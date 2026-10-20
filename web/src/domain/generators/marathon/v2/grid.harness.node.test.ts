@@ -55,6 +55,67 @@ const mainM = (w: PlanWeek): number =>
     0
   );
 
+/** MAR-07 (N11, pouka 14): plan u obliku pre MAR-07 — vraća SAMO tekstualne izmene upozorenja i napomena (MARATHON_LONG_SHORT
+    na 150 min → upozorenje umesto napomene plana, CAPACITY_LIMITED tekst poruke kapaciteta, DELOAD_LONG_SHORTENED po
+    nedelji, LONG_SHORTER_THAN_QUALITY bez preporuke manje dana). Tako bazne linije pre MAR-07 ostaju dokaz da se
+    sadržaj plana nije promenio; plan sa nedeljom pouke 35 se time ne vraća (mora biti van poređenja). */
+export function before07(p0: MarathonV2Plan): MarathonV2Plan {
+  const p = structuredClone(p0);
+  const beginner = p.input.experience === 'beginner';
+  const rule = planRule(p.input.runDays.length, p.input.experience ?? 'regular')!;
+  const EARLY = [
+    'VDOT_ESTIMATE_CAPPED',
+    'GOAL_UNREALISTIC',
+    'RESULT_5K',
+    'PLANNED_BELOW_TARGET_LIMITS',
+    'RACE_WEEK_SHORT',
+    'WEEK_MIN_LIMITS'
+  ];
+  const w = p.warnings;
+  const capNote = p.notes.findIndex((n) => n.startsWith('Najduži dugi trk je'));
+  if (capNote >= 0) {
+    p.notes.splice(capNote, 1);
+    const longest = Math.max(
+      ...p.weeks.flatMap((x) => x.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
+    );
+    let at = 0;
+    w.forEach((v, i) => {
+      if (EARLY.includes(v.rule)) at = i + 1;
+    });
+    w.splice(at, 0, {
+      rule: 'MARATHON_LONG_SHORT',
+      severity: 'warning',
+      message:
+        `Najduži dugi trk u planu je ${String(longest).replace('.', ',')} km; za maraton se preporučuje bar ${rule.longShortKm} km (${beginner ? 'M17' : 'M13'}). ` +
+        (beginner ? 'Početnik: cilj je završiti maraton. ' : '') +
+        `Ograničava ga trajanje (≤ ${P.lengths.longMaxSec / 60} min laganim tempom) — namerna granica opterećenja; ostatak obima nose ostali dani.`
+    });
+  }
+  for (const v of w) {
+    if (v.rule === 'CAPACITY_LIMITED' && v.message.includes(' Vrh '))
+      v.message = v.message.slice(0, v.message.indexOf(' Vrh '));
+    if (v.rule === 'LONG_SHORTER_THAN_QUALITY')
+      v.message = v.message.replace(/; preporuka [^;]* dana \(red sa manje dana [^)]*\)\.$/, '.');
+  }
+  const dl = w.findIndex((v) => v.rule === 'DELOAD_LONG_SHORTENED');
+  if (dl >= 0) {
+    w.splice(dl, 1);
+    const per = p.weeks
+      .filter((x) => x.deload && x.notes.some((n) => n.includes('skraćen sa 0,8 ×')))
+      .map((x) => ({
+        rule: 'DELOAD_LONG_SHORTENED',
+        severity: 'warning' as const,
+        message: `Rasterećenje: dugi ${x.days.find((d) => d.role === 'long')!.workout.km} km < 0,8 × poslednji da lagani ostanu ≥ ${P.lengths.easyMinKm} km (${x.test ? 'M16' : beginner ? 'M17' : 'A9, pouka 33'} ispred M5).`,
+        week: x.index
+      }));
+    const firstTaper = w.findIndex(
+      (v) => v.rule === 'TAPER_ZONE_DROPPED' || v.rule === 'TAPER_MP_OVER_CAP'
+    );
+    w.splice(firstTaper >= 0 ? firstTaper : dl, 0, ...per);
+  }
+  return p;
+}
+
 /** Red bazne linije: vrh cilja, najveće planirano, najduži dugi, najveća glavna doza [m], rasterećenja,
     cilj N−2 / N−1 / trkačke, upozorenja (pravila), heš celog plana. */
 export function rowOf(p: MarathonV2Plan): string {
@@ -116,7 +177,20 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
       w.index <= (beginner ? 2 : 0)
         ? 0
         : rule.quality - (w.days.some((d) => d.role === 'test') ? 1 : 0);
-    if (isSteady(w) && q.length !== want) no(`izgradnja bez ${want} kvaliteta ned ${w.index}`);
+    // Pouka 35 (MAR-07): drugi dan kvaliteta lagan kad bi dan kvaliteta bio duži od dugog (napomena nedelje); nedelja
+    // sa dva kvaliteta i danom dužim od dugog ostaje samo uz upozorenje pouke 14 (jedan kvalitet neizvodljiv).
+    const easy35 = w.notes.some((n) => n.endsWith('(pouka 35).'));
+    if (isSteady(w) && q.length !== want - (easy35 ? 1 : 0))
+      no(`izgradnja bez ${want} kvaliteta ned ${w.index}`);
+    const long0 = w.days.find((d) => d.role === 'long');
+    if (
+      isSteady(w) &&
+      long0 &&
+      q.length === 2 &&
+      q.some((d) => d.workout.sec > long0.workout.sec) &&
+      !p.warnings.some((v) => v.rule === 'LONG_SHORTER_THAN_QUALITY')
+    )
+      no(`dva kvaliteta, dan duži od dugog bez upozorenja ned ${w.index}`);
     // M15 5/6 dana: lagani jednaki (razlika ≤ 0,1 km).
     const easy = w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km));
     if (easy.length > 1 && Math.max(...easy) - Math.min(...easy) > 1)
@@ -159,11 +233,13 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     } else if (++run > 4 || (run === 4 && !firstOfPhase(p, w.index)))
       no(`niz izgradnje ned ${w.index}`);
   }
-  // Glavna doza ne opada van kapaciteta (pouke 3 i 12); nedelja testa i uvod se ne porede (M16, M17).
+  // Glavna doza ne opada van kapaciteta (pouke 3 i 12); nedelja testa i uvod se ne porede (M16, M17), ni nedelja sa
+  // lakim drugim danom kvaliteta (pouka 35: manja doza po odluci; Q2 nastavlja od stanja pre nje).
   const steady = W.filter(
     (w) =>
       isSteady(w) &&
       !w.days.some((d) => d.role === 'test') &&
+      !w.notes.some((n) => n.endsWith('(pouka 35).')) &&
       w.days.some((d) => d.workout.kind === 'quality')
   );
   for (let i = 1; i < steady.length; i++)
@@ -415,7 +491,8 @@ export function describeGrid(
     });
 
     it(`= bazna linija ${baseline.split('/').pop()} (vrh, dugi, doza, rasterećenja, taper, upozorenja, heš plana)`, () => {
-      const rows = Object.fromEntries([...run.plans].map(([id, p]) => [id, rowOf(p)]));
+      // MAR-07: poređenje sa baznim linijama pre MAR-07 — tekst upozorenja/napomena vraćen (before07).
+      const rows = Object.fromEntries([...run.plans].map(([id, p]) => [id, rowOf(before07(p))]));
       if (WRITE) {
         expect(FULL && inputs.length === all.length).toBe(true);
         writeFileSync(baseline, `${JSON.stringify(rows, null, 0)}\n`);
@@ -437,7 +514,8 @@ export function describeGrid(
         const base = JSON.parse(readFileSync(BASELINE_02, 'utf8')) as Record<string, string>;
         const fields = (row: string): string => row.split('|').slice(0, -1).join('|');
         const bad: string[] = [];
-        for (const [id, p] of run.plans) {
+        for (const [id, p07] of run.plans) {
+          const p = before07(p07);
           const row = base[id]!;
           const longer = row.split('|')[8]!.split('.').includes('LONG_SHORTER_THAN_QUALITY');
           const same = planHash02(p) === row.split('|').pop() && fields(rowOf(p)) === fields(row);
@@ -462,7 +540,8 @@ export function describeGrid(
         const jump = new Set(reg.jump);
         const bad: string[] = [];
         const fields = (row: string): string => row.split('|').slice(0, -1).join('|');
-        for (const [id, p] of run.plans) {
+        for (const [id, p07] of run.plans) {
+          const p = before07(p07);
           // MAR-04b: plan sa danom kvaliteta dužim od dugog na bd07eec (van STABLE) sme da se promeni.
           if (!id.startsWith('d4-') || !STABLE.has(id)) continue;
           const old = id.slice(3);

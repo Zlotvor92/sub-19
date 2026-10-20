@@ -372,6 +372,18 @@ export interface ExecutionAdjustmentMeta {
   startingKm: number;
   reportedLongRunKm?: number;
 }
+/** Šta izvor predaje ciljnom generatoru „kraće distance" (A2, pouka 21): SAMO činjenice — potvrđeno izvršenje (datum,
+ *  razlog, pauza, prijavljena baza i dužina) i početak od potvrđene baze; nikad povratnu politiku ni bazu zaštite rasta
+ *  izvora. Ciljevi v1 imaju strukturno istu kopiju u svom folderu (`<distanca>/plan/handoffTarget.ts`). Faza 3 (3b): `raw` su
+ *  sirove činjenice izvora v2 (zapisi sa datumom, bez `dayId` izvora; pauze, bol, rezultati, pokrivenost) za cilj v2 —
+ *  oblik određuje cilj; v1 ciljevi polje ne čitaju. */
+export interface HandoffFacts {
+  execution: ExecutionAdjustmentMeta | null;
+  restartFromBase: boolean;
+  notes?: string[];
+  meta?: Record<string, unknown>;
+  raw?: Readonly<Record<string, unknown>>;
+}
 export interface DecisionBasis {
   input: PlanGenerationInput;
   policy: ReturnPolicy | null;

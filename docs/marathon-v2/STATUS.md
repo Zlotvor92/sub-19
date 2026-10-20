@@ -22,7 +22,7 @@ const r = generateMarathonV2({
   recentLongRunKm: 18, // opciono, 5–42 km: skok dugog ≤ 10 % (M13a)
   // bez rezultata: easyPaceSecPerKm: 360 (po osećaju, M16); experience: 'beginner' (M17)
 });
-// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.3.1', paceBasis, faza nedelje, upozorenja)
+// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.4.1', paceBasis, faza nedelje, upozorenja)
 // !r.ok → r.reasons (kod + poruka sa preporukom: npr. PLAN_TOO_SHORT → polumaraton)
 const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → { ok, plan, changes, reasons } ili odbijanje
 // a.ok → a.newLimits (pouka 20: nova ograničenja poslednjeg koraka, steps.newLimits)
@@ -41,16 +41,15 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
   `segment01.baseline.json` + `segment02.regression-01.json`.
 - Sabotaže: `node scripts/sabotage.mjs ../docs/marathon-v2/artifacts/segment-03/sabotage.json`.
 
-## Trenutno stanje (marathon-v2.3.1)
+## Trenutno stanje (marathon-v2.4.0)
 
-- MAR-04b: pouka 32 za sve zone (plafon zone = M11 i trajanje dana ≤ dugi; izgradnja, rasterećenje, taper, adaptacija;
-  najniži nivo izuzet; ponavljanje kad ni druga struktura ni sledeći nivo ne staju → upozorenje); umor pre starta
-  (pouka 34: ned 1 = 0,8 × ned 1 generatora, ned 2 = ned 1); BASE_PLATEAU preko nedelje testa. Široka pretraga
-  (17 scenarija + pre starta, 267 927 tokova) i rana mreža sa asOf pre starta: 0 odbijanja.
-- M18 adaptacija (MAR-04): assess → isti konstruktor (construct) → spajanje upisanih dana (written.ts) → validate;
-  A1–A15, A17 (kopija 10K v2 sa brojevima maratona). Bez činjenica: plan bajt-isti (mreže 02/03, bazne linije).
-- Mreža 04 (6236 tokova), trajna mreža rane adaptacije (45 101) i široka pretraga: 0 odbijanja, 0 prekršaja
-  adaptInvariants. Sabotaže `artifacts/segment-04/sabotage.json`.
+- MAR-07 (Faza 4a): trkačka nedelja samo sa trkom → RACE_WEEK_SHORT (N1); pouka 35 (drugi dan kvaliteta lagan kad bi
+  dan kvaliteta bio duži od dugog, izgradnja; jedan kvalitet neizvodljiv → dva + upozorenje pouke 14); pouka 36 (umor
+  vezan za zapise); validator čita stanje mešovite nedelje (N8); jedna definicija po veličini (N9); preporuka manje
+  dana (pouka 14); MARATHON_LONG_SHORT samo bez plafona 150 min, tehnička napomena se ne prikazuje (N11).
+
+- MAR-04/04b: assess → isti konstruktor → upisani dani (written.ts) → validate; pouka 32 za sve zone, pouka 34 (umor
+  pre starta). Bez činjenica plan bajt-isti generatoru.
 - 3/4/5/6 dana (M15), 12–24 nedelje, obim po redu, rezultat 10K/HM/maraton (5K uz RESULT_5K) ≤ 84 dana, VDOT 30–80.
   3 dana: jedan kvalitet T kont. → T cruise → MP (bez I/R), rasterećenje T na Q1, taper samo MP. 5/6 dana: lagani
   jednaki. Piramida M10a (I 5000 = 800-1000-1200-1200-800). M13a: dugi ≤ max(1,1 L; L + 1), L = najduži prethodne 4
@@ -61,42 +60,20 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
 - Trajno odbijeno: < 12 ned (polumaraton), obim van reda (preporuka broja dana; < 30 km polumaraton/osnova), 1/2/7
   dana, VDOT > 80, trčanje/hodanje (svi); početnik 3/6 dana, < 16 ned, obim van 25–45 / 30–50. „Počni kasnije": > 24 ned.
 
-## Segmenti 01–03
+## Segmenti (izveštaji `reports/SEGMENT-NN-IMPLEMENTATION.md`)
 
-- 01 (`marathon-v2.0.0`, od `3fec5c5`): jezgro 4 dana; STANI M7 ↔ M11 → M7a. 02 (`marathon-v2.1.0`, od `8ae290a`): 3/5/6
-  dana, M13a. 03 (`marathon-v2.2.0`, od `bfb82c9`): po osećaju + test, početnik, plafon MP sa trajanjem. Detalji u
-  `reports/SEGMENT-01…03-IMPLEMENTATION.md`.
+| segment | verzija     | polazni SHA                     | sadržaj                                                                                              |
+| ------- | ----------- | ------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 01–03   | 2.0.0–2.2.0 | `3fec5c5`, `8ae290a`, `bfb82c9` | jezgro 4 d (STANI → M7a); 3/5/6 d, M13a; po osećaju + test, početnik                                 |
+| 04      | 2.3.0       | `5547285`                       | adaptacija M18 (A1–A15, A17); mreža 04, trajna rana, široka pretraga; sabotaže 14/14                 |
+| 04b     | 2.3.1       | `bd07eec`                       | pouka 32 sve zone, umor pre starta (pouka 34), BASE_PLATEAU; `artifacts/segment-04b/`                |
+| MAR-05  | 2.3.1       | `9443676`                       | aplikacija iza prekidača `generatorV2Marathon`, adapter `v2/app/`, byteSame 223 heša                 |
+| MAR-06  | 2.3.1       | `8beef45`                       | adaptacija u aplikaciji (facts, pregled → potvrda → revizija, vraćanje, Forma, cilj), traka u domenu |
 
-## Segment 04 (marathon-v2.3.0)
+## Segment MAR-07 (marathon-v2.4.0) i MAR-07b (2.4.1), Faza 4a
 
-- Polazni SHA `5547285`; izveštaj `reports/SEGMENT-04-IMPLEMENTATION.md`; bez STANI.
-- Testovi: brz 20 fajlova / 233 testa (50,3 s), pun 40 / 302 (10 min 43 s); sabotaže 14/14 PALO; `npm run check` exit 0
-  (260 fajlova, 3155 testova). Skripte `artifacts/segment-04/` (grid04, wide, metrics).
+- Polazni SHA `7ba9717`; izveštaj `reports/SEGMENT-07-IMPLEMENTATION.md`.
+- MAR-07b (`marathon-v2.4.1`, `reports/SEGMENT-07b-IMPLEMENTATION.md`): validator ne sudi zaštićenim danima (A11b).
+  KNOWN_VERSIONS = 2.3.1, 2.4.0, 2.4.1; regresija 0 neobjašnjenih; sabotaže 6/6 + 2/2.
 
-## Segment 04b (marathon-v2.3.1)
-
-- Polazni SHA `bd07eec`; izveštaj `reports/SEGMENT-04b-IMPLEMENTATION.md`; dva STANI (sudari 1–4), odluke primenjene.
-- Merenje i regresija: `artifacts/segment-04b/` (measure.ts, compare.ts, compare-result.json, regression-exceptions.json);
-  fikstura `segment04b.stable-bd07eec.json`. Sabotaže `artifacts/segment-04b/sabotage.json`.
-
-## Segment MAR-05 (aplikacija iza prekidača, jezgro nepromenjeno)
-
-- Polazni SHA `9443676`; izveštaj `reports/SEGMENT-05-IMPLEMENTATION.md`; bez STANI.
-- Prekidač `generatorV2Marathon` (podrazumevano isključen), rutiranje po `marathon-v2` (KNOWN_VERSIONS = tekuća;
-  ostalo UNKNOWN_POLICY), adapter `v2/app/` (bez uvoza van `marathon/v2`), čarobnjak, prikaz (trka 42,2 km van obima),
-  sat, uvoz (`vanPlanaV2`, `fullSync`), format `GenPlanState.marathonV2`. Članovi (b) „nepodržano do MAR-06".
-- Testovi: `v2/app/` app.node 27, byteSame.node 2 (223 heša sa 9443676), importV2.node 3; UI marathonV2Flow 8,
-  marathonV2Watch 2; E2E `e2e/marathon-v2.spec.ts` 3. Sabotaže `artifacts/segment-05/sabotage-05.json` 10/10.
-
-## Segment MAR-06 (adaptacija u aplikaciji; plan politike nepromenjen, `marathon-v2.3.1`)
-
-- Polazni SHA `8beef45`; izveštaj `reports/SEGMENT-06-IMPLEMENTATION.md`; bez STANI.
-- `v2/app/facts.ts` (jedino mesto prevoda), `adapt.ts` (pregled, vraćanje, cilj), `form.ts`, `members.ts` (26 članova
-  (b): v2 ili „ne koristi se" sa razlogom); domen: `steps.newLimits`, `adaptMarathonV2` → `newLimits`, `adaptBanner`
-  po pravilu HM-06 (jedno pravilo trake, samo u domenu). KNOWN_VERSIONS = 2.3.1 ∪ tekuća.
-- UI: MarathonV2Adjustment, trake (Plan, Danas), FormMarathonV2, unos testa 5 km, Ti → Cilj.
-- Sabotaže `artifacts/segment-06/sabotage-06.json` 8/8.
-
-## Sledeće
-
-- Predaja maraton v2 ↔ HM/10K (faza 3); otvorena pitanja MAR-06 (izveštaj).
+## Sledeće: predaja maraton v2 ↔ HM/10K (faza 3).

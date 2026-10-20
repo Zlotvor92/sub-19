@@ -1,0 +1,19 @@
+[
+  {
+    "name": "07b provera po danu bez preskakanja zaštićenih dana (WU/CD po tempu nedelje)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "      if (protectedDay(d)) continue;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment07.node.test.ts",
+      "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "07b urađen dan posle asOf nije zaštićen (doneDayIds se ne čita)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "  const lockedIds = new Set([...(ad?.lockedDayIds ?? []), ...(ad?.doneDayIds ?? [])]);\n",
+    "replace": "  const lockedIds = new Set([...(ad?.lockedDayIds ?? [])]);\n",
+    "tests": ["src/domain/generators/marathon/v2/segment07.node.test.ts"]
+  }
+]

@@ -391,15 +391,24 @@ export function assess(
     );
   });
   if (easyHard.length >= A.fatigueCount) {
-    const ok = !volumeRule && build(n) && !wk(n)!.deload;
+    // 2.8.0 (MASTER pouka 36): umor je vezan za ZAPISE — prinudno rasterećenje je nedelja POSLE nedelje poslednjeg
+    // zapisa umora (prva nedelja koja počinje posle zapisa). Ako je asOf već u njoj (r < n), rasterećenje važi za
+    // njen ostatak (prošli dani zaštićeni); ako je ona već rasterećenje (redovno ili od istih zapisa), novo se ne
+    // pravi. Isti zapisi prijavljeni u nedelju i u ponedeljak daju isti plan.
+    const last = Math.max(...easyHard.map((x) => day(x.date)));
+    const after = addDays(asOf, last + 1 - t);
+    const ra = weekOf(after);
+    const dw = Math.max(r, ra <= N && day(weeks[ra - 1]!.startDate) < day(after) ? ra + 1 : ra);
+    const ok = !volumeRule && build(dw) && !wk(dw)!.deload;
     if (ok) {
       step.deload = true;
+      if (dw !== n) step.deloadWeek = dw;
       volumeRule = true;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${n} je rasterećenje` : volumeRule ? 'nadjačano pauzom' : 'sledeća nedelja je već rasterećenje, taper ili trka'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${dw} je rasterećenje${dw < n ? ` (ostatak od ${next})` : ''}` : volumeRule ? 'nadjačano pauzom' : dw < n && build(dw) ? `rasterećenje za ove zapise je već u planu (nedelja ${dw})` : 'sledeća nedelja je već rasterećenje, taper ili trka'}.`
     );
   }
 

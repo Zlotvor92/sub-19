@@ -104,7 +104,7 @@ export function adaptInvariants(
       bad.push(`cilj < minimum ned ${w.index}`);
     // D5 (A5: prinudno rasterećenje sme bilo gde u izgradnji).
     if (w.deload) {
-      const forced = steps.some((s) => s.deload && s.fromWeek === w.index);
+      const forced = steps.some((s) => s.deload && (s.deloadWeek ?? s.fromWeek) === w.index);
       const prev = after.weeks[w.index - 2];
       const next = after.weeks[w.index];
       if (!isBuild(w)) bad.push(`rasterećenje van izgradnje ned ${w.index}`);
@@ -213,7 +213,7 @@ function extra(
           ]
     )
   );
-  const forced = new Set(steps.filter((s) => s.deload).map((s) => s.fromWeek));
+  const forced = new Set(steps.filter((s) => s.deload).map((s) => s.deloadWeek ?? s.fromWeek));
   const W = p.weeks;
   for (const w of W) {
     if (!w.deload || !isBuild(w) || forced.has(w.index) || !reducedW.has(w.index - 1)) continue;

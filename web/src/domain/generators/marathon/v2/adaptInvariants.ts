@@ -90,7 +90,7 @@ export function adaptInvariants(
     if (s.reduced === true) reducedAt.add(s.fromWeek);
     if (s.returnFrom) reducedAt.add(s.returnFrom.week);
   }
-  const forced = new Set(steps.filter((s) => s.deload).map((s) => s.fromWeek));
+  const forced = new Set(steps.filter((s) => s.deload).map((s) => s.deloadWeek ?? s.fromWeek));
   const restartAt = new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
   const runFrom = (i: number): number => {
     let k = i;

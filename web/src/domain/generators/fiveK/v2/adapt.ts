@@ -21,14 +21,13 @@ import type {
   FiveKV2RunWalkPlan,
   GoalAssessment,
   PlanDay,
-  PlanWeek,
   Reason,
   RunWalkAdaptResult
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { capacityKm } from './volume.ts';
+import { type Written, writtenWeeks } from './written.ts';
 
-const r2 = (x: number): number => Math.round(x * 100) / 100;
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): AdaptResult => ({
   ok: false,
@@ -130,8 +129,14 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
   if (!as.ok) return { ok: false, reasons: as.reasons, violations: [] };
   const steps = [...(plan.adaptation?.steps ?? []), as.step];
 
-  // (2) Isti konstruktor kao generate.
-  const built = construct(plan.input, steps);
+  // (2) Isti konstruktor kao generate. 2.8.0 (pouka 29): zaštita dana (≤ asOf, urađeni, zaključani) je poznata
+  // unapred i ulazi u konstruktor — prošlost = upisani dani (written.ts).
+  const done = new Set(facts.workouts.filter((x) => x.completed).map((x) => x.dayId ?? x.date));
+  const locked = new Set(facts.lockedDayIds);
+  const keep = (d: PlanDay): boolean =>
+    mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
+  const prior: Written = { weeks: plan.weeks, keep, asOf: t, at };
+  const built = construct(plan.input, steps, prior);
   if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
   const c = built.c;
   // 2.6.1 (Odluka 1 dopuna): poruka PAIN — osnova povratka iz cilja nedelje sidra r u konstrukciji
@@ -162,35 +167,8 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
     return more ? { ...x, message: x.message + more } : x;
   });
 
-  // (3) Spajanje: dani ≤ asOf, urađeni i zaključani dani iz prethodnog plana.
-  const done = new Set(facts.workouts.filter((x) => x.completed).map((x) => x.dayId ?? x.date));
-  const locked = new Set(facts.lockedDayIds);
-  const keep = (d: PlanDay): boolean =>
-    mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
-  const mixed: number[] = [];
-  const weeks: PlanWeek[] = c.weeks.map((b, i) => {
-    const s = plan.weeks[i]!;
-    if (mustDay(s.endDate) <= t) {
-      if (!same(s, b)) mixed.push(s.index);
-      return s;
-    }
-    const days = [
-      ...s.days.filter(keep),
-      ...b.days.filter((d) => !s.days.some((x) => x.date === d.date && keep(x)))
-    ].sort((x, y) => x.date.localeCompare(y.date));
-    if (same(days, b.days)) return same(s, b) ? s : b;
-    mixed.push(s.index);
-    const kept = s.days.filter((d) => keep(d) && mustDay(d.date) > t).map((d) => d.date);
-    return {
-      ...b,
-      days,
-      plannedKm: r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0)),
-      notes: [
-        ...b.notes,
-        `Adaptacija ${at}: ${mustDay(s.startDate) <= t ? `dani do ${at} nepromenjeni` : ''}${kept.length > 0 ? `${mustDay(s.startDate) <= t ? '; ' : ''}zaključano/urađeno zadržano: ${kept.join(', ')}` : ''}.`
-      ]
-    };
-  });
+  // (3) Spajanje (written.ts — isto koje vidi konstruktor).
+  const { weeks, mixed } = writtenWeeks(c.weeks, prior);
 
   // Završna zaštita: samo proverava (ne menja plan).
   for (const s of plan.weeks)

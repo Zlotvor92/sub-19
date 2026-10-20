@@ -286,9 +286,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A5',
-    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana) sa RPE ≥ 7 u 7 dana → sledeća nedelja prinudno rasterećenje (samo izgradnja; ne ako je već rasteretna, taper ili trka); redovno rasterećenje odmah posle prinudnog se ukida; prinudno se nikad ne ukida. Pouka 31: prinudno rasterećenje u uvodu početnika — obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta); uvod ima prednost.',
+    rule: 'Umor: ≥ 2 laganih treninga (lagan, dugi ili zapis van plana) sa RPE ≥ 7 u 7 dana → prinudno rasterećenje u nedelji pouke 36 (assess.fatigueWeek: prva nedelja koja počinje posle poslednjeg zapisa umora; asOf u njoj → njen ostatak) (samo izgradnja; ne ako je već rasteretna, taper ili trka); redovno rasterećenje odmah posle prinudnog se ukida; prinudno se nikad ne ukida. Pouka 31: prinudno rasterećenje u uvodu početnika — obim rasterećenja (0,8 ×), sadržaj uvoda (bez kvaliteta); uvod ima prednost.',
     place:
-      'assess.ts; steps.ts framesFor; week.ts (uvod ispred rasterećenja, HI13); validate.ts (H5 izuzetak prinudnog)',
+      'assess.ts fatigueWeek, korak.deloadWeek (samo kad ≠ fromWeek); steps.ts deloadWeekOf (framesFor, newLimits); week.ts (uvod ispred rasterećenja, HI13); validate.ts (H5 izuzetak prinudnog, deloadWeekOf)',
     rationale: 'Kao 10K v2 A5 (dopuna 06d, pouka 31).'
   },
   {
@@ -415,17 +415,24 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'F4a-N12',
-    rule: 'Pouka 36: umor je vezan za ZAPISE — sidro je nedelja koja sadrži (poslednji zapis umora) + 1, rasterećenje prva puna nedelja od nje; kad je ta nedelja već rasterećenje (umor čije je rasterećenje već u planu — isti zapisi ponovo posle granice nedelje) novo se ne pravi; inače prva puna nedelja posle asOf (prošlost se ne menja). Pouka 20: traka (adaptBanner) je JEDNO pravilo u domenu (oblik maratona posle MAR-06), aplikacija je samo zove.',
+    rule: 'Pouka 36 (precizno od hm-v2.4.1, HM-07b): umor je vezan za ZAPISE — prinudno rasterećenje je nedelja POSLE nedelje poslednjeg zapisa umora (prva nedelja koja počinje posle zapisa; assess.fatigueWeek, jedino mesto); kad asOf već pada u nju, rasterećenje važi za njen ostatak (prošli dani upisani, pouka 29); kad je ta nedelja već rasterećenje (i od istog umora — isti zapisi ponovo), novo se ne pravi. Korak nosi deloadWeek kad ≠ fromWeek; okviri, traka (newLimits) i validator čitaju steps.deloadWeekOf. Pouka 20: traka (adaptBanner) je JEDNO pravilo u domenu (oblik maratona posle MAR-06), aplikacija je samo zove.',
     place:
       'assess.ts (A5 umor); adapt.ts adaptBanner; app/adapt.ts (poziv); fatigueRepeat.node.test.ts',
     rationale:
-      'Organizator, MASTER pouka 36 (fatigue-repeat.ts HM end): drugo rasterećenje 708/777 tokova → 0 (sredom 0 → 0). Traka bajt-ista prema app/adapt.ts HM-06 (adaptFlow testovi nepromenjeni).'
+      'Organizator, MASTER pouka 36 (fatigue-repeat.ts HM end): drugo rasterećenje 708/777 tokova → 0 (sredom 0 → 0). Traka bajt-ista prema app/adapt.ts HM-06 (adaptFlow testovi nepromenjeni). HM-07b (organizator, merenje na afa1c46: zapisi pet/ned, asOf ponedeljak nedelje k → HM k + 1, maraton k): hm-v2.4.0 je za asOf u nedelji posle zapisa uzimao prvu punu nedelju posle asOf — krši „isti zapisi = isti plan" i odlaže oporavak (kad je k + 1 redovno rasterećenje, umor se gubio). Merenje (docs/hm-v2/artifacts/segment-07b/probe.ts, svaki 97. ulaz × k ∈ {2, 4, N − 6}): rasterećenje van nedelje k 5698 / 20 202 → 0, plan poslednjeg dana k − 1 ≠ prvog dana k 2590 / 2590 → 0 (osim kad rasterećenje menja upisan prvi dan), 0 odbijanja; rana 4a 114 012 i ciljana 16 275 bez promene sadržaja.'
+  },
+  {
+    id: 'HM07b-GUARD',
+    rule: 'Pouka 4 / stalni uslov 4: provere po danu (H10/H14: WU/CD, tip po fazi, lestvica, doza, RPE, deonice, oporavak, test; H11 plafon zone po treningu) preskaču zaštićene dane — zaključane (A11, lockedDayIds) i upisane (datum ≤ poslednji asOf: urađen, propušten, ručno izmenjen; pouka 29) — kao LIMITS. Zaštićen dan je činjenica: npr. zaključan dan kvaliteta posle novog rezultata nosi stari tempo (A1: novi tempo od sledeće nedelje), a validator sudi samo ono što konstruktor odlučuje.',
+    place: 'validate.ts guarded (jedno mesto: zaključan ∪ upisan), petlja H10/H14 i H11 ZONE_CAP',
+    rationale:
+      'Nalaz MAR-07 (organizator), izmereno u HM (probe.ts): rezultat faster/slower/test5k krajem nedelje k + zaključani Q1/Q2 (ili samo Q1) nedelje k + 1, pa urađen Q1 — odbijeno 2978 / 3336 tokova (WARMUP/COOLDOWN, …) → 0 / 4617 (sa lancem urađenog Q1). Rana 4a i ciljana mreža bez promene.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.4.0',
+  version: 'hm-v2.4.1',
 
   /** H1 (dani i obim: H15). */
   input: {

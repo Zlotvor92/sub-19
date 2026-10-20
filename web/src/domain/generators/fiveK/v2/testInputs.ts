@@ -1,6 +1,12 @@
 /* Zajednički ulazi za testove 5K v2 (nije testni fajl, da bi ga izolacioni test video kao deo v2). */
 
-import { addDays } from './dates.ts';
+import { addDays, weekdayOf } from './dates.ts';
+import { adaptFiveKV2 } from './adapt.ts';
+import { assess, checkFacts } from './assess.ts';
+import { mustDay } from './dates.ts';
+import { construct, generateFiveKV2 } from './generate.ts';
+import { raceTimeForVdot } from './paces.ts';
+import type { AdaptResult, FiveKV2Plan, PlanDay } from './types.ts';
 import type { Weekday } from './types.ts';
 
 export const START = '2026-11-02'; // ponedeljak
@@ -784,3 +790,402 @@ export const canonResult08e = (r: unknown): string =>
   JSON.stringify(r, (k, v: unknown) =>
     k === 'policyVersion' ? '-' : k === 'reduced' ? undefined : v
   );
+
+/* ---------- Segment 08g (5k-v2.8.0, pouka 23/29/30): trajna rana mreža (kopija Faza 4a early.ts, lib.ts grid5k /
+   facts5k / commonChecks — ne uvozi se iz docs/, Uslov 7) ---------- */
+
+/** Svih 17 scenarija Faze 4a ('chain' + drugi korak asOf + 7). */
+export const EARLY_SCENARIOS = [
+  'none',
+  'done100',
+  'under50',
+  'over120',
+  'pause10',
+  'pause20',
+  'pause35',
+  'pain5',
+  'pain8',
+  'fatigue',
+  'faster',
+  'slower',
+  'test5k',
+  'incomplete',
+  'locked',
+  'chain',
+  'painPause'
+] as const;
+export type EarlyScenario = (typeof EARLY_SCENARIOS)[number];
+
+export interface EarlyBase {
+  id: string;
+  family: 'R' | 'F' | 'B';
+  input: Record<string, unknown>;
+}
+
+const D5K: Record<3 | 4 | 5, Weekday[][]> = {
+  3: [
+    ['tue', 'thu', 'sun'],
+    ['mon', 'wed', 'sat']
+  ],
+  4: [
+    ['tue', 'thu', 'sat', 'sun'],
+    ['mon', 'wed', 'fri', 'sun']
+  ],
+  5: [
+    ['mon', 'tue', 'thu', 'sat', 'sun'],
+    ['mon', 'wed', 'thu', 'fri', 'sun']
+  ]
+};
+const KM5K: Record<3 | 4 | 5, number[]> = {
+  3: [12, 16, 20, 25, 30],
+  4: [15, 20, 25, 30, 35, 40],
+  5: [25, 30, 40, 50, 60]
+};
+
+/** Mreža ulaza Faze 4a (lib.ts grid5k): 6–16 ned × 3/4/5 dana × obim × 2 rasporeda; R (VDOT 32–58), F (po
+    osećaju E 300–480 s), B (početnik ≤ 4 dana, ≤ 30 km, ≥ 8 ned). 3816 ulaza. */
+export function earlyGridInputs(): EarlyBase[] {
+  const out: EarlyBase[] = [];
+  const raceOf = (w: number): string => addDays(START, w * 7 - 1);
+  const res = (vdot: number) => ({
+    distanceM: 5000,
+    timeSec: Math.round(raceTimeForVdot(vdot, 5000)),
+    date: addDays(START, -14)
+  });
+  for (const weeks of [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
+    for (const d of [3, 4, 5] as const)
+      for (const km of KM5K[d])
+        for (const [si, days] of D5K[d].entries()) {
+          const base = {
+            startDate: START,
+            raceDate: raceOf(weeks),
+            runDays: days,
+            currentWeeklyKm: km
+          };
+          for (const v of [32, 38, 45, 52, 58])
+            out.push({
+              id: `r-d${d}-${weeks}w-${km}km-v${v}-${si}`,
+              family: 'R',
+              input: { ...base, recentResult: res(v), goalTimeSec: null }
+            });
+          for (const e of [300, 360, 420, 480])
+            out.push({
+              id: `f-d${d}-${weeks}w-${km}km-e${e}-${si}`,
+              family: 'F',
+              input: { ...base, typicalEasyPaceSecPerKm: e, goalTimeSec: null }
+            });
+          if (d <= 4 && km <= 30 && weeks >= 8)
+            for (const b of [{ e: 420 }, { e: 480 }, { v: 32 }, { v: 36 }])
+              out.push({
+                id: `b-d${d}-${weeks}w-${km}km-${'e' in b ? `e${b.e}` : `v${b.v}`}-${si}`,
+                family: 'B',
+                input: {
+                  ...base,
+                  experience: 'beginner',
+                  canRun30Min: true,
+                  ...('e' in b ? { typicalEasyPaceSecPerKm: b.e } : { recentResult: res(b.v) }),
+                  goalTimeSec: null
+                }
+              });
+        }
+  return out;
+}
+
+/** Uzorak trajne mreže = uzorak Faze 4a (early.ts 5K 29 19 11): svaki k-ti ulaz porodice od pomaka ⌊k/2⌋. */
+export const EARLY_STEP = { R: 29, F: 19, B: 11 } as const;
+export function earlyGridBases(): EarlyBase[] {
+  const all = earlyGridInputs();
+  return (['R', 'F', 'B'] as const).flatMap((fam) => {
+    const k = EARLY_STEP[fam];
+    return all.filter((b) => b.family === fam).filter((_, i) => i % k === Math.floor(k / 2));
+  });
+}
+
+interface EarlyDay {
+  date: string;
+  role: string;
+  countsToWeek: boolean;
+  workout: { km: number; sec: number };
+}
+export interface EarlyPlan {
+  input: { startDate: string; raceDate: string; runDays: Weekday[]; currentWeeklyKm: number };
+  vdot: number | null;
+  weeks: {
+    index: number;
+    phase: string;
+    startDate: string;
+    endDate: string;
+    plannedKm: number;
+    days: EarlyDay[];
+  }[];
+}
+
+/** asOf: start − 1/− 3/− 6, sreda i kraj svake nedelje 1 … N − 2. */
+export function earlyAsOfs(plan: EarlyPlan): { tag: string; asOf: string }[] {
+  const out = [1, 3, 6].map((k) => ({ tag: `pre${k}`, asOf: addDays(plan.input.startDate, -k) }));
+  for (let i = 1; i <= plan.weeks.length - 2; i++) {
+    const w = plan.weeks[i - 1]!;
+    let wed = w.startDate;
+    while (weekdayOf(wed) !== 'wed') wed = addDays(wed, 1);
+    out.push({ tag: `w${i}wed`, asOf: wed }, { tag: `w${i}end`, asOf: w.endDate });
+  }
+  return out;
+}
+
+function earlyRuns(
+  plan: EarlyPlan,
+  from: string,
+  to: string,
+  share = 1
+): Record<string, unknown>[] {
+  const out: Record<string, unknown>[] = [];
+  const byDate = new Map(plan.weeks.flatMap((w) => w.days.map((d) => [d.date, d] as const)));
+  for (let d = from; d <= to; d = addDays(d, 1)) {
+    const pd = byDate.get(d);
+    if (pd && pd.countsToWeek)
+      out.push({
+        date: d,
+        dayId: d,
+        km: Math.round(pd.workout.km * share * 100) / 100,
+        durationSec: Math.round(pd.workout.sec * share),
+        completed: true,
+        rpe: 5
+      });
+    else if (!pd && d < plan.input.startDate && plan.input.runDays.includes(weekdayOf(d)))
+      out.push({
+        date: d,
+        km: Math.round((plan.input.currentWeeklyKm / plan.input.runDays.length) * share * 10) / 10,
+        durationSec: 2400,
+        completed: true,
+        rpe: 5
+      });
+  }
+  return out;
+}
+
+/** Činjenice scenarija (lib.facts5k, kopija). */
+export function earlyFacts(
+  plan: EarlyPlan,
+  s: EarlyScenario,
+  asOf: string
+): Record<string, unknown> {
+  const back = (n: number): string => addDays(asOf, -n);
+  const cov = (from: string, complete = true) => ({ from, to: asOf, complete });
+  const v = plan.vdot ?? 38;
+  const result = (vdot: number, kind: 'race' | 'test') => ({
+    distM: 5000,
+    sec: Math.round(raceTimeForVdot(vdot, 5000)),
+    date: asOf,
+    kind
+  });
+  const painAt = (level: number) => ({
+    workouts: [{ date: asOf, km: 0, durationSec: 0, completed: false, pain: level }]
+  });
+  switch (s) {
+    case 'none':
+      return {};
+    case 'done100':
+      return { workouts: earlyRuns(plan, back(13), asOf), coverage: cov(back(13)) };
+    case 'under50':
+      return {
+        workouts: [...earlyRuns(plan, back(13), back(7)), ...earlyRuns(plan, back(6), asOf, 0.5)],
+        coverage: cov(back(13))
+      };
+    case 'over120':
+      return { workouts: earlyRuns(plan, back(13), asOf, 1.2), coverage: cov(back(13)) };
+    case 'pause10':
+    case 'chain':
+      return { workouts: earlyRuns(plan, back(23), back(10)), coverage: cov(back(23)) };
+    case 'pause20':
+      return { breaks: [{ kind: 'break', from: back(19), to: asOf }] };
+    case 'pause35':
+      return { workouts: earlyRuns(plan, back(48), back(35)), coverage: cov(back(48)) };
+    case 'pain5':
+      return painAt(5);
+    case 'pain8':
+      return painAt(8);
+    case 'fatigue':
+      return {
+        workouts: [
+          { date: back(1), km: 6, durationSec: 2400, completed: true, rpe: 8 },
+          { date: back(3), km: 6, durationSec: 2400, completed: true, rpe: 7 }
+        ]
+      };
+    case 'faster':
+      return { results: [result(Math.round((v + 2) * 10) / 10, 'race')] };
+    case 'slower':
+      return { results: [result(Math.round((v - 2) * 10) / 10, 'race')] };
+    case 'test5k':
+      return { results: [result(v + 1, 'test')] };
+    case 'incomplete':
+      return { coverage: cov(back(13), false) };
+    case 'locked': {
+      const future = plan.weeks
+        .flatMap((w) => w.days)
+        .filter((d) => d.date > asOf && d.role !== 'race')
+        .slice(0, 3)
+        .map((d) => d.date);
+      return { workouts: earlyRuns(plan, back(1), asOf), lockedDayIds: future };
+    }
+    case 'painPause':
+      return {
+        workouts: [
+          ...earlyRuns(plan, back(33), back(20)),
+          { date: asOf, km: 0, durationSec: 0, completed: false, pain: 6 }
+        ],
+        coverage: cov(back(33))
+      };
+  }
+}
+
+/** Drugi korak lanca (asOf + 7): pola plana poslednjih 7 dana, pokrivenost potpuna (lib.chain2Generic). */
+export const earlyChain2 = (plan: EarlyPlan, at2: string): Record<string, unknown> => ({
+  workouts: earlyRuns(plan, addDays(at2, -6), at2, 0.5),
+  coverage: { from: addDays(at2, -6), to: at2, complete: true }
+});
+
+/** Nezavisne provere toka (lib.commonChecks, kopija): prošlost bajt-ista (dani ≤ asOf, urađeni, zaključani),
+    prazan trening, dugi ≥ lagan (budući dani), trkačka (bez trke) ≤ planirano poslednje nedelje tapera. */
+export function earlyChecks(
+  before: EarlyPlan,
+  after: EarlyPlan,
+  asOf: string,
+  facts: Record<string, unknown>
+): string[] {
+  const bad: string[] = [];
+  const S = JSON.stringify;
+  const done = new Set(
+    (
+      (facts['workouts'] as { completed: boolean; dayId?: string; date: string }[] | undefined) ??
+      []
+    )
+      .filter((x) => x.completed)
+      .map((x) => x.dayId ?? x.date)
+  );
+  const locked = new Set((facts['lockedDayIds'] as string[] | undefined) ?? []);
+  const aDays = new Map(after.weeks.flatMap((w) => w.days.map((d) => [d.date, d] as const)));
+  for (const w of before.weeks)
+    for (const d of w.days)
+      if (d.date <= asOf || done.has(d.date) || locked.has(d.date))
+        if (S(aDays.get(d.date)) !== S(d)) bad.push(`PROSLOST ${d.date}`);
+  for (const w of after.weeks) {
+    const fut = w.days.filter((d) => d.date > asOf);
+    for (const d of fut)
+      if (d.role !== 'race' && (!(d.workout.km > 0) || !(d.workout.sec > 0)))
+        bad.push(`PRAZAN_TRENING ${d.date}`);
+    const long = fut.find((d) => d.role === 'long');
+    if (long)
+      for (const d of fut)
+        if (d.role === 'easy' && d.workout.km > long.workout.km + 1e-6)
+          bad.push(`DUGI<LAGAN ${d.date}`);
+  }
+  const race = after.weeks[after.weeks.length - 1]!;
+  const tapers = after.weeks.filter((w) => w.phase === 'taper');
+  const taper = tapers[tapers.length - 1];
+  if (taper) {
+    const raceKm = race.days.filter((d) => d.countsToWeek).reduce((a, d) => a + d.workout.km, 0);
+    if (raceKm > taper.plannedKm + 0.05 && race.days.some((d) => d.date > asOf))
+      bad.push(`TRKACKA>TAPER ${raceKm.toFixed(2)} > ${taper.plannedKm}`);
+  }
+  return bad;
+}
+
+/** 08g: zašto se tok menja prema starijim heš fixture-ima (nezavisno od toka konstrukcije) — 'N3': trkačka nedelja
+    skraćena po pouci 30 (raceRest u rezultatu); 'F': umor vezan za zapise (pouka 36) — rasterećenje tih zapisa je
+    već u planu, novo se ne pravi (razlog FATIGUE to kaže), ili rasterećenje ostatka tekuće nedelje (deloadWeek); 'N4': konstruktor sa upisanim danima (prior, pouka 29)
+    daje drugačiji plan nego bez njih; null: ništa od toga (tok mora ostati bajt-isti). Plan trčanje/hodanje: null. */
+export function family08g(
+  plan: unknown,
+  facts: unknown,
+  asOf: string,
+  res: unknown
+): 'N3' | 'N4' | 'F' | null {
+  const r = res as {
+    ok: boolean;
+    plan?: FiveKV2Plan;
+    reasons?: { condition?: string; message: string }[];
+  };
+  const p = plan as FiveKV2Plan;
+  if ((p as { planType?: string }).planType === 'runWalk') return null;
+  if (r.ok && (r.plan!.weeks[r.plan!.weeks.length - 1]!.raceRest?.length ?? 0) > 0) return 'N3';
+  if (
+    r.ok &&
+    ((r.reasons ?? []).some(
+      (x) =>
+        x.condition === 'FATIGUE' && x.message.includes('rasterećenje za ove zapise je već u planu')
+    ) ||
+      r.plan!.adaptation?.steps[r.plan!.adaptation.steps.length - 1]?.deloadWeek !== undefined)
+  )
+    return 'F';
+  const ids = new Set(p.weeks.flatMap((w) => w.days.map((d) => d.date)));
+  const cf = checkFacts(facts, asOf, ids);
+  if (!cf.ok) return null;
+  const as = assess(p, cf.facts, asOf);
+  if (!as.ok) return null;
+  const steps = [...(p.adaptation?.steps ?? []), as.step];
+  const t = mustDay(asOf);
+  const done = new Set(cf.facts.workouts.filter((x) => x.completed).map((x) => x.dayId ?? x.date));
+  const locked = new Set(cf.facts.lockedDayIds);
+  const keep = (d: PlanDay): boolean =>
+    mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
+  const a = construct(p.input, steps, { weeks: p.weeks, keep, asOf: t, at: asOf });
+  const b = construct(p.input, steps);
+  return JSON.stringify(a) !== JSON.stringify(b) ? 'N4' : null;
+}
+
+export interface EarlyFlow {
+  key: string;
+  plan: FiveKV2Plan;
+  facts: Record<string, unknown>;
+  asOf: string;
+  res: AdaptResult;
+}
+
+/** Tokovi trajne rane mreže jednog plana (asOf × scenario; drugi korak lanca odmah posle prvog; 2.8.0, pouka 36:
+    posle umora isti zapisi ponovo asOf + 1 … + 7 — ključ „…/fatigue/+k"). `api` = tekuće stablo ili polazni SHA. */
+export function earlyFlows(
+  id: string,
+  input: Record<string, unknown>,
+  api: AdaptApi = { generate: generateFiveKV2, adapt: adaptFiveKV2 }
+): EarlyFlow[] {
+  const g = api.generate(input) as { ok: boolean; plan: FiveKV2Plan };
+  if (!g.ok) throw new Error(`generate ${id}`);
+  const p = g.plan;
+  const ep = p as unknown as EarlyPlan;
+  const out: EarlyFlow[] = [];
+  const run = (plan: FiveKV2Plan, facts: Record<string, unknown>, asOf: string): AdaptResult =>
+    api.adapt(plan, facts, asOf) as AdaptResult;
+  for (const { tag, asOf } of earlyAsOfs(ep))
+    for (const s of EARLY_SCENARIOS) {
+      const key = `${id}/${tag}/${s}`;
+      const facts = earlyFacts(ep, s, asOf);
+      const res = run(p, facts, asOf);
+      out.push({ key, plan: p, facts, asOf, res });
+      if (s === 'chain' && res.ok) {
+        const at2 = addDays(asOf, 7);
+        if (at2 < p.input.raceDate) {
+          const f2 = earlyChain2(ep, at2);
+          out.push({
+            key: `${key}/2`,
+            plan: res.plan,
+            facts: f2,
+            asOf: at2,
+            res: run(res.plan, f2, at2)
+          });
+        }
+      }
+      if (s === 'fatigue' && res.ok)
+        for (let k = 1; k <= 7; k++) {
+          const at = addDays(asOf, k);
+          if (at >= p.input.raceDate) break;
+          out.push({
+            key: `${key}/+${k}`,
+            plan: res.plan,
+            facts,
+            asOf: at,
+            res: run(res.plan, facts, at)
+          });
+        }
+    }
+  return out;
+}

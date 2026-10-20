@@ -162,7 +162,7 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
 });
 
 describe('Odluka 9: šta se ne ukida', () => {
-  it('prinudno rasterećenje (umor) se nikad ne ukida: umor + bol u istom koraku (asOf sreda ned 2) — ned 3 prinudna ostaje', () => {
+  it('prinudno rasterećenje (umor) se nikad ne ukida: umor + bol u istom koraku (asOf sreda ned 2) — prinudno rasterećenje (ned 2, pouka 36) ostaje', () => {
     const p = planOf('v45-d4-22km-14w');
     const asOf = '2026-11-11';
     const fat = reliefFacts(p, 'fatigue', asOf, raceTimeForVdot)!;
@@ -175,9 +175,10 @@ describe('Odluka 9: šta se ne ukida', () => {
     };
     const r = run2(p, facts, asOf);
     const st = r.plan.adaptation!.steps.at(-1)!;
-    expect([st.deload, st.fromWeek, st.returnFrom?.week]).toEqual([true, 3, 2]);
-    // Sidro bola r = 2 → ned 3 je prinudno rasterećenje (umor) i ostaje; redovno ned 4 se ukida zbog umora (2.5.0).
-    expect(rows(r.plan, 3, 4).map((x) => x[1])).toEqual([true, false]);
+    // 2.8.0 (pouka 36, precizno): zapisi umora su iz ned 1 → prinudno rasterećenje je ned 2 (ostatak od asOf + 1,
+    // deloadWeek), sidro bola r = 2; prinudno rasterećenje ostaje (ne ukida ga ni Odluka 9).
+    expect([st.deload, st.fromWeek, st.deloadWeek, st.returnFrom?.week]).toEqual([true, 3, 2, 2]);
+    expect(rows(r.plan, 2, 3).map((x) => x[1])).toEqual([true, false]);
     expect(r.reasons.map((x) => x.message).join(' ')).not.toContain('otpada');
   });
 

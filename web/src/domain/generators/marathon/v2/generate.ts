@@ -11,7 +11,9 @@ import {
   longestLong10,
   longJumpCap10,
   longJumpNote,
+  longShortOf,
   longsOf,
+  longTimeCapNote,
   recentLongNote
 } from './lengths.ts';
 import { assessGoal, predictedMarathon } from './paces.ts';
@@ -44,6 +46,7 @@ import {
   capacityWeeks,
   enterWeek,
   fit10,
+  fittedNote,
   initialAdaptHistory,
   leaveWeek,
   nominal10,
@@ -263,10 +266,7 @@ export function construct(
       );
     const w = make(fit.target10, mode)!;
     const notes = [...w.notes];
-    if (fit.fitted)
-      notes.unshift(
-        `Cilj po pravilu ${fmtKm(nominal / 10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmtKm(fit.target10 / 10)} km (M6).`
-      );
+    if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));
     // M13a: dugi na plafonu skoka; bez skorašnjeg najdužeg trka — napomena nedelje 1 sa pragom.
     if (w.jumpBound && w.long10 !== null)
       notes.push(longJumpNote(w.long10, jumpBase10(longs10, frame.index, recentJ)!));
@@ -361,6 +361,10 @@ export function construct(
     plan.notes.push(
       `${capacityMessage(input.runDays.length, rule, capacityLimits(seen, rule, pN, recentJ))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (M6).`
     );
+  // N11: najduži dugi ograničen trajanjem (M13, namerna granica) — rečenica u opisu plana, ne upozorenje.
+  const ls = longShortOf(seen, rule.longShortKm, pN);
+  if (ls?.timeCapped)
+    plan.notes.push(longTimeCapNote(ls.longestKm, rule.longShortKm, rule.beginner));
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)
     plan.adaptation = {
@@ -377,7 +381,8 @@ export function construct(
           adaptation: {
             ...plan.adaptation!,
             mixedWeeks: merged.mixed,
-            lockedDayIds: [...prior!.lockedDayIds]
+            lockedDayIds: [...prior!.lockedDayIds],
+            ...(prior!.doneDayIds.length > 0 ? { doneDayIds: [...prior!.doneDayIds] } : {})
           }
         }
       : plan

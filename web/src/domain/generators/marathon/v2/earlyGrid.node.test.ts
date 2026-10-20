@@ -1,4 +1,4 @@
-/* Trajna mreža rane i srednje adaptacije (pouka 23): brz nivo — svaki 60. tok unutar porodice (R/F/B) × scenarija ×
+/* Trajna mreža rane i srednje adaptacije (pouka 23): brz nivo — svaki 120. tok (MAR-07: bilo 60, brz nivo ≤ 60 s) unutar porodice (R/F/B) × vrste toka × scenarija ×
    asOf pre starta / posle (pouka 34); pun nivo — deo 1/4 ovde, delovi 2–4 u earlyGrid.<k>.full.node.test.ts. */
 
 import { existsSync } from 'node:fs';
@@ -18,7 +18,7 @@ describeEarly(
   () =>
     FULL
       ? earlyFlows(part(EARLY_BASES, 1, EARLY_PARTS))
-      : sample(earlyFlows(EARLY_BASES), 60, (f) => `${f.base.family}-${f.s}-${f.pre}`)
+      : sample(earlyFlows(EARLY_BASES), 120, (f) => `${f.base.family}-${f.kind}-${f.s}-${f.pre}`)
 );
 
 it('pun nivo: postoje tačno delovi 2…N; mreža ima sve porodice', () => {

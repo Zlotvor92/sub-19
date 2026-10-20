@@ -87,9 +87,11 @@ import type {
 } from './contract';
 import * as fiveK from './fiveK';
 import * as halfMarathon from './halfMarathon';
-import { regeneratorForDistance } from './handoff';
+import { regeneratorForDistance, v1TargetForV2Source, type SourceFormat } from './handoff';
 import * as marathon from './marathon';
 import * as tenK from './tenK';
+
+export type { SourceFormat } from './handoff';
 
 export type GeneratorId = '5k' | '10k' | 'hm' | 'marathon';
 
@@ -362,7 +364,12 @@ export interface PreparationApi {
     choice: PreparationChoice,
     context: ReplanContext
   ) => ChoiceResult | { error: string };
-  isLimitedLongPreparation: (meta: GenPlanState['meta'] | undefined) => boolean;
+  /** 3b: `plan` (neobavezno) je ceo sačuvani plan — izvor v2 ocenjuje pripremu iz svojih nedelja, `meta` ih nema; v1
+   *  ga ne čita (bajt-isto). */
+  isLimitedLongPreparation: (
+    meta: GenPlanState['meta'] | undefined,
+    plan?: GenPlanState
+  ) => boolean;
 }
 
 /** Procena stanja trkača koju ekrani oporavka dobijaju od generatora distance aktivnog plana. */
@@ -713,6 +720,25 @@ export const tenKV2FormHistory = (src: {
 /** 06: polje unosa dana testa 10K v2 sa vremenom 5 km [s] (činjenica rezultata za adaptaciju). */
 export const TEN_K_V2_TEST_FIELD = t2.TEST_FIELD;
 
+/** Faza 3 (3b): vraćanje sačuvane verzije DRUGE distance (plan pre predaje „kraća distanca") se izričito odbija — ništa
+ *  se ne menja, razlog je u `meta.futureChanges.conflicts` (isti oblik kao odbijanje vraćanja u adapteru v2). */
+export const RESTORE_OTHER_DISTANCE =
+  'Sačuvana verzija je plan druge distance (pre izbora kraće distance), pa se ne može vratiti preko ovog plana.';
+function sameDistanceGraft(
+  graft: PlanGenerator['graftFuturePlan']
+): PlanGenerator['graftFuturePlan'] {
+  return (plan, fresh, today, ctx) => {
+    const from = plan.meta?.raceDistM;
+    const to = fresh.meta?.raceDistM;
+    if (from === undefined || to === undefined || from === to)
+      return graft(plan, fresh, today, ctx);
+    return {
+      ...plan,
+      meta: { ...plan.meta, futureChanges: { changedDays: 0, conflicts: [RESTORE_OTHER_DISTANCE] } }
+    } as GenPlanState;
+  };
+}
+
 /** Kraća distanca iz HM odluke o pripremi → generator te distance (aplikaciona predaja, v. `handoff.ts`). */
 const HM_SHORTER_HANDOFF = regeneratorForDistance;
 
@@ -761,8 +787,11 @@ export const HALF_MARATHON_V2_GENERATOR: PlanGenerator = {
   planWithNewGoal: (plan, sec, today) =>
     h2.planWithNewGoal(plan, sec, today) as unknown as GoalChangeResult | ReplanError,
   planRecalibrated: h2.planRecalibrated,
-  graftFuturePlan: (plan, fresh, today, ctx) =>
-    h2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState,
+  // 3b: verzija druge distance (pre predaje „kraća distanca") se ne vraća preko ovog plana.
+  graftFuturePlan: sameDistanceGraft(
+    (plan, fresh, today, ctx) =>
+      h2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState
+  ),
   alignAutomaticOverlays: h2.alignAutomaticOverlays,
   vdotProposal: h2.vdotProposal,
   applyVdotProposal: h2.applyVdotProposal,
@@ -952,8 +981,11 @@ export const MARATHON_V2_GENERATOR: PlanGenerator = {
   planWithNewGoal: (plan, sec, today) =>
     m2.planWithNewGoal(plan, sec, today) as unknown as GoalChangeResult | ReplanError,
   planRecalibrated: m2.planRecalibrated,
-  graftFuturePlan: (plan, fresh, today, ctx) =>
-    m2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState,
+  // 3b: verzija druge distance (pre predaje „kraća distanca") se ne vraća preko ovog plana.
+  graftFuturePlan: sameDistanceGraft(
+    (plan, fresh, today, ctx) =>
+      m2.graftFuturePlan(plan, fresh, today, ctx) as unknown as GenPlanState
+  ),
   alignAutomaticOverlays: m2.alignAutomaticOverlays,
   vdotProposal: m2.vdotProposal,
   applyVdotProposal: m2.applyVdotProposal,
@@ -1179,6 +1211,29 @@ export function generatorForNewPlan(
     return HALF_MARATHON_V2_GENERATOR;
   if (generator === MARATHON_GENERATOR && flags.marathonV2 === true) return MARATHON_V2_GENERATOR;
   return generator === FIVE_K_GENERATOR && flags.fiveKV2 ? FIVE_K_V2_GENERATOR : generator;
+}
+
+/** Faza 3 (3b): cilj v2 te distance (prekidač korisnika uključen) još nema predaju — opcija je nedostupna sa razlogom,
+ *  nikad tihi prelaz na v1 cilj (DESIGN.md § 8, O4). Segment 3d ga zamenjuje predajom v2 cilja. */
+export const V2_TARGET_NOT_READY =
+  'Kraća distanca nije dostupna: plan te distance pravi generator v2, a predaja njemu još ne postoji.';
+
+/**
+ * Faza 3 (3b): „kraća distanca" za IZVOR v2 (HM v2, maraton v2). Cilj bira prekidač korisnika, isto kao za nov plan
+ * (`generatorForNewPlan`, MASTER § 6): v1 generator → v1 `handoffFuture` nad pogledom izvora bez formata v2 (`format`
+ * daje adapter izvora); v2 generator → za sada odbijanje (`V2_TARGET_NOT_READY`). Izvori v1 ostaju na
+ * `regeneratorForDistance` (O7, bajt-isto). Rezultat ima oblik argumenta `ShorterDistanceHandoff` izvora.
+ */
+export function shorterHandoffForV2Source(
+  flags: GeneratorFlags,
+  format: SourceFormat
+): (raceDistM: number | undefined) => ReturnType<typeof v1TargetForV2Source> {
+  return (raceDistM) => {
+    const target = generatorForNewPlan(raceDistM || 5000, flags);
+    if (!target) return null;
+    if (!Object.values(GENERATORS).includes(target)) return () => ({ error: V2_TARGET_NOT_READY });
+    return v1TargetForV2Source(raceDistM, format);
+  };
 }
 
 /** 08b: plan 5K v2 (prilagođavanje kroz činjenice i pregled v2, ne kroz alate v1). */

@@ -61,7 +61,7 @@ describe('generator i adaptacija bez koraka (pouka 16, A14)', () => {
       const r = adapt(p, {}, p.weeks[3]!.endDate);
       expect(JSON.stringify(r.plan.weeks)).toBe(JSON.stringify(p.weeks));
       expect(applied(r, 'NO_FACTS')).toBe(true);
-      expect(r.plan.policyVersion).toBe('marathon-v2.3.1');
+      expect(r.plan.policyVersion).toBe('marathon-v2.4.1');
     }
   });
   it('isti ulaz → isti JSON (A14); lanac čuva sve korake redom', () => {
@@ -305,10 +305,11 @@ describe('pouka 22 (A17): redovno rasterećenje odmah posle nedelje smanjenja ot
     expect(r.plan.weeks[dl - 1]!.deload).toBe(true);
   });
   it('prinudno rasterećenje se nikad ne ukida: bol u nedelji pre prinudnog', () => {
-    const mon = p.weeks[dl - 4]!.startDate;
-    const r1 = adapt(p, earlyFacts(p, 'fatigue', mon), mon);
+    // Pouka 36: rasterećenje = prva puna nedelja posle poslednjeg zapisa umora — zapisi u nedelji dl − 3 (asOf utorak).
+    const tue = addDays(p.weeks[dl - 4]!.startDate, 1);
+    const r1 = adapt(p, earlyFacts(p, 'fatigue', tue), tue);
     expect(r1.plan.weeks[dl - 3]!.deload).toBe(true);
-    const thu = addDays(mon, 3);
+    const thu = addDays(tue, 2);
     const r2 = adapt(r1.plan, painFacts(thu, 5), thu);
     expect(r2.plan.adaptation!.steps[1]!.returnFrom?.week).toBe(dl - 3);
     expect(r2.plan.weeks[dl - 3]!.deload).toBe(true);
@@ -330,10 +331,16 @@ describe('pouka 22 (A17): redovno rasterećenje odmah posle nedelje smanjenja ot
 describe('pouka 23: konstruktor ne sastavlja ono što validator odbija; odstupanje samo uz svojstvo', () => {
   it('dugi rasterećenja/tapera podignut na 5 km samo kad je 0,8 × / udeo × najduži < 5 km (A9)', () => {
     let seen = 0;
+    // MAR-07: posle pouke 35 (duži dugi u izgradnji) svojstvo daje pauza 35 kasnije u planu (kraj ned 9).
     for (const b of bases)
-      for (const s of ['pause35', 'pain8'] as const) {
+      for (const [s, i] of [
+        ['pause35', 2],
+        ['pain8', 2],
+        ['pause35', 9]
+      ] as const) {
         const p = plan(b.id);
-        const a = p.weeks[1]!.endDate;
+        if (i > p.weeks.length - 3) continue;
+        const a = p.weeks[i - 1]!.endDate;
         const r = adaptMarathonV2(p, factsOf(p, s, a), a);
         expect(r.ok, b.id).toBe(true);
         for (const w of ok(r).plan.weeks)

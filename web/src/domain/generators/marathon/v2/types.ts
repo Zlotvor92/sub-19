@@ -399,8 +399,11 @@ export interface MarathonV2AdaptStep {
   pauseRemainder: boolean;
   /** A3: pauza ≥ 28 dana — nov start (faze preostale izgradnje ponovo, vrh od novog starta). */
   restart: boolean;
-  /** A5: umor — fromWeek je rasterećenje. */
+  /** A5: umor — prinudno rasterećenje u nedelji deloadWeek (steps.deloadWeekOf). */
   deload: boolean;
+  /** Pouka 36: nedelja prinudnog rasterećenja iz ZAPISA umora (prva puna nedelja posle poslednjeg RPE zapisa
+      umora) kad nije fromWeek; bez polja = fromWeek. */
+  deloadWeek?: number;
   noQuality: DateRange[];
   oneQuality: DateRange[];
   rest: DateRange | null;
@@ -436,6 +439,9 @@ export interface MarathonV2Adaptation {
       konstrukcije: validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
   mixedWeeks: number[];
   lockedDayIds: string[];
+  /** MAR-07b: urađeni dani posle asOf (dayId činjenice; npr. trening odrađen dan ranije) — zaštićeni kao zaključani;
+      polje samo kad nije prazno. */
+  doneDayIds?: string[];
 }
 
 export type AdaptCondition =

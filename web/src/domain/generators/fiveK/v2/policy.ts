@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.7.0',
+  version: '5k-v2.8.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -683,7 +683,7 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '„plan nije prilagođen"); sada su prihvaćeni (ned 5 = 18,2 km, R 0,80 + T 1,00).'
   },
   {
-    version: '5k-v2.7.0',
+    version: '5k-v2.8.0',
     decision:
       'Segment 08e, Odluka 9 (odluka organizatora, heuristika; ista kao 10K A17; bez novog broja). Redovno ' +
       'rasterećenje odmah posle nedelje smanjenja otpada. (1) Nedelja smanjenja: (a) korak sa ciljem koraka koji ' +
@@ -719,5 +719,36 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'prethodne — pauza je jači razlog za smanjenje; npr. v38-d4-38km-10w, pauza 20, asOf sreda ned 3: ' +
       'rasterećenje 29,9 → 26,2 = 0,70 × 37,4). Sačuvan plan 5k-v2.6.0 i 5k-v2.6.1 ostaje plan 5K v2 i ' +
       'prilagođava se po 2.7.0 (app/plan.ts KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.8.0',
+    decision:
+      'Segment 08g, Faza 4a N2–N4 + pouka 36 (odluke organizatora; bez novog broja). (N2a, pouka 23/29) ' +
+      'Kontrolno trčanje iz UPISANOG plana (steps.writtenTest): test u zaštićenom danu je urađen i ostaje u svojoj ' +
+      'nedelji (nedelja ga nosi i kad sastavljeni ostatak nema test); neurađen test polazi od nedelje prethodnog ' +
+      'plana — premeštanje iz ranijeg koraka se ne gubi (f4b257d: lanac pauza 10 → manjak, f-d4-6w-30km-e420-0, ' +
+      'TEST_WEEK). (N2b, odluka D) Provere progresije porede dozu u JEDINICI u kojoj je zadata (m: distanca, ' +
+      'kontinuirano, progresija; s: ponavljanja vremenom) — km procenjen tempom nije doza (BASE_R_DECREASE, ' +
+      'DOSE_PROGRESSION, BASE_PLATEAU; QUALITY_REPEAT već poredi strukturu); R sme da padne samo kad je plafon R ' +
+      'nedelje (workouts.qualityBudgets: 5 % cilja) ispod prethodne R doze zadate distancom (MASTER pouke 12/32): ' +
+      'konstruktor bira najveću strukturu koja staje + napomena, validator upozorenje DOSE_DROPPED; inače odbijanje ' +
+      '(r-d5-14w-60km-v32-1, sporiji rezultat sreda ned 3: plafon 2,34 < 2,40 km → R 2,10; početnik usponi 270 → ' +
+      '300 s, km 0,63 → 0,60 nije pad). Merenje (slower/faster/test5k, uzorak 7/7/7): 18/34 701 → 0. (N3, pouka 30) ' +
+      'Trkačka nedelja (bez trke) ≤ planirano poslednje nedelje tapera (upisane): višak laganih dana postaje odmor — ' +
+      'prvo dani bola, pa najraniji lagani; dan pred trku, oštrenje i trka ostaju; jedno mesto week.raceWeekRest → ' +
+      'polje nedelje raceRest, validator ga čita (RACE_WEEK_TAPER greška; skraćena ispod minimuma → upozorenje ' +
+      'RACE_WEEK_SHORT). Primer r-d3-9w-20km-v45-1, bol 8 kraj ned 7: taper 7,9, trkačka 9,3 → 6,6 km. (N4, pouka ' +
+      '29) Prošlost = upisani dani: written.ts je jedino mesto spajanja (adapt i konstruktor); konstruktor čita iz ' +
+      'upisanih dana dugi prethodne nedelje za trkačku, taper, test i stanje doze (doza nedelje važi samo kad su ' +
+      'upisani dani kvaliteta isti kao sastavljeni); validator ne preskače mešovitu nedelju u proverama zavisnim od ' +
+      'prošlosti — segment doze se čita po DATUMU upisanog dana kvaliteta (steps.doseResetDate: pauza usred nedelje ' +
+      'počinje novi segment od asOf + 1; nedelja sa danima u dva segmenta nema jednu dozu); zaključan budući dan je ' +
+      'činjenica — lanac doze i oznaka testa ga ne porede, kao LIMITS (MAR-07 nalaz: novi rezultat kraj ned k + ' +
+      'zaključan Q1 ned k + 1, f4b257d 47/5184 odbijeno → 0). (Pouka 36, precizno) Prinudno rasterećenje = nedelja ' +
+      'POSLE nedelje poslednjeg zapisa umora; ako je asOf već u njoj, važi za njen ostatak (korak deloadWeek, prošli ' +
+      'dani zaštićeni); ako je ona već rasterećenje — novo se ne pravi; isti zapisi u nedelju i u ponedeljak = isti ' +
+      'plan (fatigue-repeat.ts 5K end: 58/117 → 0). Merenje (Faza 4a ' +
+      'early.ts 5K 29 19 11, 75 456 tokova): odbijeno 92 → 0, trkačka > taper 34 → 0; generator bez činjenica ' +
+      'bajt-isti (3816 planova). Sačuvan plan 5k-v2.6.0/2.6.1/2.7.0 se prilagođava po 2.8.0 (KNOWN_VERSIONS).'
   }
 ];

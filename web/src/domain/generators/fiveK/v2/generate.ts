@@ -1,7 +1,7 @@
 /* generateFiveKV2(input) → plan ili strukturisano odbijanje.
    Bez čitanja sata: svi datumi dolaze iz ulaza. Ista vrednost ulaza → isti JSON. */
 
-import { addDays, daysBetween, weekdayIndex, weekdayOf } from './dates.ts';
+import { addDays, daysBetween, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   assessGoal,
@@ -15,7 +15,15 @@ import { isShortPrep, periodize, phaseCounts } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { buildRunWalkPlan } from './runWalk.ts';
 import { choosePattern } from './schedule.ts';
-import { athleteAt, baseAthlete, baseVdot, doseResetAt, framesFor, pacesAt } from './steps.ts';
+import {
+  athleteAt,
+  baseAthlete,
+  baseVdot,
+  doseResetAt,
+  framesFor,
+  pacesAt,
+  writtenTest
+} from './steps.ts';
 import type {
   AdaptStep,
   FiveKV2Input,
@@ -25,6 +33,7 @@ import type {
   PaceModel,
   Pattern,
   Phase,
+  PlanDay,
   PlanWeek,
   Reason,
   WeekFrame,
@@ -34,6 +43,7 @@ import { validatePlan } from './validate.ts';
 import { adaptVolume, planVolume, type VolumePlan } from './volume.ts';
 import { buildRaceWeek, buildTrainingWeek } from './week.ts';
 import type { WeekDose } from './workouts.ts';
+import { type Written, writtenWeek } from './written.ts';
 
 const fmt = (sec: number): string =>
   `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
@@ -61,7 +71,8 @@ export interface Constructed {
  */
 export function construct(
   input: FiveKV2Input,
-  steps: readonly AdaptStep[] = []
+  steps: readonly AdaptStep[] = [],
+  prior: Written | null = null
 ): { ok: true; c: Constructed } | { ok: false; reasons: Reason[] } {
   // 2.4.0: ko trči (jedino mesto): broj dana, početnik, plan po osećaju (bez pouzdanog rezultata).
   const a = baseAthlete(input);
@@ -77,7 +88,7 @@ export function construct(
   const vol = planVolume(frames0, input.currentWeeklyKm, paces, a);
   const dropped = new Map<number, number>();
   const frames =
-    steps.length > 0 ? framesFor(input, steps, pat.pattern, totalWeeks, dropped) : frames0;
+    steps.length > 0 ? framesFor(input, steps, pat.pattern, totalWeeks, dropped, prior) : frames0;
   const ctx = (w: number): { p: PaceModel; a: Athlete } =>
     steps.length > 0
       ? { p: pacesAt(input, steps, w), a: athleteAt(input, steps, w) }
@@ -89,6 +100,14 @@ export function construct(
 
   const weeks: PlanWeek[] = [];
   const reasons: Reason[] = [];
+  /** 2.8.0 (pouka 29): nedelje kakve se upisuju (written.ts) — iz njih stanje koje zavisi od prošlosti. */
+  const written: PlanWeek[] = [];
+  const wt = prior && steps.length > 0 ? writtenTest(prior) : null;
+  const testDone = wt?.done ? wt.week : null;
+  const push = (w: PlanWeek): void => {
+    weeks.push(w);
+    written.push(prior ? writtenWeek(prior.weeks[w.index - 1]!, w, prior).week : w);
+  };
   // Progresija doze: doza glavnog kvaliteta poslednje ne-rasteretne nedelje, po fazi. 2.5.0: korak sa
   // novim ciljem obima (pauza, izvršenje; nov start) i promena načina tempa (po osećaju → VDOT) počinju
   // progresiju iznova (manji obim → doza sme da padne; isti segment kao u validate.ts). 2.6.1: i korak bola
@@ -107,8 +126,35 @@ export function construct(
     const adaptive = steps.length > 0 && f.index >= steps[0]!.firstWeek;
     if (f.phase === 'race') {
       const prevLong =
-        weeks[weeks.length - 1]?.days.find((d) => d.role === 'long')?.workout.km ?? 0;
-      let r = buildRaceWeek(f, target, pat.pattern, input.runDays, input.raceDate, p, prevLong);
+        written[written.length - 1]?.days.find((d) => d.role === 'long')?.workout.km ?? 0;
+      // 2.8.0 (pouka 30): trkačka nedelja ≤ planirano UPISANOG tapera (pouka 29); zaštićeni dani trkačke nedelje
+      // ulaze u zbir (week.raceWeekRest).
+      const taper = written[written.length - 1];
+      const priorRace = prior?.weeks[f.index - 1];
+      const cap = taper
+        ? {
+            km: taper.plannedKm,
+            ...(prior && priorRace
+              ? {
+                  fixed: (date: string): PlanDay | null | undefined => {
+                    const pd = priorRace.days.find((x) => x.date === date);
+                    if (pd) return prior.keep(pd) ? pd : undefined;
+                    return mustDay(date) <= prior.asOf ? null : undefined;
+                  }
+                }
+              : {})
+          }
+        : null;
+      let r = buildRaceWeek(
+        f,
+        target,
+        pat.pattern,
+        input.runDays,
+        input.raceDate,
+        p,
+        prevLong,
+        cap
+      );
       // 2.6.0: i kad oštrenje ostavlja nedelju ispod minimuma trkačke nedelje (mala granica posle
       // smanjenja) — oštrenje otpada (pravilo f), lagani dani nose granicu.
       const short = r.ok && r.week.plannedKm + 1e-9 < P.week.minRaceWeekKm;
@@ -121,14 +167,15 @@ export function construct(
           input.runDays,
           input.raceDate,
           p,
-          prevLong
+          prevLong,
+          cap
         );
         if (short && r.ok)
           r.week.notes.push(
             `Adaptacija: oštrenje ne staje u granicu ${target} km (nedelja bi bila < ${P.week.minRaceWeekKm} km).`
           );
       }
-      if (r.ok) weeks.push(r.week);
+      if (r.ok) push(r.week);
       else reasons.push(r.reason);
       return;
     }
@@ -150,19 +197,27 @@ export function construct(
       r = build({ ...f, test: false, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
       if (r.ok)
         r.week.notes.push(
-          `Adaptacija: kvalitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}${f.test ? ' (bez kontrolnog trčanja)' : ''}.`
+          `Adaptacija: kvalitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}${f.test && testDone !== f.index ? ' (bez kontrolnog trčanja)' : ''}.`
         );
     }
     if (!r.ok) {
       reasons.push(r.reason);
       return;
     }
+    // 2.8.0 (pouka 29, N2a): kontrolno trčanje u zaštićenom (upisanom) danu je urađeno — nedelja ga nosi i kad
+    // sastavljeni ostatak nedelje nema test (ne staje u smanjen obim).
+    if (testDone === f.index && f.test && !r.week.test) r.week = { ...r.week, test: true };
     if (i === 0 && vol.startCapped)
       r.week.notes.push(
         `Trenutni obim (${input.currentWeeklyKm} km) je veći od onoga što ${a.days} dana nose (${vol.capacityKm} km); plan kreće od ${vol.capacityKm} km.${a.days < (a.beginner ? P.beginner.maxRunDays : 5) ? ' Za veći obim izaberi više dana trčanja.' : ''}`
       );
-    weeks.push(r.week);
-    if (r.dose) lastDose[f.phase] = r.dose;
+    push(r.week);
+    // 2.8.0 (pouka 29, N4): stanje doze iz UPISANIH dana — doza sastavljene nedelje važi samo kad su upisani dani
+    // kvaliteta isti kao sastavljeni; inače (zaštićen dan prethodnog plana: pre novog segmenta doze ili
+    // zaključan) nedelja ne menja stanje (validator: steps.doseResetDate, granica/zaključan dan van lanca).
+    const qOf = (w: PlanWeek): string =>
+      JSON.stringify(w.days.filter((d) => d.workout.kind === 'quality'));
+    if (r.dose && qOf(written[written.length - 1]!) === qOf(r.week)) lastDose[f.phase] = r.dose;
   });
   if (reasons.length > 0) return { ok: false, reasons };
   return {

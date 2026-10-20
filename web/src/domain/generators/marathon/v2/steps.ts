@@ -25,6 +25,11 @@ import type {
 export const inRange = (d: IsoDate, r: DateRange | null): boolean =>
   r !== null && mustDay(d) >= mustDay(r.from) && mustDay(d) <= mustDay(r.to);
 
+/** Pouka 36: nedelja prinudnog rasterećenja koraka (A5) — iz zapisa umora (`deloadWeek`), inače fromWeek. JEDNO
+    mesto čitanja za okvire (framesFor), obim (volume.adaptVolume), traku (newLimits) i validator. */
+export const deloadWeekOf = (s: { fromWeek: number; deloadWeek?: number }): number =>
+  s.deloadWeek ?? s.fromWeek;
+
 /** Datum dana `wd` u nedelji okvira. */
 export function dateIn(f: { startDate: IsoDate }, wd: Weekday): IsoDate {
   for (let i = 0; i < 7; i++) {
@@ -202,11 +207,12 @@ export function framesFor(
       if (re) for (const w of [...forced]) if (w >= n) forced.delete(w);
       if (re && dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);
     }
-    const fn = frames[n - 1];
+    const dw = deloadWeekOf(s);
+    const fn = frames[dw - 1];
     if (s.deload && fn && isBuildPhase(fn.phase) && !fn.deload) {
       fn.deload = true;
-      forced.add(n);
-      const next = frames[n];
+      forced.add(dw);
+      const next = frames[dw];
       if (next && next.deload && isBuildPhase(next.phase)) next.deload = false;
     }
     for (const w of reducedWeeks(s)) {
@@ -296,8 +302,8 @@ export function newLimits(steps: readonly MarathonV2AdaptStep[]): string[] {
     const old = new Set(prev.flatMap((s) => days(s, pick)));
     for (const d of days(last, pick)) if (!old.has(d)) out.push(`${k}:${d}`);
   }
-  if (last.deload && !prev.some((s) => s.deload && s.fromWeek === last.fromWeek))
-    out.push(`deload:${last.fromWeek}`);
+  if (last.deload && !prev.some((s) => s.deload && deloadWeekOf(s) === deloadWeekOf(last)))
+    out.push(`deload:${deloadWeekOf(last)}`);
   if (last.restart) out.push(`restart:${last.fromWeek}`);
   return out;
 }

@@ -36,10 +36,12 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `hm-v2`; plan bez oznake je HM v1 (`legacy-hm`). */
 export const LEGACY_POLICY_ID = 'legacy-hm';
 /** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
- *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`) i tekuća. Sačuvan stariji plan ostaje plan
+ *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`; od HM-07b `hm-v2.4.1`) i tekuća. Sačuvan stariji plan ostaje plan
  *  HM v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown"
  *  (UNKNOWN_POLICY). */
-export const KNOWN_VERSIONS: readonly string[] = [...new Set(['hm-v2.3.0', P.version])];
+export const KNOWN_VERSIONS: readonly string[] = [
+  ...new Set(['hm-v2.3.0', 'hm-v2.4.0', P.version])
+];
 
 /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
  *  tempo trke) → VRHUNAC, taper → TAPER, trkačka nedelja → TRKA; rasterećenje (bilo koje faze) → DELOAD. */

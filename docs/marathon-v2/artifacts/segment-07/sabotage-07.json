@@ -1,0 +1,50 @@
+[
+  {
+    "name": "07-a bez raceOnly (trkačka samo sa trkom → EMPTY_WEEK)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "    if (raceOnlyWeek(w))\n",
+    "replace": "    if (raceOnlyWeek(w) && w.index < 0)\n",
+    "tests": ["src/domain/generators/marathon/v2/segment07.node.test.ts"]
+  },
+  {
+    "name": "07-b pouka 35 samo u generatoru (adaptirana nedelja zadržava dva kvaliteta)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "    w1 && w2 && picks?.q1 && picks.q2 && !test\n",
+    "replace": "    w1 && w2 && picks?.q1 && picks.q2 && !test && ctx.adapted !== true\n",
+    "tests": ["src/domain/generators/marathon/v2/segment07.node.test.ts"]
+  },
+  {
+    "name": "07-c umor vezan za asOf umesto zapisa (pouka 36)",
+    "file": "src/domain/generators/marathon/v2/assess.ts",
+    "find": "    const f = fatigueWeek(weeks, Math.max(...easyHard.map((x) => day(x.date))));\n",
+    "replace": "    const f = n;\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment07.node.test.ts",
+      "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-d validator 'unknown' posle mešovite nedelje (stanje slota se ne čita, N8)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "        lastOf[role] = slotDose(c.state, role) ?? lastOf[role];\n",
+    "replace": "        lastOf[role] = null;\n",
+    "tests": ["src/domain/generators/marathon/v2/segment07.node.test.ts"]
+  },
+  {
+    "name": "07-e MARATHON_LONG_SHORT i kad je dugi na 150 min (N11)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "  if (ls?.timeCapped) {\n",
+    "replace": "  if (ls?.timeCapped && ls.longestKm < 0) {\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment07.node.test.ts",
+      "src/domain/generators/marathon/v2/validate.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-f dve definicije minimuma nedelje (validator poredi u km, N9)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "    const below = load100 < 10 * weekMin10(rule);\n",
+    "replace": "    const below = load100 / 100 + EPS < rule.weekMinKm;\n",
+    "tests": ["src/domain/generators/marathon/v2/segment07.node.test.ts"]
+  }
+]

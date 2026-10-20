@@ -1,0 +1,52 @@
+{
+  "fat": {
+    "flows": 29328,
+    "applicable": 20202,
+    "rejected": 0,
+    "wrongWeek": 5698,
+    "sunMonPairs": 2590,
+    "sunMonDiff": 2590,
+    "ex": [
+      "d3-10w-25km-v30-A-sat/k2/L1/asOf+6 (2026-11-08): nova rasterećenja [3] umesto [2]",
+      "d3-10w-25km-v30-A-sat/k2/L1: ned ≠ pon od utorka",
+      "d3-10w-25km-v30-A-sat/k2/L3/asOf+4 (2026-11-08): nova rasterećenja [3] umesto [2]",
+      "d3-10w-25km-v30-A-sat/k2/L3: ned ≠ pon od utorka",
+      "d3-10w-25km-v30-A-sat/k2/L4/asOf+3 (2026-11-08): nova rasterećenja [3] umesto [2]",
+      "d3-10w-25km-v30-A-sat/k2/L4/asOf+4 (2026-11-09): nova rasterećenja [3] umesto [2]",
+      "d3-10w-25km-v30-A-sat/k2/L4: ned ≠ pon od utorka",
+      "d3-10w-25km-v30-A-sat/k2/L5/asOf+2 (2026-11-08): nova rasterećenja [3] umesto [2]",
+      "d3-10w-25km-v30-A-sat/k2/L5/asOf+3 (2026-11-09): nova rasterećenja [3] umesto [2]",
+      "d3-10w-25km-v30-A-sat/k2/L5/asOf+4 (2026-11-10): nova rasterećenja [3] umesto [2]",
+      "d3-10w-25km-v30-A-sat/k2/L5: ned ≠ pon od utorka",
+      "d3-10w-25km-v30-A-sat/k2/L6/asOf+1 (2026-11-08): nova rasterećenja [3] umesto [2]"
+    ]
+  },
+  "res": {
+    "flows": 3336,
+    "rejected": {
+      "b:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 1296,
+      "a:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 996,
+      "a:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 56,
+      "b:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 387,
+      "a:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 215,
+      "a:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 10,
+      "b:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 10,
+      "a:PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY": 4,
+      "b:PLAN_VIOLATES_POLICY": 4
+    },
+    "ex": [
+      "d3-10w-25km-v30-A-sat/k2/faster/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-25km-v30-A-sat/k2/test5k/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-25km-v30-A-sat/k4/faster/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-25km-v30-A-sat/k4/test5k/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-35km-v30-A-sun/k2/faster/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-35km-v30-A-sun/k2/test5k/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-35km-v30-A-sun/k4/faster/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-35km-v30-A-sun/k4/test5k/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 15 min E (km po srednjem E) (H14).",
+      "d3-10w-45km-v30-B-sat/k2/faster/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 20 min E (km po srednjem E) (H14).",
+      "d3-10w-45km-v30-B-sat/k2/test5k/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 20 min E (km po srednjem E) (H14).",
+      "d3-10w-45km-v30-B-sat/k4/faster/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 20 min E (km po srednjem E) (H14).",
+      "d3-10w-45km-v30-B-sat/k4/test5k/b: PLAN_VIOLATES_POLICY,PLAN_VIOLATES_POLICY WARMUP: Zagrevanje mora biti 20 min E (km po srednjem E) (H14)."
+    ]
+  }
+}
