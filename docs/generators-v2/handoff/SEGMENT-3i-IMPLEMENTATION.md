@@ -42,7 +42,7 @@ Svesno NE kroz funkciju (nisu broj nedelje kalendara; zapisano u odluci): redni 
 | Komanda | Rezultat |
 |---|---|
 | `tsc -b --noEmit`, eslint, prettier (menjani fajlovi) | exit 0 |
-| `npm run check` | 3633/3637; 4 pala (HM KNOWN_VERSIONS ×2, byteSame maratona ×2) ispravljena, ta 3 fajla 46/46 |
+| `npm run check` | prvi prolaz 3633/3637 (HM KNOWN_VERSIONS ×2, byteSame maratona ×2 → ispravljeno); posle spajanja sa granom (5K-08k, MAR-08b): **EXIT 0, 321 fajl, 3654/3654** |
 | `TEST_FULL=1 npx vitest run --changed ce62b01` | **311/311 fajlova, 2310/2310** (50 min) |
 | pun nivo foldera tenK/v2, halfMarathon/v2 (159 fajlova) | 157 u `--changed` (zeleno) + `isolation` ×2: 8/8 |
 | `npx playwright test` handoff-v2, tenk-v2, hm-v2 | 11/11, 1,3 min |
