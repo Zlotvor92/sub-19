@@ -1,0 +1,143 @@
+{
+ "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-08/sabotage-08.json",
+ "head": "46dff18",
+ "level": "brz",
+ "bail": true,
+ "parallel": 2,
+ "vitestArgs": [],
+ "durationS": 46.6,
+ "hashBefore": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+ "hashAfter": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08a ostatak se ne računa (stara strana: zaštićeni dani zamenjuju sastavljene, nedelja iznad cilja)",
+   "files": [
+    "src/domain/generators/marathon/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "test": "MAR-08: mešovita nedelja, ostatak do cilja (pouka 37) > primer organizatora: dugi 16,8 upisan, lagan na minimumu, T ostaje (bez T ne staje), planirano 26,92 < 29,52 i < prethodne; upozorenje",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"MIXED_OVER_TARGET: Planirano 29.52 km > cilj 25.4 km u mešovitoj nedelji — preostali dani nisu na ostatku 8.6 km (pouka 37).\",\"week\":3}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "hashSabotaged": "fa8d2dab466ac7711c9baaae0248e7a81271c15ccd19f7ebd8978cd3f448da59",
+   "hashAfter": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.9
+  },
+  {
+   "index": 2,
+   "name": "08b ostatak i naviše (manjak zaštićenih dana se nadoknađuje laganim danom)",
+   "files": [
+    "src/domain/generators/marathon/v2/mixed.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "test": "MAR-08: mešovita nedelja, ostatak do cilja (pouka 37) > mixedRest: samo naniže — svaki preostali dan ≤ sastavljen; manjak se ne nadoknađuje (dani isti)",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "hashSabotaged": "e6b31377f3af8ca61254bbfeb295d10040eef4388af29d66fbea4cf13293ddd4",
+   "hashAfter": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.2
+  },
+  {
+   "index": 3,
+   "name": "08c validator ne čita istu funkciju (svaka mešovita nedelja iznad cilja = upozorenje)",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "test": "MAR-08: mešovita nedelja, ostatak do cilja (pouka 37) > validator čita istu funkciju: preostali dani iznad ostatka → MIXED_OVER_TARGET; najmanji oblik → upozorenje",
+    "message": "AssertionError: expected [] to include 'MIXED_OVER_TARGET'"
+   },
+   "failedCount": 1,
+   "hashBefore": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "hashSabotaged": "6ee988c6d37a11ba10f6285a69bd5f2fed2e83e8560dd22d750e992ee905cbc0",
+   "hashAfter": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 23.2
+  },
+  {
+   "index": 4,
+   "name": "08e zbir zaštićenih dana po planu, ne po činjenicama (pauza/neodrađen dan „jede\" cilj)",
+   "files": [
+    "src/domain/generators/marathon/v2/mixed.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08.node.test.ts",
+    "test": "MAR-08: mešovita nedelja, ostatak do cilja (pouka 37) > zbir zaštićenih dana po činjenicama: neodrađen dan (completed false) i dan u pauzi = 0 — ostatak nije stisnut",
+    "message": "AssertionError: expected undefined to deeply equal { '2026-11-15': +0 }"
+   },
+   "failedCount": 1,
+   "hashBefore": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "hashSabotaged": "76245d2831ce1b161ec3dc3f4cb7f6dc9ac7836fd6f79d2deb5929c94df5786f",
+   "hashAfter": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 26.1
+  },
+  {
+   "index": 5,
+   "name": "08d ostatak se ne računa — samo trajna mreža (mixedGrid)",
+   "files": [
+    "src/domain/generators/marathon/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/mixedGrid.node.test.ts",
+    "test": "MAR-08 mešovita nedelja (136 planova) — uzorak > 0 odbijanja i adaptInvariants prazno (K1, Uslov 8, pouka 23)",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "hashSabotaged": "fa8d2dab466ac7711c9baaae0248e7a81271c15ccd19f7ebd8978cd3f448da59",
+   "hashAfter": "26b48c94d26211f7580c3fa8504b3faf1f0548c012efcdcd5de299f445c0af59",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 17.4
+  }
+ ]
+}

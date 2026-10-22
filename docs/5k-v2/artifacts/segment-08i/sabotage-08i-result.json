@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08i/sabotage-08i.json",
- "head": "e2e482e",
+ "head": "46e72eb",
  "level": "brz",
  "bail": true,
  "parallel": 1,
  "vitestArgs": [],
- "durationS": 11.8,
- "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
- "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+ "durationS": 10.6,
+ "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+ "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
  "ok": true,
  "results": [
   {
@@ -28,13 +28,13 @@
     "message": "AssertionError: expected [ …(10) ] to deeply equal []"
    },
    "failedCount": 2,
-   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
-   "hashSabotaged": "03c028c2df5da3892fbe97d6548b05d301f45e17cc6e1e9e271d8a89d2285ee0",
-   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "8a0a1c3d6e047bc31ac7aaaedc87ec0d1c8356a802202be0052dce3d87373a5b",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.2
+   "durationS": 2.6
   },
   {
    "index": 2,
@@ -54,13 +54,13 @@
     "message": "AssertionError: expected { …(4) } to be null"
    },
    "failedCount": 1,
-   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
-   "hashSabotaged": "0036587bf9caca90a5c0c351526a8f79e30d3b6b0902d4103289cecc050ce672",
-   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "e41d0db36de868b0a69444aa76cd95dfebf111551546082ca1fe8feb25744628",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.7
+   "durationS": 2.5
   },
   {
    "index": 3,
@@ -76,17 +76,17 @@
    "pao": true,
    "firstFailed": {
     "file": "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
-    "test": "08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže > validator: mešovita nedelja iznad cilja čiji preostali dani nisu na minimumu → MIXED_REMAINDER",
-    "message": "AssertionError: expected [] to deeply equal [ 'MIXED_REMAINDER' ]"
+    "test": "08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže > primer nalaza b-d3-8w-25km-v36-1 k3 (umor, asOf pon): ni bez kvaliteta ne staje → kvalitet ostaje + MIXED_OVER_TARGET",
+    "message": "AssertionError: expected 'Mešovita nedelja: zaštićeni dani 6.74…' to contain 'ostatak do cilja 9.16 km < najmanji p…'"
    },
    "failedCount": 1,
-   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
-   "hashSabotaged": "fa19827382040736dafdca346af53c6a08ef38ac7a31dd8b628b4d4fa5aa384d",
-   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "f659be2df0ea80daa84b5e2df1b2c12c6001c5a1d0bf934489e40c7967dab551",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.8
+   "durationS": 2.6
   },
   {
    "index": 4,
@@ -105,13 +105,13 @@
     "message": "AssertionError: expected 0 to be greater than 0"
    },
    "failedCount": 1,
-   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
-   "hashSabotaged": "9f7d4314f523d1477e51e96c32c8d67394ebf58ca2e7b73bbeae07be5104d4a4",
-   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "dbf851256da3a20371039a8f8313edcfae17a41bb9fb10953ae35d8ab292ba60",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.5
+   "durationS": 2.4
   }
  ]
 }

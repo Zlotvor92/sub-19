@@ -1,0 +1,51 @@
+[
+  {
+    "name": "08a ostatak se ne računa (stara strana: zaštićeni dani zamenjuju sastavljene, nedelja iznad cilja)",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "    if (kept.length > 0) {\n",
+    "replace": "    if (false as boolean) {\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08.node.test.ts",
+      "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b ostatak i naviše (manjak zaštićenih dana se nadoknađuje laganim danom)",
+    "file": "src/domain/generators/marathon/v2/mixed.ts",
+    "find": "  if (sum100(rest) <= B + km100(P.tolerance.plannedKm)) return { days: [...rest], ...base };\n",
+    "replace": "  const up = rest.find((d) => d.role === 'easy');\n  if (up && sum100(rest) + km100(P.tolerance.plannedKm) < B)\n    return {\n      ...base,\n      cut: true,\n      days: rest.map((d) =>\n        d === up ? easyDay(d, Math.round(d.workout.km * 10) + Math.floor((B - sum100(rest)) / 10), p) : d\n      )\n    };\n  if (sum100(rest) <= B + km100(P.tolerance.plannedKm)) return { days: [...rest], ...base };\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08.node.test.ts",
+      "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08c validator ne čita istu funkciju (svaka mešovita nedelja iznad cilja = upozorenje)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "      const m = mixedRest(kept, rest, to10(w.targetKm), pw(w), ad.factKm);\n",
+    "replace": "      const m = { over: true, days: rest, remainder100: 0 };\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08.node.test.ts",
+      "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08e zbir zaštićenih dana po planu, ne po činjenicama (pauza/neodrađen dan „jede\" cilj)",
+    "file": "src/domain/generators/marathon/v2/mixed.ts",
+    "find": "  if (facts.breaks.some((b) => b.from <= date && date <= b.to)) return 0;\n",
+    "replace": "  return null;\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08.node.test.ts",
+      "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08d ostatak se ne računa — samo trajna mreža (mixedGrid)",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "    if (kept.length > 0) {\n",
+    "replace": "    if (false as boolean) {\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/mixedGrid.node.test.ts"
+    ]
+  }
+]

@@ -9,6 +9,7 @@ import { assess, checkFacts, painReturnNote } from './assess.ts';
 import { dayNumber, mustDay } from './dates.ts';
 import { construct } from './generate.ts';
 import { checkInput } from './input.ts';
+import { factKmOf, pauseOwned } from './mixed.ts';
 import { dayRule, MARATHON_V2_POLICY as P } from './policy.ts';
 import { baseFrames, framesFor, newLimits, targetReducedWeek } from './steps.ts';
 import type {
@@ -130,13 +131,25 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
     .flatMap((w) => w.days)
     .filter((d) => mustDay(d.date) > t && done.has(d.date))
     .map((d) => d.date);
+  // MAR-08 (pouka 37): km zaštićenih dana ≤ asOf u nedeljama posle asOf (tekuća nedelja; ne trkačka, ne nedelja
+  // ostatka pauze) po činjenicama (mixed.factKmOf) — samo kad se razlikuju od planiranih.
+  const factKm: Record<string, number> = {};
+  for (const w of plan.weeks)
+    if (mustDay(w.endDate) > t && w.phase !== 'race' && !pauseOwned(steps, w.index))
+      for (const d of w.days) {
+        if (!d.countsToWeek || mustDay(d.date) > t) continue;
+        const k = factKmOf(d.date, facts);
+        if (k !== null && Math.round(k * 100) !== Math.round(d.workout.km * 100))
+          factKm[d.date] = k;
+      }
   const prior: Written = {
     weeks: plan.weeks,
     keep,
     asOf: t,
     at,
     lockedDayIds: facts.lockedDayIds,
-    doneDayIds: doneAfter
+    doneDayIds: doneAfter,
+    factKm
   };
 
   // (2) Isti konstruktor kao generate.
@@ -221,7 +234,8 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
       steps,
       mixedWeeks: mixed,
       lockedDayIds: facts.lockedDayIds,
-      ...(doneAfter.length > 0 ? { doneDayIds: doneAfter } : {})
+      ...(doneAfter.length > 0 ? { doneDayIds: doneAfter } : {}),
+      ...(Object.keys(factKm).length > 0 ? { factKm } : {})
     }
   };
 

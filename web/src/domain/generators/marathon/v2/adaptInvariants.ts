@@ -47,6 +47,14 @@ export function adaptInvariants(
     (facts.workouts ?? []).filter((x) => x.completed).map((x) => x.dayId ?? x.date)
   );
   const locked = new Set(facts.lockedDayIds ?? []);
+  const last = steps[steps.length - 1]!;
+  /** Km dana po činjenicama (dani ≤ asOf): pauza 0, zapis(i) dana = upisani km (neodrađen 0), inače plan. */
+  const factKm = (d: PlanDay): number => {
+    if (mustDay(d.date) > t) return d.workout.km;
+    if ((facts.breaks ?? []).some((b) => b.from <= d.date && d.date <= b.to)) return 0;
+    const rec = (facts.workouts ?? []).filter((x) => (x.dayId ?? x.date) === d.date);
+    return rec.length === 0 ? d.workout.km : rec.reduce((a, x) => a + (x.completed ? x.km : 0), 0);
+  };
   const afterDays = new Map(W.flatMap((w) => w.days.map((d) => [d.date, d] as const)));
   for (const w of before.weeks)
     for (const d of w.days)
@@ -125,13 +133,15 @@ export function adaptInvariants(
     if (restartAt.has(w.index)) maxDose = {};
     const m = mixed.has(w.index);
     const long = longOf(w);
-    // Dugi ≥ lagan (mešovita: među danima posle asOf).
+    // Dugi ≥ lagan (mešovita: među danima posle asOf; zaključan i urađen dan se ne sude — A11b, MAR-08).
     for (const d of w.days)
       if (
         long &&
         d.role === 'easy' &&
         !locked.has(d.date) &&
         !locked.has(long.date) &&
+        !done.has(d.date) &&
+        !done.has(long.date) &&
         d.workout.km > long.workout.km + EPS &&
         (!m || (mustDay(d.date) > t && mustDay(long.date) > t))
       )
@@ -154,6 +164,18 @@ export function adaptInvariants(
           bad.push(`skok dugog ned ${w.index}`);
       }
     }
+    // Pouka 37: mešovita nedelja posle asOf (ne trkačka, ne nedelja ostatka pauze) — planirano (zaštićeni dani ≤ asOf
+    // po činjenicama: pauza 0, zapis = upisani km, neodrađen 0) ≤ cilj, ili upozorenje MIXED_WEEK_OVER za nju.
+    if (
+      m &&
+      w.phase !== 'race' &&
+      mustDay(w.endDate) > t &&
+      !(last.pauseRemainder && last.firstWeek < last.fromWeek && last.firstWeek === w.index) &&
+      w.days.reduce((a, d) => a + (d.countsToWeek ? factKm(d) : 0), 0) >
+        w.targetKm + P.tolerance.plannedKm + EPS &&
+      !after.warnings.some((x) => x.rule === 'MIXED_WEEK_OVER' && x.week === w.index)
+    )
+      bad.push(`mešovita > cilj ned ${w.index}`);
     if (m) continue;
     const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
     // Planirano = cilj (pouka 25: uz dane bola/odmora ≤ cilj).

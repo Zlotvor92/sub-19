@@ -1206,7 +1206,8 @@ export function hasSecondEasy(res: unknown): boolean {
 }
 
 /** 08i (5k-v2.10.0, pouka 37): rezultat (plan ili plan adaptacije; i kontinuirani deo plana trčanje/hodanje) ima
-    mešovitu nedelju čiji su preostali dani sastavljeni na ostatak do cilja — oznaka week.MIXED_NOTE. */
+    mešovitu nedelju čiji su preostali dani sastavljeni na ostatak do cilja — oznaka week.MIXED_NOTE; 2.10.1: ili nedelju
+    sa zbirom zaštićenih dana po činjenicama (PlanWeek.protectedKm). */
 export function hasMixedRemainder(res: unknown): boolean {
   const r = res as { ok?: boolean; plan?: unknown };
   const plan = (r.ok === undefined ? res : r.ok ? r.plan : null) as {
@@ -1214,6 +1215,13 @@ export function hasMixedRemainder(res: unknown): boolean {
     continuous?: { plan: unknown } | null;
   } | null;
   if (!plan) return false;
-  if (plan.weeks?.some((w) => w.notes.some((n) => n.includes('(pouka 37)')))) return true;
+  if (
+    plan.weeks?.some(
+      (w) =>
+        w.notes.some((n) => n.includes('(pouka 37)')) ||
+        (w as { protectedKm?: number }).protectedKm !== undefined
+    )
+  )
+    return true;
   return plan.continuous ? hasMixedRemainder(plan.continuous.plan) : false;
 }

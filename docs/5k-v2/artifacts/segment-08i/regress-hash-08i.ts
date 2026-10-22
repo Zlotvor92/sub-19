@@ -13,8 +13,9 @@ const kmOf = (r: any): string => r.ok ? r.plan.weeks.map((w: any) => w.plannedKm
 const info = (r: any): string => {
   if (!r.ok) return 'REJ:' + r.reasons.map((x: any) => x.code).join(',') + ':' + (r.violations ?? []).filter((v: any) => v.severity === 'error').map((v: any) => v.rule).join(',');
   const w37 = r.plan.weeks.filter((w: any) => w.notes.some((n: string) => n.includes('pouka 37'))).map((w: any) => w.index);
+  const pk = r.plan.weeks.filter((w: any) => w.protectedKm !== undefined).length;
   const warn = r.plan.warnings.filter((v: any) => v.rule === 'MIXED_OVER_TARGET').length;
-  return `OK:${w37.join('.')}:${warn}`;
+  return `OK:${w37.join('.')}:${warn}:${pk}`;
 };
 let i = -1;
 for (const b of d.all()) {

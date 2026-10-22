@@ -15,7 +15,7 @@ import { doseOf } from './workouts.ts';
 describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.4.2');
+    expect(P.version).toBe('marathon-v2.5.0');
   });
 
   it('DECISIONS: M1–M18, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), A1–A15 i A17 (adaptacija, M18), svaka sa pravilom, mestom i obrazloženjem', () => {
@@ -24,7 +24,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     ids.splice(10, 0, 'M10a');
     ids.splice(7, 0, 'M7a');
     ids.push('M18', ...Array.from({ length: 15 }, (_, i) => `A${i + 1}`), 'A17');
-    // MAR-07 (Faza 4a): N1, pouka 35 (N5), pouka 36, N8, N9, N10.4–N10.7, N11; MAR-07b A11b; MAR-07c A13b.
+    // MAR-07 (Faza 4a): N1, pouka 35 (N5), pouka 36, N8, N9, N10.4–N10.7, N11; MAR-07b A11b; MAR-07c A13b; MAR-08 A11c.
     ids.push(
       'N1',
       'N5',
@@ -37,7 +37,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'N10.7',
       'N11',
       'A11b',
-      'A13b'
+      'A13b',
+      'A11c'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
