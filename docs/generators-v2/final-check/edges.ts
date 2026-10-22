@@ -53,6 +53,13 @@ if (name === "5K") {
   easyR = [270, 510];
 }
 
+/* Organizator (22. 10.): ivice ulaza samo do STVARNOG trkača — VDOT 80 je svetska elita (maraton ≈ 2:08), početnik sa
+   lakim tempom 4:30 ne postoji. Gornja ivica: iskusan VDOT ≤ 70, početnik VDOT ≤ 45 i lak tempo ≥ 330 s/km. Opseg politike
+   ostaje u izveštaju pokrivenosti; tokovi se grade samo na realnim ivicama. */
+const REAL = { vdotMaxRegular: 70, vdotMaxBeginner: 45, easyMinBeginner: 330 };
+const vdotFor = (e: string): [number, number] => [vdotR[0], Math.min(vdotR[1], e === "beginner" ? REAL.vdotMaxBeginner : REAL.vdotMaxRegular)];
+const easyFor = (e: string): [number, number] => [Math.max(easyR[0], e === "beginner" ? REAL.easyMinBeginner : easyR[0]), easyR[1]];
+
 /* ---------- pokrivenost mreže ---------- */
 const weeksOf = (i: Record<string, unknown>): number =>
   Math.round((Date.parse(i["raceDate"] as string) - Date.parse(i["startDate"] as string)) / 86_400_000 / 7 + 1 / 7);
@@ -120,6 +127,8 @@ for (const [k, r] of Object.entries(pol)) {
   for (const km of r.km)
     for (const weeks of r.weeks)
       for (const basis of ["vmin", "vmax", "e270", "e510"] as const)
+        if (basis === "vmax" && vdotFor(e)[1] <= vdotR[0]) continue;
+        else
         for (const rw of ["sat", "sun"] as const) {
           const race = rw === "sun" ? RACE_SUN : addDays(RACE_SUN, -1);
           const start = addDays(race, -7 * weeks + 1);
@@ -133,11 +142,11 @@ for (const [k, r] of Object.entries(pol)) {
             goalTimeSec: null,
           };
           if (basis === "vmin" || basis === "vmax")
-            input["recentResult"] = { distanceM: resM, timeSec: Math.round(V.raceTimeForVdot(basis === "vmin" ? vdotR[0] : vdotR[1], resM)), date: addDays(start, -14) };
-          else if (name === "5K") input["typicalEasyPaceSecPerKm"] = basis === "e270" ? 270 : 510;
+            input["recentResult"] = { distanceM: resM, timeSec: Math.round(V.raceTimeForVdot(basis === "vmin" ? vdotR[0] : vdotFor(e)[1], resM)), date: addDays(start, -14) };
+          else if (name === "5K") input["typicalEasyPaceSecPerKm"] = basis === "e270" ? easyFor(e)[0] : 510;
           else {
             input["recentResult"] = null;
-            input["easyPaceSecPerKm"] = basis === "e270" ? 270 : 510;
+            input["easyPaceSecPerKm"] = basis === "e270" ? easyFor(e)[0] : 510;
           }
           if (e === "beginner") Object.assign(input, { experience: "beginner" }, name === "5K" ? { canRun30Min: true } : {});
           const un: string[] = [];
@@ -186,7 +195,7 @@ for (const x of edgeIn) {
   ];
   for (const [tag, at] of ats) {
     const sets: [string, Record<string, unknown>][] = SCENARIOS.map((s) => [s, d.facts(p, s, at)]);
-    for (const [s, v] of [["edgeSlow", vdotR[0]], ["edgeFast", vdotR[1]]] as const)
+    for (const [s, v] of [["edgeSlow", vdotR[0]], ["edgeFast", vdotFor(x.id.split("/")[0]!)[1]]] as const)
       sets.push([s, { results: [{ distM: resM, sec: Math.round(V.raceTimeForVdot(v, resM)), date: at, kind: "race" }] }]);
     for (const [s, f] of sets) {
       const before = t.rejectedFlows;
