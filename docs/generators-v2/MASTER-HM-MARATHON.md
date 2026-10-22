@@ -157,6 +157,12 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     upisani km (neurađen = 0), ostali zaštićeni (asOf bez zapisa, zaključani, urađeni posle asOf) = planirani km —
     neodrađen dan ne „jede" cilj (5K: pauza/manjak stiskali preostale dane na minimum u 10 362/12 634 tokova). Kad
     pravilo pauze određuje ostatak nedelje pauze, ono je vlasnik te nedelje.
+38. (organizator, rani prolaz završne provere K1) Zaštićen test se ne premešta: test čiji je dan zaštićen (≤ asOf,
+    zaključan, urađen) ostaje gde jeste, a nijedan okvir ne dobija drugi test; pravila koja premeštaju test (pauza,
+    umor, bol, rasterećenje — A13) važe samo za test čiji dan nije zaštićen. Jedna funkcija „zaštićen test" (proširen
+    maraton A13b iz MAR-07c). Nađeno (zaključan dan testa + pauza 10/20, umor, bol 5/8, asOf test − 14 … − 1): 10K
+    5 662/8 050, maraton 4 200/5 880, HM 3 193/4 550 odbijeno (TEST „najviše jedan test"); 5K 0/17 360 (umor u nedelji
+    testa → test na zaključan kvalitet: 5K-08i-b). Trajna mreža: zaključan dan testa × 5 scenarija → 0 odbijanja.
     Jedno mesto odluke (ostatak računa vlasnik obima), validator čita istu funkciju. Nađeno (organizator, tekuća
     nedelja rasterećenja posle umora, asOf prvi dan nedelje k ∈ {2, 4}, svaki 97. plan): planirano > cilj 5K 22/42,
     10K 367/582, HM 291/449, maraton 426/613 tokova (prosek +2,4 … +4,2 km, max 11,9); „rasterećenje" nije niže od
