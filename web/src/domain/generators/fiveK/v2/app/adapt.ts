@@ -23,7 +23,7 @@ import {
   type FactsSource
 } from './facts.ts';
 import { rejection } from './generate.ts';
-import { generatedPlan, storedPlan, type AnyV2Plan } from './plan.ts';
+import { generatedPlan, prefixOf, storedPlan, type AnyV2Plan } from './plan.ts';
 import { addDays } from './date.ts';
 import type { PlanRejectionReason } from './types.ts';
 
@@ -165,7 +165,9 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
   const r = adaptFiveKV2(v2, built.facts, src.today);
   if (!r.ok) return { ok: false, reasons: rejection(r), coverage: built.coverage, notes };
   const after = r.plan;
-  const stored = storedPlan(generatedPlan(after));
+  // 3d: plan cilja predaje nosi nedelje izvora ispred (`prefixOf`); brojevi nedelja u pregledu `offset + index`.
+  const prefix = prefixOf(src.plan);
+  const stored = storedPlan(generatedPlan(after), prefix);
   const result: GenPlanState = {
     ...stored,
     meta: {
@@ -173,7 +175,7 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
       [EDITS_KEY]: { alts: copy(src.alts ?? {}), moves: copy(src.moves ?? {}) }
     } as GenPlanState['meta']
   };
-  const weeks = changedWeeks(v2, after, r.changes, src.today);
+  const weeks = changedWeeks(v2, after, r.changes, src.today, prefix?.offset ?? 0);
   const applied = r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
   const summary = `Prilagođavanje ${src.today}: ${applied.length ? [...new Set(applied.map((x) => CONDITION[x.condition]))].join(', ') : CONDITION.NO_FACTS}`;
   const painDates = built.facts.workouts
@@ -195,7 +197,8 @@ function changedWeeks(
   before: AnyV2Plan,
   after: AnyV2Plan,
   changes: readonly AdaptChange[],
-  today: IsoDate
+  today: IsoDate,
+  offset = 0
 ): WeekChange[] {
   const b = weekViews(before);
   const a = weekViews(after);
@@ -204,7 +207,7 @@ function changedWeeks(
   return [...ids]
     .sort((x, y) => x - y)
     .filter((w) => (a.get(w)?.end ?? b.get(w)?.end ?? '') > today)
-    .map((w) => ({ week: w, before: b.get(w) ?? null, after: a.get(w) ?? null }));
+    .map((w) => ({ week: offset + w, before: b.get(w) ?? null, after: a.get(w) ?? null }));
 }
 
 /* ---------- vraćanje revizije ---------- */
@@ -342,7 +345,7 @@ export function restoreMerge(
           : null
     };
   } else merged = mergeContinuous(cur as FiveKV2Plan, snap as FiveKV2Plan, keep, today);
-  const stored = storedPlan(generatedPlan(merged));
+  const stored = storedPlan(generatedPlan(merged), prefixOf(current));
   const before = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   let changedDays = 0;
   for (const w of stored.weeks)
@@ -394,7 +397,7 @@ export function goalChange(plan: GenPlanState, goalSec: number, today: IsoDate):
   const locked = [...trainingDates(v2)].filter((d) => d > today).sort();
   const r = adaptFiveKV2({ ...v2, input: c.input }, { lockedDayIds: locked }, today);
   if (!r.ok) return { ok: false, reasons: rejection(r) };
-  const stored = storedPlan(generatedPlan(r.plan));
+  const stored = storedPlan(generatedPlan(r.plan), prefixOf(plan));
   const result: GenPlanState = {
     ...stored,
     meta: {

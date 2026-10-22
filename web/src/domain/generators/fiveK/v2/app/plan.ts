@@ -37,14 +37,11 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `5k-v2`. */
 export const LEGACY_POLICY_ID = 'legacy-5k';
 /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 5k-v2.6.0, 5k-v2.6.1,
- *  5k-v2.7.0, 5k-v2.8.0 i tekuća 5k-v2.8.1. Sačuvan plan starije verzije ostaje plan 5K v2; prilagođavanje ga gradi tekućim pravilima,
- *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown". */
+ *  5k-v2.7.0, 5k-v2.8.0, 5k-v2.8.1 i tekuća (od 3d `5k-v2.9.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`).
+ *  Sačuvan plan starije verzije ostaje plan 5K v2; prilagođavanje ga gradi tekućim pravilima, rezultat nosi tekuću
+ *  oznaku. Svaka druga verzija je „unknown". */
 export const KNOWN_VERSIONS: readonly string[] = [
-  '5k-v2.6.0',
-  '5k-v2.6.1',
-  '5k-v2.7.0',
-  '5k-v2.8.0',
-  P.version
+  ...new Set(['5k-v2.6.0', '5k-v2.6.1', '5k-v2.7.0', '5k-v2.8.0', '5k-v2.8.1', P.version])
 ];
 
 export type AnyV2Plan = FiveKV2Plan | FiveKV2RunWalkPlan;
@@ -322,16 +319,48 @@ export function generatedPlan(plan: AnyV2Plan): GeneratedV2Plan {
   };
 }
 
-/** Izlaz generatora → plan za upis (ID-jevi dana, početak nedelje, dow 0–6). */
-export function storedPlan(gen: GeneratedV2Plan): GenPlanState {
+/** Faza 3 (3d, O6b): plan 5K napravljen predajom „kraća distanca" iz dužeg plana v2 nosi nedelje IZVORA pre svog
+ *  početka (prošlost i tekuća nedelja izvora, doslovno: dani, id-jevi, faze). Nedelje v2 tada imaju broj
+ *  `offset + index` (isti broj i id dana kao nedelja izvora istog datuma — oba plana se završavaju danom trke), pa
+ *  dnevnik, izmene i pomeranja ostaju na svojim danima. Plan bez polja = običan plan 5K v2 (offset 0). */
+export const PREFIX_KEY = 'fiveKV2Prefix';
+export interface Prefix {
+  offset: number;
+  weeks: StoredWeek[];
+}
+export function prefixOf(plan: unknown): Prefix | null {
+  const p = (plan as Record<string, unknown> | null | undefined)?.[PREFIX_KEY] as
+    { offset?: unknown; weeks?: unknown } | undefined;
+  return p && Number.isInteger(p.offset) && Array.isArray(p.weeks) ? (p as Prefix) : null;
+}
+
+/** Izlaz generatora → plan za upis (ID-jevi dana, početak nedelje, dow 0–6); uz `prefix` (3d) nedelje izvora ostaju
+ *  ispred, a nedelje v2 dobijaju broj `offset + index`. */
+export function storedPlan(gen: GeneratedV2Plan, prefix: Prefix | null = null): GenPlanState {
+  const off = prefix?.offset ?? 0;
   const weeks: StoredWeek[] = gen.weeks.map((w, wi) => ({
-    w: w.w,
+    w: off + w.w,
     start: addDays(gen.meta.start, wi * 7),
     deload: w.deload,
     focus: w.focus,
     ...(w.taper ? { taper: true as const } : {}),
-    days: w.days.map((d) => ({ ...d, dow: d.dow - 1, id: `g${w.w}d${d.dow}` }))
+    days: w.days.map((d) => ({ ...d, dow: d.dow - 1, id: `g${off + w.w}d${d.dow}` }))
   }));
+  if (prefix) {
+    const before = JSON.parse(JSON.stringify(prefix.weeks)) as StoredWeek[];
+    return stampPlan({
+      weeks: [...before, ...weeks],
+      pred: [],
+      qs: {},
+      meta: {
+        ...gen.meta,
+        start: (before[0]?.start as IsoDate | undefined) ?? gen.meta.start,
+        weeks: before.length + weeks.length
+      },
+      fiveKV2: JSON.parse(JSON.stringify(gen.fiveKV2)) as unknown,
+      [PREFIX_KEY]: { offset: off, weeks: before }
+    });
+  }
   return stampPlan({
     weeks,
     pred: [],
@@ -380,8 +409,12 @@ function phasesFrom(plan: unknown): Map<number, WeekPhase> {
 /** Plan za upis: faza svake nedelje iz odluke v2 i oznaka politike v2. Ne menja ostala polja. */
 export function stampPlan<T extends GenPlanState>(plan: T): T {
   const phases = phasesFrom(plan['fiveKV2']);
+  // 3d: nedelje izvora (≤ offset) zadržavaju svoju fazu; nedelja v2 broj `offset + index`.
+  const off = prefixOf(plan)?.offset ?? 0;
   const weeks: StoredWeek[] = plan.weeks.map((w) => {
-    const phase = phases.get(w.w) ?? (typeof w.phase === 'string' ? w.phase : undefined);
+    const phase =
+      (w.w > off ? phases.get(w.w - off) : undefined) ??
+      (typeof w.phase === 'string' ? w.phase : undefined);
     return phase === undefined ? { ...w } : { ...w, phase };
   });
   return {

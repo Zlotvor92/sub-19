@@ -210,3 +210,7 @@ nosi policyId/fazu cilja (`stampForStorage`). 7 nula uvoza: ciljevi kao argument
   budući dani maratona se ne mešaju pred plan HM.
 - Predaja za 3e: plan HM v2 cilja nema `meta.preparation`; vrh dugog i obima za opciju čitati iz `hmV2`. Predaja za
   3g: prikaz nedelja prefiksa (faze izvora) i broj nedelje u pregledu (`offset + index`).
+- Lak tempo (posle 3d-5K, organizator): `easyPaceSecPerKm` iz ulaza čarobnjaka je činjenica (unosi ga korisnik), ne
+  izvedeno polje → v2 izvor (HM v2: dopuna 3d; maraton v2: 3e) ga šalje u ulazu ugovora kad postoji. Bez njega izvor po
+  osećaju (ili rezultat stariji od 84 d pri predaji) uvek daje EASY_PACE_REQUIRED / MISSING_EASY_PACE na v2 cilju
+  (3d M3 5K: 545 → ~1 115 uspeha sa lakim tempom).

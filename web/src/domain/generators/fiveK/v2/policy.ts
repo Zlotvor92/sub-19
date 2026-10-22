@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.8.1',
+  version: '5k-v2.9.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -766,5 +766,15 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'zaključan dan posle novog rezultata već su u 5k-v2.8.0 — trajne mreže 08h (umor po danima: isto rasterećenje; ' +
       'locked-result: 0 odbijanja); urađen dan posle asOf u 5K nije činjenica (checkFacts: ADAPT_FACT_AFTER_AS_OF). ' +
       'Sačuvan plan 5k-v2.8.0 i stariji prilagođavaju se po 2.8.1 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.9.0',
+    decision:
+      'Faza 3, segment 3d (DESIGN.md § 8 O3a, O4a, O6b, O8a): 5K v2 kao CILJ predaje „kraća distanca" (izvor HM v2). ' +
+      'Pravila nepromenjena; menja se samo format plana: plan cilja nosi nedelje izvora ispred (app/plan.ts ' +
+      'PREFIX_KEY), nedelje 5K imaju broj i id dana kao nedelja izvora istog datuma. Cilj = generate (činjenice ulaza, ' +
+      'obim čarobnjaka izvora, start = granica nedelje posle potvrde) + adapt (sirove činjenice bez dayId; potvrđena ' +
+      'pauza = činjenica pauze). Odbijanje → opcija nedostupna sa razlogom v2 doslovno. Sačuvan plan 5k-v2.8.1 i ' +
+      'stariji prilagođavaju se po 2.9.0 (KNOWN_VERSIONS).'
   }
 ];
