@@ -4,7 +4,8 @@ name: Testovi
 # - samo dokumentacija (docs/** osim docs/qa/** koje testovi čitaju, *.md u korenu) ne pokreće testove;
 # - samo `push` (bez `pull_request`): PR prikazuje rezultat run-a svog commita; `paths` kod `pull_request` gleda ceo PR,
 #   pa bi svaki push dokumentacije pokretao run i otkazivao run koda;
-# - jedna grupa po grani: nov push otkazuje stariji run (osim na main);
+# - jedna grupa po grani: run koji radi se završava, a od pusheva koji stignu u međuvremenu čeka samo najnoviji
+#   (GitHub otkazuje stariji koji čeka) — tako se i pri čestim pushevima run završava, a vrh grane se uvek testira;
 # - testovi weba idu u 6 paralelnih delova (vitest --shard).
 on:
   push:
@@ -18,7 +19,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: false
 
 jobs:
   test:

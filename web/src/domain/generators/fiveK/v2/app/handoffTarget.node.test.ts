@@ -35,16 +35,9 @@ const addDays = (d: string, n: number): IsoDate =>
 
 type HmPlan = Parameters<typeof hmContractInput>[0];
 const hmOf = (src: GenPlanState): HmPlan => (src as unknown as { hmV2: HmPlan }).hmV2;
-/** Ulaz ugovora pravog izvora HM v2 (3c) za 5K; `easyPace` dodaje lak tempo iz ulaza izvora (3c ga ne šalje). */
-function contract(src: GenPlanState, easyPace = false) {
-  const v = hmOf(src);
-  const ep = (v.input as { easyPaceSecPerKm?: number | null }).easyPaceSecPerKm;
-  return {
-    ...hmContractInput(v),
-    raceDistM: 5000,
-    goalSec: null,
-    ...(easyPace && ep != null ? { easyPaceSecPerKm: ep } : {})
-  };
+/** Ulaz ugovora pravog izvora HM v2 (3c; od 3d-dopune sa lakim tempom čarobnjaka kad ga ulaz ima) za 5K. */
+function contract(src: GenPlanState) {
+  return { ...hmContractInput(hmOf(src)), raceDistM: 5000, goalSec: null };
 }
 const source = (input: unknown): GenPlanState | null => {
   const r = select.generateHmV2Plan(input as never);
@@ -147,11 +140,11 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
       for (const k of [1, 2, Math.floor(N / 2), N - 4])
         for (const s of SCEN) {
           const asOf = addDays(src.weeks[k - 1]!.start, 6);
-          const r = handoff(src, asOf, s, null, contract(src, true));
+          const r = handoff(src, asOf, s, null, contract(src));
           if (!r.error) continue;
           // Odbijanje ADAPTACIJE: generator cilja prihvata isti ulaz (start = granica posle asOf), a predaja ne uspe.
           const start = alignedStart(hmOf(src).input.raceDate, addDays(asOf, 1));
-          const g = start ? generateFiveKV2(targetInput(contract(src, true), start)) : null;
+          const g = start ? generateFiveKV2(targetInput(contract(src), start)) : null;
           if (g?.ok) adaptRejected.push(`${c.id} ${asOf} ${s}: ${r.error}`);
           const left = weeksLeft(src, asOf);
           if (left < 6 || left > 16) {
@@ -174,10 +167,13 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
     })!;
     const src = source(c.input)!;
     const asOf = addDays(src.weeks[src.weeks.length - 9]!.start, 3);
-    const r = handoff(src, asOf, 'none');
+    // Izvor šalje lak tempo (3d-dopuna); bez njega u ulazu cilja → odbijanje doslovno.
+    const { easyPaceSecPerKm: ep, ...bare } = contract(src);
+    expect(ep).toBeGreaterThan(0);
+    const r = handoff(src, asOf, 'none', null, bare);
     expect(r.result).toBeUndefined();
     expect(r.error).toContain('potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm)');
-    expect(handoff(src, asOf, 'none', null, contract(src, true)).result).toBeDefined();
+    expect(handoff(src, asOf, 'none', null, contract(src)).result).toBeDefined();
   });
 
   it('pravi izvor: odluka HM v2 (5K v2 uključen, 10K v2 NOT_READY) nudi 5K; izbor gradi plan 5K v2 sa prefiksom', () => {
