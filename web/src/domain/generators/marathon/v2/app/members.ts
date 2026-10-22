@@ -8,9 +8,9 @@
      plana, trka 5/10 km, polumaraton, maraton — M18) kroz činjenice; tempo treninga se ne meri kao forma („ne koristi se");
    - promena cilja (`planWithNewGoal`) → isti ulaz sa novim ciljem, menja se samo ocena cilja;
    - vraćanje verzije (`graftFuturePlan`) → spajanje planova v2;
-   - VDOT plana (`planVdotNow`) → tekući VDOT plana v2.
-   „Ne koristi se" (sa razlogom): `executionBasis` (odluka o ograničenoj pripremi je maraton v1; v2 smanjenje i
-   povratak odlučuje adaptacija, M18), trčanje/hodanje (maraton v2 ga odbija pri izradi), `fitnessEvidence`/
+   - VDOT plana (`planVdotNow`) → tekući VDOT plana v2;
+   - potvrđeno izvršenje (`executionBasis`, faza 3 / 3e) → osnova predaje „kraća distanca" (`./preparation.ts`).
+   „Ne koristi se" (sa razlogom): trčanje/hodanje (maraton v2 ga odbija pri izradi), `fitnessEvidence`/
    `hasRecentMeasuredForm` (ugovor nosi samo test 3 km, a on nije rezultat maratona v2 — A1), `realignPlan` (trčanje ulazi sa stvarnim datumom).
 
    Tipovi su lokalni ili generički (dan, izmena, zapis lanca, plan prolaze kroz član nepromenjeni); gde član PRAVI plan
@@ -36,9 +36,6 @@ export const ADAPTATION_V2 =
 /** Merenje forme iz tempa treninga se u v2 ne koristi (nije greška). */
 export const MEASUREMENT_NOT_USED =
   'Ne koristi se u ovom planu: maraton v2 menja tempo samo iz rezultata (test 5 km plana ili trka na 5 ili 10 km, polumaratonu ili maratonu), ne iz tempa treninga.';
-/** Odluka o ograničenoj pripremi (produženje, kraća distanca) je maraton v1; u v2 je nema. */
-export const NO_PREPARATION_DECISION =
-  'Odluka o ograničenoj pripremi (produženje, kraća distanca) postoji samo u planu maratona v1; u planu v2 smanjenje i povratak odlučuje prilagođavanje iz činjenica.';
 export const RECALIBRATION_NOT_USED =
   'Plan maratona v2 se ne preračunava prema formi iz treninga: tempo menja nov rezultat (test 5 km plana ili trka), kroz Plan → Prilagodi plan.';
 /** Maraton v2 nema plan trčanje/hodanje (odbija ga pri izradi). */
@@ -61,7 +58,11 @@ export const MEMBERS: Readonly<Record<string, { kind: 'v2' | 'not-used'; reason:
     reason: 'forma v2 nije lanac merenja iz treninga (Napredak → Forma)'
   },
   executionModel: { kind: 'v2', reason: 'opis 28 dana bez odluke; odluku donosi adaptacija v2' },
-  executionBasis: { kind: 'not-used', reason: NO_PREPARATION_DECISION },
+  executionBasis: {
+    kind: 'v2',
+    reason:
+      'faza 3 (3e): potvrđeno izvršenje kao činjenica predaje „kraća distanca" (bez politike izvora, ./preparation.ts)'
+  },
   buildExecutionAdjustment: {
     kind: 'v2',
     reason: 'pregled adaptacije v2 (potvrđena pauza → prijavljena pauza)'
@@ -251,9 +252,6 @@ export function executionModel<D extends string>(
     }
   };
 }
-
-/** Ne koristi se: odluka o ograničenoj pripremi je maraton v1 (v. `NO_PREPARATION_DECISION`). */
-export const executionBasis = (): { error: string } => ({ error: NO_PREPARATION_DECISION });
 
 /** Prilagođavanje prema izvršenju → pregled adaptacije v2. `breakDays` (potvrđena pauza) postaje prijavljena pauza do
  *  danas; obim i dužinu v2 izvodi sam iz činjenica (uneti km/ned se ne koristi). */

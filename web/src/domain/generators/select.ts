@@ -945,8 +945,8 @@ const MARATHON_SHORTER_HANDOFF = regeneratorForDistance;
    Raspodela članova: (a) v2 sam (generisanje, oznake, faza, procena, proizvod, tempo/prag/napor, sat iz strukture);
    (b) adaptacija i predlog (segment MAR-06) — kroz činjenice i `adaptMarathonV2` sa pregledom pre upisa, ili „ne
    koristi se" sa razlogom (`MEMBERS`), bez zamene maraton v1 generatorom; (c) procena stanja i vreme — sopstvena kopija v2 sa istim vrednostima kao maraton v1 (v.
-   `marathon/v2/app/index.ts`). Odluka o ograničenoj pripremi (`preparationForPlan`) i predaja „kraća distanca" ostaju
-   samo maraton v1 (faza 3).
+   `marathon/v2/app/index.ts`). Odluka o ograničenoj pripremi (`preparationForPlan`): maraton v2 kao izvor predaje
+   „kraća distanca" od faze 3 (3e, `marathonV2Preparation`).
 
    GRANICA FORMATA (kao HM v2): adapter `marathon/v2/app/` ne uvozi ni tipove formata (strogi test izolacije maratona
    v2, bez izuzetka), pa plan koji PRAVI (dan sa strukturom van unije `Day`, `meta` sa poljima koja v2 zna) ovde dobija
@@ -971,7 +971,11 @@ export const MARATHON_V2_GENERATOR: PlanGenerator = {
   assess: m2.assess,
   product: m2.product,
   executionModel: m2.executionModel,
-  executionBasis: m2.executionBasis,
+  // 3e: osnova predaje (činjenice bez politike); ulaz plana po osećaju nema `pb` (tip formata daje granica).
+  executionBasis: (current, today, analysis, options) =>
+    m2.executionBasis(current, today, analysis, options) as unknown as ReturnType<
+      PlanGenerator['executionBasis']
+    >,
   // MAR-06: plan za upis pravi adapter (granica formata, v. gore).
   buildExecutionAdjustment: (current, today, analysis, options, context) =>
     m2.buildExecutionAdjustment(current, today, analysis, options, context) as unknown as
@@ -1381,8 +1385,39 @@ export function hmV2Preparation(flags: GeneratorFlags): PreparationApi {
   } satisfies PreparationApi;
 }
 
-/** Odluka o pripremi za plan: HM v1 / maraton v1 (kao do sada) ili HM v2 (3c). `flags` (prekidači korisnika) biraju
- *  cilj predaje za izvor v2; bez njih su isključeni (v1 cilj). */
+/** Faza 3 (3e): odluka o pripremi plana maratona v2 kao IZVORA predaje „kraća distanca" (okidač i opcije su maraton v2,
+ *  `marathon/v2/shorter.ts` i `app/preparation.ts`). Cilj bira prekidač korisnika (`flags`) kroz
+ *  `shorterHandoffForV2Source` sa formatom izvora maratona v2. Politika izvora se ne predaje (`policy: null`). */
+export function marathonV2Preparation(flags: GeneratorFlags): PreparationApi {
+  const handoff = shorterHandoffForV2Source(flags, m2.SOURCE_FORMAT);
+  return {
+    basisFromPlan: (current, today) =>
+      m2.basisFromPlan(current, today) as unknown as DecisionBasis | null,
+    preparationDecision: (current, today, basis, context, status, delivered) =>
+      m2.preparationDecision(
+        current,
+        today,
+        basis as never,
+        context,
+        status,
+        delivered,
+        handoff as never
+      ) as unknown as PreparationDecision,
+    buildPreparationChoice: (current, today, basis, choice, context) =>
+      m2.buildPreparationChoice(
+        current,
+        today,
+        basis as never,
+        choice,
+        context,
+        handoff as never
+      ) as unknown as ChoiceResult | { error: string },
+    isLimitedLongPreparation: (meta, plan) => m2.isLimitedLongPreparation(meta, plan)
+  } satisfies PreparationApi;
+}
+
+/** Odluka o pripremi za plan: HM v1 / maraton v1 (kao do sada), HM v2 (3c) ili maraton v2 (3e). `flags` (prekidači
+ *  korisnika) biraju cilj predaje za izvor v2; bez njih su isključeni (v1 cilj). */
 export function preparationForPlan(
   plan: GenPlanState | null | undefined,
   flags: GeneratorFlags = { fiveKV2: false }
@@ -1391,5 +1426,6 @@ export function preparationForPlan(
   if (generator === HALF_MARATHON_GENERATOR) return HALF_MARATHON_PREPARATION;
   if (generator === HALF_MARATHON_V2_GENERATOR) return hmV2Preparation(flags);
   if (generator === MARATHON_GENERATOR) return MARATHON_PREPARATION;
+  if (generator === MARATHON_V2_GENERATOR) return marathonV2Preparation(flags);
   return null;
 }
