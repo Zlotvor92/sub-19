@@ -1,0 +1,23 @@
+[
+  {
+    "name": "3c2-a format izvora bez hmV2Edits (snimak izmena curi u v1 cilj)",
+    "file": "src/domain/generators/halfMarathon/v2/app/preparation.ts",
+    "find": "'goalAssessment', EDITS_KEY]",
+    "replace": "'goalAssessment']",
+    "tests": ["src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"]
+  },
+  {
+    "name": "3c2-b rezultat koraka adaptacije se ne šalje",
+    "file": "src/domain/generators/halfMarathon/v2/app/preparation.ts",
+    "find": "  for (const step of v2.adaptation?.steps ?? [])\n",
+    "replace": "  for (const step of [] as typeof v2.adaptation.steps)\n",
+    "tests": ["src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"]
+  },
+  {
+    "name": "3c2-c rezultat posle starta ulaza ugovora",
+    "file": "src/domain/generators/halfMarathon/v2/app/preparation.ts",
+    "find": "    if (step.result && step.result.date <= onOrBefore && (!best || step.result.date >= best.date))",
+    "replace": "    if (step.result && (!best || step.result.date >= best.date))",
+    "tests": ["src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"]
+  }
+]

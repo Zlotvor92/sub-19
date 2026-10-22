@@ -84,9 +84,10 @@ export function sourceViewForV1<P extends GenPlanState>(current: P, format: Sour
   return { ...rest, weeks: mondayWeeks(current.weeks), meta } as P;
 }
 
-/** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`); plan v2 po osećaju ga nema. */
+/** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`) koji nije posle starta novog plana; plan v2 bez takvog
+ *  rezultata (po osećaju ili samo sa testom posle starta, 3e § 6.2) ga nema. */
 export const V1_TARGET_NEEDS_RESULT =
-  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa, a ovaj plan je po osećaju.';
+  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa pre početka novog plana, a ovaj plan ga nema.';
 
 /** v1 cilj za izvor v2: isti `handoffFuture`, nad pogledom izvora bez formata v2; bez rezultata → odbijanje sa
  *  razlogom (nikad tihi prelaz). `null` kao `regeneratorForDistance`. */
