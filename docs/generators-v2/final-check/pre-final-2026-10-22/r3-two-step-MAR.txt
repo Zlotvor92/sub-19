@@ -1,0 +1,77 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 900,
+  "F": 400,
+  "B": 120
+ },
+ "sampled": 57,
+ "excludedPermanent": 3,
+ "plans": 57,
+ "first": {
+  "flows": 969,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 31008,
+   "rejectedFlows": 12,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": 13
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": [
+     "new beg-d4-17w-40km-v30-A/w2wed/pause35→+3/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "new beg-d4-17w-40km-v30-A/w2wed/pause35→+7/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "new beg-d4-17w-40km-v30-A/w2wed/faster→+3/pause35: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15)."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "pause35→faster": 6,
+    "faster→pause35": 6
+   }
+  },
+  "cum": {
+   "flows": 31008,
+   "rejectedFlows": 12,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": 13
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": [
+     "cum beg-d4-17w-40km-v30-A/w2wed/pause35→+3/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "cum beg-d4-17w-40km-v30-A/w2wed/pause35→+7/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "cum beg-d4-17w-40km-v30-A/w2wed/faster→+3/pause35: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15)."
+    ]
+   },
+   "common": {
+    "DUGI<LAGAN": 14
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum feel-d4-23w-45km-e360-C/w11wed/locked→+3/pause20",
+     "cum feel-d4-23w-45km-e360-C/w11wed/locked→+3/pain5",
+     "cum feel-d4-23w-45km-e360-C/w11wed/locked→+3/pain8"
+    ]
+   },
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "pause35→faster": 6,
+    "faster→pause35": 6
+   }
+  }
+ },
+ "seconds": 918.154
+}
