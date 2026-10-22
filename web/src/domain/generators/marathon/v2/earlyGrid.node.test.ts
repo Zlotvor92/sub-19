@@ -1,6 +1,6 @@
 /* Trajna mreža rane i srednje adaptacije (pouka 23; MAR-07c: + testDayFlows, brz nivo svaki 60. plan po osećaju i
    primer organizatora): brz nivo — svaki 120. tok (MAR-07: bilo 60, brz nivo ≤ 60 s) unutar porodice (R/F/B) × vrste toka × scenarija ×
-   asOf pre starta / posle (pouka 34); pun nivo — deo 1/4 ovde, delovi 2–4 u earlyGrid.<k>.full.node.test.ts. */
+   asOf pre starta / posle (pouka 34); pun nivo — deo 1/8 ovde, delovi 2–8 u earlyGrid.<k>.full.node.test.ts. */
 
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -24,7 +24,7 @@ describeEarly(
       ? earlyFlows(part(EARLY_BASES, 1, EARLY_PARTS))
       : sample(earlyFlows(EARLY_BASES), 120, (f) => `${f.base.family}-${f.kind}-${f.s}-${f.pre}`)
 );
-// MAR-07c: umor na dan testa ± 1 — pun nivo deo 1/4 svih planova po osećaju; brz nivo svaki 60. (po broju dana) i
+// MAR-07c: umor na dan testa ± 1 — pun nivo deo 1/8 svih planova po osećaju; brz nivo svaki 60. (po broju dana) i
 // primer organizatora.
 describeEarly(
   `MAR-07c umor na dan testa ± 1${FULL ? ` — deo 1/${EARLY_PARTS}` : ' — uzorak'}`,

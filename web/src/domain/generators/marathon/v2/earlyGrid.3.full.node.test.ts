@@ -1,5 +1,5 @@
-/* Pun nivo (TEST_FULL=1) trajne mreže rane adaptacije iz earlyGrid.node.test.ts: deo 3/4 (MAR-07c: i umor na dan
-   testa ± 1, zaseban blok). */
+/* Pun nivo (TEST_FULL=1) trajne mreže rane adaptacije iz earlyGrid.node.test.ts: deo 3/8 (MAR-07c: i umor na dan
+   testa ± 1, zaseban blok; organizator: 8 delova — deo 4/4 je na CI-ju prešao 600 s beforeAll). */
 
 import { part } from '@/test/level';
 import {

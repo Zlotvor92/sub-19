@@ -36,7 +36,7 @@ import {
 } from './testInputs.ts';
 import type { MarathonV2Plan } from './types.ts';
 
-export const EARLY_PARTS = 4;
+export const EARLY_PARTS = 8;
 export const EARLY_TIMEOUT = 600_000;
 
 export interface EarlyFlow {
