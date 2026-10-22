@@ -71,22 +71,41 @@ export function adaptInvariants(
   const race = after.weeks[n - 1]!;
   let lastBuild: PlanWeek | null = null;
   let maxDose: Record<string, number> = {};
+  // Pouka 37: planirano mešovite nedelje sa zaštićenim danima po činjenicama (pauza 0, upisani km).
+  const factKm = ad.factKm ?? {};
+  const factPlanned = (w: PlanWeek): number =>
+    w.days.reduce(
+      (a, d) => a + (!d.countsToWeek ? 0 : d.date in factKm ? factKm[d.date]! : d.workout.km),
+      0
+    );
   for (const w of after.weeks) {
     if (steps.some((s) => s.restart && s.fromWeek === w.index)) maxDose = {};
     const m = mixed.has(w.index);
     const long = w.days.find((d) => d.role === 'long');
-    // Dugi ≥ lagan (mešovita: među danima posle asOf).
+    // Dugi ≥ lagan (mešovita: među preostalim danima — posle asOf, nisu urađeni ni zaključani; pouka 37: zaštićeni
+    // dani su činjenice).
+    const free = (d: PlanDay): boolean =>
+      mustDay(d.date) > t && !done.has(d.date) && !locked.has(d.date);
     for (const d of w.days)
       if (
         long &&
         d.role === 'easy' &&
         d.workout.km > long.workout.km + EPS &&
-        (!m || (mustDay(d.date) > t && mustDay(long.date) > t))
+        (!m || (free(d) && free(long)))
       )
         bad.push(`dugi < lagan ned ${w.index}`);
     for (const d of w.days)
       if (d.workout.km <= 0 || d.workout.segments.length === 0)
         bad.push(`prazan trening ${d.date}`);
+    // Pouka 37: mešovita nedelja sa danima posle asOf — planirano ≤ cilj ili upozorenje sa razlogom.
+    if (
+      m &&
+      w.phase !== 'race' &&
+      w.days.some((d) => mustDay(d.date) > t && !locked.has(d.date) && !done.has(d.date)) &&
+      factPlanned(w) > w.targetKm + P.tolerance.plannedKm + EPS &&
+      !after.warnings.some((v) => v.rule === 'MIXED_WEEK_OVER' && v.week === w.index)
+    )
+      bad.push(`mešovita nedelja planirano > cilj bez upozorenja ned ${w.index}`);
     if (m) continue;
     const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
     // Planirano = cilj.

@@ -1,0 +1,1 @@
+{"dist":"5K","stride":6,"plans":633,"flows":21522,"inv":0,"rejected":{},"examples":[]}

@@ -11,7 +11,8 @@
    asOf svaki dan nedelje testa i nedelje pre nje (po osećaju) i svaki ponedeljak nedelja 1 … N − 3 (svi planovi;
    prinudno rasterećenje u tekućoj nedelji); svi planovi po osećaju (testDayFlows) × umor na dan testa − 1, dan testa
    i + 1 (na a869e21 540 odbijanja: 5 dana raspored C, test na Q1 = ponedeljak = asOf) → 0 odbijanja. Po
-   toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). */
+   toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). MAR-08 (pouka 37): mixedFlows —
+   umor svaki dan nedelje k (2 … N − 3) + zaključan/urađen dan sledeće nedelje (mixedGrid.*). */
 
 import { beforeAll, describe, expect, it } from 'vitest';
 import { adaptBanner, adaptMarathonV2 } from './adapt.ts';
@@ -29,6 +30,7 @@ import {
   type EarlyScenario,
   factsOf,
   feelInputs,
+  gridInputs,
   painFacts,
   PRE_START_SCENARIOS,
   type Scenario,
@@ -200,6 +202,53 @@ export function earlyFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
   return out;
 }
 
+/** MAR-08 (pouka 37): baze trajne mreže mešovite nedelje (svaki 365. ulaz mreže 02, 156. po osećaju, 84. početnika)
+    i primer organizatora (mixed-deload.ts: cilj 25,4 = dugi 16,8 upisan + lagan 7,6 + T 5,12 = 29,52). */
+export const MIXED_BASES: readonly AdaptBase[] = earlyGridBases(365, 156, 84);
+export const MIXED_EXAMPLE: AdaptBase = {
+  id: 'd3-12w-30km-v30-A-sat',
+  family: 'R',
+  input: gridInputs().find((c) => c.id === 'd3-12w-30km-v30-A-sat')!.input
+};
+
+/** MAR-08 (pouka 37): umor sa asOf svaki dan nedelje k (k = 2 … N − 3; prinudno rasterećenje u tekućoj nedelji, deo
+    dana zaštićen) i umor sa asOf prvi dan nedelje k + zaključan / urađen prvi dan trčanja nedelje k + 1 (obrazac
+    locked-result) → mešovite nedelje: planirano ≤ cilj ili MIXED_WEEK_OVER (adaptInvariants), 0 odbijanja. */
+export function mixedFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
+  const out: EarlyFlow[] = [];
+  for (const base of bases) {
+    const p = planOf(base);
+    const N = p.weeks.length;
+    for (let k = 2; k <= N - 3; k++) {
+      const w = p.weeks[k - 1]!;
+      for (let i = 0; i < 7; i++) {
+        const asOf = addDays(w.startDate, i);
+        out.push({
+          key: `${base.id}/${asOf}/mixed`,
+          base,
+          asOf,
+          kind: 'fatigueDay',
+          s: 'fatigue',
+          pre: false
+        });
+      }
+      const d = p.weeks[k]!.days.find((x) => x.countsToWeek);
+      if (d)
+        for (const how of ['locked', 'done'] as const)
+          out.push({
+            key: `${base.id}/${w.startDate}/mixed+${how}-${d.role}`,
+            base,
+            asOf: w.startDate,
+            kind: 'protected',
+            s: 'fatigue',
+            day: { date: d.date, how },
+            pre: false
+          });
+    }
+  }
+  return out;
+}
+
 const deloads = (p: MarathonV2Plan): string =>
   p.weeks
     .filter((w) => w.deload)
@@ -242,14 +291,17 @@ export function runFlow(f: EarlyFlow): string | null {
     f.kind === 'protected'
       ? p.weeks.flatMap((w) => w.days).find((d) => d.date === f.day!.date)!
       : null;
+  const f0 = f.kind === 'protected' ? factsOf(p, f.s as Scenario, f.asOf) : null;
   const facts =
     f.kind === 'protected'
       ? {
-          ...factsOf(p, f.s as Scenario, f.asOf),
+          ...f0,
           ...(f.day!.how === 'locked'
             ? { lockedDayIds: [day!.date] }
             : {
+                // MAR-08: zapisi scenarija (umor) ostaju uz urađen dan (rezultat nema zapisa — isto kao ranije).
                 workouts: [
+                  ...((f0!['workouts'] as unknown[] | undefined) ?? []),
                   {
                     date: f.asOf,
                     dayId: day!.date,

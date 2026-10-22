@@ -5,6 +5,7 @@
    (M4/M5/M16; početnik bez testa, M17) → po nedelji cilj (M6/M5/M7) i konstrukcija → trkačka nedelja (M8) →
    validator (samo prijavljuje). */
 
+import { mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   jumpBase10,
@@ -18,6 +19,7 @@ import {
 } from './lengths.ts';
 import { assessGoal, predictedMarathon } from './paces.ts';
 import { isBuildPhase, periodize, taperStep } from './periodize.ts';
+import { keptKm100, mixedNote, mixedRest, pauseOwned } from './mixed.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
 import {
@@ -264,8 +266,40 @@ export function construct(
         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
         frame.index
       );
-    const w = make(fit.target10, mode)!;
-    const notes = [...w.notes];
+    let w = make(fit.target10, mode)!;
+    // Pouka 37: mešovita nedelja — cilj važi za celu nedelju; preostali dani na ostatak = cilj − zaštićeni dani,
+    // samo naniže (mixed.ts, jedino mesto odluke; validator MIXED_WEEK_OVER čita istu funkciju). Zaštićeni dani
+    // ≤ asOf po činjenicama (prior.factKm); nedelja ostatka pauze ima svog vlasnika (mixed.pauseOwned).
+    let mixNote: string | null = null;
+    const s0 = prior?.weeks[frame.index - 1];
+    const kept =
+      prior && s0 && mustDay(s0.endDate) > prior.asOf && !pauseOwned(steps, frame.index)
+        ? s0.days.filter(prior.keep)
+        : [];
+    if (kept.length > 0) {
+      const keptAt = (d: PlanDay): boolean => kept.some((x) => x.date === d.date);
+      const m = mixedRest(
+        kept,
+        w.days.filter((d) => !keptAt(d)),
+        fit.target10,
+        ctx.paces,
+        prior!.factKm
+      );
+      if (m.cut) {
+        const days = [...w.days.filter(keptAt), ...m.days].sort((a, b) =>
+          a.date.localeCompare(b.date)
+        );
+        // Stanje doze iz dana kakvi se upisuju (pouka 29): kvalitet koji otpada ne napreduje.
+        w = {
+          ...w,
+          days,
+          planned100: planned100Of(days),
+          picks: w.picks && m.dropped ? writtenPicks(days) : w.picks
+        };
+        mixNote = mixedNote(m, keptKm100(kept, prior!.factKm) / 100, fit.target10);
+      }
+    }
+    const notes = [...w.notes, ...(mixNote ? [mixNote] : [])];
     if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));
     // M13a: dugi na plafonu skoka; bez skorašnjeg najdužeg trka — napomena nedelje 1 sa pragom.
     if (w.jumpBound && w.long10 !== null)
@@ -382,7 +416,8 @@ export function construct(
             ...plan.adaptation!,
             mixedWeeks: merged.mixed,
             lockedDayIds: [...prior!.lockedDayIds],
-            ...(prior!.doneDayIds.length > 0 ? { doneDayIds: [...prior!.doneDayIds] } : {})
+            ...(prior!.doneDayIds.length > 0 ? { doneDayIds: [...prior!.doneDayIds] } : {}),
+            ...(Object.keys(prior!.factKm).length > 0 ? { factKm: { ...prior!.factKm } } : {})
           }
         }
       : plan

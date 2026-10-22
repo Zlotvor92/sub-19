@@ -1,0 +1,56 @@
+[
+  {
+    "name": "08-a ostatak se ne računa (stara strana)",
+    "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+    "find": "? (remainderWeek(ctx, frame, w0, s0.days.filter(prior.keep), fit.target10, prior.factKm) ??\n          w0)",
+    "replace": "? w0",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-b ostatak i naviše (manjak se nadoknađuje)",
+    "edits": [
+      {
+        "file": "src/domain/generators/halfMarathon/v2/week.ts",
+        "find": "    free.length === 0 ||\n    kept100 <= sum100(built.days.filter((d) => keptDates.has(d.date))) ||\n    kept100 + sum100(free) <= target10 * 10 + tol100\n",
+        "replace": "    free.length === 0\n"
+      },
+      {
+        "file": "src/domain/generators/halfMarathon/v2/week.ts",
+        "find": "    const caps10 = easy.map((d) => Math.min(km10(d.workout.km), long10));",
+        "replace": "    const caps10 = easy.map(() => Infinity);"
+      }
+    ],
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-c validator ne čita istu funkciju (minimum preostalih)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "const min100 = mixedMin100(kept, free, factKm);",
+    "replace": "const min100 = planned;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-d trajna mreža bez mešovite nedelje (asOf kraj nedelje k)",
+    "file": "src/domain/generators/halfMarathon/v2/segment08.harness.node.test.ts",
+    "find": "            const asOf = addDays(wk.startDate, x);",
+    "replace": "            const asOf = wk.endDate;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-e zbir zaštićenih dana po planu (ne po činjenicama)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "      a + (!d.countsToWeek ? 0 : d.date in factKm ? km100(factKm[d.date]!) : km100(d.workout.km)),",
+    "replace": "      a + (!d.countsToWeek ? 0 : km100(d.workout.km)),",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+    ]
+  }
+]

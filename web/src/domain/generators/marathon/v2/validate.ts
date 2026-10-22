@@ -40,6 +40,7 @@ import {
   phasesOf,
   taperStep
 } from './periodize.ts';
+import { keptKm100, mixedRest, pauseOwned } from './mixed.ts';
 import { BEGINNER_DAYS_COUNTS, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 import {
   capM,
@@ -81,6 +82,7 @@ import type {
   MarathonV2Plan,
   Paces,
   Phase,
+  PlanDay,
   PlanWeek,
   QualityType,
   Structure,
@@ -136,6 +138,9 @@ const HARD: readonly DayRole[] = ['q1', 'q2', 'long', 'sharpener', 'race', 'test
 const ZONES: readonly WorkZone[] = ['R', 'I', 'T', 'MP'];
 const to10 = (km: number): number => Math.round(km * 10);
 const to100 = (km: number): number => Math.round(km * 100);
+const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+const planned100 = (ds: readonly PlanDay[]): number =>
+  ds.reduce((a, d) => a + (d.countsToWeek ? to100(d.workout.km) : 0), 0);
 
 /** M10: dozvoljeni tipovi kvaliteta po fazi i slotu (T druge strukture je kontinuirano ↔ deonice). */
 const SLOT_TYPES: Readonly<
@@ -534,6 +539,33 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       );
     else if (w.days.filter((d) => d.countsToWeek).length === 0)
       err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
+    // Pouka 37: mešovita nedelja (ne cela prošlost, ne trkačka) — planirano ≤ cilj; više samo kad ni najmanji
+    // preostali dani ne staju u ostatak (ista funkcija kao konstruktor, mixed.ts) → upozorenje.
+    const kept = w.days.filter(protectedDay);
+    const rest = w.days.filter((d) => !protectedDay(d));
+    if (
+      !checked(w) &&
+      ad !== undefined &&
+      w.phase !== 'race' &&
+      mustDay(w.endDate) > mustDay(ad.asOf) &&
+      !pauseOwned(steps, w.index) &&
+      keptKm100(kept, ad.factKm) + planned100(rest) >
+        10 * to10(w.targetKm) + to100(P.tolerance.plannedKm)
+    ) {
+      const m = mixedRest(kept, rest, to10(w.targetKm), pw(w), ad.factKm);
+      if (m.over && same(m.days, rest))
+        warn(
+          'MIXED_WEEK_OVER',
+          `Planirano ${(keptKm100(kept, ad.factKm) + planned100(rest)) / 100} km > cilj ${w.targetKm} km: zaštićeni dani (urađeno/zaključano/prošlost) i najmanji preostali dani ne staju u cilj (pouka 37, 14); preporuka: preostale dane trčite lagano, a ako umor traje, preskočite lagan dan.`,
+          w.index
+        );
+      else
+        err(
+          'MIXED_OVER_TARGET',
+          `Planirano ${(keptKm100(kept, ad.factKm) + planned100(rest)) / 100} km > cilj ${w.targetKm} km u mešovitoj nedelji — preostali dani nisu na ostatku ${m.remainder100 / 100} km (pouka 37).`,
+          w.index
+        );
+    }
     // Segment 04: mešovita nedelja — samo dani; nedelja sa danima bola/odmora (A4, pouka 25): planirano ≤ cilj
     // (manje = upozorenje).
     if (!checked(w)) continue;

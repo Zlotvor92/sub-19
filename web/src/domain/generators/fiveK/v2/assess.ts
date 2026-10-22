@@ -66,6 +66,25 @@ export function coveredDays(c: FactsCoverage | null, from: number, to: number): 
   return c !== null && c.complete && mustDay(c.from) <= from && mustDay(c.to) >= to;
 }
 
+/**
+ * 2.10.1 (MASTER pouka 37, dopuna 5K-08i) — km zaštićenog dana po ČINJENICAMA, JEDINO mesto (konstruktor ga prima kroz
+ * Written.factKm, validator čita zbir u PlanWeek.protectedKm): dan u eksplicitnoj pauzi = 0; dan sa zapisom = zbir km
+ * urađenih zapisa (neurađen = 0); poznat dan bez zapisa (potpuna pokrivenost, Odluka 3) = 0; inače (asOf bez zapisa i
+ * pokrivenosti, zaključan budući dan) null = planirani km. Neodrađen dan ne „jede" cilj nedelje.
+ */
+export function factKmOf(facts: CheckedFacts, asOf: IsoDate): (d: PlanDay) => number | null {
+  const t = mustDay(asOf);
+  return (d) => {
+    const n = mustDay(d.date);
+    if (n > t) return null;
+    if (facts.breaks.some((b) => mustDay(b.from) <= n && n <= mustDay(b.to))) return 0;
+    const recs = facts.workouts.filter((x) => (x.dayId ?? x.date) === d.date);
+    if (recs.length > 0)
+      return Math.round(recs.reduce((a, x) => a + (x.completed ? x.km : 0), 0) * 100) / 100;
+    return coveredDays(facts.coverage, n, n) ? 0 : null;
+  };
+}
+
 /** Provera oblika činjenica (sve greške odjednom). `days` = datumi dana plana (dayId). */
 export function checkFacts(
   raw: unknown,

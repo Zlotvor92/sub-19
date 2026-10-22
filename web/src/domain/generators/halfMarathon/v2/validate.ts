@@ -119,6 +119,8 @@ import {
   SECOND_EASY_NOTE,
   secondQualityEasy,
   sharpenerAllowed,
+  keptSum100,
+  mixedMin100,
   sharpenerDate,
   taperDayLimit
 } from './week.ts';
@@ -240,7 +242,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   /** Pouka 4 / stalni uslov 4 (HM-07b): zaštićen dan je činjenica, ne odluka generatora — zaključan (A11) ili upisan
       (datum ≤ poslednji asOf: urađen, propušten, ručno izmenjen; pouka 29). Provere po danu ga preskaču kao LIMITS
       (npr. zaključan dan kvaliteta posle novog rezultata nosi stari tempo, A1). */
-  const locked = new Set(ad?.lockedDayIds ?? []);
+  const locked = new Set([...(ad?.lockedDayIds ?? []), ...(ad?.doneDayIds ?? [])]);
   const lastAsOf = steps.length > 0 ? mustDay(steps[steps.length - 1]!.asOf) : null;
   const guarded = (d: { date: string }): boolean =>
     locked.has(d.date) || (lastAsOf !== null && mustDay(d.date) <= lastAsOf);
@@ -551,6 +553,34 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       (w.limits?.rest ?? []).length > 0;
     if (w.days.filter((d) => d.countsToWeek).length === 0 && !raceOnly)
       err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
+    // Pouka 37: mešovita nedelja (deo dana zaštićen) — cilj važi za celu nedelju: planirano ≤ cilj, ili
+    // upozorenje kad ni minimum preostalih dana ne staje u ostatak (week.mixedMin100, ista funkcija kao
+    // konstruktor week.remainderWeek). Zaštićeni dani po činjenicama (week.keptSum100, plan.adaptation.factKm).
+    // Trkačka nedelja ima svoje pravilo (pouka 5/30).
+    const free = w.days.filter((d) => !guarded(d));
+    const kept = w.days.filter(guarded);
+    const factKm = ad?.factKm ?? {};
+    const freeSum100 = free.reduce((a, d) => a + (d.countsToWeek ? to100(d.workout.km) : 0), 0);
+    if (
+      !checked(w) &&
+      w.phase !== 'race' &&
+      free.length > 0 &&
+      keptSum100(kept, factKm) + freeSum100 > to100(w.targetKm) + to100(P.tolerance.plannedKm)
+    ) {
+      const min100 = mixedMin100(kept, free, factKm);
+      if (min100 > to100(w.targetKm) + to100(P.tolerance.plannedKm))
+        warn(
+          'MIXED_WEEK_OVER',
+          `Planirano ${w.plannedKm} km > cilj ${w.targetKm} km: zaštićeni dani (≤ asOf, urađeni, zaključani; po činjenicama) i najmanji preostali dani (${(min100 / 100).toFixed(2)} km) ne staju u cilj (pouka 37, pouka 14).`,
+          w.index
+        );
+      else
+        err(
+          'MIXED_OVER_TARGET',
+          `Planirano ${w.plannedKm} km > cilj ${w.targetKm} km, a preostali dani staju u ostatak cilja (pouka 37).`,
+          w.index
+        );
+    }
     // Segment 04: mešovita nedelja — samo dani; nedelja sa danima bola/odmora (A4, pouka 25): planirano ≤
     // cilj (upozorenje).
     if (!checked(w)) continue;
