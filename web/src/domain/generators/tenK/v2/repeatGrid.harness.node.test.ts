@@ -9,12 +9,16 @@
    - zaštićeni dani (kao MAR-07b): nov rezultat kraj ned k + zaključan ili urađen Q1 ned k + 1 → 0 odbijanja, dan
      bajt-isti, doneDayIds;
    - nalaz 3 (pouke 18 i 23): isti bol 7/8 kraj ned N − 3 i N − 2 ponovo asOf + 1 … + 7 → 0 odbijanja, isti plan;
-   - 06g (pouke 23 i 30): bol 7/8 svakog dana ned N − 3 … N − 1, pa NOV zapis bola asOf + 1 … + 7 → 0 odbijanja. */
+   - 06g (pouke 23 i 30): bol 7/8 svakog dana ned N − 3 … N − 1, pa NOV zapis bola asOf + 1 … + 7 → 0 odbijanja;
+   - 06h (pouke 23, 34, 36): asOf = prvi dan plana, svi scenariji mreže E i rezultat → 0 odbijanja, adaptInvariants
+     prazno, regresija prema b8fcf22 (prihvaćeni bajt-isti; ranije odbijen samo umor), umor = start − 1 osim dana 1. */
 
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { FULL, part } from '@/test/level';
 import { adaptBanner, adaptTenKV2 } from './adapt.ts';
+import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays } from './dates.ts';
 import { earlyPlan } from './earlyGrid.harness.node.test.ts';
 import { GRID_TIMEOUT, missingParts } from './level.harness.node.test.ts';
@@ -25,7 +29,10 @@ import {
   earlyGridBases,
   type EarlyBase,
   factsOf,
-  painFacts
+  painFacts,
+  planHash06c,
+  START0_SCENARIOS,
+  start0AsOf
 } from './testInputs.ts';
 import type { TenKV2Plan } from './types.ts';
 
@@ -38,8 +45,14 @@ const STRIDE = {
   monday: { full: 4, fast: 60 },
   locked: { full: 4, fast: 60 },
   pain: { full: 4, fast: 60 },
-  painNew: { full: 40, fast: 300 }
+  painNew: { full: 40, fast: 300 },
+  start0: { full: 2, fast: 60 }
 } as const;
+
+/** 06h: heševi mreže „prvi dan plana" na b8fcf22 (svi planovi mreže E × START0_SCENARIOS, redom; 0 = odbijeno). */
+const START0 = JSON.parse(
+  readFileSync(`${HERE}segment06h.startday-hashes-b8fcf22.json`, 'utf8')
+) as { against: string; scenarios: string[]; hashes: number[] };
 type Net = keyof typeof STRIDE;
 
 /** Planovi mreže `net` u delu `partIndex` (brz nivo: ceo brz uzorak u delu 1). */
@@ -82,7 +95,8 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
               base,
               key: `${base.id}/start-${d}/fatigue`,
               asOf: addDays(p0.input.startDate, -d)
-            }))
+            })),
+            { base, key: `${base.id}/start+0/fatigue`, asOf: start0AsOf(p0) }
           ];
         });
         const bad: string[] = [];
@@ -262,6 +276,59 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             }
         }
         expect(n).toBeGreaterThan(FULL ? 1000 : 300);
+        expect(bad.slice(0, 20)).toEqual([]);
+      },
+      GRID_TIMEOUT
+    );
+
+    it(
+      '06h (pouke 23, 34, 36): asOf = prvi dan plana, svi scenariji mreže E i rezultat → 0 odbijanja, adaptInvariants prazno, prema b8fcf22 menja se samo ranije odbijen umor; umor = start − 1 osim dana 1',
+      () => {
+        expect([START0.against, START0.scenarios]).toEqual(['b8fcf22', [...START0_SCENARIOS]]);
+        expect(START0.hashes.length).toBe(earlyGridBases().length * START0_SCENARIOS.length);
+        const idx = new Map(earlyGridBases().map((b, i) => [b.id, i]));
+        const bad: string[] = [];
+        let [n, fixed] = [0, 0];
+        for (const b of basesOf('start0', partIndex)) {
+          const p0 = earlyPlan(b);
+          const at = start0AsOf(p0);
+          // Mreža proverava sama sebe: asOf je prvi dan plana (zapisi umora pre starta).
+          if (at !== p0.weeks[0]!.startDate || at !== p0.input.startDate)
+            bad.push(`${b.id}: asOf ${at} nije prvi dan plana`);
+          for (const [j, s] of START0_SCENARIOS.entries()) {
+            const key = `${b.id}/start+0/${s}`;
+            const facts = earlyFacts(p0, s, at);
+            const r = adaptTenKV2(p0, facts, at);
+            n++;
+            if (!r.ok) {
+              bad.push(`${key}: ${r.reasons[0]!.message.slice(0, 120)}`);
+              continue;
+            }
+            for (const v of adaptInvariants(p0, r.plan, at, facts)) bad.push(`${key}: ${v}`);
+            const old = START0.hashes[idx.get(b.id)! * START0_SCENARIOS.length + j]!;
+            if (old === 0) {
+              fixed++;
+              if (s !== 'fatigue') bad.push(`${key}: na b8fcf22 odbijen, a nije umor`);
+            } else if (old !== planHash06c(r)) bad.push(`${key}: promenjen prema b8fcf22`);
+            if (s !== 'fatigue') continue;
+            // Pouke 34 i 36: ista nedelja rasterećenja kao start − 1; dan 1 (≤ asOf) upisan kakav jeste.
+            const before = addDays(at, -1);
+            const r0 = adaptTenKV2(p0, earlyFacts(p0, s, before), before);
+            if (!r0.ok) bad.push(`${b.id}/start-1/fatigue: odbijeno`);
+            else if (
+              !r.plan.weeks[0]!.deload ||
+              JSON.stringify(r.plan.weeks.slice(1)) !== JSON.stringify(r0.plan.weeks.slice(1)) ||
+              JSON.stringify(r.plan.weeks[0]!.days.filter((d) => d.date !== at)) !==
+                JSON.stringify(r0.plan.weeks[0]!.days.filter((d) => d.date !== at)) ||
+              JSON.stringify(r.plan.weeks[0]!.days.filter((d) => d.date === at)) !==
+                JSON.stringify(p0.weeks[0]!.days.filter((d) => d.date === at))
+            )
+              bad.push(`${key}: nije rasterećenje ned 1 kao start − 1 uz upisan dan 1`);
+          }
+        }
+        expect(n).toBeGreaterThan(FULL ? 600 : 300);
+        // Na b8fcf22 umor sa asOf = start odbijen u svakom planu (organizator: 1245/1245).
+        expect(fixed).toBe(n / START0_SCENARIOS.length);
         expect(bad.slice(0, 20)).toEqual([]);
       },
       GRID_TIMEOUT
