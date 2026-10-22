@@ -370,6 +370,14 @@ const DECISIONS: readonly Decision[] = [
     place: 'steps.ts framesFor (konstruktor i validator)',
     rationale:
       'Organizator (fatigue-monday.ts): umor, asOf ponedeljak nedelje testa (test na Q1 = asOf, zaštićen) → rasterećenje tekuće nedelje, okvir je test stavio na T slot posle asOf i premestio ga u sledeću nedelju izgradnje → dva testa → TEST (A13, M17) odbija adaptaciju. Strana koja odstupa: konstruktor (validator sudi tačno: najviše jedan test). Nije trenerska dilema: zaštićen dan se ne menja (A11), a drugi test validator ne dozvoljava. Merenje (a869e21 → 07c): plan po osećaju i početnik (10 080) × umor asOf svaki dan nedelja 1 … N − 3 (1 084 860 tokova) 540 → 0 odbijanja (svih 540: 5 dana raspored C, Q1 = ponedeljak = dan testa = asOf); fatigue-monday.ts 1/303 → 0; regresija a04/pre/early/wide (323 314 tokova) 0 promenjenih. Trajna mreža: testDayFlows (svi planovi po osećaju × dan testa ± 1). Verzija marathon-v2.4.2.'
+  },
+  {
+    id: 'A11c',
+    rule: 'Pouka 37 (MAR-08, uz dopune organizatora iz HM-08 i 5K-08i): mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen; ne trkačka — pouka 30; ne nedelja ostatka pauze — ona ima svog vlasnika, assess pauseRemainder) — cilj važi za CELU nedelju. Preostali dani se sastavljaju na ostatak = cilj − zbir zaštićenih dana, SAMO NANIŽE (nijedan dan duži nego u nedelji sastavljenoj bez zaštićenih; manjak se ne nadoknađuje). Zbir zaštićenih dana po ČINJENICAMA: dan ≤ asOf u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km (neodrađen 0), ostali (bez zapisa, zaključani, urađeni posle asOf) planirani km; plan nosi razliku u adaptation.factKm. Redosled: lagani do minimuma 5 km (izjednačavaju se, ≤ preostali dugi), pa otpada kvalitet (Q2, pa Q1 — pouka 35; dan postaje lagan; MP najniži nivo 2 × 3000 m ostaje, kao pouka 32) SAMO ako time ostatak staje; dugi se ne skraćuje (kaskada reference poslednjeg dugog). Ne staje → kvalitet ostaje, planirano > cilj uz upozorenje MIXED_WEEK_OVER (pouka 14), ne odbijanje. Jedno mesto odluke (mixed.mixedRest, mixed.factKmOf, mixed.keptKm100); validator čita iste funkcije (MIXED_WEEK_OVER, inače MIXED_OVER_TARGET).',
+    place:
+      'mixed.ts; generate.ts (konstruktor, stanje doze iz upisanih dana); adapt.ts (factKm); written.ts (mešovita i po činjenicama); validate.ts; adaptInvariants.ts',
+    rationale:
+      'Organizator (pouka 37, mixed-deload.ts: tekuće rasterećenje posle umora, asOf prvi dan ned k ∈ {2, 4}, svaki 97. plan): maraton planirano > cilj 426/613 (+4,24 km prosek, max 11,91; d3-12w-30km-v30-A-sat ned 3: cilj 25,4 = dugi 16,8 upisan + lagan 7,6 + T 5,12 = 29,52). Posle: 78/613 (+2,56, max 6,05), svih 78 sa MIXED_WEEK_OVER (zaštićeni dani + najmanji preostali ne staju; primer 16,8 + 5 + T 5,12 = 26,92), 0 odbijanja. Rana mreža (45 101 tokova): 599 nedelja sa skraćenim ostatkom — 443 staje (116 uz odbacivanje kvaliteta), 156 ne staje i kvalitet ostaje. Nedelja ostatka pauze: 14 004 toka sa zaštićenim danima, 0 bi bilo dodatno skraćeno (nema sudara). Regresija prema 46dff18: generator bajt-isti; promenjeni samo tokovi sa mešovitom nedeljom iznad cilja ili sa činjenicom ≠ plan (adaptation.factKm); promene ciljeva samo preko stanja doze (kvalitet koji otpada ne napreduje, M6) i trkačke nedelje (lagan ≤ lagan tapera, M8). Verzija marathon-v2.5.0.'
   }
 ];
 
@@ -380,7 +388,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.4.2',
+  version: 'marathon-v2.5.0',
 
   /** M1 (dani i obim: M15). */
   input: {

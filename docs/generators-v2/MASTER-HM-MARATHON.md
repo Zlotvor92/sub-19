@@ -154,7 +154,8 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     nedelja, vrh do −22 km — odbačeno); kad ni tada ne staje → planirano > cilj uz upozorenje (pouka 14), ne
     odbijanje. Dugi ≥ lagan važi među preostalim danima (zaštićeni su činjenice). Trkačka nedelja je izuzeta (pouka 30).
     Zbir zaštićenih dana se računa po ČINJENICAMA (5K-08i): dan u prijavljenoj pauzi = 0, dan sa upisanim treningom =
-    upisani km (neurađen = 0), ostali zaštićeni (asOf bez zapisa, zaključani, urađeni posle asOf) = planirani km —
+    upisani km (neurađen = 0), dan POZNAT iz potpune pokrivenosti bez zapisa = 0 (nije trčan — činjenica; 5K-08i-b,
+    važi za sve 4), ostali zaštićeni (asOf bez zapisa i bez pokrivenosti, zaključani, urađeni posle asOf) = planirani km —
     neodrađen dan ne „jede" cilj (5K: pauza/manjak stiskali preostale dane na minimum u 10 362/12 634 tokova). Kad
     pravilo pauze određuje ostatak nedelje pauze, ono je vlasnik te nedelje. Kvalitet otpada SAMO ako time ostatak
     staje u cilj; ako ni bez kvaliteta ne staje, kvalitet ostaje (MAR-08: otpadanje bez dobitka, npr. 0,12 km, gubi

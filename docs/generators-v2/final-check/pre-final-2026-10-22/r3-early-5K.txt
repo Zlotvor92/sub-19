@@ -1,0 +1,25 @@
+{
+ "dist": "5K",
+ "step": {
+  "R": 29,
+  "F": 19,
+  "B": 11
+ },
+ "sampled": 194,
+ "excludedPermanent": 0,
+ "plans": 194,
+ "generatorRejected": 0,
+ "flows": 75456,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "noneMismatch": 0,
+ "noneEx": [],
+ "inv": {},
+ "invEx": {},
+ "byScenario": {},
+ "byAsOf": {},
+ "seconds": 314.42
+}

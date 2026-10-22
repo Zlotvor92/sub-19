@@ -86,7 +86,7 @@ for (const b of bases) {
       }
       if (s === "chain") {
         const at2 = addDays(at, 7);
-        if (at2 < p.input.raceDate) flow(p1, d.chain2(p, at2), at2, `${k}/2`, "chain2", tag);
+        if (at2 < p.input.raceDate) flow(p1, d.chain2(p1, at2), at2, `${k}/2`, "chain2", tag);
       }
     }
 }
