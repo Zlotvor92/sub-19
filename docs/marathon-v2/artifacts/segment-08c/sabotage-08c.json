@@ -1,0 +1,9 @@
+[
+  {
+    "name": "08c mešovite nedelje ne ulaze u najveću dosadašnju dozu (stara strana)",
+    "file": "src/domain/generators/marathon/v2/adaptInvariants.ts",
+    "find": "    if (m && isBuild(w) && !w.deload)\n",
+    "replace": "    if (m && isBuild(w) && !w.deload && (false as boolean))\n",
+    "tests": ["src/domain/generators/marathon/v2/segment08c.node.test.ts"]
+  }
+]

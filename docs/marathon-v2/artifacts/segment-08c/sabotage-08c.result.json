@@ -1,0 +1,39 @@
+{
+ "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-08c/sabotage-08c.json",
+ "head": "78292d4",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 2,
+ "hashBefore": "f45ebbe8cf26335cdae297fdaa64d23324191d0b7df46ba304274deaa640f784",
+ "hashAfter": "f45ebbe8cf26335cdae297fdaa64d23324191d0b7df46ba304274deaa640f784",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08c mešovite nedelje ne ulaze u najveću dosadašnju dozu (stara strana)",
+   "files": [
+    "src/domain/generators/marathon/v2/adaptInvariants.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08c.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08c.node.test.ts",
+    "test": "mešovite nedelje ulaze u najveću dosadašnju dozu: ograničena ned 5 (T 2400 posle upisanih 3000/4000) nije rast",
+    "message": "AssertionError: expected [ 'ograničenje: doza raste ned 5' ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "f45ebbe8cf26335cdae297fdaa64d23324191d0b7df46ba304274deaa640f784",
+   "hashSabotaged": "4b16f63d3d35adc9e6d062c62fd793156a8b87fe49263126821e900a4f14b7bd",
+   "hashAfter": "f45ebbe8cf26335cdae297fdaa64d23324191d0b7df46ba304274deaa640f784",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  }
+ ]
+}

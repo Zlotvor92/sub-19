@@ -179,6 +179,13 @@ export function adaptInvariants(
       !after.warnings.some((x) => x.rule === 'MIXED_WEEK_OVER' && x.week === w.index)
     )
       bad.push(`mešovita > cilj ned ${w.index}`);
+    // MAR-08c (pouka 29): mešovita nedelja se ne sudi, ali njene upisane doze ulaze u „najveću dosadašnju dozu" (isto
+    // kao writtenPicks u konstruktoru i { state } u validatoru) — inače se ograničena nedelja poredi sa starijom dozom.
+    if (m && isBuild(w) && !w.deload)
+      for (const d of qualityOf(w)) {
+        const z = d.workout.dose!.zone;
+        maxDose[z] = Math.max(maxDose[z] ?? 0, d.workout.dose!.doseM);
+      }
     if (m) continue;
     const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
     // Planirano = cilj (pouka 25: uz dane bola/odmora ≤ cilj).
