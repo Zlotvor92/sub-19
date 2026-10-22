@@ -22,6 +22,7 @@ import { advance, INITIAL_QUALITY, type QualityState, type WeekPicks } from './q
 import {
   basePaces,
   basisAt,
+  deloadRefLong10,
   framesFor,
   initialState,
   jumpRecentKm,
@@ -74,6 +75,11 @@ function recentLongNote(long10: number, ctx: WeekContext): string {
   const at = long10 === cap10 && long10 === week1LongCap10(ctx.paces, r, ctx.rule.longMaxSec);
   return `Dugi nedelje 1 ${km} km ≤ ${fmtKm(cap10 / 10)} km (skorašnji najduži ${fmtKm(r)} km, pouka 28)${at ? ' — na granici' : ''}.`;
 }
+
+/** Pouka 38 / K1: zaključani i urađeni datumi (zaštićeni posle asOf) — isti skup kao validator
+    (adaptation.lockedDayIds ∪ doneDayIds). */
+const guardedOf = (prior: Written | undefined): ReadonlySet<string> =>
+  new Set([...(prior?.lockedDayIds ?? []), ...(prior?.doneDayIds ?? [])]);
 
 const infeasible = (message: string, week?: number): GenerateResult => ({
   ok: false,
@@ -150,7 +156,7 @@ export function construct(
   if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima H5.');
   const adapted = steps.length > 0;
   const frames = adapted
-    ? framesFor(base, pattern, input.runDays, input.raceDate, pace, steps)
+    ? framesFor(base, pattern, input.runDays, input.raceDate, pace, steps, null, guardedOf(prior))
     : base;
   const ctx0: WeekContext = {
     input,
@@ -231,7 +237,16 @@ export function construct(
     const longest10 = longestLong10(written);
     const roll10 = rollingLongCap10(frame.index, longsOf10(written), recentJ);
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode, roll10);
+      buildWeek(
+        ctx,
+        frame,
+        t10,
+        quality,
+        frame.deload && lastLong10 === null ? deloadRefLong10(steps, frame.index) : lastLong10,
+        longest10,
+        mode,
+        roll10
+      );
     // HI2: druga pretraga ('relax') samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja.
     // A9: pa jedan kvalitet doze rasterećenja, pa bez kvaliteta; ograničenje kvaliteta nedelje (A3/A4)
     // preskače prolaze koje ne dozvoljava.

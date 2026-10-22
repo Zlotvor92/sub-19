@@ -22,7 +22,7 @@ import type {
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { to10 } from './volume.ts';
-import { type Written, writtenWeeks } from './written.ts';
+import { factKmOf, type Written, writtenWeeks } from './written.ts';
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): AdaptResult => ({
@@ -139,7 +139,8 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
     asOf: t,
     at,
     lockedDayIds: facts.lockedDayIds,
-    doneDayIds: doneAfter
+    doneDayIds: doneAfter,
+    factKm: factKmOf(facts.workouts, facts.breaks, facts.coverage)
   };
 
   // (2) Isti konstruktor kao generate.
@@ -175,7 +176,16 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
     chk.pace.kind === 'feel' && chk.rule.feelTest
   );
   if (base)
-    framesFor(base, chk.pattern, chk.input.runDays, chk.input.raceDate, chk.pace, steps, dropped);
+    framesFor(
+      base,
+      chk.pattern,
+      chk.input.runDays,
+      chk.input.raceDate,
+      chk.pace,
+      steps,
+      dropped,
+      new Set([...facts.lockedDayIds, ...doneAfter])
+    );
   const own = [...dropped].filter(([, k]) => k === steps.length - 1).map(([w]) => w);
   const byTarget = (w: number): boolean => targetReducedWeek(as.step) === w - 1;
   const a17 = (x: AdaptReason): string =>

@@ -1,0 +1,37 @@
+{
+ "n": {
+  "total": 114012,
+  "changed:p37": 8743,
+  "changed:x": 4682,
+  "p37:otherWeeksChanged": 772,
+  "p37:targetsChanged": 163
+ },
+ "maxTgtDrop": 19.4,
+ "ex": {
+  "total": [
+   "d3-10w-35km-v30-A-sat/pre1/none",
+   "d3-10w-35km-v30-A-sat/pre1/done100",
+   "d3-10w-35km-v30-A-sat/pre1/under50"
+  ],
+  "changed:p37": [
+   "d3-10w-35km-v30-A-sat/w1wed/pause10",
+   "d3-10w-35km-v30-A-sat/w1wed/pause35",
+   "d3-10w-35km-v30-A-sat/w1wed/chain"
+  ],
+  "changed:x": [
+   "d3-13w-40km-v30-C-sat/w1wed/pause10",
+   "d3-13w-40km-v30-C-sat/w1wed/chain",
+   "d3-13w-40km-v30-C-sat/w1wed/chain/2"
+  ],
+  "p37:otherWeeksChanged": [
+   "d3-15w-30km-v35-A-sat/w4wed/chain/2 mo 5 chg 4",
+   "d3-15w-30km-v35-A-sat/w8wed/chain/2 mo 9 chg 8",
+   "d3-18w-35km-v35-C-sat/w1wed/chain/2 mo 2 chg 1"
+  ],
+  "p37:targetsChanged": [
+   "d3-20w-25km-v40-A-sat/w16wed/chain/2 18:30.8→24.6 19:21.6→17.2 20:10.9→9.4",
+   "d4-12w-55km-v45-A-sat/w8wed/chain/2 10:61.1→48.9 11:42.8→34.2 12:22.3→18.3",
+   "d4-15w-30km-v45-C-sat/w8wed/chain/2 10:33.2→26.6 11:36.5→29.3 12:29.2→23.4 13:38.7→32.2 14:27.1→22.5 15:16.6→13.5"
+  ]
+ }
+}

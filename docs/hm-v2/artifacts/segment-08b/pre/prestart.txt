@@ -1,0 +1,8 @@
+HM 35224 {
+  'pain8→pain8: PLAN_VIOLATES_POLICY': 61,
+  'pain8→fatigue: WEEK_INFEASIBLE': 116
+} [
+  'd3-10w-25km-v30-A-sat pain8@2026-10-31 → pain8@2026-11-04: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).',
+  'd3-10w-25km-v30-A-sat pain8@2026-10-31 → fatigue@2026-11-04: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.',
+  'd3-10w-25km-v30-A-sat pain8@2026-10-31 → fatigue@2026-11-07: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.'
+]

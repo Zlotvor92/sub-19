@@ -1,0 +1,148 @@
+{
+  "flows": 279545,
+  "changed": 11353,
+  "rejOld": 390,
+  "rejNew": 390,
+  "by": {
+    "none": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "done100": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "under50": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "over120": {
+      "flows": 15333,
+      "changed": 7553,
+      "p37": 7553,
+      "over": 1390
+    },
+    "pause10": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "pause20": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "pause35": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "pain5": {
+      "flows": 15333,
+      "changed": 26,
+      "p37": 26,
+      "over": 20
+    },
+    "pain8": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "fatigue": {
+      "flows": 34217,
+      "changed": 3774,
+      "p37": 3774,
+      "over": 597
+    },
+    "faster": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "slower": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "test5k": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "incomplete": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "locked": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "chain": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    },
+    "painPause": {
+      "flows": 15333,
+      "changed": 0,
+      "p37": 0,
+      "over": 0
+    }
+  },
+  "bad": {
+    "noP37": {
+      "n": 0,
+      "ex": []
+    },
+    "prefix": {
+      "n": 0,
+      "ex": []
+    },
+    "target": {
+      "n": 612,
+      "ex": [
+        "d3-8w-20km-v30-A-sat|2026-12-16|over120 20,21.2,22.5,18,23.9,25.3,19,8.7 → 20,21.2,22.5,18,23.9,25.3,19,6",
+        "d4-9w-45km-v55-B-sat|2026-12-20|over120 45,47.7,50.6,40.5,53.6,56.6,59.6,44.7,22.1 → 45,47.7,50.6,40.5,53.6,56.6,59.6,44.7,20.8",
+        "d4-9w-45km-v55-B-sat|2026-12-23|over120 45,47.7,50.6,40.5,53.6,56.6,59.6,44.7,22.1 → 45,47.7,50.6,40.5,53.6,56.6,59.6,44.7,18.9",
+        "d4-10w-45km-v40-C-sat|2026-11-04|over120 45,47.7,50.2,50.8,40.6,51.2,53,54,40.5,19.4 → 45,47.7,49.7,50.2,40.2,50.7,52.4,53.5,40.1,19.4",
+        "d4-10w-45km-v40-C-sat|2026-11-11|over120 45,47.7,47.7,50.6,40.5,51.2,53,54,40.5,19.4 → 45,47.7,47.7,50.2,40.2,50.7,52.4,53.5,40.1,19.4"
+      ]
+    },
+    "rejectedNew": {
+      "n": 390,
+      "ex": [
+        "d3-8w-20km-v30-A-sat|2026-12-19|chain ADAPT_AS_OF_INVALID",
+        "d3-9w-25km-v55-B-sat|2026-12-26|chain ADAPT_AS_OF_INVALID",
+        "d3-10w-35km-v40-C-sat|2027-01-02|chain ADAPT_AS_OF_INVALID",
+        "d3-12w-20km-v30-A-sat|2027-01-16|chain ADAPT_AS_OF_INVALID",
+        "d3-13w-25km-v55-B-sat|2027-01-23|chain ADAPT_AS_OF_INVALID"
+      ]
+    },
+    "missing": {
+      "n": 0,
+      "ex": []
+    },
+    "p37Unchanged": {
+      "n": 0,
+      "ex": []
+    }
+  }
+}

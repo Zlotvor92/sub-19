@@ -1,0 +1,33 @@
+=== early.ts 5K 193 97 29
+{
+ "dist": "5K",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 46,
+ "excludedPermanent": 0,
+ "plans": 46,
+ "generatorRejected": 0,
+ "flows": 18252,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "noneMismatch": 0,
+ "noneEx": [],
+ "inv": {},
+ "invEx": {},
+ "byScenario": {},
+ "byAsOf": {},
+ "seconds": 88.718
+}
+(t=89s)
+=== locked-result.ts 5K
+5K { tokova: 108, odbijeno: 0 } []
+(t=4s)
+=== start-day.ts 5K 25
+{"dist":"5K","stride":25,"plans":151,"flows":5134,"inv":0,"rejected":{},"examples":[]}
+(t=29s)

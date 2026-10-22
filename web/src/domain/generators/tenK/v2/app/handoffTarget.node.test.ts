@@ -321,7 +321,7 @@ describe('3d-10K: format i izbor', () => {
       expect(r.error ?? '', s.name).not.toBe(select.V2_TARGET_NOT_READY);
     }
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 10k-v2.7.0, KNOWN_VERSIONS ∪ 10k-v2.6.2`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 10k-v2.8.0 (06i), KNOWN_VERSIONS ∪ 10k-v2.6.2`, () => {
     const r = select.generateTenKV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 10 - 1),
@@ -333,7 +333,7 @@ describe('3d-10K: format i izbor', () => {
     } as never);
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('10k-v2.7.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('10k-v2.8.0');
     expect(r.plan.weeks[0]!.days[0]!.id).toBe('g1d1');
     expect(
       select.TEN_K_V2_GENERATOR.planPolicy({

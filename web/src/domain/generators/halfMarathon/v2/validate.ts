@@ -65,6 +65,7 @@ import {
 } from './quality.ts';
 import { adjacentDays } from './schedule.ts';
 import {
+  deloadRefLong10,
   A17_MAX_RUN,
   appliedRestarts,
   basisAt,
@@ -260,7 +261,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const droppedD = new Map<number, number>();
   const frames =
     pace && base0 && base0.length === N
-      ? framesFor(base0, pat, input.runDays, input.raceDate, pace, steps, droppedD)
+      ? framesFor(base0, pat, input.runDays, input.raceDate, pace, steps, droppedD, locked)
       : null;
   const restarts = pace && base0 ? appliedRestarts(base0, steps) : new Set<number>();
   /** A3: nov start počinje progresiju doze iznova i kad faze ostaju. */
@@ -469,10 +470,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   if (pace) {
     // Segment 04 (A13): najviše jedan test, samo plan po osećaju koji nije početnik, u nedelji izgradnje po
     // osećaju; oznaka nedelje ⇔ dan testa (mešovite nedelje: samo dan).
-    const tw0 = tests[0]?.w.index;
+    // Pouka 38 / K1: zaštićen dan testa (zaključan, urađen, ≤ asOf) je činjenica — broji se, a mesto (osnova tempa,
+    // faza) se sudi samo nezaštićenom testu (kao HM07b-GUARD).
+    const judged = tests.filter((x) => !guarded(x.d));
+    const tw0 = judged[0]?.w.index;
     if (
       tests.length > 1 ||
-      (tests.length === 1 && (pace.kind !== 'feel' || !rule.feelTest)) ||
+      (judged.length === 1 && (pace.kind !== 'feel' || !rule.feelTest)) ||
       (tw0 !== undefined && (!feelW({ index: tw0 }) || !isBuildPhase(weeks[tw0 - 1]!.phase)))
     )
       err('TEST', 'Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).');
@@ -551,8 +555,23 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       w.days.length === 1 &&
       w.days[0]!.role === 'race' &&
       (w.limits?.rest ?? []).length > 0;
-    if (w.days.filter((d) => d.countsToWeek).length === 0 && !raceOnly)
-      err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
+    // K3 (HM-08b, kao 10K-06g i N1): svaki dan trčanja nedelje je dan odmora koraka (bol, A4) — nedelja bez treninga
+    // nije degenerisan plan nego odmor: upozorenje WEEK_ALL_REST, ne EMPTY_WEEK.
+    const allRest =
+      restOf(w).size > 0 &&
+      input.runDays.every((wd) => {
+        const d = dateIn(w, wd);
+        return restOf(w).has(d) || w.days.some((x) => x.date === d && x.role === 'race');
+      });
+    if (w.days.filter((d) => d.countsToWeek).length === 0 && !raceOnly) {
+      if (allRest)
+        warn(
+          'WEEK_ALL_REST',
+          'Nedelja bez treninga — svi dani trčanja su odmor (bol, A4).',
+          w.index
+        );
+      else err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
+    }
     // Pouka 37: mešovita nedelja (deo dana zaštićen) — cilj važi za celu nedelju: planirano ≤ cilj, ili
     // upozorenje kad ni minimum preostalih dana ne staje u ostatak (week.mixedMin100, ista funkcija kao
     // konstruktor week.remainderWeek). Zaštićeni dani po činjenicama (week.keptSum100, plan.adaptation.factKm).
@@ -1254,6 +1273,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     const rest = restOf(w);
     const capLong = limitLongOf(w, pat, pk);
     const hurtLong = long !== undefined && painOf(w).has(long.date);
+    // K3: bez upisanog dugog izgradnje — dugi reference rasterećenja iz koraka (ista funkcija kao konstruktor).
+    if (w.deload && lastLong10 === null) lastLong10 = deloadRefLong10(steps, w.index);
     if (w.deload && lastLong10 !== null && checked(w)) {
       const roll10 = rollingLongCap10(w.index, longsAll10, recentJ);
       // H11 na dozi po pravilu; drugi član plafona zone (pouka 32) — ista funkcija kao konstruktor.

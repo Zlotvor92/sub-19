@@ -1,0 +1,137 @@
+[
+  {
+    "name": "06i-a ostatak se ne računa (stara strana: preostali dani kao da je cela nedelja slobodna)",
+    "file": "src/domain/generators/tenK/v2/generate.ts",
+    "find": "  if (!prior || av?.remainder.has(frame.index)) return w;",
+    "replace": "  if (prior || !prior || av?.remainder.has(frame.index)) return w;",
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-b ostatak i naviše (manjak se nadoknađuje)",
+    "edits": [
+      {
+        "file": "src/domain/generators/tenK/v2/week.ts",
+        "find": "  if (free.length === 0 || sumKm(free) <= R + P.tolerance.plannedKm + 1e-9) return null;",
+        "replace": "  if (free.length === 0 || Math.abs(sumKm(free) - R) <= P.tolerance.plannedKm + 1e-9) return null;"
+      },
+      {
+        "file": "src/domain/generators/tenK/v2/week.ts",
+        "find": "    const hi = easies.map((d, i) => Math.max(lo[i]!, Math.min(km10(d.workout.km), top10)));",
+        "replace": "    const hi = easies.map((d, i) => Math.max(lo[i]!, Math.min(km10(d.workout.km) + 200, top10)));"
+      }
+    ],
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-c neodrađen dan (i dan pauze) u zbiru zaštićenih po planu, ne po činjenicama",
+    "edits": [
+      {
+        "file": "src/domain/generators/tenK/v2/written.ts",
+        "find": "    if (breaks.some((b) => mustDay(b.from) <= t && t <= mustDay(b.to))) return 0;",
+        "replace": "    if (t < 0 && breaks.some((b) => mustDay(b.from) <= t && t <= mustDay(b.to))) return 0;"
+      },
+      {
+        "file": "src/domain/generators/tenK/v2/written.ts",
+        "find": "    if (recs.length > 0) return recs.reduce((a, x) => a + (x.completed ? x.km : 0), 0);",
+        "replace": "    if (recs.length > 0) return recs.reduce((a, x) => a + (x.completed ? x.km : d.workout.km), 0);"
+      }
+    ],
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-d validator ne čita istu funkciju (week.mixedFloorKm)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "        const floor = mixedFloorKm(free);",
+    "replace": "        const floor = mixedFloorKm(free) - 0.5;",
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-e trajna mreža bez mešovite nedelje (asOf kraj prethodne nedelje, bez zaključanog/urađenog dana)",
+    "edits": [
+      {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.harness.node.test.ts",
+        "find": "      const at = addDays(w.startDate, o);",
+        "replace": "      const at = addDays(w.startDate, -1 + 0 * o);"
+      },
+      {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.harness.node.test.ts",
+        "find": "    if (!q) continue;",
+        "replace": "    if (q || !q) continue;"
+      }
+    ],
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-f invarijanta trkačke nedelje bez izuzetka dana odmora bola (K2)",
+    "file": "src/domain/generators/tenK/v2/adaptInvariants.ts",
+    "find": "    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest && !painRest)",
+    "replace": "    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest && (painRest || !painRest))",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-g kvalitet otpada i kad ni bez njega ostatak ne staje (dopuna MAR-08)",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "    ? [qs]\n    : [qs, ...(qs.length === 2",
+    "replace": "    ? [[]]\n    : [qs, ...(qs.length === 2",
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-h K1: zaštićen test se premešta (protectedTest uvek false)",
+    "file": "src/domain/generators/tenK/v2/steps.ts",
+    "find": "  return testDate !== null && (mustDay(testDate) <= mustDay(asOf) || locked.has(testDate));",
+    "replace": "  return testDate === '' && (mustDay(testDate) <= mustDay(asOf) || locked.has(testDate));",
+    "tests": [
+      "src/domain/generators/tenK/v2/lockedTest.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-i K3: drugi umor posle umora pre starta pravi drugo rasterećenje",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "      ra === 1 && wk(1)?.deload === true && steps.some((x) => x.preStart && deloadWeekOf(x) === 1);",
+    "replace": "      ra === -1 && wk(1)?.deload === true && steps.some((x) => x.preStart && deloadWeekOf(x) === 1);",
+    "tests": [
+      "src/domain/generators/tenK/v2/prestartChain.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-j K3: rasterećenje bez prethodne izgradnje sa dugim bez reference nedelje 1 generatora",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    const ref = ok && (f === 1 || noLong) ? preStartRef() : null;",
+    "replace": "    const ref = ok && (f === 1 || (noLong && f < 0)) ? preStartRef() : null;",
+    "tests": [
+      "src/domain/generators/tenK/v2/prestartChain.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-k validator sudi zaštićenom testu po osnovi tempa (zaključan test pa nov rezultat)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "        !(tDay && protectedDay(tDay)) &&",
+    "replace": "        !(tDay && protectedDay(tDay) && false) &&",
+    "tests": [
+      "src/domain/generators/tenK/v2/lockedTest.node.test.ts"
+    ]
+  },
+  {
+    "name": "06i-l dan poznat iz potpune pokrivenosti bez zapisa po planu (ne 0)",
+    "file": "src/domain/generators/tenK/v2/written.ts",
+    "find": "    if (coverage?.complete && mustDay(coverage.from) <= t && t <= mustDay(coverage.to)) return 0;",
+    "replace": "    if (coverage?.complete && mustDay(coverage.from) <= t && t <= mustDay(coverage.to) && t < 0) return 0;",
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedGrid.node.test.ts"
+    ]
+  }
+]

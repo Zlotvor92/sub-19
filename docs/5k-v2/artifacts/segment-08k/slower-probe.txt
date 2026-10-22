@@ -1,0 +1,2 @@
+{   n: 11988,   rules: { R_REP: 220, QUALITY_REPEAT: 1 },   ex: {     R_REP: 'r-d4-6w-40km-v45-0 2026-11-08 v33: R ponavljanje 123 s > 120 s.',     QUALITY_REPEAT: 'r-d3-13w-12km-v58-0 2026-12-06 v46: Isti par kvaliteta kao nedelja 5.'   } } 
+{   n: 11988,   rules: { QUALITY_REPEAT: 1 },   ex: {     QUALITY_REPEAT: 'r-d3-13w-12km-v58-0 2026-12-06 v46: Isti par kvaliteta kao nedelja 5.'   } } 

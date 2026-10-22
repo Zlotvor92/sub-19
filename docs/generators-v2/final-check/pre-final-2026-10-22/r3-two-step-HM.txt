@@ -1,0 +1,55 @@
+{
+ "dist": "HM",
+ "step": {
+  "R": 600,
+  "F": 300,
+  "B": 90
+ },
+ "sampled": 38,
+ "excludedPermanent": 32,
+ "plans": 38,
+ "first": {
+  "flows": 646,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 20672,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  },
+  "cum": {
+   "flows": 20672,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {
+    "DUGI<LAGAN": 12
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum f-d3-16w-25km-e450-A/w8wed/locked→+3/under50",
+     "cum f-d3-16w-25km-e450-A/w8wed/locked→+3/pause10",
+     "cum f-d3-16w-25km-e450-A/w8wed/locked→+3/pause20"
+    ]
+   },
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  }
+ },
+ "seconds": 420.491
+}

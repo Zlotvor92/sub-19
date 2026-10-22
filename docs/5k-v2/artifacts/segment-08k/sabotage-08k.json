@@ -1,0 +1,20 @@
+[
+  {
+    "name": "08k-1 baza: zadržana R doza bez plafona trajanja na novom tempu (stara strana)",
+    "file": "src/domain/generators/fiveK/v2/workouts.ts",
+    "find": "    (pm && fits(pm, b.R) && repFits(pm, p.R, q.rRepMaxSec) ? pm : null) ??",
+    "replace": "    (pm && fits(pm, b.R) ? pm : null) ??",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08k.node.test.ts"
+    ]
+  },
+  {
+    "name": "08k-6 rezultat van opsega VDOT se primenjuje",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "  const res = newer.find(inRange);",
+    "replace": "  const res = newer[0];",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08k.node.test.ts"
+    ]
+  }
+]

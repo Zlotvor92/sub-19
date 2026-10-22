@@ -21,7 +21,7 @@ import {
 import type { AdaptResult, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 
-/* Brz nivo — uzorak; pun — deo 1, delovi 2…4: earlyGrid.<k>.full.node.test.ts. */
+/* Brz nivo — uzorak; pun — deo 1, delovi 2…12: earlyGrid.<k>.full.node.test.ts (06i: 12 delova). */
 describeEarlyGrid('mreža E: rana adaptacija i pred nedeljom testa (N7)', 1);
 
 const inputs = [

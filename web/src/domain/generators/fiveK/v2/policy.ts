@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.10.1',
+  version: '5k-v2.10.3',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -815,5 +815,30 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '→ week.secondEasyDose (kao pouka 35), i kad je takva nedelja kasnije upisana prošlost (lanac; inače BASE_R_DECREASE / ' +
       'DOSE_PROGRESSION). Regresija prema e2e482e (99 069): ciljevi 0, km naviše 0, odbijanja 0. Sačuvan plan 5k-v2.10.0 i stariji ' +
       'prilagođavaju se po 2.10.1 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.10.2',
+    decision:
+      'K9 (organizator, two-step.ts; pouka 23): drugi korak adaptacije posle koraka smanjenja (pauza, izvršenje) bio je ' +
+      'odbijan (VOLUME_RESET / VOLUME_GROWTH / VOLUME_PEAK) — volume.adaptVolume je za kasniji korak bez cilja ponovo ' +
+      'gradio nedelju sa ciljem RANIJEG koraka od generatora, dok validator (resetKm) drži cilj koraka. Ispravka na ' +
+      'strani konstruktora: nedelja sa ciljem ranijeg koraka zadržava ga i ostaje osnov rasta. Idempotentnost: ista ' +
+      'adaptacija sa istim činjenicama na kasniji asOf daje iste ciljeve i dane posle asOf — zato kontrolno trčanje koje ' +
+      'ne staje u obim otpada PRVO samo (ista ograničenja), a tek onda manje kvaliteta (pouka 13: test ne „jede" ' +
+      'nedelju). Trajna mreža 08j: smanjenje → 17 scenarija (+3/+7, new/cum), 0 odbijanja, isti plan za iste činjenice. ' +
+      'Sačuvan plan 5k-v2.10.1 i stariji prilagođavaju se po 2.10.2 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.10.3',
+    decision:
+      '08k (organizator, edges.ts; pouka 23): (1) posle sporijeg rezultata baza je zadržavala prethodnu R dozu ' +
+      '(workouts.baseWeek) čije ponavljanje na NOVOM tempu traje duže od plafona → R_REP (npr. 0,4 km × 308 s/km = 123 s ' +
+      '> 120 s). Ispravka na strani konstruktora: zadržana doza mora stati u plafon trajanja na tekućem tempu ' +
+      '(workouts.repFits); validator bez izmene. I_REP i T_CONTINUOUS na istom obrascu: 0 na edges (15 800 tokova) i na ' +
+      'pretrazi sporijih rezultata (VDOT − 3 … − 12, svaka nedelja, 11 988 tokova) — ostale putanje biraju ponavljanje ' +
+      'na tekućem tempu. (2) Rezultat sa VDOT van 30–60 → RESULT_IGNORED sa vrednošću i opsegom (kao 10K A1); ' +
+      'adaptacija se nastavlja sa ostalim činjenicama; generator (input.ts) i dalje odbija ulaz. Merenje: edges.ts 5K ' +
+      '428 → 0 odbijanja (VDOT_OUT_OF_RANGE 420, R_REP 20 → 0); generator bajt-isti; regresija 99 069 tokova bez ' +
+      'promene. Sačuvan plan 5k-v2.10.2 i stariji prilagođavaju se po 2.10.3 (KNOWN_VERSIONS).'
   }
 ];

@@ -183,11 +183,13 @@ describe('Tok i zaštita (Uslov 4)', () => {
         adaptFiveKV2(plan, { results: [{ distM: 4000, sec: 900, date: asOf, kind: 'test' }] }, asOf)
       )
     ).toBe('ADAPT_RESULT_INVALID');
-    expect(
-      code(
-        adaptFiveKV2(plan, { results: [{ distM: 5000, sec: 900, date: asOf, kind: 'race' }] }, asOf)
-      )
-    ).toBe('VDOT_OUT_OF_RANGE');
+    // 2.10.3 (08k, kao 10K A1): rezultat van opsega VDOT se ne primenjuje (RESULT_IGNORED), adaptacija se ne odbija.
+    const fast = adaptFiveKV2(
+      plan,
+      { results: [{ distM: 5000, sec: 900, date: asOf, kind: 'race' }] },
+      asOf
+    );
+    expect(fast.ok && fast.reasons.some((x) => x.condition === 'RESULT_IGNORED')).toBe(true);
     expect(code(adaptFiveKV2({ ...plan, policyId: 'x' }, {}, asOf))).toBe('ADAPT_PLAN_INVALID');
   });
 });

@@ -35,8 +35,10 @@ import {
   at7ba,
   expectCounts,
   GRID_TIMEOUT,
+  hasP37,
   missingParts,
   p35FlowErrors,
+  p37FlowErrors,
   pick,
   sumOf
 } from './level.harness.node.test.ts';
@@ -199,6 +201,8 @@ export interface ReliefSummary {
   h81: Record<string, number>;
   /** 06f: tokovi sa poukom 35 u rezultatu. */
   p35: Set<string>;
+  /** 06i: tokovi sa mešovitom nedeljom pouke 37 u rezultatu. */
+  p37: Set<string>;
   a17: Set<string>;
   n2: Set<string>;
   dropped: Record<string, number>;
@@ -223,6 +227,7 @@ export function runReliefGrid(
     hash: {},
     h81: {},
     p35: new Set(),
+    p37: new Set(),
     a17: new Set(),
     n2: new Set(),
     dropped: {},
@@ -247,6 +252,7 @@ export function runReliefGrid(
     out.hash[key] = planHash06c(res);
     out.h81[key] = planHash81(res);
     if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
+    if (hasP37(res)) out.p37.add(key);
     if (deter(f, i))
       out.deter.push({ key, p0, facts, asOf: f.asOf, json: fnv1a(JSON.stringify(res)) });
     if (!res.ok) {
@@ -397,6 +403,15 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
         res: g.p35.has(f.key) ? 'Pouka 35:' : null
       }));
       expect(p35FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
+    });
+
+    it('06i (10k-v2.8.0): prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37', () => {
+      const runs = flows.map((f) => ({
+        key: f.key,
+        hash: g.hash[f.key]!,
+        res: g.p37.has(f.key) ? 'Mešovita nedelja (pouka 37)' : null
+      }));
+      expect(p37FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
     });
 
     it('J1: posle nedelje smanjenja sledeća nedelja nikad nije redovno rasterećenje (i nijedno nije zadržano zbog > 5 izgradnji); ukinuto po scenariju', () => {

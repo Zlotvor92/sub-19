@@ -28,7 +28,7 @@ for (const b of bases) {
       if (t.rejectedFlows > before) byWeek[tag] = (byWeek[tag] ?? 0) + 1;
       if (p1 && s === "chain") {
         const at2 = addDays(at, 7);
-        if (at2 < p.input.raceDate) flow(d, t, p1, d.chain2(p, at2), at2, `${b.id}/${tag}/asOf ${at}/chain2 ${at2}`, `${tag}/chain2`);
+        if (at2 < p.input.raceDate) flow(d, t, p1, d.chain2(p1, at2), at2, `${b.id}/${tag}/asOf ${at}/chain2 ${at2}`, `${tag}/chain2`);
       }
     }
   }

@@ -297,19 +297,20 @@ export function assess(
   for (const x of fresh)
     if (!newer.includes(x))
       reason('RESULT_IGNORED', false, `Rezultat ${x.date} nije noviji od rezultata u upotrebi.`);
-  const res = newer[0];
+  // 2.10.3 (08k, kao 10K A1): rezultat sa VDOT van opsega ulaza se ne primenjuje (RESULT_IGNORED sa vrednošću i
+  // opsegom); adaptacija se nastavlja sa ostalim činjenicama — ne odbija se cela. Generator (input.ts) i dalje odbija ulaz.
+  const inRange = (x: ResultFact): boolean =>
+    vdotOf(x) >= P.input.vdot.min && vdotOf(x) <= P.input.vdot.max;
+  for (const x of newer)
+    if (!inRange(x))
+      reason(
+        'RESULT_IGNORED',
+        false,
+        `${x.kind === 'test' ? 'Test' : 'Trka'} ${x.distM / 1000}K ${fmt(x.sec)} (${x.date}): VDOT ${vdotOf(x)} van ${P.input.vdot.min}–${P.input.vdot.max} — rezultat se ne primenjuje.`
+      );
+  const res = newer.find(inRange);
   if (res) {
     const v = vdotOf(res);
-    if (v < P.input.vdot.min || v > P.input.vdot.max)
-      return {
-        ok: false,
-        reasons: [
-          {
-            code: 'VDOT_OUT_OF_RANGE',
-            message: `VDOT novog rezultata (${v}) mora biti ${P.input.vdot.min}–${P.input.vdot.max}.`
-          }
-        ]
-      };
     if (n <= N) {
       step.result = res;
       step.vdot = v;

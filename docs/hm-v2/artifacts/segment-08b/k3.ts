@@ -1,0 +1,12 @@
+const root = process.argv[2];
+const lib = await import(`${root}/docs/generators-v2/final-check/lib.ts`);
+const pre = await import(`${root}/docs/generators-v2/final-check/pre-lib.ts`);
+const d = lib.distOf("HM"); const b = d.all().find((x: any) => x.id === (process.argv[3] ?? 'd3-10w-25km-v30-A-sat'));
+const p = d.generate(b.input).plan; const at1 = lib.addDays(p.input.startDate, -1);
+const f1 = d.facts(p, 'pain8', at1); const r1 = d.adapt(p, f1, at1);
+const show = (pl: any, n = 3) => { for (const w of pl.weeks.slice(0, n)) console.log(' ', w.index, w.phase, w.deload ? 'D' : ' ', 't', w.targetKm, 'p', w.plannedKm, JSON.stringify(w.limits ?? {}), w.days.map((x: any) => x.date.slice(5) + x.role + x.workout.km).join(' ')); };
+console.log('step1', r1.ok); show(r1.plan);
+const s2 = process.argv[4] ?? 'pain8'; const at2 = process.argv[5] ?? lib.wedOf(p.weeks[0].startDate);
+const f2 = pre.mergeFacts(f1, d.facts(r1.plan, s2, at2)); const r2 = d.adapt(r1.plan, f2, at2);
+console.log('step2', s2, at2, r2.ok, r2.ok ? '' : JSON.stringify(r2.reasons).slice(0, 300), JSON.stringify((r2.violations ?? []).filter((v: any) => v.severity === 'error')).slice(0, 300));
+if (r2.ok) show(r2.plan);

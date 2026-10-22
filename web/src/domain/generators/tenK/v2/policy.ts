@@ -402,12 +402,21 @@ const DECISIONS: readonly Decision[] = [
       'volume.ts adaptVolume (preStart po deloadWeekOf); generate.ts construct ctxAt; validate.ts (sadržaj rasterećenja iz koraka.preStart); app/plan.ts KNOWN_VERSIONS',
     rationale:
       'Organizator (22. 10., fatigue-startday.ts): umor sa asOf = start → WEEK_INFEASIBLE u 1245/1245 planova (10k-v2.6.1); HM, maraton i 5K daju rasterećenje nedelje 1. Uzrok: 06e je ključ reference vezao za fromWeek, 06f je nedelju rasterećenja premestio u deloadWeek — nedelja 1 rasterećenja bez dugog reference, buildWeek bez rešenja za svaki cilj. Merenje posle: fatigue-startday 1245 → 0, fatigue-testweek 86/6650 → 0, start-day 10K 25 (42 330 tokova) 623 → 0, adaptInvariants 0; regresija 145 673 toka (svaki 40. plan, asOf start − 6 … + 14, 17 scenarija): promenjeno 779, svi start + 0 umor, svi ranije odbijeni; start + 0 = start − 1 osim dana 1 u 1245/1245. Planirano nedelje 1 > cilj u 805/1245 (prosečno + 2,46 km) — osobina svih distanci (organizator: 5K 22/42, 10K 367/582, HM 291/449, MAR 426/613), poseban segment.'
+  },
+  /* ---------- Segment 06i (10k-v2.8.0): pouka 37 — mešovita nedelja, ostatak do cilja (samo naniže). ---------- */
+  {
+    id: 'A21',
+    rule: 'Pouka 37 (MASTER § 2, obe dopune): mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen) — cilj važi za CELU nedelju. Vlasnik obima (week.mixedRemainder, poziva generate.construct posle izbora cilja) sastavlja preostale dane na ostatak = cilj − zbir zaštićenih dana po ČINJENICAMA (written.protectedKm, jedno pravilo za 4 distance: eksplicitna pauza 0, dan sa zapisom upisani km — neurađen 0, dan poznat iz potpune pokrivenosti bez zapisa 0, ostali — bez zapisa i pokrivenosti, zaključan budući — planirani km), SAMO NANIŽE (nijedan dan duži od sastavljenog; manjak se ne nadoknađuje; razlika u toleranciji planiranog 0,1 km — bez izmene). Redosled: dugi se ne skraćuje; lagani do 3,0 km (lagan ≤ dugi samo među preostalim danima); pa otpada kvalitet (Q2, pa Q1/test — dan postaje lagan, doza se ne beleži) SAMO kad time ostatak staje (dopuna MAR-08); ni minimum preostalih dana bez kvaliteta (week.mixedFloorKm) ne staje → kvalitet ostaje, lagani na minimumu, planirano > cilj uz upozorenje MIXED_OVER_TARGET (pouka 14), ne odbijanje. Izuzeci: trkačka nedelja (pouka 30), nedelja pauze čiji cilj ostatka određuje pravilo pauze (volume remainder). Nedelja nosi keptKm (zbir zaštićenih po činjenicama) i napomenu; validator čita istu funkciju (preostali ≤ cilj − keptKm ili MIXED_OVER_TARGET, inače MIXED_REMAINDER). Pouka 25: dani odmora koraka (bol) — isti predikat week.restDaysWeek za validator (WEEK_MIN_REST) i adaptInvariants (trkačka + trka < minimum).',
+    place:
+      'week.ts mixedRemainder, mixedFloorKm, restDaysWeek; written.ts protectedKm, factKmOf, keptDays, writtenWeeks; generate.ts mixed37; adapt.ts (Written.factKm); validate.ts (MIXED_OVER_TARGET, MIXED_REMAINDER); adaptInvariants.ts; types.ts PlanWeek.keptKm; app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Organizator (mixed-deload.ts, tekuća nedelja rasterećenja posle umora, asOf prvi dan nedelje k ∈ {2, 4}, svaki 97. plan): planirano > cilj 10K 367/582 tokova (+3,0 km prosek, max 8,0), bez upozorenja — dan 1 (često dugi) upisan pun, ostali dani sastavljeni kao da je nedelja slobodna (d3-8w-20km-v30-A-sat k3: cilj 17,0 = 10,1 + 4,7 + 4,7 = 19,5). Posle: 24/582, svih 24 sa MIXED_OVER_TARGET (kvalitet ostaje, dopuna MAR-08); primer 10,1 + 3,5 + 3,4 = 17,0. Regresija (svaki 80. plan × 17 scenarija × asOf start − 6 … kraj, 279 545 tokova): promenjeno 11 353, svi sa nedeljom pouke 37 (over120 7 553, umor 3 774, bol 5 26); promene cilja 612 — trkačka posle mešovitog tapera (D23) 336 + 91 + 7 (bez oštrenja, D8), kaskada D6/D12 posle otpalog kvaliteta 178; 0 odbijanja. Uz to K1 (zaključan dan testa: steps.protectedTest), K3 (lanac pre starta → ned 1: 836/43 656 WEEK_INFEASIBLE → 0; umor posle umora pre starta bez drugog rasterećenja, inače referenca nedelja 1 generatora), K2/K5 (invarijante: dani odmora bola, zaštićeni lagani).'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.7.0',
+  version: '10k-v2.8.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {

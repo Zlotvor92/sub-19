@@ -6,7 +6,7 @@ import { daysBetween, mustDay } from './dates.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import type { PlanDay, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { deloadWeekOf } from './steps.ts';
-import { raceWeekEveOnly } from './week.ts';
+import { raceWeekEveOnly, restDaysWeek } from './week.ts';
 
 const EPS = 1e-6;
 const isBuild = (w: PlanWeek): boolean =>
@@ -74,13 +74,16 @@ export function adaptInvariants(
     if (steps.some((s) => s.restart && s.fromWeek === w.index)) maxDose = {};
     const m = mixed.has(w.index);
     const long = w.days.find((d) => d.role === 'long');
-    // Dugi ≥ lagan (mešovita: među danima posle asOf).
+    // Dugi ≥ lagan (mešovita: samo među preostalim danima — zaštićeni ≤ asOf, urađeni i zaključani su činjenice, pouka
+    // 37; organizator K5: zaključan lagan sledeće nedelje).
+    const free = (d: PlanDay): boolean =>
+      mustDay(d.date) > t && !done.has(d.date) && !locked.has(d.date);
     for (const d of w.days)
       if (
         long &&
         d.role === 'easy' &&
         d.workout.km > long.workout.km + EPS &&
-        (!m || (mustDay(d.date) > t && mustDay(long.date) > t))
+        (!m || (free(d) && free(long)))
       )
         bad.push(`dugi < lagan ned ${w.index}`);
     for (const d of w.days)
@@ -97,7 +100,7 @@ export function adaptInvariants(
     )
       bad.push(`planirano ≠ cilj ned ${w.index}`);
     // Uslov 8 i A9.
-    if (w.phase !== 'race' && w.plannedKm + EPS < min && !(w.limits?.rest?.length ?? 0))
+    if (w.phase !== 'race' && w.plannedKm + EPS < min && !restDaysWeek(w))
       bad.push(`nedelja < minimum ned ${w.index}`);
     if (w.phase !== 'race' && w.index >= first && w.targetKm + EPS < min)
       bad.push(`cilj < minimum ned ${w.index}`);
@@ -151,7 +154,11 @@ export function adaptInvariants(
       runs < d20 &&
       race.notes.includes('Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).') &&
       after.warnings.some((w) => w.rule === 'RACE_WEEK_SHORT' && w.week === race.index);
-    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest)
+    // Pouka 25 (organizator, rani prolaz K2): dani odmora koraka (bol) — isti predikat kao validator (WEEK_MIN_REST).
+    const painRest =
+      restDaysWeek(race) &&
+      after.warnings.some((w) => w.rule === 'WEEK_MIN_REST' && w.week === race.index);
+    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest && !painRest)
       bad.push('trkačka + trka < minimum');
   }
   // A5 (10k-v2.5.2, pouka 34): umor pre starta — nedelja 1 rasterećenje ≤ 0,8 × planirana nedelja 1 (ne ispod

@@ -1,0 +1,29 @@
+[
+  {
+    "name": "08j-1 kasniji korak gradi nedelju cilja ranijeg koraka od generatora (stara strana)",
+    "file": "src/domain/generators/fiveK/v2/volume.ts",
+    "find": "      else if (resets.has(i + 1)) t = targets[i]!;",
+    "replace": "      else if (false && resets.has(i + 1)) t = targets[i]!;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08j.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08j-2 test koji ne staje ne otpada sam (odmah manje kvaliteta)",
+    "file": "src/domain/generators/fiveK/v2/generate.ts",
+    "find": "    if (!r.ok && adaptive && f.test) {",
+    "replace": "    if (false && !r.ok && adaptive && f.test) {",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08j.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08j-3 trajna mreža bez smanjenja u prvom koraku",
+    "file": "src/domain/generators/fiveK/v2/segment08j.harness.node.test.ts",
+    "find": "export const REDUCTIONS: readonly EarlyScenario[] = [\n  'under50',\n  'over120',\n  'pause10',\n  'pause20',\n  'pause35',\n  'chain',\n  'painPause'\n];",
+    "replace": "export const REDUCTIONS: readonly EarlyScenario[] = ['none', 'done100'];",
+    "tests": ["src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts"]
+  }
+]

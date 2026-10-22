@@ -465,6 +465,106 @@ export function qualityOverLong(days: readonly PlanDay[], min = 2): boolean {
   return q.length >= min && long !== undefined && q.some((d) => d.workout.sec > long.workout.sec);
 }
 
+/** Pouka 25 (A4, 10k-v2.8.0 kao predikat): nedelja sa danima odmora koraka (bol) sme planirano (+ trka u trkačkoj) ispod
+    minimuma nedelje — upozorenje WEEK_MIN_REST, ne greška. Jedan predikat za validator i adaptInvariants. */
+export const restDaysWeek = (w: { limits?: { rest?: readonly string[] } }): boolean =>
+  (w.limits?.rest?.length ?? 0) > 0;
+
+/** Pouka 37 (10k-v2.8.0): oznaka (napomena) mešovite nedelje čiji su preostali dani sastavljeni na ostatak do cilja. */
+export const MIXED_NOTE = 'Mešovita nedelja (pouka 37)';
+
+const km10 = (km: number): number => Math.round(km * 10);
+const sumKm = (ds: readonly PlanDay[]): number =>
+  ds.reduce((a, d) => a + (d.countsToWeek ? km100(d.workout.km) : 0), 0) / 100;
+
+/**
+ * Pouka 37 (10k-v2.8.0): najmanji obim preostalih (slobodnih) dana mešovite nedelje — lagan = minimum (D13), dugi kakav
+ * je sastavljen (ne skraćuje se radi ostatka); kvalitet i test: `withQuality` false — kao lagan na minimumu (kvalitet
+ * otpao), true — kakav je (kvalitet ostaje). Nijedan dan iznad sastavljenog (`free` = dani kakvi su sastavljeni bez
+ * zaštićenih, ili upisani kod validatora). Konstruktor (mixedRemainder) i validator (MIXED_OVER_TARGET) čitaju istu
+ * funkciju: ostatak < najmanjeg bez kvaliteta → kvalitet ostaje, lagani na minimumu, planirano > cilj uz upozorenje.
+ */
+export function mixedFloorKm(free: readonly PlanDay[], withQuality = false): number {
+  const q = (d: PlanDay): boolean => d.workout.kind === 'quality' || d.workout.kind === 'test';
+  return (
+    free
+      .filter((d) => d.countsToWeek)
+      .reduce(
+        (s, d) =>
+          s +
+          (d.role === 'long' || (withQuality && q(d))
+            ? km100(d.workout.km)
+            : Math.min(km100(d.workout.km), EASY_MIN10 * 10)),
+        0
+      ) / 100
+  );
+}
+
+/** Pouka 37: raspodela `total` [0,1 km] na lagane dane u [lo, hi] — ujednačeno, raniji dan dobija višak (D19). */
+function fillEasy(total: number, lo: readonly number[], hi: readonly number[]): number[] {
+  const x = [...lo];
+  let rem = total - lo.reduce((a, v) => a + v, 0);
+  while (rem > 0) {
+    let k = -1;
+    for (let i = 0; i < x.length; i++) if (x[i]! < hi[i]! && (k < 0 || x[i]! < x[k]!)) k = i;
+    if (k < 0) break;
+    x[k]!++;
+    rem--;
+  }
+  return x;
+}
+
+/**
+ * Pouka 37 (10k-v2.8.0, MASTER § 2; dopuna HM-08 i 5K-08i) — JEDINO mesto odluke o obimu preostalih dana mešovite
+ * nedelje (deo dana zaštićen: ≤ asOf, zaključan, urađen; trkačka nedelja izuzeta — pouka 30; nedelja pauze — vlasnik
+ * je pravilo pauze, volume.adaptVolume `remainder`). Cilj važi za CELU nedelju: preostali dani (`free`, sastavljeni
+ * na cilj bez zaštićenih) dobijaju ostatak = cilj − `keptKm` (zbir zaštićenih po činjenicama, written.protectedKm),
+ * SAMO NANIŽE (nijedan dan duži od sastavljenog; manjak se ne nadoknađuje; ostatak u toleranciji planiranog — bez
+ * izmene). Dugi se ne skraćuje (referenca poslednjeg
+ * dugog); prvo lagani do minimuma (lagan ≤ dugi samo među preostalim danima), pa otpada kvalitet (prvo Q2, pa Q1/test;
+ * dan postaje lagan, doza se ne beleži) — samo kad time ostatak staje. Kad ni minimum preostalih dana bez kvaliteta
+ * (mixedFloorKm) ne staje: kvalitet ostaje, lagani na minimumu, `over` (planirano > cilj; validator: upozorenje
+ * MIXED_OVER_TARGET). null = staje bez izmene.
+ */
+export function mixedRemainder(
+  free: readonly PlanDay[],
+  keptKm: number,
+  targetKm: number,
+  p: Paces
+): { days: PlanDay[]; over: boolean; droppedQuality: boolean; remainderKm: number } | null {
+  const R = Math.round((targetKm - keptKm) * 100) / 100;
+  // Tolerancija planiranog (D6: planirano = cilj ± tolerance.plannedKm) — sastavljena nedelja bez činjenica ostaje ista.
+  if (free.length === 0 || sumKm(free) <= R + P.tolerance.plannedKm + 1e-9) return null;
+  const long = free.find((d) => d.role === 'long');
+  const top10 = long ? km10(long.workout.km) : Infinity;
+  const rank = (d: PlanDay): number => (d.role === 'q2' ? 1 : 0);
+  const qs = free
+    .filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test')
+    .sort((a, b) => rank(a) - rank(b));
+  const over = R + 1e-9 < mixedFloorKm(free);
+  // Dopuna (organizator, MAR-08): kvalitet otpada SAMO kad time ostatak staje; ni bez kvaliteta ne staje → kvalitet
+  // ostaje (stimulus i progresija doze), lagani na minimumu.
+  const attempts: PlanDay[][] = over
+    ? [qs]
+    : [qs, ...(qs.length === 2 ? [qs.slice(0, 1)] : []), ...(qs.length > 0 ? [[]] : [])];
+  for (const keep of attempts) {
+    const easies = free.filter((d) => d.role === 'easy' || (qs.includes(d) && !keep.includes(d)));
+    const lo = easies.map((d) => Math.min(km10(d.workout.km), EASY_MIN10));
+    const hi = easies.map((d, i) => Math.max(lo[i]!, Math.min(km10(d.workout.km), top10)));
+    const avail10 = Math.floor((R - sumKm(keep) - (long ? long.workout.km : 0)) * 10 + 1e-6);
+    if (!over && avail10 < lo.reduce((a, v) => a + v, 0)) continue;
+    const shares = over ? lo : fillEasy(avail10, lo, hi);
+    const days = free.map((d): PlanDay => {
+      const i = easies.indexOf(d);
+      if (i < 0) return d;
+      if (d.role === 'easy' && shares[i] === km10(d.workout.km)) return d;
+      return day(d.date, 'easy', easyWorkout(shares[i]! / 10, p));
+    });
+    return { days, over, droppedQuality: keep.length < qs.length, remainderKm: R };
+  }
+  return null;
+}
+
 /** D8: oštrenje ≤ RP doza tapera — puno (3 × 1000 m) ako ga RP doza tapera nosi, inače 2 × 1000 m; taper
     bez RP (odstupanje D7) → 0 (bez oštrenja). */
 export function sharpenerReps(taperRpM: number): number {

@@ -1,0 +1,55 @@
+{
+ "dist": "5K",
+ "step": {
+  "R": 30,
+  "F": 30,
+  "B": 20
+ },
+ "sampled": 138,
+ "excludedPermanent": 0,
+ "plans": 138,
+ "first": {
+  "flows": 2346,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 75072,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  },
+  "cum": {
+   "flows": 75072,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {
+    "DUGI<LAGAN": 153
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum r-d3-6w-16km-v32-1/w2wed/locked→+3/pause20",
+     "cum r-d3-6w-16km-v32-1/w2wed/locked→+3/pain5",
+     "cum r-d3-6w-16km-v32-1/w2wed/locked→+3/pain8"
+    ]
+   },
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  }
+ },
+ "seconds": 615.084
+}

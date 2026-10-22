@@ -1,0 +1,1 @@
+HM 240 { 'tekuca+0': 206, 'bez novog': 34 }
