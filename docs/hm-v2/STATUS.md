@@ -100,3 +100,9 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   (`plan.ts` `PREFIX_KEY`), nedelje v2 imaju broj `offset + index` i id kao nedelja izvora istog datuma; adaptacija,
   vraćanje verzije i promena cilja nose prefiks. Format plana se menja (prefiks) → hm-v2.5.0, `KNOWN_VERSIONS` ∪
   hm-v2.4.1. Izveštaj `docs/generators-v2/handoff/SEGMENT-3f-IMPLEMENTATION.md`.
+
+## Segment HM-08 (hm-v2.6.0, pouka 37): STANI
+
+- Mešovita nedelja, ostatak do cilja: radni patch `artifacts/segment-08/p37-wip.patch` (nije u kodu). Nalaz
+  organizatora 291/449 → 0, ali skraćen dugi preostalih dana postaje stanje (H5/pouka 28) → kaskada u 1458 tokova
+  rane mreže (vrh do −22 km). Opcije A–D i merenje: `reports/SEGMENT-08-STOP.md`; čeka odluku organizatora.
