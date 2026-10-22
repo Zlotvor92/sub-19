@@ -186,14 +186,33 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     for (const [date, x] of dated) expect(x.id, date).toBe(srcByDate.get(date)?.id);
   });
 
-  it('nedostupne opcije: HM v2 kasno (PLAN_TOO_SHORT) i 10K v2 (V2_TARGET_NOT_READY) doslovno (O4a)', () => {
+  it('nedostupne opcije: HM v2 kasno (PLAN_TOO_SHORT) doslovno (O4a); 10K iz 10K v2 (3d-10K)', () => {
     const late = '2026-12-05' as IsoDate;
     const src = stored(adapted(BASE, 'pause35', late));
     const d = decide(src, { fiveKV2: false, hmV2: true, tenKV2: true }, late);
-    expect(d.options).toEqual([]);
+    expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
+    // Vrh opcije iz plana 10K v2 cilja (strukturno, `tenKV2`; nalaz 3g), > 0.
+    const prep = select.preparationForPlan(src, { fiveKV2: false, hmV2: true, tenKV2: true })!;
+    const c = prep.buildPreparationChoice(
+      src,
+      late,
+      prep.basisFromPlan(src, late)!,
+      { kind: 'shorter', raceDistM: 10000 },
+      {}
+    );
+    if ('error' in c) throw new Error(c.error);
+    const t = (
+      c.result as unknown as {
+        tenKV2: { peakKm: number; weeks: { days: { role: string; workout: { km: number } }[] }[] };
+      }
+    ).tenKV2;
+    const longKm = Math.max(
+      ...t.weeks.flatMap((w) => w.days.filter((x) => x.role === 'long').map((x) => x.workout.km))
+    );
+    expect(longKm).toBeGreaterThan(0);
+    expect([d.options[0]!.peakLongRunKm, d.options[0]!.peakWeeklyKm]).toEqual([longKm, t.peakKm]);
     expect(d.unavailable).toEqual([
-      'Polumaraton: Plan od 8 nedelja je prekratak: polumaraton traži najmanje 10 nedelja; preporuka: 10K plan.',
-      `10K: ${select.V2_TARGET_NOT_READY}`
+      'Polumaraton: Plan od 8 nedelja je prekratak: polumaraton traži najmanje 10 nedelja; preporuka: 10K plan.'
     ]);
   });
 

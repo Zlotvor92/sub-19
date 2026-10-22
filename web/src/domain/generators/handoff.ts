@@ -29,10 +29,12 @@ export function regeneratorForDistance(raceDistM: number | undefined): V1Target 
   return null;
 }
 
-/** Format plana izvora v2 koji v1 cilj ne sme da nasledi: ključ objekta plana v2 i meta ključevi koje piše samo v2.
- *  Daje ga adapter izvora (`<distanca>/v2/app/`). */
+/** Format plana izvora v2 koji v1 cilj ne sme da nasledi: ključ objekta plana v2, ostali ključevi plana koje piše samo
+ *  v2 (REVIEW-3 #1: npr. prefiks nedelja izvora predaje, `hmV2Prefix` — lanac maraton v2 → HM v2 → v1) i meta ključevi
+ *  koje piše samo v2. Daje ga adapter izvora (`<distanca>/v2/app/`), jedino mesto spiska po izvoru. */
 export interface SourceFormat {
   readonly planKey: string;
+  readonly planKeys?: readonly string[];
   readonly metaKeys: readonly string[];
 }
 
@@ -72,10 +74,13 @@ export function mondayWeeks(weeks: Weeks): Weeks {
   });
 }
 
-/** Pogled plana izvora za v1 cilj: bez objekta plana v2 i bez meta ključeva v2; nedelje od ponedeljka
- *  (`mondayWeeks`). Dani ostaju (istorija). */
+/** Pogled plana izvora za v1 cilj: bez objekta plana v2, ostalih ključeva plana v2 i meta ključeva v2; nedelje od
+ *  ponedeljka (`mondayWeeks`). Dani ostaju (istorija). */
 export function sourceViewForV1<P extends GenPlanState>(current: P, format: SourceFormat): P {
-  const { [format.planKey]: _plan, ...rest } = current as P & Record<string, unknown>;
+  const drop = [format.planKey, ...(format.planKeys ?? [])];
+  const rest = Object.fromEntries(
+    Object.entries(current as P & Record<string, unknown>).filter(([k]) => !drop.includes(k))
+  );
   const meta = current.meta
     ? (Object.fromEntries(
         Object.entries(current.meta).filter(([k]) => !format.metaKeys.includes(k))
@@ -84,9 +89,10 @@ export function sourceViewForV1<P extends GenPlanState>(current: P, format: Sour
   return { ...rest, weeks: mondayWeeks(current.weeks), meta } as P;
 }
 
-/** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`); plan v2 po osećaju ga nema. */
+/** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`) koji nije posle starta novog plana; plan v2 bez takvog
+ *  rezultata (po osećaju ili samo sa testom posle starta, 3e § 6.2) ga nema. */
 export const V1_TARGET_NEEDS_RESULT =
-  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa, a ovaj plan je po osećaju.';
+  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa pre početka novog plana, a ovaj plan ga nema.';
 
 /** v1 cilj za izvor v2: isti `handoffFuture`, nad pogledom izvora bez formata v2; bez rezultata → odbijanje sa
  *  razlogom (nikad tihi prelaz). `null` kao `regeneratorForDistance`. */

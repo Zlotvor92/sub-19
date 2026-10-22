@@ -130,7 +130,7 @@ describe('generisanje kroz adapter', () => {
       const v2 = v2Of(p);
       expect(p.meta).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.6.1',
+        policyVersion: '10k-v2.7.0',
         raceDistM: 10000,
         raceDate: RACE,
         start: START,

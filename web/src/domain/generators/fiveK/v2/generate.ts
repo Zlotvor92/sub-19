@@ -41,7 +41,7 @@ import type {
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { adaptVolume, planVolume, type VolumePlan } from './volume.ts';
-import { buildRaceWeek, buildTrainingWeek } from './week.ts';
+import { buildRaceWeek, buildTrainingWeek, mixedWeek } from './week.ts';
 import type { WeekDose } from './workouts.ts';
 import { type Written, writtenWeek } from './written.ts';
 
@@ -113,6 +113,14 @@ export function construct(
   // progresiju iznova (manji obim → doza sme da padne; isti segment kao u validate.ts). 2.6.1: i korak bola
   // sa povratkom, od nedelje posle sidra (steps.doseResetAt).
   let lastDose: Partial<Record<Phase, WeekDose>> = {};
+  // 2.10.0 (pouka 37): mešovita nedelja izgradnje/tapera (deo dana zaštićen, nedelja nije cela prošlost) — cilj važi
+  // za celu nedelju; trkačka nedelja izuzeta (pouka 30: ≤ planirano tapera, week.raceWeekRest).
+  const mixedOf = (w: PlanWeek, f: WeekFrame, p: PaceModel): ReturnType<typeof mixedWeek> => {
+    const pw = prior?.weeks[f.index - 1];
+    return prior && pw && mustDay(pw.endDate) > prior.asOf
+      ? mixedWeek(w, pw.days.filter(prior.keep), p)
+      : null;
+  };
   frames.forEach((f, i) => {
     const target = adapted.targets[i]!;
     const { p, a: aw } = ctx(f.index);
@@ -204,6 +212,10 @@ export function construct(
       reasons.push(r.reason);
       return;
     }
+    // 2.10.0 (pouka 37): mešovita nedelja — preostali dani na ostatak do cilja (week.mixedWeek); kvalitet koji
+    // otpada ne menja stanje doze.
+    const m = mixedOf(r.week, f, p);
+    if (m) r = { ok: true, week: m.week, dose: m.droppedQuality ? null : r.dose };
     // 2.8.0 (pouka 29, N2a): kontrolno trčanje u zaštićenom (upisanom) danu je urađeno — nedelja ga nosi i kad
     // sastavljeni ostatak nedelje nema test (ne staje u smanjen obim).
     if (testDone === f.index && f.test && !r.week.test) r.week = { ...r.week, test: true };

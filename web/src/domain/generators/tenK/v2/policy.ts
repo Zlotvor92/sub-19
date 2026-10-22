@@ -393,12 +393,21 @@ const DECISIONS: readonly Decision[] = [
       'week.ts raceWeekRest, raceWeekEveOnly; validate.ts (D23, RACE_WEEK_OVER_TAPER_EVE, WEEK_ALL_REST); adaptInvariants.ts (trkačka > taper); app/plan.ts KNOWN_VERSIONS',
     rationale:
       'Organizator (06f otvoreno a i b). Nalaz: b-d4-11w-18km-v35-B-sat, bol 8 kraj ned 9 i NOV bol 8 sutra → na 10k-v2.6.0 RACE_WEEK_OVER_TAPER (dan pred trku 3,3 km > taper 3 km), sada upozorenje. Trajna mreža (nov bol 7/8 svakog dana ned N − 3 … N − 1, nov zapis asOf + 1 … + 7) na 10k-v2.6.0: odbijeno RACE_WEEK_OVER_TAPER, EMPTY_WEEK (6 dana odmora iz dve prijave — nedelja cela odmor; trkačka samo sa trkom) i RACE_WEEK (mešovit taper: validator nije računao D23) → 0. Pouka 35 u mešovitoj nedelji asOf: 467 tokova prvog koraka uzorka 4a (dan kvaliteta pre asOf duži od dugog) — prihvaćeno, bez izmene.'
+  },
+  /* ---------- Segment 06h (10k-v2.6.2): umor pre starta sa asOf = prvi dan plana. ---------- */
+  {
+    id: 'A20',
+    rule: 'Pouke 23, 34 i 36: referenca umora pre starta (korak.preStart — cilj, dugi i doza nedelje 1 generatora bez činjenica) važi za nedelju prinudnog rasterećenja koraka (steps.deloadWeekOf), ne za fromWeek — konstruktor (volume.adaptVolume, generate ctxAt) i validator čitaju je istim ključem. asOf = prvi dan plana sa zapisima umora pre starta: nedelja 1 je rasterećenje kao sa asOf = start − 1 (deloadWeek 1 < fromWeek 2, ostatak tekuće nedelje), dan 1 (≤ asOf, zaštićen) ostaje upisan kakav jeste; ostali dani nedelje 1 i nedelje 2…N isti kao start − 1. Planirano nedelje 1 sme biti iznad cilja (upisani dan umesto sastavljenog) — isto pravilo mešovite nedelje kao tekuće rasterećenje nedelje k ≥ 2 (A11, A18); „ostatak do cilja minus upisani dani" je zasebna odluka za sve distance (organizator, pouka 37).',
+    place:
+      'volume.ts adaptVolume (preStart po deloadWeekOf); generate.ts construct ctxAt; validate.ts (sadržaj rasterećenja iz koraka.preStart); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Organizator (22. 10., fatigue-startday.ts): umor sa asOf = start → WEEK_INFEASIBLE u 1245/1245 planova (10k-v2.6.1); HM, maraton i 5K daju rasterećenje nedelje 1. Uzrok: 06e je ključ reference vezao za fromWeek, 06f je nedelju rasterećenja premestio u deloadWeek — nedelja 1 rasterećenja bez dugog reference, buildWeek bez rešenja za svaki cilj. Merenje posle: fatigue-startday 1245 → 0, fatigue-testweek 86/6650 → 0, start-day 10K 25 (42 330 tokova) 623 → 0, adaptInvariants 0; regresija 145 673 toka (svaki 40. plan, asOf start − 6 … + 14, 17 scenarija): promenjeno 779, svi start + 0 umor, svi ranije odbijeni; start + 0 = start − 1 osim dana 1 u 1245/1245. Planirano nedelje 1 > cilj u 805/1245 (prosečno + 2,46 km) — osobina svih distanci (organizator: 5K 22/42, 10K 367/582, HM 291/449, MAR 426/613), poseban segment.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.6.1',
+  version: '10k-v2.7.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {

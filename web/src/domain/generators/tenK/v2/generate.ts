@@ -17,7 +17,15 @@ import {
   type WeekPicks
 } from './quality.ts';
 import { longestLong10 } from './lengths.ts';
-import { basePaces, basisAt, framesFor, pacesAt, restartWeeks, stepVdotAt } from './steps.ts';
+import {
+  basePaces,
+  basisAt,
+  deloadWeekOf,
+  framesFor,
+  pacesAt,
+  restartWeeks,
+  stepVdotAt
+} from './steps.ts';
 import type {
   GenerateResult,
   PlanDay,
@@ -128,7 +136,8 @@ export function construct(
   const ctxAt = (w: number): WeekContext => {
     if (!av) return ctx0;
     // A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja iz koraka (assess, preStartRef).
-    const ps = steps.find((s) => s.preStart && s.fromWeek === w)?.preStart;
+    // 10k-v2.6.2: nedelja rasterećenja koraka (steps.deloadWeekOf), ne fromWeek — asOf = start: ned 1.
+    const ps = steps.find((s) => s.preStart && deloadWeekOf(s) === w)?.preStart;
     const extra = {
       ...(w >= av.reducedFrom ? { adapted: true } : {}),
       ...(ps ? { preStart: ps } : {})

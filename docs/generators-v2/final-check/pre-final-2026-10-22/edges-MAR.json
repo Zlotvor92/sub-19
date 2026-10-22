@@ -1,0 +1,292 @@
+{
+ "dist": "MAR",
+ "policy": {
+  "regular/3": {
+   "km": [
+    30,
+    50
+   ],
+   "weeks": [
+    12,
+    24
+   ]
+  },
+  "regular/4": {
+   "km": [
+    35,
+    65
+   ],
+   "weeks": [
+    12,
+    24
+   ]
+  },
+  "regular/5": {
+   "km": [
+    40,
+    85
+   ],
+   "weeks": [
+    12,
+    24
+   ]
+  },
+  "regular/6": {
+   "km": [
+    50,
+    110
+   ],
+   "weeks": [
+    12,
+    24
+   ]
+  },
+  "beginner/4": {
+   "km": [
+    25,
+    45
+   ],
+   "weeks": [
+    16,
+    24
+   ]
+  },
+  "beginner/5": {
+   "km": [
+    30,
+    50
+   ],
+   "weeks": [
+    16,
+    24
+   ]
+  }
+ },
+ "vdot": [
+  30,
+  80
+ ],
+ "easy": [
+  270,
+  510
+ ],
+ "gridCoverage": {
+  "regular/3": {
+   "n": 4290,
+   "km": [
+    30,
+    50
+   ],
+   "weeks": [
+    12,
+    24
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/4": {
+   "n": 6006,
+   "km": [
+    35,
+    65
+   ],
+   "weeks": [
+    12,
+    24
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/5": {
+   "n": 8580,
+   "km": [
+    40,
+    85
+   ],
+   "weeks": [
+    12,
+    24
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/6": {
+   "n": 11154,
+   "km": [
+    50,
+    110
+   ],
+   "weeks": [
+    12,
+    24
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/4": {
+   "n": 945,
+   "km": [
+    25,
+    45
+   ],
+   "weeks": [
+    16,
+    24
+   ],
+   "vdot": [
+    30,
+    40
+   ],
+   "easy": [
+    330,
+    510
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/5": {
+   "n": 945,
+   "km": [
+    30,
+    50
+   ],
+   "weeks": [
+    16,
+    24
+   ],
+   "vdot": [
+    30,
+    40
+   ],
+   "easy": [
+    330,
+    510
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  }
+ },
+ "uncovered": [
+  "regular/3: VDOT max 80 (mreža do 70)",
+  "regular/3: skorašnji najduži 5 km (mreža od —)",
+  "regular/3: skorašnji najduži 42 km (mreža do —)",
+  "regular/4: VDOT max 80 (mreža do 70)",
+  "regular/4: skorašnji najduži 5 km (mreža od —)",
+  "regular/4: skorašnji najduži 42 km (mreža do —)",
+  "regular/5: VDOT max 80 (mreža do 70)",
+  "regular/5: skorašnji najduži 5 km (mreža od —)",
+  "regular/5: skorašnji najduži 42 km (mreža do —)",
+  "regular/6: VDOT max 80 (mreža do 70)",
+  "regular/6: skorašnji najduži 5 km (mreža od —)",
+  "regular/6: skorašnji najduži 42 km (mreža do —)",
+  "beginner/4: VDOT max 80 (mreža do 40)",
+  "beginner/4: lak tempo min 270 (mreža od 330)",
+  "beginner/4: trka sat (mreža nema)",
+  "beginner/4: skorašnji najduži 5 km (mreža od —)",
+  "beginner/4: skorašnji najduži 42 km (mreža do —)",
+  "beginner/5: VDOT max 80 (mreža do 40)",
+  "beginner/5: lak tempo min 270 (mreža od 330)",
+  "beginner/5: trka sat (mreža nema)",
+  "beginner/5: skorašnji najduži 5 km (mreža od —)",
+  "beginner/5: skorašnji najduži 42 km (mreža do —)"
+ ],
+ "edgeInputs": 204,
+ "generatorRejected": {
+  "WEEK_INFEASIBLE": 18,
+  "RECENT_LONG_TOO_SHORT": 4
+ },
+ "generatorRejectedEx": {
+  "WEEK_INFEASIBLE": "regular/3/30km/24w/vmax/sat: Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.",
+  "RECENT_LONG_TOO_SHORT": "regular/3/50km/12w/vmax/sun/rl5: Skorašnji najduži trk (5,0 km) je prekratak za 50,0 km nedeljno sa 3 dana i 12 nedelja do trke (nedelja 5 ne može da se sastavi uz skok dugog ≤ 10 %, M13a); preporuka: duža priprema, manji početni obi"
+ },
+ "plans": 182,
+ "plansUncovered": 70,
+ "uncoveredFlows": {
+  "flows": 6650,
+  "rejected": 0
+ },
+ "flows": 18200,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "inv": {
+  "skok cilja ned #": 8
+ },
+ "invEx": {
+  "skok cilja ned #": [
+   "regular/5/85km/12w/vmax/sun/rl5 [vdotMax,rl5]/start 2026-12-14/pause10: skok cilja ned 2",
+   "regular/5/85km/12w/vmax/sun/rl5 [vdotMax,rl5]/start 2026-12-14/chain: skok cilja ned 2",
+   "regular/5/85km/12w/vmax/sun/rl5 [vdotMax,rl5]/start 2026-12-14/chain/chain2 2026-12-21: skok cilja ned 2"
+  ]
+ },
+ "by": {},
+ "seconds": 566.265
+}

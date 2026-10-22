@@ -1,0 +1,22 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 253,
+ "excludedPermanent": 9,
+ "plans": 253,
+ "rejectedByWeek": {},
+ "flows": 89309,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "inv": {},
+ "invEx": {},
+ "by": {},
+ "seconds": 2351.219
+}

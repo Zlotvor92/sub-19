@@ -438,6 +438,11 @@ export interface HmV2Adaptation {
       konstrukcije: validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
   mixedWeeks: number[];
   lockedDayIds: string[];
+  /** Pouka 37: urađeni dani posle asOf (dayId) — zaštićeni kao zaključani; samo kad ih ima. */
+  doneDayIds?: string[];
+  /** Pouka 37: km zaštićenih dana nedelja posle asOf po činjenicama, samo gde se razlikuju od plana (pauza 0,
+      upisani km; week.keptSum100). Samo kad ih ima. */
+  factKm?: Record<string, number>;
 }
 
 export type AdaptCondition =

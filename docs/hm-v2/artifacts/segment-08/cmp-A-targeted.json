@@ -1,0 +1,25 @@
+{
+ "n": {
+  "total": 16275,
+  "changed:x": 3073,
+  "changed:p37": 23
+ },
+ "maxTgtDrop": 0,
+ "ex": {
+  "total": [
+   "d3-10w-25km-v30-A-sat/w3/pause35",
+   "d3-10w-25km-v30-A-sat/w3/pause20",
+   "d3-10w-25km-v30-A-sat/w3/pain5"
+  ],
+  "changed:x": [
+   "d3-10w-35km-v50-B-sat/w3/pain5",
+   "d3-10w-35km-v50-B-sat/w4/pain5",
+   "d3-10w-35km-v50-B-sat/w5/pain5"
+  ],
+  "changed:p37": [
+   "d3-17w-40km-v35-A-sat/w3/pain5",
+   "d3-17w-40km-v35-A-sat/w5/pain5",
+   "d3-17w-40km-v35-A-sat/w8/pain5"
+  ]
+ }
+}

@@ -11,6 +11,7 @@ import { alignedStart } from './generate.ts';
 import { targetInput } from './handoffTarget.ts';
 import { PREFIX_KEY, prefixOf } from './plan.ts';
 import { FULL } from '../../../../../test/level';
+import { handoffFuture as tenKV2HandoffFuture } from '../../../tenK/v2/app/handoffTarget.ts';
 
 /* FAZA 3, SEGMENT 3f — HM v2 kao CILJ predaje „kraća distanca" (DESIGN.md § 3 P3/P5, § 8 O3a, O4a, O6b).
    Izvor: sintetički maraton v2 (plan za upis iz generatora maratona v2 + činjenice 4a scenarija), jer izvor maratona
@@ -261,7 +262,7 @@ describe('3f: T1/T2', () => {
 });
 
 describe('3f: format i izbor', () => {
-  it('prekidač HM v2 isključen → v1 cilj (HM v1); uključen → HM v2; 10K v2 i dalje NOT_READY (3d)', () => {
+  it('prekidač HM v2 isključen → v1 cilj (HM v1); uključen → HM v2; 10K v2 → cilj 10K v2 (3d-10K)', () => {
     expect(select.shorterHandoffForV2Source({ fiveKV2: false }, MAR_FORMAT)(21097.5)).not.toBe(
       select.shorterHandoffForV2Source(ON, MAR_FORMAT)(21097.5)
     );
@@ -269,9 +270,9 @@ describe('3f: format i izbor', () => {
       { fiveKV2: false, tenKV2: true },
       MAR_FORMAT
     )(10000)!;
-    expect((ten as unknown as () => unknown)()).toEqual({ error: select.V2_TARGET_NOT_READY });
+    expect(ten).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.5.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.6.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
     const r = select.generateHmV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 12 - 1),
@@ -283,10 +284,15 @@ describe('3f: format i izbor', () => {
     });
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.5.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.6.0');
     expect(
       select.HALF_MARATHON_V2_GENERATOR.planPolicy({
         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.4.1' }
+      } as never).status
+    ).toBe('current');
+    expect(
+      select.HALF_MARATHON_V2_GENERATOR.planPolicy({
+        meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.5.0' }
       } as never).status
     ).toBe('current');
   });

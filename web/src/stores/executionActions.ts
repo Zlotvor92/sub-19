@@ -15,6 +15,7 @@ import {
   unsupportedPlanReason,
   type DecisionPoint,
   type ExecutionAdjustmentOptions,
+  type GeneratorFlags,
   type PreparationChoice,
   type PreparationDecision,
   type ReplanContext,
@@ -27,6 +28,7 @@ import {
 } from '../domain/plan/versions';
 import type { AltRecord, GenPlanState } from '../domain/state';
 import { fiveKV2Sources } from './fiveKV2Actions';
+import { currentGeneratorFlags } from './generatorFlags';
 import { hmV2Sources } from './hmV2Actions';
 import { marathonV2Sources } from './marathonV2Actions';
 import { tenKV2Sources } from './tenKV2Actions';
@@ -85,14 +87,16 @@ export type TenKV2Details = Pick<
   'reasons' | 'weeks' | 'coverage' | 'needed'
 >;
 type HmV2Outcome = ReturnType<typeof hmV2AdaptPreview>;
+/** 3g: `shorterOffer` (odluka domena, 3c) — posle ovog prilagođavanja plan je ograničena priprema (ponuda „kraća
+ *  distanca"); polja nema kad ponude nema. */
 export type HmV2Details = Pick<
   Extract<HmV2Outcome, { ok: true }>,
-  'reasons' | 'weeks' | 'coverage' | 'needed'
+  'reasons' | 'weeks' | 'coverage' | 'needed' | 'shorterOffer'
 >;
 type MarathonV2Outcome = ReturnType<typeof marathonV2AdaptPreview>;
 export type MarathonV2Details = Pick<
   Extract<MarathonV2Outcome, { ok: true }>,
-  'reasons' | 'weeks' | 'coverage' | 'needed'
+  'reasons' | 'weeks' | 'coverage' | 'needed' | 'shorterOffer'
 >;
 type PreviewReason = Extract<PlanRevisionReason, 'execution' | 'restore' | 'goal'>;
 
@@ -356,18 +360,22 @@ export function previewExecution(
 }
 
 /** Options for the stored plan when it is already a limited long-distance preparation. */
-export function storedPreparationDecision(todayStr: string): PreparationDecision | null {
+export function storedPreparationDecision(
+  todayStr: string,
+  flags: GeneratorFlags = currentGeneratorFlags()
+): PreparationDecision | null {
   const t = useTrainingStore.getState();
   const today = parseIsoDate(todayStr);
   const baseMode =
     (t.genPlan?.meta?.['cycleDecision'] as { kind?: string } | undefined)?.kind === 'base';
-  // Odluka pripada generatoru distance plana (HM → HM, maraton → maraton); 5K/10K je nemaju.
-  const preparation = preparationForPlan(t.genPlan);
+  // Odluka pripada generatoru distance plana (HM → HM, maraton → maraton); 5K/10K je nemaju. 3g: prekidači korisnika
+  // biraju cilj predaje izvora v2 (isti izvor kao za nov plan), a izvor v2 ocenjuje pripremu iz nedelja plana.
+  const preparation = preparationForPlan(t.genPlan, flags);
   if (
     !preparation ||
     !t.genPlan?.meta ||
     !today ||
-    !(baseMode || preparation.isLimitedLongPreparation(t.genPlan.meta))
+    !(baseMode || preparation.isLimitedLongPreparation(t.genPlan.meta, t.genPlan))
   )
     return null;
   const race = parseIsoDate(t.genPlan.meta.raceDate);
@@ -393,7 +401,7 @@ export function storedPreparationDecision(todayStr: string): PreparationDecision
  * without them the stored plan's own facts are reused. Nothing is written until commit.
  */
 export function previewPreparationChoice(
-  plan: ResolvedPlan,
+  plan: ResolvedPlan | null,
   todayStr: string,
   options: ExecutionAdjustmentOptions | null,
   choice: PreparationChoice
@@ -403,13 +411,14 @@ export function previewPreparationChoice(
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za odluku o pripremi treba generisan plan i ispravan datum.' };
   const generator = generatorForPlan(t.genPlan);
-  const preparation = preparationForPlan(t.genPlan);
+  const preparation = preparationForPlan(t.genPlan, currentGeneratorFlags());
   if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
   if (!preparation)
     return { ok: false, reason: 'Odluka o pripremi postoji samo za polumaraton i maraton.' };
-  const basis = options
-    ? generator.executionBasis(t.genPlan, today, executionModel(plan, today).analysis, options)
-    : preparation.basisFromPlan(t.genPlan, today);
+  const basis =
+    options && plan
+      ? generator.executionBasis(t.genPlan, today, executionModel(plan, today).analysis, options)
+      : preparation.basisFromPlan(t.genPlan, today);
   if (!basis) return { ok: false, reason: 'Plan nema sačuvane ulazne podatke.' };
   if ('error' in basis) return { ok: false, reason: basis.error };
   const built = preparation.buildPreparationChoice(
@@ -553,7 +562,13 @@ export function previewHmV2(
       reasons: [...out.reasons.map((x) => x.message), ...out.notes]
     };
   return preview(out.result, today, 'execution', out.summary, out.notes, {
-    hmV2: { reasons: out.reasons, weeks: out.weeks, coverage: out.coverage, needed: out.needed }
+    hmV2: {
+      reasons: out.reasons,
+      weeks: out.weeks,
+      coverage: out.coverage,
+      needed: out.needed,
+      ...(out.shorterOffer ? { shorterOffer: out.shorterOffer } : {})
+    }
   });
 }
 
@@ -590,7 +605,8 @@ export function previewMarathonV2(
       reasons: out.reasons,
       weeks: out.weeks,
       coverage: out.coverage,
-      needed: out.needed
+      needed: out.needed,
+      ...(out.shorterOffer ? { shorterOffer: out.shorterOffer } : {})
     }
   });
 }
@@ -607,8 +623,14 @@ export function previewRestore(revisionId: string, todayStr: string): PlanChange
   const result = generator.graftFuturePlan(t.genPlan, revision.snapshot, today, replanContext());
   const changes = result.meta?.['futureChanges'] as
     { changedDays?: number; conflicts?: string[] } | undefined;
+  // 3g: odbijeno vraćanje sa razlogom domena (npr. verzija druge distance, RESTORE_OTHER_DISTANCE) prikazuje taj razlog.
   if (!changes?.changedDays)
-    return { ok: false, reason: 'Nema preostalih dana koji se mogu vratiti bez promene istorije.' };
+    return {
+      ok: false,
+      reason: changes?.conflicts?.length
+        ? changes.conflicts.join(' ')
+        : 'Nema preostalih dana koji se mogu vratiti bez promene istorije.'
+    };
   return preview(result, today, 'restore', `Vraćanje plana: ${revision.summary}`, [
     'Vraćaju se samo nezaštićeni budući treninzi. Dnevnik, merenja, pomeranja i ručne izmene ostaju.',
     ...(changes.conflicts ?? [])

@@ -106,3 +106,17 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - `app/preparation.ts` `contractInput` nosi `easyPaceSecPerKm` kad ga ulaz ima (činjenica korisnika, DESIGN § 8); v1
   cilj ga ne dobija (lepak `handoff.ts`), pa je v1 plan bajt-isti. Verzija HM nepromenjena. Izveštaj
   `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` § 8.
+
+## Segment HM-08 (hm-v2.6.0): pouka 37 — mešovita nedelja, ostatak do cilja (samo naniže)
+
+- `week.remainderWeek` (jedino mesto): preostali dani na ostatak = cilj − zaštićeni (po činjenicama, `keptSum100`);
+  lagani do 4 km, pa kvalitet otpada samo kad time staje; dugi i test ostaju (opcija A, STOP `reports/SEGMENT-08-STOP.md`);
+  ne staje → MIXED_WEEK_OVER. Validator iste funkcije (`mixedMin100`), `adaptation.doneDayIds`/`factKm`.
+- mixed-deload HM 291/449 → 19 (sva sa upozorenjem); generator bajt-isti; 0 odbijanja. Trajna mreža `segment08`.
+  Izveštaj `reports/SEGMENT-08-IMPLEMENTATION.md`, artefakti `artifacts/segment-08/`.
+
+## Faza 3, 3c-dopuna 2: format izmena i poslednji rezultat (obrazac 3e)
+
+- `app/preparation.ts`: `HM_V2_SOURCE_FORMAT` ∪ `hmV2Edits` (snimak izmena ne prelazi u v1 cilj); `lastResult` — `pb` =
+  poslednji rezultat (ulaz ili korak adaptacije) koji nije posle starta ulaza ugovora. `handoff.ts` tekst O5. Verzija
+  HM nepromenjena. Izveštaj `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` § 9.

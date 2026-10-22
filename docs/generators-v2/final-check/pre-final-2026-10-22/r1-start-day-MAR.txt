@@ -1,0 +1,1 @@
+{"dist":"MAR","stride":25,"plans":1277,"flows":43418,"inv":0,"rejected":{},"examples":[]}

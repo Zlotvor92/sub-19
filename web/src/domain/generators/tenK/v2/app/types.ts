@@ -125,6 +125,8 @@ export interface StoredPlan {
   meta: TenKV2Meta;
   /** Izlaz generatora 10K v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (segment 06). */
   tenKV2: unknown;
+  /** Faza 3 (3d-10K): nedelje izvora predaje ispred plana (`plan.ts` `PREFIX_KEY`). */
+  tenKV2Prefix?: { offset: number; weeks: StoredWeek[] };
 }
 /** Plan koji adapter samo čita (bilo koji plan formata). */
 export interface PlanLike {

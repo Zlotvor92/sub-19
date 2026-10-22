@@ -10,7 +10,7 @@ import { basisAt, pacesAt } from '../steps.ts';
 import { v2Of } from './adapt.ts';
 import { diffDays } from './date.ts';
 import { buildFacts } from './facts.ts';
-import { goalOf } from './plan.ts';
+import { goalOf, prefixOf } from './plan.ts';
 import type { AppPlan, IsoDate, LogEntry } from './types.ts';
 
 export interface FormPointV2 {
@@ -28,7 +28,8 @@ export interface FormHistoryV2 {
   current: number | null;
   predictedHmSec: number | null;
   mode: 'vdot' | 'feel';
-  /** Primenjen rezultat čiji tempo važi tek od sledeće nedelje (A1): nedelja i VDOT; `null` = nema takvog. */
+  /** Primenjen rezultat čiji tempo važi tek od sledeće nedelje (A1): nedelja (broj kao u kalendaru, uz prefiks izvora
+   *  `offset + fromWeek`, 3h) i VDOT; `null` = nema takvog. */
   next: { week: number; vdot: number } | null;
   goal: { status: string; label: string; message: string } | null;
 }
@@ -55,6 +56,8 @@ export function formHistory(src: {
   const goal = goalOf(v2) ?? null;
   const points: FormPointV2[] = [];
   const used = new Set<string>();
+  // 3h: plan cilja predaje nosi nedelje izvora ispred; prikazni broj nedelje = `offset + fromWeek` (kao kalendar).
+  const off = prefixOf(src.plan)?.offset ?? 0;
   const r = v2.input.recentResult;
   if (chk.pace.kind === 'result' && r) {
     points.push({
@@ -73,7 +76,7 @@ export function formHistory(src: {
         date: s.result.date,
         vdot: s.vdot,
         kind: s.result.kind,
-        label: `${s.result.kind === 'test' ? 'Test' : 'Trka'} ${dist(s.result.distM)} ${mmss(s.result.sec)} — tempo od nedelje ${s.fromWeek}`,
+        label: `${s.result.kind === 'test' ? 'Test' : 'Trka'} ${dist(s.result.distM)} ${mmss(s.result.sec)} — tempo od nedelje ${off + s.fromWeek}`,
         status: 'used'
       });
     }
@@ -112,7 +115,7 @@ export function formHistory(src: {
     current: feel ? null : paces.vdot,
     predictedHmSec: feel ? null : predictedHm(paces),
     mode: feel ? 'feel' : 'vdot',
-    next: later ? { week: later.fromWeek, vdot: later.vdot! } : null,
+    next: later ? { week: off + later.fromWeek, vdot: later.vdot! } : null,
     goal: goal ? { status: goal.status, label: goal.label, message: goal.message } : null
   };
 }

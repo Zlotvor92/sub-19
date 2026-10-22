@@ -10,7 +10,7 @@ import type { GenPlanState, IsoDate, LogEntry, T3kRecord } from '../../exchange.
 import { v2Of } from './adapt.ts';
 import { diffDays } from './date.ts';
 import { buildFacts } from './facts.ts';
-import { goalOf } from './plan.ts';
+import { goalOf, prefixOf } from './plan.ts';
 
 export interface FormPointV2 {
   date: string;
@@ -46,6 +46,8 @@ export function formHistory(src: {
   const cont: FiveKV2Plan | null = v2.planType === 'runWalk' ? (v2.continuous?.plan ?? null) : v2;
   const points: FormPointV2[] = [];
   const used = new Set<string>();
+  // 3h: plan cilja predaje nosi nedelje izvora ispred; prikazni broj nedelje = `offset + fromWeek` (kao kalendar).
+  const off = prefixOf(src.plan)?.offset ?? 0;
   if (cont) {
     const input = cont.input;
     const base = baseVdot(input);
@@ -66,7 +68,7 @@ export function formHistory(src: {
           date: s.result.date,
           vdot: s.vdot,
           kind: s.result.kind,
-          label: `${s.result.kind === 'test' ? 'Test' : 'Trka'} ${s.result.distM / 1000}K ${mmss(s.result.sec)} — tempo od nedelje ${s.fromWeek}`,
+          label: `${s.result.kind === 'test' ? 'Test' : 'Trka'} ${s.result.distM / 1000}K ${mmss(s.result.sec)} — tempo od nedelje ${off + s.fromWeek}`,
           status: 'used'
         });
       }

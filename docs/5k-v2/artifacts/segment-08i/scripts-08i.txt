@@ -1,0 +1,95 @@
+=== mixed-deload.ts
+5K {
+  tekucaRasterecenja: 42,
+  planIznadCilja: 7,
+  prosek: 1.29,
+  max: 2.12,
+  neNizeOdPrethodne: 19,
+  ex: [
+    'b-d3-8w-25km-v36-1 k3 cilj 15.9 plan 16.84',
+    'b-d3-8w-25km-v36-1 k5 cilj 15.9 plan 18.02',
+    'f-d3-12w-12km-e480-1 k5 cilj 11.1 plan 11.77'
+  ]
+}
+10K {
+  tekucaRasterecenja: 582,
+  planIznadCilja: 367,
+  prosek: 3.04,
+  max: 8.02,
+  neNizeOdPrethodne: 254,
+  ex: [
+    'd3-8w-20km-v30-A-sat k3 cilj 17 plan 19.5',
+    'd3-8w-20km-v30-A-sat k5 cilj 18 plan 20.7',
+    'd3-9w-25km-v30-B-sun k3 cilj 21.2 plan 24.64'
+  ]
+}
+HM {
+  tekucaRasterecenja: 449,
+  planIznadCilja: 291,
+  prosek: 3.66,
+  max: 9.98,
+  neNizeOdPrethodne: 184,
+  ex: [
+    'd3-10w-25km-v30-A-sat k3 cilj 21.2 plan 24.32',
+    'd3-11w-30km-v30-B-sun k3 cilj 25.4 plan 29.02',
+    'd3-11w-40km-v30-C-sat k3 cilj 33.9 plan 37.46'
+  ]
+}
+MAR {
+  tekucaRasterecenja: 613,
+  planIznadCilja: 426,
+  prosek: 4.24,
+  max: 11.91,
+  neNizeOdPrethodne: 277,
+  ex: [
+    'd3-12w-30km-v30-A-sat k3 cilj 25.4 plan 29.52',
+    'd3-12w-50km-v30-B-sat k3 cilj 34.4 plan 37.96',
+    'd3-14w-30km-v30-C-sun k3 cilj 25.4 plan 28.52'
+  ]
+}
+(t=44s)
+=== fatigue-monday.ts
+5K 35 { 'tekuca+0': 22, 'bez novog': 13 }
+10K 296 { 'tekuca+0': 268, 'bez novog': 28 }
+HM 240 { 'tekuca+0': 206, 'bez novog': 34 }
+MAR 304 { 'tekuca+0': 281, 'bez novog': 23 }
+(t=28s)
+=== fatigue-repeat.ts 5K end
+5K { tokova: 117, drugo_rasterecenje: 0, odbijeno_drugi: 0 }
+(t=6s)
+=== locked-result.ts 5K
+5K { tokova: 108, odbijeno: 0 } []
+(t=5s)
+=== start-day.ts 5K 6
+{"dist":"5K","stride":6,"plans":633,"flows":21522,"inv":0,"rejected":{},"examples":[]}
+(t=106s)
+=== fatigue-testweek.ts 5K 3
+{"dist":"5K","stride":3,"plans":514,"flows":7196,"rejected":{},"twoTests":0,"examples":[]}
+(t=41s)
+=== early.ts 5K 29 19 11
+{
+ "dist": "5K",
+ "step": {
+  "R": 29,
+  "F": 19,
+  "B": 11
+ },
+ "sampled": 194,
+ "excludedPermanent": 0,
+ "plans": 194,
+ "generatorRejected": 0,
+ "flows": 75456,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "noneMismatch": 0,
+ "noneEx": [],
+ "inv": {},
+ "invEx": {},
+ "byScenario": {},
+ "byAsOf": {},
+ "seconds": 355.242
+}
+(t=356s)

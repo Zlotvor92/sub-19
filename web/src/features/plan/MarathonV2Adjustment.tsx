@@ -9,6 +9,13 @@ import {
   previewRestore,
   type PlanChangePreview
 } from '../../stores/executionActions';
+import {
+  noteHandoffApplied,
+  RaceChange,
+  ShorterDistanceDecision,
+  ShorterOfferNote,
+  useStoredDecision
+} from './ShorterDistanceDecision';
 
 type ReadyPreview = Extract<PlanChangePreview, { ok: true }>;
 type WeekView = NonNullable<NonNullable<ReadyPreview['marathonV2']>['weeks'][number]['before']>;
@@ -36,6 +43,7 @@ export function MarathonV2Adjustment({ today }: { today: string }) {
   const [result, setResult] = useState<PlanChangePreview | null>(() => previewMarathonV2(today));
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const decision = useStoredDecision(today);
 
   const review = (
     opts: { confirmed?: boolean; days?: string; breaks?: typeof breaks } = {}
@@ -65,6 +73,11 @@ export function MarathonV2Adjustment({ today }: { today: string }) {
     setResult(null);
     if (!r.ok) {
       setError(r.reason);
+      return;
+    }
+    // 3g: izbor kraće distance menja distancu plana (ekran prelazi na cilj) — potvrda ide na ekran cilja.
+    if (result.change) {
+      noteHandoffApplied(result.summary);
       return;
     }
     setMessage(
@@ -177,6 +190,10 @@ export function MarathonV2Adjustment({ today }: { today: string }) {
       {preview ? (
         <Section title="Pregled promene" id="plan-change-preview">
           <p className="prop-m">{preview.summary}</p>
+          {preview.change ? <RaceChange change={preview.change} /> : null}
+          {v2?.shorterOffer ? (
+            <ShorterOfferNote distance="maraton" hasDecision={!!decision} />
+          ) : null}
           {v2 ? (
             <>
               <ul aria-label="Razlozi prilagođavanja">
@@ -258,6 +275,18 @@ export function MarathonV2Adjustment({ today }: { today: string }) {
             </button>
           </div>
         </Section>
+      ) : null}
+
+      {decision ? (
+        <ShorterDistanceDecision
+          decision={decision}
+          today={today}
+          onPreview={(r) => {
+            setMessage('');
+            setError('');
+            setResult(r);
+          }}
+        />
       ) : null}
 
       {revisions.length ? (

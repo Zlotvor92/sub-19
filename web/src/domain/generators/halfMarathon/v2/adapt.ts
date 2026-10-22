@@ -19,7 +19,8 @@ import type {
   PreStartRef,
   Reason,
   HmV2AdaptStep,
-  HmV2Plan
+  HmV2Plan,
+  WorkoutFact
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { to10 } from './volume.ts';
@@ -139,12 +140,18 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
   const locked = new Set(facts.lockedDayIds);
   const keep = (d: PlanDay): boolean =>
     mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
+  // Pouka 37: urađeni dani posle asOf ulaze u plan (adaptation.doneDayIds) — validator ih, kao zaključane, vidi
+  // kao zaštićene (ostatak mešovite nedelje).
+  const doneAfter = [...done].filter((id) => ids.has(id) && mustDay(id) > t).sort();
+  const factKm = factKmOf(plan, facts, keep, t);
   const prior: Written = {
     weeks: plan.weeks,
     keep,
     asOf: t,
     at,
-    lockedDayIds: facts.lockedDayIds
+    lockedDayIds: facts.lockedDayIds,
+    doneDayIds: doneAfter,
+    factKm
   };
 
   // (2) Isti konstruktor kao generate.
@@ -224,7 +231,14 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
       ...applied.map((x) => `Adaptacija ${at}: ${x.message}`)
     ],
     warnings: [],
-    adaptation: { asOf: at, steps, mixedWeeks: mixed, lockedDayIds: facts.lockedDayIds }
+    adaptation: {
+      asOf: at,
+      steps,
+      mixedWeeks: mixed,
+      lockedDayIds: facts.lockedDayIds,
+      ...(doneAfter.length > 0 ? { doneDayIds: doneAfter } : {}),
+      ...(Object.keys(factKm).length > 0 ? { factKm } : {})
+    }
   };
 
   // (4) Validacija.
@@ -244,6 +258,36 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
   out.warnings = violations;
   // Pouka 20: traka samo za NOVO ograničenje (steps.newLimits; aplikacija čita ovo polje).
   return { ok: true, plan: out, changes: diff(plan, out), reasons, newLimits: newLimits(steps) };
+}
+
+/**
+ * Pouka 37 (dopuna organizatora, 5K-08i): km zaštićenih dana nedelja koje nisu cele ≤ asOf po ČINJENICAMA — dan u
+ * prijavljenoj pauzi 0, dan sa upisanim treningom (dayId, inače datum) zbir upisanih km (completed = false → 0);
+ * ostali (asOf bez zapisa, zaključani) ostaju po planu i nisu u mapi. Samo dani čiji se km razlikuje od plana.
+ * Zbir čita week.keptSum100 (konstruktor i validator).
+ */
+function factKmOf(
+  plan: HmV2Plan,
+  facts: { workouts: readonly WorkoutFact[]; breaks: readonly { from: string; to: string }[] },
+  keep: (d: PlanDay) => boolean,
+  t: number
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const w of plan.weeks) {
+    if (mustDay(w.endDate) <= t) continue;
+    for (const d of w.days) {
+      if (!keep(d) || !d.countsToWeek) continue;
+      const x = mustDay(d.date);
+      const rec = facts.workouts.filter((r) => (r.dayId ?? r.date) === d.date);
+      const km = facts.breaks.some((b) => mustDay(b.from) <= x && x <= mustDay(b.to))
+        ? 0
+        : rec.length > 0
+          ? Math.round(rec.reduce((a, r) => a + (r.completed ? r.km : 0), 0) * 100) / 100
+          : d.workout.km;
+      if (Math.round(km * 100) !== Math.round(d.workout.km * 100)) out[d.date] = km;
+    }
+  }
+  return out;
 }
 
 /** Pouka 20: ograničenja (bol, pauza, umor) — traka samo kad korak donese NOVO ograničenje (`newLimits`). */
