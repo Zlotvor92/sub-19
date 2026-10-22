@@ -1,7 +1,7 @@
 # Segment 3h — Forma (Napredak) prikazuje broj nedelje sa prefiksom izvora (REVIEW-3 #2)
 
-Grana `claude/generator-isolation-5k-10k-hm-marathon`, polazni SHA `0fa8be7`. Bez PR-a, mergea i deploya. Verzija
-politike nije menjana (prikaz, ne plan). UI (`FormTenKV2.tsx`, `FormHmV2.tsx`) nije menjan: čita `next.week` iz domena.
+Grana `claude/generator-isolation-5k-10k-hm-marathon`, polazni SHA `0fa8be7`. Verzija politike nije menjana (prikaz).
+UI (`FormTenKV2.tsx`, `FormHmV2.tsx`) nije menjan: čita `next.week` iz domena.
 
 ## 1. Izmena
 
@@ -11,14 +11,12 @@ politike nije menjana (prikaz, ne plan). UI (`FormTenKV2.tsx`, `FormHmV2.tsx`) n
 | `halfMarathon/v2/app/form.ts` | isto | isto |
 | `fiveK/v2/app/form.ts` | oznaka `fromWeek` (polja `next` nema) | `off + fromWeek` |
 
-Unutrašnje poređenje `fromWeek > week` ostaje u indeksu v2. Bez prefiksa `off = 0` → isti izlaz kao pre. Obrazac je
-isti kao 3d/3g (pregled i kalendar `offset + index`).
+Poređenje `fromWeek > week` ostaje u indeksu v2; bez prefiksa `off = 0` → isti izlaz. Obrazac 3d/3g (`offset + index`).
 
 ## 2. Eksperiment (testovi pre izmene, pravi tok predaje)
 
-Nov `form.node.test.ts` u sva tri `app/` foldera. Tok: izvor v2 → pauza 20 d → `preparationForPlan` →
-`buildPreparationChoice` (kraća) → plan cilja sa prefiksom → trka u 2. nedelji v2 → adaptacija (tempo od nedelje v2 3)
-→ `formHistory`.
+Nov `form.node.test.ts` u sva tri `app/`: izvor v2 → pauza 20 d → `preparationForPlan` → `buildPreparationChoice` →
+plan cilja sa prefiksom → trka u 2. nedelji v2 → adaptacija (tempo od nedelje v2 3) → `formHistory`.
 
 | Cilj (izvor) | offset | Forma pre | Kalendar | Posle |
 |---|---|---|---|---|
@@ -30,17 +28,15 @@ Nalaz važi za sve tri distance. Test proverava i da nedelja kalendara sa prikaz
 `fromWeek`. Drugi test: isti plan bez polja prefiksa → broj = `fromWeek`. Pre izmene: **3/6 pada** (sva tri testa sa
 prefiksom), posle: 6/6.
 
-`docs/generators-v2/handoff/review3d.measure.ts` **nije na grani** (`git ls-files` prazno), pa `labelMismatch` nije
-ponovljen. Zamena su gornji testovi (isti tip slučaja: test posle starta na planu sa prefiksom).
+`review3d.measure.ts` (stigao pull-om posle commita; privremena kopija sa putanjom izlaza u moj scratchpad, obrisana):
+94 cilja 10K v2 sa prefiksom, 30 sa testom, 30 prilagođeno → **`labelMismatch` 0** (bilo 30/30).
 
 ## 3. Sabotaže (`sabotage.mjs`, brz nivo, `--bail=1`)
 
-Ulaz nije u repou (segment sme da menja samo navedene fajlove). Tri sabotaže, svaka vraća `off + ` → bez offset-a:
-10K (oznaka i `next`), HM (oznaka i `next`), 5K (oznaka). Svaka je proverena svojim `form.node.test.ts`.
-**3/3 palo**, 19 s; stanje `src` posle vraćanja isto.
+Ulaz nije u repou (opseg fajlova). Bez offset-a: 10K (oznaka, `next`), HM (oznaka, `next`), 5K (oznaka), svaka nad svojim
+`form.node.test.ts`: **3/3 palo**, 19 s; stanje `src` posle vraćanja isto.
 
 ## 4. Provere (iz `web/`)
-
 | Komanda | Rezultat |
 |---|---|
 | `tsc -b --noEmit`, eslint, prettier (menjani fajlovi) | exit 0 |
@@ -49,6 +45,6 @@ Ulaz nije u repou (segment sme da menja samo navedene fajlove). Tri sabotaže, s
 | `npx playwright test` handoff-v2, tenk-v2, hm-v2, fivek-v2 | 13/13, 2,2 min |
 
 ## 5. Otvoreno
-
-- `review3d.measure.ts` nije na grani; ako ga organizator doda, ponoviti `labelMismatch` (očekivano 0).
-- Marathon v2 `form.ts` nije u opsegu: maraton nije cilj predaje „kraća distanca", pa nema prefiks.
+- REVIEW-3 G2, drugi deo (van opsega 3h, domen 10K-06i): poruke jezgra u `reasons`/`needed` pregleda
+  (`tenK/v2/assess.ts:315` „od nedelje ${n}" i dr.) i dalje nose v2 indeks.
+- Maraton v2 `form.ts` van opsega: maraton nije cilj predaje „kraća distanca" (nema prefiks).
