@@ -14,7 +14,7 @@ import { tab } from './support/flows';
 
 const STATE_KEY = 'sub19-v1:account:u-e2e';
 const NEEDS_RESULT =
-  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa, a ovaj plan je po osećaju.';
+  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa pre početka novog plana, a ovaj plan ga nema.';
 const RESTORE_OTHER =
   'Sačuvana verzija je plan druge distance (pre izbora kraće distance), pa se ne može vratiti preko ovog plana.';
 
