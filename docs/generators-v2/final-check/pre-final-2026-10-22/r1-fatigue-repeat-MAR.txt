@@ -1,0 +1,1 @@
+MAR { tokova: 990, drugo_rasterecenje: 0, odbijeno_drugi: 0 }

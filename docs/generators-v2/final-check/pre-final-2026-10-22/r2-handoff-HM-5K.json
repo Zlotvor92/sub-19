@@ -1,0 +1,109 @@
+{
+ "pair": "HM>5K",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 60
+ },
+ "sources": 74,
+ "handoff": {
+  "calls": 444,
+  "ok": 177,
+  "noPrefix": 0,
+  "errors": {
+   "Trenutni obim mora biti #–# km nedeljno za # dana.": 60,
+   "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno za # dana.": 18,
+   "Plan mora trajati #–# nedelja; sada #.": 21,
+   "Podržano je #, #, # dana trčanja nedeljno; zadato #.": 42,
+   "Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni obim mora biti #–# km nedelj": 48,
+   "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno; zadato #": 6,
+   "Početnik: najviše # dana trčanja nedeljno; zadato #.": 66,
+   "Plan mora trajati #–# nedelja; sada #. Početnik: najviše # dana trčanja nedeljno; zadato #": 6
+  },
+  "errorEx": [
+   "d3-10w-45km-v35-B-sat/none/asOf 2026-11-14: Trenutni obim mora biti 12–35 km nedeljno za 3 dana.",
+   "d3-10w-45km-v35-B-sat/under50/asOf 2026-11-14: Trenutni obim mora biti 12–35 km nedeljno za 3 dana.",
+   "d3-10w-45km-v35-B-sat/pain8/asOf 2026-11-14: Trenutni obim mora biti 12–35 km nedeljno za 3 dana.",
+   "d3-10w-45km-v35-B-sat/none/asOf 2026-12-05: Plan mora trajati 6–16 nedelja; sada 5. Trenutni obim mora biti 12–35 km nedeljno za 3 dana."
+  ]
+ },
+ "adapt": {
+  "new": {
+   "flows": 12036,
+   "rejectedFlows": 379,
+   "rejected": {
+    "VDOT_OUT_OF_RANGE:VDOT novog rezultata (#) mora biti #–#.": 336,
+    "VALIDATOR:R_REP": 69
+   },
+   "rejectedEx": {
+    "VDOT_OUT_OF_RANGE:VDOT novog rezultata (#) mora biti #–#.": [
+     "new d3-14w-25km-v60-C-sat/none@2026-11-14→5K/t1 2026-11-15/faster: VDOT novog rezultata (62) mora biti 30–60.",
+     "new d3-14w-25km-v60-C-sat/none@2026-11-14→5K/t1 2026-11-15/test5k: VDOT novog rezultata (61) mora biti 30–60.",
+     "new d3-14w-25km-v60-C-sat/none@2026-11-14→5K/t1wed 2026-11-18/faster: VDOT novog rezultata (62) mora biti 30–60."
+    ],
+    "VALIDATOR:R_REP": [
+     "new d4-13w-45km-v35-B-sat/none@2026-11-14→5K/t1 2026-11-15/slower: R ponavljanje 123 s > 120 s.",
+     "new d4-13w-45km-v35-B-sat/none@2026-11-14→5K/t1wed 2026-11-18/slower: R ponavljanje 123 s > 120 s.",
+     "new d4-13w-45km-v35-B-sat/none@2026-11-14→5K/t1end 2026-11-21/slower: R ponavljanje 123 s > 120 s."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1/faster": 36,
+    "t1/test5k": 36,
+    "t1wed/faster": 36,
+    "t1wed/test5k": 36,
+    "t1end/faster": 36,
+    "t1end/test5k": 36,
+    "t2wed/faster": 36,
+    "t2wed/test5k": 36,
+    "t1/slower": 24,
+    "t1wed/slower": 24,
+    "t1end/slower": 24,
+    "t2wed/slower": 19
+   }
+  },
+  "cum": {
+   "flows": 12036,
+   "rejectedFlows": 379,
+   "rejected": {
+    "VDOT_OUT_OF_RANGE:VDOT novog rezultata (#) mora biti #–#.": 336,
+    "VALIDATOR:R_REP": 69
+   },
+   "rejectedEx": {
+    "VDOT_OUT_OF_RANGE:VDOT novog rezultata (#) mora biti #–#.": [
+     "cum d3-14w-25km-v60-C-sat/none@2026-11-14→5K/t1 2026-11-15/faster: VDOT novog rezultata (62) mora biti 30–60.",
+     "cum d3-14w-25km-v60-C-sat/none@2026-11-14→5K/t1 2026-11-15/test5k: VDOT novog rezultata (61) mora biti 30–60.",
+     "cum d3-14w-25km-v60-C-sat/none@2026-11-14→5K/t1wed 2026-11-18/faster: VDOT novog rezultata (62) mora biti 30–60."
+    ],
+    "VALIDATOR:R_REP": [
+     "cum d4-13w-45km-v35-B-sat/none@2026-11-14→5K/t1 2026-11-15/slower: R ponavljanje 123 s > 120 s.",
+     "cum d4-13w-45km-v35-B-sat/none@2026-11-14→5K/t1wed 2026-11-18/slower: R ponavljanje 123 s > 120 s.",
+     "cum d4-13w-45km-v35-B-sat/none@2026-11-14→5K/t1end 2026-11-21/slower: R ponavljanje 123 s > 120 s."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1/faster": 36,
+    "t1/test5k": 36,
+    "t1wed/faster": 36,
+    "t1wed/test5k": 36,
+    "t1end/faster": 36,
+    "t1end/test5k": 36,
+    "t2wed/faster": 36,
+    "t2wed/test5k": 36,
+    "t1/slower": 24,
+    "t1wed/slower": 24,
+    "t1end/slower": 24,
+    "t2wed/slower": 19
+   }
+  }
+ },
+ "seconds": 162.729
+}
