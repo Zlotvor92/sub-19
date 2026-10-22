@@ -131,7 +131,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     }
   }, GRID_TIMEOUT);
 
-  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.6.0', () => {
+  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.6.1', () => {
     expect(PAIN_GRID.length).toBe(6);
     expect(flows.length).toBe(336);
     expect(flows.filter((f) => !f.res.ok).map((f) => f.key)).toEqual([]);
@@ -141,7 +141,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.6.0');
+      expect(r.plan.policyVersion).toBe('10k-v2.6.1');
     }
   });
 

@@ -6,6 +6,7 @@ import { daysBetween, mustDay } from './dates.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import type { PlanDay, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { deloadWeekOf } from './steps.ts';
+import { raceWeekEveOnly } from './week.ts';
 
 const EPS = 1e-6;
 const isBuild = (w: PlanWeek): boolean =>
@@ -134,7 +135,11 @@ export function adaptInvariants(
   }
   // Trkačka ≤ taper; D30b.
   if (!mixed.has(taper.index) && !mixed.has(race.index)) {
-    if (race.plannedKm > taper.plannedKm + EPS) bad.push('trkačka > taper');
+    // 06g (pouka 30): izuzetak — ostali su samo dan pred trku i trka (svi ostali dani odmor), uz upozorenje.
+    const eveOnly =
+      raceWeekEveOnly(race.days) &&
+      after.warnings.some((w) => w.rule === 'RACE_WEEK_OVER_TAPER_EVE' && w.week === race.index);
+    if (race.plannedKm > taper.plannedKm + EPS && !eveOnly) bad.push('trkačka > taper');
     // Izuzetak D30b (10k-v2.5.1, uzak): trkačka nedelja skraćena po D23 (dani pretvoreni u odmor — manje dana
     // trčanja od D20 bez dana odmora koraka — uz napomenu D23) i plan nosi upozorenje RACE_WEEK_SHORT.
     const runs = race.days.filter((d) => d.role !== 'race').length;

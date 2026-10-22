@@ -6,7 +6,7 @@
     "replace": "    const anchor = addDays(asOf, 1);",
     "tests": [
       "src/domain/generators/tenK/v2/fatigue.node.test.ts",
-      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
     ]
   },
   {
@@ -43,7 +43,7 @@
     "replace": "find((s) => s.pain !== null && day(s.asOf) > t)",
     "tests": [
       "src/domain/generators/tenK/v2/fatigue.node.test.ts",
-      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
     ]
   },
   {
@@ -52,7 +52,7 @@
     "find": "      if (f !== n) step.deloadWeek = f;\n",
     "replace": "",
     "tests": [
-      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
     ]
   },
   {
@@ -61,7 +61,26 @@
     "find": "      if (protectedDay(d)) continue;\n",
     "replace": "",
     "tests": [
-      "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06g-h trkačka samo sa danom pred trku > tapera ostaje greška (bez RACE_WEEK_OVER_TAPER_EVE)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "if (restD23.length > 0 && raceWeekEveOnly(rw.days))",
+    "replace": "if (restD23.length < 0 && raceWeekEveOnly(rw.days))",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06g-i nedelja cela odmor (bol) ostaje EMPTY_WEEK",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "      if (allRest)\n",
+    "replace": "      if (allRest && w.index < 0)\n",
+    "tests": [
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
     ]
   }
 ]
