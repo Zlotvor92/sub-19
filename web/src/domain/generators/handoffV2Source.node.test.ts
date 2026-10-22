@@ -245,20 +245,23 @@ describe('3b: izvor v2 → v1 cilj (ponovljeno M2 sa čistačem)', () => {
 describe('3b: izbor cilja po prekidaču korisnika (generatorForNewPlan)', () => {
   const plan = stored('hm', sources('hm', false)[0]!.input);
   const input = contractInput(sources('hm', false)[0]!.input, 10000);
+  // 3f (HM v2), 3d (5K v2, 10K v2): svaki cilj v2 ima predaju — NOT_READY se više ne vraća; plan je plan v2 cilja
+  // ili odbijanje v2 doslovno, nikad v1 (`<distanca>/v2/app/handoffTarget.node.test.ts`).
   it.each([
-    // 3f: HM v2 cilj, 3d: 5K v2 cilj više nisu NOT_READY (`fiveK/v2/app/handoffTarget.node.test.ts`).
-    [{ fiveKV2: false, tenKV2: true }, 10000]
-  ] as const)('prekidač cilja uključen %j → %d: odbijanje sa razlogom, ne v1', (flags, dist) => {
-    const h = select.shorterHandoffForV2Source(flags, HM_FORMAT)(dist)!;
-    expect(
-      call(h, plan, { ...input, raceDistM: dist }, addDays(START, 13), {
+    [{ fiveKV2: false, tenKV2: true }, 10000, 'tenKV2'],
+    [{ fiveKV2: true }, 5000, 'fiveKV2']
+  ] as const)(
+    'prekidač cilja uključen %j → %d: cilj v2, ne v1 i ne NOT_READY',
+    (flags, dist, key) => {
+      const h = select.shorterHandoffForV2Source(flags, HM_FORMAT)(dist)!;
+      const r = call(h, plan, { ...input, raceDistM: dist }, addDays(START, 13), {
         execution: null,
         restartFromBase: false
-      })
-    ).toEqual({
-      error: select.V2_TARGET_NOT_READY
-    });
-  });
+      }) as { result?: Record<string, unknown>; error?: string };
+      expect(r.error).not.toBe(select.V2_TARGET_NOT_READY);
+      if (r.result) expect(key in r.result).toBe(true);
+    }
+  );
   it('prekidač isključen → v1 cilj; distanca bez generatora → null', () => {
     const h = select.shorterHandoffForV2Source({ fiveKV2: false, tenKV2: false }, HM_FORMAT);
     expect(h(10000)).not.toBeNull();

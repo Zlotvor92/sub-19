@@ -11,6 +11,7 @@ import * as adapt from './adapt.ts';
 import * as facts from './facts.ts';
 import * as form from './form.ts';
 import * as gen from './generate.ts';
+import * as target from './handoffTarget.ts';
 import * as b from './members.ts';
 import * as plan from './plan.ts';
 import * as paces from './paces.ts';
@@ -77,6 +78,8 @@ export const tenKV2 = {
   injuryProposal: b.injuryProposal,
   applyInjuryProposal: b.applyInjuryProposal,
   realignPlan: b.realignPlan,
+  /* faza 3 (3d-10K): 10K v2 kao CILJ predaje „kraća distanca" (izvori HM v2, maraton v2) */
+  handoffFuture: target.handoffFuture,
   /* (c) prikaz stanja — sopstvena kopija */
   weatherCard: weather.weatherCard,
   painStatus: state.painStatus,
