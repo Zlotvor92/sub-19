@@ -630,7 +630,15 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
 
   it('KNOWN_VERSIONS: sačuvan plan hm-v2.3.0 (HM-05) / hm-v2.4.0 (HM-07) ostaje plan HM v2 i prilagođava se tekućim pravilima; druge verzije → UNKNOWN_POLICY', () => {
     expect(KNOWN_VERSIONS).toEqual([
-      ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', 'hm-v2.5.0', 'hm-v2.6.0', 'hm-v2.6.1', P.version])
+      ...new Set([
+        'hm-v2.3.0',
+        'hm-v2.4.0',
+        'hm-v2.4.1',
+        'hm-v2.5.0',
+        'hm-v2.6.0',
+        'hm-v2.6.1',
+        P.version
+      ])
     ]);
     const cur = planOf(WITH_RESULT);
     const as = (p: GenPlanState, version: string): GenPlanState => ({
