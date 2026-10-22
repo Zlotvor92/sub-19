@@ -194,6 +194,126 @@ export function secondQualityEasy(
   return one.capped || one.shares.some((x) => x < one.easyMin) ? null : one;
 }
 
+/** Pouka 37: oznaka (napomena) mešovite nedelje čiji su preostali dani sastavljeni na ostatak do cilja. */
+export const MIXED_NOTE = 'pouka 37';
+
+/** Najkraći lagan dan faze (taper i trkačka: taperMinKm). */
+export const easyMinOf = (phase: WeekFrame['phase']): number =>
+  phase === 'taper' || phase === 'race' ? P.easy.taperMinKm : P.easy.minKm;
+
+/**
+ * 2.10.0 (MASTER pouka 37): najmanji obim preostalih (slobodnih) dana mešovite nedelje — bez kvaliteta, lagan =
+ * minimum faze, dugi kakav je sastavljen (ne skraćuje se radi ostatka); nijedan dan iznad sastavljenog (`free` = dani
+ * kakvi su sastavljeni bez zaštićenih, ili upisani kod validatora). Konstruktor (mixedRemainder) i validator
+ * (MIXED_OVER_TARGET) čitaju istu funkciju: ostatak < ovog → planirano > cilj uz upozorenje.
+ */
+export function mixedFloorKm(free: readonly PlanDay[], easyMin: number): number {
+  return r2(
+    free
+      .filter((d) => d.countsToWeek)
+      .reduce((s, d) => s + (d.role === 'long' ? d.workout.km : Math.min(d.workout.km, easyMin)), 0)
+  );
+}
+
+/** Lagan dan iste vrste ubrzanja (bez, redovna, samo ubrzanja) sa novom dužinom. */
+function resizedEasy(d: PlanDay, km: number, p: PaceModel): Workout {
+  const st = d.workout.segments.filter((x) => x.kind === 'stride');
+  const so = P.quality.deloadSubstitute.stridesOnly;
+  if (st.length === 0) return easyRun(km, p, false);
+  return st.length === so.reps && st.every((x) => x.sec === so.sec)
+    ? easyRun(km, p, true, so)
+    : easyRun(km, p, true);
+}
+
+/**
+ * 2.10.0 (MASTER pouka 37, dopuna organizatora iz HM-08) — JEDINO mesto odluke o obimu preostalih dana mešovite
+ * nedelje izgradnje/tapera (deo dana zaštićen: ≤ asOf ili zaključan; `kept` = zaštićeni dani prethodnog plana te
+ * nedelje; trkačka nedelja izuzeta — pouka 30). Cilj važi za CELU nedelju: preostali dani (sastavljeni bez zaštićenih,
+ * `week`) dobijaju ostatak = cilj − zbir zaštićenih, SAMO NANIŽE (nijedan dan duži od sastavljenog; manjak se ne
+ * nadoknađuje). Dugi se ne skraćuje (referenca poslednjeg dugog); prvo lagani do minimuma (lagan ≤ dugi samo među
+ * preostalim danima — zaštićeni su činjenice), pa otpada kvalitet (prvo drugi, pa svi; dan postaje lagan, doza se ne
+ * beleži). Kad ni minimum preostalih dana (mixedFloorKm) ne staje: preostali dani na minimumu, `over` (planirano >
+ * cilj, validator: upozorenje MIXED_OVER_TARGET, pouka 14). null = staje bez izmene.
+ */
+export function mixedRemainder(
+  week: PlanWeek,
+  kept: readonly PlanDay[],
+  p: PaceModel
+): { days: PlanDay[]; over: boolean; droppedQuality: boolean; remainderKm: number } | null {
+  const keptDates = new Set(kept.map((d) => d.date));
+  const free = week.days.filter((d) => !keptDates.has(d.date));
+  const km = (ds: readonly PlanDay[]): number =>
+    r2(ds.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
+  const R = r2(week.targetKm - km(kept));
+  if (kept.length === 0 || free.length === 0 || km(free) <= R + 1e-9) return null;
+  const easyMin = easyMinOf(week.phase);
+  const long = free.find((d) => d.role === 'long');
+  const top = long ? long.workout.km : Infinity;
+  const qs = free.filter((d) => d.workout.kind === 'quality');
+  const over = R + 1e-9 < mixedFloorKm(free, easyMin);
+  const attempts: PlanDay[][] = over
+    ? [[]]
+    : [qs, ...(qs.length === 2 ? [qs.slice(0, 1)] : []), ...(qs.length > 0 ? [[]] : [])];
+  for (const keep of attempts) {
+    const easies = free.filter(
+      (d) => d.role === 'easy' || (d.workout.kind === 'quality' && !keep.includes(d))
+    );
+    const lo = easies.map((d) => Math.min(d.workout.km, easyMin));
+    const avail = r2(R - km(keep) - (long ? long.workout.km : 0));
+    if (!over && avail + 1e-9 < r2(lo.reduce((a, x) => a + x, 0))) continue;
+    const shares = over
+      ? lo
+      : splitEasy(avail, easies.length, top).map((x, i) =>
+          Math.max(lo[i]!, Math.min(x, easies[i]!.workout.km, top))
+        );
+    if (!over && r2(shares.reduce((a, x) => a + x, 0)) > avail + 1e-9) continue;
+    const days = week.days.map((d): PlanDay => {
+      const i = easies.indexOf(d);
+      if (i < 0) return d;
+      if (d.role !== 'easy')
+        return { ...d, role: 'easy', hard: false, workout: easyRun(shares[i]!, p, false) };
+      return Math.abs(shares[i]! - d.workout.km) < 1e-9
+        ? d
+        : { ...d, workout: resizedEasy(d, shares[i]!, p) };
+    });
+    return { days, over, droppedQuality: keep.length < qs.length, remainderKm: R };
+  }
+  return null;
+}
+
+/** Pouka 37: nedelja sa preostalim danima na ostatku do cilja (mixedRemainder) i napomenom; kontrolno trčanje koje
+    otpada skida oznaku testa. null = staje bez izmene. */
+export function mixedWeek(
+  week: PlanWeek,
+  kept: readonly PlanDay[],
+  p: PaceModel
+): { week: PlanWeek; droppedQuality: boolean } | null {
+  const m = mixedRemainder(week, kept, p);
+  if (!m) return null;
+  const keptDates = new Set(kept.map((d) => d.date));
+  const floor = mixedFloorKm(
+    week.days.filter((d) => !keptDates.has(d.date)),
+    easyMinOf(week.phase)
+  );
+  const keptKm = r2(week.targetKm - m.remainderKm);
+  const lost = week.test && !m.days.some((d) => d.workout.qualityType === 'TEST_3K');
+  return {
+    week: {
+      ...week,
+      days: m.days,
+      plannedKm: r2(m.days.reduce((x, d) => x + (d.countsToWeek ? d.workout.km : 0), 0)),
+      ...(lost ? { test: false } : {}),
+      notes: [
+        ...week.notes,
+        m.over
+          ? `Mešovita nedelja (${MIXED_NOTE}): zaštićeni dani ${keptKm} km, ostatak do cilja ${m.remainderKm} km < najmanji preostali dani ${floor} km — preostali dani na minimumu, planirano > cilj ${week.targetKm} km.`
+          : `Mešovita nedelja (${MIXED_NOTE}): zaštićeni dani ${keptKm} km, preostali dani skraćeni na ostatak do cilja ${m.remainderKm} km${m.droppedQuality ? ' (kvalitet koji ne staje otpada)' : ''}.`
+      ]
+    },
+    droppedQuality: m.droppedQuality
+  };
+}
+
 /** Doza nedelje bez drugog kvaliteta: drugi kvalitet (T, druga vrsta po osećaju) ostaje na prethodnoj dozi. */
 function secondEasyDose(d: WeekDose, prev: WeekDose | null): WeekDose {
   const kind = d.kind;

@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.9.0',
+  version: '5k-v2.10.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -776,5 +776,25 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'obim čarobnjaka izvora, start = granica nedelje posle potvrde) + adapt (sirove činjenice bez dayId; potvrđena ' +
       'pauza = činjenica pauze). Odbijanje → opcija nedostupna sa razlogom v2 doslovno. Sačuvan plan 5k-v2.8.1 i ' +
       'stariji prilagođavaju se po 2.9.0 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.10.0',
+    decision:
+      'MASTER pouka 37 (organizator, 10K-06h sudar; dopuna iz HM-08): mešovita nedelja izgradnje/tapera (deo dana ' +
+      'zaštićen: ≤ asOf, zaključan; urađen dan posle asOf u 5K nije činjenica) — cilj važi za CELU nedelju. Konstruktor ' +
+      'sastavlja nedelju bez zaštićenih dana, pa preostali dani dobijaju ostatak = cilj − zbir zaštićenih, SAMO NANIŽE ' +
+      '(nijedan dan duži od sastavljenog, manjak se ne nadoknađuje). Dugi se NE skraćuje (referenca poslednjeg dugog); ' +
+      'prvo lagani do minimuma (lagan ≤ dugi samo među preostalim danima — zaštićeni su činjenice), pa otpada kvalitet ' +
+      '(prvo drugi, pa svi; dan postaje lagan, doza se ne beleži); kad ni minimum preostalih dana (bez kvaliteta, lagan = ' +
+      'minimum, dugi kakav je) ne staje → preostali dani na minimumu, planirano > cilj uz upozorenje MIXED_OVER_TARGET ' +
+      '(pouka 14), ne odbijanje. Trkačka nedelja izuzeta (pouka 30: ≤ planirano tapera). Jedno mesto: week.mixedRemainder ' +
+      '(generate.construct); validator: mešovita nedelja posle asOf sa planirano > cilj → MIXED_OVER_TARGET ako su ' +
+      'preostali dani na week.mixedFloorKm (ista funkcija), inače MIXED_REMAINDER. Ciljevi nedelja se ne menjaju. ' +
+      'Merenje: mixed-deload.ts e2e482e planirano > cilj 22/42 (+2,4 km prosek, max 4,6) → 7/42 (svi sa upozorenjem, ' +
+      '+1,29, max 2,12); regresija 99 069 tokova (svaki 24. plan × 17 scenarija × asOf start − 3/− 1 i dan 0/3/6 svake ' +
+      'nedelje, umor svaki dan): generator bajt-isti (3816), promenjeno 15 742 — svi sa mešovitom nedeljom po pouci 37 ' +
+      '(pauza/lanac/bol+pauza 12 634, umor 553, bol 16, drugi korak lanca 2 539), ciljevi 0, nijedan km naviše, ' +
+      '0 odbijanja; trajna mreža 08i 0 odbijanja. Sačuvan plan 5k-v2.9.0 i stariji prilagođavaju se po 2.10.0 ' +
+      '(KNOWN_VERSIONS).'
   }
 ];

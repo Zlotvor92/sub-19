@@ -1,0 +1,48 @@
+e2e482e:
+{
+  n: 17459,
+  over: 2107,
+  overBound: 1694,
+  overTaper: 0,
+  med: 1.4399999999999995,
+  max: 12.820000000000002,
+  byS: {
+    pause10: 386,
+    pause20: 416,
+    pause35: 434,
+    chain: 386,
+    painPause: 422,
+    pain5: 38,
+    pain8: 25
+  },
+  ex: [
+    'r-d3-6w-12km-v32-0 pause10 2026-12-11 cilj 5.6 plan 5.99 granica 5.6 12-08 easy:2.8 | 12-10 q1:3.19 | 12-13 race:8.5',
+    'r-d3-6w-12km-v32-0 pause10 2026-12-12 cilj 5.6 plan 5.99 granica 5.6 12-08 easy:2.8 | 12-10 q1:3.19 | 12-13 race:8.5',
+    'r-d3-6w-12km-v32-0 pause20 2026-12-08 cilj 4.9 plan 5.3 granica 4.9 12-08 easy:2.8 | 12-10 easy:2.5 | 12-13 race:8.5',
+    'r-d3-6w-12km-v32-0 pause20 2026-12-09 cilj 4.9 plan 5.3 granica 4.9 12-08 easy:2.8 | 12-10 easy:2.5 | 12-13 race:8.5'
+  ]
+}
+08i:
+{
+  n: 17459,
+  over: 2107,
+  overBound: 1694,
+  overTaper: 0,
+  med: 1.4399999999999995,
+  max: 12.820000000000002,
+  byS: {
+    pause10: 386,
+    pause20: 416,
+    pause35: 434,
+    chain: 386,
+    painPause: 422,
+    pain5: 38,
+    pain8: 25
+  },
+  ex: [
+    'r-d3-6w-12km-v32-0 pause10 2026-12-11 cilj 5.6 plan 5.99 granica 5.6 12-08 easy:2.8 | 12-10 q1:3.19 | 12-13 race:8.5',
+    'r-d3-6w-12km-v32-0 pause10 2026-12-12 cilj 5.6 plan 5.99 granica 5.6 12-08 easy:2.8 | 12-10 q1:3.19 | 12-13 race:8.5',
+    'r-d3-6w-12km-v32-0 pause20 2026-12-08 cilj 4.9 plan 5.3 granica 4.9 12-08 easy:2.8 | 12-10 easy:2.5 | 12-13 race:8.5',
+    'r-d3-6w-12km-v32-0 pause20 2026-12-09 cilj 4.9 plan 5.3 granica 4.9 12-08 easy:2.8 | 12-10 easy:2.5 | 12-13 race:8.5'
+  ]
+}
