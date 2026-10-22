@@ -114,7 +114,7 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
     expect('error' in base && base.error).toMatch(/samo kraću distancu/);
   });
 
-  it('prekidač cilja v2 uključen → 10K nedostupan sa razlogom (O4a), 5K iz 5K v2 (3d); nikad v1', () => {
+  it('prekidač cilja v2 uključen → 10K iz 10K v2 (3d-10K), prva koju cilj pokriva; nikad v1', () => {
     const prep = select.preparationForPlan(source, { fiveKV2: true, tenKV2: true })!;
     const d = prep.preparationDecision(
       source,
@@ -124,9 +124,24 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
       'limited',
       undefined
     );
-    // 3d: 5K v2 je cilj predaje (`fiveK/v2/app/handoffTarget.node.test.ts`); 10K v2 i dalje nedostupan sa razlogom.
-    expect(d.unavailable).toEqual([`10K: ${select.V2_TARGET_NOT_READY}`]);
-    expect(d.options.map((o) => o.id)).toEqual(['shorter-5000']);
+    // 3d: 5K v2 i 10K v2 su ciljevi predaje (`<distanca>/v2/app/handoffTarget.node.test.ts`); nema NOT_READY.
+    expect(d.unavailable).toEqual([]);
+    expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
+    // Vrh opcije iz plana 10K v2 cilja (strukturno, `tenKV2`; nalaz 3g), > 0.
+    const c = prep.buildPreparationChoice(
+      source,
+      today,
+      prep.basisFromPlan(source, today)!,
+      { kind: 'shorter', raceDistM: 10000 },
+      {}
+    );
+    if ('error' in c) throw new Error(c.error);
+    const pk = v2Peaks(c.result, 'tenKV2');
+    expect(pk.longKm).toBeGreaterThan(0);
+    expect([d.options[0]!.peakLongRunKm, d.options[0]!.peakWeeklyKm]).toEqual([
+      pk.longKm,
+      pk.weeklyKm
+    ]);
   });
 
   it('plan po osećaju → v1 cilj nedostupan (O5a)', () => {
@@ -157,6 +172,20 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
     ]);
   });
 });
+
+/** Vrh plana v2 cilja (bez prefiksa izvora): najduži dugi i `peakKm` objekta plana v2. */
+function v2Peaks(result: object, key: string): { longKm: number; weeklyKm: number } {
+  const p = (
+    result as Record<
+      string,
+      { peakKm: number; weeks: { days: { role: string; workout: { km: number } }[] }[] }
+    >
+  )[key]!;
+  const longs = p.weeks.flatMap((w) =>
+    w.days.filter((d) => d.role === 'long').map((d) => d.workout.km)
+  );
+  return { longKm: Math.max(...longs), weeklyKm: p.peakKm };
+}
 
 /* T1/T2: ceo tok izvor → predaja → cilj, bez i sa potvrđenom pauzom (`executionBasis`). Poredi se budući deo plana
    cilja (dani posle danas) i ocena pripreme; prošli dani su istorija izvora (graft ih čuva). */

@@ -10,10 +10,10 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.6.2', () => {
+describe('policy 10k-v2.7.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.6.2');
+    expect(P.version).toBe('10k-v2.7.0');
   });
 
   it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g) i A20 (06h), svaka sa pravilom, mestom i obrazloženjem', () => {

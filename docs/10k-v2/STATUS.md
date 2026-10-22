@@ -199,3 +199,16 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   Sabotaže 2/2. `KNOWN_VERSIONS` + 6.1.
 - Otvoreno: planirano ned 1 > cilj (upisan dan, pravilo mešovite nedelje) — pouka 37, zaseban segment za sve distance;
   delovi `earlyGrid.<k>.full` ~278 s lokalno (beforeAll; CI blizu 600 s).
+
+## Faza 3, segment 3d-10K — 10K v2 kao cilj predaje „kraća distanca" (10k-v2.7.0, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: d491000
+- `app/handoffTarget.ts` `handoffFuture` (izvori HM v2 i maraton v2): generate iz činjenica ulaza (obim čarobnjaka, trka
+  istog datuma, start = granica nedelje posle potvrde) + `adaptTenKV2` sa sirovim činjenicama (bez `dayId`); potvrđena
+  pauza → `facts.ts` `confirmedBreakFact`. O6(b): prefiks nedelja izvora (`plan.ts` `tenKV2Prefix`), nedelje v2 broj
+  `offset + index`, id = id izvora istog datuma; adaptacija, vraćanje i promena cilja nose prefiks. Pokrivenost 'full'.
+  `KNOWN_VERSIONS` ∪ 10k-v2.6.2. Domen i pravila nepromenjeni (`policy.ts` samo `version`).
+- M3 kroz pravi kod: HM v2 → 10K v2 1 690 / 4 240, maraton v2 → 10K v2 1 175 / 5 060; odbijanje adaptacije 0, dupli
+  datum/id 0, id ≠ izvor 0, zajedničke provere 0. byteSame: samo 13 redova „10K v2" (maraton).
+- Testovi `app/handoffTarget.node.test.ts` 14; sabotaže 3d10 8/8 PALO (uz vrh opcije v2 cilja u izvorima HM/maraton v2).
+- Izveštaj: `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` (3d-10K).

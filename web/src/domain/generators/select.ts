@@ -1229,8 +1229,8 @@ export const V2_TARGET_NOT_READY =
 /**
  * Faza 3 (3b): „kraća distanca" za IZVOR v2 (HM v2, maraton v2). Cilj bira prekidač korisnika, isto kao za nov plan
  * (`generatorForNewPlan`, MASTER § 6): v1 generator → v1 `handoffFuture` nad pogledom izvora bez formata v2 (`format`
- * daje adapter izvora); HM v2 → `handoffFuture` HM v2 (3f); 5K v2 → `handoffFuture` 5K v2 (3d); 10K v2 → za sada
- * odbijanje (`V2_TARGET_NOT_READY`, 3d-10K). Izvori v1 ostaju na
+ * daje adapter izvora); HM v2 → `handoffFuture` HM v2 (3f); 5K v2 i 10K v2 → `handoffFuture` te distance (3d); v2
+ * generator bez predaje → odbijanje (`V2_TARGET_NOT_READY`). Izvori v1 ostaju na
  * `regeneratorForDistance` (O7, bajt-isto). Rezultat ima oblik argumenta `ShorterDistanceHandoff` izvora.
  */
 export function shorterHandoffForV2Source(
@@ -1240,11 +1240,14 @@ export function shorterHandoffForV2Source(
   return (raceDistM) => {
     const target = generatorForNewPlan(raceDistM || 5000, flags);
     if (!target) return null;
-    // 3f: polumaraton v2 je cilj (generate + adapt iz činjenica, prefiks nedelja izvora); 10K v2 čeka 3d-10K.
+    // 3f: polumaraton v2 je cilj (generate + adapt iz činjenica, prefiks nedelja izvora).
     if (target === HALF_MARATHON_V2_GENERATOR)
       return h2.handoffFuture as unknown as ReturnType<typeof v1TargetForV2Source>;
     // 3d: 5K v2 je cilj (isto: generate + adapt iz činjenica, prefiks nedelja izvora).
     if (target === FIVE_K_V2_GENERATOR) return v2.handoffFuture;
+    // 3d-10K: 10K v2 je cilj (isto: generate + adapt iz činjenica, prefiks nedelja izvora).
+    if (target === TEN_K_V2_GENERATOR)
+      return t2.handoffFuture as unknown as ReturnType<typeof v1TargetForV2Source>;
     if (!Object.values(GENERATORS).includes(target)) return () => ({ error: V2_TARGET_NOT_READY });
     return v1TargetForV2Source(raceDistM, format);
   };

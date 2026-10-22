@@ -1,0 +1,75 @@
+[
+  {
+    "name": "3d10-a cilj čita politiku izvora (startingKm izvršenja kao obim)",
+    "file": "src/domain/generators/tenK/v2/app/handoffTarget.ts",
+    "find": "  const g = generateTenKV2(targetInput(input, start));",
+    "replace": "  const g = generateTenKV2(targetInput({ ...input, weeklyKm: (facts.execution as { startingKm?: number } | null)?.startingKm ?? input.weeklyKm }, start));",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "3d10-b start cilja nije granica nedelje (dan posle potvrde)",
+    "file": "src/domain/generators/tenK/v2/app/handoffTarget.ts",
+    "find": "  const start = alignedStart(input.raceDate, addDays(today, 1));",
+    "replace": "  const start = alignedStart(input.raceDate, addDays(today, 1)) && addDays(today, 1);",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "3d10-c dayId izvora prelazi u činjenice cilja",
+    "file": "src/domain/generators/tenK/v2/app/handoffTarget.ts",
+    "find": "    ...(workouts ? { workouts: workouts.map(({ dayId: _d, ...w }) => w) } : {}),",
+    "replace": "    ...(workouts ? { workouts } : {}),",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "3d10-d nedelje cilja ne nastavljaju broj nedelja izvora (id g1d1 posle prefiksa)",
+    "file": "src/domain/generators/tenK/v2/app/plan.ts",
+    "find": "  const off = prefix?.offset ?? 0;\n",
+    "replace": "  const off = 0;\n",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "3d10-e potvrđena pauza iz izvršenja se ne prevodi u činjenicu pauze",
+    "file": "src/domain/generators/tenK/v2/app/handoffTarget.ts",
+    "find": "    e && e.reason === 'confirmed-break' && e.breakDays > 0 && isIsoDate(e.date)",
+    "replace": "    e && e.reason === 'never' && e.breakDays > 0 && isIsoDate(e.date)",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "3d10-f select: 10K v2 cilj ponovo NOT_READY",
+    "file": "src/domain/generators/select.ts",
+    "find": "    if (target === TEN_K_V2_GENERATOR)\n",
+    "replace": "    if (target === TEN_K_V2_GENERATOR) return () => ({ error: V2_TARGET_NOT_READY });\n    if (target === TEN_K_V2_GENERATOR)\n",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "3d10-g HM v2 izvor ne čita vrh iz plana 5K/10K v2 cilja",
+    "file": "src/domain/generators/halfMarathon/v2/app/preparation.ts",
+    "find": "const V2_TARGET_KEYS = ['tenKV2', 'fiveKV2'] as const;",
+    "replace": "const V2_TARGET_KEYS = [] as const;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/app/handoffTarget.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3d10-h maraton v2 izvor ne čita vrh iz plana 10K v2 cilja",
+    "file": "src/domain/generators/marathon/v2/app/preparation.ts",
+    "find": "const V2_TARGET_KEYS = ['hmV2', 'tenKV2'] as const;",
+    "replace": "const V2_TARGET_KEYS = ['hmV2'] as const;",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  }
+]
