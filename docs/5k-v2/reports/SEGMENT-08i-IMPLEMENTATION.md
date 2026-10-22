@@ -72,7 +72,7 @@ Ukupno 4/4 PALO, 11,8 s (brz nivo, `--bail=1`); stanje `src` isto pre i posle.
 | komanda | rezultat |
 |---|---|
 | `npx tsc -b --noEmit`, `npx eslint .`, `npx prettier --check .` | exit 0 |
-| `npm run check` | exit 0 — 299 fajlova, 3519 testova, 622 s |
+| `npm run check` | exit 0 — 299 / 3519, 622 s; posle mergea grane (6ca22b4) 301 / 3553, 511 s; E2E 3 / 3 |
 | `TEST_FULL=1 npx vitest run --changed e2e482e` | exit 0 — 185 fajlova, 1866 testova, 934 s |
 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK/v2` | 30 fajlova, 703 testa; 08e (2) pali na TOTALS → ažurirano (M), ponovo 27 / 27 |
 | `npx vitest run --project node src/domain/generators/fiveK/v2` (brz) | 23 fajla, 696 / 696, 38 s |
