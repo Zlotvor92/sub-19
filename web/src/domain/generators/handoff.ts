@@ -84,9 +84,10 @@ export function sourceViewForV1<P extends GenPlanState>(current: P, format: Sour
   return { ...rest, weeks: mondayWeeks(current.weeks), meta } as P;
 }
 
-/** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`); plan v2 po osećaju ga nema. */
+/** O5 (DESIGN.md § 8): v1 cilj gradi plan iz rezultata (`pb`) koji nije posle starta novog plana; plan v2 bez takvog
+ *  rezultata (po osećaju ili samo sa testom posle starta, 3e § 6.2) ga nema. */
 export const V1_TARGET_NEEDS_RESULT =
-  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa, a ovaj plan je po osećaju.';
+  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa pre početka novog plana, a ovaj plan ga nema.';
 
 /** v1 cilj za izvor v2: isti `handoffFuture`, nad pogledom izvora bez formata v2; bez rezultata → odbijanje sa
  *  razlogom (nikad tihi prelaz). `null` kao `regeneratorForDistance`. */
@@ -100,6 +101,11 @@ export function v1TargetForV2Source(
     const pb = (input as { pb?: { distM?: unknown; sec?: unknown } }).pb;
     if (!pb || !(Number(pb.distM) > 0) || !(Number(pb.sec) > 0))
       return { error: V1_TARGET_NEEDS_RESULT };
-    return target(sourceViewForV1(current, format), input, today, context, facts);
+    // 3d-dopuna: lak tempo je činjenica izvora v2 za v2 cilj; v1 cilj ga ne čita, a ulaz prepisuje u plan (`ulaz`),
+    // pa ga ne dobija — plan v1 ostaje bajt-isti (važi za svaki v2 izvor).
+    const { easyPaceSecPerKm: _easy, ...v1Input } = input as typeof input & {
+      easyPaceSecPerKm?: unknown;
+    };
+    return target(sourceViewForV1(current, format), v1Input, today, context, facts);
   };
 }

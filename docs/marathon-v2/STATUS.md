@@ -80,4 +80,13 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
   × umor svaki dan ned 1 … N − 3: 540/1 084 860 → 0 odbijanja; regresija 323 314 tokova 0 promenjenih; sabotaže 4/4;
   KNOWN_VERSIONS = 2.3.1, 2.4.0, 2.4.1, 2.4.2.
 
-## Sledeće: predaja maraton v2 ↔ HM/10K (faza 3).
+## Faza 3, segment 3e (marathon-v2.4.2, bez promene verzije): maraton v2 kao izvor predaje „kraća distanca"
+
+- Okidač u domenu: `shorter.ts` `shorterOffer` (O1) — prag `lengths.longShortOf` (isti kao validator
+  MARATHON_LONG_SHORT i napomena N11; dugi ograničen trajanjem takođe nudi), osnova = plan generatora za isti ulaz.
+  Odluka o pripremi u adapteru: `app/preparation.ts` (polumaraton, pa 10K; „zadrži plan v2"; činjenice bez politike;
+  `MARATHON_V2_SOURCE_FORMAT`; `lastResult`). `executionBasis` postaje član 'v2'. Pregled adaptacije: `shorterOffer:
+  true` samo kad ponuda postoji. Cilj HM v2 (3f) kroz prekidač. Izveštaj
+  `docs/generators-v2/handoff/SEGMENT-3e-IMPLEMENTATION.md`.
+
+## Sledeće: 3g (UI predaje), 10K v2 kao cilj (3d).

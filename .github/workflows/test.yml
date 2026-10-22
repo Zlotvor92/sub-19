@@ -1,8 +1,11 @@
 name: Testovi
 
-# Ubrzanje (organizator, 22. 10.; v. docs/testing/TEST-SPEED.md § CI):
+# Ubrzanje (organizator, 22. 10.; v. docs/testing/TEST-SPEED.md § 10):
 # - samo dokumentacija (docs/** osim docs/qa/** koje testovi čitaju, *.md u korenu) ne pokreće testove;
-# - jedna grupa po grani: push i PR iste grane se ne vrte dvaput, a nov push otkazuje stariji run (osim na main);
+# - samo `push` (bez `pull_request`): PR prikazuje rezultat run-a svog commita; `paths` kod `pull_request` gleda ceo PR,
+#   pa bi svaki push dokumentacije pokretao run i otkazivao run koda;
+# - jedna grupa po grani: run koji radi se završava, a od pusheva koji stignu u međuvremenu čeka samo najnoviji
+#   (GitHub otkazuje stariji koji čeka) — tako se i pri čestim pushevima run završava, a vrh grane se uvek testira;
 # - testovi weba idu u 6 paralelnih delova (vitest --shard).
 on:
   push:
@@ -12,17 +15,11 @@ on:
       - '!docs/**'
       - 'docs/qa/**'
       - '!*.md'
-  pull_request:
-    paths:
-      - '**'
-      - '!docs/**'
-      - 'docs/qa/**'
-      - '!*.md'
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   test:

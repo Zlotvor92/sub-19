@@ -1,0 +1,83 @@
+[
+  {
+    "name": "3e-a okidač bez provere „pre adaptacije\" (plan generatora)",
+    "file": "src/domain/generators/marathon/v2/shorter.ts",
+    "find": "  return born.ok && !belowLongShort(born.plan, km);",
+    "replace": "  return born.ok;",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-b okidač čita upozorenje (N11: dugi ograničen trajanjem ne nudi) umesto praga",
+    "file": "src/domain/generators/marathon/v2/shorter.ts",
+    "find": "  return longShortOf(plan.weeks, longShortKm, plan.paces) !== null;",
+    "replace": "  return longShortOf(plan.weeks, longShortKm, plan.paces)?.timeCapped === false;",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-c izvor šalje izvedeni obim (odluku svoje politike) umesto obima čarobnjaka",
+    "file": "src/domain/generators/marathon/v2/app/preparation.ts",
+    "find": "    weeklyKm: i.currentWeeklyKm,",
+    "replace": "    weeklyKm: Math.min(...v2.weeks.map((w) => w.targetKm)),",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-d čistač preskočen (prazan format izvora)",
+    "file": "src/domain/generators/select.ts",
+    "find": "  const handoff = shorterHandoffForV2Source(flags, m2.SOURCE_FORMAT);",
+    "replace": "  const handoff = shorterHandoffForV2Source(flags, { planKey: '', metaKeys: [] });",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-e dayId izvora prelazi u činjenice cilja",
+    "file": "src/domain/generators/marathon/v2/app/preparation.ts",
+    "find": "  return { ...facts, workouts: facts.workouts.map(({ dayId: _d, ...w }) => w) };",
+    "replace": "  return { ...facts };",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-f lak tempo čarobnjaka se ne šalje (v2 cilj odbija EASY_PACE_REQUIRED)",
+    "file": "src/domain/generators/marathon/v2/app/preparation.ts",
+    "find": "    ...(i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-g vrh opcije HM v2 cilja ne čita hmV2 (0 km)",
+    "file": "src/domain/generators/marathon/v2/app/preparation.ts",
+    "find": "  if (!hm) return { longKm: 0, weeklyKm: 0 };",
+    "replace": "  return { longKm: 0, weeklyKm: 0 };",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-h rezultat iz koraka adaptacije se ne šalje (samo ulaz čarobnjaka)",
+    "file": "src/domain/generators/marathon/v2/app/preparation.ts",
+    "find": "    if (step.result && step.result.date <= onOrBefore && (!best || step.result.date >= best.date))",
+    "replace": "    if (false as boolean)",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  },
+  {
+    "name": "3e-i rezultat posle starta ulaza (v1 cilj ga odbija)",
+    "file": "src/domain/generators/marathon/v2/app/preparation.ts",
+    "find": "    if (step.result && step.result.date <= onOrBefore && (!best || step.result.date >= best.date))",
+    "replace": "    if (step.result && (!best || step.result.date >= best.date))",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"
+    ]
+  }
+]

@@ -1,0 +1,76 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "plans": 253,
+ "generatorRejected": 0,
+ "flows": 164394,
+ "rejected": 0,
+ "bornShort": 188,
+ "bornShortV1": 189,
+ "longLost": 3141,
+ "longLostV1": 2989,
+ "longLostNew": 2558,
+ "offer": 3339,
+ "offerTimeCapped": 583,
+ "offerByScenario": {
+  "pause35": 598,
+  "pain5": 263,
+  "pain8": 282,
+  "slower": 248,
+  "test5k": 615,
+  "painPause": 311,
+  "pause20": 281,
+  "pause10": 198,
+  "chain": 198,
+  "chain2": 209,
+  "under50": 115,
+  "fatigue": 11,
+  "over120": 10
+ },
+ "offerNotLost": 198,
+ "lostNotOffer": 0,
+ "longLostByScenario": {
+  "pause35": 598,
+  "pain5": 263,
+  "pain8": 282,
+  "slower": 248,
+  "test5k": 615,
+  "painPause": 311,
+  "pause20": 281,
+  "pause10": 198,
+  "chain": 198,
+  "under50": 115,
+  "chain2": 11,
+  "fatigue": 11,
+  "over120": 10
+ },
+ "longLostWeeksLeft": {
+  "≥12": 2039,
+  "8-11": 876,
+  "4-7": 226
+ },
+ "longLostCover10K": 3141,
+ "longLostCoverHM": 3106,
+ "longLostEx": [
+  "d4-16w-60km-v50-A-sat/2026-10-31/pause35: 26.6 → 24 km, 16 ned",
+  "d4-16w-60km-v50-A-sat/2026-10-31/pain5: 26.6 → 24.3 km, 16 ned",
+  "d4-16w-60km-v50-A-sat/2026-10-31/pain8: 26.6 → 22.1 km, 16 ned",
+  "d4-16w-60km-v50-A-sat/2026-10-31/slower: 26.6 → 25.7 km, 16 ned",
+  "d4-16w-60km-v50-A-sat/2026-10-31/test5k: 26.6 → 21.9 km, 16 ned"
+ ],
+ "goalFlows": 70668,
+ "goalWorse": 5547,
+ "goalWorseByScenario": {
+  "slower": 3338,
+  "test5k": 2209
+ },
+ "goalWorseTo": {
+  "realistic→ambitious": 1433,
+  "realistic→unrealistic": 4114
+ },
+ "seconds": 3651.468
+}

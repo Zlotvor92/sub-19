@@ -671,6 +671,11 @@ export const EARLY_SCENARIOS = [
     (trka 5 km, VDOT + 2). */
 export const EARLY_PRE_SCENARIOS = ['fatigue', 'pain5', 'pause10', 'faster'] as const;
 export const EARLY_PRE_BACK = [1, 3, 6] as const;
+/** 06h (10k-v2.6.2, pouke 23 i 34): asOf = PRVI DAN plana (zapisi pre starta, dan 1 zaštićen) — svi scenariji mreže E
+    i rezultat; trajna mreža u repeatGrid.harness.node.test.ts (heševi segment06h.startday-hashes-b8fcf22.json). */
+export const START0_SCENARIOS = [...EARLY_SCENARIOS, 'faster'] as const;
+/** asOf mreže „prvi dan plana" (jedino mesto; sabotaža: mreža bez start + 0). */
+export const start0AsOf = (plan: PlanLike): string => plan.weeks[0]!.startDate;
 export type EarlyScenario = (typeof EARLY_SCENARIOS)[number] | (typeof EARLY_PRE_SCENARIOS)[number];
 
 /** Činjenice mreže E (asOf = dan adaptacije): pauza 10/20 dana (breaks do asOf), bol 5/8 na dan asOf, pauza 10 +

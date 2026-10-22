@@ -43,7 +43,7 @@ Grana `claude/generator-isolation-5k-10k-hm-marathon`. Bez PR-a, mergea i deploy
 obim (T1); 3d-b start = dan posle potvrde (tok); 3d-c `dayId` izvora u činjenicama (M3: adaptacija odbija); 3d-d
 nedelje cilja bez `offset` (tok: id); 3d-e potvrđena pauza se ne prevodi (T1 pauza). Stanje `src` posle vraćanja isto.
 
-### 3. Merenje M3 kroz pravi kod (`v2target3d.measure.ts` → `v2target3d-5K.json`, `-easy.json`)
+### 3. Merenje M3 kroz pravi kod (`v2target3d.measure.ts` → `v2target3d-5K.json`; brojevi pre 3d-dopune)
 
 Uzorak kao 3a/3f M3 (212 izvora HM v2, 4 240 predaja), ulaz = pravi `contractInput` HM v2 (3c): uspeh **545**;
 odbijanje adaptacije **0**; bez iste granice nedelje 0; dupli datum 0, dupli id 0, id ≠ id izvora 0, prefiks ≠ izvor
@@ -52,7 +52,7 @@ odbijanje adaptacije **0**; bez iste granice nedelje 0; dupli datum 0, dupli id 
 dužina 6–16 (PLAN_LENGTH_OUT_OF_RANGE) 1 755, bez laganog tempa (MISSING_EASY_PACE) 1 490, broj dana 3–5 1 040,
 obim za broj dana 915, početnik najviše 4 dana 600, VDOT rezultata 100.
 
-Kontrafaktual (EASY=1, izvor šalje i `easyPaceSecPerKm` iz svog ulaza): uspeh **1 115**, ostalo isto (0 / 0 / 0).
+Posle 3d-dopune (izvor šalje lak tempo, § 8): uspeh **1 115**, ostalo isto (0 / 0 / 0); MISSING_EASY_PACE 1 490 → 160.
 Razlika prema 3a M3 (1 385): 3a je ograničavao broj nedelja na 16 (kasniji start); sa O6(b)/O8a rana predaja (> 16)
 je nedostupna sa razlogom.
 
@@ -81,10 +81,7 @@ cilja, zajedničke provere 0.
 
 ### 6. Otvoreno (3d-5K)
 
-- **Lak tempo izvora HM v2 (za organizatora):** `halfMarathon/v2/app/preparation.ts` `contractInput` (3c) ne šalje
-  `easyPaceSecPerKm`, pa HM v2 po osećaju (i rezultat star > 12 ned.) → 5K v2 uvek MISSING_EASY_PACE (M3: 545 → 1 115
-  sa njim). 3f `HandoffInput` ga već predviđa. (a) dopuna 3c: izvor šalje `easyPaceSecPerKm` iz ulaza (činjenica
-  čarobnjaka, ne odluka) **[preporuka; van mog foldera]**; (b) ostaje odbijanje sa razlogom.
+- Lak tempo izvora HM v2: rešeno u 3d-dopuni (§ 8).
 - Rezultat HM/maraton izvora ide doslovno; 5K v2 ga odbija (RESULT_DISTANCE_UNSUPPORTED) — u M3 0 (grid izvora ima
   rezultate 5K/10K), u aplikaciji moguće.
 
@@ -94,3 +91,41 @@ cilja, zajedničke provere 0.
   `meta.preparation`) — za prikaz čitati iz `fiveKV2` ako treba. Pokrivenost 5K v2 cilja je uvek 'full'.
 - 3g: prikaz nedelja prefiksa (faze izvora HM v2, struktura dana iz HM v2), broj nedelje u pregledu adaptacije
   (`offset + index`), razlog nedostupnosti doslovno (dužina 6–16, lak tempo, dani 3–5).
+
+## 8. 3d-dopuna — HM v2 izvor šalje lak tempo čarobnjaka (odluka organizatora (a), DESIGN § 8)
+
+Polazni `8eb4416`. Lak tempo (`easyPaceSecPerKm`) je činjenica koju korisnik unosi, ne izvedeno polje (P2).
+- `halfMarathon/v2/app/preparation.ts` `contractInput`: polje kad ga ulaz ima, inače odsutno. Verzija HM ostaje.
+- STANI pre commita: v1 10K/5K cilj polje ne čita, ali predati ulaz prepisuje u `ulaz` plana — jedina razlika u
+  rezultatu `ulaz.easyPaceSecPerKm` (1 red, oba cilja). Odluka (a): lepak `handoff.ts` `v1TargetForV2Source` predaje
+  v1 cilju ulaz BEZ polja (jedno mesto, svaki v2 izvor, i maraton u 3e) → v1 plan bajt-isti doslovno; v1 kod nedirnut.
+- Testovi `handoffSource.node.test.ts` +2: polje prisutno/odsutno; v1 10K i 5K sa i bez polja → `JSON` bajt-isti;
+  5K v2 cilj iz HM v2 po osećaju → plan postoji. 5K test „po osećaju" sada briše polje iz pravog ulaza.
+- Snimak maratona: promenjen 1 red „HM v2 #1 · priprema" (snimak `basisFromPlan` plana HM v2 po osećaju — osnova sada
+  nosi lak tempo); redovi plana HM v2 bajt-isti. HM i 10K snimci bez promene.
+- M3 kroz pravi kod: uspeh 545 → **1 115**, odbijanje adaptacije 0, zajedničke provere 0.
+- Sabotaže (`sabotage-3d.json` 3d-f lepak predaje polje v1 cilju, 3d-g izvor ga ne šalje): pale; ceo skup 3d **7/7**.
+- Provere: tsc/eslint/prettier 0; `npm run check` **297 / 3515**, exit 0; `TEST_FULL=1 --changed 8eb4416` **158 / 1292** (551 s); E2E `hm-v2` + `fivek-v2` **6/6**.
+
+## 9. 3c-dopuna 2 — HM v2 izvor kao 3e: format izmena, poslednji rezultat, tekst O5 (odluka organizatora)
+
+Polazni `46dff18`. Obrazac `marathon/v2/app/preparation.ts` (3e), kopija. Domen `halfMarathon/v2` i `marathon/v2` nedirnut.
+- `halfMarathon/v2/app/preparation.ts`: `HM_V2_SOURCE_FORMAT.metaKeys` ∪ `hmV2Edits` (`EDITS_KEY`); `lastResult(v2,
+  onOrBefore)` = najnoviji rezultat (ulaz ili `step.result`) čiji datum nije posle starta ulaza ugovora; `contractInput`
+  → `pb = lastResult`. `basisFromPlan` (start plana) → rezultat ulaza kao pre; `executionBasis` (start = sutra) nosi i
+  rezultat koraka.
+- `handoff.ts` `V1_TARGET_NEEDS_RESULT`: „… traži rezultat trke ili testa pre početka novog plana, a ovaj plan ga
+  nema." Testovi porede konstantu (doslovnih poređenja teksta nema).
+- Testovi `handoffSource.node.test.ts` +2: v1 10K/5K bez `hmV2Edits`; po osećaju + pauza 35 + test 5 km u ned. 2 →
+  `basisFromPlan` nedostupno (`V1_TARGET_NEEDS_RESULT` ×2), `executionBasis` → plan 10K v1.
+- Merenje toka kroz pravi kod (`hmSource.measure.ts` → `hmSource-before.json` / `-after.json`, kod pre i posle; 212
+  planova, 2 968 tokova, 218 ponuda, izvor nosi `hmV2Edits` kao posle pregleda): curenje `hmV2Edits` u v1 cilj 142 → **0**
+  (svaki uspeh, 10K i 5K, oba puta); `hmV2`/meta v2 0; dupli datum/id 0; id ≠ izvor 0. `basisFromPlan`: novi `pb` 0,
+  izbori bajt-isti (heš bez `hmV2Edits`; tekst O5 neutralisan). `executionBasis`: novi `pb` u 69 ponuda → promenjeno
+  tačno 138 izbora (69 × 10K/5K), svi sa novim `pb`, nijedan drugi; uspeh 142 → **169** po cilju (27 planova po osećaju
+  sa testom posle starta postaje dostupno), ostalih 49 = bez ijednog rezultata.
+- M1 HM (`shorter.ts HM 193 97 29` → `shorter-HM-3c2.json`, 1 055 s): ponuda **3 274 / 114 012** = 3c (svi ključevi isti;
+  nov ključ skripte `offerTimeCapped` 0).
+- Sabotaže `sabotage-3c2.json`: **3/3 palo** (format bez `hmV2Edits`, rezultat koraka se ne šalje, rezultat posle
+  starta).
+- Provere: tsc/eslint/prettier 0; `npm run check` **298 / 3537**, exit 0; `TEST_FULL=1 --changed 46dff18` **159 / 1314** (531 s); E2E `hm-v2` + `fivek-v2` **6/6**.

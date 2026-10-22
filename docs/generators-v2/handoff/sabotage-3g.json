@@ -1,0 +1,60 @@
+[
+  {
+    "name": "3g-a store bez plana (isLimitedLongPreparation samo iz meta)",
+    "file": "src/stores/executionActions.ts",
+    "find": "preparation.isLimitedLongPreparation(t.genPlan.meta, t.genPlan)",
+    "replace": "preparation.isLimitedLongPreparation(t.genPlan.meta)",
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
+  },
+  {
+    "name": "3g-b store bez prekidača korisnika (cilj uvek v1)",
+    "edits": [
+      {
+        "file": "src/stores/executionActions.ts",
+        "find": "  const preparation = preparationForPlan(t.genPlan, flags);",
+        "replace": "  const preparation = preparationForPlan(t.genPlan);"
+      },
+      {
+        "file": "src/stores/executionActions.ts",
+        "find": "  const preparation = preparationForPlan(t.genPlan, currentGeneratorFlags());",
+        "replace": "  const preparation = preparationForPlan(t.genPlan);"
+      }
+    ],
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
+  },
+  {
+    "name": "3g-c razlog nedostupnosti parafraziran",
+    "file": "src/features/plan/ShorterDistanceDecision.tsx",
+    "find": "              {reason}\n",
+    "replace": "              {reason.replace(/: .*$/, ': opcija nije dostupna.')}\n",
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
+  },
+  {
+    "name": "3g-d broj nedelje u pregledu bez offset-a",
+    "file": "src/domain/generators/fiveK/v2/app/adapt.ts",
+    "find": "week: offset + w,",
+    "replace": "week: w,",
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
+  },
+  {
+    "name": "3g-e broj nedelje u kalendaru bez offset-a",
+    "file": "src/domain/generators/fiveK/v2/app/plan.ts",
+    "find": "    w: off + w.w,",
+    "replace": "    w: w.w,",
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
+  },
+  {
+    "name": "3g-f vraćanje bez conflicts (opšta poruka)",
+    "file": "src/stores/executionActions.ts",
+    "find": "      reason: changes?.conflicts?.length\n        ? changes.conflicts.join(' ')\n        : 'Nema",
+    "replace": "      reason: 'Nema",
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
+  },
+  {
+    "name": "3g-g pregled HM v2 ne prenosi ponudu",
+    "file": "src/stores/executionActions.ts",
+    "find": "  return preview(out.result, today, 'execution', out.summary, out.notes, {\n    hmV2: {\n      reasons: out.reasons,\n      weeks: out.weeks,\n      coverage: out.coverage,\n      needed: out.needed,\n      ...(out.shorterOffer ? { shorterOffer: out.shorterOffer } : {})",
+    "replace": "  return preview(out.result, today, 'execution', out.summary, out.notes, {\n    hmV2: {\n      reasons: out.reasons,\n      weeks: out.weeks,\n      coverage: out.coverage,\n      needed: out.needed",
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
+  }
+]
