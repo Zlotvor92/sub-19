@@ -19,6 +19,7 @@ K="193 97 29"
     echo "start-day-$D|web|node ../docs/generators-v2/final-check/start-day.ts $D 25"
     echo "locked-result-$D|web|node ../docs/generators-v2/final-check/locked-result.ts $D"
     echo "locked-test-$D|web|node ../docs/generators-v2/final-check/locked-test.ts $D 97"
+    echo "edges-$D|web|node ../docs/generators-v2/final-check/edges.ts $D"
     for s in last-weeks locked-pause result-pain two-step; do
       echo "$s-$D|web|node ../docs/generators-v2/final-check/$s.ts $D $K"
     done
