@@ -101,6 +101,12 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   vraćanje verzije i promena cilja nose prefiks. Format plana se menja (prefiks) → hm-v2.5.0, `KNOWN_VERSIONS` ∪
   hm-v2.4.1. Izveštaj `docs/generators-v2/handoff/SEGMENT-3f-IMPLEMENTATION.md`.
 
+## Faza 3, 3d-dopuna: HM v2 izvor šalje lak tempo čarobnjaka
+
+- `app/preparation.ts` `contractInput` nosi `easyPaceSecPerKm` kad ga ulaz ima (činjenica korisnika, DESIGN § 8); v1
+  cilj ga ne dobija (lepak `handoff.ts`), pa je v1 plan bajt-isti. Verzija HM nepromenjena. Izveštaj
+  `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` § 8.
+
 ## Segment HM-08 (hm-v2.6.0, pouka 37): STANI
 
 - Mešovita nedelja, ostatak do cilja: radni patch `artifacts/segment-08/p37-wip.patch` (nije u kodu). Nalaz
