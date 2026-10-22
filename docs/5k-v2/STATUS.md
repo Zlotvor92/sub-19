@@ -16,7 +16,8 @@ adaptacija koju konstruktor sastavi više ne odbija validator (rast uz donju gra
 pauze u nedelji rasterećenja). 08g (5k-v2.8.0): prošlost = upisani dani (`written.ts`, pouka 29), trkačka ≤ taper
 (pouka 30), test iz upisanog plana, provere progresije u jedinici doze + DOSE_DROPPED, umor vezan za zapise (pouka 36);
 trajna rana mreža 104 800 tokova, 0 odbijanja. 08h (5k-v2.8.1): pouka 35 (drugi dan kvaliteta lagan kad dugi ne bi
-bio najduži). Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
+bio najduži). Faza 3, 3d (5k-v2.9.0): 5K v2 je CILJ predaje „kraća distanca" iz HM v2 (generate + adapt iz
+činjenica, prefiks nedelja izvora). Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–07 (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -135,3 +136,16 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Provere: tsc/eslint/prettier exit 0; `npm run check` exit 0 (289 / 3444); `--changed 23b1b88` pun 266 / 2533; pun fiveK/v2
   25 / 686; E2E `fivek-v2` 3/3; sabotaže 08h 5/5 PALO.
 - Izveštaj: `reports/SEGMENT-08h-IMPLEMENTATION.md`.
+
+## Faza 3, segment 3d-5K — 5K v2 kao cilj predaje „kraća distanca" (5k-v2.9.0, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: e7fe15d
+- `app/handoffTarget.ts` `handoffFuture`: generate iz činjenica ulaza izvora HM v2 (obim čarobnjaka, trka istog datuma,
+  start = granica nedelje posle potvrde) + `adaptFiveKV2` sa sirovim činjenicama (bez `dayId`); potvrđena pauza →
+  činjenica pauze (`facts.ts` `confirmedBreakFact`). O6(b): nedelje izvora pre starta su prefiks plana (`plan.ts`
+  `PREFIX_KEY` = `fiveKV2Prefix`), nedelje v2 broj `offset + index`, id = id izvora istog datuma; adaptacija, vraćanje i
+  promena cilja nose prefiks. Pokrivenost 'full'. `KNOWN_VERSIONS` ∪ 5k-v2.8.1. Pravila nepromenjena.
+- M3 kroz pravi kod (212 izvora, 4 240 predaja): uspeh 545 (1 115 kad izvor šalje lak tempo), odbijanje adaptacije 0,
+  dupli datum/id 0, id ≠ izvor 0, zajedničke provere 0. byteSame: samo redovi „5K v2" (HM 13, maraton 13, 10K 19).
+- Testovi `app/handoffTarget.node.test.ts` 9; sabotaže 3d 5/5 PALO.
+- Izveštaj: `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md`.

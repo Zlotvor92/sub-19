@@ -114,7 +114,7 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
     expect('error' in base && base.error).toMatch(/samo kraću distancu/);
   });
 
-  it('prekidač cilja v2 uključen → opcija nedostupna sa razlogom (O4a), nikad v1', () => {
+  it('prekidač cilja v2 uključen → 10K nedostupan sa razlogom (O4a), 5K iz 5K v2 (3d); nikad v1', () => {
     const prep = select.preparationForPlan(source, { fiveKV2: true, tenKV2: true })!;
     const d = prep.preparationDecision(
       source,
@@ -124,11 +124,9 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
       'limited',
       undefined
     );
-    expect(d.options).toEqual([]);
-    expect(d.unavailable).toEqual([
-      `10K: ${select.V2_TARGET_NOT_READY}`,
-      `5K: ${select.V2_TARGET_NOT_READY}`
-    ]);
+    // 3d: 5K v2 je cilj predaje (`fiveK/v2/app/handoffTarget.node.test.ts`); 10K v2 i dalje nedostupan sa razlogom.
+    expect(d.unavailable).toEqual([`10K: ${select.V2_TARGET_NOT_READY}`]);
+    expect(d.options.map((o) => o.id)).toEqual(['shorter-5000']);
   });
 
   it('plan po osećaju → v1 cilj nedostupan (O5a)', () => {
