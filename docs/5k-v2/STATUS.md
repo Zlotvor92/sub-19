@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.10.2`, 08j) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.10.3`, 08k) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -181,3 +181,11 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - two-step 5K 30 30 20: new 3 624 → 0, cum 3 696 → 0; DUGI<LAGAN cum 153 = zaključan lagan (po pouci 37); early/locked/
   start-day 0 odbijanja; trajna mreža `segment08j.*` (4 dela), sabotaže 3/3.
 - Izveštaj: `reports/SEGMENT-08j-IMPLEMENTATION.md`.
+
+## Segment 08k — plafon ponavljanja na novom tempu; rezultat van opsega VDOT (5k-v2.10.3, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 3949a61
+- `workouts.baseWeek`: zadržana R doza mora stati u plafon trajanja na tekućem tempu (`repFits`); `assess`: VDOT van
+  30–60 → RESULT_IGNORED (kao 10K A1), adaptacija se nastavlja.
+- edges 5K 428 → 0; pretraga sporijih rezultata R_REP 220 → 0; generator bajt-isti; regresija 0; trajna mreža ivica.
+- Izveštaj: `reports/SEGMENT-08k-IMPLEMENTATION.md`.

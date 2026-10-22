@@ -139,13 +139,14 @@ describe('Plan → Prilagodi plan (5K v2)', () => {
   });
 
   it('odbijanje v2 → poruka sa razlogom, plan se ne menja', () => {
+    // 5k-v2.10.3 (08k): rezultat van opsega VDOT se više ne odbija (RESULT_IGNORED) — odbijanje: asOf = dan trke.
     const p = plan();
-    hydratePersisted(state({ genPlan: p, t3k: [{ id: 't3k-x', date: '2026-11-10', sec: 420 }] }));
-    useUIStore.setState({ today: '2026-11-12', confirm: null });
+    hydratePersisted(state({ genPlan: p }));
+    useUIStore.setState({ today: '2027-01-10', confirm: null });
     render(<AdjustPlan />);
     const box = document.getElementById('v2-adapt-rejected')!;
     expect(within(box).getByRole('status').textContent).toMatch(
-      /Plan nije prilagođen\. Razlozi:VDOT novog rezultata \(\d+(\.\d)?\) mora biti 30–60\./
+      /Plan nije prilagođen\. Razlozi:asOf mora biti pre dana trke/
     );
     expect(stored()).toEqual(p);
   });

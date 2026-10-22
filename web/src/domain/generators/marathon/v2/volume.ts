@@ -2,7 +2,7 @@
    nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija nedelje
    (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longCap10, longJumpCap10, longShareCap10, longTimeCap10 } from './lengths.ts';
+import { longCap10, longJumpCap10, longShareCap10, longTimeCap10, weekMin10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import {
   BEGINNER_DAYS_COUNTS,
@@ -116,9 +116,8 @@ export function capacityLimits(
 
 /** M15 (Uslov 8, pouka 24): minimum nedelje [0,1 km] — JEDNA definicija za pretragu cilja (fit10), donju granicu
     adaptacije (adaptNominal10, A9) i validator (TARGET_FLOOR, WEEK_MIN_VOLUME); poređenje uvek u 0,1 km. */
-export function weekMin10(rule: DayRule): number {
-  return to10(rule.weekMinKm);
-}
+/** Minimum nedelje M15 [0,1 km] — definicija u lengths.ts (jedna, pouka 24), ovde izvezena za obim i validator. */
+export { weekMin10 };
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */
 export function startKm10(currentWeeklyKm: number): number {

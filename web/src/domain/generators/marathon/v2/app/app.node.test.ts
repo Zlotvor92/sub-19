@@ -455,6 +455,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
         'marathon-v2.4.0',
         'marathon-v2.4.1',
         'marathon-v2.4.2',
+        'marathon-v2.5.0',
         VERSION
       ])
     ]);

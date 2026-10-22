@@ -72,6 +72,7 @@ import {
   jumpRecentKm,
   pacesAt,
   preStartOf,
+  stateRefOf,
   restartWeeks
 } from './steps.ts';
 import type {
@@ -112,6 +113,7 @@ import {
   deloadDayLimit,
   lowestBuild,
   oneDayLimit,
+  allRestWeek,
   raceOnlyWeek,
   raceWeekRest,
   secondEasyWeek,
@@ -234,7 +236,16 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   const dropped = new Map<number, number>();
   const frames =
     base0 && base0.length === N
-      ? framesFor(base0, plan.pattern, input.runDays, input.raceDate, pace, steps, dropped)
+      ? framesFor(
+          base0,
+          plan.pattern,
+          input.runDays,
+          input.raceDate,
+          pace,
+          steps,
+          dropped,
+          lockedIds
+        )
       : null;
   const restarts = base0 ? appliedRestarts(base0, steps) : new Set<number>();
   /** M13a (pouka 34): „nedelja 0" plafona skoka — skorašnji najduži iz ulaza i dugi reference umora pre starta. */
@@ -535,6 +546,17 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       warn(
         'RACE_WEEK_SHORT',
         'Trkačka nedelja ima samo trku: dani pre trke su odmor (bol, A4; pouka 30).',
+        w.index
+      );
+    else if (
+      allRestWeek(
+        w,
+        input.runDays.map((wd) => dateIn(w, wd))
+      )
+    )
+      warn(
+        'WEEK_ALL_REST',
+        'Nedelja bez treninga: svi dani trčanja su dani odmora (bol, A4; kao pouka 30).',
         w.index
       );
     else if (w.days.filter((d) => d.countsToWeek).length === 0)
@@ -1304,8 +1326,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   let last: Record<'q1' | 'q2', Dose | null> = { q1: null, q2: null };
   /** M5: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje (pouka 34: posle umora pre starta iz
       reference, kao i poslednji dugi). */
-  let lastT = pre ? pre.tM : 0;
-  let lastLong10: number | null = pre ? to10(pre.longKm) : null;
+  const ref = stateRefOf(steps);
+  let lastT = ref ? ref.tM : 0;
+  let lastLong10: number | null = ref ? to10(ref.longKm) : null;
   let seenSteady = pre !== null;
   const otherSlot = (r: 'q1' | 'q2'): 'q1' | 'q2' => (r === 'q1' ? 'q2' : 'q1');
   /** N11: rasterećenja sa skraćenim dugim — jedno upozorenje po planu. */

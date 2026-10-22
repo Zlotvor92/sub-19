@@ -115,18 +115,32 @@ export function splitEasy(total10: number, n: number): number[] {
   return Array.from({ length: n }, (_, i) => each + (i < total10 - each * n ? 1 : 0));
 }
 
+/** Minimum nedelje M15 [0,1 km] — JEDNA definicija (pouka 24; volume.ts je izvozi za obim i validator). */
+export function weekMin10(rule: DayRule): number {
+  return Math.round(rule.weekMinKm * 10);
+}
+
+/** MAR-08b (K4, pouka 23): zbir laganih [0,1 km] iz ostatka nedelje [0,01 km] — zaokružen; kad je cilj na minimumu
+    nedelje (M15), naviše, da planirano ne padne ispod minimuma koji validator proverava (WEEK_MIN_VOLUME, 19,98 < 20).
+    JEDINO zaokruživanje laganih (buildLengths, deloadLengths, taperLengths). */
+export function easyTotal10(rest100: number, target10: number, rule: DayRule): number {
+  return target10 <= weekMin10(rule) ? Math.ceil(rest100 / 10 - EPS) : Math.round(rest100 / 10);
+}
+
 /** `n` laganih dana: dugi do min(`cap10`, `jump10`) (svaki lagan ≥ 5 km), lagani = ostatak (≥ 5 km, ≤ dugi).
-    Ostatak u stotinkama km. */
+    Ostatak u stotinkama km; `target10` i `rule` za zaokruživanje laganih (easyTotal10). */
 function withEasy(
   rest100: number,
   cap10: number,
   n: number,
-  jump10: number | null
+  jump10: number | null,
+  target10: number,
+  rule: DayRule
 ): Lengths | null {
   const top = Math.min(cap10, jump10 ?? Infinity);
   const long10 = Math.min(top, Math.floor((rest100 - n * EASY_MIN10 * 10) / 10));
   if (long10 < EASY_MIN10) return null;
-  const easy10 = splitEasy(Math.round((rest100 - long10 * 10) / 10), n);
+  const easy10 = splitEasy(easyTotal10(rest100 - long10 * 10, target10, rule), n);
   if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
   return { long10, easy10, jumpBound: jump10 !== null && jump10 < cap10 && long10 === jump10 };
 }
@@ -141,7 +155,14 @@ export function buildLengths(
   p: Paces,
   jump10: number | null = null
 ): Lengths | null {
-  return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p), easyDays, jump10);
+  return withEasy(
+    target10 * 10 - quality100,
+    longCap10(target10, rule, p),
+    easyDays,
+    jump10,
+    target10,
+    rule
+  );
 }
 
 /** M7: najduži dugi plana [0,1 km] — JEDNA definicija (pouke 24 i 29) za konstruktor i validator: dani uloge 'long'
@@ -193,7 +214,7 @@ export function taperLengths(
 ): Lengths | null {
   const rule10 = taperRule10(target10, longest10, step, rule, p);
   const cap10 = adaptedLongCap10(rule10, adapted);
-  const len = withEasy(target10 * 10 - quality100, cap10, easyDays, jump10);
+  const len = withEasy(target10 * 10 - quality100, cap10, easyDays, jump10, target10, rule);
   return len && len.long10 > rule10 ? { ...len, raised: true } : len;
 }
 
@@ -273,12 +294,15 @@ export function deloadLengths(
   const cap10 = adaptedLongCap10(rule10, adapted);
   const long10 = Math.min(cap10, jump10 ?? Infinity);
   const raised = long10 > rule10 ? { raised: true as const } : {};
-  const easy10 = splitEasy(Math.round((target10 * 10 - quality100 - long10 * 10) / 10), easyDays);
+  const easy10 = splitEasy(
+    easyTotal10(target10 * 10 - quality100 - long10 * 10, target10, rule),
+    easyDays
+  );
   if (easy10.every((e) => e >= EASY_MIN10 && e <= long10))
     return { long10, easy10, jumpBound: jump10 !== null && jump10 < cap10, ...raised };
   // Odstupanje (M16 test u rasterećenju; M17 mali obim početnika): lagani ispod 5 km → dugi se skraćuje na
   // najduži koji ostavlja lagane ≥ 5 km (i dugi ≥ lagan); cilj i kvalitet ostaju.
   if (!shorten) return null;
-  const short = withEasy(target10 * 10 - quality100, long10, easyDays, null);
+  const short = withEasy(target10 * 10 - quality100, long10, easyDays, null, target10, rule);
   return short && short.long10 < long10 ? { ...short, jumpBound: false, shortened: true } : null;
 }

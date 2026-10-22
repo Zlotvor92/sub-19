@@ -1,0 +1,12 @@
+MAR 44880 {
+  'pain8→pain8: PLAN_VIOLATES_POLICY': 118,
+  'pain8→fatigue: WEEK_INFEASIBLE': 152,
+  'pain8→faster: PLAN_VIOLATES_POLICY': 2,
+  'pain5→faster: PLAN_VIOLATES_POLICY': 2,
+  'pause20→faster: PLAN_VIOLATES_POLICY': 2
+} [
+  'd3-12w-30km-v30-A-sat pain8@2026-10-31 → pain8@2026-11-04: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).',
+  'd3-12w-30km-v30-A-sat pain8@2026-10-31 → fatigue@2026-11-04: Nedelja 2: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.',
+  'd3-12w-30km-v30-A-sat pain8@2026-10-31 → fatigue@2026-11-07: Nedelja 2: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.'
+]
+
