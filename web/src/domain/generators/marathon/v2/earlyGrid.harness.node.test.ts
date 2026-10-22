@@ -12,7 +12,9 @@
    prinudno rasterećenje u tekućoj nedelji); svi planovi po osećaju (testDayFlows) × umor na dan testa − 1, dan testa
    i + 1 (na a869e21 540 odbijanja: 5 dana raspored C, test na Q1 = ponedeljak = asOf) → 0 odbijanja. Po
    toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). MAR-08 (pouka 37): mixedFlows —
-   umor svaki dan nedelje k (2 … N − 3) + zaključan/urađen dan sledeće nedelje (mixedGrid.*). */
+   umor svaki dan nedelje k (2 … N − 3) + zaključan/urađen dan sledeće nedelje (mixedGrid.*). MAR-08b: zaključan dan
+   testa × 6 scenarija (lockedTestFlows, pouka 38) i lanac pre starta → ned 1 (prestartChainFlows, K3/K4) —
+   protectGrid.*. */
 
 import { beforeAll, describe, expect, it } from 'vitest';
 import { adaptBanner, adaptMarathonV2 } from './adapt.ts';
@@ -48,7 +50,9 @@ export interface EarlyFlow {
   /** 'early' — earlyFacts (s: EarlyScenario); 's17' — factsOf mreže 04 (s: Scenario, N10.7); 'pain' — bol `level`
       na dan asOf (N1); 'fatigue' — isti zapisi umora ponovo asOf + 1 … + 7 (pouka 36); 'fatigueDay' — umor
       (factsOf) na dan asOf (MAR-07c). */
-  kind: 'early' | 's17' | 'pain' | 'fatigue' | 'fatigueDay' | 'protected';
+  kind: 'early' | 's17' | 'pain' | 'fatigue' | 'fatigueDay' | 'protected' | 'prestart';
+  /** MAR-08b: lanac pre starta — scenario prvog koraka (asOf start − 1); `s` je scenario drugog koraka u ned 1. */
+  s1?: Scenario;
   /** MAR-07b: zaštićen dan kvaliteta sledeće nedelje i način zaštite. */
   day?: { date: string; how: 'locked' | 'done' };
   s: EarlyScenario | Scenario;
@@ -249,6 +253,90 @@ export function mixedFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
   return out;
 }
 
+/** MAR-08b (pouka 38, K3/K4): baze trajne mreže zaštite — svaki 1460. ulaz mreže 02, 624. po osećaju, 336. početnika
+    (lanac pre starta) i planovi po osećaju sa testom (svaki 78., zaključan dan testa). */
+export const PROTECT_BASES: readonly AdaptBase[] = earlyGridBases(1460, 624, 336);
+export const LOCKED_TEST_BASES: readonly AdaptBase[] = earlyGridBases(
+  Infinity,
+  78,
+  Infinity
+).filter((b) => b.family === 'F');
+
+/** MAR-08b (pouka 38): zaključan dan testa × pauza 10/20, pauza + bol, umor, bol 5/8; asOf test − 14 … − 1 (svaki drugi
+    dan) — test ostaje jedini, na zaključanom danu. */
+export function lockedTestFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
+  const out: EarlyFlow[] = [];
+  for (const base of bases) {
+    const t = planOf(base)
+      .weeks.flatMap((w) => w.days)
+      .find((d) => d.role === 'test');
+    if (!t) continue;
+    for (let o = 14; o >= 1; o -= 2) {
+      const asOf = addDays(t.date, -o);
+      if (asOf < addDays(planOf(base).input.startDate, -1)) continue;
+      for (const s of ['pause10', 'pause20', 'painPause', 'fatigue', 'pain5', 'pain8'] as const)
+        out.push({
+          key: `${base.id}/${asOf}/${s}+locked-test`,
+          base,
+          asOf,
+          kind: 'protected',
+          s,
+          day: { date: t.date, how: 'locked' },
+          pre: false
+        });
+    }
+  }
+  return out;
+}
+
+/** MAR-08b (K3/K4): lanac pre starta — korak 1 (bol 8/5, umor, pauza 20) na start − 1, korak 2 u ned 1 (sreda i kraj)
+    sa scenarijem mreže 04, činjenice kumulativne (dnevnik aplikacije). */
+export function prestartChainFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
+  const out: EarlyFlow[] = [];
+  for (const base of bases) {
+    const p = planOf(base);
+    const w1 = p.weeks[0]!;
+    let wed = w1.startDate;
+    while (new Date(wed + 'T00:00:00Z').getUTCDay() !== 3) wed = addDays(wed, 1);
+    for (const s1 of ['pain8', 'pain5', 'fatigue', 'pause20'] as const)
+      for (const asOf of [wed, w1.endDate])
+        for (const s of SCENARIOS)
+          out.push({
+            key: `${base.id}/s-1:${s1}/${asOf}/${s}`,
+            base,
+            asOf,
+            kind: 'prestart',
+            s1,
+            s,
+            pre: true
+          });
+  }
+  return out;
+}
+
+/** Spajanje činjenica dva koraka (kao dnevnik: drugi ima prednost za isti datum; rezultati i pauze se nadovezuju). */
+function mergeFacts(
+  a: Record<string, unknown>,
+  b: Record<string, unknown>
+): Record<string, unknown> {
+  type W = { date: string };
+  const wa = (a['workouts'] as W[] | undefined) ?? [];
+  const wb = (b['workouts'] as W[] | undefined) ?? [];
+  const dates = new Set(wb.map((w) => w.date));
+  const workouts = [...wa.filter((w) => !dates.has(w.date)), ...wb];
+  const results = [...((a['results'] as unknown[]) ?? []), ...((b['results'] as unknown[]) ?? [])];
+  const breaks = [...((a['breaks'] as unknown[]) ?? []), ...((b['breaks'] as unknown[]) ?? [])];
+  const locked = (b['lockedDayIds'] ?? a['lockedDayIds']) as string[] | undefined;
+  const coverage = b['coverage'] ?? a['coverage'];
+  return {
+    ...(workouts.length ? { workouts } : {}),
+    ...(results.length ? { results } : {}),
+    ...(breaks.length ? { breaks } : {}),
+    ...(locked ? { lockedDayIds: locked } : {}),
+    ...(coverage ? { coverage } : {})
+  };
+}
+
 const deloads = (p: MarathonV2Plan): string =>
   p.weeks
     .filter((w) => w.deload)
@@ -287,6 +375,21 @@ function fatigueRepeat(f: EarlyFlow, p: MarathonV2Plan): string | null {
 export function runFlow(f: EarlyFlow): string | null {
   const p = planOf(f.base);
   if (f.kind === 'fatigue') return fatigueRepeat(f, p);
+  if (f.kind === 'prestart') {
+    const at1 = addDays(p.input.startDate, -1);
+    const f1 = factsOf(p, f.s1!, at1);
+    const r1 = adaptMarathonV2(p, f1, at1);
+    if (!r1.ok) return `${f.key}: korak 1 odbijen ${r1.reasons.map((x) => x.message).join(' | ')}`;
+    const f2 = mergeFacts(f1, factsOf(r1.plan, f.s as Scenario, f.asOf));
+    const r2 = adaptMarathonV2(r1.plan, f2, f.asOf);
+    if (!r2.ok)
+      return `${f.key}: odbijeno ${r2.reasons
+        .map((x) => x.message)
+        .join(' | ')
+        .slice(0, 300)}`;
+    const bad = adaptInvariants(r1.plan, r2.plan, f.asOf, f2);
+    return bad.length > 0 ? `${f.key}: ${bad.join('; ')}` : null;
+  }
   const day =
     f.kind === 'protected'
       ? p.weeks.flatMap((w) => w.days).find((d) => d.date === f.day!.date)!

@@ -1,0 +1,35 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 253,
+ "excludedPermanent": 9,
+ "plans": 253,
+ "flows": 73188,
+ "rejectedFlows": 56,
+ "rejected": {
+  "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": 60
+ },
+ "rejectedEx": {
+  "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": [
+   "beg-d4-16w-25km-v30-C/w2/faster+pain5/R-pon/B-cet/asOf 2026-11-12: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+   "beg-d4-16w-25km-v30-C/w2/faster+pain5/oba-cet/asOf 2026-11-12: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+   "beg-d4-16w-25km-v30-C/w2/faster+pain8/R-pon/B-cet/asOf 2026-11-12: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15)."
+  ]
+ },
+ "common": {},
+ "commonEx": {},
+ "inv": {},
+ "invEx": {},
+ "by": {
+  "faster+pain5/R-pon/B-cet": 14,
+  "faster+pain5/oba-cet": 14,
+  "faster+pain8/R-pon/B-cet": 14,
+  "faster+pain8/oba-cet": 14
+ },
+ "seconds": 1194.493
+}
+

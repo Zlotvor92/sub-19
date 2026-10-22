@@ -53,6 +53,17 @@ export function preStartOf(steps: readonly { preStart?: PreStartRef }[]): PreSta
   return r;
 }
 
+/** Pouka 34 + MAR-08b (K3): početno stanje dugog i T doze (pre nedelje 1) — referenca umora pre starta ili referenca
+    rasterećenja bez prethodne nedelje sa dugim (deloadRef). JEDNO mesto za konstruktor i validator. */
+export function stateRefOf(
+  steps: readonly { preStart?: PreStartRef; deloadRef?: PreStartRef }[]
+): PreStartRef | null {
+  let r: PreStartRef | null = preStartOf(steps);
+  if (r) return r;
+  for (const s of steps) if (s.deloadRef) r = s.deloadRef;
+  return r;
+}
+
 /** M13a (pouka 34): skorašnji najduži trk kao dugi „nedelje 0" — iz ulaza, a posle umora pre starta i dugi
     reference (najveći); konstruktor i validator (plafon skoka). Napomene nedelje 1 (M13a) čitaju samo ulaz. */
 export function jumpRecentKm(
@@ -188,7 +199,8 @@ export function framesFor(
   raceDate: IsoDate,
   pace: PaceInput,
   steps: readonly MarathonV2AdaptStep[],
-  dropped: Map<number, number> | null = null
+  dropped: Map<number, number> | null = null,
+  kept: ReadonlySet<string> = new Set()
 ): WeekFrame[] {
   let frames: WeekFrame[] = base.map((f) => ({ ...f }));
   if (steps.length === 0) return frames;
@@ -247,6 +259,21 @@ export function framesFor(
     frames = frames.map((f) =>
       f.test && mustDay(testDateOf(f, pattern)) > mustDay(last) ? withoutTest(f) : f
     );
+  // MAR-08b (pouka 38): test čiji je dan zaključan ili urađen (posle asOf) je takođe zaštićen — ostaje gde jeste
+  // (upisan, A11), ne premešta se (pauza, umor, bol, rasterećenje — A13) i nijedan okvir nema drugi test.
+  else if (tw && kept.has(testDateOf(tw, pattern))) {
+    // Zaključan dan testa nosi test sam (spajanje A11), bez premeštanja. Okvir koji i dalje ima test na tom danu
+    // ostaje kakav jeste; inače (rasterećenje bi dan testa okvira pomerilo na T slot, pa bi to bio drugi test,
+    // ili pravilo premeštanja) nijedan okvir nema test.
+    const cur = frames.filter((f) => f.test);
+    if (
+      cur.length === 1 &&
+      cur[0]!.index === tw.index &&
+      testDateOf(cur[0]!, pattern) === testDateOf(tw, pattern)
+    )
+      return frames;
+    return frames.map((f) => (f.test ? withoutTest(f) : f));
+  }
   const i = frames.findIndex((f) => f.test);
   const t = frames[i];
   const blocked = (f: WeekFrame, k: number): boolean =>

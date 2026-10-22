@@ -198,9 +198,12 @@ describe('N9 (pouka 24): jedna definicija po veličini — validator ne nosi kop
     expect(v).not.toMatch(/longFactor \*/);
     expect(v).not.toMatch(/P\.deload\.tMinKm\) \* 1000|function expectedReduced/);
     expect(v).not.toMatch(/P\.workout\.warmupCooldown/);
-    // Minimum nedelje: jedna funkcija (volume.weekMin10) za pretragu cilja, donju granicu i validator.
-    for (const f of ['volume.ts', 'generate.ts', 'week.ts', 'lengths.ts'])
-      expect(src(f).match(/to10\(rule\.weekMinKm\)/g)?.length ?? 0).toBe(f === 'volume.ts' ? 1 : 0);
+    // Minimum nedelje: jedna funkcija (weekMin10; od MAR-08b definisana u lengths.ts — zaokruživanje laganih na
+    // minimumu, K4 — i izvezena iz volume.ts) za pretragu cilja, donju granicu, dužine i validator.
+    for (const f of ['volume.ts', 'generate.ts', 'week.ts', 'lengths.ts', 'validate.ts'])
+      expect(src(f).match(/rule\.weekMinKm \* 10|to10\(rule\.weekMinKm\)/g)?.length ?? 0).toBe(
+        f === 'lengths.ts' ? 1 : 0
+      );
   });
 });
 

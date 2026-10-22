@@ -447,6 +447,11 @@ export function assess(
       if (f !== n) step.deloadWeek = f;
       volumeRule = true;
       if (pre) step.preStart = pre;
+      // MAR-08b (K3): rasterećenje bez prethodne nedelje sa dugim → referenca nedelje 1 generatora (pouka 34).
+      else if (!plan.weeks.slice(0, f - 1).some((w) => w.days.some((d) => d.role === 'long'))) {
+        const ref = preStartRef(plan.input);
+        if (ref) step.deloadRef = ref;
+      }
     }
     reason(
       'FATIGUE',
