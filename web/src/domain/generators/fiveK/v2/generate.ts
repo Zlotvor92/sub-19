@@ -40,8 +40,14 @@ import type {
   Weekday
 } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { adaptVolume, planVolume, type VolumePlan } from './volume.ts';
-import { buildRaceWeek, buildTrainingWeek, mixedWeek } from './week.ts';
+import { adaptVolume, pauseRemainderKm, planVolume, type VolumePlan } from './volume.ts';
+import {
+  buildRaceWeek,
+  buildTrainingWeek,
+  mixedWeek,
+  protectedKm,
+  secondEasyDose
+} from './week.ts';
 import type { WeekDose } from './workouts.ts';
 import { type Written, writtenWeek } from './written.ts';
 
@@ -87,8 +93,12 @@ export function construct(
   const frames0 = periodize(input.startDate, totalWeeks, rules.deloadEvery, a.feel);
   const vol = planVolume(frames0, input.currentWeeklyKm, paces, a);
   const dropped = new Map<number, number>();
+  /** 2.10.1: nedelja → dan testa koji je zaštićen (test otpada, steps.framesFor). */
+  const testLost = new Map<number, string>();
   const frames =
-    steps.length > 0 ? framesFor(input, steps, pat.pattern, totalWeeks, dropped, prior) : frames0;
+    steps.length > 0
+      ? framesFor(input, steps, pat.pattern, totalWeeks, dropped, prior, testLost)
+      : frames0;
   const ctx = (w: number): { p: PaceModel; a: Athlete } =>
     steps.length > 0
       ? { p: pacesAt(input, steps, w), a: athleteAt(input, steps, w) }
@@ -114,12 +124,35 @@ export function construct(
   // sa povratkom, od nedelje posle sidra (steps.doseResetAt).
   let lastDose: Partial<Record<Phase, WeekDose>> = {};
   // 2.10.0 (pouka 37): mešovita nedelja izgradnje/tapera (deo dana zaštićen, nedelja nije cela prošlost) — cilj važi
-  // za celu nedelju; trkačka nedelja izuzeta (pouka 30: ≤ planirano tapera, week.raceWeekRest).
-  const mixedOf = (w: PlanWeek, f: WeekFrame, p: PaceModel): ReturnType<typeof mixedWeek> => {
+  // za celu nedelju; trkačka nedelja izuzeta (pouka 30: ≤ planirano tapera, week.raceWeekRest). 2.10.1: zbir zaštićenih
+  // po činjenicama (week.protectedKm ← Written.factKm), upisan u nedelju kad se razlikuje od planiranih km i validator ga
+  // treba (nedelja je tada mešovita — written.writtenWeek);
+  // nedelja ostatka pauze (volume.pauseRemainderKm) ima vlasnika — pravilo pauze, pouka 37 je ne menja.
+  const mixedOf = (
+    w: PlanWeek,
+    f: WeekFrame,
+    p: PaceModel
+  ): { week: PlanWeek; droppedQuality: boolean } | null => {
     const pw = prior?.weeks[f.index - 1];
-    return prior && pw && mustDay(pw.endDate) > prior.asOf
-      ? mixedWeek(w, pw.days.filter(prior.keep), p)
-      : null;
+    if (!prior || !pw || mustDay(pw.endDate) <= prior.asOf) return null;
+    const kept = pw.days.filter(prior.keep);
+    const keptKm = protectedKm(kept, prior.factKm);
+    const owner = steps.some(
+      (s) => s.firstWeek === f.index && pauseRemainderKm(s, f, w.targetKm) !== null
+    );
+    const m = owner ? null : mixedWeek(w, kept, keptKm, p);
+    const out = m?.week ?? w;
+    const planKm = protectedKm(kept);
+    const keptDates = new Set(kept.map((d) => d.date));
+    const freeKm = out.days
+      .filter((d) => !keptDates.has(d.date) && d.countsToWeek)
+      .reduce((a, d) => a + d.workout.km, 0);
+    // Validator treba zbir po činjenicama samo kad bi sa planiranim km nedelja bila iznad cilja, ili kad su zaštićeni
+    // dani po činjenicama veći (skraćivanje i u nedelji čiji su dani isti kao sastavljeni).
+    const need =
+      keptKm > planKm || planKm + freeKm > out.targetKm + P.tolerance.arithmeticKm + 1e-9;
+    if (keptKm === planKm || !need) return m;
+    return { week: { ...out, protectedKm: keptKm }, droppedQuality: m?.droppedQuality ?? false };
   };
   frames.forEach((f, i) => {
     const target = adapted.targets[i]!;
@@ -198,6 +231,15 @@ export function construct(
         phaseCounts(totalWeeks).taper
       );
     let r = build(f);
+    // 2.10.2 (K9): kontrolno trčanje koje ne staje otpada PRVO samo (ista ograničenja, isti obim); tek onda manje
+    // kvaliteta — inače ponovljena adaptacija (bez testa u prethodnom planu) gradi drugu dozu.
+    if (!r.ok && adaptive && f.test) {
+      const t = build({ ...f, test: false });
+      if (t.ok) {
+        t.week.notes.push(`Adaptacija: kontrolno trčanje ne staje u obim ${target} km — otpada.`);
+        r = t;
+      }
+    }
     for (const q of ['one', 'none'] as const) {
       if (r.ok || !adaptive || (q === 'one' && f.limits?.quality !== undefined)) continue;
       const { swap: _swap, ...rest } = f.limits ?? {};
@@ -213,9 +255,23 @@ export function construct(
       return;
     }
     // 2.10.0 (pouka 37): mešovita nedelja — preostali dani na ostatak do cilja (week.mixedWeek); kvalitet koji
-    // otpada ne menja stanje doze.
+    // otpada ne menja stanje svoje doze.
     const m = mixedOf(r.week, f, p);
-    if (m) r = { ok: true, week: m.week, dose: m.droppedQuality ? null : r.dose };
+    // 2.10.1: otpao samo drugi kvalitet (q1 ostaje) → doza kao pouka 35 (week.secondEasyDose); svi → bez doze.
+    if (m) {
+      const q1Left = m.week.days.some((d) => d.role === 'q1' && d.workout.kind === 'quality');
+      const dose = !m.droppedQuality
+        ? r.dose
+        : q1Left && r.dose
+          ? secondEasyDose(r.dose, lastDose[f.phase] ?? null)
+          : null;
+      r = { ok: true, week: m.week, dose };
+    }
+    const lost = testLost.get(f.index);
+    if (lost)
+      r.week.notes.push(
+        `Adaptacija: kontrolno trčanje otpada — dan testa ${lost} je zaključan (test se ne stavlja na zaštićen dan).`
+      );
     // 2.8.0 (pouka 29, N2a): kontrolno trčanje u zaštićenom (upisanom) danu je urađeno — nedelja ga nosi i kad
     // sastavljeni ostatak nedelje nema test (ne staje u smanjen obim).
     if (testDone === f.index && f.test && !r.week.test) r.week = { ...r.week, test: true };
@@ -229,7 +285,19 @@ export function construct(
     // zaključan) nedelja ne menja stanje (validator: steps.doseResetDate, granica/zaključan dan van lanca).
     const qOf = (w: PlanWeek): string =>
       JSON.stringify(w.days.filter((d) => d.workout.kind === 'quality'));
-    if (r.dose && qOf(written[written.length - 1]!) === qOf(r.week)) lastDose[f.phase] = r.dose;
+    const wr = written[written.length - 1]!;
+    // 2.10.1 (pouka 37): upisana nedelja bez drugog kvaliteta (otpao u mešovitoj nedelji ranije adaptacije), prvi isti
+    // kao sastavljen → doza kao pouka 35 (week.secondEasyDose).
+    const q1Of = (w: PlanWeek): string =>
+      JSON.stringify(w.days.filter((d) => d.workout.kind === 'quality' && d.role === 'q1'));
+    const q2Gone =
+      !wr.days.some((d) => d.workout.kind === 'quality' && d.role === 'q2') &&
+      r.week.days.some((d) => d.workout.kind === 'quality' && d.role === 'q2') &&
+      q1Of(wr) === q1Of(r.week) &&
+      wr.days.some((d) => d.workout.kind === 'quality');
+    if (r.dose && qOf(wr) === qOf(r.week)) lastDose[f.phase] = r.dose;
+    else if (r.dose && q2Gone)
+      lastDose[f.phase] = secondEasyDose(r.dose, lastDose[f.phase] ?? null);
   });
   if (reasons.length > 0) return { ok: false, reasons };
   return {

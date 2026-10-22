@@ -442,6 +442,9 @@ export interface MarathonV2Adaptation {
   /** MAR-07b: urađeni dani posle asOf (dayId činjenice; npr. trening odrađen dan ranije) — zaštićeni kao zaključani;
       polje samo kad nije prazno. */
   doneDayIds?: string[];
+  /** MAR-08 (pouka 37): km zaštićenih dana ≤ asOf tekuće nedelje po činjenicama (mixed.factKmOf), samo kad se
+      razlikuju od planiranih; polje samo kad nije prazno. */
+  factKm?: Record<string, number>;
 }
 
 export type AdaptCondition =

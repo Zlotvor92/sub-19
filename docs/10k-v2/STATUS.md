@@ -212,3 +212,19 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   datum/id 0, id ≠ izvor 0, zajedničke provere 0. byteSame: samo 13 redova „10K v2" (maraton).
 - Testovi `app/handoffTarget.node.test.ts` 14; sabotaže 3d10 8/8 PALO (uz vrh opcije v2 cilja u izvorima HM/maraton v2).
 - Izveštaj: `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` (3d-10K).
+
+## Segment 06i (10k-v2.8.0): pouka 37 — mešovita nedelja, ostatak do cilja; K1, K2, K3, K5; earlyGrid u 12 delova
+
+- Izveštaj `reports/SEGMENT-06i-IMPLEMENTATION.md`, artefakti `artifacts/segment-06i/`, DECISIONS A21; polazni `46e72eb`,
+  spojeno 3d-10K (10k-v2.7.0) i grana do `c082abb`.
+- Pouka 37 (+ dopune 5K-08i i MAR-08): mešovita nedelja — preostali dani na ostatak = cilj − zbir zaštićenih po
+  činjenicama (pauza 0, zapis = upisani km, neurađen 0, poznat iz pokrivenosti bez zapisa 0), samo naniže; dugi se ne seče; lagani do 3,0; kvalitet otpada
+  samo kad time staje, inače ostaje uz MIXED_OVER_TARGET. Jedno mesto `week.mixedRemainder`, validator `week.mixedFloorKm`,
+  zbir `written.protectedKm`; nedelja nosi `keptKm`. Trkačka i nedelja pauze izuzete. mixed-deload 10K 367 → 24 (sve sa
+  upozorenjem). Regresija 279 545 tokova: promenjeno 11 353, svi sa pouke 37; promene cilja 612 objašnjene (D23/D8/D6).
+- K1 (zaključan dan testa): `steps.protectedTest` — locked-test 5 662 → 0, locked-pause 394 → 0. K2 (`week.restDaysWeek`):
+  last-weeks inv 141 → 0. K3 (lanac pre starta → ned 1; i 10K kao cilj predaje): 836 → 0, HM>10K 80 → 0, MAR>10K 44 → 0.
+  K5: invarijanta „dugi ≥ lagan" samo među preostalim danima.
+- Trajne mreže: `mixedGrid` (10 delova), `lockedTest` (4), `prestartChain` (4); `earlyGrid` 4 → 12 delova; fixture
+  `segment06i.adapt-changed-46e72eb.json` (promenjeno ⇔ pouka 37). Sabotaže 10/10. KNOWN_VERSIONS + 6.2, 7.0.
+- Otvoreno: RP tapera otpada već za 0,1–0,2 km (7 tokova, bez oštrenja) — trenerski izbor. 10K-06j otkazan (organizator: VDOT 80 nije realan korisnik).

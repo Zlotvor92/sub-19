@@ -17,7 +17,8 @@ import {
   countViolations,
   expectCounts,
   GRID_TIMEOUT,
-  p35FlowErrors
+  p35FlowErrors,
+  p37FlowErrors
 } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
@@ -241,7 +242,9 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       none: { n: 120, NO_FACTS: 120, same: 120 },
       done100: { n: 120, same: 120 },
       under50: { n: 120, UNDER_EXECUTION: 80, same: 40 },
-      over120: { n: 120, OVER_EXECUTION: 80, same: 44 },
+      // 06i (pouka 37): zaštićeni dani po činjenicama (× 1,2) prelaze sastavljene → preostali dani na ostatak do cilja
+      // (mešovita nedelja; same 44 → 14); 1 tok: test otpada sa kvalitetom koji ne staje (TEST_MOVED).
+      over120: { n: 120, OVER_EXECUTION: 80, same: 14, mixed: 60, TEST_MOVED: 1 },
       pause10: { n: 120, PAUSE: 120, mixed: 50, TEST_MOVED: 5 },
       pause20: { n: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 },
       pause35: { n: 120, PAUSE: 120, mixed: 60, TEST_MOVED: 13 },
@@ -250,7 +253,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 6 },
       // 06b (10k-v2.4.1): TEST_MOVED 10 → 9 — viši cilj posle sidra, test 5 km ostaje u svojoj nedelji.
       pain8: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 9 },
-      fatigue: { n: 120, FATIGUE: 80, same: 40, TEST_MOVED: 4 },
+      // 06i (pouka 37): 3 toka sa ostatkom do cilja (zapis umora 6 km na zaštićenom danu > sastavljeno); same 40 → 37.
+      fatigue: { n: 120, FATIGUE: 80, same: 37, mixed: 3, TEST_MOVED: 4 },
       faster: { n: 120, NEW_RESULT: 120, mixed: 1, TEST_MOVED: 13 },
       slower: { n: 120, NEW_RESULT: 108, mixed: 1, TEST_MOVED: 13, same: 12 },
       test5k: { n: 120, NEW_RESULT: 120, mixed: 1, TEST_MOVED: 13 },
@@ -360,6 +364,10 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
 
   it('06f (10k-v2.6.0): prema 7ba9717 menjaju se tačno tokovi sa poukom 35 (76 u celoj mreži)', () => {
     expect(p35FlowErrors('grid04', p35Flows)).toEqual([]);
+  });
+
+  it('06i (10k-v2.8.0): prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37', () => {
+    expect(p37FlowErrors('grid04', p35Flows)).toEqual([]);
   });
 
   it('06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim', () => {

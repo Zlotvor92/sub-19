@@ -207,7 +207,7 @@ for (const x of edgeIn) {
       }
       if (p1 && s === "chain") {
         const at2 = addDays(at, 7);
-        if (at2 < p.input.raceDate) flow(d, t, p1, d.chain2(p, at2), at2, `${k}/chain2 ${at2}`, "chain2");
+        if (at2 < p.input.raceDate) flow(d, t, p1, d.chain2(p1, at2), at2, `${k}/chain2 ${at2}`, "chain2");
       }
     }
   }

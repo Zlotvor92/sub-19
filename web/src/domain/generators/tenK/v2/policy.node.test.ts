@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.7.0', () => {
+describe('policy 10k-v2.8.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.7.0');
+    expect(P.version).toBe('10k-v2.8.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g) i A20 (06h), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h) i A21 (06i), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +29,7 @@ describe('policy 10k-v2.7.0', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 20 }, (_, i) => `A${i + 1}`)
+      ...Array.from({ length: 21 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -136,6 +136,10 @@ describe('policy 10k-v2.7.0', () => {
     // 06h (10k-v2.6.2): referenca umora pre starta po nedelji rasterećenja.
     expect(rule('A20')).toMatch(/steps\.deloadWeekOf\), ne za fromWeek/);
     expect(why('A20')).toMatch(/1245\/1245/);
+    // 06i (10k-v2.8.0): pouka 37.
+    expect(rule('A21')).toMatch(/SAMO NANIŽE/);
+    expect(rule('A21')).toMatch(/po ČINJENICAMA/);
+    expect(why('A21')).toMatch(/367\/582/);
     expect(rule('A5')).toMatch(
       /Isto posle nedelje smanjenja pauzom, manjkom ili bolom \(A17, 10k-v2\.5\.0\)/
     );

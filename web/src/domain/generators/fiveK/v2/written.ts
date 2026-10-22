@@ -16,6 +16,8 @@ export interface Written {
   /** asOf (broj dana) i kao datum (napomena spajanja). */
   asOf: number;
   at: string;
+  /** 2.10.1 (pouka 37): km zaštićenog dana po činjenicama (assess.factKmOf); null/izostavljeno = planirani km. */
+  factKm?: (d: PlanDay) => number | null;
 }
 
 const r2 = (x: number): number => Math.round(x * 100) / 100;
@@ -42,7 +44,9 @@ export function writtenWeek(
 ): { week: PlanWeek; mixed: boolean } {
   if (mustDay(prev.endDate) <= w.asOf) return { week: prev, mixed: !same(prev, b) };
   const days = [...writtenDays(prev, b.days, w)];
-  if (same(days, b.days)) return { week: same(prev, b) ? prev : b, mixed: false };
+  // 2.10.1 (pouka 37): nedelja sa zbirom zaštićenih po činjenicama (protectedKm) je mešovita i kad su dani isti.
+  if (same(days, b.days) && b.protectedKm === undefined)
+    return { week: same(prev, b) ? prev : b, mixed: false };
   const kept = prev.days.filter((d) => w.keep(d) && mustDay(d.date) > w.asOf).map((d) => d.date);
   const past = mustDay(prev.startDate) <= w.asOf;
   return {

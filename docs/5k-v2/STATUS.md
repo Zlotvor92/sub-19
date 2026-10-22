@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.10.0`, 08i) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.10.2`, 08j) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -162,3 +162,22 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   mreža 08g prema e2e482e: 9 931 / 104 800 promenjeno, sve M, 0 odbijanja; fixture 08g ponovo snimljen (klasa M).
 - Otvoreno: pauza (Odluka 3) i pouka 37; zaključan dan + test po osećaju (TEST_WEEK 168 / 9 919, staro).
 - Izveštaj: `reports/SEGMENT-08i-IMPLEMENTATION.md`.
+
+## Segment 08i-b — zbir zaštićenih po činjenicama; test ne na zaključan dan (5k-v2.10.1, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 46e72eb
+- `assess.factKmOf` (pauza 0, zapis = urađeni km, poznat dan bez zapisa 0, inače planirano) → `week.protectedKm` →
+  `PlanWeek.protectedKm` (validator); nedelja ostatka pauze: vlasnik pravilo pauze (isključen izuzetak → 0 razlika);
+  `steps.framesFor`: test ne na zaštićen dan → otpada uz napomenu; doza nedelje bez drugog kvaliteta (`secondEasyDose`).
+- Merenje: tokovi pauze sa MIXED_OVER_TARGET 10 362 → 0 (dani kao e2e482e); TEST_WEEK 168 → 0; regresija 99 069 prema
+  e2e482e: ciljevi 0, naviše 0, odbijanja 0; mreža 08g 14 908 promenjeno (sve M), 0 odbijanja; sabotaže 5/5 + 4/4.
+- Izveštaj: `reports/SEGMENT-08i-b-IMPLEMENTATION.md`.
+
+## Segment 08j — K9: drugi korak posle smanjenja (5k-v2.10.2, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 9676d1e
+- `volume.adaptVolume`: nedelja sa ciljem ranijeg koraka zadržava cilj u kasnijem koraku (kao validator `resetKm`);
+  `generate.construct`: test koji ne staje otpada prvo sam (idempotentnost ponovljene adaptacije).
+- two-step 5K 30 30 20: new 3 624 → 0, cum 3 696 → 0; DUGI<LAGAN cum 153 = zaključan lagan (po pouci 37); early/locked/
+  start-day 0 odbijanja; trajna mreža `segment08j.*` (4 dela), sabotaže 3/3.
+- Izveštaj: `reports/SEGMENT-08j-IMPLEMENTATION.md`.

@@ -19,6 +19,8 @@ export interface Written {
   lockedDayIds: readonly string[];
   /** MAR-07b: urađeni dani posle asOf (zaštićeni; validator ih ne sudi). */
   doneDayIds: readonly string[];
+  /** MAR-08 (pouka 37): km zaštićenih dana po činjenicama (mixed.factKmOf). */
+  factKm: Readonly<Record<string, number>>;
 }
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
@@ -50,7 +52,10 @@ export function writtenWeeks(
       return s;
     }
     const days = [...writtenDays(s, b.days, w)];
-    if (same(days, b.days)) return same(s, b) ? s : b;
+    // MAR-08 (pouka 37): nedelja sa zaštićenim danom čiji se km po činjenicama razlikuje od plana je mešovita i kad su
+    // dani isti kao sastavljeni (ostatak se računa po činjenicama).
+    const facts = days.some((d) => w.factKm[d.date] !== undefined);
+    if (same(days, b.days) && !facts) return same(s, b) ? s : b;
     mixed.push(s.index);
     const kept = s.days.filter((d) => w.keep(d) && mustDay(d.date) > t).map((d) => d.date);
     const past = mustDay(s.startDate) <= t;

@@ -21,7 +21,13 @@ import { adaptBanner, adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays } from './dates.ts';
 import { earlyPlan } from './earlyGrid.harness.node.test.ts';
-import { GRID_TIMEOUT, missingParts } from './level.harness.node.test.ts';
+import {
+  at46e,
+  GRID_TIMEOUT,
+  hasP37,
+  missingParts,
+  p37FlowErrors
+} from './level.harness.node.test.ts';
 import {
   EARLY_PRE_BACK,
   earlyAsOfs,
@@ -34,7 +40,7 @@ import {
   START0_SCENARIOS,
   start0AsOf
 } from './testInputs.ts';
-import type { TenKV2Plan } from './types.ts';
+import type { PlanWeek, TenKV2Plan } from './types.ts';
 
 export const REPEAT_PARTS = 16;
 const HERE = fileURLToPath(new URL('./', import.meta.url));
@@ -60,6 +66,21 @@ function basesOf(net: Net, partIndex: number): EarlyBase[] {
   const k = FULL ? STRIDE[net].full : STRIDE[net].fast;
   const xs = earlyGridBases().filter((_, i) => i % k === 0);
   return FULL ? part(xs, partIndex, REPEAT_PARTS) : xs;
+}
+
+/** 06i (pouka 37): dani nedelje `w` posle `from` samo naniže prema `ref` (isti datumi, km ≤, kvalitet sme da otpadne). */
+function downOnly(w: PlanWeek, ref: PlanWeek, from: string): boolean {
+  const xs = w.days.filter((d) => d.date > from);
+  const ys = ref.days.filter((d) => d.date > from);
+  return (
+    xs.length === ys.length &&
+    xs.every(
+      (d, i) =>
+        d.date === ys[i]!.date &&
+        d.workout.km <= ys[i]!.workout.km + 1e-9 &&
+        (d.role === ys[i]!.role || d.role === 'easy')
+    )
+  );
 }
 
 const rpe = (date: string) => ({ date, km: 6, durationSec: 2400, completed: true, rpe: 8 });
@@ -131,6 +152,7 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
         // prelazi u sledeću nedelju, A13).
         const bad: string[] = [];
         let n = 0;
+        let m37 = 0;
         for (const b of basesOf('monday', partIndex)) {
           const p0 = earlyPlan(b);
           for (let k = 2; k <= p0.weeks.length - 3; k++) {
@@ -149,12 +171,24 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             if (forced(c.plan).length > 0 && forced(c.plan)[0] !== k)
               bad.push(`${b.id}/k${k}: rasterećenje ${forced(c.plan).join(',')}`);
             if (p0.weeks[k - 1]!.days.some((d) => d.date === mon && d.role === 'test')) continue;
-            const after = (x: TenKV2Plan) =>
-              JSON.stringify(x.weeks.flatMap((w) => w.days.filter((d) => d.date > mon)));
-            if (after(a.plan) !== after(c.plan)) bad.push(`${b.id}/k${k}: drugi dani od utorka`);
+            const after = (x: TenKV2Plan, from: number) =>
+              JSON.stringify(
+                x.weeks.slice(from).flatMap((w) => w.days.filter((d) => d.date > mon))
+              );
+            // 06i (pouka 37): ponedeljak k je zaštićen (≤ asOf) i nedelja k ima ostatak do cilja (keptKm) — preostali
+            // dani nedelje k samo naniže prema asOf nedelja (isti datumi), nedelje posle k iste.
+            if (c.plan.weeks[k - 1]!.keptKm !== undefined) {
+              m37++;
+              if (!downOnly(c.plan.weeks[k - 1]!, a.plan.weeks[k - 1]!, mon))
+                bad.push(`${b.id}/k${k}: pouka 37 — preostali dani nisu samo naniže`);
+              if (after(a.plan, k) !== after(c.plan, k))
+                bad.push(`${b.id}/k${k}: drugi dani posle nedelje k`);
+            } else if (after(a.plan, 0) !== after(c.plan, 0))
+              bad.push(`${b.id}/k${k}: drugi dani od utorka`);
           }
         }
         expect(n).toBeGreaterThan(FULL ? 300 : 200);
+        expect(m37).toBeGreaterThan(0);
         expect(bad.slice(0, 20)).toEqual([]);
       },
       GRID_TIMEOUT
@@ -289,6 +323,7 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
         const idx = new Map(earlyGridBases().map((b, i) => [b.id, i]));
         const bad: string[] = [];
         let [n, fixed] = [0, 0];
+        const runs37: { key: string; hash: number; res: unknown }[] = [];
         for (const b of basesOf('start0', partIndex)) {
           const p0 = earlyPlan(b);
           const at = start0AsOf(p0);
@@ -306,10 +341,12 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             }
             for (const v of adaptInvariants(p0, r.plan, at, facts)) bad.push(`${key}: ${v}`);
             const old = START0.hashes[idx.get(b.id)! * START0_SCENARIOS.length + j]!;
+            const h = planHash06c(r);
+            runs37.push({ key, hash: h, res: hasP37(r) ? 'Mešovita nedelja (pouka 37)' : null });
             if (old === 0) {
               fixed++;
               if (s !== 'fatigue') bad.push(`${key}: na b8fcf22 odbijen, a nije umor`);
-            } else if (old !== planHash06c(r)) bad.push(`${key}: promenjen prema b8fcf22`);
+            } else if (old !== at46e('start0', key, h)) bad.push(`${key}: promenjen prema b8fcf22`);
             if (s !== 'fatigue') continue;
             // Pouke 34 i 36: ista nedelja rasterećenja kao start − 1; dan 1 (≤ asOf) upisan kakav jeste.
             const before = addDays(at, -1);
@@ -318,8 +355,11 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             else if (
               !r.plan.weeks[0]!.deload ||
               JSON.stringify(r.plan.weeks.slice(1)) !== JSON.stringify(r0.plan.weeks.slice(1)) ||
-              JSON.stringify(r.plan.weeks[0]!.days.filter((d) => d.date !== at)) !==
-                JSON.stringify(r0.plan.weeks[0]!.days.filter((d) => d.date !== at)) ||
+              // 06i (pouka 37): uz ostatak do cilja (keptKm) ostali dani ned 1 samo naniže prema start − 1.
+              (r.plan.weeks[0]!.keptKm !== undefined
+                ? !downOnly(r.plan.weeks[0]!, r0.plan.weeks[0]!, at)
+                : JSON.stringify(r.plan.weeks[0]!.days.filter((d) => d.date !== at)) !==
+                  JSON.stringify(r0.plan.weeks[0]!.days.filter((d) => d.date !== at))) ||
               JSON.stringify(r.plan.weeks[0]!.days.filter((d) => d.date === at)) !==
                 JSON.stringify(p0.weeks[0]!.days.filter((d) => d.date === at))
             )
@@ -330,6 +370,8 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
         // Na b8fcf22 umor sa asOf = start odbijen u svakom planu (organizator: 1245/1245).
         expect(fixed).toBe(n / START0_SCENARIOS.length);
         expect(bad.slice(0, 20)).toEqual([]);
+        // 06i: prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37.
+        expect(p37FlowErrors('start0', runs37).slice(0, 10)).toEqual([]);
       },
       GRID_TIMEOUT
     );

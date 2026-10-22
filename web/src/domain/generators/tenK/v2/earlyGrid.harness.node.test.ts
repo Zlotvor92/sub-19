@@ -24,7 +24,14 @@ import { FULL, part, sample } from '@/test/level';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { generateTenKV2 } from './generate.ts';
-import { at7ba, GRID_TIMEOUT, missingParts, p35FlowErrors } from './level.harness.node.test.ts';
+import {
+  at7ba,
+  GRID_TIMEOUT,
+  hasP37,
+  missingParts,
+  p35FlowErrors,
+  p37FlowErrors
+} from './level.harness.node.test.ts';
 import {
   EARLY_NAMED,
   type EarlyBase,
@@ -37,7 +44,7 @@ import {
 } from './testInputs.ts';
 import type { TenKV2Facts, TenKV2Plan } from './types.ts';
 
-export const EARLY_PARTS = 4;
+export const EARLY_PARTS = 12;
 const K_FAST = 60;
 const K_PRE = 240;
 const HERE = fileURLToPath(new URL('./', import.meta.url));
@@ -98,6 +105,8 @@ export interface EarlyRun {
   hash: number;
   /** 06f: pouka 35 u rezultatu (napomena konstruktora). */
   p35: boolean;
+  /** 06i: mešovita nedelja pouke 37 u rezultatu. */
+  p37: boolean;
 }
 
 export function runEarly(f: EarlyFlow): EarlyRun {
@@ -109,12 +118,19 @@ export function runEarly(f: EarlyFlow): EarlyRun {
       ok: false,
       bad: [`${f.key}: ${JSON.stringify(r).slice(0, 400)}`],
       hash: 0,
-      p35: false
+      p35: false,
+      p37: false
     };
   const bad = adaptInvariants(p0, r.plan, f.asOf, facts as unknown as TenKV2Facts).map(
     (v) => `${f.key}: ${v}`
   );
-  return { ok: true, bad, hash: planHash06c(r), p35: JSON.stringify(r).includes('Pouka 35:') };
+  return {
+    ok: true,
+    bad,
+    hash: planHash06c(r),
+    p35: JSON.stringify(r).includes('Pouka 35:'),
+    p37: hasP37(r)
+  };
 }
 
 interface EarlyHashes {
@@ -180,6 +196,15 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
         res: res[i]!.p35 ? 'Pouka 35:' : null
       }));
       expect(p35FlowErrors('early', runs).slice(0, 10)).toEqual([]);
+    });
+
+    it('06i (10k-v2.8.0): prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37', () => {
+      const runs = flows.map((f, i) => ({
+        key: f.key,
+        hash: res[i]!.hash,
+        res: res[i]!.p37 ? 'Mešovita nedelja (pouka 37)' : null
+      }));
+      expect(p37FlowErrors('early', runs).slice(0, 10)).toEqual([]);
     });
 
     it('regresija: tok prihvaćen na 51a924f (pre starta: bd07eec) bajt-isti (heš bez oznake verzije), osim porodice 1 i A5 u uvodu (ti se menjaju)', () => {
