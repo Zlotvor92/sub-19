@@ -110,6 +110,27 @@ async function hmFeelPlan(page: Page): Promise<void> {
   await finish(page);
 }
 
+/** HM v2 sa rezultatom (10 km 45:00, 40 km, najduže 16 km, 4 dana, cilj 1:40:00). */
+async function hmResultPlan(page: Page): Promise<void> {
+  await raceStep(page, 'Polumaraton', '2026-04-12', /Plan polumaratona v2: 12 nedelja/);
+  await page.getByRole('button', { name: 'Imam rezultat' }).click();
+  await page.getByLabel('minuti').fill('45');
+  await page.getByLabel('sekunde').fill('0');
+  await page.getByLabel('Datum rezultata').fill('2026-01-10');
+  await page.getByRole('button', { name: 'Dalje' }).click();
+  await page.getByRole('button', { name: 'Da', exact: true }).click();
+  await page.getByLabel('Nedeljna kilometraža').fill('40');
+  await page.getByLabel('Najduže skorašnje trčanje (km)').fill('16');
+  await page.getByRole('button', { name: 'Trčim redovno' }).click();
+  await page.getByRole('button', { name: 'Dalje' }).click();
+  await pickDays(page, ['Uto', 'Čet', 'Sub', 'Ned']);
+  await group(page, 'Dan dugog trčanja').getByRole('button', { name: 'Ned', exact: true }).click();
+  await page.getByLabel('sati').fill('1');
+  await page.getByLabel('minuti').fill('40');
+  await page.getByLabel('sekunde').fill('0');
+  await finish(page);
+}
+
 /** Pomeranje dana (sat) i otvaranje „Prilagodi plan"; prijavljena pauza 35 dana do danas → pregled. */
 async function pauseReview(page: Page, today: string, from: string): Promise<void> {
   await fixToday(page, `${today}T09:00:00`);
@@ -148,6 +169,10 @@ async function choose(page: Page, backend: Backend, title: string): Promise<void
   await expect(preview.getByLabel('Promena trke i cilja')).toContainText('bez vremenskog cilja');
   await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
   await expect.poll(() => serverPlan(backend), SYNC).toContain(`"summary":"${title}"`);
+  // Potvrda „primenjeno" na ekranu cilja (ekran prilagođavanja je sada ekran plana cilja).
+  await expect(page.locator('#handoff-applied').getByRole('status')).toHaveText(
+    `Plan je promenjen: ${title}. Prethodni plan je sačuvan u istoriji (Prethodne verzije plana).`
+  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -230,23 +255,7 @@ test('(c) HM v2 sa rezultatom → 10K v1 (prekidač 10K v2 isključen)', async (
   await enableFlags(page, { generatorV2HalfMarathon: true, generatorV2TenK: false });
   const backend = await installBackend(page);
   await page.goto('/');
-  await raceStep(page, 'Polumaraton', '2026-04-12', /Plan polumaratona v2: 12 nedelja/);
-  await page.getByRole('button', { name: 'Imam rezultat' }).click();
-  await page.getByLabel('minuti').fill('45');
-  await page.getByLabel('sekunde').fill('0');
-  await page.getByLabel('Datum rezultata').fill('2026-01-10');
-  await page.getByRole('button', { name: 'Dalje' }).click();
-  await page.getByRole('button', { name: 'Da', exact: true }).click();
-  await page.getByLabel('Nedeljna kilometraža').fill('40');
-  await page.getByLabel('Najduže skorašnje trčanje (km)').fill('16');
-  await page.getByRole('button', { name: 'Trčim redovno' }).click();
-  await page.getByRole('button', { name: 'Dalje' }).click();
-  await pickDays(page, ['Uto', 'Čet', 'Sub', 'Ned']);
-  await group(page, 'Dan dugog trčanja').getByRole('button', { name: 'Ned', exact: true }).click();
-  await page.getByLabel('sati').fill('1');
-  await page.getByLabel('minuti').fill('40');
-  await page.getByLabel('sekunde').fill('0');
-  await finish(page);
+  await hmResultPlan(page);
   await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"hm-v2"');
 
   await pauseReview(page, '2026-01-20', '2025-12-17');
@@ -291,4 +300,28 @@ test('(d)(e) HM v2 po osećaju, ciljevi v1: opcije nedostupne sa razlogom doslov
   await expect(page.locator('#plan-decision')).toBeVisible();
   expect(serverPlan(backend)).toBe(adapted);
   expect(serverPlan(backend)).toContain('"policyId":"hm-v2"');
+});
+
+test('(g) HM v2 sa rezultatom → 10K v2 (prekidač 10K v2): ponuda → opcija sa vrhom > 0 → izbor → plan 10K v2 sa prefiksom', async ({
+  page
+}) => {
+  await enableFlags(page, { generatorV2HalfMarathon: true, generatorV2TenK: true });
+  const backend = await installBackend(page);
+  await page.goto('/');
+  await hmResultPlan(page);
+  await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"hm-v2"');
+
+  await pauseReview(page, '2026-01-20', '2025-12-17');
+  const decision = await applyWithOffer(page, backend, 'polumaraton', '2026-01-20');
+  await expect(decision).toContainText('Kraća distanca: 10K istog datuma');
+  await expect(decision.getByRole('list', { name: 'Nedostupne opcije' })).toHaveCount(0);
+  // Vrh dugog i obima plana 10K v2 cilja (3d-10K): brojevi, ne „—", veći od 0.
+  const peaks = (await decision.textContent()) ?? '';
+  const m = /najduže ([\d,]+) km · vrhunac ([\d,]+) km\/ned/.exec(peaks);
+  expect(m).not.toBeNull();
+  expect(Number(m![1].replace(',', '.'))).toBeGreaterThan(0);
+  expect(Number(m![2].replace(',', '.'))).toBeGreaterThan(0);
+  await choose(page, backend, 'Kraća distanca: 10K istog datuma');
+  expect(serverPlan(backend)).toContain('"policyId":"10k-v2"');
+  expect(serverPlan(backend)).toContain('"tenKV2Prefix":{"offset":1');
 });

@@ -56,5 +56,12 @@
     "find": "  return preview(out.result, today, 'execution', out.summary, out.notes, {\n    hmV2: {\n      reasons: out.reasons,\n      weeks: out.weeks,\n      coverage: out.coverage,\n      needed: out.needed,\n      ...(out.shorterOffer ? { shorterOffer: out.shorterOffer } : {})",
     "replace": "  return preview(out.result, today, 'execution', out.summary, out.notes, {\n    hmV2: {\n      reasons: out.reasons,\n      weeks: out.weeks,\n      coverage: out.coverage,\n      needed: out.needed",
     "tests": ["src/features/plan/handoffV2.test.tsx"]
+  },
+  {
+    "name": "3g-h potvrda „primenjeno\" se ne upisuje",
+    "file": "src/features/plan/HmV2Adjustment.tsx",
+    "find": "      noteHandoffApplied(result.summary);\n",
+    "replace": "",
+    "tests": ["src/features/plan/handoffV2.test.tsx"]
   }
 ]

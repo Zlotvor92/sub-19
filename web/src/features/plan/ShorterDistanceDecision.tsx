@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { create } from 'zustand';
 import { Section } from '../../components/ui/primitives';
 import { fmtClock, fmtDayMonthYear } from '../../domain/format';
 import {
@@ -150,5 +151,38 @@ export function ShorterDistanceDecision({
         </button>
       </div>
     </Section>
+  );
+}
+
+/* Potvrda posle izbora kraće distance: primena menja distancu plana, pa ekran prilagođavanja prelazi na generator cilja
+   (npr. 5K v2) i poruka izvora se ne bi videla. Potvrda zato živi van ekrana izvora i prikazuje se jednom, na ekranu
+   cilja (`AdjustPlan`), dok je korisnik ne zatvori ili ne napusti ekran. Ne perzistira se. */
+const useHandoffNotice = create<{ text: string | null }>()(() => ({ text: null }));
+
+/** Upis potvrde posle uspešne primene opcije kraće distance (`summary` pregleda, npr. „Kraća distanca: 5K istog
+ *  datuma"). */
+export const noteHandoffApplied = (summary: string): void =>
+  useHandoffNotice.setState({
+    text: `Plan je promenjen: ${summary}. Prethodni plan je sačuvan u istoriji (Prethodne verzije plana).`
+  });
+
+/** Potvrda predaje na ekranu cilja; nestaje na „U redu" ili pri napuštanju ekrana. */
+export function HandoffAppliedNotice() {
+  const text = useHandoffNotice((s) => s.text);
+  useEffect(() => () => useHandoffNotice.setState({ text: null }), []);
+  if (!text) return null;
+  return (
+    <div className="alt-block" id="handoff-applied">
+      <p role="status" className="prop-m">
+        {text}
+      </p>
+      <button
+        type="button"
+        className="btn ghost sm"
+        onClick={() => useHandoffNotice.setState({ text: null })}
+      >
+        U redu
+      </button>
+    </div>
   );
 }
