@@ -265,6 +265,9 @@ export interface PlanWeek extends WeekFrame {
   fitted: 'down' | 'up' | null;
   days: PlanDay[];
   notes: string[];
+  /** Pouka 37 (10k-v2.8.0): zbir zaštićenih dana po činjenicama [km] (written.protectedKm) — samo u mešovitoj nedelji
+      čiji su preostali dani sastavljeni na ostatak do cilja (week.mixedRemainder); validator ga čita. */
+  keptKm?: number;
 }
 
 /** D9 šablon: Q1 (i Q2 kod 4–6 dana; null kod 3 dana, D18), dugi i lagani dani (rastućim danom). */

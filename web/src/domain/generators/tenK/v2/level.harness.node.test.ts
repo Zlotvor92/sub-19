@@ -41,9 +41,44 @@ export const ADAPT_CHANGED_7BA = (
     flows: Record<'grid04' | 'early' | 'relief' | 'pain', Record<string, number>>;
   }
 ).flows;
-/** Heš toka u stanju 7ba9717 (za starije regresije): promenjen u 06f → heš iz fixture-a, inače današnji. */
+/** Segment 06i (10k-v2.8.0, pouka 37): tokovi trajnih mreža adaptacije koje 10k-v2.8.0 menja → heš na 46e72eb
+    (segment06i.adapt-changed-46e72eb.json) — svi sa mešovitom nedeljom pouke 37 (week.MIXED_NOTE). Starije regresije
+    porede stanje 46e72eb (`at46e`, u lancu `at7ba`); tačan skup proverava `p37FlowErrors`. */
+export const ADAPT_CHANGED_46E = (
+  JSON.parse(
+    readFileSync(
+      fileURLToPath(new URL('./segment06i.adapt-changed-46e72eb.json', import.meta.url)),
+      'utf8'
+    )
+  ) as {
+    against: string;
+    flows: Record<'grid04' | 'early' | 'relief' | 'pain' | 'start0', Record<string, number>>;
+  }
+).flows;
+/** Heš toka u stanju 46e72eb: promenjen u 06i → heš iz fixture-a, inače današnji. */
+export const at46e = (net: keyof typeof ADAPT_CHANGED_46E, key: string, h: number): number =>
+  ADAPT_CHANGED_46E[net][key] ?? h;
+/** Pouka 37 u adaptiranom rezultatu (napomena konstruktora, week.MIXED_NOTE). */
+export const hasP37 = (r: unknown): boolean =>
+  JSON.stringify(r).includes('Mešovita nedelja (pouka 37)');
+/** 06i: tok mreže `net` se razlikuje od 46e72eb (u fixture-u, heš drugačiji) tačno kad ima mešovitu nedelju pouke 37.
+    Vraća prekršaje. */
+export function p37FlowErrors(
+  net: keyof typeof ADAPT_CHANGED_46E,
+  flows: readonly { key: string; hash: number; res: unknown }[]
+): string[] {
+  const bad: string[] = [];
+  for (const f of flows) {
+    const old = ADAPT_CHANGED_46E[net][f.key];
+    if (old !== undefined && (old === f.hash || !hasP37(f.res)))
+      bad.push(`${f.key}: u fixture-u 06i, ${old === f.hash ? 'heš isti' : 'bez pouke 37'}`);
+    if (old === undefined && hasP37(f.res)) bad.push(`${f.key}: pouka 37, a nije u fixture-u 06i`);
+  }
+  return bad;
+}
+/** Heš toka u stanju 7ba9717 (za starije regresije): promenjen u 06f → heš iz fixture-a, inače stanje 46e72eb (06i). */
 export const at7ba = (net: keyof typeof ADAPT_CHANGED_7BA, key: string, h: number): number =>
-  ADAPT_CHANGED_7BA[net][key] ?? h;
+  ADAPT_CHANGED_7BA[net][key] ?? at46e(net, key, h);
 /** 06f: tok mreže `net` se razlikuje od 7ba9717 (u fixture-u, heš drugačiji) tačno kad ima pouku 35 (nedelja
     pouke 35 u rezultatu ili bazni plan iz P35_PLANS). Vraća prekršaje. */
 export function p35FlowErrors(

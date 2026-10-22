@@ -18,6 +18,40 @@ export interface Written {
   lockedDayIds: readonly string[];
   /** 06f: urađeni dani posle asOf (zaštićeni; validator ih ne sudi po danu). */
   doneDayIds: readonly string[];
+  /** Pouka 37 (10k-v2.8.0): km zaštićenog dana po ČINJENICAMA (adapt.ts iz činjenica; protectedKm ga sabira). */
+  factKm: (d: PlanDay) => number;
+}
+
+/** Pouka 37 (10k-v2.8.0): zaštićeni dani nedelje prethodnog plana `prev` koja nije cela ≤ asOf (prazno: cela je prošlost). */
+export function keptDays(prev: PlanWeek, w: Written): PlanDay[] {
+  return mustDay(prev.endDate) <= w.asOf ? [] : prev.days.filter(w.keep);
+}
+
+/**
+ * Pouka 37 (10k-v2.8.0, dopuna 5K-08i) — JEDINA definicija zbira zaštićenih dana mešovite nedelje: po činjenicama, ne
+ * po planu — dan u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km (neurađen 0), ostali zaštićeni (asOf
+ * bez zapisa, zaključan, urađen posle asOf bez km) planirani km. Neodrađen dan tako ne „jede" cilj nedelje.
+ */
+export function protectedKm(kept: readonly PlanDay[], w: Written): number {
+  return kept.reduce((a, d) => a + Math.round(w.factKm(d) * 100), 0) / 100;
+}
+
+/** Pouka 37 (organizator, jedno pravilo za sve 4 distance; uzor 5K-08i-b): km dana po činjenicama (adapt.ts gradi
+    `Written.factKm`): eksplicitna pauza → 0; zapisi dana (dayId ili datum) → zbir urađenih km (neurađen 0); dan POZNAT iz
+    potpune pokrivenosti (A10) bez zapisa → 0; inače (bez zapisa i bez pokrivenosti, zaključan budući dan) → planirano. */
+export function factKmOf(
+  workouts: readonly { date: string; dayId?: string; km: number; completed: boolean }[],
+  breaks: readonly { from: string; to: string }[],
+  coverage: { from: string; to: string; complete: boolean } | null = null
+): (d: PlanDay) => number {
+  return (d) => {
+    const t = mustDay(d.date);
+    if (breaks.some((b) => mustDay(b.from) <= t && t <= mustDay(b.to))) return 0;
+    const recs = workouts.filter((x) => (x.dayId ?? x.date) === d.date);
+    if (recs.length > 0) return recs.reduce((a, x) => a + (x.completed ? x.km : 0), 0);
+    if (coverage?.complete && mustDay(coverage.from) <= t && t <= mustDay(coverage.to)) return 0;
+    return d.countsToWeek ? d.workout.km : 0;
+  };
 }
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
@@ -49,7 +83,8 @@ export function writtenWeeks(
       return s;
     }
     const days = [...writtenDays(s, b.days, w)];
-    if (same(days, b.days)) return same(s, b) ? s : b;
+    // Pouka 37: nedelja sa preostalim danima na ostatku (keptKm) je mešovita i kad su zaštićeni dani isti kao sastavljeni.
+    if (same(days, b.days) && b.keptKm === undefined) return same(s, b) ? s : b;
     mixed.push(s.index);
     const kept = s.days.filter((d) => w.keep(d) && mustDay(d.date) > t).map((d) => d.date);
     const past = mustDay(s.startDate) <= t;

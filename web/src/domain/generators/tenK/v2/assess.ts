@@ -9,7 +9,7 @@ import type { PaceInput } from './input.ts';
 import { round1, vdotFromResult } from './paces.ts';
 import { isBuildPhase } from './periodize.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
-import { stepVdotAt } from './steps.ts';
+import { deloadWeekOf, stepVdotAt } from './steps.ts';
 import { returnAnchor, returnBase10 } from './volume.ts';
 import type {
   AdaptReason,
@@ -425,11 +425,19 @@ export function assess(
     const anchor = addDays(asOf, Math.max(...easyHard.map((x) => day(x.date))) - t + 1);
     const ra = weekOf(anchor);
     const f = ra <= N && day(weeks[ra - 1]!.startDate) < day(anchor) ? ra + 1 : ra;
-    const covered = f < n && wk(f)?.deload === true;
-    const ok = !volumeRule && build(f) && !wk(f)!.deload;
+    // 10k-v2.8.0 (organizator K3, pouka 36): zapisi umora u nedelji 1 koja je već prinudno rasterećenje pre starta
+    // (umor pre starta, korak.preStart) — rasterećenje je već u planu, drugo (nedelja 2) se ne pravi.
+    const pre1 =
+      ra === 1 && wk(1)?.deload === true && steps.some((x) => x.preStart && deloadWeekOf(x) === 1);
+    const covered = (f < n && wk(f)?.deload === true) || pre1;
+    const ok = !volumeRule && !pre1 && build(f) && !wk(f)!.deload;
     // 10k-v2.5.2 (pouka 34): asOf pre starta (n = 1, nema prethodne izgradnje) — referenca rasterećenja je
-    // nedelja 1 generatora bez činjenica.
-    const ref = ok && f === 1 ? preStartRef() : null;
+    // nedelja 1 generatora bez činjenica. 10k-v2.8.0 (K3, pouke 33 i 34): isto kad pre nedelje f nema nedelje
+    // izgradnje (ne-rasteretne) sa dugim — npr. bol pre starta pa umor u nedelji 1 — inače rasterećenje bez reference.
+    const noLong = !weeks.some(
+      (w) => w.index < f && build(w.index) && !w.deload && w.days.some((d) => d.role === 'long')
+    );
+    const ref = ok && (f === 1 || noLong) ? preStartRef() : null;
     if (ok) {
       step.deload = true;
       if (f !== n) step.deloadWeek = f;

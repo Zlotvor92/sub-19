@@ -1,0 +1,224 @@
+{
+  "input": "/home/user/sub-19/docs/10k-v2/artifacts/segment-06i/sabotage-06i.json",
+  "head": "c082abb",
+  "level": "brz",
+  "bail": true,
+  "parallel": 1,
+  "vitestArgs": [],
+  "durationS": 185.1,
+  "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+  "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "06i-a ostatak se ne računa (stara strana: preostali dani kao da je cela nedelja slobodna)",
+      "files": ["src/domain/generators/tenK/v2/generate.ts"],
+      "tests": ["src/domain/generators/tenK/v2/mixedGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+        "test": "mreža pouke 37: mešovita nedelja (umor svaki dan nedelje, zaključan/urađen dan) > 0 odbijanja i adaptInvariants prazno; mešovita nedelja: preostali ≤ cilj − zaštićeni (po činjenicama) ili MIXED_OVER_TARGET",
+        "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "0b7b1136f3c3ff331cc865a89c40271fc5962b65206777ab679f7f8f99d9e460",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 18.1
+    },
+    {
+      "index": 2,
+      "name": "06i-b ostatak i naviše (manjak se nadoknađuje)",
+      "files": ["src/domain/generators/tenK/v2/week.ts"],
+      "tests": ["src/domain/generators/tenK/v2/mixedGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+        "test": "pouka 37: primer nalaza d3-8w-20km-v30-A-sat (umor, asOf prvi dan nedelje 3) > po činjenicama: neurađen dan 1 (zapis 0 km) i dan u pauzi = 0 — ostatak 17,0, preostali dani ostaju kakvi su sastavljeni (samo naniže)",
+        "message": "AssertionError: expected +0 to be undefined"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "e37bb77477d5da177f656f272e4a0114e1a7260dbc1cfa191b58d02c0612f3c4",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 19.5
+    },
+    {
+      "index": 3,
+      "name": "06i-c neodrađen dan (i dan pauze) u zbiru zaštićenih po planu, ne po činjenicama",
+      "files": ["src/domain/generators/tenK/v2/written.ts"],
+      "tests": ["src/domain/generators/tenK/v2/mixedGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+        "test": "pouka 37: primer nalaza d3-8w-20km-v30-A-sat (umor, asOf prvi dan nedelje 3) > po činjenicama: neurađen dan 1 (zapis 0 km) i dan u pauzi = 0 — ostatak 17,0, preostali dani ostaju kakvi su sastavljeni (samo naniže)",
+        "message": "AssertionError: expected 10.1 to be undefined"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "821074b5b5ebee858a4936ed516b974ff9318dc66c1fe4d354174760b07f8bb7",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 18.1
+    },
+    {
+      "index": 4,
+      "name": "06i-d validator ne čita istu funkciju (week.mixedFloorKm)",
+      "files": ["src/domain/generators/tenK/v2/validate.ts"],
+      "tests": ["src/domain/generators/tenK/v2/mixedGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+        "test": "mreža pouke 37: mešovita nedelja (umor svaki dan nedelje, zaključan/urađen dan) > 0 odbijanja i adaptInvariants prazno; mešovita nedelja: preostali ≤ cilj − zaštićeni (po činjenicama) ili MIXED_OVER_TARGET",
+        "message": "AssertionError: expected 3 to be +0 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "498b862c6242d51bff3fd4cac0fcd33bc49558d03bcde23a0e0d87eb944d33de",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 16.1
+    },
+    {
+      "index": 5,
+      "name": "06i-e trajna mreža bez mešovite nedelje (asOf kraj prethodne nedelje, bez zaključanog/urađenog dana)",
+      "files": ["src/domain/generators/tenK/v2/mixedGrid.harness.node.test.ts"],
+      "tests": ["src/domain/generators/tenK/v2/mixedGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+        "test": "mreža pouke 37: mešovita nedelja (umor svaki dan nedelje, zaključan/urađen dan) > pun nivo: svi delovi postoje; skup tokova neprazan",
+        "message": "AssertionError: expected 882 to be greater than 1000"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "6abb3f8700b9175429d5cfcd47ecd5604a2cbfc66834c8d83efee6d8c4f564d7",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 8.7
+    },
+    {
+      "index": 6,
+      "name": "06i-f invarijanta trkačke nedelje bez izuzetka dana odmora bola (K2)",
+      "files": ["src/domain/generators/tenK/v2/adaptInvariants.ts"],
+      "tests": ["src/domain/generators/tenK/v2/fatigue.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+        "test": "06i (organizator, rani prolaz K2): trkačka nedelja sa danima odmora bola ispod minimuma — upozorenje, ne prekršaj invarijante > d5-11w-30km-v40-A-sat, bol 8 asOf 2027-01-09 (subota, ned N − 1): trkačka 3 dana odmora, WEEK_MIN_REST; adaptInvariants prazno (isti predikat week.restDaysWeek)",
+        "message": "AssertionError: expected [ 'trkačka + trka < minimum' ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "1161705eb7cacda7da638313493ec40b36f966c3abbc1ddd90b3e59e1337a5d9",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 5.1
+    },
+    {
+      "index": 7,
+      "name": "06i-g kvalitet otpada i kad ni bez njega ostatak ne staje (dopuna MAR-08)",
+      "files": ["src/domain/generators/tenK/v2/week.ts"],
+      "tests": ["src/domain/generators/tenK/v2/mixedGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+        "test": "pouka 37, dopuna (organizator, MAR-08): kvalitet otpada samo kad time ostatak staje > b-d4-16w-18km-e510-A-sat, umor asOf četvrtak ned 4: ni bez kvaliteta ne staje → Q1 ostaje, lagani na 3,0, MIXED_OVER_TARGET",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "32b9c8751d9d9c3ab6e06122ecf1e9a3f2cbd6c3da1457c7b75843500ff4824b",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 16.8
+    },
+    {
+      "index": 8,
+      "name": "06i-h K1: zaštićen test se premešta (protectedTest uvek false)",
+      "files": ["src/domain/generators/tenK/v2/steps.ts"],
+      "tests": ["src/domain/generators/tenK/v2/lockedTest.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/lockedTest.node.test.ts",
+        "test": "mreža A13b: zaključan dan testa (pauza 10/20, umor, bol 5/8, asOf test − 14 … − 1) > pun nivo: svi delovi postoje; zaključan dan testa × 5 scenarija → 0 odbijanja, jedan test, dan bajt-isti",
+        "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "579d70b9a24bc06765887222aca1dd0a418d42b8555f54fe42a50386bc94446a",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 12.2
+    },
+    {
+      "index": 9,
+      "name": "06i-i K3: drugi umor posle umora pre starta pravi drugo rasterećenje",
+      "files": ["src/domain/generators/tenK/v2/assess.ts"],
+      "tests": ["src/domain/generators/tenK/v2/prestartChain.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/prestartChain.node.test.ts",
+        "test": "K3: primer d3-8w-20km-v30-A-sat > umor → umor 2026-11-04: nedelja 1 ostaje rasterećenje, nedelja 2 izgradnja (bez drugog rasterećenja), umor „već u planu\"",
+        "message": "AssertionError: expected [ true, true ] to deeply equal [ true, false ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "cd7430bb86c74ae891066585ea40c7d48c3e0ba98f263f4b21401c0bc7694868",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 35.7
+    },
+    {
+      "index": 10,
+      "name": "06i-j K3: rasterećenje bez prethodne izgradnje sa dugim bez reference nedelje 1 generatora",
+      "files": ["src/domain/generators/tenK/v2/assess.ts"],
+      "tests": ["src/domain/generators/tenK/v2/prestartChain.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/tenK/v2/prestartChain.node.test.ts",
+        "test": "mreža K3: lanac pre starta (bol 8/5, umor, pauza 20) → nedelja 1, svih 17 scenarija > pun nivo: svi delovi postoje; lanac pre starta → nedelja 1: 0 odbijanja, adaptInvariants prazno",
+        "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "hashSabotaged": "8556bb3bad17cafaac53b518840be9e32b635090592c0715bc234b96dbce24ef",
+      "hashAfter": "98a716291e31416cb59776820a52f59daaa88b4997e5b15232918f0b56acfadd",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 33.7
+    }
+  ]
+}
