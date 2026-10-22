@@ -2,8 +2,15 @@
 
 Polazni SHA `43930f3` (posle 08k). Grana `claude/generator-isolation-5k-10k-hm-marathon`. Menjano `fiveK/v2/**`,
 `docs/5k-v2/**`; izuzeci kao 08i (redovi „5K v2" u byteSame, oznaka u `fiveKV2Flow.test.tsx`). Bez PR-a, mergea, deploya.
-Obrazac 3i (10K/HM) kopiran, ne uvezen. `docs/generators-v2/handoff/SEGMENT-3i-IMPLEMENTATION.md` u trenutku rada NIJE na
-grani — ime polja `weekOffset` treba uskladiti kad 3i za 10K/HM stigne (ako se razlikuje).
+Obrazac 3i (10K/HM) kopiran, ne uvezen. 3i za 10K/HM (`docs/generators-v2/handoff/SEGMENT-3i-IMPLEMENTATION.md`) stigao je
+na granu pri spajanju pre pusha: ime polja isto (`weekOffset`), usklađivanje nije potrebno. Razlike (svesne, bez
+uticaja na ponašanje): potpis 5K `weekLabel(n, offset)` (10K/HM `weekLabel(input, n)`); 5K opseg 0–52 (10K/HM ≥ 0);
+5K forma i adaptacija za sačuvan plan cilja iz 2.9.0–2.10.3 (bez polja) uzimaju pomak iz prefiksa.
+
+Svesno NE kroz funkciju (nisu broj nedelje kalendara ili su opis pravila): STRUCTURE „Redni broj nedelje i ≠ j"
+(`validate.ts`, `runWalkValidate.ts`), BEGINNER_INTRO „Nedelje 1–2 početnika moraju biti bez kvaliteta." (opis pravila,
+samo u odbijanju; 3i ga za HM provodi kroz funkciju — otvoreno pitanje za organizatora), „prva nedelja 1 kvalitet"
+(broj kvaliteta). Polja `Reason.week` / `Violation.week` ostaju v2 indeks (kao 3i, POSLE-MERGE).
 
 ## 1. Problem i odluka
 
@@ -71,6 +78,7 @@ brojevi nedelje u napomenama/upozorenjima u offset + 1 … offset + N.
 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK/v2` | 38 / 726, 375 s |
 | `TEST_FULL=1 npx vitest run --changed 43930f3` (pun, posle svih izmena) | 198 / 1940, 927 s |
 | `npx playwright test e2e/fivek-v2.spec.ts` | 3 / 3 |
+| `npm run check` posle spajanja sa granom (3i 10K/HM, MAR-08b) | exit 0 — 322 / 3657, 600 s; byteSame maratona: prema strani grane promenjeno samo 13 ključeva „5K v2" |
 | `segment08l` na 43930f3 | pada (2 / 3: `weekLabel` ne postoji; poruke bez pomaka) |
 | byteSame 10K/HM/maraton | samo redovi „5K v2" (oznaka; sa privremenim 5k-v2.10.3 i starim snimkom prolaze 6 / 6) |
 
