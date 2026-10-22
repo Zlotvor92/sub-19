@@ -1,0 +1,529 @@
+diff --git a/web/src/domain/generators/halfMarathon/v2/adapt.ts b/web/src/domain/generators/halfMarathon/v2/adapt.ts
+index 7a9c0a3..8c08c4d 100644
+--- a/web/src/domain/generators/halfMarathon/v2/adapt.ts
++++ b/web/src/domain/generators/halfMarathon/v2/adapt.ts
+@@ -139,12 +139,16 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
+   const locked = new Set(facts.lockedDayIds);
+   const keep = (d: PlanDay): boolean =>
+     mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
++  // Pouka 37: urađeni dani posle asOf ulaze u plan (adaptation.doneDayIds) — validator ih, kao zaključane, vidi
++  // kao zaštićene (ostatak mešovite nedelje).
++  const doneAfter = [...done].filter((id) => ids.has(id) && mustDay(id) > t).sort();
+   const prior: Written = {
+     weeks: plan.weeks,
+     keep,
+     asOf: t,
+     at,
+-    lockedDayIds: facts.lockedDayIds
++    lockedDayIds: facts.lockedDayIds,
++    doneDayIds: doneAfter
+   };
+ 
+   // (2) Isti konstruktor kao generate.
+@@ -224,7 +228,13 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
+       ...applied.map((x) => `Adaptacija ${at}: ${x.message}`)
+     ],
+     warnings: [],
+-    adaptation: { asOf: at, steps, mixedWeeks: mixed, lockedDayIds: facts.lockedDayIds }
++    adaptation: {
++      asOf: at,
++      steps,
++      mixedWeeks: mixed,
++      lockedDayIds: facts.lockedDayIds,
++      ...(doneAfter.length > 0 ? { doneDayIds: doneAfter } : {})
++    }
+   };
+ 
+   // (4) Validacija.
+diff --git a/web/src/domain/generators/halfMarathon/v2/adaptInvariants.ts b/web/src/domain/generators/halfMarathon/v2/adaptInvariants.ts
+index b01191e..4d9cf01 100644
+--- a/web/src/domain/generators/halfMarathon/v2/adaptInvariants.ts
++++ b/web/src/domain/generators/halfMarathon/v2/adaptInvariants.ts
+@@ -87,6 +87,15 @@ export function adaptInvariants(
+     for (const d of w.days)
+       if (d.workout.km <= 0 || d.workout.segments.length === 0)
+         bad.push(`prazan trening ${d.date}`);
++    // Pouka 37: mešovita nedelja sa danima posle asOf — planirano ≤ cilj ili upozorenje sa razlogom.
++    if (
++      m &&
++      w.phase !== 'race' &&
++      w.days.some((d) => mustDay(d.date) > t && !locked.has(d.date) && !done.has(d.date)) &&
++      w.plannedKm > w.targetKm + P.tolerance.plannedKm + EPS &&
++      !after.warnings.some((v) => v.rule === 'MIXED_WEEK_OVER' && v.week === w.index)
++    )
++      bad.push(`mešovita nedelja planirano > cilj bez upozorenja ned ${w.index}`);
+     if (m) continue;
+     const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
+     // Planirano = cilj.
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts b/web/src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts
+index 2547080..7e97c7d 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts
+@@ -630,7 +630,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
+ 
+   it('KNOWN_VERSIONS: sačuvan plan hm-v2.3.0 (HM-05) / hm-v2.4.0 (HM-07) ostaje plan HM v2 i prilagođava se tekućim pravilima; druge verzije → UNKNOWN_POLICY', () => {
+     expect(KNOWN_VERSIONS).toEqual([
+-      ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', P.version])
++      ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', 'hm-v2.5.0', P.version])
+     ]);
+     const cur = planOf(WITH_RESULT);
+     const as = (p: GenPlanState, version: string): GenPlanState => ({
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts b/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts
+index c500d8d..c6551e7 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/app.node.test.ts
+@@ -428,7 +428,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
+ 
+   it('KNOWN_VERSIONS = sve verzije sačuvane posle HM-05 (hm-v2.3.0, hm-v2.4.0) i tekuća', () => {
+     expect(hm.hmV2.KNOWN_VERSIONS).toEqual([
+-      ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', VERSION])
++      ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', 'hm-v2.5.0', VERSION])
+     ]);
+     expect(HALF_MARATHON_V2_GENERATOR.policyVersion).toBe(VERSION);
+     expect(HALF_MARATHON_V2_GENERATOR.legacyPolicyId).toBe('legacy-hm');
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts b/web/src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts
+index 8826867..7148957 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts
+@@ -271,7 +271,7 @@ describe('3f: format i izbor', () => {
+     )(10000)!;
+     expect((ten as unknown as () => unknown)()).toEqual({ error: select.V2_TARGET_NOT_READY });
+   });
+-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.5.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
++  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.6.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
+     const r = select.generateHmV2Plan({
+       startDate: '2026-11-02',
+       raceDate: addDays('2026-11-02', 7 * 12 - 1),
+@@ -283,11 +283,15 @@ describe('3f: format i izbor', () => {
+     });
+     if (!r.ok) throw new Error('generator');
+     expect(PREFIX_KEY in r.plan).toBe(false);
+-    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.5.0');
++    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.6.0');
+     expect(
+       select.HALF_MARATHON_V2_GENERATOR.planPolicy({
+         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.4.1' }
+       } as never).status
++    ).toBe('current');    expect(
++      select.HALF_MARATHON_V2_GENERATOR.planPolicy({
++        meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.5.0' }
++      } as never).status
+     ).toBe('current');
+   });
+ });
+diff --git a/web/src/domain/generators/halfMarathon/v2/app/plan.ts b/web/src/domain/generators/halfMarathon/v2/app/plan.ts
+index f2094e6..7a5e4dc 100644
+--- a/web/src/domain/generators/halfMarathon/v2/app/plan.ts
++++ b/web/src/domain/generators/halfMarathon/v2/app/plan.ts
+@@ -36,11 +36,11 @@ export const POLICY_VERSION = P.version;
+ /** v2 nema plan pre oznake politike: svaki v2 plan nosi `hm-v2`; plan bez oznake je HM v1 (`legacy-hm`). */
+ export const LEGACY_POLICY_ID = 'legacy-hm';
+ /** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
+- *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`; od HM-07b `hm-v2.4.1`; od 3f `hm-v2.5.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`) i tekuća. Sačuvan stariji plan ostaje plan
++ *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`; od HM-07b `hm-v2.4.1`; od 3f `hm-v2.5.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`; od HM-08 `hm-v2.6.0`) i tekuća. Sačuvan stariji plan ostaje plan
+  *  HM v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown"
+  *  (UNKNOWN_POLICY). */
+ export const KNOWN_VERSIONS: readonly string[] = [
+-  ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', P.version])
++  ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', 'hm-v2.5.0', P.version])
+ ];
+ 
+ /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za
+diff --git a/web/src/domain/generators/halfMarathon/v2/generate.ts b/web/src/domain/generators/halfMarathon/v2/generate.ts
+index 541037c..db43399 100644
+--- a/web/src/domain/generators/halfMarathon/v2/generate.ts
++++ b/web/src/domain/generators/halfMarathon/v2/generate.ts
+@@ -5,6 +5,7 @@
+    H16; početnik bez testa) → po nedelji cilj (H6, volume.ts) i konstrukcija (week.ts) → validator (samo
+    prijavljuje; greška = odbijanje PLAN_VIOLATES_POLICY, nikad degenerisan plan). */
+ 
++import { mustDay } from './dates.ts';
+ import { checkInput } from './input.ts';
+ import {
+   longestLong10,
+@@ -51,7 +52,14 @@ import {
+   raceWeekTarget10,
+   startKm10
+ } from './volume.ts';
+-import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
++import {
++  type BuiltWeek,
++  buildWeek,
++  type QualityMode,
++  raceWeek,
++  remainderWeek,
++  type WeekContext
++} from './week.ts';
+ import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
+ import { type Written, writtenDays, writtenWeeks } from './written.ts';
+ 
+@@ -262,7 +270,13 @@ export function construct(
+         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
+         frame.index
+       );
+-    const w = make(fit.target10, mode)!;
++    // Pouka 37: mešovita nedelja — preostali dani na ostatak cilja (samo naniže; week.remainderWeek).
++    const w0 = make(fit.target10, mode)!;
++    const s0 = prior?.weeks[frame.index - 1];
++    const w =
++      prior && s0 && mustDay(s0.endDate) > prior.asOf
++        ? (remainderWeek(ctx, frame, w0, s0.days.filter(prior.keep), fit.target10) ?? w0)
++        : w0;
+     const notes = [...w.notes];
+     if (frame.index === 1 && w.long10 !== null) notes.push(recentLongNote(w.long10, ctx));
+     if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));
+@@ -366,7 +380,8 @@ export function construct(
+           adaptation: {
+             ...plan.adaptation!,
+             mixedWeeks: merged.mixed,
+-            lockedDayIds: [...prior!.lockedDayIds]
++            lockedDayIds: [...prior!.lockedDayIds],
++            ...(prior!.doneDayIds.length > 0 ? { doneDayIds: [...prior!.doneDayIds] } : {})
+           }
+         }
+       : plan
+diff --git a/web/src/domain/generators/halfMarathon/v2/lengths.ts b/web/src/domain/generators/halfMarathon/v2/lengths.ts
+index 6bbc9ec..cd758c9 100644
+--- a/web/src/domain/generators/halfMarathon/v2/lengths.ts
++++ b/web/src/domain/generators/halfMarathon/v2/lengths.ts
+@@ -239,3 +239,43 @@ export function limitedEasy10(easy10: number, inPain: boolean, long10: number |
+     : easy10;
+   return long10 === null ? k : Math.min(k, long10);
+ }
++
++/* ---------- Pouka 37: mešovita nedelja (deo dana zaštićen) — ostatak do cilja, samo naniže ---------- */
++
++/** Pouka 37: vrsta preostalog (nezaštićenog) dana — dugi, lagan, kvalitet (sme da otpadne u lagan) ili test
++    (ostaje kakav jeste, H16). */
++export type FreeKind = 'long' | 'easy' | 'quality' | 'test';
++
++/**
++ * Pouka 37 — JEDNA funkcija minimuma preostalih dana mešovite nedelje [0,01 km]: dugi, lagan i kvalitet (otpada u
++ * lagan) po 4 km (dugi ≥ lagan među preostalim danima), test svojom dužinom. Kad zaštićeni dani + ovaj minimum >
++ * cilj, nedelja je planirano > cilj uz upozorenje (MIXED_WEEK_OVER); konstruktor (week.remainderWeek) i validator
++ * čitaju istu funkciju.
++ */
++export function mixedFloor100(free: readonly { kind: FreeKind; km100: number }[]): number {
++  return free.reduce((a, d) => a + (d.kind === 'test' ? d.km100 : EASY_MIN10 * 10), 0);
++}
++
++/**
++ * Pouka 37 (kao pouka 33): dužine preostalih dana na ostatak `rest100` [0,01 km] — dugi (`longCap10` = sastavljen
++ * dugi kao gornja granica, null kad dugi nije preostali dan) ostaje najduži mogući, lagani (`caps10` = sastavljeni
++ * lagani, gornje granice — samo naniže) dele ostatak; lagani se skraćuju do 4 km pre dugog, dugi zatim do 4 km
++ * (≥ lagan). Zbir ≤ `rest100`; null = ne staje.
++ */
++export function remainderLengths(
++  rest100: number,
++  longCap10: number | null,
++  caps10: readonly number[]
++): Lengths | null {
++  const n = caps10.length;
++  const long10 =
++    longCap10 === null
++      ? Infinity
++      : Math.min(longCap10, Math.floor((rest100 - n * EASY_MIN10 * 10) / 10));
++  if (long10 < EASY_MIN10) return null;
++  const left10 = Math.floor((rest100 - (longCap10 === null ? 0 : long10 * 10)) / 10);
++  if (n === 0) return left10 >= 0 ? { long10, easy10: [] } : null;
++  const easy10 = splitEasy(left10, n).map((e, i) => Math.min(e, caps10[i]!));
++  if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
++  return { long10, easy10 };
++}
+diff --git a/web/src/domain/generators/halfMarathon/v2/policy.node.test.ts b/web/src/domain/generators/halfMarathon/v2/policy.node.test.ts
+index 93a5935..64d2ae3 100644
+--- a/web/src/domain/generators/halfMarathon/v2/policy.node.test.ts
++++ b/web/src/domain/generators/halfMarathon/v2/policy.node.test.ts
+@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
+ describe('HM v2 politika (MASTER § 4)', () => {
+   it('oznaka politike (Uslov 6)', () => {
+     expect(P.id).toBe('hm-v2');
+-    expect(P.version).toBe('hm-v2.5.0');
++    expect(P.version).toBe('hm-v2.6.0');
+   });
+ 
+   it('H1 opseg ulaza', () => {
+@@ -252,7 +252,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
+       'F4a-N10',
+       'F4a-N11',
+       'F4a-N12',
+-      'HM07b-GUARD'
++      'HM07b-GUARD',
++      'P37-MIXED'
+     ]);
+     for (const d of P.DECISIONS) {
+       expect(d.rule.length, d.id).toBeGreaterThan(20);
+diff --git a/web/src/domain/generators/halfMarathon/v2/policy.ts b/web/src/domain/generators/halfMarathon/v2/policy.ts
+index 4b3c45e..f5bfcc3 100644
+--- a/web/src/domain/generators/halfMarathon/v2/policy.ts
++++ b/web/src/domain/generators/halfMarathon/v2/policy.ts
+@@ -427,12 +427,18 @@ const DECISIONS: readonly Decision[] = [
+     place: 'validate.ts guarded (jedno mesto: zaključan ∪ upisan), petlja H10/H14 i H11 ZONE_CAP',
+     rationale:
+       'Nalaz MAR-07 (organizator), izmereno u HM (probe.ts): rezultat faster/slower/test5k krajem nedelje k + zaključani Q1/Q2 (ili samo Q1) nedelje k + 1, pa urađen Q1 — odbijeno 2978 / 3336 tokova (WARMUP/COOLDOWN, …) → 0 / 4617 (sa lancem urađenog Q1). Rana 4a i ciljana mreža bez promene.'
++  },
++  {
++    id: 'P37-MIXED',
++    rule: 'Pouka 37: mešovita nedelja (deo dana zaštićen: ≤ asOf, urađen, zaključan) — cilj važi za celu nedelju. Preostali dani se sastavljaju na ostatak = cilj − zaštićeni dani, SAMO NANIŽE (nikad više nego sastavljeni za te dane; menja se samo nedelja u kojoj zaštićeni dani prelaze sastavljene za te datume; manjak se ne nadoknađuje). Struktura kao pouka 33: kvalitet ostaje, lagani se skraćuju do 4 km, pa dugi (≥ lagan među preostalim danima); kvalitet otpada u lagan (Q2, pa Q1; test ostaje) tek kad ni tako ne staje ili kad bi skraćen dugi bio kraći od dana kvaliteta (pouka 35, taper izuzet). Kad ni minimum preostalih dana (4 km po danu, test svojom dužinom) ne staje → najmanja struktura, planirano > cilj uz upozorenje MIXED_WEEK_OVER (pouka 14), ne odbijanje. Trkačka nedelja: svoje pravilo (pouka 5/30). Urađeni dani posle asOf → adaptation.doneDayIds (zaštićeni u validatoru).',
++    place: 'week.ts remainderWeek (jedino mesto odluke) i mixedMin100 / lengths.ts mixedFloor100, remainderLengths (minimum i dužine); generate.ts construct (poziv po nedelji, upisani dani); validate.ts MIXED_WEEK_OVER / MIXED_OVER_TARGET (ista funkcija mixedMin100); adaptInvariants.ts',
++    rationale: 'MERENJE_P37'
+   }
+ ];
+ 
+ export const HM_V2_POLICY = {
+   id: 'hm-v2',
+-  version: 'hm-v2.5.0',
++  version: 'hm-v2.6.0',
+ 
+   /** H1 (dani i obim: H15). */
+   input: {
+diff --git a/web/src/domain/generators/halfMarathon/v2/types.ts b/web/src/domain/generators/halfMarathon/v2/types.ts
+index 423bf03..8cb3820 100644
+--- a/web/src/domain/generators/halfMarathon/v2/types.ts
++++ b/web/src/domain/generators/halfMarathon/v2/types.ts
+@@ -438,6 +438,8 @@ export interface HmV2Adaptation {
+       konstrukcije: validator na njima proverava samo dane (nedeljna pravila važe za konstrukciju). */
+   mixedWeeks: number[];
+   lockedDayIds: string[];
++  /** Pouka 37: urađeni dani posle asOf (dayId) — zaštićeni kao zaključani; samo kad ih ima. */
++  doneDayIds?: string[];
+ }
+ 
+ export type AdaptCondition =
+diff --git a/web/src/domain/generators/halfMarathon/v2/validate.ts b/web/src/domain/generators/halfMarathon/v2/validate.ts
+index 64d4b1e..0af0965 100644
+--- a/web/src/domain/generators/halfMarathon/v2/validate.ts
++++ b/web/src/domain/generators/halfMarathon/v2/validate.ts
+@@ -119,6 +119,7 @@ import {
+   SECOND_EASY_NOTE,
+   secondQualityEasy,
+   sharpenerAllowed,
++  mixedMin100,
+   sharpenerDate,
+   taperDayLimit
+ } from './week.ts';
+@@ -240,7 +241,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
+   /** Pouka 4 / stalni uslov 4 (HM-07b): zaštićen dan je činjenica, ne odluka generatora — zaključan (A11) ili upisan
+       (datum ≤ poslednji asOf: urađen, propušten, ručno izmenjen; pouka 29). Provere po danu ga preskaču kao LIMITS
+       (npr. zaključan dan kvaliteta posle novog rezultata nosi stari tempo, A1). */
+-  const locked = new Set(ad?.lockedDayIds ?? []);
++  const locked = new Set([...(ad?.lockedDayIds ?? []), ...(ad?.doneDayIds ?? [])]);
+   const lastAsOf = steps.length > 0 ? mustDay(steps[steps.length - 1]!.asOf) : null;
+   const guarded = (d: { date: string }): boolean =>
+     locked.has(d.date) || (lastAsOf !== null && mustDay(d.date) <= lastAsOf);
+@@ -551,6 +552,30 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
+       (w.limits?.rest ?? []).length > 0;
+     if (w.days.filter((d) => d.countsToWeek).length === 0 && !raceOnly)
+       err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
++    // Pouka 37: mešovita nedelja (deo dana zaštićen) — cilj važi za celu nedelju: planirano ≤ cilj, ili
++    // upozorenje kad ni minimum preostalih dana ne staje u ostatak (week.mixedMin100, ista funkcija kao
++    // konstruktor week.remainderWeek). Trkačka nedelja ima svoje pravilo (pouka 5/30).
++    const free = w.days.filter((d) => !guarded(d));
++    if (
++      !checked(w) &&
++      w.phase !== 'race' &&
++      free.length > 0 &&
++      planned > to100(w.targetKm) + to100(P.tolerance.plannedKm)
++    ) {
++      const min100 = mixedMin100(w.days.filter(guarded), free);
++      if (min100 > to100(w.targetKm) + to100(P.tolerance.plannedKm))
++        warn(
++          'MIXED_WEEK_OVER',
++          `Planirano ${w.plannedKm} km > cilj ${w.targetKm} km: zaštićeni dani (≤ asOf, urađeni, zaključani) i najmanji preostali dani (${(min100 / 100).toFixed(2)} km) ne staju u cilj (pouka 37, pouka 14).`,
++          w.index
++        );
++      else
++        err(
++          'MIXED_OVER_TARGET',
++          `Planirano ${w.plannedKm} km > cilj ${w.targetKm} km, a preostali dani staju u ostatak cilja (pouka 37).`,
++          w.index
++        );
++    }
+     // Segment 04: mešovita nedelja — samo dani; nedelja sa danima bola/odmora (A4, pouka 25): planirano ≤
+     // cilj (upozorenje).
+     if (!checked(w)) continue;
+diff --git a/web/src/domain/generators/halfMarathon/v2/week.ts b/web/src/domain/generators/halfMarathon/v2/week.ts
+index d38ac54..395daf3 100644
+--- a/web/src/domain/generators/halfMarathon/v2/week.ts
++++ b/web/src/domain/generators/halfMarathon/v2/week.ts
+@@ -13,7 +13,11 @@ import {
+   deloadLong10,
+   type Lengths,
+   longCap10,
++  EASY_MIN10,
+   longFor10,
++  mixedFloor100,
++  remainderLengths,
++  type FreeKind,
+   taperLengths
+ } from './lengths.ts';
+ import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
+@@ -764,6 +768,155 @@ export function buildWeek(
+   );
+ }
+ 
++/** Pouka 37: vrsta preostalog dana (dan iz plana) — jedna definicija za konstruktor i validator. */
++export function freeKind(d: Pick<PlanDay, 'role'>): FreeKind {
++  return d.role === 'long'
++    ? (globalThis as unknown as { P37_KEEP_LONG?: boolean }).P37_KEEP_LONG
++      ? 'test'
++      : 'long'
++    : d.role === 'test'
++      ? 'test'
++      : d.role === 'q1' || d.role === 'q2'
++        ? 'quality'
++        : 'easy';
++}
++
++/** Pouka 37: minimum nedelje sa zaštićenim danima `kept` i preostalim `free` [0,01 km] (lengths.mixedFloor100). */
++export function mixedMin100(kept: readonly PlanDay[], free: readonly PlanDay[]): number {
++  return (
++    kept.reduce((a, d) => a + (d.countsToWeek ? km100(d.workout.km) : 0), 0) +
++    mixedFloor100(free.map((d) => ({ kind: freeKind(d), km100: km100(d.workout.km) })))
++  );
++}
++
++/** Pouka 37: napomena mešovite nedelje čiji su preostali dani sastavljeni na ostatak (validator je čita). */
++export const MIXED_NOTE = 'mešovita nedelja (pouka 37)';
++
++/**
++ * Pouka 37 — JEDINO mesto odluke o preostalim danima mešovite nedelje (deo dana zaštićen: ≤ asOf, urađen,
++ * zaključan; `kept` = zaštićeni dani iz prethodnog plana). Cilj `target10` važi za celu nedelju: preostali dani
++ * sastavljene nedelje `built` (dani na zaštićenim datumima se ne upisuju) sastavljaju se na ostatak = cilj −
++ * zaštićeni, SAMO NANIŽE — kad zaštićeni dani nisu veći od sastavljenih za te datume ili sastavljeni preostali
++ * dani već staju u ostatak, nedelja ostaje kakva jeste (null).
++ * Struktura kao pouka 33: kvalitet ostaje, lagani se skraćuju do 4 km, pa dugi (≥ lagan, ≥ 4 km); kvalitet
++ * otpada u lagan dan (prvo Q2, pa Q1; test ostaje) tek kad ni tako ne staje, ili kad bi skraćen dugi bio kraći od
++ * dana kvaliteta (pouka 35; taper izuzet). Kad ni minimum preostalih dana (mixedMin100) ne staje → najmanja
++ * struktura, planirano > cilj (upozorenje MIXED_WEEK_OVER validatora, pouka 14), ne odbijanje. Trkačka nedelja
++ * ima svoje pravilo (pouka 5/30). Jedna petlja po opcijama strukture, ne uzastopno skraćivanje (Uslov 1).
++ */
++export function remainderWeek(
++  ctx: WeekContext,
++  frame: WeekFrame,
++  built: BuiltWeek,
++  kept: readonly PlanDay[],
++  target10: number
++): BuiltWeek | null {
++  if (frame.phase === 'race' || kept.length === 0) return null;
++  const p = ctx.paces;
++  const keptDates = new Set(kept.map((d) => d.date));
++  const free = built.days.filter((d) => !keptDates.has(d.date));
++  const sum100 = (ds: readonly PlanDay[]): number =>
++    ds.reduce((a, d) => a + (d.countsToWeek ? km100(d.workout.km) : 0), 0);
++  const kept100 = sum100(kept);
++  const rest100 = target10 * 10 - kept100;
++  // Samo naniže: menja se samo nedelja u kojoj zaštićeni dani prelaze ono što je sastavljeno za te datume.
++  if (
++    free.length === 0 ||
++    kept100 <= sum100(built.days.filter((d) => keptDates.has(d.date))) ||
++    kept100 + sum100(free) <= target10 * 10
++  )
++    return null;
++  const long = (globalThis as unknown as { P37_KEEP_LONG?: boolean }).P37_KEEP_LONG ? null : (free.find((d) => d.role === 'long') ?? null);
++  const keptLong = kept.find((d) => d.role === 'long');
++  const droppable = ['q2', 'q1']
++    .map((r) => free.find((d) => d.role === r))
++    .filter((d): d is PlanDay => !!d);
++  const quality = (d: PlanDay): boolean => d.role === 'q1' || d.role === 'q2';
++  const compose = (
++    dropN: number,
++    withKept: boolean
++  ): { days: PlanDay[]; long10: number | null } | null => {
++    const dropped = new Set(droppable.slice(0, dropN).map((d) => d.date));
++    const fixed = free.filter(
++      (d) =>
++        (quality(d) && !dropped.has(d.date)) ||
++        d.role === 'test' ||
++        (d.role === 'long' && !long)
++    );
++    const easy = free.filter((d) => d.role === 'easy' || dropped.has(d.date));
++    const len = remainderLengths(
++      rest100 - sum100(fixed),
++      long ? km10(long.workout.km) : null,
++      easy.map((d) => km10(d.workout.km))
++    );
++    if (!len) return null;
++    // Pouka 35: skraćen dugi ostaje najduži trening nedelje (taper izuzet, H7); zaštićen dan kvaliteta se
++    // poredi samo dok neka opcija to dozvoljava (zaštićen dan je činjenica).
++    if (long && len.long10 < km10(long.workout.km) && frame.phase !== 'taper') {
++      const longSec = longWorkout(len.long10 / 10, p).sec;
++      if ([...(withKept ? kept : []), ...fixed].some((d) => quality(d) && d.workout.sec > longSec))
++        return null;
++    }
++    return {
++      days: [
++        ...fixed,
++        ...(long
++          ? [
++              len.long10 === km10(long.workout.km)
++                ? long
++                : day(long.date, 'long', longWorkout(len.long10 / 10, p))
++            ]
++          : []),
++        ...easy.map((d, i) =>
++          d.role === 'easy' && km10(d.workout.km) === len.easy10[i]
++            ? d
++            : day(d.date, 'easy', easyWorkout(len.easy10[i]! / 10, p))
++        )
++      ],
++      long10: long ? len.long10 : null
++    };
++  };
++  let dropN = 0;
++  let c: ReturnType<typeof compose> = null;
++  for (const withKept of [true, false])
++    for (dropN = 0; dropN <= droppable.length && !c; dropN++) c = compose(dropN, withKept);
++  dropN--;
++  if (!c) {
++    // Najmanja struktura (samo naniže): kvalitet otpada, lagani 4 km, dugi na donjoj granici.
++    dropN = droppable.length;
++    const dropped = new Set(droppable.map((d) => d.date));
++    c = {
++      days: free.map((d) =>
++        d.role === 'test'
++          ? d
++          : d.role === 'long' && long
++            ? day(d.date, 'long', longWorkout(Math.min(km10(d.workout.km), EASY_MIN10) / 10, p))
++            : d.role === 'easy' || dropped.has(d.date)
++              ? day(d.date, 'easy', easyWorkout(Math.min(km10(d.workout.km), EASY_MIN10) / 10, p))
++              : d
++      ),
++      long10: long ? Math.min(km10(long.workout.km), EASY_MIN10) : null
++    };
++  }
++  const droppedRoles = droppable.slice(0, dropN).map((d) => d.role.toUpperCase());
++  const days = [...built.days.filter((d) => keptDates.has(d.date)), ...c.days];
++  const freeKm = sum100(c.days) / 100;
++  const over = kept100 + sum100(c.days) > target10 * 10;
++  const note = over
++    ? `Adaptacija: ${MIXED_NOTE} — zaštićeni dani ${fmtKm(kept100 / 100)} km; ni najmanji preostali dani (${fmtKm(freeKm)} km${droppedRoles.length > 0 ? `, ${droppedRoles.join(' i ')} lagan` : ''}) ne staju u ostatak ${fmtKm(Math.max(0, rest100) / 100)} km do cilja ${fmtKm(target10 / 10)} km — planirano iznad cilja.`
++    : `Adaptacija: ${MIXED_NOTE} — zaštićeni dani ${fmtKm(kept100 / 100)} km; preostali dani ${fmtKm(freeKm)} km na ostatak ${fmtKm(rest100 / 100)} km do cilja ${fmtKm(target10 / 10)} km${droppedRoles.length > 0 ? `; ${droppedRoles.join(' i ')} lagan (ne staje u ostatak)` : ''}.`;
++  const picks = built.picks
++    ? {
++        q1: droppedRoles.includes('Q1') ? null : built.picks.q1,
++        q2: droppedRoles.includes('Q2') ? null : built.picks.q2
++      }
++    : null;
++  return finish(days, keptLong ? km10(keptLong.workout.km) : c.long10, picks, [
++    ...built.notes,
++    note
++  ]);
++}
++
+ /** H8: oštrenje (2 × 2000 m RP) samo kad je ≤ RP doza tapera; taper bez RP → bez oštrenja. */
+ export function sharpenerAllowed(taperRpM: number): boolean {
+   const s = P.raceWeek.sharpener;
+diff --git a/web/src/domain/generators/halfMarathon/v2/written.ts b/web/src/domain/generators/halfMarathon/v2/written.ts
+index bae6702..2f976c8 100644
+--- a/web/src/domain/generators/halfMarathon/v2/written.ts
++++ b/web/src/domain/generators/halfMarathon/v2/written.ts
+@@ -17,6 +17,8 @@ export interface Written {
+   asOf: number;
+   at: string;
+   lockedDayIds: readonly string[];
++  /** Pouka 37: urađeni dani posle asOf (dayId) — zaštićeni; validator ih čita iz plan.adaptation.doneDayIds. */
++  doneDayIds: readonly string[];
+ }
+ 
+ const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);

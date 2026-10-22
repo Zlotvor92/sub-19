@@ -5,6 +5,7 @@
 import { longShareCap10, longTimeCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { deloadWeekOf } from './steps.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
 
 const EPS = 1e-9;
@@ -170,8 +171,10 @@ export interface VolumeStep {
   restart: boolean;
   levelKm: number | null;
   returnFrom: { week: number; share: number } | null;
-  /** A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja nedelje fromWeek (= 1). */
+  /** A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja nedelje 1 (steps.deloadWeekOf). */
   preStart?: { buildKm: number };
+  /** Pouka 36 (10k-v2.6.0): nedelja prinudnog rasterećenja iz zapisa umora (asOf u njoj: < fromWeek). */
+  deloadWeek?: number;
 }
 
 /** Pravila obima iz koraka po nedelji (konstruktor i validator čitaju isto). */
@@ -222,7 +225,8 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
   const anchors = new Map<number, ReturnAnchor>();
   const preStart = new Map<number, number>();
   for (const s of steps) {
-    if (s.preStart) preStart.set(s.fromWeek, to10(s.preStart.buildKm));
+    // 10k-v2.6.2 (pouka 23): referenca važi za nedelju rasterećenja (asOf = start: ned 1 < fromWeek 2).
+    if (s.preStart) preStart.set(deloadWeekOf(s), to10(s.preStart.buildKm));
     if (s.startKm !== null) {
       reset.set(s.fromWeek, to10(s.startKm));
       if (s.restart) restart.set(s.fromWeek, to10(s.startKm));

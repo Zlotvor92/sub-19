@@ -107,6 +107,11 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   cilj ga ne dobija (lepak `handoff.ts`), pa je v1 plan bajt-isti. Verzija HM nepromenjena. Izveštaj
   `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` § 8.
 
+## Segment HM-08 (hm-v2.6.0, pouka 37): STANI
+
+- Mešovita nedelja, ostatak do cilja: radni patch `artifacts/segment-08/p37-wip.patch` (nije u kodu). Nalaz
+  organizatora 291/449 → 0, ali skraćen dugi preostalih dana postaje stanje (H5/pouka 28) → kaskada u 1458 tokova
+  rane mreže (vrh do −22 km). Opcije A–D i merenje: `reports/SEGMENT-08-STOP.md`; čeka odluku organizatora.
 ## Faza 3, 3c-dopuna 2: format izmena i poslednji rezultat (obrazac 3e)
 
 - `app/preparation.ts`: `HM_V2_SOURCE_FORMAT` ∪ `hmV2Edits` (snimak izmena ne prelazi u v1 cilj); `lastResult` — `pb` =
