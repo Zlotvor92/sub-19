@@ -41,7 +41,7 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
   `segment01.baseline.json` + `segment02.regression-01.json`.
 - Sabotaže: `node scripts/sabotage.mjs ../docs/marathon-v2/artifacts/segment-03/sabotage.json`.
 
-## Trenutno stanje (marathon-v2.4.0)
+## Trenutno stanje (marathon-v2.4.2)
 
 - MAR-07 (Faza 4a): trkačka nedelja samo sa trkom → RACE_WEEK_SHORT (N1); pouka 35 (drugi dan kvaliteta lagan kad bi
   dan kvaliteta bio duži od dugog, izgradnja; jedan kvalitet neizvodljiv → dva + upozorenje pouke 14); pouka 36 (umor
@@ -70,10 +70,14 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
 | MAR-05  | 2.3.1       | `9443676`                       | aplikacija iza prekidača `generatorV2Marathon`, adapter `v2/app/`, byteSame 223 heša                 |
 | MAR-06  | 2.3.1       | `8beef45`                       | adaptacija u aplikaciji (facts, pregled → potvrda → revizija, vraćanje, Forma, cilj), traka u domenu |
 
-## Segment MAR-07 (marathon-v2.4.0) i MAR-07b (2.4.1), Faza 4a
+## Segment MAR-07 (marathon-v2.4.0), MAR-07b (2.4.1) i MAR-07c (2.4.2), Faza 4a
 
 - Polazni SHA `7ba9717`; izveštaj `reports/SEGMENT-07-IMPLEMENTATION.md`.
 - MAR-07b (`marathon-v2.4.1`, `reports/SEGMENT-07b-IMPLEMENTATION.md`): validator ne sudi zaštićenim danima (A11b).
   KNOWN_VERSIONS = 2.3.1, 2.4.0, 2.4.1; regresija 0 neobjašnjenih; sabotaže 6/6 + 2/2.
+- MAR-07c (`marathon-v2.4.2`, polazni `a869e21`, `reports/SEGMENT-07c-IMPLEMENTATION.md`): umor sa asOf na dan testa
+  (pouke 23, 36) — test zaštićen (≤ asOf) ostaje jedini, ne premešta se (A13b, `steps.framesFor`). Po osećaju + početnik
+  × umor svaki dan ned 1 … N − 3: 540/1 084 860 → 0 odbijanja; regresija 323 314 tokova 0 promenjenih; sabotaže 4/4;
+  KNOWN_VERSIONS = 2.3.1, 2.4.0, 2.4.1, 2.4.2.
 
 ## Sledeće: predaja maraton v2 ↔ HM/10K (faza 3).

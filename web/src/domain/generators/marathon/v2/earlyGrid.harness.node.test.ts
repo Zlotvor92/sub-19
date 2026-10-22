@@ -7,7 +7,10 @@
    korak nedelju kasnije); N1 — bol 7 i 8 na svaki dan nedelja N − 2 i N − 1 (3–4 dana); pouka 36 — isti zapisi umora
    ponovo asOf + 1 … + 7 (asOf: kraj nedelja iz earlyAsOfs i start − 1) → 0 novih rasterećenja, traka prazna. MAR-07b
    (pouka 4): novi rezultat (brži, sporiji, test 5 km) × zaključan ili urađen Q1/Q2 sledeće nedelje (asOf: kraj
-   nedelja iz earlyAsOfs) → 0 odbijanja, zaštićen dan bajt-isti (adaptInvariants). Po
+   nedelja iz earlyAsOfs) → 0 odbijanja, zaštićen dan bajt-isti (adaptInvariants). MAR-07c (pouke 23, 36): umor sa
+   asOf svaki dan nedelje testa i nedelje pre nje (po osećaju) i svaki ponedeljak nedelja 1 … N − 3 (svi planovi;
+   prinudno rasterećenje u tekućoj nedelji); svi planovi po osećaju (testDayFlows) × umor na dan testa − 1, dan testa
+   i + 1 (na a869e21 540 odbijanja: 5 dana raspored C, test na Q1 = ponedeljak = asOf) → 0 odbijanja. Po
    toku: prihvaćen (K1 = 0) i adaptInvariants prazno (nezavisno od validatora). */
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -25,6 +28,7 @@ import {
   earlyPreAsOfs,
   type EarlyScenario,
   factsOf,
+  feelInputs,
   painFacts,
   PRE_START_SCENARIOS,
   type Scenario,
@@ -32,7 +36,7 @@ import {
 } from './testInputs.ts';
 import type { MarathonV2Plan } from './types.ts';
 
-export const EARLY_PARTS = 4;
+export const EARLY_PARTS = 8;
 export const EARLY_TIMEOUT = 600_000;
 
 export interface EarlyFlow {
@@ -40,8 +44,9 @@ export interface EarlyFlow {
   base: AdaptBase;
   asOf: string;
   /** 'early' — earlyFacts (s: EarlyScenario); 's17' — factsOf mreže 04 (s: Scenario, N10.7); 'pain' — bol `level`
-      na dan asOf (N1); 'fatigue' — isti zapisi umora ponovo asOf + 1 … + 7 (pouka 36). */
-  kind: 'early' | 's17' | 'pain' | 'fatigue' | 'protected';
+      na dan asOf (N1); 'fatigue' — isti zapisi umora ponovo asOf + 1 … + 7 (pouka 36); 'fatigueDay' — umor
+      (factsOf) na dan asOf (MAR-07c). */
+  kind: 'early' | 's17' | 'pain' | 'fatigue' | 'fatigueDay' | 'protected';
   /** MAR-07b: zaštićen dan kvaliteta sledeće nedelje i način zaštite. */
   day?: { date: string; how: 'locked' | 'done' };
   s: EarlyScenario | Scenario;
@@ -63,6 +68,37 @@ export const planOf = (b: AdaptBase): MarathonV2Plan => {
 };
 
 export const EARLY_BASES: readonly AdaptBase[] = earlyGridBases(182, 78, 42);
+/** MAR-07c: svi planovi po osećaju (mreža 03, 8190) — baze tokova testDayFlows. */
+export const TEST_DAY_BASES: readonly AdaptBase[] = feelInputs().map((c) => ({
+  id: c.id,
+  family: 'F',
+  input: c.input
+}));
+/** Primer organizatora (fatigue-monday.ts): umor, asOf 2026-11-30 = dan testa. */
+export const TEST_DAY_EXAMPLE = 'feel-d5-18w-40km-e450-C';
+
+/** MAR-07c (pouke 23, 36): umor (factsOf) na dan testa − 1, dan testa i + 1. */
+export function testDayFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
+  const out: EarlyFlow[] = [];
+  for (const base of bases) {
+    const t = planOf(base)
+      .weeks.flatMap((w) => w.days)
+      .find((d) => d.role === 'test');
+    if (!t) continue;
+    for (const k of [-1, 0, 1]) {
+      const asOf = addDays(t.date, k);
+      out.push({
+        key: `${base.id}/${asOf}/testDay`,
+        base,
+        asOf,
+        kind: 'fatigueDay',
+        s: 'fatigue',
+        pre: false
+      });
+    }
+  }
+  return out;
+}
 
 /** Tokovi mreže za date planove (redosled: plan, asOf pre starta × PRE_START_SCENARIOS i × 17 scenarija, asOf ×
     scenario, bol 7/8 ned N − 2 i N − 1 (3–4 dana), ponovljen umor). */
@@ -135,6 +171,22 @@ export function earlyFlows(bases: readonly AdaptBase[]): EarlyFlow[] {
               pre: false
             });
     }
+    // MAR-07c: umor svaki dan nedelje testa i nedelje pre nje; svaki ponedeljak nedelja 1 … N − 3.
+    const tw = p.weeks.find((w) => w.test)?.index;
+    const days = new Set<string>();
+    for (let w = 1; w <= N - 3; w++) days.add(p.weeks[w - 1]!.startDate);
+    if (tw !== undefined)
+      for (const w of [tw - 1, tw].filter((x) => x >= 1))
+        for (let i = 0; i < 7; i++) days.add(addDays(p.weeks[w - 1]!.startDate, i));
+    for (const asOf of [...days].sort())
+      out.push({
+        key: `${base.id}/${asOf}/fatigueDay`,
+        base,
+        asOf,
+        kind: 'fatigueDay',
+        s: 'fatigue',
+        pre: false
+      });
     for (const a of ends)
       out.push({
         key: `${base.id}/${a.tag}/fatigue+7`,
@@ -210,7 +262,7 @@ export function runFlow(f: EarlyFlow): string | null {
         }
       : f.kind === 'early'
         ? earlyFacts(p, f.s as EarlyScenario, f.asOf)
-        : f.kind === 's17'
+        : f.kind === 's17' || f.kind === 'fatigueDay'
           ? factsOf(p, f.s as Scenario, f.asOf)
           : painFacts(f.asOf, f.level!);
   let r = adaptMarathonV2(p, facts, f.asOf);

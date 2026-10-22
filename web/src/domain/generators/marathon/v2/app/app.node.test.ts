@@ -449,7 +449,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
 
   it('KNOWN_VERSIONS = sve verzije sačuvane posle MAR-05 (marathon-v2.3.1) i tekuća', () => {
     expect(mar.marathonV2.KNOWN_VERSIONS).toEqual([
-      ...new Set(['marathon-v2.3.1', 'marathon-v2.4.0', VERSION])
+      ...new Set(['marathon-v2.3.1', 'marathon-v2.4.0', 'marathon-v2.4.1', VERSION])
     ]);
     expect(MARATHON_V2_GENERATOR.policyVersion).toBe(VERSION);
     expect(MARATHON_V2_GENERATOR.legacyPolicyId).toBe('legacy-marathon');

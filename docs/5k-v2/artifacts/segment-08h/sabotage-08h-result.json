@@ -1,0 +1,149 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08h/sabotage-08h.json",
+ "head": "e41defc",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 59.2,
+ "hashBefore": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+ "hashAfter": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08h-1 konstruktor bez pouke 35 (drugi kvalitet ostaje)",
+   "files": [
+    "src/domain/generators/fiveK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "f-d4-6w-15km-e300-0"
+   },
+   "failedCount": 2,
+   "hashBefore": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "hashSabotaged": "0e19de5247e9edd703a497332b1012428106b147c3f46399034da20354419823",
+   "hashAfter": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 11.5
+  },
+  {
+   "index": 2,
+   "name": "08h-2 validator ne čita secondQualityEasy",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "test": "08h pouka 35 — dugi ostaje najduži u nedelji izgradnje > validator: dva dana kvaliteta kad bi dugi bio kraći → SECOND_QUALITY; oznaka bez drugog dana → ROLES",
+    "message": "AssertionError: expected [ 'ARITHMETIC', …(3) ] to include 'SECOND_QUALITY'"
+   },
+   "failedCount": 1,
+   "hashBefore": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "hashSabotaged": "0b260da17c34eea1587f738ea51688fd4b1ac1373422eac506b23c522dc60762",
+   "hashAfter": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12
+  },
+  {
+   "index": 3,
+   "name": "08h-3 validator ne čita oznaku pouke 35 (broj kvaliteta)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "f-d4-6w-15km-e300-0"
+   },
+   "failedCount": 2,
+   "hashBefore": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "hashSabotaged": "f618f709a714960da5e78098e4d32631e797d4c555ef8e2df08bbad599a5c67a",
+   "hashAfter": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 11.6
+  },
+  {
+   "index": 4,
+   "name": "08h-4 umor: rasterećenje uvek sledeće nedelje (pouka 36, po danima)",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts",
+    "test": "08h trajne mreže (zaštićen dan posle novog rezultata, umor po danima) — deo 1 > 5 planova: zapisi umora pet/ned nedelje k − 1, asOf ned … čet → isto rasterećenje (pouka 36)",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "hashSabotaged": "4a82c6091e2638d2278d12a31c701ed3b8fe515feb30c8bf1d0b5d18a001c99e",
+   "hashAfter": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12.1
+  },
+  {
+   "index": 5,
+   "name": "08h-5 zaključan budući dan ulazi u lanac doze",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08h.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08h.grid.node.test.ts",
+    "test": "08h trajne mreže (zaštićen dan posle novog rezultata, umor po danima) — deo 1 > 5 planova: nov rezultat + zaključan Q1 sledeće nedelje → 0 odbijanja, dan bajt-isti",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "hashSabotaged": "8a9b0eff6e79591a5825fc59ed177a98c9e1804c8f66d3406ad26d79182b6361",
+   "hashAfter": "8ff9fee57cc23d2a769bbe08a80698e2beb138b91a0ffeda70f172830197d7f4",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 11.5
+  }
+ ]
+}

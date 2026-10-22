@@ -363,6 +363,13 @@ const DECISIONS: readonly Decision[] = [
     place: 'validate.ts protectedDay; adapt.ts / generate.ts / written.ts (doneDayIds)',
     rationale:
       'Organizator (MAR-07b): zaštićen dan posle novog rezultata nosi stari tempo, a provera WU/CD ga je merila tempom nove nedelje → adaptacija odbijena. Merenje: rezultat (brži, sporiji, test 5 km) × zaključan ili urađen Q1/Q2 sledeće nedelje na trajnoj ranoj mreži 12 196/12 432 odbijeno → 0. Verzija marathon-v2.4.1: plan sa urađenim danom posle asOf nosi doneDayIds.'
+  },
+  {
+    id: 'A13b',
+    rule: 'Pouke 23 i 36 (MAR-07c): test čiji je dan u planu pre koraka ≤ asOf je zaštićen (upisan, A11) — ne premešta se i nijedan okvir posle asOf ne nosi drugi test. Prinudno rasterećenje (pouka 36) na nedelji testa pomera dan testa okvira (Q1 → T slot, M16) posle asOf; poređenje se radi sa danom testa iz plana pre koraka (framesFor nad koracima bez poslednjeg), ne iz novog okvira. Test posle asOf i dalje sledi A13.',
+    place: 'steps.ts framesFor (konstruktor i validator)',
+    rationale:
+      'Organizator (fatigue-monday.ts): umor, asOf ponedeljak nedelje testa (test na Q1 = asOf, zaštićen) → rasterećenje tekuće nedelje, okvir je test stavio na T slot posle asOf i premestio ga u sledeću nedelju izgradnje → dva testa → TEST (A13, M17) odbija adaptaciju. Strana koja odstupa: konstruktor (validator sudi tačno: najviše jedan test). Nije trenerska dilema: zaštićen dan se ne menja (A11), a drugi test validator ne dozvoljava. Merenje (a869e21 → 07c): plan po osećaju i početnik (10 080) × umor asOf svaki dan nedelja 1 … N − 3 (1 084 860 tokova) 540 → 0 odbijanja (svih 540: 5 dana raspored C, Q1 = ponedeljak = dan testa = asOf); fatigue-monday.ts 1/303 → 0; regresija a04/pre/early/wide (323 314 tokova) 0 promenjenih. Trajna mreža: testDayFlows (svi planovi po osećaju × dan testa ± 1). Verzija marathon-v2.4.2.'
   }
 ];
 
@@ -373,7 +380,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.4.1',
+  version: 'marathon-v2.4.2',
 
   /** M1 (dani i obim: M15). */
   input: {
