@@ -156,7 +156,9 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     Zbir zaštićenih dana se računa po ČINJENICAMA (5K-08i): dan u prijavljenoj pauzi = 0, dan sa upisanim treningom =
     upisani km (neurađen = 0), ostali zaštićeni (asOf bez zapisa, zaključani, urađeni posle asOf) = planirani km —
     neodrađen dan ne „jede" cilj (5K: pauza/manjak stiskali preostale dane na minimum u 10 362/12 634 tokova). Kad
-    pravilo pauze određuje ostatak nedelje pauze, ono je vlasnik te nedelje.
+    pravilo pauze određuje ostatak nedelje pauze, ono je vlasnik te nedelje. Kvalitet otpada SAMO ako time ostatak
+    staje u cilj; ako ni bez kvaliteta ne staje, kvalitet ostaje (MAR-08: otpadanje bez dobitka, npr. 0,12 km, gubi
+    stimulus i lomi progresiju doze — kaskada cilja ±1 km).
 38. (organizator, rani prolaz završne provere K1) Zaštićen test se ne premešta: test čiji je dan zaštićen (≤ asOf,
     zaključan, urađen) ostaje gde jeste, a nijedan okvir ne dobija drugi test; pravila koja premeštaju test (pauza,
     umor, bol, rasterećenje — A13) važe samo za test čiji dan nije zaštićen. Jedna funkcija „zaštićen test" (proširen
