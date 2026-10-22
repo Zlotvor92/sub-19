@@ -273,7 +273,7 @@ Run 665 (d473e5d) pao je na timeout beforeAll-a pod opterećenjem.
 | izmena | efekat |
 |---|---|
 | `paths`: sve osim `docs/**` (izuzev `docs/qa/**`, koje testovi čitaju) i `*.md` u korenu; + `workflow_dispatch` | push samo dokumentacije ne pokreće testove (izveštaji segmenata); ručno pokretanje ostaje |
-| `concurrency` po grani (`head_ref` ‖ `ref_name`), `cancel-in-progress` osim na `main` | push i PR iste grane = jedan run (kasniji otkazuje raniji); nov push otkazuje stariji run iste grane |
+| samo `push` (+ `workflow_dispatch`), bez `pull_request`; `concurrency` po grani, `cancel-in-progress` osim na `main` | jedan run po pushu; PR prikazuje run svog commita; nov push otkazuje stariji run iste grane. (Prva verzija je imala i `pull_request`: njegov `paths` gleda ceo PR, pa je svaki push dokumentacije pokretao run i otkazivao run koda — ispravljeno istog dana.) |
 | posao `web-test` (matrica 1…6): `npm test -- --shard=i/6` | pun nivo u 6 paralelnih delova (vitest deli fajlove po hešu putanje); `web` ostaje typecheck, lint, format, build, E2E |
 
 Pokrivenost ista (isti `npm test`, isti fajlovi; zbir delova = svi fajlovi). Posledica otkazivanja: proverava se vrh
