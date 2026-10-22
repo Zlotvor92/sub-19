@@ -35,7 +35,7 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `10k-v2`; plan bez oznake je 10K v1 (`legacy-10k`). */
 export const LEGACY_POLICY_ID = 'legacy-10k';
 /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0,
- *  10k-v2.5.1, 10k-v2.5.2 i tekuća 10k-v2.6.0. Sačuvan plan 4.0, 4.1, 5.0, 5.1 ili 5.2 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 6.0 (A15),
+ *  10k-v2.5.1, 10k-v2.5.2, 10k-v2.6.0 i tekuća 10k-v2.6.1. Sačuvan plan 4.0 … 6.0 ostaje plan 10K v2; prilagođavanje ga gradi pravilima 6.1 (A15),
  *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.4.0',
@@ -43,6 +43,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.5.0',
   '10k-v2.5.1',
   '10k-v2.5.2',
+  '10k-v2.6.0',
   P.version
 ];
 

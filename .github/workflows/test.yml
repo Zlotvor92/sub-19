@@ -1,9 +1,28 @@
 name: Testovi
 
+# Ubrzanje (organizator, 22. 10.; v. docs/testing/TEST-SPEED.md § CI):
+# - samo dokumentacija (docs/** osim docs/qa/** koje testovi čitaju, *.md u korenu) ne pokreće testove;
+# - jedna grupa po grani: push i PR iste grane se ne vrte dvaput, a nov push otkazuje stariji run (osim na main);
+# - testovi weba idu u 6 paralelnih delova (vitest --shard).
 on:
   push:
     branches: ['**']
+    paths:
+      - '**'
+      - '!docs/**'
+      - 'docs/qa/**'
+      - '!*.md'
   pull_request:
+    paths:
+      - '**'
+      - '!docs/**'
+      - 'docs/qa/**'
+      - '!*.md'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
@@ -40,8 +59,6 @@ jobs:
         run: npm run lint
       - name: Format
         run: npm run format:check
-      - name: Unit/domain/zamrznuti oracle/node testovi
-        run: npm test
       - name: Build
         run: npm run build
       - name: E2E
@@ -57,6 +74,29 @@ jobs:
             web/playwright-report/
             web/test-results/
           if-no-files-found: warn
+
+  # Unit/domain/zamrznuti oracle/node testovi (pun nivo, `npm test`) u 6 delova; delovi se biraju heš-putanjom fajla
+  # (vitest), pa svaki deo dobija deo velikih `*.full.node.test.ts`.
+  web-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    name: web-test (${{ matrix.shard }}/6)
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: Testovi (deo ${{ matrix.shard }}/6)
+        run: npm test -- --shard=${{ matrix.shard }}/6
 
   database:
     runs-on: ubuntu-latest

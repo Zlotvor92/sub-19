@@ -384,12 +384,21 @@ const DECISIONS: readonly Decision[] = [
       'assess.ts (A5: nedelja iz zapisa, deloadWeek; A4: isti zapis bola); steps.ts deloadWeekOf, framesFor; validate.ts protectedDay; adapt.ts / generate.ts / written.ts (doneDayIds); steps.ts newLimits; adapt.ts adaptBanner; app/adapt.ts (samo poziv); week.ts buildWeek (pouka 35, qualityOverLong, P35_DROP/P35_KEEP); validate.ts (pouka 35, WEEK_MIN_REST i uz dane bola); app/plan.ts KNOWN_VERSIONS',
     rationale:
       'Odluke organizatora (MAR-06 pitanje 2, Faza 4a N5/N12/traka, 10K-06f: prva adaptacija ponedeljkom prihvaćena, pouka 35 opcija A, nalaz 3). Merenje (fatigue-repeat.ts 10K, isti zapisi umora sledeći dan): asOf kraj nedelje 903/963 tokova dobija drugo rasterećenje na 10k-v2.5.2, sada 0; asOf sreda 0 → 0. Prva adaptacija umora sa asOf = prvi dan nedelje redovnog rasterećenja (zapisi u prethodnoj nedelji): 620/2712 tokova (uzorak 4a, asOf prvi dan svake nedelje 2 … N − 2) — na 10k-v2.5.2 redovno k + prinudno k + 1, sada samo k (npr. d4-r-18w, prvo rasterećenje, asOf njegov ponedeljak). Precizno pravilo (organizator, MAR-07): zapisi pet/ned nedelje k − 1, asOf ponedeljak k → rasterećenje u nedelji k (fatigue-monday.ts 10K: na 7ba9717 176/296 tekuća + 1 (organizator), na e7ad505 148/296, sada 268 tekuća, 28 bez novog — nedelja k već rasterećenje); ista prijava u nedelju k − 1 daje iste dane od utorka (trajna mreža; izuzetak: ponedeljak k je dan testa — urađen, ostaje). Zaštićeni dani (kao maraton MAR-07b, A11b): provere po danu (tipovi, WU/CD, RPE, oporavci, struktura testa, lagan ≥ min) preskaču dane ≤ asOf, zaključane i urađene (plan.adaptation.doneDayIds za urađen dan posle asOf) — locked-result.ts 10K (nov rezultat + zaključan Q1 sledeće nedelje): 1645/1960 odbijeno (WARMUP/COOLDOWN) → 0. Nalaz 3: b-d4-11w-18km-v35-B-sat, bol 8 kraj ned 9 poslat ponovo sutra → na 10k-v2.5.2 RACE_WEEK_OVER_TAPER (period odmora pomeren za dan: taper 3 km < dan pred trku 3,3 km), sada isti plan. Traka: oblik maraton v2 (MAR-06); newLimits iz koraka plana u adaptBanner (nije novo polje rezultata adaptacije). Pouka 25: u merenim mrežama 0 slučajeva. Pouka 35 na 10k-v2.5.2: generator 2022 nedelje u 858/31 122 planova (sve ned 1 tih planova, 4–6 dana, nizak obim / brz tempo; q1 R/I/RP i q2 T duži od dugog za medijanu 5,6 min, najviše 23,2 min; u 92 % i q1 duži); adaptacija 3602/121 392 toka (pauza 35: 1148). Posle: 0 takvih nedelja, menja se tačno 858 planova (prva promenjena nedelja = nedelja pouke 35), vrh cilja isti, najveća glavna doza niža u 240 planova (q2 progresija kreće kasnije); npr. 10w-25km-v70-A-sat ned 1 dugi 5,6 → 8,2 km (34 min) uz R dan 32 min.'
+  },
+  /* ---------- Segment 06g (10k-v2.6.1): trkačka nedelja samo sa danom pred trku, nedelja cela odmor. ---------- */
+  {
+    id: 'A19',
+    rule: 'Pouke 23 i 30 (odluka organizatora): kad ni bez svih laganih dana trkačka nedelja nije ≤ planirano tapera (D23), ostaju dan pred trku i trka (week.raceWeekRest pretvara sve ostale dane u odmor; dan pred trku se ne skraćuje) — validator: upozorenje RACE_WEEK_OVER_TAPER_EVE umesto greške (predikat week.raceWeekEveOnly, i u adaptInvariants). D23 dani odmora trkačke nedelje računaju se i kad je taper mešovit (upisan taper, isti koji čita konstruktor). Nedelja čiji su svi dani trčanja dani odmora koraka (bol, A4), i trkačka nedelja samo sa trkom (ostali dani odmor ili D23) — upozorenje WEEK_ALL_REST, ne EMPTY_WEEK (kao HM/maraton N1). Pouka 35 u mešovitoj nedelji važi samo za buduće dane — prošao dan kvaliteta je činjenica.',
+    place:
+      'week.ts raceWeekRest, raceWeekEveOnly; validate.ts (D23, RACE_WEEK_OVER_TAPER_EVE, WEEK_ALL_REST); adaptInvariants.ts (trkačka > taper); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Organizator (06f otvoreno a i b). Nalaz: b-d4-11w-18km-v35-B-sat, bol 8 kraj ned 9 i NOV bol 8 sutra → na 10k-v2.6.0 RACE_WEEK_OVER_TAPER (dan pred trku 3,3 km > taper 3 km), sada upozorenje. Trajna mreža (nov bol 7/8 svakog dana ned N − 3 … N − 1, nov zapis asOf + 1 … + 7) na 10k-v2.6.0: odbijeno RACE_WEEK_OVER_TAPER, EMPTY_WEEK (6 dana odmora iz dve prijave — nedelja cela odmor; trkačka samo sa trkom) i RACE_WEEK (mešovit taper: validator nije računao D23) → 0. Pouka 35 u mešovitoj nedelji asOf: 467 tokova prvog koraka uzorka 4a (dan kvaliteta pre asOf duži od dugog) — prihvaćeno, bez izmene.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.6.0',
+  version: '10k-v2.6.1',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {

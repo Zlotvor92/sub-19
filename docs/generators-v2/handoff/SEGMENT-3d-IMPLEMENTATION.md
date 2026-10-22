@@ -61,7 +61,7 @@ je nedostupna sa razlogom.
 | Komanda | Rezultat |
 |---|---|
 | `npx tsc -b --noEmit`; eslint/prettier menjanih fajlova | exit 0 |
-| `npm run check` | **296 fajlova, 3509/3509** |
+| `npm run check` (pre i posle spajanja sa 10K-06g) | **296 fajlova, 3509/3509**; posle spajanja **297, 3513/3513**, exit 0 |
 | `TEST_FULL=1 npx vitest run --changed e7fe15d` | **181 fajl, 1858/1858**, 792 s |
 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK/v2` | **26 fajlova, 695/695**, 269 s |
 | `npx playwright test e2e/fivek-v2.spec.ts e2e/hm-v2.spec.ts` | **6/6** (48 s) |

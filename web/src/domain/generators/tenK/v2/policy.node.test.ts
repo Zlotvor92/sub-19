@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.6.0', () => {
+describe('policy 10k-v2.6.1', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.6.0');
+    expect(P.version).toBe('10k-v2.6.1');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c) i A18 (06f), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f) i A19 (06g), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +29,7 @@ describe('policy 10k-v2.6.0', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 18 }, (_, i) => `A${i + 1}`)
+      ...Array.from({ length: 19 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -129,6 +129,10 @@ describe('policy 10k-v2.6.0', () => {
     expect(rule('A18')).toMatch(/drugi dan kvaliteta je lagan \(prvi ostaje/);
     expect(rule('A18')).toMatch(/isti zapis ne pravi nov period odmora\/bola/);
     expect(rule('A5')).toMatch(/Dopuna \(10k-v2\.6\.0, pouka 36, A18\)/);
+    // 06g (10k-v2.6.1): trkačka samo sa danom pred trku, nedelja cela odmor, pouka 35 u mešovitoj nedelji.
+    expect(rule('A19')).toMatch(/upozorenje RACE_WEEK_OVER_TAPER_EVE umesto greške/);
+    expect(rule('A19')).toMatch(/upozorenje WEEK_ALL_REST, ne EMPTY_WEEK/);
+    expect(why('A19')).toMatch(/467 tokova/);
     expect(rule('A5')).toMatch(
       /Isto posle nedelje smanjenja pauzom, manjkom ili bolom \(A17, 10k-v2\.5\.0\)/
     );

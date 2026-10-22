@@ -25,8 +25,8 @@ merenja). „Pre" = b09ae49 (čist worktree), „posle" = ovaj commit. Vitest 5.
      tenK/v2 ≤ 60 s nije moguće;
    - `check:full` koristi eslint BEZ keša, isto kao CI (keš daje zastareo rezultat za pravila sa tipovima, § 4.1);
    - typecheck `tsc -b --noEmit --incremental`.
-3. **Otvoreno, bez implementacije:** predlozi 2 (brzina produkcije, bajt-isti izlaz), 3 (CI `--shard`) i 4 (paralelne
-   statičke provere za hladan `check`) iz § 3.
+3. **Otvoreno, bez implementacije:** predlozi 2 (brzina produkcije, bajt-isti izlaz) i 4 (paralelne statičke provere
+   za hladan `check`) iz § 3. Predlog 3 (CI `--shard`) je urađen 22. 10. (§ 10).
 4. **Ispravka merenja organizatora** (JSON reporter ne meri collect ni okruženje) ostaje u izveštaju (§ 3, § 4.1).
 
 ## 2. Komande (iz `web/`)
@@ -35,7 +35,7 @@ merenja). „Pre" = b09ae49 (čist worktree), „posle" = ovaj commit. Vitest 5.
 |---|---|
 | `npm run check` | typecheck (`tsc -b --noEmit --incremental`) + `lint:cache` + `format:check:cache` + `test:fast` — za svaki segment i proveru |
 | `npm run check:full` | typecheck + `lint` (BEZ keša, kao CI) + `format:check:cache` + `npm test` — kad segment dira v1, zajednički kod, reference ili test infrastrukturu, i pre mergea u main |
-| `npm test` | pun nivo (`TEST_FULL=1 vitest run`) — CI (`.github/workflows/test.yml`) ga zove, nepromenjeno |
+| `npm test` | pun nivo (`TEST_FULL=1 vitest run`) — CI (`.github/workflows/test.yml`) ga zove u 6 delova (`npm test -- --shard=i/6`, § 10) |
 | `npm run test:fast`, `npx vitest run …` | brz nivo (podrazumevan) |
 | `TEST_FULL=1 npx vitest run …` | pun nivo za izabrane fajlove (uključuje `*.full.node.test.ts`) |
 | `TEST_ROWS_LOG=<fajl>` | svako poređenje sa referencom dopisuje `{ref, full, names}` (§ 5) |
@@ -261,3 +261,21 @@ delovi „(deo k/N)" su delovi postojećih `it`.
   (provera izolacije, tsconfig); vitest ih ne skuplja.
 - `src/test/level.ts` je u `tsconfig.oracle.json` (Node tipovi), izuzet iz `tsconfig.app.json`.
 - Sva merenja agenata (paralelno, deljena 4 jezgra) su samo orijentir; brojke u ovom dokumentu su iz serijskog merenja.
+
+## 10. CI (organizator, 22. 10. — odluka delegirana od korisnika)
+
+Pre: jedan posao `web` je radio typecheck, lint, format, `npm test`, build i E2E redom — 80–90 min po run-u; svaki push
+grane sa otvorenim PR-om pokretao je DVA run-a (push i pull_request), a brzi pushevi su se gomilali (4 run-a odjednom).
+Run 665 (d473e5d) pao je na timeout beforeAll-a pod opterećenjem.
+
+`.github/workflows/test.yml` sada:
+
+| izmena | efekat |
+|---|---|
+| `paths`: sve osim `docs/**` (izuzev `docs/qa/**`, koje testovi čitaju) i `*.md` u korenu; + `workflow_dispatch` | push samo dokumentacije ne pokreće testove (izveštaji segmenata); ručno pokretanje ostaje |
+| `concurrency` po grani (`head_ref` ‖ `ref_name`), `cancel-in-progress` osim na `main` | push i PR iste grane = jedan run (kasniji otkazuje raniji); nov push otkazuje stariji run iste grane |
+| posao `web-test` (matrica 1…6): `npm test -- --shard=i/6` | pun nivo u 6 paralelnih delova (vitest deli fajlove po hešu putanje); `web` ostaje typecheck, lint, format, build, E2E |
+
+Pokrivenost ista (isti `npm test`, isti fajlovi; zbir delova = svi fajlovi). Posledica otkazivanja: proverava se vrh
+grane, ne svaki međukorak — organizator čita CI na vrhu grane. Grana bez novih pusheva dobija završen run.
+

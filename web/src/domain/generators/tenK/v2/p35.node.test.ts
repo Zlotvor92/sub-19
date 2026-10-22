@@ -1,26 +1,17 @@
 /* Segment 06f (10k-v2.6.0): pouka 35 — dva dana kvaliteta samo kad dugi ostaje najduži. Jedno mesto odluke
    (week.ts buildWeek, predikat qualityOverLong), validator čita isti predikat. Na 7ba9717: 2022 nedelje u 966
    planova mreža 01/02/F (segment06f.p35-plans-7ba9717.json; 858 različitih ulaza) — tačno ti planovi se menjaju
-   (regresije grid/feelGrid), u svakom od njih prva promenjena nedelja je nedelja pouke 35 (izveštaj 06f). */
+   (regresije grid/feelGrid), u svakom od njih prva promenjena nedelja je nedelja pouke 35 (izveštaj 06f). Mreža:
+   p35.harness.node.test.ts (06g: pun nivo u 4 dela). */
 
 import { describe, expect, it } from 'vitest';
-import { FULL } from '@/test/level';
 import { generateTenKV2 } from './generate.ts';
-import { P35_PLANS } from './level.harness.node.test.ts';
-import {
-  beginnerGridInputs,
-  feelGridInputs,
-  grid02Inputs,
-  gridInputs,
-  inputOf,
-  SCHEDULES_BY_DAYS
-} from './testInputs.ts';
+import { describeP35Grid } from './p35.harness.node.test.ts';
+import { inputOf, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { P35_DROP, P35_KEEP, qualityOverLong } from './week.ts';
 
-const BUILD = new Set(['base', 'development', 'specific']);
-const steady = (w: PlanWeek): boolean => BUILD.has(w.phase) && !w.deload;
 const p35 = (w: PlanWeek): boolean => w.notes.some((n) => n.startsWith(P35_DROP));
 const planOf = (days: 3 | 4 | 5 | 6, o: { weeks: number; km: number; vdot: number }) => {
   const sc = SCHEDULES_BY_DAYS[days].A;
@@ -58,36 +49,10 @@ describe('pouka 35 u generatoru', () => {
     );
     expect(p.warnings.some((v) => v.rule === 'LONG_SHORTER_THAN_QUALITY')).toBe(true);
   });
-
-  it(`planovi pouke 35 sa 7ba9717 (${P35_PLANS.size}) — nijedna nedelja izgradnje sa 2 dana kvaliteta i danom kvaliteta dužim od dugog; ${FULL ? 'pun: sve mreže' : 'brz: ti planovi'}`, () => {
-    const all = [
-      ...gridInputs(),
-      ...([3, 4, 5, 6] as const).flatMap((d) => grid02Inputs(d)),
-      ...([3, 4, 5, 6] as const).flatMap((d) => feelGridInputs(d)),
-      ...([3, 4] as const).flatMap((d) => beginnerGridInputs(d))
-    ];
-    const cases = FULL ? all : all.filter((c) => P35_PLANS.has(c.id));
-    expect(cases.length).toBeGreaterThanOrEqual(P35_PLANS.size);
-    const bad: string[] = [];
-    let dropped = 0;
-    for (const c of cases) {
-      const r = generateTenKV2(c.input);
-      if (!r.ok) {
-        bad.push(`${c.id}: odbijen`);
-        continue;
-      }
-      for (const w of r.plan.weeks.filter(steady)) {
-        if (qualityOverLong(w.days)) bad.push(`${c.id} ned ${w.index}`);
-        if (p35(w)) dropped++;
-      }
-      if (P35_PLANS.has(c.id) && !r.plan.weeks.some(p35)) bad.push(`${c.id}: bez pouke 35`);
-    }
-    expect(bad.slice(0, 10)).toEqual([]);
-    // Nedelje sa drugim danom kvaliteta laganim (na 7ba9717 2022 nedelje sa 2 kvaliteta dužim od dugog; posle prve
-    // takve nedelje progresija q2 kreće kasnije, pa deo kasnijih ne treba): isto u brzom i punom nivou.
-    expect(dropped).toBe(1854);
-  });
 });
+
+// Mreža (brz: planovi pouke 35; pun: deo 1/4, delovi 2…4 u p35.<k>.full.node.test.ts).
+describeP35Grid('pouka 35 u generatoru — mreža, deo 1/4', 1);
 
 describe('pouka 35 u validatoru (isti predikat)', () => {
   const p = planOf(4, { weeks: 10, km: 25, vdot: 70 });

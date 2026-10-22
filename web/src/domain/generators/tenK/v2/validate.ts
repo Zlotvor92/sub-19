@@ -41,7 +41,7 @@ import {
   nextLevel
 } from './quality.ts';
 import { adjacentDays } from './schedule.ts';
-import { P35_DROP, P35_KEEP, qualityOverLong, raceWeekRest } from './week.ts';
+import { P35_DROP, P35_KEEP, qualityOverLong, raceWeekEveOnly, raceWeekRest } from './week.ts';
 import {
   A17_MAX_RUN,
   appliedRestarts,
@@ -412,8 +412,28 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     }
     const planned = w.days.reduce((a, d) => a + (d.countsToWeek ? to100(d.workout.km) : 0), 0);
     if (planned !== to100(w.plannedKm)) err('ARITHMETIC', 'Planirano ≠ zbir dana.', w.index);
-    if (w.days.filter((d) => d.countsToWeek).length === 0)
-      err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
+    // 06g (kao HM/maraton N1, pouke 25 i 30): svaki dan trčanja nedelje je dan odmora koraka (bol, A4) — osim trke —
+    // nedelja bez treninga nije degenerisan plan nego odmor: upozorenje, ne EMPTY_WEEK.
+    const allRest =
+      (restOf(w).size > 0 &&
+        input.runDays.every((wd) => {
+          const d = dateIn(w, wd);
+          return restOf(w).has(d) || w.days.some((x) => x.date === d && x.role === 'race');
+        })) ||
+      // Trkačka nedelja samo sa trkom: ostali dani odmor ili otpali po D23 (taper sa danima odmora/bola).
+      (w.phase === 'race' &&
+        w.days.every((d) => d.role === 'race') &&
+        (restOf(w).size > 0 ||
+          w.notes.some((n) => n.includes('(D23).') && n.includes('skraćena'))));
+    if (w.days.filter((d) => d.countsToWeek).length === 0) {
+      if (allRest)
+        warn(
+          'WEEK_ALL_REST',
+          `Nedelja bez treninga${w.phase === 'race' ? ' (osim trke)' : ''} — svi dani su odmor (bol, A4).`,
+          w.index
+        );
+      else err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
+    }
     // Segment 04: mešovita nedelja — samo dani; nedelja sa danima bola/odmora (A4): planirano ≤ cilj.
     if (!checked(w)) continue;
     const limited = restOf(w).size > 0 || painOf(w).size > 0;
@@ -1292,13 +1312,14 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const runsR = runs.filter((d) => !dropped.includes(d) && !restR.has(d));
     const others = rw.days.filter((d) => d.role !== 'race');
     // D23 (10k-v2.5.1): taper skraćen danima odmora/bola — dani koji postaju odmor (isti podatak kao
-    // konstrukcija, week.raceWeekRest; bez oštrenja, A9 ga ukida pre toga).
+    // konstrukcija, week.raceWeekRest; bez oštrenja, A9 ga ukida pre toga). 06g: i kad je taper mešovit — konstruktor
+    // čita upisan taper (written.ts), isti koji vidi validator.
     const taperW0 = weeks.find((w) => w.phase === 'taper');
     const taperEasy0 = (taperW0?.days ?? [])
       .filter((d) => d.role === 'easy')
       .map((d) => to10(d.workout.km));
     const restD23 =
-      steps.length > 0 && taperW0 && taperOk && !others.some((d) => d.role === 'sharpener')
+      steps.length > 0 && taperW0 && !others.some((d) => d.role === 'sharpener')
         ? raceWeekRest(
             runsR,
             race,
@@ -1414,12 +1435,22 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         );
     }
     // D23: trkačka nedelja (bez trke) ≤ taper.
-    if (taperWeek && taperOk && to100(rw.plannedKm) > to100(taperWeek.plannedKm))
-      err(
-        'RACE_WEEK_OVER_TAPER',
-        `Trkačka nedelja ${rw.plannedKm} km > taper ${taperWeek.plannedKm} km (D23).`,
-        rw.index
-      );
+    // 06g (pouke 23 i 30): kad su posle D23 ostali samo dan pred trku i trka, konstruktor nema šta da ukloni —
+    // upozorenje (isti predikat kao konstruktor, week.raceWeekEveOnly).
+    if (taperWeek && taperOk && to100(rw.plannedKm) > to100(taperWeek.plannedKm)) {
+      if (restD23.length > 0 && raceWeekEveOnly(rw.days))
+        warn(
+          'RACE_WEEK_OVER_TAPER_EVE',
+          `Trkačka nedelja ${rw.plannedKm} km > taper ${taperWeek.plannedKm} km — ostali su samo dan pred trku i trka (D23, pouka 30).`,
+          rw.index
+        );
+      else
+        err(
+          'RACE_WEEK_OVER_TAPER',
+          `Trkačka nedelja ${rw.plannedKm} km > taper ${taperWeek.plannedKm} km (D23).`,
+          rw.index
+        );
+    }
     if (to10(rw.targetKm) !== Math.round(to100(rw.plannedKm) / 10))
       err('RACE_WEEK', 'Cilj trkačke nedelje = planirano (D8).', rw.index);
   }
