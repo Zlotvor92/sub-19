@@ -49,5 +49,5 @@ test('D', () => {
     if (n !== null && calWeekAfterTest !== null && n !== calWeekAfterTest) out.labelMismatch++;
     if (out.ex.length < 3) out.ex.push({ base: b.id, at, test: t.date, testWeekW: t.w, offset: off, label: lab, calWeekAfterTest, next: f.next, previewWeeks: pv.weeks.map((w) => w.week), reasonWeeks: pv.reasons.filter((x) => x.applied).map((x) => x.message).filter((m) => /nedelj/.test(m)), needed: pv.needed });
   }
-  writeFileSync('/tmp/claude-0/-home-user-sub-19/937e1701-d1dc-5134-b9ff-d6884fb03dcc/scratchpad/review3d.json', JSON.stringify(out, null, 1));
+  writeFileSync((process.env.OUT_DIR ?? '.') + '/review3d.json', JSON.stringify(out, null, 1));
 }, 3_600_000);

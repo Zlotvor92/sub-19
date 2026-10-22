@@ -67,5 +67,5 @@ test('A', () => {
     }
     }
   }
-  _w('/tmp/claude-0/-home-user-sub-19/937e1701-d1dc-5134-b9ff-d6884fb03dcc/scratchpad/review3a.json', JSON.stringify(out, null, 1));
+  _w((process.env.OUT_DIR ?? '.') + '/review3a.json', JSON.stringify(out, null, 1));
 }, 3_600_000);

@@ -39,5 +39,5 @@ test('C', () => {
       inc(o.restore, key);
     }
   }
-  writeFileSync('/tmp/claude-0/-home-user-sub-19/937e1701-d1dc-5134-b9ff-d6884fb03dcc/scratchpad/review3c.json', JSON.stringify(out, null, 1));
+  writeFileSync((process.env.OUT_DIR ?? '.') + '/review3c.json', JSON.stringify(out, null, 1));
 }, 3_600_000);
