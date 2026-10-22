@@ -10,6 +10,7 @@ import {
   type PlanChangePreview
 } from '../../stores/executionActions';
 import {
+  noteHandoffApplied,
   RaceChange,
   ShorterDistanceDecision,
   ShorterOfferNote,
@@ -70,6 +71,11 @@ export function HmV2Adjustment({ today }: { today: string }) {
     setResult(null);
     if (!r.ok) {
       setError(r.reason);
+      return;
+    }
+    // 3g: izbor kraće distance menja distancu plana (ekran prelazi na cilj) — potvrda ide na ekran cilja.
+    if (result.change) {
+      noteHandoffApplied(result.summary);
       return;
     }
     setMessage(
