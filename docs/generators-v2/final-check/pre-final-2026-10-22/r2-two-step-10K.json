@@ -1,0 +1,75 @@
+{
+ "dist": "10K",
+ "step": {
+  "R": 600,
+  "F": 450,
+  "B": 150
+ },
+ "sampled": 43,
+ "excludedPermanent": 32,
+ "plans": 43,
+ "first": {
+  "flows": 731,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 23392,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  },
+  "cum": {
+   "flows": 23392,
+   "rejectedFlows": 3,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:TEST": 3
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:TEST": [
+     "cum f-d5-14w-35km-e315-B-sun/w3end/locked→+3/pain5: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32).",
+     "cum f-d5-14w-35km-e315-B-sun/w3end/locked→+3/pain8: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32).",
+     "cum f-d5-14w-35km-e315-B-sun/w3end/locked→+3/painPause: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32)."
+    ]
+   },
+   "common": {
+    "DUGI<LAGAN": 20
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum f-d3-11w-35km-e450-B-sun/w5wed/locked→+3/under50",
+     "cum f-d3-11w-35km-e450-B-sun/w5wed/locked→+3/pause10",
+     "cum f-d3-11w-35km-e450-B-sun/w5wed/locked→+3/pause20"
+    ]
+   },
+   "inv": {
+    "dugi < lagan ned #": 20
+   },
+   "invEx": {
+    "dugi < lagan ned #": [
+     "cum f-d3-11w-35km-e450-B-sun/w5wed/locked→+3/under50: dugi < lagan ned 6",
+     "cum f-d3-11w-35km-e450-B-sun/w5wed/locked→+3/pause10: dugi < lagan ned 6",
+     "cum f-d3-11w-35km-e450-B-sun/w5wed/locked→+3/pause20: dugi < lagan ned 6"
+    ]
+   },
+   "by": {
+    "locked→pain5": 1,
+    "locked→pain8": 1,
+    "locked→painPause": 1
+   }
+  }
+ },
+ "seconds": 534.023
+}

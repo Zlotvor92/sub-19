@@ -10,8 +10,7 @@ import {
   isFiveKV2Plan,
   isHmV2Plan,
   marathonV2Start,
-  RESTORE_OTHER_DISTANCE,
-  V2_TARGET_NOT_READY
+  RESTORE_OTHER_DISTANCE
 } from '../../domain/generators/select';
 import type { HmV2PlanInput, MarathonV2PlanInput } from '../../domain/generators/contract';
 import { resolvePlan } from '../../domain/plan';
@@ -183,11 +182,10 @@ describe('3g UI: ponuda, odluka, zatvaranje', () => {
     flags('generatorV2TenK');
     const b = render(<AdjustPlan />);
     const box = decisionBox()!;
-    expect(
-      within(within(box).getByRole('list', { name: 'Nedostupne opcije' })).getByRole('listitem')
-        .textContent
-    ).toBe(`10K: ${V2_TARGET_NOT_READY}`);
-    expect(within(box).getByText('Kraća distanca: 5K istog datuma')).toBeTruthy();
+    // 3d-10K: 10K v2 je cilj predaje (nema NOT_READY); vrh opcije iz plana 10K v2 cilja.
+    expect(within(box).queryByRole('list', { name: 'Nedostupne opcije' })).toBeNull();
+    expect(within(box).getByText('Kraća distanca: 10K istog datuma')).toBeTruthy();
+    expect(storedPreparationDecision('2026-01-20')!.options[0]!.peakLongRunKm).toBeGreaterThan(0);
     b.unmount();
     flags();
     render(<AdjustPlan />);
@@ -238,6 +236,13 @@ describe('3g UI: izbor kraće distance, prefiks, vraćanje', () => {
     const after = stored();
     expect(isFiveKV2Plan(after)).toBe(true);
     expect(getPlanRevisions(after).at(-1)?.summary).toBe('Kraća distanca: 5K istog datuma');
+    // Potvrda „primenjeno" na ekranu cilja (prilagođavanje 5K v2), jednom; „U redu" je sklanja.
+    expect(screen.getByRole('status').textContent).toBe(
+      'Plan je promenjen: Kraća distanca: 5K istog datuma. Prethodni plan je sačuvan u istoriji (Prethodne verzije plana).'
+    );
+    expect(document.getElementById('v2-adapt')).not.toBeNull();
+    await user.click(screen.getByRole('button', { name: 'U redu' }));
+    expect(document.getElementById('handoff-applied')).toBeNull();
     adj.unmount();
     return { before, after, day, user };
   }

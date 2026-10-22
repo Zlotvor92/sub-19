@@ -245,20 +245,23 @@ describe('3b: izvor v2 → v1 cilj (ponovljeno M2 sa čistačem)', () => {
 describe('3b: izbor cilja po prekidaču korisnika (generatorForNewPlan)', () => {
   const plan = stored('hm', sources('hm', false)[0]!.input);
   const input = contractInput(sources('hm', false)[0]!.input, 10000);
+  // 3f (HM v2), 3d (5K v2, 10K v2): svaki cilj v2 ima predaju — NOT_READY se više ne vraća; plan je plan v2 cilja
+  // ili odbijanje v2 doslovno, nikad v1 (`<distanca>/v2/app/handoffTarget.node.test.ts`).
   it.each([
-    // 3f: HM v2 cilj, 3d: 5K v2 cilj više nisu NOT_READY (`fiveK/v2/app/handoffTarget.node.test.ts`).
-    [{ fiveKV2: false, tenKV2: true }, 10000]
-  ] as const)('prekidač cilja uključen %j → %d: odbijanje sa razlogom, ne v1', (flags, dist) => {
-    const h = select.shorterHandoffForV2Source(flags, HM_FORMAT)(dist)!;
-    expect(
-      call(h, plan, { ...input, raceDistM: dist }, addDays(START, 13), {
+    [{ fiveKV2: false, tenKV2: true }, 10000, 'tenKV2'],
+    [{ fiveKV2: true }, 5000, 'fiveKV2']
+  ] as const)(
+    'prekidač cilja uključen %j → %d: cilj v2, ne v1 i ne NOT_READY',
+    (flags, dist, key) => {
+      const h = select.shorterHandoffForV2Source(flags, HM_FORMAT)(dist)!;
+      const r = call(h, plan, { ...input, raceDistM: dist }, addDays(START, 13), {
         execution: null,
         restartFromBase: false
-      })
-    ).toEqual({
-      error: select.V2_TARGET_NOT_READY
-    });
-  });
+      }) as { result?: Record<string, unknown>; error?: string };
+      expect(r.error).not.toBe(select.V2_TARGET_NOT_READY);
+      if (r.result) expect(key in r.result).toBe(true);
+    }
+  );
   it('prekidač isključen → v1 cilj; distanca bez generatora → null', () => {
     const h = select.shorterHandoffForV2Source({ fiveKV2: false, tenKV2: false }, HM_FORMAT);
     expect(h(10000)).not.toBeNull();
@@ -306,6 +309,47 @@ describe('3b: ugovor', () => {
       expect(api.isLimitedLongPreparation(meta as never, plan)).toBe(
         api.isLimitedLongPreparation(meta as never)
       );
+    }
+  });
+});
+
+describe('REVIEW-3 #1: lanac maraton v2 → HM v2 (predaja, prefiks) → v1 cilj', () => {
+  const RACE = '2026-05-10';
+  const TODAY = '2026-01-27' as IsoDate; // utorak 2. nedelje izvora → prefiks 2 nedelje (O6b)
+  const input: MarathonV2PlanInput = {
+    startDate: select.marathonV2Start(RACE, '2026-01-14')!,
+    raceDate: RACE,
+    runDays: ['tue', 'thu', 'sat', 'sun'],
+    longRunDay: 'sun',
+    currentWeeklyKm: 50,
+    recentLongRunKm: 24,
+    recentResult: { distanceM: 10000, timeSec: 2280, date: '2026-01-10' },
+    goalTimeSec: 11400
+  };
+  function choose(source: GenPlanState, dist: number, flags: select.GeneratorFlags): GenPlanState {
+    const prep = select.preparationForPlan(source, flags)!;
+    const basis = prep.basisFromPlan(source, TODAY)!;
+    const c = prep.buildPreparationChoice(
+      source,
+      TODAY,
+      basis,
+      { kind: 'shorter', raceDistM: dist as never },
+      {}
+    );
+    if ('error' in c) throw new Error(c.error);
+    return select.stampForStorage(c.result);
+  }
+
+  it('v1 cilj iz plana HM v2 sa prefiksom ne nasleđuje ključ prefiksa (ni objekte v2)', () => {
+    const g = select.generateMarathonV2Plan(input);
+    if (!g.ok) throw new Error(JSON.stringify(g.reasons));
+    const hm = choose(select.stampForStorage(g.plan), 21097.5, { fiveKV2: false, hmV2: true });
+    expect(select.isHmV2Plan(hm)).toBe(true);
+    expect('hmV2Prefix' in hm).toBe(true); // kontrola: izvor zaista nosi prefiks
+    for (const dist of [10000, 5000]) {
+      const v1 = choose(hm, dist, { fiveKV2: false }) as GenPlanState & Record<string, unknown>;
+      expect(select.generatorForPlan(v1)?.id).toBe(dist === 10000 ? '10k' : '5k');
+      for (const k of ['hmV2Prefix', 'hmV2', 'marathonV2']) expect(k in v1, k).toBe(false);
     }
   });
 });

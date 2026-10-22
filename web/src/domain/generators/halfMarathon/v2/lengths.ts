@@ -239,3 +239,30 @@ export function limitedEasy10(easy10: number, inPain: boolean, long10: number | 
     : easy10;
   return long10 === null ? k : Math.min(k, long10);
 }
+
+/* ---------- Pouka 37: mešovita nedelja (deo dana zaštićen) — ostatak do cilja, samo naniže ---------- */
+
+/** Pouka 37: vrsta preostalog (nezaštićenog) dana — lagan (skraćuje se do 4 km), kvalitet (sme da otpadne u lagan)
+    ili nepromenljiv dan (dugi i test: dugi se ne skraćuje radi ostatka — odluka HM-08, opcija A). */
+export type FreeKind = 'easy' | 'quality' | 'fixed';
+
+/**
+ * Pouka 37 — JEDNA funkcija minimuma preostalih dana mešovite nedelje [0,01 km]: lagan i kvalitet (otpada u lagan)
+ * po 4 km, dugi i test svojom dužinom. Kad zaštićeni dani + ovaj minimum > cilj, nedelja je planirano > cilj uz
+ * upozorenje (MIXED_WEEK_OVER); konstruktor (week.remainderWeek) i validator čitaju istu funkciju.
+ */
+export function mixedFloor100(free: readonly { kind: FreeKind; km100: number }[]): number {
+  return free.reduce((a, d) => a + (d.kind === 'fixed' ? d.km100 : EASY_MIN10 * 10), 0);
+}
+
+/**
+ * Pouka 37: lagani preostali dani na ostatak `rest100` [0,01 km] — jednaki delovi (raniji dan dobija višak), svaki
+ * ≤ sastavljen (`caps10`, samo naniže) i ≥ 4 km; zbir ≤ `rest100`. null = ne staje.
+ */
+export function remainderEasy10(rest100: number, caps10: readonly number[]): number[] | null {
+  if (caps10.length === 0) return rest100 >= 0 ? [] : null;
+  const easy10 = splitEasy(Math.floor(rest100 / 10), caps10.length).map((e, i) =>
+    Math.min(e, caps10[i]!)
+  );
+  return easy10.every((e) => e >= EASY_MIN10) ? easy10 : null;
+}

@@ -1,0 +1,35 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 253,
+ "excludedPermanent": 9,
+ "plans": 253,
+ "skippedNoDay": 0,
+ "flows": 54848,
+ "rejectedFlows": 400,
+ "rejected": {
+  "PLAN_VIOLATES_POLICY:TEST": 400
+ },
+ "rejectedEx": {
+  "PLAN_VIOLATES_POLICY:TEST": [
+   "feel-d3-12w-40km-e450-A/w3/pause10/lock-q 2026-11-19/asOf 2026-11-18: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+   "feel-d3-12w-40km-e450-A/w3/pause10/lock-in+q 2026-11-15,2026-11-19/asOf 2026-11-18: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+   "feel-d3-12w-40km-e450-A/w3/pause20/lock-q 2026-11-19/asOf 2026-11-18: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17)."
+  ]
+ },
+ "common": {},
+ "commonEx": {},
+ "inv": {},
+ "invEx": {},
+ "by": {
+  "pause10/lock-q": 100,
+  "pause10/lock-in+q": 100,
+  "pause20/lock-q": 100,
+  "pause20/lock-in+q": 100
+ },
+ "seconds": 1536.611
+}

@@ -1,0 +1,139 @@
+{
+ "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-08/sabotage-08.json",
+ "head": "7606e68",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 10.3,
+ "hashBefore": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+ "hashAfter": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08-a ostatak se ne računa (stara strana)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08.node.test.ts",
+    "test": "HM-08 primer iz nalaza (pouka 37) > d3-10w-25km-v30-A-sat, umor, asOf prvi dan ned 3: dugi 12,6 upisan + preostali na ostatak 8,6 → planirano 21,2 = cilj (pre 24,32)",
+    "message": "Error: PLAN_VIOLATES_POLICY MIXED_OVER_TARGET: Planirano 24.32 km > cilj 21.2 km, a preostali dani staju u ostatak cilja (pouka 37)."
+   },
+   "failedCount": 1,
+   "hashBefore": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "hashSabotaged": "7ddb7f51eaa377b62b34740f3793d79951f900703d4eac9f5e56dd04ed72aff5",
+   "hashAfter": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2
+  },
+  {
+   "index": 2,
+   "name": "08-b ostatak i naviše (manjak se nadoknađuje)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08.node.test.ts",
+    "test": "HM-08 samo naniže i validator (pouka 37) > urađen dugi nedelje k + 1 kraći od sastavljenog: preostali dani isti kao bez zaštite (manjak se ne nadoknađuje)",
+    "message": "AssertionError: expected [ { date: '2026-12-01', …(5) }, …(1) ] to deeply equal [ { date: '2026-12-01', …(5) }, …(1) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "hashSabotaged": "3d749508d1b638dabf539beb13165fbbd012df437766e4d037dddd86acf5723a",
+   "hashAfter": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.5
+  },
+  {
+   "index": 3,
+   "name": "08-c validator ne čita istu funkciju (minimum preostalih)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08.node.test.ts",
+    "test": "HM-08 samo naniže i validator (pouka 37) > ni minimum preostalih dana ne staje → planirano > cilj + MIXED_WEEK_OVER (ne odbijanje); višak u preostalim danima → MIXED_OVER_TARGET",
+    "message": "AssertionError: expected [ 'ARITHMETIC', …(3) ] to include 'MIXED_OVER_TARGET'"
+   },
+   "failedCount": 1,
+   "hashBefore": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "hashSabotaged": "404925970ba7afae841e7fa899ec5d92b3e204547172b50c09db04f032ac3b4a",
+   "hashAfter": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.2
+  },
+  {
+   "index": 4,
+   "name": "08-d trajna mreža bez mešovite nedelje (asOf kraj nedelje k)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/segment08.harness.node.test.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08.node.test.ts",
+    "test": "HM-08 trajna mreža: umor asOf svaki dan nedelje k, zaključan/urađen dan k + 1 (deo 1/6) > 0 odbijanja, adaptInvariants prazno, mešovita nedelja planirano ≤ cilj ili MIXED_WEEK_OVER",
+    "message": "AssertionError: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "hashSabotaged": "e6db2c4017df045056006c904245569044581c99532929278f715ff3dda9abb7",
+   "hashAfter": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.5
+  },
+  {
+   "index": 5,
+   "name": "08-e zbir zaštićenih dana po planu (ne po činjenicama)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08.node.test.ts",
+    "test": "HM-08 zbir zaštićenih dana po činjenicama (dopuna pouke 37) > pauza 20 do srede ned 4: prvi dan nedelje (u pauzi) = 0 km → preostali dani nisu stisnuti (planirano po činjenicama ≤ cilj)",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "hashSabotaged": "bd75afe0667521f344c5fad56dc5d8a35636174dc9b81893139fbb5046eb8834",
+   "hashAfter": "25f3ed82a22b8a1d03fd41ec40c226374171ba297a605c1352d2b8fdb9ec481e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.7
+  }
+ ]
+}

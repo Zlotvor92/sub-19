@@ -29,10 +29,12 @@ export function regeneratorForDistance(raceDistM: number | undefined): V1Target 
   return null;
 }
 
-/** Format plana izvora v2 koji v1 cilj ne sme da nasledi: ključ objekta plana v2 i meta ključevi koje piše samo v2.
- *  Daje ga adapter izvora (`<distanca>/v2/app/`). */
+/** Format plana izvora v2 koji v1 cilj ne sme da nasledi: ključ objekta plana v2, ostali ključevi plana koje piše samo
+ *  v2 (REVIEW-3 #1: npr. prefiks nedelja izvora predaje, `hmV2Prefix` — lanac maraton v2 → HM v2 → v1) i meta ključevi
+ *  koje piše samo v2. Daje ga adapter izvora (`<distanca>/v2/app/`), jedino mesto spiska po izvoru. */
 export interface SourceFormat {
   readonly planKey: string;
+  readonly planKeys?: readonly string[];
   readonly metaKeys: readonly string[];
 }
 
@@ -72,10 +74,13 @@ export function mondayWeeks(weeks: Weeks): Weeks {
   });
 }
 
-/** Pogled plana izvora za v1 cilj: bez objekta plana v2 i bez meta ključeva v2; nedelje od ponedeljka
- *  (`mondayWeeks`). Dani ostaju (istorija). */
+/** Pogled plana izvora za v1 cilj: bez objekta plana v2, ostalih ključeva plana v2 i meta ključeva v2; nedelje od
+ *  ponedeljka (`mondayWeeks`). Dani ostaju (istorija). */
 export function sourceViewForV1<P extends GenPlanState>(current: P, format: SourceFormat): P {
-  const { [format.planKey]: _plan, ...rest } = current as P & Record<string, unknown>;
+  const drop = [format.planKey, ...(format.planKeys ?? [])];
+  const rest = Object.fromEntries(
+    Object.entries(current as P & Record<string, unknown>).filter(([k]) => !drop.includes(k))
+  );
   const meta = current.meta
     ? (Object.fromEntries(
         Object.entries(current.meta).filter(([k]) => !format.metaKeys.includes(k))

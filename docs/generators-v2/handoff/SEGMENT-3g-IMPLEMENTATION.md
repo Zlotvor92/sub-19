@@ -79,8 +79,17 @@ menjan. U E2E je konstanta zapisana doslovno i ažurirana je. `check:full` lokal
 
 ## 6. Otvoreno
 
-- **(g) 10K v2 kao cilj:** 3d-10K nije na grani. E2E (g) se dodaje kad stigne `tenK/v2/app/handoffTarget.ts`.
 - **Vrh opcije 5K v2 = 0:** HM v2 izvor čita `meta.preparation`, a 5K v2 cilj ga nema (predaja 3d § 7). UI prikazuje
   „—". Ispravka je u domenu (izvor čita vrh iz `fiveKV2`, kao maraton iz `hmV2`), nije u opsegu 3g.
-- **Poruka posle izbora:** primena opcije menja distancu plana, pa ekran prelazi na prilagođavanje cilja (npr. 5K v2), a
-  poruka „primenjeno" se ne vidi. Plan, revizija i server su ispravni (E2E).
+- **Maraton v2 → 10K v2 nije u E2E:** redom opcija prvo ide HM (v1 ili v2), pa 10K dolazi samo kad HM nije dostupan.
+  Takav slučaj nema jednostavan tok kroz čarobnjak.
+
+## 7. Dopuna (posle signala „3d-10K na grani", polazni `4e933b5`)
+
+| Stavka | Fajl | Izmena | Test |
+|---|---|---|---|
+| (g) HM v2 → 10K v2 | `e2e/handoff-v2.spec.ts` | prekidači HM v2 + 10K v2; 01-20, pauza 35 d → opcija 10K v2, bez nedostupnih; vrh dugog i obima > 0 (brojevi, ne „—") → izbor | `10k-v2`, `tenKV2Prefix` offset 1, revizija na serveru |
+| Potvrda „primenjeno" | `ShorterDistanceDecision.tsx` (`noteHandoffApplied`, `HandoffAppliedNotice`, efemerno stanje bez perzistencije), `HmV2Adjustment`/`MarathonV2Adjustment` (`result.change` → potvrda), `AdjustPlan.tsx` (prikaz iznad ekrana cilja) | Potvrda se prikazuje jednom na ekranu cilja. Nestaje na „U redu" ili kad korisnik napusti ekran. | UI (5): tekst doslovno, ekran 5K v2 aktivan, „U redu" sklanja; E2E (a)(b)(c)(g): `#handoff-applied` na ekranu cilja; sabotaža 3g-h PALA |
+
+Provere: tsc čist; `npm run check` **EXIT 0, 302 fajla / 3569 testova**; `--changed 4e933b5` 16 fajlova / 137 testova;
+E2E handoff-v2 (5) + hm/marathon/fivek/tenk v2: **17/17**; sabotaže `sabotage-3g.json` **8/8** palo, stanje `src` isto.

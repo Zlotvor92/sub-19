@@ -407,7 +407,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.6.2',
+  version: '10k-v2.7.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {

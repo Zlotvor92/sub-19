@@ -1,0 +1,305 @@
+{
+ "dist": "HM",
+ "policy": {
+  "regular/3": {
+   "km": [
+    25,
+    45
+   ],
+   "weeks": [
+    10,
+    20
+   ]
+  },
+  "regular/4": {
+   "km": [
+    30,
+    60
+   ],
+   "weeks": [
+    10,
+    20
+   ]
+  },
+  "regular/5": {
+   "km": [
+    35,
+    75
+   ],
+   "weeks": [
+    10,
+    20
+   ]
+  },
+  "regular/6": {
+   "km": [
+    40,
+    90
+   ],
+   "weeks": [
+    10,
+    20
+   ]
+  },
+  "beginner/4": {
+   "km": [
+    20,
+    40
+   ],
+   "weeks": [
+    12,
+    20
+   ]
+  },
+  "beginner/5": {
+   "km": [
+    25,
+    45
+   ],
+   "weeks": [
+    12,
+    20
+   ]
+  }
+ },
+ "vdot": [
+  30,
+  80
+ ],
+ "easy": [
+  270,
+  510
+ ],
+ "gridCoverage": {
+  "regular/3": {
+   "n": 3630,
+   "km": [
+    25,
+    45
+   ],
+   "weeks": [
+    10,
+    20
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/4": {
+   "n": 5082,
+   "km": [
+    30,
+    60
+   ],
+   "weeks": [
+    10,
+    20
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/5": {
+   "n": 6534,
+   "km": [
+    35,
+    75
+   ],
+   "weeks": [
+    10,
+    20
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/6": {
+   "n": 7986,
+   "km": [
+    40,
+    90
+   ],
+   "weeks": [
+    10,
+    20
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/4": {
+   "n": 945,
+   "km": [
+    20,
+    40
+   ],
+   "weeks": [
+    12,
+    20
+   ],
+   "vdot": [
+    30,
+    40
+   ],
+   "easy": [
+    330,
+    510
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/5": {
+   "n": 945,
+   "km": [
+    25,
+    45
+   ],
+   "weeks": [
+    12,
+    20
+   ],
+   "vdot": [
+    30,
+    40
+   ],
+   "easy": [
+    330,
+    510
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  }
+ },
+ "uncovered": [
+  "regular/3: VDOT max 80 (mreža do 70)",
+  "regular/3: skorašnji najduži 5 km (mreža od —)",
+  "regular/3: skorašnji najduži 42 km (mreža do —)",
+  "regular/4: VDOT max 80 (mreža do 70)",
+  "regular/4: skorašnji najduži 5 km (mreža od —)",
+  "regular/4: skorašnji najduži 42 km (mreža do —)",
+  "regular/5: VDOT max 80 (mreža do 70)",
+  "regular/5: skorašnji najduži 5 km (mreža od —)",
+  "regular/5: skorašnji najduži 42 km (mreža do —)",
+  "regular/6: VDOT max 80 (mreža do 70)",
+  "regular/6: skorašnji najduži 5 km (mreža od —)",
+  "regular/6: skorašnji najduži 42 km (mreža do —)",
+  "beginner/4: VDOT max 80 (mreža do 40)",
+  "beginner/4: lak tempo min 270 (mreža od 330)",
+  "beginner/4: trka sat (mreža nema)",
+  "beginner/4: skorašnji najduži 5 km (mreža od —)",
+  "beginner/4: skorašnji najduži 42 km (mreža do —)",
+  "beginner/5: VDOT max 80 (mreža do 40)",
+  "beginner/5: lak tempo min 270 (mreža od 330)",
+  "beginner/5: trka sat (mreža nema)",
+  "beginner/5: skorašnji najduži 5 km (mreža od —)",
+  "beginner/5: skorašnji najduži 42 km (mreža do —)"
+ ],
+ "edgeInputs": 204,
+ "generatorRejected": {
+  "WEEK_INFEASIBLE": 4
+ },
+ "generatorRejectedEx": {
+  "WEEK_INFEASIBLE": "beginner/4/20km/12w/vmax/sat: Nedelja 11: nijedan cilj od 16 km naviše ne može da se sastavi po pravilima."
+ },
+ "plans": 200,
+ "plansUncovered": 88,
+ "uncoveredFlows": {
+  "flows": 8360,
+  "rejected": 19
+ },
+ "flows": 19998,
+ "rejectedFlows": 19,
+ "rejected": {
+  "WEEK_INFEASIBLE:Nedelja #": 19
+ },
+ "rejectedEx": {
+  "WEEK_INFEASIBLE:Nedelja #": [
+   "beginner/5/25km/12w/vmax/sat [vdotMax,race-sat]/start-1 2026-12-12/pause35: Nedelja 11: nijedan cilj od 20 km naviše ne može da se sastavi po pravilima.",
+   "beginner/5/25km/12w/vmax/sat [vdotMax,race-sat]/start-1 2026-12-12/pain8: Nedelja 11: nijedan cilj od 20 km naviše ne može da se sastavi po pravilima.",
+   "beginner/5/25km/12w/vmax/sat [vdotMax,race-sat]/start-1 2026-12-12/painPause: Nedelja 11: nijedan cilj od 20 km naviše ne može da se sastavi po pravilima."
+  ]
+ },
+ "common": {},
+ "commonEx": {},
+ "inv": {
+  "povratni rast > nivo ned #": 32
+ },
+ "invEx": {
+  "povratni rast > nivo ned #": [
+   "regular/3/45km/10w/vmax/sun/rl5 [vdotMax,rl5]/start 2026-12-28/pause35: povratni rast > nivo ned 2",
+   "regular/3/45km/10w/vmax/sun/rl5 [vdotMax,rl5]/start 2026-12-28/painPause: povratni rast > nivo ned 2",
+   "regular/3/45km/10w/vmax/sun/rl5 [vdotMax,rl5]/w1wed 2026-12-30/pause35: povratni rast > nivo ned 2"
+  ]
+ },
+ "by": {
+  "pause35": 8,
+  "pain8": 1,
+  "painPause": 4,
+  "pause10": 2,
+  "pause20": 2,
+  "chain": 2
+ },
+ "seconds": 509.903
+}

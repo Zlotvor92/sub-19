@@ -1,0 +1,38 @@
+{
+ "sources": 253,
+ "calls": 5060,
+ "ok": 1175,
+ "genRejected": {
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja.": 475,
+  "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava #–# da": 235,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Trenutni obim ": 490,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Nema pouzdanog": 310,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Tr": 285,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#.": 580,
+  "Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju une": 90,
+  "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana": 155,
+  "Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana.": 385,
+  "Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana. Nema pouzdanog": 30,
+  "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #": 95,
+  "Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–": 90,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Početnik sa # ": 60,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Po": 230,
+  "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana.": 95,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Početnik: #K p": 145,
+  "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana. Poč": 125,
+  "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana. Nem": 10
+ },
+ "adaptRejected": 0,
+ "adaptEx": [],
+ "noBoundary": 0,
+ "duplicateDates": 0,
+ "duplicateIds": 0,
+ "idMismatch": 0,
+ "prefixMismatch": 0,
+ "common": {},
+ "byWeeksLeft": {
+  "8-18": "1175/2485 ok",
+  "<8": "0/1480 ok",
+  ">18": "0/1095 ok"
+ }
+}

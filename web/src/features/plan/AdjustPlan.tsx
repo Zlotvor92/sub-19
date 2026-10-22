@@ -22,6 +22,7 @@ import { ExecutionAdjustment } from './ExecutionAdjustment';
 import { FiveKV2Adjustment } from './FiveKV2Adjustment';
 import { HmV2Adjustment } from './HmV2Adjustment';
 import { MarathonV2Adjustment } from './MarathonV2Adjustment';
+import { HandoffAppliedNotice } from './ShorterDistanceDecision';
 import { TenKV2Adjustment } from './TenKV2Adjustment';
 
 /* PRILAGODI PLAN: jedino mesto za sve što menja plan kao celinu — predlog zbog bola, predlog tempa prema formi, preračunavanje, novi plan. Predlozi se
@@ -154,6 +155,8 @@ export function AdjustPlan() {
       {!injury && !pace && !adj.adjusted && !v2 ? (
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
+
+      <HandoffAppliedNotice />
 
       {marathonV2 ? (
         <MarathonV2Adjustment today={todayStr} />

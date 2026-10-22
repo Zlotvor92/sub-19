@@ -1,0 +1,1 @@
+5K { tokova: 117, drugo_rasterecenje: 0, odbijeno_drugi: 0 }

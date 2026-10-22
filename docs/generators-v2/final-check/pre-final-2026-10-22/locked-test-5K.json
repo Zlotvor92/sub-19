@@ -1,0 +1,29 @@
+{
+ "dist": "5K",
+ "k": 7,
+ "plans": 248,
+ "twoTestsAccepted": 0,
+ "locked": {
+  "flows": 17360,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "control": {
+  "flows": 17360,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "seconds": 693.668
+}
