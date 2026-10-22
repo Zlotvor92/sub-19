@@ -293,7 +293,7 @@ describe('3d: format i izbor', () => {
     )(10000)!;
     expect(ten).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.9.0, KNOWN_VERSIONS ∪ 5k-v2.8.1`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.10.0, KNOWN_VERSIONS ∪ 5k-v2.9.0`, () => {
     const r = select.generateFiveKV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 10 - 1),
@@ -304,11 +304,11 @@ describe('3d: format i izbor', () => {
     } as never);
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.9.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.10.0');
     expect(r.plan.weeks.map((w) => w.days.map((d) => d.id))[0]![0]).toBe('g1d1');
     expect(
       select.FIVE_K_V2_GENERATOR.planPolicy({
-        meta: { policyId: '5k-v2', policyVersion: '5k-v2.8.1' }
+        meta: { policyId: '5k-v2', policyVersion: '5k-v2.9.0' }
       } as never).status
     ).toBe('current');
   });

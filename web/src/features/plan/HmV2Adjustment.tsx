@@ -9,6 +9,12 @@ import {
   previewRestore,
   type PlanChangePreview
 } from '../../stores/executionActions';
+import {
+  RaceChange,
+  ShorterDistanceDecision,
+  ShorterOfferNote,
+  useStoredDecision
+} from './ShorterDistanceDecision';
 
 type ReadyPreview = Extract<PlanChangePreview, { ok: true }>;
 type WeekView = NonNullable<NonNullable<ReadyPreview['hmV2']>['weeks'][number]['before']>;
@@ -36,6 +42,7 @@ export function HmV2Adjustment({ today }: { today: string }) {
   const [result, setResult] = useState<PlanChangePreview | null>(() => previewHmV2(today));
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const decision = useStoredDecision(today);
 
   const review = (
     opts: { confirmed?: boolean; days?: string; breaks?: typeof breaks } = {}
@@ -175,6 +182,10 @@ export function HmV2Adjustment({ today }: { today: string }) {
       {preview ? (
         <Section title="Pregled promene" id="plan-change-preview">
           <p className="prop-m">{preview.summary}</p>
+          {preview.change ? <RaceChange change={preview.change} /> : null}
+          {v2?.shorterOffer ? (
+            <ShorterOfferNote distance="polumaraton" hasDecision={!!decision} />
+          ) : null}
           {v2 ? (
             <>
               <ul aria-label="Razlozi prilagođavanja">
@@ -256,6 +267,18 @@ export function HmV2Adjustment({ today }: { today: string }) {
             </button>
           </div>
         </Section>
+      ) : null}
+
+      {decision ? (
+        <ShorterDistanceDecision
+          decision={decision}
+          today={today}
+          onPreview={(r) => {
+            setMessage('');
+            setError('');
+            setResult(r);
+          }}
+        />
       ) : null}
 
       {revisions.length ? (

@@ -1,0 +1,117 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08i/sabotage-08i.json",
+ "head": "e2e482e",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 11.8,
+ "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+ "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08i-1 ostatak se ne računa (stara strana: zaštićeni dani + sastavljeni dani)",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts",
+    "test": "08i trajna mreža (umor po danima nedelje k + zaključan Q1 k + 1, pouka 37) — deo 1 > 6 planova: umor (zapisi u k − 1), asOf svaki dan nedelje k + zaključan Q1 nedelje k + 1 → 0 odbijanja; mešovita nedelja planirano ≤ cilj ili upozorenje sa minimumom (pouka 37)",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashSabotaged": "03c028c2df5da3892fbe97d6548b05d301f45e17cc6e1e9e271d8a89d2285ee0",
+   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.2
+  },
+  {
+   "index": 2,
+   "name": "08i-2 ostatak i naviše (manjak se nadoknađuje)",
+   "files": [
+    "src/domain/generators/fiveK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "test": "08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže > mixedRemainder: zaštićeni dani kao sastavljeni ili kraći → bez izmene (manjak se ne nadoknađuje)",
+    "message": "AssertionError: expected { …(4) } to be null"
+   },
+   "failedCount": 1,
+   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashSabotaged": "0036587bf9caca90a5c0c351526a8f79e30d3b6b0902d4103289cecc050ce672",
+   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.7
+  },
+  {
+   "index": 3,
+   "name": "08i-3 validator ne čita istu funkciju (mixedFloorKm)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "test": "08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže > validator: mešovita nedelja iznad cilja čiji preostali dani nisu na minimumu → MIXED_REMAINDER",
+    "message": "AssertionError: expected [] to deeply equal [ 'MIXED_REMAINDER' ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashSabotaged": "fa19827382040736dafdca346af53c6a08ef38ac7a31dd8b628b4d4fa5aa384d",
+   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.8
+  },
+  {
+   "index": 4,
+   "name": "08i-4 trajna mreža bez mešovite nedelje (asOf pre nedelje k, bez zaključanog dana)",
+   "files": [
+    "src/domain/generators/fiveK/v2/segment08i.harness.node.test.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts",
+    "test": "08i trajna mreža (umor po danima nedelje k + zaključan Q1 k + 1, pouka 37) — deo 1 > 6 planova: umor (zapisi u k − 1), asOf svaki dan nedelje k + zaključan Q1 nedelje k + 1 → 0 odbijanja; mešovita nedelja planirano ≤ cilj ili upozorenje sa minimumom (pouka 37)",
+    "message": "AssertionError: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "hashSabotaged": "9f7d4314f523d1477e51e96c32c8d67394ebf58ca2e7b73bbeae07be5104d4a4",
+   "hashAfter": "25409b2df10faeec883447ab69e9cdf79a7cff387b5b640731456bccfd1f24fb",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.5
+  }
+ ]
+}

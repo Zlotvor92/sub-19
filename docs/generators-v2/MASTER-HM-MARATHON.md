@@ -153,6 +153,10 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     se NE skraćuje radi ostatka (HM-08: skraćen dugi postaje referenca poslednjeg dugog → kaskada ciljeva narednih
     nedelja, vrh do −22 km — odbačeno); kad ni tada ne staje → planirano > cilj uz upozorenje (pouka 14), ne
     odbijanje. Dugi ≥ lagan važi među preostalim danima (zaštićeni su činjenice). Trkačka nedelja je izuzeta (pouka 30).
+    Zbir zaštićenih dana se računa po ČINJENICAMA (5K-08i): dan u prijavljenoj pauzi = 0, dan sa upisanim treningom =
+    upisani km (neurađen = 0), ostali zaštićeni (asOf bez zapisa, zaključani, urađeni posle asOf) = planirani km —
+    neodrađen dan ne „jede" cilj (5K: pauza/manjak stiskali preostale dane na minimum u 10 362/12 634 tokova). Kad
+    pravilo pauze određuje ostatak nedelje pauze, ono je vlasnik te nedelje.
     Jedno mesto odluke (ostatak računa vlasnik obima), validator čita istu funkciju. Nađeno (organizator, tekuća
     nedelja rasterećenja posle umora, asOf prvi dan nedelje k ∈ {2, 4}, svaki 97. plan): planirano > cilj 5K 22/42,
     10K 367/582, HM 291/449, maraton 426/613 tokova (prosek +2,4 … +4,2 km, max 11,9); „rasterećenje" nije niže od

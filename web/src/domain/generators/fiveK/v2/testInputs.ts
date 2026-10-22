@@ -1093,13 +1093,13 @@ export function earlyChecks(
 /** 08g: zašto se tok menja prema starijim heš fixture-ima (nezavisno od toka konstrukcije) — 'N3': trkačka nedelja
     skraćena po pouci 30 (raceRest u rezultatu); 'F': umor vezan za zapise (pouka 36) — rasterećenje tih zapisa je
     već u planu, novo se ne pravi (razlog FATIGUE to kaže), ili rasterećenje ostatka tekuće nedelje (deloadWeek); 'N4': konstruktor sa upisanim danima (prior, pouka 29)
-    daje drugačiji plan nego bez njih; 'P' (08h, pouka 35): drugi dan kvaliteta lagan u rezultatu ili u prethodnom planu (hasSecondEasy); null: ništa od toga (tok mora ostati bajt-isti). Plan trčanje/hodanje: null. */
+    daje drugačiji plan nego bez njih; 'P' (08h, pouka 35): drugi dan kvaliteta lagan u rezultatu ili u prethodnom planu (hasSecondEasy); 'M' (08i, pouka 37): mešovita nedelja skraćena na ostatak do cilja u rezultatu ili u prethodnom planu (hasMixedRemainder); null: ništa od toga (tok mora ostati bajt-isti). Plan trčanje/hodanje: null. */
 export function family08g(
   plan: unknown,
   facts: unknown,
   asOf: string,
   res: unknown
-): 'N3' | 'N4' | 'F' | 'P' | null {
+): 'N3' | 'N4' | 'F' | 'P' | 'M' | null {
   const r = res as {
     ok: boolean;
     plan?: FiveKV2Plan;
@@ -1108,6 +1108,7 @@ export function family08g(
   const p = plan as FiveKV2Plan;
   if ((p as { planType?: string }).planType === 'runWalk') return null;
   if (r.ok && (r.plan!.weeks[r.plan!.weeks.length - 1]!.raceRest?.length ?? 0) > 0) return 'N3';
+  if (r.ok && (hasMixedRemainder(res) || hasMixedRemainder(p))) return 'M';
   if (
     r.ok &&
     ((r.reasons ?? []).some(
@@ -1202,4 +1203,17 @@ export function hasSecondEasy(res: unknown): boolean {
   if (!plan) return false;
   if (plan.weeks?.some((w) => w.notes.some((n) => n.includes('(pouka 35)')))) return true;
   return plan.continuous ? hasSecondEasy(plan.continuous.plan) : false;
+}
+
+/** 08i (5k-v2.10.0, pouka 37): rezultat (plan ili plan adaptacije; i kontinuirani deo plana trčanje/hodanje) ima
+    mešovitu nedelju čiji su preostali dani sastavljeni na ostatak do cilja — oznaka week.MIXED_NOTE. */
+export function hasMixedRemainder(res: unknown): boolean {
+  const r = res as { ok?: boolean; plan?: unknown };
+  const plan = (r.ok === undefined ? res : r.ok ? r.plan : null) as {
+    weeks?: { notes: string[] }[];
+    continuous?: { plan: unknown } | null;
+  } | null;
+  if (!plan) return false;
+  if (plan.weeks?.some((w) => w.notes.some((n) => n.includes('(pouka 37)')))) return true;
+  return plan.continuous ? hasMixedRemainder(plan.continuous.plan) : false;
 }
