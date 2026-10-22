@@ -1,0 +1,89 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08l/sabotage-08l.json",
+ "head": "43930f3",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 44,
+ "hashBefore": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+ "hashAfter": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08l-1 poruka rezultata (assess) mimo weekLabel: broj nedelje bez pomaka",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08l.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08l.node.test.ts",
+    "test": "08l broj nedelje u porukama jezgra (weekOffset, input.weekLabel) > 4 planova (R/F/B) × asOf rane mreže × 17 scenarija: sve poruke sa „nedelj…\" na planu sa pomakom 7 imaju broj + 7",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+   "hashSabotaged": "75fd6fe62c7ba72d2c11f21450e3c141d18667f5bd7014d7308820d6f44ea53a",
+   "hashAfter": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 19
+  },
+  {
+   "index": 2,
+   "name": "08l-2 napomena kontrolnog trčanja (generate) mimo weekLabel",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08l.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08l.node.test.ts",
+    "test": "08l broj nedelje u porukama jezgra (weekOffset, input.weekLabel) > 4 planova (R/F/B) × asOf rane mreže × 17 scenarija: sve poruke sa „nedelj…\" na planu sa pomakom 7 imaju broj + 7",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+   "hashSabotaged": "319cfe55f78ec010f4dc147d8b6595d253be5fd3088821e033551a808c769808",
+   "hashAfter": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 18.9
+  },
+  {
+   "index": 3,
+   "name": "08l-3 handoff ne prenosi pomak u ulaz jezgra",
+   "files": [
+    "src/domain/generators/fiveK/v2/app/handoffTarget.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/app/handoffTarget.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/app/handoffTarget.node.test.ts",
+    "test": "3d: HM v2 → 5K v2 cilj (generate + adapt, O6b) > tok: plan 5K v2 sa prefiksom izvora; bez duplih datuma i id-a; id cilja = id izvora istog datuma; uslov 8",
+    "message": "AssertionError: d3-10w-25km-v60-C-sun 2026-11-19 none: expected +0 to be 3 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+   "hashSabotaged": "6b76d5c69624cc2b0fdbdee3298885ec8df81cc02e3318e449ddb377c2d8b6cb",
+   "hashAfter": "55785e65b6a41cadb98c1d34c12f085be57c83855ed9bb8f9fb73296bbb8cf10",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5.8
+  }
+ ]
+}

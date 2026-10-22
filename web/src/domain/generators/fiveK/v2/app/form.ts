@@ -4,6 +4,7 @@
 
 import { raceTimeForVdot, vdotFromResult } from '../paces.ts';
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
+import { weekLabel } from '../input.ts';
 import { baseVdot, vdotAt } from '../steps.ts';
 import type { FiveKV2Plan } from '../types.ts';
 import type { GenPlanState, IsoDate, LogEntry, T3kRecord } from '../../exchange.ts';
@@ -46,8 +47,8 @@ export function formHistory(src: {
   const cont: FiveKV2Plan | null = v2.planType === 'runWalk' ? (v2.continuous?.plan ?? null) : v2;
   const points: FormPointV2[] = [];
   const used = new Set<string>();
-  // 3h: plan cilja predaje nosi nedelje izvora ispred; prikazni broj nedelje = `offset + fromWeek` (kao kalendar).
-  const off = prefixOf(src.plan)?.offset ?? 0;
+  // 3h / 08l: plan cilja predaje — broj nedelje kao kalendar (`offset + fromWeek`) kroz istu funkciju kao jezgro
+  // (input.weekLabel, ulaz weekOffset; plan sačuvan pre 08l: offset prefiksa).
   if (cont) {
     const input = cont.input;
     const base = baseVdot(input);
@@ -68,7 +69,7 @@ export function formHistory(src: {
           date: s.result.date,
           vdot: s.vdot,
           kind: s.result.kind,
-          label: `${s.result.kind === 'test' ? 'Test' : 'Trka'} ${s.result.distM / 1000}K ${mmss(s.result.sec)} — tempo od nedelje ${off + s.fromWeek}`,
+          label: `${s.result.kind === 'test' ? 'Test' : 'Trka'} ${s.result.distM / 1000}K ${mmss(s.result.sec)} — tempo od nedelje ${weekLabel(s.fromWeek, input.weekOffset ?? prefixOf(src.plan)?.offset)}`,
           status: 'used'
         });
       }

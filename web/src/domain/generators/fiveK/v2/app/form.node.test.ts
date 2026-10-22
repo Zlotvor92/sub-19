@@ -78,6 +78,10 @@ describe('3h: Forma na planu 5K v2 sa prefiksom izvora', () => {
     const plan = handedOff();
     const bare = { ...plan } as Record<string, unknown>;
     for (const k of Object.keys(bare)) if (k.endsWith('Prefix')) delete bare[k];
+    // 08l: plan bez prefiksa nema ni pomak u ulazu jezgra (weekOffset) — kao običan plan 5K v2.
+    const v2 = bare['fiveKV2'] as { input: Record<string, unknown> };
+    const { weekOffset: _off, ...input } = v2.input;
+    bare['fiveKV2'] = { ...v2, input };
     expect(prefixOf(bare)).toBeNull();
     const { applied, today, log, fromWeek } = formAfterResult(bare as GenPlanState);
     const f = select.fiveKV2FormHistory({ plan: applied, today, log })!;

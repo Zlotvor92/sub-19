@@ -5,6 +5,7 @@
    najmanji procenjeni rad veći od prethodnog iste vrste u fazi; bez višeg nivoa ista doza druge
    strukture (Odluka 3); tek tada, uz drugi kvalitet koji se menja, zadržana doza. */
 
+import { weekLabel } from './input.ts';
 import { easyCount, weekLengths } from './lengths.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import type {
@@ -348,7 +349,7 @@ export function simpleWeekQuality(
       easyStrides: false,
       stridesOnly: true,
       notes: [
-        `Početnik: nedelja ${f.index} bez kvaliteta — samo lagano + ubrzanja ${so.reps} × ${so.sec} s.`
+        `Početnik: nedelja ${weekLabel(f.index, a.weekOffset)} bez kvaliteta — samo lagano + ubrzanja ${so.reps} × ${so.sec} s.`
       ],
       dose: prev
     };

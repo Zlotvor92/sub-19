@@ -115,6 +115,19 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
           expect(res.weeks.at(-1)!.phase, key).toBe('TRKA');
           // Uslov 8 na delu cilja (plan v2): budući dani nisu prazni, lagan ≤ dugi.
           const v2 = (res as unknown as { fiveKV2: FiveKV2Plan }).fiveKV2;
+          // 08l (3i): ulaz jezgra nosi pomak = broj nedelja prefiksa; svaki broj nedelje u porukama je broj nedelje
+          // kalendara (posle prefiksa, najviše poslednja nedelja plana).
+          expect(v2.input.weekOffset ?? 0, key).toBe(prefix.offset);
+          for (const m of [
+            ...v2.notes,
+            ...v2.weeks.flatMap((w) => w.notes),
+            ...v2.warnings.map((x) => x.message)
+          ])
+            for (const [, n] of m.matchAll(/[Nn]edelj[a-z]* (\d+)(?!\d|[.,]\d| km| kvalitet)/g))
+              if (Number(n) <= prefix.offset || Number(n) > prefix.offset + v2.weeks.length)
+                bad.push(
+                  `${key}: broj nedelje ${n} van ${prefix.offset + 1}–${prefix.offset + v2.weeks.length}: ${m}`
+                );
           for (const w of v2.weeks) {
             const fut = w.days.filter((d) => d.date > asOf);
             for (const d of fut)
@@ -293,7 +306,7 @@ describe('3d: format i izbor', () => {
     )(10000)!;
     expect(ten).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.10.3, KNOWN_VERSIONS ∪ 5k-v2.10.2`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.10.4, KNOWN_VERSIONS ∪ 5k-v2.10.3`, () => {
     const r = select.generateFiveKV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 10 - 1),
@@ -304,11 +317,11 @@ describe('3d: format i izbor', () => {
     } as never);
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.10.3');
+    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.10.4');
     expect(r.plan.weeks.map((w) => w.days.map((d) => d.id))[0]![0]).toBe('g1d1');
     expect(
       select.FIVE_K_V2_GENERATOR.planPolicy({
-        meta: { policyId: '5k-v2', policyVersion: '5k-v2.10.2' }
+        meta: { policyId: '5k-v2', policyVersion: '5k-v2.10.3' }
       } as never).status
     ).toBe('current');
   });

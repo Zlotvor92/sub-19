@@ -17,6 +17,9 @@ export interface FiveKV2Result {
 export type Experience = 'beginner' | 'regular';
 
 export interface FiveKV2Input {
+  /** 2.10.4 (3i): broj nedelja ispred plana (plan cilja predaje nosi nedelje izvora, app/handoffTarget.ts); poruke
+      sa brojem nedelje ga dodaju (input.weekLabel). Izostavljeno = 0 (bajt-isto). */
+  weekOffset?: number;
   /** Prvi dan nedelje 1. */
   startDate: IsoDate;
   /** Dan trke = poslednji dan poslednje nedelje. */

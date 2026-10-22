@@ -8,6 +8,12 @@ import type { FiveKV2Input, FiveKV2Result, InputCheck, Reason, Weekday } from '.
 
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 
+/** 2.10.4 (3i) — JEDINA funkcija broja nedelje u porukama jezgra: redni broj nedelje plana `n` + pomak
+    (ulaz weekOffset — nedelje izvora predaje ispred plana). Bez pomaka = n (bajt-isto). */
+export function weekLabel(n: number, offset: number | undefined = 0): number {
+  return n + (offset ?? 0);
+}
+
 export function checkInput(raw: unknown): InputCheck {
   const reasons: Reason[] = [];
   const add = (code: Reason['code'], message: string): void => {
@@ -176,6 +182,10 @@ export function checkInput(raw: unknown): InputCheck {
       add('GOAL_INVALID', 'Ciljno vreme 5K nije u smislenom opsegu.');
   }
 
+  // 2.10.4 (3i): pomak broja nedelje (plan cilja predaje); ceo broj 0–52.
+  const wo = r['weekOffset'];
+  if (wo !== undefined && !(Number.isInteger(wo) && (wo as number) >= 0 && (wo as number) <= 52))
+    add('INPUT_SHAPE', 'weekOffset mora biti ceo broj 0–52 ili izostavljen.');
   if (reasons.length > 0) return { ok: false, reasons };
 
   const days = [...(runDays as Weekday[])].sort((a, b) => weekdayIndex(a) - weekdayIndex(b));
@@ -196,7 +206,7 @@ export function checkInput(raw: unknown): InputCheck {
     experience: beginner ? 'beginner' : 'regular',
     ...(typeof can30 === 'boolean' ? { canRun30Min: can30 } : {})
   };
-  return { ok: true, input };
+  return { ok: true, input: wo ? { ...input, weekOffset: wo as number } : input };
 }
 
 /** 2.4.0: rezultat je pouzdan ako postoji i nije stariji od resultMaxAgeDays (jedino mesto odluke). */

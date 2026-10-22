@@ -37,6 +37,19 @@ export function v2Of(plan: GenPlanState | null | undefined): AnyV2Plan | null {
   return p && p.policyId === P.id && Array.isArray(p.weeks) ? (p as AnyV2Plan) : null;
 }
 
+/** 08l (3i): plan cilja predaje sačuvan pre 5k-v2.10.4 nema ulaz `weekOffset` — dobija ga iz prefiksa (ista vrednost
+ *  koju handoffTarget sada upisuje), da poruke jezgra imaju broj nedelje kao kalendar. Plan bez prefiksa ili sa pomakom: isti. */
+function withWeekOffset(v2: AnyV2Plan, prefix: { offset: number } | null): AnyV2Plan {
+  if (
+    !prefix ||
+    prefix.offset <= 0 ||
+    v2.planType === 'runWalk' ||
+    v2.input.weekOffset !== undefined
+  )
+    return v2;
+  return { ...v2, input: { ...v2.input, weekOffset: prefix.offset } };
+}
+
 /** Nedelja u pregledu: cilj i planirano (km, trka van obima), kvalitet (naslovi v2) ili nivoi trčanja/hodanja. */
 export interface WeekView {
   targetKm: number | null;
@@ -162,7 +175,7 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     };
   const built = buildFacts(src, v2);
   const notes = [coverageText(built.coverage), ...built.notes];
-  const r = adaptFiveKV2(v2, built.facts, src.today);
+  const r = adaptFiveKV2(withWeekOffset(v2, prefixOf(src.plan)), built.facts, src.today);
   if (!r.ok) return { ok: false, reasons: rejection(r), coverage: built.coverage, notes };
   const after = r.plan;
   // 3d: plan cilja predaje nosi nedelje izvora ispred (`prefixOf`); brojevi nedelja u pregledu `offset + index`.
@@ -395,7 +408,11 @@ export function goalChange(plan: GenPlanState, goalSec: number, today: IsoDate):
   if (!c.ok)
     return { ok: false, reasons: c.reasons.map((x) => ({ code: x.code, message: x.message })) };
   const locked = [...trainingDates(v2)].filter((d) => d > today).sort();
-  const r = adaptFiveKV2({ ...v2, input: c.input }, { lockedDayIds: locked }, today);
+  const r = adaptFiveKV2(
+    withWeekOffset({ ...v2, input: c.input }, prefixOf(plan)),
+    { lockedDayIds: locked },
+    today
+  );
   if (!r.ok) return { ok: false, reasons: rejection(r) };
   const stored = storedPlan(generatedPlan(r.plan), prefixOf(plan));
   const result: GenPlanState = {

@@ -10,7 +10,7 @@
 
 import type { CheckedFacts } from './assess.ts';
 import { addDays, mustDay } from './dates.ts';
-import { checkInput } from './input.ts';
+import { checkInput, weekLabel } from './input.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { initialStep, MAX_LEVEL, transitionInput, weekCount, weekOfDate } from './runWalk.ts';
 import type { AdaptReason, FiveKV2RunWalkPlan, IsoDate, RunWalkStep } from './types.ts';
@@ -183,7 +183,7 @@ export function assessRunWalk(
       'TRANSITION',
       why === null,
       why === null
-        ? `L${MAX_LEVEL} dostignut, do trke ${left} nedelja: od nedelje ${n} kontinuirani plan početnika (po osećaju, ${vi!['currentWeeklyKm'] as number} km = 3 × 30 min tipičnim laganim tempom), isti konstruktor kao generator.`
+        ? `L${MAX_LEVEL} dostignut, do trke ${left} nedelja: od nedelje ${weekLabel(n, input.weekOffset)} kontinuirani plan početnika (po osećaju, ${vi!['currentWeeklyKm'] as number} km = 3 × 30 min tipičnim laganim tempom), isti konstruktor kao generator.`
         : `L${MAX_LEVEL} dostignut: ${why}.`
     );
   }

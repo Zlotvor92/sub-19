@@ -4,7 +4,7 @@
    posle prelaza proverava validatePlan (validate.ts). */
 
 import { addDays, mustDay, weekdayOf } from './dates.ts';
-import { checkInput } from './input.ts';
+import { checkInput, weekLabel } from './input.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import {
   constructRunWalk,
@@ -21,6 +21,7 @@ const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.str
 
 export function validateRunWalk(plan: FiveKV2RunWalkPlan): Violation[] {
   const out: Violation[] = [];
+  const wl = (k: number): number => weekLabel(k, plan.input.weekOffset);
   const err = (rule: string, message: string, week?: number, date?: string): void => {
     out.push({
       rule,
@@ -81,10 +82,10 @@ export function validateRunWalk(plan: FiveKV2RunWalkPlan): Violation[] {
   plan.weeks.forEach((w, i) => {
     const start = addDays(input.startDate, i * 7);
     if (w.index !== i + 1 || w.startDate !== start || w.endDate !== addDays(start, 6))
-      err('STRUCTURE', `Nedelja ${i + 1}: redni broj ili datumi.`, w.index);
+      err('STRUCTURE', `Nedelja ${wl(i + 1)}: redni broj ili datumi.`, w.index);
     const race = w.index === N;
     if (w.phase !== (race ? 'race' : 'runWalk'))
-      err('PHASES', `Nedelja ${w.index}: faza ${w.phase}.`, w.index);
+      err('PHASES', `Nedelja ${wl(w.index)}: faza ${w.phase}.`, w.index);
     const sessions = w.days.filter((d) => d.role === 'session');
     const expected = race
       ? raceSessions
@@ -99,7 +100,7 @@ export function validateRunWalk(plan: FiveKV2RunWalkPlan): Violation[] {
     )
       err(
         'RUN_DAYS',
-        `Nedelja ${w.index}: sesije ${sessions.map((d) => d.date).join(', ')}.`,
+        `Nedelja ${wl(w.index)}: sesije ${sessions.map((d) => d.date).join(', ')}.`,
         w.index
       );
     for (const d of w.days) {
@@ -147,7 +148,11 @@ export function validateRunWalk(plan: FiveKV2RunWalkPlan): Violation[] {
     if (race && w.days.filter((d) => d.role === 'race').length !== 1)
       err('RACE_DAY', 'Trkačka nedelja mora imati tačno jednu trku.', w.index);
     if (!race && sessions.length !== RW.days)
-      err('RUN_DAYS', `Nedelja ${w.index}: ${sessions.length} sesija umesto ${RW.days}.`, w.index);
+      err(
+        'RUN_DAYS',
+        `Nedelja ${wl(w.index)}: ${sessions.length} sesija umesto ${RW.days}.`,
+        w.index
+      );
   });
   if (!cont && plan.weeks.at(-1)?.endDate !== input.raceDate)
     err('STRUCTURE', 'Poslednja nedelja se ne završava danom trke.');

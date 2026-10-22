@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.10.3`, 08k) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.10.4`, 08l) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -189,3 +189,12 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   30–60 → RESULT_IGNORED (kao 10K A1), adaptacija se nastavlja.
 - edges 5K 428 → 0; pretraga sporijih rezultata R_REP 220 → 0; generator bajt-isti; regresija 0; trajna mreža ivica.
 - Izveštaj: `reports/SEGMENT-08k-IMPLEMENTATION.md`.
+
+## Segment 08l — broj nedelje u porukama jezgra na planu cilja predaje, 3i za 5K (5k-v2.10.4, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 43930f3
+- Ulaz jezgra `weekOffset` (podrazumevano 0); `app/handoffTarget.ts` ga postavlja = broj nedelja prefiksa i čuva u
+  ulazu plana; adaptacija čita iz plana (stariji plan cilja: iz prefiksa); sve poruke sa brojem nedelje kroz
+  `input.weekLabel`; forma čita isti pomak.
+- review3d-5K: reasonMismatch 112 → 0, labelMismatch 0; bez pomaka bajt-isto; sabotaže 3/3.
+- Izveštaj: `reports/SEGMENT-08l-IMPLEMENTATION.md`.
