@@ -112,3 +112,8 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - Mešovita nedelja, ostatak do cilja: radni patch `artifacts/segment-08/p37-wip.patch` (nije u kodu). Nalaz
   organizatora 291/449 → 0, ali skraćen dugi preostalih dana postaje stanje (H5/pouka 28) → kaskada u 1458 tokova
   rane mreže (vrh do −22 km). Opcije A–D i merenje: `reports/SEGMENT-08-STOP.md`; čeka odluku organizatora.
+## Faza 3, 3c-dopuna 2: format izmena i poslednji rezultat (obrazac 3e)
+
+- `app/preparation.ts`: `HM_V2_SOURCE_FORMAT` ∪ `hmV2Edits` (snimak izmena ne prelazi u v1 cilj); `lastResult` — `pb` =
+  poslednji rezultat (ulaz ili korak adaptacije) koji nije posle starta ulaza ugovora. `handoff.ts` tekst O5. Verzija
+  HM nepromenjena. Izveštaj `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` § 9.

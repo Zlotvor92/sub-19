@@ -185,3 +185,17 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   D23 i uz mešovit taper. Trajna mreža nov bol 7/8 (ned N − 3 … N − 1, + 1 … + 7) → 0 odbijanja; ostala merenja bajt-ista
   prema 06f. Pouka 35 u mešovitoj nedelji (467) — DECISIONS A19.
 - Puni testovi: p35 u 4 dela, trajne mreže ponavljanja u `repeatGrid` (16 delova, ≤ ~42 s). KNOWN_VERSIONS + 6.0.
+
+## Segment 06h (10k-v2.6.2): umor pre starta sa asOf = prvi dan plana
+
+- STANI (`reports/SEGMENT-06h-STOP.md`, 213cb75) → odluka organizatora: opcija A; izveštaj
+  `reports/SEGMENT-06h-IMPLEMENTATION.md`, artefakti `artifacts/segment-06h/`, DECISIONS A20.
+- Uzrok (pouka 23): referenca umora pre starta (`preStart`) čitana po fromWeek, a nedelja rasterećenja je od 06f
+  `deloadWeekOf` (asOf = start: ned 1 < fromWeek 2) → WEEK_INFEASIBLE u konstruktoru. Ispravka: konstruktor
+  (`volume.adaptVolume`, `generate.ctxAt`) i validator po `deloadWeekOf`.
+- Merenje: fatigue-startday 1245 → 0, fatigue-testweek 86 → 0, start-day 623 → 0 (adaptInvariants 0); start + 0 = start − 1
+  osim dana 1 (upisan) u 1245/1245. Regresija: 145 673 toka — promenjeno samo 779 ranije odbijenih (start + 0 umor).
+- Trajna mreža start + 0 u `repeatGrid` (24 672 toka na punom skupu, fixture `segment06h.startday-hashes-b8fcf22.json`).
+  Sabotaže 2/2. `KNOWN_VERSIONS` + 6.1.
+- Otvoreno: planirano ned 1 > cilj (upisan dan, pravilo mešovite nedelje) — pouka 37, zaseban segment za sve distance;
+  delovi `earlyGrid.<k>.full` ~278 s lokalno (beforeAll; CI blizu 600 s).

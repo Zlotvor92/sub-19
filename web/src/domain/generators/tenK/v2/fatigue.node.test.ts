@@ -9,7 +9,8 @@ import { addDays } from './dates.ts';
 import { generateTenKV2 } from './generate.ts';
 import { dayRule } from './policy.ts';
 import { newLimits } from './steps.ts';
-import { adaptBases, beginnerGridInputs, factsOf, painFacts } from './testInputs.ts';
+import { adaptInvariants } from './adaptInvariants.ts';
+import { adaptBases, beginnerGridInputs, factsOf, grid02Inputs, painFacts } from './testInputs.ts';
 import type { AdaptResult, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 
@@ -222,5 +223,60 @@ describe('06g (pouke 23 i 30): trkačka nedelja samo sa danom pred trku i trkom'
     expect(
       validatePlan(bad).some((x) => x.rule === 'RACE_WEEK_OVER_TAPER' && x.severity === 'error')
     ).toBe(true);
+  });
+});
+
+describe('06h (pouke 23, 34, 36): umor pre starta sa asOf = prvi dan plana', () => {
+  // Organizator (22. 10.): na 10k-v2.6.1 WEEK_INFEASIBLE u 1245/1245 planova (fatigue-startday.ts 10K 25).
+  const g = generateTenKV2(grid02Inputs(3).find((c) => c.id === 'd3-8w-20km-v30-A-sat')!.input);
+  if (!g.ok) throw new Error('d3-8w-20km-v30-A-sat');
+  const p = g.plan;
+  const s = p.weeks[0]!.startDate;
+  const strip = (w: TenKV2Plan['weeks'][number]) => ({
+    ...w,
+    plannedKm: 0,
+    notes: w.notes.filter((n) => !n.startsWith('Adaptacija')),
+    days: w.days.filter((d) => d.date !== s)
+  });
+
+  it('d3-8w-20km-v30-A-sat (start ned 2026-11-01, dan 1 dugi 9 km): asOf = start → rasterećenje ned 1 kao start − 1, dan 1 upisan', () => {
+    expect([s, p.weeks[0]!.days[0]!.date, p.weeks[0]!.days[0]!.role]).toEqual([
+      '2026-11-01',
+      '2026-11-01',
+      'long'
+    ]);
+    const before = addDays(s, -1);
+    const a0 = ok(adaptTenKV2(p, factsOf(p, 'fatigue', before), before));
+    const f = factsOf(p, 'fatigue', s);
+    const a = ok(adaptTenKV2(p, f, s));
+    const w1 = a.plan.weeks[0]!;
+    expect([w1.deload, w1.targetKm, a0.plan.weeks[0]!.targetKm]).toEqual([true, 16, 16]);
+    // Dan 1 (≤ asOf, zaštićen) ostaje kakav je bio; ostali dani i nedelje 2…N kao start − 1.
+    expect(w1.days[0]).toEqual(p.weeks[0]!.days[0]);
+    expect(strip(w1)).toEqual(strip(a0.plan.weeks[0]!));
+    expect(a.plan.weeks.slice(1)).toEqual(a0.plan.weeks.slice(1));
+    expect(w1.notes.some((n) => n.startsWith('Umor pre starta (A5)'))).toBe(true);
+    // Planirano = upisan dugi 9,0 + lagani 4,4 + 4,4 (pravilo mešovite nedelje, A20).
+    expect(w1.plannedKm).toBe(17.8);
+    expect(adaptInvariants(p, a.plan, s, f)).toEqual([]);
+  });
+
+  it('svaki 397. plan mreže 02 (3–6 dana, 40 planova): asOf = start, umor → 0 odbijanja, ned 2…N kao start − 1', () => {
+    let n = 0;
+    for (const [i, c] of ([3, 4, 5, 6] as const).flatMap((d) => grid02Inputs(d)).entries()) {
+      if (i % 397 !== 0) continue;
+      const r = generateTenKV2(c.input);
+      if (!r.ok) continue;
+      const q = r.plan;
+      const at = q.weeks[0]!.startDate;
+      const a = adaptTenKV2(q, factsOf(q, 'fatigue', at), at);
+      expect(a.ok, `${c.id} ${a.ok ? '' : a.reasons[0]!.message}`).toBe(true);
+      if (!a.ok) continue;
+      const b = ok(adaptTenKV2(q, factsOf(q, 'fatigue', addDays(at, -1)), addDays(at, -1)));
+      expect(a.plan.weeks.slice(1), c.id).toEqual(b.plan.weeks.slice(1));
+      expect(a.plan.weeks[0]!.deload, c.id).toBe(true);
+      n++;
+    }
+    expect(n).toBe(40);
   });
 });

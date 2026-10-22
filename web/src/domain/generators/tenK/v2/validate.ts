@@ -1035,7 +1035,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const rest = restOf(w);
     // A5 (10k-v2.5.2, pouka 34): umor pre starta — referenca prinudnog rasterećenja (dugi, doza) je nedelja 1
     // generatora bez činjenica, iz koraka (isto što čita konstruktor).
-    const ref = steps.find((x) => x.preStart && x.fromWeek === w.index)?.preStart;
+    const ref = steps.find((x) => x.preStart && deloadWeekOf(x) === w.index)?.preStart;
     if (w.deload && (seenSteady || ref) && checked(w)) {
       // D5/D18: poslednja doza T slota, min 2,0 km; D31 početnik: poslednja T doza, min 1,5 km.
       const lastT = ref ? ref.tDoseM : rule.beginner ? lastTDose : (lastSlot[tSlot]?.doseM ?? 0);

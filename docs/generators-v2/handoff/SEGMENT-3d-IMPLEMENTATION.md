@@ -106,3 +106,26 @@ Polazni `8eb4416`. Lak tempo (`easyPaceSecPerKm`) je činjenica koju korisnik un
 - M3 kroz pravi kod: uspeh 545 → **1 115**, odbijanje adaptacije 0, zajedničke provere 0.
 - Sabotaže (`sabotage-3d.json` 3d-f lepak predaje polje v1 cilju, 3d-g izvor ga ne šalje): pale; ceo skup 3d **7/7**.
 - Provere: tsc/eslint/prettier 0; `npm run check` **297 / 3515**, exit 0; `TEST_FULL=1 --changed 8eb4416` **158 / 1292** (551 s); E2E `hm-v2` + `fivek-v2` **6/6**.
+
+## 9. 3c-dopuna 2 — HM v2 izvor kao 3e: format izmena, poslednji rezultat, tekst O5 (odluka organizatora)
+
+Polazni `46dff18`. Obrazac `marathon/v2/app/preparation.ts` (3e), kopija. Domen `halfMarathon/v2` i `marathon/v2` nedirnut.
+- `halfMarathon/v2/app/preparation.ts`: `HM_V2_SOURCE_FORMAT.metaKeys` ∪ `hmV2Edits` (`EDITS_KEY`); `lastResult(v2,
+  onOrBefore)` = najnoviji rezultat (ulaz ili `step.result`) čiji datum nije posle starta ulaza ugovora; `contractInput`
+  → `pb = lastResult`. `basisFromPlan` (start plana) → rezultat ulaza kao pre; `executionBasis` (start = sutra) nosi i
+  rezultat koraka.
+- `handoff.ts` `V1_TARGET_NEEDS_RESULT`: „… traži rezultat trke ili testa pre početka novog plana, a ovaj plan ga
+  nema." Testovi porede konstantu (doslovnih poređenja teksta nema).
+- Testovi `handoffSource.node.test.ts` +2: v1 10K/5K bez `hmV2Edits`; po osećaju + pauza 35 + test 5 km u ned. 2 →
+  `basisFromPlan` nedostupno (`V1_TARGET_NEEDS_RESULT` ×2), `executionBasis` → plan 10K v1.
+- Merenje toka kroz pravi kod (`hmSource.measure.ts` → `hmSource-before.json` / `-after.json`, kod pre i posle; 212
+  planova, 2 968 tokova, 218 ponuda, izvor nosi `hmV2Edits` kao posle pregleda): curenje `hmV2Edits` u v1 cilj 142 → **0**
+  (svaki uspeh, 10K i 5K, oba puta); `hmV2`/meta v2 0; dupli datum/id 0; id ≠ izvor 0. `basisFromPlan`: novi `pb` 0,
+  izbori bajt-isti (heš bez `hmV2Edits`; tekst O5 neutralisan). `executionBasis`: novi `pb` u 69 ponuda → promenjeno
+  tačno 138 izbora (69 × 10K/5K), svi sa novim `pb`, nijedan drugi; uspeh 142 → **169** po cilju (27 planova po osećaju
+  sa testom posle starta postaje dostupno), ostalih 49 = bez ijednog rezultata.
+- M1 HM (`shorter.ts HM 193 97 29` → `shorter-HM-3c2.json`, 1 055 s): ponuda **3 274 / 114 012** = 3c (svi ključevi isti;
+  nov ključ skripte `offerTimeCapped` 0).
+- Sabotaže `sabotage-3c2.json`: **3/3 palo** (format bez `hmV2Edits`, rezultat koraka se ne šalje, rezultat posle
+  starta).
+- Provere: tsc/eslint/prettier 0; `npm run check` **298 / 3537**, exit 0; `TEST_FULL=1 --changed 46dff18` **159 / 1314** (531 s); E2E `hm-v2` + `fivek-v2` **6/6**.

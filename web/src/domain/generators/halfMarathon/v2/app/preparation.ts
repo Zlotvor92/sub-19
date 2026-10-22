@@ -16,7 +16,7 @@ import { longestLong10 } from '../lengths.ts';
 import type { HmV2Plan } from '../types.ts';
 import { v2Of } from './adapt.ts';
 import { addDays, isIsoDate } from './date.ts';
-import { buildFacts } from './facts.ts';
+import { buildFacts, EDITS_KEY } from './facts.ts';
 import { sourceOf } from './members.ts';
 import type { AppPlan, IsoDate } from './types.ts';
 
@@ -30,7 +30,7 @@ const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
  *  (`handoff.ts` `sourceViewForV1`). Ključeve koje piše i v1 cilj (`trainingVdot`, `racePace` …) cilj prepisuje. */
 export const HM_V2_SOURCE_FORMAT = {
   planKey: 'hmV2',
-  metaKeys: ['vdot', 'paceBasis', 'predictedHmSec', 'goalVdot', 'goalAssessment']
+  metaKeys: ['vdot', 'paceBasis', 'predictedHmSec', 'goalVdot', 'goalAssessment', EDITS_KEY]
 } as const;
 
 /* ---------- lokalni strukturni oblici ugovora (tip formata daje granica u `select.ts`) ---------- */
@@ -83,24 +83,35 @@ type Target = (
 export type Handoff = (raceDistM: number | undefined) => Target | null;
 type Context = Parameters<typeof sourceOf>[2];
 
-/** Ulaz ugovora iz ulaza HM v2 — samo činjenice čarobnjaka (bez izvedenih polja; lak tempo je činjenica, 3d-dopuna). `intensity: 'std'`: v2 nema izbor
- *  intenziteta; v1 cilj ga traži kao obavezno polje (neutralna vrednost, ne odluka izvora). */
+/** Poslednji rezultat (P2: činjenica) poznat na dan `onOrBefore` (start ulaza ugovora; v1 cilj traži rezultat koji
+ *  nije posle starta) — iz ulaza čarobnjaka ili iz koraka adaptacije (`step.result`: test plana ili trka); noviji po
+ *  datumu, kod istog datuma korak. `null` = nema rezultata do tog dana. (3c-dopuna 2, obrazac 3e.) */
+export function lastResult(
+  v2: HmV2Plan,
+  onOrBefore: IsoDate
+): { distM: number; sec: number; date: string } | null {
+  const r = v2.input.recentResult;
+  let best =
+    r && r.date <= onOrBefore ? { distM: r.distanceM, sec: r.timeSec, date: r.date } : null;
+  for (const step of v2.adaptation?.steps ?? [])
+    if (step.result && step.result.date <= onOrBefore && (!best || step.result.date >= best.date))
+      best = { distM: step.result.distM, sec: step.result.sec, date: step.result.date };
+  return best;
+}
+
+/** Ulaz ugovora iz ulaza HM v2 — samo činjenice čarobnjaka (bez izvedenih polja; lak tempo je činjenica, 3d-dopuna) i
+ *  poslednji rezultat (`lastResult`). `intensity: 'std'`: v2 nema izbor intenziteta; v1 cilj ga traži kao obavezno
+ *  polje (neutralna vrednost, ne odluka izvora). */
 export function contractInput(v2: HmV2Plan, startDate?: IsoDate): ContractInput {
   const i = v2.input;
   const runDows = i.runDays.map((d) => WEEKDAYS.indexOf(d) + 1);
+  const start = startDate ?? i.startDate;
+  const pb = lastResult(v2, start);
   return {
-    startDate: startDate ?? i.startDate,
+    startDate: start,
     raceDate: i.raceDate,
     raceDistM: HM_M,
-    ...(i.recentResult
-      ? {
-          pb: {
-            distM: i.recentResult.distanceM,
-            sec: i.recentResult.timeSec,
-            date: i.recentResult.date
-          }
-        }
-      : {}),
+    ...(pb ? { pb } : {}),
     weeklyKm: i.currentWeeklyKm,
     ...(i.recentLongRunKm != null ? { recentLongRunKm: i.recentLongRunKm } : {}),
     ...(i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),
