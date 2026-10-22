@@ -131,7 +131,17 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
       q2: dose('q2')
     };
   };
-  const as = assess(plan, facts, at, chk.pace, chk.rule.weekMinKm, week1Ref);
+  // K3: dugi poslednje ne-rasteretne izgradnje generatora pre nedelje w (referenca rasterećenja bez upisanog dugog).
+  const genLongBefore = (w: number): number | null => {
+    const g = construct(plan.input, []);
+    if (!g.ok) return null;
+    const b = g.plan.weeks
+      .slice(0, w - 1)
+      .filter((x) => !x.deload && x.days.some((d) => d.role === 'long'))
+      .pop();
+    return b?.days.find((d) => d.role === 'long')?.workout.km ?? null;
+  };
+  const as = assess(plan, facts, at, chk.pace, chk.rule.weekMinKm, week1Ref, genLongBefore);
   const steps = [...prevSteps, as.step];
 
   // Zaštita (A11): dani ≤ asOf, urađeni (po dayId ili datumu) i zaključani iz prethodnog plana — konstruktor
@@ -187,7 +197,16 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
     chk.pace.kind === 'feel' && chk.rule.feelTest
   );
   if (base)
-    framesFor(base, chk.pattern, chk.input.runDays, chk.input.raceDate, chk.pace, steps, dropped);
+    framesFor(
+      base,
+      chk.pattern,
+      chk.input.runDays,
+      chk.input.raceDate,
+      chk.pace,
+      steps,
+      dropped,
+      new Set([...facts.lockedDayIds, ...doneAfter])
+    );
   const own = [...dropped].filter(([, k]) => k === steps.length - 1).map(([w]) => w);
   const byTarget = (w: number): boolean => targetReducedWeek(as.step) === w - 1;
   const a17 = (x: AdaptReason): string =>
@@ -261,14 +280,19 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
 }
 
 /**
- * Pouka 37 (dopuna organizatora, 5K-08i): km zaštićenih dana nedelja koje nisu cele ≤ asOf po ČINJENICAMA — dan u
- * prijavljenoj pauzi 0, dan sa upisanim treningom (dayId, inače datum) zbir upisanih km (completed = false → 0);
- * ostali (asOf bez zapisa, zaključani) ostaju po planu i nisu u mapi. Samo dani čiji se km razlikuje od plana.
+ * Pouka 37 (dopuna organizatora, 5K-08i i 5K-08i-b): km zaštićenih dana nedelja koje nisu cele ≤ asOf po
+ * ČINJENICAMA — dan u prijavljenoj pauzi 0, dan sa upisanim treningom (dayId, inače datum) zbir upisanih km
+ * (completed = false → 0), dan poznat iz potpune pokrivenosti bez zapisa 0 (nije trčan — činjenica, A10);
+ * ostali (bez zapisa i bez pokrivenosti, zaključan budući dan) ostaju po planu i nisu u mapi. Samo dani čiji se km razlikuje od plana.
  * Zbir čita week.keptSum100 (konstruktor i validator).
  */
 function factKmOf(
   plan: HmV2Plan,
-  facts: { workouts: readonly WorkoutFact[]; breaks: readonly { from: string; to: string }[] },
+  facts: {
+    workouts: readonly WorkoutFact[];
+    breaks: readonly { from: string; to: string }[];
+    coverage: { from: string; to: string; complete: boolean } | null;
+  },
   keep: (d: PlanDay) => boolean,
   t: number
 ): Record<string, number> {
@@ -279,11 +303,15 @@ function factKmOf(
       if (!keep(d) || !d.countsToWeek) continue;
       const x = mustDay(d.date);
       const rec = facts.workouts.filter((r) => (r.dayId ?? r.date) === d.date);
-      const km = facts.breaks.some((b) => mustDay(b.from) <= x && x <= mustDay(b.to))
-        ? 0
-        : rec.length > 0
-          ? Math.round(rec.reduce((a, r) => a + (r.completed ? r.km : 0), 0) * 100) / 100
-          : d.workout.km;
+      const cov = facts.coverage;
+      const known =
+        !!cov?.complete && mustDay(cov.from) <= x && x <= mustDay(cov.to) && rec.length === 0;
+      const km =
+        facts.breaks.some((b) => mustDay(b.from) <= x && x <= mustDay(b.to)) || known
+          ? 0
+          : rec.length > 0
+            ? Math.round(rec.reduce((a, r) => a + (r.completed ? r.km : 0), 0) * 100) / 100
+            : d.workout.km;
       if (Math.round(km * 100) !== Math.round(d.workout.km * 100)) out[d.date] = km;
     }
   }

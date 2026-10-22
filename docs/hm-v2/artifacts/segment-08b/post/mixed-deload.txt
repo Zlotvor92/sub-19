@@ -1,0 +1,12 @@
+HM {
+  tekucaRasterecenja: 449,
+  planIznadCilja: 19,
+  prosek: 3.32,
+  max: 6.56,
+  neNizeOdPrethodne: 118,
+  ex: [
+    'd3-11w-30km-v30-B-sun k3 cilj 25.4 plan 29.02',
+    'd3-13w-40km-v35-B-sun k3 cilj 33.9 plan 39.12',
+    'd3-13w-40km-v35-B-sun k5 cilj 35.9 plan 42.46'
+  ]
+}

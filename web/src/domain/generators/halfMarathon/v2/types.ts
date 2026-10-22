@@ -421,6 +421,10 @@ export interface HmV2AdaptStep {
   /** Pouka 34: umor sa asOf pre starta — referenca „poslednja izgradnja / poslednji dugi / doza" = nedelja 1
       generatora bez činjenica (nema prethodne izgradnje). */
   preStart?: PreStartRef;
+  /** K3 (HM-08b): dugi reference prinudnog rasterećenja [km] kad upisani plan pre nedelje rasterećenja nema dugi
+      ne-rasteretne izgradnje (npr. ned 1 cela u odmoru bola) — dugi poslednje ne-rasteretne izgradnje generatora
+      pre te nedelje (steps.deloadRefLong10). Samo kad ga ima. */
+  deloadRefLongKm?: number;
 }
 
 /** Pouka 34: nedelja 1 generatora bez činjenica — cilj, dugi i doze slotova. */
