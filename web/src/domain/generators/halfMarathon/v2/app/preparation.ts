@@ -50,6 +50,8 @@ export interface ContractInput {
   pb?: { distM: number; sec: number; date?: string };
   weeklyKm: number;
   recentLongRunKm?: number;
+  /** 3d-dopuna: lak tempo iz čarobnjaka (činjenica korisnika, plan po osećaju); izostavljen kad ga ulaz nema. */
+  easyPaceSecPerKm?: number;
   runDays: number;
   runDows: number[];
   lrDow?: number;
@@ -81,7 +83,7 @@ type Target = (
 export type Handoff = (raceDistM: number | undefined) => Target | null;
 type Context = Parameters<typeof sourceOf>[2];
 
-/** Ulaz ugovora iz ulaza HM v2 — samo činjenice čarobnjaka (bez izvedenih polja). `intensity: 'std'`: v2 nema izbor
+/** Ulaz ugovora iz ulaza HM v2 — samo činjenice čarobnjaka (bez izvedenih polja; lak tempo je činjenica, 3d-dopuna). `intensity: 'std'`: v2 nema izbor
  *  intenziteta; v1 cilj ga traži kao obavezno polje (neutralna vrednost, ne odluka izvora). */
 export function contractInput(v2: HmV2Plan, startDate?: IsoDate): ContractInput {
   const i = v2.input;
@@ -101,6 +103,7 @@ export function contractInput(v2: HmV2Plan, startDate?: IsoDate): ContractInput 
       : {}),
     weeklyKm: i.currentWeeklyKm,
     ...(i.recentLongRunKm != null ? { recentLongRunKm: i.recentLongRunKm } : {}),
+    ...(i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),
     runDays: runDows.length,
     runDows,
     ...(i.longRunDay ? { lrDow: WEEKDAYS.indexOf(i.longRunDay) + 1 } : {}),

@@ -13,7 +13,7 @@ import { longWarnKmOf, shorterOffer } from '../shorter.ts';
 import { feelInputs, grid02Inputs } from '../testInputs.ts';
 import type { HmV2Plan } from '../types.ts';
 import { generatedPlan, storedPlan } from './plan.ts';
-import { HM_V2_SOURCE_FORMAT } from './preparation.ts';
+import { contractInput, HM_V2_SOURCE_FORMAT } from './preparation.ts';
 
 /* FAZA 3, SEGMENT 3c — HM v2 kao IZVOR predaje „kraća distanca" (DESIGN.md § 3 P1–P5, § 8).
    - Okidač (O1): adaptirani plan ispod praga upozorenja najdužeg dugog, plan generatora za isti ulaz nije.
@@ -242,4 +242,64 @@ describe('3c: T1/T2 — politika izvora ne menja cilj; politika cilja ga menja',
           expect(t2.target, 'T2: politika cilja menja plan cilja').not.toBe(base.target);
         }
       });
+});
+
+/* 3d-dopuna (odluka organizatora): lak tempo iz čarobnjaka je činjenica korisnika → izvor ga šalje kad ga ulaz ima.
+   v1 ciljevi ga ne čitaju (plan cilja bajt-isti sa i bez polja); 5K v2 cilj ga koristi za plan po osećaju. */
+describe('3d-dopuna: lak tempo izvora (činjenica čarobnjaka)', () => {
+  const EASY = { ...BASE, easyPaceSecPerKm: 330 };
+  it('contractInput: polje prisutno kad ga ulaz ima, odsutno kad ga nema', () => {
+    const withEasy = generateHmV2(EASY);
+    const without = generateHmV2(BASE);
+    if (!withEasy.ok || !without.ok) throw new Error('generator');
+    expect(contractInput(withEasy.plan).easyPaceSecPerKm).toBe(330);
+    expect('easyPaceSecPerKm' in contractInput(without.plan)).toBe(false);
+  });
+
+  it('v1 cilj (10K, 5K) bajt-isti sa i bez polja; 5K v2 cilj ga koristi (po osećaju)', () => {
+    const src = stored(adapted(EASY, 'pause35', AS_OF));
+    const prep = select.preparationForPlan(src)!;
+    const basis = prep.basisFromPlan(src, AS_OF)!;
+    expect(basis.input).toHaveProperty('easyPaceSecPerKm', 330);
+    const { easyPaceSecPerKm: _e, ...bare } = basis.input as typeof basis.input & {
+      easyPaceSecPerKm?: number;
+    };
+    for (const dist of [10000, 5000] as const) {
+      const a = prep.buildPreparationChoice(
+        src,
+        AS_OF,
+        basis,
+        { kind: 'shorter', raceDistM: dist },
+        {}
+      );
+      const b = prep.buildPreparationChoice(
+        src,
+        AS_OF,
+        { ...basis, input: bare },
+        { kind: 'shorter', raceDistM: dist },
+        {}
+      );
+      expect('error' in a, String(dist)).toBe(false);
+      expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+    }
+    // 5K v2 cilj: izvor po osećaju (rezultat izostavljen) — sa lakim tempom plan postoji, bez njega MISSING_EASY_PACE.
+    const feel = feelInputs().find((c) => {
+      try {
+        return shorterOffer(adapted(c.input, 'pause35', AS_OF), AS_OF);
+      } catch {
+        return false;
+      }
+    })!;
+    const fsrc = stored(adapted(feel.input, 'pause35', AS_OF));
+    const v2prep = select.preparationForPlan(fsrc, { fiveKV2: true })!;
+    const fb = v2prep.basisFromPlan(fsrc, AS_OF)!;
+    const c = v2prep.buildPreparationChoice(
+      fsrc,
+      AS_OF,
+      fb,
+      { kind: 'shorter', raceDistM: 5000 },
+      {}
+    );
+    expect('error' in c ? c.error : 'ok').toBe('ok');
+  });
 });

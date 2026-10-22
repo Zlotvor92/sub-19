@@ -1,6 +1,6 @@
 /* Faza 3, 3d — M3 (HM v2 → 5K v2 cilj; dopuna 3d-10K: HM v2 i maraton v2 → 10K v2) kroz PRAVI kod:
    `select.shorterHandoffForV2Source` sa uključenim prekidačem cilja; ulaz ugovora izvora HM v2 = pravi
-   `contractInput` izvora (`halfMarathon/v2/app/preparation.ts`, 3c). Uzorak kao v2targetReal.measure.ts (svaki
+   `contractInput` izvora (`halfMarathon/v2/app/preparation.ts`, 3c; lak tempo čarobnjaka od 3d-dopune). Uzorak kao v2targetReal.measure.ts (svaki
    193./97./29. ulaz R/F/B mreže izvora, bez trajnih mreža); asOf start − 1, kraj ned. 2, ⌊N/2⌋, N − 4; scenariji
    none/under50/pause35/pain8/fatigue (činjenice 4a, `raw`; cilj sam skida dayId).
    Meri: uspeh (po preostalim nedeljama), odbijanja generatora cilja (klasa poruke), odbijanja ADAPTACIJE (generator
@@ -16,7 +16,6 @@ import { contractInput } from '../../../web/src/domain/generators/halfMarathon/v
 import { addDays, commonChecks, distOf, sampleBases, type Plan } from '../final-check/lib';
 
 declare const test: (name: string, fn: () => void, timeout?: number) => void;
-const EASY = process.env['EASY'] === '1';
 const SC = ['none', 'under50', 'pause35', 'pain8', 'fatigue'] as const;
 type Week = { w: number; start: string; days: { dow: number; id?: string }[] };
 type Out = { result?: { weeks: Week[]; fiveKV2: Plan }; error?: string };
@@ -35,9 +34,7 @@ test('M3 3d: HM v2 → 5K v2 kroz pravi kod', () => {
     const p = src.hmV2;
     const N = p.weeks.length;
     const ends = [addDays(p.input.startDate, -1), p.weeks[1]!.endDate, p.weeks[Math.floor(N / 2) - 1]!.endDate, p.weeks[N - 5]!.endDate];
-    // EASY=1: kontrafaktual — izvor šalje i lak tempo iz svog ulaza (3c `contractInput` ga ne šalje; otvoreno pitanje).
-    const ep = (p.input as { easyPaceSecPerKm?: number | null }).easyPaceSecPerKm;
-    const ci = { ...contractInput(p as never), raceDistM: 5000, goalSec: null, ...(EASY && ep != null ? { easyPaceSecPerKm: ep } : {}) };
+    const ci = { ...contractInput(p as never), raceDistM: 5000, goalSec: null };
     for (const at of ends)
       for (const sc of SC) {
         out.calls++;
@@ -77,5 +74,5 @@ test('M3 3d: HM v2 → 5K v2 kroz pravi kod', () => {
       }
   }
   out.byWeeksLeft = Object.fromEntries(Object.entries(tally).map(([k, [a, n]]) => [k, `${a}/${n} ok`]));
-  writeFileSync(new URL(EASY ? './v2target3d-5K-easy.json' : './v2target3d-5K.json', import.meta.url), JSON.stringify(out, null, 1) + '\n');
+  writeFileSync(new URL('./v2target3d-5K.json', import.meta.url), JSON.stringify(out, null, 1) + '\n');
 }, 3_600_000);

@@ -100,6 +100,11 @@ export function v1TargetForV2Source(
     const pb = (input as { pb?: { distM?: unknown; sec?: unknown } }).pb;
     if (!pb || !(Number(pb.distM) > 0) || !(Number(pb.sec) > 0))
       return { error: V1_TARGET_NEEDS_RESULT };
-    return target(sourceViewForV1(current, format), input, today, context, facts);
+    // 3d-dopuna: lak tempo je činjenica izvora v2 za v2 cilj; v1 cilj ga ne čita, a ulaz prepisuje u plan (`ulaz`),
+    // pa ga ne dobija — plan v1 ostaje bajt-isti (važi za svaki v2 izvor).
+    const { easyPaceSecPerKm: _easy, ...v1Input } = input as typeof input & {
+      easyPaceSecPerKm?: unknown;
+    };
+    return target(sourceViewForV1(current, format), v1Input, today, context, facts);
   };
 }
