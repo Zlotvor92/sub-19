@@ -1,23 +1,19 @@
 {
  "sources": 212,
  "calls": 4240,
- "ok": 545,
+ "ok": 1115,
  "genRejected": {
-  "Plan mora trajati #–# nedelja; sada #.": 275,
-  "Trenutni obim mora biti #–# km nedeljno za # dana.": 205,
+  "Plan mora trajati #–# nedelja; sada #.": 625,
+  "Trenutni obim mora biti #–# km nedeljno za # dana.": 325,
   "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno z": 275,
-  "Plan mora trajati #–# nedelja; sada #. Bez pouzdanog rezultata (nema ga ili je s": 510,
+  "Plan mora trajati #–# nedelja; sada #. Bez pouzdanog rezultata (nema ga ili je s": 160,
   "VDOT rezultata (#) mora biti #–#.": 90,
   "Plan mora trajati #–# nedelja; sada #. VDOT rezultata (#) mora biti #–#.": 10,
-  "Podržano je #, #, # dana trčanja nedeljno; zadato #.": 200,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #.": 300,
   "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno": 425,
   "Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni obim mora biti #–#": 315,
-  "Bez pouzdanog rezultata (nema ga ili je stariji od # nedelja) potreban je uobiča": 570,
-  "Trenutni obim mora biti #–# km nedeljno za # dana. Bez pouzdanog rezultata (nema": 120,
-  "Podržano je #, #, # dana trčanja nedeljno; zadato #. Bez pouzdanog rezultata (ne": 100,
-  "Početnik: najviše # dana trčanja nedeljno; zadato #. Bez pouzdanog rezultata (ne": 190,
-  "Plan mora trajati #–# nedelja; sada #. Početnik: najviše # dana trčanja nedeljno": 260,
-  "Početnik: najviše # dana trčanja nedeljno; zadato #.": 150
+  "Početnik: najviše # dana trčanja nedeljno; zadato #.": 340,
+  "Plan mora trajati #–# nedelja; sada #. Početnik: najviše # dana trčanja nedeljno": 260
  },
  "adaptRejected": 0,
  "adaptEx": [],
@@ -28,7 +24,7 @@
  "prefixMismatch": 0,
  "common": {},
  "byWeeksLeft": {
-  "6-16": "545/2485 ok",
+  "6-16": "1115/2485 ok",
   "<6": "0/1115 ok",
   ">16": "0/640 ok"
  }

@@ -1,0 +1,90 @@
+{
+ "plans": 253,
+ "flows": 3036,
+ "offers": 170,
+ "offersFeel": 46,
+ "decisions": {
+  "v1": {
+   "shorter-21097.5": 93,
+   "—": 77
+  },
+  "hmV2": {
+   "shorter-21097.5": 119,
+   "shorter-10000": 24,
+   "—": 27
+  }
+ },
+ "unavailable": {
+  "v1": {
+   "Polumaraton: Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili t": 77,
+   "#K: Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a o": 77
+  },
+  "hmV2": {
+   "Polumaraton: Plan od # nedelja je prekratak: polumaraton traži najmanje # nedelja; preporu": 42,
+   "Polumaraton: Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#.": 9,
+   "#K: Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a o": 27
+  }
+ },
+ "feelV1Unavailable": 46,
+ "feelV1Available": 0,
+ "feelWithStepResult": 31,
+ "HM v1": {
+  "choices": 170,
+  "ok": 93,
+  "duplicateDates": 0,
+  "duplicateIds": 0,
+  "pastIdMismatch": 0,
+  "idMismatch": 0,
+  "leakPlanKey": 0,
+  "leakMeta": 0,
+  "easyPaceInV1Input": 0,
+  "wrongGenerator": 0,
+  "rejected": {
+   "Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a ovaj ": 77
+  },
+  "common": {}
+ },
+ "10K v1": {
+  "choices": 170,
+  "ok": 93,
+  "duplicateDates": 0,
+  "duplicateIds": 0,
+  "pastIdMismatch": 0,
+  "idMismatch": 0,
+  "leakPlanKey": 0,
+  "leakMeta": 0,
+  "easyPaceInV1Input": 0,
+  "wrongGenerator": 0,
+  "rejected": {
+   "Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a ovaj ": 77
+  },
+  "common": {}
+ },
+ "HM v2": {
+  "choices": 170,
+  "ok": 119,
+  "duplicateDates": 0,
+  "duplicateIds": 0,
+  "pastIdMismatch": 0,
+  "idMismatch": 0,
+  "leakPlanKey": 0,
+  "leakMeta": 0,
+  "easyPaceInV1Input": 0,
+  "wrongGenerator": 0,
+  "rejected": {
+   "Plan od # nedelja je prekratak: polumaraton traži najmanje # nedelja; preporuka: #K plan.": 42,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#.": 6,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Početnik sa ": 3
+  },
+  "common": {}
+ },
+ "exec": {
+  "ok": 124,
+  "stepResultOk": 31,
+  "stepResultRejected": 0,
+  "rejected": {
+   "Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a ovaj ": 46
+  }
+ },
+ "seconds": 75.883
+}

@@ -59,7 +59,6 @@ import { qualityWorkout, warmupCooldown } from '../workouts.ts';
 import {
   ADAPTATION_V2,
   MEMBERS,
-  NO_PREPARATION_DECISION,
   NO_RUN_WALK,
   RECALIBRATION_NOT_USED,
   T3K_NOT_USED
@@ -387,8 +386,10 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     expect(isMarathonV2Plan(v2)).toBe(true);
     expect(isHmV2Plan(v2)).toBe(false);
     expect(isTenKV2Plan(v2)).toBe(false);
-    // Odluka o ograničenoj pripremi je samo maraton v1.
-    expect(preparationForPlan(v2)).toBeNull();
+    // Faza 3 (3e): maraton v2 je izvor odluke o pripremi („kraća distanca"); plan bez adaptacije nije ograničen.
+    const prep = preparationForPlan(v2);
+    expect(prep).not.toBeNull();
+    expect(prep!.isLimitedLongPreparation(v2.meta, v2)).toBe(false);
     const meta = v2.meta!;
     const withMeta = (m: Record<string, unknown>): GenPlanState => ({
       ...v2,
@@ -712,8 +713,22 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad maraton v1)
     expect(g.buildRunWalkAdjustment(p, today, null as never, { mode: 'hold' })).toEqual({
       error: NO_RUN_WALK
     });
+    // Faza 3 (3e): potvrđeno izvršenje je činjenica predaje — bez baze nema osnove; sa njom bez politike izvora.
     expect(g.executionBasis(p, today, null as never, {})).toEqual({
-      error: NO_PREPARATION_DECISION
+      error: 'Unesi ponovljivu nedeljnu bazu veću od nule, do 200 km.'
+    });
+    expect(
+      g.executionBasis(p, today, null as never, { breakDays: 14, weeklyKm: 30 })
+    ).toMatchObject({
+      policy: null,
+      input: { startDate: '2026-11-21', raceDistM: 42195 },
+      execution: {
+        date: today,
+        reason: 'confirmed-break',
+        breakDays: 14,
+        reportedBaseKm: 30,
+        startingKm: 30
+      }
     });
     expect(g.planRecalibrated(p, 50, today)).toEqual({ error: RECALIBRATION_NOT_USED });
     const ex = g.executionModel(plan, today, {});
