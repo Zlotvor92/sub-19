@@ -10,4 +10,5 @@ sa razlogom zašto ne blokiraju merge.
 | 5K QUALITY_INFEASIBLE 2 na 3 d / 12 km / VDOT 60 | nerealan ulaz; odbijanje sa porukom | edges.ts 5K |
 | lib.ts KM5K bez gornjih ivica (35/45/65) | pokriveno edges.ts i trajnom mrežom 5K-08k | 5K-08j/k |
 | Maraton v2 → 10K v2 u E2E (10K dolazi samo kad HM nije dostupan) | pokriveno domenskim testovima 3d-10K | 3g „Otvoreno" |
-| HM/5K „rasterećenje nije niže od prethodne nedelje" (HM 118, 5K 19) | odluka cilja nedelje, zapisano u DECISIONS | HM-08, mixed-deload |
+| HM/5K/maraton „rasterećenje nije niže od prethodne nedelje" (HM 118, 5K 19, maraton 178) | odluka cilja nedelje, zapisano u DECISIONS | HM-08, MAR-08, mixed-deload |
+| Pouka 37: prag viška za otpadanje kvaliteta (npr. višak ≤ 10 % cilja → kvalitet ostaje uz upozorenje) | sada Q2 otpada i za mali višak kad time staje → doza ne napreduje, kaskada cilja ±0,1–1,6 km (maraton: 17/66 tokova); novo pravilo u 4 foldera | MAR-08 otvoreno 2 |
