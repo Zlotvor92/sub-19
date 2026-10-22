@@ -13,7 +13,11 @@ import {
   deloadLong10,
   type Lengths,
   longCap10,
+  EASY_MIN10,
   longFor10,
+  mixedFloor100,
+  remainderEasy10,
+  type FreeKind,
   taperLengths
 } from './lengths.ts';
 import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
@@ -762,6 +766,136 @@ export function buildWeek(
     picksW,
     notes
   );
+}
+
+/** Pouka 37: vrsta preostalog dana (dan iz plana) — jedna definicija za konstruktor i validator: dugi i test
+    ostaju kakvi jesu, kvalitet sme da otpadne u lagan, lagan se skraćuje do 4 km. */
+export function freeKind(d: Pick<PlanDay, 'role'>): FreeKind {
+  return d.role === 'long' || d.role === 'test'
+    ? 'fixed'
+    : d.role === 'q1' || d.role === 'q2'
+      ? 'quality'
+      : 'easy';
+}
+
+/**
+ * Pouka 37 (dopuna organizatora, 5K-08i) — JEDNA funkcija zbira zaštićenih dana [0,01 km] po ČINJENICAMA: dan iz
+ * `factKm` (adapt.factKmOf: dan u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km — completed = false →
+ * 0) nosi taj km, ostali zaštićeni dani (asOf bez zapisa, zaključani) planirani km. Neodrađen dan ne „jede" cilj
+ * nedelje. Čitaju je konstruktor (remainderWeek) i validator (plan.adaptation.factKm).
+ */
+export function keptSum100(
+  kept: readonly PlanDay[],
+  factKm: Readonly<Record<string, number>>
+): number {
+  return kept.reduce(
+    (a, d) =>
+      a + (!d.countsToWeek ? 0 : d.date in factKm ? km100(factKm[d.date]!) : km100(d.workout.km)),
+    0
+  );
+}
+
+/** Pouka 37: minimum nedelje sa zaštićenim danima `kept` (po činjenicama, keptSum100) i preostalim `free` [0,01 km]
+    (lengths.mixedFloor100). */
+export function mixedMin100(
+  kept: readonly PlanDay[],
+  free: readonly PlanDay[],
+  factKm: Readonly<Record<string, number>>
+): number {
+  return (
+    keptSum100(kept, factKm) +
+    mixedFloor100(free.map((d) => ({ kind: freeKind(d), km100: km100(d.workout.km) })))
+  );
+}
+
+/** Pouka 37: oznaka napomene mešovite nedelje čiji su preostali dani sastavljeni na ostatak. */
+export const MIXED_NOTE = 'mešovita nedelja (pouka 37)';
+
+/**
+ * Pouka 37 — JEDINO mesto odluke o preostalim danima mešovite nedelje (deo dana zaštićen: ≤ asOf, urađen,
+ * zaključan; `kept` = zaštićeni dani iz prethodnog plana, zbir po činjenicama `factKm` — keptSum100). Cilj `target10` važi za celu nedelju: preostali dani
+ * sastavljene nedelje `built` (dani na zaštićenim datumima se ne upisuju) sastavljaju se na ostatak = cilj −
+ * zaštićeni, SAMO NANIŽE — kad zaštićeni dani nisu veći od sastavljenih za te datume ili sastavljeni preostali
+ * dani već staju u ostatak, nedelja ostaje kakva jeste (null). Redosled (odluka organizatora HM-08, opcija A):
+ * lagani se skraćuju do 4 km, pa kvalitet otpada u lagan dan (prvo Q2, pa Q1) — SAMO ako time ostatak staje (inače
+ * kvalitet ostaje, dopuna MAR-08); dugi i test se ne menjaju (skraćen
+ * dugi bi postao „poslednji dugi" H5/pouka 28 i spustio ciljeve sledećih nedelja). Dugi ≥ lagan važi među
+ * preostalim danima (lagani samo naniže i ≤ preostali dugi). Kad ni minimum (mixedMin100) ne staje → najmanja struktura, planirano >
+ * cilj (upozorenje MIXED_WEEK_OVER validatora, pouka 14), ne odbijanje. Trkačka nedelja ima svoje pravilo (pouke
+ * 5/30). Jedna petlja po opcijama strukture, ne uzastopno skraćivanje (Uslov 1).
+ */
+export function remainderWeek(
+  ctx: WeekContext,
+  frame: WeekFrame,
+  built: BuiltWeek,
+  kept: readonly PlanDay[],
+  target10: number,
+  factKm: Readonly<Record<string, number>>
+): BuiltWeek | null {
+  if (frame.phase === 'race' || kept.length === 0) return null;
+  const p = ctx.paces;
+  const keptDates = new Set(kept.map((d) => d.date));
+  const free = built.days.filter((d) => !keptDates.has(d.date));
+  const sum100 = (ds: readonly PlanDay[]): number =>
+    ds.reduce((a, d) => a + (d.countsToWeek ? km100(d.workout.km) : 0), 0);
+  const kept100 = keptSum100(kept, factKm);
+  const rest100 = target10 * 10 - kept100;
+  // Tolerancija planiranog (validator PLANNED_VS_TARGET): odstupanje do 0,1 km nije razlog da kvalitet otpadne.
+  const tol100 = Math.round(P.tolerance.plannedKm * 100);
+  // Samo naniže: menja se samo nedelja u kojoj zaštićeni dani prelaze ono što je sastavljeno za te datume.
+  if (
+    free.length === 0 ||
+    kept100 <= sum100(built.days.filter((d) => keptDates.has(d.date))) ||
+    kept100 + sum100(free) <= target10 * 10 + tol100
+  )
+    return null;
+  const droppable = ['q2', 'q1']
+    .map((r) => free.find((d) => d.role === r))
+    .filter((d): d is PlanDay => !!d);
+  // Dugi ≥ lagan među preostalim danima: lagan (i kvalitet koji otpada u lagan) ≤ preostali dugi.
+  const freeLong = free.find((d) => d.role === 'long');
+  const long10 = freeLong ? km10(freeLong.workout.km) : Infinity;
+  const asEasy = (d: PlanDay, e10: number): PlanDay =>
+    d.role === 'easy' && km10(d.workout.km) === e10
+      ? d
+      : day(d.date, 'easy', easyWorkout(e10 / 10, p));
+  const compose = (dropN: number): PlanDay[] | null => {
+    const dropped = new Set(droppable.slice(0, dropN).map((d) => d.date));
+    const easy = free.filter((d) => d.role === 'easy' || dropped.has(d.date));
+    const fixed = free.filter((d) => !easy.includes(d));
+    const caps10 = easy.map((d) => Math.min(km10(d.workout.km), long10));
+    const left100 = rest100 - sum100(fixed);
+    const e10 = remainderEasy10(left100, caps10) ?? remainderEasy10(left100 + tol100, caps10);
+    return e10 ? [...fixed, ...easy.map((d, i) => asEasy(d, e10[i]!))] : null;
+  };
+  let dropN = 0;
+  let c = compose(0);
+  while (!c && dropN < droppable.length) c = compose(++dropN);
+  // Najmanja struktura (samo naniže): ni bez kvaliteta ne staje → kvalitet OSTAJE (otpadanje bez dobitka gubi
+  // stimulus i lomi progresiju doze — dopuna organizatora, MAR-08), lagani 4 km; dugi i test ostaju.
+  if (!c) {
+    dropN = 0;
+    c = free.map((d) =>
+      freeKind(d) === 'easy' ? asEasy(d, Math.min(km10(d.workout.km), EASY_MIN10)) : d
+    );
+  }
+  const droppedRoles = droppable.slice(0, dropN).map((d) => d.role.toUpperCase());
+  const freeKm = fmtKm(sum100(c) / 100);
+  const over = kept100 + sum100(c) > target10 * 10 + tol100;
+  const dropNote = droppedRoles.length > 0 ? `${droppedRoles.join(' i ')} lagan` : '';
+  const note = over
+    ? `Adaptacija: ${MIXED_NOTE} — zaštićeni dani ${fmtKm(kept100 / 100)} km; ni bez kvaliteta preostali dani ne staju u ostatak ${fmtKm(Math.max(0, rest100) / 100)} km do cilja ${fmtKm(target10 / 10)} km — kvalitet ostaje, lagani do 4 km (${freeKm} km), planirano iznad cilja.`
+    : `Adaptacija: ${MIXED_NOTE} — zaštićeni dani ${fmtKm(kept100 / 100)} km; preostali dani ${freeKm} km na ostatak ${fmtKm(rest100 / 100)} km do cilja ${fmtKm(target10 / 10)} km${dropNote ? `; ${dropNote} (ne staje u ostatak)` : ''}.`;
+  const picks = built.picks
+    ? {
+        q1: droppedRoles.includes('Q1') ? null : built.picks.q1,
+        q2: droppedRoles.includes('Q2') ? null : built.picks.q2
+      }
+    : null;
+  return finish([...built.days.filter((d) => keptDates.has(d.date)), ...c], built.long10, picks, [
+    ...built.notes,
+    note
+  ]);
 }
 
 /** H8: oštrenje (2 × 2000 m RP) samo kad je ≤ RP doza tapera; taper bez RP → bez oštrenja. */

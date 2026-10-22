@@ -17,6 +17,10 @@ export interface Written {
   asOf: number;
   at: string;
   lockedDayIds: readonly string[];
+  /** Pouka 37: urađeni dani posle asOf (dayId) — zaštićeni; validator ih čita iz plan.adaptation.doneDayIds. */
+  doneDayIds: readonly string[];
+  /** Pouka 37: km zaštićenih dana po činjenicama gde se razlikuju od plana (adapt.factKmOf; week.keptSum100). */
+  factKm: Readonly<Record<string, number>>;
 }
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
@@ -48,7 +52,10 @@ export function writtenWeeks(
       return s;
     }
     const days = [...writtenDays(s, b.days, w)];
-    if (same(days, b.days)) return same(s, b) ? s : b;
+    // Pouka 37: nedelja sa zaštićenim danom čiji se km po činjenicama razlikuje od plana (factKm) je mešovita —
+    // preostali dani su sastavljeni na ostatak po činjenicama.
+    const byFact = s.days.some((d) => w.keep(d) && d.date in w.factKm);
+    if (same(days, b.days) && !byFact) return same(s, b) ? s : b;
     mixed.push(s.index);
     const kept = s.days.filter((d) => w.keep(d) && mustDay(d.date) > t).map((d) => d.date);
     const past = mustDay(s.startDate) <= t;

@@ -5,6 +5,7 @@
    H16; početnik bez testa) → po nedelji cilj (H6, volume.ts) i konstrukcija (week.ts) → validator (samo
    prijavljuje; greška = odbijanje PLAN_VIOLATES_POLICY, nikad degenerisan plan). */
 
+import { mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   longestLong10,
@@ -51,7 +52,14 @@ import {
   raceWeekTarget10,
   startKm10
 } from './volume.ts';
-import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
+import {
+  type BuiltWeek,
+  buildWeek,
+  type QualityMode,
+  raceWeek,
+  remainderWeek,
+  type WeekContext
+} from './week.ts';
 import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
 import { type Written, writtenDays, writtenWeeks } from './written.ts';
 
@@ -262,7 +270,14 @@ export function construct(
         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
         frame.index
       );
-    const w = make(fit.target10, mode)!;
+    // Pouka 37: mešovita nedelja — preostali dani na ostatak cilja (samo naniže; week.remainderWeek).
+    const w0 = make(fit.target10, mode)!;
+    const s0 = prior?.weeks[frame.index - 1];
+    const w =
+      prior && s0 && mustDay(s0.endDate) > prior.asOf
+        ? (remainderWeek(ctx, frame, w0, s0.days.filter(prior.keep), fit.target10, prior.factKm) ??
+          w0)
+        : w0;
     const notes = [...w.notes];
     if (frame.index === 1 && w.long10 !== null) notes.push(recentLongNote(w.long10, ctx));
     if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));
@@ -366,7 +381,9 @@ export function construct(
           adaptation: {
             ...plan.adaptation!,
             mixedWeeks: merged.mixed,
-            lockedDayIds: [...prior!.lockedDayIds]
+            lockedDayIds: [...prior!.lockedDayIds],
+            ...(prior!.doneDayIds.length > 0 ? { doneDayIds: [...prior!.doneDayIds] } : {}),
+            ...(Object.keys(prior!.factKm).length > 0 ? { factKm: { ...prior!.factKm } } : {})
           }
         }
       : plan
