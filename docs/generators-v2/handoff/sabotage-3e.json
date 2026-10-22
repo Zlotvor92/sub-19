@@ -45,9 +45,9 @@
     ]
   },
   {
-    "name": "3e-f plan po osećaju ne šalje lak tempo (v2 cilj odbija EASY_PACE_REQUIRED)",
+    "name": "3e-f lak tempo čarobnjaka se ne šalje (v2 cilj odbija EASY_PACE_REQUIRED)",
     "file": "src/domain/generators/marathon/v2/app/preparation.ts",
-    "find": "    ...(!pb && i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),\n",
+    "find": "    ...(i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),\n",
     "replace": "",
     "tests": [
       "src/domain/generators/marathon/v2/app/handoffSource.node.test.ts"

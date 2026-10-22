@@ -64,7 +64,7 @@ export interface ContractInput {
   pb?: { distM: number; sec: number; date?: string };
   weeklyKm: number;
   recentLongRunKm?: number;
-  /** Samo plan po osećaju (bez rezultata): lak tempo iz čarobnjaka (činjenica; v2 cilj ga traži, v1 cilj odbija). */
+  /** Lak tempo iz čarobnjaka kad postoji (činjenica, DESIGN § 8 „Lak tempo"; v2 cilj ga traži bez svežeg rezultata). */
   easyPaceSecPerKm?: number;
   runDays: number;
   runDows: number[];
@@ -118,7 +118,7 @@ export function lastResult(
 
 /** Ulaz ugovora iz ulaza maratona v2 — samo činjenice čarobnjaka (bez izvedenih polja) i poslednji rezultat
  *  (`lastResult`). `intensity: 'std'`: v2 nema izbor intenziteta; v1 cilj ga traži kao obavezno polje (neutralna
- *  vrednost, ne odluka izvora). Lak tempo samo bez rezultata (plan po osećaju), kao ulaz čarobnjaka. */
+ *  vrednost, ne odluka izvora). Lak tempo kad ga čarobnjak ima (činjenica, DESIGN § 8). */
 export function contractInput(v2: MarathonV2Plan, startDate?: IsoDate): ContractInput {
   const i = v2.input;
   const runDows = i.runDays.map((d) => WEEKDAYS.indexOf(d) + 1);
@@ -131,7 +131,7 @@ export function contractInput(v2: MarathonV2Plan, startDate?: IsoDate): Contract
     ...(pb ? { pb } : {}),
     weeklyKm: i.currentWeeklyKm,
     ...(i.recentLongRunKm != null ? { recentLongRunKm: i.recentLongRunKm } : {}),
-    ...(!pb && i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),
+    ...(i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),
     runDays: runDows.length,
     runDows,
     ...(i.longRunDay ? { lrDow: WEEKDAYS.indexOf(i.longRunDay) + 1 } : {}),

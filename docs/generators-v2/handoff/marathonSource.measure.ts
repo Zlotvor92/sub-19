@@ -27,7 +27,7 @@ test('3e tok kroz pravi kod', () => {
   const mar = distOf('MAR');
   const { bases } = sampleBases(mar, { R: 193, F: 97, B: 29 });
   const t0 = Date.now();
-  const target = () => ({ choices: 0, ok: 0, duplicateDates: 0, duplicateIds: 0, pastIdMismatch: 0, idMismatch: 0, leakPlanKey: 0, leakMeta: 0, wrongGenerator: 0, rejected: {} as Record<string, number>, common: {} as Record<string, number> });
+  const target = () => ({ choices: 0, ok: 0, duplicateDates: 0, duplicateIds: 0, pastIdMismatch: 0, idMismatch: 0, leakPlanKey: 0, leakMeta: 0, easyPaceInV1Input: 0, wrongGenerator: 0, rejected: {} as Record<string, number>, common: {} as Record<string, number> });
   const out = {
     plans: 0, flows: 0, offers: 0, offersFeel: 0,
     decisions: { v1: {} as Record<string, number>, hmV2: {} as Record<string, number> },
@@ -110,6 +110,9 @@ test('3e tok kroz pravi kod', () => {
             // (isto ime), pa se broje samo ključevi koje piše SAMO maraton v2.
             const own = name === 'HM v2' ? MARATHON_V2_SOURCE_FORMAT.metaKeys.filter((k) => !['vdot', 'paceBasis', 'goalVdot', 'goalAssessment'].includes(k)) : MARATHON_V2_SOURCE_FORMAT.metaKeys;
             if (own.some((k) => res.meta?.[k] !== undefined && (name === 'HM v2' || JSON.stringify(res.meta[k]) === JSON.stringify(src.meta?.[k])))) t.leakMeta++;
+            // DESIGN § 8 „Lak tempo": izvor šalje `easyPaceSecPerKm` kad ga čarobnjak ima; v1 cilj ga ne čita — broji se
+            // gde završi u ulazu v1 plana (`ulaz`).
+            if (name !== 'HM v2' && JSON.stringify(res['ulaz'] ?? res.meta?.['ulaz'] ?? null).includes('easyPaceSecPerKm')) t.easyPaceInV1Input++;
             const gen = select.generatorForPlan(res as never);
             const want = name === 'HM v2' ? select.HALF_MARATHON_V2_GENERATOR : name === 'HM v1' ? select.HALF_MARATHON_GENERATOR : select.TEN_K_GENERATOR;
             if (gen !== want) t.wrongGenerator++;

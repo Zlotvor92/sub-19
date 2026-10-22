@@ -37,6 +37,7 @@
   "idMismatch": 0,
   "leakPlanKey": 0,
   "leakMeta": 0,
+  "easyPaceInV1Input": 0,
   "wrongGenerator": 0,
   "rejected": {
    "Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a ovaj ": 77
@@ -52,6 +53,7 @@
   "idMismatch": 0,
   "leakPlanKey": 0,
   "leakMeta": 0,
+  "easyPaceInV1Input": 0,
   "wrongGenerator": 0,
   "rejected": {
    "Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a ovaj ": 77
@@ -67,6 +69,7 @@
   "idMismatch": 0,
   "leakPlanKey": 0,
   "leakMeta": 0,
+  "easyPaceInV1Input": 0,
   "wrongGenerator": 0,
   "rejected": {
    "Plan od # nedelja je prekratak: polumaraton traži najmanje # nedelja; preporuka: #K plan.": 42,
@@ -83,5 +86,5 @@
    "Kraća distanca nije dostupna: plan te distance (v#) traži rezultat trke ili testa, a ovaj ": 46
   }
  },
- "seconds": 88.319
+ "seconds": 75.883
 }

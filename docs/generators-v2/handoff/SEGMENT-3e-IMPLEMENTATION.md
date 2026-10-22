@@ -11,7 +11,7 @@ nisu. Verzija maratona v2 ostaje **marathon-v2.4.2**: plan ne dobija novo polje 
 | Fajl | Izmena |
 |---|---|
 | `marathon/v2/shorter.ts` (nov) | Okidač O1 `shorterOffer(plan, asOf?)`: ima adaptaciju, ispod praga, plan generatora za isti ulaz nije, trka posle `asOf`. Prag = `belowLongShort` = `lengths.longShortOf(...) !== null`. To je ista funkcija koju čitaju validator (MARATHON_LONG_SHORT) i konstruktor (napomena N11). Red tabele dolazi iz `checkInput`, kao u validatoru. |
-| `marathon/v2/app/preparation.ts` (nov) | `MARATHON_V2_SOURCE_FORMAT` je jedino mesto spiska (`marathonV2`; `vdot`, `paceBasis`, `mpVdot`, `predictedMarathonSec`, `goalVdot`, `goalAssessment`, `marathonV2Edits`). `contractInput` daje ulaz čarobnjaka bez izvedenih polja. `pb` = `lastResult`. Lak tempo ide samo bez rezultata. `rawFacts` je bez `dayId` i zaključanih dana. `basisFromPlan`: `policy: null`, `execution: null`, bez `guardBaseKm`. `executionBasis`: potvrda + opis 28 dana, `startingKm = reportedBaseKm`, start = dan posle potvrde. `preparationDecision`: HM, pa 10K, prva koju cilj pokriva. „Zadrži plan v2" je u `conditions`. Vrh opcije dolazi iz `meta.preparation` (v1) ili iz `hmV2` (`peakKm`, najduži dugi; predaja 3f). `buildPreparationChoice` radi samo „shorter". |
+| `marathon/v2/app/preparation.ts` (nov) | `MARATHON_V2_SOURCE_FORMAT` je jedino mesto spiska (`marathonV2`; `vdot`, `paceBasis`, `mpVdot`, `predictedMarathonSec`, `goalVdot`, `goalAssessment`, `marathonV2Edits`). `contractInput` daje ulaz čarobnjaka bez izvedenih polja. `pb` = `lastResult`. Lak tempo se šalje uvek kad ga čarobnjak ima (DESIGN § 8 „Lak tempo”, odluka stigla posle `pull`). `rawFacts` je bez `dayId` i zaključanih dana. `basisFromPlan`: `policy: null`, `execution: null`, bez `guardBaseKm`. `executionBasis`: potvrda + opis 28 dana, `startingKm = reportedBaseKm`, start = dan posle potvrde. `preparationDecision`: HM, pa 10K, prva koju cilj pokriva. „Zadrži plan v2" je u `conditions`. Vrh opcije dolazi iz `meta.preparation` (v1) ili iz `hmV2` (`peakKm`, najduži dugi; predaja 3f). `buildPreparationChoice` radi samo „shorter". |
 | `marathon/v2/app/{members,index,adapt}.ts` | `executionBasis` postaje član 'v2' (`NO_PREPARATION_DECISION` uklonjen). Izvoz odluke i formata. `AdaptPreview.shorterOffer?: true` samo kad ponuda postoji. |
 | `select.ts` | `marathonV2Preparation(flags)` (obrazac `hmV2Preparation`), `preparationForPlan` → maraton v2, granični kast `executionBasis`, komentar. `shorterHandoffForV2Source` nije menjan: cilj već bira prekidač (HM v2 iz 3f, 10K v2 → `V2_TARGET_NOT_READY`). |
 
@@ -44,6 +44,9 @@ kao 3c: 256). Rezultat kao okidač: test5k 615, slower 248; ponuda sa dugim ogra
 | 10K v1 | 170 | 93 | 0 / 0 | 0 | 0 | 0 / 0 | 0 | — |
 | HM v2 (prekidač, 3f) | 170 | 119 | 0 / 0 | 0 | 0 | 0 / 0 | 0 | **0** |
 | HM v1 (`executionBasis`, obim čarobnjaka) | 170 | 124 | | | | | | |
+
+`easyPaceSecPerKm` u ulazu v1 plana: 0/186. Mreža rezultata nema lak tempo, pa ova mera ne dokazuje ništa za ulaz
+koji ima i rezultat i lak tempo.
 
 Razlozi neuspeha:
 - **v1:** 77 × `V1_TARGET_NEEDS_RESULT` (O5a). To su 46 planova bez ijednog rezultata i 31 plan po osećaju čiji je
@@ -88,7 +91,7 @@ ograničen.
 - 3e-c izvedeni obim;
 - 3e-d čistač preskočen;
 - 3e-e `dayId` prelazi;
-- 3e-f bez laganog tempa;
+- 3e-f lak tempo se ne šalje;
 - 3e-g vrh ne čita `hmV2`;
 - 3e-h rezultat koraka se ne šalje;
 - 3e-i rezultat posle starta.
@@ -98,7 +101,7 @@ ograničen.
 | Komanda | Rezultat |
 |---|---|
 | `npx tsc -b --noEmit`; eslint/prettier menjanih fajlova | exit 0 |
-| `npm run check` | **EXIT 0; 296 fajlova, 3521/3521** (13 min) |
+| `npm run check` | **EXIT 0; 296 fajlova, 3521/3521** (13 min); posle `pull` + lak tempo: **298 fajlova, 3533/3533** |
 | `TEST_FULL=1 npx vitest run --changed f2e833d` | **147 fajlova, 1223/1223** (7 min) |
 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/marathon/v2` | **53 fajla, 438/438** (25,7 min) |
 | `npx playwright test e2e/marathon-v2.spec.ts e2e/hm-v2.spec.ts` | **6/6** (42 s) |
@@ -120,7 +123,7 @@ v2, maraton v2) nema red plana maratona v2, pa nema redova za osvežavanje. Sač
 
 ## 6. Otvoreno (za organizatora)
 
-1. **HM v2 (3c) nema isto što ima 3e** (nije menjano, van opsega):
+1. **HM v2 (3c) nema isto što ima 3e** (nije menjano, van opsega; lak tempo je već dopunjen u 3d):
    - `HM_V2_SOURCE_FORMAT` nema `hmV2Edits`, pa bi posle adaptacije snimak izmena HM v2 ostao u meta v1 cilja;
    - HM `contractInput` ne šalje rezultat iz koraka adaptacije (P2).
    Predlog: ista dopuna u HM v2 kao 3e (mali segment).

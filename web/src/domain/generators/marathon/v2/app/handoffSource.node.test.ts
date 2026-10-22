@@ -239,7 +239,6 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     });
     if ('error' in ex) throw new Error(ex.error);
     expect(ex.input.pb).toEqual({ distM: step.distM, sec: step.sec, date: step.date });
-    expect('easyPaceSecPerKm' in ex.input).toBe(false);
     const d = prep.preparationDecision(src, at, ex, {}, 'limited', undefined);
     expect(d.options.map((o) => o.id)).toEqual(['shorter-21097.5']);
   });
