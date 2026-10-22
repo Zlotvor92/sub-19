@@ -148,9 +148,11 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     to krši „isti zapisi = isti plan" i odlaže oporavak za nedelju).
 37. (organizator, 10K-06h sudar) Mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen): cilj nedelje važi
     za CELU nedelju. Vlasnik obima sastavlja preostale dane na ostatak = cilj − zbir zaštićenih dana, SAMO NANIŽE:
-    nikad više nego što bi za te dane sastavio bez zaštićenih (manjak se ne nadoknađuje). Struktura preostalih dana
-    kao pouka 33: lagani ≥ minimum, dugi ≥ lagan, kvalitet otpada tek kad ni sa skraćenim ne staje (pouka 35 važi);
-    kad ni minimum preostalih dana ne staje u ostatak → planirano > cilj uz upozorenje (pouka 14), ne odbijanje.
+    nikad više nego što bi za te dane sastavio bez zaštićenih (manjak se ne nadoknađuje). Redosled smanjenja
+    preostalih dana: lagani do minimuma distance, pa otpada kvalitet (drugi, pa prvi); dugi među preostalim danima
+    se NE skraćuje radi ostatka (HM-08: skraćen dugi postaje referenca poslednjeg dugog → kaskada ciljeva narednih
+    nedelja, vrh do −22 km — odbačeno); kad ni tada ne staje → planirano > cilj uz upozorenje (pouka 14), ne
+    odbijanje. Dugi ≥ lagan važi među preostalim danima (zaštićeni su činjenice). Trkačka nedelja je izuzeta (pouka 30).
     Jedno mesto odluke (ostatak računa vlasnik obima), validator čita istu funkciju. Nađeno (organizator, tekuća
     nedelja rasterećenja posle umora, asOf prvi dan nedelje k ∈ {2, 4}, svaki 97. plan): planirano > cilj 5K 22/42,
     10K 367/582, HM 291/449, maraton 426/613 tokova (prosek +2,4 … +4,2 km, max 11,9); „rasterećenje" nije niže od
