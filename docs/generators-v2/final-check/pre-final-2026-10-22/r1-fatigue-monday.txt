@@ -1,0 +1,4 @@
+5K 35 { 'tekuca+0': 22, 'bez novog': 13 }
+10K 296 { 'tekuca+0': 268, 'bez novog': 28 }
+HM 240 { 'tekuca+0': 206, 'bez novog': 34 }
+MAR 304 { 'tekuca+0': 281, 'bez novog': 23 }

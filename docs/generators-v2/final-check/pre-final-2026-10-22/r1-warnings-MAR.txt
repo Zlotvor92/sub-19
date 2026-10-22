@@ -1,0 +1,177 @@
+{
+ "dist": "MAR",
+ "k": 1,
+ "R": {
+  "plans": 21840,
+  "rejected": 0,
+  "rej": {},
+  "rules": {
+   "CAPACITY_LIMITED": {
+    "plansPct": 25.1,
+    "plans": 5484,
+    "perPlan": 1
+   },
+   "MARATHON_LONG_SHORT": {
+    "plansPct": 12,
+    "plans": 2610,
+    "perPlan": 1
+   },
+   "TAPER_MP_OVER_CAP": {
+    "plansPct": 7.1,
+    "plans": 1560,
+    "perPlan": 1
+   },
+   "DOSE_DROPPED": {
+    "plansPct": 1.6,
+    "plans": 342,
+    "perPlan": 1
+   }
+  },
+  "shownLines": {
+   "median": 1,
+   "p90": 2,
+   "max": 3
+  },
+  "examples": {
+   "TAPER_MP_OVER_CAP": "d3-12w-30km-v30-A-sat (ned 11): Taper N−1: MP 6000 m > 20 % cilja 25.3 km — minimum tapera ispred plafona (M7a).",
+   "MARATHON_LONG_SHORT": "d3-12w-30km-v40-A-sat (ned -): Najduži dugi trk u planu je 21,2 km; za maraton se preporučuje bar 26 km (M13). Ograničava ga udeo dugog (≤ 50 % nedelje sa 3 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duži dugi trk.",
+   "CAPACITY_LIMITED": "d3-12w-35km-v30-A-sat (ned -): 3 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 4–6 dana. Vrh 46,9 km umesto do 52,5 km (M6).",
+   "DOSE_DROPPED": "d4-17w-45km-v30-A-sat (ned 6): q2: doza spuštena 5000 → 4800 m (plafon, nijedan cilj nije izvodljiv bez toga)."
+  }
+ },
+ "F": {
+  "plans": 8190,
+  "rejected": 0,
+  "rej": {},
+  "rules": {
+   "CAPACITY_LIMITED": {
+    "plansPct": 36.7,
+    "plans": 3009,
+    "perPlan": 1
+   },
+   "MARATHON_LONG_SHORT": {
+    "plansPct": 9,
+    "plans": 735,
+    "perPlan": 1
+   },
+   "TAPER_MP_OVER_CAP": {
+    "plansPct": 8.4,
+    "plans": 690,
+    "perPlan": 1
+   },
+   "DOSE_DROPPED": {
+    "plansPct": 2.1,
+    "plans": 174,
+    "perPlan": 1.1
+   },
+   "DELOAD_LONG_SHORTENED": {
+    "plansPct": 1.5,
+    "plans": 126,
+    "perPlan": 1
+   }
+  },
+  "shownLines": {
+   "median": 3,
+   "p90": 4,
+   "max": 6
+  },
+  "examples": {
+   "MARATHON_LONG_SHORT": "feel-d3-12w-30km-e270-A (ned -): Najduži dugi trk u planu je 21,2 km; za maraton se preporučuje bar 26 km (M13). Ograničava ga udeo dugog (≤ 50 % nedelje sa 3 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duži dugi trk.",
+   "TAPER_MP_OVER_CAP": "feel-d3-12w-30km-e270-A (ned 11): Taper N−1: MP 6000 m > 20 % cilja 25.5 km — minimum tapera ispred plafona (M7a).",
+   "CAPACITY_LIMITED": "feel-d3-12w-35km-e510-A (ned -): 3 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 4–6 dana. Vrh 45,3 km umesto do 52,5 km (M6).",
+   "DELOAD_LONG_SHORTENED": "feel-d3-14w-30km-e270-A (ned 4): Rasterećenje (nedelja 4): dugi kraći od 0,8 × poslednjeg da lagani ostanu ≥ 5 km (M16 ispred M5).",
+   "DOSE_DROPPED": "feel-d4-17w-45km-e510-A (ned 6): q2: doza spuštena 5000 → 3000 m (plafon, nijedan cilj nije izvodljiv bez toga)."
+  }
+ },
+ "B": {
+  "plans": 1890,
+  "rejected": 0,
+  "rej": {},
+  "rules": {
+   "MARATHON_LONG_SHORT": {
+    "plansPct": 44.3,
+    "plans": 837,
+    "perPlan": 1
+   },
+   "DELOAD_LONG_SHORTENED": {
+    "plansPct": 24.3,
+    "plans": 459,
+    "perPlan": 1
+   },
+   "CAPACITY_LIMITED": {
+    "plansPct": 3.2,
+    "plans": 60,
+    "perPlan": 1
+   },
+   "LONG_SHORTER_THAN_QUALITY": {
+    "plansPct": 1.4,
+    "plans": 27,
+    "perPlan": 1
+   }
+  },
+  "shownLines": {
+   "median": 4,
+   "p90": 5,
+   "max": 6
+  },
+  "examples": {
+   "MARATHON_LONG_SHORT": "beg-d4-16w-25km-e330-A (ned -): Najduži dugi trk u planu je 15 km; za maraton se preporučuje bar 24 km (M17). Početnik: cilj je završiti maraton. Ograničava ga udeo dugog (≤ 40 % nedelje sa 4 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duži dugi trk.",
+   "DELOAD_LONG_SHORTENED": "beg-d4-16w-25km-e330-A (ned 4): Rasterećenje (nedelja 4, 8): dugi kraći od 0,8 × poslednjeg da lagani ostanu ≥ 5 km (M17 ispred M5).",
+   "CAPACITY_LIMITED": "beg-d4-16w-45km-e510-A (ned -): 4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5 dana. Vrh 66,2 km umesto do 67,5 km (M6).",
+   "LONG_SHORTER_THAN_QUALITY": "beg-d5-16w-30km-e330-A (ned 4): Kvalitetni dan duži od dugog po trajanju u 1 od 13 nedelja izgradnje i rasterećenja (ned 4: 32 > 30 min; najniži nivo zone, pouka 32); preporuka 4 dana (red sa manje dana podržava obim 30 km, dugi dobija veći udeo)."
+  }
+ },
+ "M13a": {
+  "plans": 34980,
+  "rejected": 930,
+  "rej": {
+   "RECENT_LONG_TOO_SHORT": 930
+  },
+  "rules": {
+   "CAPACITY_LIMITED": {
+    "plansPct": 24.4,
+    "plans": 8550,
+    "perPlan": 1
+   },
+   "MARATHON_LONG_SHORT": {
+    "plansPct": 19.6,
+    "plans": 6849,
+    "perPlan": 1
+   },
+   "TAPER_MP_OVER_CAP": {
+    "plansPct": 8.8,
+    "plans": 3090,
+    "perPlan": 1
+   },
+   "LONG_SHORTER_THAN_QUALITY": {
+    "plansPct": 5.2,
+    "plans": 1830,
+    "perPlan": 1
+   },
+   "DOSE_DROPPED": {
+    "plansPct": 1.6,
+    "plans": 576,
+    "perPlan": 1
+   },
+   "IDENTICAL_WEEKS": {
+    "plansPct": 0.2,
+    "plans": 78,
+    "perPlan": 1.3
+   }
+  },
+  "shownLines": {
+   "median": 1,
+   "p90": 2,
+   "max": 4
+  },
+  "examples": {
+   "MARATHON_LONG_SHORT": "recent-d3-12w-30km-v30-A-r7 (ned -): Najduži dugi trk u planu je 14,6 km; za maraton se preporučuje bar 26 km (M13). Ograničava ga udeo dugog (≤ 50 % nedelje sa 3 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duži dugi trk.",
+   "TAPER_MP_OVER_CAP": "recent-d3-12w-30km-v30-A-r7 (ned 10): Taper N−2: MP 6000 m > 20 % cilja 27 km — minimum tapera ispred plafona (M7a).",
+   "CAPACITY_LIMITED": "recent-d3-24w-30km-v30-A-r8 (ned -): 3 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 4–6 dana. Vrh 45,0 km umesto do 45,0 km (M6).",
+   "LONG_SHORTER_THAN_QUALITY": "recent-d3-12w-50km-v70-A-r9 (ned 1): Kvalitetni dan duži od dugog po trajanju u 1 od 9 nedelja izgradnje i rasterećenja (ned 1: 41 > 41 min; najniži nivo zone, pouka 32); dugi je ograničen skokom od skorašnjeg najdužeg (M13a).",
+   "DOSE_DROPPED": "recent-d4-24w-40km-v30-A-r13 (ned 9): q2: doza spuštena 5000 → 4800 m (plafon, nijedan cilj nije izvodljiv bez toga).",
+   "IDENTICAL_WEEKS": "recent-d5-16w-50km-v70-A-r5 (ned 6): Isti kvalitet kao nedelja 5: druga struktura iste doze i sledeći nivo ne staju u plafon zone (pouka 32, M10)."
+  }
+ },
+ "seconds": 1216.045
+}

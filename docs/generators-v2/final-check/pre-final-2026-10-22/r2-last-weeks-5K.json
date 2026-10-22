@@ -1,0 +1,32 @@
+{
+ "dist": "5K",
+ "step": {
+  "R": 29,
+  "F": 19,
+  "B": 11
+ },
+ "sampled": 194,
+ "excludedPermanent": 0,
+ "plans": 194,
+ "rejectedByWeek": {},
+ "flows": 68482,
+ "rejectedFlows": 85,
+ "rejected": {
+  "ADAPT_DAY_UNKNOWN:Trening #": 85
+ },
+ "rejectedEx": {
+  "ADAPT_DAY_UNKNOWN:Trening #": [
+   "r-d4-9w-15km-v38-1/N-1/taper/asOf 2026-12-25/chain2 2027-01-01: Trening 4: dayId \"2027-01-01\" nije dan plana.",
+   "r-d4-9w-15km-v38-1/N-1/taper/asOf 2026-12-26/chain2 2027-01-02: Trening 4: dayId \"2027-01-01\" nije dan plana.",
+   "r-d3-16w-12km-v58-1/N-1/taper/asOf 2027-02-08/chain2 2027-02-15: Trening 3: dayId \"2027-02-15\" nije dan plana."
+  ]
+ },
+ "common": {},
+ "commonEx": {},
+ "inv": {},
+ "invEx": {},
+ "by": {
+  "N-1/taper/chain2": 85
+ },
+ "seconds": 398.184
+}

@@ -1,0 +1,65 @@
+{
+ "pair": "MAR>5K",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 60
+ },
+ "sources": 120,
+ "handoff": {
+  "calls": 720,
+  "ok": 87,
+  "noPrefix": 0,
+  "errors": {
+   "Trenutni obim mora biti #–# km nedeljno za # dana. Rezultat mora biti sa #K, #K ili #K.": 72,
+   "Rezultat mora biti sa #K, #K ili #K.": 72,
+   "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno za # dana. ": 27,
+   "Plan mora trajati #–# nedelja; sada #. Rezultat mora biti sa #K, #K ili #K.": 36,
+   "Trenutni obim mora biti #–# km nedeljno za # dana. Rezultat mora biti sa #K, #K ili #K. Be": 15,
+   "Rezultat mora biti sa #K, #K ili #K. Bez pouzdanog rezultata (nema ga ili je stariji od # ": 18,
+   "Podržano je #, #, # dana trčanja nedeljno; zadato #. Rezultat mora biti sa #K, #K ili #K.": 21,
+   "Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni obim mora biti #–# km nedelj": 117,
+   "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno; zadato #": 48,
+   "Podržano je #, #, # dana trčanja nedeljno; zadato #. Rezultat mora biti sa #K, #K ili #K. ": 6,
+   "Trenutni obim mora biti #–# km nedeljno za # dana.": 57,
+   "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno za # dana.": 15,
+   "Plan mora trajati #–# nedelja; sada #.": 39,
+   "Podržano je #, #, # dana trčanja nedeljno; zadato #.": 18,
+   "Početnik: najviše # dana trčanja nedeljno; zadato #.": 21,
+   "Početnik: najviše # dana trčanja nedeljno; zadato #. Rezultat mora biti sa #K, #K ili #K.": 21,
+   "Plan mora trajati #–# nedelja; sada #. Početnik: najviše # dana trčanja nedeljno; zadato #": 24,
+   "Početnik: najviše # dana trčanja nedeljno; zadato #. Rezultat mora biti sa #K, #K ili #K. ": 6
+  },
+  "errorEx": [
+   "d3-12w-50km-v35-B-sat/none/asOf 2026-11-14: Trenutni obim mora biti 12–35 km nedeljno za 3 dana. Rezultat mora biti sa 3K, 5K ili 10K.",
+   "d3-12w-50km-v35-B-sat/under50/asOf 2026-11-14: Trenutni obim mora biti 12–35 km nedeljno za 3 dana. Rezultat mora biti sa 3K, 5K ili 10K.",
+   "d3-12w-50km-v35-B-sat/pain8/asOf 2026-11-14: Trenutni obim mora biti 12–35 km nedeljno za 3 dana. Rezultat mora biti sa 3K, 5K ili 10K.",
+   "d3-12w-50km-v35-B-sat/none/asOf 2026-12-12: Trenutni obim mora biti 12–35 km nedeljno za 3 dana. Rezultat mora biti sa 3K, 5K ili 10K."
+  ]
+ },
+ "adapt": {
+  "new": {
+   "flows": 5916,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  },
+  "cum": {
+   "flows": 5916,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  }
+ },
+ "seconds": 92.614
+}

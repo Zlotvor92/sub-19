@@ -1,0 +1,87 @@
+{
+ "pair": "MAR>10K",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 60
+ },
+ "sources": 120,
+ "handoff": {
+  "calls": 720,
+  "ok": 237,
+  "noPrefix": 0,
+  "errors": {
+   "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava #–# dana trčanja": 48,
+   "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Trenutni obim # km je iz": 24,
+   "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja.": 39,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#.": 69,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Trenutni obi": 36,
+   "Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju unesi lagan t": 30,
+   "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana trčanja.": 36,
+   "Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana.": 81,
+   "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana trčanja. ": 3,
+   "Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana. Nema pouzdanog rezultata": 6,
+   "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#.": 9,
+   "Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–# km); uz ": 21,
+   "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#. Poče": 15,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Početnik sa ": 6,
+   "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana. Početnik: tre": 27,
+   "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana.": 12,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Početnik: #K": 18,
+   "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana. Nema pouzdano": 3
+  },
+  "errorEx": [
+   "d3-12w-50km-v35-B-sat/none/asOf 2026-11-14: Trenutni obim 50 km je iznad 40 km za 3 dana trčanja: za 50 km plan podržava 4–6 dana trčanja.",
+   "d3-12w-50km-v35-B-sat/under50/asOf 2026-11-14: Trenutni obim 50 km je iznad 40 km za 3 dana trčanja: za 50 km plan podržava 4–6 dana trčanja.",
+   "d3-12w-50km-v35-B-sat/pain8/asOf 2026-11-14: Trenutni obim 50 km je iznad 40 km za 3 dana trčanja: za 50 km plan podržava 4–6 dana trčanja.",
+   "d3-12w-50km-v35-B-sat/none/asOf 2026-12-12: Plan od 6 nedelja je prekratak: 10K plan traži najmanje 8 nedelja. Trenutni obim 50 km je iznad 40 km za 3 dana trčanja: za 50 km plan podržava 4–6 dana trčanja."
+  ]
+ },
+ "adapt": {
+  "new": {
+   "flows": 16116,
+   "rejectedFlows": 48,
+   "rejected": {
+    "WEEK_INFEASIBLE:Nedelja #": 48
+   },
+   "rejectedEx": {
+    "WEEK_INFEASIBLE:Nedelja #": [
+     "new d3-14w-40km-v50-A-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "new d3-14w-40km-v50-A-sat/pain8@2026-11-14→10K/t1end 2026-11-21/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "new d3-19w-40km-v50-A-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1wed/fatigue": 24,
+    "t1end/fatigue": 24
+   }
+  },
+  "cum": {
+   "flows": 16116,
+   "rejectedFlows": 48,
+   "rejected": {
+    "WEEK_INFEASIBLE:Nedelja #": 48
+   },
+   "rejectedEx": {
+    "WEEK_INFEASIBLE:Nedelja #": [
+     "cum d3-14w-40km-v50-A-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "cum d3-14w-40km-v50-A-sat/pain8@2026-11-14→10K/t1end 2026-11-21/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "cum d3-19w-40km-v50-A-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1wed/fatigue": 24,
+    "t1end/fatigue": 24
+   }
+  }
+ },
+ "seconds": 277.508
+}

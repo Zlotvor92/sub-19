@@ -13,7 +13,7 @@ import { longWarnKmOf, shorterOffer } from '../shorter.ts';
 import { feelInputs, grid02Inputs } from '../testInputs.ts';
 import type { HmV2Plan } from '../types.ts';
 import { generatedPlan, storedPlan } from './plan.ts';
-import { contractInput, HM_V2_SOURCE_FORMAT } from './preparation.ts';
+import { contractInput, HM_V2_SOURCE_FORMAT, lastResult } from './preparation.ts';
 
 /* FAZA 3, SEGMENT 3c — HM v2 kao IZVOR predaje „kraća distanca" (DESIGN.md § 3 P1–P5, § 8).
    - Okidač (O1): adaptirani plan ispod praga upozorenja najdužeg dugog, plan generatora za isti ulaz nije.
@@ -114,7 +114,7 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
     expect('error' in base && base.error).toMatch(/samo kraću distancu/);
   });
 
-  it('prekidač cilja v2 uključen → 10K nedostupan sa razlogom (O4a), 5K iz 5K v2 (3d); nikad v1', () => {
+  it('prekidač cilja v2 uključen → 10K iz 10K v2 (3d-10K), prva koju cilj pokriva; nikad v1', () => {
     const prep = select.preparationForPlan(source, { fiveKV2: true, tenKV2: true })!;
     const d = prep.preparationDecision(
       source,
@@ -124,9 +124,24 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
       'limited',
       undefined
     );
-    // 3d: 5K v2 je cilj predaje (`fiveK/v2/app/handoffTarget.node.test.ts`); 10K v2 i dalje nedostupan sa razlogom.
-    expect(d.unavailable).toEqual([`10K: ${select.V2_TARGET_NOT_READY}`]);
-    expect(d.options.map((o) => o.id)).toEqual(['shorter-5000']);
+    // 3d: 5K v2 i 10K v2 su ciljevi predaje (`<distanca>/v2/app/handoffTarget.node.test.ts`); nema NOT_READY.
+    expect(d.unavailable).toEqual([]);
+    expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
+    // Vrh opcije iz plana 10K v2 cilja (strukturno, `tenKV2`; nalaz 3g), > 0.
+    const c = prep.buildPreparationChoice(
+      source,
+      today,
+      prep.basisFromPlan(source, today)!,
+      { kind: 'shorter', raceDistM: 10000 },
+      {}
+    );
+    if ('error' in c) throw new Error(c.error);
+    const pk = v2Peaks(c.result, 'tenKV2');
+    expect(pk.longKm).toBeGreaterThan(0);
+    expect([d.options[0]!.peakLongRunKm, d.options[0]!.peakWeeklyKm]).toEqual([
+      pk.longKm,
+      pk.weeklyKm
+    ]);
   });
 
   it('plan po osećaju → v1 cilj nedostupan (O5a)', () => {
@@ -157,6 +172,20 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
     ]);
   });
 });
+
+/** Vrh plana v2 cilja (bez prefiksa izvora): najduži dugi i `peakKm` objekta plana v2. */
+function v2Peaks(result: object, key: string): { longKm: number; weeklyKm: number } {
+  const p = (
+    result as Record<
+      string,
+      { peakKm: number; weeks: { days: { role: string; workout: { km: number } }[] }[] }
+    >
+  )[key]!;
+  const longs = p.weeks.flatMap((w) =>
+    w.days.filter((d) => d.role === 'long').map((d) => d.workout.km)
+  );
+  return { longKm: Math.max(...longs), weeklyKm: p.peakKm };
+}
 
 /* T1/T2: ceo tok izvor → predaja → cilj, bez i sa potvrđenom pauzom (`executionBasis`). Poredi se budući deo plana
    cilja (dani posle danas) i ocena pripreme; prošli dani su istorija izvora (graft ih čuva). */
@@ -301,5 +330,80 @@ describe('3d-dopuna: lak tempo izvora (činjenica čarobnjaka)', () => {
       {}
     );
     expect('error' in c ? c.error : 'ok').toBe('ok');
+  });
+});
+
+/* 3c-dopuna 2 (obrazac 3e): snimak izmena HM v2 ne prelazi u v1 cilj; poslednji rezultat (ulaz ili korak adaptacije)
+   koji nije posle starta ulaza ugovora ide kao `pb` — kroz `executionBasis` (start = sutra) i rezultat koraka. */
+describe('3c-dopuna 2: format izmena i poslednji rezultat', () => {
+  // Predaja u nedelji 2 plana (start 2026-11-02): rezultat koraka je posle starta plana.
+  const AT = '2026-11-12' as IsoDate;
+  const feel = feelInputs().find((c) => {
+    try {
+      return shorterOffer(adapted(c.input, 'pause35', AT), AT);
+    } catch {
+      return false;
+    }
+  })!;
+  /** Plan po osećaju posle adaptacije: pauza 35 d + test 5 km na dan AT (rezultat koraka). */
+  const feelWithTest = (): HmV2Plan => {
+    const g = generateHmV2(feel.input);
+    if (!g.ok) throw new Error('generator');
+    const f = factsOf(g.plan, 'pause35', AT);
+    const r = adaptHmV2(g.plan, { ...f, results: factsOf(g.plan, 'test5k', AT)['results'] }, AT);
+    if (!r.ok) throw new Error('adaptacija');
+    return r.plan;
+  };
+
+  it('v1 cilj (10K, 5K): bez `hmV2Edits` u meta (snimak izmena posle adaptacije)', () => {
+    const s = stored(adapted(BASE, 'pause35', AS_OF));
+    const src = { ...s, meta: { ...s.meta, hmV2Edits: { alts: {}, moves: {} } } } as GenPlanState;
+    expect(HM_V2_SOURCE_FORMAT.metaKeys).toContain('hmV2Edits');
+    const prep = select.preparationForPlan(src)!;
+    const basis = prep.basisFromPlan(src, AS_OF)!;
+    for (const dist of [10000, 5000] as const) {
+      const c = prep.buildPreparationChoice(
+        src,
+        AS_OF,
+        basis,
+        { kind: 'shorter', raceDistM: dist },
+        {}
+      );
+      if ('error' in c) throw new Error(c.error);
+      expect('hmV2Edits' in (c.result.meta ?? {}), String(dist)).toBe(false);
+    }
+  });
+
+  it('lastResult: rezultat koraka samo kad nije posle starta; basisFromPlan → nedostupno, executionBasis → v1 plan', () => {
+    const v2 = feelWithTest();
+    expect(v2.input.recentResult ?? null).toBeNull();
+    expect(lastResult(v2, v2.input.startDate)).toBeNull();
+    expect(lastResult(v2, AT)).toEqual({ distM: 5000, sec: 1500, date: AT });
+    expect(contractInput(v2, '2026-11-13').pb).toEqual({
+      distM: 5000,
+      sec: 1500,
+      date: AT
+    });
+    const src = stored(v2);
+    const prep = select.preparationForPlan(src)!;
+    const d = prep.preparationDecision(
+      src,
+      AT,
+      prep.basisFromPlan(src, AT)!,
+      {},
+      'limited',
+      undefined
+    );
+    expect(d.unavailable).toEqual([
+      `10K: ${V1_TARGET_NEEDS_RESULT}`,
+      `5K: ${V1_TARGET_NEEDS_RESULT}`
+    ]);
+    const ex = select.HALF_MARATHON_V2_GENERATOR.executionBasis(src, AT, null as never, {
+      weeklyKm: 30
+    });
+    if ('error' in ex) throw new Error(ex.error);
+    const c = prep.buildPreparationChoice(src, AT, ex, { kind: 'shorter', raceDistM: 10000 }, {});
+    if ('error' in c) throw new Error(c.error);
+    expect(select.generatorForPlan(select.stampForStorage(c.result))?.id).toBe('10k');
   });
 });

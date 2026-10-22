@@ -16,6 +16,7 @@ import { alignedStart } from './generate.ts';
 import { targetInput } from './handoffTarget.ts';
 import { PREFIX_KEY, prefixOf } from './plan.ts';
 import { FULL } from '../../../../../test/level';
+import { handoffFuture as tenKV2HandoffFuture } from '../../../tenK/v2/app/handoffTarget.ts';
 
 /* FAZA 3, SEGMENT 3d — 5K v2 kao CILJ predaje „kraća distanca" (DESIGN.md § 3 P3/P5, § 8 O3a, O4a, O6b, O8a).
    Obrazac 3f (`halfMarathon/v2/app/handoffTarget.node.test.ts`). Izvor: HM v2 — plan za upis iz generatora HM v2,
@@ -176,7 +177,7 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
     expect(handoff(src, asOf, 'none', null, contract(src)).result).toBeDefined();
   });
 
-  it('pravi izvor: odluka HM v2 (5K v2 uključen, 10K v2 NOT_READY) nudi 5K; izbor gradi plan 5K v2 sa prefiksom', () => {
+  it('pravi izvor: odluka HM v2 (5K v2 i 10K v2 uključeni) 10K v2 odbija doslovno (O8a), nudi 5K; izbor gradi plan 5K v2 sa prefiksom', () => {
     const base = grid02Inputs().find((x) => x.id === 'd3-10w-35km-v30-A-sat')!.input;
     const g = select.generateHmV2Plan(base as never);
     if (!g.ok) throw new Error('generator');
@@ -187,7 +188,9 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
     const prep = select.preparationForPlan(src, { fiveKV2: true, tenKV2: true })!;
     const basis = prep.basisFromPlan(src, asOf)!;
     const d = prep.preparationDecision(src, asOf, basis, {}, 'limited', undefined);
-    expect(d.unavailable).toEqual([`10K: ${select.V2_TARGET_NOT_READY}`]);
+    expect(d.unavailable).toEqual([
+      '10K: Plan od 6 nedelja je prekratak: 10K plan traži najmanje 8 nedelja.'
+    ]);
     expect(d.options.map((o) => o.id)).toEqual(['shorter-5000']);
     const ch = prep.buildPreparationChoice(
       src,
@@ -201,6 +204,13 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
     expect(select.isFiveKV2Plan(res)).toBe(true);
     expect('hmV2' in res).toBe(false);
     expect(prefixOf(res)!.weeks).toEqual(src.weeks.filter((w) => w.start <= asOf));
+    // Vrh opcije iz plana 5K v2 cilja (strukturno, `fiveKV2`, bez prefiksa izvora; nalaz 3g), > 0.
+    const v2 = (res as unknown as { fiveKV2: FiveKV2Plan }).fiveKV2;
+    const longKm = Math.max(
+      ...v2.weeks.flatMap((w) => w.days.filter((x) => x.role === 'long').map((x) => x.workout.km))
+    );
+    expect(longKm).toBeGreaterThan(0);
+    expect([d.options[0]!.peakLongRunKm, d.options[0]!.peakWeeklyKm]).toEqual([longKm, v2.peakKm]);
   });
 });
 
@@ -270,7 +280,7 @@ describe('3d: T1/T2', () => {
 });
 
 describe('3d: format i izbor', () => {
-  it('prekidač 5K v2 isključen → v1 cilj (5K v1); uključen → 5K v2 (nije NOT_READY); 10K v2 i dalje NOT_READY', () => {
+  it('prekidač 5K v2 isključen → v1 cilj (5K v1); uključen → 5K v2 (nije NOT_READY); 10K v2 → cilj 10K v2', () => {
     const off = select.shorterHandoffForV2Source({ fiveKV2: false }, HM_V2_SOURCE_FORMAT)(5000);
     const on = select.shorterHandoffForV2Source(ON, HM_V2_SOURCE_FORMAT)(5000)!;
     expect(off).not.toBe(on);
@@ -281,9 +291,9 @@ describe('3d: format i izbor', () => {
       { fiveKV2: true, tenKV2: true },
       HM_V2_SOURCE_FORMAT
     )(10000)!;
-    expect((ten as unknown as () => unknown)()).toEqual({ error: select.V2_TARGET_NOT_READY });
+    expect(ten).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.9.0, KNOWN_VERSIONS ∪ 5k-v2.8.1`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.10.0, KNOWN_VERSIONS ∪ 5k-v2.9.0`, () => {
     const r = select.generateFiveKV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 10 - 1),
@@ -294,11 +304,11 @@ describe('3d: format i izbor', () => {
     } as never);
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.9.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.10.0');
     expect(r.plan.weeks.map((w) => w.days.map((d) => d.id))[0]![0]).toBe('g1d1');
     expect(
       select.FIVE_K_V2_GENERATOR.planPolicy({
-        meta: { policyId: '5k-v2', policyVersion: '5k-v2.8.1' }
+        meta: { policyId: '5k-v2', policyVersion: '5k-v2.9.0' }
       } as never).status
     ).toBe('current');
   });

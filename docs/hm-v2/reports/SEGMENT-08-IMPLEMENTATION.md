@@ -78,6 +78,9 @@ Rana mreža × k ∈ 2 … N − 3 × asOf svaki dan nedelje k (umor kraj k − 
 2. Handoff nedirnut. 6. `hm-v2.6.0`. 7. Bez uvoza van foldera. 8. Mreža: lagan ≥ 4 km, dugi ≥ lagan među
    preostalim, planirano ≤ cilj ili upozorenje.
 
+K5 (organizator, `two-step.ts HM 193 97 29`, posle merge-a sa granom): inv 0 (na 46e72eb 12 / 20 672 „dugi < lagan",
+plan > cilj bez upozorenja); preostalo 12 odbijanja TEST (zaključan test, K1 → HM-08b; `two-step-locked.after.json`).
+
 ## Otvoreno
 
 - „Dva testa" (38 / 5237, pre-postojeće): zaštićen test + umor pomera test (A13) — HM-08b (K1).

@@ -1,0 +1,78 @@
+{
+ "pair": "HM>10K",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 60
+ },
+ "sources": 74,
+ "handoff": {
+  "calls": 444,
+  "ok": 228,
+  "noPrefix": 0,
+  "errors": {
+   "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava #–# dana trčanja": 15,
+   "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Trenutni obim # km je iz": 9,
+   "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja.": 69,
+   "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana trčanja.": 21,
+   "Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana.": 15,
+   "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#.": 15,
+   "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana.": 42,
+   "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#. Poče": 21,
+   "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Početnik: #K plan radi s": 9
+  },
+  "errorEx": [
+   "d3-10w-45km-v35-B-sat/none/asOf 2026-11-14: Trenutni obim 45 km je iznad 40 km za 3 dana trčanja: za 45 km plan podržava 4–6 dana trčanja.",
+   "d3-10w-45km-v35-B-sat/under50/asOf 2026-11-14: Trenutni obim 45 km je iznad 40 km za 3 dana trčanja: za 45 km plan podržava 4–6 dana trčanja.",
+   "d3-10w-45km-v35-B-sat/pain8/asOf 2026-11-14: Trenutni obim 45 km je iznad 40 km za 3 dana trčanja: za 45 km plan podržava 4–6 dana trčanja.",
+   "d3-10w-45km-v35-B-sat/none/asOf 2026-12-05: Plan od 5 nedelja je prekratak: 10K plan traži najmanje 8 nedelja. Trenutni obim 45 km je iznad 40 km za 3 dana trčanja: za 45 km plan podržava 4–6 dana trčanja."
+  ]
+ },
+ "adapt": {
+  "new": {
+   "flows": 15504,
+   "rejectedFlows": 34,
+   "rejected": {
+    "WEEK_INFEASIBLE:Nedelja #": 34
+   },
+   "rejectedEx": {
+    "WEEK_INFEASIBLE:Nedelja #": [
+     "new d3-14w-25km-v60-C-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "new d3-14w-25km-v60-C-sat/pain8@2026-11-14→10K/t1end 2026-11-21/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "new d3-19w-25km-v60-C-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1wed/fatigue": 17,
+    "t1end/fatigue": 17
+   }
+  },
+  "cum": {
+   "flows": 15504,
+   "rejectedFlows": 34,
+   "rejected": {
+    "WEEK_INFEASIBLE:Nedelja #": 34
+   },
+   "rejectedEx": {
+    "WEEK_INFEASIBLE:Nedelja #": [
+     "cum d3-14w-25km-v60-C-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "cum d3-14w-25km-v60-C-sat/pain8@2026-11-14→10K/t1end 2026-11-21/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.",
+     "cum d3-19w-25km-v60-C-sat/pain8@2026-11-14→10K/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1wed/fatigue": 17,
+    "t1end/fatigue": 17
+   }
+  }
+ },
+ "seconds": 263.923
+}

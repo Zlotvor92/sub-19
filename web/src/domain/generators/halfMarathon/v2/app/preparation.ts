@@ -16,7 +16,8 @@ import { longestLong10 } from '../lengths.ts';
 import type { HmV2Plan } from '../types.ts';
 import { v2Of } from './adapt.ts';
 import { addDays, isIsoDate } from './date.ts';
-import { buildFacts } from './facts.ts';
+import { buildFacts, EDITS_KEY } from './facts.ts';
+import { PREFIX_KEY } from './plan.ts';
 import { sourceOf } from './members.ts';
 import type { AppPlan, IsoDate } from './types.ts';
 
@@ -26,11 +27,13 @@ const SHORTER = [10000, 5000] as const;
 const NAME: Readonly<Record<number, string>> = { 10000: '10K', 5000: '5K' };
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
-/** Ključ objekta plana v2 i meta ključevi koje piše samo HM v2 (ili koji opisuju cilj izvora) — v1 cilj ih ne nasleđuje
+/** Ključ objekta plana v2, ostali ključevi plana i meta ključevi koje piše samo HM v2 (ili koji opisuju cilj izvora) — v1 cilj ih ne nasleđuje
  *  (`handoff.ts` `sourceViewForV1`). Ključeve koje piše i v1 cilj (`trainingVdot`, `racePace` …) cilj prepisuje. */
 export const HM_V2_SOURCE_FORMAT = {
   planKey: 'hmV2',
-  metaKeys: ['vdot', 'paceBasis', 'predictedHmSec', 'goalVdot', 'goalAssessment']
+  // REVIEW-3 #1: plan HM v2 nastao predajom (maraton v2 → HM v2, 3f) nosi nedelje izvora pod ključem najvišeg nivoa.
+  planKeys: [PREFIX_KEY],
+  metaKeys: ['vdot', 'paceBasis', 'predictedHmSec', 'goalVdot', 'goalAssessment', EDITS_KEY]
 } as const;
 
 /* ---------- lokalni strukturni oblici ugovora (tip formata daje granica u `select.ts`) ---------- */
@@ -71,7 +74,10 @@ interface HandoffFacts {
   meta?: Record<string, unknown>;
   raw?: Readonly<Record<string, unknown>>;
 }
-type Built = { result: { meta?: Meta } & object; coverage: 'full' | 'distance' | 'insufficient' };
+type Built = {
+  result: { meta?: Meta } & Record<string, unknown>;
+  coverage: 'full' | 'distance' | 'insufficient';
+};
 type Target = (
   current: never,
   input: ContractInput,
@@ -83,24 +89,35 @@ type Target = (
 export type Handoff = (raceDistM: number | undefined) => Target | null;
 type Context = Parameters<typeof sourceOf>[2];
 
-/** Ulaz ugovora iz ulaza HM v2 — samo činjenice čarobnjaka (bez izvedenih polja; lak tempo je činjenica, 3d-dopuna). `intensity: 'std'`: v2 nema izbor
- *  intenziteta; v1 cilj ga traži kao obavezno polje (neutralna vrednost, ne odluka izvora). */
+/** Poslednji rezultat (P2: činjenica) poznat na dan `onOrBefore` (start ulaza ugovora; v1 cilj traži rezultat koji
+ *  nije posle starta) — iz ulaza čarobnjaka ili iz koraka adaptacije (`step.result`: test plana ili trka); noviji po
+ *  datumu, kod istog datuma korak. `null` = nema rezultata do tog dana. (3c-dopuna 2, obrazac 3e.) */
+export function lastResult(
+  v2: HmV2Plan,
+  onOrBefore: IsoDate
+): { distM: number; sec: number; date: string } | null {
+  const r = v2.input.recentResult;
+  let best =
+    r && r.date <= onOrBefore ? { distM: r.distanceM, sec: r.timeSec, date: r.date } : null;
+  for (const step of v2.adaptation?.steps ?? [])
+    if (step.result && step.result.date <= onOrBefore && (!best || step.result.date >= best.date))
+      best = { distM: step.result.distM, sec: step.result.sec, date: step.result.date };
+  return best;
+}
+
+/** Ulaz ugovora iz ulaza HM v2 — samo činjenice čarobnjaka (bez izvedenih polja; lak tempo je činjenica, 3d-dopuna) i
+ *  poslednji rezultat (`lastResult`). `intensity: 'std'`: v2 nema izbor intenziteta; v1 cilj ga traži kao obavezno
+ *  polje (neutralna vrednost, ne odluka izvora). */
 export function contractInput(v2: HmV2Plan, startDate?: IsoDate): ContractInput {
   const i = v2.input;
   const runDows = i.runDays.map((d) => WEEKDAYS.indexOf(d) + 1);
+  const start = startDate ?? i.startDate;
+  const pb = lastResult(v2, start);
   return {
-    startDate: startDate ?? i.startDate,
+    startDate: start,
     raceDate: i.raceDate,
     raceDistM: HM_M,
-    ...(i.recentResult
-      ? {
-          pb: {
-            distM: i.recentResult.distanceM,
-            sec: i.recentResult.timeSec,
-            date: i.recentResult.date
-          }
-        }
-      : {}),
+    ...(pb ? { pb } : {}),
     weeklyKm: i.currentWeeklyKm,
     ...(i.recentLongRunKm != null ? { recentLongRunKm: i.recentLongRunKm } : {}),
     ...(i.easyPaceSecPerKm != null ? { easyPaceSecPerKm: i.easyPaceSecPerKm } : {}),
@@ -212,6 +229,28 @@ function build(
   );
 }
 
+/** Ključevi objekta plana v2 cilja (10K v2, 5K v2; 3d) — čitaju se strukturno, bez uvoza tipova cilja (uslov 7). */
+const V2_TARGET_KEYS = ['tenKV2', 'fiveKV2'] as const;
+/** Vrh dugog i obima plana cilja: v1 cilj — `meta.preparation`; v2 cilj — objekat plana v2 (`peakKm`, najduži dugi
+ *  njegovih nedelja; prefiks izvora nije u njemu). Obrazac 3e (`marathon/v2/app/preparation.ts`), kopija. */
+type V2Peaks = {
+  peakKm?: number;
+  weeks?: readonly { days: readonly { role?: string; workout?: { km?: number } }[] }[];
+};
+function peaksOf(result: Built['result']): { longKm: number; weeklyKm: number } {
+  const prep = (
+    (result.meta ?? {}) as { preparation?: { peakLongRunKm?: number; peakWeeklyKm?: number } }
+  ).preparation;
+  if (prep) return { longKm: prep.peakLongRunKm ?? 0, weeklyKm: prep.peakWeeklyKm ?? 0 };
+  const found: unknown = V2_TARGET_KEYS.map((k) => result[k]).find((x) => x != null);
+  const v2 = found as V2Peaks | undefined;
+  if (!v2) return { longKm: 0, weeklyKm: 0 };
+  const longs = (v2.weeks ?? []).flatMap((w) =>
+    w.days.filter((d) => d.role === 'long').map((d) => d.workout?.km ?? 0)
+  );
+  return { longKm: Math.max(0, ...longs), weeklyKm: v2.peakKm ?? 0 };
+}
+
 export interface Option {
   id: string;
   choice: { kind: 'shorter'; raceDistM: number };
@@ -260,7 +299,6 @@ export function preparationDecision(
     }
     const meta = (built.result.meta ?? {}) as {
       raceName?: string;
-      preparation?: { peakLongRunKm?: number; peakWeeklyKm?: number };
     };
     const name = meta.raceName ?? NAME[dist]!;
     options.push({
@@ -275,8 +313,8 @@ export function preparationDecision(
       raceDistM: dist,
       goalSec: null,
       coverage: built.coverage,
-      peakLongRunKm: meta.preparation?.peakLongRunKm ?? 0,
-      peakWeeklyKm: meta.preparation?.peakWeeklyKm ?? 0
+      peakLongRunKm: peaksOf(built.result).longKm,
+      peakWeeklyKm: peaksOf(built.result).weeklyKm
     });
     break;
   }

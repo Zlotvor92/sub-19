@@ -1,0 +1,67 @@
+{
+ "input": "/home/user/sub-19/docs/10k-v2/artifacts/segment-06h/sabotage-06h.json",
+ "head": "a650802",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 171,
+ "hashBefore": "35927d7d3b81a15f003801e741a9859f0bc4447ab16d39390b83d865953c6251",
+ "hashAfter": "35927d7d3b81a15f003801e741a9859f0bc4447ab16d39390b83d865953c6251",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "06h-a stara strana: referenca umora pre starta po fromWeek (konstruktor i validator)",
+   "files": [
+    "src/domain/generators/tenK/v2/volume.ts",
+    "src/domain/generators/tenK/v2/generate.ts",
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "test": "06h (pouke 23, 34, 36): umor pre starta sa asOf = prvi dan plana > d3-8w-20km-v30-A-sat (start ned 2026-11-01, dan 1 dugi 9 km): asOf = start → rasterećenje ned 1 kao start − 1, dan 1 upisan",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 1: nijedan cilj od 9 km naviše ne može da se sastavi po pravilima.\",\"week\":1}],\"violations\":[]}"
+   },
+   "failedCount": 2,
+   "hashBefore": "35927d7d3b81a15f003801e741a9859f0bc4447ab16d39390b83d865953c6251",
+   "hashSabotaged": "b8ef4690e8cbb1e4c042b4ed9b046bc2501ffdbd80be875e32da762b5a8c8c47",
+   "hashAfter": "35927d7d3b81a15f003801e741a9859f0bc4447ab16d39390b83d865953c6251",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 83.4
+  },
+  {
+   "index": 2,
+   "name": "06h-b trajna mreža bez start + 0 (asOf mreže = start − 1)",
+   "files": [
+    "src/domain/generators/tenK/v2/testInputs.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/repeatGrid.node.test.ts",
+    "test": "trajne mreže ponavljanja (umor, bol, zaštićeni dani) > 06h (pouke 23, 34, 36): asOf = prvi dan plana, svi scenariji mreže E i rezultat → 0 odbijanja, adaptInvariants prazno, prema b8fcf22 menja se samo ranije odbijen umor; umor = start − 1 osim dana 1",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "35927d7d3b81a15f003801e741a9859f0bc4447ab16d39390b83d865953c6251",
+   "hashSabotaged": "08d6e39205b2ff53fa6d8339e3d8c001367df1381332e2036edfdec103d36141",
+   "hashAfter": "35927d7d3b81a15f003801e741a9859f0bc4447ab16d39390b83d865953c6251",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 87.5
+  }
+ ]
+}

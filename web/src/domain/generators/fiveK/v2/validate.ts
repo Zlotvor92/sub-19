@@ -8,7 +8,7 @@ import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import { isShortPrep, periodize, phaseCounts, testWeekOf } from './periodize.ts';
 import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { validateRunWalk } from './runWalkValidate.ts';
-import { SECOND_EASY_NOTE, secondQualityEasy } from './week.ts';
+import { easyMinOf, mixedFloorKm, SECOND_EASY_NOTE, secondQualityEasy } from './week.ts';
 import { athleteAt, baseAthlete, doseResetDate, inRange, pacesAt, vdotAt } from './steps.ts';
 import type {
   FiveKV2Plan,
@@ -445,6 +445,36 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     const planned = w.days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0);
     if (Math.abs(planned - w.plannedKm) > tolKm)
       err('ARITHMETIC', 'Planirani km nedelje ≠ zbir dana.', w.index);
+    // 2.10.0 (pouka 37): mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan; trkačka izuzeta) — cilj važi za celu nedelju,
+    // planirano ≤ cilj; iznad samo kad ni najmanji preostali dani ne staju u ostatak (week.mixedFloorKm — ista
+    // funkcija kao konstruktor week.mixedRemainder) → upozorenje (pouka 14), inače greška.
+    if (ad && mixed.has(w.index) && w.phase !== 'race' && mustDay(w.endDate) > mustDay(ad.asOf)) {
+      const prot = (d: PlanDay): boolean => mustDay(d.date) <= mustDay(ad.asOf) || lockedFuture(d);
+      const kept = w.days.filter(prot);
+      const free = w.days.filter((d) => !prot(d));
+      const kmOf = (ds: readonly PlanDay[]): number =>
+        ds.reduce((x, d) => x + (d.countsToWeek ? d.workout.km : 0), 0);
+      if (kept.length > 0 && free.length > 0 && w.plannedKm > w.targetKm + tolKm) {
+        const floor = mixedFloorKm(free, easyMinOf(w.phase));
+        const rest = w.targetKm - kmOf(kept);
+        if (
+          Math.abs(kmOf(free) - floor) <= tolKm &&
+          !free.some((d) => d.workout.kind === 'quality') &&
+          rest + EPS < floor
+        )
+          warn(
+            'MIXED_OVER_TARGET',
+            `Mešovita nedelja: zaštićeni dani ${Math.round(kmOf(kept) * 100) / 100} km, ostatak do cilja ${Math.round(rest * 100) / 100} km < najmanji preostali dani ${floor} km — planirano ${w.plannedKm} km > cilj ${w.targetKm} km (pouka 37/14).`,
+            w.index
+          );
+        else
+          err(
+            'MIXED_REMAINDER',
+            `Mešovita nedelja: planirano ${w.plannedKm} km > cilj ${w.targetKm} km, a preostali dani nisu na ostatku do cilja (pouka 37).`,
+            w.index
+          );
+      }
+    }
     for (const d of w.days)
       if (
         d.workout.segments.length === 0 ||

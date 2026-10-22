@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.8.1`, 08h) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.10.0`, 08i) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -17,7 +17,8 @@ pauze u nedelji rasterećenja). 08g (5k-v2.8.0): prošlost = upisani dani (`writ
 (pouka 30), test iz upisanog plana, provere progresije u jedinici doze + DOSE_DROPPED, umor vezan za zapise (pouka 36);
 trajna rana mreža 104 800 tokova, 0 odbijanja. 08h (5k-v2.8.1): pouka 35 (drugi dan kvaliteta lagan kad dugi ne bi
 bio najduži). Faza 3, 3d (5k-v2.9.0): 5K v2 je CILJ predaje „kraća distanca" iz HM v2 (generate + adapt iz
-činjenica, prefiks nedelja izvora). Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
+činjenica, prefiks nedelja izvora). 08i (5k-v2.10.0): pouka 37 — mešovita nedelja: preostali dani na ostatak = cilj − zaštićeni dani,
+samo naniže (dugi se ne seče; lagani do minimuma, pa kvalitet; ni to → upozorenje MIXED_OVER_TARGET); trkačka izuzeta. Sledeće: odluka o uključivanju za korisnike (v. „Preostalo" u izveštajima 08b i 08c).
 Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 
 ## Segmenti 01–07 (sažeto 2026-10-17; detalji u izveštajima `reports/SEGMENT-0x-IMPLEMENTATION.md`)
@@ -149,3 +150,15 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   dupli datum/id 0, id ≠ izvor 0, zajedničke provere 0. byteSame: samo redovi „5K v2" (HM 13, maraton 13, 10K 19).
 - Testovi `app/handoffTarget.node.test.ts` 9; sabotaže 3d 5/5 PALO.
 - Izveštaj: `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md`.
+
+## Segment 08i — pouka 37: mešovita nedelja, ostatak do cilja (5k-v2.10.0, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: e2e482e
+- `week.mixedRemainder` (jedino mesto, `generate.construct`): preostali dani mešovite nedelje izgradnje/tapera na ostatak
+  = cilj − zaštićeni dani, samo naniže; dugi se ne skraćuje (dopuna HM-08), lagani do minimuma, pa otpada kvalitet; ni
+  to → minimum + MIXED_OVER_TARGET. Validator: `week.mixedFloorKm` (ista funkcija) → upozorenje ili MIXED_REMAINDER.
+- Merenje: mixed-deload 5K plan > cilj 22/42 → 7/42 (svi sa upozorenjem); ostale skripte 0 odbijanja, bez promene.
+  Regresija 99 069 tokova: generator bajt-isti, promenjeno 15 742 (sve pouka 37), ciljevi 0, km naviše 0; trajna rana
+  mreža 08g prema e2e482e: 9 931 / 104 800 promenjeno, sve M, 0 odbijanja; fixture 08g ponovo snimljen (klasa M).
+- Otvoreno: pauza (Odluka 3) i pouka 37; zaključan dan + test po osećaju (TEST_WEEK 168 / 9 919, staro).
+- Izveštaj: `reports/SEGMENT-08i-IMPLEMENTATION.md`.

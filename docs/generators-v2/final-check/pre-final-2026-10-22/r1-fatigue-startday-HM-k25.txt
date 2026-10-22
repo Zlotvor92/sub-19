@@ -1,0 +1,1 @@
+{"dist":"HM","stride":25,"plans":1005,"flows":{"start-1":1005,"start+0":1005,"start+1":1005,"start+2":1005},"rejected":{},"examples":[]}

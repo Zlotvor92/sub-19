@@ -37,11 +37,20 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `5k-v2`. */
 export const LEGACY_POLICY_ID = 'legacy-5k';
 /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 5k-v2.6.0, 5k-v2.6.1,
- *  5k-v2.7.0, 5k-v2.8.0, 5k-v2.8.1 i tekuća (od 3d `5k-v2.9.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`).
+ *  5k-v2.7.0, 5k-v2.8.0, 5k-v2.8.1, 5k-v2.9.0 (od 3d — plan sa nedeljama izvora predaje, `PREFIX_KEY`) i tekuća
+ *  (08i `5k-v2.10.0`, pouka 37).
  *  Sačuvan plan starije verzije ostaje plan 5K v2; prilagođavanje ga gradi tekućim pravilima, rezultat nosi tekuću
  *  oznaku. Svaka druga verzija je „unknown". */
 export const KNOWN_VERSIONS: readonly string[] = [
-  ...new Set(['5k-v2.6.0', '5k-v2.6.1', '5k-v2.7.0', '5k-v2.8.0', '5k-v2.8.1', P.version])
+  ...new Set([
+    '5k-v2.6.0',
+    '5k-v2.6.1',
+    '5k-v2.7.0',
+    '5k-v2.8.0',
+    '5k-v2.8.1',
+    '5k-v2.9.0',
+    P.version
+  ])
 ];
 
 export type AnyV2Plan = FiveKV2Plan | FiveKV2RunWalkPlan;
