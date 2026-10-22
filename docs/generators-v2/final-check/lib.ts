@@ -370,9 +370,11 @@ export function commonChecks(before: Plan, after: Plan, asOf: string, facts: Rec
     const fut = w.days.filter((d) => d.date > asOf);
     for (const d of fut)
       if (d.role !== "race" && (!(d.workout.km > 0) || !(d.workout.sec > 0))) bad.push(`PRAZAN_TRENING ${d.role}`);
-    const long = fut.find((d) => d.role === "long");
+    // Pouka 37: dugi ≥ lagan samo među PREOSTALIM danima — zaključani i urađeni dani su činjenice.
+    const rest = fut.filter((d) => !locked.has(d.date) && !done.has(d.date));
+    const long = rest.find((d) => d.role === "long");
     if (long)
-      for (const d of fut)
+      for (const d of rest)
         if (d.role === "easy" && d.workout.km > long.workout.km + 1e-6) bad.push("DUGI<LAGAN");
   }
   const N = after.weeks.length;
