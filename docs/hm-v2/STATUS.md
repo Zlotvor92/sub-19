@@ -120,3 +120,12 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - `app/preparation.ts`: `HM_V2_SOURCE_FORMAT` ∪ `hmV2Edits` (snimak izmena ne prelazi u v1 cilj); `lastResult` — `pb` =
   poslednji rezultat (ulaz ili korak adaptacije) koji nije posle starta ulaza ugovora. `handoff.ts` tekst O5. Verzija
   HM nepromenjena. Izveštaj `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` § 9.
+
+## Segment HM-08b (hm-v2.6.1): K1, K2, K3 (i MAR → HM), pokrivenost u pouci 37
+
+- K1: zaštićen test (≤ asOf, zaključan, urađen) se ne premešta (`steps.protectedTestDate`); validator ne sudi mesto
+  zaštićenog testa. K2: invarijanta trkačke nedelje sa danima odmora. K3: WEEK_ALL_REST; referenca rasterećenja bez
+  upisanog dugog (`deloadRefLongKm`). Pouka 37: dan iz potpune pokrivenosti bez zapisa = 0.
+- locked-test 3193 → 0, locked-pause 258 → 0, last-weeks inv 6 → 0, prestart-chain 177 → 0, MAR→HM 136 → 0.
+  Izveštaj `reports/SEGMENT-08b-IMPLEMENTATION.md`, artefakti `artifacts/segment-08b/`, mreža `segment08b`.
+

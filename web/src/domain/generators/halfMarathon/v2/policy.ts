@@ -430,17 +430,40 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'P37-MIXED',
-    rule: 'Pouka 37: mešovita nedelja (deo dana zaštićen: ≤ asOf, urađen, zaključan) — cilj važi za celu nedelju. Zaštićeni dani se broje po ČINJENICAMA (dopuna 5K-08i; week.keptSum100: dan u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km — completed = false → 0, ostali planirani km; adaptation.factKm). Preostali dani se sastavljaju na ostatak = cilj − zaštićeni, SAMO NANIŽE: menja se samo nedelja u kojoj zaštićeni dani prelaze sastavljene za te datume, a zaštićeni + preostali > cilj + tolerancija (0,1 km); nijedan dan više od sastavljenog, manjak se ne nadoknađuje. Redosled (HM-08 opcija A): lagani se skraćuju do 4 km (i ≤ preostali dugi — dugi ≥ lagan važi među preostalim danima, zaštićeni su činjenice), pa kvalitet otpada u lagan (Q2, pa Q1) SAMO ako time nedelja staje (dopuna MAR-08); dugi i test se ne skraćuju radi ostatka. Ne staje → kvalitet ostaje, lagani 4 km, planirano > cilj uz upozorenje MIXED_WEEK_OVER (pouka 14), ne odbijanje. Trkačka nedelja izuzeta (pouke 5, 30). Urađeni dani posle asOf → adaptation.doneDayIds. Pauza: cilj nedelje pauze određuje volume (pauseRemainder), pouka 37 samo raspoređuje dane.',
+    rule: 'Pouka 37: mešovita nedelja (deo dana zaštićen: ≤ asOf, urađen, zaključan) — cilj važi za celu nedelju. Zaštićeni dani se broje po ČINJENICAMA (dopuna 5K-08i; week.keptSum100: dan u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km — completed = false → 0, ostali planirani km; adaptation.factKm). Preostali dani se sastavljaju na ostatak = cilj − zaštićeni, SAMO NANIŽE: menja se samo nedelja u kojoj zaštićeni dani prelaze sastavljene za te datume, a zaštićeni + preostali > cilj + tolerancija (0,1 km); nijedan dan više od sastavljenog, manjak se ne nadoknađuje. Redosled (HM-08 opcija A): lagani se skraćuju do 4 km (i ≤ preostali dugi — dugi ≥ lagan važi među preostalim danima, zaštićeni su činjenice), pa kvalitet otpada u lagan (Q2, pa Q1) SAMO ako time nedelja staje (dopuna MAR-08); dugi i test se ne skraćuju radi ostatka. Ne staje → kvalitet ostaje, lagani 4 km, planirano > cilj uz upozorenje MIXED_WEEK_OVER (pouka 14), ne odbijanje. Trkačka nedelja izuzeta (pouke 5, 30). Urađeni dani posle asOf → adaptation.doneDayIds. Pauza: cilj nedelje pauze određuje volume (pauseRemainder), pouka 37 samo raspoređuje dane. HM-08b (ispravka organizatora, 5K-08i-b): dan poznat iz potpune pokrivenosti bez zapisa = 0 (činjenica).',
     place:
       'week.ts remainderWeek (jedino mesto odluke), keptSum100, freeKind, mixedMin100; lengths.ts mixedFloor100, remainderEasy10; adapt.ts factKmOf, doneDayIds; written.ts (factKm → mešovita); generate.ts construct; validate.ts MIXED_WEEK_OVER / MIXED_OVER_TARGET (iste funkcije); adaptInvariants.ts',
     rationale:
       'Nalaz organizatora (mixed-deload.ts, tekuće rasterećenje posle umora, asOf prvi dan nedelje k ∈ {2, 4}, svaki 97. plan): planirano > cilj 291/449 (+3,66, max +9,98 km) → 19/449, svih 19 sa MIXED_WEEK_OVER; d3-10w-25km-v30-A-sat ned 3: 24,32 → 21,2. B (dugi se skraćuje) odbačena: skraćen dugi postaje poslednji dugi (H5, pouka 29) → cilj u 1458 tokova rane mreže, vrh do −22,1 km; C (stanje ne čita skraćen dugi) — dve definicije. Regresija (heš bez verzije): generator 25 122 bez promene; rana 4a 114 012 i ciljana 16 275 — 0 odbijanja; promene po scenariju u SEGMENT-08-IMPLEMENTATION (pauza 20 / under50 / bol 8 posle zbira po činjenicama više nisu stisnuti — samo adaptation.mixedWeeks/factKm; over120 upisani višak skraćuje preostale dane, 25 tokova menja cilj preko progresije doze; cilj chain/2 258 — A2 manjak pre, ne posle, jer mešovita nedelja prvog koraka ima manje planiranih km). Van pouke 37 (audit): rasterećenje nije niže od prethodne 184 → 118, u svih 118 je CILJ ≥ planirano prethodne (volume.ts).'
+  },
+  {
+    id: 'K1-TEST',
+    rule: 'Pouka 38 / K1 (kao maraton A13b, MAR-08b): test čiji je dan u planu pre koraka ZAŠTIĆEN (≤ asOf, zaključan, urađen) se ne premešta i nijedan okvir ne nosi drugi test; zaštićen dan ostaje upisan (A11).',
+    place:
+      'steps.ts protectedTestDate (jedna funkcija), framesFor (konstruktor generate.ts, validator validate.ts, adapt.ts — skup zaključanih i urađenih datuma)',
+    rationale:
+      'Rani prolaz završne provere (organizator, K1): locked-test.ts HM 97 — zaključan dan testa + pauza 10/20, umor, bol 5/8, asOf test − 14 … − 1: 3193 / 4550 odbijeno (TEST, dva testa) na 836a5cd → 0; locked-pause.ts HM 193 97 29: 258 / 35 408 → 0; two-step locked → nov rezultat (cum): validator je sudio mesto zaštićenog testa (osnova tempa posle rezultata) → broj testova ≤ 1 uvek, mesto samo nezaštićenom (kao HM07b-GUARD); 12 → 0. Regresija rane/ciljane mreže 0 (ti tokovi su ranije bili odbijeni).'
+  },
+  {
+    id: 'K2-RACE-REST',
+    rule: 'K2: trkačka nedelja sa danima odmora koraka (bol, A4) sme biti trkačka + trka < minimum uz upozorenje RACE_WEEK_SHORT (pouka 25, kao obična nedelja sa danima odmora). Strana koja je odstupala: invarijanta (test kod), ne konstruktor ni validator.',
+    place: 'adaptInvariants.ts (D30b izuzetak)',
+    rationale:
+      'last-weeks.ts HM 193 97 29: 6 / 74 836 tokova (bol 8 u trkačkoj nedelji, npr. d6-10w-40km-v35-B-sun asOf 2027-01-05: trkačka 2,81 km + trka < 24 km uz RACE_WEEK_SHORT) → 0; konstruktor i validator nepromenjeni (kao 10K K2).'
+  },
+  {
+    id: 'K3-CHAIN',
+    rule: 'K3: (a) nedelja čiji su svi dani trčanja dani odmora koraka (bol, A4) bez treninga = upozorenje WEEK_ALL_REST, ne EMPTY_WEEK (kao 10K-06g, N1). (b) prinudno rasterećenje (umor) čija nedelja nema pre sebe upisan dugi ne-rasteretne izgradnje (npr. nedelja 1 cela u odmoru bola) → dugi reference = dugi poslednje ne-rasteretne izgradnje generatora pre te nedelje (korak.deloadRefLongKm; kao pouka 34: bez izgradnje referenca je generator); 0,8 × po H5.',
+    place:
+      'validate.ts (WEEK_ALL_REST); assess.ts (A5: deloadRefLongKm), adapt.ts (genLongBefore), steps.ts deloadRefLong10 (jedna funkcija: konstruktor generate.ts i validator)',
+    rationale:
+      'prestart-chain.ts (HM, svaki 97. ulaz, bol 8 / bol 5 / umor / pauza 20 na start − 1 → 17 scenarija u ned 1): 61 EMPTY_WEEK + 116 WEEK_INFEASIBLE / 35 224 → 0; handoff-adapt.ts MAR>HM 193 97 29 (plan cilja predaje): 136 / 44 676 (80 EMPTY_WEEK, 56 WEEK_INFEASIBLE) → 0. Opcija pouke 33 nije primenljiva — bez reference nema 0,8 × poslednji; referenca generatora je ista kao pouka 34 (nema upisane izgradnje). Trajna mreža segment08b.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.6.0',
+  version: 'hm-v2.6.1',
 
   /** H1 (dani i obim: H15). */
   input: {

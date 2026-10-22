@@ -1,0 +1,164 @@
+{
+ "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-08b/sabotage-08b.json",
+ "head": "836a5cd",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 11.8,
+ "hashBefore": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+ "hashAfter": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08b-a zaštićen test se premešta (samo ≤ asOf, bez zaključanog/urađenog)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts",
+    "test": "HM-08b primeri iz nalaza > K1: f-d3-15w-30km-e270-B, pauza 20, asOf 2026-11-18, zaključan dan testa → jedan test, ne premešta se",
+    "message": "Error: PLAN_VIOLATES_POLICY TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17)."
+   },
+   "failedCount": 1,
+   "hashBefore": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "hashSabotaged": "8d61acc22a272f9af459750fe9c1416cd301c2d9a7db58ab639db3df9604e49d",
+   "hashAfter": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.5
+  },
+  {
+   "index": 2,
+   "name": "08b-c nedelja svih dana odmora = EMPTY_WEEK (stara strana)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts",
+    "test": "HM-08b primeri iz nalaza > K3: d3-10w-25km-v30-A-sat bol 8 pre starta → bol 8 u sredu ned 1: WEEK_ALL_REST (ne EMPTY_WEEK); → umor: rasterećenje ned 2 izvodljivo",
+    "message": "Error: PLAN_VIOLATES_POLICY EMPTY_WEEK: Nedelja bez treninga (Uslov 8)."
+   },
+   "failedCount": 1,
+   "hashBefore": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "hashSabotaged": "524a21101b2e3359276b8caada28dd2314c14036a29fa9821211ec811b36bb9f",
+   "hashAfter": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2
+  },
+  {
+   "index": 3,
+   "name": "08b-d rasterećenje bez reference dugog (stara strana)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts",
+    "test": "HM-08b primeri iz nalaza > K3: d3-10w-25km-v30-A-sat bol 8 pre starta → bol 8 u sredu ned 1: WEEK_ALL_REST (ne EMPTY_WEEK); → umor: rasterećenje ned 2 izvodljivo",
+    "message": "Error: WEEK_INFEASIBLE Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima."
+   },
+   "failedCount": 1,
+   "hashBefore": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "hashSabotaged": "cef2aeb00239d42d337ec7206c61b0d18c76e6c2c0a3a75a2712ade54cd9c05e",
+   "hashAfter": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.5
+  },
+  {
+   "index": 4,
+   "name": "08b-e invarijanta trkačke nedelje bez izuzetka dana odmora",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/adaptInvariants.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts",
+    "test": "HM-08b primeri iz nalaza > K2: d6-10w-40km-v35-B-sun bol 8 asOf 2027-01-05 (trkačka nedelja sa danima odmora) → RACE_WEEK_SHORT, invarijanta prazna",
+    "message": "AssertionError: expected [ 'trkačka + trka < minimum' ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "hashSabotaged": "1d919141cea7053d68983c422bb3bdd302ea030b3b01919f680ed5b8259cc0b8",
+   "hashAfter": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.6
+  },
+  {
+   "index": 5,
+   "name": "08b-f dan iz potpune pokrivenosti bez zapisa po planu (stara strana)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts",
+    "test": "HM-08b dan poznat iz potpune pokrivenosti bez zapisa = 0 (dopuna pouke 37, 5K-08i-b) > pauza 10 (pokrivenost do asOf, bez zapisa): zaštićeni dani nedelje = 0 km → preostali dani nisu stisnuti",
+    "message": "AssertionError: expected undefined to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "hashSabotaged": "48a6b02e46fe1d0cf182230b4fab9bc76a9dbec851233cf241e37fcd13cc4407",
+   "hashAfter": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2
+  },
+  {
+   "index": 6,
+   "name": "08b-g validator sudi mesto zaštićenog testa",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts",
+    "test": "HM-08b primeri iz nalaza > K1: zaključan dan testa, pa nov rezultat (lanac, činjenice kumulativne) → zaštićen test ostaje jedini, bez odbijanja",
+    "message": "Error: PLAN_VIOLATES_POLICY TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17)."
+   },
+   "failedCount": 1,
+   "hashBefore": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "hashSabotaged": "8230fba30a23d0a183d4a90515185919e325ae3ab92ec6b6c882d08b4baa5401",
+   "hashAfter": "57bbce6650b9c5db24c5b9b1f0d44968d464fc92aefc82737d5c3f6efa6e5f90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.7
+  }
+ ]
+}

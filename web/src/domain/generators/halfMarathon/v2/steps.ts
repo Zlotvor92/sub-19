@@ -163,7 +163,8 @@ export function framesFor(
   raceDate: IsoDate,
   pace: PaceInput,
   steps: readonly HmV2AdaptStep[],
-  dropped: Map<number, number> | null = null
+  dropped: Map<number, number> | null = null,
+  guarded: ReadonlySet<string> = new Set()
 ): WeekFrame[] {
   let frames: WeekFrame[] = base.map((f) => ({ ...f }));
   if (steps.length === 0) return frames;
@@ -214,6 +215,11 @@ export function framesFor(
     return l ? { ...f, limits: l } : f;
   });
   const last = steps[steps.length - 1]!.asOf;
+  // Pouka 38 / K1 (kao maraton A13b, MAR-07c i MAR-08b): test čiji je dan u planu pre ovog koraka ZAŠTIĆEN (≤ asOf,
+  // zaključan, urađen — `guarded`) se ne premešta i nijedan drugi okvir ne nosi test (zaštićen dan ostaje upisan).
+  const td = protectedTestDate(base, pattern, runDays, raceDate, pace, steps, guarded);
+  if (td !== null)
+    return frames.map((f) => (f.test && testDateOf(f, pattern) !== td ? withoutTest(f) : f));
   const i = frames.findIndex((f) => f.test);
   const t = frames[i];
   const blocked = (f: WeekFrame, k: number): boolean =>
@@ -231,6 +237,37 @@ export function framesFor(
     if (j >= 0) frames[j] = { ...frames[j]!, test: true };
   }
   return frames;
+}
+
+/**
+ * Pouka 38 / K1 — JEDNA funkcija „zaštićen test": dan testa u planu pre poslednjeg koraka (okviri bez njega) kad je
+ * zaštićen — ≤ asOf poslednjeg koraka, zaključan ili urađen (`guarded`, datumi); inače null. Čitaju je framesFor
+ * (konstruktor i validator).
+ */
+export function protectedTestDate(
+  base: readonly WeekFrame[],
+  pattern: Pattern,
+  runDays: readonly Weekday[],
+  raceDate: IsoDate,
+  pace: PaceInput,
+  steps: readonly HmV2AdaptStep[],
+  guarded: ReadonlySet<string>
+): IsoDate | null {
+  if (steps.length === 0) return null;
+  const before = framesFor(
+    base,
+    pattern,
+    runDays,
+    raceDate,
+    pace,
+    steps.slice(0, -1),
+    null,
+    guarded
+  );
+  const tw = before.find((f) => f.test);
+  if (!tw) return null;
+  const td = testDateOf(tw, pattern);
+  return mustDay(td) <= mustDay(steps[steps.length - 1]!.asOf) || guarded.has(td) ? td : null;
 }
 
 /** A3: nedelje novog starta u kojima je rePeriodize primenjen (D5 ima raspored preostale izgradnje). */
@@ -286,6 +323,17 @@ export function newLimits(steps: readonly HmV2AdaptStep[]): string[] {
 export function preStartOf<T>(steps: readonly { preStart?: T }[]): T | null {
   let r: T | null = null;
   for (const s of steps) if (s.preStart) r = s.preStart;
+  return r;
+}
+
+/** K3 (HM-08b) — JEDNA funkcija: dugi reference rasterećenja nedelje `w` [0,1 km] kad konstrukcija nema poslednji
+    dugi (upisani dani bez dugog ne-rasteretne izgradnje): poslednji korak čije je rasterećenje nedelja `w` i nosi
+    deloadRefLongKm; inače null. Konstruktor i validator. */
+export function deloadRefLong10(steps: readonly HmV2AdaptStep[], w: number): number | null {
+  let r: number | null = null;
+  for (const s of steps)
+    if (s.deload && s.deloadRefLongKm !== undefined && deloadWeekOf(s) === w)
+      r = Math.round(s.deloadRefLongKm * 10);
   return r;
 }
 
