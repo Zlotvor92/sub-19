@@ -149,7 +149,7 @@ export function reducedWeeks(s: AdaptStep): number[] {
  * (raspored se ne pomera, ništa se ne ubacuje); novi rezultat → nema testa od fromWeek; ograničenja po
  * datumima (limitsOf). Kontrolno trčanje (po osećaju) u nedelji sa ograničenjem kvaliteta, rasterećenjem
  * ili van izgradnje, a posle asOf, premešta se na prvu sledeću ne-rasteretnu nedelju izgradnje bez
- * ograničenja; ako je nema — bez testa. `dropped` (izlaz, Odluka 9): ukinuta rasterećenja — nedelja →
+ * ograničenja; ako je nema ili je njen dan testa zaštićen (zaključan; 2.10.1, izlaz `testLost`) — bez testa. `dropped` (izlaz, Odluka 9): ukinuta rasterećenja — nedelja →
  * indeks koraka (JEDINO mesto odluke; isti podatak čitaju validator i poruka koraka u adapt.ts).
  */
 export function framesFor(
@@ -158,7 +158,8 @@ export function framesFor(
   pattern: Pattern,
   totalWeeks: number,
   dropped: Map<number, number> | null = null,
-  prior: Written | null = null
+  prior: Written | null = null,
+  testLost: Map<number, string> | null = null
 ): WeekFrame[] {
   const a = baseAthlete(input);
   const every = rulesOf(a).deloadEvery;
@@ -216,7 +217,15 @@ export function framesFor(
     const next = frames.find(
       (f) => f.index > t.index && !blocked(f) && vdotAt(input, steps, f.index) === null
     );
-    if (next) next.test = true;
+    // 2.10.1 (pouka 23, kao maraton A13/A13b): test se ne stavlja na zaštićen (zaključan) dan prethodnog plana — tada
+    // otpada (bez drugog testa), uz napomenu nedelje.
+    const day = next ? dateOf(next, pattern.q1) : null;
+    const kept =
+      next && day && prior
+        ? prior.weeks[next.index - 1]?.days.find((d) => d.date === day && prior.keep(d))
+        : undefined;
+    if (next && kept) testLost?.set(next.index, day!);
+    else if (next) next.test = true;
   }
   return frames;
 }

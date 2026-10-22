@@ -1,0 +1,23 @@
+GEN {'flows': 159}
+chain {'flows': 5146, 'changed': 2536, 'onlyProtectedKm': 2536, 'onlyNotes': 2536}
+chain2 {'flows': 4988, 'changed': 2536, 'onlyProtectedKm': 2536, 'onlyNotes': 2536}
+done100 {'flows': 5146}
+faster {'flows': 5146}
+fatigue {'flows': 11586, 'changed': 2563, 'warn': 1315, 'onlyNotes': 1454, 'days': 1109, 'kmDown': 1465.3299999999979, 'onlyProtectedKm': 384}
+incomplete {'flows': 5146}
+locked {'flows': 5146}
+none {'flows': 5146}
+over120 {'flows': 5146, 'changed': 2666, 'warn': 1094, 'days': 1818, 'kmDown': 4265.61, 'onlyNotes': 848}
+pain5 {'flows': 5146, 'changed': 16, 'onlyProtectedKm': 16, 'onlyNotes': 16}
+pain8 {'flows': 5146}
+painPause {'flows': 5146, 'changed': 2295, 'onlyProtectedKm': 2295, 'onlyNotes': 2295}
+pause10 {'flows': 5146, 'changed': 2536, 'onlyProtectedKm': 2536, 'onlyNotes': 2536}
+pause20 {'flows': 5146, 'changed': 2628, 'onlyProtectedKm': 2628, 'onlyNotes': 2628}
+pause35 {'flows': 5146, 'changed': 2629, 'onlyProtectedKm': 2629, 'onlyNotes': 2629}
+slower {'flows': 5146}
+test5k {'flows': 5146}
+under50 {'flows': 5146}
+TOTAL {'flows': 99069, 'changed': 20405, 'onlyProtectedKm': 15560, 'onlyNotes': 17478, 'warn': 2409, 'days': 2927, 'kmDown': 5730.939999999998}
+TARGET 0 []
+UP 0 []
+BAD 0 []

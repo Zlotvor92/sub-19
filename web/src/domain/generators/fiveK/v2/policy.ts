@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.10.0',
+  version: '5k-v2.10.1',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -796,5 +796,24 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '(pauza/lanac/bol+pauza 12 634, umor 553, bol 16, drugi korak lanca 2 539), ciljevi 0, nijedan km naviše, ' +
       '0 odbijanja; trajna mreža 08i 0 odbijanja. Sačuvan plan 5k-v2.9.0 i stariji prilagođavaju se po 2.10.0 ' +
       '(KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.10.1',
+    decision:
+      'Dopuna 08i-b (organizator, MASTER pouka 37): (1) zbir zaštićenih dana mešovite nedelje po ČINJENICAMA — ' +
+      'assess.factKmOf (jedino mesto): dan u eksplicitnoj pauzi = 0, dan sa zapisom = urađeni km (neurađen = 0), poznat ' +
+      'dan bez zapisa (potpuna pokrivenost, Odluka 3) = 0, ostalo (asOf bez zapisa i pokrivenosti, zaključan budući) = ' +
+      'planirani km; week.protectedKm sabira, konstruktor ga upisuje u PlanWeek.protectedKm kad se razlikuje od planiranih ' +
+      'km i validator ga treba (nedelja je tada mešovita), validator ga čita. Nedelja ostatka pauze (volume.pauseRemainderKm) ' +
+      'ima vlasnika — pravilo pauze; pouka 37 je ne menja (merenje: isključen izuzetak → 0 promenjenih tokova od 99 069, ' +
+      'pravila se ne sudaraju). (2) Pouka 23 (kao maraton A13/A13b): kontrolno trčanje koje se premešta (steps.framesFor) ' +
+      'ne ide na zaštićen (zaključan) dan — tada otpada uz napomenu, bez drugog testa. Merenje: tokovi pauze sa ' +
+      'MIXED_OVER_TARGET 10 362 → 0 (dani pauze kao na e2e482e); više od plana (over120) sada skraćuje preostale dane ' +
+      '(urađeni km > planirani); TEST_WEEK u trajnoj mreži sa zaključanim danom i u planu po osećaju 168 / 9 919 → 0. ' +
+      '(3) Dopuna MAR-08: kvalitet otpada samo kad time ostatak staje; kad ni bez kvaliteta ne staje — kvalitet ostaje, ' +
+      'lagani na minimumu, MIXED_OVER_TARGET (816 tokova regresije zadržava kvalitet). (4) Doza: otpao samo drugi kvalitet ' +
+      '→ week.secondEasyDose (kao pouka 35), i kad je takva nedelja kasnije upisana prošlost (lanac; inače BASE_R_DECREASE / ' +
+      'DOSE_PROGRESSION). Regresija prema e2e482e (99 069): ciljevi 0, km naviše 0, odbijanja 0. Sačuvan plan 5k-v2.10.0 i stariji ' +
+      'prilagođavaju se po 2.10.1 (KNOWN_VERSIONS).'
   }
 ];

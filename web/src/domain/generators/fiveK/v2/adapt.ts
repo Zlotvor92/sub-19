@@ -7,7 +7,7 @@
 
 import { dayNumber, mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
-import { assess, checkFacts, painReturnNote } from './assess.ts';
+import { assess, checkFacts, factKmOf, painReturnNote } from './assess.ts';
 import { construct } from './generate.ts';
 import { assessGoal, beginnerGoal, goalWithoutData, raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
@@ -135,7 +135,7 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
   const locked = new Set(facts.lockedDayIds);
   const keep = (d: PlanDay): boolean =>
     mustDay(d.date) <= t || done.has(d.date) || locked.has(d.date);
-  const prior: Written = { weeks: plan.weeks, keep, asOf: t, at };
+  const prior: Written = { weeks: plan.weeks, keep, asOf: t, at, factKm: factKmOf(facts, at) };
   const built = construct(plan.input, steps, prior);
   if (!built.ok) return { ok: false, reasons: built.reasons, violations: [] };
   const c = built.c;
