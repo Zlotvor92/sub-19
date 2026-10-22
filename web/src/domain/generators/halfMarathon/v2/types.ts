@@ -38,6 +38,9 @@ export interface HmV2Input {
   easyPaceSecPerKm?: number | null;
   /** H17: trčanje/hodanje — polumaraton ga ne podržava (odbijanje). */
   runWalk?: boolean | null;
+  /** Segment 3i: broj nedelja ispred plana (prefiks izvora predaje „kraća distanca"); samo broj nedelje u porukama
+      (`weekLabel.ts`). Podrazumevano 0; normalizovan ulaz ga nosi samo kad je > 0. */
+  weekOffset?: number | null;
 }
 
 export type Experience = 'beginner' | 'regular';

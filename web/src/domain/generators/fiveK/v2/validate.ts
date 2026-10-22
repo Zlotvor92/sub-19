@@ -4,6 +4,7 @@
    2.8.0 (pouka 29): provere koje zavise od prošlosti (dugi prethodne nedelje za trkačku, lanac doze, kontrolno
    trčanje) čitaju upisani plan i u mešovitoj nedelji (bez preskakanja); pouka 30: trkačka ≤ taper. */
 
+import { weekLabel } from './input.ts';
 import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import { isShortPrep, periodize, phaseCounts, testWeekOf } from './periodize.ts';
 import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
@@ -427,7 +428,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     err(
       'TEST_WEEK',
       a.feel
-        ? `Plan po osećaju: kontrolno trčanje tačno jednom, u nedelji ${expectTest ?? '—'} (3. ili 4., ne rasteretna).`
+        ? `Plan po osećaju: kontrolno trčanje tačno jednom, u nedelji ${expectTest === null ? '—' : weekLabel(expectTest, plan.input.weekOffset)} (3. ili 4., ne rasteretna).`
         : 'Plan sa rezultatom nema kontrolno trčanje.'
     );
 
@@ -900,7 +901,11 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           b.index
         );
     if (qualityKey(a) === qualityKey(b))
-      err('QUALITY_REPEAT', `Isti par kvaliteta kao nedelja ${a.index}.`, b.index);
+      err(
+        'QUALITY_REPEAT',
+        `Isti par kvaliteta kao nedelja ${weekLabel(a.index, plan.input.weekOffset)}.`,
+        b.index
+      );
   }
   // 2.2.0 (Odluka 3): nema dugog platoa u bazi — 3 uzastopne ne-rasteretne nedelje iste doze.
   const baseSteady = steady.filter((w) => w.phase === 'base');

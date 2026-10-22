@@ -1,6 +1,7 @@
 /* 2.4.0: konstrukcija nedelje (izdvojeno iz generate.ts): nedelja treninga i trkačka nedelja. Dužine
    dugog/laganih su u lengths.ts, kvalitet u quality.ts — iste funkcije koristi kapacitet (volume.ts). */
 
+import { weekLabel } from './input.ts';
 import { addDays, daysBetween, weekdayIndex, weekdayOf } from './dates.ts';
 import { limitedEasyKm, painLongKm, splitEasy, weekLengths } from './lengths.ts';
 import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';
@@ -72,7 +73,7 @@ export function buildTrainingWeek(
       reason: {
         code: 'QUALITY_INFEASIBLE',
         week: f.index,
-        message: `Nedelja ${f.index}: ${s.message}`
+        message: `Nedelja ${weekLabel(f.index, a.weekOffset)}: ${s.message}`
       }
     };
   const q1 = s.q1;
@@ -106,7 +107,7 @@ export function buildTrainingWeek(
       reason: {
         code: 'WEEK_INFEASIBLE',
         week: f.index,
-        message: `Nedelja ${f.index}: posle kvaliteta (${r2(fixed - longKm)} km) i dugog (${longKm} km) za lagan trk ostaje ${shares.join(' / ')} km < ${easyMin} km.`
+        message: `Nedelja ${weekLabel(f.index, a.weekOffset)}: posle kvaliteta (${r2(fixed - longKm)} km) i dugog (${longKm} km) za lagan trk ostaje ${shares.join(' / ')} km < ${easyMin} km.`
       }
     };
 
@@ -406,7 +407,8 @@ export function buildRaceWeek(
   raceDate: string,
   p: PaceModel,
   prevLongKm: number,
-  cap: { km: number; fixed?: (date: string) => PlanDay | null | undefined } | null = null
+  cap: { km: number; fixed?: (date: string) => PlanDay | null | undefined } | null = null,
+  off = 0
 ): WeekResult {
   const budgets = qualityBudgets(bound);
   const gapToRace = (w: Weekday): number => daysBetween(dateOfWeekday(f, w), raceDate);
@@ -438,7 +440,7 @@ export function buildRaceWeek(
       reason: {
         code: 'QUALITY_INFEASIBLE',
         week: f.index,
-        message: `Nedelja ${f.index}: ${sharp.message}`
+        message: `Nedelja ${weekLabel(f.index, off)}: ${sharp.message}`
       }
     };
 

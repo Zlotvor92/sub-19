@@ -2,7 +2,7 @@
    Bez čitanja sata: svi datumi dolaze iz ulaza. Ista vrednost ulaza → isti JSON. */
 
 import { addDays, daysBetween, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
-import { checkInput } from './input.ts';
+import { checkInput, weekLabel } from './input.ts';
 import {
   assessGoal,
   beginnerGoal,
@@ -194,7 +194,8 @@ export function construct(
         input.raceDate,
         p,
         prevLong,
-        cap
+        cap,
+        input.weekOffset
       );
       // 2.6.0: i kad oštrenje ostavlja nedelju ispod minimuma trkačke nedelje (mala granica posle
       // smanjenja) — oštrenje otpada (pravilo f), lagani dani nose granicu.
@@ -209,7 +210,8 @@ export function construct(
           input.raceDate,
           p,
           prevLong,
-          cap
+          cap,
+          input.weekOffset
         );
         if (short && r.ok)
           r.week.notes.push(
@@ -365,7 +367,10 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
   if (a.feel) {
     const test = frames.find((f) => f.test);
     notes.push(P.feel.note);
-    if (test) notes.push(P.feel.testNote.replace('{week}', String(test.index)));
+    if (test)
+      notes.push(
+        P.feel.testNote.replace('{week}', String(weekLabel(test.index, input.weekOffset)))
+      );
     notes.push(P.feel.forecastNote);
     const old = input.recentResult;
     if (old)
@@ -377,7 +382,7 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
   }
   if (a.beginner)
     notes.push(
-      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${P.beginner.introWeeks + 1}, bez I; rast obima ≤ ${rules.maxBuildGrowth * 100}%, dugi ≤ ${rules.longMaxSec / 60} min, vrh ≤ ${rules.peakCapFactor} × start, rasterećenje svake ${rules.deloadEvery}. nedelje.`
+      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez I; rast obima ≤ ${rules.maxBuildGrowth * 100}%, dugi ≤ ${rules.longMaxSec / 60} min, vrh ≤ ${rules.peakCapFactor} × start, rasterećenje svake ${rules.deloadEvery}. nedelje.`
     );
 
   const plan: FiveKV2Plan = {

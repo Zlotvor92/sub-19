@@ -9,7 +9,7 @@ import { assessRunWalk } from './runWalkAssess.ts';
 import { checkFacts } from './assess.ts';
 import { dayNumber, mustDay } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
-import { checkInput } from './input.ts';
+import { checkInput, weekLabel } from './input.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { constructRunWalk, transitionInput, weekCount } from './runWalk.ts';
 import type {
@@ -191,7 +191,9 @@ export function adaptRunWalk(
     goal: plan.goal,
     notes: [
       ...plan.notes,
-      ...(T !== null ? [P.runWalk.transitionNote.replace('{week}', String(T))] : [])
+      ...(T !== null
+        ? [P.runWalk.transitionNote.replace('{week}', String(weekLabel(T, plan.input.weekOffset)))]
+        : [])
     ],
     weeks,
     continuous,

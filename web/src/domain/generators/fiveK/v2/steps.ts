@@ -31,7 +31,8 @@ export function baseAthlete(input: FiveKV2Input): Athlete {
   return {
     days: input.runDays.length as RunDaysCount,
     beginner: input.experience === 'beginner',
-    feel: !hasFreshResult(input)
+    feel: !hasFreshResult(input),
+    ...(input.weekOffset ? { weekOffset: input.weekOffset } : {})
   };
 }
 

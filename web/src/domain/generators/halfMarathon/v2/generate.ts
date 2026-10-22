@@ -61,6 +61,7 @@ import {
   remainderWeek,
   type WeekContext
 } from './week.ts';
+import { weekLabel } from './weekLabel.ts';
 import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
 import { type Written, writtenDays, writtenWeeks } from './written.ts';
 
@@ -70,10 +71,10 @@ function recentLongNote(long10: number, ctx: WeekContext): string {
   const r = ctx.input.recentLongRunKm;
   const km = fmtKm(long10 / 10);
   if (r == null)
-    return `Dugi nedelje 1 ${km} km pretpostavlja skorašnji najduži trk od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
+    return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km pretpostavlja skorašnji najduži trk od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
   const cap10 = recentLongCap10(r);
   const at = long10 === cap10 && long10 === week1LongCap10(ctx.paces, r, ctx.rule.longMaxSec);
-  return `Dugi nedelje 1 ${km} km ≤ ${fmtKm(cap10 / 10)} km (skorašnji najduži ${fmtKm(r)} km, pouka 28)${at ? ' — na granici' : ''}.`;
+  return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km ≤ ${fmtKm(cap10 / 10)} km (skorašnji najduži ${fmtKm(r)} km, pouka 28)${at ? ' — na granici' : ''}.`;
 }
 
 /** Pouka 38 / K1: zaključani i urađeni datumi (zaštićeni posle asOf) — isti skup kao validator
@@ -113,7 +114,7 @@ function recentTooShort(
     reasons: [
       {
         code: 'RECENT_LONG_TOO_SHORT',
-        message: `Skorašnji najduži trk ${fmtKm(r)} km je prekratak za plan od ${days} dana, ${fmtKm(input.currentWeeklyKm)} km nedeljno: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${week} ne može da se sastavi po pravilima (pouka 28).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, dužu pripremu, manji obim, više dana ili 10K plan.`,
+        message: `Skorašnji najduži trk ${fmtKm(r)} km je prekratak za plan od ${days} dana, ${fmtKm(input.currentWeeklyKm)} km nedeljno: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${weekLabel(input, week)} ne može da se sastavi po pravilima (pouka 28).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, dužu pripremu, manji obim, više dana ili 10K plan.`,
         week
       }
     ]
@@ -282,7 +283,7 @@ export function construct(
       return recentTooShort(raw as Record<string, unknown>, input, frame.index);
     if (!fit)
       return infeasible(
-        `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
+        `Nedelja ${weekLabel(input, frame.index)}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
         frame.index
       );
     // Pouka 37: mešovita nedelja — preostali dani na ostatak cilja (samo naniže; week.remainderWeek).
@@ -367,7 +368,7 @@ export function construct(
     plan.notes.push(
       `Plan po osećaju (H16): ${pace.why}. E = lagan tempo ${fmtSec(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
       t && td
-        ? `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (H16). Prognoza polumaratona i ocena cilja: posle testa; do tada RP po RPE.${goalNote}`
+        ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date} (H16). Prognoza polumaratona i ocena cilja: posle testa; do tada RP po RPE.${goalNote}`
         : rule.feelTest
           ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
           : `Početnik bez testa ${P.test.km} km (H17): kvalitet po RPE; prognoza polumaratona i ocena cilja posle rezultata trke (adaptacija, segment 04).${goalNote}`
@@ -375,7 +376,7 @@ export function construct(
   }
   if (rule.beginner)
     plan.notes.push(
-      `Početnik (H17): nedelje 1–${rule.introWeeks} uvod bez kvaliteta, zatim jedan kvalitet nedeljno (T → T cruise → RP, bez I i R), rast ${Math.round(rule.growth * 100)} % (${fmtKm(rule.growthMinKm)}–${fmtKm(rule.growthMaxKm)} km), dugi ≤ ${Math.round(rule.longMaxSec / 60)} min, bez testa.`
+      `Početnik (H17): nedelje ${weekLabel(input, 1)}–${weekLabel(input, rule.introWeeks)} uvod bez kvaliteta, zatim jedan kvalitet nedeljno (T → T cruise → RP, bez I i R), rast ${Math.round(rule.growth * 100)} % (${fmtKm(rule.growthMinKm)}–${fmtKm(rule.growthMaxKm)} km), dugi ≤ ${Math.round(rule.longMaxSec / 60)} min, bez testa.`
     );
   // Faza 4a N11: kapacitet (H6/HI8) ide korisniku jednom — upozorenje CAPACITY_LIMITED (validator, sa vrhom).
   if (orientation) plan.notes.push(P.adapt.orientationMessage);

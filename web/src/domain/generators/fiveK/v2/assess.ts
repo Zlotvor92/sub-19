@@ -6,6 +6,7 @@
    nivo pre bola; osnovu računa volume.returnBaseKm. 2.7.0 (Odluka 9): oznaka `reduced` (cilj koraka je
    smanjenje: pauza, manjak — da; višak — ne); rasterećenja ukida steps.framesFor. */
 
+import { weekLabel } from './input.ts';
 import { addDays, dayNumber, mustDay } from './dates.ts';
 import { vdotFromResult } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
@@ -39,7 +40,7 @@ const growthNote = (level: number): string =>
  * računa je samo volume.returnBaseKm. Kad deluje min sa ciljem nedelje r, poruka to kaže. adapt.ts poziva
  * posle konstrukcije.
  */
-export function painReturnNote(step: AdaptStep, targetRKm: number): string {
+export function painReturnNote(step: AdaptStep, targetRKm: number, off?: number): string {
   const rf = step.returnFrom!;
   const level = step.levelKm!;
   const base = returnBaseKm(rf.share, level, targetRKm);
@@ -47,8 +48,8 @@ export function painReturnNote(step: AdaptStep, targetRKm: number): string {
   const pct = `${rf.share * 100}%`;
   return `${
     base < shareKm
-      ? ` Posle nedelje ${rf.week} rast kreće od ${base} km (cilj nedelje ${rf.week}; ${pct} nivoa pre bola bilo bi ${shareKm} km).`
-      : ` Posle nedelje ${rf.week} rast kreće od ${pct} nivoa pre bola (${base} km).`
+      ? ` Posle nedelje ${weekLabel(rf.week, off)} rast kreće od ${base} km (cilj nedelje ${weekLabel(rf.week, off)}; ${pct} nivoa pre bola bilo bi ${shareKm} km).`
+      : ` Posle nedelje ${weekLabel(rf.week, off)} rast kreće od ${pct} nivoa pre bola (${base} km).`
   }${growthNote(level)}`;
 }
 
@@ -210,6 +211,8 @@ export function assess(
 ): { ok: true; step: AdaptStep; reasons: AdaptReason[] } | { ok: false; reasons: Reason[] } {
   const weeks = plan.weeks;
   const N = weeks.length;
+  /** 2.10.4 (3i): broj nedelje u porukama (input.weekLabel). */
+  const wl = (k: number): number => weekLabel(k, plan.input.weekOffset);
   const steps = plan.adaptation?.steps ?? [];
   const day = (d: IsoDate): number => mustDay(d);
   const next = addDays(asOf, 1);
@@ -318,7 +321,7 @@ export function assess(
       reason(
         'NEW_RESULT',
         true,
-        `${res.kind === 'test' ? 'Test' : 'Trka'} ${res.distM / 1000}K ${fmt(res.sec)} (${res.date}): VDOT ${v} od nedelje ${n}${was === null ? ' — plan po osećaju prelazi na tempo' : ` (bilo ${was})`}.`
+        `${res.kind === 'test' ? 'Test' : 'Trka'} ${res.distM / 1000}K ${fmt(res.sec)} (${res.date}): VDOT ${v} od nedelje ${wl(n)}${was === null ? ' — plan po osećaju prelazi na tempo' : ` (bilo ${was})`}.`
       );
     } else
       reason('NEW_RESULT', false, 'Novi rezultat: nema sledeće nedelje do trke — tempo ostaje.');
@@ -428,7 +431,7 @@ export function assess(
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${dw} je rasterećenje${dw < n ? ` (ostatak od ${next})` : ''}` : volumeRule ? 'nadjačano pauzom' : dw < n && build(dw) ? `rasterećenje za ove zapise je već u planu (nedelja ${dw})` : 'sledeća nedelja je već rasterećenje, taper ili trka'}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${wl(dw)} je rasterećenje${dw < n ? ` (ostatak od ${next})` : ''}` : volumeRule ? 'nadjačano pauzom' : dw < n && build(dw) ? `rasterećenje za ove zapise je već u planu (nedelja ${wl(dw)})` : 'sledeća nedelja je već rasterećenje, taper ili trka'}.`
     );
   }
 
@@ -457,7 +460,7 @@ export function assess(
       reason(
         'UNDER_EXECUTION',
         ok,
-        `Izvršeno ${round1(a2)} od ${round1(p2)} km u 7 dana (< ${A.underShare * 100}%): ${ok ? `nedelja ${n} ne raste, cilj ${step.startKm} km.${growthNote(step.levelKm!)}` : 'nadjačano ili nema sledeće nedelje izgradnje.'}`
+        `Izvršeno ${round1(a2)} od ${round1(p2)} km u 7 dana (< ${A.underShare * 100}%): ${ok ? `nedelja ${wl(n)} ne raste, cilj ${step.startKm} km.${growthNote(step.levelKm!)}` : 'nadjačano ili nema sledeće nedelje izgradnje.'}`
       );
     } else if (coveredDays(cov, w1[0], t)) {
       const p1 = plannedKm(...w1);
@@ -472,7 +475,7 @@ export function assess(
         reason(
           'OVER_EXECUTION',
           ok,
-          `Izvršeno > ${Math.round(A.overShare * 100)}% planiranog dve nedelje zaredom (${round1(a1)}/${round1(p1)}, ${round1(a2)}/${round1(p2)} km): ${ok ? `plan se ne povećava (nedelja ${n}: ${step.startKm} km). Više od plana povećava rizik; drži se plana` : 'nadjačano, ili sledeća nedelja nije nedelja izgradnje bez rasterećenja'}.`
+          `Izvršeno > ${Math.round(A.overShare * 100)}% planiranog dve nedelje zaredom (${round1(a1)}/${round1(p1)}, ${round1(a2)}/${round1(p2)} km): ${ok ? `plan se ne povećava (nedelja ${wl(n)}: ${step.startKm} km). Više od plana povećava rizik; drži se plana` : 'nadjačano, ili sledeća nedelja nije nedelja izgradnje bez rasterećenja'}.`
         );
       }
     }

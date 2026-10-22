@@ -1,0 +1,29 @@
+[
+  {
+    "name": "08l-1 poruka rezultata (assess) mimo weekLabel: broj nedelje bez pomaka",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "VDOT ${v} od nedelje ${wl(n)}",
+    "replace": "VDOT ${v} od nedelje ${n}",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08l.node.test.ts"
+    ]
+  },
+  {
+    "name": "08l-2 napomena kontrolnog trčanja (generate) mimo weekLabel",
+    "file": "src/domain/generators/fiveK/v2/generate.ts",
+    "find": "String(weekLabel(test.index, input.weekOffset))",
+    "replace": "String(test.index)",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08l.node.test.ts"
+    ]
+  },
+  {
+    "name": "08l-3 handoff ne prenosi pomak u ulaz jezgra",
+    "file": "src/domain/generators/fiveK/v2/app/handoffTarget.ts",
+    "find": "targetInput(input, start, prefix.offset)",
+    "replace": "targetInput(input, start)",
+    "tests": [
+      "src/domain/generators/fiveK/v2/app/handoffTarget.node.test.ts"
+    ]
+  }
+]

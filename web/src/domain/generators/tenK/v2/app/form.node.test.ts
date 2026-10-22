@@ -7,7 +7,8 @@ import { prefixOf } from './plan.ts';
 
 /* FAZA 3, SEGMENT 3h (REVIEW-3 #2) — Napredak → Forma na planu 10K v2 cilja predaje („kraća distanca" iz HM v2): plan
    nosi nedelje izvora ispred (`prefixOf(plan).offset`), pa je prikazni broj nedelje `offset + fromWeek` (isto kao
-   pregled i kalendar, 3d/3g). Unutrašnje poređenje ostaje u indeksu v2. Plan bez prefiksa: broj = `fromWeek`. */
+   pregled i kalendar, 3d/3g). Unutrašnje poređenje ostaje u indeksu v2. Plan bez prefiksa: broj = `fromWeek`. 3i: Forma
+   čita isti offset kao jezgro (`input.weekOffset`, postavlja ga cilj predaje = offset prefiksa). */
 
 const DAY = 86_400_000;
 const addDays = (d: string, n: number): IsoDate =>
@@ -75,10 +76,11 @@ describe('3h: Forma na planu 10K v2 sa prefiksom izvora', () => {
     expect(applied.weeks.find((w) => w.w === shown)!.start).toBe(v2.weeks[fromWeek - 1]!.startDate);
   });
 
-  it('plan bez prefiksa: broj = fromWeek (kao pre)', () => {
+  it('plan bez prefiksa i bez weekOffset (3i): broj = fromWeek (kao pre)', () => {
     const plan = handedOff();
-    const bare = { ...plan } as Record<string, unknown>;
+    const bare = JSON.parse(JSON.stringify(plan)) as Record<string, unknown>;
     for (const k of Object.keys(bare)) if (k.endsWith('Prefix')) delete bare[k];
+    delete (bare['tenKV2'] as { input: Record<string, unknown> }).input['weekOffset'];
     expect(prefixOf(bare)).toBeNull();
     const { applied, today, log, fromWeek } = formAfterResult(bare as GenPlanState);
     const f = select.tenKV2FormHistory({ plan: applied, today, log })!;

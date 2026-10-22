@@ -6,7 +6,7 @@
    2.6.0: plan trčanje/hodanje ide u runWalkAdapt.ts (isti API, isti tok). */
 
 import { dayNumber, mustDay } from './dates.ts';
-import { checkInput } from './input.ts';
+import { checkInput, weekLabel } from './input.ts';
 import { assess, checkFacts, factKmOf, painReturnNote } from './assess.ts';
 import { construct } from './generate.ts';
 import { assessGoal, beginnerGoal, goalWithoutData, raceTimeForVdot } from './paces.ts';
@@ -157,12 +157,14 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
       )
       .map(
         (w) =>
-          ` Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena (Odluka 9).`
+          ` Redovno rasterećenje u nedelji ${weekLabel(w, plan.input.weekOffset)} otpada: nedelja ${weekLabel(w - 1, plan.input.weekOffset)} je smanjena (Odluka 9).`
       )
       .join('');
   const reasons: AdaptReason[] = as.reasons.map((x) => {
     const pain =
-      rf && x.condition === 'PAIN' ? painReturnNote(as.step, c.weeks[rf.week - 1]!.targetKm) : '';
+      rf && x.condition === 'PAIN'
+        ? painReturnNote(as.step, c.weeks[rf.week - 1]!.targetKm, plan.input.weekOffset)
+        : '';
     const more = pain + (x.applied ? relief(x.condition) : '');
     return more ? { ...x, message: x.message + more } : x;
   });

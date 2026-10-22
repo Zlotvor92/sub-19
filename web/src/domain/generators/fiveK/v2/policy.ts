@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.10.3',
+  version: '5k-v2.10.4',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -437,6 +437,8 @@ export interface Athlete {
   days: RunDaysCount;
   beginner: boolean;
   feel: boolean;
+  /** 2.10.4 (3i): pomak broja nedelje u porukama (ulaz weekOffset; input.weekLabel). */
+  weekOffset?: number;
 }
 
 /** 2.4.0: broj dana (stari potpis, 2.3.0) → iskusan trkač sa rezultatom. */
@@ -829,7 +831,7 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'Sačuvan plan 5k-v2.10.1 i stariji prilagođavaju se po 2.10.2 (KNOWN_VERSIONS).'
   },
   {
-    version: '5k-v2.10.3',
+    version: '5k-v2.10.4',
     decision:
       '08k (organizator, edges.ts; pouka 23): (1) posle sporijeg rezultata baza je zadržavala prethodnu R dozu ' +
       '(workouts.baseWeek) čije ponavljanje na NOVOM tempu traje duže od plafona → R_REP (npr. 0,4 km × 308 s/km = 123 s ' +
@@ -840,5 +842,16 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'adaptacija se nastavlja sa ostalim činjenicama; generator (input.ts) i dalje odbija ulaz. Merenje: edges.ts 5K ' +
       '428 → 0 odbijanja (VDOT_OUT_OF_RANGE 420, R_REP 20 → 0); generator bajt-isti; regresija 99 069 tokova bez ' +
       'promene. Sačuvan plan 5k-v2.10.2 i stariji prilagođavaju se po 2.10.3 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.10.4',
+    decision:
+      '08l (3i za 5K, organizator): plan cilja predaje nosi nedelje izvora ispred (prefiks), pa je nedelja v2 i u ' +
+      'kalendaru nedelja offset + i; poruke jezgra su brojale od 1. Ulaz jezgra weekOffset (ceo broj 0–52, ' +
+      'podrazumevano 0, izostavljen kad je 0); app/handoffTarget.ts ga postavlja (= broj nedelja prefiksa) i čuva u ' +
+      'ulazu plana; adaptacija ga čita iz plana (app/adapt.ts dopunjuje stariji sačuvan plan cilja iz prefiksa). Svaka ' +
+      'poruka jezgra sa brojem nedelje ide kroz jednu funkciju input.weekLabel; forma (app/form.ts) čita isti pomak, bez ' +
+      'duplog sabiranja. Bez pomaka bajt-isto (generator 3 816, regresija 148 163 toka bez promene). Merenje review3d (5K): ' +
+      'labelMismatch 0, reasonMismatch 0. Sačuvan plan 5k-v2.10.3 i stariji prilagođavaju se po 2.10.4 (KNOWN_VERSIONS).'
   }
 ];

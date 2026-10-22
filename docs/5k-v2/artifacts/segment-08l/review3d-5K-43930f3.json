@@ -1,0 +1,34 @@
+{
+ "targets": 56,
+ "adapted": 56,
+ "labelMismatch": 0,
+ "reasonMismatch": 112,
+ "numbered": 112,
+ "ex": [
+  {
+   "base": "d4-10w-30km-v55-A-sat",
+   "offset": 3,
+   "message": "Trka 5K 23:00 (2026-12-01): VDOT 42.3 od nedelje 3 (bilo 55)."
+  },
+  {
+   "base": "d4-10w-30km-v55-A-sat",
+   "offset": 3,
+   "message": "Trka 5K 23:00 (2026-12-01): VDOT 42.3 od nedelje 3 (bilo 55)."
+  },
+  {
+   "base": "d4-11w-35km-v35-A-sat",
+   "offset": 3,
+   "message": "Trka 5K 23:00 (2026-12-01): VDOT 42.3 od nedelje 3 (bilo 35)."
+  },
+  {
+   "base": "d4-11w-35km-v35-A-sat",
+   "offset": 3,
+   "message": "Trka 5K 23:00 (2026-12-01): VDOT 42.3 od nedelje 3 (bilo 35)."
+  },
+  {
+   "base": "d4-12w-30km-v45-A-sat",
+   "offset": 3,
+   "message": "Trka 5K 23:00 (2026-12-01): VDOT 42.3 od nedelje 3 (bilo 45)."
+  }
+ ]
+}

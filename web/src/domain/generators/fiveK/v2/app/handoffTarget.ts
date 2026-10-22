@@ -76,7 +76,11 @@ export function targetFacts(facts: HandoffFacts): Record<string, unknown> {
 }
 
 /** Ulaz 5K v2 iz činjenica ulaza izvora (bez izvedenih polja izvora). */
-export function targetInput(input: HandoffInput, start: string): Record<string, unknown> {
+export function targetInput(
+  input: HandoffInput,
+  start: string,
+  weekOffset = 0
+): Record<string, unknown> {
   const pb = input.pb;
   const beginner = input.trainedRecently === false;
   return {
@@ -88,7 +92,9 @@ export function targetInput(input: HandoffInput, start: string): Record<string, 
     ...(input.easyPaceSecPerKm != null ? { typicalEasyPaceSecPerKm: input.easyPaceSecPerKm } : {}),
     experience: beginner ? 'beginner' : 'regular',
     ...(beginner ? { canRun30Min: true } : {}),
-    goalTimeSec: null
+    goalTimeSec: null,
+    // 08l (3i): broj nedelja izvora ispred plana (= prefiks) — poruke jezgra sa brojem nedelje ga dodaju.
+    ...(weekOffset > 0 ? { weekOffset } : {})
   };
 }
 
@@ -115,7 +121,7 @@ export function handoffFuture(
     offset: at.w - 1,
     weeks: current.weeks.filter((w) => w.start < start)
   };
-  const g = generateFiveKV2(targetInput(input, start));
+  const g = generateFiveKV2(targetInput(input, start, prefix.offset));
   if (!g.ok) return fail(rejection(g));
   const a = adaptFiveKV2(g.plan, targetFacts(facts), today);
   if (!a.ok) return fail(rejection(a));
