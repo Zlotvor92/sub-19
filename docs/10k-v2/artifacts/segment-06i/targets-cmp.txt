@@ -1,0 +1,6 @@
+{
+  'trkačka: taper mešovit, najkraći lagan tapera kraći (D23)': 336,
+  'kaskada: kvalitet otpao pre DA, D6/D12 u promenjenoj DA': 178,
+  'trkačka: kvalitet otpao ranije → doza tapera → lagan tapera (D7/D23)': 91,
+  'trkačka: DRUGO': 7
+}

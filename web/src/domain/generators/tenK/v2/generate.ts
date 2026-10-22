@@ -32,11 +32,13 @@ import type {
   PlanWeek,
   PreStartRef,
   TenKV2AdaptStep,
-  TenKV2Plan
+  TenKV2Plan,
+  WeekFrame
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import {
   adaptNominal10,
+  type AdaptVolume,
   adaptVolume,
   capacityLimits,
   capacityMessage,
@@ -49,9 +51,18 @@ import {
   raceWeekTarget10,
   startKm10
 } from './volume.ts';
-import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
+import {
+  type BuiltWeek,
+  buildWeek,
+  MIXED_NOTE,
+  mixedFloorKm,
+  mixedRemainder,
+  type QualityMode,
+  raceWeek,
+  type WeekContext
+} from './week.ts';
 import { fmtKm, fmtSec as fmtPace, warmupCooldown } from './workouts.ts';
-import { type Written, writtenDays, writtenWeeks } from './written.ts';
+import { keptDays, protectedKm, type Written, writtenDays, writtenWeeks } from './written.ts';
 
 export function generateTenKV2(input: unknown): GenerateResult {
   return construct(input, []);
@@ -82,6 +93,51 @@ export function preStartRef(input: unknown): PreStartRef | null {
     buildKm: w.targetKm,
     longKm: long ? long.workout.km : 0,
     tDoseM: deloadLastM(advance(writtenPicks(w.days), INITIAL_QUALITY), chk.rule)
+  };
+}
+
+/**
+ * Pouka 37 (10k-v2.8.0): mešovita nedelja (adaptacija; zaštićeni dani prethodnog plana u nedelji koja nije cela ≤ asOf)
+ * — cilj važi za celu nedelju: preostali dani na ostatak do cilja (week.mixedRemainder, jedino mesto odluke; zbir
+ * zaštićenih po činjenicama, written.protectedKm). Nedelja pauze (volume `remainder`: cilj ostatka nedelje određuje
+ * pravilo pauze) ostaje pravilu pauze. Bez izmene → ista nedelja.
+ */
+function mixed37(
+  w: BuiltWeek,
+  frame: WeekFrame,
+  target10: number,
+  ctx: WeekContext,
+  prior: Written | undefined,
+  av: AdaptVolume | null
+): BuiltWeek & { keptKm?: number } {
+  if (!prior || av?.remainder.has(frame.index)) return w;
+  const kept = keptDays(prior.weeks[frame.index - 1]!, prior);
+  if (kept.length === 0) return w;
+  const keptDates = new Set(kept.map((d) => d.date));
+  const keptKm = protectedKm(kept, prior);
+  const m = mixedRemainder(
+    w.days.filter((d) => !keptDates.has(d.date)),
+    keptKm,
+    target10 / 10,
+    ctx.paces
+  );
+  if (!m) return w;
+  const days = w.days.map((d) => m.days.find((x) => x.date === d.date) ?? d);
+  const floor = mixedFloorKm(m.days);
+  const fmt2 = (km: number): string =>
+    (Math.round(km * 100) / 100).toFixed(2).replace(/0$/, '').replace('.', ',');
+  return {
+    ...w,
+    days,
+    planned100: planned100Of(days),
+    picks: w.picks && m.droppedQuality ? writtenPicks(days) : w.picks,
+    notes: [
+      ...w.notes,
+      m.over
+        ? `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, ostatak do cilja ${fmt2(m.remainderKm)} km < najmanji preostali dani bez kvaliteta ${fmt2(floor)} km — lagani na minimumu, kvalitet ostaje, planirano > cilj ${fmtKm(target10 / 10)} km.`
+        : `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, preostali dani skraćeni na ostatak do cilja ${fmt2(m.remainderKm)} km${m.droppedQuality ? ' (kvalitet koji ne staje otpada)' : ''}.`
+    ],
+    keptKm
   };
 }
 
@@ -117,7 +173,16 @@ export function construct(
   if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima D5.');
   const adapted = steps.length > 0;
   const frames = adapted
-    ? framesFor(base, pattern, input.runDays, input.raceDate, pace, steps)
+    ? framesFor(
+        base,
+        pattern,
+        input.runDays,
+        input.raceDate,
+        pace,
+        steps,
+        null,
+        new Set([...(prior?.lockedDayIds ?? []), ...(prior?.doneDayIds ?? [])])
+      )
     : base;
   const ctx0: WeekContext = {
     input,
@@ -250,7 +315,7 @@ export function construct(
         `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
         frame.index
       );
-    const w = make(fit.target10, mode)!;
+    const w = mixed37(make(fit.target10, mode)!, frame, fit.target10, ctx, prior, av);
     const notes = [...w.notes];
     if (fit.fitted)
       notes.unshift(
@@ -265,7 +330,8 @@ export function construct(
       nominalKm: nominal / 10,
       fitted: fit.fitted,
       days: w.days,
-      notes
+      notes,
+      ...(w.keptKm !== undefined ? { keptKm: w.keptKm } : {})
     });
     const wd = prior ? writtenDays(prior.weeks[frame.index - 1]!, w.days, prior) : w.days;
     written.push({ days: wd });

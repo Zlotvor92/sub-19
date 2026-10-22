@@ -156,10 +156,20 @@ export function framesFor(
   raceDate: IsoDate,
   pace: PaceInput,
   steps: readonly TenKV2AdaptStep[],
-  dropped: Map<number, number> | null = null
+  dropped: Map<number, number> | null = null,
+  locked: ReadonlySet<string> = new Set()
 ): WeekFrame[] {
   let frames: WeekFrame[] = base.map((f) => ({ ...f }));
   if (steps.length === 0) return frames;
+  // A13b (10k-v2.8.0, organizator K1; obrazac maraton A13b): dan testa iz plana pre koraka.
+  const prevTest = (() => {
+    const pf =
+      steps.length > 1
+        ? framesFor(base, pattern, runDays, raceDate, pace, steps.slice(0, -1))
+        : base;
+    const f = pf.find((x) => x.test);
+    return f ? testDateOf(f, pattern) : null;
+  })();
   const forced = new Set<number>();
   /** Uzastopne nedelje izgradnje od nedelje i (indeks u nizu) do prvog rasterećenja ili kraja izgradnje. */
   const runFrom = (i: number): number => {
@@ -211,11 +221,22 @@ export function framesFor(
     return l ? { ...f, limits: l } : f;
   });
   const last = steps[steps.length - 1]!.asOf;
+  // A13b: zaštićen test (dan upisan) — okvir ga nosi samo na istom danu (prinudno rasterećenje pomera dan testa Q1 →
+  // slot rasterećenja; rePeriodize premešta nedelju), inače okvir bez testa; test se ne premešta (ispod).
+  if (protectedTest(prevTest, last, locked))
+    frames = frames.map((f) =>
+      f.test && testDateOf(f, pattern) !== prevTest ? withoutTest(f) : f
+    );
   const i = frames.findIndex((f) => f.test);
   const t = frames[i];
   const blocked = (f: WeekFrame, k: number): boolean =>
     !isBuildPhase(f.phase) || f.limits?.quality !== undefined || (f.deload && !base[k]!.deload);
-  if (t && blocked(t, i) && mustDay(testDateOf(t, pattern)) > mustDay(last)) {
+  if (
+    t &&
+    blocked(t, i) &&
+    mustDay(testDateOf(t, pattern)) > mustDay(last) &&
+    !protectedTest(prevTest, last, locked)
+  ) {
     frames[i] = withoutTest(t);
     const j = frames.findIndex(
       (f, k) =>
@@ -228,6 +249,20 @@ export function framesFor(
     if (j >= 0) frames[j] = { ...frames[j]!, test: true };
   }
   return frames;
+}
+
+/**
+ * A13b (10k-v2.8.0, organizator K1; obrazac maraton A13b) — JEDNA funkcija „zaštićen test": test čiji je dan u planu
+ * pre koraka zaštićen (≤ asOf, zaključan ili urađen — `locked` = lockedDayIds ∪ doneDayIds) ostaje upisan (A11);
+ * framesFor ga ne premešta i nijedan drugi okvir ne dobija test. Konstruktor, validator i adapt.ts zovu framesFor sa
+ * istim skupom.
+ */
+export function protectedTest(
+  testDate: IsoDate | null,
+  asOf: IsoDate,
+  locked: ReadonlySet<string>
+): boolean {
+  return testDate !== null && (mustDay(testDate) <= mustDay(asOf) || locked.has(testDate));
 }
 
 /** A3: nedelje novog starta u kojima je rePeriodize primenjen (D5 ima raspored preostale izgradnje). */

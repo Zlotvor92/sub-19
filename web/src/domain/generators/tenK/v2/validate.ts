@@ -41,7 +41,15 @@ import {
   nextLevel
 } from './quality.ts';
 import { adjacentDays } from './schedule.ts';
-import { P35_DROP, P35_KEEP, qualityOverLong, raceWeekEveOnly, raceWeekRest } from './week.ts';
+import {
+  mixedFloorKm,
+  P35_DROP,
+  P35_KEEP,
+  qualityOverLong,
+  raceWeekEveOnly,
+  raceWeekRest,
+  restDaysWeek
+} from './week.ts';
 import {
   A17_MAX_RUN,
   appliedRestarts,
@@ -201,7 +209,16 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   const dropped = new Map<number, number>();
   const frames =
     pace && base0 && base0.length === N
-      ? framesFor(base0, plan.pattern, input.runDays, input.raceDate, pace, steps, dropped)
+      ? framesFor(
+          base0,
+          plan.pattern,
+          input.runDays,
+          input.raceDate,
+          pace,
+          steps,
+          dropped,
+          lockedIds
+        )
       : null;
   const restarts = pace && base0 ? appliedRestarts(base0, steps) : new Set<number>();
   /** A3: nov start počinje progresiju doze iznova i kad faze ostaju (odstupanje A3). */
@@ -434,6 +451,38 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         );
       else err('EMPTY_WEEK', 'Nedelja bez treninga (Uslov 8).', w.index);
     }
+    // Pouka 37 (10k-v2.8.0): mešovita nedelja čiji su preostali dani na ostatku do cilja (keptKm = zbir zaštićenih po
+    // činjenicama, konstruktor) — preostali dani ≤ cilj − keptKm; iznad samo kad ni najmanji preostali dani ne staju
+    // (week.mixedFloorKm — ista funkcija kao konstruktor week.mixedRemainder) → upozorenje (pouka 14), inače greška.
+    // Nedelja cela ≤ asOf: istorija (prethodna adaptacija), ne sudi se.
+    if (
+      ad &&
+      w.keptKm !== undefined &&
+      w.phase !== 'race' &&
+      mustDay(w.endDate) > mustDay(ad.asOf)
+    ) {
+      const free = w.days.filter((d) => !protectedDay(d));
+      const freeKm = free.reduce((a, d) => a + (d.countsToWeek ? to100(d.workout.km) : 0), 0) / 100;
+      const rest = Math.round((w.targetKm - w.keptKm) * 100) / 100;
+      if (!mixed.has(w.index) || free.length === 0)
+        err('MIXED_REMAINDER', 'Ostatak do cilja (pouka 37) van mešovite nedelje.', w.index);
+      else if (freeKm > rest + P.tolerance.plannedKm + EPS) {
+        const floor = mixedFloorKm(free);
+        // Kvalitet ostaje (dopuna MAR-08): preostali = dugi + kvalitet + lagani na minimumu (ista funkcija).
+        if (Math.abs(freeKm - mixedFloorKm(free, true)) <= EPS && rest + EPS < floor)
+          warn(
+            'MIXED_OVER_TARGET',
+            `Mešovita nedelja: zaštićeni dani ${w.keptKm} km (po činjenicama), ostatak do cilja ${rest} km < najmanji preostali dani ${floor} km — planirano ${w.plannedKm} km > cilj ${w.targetKm} km (pouka 37/14).`,
+            w.index
+          );
+        else
+          err(
+            'MIXED_REMAINDER',
+            `Mešovita nedelja: preostali dani ${freeKm} km > ostatak do cilja ${rest} km, a nisu na minimumu (pouka 37).`,
+            w.index
+          );
+      }
+    }
     // Segment 04: mešovita nedelja — samo dani; nedelja sa danima bola/odmora (A4): planirano ≤ cilj.
     if (!checked(w)) continue;
     const limited = restOf(w).size > 0 || painOf(w).size > 0;
@@ -460,7 +509,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const load = w.plannedKm + (w.phase === 'race' ? P.raceWeek.raceKm : 0);
     if (
       load + EPS < rule.weekMinKm &&
-      (restOf(w).size > 0 || (painOf(w).size > 0 && w.phase !== 'race'))
+      (restDaysWeek(w) || (painOf(w).size > 0 && w.phase !== 'race'))
     )
       warn(
         'WEEK_MIN_REST',
@@ -1633,10 +1682,15 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     // Segment 04 (A13): najviše jedan test, samo plan po osećaju koji nije početnik, u nedelji izgradnje po
     // osećaju; oznaka nedelje ⇔ dan testa (mešovite nedelje: samo dan).
     const tw0 = tests[0];
+    // A13b (10k-v2.8.0): zaštićen dan testa (≤ asOf, zaključan, urađen) je upisan kakav jeste (A11) — ne sudi se po
+    // osnovi tempa ni fazi nedelje (npr. nov rezultat posle zaključanog testa); najviše jedan test važi i dalje.
+    const tDay = weeks.flatMap((w) => w.days).find((d) => d.role === 'test');
     const bad =
       tests.length > 1 ||
       (tests.length === 1 && (pace.kind !== 'feel' || !rule.feelTest)) ||
-      (tw0 !== undefined && (!feelW({ index: tw0 }) || !isBuildPhase(weeks[tw0 - 1]!.phase)));
+      (tw0 !== undefined &&
+        !(tDay && protectedDay(tDay)) &&
+        (!feelW({ index: tw0 }) || !isBuildPhase(weeks[tw0 - 1]!.phase)));
     if (bad)
       err('TEST', 'Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32).');
     for (const w of weeks)
