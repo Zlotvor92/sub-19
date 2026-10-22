@@ -1,5 +1,5 @@
 import { fmtClock } from '../../domain/format';
-import { journeyModel, type JourneyKey, type JourneyPoint } from './journey';
+import { journeyModel, type JourneyKey, type JourneyPoint } from './journeyModel';
 
 const LABEL: Readonly<Record<JourneyKey, string>> = {
   start: 'start',

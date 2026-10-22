@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MIN_GAP, gapToGoal, journeyModel } from './journey';
+import { MIN_GAP, gapToGoal, journeyModel } from './journeyModel';
 
 describe('journeyModel', () => {
   it('brže je desno: start 20:37 → sada 20:13 → cilj 19:59 → plan 19:45', () => {

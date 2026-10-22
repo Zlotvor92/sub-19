@@ -16,7 +16,7 @@ import { t3kRows, t3kSeries } from '../../domain/training/test3k';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
 import { useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useUIStore } from '../../stores/uiStore';
-import { gapToGoal } from './journey';
+import { gapToGoal } from './journeyModel';
 
 const num = (x: unknown): number | null => (typeof x === 'number' && Number.isFinite(x) ? x : null);
 
