@@ -1,10 +1,10 @@
 /* Segment 08i (5k-v2.10.0) — trajna mreža pouke 37 (mešovita nedelja: ostatak do cilja, samo naniže) nad planovima
    uzorka Faze 4a (testInputs.earlyGridBases). Nezavisno od konstrukcije:
    - UMOR: zapisi umora pet i ned nedelje k − 1 (RPE 8), asOf SVAKI dan nedelje k (k = 2 … N − 3; tekuća nedelja
-     rasterećenja je mešovita) + zaključan prvi dan kvaliteta nedelje k + 1 (obrazac locked-result: plan sa
-     rezultatom) → 0 odbijanja;
+     rasterećenja je mešovita) + zaključan prvi dan kvaliteta nedelje k + 1 (obrazac locked-result; 2.10.1 i plan po
+     osećaju — test se ne stavlja na zaključan dan) → 0 odbijanja;
      svaka mešovita nedelja posle asOf (trkačka izuzeta, pouka 30): planirano ≤ cilj ILI upozorenje MIXED_OVER_TARGET
-     te nedelje, a tada su preostali dani na minimumu (bez kvaliteta, lagan = minimum); preostali dani bez
+     te nedelje, a tada su lagani preostali dani na minimumu (kvalitet ostaje — dopuna MAR-08); preostali dani bez
      degenerisanog dana (minimum ≤ lagan ≤ preostali dugi, prazan trening), zaštićeni dani bajt-isti.
    - Mreža mora sadržati mešovite nedelje skraćene po pouci 37 (oznaka week.MIXED_NOTE) — inače ne proverava ništa.
    BRZ nivo: BRZ_PLANOVI (segment08g.harness) + primer nalaza; PUN: svi planovi uzorka u 3 dela
@@ -33,6 +33,8 @@ export interface MixedStats {
   mixed: number;
   trimmed: number;
   over: number;
+  /** 2.10.1: tokovi u kojima je test otpao jer bi pao na zaključan dan (napomena). */
+  testLost: number;
 }
 
 const kmOf = (ds: readonly PlanDay[]): number =>
@@ -42,14 +44,11 @@ export function mixedBad(id: string, input: Record<string, unknown>): MixedStats
   const g = generateFiveKV2(input);
   if (!g.ok) throw new Error(id);
   const p = g.plan as FiveKV2Plan;
-  const st: MixedStats = { bad: [], flows: 0, mixed: 0, trimmed: 0, over: 0 };
+  const st: MixedStats = { bad: [], flows: 0, mixed: 0, trimmed: 0, over: 0, testLost: 0 };
   const rec = (date: string) => ({ date, km: 6, durationSec: 2400, completed: true, rpe: 8 });
   for (let k = 2; k <= p.weeks.length - 3; k++) {
     const sun = p.weeks[k - 2]!.endDate;
-    // Zaključan dan kao locked-result: samo plan sa rezultatom (po osećaju: v. izveštaj 08i — test premešten u nedelju
-    // sa zaključanim kvalitetom, TEST_WEEK, isto na e2e482e).
-    const q =
-      p.vdot === null ? undefined : p.weeks[k]!.days.find((d) => d.workout.kind === 'quality');
+    const q = p.weeks[k]!.days.find((d) => d.workout.kind === 'quality');
     for (let d = 0; d <= 6; d++) {
       const at = addDays(p.weeks[k - 1]!.startDate, d);
       const key = `${id}/k${k}/+${d}`;
@@ -70,6 +69,8 @@ export function mixedBad(id: string, input: Record<string, unknown>): MixedStats
         );
         continue;
       }
+      if (r.plan.weeks.some((w) => w.notes.some((n) => n.includes('kontrolno trčanje otpada'))))
+        st.testLost++;
       const t = mustDay(at);
       const prot = (x: PlanDay): boolean => mustDay(x.date) <= t || x.date === q?.date;
       for (const w of r.plan.weeks) {
@@ -96,13 +97,15 @@ export function mixedBad(id: string, input: Record<string, unknown>): MixedStats
                 x.workout.km > (long?.workout.km ?? Infinity) + 1e-9))
           )
             st.bad.push(`${key}/w${w.index}: degenerisan dan ${x.date} ${x.role} ${x.workout.km}`);
+        // Zapisi umora su u nedelji k − 1 (cela prošlost): zbir zaštićenih po činjenicama = planirani km (protectedKm nema).
+        if (w.protectedKm !== undefined)
+          st.bad.push(`${key}/w${w.index}: protectedKm ${w.protectedKm} bez činjenica u nedelji`);
         if (w.plannedKm <= w.targetKm + EPS) continue;
         const warned = r.plan.warnings.some(
           (v) => v.rule === 'MIXED_OVER_TARGET' && v.week === w.index
         );
-        const minimal =
-          !free.some((x) => x.workout.kind === 'quality') &&
-          free.every((x) => x.role !== 'easy' || x.workout.km <= easyMin + 1e-9);
+        // 2.10.1: kvalitet ostaje kad ni bez njega ne staje — minimum = lagani na minimumu.
+        const minimal = free.every((x) => x.role !== 'easy' || x.workout.km <= easyMin + 1e-9);
         if (!warned || !minimal)
           st.bad.push(
             `${key}/w${w.index}: planirano ${w.plannedKm} > cilj ${w.targetKm} (zaštićeni ${Math.round(kmOf(kept) * 100) / 100})${warned ? ', preostali dani nisu na minimumu' : ' bez upozorenja'}`
@@ -138,6 +141,7 @@ export function describe08i(label: string, part: 1 | 2 | 3): void {
         const st = bases.map((b) => mixedBad(b.id, b.input));
         expect(st.flatMap((s) => s.bad).slice(0, 10)).toEqual([]);
         expect(st.reduce((a, s) => a + s.trimmed, 0)).toBeGreaterThan(0);
+        if (part === 1) expect(st.reduce((a, s) => a + s.testLost, 0)).toBeGreaterThan(0);
       },
       GRID_TIMEOUT
     );

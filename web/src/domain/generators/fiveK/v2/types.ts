@@ -244,6 +244,9 @@ export interface PlanWeek extends WeekFrame {
   /** 2.8.0 (pouka 30): dani trkačke nedelje koji su postali odmor da trkačka nedelja ostane ≤ planirano tapera
       (week.raceWeekRest; samo kad nije prazno). */
   raceRest?: IsoDate[];
+  /** 2.10.1 (pouka 37): mešovita nedelja — zbir zaštićenih dana po činjenicama (assess.factKmOf), samo kad se
+      razlikuje od planiranih km tih dana; validator ga čita umesto planiranih km. */
+  protectedKm?: number;
 }
 
 /** 2.3.0: q2 = null za 3 dana (jedan kvalitet); easy = lagani dani šablona (1 za 3–4, 2 za 5 dana).

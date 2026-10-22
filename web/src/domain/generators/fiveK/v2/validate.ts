@@ -454,23 +454,34 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       const free = w.days.filter((d) => !prot(d));
       const kmOf = (ds: readonly PlanDay[]): number =>
         ds.reduce((x, d) => x + (d.countsToWeek ? d.workout.km : 0), 0);
-      if (kept.length > 0 && free.length > 0 && w.plannedKm > w.targetKm + tolKm) {
+      // 2.10.1: zbir zaštićenih po činjenicama (protectedKm iz konstruktora — week.protectedKm); nedelja ostatka pauze
+      // ima vlasnika (volume.pauseRemainderKm).
+      const keptKm = w.protectedKm ?? kmOf(kept);
+      const owner = steps.some(
+        (s) => s.firstWeek === w.index && pauseRemainderKm(s, w, w.targetKm) !== null
+      );
+      if (
+        !owner &&
+        kept.length > 0 &&
+        free.length > 0 &&
+        keptKm + kmOf(free) > w.targetKm + tolKm
+      ) {
         const floor = mixedFloorKm(free, easyMinOf(w.phase));
-        const rest = w.targetKm - kmOf(kept);
+        const rest = w.targetKm - keptKm;
+        // 2.10.1 (dopuna MAR-08): ni bez kvaliteta ne staje → kvalitet ostaje, lagani na minimumu.
         if (
-          Math.abs(kmOf(free) - floor) <= tolKm &&
-          !free.some((d) => d.workout.kind === 'quality') &&
+          Math.abs(kmOf(free) - mixedFloorKm(free, easyMinOf(w.phase), true)) <= tolKm &&
           rest + EPS < floor
         )
           warn(
             'MIXED_OVER_TARGET',
-            `Mešovita nedelja: zaštićeni dani ${Math.round(kmOf(kept) * 100) / 100} km, ostatak do cilja ${Math.round(rest * 100) / 100} km < najmanji preostali dani ${floor} km — planirano ${w.plannedKm} km > cilj ${w.targetKm} km (pouka 37/14).`,
+            `Mešovita nedelja: zaštićeni dani ${Math.round(keptKm * 100) / 100} km, ostatak do cilja ${Math.round(rest * 100) / 100} km < najmanji preostali dani bez kvaliteta ${floor} km — planirano > cilj ${w.targetKm} km (pouka 37/14).`,
             w.index
           );
         else
           err(
             'MIXED_REMAINDER',
-            `Mešovita nedelja: planirano ${w.plannedKm} km > cilj ${w.targetKm} km, a preostali dani nisu na ostatku do cilja (pouka 37).`,
+            `Mešovita nedelja: zaštićeni ${Math.round(keptKm * 100) / 100} km + preostali ${Math.round(kmOf(free) * 100) / 100} km > cilj ${w.targetKm} km, a preostali dani nisu na ostatku do cilja (pouka 37).`,
             w.index
           );
       }

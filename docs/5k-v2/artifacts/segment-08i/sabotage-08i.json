@@ -2,8 +2,8 @@
   {
     "name": "08i-1 ostatak se ne računa (stara strana: zaštićeni dani + sastavljeni dani)",
     "file": "src/domain/generators/fiveK/v2/generate.ts",
-    "find": "    return prior && pw && mustDay(pw.endDate) > prior.asOf",
-    "replace": "    return false && prior && pw && mustDay(pw.endDate) > prior.asOf",
+    "find": "    const m = owner ? null : mixedWeek(w, kept, keptKm, p);",
+    "replace": "    const m = owner || true ? null : mixedWeek(w, kept, keptKm, p);",
     "tests": [
       "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
       "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"

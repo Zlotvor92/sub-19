@@ -1,0 +1,142 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08i-b/sabotage-08i-b.json",
+ "head": "46e72eb",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 16,
+ "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+ "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08i-b-1 zbir zaštićenih po planu, ne po činjenicama (stara strana)",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "test": "08i-b (5k-v2.10.1): zbir zaštićenih dana po činjenicama; test se ne stavlja na zaključan dan > pauza 10 (r-d4-10w-15km-v38-1, asOf čet ned 4): neodrađeni zaštićeni dani = 0 → preostali dani kao sastavljeni, bez upozorenja",
+    "message": "AssertionError: expected undefined to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "e1cb70fe6e0bdfbfb9b34d0cf11510bf16ff047431a3c6bcaed6079a7bf19a4b",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.9
+  },
+  {
+   "index": 2,
+   "name": "08i-b-2 validator ne čita protectedKm (zbir po planu)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "test": "08i-b (5k-v2.10.1): zbir zaštićenih dana po činjenicama; test se ne stavlja na zaključan dan > više od plana (r-d4-10w-15km-v38-1, asOf čet ned 1): urađeni km 7,92 ulaze u zbir → ni bez kvaliteta ne staje: kvalitet ostaje + upozorenje",
+    "message": "AssertionError: expected [] to deeply equal [ 1 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "0739e813506a56e3e20ec1e0782b38a77975b1e9ad924deec4517f6f821a7f96",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.4
+  },
+  {
+   "index": 3,
+   "name": "08i-b-3 test se premešta i na zaključan dan",
+   "files": [
+    "src/domain/generators/fiveK/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts",
+    "test": "08i trajna mreža (umor po danima nedelje k + zaključan Q1 k + 1, pouka 37) — deo 1 > 6 planova: umor (zapisi u k − 1), asOf svaki dan nedelje k + zaključan Q1 nedelje k + 1 → 0 odbijanja; mešovita nedelja planirano ≤ cilj ili upozorenje sa minimumom (pouka 37)",
+    "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "ce97ae436b69880f4c0942390d6c7e1667b24b787aeb85d2eaf514b57a2d1e67",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.7
+  },
+  {
+   "index": 4,
+   "name": "08i-b-4 trajna mreža bez zaključanog dana u planu po osećaju",
+   "files": [
+    "src/domain/generators/fiveK/v2/segment08i.harness.node.test.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts",
+    "test": "08i trajna mreža (umor po danima nedelje k + zaključan Q1 k + 1, pouka 37) — deo 1 > 6 planova: umor (zapisi u k − 1), asOf svaki dan nedelje k + zaključan Q1 nedelje k + 1 → 0 odbijanja; mešovita nedelja planirano ≤ cilj ili upozorenje sa minimumom (pouka 37)",
+    "message": "AssertionError: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "bbdbbe99a382e426783af87d83102edc63c2f2133939c3e4d389db5c109540c5",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.5
+  },
+  {
+   "index": 5,
+   "name": "08i-b-5 upisana nedelja bez drugog kvaliteta ne nosi dozu prvog (lanac)",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08i.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+    "test": "08i-b: lanac — upisana nedelja bez drugog kvaliteta (pouka 37 ranije adaptacije) nosi dozu prvog > r-d4-13w-15km-v58-0 umor sreda ned 5, isti zapisi ponovo asOf + 6 / + 7 → 0 odbijanja (DOSE_PROGRESSION)",
+    "message": "AssertionError: expected [ false, false ] to deeply equal [ true, true ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "hashSabotaged": "8b4812a643fd6e9fe40270dfe42351aea8001549fd56ecd8a9d022c9c2ca607b",
+   "hashAfter": "d806604d74ebe08bbcf13363bf92fec22b77d1533d68466981711cbac57f8451",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.7
+  }
+ ]
+}

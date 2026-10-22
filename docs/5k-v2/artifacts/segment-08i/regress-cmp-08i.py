@@ -9,7 +9,8 @@ for x,y in zip(b,n):
     if X[3]==Y[3]: continue
     st[s]['changed']+=1
     if X[1]=='GEN': bad.append(('GEN',x)); continue
-    p37 = Y[4].startswith('OK:') and Y[4].split(':')[1]!=''
+    p37 = Y[4].startswith('OK:') and (Y[4].split(':')[1]!='' or (len(Y[4].split(':'))>3 and int(Y[4].split(':')[3])>0))
+    if Y[4].startswith('OK:') and Y[4].split(':')[1]=='' and p37: st[s]['onlyProtectedKm']+=1
     if not p37: bad.append(y); 
     if Y[4].startswith('OK') and int(Y[4].split(':')[2])>0: st[s]['warn']+=1
     if X[4].startswith('REJ'): st[s]['wasRej']+=1
