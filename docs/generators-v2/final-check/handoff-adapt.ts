@@ -1,12 +1,12 @@
 /* Faza 4 pre-final (22. 10.), zadatak 2e — plan CILJA posle predaje „kraća distanca" (plan sa prefiksom izvora), pa
    adaptacija cilja sa 17 scenarija. Predaja kroz PRAVI kod aplikacije (bez izmene web/**):
    `<cilj>/v2/app/handoffTarget.handoffFuture(planIzvoraZaUpis, contractInput izvora, asOf, {}, { raw: činjenice })`,
-   kao `select.shorterHandoffForV2Source` (3d: HM/maraton → 5K; 3f: maraton → HM). 10K cilj (3d-10K) još nije na grani.
+   kao `select.shorterHandoffForV2Source` (3d: HM/maraton → 5K; 3d-10K: HM/maraton → 10K; 3f: maraton → HM).
    Izvor: uzorak lib.sampleBases distance izvora; predaja na kraju ned 2 i ned ⌊N/2⌋; činjenice izvora none/under50/pain8.
    Adaptacija cilja (domen cilja nad planom v2 iz plana za upis): asOf = start cilja (prvi dan), sreda i kraj ned 1,
    sreda ned 2; činjenice cilja = lib facts cilja nad planom cilja, u dva oblika: new (samo nove) i cum (+ činjenice
    izvora bez dayId, kao dnevnik). Iz web/:
-   node ../docs/generators-v2/final-check/handoff-adapt.ts <HM>5K|MAR>HM|MAR>5K> <kR> <kF> <kB> > out.json */
+   node ../docs/generators-v2/final-check/handoff-adapt.ts <HM>5K|HM>10K|MAR>HM|MAR>10K|MAR>5K> <kR> <kF> <kB> > out.json */
 
 import { addDays, distOf, SCENARIOS, sampleBases, wedOf, type Plan } from "./lib.ts";
 import { flow, mergeFacts, print, tally } from "./pre-lib.ts";
@@ -16,13 +16,19 @@ import * as hmTarget from "../../../web/src/domain/generators/halfMarathon/v2/ap
 import * as marPlan from "../../../web/src/domain/generators/marathon/v2/app/plan.ts";
 import * as marPrep from "../../../web/src/domain/generators/marathon/v2/app/preparation.ts";
 import * as fkTarget from "../../../web/src/domain/generators/fiveK/v2/app/handoffTarget.ts";
+import * as tkTarget from "../../../web/src/domain/generators/tenK/v2/app/handoffTarget.ts";
 
 const [pair, kR, kF, kB] = [process.argv[2]!, ...process.argv.slice(3, 6).map(Number)] as [string, number, number, number];
 const [srcName, tgtName] = pair.split(">") as [string, string];
 const src = distOf(srcName);
 const tgt = distOf(tgtName);
 const SRC = srcName === "HM" ? { plan: hmPlan, prep: hmPrep } : { plan: marPlan, prep: marPrep };
-const TGT = tgtName === "HM" ? { fn: hmTarget.handoffFuture, key: "hmV2", prefixKey: "hmV2Prefix", distM: 21097.5 } : { fn: fkTarget.handoffFuture, key: "fiveKV2", prefixKey: "fiveKV2Prefix", distM: 5000 };
+const TGT =
+  tgtName === "HM"
+    ? { fn: hmTarget.handoffFuture, key: "hmV2", prefixKey: "hmV2Prefix", distM: 21097.5 }
+    : tgtName === "10K"
+      ? { fn: tkTarget.handoffFuture, key: "tenKV2", prefixKey: "tenKV2Prefix", distM: 10000 }
+      : { fn: fkTarget.handoffFuture, key: "fiveKV2", prefixKey: "fiveKV2Prefix", distM: 5000 };
 const strip = (f: Record<string, unknown>): Record<string, unknown> => {
   const { lockedDayIds: _l, ...rest } = f;
   const w = rest["workouts"] as Record<string, unknown>[] | undefined;
