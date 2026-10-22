@@ -1,0 +1,274 @@
+{
+ "dist": "5K",
+ "policy": {
+  "regular/3": {
+   "km": [
+    12,
+    35
+   ],
+   "weeks": [
+    6,
+    16
+   ]
+  },
+  "regular/4": {
+   "km": [
+    15,
+    45
+   ],
+   "weeks": [
+    6,
+    16
+   ]
+  },
+  "regular/5": {
+   "km": [
+    25,
+    65
+   ],
+   "weeks": [
+    6,
+    16
+   ]
+  },
+  "beginner/3": {
+   "km": [
+    12,
+    35
+   ],
+   "weeks": [
+    6,
+    16
+   ]
+  },
+  "beginner/4": {
+   "km": [
+    15,
+    45
+   ],
+   "weeks": [
+    6,
+    16
+   ]
+  }
+ },
+ "vdot": [
+  30,
+  60
+ ],
+ "easy": [
+  270,
+  510
+ ],
+ "gridCoverage": {
+  "regular/3": {
+   "n": 990,
+   "km": [
+    12,
+    30
+   ],
+   "weeks": [
+    6,
+    16
+   ],
+   "vdot": [
+    32,
+    58
+   ],
+   "easy": [
+    300,
+    480
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/4": {
+   "n": 1188,
+   "km": [
+    15,
+    40
+   ],
+   "weeks": [
+    6,
+    16
+   ],
+   "vdot": [
+    32,
+    58
+   ],
+   "easy": [
+    300,
+    480
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/5": {
+   "n": 990,
+   "km": [
+    25,
+    60
+   ],
+   "weeks": [
+    6,
+    16
+   ],
+   "vdot": [
+    32,
+    58
+   ],
+   "easy": [
+    300,
+    480
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/3": {
+   "n": 360,
+   "km": [
+    12,
+    30
+   ],
+   "weeks": [
+    8,
+    16
+   ],
+   "vdot": [
+    32,
+    36
+   ],
+   "easy": [
+    420,
+    480
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/4": {
+   "n": 288,
+   "km": [
+    15,
+    30
+   ],
+   "weeks": [
+    8,
+    16
+   ],
+   "vdot": [
+    32,
+    36
+   ],
+   "easy": [
+    420,
+    480
+   ],
+   "race": [
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  }
+ },
+ "uncovered": [
+  "regular/3: km max 35 (mreža do 30)",
+  "regular/3: VDOT min 30 (mreža od 32)",
+  "regular/3: VDOT max 60 (mreža do 58)",
+  "regular/3: lak tempo min 270 (mreža od 300)",
+  "regular/3: lak tempo max 510 (mreža do 480)",
+  "regular/3: trka sat (mreža nema)",
+  "regular/4: km max 45 (mreža do 40)",
+  "regular/4: VDOT min 30 (mreža od 32)",
+  "regular/4: VDOT max 60 (mreža do 58)",
+  "regular/4: lak tempo min 270 (mreža od 300)",
+  "regular/4: lak tempo max 510 (mreža do 480)",
+  "regular/4: trka sat (mreža nema)",
+  "regular/5: km max 65 (mreža do 60)",
+  "regular/5: VDOT min 30 (mreža od 32)",
+  "regular/5: VDOT max 60 (mreža do 58)",
+  "regular/5: lak tempo min 270 (mreža od 300)",
+  "regular/5: lak tempo max 510 (mreža do 480)",
+  "regular/5: trka sat (mreža nema)",
+  "beginner/3: km max 35 (mreža do 30)",
+  "beginner/3: nedelje min 6 (mreža od 8)",
+  "beginner/3: VDOT min 30 (mreža od 32)",
+  "beginner/3: VDOT max 60 (mreža do 36)",
+  "beginner/3: lak tempo min 270 (mreža od 420)",
+  "beginner/3: lak tempo max 510 (mreža do 480)",
+  "beginner/3: trka sat (mreža nema)",
+  "beginner/4: km max 45 (mreža do 30)",
+  "beginner/4: nedelje min 6 (mreža od 8)",
+  "beginner/4: VDOT min 30 (mreža od 32)",
+  "beginner/4: VDOT max 60 (mreža do 36)",
+  "beginner/4: lak tempo min 270 (mreža od 420)",
+  "beginner/4: lak tempo max 510 (mreža do 480)",
+  "beginner/4: trka sat (mreža nema)"
+ ],
+ "edgeInputs": 160,
+ "generatorRejected": {
+  "QUALITY_INFEASIBLE": 2
+ },
+ "generatorRejectedEx": {
+  "QUALITY_INFEASIBLE": [
+   "regular/3/12km/6w/vmax/sat [vdotMax,race-sat]: Nedelja 3: I ponavljanja: budžet 1.11 km nije dovoljan za najmanji smislen trening po pravilima.",
+   "regular/3/12km/6w/vmax/sun [vdotMax]: Nedelja 3: I ponavljanja: budžet 1.11 km nije dovoljan za najmanji smislen trening po pravilima."
+  ]
+ },
+ "plans": 158,
+ "plansUncovered": 158,
+ "uncoveredFlows": {
+  "flows": 15010,
+  "rejected": 428
+ },
+ "flows": 15800,
+ "rejectedFlows": 428,
+ "rejected": {
+  "VDOT_OUT_OF_RANGE:VDOT novog rezultata (#) mora biti #–#.": 420,
+  "VALIDATOR:R_REP": 20
+ },
+ "rejectedEx": {
+  "VDOT_OUT_OF_RANGE:VDOT novog rezultata (#) mora biti #–#.": [
+   "regular/3/12km/6w/vmin/sat [vdotMin,race-sat]/start-1 2027-01-23/slower: VDOT novog rezultata (28) mora biti 30–60.",
+   "regular/3/12km/6w/vmin/sat [vdotMin,race-sat]/start 2027-01-24/slower: VDOT novog rezultata (28) mora biti 30–60.",
+   "regular/3/12km/6w/vmin/sat [vdotMin,race-sat]/w1wed 2027-01-27/slower: VDOT novog rezultata (28) mora biti 30–60."
+  ],
+  "VALIDATOR:R_REP": [
+   "regular/4/45km/6w/vmax/sat [km45,vdotMax,race-sat]/start 2027-01-24/edgeSlow: R ponavljanje 133 s > 120 s.",
+   "regular/4/45km/6w/vmax/sat [km45,vdotMax,race-sat]/w1wed 2027-01-27/edgeSlow: R ponavljanje 133 s > 120 s.",
+   "regular/4/45km/6w/vmax/sun [km45,vdotMax]/start 2027-01-25/edgeSlow: R ponavljanje 133 s > 120 s."
+  ]
+ },
+ "common": {},
+ "commonEx": {},
+ "inv": {},
+ "invEx": {},
+ "by": {
+  "slower": 200,
+  "faster": 110,
+  "test5k": 110,
+  "edgeSlow": 8
+ },
+ "seconds": 66.378
+}

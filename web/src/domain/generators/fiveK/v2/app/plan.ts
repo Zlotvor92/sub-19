@@ -38,7 +38,7 @@ export const POLICY_VERSION = P.version;
 export const LEGACY_POLICY_ID = 'legacy-5k';
 /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 5k-v2.6.0, 5k-v2.6.1,
  *  5k-v2.7.0, 5k-v2.8.0, 5k-v2.8.1, 5k-v2.9.0 (od 3d — plan sa nedeljama izvora predaje, `PREFIX_KEY`),
- *  5k-v2.10.0 (08i, pouka 37), 5k-v2.10.1 (08i-b) i tekuća (08j `5k-v2.10.2`).
+ *  5k-v2.10.0 (08i, pouka 37), 5k-v2.10.1 (08i-b), 5k-v2.10.2 (08j) i tekuća (08k `5k-v2.10.3`).
  *  Sačuvan plan starije verzije ostaje plan 5K v2; prilagođavanje ga gradi tekućim pravilima, rezultat nosi tekuću
  *  oznaku. Svaka druga verzija je „unknown". */
 export const KNOWN_VERSIONS: readonly string[] = [
@@ -51,6 +51,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
     '5k-v2.9.0',
     '5k-v2.10.0',
     '5k-v2.10.1',
+    '5k-v2.10.2',
     P.version
   ])
 ];

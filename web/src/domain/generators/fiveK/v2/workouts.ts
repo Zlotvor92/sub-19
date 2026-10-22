@@ -229,6 +229,10 @@ export interface PrevDose {
 }
 
 const workOf = (c: RepChoice): number => Math.round(c.reps * c.repKm * 100) / 100;
+/** 2.10.3 (08k, pouka 23): zadržana PRETHODNA doza staje u plafon trajanja ponavljanja na TEKUĆEM tempu (kao validator
+    R_REP); posle sporijeg rezultata isti metri traju duže. */
+const repFits = (c: { repKm: number }, paceSecPerKm: number, maxSec: number): boolean =>
+  c.repKm * paceSecPerKm <= maxSec + 1e-9;
 
 /**
  * 2.1.0 progresija doze. Nabraja dozvoljene parove (dužina iz ponude × broj ponavljanja u
@@ -656,7 +660,7 @@ function baseWeek(
     workOf(c) <= budget + 1e-9 && workOf(c) + 1e-9 >= budget * q.mainMinShareOfBudget;
   let r =
     chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, pm ? 'grow' : 'base') ??
-    (pm && fits(pm, b.R) ? pm : null) ??
+    (pm && fits(pm, b.R) && repFits(pm, p.R, q.rRepMaxSec) ? pm : null) ??
     chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, 'base');
   if (!r) return { ok: false, message: `R ponavljanja: budžet ${km(b.R)} km nije dovoljan.` };
   const top = tContinuousTop(b.T, 'base', p);
