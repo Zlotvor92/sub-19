@@ -1,0 +1,16 @@
+[
+  {
+    "name": "R3-1a čistač bez planKeys",
+    "file": "src/domain/generators/handoff.ts",
+    "find": "  const drop = [format.planKey, ...(format.planKeys ?? [])];",
+    "replace": "  const drop = [format.planKey];",
+    "tests": ["src/domain/generators/handoffV2Source.node.test.ts"]
+  },
+  {
+    "name": "R3-1b format HM v2 bez ključa prefiksa",
+    "file": "src/domain/generators/halfMarathon/v2/app/preparation.ts",
+    "find": "  planKeys: [PREFIX_KEY],",
+    "replace": "  planKeys: [] as string[],",
+    "tests": ["src/domain/generators/handoffV2Source.node.test.ts"]
+  }
+]

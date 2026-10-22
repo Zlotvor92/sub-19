@@ -36,6 +36,8 @@ const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
  *  piše i v1 cilj (`trainingVdot`, `racePace`, `vdot0` …) cilj prepisuje. */
 export const MARATHON_V2_SOURCE_FORMAT = {
   planKey: 'marathonV2',
+  // REVIEW-3 #1: plan maratona v2 nema drugih ključeva najvišeg nivoa (maraton nikad nije cilj predaje, nema prefiks).
+  planKeys: [],
   metaKeys: [
     'vdot',
     'paceBasis',
