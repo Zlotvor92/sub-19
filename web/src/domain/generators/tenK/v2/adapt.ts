@@ -22,6 +22,7 @@ import type {
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { to10 } from './volume.ts';
+import { weekLabel } from './weekLabel.ts';
 import { factKmOf, type Written, writtenWeeks } from './written.ts';
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
@@ -186,6 +187,8 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
       dropped,
       new Set([...facts.lockedDayIds, ...doneAfter])
     );
+  // Segment 3i: broj nedelje u porukama (prefiks plana cilja predaje); indeksi ostaju v2.
+  const wl = (w: number): number => weekLabel(chk.input, w);
   const own = [...dropped].filter(([, k]) => k === steps.length - 1).map(([w]) => w);
   const byTarget = (w: number): boolean => targetReducedWeek(as.step) === w - 1;
   const a17 = (x: AdaptReason): string =>
@@ -194,13 +197,14 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
         x.condition === 'PAIN' ? !byTarget(w) : REDUCING.includes(x.condition) && byTarget(w)
       )
       .map(
-        (w) => ` Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena (A17).`
+        (w) =>
+          ` Redovno rasterećenje u nedelji ${wl(w)} otpada: nedelja ${wl(w - 1)} je smanjena (A17).`
       )
       .join('');
   const reasons: AdaptReason[] = as.reasons.map((x) => {
     const pain =
       rf && x.condition === 'PAIN'
-        ? painReturnNote(as.step, to10(c.weeks[rf.week - 1]!.targetKm))
+        ? painReturnNote(chk.input, as.step, to10(c.weeks[rf.week - 1]!.targetKm))
         : '';
     const note = pain + (x.applied ? a17(x) : '');
     return note ? { ...x, message: x.message + note } : x;
@@ -215,8 +219,8 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
       applied: true,
       message:
         ta === null
-          ? `Test ${P.test.km} km (nedelja ${tb}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja (A13).`
-          : `Test ${P.test.km} km: nedelja ${tb ?? '—'} → ${ta} (prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja, A13).`
+          ? `Test ${P.test.km} km (nedelja ${tb === null ? tb : wl(tb)}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja (A13).`
+          : `Test ${P.test.km} km: nedelja ${tb === null ? '—' : wl(tb)} → ${wl(ta)} (prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja, A13).`
     });
   const applied = reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
   const prevNotes = plan.notes.filter((x) => x.startsWith('Adaptacija '));

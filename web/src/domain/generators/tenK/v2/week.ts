@@ -51,6 +51,7 @@ import {
   type WarmupCooldown,
   zoneOf
 } from './workouts.ts';
+import { weekLabel } from './weekLabel.ts';
 
 export interface WeekContext {
   input: TenKV2Input;
@@ -286,7 +287,7 @@ export function buildWeek(
       ...(test ? [testNote] : []),
       ...(ref
         ? [
-            `Umor pre starta (A5): referenca rasterećenja je nedelja 1 plana bez činjenica — cilj ${fmtKm(ref.buildKm)} km, dugi ${fmtKm(ref.longKm)} km${ref.tDoseM > 0 ? `, T ${ref.tDoseM} m` : ''}.`
+            `Umor pre starta (A5): referenca rasterećenja je nedelja ${weekLabel(ctx.input, 1)} plana bez činjenica — cilj ${fmtKm(ref.buildKm)} km, dugi ${fmtKm(ref.longKm)} km${ref.tDoseM > 0 ? `, T ${ref.tDoseM} m` : ''}.`
           ]
         : [])
     ]);

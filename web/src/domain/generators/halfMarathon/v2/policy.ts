@@ -458,12 +458,21 @@ const DECISIONS: readonly Decision[] = [
       'validate.ts (WEEK_ALL_REST); assess.ts (A5: deloadRefLongKm), adapt.ts (genLongBefore), steps.ts deloadRefLong10 (jedna funkcija: konstruktor generate.ts i validator)',
     rationale:
       'prestart-chain.ts (HM, svaki 97. ulaz, bol 8 / bol 5 / umor / pauza 20 na start − 1 → 17 scenarija u ned 1): 61 EMPTY_WEEK + 116 WEEK_INFEASIBLE / 35 224 → 0; handoff-adapt.ts MAR>HM 193 97 29 (plan cilja predaje): 136 / 44 676 (80 EMPTY_WEEK, 56 WEEK_INFEASIBLE) → 0. Opcija pouke 33 nije primenljiva — bez reference nema 0,8 × poslednji; referenca generatora je ista kao pouka 34 (nema upisane izgradnje). Trajna mreža segment08b.'
+  },
+  /* ---------- Segment 3i (hm-v2.6.2): broj nedelje u porukama na planu cilja predaje. ---------- */
+  {
+    id: '3i-WEEK-LABEL',
+    rule: 'Ulaz weekOffset (ceo broj ≥ 0, podrazumevano 0; normalizovan ulaz ga nosi samo kad je > 0) = broj nedelja ispred plana (prefiks izvora predaje „kraća distanca"). Uslov poznat unapred (uslov 4): postavlja ga cilj predaje pri stvaranju plana, čuva se u plan.input, adaptacija ga čita iz plana. Svaki broj nedelje u porukama jezgra (napomene nedelja i plana, razlozi adaptacije i traka, upozorenja i odbijanja validatora) ide kroz weekLabel = weekOffset + indeks v2; indeksi, polja week i poređenja ostaju v2. Izuzeci (nisu broj nedelje kalendara): redni broj uvoda „nedelja k od N" (H17), „u nedeljama 1–2" segmenta (H5, položaj u segmentu), STRUCTURE, greške programa (throw). Bez offseta → isti plan.',
+    place:
+      'weekLabel.ts; input.ts checkInput; types.ts HmV2Input.weekOffset; assess.ts, adapt.ts, generate.ts, validate.ts (poruke); app/handoffTarget.ts targetInput; app/form.ts (Forma, isti offset); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'REVIEW-3 #2 dopuna (review3d.measure.ts, obrazac 10K): na planu cilja razlozi i traka nosili su v2 indeks, a kalendar i pregled offset + indeks. Prepisivanje teksta u app sloju je krhko (odluka organizatora); offset je činjenica plana, ne politika izvora.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.6.1',
+  version: 'hm-v2.6.2',
 
   /** H1 (dani i obim: H15). */
   input: {

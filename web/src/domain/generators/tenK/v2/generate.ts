@@ -61,6 +61,7 @@ import {
   raceWeek,
   type WeekContext
 } from './week.ts';
+import { weekLabel } from './weekLabel.ts';
 import { fmtKm, fmtSec as fmtPace, warmupCooldown } from './workouts.ts';
 import { keptDays, protectedKm, type Written, writtenDays, writtenWeeks } from './written.ts';
 
@@ -312,7 +313,7 @@ export function construct(
     }
     if (!fit)
       return infeasible(
-        `Nedelja ${frame.index}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
+        `Nedelja ${weekLabel(input, frame.index)}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
         frame.index
       );
     const w = mixed37(make(fit.target10, mode)!, frame, fit.target10, ctx, prior, av);
@@ -393,7 +394,7 @@ export function construct(
     plan.notes.push(
       `Plan po osećaju (D26): ${pace.why}. E = lagan tempo ${fmtPace(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
       t && td
-        ? `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (D27). Ocena cilja i prognoza 10K: posle testa.`
+        ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date} (D27). Ocena cilja i prognoza 10K: posle testa.`
         : rule.feelTest
           ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
           : `Početnik bez testa ${P.test.km} km (D32): kvalitet po RPE; ocena cilja i prognoza 10K posle rezultata trke ili parkruna (adaptacija, segment 04).`

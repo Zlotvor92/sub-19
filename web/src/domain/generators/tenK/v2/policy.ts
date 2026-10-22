@@ -411,12 +411,21 @@ const DECISIONS: readonly Decision[] = [
       'week.ts mixedRemainder, mixedFloorKm, restDaysWeek; written.ts protectedKm, factKmOf, keptDays, writtenWeeks; generate.ts mixed37; adapt.ts (Written.factKm); validate.ts (MIXED_OVER_TARGET, MIXED_REMAINDER); adaptInvariants.ts; types.ts PlanWeek.keptKm; app/plan.ts KNOWN_VERSIONS',
     rationale:
       'Organizator (mixed-deload.ts, tekuća nedelja rasterećenja posle umora, asOf prvi dan nedelje k ∈ {2, 4}, svaki 97. plan): planirano > cilj 10K 367/582 tokova (+3,0 km prosek, max 8,0), bez upozorenja — dan 1 (često dugi) upisan pun, ostali dani sastavljeni kao da je nedelja slobodna (d3-8w-20km-v30-A-sat k3: cilj 17,0 = 10,1 + 4,7 + 4,7 = 19,5). Posle: 24/582, svih 24 sa MIXED_OVER_TARGET (kvalitet ostaje, dopuna MAR-08); primer 10,1 + 3,5 + 3,4 = 17,0. Regresija (svaki 80. plan × 17 scenarija × asOf start − 6 … kraj, 279 545 tokova): promenjeno 11 353, svi sa nedeljom pouke 37 (over120 7 553, umor 3 774, bol 5 26); promene cilja 612 — trkačka posle mešovitog tapera (D23) 336 + 91 + 7 (bez oštrenja, D8), kaskada D6/D12 posle otpalog kvaliteta 178; 0 odbijanja. Uz to K1 (zaključan dan testa: steps.protectedTest), K3 (lanac pre starta → ned 1: 836/43 656 WEEK_INFEASIBLE → 0; umor posle umora pre starta bez drugog rasterećenja, inače referenca nedelja 1 generatora), K2/K5 (invarijante: dani odmora bola, zaštićeni lagani).'
+  },
+  /* ---------- Segment 3i (10k-v2.8.1): broj nedelje u porukama na planu cilja predaje. ---------- */
+  {
+    id: 'A22',
+    rule: 'Ulaz weekOffset (ceo broj ≥ 0, podrazumevano 0; normalizovan ulaz ga nosi samo kad je > 0) = broj nedelja ispred plana (prefiks izvora predaje „kraća distanca"). Uslov poznat unapred (uslov 4): postavlja ga cilj predaje pri stvaranju plana, čuva se u plan.input, adaptacija ga čita iz plana. Svaki broj nedelje u porukama jezgra (napomene nedelja i plana, razlozi adaptacije i traka, upozorenja i odbijanja validatora) ide kroz weekLabel = weekOffset + indeks v2; indeksi, polja week i poređenja ostaju v2. Izuzeci (nisu broj nedelje kalendara): redni broj uvoda „nedelja k od N" (D28), STRUCTURE (redni broj ≠ indeks), greške programa (throw). Bez offseta → isti plan.',
+    place:
+      'weekLabel.ts; input.ts checkInput; types.ts TenKV2Input.weekOffset; assess.ts, adapt.ts, generate.ts, week.ts, validate.ts (poruke); app/handoffTarget.ts targetInput; app/form.ts (Forma, isti offset); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'REVIEW-3 #2 dopuna (review3d.measure.ts): na planu cilja (offset 3) razlozi i traka nosili su v2 indeks („VDOT … od nedelje 3"), a kalendar i pregled offset + indeks (6) — 30/30. Prepisivanje teksta u app sloju je krhko (odluka organizatora); offset je činjenica plana, ne politika izvora.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.8.0',
+  version: '10k-v2.8.1',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {

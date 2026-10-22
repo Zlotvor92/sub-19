@@ -139,6 +139,7 @@ import {
   warmupCooldown,
   zoneOf
 } from './workouts.ts';
+import { weekLabel } from './weekLabel.ts';
 
 const EPS = 1e-6;
 const PHASES: readonly Phase[] = ['base', 'development', 'specific', 'taper', 'race'];
@@ -209,6 +210,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   };
   const weeks = plan.weeks;
   const input = plan.input;
+  // Segment 3i: broj nedelje u porukama (prefiks plana cilja predaje); indeksi i polje `week` ostaju v2.
+  const wl = (w: number): number => weekLabel(input, w);
   const p = plan.paces;
   const N = weeks.length;
   const rule = planRule(
@@ -428,7 +431,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           w.index
         );
       if (intro(w) && hasQuality(w))
-        err('INTRO', `Nedelja uvoda ${w.index} ima kvalitet (H17, HI13).`, w.index);
+        err('INTRO', `Nedelja uvoda ${wl(w.index)} ima kvalitet (H17, HI13).`, w.index);
       continue;
     }
     const roleOf = (r: 'q1' | 'q2'): DayRole => {
@@ -457,7 +460,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       err('ROLES', 'Rasterećenje ima samo T kvalitet (H5).', w.index);
     // H17/HI13: uvod bez kvaliteta (i kad je rasteretna nedelja).
     if (intro(w) && hasQuality(w))
-      err('INTRO', `Nedelja uvoda ${w.index} ima kvalitet (H17, HI13).`, w.index);
+      err('INTRO', `Nedelja uvoda ${wl(w.index)} ima kvalitet (H17, HI13).`, w.index);
   }
 
   // --- H16: test 5 km — plan po osećaju koji nije početnik: tačno jedan, u poslednjoj nedelji baze (oznaka
@@ -496,7 +499,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   )
     err(
       'TEST',
-      `Plan po osećaju ima tačno jedan test 5 km, u poslednjoj nedelji baze (${wantTest}) (H16).`,
+      `Plan po osećaju ima tačno jedan test 5 km, u poslednjoj nedelji baze (${wl(wantTest)}) (H16).`,
       tests[0]?.w.index
     );
 
@@ -687,7 +690,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     if (l10 > roll10)
       err(
         'LONG_ROLLING',
-        `Dugi ${long.workout.km} km > ${roll10 / 10} km = max(1,1 × L, L + 1 km), L najduži prethodne 4 nedelje (u ned 1–4 i skorašnji najduži) (pouka 28).`,
+        `Dugi ${long.workout.km} km > ${roll10 / 10} km = max(1,1 × L, L + 1 km), L najduži prethodne 4 nedelje (u ned ${wl(1)}–${wl(4)} i skorašnji najduži) (pouka 28).`,
         w.index,
         long.date
       );
@@ -765,7 +768,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     const f = longer[0]!;
     warn(
       'LONG_SHORTER_THAN_QUALITY',
-      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter((w) => isBuildPhase(w.phase)).length} nedelja izgradnje i rasterećenja (ned ${f.w}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; najniži nivo zone ili test, pouka 32; HI3)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
+      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter((w) => isBuildPhase(w.phase)).length} nedelja izgradnje i rasterećenja (ned ${wl(f.w)}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; najniži nivo zone ili test, pouka 32; HI3)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
       f.w
     );
   }
@@ -1156,7 +1159,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       const repeat = (['q1', 'q2'] as const).some((r) => slotDose(b, r)?.step === 'repeat');
       if (hasQuality(b) && qualityKey(prevW) === qualityKey(b)) {
         if (!(repeat && b.notes.some((n) => n.includes('ponovljen'))))
-          err('IDENTICAL_WEEKS', `Isti kvalitet kao nedelja ${prevW.index} (H12).`, b.index);
+          err('IDENTICAL_WEEKS', `Isti kvalitet kao nedelja ${wl(prevW.index)} (H12).`, b.index);
         else {
           // Faza 4a N10.1 (MASTER pouka 32, kao maraton): ponavljanje doze je upozorenje kad za svaki slot ni druga
           // struktura iste doze ni sledeći nivo ne staju u plafon zone (oba člana, ista funkcija kao konstruktor).
@@ -1177,7 +1180,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           if (forced)
             warn(
               'IDENTICAL_WEEKS',
-              `Isti kvalitet kao nedelja ${prevW.index}: druga struktura iste doze i sledeći nivo ne staju u plafon zone (pouka 32, H10).`,
+              `Isti kvalitet kao nedelja ${wl(prevW.index)}: druga struktura iste doze i sledeći nivo ne staju u plafon zone (pouka 32, H10).`,
               b.index
             );
         }
@@ -1525,7 +1528,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   if (shortened.length > 0)
     warn(
       'DELOAD_LONG_SHORTENED',
-      `Rasterećenje: dugi kraći od 0,8 × poslednji da lagani ostanu ≥ ${P.lengths.easyMinKm} km (najmanji obim, HI14) — ${shortened.map((x) => `ned ${x.w}: ${fmtKm(x.long10 / 10)} < ${fmtKm(x.want10 / 10)} km`).join('; ')}.`,
+      `Rasterećenje: dugi kraći od 0,8 × poslednji da lagani ostanu ≥ ${P.lengths.easyMinKm} km (najmanji obim, HI14) — ${shortened.map((x) => `ned ${wl(x.w)}: ${fmtKm(x.long10 / 10)} < ${fmtKm(x.want10 / 10)} km`).join('; ')}.`,
       shortened[0]!.w
     );
 
@@ -1769,7 +1772,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     };
     warn(
       'WEEK_FITTED',
-      `Izvodljiv cilj umesto cilja po pravilu (H6): ${[...part('down', 'spušteno'), ...part('up', 'podignuto')].join(', ')} (nedelje ${fittedW.map((x) => x.w).join(', ')}).`,
+      `Izvodljiv cilj umesto cilja po pravilu (H6): ${[...part('down', 'spušteno'), ...part('up', 'podignuto')].join(', ')} (nedelje ${fittedW.map((x) => wl(x.w)).join(', ')}).`,
       fittedW[0]!.w
     );
   }
@@ -1785,7 +1788,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   )
     err(
       'WEEK1_BELOW_START',
-      `Nedelja 1 ${w1.targetKm} km < trenutni obim ${plan.startKm} km, a dugi nije na ${abs1 / 10} km (150 min, 24 km, skorašnji najduži; H6, pouka 9, HI8).`,
+      `Nedelja ${wl(1)} ${w1.targetKm} km < trenutni obim ${plan.startKm} km, a dugi nije na ${abs1 / 10} km (150 min, 24 km, skorašnji najduži; H6, pouka 9, HI8).`,
       1
     );
   if (capacityCut)

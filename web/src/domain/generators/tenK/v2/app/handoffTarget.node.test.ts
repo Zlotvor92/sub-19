@@ -333,7 +333,7 @@ describe('3d-10K: format i izbor', () => {
     } as never);
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('10k-v2.8.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('10k-v2.8.1');
     expect(r.plan.weeks[0]!.days[0]!.id).toBe('g1d1');
     expect(
       select.TEN_K_V2_GENERATOR.planPolicy({
