@@ -86,7 +86,7 @@ interface HandoffFacts {
   raw?: Readonly<Record<string, unknown>>;
 }
 type Built = {
-  result: { meta?: Meta; hmV2?: unknown } & object;
+  result: { meta?: Meta } & Record<string, unknown>;
   coverage: 'full' | 'distance' | 'insufficient';
 };
 type Target = (
@@ -240,23 +240,26 @@ function build(
   );
 }
 
-/** Vrh dugog i obima plana cilja: v1 cilj — `meta.preparation`; HM v2 cilj — objekat plana v2 (`hmV2`, predaja 3f). */
+/** Ključevi objekta plana v2 cilja (HM v2 3f, 10K v2 3d-10K) — čitaju se strukturno, bez uvoza tipova cilja. */
+const V2_TARGET_KEYS = ['hmV2', 'tenKV2'] as const;
+/** Vrh dugog i obima plana cilja: v1 cilj — `meta.preparation`; v2 cilj — objekat plana v2 (`peakKm`, najduži dugi
+ *  njegovih nedelja; prefiks izvora nije u njemu). */
+type V2Peaks = {
+  peakKm?: number;
+  weeks?: readonly { days: readonly { role?: string; workout?: { km?: number } }[] }[];
+};
 function peaksOf(result: Built['result']): { longKm: number; weeklyKm: number } {
   const prep = (
     (result.meta ?? {}) as { preparation?: { peakLongRunKm?: number; peakWeeklyKm?: number } }
   ).preparation;
   if (prep) return { longKm: prep.peakLongRunKm ?? 0, weeklyKm: prep.peakWeeklyKm ?? 0 };
-  const hm = result.hmV2 as
-    | {
-        peakKm?: number;
-        weeks?: readonly { days: readonly { role?: string; workout?: { km?: number } }[] }[];
-      }
-    | undefined;
-  if (!hm) return { longKm: 0, weeklyKm: 0 };
-  const longs = (hm.weeks ?? []).flatMap((w) =>
+  const found: unknown = V2_TARGET_KEYS.map((k) => result[k]).find((x) => x != null);
+  const v2 = found as V2Peaks | undefined;
+  if (!v2) return { longKm: 0, weeklyKm: 0 };
+  const longs = (v2.weeks ?? []).flatMap((w) =>
     w.days.filter((d) => d.role === 'long').map((d) => d.workout?.km ?? 0)
   );
-  return { longKm: Math.max(0, ...longs), weeklyKm: hm.peakKm ?? 0 };
+  return { longKm: Math.max(0, ...longs), weeklyKm: v2.peakKm ?? 0 };
 }
 
 export interface Option {
