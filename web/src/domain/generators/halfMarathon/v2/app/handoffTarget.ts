@@ -76,7 +76,11 @@ export function targetFacts(facts: HandoffFacts): Record<string, unknown> {
 }
 
 /** Ulaz HM v2 iz činjenica ulaza izvora (bez izvedenih polja izvora). */
-export function targetInput(input: HandoffInput, start: string): Record<string, unknown> {
+export function targetInput(
+  input: HandoffInput,
+  start: string,
+  weekOffset = 0
+): Record<string, unknown> {
   const pb = input.pb;
   return {
     startDate: start,
@@ -88,7 +92,9 @@ export function targetInput(input: HandoffInput, start: string): Record<string, 
     ...(input.easyPaceSecPerKm != null ? { easyPaceSecPerKm: input.easyPaceSecPerKm } : {}),
     ...(input.recentLongRunKm != null ? { recentLongRunKm: input.recentLongRunKm } : {}),
     experience: input.trainedRecently === false ? 'beginner' : 'regular',
-    goalTimeSec: null
+    goalTimeSec: null,
+    // 3i: broj nedelja prefiksa izvora — poznat uslov jezgra (broj nedelje u porukama = broj u kalendaru).
+    ...(weekOffset > 0 ? { weekOffset } : {})
   };
 }
 
@@ -115,7 +121,7 @@ export function handoffFuture(
     offset: at.w - 1,
     weeks: current.weeks.filter((w) => w.start < start) as unknown as StoredWeek[]
   };
-  const g = generateHmV2(targetInput(input, start));
+  const g = generateHmV2(targetInput(input, start, prefix.offset));
   if (!g.ok) return fail(rejection(g.reasons));
   const a = adaptHmV2(g.plan, targetFacts(facts), today);
   if (!a.ok)

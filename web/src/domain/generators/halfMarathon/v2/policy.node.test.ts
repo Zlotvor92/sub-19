@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.6.1');
+    expect(P.version).toBe('hm-v2.6.2');
   });
 
   it('H1 opseg ulaza', () => {
@@ -256,7 +256,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'P37-MIXED',
       'K1-TEST',
       'K2-RACE-REST',
-      'K3-CHAIN'
+      'K3-CHAIN',
+      '3i-WEEK-LABEL'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

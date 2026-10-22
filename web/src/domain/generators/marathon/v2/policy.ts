@@ -373,11 +373,34 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'A11c',
-    rule: 'Pouka 37 (MAR-08, uz dopune organizatora iz HM-08 i 5K-08i): mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen; ne trkačka — pouka 30; ne nedelja ostatka pauze — ona ima svog vlasnika, assess pauseRemainder) — cilj važi za CELU nedelju. Preostali dani se sastavljaju na ostatak = cilj − zbir zaštićenih dana, SAMO NANIŽE (nijedan dan duži nego u nedelji sastavljenoj bez zaštićenih; manjak se ne nadoknađuje). Zbir zaštićenih dana po ČINJENICAMA: dan ≤ asOf u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km (neodrađen 0), ostali (bez zapisa, zaključani, urađeni posle asOf) planirani km; plan nosi razliku u adaptation.factKm. Redosled: lagani do minimuma 5 km (izjednačavaju se, ≤ preostali dugi), pa otpada kvalitet (Q2, pa Q1 — pouka 35; dan postaje lagan; MP najniži nivo 2 × 3000 m ostaje, kao pouka 32) SAMO ako time ostatak staje; dugi se ne skraćuje (kaskada reference poslednjeg dugog). Ne staje → kvalitet ostaje, planirano > cilj uz upozorenje MIXED_WEEK_OVER (pouka 14), ne odbijanje. Jedno mesto odluke (mixed.mixedRest, mixed.factKmOf, mixed.keptKm100); validator čita iste funkcije (MIXED_WEEK_OVER, inače MIXED_OVER_TARGET).',
+    rule: 'Pouka 37 (MAR-08, uz dopune organizatora iz HM-08 i 5K-08i): mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen; ne trkačka — pouka 30; ne nedelja ostatka pauze — ona ima svog vlasnika, assess pauseRemainder) — cilj važi za CELU nedelju. Preostali dani se sastavljaju na ostatak = cilj − zbir zaštićenih dana, SAMO NANIŽE (nijedan dan duži nego u nedelji sastavljenoj bez zaštićenih; manjak se ne nadoknađuje). Zbir zaštićenih dana po ČINJENICAMA: dan ≤ asOf u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km (neodrađen 0), dan poznat iz potpune pokrivenosti (A10) bez zapisa 0 (MAR-08b), ostali (bez zapisa i pokrivenosti, zaključani, urađeni posle asOf) planirani km; plan nosi razliku u adaptation.factKm. Redosled: lagani do minimuma 5 km (izjednačavaju se, ≤ preostali dugi), pa otpada kvalitet (Q2, pa Q1 — pouka 35; dan postaje lagan; MP najniži nivo 2 × 3000 m ostaje, kao pouka 32) SAMO ako time ostatak staje; dugi se ne skraćuje (kaskada reference poslednjeg dugog). Ne staje → kvalitet ostaje, planirano > cilj uz upozorenje MIXED_WEEK_OVER (pouka 14), ne odbijanje. Jedno mesto odluke (mixed.mixedRest, mixed.factKmOf, mixed.keptKm100); validator čita iste funkcije (MIXED_WEEK_OVER, inače MIXED_OVER_TARGET).',
     place:
       'mixed.ts; generate.ts (konstruktor, stanje doze iz upisanih dana); adapt.ts (factKm); written.ts (mešovita i po činjenicama); validate.ts; adaptInvariants.ts',
     rationale:
       'Organizator (pouka 37, mixed-deload.ts: tekuće rasterećenje posle umora, asOf prvi dan ned k ∈ {2, 4}, svaki 97. plan): maraton planirano > cilj 426/613 (+4,24 km prosek, max 11,91; d3-12w-30km-v30-A-sat ned 3: cilj 25,4 = dugi 16,8 upisan + lagan 7,6 + T 5,12 = 29,52). Posle: 78/613 (+2,56, max 6,05), svih 78 sa MIXED_WEEK_OVER (zaštićeni dani + najmanji preostali ne staju; primer 16,8 + 5 + T 5,12 = 26,92), 0 odbijanja. Rana mreža (45 101 tokova): 599 nedelja sa skraćenim ostatkom — 443 staje (116 uz odbacivanje kvaliteta), 156 ne staje i kvalitet ostaje. Nedelja ostatka pauze: 14 004 toka sa zaštićenim danima, 0 bi bilo dodatno skraćeno (nema sudara). Regresija prema 46dff18: generator bajt-isti; promenjeni samo tokovi sa mešovitom nedeljom iznad cilja ili sa činjenicom ≠ plan (adaptation.factKm); promene ciljeva samo preko stanja doze (kvalitet koji otpada ne napreduje, M6) i trkačke nedelje (lagan ≤ lagan tapera, M8). Verzija marathon-v2.5.0.'
+  },
+  {
+    id: 'A13c',
+    rule: 'Pouka 38 (MAR-08b, K1): zaštićen test se ne premešta — test čiji je dan u planu pre koraka ≤ asOf, zaključan ili urađen ostaje gde jeste (upisan, A11); pravila koja premeštaju test (pauza, umor, bol, rasterećenje — A13) važe samo za nezaštićen test, a nijedan okvir ne dobija drugi test. Jedna funkcija (steps.framesFor, proširen A13b: zaključani i urađeni dani su ulaz), konstruktor, adapt i validator je zovu sa istim danima.',
+    place: 'steps.ts framesFor (parametar kept); generate.ts, adapt.ts, validate.ts',
+    rationale:
+      'Organizator (locked-test.ts MAR 97: zaključan dan testa + pauza 10/20, umor, bol 5/8, asOf test − 14 … − 1): 4200/5880 odbijeno (TEST „najviše jedan test" — pauza je test premeštala, zaključan ostajao; umor: rasterećenje je dan testa okvira prebacivalo na T slot). Merenje pre/posle u izveštaju MAR-08b. Verzija marathon-v2.5.1.'
+  },
+  {
+    id: 'K3',
+    rule: 'MAR-08b (lanac pre starta → ned 1): (a) nedelja (ne trkačka) bez treninga jer su SVI dani trčanja dani odmora bola (A4) → upozorenje WEEK_ALL_REST, ne EMPTY_WEEK (kao N1/pouka 30; week.allRestWeek). (b) Prinudno rasterećenje (umor) u nedelji f > 1 bez prethodne nedelje sa dugim (npr. ned 1 cela odmor/bol) → referenca dugog i T doze = nedelja 1 generatora bez činjenica (pouka 34; step.deloadRef, steps.stateRefOf — jedno mesto za konstruktor i validator).',
+    place:
+      'week.ts allRestWeek, validate.ts; assess.ts (deloadRef), steps.ts stateRefOf, generate.ts, validate.ts',
+    rationale:
+      'Organizator (prestart-chain.ts MAR, 44 880 tokova): bol 8 na start − 1 → u ned 1 bol 8 → EMPTY_WEEK 118; umor → WEEK_INFEASIBLE „Nedelja 2: nijedan cilj od 15 km" 152 (rasterećenje bez reference dugog: lastLong null). Merenje u izveštaju MAR-08b.'
+  },
+  {
+    id: 'K4',
+    rule: 'MAR-08b (pouka 23): zbir laganih nedelje se zaokružuje na 0,1 km; kad je cilj na minimumu nedelje (M15), naviše — planirano nikad ispod minimuma koji validator proverava (WEEK_MIN_VOLUME). Jedno zaokruživanje (lengths.easyTotal10) za izgradnju, rasterećenje i taper; minimum nedelje jedna definicija (lengths.weekMin10, izvezena iz volume.ts).',
+    place:
+      'lengths.ts easyTotal10, weekMin10 (buildLengths, deloadLengths, taperLengths); volume.ts',
+    rationale:
+      'Organizator (result-pain.ts MAR 193 97 29: 60/73 188; two-step.ts 13/31 008; prestart-chain 6): WEEK_MIN_VOLUME „19,98 km < 20 km" — lagani zaokruženi naniže dok je dan kvaliteta u 0,01 km. Generator nepromenjen (takve nedelje su ranije bile odbijene).'
   }
 ];
 
@@ -388,7 +411,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.5.0',
+  version: 'marathon-v2.5.1',
 
   /** M1 (dani i obim: M15). */
   input: {

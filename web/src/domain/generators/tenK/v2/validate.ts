@@ -96,6 +96,7 @@ import {
   structuresForDose,
   zoneOf
 } from './workouts.ts';
+import { weekLabel } from './weekLabel.ts';
 
 const EPS = 1e-6;
 const PHASES: readonly Phase[] = ['base', 'development', 'specific', 'taper', 'race'];
@@ -175,6 +176,8 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   };
   const weeks = plan.weeks;
   const input = plan.input;
+  // Segment 3i: broj nedelje u porukama (prefiks plana cilja predaje); indeksi i polje `week` ostaju v2.
+  const wl = (w: number): number => weekLabel(input, w);
   const p = plan.paces;
   const N = weeks.length;
   const rule = planRule(input.runDays.length, input.experience ?? 'regular');
@@ -625,7 +628,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const f = longer[0]!;
     warn(
       'LONG_SHORTER_THAN_QUALITY',
-      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter(isSteady).length} nedelja izgradnje (ned ${f.w}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; D25)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
+      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter(isSteady).length} nedelja izgradnje (ned ${wl(f.w)}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; D25)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
       f.w
     );
   }
@@ -951,7 +954,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       slotDose(b, 'q1')?.step === 'repeat' &&
       b.notes.some((n) => n.includes('ponovljen'));
     if (hasQuality(b) && qualityKey(a0) === qualityKey(b) && !oneSlotRepeat)
-      err('IDENTICAL_WEEKS', `Isti kvalitet kao nedelja ${a0.index} (D12).`, b.index);
+      err('IDENTICAL_WEEKS', `Isti kvalitet kao nedelja ${wl(a0.index)} (D12).`, b.index);
     // D12/D22: baza bez platoa (tvrdo) — T slota raste ili, kad sledeći nivo ne staje, menja strukturu.
     if (a0.phase === 'base' && b.phase === 'base' && !dropped) {
       const ta = slotDose(a0, tSlot);
@@ -1703,7 +1706,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     err(
       'TEST',
       withTest
-        ? `Plan po osećaju: tačno jedan test, u poslednjoj nedelji baze ${tw} (sada: ${tests.join(', ') || 'nijedan'}) (D27).`
+        ? `Plan po osećaju: tačno jedan test, u poslednjoj nedelji baze ${wl(tw)} (sada: ${tests.map(wl).join(', ') || 'nijedan'}) (D27).`
         : feel
           ? 'Početnik nema test (D32).'
           : 'Plan sa rezultatom nema test (D27).'

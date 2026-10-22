@@ -22,7 +22,7 @@ const r = generateMarathonV2({
   recentLongRunKm: 18, // opciono, 5–42 km: skok dugog ≤ 10 % (M13a)
   // bez rezultata: easyPaceSecPerKm: 360 (po osećaju, M16); experience: 'beginner' (M17)
 });
-// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.5.0', paceBasis, faza nedelje, upozorenja)
+// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.5.1', paceBasis, faza nedelje, upozorenja)
 // !r.ok → r.reasons (kod + poruka sa preporukom: npr. PLAN_TOO_SHORT → polumaraton)
 const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → { ok, plan, changes, reasons } ili odbijanje
 // a.ok → a.newLimits (pouka 20: nova ograničenja poslednjeg koraka, steps.newLimits)
@@ -41,7 +41,10 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
   `segment01.baseline.json` + `segment02.regression-01.json`.
 - Sabotaže: `node scripts/sabotage.mjs ../docs/marathon-v2/artifacts/segment-03/sabotage.json`.
 
-## Trenutno stanje (marathon-v2.5.0)
+## Trenutno stanje (marathon-v2.5.1)
+
+- MAR-08b: pouka 38 (zaključan/urađen test se ne premešta), lanac pre starta (WEEK_ALL_REST, referenca rasterećenja
+  deloadRef), minimum nedelje pri zaokruživanju laganih, dan poznat iz pokrivenosti bez zapisa = 0; trajna mreža `protectGrid`.
 
 - MAR-08: pouka 37 — mešovita nedelja (deo dana zaštićen): preostali dani na ostatak = cilj − zaštićeni dani, samo
   naniže (lagani do minimuma, pa otpada Q2 pa Q1; dugi se ne skraćuje); ne staje → MIXED_WEEK_OVER (upozorenje).
@@ -97,5 +100,9 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
 
 - Polazni SHA `46dff18`; izveštaj `reports/SEGMENT-08-IMPLEMENTATION.md`; merenje i sabotaže `artifacts/segment-08/`.
   KNOWN_VERSIONS = 2.3.1, 2.4.0, 2.4.1, 2.4.2, 2.5.0.
+
+## Segment MAR-08b (marathon-v2.5.1)
+
+- Polazni SHA `d73b83a`; izveštaj `reports/SEGMENT-08b-IMPLEMENTATION.md`; `artifacts/segment-08b/`. KNOWN_VERSIONS ∪ 2.5.0.
 
 ## Sledeće: 3g (UI predaje), 10K v2 kao cilj (3d).

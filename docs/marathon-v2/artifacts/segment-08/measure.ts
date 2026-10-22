@@ -100,6 +100,13 @@ function rec(p: Plan) {
     tg: p.weeks.map((w: any) => w.targetKm).join(","),
     // Pouka 37 (dopuna): zaštićeni dani po činjenicama u planu (adaptation.factKm) i nedelje sa skraćenim ostatkom.
     fk: p.adaptation?.factKm !== undefined,
+    // MAR-08b: sadržaj factKm (pravilo pokrivenosti menja samo tokove čiji se factKm menja).
+    fkh: fnv(JSON.stringify(p.adaptation?.factKm ?? null)),
+    tests: p.weeks
+      .flatMap((w: any) =>
+        w.days.filter((d: any) => d.role === "test").map((d: any) => d.date),
+      )
+      .join(","),
     cut: p.weeks
       .filter((w: any) =>
         w.notes.some((n: string) =>

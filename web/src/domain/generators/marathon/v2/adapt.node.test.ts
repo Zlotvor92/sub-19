@@ -61,7 +61,7 @@ describe('generator i adaptacija bez koraka (pouka 16, A14)', () => {
       const r = adapt(p, {}, p.weeks[3]!.endDate);
       expect(JSON.stringify(r.plan.weeks)).toBe(JSON.stringify(p.weeks));
       expect(applied(r, 'NO_FACTS')).toBe(true);
-      expect(r.plan.policyVersion).toBe('marathon-v2.5.0');
+      expect(r.plan.policyVersion).toBe('marathon-v2.5.1');
     }
   });
   it('isti ulaz → isti JSON (A14); lanac čuva sve korake redom', () => {

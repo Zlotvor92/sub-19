@@ -48,12 +48,15 @@ export function adaptInvariants(
   );
   const locked = new Set(facts.lockedDayIds ?? []);
   const last = steps[steps.length - 1]!;
-  /** Km dana po činjenicama (dani ≤ asOf): pauza 0, zapis(i) dana = upisani km (neodrađen 0), inače plan. */
+  /** Km dana po činjenicama (dani ≤ asOf): pauza 0, zapis(i) dana = upisani km (neodrađen 0), poznat iz potpune
+      pokrivenosti bez zapisa 0, inače plan. */
   const factKm = (d: PlanDay): number => {
     if (mustDay(d.date) > t) return d.workout.km;
     if ((facts.breaks ?? []).some((b) => b.from <= d.date && d.date <= b.to)) return 0;
     const rec = (facts.workouts ?? []).filter((x) => (x.dayId ?? x.date) === d.date);
-    return rec.length === 0 ? d.workout.km : rec.reduce((a, x) => a + (x.completed ? x.km : 0), 0);
+    if (rec.length > 0) return rec.reduce((a, x) => a + (x.completed ? x.km : 0), 0);
+    const c = facts.coverage;
+    return c && c.complete && c.from <= d.date && d.date <= c.to ? 0 : d.workout.km;
   };
   const afterDays = new Map(W.flatMap((w) => w.days.map((d) => [d.date, d] as const)));
   for (const w of before.weeks)

@@ -99,6 +99,18 @@ export function checkInput(raw: unknown): InputCheck {
         }
       ]
     };
+  // Segment 3i: broj nedelja prefiksa (samo broj nedelje u porukama, weekLabel.ts).
+  const off = raw['weekOffset'];
+  if (off !== undefined && off !== null && !(Number.isInteger(off) && (off as number) >= 0))
+    return {
+      ok: false,
+      reasons: [
+        {
+          code: 'INPUT_SHAPE',
+          message: 'weekOffset mora biti ceo broj ≥ 0 (broj nedelja ispred plana).'
+        }
+      ]
+    };
   const experience: Experience = raw['experience'] === 'beginner' ? 'beginner' : 'regular';
   const beginner = experience === 'beginner';
   const startDate = raw['startDate'];
@@ -304,7 +316,8 @@ export function checkInput(raw: unknown): InputCheck {
     goalTimeSec: (goal as number | null | undefined) ?? null,
     ...(recentLong != null ? { recentLongRunKm: recentLong } : {}),
     ...(beginner ? { experience } : {}),
-    ...(easy != null ? { easyPaceSecPerKm: easy } : {})
+    ...(easy != null ? { easyPaceSecPerKm: easy } : {}),
+    ...(typeof off === 'number' && off > 0 ? { weekOffset: off } : {})
   };
   const pace: PaceInput =
     feelWhy === null

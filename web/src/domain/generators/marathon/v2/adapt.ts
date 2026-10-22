@@ -185,7 +185,16 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
     chk.pace.kind === 'feel' && chk.rule.feelTest
   );
   if (base)
-    framesFor(base, chk.pattern, chk.input.runDays, chk.input.raceDate, chk.pace, steps, dropped);
+    framesFor(
+      base,
+      chk.pattern,
+      chk.input.runDays,
+      chk.input.raceDate,
+      chk.pace,
+      steps,
+      dropped,
+      new Set([...facts.lockedDayIds, ...doneAfter])
+    );
   const own = [...dropped].filter(([, k]) => k === steps.length - 1).map(([w]) => w);
   const byTarget = (w: number): boolean => targetReducedWeek(as.step) === w - 1;
   const a17 = (x: AdaptReason): string =>

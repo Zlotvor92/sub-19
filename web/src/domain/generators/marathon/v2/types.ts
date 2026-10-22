@@ -423,6 +423,10 @@ export interface MarathonV2AdaptStep {
       0,8 × cilj reference, ned 2 = cilj reference (bez rasta), dalje po rasporedu; dugi reference ulazi u L
       (M13a) kao nedelja 0. Korak bez umora pre starta: polja nema. */
   preStart?: PreStartRef;
+  /** MAR-08b (pouka 34, K3): prinudno rasterećenje (umor) u nedelji f > 1 bez prethodne nedelje sa dugim (npr. ned 1
+      cela odmor/bol pre starta) — referenca dugog i T doze je nedelja 1 generatora bez činjenica (isto kao preStart,
+      samo početno stanje dugog i T). Polje samo tada. */
+  deloadRef?: PreStartRef;
 }
 
 /** Pouka 34: referenca umora pre starta (nedelja 1 generatora bez činjenica). */

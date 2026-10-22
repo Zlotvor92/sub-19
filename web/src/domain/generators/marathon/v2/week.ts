@@ -837,6 +837,21 @@ export function raceOnlyWeek(w: {
   );
 }
 
+/** MAR-08b (K3, kao N1): nedelja (ne trkačka) bez ijednog treninga jer su SVI dani trčanja dani odmora bola (A4) —
+    upozorenje WEEK_ALL_REST, ne EMPTY_WEEK. `runDates` = datumi dana trčanja nedelje po šablonu. */
+export function allRestWeek(
+  w: { phase: string; days: readonly { countsToWeek: boolean }[]; limits?: WeekLimits },
+  runDates: readonly string[]
+): boolean {
+  const rest = new Set(w.limits?.rest ?? []);
+  return (
+    w.phase !== 'race' &&
+    w.days.every((d) => !d.countsToWeek) &&
+    runDates.length > 0 &&
+    runDates.every((d) => rest.has(d))
+  );
+}
+
 /** M8: oštrenje (2 × 2000 m MP) samo kad je ≤ MP doza poslednje nedelje tapera `taperMpM`. */
 export function hasSharpener(taperMpM: number): boolean {
   const s = P.raceWeek.sharpener;

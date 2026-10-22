@@ -30,6 +30,7 @@ import {
   pacesAt,
   preStartOf,
   restartWeeks,
+  stateRefOf,
   stepVdotAt
 } from './steps.ts';
 import type {
@@ -127,7 +128,16 @@ export function construct(
   if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima M5.');
   const adapted = steps.length > 0;
   const frames = adapted
-    ? framesFor(base, pattern, input.runDays, input.raceDate, pace, steps)
+    ? framesFor(
+        base,
+        pattern,
+        input.runDays,
+        input.raceDate,
+        pace,
+        steps,
+        null,
+        new Set([...(prior?.lockedDayIds ?? []), ...(prior?.doneDayIds ?? [])])
+      )
     : base;
   const phases = frames.map((f) => f.phase);
   const ctx0: WeekContext = {
@@ -159,9 +169,10 @@ export function construct(
 
   // Pouka 34: umor pre starta — prinudno rasterećenje nedelje 1 iz reference (ned 1 generatora bez činjenica):
   // poslednji dugi i poslednja T doza (M5); progresija doze od ned 2 kreće od početnog nivoa (kao planirana ned 1).
-  let quality: QualityState = pre ? { ...INITIAL_QUALITY, t: pre.tM } : INITIAL_QUALITY;
+  const ref = stateRefOf(steps);
+  let quality: QualityState = ref ? { ...INITIAL_QUALITY, t: ref.tM } : INITIAL_QUALITY;
   let h = initialAdaptHistory(cap10);
-  let lastLong10: number | null = pre ? Math.round(pre.longKm * 10) : null;
+  let lastLong10: number | null = ref ? Math.round(ref.longKm * 10) : null;
   /** Prošlost = upisani dani (pouka 29): dani nedelja kakvi se upisuju — iz njih najduži dugi (M7), dugi
       prethodnih nedelja (M13a), poslednji dugi (M5), stanje doze i N−1 za trkačku nedelju (M8). */
   const written: { days: readonly PlanDay[] }[] = [];

@@ -20,22 +20,25 @@ const sum100 = (days: readonly PlanDay[]): number =>
 export type FactKm = Readonly<Record<string, number>>;
 
 /**
- * Pouka 37 (dopuna organizatora iz 5K-08i): km zaštićenog dana ≤ asOf po ČINJENICAMA — dan u prijavljenoj pauzi = 0;
- * dan sa upisanim treningom (dayId, inače datum) = upisani km (neodrađen, completed = false → 0); null = planirani km
- * (bez zapisa; zaključani i urađeni posle asOf su planirani). Neodrađen dan ne „jede" cilj nedelje. Jedino pravilo
- * (adapt.ts ga primenjuje, plan nosi rezultat u adaptation.factKm, validator ga čita).
+ * Pouka 37 (dopuna organizatora iz 5K-08i, jedno pravilo za sve 4 distance): km zaštićenog dana ≤ asOf po ČINJENICAMA
+ * — dan u prijavljenoj pauzi = 0; dan sa upisanim treningom (dayId, inače datum) = upisani km (neodrađen,
+ * completed = false → 0); dan POZNAT iz potpune pokrivenosti (A10), a bez zapisa = 0 (MAR-08b); null = planirani km
+ * (bez zapisa i bez pokrivenosti; zaključani i urađeni posle asOf su planirani). Neodrađen dan ne „jede" cilj
+ * nedelje. Jedino pravilo (adapt.ts ga primenjuje, plan nosi rezultat u adaptation.factKm, validator ga čita).
  */
 export function factKmOf(
   date: string,
   facts: {
     workouts: readonly { date: string; dayId?: string; km: number; completed: boolean }[];
     breaks: readonly { from: string; to: string }[];
+    coverage?: { from: string; to: string; complete: boolean } | null;
   }
 ): number | null {
   if (facts.breaks.some((b) => b.from <= date && date <= b.to)) return 0;
   const rec = facts.workouts.filter((x) => (x.dayId ?? x.date) === date);
-  if (rec.length === 0) return null;
-  return rec.reduce((a, x) => a + (x.completed ? x.km : 0), 0);
+  if (rec.length > 0) return rec.reduce((a, x) => a + (x.completed ? x.km : 0), 0);
+  const c = facts.coverage;
+  return c && c.complete && c.from <= date && date <= c.to ? 0 : null;
 }
 
 /** Pouka 37: zbir zaštićenih dana [0,01 km] — po činjenicama (`fk`), inače planirani km. */

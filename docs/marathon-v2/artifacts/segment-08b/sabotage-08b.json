@@ -1,0 +1,60 @@
+[
+  {
+    "name": "08b-a zaključan test se ne štiti (kept ignorisan, A13c)",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "  else if (tw && kept.has(testDateOf(tw, pattern))) {\n",
+    "replace": "  else if (false as boolean) {\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+      "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-b nedelja bez treninga (svi dani odmor) ponovo EMPTY_WEEK",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "      allRestWeek(\n",
+    "replace": "      false && allRestWeek(\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+      "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-c rasterećenje bez reference dugog (bez deloadRef)",
+    "file": "src/domain/generators/marathon/v2/assess.ts",
+    "find": "        if (ref) step.deloadRef = ref;\n",
+    "replace": "        if (ref && (false as boolean)) step.deloadRef = ref;\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+      "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-d lagani na minimumu zaokruženi kao i inače (Math.round)",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "  return target10 <= weekMin10(rule) ? Math.ceil(rest100 / 10 - EPS) : Math.round(rest100 / 10);\n",
+    "replace": "  return target10 < 0 && weekMin10(rule) > 0 ? Math.ceil(rest100 / 10 - EPS) : Math.round(rest100 / 10);\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+      "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-e dan poznat iz pokrivenosti bez zapisa = plan (ne 0)",
+    "file": "src/domain/generators/marathon/v2/mixed.ts",
+    "find": "  return c && c.complete && c.from <= date && date <= c.to ? 0 : null;\n",
+    "replace": "  return c && c.complete && c.from <= date && date <= c.to && (false as boolean) ? 0 : null;\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/segment08b.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-f zaključan test se ne štiti — samo trajna mreža (protectGrid)",
+    "file": "src/domain/generators/marathon/v2/steps.ts",
+    "find": "  else if (tw && kept.has(testDateOf(tw, pattern))) {\n",
+    "replace": "  else if (false as boolean) {\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+    ]
+  }
+]
