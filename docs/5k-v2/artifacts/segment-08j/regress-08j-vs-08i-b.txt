@@ -1,0 +1,5 @@
+under50 {'flows': 5146, 'changed': 9, 'days': 1, 'kmDown': 0.0, 'onlyNotes': 8}
+TOTAL {'flows': 99069, 'changed': 305, 'days': 107, 'kmDown': 0.0, 'onlyProtectedKm': 149, 'onlyNotes': 198}
+TARGET 0 []
+UP 0 []
+BAD 156 ['b-d3-10w-16km-e420-1\tchain2\t2026-11-15\t7455df5e5443ad81\tOK::0:0:0:1\t79506fda24cfdb8f\t16,16.8,11.3,9.9,10.8,11.8,12.9,11,9,4.97|16,16.8,11.3,9.9,10.8,11.8,12.9,11,9,4.97', 'b-d3-10w-16km-e420-1\tpause35\t2026-10-30\tbb61868bf80e4a87\tOK::0:0:0:1\ta257cb354215e9c0\t9,9.9,9,10.8,9,11.8,

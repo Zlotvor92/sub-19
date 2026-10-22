@@ -168,7 +168,7 @@ export const TOTALS: Record<
     changed: number;
     formerlyRejected: number;
     /** 08g: promenjeni tokovi porodice N3/N4/F (testInputs.family08g; uska 75 N3/N4 + 8 P; šira 7 N3/N4 + 270 F + 33 P (08h, pouka 35));
-        08i (pouka 37, M): uska + 920, šira + 1355 (promenjeno isto toliko više); 08i-b (zbir po činjenicama): šira + 496. */
+        08i (pouka 37, M): uska + 920, šira + 1355 (promenjeno isto toliko više); 08i-b (zbir po činjenicama): šira + 496; 08j (K9, test otpada sam): uska + 10, šira + 21. */
     family08g: number;
   }
 > = {
@@ -176,17 +176,17 @@ export const TOTALS: Record<
     flows: 5952,
     dropped: 988,
     kept: 0,
-    changed: 2022,
+    changed: 2032,
     formerlyRejected: 31,
-    family08g: 1003
+    family08g: 1013
   },
   wide: {
     flows: 10852,
     dropped: 978,
     kept: 0,
-    changed: 3168,
+    changed: 3189,
     formerlyRejected: 29,
-    family08g: 2161
+    family08g: 2182
   }
 };
 

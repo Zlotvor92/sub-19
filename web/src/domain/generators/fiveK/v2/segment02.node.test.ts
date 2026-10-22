@@ -42,7 +42,7 @@ describe('plan nosi identitet politike (Uslov 6)', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     expect(plan.policyId).toBe('5k-v2');
-    expect(plan.policyVersion).toBe('5k-v2.10.1');
+    expect(plan.policyVersion).toBe('5k-v2.10.2');
   });
 });
 

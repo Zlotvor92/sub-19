@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.10.1',
+  version: '5k-v2.10.2',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -815,5 +815,17 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '→ week.secondEasyDose (kao pouka 35), i kad je takva nedelja kasnije upisana prošlost (lanac; inače BASE_R_DECREASE / ' +
       'DOSE_PROGRESSION). Regresija prema e2e482e (99 069): ciljevi 0, km naviše 0, odbijanja 0. Sačuvan plan 5k-v2.10.0 i stariji ' +
       'prilagođavaju se po 2.10.1 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.10.2',
+    decision:
+      'K9 (organizator, two-step.ts; pouka 23): drugi korak adaptacije posle koraka smanjenja (pauza, izvršenje) bio je ' +
+      'odbijan (VOLUME_RESET / VOLUME_GROWTH / VOLUME_PEAK) — volume.adaptVolume je za kasniji korak bez cilja ponovo ' +
+      'gradio nedelju sa ciljem RANIJEG koraka od generatora, dok validator (resetKm) drži cilj koraka. Ispravka na ' +
+      'strani konstruktora: nedelja sa ciljem ranijeg koraka zadržava ga i ostaje osnov rasta. Idempotentnost: ista ' +
+      'adaptacija sa istim činjenicama na kasniji asOf daje iste ciljeve i dane posle asOf — zato kontrolno trčanje koje ' +
+      'ne staje u obim otpada PRVO samo (ista ograničenja), a tek onda manje kvaliteta (pouka 13: test ne „jede" ' +
+      'nedelju). Trajna mreža 08j: smanjenje → 17 scenarija (+3/+7, new/cum), 0 odbijanja, isti plan za iste činjenice. ' +
+      'Sačuvan plan 5k-v2.10.1 i stariji prilagođavaju se po 2.10.2 (KNOWN_VERSIONS).'
   }
 ];

@@ -353,6 +353,9 @@ export function adaptVolume(
       const f = frames[i]!;
       let t: number;
       if (i === n - 1 && s.startKm !== null) t = s.startKm;
+      // 2.10.2 (K9, pouka 23): nedelja sa ciljem RANIJEG koraka (pauza, izvršenje) zadržava taj cilj i u kasnijem koraku
+      // bez cilja — kao validator (resetKm); inače bi drugi korak gradio od generatora (VOLUME_RESET / GROWTH).
+      else if (resets.has(i + 1)) t = targets[i]!;
       // Rasterećenje: deloadFactor × poslednja ne-rasteretna nedelja (u generatoru je to uvek prethodna;
       // prisilno rasterećenje odmah posle redovnog se ne sabija dvaput).
       else if (f.deload)
@@ -361,7 +364,7 @@ export function adaptVolume(
       else t = nextBuildKm(lastBuild, f.phase, growth, cap, level);
       t = fitAt(i + 1, t);
       // Cilj koraka je osnov daljeg rasta i kad je nedelja rasteretna (obim pre pauze/smanjenja ne važi).
-      if (!f.deload || (i === n - 1 && s.startKm !== null)) lastBuild = t;
+      if (!f.deload || (i === n - 1 && s.startKm !== null) || resets.has(i + 1)) lastBuild = t;
       targets[i] = t;
       // Bol: nedelja sidra zadržava cilj (dani su ograničeni), rast posle nje kreće od osnove povratka.
       lastBuild = anchored(i, lastBuild);

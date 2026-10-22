@@ -1,0 +1,91 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08j/sabotage-08j.json",
+ "head": "9676d1e",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 10.6,
+ "hashBefore": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+ "hashAfter": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08j-1 kasniji korak gradi nedelju cilja ranijeg koraka od generatora (stara strana)",
+   "files": [
+    "src/domain/generators/fiveK/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08j.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts",
+    "test": "08j dva koraka adaptacije posle smanjenja (K9) — deo 1 > 2 planova: smanjenje → 17 scenarija (+3/+7, new/cum) → 0 odbijanja; iste činjenice ponovo → isti plan",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+   "hashSabotaged": "c5b083d7813b464437649cf5f4a00a8e42f358775b54ebba898b14a651d2a60b",
+   "hashAfter": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.3
+  },
+  {
+   "index": 2,
+   "name": "08j-2 test koji ne staje ne otpada sam (odmah manje kvaliteta)",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08j.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08j.node.test.ts",
+    "test": "08j K9 — drugi korak posle smanjenja > idempotentnost f-d3-16w-12km-e420-0: iste činjenice manjka ponovo + 3 → isti plan posle asOf (test otpada sam)",
+    "message": "AssertionError: expected '[[11.1,false,false,[{\"date\":\"2026-11-…' to be '[[11.1,false,false,[{\"date\":\"2026-11-…' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+   "hashSabotaged": "aeedde607e54e091580505530ed61e4cf29c77612d0c46a95f38f8a68cdb6809",
+   "hashAfter": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4
+  },
+  {
+   "index": 3,
+   "name": "08j-3 trajna mreža bez smanjenja u prvom koraku",
+   "files": [
+    "src/domain/generators/fiveK/v2/segment08j.harness.node.test.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08j.grid.node.test.ts",
+    "test": "08j dva koraka adaptacije posle smanjenja (K9) — deo 1 > 2 planova: smanjenje → 17 scenarija (+3/+7, new/cum) → 0 odbijanja; iste činjenice ponovo → isti plan",
+    "message": "AssertionError: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+   "hashSabotaged": "d8ab0ea93fe07c004f3a8508da6de0bb3c856245fcc349324b258b2c31cf4a66",
+   "hashAfter": "74525741cea4e04febf67547101b673861d2d388aa0ad5454f92d0266ceabb90",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.1
+  }
+ ]
+}

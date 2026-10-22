@@ -10,7 +10,8 @@
      trkačka (raceRest), N4 konstruktor sa upisanim danima ≠ bez njih (testInputs.family08g), C drugi korak
      lanca posle promenjenog prvog, F ponovljen umor (pouka 36: na f4b257d novo rasterećenje za iste zapise).
      P (08h, pouka 35): drugi dan kvaliteta lagan (testInputs.hasSecondEasy). M (08i, pouka 37): mešovita nedelja
-     skraćena na ostatak do cilja (testInputs.hasMixedRemainder).
+     skraćena na ostatak do cilja (testInputs.hasMixedRemainder). K (08j, K9): drugi korak posle koraka sa ciljem ili
+     test koji otpada sam (testInputs.hasTestDroppedAlone).
    - pouka 36: posle umora isti zapisi ponovo asOf + 1 … + 7 → 0 novih rasterećenja.
    BRZ nivo: planovi BRZ_PLANOVI (imenovani primeri N2a, N2b, N3, N4 i po jedan R/F/B). PUN nivo: 4 dela po planu
    (segment08g.grid.node.test.ts deo 1, segment08g.{2,3,4}.full.node.test.ts). */
@@ -27,6 +28,7 @@ import {
   family08g,
   hasMixedRemainder,
   hasSecondEasy,
+  hasTestDroppedAlone,
   type EarlyPlan
 } from './testInputs.ts';
 
@@ -46,7 +48,7 @@ const REF = JSON.parse(
 ) as {
   policyVersion: string;
   plans: Record<string, string>;
-  changed: Record<string, { h: string; why: 'R' | 'N3' | 'N4' | 'C' | 'F' | 'P' | 'M' }>;
+  changed: Record<string, { h: string; why: 'R' | 'N3' | 'N4' | 'C' | 'F' | 'P' | 'M' | 'K' }>;
 };
 const hash = (r: unknown): string =>
   createHash('sha256').update(canonResult(r)).digest('hex').slice(0, 16);
@@ -108,6 +110,12 @@ export function checkPlan(id: string, input: Record<string, unknown>): string[] 
       bad.push(`${f.key}: P bez pouke 35`);
     if (ch.why === 'M' && !hasMixedRemainder(f.res) && !hasMixedRemainder(f.plan))
       bad.push(`${f.key}: M bez pouke 37`);
+    if (
+      ch.why === 'K' &&
+      !hasTestDroppedAlone(f.res) &&
+      !(f.plan.adaptation?.steps ?? []).some((x) => x.startKm !== null)
+    )
+      bad.push(`${f.key}: K bez drugog koraka posle smanjenja / testa koji otpada sam`);
     if (ch.why === 'F' && !f.key.includes('/fatigue/+'))
       bad.push(`${f.key}: F van ponovljenog umora`);
   }

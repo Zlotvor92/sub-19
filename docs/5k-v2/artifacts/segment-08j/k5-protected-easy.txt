@@ -1,0 +1,1 @@
+{ weeks: 153, protectedEasy: 153, other: 0, ex: [] }

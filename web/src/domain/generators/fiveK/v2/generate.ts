@@ -231,6 +231,15 @@ export function construct(
         phaseCounts(totalWeeks).taper
       );
     let r = build(f);
+    // 2.10.2 (K9): kontrolno trčanje koje ne staje otpada PRVO samo (ista ograničenja, isti obim); tek onda manje
+    // kvaliteta — inače ponovljena adaptacija (bez testa u prethodnom planu) gradi drugu dozu.
+    if (!r.ok && adaptive && f.test) {
+      const t = build({ ...f, test: false });
+      if (t.ok) {
+        t.week.notes.push(`Adaptacija: kontrolno trčanje ne staje u obim ${target} km — otpada.`);
+        r = t;
+      }
+    }
     for (const q of ['one', 'none'] as const) {
       if (r.ok || !adaptive || (q === 'one' && f.limits?.quality !== undefined)) continue;
       const { swap: _swap, ...rest } = f.limits ?? {};
