@@ -178,3 +178,49 @@ describe('nalaz 3 (pouke 18 i 23): isti zapis bola poslat ponovo ne pravi nov pe
     expect(a2.plan.adaptation!.steps.at(-1)!.pain).not.toBeNull();
   });
 });
+
+describe('06g (pouke 23 i 30): trkačka nedelja samo sa danom pred trku i trkom', () => {
+  const b = ([3, 4] as const)
+    .flatMap((d) => beginnerGridInputs(d))
+    .find((x) => x.id === 'b-d4-11w-18km-v35-B-sat')!;
+  const g = generateTenKV2(b.input);
+  if (!g.ok) throw new Error('generator');
+  const p = g.plan;
+  const at = p.weeks[8]!.endDate;
+  const pain = (date: string) => ({ date, km: 0, durationSec: 0, completed: false, pain: 8 });
+
+  it('b-d4-11w-18km-v35-B-sat: bol 8 kraj ned 9, NOV bol 8 sutra — na 10k-v2.6.0 RACE_WEEK_OVER_TAPER (3,3 > 3 km); sada upozorenje RACE_WEEK_OVER_TAPER_EVE', () => {
+    const a1 = ok(adaptTenKV2(p, { workouts: [pain(at)] }, at));
+    const b1 = addDays(at, 1);
+    const a2 = ok(adaptTenKV2(a1.plan, { workouts: [pain(at), pain(b1)] }, b1));
+    const race = a2.plan.weeks.at(-1)!;
+    expect(race.days.map((d) => d.role)).toEqual(['eve', 'race']);
+    expect(race.plannedKm).toBeGreaterThan(a2.plan.weeks.at(-2)!.plannedKm);
+    const v = a2.plan.warnings.find((x) => x.rule === 'RACE_WEEK_OVER_TAPER_EVE');
+    expect(v).toMatchObject({ severity: 'warning', week: race.index });
+  });
+
+  it('validator: trkačka > tapera sa još jednim laganim danom → greška RACE_WEEK_OVER_TAPER (izuzetak samo kad je ostao dan pred trku)', () => {
+    const a1 = ok(adaptTenKV2(p, { workouts: [pain(at)] }, at));
+    const b1 = addDays(at, 1);
+    const a2 = ok(adaptTenKV2(a1.plan, { workouts: [pain(at), pain(b1)] }, b1));
+    const race = a2.plan.weeks.at(-1)!;
+    const eve = race.days.find((d) => d.role === 'eve')!;
+    const extra = { ...eve, role: 'easy' as const, date: addDays(eve.date, -2) };
+    const bad: TenKV2Plan = {
+      ...a2.plan,
+      weeks: a2.plan.weeks.map((w) =>
+        w !== race
+          ? w
+          : {
+              ...w,
+              days: [extra, ...w.days],
+              plannedKm: Math.round((w.plannedKm + extra.workout.km) * 100) / 100
+            }
+      )
+    };
+    expect(
+      validatePlan(bad).some((x) => x.rule === 'RACE_WEEK_OVER_TAPER' && x.severity === 'error')
+    ).toBe(true);
+  });
+});

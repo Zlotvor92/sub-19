@@ -536,8 +536,16 @@ export function raceWeekRest(
     out.push(d);
     total -= km100.get(d)!;
   }
-  return total <= cap100 ? out.sort() : [];
+  // 06g (pouka 30, odluka organizatora): ni bez svih laganih dana trkačka nije ≤ tapera — ostaju dan pred trku i
+  // trka (svi lagani postaju odmor); validator: upozorenje RACE_WEEK_OVER_TAPER_EVE (raceWeekEveOnly).
+  return out.sort();
 }
+
+/** 06g (jedan predikat za validator i adaptInvariants): trkačka nedelja ima samo dan pred trku i trku — kad je
+    raceWeekRest pretvorio sve ostale dane u odmor, a i dalje je > tapera (upozorenje RACE_WEEK_OVER_TAPER_EVE, pouke
+    23 i 30). */
+export const raceWeekEveOnly = (days: readonly PlanDay[]): boolean =>
+  days.some((d) => d.role === 'eve') && days.every((d) => d.role === 'eve' || d.role === 'race');
 
 /**
  * D8 + D20: trkačka nedelja. Dani po D20; trka zamenjuje dugi. Oštrenje (≤ RP doza tapera) na najkasnijem

@@ -177,3 +177,11 @@ const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanj
   5.0, 5.1, 5.2, 6.0.
 - Otvoreno: nov zapis bola sutradan u istom slučaju i dalje RACE_WEEK_OVER_TAPER (trenerski izbor); pouka 35 u mešovitoj
   nedelji asOf (467 tokova).
+
+## Segment 06g (10k-v2.6.1): trkačka samo sa danom pred trku, nedelja cela odmor, podela punih testova
+
+- Izveštaj `reports/SEGMENT-06g-IMPLEMENTATION.md`. Trkačka nedelja koja ni bez svih laganih dana nije ≤ tapera: dan pred
+  trku + trka, upozorenje RACE_WEEK_OVER_TAPER_EVE; nedelja čiji su svi dani odmor (bol) — WEEK_ALL_REST, ne EMPTY_WEEK;
+  D23 i uz mešovit taper. Trajna mreža nov bol 7/8 (ned N − 3 … N − 1, + 1 … + 7) → 0 odbijanja; ostala merenja bajt-ista
+  prema 06f. Pouka 35 u mešovitoj nedelji (467) — DECISIONS A19.
+- Puni testovi: p35 u 4 dela, trajne mreže ponavljanja u `repeatGrid` (16 delova, ≤ ~42 s). KNOWN_VERSIONS + 6.0.

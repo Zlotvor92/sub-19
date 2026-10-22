@@ -112,6 +112,11 @@ const num = (v: unknown): number | null => {
 };
 const before = (a: string, b: string): boolean => a < b;
 
+/** Faza 3 (3d): potvrđena pauza iz predaje (N dana do dana potvrde) kao činjenica pauze cilja — prevod je samo ovde. */
+export function confirmedBreakFact(date: IsoDate, days: number): BreakFact {
+  return { kind: 'break', from: addDays(date, 1 - days), to: date };
+}
+
 /** Datumi treninga plana v2 (dayId jezgra = datum dana; uključuje kontinuirani deo posle prelaza). */
 export function trainingDates(v2: AnyV2): Set<string> {
   const out = new Set<string>();

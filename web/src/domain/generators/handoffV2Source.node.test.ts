@@ -246,8 +246,8 @@ describe('3b: izbor cilja po prekidaču korisnika (generatorForNewPlan)', () => 
   const plan = stored('hm', sources('hm', false)[0]!.input);
   const input = contractInput(sources('hm', false)[0]!.input, 10000);
   it.each([
-    [{ fiveKV2: false, tenKV2: true }, 10000],
-    [{ fiveKV2: true }, 5000]
+    // 3f: HM v2 cilj, 3d: 5K v2 cilj više nisu NOT_READY (`fiveK/v2/app/handoffTarget.node.test.ts`).
+    [{ fiveKV2: false, tenKV2: true }, 10000]
   ] as const)('prekidač cilja uključen %j → %d: odbijanje sa razlogom, ne v1', (flags, dist) => {
     const h = select.shorterHandoffForV2Source(flags, HM_FORMAT)(dist)!;
     expect(
