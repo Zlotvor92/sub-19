@@ -17,6 +17,7 @@ import type { HmV2Plan } from '../types.ts';
 import { v2Of } from './adapt.ts';
 import { addDays, isIsoDate } from './date.ts';
 import { buildFacts, EDITS_KEY } from './facts.ts';
+import { PREFIX_KEY } from './plan.ts';
 import { sourceOf } from './members.ts';
 import type { AppPlan, IsoDate } from './types.ts';
 
@@ -26,10 +27,12 @@ const SHORTER = [10000, 5000] as const;
 const NAME: Readonly<Record<number, string>> = { 10000: '10K', 5000: '5K' };
 const WEEKDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
-/** Ključ objekta plana v2 i meta ključevi koje piše samo HM v2 (ili koji opisuju cilj izvora) — v1 cilj ih ne nasleđuje
+/** Ključ objekta plana v2, ostali ključevi plana i meta ključevi koje piše samo HM v2 (ili koji opisuju cilj izvora) — v1 cilj ih ne nasleđuje
  *  (`handoff.ts` `sourceViewForV1`). Ključeve koje piše i v1 cilj (`trainingVdot`, `racePace` …) cilj prepisuje. */
 export const HM_V2_SOURCE_FORMAT = {
   planKey: 'hmV2',
+  // REVIEW-3 #1: plan HM v2 nastao predajom (maraton v2 → HM v2, 3f) nosi nedelje izvora pod ključem najvišeg nivoa.
+  planKeys: [PREFIX_KEY],
   metaKeys: ['vdot', 'paceBasis', 'predictedHmSec', 'goalVdot', 'goalAssessment', EDITS_KEY]
 } as const;
 
