@@ -209,7 +209,8 @@ export function assess(
   asOf: IsoDate,
   pace: PaceInput,
   weekMinKm: number,
-  week1Ref: () => PreStartRef | null = () => null
+  week1Ref: () => PreStartRef | null = () => null,
+  genLongBefore: (w: number) => number | null = () => null
 ): { step: HmV2AdaptStep; reasons: AdaptReason[] } {
   const weeks = plan.weeks;
   const N = weeks.length;
@@ -431,6 +432,13 @@ export function assess(
       if (f !== n) step.deloadWeek = f;
       volumeRule = true;
       if (ref) step.preStart = ref;
+      // K3 (HM-08b): upisani plan pre nedelje rasterećenja nema dugi ne-rasteretne izgradnje (npr. ned 1 cela u
+      // odmoru bola) → referenca „poslednji dugi" = poslednja ne-rasteretna izgradnja generatora (kao pouka 34).
+      const noLong = !weeks
+        .slice(0, f - 1)
+        .some((w) => build(w.index) && !w.deload && w.days.some((d) => d.role === 'long'));
+      const gl = !ref && f >= 2 && noLong ? genLongBefore(f) : null;
+      if (gl !== null) step.deloadRefLongKm = gl;
     }
     reason(
       'FATIGUE',

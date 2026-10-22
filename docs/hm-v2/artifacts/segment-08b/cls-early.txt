@@ -1,0 +1,2 @@
+{"pause10":{"meta":982,"days":1867},"pause35":{"days":1280,"meta":1569},"chain":{"meta":982,"days":1867},"painPause":{"days":314,"meta":2465},"chain/2":{"days":1609,"meta":232,"tgt":258}}
+{"chain/2":["d3-20w-25km-v40-A-sat/w16wed/chain/2 18:30.8→24.6 19:21.6→17.2 20:10.9→9.4","d4-12w-55km-v45-A-sat/w8wed/chain/2 10:61.1→48.9 11:42.8→34.2 12:22.3→18.3"]}

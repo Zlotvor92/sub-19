@@ -36,11 +36,11 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `hm-v2`; plan bez oznake je HM v1 (`legacy-hm`). */
 export const LEGACY_POLICY_ID = 'legacy-hm';
 /** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
- *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`; od HM-07b `hm-v2.4.1`; od 3f `hm-v2.5.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`; od HM-08 `hm-v2.6.0`) i tekuća. Sačuvan stariji plan ostaje plan
+ *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`; od HM-07b `hm-v2.4.1`; od 3f `hm-v2.5.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`; od HM-08 `hm-v2.6.0`; od HM-08b `hm-v2.6.1`) i tekuća. Sačuvan stariji plan ostaje plan
  *  HM v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown"
  *  (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [
-  ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', 'hm-v2.5.0', P.version])
+  ...new Set(['hm-v2.3.0', 'hm-v2.4.0', 'hm-v2.4.1', 'hm-v2.5.0', 'hm-v2.6.0', P.version])
 ];
 
 /** JEDNA mapa faze za prikaz (odluka adaptera): baza → BAZA, razvoj → RAZVOJ, specifična faza (najspecifičniji rad za

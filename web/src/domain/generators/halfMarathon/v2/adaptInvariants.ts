@@ -167,7 +167,12 @@ export function adaptInvariants(
       runs < d20 &&
       race.notes.includes('Trkačka nedelja skraćena: taper je imao dane odmora/bola (pouka 30).') &&
       after.warnings.some((w) => w.rule === 'RACE_WEEK_SHORT' && w.week === race.index);
-    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest)
+    // K2 (HM-08b, kao 10K K2 i pouka 25): trkačka nedelja sa danima odmora koraka (bol, A4) sme ispod minimuma uz
+    // upozorenje RACE_WEEK_SHORT — kao obična nedelja sa danima odmora („nedelja < minimum" ih izuzima).
+    const a4Rest =
+      (race.limits?.rest ?? []).length > 0 &&
+      after.warnings.some((w) => w.rule === 'RACE_WEEK_SHORT' && w.week === race.index);
+    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest && !a4Rest)
       bad.push('trkačka + trka < minimum');
   }
   // A8: taper posle smanjenja ≤ poslednja nedelja izgradnje.

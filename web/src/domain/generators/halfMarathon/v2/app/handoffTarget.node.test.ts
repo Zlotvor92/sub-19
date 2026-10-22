@@ -272,7 +272,7 @@ describe('3f: format i izbor', () => {
     )(10000)!;
     expect(ten).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.6.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.6.1, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
     const r = select.generateHmV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 12 - 1),
@@ -284,7 +284,7 @@ describe('3f: format i izbor', () => {
     });
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.6.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.6.1');
     expect(
       select.HALF_MARATHON_V2_GENERATOR.planPolicy({
         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.4.1' }

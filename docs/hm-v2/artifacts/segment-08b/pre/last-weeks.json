@@ -1,0 +1,30 @@
+{
+ "dist": "HM",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 212,
+ "excludedPermanent": 6,
+ "plans": 212,
+ "rejectedByWeek": {},
+ "flows": 74836,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "inv": {
+  "trkačka + trka < minimum": 6
+ },
+ "invEx": {
+  "trkačka + trka < minimum": [
+   "d6-10w-40km-v35-B-sun/N/race/asOf 2027-01-05/pain8: trkačka + trka < minimum",
+   "f-d6-11w-90km-e450-B/N/race/asOf 2027-01-12/pain8: trkačka + trka < minimum",
+   "f-d6-17w-85km-e450-A/N/race/asOf 2027-02-22/pain8: trkačka + trka < minimum"
+  ]
+ },
+ "by": {},
+ "seconds": 964.142
+}
