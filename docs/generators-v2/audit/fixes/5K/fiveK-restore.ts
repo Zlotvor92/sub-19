@@ -1,6 +1,8 @@
 /* 5K-09, Z4: vraćanje revizije (app/adapt.ts restoreMerge) po obrascu owner/tenK-restore.ts.
    Tok: g = generate(mreža adaptacije); trenutni = adapt(g, scenario, asOf1); snimak = g (rev1) ili adapt(g, {}, asOf1−3)
-   (rev-adapted); vraćanje danas = asOf1 + k; zatim validatePlan(jezgro vraćenog) i sledeća adaptacija adapt(vraćen, {}, danas).
+   (rev-adapted) — snimak je verzija tik pre poslednje adaptacije; vraćanje danas = asOf1 + k, k = 0 je neposredno
+   poništavanje (bez novih zapisa posle; mora da prođe); zatim validatePlan(jezgro vraćenog) i sledeća adaptacija
+   adapt(vraćen, {}, danas). Odbijena vraćanja: broj i razlozi (meta.futureChanges.problems, app/adapt.restoreProblems).
    Iz web/: node ../docs/generators-v2/audit/fixes/5K/fiveK-restore.ts */
 const V2 = '../../../../../web/src/domain/generators/fiveK/v2';
 const { generateFiveKV2 } = await import(`${V2}/generate.ts`);
@@ -23,7 +25,8 @@ const scen = (p: Plan, s: string, asOf: string): Record<string, unknown> => {
   return {};
 };
 const SC = ['none', 'under50', 'pause10', 'pause20', 'pain5', 'fatigue'];
-const stat = { flows: 0, controlRejected: 0, refused: 0, restored: 0, invalid: 0, nextRejected: 0 };
+const stat = { flows: 0, controlRejected: 0, refused: 0, refusedImmediate: 0, restored: 0, invalid: 0, nextRejected: 0 };
+const why: Record<string, number> = {};
 const rules: Record<string, number> = {};
 const ex: string[] = [];
 for (const b of T.adaptNetwork()) {
@@ -42,13 +45,18 @@ for (const b of T.adaptNetwork()) {
       for (const s of SC) {
         const cur = adaptFiveKV2(snap, scen(snap, s, asOf1), asOf1);
         if (!cur.ok) continue;
-        for (const k of [1, 4, 8]) {
+        for (const k of [0, 1, 4, 8]) {
           const today = addDays(asOf1, k);
           stat.flows++;
           if (!adaptFiveKV2(cur.plan, {}, today).ok) stat.controlRejected++;
           const r = restoreMerge(store(cur.plan), store(snap), today, {});
-          const conflicts = (r.meta as { futureChanges?: { conflicts: string[] } }).futureChanges?.conflicts ?? [];
-          if (conflicts.length) { stat.refused++; continue; }
+          const fc = (r.meta as { futureChanges?: { conflicts: string[]; problems?: string[] } }).futureChanges;
+          if (fc?.conflicts.length) {
+            stat.refused++;
+            if (k === 0) stat.refusedImmediate++;
+            for (const x of fc.problems ?? ['?']) why[x] = (why[x] ?? 0) + 1;
+            continue;
+          }
           stat.restored++;
           const core = (r as { fiveKV2: unknown }).fiveKV2;
           const errs = validatePlan(core).filter((v: { severity: string }) => v.severity === 'error');
@@ -66,4 +74,5 @@ for (const b of T.adaptNetwork()) {
 }
 console.log(JSON.stringify(stat));
 console.log('greške validatora na vraćenom planu:', JSON.stringify(rules));
+console.log('razlozi odbijenih vraćanja (pravilo/kod → broj tokova):', JSON.stringify(why));
 for (const e of ex) console.log('  ' + e);

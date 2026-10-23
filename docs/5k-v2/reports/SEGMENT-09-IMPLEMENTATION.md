@@ -12,7 +12,7 @@ merne skripte `docs/generators-v2/audit/fixes/5K/` (nove). Bez PR-a, mergea, dep
 | 2 | F2 3 d / 12 km | generator koristi POSTOJEĆI lanac konstruktora (`generate.construct`: jedan kvalitet doze rasterećenja → bez kvaliteta, isto kao adaptacija) umesto odbijanja; napomena + upozorenje `QUALITY_REDUCED` (validator čita `limits.quality`) | `audit/fuzz/qinf5k.ts` km12: **273/1 023 → 0** (VDOT 30–60; km13–20 0 → 0) |
 | 3 | Z5a/Z5b cilj predaje | `app/handoffTarget.ts`: rezultat nepodržane distance (HM/maraton) → `recentResult: null`, lak tempo izvora, a bez njega lak tempo iz rezultata po modelu tempa 5K (E sporija granica, u opsegu ulaza); `targetFacts` ne prosleđuje rezultate nepodržane distance. Z5b: početnik izvora sa > `beginner.maxRunDays` (4) dana → plan bez oznake početnika | HM izvor sa HM rezultatom → 5K cilj: odbijanje (RESULT_DISTANCE_UNSUPPORTED) → plan po osećaju (test `handoffTarget.node.test.ts`, tokovi none/pause35) |
 | 4 | C8 VDOT < 30 | `input.ts`: VDOT ispod opsega → plan po osećaju (lagan tempo obavezan, napomena „sporiji od opsega tabela tempa"); jedno mesto `input.hasFreshResult` (+ `vdotBelowRange`); VDOT > 60 i dalje VDOT_OUT_OF_RANGE (kao 10K) | 5 km 31:40: odbijanje → plan po osećaju |
-| 5 | Z4 vraćanje revizije | `app/adapt.ts` `mergeContinuous` spaja kroz `written.writtenWeeks` (mešovite nedelje i kad verzija nema adaptaciju); vraćanje samo ako plan prolazi `validatePlan` i sledeću adaptaciju, inače poruka „Sačuvana verzija se ne može vratiti …" | `fixes/5K/fiveK-restore.ts` (obrazac tenK-restore, 4 320 tokova): vraćen plan krši validator **376 → 0**, sledeća adaptacija odbijena **130 → 0**, odbijeno vraćanje 0 → 156 (sa porukom) |
+| 5 | Z4 vraćanje revizije | `app/adapt.ts` `mergeContinuous` spaja kroz `written.writtenWeeks` (mešovite nedelje i kad verzija nema adaptaciju); po pojašnjenju organizatora vraćanje = „poništi prilagođavanje": spoj se primenjuje kad prolazi `validatePlan` i sledeću adaptaciju (`restoreProblems`, jedna funkcija), inače odbijanje sa porukom (razlozi u `meta.futureChanges.problems`, interno) | `fixes/5K/fiveK-restore.ts` (obrazac tenK-restore, 5 760 tokova, danas = asOf + {0, 1, 4, 8}): vraćen plan krši validator **376 → 0**, sledeća adaptacija odbijena **130 → 0**; neposredno poništavanje (k = 0, 1 440): **0 odbijenih**; odbijena vraćanja 156 (k ≥ 1): MIXED_REMAINDER 38, TEST_WEEK 40, DELOAD_SHORT 36, BASE_R_DECREASE 22, VOLUME_GROWTH 20, VOLUME_DELOAD 10, DOSE_PROGRESSION 10, QUALITY_REPEAT 4, sledeća adaptacija 4, VOLUME_TAPER 2, BUDGETS 2 (tok može imati više) |
 | 6 | 1a M2 | napomena odmora/bola bez broja planiranog pre upisa („planirano ≤ cilj obima X km", kao 10K) | `coach-5k-10k/measure.ts 5K 1 60`: **1 114 → 0** tokova |
 | 7 | 1a M3 | `quality.weekQuality`: napomene doze rasterećenja u nedelji koja nije rasteretna počinju sa „Doza rasterećenja:" | isto merenje: **2 221 → 0** tokova |
 | 8 | C1 početnik ned 1–2 | `periodize.deloadWeeks`: rasterećenje pomereno unazad u nedelju < `volume.deloadFirstWeek` (3) ide na nedelju posle n (8 ned: 2 → 4, kao 10K/HM „izuzetno 4"); granica niza Odluke 9 ostaje 4 (`reliefMaxRun`) | `fixes/5K/measure09.ts`: **72/648 → 0** |
@@ -60,11 +60,27 @@ CH — drugi korak lanca posle promenjenog prvog. Ostalo: bajt-isto u kanonu.
 
 ## 3. Testovi, sabotaže, završna provera
 
-(popunjava se na kraju — §3)
+- Namenski: `segment09.node.test.ts` (24 testa; ulazi iz nalaza; svaki pada na c13c258 — merne skripte iz §1 to
+  pokazuju brojevima pre), `app/handoffTarget.node.test.ts` (Z5a pravi tok HM → 5K), izmenjena očekivanja postojećih
+  testova (tekst Z2, C8, C13, verzija 2.11.0, 05b 828 → 840 planova zbog F2).
+- `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK`: **43 fajla, 765/765** (≈ 8 min).
+- `npm run check` i `npx vitest run --changed 670700e`: 3 689 prolazi, **7 pada VAN foldera 5K** (redovi „5K v2" u
+  `byteSame` 10K/HM/MAR i oznaka verzije u `features/onboarding/fiveKV2Flow.test.tsx`) — očekivano posle promene 5K v2;
+  izmena tamo traži organizatora (pravilo 1, pitanje poslato).
+- E2E `npx playwright test e2e/fivek-v2`: **3/3**.
+- Sabotaže `artifacts/segment-09/sabotage-09.json` (rezultat `sabotage-09-result.json`): **20/20 pale**, stanje `src`
+  vraćeno (svaka stavka ima svoju; C13 hvata `segment05`, ostale `segment09`).
+- `bash docs/generators-v2/final-check/run-all.sh /tmp/ra 4 '.*-5K'` (regex iz uputstva `'.*-5K$'` ne hvata nijedan
+  posao — `$` stoji ispred `|` u `run-all.sh`): **14 poslova, 0 nečistih** — early 0/18 252, edges 0/16 000,
+  last-weeks 0/16 238, locked-pause 0/4 800, locked-result 0/108, locked-test 0/1 120, result-pain 0/7 452,
+  start-day 0/5 202, two-step 0/25 024, fatigue-repeat/startday/testweek čisto, predaja HM→5K new 0/44 268,
+  MAR→5K 0/34 476.
 
 ## 4. Primećeno, nije rađeno
 
 - `policy.ts` DECISIONS: zapis 08k nosi oznaku `5k-v2.10.4` (treba 2.10.3) — istorija, nije menjano.
+- `docs/generators-v2/audit/fixes/01-chains-addendum.md` (Z6–Z8, 5K C4/C5/C8) stigao je posle starta segmenta i nije u
+  `5K.md` — nije rađeno (pitanje organizatoru).
 - 4 dana RUN_DAYS_SPACING (98/245 u sharpen5k) — nije na spisku.
 - `f-d3-15w-25km-e420-1`, bol 8 na 2026-12-09 (jedan korak): adaptacija odbijena EASY_CAP („Oznaka lagan = dugi ne
   odgovara danima nedelje", ned 6) — isto na c13c258 (nije od ovog segmenta; nađeno uzorkom 12/12/6 skripte N1).

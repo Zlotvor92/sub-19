@@ -300,6 +300,17 @@ describe('Z4: vraćanje revizije kroz spajanje jezgra', () => {
     const core = (r as unknown as { fiveKV2: FiveKV2Plan }).fiveKV2;
     expect(errors(core)).toEqual([]);
     expect(adaptFiveKV2(core, {}, today).ok).toBe(true);
+    // Neposredno poništavanje (pojašnjenje organizatora): verzija tik pre poslednje adaptacije, danas = asOf, bez novih
+    // zapisa — vraća se i daje plan bez koraka bola u budućnosti.
+    const u = restoreMerge(store(cur), store(g), asOf as IsoDate, {});
+    expect(
+      (u.meta as unknown as { futureChanges: { conflicts: string[] } }).futureChanges.conflicts
+    ).toEqual([]);
+    const undo = (u as unknown as { fiveKV2: FiveKV2Plan }).fiveKV2;
+    expect(errors(undo)).toEqual([]);
+    expect(undo.weeks.filter((w) => w.startDate > asOf)).toEqual(
+      g.weeks.filter((w) => w.startDate > asOf)
+    );
   });
 });
 

@@ -63,13 +63,13 @@
    },
    {
     "file": "src/domain/generators/fiveK/v2/app/adapt.ts",
-    "find": "    validatePlan(merged).some((v) => v.severity === 'error') ||",
-    "replace": "    validatePlan(merged).some((v) => v.severity === 'none') ||"
+    "find": "  if (rules.length > 0) return rules;",
+    "replace": "  if (rules.length < 0) return rules;"
    },
    {
     "file": "src/domain/generators/fiveK/v2/app/adapt.ts",
-    "find": "    !adaptFiveKV2(merged as unknown, {}, today).ok",
-    "replace": "    !adaptFiveKV2(merged as unknown, {}, today).reasons"
+    "find": "  return next.ok ? [] : next.reasons.map((x) => `NEXT:${x.code}`);",
+    "replace": "  return next.ok ? [] : [];"
    }
   ],
   "tests": [

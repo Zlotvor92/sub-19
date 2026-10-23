@@ -312,6 +312,21 @@ function mergeContinuous(
   };
 }
 
+/** Z4: zašto spoj vraćanja nije plan (prazno = vraća se): pravila validatora sa greškom i kod odbijanja sledeće
+ *  adaptacije bez činjenica (`NEXT:<kod>`). Merenje razloga: docs/generators-v2/audit/fixes/5K/fiveK-restore.ts. */
+export function restoreProblems(merged: AnyV2Plan, today: IsoDate): string[] {
+  const rules = [
+    ...new Set(
+      validatePlan(merged)
+        .filter((v) => v.severity === 'error')
+        .map((v) => v.rule)
+    )
+  ];
+  if (rules.length > 0) return rules;
+  const next = adaptFiveKV2(merged as unknown, {}, today);
+  return next.ok ? [] : next.reasons.map((x) => `NEXT:${x.code}`);
+}
+
 /** Vraćanje sačuvane verzije (`graftFuturePlan`): budući dani posle danas iz verzije, osim urađenih i ručno izmenjenih
  *  ili pomerenih (oni ostaju iz trenutnog plana); cele prošle nedelje ostaju. Druga vrsta plana (trčanje/hodanje ↔
  *  kontinuirani, drugi prelaz) se ne vraća — to bi menjalo prošlost. `meta.futureChanges` kaže koliko se dana menja. */
@@ -325,11 +340,16 @@ export function restoreMerge(
     moves?: Readonly<Record<string, unknown>>;
   } = {}
 ): GenPlanState {
-  const refuse = (why: string): GenPlanState => ({
+  const refuse = (why: string, problems: string[] = []): GenPlanState => ({
     ...current,
     meta: {
       ...(current.meta ?? {}),
-      futureChanges: { changedDays: 0, conflicts: [why] }
+      // `problems` (interno, ne prikazuje se): pravila/kodovi zbog kojih se ne vraća (restoreProblems).
+      futureChanges: {
+        changedDays: 0,
+        conflicts: [why],
+        ...(problems.length > 0 ? { problems } : {})
+      }
     } as GenPlanState['meta']
   });
   const cur = v2Of(current);
@@ -368,14 +388,13 @@ export function restoreMerge(
           : null
     };
   } else merged = mergeContinuous(cur as FiveKV2Plan, snap as FiveKV2Plan, keep, today);
-  // Z4: vraćen plan mora proći validator jezgra i biti osnova za sledeću adaptaciju (kao svaka adaptacija); inače
-  // se verzija ne vraća, uz razlog.
-  if (
-    validatePlan(merged).some((v) => v.severity === 'error') ||
-    !adaptFiveKV2(merged as unknown, {}, today).ok
-  )
+  // Z4 (pojašnjenje organizatora): vraćanje = poništi prilagođavanje — primenjuje se kad spoj prolazi validator jezgra
+  // i sledeću adaptaciju (kao svaka adaptacija); inače odbijanje sa jasnom porukom.
+  const problems = restoreProblems(merged, today);
+  if (problems.length > 0)
     return refuse(
-      'Sačuvana verzija se ne može vratiti: posle nje je plan prilagođen, a spoj urađenih dana i sačuvane verzije ne bi bio ispravan plan. Plan ostaje kakav jeste.'
+      'Sačuvana verzija se ne može vratiti: spoj urađenih dana i sačuvane verzije ne bi bio ispravan plan. Plan ostaje kakav jeste.',
+      problems
     );
   const stored = storedPlan(generatedPlan(merged), prefixOf(current));
   const before = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
