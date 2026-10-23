@@ -148,9 +148,11 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
       expect(Object.keys(fx.feel).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.81bd351.feel', Object.keys(g.h81));
-      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
-      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id])).toEqual(
-        Object.keys(g.h81).filter((id) => P35_PLANS.has(id))
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717; 10K-07: i planovi sa uzrokom cause07
+      // (posle undo07), ostali bajt-isti.
+      const no07 = (id: string): boolean => !g.c07[id];
+      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id] && no07(id))).toEqual(
+        Object.keys(g.h81).filter((id) => P35_PLANS.has(id) && no07(id))
       );
     });
     it('regresija 04: generate = construct(input, []) — ceo plan po osećaju bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 11880', () => {
@@ -159,9 +161,11 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
       expect(Object.keys(fx.feel).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.b13ca17.feel', Object.keys(g.h81));
-      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
-      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id])).toEqual(
-        Object.keys(g.h81).filter((id) => P35_PLANS.has(id))
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717; 10K-07: i planovi sa uzrokom cause07
+      // (posle undo07), ostali bajt-isti.
+      const no07 = (id: string): boolean => !g.c07[id];
+      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id] && no07(id))).toEqual(
+        Object.keys(g.h81).filter((id) => P35_PLANS.has(id) && no07(id))
       );
     });
 

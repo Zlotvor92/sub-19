@@ -380,7 +380,7 @@ describe('validator', () => {
       [
         'warning',
         1,
-        'Kvalitetni dan duži od dugog po trajanju u 3 od 8 nedelja izgradnje (ned 1: 42 > 39 min; D25); preporuka 3–5 dana (red D17 sa manje dana podržava obim 35 km, dugi dobija veći udeo).'
+        'Dan kvaliteta ili testa duži od dugog po trajanju u 3 od 8 nedelja izgradnje (nedelja 1: 42 > 39 min); preporuka 3–5 dana (plan sa manje dana podržava obim 35 km, dugi dobija veći udeo; D17).'
       ]
     ]);
     // 3 dana nema manji red — bez preporuke (i bez upozorenja).

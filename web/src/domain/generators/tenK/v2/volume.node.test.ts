@@ -206,13 +206,14 @@ describe('D6: obim', () => {
       return r.plan.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')?.message;
     };
     const d = SCHEDULES_BY_DAYS;
-    // 4 dana, 25 km, VDOT 30: spuštene nedelje seče udeo 33 % (01b: poruka je pogrešno navodila 105 min).
+    // 4 dana, 25 km, VDOT 30: spuštene nedelje seče udeo 33 % (01b: poruka je pogrešno navodila 105 min). 10K-07
+    // (O-1b): 5 dana (30–65) i 6 dana (35–80) ne podržavaju 25 km (ulaz bi ih odbio) → bez preporuke.
     expect(msgOf({ weeks: 12, km: 25, vdot: 30, days: d[4].A.days, long: 'sun' })).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje; preporuka 5–6 dana.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje.'
     );
     // 02b (D17 udeo 3 dana 0,45): isti ulaz je u 10k-v2.2.0 sekao i udeo 40 %; sada samo 105 min.
     expect(msgOf({ weeks: 17, km: 30, vdot: 35, days: d[3].A.days, long: 'sun' })).toBe(
-      '3 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 4–6 dana.'
+      '3 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 4–5 dana.'
     );
     expect(msgOf({ weeks: 12, km: 65, vdot: 30, days: d[5].A.days, long: 'sun' })).toBe(
       '5 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 6 dana.'
@@ -239,10 +240,15 @@ describe('D6: obim', () => {
     expect(fewerDaysAdvice(4, 45, reg(4))).toBe('');
     // D28: početnik — samo tabela početnika (3 dana 15–30 km).
     expect(fewerDaysAdvice(4, 25, planRule(4, 'beginner')!)).toBe(
-      '; preporuka 3 dana (red D28 sa manje dana podržava obim 25 km, dugi dobija veći udeo)'
+      '; preporuka 3 dana (plan sa manje dana podržava obim 25 km, dugi dobija veći udeo; D28)'
     );
     expect(fewerDaysAdvice(4, 25, reg(4))).toBe(
-      '; preporuka 3 dana (red D17 sa manje dana podržava obim 25 km, dugi dobija veći udeo)'
+      '; preporuka 3 dana (plan sa manje dana podržava obim 25 km, dugi dobija veći udeo; D17)'
+    );
+    // 10K-07 (O-1a): sirov obim kao ulaz — 40,04 km je iznad reda 3 dana (20–40), ulaz bi 3 dana odbio.
+    expect(fewerDaysAdvice(4, 40.04, reg(4))).toBe('');
+    expect(fewerDaysAdvice(5, 40.01, reg(5))).toBe(
+      '; preporuka 4 dana (plan sa manje dana podržava obim 40.01 km, dugi dobija veći udeo; D17)'
     );
   });
 });

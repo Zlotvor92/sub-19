@@ -230,7 +230,7 @@ const band = (km: number): [number, number] =>
   km < 35 ? [900, 600] : km < 45 ? [1200, 900] : [1500, 900];
 
 describe('D14: WU/CD i oporavci', () => {
-  it('WU/CD po pojasu obima za sve brojeve dana (< 35: 15/10, 35–44,9: 20/15, ≥ 45: 25/15 min; trka 15/10); oporavci po pravilu', () => {
+  it('WU/CD po pojasu obima za sve brojeve dana (< 35: 15/10, 35–44,9: 20/15, ≥ 45: 25/15 min; trka i oštrenje 15/10, 10K-07); oporavci po pravilu', () => {
     const seen = new Set<string>();
     let iRecs = 0;
     for (const p of plans) {
@@ -239,8 +239,12 @@ describe('D14: WU/CD i oporavci', () => {
         for (const d of w.days) {
           const wo = d.workout;
           if (wo.kind !== 'quality' && wo.kind !== 'race') continue;
-          const [wu, cdSec] = wo.kind === 'race' ? [900, 600] : band(p.input.currentWeeklyKm);
-          if (wo.kind === 'quality') seen.add(`${p.input.runDays.length}:${wu}/${cdSec}`);
+          const [wu, cdSec] =
+            wo.kind === 'race' || d.role === 'sharpener'
+              ? [900, 600]
+              : band(p.input.currentWeeklyKm);
+          if (wo.kind === 'quality' && d.role !== 'sharpener')
+            seen.add(`${p.input.runDays.length}:${wu}/${cdSec}`);
           const s = wo.segments;
           expect([s[0]!.kind, s[0]!.sec, s[0]!.km]).toEqual([
             'warmup',

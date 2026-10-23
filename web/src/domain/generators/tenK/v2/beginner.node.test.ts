@@ -95,7 +95,7 @@ describe('D28: početnik — plan', () => {
         expect(quality(w)).toEqual([]);
         expect(w.days.find((d) => d.weekday === p.pattern.q1)!.role).toBe('easy');
         expect(w.days.filter((d) => d.role === 'easy').length).toBe(days - 1);
-        expect(w.notes.some((n) => n.startsWith('Uvod (D28)'))).toBe(true);
+        expect(w.notes.some((n) => n.startsWith('Uvod: '))).toBe(true);
       }
       const ladders = p.weeks
         .filter(steady)

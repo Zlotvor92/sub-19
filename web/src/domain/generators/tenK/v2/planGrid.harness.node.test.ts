@@ -11,7 +11,7 @@ import {
   type Row,
   summaryRow
 } from './gridInvariants.ts';
-import { fnv1a, type GridCase, planHash81 } from './testInputs.ts';
+import { cause07, fnv1a, type GridCase, planHash81 } from './testInputs.ts';
 import type { GenerateResult, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { sample } from '@/test/level';
@@ -23,6 +23,8 @@ export interface PlanGrid {
   /** fnv1a(JSON) rezultata po ulazu (redosled `cases`) — determinizam. */
   hashes: number[];
   h81: Record<string, number>;
+  /** 10K-07: uzrok promene toka (testInputs.cause07); null = mora biti bajt-isti posle undo07. */
+  c07: Record<string, string | null>;
   rejected: string[];
   errors: Record<string, number>;
   /** `<dana>:<pravilo upozorenja>` → broj planova. */
@@ -52,6 +54,7 @@ export function runPlanGrid(
     rows: {},
     hashes: [],
     h81: {},
+    c07: {},
     rejected: [],
     errors: {},
     warned: {},
@@ -62,6 +65,7 @@ export function runPlanGrid(
     const r = generateTenKV2(c.input);
     g.hashes.push(fnv1a(JSON.stringify(r)));
     g.h81[c.id] = planHash81(r);
+    g.c07[c.id] = cause07(r);
     if (!r.ok) {
       g.rejected.push(`${c.id}: ${r.reasons.map((x) => x.code).join(',')}`);
       continue;

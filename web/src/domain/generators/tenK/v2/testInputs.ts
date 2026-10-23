@@ -7,7 +7,7 @@ import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
 import type { Structure, Weekday } from './types.ts';
 import { checkInput } from './input.ts';
 import { basisAt, pacesAt } from './steps.ts';
-import { qualityWorkout, repsOf, warmupCooldown } from './workouts.ts';
+import { qualityWorkout, repsOf, sharpenerWorkout, warmupCooldown } from './workouts.ts';
 
 /** Ponedeljak; trka nedelja = START + 7N − 1. Trka subota: start nedelja (dan ranije). */
 export const START = '2026-11-02';
@@ -839,6 +839,7 @@ interface U7Week {
   phase: string;
   plannedKm: number;
   targetKm: number;
+  nominalKm: number;
   days: U7Day[];
   notes: string[];
 }
@@ -850,7 +851,7 @@ interface U7Plan {
 }
 
 const D25_NEW =
-  /Dan kvaliteta ili testa duži od dugog po trajanju u (\d+) od (\d+) nedelja izgradnje \((\d+)\. nedelja: (\d+) > (\d+) min\)/g;
+  /Dan kvaliteta ili testa duži od dugog po trajanju u (\d+) od (\d+) nedelja izgradnje \(nedelja (\d+): (\d+) > (\d+) min\)/g;
 const ADV_NEW =
   /; preporuka ([\d–]+) dana \(plan sa manje dana podržava obim ([^ ]+) km, dugi dobija veći udeo; (D17|D28)\)/g;
 const UVOD_NEW = /Uvod: (\d+)\. od (\d+) nedelje uvoda bez kvaliteta/g;
@@ -894,8 +895,10 @@ export function undo07<T>(result: T): T {
     const p100 = Math.round(w.plannedKm * 100) + delta100;
     const t100 = Math.round(w.targetKm * 100);
     w.plannedKm = p100 / 100;
-    if (t100 === Math.round(Math.round((p100 - delta100) / 10)) * 10)
-      w.targetKm = Math.round(p100 / 10) / 10;
+    // Cilj i nominalni cilj trkačke nedelje = planirano (D8, raceWeekTarget10).
+    const t10 = Math.round((p100 - delta100) / 10);
+    if (t100 === t10 * 10) w.targetKm = Math.round(p100 / 10) / 10;
+    if (Math.round(w.nominalKm * 10) === t10) w.nominalKm = Math.round(p100 / 10) / 10;
   }
   const text = (t: string): string =>
     t
@@ -910,7 +913,60 @@ export function undo07<T>(result: T): T {
       );
   for (const w of plan.weeks) w.notes = w.notes.map(text);
   for (const v of plan.warnings) v.message = text(v.message);
-  if (Array.isArray(r.changes))
+  if (Array.isArray(r.changes)) {
+    // `changes`: pre = plan sa koracima bez poslednjeg, posle = ovaj plan; oštrenje iz oznake dana ili iz plana.
+    const rw = plan.weeks.find((w) => w.phase === 'race');
+    const deltaOf = (reps: number, st: readonly never[]): number => {
+      if (!rw || reps === 0) return 0;
+      const paces = pacesAt(chk.pace, st, rw.index);
+      const feel = basisAt(chk.pace, st, rw.index) === 'feel';
+      const dose = sharpenerWorkout(reps, paces, feel).dose!;
+      return (
+        Math.round(qualityWorkout(dose, paces, wcOld, feel).km * 100) -
+        Math.round(qualityWorkout(dose, paces, raceWc, feel).km * 100)
+      );
+    };
+    const repsIn = (label: string | undefined): number | null => {
+      const m = label === undefined ? null : /^sharpener: .*RP (\d) × 1000 m/u.exec(label);
+      return label === undefined ? null : m ? Number(m[1]) : 0;
+    };
+    const sd = rw?.days.find((d) => d.role === 'sharpener');
+    const repsAfter = sd ? Number(/RP (\d) ×/u.exec(sd.workout.title)?.[1] ?? 0) : 0;
+    const dayCh = r.changes.find(
+      (c) =>
+        c.field === 'day' &&
+        c.week === rw?.index &&
+        (c.before.startsWith('sharpener: ') || c.after.startsWith('sharpener: '))
+    );
+    const repsBefore = dayCh ? (repsIn(dayCh.before) ?? 0) : repsAfter;
+    const dA = deltaOf(repsAfter, steps);
+    const dB = deltaOf(repsBefore, steps.slice(0, -1));
+    const km = (x: string, d: number): string => String((Math.round(Number(x) * 100) + d) / 100);
+    const tk = (x: string, plannedNew: string, d: number): string =>
+      Math.round(Number(x) * 10) === Math.round(Number(plannedNew) * 10)
+        ? String(Math.round((Math.round(Number(plannedNew) * 100) + d) / 10) / 10)
+        : x;
+    const pl = r.changes.find((c) => c.field === 'plannedKm' && c.week === rw?.index);
+    // Cilj trkačke = planirano: posle vraćanja planiranog stavka cilja nastaje ili nestaje (kao pre 10K-07).
+    if (
+      rw &&
+      pl &&
+      Math.round(rw.targetKm * 10) === Math.round((Math.round(Number(pl.after) * 100) + dA) / 10)
+    ) {
+      const t = (x: string, d: number): string =>
+        String(Math.round((Math.round(Number(x) * 100) + d) / 10) / 10);
+      const ti = r.changes.findIndex((c) => c.field === 'targetKm' && c.week === rw.index);
+      const tb = t(pl.before, dB);
+      const ta = t(pl.after, dA);
+      if (ti >= 0) r.changes.splice(ti, 1);
+      if (tb !== ta)
+        r.changes.splice(r.changes.indexOf(pl), 0, {
+          week: rw.index,
+          field: 'targetKm',
+          before: tb,
+          after: ta
+        });
+    }
     for (const c of r.changes) {
       if (c.field === 'day') {
         c.before = c.before.replace(
@@ -921,23 +977,38 @@ export function undo07<T>(result: T): T {
           /^sharpener: (.*)$/u,
           (_, t: string) => `sharpener: ${titleOld(t)}`
         );
-      } else if (
-        c.field === 'plannedKm' &&
-        plan.weeks[c.week - 1]?.phase === 'race' &&
-        delta100 !== 0
-      ) {
-        c.before = String((Math.round(Number(c.before) * 100) + delta100) / 100);
-        c.after = String((Math.round(Number(c.after) * 100) + delta100) / 100);
-      } else if (
-        c.field === 'targetKm' &&
-        plan.weeks[c.week - 1]?.phase === 'race' &&
-        delta100 !== 0
-      ) {
-        const t = (x: string): string =>
-          String(Math.round((Math.round(Number(x) * 100) + delta100) / 10) / 10);
-        c.before = t(c.before);
-        c.after = t(c.after);
+      } else if (rw && c.week === rw.index && (c.field === 'plannedKm' || c.field === 'targetKm')) {
+        if (c.field === 'targetKm' && pl) {
+          // već obrađeno iznad
+        } else if (c.field === 'targetKm') {
+          const pb = pl ? pl.before : c.before;
+          const pa = pl ? pl.after : c.after;
+          c.before = tk(c.before, pb, dB);
+          c.after = tk(c.after, pa, dA);
+        } else {
+          c.before = km(c.before, dB);
+          c.after = km(c.after, dA);
+        }
       }
     }
+  }
+  // Stavka koja posle vraćanja nema razliku ne postoji (diff je pravi samo kad se vrednost menja).
+  if (Array.isArray(r.changes)) r.changes = r.changes.filter((c) => c.before !== c.after);
   return r as T;
+}
+
+/**
+ * 10K-07: uzrok promene toka posle `undo07` (izmereno prema c13c258, stari kod u worktree-u: generisanje grid02 +
+ * po osećaju + početnik 31 122 planova → O-1b 930, F3 822, ostalo bajt-isto; adaptacija 2 040 tokova → Z1 28, F3 37,
+ * ostalo bajt-isto). 'O-1b': poruka CAPACITY_LIMITED (preporuka dana samo za redove koji podržavaju obim); 'F3':
+ * upozorenje D25 (sada i dan testa); 'Z1': mešovita nedelja zadržava kvalitet zbog upisanog viška. null = tok mora biti
+ * bajt-isti posle undo07.
+ */
+export function cause07(result: unknown): 'O-1b' | 'F3' | 'Z1' | null {
+  const p = (result as { plan?: U7Plan } | null)?.plan;
+  if (!p || !Array.isArray(p.weeks)) return null;
+  if (p.weeks.some((w) => w.notes.some((n) => n.includes('(više od planiranog)')))) return 'Z1';
+  if (p.warnings.some((w) => w.rule === 'LONG_SHORTER_THAN_QUALITY')) return 'F3';
+  if (p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')) return 'O-1b';
+  return null;
 }

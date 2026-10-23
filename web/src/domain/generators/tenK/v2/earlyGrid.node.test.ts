@@ -200,7 +200,7 @@ describe('06e (10k-v2.5.2, pouka 34): umor sa asOf pre starta — 10k-v2.5.1 odb
     expect([w1!.deload, w1!.targetKm]).toEqual([true, 14.4]);
     expect(w1!.days.some((d) => d.workout.kind === 'quality')).toBe(false);
     expect(kinds(w1!).sort()).toEqual(kinds(p0.weeks[0]!).sort());
-    expect(w1!.notes.some((n) => n.includes('Uvod (D28)'))).toBe(true);
+    expect(w1!.notes.some((n) => n.includes('Uvod: '))).toBe(true);
     expect([w2!.deload, w2!.targetKm]).toEqual([false, p0.weeks[0]!.targetKm]);
     expect(w2!.days.some((d) => d.workout.kind === 'quality')).toBe(false);
   });

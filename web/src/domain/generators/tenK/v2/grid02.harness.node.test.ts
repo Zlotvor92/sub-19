@@ -286,6 +286,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         else if (x.h[0] === h0) c['same']!++;
         else if (rws0 === 1 && x.h[0] === noRws0) c['D30b']!++;
         else if (x.rp800) c[rws0 === 1 ? 'D30a+D30b' : 'D30a']!++;
+        // 10K-07: plan sa uzrokom cause07 (posle undo07) — razvrstan po tome šta je 21c03f1 imao (D30b: RACE_WEEK_SHORT).
+        else if (g.c07[id]) c[rws0 === 1 ? 'D30b' : 'same']!++;
         else other.push(id);
       }
       expect(other).toEqual([]);
@@ -307,11 +309,13 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       expect(Object.keys(fx.result).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.81bd351.result', Object.keys(g.h81));
-      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
-      const changed = Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id]);
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717; 10K-07: i planovi sa uzrokom cause07
+      // (posle undo07), ostali bajt-isti.
+      const no07 = (id: string): boolean => !g.c07[id];
+      const changed = Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id] && no07(id));
       expect(changed.sort()).toEqual(
         Object.keys(g.h81)
-          .filter((id) => P35_PLANS.has(id))
+          .filter((id) => P35_PLANS.has(id) && no07(id))
           .sort()
       );
     });
@@ -321,11 +325,13 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       expect(Object.keys(fx.result).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.b13ca17.result', Object.keys(g.h81));
-      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
-      const changed = Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id]);
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717; 10K-07: i planovi sa uzrokom cause07
+      // (posle undo07), ostali bajt-isti.
+      const no07 = (id: string): boolean => !g.c07[id];
+      const changed = Object.keys(g.h81).filter((id) => g.h81[id] !== fx.result[id] && no07(id));
       expect(changed.sort()).toEqual(
         Object.keys(g.h81)
-          .filter((id) => P35_PLANS.has(id))
+          .filter((id) => P35_PLANS.has(id) && no07(id))
           .sort()
       );
     });

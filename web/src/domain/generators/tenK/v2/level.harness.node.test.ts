@@ -3,7 +3,7 @@
    Mreža se računa u `beforeAll` (ne u telu `describe`): vitest raspoređuje fajlove po zabeleženom trajanju, a ono
    ne uključuje fazu collect; uz to filter imena / `--bail` ne računa mrežu za describe čiji se testovi ne pokreću. */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
@@ -68,6 +68,11 @@ export function p37FlowErrors(
   flows: readonly { key: string; hash: number; res: unknown }[]
 ): string[] {
   const bad: string[] = [];
+  if (process.env['DUMP07'])
+    appendFileSync(
+      process.env['DUMP07'],
+      flows.map((f) => `${net}\t${f.key}\t${f.hash}\n`).join('')
+    );
   for (const f of flows) {
     const old = ADAPT_CHANGED_46E[net][f.key];
     if (old !== undefined && (old === f.hash || !hasP37(f.res)))

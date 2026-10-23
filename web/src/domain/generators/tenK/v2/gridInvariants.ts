@@ -369,14 +369,19 @@ export function checkPlan(
     )
       no('RACE_EASY_D23', `${d.date}`);
   if (byKm && raceEasy.length > 0) st.raceKmEasy++;
-  // D25: upozorenje TAČNO kad je u ne-rasteretnoj nedelji izgradnje kvalitetni dan duži od dugog po
-  // trajanju; preporuka manje dana tačno kad red sa manje dana podržava trenutni obim.
+  // D25: upozorenje TAČNO kad je u ne-rasteretnoj nedelji izgradnje kvalitetni dan, ili u bilo kojoj nedelji
+  // izgradnje dan testa (10K-07), duži od dugog po trajanju; preporuka manje dana tačno kad red sa manje dana podržava
+  // trenutni obim.
   const longer = p.weeks.some((w) => {
     const l = w.days.find((d) => d.role === 'long');
     return (
-      steady(w) &&
       !!l &&
-      w.days.some((d) => d.workout.kind === 'quality' && d.workout.sec > l.workout.sec)
+      w.days.some(
+        (d) =>
+          ((steady(w) && d.workout.kind === 'quality') ||
+            (w.phase !== 'taper' && w.phase !== 'race' && d.workout.kind === 'test')) &&
+          d.workout.sec > l.workout.sec
+      )
     );
   });
   const d25 = p.warnings.filter((x) => x.rule === 'LONG_SHORTER_THAN_QUALITY');

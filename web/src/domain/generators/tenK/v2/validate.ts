@@ -644,7 +644,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const f = longer[0]!;
     warn(
       'LONG_SHORTER_THAN_QUALITY',
-      `Dan kvaliteta ili testa duži od dugog po trajanju u ${longer.length} od ${weeks.filter(d25).length} nedelja izgradnje (${wl(f.w)}. nedelja: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
+      `Dan kvaliteta ili testa duži od dugog po trajanju u ${longer.length} od ${weeks.filter(d25).length} nedelja izgradnje (nedelja ${wl(f.w)}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
       f.w
     );
   }

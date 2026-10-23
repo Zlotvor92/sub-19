@@ -278,7 +278,7 @@ export function buildWeek(
             len.long10 < Math.max(EASY_MIN10, Math.min(long0, longCap10(target10, rule, p)))
           ? `Rasterećenje: cilj ${fmtKm(targetKm)} km${tw ? ', jedan kvalitet (T)' : ' bez kvaliteta'}, dugi ${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × poslednjeg ne-rasteretnog da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (A9, odstupanje).`
           : intro
-            ? `Uvod (D28): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan; prinudno rasterećenje (A5): cilj ${fmtKm(targetKm)} km, nedelja bez kvaliteta, dugi 0,8 × poslednji ne-rasteretni.`
+            ? `Uvod: ${frame.index}. od ${rule.introWeeks} nedelje uvoda bez kvaliteta — dan kvaliteta je lagan; prinudno rasterećenje (A5): cilj ${fmtKm(targetKm)} km, nedelja bez kvaliteta, dugi 0,8 × poslednji ne-rasteretni.`
             : tw
               ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), dugi 0,8 × poslednji ne-rasteretni (D5).`
               : mode === 'none'

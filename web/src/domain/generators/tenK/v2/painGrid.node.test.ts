@@ -49,8 +49,10 @@ const I3_RACE_WEEK = [
   // 06c (10k-v2.5.0, A17): d5-f-18w asOf 02-05/02-06 otpadaju (r = 14, ukinuto rasterećenje ned 15); d4-r-14w
   // asOf 01-09 nov (r = 10, ukinuto rasterećenje ned 11; uz bol 8 ned 12 ima dan bola → 1 kvalitet, RP tapera
   // 2000 m umesto 2400 m, lagan tapera 4,2 umesto 3,8 km → trkačka 16,4 umesto 16,0, D23/D8).
-  'd4-r-14w/w10/2027-01-09/p8 ned 14: 16 → 16.4',
-  'd5-f-18w/w14/2027-02-07/p8 ned 18: 18.8 → 22.8'
+  // 10K-07 (10k-v2.9.0, D8): oštrenje nosi WU/CD trke (15 + 10 min) umesto pojasa D14 — ista dva toka, trkačka
+  // nedelja (cilj = planirano) kraća za razliku WU/CD oštrenja (2,1 / 2,5 km); razlika bol 8 − bol 5 ista.
+  'd4-r-14w/w10/2027-01-09/p8 ned 14: 14.3 → 14.7',
+  'd5-f-18w/w14/2027-02-07/p8 ned 18: 16.3 → 20.3'
 ];
 /** I3 — nedelje sa istim ciljem bez dana bola u kojima je planirano uz bol 8 veće za ≤ 0,1 km (D19). 06c
     (A17): 16 → 14 — d5-f-18w asOf 02-05/02-06 ned 17 (taper) otpadaju zajedno sa trkačkom (ukinuto
@@ -131,7 +133,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     }
   }, GRID_TIMEOUT);
 
-  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.8.1', () => {
+  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.9.0', () => {
     expect(PAIN_GRID.length).toBe(6);
     expect(flows.length).toBe(336);
     expect(flows.filter((f) => !f.res.ok).map((f) => f.key)).toEqual([]);
@@ -141,7 +143,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.8.1');
+      expect(r.plan.policyVersion).toBe('10k-v2.9.0');
     }
   });
 

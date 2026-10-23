@@ -57,6 +57,7 @@ import {
 } from './members.ts';
 import { workoutStructure } from './structure.ts';
 import { SKIP_FEEL, SKIP_NO_STRUCTURE } from './watch.ts';
+import { userText } from './format.ts';
 
 /* SEGMENT 05 — 10K v2 u aplikaciji: prekidač, rutiranje po oznaci politike, generisanje kroz adapter (nedelja 7 dana,
    struktura na svakom treningu, faza iz v2, trka van obima, odbijanje sa razlozima), čuvanje (backup/uvoz i vraćanje
@@ -130,7 +131,7 @@ describe('generisanje kroz adapter', () => {
       const v2 = v2Of(p);
       expect(p.meta).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.8.1',
+        policyVersion: '10k-v2.9.0',
         raceDistM: 10000,
         raceDate: RACE,
         start: START,
@@ -210,7 +211,7 @@ describe('generisanje kroz adapter', () => {
       label: { realistic: 'realističan', ambitious: 'ambiciozan', unrealistic: 'nerealan' }[
         v2.goal!.status as 'realistic'
       ],
-      message: v2.goal!.message
+      message: userText(v2.goal!.message)
     });
     const feel = planOf(FEEL);
     const fm = feel.meta as Record<string, unknown>;
@@ -225,8 +226,8 @@ describe('generisanje kroz adapter', () => {
     ])
       expect(fm, k).not.toHaveProperty(k);
     // Upozorenja i napomene v2 doslovno.
-    for (const n of v2Of(feel).notes) expect(fm['dayWarnings']).toContain(n);
-    for (const v of v2Of(feel).warnings) expect(fm['dayWarnings']).toContain(v.message);
+    for (const n of v2Of(feel).notes) expect(fm['dayWarnings']).toContain(userText(n));
+    for (const v of v2Of(feel).warnings) expect(fm['dayWarnings']).toContain(userText(v.message));
   });
 
   it('plan po osećaju: rad kvaliteta nosi RPE i tempo kao procenu; test 5 km; sa rezultatom tempo je propisan', () => {
