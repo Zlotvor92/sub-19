@@ -3,6 +3,22 @@ import { brojNedelja } from '../../domain/format';
 import type { WizardState, weeksHint } from '../../domain/onboarding';
 import { Chips, RACE_DISTS } from './controls';
 
+/* Jedna rečenica za IZABRANU distancu umesto objašnjenja sve četiri odjednom. Isti sadržaj kao ranije (fokus, dugo trčanje, minimum nedelja). */
+const DIST_LINE: Readonly<Record<number, string>> = {
+  5000: '5K gradi VO2max i brzinu.',
+  10000: '10K gradi prag i specifičnu izdržljivost.',
+  21097.5:
+    'Polumaraton gradi izdržljivost: dva duža trčanja nedeljno, taper od dve nedelje, uvežbavanje unosa goriva.',
+  42195:
+    'Maraton: dugo trčanje traje najviše 3 sata, opterećenje raste u sopstvenim talasima, a unos goriva se uvežbava.'
+};
+const DIST_WEEKS: Readonly<Record<number, string>> = {
+  5000: '6 nedelja',
+  10000: '8 nedelja',
+  21097.5: '10 nedelja',
+  42195: '12 nedelja'
+};
+
 /* KORAK 1: ciljna distanca i datum trke. Poruka pod datumom (koliko nedelja ima do trke i da li je dovoljno) stiže gotova iz domena. */
 
 export function Step1Race({
@@ -26,8 +42,8 @@ export function Step1Race({
       <div className="ob-eyebrow">Korak 1 od 4</div>
       <h1 className="ob-h1">Za koju trku se spremaš?</h1>
       <div className="ob-sub">
-        Distanca određuje strukturu plana — koliko raste dugo trčanje i koliko tempo rada ima u
-        nedelji.
+        Distanca određuje strukturu plana — koliko raste dugo trčanje i koliko nedeljno ima rada u
+        tempu.
       </div>
       <div className="ob-card">
         <div className="ob-ct">Ciljna distanca</div>
@@ -38,12 +54,8 @@ export function Step1Race({
           onPick={(v) => set({ raceDist: v })}
         />
         <div className="ob-hint">
-          Svaka distanca ima <b>svoju</b> logiku — 5K gradi VO2max i brzinu, 10K prag i specifičnu
-          izdržljivost, polumaraton akumuliranu izdržljivost (dva duža trčanja nedeljno, taper od
-          dve nedelje, uvežbavanje goriva). Ne prave se iz istog kalupa. Maraton ide još dalje: dugo
-          trčanje mu je ograničeno <b>vremenom</b> (3 sata), ima sopstveni talas i uvežbavanje
-          goriva. Preporučeno za pun ciklus: <b>6 nedelja</b> za 5K, <b>8</b> za 10K, <b>10</b> za
-          polumaraton, <b>12</b> za maraton.
+          {DIST_LINE[w.raceDist] ?? ''} Preporučena priprema: <b>{DIST_WEEKS[w.raceDist] ?? '—'}</b>
+          .
         </div>
       </div>
       <div className="ob-card">
@@ -61,7 +73,8 @@ export function Step1Race({
         <div className="ob-hint" id="ob-weeks-hint" aria-live="polite">
           {hint.kind === 'this-week' ? (
             <>
-              Trka je <b>ove nedelje</b> — plan je dozvoljen, ali nema vremena za punu pripremu.
+              Trka je <b>ove nedelje</b> — plan možeš da napraviš, ali nema vremena za punu
+              pripremu.
             </>
           ) : hint.kind === 'too-short' ? (
             <>
@@ -72,7 +85,7 @@ export function Step1Race({
           ) : hint.kind === 'enough' ? (
             <>
               Do trke: <b>{brojNedelja(hint.weeks)}</b> — dovoljno za pun ciklus pripreme za{' '}
-              {hint.nameInSentence}, sa deload nedeljom i taperom.
+              {hint.nameInSentence}, sa nedeljom rasterećenja i taperom.
             </>
           ) : null}
         </div>

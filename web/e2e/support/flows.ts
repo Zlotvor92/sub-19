@@ -63,9 +63,9 @@ export async function runWizard(page: Page, input: PlanInput = TEN_K): Promise<v
     await page.getByText('Tvoja trenutna baza — opciono').click();
     await page.getByLabel('Skorašnja ponovljiva dužina (km)').fill(input.history.longRunKm);
     await page
-      .getByLabel('Nedelja redovnog trčanja u kontinuitetu')
+      .getByLabel('Kontinuitet — koliko nedelja trčiš redovno')
       .fill(input.history.consistentWeeks);
-    await page.getByLabel('Skorašnja pauza (nedelja)').fill(input.history.breakWeeks);
+    await page.getByLabel('Skorašnja pauza (broj nedelja)').fill(input.history.breakWeeks);
     await page
       .getByLabel('Iskustvo sa intervalima i tempo treningom')
       .selectOption(input.history.qualityExperience);

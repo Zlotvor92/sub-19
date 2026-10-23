@@ -18,7 +18,7 @@ export function AppRefresh() {
       else if (st.waiting)
         setInfo(
           <>
-            <b className="warn-t">Nova verzija je preuzeta i čeka.</b> Dodirni „Osveži aplikaciju" —
+            <b className="warn-t">Nova verzija je preuzeta i čeka.</b> Dodirni „Osveži aplikaciju“ —
             ništa se ne gubi, podaci ostaju.
           </>
         );
@@ -26,7 +26,7 @@ export function AppRefresh() {
         setInfo(
           <>
             Offline kopija je na verziji <b>{st.active}</b>, a učitan kod na <b>{APP_VERSION}</b>.
-            Dok si na mreži radiš na novom kodu; „Osveži aplikaciju" izjednačava i offline kopiju.
+            Dok si na mreži radiš na novom kodu; „Osveži aplikaciju“ izjednačava i offline kopiju.
           </>
         );
       else if (st.active) setInfo(`Offline kopija je na verziji ${st.active} — usklađena.`);

@@ -36,7 +36,7 @@ export function AccountBody() {
         </div>
         <Help summary="Šta dobijam prijavom">
           <p>
-            Bez prijave sve radi kao i do sad, samo bez rezervne kopije na serveru i bez istog plana
+            Bez prijave sve radi kao i dosad, samo bez rezervne kopije na serveru i bez istog plana
             na više uređaja.
           </p>
         </Help>
@@ -95,8 +95,8 @@ export function AccountBody() {
       <Help summary="Brisanje naloga">
         <p>
           Briše nalog i <b>sve</b> podatke sa servera — plan, istoriju treninga, merenja oporavka i
-          prijave za obaveštenja. Ne može da se poništi. Pre brisanja napravi „Backup" ako želiš da
-          zadržiš kopiju.
+          prijave za obaveštenja. Ne može da se poništi. Pre brisanja napravi „Izvezi backup“ ako
+          želiš da zadržiš kopiju.
         </p>
         <div className="btnrow">
           <button

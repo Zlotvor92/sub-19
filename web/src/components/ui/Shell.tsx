@@ -135,7 +135,7 @@ function LoginContent({ message, onLogin }: { message: string; onLogin: () => vo
       <h1 className="gate-h1">Prijavi se da nastaviš</h1>
       <div className="gate-sub">
         Nalog čuva tvoj plan i istoriju treninga na serveru — ako izgubiš telefon ili obrišeš
-        podatke pretraživača, sve je i dalje tu.
+        podatke pregledača, sve je i dalje tu.
       </div>
       <button type="button" className="btn block" id="gate-go" onClick={onLogin}>
         Prijavi se Google nalogom

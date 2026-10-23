@@ -43,7 +43,7 @@ export function Step3Volume({
         />
       </div>
       <div className="ob-card">
-        <div className="ob-ct">Trčao redovno poslednjih mesec dana?</div>
+        <div className="ob-ct">Da li si trčao redovno poslednjih mesec dana?</div>
         <Chips
           items={[
             ['yes', 'Da, redovno'],
@@ -61,8 +61,8 @@ export function Step3Volume({
       <details className="ob-card">
         <summary className="ob-ct">Tvoja trenutna baza — opciono</summary>
         <div className="ob-hint">
-          Ovi podaci odvojeno određuju dužinu i dozu kvalitetnog rada. Ako ih preskočiš, plan
-          koristi oprezne pretpostavke i navodi ih.
+          Ovi podaci odvojeno određuju dužinu dugog trčanja i dozu kvalitetnog rada. Ako ih
+          preskočiš, plan koristi oprezne pretpostavke i navodi ih.
         </div>
         <label className="ob-ct" htmlFor="recent-lr">
           Skorašnja ponovljiva dužina (km)
@@ -83,7 +83,7 @@ export function Step3Volume({
           oporavak.
         </div>
         <label className="ob-ct" htmlFor="consistent-weeks">
-          Nedelja redovnog trčanja u kontinuitetu
+          Kontinuitet — koliko nedelja trčiš redovno
         </label>
         <input
           id="consistent-weeks"
@@ -96,7 +96,7 @@ export function Step3Volume({
           onChange={(e) => set({ consistentWeeks: e.target.value })}
         />
         <label className="ob-ct" htmlFor="break-weeks">
-          Skorašnja pauza (nedelja)
+          Skorašnja pauza (broj nedelja)
         </label>
         <input
           id="break-weeks"
@@ -109,8 +109,8 @@ export function Step3Volume({
           onChange={(e) => set({ breakWeeks: e.target.value })}
         />
         <div className="ob-hint">
-          Pauza pre sadašnjeg kontinuiteta; kilometraža iznad već treba da predstavlja tvoj trenutni
-          prosek.
+          Pauza pre sadašnjeg perioda redovnog trčanja. Kilometraža iznad treba da bude tvoj
+          trenutni prosek.
         </div>
         <label className="ob-ct" htmlFor="quality-experience">
           Iskustvo sa intervalima i tempo treningom
@@ -154,8 +154,8 @@ export function Step3Volume({
             </>
           ) : (
             <>
-              Ostavi prazno pa plan sam raspoređuje dane. Izaberi konkretne ako imaš fiksne obaveze
-              — tada se koriste <b>tačno ti dani</b>.
+              Ostavi prazno i plan će sam rasporediti dane. Izaberi konkretne ako imaš fiksne
+              obaveze — tada se koriste <b>tačno ti dani</b>.
             </>
           )}
         </div>

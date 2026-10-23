@@ -66,8 +66,9 @@ export function MarathonV2Result({
       <div className="ob-eyebrow">Korak 2 od 4</div>
       <h1 className="ob-h1">Imaš li skoriji rezultat?</h1>
       <div className="ob-sub">
-        Rezultat iz poslednjih 12 nedelja daje tempo svakog treninga. Bez njega plan ide po osećaju:
-        lagano iz tvog uobičajenog laganog tempa, kvalitet po naporu (RPE), uz test 5 km.
+        Rezultat iz poslednjih 12 nedelja određuje tempo svakog treninga. Bez njega plan ide po
+        osećaju: lagani treninzi tvojim uobičajenim laganim tempom, kvalitet po naporu (RPE), uz
+        test 5 km.
       </div>
       <div className="ob-card">
         <Chips
@@ -210,8 +211,8 @@ export function MarathonV2Experience({
               onChange={(e) => set({ longestKm: e.target.value })}
             />
             <div className="ob-hint">
-              Dugi trk plana raste postepeno od njega. Bez unosa plan kaže koliki najduži trk
-              pretpostavlja.
+              Dugo trčanje u planu raste postepeno od te dužine. Bez unosa plan navodi koliko
+              najduže trčanje pretpostavlja.
             </div>
           </div>
           <div className="ob-card">
@@ -293,7 +294,7 @@ export function MarathonV2Days({
           }
         />
         <div className="ob-hint">
-          Cilj se samo procenjuje; tempo treninga ostaje prema rezultatu ili naporu.
+          Cilj se samo procenjuje; tempo treninga i dalje zavisi od rezultata ili napora.
         </div>
       </div>
       <Rejection reasons={rejection} />

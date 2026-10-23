@@ -226,6 +226,6 @@ for (const fallback of [false, true]) {
     await page.reload();
     await openProgress(page, /^Analiza trke/);
     await expect(form.getByText('Prolazi su analizirani po svakom kilometru.')).toBeVisible();
-    await expect(form.getByText(/22 deonica/).first()).toBeVisible();
+    await expect(form.getByText(/22 deonice/).first()).toBeVisible();
   });
 }

@@ -29,7 +29,7 @@ export function useSystemBanners(): void {
         id: BANNER.conflict,
         kind: 'upozorenje',
         title: 'Podaci se razlikuju',
-        body: `Na drugom uređaju postoje noviji podaci (${when}). Dok ne izabereš, ništa se ne menja. „Uzmi sa servera" prepisuje izmene na ovom uređaju. „Zadrži sa telefona" prepisuje one na serveru.`,
+        body: `Na drugom uređaju postoje noviji podaci (${when}). Dok ne izabereš, ništa se ne menja. „Uzmi sa servera“ prepisuje izmene na ovom uređaju. „Zadrži sa telefona“ prepisuje one na serveru.`,
         actions: [
           { id: 'pull', label: 'Uzmi sa servera' },
           { id: 'push', label: 'Zadrži sa telefona', ghost: true }
@@ -45,7 +45,7 @@ export function useSystemBanners(): void {
         id: BANNER.loadFailure,
         kind: 'greska',
         title: 'Sačuvani podaci se ne mogu pročitati',
-        body: `Zapis na ovom uređaju je oštećen (${kb} KB). Ništa nije obrisano — sirov sadržaj je sačuvan i možeš ga skinuti. Slanje na server je zaustavljeno dok ne odlučiš, da prazno stanje ne bi prepisalo ono što je gore. Ako koristiš nalog, „Uzmi sa servera" je najbrži put nazad. Spašeni fajl zadrži za svaki slučaj.`,
+        body: `Zapis na ovom uređaju je oštećen (${kb} KB). Ništa nije obrisano — sirov sadržaj je sačuvan i možeš ga skinuti. Slanje na server je zaustavljeno dok ne odlučiš, da prazno stanje ne bi prepisalo ono što je gore. Ako koristiš nalog, „Uzmi sa servera“ je najbrži put nazad. Spašeni fajl zadrži za svaki slučaj.`,
         actions: [
           { id: 'download', label: 'Skini spašeno' },
           { id: 'server', label: 'Uzmi sa servera', ghost: true }

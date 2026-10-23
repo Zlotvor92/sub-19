@@ -49,8 +49,8 @@ export function FiveKV2Result({
       <div className="ob-eyebrow">Korak 2 od 4</div>
       <h1 className="ob-h1">Imaš li skoriji rezultat?</h1>
       <div className="ob-sub">
-        Rezultat iz poslednjih 12 nedelja daje tempo svakog treninga. Bez njega plan ide po osećaju:
-        lagano iz tvog uobičajenog laganog tempa, kvalitet po naporu (RPE).
+        Rezultat iz poslednjih 12 nedelja određuje tempo svakog treninga. Bez njega plan ide po
+        osećaju: lagani treninzi tvojim uobičajenim laganim tempom, kvalitet po naporu (RPE).
       </div>
       <div className="ob-card">
         <Chips
@@ -186,7 +186,7 @@ export function FiveKV2Experience({ v, set }: { v: FiveKV2Wizard; set: Set }) {
           onPick={(x) => set({ canRun30: x === 'yes' })}
         />
         <div className="ob-hint">
-          „Ne još" → plan trčanje/hodanje: vremenski, 3 dana nedeljno, cilj je završiti trku.
+          „Ne još“ → plan trčanja/hodanja po vremenu, 3 dana nedeljno; cilj je završiti trku.
         </div>
       </div>
     </div>
@@ -238,7 +238,7 @@ export function FiveKV2Days({
             }
           />
           <div className="ob-hint">
-            Cilj se samo procenjuje; tempo treninga ostaje prema rezultatu ili naporu.
+            Cilj se samo procenjuje; tempo treninga i dalje zavisi od rezultata ili napora.
           </div>
         </div>
       ) : null}

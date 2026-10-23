@@ -42,6 +42,10 @@ main {
 .install-btn {
   flex: none;
 }
+/* Instalacija je sporedna radnja: obrisano dugme sa tankom ivicom, da ne bude u rangu glavne radnje ekrana. */
+.btn.ghost.install-btn {
+  border-color: var(--border-ui);
+}
 .appbar-r.tag {
   font-size: var(--fs-label);
   font-weight: var(--w-strong);

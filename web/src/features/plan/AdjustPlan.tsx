@@ -203,7 +203,7 @@ export function AdjustPlan() {
             <Row
               icon="undo"
               title="Vrati na moj plan"
-              sub="Generisan plan se trajno briše"
+              sub="Generisani plan se trajno briše"
               onClick={backToOwnPlan}
             />
           ) : (

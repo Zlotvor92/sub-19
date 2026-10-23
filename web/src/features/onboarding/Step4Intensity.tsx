@@ -46,8 +46,8 @@ export function Step4Intensity({
       <div className="ob-eyebrow">Korak 4 od 4</div>
       <h1 className="ob-h1">Kako da izgleda priprema?</h1>
       <div className="ob-sub">
-        Izaberi kvalitetne dane i rast obima. Tempa treninga polaze od trenutne forme; željeno vreme
-        trke ne ubrzava ih automatski.
+        Izaberi dane za kvalitet i rast obima. Tempa treninga polaze od trenutne forme; željeno
+        vreme trke ne ubrzava ih automatski.
       </div>
       <div className="ob-card">
         <div className="ob-ct">Kvalitetnih treninga nedeljno</div>
@@ -61,8 +61,8 @@ export function Step4Intensity({
           onPick={(v) => set({ quality: v, qDays: trimQualityDays(w.qDays, v) })}
         />
         <div className="ob-hint">
-          Na <b>3 dana trčanja ili manje</b> plan forsira 1 kvalitet — dva bi bila previše na tako
-          mali obim.
+          Na <b>3 dana trčanja ili manje</b> plan zadaje 1 kvalitetan trening — dva bi bila previše
+          za tako mali obim.
         </div>
       </div>
       <div className="ob-card">
@@ -74,8 +74,8 @@ export function Step4Intensity({
           onPick={(v) => set({ intensity: v })}
         />
         <div className="ob-hint">
-          Menja količinu bržeg rada i zahtevne završetke dužine. Tempa ostaju ista; rast kilometraže
-          biraš odvojeno.
+          Menja količinu bržeg rada i zahtevnost završetka dugog trčanja. Tempa ostaju ista; rast
+          kilometraže biraš odvojeno.
         </div>
       </div>
       <div className="ob-card">
@@ -166,8 +166,8 @@ export function Step4Intensity({
             ))
           ) : (
             <div className="gw-ok">
-              Nema zamerki — traženi obim staje u izabrane dane, a raspored poštuje hard/easy
-              princip.
+              Nema zamerki — traženi obim staje u izabrane dane, a raspored smenjuje teške i lagane
+              dane.
             </div>
           )}
         </div>

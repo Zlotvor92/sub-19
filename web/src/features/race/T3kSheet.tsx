@@ -14,7 +14,7 @@ import { useUIStore } from '../../stores/uiStore';
    od nikakve. Ista rečenica na oba mesta (živa provera i dugme). */
 const rangeError = (): string =>
   `Vreme za 3 km mora biti između ${fmtClock(T3K_SEC_MIN)} i ${fmtClock(t3kSlowest())}. Brže od ${fmtClock(T3K_SEC_MIN)} je preko svetskog rekorda — proveri da nije omaška u kucanju.`;
-const EMPTY = 'Unesi vreme pa se ispod prikaže šta znači.';
+const EMPTY = 'Unesi vreme, pa se ispod prikaže šta znači.';
 
 /* TEST NA 3 KM: živa provera — čovek mora da vidi šta je uneo PRE nego što sačuva, jer se iz ovog jednog broja forma pomera više nego
    iz bilo čega drugog. */
@@ -97,8 +97,8 @@ export function T3kSheet({ id, today }: { id: string | null; today: string }) {
         ) : null}
       </div>
       <div className="note-src">
-        Trči kao pravu trku, ali bez pritiska — cilj je tačna procena forme, ne rekord. Isti uslovi
-        (staza, doba dana) daju uporediv rezultat.
+        Istrči ga kao pravu trku, ali bez pritiska — cilj je tačna procena forme, ne rekord. Isti
+        uslovi (staza, doba dana) daju uporediv rezultat.
       </div>
     </>
   );

@@ -69,7 +69,7 @@ export function Advisories({ today }: { today: string }) {
               /* JEDINI dijalog koji NAMERNO nije kapija: ovo je ponuda (čarobnjak se otvara u oba slučaja), pa prigušen dijalog znači samo „bez backupa“. */
               if (
                 window.confirm(
-                  'Prvo izvezi backup postojećih unosa?\n\nOK = izvezi pa nastavi\nOtkaži = idi odmah na pravljenje plana'
+                  'Prvo izvesti backup postojećih unosa?\n\nOK = izvezi pa nastavi\nOtkaži = idi odmah na pravljenje plana'
                 )
               )
                 downloadText(`sub19-backup-${today}.json`, getApp().exportBackup());
@@ -79,7 +79,7 @@ export function Advisories({ today }: { today: string }) {
         ]}
       >
         Gledaš ugrađeni plan sa tuđim datumom trke i tuđim tempom. Postojeći unosi ostaju sačuvani u
-        backup-u.
+        backupu.
       </Notice>
     );
 

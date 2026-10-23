@@ -38,8 +38,8 @@ describe('čarobnjak', () => {
     await user.click(screen.getByRole('button', { name: 'Nazad' }));
     await user.click(screen.getByText('Tvoja trenutna baza — opciono'));
     await user.type(screen.getByLabelText('Skorašnja ponovljiva dužina (km)'), '12');
-    await user.type(screen.getByLabelText('Nedelja redovnog trčanja u kontinuitetu'), '24');
-    await user.type(screen.getByLabelText('Skorašnja pauza (nedelja)'), '0');
+    await user.type(screen.getByLabelText('Kontinuitet — koliko nedelja trčiš redovno'), '24');
+    await user.type(screen.getByLabelText('Skorašnja pauza (broj nedelja)'), '0');
     await user.selectOptions(
       screen.getByLabelText('Iskustvo sa intervalima i tempo treningom'),
       'experienced'

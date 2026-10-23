@@ -22,7 +22,9 @@ export function useIcuInfo(): SectionInfo {
   const on = connected(icu);
   return {
     visible: true,
-    summary: on ? `${records} zapisa · ${dateOf(icu?.['lastSync']) || 'nikad'}` : 'nije povezan',
+    summary: on
+      ? `${records} ${pl3(records, 'zapis', 'zapisa', 'zapisa')} · ${dateOf(icu?.['lastSync']) || 'nikad'}`
+      : 'nije povezan',
     dot: on,
     open: !on
   };
@@ -92,7 +94,7 @@ export function IcuBody() {
             </button>
           </div>
           <p>
-            Najčešća dva uzroka: <b>fali kosa crta</b> na kraju prijavljene adrese, ili si
+            Dva najčešća uzroka: <b>fali kosa crta</b> na kraju prijavljene adrese, ili si
             aplikaciju otvorio preko privremene Vercel adrese (one sa nasumičnim delom u imenu)
             umesto preko stalne — tada se domen ne poklapa ni sa čim što je prijavljeno.
           </p>
@@ -240,9 +242,9 @@ export function IcuBody() {
           čitamo — Garminov sopstveni API traži partnerski program.
         </p>
         <p>
-          <b>I sami treninzi.</b> intervals.icu je radne deonice već prepoznao nad izvornim fajlom
-          sa sata, pa analiza dobija svaki interval posebno — tempo, GAP (tempo korigovan za nagib),
-          puls i oporavak između repova — umesto proseka cele sesije. Ako intervals.icu nije
+          <b>I sami treninzi.</b> intervals.icu je radne deonice već prepoznao u izvornom fajlu sa
+          sata, pa analiza dobija svaki interval posebno — tempo, GAP (tempo korigovan za nagib),
+          puls i oporavak između ponavljanja — umesto proseka cele sesije. Ako intervals.icu nije
           povezan, sve to i dalje radi preko Strave, samo grublje.
         </p>
       </Help>
@@ -411,7 +413,7 @@ export async function pushToWatch(replace: boolean): Promise<{ ok: boolean; stat
   }
   const question = replace
     ? `Obrisati ${n} ${pl3(n, 'ranije poslat trening', 'ranije poslata treninga', 'ranije poslatih treninga')} i napraviti ih iz početka?\n\nBriše se samo ono što je poslala ova aplikacija — ostalo u kalendaru se ne dira.\n\nOvo je potrebno posle unosa praga tempa: Garmin izvoz se pravi kad događaj nastane, pa obično ažuriranje ne pomaže.`
-    : `Poslati ${brojTreninga(n)} u intervals.icu kalendar?\n\nPostojeći koje je poslala ova aplikacija biće ažurirani, ostali se ne diraju.`;
+    : `Poslati ${brojTreninga(n)} u intervals.icu kalendar?\n\nTreninzi koje je ova aplikacija već poslala biće ažurirani, ostali se ne diraju.`;
   if (!(await confirmAction(question)))
     return { ok: false, status: replace ? 'Iz početka' : 'Pošalji na sat (14 dana)' };
   const r = await watch.push(14, replace);

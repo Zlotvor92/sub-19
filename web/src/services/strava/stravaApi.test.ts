@@ -128,7 +128,7 @@ describe('Strava API', () => {
       ok: false,
       status: 429,
       error: expect.stringMatching(
-        /^Strava rate limit \(429\) — sačekaj do isteka 15-min prozora/
+        /^Strava je privremeno ograničila broj zahteva \(429\) — sačekaj do 15 minuta/
       ) as string
     });
     const broken = make(fresh(), () =>

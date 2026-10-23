@@ -324,7 +324,7 @@ function FormV1() {
               </>
             ) : null}
             <p className="note-src">
-              Najjači pojedinačan pokazatelj forme koji možeš sam da napraviš: napor od 10–30 minuta
+              Najjači pojedinačni pokazatelj forme koji možeš sam da napraviš: napor od 10–30 minuta
               je prozor u kom je VDOT formula i izvedena i najtačnija. Zato test pomera formu znatno
               više nego bilo koji trening.
             </p>
@@ -332,8 +332,8 @@ function FormV1() {
         ) : (
           <p className="note-src">
             Istrči 3 km kao pravu trku — ravna staza, isti uslovi svaki put. Napor od 10–30 minuta
-            je prozor u kom je VDOT formula najtačnija, pa test forme pomera znatno više nego bilo
-            koji trening. Iz njega se računaju i forma i predikcija {refs.raceName}.
+            je prozor u kom je VDOT formula najtačnija, pa test pomera formu znatno više nego bilo
+            koji trening. Iz njega se računaju i forma i predikcija za {refs.raceName}.
           </p>
         )}
         <div className="btnrow start">

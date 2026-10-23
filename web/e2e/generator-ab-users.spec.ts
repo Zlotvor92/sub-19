@@ -84,9 +84,9 @@ async function lockedWizard(page: Page, input: PlanGenerationInput): Promise<voi
   await page.getByText('Tvoja trenutna baza — opciono', { exact: true }).click();
   await page.getByLabel('Skorašnja ponovljiva dužina (km)').fill(String(input.recentLongRunKm));
   await page
-    .getByLabel('Nedelja redovnog trčanja u kontinuitetu')
+    .getByLabel('Kontinuitet — koliko nedelja trčiš redovno')
     .fill(String(input.consistentWeeks));
-  await page.getByLabel('Skorašnja pauza (nedelja)').fill(String(input.breakWeeks));
+  await page.getByLabel('Skorašnja pauza (broj nedelja)').fill(String(input.breakWeeks));
   await page
     .getByLabel('Iskustvo sa intervalima i tempo treningom')
     .selectOption(input.qualityExperience!);

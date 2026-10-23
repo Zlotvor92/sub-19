@@ -49,7 +49,7 @@ export function FiveKV2Adjustment({ today }: { today: string }) {
   };
   const addBreak = (): void => {
     if (!from || !to || from > to || to > today) {
-      setError('Pauza: unesi datume od–do, najkasnije danas, „od" pre „do".');
+      setError('Pauza: unesi datume od–do, najkasnije danas, „od“ pre „do“.');
       return;
     }
     const next = [...breaks, { from, to }];

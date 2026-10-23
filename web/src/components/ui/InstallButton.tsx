@@ -45,7 +45,7 @@ export function InstallButton() {
     else useUIStore.getState().openSheet({ kind: 'install', props: { kind } });
   };
   return (
-    <button type="button" className="btn sm install-btn" disabled={busy} onClick={onClick}>
+    <button type="button" className="btn sm ghost install-btn" disabled={busy} onClick={onClick}>
       Instaliraj
     </button>
   );

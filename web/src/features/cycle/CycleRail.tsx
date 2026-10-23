@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { plDan } from '../../domain/format';
+import { pl3, plDan } from '../../domain/format';
 import { Icon } from '../../components/ui/icons';
 import { PHASE_COLOR, type CycleModel, type PhaseKey } from './cycle';
 
@@ -24,7 +24,7 @@ export function cycleLabel(model: CycleModel, daysToRace: number | null): string
           : ', trka je prošla';
   return c
     ? `Ciklus: nedelja ${c.w} od ${model.total}, faza ${PHASE_NAME[c.phase]}${c.deload ? ' (rasterećenje)' : ''}${race}.`
-    : `Ciklus: plan od ${model.total} nedelja${race}.`;
+    : `Ciklus: plan od ${model.total} ${pl3(model.total, 'nedelje', 'nedelje', 'nedelja')}${race}.`;
 }
 
 /** Pregled cele pripreme u jednoj liniji: jedan segment po nedelji, tonovi po fazi, tekuća nedelja uzdignuta, rasterećenje niže, zastavica trke. */

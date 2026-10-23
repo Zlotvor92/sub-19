@@ -113,7 +113,7 @@ export function KneeSheet({
             type="button"
             className="btn danger"
             onClick={() => {
-              void confirmAction('Obriši ovaj unos?').then((ok) => {
+              void confirmAction('Obrisati ovaj unos?').then((ok) => {
                 if (!ok) return;
                 removePain(id);
                 closeSheet();

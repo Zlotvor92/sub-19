@@ -121,7 +121,7 @@ describe('upozorenje „Ovo nije tvoj plan" (Danas)', () => {
     render(<Advisories today={TODAY} />);
     expect(screen.getByText('Ovo nije tvoj plan')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Napravi svoj' }));
-    expect(confirm).toHaveBeenCalledWith(expect.stringMatching(/^Prvo izvezi backup/));
+    expect(confirm).toHaveBeenCalledWith(expect.stringMatching(/^Prvo izvesti backup/));
     expect(useUIStore.getState().wizard).toBe(true); // otvara se u oba slučaja — ovo je ponuda, ne kapija
   });
 

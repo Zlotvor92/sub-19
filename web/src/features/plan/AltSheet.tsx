@@ -268,8 +268,8 @@ export function AltSheet({ id }: { id: string }) {
         </div>
       ) : null}
       <div className="note-src">
-        Plan se ne menja — ovo je izmena samo za ovaj dan i uvek se vraća. Odrađeni treninzi se ne
-        menjaju.
+        Plan se ne menja — ovo je izmena samo za ovaj dan i uvek može da se vrati. Odrađeni treninzi
+        se ne menjaju.
       </div>
     </>
   );
