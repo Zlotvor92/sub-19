@@ -1,0 +1,37 @@
+{
+ "dist": "MAR",
+ "k": 97,
+ "flows": 70335,
+ "rejected": 0,
+ "mixed": 27892,
+ "dropped": 1759,
+ "keptOver": 0,
+ "bySc": {
+  "over120": 1759
+ },
+ "excess": {
+  "le2": 19,
+  "le5": 273,
+  "le10": 1296,
+  "gt10": 171
+ },
+ "nextDoseChanged": 875,
+ "cascade": 766,
+ "cascadeMax": 5,
+ "ex": [
+  "d3-12w-30km-v30-A-sat over120 asOf 2026-12-16 ned 7: cilj 40.1 plan 34.3, otpalo 1 kval. (5.81 km), procena viška 5.77 km (14.39 %)",
+  "d3-12w-40km-v30-A-sun over120 asOf 2026-12-15 ned 7: cilj 46.9 plan 43.3, otpalo 1 kval. (3.61 km), procena viška 3.57 km (7.61 %)",
+  "d3-12w-40km-v30-A-sun over120 asOf 2026-12-29 ned 9: cilj 46.7 plan 43.1, otpalo 1 kval. (3.62 km), procena viška 3.58 km (7.67 %)",
+  "d3-13w-45km-v30-C-sat over120 asOf 2026-12-21 ned 8: cilj 46.9 plan 43.3, otpalo 1 kval. (3.61 km), procena viška 3.57 km (7.61 %)"
+ ],
+ "exSmall": [
+  "d3-20w-30km-v45-B-sat over120 asOf 2026-11-23 ned 4: cilj 27 plan 24.3, otpalo 1 kval. (0.77 km), procena viška 0.75 km (2.78 %)",
+  "d3-22w-30km-v50-A-sun over120 asOf 2027-02-09 ned 15: cilj 45 plan 43, otpalo 1 kval. (2.03 km), procena viška 1.95 km (4.33 %)",
+  "d3-22w-30km-v50-A-sun over120 asOf 2027-02-16 ned 16: cilj 45 plan 43, otpalo 1 kval. (2.05 km), procena viška 2.03 km (4.51 %)",
+  "d3-22w-30km-v50-A-sun over120 asOf 2027-03-02 ned 18: cilj 45 plan 43, otpalo 1 kval. (2.03 km), procena viška 1.95 km (4.33 %)",
+  "d3-22w-30km-v50-A-sun over120 asOf 2027-03-09 ned 19: cilj 45 plan 43, otpalo 1 kval. (2.05 km), procena viška 2.03 km (4.51 %)",
+  "d3-23w-35km-v50-C-sat over120 asOf 2027-03-01 ned 18: cilj 52.5 plan 50.2, otpalo 1 kval. (2.32 km), procena viška 2.28 km (4.34 %)"
+ ],
+ "excessMedKm": 4.65,
+ "excessMaxKm": 12.03
+}

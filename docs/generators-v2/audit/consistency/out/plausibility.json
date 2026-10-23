@@ -1,0 +1,77 @@
+{
+ "5K mreže generatora (lib.all)": {
+  "n": 3816,
+  "L1": 0,
+  "L2": 0,
+  "withRecentLong": 0,
+  "B1": 0,
+  "B2": 0,
+  "beginners": 648,
+  "V1": 0,
+  "M1": 0,
+  "any": 0,
+  "ex": {}
+ },
+ "10K mreže generatora (lib.all)": {
+  "n": 31122,
+  "L1": 0,
+  "L2": 0,
+  "withRecentLong": 0,
+  "B1": 0,
+  "B2": 0,
+  "beginners": 3402,
+  "V1": 0,
+  "M1": 792,
+  "any": 0,
+  "ex": {
+   "M1": "{\"km\":20,\"days\":3,\"v\":60,\"beg\":false}"
+  }
+ },
+ "HM mreže generatora (lib.all)": {
+  "n": 25122,
+  "L1": 0,
+  "L2": 0,
+  "withRecentLong": 0,
+  "B1": 0,
+  "B2": 0,
+  "beginners": 1890,
+  "V1": 0,
+  "M1": 396,
+  "any": 0,
+  "ex": {
+   "M1": "{\"km\":25,\"days\":3,\"v\":60,\"beg\":false}"
+  }
+ },
+ "MAR mreže generatora (lib.all)": {
+  "n": 31920,
+  "L1": 0,
+  "L2": 0,
+  "withRecentLong": 0,
+  "B1": 0,
+  "B2": 0,
+  "beginners": 1890,
+  "V1": 0,
+  "M1": 156,
+  "any": 0,
+  "ex": {
+   "M1": "{\"km\":30,\"days\":3,\"v\":60,\"beg\":false}"
+  }
+ },
+ "MAR recentInputs (M13a)": {
+  "n": 35910,
+  "L1": 864,
+  "L2": 7749,
+  "withRecentLong": 35910,
+  "B1": 0,
+  "B2": 0,
+  "beginners": 0,
+  "V1": 0,
+  "M1": 342,
+  "any": 8613,
+  "ex": {
+   "L2": "{\"km\":30,\"days\":3,\"rl\":5,\"v\":30,\"beg\":false}",
+   "L1": "{\"km\":30,\"days\":3,\"rl\":31,\"v\":30,\"beg\":false}",
+   "M1": "{\"km\":30,\"days\":3,\"rl\":5,\"v\":70,\"beg\":false}"
+  }
+ }
+}

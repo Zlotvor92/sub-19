@@ -1,0 +1,37 @@
+{
+ "dist": "5K",
+ "k": 97,
+ "flows": 4245,
+ "rejected": 0,
+ "mixed": 849,
+ "dropped": 149,
+ "keptOver": 0,
+ "bySc": {
+  "over120": 149
+ },
+ "excess": {
+  "le2": 0,
+  "le5": 34,
+  "le10": 102,
+  "gt10": 13
+ },
+ "nextDoseChanged": 56,
+ "cascade": 34,
+ "cascadeMax": 3.4,
+ "ex": [
+  "f-d4-6w-15km-e420-0 over120 asOf 2026-11-10 ned 2: cilj 16.2 plan 15.23, otpalo 1 kval. (0.97 km), procena viška 0.78 km (4.81 %)",
+  "f-d4-6w-40km-e300-1 over120 asOf 2026-11-10 ned 2: cilj 43.2 plan 40.6, otpalo 1 kval. (2.6 km), procena viška 2.6 km (6.02 %)",
+  "f-d4-6w-40km-e300-1 over120 asOf 2026-11-17 ned 3: cilj 46.6 plan 43.78, otpalo 1 kval. (2.82 km), procena viška 2.82 km (6.05 %)",
+  "f-d4-6w-40km-e300-1 over120 asOf 2026-11-19 ned 3: cilj 46.6 plan 42.18, otpalo 1 kval. (4.42 km), procena viška 4.42 km (9.48 %)"
+ ],
+ "exSmall": [
+  "f-d4-6w-15km-e420-0 over120 asOf 2026-11-10 ned 2: cilj 16.2 plan 15.23, otpalo 1 kval. (0.97 km), procena viška 0.78 km (4.81 %)",
+  "r-d4-7w-15km-v38-1 over120 asOf 2026-11-10 ned 2: cilj 16.2 plan 15.6, otpalo 1 kval. (0.6 km), procena viška 0.6 km (3.7 %)",
+  "r-d4-7w-15km-v38-1 over120 asOf 2026-11-17 ned 3: cilj 17.4 plan 16.59, otpalo 2 kval. (0.81 km), procena viška 0.81 km (4.66 %)",
+  "r-d4-7w-15km-v38-1 over120 asOf 2026-11-24 ned 4: cilj 18.7 plan 17.79, otpalo 2 kval. (0.91 km), procena viška 0.91 km (4.87 %)",
+  "f-d3-8w-12km-e360-0 over120 asOf 2026-11-17 ned 3: cilj 13.9 plan 13.3, otpalo 1 kval. (0.6 km), procena viška 0.6 km (4.32 %)",
+  "f-d4-8w-25km-e300-1 over120 asOf 2026-11-10 ned 2: cilj 27 plan 25.86, otpalo 1 kval. (1.14 km), procena viška 1.14 km (4.22 %)"
+ ],
+ "excessMedKm": 1.7,
+ "excessMaxKm": 7.08
+}
