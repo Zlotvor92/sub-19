@@ -340,12 +340,16 @@ describe('pregled prilagođavanja (adaptPreview)', () => {
     expect(r.weeks[0]!.after!.targetKm).toBeLessThan(r.weeks[0]!.before!.targetKm);
     expect(r.notes[0]).toMatch(/^Zapis treninga je potpun od/);
     usable(r.result, day);
-    // 06f (pouka 20, traka samo u domenu): isti dan posle primene manjak je ponovo primenjen, ali bez trake.
+    // 06f (pouka 20, traka samo u domenu) i 10K-07 Z7 (C2): isti dan posle primene manjak je već u planu — ne
+    // primenjuje se ponovo (cilj se ne seče još 20 %), bez trake, nedelje iste.
     const again = ok(
       tenKV2AdaptPreview(stampForStorage(r.result), day, { log, facts: { sync: sync(day) } })
     );
-    expect(again.reasons.find((x) => x.condition === 'UNDER_EXECUTION')!.applied).toBe(true);
+    const u2 = again.reasons.find((x) => x.condition === 'UNDER_EXECUTION')!;
+    expect(u2.applied).toBe(false);
+    expect(u2.message).toMatch(/već u planu/);
     expect(again.needed).toEqual([]);
+    expect(again.result.weeks).toEqual(r.result.weeks);
   });
 
   it('bol, pauza: traka; zaštita urađenog i ručno izmenjenog dana; posle primene istog dana bez trake', () => {

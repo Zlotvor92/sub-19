@@ -116,12 +116,13 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
           const s = g.stats[n];
           return [s.belowTime, s.belowShare, s.longShorter, s.doseDropped, s.doseDroppedShare];
         },
-        // 06f (pouka 35): D25 (kolona 3) 0 / 78 / 78 / 132 → 0 / 36 / 24 / 78 planova.
+        // 06f (pouka 35): D25 (kolona 3) 0 / 78 / 78 / 132 → 0 / 36 / 24 / 78 planova. 10K-07 (F3): D25 obuhvata i dan
+        // testa → 144 / 228 / 204 / 294.
         [
-          [396, 0, 0, 84, 0],
-          [660, 132, 36, 156, 6],
-          [396, 0, 24, 0, 0],
-          [396, 0, 78, 0, 0]
+          [396, 0, 144, 84, 0],
+          [660, 132, 228, 156, 6],
+          [396, 0, 204, 0, 0],
+          [396, 0, 294, 0, 0]
         ]
       );
     });
