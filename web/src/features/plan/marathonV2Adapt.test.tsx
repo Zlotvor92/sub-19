@@ -114,15 +114,19 @@ describe('Plan → Prilagodi plan (maraton v2)', () => {
     expect(getPlanRevisions(after)).toHaveLength(1);
     expect(after.weeks.slice(0, 2)).toEqual(p.weeks.slice(0, 2));
     expect(after.weeks.slice(2)).not.toEqual(p.weeks.slice(2));
-    // MAR-09 (Z4): vraćanje revizije sačuvane PRE prilagođavanja se odbija sa razlogom domena (spajanje dve verzije
-    // jezgra je kršilo pravila plana); plan i revizije ostaju.
+    // MAR-10 (Z4): vraćanje revizije (sledećeg dana) = spoj → validatePlan jezgra; pregled pa potvrda; budući dani iz
+    // sačuvane verzije.
     useUIStore.setState({ today: '2026-11-16' });
     await user.click(
       screen.getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-11-15: pauza' })
     );
-    expect(document.body.textContent).toMatch(/prilagođavan posle sačuvane verzije/);
-    expect(stored()).toEqual(after);
-    expect(getPlanRevisions(stored())).toHaveLength(1);
+    expect(
+      within(preview()).getByText('Vraćanje plana: Prilagođavanje 2026-11-15: pauza')
+    ).toBeTruthy();
+    await user.click(within(preview()).getByRole('button', { name: 'Primeni prikazanu promenu' }));
+    const back = stored();
+    expect(getPlanRevisions(back)).toHaveLength(2);
+    expect(back.weeks.slice(3)).toEqual(p.weeks.slice(3));
   });
 
   it('bol 5 → traka „Plan treba prilagoditi" (Plan i Danas) → isti pregled → primena → traka nestaje', async () => {

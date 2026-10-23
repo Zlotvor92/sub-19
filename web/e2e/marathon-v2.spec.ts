@@ -190,14 +190,17 @@ test('maraton v2: čarobnjak (rezultat, 4 dana, cilj 3:30:00) → plan v2 → Pl
   await expect.poll(() => serverPlan(backend), SYNC).toContain('Prilagođavanje 2026-02-04: pauza');
   expect(serverPlan(backend)).toContain('"policyId":"marathon-v2"');
   expect(serverPlan(backend)).toContain('"asOf":"2026-02-04"');
-  // MAR-09 (Z4): vraćanje revizije sačuvane PRE prilagođavanja se odbija sa razlogom domena (spajanje dve verzije
-  // jezgra je kršilo pravila plana); ništa se ne upisuje, plan ostaje maraton v2.
+  // MAR-10 (Z4): vraćanje te revizije: pregled (ništa se ne upisuje) → primena → druga revizija; plan ostaje maraton v2.
   const adapted = serverPlan(backend);
   await page
     .getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-02-04: pauza' })
     .click();
-  await expect(page.getByText(/prilagođavan posle sačuvane verzije/)).toBeVisible();
+  await expect(preview).toContainText('Vraćanje plana: Prilagođavanje 2026-02-04: pauza');
   expect(serverPlan(backend)).toBe(adapted);
+  await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+  await expect
+    .poll(() => serverPlan(backend), SYNC)
+    .toContain('Vraćanje plana: Prilagođavanje 2026-02-04: pauza');
   expect(serverPlan(backend)).toContain('"policyId":"marathon-v2"');
 
   // Nedelja trke: trka 42,2 km (van obima nedelje, M8) na Plan tabu.
