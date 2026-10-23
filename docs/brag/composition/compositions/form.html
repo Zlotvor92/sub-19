@@ -1,0 +1,143 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Figtree";
+      font-weight: 300 900;
+      src: url("assets/fonts/figtree-latin.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2191, U+2193, U+2212;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Figtree", sans-serif;
+      color: #19251e;
+    }
+    #form-chapter {
+      position: absolute;
+      left: 86px;
+      top: 640px;
+      width: 908px;
+      font-size: 104px;
+      line-height: 1.05;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+    #form-cam {
+      position: absolute;
+      inset: 0;
+    }
+    #form-ui {
+      position: absolute;
+      left: 0;
+      top: 250px;
+      width: 1080.3px;
+      height: 928.2px;
+    }
+    #form-ui img {
+      position: absolute;
+    }
+    #form-base {
+      left: 0;
+      top: 0;
+      width: 1080.3px;
+      height: 928.2px;
+    }
+    #form-da {
+      left: 52.44px;
+      top: 170.43px;
+      width: 489.44px;
+      height: 117.99px;
+    }
+    #form-line {
+      left: 43.7px;
+      top: 321.63px;
+      width: 970.14px;
+      height: 57.68px;
+    }
+    #form-label {
+      left: 471.96px;
+      top: 431.76px;
+      width: 244.72px;
+      height: 103.13px;
+    }
+    .form-veil {
+      position: absolute;
+      background: #f6f7f5;
+    }
+    #form-fill {
+      left: 131.1px;
+      top: 545.38px;
+      width: 491.19px;
+      height: 68.17px;
+    }
+  </style>
+  <div id="root" data-composition-id="form" data-width="1080" data-height="1920">
+    <div id="form-chapter">7 nedelja kasnije</div>
+    <div id="form-cam">
+      <!-- Real Forma screen after one 3 km test: base without the answer, then the answer, the line, the fill and the label. -->
+      <div id="form-ui" data-layout-allow-overflow>
+        <img id="form-base" src="assets/ui/form-base.png" alt="" />
+        <img id="form-fill" src="assets/ui/form-fill.png" alt="" />
+        <img id="form-da" src="assets/ui/form-da.png" alt="" />
+        <img id="form-line" src="assets/ui/form-line.png" alt="" />
+        <img id="form-label" src="assets/ui/form-label.png" alt="" />
+        <!-- Ground-coloured veils that leave only "Procena nije obećanje." in the footnote during the push. -->
+        <div class="form-veil" style="left: 48px; top: 764px; width: 948px; height: 46px"></div>
+        <div class="form-veil" style="left: 48px; top: 819px; width: 497px; height: 46px"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    gsap.set("#form-ui", { opacity: 0 });
+    gsap.set(["#form-da", "#form-line", "#form-label", ".form-veil"], { opacity: 0 });
+    gsap.set("#form-fill", { clipPath: "inset(0px 100% 0px 0px)" });
+    gsap.set("#form-cam", { x: 0, y: 0, scale: 1, opacity: 1, filter: "blur(0px)", transformOrigin: "734px 1092px" });
+    // Chapter line (14.92 s), blur swap out (16.15 s). Scene 0 = 14.90 s.
+    tl.fromTo(
+      "#form-chapter",
+      { opacity: 0, filter: "blur(8px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" },
+      0.02
+    );
+    tl.to("#form-chapter", { opacity: 0, filter: "blur(8px)", duration: 0.13, ease: "power2.in" }, 1.25);
+    // Forma section arrives on the same stage.
+    tl.fromTo(
+      "#form-ui",
+      { opacity: 0, filter: "blur(6px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" },
+      1.27
+    );
+    // "Da ▲ VDOT +2,2" lands on the strong cue. beat-locked: 16.38s
+    tl.fromTo(
+      "#form-da",
+      { opacity: 0, filter: "blur(8px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power4.out" },
+      1.48
+    );
+    tl.fromTo(
+      "#form-line",
+      { opacity: 0, filter: "blur(8px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" },
+      1.61
+    );
+    // The bar fills from the 21:29 start to today's 20:38 estimate.
+    tl.fromTo(
+      "#form-fill",
+      { clipPath: "inset(0px 100% 0px 0px)" },
+      { clipPath: "inset(0px 0% 0px 0px)", duration: 1.0, ease: "power2.inOut" },
+      1.85
+    );
+    tl.fromTo(
+      "#form-label",
+      { opacity: 0, filter: "blur(6px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" },
+      2.7
+    );
+    // Push into the footnote "Procena nije obećanje." (18.85 → 19.45 s) — it becomes the next scene's line.
+    tl.to(".form-veil", { opacity: 0.85, duration: 0.3, ease: "power2.out" }, 3.95);
+    tl.to("#form-cam", { x: -194, y: -392, scale: 1.8, duration: 0.6, ease: "power2.inOut" }, 3.95);
+    tl.to("#form-cam", { opacity: 0, filter: "blur(8px)", duration: 0.12, ease: "power2.in" }, 4.6);
+    window.__timelines["form"] = tl;
+  </script>
+</template>

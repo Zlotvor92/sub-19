@@ -1,0 +1,64 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+    }
+    #plan-iris {
+      position: absolute;
+      inset: 0;
+      background: #f6f7f5;
+      overflow: hidden;
+    }
+    #plan-cam {
+      position: absolute;
+      inset: 0;
+    }
+    #plan-scroll {
+      position: absolute;
+      left: 46px;
+      top: 168px;
+      width: 988.8px;
+      height: 1896px;
+    }
+    #plan-scroll img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 988.8px;
+      height: 1896px;
+    }
+  </style>
+  <div id="root" data-composition-id="plan" data-width="1080" data-height="1920">
+    <div id="plan-iris" data-layout-allow-overflow>
+      <div id="plan-cam">
+        <!-- Real Plan tab, week 1 of the generated 5K plan (header, week strip, 19,6 km, day rows). -->
+        <div id="plan-scroll" data-layout-allow-overflow>
+          <img src="assets/ui/plan-week.png" alt="" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Iris opens from the "Napravi plan" tap (850, 1262) — scene 0 = 11.55 s, fully open ~11.97 s.
+    tl.fromTo(
+      "#plan-iris",
+      { clipPath: "circle(0px at 850px 1262px)" },
+      { clipPath: "circle(2300px at 850px 1262px)", duration: 0.42, ease: "power2.in" },
+      0
+    );
+    // The new screen comes in slightly large and settles.
+    tl.fromTo(
+      "#plan-cam",
+      { scale: 1.04, transformOrigin: "50% 40%" },
+      { scale: 1, duration: 0.7, ease: "expo.out" },
+      0
+    );
+    // Scroll to the week's rows (13.15 → 13.77 s).
+    tl.fromTo("#plan-scroll", { y: 0 }, { y: -970, duration: 0.62, ease: "power2.inOut" }, 1.6);
+    // Blur swap out to the chapter line (14.90 s).
+    tl.to("#plan-cam", { opacity: 0, filter: "blur(8px)", duration: 0.18, ease: "power2.in" }, 3.35);
+    window.__timelines["plan"] = tl;
+  </script>
+</template>

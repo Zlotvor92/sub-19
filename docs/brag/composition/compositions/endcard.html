@@ -1,0 +1,118 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Figtree";
+      font-weight: 300 900;
+      src: url("assets/fonts/figtree-latin.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2191, U+2193, U+2212;
+    }
+    @font-face {
+      font-family: "Figtree";
+      font-weight: 300 900;
+      src: url("assets/fonts/figtree-latin-ext.woff2") format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Figtree", sans-serif;
+    }
+    #end-flood {
+      position: absolute;
+      inset: 0;
+      background: #335e35;
+    }
+    #end-line {
+      position: absolute;
+      left: 86px;
+      top: 590px;
+      width: 908px;
+      font-size: 124px;
+      line-height: 1.08;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      color: #19251e;
+    }
+    #end-line span {
+      display: inline-block;
+      margin-right: 0.22em;
+    }
+    #end-mark {
+      position: absolute;
+      left: 410px;
+      top: 520px;
+      width: 260px;
+      height: 260px;
+    }
+    #end-word {
+      position: absolute;
+      left: 0;
+      top: 830px;
+      width: 1080px;
+      text-align: center;
+      font-size: 176px;
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.035em;
+      color: #ffffff;
+    }
+    #end-url {
+      position: absolute;
+      left: 0;
+      top: 1070px;
+      width: 1080px;
+      text-align: center;
+      font-size: 60px;
+      line-height: 1.2;
+      font-weight: 500;
+      color: #ffffff;
+    }
+  </style>
+  <div id="root" data-composition-id="endcard" data-width="1080" data-height="1920">
+    <div id="end-flood"></div>
+    <div id="end-line"><span>Procena</span><span>nije</span><span>obećanje.</span></div>
+    <!-- The real app icon: its ground is #335e35, so on the flood only the mark shows. -->
+    <img id="end-mark" src="assets/ui/icon-512.png" alt="sub20" />
+    <div id="end-word">sub20</div>
+    <div id="end-url">sub-19.vercel.app</div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    gsap.set("#end-flood", { opacity: 0 });
+    gsap.set("#end-line", { color: "#19251e", opacity: 1, filter: "blur(0px)" });
+    gsap.set("#end-mark", { clipPath: "inset(100% 0% 0% 0%)" });
+    gsap.set("#end-word", { clipPath: "inset(0% 100% 0% 0%)" });
+    gsap.set("#end-url", { opacity: 0 });
+    // The footnote from the Forma screen, now the closing line (19.57 s). Scene 0 = 19.55 s.
+    tl.fromTo(
+      "#end-line span",
+      { opacity: 0, filter: "blur(6px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out", stagger: 0.067 },
+      0.02
+    );
+    // Colour flood: the line stays while the ground turns green (21.28 s).
+    tl.to("#end-flood", { opacity: 1, duration: 0.37, ease: "power2.inOut" }, 1.73);
+    tl.to("#end-line", { color: "#ffffff", duration: 0.37, ease: "power2.inOut" }, 1.73);
+    tl.to("#end-line", { opacity: 0, filter: "blur(8px)", duration: 0.12, ease: "power2.in" }, 2.1);
+    // The mark fills upward once the line is gone (21.79 → 22.19 s); payoff hit at 21.95 s.
+    tl.fromTo(
+      "#end-mark",
+      { clipPath: "inset(100% 0% 0% 0%)" },
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "power2.out" },
+      2.24
+    );
+    tl.fromTo(
+      "#end-word",
+      { clipPath: "inset(0% 100% 0% 0%)" },
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "expo.out" },
+      2.34
+    );
+    tl.fromTo(
+      "#end-url",
+      { opacity: 0, filter: "blur(8px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" },
+      2.34
+    );
+    window.__timelines["endcard"] = tl;
+  </script>
+</template>

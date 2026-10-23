@@ -1,0 +1,114 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Figtree";
+      font-weight: 300 900;
+      src: url("assets/fonts/figtree-latin.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2191, U+2193, U+2212;
+    }
+    @font-face {
+      font-family: "Figtree";
+      font-weight: 300 900;
+      src: url("assets/fonts/figtree-latin-ext.woff2") format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      font-family: "Figtree", sans-serif;
+      color: #19251e;
+    }
+    #hook-stage {
+      position: absolute;
+      inset: 0;
+    }
+    #hook-time {
+      position: absolute;
+      left: 165px;
+      top: 470px;
+      width: 750px;
+      height: 300px;
+      display: flex;
+    }
+    .hook-col {
+      width: 170px;
+      height: 300px;
+      overflow: hidden;
+      position: relative;
+    }
+    .hook-colon {
+      width: 70px;
+      height: 300px;
+      font-size: 300px;
+      line-height: 300px;
+      font-weight: 300;
+      text-align: center;
+    }
+    .hook-strip {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 170px;
+    }
+    .hook-strip span {
+      display: block;
+      height: 300px;
+      font-size: 300px;
+      line-height: 300px;
+      font-weight: 300;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+    #hook-line {
+      position: absolute;
+      left: 0;
+      width: 1080px;
+      top: 840px;
+      text-align: center;
+      font-size: 68px;
+      font-weight: 500;
+      color: #46554b;
+      letter-spacing: -0.01em;
+    }
+    #hook-line b {
+      font-weight: 500;
+      color: #2b5230;
+    }
+  </style>
+  <div id="root" data-composition-id="hook" data-width="1080" data-height="1920">
+    <div id="hook-stage">
+      <div id="hook-time" data-layout-allow-overflow>
+        <div class="hook-col"><div class="hook-strip" id="hook-c1"><span>1</span><span>2</span></div></div>
+        <div class="hook-col"><div class="hook-strip" id="hook-c2"><span>9</span><span>0</span></div></div>
+        <div class="hook-colon">:</div>
+        <div class="hook-col"><div class="hook-strip" id="hook-c3"><span>5</span><span>0</span></div></div>
+        <div class="hook-col"><div class="hook-strip" id="hook-c4"><span>9</span><span>0</span></div></div>
+      </div>
+      <div id="hook-line">Jedna <b>sekunda.</b></div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    // Frame 0: "20:00". Odometer roll down to "19:59", units first (beat 1 at 0.54 s).
+    gsap.set(["#hook-c1", "#hook-c2", "#hook-c3", "#hook-c4"], { y: -300, filter: "blur(0px)" });
+    gsap.set("#hook-line", { opacity: 0, filter: "blur(8px)" });
+    gsap.set("#hook-stage", { opacity: 1, filter: "blur(0px)" });
+    ["#hook-c4", "#hook-c3", "#hook-c2", "#hook-c1"].forEach((sel, i) => {
+      const t = 0.54 + i * 0.06;
+      tl.to(sel, { y: 0, duration: 0.42, ease: "power3.out" }, t);
+      // Vertical smear peaks at the fastest frame, then sharpens; frame 0 stays crisp.
+      tl.fromTo(sel, { filter: "blur(0px)" }, { filter: "blur(6px)", duration: 0.08, ease: "none", immediateRender: false }, t);
+      tl.to(sel, { filter: "blur(0px)", duration: 0.3, ease: "power2.out" }, t + 0.08);
+    });
+    // "Jedna sekunda." — whole line blurs in, then holds.
+    tl.fromTo(
+      "#hook-line",
+      { opacity: 0, filter: "blur(8px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" },
+      0.95
+    );
+    // Blur swap out on the same stage, gone by the reveal cue (2.19 s).
+    tl.to("#hook-stage", { opacity: 0, filter: "blur(8px)", duration: 0.14, ease: "power2.in" }, 2.05);
+    window.__timelines["hook"] = tl;
+  </script>
+</template>
