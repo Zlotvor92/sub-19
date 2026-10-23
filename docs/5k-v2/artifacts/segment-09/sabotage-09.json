@@ -192,5 +192,78 @@
   "tests": [
    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
   ]
+ },
+ {
+  "name": "09-Z6 zaštićen dan samo zaključan (prošlost se ponovo sudi)",
+  "file": "src/domain/generators/fiveK/v2/validate.ts",
+  "find": "    ad !== undefined && (mustDay(d.date) <= mustDay(ad.asOf) || lockedIds.has(d.date));",
+  "replace": "    ad !== undefined && lockedIds.has(d.date);",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z7 manjak se ponovo primenjuje na iste zapise",
+  "file": "src/domain/generators/fiveK/v2/assess.ts",
+  "find": "    const seen = steps.find((s) => s.underFrom !== undefined && day(s.asOf) >= w2[0]);",
+  "replace": "    const seen = undefined as AdaptStep | undefined;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z8 bol se ponovo primenjuje na iste zapise",
+  "file": "src/domain/generators/fiveK/v2/assess.ts",
+  "find": "    lastHurt !== null ? steps.find((s) => s.pain !== null && day(s.asOf) >= lastHurt) : undefined;",
+  "replace": "    lastHurt !== null ? undefined : undefined;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C4 doza iz činjenice ne zatvara segment",
+  "file": "src/domain/generators/fiveK/v2/validate.ts",
+  "find": "    if (qd.some(lockedFuture) || w.doseFact) return -w.index;",
+  "replace": "    if (qd.some(lockedFuture)) return -w.index;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C4 dan testa u prošlosti se poredi sa oznakom nedelje",
+  "file": "src/domain/generators/fiveK/v2/validate.ts",
+  "find": "    w.days.some((d) => d.workout.qualityType === 'TEST_3K' && protectedDay(d));",
+  "replace": "    w.days.some((d) => d.workout.qualityType === 'TEST_3K' && lockedFuture(d));",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C5 bez odmora kad ni bez svih laganih ne staje",
+  "file": "src/domain/generators/fiveK/v2/week.ts",
+  "find": "  return out.sort();\n}",
+  "replace": "  return total <= capKm + 1e-9 ? out.sort() : [];\n}",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+   "src/domain/generators/fiveK/v2/segment08g.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C8 bez upozorenja vlasnika pauze",
+  "file": "src/domain/generators/fiveK/v2/validate.ts",
+  "find": "      if (owner && kept.length > 0 && sumKm > w.targetKm + tolKm)",
+  "replace": "      if (false && owner && kept.length > 0 && sumKm > w.targetKm + tolKm)",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C5 zaštićen dan van sastavljenih dana se ne broji",
+  "file": "src/domain/generators/fiveK/v2/week.ts",
+  "find": "  const dates = [...new Set([...days.map((d) => d.date), ...weekDates])];",
+  "replace": "  const dates = [...new Set([...days.map((d) => d.date)])];",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
  }
 ]

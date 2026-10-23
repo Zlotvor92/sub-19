@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.11.0`, 09) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.11.1`, 09) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -209,6 +209,11 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   višak posle bola ne ispod donje granice (kao manjak); C13 početnik bez testa (324 → 0); Z1 kvalitet ostaje uz upisani višak ≤ 10 % (136 → 0); Z2 jedan format teksta
   (`text.ts`); Z3 Forma čita `assess.resultUse` (12 124 → 0); K plafon laganog trkačke nedelje, peakKm adaptacije
   (2 474 → 0), izolacija; test granice plafona I.
+- Dopuna lanci (`fixes/01-chains-addendum.md`, 5k-v2.11.1): Z6 jedna definicija zaštićenog dana u validatoru (i LIMITS);
+  Z7/Z8 manjak i bol vezani za zapise (ponovna primena ne seče cilj ponovo); C4 doza/test čitaju zaštićen dan kao
+  činjenicu (`PlanWeek.doseFact`); C5 trkačka posle tapera skraćenog bolom — odmor laganih + upozorenje, zbir po svim
+  datumima nedelje; C8 upozorenje „posle pauze" (zbir kao pouka 37). `chains.ts 5K 20261023 0 2000`: odbijeni lanci
+  131 → 1 (i=1299 QUALITY_REPEAT, van spiska), IDEMP:WEEKS 327 → 40; `idemp.ts` same 462 → 41, next 203 → 30.
 - Otisci regresije prema c13c258 bez teksta (`segment09.*-c13c258.json`, `fixes/5K/fixture09.ts`).
 - Izveštaj: `reports/SEGMENT-09-IMPLEMENTATION.md`.
 

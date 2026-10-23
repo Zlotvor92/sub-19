@@ -355,7 +355,18 @@ export function assess(
   // poslednja nedelja bola; samo kad je r nedelja izgradnje. Nivo pre bola: levelBefore prvog dana bola.
   // Osnova (cilj nedelje r posle konstrukcije, nivo konačnog koraka): painReturnNote u adapt.ts.
   const hurt = W.filter((x) => t - day(x.date) < A.painLookbackDays && (x.pain ?? 0) >= A.painMin);
-  if (hurt.length > 0) {
+  // 5k-v2.11.1 (Z8, kao umor — pouka 36): bol je vezan za ZAPISE — kad je raniji korak bola već video najnoviji zapis
+  // bola (asOf koraka ≥ datum zapisa), nov korak bola se ne pravi (sidro i osnova ostaju iz tog koraka; bez kaskade).
+  const lastHurt = hurt.length > 0 ? Math.max(...hurt.map((x) => day(x.date))) : null;
+  const painSeen =
+    lastHurt !== null ? steps.find((s) => s.pain !== null && day(s.asOf) >= lastHurt) : undefined;
+  if (painSeen)
+    reason(
+      'PAIN',
+      false,
+      `Bol ${Math.max(...hurt.map((x) => x.pain!))}/10: za ove zapise ograničenja su već u planu (prilagođavanje ${painSeen.asOf}). ${A.painMessage}`
+    );
+  else if (hurt.length > 0) {
     const max = Math.max(...hurt.map((x) => x.pain!));
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };
@@ -464,7 +475,17 @@ export function assess(
     const p2 = plannedKm(...w2);
     const a2 = sumKm(...w2);
     const tn = target(n);
-    if (p2 > 0 && a2 < A.underShare * p2) {
+    // 5k-v2.11.1 (Z7, kao umor — pouka 36): manjak je vezan za ZAPISE — korak čiji se prozor zapisa preklapa sa
+    // prozorom ranijeg primenjenog koraka manjka ne pravi novi (isti zapisi ne seku cilj ponovo).
+    const seen = steps.find((s) => s.underFrom !== undefined && day(s.asOf) >= w2[0]);
+    if (p2 > 0 && a2 < A.underShare * p2 && seen) {
+      volumeRule = true;
+      reason(
+        'UNDER_EXECUTION',
+        false,
+        `Izvršeno ${round1(a2)} od ${round1(p2)} km u 7 dana: manjak za ove zapise je već u planu (prilagođavanje ${seen.asOf}).`
+      );
+    } else if (p2 > 0 && a2 < A.underShare * p2) {
       const ok = !volumeRule && build(n) && tn !== null;
       if (ok) {
         // Ne ispod min(planirano, donja granica volume.adaptFloorKm).
@@ -475,6 +496,7 @@ export function assess(
           )
         );
         step.reduced = true;
+        step.underFrom = addDays(asOf, w2[0] - t);
         step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
       }

@@ -151,7 +151,7 @@ describe('08g N3 — trkačka nedelja ≤ planirano tapera (pouka 30)', () => {
       []
     );
   });
-  it('raceWeekRest: prvo dani bola, pa najraniji lagani; dan pred trku i trka nikad; prazno kad ne staje', () => {
+  it('raceWeekRest: prvo dani bola, pa najraniji lagani; dan pred trku i trka nikad; kad ne staje — svi lagani (5k-v2.11.1, C5)', () => {
     if (!r.ok) throw new Error('N3');
     const p0 = p.weeks[8]!;
     const race = p.input.raceDate;
@@ -168,7 +168,7 @@ describe('08g N3 — trkačka nedelja ≤ planirano tapera (pouka 30)', () => {
     expect(raceWeekRest(days2, race, new Set(), cap)).toEqual([e0.date]);
     expect(raceWeekRest(days2, race, new Set([extra.date]), cap)).toEqual([extra.date]);
     expect(raceWeekRest(days2, race, new Set([addDays(race, -1)]), cap)).toEqual([e0.date]);
-    expect(raceWeekRest(p0.days, race, new Set(), 1)).toEqual([]);
+    expect(raceWeekRest(p0.days, race, new Set(), 1)).toEqual([...easy].sort());
   });
   it('validator: trkačka > taper → RACE_WEEK_TAPER; skraćena ispod minimuma → upozorenje RACE_WEEK_SHORT', () => {
     if (!r.ok) throw new Error('N3');

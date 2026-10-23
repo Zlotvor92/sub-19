@@ -44,11 +44,25 @@ const count = (r: any, pred: (p: any) => number) => plansOf(r).reduce((s, p) => 
 function why(key: string, x: any, y: any, changed: Set<string>): string {
   if (!x.ok && y.ok) {
     const codes = x.reasons.map((r: any) => r.code);
+    const rules = (x.violations ?? []).filter((v: any) => v.severity === "error").map((v: any) => v.rule);
+    if (rules.includes("LIMITS")) return "Z6";
+    if (rules.includes("RACE_WEEK_TAPER")) return "LC5";
+    if (rules.some((u: string) => ["TEST_WEEK", "DOSE_PROGRESSION", "BASE_R_DECREASE", "QUALITY_REPEAT"].includes(u))) return "LC4";
     if (codes.includes("WEEK_INFEASIBLE")) return "F1";
     if (codes.includes("QUALITY_INFEASIBLE")) return "F2";
     if (codes.includes("VDOT_OUT_OF_RANGE")) return "C8";
     return "?rej:" + codes.join("+");
   }
+  const uf = (p: any) => (p.adaptation?.steps ?? []).filter((s: any) => s.underFrom !== undefined).length;
+  if (count(y, uf) > count(x, uf) && T.canon09(x).replace(/,"underFrom":"[^"]*"/g, "") === T.canon09(y).replace(/,"underFrom":"[^"]*"/g, "")) return "Z7";
+  // C4: doza nedelje iz činjenice (oznaka doseFact) — jedina razlika u kanonu (uz oznaku prozora manjka Z7).
+  const uf0 = (r: any) => T.canon09(r).replace(/,"underFrom":"[^"]*"/g, "");
+  if (uf0(x) === uf0(y).replace(/,"doseFact":true/g, "")) return "LC4";
+  const rs = (r: any, c: string, a: boolean) => (r.ok && r.reasons ? r.reasons.filter((q: any) => q.condition === c && q.applied === a).length : 0);
+  if (rs(y, "PAIN", false) > rs(x, "PAIN", false)) return "Z8";
+  if (rs(y, "UNDER_EXECUTION", false) > rs(x, "UNDER_EXECUTION", false)) return "Z7";
+  const lc8 = (p: any) => (p.warnings ?? []).filter((w: any) => w.rule === "MIXED_OVER_TARGET" && w.message.includes("posle pauze")).length;
+  if (count(y, lc8) > count(x, lc8)) return "LC8";
   const parent = key.replace(/\/(\+\d+|chain)$/, "");
   if (parent !== key && changed.has(parent)) return "CH";
   const test = (p: any) => (p.experience === "beginner" ? p.weeks.filter((w: any) => w.test).length : 0);

@@ -306,6 +306,9 @@ export function construct(
     if (r.dose && qOf(wr) === qOf(r.week)) lastDose[f.phase] = r.dose;
     else if (r.dose && q2Gone)
       lastDose[f.phase] = secondEasyDose(r.dose, lastDose[f.phase] ?? null);
+    // 5k-v2.11.1 (C4): upisani (zaštićeni) dani kvaliteta nisu sastavljeni — doza nedelje je činjenica, nedelja je van
+    // lanca doze; oznaka za validator (jedan vlasnik: ova odluka).
+    else if (r.dose) weeks[weeks.length - 1] = { ...weeks[weeks.length - 1]!, doseFact: true };
   });
   if (reasons.length > 0) return { ok: false, reasons };
   return {

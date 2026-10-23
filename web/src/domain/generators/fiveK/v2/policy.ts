@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.11.0',
+  version: '5k-v2.11.1',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -892,5 +892,23 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '(owner K) plafon laganog dana trkačke nedelje jedna funkcija week.raceWeekEasyCap; peakKm adaptacije = vrh iz ' +
       'konstrukcije. Brojevi pre → posle: docs/5k-v2/reports/SEGMENT-09-IMPLEMENTATION.md. Sačuvan plan 5k-v2.10.4 i ' +
       'stariji prilagođavaju se po 2.11.0 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.11.1',
+    decision:
+      '5K-09 dopuna (organizator, docs/generators-v2/audit/fixes/01-chains-addendum.md, ugao 3 lanci). (Z6) Validator: ' +
+      'JEDNA definicija zaštićenog dana (protectedDay: ≤ asOf ili zaključan) i u proveri LIMITS — dan zaključan u ' +
+      'ranijem koraku koji je postao prošlost je činjenica (validator ne sudi činjenicama, kao MAR-07). (Z7) Manjak ' +
+      'izvršenja vezan za zapise kao umor (pouka 36): korak čiji se prozor zapisa preklapa sa prozorom ranijeg primenjenog ' +
+      'koraka manjka (AdaptStep.underFrom) ne pravi novi — ista primena istih činjenica ne seče cilj ponovo. (Z8) Bol ' +
+      'vezan za zapise: kad je raniji korak bola već video najnoviji zapis bola, nov korak bola se ne pravi (sidro i ' +
+      'osnova ostaju; bez kaskade „sutra bez novih zapisa"). (C4) Nedeljna pravila testa i doze čitaju zaštićen dan kao ' +
+      'činjenicu: oznaka nedelje se ne poredi sa danom testa u prošlosti (urađen test i dalje broji za „najviše jednom"); nedelja čiji upisani dani kvaliteta nisu sastavljeni je van ' +
+      'lanca doze (PlanWeek.doseFact — odluka konstruktora, validator je čita). (C5) Trkačka nedelja posle tapera ' +
+      'skraćenog bolom: kad ni bez svih laganih ne staje u taper, svi lagani koji smeju postaju odmor, a višak (oštrenje, ' +
+      'dan pred trku) je upozorenje RACE_WEEK_TAPER, ne odbijanje (pouka 30); zbir ide po svim datumima nedelje (zaštićen ' +
+      'dan koji sastavljena nedelja nema, npr. izostavljen lagan dan, ulazi u zbir). (C8) Mešovita nedelja čiji je vlasnik ' +
+      'pravilo pauze: planirano > cilj uz upozorenje MIXED_OVER_TARGET. Brojevi: docs/5k-v2/reports/' +
+      'SEGMENT-09-IMPLEMENTATION.md § 5. Sačuvan plan 5k-v2.11.0 i stariji prilagođavaju se po 2.11.1 (KNOWN_VERSIONS).'
   }
 ];

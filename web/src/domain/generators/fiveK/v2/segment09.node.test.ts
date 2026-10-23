@@ -11,9 +11,9 @@ import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { START } from './testInputs.ts';
 import { kmText, mss, userText } from './text.ts';
 import type { IsoDate } from '../exchange.ts';
-import type { AdaptResult, FiveKV2Plan, PlanWeek } from './types.ts';
+import type { AdaptResult, FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { raceWeekEasyCap, sharpenerCandidates } from './week.ts';
+import { raceWeekEasyCap, raceWeekRest, sharpenerCandidates } from './week.ts';
 import { restoreMerge } from './app/adapt.ts';
 import { formHistory } from './app/form.ts';
 import { targetFacts, targetInput } from './app/handoffTarget.ts';
@@ -694,6 +694,242 @@ describe('plafon trajanja I na novom tempu (POSLE-MERGE c)', () => {
     expect(reps.map((s) => [s.km, s.sec])).toEqual([
       [1, P.quality.iRepMaxSec],
       [1, P.quality.iRepMaxSec]
+    ]);
+  });
+});
+
+/* ---------- Dopuna (01-chains-addendum.md, 5k-v2.11.1): lanci adaptacija ---------- */
+
+describe('dopuna lanci: Z6 — zaštićen dan (prošlost ili zaključan) u proveri LIMITS', () => {
+  it('dan kvaliteta zaključan u koraku bola, u sledećem koraku je prošlost → prihvaćeno (ranije LIMITS)', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 69),
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 30,
+      recentResult: result(45, addDays(START, -10)),
+      goalTimeSec: null
+    });
+    const A = '2026-11-15';
+    const Q = '2026-11-24';
+    expect(p.weeks.flatMap((w) => w.days).find((d) => d.date === Q)!.workout.kind).toBe('quality');
+    const pain = { date: A, km: 0, durationSec: 0, completed: false, pain: 8 };
+    const r1 = adapted(adaptFiveKV2(p, { workouts: [pain], lockedDayIds: [Q] }, A));
+    const r2 = adaptFiveKV2(r1, { workouts: [pain] }, addDays(Q, 1));
+    expect(
+      r2.ok ? [] : r2.violations.filter((v) => v.severity === 'error').map((v) => v.rule)
+    ).toEqual([]);
+  });
+});
+
+describe('dopuna lanci: Z7 — manjak vezan za zapise (idempotentno)', () => {
+  it('iste činjenice, isti asOf, druga primena: isti ciljevi (ranije 14,8 → 11,8), manjak „već u planu"', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 76),
+      runDays: ['tue', 'thu', 'sun'],
+      currentWeeklyKm: 16,
+      recentResult: result(40, addDays(START, -10)),
+      goalTimeSec: null
+    });
+    const B = addDays(START, 14);
+    const runs = p.weeks
+      .flatMap((w) => w.days)
+      .filter((d) => d.date < B && d.countsToWeek)
+      .map((d) => ({
+        date: d.date,
+        dayId: d.date,
+        km: d.date >= addDays(B, -6) ? Math.round(d.workout.km * 0.4 * 10) / 10 : d.workout.km,
+        durationSec: d.workout.sec,
+        completed: true
+      }));
+    const facts = { workouts: runs, coverage: { from: START, to: B, complete: true } };
+    const r1 = adaptFiveKV2(p, facts, B);
+    const u1 = adapted(r1);
+    expect(r1.ok && r1.reasons.some((x) => x.condition === 'UNDER_EXECUTION' && x.applied)).toBe(
+      true
+    );
+    const r2 = adaptFiveKV2(u1, facts, B);
+    const u2 = adapted(r2);
+    expect(u2.weeks.map((w) => w.targetKm)).toEqual(u1.weeks.map((w) => w.targetKm));
+    expect(r2.ok && r2.reasons.find((x) => x.condition === 'UNDER_EXECUTION')!.applied).toBe(false);
+  });
+});
+
+describe('dopuna lanci: Z8 — bol vezan za zapise', () => {
+  it('isti zapis bola sutra bez novih zapisa: nov korak bola se ne pravi (ograničenja i ciljevi ostaju)', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 76),
+      runDays: ['tue', 'thu', 'sun'],
+      currentWeeklyKm: 25,
+      recentResult: result(45, addDays(START, -10)),
+      goalTimeSec: null
+    });
+    const A = '2026-11-22';
+    const f = { workouts: [{ date: A, km: 0, durationSec: 0, completed: false, pain: 7 }] };
+    const a = adapted(adaptFiveKV2(p, f, A));
+    const r = adaptFiveKV2(a, f, addDays(A, 1));
+    const b = adapted(r);
+    expect(r.ok && r.reasons.find((x) => x.condition === 'PAIN')!.applied).toBe(false);
+    expect(b.adaptation!.steps.at(-1)!.pain).toBeNull();
+    expect(b.weeks.map((w) => w.targetKm)).toEqual(a.weeks.map((w) => w.targetKm));
+  });
+});
+
+describe('dopuna lanci: C4 — nedeljna pravila doze i testa čitaju zaštićen dan kao činjenicu', () => {
+  it('dan kvaliteta zaključan pri manjku, posle njega prošlost: doza nedelje je činjenica (ranije DOSE_PROGRESSION)', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 83),
+      runDays: ['tue', 'thu', 'sun'],
+      currentWeeklyKm: 30,
+      recentResult: result(45, addDays(START, -10)),
+      goalTimeSec: null
+    });
+    const B = '2026-11-24';
+    const Q = '2026-12-03';
+    const all = p.weeks.flatMap((w) => w.days);
+    const runs = all
+      .filter((d) => d.date <= B && d.countsToWeek)
+      .map((d) => ({
+        date: d.date,
+        dayId: d.date,
+        km: d.date >= addDays(B, -6) ? 0.1 : d.workout.km,
+        durationSec: d.workout.sec,
+        completed: true
+      }));
+    const r1 = adapted(
+      adaptFiveKV2(
+        p,
+        { workouts: runs, coverage: { from: START, to: B, complete: true }, lockedDayIds: [Q] },
+        B
+      )
+    );
+    const runs2 = r1.weeks
+      .flatMap((w) => w.days)
+      .filter((d) => d.date > B && d.date <= addDays(Q, 1) && d.countsToWeek)
+      .map((d) => ({
+        date: d.date,
+        dayId: d.date,
+        km: d.workout.km,
+        durationSec: d.workout.sec,
+        completed: true
+      }));
+    const r2 = adaptFiveKV2(
+      r1,
+      {
+        workouts: [...runs, ...runs2],
+        coverage: { from: START, to: addDays(Q, 1), complete: true }
+      },
+      addDays(Q, 1)
+    );
+    expect(
+      r2.ok ? [] : r2.violations.filter((v) => v.severity === 'error').map((v) => v.rule)
+    ).toEqual([]);
+    expect(adapted(r2).weeks.some((w) => w.doseFact)).toBe(true);
+  });
+
+  it('dan testa u prošlosti nedelje bez oznake testa (rezultat je preveo plan na tempo) nije greška TEST_WEEK', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 83),
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 30,
+      typicalEasyPaceSecPerKm: 360,
+      goalTimeSec: null
+    });
+    const T = p.weeks.flatMap((w) => w.days).find((d) => d.workout.qualityType === 'TEST_3K')!;
+    const a = adapted(adaptFiveKV2(p, {}, addDays(T.date, 1)));
+    const q = JSON.parse(JSON.stringify(a)) as FiveKV2Plan;
+    q.weeks.find((w) => w.test)!.test = false;
+    expect(validatePlan(q).filter((v) => v.rule === 'TEST_WEEK')).toEqual([]);
+  });
+});
+
+describe('dopuna lanci: C5 — trkačka posle taper skraćenog bolom', () => {
+  it('kad ni bez svih laganih ne staje: lagani postaju odmor, višak (oštrenje i dan pred trku) je upozorenje', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 69),
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 30,
+      recentResult: result(45, addDays(START, -10)),
+      goalTimeSec: null
+    });
+    const race = p.weeks.at(-1)!;
+    const keep = race.days.filter(
+      (d) => d.role !== 'easy' || daysBetween(d.date, p.input.raceDate) <= 1
+    );
+    const rest = race.days.filter((d) => !keep.includes(d)).map((d) => d.date);
+    const capKm = 1;
+    expect(raceWeekRest(race.days, p.input.raceDate, new Set(), capKm)).toEqual(rest.sort());
+    const q = JSON.parse(JSON.stringify(p)) as FiveKV2Plan;
+    const rw = q.weeks.at(-1)!;
+    rw.days = rw.days.filter((d) => !rest.includes(d.date));
+    rw.raceRest = rest;
+    rw.plannedKm = rw.targetKm =
+      Math.round(rw.days.reduce((s, d) => s + (d.countsToWeek ? d.workout.km : 0), 0) * 100) / 100;
+    q.weeks.at(-2)!.plannedKm = 1;
+    const v = validatePlan(q).filter((x) => x.rule === 'RACE_WEEK_TAPER');
+    expect(v.map((x) => x.severity)).toEqual(['warning']);
+  });
+
+  it('zaštićen dan na datumu koji sastavljena nedelja nema (izostavljen lagan dan) ulazi u zbir (lanac i=107)', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 69),
+      runDays: ['mon', 'tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 40,
+      recentResult: result(45, addDays(START, -10)),
+      goalTimeSec: null
+    });
+    const race = p.weeks.at(-1)!;
+    const easy = race.days.filter(
+      (d) => d.role === 'easy' && daysBetween(d.date, p.input.raceDate) > 1
+    );
+    expect(easy.length).toBeGreaterThanOrEqual(2);
+    const locked = easy.at(-1)!;
+    const built = race.days.filter((d) => d.date !== locked.date);
+    const capKm =
+      Math.round(built.reduce((s, d) => s + (d.countsToWeek ? d.workout.km : 0), 0) * 100) / 100;
+    const fixed = (date: string): PlanDay | undefined =>
+      date === locked.date ? locked : undefined;
+    const dates = Array.from({ length: 7 }, (_, k) => addDays(race.startDate, k));
+    expect(raceWeekRest(built, p.input.raceDate, new Set(), capKm, fixed, dates)).toEqual([
+      easy[0]!.date
+    ]);
+  });
+});
+
+describe('dopuna lanci: C8 — mešovita nedelja posle pauze iznad cilja uz upozorenje', () => {
+  it('pauza 9 dana do početka nedelje, zaključan dugi: zaštićeni + preostali > cilj → MIXED_OVER_TARGET (ranije bez upozorenja)', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 69),
+      runDays: ['tue', 'thu', 'sun'],
+      currentWeeklyKm: 20,
+      recentResult: result(45, addDays(START, -10)),
+      goalTimeSec: null
+    });
+    const A = '2026-11-23';
+    const r = adapted(
+      adaptFiveKV2(
+        p,
+        {
+          workouts: [],
+          breaks: [{ kind: 'break', from: addDays(A, -9), to: A }],
+          coverage: { from: addDays(A, -20), to: A, complete: true },
+          lockedDayIds: ['2026-11-29']
+        },
+        A
+      )
+    );
+    const w = r.weeks.find((x) => x.startDate <= A && A <= x.endDate)!;
+    expect(w.plannedKm).toBeGreaterThan(w.targetKm);
+    expect(w.days.filter((d) => d.date <= A)).toEqual([]);
+    expect(r.warnings.filter((x) => x.rule === 'MIXED_OVER_TARGET').map((x) => x.week)).toEqual([
+      w.index
     ]);
   });
 });

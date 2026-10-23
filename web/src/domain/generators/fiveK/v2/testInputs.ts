@@ -1317,7 +1317,22 @@ export const canon09 = (r: unknown): string =>
   );
 
 /** Razlog promene toka prema c13c258 (ispravka segmenta 09); CH = drugi korak lanca posle promenjenog prvog. */
-export type Why09 = 'F1' | 'F2' | 'C1' | 'C8' | 'C13' | 'C2' | 'N1' | 'Z1' | 'CH';
+export type Why09 =
+  | 'F1'
+  | 'F2'
+  | 'C1'
+  | 'C8'
+  | 'C13'
+  | 'C2'
+  | 'N1'
+  | 'Z1'
+  | 'Z6'
+  | 'Z7'
+  | 'Z8'
+  | 'LC4'
+  | 'LC5'
+  | 'LC8'
+  | 'CH';
 
 interface MarkPlan {
   experience?: string;
@@ -1333,7 +1348,7 @@ interface MarkPlan {
   }[];
   warnings?: { rule: string }[];
   adaptation?: {
-    steps: { deload?: boolean; deloadWeek?: number; fromWeek: number }[];
+    steps: { deload?: boolean; deloadWeek?: number; fromWeek: number; underFrom?: string }[];
     mixedWeeks?: number[];
   };
   continuous?: { plan: MarkPlan } | null;
@@ -1343,6 +1358,13 @@ const plansOf = (r: unknown): MarkPlan[] => {
   const p = x.ok === undefined ? (r as MarkPlan) : x.ok ? x.plan! : null;
   if (!p) return [];
   return p.continuous ? [p, p.continuous.plan] : [p];
+};
+
+const reasonsOf = (r: unknown): { condition: string; applied: boolean }[] => {
+  const x = r as { ok?: boolean; reasons?: { condition?: string; applied?: boolean }[] };
+  return x.ok
+    ? (x.reasons ?? []).map((y) => ({ condition: y.condition ?? '', applied: y.applied === true }))
+    : [];
 };
 
 /** Oznaka razloga na TEKUĆEM rezultatu (provera u testu; razlog određuje skripta otisaka poređenjem sa c13c258). */
@@ -1377,6 +1399,27 @@ export function mark09(why: Why09, r: unknown): boolean {
     case 'C13':
       // Početnik (plan po osećaju ili posle rezultata koji ga prevodi na tempo): bez kontrolnog trčanja.
       return ps.some((p) => p.experience === 'beginner' && !p.weeks.some((w) => w.test));
+    case 'Z7':
+      // Korak manjka nosi prozor svojih zapisa, ili isti zapisi ne prave nov korak (5k-v2.11.1).
+      return (
+        ps.some((p) => (p.adaptation?.steps ?? []).some((x) => x.underFrom !== undefined)) ||
+        reasonsOf(r).some((x) => x.condition === 'UNDER_EXECUTION' && !x.applied)
+      );
+    case 'Z8':
+      return reasonsOf(r).some((x) => x.condition === 'PAIN' && !x.applied);
+    case 'Z6':
+    case 'LC4':
+    case 'LC5':
+      // Ranije odbijen tok (LIMITS / pravila doze i testa / RACE_WEEK_TAPER) sada prolazi.
+      return (r as { ok?: boolean }).ok === true;
+    case 'LC8':
+      return ps.some((p) =>
+        (p.warnings ?? []).some(
+          (w) =>
+            w.rule === 'MIXED_OVER_TARGET' &&
+            (w as { message?: string }).message?.includes('posle pauze') === true
+        )
+      );
     case 'Z1':
       // Kvalitet zadržan u mešovitoj nedelji (planirano iznad cilja uz MIXED_OVER_TARGET ili u toleranciji).
       return ps.some(

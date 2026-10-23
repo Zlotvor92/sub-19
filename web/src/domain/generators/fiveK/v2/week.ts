@@ -410,16 +410,20 @@ export function secondEasyDose(d: WeekDose, prev: WeekDose | null): WeekDose {
  * (bez trke) ne bi bila ≤ planirano tapera `capKm` (taper skraćen danima odmora/bola) — prvo dani bola, pa
  * najraniji lagani, najmanje koliko treba; dan pred trku, oštrenje i trka nikad. `fixed(date)` = dan prethodnog
  * plana na zaštićenom datumu (undefined = nije zaštićen, null = zaštićen bez treninga): ulazi u zbir i ne
- * postaje odmor (prošlost = upisani dani). Prazno kad staje ili kad ni bez svih laganih ne staje.
+ * postaje odmor (prošlost = upisani dani). Prazno kad staje. 5k-v2.11.1 (C5): kad ni bez svih laganih ne staje, svi
+ * lagani koji smeju postaju odmor (višak su oštrenje i dan pred trku — validator: upozorenje RACE_WEEK_TAPER).
  */
 export function raceWeekRest(
   days: readonly PlanDay[],
   raceDate: string,
   pain: ReadonlySet<string>,
   capKm: number,
-  fixed: (date: string) => PlanDay | null | undefined = () => undefined
+  fixed: (date: string) => PlanDay | null | undefined = () => undefined,
+  weekDates: readonly string[] = []
 ): string[] {
-  const dates = [...new Set(days.map((d) => d.date))];
+  // 5k-v2.11.1 (C5): zbir ide po svim datumima nedelje (`weekDates`) — zaštićen dan na datumu koji sastavljena
+  // nedelja nema (izostavljen lagan dan) ulazi u zbir kao i ostali zaštićeni.
+  const dates = [...new Set([...days.map((d) => d.date), ...weekDates])];
   const kmOf = (date: string): number => {
     const f = fixed(date);
     const d = f === undefined ? days.find((x) => x.date === date) : f;
@@ -436,7 +440,7 @@ export function raceWeekRest(
     out.push(d.date);
     total = r2(total - d.workout.km);
   }
-  return total <= capKm + 1e-9 ? out.sort() : [];
+  return out.sort();
 }
 
 /**
@@ -571,7 +575,11 @@ export function buildRaceWeek(
   });
   days.sort((a, b) => a.date.localeCompare(b.date));
   // 2.8.0 (pouka 30): trkačka nedelja ≤ planirano tapera — višak laganih dana postaje odmor (raceWeekRest).
-  const raceRest = cap ? raceWeekRest(days, raceDate, pain, cap.km, cap.fixed) : [];
+  const weekDates = Array.from(
+    { length: Math.max(0, daysBetween(f.startDate, raceDate)) },
+    (_, k) => addDays(f.startDate, k)
+  );
+  const raceRest = cap ? raceWeekRest(days, raceDate, pain, cap.km, cap.fixed, weekDates) : [];
   if (raceRest.length > 0)
     days.splice(0, days.length, ...days.filter((d) => !raceRest.includes(d.date)));
   const notes = ['Trkačka nedelja: trka se ne računa u nedeljni obim.'];

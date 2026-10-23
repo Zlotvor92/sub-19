@@ -174,6 +174,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   const lockedIds = new Set(ad?.lockedDayIds ?? []);
   const lockedFuture = (d: PlanDay): boolean =>
     ad !== undefined && lockedIds.has(d.date) && mustDay(d.date) > mustDay(ad.asOf);
+  /** 5k-v2.11.1 (Z6): JEDNA definicija zaštićenog dana u validatoru — prošlost (≤ asOf adaptacije: urađeno ili
+      propušteno, činjenica) ili zaključan dan; validator ne sudi činjenicama (kao MAR-07). */
+  const protectedDay = (d: PlanDay): boolean =>
+    ad !== undefined && (mustDay(d.date) <= mustDay(ad.asOf) || lockedIds.has(d.date));
   const checked = (w: PlanWeek): boolean => !mixed.has(w.index);
   const pw = (w: PlanWeek): PaceModel => (ad ? pacesAt(plan.input, steps, w.index) : plan.paces);
   const aw = (w: PlanWeek): Athlete => (ad ? athleteAt(plan.input, steps, w.index) : a);
@@ -421,12 +425,14 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
               d.date
             );
     }
+  // 2.8.0: zaključan budući dan kontrolnog trčanja je činjenica — oznaka te nedelje se ne poredi sa treningom.
+  // 5k-v2.11.1 (C4, kao Z6): oznaka nedelje se ne poredi ni sa danom testa u prošlosti (≤ asOf) — svaki zaštićen dan
+  // (protectedDay); urađen test i dalje broji za „najviše jednom".
   const testWeeks = weeks.filter((w) =>
     w.days.some((d) => d.workout.qualityType === 'TEST_3K' && !lockedFuture(d))
   );
-  // 2.8.0: zaključan budući dan kontrolnog trčanja je činjenica — oznaka te nedelje se ne poredi sa treningom.
   const lockedTest = (w: PlanWeek): boolean =>
-    w.days.some((d) => d.workout.qualityType === 'TEST_3K' && lockedFuture(d));
+    w.days.some((d) => d.workout.qualityType === 'TEST_3K' && protectedDay(d));
   const expectTest = controlTest(a) ? testWeekOf(weeks) : null;
   // 2.5.0: posle adaptacije test najviše jednom, samo u nedelji po osećaju, oznaka ⇔ trening.
   if (ad) {
@@ -468,7 +474,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     // planirano ≤ cilj; iznad samo kad ni najmanji preostali dani ne staju u ostatak (week.mixedFloorKm — ista
     // funkcija kao konstruktor week.mixedRemainder) → upozorenje (pouka 14), inače greška.
     if (ad && mixed.has(w.index) && w.phase !== 'race' && mustDay(w.endDate) > mustDay(ad.asOf)) {
-      const prot = (d: PlanDay): boolean => mustDay(d.date) <= mustDay(ad.asOf) || lockedFuture(d);
+      const prot = protectedDay;
       const kept = w.days.filter(prot);
       const free = w.days.filter((d) => !prot(d));
       const kmOf = (ds: readonly PlanDay[]): number =>
@@ -479,6 +485,15 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       const owner = steps.some(
         (s) => s.firstWeek === w.index && pauseRemainderKm(s, w, w.targetKm) !== null
       );
+      // 5k-v2.11.1 (C8): vlasnik ostatka je pravilo pauze (pouka 37 je ne menja) — zbir kao pouka 37 (zaštićeni po
+      // činjenicama + preostali) > cilj je upozorenje.
+      const sumKm = Math.round((keptKm + kmOf(free)) * 100) / 100;
+      if (owner && kept.length > 0 && sumKm > w.targetKm + tolKm)
+        warn(
+          'MIXED_OVER_TARGET',
+          `Mešovita nedelja posle pauze: zaštićeni + preostali ${sumKm} km > cilj ${w.targetKm} km (zaštićeni dani ostaju, ostatak nedelje određuje pravilo pauze).`,
+          w.index
+        );
       if (
         !owner &&
         kept.length > 0 &&
@@ -570,12 +585,18 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   {
     const rw = weeks[weeks.length - 1]!;
     const tw = weeks[weeks.length - 2];
-    if (rw.phase === 'race' && tw?.phase === 'taper' && rw.plannedKm > tw.plannedKm + tolKm)
-      err(
+    // 5k-v2.11.1 (C5): višak koji ostaje kad su svi lagani dani koji smeju odmor (week.raceWeekRest) — oštrenje, dan
+    // pred trku, zaštićeni dani — je upozorenje; greška samo dok neki lagan dan koji sme da bude odmor postoji.
+    if (rw.phase === 'race' && tw?.phase === 'taper' && rw.plannedKm > tw.plannedKm + tolKm) {
+      const removable = rw.days.some(
+        (d) => d.role === 'easy' && daysBetween(d.date, plan.input.raceDate) > 1 && !protectedDay(d)
+      );
+      (removable ? err : warn)(
         'RACE_WEEK_TAPER',
-        `Trkačka nedelja ${rw.plannedKm} km > planirano tapera ${tw.plannedKm} km.`,
+        `Trkačka nedelja ${rw.plannedKm} km > planirano tapera ${tw.plannedKm} km${removable ? '' : ' (ostaju oštrenje i dan pred trku)'}.`,
         rw.index
       );
+    }
     for (const d of rw.raceRest ?? [])
       if (
         rw.days.some((x) => x.date === d) ||
@@ -878,7 +899,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     const qd = w.days.filter((d) => d.workout.kind === 'quality');
     // 2.8.0 (MAR-07 nalaz): zaključan budući dan kvaliteta je činjenica, ne odluka konstruktora — nedelja prekida
     // lanac doze (sopstven segment: ne poredi se ni sa prethodnom ni sa sledećom; kao LIMITS).
-    if (qd.some(lockedFuture)) return -w.index;
+    if (qd.some(lockedFuture) || w.doseFact) return -w.index;
     const ks = new Set(
       (qd.length > 0 ? qd.map((d) => d.date) : [w.startDate]).map(
         (x) => resets.filter((r) => mustDay(r) <= mustDay(x)).length
@@ -1021,11 +1042,12 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       }
     }
   }
-  // --- 2.5.0: ograničenja koraka po datumima (i u mešovitim nedeljama; zaključan dan je izuzet):
+  // --- 2.5.0: ograničenja koraka po datumima (i u mešovitim nedeljama; zaštićen dan je izuzet — 2.11.1 Z6: i prošlost,
+  // ne samo dan zaključan u tekućem koraku):
   // zabrana kvaliteta / bol / odmor → bez kvaliteta; bol → bez ubrzanja; odmor → bez treninga.
   for (const w of weeks)
     for (const d of w.days) {
-      if (lockedIds.has(d.date) || d.role === 'race') continue;
+      if (protectedDay(d) || d.role === 'race') continue;
       const inAny = (
         pick: (st: (typeof steps)[number]) => readonly ({ from: string; to: string } | null)[]
       ): boolean => steps.some((st) => pick(st).some((r) => inRange(d.date, r)));
