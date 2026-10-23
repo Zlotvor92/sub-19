@@ -36,6 +36,7 @@ let flows = 0;
 let reached = 0;
 const byCode = new Map<string, number>();
 const examples: string[] = [];
+const firstOf = new Map<string, string>();
 for (const b0 of bases) for (const rk of RECENT.length ? RECENT : [null]) {
   const b = rk === null ? b0 : { id: `${b0.id}-rl${rk}`, input: { ...b0.input, recentLongRunKm: rk } };
   const g = generateHmV2(b.input) as R;
@@ -72,6 +73,8 @@ for (const b0 of bases) for (const rk of RECENT.length ? RECENT : [null]) {
   const msgs = (s3.reasons ?? []).filter((r: any) => r.message.startsWith('DELOAD_LONG')).map((r: any) => `ned ${r.week}: ${r.message}`);
   const key = s3.ok ? (st3.deload && st3.deloadRefLongKm !== undefined ? 'ok-K3x2' : 'ok-other') : `REJ:${(s3.reasons ?? []).map((r: any) => r.code).join(',')}:${[...new Set(viol)].join(',')}`;
   byCode.set(key, (byCode.get(key) ?? 0) + 1);
+  if (!s3.ok && !firstOf.has(key))
+    firstOf.set(key, `${b.id} asOf ${asOf1}/${asOf2}/${asOf3}: ${(s3.reasons ?? []).map((r: any) => r.message).join(' | ').slice(0, 260)}`);
   if (!s3.ok && viol.includes('DELOAD_LONG')) {
     reached++;
     if (examples.length < 3)
@@ -82,3 +85,4 @@ for (const b0 of bases) for (const rk of RECENT.length ? RECENT : [null]) {
 }
 console.log(JSON.stringify({ stride: STRIDE, bases: bases.length, flows, deloadLongRejected: reached, outcomes: Object.fromEntries(byCode) }, null, 1));
 for (const e of examples) console.log(e);
+for (const [k, e] of firstOf) console.log(`prvi ${k}: ${e}`);
