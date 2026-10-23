@@ -891,7 +891,7 @@ export function undo07<T>(result: T): T {
     if (JSON.stringify(now) !== JSON.stringify(sd.workout)) continue;
     const old = qualityWorkout(sd.workout.dose as never, paces, wcOld, feel);
     delta100 = Math.round(old.km * 100) - Math.round(sd.workout.km * 100);
-    sd.workout = old as never;
+    sd.workout = old;
     const p100 = Math.round(w.plannedKm * 100) + delta100;
     const t100 = Math.round(w.targetKm * 100);
     w.plannedKm = p100 / 100;
@@ -1011,4 +1011,27 @@ export function cause07(result: unknown): 'O-1b' | 'F3' | 'Z1' | null {
   if (p.warnings.some((w) => w.rule === 'LONG_SHORTER_THAN_QUALITY')) return 'F3';
   if (p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')) return 'O-1b';
   return null;
+}
+
+/** 10K-07: oznake uzroka promene adaptiranog toka (za fixture segment07.adapt-changed-c13c258.json i proveru skupa):
+    Z1/F3/O-1b (cause07), C7/C8 (nova upozorenja), Z7 (manjak/umor „već u planu" — vezano za zapise). Prazno = bez
+    oznake (tok mora biti bajt-isti posle undo07, osim ranije odbijenog toka — Z6/C3). */
+export function mark07(result: unknown): string {
+  const r = (result ?? {}) as {
+    plan?: { warnings: { rule: string }[] };
+    reasons?: { message: string }[];
+  };
+  const w = (r.plan?.warnings ?? []).map((x) => x.rule);
+  const reasons = JSON.stringify(r.reasons ?? []);
+  return [
+    cause07(result) ?? '',
+    w.includes('RACE_WEEK_OVER_TAPER_LOCKED') ? 'C7' : '',
+    w.includes('MIXED_OVER_TARGET') &&
+    JSON.stringify(r.plan).includes('Mešovita nedelja posle pauze')
+      ? 'C8'
+      : '',
+    reasons.includes('posle ovih zapisa je već u planu') ? 'Z7' : ''
+  ]
+    .filter(Boolean)
+    .join('+');
 }

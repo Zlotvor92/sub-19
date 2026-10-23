@@ -18,7 +18,8 @@ import {
   expectCounts,
   GRID_TIMEOUT,
   p35FlowErrors,
-  p37FlowErrors
+  p37FlowErrors,
+  p07FlowErrors
 } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
@@ -40,7 +41,8 @@ import {
   runsIn,
   SCENARIOS,
   SCHEDULES_BY_DAYS,
-  timeForVdot
+  timeForVdot,
+  mark07
 } from './testInputs.ts';
 import type { AdaptResult, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
@@ -368,6 +370,13 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
 
   it('06i (10k-v2.8.0): prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37', () => {
     expect(p37FlowErrors('grid04', p35Flows)).toEqual([]);
+    // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
+    expect(
+      p07FlowErrors(
+        'grid04',
+        p35Flows.map((f) => ({ ...f, m07: mark07(f.res) }))
+      )
+    ).toEqual([]);
   });
 
   it('06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim', () => {

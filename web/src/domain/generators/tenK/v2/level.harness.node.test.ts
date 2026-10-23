@@ -7,6 +7,7 @@ import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
+import { mark07 } from './testInputs.ts';
 import { FULL } from '@/test/level';
 
 /** Timeout `beforeAll` koji računa mrežu (hookTimeout je podrazumevano 10 s). */
@@ -55,9 +56,47 @@ export const ADAPT_CHANGED_46E = (
     flows: Record<'grid04' | 'early' | 'relief' | 'pain' | 'start0', Record<string, number>>;
   }
 ).flows;
-/** Heš toka u stanju 46e72eb: promenjen u 06i → heš iz fixture-a, inače današnji. */
+/** Segment 10K-07 (10k-v2.9.0): tokovi trajnih mreža adaptacije koje 10K-07 menja posle undo07 → [heš na c13c258,
+    uzrok] (segment07.adapt-changed-c13c258.json). Starije regresije porede stanje c13c258 (`atC13`, u lancu
+    `at46e`); tačan skup i uzrok proverava `p07FlowErrors`. */
+export const ADAPT_CHANGED_07 = (
+  JSON.parse(
+    readFileSync(
+      fileURLToPath(new URL('./segment07.adapt-changed-c13c258.json', import.meta.url)),
+      'utf8'
+    )
+  ) as {
+    against: string;
+    flows: Partial<
+      Record<'grid04' | 'early' | 'relief' | 'start0', Record<string, [number, string]>>
+    >;
+  }
+).flows;
+/** Heš toka u stanju c13c258: promenjen u 10K-07 → heš iz fixture-a, inače današnji. */
+export const atC13 = (net: string, key: string, h: number): number =>
+  (ADAPT_CHANGED_07 as Record<string, Record<string, [number, string]> | undefined>)[net]?.[
+    key
+  ]?.[0] ?? h;
+/** 10K-07: tok mreže `net` je u fixture-u tačno kad se razlikuje od c13c258, sa uzrokom: oznaka mark07 (Z1, F3, O-1b,
+    C7, C8, Z7) ili ranije odbijen tok (Z6/C3, heš 0 u mreži E / oznaka u fixture-u). Vraća prekršaje. */
+export function p07FlowErrors(
+  net: 'grid04' | 'early' | 'relief' | 'start0',
+  flows: readonly { key: string; hash: number; m07: string }[]
+): string[] {
+  const fx = ADAPT_CHANGED_07[net] ?? {};
+  const bad: string[] = [];
+  for (const f of flows) {
+    const e = fx[f.key];
+    if (!e) continue;
+    if (e[0] === f.hash) bad.push(`${f.key}: u fixture-u 10K-07, heš isti`);
+    else if (e[1] !== 'Z6/C3' && !e[1].split('+').some((c) => f.m07.split('+').includes(c)))
+      bad.push(`${f.key}: uzrok ${e[1]}, oznaka toka „${f.m07}"`);
+  }
+  return bad;
+}
+/** Heš toka u stanju 46e72eb: promenjen u 06i → heš iz fixture-a, inače stanje c13c258 (10K-07). */
 export const at46e = (net: keyof typeof ADAPT_CHANGED_46E, key: string, h: number): number =>
-  ADAPT_CHANGED_46E[net][key] ?? h;
+  ADAPT_CHANGED_46E[net][key] ?? atC13(net, key, h);
 /** Pouka 37 u adaptiranom rezultatu (napomena konstruktora, week.MIXED_NOTE). */
 export const hasP37 = (r: unknown): boolean =>
   JSON.stringify(r).includes('Mešovita nedelja (pouka 37)');
@@ -72,19 +111,9 @@ export function p37FlowErrors(
     appendFileSync(
       process.env['DUMP07'],
       flows
-        .map((f) => {
-          const r = f.res as { ok?: boolean; plan?: { warnings: { rule: string }[] }; reasons?: { message: string }[] };
-          const w = (r.plan?.warnings ?? []).map((x) => x.rule);
-          const txt = JSON.stringify(r.reasons ?? []);
-          const m = [
-            w.includes('RACE_WEEK_OVER_TAPER_LOCKED') ? 'C7' : '',
-            JSON.stringify(r).includes('Mešovita nedelja posle pauze') ? 'C8' : '',
-            JSON.stringify(r).includes('(više od planiranog)') ? 'Z1' : '',
-            w.includes('LONG_SHORTER_THAN_QUALITY') ? 'F3' : '',
-            txt.includes('posle ovih zapisa je već u planu') ? 'Z7' : ''
-          ].filter(Boolean).join('+');
-          return `${net}\t${f.key}\t${f.hash}\t${r.ok ? 1 : 0}\t${m || '-'}\n`;
-        })
+        .map(
+          (f) => `${net}\t${f.key}\t${f.hash}\t${(f as { m07?: string }).m07 ?? mark07(f.res)}\n`
+        )
         .join('')
     );
   for (const f of flows) {

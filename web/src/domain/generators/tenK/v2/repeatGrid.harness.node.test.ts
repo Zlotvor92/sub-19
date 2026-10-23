@@ -26,7 +26,8 @@ import {
   GRID_TIMEOUT,
   hasP37,
   missingParts,
-  p37FlowErrors
+  p37FlowErrors,
+  p07FlowErrors
 } from './level.harness.node.test.ts';
 import {
   EARLY_PRE_BACK,
@@ -38,7 +39,8 @@ import {
   painFacts,
   planHash06c,
   START0_SCENARIOS,
-  start0AsOf
+  start0AsOf,
+  mark07
 } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
 
@@ -323,7 +325,7 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
         const idx = new Map(earlyGridBases().map((b, i) => [b.id, i]));
         const bad: string[] = [];
         let [n, fixed] = [0, 0];
-        const runs37: { key: string; hash: number; res: unknown }[] = [];
+        const runs37: { key: string; hash: number; res: unknown; m07: string }[] = [];
         for (const b of basesOf('start0', partIndex)) {
           const p0 = earlyPlan(b);
           const at = start0AsOf(p0);
@@ -342,7 +344,12 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             for (const v of adaptInvariants(p0, r.plan, at, facts)) bad.push(`${key}: ${v}`);
             const old = START0.hashes[idx.get(b.id)! * START0_SCENARIOS.length + j]!;
             const h = planHash06c(r);
-            runs37.push({ key, hash: h, res: hasP37(r) ? 'Mešovita nedelja (pouka 37)' : null });
+            runs37.push({
+              key,
+              hash: h,
+              res: hasP37(r) ? 'Mešovita nedelja (pouka 37)' : null,
+              m07: mark07(r)
+            });
             if (old === 0) {
               fixed++;
               if (s !== 'fatigue') bad.push(`${key}: na b8fcf22 odbijen, a nije umor`);
@@ -372,6 +379,8 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
         expect(bad.slice(0, 20)).toEqual([]);
         // 06i: prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37.
         expect(p37FlowErrors('start0', runs37).slice(0, 10)).toEqual([]);
+        // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
+        expect(p07FlowErrors('start0', runs37).slice(0, 10)).toEqual([]);
       },
       GRID_TIMEOUT
     );

@@ -453,10 +453,11 @@ export function assess(
     // (umor pre starta, korak.preStart) — rasterećenje je već u planu, drugo (nedelja 2) se ne pravi.
     const pre1 =
       ra === 1 && wk(1)?.deload === true && steps.some((x) => x.preStart && deloadWeekOf(x) === 1);
-    // Z7/Z8 (10K-07): zapisi umora kojima je prethodni korak već sudio (bez novih zapisa od njega) ne prave novo
-    // rasterećenje — npr. korak bola je ukinuo redovno rasterećenje (A17), sutra isti zapisi umora bi ga vratili.
-    const covered = (f < n && wk(f)?.deload === true) || pre1 || nothingNew;
-    const ok = !volumeRule && !pre1 && !nothingNew && build(f) && !wk(f)!.deload;
+    // Z7/Z8 (10K-07, pouka 36): zapisi umora koje je prethodni korak već video (svi ≤ njegov asOf) su već presuđeni —
+    // ne prave novo rasterećenje (npr. korak bola je ukinuo redovno rasterećenje, A17; sutra isti zapisi bi ga vratili).
+    const judged = prevAt !== null && easyHard.every((x) => day(x.date) <= prevAt);
+    const covered = (f < n && wk(f)?.deload === true) || pre1 || judged;
+    const ok = !volumeRule && !pre1 && !judged && build(f) && !wk(f)!.deload;
     // 10k-v2.5.2 (pouka 34): asOf pre starta (n = 1, nema prethodne izgradnje) — referenca rasterećenja je
     // nedelja 1 generatora bez činjenica. 10k-v2.8.0 (K3, pouke 33 i 34): isto kad pre nedelje f nema nedelje
     // izgradnje (ne-rasteretne) sa dugim — npr. bol pre starta pa umor u nedelji 1 — inače rasterećenje bez reference.

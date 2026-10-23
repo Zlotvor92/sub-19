@@ -26,7 +26,8 @@ import {
   type ReliefScenario,
   reliefAsOfs,
   reliefFacts,
-  reliefGridBases
+  reliefGridBases,
+  mark07
 } from './testInputs.ts';
 import type { AdaptResult, PlanWeek, TenKV2AdaptStep, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
@@ -39,6 +40,7 @@ import {
   missingParts,
   p35FlowErrors,
   p37FlowErrors,
+  p07FlowErrors,
   pick,
   sumOf
 } from './level.harness.node.test.ts';
@@ -203,6 +205,8 @@ export interface ReliefSummary {
   p35: Set<string>;
   /** 06i: tokovi sa mešovitom nedeljom pouke 37 u rezultatu. */
   p37: Set<string>;
+  /** 10K-07: oznaka uzroka po toku (testInputs.mark07). */
+  m07: Record<string, string>;
   a17: Set<string>;
   n2: Set<string>;
   dropped: Record<string, number>;
@@ -228,6 +232,7 @@ export function runReliefGrid(
     h81: {},
     p35: new Set(),
     p37: new Set(),
+    m07: {},
     a17: new Set(),
     n2: new Set(),
     dropped: {},
@@ -253,6 +258,7 @@ export function runReliefGrid(
     out.h81[key] = planHash81(res);
     if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
     if (hasP37(res)) out.p37.add(key);
+    out.m07[key] = mark07(res);
     if (deter(f, i))
       out.deter.push({ key, p0, facts, asOf: f.asOf, json: fnv1a(JSON.stringify(res)) });
     if (!res.ok) {
@@ -409,9 +415,12 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       const runs = flows.map((f) => ({
         key: f.key,
         hash: g.hash[f.key]!,
-        res: g.p37.has(f.key) ? 'Mešovita nedelja (pouka 37)' : null
+        res: g.p37.has(f.key) ? 'Mešovita nedelja (pouka 37)' : null,
+        m07: g.m07[f.key] ?? ''
       }));
       expect(p37FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
+      // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
+      expect(p07FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
     });
 
     it('J1: posle nedelje smanjenja sledeća nedelja nikad nije redovno rasterećenje (i nijedno nije zadržano zbog > 5 izgradnji); ukinuto po scenariju', () => {
