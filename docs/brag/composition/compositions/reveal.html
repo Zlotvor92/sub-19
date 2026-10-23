@@ -21,88 +21,57 @@
     #reveal-group {
       position: absolute;
       left: 86px;
-      top: 330px;
+      top: 400px;
       width: 908px;
     }
     #reveal-icon {
       display: block;
-      width: 200px;
-      height: 200px;
-      border-radius: 46px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50px;
     }
     #reveal-word {
       margin-top: 40px;
-      font-size: 190px;
+      font-size: 220px;
       line-height: 1;
       font-weight: 700;
       letter-spacing: -0.035em;
-      display: flex;
-    }
-    #reveal-word span {
-      display: inline-block;
     }
     #reveal-tag {
-      margin-top: 56px;
-      font-size: 62px;
-      line-height: 1.22;
-      font-weight: 500;
-      letter-spacing: -0.01em;
-      color: #19251e;
-    }
-    #reveal-tag span {
-      display: inline-block;
-      margin-right: 0.24em;
-    }
-    #reveal-vdot {
-      margin-top: 30px;
-      font-size: 44px;
-      line-height: 1.25;
-      font-weight: 500;
+      margin-top: 44px;
+      font-size: 84px;
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: -0.015em;
       color: #2b5230;
     }
   </style>
   <div id="root" data-composition-id="reveal" data-width="1080" data-height="1920">
     <div id="reveal-group">
       <img id="reveal-icon" src="assets/ui/icon-512.png" alt="sub20" />
-      <div id="reveal-word"><span>s</span><span>u</span><span>b</span><span>2</span><span>0</span></div>
-      <div id="reveal-tag">
-        <span>Plan</span><span>treninga</span><span>za</span><span>5K,</span><span>10K,</span><span>polumaraton</span><span>i</span><span>maraton.</span>
-      </div>
-      <div id="reveal-vdot">po Danielsovoj VDOT metodologiji</div>
+      <div id="reveal-word">sub20</div>
+      <div id="reveal-tag">Trkački plan</div>
     </div>
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    tl.set("#reveal-group", { y: 0, opacity: 1, filter: "blur(0px)" }, 0);
-    // Icon lands on the strong cue (scene 0 = 2.19 s). beat-locked: 2.19s
+    gsap.set("#reveal-tag", { opacity: 0, filter: "blur(8px)" });
+    // Hard cut on the downbeat (scene 0 = 2.0 s, the track's louder section starts here): the lockup slams in. beat-locked: 2.0s
     tl.fromTo(
-      "#reveal-icon",
-      { opacity: 0, scale: 0.86, filter: "blur(6px)" },
-      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "expo.out", transformOrigin: "0% 50%" },
+      "#reveal-group",
+      { scale: 1.14, opacity: 1, y: 0, filter: "blur(0px)" },
+      { scale: 1, duration: 0.22, ease: "expo.out", transformOrigin: "0% 50%" },
       0
     );
-    // Wordmark letter by letter.
+    // "sub20 · Trkački plan" (the app's manifest name), on the next beat.
     tl.fromTo(
-      "#reveal-word span",
-      { opacity: 0, filter: "blur(4px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out", stagger: 0.06 },
-      0.1
-    );
-    // Manifest line, word by word.
-    tl.fromTo(
-      "#reveal-tag span",
-      { opacity: 0, filter: "blur(6px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out", stagger: 0.067 },
-      0.3
-    );
-    tl.fromTo(
-      "#reveal-vdot",
+      "#reveal-tag",
       { opacity: 0, filter: "blur(8px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" },
-      0.95
+      { opacity: 1, filter: "blur(0px)", duration: 0.1, ease: "power4.out" },
+      0.5
     );
-    // Whip up and out (the next scene arrives from below).
-    tl.to("#reveal-group", { y: -160, opacity: 0, filter: "blur(10px)", duration: 0.2, ease: "power3.in" }, 3.11);
+    // Whip up and out (3.85 → 4.0 s); the wizard arrives from below.
+    tl.to("#reveal-group", { y: -240, opacity: 0, filter: "blur(16px)", duration: 0.15, ease: "power3.in" }, 1.85);
     window.__timelines["reveal"] = tl;
   </script>
 </template>

@@ -7,7 +7,7 @@ Create a short launch-style brag reel for sub20, the running-plan app in this re
 - Composition directory: `docs/brag/composition/`
 - Rendered video: `docs/brag/brag.mp4`
 - Format: vertical — 1080x1920, 30 fps
-- Duration: 24.0 s
+- Duration: 20.0 s (v2 fast cut)
 
 ## Source Material
 - Project root: `/home/user/sub-19` (React/Vite PWA in `web/`)
@@ -24,11 +24,11 @@ Create a short launch-style brag reel for sub20, the running-plan app in this re
   - sub-19.vercel.app
 
 ## Creative Direction
-- Tone preset: polished
+- Tone preset: polished, re-cut fast (hard cuts and whips on a 120 BPM grid)
 - Creative direction: the honest coach — quiet premium product film in the app's own "Quiet Athlete" design language
 - Interpretation: flat light ground, ink type, one green accent; arrivals on long-tailed eases, titles dead still once landed; humor only from the app's own copy.
 - Angle: The app is named after one second (19:59), yet it saves your 19:59 goal "kao želja" and keeps every pace tied to confirmed form; seven weeks later it shows exactly how much is still missing. Honest > hype.
-- Hook: "20:00" rolls to "19:59" — "Jedna sekunda."
+- Hook: race clock 19:55 → 19:59, stop — "Jedna sekunda."
 - Outro / punchline: "Procena nije obećanje." → sub20 mark + sub-19.vercel.app
 - Avoid:
   - Generic SaaS language
@@ -46,21 +46,22 @@ Create a short launch-style brag reel for sub20, the running-plan app in this re
 ## Storyboard
 Use the storyboard in `docs/brag/brag-plan.md` as the creative contract.
 
-Scene summary:
-1. Hook — 0.00–2.19 s — "20:00" → "19:59", "Jedna sekunda."
-2. Reveal — 2.19–5.47 s — app icon, "sub20", manifest line
-3. One result — 5.47–7.65 s — wizard step 2, typing 21:30
-4. The honest answer — 7.65–12.01 s — goal 19:59, warning card, highlight "Cilj je sačuvan kao želja", tap "Napravi plan"
-5. The plan — 12.01–15.29 s — Plan tab week 1, scroll to rows
-6. Seven weeks later — 15.29–19.65 s — Forma: "Da ▲ VDOT +2,2", bar 21:29 → 20:38, "fali 39 s"
-7. Punchline + end card — 19.65–24.00 s — "Procena nije obećanje.", flood, mark, URL
+Scene summary (v2):
+1. Race clock — 0.0–2.0 s — 19:55 → 19:59, "Jedna sekunda."
+2. Logo — 2.0–4.0 s — app icon, "sub20", "Trkački plan"
+3. One result — 3.9–6.0 s — wizard step 2, typing 21:30
+4. The honest answer — 5.9–9.35 s — goal 19:59, warning card, highlight "Cilj je sačuvan kao želja", tap "Napravi plan", zoom through
+5. The plan — 9.35–11.5 s — Plan tab week 1, scroll to rows
+6. Weeks fly — 11.5–13.0 s — Plan headers weeks 2 → 8
+7. Forma — 13.0–16.0 s — "Da ▲ VDOT +2,2", bar 21:29 → 20:38, "fali 39 s"
+8. Punchline + end card — 16.0–20.0 s — "Procena nije obećanje.", green, mark, URL
 
 ## Audio
 - Audio role: warm bed with sparse, action-matched accents
 - Audio arc: soft intro → opens on the reveal → tactile typing → one warm accent on "Da" → payoff hit on the mark → fade out
-- Music: `assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3` (Music: Sascha Ende, ende.app, CC BY 4.0)
-- Music treatment: media start 6.55 s, volume ~0.32, fade-in 0.3 s, fade-out 1.5 s
-- Music cue guidance: bundled preset `cues/happy-beats-business-moves-vol-12-by-ende-dot-app.music-cues.json`; strong locks at 2.19, 12.01, 16.38 (video time)
+- Music: `assets/music/happy-beats-business-moves-vol-1-by-ende-dot-app.mp3` (Music: Sascha Ende, ende.app, CC BY 4.0)
+- Music treatment: media start 13.02 s, fade-out 1.0 s; final file normalized to −14 LUFS
+- Music cue guidance: bundled preset `cues/happy-beats-business-moves-vol-1-by-ende-dot-app.music-cues.json`; beats every 0.5 s; strong locks at 2.0, 7.0, 9.0, 13.5, 14.0 (video time)
 - Audio-reactive treatment: none — documented brand reason (flat surfaces, no glow/pulse in the app's design system)
 - Audio-coupled moments:
   - Scene 1 — digit roll — one soft tick
@@ -78,7 +79,7 @@ Built with the current `hyperframes` skill (contract, format, motion, sound, rev
 Requirements:
 - Show real UI (screen captures of the running app).
 - Keep all text readable; nothing meant to be read outside 168–1330 px.
-- 24.0 s total.
+- 20.0 s total.
 - Music + sparse SFX.
 - `hyperframes check` before render.
 - Local creation and render only.

@@ -1,0 +1,46 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+    }
+    #weeks-stage {
+      position: absolute;
+      inset: 0;
+      background: #f6f7f5;
+    }
+    .weeks-img {
+      position: absolute;
+      left: 46px;
+      top: 168px;
+      width: 988.8px;
+    }
+  </style>
+  <div id="root" data-composition-id="weeks" data-width="1080" data-height="1920">
+    <!-- Real Plan tab headers, weeks 2-8, captured by pressing "Sledeća nedelja" in the app. One per sixteenth note. -->
+    <div id="weeks-stage">
+      <img id="week-2" class="weeks-img" src="assets/ui/week-2.png" alt="" style="height: 1041.6px" />
+      <img id="week-3" class="weeks-img" src="assets/ui/week-3.png" alt="" style="height: 1041.6px" />
+      <img id="week-4" class="weeks-img" src="assets/ui/week-4.png" alt="" style="height: 1092px" />
+      <img id="week-5" class="weeks-img" src="assets/ui/week-5.png" alt="" style="height: 1092px" />
+      <img id="week-6" class="weeks-img" src="assets/ui/week-6.png" alt="" style="height: 1092px" />
+      <img id="week-7" class="weeks-img" src="assets/ui/week-7.png" alt="" style="height: 1092px" />
+      <img id="week-8" class="weeks-img" src="assets/ui/week-8.png" alt="" style="height: 1092px" />
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const ids = ["#week-2", "#week-3", "#week-4", "#week-5", "#week-6", "#week-7", "#week-8"];
+    gsap.set(ids.slice(1), { opacity: 0 });
+    gsap.set("#week-2", { opacity: 1 });
+    // Scene 0 = 11.5 s. A new week every 0.125 s; week 8 lands at 12.25 s and holds to the Forma cut (13.0 s).
+    ids.forEach((id, i) => {
+      if (i === 0) return;
+      tl.set(ids[i - 1], { opacity: 0 }, i * 0.125);
+      tl.set(id, { opacity: 1 }, i * 0.125);
+    });
+    // Week 8 settles with one small punch.
+    tl.fromTo("#week-8", { scale: 1.03, transformOrigin: "0% 0%" }, { scale: 1, duration: 0.2, ease: "expo.out", immediateRender: false }, 0.75);
+    window.__timelines["weeks"] = tl;
+  </script>
+</template>

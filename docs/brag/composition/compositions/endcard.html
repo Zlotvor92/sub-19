@@ -83,35 +83,33 @@
     gsap.set("#end-mark", { clipPath: "inset(100% 0% 0% 0%)" });
     gsap.set("#end-word", { clipPath: "inset(0% 100% 0% 0%)" });
     gsap.set("#end-url", { opacity: 0 });
-    // The footnote from the Forma screen, now the closing line (19.57 s). Scene 0 = 19.55 s.
+    // The footnote from the Forma screen slams in as the closing line on the bar (scene 0 = 16.0 s).
     tl.fromTo(
       "#end-line span",
-      { opacity: 0, filter: "blur(6px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power2.out", stagger: 0.067 },
-      0.02
+      { opacity: 0, filter: "blur(8px)" },
+      { opacity: 1, filter: "blur(0px)", duration: 0.1, ease: "power4.out", stagger: 0.05 },
+      0
     );
-    // Colour flood: the line stays while the ground turns green (21.28 s).
-    tl.to("#end-flood", { opacity: 1, duration: 0.37, ease: "power2.inOut" }, 1.73);
-    tl.to("#end-line", { color: "#ffffff", duration: 0.37, ease: "power2.inOut" }, 1.73);
-    tl.to("#end-line", { opacity: 0, filter: "blur(8px)", duration: 0.12, ease: "power2.in" }, 2.1);
-    // The mark fills upward once the line is gone (21.79 → 22.19 s); payoff hit at 21.95 s.
+    // Hard cut to green on the beat (17.5 s); the mark fills upward, then wordmark and address.
+    tl.set("#end-flood", { opacity: 1 }, 1.5);
+    tl.set("#end-line", { opacity: 0 }, 1.5);
     tl.fromTo(
       "#end-mark",
       { clipPath: "inset(100% 0% 0% 0%)" },
-      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "power2.out" },
-      2.24
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.25, ease: "power3.out" },
+      1.5
     );
     tl.fromTo(
       "#end-word",
       { clipPath: "inset(0% 100% 0% 0%)" },
-      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.4, ease: "expo.out" },
-      2.34
+      { clipPath: "inset(0% 0% 0% 0%)", duration: 0.25, ease: "expo.out" },
+      1.6
     );
     tl.fromTo(
       "#end-url",
       { opacity: 0, filter: "blur(8px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" },
-      2.34
+      { opacity: 1, filter: "blur(0px)", duration: 0.12, ease: "power4.out" },
+      1.6
     );
     window.__timelines["endcard"] = tl;
   </script>

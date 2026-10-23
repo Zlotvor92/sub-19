@@ -12,16 +12,6 @@
       font-family: "Figtree", sans-serif;
       color: #19251e;
     }
-    #form-chapter {
-      position: absolute;
-      left: 86px;
-      top: 640px;
-      width: 908px;
-      font-size: 104px;
-      line-height: 1.05;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
     #form-cam {
       position: absolute;
       inset: 0;
@@ -72,7 +62,6 @@
     }
   </style>
   <div id="root" data-composition-id="form" data-width="1080" data-height="1920">
-    <div id="form-chapter">7 nedelja kasnije</div>
     <div id="form-cam">
       <!-- Real Forma screen after one 3 km test: base without the answer, then the answer, the line, the fill and the label. -->
       <div id="form-ui" data-layout-allow-overflow>
@@ -89,55 +78,41 @@
   </div>
   <script>
     const tl = gsap.timeline({ paused: true });
-    gsap.set("#form-ui", { opacity: 0 });
     gsap.set(["#form-da", "#form-line", "#form-label", ".form-veil"], { opacity: 0 });
     gsap.set("#form-fill", { clipPath: "inset(0px 100% 0px 0px)" });
     gsap.set("#form-cam", { x: 0, y: 0, scale: 1, opacity: 1, filter: "blur(0px)", transformOrigin: "734px 1092px" });
-    // Chapter line (14.92 s), blur swap out (16.15 s). Scene 0 = 14.90 s.
-    tl.fromTo(
-      "#form-chapter",
-      { opacity: 0, filter: "blur(8px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" },
-      0.02
-    );
-    tl.to("#form-chapter", { opacity: 0, filter: "blur(8px)", duration: 0.13, ease: "power2.in" }, 1.25);
-    // Forma section arrives on the same stage.
-    tl.fromTo(
-      "#form-ui",
-      { opacity: 0, filter: "blur(6px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power4.out" },
-      1.27
-    );
-    // "Da ▲ VDOT +2,2" lands on the strong cue. beat-locked: 16.38s
+    // Hard cut from week 8 on the bar (scene 0 = 13.0 s): "Da li napredujem?" lands slightly large and settles.
+    tl.fromTo("#form-ui", { scale: 1.04, transformOrigin: "50% 20%" }, { scale: 1, duration: 0.2, ease: "expo.out" }, 0);
+    // The answer slams in on the strong beat (13.5 s). beat-locked: 13.5s
     tl.fromTo(
       "#form-da",
-      { opacity: 0, filter: "blur(8px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.13, ease: "power4.out" },
-      1.48
+      { opacity: 0, scale: 1.15, filter: "blur(8px)", transformOrigin: "0% 50%" },
+      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.18, ease: "expo.out" },
+      0.5
     );
     tl.fromTo(
       "#form-line",
       { opacity: 0, filter: "blur(8px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" },
-      1.61
+      { opacity: 1, filter: "blur(0px)", duration: 0.1, ease: "power4.out" },
+      0.62
     );
-    // The bar fills from the 21:29 start to today's 20:38 estimate.
+    // The bar fills from the 21:29 start to today's 20:38 estimate, landing on the beat (14.0 s).
     tl.fromTo(
       "#form-fill",
       { clipPath: "inset(0px 100% 0px 0px)" },
-      { clipPath: "inset(0px 0% 0px 0px)", duration: 1.0, ease: "power2.inOut" },
-      1.85
+      { clipPath: "inset(0px 0% 0px 0px)", duration: 0.38, ease: "power3.inOut" },
+      0.62
     );
     tl.fromTo(
       "#form-label",
       { opacity: 0, filter: "blur(6px)" },
-      { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power4.out" },
-      2.7
+      { opacity: 1, filter: "blur(0px)", duration: 0.1, ease: "power4.out" },
+      1.0
     );
-    // Push into the footnote "Procena nije obećanje." (18.85 → 19.45 s) — it becomes the next scene's line.
-    tl.to(".form-veil", { opacity: 0.85, duration: 0.3, ease: "power2.out" }, 3.95);
-    tl.to("#form-cam", { x: -194, y: -392, scale: 1.8, duration: 0.6, ease: "power2.inOut" }, 3.95);
-    tl.to("#form-cam", { opacity: 0, filter: "blur(8px)", duration: 0.12, ease: "power2.in" }, 4.6);
+    // Veils leave only "Procena nije obećanje." in the footnote; fast push into it (15.5 → 15.85 s).
+    tl.to(".form-veil", { opacity: 0.85, duration: 0.15, ease: "power2.out" }, 2.4);
+    tl.to("#form-cam", { x: -194, y: -392, scale: 1.8, duration: 0.35, ease: "power3.in" }, 2.5);
+    tl.to("#form-cam", { opacity: 0, filter: "blur(10px)", duration: 0.1, ease: "power2.in" }, 2.85);
     window.__timelines["form"] = tl;
   </script>
 </template>
