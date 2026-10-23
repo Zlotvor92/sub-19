@@ -5,7 +5,9 @@
 import { addDays, mustDay, weekdayOf } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
 import type { Structure, Weekday } from './types.ts';
-import { repsOf } from './workouts.ts';
+import { checkInput } from './input.ts';
+import { basisAt, pacesAt } from './steps.ts';
+import { qualityWorkout, repsOf, warmupCooldown } from './workouts.ts';
 
 /** Ponedeljak; trka nedelja = START + 7N − 1. Trka subota: start nedelja (dan ranije). */
 export const START = '2026-11-02';
@@ -158,7 +160,7 @@ export function fnv1a(s: string): number {
     (D22 menja samo tekst). Isti normalizator koristi skripta koja je upisala heševe 53da370. */
 export function planHash(result: unknown): number {
   return fnv1a(
-    JSON.stringify(result)
+    JSON.stringify(undo07(result))
       .replace(/10k-v2\.\d+\.\d+/g, 'VERSION')
       .replace(/\d dana ne nose ovaj obim[^."]*\./g, 'CAPACITY.')
   );
@@ -280,7 +282,7 @@ export function beginnerGridInputs(days: 3 | 4): GridCase[] {
     podrazumevanom vrednošću (plan.paceBasis 'result'; input.experience 'regular' i
     input.easyPaceSecPerKm null — u planu sa rezultatom uvek iste). Nad planom 21c03f1 ne menja ništa. */
 function normalize21(result: unknown): string {
-  return JSON.stringify(result)
+  return JSON.stringify(undo07(result))
     .replace(/10k-v2\.\d+\.\d+/g, 'VERSION')
     .replace(/,"paceBasis":"result"/g, '')
     .replace(/,"experience":"regular","easyPaceSecPerKm":null/g, '');
@@ -301,13 +303,13 @@ export function planHashes21(result: unknown): [number, number] {
 /** Regresija prema 81bd351 (10k-v2.3.0): heš celog rezultata bez oznake verzije (isti kod u skripti koja
     je upisala heševe 81bd351). */
 export function planHash81(result: unknown): number {
-  return fnv1a(JSON.stringify(result).replace(/10k-v2\.\d+\.\d+/g, 'VERSION'));
+  return fnv1a(JSON.stringify(undo07(result)).replace(/10k-v2\.\d+\.\d+/g, 'VERSION'));
 }
 
 /** Regresija prema 4917959 (10k-v2.4.1) u 06c: kao planHash81 i bez polja koraka `reduced` (novo u
     10k-v2.5.0, A17; normalizacija kao normalize21). Nad izlazom 4917959 ne menja ništa. */
 export const stripReduced = (result: unknown): string =>
-  JSON.stringify(result)
+  JSON.stringify(undo07(result))
     .replace(/10k-v2\.\d+\.\d+/g, 'VERSION')
     .replace(/,"reduced":(true|false)/g, '');
 export const planHash06c = (result: unknown): number => fnv1a(stripReduced(result));
@@ -820,4 +822,122 @@ export function earlyFlows(planOf: (b: EarlyBase) => PlanLike): EarlyFlow[] {
         });
   }
   return out;
+}
+
+/* ---------- 10K-07 (10k-v2.9.0): normalizator regresije prema starijim heševima ---------- */
+
+interface U7Day {
+  role: string;
+  workout: {
+    km: number;
+    title: string;
+    dose: unknown;
+  };
+}
+interface U7Week {
+  index: number;
+  phase: string;
+  plannedKm: number;
+  targetKm: number;
+  days: U7Day[];
+  notes: string[];
+}
+interface U7Plan {
+  input: Record<string, unknown>;
+  weeks: U7Week[];
+  warnings: { rule: string; message: string }[];
+  adaptation?: { steps: never[] };
+}
+
+const D25_NEW =
+  /Dan kvaliteta ili testa duži od dugog po trajanju u (\d+) od (\d+) nedelja izgradnje \((\d+)\. nedelja: (\d+) > (\d+) min\)/g;
+const ADV_NEW =
+  /; preporuka ([\d–]+) dana \(plan sa manje dana podržava obim ([^ ]+) km, dugi dobija veći udeo; (D17|D28)\)/g;
+const UVOD_NEW = /Uvod: (\d+)\. od (\d+) nedelje uvoda bez kvaliteta/g;
+
+/**
+ * 10K-07: izlaz 10k-v2.9.0 u obliku pre 10K-07 za promene objašnjene ispravkom — (a) oštrenje trkačke nedelje sa
+ * WU/CD po pojasu D14 (pre: pojas, sada WU/CD trke), planirano i cilj trkačke nedelje (cilj = planirano, D8) i oznake
+ * dana u `changes`; (b) tekst uvoda (stavka 7), upozorenja D25 i saveta D25 (stavke 5–6). NE vraća: novu preporuku
+ * dana D22 (O-1b), D25 sa testom (F3), Z1, vraćanje/predaju — to su izuzeci po uzroku. Nad izlazom pre 10K-07 ne
+ * menja ništa (nema oštrenja sa WU/CD trke, nema novih tekstova).
+ */
+export function undo07<T>(result: T): T {
+  const r = JSON.parse(JSON.stringify(result)) as {
+    plan?: U7Plan;
+    changes?: { week: number; field: string; before: string; after: string }[];
+  };
+  const plan = r?.plan;
+  if (!plan || !Array.isArray(plan.weeks)) return result;
+  const chk = checkInput(plan.input);
+  if (!chk.ok) return result;
+  const steps = plan.adaptation?.steps ?? [];
+  const wcOld = warmupCooldown(chk.input.currentWeeklyKm, chk.rule.beginner);
+  const raceWc = { warmupSec: 900, cooldownSec: 600 };
+  const titleOld = (t: string): string =>
+    t.replace(
+      /^WU 15 min \+ (.*) \+ CD 10 min$/u,
+      `WU ${wcOld.warmupSec / 60} min + $1 + CD ${wcOld.cooldownSec / 60} min`
+    );
+  let delta100 = 0;
+  for (const w of plan.weeks) {
+    if (w.phase !== 'race') continue;
+    const sd = w.days.find((d) => d.role === 'sharpener');
+    if (!sd || !sd.workout.dose) continue;
+    const paces = pacesAt(chk.pace, steps, w.index);
+    const feel = basisAt(chk.pace, steps, w.index) === 'feel';
+    const now = qualityWorkout(sd.workout.dose as never, paces, raceWc, feel);
+    if (JSON.stringify(now) !== JSON.stringify(sd.workout)) continue;
+    const old = qualityWorkout(sd.workout.dose as never, paces, wcOld, feel);
+    delta100 = Math.round(old.km * 100) - Math.round(sd.workout.km * 100);
+    sd.workout = old as never;
+    const p100 = Math.round(w.plannedKm * 100) + delta100;
+    const t100 = Math.round(w.targetKm * 100);
+    w.plannedKm = p100 / 100;
+    if (t100 === Math.round(Math.round((p100 - delta100) / 10)) * 10)
+      w.targetKm = Math.round(p100 / 10) / 10;
+  }
+  const text = (t: string): string =>
+    t
+      .replace(UVOD_NEW, 'Uvod (D28): nedelja $1 od $2 bez kvaliteta')
+      .replace(
+        D25_NEW,
+        'Kvalitetni dan duži od dugog po trajanju u $1 od $2 nedelja izgradnje (ned $3: $4 > $5 min; D25)'
+      )
+      .replace(
+        ADV_NEW,
+        '; preporuka $1 dana (red $3 sa manje dana podržava obim $2 km, dugi dobija veći udeo)'
+      );
+  for (const w of plan.weeks) w.notes = w.notes.map(text);
+  for (const v of plan.warnings) v.message = text(v.message);
+  if (Array.isArray(r.changes))
+    for (const c of r.changes) {
+      if (c.field === 'day') {
+        c.before = c.before.replace(
+          /^sharpener: (.*)$/u,
+          (_, t: string) => `sharpener: ${titleOld(t)}`
+        );
+        c.after = c.after.replace(
+          /^sharpener: (.*)$/u,
+          (_, t: string) => `sharpener: ${titleOld(t)}`
+        );
+      } else if (
+        c.field === 'plannedKm' &&
+        plan.weeks[c.week - 1]?.phase === 'race' &&
+        delta100 !== 0
+      ) {
+        c.before = String((Math.round(Number(c.before) * 100) + delta100) / 100);
+        c.after = String((Math.round(Number(c.after) * 100) + delta100) / 100);
+      } else if (
+        c.field === 'targetKm' &&
+        plan.weeks[c.week - 1]?.phase === 'race' &&
+        delta100 !== 0
+      ) {
+        const t = (x: string): string =>
+          String(Math.round((Math.round(Number(x) * 100) + delta100) / 10) / 10);
+        c.before = t(c.before);
+        c.after = t(c.after);
+      }
+    }
+  return r as T;
 }

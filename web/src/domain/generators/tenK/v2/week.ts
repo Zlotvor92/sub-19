@@ -518,8 +518,8 @@ export function recordedExcessKeepsQuality(
   return (
     free.some((d) => d.workout.kind === 'quality' || d.workout.kind === 'test') &&
     keptKm > plannedKeptKm + 1e-9 &&
-    targetKm - plannedKeptKm + 1e-9 >= withQ &&
-    targetKm - keptKm + 1e-9 < withQ &&
+    targetKm - plannedKeptKm + P.tolerance.plannedKm + 1e-9 >= withQ &&
+    targetKm - keptKm + P.tolerance.plannedKm + 1e-9 < withQ &&
     keptKm + withQ <= P.adapt.mixedKeepQualityMax * targetKm + 1e-9
   );
 }
