@@ -215,5 +215,6 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   datumima nedelje; C8 upozorenje „posle pauze" (zbir kao pouka 37). `chains.ts 5K 20261023 0 2000`: odbijeni lanci
   131 → 1 (i=1299 QUALITY_REPEAT, van spiska), IDEMP:WEEKS 327 → 40; `idemp.ts` same 462 → 41, next 203 → 30.
 - Otisci regresije prema c13c258 bez teksta (`segment09.*-c13c258.json`, `fixes/5K/fixture09.ts`).
+- Dopuna T (`fixes/02-text-addendum.md`): „dugo trčanje", „tempo treninga i dalje zavisi od rezultata" (isto 5k-v2.11.1).
 - Izveštaj: `reports/SEGMENT-09-IMPLEMENTATION.md`.
 

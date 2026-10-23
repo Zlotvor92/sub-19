@@ -265,7 +265,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         err('RUN_DAYS', `Nedelja ima ${w.days.length} treninga umesto ${nDays - restN}.`, w.index);
       const longs = roles.filter((r) => r === 'long').length;
       if (restN > 0 ? longs > 1 : longs !== 1)
-        err('ROLES', 'Nedelja mora imati tačno jedan dugi trk.', w.index);
+        err('ROLES', 'Nedelja mora imati tačno jedno dugo trčanje.', w.index);
       // 2.8.1 (pouka 35): nedelja izgradnje sa drugim danom kvaliteta laganim (oznaka week.SECOND_EASY_NOTE).
       const secondEasy = isBuild(w) && w.notes.some((n) => n.includes(SECOND_EASY_NOTE));
       const oneQuality =
@@ -1003,7 +1003,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       if (lw.segments.some((s) => s.zone !== 'E' || s.kind !== 'long'))
         err(
           'LONG_NOT_EASY',
-          'Dugi trk sme biti samo lagan, bez brzog završetka.',
+          'Dugo trčanje sme biti samo lagano, bez brzog završetka.',
           w.index,
           long.date
         );

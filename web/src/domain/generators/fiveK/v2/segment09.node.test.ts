@@ -933,3 +933,26 @@ describe('dopuna lanci: C8 — mešovita nedelja posle pauze iznad cilja uz upoz
     ]);
   });
 });
+
+describe('dopuna T (02-text-addendum): tekst korisniku', () => {
+  it('ocena cilja: „tempo treninga i dalje zavisi od rezultata"; uloge i dugi: „dugo trčanje" (rod)', () => {
+    const p = planOf({
+      startDate: START,
+      raceDate: addDays(START, 69),
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 30,
+      recentResult: result(45, addDays(START, -10)),
+      goalTimeSec: Math.round(raceTimeForVdot(49, 5000))
+    });
+    const goal = p.warnings.filter((v) => v.rule === 'GOAL_STATUS').map((v) => v.message);
+    expect(goal.length).toBe(1);
+    expect(goal[0]).toContain('tempo treninga i dalje zavisi od rezultata.');
+    const q = JSON.parse(JSON.stringify(p)) as FiveKV2Plan;
+    const w = q.weeks[0]!;
+    const long = w.days.find((d) => d.role === 'long')!;
+    long.role = 'easy';
+    const msgs = validatePlan(q).map((v) => v.message);
+    expect(msgs).toContain('Nedelja mora imati tačno jedno dugo trčanje.');
+    expect(msgs.join(' ')).not.toMatch(/dugi trk/i);
+  });
+});

@@ -143,3 +143,8 @@ src/domain/generators/fiveK`: **43 fajla, 774/774**; `npm run check` i `npx vite
 `run-all.sh /tmp/ra 4 '.*-5K'` + `summarize-all.py`: **14 poslova, 0 nečistih** (early 0/18 252, edges 0/16 000,
 last-weeks 0/16 238, locked-pause 0/4 800, locked-result 0/108, locked-test 0/1 120 + 0/1 120, result-pain 0/7 452,
 start-day 0/5 202, two-step 0/25 024, predaja HM→5K 0/44 268, MAR→5K 0/34 476, fatigue-* čisto).
+
+Dopuna T (`fixes/02-text-addendum.md`, samo tekst, ista verzija 5k-v2.11.1): `validate.ts` „Nedelja mora imati tačno jedno
+dugo trčanje.", „Dugo trčanje sme biti samo lagano, bez brzog završetka."; `paces.ts` ocena cilja „… tempo treninga i dalje
+zavisi od rezultata." Test `segment09` „dopuna T" (pada na starom tekstu). Otisci prema c13c258 bez promene (kanon bez
+teksta); byteSame 10K/HM/MAR: 5 redova „5K v2" (#0 generisanje/plan/cilj/prilagođavanje/adaptacija), ostali redovi isti.

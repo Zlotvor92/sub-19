@@ -79,8 +79,8 @@ export function assessGoal(vdot: number, goalTimeSec: number): GoalAssessment {
     status === 'feasible'
       ? 'Cilj je u skladu sa prognozom iz rezultata (izvodljiv).'
       : status === 'ambitious'
-        ? 'Cilj traži napredak iznad prognoze (ambiciozan); tempo treninga ostaje prema rezultatu.'
-        : 'Cilj je daleko iznad prognoze (nerealan za ovaj ciklus); tempo treninga ostaje prema rezultatu.';
+        ? 'Cilj traži napredak iznad prognoze (ambiciozan); tempo treninga i dalje zavisi od rezultata.'
+        : 'Cilj je daleko iznad prognoze (nerealan za ovaj ciklus); tempo treninga i dalje zavisi od rezultata.';
   return { goalTimeSec, goalVdot, vdotGap, status, message };
 }
 

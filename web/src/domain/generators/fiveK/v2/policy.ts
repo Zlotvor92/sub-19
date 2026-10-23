@@ -909,6 +909,7 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'dan pred trku) je upozorenje RACE_WEEK_TAPER, ne odbijanje (pouka 30); zbir ide po svim datumima nedelje (zaštićen ' +
       'dan koji sastavljena nedelja nema, npr. izostavljen lagan dan, ulazi u zbir). (C8) Mešovita nedelja čiji je vlasnik ' +
       'pravilo pauze: planirano > cilj uz upozorenje MIXED_OVER_TARGET. Brojevi: docs/5k-v2/reports/' +
-      'SEGMENT-09-IMPLEMENTATION.md § 5. Sačuvan plan 5k-v2.11.0 i stariji prilagođavaju se po 2.11.1 (KNOWN_VERSIONS).'
+      'SEGMENT-09-IMPLEMENTATION.md § 5. Sačuvan plan 5k-v2.11.0 i stariji prilagođavaju se po 2.11.1 (KNOWN_VERSIONS). Dopuna T ' +
+      '(02-text-addendum, samo tekst): „dugo trčanje" (rod), „tempo treninga i dalje zavisi od rezultata".'
   }
 ];
