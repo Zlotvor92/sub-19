@@ -400,12 +400,14 @@ export function eveWorkout(p: Paces, strides = true): Workout {
 }
 
 /** D8: oštrenje trkačke nedelje — WU + reps × 1000 m RP (90 s) + CD (WU/CD po D14). */
-export function sharpenerWorkout(
-  reps: number,
-  p: Paces,
-  wc: WarmupCooldown,
-  feel = false
-): Workout {
+/** D8 (10K-07): WU/CD oštrenja trkačke nedelje = WU/CD trke (15 + 10 min E), ne pojas izgradnje D14 — oštrenje je
+    trenerski vezano za trkačku nedelju (ostali dani ≤ lagan tapera, D23). Jedino mesto: konstruktor i validator. */
+export function sharpenerWarmupCooldown(): WarmupCooldown {
+  return { warmupSec: P.raceWeek.raceWarmupSec, cooldownSec: P.raceWeek.raceCooldownSec };
+}
+
+export function sharpenerWorkout(reps: number, p: Paces, feel = false): Workout {
+  const wc = sharpenerWarmupCooldown();
   const s = P.raceWeek.sharpener;
   return qualityWorkout(
     {

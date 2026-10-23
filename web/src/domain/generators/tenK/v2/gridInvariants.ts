@@ -191,11 +191,13 @@ export function checkPlan(
       }
       if (wo.kind !== 'quality') continue;
       const s = wo.segments;
+      // D8 (10K-07): oštrenje trkačke nedelje nosi WU/CD trke (15 + 10 min), ne pojas D14.
+      const sharp = d.role === 'sharpener';
       if (
         s[0]!.kind !== 'warmup' ||
-        s[0]!.sec !== wu ||
+        s[0]!.sec !== (sharp ? 900 : wu) ||
         s.at(-1)!.kind !== 'cooldown' ||
-        s.at(-1)!.sec !== cd
+        s.at(-1)!.sec !== (sharp ? 600 : cd)
       )
         no('WU_CD_BAND', `${tag} ${d.date}`);
       const zone = wo.dose!.zone;

@@ -74,6 +74,13 @@ export function coveredDays(c: FactsCoverage | null, from: number, to: number): 
   return c !== null && c.complete && mustDay(c.from) <= from && mustDay(c.to) >= to;
 }
 
+/** A1 (10K-07, Z3) — JEDINA definicija „VDOT rezultata je u opsegu adaptacije" (30–80, VDOT zaokružen na 0,1): van
+    opsega rezultat se ne primenjuje (RESULT_IGNORED). Zovu je assess i Forma aplikacije (app/form.ts). */
+export function resultVdotUsable(distM: number, sec: number): boolean {
+  const v = round1(vdotFromResult(distM, sec));
+  return v >= P.input.vdotMin && v <= P.input.vdotMax;
+}
+
 /** Provera oblika činjenica (sve greške odjednom). `days` = datumi dana plana (dayId). */
 export function checkFacts(
   raw: unknown,
@@ -303,7 +310,7 @@ export function assess(
   let res: ResultFact | null = null;
   for (const x of newer) {
     const v = vdotOf(x);
-    if (v < q.vdotMin || v > q.vdotMax)
+    if (!resultVdotUsable(x.distM, x.sec))
       reason(
         'RESULT_IGNORED',
         false,

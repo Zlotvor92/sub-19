@@ -43,6 +43,7 @@ import {
 import { adjacentDays } from './schedule.ts';
 import {
   mixedFloorKm,
+  recordedExcessKeepsQuality,
   P35_DROP,
   P35_KEEP,
   qualityOverLong,
@@ -93,6 +94,7 @@ import {
   recoveryOf,
   repsOf,
   sameStructure,
+  sharpenerWarmupCooldown,
   structuresForDose,
   zoneOf
 } from './workouts.ts';
@@ -472,7 +474,16 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       else if (freeKm > rest + P.tolerance.plannedKm + EPS) {
         const floor = mixedFloorKm(free);
         // Kvalitet ostaje (dopuna MAR-08): preostali = dugi + kvalitet + lagani na minimumu (ista funkcija).
-        if (Math.abs(freeKm - mixedFloorKm(free, true)) <= EPS && rest + EPS < floor)
+        // Z1 (10K-07): ili je jedini uzrok upisani višak zaštićenih dana (ista funkcija kao konstruktor).
+        const plannedKept =
+          w.days
+            .filter((d) => protectedDay(d) && d.countsToWeek)
+            .reduce((a, d) => a + to100(d.workout.km), 0) / 100;
+        if (
+          Math.abs(freeKm - mixedFloorKm(free, true)) <= EPS &&
+          (rest + EPS < floor ||
+            recordedExcessKeepsQuality(free, w.keptKm, plannedKept, w.targetKm))
+        )
           warn(
             'MIXED_OVER_TARGET',
             `Mešovita nedelja: zaštićeni dani ${w.keptKm} km (po činjenicama), ostatak do cilja ${rest} km < najmanji preostali dani ${floor} km — planirano ${w.plannedKm} km > cilj ${w.targetKm} km (pouka 37/14).`,
@@ -614,13 +625,18 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       );
   }
 
-  // --- D25: upozorenje — kvalitetni dan duži od dugog po trajanju u ne-rasteretnoj nedelji izgradnje.
+  // --- D25: upozorenje — dan kvaliteta duži od dugog po trajanju u ne-rasteretnoj nedelji izgradnje; dan testa
+  // (10K-07, kao HM pouka 32) u svakoj nedelji izgradnje, i u rasterećenju.
+  const d25 = (w: PlanWeek): boolean =>
+    isSteady(w) || (isBuildPhase(w.phase) && w.days.some((d) => d.workout.kind === 'test'));
   const longer = weeks.flatMap((w) => {
     const long = w.days.find((d) => d.role === 'long');
-    if (!isSteady(w) || !long || !checked(w)) return [];
+    if (!d25(w) || !long || !checked(w)) return [];
     const q = Math.max(
       0,
-      ...w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.sec)
+      ...w.days
+        .filter((d) => d.workout.kind === 'test' || (d.workout.kind === 'quality' && isSteady(w)))
+        .map((d) => d.workout.sec)
     );
     return q > long.workout.sec ? [{ w: w.index, q, long: long.workout.sec }] : [];
   });
@@ -628,7 +644,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const f = longer[0]!;
     warn(
       'LONG_SHORTER_THAN_QUALITY',
-      `Kvalitetni dan duži od dugog po trajanju u ${longer.length} od ${weeks.filter(isSteady).length} nedelja izgradnje (ned ${wl(f.w)}: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min; D25)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
+      `Dan kvaliteta ili testa duži od dugog po trajanju u ${longer.length} od ${weeks.filter(d25).length} nedelja izgradnje (${wl(f.w)}. nedelja: ${Math.round(f.q / 60)} > ${Math.round(f.long / 60)} min)${fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule)}.`,
       f.w
     );
   }
@@ -654,10 +670,11 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   const slotTypes = rule.quality === 1 ? SLOT_TYPES_ONE : SLOT_TYPES;
   const km10 = to10(input.currentWeeklyKm);
   const bands = P.workout.warmupCooldown;
-  const wc = rule.beginner ? bands[0]! : bands.filter((b) => to10(b.fromKm) <= km10).pop()!;
+  const wcBand = rule.beginner ? bands[0]! : bands.filter((b) => to10(b.fromKm) <= km10).pop()!;
   const wuCdOk = (
     seg: readonly { kind: string; sec: number; km: number }[],
-    mid: number
+    mid: number,
+    wc: { warmupSec: number; cooldownSec: number } = wcBand
   ): [boolean, boolean] => {
     const wu = seg[0];
     const cd = seg[seg.length - 1];
@@ -702,7 +719,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         )
           err(
             'TEST',
-            `Test: WU ${wc.warmupSec / 60} min + ${P.test.km} km + CD ${wc.cooldownSec / 60} min, u obimu nedelje, bez doze (D27).`,
+            `Test: WU ${wcBand.warmupSec / 60} min + ${P.test.km} km + CD ${wcBand.cooldownSec / 60} min, u obimu nedelje, bez doze (D27).`,
             w.index,
             d.date
           );
@@ -795,7 +812,9 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
           d.date
         );
       const seg = wo.segments;
-      const [okWu, okCd] = wuCdOk(seg, mid);
+      // D8 (10K-07): oštrenje nosi WU/CD trke (workouts.sharpenerWarmupCooldown), ostali kvalitet pojas D14.
+      const wc = d.role === 'sharpener' ? sharpenerWarmupCooldown() : wcBand;
+      const [okWu, okCd] = wuCdOk(seg, mid, wc);
       if (!okWu)
         err(
           'WARMUP',
@@ -1601,7 +1620,12 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   if (capacityCut)
     warn(
       'CAPACITY_LIMITED',
-      capacityMessage(input.runDays.length, rule, capacityLimits(weeks, rule, p))
+      capacityMessage(
+        input.runDays.length,
+        input.currentWeeklyKm,
+        rule,
+        capacityLimits(weeks, rule, p)
+      )
     );
 
   // --- D26: osnova tempa — rezultat ≤ 84 dana sa VDOT ≥ 30, inače plan po osećaju.

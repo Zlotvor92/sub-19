@@ -71,7 +71,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D8',
-    rule: 'Trkačka nedelja: broj dana po D20; trka zamenjuje dugi; oštrenje WU + 3 × 1000 m RP (90 s) + CD ako je RP doza tapera ≥ 3,0 km, inače 2 × 1000 m (oštrenje ≤ RP doza tapera), na najkasnijem danu ≥ 3 dana pre trke; WU/CD oštrenja po D14; dan pred trku 20 min E + 4 × 20 s (≤ 30 min); ostali 35 min E, ali ne duže od laganog dana tapera (D23); trka 10 km + WU 15 + CD 10 van obima; cilj = planirano.',
+    rule: 'Trkačka nedelja: broj dana po D20; trka zamenjuje dugi; oštrenje WU + 3 × 1000 m RP (90 s) + CD ako je RP doza tapera ≥ 3,0 km, inače 2 × 1000 m (oštrenje ≤ RP doza tapera), na najkasnijem danu ≥ 3 dana pre trke; WU/CD oštrenja = WU/CD trke 15 + 10 min (10k-v2.9.0; ranije pojas D14); dan pred trku 20 min E + 4 × 20 s (≤ 30 min); ostali 35 min E, ali ne duže od laganog dana tapera (D23); trka 10 km + WU 15 + CD 10 van obima; cilj = planirano.',
     place: 'week.ts (raceWeek) + workouts.ts',
     rationale:
       'Fiksna trenerska heuristika. D8 je potpuna specifikacija trkačke nedelje, pa se plafon D11 na nju ne primenjuje (oštrenje 3 km RP je > 10 % cilja od 13–20 km). Oštrenje ne sme biti veće od RP doze tapera (zamenjuje prag „vrh < 35 km" iz 10k-v2.0.0). WU/CD trke ostaju 15/10 min (D8, van obima). Oštrenje mora biti nesusedno poslednjem zahtevnom danu tapera (D9). Odstupanja (opreznije): kad nijedan dan trčanja nije ≥ 3 dana pre trke i nesusedan tom danu (samo 3 dana, npr. pet/sub/ned ili pon/pet/ned uz trku u nedelju) ili kad taper nema RP (D7 b), oštrenja nema — ostali dani po D8.'
@@ -170,7 +170,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D22',
-    rule: 'Ispravke iz 01b: T druga struktura sa deonicama ≥ 1000 m deljivim sa 50 m kad podela na 100 m ne postoji (2,5 = 2 × 1250; 3,5 = 2 × 1750; 4,5 = 3 × 1500); R deonice 200 / 300 / 400 m; „baza bez platoa" ponovo tvrdo (BASE_PLATEAU = greška); CAPACITY_LIMITED imenuje stvarno ograničenje (dugi 105 min i/ili udeo dugog) i preporučuje više dana samo kad veći broj dana postoji (6 dana bez preporuke).',
+    rule: 'Ispravke iz 01b: T druga struktura sa deonicama ≥ 1000 m deljivim sa 50 m kad podela na 100 m ne postoji (2,5 = 2 × 1250; 3,5 = 2 × 1750; 4,5 = 3 × 1500); R deonice 200 / 300 / 400 m; „baza bez platoa" ponovo tvrdo (BASE_PLATEAU = greška); CAPACITY_LIMITED imenuje stvarno ograničenje (dugi 105 min i/ili udeo dugog) i preporučuje više dana samo kad veći broj dana postoji (6 dana bez preporuke); 10k-v2.9.0: samo brojevi dana čiji red D17/D28 podržava trenutni obim (policy.daysForKm, ista funkcija kao ulaz).',
     place:
       'workouts.ts (structuresForDose); validate.ts (BASE_PLATEAU); volume.ts (capacityMessage)',
     rationale:
@@ -193,7 +193,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D25',
-    rule: 'UPOZORENJE LONG_SHORTER_THAN_QUALITY (ne greška, plan se ne menja): u ne-rasteretnoj nedelji izgradnje najduži kvalitetni dan je po trajanju duži od dugog. Poruka preporučuje manje dana trčanja kad red tabele D17 sa manje dana podržava trenutni obim.',
+    rule: 'UPOZORENJE LONG_SHORTER_THAN_QUALITY (ne greška, plan se ne menja): u ne-rasteretnoj nedelji izgradnje najduži kvalitetni dan, ili u bilo kojoj nedelji izgradnje (i rasterećenju) dan testa (10k-v2.9.0, kao HM pouka 32), je po trajanju duži od dugog. Poruka preporučuje manje dana trčanja kad red tabele D17 sa manje dana podržava trenutni obim.',
     place: 'validate.ts (LONG_SHORTER_THAN_QUALITY); volume.ts (fewerDaysAdvice)',
     rationale:
       'Na 49ad476 i 10k-v2.2.1: 0 / 132 / 132 / 330 planova 3–6 dana — brz trkač na najnižim obimima reda (4 dana 25 km VDOT 60–70; 5 dana 30–35 km VDOT 70; 6 dana 35–45 km VDOT 55–70): WU/CD po pojasu D14 + rad > dugi. Kraći WU/CD po vremenu nedelje bi ovo rešio, ali simulacija organizatora na 49ad476 (nije ponovljena u 02b) pokazuje regresiju kapaciteta 4 dana (ispod obima zbog udela 0 → 66, CAPACITY_LIMITED 1320 → 1830, 234 niža vrha) — zato samo upozorenje; manje dana daje dugi veći udeo (D17).'
@@ -420,12 +420,21 @@ const DECISIONS: readonly Decision[] = [
       'weekLabel.ts; input.ts checkInput; types.ts TenKV2Input.weekOffset; assess.ts, adapt.ts, generate.ts, week.ts, validate.ts (poruke); app/handoffTarget.ts targetInput; app/form.ts (Forma, isti offset); app/plan.ts KNOWN_VERSIONS',
     rationale:
       'REVIEW-3 #2 dopuna (review3d.measure.ts): na planu cilja (offset 3) razlozi i traka nosili su v2 indeks („VDOT … od nedelje 3"), a kalendar i pregled offset + indeks (6) — 30/30. Prepisivanje teksta u app sloju je krhko (odluka organizatora); offset je činjenica plana, ne politika izvora.'
+  },
+  /* ---------- Segment 10K-07 (10k-v2.9.0): ispravke posle dubinske provere v2. ---------- */
+  {
+    id: 'A23',
+    rule: '10K-07 (zaključan spisak organizatora): (1) vraćanje revizije ide kroz jezgro — adaptTenKV2 nad odlukama sačuvane verzije (ulaz, koraci) sa prošlošću trenutnog plana (writtenWeeks + validatePlan); verzija koju jezgro ne može da spoji se ne vraća, uz poruku; (2) cilj predaje: rezultat distance koju 10K ne koristi (maraton) → plan po osećaju (lak tempo izvora), ne odbijanje; početnik izvora iznad reda D28 → plan bez oznake početnika; (3) D8: WU/CD oštrenja = WU/CD trke (15 + 10 min), ne pojas D14; (4) D25 obuhvata i dan testa (u svakoj nedelji izgradnje, i u rasterećenju); (5) jedna funkcija „red tabele podržava obim" (policy.kmFit/daysForKm, sirov obim) za ulaz, poruku kapaciteta D22 (preporuka više dana samo za redove koji podržavaju obim) i D25; (6) uvod: „k. od N nedelje uvoda" (ne liči na kalendarski broj); (7) Z1: kvalitet mešovite nedelje ne otpada kad je jedini uzrok viška upisani višak zaštićenih dana i planirano sa kvalitetom ≤ 1,10 × cilj (week.recordedExcessKeepsQuality, konstruktor i validator) — lagani na minimumu, MIXED_OVER_TARGET; (8) Z3: Forma ne piše „čeka prilagođavanje" za rezultat sa VDOT van 30–80 (assess.resultVdotUsable); (9) Z2: tekst korisniku bez internih oznaka, decimalni zarez, km ≤ 1 decimala (app/format.userText — jedino mesto, app sloj; plan jezgra zadržava oznake).',
+    place:
+      'app/adapt.ts restoreMerge; app/handoffTarget.ts targetInput; workouts.ts sharpenerWarmupCooldown; validate.ts (D25, WARMUP/COOLDOWN oštrenja, MIXED_OVER_TARGET); policy.ts kmFit/daysForKm; input.ts; volume.ts capacityMessage/fewerDaysAdvice; week.ts (uvod, recordedExcessKeepsQuality, mixedRemainder); generate.ts mixed37; assess.ts resultVdotUsable; app/form.ts; app/format.ts userText; app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Nalazi provere v2 (docs/generators-v2/audit: owner O-1a/O-1b/O-3/K, fuzz F3, coach M4, app A1/A2/A5, consistency mixed-drop) i odluke organizatora Z1–Z5 (fixes/00-common.md, fixes/10K.md). Brojevi pre → posle u docs/10k-v2/reports/SEGMENT-07-IMPLEMENTATION.md.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.8.1',
+  version: '10k-v2.9.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
@@ -691,6 +700,9 @@ export const TEN_K_V2_POLICY = {
   /** Segment 04: adaptacija (A1–A15). Rezultat: starost i VDOT kao ulaz (input.resultMaxAgeDays, vdotMin,
       vdotMax); donja granica cilja: weekMinKm (D17, A9); lagan ≥ lengths.easyMinKm. */
   adapt: {
+    /** Z1 (10K-07): mešovita nedelja — kvalitet ostaje kad je jedini uzrok viška upisani višak zaštićenih dana i
+        planirano sa kvalitetom ≤ mixedKeepQualityMax × cilj (week.recordedExcessKeepsQuality). */
+    mixedKeepQualityMax: 1.1,
     /** A2/A5/A6: prozor [dana]. */
     windowDays: 7,
     /** A2: izvršeno < underShare planiranog → cilj max(izvršeno, underFloorShare × cilj nedelje). */
@@ -783,6 +795,28 @@ export interface PlanRule extends DayRule {
   readonly feelTest: boolean;
   /** Brojevi dana dostupni ovom iskustvu (preporuke u porukama). */
   readonly dayCounts: readonly number[];
+}
+
+/**
+ * D17/D28 (10K-07) — JEDINA definicija „red tabele podržava obim": red broja dana `count` (početnik: tabela D28) i
+ * SIROV obim `km` (bez zaokruživanja). 'low' / 'high' = ispod / iznad reda, null = nema reda za taj broj dana. Zovu je
+ * ulaz (input.ts, WEEKLY_KM_*), poruka kapaciteta (D22) i preporuka manje dana (D25, volume.ts) i cilj predaje
+ * (app/handoffTarget.ts) — preporuka i ulaz se ne razilaze.
+ */
+export function kmFit(
+  count: number,
+  experience: Experience,
+  km: number
+): 'low' | 'ok' | 'high' | null {
+  const r = planRule(count, experience);
+  if (!r) return null;
+  return km < r.kmMin ? 'low' : km > r.kmMax ? 'high' : 'ok';
+}
+
+/** Brojevi dana (rastuće) čiji red podržava obim `km` (kmFit = 'ok'). */
+export function daysForKm(km: number, experience: Experience): number[] {
+  const counts = experience === 'beginner' ? BEGINNER_DAYS_COUNTS : RUN_DAYS_COUNTS;
+  return counts.filter((n) => kmFit(n, experience, km) === 'ok');
 }
 
 export function planRule(count: number, experience: Experience): PlanRule | null {

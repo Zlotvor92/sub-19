@@ -4,11 +4,12 @@
    5K v2 (08b), ne uvoz.
 
    Isto jezgro služi i:
-   - vraćanju revizije (`restoreMerge`): budući nezaštićeni dani iz sačuvane verzije, prošlost/urađeno/ručno izmenjeno iz
-     trenutnog plana — spajanje na nivou plana v2, pa iz njega plan za upis;
+   - vraćanju revizije (`restoreMerge`): odluke sačuvane verzije, prošlost/urađeno/ručno izmenjeno iz trenutnog plana —
+     spaja i proverava jezgro (`adaptTenKV2`: `writtenWeeks` + `validatePlan`), pa iz njega plan za upis;
    - promeni cilja (`goalChange`): isti ulaz sa novim ciljem, svi budući dani zaključani → menja se samo ocena cilja;
    - traci „Plan treba prilagoditi" (`needed`): pravilo je SAMO u domenu (`../adapt.ts` `adaptBanner`, pouka 20). */
 
+import { userText } from './format.ts';
 import { adaptBanner, adaptTenKV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
@@ -52,7 +53,7 @@ function adaptRejection(r: Extract<AdaptResult, { ok: false }>): PlanRejectionRe
       .filter((v) => v.severity === 'error')
       .map((v) => ({
         code: v.rule,
-        message: v.message,
+        message: userText(v.message),
         ...(v.week != null ? { week: v.week } : {})
       }))
   ];
@@ -156,12 +157,12 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     ok: true,
     result,
     summary,
-    reasons: r.reasons,
+    reasons: r.reasons.map((x) => ({ ...x, message: userText(x.message) })),
     weeks,
     notes,
     coverage: built.coverage,
     // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
-    needed: adaptBanner(v2, r, built.facts, src.today)
+    needed: adaptBanner(v2, r, built.facts, src.today).map(userText)
   };
 }
 
@@ -184,9 +185,12 @@ function changedWeeks(
 
 /* ---------- vraćanje revizije ---------- */
 
-/** Vraćanje sačuvane verzije (`graftFuturePlan`): budući dani posle danas iz verzije, osim urađenih i ručno izmenjenih
- *  ili pomerenih (oni ostaju iz trenutnog plana); cele prošle nedelje ostaju. `meta.futureChanges` kaže koliko se dana
- *  menja. Verzija bez plana 10K v2 ili sa drugim brojem nedelja se ne vraća (menjala bi prošlost). */
+/** Vraćanje sačuvane verzije (`graftFuturePlan`, 10K-07, Z4): vraćaju se ODLUKE verzije (ulaz i koraci adaptacije), a
+ *  budući deo gradi jezgro — `adaptTenKV2` nad verzijom sa prošlošću iz trenutnog plana: dani do danas, urađeni i ručno
+ *  izmenjeni ili pomereni (zaključani) ostaju iz trenutnog plana, spajanje je `writtenWeeks`, plan prolazi
+ *  `validatePlan` (jedno spajanje, jedan vlasnik; ranije sopstveno spajanje ovde je davalo plan koji validator odbija).
+ *  `meta.futureChanges` kaže koliko se dana menja. Verzija bez plana 10K v2, sa drugim datumima plana ili koju jezgro
+ *  ne može da spoji sa prošlošću se ne vraća (razlog u `conflicts`, plan ostaje). */
 export function restoreMerge<T extends AppPlan>(
   current: T,
   fresh: AppPlan,
@@ -204,9 +208,13 @@ export function restoreMerge<T extends AppPlan>(
   const cur = v2Of(current);
   const snap = v2Of(fresh);
   if (!cur || !snap) return refuse('Sačuvana verzija nema plan 10K v2, pa se ne može vratiti.');
-  if (cur.weeks.length !== snap.weeks.length)
-    return refuse('Sačuvana verzija ima drugi broj nedelja; vraćanje bi menjalo prošle nedelje.');
-  // Zaštićeni datumi (po planu): do danas, urađeni dani i dani sa ručnom izmenom ili pomeranjem.
+  if (
+    cur.weeks.length !== snap.weeks.length ||
+    cur.input.startDate !== snap.input.startDate ||
+    cur.input.raceDate !== snap.input.raceDate
+  )
+    return refuse('Sačuvana verzija ima druge datume plana; vraćanje bi menjalo prošle nedelje.');
+  // Zaštićeni budući datumi: urađeni dani i dani sa ručnom izmenom ili pomeranjem (dani do danas jezgro čuva samo).
   const protectedIds = new Set<string>([
     ...Object.entries(ctx.log ?? {})
       .filter(([, e]) => e?.status === 'done')
@@ -214,52 +222,29 @@ export function restoreMerge<T extends AppPlan>(
     ...Object.keys(ctx.alts ?? {}),
     ...Object.keys(ctx.moves ?? {})
   ]);
-  const dateOf = (start: string, dow: number): string => addDays(start, dow);
-  const protectedDates = new Set<string>();
+  const dates = trainingDates(cur);
+  const locked = new Set<string>();
   for (const w of current.weeks)
-    for (const d of w.days)
-      if (typeof d.id === 'string' && protectedIds.has(d.id))
-        protectedDates.add(dateOf(w.start, d.dow));
-  const keep = (date: string): boolean => date <= today || protectedDates.has(date);
-  // Spajanje nedelja: cele prošle nedelje i zaštićeni dani iz trenutnog plana, ostalo iz sačuvane verzije.
-  const mixed: number[] = [];
-  const weeks: PlanWeek[] = snap.weeks.map((s, i) => {
-    const c = cur.weeks[i]!;
-    if (c.endDate <= today) return c;
-    const days = [
-      ...c.days.filter((d) => keep(d.date)),
-      ...s.days.filter((d) => !keep(d.date))
-    ].sort((x, y) => x.date.localeCompare(y.date));
-    if (same(days, s.days)) return s;
-    mixed.push(s.index);
-    return {
-      ...s,
-      days,
-      plannedKm:
-        Math.round(days.reduce((sum, d) => sum + (d.countsToWeek ? d.workout.km : 0), 0) * 100) /
-        100
-    };
-  });
-  const merged: TenKV2Plan = {
-    ...copy(snap),
-    weeks,
-    ...(snap.adaptation
-      ? {
-          adaptation: {
-            ...snap.adaptation,
-            mixedWeeks: [...new Set([...snap.adaptation.mixedWeeks, ...mixed])].sort(
-              (a, b) => a - b
-            )
-          }
-        }
-      : {})
-  };
-  const out = stored(merged, metaOf(current)[EDITS_KEY], prefixOf(current));
+    for (const d of w.days) {
+      const date = addDays(w.start, d.dow);
+      if (typeof d.id === 'string' && protectedIds.has(d.id) && date > today && dates.has(date))
+        locked.add(date);
+    }
+  // Prošlost iz trenutnog plana, odluke iz verzije; jezgro gradi budućnost i proverava plan.
+  const base: TenKV2Plan = { ...copy(snap), weeks: copy(cur.weeks) };
+  const r = adaptTenKV2(base, { lockedDayIds: [...locked].sort() }, today);
+  // Verzija čije odluke ne odgovaraju urađenom delu (npr. posle nje je plan prilagođen pauzi ili umoru, pa jezgro iz
+  // njenih koraka i upisane prošlosti ne gradi ispravan plan) se ne vraća — plan koji validator odbija se ne upisuje.
+  if (!r.ok)
+    return refuse(
+      'Sačuvana verzija se ne može vratiti: posle nje je plan prilagođen, a njeni budući treninzi se ne slažu sa urađenim delom plana. Plan ostaje kakav jeste.'
+    );
+  const out = stored(r.plan, metaOf(current)[EDITS_KEY], prefixOf(current));
   const prev = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   let changedDays = 0;
   for (const w of out.weeks)
     for (const d of w.days)
-      if (dateOf(w.start, d.dow) > today && !same(prev.get(d.id), d)) changedDays++;
+      if (addDays(w.start, d.dow) > today && !same(prev.get(d.id), d)) changedDays++;
   return {
     ...out,
     meta: { ...out.meta, futureChanges: { changedDays, conflicts: [] } } as StoredPlan['meta']

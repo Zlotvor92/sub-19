@@ -120,7 +120,8 @@ function mixed37(
     w.days.filter((d) => !keptDates.has(d.date)),
     keptKm,
     target10 / 10,
-    ctx.paces
+    ctx.paces,
+    kept.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0) / 100
   );
   if (!m) return w;
   const days = w.days.map((d) => m.days.find((x) => x.date === d.date) ?? d);
@@ -135,7 +136,9 @@ function mixed37(
     notes: [
       ...w.notes,
       m.over
-        ? `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, ostatak do cilja ${fmt2(m.remainderKm)} km < najmanji preostali dani bez kvaliteta ${fmt2(floor)} km — lagani na minimumu, kvalitet ostaje, planirano > cilj ${fmtKm(target10 / 10)} km.`
+        ? m.excess
+          ? `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km (više od planiranog), ostatak do cilja ${fmt2(m.remainderKm)} km — kvalitet ostaje, lagani na minimumu, planirano > cilj ${fmtKm(target10 / 10)} km (≤ 10 % iznad cilja).`
+          : `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, ostatak do cilja ${fmt2(m.remainderKm)} km < najmanji preostali dani bez kvaliteta ${fmt2(floor)} km — lagani na minimumu, kvalitet ostaje, planirano > cilj ${fmtKm(target10 / 10)} km.`
         : `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, preostali dani skraćeni na ostatak do cilja ${fmt2(m.remainderKm)} km${m.droppedQuality ? ' (kvalitet koji ne staje otpada)' : ''}.`
     ],
     keptKm
@@ -402,7 +405,7 @@ export function construct(
   }
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
-      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, pN))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
+      `${capacityMessage(input.runDays.length, input.currentWeeklyKm, rule, capacityLimits(out, rule, pN))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
     );
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)

@@ -10,6 +10,7 @@
      su izostavljena — čitaoci aplikacije ih proveravaju (`raceRefs`, `planBaselineVdot`). Ceo izlaz v2 je u `tenKV2`.
    Jedine odluke adaptera (mapa faze, ime vrste, tip dana, oblik dana) imaju po jedno mesto: ovaj fajl. */
 
+import { userText } from './format.ts';
 import { checkInput } from '../input.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
@@ -36,7 +37,7 @@ export const POLICY_VERSION = P.version;
 export const LEGACY_POLICY_ID = 'legacy-10k';
 /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0,
  *  10k-v2.5.1, 10k-v2.5.2, 10k-v2.6.0, 10k-v2.6.1, 10k-v2.6.2, 10k-v2.7.0 (3d-10K — plan sa nedeljama izvora predaje,
- *  `PREFIX_KEY`), 10k-v2.8.0 (06i) i tekuća 10k-v2.8.1 (3i, ulaz `weekOffset`). Sačuvan plan 4.0 … 7.0 ostaje plan 10K v2; prilagođavanje ga gradi tekućim pravilima (A15),
+ *  `PREFIX_KEY`), 10k-v2.8.0 (06i), 10k-v2.8.1 (3i, ulaz `weekOffset`) i tekuća 10k-v2.9.0 (10K-07). Sačuvan plan 4.0 … 7.0 ostaje plan 10K v2; prilagođavanje ga gradi tekućim pravilima (A15),
  *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.4.0',
@@ -49,6 +50,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.6.2',
   '10k-v2.7.0',
   '10k-v2.8.0',
+  '10k-v2.8.1',
   P.version
 ];
 
@@ -159,7 +161,9 @@ function weeksOf(plan: TenKV2Plan): GeneratedWeek[] {
         (_, i) => byDate.get(addDays(wk.startDate, i)) ?? rest(i + 1)
       ),
       deload: wk.deload,
-      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes].filter(Boolean).join(' '),
+      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes.map(userText)]
+        .filter(Boolean)
+        .join(' '),
       ...(wk.phase === 'taper' ? { taper: true as const } : {})
     };
   });
@@ -167,13 +171,15 @@ function weeksOf(plan: TenKV2Plan): GeneratedWeek[] {
 
 export function goalOf(plan: TenKV2Plan): GoalAssessmentView | undefined {
   const g = plan.goal;
-  return g ? { status: g.status, label: GOAL_LABEL[g.status], message: g.message } : undefined;
+  return g
+    ? { status: g.status, label: GOAL_LABEL[g.status], message: userText(g.message) }
+    : undefined;
 }
 
 /** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja). */
 function planWarnings(plan: TenKV2Plan): string[] {
   const out: string[] = [];
-  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)])
+  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)].map(userText))
     if (t && !out.includes(t)) out.push(t);
   return out;
 }

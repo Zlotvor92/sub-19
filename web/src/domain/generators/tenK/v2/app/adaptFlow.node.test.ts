@@ -433,7 +433,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
           conflicts: string[];
         }
       ).conflicts[0]
-    ).toMatch(/drugi broj nedelja/);
+    ).toMatch(/druge datume plana/);
   });
 
   it('promena cilja: treninzi bajt-isti, menja se samo ocena; po osećaju bez ocene; neispravan cilj odbijen', () => {

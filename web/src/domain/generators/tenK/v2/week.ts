@@ -391,7 +391,7 @@ export function buildWeek(
   const notes: string[] = [];
   if (intro)
     notes.push(
-      `Uvod (D28): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`
+      `Uvod: ${frame.index}. od ${rule.introWeeks} nedelje uvoda bez kvaliteta — dan kvaliteta je lagan.`
     );
   else if (test) notes.push(testNote);
   else if (reduced) {
@@ -501,6 +501,29 @@ export function mixedFloorKm(free: readonly PlanDay[], withQuality = false): num
   );
 }
 
+/**
+ * Z1 (10K-07, odluka organizatora; dopuna pouke 37) — JEDINA definicija: kvalitet mešovite nedelje NE otpada kad je
+ * jedini uzrok viška upisani višak (zaštićeni po činjenicama `keptKm` > planirani zaštićeni `plannedKeptKm`: sa
+ * planiranim zaštićenim kvalitet staje, sa upisanim ne) i planirano sa zadržanim kvalitetom (lagani na minimumu)
+ * ≤ 1,10 × cilj. Tada kvalitet ostaje, lagani na minimumu, planirano > cilj (upozorenje MIXED_OVER_TARGET). Zovu je
+ * konstruktor (mixedRemainder) i validator.
+ */
+export function recordedExcessKeepsQuality(
+  free: readonly PlanDay[],
+  keptKm: number,
+  plannedKeptKm: number,
+  targetKm: number
+): boolean {
+  const withQ = mixedFloorKm(free, true);
+  return (
+    free.some((d) => d.workout.kind === 'quality' || d.workout.kind === 'test') &&
+    keptKm > plannedKeptKm + 1e-9 &&
+    targetKm - plannedKeptKm + 1e-9 >= withQ &&
+    targetKm - keptKm + 1e-9 < withQ &&
+    keptKm + withQ <= P.adapt.mixedKeepQualityMax * targetKm + 1e-9
+  );
+}
+
 /** Pouka 37: raspodela `total` [0,1 km] na lagane dane u [lo, hi] — ujednačeno, raniji dan dobija višak (D19). */
 function fillEasy(total: number, lo: readonly number[], hi: readonly number[]): number[] {
   const x = [...lo];
@@ -531,8 +554,15 @@ export function mixedRemainder(
   free: readonly PlanDay[],
   keptKm: number,
   targetKm: number,
-  p: Paces
-): { days: PlanDay[]; over: boolean; droppedQuality: boolean; remainderKm: number } | null {
+  p: Paces,
+  plannedKeptKm = keptKm
+): {
+  days: PlanDay[];
+  over: boolean;
+  excess: boolean;
+  droppedQuality: boolean;
+  remainderKm: number;
+} | null {
   const R = Math.round((targetKm - keptKm) * 100) / 100;
   // Tolerancija planiranog (D6: planirano = cilj ± tolerance.plannedKm) — sastavljena nedelja bez činjenica ostaje ista.
   if (free.length === 0 || sumKm(free) <= R + P.tolerance.plannedKm + 1e-9) return null;
@@ -542,7 +572,9 @@ export function mixedRemainder(
   const qs = free
     .filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test')
     .sort((a, b) => rank(a) - rank(b));
-  const over = R + 1e-9 < mixedFloorKm(free);
+  // Z1: upisani višak zaštićenih dana ne obara kvalitet (lagani na minimumu, kao `over`).
+  const excess = recordedExcessKeepsQuality(free, keptKm, plannedKeptKm, targetKm);
+  const over = excess || R + 1e-9 < mixedFloorKm(free);
   // Dopuna (organizator, MAR-08): kvalitet otpada SAMO kad time ostatak staje; ni bez kvaliteta ne staje → kvalitet
   // ostaje (stimulus i progresija doze), lagani na minimumu.
   const attempts: PlanDay[][] = over
@@ -561,7 +593,7 @@ export function mixedRemainder(
       if (d.role === 'easy' && shares[i] === km10(d.workout.km)) return d;
       return day(d.date, 'easy', easyWorkout(shares[i]! / 10, p));
     });
-    return { days, over, droppedQuality: keep.length < qs.length, remainderKm: R };
+    return { days, over, excess, droppedQuality: keep.length < qs.length, remainderKm: R };
   }
   return null;
 }
@@ -699,8 +731,7 @@ export function raceWeek(
   const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
   const easy = raceEasyWorkout(taperEasy10, p);
   for (const d of runs) {
-    if (d === sharpenDate)
-      days.push(day(d, 'sharpener', sharpenerWorkout(reps, p, ctx.wc, ctx.feel)));
+    if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, p, ctx.feel)));
     else if (daysBetween(d, race) === 1) days.push(day(d, 'eve', eveWorkout(p)));
     else days.push(day(d, 'easy', easy));
   }

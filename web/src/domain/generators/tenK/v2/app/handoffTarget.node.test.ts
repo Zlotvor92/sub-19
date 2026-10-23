@@ -342,3 +342,76 @@ describe('3d-10K: format i izbor', () => {
     ).toBe('current');
   });
 });
+
+/* 10K-07 Z5 (uslov 5): cilj sam određuje politiku. (a) rezultat izvora nepodržane distance (maraton) → plan po osećaju
+   (lak tempo izvora), ne odbijanje; (b) početnik izvora iznad reda početnika 10K (D28; provera app A1: MAR v2 početnik
+   45 km, 4 dana uto/čet/sub/ned, dugi ned, 10 km 46:00) → plan bez oznake početnika; MAR→10K ponuda postoji. */
+describe('10K-07 Z5: cilj predaje sam određuje politiku', () => {
+  const MAR = SOURCES[1]!;
+  const begInput = (weeks: number) =>
+    TM.inputOf({
+      weeks,
+      km: 45,
+      days: ['tue', 'thu', 'sat', 'sun'],
+      long: 'sun',
+      race: 'sun',
+      result: { distanceM: 10000, timeSec: 2760 },
+      experience: 'beginner'
+    } as never);
+
+  it('Z5a: maraton rezultat izvora → plan bez rezultata (po osećaju, lak tempo izvora); bez lakog tempa EASY_PACE_REQUIRED', () => {
+    const base = TM.gridInputs().find((x) => (MAR.generate(x.input)?.weeks.length ?? 0) >= 16)!;
+    const src = MAR.generate(base.input)!;
+    const asOf = addDays(src.weeks[src.weeks.length - 11]!.start, 2);
+    const date = v2Of(MAR, src).input.startDate ?? asOf;
+    const withMar = {
+      ...contract(MAR, src),
+      pb: { distM: 42195, sec: 12600, date },
+      easyPaceSecPerKm: 360
+    };
+    const r = handoff(MAR, src, asOf, 'none', null, withMar);
+    expect(r.error).toBeUndefined();
+    const v2 = (r.result as unknown as { tenKV2: TenKV2Plan }).tenKV2;
+    expect(v2.input.recentResult).toBeNull();
+    expect(v2.paceBasis).toBe('feel');
+    const { easyPaceSecPerKm: _e, ...bare } = withMar as Record<string, unknown>;
+    expect(handoff(MAR, src, asOf, 'none', null, bare).error).toMatch(
+      /za plan po osećaju unesi lagan tempo/
+    );
+  });
+
+  it('Z5b: MAR v2 početnik 45 km → 10K cilj bez oznake početnika; ponuda 10K v2 u odluci postoji', () => {
+    const g = select.generateMarathonV2Plan(begInput(18) as never);
+    if (!g.ok) throw new Error(JSON.stringify(g.reasons));
+    const asOf = addDays(g.plan.weeks[g.plan.weeks.length - 13]!.start, 2);
+    const a = select.marathonV2AdaptPreview(g.plan, asOf, {}, [
+      { from: addDays(asOf, -20), to: asOf }
+    ]);
+    if (!a.ok) throw new Error('adaptacija');
+    const src = select.stampForStorage(a.result);
+    const c = contract(MAR, src) as Record<string, unknown>;
+    expect(c['trainedRecently']).toBe(false);
+    const ti = targetInput(c as never, alignedStart(c['raceDate'] as string, addDays(asOf, 1))!);
+    expect(ti['experience']).toBe('regular');
+    const r = handoff(MAR, src, asOf, 'none');
+    expect(r.error).toBeUndefined();
+    expect((r.result as unknown as { tenKV2: TenKV2Plan }).tenKV2.input.experience).toBe('regular');
+    const prep = select.preparationForPlan(src, ON)!;
+    const basis = prep.basisFromPlan(src, asOf)!;
+    const d = prep.preparationDecision(src, asOf, basis, {}, 'limited', undefined);
+    expect(d.unavailable.join(' ')).not.toMatch(/početnik/i);
+    const ch = prep.buildPreparationChoice(
+      src,
+      asOf,
+      basis,
+      { kind: 'shorter', raceDistM: 10000 },
+      {}
+    );
+    if ('error' in ch) throw new Error(ch.error);
+    expect(select.isTenKV2Plan(select.stampForStorage(ch.result))).toBe(true);
+    // Početnik u opsegu reda (35 km) ostaje početnik.
+    expect(
+      targetInput({ ...c, weeklyKm: 35 } as never, ti['startDate'] as string)['experience']
+    ).toBe('beginner');
+  });
+});

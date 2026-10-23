@@ -5,6 +5,8 @@ import { addDays, dayNumber, isWeekday, weekdayIndex } from './dates.ts';
 import { round1, vdotFromResult } from './paces.ts';
 import {
   BEGINNER_DAYS_COUNTS,
+  daysForKm,
+  kmFit,
   planRule,
   type PlanRule,
   RUN_DAYS_COUNTS,
@@ -46,11 +48,10 @@ const mmss = (sec: number): string =>
 const range = (ns: readonly number[]): string =>
   ns.length === 1 ? `${ns[0]}` : `${ns[0]}–${ns[ns.length - 1]}`;
 
-/** D17: brojevi dana čiji red tabele podržava obim `km` (npr. „3–5"); prazno ako nijedan. */
-function daysForKm(km: number): string {
-  const ok = RUN_DAYS_COUNTS.filter((n) => km >= P.days[n].kmMin && km <= P.days[n].kmMax);
-  if (ok.length === 0) return '';
-  return ok.length === 1 ? `${ok[0]}` : `${ok[0]}–${ok[ok.length - 1]}`;
+/** D17: brojevi dana čiji red tabele podržava obim `km` (npr. „3–5"); prazno ako nijedan (policy.ts `daysForKm`). */
+function daysTextForKm(km: number): string {
+  const ok = daysForKm(km, 'regular');
+  return ok.length === 0 ? '' : range(ok);
 }
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null;
@@ -200,12 +201,19 @@ export function checkInput(raw: unknown): InputCheck {
     const lo = rule ? rule.kmMin : b[BEGINNER_DAYS_COUNTS[0]!].kmMin;
     const hi = rule ? rule.kmMax : b[BEGINNER_DAYS_COUNTS[BEGINNER_DAYS_COUNTS.length - 1]!].kmMax;
     const forDays = rule ? ` sa ${runDays.length} dana trčanja` : '';
-    if (km < lo)
+    const fit = rule
+      ? kmFit(runDays.length, 'beginner', km)
+      : km < lo
+        ? 'low'
+        : km > hi
+          ? 'high'
+          : 'ok';
+    if (fit === 'low')
       no(
         'WEEKLY_KM_TOO_LOW',
         `Početnik${forDays}: trenutni obim ${km} km je ispod ${lo} km — preporuka je 5K plan pre 10K plana.`
       );
-    else if (km > hi)
+    else if (fit === 'high')
       no(
         'WEEKLY_KM_TOO_HIGH',
         `Početnik${forDays}: trenutni obim ${km} km je iznad ${hi} km (opseg početnika ${lo}–${hi} km); uz ovaj obim plan bez oznake početnika.`
@@ -213,16 +221,23 @@ export function checkInput(raw: unknown): InputCheck {
   } else {
     const kmLo = rule ? rule.kmMin : P.days[minDays].kmMin;
     const kmHi = rule ? rule.kmMax : P.days[maxDays].kmMax;
-    const other = daysForKm(km);
+    const other = daysTextForKm(km);
     const forDays = rule ? ` za ${runDays.length} dana trčanja` : '';
-    if (km < kmLo)
+    const fit = rule
+      ? kmFit(runDays.length, 'regular', km)
+      : km < kmLo
+        ? 'low'
+        : km > kmHi
+          ? 'high'
+          : 'ok';
+    if (fit === 'low')
       no(
         'WEEKLY_KM_TOO_LOW',
         other
           ? `Trenutni obim ${km} km je ispod ${kmLo} km${forDays}: za ${km} km plan podržava ${other} dana trčanja.`
           : `Trenutni obim ${km} km je ispod ${P.days[minDays].kmMin} km nedeljno: preporuka je 5K plan ili izgradnja osnove pre 10K plana.`
       );
-    else if (km > kmHi)
+    else if (fit === 'high')
       no(
         'WEEKLY_KM_TOO_HIGH',
         other

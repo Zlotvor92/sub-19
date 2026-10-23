@@ -46,3 +46,43 @@ export function fmtDuration(sec: number): string {
   const s = Math.round(sec % 60);
   return s ? `${m}:${pad2(s)} min` : `${m} min`;
 }
+
+/* Z2 (10K-07) — tekst jezgra kakav vidi korisnik. JEDINO mesto: napomene nedelja i plana, upozorenja, razlozi
+   adaptacije i odbijanja prolaze kroz `userText` pre prikaza (app/plan.ts, app/generate.ts, app/adapt.ts,
+   app/handoffTarget.ts). Plan jezgra (`tenKV2`) zadržava tehničke oznake (interno polje; validator ih čita). */
+
+/** Interna oznaka pravila: D6, D22b, A3, H17, M7, F4a; niz „A3/A4"; „D11 ispred D7/D31". */
+const LABEL = String.raw`\b(?:[DAHMF]\d{1,2}[a-z]?)\b`;
+const LABELS = new RegExp(
+  String.raw`${LABEL}(?:\/${LABEL})*(?:\s+ispred\s+${LABEL}(?:\/${LABEL})*)?`,
+  'g'
+);
+
+/** Tekst za korisnika: bez internih oznaka (D6, A3/A4, H17, M7, pouka N, segment N), decimalni zarez, km sa najviše
+ *  jednom decimalom, bez „..". */
+export function userText(s: string): string {
+  let t = s
+    .replace(/^Pouka \d+:\s*/u, '')
+    .replace(/\s*\(pouka \d+\)/giu, '')
+    .replace(/,?\s*\bpouka \d+\b/giu, '')
+    .replace(/,?\s*\bsegment \d+[a-z]?\b/giu, '')
+    .replace(LABELS, '')
+    // Ostaci zagrada i separatora posle uklanjanja oznaka.
+    .replace(/\(\s*[,;:]\s*/gu, '(')
+    .replace(/\s*[,;:]\s*\)/gu, ')')
+    .replace(/\s*\(\s*\)/gu, '')
+    .replace(/\s+([,;:.)])/gu, '$1')
+    .replace(/ {2,}/gu, ' ')
+    // Decimalni zarez (ne u datumima i verzijama: samo cifra.cifra van „v2.5").
+    .replace(/(?<![\dv.])(\d+)\.(\d+)(?![\d.])/gu, '$1,$2')
+    .replace(/\.{2,}/gu, '.')
+    .trim();
+  // km: najviše jedna decimala.
+  t = t.replace(
+    /(\d+),(\d{2,})(\s*km)/gu,
+    (_, a: string, b: string, k: string) =>
+      `${fmtNum(Number(`${a}.${b}`), 1).replace(/^(\d+)$/u, '$1,0')}${k}`
+  );
+  // Tekst koji je počinjao velikim slovom (npr. posle uklonjenog prefiksa pouke) ostaje tako.
+  return /^\p{Lu}/u.test(s) ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+}

@@ -2,6 +2,7 @@
    primenjeni rezultati adaptacije, novi rezultati koji čekaju prilagođavanje) i ocena cilja v2 doslovno. Lanac forme iz
    treninga (v1) se ne koristi. Obrazac je kopija 5K v2 (08b), ne uvoz. */
 
+import { resultVdotUsable } from '../assess.ts';
 import { checkInput } from '../input.ts';
 import { predicted10k, round1, vdotFromResult } from '../paces.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
@@ -95,16 +96,20 @@ export function formHistory(src: {
     if (used.has(`${x.date}|${x.distM}|${x.sec}`)) continue;
     const fresh = diffDays(x.date, src.today) <= P.input.resultMaxAgeDays;
     const newer = lastUsed === null || x.date > lastUsed;
+    // Z3 (10K-07): rezultat koji jezgro ignoriše (VDOT van opsega) ne čeka prilagođavanje — odluka jezgra.
+    const usable = resultVdotUsable(x.distM, x.sec);
     points.push({
       date: x.date,
       vdot: round1(vdotFromResult(x.distM, x.sec)),
       kind: x.kind,
       label: `${x.kind === 'test' ? 'Test' : 'Trka'} ${dist(x.distM)} ${mmss(x.sec)}${
-        fresh && newer
-          ? ' — čeka prilagođavanje plana'
-          : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
+        !usable
+          ? ` — ne menja tempo (VDOT van ${P.input.vdotMin}–${P.input.vdotMax})`
+          : fresh && newer
+            ? ' — čeka prilagođavanje plana'
+            : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
       }`,
-      status: fresh && newer ? 'pending' : 'old'
+      status: usable && fresh && newer ? 'pending' : 'old'
     });
   }
   points.sort((a, b) => a.date.localeCompare(b.date));
