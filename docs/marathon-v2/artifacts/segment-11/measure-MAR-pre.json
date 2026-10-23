@@ -1,0 +1,94 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 100
+ },
+ "generator": {
+  "plans": 31650,
+  "rejected": 0,
+  "unrealistic": 270,
+  "t1": 22344,
+  "t1contra": 0,
+  "t1two": 0,
+  "t1maxOver": 26,
+  "t1ex": [
+   "d3-12w-30km-v30-A-sat: ned 11 70>64 min",
+   "d3-12w-30km-v30-A-sun: ned 11 70>64 min",
+   "d3-12w-30km-v30-B-sat: ned 11 70>64 min",
+   "d3-12w-30km-v30-B-sun: ned 11 70>64 min",
+   "d3-12w-30km-v30-C-sat: ned 11 70>64 min",
+   "d3-12w-30km-v30-C-sun: ned 11 70>64 min"
+  ],
+  "t2": 10521,
+  "t2adj": 2282,
+  "t2maxEasy": 27.2,
+  "t2ex": [
+   "d3-12w-35km-v30-A-sat: ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.1/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 9 lagan 17.8/dugi 17.8",
+   "d3-12w-35km-v30-A-sun: ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.1/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 9 lagan 17.8/dugi 17.8",
+   "d3-12w-35km-v30-B-sat: ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.1/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 9 lagan 17.8/dugi 17.8",
+   "d3-12w-35km-v30-B-sun: ned 4 lagan 17.5/dugi 17.8 susedan, ned 6 lagan 17.1/dugi 17.8 susedan, ned 7 lagan 17.8/dugi 17.8 susedan, ned 9 lagan 17.8/dugi 17.8 susedan",
+   "d3-12w-35km-v30-C-sat: ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.1/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 9 lagan 17.8/dugi 17.8",
+   "d3-12w-35km-v30-C-sun: ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.1/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 9 lagan 17.8/dugi 17.8"
+  ],
+  "t1ByDays": {
+   "3d": 1854,
+   "4d": 3579,
+   "5d": 6867,
+   "6d": 10044
+  },
+  "t1worst": "d6-12w-50km-v70-A-sat (vdot 70): ned 10 57>57 min, ned 11 57>31 min",
+  "t2worst": "feel-d4-17w-65km-e315-A (vdot 48.4): ned 5 lagan 25.9/dugi 27.2 susedan, ned 6 lagan 27.2/dugi 27.2 susedan",
+  "t2worstKm": 27.2,
+  "t2adjMinutes": {
+   "≥120 min": 6826
+  },
+  "t2ByDays": {
+   "3d": 1845,
+   "4d": 2922,
+   "5d": 2673,
+   "6d": 3081
+  },
+  "t1Warn": {
+   "TAPER_MP_OVER_CAP": 1491,
+   "MARATHON_LONG_SHORT": 2478,
+   "CAPACITY_LIMITED": 7596,
+   "DOSE_DROPPED": 441,
+   "DELOAD_LONG_SHORTENED": 108
+  }
+ },
+ "adaptation": {
+  "bases": 110,
+  "flows": 64692,
+  "rejected": 0,
+  "t1": 3798,
+  "t1two": 223,
+  "t1contra": 72,
+  "t1noWarn": 1974,
+  "byScenario": {
+   "pause35": 1203,
+   "pause20": 438,
+   "painPause": 488,
+   "pain8": 277,
+   "chain2": 310,
+   "pause10": 260,
+   "chain": 260,
+   "pain5": 271,
+   "under50": 177,
+   "slower": 26,
+   "faster": 8,
+   "test5k": 58,
+   "fatigue": 10,
+   "over120": 12
+  },
+  "ex": [
+   "d3-12w-50km-v35-B-sat / pause35 / asOf 2026-12-02: ned 10 74>57 min",
+   "d3-12w-50km-v35-B-sat / pause35 / asOf 2026-12-05: ned 10 74>57 min",
+   "d3-12w-50km-v35-B-sat / pause35 / asOf 2026-12-12: ned 10 74>47 min",
+   "d3-12w-50km-v35-B-sat / pause20 / asOf 2026-12-19: ned 10 74>58 min",
+   "d3-12w-50km-v35-B-sat / pause20 / asOf 2026-12-23: ned 10 74>43 min",
+   "d3-12w-50km-v35-B-sat / painPause / asOf 2026-12-23: ned 10 74>58 min"
+  ]
+ }
+}

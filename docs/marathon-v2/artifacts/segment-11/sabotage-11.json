@@ -2,7 +2,7 @@
  {
   "name": "11-T1 lagan bez plafona 0,8 × dugi",
   "file": "src/domain/generators/marathon/v2/lengths.ts",
-  "find": "  const max10 = t1 ? easyCap10(long10) : long10;",
+  "find": "  const max10 = t1 ? easyCap10(long10, min10, relax) : long10;",
   "replace": "  const max10 = long10;",
   "tests": [
    "src/domain/generators/marathon/v2/segment11.node.test.ts"

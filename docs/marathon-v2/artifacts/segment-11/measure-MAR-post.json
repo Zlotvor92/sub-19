@@ -1,0 +1,57 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 100
+ },
+ "generator": {
+  "plans": 31650,
+  "rejected": 0,
+  "unrealistic": 270,
+  "t1": 0,
+  "t1contra": 0,
+  "t1two": 0,
+  "t1maxOver": 0,
+  "t1ex": [],
+  "t2": 0,
+  "t2adj": 0,
+  "t2maxEasy": 0,
+  "t2ex": [],
+  "t1ByDays": {},
+  "t1worst": "",
+  "t2worst": "",
+  "t2worstKm": 0,
+  "t2adjMinutes": {},
+  "t2ByDays": {},
+  "t1Warn": {}
+ },
+ "adaptation": {
+  "bases": 110,
+  "flows": 64692,
+  "rejected": 106,
+  "t1": 303,
+  "t1two": 0,
+  "t1contra": 0,
+  "t1noWarn": 245,
+  "byScenario": {
+   "pause20": 32,
+   "painPause": 36,
+   "pause35": 195,
+   "under50": 3,
+   "pain5": 10,
+   "pain8": 11,
+   "pause10": 4,
+   "chain": 4,
+   "chain2": 8
+  },
+  "ex": [
+   "d3-12w-50km-v35-B-sat / pause20 / asOf 2026-12-19: ned 11 41>41 min",
+   "d3-12w-50km-v35-B-sat / painPause / asOf 2026-12-23: ned 11 41>40 min",
+   "d3-16w-30km-v60-C-sat / pause35 / asOf 2026-11-04: ned 15 29>27 min",
+   "d3-16w-30km-v60-C-sat / pause35 / asOf 2026-11-18: ned 15 29>29 min",
+   "d3-16w-30km-v60-C-sat / pause35 / asOf 2026-11-21: ned 15 29>29 min",
+   "d3-16w-30km-v60-C-sat / pause35 / asOf 2026-12-23: ned 14 29>28 min"
+  ]
+ }
+}

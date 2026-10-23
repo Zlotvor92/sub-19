@@ -913,7 +913,7 @@ export function buildWeek(
           ? `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — kvalitetni dan bi trajao duže od dugog (plafon ${d.zone === 'MP' ? 'MP, pouka 14' : 'zone, pouka 32'}).`
           : `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (M11 ispred M12).`
       );
-  return done(
+  const built = done(
     [
       ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
       ...(w2 ? [day(dateOf(frame, pat.q2!), 'q2', w2)] : []),
@@ -926,6 +926,9 @@ export function buildWeek(
     notes,
     len.jumpBound
   );
+  // MAR-11 (T1): lagan dan odmora samo dok nedelja ima trening (dani odmora/bola koraka mogu da uzmu ostale).
+  if (rested.length > 0 && !built.days.some((d) => d.countsToWeek)) return null;
+  return built;
 }
 
 /** Pouka 30 (N1, kao HM-04 t. 4; MAR-09 t. 1): trkačka nedelja samo sa trkom — dani trčanja pre trke su dani

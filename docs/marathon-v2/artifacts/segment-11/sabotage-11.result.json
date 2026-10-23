@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-11/sabotage-11.json",
- "head": "9f60257",
+ "head": "f20c7ec",
  "level": "brz",
  "bail": true,
  "parallel": 2,
  "vitestArgs": [],
- "durationS": 26.4,
- "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
- "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+ "durationS": 30.4,
+ "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
  "ok": true,
  "results": [
   {
@@ -27,13 +27,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 15 km van granica nedelje izgradnje (≤ 0.8 × dugi 18 km, ≥ 5 km i 20 min).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 19.2 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 20.9 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 22.2 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":10},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 20.8 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":11}]"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "64aff6ff10c30d1f8143cfcdbe16d031c8182d78030f8f4dc390f4cfea6924c2",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "b4abb3bb893b4266d8556378f727023ffaffc51f451985b41b0b8acbe59e3a0f",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.9
+   "durationS": 3
   },
   {
    "index": 2,
@@ -52,13 +52,13 @@
     "message": "AssertionError: ned 11: expected 4200 to be less than or equal to 3848"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "79f733565bccd47b288bfd5f20498818faa477e250af18adb0d09d9bc20f539e",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "c0948e39373862a56bb0af1f1a32467ce2f745a0106fb6d5570f5f424dbe85a2",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.5
+   "durationS": 3.4
   },
   {
    "index": 3,
@@ -77,13 +77,13 @@
     "message": "AssertionError: ned 16: expected 2 to be 1 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "ae3bf8bac41976e69a453e14c451815645b58609271fcdc975d56c7c13b4176f",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "599a98a02f71d2fe7bc4cf59421f07f95de8bfb2f9a7c9ae95376df1736104cb",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 4.5
+   "durationS": 3.6
   },
   {
    "index": 4,
@@ -102,13 +102,13 @@
     "message": "AssertionError: expected false to be true // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "3fe98562e71536104ea100f7fbc073b2c2925ed4277f5e2c1643d89f59c4ec45",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "f3f179fe4debd27ccc4c7ea67af94a9ee1f0c373e81233eb93aaa243f5f3faf1",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.5
+   "durationS": 3.2
   },
   {
    "index": 5,
@@ -127,13 +127,13 @@
     "message": "AssertionError: expected false to be true // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "fcb1a7d50518258a2ce06b9f4738286ce2b4b3c71664ab4f58f99fc585665224",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "9a9876c220278ebf6551e1d277d8706adc08812bce88df25e19fd845713797cc",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3
+   "durationS": 4.6
   },
   {
    "index": 6,
@@ -152,13 +152,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_DAYS: Dan kvaliteta duži od dugog uz dva kvaliteta, a nedelja sa jednim je izvodljiva — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":3}]"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "fac66a0ae419278106d1bc5f7e0bbe454eb38f5dca3a8bdb33468a646f3e0b29",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "0856ba743e2678118cd51f1a2a30791d398036b1d45d94ab0bac72c0b5e5f1d3",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 4
+   "durationS": 5
   },
   {
    "index": 7,
@@ -177,13 +177,13 @@
     "message": "AssertionError: expected true to be false // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "7359027d1dc32c3af4ddddc1c5aef6514aac9338d9cd541de2b060d777bc0315",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "58f9f4e0fa866c09121f0634f17244fc5415b1cec4553b97636b2c536769f755",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.1
+   "durationS": 5
   },
   {
    "index": 8,
@@ -202,13 +202,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}]"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "ca5c12c0f301aace0edd5488310c1efe393dc49c40fd525cc99129becd74ca7f",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "57e2885e02b696611fde47ca5f39fc8abd5f8a6c8ff633033abee819df497158",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 4.3
+   "durationS": 5.2
   },
   {
    "index": 9,
@@ -227,13 +227,13 @@
     "message": "AssertionError: expected [ 50, 53, 56.2, 45, 59.6, 63.2, …(12) ] to deeply equal [ 50, 53, 56.2, 45, 59.6, 63.2, …(12) ]"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "1afca9219a6c782d4970c751be96ac74336864544852b6ee5eac8627958c8c37",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "0e145ce00005da2667380545bdc2d39a36111f09c81e9d629e1b6dda5ddd9afd",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 5
+   "durationS": 5.6
   },
   {
    "index": 10,
@@ -252,13 +252,13 @@
     "message": "AssertionError: expected false to be true // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "95895710a4d4ed3c00b5d8a47c0ac4444f65e64090b38681f245860cd3bde33b",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "4a4d18882ca5dbb05a612958fcf05f296642d95af51439b07e7fe0d03400063c",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 4.9
+   "durationS": 6.3
   },
   {
    "index": 11,
@@ -277,13 +277,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}]"
    },
    "failedCount": 1,
-   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
-   "hashSabotaged": "ee521ba8362ab369d6f3e6808660b79e8561847aa8daa936fc8554ba9c430d4d",
-   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "905ea804fdb24cfbfdb73a6b0d0ef416fe7b130c9bdc16d7fbe07d258cf5e07a",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 4.9
+   "durationS": 5.4
   }
  ]
 }
