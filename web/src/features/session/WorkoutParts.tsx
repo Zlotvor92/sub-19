@@ -10,12 +10,18 @@ const minutesText = (m: number): string =>
 
 const find = (view: SessionView, label: string) => view.rows?.find((r) => r[0] === label);
 
+/** Prosečan tempo celog treninga (procena: km i procenjeno trajanje) — samo kad tempo rada nije tempo celog treninga. */
+export function averagePace(view: SessionView): number | null {
+  if (!view.workPace || view.km == null || view.km <= 0 || view.minutes == null) return null;
+  return Math.round((view.minutes * 60) / view.km);
+}
+
 /** Ciljevi treninga u jednoj listi: tempo (sa poreklom), distanca, trajanje, napor. Prikazuje se samo ono što postoji. */
 export function WorkoutFacts({ view }: { view: SessionView }) {
   const items: Array<{ label: string; value: React.ReactNode }> = [];
   if (view.paceSec != null)
     items.push({
-      label: 'Ciljni tempo',
+      label: view.workPace ? 'Tempo rada' : 'Ciljni tempo',
       value: (
         <>
           <span className="num">{fmtClock(view.paceSec)} /km</span>{' '}
@@ -29,6 +35,16 @@ export function WorkoutFacts({ view }: { view: SessionView }) {
     });
   if (view.km != null)
     items.push({ label: 'Distanca', value: <span className="num">{fmtKm(view.km)} km</span> });
+  const avg = averagePace(view);
+  if (avg != null)
+    items.push({
+      label: 'Prosek celog treninga',
+      value: (
+        <>
+          <span className="num">≈ {fmtClock(avg)} /km</span> <ProvenanceBadge kind="estimated" />
+        </>
+      )
+    });
   if (view.minutes != null)
     items.push({
       label: 'Trajanje',
@@ -55,43 +71,55 @@ export function WorkoutFacts({ view }: { view: SessionView }) {
   return <Facts items={items} />;
 }
 
-/** Struktura sesije: zagrevanje / rad / hlađenje srazmerno trajanju, pa profil (visina = brzina) i tabela koraka kad je sesija razlomljena. */
-export function WorkoutStructure({ view }: { view: SessionView }) {
+/** Zagrevanje / rad / hlađenje u tri trake srazmerne trajanju; `null` kad sesija nema radni deo. Isti blok stoji na Danas i u Detaljima. */
+export function WorkoutLanes({ view, compact = false }: { view: SessionView; compact?: boolean }) {
   const wu = find(view, 'Zagrevanje');
   const work = find(view, 'Radni deo');
   const rest = find(view, 'Odmor');
   const cd = find(view, 'Hlađenje');
+  if (!work) return null;
   const seg = view.segments;
-  if (!work && !seg && !view.rows) return null;
   const sum = (kinds: string[]): number =>
     seg ? seg.filter((s) => kinds.includes(s.kind)).reduce((a, s) => a + s.sec, 0) : 0;
   const wWu = sum(['wu', 'steady']);
   const wWork = sum(['rep', 'rec']);
   const wCd = sum(['cd']);
   const flex = seg && wWu + wWork + wCd > 0 ? [wWu, wWork, wCd] : [1, 1.2, 1];
-  const [workMain, workPace] = work ? work[1].split(' @ ') : ['', ''];
+  const [workMain, workPace] = work[1].split(' @ ');
+  return (
+    <div
+      className={compact ? 'lanes compact' : 'lanes'}
+      role="group"
+      aria-label="Struktura treninga"
+    >
+      <div className="lane" style={{ flex: flex[0] }}>
+        <span className="eyebrow">Pre</span>
+        <b className="num">{wu?.[1] ?? '—'}</b>
+        <span>zagrevanje</span>
+      </div>
+      <div className="lane work" style={{ flex: flex[1] }}>
+        <span className="eyebrow">Rad</span>
+        <b className="num">{workMain}</b>
+        {workPace ? <span className="num">{workPace}</span> : null}
+        {rest ? <span>odmor {rest[1]}</span> : null}
+      </div>
+      <div className="lane" style={{ flex: flex[2] }}>
+        <span className="eyebrow">Posle</span>
+        <b className="num">{cd?.[1] ?? '—'}</b>
+        <span>hlađenje</span>
+      </div>
+    </div>
+  );
+}
+
+/** Struktura sesije: zagrevanje / rad / hlađenje srazmerno trajanju, pa profil (visina = brzina) i tabela koraka kad je sesija razlomljena. */
+export function WorkoutStructure({ view }: { view: SessionView }) {
+  const work = find(view, 'Radni deo');
+  const seg = view.segments;
+  if (!work && !seg && !view.rows) return null;
   return (
     <Section title="Struktura" extra={view.rows ? `${view.rows.length} koraka` : undefined}>
-      {work ? (
-        <div className="lanes" role="group" aria-label="Struktura treninga">
-          <div className="lane" style={{ flex: flex[0] }}>
-            <span className="eyebrow">Pre</span>
-            <b className="num">{wu?.[1] ?? '—'}</b>
-            <span>zagrevanje</span>
-          </div>
-          <div className="lane work" style={{ flex: flex[1] }}>
-            <span className="eyebrow">Rad</span>
-            <b className="num">{workMain}</b>
-            {workPace ? <span className="num">{workPace}</span> : null}
-            {rest ? <span>odmor {rest[1]}</span> : null}
-          </div>
-          <div className="lane" style={{ flex: flex[2] }}>
-            <span className="eyebrow">Posle</span>
-            <b className="num">{cd?.[1] ?? '—'}</b>
-            <span>hlađenje</span>
-          </div>
-        </div>
-      ) : null}
+      <WorkoutLanes view={view} />
       {seg ? (
         <SessionProfile
           segments={seg}

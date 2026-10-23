@@ -140,7 +140,7 @@ export function DataBody() {
       <Help summary="Šta server pamti, a šta ne">
         <p>
           Pre svake izmene sačuva se prethodno stanje — najviše 40 verzija i najviše jedna na sat,
-          što u praksi pokriva nedeljama unazad.
+          što u praksi pokriva više nedelja unazad.
         </p>
         <p>
           <b>Brisanje naloga briše i istoriju.</b> Obrisano je obrisano; tu backup fajl ostaje

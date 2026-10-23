@@ -16,6 +16,7 @@ export default function ProgressPage() {
   const log = useTrainingStore((s) => s.log);
   const alts = useTrainingStore((s) => s.alts);
   const openScreen = useUIStore((s) => s.openScreen);
+  const setTab = useUIStore((s) => s.setTab);
   const cycle = useCycleModel();
   const form = useFormModel();
   const rec = useRecoveryModel();
@@ -56,6 +57,13 @@ export default function ProgressPage() {
     });
   if (m && m.sum.runsTotal > 0)
     records.push({ label: 'Trčanja po planu', value: `${m.sum.runsDone} od ${m.sum.runsTotal}` });
+
+  /* Početak plana: još nijedan kilometar i nijedna aktivnost. Niz nula (0 km, prazan grafikon) ne govori ništa; glavni broj je tada procena za trku
+     prema cilju — ona postoji od prvog dana — a kilometri i grafikon dolaze posle prvog unosa. */
+  const fresh = total === 0 && !last;
+  const predSec = m ? (m.estSec ?? m.baseSec) : null;
+  const goalSec = m && !m.personal ? (m.refs.goalSec ?? null) : null;
+  const gapSec = predSec != null && goalSec != null ? predSec - goalSec : null;
 
   const painNow = rec?.active.length ?? 0;
   const rows = (
@@ -101,11 +109,13 @@ export default function ProgressPage() {
     <>
       <AppBar
         right={
-          weeks.length > 1
-            ? `Poslednje ${weeks.length} nedelje`
-            : weeks.length
-              ? 'Ova nedelja'
-              : undefined
+          fresh
+            ? undefined
+            : weeks.length > 1
+              ? `Poslednje ${weeks.length} nedelje`
+              : weeks.length
+                ? 'Ova nedelja'
+                : undefined
         }
         tag
       />
@@ -118,7 +128,33 @@ export default function ProgressPage() {
         ) : null}
       </header>
 
-      {weeks.length ? (
+      {fresh && m && predSec != null ? (
+        <section className="prog-start" aria-labelledby="prog-start-h">
+          <h2 id="prog-start-h" className="eyebrow">
+            Procena za {m.refs.raceName} danas
+          </h2>
+          <div className="hero">
+            <span className="hero-v num">{fmtClock(predSec)}</span>
+          </div>
+          {gapSec != null ? (
+            <p className="prog-gap">
+              {gapSec > 0 ? (
+                <>
+                  <b className="num">{fmtClock(gapSec)}</b> do cilja · cilj {m.goalText}
+                </>
+              ) : (
+                <>
+                  <b>Procena je već na cilju</b> · cilj {m.goalText}
+                </>
+              )}
+            </p>
+          ) : null}
+          <p className="weekkm-l">
+            {m.cv != null ? 'Potvrđen' : 'Polazni'} VDOT {fmtNum(m.formVdot, 1)} · procena se menja
+            posle treninga i testa na 3 km.
+          </p>
+        </section>
+      ) : weeks.length ? (
         <section className="prog-km" aria-labelledby="prog-km-h">
           <h2 id="prog-km-h" className="sr-only">
             Kilometri po nedeljama
@@ -155,7 +191,7 @@ export default function ProgressPage() {
         </div>
       )}
 
-      {m ? (
+      {m && !fresh ? (
         <button type="button" className="duo" onClick={() => openScreen({ kind: 'forma' })}>
           <span className="duo-c">
             <span className="duo-l">{m.cv != null ? 'Potvrđen VDOT' : 'Polazni VDOT'}</span>
@@ -205,10 +241,14 @@ export default function ProgressPage() {
           </button>
         </Section>
       ) : (
-        <Section title="Aktivnosti">
+        <Section title="Prvi trening">
           <p className="empty">
-            Još nema odrađenih treninga. Kad završiš prvi ili povežeš Stravu, pojaviće se ovde.
+            Još nema odrađenih treninga. Kilometri, grafikon i rekordi pojavljuju se ovde kad
+            završiš prvi trening ili povežeš Stravu.
           </p>
+          <button type="button" className="btn ghost block" onClick={() => setTab('danas')}>
+            Otvori današnji trening
+          </button>
         </Section>
       )}
 

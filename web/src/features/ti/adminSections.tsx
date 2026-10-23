@@ -135,7 +135,7 @@ export function BroadcastBody() {
           disabled={busy !== null}
           onClick={() => void trial()}
         >
-          {busy === 'test' ? label : 'Proba na mene'}
+          {busy === 'test' ? label : 'Probni mejl meni'}
         </button>
       </div>
       <div className="btnrow">
@@ -154,7 +154,7 @@ export function BroadcastBody() {
         {list ? (
           <>
             <div className="note-src">
-              {addresses(list.length)} · nalepi ih u <b>BCC</b>, ne u „Za", da niko ne vidi tuđe.
+              {addresses(list.length)} · nalepi ih u <b>BCC</b>, ne u „Za“, da niko ne vidi tuđe.
             </div>
             <textarea
               id="bc-txt"
@@ -191,7 +191,7 @@ export function BroadcastBody() {
           mejlom — poslat mejl se ne može ispraviti, a stranica može.
         </p>
         <p>
-          Svaki mejl ide <b>posebno</b>, da niko ne vidi tuđe adrese. „Pošalji svima" prvo prebroji
+          Svaki mejl ide <b>posebno</b>, da niko ne vidi tuđe adrese. „Pošalji svima“ prvo prebroji
           primaoce i pita za potvrdu.
         </p>
       </Help>

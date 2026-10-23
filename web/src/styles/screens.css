@@ -111,37 +111,6 @@
   font-size: var(--fs-small);
   color: var(--text-2);
 }
-.daystrip {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  margin: var(--s-5) 0 var(--s-4);
-  text-align: center;
-}
-.ds {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-2);
-}
-.ds-l {
-  font-size: var(--fs-small);
-  color: var(--text-2);
-  font-weight: 500;
-}
-.ds-n {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: var(--fs-lead);
-}
-.ds.now .ds-n {
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-weight: var(--w-strong);
-}
 .weekkm {
   margin: var(--s-4) 0 var(--s-5);
 }
@@ -149,6 +118,11 @@
   margin-top: var(--s-1);
   font-size: var(--fs-small);
   color: var(--text-2);
+}
+.weekkm-v {
+  font-size: var(--fs-h3);
+  font-weight: var(--w-strong);
+  color: var(--text);
 }
 .rows > .plan-row {
   display: grid;
@@ -1151,4 +1125,29 @@
   padding: var(--s-6) 0;
   color: var(--text-3);
   font-size: var(--fs-small);
+}
+
+/* Struktura na Danas: iste tri trake kao u Detaljima, niže i bez naslova. */
+.lanes.compact {
+  margin: var(--s-4) 0 0;
+}
+.lanes.compact .lane {
+  padding: var(--s-2) var(--s-3);
+}
+
+/* Napredak na početku plana: procena za trku prema cilju umesto niza nula. */
+.prog-start {
+  padding: var(--s-4) 0 var(--s-5);
+}
+.prog-start .hero {
+  margin-top: var(--s-1);
+}
+.prog-gap {
+  margin-top: var(--s-2);
+  font-size: var(--fs-lead);
+  color: var(--text-2);
+}
+.prog-gap b {
+  color: var(--text);
+  font-weight: var(--w-strong);
 }

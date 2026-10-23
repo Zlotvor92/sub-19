@@ -2,6 +2,7 @@ import { fmtClock, fmtKm } from '../../domain/format';
 import type { LogEntry } from '../../domain/state';
 import { Icon } from '../../components/ui/icons';
 import type { SessionView } from '../session/sessionModel';
+import { averagePace, WorkoutLanes } from '../session/WorkoutParts';
 import type { DayStatus } from './DayCard';
 
 const minutesText = (m: number): string =>
@@ -19,19 +20,26 @@ export function entrySummary(entry: LogEntry | undefined): string {
   return parts.join(' · ');
 }
 
-/** Jedna rečenica o tempu ili naporu, ono što postoji: „5:42 /km · oko 45 min“. */
-export function effortLine(view: SessionView): string {
+/** Jedna rečenica o tempu ili naporu, ono što postoji: „5:42 /km · oko 45 min“. Tempo radnog dela se ne prikazuje kao tempo celog treninga: piše „rad …“,
+ *  a izostaje kad ga red sa strukturom (`shownCore`) već nosi. */
+export function effortLine(view: SessionView, shownCore = ''): string {
   const parts: string[] = [];
-  if (view.paceSec != null)
-    parts.push(`${fmtClock(view.paceSec)} /km${view.paceOwn ? ' · tvoj cilj' : ''}`);
-  else if (view.rpe) parts.push(`napor ${view.rpe.min}–${view.rpe.max} od 10`);
+  if (view.paceSec != null) {
+    const pace = fmtClock(view.paceSec);
+    if (!view.workPace) parts.push(`${pace} /km${view.paceOwn ? ' · tvoj cilj' : ''}`);
+    else if (!shownCore.includes(pace)) parts.push(`rad ${pace} /km`);
+  }
+  if (view.paceSec == null && view.rpe) parts.push(`napor ${view.rpe.min}–${view.rpe.max} od 10`);
   if (view.minutes != null) parts.push(`oko ${minutesText(view.minutes)}`);
+  const avg = averagePace(view);
+  if (avg != null) parts.push(`prosek ≈ ${fmtClock(avg)} /km`);
   return parts.join(' · ');
 }
 
 /**
- * TRENING DANAS: jedan veliki broj (kilometri, a bez njih minuti), vrsta treninga, tempo ili napor, i JEDNO glavno dugme za detalje. Završetak i
- * preskakanje su tihe radnje ispod — česte su, ali nisu glavna odluka ekrana. Sve ostalo (struktura, „zašto“, vreme, analiza) je u Detaljima.
+ * TRENING DANAS: jedan veliki broj (kilometri, a bez njih minuti), vrsta treninga, tempo ili napor, struktura (zagrevanje / rad / hlađenje) dok trening
+ * predstoji, i JEDNO glavno dugme za detalje. Završetak i preskakanje su tihe radnje ispod — česte su, ali nisu glavna odluka ekrana. Ostalo („zašto“,
+ * vreme, analiza) je u Detaljima.
  */
 export function TodayHero({
   view,
@@ -50,7 +58,8 @@ export function TodayHero({
 }) {
   const summary = status === 'done' ? entrySummary(entry) : '';
   const hasNumber = view.km != null || view.minutes != null;
-  const effort = effortLine(view);
+  const showCore = !!(view.rows && view.core && view.core !== view.title);
+  const effort = effortLine(view, showCore ? view.core : '');
   return (
     <section className="today" id="tcard" data-status={status} aria-labelledby="focus-title">
       {hasNumber ? (
@@ -71,10 +80,9 @@ export function TodayHero({
           </span>
         ) : null}
       </h2>
-      {view.rows && view.core && view.core !== view.title ? (
-        <p className="today-core">{view.core}</p>
-      ) : null}
+      {showCore ? <p className="today-core">{view.core}</p> : null}
       {effort ? <p className="today-sub">{effort}</p> : null}
+      {status === 'pending' ? <WorkoutLanes view={view} compact /> : null}
       {weather && status === 'pending' ? <p className="today-sub">{weather}</p> : null}
 
       {status === 'done' ? (
@@ -95,7 +103,7 @@ export function TodayHero({
 
       <button type="button" className="btn block today-cta" onClick={onDetails}>
         Detalji treninga
-        <Icon name="arrow-up-right" size={20} />
+        <Icon name="chevron" size={20} />
       </button>
 
       {status === 'pending' ? (

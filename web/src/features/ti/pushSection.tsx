@@ -154,8 +154,8 @@ export function PushBody({ status, reload }: { status: PushStatus | null; reload
       </div>
       <Help summary="Šta se šalje i odakle">
         <p>
-          Server zna samo <b>datum i jedan red teksta</b> („8×400 m · 12 km") koji mu aplikacija
-          sama upiše za narednih nedelju dana. Plan, tempo, puls i istorija ostaju na uređaju.
+          Server zna samo <b>datum i jedan red teksta</b> („8×400 m · 12 km“) koji mu aplikacija
+          sama upiše za narednu nedelju. Plan, tempo, puls i istorija ostaju na uređaju.
         </p>
         <p>
           Sadržaj obaveštenja se šifruje ključem koji postoji samo na tvom telefonu — ni Google ni

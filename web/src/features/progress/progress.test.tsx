@@ -142,15 +142,15 @@ describe('Napredak (ekran)', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('pre početka plana: kaže da nema nedelja, a ulazi u detalje postoje', () => {
+  it('pre početka plana: umesto niza nula glavni broj je procena za trku, a ulazi u detalje postoje', () => {
     useUIStore.setState({ today: '2025-12-20' });
-    render(<ProgressPage />);
-    expect(screen.getByText('Još nema nedelja za prikaz')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Još nema odrađenih treninga. Kad završiš prvi ili povežeš Stravu, pojaviće se ovde.'
-      )
-    ).toBeInTheDocument();
+    const { container } = render(<ProgressPage />);
+    expect(screen.queryByText('Još nema nedelja za prikaz')).not.toBeInTheDocument();
+    expect(container.querySelector('.prog-km')).toBeNull();
+    expect(screen.getByRole('heading', { name: /^Procena za .+ danas$/ })).toBeInTheDocument();
+    expect(container.querySelector('.prog-start .hero-v')?.textContent).toMatch(/^\d+:\d{2}/);
+    expect(screen.getByRole('heading', { name: 'Prvi trening' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Otvori današnji trening' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Forma i predikcija/ })).toBeInTheDocument();
   });
 

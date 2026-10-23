@@ -618,7 +618,7 @@ function FiveKV2Toggle() {
       </label>
       <p className="note-src">
         Važi samo za novi 5K plan iz čarobnjaka. Postojeći plan se ne menja. Plan v2 se prilagođava
-        kroz Plan → Prilagodi plan (pregled pa potvrda).
+        kroz Plan → Prilagodi plan (pregled, pa potvrda).
         {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
       </p>
     </>

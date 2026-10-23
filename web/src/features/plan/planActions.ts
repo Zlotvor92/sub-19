@@ -296,7 +296,7 @@ export function startNewPlan(): void {
 /** Vlasnik se vraća na svoj ugrađeni plan: generisan plan se trajno briše. */
 export function backToOwnPlan(): void {
   void confirmAction(
-    'Vratiti se na tvoj originalni plan? Generisan plan se TRAJNO briše (napredak/unosi uz njega takođe) — nema arhive.\n\nTvoj plan i njegova istorija se vraćaju netaknuti.'
+    'Vratiti se na tvoj originalni plan? Generisani plan se TRAJNO briše (napredak/unosi uz njega takođe) — nema arhive.\n\nTvoj plan i njegova istorija se vraćaju netaknuti.'
   ).then((ok) => {
     if (ok) discardPlan();
   });

@@ -196,7 +196,7 @@ export function previewRecalibration(plan: ResolvedPlan, today: string): Recalib
   if (form == null || distinctDays < minMeasurements)
     return {
       ok: false,
-      reason: `Za preračunavanje treba bar ${minMeasurements} različita dana prihvatljivih merenja u poslednje 42 dana (sada ${distinctDays}, ${measurements} merenja). Kratke repeticije, neodrađeni i stari treninzi ne potvrđuju novu formu.`
+      reason: `Za preračunavanje treba bar ${minMeasurements} različita dana prihvatljivih merenja u poslednja 42 dana (sada ${distinctDays}, ${measurements} merenja). Kratke repeticije, neodrađeni i stari treninzi ne potvrđuju novu formu.`
     };
   const planVdot = generator.planVdotNow({
     today,

@@ -1,4 +1,5 @@
 import { StatusBadge } from '../../components/ui/Badge';
+import { pl3 } from '../../domain/format';
 import { toBadge } from './cards';
 import type { Readiness } from '../../domain/generators/select';
 
@@ -10,7 +11,9 @@ export function ReadinessCard({ model }: { model: Readiness }) {
     <section className={`ready ${tone}`} aria-labelledby="rd-h">
       <div className="section-h">
         <h2 id="rd-h">Stanje danas</h2>
-        <span>{model.signals.length} signala</span>
+        <span>
+          {model.signals.length} {pl3(model.signals.length, 'signal', 'signala', 'signala')}
+        </span>
       </div>
       <p className={`rd-a ${tone}`}>{model.word}</p>
       <p className="vd-line">{model.why}</p>

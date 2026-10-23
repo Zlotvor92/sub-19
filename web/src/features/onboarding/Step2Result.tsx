@@ -21,8 +21,8 @@ export function Step2Result({
       <div className="ob-eyebrow">Korak 2 od 4</div>
       <h1 className="ob-h1">Šta si poslednje istrčao?</h1>
       <div className="ob-sub">
-        Bilo koja skorija trka na poznatoj distanci. Iz ovog jednog rezultata računa se svaki ciljni
-        tempo u planu.
+        Bilo koja skorija trka na jednoj od ovih distanci. Iz ovog jednog rezultata računa se svaki
+        ciljni tempo u planu.
       </div>
       <div className="ob-card">
         <div className="ob-ct">Distanca</div>

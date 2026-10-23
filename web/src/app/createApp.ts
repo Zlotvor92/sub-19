@@ -599,7 +599,7 @@ export function createApp(deps: AppDeps): App {
         return {
           ok: false,
           error:
-            'Ta verzija je iz novije šeme nego što je ova aplikacija. Ažuriraj aplikaciju pa probaj ponovo.'
+            'Ta verzija je sačuvana novijom verzijom aplikacije. Ažuriraj aplikaciju pa probaj ponovo.'
         };
       /* ISTI put kao „Uzmi sa servera": veze sa Stravom i intervals.icu-om i koordinate ostaju (na serveru su bez tokena). */
       const before = collectPersisted();

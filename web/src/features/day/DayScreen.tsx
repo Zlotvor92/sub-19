@@ -26,8 +26,8 @@ const STATUSES: ReadonlyArray<readonly [Status, string]> = [
   ['skip', 'Preskočen']
 ];
 
-/* DETALJI TRENINGA: jedan ekran za sve što se o jednom danu zna i može. Redosled prati odluku: šta je i koliko (ciljevi), stanje, PRILAGODI TRENING
-   (pomeri, zameni/skrati, vrati) dok trening još predstoji, struktura i „zašto“, unos i analiza posle trčanja. Otvara se sa Danas, iz Plana, iz liste
+/* DETALJI TRENINGA: jedan ekran za sve što se o jednom danu zna i može. Redosled prati trčanje: kako izgleda trening (struktura), ciljevi (tempo rada,
+   prosek, trajanje, napor), stanje, PRILAGODI TRENING (pomeri, zameni/skrati, vrati) dok trening još predstoji, „zašto“, unos i analiza posle trčanja. Otvara se sa Danas, iz Plana, iz liste
    aktivnosti i iz obaveštenja (`?dan=`) — uvek ista, jedna verzija. Dan odmora nema unos ni status, samo prilagođavanje. */
 export function DayScreen({ id }: { id: string }) {
   const plan = useResolvedPlan();
@@ -117,6 +117,7 @@ export function DayScreen({ id }: { id: string }) {
 
       {rest ? null : (
         <>
+          <WorkoutStructure view={view} />
           <WorkoutFacts view={view} />
           <Section title="Status">
             <div className="seg" role="group" aria-label="Status treninga">
@@ -141,7 +142,6 @@ export function DayScreen({ id }: { id: string }) {
 
       {pending ? adjust : null}
       {rest ? null : <WeatherSection day={day} today={today} />}
-      {rest ? null : <WorkoutStructure view={view} />}
       {rest ? null : <WorkoutWhy view={view} phase={phase} weekFocus={weekFocus} />}
       {rest ? null : (
         <Section

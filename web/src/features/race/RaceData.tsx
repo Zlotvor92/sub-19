@@ -3,7 +3,7 @@ import { getApp } from '../../app/appContext';
 import type { ResolvedDay } from '../../domain/plan';
 import { defaultRaceContext, type RaceContext } from '../../domain/race/analysis';
 import { useTrainingStore } from '../../stores';
-import { fmtClock } from '../../domain/format';
+import { fmtClock, pl3 } from '../../domain/format';
 const obj = (v: unknown): Record<string, unknown> =>
   v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 const value = (v: unknown): string =>
@@ -48,7 +48,7 @@ export function RaceData({ day, context }: { day: ResolvedDay; context?: RaceCon
         <details>
           <summary>
             Prolazi po kilometru · {data['source'] === 'icu' ? 'intervals.icu' : 'Strava'} ·{' '}
-            {rows.length} deonica
+            {rows.length} {pl3(rows.length, 'deonica', 'deonice', 'deonica')}
           </summary>
           <div style={{ overflowX: 'auto' }}>
             <table>
@@ -90,7 +90,7 @@ export function RaceData({ day, context }: { day: ResolvedDay; context?: RaceCon
         </details>
       ) : (
         <p className="muted">
-          Povuci prolaze sa Strave i intervals.icu pre analize. Ručni unos bez povezanog servisa
+          Povuci prolaze sa Strave ili intervals.icu pre analize. Ručni unos bez povezanog servisa
           sadrži samo prosek.
         </p>
       )}

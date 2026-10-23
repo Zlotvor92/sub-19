@@ -7,7 +7,6 @@ import { AppBar } from '../../components/ui/Shell';
 import { Icon } from '../../components/ui/icons';
 import { Disclosure } from '../../components/ui/Disclosure';
 import { Notice, Row } from '../../components/ui/primitives';
-import { dayOfMonth, dowInitial } from '../../lib/dates';
 import { useActiveGenPlan, useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores';
 import { useFiveKV2Needed } from '../../stores/fiveKV2Actions';
 import { useHmV2Needed } from '../../stores/hmV2Actions';
@@ -26,7 +25,8 @@ const byDate = (a: { date: string }, b: { date: string }): number => {
   return da < db ? -1 : da > db ? 1 : 0;
 };
 
-/* EKRAN PLAN: jedna nedelja odjednom (tekuća, a ‹ › pomeraju na ostale), sa stanjem svakog dana — završeno, danas, predstoji, odmor. Ispod su
+/* EKRAN PLAN: jedna nedelja odjednom (tekuća, a ‹ › pomeraju na ostale), sa stanjem svakog dana — završeno, danas, predstoji, odmor. Nedelja se prikazuje
+   jednom (lista dana, bez trake datuma), faza jednom (rečenica ispod naslova nedelje), a kilometri nedelje kao red, ne kao veliki broj. Ispod su
    dve radnje: cela priprema (faze, nedelje, kilometri) i prilagođavanje plana. Sve ostalo što je Plan ranije nosio je u „Pregledu celog plana“. */
 export default function PlanPage() {
   const plan = useResolvedPlan();
@@ -78,14 +78,13 @@ export default function PlanPage() {
   const realKm = weekRealKm(week, log);
   const race = weekRace(week);
   const days = week.days.slice().sort(byDate);
-  const stripDays = Array.from({ length: 7 }, (_, i) => addDays(week.start, i));
   const refs = gen ? raceRefs(gen.meta) : null;
   const daysToRace = view.race ? diffDays(today, view.race) : null;
   const rangeText = `${fmtDayMonth(week.start)} – ${fmtDayMonth(addDays(week.start, 6))}`;
 
   return (
     <>
-      <AppBar right={phase} tag />
+      <AppBar />
       <header className="screen-head">
         <h1>Tvoj plan</h1>
         {view.race ? (
@@ -140,21 +139,9 @@ export default function PlanPage() {
         </p>
       ) : null}
 
-      <div className="daystrip" aria-hidden="true">
-        {stripDays.map((d) => (
-          <span key={d} className={`ds${d === todayStr ? ' now' : ''}`}>
-            <span className="ds-l">{dowInitial(d)}</span>
-            <span className="ds-n num">{dayOfMonth(d)}</span>
-          </span>
-        ))}
-      </div>
-
       <div className="weekkm">
-        <div className="hero">
-          <span className="hero-v num">{fmtKm(planKm)}</span>
-          <span className="hero-u">km</span>
-        </div>
         <p className="weekkm-l">
+          <b className="num weekkm-v">{fmtKm(planKm)} km</b>{' '}
           {isNow
             ? `planirano ove nedelje · ostvareno ${fmtKm(realKm)} km`
             : started
