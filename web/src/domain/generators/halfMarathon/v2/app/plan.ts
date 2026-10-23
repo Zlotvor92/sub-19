@@ -14,6 +14,7 @@ import { checkInput } from '../input.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import type { GoalAssessment, HmV2Plan, Paces, Phase, PlanDay } from '../types.ts';
+import { userText } from '../userText.ts';
 import { userWeekNotes } from '../volume.ts';
 import { addDays, diffDays } from './date.ts';
 import { workoutStructure } from './structure.ts';
@@ -36,7 +37,7 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `hm-v2`; plan bez oznake je HM v1 (`legacy-hm`). */
 export const LEGACY_POLICY_ID = 'legacy-hm';
 /** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
- *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`; od HM-07b `hm-v2.4.1`; od 3f `hm-v2.5.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`; od HM-08 `hm-v2.6.0`; od HM-08b `hm-v2.6.1`; od 3i `hm-v2.6.2` — ulaz `weekOffset`) i tekuća. Sačuvan stariji plan ostaje plan
+ *  biti sačuvane posle HM-05 (aplikacija je od HM-05 do HM-06 pisala samo `hm-v2.3.0`; od HM-07 `hm-v2.4.0`; od HM-07b `hm-v2.4.1`; od 3f `hm-v2.5.0` — plan sa nedeljama izvora predaje, `PREFIX_KEY`; od HM-08 `hm-v2.6.0`; od HM-08b `hm-v2.6.1`; od 3i `hm-v2.6.2` — ulaz `weekOffset`; od HM-09 `hm-v2.7.0`) i tekuća. Sačuvan stariji plan ostaje plan
  *  HM v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown"
  *  (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [
@@ -47,6 +48,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
     'hm-v2.5.0',
     'hm-v2.6.0',
     'hm-v2.6.1',
+    'hm-v2.6.2',
     P.version
   ])
 ];
@@ -168,13 +170,15 @@ function weeksOf(plan: HmV2Plan): GeneratedWeek[] {
 
 export function goalOf(plan: HmV2Plan): GoalAssessmentView | undefined {
   const g = plan.goal;
-  return g ? { status: g.status, label: GOAL_LABEL[g.status], message: g.message } : undefined;
+  return g
+    ? { status: g.status, label: GOAL_LABEL[g.status], message: userText(g.message) }
+    : undefined;
 }
 
 /** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja). */
 function planWarnings(plan: HmV2Plan): string[] {
   const out: string[] = [];
-  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)])
+  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)].map(userText))
     if (t && !out.includes(t)) out.push(t);
   return out;
 }

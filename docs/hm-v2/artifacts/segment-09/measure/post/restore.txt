@@ -1,0 +1,4 @@
+{"controlRejected":0,"flows":3168,"refused":3168,"restored":0,"invalid":0,"nextRejected":0}
+greške validatora na vraćenom planu (broj tokova po pravilu): {}
+sledeća adaptacija odbijena (pravilo/kod → broj): {}
+sledeća adaptacija odbijena po (snimak/scenario): {}

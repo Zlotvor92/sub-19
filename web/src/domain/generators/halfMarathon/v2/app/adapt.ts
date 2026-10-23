@@ -11,6 +11,8 @@
 
 import { adaptBanner, adaptHmV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
+import { userText } from '../userText.ts';
+import { validatePlan } from '../validate.ts';
 import { shorterOffer } from '../shorter.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, HmV2Plan } from '../types.ts';
@@ -53,7 +55,7 @@ function adaptRejection(r: Extract<AdaptResult, { ok: false }>): PlanRejectionRe
       .filter((v) => v.severity === 'error')
       .map((v) => ({
         code: v.rule,
-        message: v.message,
+        message: userText(v.message),
         ...(v.week != null ? { week: v.week } : {})
       }))
   ];
@@ -160,12 +162,12 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     ok: true,
     result,
     summary,
-    reasons: r.reasons,
+    reasons: r.reasons.map((x) => ({ ...x, message: userText(x.message) })),
     weeks,
     notes,
     coverage: built.coverage,
     // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
-    needed: adaptBanner(v2, r, built.facts, src.today),
+    needed: adaptBanner(v2, r, built.facts, src.today).map(userText),
     ...(shorterOffer(after, src.today) ? { shorterOffer: true as const } : {})
   };
 }
@@ -211,6 +213,12 @@ export function restoreMerge<T extends AppPlan>(
   if (!cur || !snap) return refuse('Sačuvana verzija nema plan HM v2, pa se ne može vratiti.');
   if (cur.weeks.length !== snap.weeks.length)
     return refuse('Sačuvana verzija ima drugi broj nedelja; vraćanje bi menjalo prošle nedelje.');
+  // HM-09 (Z4): posle sačuvane verzije plan je prilagođen — stara budućnost uz novu prošlost nije plan jezgra
+  // (krši pravila i obara sledeće prilagođavanje). Vraćanje samo kad posle snimka nema prilagođavanja.
+  if (!same(cur.adaptation?.steps ?? [], snap.adaptation?.steps ?? []))
+    return refuse(
+      `Posle ove verzije plan je prilagođen${cur.adaptation ? ` (${cur.adaptation.asOf})` : ''}; vraćanje bi spojilo staru verziju sa novijom prošlošću. Može se vratiti samo verzija sačuvana posle poslednjeg prilagođavanja.`
+    );
   // Zaštićeni datumi (po planu): do danas, urađeni dani i dani sa ručnom izmenom ili pomeranjem.
   const protectedIds = new Set<string>([
     ...Object.entries(ctx.log ?? {})
@@ -259,6 +267,9 @@ export function restoreMerge<T extends AppPlan>(
         }
       : {})
   };
+  // Završna provera (samo prijava): spojen plan koji jezgro ne prihvata se ne vraća.
+  if (validatePlan(merged).some((v) => v.severity === 'error'))
+    return refuse('Spojena verzija ne zadovoljava pravila plana, pa se ne vraća.');
   const out = stored(merged, metaOf(current)[EDITS_KEY], prefixOf(current));
   const prev = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   let changedDays = 0;

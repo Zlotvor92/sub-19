@@ -29,6 +29,70 @@ import type {
 } from './types.ts';
 import { weekLabel } from './weekLabel.ts';
 
+/**
+ * HM-09 (pouka 28 × pouka 37): najduži trčan po ČINJENICAMA prošlih nedelja (cele ≤ asOf) čiji je svaki dan poznat
+ * (potpuna pokrivenost ili prijavljena pauza) — najveći km urađenog zapisa u nedelji, 0 bez zapisa; samo gde je
+ * kraći od upisanog dugog (planirani dugi koji nije istrčan ne ulazi u L skoka). Korak ih nosi (step.ranLongKm;
+ * nedelja koja sadrži asOf, poznata od početka do asOf: step.ranPart — sledeći korak je dopunjuje);
+ * važe za nedelje od firstWeek koraka (steps.ranLongFor → lengths.longsOf10, konstruktor i validator).
+ */
+function ranLongOf(
+  plan: HmV2Plan,
+  facts: CheckedFacts,
+  t: number
+): { ran: Record<string, number>; part: { week: number; km: number } | null } {
+  const out: Record<string, number> = {};
+  let part: { week: number; km: number } | null = null;
+  const cov = facts.coverage;
+  // Nedelja koja sadrži asOf prethodnog koraka: dani do njegovog asOf poznati (step.ranPart) — nedelja poznata
+  // delom u jednom, delom u sledećem koraku.
+  const prev = plan.adaptation?.steps.at(-1);
+  const pp = prev?.ranPart;
+  const pAt = prev ? mustDay(prev.asOf) : -1;
+  const known = (x: number, w: number): boolean =>
+    (!!cov?.complete && mustDay(cov.from) <= x && x <= mustDay(cov.to)) ||
+    facts.breaks.some((b) => mustDay(b.from) <= x && x <= mustDay(b.to)) ||
+    (pp?.week === w && x <= pAt);
+  for (const w of plan.weeks) {
+    const [s, e] = [mustDay(w.startDate), mustDay(w.endDate)];
+    if (s > t) continue;
+    const end = Math.min(e, t);
+    let all = true;
+    for (let x = s; x <= end && all; x++) all = known(x, w.index);
+    if (!all) continue;
+    const ran = Math.max(
+      pp?.week === w.index ? pp.km : 0,
+      ...facts.workouts
+        .filter(
+          (r) => r.completed && s <= mustDay(r.dayId ?? r.date) && mustDay(r.dayId ?? r.date) <= end
+        )
+        .map((r) => r.km)
+    );
+    if (e > t) {
+      part = { week: w.index, km: ran };
+      continue;
+    }
+    const long = w.days.find((d) => d.role === 'long');
+    if (long && Math.round(ran * 10) < Math.round(long.workout.km * 10)) out[String(w.index)] = ran;
+  }
+  return { ran: out, part };
+}
+
+/** A1 (HM-09 Z3, pouka 24) — JEDNA odluka „rezultat se primenjuje": 'stale' stariji od 84 dana, 'older' nije noviji
+    od rezultata u upotrebi (`prevDate`), 'vdot' VDOT van 30–80, 'ok' primenjuje se (najnoviji od 'ok' bira assess).
+    Čitaju je assess i Forma (app/form.ts). */
+export function resultUse(
+  x: { date: string; distM: number; sec: number },
+  prevDate: string | null | undefined,
+  asOf: string
+): 'stale' | 'older' | 'vdot' | 'ok' {
+  const q = P.input;
+  if (mustDay(asOf) - mustDay(x.date) > q.resultMaxAgeDays) return 'stale';
+  if (prevDate != null && mustDay(x.date) <= mustDay(prevDate)) return 'older';
+  const v = round1(vdotFromResult(x.distM, x.sec));
+  return v < q.vdotMin || v > q.vdotMax ? 'vdot' : 'ok';
+}
+
 const A = P.adapt;
 const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
 const fmt = (sec: number): string =>
@@ -296,7 +360,8 @@ export function assess(
   const label = (x: ResultFact): string =>
     `${x.kind === 'test' ? 'Test' : 'Trka'} ${x.distM === 21097.5 ? 'polumaraton' : x.distM === 42195 ? 'maraton' : `${x.distM / 1000} km`} ${fmt(x.sec)} (${x.date})`;
   const q = P.input;
-  const fresh = facts.results.filter((x) => t - day(x.date) <= q.resultMaxAgeDays);
+  const applies = (x: ResultFact) => resultUse(x, prevResult, asOf);
+  const fresh = facts.results.filter((x) => applies(x) !== 'stale');
   for (const x of facts.results)
     if (!fresh.includes(x))
       reason(
@@ -305,7 +370,7 @@ export function assess(
         `${label(x)}: stariji od ${q.resultMaxAgeDays} dana — ne menja tempo (A1).`
       );
   const newer = fresh
-    .filter((x) => prevResult === undefined || day(x.date) > day(prevResult))
+    .filter((x) => applies(x) !== 'older')
     .sort((a, b) => day(b.date) - day(a.date) || vdotOf(b) - vdotOf(a));
   for (const x of fresh)
     if (!newer.includes(x))
@@ -313,7 +378,7 @@ export function assess(
   let res: ResultFact | null = null;
   for (const x of newer) {
     const v = vdotOf(x);
-    if (v < q.vdotMin || v > q.vdotMax)
+    if (applies(x) === 'vdot')
       reason(
         'RESULT_IGNORED',
         false,
@@ -437,18 +502,16 @@ export function assess(
       if (f !== n) step.deloadWeek = f;
       volumeRule = true;
       if (ref) step.preStart = ref;
-      // K3 (HM-08b): upisani plan pre nedelje rasterećenja nema dugi ne-rasteretne izgradnje (npr. ned 1 cela u
-      // odmoru bola) → referenca „poslednji dugi" = poslednja ne-rasteretna izgradnja generatora (kao pouka 34).
-      const noLong = !weeks
-        .slice(0, f - 1)
-        .some((w) => build(w.index) && !w.deload && w.days.some((d) => d.role === 'long'));
-      const gl = !ref && f >= 2 && noLong ? genLongBefore(f) : null;
+      // K3 (HM-08b) / HM-09 B2: referenca „poslednji dugi" = poslednja ne-rasteretna izgradnja generatora (kao
+      // pouka 34) — uvek uz umor od nedelje 2; da li upisani plan ima dugi pre nedelje odlučuje samo
+      // steps.longRef10 (konstruktor i validator, iz upisanih dana NOVOG plana: odmor istog koraka briše dugi).
+      const gl = !ref && f >= 2 ? genLongBefore(f) : null;
       if (gl !== null) step.deloadRefLongKm = gl;
     }
     reason(
       'FATIGUE',
       ok,
-      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${wl(f)} je rasterećenje (A5${f < n ? ', od sutra' : ''})${ref ? `; pre starta: 0,8 × planirana nedelja ${wl(1)} (${km(ref.targetKm)} km), nedelja ${wl(2)} = ${km(ref.targetKm)} km bez rasta (pouka 34)` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : `nedelja ${f} je već rasterećenje, taper ili trka (A5, pouka 36)`}.`
+      `${easyHard.length} lagana treninga sa RPE ≥ ${A.fatigueRpe} u 7 dana: ${ok ? `nedelja ${wl(f)} je rasterećenje (A5${f < n ? ', od sutra' : ''})${ref ? `; pre starta: 0,8 × planirana nedelja ${wl(1)} (${km(ref.targetKm)} km), nedelja ${wl(2)} = ${km(ref.targetKm)} km bez rasta (pouka 34)` : ''}` : volumeRule ? 'nadjačano pauzom (A7)' : `nedelja ${wl(f)} je već rasterećenje, taper ili trka (A5, pouka 36)`}.`
     );
   }
 
@@ -502,5 +565,9 @@ export function assess(
     facts.breaks.length === 0
   )
     reason('NO_FACTS', true, 'Nema činjenica: budući deo plana ostaje isti.');
+  // HM-09: L skoka iz stvarno trčanog (pouka 28 × 37) — važi od firstWeek ovog koraka (steps.ranLongFor).
+  const { ran, part } = ranLongOf(plan, facts, t);
+  if (Object.keys(ran).length > 0) step.ranLongKm = ran;
+  if (part) step.ranPart = part;
   return { step, reasons: out };
 }

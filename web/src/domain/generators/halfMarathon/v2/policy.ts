@@ -467,12 +467,21 @@ const DECISIONS: readonly Decision[] = [
       'weekLabel.ts; input.ts checkInput; types.ts HmV2Input.weekOffset; assess.ts, adapt.ts, generate.ts, validate.ts (poruke); app/handoffTarget.ts targetInput; app/form.ts (Forma, isti offset); app/plan.ts KNOWN_VERSIONS',
     rationale:
       'REVIEW-3 #2 dopuna (review3d.measure.ts, obrazac 10K): na planu cilja razlozi i traka nosili su v2 indeks, a kalendar i pregled offset + indeks. Prepisivanje teksta u app sloju je krhko (odluka organizatora); offset je činjenica plana, ne politika izvora.'
+  },
+  /* ---------- Segment HM-09 (hm-v2.7.0): ispravke posle dubinske provere (audit/fixes/HM.md). ---------- */
+  {
+    id: 'HM-09',
+    rule: 'B1/B2: dugi reference rasterećenja nedelje w = JEDNA funkcija steps.longRef10 (poslednji upisani dugi ne-rasteretne izgradnje iz upisanih dana NOVOG plana; bez njega u rasterećenju referenca koraka za tu nedelju), po nedelji, ne pamti se; assess daje deloadRefLongKm uz svaki umor od nedelje 2 (odluku „ima li upisanog dugog" donosi samo longRef10). B3: dugi tapera ≥ 4 km (lengths.taperLongCap10, kao A18 rasterećenja) uz upozorenje TAPER_LONG_MIN. Pouka 28 × 37: L skoka iz stvarno trčanog — prošla nedelja cela poznata (pokrivenost/pauza) daje najduži trčan (step.ranLongKm, važi od firstWeek koraka — steps.ranLongFor; bez trčanja = bez dugog), nikad iznad upisanog (lengths.longsOf10). Pouka 35 u taperu: dva dana kvaliteta, a neki duži od dugog → drugi lagan, nedelja kao „samo RP" (week.taperSecondEasy). Napomena tapera „ne sme biti duži" samo kad dan nije duži; inače „najmanja doza; i dalje duži". Z1: kvalitet ostaje u mešovitoj nedelji kad je jedini uzrok viška upisani višak i planirano ≤ 1,10 × cilj (week.mixedQualityStays, MIXED_WEEK_OVER). Z2: tekst za korisnika kroz userText (bez internih oznaka, decimalni zarez, km ≤ 1 decimala, bez „.."); plan i validator nose oznake. Z3: Forma čita assess.resultUse. Z4: vraćanje verzije samo kad posle nje nema prilagođavanja; spojen plan koji validator odbija se ne vraća. Z5b: početnik izvora iznad opsega početnika cilja → plan bez oznake početnika.',
+    place:
+      'steps.ts longRef10; assess.ts (A5, resultUse); generate.ts; validate.ts (DELOAD_*, TAPER_LONG_MIN, SECOND_QUALITY taper, MIXED_WEEK_OVER); lengths.ts taperLongCap10, longsOf10; assess.ts ranLongOf, steps.ts ranLongFor; week.ts taperSecondEasy, mixedQualityStays, uvod; userText.ts; app/form.ts, app/adapt.ts restoreMerge, app/handoffTarget.ts; adaptInvariants/gridInvariants (K1, F6)',
+    rationale:
+      'Dubinska provera v2 (owner B1 3 758/13 860, B2 19 490/19 490, B3 8 tokova, T1 495/528; coach-hm-mar 1b #1/#2/#5; consistency Z1; app A1/A2; fuzz F6) — brojevi pre → posle u docs/hm-v2/reports/SEGMENT-09-IMPLEMENTATION.md.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.6.2',
+  version: 'hm-v2.7.0',
 
   /** H1 (dani i obim: H15). */
   input: {
@@ -782,6 +791,9 @@ export const HM_V2_POLICY = {
 
   /** Tehnička tolerancija: planirano vs cilj (zaokruženje dana na 0,1 km). */
   tolerance: { plannedKm: 0.1 },
+  /** Z1 (HM-09, pouka 37 dopuna): kvalitet ostaje u mešovitoj nedelji kad je jedini uzrok viška upisani višak i
+      planirano sa kvalitetom ≤ 1,10 × cilj. */
+  mixed: { keepQualityShare: 1.1 },
 
   DECISIONS
 } as const;

@@ -7,6 +7,7 @@ import { generateHmV2 } from '../generate.ts';
 import { assessGoal, raceTimeForVdot, round1, vdotFromResult } from '../paces.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import type { Reason, Weekday } from '../types.ts';
+import { userText } from '../userText.ts';
 import { addDays, diffDays } from './date.ts';
 import { generatedPlan, storedPlan, type GeneratedV2Plan } from './plan.ts';
 import type {
@@ -38,7 +39,7 @@ export function alignedStart(raceDate: string, today: string): string | null {
 export function rejection(reasons: readonly Reason[]): PlanRejectionReason[] {
   return reasons.map((x) => ({
     code: x.code,
-    message: x.message,
+    message: userText(x.message),
     ...(x.week != null ? { week: x.week } : {})
   }));
 }

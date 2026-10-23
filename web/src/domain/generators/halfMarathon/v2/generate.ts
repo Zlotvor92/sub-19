@@ -9,10 +9,9 @@ import { mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   longestLong10,
-  longsOf10,
   recentLongCap10,
   recentLongNeeded10,
-  rollingLongCap10,
+  rollingCapRan10,
   week1LongCap10
 } from './lengths.ts';
 import { assessGoal, predictedHm } from './paces.ts';
@@ -22,7 +21,8 @@ import { advance, INITIAL_QUALITY, type QualityState, type WeekPicks } from './q
 import {
   basePaces,
   basisAt,
-  deloadRefLong10,
+  longRef10,
+  ranLongFor,
   framesFor,
   initialState,
   jumpRecentKm,
@@ -236,14 +236,14 @@ export function construct(
       ? adaptNominal10(frame, h, start10, rule, av)
       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
     const longest10 = longestLong10(written);
-    const roll10 = rollingLongCap10(frame.index, longsOf10(written), recentJ);
+    const roll10 = rollingCapRan10(frame.index, written, ranLongFor(steps, frame.index), recentJ);
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
         ctx,
         frame,
         t10,
         quality,
-        frame.deload && lastLong10 === null ? deloadRefLong10(steps, frame.index) : lastLong10,
+        longRef10(lastLong10, steps, frame),
         longest10,
         mode,
         roll10

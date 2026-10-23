@@ -36,8 +36,20 @@ export const CHANGED_07 = new Map(
     >
   )
 );
-/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32) ili HM-07. */
-export const mayChange = (id: string): boolean => OVER_LONG.has(id) || CHANGED_07.has(id);
+/** HM-09 (hm-v2.7.0): planovi čiji se rezultat menja prema c13c258, sa klasom — a taper/trkačka nedelja (pouka 35
+    u taperu), d samo tekst napomena (uvod početnika, napomena tapera „najmanja doza"). Izvor:
+    docs/hm-v2/artifacts/segment-09/changed09.ts. */
+export const CHANGED_09 = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(join(DIR, 'segment09.changed-c13c258.json'), 'utf8')) as Record<
+      string,
+      string
+    >
+  )
+);
+/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07 ili HM-09. */
+export const mayChange = (id: string): boolean =>
+  OVER_LONG.has(id) || CHANGED_07.has(id) || CHANGED_09.has(id);
 
 /** Red bazne linije: vrh cilja, najduži dugi, heš celog plana bez oznake verzije (regresija sledećeg segmenta). */
 export type BaselineRow = [peakKm: number, longestKm: number, hash: string];

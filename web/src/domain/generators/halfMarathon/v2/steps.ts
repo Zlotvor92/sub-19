@@ -337,6 +337,30 @@ export function deloadRefLong10(steps: readonly HmV2AdaptStep[], w: number): num
   return r;
 }
 
+/** HM-09 (pouka 28 × 37) — JEDNA funkcija: najduži trčan po činjenicama koji važi za L skoka nedelje `w` — koraci
+    čiji je firstWeek ≤ w (kasniji korak preklapa raniji). Prošle nedelje koraka se rekonstruišu kao kad su
+    sastavljene (ista mapa). Konstruktor i validator (lengths.longsOf10). */
+export function ranLongFor(
+  steps: readonly HmV2AdaptStep[],
+  w: number
+): Readonly<Record<string, number>> {
+  let r: Record<string, number> = {};
+  for (const s of steps) if (s.ranLongKm && s.firstWeek <= w) r = { ...r, ...s.ranLongKm };
+  return r;
+}
+
+/** HM-09 (B1/B2, pouka 24) — JEDNA funkcija „dugi reference rasterećenja nedelje w" [0,1 km] za konstruktor i
+    validator: poslednji UPISANI dugi ne-rasteretne izgradnje pre nedelje (`lastLong10`, iz upisanih dana novog plana);
+    kad ga nema, a nedelja je rasterećenje — referenca koraka za tu nedelju (deloadRefLong10). Ne pamti se između
+    nedelja: svako rasterećenje bez upisanog dugog čita sopstvenu referencu. */
+export function longRef10(
+  lastLong10: number | null,
+  steps: readonly HmV2AdaptStep[],
+  w: { index: number; deload: boolean }
+): number | null {
+  return w.deload && lastLong10 === null ? deloadRefLong10(steps, w.index) : lastLong10;
+}
+
 /** Pouka 28/34 (Faza 4a N10.3, oblik maratona): skorašnji najduži trk kao dugi „nedelje 0" kotrljajuće granice —
     iz ulaza, a posle umora pre starta i dugi reference (najveći). Konstruktor i validator (LONG_ROLLING); napomena i
     pouka 9 nedelje 1 (week1LongCap10, recentLongNote) čitaju samo ulaz. */

@@ -1,0 +1,11 @@
+{
+ "dist": "HM",
+ "flows": 9058,
+ "rejected": 0,
+ "hit": 0,
+ "byScenario": {},
+ "overKm": {},
+ "maxOver": 0,
+ "maxEx": "",
+ "ex": []
+}

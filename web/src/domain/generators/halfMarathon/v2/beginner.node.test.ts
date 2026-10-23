@@ -100,7 +100,7 @@ describe('H17 plan početnika', () => {
     expect([q(1).length, q(2).length]).toEqual([0, 0]);
     expect(p.weeks[0]!.days.map((d) => d.role).sort()).toEqual(['easy', 'easy', 'easy', 'long']);
     expect(p.weeks[0]!.notes[0]).toBe(
-      'Uvod (H17): nedelja 1 od 2 bez kvaliteta — dan kvaliteta je lagan.'
+      'Uvod: prva od 2 uvodne nedelje, bez kvaliteta — dan kvaliteta je lagan.'
     );
     expect([q(3)[0]!.workout.dose!.ladder, q(3)[0]!.workout.dose!.doseM]).toEqual([
       'T_continuous',

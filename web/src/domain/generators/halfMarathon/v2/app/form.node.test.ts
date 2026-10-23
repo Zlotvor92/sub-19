@@ -94,3 +94,38 @@ describe('3h: Forma na planu HM v2 sa prefiksom izvora', () => {
     );
   });
 });
+
+describe('HM-09 Z3: Forma čita odluku jezgra o rezultatu (assess.resultUse)', () => {
+  it('owner T1: početnik, trka 5 km 36:00 (VDOT 24,7 van 30–80) — jezgro ignoriše, Forma ne piše „čeka"', async () => {
+    const { adaptBases } = await import('../adaptInputs.ts');
+    const { generateHmV2 } = await import('../generate.ts');
+    const { adaptHmV2 } = await import('../adapt.ts');
+    const { generatedPlan, storedPlan } = await import('./plan.ts');
+    const { formHistory } = await import('./form.ts');
+    const b = adaptBases().find((x) => x.id === 'beg-d4-f-12w')!;
+    const g = generateHmV2(b.input);
+    if (!g.ok) throw new Error('generator');
+    const day = addDays(g.plan.weeks[1]!.startDate, 2);
+    const today = addDays(day, 1);
+    const sec = 36 * 60;
+    const log = {
+      trka: {
+        status: 'done',
+        km: 5,
+        sec,
+        ts: day,
+        raceAi: { context: { date: day, distanceM: 5000, officialSec: sec, intent: 'race' } }
+      } as LogEntry
+    };
+    const a = adaptHmV2(
+      g.plan,
+      { results: [{ distM: 5000, sec, date: day, kind: 'race' }] },
+      today
+    );
+    expect(a.ok && a.reasons.some((r) => r.condition === 'RESULT_IGNORED')).toBe(true);
+    const f = formHistory({ plan: storedPlan(generatedPlan(g.plan)), today, log })!;
+    const pt = f.points.find((p) => p.kind === 'race')!;
+    expect(pt.status).toBe('old');
+    expect(pt.label).toMatch(/VDOT van 30–80/);
+  });
+});

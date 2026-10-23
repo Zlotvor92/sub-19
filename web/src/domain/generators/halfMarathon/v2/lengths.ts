@@ -90,10 +90,16 @@ export function longCap10(target10: number, rule: LongRule, p: Paces, roll10 = I
   );
 }
 
-/** H7: plafon dugog tapera — 0,6 × najduži dugi plana [0,1 km]. */
+/** H7: plafon dugog tapera — 0,6 × najduži dugi plana [0,1 km]. HM-09 (B3, kao A18 deloadLong10): najmanje 4 km —
+    posle smanjenja (najduži < 6,7 km) 0,6 × bi bio kraći od laganog minimuma i taper nije izvodljiv (pouka 2);
+    validator tada upozorava TAPER_LONG_MIN. */
 export function taperLongCap10(longest10: number): number {
-  return Math.floor(P.taper.longFactor * longest10 + EPS);
+  return Math.max(EASY_MIN10, Math.floor(P.taper.longFactor * longest10 + EPS));
 }
+
+/** HM-09 (B3): dugi tapera je na minimumu 4 km iznad 0,6 × najduži (taperLongCap10). */
+export const taperLongAtMin = (long10: number, longest10: number): boolean =>
+  long10 > Math.floor(P.taper.longFactor * longest10 + EPS);
 
 /** H5: dugi rasterećenja — 0,8 × poslednji ne-rasteretni dugi [0,1 km]. A18 (adaptirana nedelja, kao 10K
     deloadLengths): najmanje 4 km — posle povratka sa dugim 4 km 0,8 × bi bio kraći od laganog minimuma. */
@@ -196,14 +202,40 @@ export function longFor10(sec: number, p: Paces): number {
 }
 
 /** Pouka 28 (pouka 24): dugi svake nedelje [0,1 km] (null bez dugog) — osnov kotrljajuće granice; jedna
-    definicija za konstruktor (upisani dani, written.ts) i validator (dani plana). */
+    definicija za konstruktor (upisani dani, written.ts) i validator (dani plana). HM-09: `ran` (ključ = broj
+    nedelje) = najduži trčan po činjenicama — dugi te nedelje je min(upisani, trčan), 0 kad nije trčano. */
 export function longsOf10(
-  weeks: readonly { days: readonly { role: string; workout: { km: number } }[] }[]
+  weeks: readonly { index?: number; days: readonly { role: string; workout: { km: number } }[] }[],
+  ran: Readonly<Record<string, number>> = {}
 ): (number | null)[] {
-  return weeks.map((w) => {
+  return weeks.map((w, i) => {
     const l = w.days.find((d) => d.role === 'long');
-    return l ? Math.round(l.workout.km * 10) : null;
+    const r = ran[String(w.index ?? i + 1)];
+    const l10 = l ? Math.round(l.workout.km * 10) : null;
+    return r === undefined || l10 === null ? l10 : Math.min(l10, Math.round(r * 10));
   });
+}
+
+/** HM-09 (1b #5; pouka 37 i za L skoka) — JEDNA funkcija kotrljajuće granice dugog nedelje `index` sa činjenicama:
+    `ran` = najduži trčan prošlih nedelja cele poznate (steps.ranLongFor). L iz trčanog važi od nedelje 5 (nedelje
+    1–4 nose pretpostavljeni skorašnji najduži trk — ostaju kao pre); kad ništa nije trčano (L = 0), granica je
+    kao pre. Nikad labavija od granice iz upisanih dugih. Konstruktor, validator i poruka kapaciteta. */
+export function rollingCapRan10(
+  index: number,
+  weeks: readonly { index?: number; days: readonly { role: string; workout: { km: number } }[] }[],
+  ran: Readonly<Record<string, number>>,
+  recentKm: number | null | undefined
+): number {
+  const plan = rollingLongCap10(index, longsOf10(weeks), recentKm);
+  const w = P.recentLong.windowWeeks;
+  if (index <= w || Object.keys(ran).length === 0) return plan;
+  const L = Math.max(
+    0,
+    ...longsOf10(weeks, ran)
+      .slice(Math.max(0, index - 1 - w), index - 1)
+      .filter((x): x is number => x !== null)
+  );
+  return L > 0 ? Math.min(plan, stepCap10(L)) : plan;
 }
 
 /** H7 / pouka 29: najduži dugi plana — jedna definicija za konstruktor (iz upisanih dana, written.ts) i

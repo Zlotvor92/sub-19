@@ -1,0 +1,89 @@
+{
+ "dist": "HM",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 100
+ },
+ "generator": {
+  "plans": 24852,
+  "rejected": 0,
+  "unrealistic": 270,
+  "t1": 744,
+  "t1contra": 0,
+  "t1two": 0,
+  "t1maxOver": 12,
+  "t1ex": [
+   "d4-10w-30km-v70-A-sat: ned 9 39>37 min",
+   "d4-10w-30km-v70-A-sun: ned 9 39>37 min",
+   "d4-10w-30km-v70-B-sat: ned 9 39>37 min",
+   "d4-10w-30km-v70-B-sun: ned 9 39>37 min",
+   "d4-10w-30km-v70-C-sat: ned 9 39>37 min",
+   "d4-10w-30km-v70-C-sun: ned 9 39>37 min"
+  ],
+  "t2": 3906,
+  "t2adj": 909,
+  "t2maxEasy": 23.5,
+  "t2ex": [
+   "d3-10w-35km-v30-A-sat: ned 1 lagan 14.2/dugi 15.7, ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.8/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 8 lagan 17.8/dugi 17.8",
+   "d3-10w-35km-v30-A-sun: ned 1 lagan 14.2/dugi 15.7, ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.8/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 8 lagan 17.8/dugi 17.8",
+   "d3-10w-35km-v30-B-sat: ned 1 lagan 14.2/dugi 15.7, ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.8/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 8 lagan 17.8/dugi 17.8",
+   "d3-10w-35km-v30-B-sun: ned 1 lagan 14.2/dugi 15.7, ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.8/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 8 lagan 17.8/dugi 17.8",
+   "d3-10w-35km-v30-C-sat: ned 1 lagan 14.2/dugi 15.7, ned 4 lagan 17.5/dugi 17.8, ned 6 lagan 17.8/dugi 17.8, ned 7 lagan 17.8/dugi 17.8, ned 8 lagan 17.8/dugi 17.8",
+   "d3-10w-35km-v30-C-sun: ned 1 lagan 14.2/dugi 15.7 susedan, ned 4 lagan 17.5/dugi 17.8 susedan, ned 6 lagan 17.8/dugi 17.8 susedan, ned 7 lagan 17.8/dugi 17.8 susedan, ned 8 lagan 17.8/dugi 17.8 susedan"
+  ],
+  "t1ByDays": {
+   "4d": 18,
+   "5d": 297,
+   "6d": 429
+  },
+  "t1worst": "d6-10w-40km-v70-A-sat (vdot 70): ned 9 49>37 min",
+  "t2worst": "f-d4-18w-55km-e360-A (vdot 41): ned 6 lagan 22.5/dugi 24 susedan, ned 7 lagan 23.5/dugi 24 susedan",
+  "t2worstKm": 23.5,
+  "t2adjMinutes": {
+   "90–119 min": 30,
+   "≥120 min": 1839
+  },
+  "t2ByDays": {
+   "3d": 897,
+   "4d": 1446,
+   "5d": 942,
+   "6d": 621
+  },
+  "t1Warn": {
+   "LONG_RUN_SHORT": 78,
+   "DOSE_DROPPED": 114,
+   "LONG_SHORTER_THAN_QUALITY": 102,
+   "TAPER_RP_ONLY": 75,
+   "TEST_DELOAD_LONG": 24
+  }
+ },
+ "adaptation": {
+  "bases": 49,
+  "flows": 23292,
+  "rejected": 0,
+  "t1": 682,
+  "t1two": 0,
+  "t1contra": 0,
+  "t1noWarn": 286,
+  "byScenario": {
+   "pause20": 119,
+   "painPause": 124,
+   "pain5": 48,
+   "pain8": 49,
+   "pause10": 35,
+   "chain": 35,
+   "chain2": 62,
+   "pause35": 183,
+   "under50": 27
+  },
+  "ex": [
+   "d4-12w-35km-v60-C-sat / pause20 / asOf 2026-11-04: ned 11 41>40 min",
+   "d4-12w-35km-v60-C-sat / painPause / asOf 2026-11-04: ned 11 41>41 min",
+   "d4-12w-35km-v60-C-sat / pause20 / asOf 2026-11-07: ned 11 41>40 min",
+   "d4-12w-35km-v60-C-sat / pain5 / asOf 2026-11-07: ned 11 41>40 min",
+   "d4-12w-35km-v60-C-sat / pain8 / asOf 2026-11-07: ned 11 41>40 min",
+   "d4-12w-35km-v60-C-sat / painPause / asOf 2026-11-07: ned 11 41>40 min"
+  ]
+ }
+}

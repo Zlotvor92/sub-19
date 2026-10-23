@@ -400,7 +400,9 @@ export function checkPlan(
       const t10 = Math.round(0.8 * (lastBuild ?? 0));
       if (to10(w.targetKm) > t10 || (to10(w.targetKm) < t10 && w.fitted !== 'down'))
         no('DELOAD_TARGET', tag);
-      if (lastLong !== null && long !== null && long > Math.floor(0.8 * lastLong + EPS))
+      // Pouka 32 (fuzz F6): rasterećenje sa testom — dugi podignut do trajanja dana testa (napomena „podignut").
+      const raised = !!w.test && w.notes.some((n) => n.includes('podignut'));
+      if (lastLong !== null && long !== null && long > Math.floor(0.8 * lastLong + EPS) && !raised)
         no('DELOAD_LONG', tag);
       const qs = w.days.filter((d) => d.workout.kind === 'quality');
       if (qs.length === 0 && !w.test) st.deloadNoQuality++;
@@ -521,7 +523,8 @@ export function checkPlan(
     if (w.phase === 'taper') {
       // H7: cilj ≤ 0,7 × vrh; RP i T ≈ 60 % (min 2 × 2000 m, 2,0 km); dugi ≤ 0,6 × najduži.
       if (to10(w.targetKm) > Math.round(0.7 * peak)) no('TAPER_TARGET', tag);
-      if (long !== null && long > Math.floor(0.6 * longest + EPS)) no('TAPER_LONG', tag);
+      if (long !== null && long > Math.max(40, Math.floor(0.6 * longest + EPS)))
+        no('TAPER_LONG', tag);
       const q1d = w.days.find((d) => d.role === 'q1')?.workout.dose;
       // H17/HI10: taper početnika T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km) kad RP ne staje.
       const rp = q1d?.zone === 'RP' ? q1d.doseM : 0;

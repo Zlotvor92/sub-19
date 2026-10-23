@@ -1,0 +1,30 @@
+{
+ "dist": "HM",
+ "k": 97,
+ "flows": 42810,
+ "rejected": 0,
+ "mixed": 16968,
+ "dropped": 167,
+ "keptOver": 0,
+ "bySc": {
+  "over120": 167
+ },
+ "excess": {
+  "le2": 0,
+  "le5": 0,
+  "le10": 0,
+  "gt10": 167
+ },
+ "nextDoseChanged": 101,
+ "cascade": 77,
+ "cascadeMax": 4,
+ "ex": [
+  "d3-17w-30km-v45-A-sat over120 asOf 2027-02-03 ned 14: cilj 42 plan 35.7, otpalo 1 kval. (6.33 km), procena viška 6.33 km (15.07 %)",
+  "d3-19w-40km-v50-A-sat over120 asOf 2027-02-03 ned 14: cilj 55 plan 46.5, otpalo 1 kval. (8.49 km), procena viška 8.43 km (15.33 %)",
+  "d3-19w-40km-v50-A-sat over120 asOf 2027-02-10 ned 15: cilj 55 plan 46.9, otpalo 1 kval. (8.08 km), procena viška 8 km (14.55 %)",
+  "d4-11w-40km-v55-B-sat over120 asOf 2026-11-09 ned 2: cilj 42.4 plan 37.84, otpalo 1 kval. (4.54 km), procena viška 4.54 km (10.71 %)"
+ ],
+ "exSmall": [],
+ "excessMedKm": 7.11,
+ "excessMaxKm": 10.99
+}

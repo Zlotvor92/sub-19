@@ -1,0 +1,91 @@
+{
+ "stride": 1,
+ "recent": [],
+ "flows": 19490,
+ "out": {
+  "ok deload2=true ref=11.2": 1289,
+  "ok deload2=true ref=13.5": 979,
+  "ok deload2=true ref=15.7": 550,
+  "ok deload2=true ref=17.8": 748,
+  "ok deload2=true ref=18": 1419,
+  "ok deload2=true ref=20": 924,
+  "ok deload2=true ref=20.2": 396,
+  "ok deload2=true ref=12": 959,
+  "ok deload2=true ref=11.7": 44,
+  "ok deload2=true ref=11": 44,
+  "ok deload2=true ref=9.6": 233,
+  "ok deload2=true ref=14": 739,
+  "ok deload2=true ref=16": 1218,
+  "ok deload2=true ref=14.7": 44,
+  "ok deload2=true ref=22": 363,
+  "ok deload2=true ref=22.2": 308,
+  "ok deload2=true ref=24": 1595,
+  "ok deload2=true ref=10.6": 44,
+  "ok deload2=true ref=12.8": 618,
+  "ok deload2=true ref=12.7": 77,
+  "ok deload2=true ref=10.7": 121,
+  "ok deload2=true ref=14.4": 739,
+  "ok deload2=true ref=17.6": 517,
+  "ok deload2=true ref=19.2": 473,
+  "ok deload2=true ref=20.8": 396,
+  "ok deload2=true ref=22.4": 319,
+  "ok deload2=true ref=11.8": 44,
+  "ok deload2=true ref=9.7": 44,
+  "ok deload2=true ref=13.2": 44,
+  "ok deload2=true ref=15": 550,
+  "ok deload2=true ref=16.5": 550,
+  "ok deload2=true ref=19.5": 440,
+  "ok deload2=true ref=21": 396,
+  "ok deload2=true ref=22.5": 319,
+  "ok deload2=true ref=19.3": 429,
+  "ok deload2=true ref=17.1": 594,
+  "ok deload2=true ref=21.4": 264,
+  "ok deload2=true ref=12.2": 33,
+  "ok deload2=true ref=10.4": 33,
+  "ok deload2=true ref=8": 378,
+  "ok deload2=true ref=10": 189,
+  "ok deload2=true ref=15.4": 27
+ }
+}
+ok deload2=true ref=11.2: d3-10w-25km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=13.5: d3-10w-30km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=15.7: d3-10w-35km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=17.8: d3-10w-40km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=18: d3-10w-40km-v35-A-sun asOf 2026-11-05: 
+ok deload2=true ref=20: d3-10w-45km-v35-A-sun asOf 2026-11-05: 
+ok deload2=true ref=20.2: d3-10w-45km-v40-A-sun asOf 2026-11-05: 
+ok deload2=true ref=12: d4-10w-30km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=11.7: d4-10w-30km-v55-A-sun asOf 2026-11-05: 
+ok deload2=true ref=11: d4-10w-30km-v60-A-sun asOf 2026-11-05: 
+ok deload2=true ref=9.6: d4-10w-30km-v70-A-sun asOf 2026-11-05: 
+ok deload2=true ref=14: d4-10w-35km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=16: d4-10w-40km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=14.7: d4-10w-40km-v70-A-sun asOf 2026-11-05: 
+ok deload2=true ref=22: d4-10w-55km-v40-A-sun asOf 2026-11-05: 
+ok deload2=true ref=22.2: d4-10w-60km-v40-A-sun asOf 2026-11-05: 
+ok deload2=true ref=24: d4-10w-60km-v45-A-sun asOf 2026-11-05: 
+ok deload2=true ref=10.6: d5-10w-35km-v70-A-sun asOf 2026-11-05: 
+ok deload2=true ref=12.8: d5-10w-40km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=12.7: d5-10w-40km-v60-A-sun asOf 2026-11-05: 
+ok deload2=true ref=10.7: d5-10w-40km-v70-A-sun asOf 2026-11-05: 
+ok deload2=true ref=14.4: d5-10w-45km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=17.6: d5-10w-55km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=19.2: d5-10w-60km-v35-A-sun asOf 2026-11-05: 
+ok deload2=true ref=20.8: d5-10w-65km-v40-A-sun asOf 2026-11-05: 
+ok deload2=true ref=22.4: d5-10w-70km-v45-A-sun asOf 2026-11-05: 
+ok deload2=true ref=11.8: d6-10w-40km-v45-A-sun asOf 2026-11-05: 
+ok deload2=true ref=9.7: d6-10w-40km-v55-A-sun asOf 2026-11-05: 
+ok deload2=true ref=13.2: d6-10w-45km-v60-A-sun asOf 2026-11-05: 
+ok deload2=true ref=15: d6-10w-50km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=16.5: d6-10w-55km-v30-A-sun asOf 2026-11-05: 
+ok deload2=true ref=19.5: d6-10w-65km-v35-A-sun asOf 2026-11-05: 
+ok deload2=true ref=21: d6-10w-70km-v40-A-sun asOf 2026-11-05: 
+ok deload2=true ref=22.5: d6-10w-75km-v45-A-sun asOf 2026-11-05: 
+ok deload2=true ref=19.3: f-d3-10w-45km-e450-A asOf 2026-11-05: 
+ok deload2=true ref=17.1: f-d3-10w-40km-e510-A asOf 2026-11-05: 
+ok deload2=true ref=21.4: f-d4-10w-55km-e405-A asOf 2026-11-05: 
+ok deload2=true ref=12.2: f-d5-10w-40km-e270-A asOf 2026-11-05: 
+ok deload2=true ref=10.4: f-d6-10w-40km-e315-A asOf 2026-11-05: 
+ok deload2=true ref=8: b-d4-12w-20km-e330-A asOf 2026-11-05: 
+ok deload2=true ref=10: b-d4-12w-25km-e330-A asOf 2026-11-05: 
+ok deload2=true ref=15.4: b-d4-12w-40km-e510-A asOf 2026-11-05: 

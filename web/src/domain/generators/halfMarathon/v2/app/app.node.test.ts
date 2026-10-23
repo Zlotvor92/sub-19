@@ -62,6 +62,7 @@ import {
 } from './members.ts';
 import { workoutStructure } from './structure.ts';
 import { SKIP_FEEL, SKIP_NO_STRUCTURE } from './watch.ts';
+import { userText } from '../userText.ts';
 
 /* SEGMENT HM-05 — polumaraton v2 u aplikaciji: prekidač, rutiranje po oznaci politike, generisanje kroz adapter (nedelja
    7 dana, struktura na svakom treningu, faza iz v2, trka 21,1 km van obima, odbijanje sa razlozima), čuvanje (backup/uvoz
@@ -223,7 +224,7 @@ describe('generisanje kroz adapter', () => {
       label: { realistic: 'realističan', ambitious: 'ambiciozan', unrealistic: 'nerealan' }[
         v2.goal!.status as 'realistic'
       ],
-      message: v2.goal!.message
+      message: userText(v2.goal!.message)
     });
     const feel = planOf(FEEL);
     const fm = feel.meta as Record<string, unknown>;
@@ -238,8 +239,8 @@ describe('generisanje kroz adapter', () => {
     ])
       expect(fm, k).not.toHaveProperty(k);
     // Upozorenja i napomene v2 doslovno.
-    for (const n of v2Of(feel).notes) expect(fm['dayWarnings']).toContain(n);
-    for (const v of v2Of(feel).warnings) expect(fm['dayWarnings']).toContain(v.message);
+    for (const n of v2Of(feel).notes) expect(fm['dayWarnings']).toContain(userText(n));
+    for (const v of v2Of(feel).warnings) expect(fm['dayWarnings']).toContain(userText(v.message));
   });
 
   it('plan po osećaju: rad kvaliteta nosi RPE i tempo kao procenu; test 5 km; sa rezultatom tempo je propisan', () => {
@@ -435,6 +436,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
         'hm-v2.5.0',
         'hm-v2.6.0',
         'hm-v2.6.1',
+        'hm-v2.6.2',
         VERSION
       ])
     ]);

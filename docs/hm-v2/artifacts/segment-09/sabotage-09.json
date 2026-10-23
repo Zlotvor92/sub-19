@@ -1,0 +1,110 @@
+[
+  {
+    "name": "09-1 B2 referenca samo bez upisanog dugog (assess)",
+    "file": "src/domain/generators/halfMarathon/v2/assess.ts",
+    "find": "const gl = !ref && f >= 2 ? genLongBefore(f) : null;",
+    "replace": "const gl = !ref && f >= 99 ? genLongBefore(f) : null;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-2 B1 validator pamti referencu (dve definicije)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "    const ref10 = longRef10(lastLong10, steps, w);\n",
+    "replace": "    const ref10 = longRef10(lastLong10, steps, w);\n    if (w.deload && lastLong10 === null) lastLong10 = ref10;\n",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-3 B3 dugi tapera bez poda 4 km",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "return Math.max(EASY_MIN10, Math.floor(P.taper.longFactor * longest10 + EPS));",
+    "replace": "return Math.floor(P.taper.longFactor * longest10 + EPS);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-4 L skoka iz planiranog, ne trčanog",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "return L > 0 ? Math.min(plan, stepCap10(L)) : plan;",
+    "replace": "return plan;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-7 pouka 35 u taperu isključena",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "return w1.sec > long || w2.sec > long;",
+    "replace": "return false;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-8 napomena tapera uvek „ne sme biti duži\"",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "        wk.sec > longSec\n",
+    "replace": "        false\n",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-Z1 kvalitet otpada i uz višak ≤ 10 %",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "const stays = !c && mixedQualityStays(kept, free, factKm, target10);",
+    "replace": "const stays = false;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-Z2 userText ne skida oznake",
+    "file": "src/domain/generators/halfMarathon/v2/userText.ts",
+    "find": "    if (keep.length === parts.length) return all;",
+    "replace": "    return all;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/userText.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-Z3 Forma bez opsega VDOT",
+    "file": "src/domain/generators/halfMarathon/v2/app/form.ts",
+    "find": "status: use === 'ok' ? 'pending' : 'old'",
+    "replace": "status: use === 'ok' || use === 'vdot' ? 'pending' : 'old'",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/form.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-Z4 vraćanje i posle prilagođavanja",
+    "file": "src/domain/generators/halfMarathon/v2/app/adapt.ts",
+    "find": "if (!same(cur.adaptation?.steps ?? [], snap.adaptation?.steps ?? []))",
+    "replace": "if (cur.weeks.length < 0)",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-Z5b početnik iznad opsega odbijen",
+    "file": "src/domain/generators/halfMarathon/v2/app/handoffTarget.ts",
+    "find": "g.reasons.some((r) => r.code === 'WEEKLY_KM_TOO_HIGH')",
+    "replace": "g.reasons.some((r) => r.code === 'X')",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-F6 invarijanta bez izuzetka pouke 32",
+    "file": "src/domain/generators/halfMarathon/v2/gridInvariants.ts",
+    "find": " && !raised)",
+    "replace": ")",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  }
+]

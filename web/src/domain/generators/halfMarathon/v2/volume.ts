@@ -2,8 +2,9 @@
    trkačke nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longKmCap10, longShareCap10, longTimeCap10, rollingLongCap10 } from './lengths.ts';
+import { longKmCap10, longShareCap10, longTimeCap10, rollingCapRan10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
+import { userText } from './userText.ts';
 import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
 import { preStartOf } from './steps.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
@@ -46,7 +47,7 @@ const fmt = (k10: number): string => (k10 / 10).toFixed(1).replace('.', ',');
 /** Faza 4a N11 (jedan vlasnik — domen): napomene nedelje za korisnika — bez tehničke napomene izvodljivog cilja
     (fittedNote). Aplikacija samo prikazuje ovo. */
 export const userWeekNotes = (w: { notes: readonly string[] }): string[] =>
-  w.notes.filter((n) => !n.includes('nije izvodljiv u konstrukciji nedelje'));
+  w.notes.filter((n) => !n.includes('nije izvodljiv u konstrukciji nedelje')).map(userText);
 
 /** HI3 (pouka 14): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele H15 (početnik:
     tabela H17) podržava trenutni obim; prazno kad ih nema. */
@@ -71,13 +72,10 @@ export function capacityLimits(
   weeks: readonly PlanWeek[],
   rule: PlanRule,
   p: Paces,
-  recentKm: number | null | undefined = null
+  recentKm: number | null | undefined = null,
+  ranAt: (w: number) => Readonly<Record<string, number>> = () => ({})
 ): CapacityLimit[] {
   const hit = new Set<CapacityLimit>();
-  const longs10 = weeks.map((w) => {
-    const l = w.days.find((d) => d.role === 'long');
-    return l ? to10(l.workout.km) : null;
-  });
   for (const w of weeks) {
     if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') continue;
     const long = w.days.find((d) => d.role === 'long');
@@ -86,7 +84,7 @@ export function capacityLimits(
     if (l10 === longTimeCap10(p, rule.longMaxSec)) hit.add('time');
     if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
     if (l10 === longKmCap10()) hit.add('km');
-    if (l10 === rollingLongCap10(w.index, longs10, recentKm)) hit.add('rolling');
+    if (l10 === rollingCapRan10(w.index, weeks, ranAt(w.index), recentKm)) hit.add('rolling');
   }
   return (['time', 'share', 'km', 'rolling'] as const).filter((l) => hit.has(l));
 }

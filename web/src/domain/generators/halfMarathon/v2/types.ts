@@ -428,6 +428,13 @@ export interface HmV2AdaptStep {
       ne-rasteretne izgradnje (npr. ned 1 cela u odmoru bola) — dugi poslednje ne-rasteretne izgradnje generatora
       pre te nedelje (steps.deloadRefLong10). Samo kad ga ima. */
   deloadRefLongKm?: number;
+  /** HM-09 (pouka 28 × 37): najduži trčan po činjenicama prošlih nedelja celih poznatih (pokrivenost ili pauza),
+      samo gde je kraći od upisanog dugog; ključ = broj nedelje. Važi za L skoka nedelja od firstWeek ovog koraka
+      (steps.ranLongFor). Samo kad ih ima. */
+  ranLongKm?: Record<string, number>;
+  /** HM-09: nedelja koja sadrži asOf, poznata od početka do asOf, i najduži trčan u tom delu — sledeći korak
+      dopunjuje ostatak nedelje (assess.ranLongOf). Samo kad postoji. */
+  ranPart?: { week: number; km: number };
 }
 
 /** Pouka 34: nedelja 1 generatora bez činjenica — cilj, dugi i doze slotova. */

@@ -1,0 +1,5 @@
+{"flows":528,"formPendingButIgnored":495}
+d3-r-10w 5 km 31:00 (VDOT 29.6) 2026-11-11: adaptHmV2 → RESULT_IGNORED; Forma pre: pending „Trka 5 km 31:00 — čeka prilagođavanje plana"; posle primene: pending
+d3-r-10w 5 km 32:00 (VDOT 28.5) 2026-11-11: adaptHmV2 → RESULT_IGNORED; Forma pre: pending „Trka 5 km 32:00 — čeka prilagođavanje plana"; posle primene: pending
+d3-r-10w 5 km 33:00 (VDOT 27.5) 2026-11-11: adaptHmV2 → RESULT_IGNORED; Forma pre: pending „Trka 5 km 33:00 — čeka prilagođavanje plana"; posle primene: pending
+d3-r-10w 5 km 34:00 (VDOT 26.5) 2026-11-11: adaptHmV2 → RESULT_IGNORED; Forma pre: pending „Trka 5 km 34:00 — čeka prilagođavanje plana"; posle primene: pending

@@ -340,7 +340,9 @@ function extra(
           .filter((s) => s.fromWeek <= w.index && s.levelKm !== null)
           .map((s) => Math.round(s.levelKm! * 10))
       );
-      const normal = prev + Math.min(40, Math.max(10, Math.round(prev * (beg ? 0.05 : 0.06))));
+      // H17 (owner K1): početnik najviše 2,0 km rasta (kao gridInvariants), ostali 4,0 km.
+      const normal =
+        prev + Math.min(beg ? 20 : 40, Math.max(10, Math.round(prev * (beg ? 0.05 : 0.06))));
       const back = Math.min(level, prev + Math.max(10, Math.round(prev * 0.1)));
       // H6: nedelja na najbližem izvodljivom cilju (fitted, napomena) — poredi se cilj po pravilu.
       const rule10 = w.fitted !== null ? Math.round(w.nominalKm * 10) : t10;

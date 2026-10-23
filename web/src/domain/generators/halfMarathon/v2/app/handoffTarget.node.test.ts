@@ -261,6 +261,33 @@ describe('3f: T1/T2', () => {
   });
 });
 
+describe('HM-09 Z5b: početnik izvora iznad opsega početnika cilja', () => {
+  // A1 (audit/app): maraton v2 početnik 4 d, 45 km (MAR 25–45) → HM početnik 4 d 20–40 → WEEKLY_KM_TOO_HIGH; cilj
+  // sam određuje politiku (uslov 5) i gradi plan bez oznake početnika.
+  const mar: MarIn = {
+    startDate: '2026-01-12',
+    raceDate: '2026-05-10',
+    runDays: ['tue', 'thu', 'sat', 'sun'],
+    longRunDay: 'sun',
+    currentWeeklyKm: 45,
+    recentResult: { distanceM: 10000, timeSec: 46 * 60, date: '2026-01-10' },
+    recentLongRunKm: 18,
+    experience: 'beginner'
+  };
+  it('MAR v2 početnik 45 km → ponuda HM v2 postoji (plan bez oznake početnika)', () => {
+    const src = source(mar)!;
+    expect(src, 'izvor maraton v2').not.toBeNull();
+    const asOf = '2026-01-27' as IsoDate;
+    const start = alignedStart(mar.raceDate, addDays(asOf, 1))!;
+    const g = generateHmV2(targetInput(contractInput(mar), start));
+    expect(!g.ok && g.reasons.map((r) => r.code)).toEqual(['WEEKLY_KM_TOO_HIGH']);
+    const r = handoff(src, mar, asOf, 'none');
+    expect(r.error).toBeUndefined();
+    const v2 = (select.stampForStorage(r.result!) as unknown as { hmV2: HmV2Plan }).hmV2;
+    expect(v2.input.experience ?? 'regular').toBe('regular');
+  });
+});
+
 describe('3f: format i izbor', () => {
   it('prekidač HM v2 isključen → v1 cilj (HM v1); uključen → HM v2; 10K v2 → cilj 10K v2 (3d-10K)', () => {
     expect(select.shorterHandoffForV2Source({ fiveKV2: false }, MAR_FORMAT)(21097.5)).not.toBe(
@@ -272,7 +299,7 @@ describe('3f: format i izbor', () => {
     )(10000)!;
     expect(ten).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.6.2, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.7.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
     const r = select.generateHmV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 12 - 1),
@@ -284,7 +311,7 @@ describe('3f: format i izbor', () => {
     });
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.6.2');
+    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.7.0');
     expect(
       select.HALF_MARATHON_V2_GENERATOR.planPolicy({
         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.4.1' }

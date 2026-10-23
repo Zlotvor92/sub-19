@@ -483,7 +483,7 @@ describe('jedno mesto prevoda činjenica (pouke 16–20)', () => {
 });
 
 describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
-  it('vraćanje: budući nezaštićeni dani iz verzije, urađeni ostaju; isti plan → 0 dana', () => {
+  it('vraćanje (HM-09 Z4): posle prilagođavanja verzija se ne vraća (poruka); ista verzija → 0 dana', () => {
     const p = planOf(WITH_RESULT);
     const day = '2026-11-15' as IsoDate;
     const pain = ok(hmV2AdaptPreview(p, day, { facts: { pain: [{ date: day, pain: 5 }] } }));
@@ -491,38 +491,20 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     const next = '2026-11-18' as IsoDate;
     const done = view(applied).dated.find((d) => !d.rest && d.date > day && d.date <= next)!;
     const log = { [done.id]: { status: 'done', km: 5, sec: 1800 } };
-    // Budući ručno izmenjen dan (posle danas, u nedelji bola — razlikuje se od sačuvane verzije) ostaje iz trenutnog plana.
-    const original0 = view(p);
-    const edited = view(applied).dated.find(
-      (d) =>
-        !d.rest &&
-        d.date > next &&
-        JSON.stringify(d.structure) !== JSON.stringify(original0.byId.get(d.id)?.structure)
-    )!;
-    // Budući dan (po planu posle danas) već odrađen — npr. trčan ranije: ostaje iz trenutnog plana.
-    const doneAhead = view(applied).dated.find(
-      (d) =>
-        !d.rest &&
-        d.date > next &&
-        d.id !== edited.id &&
-        JSON.stringify(d.structure) !== JSON.stringify(original0.byId.get(d.id)?.structure)
-    )!;
-    log[doneAhead.id] = { status: 'done', km: 6, sec: 2100 };
-    const alt = { tag: 'lako' as const, km: 5, desc: 'x', pace: null, rw: null, paceAuto: false };
-    const back = HALF_MARATHON_V2_GENERATOR.graftFuturePlan(applied, p, next, {
-      log,
-      alts: { [edited.id]: alt }
-    });
+    // Stara verzija (pre bola) uz noviju prošlost nije plan jezgra (owner Z4: krši pravila, obara sledeće
+    // prilagođavanje) → odbijanje sa razlogom, plan ostaje.
+    const back = HALF_MARATHON_V2_GENERATOR.graftFuturePlan(applied, p, next, { log });
     const ch = back.meta!['futureChanges'] as { changedDays: number; conflicts: string[] };
-    expect(ch.changedDays).toBeGreaterThan(10);
-    expect(ch.conflicts).toEqual([]);
-    const bv = view(back);
-    expect(bv.byId.get(done.id)!.structure).toEqual(done.structure);
-    expect(bv.byId.get(edited.id)!.structure).toEqual(edited.structure);
-    expect(bv.byId.get(doneAhead.id)!.structure).toEqual(doneAhead.structure);
-    const original = view(p);
-    for (const d of original.dated.filter((x) => x.date > '2026-11-22'))
-      expect(bv.byId.get(d.id)!.structure, d.id).toEqual(d.structure);
+    expect(ch.changedDays).toBe(0);
+    expect(ch.conflicts[0]).toMatch(/plan je prilagođen \(2026-11-15\)/);
+    expect(back.weeks).toEqual(applied.weeks);
+    // Verzija posle poslednjeg prilagođavanja se vraća (ovde ista: 0 dana).
+    expect(
+      HALF_MARATHON_V2_GENERATOR.graftFuturePlan(applied, applied, next).meta!['futureChanges']
+    ).toEqual({
+      changedDays: 0,
+      conflicts: []
+    });
     expect(HALF_MARATHON_V2_GENERATOR.graftFuturePlan(p, p, next).meta!['futureChanges']).toEqual({
       changedDays: 0,
       conflicts: []
@@ -637,6 +619,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
         'hm-v2.5.0',
         'hm-v2.6.0',
         'hm-v2.6.1',
+        'hm-v2.6.2',
         P.version
       ])
     ]);

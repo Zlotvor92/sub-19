@@ -3,12 +3,12 @@
    treninga (v1) se ne koristi. Obrazac je kopija 10K v2 (06), ne uvoz. Test 3 km nije rezultat HM v2
    (A1, H18), pa nije ni tačka forme. */
 
+import { resultUse } from '../assess.ts';
 import { checkInput } from '../input.ts';
 import { predictedHm, round1, vdotFromResult } from '../paces.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import { v2Of } from './adapt.ts';
-import { diffDays } from './date.ts';
 import { buildFacts } from './facts.ts';
 import { weekLabel } from '../weekLabel.ts';
 import { goalOf } from './plan.ts';
@@ -92,18 +92,20 @@ export function formHistory(src: {
     .results;
   for (const x of facts) {
     if (used.has(`${x.date}|${x.distM}|${x.sec}`)) continue;
-    const fresh = diffDays(x.date, src.today) <= P.input.resultMaxAgeDays;
-    const newer = lastUsed === null || x.date > lastUsed;
+    // Z3: odluka jezgra (assess.resultUse) — Forma ne piše „čeka" za rezultat koji jezgro ne primenjuje.
+    const use = resultUse(x, lastUsed, src.today);
     points.push({
       date: x.date,
       vdot: round1(vdotFromResult(x.distM, x.sec)),
       kind: x.kind,
       label: `${x.kind === 'test' ? 'Test' : 'Trka'} ${dist(x.distM)} ${mmss(x.sec)}${
-        fresh && newer
+        use === 'ok'
           ? ' — čeka prilagođavanje plana'
-          : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
+          : use === 'vdot'
+            ? ` — ne menja tempo (VDOT van ${P.input.vdotMin}–${P.input.vdotMax})`
+            : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
       }`,
-      status: fresh && newer ? 'pending' : 'old'
+      status: use === 'ok' ? 'pending' : 'old'
     });
   }
   points.sort((a, b) => a.date.localeCompare(b.date));
