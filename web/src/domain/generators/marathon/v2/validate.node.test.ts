@@ -395,7 +395,7 @@ describe('upozorenja (plan ostaje ispravan)', () => {
   it('MARATHON_LONG_SHORT, RESULT_5K, GOAL_UNREALISTIC', () => {
     // N11: BASE (VDOT 45) — najduži dugi na 150 min: napomena plana, ne upozorenje; VDOT 70 — udeo dugog: upozorenje.
     expect(warnings(BASE)).not.toContain('MARATHON_LONG_SHORT');
-    expect(BASE.notes.some((n) => n.startsWith('Najduži dugi trk je'))).toBe(true);
+    expect(BASE.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(true);
     expect(warnings(plan({ weeks: 16, km: 35, vdot: 70 }))).toContain('MARATHON_LONG_SHORT');
     const five = plan({
       result: { distanceM: 5000, timeSec: timeForVdot(45, 5000) },
@@ -435,8 +435,8 @@ describe('upozorenja (plan ostaje ispravan)', () => {
   it('MARATHON_LONG_SHORT: tekst navodi najduži dugi i ograničenje (40 % nedelje); 150 min → napomena plana (N11)', () => {
     const slow = plan({ weeks: 16, km: 55, vdot: 30 });
     expect(slow.warnings.some((w) => w.rule === 'MARATHON_LONG_SHORT')).toBe(false);
-    const m1 = slow.notes.find((n) => n.startsWith('Najduži dugi trk je'))!;
-    expect(m1).toMatch(/^Najduži dugi trk je \d+,\d km: ograničava ga trajanje/);
+    const m1 = slow.notes.find((n) => n.startsWith('Najduže dugo trčanje je'))!;
+    expect(m1).toMatch(/^Najduže dugo trčanje je \d+,\d km: ograničava ga trajanje/);
     expect(m1).toMatch(/150 min laganim tempom/);
     const fast = plan({ weeks: 16, km: 35, vdot: 70 });
     const m2 = fast.warnings.find((w) => w.rule === 'MARATHON_LONG_SHORT')!.message;

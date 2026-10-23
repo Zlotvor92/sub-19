@@ -178,7 +178,7 @@ describe('M17 plan', () => {
     expect(longest).toBeGreaterThanOrEqual(20);
     // N11 (MAR-07): najduži dugi početnika na 150 min → rečenica u opisu plana, ne upozorenje.
     expect(B4.warnings.some((x) => x.rule === 'MARATHON_LONG_SHORT')).toBe(false);
-    const w = B4.notes.find((n) => n.startsWith('Najduži dugi trk je'))!;
+    const w = B4.notes.find((n) => n.startsWith('Najduže dugo trčanje je'))!;
     expect(w).toMatch(/preporučenih 24,0 km/);
     expect(w).toMatch(/M17/);
     expect(w).toMatch(/cilj je završiti maraton/);

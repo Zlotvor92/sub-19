@@ -220,13 +220,13 @@ describe('N11: upozorenja i napomene', () => {
     );
     expect(slow.notes).toContain(longTimeCapNote(longest, 26, false));
     const q = structuredClone(slow);
-    q.notes = q.notes.filter((n) => !n.startsWith('Najduži dugi trk je'));
+    q.notes = q.notes.filter((n) => !n.startsWith('Najduže dugo trčanje je'));
     expect(errors(q)).toContain('LONG_SHORT_NOTE@-');
     const fast = planOf(
       inputOf({ weeks: 16, km: 35, vdot: 70, days: ['tue', 'thu', 'sat', 'sun'], long: 'sun' })
     );
     expect(rules(fast)).toContain('MARATHON_LONG_SHORT');
-    expect(fast.notes.some((n) => n.startsWith('Najduži dugi trk je'))).toBe(false);
+    expect(fast.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
   });
 
   it('napomena „Cilj po pravilu … nije izvodljiv" ostaje u planu (validator), ne ide korisniku (aplikacija)', () => {

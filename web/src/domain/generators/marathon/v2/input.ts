@@ -236,7 +236,7 @@ export function checkInput(raw: unknown): InputCheck {
   )
     no(
       'RECENT_LONG_INVALID',
-      `Skorašnji najduži trk mora biti ${q.recentLongMinKm}–${q.recentLongMaxKm} km (unet ${String(recent)}).`
+      `Skorašnje najduže trčanje mora biti ${q.recentLongMinKm}–${q.recentLongMaxKm} km (unet ${String(recent)}).`
     );
 
   // Rezultat → VDOT; bez pouzdanog rezultata plan po osećaju (M16).

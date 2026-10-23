@@ -96,17 +96,17 @@ export function longShortOf(
 
 /** N11: rečenica u opisu plana (plan.notes) kad najduži dugi ograničava trajanje (M13: ≤ 150 min) — ne upozorenje. */
 export function longTimeCapNote(longestKm: number, longShortKm: number, beginner: boolean): string {
-  return `Najduži dugi trk je ${fmtKm(longestKm)} km: ograničava ga trajanje (≤ ${P.lengths.longMaxSec / 60} min laganim tempom, ${beginner ? 'M17' : 'M13'}) — namerna granica opterećenja umesto preporučenih ${fmtKm(longShortKm)} km; ostatak obima nose ostali dani${beginner ? ', cilj je završiti maraton' : ''}.`;
+  return `Najduže dugo trčanje je ${fmtKm(longestKm)} km: ograničava ga trajanje (≤ ${P.lengths.longMaxSec / 60} min laganim tempom, ${beginner ? 'M17' : 'M13'}) — namerna granica opterećenja umesto preporučenih ${fmtKm(longShortKm)} km; ostatak obima nose ostali dani${beginner ? ', cilj je završiti maraton' : ''}.`;
 }
 
 /** M13a: napomena nedelje čiji je dugi na plafonu skoka (`L` = jumpBase10). */
 export function longJumpNote(long10: number, L10: number): string {
-  return `Dugi ${fmtKm(long10 / 10)} km = plafon skoka max(1,1 × L; L + 1,0 km), L = ${fmtKm(L10 / 10)} km (najduži dugi prethodne 4 nedelje ili skorašnji najduži trk) (M13a).`;
+  return `Dugi ${fmtKm(long10 / 10)} km = plafon skoka max(1,1 × L; L + 1,0 km), L = ${fmtKm(L10 / 10)} km (najduže dugo trčanje prethodne 4 nedelje ili skorašnje najduže trčanje) (M13a).`;
 }
 
 /** M13a: napomena nedelje 1 bez ulaza `recentLongRunKm`. */
 export function recentLongNote(long10: number): string {
-  return `Dugi ${fmtKm(long10 / 10)} km: ako ti je skorašnji najduži trk kraći od ${fmtKm(recentLongThreshold10(long10) / 10)} km, unesi ga — plan počinje od njega (M13a).`;
+  return `Dugi ${fmtKm(long10 / 10)} km: ako ti je skorašnje najduže trčanje kraće od ${fmtKm(recentLongThreshold10(long10) / 10)} km, unesi ga — plan počinje od njega (M13a).`;
 }
 
 /** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje. */

@@ -637,7 +637,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     // Mešovita nedelja: zadržani dani (prošlost) i konstruisani dani nisu ista nedelja (samo provere dana).
     if (!checked(w)) continue;
     if (!long) {
-      if (!restOf(w).has(dateIn(w, pat.long))) err('ROLES', 'Nedelja nema dugi trk.', w.index);
+      if (!restOf(w).has(dateIn(w, pat.long))) err('ROLES', 'Nedelja nema dugo trčanje.', w.index);
       continue;
     }
     // A4: dugi na danu bola ≤ 60 min; lagani na danima bola nisu jednaki (× 0,7).
@@ -663,7 +663,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         long.date
       );
     if (long.workout.segments.some((s) => s.zone !== 'E'))
-      err('LONG_NOT_EASY', 'Dugi trk je samo lagan.', w.index, long.date);
+      err('LONG_NOT_EASY', 'Dugo trčanje je samo lagano.', w.index, long.date);
     const easyKm = w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km));
     if (easyKm.length > 1 && Math.max(...easyKm) - Math.min(...easyKm) > 1 && painOf(w).size === 0)
       err(
@@ -694,9 +694,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   } else if (ls)
     warn(
       'MARATHON_LONG_SHORT',
-      `Najduži dugi trk u planu je ${String(ls.longestKm).replace('.', ',')} km; za maraton se preporučuje bar ${rule.longShortKm} km (${beginner ? 'M17' : 'M13'}). ` +
+      `Najduže dugo trčanje u planu je ${String(ls.longestKm).replace('.', ',')} km; za maraton se preporučuje bar ${rule.longShortKm} km (${beginner ? 'M17' : 'M13'}). ` +
         (beginner ? 'Početnik: cilj je završiti maraton. ' : '') +
-        `Ograničava ga udeo dugog (≤ ${Math.round(rule.longMaxShare * 100)} % nedelje sa ${input.runDays.length} dana): veći nedeljni obim${input.runDays.length < (beginner ? BEGINNER_DAYS_MAX : RUN_DAYS_MAX) ? ' (više dana trčanja nose veći obim)' : ''} daje duži dugi trk.`
+        `Ograničava ga udeo dugog (≤ ${Math.round(rule.longMaxShare * 100)} % nedelje sa ${input.runDays.length} dana): veći nedeljni obim${input.runDays.length < (beginner ? BEGINNER_DAYS_MAX : RUN_DAYS_MAX) ? ' (više dana trčanja nose veći obim)' : ''} daje duže dugo trčanje.`
     );
   // Pouka 14/32: kvalitetni dan duži od dugog po trajanju u nedelji izgradnje ili rasterećenja (upozorenje; posle
   // pouke 32 samo najniži nivo zone — iznad njega greška QUALITY_OVER_LONG).

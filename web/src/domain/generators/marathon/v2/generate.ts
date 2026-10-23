@@ -82,7 +82,7 @@ const recentTooShort = (
   reasons: [
     {
       code: 'RECENT_LONG_TOO_SHORT',
-      message: `Skorašnji najduži trk ${fmtKm(r)} km je prekratak za ${fmtKm(km)} km nedeljno sa ${days} dana i ${weeks} nedelja do trke: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${week} ne može da se sastavi po pravilima (M13a).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, duža priprema, manji početni obim ili više dana, ili polumaraton.`,
+      message: `Skorašnje najduže trčanje ${fmtKm(r)} km je prekratko za ${fmtKm(km)} km nedeljno sa ${days} dana i ${weeks} nedelja do trke: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${week} ne može da se sastavi po pravilima (M13a).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugo trčanje, duža priprema, manji početni obim ili više dana, ili polumaraton.`,
       week
     }
   ]

@@ -55,12 +55,39 @@ const mainM = (w: PlanWeek): number =>
     0
   );
 
+/** Dopuna T (korisnik, 23. 10.): „dugo trčanje" i „tempo treninga i dalje zavisi od rezultata" — samo tekst; za
+    poređenje sa baznim linijama vraća se stari izraz u svim tekstovima plana. */
+const TEXT_T: [RegExp, string][] = [
+  [/Najduže dugo trčanje u planu je/g, 'Najduži dugi trk u planu je'],
+  [/Najduže dugo trčanje je/g, 'Najduži dugi trk je'],
+  [/daje duže dugo trčanje\./g, 'daje duži dugi trk.'],
+  [/ako ti je skorašnje najduže trčanje kraće od/g, 'ako ti je skorašnji najduži trk kraći od'],
+  [
+    /Skorašnje najduže trčanje (\S+ km) je prekratko za/g,
+    'Skorašnji najduži trk $1 je prekratak za'
+  ],
+  [/Preporuka: produži dugo trčanje,/g, 'Preporuka: produži dugi trk,'],
+  [/tempo treninga i dalje zavisi od rezultata/g, 'tempo treninga ostaje prema rezultatu'],
+  [
+    /\(najduže dugo trčanje prethodne 4 nedelje ili skorašnje najduže trčanje\)/g,
+    '(najduži dugi prethodne 4 nedelje ili skorašnji najduži trk)'
+  ]
+];
+const oldText = <T>(v: T): T =>
+  (typeof v === 'string'
+    ? TEXT_T.reduce((s, [re, to]) => s.replace(re, to), v as string)
+    : Array.isArray(v)
+      ? v.map(oldText)
+      : v && typeof v === 'object'
+        ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, oldText(x)]))
+        : v) as T;
+
 /** MAR-07 (N11, pouka 14): plan u obliku pre MAR-07 — vraća SAMO tekstualne izmene upozorenja i napomena (MARATHON_LONG_SHORT
     na 150 min → upozorenje umesto napomene plana, CAPACITY_LIMITED tekst poruke kapaciteta, DELOAD_LONG_SHORTENED po
     nedelji, LONG_SHORTER_THAN_QUALITY bez preporuke manje dana). Tako bazne linije pre MAR-07 ostaju dokaz da se
     sadržaj plana nije promenio; plan sa nedeljom pouke 35 se time ne vraća (mora biti van poređenja). */
 export function before07(p0: MarathonV2Plan): MarathonV2Plan {
-  const p = structuredClone(p0);
+  const p = oldText(structuredClone(p0));
   const beginner = p.input.experience === 'beginner';
   const rule = planRule(p.input.runDays.length, p.input.experience ?? 'regular')!;
   const EARLY = [

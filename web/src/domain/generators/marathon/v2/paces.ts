@@ -121,7 +121,7 @@ export function assessGoal(mpVdot: number, goalTimeSec: number, weeks: number): 
     status === 'realistic'
       ? `Cilj je realističan: traži ${Math.max(0, vdotGap).toFixed(1)} VDOT za ${weeks} nedelja (≤ ${(realistic / 10).toFixed(1)}).`
       : status === 'ambitious'
-        ? `Cilj je ambiciozan: traži ${vdotGap.toFixed(1)} VDOT za ${weeks} nedelja (realistično ≤ ${(realistic / 10).toFixed(1)}); tempo treninga ostaje prema rezultatu.`
-        : `Cilj je nerealan za ovaj ciklus: traži ${vdotGap.toFixed(1)} VDOT za ${weeks} nedelja (ambiciozno ≤ ${(ambitious / 10).toFixed(1)}); tempo treninga ostaje prema rezultatu.`;
+        ? `Cilj je ambiciozan: traži ${vdotGap.toFixed(1)} VDOT za ${weeks} nedelja (realistično ≤ ${(realistic / 10).toFixed(1)}); tempo treninga i dalje zavisi od rezultata.`
+        : `Cilj je nerealan za ovaj ciklus: traži ${vdotGap.toFixed(1)} VDOT za ${weeks} nedelja (ambiciozno ≤ ${(ambitious / 10).toFixed(1)}); tempo treninga i dalje zavisi od rezultata.`;
   return { goalTimeSec, goalVdot, vdotGap, weeks, status, message };
 }
