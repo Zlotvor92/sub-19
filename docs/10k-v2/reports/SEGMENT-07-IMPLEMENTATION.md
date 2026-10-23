@@ -46,15 +46,26 @@ P37 iznad cilja bez upozorenja **9 → 0**, buduća nedelja < 40 % cilja 30 → 
 
 ## Testovi
 
-TESTS
+- `npm run check` (typecheck, lint, format, brz nivo): jedini pad bio je `marathon/v2/app/byteSame` (13 redova „10K v2",
+  upisani uz odobrenje organizatora, ostali redovi iz grane) → posle upisa `npx vitest run --changed 670700e`:
+  **331 / 331 fajlova, 3 710 / 3 710 testova**.
+- Brz nivo 10K: **39 / 39 fajlova, 410 / 410**. Pun nivo `TEST_FULL=1 … src/domain/generators/tenK`: 96 / 97 fajlova,
+  732 / 733 — jedini pad (TEST_MOVED over120 1 → 0, posledica Z1) ispravljen i ponovo proveren.
+- E2E `npx playwright test e2e/tenk-v2`: **3 / 3**.
+- Dopuna T (02-text-addendum): „dugo trčanje", „tempo treninga i dalje zavisi od rezultata" (undo07 vraća tekst za
+  stare otiske).
 
 ## run-all
 
-RUNALL
+`bash docs/generators-v2/final-check/run-all.sh /tmp/ra 4 '.*-10K'` + `summarize-all.py`: **14 poslova, nečistih 0**
+(early 0/121 392, edges 0/19 200, last-weeks 0/93 192, locked-pause 0/34 944, result-pain 0/51 336, start-day 0/42 330,
+two-step cum 0/143 616, handoff HM→10K 0/48 144, MAR→10K 0/38 352, locked-test 0/8 050, fatigue-* čisto). Pokrenuto
+pre dopune T (samo tekst poruka).
 
 ## Sabotaže (`node scripts/sabotage.mjs ../docs/10k-v2/artifacts/segment-07/sabotage-07.json`, --bail=1)
 
-SABOTAGE
+17 sabotaža (stavke 1–7, Z1–Z3, Z6, Z7, Z8, C3, C7, C8): **17 / 17 pada** (Z8 posle dopune testa lancem 1855 —
+prvo pokretanje 16 / 17); stanje `src` posle vraćanja bajt-isto.
 
 ## Primećeno, nije rađeno
 
