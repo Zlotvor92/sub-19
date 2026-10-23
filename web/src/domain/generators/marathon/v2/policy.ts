@@ -409,6 +409,13 @@ const DECISIONS: readonly Decision[] = [
       'week.ts raceOnlyWeek; assess.ts (ranLongs, resultFates, prevResultOf); lengths.ts jumpLongs10, longShortOf; volume.ts capacityWeeks/capacityLimits; mixed.ts mixedRest; generate.ts (recentTooShort, recentThreshold); app/format.ts userText; app/plan.ts, app/adapt.ts (restoreMerge), app/generate.ts, app/form.ts; validate.ts',
     rationale:
       'Organizator: docs/generators-v2/audit/fixes/MAR.md i 00-common.md (zaključan spisak). Merenja pre → posle u docs/marathon-v2/reports/SEGMENT-09-IMPLEMENTATION.md.'
+  },
+  {
+    id: 'MAR-10',
+    rule: 'Ispravke lanaca (marathon-v2.6.1): Z7 — manjak izvršenja (A2) vezan za ZAPISE kao umor (pouka 36): korak čiji se prozor zapisa preklapa sa prozorom ranijeg primenjenog manjka (step.underFrom) ne pravi nov (isti zapisi ne seku cilj ponovo); Z6 — LIMITS (i oštrenje na dan zabrane) preskače zaštićen dan (≤ asOf, zaključan, urađen) istom funkcijom protectedDay kao ostale provere po danu; Z4 — vraćanje revizije = spoj (restoreMerge) → validatePlan jezgra i sledeća adaptacija bez činjenica; prolazi → primeni, ne prolazi → odbij sa razlogom (bez uslova „samo bez prilagođavanja posle"; neposredno poništavanje prolazi).',
+    place: 'assess.ts (UNDER_EXECUTION, underFrom); types.ts; validate.ts (LIMITS); app/adapt.ts (restoreMerge); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Organizator: docs/generators-v2/audit/fixes/MAR-10.md (zaključan spisak, isti obrazac kao HM-09 hm-v2.7.1). Merenja pre → posle u docs/marathon-v2/reports/SEGMENT-09-IMPLEMENTATION.md § MAR-10.'
   }
 ];
 
@@ -419,7 +426,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.6.0',
+  version: 'marathon-v2.6.1',
 
   /** M1 (dani i obim: M15). */
   input: {

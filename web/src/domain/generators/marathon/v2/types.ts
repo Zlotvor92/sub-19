@@ -431,6 +431,9 @@ export interface MarathonV2AdaptStep {
       (potpuna pokrivenost ili pauza) → najduži odrađen trk nedelje [km] (0 = nije trčano). Polje samo kad nije
       prazno. Čita ga lengths.jumpLongs10. */
   ranLongs?: Record<string, number>;
+  /** MAR-10 (Z7): primenjen manjak izvršenja — prvi dan prozora zapisa (7 dana do asOf); kasniji korak čiji se prozor
+      preklapa ne pravi nov manjak. Samo kad ga ima. */
+  underFrom?: IsoDate;
 }
 
 /** Pouka 34: referenca umora pre starta (nedelja 1 generatora bez činjenica). */

@@ -207,13 +207,6 @@ export function restoreMerge<T extends AppPlan>(
     return refuse('Sačuvana verzija nema plan maratona v2, pa se ne može vratiti.');
   if (cur.weeks.length !== snap.weeks.length)
     return refuse('Sačuvana verzija ima drugi broj nedelja; vraćanje bi menjalo prošle nedelje.');
-  // Z4 (MAR-09 t. 3): spajanje dve verzije jezgra (prošlost trenutne, budućnost sačuvane) posle prilagođavanja
-  // menja stanje od kog zavise budući dani (doza, dugi, cilj) — vraća se samo verzija posle poslednjeg
-  // prilagođavanja (isti koraci adaptacije), a vraćen plan mora proći pravila jezgra (validatePlan).
-  if (!same(cur.adaptation?.steps ?? [], snap.adaptation?.steps ?? []))
-    return refuse(
-      'Plan je prilagođavan posle sačuvane verzije; vraćanje bi spojilo dva različita plana. Vratiti se može samo verzija sačuvana posle poslednjeg prilagođavanja.'
-    );
   // Zaštićeni datumi (po planu): do danas, urađeni dani i dani sa ručnom izmenom ili pomeranjem.
   const protectedIds = new Set<string>([
     ...Object.entries(ctx.log ?? {})
@@ -233,7 +226,12 @@ export function restoreMerge<T extends AppPlan>(
   const mixed: number[] = [];
   const weeks: PlanWeek[] = snap.weeks.map((s, i) => {
     const c = cur.weeks[i]!;
-    if (c.endDate <= today) return c;
+    // MAR-10 (Z4, kao jezgro written.writtenWeeks): cela prošla nedelja iz trenutnog plana; kad se razlikuje od
+    // verzije, nedelja je mešovita (validator na njoj proverava samo dane).
+    if (c.endDate <= today) {
+      if (!same(c, s)) mixed.push(s.index);
+      return c;
+    }
     const days = [
       ...c.days.filter((d) => keep(d.date)),
       ...s.days.filter((d) => !keep(d.date))
@@ -262,8 +260,19 @@ export function restoreMerge<T extends AppPlan>(
         }
       : {})
   };
-  if (validatePlan(merged).some((v) => v.severity === 'error'))
-    return refuse('Vraćena verzija ne prolazi pravila plana; vraćanje nije moguće.');
+  // MAR-10 (Z4): vraćanje = „poništi prilagođavanje" — ne odbija se samo zato što je posle verzije bilo
+  // prilagođavanja. Spoj → validatePlan (ista funkcija jezgra); prolazi → vraća se, ne prolazi → odbijanje sa razlogom.
+  const errors = validatePlan(merged).filter((v) => v.severity === 'error');
+  if (errors.length > 0)
+    return refuse(
+      `Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (${userText(errors[0]!.message)}), pa se ne vraća.`
+    );
+  // Vraćen plan mora da se dalje prilagođava (isto jezgro, bez novih činjenica).
+  const next = adaptMarathonV2(merged, {}, today);
+  if (!next.ok)
+    return refuse(
+      `Sačuvana verzija uz treninge posle nje ne može dalje da se prilagođava (${userText((next.reasons[0]?.message ?? '').replace(/^[A-Z0-9_]+: /, ''))}), pa se ne vraća.`
+    );
   const out = stored(merged, metaOf(current)[EDITS_KEY]);
   const prev = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   let changedDays = 0;

@@ -5,7 +5,7 @@
        politike meta = tekuća P.version (app/plan.ts:309 stampPlan), jezgro nosi verziju snimka.
    Tok: g = generate(baza); trenutni = adapt(g, scenario, asOf1); snimak = g (revizija 1) ILI adapt(g, 'none', asOf0)
    (revizija sa koracima); vraćanje danas = asOf1 + k; pa validatePlan(jezgro vraćenog) i sledeća adaptacija
-   adaptMarathonV2(vraćen, {}, danas). Bez slučajnosti (pune mreže: adaptBases × scenariji × asOf × k).
+   adaptMarathonV2(vraćen, {}, danas). k = 0 (MAR-10): neposredno poništavanje (vraćanje istog dana, bez novih zapisa). Bez slučajnosti (pune mreže: adaptBases × scenariji × asOf × k).
    Iz web/: node ../docs/marathon-v2/artifacts/segment-09/mar-restore.ts (MAR-09, obrazac owner/tenK-restore.ts) */
 
 const V2 = '../../../../web/src/domain/generators/marathon/v2';
@@ -19,7 +19,8 @@ const { generatedPlan, storedPlan } = await import(`${V2}/app/plan.ts`);
 
 const store = (p: unknown) => storedPlan(generatedPlan(p));
 const SC = ['none', 'under50', 'pause10', 'pause20', 'pain5', 'fatigue', 'faster', 'locked'] as const;
-const stat = { controlRejected: 0, flows: 0, refused: 0, restored: 0, invalid: 0, nextRejected: 0, stampMismatch: 0 };
+const stat = { controlRejected: 0, flows: 0, refused: 0, restored: 0, invalid: 0, nextRejected: 0, stampMismatch: 0, undoFlows: 0, undoRestored: 0 };
+const why: Record<string, number> = {};
 const rules: Record<string, number> = {};
 const nextCodes: Record<string, number> = {};
 const ex: string[] = [];
@@ -40,14 +41,16 @@ for (const b of T.adaptBases()) {
       for (const s of SC) {
         const cur = adaptMarathonV2(snapCore, T.factsOf(snapCore, s, asOf1), asOf1);
         if (!cur.ok) continue;
-        for (const k of [1, 4, 8]) {
+        for (const k of [0, 1, 4, 8]) {
           const today = addDays(asOf1, k);
           stat.flows++;
           // Kontrola: ista adaptacija trenutnog plana bez vraćanja.
           if (!adaptMarathonV2(cur.plan, {}, today).ok) stat.controlRejected++;
           const r = restoreMerge(store(cur.plan), store(snapCore), today, {});
           const conflicts = (r.meta as { futureChanges?: { conflicts: string[] } }).futureChanges?.conflicts ?? [];
-          if (conflicts.length) { stat.refused++; continue; }
+          if (k === 0) stat.undoFlows++;
+          if (conflicts.length) { stat.refused++; const w = conflicts[0].replace(/[0-9]+([.,][0-9]+)?/g, '#').slice(0, 110); why[w] = (why[w] ?? 0) + 1; continue; }
+          if (k === 0) stat.undoRestored++;
           stat.restored++;
           const core = (r as { marathonV2: { policyVersion: string } }).marathonV2;
           if ((r.meta as { policyVersion: string }).policyVersion !== core.policyVersion) stat.stampMismatch++;
@@ -72,6 +75,7 @@ for (const b of T.adaptBases()) {
   }
 }
 console.log(JSON.stringify(stat));
+console.log('razlozi odbijanja:', JSON.stringify(why, null, 1));
 console.log('greške validatora na vraćenom planu (broj tokova po pravilu):', JSON.stringify(rules));
 console.log('sledeća adaptacija odbijena (pravilo/kod → broj):', JSON.stringify(nextCodes));
 for (const e of ex) console.log('  ' + e);

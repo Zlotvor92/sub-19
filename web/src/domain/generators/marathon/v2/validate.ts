@@ -1749,7 +1749,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       : undefined;
     const a9 = rw.notes.some((n) => n.includes('(A9, M8)'));
     for (const d of sharp)
-      if (bannedR.has(d.date))
+      if (bannedR.has(d.date) && !protectedDay(d))
         err('LIMITS', 'Oštrenje na dan zabrane kvaliteta (A3/A4).', rw.index, d.date);
     if (!taperOk) {
       // Mešovit taper: oštrenje i lagani trkačke nedelje zavise od konstruisanog tapera.
@@ -1828,7 +1828,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // bez ubrzanja.
   for (const w of weeks)
     for (const d of w.days) {
-      if (steps.length === 0 || lockedIds.has(d.date) || d.role === 'race') continue;
+      // MAR-10 (Z6): zaštićen dan (≤ asOf, zaključan, urađen) je činjenica — ista funkcija kao ostale provere po danu.
+      if (steps.length === 0 || protectedDay(d) || d.role === 'race') continue;
       const inAny = (pick: (x: (typeof steps)[number]) => readonly (DateRange | null)[]): boolean =>
         steps.some((x) => pick(x).some((r) => inRange(d.date, r)));
       if (inAny((x) => [x.rest])) err('LIMITS', 'Trening na dan odmora (A4).', w.index, d.date);

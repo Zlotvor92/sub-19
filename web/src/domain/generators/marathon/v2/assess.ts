@@ -498,7 +498,17 @@ export function assess(
     const p2 = plannedKm(...w2);
     const a2 = sumKm(...w2);
     const tn = build(n) ? target(n) : null;
-    if (p2 > 0 && a2 < A.underShare * p2) {
+    // MAR-10 (Z7, kao umor — pouka 36): manjak je vezan za ZAPISE — korak čiji se prozor zapisa preklapa sa prozorom
+    // ranijeg primenjenog koraka manjka ne pravi nov (isti zapisi ne seku cilj ponovo).
+    const seen = steps.find((s) => s.underFrom !== undefined && day(s.asOf) >= w2[0]);
+    if (p2 > 0 && a2 < A.underShare * p2 && seen) {
+      volumeRule = true;
+      reason(
+        'UNDER_EXECUTION',
+        false,
+        `Izvršeno ${km(a2)} od ${km(p2)} km u 7 dana: manjak za ove zapise je već u planu (prilagođavanje ${seen.asOf}).`
+      );
+    } else if (p2 > 0 && a2 < A.underShare * p2) {
       const ok = !volumeRule && tn !== null;
       if (ok) {
         step.startKm = round1(
@@ -508,6 +518,7 @@ export function assess(
           )
         );
         step.reduced = true;
+        step.underFrom = addDays(asOf, w2[0] - t);
         step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
       }
