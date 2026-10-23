@@ -102,7 +102,14 @@ export function adaptInvariants(
     )
       bad.push(`planirano ≠ cilj ned ${w.index}`);
     // Uslov 8 i A9.
-    if (w.phase !== 'race' && w.plannedKm + EPS < min && !restDaysWeek(w))
+    // Pouka 25 (kao validator WEEK_MIN_REST): nedelja sa danima odmora ili bola sme planirano ispod minimuma (10K-08:
+    // uz T1 — lagan dan odmor — to se javlja i u nedelji bola bez dana odmora).
+    if (
+      w.phase !== 'race' &&
+      w.plannedKm + EPS < min &&
+      !restDaysWeek(w) &&
+      !(w.limits?.pain?.length ?? 0)
+    )
       bad.push(`nedelja < minimum ned ${w.index}`);
     if (w.phase !== 'race' && w.index >= first && w.targetKm + EPS < min)
       bad.push(`cilj < minimum ned ${w.index}`);

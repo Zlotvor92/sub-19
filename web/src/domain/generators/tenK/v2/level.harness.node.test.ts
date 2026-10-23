@@ -245,6 +245,10 @@ export function expectByDays<D extends number>(
   n?: (d: D) => { got: number; full: number }
 ): void {
   const want = days.map((d) => table[all.indexOf(d)]);
+  if (process.env['PRINT08']) {
+    console.log('PRINT08', expect.getState().currentTestName, JSON.stringify({ days, got: days.map(get), want }));
+    return;
+  }
   if (FULL) {
     expect(days.map(get)).toEqual(want);
     return;

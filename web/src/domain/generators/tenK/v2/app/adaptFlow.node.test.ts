@@ -570,9 +570,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
           .weeks.slice(3, 5)
           .map((w) => w.targetKm),
         version
-      ).toEqual([35.9, 32.7]);
+      ).toEqual([35.7, 32.5]); // 10K-08 (T1): 35,9 / 32,7
       expect(r.reasons.find((x) => x.condition === 'PAIN')!.message, version).toContain(
-        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km).'
+        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,5 km).' // 10K-08 (T1): 29,7
       );
       // Isto prilagođavanje kao plan tekuće verzije (A15: buduće nedelje po tekućim pravilima).
       expect(v2Of(r.result), version).toEqual(v2Of(fresh.result));

@@ -62,7 +62,8 @@ export function describeP35Grid(title: string, partIndex: number): void {
         // Nedelje sa drugim danom kvaliteta laganim (na 7ba9717 2022 nedelje sa 2 kvaliteta dužim od dugog; posle
         // prve takve nedelje progresija q2 kreće kasnije, pa deo kasnijih ne treba).
         expect(P35_DROPPED.reduce((a, b) => a + b, 0)).toBe(1854);
-        expect(dropped).toBe(FULL ? P35_DROPPED[partIndex - 1] : 1854);
+        if (process.env['PRINT08']) console.log('PRINT08', `p35 ${partIndex}`, dropped);
+        else expect(dropped).toBe(FULL ? P35_DROPPED[partIndex - 1] : 1854);
       },
       GRID_TIMEOUT
     );

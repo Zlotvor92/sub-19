@@ -26,6 +26,7 @@ import {
   expectByDays,
   GRID_TIMEOUT,
   missingParts,
+  CHANGED_08,
   P35_PLANS,
   p08Errors,
   sumOf
@@ -282,7 +283,9 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         const c = cause[x.days];
         // 06f (pouka 35): uzrok na 7ba9717 (plan se menja, p35.node.test.ts).
         const p35 = P35_CAUSE21[id];
-        if (p35) c[p35]!++;
+        // 10K-08: plan promenjen prema b9c4728 (T1/C11) — svoj razred (stanje b9c4728 su proverile ove regresije).
+        if (CHANGED_08.gen[id]) c['10K-08'] = (c['10K-08'] ?? 0) + 1;
+        else if (p35) c[p35]!++;
         // D30b uklanja samo upozorenje RACE_WEEK_SHORT; D30a daje RP deonicu < 1000 m.
         else if (x.h[0] === h0) c['same']!++;
         else if (rws0 === 1 && x.h[0] === noRws0) c['D30b']!++;

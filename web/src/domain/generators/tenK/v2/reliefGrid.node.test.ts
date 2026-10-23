@@ -62,15 +62,15 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
 
   it('10w-25km-v30-A-sat, asOf kraj ned 3: ned 5 više nije rasterećenje (4917959: pauza 17,0, bol 5 14,9, manjak 19,0)', () => {
     const id = '10w-25km-v30-A-sat';
+    // 10K-08 (T1, lagan ≤ 0,8 × dugi i ≥ 20 min): bazni plan i povratak niži (10k-v2.9.0: 29,8 / 23,8 / 31,6 / 33,5).
     expect(rows(reliefPlan(id), 4, 7)).toEqual([
-      [29.8, false],
-      [23.8, true],
-      [31.6, false],
-      [33.5, false]
+      [27.4, false],
+      [21.9, true],
+      [27.9, false],
+      [30, false]
     ]);
     const pause = adapt(id, 3, 'pause10');
     expect(rows(pause.plan, 4, 7)).toEqual([
-      // 10K-08 (T1, lagan ≤ 0,8 × dugi i ≥ 20 min): 21,2 / 23,3 → 21,1 / 23,2.
       [21.1, false],
       [23.2, false],
       [25, false],
@@ -81,23 +81,23 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
     );
     const pain = adapt(id, 3, 'pain5');
     expect(rows(pain.plan, 4, 7)).toEqual([
-      [29.8, false],
-      [20.5, false],
-      [22.6, false],
-      [24.9, false]
+      [28.3, false],
+      [20.4, false],
+      [22.4, false],
+      [24.6, false]
     ]);
     expect(msg(pain, 'PAIN')).toContain(
-      'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (18,6 km).'
+      'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (18,5 km).'
     );
     expect(msg(pain, 'PAIN')).toMatch(
       / Redovno rasterećenje u nedelji 5 otpada: nedelja 4 je smanjena \(A17\)\.$/
     );
     const under = adapt(id, 3, 'under');
     expect(rows(under.plan, 4, 7)).toEqual([
-      [23.8, false],
-      [26.2, false],
-      [27.8, false],
-      [29.5, false]
+      [21.9, false],
+      [24.1, false],
+      [26.4, false],
+      [28, false]
     ]);
     expect(msg(under, 'UNDER_EXECUTION')).toMatch(/nedelja 4 je smanjena \(A17\)\.$/);
     // Pauza + bol na kraju nedelje (r = n): jedna rečenica A17, u poruci pauze.
@@ -107,8 +107,8 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
     // Umor: prinudno rasterećenje ned 4 (A5), redovno ned 5 ukida A5 — A17 bez dejstva.
     const tired = adapt(id, 3, 'fatigue');
     expect(rows(tired.plan, 4, 5)).toEqual([
-      [22.5, true],
-      [29.8, false]
+      [21.4, true],
+      [27.4, false]
     ]);
     expect(a17Of(tired)).toBe(false);
   });
@@ -119,7 +119,7 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
     expect(buildRun(p12, 4)).toBe(5);
     const p17 = adapt('17w-25km-v30-A-sat', 6, 'pain5').plan;
     expect(p17.weeks.filter((w) => w.deload).map((w) => w.index)).toEqual([4, 13]);
-    expect(p17.weeks.slice(7, 12).map((w) => w.targetKm)).toEqual([23, 25.3, 27.8, 29.8, 31.6]);
+    expect(p17.weeks.slice(7, 12).map((w) => w.targetKm)).toEqual([20.4, 22.4, 24.6, 26.4, 27.6]); // 10K-08 (T1): 23 … 31,6
     expect(buildRun(p17, 8)).toBe(5);
   });
 });

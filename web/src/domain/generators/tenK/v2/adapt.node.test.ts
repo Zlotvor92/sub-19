@@ -277,6 +277,10 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     got: Record<string, Record<string, number>>,
     full: Record<string, Record<string, number>>
   ): void {
+    if (process.env['PRINT08']) {
+      console.log('PRINT08', expect.getState().currentTestName, JSON.stringify(got));
+      return;
+    }
     if (FULL) {
       expect(got).toEqual(full);
       return;
