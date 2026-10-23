@@ -485,12 +485,21 @@ const DECISIONS: readonly Decision[] = [
       'validate.ts (guarded u LIMITS); assess.ts (underFrom, painSeen, testKept); steps.ts protectedTestDate; volume.ts adaptNominal10; adaptInvariants.ts',
     rationale:
       'chains.ts HM 20261023 0 2000: odbijeni lanci 95 → 0; idemp.ts: isti 643 → 25, sutra 218 → 21 (manjak 361/113 → 0); C7 i=4878 taper 24 km (svi dani 4 km) → 46,5 km.'
+  },
+  /* ---------- Segment HM-10 (hm-v2.8.0): krug T — trenerska pravila (audit/fixes/03-coach-rules.md, T-assign.md). ---------- */
+  {
+    id: 'HM-10',
+    rule: 'T1: u nedelji izgradnje (ne rasterećenje, taper, trkačka) svaki lagan ≤ 0,8 × dugi iste nedelje (km) i ≥ max(4 km, 20 min srednjim E); dugi se određuje kao i do sada (najduži dozvoljen) i zbog ovoga se ne produžava — ostatak koji ne staje → nedelja nije izvodljiva sa tim ciljem i pretraga cilja je spušta (planirano < cilj po pravilu, CAPACITY_LIMITED „i lagane ≤ 0,8 × dugi" uz preporuku više dana); kad najkraći lagan ne staje ispod 0,8 × dugi (mali obim) → manje laganih dana (najkasniji lagani su odmor, napomena „Manje laganih dana"); pouka 35: dva dana kvaliteta koja staju samo uz dan odmora → drugi dan lagan kad nedelja sa jednim staje. Izuzetak (pitanje organizatoru): nedelja NA minimumu obima u kojoj T1 nije izvodljiv ni sa manje dana → dužine kao pre (lagan ≤ dugi), upozorenje EASY_BUILD_MIN_WEEK. Dan trčanja šablona koji je odmor ostaje dan plana za dayId zapisa. T3: posle novog starta (A3) taper zadržava jedan kvalitet kad RP ne staje u plafon: T ≈ 60 % poslednje T doze posle povratka (min 2,0 km, plafon T važi) kad je posle povratka bar jedna nedelja izgradnje sa kvalitetom; trkačka nedelja kratko oštrenje kao bez pauze, osim u periodu bola. C4: urađen dan posle asOf u zbiru zaštićenih = planirani km (MASTER pouka 37). C12: RP najnižeg nivoa (2 × 2000 m) se u mešovitoj nedelji ne odbacuje (kao MAR MP). T7: skorašnji najduži > trenutni nedeljni obim → RECENT_LONG_OVER_WEEKLY („proveri unos").',
+    place:
+      'lengths.ts buildLengthsT1, buildLengths, buildEasyMin10, buildEasyCap10, t1MinWeek; week.ts buildDayLimit, secondQualityEasy, easyDays, T1_REST_NOTE, freeKind (C12), sharpenerAllowed (T3); quality.ts restartTaperT; steps.ts newStartAt; generate.ts (newStart); volume.ts capacityLimits/capacityMessage (easy); validate.ts EASY_BUILD, EASY_BUILD_MIN_WEEK, ROLES (t1Rest), WEEK1_BELOW_START, TAPER_QUALITY, PHASE_QUALITY, RACE_SHARPENER; adapt.ts factKmOf (C4), dayId dana šablona; input.ts RECENT_LONG_OVER_WEEKLY; gridInvariants (EASY_BUILD, K2, DAYS_COUNT), adaptInvariants (minimum u koraku 0,1 km, pouka 25)',
+    rationale:
+      'coach-hm-mar 1b #4 i measure.ts HM 400 200 100: lagan ≥ 0,9 × dugi 3 906 → 0 / 24 852 planova; coach-HM pauza 35 (taper bez kvaliteta, trkačka bez oštrenja); consistency C4/C12; plauzibilnost L1. Brojevi pre → posle u docs/hm-v2/reports/SEGMENT-10-IMPLEMENTATION.md.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.7.1',
+  version: 'hm-v2.8.0',
 
   /** H1 (dani i obim: H15). */
   input: {
@@ -725,7 +734,16 @@ export const HM_V2_POLICY = {
   caps: { R: 0.05, I: 0.08, T: 0.1, RP: 0.15 },
 
   /** H13 (udeo dugog: H15). longMaxKm: odluka organizatora HM-01 → 02 (≈ 1,15 × trka). */
-  lengths: { longMaxSec: 9000, longMaxKm: 24, easyMinKm: 4.0, longWarnKm: 16 },
+  lengths: {
+    longMaxSec: 9000,
+    longMaxKm: 24,
+    easyMinKm: 4.0,
+    longWarnKm: 16,
+    /** T1 (krug T, organizator 23. 10.): u nedelji izgradnje lagan ≤ ovaj udeo dugog iste nedelje (km) i
+        ≥ max(easyMinKm, easyMinSec laganim tempom). */
+    easyLongMaxShare: 0.8,
+    easyMinSec: 1200
+  },
 
   /** Pouka 28 (HI7): dugi svake nedelje ≤ max(factor × L, L + addKm), L = najduži dugi prethodnih
       windowWeeks nedelja (u nedeljama 1…windowWeeks i skorašnji najduži trk, minKm–maxKm). */

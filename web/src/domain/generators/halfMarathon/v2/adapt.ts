@@ -6,7 +6,7 @@
    JSON (A14). */
 
 import { assess, checkFacts, painReturnNote } from './assess.ts';
-import { dayNumber, mustDay } from './dates.ts';
+import { addDays, dayNumber, mustDay, weekdayOf } from './dates.ts';
 import { construct } from './generate.ts';
 import { checkInput } from './input.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
@@ -112,7 +112,13 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
       `asOf ne sme biti pre prethodne adaptacije (${String(prevAsOf)}, A11).`
     );
   const ids = new Set(plan.weeks.flatMap((w) => w.days.map((d) => d.date)));
-  const cf = checkFacts(rawFacts, at, ids);
+  // T1 (krug T): dan trčanja šablona koji je u nedelji odmor (manje laganih dana, odmor koraka) je i dalje dan plana
+  // za dayId zapisa — zapis na njemu je trčanje van plana.
+  const runIds = new Set(ids);
+  for (const w of plan.weeks)
+    for (let d = w.startDate; d <= w.endDate; d = addDays(d, 1))
+      if (plan.input.runDays.includes(weekdayOf(d))) runIds.add(d);
+  const cf = checkFacts(rawFacts, at, runIds);
   if (!cf.ok) return { ok: false, reasons: cf.reasons, violations: [] };
   const facts = cf.facts;
   const chk = checkInput(plan.input);
@@ -306,7 +312,8 @@ function factKmOf(
     for (const d of w.days) {
       if (!keep(d) || !d.countsToWeek) continue;
       const x = mustDay(d.date);
-      const rec = facts.workouts.filter((r) => (r.dayId ?? r.date) === d.date);
+      // C4 (krug T, MASTER pouka 37): urađen dan posle asOf (zapis sa dayId budućeg dana) = planirani km.
+      const rec = x > t ? [] : facts.workouts.filter((r) => (r.dayId ?? r.date) === d.date);
       const cov = facts.coverage;
       const known =
         !!cov?.complete && mustDay(cov.from) <= x && x <= mustDay(cov.to) && rec.length === 0;

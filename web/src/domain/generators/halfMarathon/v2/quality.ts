@@ -372,6 +372,30 @@ export function beginnerTaperT(state: QualityState, dayFits?: DayFits): Dose {
   );
 }
 
+/** T3 (krug T, organizator 23. 10.) — JEDNA funkcija za konstruktor i validator: posle novog starta (`newStart`,
+    steps.newStartAt) taper zadržava jedan kvalitet kad RP ne staje u plafon: T ≈ 60 % poslednje T doze posle povratka
+    (stanje doze se briše u nedelji novog starta, pa je stanje = posle povratka), najmanje najniži nivo (2,0 km),
+    samo kad je posle povratka bar jedna nedelja izgradnje sa kvalitetom (stanje nije prazno). null = pravilo ne važi. */
+export function restartTaperT(
+  state: QualityState,
+  newStart: boolean,
+  dayFits?: DayFits
+): Dose | null {
+  if (!newStart || (state.q1 === null && state.q2 === null)) return null;
+  return pick(
+    'T_cruise',
+    reducedStructure(
+      'T_cruise',
+      state.t,
+      P.taper.doseShare,
+      tMinStructure('T_cruise', P.taper.tMinKm),
+      false,
+      dayFits
+    ),
+    'taper'
+  );
+}
+
 /** H7: taper — RP i T (cruise), svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 2000 m RP, 2,0 km T);
     3 dana i početnik samo RP (HI6, H17). Drugi član (pouka 32, `limit`): RP prvi (sa T na najmanjoj dozi),
     pa T uz izabran RP; najmanja doza je izuzeta. */

@@ -3,6 +3,7 @@
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
 import {
+  buildEasyCap10,
   longKmCap10,
   longShareCap10,
   longsOf10,
@@ -20,7 +21,7 @@ export const to10 = (km: number): number => Math.round(km * 10);
 
 /** Šta je seklo spuštenu nedelju izgradnje — dugi na 150 min ('time'), na udelu H15 ('share'), na 24 km
     ('km'; HI8) i/ili na kotrljajućoj granici pouke 28 ('rolling'; HI7). */
-export type CapacityLimit = 'time' | 'share' | 'km' | 'rolling';
+export type CapacityLimit = 'time' | 'share' | 'km' | 'rolling' | 'easy';
 
 /** H6/HI8: poruka CAPACITY_LIMITED — imenuje stvarna ograničenja; preporučuje više dana samo kad veći broj
     dana postoji u tabeli H15 (HI9 a: 4 dana → 5–6 dana; početnik samo 4 → 5, H17). */
@@ -33,9 +34,16 @@ export function capacityMessage(
     time: `${Math.round(rule.longMaxSec / 60)} min`,
     share: `${Math.round(rule.longMaxShare * 100)} % nedelje`,
     km: `${P.lengths.longMaxKm} km`,
-    rolling: 'max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28)'
+    rolling: 'max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28)',
+    easy: ''
   };
-  const what = limits.length > 0 ? ` uz dugi ≤ ${limits.map((l) => text[l]).join(' i ≤ ')}` : '';
+  const longL = limits.filter((l) => l !== 'easy');
+  // T1 (krug T): lagan ≤ 0,8 × dugi.
+  const easyL = limits.includes('easy')
+    ? ` ${longL.length > 0 ? 'i ' : 'uz '}lagane ≤ ${String(P.lengths.easyLongMaxShare).replace('.', ',')} × dugi`
+    : '';
+  const what =
+    (longL.length > 0 ? ` uz dugi ≤ ${longL.map((l) => text[l]).join(' i ≤ ')}` : '') + easyL;
   const more = rule.dayCounts.filter((n) => n > runDays);
   const advice =
     more.length === 0
@@ -92,8 +100,10 @@ export function capacityLimits(
     if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
     if (l10 === longKmCap10()) hit.add('km');
     if (l10 === rollAt(w.index)) hit.add('rolling');
+    if (w.days.some((d) => d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(l10)))
+      hit.add('easy');
   }
-  return (['time', 'share', 'km', 'rolling'] as const).filter((l) => hit.has(l));
+  return (['time', 'share', 'km', 'rolling', 'easy'] as const).filter((l) => hit.has(l));
 }
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */

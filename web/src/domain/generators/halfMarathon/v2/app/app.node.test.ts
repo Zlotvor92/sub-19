@@ -438,6 +438,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
         'hm-v2.6.1',
         'hm-v2.6.2',
         'hm-v2.7.0',
+        'hm-v2.7.1',
         VERSION
       ])
     ]);

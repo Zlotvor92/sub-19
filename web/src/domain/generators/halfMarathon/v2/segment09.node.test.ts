@@ -10,7 +10,7 @@ import { generatedPlan, storedPlan } from './app/plan.ts';
 import { addDays } from './dates.ts';
 import { generateHmV2 } from './generate.ts';
 import { checkPlan, emptyStats } from './gridInvariants.ts';
-import { stepCap10, taperLongCap10 } from './lengths.ts';
+import { longestLong10, stepCap10, taperLongAtMin, taperLongCap10 } from './lengths.ts';
 import { beginnerInputs, feelInputs, grid02Inputs } from './testInputs.ts';
 import type { HmV2Plan, PlanWeek } from './types.ts';
 import { FULL } from '../../../../test/level';
@@ -83,9 +83,13 @@ describe('HM-09 B3: taper posle smanjenja — dugi tapera najmanje 4 km', () => 
     const { s3 } = chain3(inputOf('b-d5-12w-25km-e390-A'));
     const p = ok(s3);
     const taper = p.weeks.find((w) => w.phase === 'taper')!;
-    expect(longOf(taper)!.workout.km).toBe(4);
+    // HM-10 (T1): manje laganih dana u malim nedeljama → duži najduži dugi (bilo 6,6 km); dugi tapera i upozorenje
+    // po istoj funkciji (taperLongCap10 / taperLongAtMin).
+    const longest10 = longestLong10(p.weeks.slice(0, taper.index - 1));
+    const t10 = Math.round(longOf(taper)!.workout.km * 10);
+    expect(t10).toBeLessThanOrEqual(taperLongCap10(longest10));
     expect(p.warnings.some((v) => v.rule === 'TAPER_LONG_MIN' && v.week === taper.index)).toBe(
-      true
+      taperLongAtMin(t10, longest10)
     );
   });
 });

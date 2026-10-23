@@ -123,13 +123,14 @@ describe('HI7 (pouka 28) skorašnji najduži trk', () => {
     expect(p30.weeks[0]!.days).toEqual(free.weeks[0]!.days);
   });
 
-  it('u nedeljama 2–4 skorašnji najduži ulazi u L (brz trkač 30 km: ned 1 dugi 11,0; ned 2 12,1 bez r, 12,4 uz r = 12)', () => {
+  it('u nedeljama 2–4 skorašnji najduži ulazi u L (brz trkač 30 km: ned 1 dugi 10,6; ned 2 11,6 bez r, 12,0 uz r = 12)', () => {
     const at = (r?: number) =>
       gen({ km: 30, vdot: 60, ...(r !== undefined ? { recentLongRunKm: r } : {}) }).weeks.map(
         (w) => km(w, 'long')[0]
       );
-    expect(at().slice(0, 2)).toEqual([11, 12.1]); // max(1,1 × 11,0; 12,0) = 12,1
-    expect(at(12).slice(0, 2)).toEqual([11, 12.4]); // L = max(11,0; 12) → 13,2; dugi po udelu 12,4
+    // HM-10 (T1): dugi ostavlja laganom najmanje 20 min (4,4 km) — ned 1 10,6 km (bilo 11,0 po udelu).
+    expect(at().slice(0, 2)).toEqual([10.6, 11.6]); // max(1,1 × 10,6; 11,6) = 11,6
+    expect(at(12).slice(0, 2)).toEqual([10.6, 12]); // L = max(10,6; 12) → 13,2; dugi do laganog od 20 min 12,0
   });
 
   it('P1: neizvodljiva nedelja uz dati r → RECENT_LONG_TOO_SHORT sa pragom i preporukom', () => {

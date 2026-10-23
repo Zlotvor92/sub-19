@@ -65,9 +65,19 @@ describe('H1 opseg ulaza', () => {
     expect(message(d(6, 90.1))).toContain('najviše 90 km (6 dana)');
   });
 
+  it('T7 (krug T): skorašnji najduži > trenutni nedeljni obim → odbijanje RECENT_LONG_OVER_WEEKLY (proveri unos)', () => {
+    expect(codes(base({ recentLongRunKm: 40 }))).toEqual([]);
+    expect(codes(base({ recentLongRunKm: 40.1 }))).toEqual(['RECENT_LONG_OVER_WEEKLY']);
+    expect(message(base({ recentLongRunKm: 40.1 }))).toBe(
+      'Skorašnje najduže trčanje (40,1 km) je duže od trenutnog nedeljnog obima (40 km) — proveri unos.'
+    );
+    // Van opsega 5–42 ostaje samo RECENT_LONG_INVALID.
+    expect(codes(base({ recentLongRunKm: 42.1 }))).toEqual(['RECENT_LONG_INVALID']);
+  });
+
   it('HI7 (pouka 28): recentLongRunKm opcion, 5–42 km; u ulazu plana samo kad je dat', () => {
     expect(codes(base({ recentLongRunKm: 5 }))).toEqual([]);
-    expect(codes(base({ recentLongRunKm: 42 }))).toEqual([]);
+    expect(codes(base({ recentLongRunKm: 42, currentWeeklyKm: 45 }))).toEqual([]);
     expect(codes(base({ recentLongRunKm: null }))).toEqual([]);
     expect(codes(base({ recentLongRunKm: 4.9 }))).toEqual(['RECENT_LONG_INVALID']);
     expect(codes(base({ recentLongRunKm: 42.1 }))).toEqual(['RECENT_LONG_INVALID']);

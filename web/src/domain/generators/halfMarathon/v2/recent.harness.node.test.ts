@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
-import { mayChange } from './grid.harness.node.test.ts';
+import { CHANGED_10, mayChange } from './grid.harness.node.test.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
 import { DAY_COUNTS, inputOf, KM_BY_DAYS, resultHash, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { HmV2Plan } from './types.ts';
@@ -67,6 +67,7 @@ export function describeRecent(
     const excepted: Record<string, WeekRow> = {};
     const tooShort: { id: string; r: number; days: number; week?: number; message: string }[] = [];
     const other: string[] = [];
+    const overWeekly: string[] = [];
     const bad: Record<string, string[]> = {};
     let st: GridStats = emptyStats();
     beforeAll(() => {
@@ -85,22 +86,27 @@ export function describeRecent(
         const ex = EXCEPTIONS[g.id];
         // HM-04 A (pouka 32): plan sa kvalitetnim danom dužim od dugog na 5e09a02 sme da se promeni; HM-07 (CHANGED_07).
         const over = mayChange(`r-${g.id}`);
-        if (ex && res.ok && !same) excepted[g.id] = rowOf(res.plan, ex.week);
-        else if ((!same && !over) || ex) regression.push(g.id);
+        // HM-10 (krug T): plan izuzetka koji menja i T1/T7 (CHANGED_10) proverava spisak promena, ne red izuzetka.
+        const t10 = CHANGED_10.has(`r-${g.id}`);
+        if (ex && res.ok && !same && !t10) excepted[g.id] = rowOf(res.plan, ex.week);
+        else if ((!same && !over) || (ex && !t10)) regression.push(g.id);
         if (res.ok) checkPlan(g.id, res.plan, bad, st);
         else if (res.reasons.length === 1 && res.reasons[0]!.code === 'RECENT_LONG_TOO_SHORT')
           tooShort.push({ id: g.id, r: g.r, days: g.days, ...res.reasons[0]! });
+        // T7 (krug T): skorašnji najduži > trenutni nedeljni obim → odbijanje (plauzibilnost).
+        else if (res.reasons.length === 1 && res.reasons[0]!.code === 'RECENT_LONG_OVER_WEEKLY')
+          overWeekly.push(g.r > g.km ? '' : g.id);
         else other.push(`${g.id}: ${res.reasons.map((x) => `${x.code} ${x.message}`).join(' | ')}`);
       }
     }, 120_000);
 
-    it('K1: jedino odbijanje je RECENT_LONG_TOO_SHORT sa pragom (izmereno: ned 1, r ≤ 6 km, 3–4 dana)', () => {
+    it('K1: odbijanja su RECENT_LONG_TOO_SHORT sa pragom (izmereno HM-10: ned 1, r ≤ 7 km) i T7 RECENT_LONG_OVER_WEEKLY tačno kad je r > obim', () => {
       expect(inputs.length).toBeGreaterThan(0);
       expect(other).toEqual([]);
+      expect(overWeekly.filter((x) => x !== '')).toEqual([]);
+      expect(overWeekly.length).toBe(inputs.filter((g) => g.r > g.km).length);
       expect(
-        tooShort.filter(
-          (x) => x.week !== 1 || x.r > 6 || x.days > 4 || !/izvodljiv od \d+,\d km/.test(x.message)
-        )
+        tooShort.filter((x) => x.week !== 1 || x.r > 7 || !/izvodljiv od \d+,\d km/.test(x.message))
       ).toEqual([]);
     });
 
@@ -116,7 +122,9 @@ export function describeRecent(
 
     it('regresija prema HM-02: bajt-isto osim spiska izuzetaka (HI14 / pouka 33: samo prva rasteretna nedelja)', () => {
       expect(regression).toEqual([]);
-      const ids = inputs.map((g) => g.id).filter((id) => id in EXCEPTIONS);
+      const ids = inputs
+        .map((g) => g.id)
+        .filter((id) => id in EXCEPTIONS && !CHANGED_10.has(`r-${id}`));
       expect(Object.keys(excepted)).toEqual(ids);
       for (const id of ids) expect(excepted[id]).toEqual(EXCEPTIONS[id]!.after);
     });

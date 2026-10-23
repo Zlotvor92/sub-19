@@ -1,0 +1,74 @@
+{
+ "dist": "HM",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 100
+ },
+ "generator": {
+  "plans": 24852,
+  "rejected": 0,
+  "unrealistic": 270,
+  "t1": 786,
+  "t1contra": 0,
+  "t1two": 0,
+  "t1maxOver": 15,
+  "t1ex": [
+   "d4-10w-30km-v70-A-sat: ned 9 39>34 min",
+   "d4-10w-30km-v70-A-sun: ned 9 39>34 min",
+   "d4-10w-30km-v70-B-sat: ned 9 39>34 min",
+   "d4-10w-30km-v70-B-sun: ned 9 39>34 min",
+   "d4-10w-30km-v70-C-sat: ned 9 39>34 min",
+   "d4-10w-30km-v70-C-sun: ned 9 39>34 min"
+  ],
+  "t2": 0,
+  "t2adj": 0,
+  "t2maxEasy": 0,
+  "t2ex": [],
+  "t1ByDays": {
+   "4d": 60,
+   "5d": 297,
+   "6d": 429
+  },
+  "t1worst": "d6-11w-40km-v70-A-sat (vdot 70): ned 10 49>34 min",
+  "t2worst": "",
+  "t2worstKm": 0,
+  "t2adjMinutes": {},
+  "t2ByDays": {},
+  "t1Warn": {
+   "LONG_RUN_SHORT": 165,
+   "LONG_SHORTER_THAN_QUALITY": 198,
+   "DOSE_DROPPED": 156,
+   "TAPER_RP_ONLY": 66,
+   "TEST_DELOAD_LONG": 12
+  }
+ },
+ "adaptation": {
+  "bases": 49,
+  "flows": 23292,
+  "rejected": 0,
+  "t1": 777,
+  "t1two": 0,
+  "t1contra": 0,
+  "t1noWarn": 319,
+  "byScenario": {
+   "pause20": 124,
+   "pause35": 255,
+   "painPause": 133,
+   "pain5": 49,
+   "pain8": 50,
+   "pause10": 36,
+   "chain": 36,
+   "chain2": 63,
+   "under50": 31
+  },
+  "ex": [
+   "d4-12w-35km-v60-C-sat / pause20 / asOf 2026-11-04: ned 11 41>39 min",
+   "d4-12w-35km-v60-C-sat / pause35 / asOf 2026-11-04: ned 11 33>27 min",
+   "d4-12w-35km-v60-C-sat / painPause / asOf 2026-11-04: ned 11 41>39 min",
+   "d4-12w-35km-v60-C-sat / pause20 / asOf 2026-11-07: ned 11 41>39 min",
+   "d4-12w-35km-v60-C-sat / pause35 / asOf 2026-11-07: ned 11 33>29 min",
+   "d4-12w-35km-v60-C-sat / pain5 / asOf 2026-11-07: ned 11 41>39 min"
+  ]
+ }
+}

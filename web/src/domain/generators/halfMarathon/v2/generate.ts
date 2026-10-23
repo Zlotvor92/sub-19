@@ -28,6 +28,7 @@ import {
   initialState,
   jumpRecentKm,
   pacesAt,
+  newStartAt,
   restartWeeks,
   stepVdotAt
 } from './steps.ts';
@@ -177,7 +178,10 @@ export function construct(
   // koji ne staje otpada samo posle smanjenja obima.
   const ctxAt = (w: number): WeekContext => {
     if (!av) return ctx0;
-    const reduced = w >= av.reducedFrom ? { adapted: true } : {};
+    const reduced = {
+      ...(w >= av.reducedFrom ? { adapted: true } : {}),
+      ...(newStartAt(steps, w) ? { newStart: true } : {})
+    };
     if (stepVdotAt(steps, w) === null) return { ...ctx0, ...reduced };
     const p = pacesAt(pace, steps, w);
     return { ...ctx0, paces: p, raceSec: predictedHm(p), feel: false, ...reduced };

@@ -241,6 +241,12 @@ export function checkInput(raw: unknown): InputCheck {
       'RECENT_LONG_INVALID',
       `Skorašnje najduže trčanje mora biti između ${rl.minKm} i ${rl.maxKm} km (uneto ${recentLong}).`
     );
+  // T7 (krug T, plauzibilnost): najduži trk ne može biti duži od cele nedelje (trenutni nedeljni obim).
+  else if (recentLong != null && isNum(km) && recentLong > km)
+    no(
+      'RECENT_LONG_OVER_WEEKLY',
+      `Skorašnje najduže trčanje (${String(recentLong).replace('.', ',')} km) je duže od trenutnog nedeljnog obima (${String(km).replace('.', ',')} km) — proveri unos.`
+    );
 
   // Rezultat → VDOT (H1); bez pouzdanog rezultata plan po osećaju (H16).
   const res = raw['recentResult'] as HmV2Result | null | undefined;

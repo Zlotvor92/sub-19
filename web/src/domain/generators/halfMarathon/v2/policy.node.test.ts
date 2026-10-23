@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.7.1');
+    expect(P.version).toBe('hm-v2.8.0');
   });
 
   it('H1 opseg ulaza', () => {
@@ -151,7 +151,15 @@ describe('HM v2 politika (MASTER § 4)', () => {
     expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, RP: 0.15 });
     expect(P.startLevel).toEqual({ capShare: 0.6 });
     // H13: dugi ≤ 24 km (odluka organizatora HM-01 → 02); pouka 28 (HI7).
-    expect(P.lengths).toEqual({ longMaxSec: 9000, longMaxKm: 24, easyMinKm: 4.0, longWarnKm: 16 });
+    // T1 (krug T): lagan izgradnje ≤ 0,8 × dugi i ≥ 20 min.
+    expect(P.lengths).toEqual({
+      longMaxSec: 9000,
+      longMaxKm: 24,
+      easyMinKm: 4.0,
+      longWarnKm: 16,
+      easyLongMaxShare: 0.8,
+      easyMinSec: 1200
+    });
     expect(P.recentLong).toEqual({
       minKm: 5,
       maxKm: 42,

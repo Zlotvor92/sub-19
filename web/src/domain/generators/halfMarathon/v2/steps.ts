@@ -122,6 +122,12 @@ export const restartWeeks = (steps: readonly HmV2AdaptStep[]): Set<number> =>
     ])
   );
 
+/** T3 (krug T): nedelja `w` je posle novog starta (A3, pauza ≥ 35 dana / restart) — taper zadržava jedan kvalitet
+    (quality.restartTaperT), trkačka nedelja kratko oštrenje kao bez pauze (week.sharpenerAllowed). Konstruktor i
+    validator. */
+export const newStartAt = (steps: readonly HmV2AdaptStep[], w: number): boolean =>
+  steps.some((s) => s.restart && s.fromWeek <= w);
+
 /** A17 (pouka 22): najviše uzastopnih nedelja izgradnje od ukinutog rasterećenja (uključujući ukinutu
     nedelju) do sledećeg redovnog rasterećenja — H5 izuzetak 4 + ukinuta nedelja. framesFor i validator. */
 export const A17_MAX_RUN = P.deload.exceptionRun + 1;

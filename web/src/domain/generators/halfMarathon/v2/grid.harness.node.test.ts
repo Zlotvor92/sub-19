@@ -47,9 +47,23 @@ export const CHANGED_09 = new Map(
     >
   )
 );
-/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07 ili HM-09. */
+/** HM-10 (hm-v2.8.0, krug T): planovi čiji se rezultat menja prema b9c4728, sa klasom — l T1 (lagan ≤ 0,8 × dugi,
+    ≥ 20 min; manje laganih dana; spuštena nedelja i posledice), m T1 (lagan na granici 20 min), r T1 → odbijanje
+    RECENT_LONG_TOO_SHORT sa pragom, p T7 (skorašnji najduži > nedeljni obim), d samo tekst, x drugo (3 plana, u
+    izveštaju). Izvor: docs/hm-v2/artifacts/segment-10/changed10.ts. */
+export const CHANGED_10 = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(join(DIR, 'segment10.changed-b9c4728.json'), 'utf8')) as Record<
+      string,
+      string
+    >
+  )
+);
+/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07, HM-09 ili HM-10. */
 export const mayChange = (id: string): boolean =>
-  OVER_LONG.has(id) || CHANGED_07.has(id) || CHANGED_09.has(id);
+  OVER_LONG.has(id) || CHANGED_07.has(id) || CHANGED_09.has(id) || CHANGED_10.has(id);
+/** HM-10 (T1): vrh sme da padne — namerno manji obim kad lagani ne staju u granice T1. */
+export const mayLower = (id: string): boolean => ['l', 'm', 'x'].includes(CHANGED_10.get(id) ?? '');
 
 /** Red bazne linije: vrh cilja, najduži dugi, heš celog plana bez oznake verzije (regresija sledećeg segmenta). */
 export type BaselineRow = [peakKm: number, longestKm: number, hash: string];
@@ -154,7 +168,7 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         const id = g.id.slice(3);
         const old = base[id]!;
         const now = res.rows[g.id]!;
-        if (now[0] < old[0]) lower.push(`${g.id}: ${old[0]} → ${now[0]}`);
+        if (now[0] < old[0] && !mayLower(g.id)) lower.push(`${g.id}: ${old[0]} → ${now[0]}`);
         if (res.norm[g.id] === norm[id]) continue;
         changed++;
         // Dozvoljeni uzroci promene: dugi > 24 km u HM-01, sada na 24 km (prompt HM-02, tačka 2); kotrljajuća
@@ -190,9 +204,11 @@ export function describeGrid(name: string, inputs: readonly GridInput[], extra?:
         (g) => JSON.stringify(res.rows[g.id]) !== JSON.stringify(base[g.id])
       );
       expect(changed.filter((g) => !mayChange(g.id)).map((g) => g.id)).toEqual([]);
-      expect(changed.filter((g) => res.rows[g.id]![0] < base[g.id]![0]).map((g) => g.id)).toEqual(
-        []
-      );
+      expect(
+        changed
+          .filter((g) => res.rows[g.id]![0] < base[g.id]![0] && !mayLower(g.id))
+          .map((g) => g.id)
+      ).toEqual([]);
     });
 
     extra?.();

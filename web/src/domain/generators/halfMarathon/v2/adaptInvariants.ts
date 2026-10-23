@@ -116,8 +116,9 @@ export function adaptInvariants(
         : Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
     )
       bad.push(`planirano ≠ cilj ned ${w.index}`);
-    // Uslov 8 i A9.
-    if (w.phase !== 'race' && w.plannedKm + EPS < min && !(w.limits?.rest?.length ?? 0))
+    // Uslov 8 i A9 (u koraku 0,1 km, kao validator). Krug T (T1 — lagani u nedelji bola veći, × 0,7 ih skraćuje):
+    // nedelja sa danima bola ili odmora sme ispod minimuma (pouka 25, upozorenje WEEK_MIN_LIMITS validatora).
+    if (w.phase !== 'race' && Math.round(w.plannedKm * 10) < Math.round(min * 10) && !limited)
       bad.push(`nedelja < minimum ned ${w.index}`);
     if (w.phase !== 'race' && w.index >= first && w.targetKm + EPS < min)
       bad.push(`cilj < minimum ned ${w.index}`);

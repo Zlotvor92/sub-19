@@ -1,0 +1,239 @@
+{
+ "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-10/sabotage-10.json",
+ "head": "b9c4728",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 18.4,
+ "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+ "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "10-1 T1 lagan bez plafona 0,8 × dugi (konstruktor)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 T1: lagan prema dugom u nedeljama izgradnje > f-d4-18w-55km-e360-A (1b #4: lagan 23,5 / dugi 24): svaki lagan ≤ 0,8 × dugi i ≥ 20 min; validator EASY_BUILD",
+    "message": "Error: EASY_BUILD: Lagan 19.3 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1). | EASY_BUILD: Lagan 22.5 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1). | EASY_BUILD: Lagan 23.5 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1). | EASY_BUILD: Lagan 21.4 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1). | EASY_BUILD: Lagan 20.9 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1). | EASY_BUILD: Lagan 20.3 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1). | EASY_BUILD: Lagan 21.4 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1). | EASY_BUILD: Lagan 19.6 km van [4, 19.2] km (≥ 20 min, ≤ 0,8 × dugi 24 km; T1)."
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "fee7b1469481e9d995c68a8b0ebb353cbeab551d1a0c31ab7b221a40ab05eb9b",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.1
+  },
+  {
+   "index": 2,
+   "name": "10-2 T1 validator ne proverava plafon laganog",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 T1: lagan prema dugom u nedeljama izgradnje > f-d4-18w-55km-e360-A (1b #4: lagan 23,5 / dugi 24): svaki lagan ≤ 0,8 × dugi i ≥ 20 min; validator EASY_BUILD",
+    "message": "AssertionError: expected [ 'ARITHMETIC' ] to include 'EASY_BUILD'"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "7fdc8a85f23a6c5cf2d33429843add2a5137a6d25a0137c4c9b555655da45af8",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  },
+  {
+   "index": 3,
+   "name": "10-3 T1 najkraći lagan bez 20 min",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 T1: lagan prema dugom u nedeljama izgradnje > manje laganih dana kad najkraći lagan ne staje ispod 0,8 × dugi (16 km, 3 lagana → 2, dugi se ne podiže iznad svog plafona)",
+    "message": "AssertionError: expected 40 to be greater than 40"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "60b9c9bcd89a391f8f01a4aabdace2a10d4cc6bc21a14192e66f39869c89b154",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.2
+  },
+  {
+   "index": 4,
+   "name": "10-4 T1 bez manje laganih dana",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 T1: lagan prema dugom u nedeljama izgradnje > manje laganih dana kad najkraći lagan ne staje ispod 0,8 × dugi (16 km, 3 lagana → 2, dugi se ne podiže iznad svog plafona)",
+    "message": "AssertionError: expected 3 to be 2 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "4f700d527ea3194f4408f81bdf57d3fe7c360a0e7a8ae82c2fb647f5ea9f0df2",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.5
+  },
+  {
+   "index": 5,
+   "name": "10-5 T3 taper posle novog starta bez kvaliteta",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 T3: posle novog starta taper zadržava 1 kvalitet, trkačka kratko oštrenje > d3-10w-45km-v35-B-sat, pauza 35 do 2026-11-07: taper T ≈ 60 % (bilo bez kvaliteta), trkačka sa oštrenjem",
+    "message": "AssertionError: expected +0 to be 1 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "5a5542f10be6d206a8d5bc0c67e3f38f4cf42aa9b82ac703148b230983e10e1c",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.5
+  },
+  {
+   "index": 6,
+   "name": "10-6 T3 trkačka posle novog starta bez oštrenja",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 T3: posle novog starta taper zadržava 1 kvalitet, trkačka kratko oštrenje > d3-10w-45km-v35-B-sat, pauza 35 do 2026-11-07: taper T ≈ 60 % (bilo bez kvaliteta), trkačka sa oštrenjem",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "8324d3b11dc26b4bee076da8be795223b9dd1984fbabe00762a5a741566b7949",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  },
+  {
+   "index": 7,
+   "name": "10-7 C4 urađen dan posle asOf po upisanim km",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 C4: urađen dan posle asOf u zbiru zaštićenih = planirani km (MASTER pouka 37) > zapis ≤ asOf sa dayId budućeg dana i km ≠ plan: factKm ga nema (bilo upisani km)",
+    "message": "AssertionError: expected 11.7 to be undefined"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "6b6c54e30ec028259a8f9902f5e72931559239b4e494917e34df307da15b7a5e",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.1
+  },
+  {
+   "index": 8,
+   "name": "10-8 C12 RP najnižeg nivoa otpada u mešovitoj nedelji",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment10.node.test.ts",
+    "test": "HM-10 C12: najniži nivo RP se u mešovitoj nedelji ne odbacuje (kao MAR MP) > d3-10w-25km-v55-B-sun ned 6, urađeni dani × 1,6 do 2026-12-07: RP 2 × 2000 m ostaje (bilo lagan)",
+    "message": "AssertionError: expected undefined to be 'RP' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "e502cf8daa03f5d7da93ba55f618fa62d66c8abd8bb6cba599588c1414976631",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.3
+  },
+  {
+   "index": 9,
+   "name": "10-9 T7 bez provere najdužeg prema nedeljnom obimu",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/input.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/input.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/input.node.test.ts",
+    "test": "H1 opseg ulaza > T7 (krug T): skorašnji najduži > trenutni nedeljni obim → odbijanje RECENT_LONG_OVER_WEEKLY (proveri unos)",
+    "message": "AssertionError: expected [] to deeply equal [ 'RECENT_LONG_OVER_WEEKLY' ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "hashSabotaged": "8afea10080b4a091dc78abd9e517f086e0d28a5cb84bda231fef2a2da2db0b3b",
+   "hashAfter": "f12e6f9d4e0ed3023d9b97fb48433186b28c7ff2be3c11366eeee4a41a38451f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.2
+  }
+ ]
+}
