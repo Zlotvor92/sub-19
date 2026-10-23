@@ -81,7 +81,7 @@ describe('5K v2 iza prekidača', () => {
     unmount();
 
     const saved = collectPersisted();
-    expect(saved.genPlan!.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.10.4' });
+    expect(saved.genPlan!.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.11.0' });
     expect(generatorForPlan(saved.genPlan)).toBe(FIVE_K_V2_GENERATOR);
     expect(saved.genPlan!.weeks[0]!.start).toBe('2026-01-12');
 
