@@ -1,3 +1,4 @@
+import { appendFileSync } from 'node:fs';
 /* Zajednički ulazi za testove 10K v2 (nije testni fajl, da bi ga izolacioni test video kao deo v2).
    Mreža 01 (4 dana, 10–18 ned), mreža 02 (3/4/5/6 dana, 8–18 ned, sa rezultatom), mreža po osećaju i mreža
    početnika (segment 03). */
@@ -1039,4 +1040,25 @@ export function mark07(result: unknown): string {
   ]
     .filter(Boolean)
     .join('+');
+}
+
+/* ---------- 10K-08: PRIVREMENA kuka za fixture (uklanja se posle upisa) ---------- */
+// eslint-disable-next-line
+export function dump08(net: string, key: string, result: unknown): void {
+  const f = process.env['DUMP08'];
+  if (!f) return;
+  const r = result as { ok?: boolean; plan?: { weeks: any[]; adaptation?: { steps: any[] } } };
+  const tags: string[] = [];
+  const ws = r.plan?.weeks ?? [];
+  const steady = (w: any) => ['base', 'development', 'specific'].includes(w.phase) && !w.deload;
+  if (ws.some((w: any) => { if (!steady(w) || w.limits?.pain?.length || w.limits?.rest?.length) return false;
+      const L = w.days.find((d: any) => d.role === 'long'); if (!L) return false;
+      return w.days.some((d: any) => d.role === 'easy' && (d.workout.km > Math.floor(8 * L.workout.km + 1e-9) / 10 + 1e-9 || d.workout.sec < 1200)); }))
+    tags.push('T1');
+  if ((r.plan?.adaptation?.steps ?? []).some((s: any) => s.restart) && (ws.some((w: any) => w.phase === 'taper' && !w.days.some((d: any) => d.workout.kind === 'quality')) || !ws.at(-1)?.days.some((d: any) => d.role === 'sharpener')))
+    tags.push('T3');
+  if (ws.some((w: any) => { if (w.phase !== 'taper') return false; const q = w.days.filter((d: any) => d.workout.kind === 'quality'); const L = w.days.find((d: any) => d.role === 'long');
+      return q.length >= 2 && L && q.some((d: any) => d.workout.sec > L.workout.sec); }))
+    tags.push('C11');
+  appendFileSync(f, `${net}\t${key}\t${planHash06c(result)}\t${r.ok === false ? 'rej' : tags.join('+')}\n`);
 }

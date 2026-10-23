@@ -90,7 +90,12 @@ export function buildLengths(
     const len = n === easyDays ? base : withEasy(rest100, cap10, n);
     if (!len) return null;
     const { min10, max10 } = buildEasyBounds10(len.long10, p);
-    if (len.easy10[0]! > max10) return null;
+    if (len.easy10[0]! > max10) {
+      // Dugi na plafonu: sa manje laganih dana lagan je još duži — cilj nije izvodljiv. Inače je dugi skraćen da lagani
+      // ostanu ≥ 3 km; sa manje laganih dana dugi raste (do plafona).
+      if (len.long10 >= cap10) return null;
+      continue;
+    }
     if (len.easy10[n - 1]! >= min10) return len;
   }
   // Ni jedan lagan od 20 min ne staje: svi lagani dani su odmor, dugi po D13 (≤ plafon, ≤ ostatak), ostatak iznad

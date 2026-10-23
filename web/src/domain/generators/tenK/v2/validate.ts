@@ -12,6 +12,7 @@ import { addDays as isoAdd, daysBetween, mustDay, weekdayOf } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   buildEasyBounds10,
+  buildLengths,
   easyRestShort,
   keptEasyDates,
   longCap10,
@@ -379,16 +380,22 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       const easy = w.days.filter((d) => d.role === 'easy');
       const missing = slots.filter((d) => !rest0.has(d) && !easy.some((x) => x.date === d));
       if (missing.length > 0) {
-        const easy10 = easy.reduce((a, d) => a + to10(d.workout.km), 0);
-        const gap10 =
-          easy.length === 0 ? Math.round((to100(w.targetKm) - to100(w.plannedKm)) / 10) : 0;
         // Nedelja sa danima odmora koraka (bol, A4): konstruktor bira lagane dane pre limitDays — ne sudi se po danu.
+        // Ista funkcija kao konstruktor (lengths.buildLengths): broj laganih dana i dugi za cilj nedelje.
+        const q100 = w.days
+          .filter((d) => d.countsToWeek && d.role !== 'easy' && d.role !== 'long')
+          .reduce((a, d) => a + to100(d.workout.km), 0);
+        const L =
+          long === undefined
+            ? null
+            : buildLengths(to10(w.targetKm), q100, slots.length, rule, pw(w));
         const ok =
           rest0.size > 0 ||
           (long !== undefined &&
-            missing.every((d) => !keptEasyDates(slots, easy.length, long.date).includes(d)) &&
-            Math.floor((easy10 + gap10) / (easy.length + 1)) <
-              buildEasyBounds10(to10(long.workout.km), pw(w)).min10);
+            L !== null &&
+            L.easy10.length === easy.length &&
+            L.long10 === to10(long.workout.km) &&
+            missing.every((d) => !keptEasyDates(slots, easy.length, long.date).includes(d)));
         if (ok) for (const d of missing) t1Rest.add(d);
         else err('ROLES', 'Lagan dan je odmor, a lagan ≥ 20 min staje (T1).', w.index);
       }

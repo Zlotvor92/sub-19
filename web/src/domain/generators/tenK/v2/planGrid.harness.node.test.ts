@@ -11,7 +11,7 @@ import {
   type Row,
   summaryRow
 } from './gridInvariants.ts';
-import { cause07, fnv1a, type GridCase, planHash81 } from './testInputs.ts';
+import { cause07, dump08, fnv1a, type GridCase, planHash81 } from './testInputs.ts';
 import type { GenerateResult, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { sample } from '@/test/level';
@@ -69,6 +69,7 @@ export function runPlanGrid(
     const r = generateTenKV2(c.input);
     g.hashes.push(fnv1a(JSON.stringify(r)));
     g.h81[c.id] = planHash81(r);
+    dump08('gen', c.id, r);
     g.c07[c.id] = cause07(r);
     // 10K-08: plan promenjen prema b9c4728 — starije regresije vide stanje b9c4728 (fixture), p08Errors današnje.
     const ch = CHANGED_08.gen[c.id];

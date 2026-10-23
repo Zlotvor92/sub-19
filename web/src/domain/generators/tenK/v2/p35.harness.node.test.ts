@@ -55,7 +55,8 @@ export function describeP35Grid(title: string, partIndex: number): void {
             if (p35(w)) dropped++;
           }
           // 10K-08: plan promenjen prema b9c4728 (T1) ne mora više imati nedelju pouke 35.
-          if (P35_PLANS.has(c.id) && !CHANGED_08.gen[c.id] && !r.plan.weeks.some(p35)) bad.push(`${c.id}: bez pouke 35`);
+          if (P35_PLANS.has(c.id) && !CHANGED_08.gen[c.id] && !r.plan.weeks.some(p35))
+            bad.push(`${c.id}: bez pouke 35`);
         }
         expect(bad.slice(0, 10)).toEqual([]);
         // Nedelje sa drugim danom kvaliteta laganim (na 7ba9717 2022 nedelje sa 2 kvaliteta dužim od dugog; posle

@@ -307,7 +307,12 @@ export function construct(
     const testDeload = frame.deload && frame.test === true;
     const can = (t10: number, m: QualityMode): boolean => {
       const b = make(t10, m);
-      return b !== null && (!testDeload || t10 <= nominal || b.days.some((d) => d.role === 'test'));
+      return (
+        b !== null &&
+        (!testDeload || t10 <= nominal || b.days.some((d) => d.role === 'test')) &&
+        // T1 (10K-08): cilj se ne podiže iznad pravila da bi nedelja bila planirano < cilj (lagani dani odmor).
+        (t10 <= nominal || b.planned100 + P.tolerance.plannedKm * 100 >= t10 * 10)
+      );
     };
     let fit: ReturnType<typeof fit10> = null;
     let mode: QualityMode = 'rule';

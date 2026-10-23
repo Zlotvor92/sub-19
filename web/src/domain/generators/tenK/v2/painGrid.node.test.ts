@@ -23,6 +23,7 @@ import {
   painFacts,
   painGridBases,
   planHash06c,
+  dump08,
   planHash81,
   type PainCase
 } from './testInputs.ts';
@@ -133,6 +134,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
       for (const c of painCases(b.id, p0)) {
         const facts = painFacts(c.asOf, c.level) as unknown as TenKV2Facts;
         flows.push({ ...c, p0, facts, res: adaptTenKV2(p0, facts, c.asOf) });
+        dump08('pain', c.key, flows[flows.length - 1]!.res);
       }
     }
   }, GRID_TIMEOUT);
