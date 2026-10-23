@@ -1,7 +1,9 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { InstallSteps } from '../../features/install/InstallSheet';
 import { navBack } from '../../app/navHistory';
 import { TABS, type Tab, useUIStore } from '../../stores/uiStore';
 import { Icon, TabIcon, TAB_LABELS } from './icons';
+import { InstallButton, useInstall } from './InstallButton';
 
 /* LJUSKA: gornji red taba, ekran iznad taba („Nazad“), traka tabova, kapija za prijavu, stranica jednog taba. */
 
@@ -13,6 +15,7 @@ export function AppBar({ right, tag }: { right?: ReactNode; tag?: boolean }) {
         sub20
       </span>
       {right ? <div className={`appbar-r${tag ? ' tag' : ''}`}>{right}</div> : null}
+      <InstallButton />
     </div>
   );
 }
@@ -67,7 +70,11 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
   );
 }
 
+/* KAPIJA ZA PRIJAVU. Na telefonu u pregledaču prvo traži instalaciju, a prijava ide u instaliranoj aplikaciji: na iPhone-u aplikacija sa
+   početnog ekrana ne vidi sesiju iz Safarija, pa bi prijava u pregledaču ionako morala da se ponovi. Prijava u pregledaču ostaje kao sporedni
+   izlaz za pregledače u kojima instalacija ne postoji (ugrađeni pregledači društvenih mreža). */
 export function AuthGate({ message, onLogin }: { message: string; onLogin: () => void }) {
+  const { kind, installed, busy, install } = useInstall();
   return (
     <div
       id="sb-gate"
@@ -77,24 +84,68 @@ export function AuthGate({ message, onLogin }: { message: string; onLogin: () =>
       aria-modal="true"
       aria-label="Prijava"
     >
-      <div className="gate-in">
-        <img className="gate-logo" src="./icon-192.png" alt="" width="72" height="72" />
-        <div className="gate-brand">sub20</div>
-        <h1 className="gate-h1">Prijavi se da nastaviš</h1>
-        <div className="gate-sub">
-          Nalog čuva tvoj plan i istoriju treninga na serveru — ako izgubiš telefon ili obrišeš
-          podatke pretraživača, sve je i dalje tu.
-        </div>
-        <button type="button" className="btn block" id="gate-go" onClick={onLogin}>
-          Prijavi se Google nalogom
-        </button>
-        {message ? (
-          <div className="gate-err" role="alert">
-            {message}
+      {kind ? (
+        <div className="gate-in">
+          <img className="gate-logo" src="./icon-192.png" alt="" width="72" height="72" />
+          <div className="gate-brand">sub20</div>
+          <h1 className="gate-h1">Prvo instaliraj sub20</h1>
+          <div className="gate-sub">
+            Prijavljuješ se u instaliranoj aplikaciji: radi preko celog ekrana, bez interneta i
+            šalje podsetnike za trening.
           </div>
-        ) : null}
-        <div className="gate-note">Posle prijave aplikacija radi i bez interneta.</div>
+          {installed ? (
+            <div className="gate-steps" role="status">
+              Instalirano. Otvori <b>sub20</b> sa početnog ekrana i tamo se prijavi.
+            </div>
+          ) : kind === 'prompt' ? (
+            <button
+              type="button"
+              className="btn block"
+              disabled={busy}
+              onClick={() => void install()}
+            >
+              Instaliraj
+            </button>
+          ) : (
+            <div className="gate-steps">
+              <InstallSteps kind={kind} />
+            </div>
+          )}
+          {message ? (
+            <div className="gate-err" role="alert">
+              {message}
+            </div>
+          ) : null}
+          <button type="button" className="btn quiet" onClick={onLogin}>
+            Ne mogu da instaliram — prijavi me u pregledaču
+          </button>
+        </div>
+      ) : (
+        <LoginContent message={message} onLogin={onLogin} />
+      )}
+    </div>
+  );
+}
+
+function LoginContent({ message, onLogin }: { message: string; onLogin: () => void }) {
+  return (
+    <div className="gate-in">
+      <img className="gate-logo" src="./icon-192.png" alt="" width="72" height="72" />
+      <div className="gate-brand">sub20</div>
+      <h1 className="gate-h1">Prijavi se da nastaviš</h1>
+      <div className="gate-sub">
+        Nalog čuva tvoj plan i istoriju treninga na serveru — ako izgubiš telefon ili obrišeš
+        podatke pretraživača, sve je i dalje tu.
       </div>
+      <button type="button" className="btn block" id="gate-go" onClick={onLogin}>
+        Prijavi se Google nalogom
+      </button>
+      {message ? (
+        <div className="gate-err" role="alert">
+          {message}
+        </div>
+      ) : null}
+      <div className="gate-note">Posle prijave aplikacija radi i bez interneta.</div>
     </div>
   );
 }

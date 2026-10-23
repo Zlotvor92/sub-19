@@ -1,5 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
-import { SUPABASE, fixToday, installBackend, jwt, seedSession } from './support/backend';
+import {
+  SUPABASE,
+  fixToday,
+  installBackend,
+  jwt,
+  seedSession,
+  asInstalledApp
+} from './support/backend';
 import { createPlan, openTi } from './support/flows';
 
 /* Tokovi 1, 10, 11: prvi start bez naloga, prijava (povratak sa Google-a preko Supabase-a, sa proverom nonce-a), odjava. */
@@ -16,6 +23,7 @@ const localPlan = (page: Page, key: string): Promise<unknown> =>
 
 test.beforeEach(async ({ page }) => {
   await fixToday(page);
+  await asInstalledApp(page);
 });
 
 test('prvi start bez naloga: kapija sa jednim dugmetom, ništa se ne šalje na server, nema grešaka', async ({

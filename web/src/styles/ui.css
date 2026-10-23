@@ -891,6 +891,22 @@ details.help b {
   color: var(--text-2);
   margin-bottom: var(--s-4);
 }
+.sh-steps {
+  margin: 0 0 var(--s-3);
+  padding-left: 1.4em;
+  line-height: 1.5;
+}
+.sh-steps li + li {
+  margin-top: var(--s-1);
+}
+.sh-steps img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: var(--s-2) 0 var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+}
 #confirm-dialog {
   max-height: none;
 }

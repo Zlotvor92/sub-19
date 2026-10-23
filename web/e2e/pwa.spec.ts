@@ -26,6 +26,14 @@ async function ready(page: Page): Promise<void> {
   await fixToday(page);
   await seedSession(page);
   await installBackend(page);
+  /* Prvo otvaranje: SW se instalira, preuzima stranicu i `controllerchange` je ponovo učita (`pwa/register`). Ako bi se to desilo usred
+     čarobnjaka, unos bi nestao i „Dalje" ostalo neaktivno — zato se čarobnjak popunjava tek kad SW već kontroliše stranicu. */
+  await page.goto(server.url);
+  await expect
+    .poll(() => page.evaluate(() => !!navigator.serviceWorker.controller).catch(() => false), {
+      timeout: 15_000
+    })
+    .toBe(true);
   await createPlan(page, undefined, server.url);
   await page.evaluate(() => navigator.serviceWorker.ready.then(() => true));
   await expect.poll(() => cacheNames(page)).toHaveLength(1);
