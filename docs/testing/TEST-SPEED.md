@@ -34,7 +34,7 @@ merenja). „Pre" = b09ae49 (čist worktree), „posle" = ovaj commit. Vitest 5.
 | komanda | šta |
 |---|---|
 | `npm run check` | typecheck (`tsc -b --noEmit --incremental`) + `lint:cache` + `format:check:cache` + `test:fast` — za svaki segment i proveru |
-| `npm run check:full` | typecheck + `lint` (BEZ keša, kao CI) + `format:check:cache` + `npm test` — kad segment dira v1, zajednički kod, reference ili test infrastrukturu, i pre mergea u main |
+| `npm run check:full` | typecheck + `lint` (BEZ keša, kao CI) + `format:check:cache` + `npm test` — samo kad je menjan `src/domain/**` (v1, v2, zajednički domen, reference) ili test infrastruktura, jednom pre mergea u main; za izmene samo ekrana/stila/teksta se lokalno ne pokreće (pun nivo pokriva CI) |
 | `npm test` | pun nivo (`TEST_FULL=1 vitest run`) — CI (`.github/workflows/test.yml`) ga zove u 6 delova (`npm test -- --shard=i/6`, § 10) |
 | `npm run test:fast`, `npx vitest run …` | brz nivo (podrazumevan) |
 | `TEST_FULL=1 npx vitest run …` | pun nivo za izabrane fajlove (uključuje `*.full.node.test.ts`) |

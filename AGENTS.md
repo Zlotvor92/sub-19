@@ -40,10 +40,12 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
   <polazni SHA>` (vitest sam bira testove koji uvoze promenjene fajlove; sa `TEST_FULL=1` i pun nivo tih testova) +
   E2E dirane distance. Pun nivo celog foldera samo kad je menjan generator te distance:
   `TEST_FULL=1 npx vitest run --project node <folder>`.
-  `npm run check:full` se lokalno NE pokreće po segmentu (traje 45–75 min) — CI pokreće pun nivo (`npm test`, 6 paralelnih
-  delova) na svaki push koda (push samo `docs/**` ga ne pokreće; dok run radi, čeka samo najnoviji push iste grane), a
-  organizator proverava CI na vrhu grane. `check:full` lokalno samo pre mergea u main ili kad se menja test
-  infrastruktura.
+  `npm run check:full` (45–75 min, skoro sve su mreže generatora) se lokalno pokreće SAMO kad je menjan domenski kod
+  (`web/src/domain/**` — generatori v1/v2, zajednički domen, reference) ili test infrastruktura, i tada jednom, pre
+  mergea u main; nikad po segmentu. Izmene koje ne diraju `src/domain/**` ni test infrastrukturu (ekrani, stil, tekst,
+  `features/`, `components/`, dokumentacija): `npm run check` + E2E dirnutih ekrana + `npm run build` — bez lokalnog
+  `check:full`, ni pre mergea. Pun nivo u svakom slučaju pokreće CI (`npm test`, 6 paralelnih delova) na svaki push
+  koda (push samo `docs/**` ga ne pokreće; dok run radi, čeka samo najnoviji push iste grane); u main tek kad je CI zelen.
   Nivoi, uzorci i merenja: `docs/testing/TEST-SPEED.md`.
 - Sabotaže samo kroz `web/scripts/sabotage.mjs`, na fajlovima koji treba da ih uhvate, sa `--bail=1`; nikad ceo
   skup. Uputstvo: `docs/testing/SABOTAGE.md`.
