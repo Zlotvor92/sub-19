@@ -19,3 +19,4 @@ rej-HM rc=0
 idemp-10K rc=0
 idemp-MAR rc=0
 re-classify-rej-5K rc=0
+rej-MAR rc=0
