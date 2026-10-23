@@ -1,4 +1,4 @@
-import { fmtClock, fmtKm } from '../../domain/format';
+import { fmtClock, fmtKm, pl3 } from '../../domain/format';
 import { ProvenanceBadge } from '../../components/ui/Badge';
 import { Section, Facts } from '../../components/ui/primitives';
 import { SessionProfile } from '../../components/ui/SessionProfile';
@@ -118,7 +118,14 @@ export function WorkoutStructure({ view }: { view: SessionView }) {
   const seg = view.segments;
   if (!work && !seg && !view.rows) return null;
   return (
-    <Section title="Struktura" extra={view.rows ? `${view.rows.length} koraka` : undefined}>
+    <Section
+      title="Struktura"
+      extra={
+        view.rows
+          ? `${view.rows.length} ${pl3(view.rows.length, 'korak', 'koraka', 'koraka')}`
+          : undefined
+      }
+    >
       <WorkoutLanes view={view} />
       {seg ? (
         <SessionProfile

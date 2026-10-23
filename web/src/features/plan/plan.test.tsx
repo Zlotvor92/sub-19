@@ -195,7 +195,7 @@ describe('Detalji treninga', () => {
     await user.type(screen.getByLabelText(/Telesna masa/), '80');
     expect(useRecoveryStore.getState().kg.some((k) => k.src === d.id)).toBe(true);
     await user.click(screen.getByRole('button', { name: 'Obriši unos' }));
-    expect(useUIStore.getState().confirm?.text).toBe('Obriši sve unete podatke za ovaj trening?');
+    expect(useUIStore.getState().confirm?.text).toBe('Obrisati sve unete podatke za ovaj trening?');
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useTrainingStore.getState().log[d.id]).toBeUndefined());
     expect(useRecoveryStore.getState().kg.some((k) => k.src === d.id)).toBe(false);

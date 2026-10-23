@@ -26,7 +26,7 @@ export function HmV2TestResult({ dayId }: { dayId: string }) {
     setMessage(
       r.sec === null
         ? 'Vreme testa je obrisano.'
-        : `Upisano: 5 km za ${fmtClock(r.sec)}. Tempo plana menja Plan → Prilagodi plan.`
+        : `Upisano: 5 km za ${fmtClock(r.sec)}. Tempo plana menjaš u Plan → Prilagodi plan.`
     );
   };
   return (

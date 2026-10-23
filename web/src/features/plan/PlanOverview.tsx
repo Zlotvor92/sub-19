@@ -100,8 +100,8 @@ export function PlanOverview() {
           ))}
           {!preparation.fullPreparation ? (
             <p className="note-src">
-              Pomeranje trke, kraću distancu ili povratni režim sa uslovima nastavka pregledaj u
-              Prilagodi plan. Datum i cilj menjaju se samo kada primeniš prikazan predlog.
+              Pomeranje trke, kraću distancu ili povratni režim sa uslovima za nastavak pregledaj u
+              „Prilagodi plan“. Datum i cilj menjaju se samo kada primeniš prikazan predlog.
             </p>
           ) : null}
           <p className="note-src">

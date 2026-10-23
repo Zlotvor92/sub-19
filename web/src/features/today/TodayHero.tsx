@@ -1,4 +1,4 @@
-import { fmtClock, fmtKm } from '../../domain/format';
+import { fmtClock, fmtKm, pl3 } from '../../domain/format';
 import type { LogEntry } from '../../domain/state';
 import { Icon } from '../../components/ui/icons';
 import type { SessionView } from '../session/sessionModel';
@@ -76,7 +76,10 @@ export function TodayHero({
         {view.title}
         {hasNumber ? (
           <span className="sr-only">
-            , {view.km != null ? `${fmtKm(view.km)} kilometara` : `${view.minutes} minuta`}
+            ,{' '}
+            {view.km != null
+              ? `${fmtKm(view.km)} ${Number.isInteger(view.km) ? pl3(view.km, 'kilometar', 'kilometra', 'kilometara') : 'kilometara'}`
+              : `${view.minutes} ${pl3(view.minutes ?? 0, 'minut', 'minuta', 'minuta')}`}
           </span>
         ) : null}
       </h2>
@@ -118,10 +121,10 @@ export function TodayHero({
       ) : status === 'skip' ? (
         <div className="today-acts">
           <button type="button" className="btn quiet" onClick={() => onStatus('done')}>
-            Ipak sam odradio
+            Označi kao odrađen
           </button>
           <button type="button" className="btn quiet" onClick={() => onStatus('pending')}>
-            Vrati
+            Poništi
           </button>
         </div>
       ) : null}

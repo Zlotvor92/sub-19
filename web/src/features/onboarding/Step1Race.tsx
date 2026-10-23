@@ -10,7 +10,7 @@ const DIST_LINE: Readonly<Record<number, string>> = {
   21097.5:
     'Polumaraton gradi izdržljivost: dva duža trčanja nedeljno, taper od dve nedelje, uvežbavanje unosa goriva.',
   42195:
-    'Maraton: dugo trčanje je ograničeno vremenom (do 3 sata), uz sopstveni talas opterećenja i uvežbavanje unosa goriva.'
+    'Maraton: dugo trčanje traje najviše 3 sata, opterećenje raste u sopstvenim talasima, a unos goriva se uvežbava.'
 };
 const DIST_WEEKS: Readonly<Record<number, string>> = {
   5000: '6 nedelja',

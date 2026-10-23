@@ -158,7 +158,7 @@ function AiAnalysisCard({ day, raceContext }: { day: ResolvedDay; raceContext?: 
         : local.kind === 'starting'
           ? 'Analiziram…'
           : local.kind === 'waiting'
-            ? 'Analiziram… ovo traje do minut. Možeš da zatvoriš aplikaciju, rezultat te čeka.'
+            ? 'Analiziram… ovo traje do jednog minuta. Možeš da zatvoriš aplikaciju, rezultat te čeka.'
             : local.kind === 'still'
               ? 'Analiza još traje. Rezultat će se pojaviti sam — možeš da zatvoriš aplikaciju.'
               : local.text;

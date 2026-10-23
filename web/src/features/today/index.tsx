@@ -75,7 +75,7 @@ export default function TodayPage() {
   const { today, plan, day } = model;
 
   const onStatus = async (d: ResolvedDay, s: DayStatus): Promise<void> => {
-    if (s === 'skip' && !(await confirmAction('Označi trening kao preskočen?'))) return;
+    if (s === 'skip' && !(await confirmAction('Označiti trening kao preskočen?'))) return;
     setStatus(d, s, today);
     if (s === 'done') setPop(true);
   };
@@ -99,7 +99,7 @@ export default function TodayPage() {
           <p>
             {before
               ? `Plan počinje ${fmtDayLong(plan.weeks[0]?.start)}.`
-              : `Rezultat trke je u planu, nedelja N${plan.weeks.length}.`}
+              : `Rezultat trke je u planu, u nedelji N${plan.weeks.length}.`}
           </p>
           <button type="button" className="btn ghost" onClick={() => setTab('plan')}>
             Otvori plan

@@ -186,7 +186,7 @@ export function DayScreen({ id }: { id: string }) {
             type="button"
             className="btn danger"
             onClick={() => {
-              void confirmAction('Obriši sve unete podatke za ovaj trening?').then((ok) => {
+              void confirmAction('Obrisati sve unete podatke za ovaj trening?').then((ok) => {
                 if (!ok) return;
                 deleteEntry(id);
                 closeScreen();

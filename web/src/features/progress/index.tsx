@@ -112,7 +112,7 @@ export default function ProgressPage() {
           fresh
             ? undefined
             : weeks.length > 1
-              ? `Poslednje ${weeks.length} nedelje`
+              ? `${pl3(weeks.length, 'Poslednja', 'Poslednje', 'Poslednjih')} ${weeks.length} ${pl3(weeks.length, 'nedelja', 'nedelje', 'nedelja')}`
               : weeks.length
                 ? 'Ova nedelja'
                 : undefined
