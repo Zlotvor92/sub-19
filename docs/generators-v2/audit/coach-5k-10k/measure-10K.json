@@ -1,0 +1,102 @@
+{
+ "dist": "10K",
+ "kG": 3,
+ "kA": 400,
+ "M1_laganJednakDugi": {
+  "plans": 10374,
+  "ok": 10374,
+  "withEq": 2912,
+  "withNear": 3186,
+  "byDays": {
+   "3R": [
+    880,
+    276
+   ],
+   "4R": [
+    1232,
+    450
+   ],
+   "5R": [
+    1408,
+    270
+   ],
+   "6R": [
+    1760,
+    248
+   ],
+   "3F": [
+    660,
+    288
+   ],
+   "4F": [
+    924,
+    462
+   ],
+   "5F": [
+    1056,
+    316
+   ],
+   "6F": [
+    1320,
+    282
+   ],
+   "3B": [
+    504,
+    212
+   ],
+   "4B": [
+    630,
+    108
+   ]
+  },
+  "ex": [
+   "d3-8w-25km-v30-A-sat",
+   "d3-8w-25km-v30-B-sun",
+   "d3-8w-30km-v30-A-sat",
+   "d3-8w-30km-v30-B-sun",
+   "d3-8w-30km-v35-A-sat",
+   "d3-8w-30km-v35-B-sun"
+  ]
+ },
+ "M5_laganUzDugiSusedniDan": {
+  "plans": 974,
+  "weeks": 6426,
+  "ex": [
+   "d5-8w-45km-v30-A-sat",
+   "d5-8w-45km-v30-B-sun",
+   "d5-8w-50km-v30-A-sat",
+   "d5-8w-50km-v30-B-sun",
+   "d5-8w-50km-v35-A-sat",
+   "d5-8w-50km-v35-B-sun"
+  ]
+ },
+ "M6_laganKraciOd20min": {
+  "plans": 1116,
+  "minSec": 738,
+  "ex": [
+   "d3-8w-20km-v55-A-sat",
+   "d3-8w-20km-v55-B-sun",
+   "d3-8w-20km-v60-A-sat",
+   "d3-8w-20km-v60-B-sun",
+   "d3-8w-20km-v70-A-sat",
+   "d3-8w-20km-v70-B-sun"
+  ]
+ },
+ "M4_ostrenjePremaLaganom": {
+  "n": 9950,
+  "ratioGe15": 6516,
+  "maxRatio": 4.5,
+  "ex": "d5-13w-45km-v70-A-sat: oštrenje 13.5 km / lagan 3 km"
+ },
+ "M2_M3_napomene": {
+  "flows": 7900,
+  "ok": 7900,
+  "notePlannedMismatch": 0,
+  "notePlannedMismatchOver015": 0,
+  "flowsWithMismatch": 0,
+  "deloadNoteOnNonDeload": 0,
+  "flowsWithDeloadNote": 0,
+  "ex2": [],
+  "ex3": []
+ }
+}
