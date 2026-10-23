@@ -964,10 +964,11 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     const key = `${b.index}${role}`;
     const got = fitsMemo.get(key);
     if (got) return got;
+    // MAR-11 (T1): lagani dani odmora (easyRestDates) nisu lagani nedelje — isto kao konstruktor.
     const l = buildDayLimit(
       dlcOf(b),
       to10(b.targetKm),
-      pat.easy.length,
+      pat.easy.length - easyRestDates(b).length,
       jumpOf(b),
       rule.quality === 2 ? ladderFor(b.phase, 'q2') : null,
       b.days.find((d) => d.workout.kind === 'test')?.workout ?? null
@@ -1023,7 +1024,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         rule,
         pw(w),
         jumpOf(w),
-        pat.easy.length,
+        pat.easy.length - easyRestDates(w).length,
         q1.workout,
         q2.workout
       )
@@ -1653,7 +1654,10 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         (dose &&
           (dose.ladder !== deloadLadder(w.phase) ||
             dose.doseM > capM('T', w.targetKm) ||
-            dose.doseM !== wantWith(oneDayLimit(dlcOf(w), to10(w.targetKm), nEasy1, jumpOf(w)))))
+            dose.doseM !==
+              wantWith(
+                oneDayLimit(dlcOf(w), to10(w.targetKm), nEasy1 - easyRestDates(w).length, jumpOf(w))
+              )))
       )
         err(
           'ONE_QUALITY',

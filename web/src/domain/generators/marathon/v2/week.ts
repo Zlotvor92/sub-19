@@ -803,7 +803,7 @@ export function buildWeek(
             frame.phase,
             targetKm,
             rule.beginner,
-            oneDayLimit(dlc, target10, (pat.q2 ? 2 : 1) + pat.easy.length - 1, jump10)
+            oneDayLimit(dlc, target10, (pat.q2 ? 2 : 1) + pat.easy.length - 1 - drop, jump10)
           )
         : null;
       if (!d || !wd) return null;
@@ -822,7 +822,7 @@ export function buildWeek(
       buildDayLimit(
         dlc,
         target10,
-        pat.easy.length,
+        pat.easy.length - drop,
         jump10,
         rule.quality === 2 ? ladderFor(frame.phase, 'q2') : null,
         test ? testWorkout(p, ctx.wc) : null
