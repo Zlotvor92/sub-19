@@ -79,5 +79,14 @@
   "tests": [
    "src/domain/generators/marathon/v2/segment09.node.test.ts"
   ]
+ },
+ {
+  "name": "09-2b taper N−1 iznad N−2",
+  "file": "src/domain/generators/marathon/v2/volume.ts",
+  "find": "  if (frame.phase === 'taper')\n    out.tailCap10",
+  "replace": "  if (frame.phase === 'taper' && target10 < 0)\n    out.tailCap10",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
  }
 ]

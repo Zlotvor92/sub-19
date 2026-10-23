@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { adaptMarathonV2 } from './adapt.ts';
 import { resultFates } from './assess.ts';
-import { mustDay } from './dates.ts';
+import { addDays, mustDay } from './dates.ts';
 import { userText } from './app/format.ts';
 import { generatedPlan } from './app/plan.ts';
 import { generateMarathonV2 } from './generate.ts';
@@ -209,5 +209,17 @@ describe('t. 6 (Z2): RECENT_LONG_TOO_SHORT sa pravilom max(10 %, 1 km) i pragom'
         recentLongRunKm: 8
       }).ok
     ).toBe(true);
+  });
+});
+
+describe('t. 2 (posledica): taper samo naniže posle plafona skoka iz trčanog', () => {
+  it('d3-19w-45km-v35-B-sun painPause sreda ned 16: cilj N−1 ≤ cilj N−2 (volume.leaveWeek)', () => {
+    const p = planOf(gridInputs().find((x) => x.id === 'd3-19w-45km-v35-B-sun')!.input);
+    let at = p.weeks[15]!.startDate;
+    while (new Date(at + 'T00:00:00Z').getUTCDay() !== 3) at = addDays(at, 1);
+    const r = ok(adaptMarathonV2(p, factsOf(p, 'painPause', at), at));
+    const N = r.plan.weeks.length;
+    expect(r.plan.weeks[N - 3]!.phase).toBe('taper');
+    expect(r.plan.weeks[N - 2]!.targetKm).toBeLessThanOrEqual(r.plan.weeks[N - 3]!.targetKm);
   });
 });

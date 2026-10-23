@@ -412,7 +412,7 @@ export function adaptNominal10(
 }
 
 /** Posle nedelje `frame` sa ciljem `target10`: osnov rasta (ne-rasteretna izgradnja; cilj koraka i kad je
-    rasteretna, A8), vrh, sidro bola (A4: osnova povratka returnBase10). */
+    rasteretna, A8), vrh, sidro bola (A4: osnova povratka returnBase10); taper: gornja granica sledeće nedelje tapera. */
 export function leaveWeek(
   h: AdaptHistory,
   frame: WeekFrame,
@@ -420,6 +420,10 @@ export function leaveWeek(
   av: AdaptVolume
 ): AdaptHistory {
   const out = { ...h };
+  // M7 (MAR-09): taper samo naniže — cilj sledeće nedelje tapera ≤ ostvaren cilj ove (N−2 spuštena npr. plafonom
+  // skoka dugog posle pauze/bola ne sme ispod N−1).
+  if (frame.phase === 'taper')
+    out.tailCap10 = out.tailCap10 === null ? target10 : Math.min(out.tailCap10, target10);
   if (!isBuildPhase(frame.phase)) return out;
   const i = frame.index;
   if (!frame.deload || av.reset.has(i)) {
