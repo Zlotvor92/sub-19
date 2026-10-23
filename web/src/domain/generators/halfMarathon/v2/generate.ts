@@ -72,7 +72,7 @@ function recentLongNote(long10: number, ctx: WeekContext): string {
   const r = ctx.input.recentLongRunKm;
   const km = fmtKm(long10 / 10);
   if (r == null)
-    return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km pretpostavlja skorašnji najduži trk od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
+    return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km pretpostavlja skorašnje najduže trčanje od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
   const cap10 = recentLongCap10(r);
   const at = long10 === cap10 && long10 === week1LongCap10(ctx.paces, r, ctx.rule.longMaxSec);
   return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km ≤ ${fmtKm(cap10 / 10)} km (skorašnji najduži ${fmtKm(r)} km, pouka 28)${at ? ' — na granici' : ''}.`;
@@ -115,7 +115,7 @@ function recentTooShort(
     reasons: [
       {
         code: 'RECENT_LONG_TOO_SHORT',
-        message: `Skorašnji najduži trk ${fmtKm(r)} km je prekratak za plan od ${days} dana, ${fmtKm(input.currentWeeklyKm)} km nedeljno: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${weekLabel(input, week)} ne može da se sastavi po pravilima (pouka 28).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, dužu pripremu, manji obim, više dana ili 10K plan.`,
+        message: `Skorašnje najduže trčanje ${fmtKm(r)} km je prekratko za plan od ${days} dana, ${fmtKm(input.currentWeeklyKm)} km nedeljno: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${weekLabel(input, week)} ne može da se sastavi po pravilima (pouka 28).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, dužu pripremu, manji obim, više dana ili 10K plan.`,
         week
       }
     ]

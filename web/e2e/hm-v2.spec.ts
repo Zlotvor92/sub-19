@@ -7,7 +7,7 @@ import { back, openTi, tab } from './support/flows';
    Podešavanjima vidi samo administrator ili razvoj), uz povezan intervals.icu (da bi „Slanje na sat" bilo ponuđeno).
    Tokovi: (1) čarobnjak sa rezultatom → plan `hm-v2` na serveru → Plan tab i dan iz strukture → sat: pregled slanja bez
    preskočenih dana → Prilagodi plan (HM-06): pregled iz činjenica, prijavljena pauza → pregled → primena → revizija na
-   serveru → vraćanje revizije pre prilagođavanja se odbija sa razlogom (HM-09 Z4); (2) čarobnjak po osećaju → RPE i tempo „orijentir (procena)", test
+   serveru → vraćanje te revizije (pregled → primena → druga revizija); (2) čarobnjak po osećaju → RPE i tempo „orijentir (procena)", test
    5 km u planu → sat: dani po osećaju preskočeni sa razlogom; (3) trčanje/hodanje → odbijanje v2 doslovno sa preporukom
    5K, plan se ne pravi. */
 
@@ -181,19 +181,17 @@ test('HM v2: čarobnjak (rezultat, 4 dana, cilj 1:40:00) → plan v2 → Plan ta
   await expect.poll(() => serverPlan(backend), SYNC).toContain('Prilagođavanje 2026-01-14: pauza');
   expect(serverPlan(backend)).toContain('"policyId":"hm-v2"');
   expect(serverPlan(backend)).toContain('"asOf":"2026-01-14"');
-  // Vraćanje revizije pre prilagođavanja (HM-09 Z4): stara verzija uz noviju prošlost nije plan jezgra — vraćanje se
-  // odbija sa razlogom, ništa se ne upisuje.
+  // Vraćanje te revizije: pregled (ništa se ne upisuje) → primena → druga revizija; plan ostaje HM v2.
   const adapted = serverPlan(backend);
   await page
     .getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-01-14: pauza' })
     .click();
-  await expect(
-    page
-      .getByRole('status')
-      .filter({ hasText: 'Posle ove verzije plan je prilagođen (2026-01-14)' })
-  ).toBeVisible();
-  await expect(preview).toHaveCount(0);
+  await expect(preview).toContainText('Vraćanje plana: Prilagođavanje 2026-01-14: pauza');
   expect(serverPlan(backend)).toBe(adapted);
+  await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+  await expect
+    .poll(() => serverPlan(backend), SYNC)
+    .toContain('Vraćanje plana: Prilagođavanje 2026-01-14: pauza');
   expect(serverPlan(backend)).toContain('"policyId":"hm-v2"');
 });
 

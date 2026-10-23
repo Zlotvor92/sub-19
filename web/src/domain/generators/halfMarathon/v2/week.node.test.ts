@@ -164,7 +164,7 @@ describe('HI7 (pouka 28) skorašnji najduži trk', () => {
   it('bez ulaza: napomena nedelje 1 sa pragom (najmanji r za koji je dugi u granici)', () => {
     const n = gen({}).weeks[0]!.notes.find((x) => x.startsWith('Dugi nedelje 1'))!;
     // Dugi 16,0 km: 1,1 × 14,6 = 16,06 ≥ 16 (14,5 → 15,95).
-    expect(n).toContain('16,0 km pretpostavlja skorašnji najduži trk od bar 14,6 km');
+    expect(n).toContain('16,0 km pretpostavlja skorašnje najduže trčanje od bar 14,6 km');
   });
 });
 

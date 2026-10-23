@@ -81,11 +81,12 @@
     ]
   },
   {
-    "name": "09-Z4 vraćanje i posle prilagođavanja",
+    "name": "09-Z4 vraćanje bez validatePlan",
     "file": "src/domain/generators/halfMarathon/v2/app/adapt.ts",
-    "find": "if (!same(cur.adaptation?.steps ?? [], snap.adaptation?.steps ?? []))",
-    "replace": "if (cur.weeks.length < 0)",
+    "find": "  if (errors.length > 0)\n    return refuse(",
+    "replace": "  if (errors.length < 0)\n    return refuse(",
     "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
       "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
     ]
   },

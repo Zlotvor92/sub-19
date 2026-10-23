@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { adaptHmV2 } from './adapt.ts';
 import { adaptBases, factsOf } from './adaptInputs.ts';
 import { MIXED_NOTE } from './week.ts';
+import { validatePlan } from './validate.ts';
+import { restoreMerge } from './app/adapt.ts';
+import { generatedPlan, storedPlan } from './app/plan.ts';
 import { addDays } from './dates.ts';
 import { generateHmV2 } from './generate.ts';
 import { checkPlan, emptyStats } from './gridInvariants.ts';
@@ -175,5 +178,26 @@ describe('HM-09 Z1: mešovita nedelja — kvalitet ostaje uz upisani višak ≤ 
     expect(w.notes.some((n) => n.includes(MIXED_NOTE) && n.includes('kvalitet ostaje'))).toBe(true);
     expect(w.plannedKm).toBeLessThanOrEqual(1.1 * w.targetKm + 1e-9);
     expect(p.warnings.some((v) => v.rule === 'MIXED_WEEK_OVER' && v.week === 2)).toBe(true);
+  });
+});
+
+describe('HM-09 Z4: vraćanje verzije = spoj → validatePlan (jezgro)', () => {
+  const b = adaptBases().find((x) => x.id === 'd3-r-10w')!;
+  const g = ok(generateHmV2(b.input));
+  const asOf = addDays(g.weeks[1]!.startDate, 2);
+  const cur = ok(adaptHmV2(g, factsOf(g, 'under50', asOf), asOf));
+  const store = (p: HmV2Plan) => storedPlan(generatedPlan(p));
+  const conflicts = (r: unknown) =>
+    (r as { meta: { futureChanges: { conflicts: string[] } } }).meta.futureChanges.conflicts;
+  it('neposredno poništavanje (isti dan, bez novih zapisa) se vraća i prolazi validator', () => {
+    const r = restoreMerge(store(cur), store(g), asOf as never);
+    expect(conflicts(r)).toEqual([]);
+    const back = (r as unknown as { hmV2: HmV2Plan }).hmV2;
+    expect(validatePlan(back).filter((v) => v.severity === 'error')).toEqual([]);
+    expect(adaptHmV2(back, {}, asOf).ok).toBe(true);
+  });
+  it('d3-r-10w under50 +8 dana: spoj krši pravila plana → odbijanje sa razlogom', () => {
+    const r = restoreMerge(store(cur), store(g), addDays(asOf, 8) as never);
+    expect(conflicts(r)[0]).toMatch(/ne zadovoljava pravila plana/);
   });
 });

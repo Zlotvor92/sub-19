@@ -239,7 +239,7 @@ export function checkInput(raw: unknown): InputCheck {
   if (recentLong != null && (recentLong < rl.minKm || recentLong > rl.maxKm))
     no(
       'RECENT_LONG_INVALID',
-      `Skorašnji najduži trk mora biti između ${rl.minKm} i ${rl.maxKm} km (uneto ${recentLong}).`
+      `Skorašnje najduže trčanje mora biti između ${rl.minKm} i ${rl.maxKm} km (uneto ${recentLong}).`
     );
 
   // Rezultat → VDOT (H1); bez pouzdanog rezultata plan po osećaju (H16).

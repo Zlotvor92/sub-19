@@ -13,7 +13,7 @@ DECISIONS `HM-09` (policy.ts). Artefakti: `docs/hm-v2/artifacts/segment-09/` (sk
 | 3 | B3: početnik u 3 koraka → WEEK_INFEASIBLE ned 11 | uzrok potvrđen: najduži dugi pre tapera 6,6 km → 0,6 × = 3,9 km < 4 km (`withEasy`); `lengths.taperLongCap10` ≥ 4 km (kao A18 rasterećenja) + upozorenje `TAPER_LONG_MIN` | `hm-deloadref.ts 4 …` (WEEK_INFEASIBLE), `segment-09/b3-flow.ts` | 8 → **0**; tok `b-d5-12w-25km-e390-A` prihvaćen, taper dugi 4 km |
 | 4 | 1b #5: L skoka dugog iz neistrčanih planiranih dugih | `assess.ranLongOf`: najduži trčan prošlih nedelja cele poznate (pokrivenost/pauza; nedelja delom u dva koraka — `step.ranPart`) → `step.ranLongKm`; `steps.ranLongFor` (važi od fromWeek koraka — samo cele buduće nedelje; tekuća i prošle se rekonstruišu isto); `lengths.rollingCapRan10` (od ned 5; L = 0 → kao pre; ne ispod najmanjeg dugog nedelje minimuma `ranCapFloor10` = max(4 km, minimum/dani); nikad labavije) | `coach-hm-mar/measure-jump.ts HM 400 200 100`, `jump-example.ts` | 1 060 / 9 058 (0 odbijanja) → **0** (0 odbijanja); primer ned 12 dugi 21,4 → 9,5 km (L 8,5) |
 | 5 | Z5b: MAR v2 početnik 45 km → HM cilj WEEKLY_KM_TOO_HIGH | `app/handoffTarget.handoffFuture`: odbijanje generatora cilja WEEKLY_KM_TOO_HIGH za početnika → isti ulaz bez oznake početnika (odluka generatora cilja) | test `handoffTarget` Z5b | ponuda nije postojala → postoji |
-| 6 | Z4: vraćanje revizije | izmereno (`segment-09/hm-restore.ts`, obrazac `tenK-restore.ts`): krši. Vraćanje kroz jezgro nije izvodljivo bez velikog zahvata (stara budućnost + nova prošlost nisu stanje koraka) → `restoreMerge` vraća samo kad posle verzije nema prilagođavanja (jasna poruka); spojen plan koji validator odbija se ne vraća | `hm-restore.ts` | vraćeno i krši validator 1 565 / 3 168, sledeća adaptacija odbijena 236 → **0 / 0** (3 168 odbijeno sa porukom) |
+| 6 | Z4: vraćanje revizije | po pojašnjenju organizatora: `restoreMerge` spaja (cela prošla nedelja iz trenutnog plana; kad se razlikuje od verzije — mešovita, kao jezgro `writtenWeeks`), pa `validatePlan` (jezgro) i sledeće prilagođavanje bez činjenica (`adaptHmV2`); prolazi → vraća se, ne prolazi → odbijanje sa razlogom | `segment-09/hm-restore.ts` (k = 0, 1, 4, 8 dana) | vraćeno i krši validator 1 565 / 3 168 → **0** / 4 224; sledeća adaptacija odbijena 236 → **0**; neposredno poništavanje (k = 0) **1 056 / 1 056** vraćeno; odbijeno 1 476 sa razlogom (`measure/post/restore.txt`) |
 | 7 | 1b #1: pouka 35 u taperu | `week.taperSecondEasy` (konstruktor i validator): dva dana kvaliteta, neki duži od dugog → drugi lagan, nedelja kao „samo RP" | `coach-hm-mar/measure.ts HM 400 200 100` | gen dva dana 552 → **0** (t1 1 446 → 744 = jedan dan na najnižoj dozi); adapt dva dana 636 → **0**, bez upozorenja 997 → 286 |
 | 8 | 1b #2: napomena „ne sme biti duži" kad jeste | napomena tapera: „najmanja doza; dan kvaliteta je i dalje duži od dugog tapera" | `measure.ts` contra | gen 909 → **0**; adapt 546 → **0** |
 | 9 | app A2 + C10 | uvod: „Uvod: prva od 2 uvodne nedelje, bez kvaliteta …"; `assess` „već rasterećenje" → `wl(f)` | test beginner | — |
@@ -28,7 +28,12 @@ DECISIONS `HM-09` (policy.ts). Artefakti: `docs/hm-v2/artifacts/segment-09/` (sk
 ## Promene generatora (otisak; `segment-09/changed09.ts`, `segment09.changed-c13c258.json`)
 
 Mreže 02, 03 (po osećaju, početnik) i pouke 28 (`r-`): **a** 2 541 planova — samo taper i trkačka nedelja (pouka 35
-u taperu; trkačka čita taper); **d** 1 890 — samo tekst napomene (svi početnici: uvod); drugo 0. Bazne linije
+u taperu; trkačka čita taper); **d** 23 790 — samo tekst (uvod početnika, napomena tapera, dopuna T: „skorašnje
+najduže trčanje", „tempo treninga i dalje zavisi od rezultata", razlog RECENT_LONG_TOO_SHORT); drugo 0.
+
+Dopuna T (`fixes/02-text-addendum.md`): validate „Nedelja nema dugo trčanje.", „Dugo trčanje je samo lagano.";
+generate/input „Skorašnje najduže trčanje … prekratko / mora biti između"; paces „tempo treninga i dalje zavisi od
+rezultata". Bazne linije
 segmenata 02/03 ostaju; `mayChange` prima i CHANGED_09 (konvencija HM-07). Adaptacija: korak nosi
 `ranLongKm`/`ranPart` kad ih ima; taper/mešovite nedelje po stavkama 3, 4, 7, 10.
 
@@ -40,22 +45,23 @@ Z1 · Z2 · Z3 · Z4 · Z5b · F6.
 
 ## Testovi (iz `web/`)
 
-Novi: `segment09.node.test.ts` (7, svi padaju na c13c258), `userText.node.test.ts` (2), Z3 u `app/form.node.test.ts`,
-Z5b u `app/handoffTarget.node.test.ts`, Z4 u `app/adaptFlow.node.test.ts`; E2E `hm-v2.spec.ts` vraćanje → odbijanje.
+Novi: `segment09.node.test.ts` (9; 7 padaju na c13c258, 2 za Z4), `userText.node.test.ts` (2), Z3 u `app/form.node.test.ts`,
+Z5b u `app/handoffTarget.node.test.ts`, Z4 u `app/adaptFlow.node.test.ts`; E2E `hm-v2.spec.ts` nepromenjen (neposredno poništavanje prolazi).
 
 - `tsc -b` 0 · `eslint` 0 · `prettier` 0
 - brz nivo `halfMarathon`: 40 / 344, exit 0
-- pun nivo `TEST_FULL=1 … halfMarathon`: 83 / 445, exit 0 (1 780 s)
-- `npx vitest run --changed 670700e`: 324 / 327 fajlova, 3 678 / 3 682 testova — pali samo 4 testa VAN foldera HM
-  (ispod); `npm run check` isto + 3 v1 testa `training/generator` pod opterećenjem (sami 48/48)
+- pun nivo `TEST_FULL=1 … halfMarathon`: 83 / 447, exit 0
+- `npx vitest run --changed 670700e`: 333 / 333 fajlova, 3 731 / 3 731 testova, exit 0 (posle izmena van foldera);
+  3 v1 testa `training/generator` koja su pala pod opterećenjem merenja prolaze sami (48/48)
 - E2E `npx playwright test e2e/hm-v2.spec.ts`: 3/3
-- run-all `'.*-HM|handoff-adapt-.*HM.*'` (18 poslova): 1 nečist = edges-HM inv 26 (poznato, FINAL-2026-10-23);
+- run-all `'.*-HM|handoff-adapt-.*HM.*'` (18 poslova, na 71af52a; posle toga samo tekst, app vraćanje i testovi): 1 nečist = edges-HM inv 26 (poznato, FINAL-2026-10-23);
   two-step-HM 0/115 328 (new i cum), MAR→HM 0/47 736 (više tokova: Z5b početnik sada ima ponudu), early 0/114 012
   (`artifacts/segment-09/run-all-summary.txt`)
 
-Pali van foldera (čita staro ponašanje; javljeno organizatoru, nije dirano — pravilo 1):
-`marathon/v2/app/byteSame` (HM v2 redovi, 2 testa), `features/onboarding/hmV2Flow.test.tsx:223` (doslovna napomena →
-userText), `features/plan/hmV2Adapt.test.tsx:123` (vraćanje posle prilagođavanja → odbijanje).
+Izmene VAN foldera (odobrenje organizatora): `marathon/v2/app/byteSame.9443676.json` — samo 13 redova „HM v2"
+(BYTE_SAME_RECORD=1, ostali redovi zadržani; snimak ne menja nijedan drugi red); `features/onboarding/hmV2Flow.test.tsx`
+— napomene kao doslovan korisnički tekst (bez uvoza iz unutrašnjosti v2). `features/plan/hmV2Adapt.test.tsx` prolazi
+bez izmene (neposredno poništavanje). „.." je ispravio organizator (`WorkoutParts.tsx`, d2f812a).
 
 ## Stalni uslovi
 

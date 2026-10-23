@@ -1,6 +1,6 @@
 /* HM-09 — planovi generatora čiji se rezultat menja prema c13c258 (pre HM-09), sa klasom:
    a = sadržaj tapera/trkačke nedelje (pouka 35 u taperu: drugi dan kvaliteta lagan; trkačka nedelja čita taper),
-   d = samo tekst napomena/upozorenja (uvod početnika „prva od 2 uvodne nedelje", napomena tapera „najmanja doza"),
+   d = samo tekst napomena/upozorenja/razloga odbijanja (uvod početnika, napomena tapera, dopuna T: „najduže trčanje"),
    x = drugo (mora biti 0). Mreže 02, 03 (po osećaju, početnik) i pouke 28 (`r-`). Bez slučajnosti.
    Iz web/: node ../docs/hm-v2/artifacts/segment-09/changed09.ts <web/ na c13c258> > src/domain/generators/halfMarathon/v2/segment09.changed-c13c258.json */
 const A = `${process.argv[2]}/src/domain/generators/halfMarathon/v2`;
@@ -15,6 +15,7 @@ const cmp = (id: string, input: unknown) => {
   const a: any = ga(input), b: any = gb(input);
   if (JSON.stringify(a.ok ? { ...a.plan, policyVersion: '' } : a) === JSON.stringify(b.ok ? { ...b.plan, policyVersion: '' } : b)) return;
   let c = 'x';
+  if (!a.ok && !b.ok && JSON.stringify(a.reasons.map((r: any) => r.code)) === JSON.stringify(b.reasons.map((r: any) => r.code))) c = 'd';
   if (a.ok && b.ok) {
     if (noText(a.plan) === noText(b.plan)) c = 'd';
     else {

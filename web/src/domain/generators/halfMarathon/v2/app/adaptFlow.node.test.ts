@@ -27,6 +27,7 @@ import * as tenK from '../../../tenK/index';
 import * as hm from '../../index';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import type { HmV2Plan } from '../types.ts';
+import { validatePlan } from '../validate.ts';
 import { buildFacts, EDITS_KEY } from './facts.ts';
 import { KNOWN_VERSIONS } from './plan.ts';
 
@@ -483,36 +484,41 @@ describe('jedno mesto prevoda činjenica (pouke 16–20)', () => {
 });
 
 describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
-  it('vraćanje (HM-09 Z4): posle prilagođavanja verzija se ne vraća (poruka); ista verzija → 0 dana', () => {
+  it('vraćanje (HM-09 Z4): spoj → validatePlan; neposredno poništavanje prolazi; plan koji krši pravila se ne vraća', () => {
     const p = planOf(WITH_RESULT);
     const day = '2026-11-15' as IsoDate;
     const pain = ok(hmV2AdaptPreview(p, day, { facts: { pain: [{ date: day, pain: 5 }] } }));
     const applied = stampForStorage(pain.result);
-    const next = '2026-11-18' as IsoDate;
-    const done = view(applied).dated.find((d) => !d.rest && d.date > day && d.date <= next)!;
-    const log = { [done.id]: { status: 'done', km: 5, sec: 1800 } };
-    // Stara verzija (pre bola) uz noviju prošlost nije plan jezgra (owner Z4: krši pravila, obara sledeće
-    // prilagođavanje) → odbijanje sa razlogom, plan ostaje.
-    const back = HALF_MARATHON_V2_GENERATOR.graftFuturePlan(applied, p, next, { log });
-    const ch = back.meta!['futureChanges'] as { changedDays: number; conflicts: string[] };
-    expect(ch.changedDays).toBe(0);
-    expect(ch.conflicts[0]).toMatch(/plan je prilagođen \(2026-11-15\)/);
-    expect(back.weeks).toEqual(applied.weeks);
-    // Verzija posle poslednjeg prilagođavanja se vraća (ovde ista: 0 dana).
-    expect(
-      HALF_MARATHON_V2_GENERATOR.graftFuturePlan(applied, applied, next).meta!['futureChanges']
-    ).toEqual({
-      changedDays: 0,
-      conflicts: []
-    });
-    expect(HALF_MARATHON_V2_GENERATOR.graftFuturePlan(p, p, next).meta!['futureChanges']).toEqual({
+    // Neposredno poništavanje: verzija tik pre prilagođavanja, istog dana, bez novih zapisa → vraća se.
+    const undo = HALF_MARATHON_V2_GENERATOR.graftFuturePlan(applied, p, day);
+    const ch = undo.meta!['futureChanges'] as { changedDays: number; conflicts: string[] };
+    expect(ch.conflicts).toEqual([]);
+    expect(ch.changedDays).toBeGreaterThan(0);
+    const back = v2Of(undo);
+    expect(validatePlan(back).filter((v) => v.severity === 'error')).toEqual([]);
+    expect(back.weeks.filter((w) => w.endDate > day)).toEqual(
+      v2Of(p).weeks.filter((w) => w.endDate > day)
+    );
+    // Vraćen plan se dalje prilagođava.
+    expect(ok(hmV2AdaptPreview(undo, '2026-11-18' as IsoDate, {})).result).toBeDefined();
+    // Spojena verzija koja krši pravila plana → odbijanje sa razlogom, plan ostaje.
+    const late = '2026-11-25' as IsoDate;
+    const r = HALF_MARATHON_V2_GENERATOR.graftFuturePlan(applied, p, late);
+    const c2 = r.meta!['futureChanges'] as { changedDays: number; conflicts: string[] };
+    if (c2.conflicts.length) {
+      expect(c2.conflicts[0]).toMatch(
+        /ne zadovoljava pravila plana|ne može dalje da se prilagođava/
+      );
+      expect(r.weeks).toEqual(applied.weeks);
+    } else expect(validatePlan(v2Of(r)).filter((v) => v.severity === 'error')).toEqual([]);
+    expect(HALF_MARATHON_V2_GENERATOR.graftFuturePlan(p, p, day).meta!['futureChanges']).toEqual({
       changedDays: 0,
       conflicts: []
     });
     const other = planOf({ ...WITH_RESULT, startDate: hmV2Start(RACE, '2026-11-02')! });
     expect(
       (
-        HALF_MARATHON_V2_GENERATOR.graftFuturePlan(p, other, next).meta!['futureChanges'] as {
+        HALF_MARATHON_V2_GENERATOR.graftFuturePlan(p, other, day).meta!['futureChanges'] as {
           conflicts: string[];
         }
       ).conflicts[0]
