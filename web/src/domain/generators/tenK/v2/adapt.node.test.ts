@@ -39,7 +39,6 @@ import {
   fnv1a,
   inputOf,
   planHash06c,
-  dump08,
   planHash81,
   runsIn,
   SCENARIOS,
@@ -197,7 +196,6 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       hashes.push(fnv1a(JSON.stringify(r)));
       h81[`${id}/${k}/${s}`] = planHash81(r);
       h06c[`${id}/${k}/${s}`] = planHash06c(r);
-      dump08('grid04', `${id}/${k}/${s}`, r);
       p35Flows.push({ key: `${id}/${k}/${s}`, id, hash: planHash06c(r), res: r });
       const notes = r.ok ? r.plan.notes : [];
       if (notes.some((x) => x.includes('(A17)'))) a17.add(`${id}/${k}/${s}`);

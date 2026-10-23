@@ -21,7 +21,6 @@ import { planRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import {
   fnv1a,
   planHash06c,
-  dump08,
   planHash81,
   RELIEF_SCENARIOS,
   type ReliefScenario,
@@ -258,7 +257,6 @@ export function runReliefGrid(
     const res = adaptTenKV2(p0, facts, f.asOf);
     out.flows++;
     out.hash[key] = planHash06c(res);
-    dump08('relief', key, res);
     out.h81[key] = planHash81(res);
     if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
     if (hasP37(res)) out.p37.add(key);

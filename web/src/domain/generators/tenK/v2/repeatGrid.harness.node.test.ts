@@ -39,7 +39,6 @@ import {
   factsOf,
   painFacts,
   planHash06c,
-  dump08,
   START0_SCENARIOS,
   start0AsOf,
   mark07
@@ -346,7 +345,6 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             for (const v of adaptInvariants(p0, r.plan, at, facts)) bad.push(`${key}: ${v}`);
             const old = START0.hashes[idx.get(b.id)! * START0_SCENARIOS.length + j]!;
             const h = planHash06c(r);
-            dump08('start0', key, r);
             runs37.push({
               key,
               hash: h,
