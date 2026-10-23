@@ -373,14 +373,16 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
               bad.push(`${key}: nije rasterećenje ned 1 kao start − 1 uz upisan dan 1`);
           }
         }
+        // 06i: prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37; 10K-07: tokovi koje 10k-v2.9.0
+        // menja (fixture, uzrok) — pre provere „promenjen prema b8fcf22" (koja ih čita preko at46e).
+        const e37 = p37FlowErrors('start0', runs37).slice(0, 10);
+        const e07 = p07FlowErrors('start0', runs37).slice(0, 10);
         expect(n).toBeGreaterThan(FULL ? 600 : 300);
         // Na b8fcf22 umor sa asOf = start odbijen u svakom planu (organizator: 1245/1245).
         expect(fixed).toBe(n / START0_SCENARIOS.length);
         expect(bad.slice(0, 20)).toEqual([]);
-        // 06i: prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37.
-        expect(p37FlowErrors('start0', runs37).slice(0, 10)).toEqual([]);
-        // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
-        expect(p07FlowErrors('start0', runs37).slice(0, 10)).toEqual([]);
+        expect(e37).toEqual([]);
+        expect(e07).toEqual([]);
       },
       GRID_TIMEOUT
     );

@@ -17,7 +17,7 @@ dopunjeni; `app/plan.ts` KNOWN_VERSIONS ∪ 10k-v2.8.1).
 | 5 F3 | `validate.ts` D25: dan testa u svakoj nedelji izgradnje (i rasterećenju) + kvalitet u ne-rasteretnoj | `feelGrid` (invarijanta D25_EXACT, brojke 144/228/204/294) | `fuzz.ts 10K 20261023 0 100000`: test duži od dugog bez upozorenja **1 496 (487 baza + 1 009 rasterećenje) → 0**; B 0; greške validatora 0 |
 | 6 O-1a/O-1b | `policy.kmFit` / `daysForKm` (sirov obim) — ulaz (`input.ts`), D22 `capacityMessage` (više dana samo za redove koji podržavaju obim), D25 `fewerDaysAdvice` | `volume.node.test.ts` D22/D25 (40,04 km) | `owner/tenK-advice.ts`: (a) preporuka manje dana odbijena ulazom **28 / 8 220 → 0 / 8 204**; (b) CAPACITY_LIMITED preporuka vodi u odbijanje **930 / 6 708 → 0 / 6 624** |
 | 7 app A2 | uvod: „Uvod: k. od N nedelje uvoda bez kvaliteta…" (nije broj kalendarske nedelje) | `beginner.node.test.ts` | — |
-| 8 Z1 | `week.recordedExcessKeepsQuality` (konstruktor `mixedRemainder` i validator MIXED_OVER_TARGET): jedini uzrok upisani višak (sa planiranim zaštićenim kvalitet staje, sa upisanim ne — isti kriterijum kao konstruktor) i planirano sa kvalitetom ≤ 1,10 × cilj → kvalitet ostaje, lagani na minimumu | `mixedZ1.node.test.ts` (d3-18w-20km-v50-A-sun over120 2026-11-10) | `consistency/mixed-drop.ts 10K 97` (43 740 tokova): otpao kvalitet over120 **1 741 → MIXED_AFTER**, od toga uz višak ≤ 10 % **1 349 → MIXED_LE10** |
+| 8 Z1 | `week.recordedExcessKeepsQuality` (konstruktor `mixedRemainder` i validator MIXED_OVER_TARGET): jedini uzrok upisani višak (sa planiranim zaštićenim kvalitet staje, sa upisanim ne — isti kriterijum kao konstruktor) i planirano sa kvalitetom ≤ 1,10 × cilj → kvalitet ostaje, lagani na minimumu | `mixedZ1.node.test.ts` (d3-18w-20km-v50-A-sun over120 2026-11-10) | `consistency/mixed-drop.ts 10K 97` (43 740 tokova): otpao kvalitet over120 **1 741 → 284**, od toga uz višak ≤ 10 % **1 349 → 0** (preostalih 284: višak > 10 %) |
 | 8 Z2 | `app/format.userText` (jedino mesto, app sloj: fokus nedelje, „Na šta da paziš", ocena cilja, razlozi, odbijanja, traka): bez oznaka D/A/H/M/F, „pouka N", „segment N"; decimalni zarez; km ≤ 1 decimala; bez „..". Plan jezgra (`tenKV2`) zadržava oznake (validator ih čita) | `app/userText.node.test.ts` (mreža + adaptacija) | „traži 0.3 VDOT" → „traži 0,3 VDOT" |
 | 8 Z3 | `assess.resultVdotUsable` (jedina definicija VDOT 30–80) — assess i Forma | `app/form.node.test.ts` Z3 (5 km 31:46) | Forma: „čeka prilagođavanje" → „ne menja tempo (VDOT van 30–80)" |
 | 9 owner K | `isolation.node.test.ts v2Edges`: alias `@/…/tenK/v2` i dinamički uvoz | isti fajl | — |
@@ -39,7 +39,9 @@ P37 iznad cilja bez upozorenja **9 → 0**, buduća nedelja < 40 % cilja 30 → 
   31 122 plana → **O-1b 930, F3 822, ostalo bajt-isto**; adaptacija 2 040 → **Z1 28, F3 37, ostalo bajt-isto**.
 - Adaptacione mreže (grid04, E, R, start + 0): fixture `segment07.adapt-changed-c13c258.json` (tok → [heš na c13c258,
   uzrok]) kao 06f/06i; starije regresije porede stanje c13c258 (`atC13` u lancu `at46e`), `p07FlowErrors` proverava
-  skup i uzrok. Brojevi: FIXTURE_COUNTS.
+  skup i uzrok. Brojevi (pun nivo, 135 276 tokova): grid04 241 (C8 159, F3 33, F3+C8 17, Z1 32), E 24 264 (C8 7 339, F3 9 879, F3+C8
+  2 651, O-1b 1 739, O-1b+C8 2 551, Z1 105), R 961 (F3 247, O-1b 714), start + 0 4 456 (C8 2 160, F3 974, F3+C8 551,
+  O-1b 178, O-1b+C8 593); **bez uzroka 0**. C8 = novo upozorenje mešovite nedelje pauze (plan isti, dodato upozorenje).
 - `painGrid` I3: trkačka bol 8 − bol 5 ista dva toka, cilj niži za razliku WU/CD oštrenja.
 
 ## Testovi
