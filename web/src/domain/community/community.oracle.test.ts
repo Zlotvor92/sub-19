@@ -1,9 +1,9 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 import { effectiveRaceDate } from '../day';
 import { fmtDayMonth } from '../format';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { GenPlanState, LogEntry, T3kRecord, VdotRecord } from '../state';
 import { currentVdot } from '../training/adaptation';

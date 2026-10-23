@@ -148,6 +148,7 @@ function RaceAnalysisForm({ initialId }: { initialId?: string }) {
           runWalk: undefined,
           snaga: false,
           session: undefined,
+          originSession: undefined,
           mlr: false,
           test: false,
           origin: {

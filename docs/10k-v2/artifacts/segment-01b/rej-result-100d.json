@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "FEEL_PLAN_SEGMENT_03",
+      "message": "Rezultat je star 100 dana (> 84): tempo nije pouzdan; plan po osećaju dolazi u segmentu 03."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "WEEKLY_KM_TOO_LOW",
+      "message": "Trenutni obim 30 km je ispod 35 km za 6 dana trčanja: za 30 km plan podržava 3–5 dana trčanja."
+    }
+  ]
+}

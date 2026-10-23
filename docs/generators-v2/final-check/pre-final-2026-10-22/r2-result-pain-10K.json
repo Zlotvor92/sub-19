@@ -1,0 +1,21 @@
+{
+ "dist": "10K",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 264,
+ "excludedPermanent": 57,
+ "plans": 264,
+ "flows": 51336,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "inv": {},
+ "invEx": {},
+ "by": {},
+ "seconds": 553.423
+}

@@ -1,0 +1,259 @@
+{
+  "asOf": "2026-12-13",
+  "reasons": [
+    {
+      "condition": "PAUSE",
+      "applied": true,
+      "message": "Pauza 7 dana (obim 7 dana pre pauze 31.4 km): cilj 25.1 km; prva nedelja 1 kvalitet."
+    },
+    {
+      "condition": "UNDER_EXECUTION",
+      "applied": false,
+      "message": "Izvršeno 0 od 32.5 km u 7 dana (< 60%): nadjačano ili nema sledeće nedelje izgradnje."
+    }
+  ],
+  "changes": [
+    {
+      "week": 7,
+      "field": "targetKm",
+      "before": "26",
+      "after": "25.1"
+    },
+    {
+      "week": 7,
+      "field": "plannedKm",
+      "before": "26",
+      "after": "25.1"
+    },
+    {
+      "week": 7,
+      "date": "2026-12-17",
+      "field": "day",
+      "before": "easy: Lagano 5.4 km",
+      "after": "easy: Lagano 5.1 km"
+    },
+    {
+      "week": 7,
+      "date": "2026-12-19",
+      "field": "day",
+      "before": "easy: Lagano 5.3 km",
+      "after": "easy: Lagano 5.1 km"
+    },
+    {
+      "week": 7,
+      "date": "2026-12-20",
+      "field": "day",
+      "before": "long: Dugi lagano 9.1 km",
+      "after": "long: Dugi lagano 8.7 km"
+    },
+    {
+      "week": 8,
+      "field": "targetKm",
+      "before": "32.5",
+      "after": "25.1"
+    },
+    {
+      "week": 8,
+      "field": "plannedKm",
+      "before": "32.5",
+      "after": "25.1"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-22",
+      "field": "day",
+      "before": "q1: RP po osećaju: 7 × 1:30 min osećaj trkačkog napora za 5K (RPE 8; oporavak 45 s lagano)",
+      "after": "q1: RP po osećaju: 6 × 1:30 min osećaj trkačkog napora za 5K (RPE 8; oporavak 45 s lagano)"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-24",
+      "field": "day",
+      "before": "q2: Kratki usponi: 9 × 45 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1:30 min)",
+      "after": "q2: Kratki usponi: 11 × 30 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1 min)"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-26",
+      "field": "day",
+      "before": "easy: Lagano 8.64 km",
+      "after": "easy: Lagano 4.82 km"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-27",
+      "field": "day",
+      "before": "long: Dugi lagano 11.3 km",
+      "after": "long: Dugi lagano 8.7 km"
+    },
+    {
+      "week": 9,
+      "field": "targetKm",
+      "before": "32.5",
+      "after": "25.1"
+    },
+    {
+      "week": 9,
+      "field": "plannedKm",
+      "before": "32.5",
+      "after": "25.1"
+    },
+    {
+      "week": 9,
+      "date": "2026-12-29",
+      "field": "day",
+      "before": "q1: RP po osećaju: 6 × 2 min osećaj trkačkog napora za 5K (RPE 8; oporavak 1 min lagano)",
+      "after": "q1: RP po osećaju: 5 × 2 min osećaj trkačkog napora za 5K (RPE 8; oporavak 1 min lagano)"
+    },
+    {
+      "week": 9,
+      "date": "2026-12-31",
+      "field": "day",
+      "before": "q2: Kratki usponi: 10 × 45 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1:30 min)",
+      "after": "q2: Kratki usponi: 12 × 30 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1 min)"
+    },
+    {
+      "week": 9,
+      "date": "2027-01-02",
+      "field": "day",
+      "before": "easy: Lagano 7.96 km",
+      "after": "easy: Lagano 4.39 km"
+    },
+    {
+      "week": 9,
+      "date": "2027-01-03",
+      "field": "day",
+      "before": "long: Dugi lagano 11.3 km",
+      "after": "long: Dugi lagano 8.7 km"
+    },
+    {
+      "week": 10,
+      "field": "targetKm",
+      "before": "27.6",
+      "after": "21.3"
+    },
+    {
+      "week": 10,
+      "field": "plannedKm",
+      "before": "27.6",
+      "after": "21.3"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-05",
+      "field": "day",
+      "before": "q1: RP po osećaju: 6 × 1:30 min osećaj trkačkog napora za 5K (RPE 8; oporavak 45 s lagano)",
+      "after": "q1: RP po osećaju: 7 × 1 min osećaj trkačkog napora za 5K (RPE 8; oporavak 30 s lagano)"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-07",
+      "field": "day",
+      "before": "q2: Tempo po osećaju: 2 × 6 min (60 s lagano između) (RPE 6–7, može da se priča u kratkim rečenicama)",
+      "after": "q2: Tempo po osećaju: 2 × 5 min (60 s lagano između) (RPE 6–7, može da se priča u kratkim rečenicama)"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-09",
+      "field": "day",
+      "before": "easy: Lagano 6.74 km",
+      "after": "easy: Lagano 5.41 km"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-10",
+      "field": "day",
+      "before": "long: Dugi lagano 9.6 km",
+      "after": "long: Dugi lagano 7.4 km"
+    },
+    {
+      "week": 11,
+      "field": "targetKm",
+      "before": "22.8",
+      "after": "17.6"
+    },
+    {
+      "week": 11,
+      "field": "plannedKm",
+      "before": "22.8",
+      "after": "17.6"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-12",
+      "field": "day",
+      "before": "q1: RP po osećaju: 5 × 1:30 min osećaj trkačkog napora za 5K (RPE 8; oporavak 45 s lagano)",
+      "after": "q1: RP po osećaju: 3 × 2 min osećaj trkačkog napora za 5K (RPE 8; oporavak 1 min lagano)"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-14",
+      "field": "day",
+      "before": "easy: Lagano 5.37 km + 4 × 20 s ubrzanja",
+      "after": "easy: Lagano 3.89 km + 4 × 20 s ubrzanja"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-16",
+      "field": "day",
+      "before": "easy: Lagano 5.3 km + 4 × 20 s ubrzanja",
+      "after": "easy: Lagano 3.8 km + 4 × 20 s ubrzanja"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-17",
+      "field": "day",
+      "before": "long: Dugi lagano 7.9 km",
+      "after": "long: Dugi lagano 6.1 km"
+    },
+    {
+      "week": 12,
+      "field": "targetKm",
+      "before": "11.29",
+      "after": "9.49"
+    },
+    {
+      "week": 12,
+      "field": "plannedKm",
+      "before": "11.29",
+      "after": "9.49"
+    },
+    {
+      "week": 12,
+      "date": "2027-01-19",
+      "field": "day",
+      "before": "easy: Lagano 3.9 km",
+      "after": "easy: Lagano 3 km"
+    },
+    {
+      "week": 12,
+      "date": "2027-01-23",
+      "field": "day",
+      "before": "easy: Lagano 3.9 km + 4 × 20 s ubrzanja",
+      "after": "easy: Lagano 3 km + 4 × 20 s ubrzanja"
+    }
+  ],
+  "steps": [
+    {
+      "asOf": "2026-12-13",
+      "firstWeek": 7,
+      "fromWeek": 7,
+      "result": null,
+      "vdot": null,
+      "startKm": 25.1,
+      "pauseRemainder": true,
+      "restart": false,
+      "deload": false,
+      "noQuality": [],
+      "oneQuality": [
+        {
+          "from": "2026-12-14",
+          "to": "2026-12-20"
+        }
+      ],
+      "rest": null,
+      "pain": null,
+      "orientation": false
+    }
+  ]
+}

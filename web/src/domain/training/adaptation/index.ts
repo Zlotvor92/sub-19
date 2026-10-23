@@ -18,27 +18,6 @@ export {
   dayZone,
   type StoredPredRow
 } from './matching';
-export {
-  planVdotNow,
-  effectivePace,
-  formVsPlan,
-  vdotProposal,
-  applyVdotProposal,
-  undoVdotAdjustments,
-  refreshSessionPace,
-  restoreSessionPace,
-  type ProposalContext,
-  type FormVsPlan,
-  type VdotProposal,
-  type ProposalChange,
-  type ApplyResult
-} from './proposal';
+export { effectivePace } from './effectivePace';
 export { alignVdotDates } from './dates';
-export {
-  fitnessEvidence,
-  FITNESS_EVIDENCE_WINDOW_DAYS,
-  FITNESS_EVIDENCE_MIN_WORK_SEC,
-  type FitnessEvidence,
-  type FitnessEvidenceContext,
-  type EvidenceExclusion
-} from './evidence';
+/* Predlog tempa i dokaz forme (adaptacija) su u generatoru distance plana; stari `./proposal` i `./evidence` su obrisani. */

@@ -1,9 +1,9 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate } from '../domain/date';
-import { adaptGeneratedPlan, resolvePlan } from '../domain/plan';
+import { resolvePlan } from '../domain/plan';
 import { getPlanRevisions } from '../domain/plan/versions';
 import { migrateState, seedState, type PersistedState } from '../domain/state';
-import { generatePlan } from '../domain/training/generator/generatePlan';
 import { sessKm } from '../domain/training/sessions/calc';
 import type { PlanGenerationInput } from '../domain/training/types';
 import { hydratePersisted } from './index';
@@ -18,7 +18,8 @@ import { useRecoveryStore } from './recoveryStore';
 import { useTrainingStore } from './trainingStore';
 import { useUIStore } from './uiStore';
 import { undoAdjustments } from './raceActions';
-import { refreshSessionPace } from '../domain/training/adaptation/proposal';
+// Plan u ovom testu je 10K; ručno osvežavanje tempa sesije je funkcija 10K generatora.
+import { refreshSessionPace } from '../domain/generators/tenK/training/adaptation/proposal';
 
 const TODAY = '2026-02-18';
 const INPUT: PlanGenerationInput = {

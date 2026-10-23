@@ -10,7 +10,10 @@
    (novija verzija aplikacije ih možda koristi).
    ============================================================ */
 
-import type { TrainingPlan, PredictionRow, RunWalk, Week } from '../training/types';
+import type { TrainingPlan, PredictionRow, RunWalk, StructuredDay, Week } from '../training/types';
+/** Oblik generisanog plana je deo formata razmene (ugovor generatora, `generators/contract.ts`, ga čita odavde).
+ *  `StructuredDay` (5k-v2, 08a): dan sa strukturom treninga. */
+export type { TrainingPlan, PredictionRow, RunWalk, StructuredDay, Week };
 
 export const SCHEMA_VERSION = 12;
 
@@ -91,6 +94,23 @@ export interface WellnessRecord {
   svezina: number | null;
 }
 
+/** 08c: uvezeno trčanje koje nije upareno sa danom plana (samo za aktivan plan 5K v2; `PersistedState.vanPlanaV2`,
+ *  ključ `izvor:ID`). Datum je lokalni dan početka; `km` 0 = vremenska sesija bez km; `sec` `null` = trajanje nepoznato. */
+export interface OffPlanRun {
+  date: string;
+  km: number;
+  sec: number | null;
+  src: 'strava' | 'icu';
+  id: string;
+}
+
+/** 08c: aktivnost izvora koja pri sinhronizaciji nije preuzeta ili obrađena (`date` `null` = dan nepoznat). */
+export interface SyncIssue {
+  date: string | null;
+  id: string | null;
+  reason: string;
+}
+
 /** Ručna izmena dana (tip/km/opis/tempo/run-walk/+snaga). */
 export interface AltRecord {
   tag: DayTag;
@@ -110,6 +130,9 @@ export interface StoredWeek {
   focus: string;
   /** Taper nedelja (zastavica iz generatora; stariji planovi je nemaju). */
   taper?: true;
+  /** Faza nedelje za prikaz koju je upisao generator plana (`stampPlan`); stariji planovi je nemaju — tada fazu izvodi
+   *  generator tog plana svojom funkcijom (`weekPhase`). */
+  phase?: string;
   /** Napomena: perzistirana nedelja NEMA `vol` (ukupan km se računa iz dana). */
   days: Array<Week['days'][number] & { id?: string }>;
 }
@@ -117,9 +140,24 @@ export interface GenPlanState {
   weeks: StoredWeek[];
   pred: Array<PredictionRow & { id?: string }>;
   qs?: Record<string, number[]>;
+  /** `meta.policyId`/`meta.policyVersion`: politika generatora koja je poslednja upisala plan (`stampPlan`); plan bez
+   *  oznake je „legacy-<distanca>" i obrađuje ga postojeći generator te distance. */
   meta?: TrainingPlan['meta'] & Record<string, unknown>;
   /** Pun ulaz generatora — potreban da se cilj promeni usred pripreme. NEPOUZDAN. */
   ulaz?: unknown;
+  /** 5k-v2 (08a): izlaz generatora 5K v2 doslovno (ulaz, nedelje, koraci) — osnova za njegovu adaptaciju (08b). Oblik
+   *  poznaje samo `generators/fiveK/v2`; aplikacija ga ne čita. Plan bez polja nije v2 plan. NEPOUZDAN. */
+  fiveKV2?: unknown;
+  /** 10k-v2 (segment 05): izlaz generatora 10K v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (06). Oblik
+   *  poznaje samo `generators/tenK/v2`; aplikacija ga ne čita. Plan bez polja nije 10K v2 plan. NEPOUZDAN. */
+  tenKV2?: unknown;
+  /** hm-v2 (segment HM-05): izlaz generatora HM v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije (HM-06).
+   *  Oblik poznaje samo `generators/halfMarathon/v2`; aplikacija ga ne čita. Plan bez polja nije HM v2 plan. NEPOUZDAN. */
+  hmV2?: unknown;
+  /** marathon-v2 (segment MAR-05): izlaz generatora maratona v2 doslovno (ulaz, nedelje, upozorenja) — osnova adaptacije
+   *  (MAR-06). Oblik poznaje samo `generators/marathon/v2`; aplikacija ga ne čita. Plan bez polja nije plan maratona v2.
+   *  NEPOUZDAN. */
+  marathonV2?: unknown;
   [field: string]: unknown;
 }
 
@@ -158,6 +196,8 @@ export interface PersistedState {
   wellness: Record<string, WellnessRecord>;
   icu: Record<string, unknown> | null;
   vanPlana: Record<string, number>;
+  /** 08c: trčanja van plana za plan 5K v2 (`izvor:ID` → zapis); stanje bez polja ga nema (planovi v1 ga ne pune). */
+  vanPlanaV2?: Record<string, OffPlanRun>;
   zajed: CommunityState;
   ui: UiState;
   [field: string]: unknown;

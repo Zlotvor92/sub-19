@@ -1,11 +1,10 @@
+import { assess, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { goalContext } from '../../ai';
 import { addDays, type IsoDate } from '../../date';
 import type { Intensity, TrainingPlan } from '../types';
 import { raceTimeForVdot } from '../vdot/racePrediction';
 import { vdotFromRace } from '../vdot/calculateVDOT';
-import { assess } from './assess';
-import { generatePlan } from './generatePlan';
 
 const intensities: Intensity[] = ['kons', 'std', 'agr'];
 const pb = { distM: 5000, sec: 1235 };

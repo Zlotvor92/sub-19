@@ -1,0 +1,152 @@
+{
+ "code": "51a924f + k1k2-prototype.diff",
+ "sec": 1484,
+ "stat": {
+  "N7/pain5": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "N7/UKUPNO": {
+   "tokova": 61104,
+   "odbijeno": 27,
+   "K2": 27
+  },
+  "N7/pain8": {
+   "tokova": 10184,
+   "odbijeno": 0
+  },
+  "N7/pause10": {
+   "tokova": 10184,
+   "odbijeno": 2,
+   "K2": 2
+  },
+  "N7/pause10pain5": {
+   "tokova": 10184,
+   "odbijeno": 2,
+   "K2": 2
+  },
+  "N7/pause20": {
+   "tokova": 10184,
+   "odbijeno": 22,
+   "K2": 22
+  },
+  "N7/under": {
+   "tokova": 10184,
+   "odbijeno": 1,
+   "K2": 1
+  },
+  "S/faster": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/UKUPNO": {
+   "tokova": 847392,
+   "odbijeno": 3648,
+   "K2": 641,
+   "novo:RACE_WEEK_OVER_TAPER": 1308,
+   "novo:ROLES": 1692,
+   "novo:TAPER_QUALITY": 1,
+   "novo:DELOAD_CONTENT": 6
+  },
+  "S/fatigue": {
+   "tokova": 70616,
+   "odbijeno": 1692,
+   "novo:ROLES": 1692
+  },
+  "S/over": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pain5": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/pain8": {
+   "tokova": 70616,
+   "odbijeno": 1308,
+   "novo:RACE_WEEK_OVER_TAPER": 1308
+  },
+  "S/pause10": {
+   "tokova": 70616,
+   "odbijeno": 112,
+   "K2": 110,
+   "novo:DELOAD_CONTENT": 2
+  },
+  "S/pause10pain5": {
+   "tokova": 70616,
+   "odbijeno": 132,
+   "K2": 132
+  },
+  "S/pause20": {
+   "tokova": 70616,
+   "odbijeno": 114,
+   "K2": 111,
+   "novo:TAPER_QUALITY": 1,
+   "novo:DELOAD_CONTENT": 2
+  },
+  "S/pause35": {
+   "tokova": 70616,
+   "odbijeno": 277,
+   "K2": 277
+  },
+  "S/slower": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/test5k": {
+   "tokova": 70616,
+   "odbijeno": 0
+  },
+  "S/under": {
+   "tokova": 70616,
+   "odbijeno": 13,
+   "novo:DELOAD_CONTENT": 2,
+   "K2": 11
+  }
+ },
+ "examples": {
+  "N7/K2": [
+   "N7/f-d3-12w-35km-e360-A-sat/w3end-3/pause20: ned 11 TAPER_LONG: Dugi tapera 12.5 km > 0,75 × najduži 16.6 km (D7).",
+   "N7/f-d3-8w-20km-e270-A-sat/w1end-3/pause20: ned 7 TAPER_LONG: Dugi tapera 6.3 km > 0,75 × najduži 8.3 km (D7).",
+   "N7/f-d3-8w-30km-e360-A-sat/w1end-3/pause20: ned 7 TAPER_LONG: Dugi tapera 9.4 km > 0,75 × najduži 12.5 km (D7).",
+   "N7/f-d4-10w-25km-e315-B-sat/w2end-3/pause20: ned 9 TAPER_LONG: Dugi tapera 6.2 km > 0,75 × najduži 8.2 km (D7).",
+   "N7/f-d4-10w-55km-e270-B-sat/w2end-3/pause20: ned 9 TAPER_LONG: Dugi tapera 13.6 km > 0,75 × najduži 18.1 km (D7).",
+   "N7/f-d4-11w-25km-e315-B-sat/w2end-3/pause20: ned 10 TAPER_LONG: Dugi tapera 6.2 km > 0,75 × najduži 8.2 km (D7)."
+  ],
+  "S/K2": [
+   "S/10w-25km-v30-A-sat/w1wed/pause35: ned 9 TAPER_LONG: Dugi tapera 5 km > 0,75 × najduži 6.6 km (D7).",
+   "S/10w-25km-v30-A-sat/w2wed/pause20: ned 9 TAPER_LONG: Dugi tapera 6.2 km > 0,75 × najduži 8.2 km (D7).",
+   "S/10w-25km-v40-A-sat/w1wed/pause35: ned 9 TAPER_LONG: Dugi tapera 5 km > 0,75 × najduži 6.6 km (D7).",
+   "S/10w-25km-v40-A-sat/w2wed/pause20: ned 9 TAPER_LONG: Dugi tapera 6.2 km > 0,75 × najduži 8.2 km (D7).",
+   "S/10w-25km-v50-A-sat/w1wed/pause35: ned 9 TAPER_LONG: Dugi tapera 5 km > 0,75 × najduži 6.6 km (D7).",
+   "S/10w-25km-v50-A-sat/w2wed/pause20: ned 9 TAPER_LONG: Dugi tapera 6.2 km > 0,75 × najduži 8.2 km (D7)."
+  ],
+  "S/novo:RACE_WEEK_OVER_TAPER": [
+   "S/10w-25km-v30-A-sat/w8end/pain8: ned 10 RACE_WEEK_OVER_TAPER: Trkačka nedelja 10.1 km > taper 8.2 km (D23).",
+   "S/10w-25km-v40-A-sat/w8end/pain8: ned 10 RACE_WEEK_OVER_TAPER: Trkačka nedelja 10.1 km > taper 8.2 km (D23).",
+   "S/10w-25km-v50-A-sat/w8end/pain8: ned 10 RACE_WEEK_OVER_TAPER: Trkačka nedelja 10.1 km > taper 8.2 km (D23).",
+   "S/10w-25km-v60-A-sat/w8end/pain8: ned 10 RACE_WEEK_OVER_TAPER: Trkačka nedelja 10.1 km > taper 8.2 km (D23).",
+   "S/10w-30km-v30-A-sat/w8end/pain8: ned 10 RACE_WEEK_OVER_TAPER: Trkačka nedelja 10.37 km > taper 9.6 km (D23).",
+   "S/10w-30km-v40-A-sat/w8end/pain8: ned 10 RACE_WEEK_OVER_TAPER: Trkačka nedelja 11.7 km > taper 9.8 km (D23)."
+  ],
+  "S/novo:ROLES": [
+   "S/b-d3-10w-20km-e390-A-sat/w1end/fatigue: ned 2 ROLES: Dani easy@tue, long@sun, q1@thu ≠ šablon easy@thu, easy@tue, long@sun (D9).",
+   "S/b-d3-10w-20km-e390-A-sat/w1wed/fatigue: ned 2 ROLES: Dani easy@tue, long@sun, q1@thu ≠ šablon easy@thu, easy@tue, long@sun (D9).",
+   "S/b-d3-10w-20km-e390-B-sun/w1end/fatigue: ned 2 ROLES: Dani easy@mon, long@sat, q1@wed ≠ šablon easy@mon, easy@wed, long@sat (D9).",
+   "S/b-d3-10w-20km-e390-B-sun/w1wed/fatigue: ned 2 ROLES: Dani easy@mon, long@sat, q1@wed ≠ šablon easy@mon, easy@wed, long@sat (D9).",
+   "S/b-d3-10w-20km-e450-A-sat/w1end/fatigue: ned 2 ROLES: Dani easy@tue, long@sun, q1@thu ≠ šablon easy@thu, easy@tue, long@sun (D9).",
+   "S/b-d3-10w-20km-e450-A-sat/w1wed/fatigue: ned 2 ROLES: Dani easy@tue, long@sun, q1@thu ≠ šablon easy@thu, easy@tue, long@sun (D9)."
+  ],
+  "S/novo:TAPER_QUALITY": [
+   "S/b-d3-16w-30km-e330-B-sun/w11wed/pause20: ned 15 TAPER_QUALITY: Taper: RP 2000 m > plafon 1940 m → bez kvaliteta, uz napomenu (D11 ispred D7)."
+  ],
+  "S/novo:DELOAD_CONTENT": [
+   "S/b-d3-17w-30km-e330-B-sun/w10wed/pause10: ned 13 DELOAD_CONTENT: Rasterećenje: 1 kvalitet T 2000 m (≈ 60 % od 3600 m) (D5).",
+   "S/b-d3-17w-30km-e330-B-sun/w10wed/under: ned 13 DELOAD_CONTENT: Rasterećenje: 1 kvalitet T 2000 m (≈ 60 % od 3600 m) (D5).",
+   "S/b-d3-18w-30km-e330-B-sun/w10wed/pause20: ned 15 DELOAD_CONTENT: Rasterećenje: 1 kvalitet T 2000 m (≈ 60 % od 3600 m) (D5).",
+   "S/b-d3-18w-30km-e330-B-sun/w11wed/pause10: ned 15 DELOAD_CONTENT: Rasterećenje: 1 kvalitet T 2000 m (≈ 60 % od 3600 m) (D5).",
+   "S/b-d3-18w-30km-e330-B-sun/w11wed/pause20: ned 15 DELOAD_CONTENT: Rasterećenje: 1 kvalitet T 2000 m (≈ 60 % od 3600 m) (D5).",
+   "S/b-d3-18w-30km-e330-B-sun/w11wed/under: ned 15 DELOAD_CONTENT: Rasterećenje: 1 kvalitet T 2000 m (≈ 60 % od 3600 m) (D5)."
+  ]
+ }
+}

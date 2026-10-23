@@ -1,0 +1,23 @@
+[
+  {
+    "name": "3f-a cilj čita politiku izvora (startingKm izvršenja kao obim)",
+    "file": "src/domain/generators/halfMarathon/v2/app/handoffTarget.ts",
+    "find": "  const g = generateHmV2(targetInput(input, start));",
+    "replace": "  const g = generateHmV2(targetInput({ ...input, weeklyKm: (facts.execution as { startingKm?: number } | null)?.startingKm ?? input.weeklyKm }, start));",
+    "tests": ["src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts"]
+  },
+  {
+    "name": "3f-b start cilja nije granica nedelje (dan posle potvrde)",
+    "file": "src/domain/generators/halfMarathon/v2/app/handoffTarget.ts",
+    "find": "  const start = alignedStart(input.raceDate, addDays(today, 1));",
+    "replace": "  const start = alignedStart(input.raceDate, addDays(today, 1)) && addDays(today, 1);",
+    "tests": ["src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts"]
+  },
+  {
+    "name": "3f-c dayId izvora prelazi u činjenice cilja",
+    "file": "src/domain/generators/halfMarathon/v2/app/handoffTarget.ts",
+    "find": "    ...(workouts ? { workouts: workouts.map(({ dayId: _d, ...w }) => w) } : {}),",
+    "replace": "    ...(workouts ? { workouts } : {}),",
+    "tests": ["src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts"]
+  }
+]

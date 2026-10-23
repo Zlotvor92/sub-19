@@ -1,36 +1,39 @@
-import { alignAutomaticOverlays } from '../domain/plan/automaticAlts';
 import { addDays, parseIsoDate } from '../domain/date';
 import { resolvePlan, type ResolvedPlan } from '../domain/plan';
 import {
-  buildExecutionAdjustment,
-  executionBasis,
-  executionModel as model,
-  type ExecutionAdjustmentOptions
-} from '../domain/plan/executionAdjustment';
-import {
-  basisFromPlan,
-  buildPreparationChoice,
-  isLimitedLongPreparation,
-  preparationDecision,
+  fiveKV2AdaptPreview,
+  generatorForPlan,
+  hmV2AdaptPreview,
+  isFiveKV2Plan,
+  isHmV2Plan,
+  isMarathonV2Plan,
+  marathonV2AdaptPreview,
+  isTenKV2Plan,
+  tenKV2AdaptPreview,
+  preparationForPlan,
+  stampForStorage,
+  unsupportedPlanReason,
   type DecisionPoint,
+  type ExecutionAdjustmentOptions,
+  type GeneratorFlags,
   type PreparationChoice,
-  type PreparationDecision
-} from '../domain/plan/preparationDecision';
-import { graftFuturePlan, type ReplanContext } from '../domain/plan/future';
-import {
-  buildRunWalkAdjustment,
+  type PreparationDecision,
+  type ReplanContext,
   type RunWalkAdjustmentOptions
-} from '../domain/plan/runWalkAdjustment';
-import { hasRecentMeasuredForm, qualityEntryGate } from '../domain/training/qualityGate';
-import { assessRunWalkProgress } from '../domain/training/runWalkProgress';
+} from '../domain/generators/select';
 import {
   getPlanRevisions,
   recordPlanRevision,
   type PlanRevisionReason
 } from '../domain/plan/versions';
 import type { AltRecord, GenPlanState } from '../domain/state';
+import { fiveKV2Sources } from './fiveKV2Actions';
+import { currentGeneratorFlags } from './generatorFlags';
+import { hmV2Sources } from './hmV2Actions';
+import { marathonV2Sources } from './marathonV2Actions';
+import { tenKV2Sources } from './tenKV2Actions';
 import { useRecoveryStore } from './recoveryStore';
-import { useTrainingStore } from './trainingStore';
+import { activeGenPlan, useTrainingStore } from './trainingStore';
 import { useUIStore } from './uiStore';
 import { sessQKm } from '../domain/training/sessions/calc';
 
@@ -57,8 +60,44 @@ export type PlanChangePreview =
         demandingDaysAfter?: number;
       }>;
       notes: string[];
+      /** 08b: pregled prilagođavanja plana 5K v2 (razlozi v2 doslovno, promenjene nedelje, pokrivenost zapisa). */
+      fiveKV2?: FiveKV2Details;
+      /** 10K v2 (segment 06): isti pregled za plan 10K v2. */
+      tenKV2?: TenKV2Details;
+      /** HM v2 (segment HM-06): isti pregled za plan polumaratona v2. */
+      hmV2?: HmV2Details;
+      /** Maraton v2 (segment MAR-06): isti pregled za plan maratona v2. */
+      marathonV2?: MarathonV2Details;
     }
-  | { ok: false; reason: string; decision?: PreparationDecision };
+  | {
+      ok: false;
+      reason: string;
+      decision?: PreparationDecision;
+      /** 08b: odbijanje v2 — razlozi doslovno. */
+      reasons?: string[];
+    };
+type FiveKV2Outcome = ReturnType<typeof fiveKV2AdaptPreview>;
+export type FiveKV2Details = Pick<
+  Extract<FiveKV2Outcome, { ok: true }>,
+  'reasons' | 'weeks' | 'coverage' | 'needed'
+>;
+type TenKV2Outcome = ReturnType<typeof tenKV2AdaptPreview>;
+export type TenKV2Details = Pick<
+  Extract<TenKV2Outcome, { ok: true }>,
+  'reasons' | 'weeks' | 'coverage' | 'needed'
+>;
+type HmV2Outcome = ReturnType<typeof hmV2AdaptPreview>;
+/** 3g: `shorterOffer` (odluka domena, 3c) — posle ovog prilagođavanja plan je ograničena priprema (ponuda „kraća
+ *  distanca"); polja nema kad ponude nema. */
+export type HmV2Details = Pick<
+  Extract<HmV2Outcome, { ok: true }>,
+  'reasons' | 'weeks' | 'coverage' | 'needed' | 'shorterOffer'
+>;
+type MarathonV2Outcome = ReturnType<typeof marathonV2AdaptPreview>;
+export type MarathonV2Details = Pick<
+  Extract<MarathonV2Outcome, { ok: true }>,
+  'reasons' | 'weeks' | 'coverage' | 'needed' | 'shorterOffer'
+>;
 type PreviewReason = Extract<PlanRevisionReason, 'execution' | 'restore' | 'goal'>;
 
 export function replanContext(): ReplanContext & {
@@ -88,8 +127,27 @@ export function planStateStamp(): string {
   ]);
 }
 
+/**
+ * Generator aktivnog plana (sačuvanog ili ugrađenog ličnog); adaptacija pripada generatoru njegove distance
+ * (`domain/generators/select.ts`). `null` kad plan nema podržanu distancu — ekrani to prikazuju umesto prilagođavanja.
+ */
+export const activePlanGenerator = () => generatorForPlan(activeGenPlan());
+/** Zašto aktivni plan nema generator (nepodržana distanca ili nepoznata verzija politike, A7). */
+export const activePlanUnsupportedReason = (): string => unsupportedPlanReason(activeGenPlan());
+
+function planGenerator() {
+  const generator = activePlanGenerator();
+  if (!generator) throw new Error(activePlanUnsupportedReason());
+  return generator;
+}
+
 export function executionModel(plan: ResolvedPlan, today: string) {
-  return model(plan, today, replanContext(), useRecoveryStore.getState().vanPlana);
+  return planGenerator().executionModel(
+    plan,
+    today,
+    replanContext(),
+    useRecoveryStore.getState().vanPlana
+  );
 }
 
 function recentPainMax(todayStr: string, days: number): number | null {
@@ -108,7 +166,7 @@ function recentPainMax(todayStr: string, days: number): number | null {
 
 /** Tolerancija run/walk koraka iz prijavljenog izvršenja; prazan dnevnik ostaje nepoznat. */
 export function runWalkModel(plan: ResolvedPlan, today: string) {
-  return assessRunWalkProgress({
+  return planGenerator().assessRunWalkProgress({
     plan,
     log: useTrainingStore.getState().log,
     today,
@@ -122,10 +180,11 @@ export function qualityGateModel(plan: ResolvedPlan, today: string) {
   const policy = (t.genPlan?.meta as { formPolicy?: { basis?: string } } | null | undefined)
     ?.formPolicy;
   if (policy?.basis !== 'effort-first') return null;
-  return qualityEntryGate({
+  const generator = planGenerator();
+  return generator.qualityEntryGate({
     analysis: executionModel(plan, today).analysis,
     recentPainMax: recentPainMax(today, 14),
-    formConfirmed: hasRecentMeasuredForm(today, { t3k: t.t3k, vdotLog: t.vdotLog })
+    formConfirmed: generator.hasRecentMeasuredForm(today, { t3k: t.t3k, vdotLog: t.vdotLog })
   });
 }
 
@@ -147,6 +206,7 @@ export function positiveAdjustmentBlock(plan: ResolvedPlan, todayStr: string): s
     );
   });
   if (pain) return 'Noviji zapis bola sprečava predlog bržeg rada. Najpre proveri oporavak.';
+  if (!activePlanGenerator()) return activePlanUnsupportedReason();
   const { analysis } = executionModel(plan, today);
   if (analysis.easyHighRpeCount >= 2)
     return 'Više lakih treninga ima visok prijavljeni napor; brži rad se ne predlaže.';
@@ -170,7 +230,10 @@ const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 /** A regenerated session must not remain hidden behind an obsolete automatic pace overlay. */
 export function alignAutomaticAlts(result: GenPlanState, today: string): Record<string, AltRecord> {
   const t = useTrainingStore.getState();
-  return alignAutomaticOverlays(t.genPlan, result, today, replanContext());
+  // `result` je uvek izlaz nekog generatora; plan bez podržane distance ovde ne sme da stigne.
+  const generator = generatorForPlan(result);
+  if (!generator) throw new Error(unsupportedPlanReason(result));
+  return generator.alignAutomaticOverlays(t.genPlan, result, today, replanContext());
 }
 
 export function planPreviewChanges(
@@ -233,7 +296,10 @@ function preview(
   reason: PreviewReason,
   summary: string,
   notes: string[],
-  extra: Pick<SuccessfulPreview, 'decision' | 'change'> = {}
+  extra: Pick<
+    SuccessfulPreview,
+    'decision' | 'change' | 'fiveKV2' | 'tenKV2' | 'hmV2' | 'marathonV2'
+  > = {}
 ): SuccessfulPreview {
   const changes = planPreviewChanges(result, today);
   const value: SuccessfulPreview = {
@@ -266,8 +332,16 @@ export function previewExecution(
   const today = parseIsoDate(todayStr);
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
+  const generator = generatorForPlan(t.genPlan);
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
   const { analysis } = executionModel(plan, today);
-  const built = buildExecutionAdjustment(t.genPlan, today, analysis, options, replanContext());
+  const built = generator.buildExecutionAdjustment(
+    t.genPlan,
+    today,
+    analysis,
+    options,
+    replanContext()
+  );
   if ('error' in built)
     return {
       ok: false,
@@ -286,18 +360,29 @@ export function previewExecution(
 }
 
 /** Options for the stored plan when it is already a limited long-distance preparation. */
-export function storedPreparationDecision(todayStr: string): PreparationDecision | null {
+export function storedPreparationDecision(
+  todayStr: string,
+  flags: GeneratorFlags = currentGeneratorFlags()
+): PreparationDecision | null {
   const t = useTrainingStore.getState();
   const today = parseIsoDate(todayStr);
   const baseMode =
     (t.genPlan?.meta?.['cycleDecision'] as { kind?: string } | undefined)?.kind === 'base';
-  if (!t.genPlan?.meta || !today || !(baseMode || isLimitedLongPreparation(t.genPlan.meta)))
+  // Odluka pripada generatoru distance plana (HM → HM, maraton → maraton); 5K/10K je nemaju. 3g: prekidači korisnika
+  // biraju cilj predaje izvora v2 (isti izvor kao za nov plan), a izvor v2 ocenjuje pripremu iz nedelja plana.
+  const preparation = preparationForPlan(t.genPlan, flags);
+  if (
+    !preparation ||
+    !t.genPlan?.meta ||
+    !today ||
+    !(baseMode || preparation.isLimitedLongPreparation(t.genPlan.meta, t.genPlan))
+  )
     return null;
   const race = parseIsoDate(t.genPlan.meta.raceDate);
   if (!race || race <= today) return null;
-  const basis = basisFromPlan(t.genPlan, today);
+  const basis = preparation.basisFromPlan(t.genPlan, today);
   if (!basis) return null;
-  const decision = preparationDecision(
+  const decision = preparation.preparationDecision(
     t.genPlan,
     today,
     basis,
@@ -316,7 +401,7 @@ export function storedPreparationDecision(todayStr: string): PreparationDecision
  * without them the stored plan's own facts are reused. Nothing is written until commit.
  */
 export function previewPreparationChoice(
-  plan: ResolvedPlan,
+  plan: ResolvedPlan | null,
   todayStr: string,
   options: ExecutionAdjustmentOptions | null,
   choice: PreparationChoice
@@ -325,12 +410,24 @@ export function previewPreparationChoice(
   const today = parseIsoDate(todayStr);
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za odluku o pripremi treba generisan plan i ispravan datum.' };
-  const basis = options
-    ? executionBasis(t.genPlan, today, executionModel(plan, today).analysis, options)
-    : basisFromPlan(t.genPlan, today);
+  const generator = generatorForPlan(t.genPlan);
+  const preparation = preparationForPlan(t.genPlan, currentGeneratorFlags());
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
+  if (!preparation)
+    return { ok: false, reason: 'Odluka o pripremi postoji samo za polumaraton i maraton.' };
+  const basis =
+    options && plan
+      ? generator.executionBasis(t.genPlan, today, executionModel(plan, today).analysis, options)
+      : preparation.basisFromPlan(t.genPlan, today);
   if (!basis) return { ok: false, reason: 'Plan nema sačuvane ulazne podatke.' };
   if ('error' in basis) return { ok: false, reason: basis.error };
-  const built = buildPreparationChoice(t.genPlan, today, basis, choice, replanContext());
+  const built = preparation.buildPreparationChoice(
+    t.genPlan,
+    today,
+    basis,
+    choice,
+    replanContext()
+  );
   if ('error' in built) return { ok: false, reason: built.error };
   return preview(
     built.result,
@@ -351,9 +448,11 @@ export function previewRunWalk(
   const today = parseIsoDate(todayStr);
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za prilagođavanje treba generisan plan i ispravan datum.' };
+  const generator = generatorForPlan(t.genPlan);
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
   const assessment = runWalkModel(plan, today);
   const { analysis } = executionModel(plan, today);
-  const built = buildRunWalkAdjustment(
+  const built = generator.buildRunWalkAdjustment(
     t.genPlan,
     today,
     assessment,
@@ -368,17 +467,170 @@ export function previewRunWalk(
   ]);
 }
 
+/**
+ * 08b: pregled prilagođavanja plana 5K v2 iz činjenica (dnevnik sa uvozom, bol, testovi, sinhronizacija; potvrda
+ * „zapis za proteklih N dana je potpun" i prijavljene pauze iz toka). Ne upisuje ništa; primena = `commitPlanChange`
+ * (nova revizija). Odbijanje v2 vraća razloge doslovno.
+ */
+export function previewFiveKV2(
+  todayStr: string,
+  options: {
+    confirmedDays?: number | null;
+    breaks?: ReadonlyArray<{ from: string; to: string }>;
+  } = {}
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today || !isFiveKV2Plan(t.genPlan))
+    return { ok: false, reason: 'Prilagođavanje v2 traži plan 5K v2 i ispravan datum.' };
+  const out = fiveKV2AdaptPreview(
+    t.genPlan,
+    today,
+    { ...replanContext(), facts: fiveKV2Sources(options.confirmedDays ?? null) },
+    options.breaks ?? []
+  );
+  if (!out.ok)
+    return {
+      ok: false,
+      reason: 'Plan nije prilagođen. Razlozi:',
+      reasons: [...out.reasons.map((x) => x.message), ...out.notes]
+    };
+  return preview(out.result, today, 'execution', out.summary, out.notes, {
+    fiveKV2: { reasons: out.reasons, weeks: out.weeks, coverage: out.coverage, needed: out.needed }
+  });
+}
+
+/**
+ * Segment 06: pregled prilagođavanja plana 10K v2 iz činjenica (dnevnik sa uvozom, bol, rezultati — test 5 km, test 3 km,
+ * trke —, sinhronizacija; potvrda „zapis za proteklih N dana je potpun" i prijavljene pauze iz toka). Ne upisuje ništa;
+ * primena = `commitPlanChange` (nova revizija). Odbijanje v2 vraća razloge doslovno.
+ */
+export function previewTenKV2(
+  todayStr: string,
+  options: {
+    confirmedDays?: number | null;
+    breaks?: ReadonlyArray<{ from: string; to: string }>;
+  } = {}
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today || !isTenKV2Plan(t.genPlan))
+    return { ok: false, reason: 'Prilagođavanje v2 traži plan 10K v2 i ispravan datum.' };
+  const out = tenKV2AdaptPreview(
+    t.genPlan,
+    today,
+    { ...replanContext(), facts: tenKV2Sources(options.confirmedDays ?? null) },
+    options.breaks ?? []
+  );
+  if (!out.ok)
+    return {
+      ok: false,
+      reason: 'Plan nije prilagođen. Razlozi:',
+      reasons: [...out.reasons.map((x) => x.message), ...out.notes]
+    };
+  return preview(out.result, today, 'execution', out.summary, out.notes, {
+    tenKV2: { reasons: out.reasons, weeks: out.weeks, coverage: out.coverage, needed: out.needed }
+  });
+}
+
+/**
+ * Segment HM-06: pregled prilagođavanja plana HM v2 iz činjenica (dnevnik sa uvozom, bol, rezultati — test 5 km plana,
+ * trke —, sinhronizacija; potvrda „zapis za proteklih N dana je potpun" i prijavljene pauze iz toka). Ne upisuje ništa;
+ * primena = `commitPlanChange` (nova revizija). Odbijanje v2 vraća razloge doslovno.
+ */
+export function previewHmV2(
+  todayStr: string,
+  options: {
+    confirmedDays?: number | null;
+    breaks?: ReadonlyArray<{ from: string; to: string }>;
+  } = {}
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today || !isHmV2Plan(t.genPlan))
+    return { ok: false, reason: 'Prilagođavanje v2 traži plan polumaratona v2 i ispravan datum.' };
+  const out = hmV2AdaptPreview(
+    t.genPlan,
+    today,
+    { ...replanContext(), facts: hmV2Sources(options.confirmedDays ?? null) },
+    options.breaks ?? []
+  );
+  if (!out.ok)
+    return {
+      ok: false,
+      reason: 'Plan nije prilagođen. Razlozi:',
+      reasons: [...out.reasons.map((x) => x.message), ...out.notes]
+    };
+  return preview(out.result, today, 'execution', out.summary, out.notes, {
+    hmV2: {
+      reasons: out.reasons,
+      weeks: out.weeks,
+      coverage: out.coverage,
+      needed: out.needed,
+      ...(out.shorterOffer ? { shorterOffer: out.shorterOffer } : {})
+    }
+  });
+}
+
+/**
+ * Segment MAR-06: pregled prilagođavanja plana maratona v2 iz činjenica (isti tok kao HM v2: dnevnik sa uvozom, bol,
+ * rezultati — test 5 km plana, trke —, sinhronizacija; potvrda „zapis za proteklih N dana je potpun" i prijavljene
+ * pauze iz toka). Ne upisuje ništa; primena = `commitPlanChange` (nova revizija). Odbijanje v2 vraća razloge doslovno.
+ */
+export function previewMarathonV2(
+  todayStr: string,
+  options: {
+    confirmedDays?: number | null;
+    breaks?: ReadonlyArray<{ from: string; to: string }>;
+  } = {}
+): PlanChangePreview {
+  const t = useTrainingStore.getState();
+  const today = parseIsoDate(todayStr);
+  if (!t.genPlan || !today || !isMarathonV2Plan(t.genPlan))
+    return { ok: false, reason: 'Prilagođavanje v2 traži plan maratona v2 i ispravan datum.' };
+  const out = marathonV2AdaptPreview(
+    t.genPlan,
+    today,
+    { ...replanContext(), facts: marathonV2Sources(options.confirmedDays ?? null) },
+    options.breaks ?? []
+  );
+  if (!out.ok)
+    return {
+      ok: false,
+      reason: 'Plan nije prilagođen. Razlozi:',
+      reasons: [...out.reasons.map((x) => x.message), ...out.notes]
+    };
+  return preview(out.result, today, 'execution', out.summary, out.notes, {
+    marathonV2: {
+      reasons: out.reasons,
+      weeks: out.weeks,
+      coverage: out.coverage,
+      needed: out.needed,
+      ...(out.shorterOffer ? { shorterOffer: out.shorterOffer } : {})
+    }
+  });
+}
+
 export function previewRestore(revisionId: string, todayStr: string): PlanChangePreview {
   const t = useTrainingStore.getState();
   const today = parseIsoDate(todayStr);
   if (!t.genPlan || !today) return { ok: false, reason: 'Nema plana za vraćanje.' };
   const revision = getPlanRevisions(t.genPlan).find((item) => item.id === revisionId);
   if (!revision) return { ok: false, reason: 'Sačuvana verzija više nije dostupna.' };
-  const result = graftFuturePlan(t.genPlan, revision.snapshot, today, replanContext());
+  // The restored version is finalized by the generator of the plan being written back.
+  const generator = generatorForPlan(revision.snapshot);
+  if (!generator) return { ok: false, reason: unsupportedPlanReason(revision.snapshot) };
+  const result = generator.graftFuturePlan(t.genPlan, revision.snapshot, today, replanContext());
   const changes = result.meta?.['futureChanges'] as
     { changedDays?: number; conflicts?: string[] } | undefined;
+  // 3g: odbijeno vraćanje sa razlogom domena (npr. verzija druge distance, RESTORE_OTHER_DISTANCE) prikazuje taj razlog.
   if (!changes?.changedDays)
-    return { ok: false, reason: 'Nema preostalih dana koji se mogu vratiti bez promene istorije.' };
+    return {
+      ok: false,
+      reason: changes?.conflicts?.length
+        ? changes.conflicts.join(' ')
+        : 'Nema preostalih dana koji se mogu vratiti bez promene istorije.'
+    };
   return preview(result, today, 'restore', `Vraćanje plana: ${revision.summary}`, [
     'Vraćaju se samo nezaštićeni budući treninzi. Dnevnik, merenja, pomeranja i ručne izmene ostaju.',
     ...(changes.conflicts ?? [])
@@ -399,7 +651,7 @@ export function commitPlanChange(
       reason: 'Plan ili unosi su se promenili. Ponovo pregledaj predlog pre primene.'
     };
   t.patch({
-    genPlan: recordPlanRevision(t.genPlan, registered.result, {
+    genPlan: recordPlanRevision(t.genPlan, stampForStorage(registered.result), {
       reason: registered.reason,
       date: registered.day,
       summary: registered.summary

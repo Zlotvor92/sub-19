@@ -7,13 +7,17 @@ import { deleteEntry, setStatus } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
 import { useCycleModel } from '../cycle/useCycleModel';
 import { sessionView } from '../session/sessionModel';
-import { useEasyPace } from '../session/useEasyPace';
+import { useEasyPace, usePlanRpe } from '../session/useEasyPace';
 import { WorkoutFacts, WorkoutStructure, WorkoutWhy } from '../session/WorkoutParts';
 import { AiCard } from '../today/AiCard';
 import { CompareCard, MorningCard, WatchCard, ZonesCard, dataDate } from '../today/Cards';
 import { Description } from '../today/DayCard';
 import { DayEntry } from '../today/DayEntry';
 import { WeatherSection } from '../today/WeatherCard';
+import { isHmV2Plan, isMarathonV2Plan, isTenKV2Plan } from '../../domain/generators/select';
+import { HmV2TestResult } from './HmV2TestResult';
+import { MarathonV2TestResult } from './MarathonV2TestResult';
+import { TenKV2TestResult } from './TenKV2TestResult';
 
 type Status = 'pending' | 'done' | 'skip';
 const STATUSES: ReadonlyArray<readonly [Status, string]> = [
@@ -34,9 +38,13 @@ export function DayScreen({ id }: { id: string }) {
   const clearAlt = useTrainingStore((s) => s.clearAlt);
   const cycle = useCycleModel();
   const easy = useEasyPace();
+  const rpe = usePlanRpe();
   const today = useUIStore((s) => s.today);
   const openSheet = useUIStore((s) => s.openSheet);
   const closeScreen = useUIStore((s) => s.closeScreen);
+  const tenKV2 = useTrainingStore((s) => isTenKV2Plan(s.genPlan));
+  const hmV2 = useTrainingStore((s) => isHmV2Plan(s.genPlan));
+  const marathonV2 = useTrainingStore((s) => isMarathonV2Plan(s.genPlan));
 
   if (!plan || !day)
     return (
@@ -50,7 +58,7 @@ export function DayScreen({ id }: { id: string }) {
 
   const rest = day.rest;
   const edited = !!alt;
-  const view = sessionView(day, { alt, easyPaceSec: easy });
+  const view = sessionView(day, { alt, easyPaceSec: easy, rpeTarget: rpe });
   const phase = cycle?.weeks.find((w) => w.w === day.w)?.phase ?? null;
   const weekFocus = plan.weeks.find((w) => w.w === day.w)?.focus ?? '';
   const when = day.test ? 'TEST (opciono)' : `${dowShort(day.date)} ${fmtDayMonthYear(day.date)}`;
@@ -157,6 +165,9 @@ export function DayScreen({ id }: { id: string }) {
         </>
       )}
       {!pending ? adjust : null}
+      {tenKV2 && day.tag === 'test' && !rest ? <TenKV2TestResult dayId={id} /> : null}
+      {hmV2 && day.tag === 'test' && !rest ? <HmV2TestResult dayId={id} /> : null}
+      {marathonV2 && day.tag === 'test' && !rest ? <MarathonV2TestResult dayId={id} /> : null}
       {day.test ? (
         <Section title="Rezultat testa">
           <div className="rows">

@@ -20,6 +20,7 @@ import { useCycleModel } from '../cycle/useCycleModel';
 import { useEasyPace } from '../session/useEasyPace';
 import { preparationSummary } from '../../domain/plan/preparation';
 import { WeekBody } from './WeekBody';
+import { phaseReaderFor } from '../../domain/generators/select';
 import { WeekChart } from './WeekChart';
 import { WeekRow } from './WeekRow';
 
@@ -34,6 +35,7 @@ export function PlanOverview() {
   const log = useTrainingStore((s) => s.log);
   const alts = useTrainingStore((s) => s.alts);
   const gen = useActiveGenPlan();
+  const phaseOf = useMemo(() => phaseReaderFor(gen), [gen]);
   const todayStr = useUIStore((s) => s.today);
   const openScreen = useUIStore((s) => s.openScreen);
   const openSheet = useUIStore((s) => s.openSheet);
@@ -193,6 +195,7 @@ export function PlanOverview() {
                   <WeekBody
                     week={rw}
                     totalWeeks={plan.weeks.length}
+                    phaseOf={phaseOf}
                     current={nowW === w.w}
                     log={log}
                     alts={alts}

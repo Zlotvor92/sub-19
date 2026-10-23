@@ -1,0 +1,2438 @@
+[
+  {
+    "id": "A",
+    "asOf": "2026-11-15",
+    "painDay": "2026-11-14",
+    "pain": 5,
+    "before": {
+      "step": {
+        "policyVersion": "10k-v2.4.0",
+        "firstWeek": 4,
+        "fromWeek": 4,
+        "rest": null,
+        "pain": {
+          "from": "2026-11-16",
+          "to": "2026-11-22"
+        },
+        "levelKm": 42.4,
+        "returnFrom": {
+          "week": 4,
+          "share": 0.7
+        },
+        "message": "Bol 5/10 u poslednja 3 dana: 7 dana bez kvaliteta i ubrzanja (2026-11-16 – 2026-11-22). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 4 rast kreće od 70 % njenog cilja. Povratak do 42,4 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 26.6,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-17", "2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": [],
+          "days": [
+            "2026-11-17 easy 5,6",
+            "2026-11-19 easy 5,6",
+            "2026-11-21 easy 5,6",
+            "2026-11-22 long 9,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 27.6,
+          "plannedKm": 27.6,
+          "nominalKm": 27.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-24 q1 8,7 (I)",
+            "2026-11-26 q2 8,6 (T)",
+            "2026-11-28 easy 3,0",
+            "2026-11-29 long 7,3"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 30.4,
+          "plannedKm": 30.4,
+          "nominalKm": 30.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 9,5 (I)",
+            "2026-12-03 q2 9,4 (T)",
+            "2026-12-05 easy 3,0",
+            "2026-12-06 long 8,5"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 33.4,
+          "plannedKm": 33.4,
+          "nominalKm": 33.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 9,1 (I)",
+            "2026-12-10 q2 9,2 (T)",
+            "2026-12-12 easy 4,1",
+            "2026-12-13 long 11,0"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 26.7,
+          "plannedKm": 26.69,
+          "nominalKm": 26.7,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 4,9",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 4,8",
+            "2026-12-20 long 8,8"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 36.7,
+          "plannedKm": 36.75,
+          "nominalKm": 36.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 8,6 (RP)",
+            "2026-12-24 q2 10,0 (T)",
+            "2026-12-26 easy 6,1",
+            "2026-12-27 long 12,1"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 40.4,
+          "plannedKm": 40.39,
+          "nominalKm": 40.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 9,4 (RP)",
+            "2026-12-31 q2 10,5 (T)",
+            "2027-01-02 easy 7,2",
+            "2027-01-03 long 13,3"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 42.8,
+          "plannedKm": 42.82,
+          "nominalKm": 42.8,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 10,5 (RP)",
+            "2027-01-07 q2 10,2 (T)",
+            "2027-01-09 easy 8,0",
+            "2027-01-10 long 14,1"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 32.1,
+          "plannedKm": 32.08,
+          "nominalKm": 32.1,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 4,4",
+            "2027-01-17 long 10,5"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 16.7,
+          "plannedKm": 16.68,
+          "nominalKm": 16.7,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 4,4",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "step": {
+        "policyVersion": "10k-v2.4.1",
+        "firstWeek": 4,
+        "fromWeek": 4,
+        "rest": null,
+        "pain": {
+          "from": "2026-11-16",
+          "to": "2026-11-22"
+        },
+        "levelKm": 42.4,
+        "returnFrom": {
+          "week": 4,
+          "share": 0.7
+        },
+        "message": "Bol 5/10 u poslednja 3 dana: 7 dana bez kvaliteta i ubrzanja (2026-11-16 – 2026-11-22). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km). Povratak do 42,4 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 26.6,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-17", "2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": [],
+          "days": [
+            "2026-11-17 easy 5,6",
+            "2026-11-19 easy 5,6",
+            "2026-11-21 easy 5,6",
+            "2026-11-22 long 9,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 32.7,
+          "plannedKm": 32.67,
+          "nominalKm": 32.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-24 q1 8,7 (I)",
+            "2026-11-26 q2 9,4 (T)",
+            "2026-11-28 easy 3,9",
+            "2026-11-29 long 10,7"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 36,
+          "plannedKm": 36,
+          "nominalKm": 36,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 9,5 (I)",
+            "2026-12-03 q2 10,0 (T)",
+            "2026-12-05 easy 4,7",
+            "2026-12-06 long 11,8"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 39.6,
+          "plannedKm": 39.59,
+          "nominalKm": 39.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 10,4 (I)",
+            "2026-12-10 q2 9,8 (T)",
+            "2026-12-12 easy 6,4",
+            "2026-12-13 long 13,0"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 31.7,
+          "plannedKm": 31.69,
+          "nominalKm": 31.7,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 6,6",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 6,5",
+            "2026-12-20 long 10,4"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.39,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 9,4 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 8,6",
+            "2026-12-27 long 13,9"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.92,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 10,5 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 9,4",
+            "2027-01-03 long 14,8"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 47.56,
+          "nominalKm": 47.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 11,0 (RP)",
+            "2027-01-07 q2 10,0 (T)",
+            "2027-01-09 easy 10,8",
+            "2027-01-10 long 15,7"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 35.7,
+          "plannedKm": 35.68,
+          "nominalKm": 35.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 6,8",
+            "2027-01-17 long 11,7"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "B",
+    "asOf": "2026-11-15",
+    "painDay": "2026-11-14",
+    "pain": 8,
+    "before": {
+      "step": {
+        "policyVersion": "10k-v2.4.0",
+        "firstWeek": 4,
+        "fromWeek": 4,
+        "rest": {
+          "from": "2026-11-16",
+          "to": "2026-11-18"
+        },
+        "pain": {
+          "from": "2026-11-19",
+          "to": "2026-11-25"
+        },
+        "levelKm": 42.4,
+        "returnFrom": {
+          "week": 5,
+          "share": 0.7
+        },
+        "message": "Bol 8/10 u poslednja 3 dana: 3 dana odmora (do 2026-11-18), pa 7 dana bez kvaliteta i ubrzanja (2026-11-19 – 2026-11-25). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 5 rast kreće od 70 % njenog cilja. Povratak do 42,4 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 21,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": ["2026-11-17"],
+          "days": [
+            "2026-11-19 easy 5,6",
+            "2026-11-21 easy 5,6",
+            "2026-11-22 long 9,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 43.99,
+          "nominalKm": 47.6,
+          "quality": 1,
+          "pain": ["2026-11-24"],
+          "rest": [],
+          "days": [
+            "2026-11-24 easy 8,3",
+            "2026-11-26 q2 8,2 (T)",
+            "2026-11-28 easy 11,8",
+            "2026-11-29 long 15,7"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 36.6,
+          "plannedKm": 36.57,
+          "nominalKm": 36.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 8,7 (I)",
+            "2026-12-03 q2 9,4 (T)",
+            "2026-12-05 easy 6,5",
+            "2026-12-06 long 12,0"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 40.3,
+          "plannedKm": 40.3,
+          "nominalKm": 40.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 9,5 (I)",
+            "2026-12-10 q2 10,0 (T)",
+            "2026-12-12 easy 7,6",
+            "2026-12-13 long 13,2"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 32.2,
+          "plannedKm": 32.19,
+          "nominalKm": 32.2,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 6,8",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 6,7",
+            "2026-12-20 long 10,5"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 42.7,
+          "plannedKm": 42.72,
+          "nominalKm": 42.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 8,6 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 9,6",
+            "2026-12-27 long 14,0"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 45.3,
+          "plannedKm": 45.35,
+          "nominalKm": 45.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 9,4 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 10,9",
+            "2027-01-03 long 14,9"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 48,
+          "plannedKm": 47.99,
+          "nominalKm": 48,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 10,5 (RP)",
+            "2027-01-07 q2 11,2 (T)",
+            "2027-01-09 easy 10,5",
+            "2027-01-10 long 15,8"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 36,
+          "plannedKm": 35.98,
+          "nominalKm": 36,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 7,0",
+            "2027-01-17 long 11,8"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "step": {
+        "policyVersion": "10k-v2.4.1",
+        "firstWeek": 4,
+        "fromWeek": 4,
+        "rest": {
+          "from": "2026-11-16",
+          "to": "2026-11-18"
+        },
+        "pain": {
+          "from": "2026-11-19",
+          "to": "2026-11-25"
+        },
+        "levelKm": 42.4,
+        "returnFrom": {
+          "week": 4,
+          "share": 0.7
+        },
+        "message": "Bol 8/10 u poslednja 3 dana: 3 dana odmora (do 2026-11-18), pa 7 dana bez kvaliteta i ubrzanja (2026-11-19 – 2026-11-25). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km). Povratak do 42,4 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 21,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": ["2026-11-17"],
+          "days": [
+            "2026-11-19 easy 5,6",
+            "2026-11-21 easy 5,6",
+            "2026-11-22 long 9,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 32.7,
+          "plannedKm": 30.59,
+          "nominalKm": 32.7,
+          "quality": 1,
+          "pain": ["2026-11-24"],
+          "rest": [],
+          "days": [
+            "2026-11-24 easy 4,8",
+            "2026-11-26 q2 8,2 (T)",
+            "2026-11-28 easy 6,9",
+            "2026-11-29 long 10,7"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 36,
+          "plannedKm": 35.97,
+          "nominalKm": 36,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 8,7 (I)",
+            "2026-12-03 q2 9,4 (T)",
+            "2026-12-05 easy 6,1",
+            "2026-12-06 long 11,8"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 39.6,
+          "plannedKm": 39.6,
+          "nominalKm": 39.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 9,5 (I)",
+            "2026-12-10 q2 10,0 (T)",
+            "2026-12-12 easy 7,1",
+            "2026-12-13 long 13,0"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 31.7,
+          "plannedKm": 31.69,
+          "nominalKm": 31.7,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 6,6",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 6,5",
+            "2026-12-20 long 10,4"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.42,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 8,6 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 9,4",
+            "2026-12-27 long 13,9"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.95,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 9,4 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 10,6",
+            "2027-01-03 long 14,8"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 47.65,
+          "nominalKm": 47.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 10,5 (RP)",
+            "2027-01-07 q2 10,0 (T)",
+            "2027-01-09 easy 11,4",
+            "2027-01-10 long 15,7"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 35.7,
+          "plannedKm": 35.68,
+          "nominalKm": 35.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 6,8",
+            "2027-01-17 long 11,7"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "C",
+    "asOf": "2026-11-18",
+    "painDay": "2026-11-18",
+    "pain": 5,
+    "before": {
+      "step": {
+        "policyVersion": "10k-v2.4.0",
+        "firstWeek": 4,
+        "fromWeek": 5,
+        "rest": null,
+        "pain": {
+          "from": "2026-11-19",
+          "to": "2026-11-25"
+        },
+        "levelKm": 44.9,
+        "returnFrom": {
+          "week": 5,
+          "share": 0.7
+        },
+        "message": "Bol 5/10 u poslednja 3 dana: 7 dana bez kvaliteta i ubrzanja (2026-11-19 – 2026-11-25). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 5 rast kreće od 70 % njenog cilja. Povratak do 44,9 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 29.1,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": [],
+          "days": [
+            "2026-11-17 easy 8,1",
+            "2026-11-19 easy 5,6",
+            "2026-11-21 easy 5,6",
+            "2026-11-22 long 9,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 43.99,
+          "nominalKm": 47.6,
+          "quality": 1,
+          "pain": ["2026-11-24"],
+          "rest": [],
+          "days": [
+            "2026-11-24 easy 8,3",
+            "2026-11-26 q2 8,2 (T)",
+            "2026-11-28 easy 11,8",
+            "2026-11-29 long 15,7"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 36.6,
+          "plannedKm": 36.57,
+          "nominalKm": 36.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 8,7 (I)",
+            "2026-12-03 q2 9,4 (T)",
+            "2026-12-05 easy 6,5",
+            "2026-12-06 long 12,0"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 40.3,
+          "plannedKm": 40.3,
+          "nominalKm": 40.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 9,5 (I)",
+            "2026-12-10 q2 10,0 (T)",
+            "2026-12-12 easy 7,6",
+            "2026-12-13 long 13,2"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 32.2,
+          "plannedKm": 32.19,
+          "nominalKm": 32.2,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 6,8",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 6,7",
+            "2026-12-20 long 10,5"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 44.3,
+          "plannedKm": 44.32,
+          "nominalKm": 44.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 8,6 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 10,6",
+            "2026-12-27 long 14,6"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 47,
+          "plannedKm": 47.05,
+          "nominalKm": 47,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 9,4 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 12,0",
+            "2027-01-03 long 15,5"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 49.8,
+          "plannedKm": 49.79,
+          "nominalKm": 49.8,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 10,5 (RP)",
+            "2027-01-07 q2 11,2 (T)",
+            "2027-01-09 easy 11,7",
+            "2027-01-10 long 16,4"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 37.4,
+          "plannedKm": 37.38,
+          "nominalKm": 37.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 7,9",
+            "2027-01-17 long 12,3"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "step": {
+        "policyVersion": "10k-v2.4.1",
+        "firstWeek": 4,
+        "fromWeek": 5,
+        "rest": null,
+        "pain": {
+          "from": "2026-11-19",
+          "to": "2026-11-25"
+        },
+        "levelKm": 44.9,
+        "returnFrom": {
+          "week": 4,
+          "share": 0.7
+        },
+        "message": "Bol 5/10 u poslednja 3 dana: 7 dana bez kvaliteta i ubrzanja (2026-11-19 – 2026-11-25). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 4 rast kreće od 70 % nivoa pre bola (31,4 km). Povratak do 44,9 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 29.1,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": [],
+          "days": [
+            "2026-11-17 easy 8,1",
+            "2026-11-19 easy 5,6",
+            "2026-11-21 easy 5,6",
+            "2026-11-22 long 9,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 34.5,
+          "plannedKm": 32.19,
+          "nominalKm": 34.5,
+          "quality": 1,
+          "pain": ["2026-11-24"],
+          "rest": [],
+          "days": [
+            "2026-11-24 easy 5,2",
+            "2026-11-26 q2 8,2 (T)",
+            "2026-11-28 easy 7,5",
+            "2026-11-29 long 11,3"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 38,
+          "plannedKm": 37.97,
+          "nominalKm": 38,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 8,7 (I)",
+            "2026-12-03 q2 9,4 (T)",
+            "2026-12-05 easy 7,4",
+            "2026-12-06 long 12,5"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 41.8,
+          "plannedKm": 41.8,
+          "nominalKm": 41.8,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 9,5 (I)",
+            "2026-12-10 q2 10,0 (T)",
+            "2026-12-12 easy 8,6",
+            "2026-12-13 long 13,7"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 33.4,
+          "plannedKm": 33.39,
+          "nominalKm": 33.4,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 7,2",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 7,1",
+            "2026-12-20 long 10,9"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.92,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 8,6 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 11,0",
+            "2026-12-27 long 14,8"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 47.65,
+          "nominalKm": 47.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 9,4 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 12,4",
+            "2027-01-03 long 15,7"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 50.5,
+          "plannedKm": 50.49,
+          "nominalKm": 50.5,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 10,5 (RP)",
+            "2027-01-07 q2 11,2 (T)",
+            "2027-01-09 easy 12,2",
+            "2027-01-10 long 16,6"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 37.9,
+          "plannedKm": 37.88,
+          "nominalKm": 37.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 8,3",
+            "2027-01-17 long 12,4"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "D",
+    "asOf": "2026-11-18",
+    "painDay": "2026-11-18",
+    "pain": 8,
+    "before": {
+      "step": {
+        "policyVersion": "10k-v2.4.0",
+        "firstWeek": 4,
+        "fromWeek": 5,
+        "rest": {
+          "from": "2026-11-19",
+          "to": "2026-11-21"
+        },
+        "pain": {
+          "from": "2026-11-22",
+          "to": "2026-11-28"
+        },
+        "levelKm": 44.9,
+        "returnFrom": {
+          "week": 5,
+          "share": 0.7
+        },
+        "message": "Bol 8/10 u poslednja 3 dana: 3 dana odmora (do 2026-11-21), pa 7 dana bez kvaliteta i ubrzanja (2026-11-22 – 2026-11-28). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 5 rast kreće od 70 % njenog cilja. Povratak do 44,9 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 17.9,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-22"],
+          "rest": ["2026-11-19", "2026-11-21"],
+          "days": ["2026-11-17 easy 8,1", "2026-11-22 long 9,8"]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 37.9,
+          "nominalKm": 47.6,
+          "quality": 0,
+          "pain": ["2026-11-24", "2026-11-26", "2026-11-28"],
+          "rest": [],
+          "days": [
+            "2026-11-24 easy 7,4",
+            "2026-11-26 easy 7,4",
+            "2026-11-28 easy 7,4",
+            "2026-11-29 long 15,7"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 36.6,
+          "plannedKm": 36.57,
+          "nominalKm": 36.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 8,7 (I)",
+            "2026-12-03 q2 9,4 (T)",
+            "2026-12-05 easy 6,5",
+            "2026-12-06 long 12,0"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 40.3,
+          "plannedKm": 40.3,
+          "nominalKm": 40.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 9,5 (I)",
+            "2026-12-10 q2 10,0 (T)",
+            "2026-12-12 easy 7,6",
+            "2026-12-13 long 13,2"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 32.2,
+          "plannedKm": 32.19,
+          "nominalKm": 32.2,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 6,8",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 6,7",
+            "2026-12-20 long 10,5"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 44.3,
+          "plannedKm": 44.32,
+          "nominalKm": 44.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 8,6 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 10,6",
+            "2026-12-27 long 14,6"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 47,
+          "plannedKm": 47.05,
+          "nominalKm": 47,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 9,4 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 12,0",
+            "2027-01-03 long 15,5"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 49.8,
+          "plannedKm": 49.79,
+          "nominalKm": 49.8,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 10,5 (RP)",
+            "2027-01-07 q2 11,2 (T)",
+            "2027-01-09 easy 11,7",
+            "2027-01-10 long 16,4"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 37.4,
+          "plannedKm": 37.38,
+          "nominalKm": 37.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 7,9",
+            "2027-01-17 long 12,3"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "step": {
+        "policyVersion": "10k-v2.4.1",
+        "firstWeek": 4,
+        "fromWeek": 5,
+        "rest": {
+          "from": "2026-11-19",
+          "to": "2026-11-21"
+        },
+        "pain": {
+          "from": "2026-11-22",
+          "to": "2026-11-28"
+        },
+        "levelKm": 44.9,
+        "returnFrom": {
+          "week": 4,
+          "share": 0.7
+        },
+        "message": "Bol 8/10 u poslednja 3 dana: 3 dana odmora (do 2026-11-21), pa 7 dana bez kvaliteta i ubrzanja (2026-11-22 – 2026-11-28). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 4 rast kreće od 70 % nivoa pre bola (31,4 km). Povratak do 44,9 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.94,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-10 q1 9,3 (R)",
+            "2026-11-12 q2 9,0 (T)",
+            "2026-11-14 easy 11,8",
+            "2026-11-15 long 14,8"
+          ]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 17.9,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-22"],
+          "rest": ["2026-11-19", "2026-11-21"],
+          "days": ["2026-11-17 easy 8,1", "2026-11-22 long 9,8"]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 34.5,
+          "plannedKm": 27.3,
+          "nominalKm": 34.5,
+          "quality": 0,
+          "pain": ["2026-11-24", "2026-11-26", "2026-11-28"],
+          "rest": [],
+          "days": [
+            "2026-11-24 easy 5,4",
+            "2026-11-26 easy 5,3",
+            "2026-11-28 easy 5,3",
+            "2026-11-29 long 11,3"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 38,
+          "plannedKm": 37.97,
+          "nominalKm": 38,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 8,7 (I)",
+            "2026-12-03 q2 9,4 (T)",
+            "2026-12-05 easy 7,4",
+            "2026-12-06 long 12,5"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 41.8,
+          "plannedKm": 41.8,
+          "nominalKm": 41.8,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 9,5 (I)",
+            "2026-12-10 q2 10,0 (T)",
+            "2026-12-12 easy 8,6",
+            "2026-12-13 long 13,7"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 33.4,
+          "plannedKm": 33.39,
+          "nominalKm": 33.4,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 7,2",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 7,1",
+            "2026-12-20 long 10,9"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.92,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 8,6 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 11,0",
+            "2026-12-27 long 14,8"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 47.65,
+          "nominalKm": 47.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 9,4 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 12,4",
+            "2027-01-03 long 15,7"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 50.5,
+          "plannedKm": 50.49,
+          "nominalKm": 50.5,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 10,5 (RP)",
+            "2027-01-07 q2 11,2 (T)",
+            "2027-01-09 easy 12,2",
+            "2027-01-10 long 16,6"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 37.9,
+          "plannedKm": 37.88,
+          "nominalKm": 37.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 8,3",
+            "2027-01-17 long 12,4"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "E",
+    "asOf": "2026-11-13",
+    "painDay": "2026-11-13",
+    "pain": 7,
+    "before": {
+      "step": {
+        "policyVersion": "10k-v2.4.0",
+        "firstWeek": 3,
+        "fromWeek": 4,
+        "rest": {
+          "from": "2026-11-14",
+          "to": "2026-11-16"
+        },
+        "pain": {
+          "from": "2026-11-17",
+          "to": "2026-11-23"
+        },
+        "levelKm": 42.4,
+        "returnFrom": {
+          "week": 5,
+          "share": 0.7
+        },
+        "message": "Bol 7/10 u poslednja 3 dana: 3 dana odmora (do 2026-11-16), pa 7 dana bez kvaliteta i ubrzanja (2026-11-17 – 2026-11-23). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 5 rast kreće od 70 % njenog cilja. Povratak do 42,4 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 18.34,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": ["2026-11-14", "2026-11-15"],
+          "days": ["2026-11-10 q1 9,3 (R)", "2026-11-12 q2 9,0 (T)"]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 35.9,
+          "plannedKm": 27.1,
+          "nominalKm": 35.9,
+          "quality": 0,
+          "pain": ["2026-11-17", "2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": [],
+          "days": [
+            "2026-11-17 easy 5,8",
+            "2026-11-19 easy 5,8",
+            "2026-11-21 easy 5,7",
+            "2026-11-22 long 9,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 47.57,
+          "nominalKm": 47.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-24 q1 8,7 (I)",
+            "2026-11-26 q2 9,4 (T)",
+            "2026-11-28 easy 13,8",
+            "2026-11-29 long 15,7"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 36.6,
+          "plannedKm": 36.6,
+          "nominalKm": 36.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 9,5 (I)",
+            "2026-12-03 q2 10,0 (T)",
+            "2026-12-05 easy 5,1",
+            "2026-12-06 long 12,0"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 40.3,
+          "plannedKm": 40.33,
+          "nominalKm": 40.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 10,4 (I)",
+            "2026-12-10 q2 10,5 (T)",
+            "2026-12-12 easy 6,2",
+            "2026-12-13 long 13,2"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 32.2,
+          "plannedKm": 32.19,
+          "nominalKm": 32.2,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 6,6",
+            "2026-12-17 q2 8,6 (T)",
+            "2026-12-19 easy 6,5",
+            "2026-12-20 long 10,5"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 42.7,
+          "plannedKm": 42.75,
+          "nominalKm": 42.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 9,4 (RP)",
+            "2026-12-24 q2 10,2 (T)",
+            "2026-12-26 easy 9,2",
+            "2026-12-27 long 14,0"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 45.3,
+          "plannedKm": 45.35,
+          "nominalKm": 45.3,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 10,5 (RP)",
+            "2026-12-31 q2 10,0 (T)",
+            "2027-01-02 easy 9,9",
+            "2027-01-03 long 14,9"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 48,
+          "plannedKm": 48,
+          "nominalKm": 48,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 11,0 (RP)",
+            "2027-01-07 q2 11,2 (T)",
+            "2027-01-09 easy 10,0",
+            "2027-01-10 long 15,8"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 36,
+          "plannedKm": 35.98,
+          "nominalKm": 36,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 7,0",
+            "2027-01-17 long 11,8"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    },
+    "after": {
+      "step": {
+        "policyVersion": "10k-v2.4.1",
+        "firstWeek": 3,
+        "fromWeek": 4,
+        "rest": {
+          "from": "2026-11-14",
+          "to": "2026-11-16"
+        },
+        "pain": {
+          "from": "2026-11-17",
+          "to": "2026-11-23"
+        },
+        "levelKm": 42.4,
+        "returnFrom": {
+          "week": 3,
+          "share": 0.7
+        },
+        "message": "Bol 7/10 u poslednja 3 dana: 3 dana odmora (do 2026-11-16), pa 7 dana bez kvaliteta i ubrzanja (2026-11-17 – 2026-11-23). Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4). Posle nedelje 3 rast kreće od 70 % nivoa pre bola (29,7 km). Povratak do 42,4 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8)."
+      },
+      "weeks": [
+        {
+          "week": 1,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 40,
+          "plannedKm": 40.04,
+          "nominalKm": 40,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-10-27 q1 8,2 (R)",
+            "2026-10-29 q2 8,0 (T)",
+            "2026-10-31 easy 10,6",
+            "2026-11-01 long 13,2"
+          ]
+        },
+        {
+          "week": 2,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.44,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-03 q1 9,0 (R)",
+            "2026-11-05 q2 8,5 (T)",
+            "2026-11-07 easy 11,0",
+            "2026-11-08 long 13,9"
+          ]
+        },
+        {
+          "week": 3,
+          "phase": "base",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 18.34,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": ["2026-11-14", "2026-11-15"],
+          "days": ["2026-11-10 q1 9,3 (R)", "2026-11-12 q2 9,0 (T)"]
+        },
+        {
+          "week": 4,
+          "phase": "base",
+          "deload": true,
+          "targetKm": 23.8,
+          "plannedKm": 18.9,
+          "nominalKm": 23.8,
+          "quality": 0,
+          "pain": ["2026-11-17", "2026-11-19", "2026-11-21", "2026-11-22"],
+          "rest": [],
+          "days": [
+            "2026-11-17 easy 3,7",
+            "2026-11-19 easy 3,7",
+            "2026-11-21 easy 3,7",
+            "2026-11-22 long 7,8"
+          ]
+        },
+        {
+          "week": 5,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 32.7,
+          "plannedKm": 32.67,
+          "nominalKm": 32.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-11-24 q1 8,7 (I)",
+            "2026-11-26 q2 9,4 (T)",
+            "2026-11-28 easy 3,9",
+            "2026-11-29 long 10,7"
+          ]
+        },
+        {
+          "week": 6,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 36,
+          "plannedKm": 36,
+          "nominalKm": 36,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-01 q1 9,5 (I)",
+            "2026-12-03 q2 10,0 (T)",
+            "2026-12-05 easy 4,7",
+            "2026-12-06 long 11,8"
+          ]
+        },
+        {
+          "week": 7,
+          "phase": "development",
+          "deload": false,
+          "targetKm": 39.6,
+          "plannedKm": 39.59,
+          "nominalKm": 39.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-08 q1 10,4 (I)",
+            "2026-12-10 q2 9,8 (T)",
+            "2026-12-12 easy 6,4",
+            "2026-12-13 long 13,0"
+          ]
+        },
+        {
+          "week": 8,
+          "phase": "development",
+          "deload": true,
+          "targetKm": 31.7,
+          "plannedKm": 31.69,
+          "nominalKm": 31.7,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-15 easy 6,6",
+            "2026-12-17 q2 8,2 (T)",
+            "2026-12-19 easy 6,5",
+            "2026-12-20 long 10,4"
+          ]
+        },
+        {
+          "week": 9,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 42.4,
+          "plannedKm": 42.39,
+          "nominalKm": 42.4,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-22 q1 9,4 (RP)",
+            "2026-12-24 q2 10,5 (T)",
+            "2026-12-26 easy 8,6",
+            "2026-12-27 long 13,9"
+          ]
+        },
+        {
+          "week": 10,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 44.9,
+          "plannedKm": 44.92,
+          "nominalKm": 44.9,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2026-12-29 q1 10,5 (RP)",
+            "2026-12-31 q2 10,2 (T)",
+            "2027-01-02 easy 9,4",
+            "2027-01-03 long 14,8"
+          ]
+        },
+        {
+          "week": 11,
+          "phase": "specific",
+          "deload": false,
+          "targetKm": 47.6,
+          "plannedKm": 47.56,
+          "nominalKm": 47.6,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-05 q1 11,0 (RP)",
+            "2027-01-07 q2 10,0 (T)",
+            "2027-01-09 easy 10,8",
+            "2027-01-10 long 15,7"
+          ]
+        },
+        {
+          "week": 12,
+          "phase": "taper",
+          "deload": false,
+          "targetKm": 35.7,
+          "plannedKm": 35.68,
+          "nominalKm": 35.7,
+          "quality": 2,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-12 q1 8,6 (RP)",
+            "2027-01-14 q2 8,6 (T)",
+            "2027-01-16 easy 6,8",
+            "2027-01-17 long 11,7"
+          ]
+        },
+        {
+          "week": 13,
+          "phase": "race",
+          "deload": false,
+          "targetKm": 18.3,
+          "plannedKm": 18.3,
+          "nominalKm": 18.3,
+          "quality": 1,
+          "pain": [],
+          "rest": [],
+          "days": [
+            "2027-01-19 easy 6,0",
+            "2027-01-21 sharpener 8,3 (RP)",
+            "2027-01-23 eve 4,0",
+            "2027-01-24 race 14,3"
+          ]
+        }
+      ]
+    }
+  }
+]

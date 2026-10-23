@@ -1,11 +1,33 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
-import { adaptGeneratedPlan } from '../src/domain/plan/adapt';
+import { adaptGeneratedPlan as fiveKAdapt } from '../src/domain/generators/fiveK/plan/adapt';
+import { adaptGeneratedPlan as hmAdapt } from '../src/domain/generators/halfMarathon/plan/adapt';
+import { adaptGeneratedPlan as marathonAdapt } from '../src/domain/generators/marathon/plan/adapt';
+import { adaptGeneratedPlan as tenKAdapt } from '../src/domain/generators/tenK/plan/adapt';
+import { stampPlan as fiveKStamp } from '../src/domain/generators/fiveK/plan/policy';
+import { stampPlan as hmStamp } from '../src/domain/generators/halfMarathon/plan/policy';
+import { stampPlan as marathonStamp } from '../src/domain/generators/marathon/plan/policy';
+import { stampPlan as tenKStamp } from '../src/domain/generators/tenK/plan/policy';
 import type { GenPlanState, LogEntry } from '../src/domain/state';
 import type { PlanGenerationInput, PlanGenerationResult } from '../src/domain/training/types';
 import { fixToday, installBackend, seedSession } from './support/backend';
 import { back, openAdjust, tab } from './support/flows';
+
+const ADAPT: Record<string, typeof fiveKAdapt> = {
+  5000: fiveKAdapt,
+  10000: tenKAdapt,
+  21097.5: hmAdapt,
+  42195: marathonAdapt
+};
+/** Upis plana generatora distance (oznaka politike + faza nedelje) — ono što aplikacija radi pri upisu
+ *  (`select.stampForStorage` → `stampPlan` generatora plana). */
+const STAMP: Record<string, typeof fiveKStamp> = {
+  5000: fiveKStamp,
+  10000: tenKStamp,
+  21097.5: hmStamp,
+  42195: marathonStamp
+};
 
 interface LockedProfile {
   id: string;
@@ -89,6 +111,29 @@ async function lockedWizard(page: Page, input: PlanGenerationInput): Promise<voi
   await expect(wizard).toBeHidden();
 }
 
+/** Putanje (JSON) u kojima se `a` i `b` razlikuju. */
+function diffPaths(a: unknown, b: unknown, path = ''): string[] {
+  if (JSON.stringify(a) === JSON.stringify(b)) return [];
+  if (
+    a !== null &&
+    b !== null &&
+    typeof a === 'object' &&
+    typeof b === 'object' &&
+    Array.isArray(a) === Array.isArray(b)
+  ) {
+    const x = a as Record<string, unknown>;
+    const y = b as Record<string, unknown>;
+    return [...new Set([...Object.keys(x), ...Object.keys(y)])].flatMap((k) =>
+      diffPaths(x[k], y[k], path ? `${path}.${k}` : k)
+    );
+  }
+  return [path];
+}
+/* Segment 08b (tačka 11): zamrznuti plan je snimljen pre nego što je generator počeo da upisuje oznaku svoje politike
+   (`meta.policyId`/`policyVersion`) i fazu nedelje (`weeks[].phase`, commit d68c69a/82f1043). Test DOKAZUJE da se stvarni
+   plan razlikuje SAMO u tim poljima; tek tada očekivanje dobija ta polja istom funkcijom kojom ih aplikacija upisuje. */
+const STAMP_ONLY = /^(meta\.policyId|meta\.policyVersion|weeks\.\d+\.phase)$/;
+
 async function attachJson(info: TestInfo, name: string, value: unknown): Promise<void> {
   await info.attach(name, {
     body: Buffer.from(JSON.stringify(value, null, 2)),
@@ -123,15 +168,26 @@ test.describe('locked inputs: current purpose- and dose-aware wizard and persist
       const current = JSON.parse(
         readFileSync(resolve(root, `../generator-final/raw/${profile.id}.json`), 'utf8')
       ) as { versions: { new: { plan: PlanGenerationResult } } };
-      const expected = adaptGeneratedPlan(current.versions.new.plan)!;
+      // Stari zajednički engine je obrisan: adaptaciju radi generator distance profila (kao aplikacija).
+      const adapt = ADAPT[String(profile.input.raceDistM || 5000)];
+      if (!adapt) throw new Error(`Nepodržana distanca ${profile.input.raceDistM}`);
+      const frozen = adapt(current.versions.new.plan)!;
       // Empty scheduling arrays are genuine wizard serialization, absent from the locked domain input.
       const wizardInput = { ...profile.input, qDows: [], runDows: [] };
-      expected.ulaz = wizardInput;
+      frozen.ulaz = wizardInput;
       await page.goto('/');
       await lockedWizard(page, profile.input);
       await expect.poll(() => state().genPlan?.ulaz).toEqual(wizardInput);
       await attachJson(info, `${profile.id}-wizard-input`, state().genPlan?.ulaz);
       await attachJson(info, `${profile.id}-full-browser-generated-plan`, state().genPlan);
+      const paths = diffPaths(state().genPlan, frozen);
+      const outside = paths.filter((p) => !STAMP_ONLY.test(p));
+      await attachJson(info, `${profile.id}-diff-vs-frozen`, { paths, outside });
+      console.log(
+        `${profile.id}: razlika prema zamrznutom planu ${paths.length} putanja (${[...new Set(paths.map((p) => p.replace(/\.\d+\./, '[].')))].join(', ')}); van oznake politike i faze: ${outside.length}`
+      );
+      expect(outside).toEqual([]);
+      const expected = STAMP[String(profile.input.raceDistM || 5000)](frozen);
       expect(state().genPlan).toEqual(expected);
       await tab(page, 'Plan').click();
       await expect(

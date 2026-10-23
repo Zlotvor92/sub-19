@@ -1,0 +1,43 @@
+{
+ "dist": "10K",
+ "k": 97,
+ "plans": 122,
+ "twoTestsAccepted": 0,
+ "locked": {
+  "flows": 8050,
+  "rejectedFlows": 5662,
+  "rejected": {
+   "PLAN_VIOLATES_POLICY:TEST": 5662
+  },
+  "rejectedEx": {
+   "PLAN_VIOLATES_POLICY:TEST": [
+    "lock f-d3-8w-25km-e510-B-sat/pause20/asOf 2026-10-31/test 2026-11-11: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32).",
+    "lock f-d3-8w-25km-e510-B-sat/pain8/asOf 2026-10-31/test 2026-11-11: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32).",
+    "lock f-d3-8w-25km-e510-B-sat/pause10/asOf 2026-11-01/test 2026-11-11: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32)."
+   ]
+  },
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {
+   "pause20": 1444,
+   "pain8": 1328,
+   "pause10": 1118,
+   "fatigue": 739,
+   "pain5": 1033
+  }
+ },
+ "control": {
+  "flows": 8050,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "seconds": 581.47
+}

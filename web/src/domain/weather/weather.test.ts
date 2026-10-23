@@ -1,17 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import {
-  bestHour,
-  heatAdjustedPace,
-  heatAdvice,
-  heatFor,
   hourFor,
   parseForecast,
   runHour,
   runTemp,
   trainingHour,
-  weatherCard,
   type ForecastCache
 } from './index';
+import {
+  bestHour,
+  heatAdjustedPace,
+  heatAdvice,
+  heatFor,
+  weatherCard
+} from '../generators/fiveK/weather';
 
 /* parity: test/temperatura-trcanja.test.mjs. Namera: temperatura odrađenog trčanja je vrednost iz prognoze za
    SREDINU trčanja; očitavanje sa sata je rezerva koja UVEK nosi oznaku izvora. Stari kod je diferencijalno

@@ -1,9 +1,8 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { seedState, type PersistedState } from '../../domain/state';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { ADMIN_UID } from '../../services/config';
 import { THEME_KEY } from '../../lib/theme';
 import { setApp } from '../../app/appContext';

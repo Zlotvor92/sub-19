@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "WEEKLY_KM_TOO_LOW",
+      "message": "Trenutni obim 20 km je ispod 25 km nedeljno: preporuka je 5K plan ili izgradnja osnove pre 10K plana."
+    }
+  ]
+}

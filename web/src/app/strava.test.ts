@@ -1,8 +1,7 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeSupabase } from '@/test/fakeSupabase';
-import { adaptGeneratedPlan } from '../domain/plan/adapt';
 import { seedState, type PersistedState } from '../domain/state';
-import { generatePlan } from '../domain/training/generator/generatePlan';
 import { hydratePersisted, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useSettingsStore } from '../stores/settingsStore';

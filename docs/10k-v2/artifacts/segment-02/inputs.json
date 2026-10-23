@@ -1,0 +1,257 @@
+[
+  {
+    "id": "d3-20km-v35-12w",
+    "group": "plan",
+    "note": "3 dana uto/čet/ned, 20 km, VDOT 35, 12 ned, cilj 55:00",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 20,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3365,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 3300
+    }
+  },
+  {
+    "id": "d3-35km-v45-10w",
+    "group": "plan",
+    "note": "3 dana pon/sre/sub, 35 km, VDOT 45, 10 ned, trka subota",
+    "input": {
+      "startDate": "2026-11-01",
+      "raceDate": "2027-01-09",
+      "runDays": ["mon", "wed", "sat"],
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-18"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "d5-35km-v40-12w",
+    "group": "plan",
+    "note": "5 dana pon/uto/čet/sub/ned, 35 km, VDOT 40, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["mon", "tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3003,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "d5-60km-v55-16w",
+    "group": "plan",
+    "note": "5 dana uto/sre/čet/sub/ned, 60 km, VDOT 55, 16 ned, cilj 37:00",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": ["tue", "wed", "thu", "sat", "sun"],
+      "currentWeeklyKm": 60,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2287,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 2220
+    }
+  },
+  {
+    "id": "d6-45km-v45-14w",
+    "group": "plan",
+    "note": "6 dana pon–čet/sub/ned, 45 km, VDOT 45, 14 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+      "currentWeeklyKm": 45,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "d6-80km-v65-18w",
+    "group": "plan",
+    "note": "6 dana pon–sub, 80 km, VDOT 65, 18 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-03-07",
+      "runDays": ["mon", "tue", "wed", "thu", "fri", "sat"],
+      "currentWeeklyKm": 80,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 1983,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "short-8w-d4-35km-v45",
+    "group": "kratka priprema",
+    "note": "8 ned, 4 dana, 35 km, VDOT 45",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2026-12-27",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "short-9w-d5-45km-v50",
+    "group": "kratka priprema",
+    "note": "9 ned, 5 dana, 45 km, VDOT 50, cilj 41:00",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-03",
+      "runDays": ["mon", "tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 45,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2481,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 2460
+    }
+  },
+  {
+    "id": "short-8w-d3-25km-v38",
+    "group": "kratka priprema",
+    "note": "8 ned, 3 dana, 25 km, VDOT 38",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2026-12-27",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 25,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3138,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "edge-d6-80km-v30",
+    "group": "granični",
+    "note": "kapacitet: 6 dana, 80 km, VDOT 30, 14 ned (105 min seče dugi)",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+      "currentWeeklyKm": 80,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3834,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-2-days",
+    "group": "odbijeni",
+    "note": "2 dana nedeljno",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "sun"],
+      "currentWeeklyKm": 30,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-7-days",
+    "group": "odbijeni",
+    "note": "7 dana nedeljno",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+      "currentWeeklyKm": 50,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-3-days-45km",
+    "group": "odbijeni",
+    "note": "3 dana, 45 km",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 45,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-6-days-30km",
+    "group": "odbijeni",
+    "note": "6 dana, 30 km",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+      "currentWeeklyKm": 30,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-7-weeks",
+    "group": "odbijeni",
+    "note": "7 nedelja",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2026-12-20",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null
+    }
+  }
+]

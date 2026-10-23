@@ -1,19 +1,24 @@
 import { useMemo, useState } from 'react';
 import { addDays, diffDays, parseIsoDate } from '../../domain/date';
-import { effectiveRaceDate, weekPlanKm, weekRealKm } from '../../domain/day';
+import { effectiveRaceDate, weekPlanKm, weekRace, weekRealKm } from '../../domain/day';
 import { fmtDayLong, fmtDayMonth, fmtKm, plDan } from '../../domain/format';
 import { raceRefs } from '../../domain/race';
 import { AppBar } from '../../components/ui/Shell';
 import { Icon } from '../../components/ui/icons';
 import { Disclosure } from '../../components/ui/Disclosure';
-import { Row } from '../../components/ui/primitives';
+import { Notice, Row } from '../../components/ui/primitives';
 import { dayOfMonth, dowInitial } from '../../lib/dates';
 import { useActiveGenPlan, useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores';
+import { useFiveKV2Needed } from '../../stores/fiveKV2Actions';
+import { useHmV2Needed } from '../../stores/hmV2Actions';
+import { useMarathonV2Needed } from '../../stores/marathonV2Actions';
+import { useTenKV2Needed } from '../../stores/tenKV2Actions';
 import { useUIStore } from '../../stores/uiStore';
 import { PHASE_LINE, type PhaseKey } from '../cycle/cycle';
 import { useCycleModel } from '../cycle/useCycleModel';
 import { useEasyPace } from '../session/useEasyPace';
 import { DayRow } from './DayRow';
+import { GoalAssessmentLine } from './GoalAssessment';
 
 const byDate = (a: { date: string }, b: { date: string }): number => {
   const da = a.date || '9999-99-99';
@@ -34,6 +39,17 @@ export default function PlanPage() {
   const openSheet = useUIStore((s) => s.openSheet);
   const cycle = useCycleModel();
   const easy = useEasyPace();
+  const needed5k = useFiveKV2Needed();
+  const needed10k = useTenKV2Needed();
+  const neededHm = useHmV2Needed();
+  const neededMarathon = useMarathonV2Needed();
+  const needed = needed5k.length
+    ? needed5k
+    : needed10k.length
+      ? needed10k
+      : neededHm.length
+        ? neededHm
+        : neededMarathon;
   const [picked, setPicked] = useState<number | null>(null);
   const today = parseIsoDate(todayStr);
 
@@ -60,6 +76,7 @@ export default function PlanPage() {
   const started = week.start <= todayStr;
   const planKm = weekPlanKm(week);
   const realKm = weekRealKm(week, log);
+  const race = weekRace(week);
   const days = week.days.slice().sort(byDate);
   const stripDays = Array.from({ length: 7 }, (_, i) => addDays(week.start, i));
   const refs = gen ? raceRefs(gen.meta) : null;
@@ -82,6 +99,7 @@ export default function PlanPage() {
                 : ''}
           </p>
         ) : null}
+        <GoalAssessmentLine meta={gen?.meta} />
       </header>
 
       <div className="weeknav">
@@ -143,7 +161,24 @@ export default function PlanPage() {
               ? `planirano · ostvareno ${fmtKm(realKm)} km`
               : 'planirano za ovu nedelju'}
         </p>
+        {race ? (
+          <p className="weekkm-l" id="week-race-km">
+            + trka {fmtKm(race.raceKm)} km (dan trke {fmtKm(race.dayKm)} km sa zagrevanjem i
+            hlađenjem) — van obima nedelje
+          </p>
+        ) : null}
       </div>
+
+      {needed.length ? (
+        <Notice
+          tone="warn"
+          title="Plan treba prilagoditi"
+          id="v2-needed"
+          actions={[{ label: 'Pregledaj', onClick: () => openScreen({ kind: 'plan-prilagodi' }) }]}
+        >
+          {needed.join(' ')}
+        </Notice>
+      ) : null}
 
       <div className="rows" aria-labelledby="week-h">
         {days.map((d) => (

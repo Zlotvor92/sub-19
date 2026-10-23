@@ -5,3 +5,6 @@ playwright-report
 test-results
 *.tsbuildinfo
 .env.local
+# Keš eslint/prettier (`npm run check`, v. docs/testing/TEST-SPEED.md); podrazumevano u node_modules/.cache/.
+.eslintcache
+.prettier-cache

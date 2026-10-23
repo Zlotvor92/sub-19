@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "EASY_PACE_REQUIRED",
+      "message": "Nema pouzdanog rezultata (bez rezultata trke): za plan po osećaju unesi lagan tempo (easyPaceSecPerKm, 4:30–8:30/km) ili rezultat 3/5/10 km ili polumaratona ne stariji od 84 dana."
+    }
+  ]
+}

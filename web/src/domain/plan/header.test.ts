@@ -1,8 +1,7 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../date';
-import { generatePlan } from '../training/generator/generatePlan';
 import { plDan, fmtDayMonthYear } from '../format';
-import { adaptGeneratedPlan } from './adapt';
 import { headerSubtitle } from './header';
 import { resolvePlan } from './resolve';
 

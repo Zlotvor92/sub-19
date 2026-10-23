@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "RUN_DAYS_COUNT",
+      "message": "Podržano je tačno 4 dana trčanja nedeljno; zadato 3."
+    }
+  ],
+  "violations": []
+}

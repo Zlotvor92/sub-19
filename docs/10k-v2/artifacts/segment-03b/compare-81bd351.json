@@ -1,0 +1,49 @@
+{
+  "against": "81bd351",
+  "cases": {
+    "beg-d3-15km-e7:30-12w": {
+      "ok": true,
+      "qualityWeeks": 0,
+      "trainingWeeks": 9,
+      "test": 4,
+      "shortestLong": 3.1,
+      "deloadLongs": [3.1, 6.9],
+      "peak": 19.5,
+      "taper": "—",
+      "sharpener": false
+    },
+    "beg-d4-18km-e8:00-10w": {
+      "ok": true,
+      "qualityWeeks": 1,
+      "trainingWeeks": 7,
+      "test": 3,
+      "shortestLong": 5.5,
+      "deloadLongs": [5.5],
+      "peak": 23.4,
+      "taper": "—",
+      "sharpener": false
+    },
+    "beg-d3-20km-e6:30-14w": {
+      "ok": true,
+      "qualityWeeks": 9,
+      "trainingWeeks": 11,
+      "test": 4,
+      "shortestLong": 5.8,
+      "deloadLongs": [5.8, 9.2, 9.3],
+      "peak": 26,
+      "taper": "—",
+      "sharpener": false
+    },
+    "beg-d4-25km-result-v35-14w": {
+      "ok": true,
+      "qualityWeeks": 11,
+      "trainingWeeks": 11,
+      "test": null,
+      "shortestLong": 7.2,
+      "deloadLongs": [7.2, 8.4, 8.5],
+      "peak": 32.5,
+      "taper": "RP 2 × 1000 m",
+      "sharpener": true
+    }
+  }
+}

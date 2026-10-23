@@ -3,7 +3,6 @@
 import { addDays, diffDays, parseIsoDate, type IsoDate } from '../date';
 import { leadingNumber } from '../lib/number';
 import type { LogEntry, PainRecord, WeightRecord, WellnessRecord } from '../state/types';
-import { ACWR_MAX, ACWR_RETURN } from './constants';
 
 /* ------------------------------ jutarnja merenja ------------------------------ */
 
@@ -180,24 +179,8 @@ export type PainClass = '' | 'l0' | 'l1' | 'l2' | 'l3';
 export const painClass = (v: number | null): PainClass =>
   v == null ? '' : v >= 6 ? 'l3' : v >= 3 ? 'l2' : v >= 1 ? 'l1' : 'l0';
 
-/* ------------------------------ opterećenje ------------------------------ */
-
-/** Skala trake ide do 2,0 — granica 1,5 (na kojoj rizik naglo raste) mora biti UNUTAR slike. */
-export const ACWR_SCALE = 2;
-export const ACWR_HIGH = 1.5;
-export const acwrPosition = (v: number): number =>
-  Math.max(0, Math.min(100, (v / ACWR_SCALE) * 100));
-
-export type AcwrBand = 'low' | 'ok' | 'high' | 'danger';
-export function acwrBand(ratio: number): AcwrBand {
-  if (ratio < ACWR_RETURN) return 'low';
-  if (ratio <= ACWR_MAX) return 'ok';
-  return ratio <= ACWR_HIGH ? 'high' : 'danger';
-}
-
-/** Odnos na TAČNO dve decimale sa zarezom („0,80", „1,30" su granice pojasa); `—` kad ga nema. */
-export const acwrText = (v: number | null | undefined): string =>
-  v == null || !Number.isFinite(v) ? '—' : v.toFixed(2).replace('.', ',');
+/* Pojasevi opterećenja (ACWR) i tonovi koji ulaze u ocenu spremnosti su od prenosa u generatoru distance plana
+   (`domain/generators/<distanca>/recovery/view.ts`). */
 
 /** Koliko dana ima od datuma do danas — za osu vremena na grafikonima. */
 export const daysBetween = (from: string, to: string): number | null => {

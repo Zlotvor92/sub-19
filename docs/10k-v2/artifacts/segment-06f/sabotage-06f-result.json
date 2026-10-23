@@ -1,0 +1,242 @@
+{
+ "input": "/home/user/sub-19/docs/10k-v2/artifacts/segment-06f/sabotage-06f.json",
+ "head": "553bda0",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 203,
+ "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+ "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "06f-a umor vezan za asOf (sidro iz asOf + 1, ne iz zapisa, pouka 36)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/repeatGrid.node.test.ts",
+    "test": "trajne mreže ponavljanja (umor, bol, zaštićeni dani) > pouka 36: isti umor ponovo asOf + 1 … + 7 → 0 novih rasterećenja, traka bez umora",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "1b23af79156dc068cb45b286dc5452394a6a0c2516767f595cbf9119942cf938",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 13
+  },
+  {
+   "index": 2,
+   "name": "06f-b traka u aplikaciji (bez domenskog adaptBanner: svaki primenjen uslov)",
+   "files": [
+    "src/domain/generators/tenK/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts",
+    "test": "pregled prilagođavanja (adaptPreview) > manjak izvršenja: samo uz potpunu sinhronizaciju (bez nje dan bez zapisa nije poznat)",
+    "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "a7735e76927ad063c38de011e855adcb881051ecd534595ab263da7178e8fdeb",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.4
+  },
+  {
+   "index": 3,
+   "name": "06f-c tekst prekidača 10K v2 vraćen („Prilagođavanje … stiže uskoro.\")",
+   "files": [
+    "src/features/ti/screens.tsx"
+   ],
+   "tests": [
+    "src/features/onboarding/tenKV2Flow.test.tsx"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/features/onboarding/tenKV2Flow.test.tsx",
+    "test": "Prekidač 10K v2: vidljiv samo uz VITE_TENK_V2 ili administratoru > 06f: tekst prekidača bez „prilagođavanje stiže uskoro\" (prilagođavanje 10K v2 postoji od segmenta 06)",
+    "message": "AssertionError: expected 'Važi samo za novi 10K plan iz čarobnj…' not to match /stiže uskoro/"
+   },
+   "failedCount": 1,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "d9ba896e2472ff769adda83c9b9fc722c50222e3184e94ee238f5942b46ea9db",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 8.6
+  },
+  {
+   "index": 4,
+   "name": "06f-d pouka 35 isključena (drugi dan kvaliteta ostaje i kad je dan kvaliteta duži od dugog)",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/p35.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/p35.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":2},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":3}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "b80053a14dd5ce8bc8580682ed2fc1a66ec88134ccd90b80d4849dace7b0682e",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 0.7
+  },
+  {
+   "index": 5,
+   "name": "06f-e bol vezan za asOf (isti zapis bola ponovo pravi nov period, nalaz 3)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "test": "nalaz 3 (pouke 18 i 23): isti zapis bola poslat ponovo ne pravi nov period > b-d4-11w-18km-v35-B-sat, bol 8 kraj ned 9, isti zapis sutra — na 7ba9717 RACE_WEEK_OVER_TAPER (trkačka 9,3 > taper 3 km); sada isti plan",
+    "message": "AssertionError: expected [ { index: 1, …(10) }, …(10) ] to deeply equal [ { index: 1, …(10) }, …(10) ]"
+   },
+   "failedCount": 2,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "e935b4b7d1ccfee0af365acb37b1e2d246b48218641c9ed2902d9a75f641e54b",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 33.5
+  },
+  {
+   "index": 6,
+   "name": "06f-f umor ponedeljkom u sledećoj nedelji (bez deloadWeek, tekuća + 1)",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/repeatGrid.node.test.ts",
+    "test": "trajne mreže ponavljanja (umor, bol, zaštićeni dani) > pouka 36 precizno: umor pet/ned nedelje k − 1, asOf nedelja k − 1 ili ponedeljak k → rasterećenje u nedelji k, isti dani od utorka",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "d8630a21ccfe2c6692c5cc711819459d77d52f844460143248c657f2ff4493cf",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 17.9
+  },
+  {
+   "index": 7,
+   "name": "06f-g validator sudi zaštićenom danu po tempu nedelje (WU/CD posle novog rezultata)",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/repeatGrid.node.test.ts",
+    "test": "trajne mreže ponavljanja (umor, bol, zaštićeni dani) > zaštićeni dani (kao maraton MAR-07b): nov rezultat kraj ned k + zaključan ili urađen Q1 ned k + 1 → 0 odbijanja, dan bajt-isti",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "4ae6c37fe41a72d268d2001e60063809fd9d3d7850e227906ea0756e9130e9b0",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 22.5
+  },
+  {
+   "index": 8,
+   "name": "06g-h trkačka samo sa danom pred trku > tapera ostaje greška (bez RACE_WEEK_OVER_TAPER_EVE)",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+    "test": "06g (pouke 23 i 30): trkačka nedelja samo sa danom pred trku i trkom > b-d4-11w-18km-v35-B-sat: bol 8 kraj ned 9, NOV bol 8 sutra — na 10k-v2.6.0 RACE_WEEK_OVER_TAPER (3,3 > 3 km); sada upozorenje RACE_WEEK_OVER_TAPER_EVE",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK_OVER_TAPER: Trkačka nedelja 3.3 km > taper 3 km (D23).\",\"week\":11}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "061e6e0d5cc738953dbafbc284d79b817377855863bba443938296965d3e6e75",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 51.1
+  },
+  {
+   "index": 9,
+   "name": "06g-i nedelja cela odmor (bol) ostaje EMPTY_WEEK",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/repeatGrid.node.test.ts",
+    "test": "trajne mreže ponavljanja (umor, bol, zaštićeni dani) > 06g (pouke 23 i 30): bol 7/8 svakog dana ned N − 3 … N − 1, pa NOV zapis bola asOf + 1 … + 7 → 0 odbijanja",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "hashSabotaged": "94bebdd4e33f06d58d08ffaba4548efa3f500e0b7cbd305239ef468e8a915138",
+   "hashAfter": "66c53c4937dace1f1cfdbdfad773f419fe1ad8f2c6ff4c0d4cc55c3c4c24feab",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 51.7
+  }
+ ]
+}

@@ -1,0 +1,270 @@
+{
+ "dist": "10K",
+ "policy": {
+  "regular/3": {
+   "km": [
+    20,
+    40
+   ],
+   "weeks": [
+    8,
+    18
+   ]
+  },
+  "regular/4": {
+   "km": [
+    25,
+    55
+   ],
+   "weeks": [
+    8,
+    18
+   ]
+  },
+  "regular/5": {
+   "km": [
+    30,
+    65
+   ],
+   "weeks": [
+    8,
+    18
+   ]
+  },
+  "regular/6": {
+   "km": [
+    35,
+    80
+   ],
+   "weeks": [
+    8,
+    18
+   ]
+  },
+  "beginner/3": {
+   "km": [
+    15,
+    30
+   ],
+   "weeks": [
+    10,
+    18
+   ]
+  },
+  "beginner/4": {
+   "km": [
+    18,
+    35
+   ],
+   "weeks": [
+    10,
+    18
+   ]
+  }
+ },
+ "vdot": [
+  30,
+  80
+ ],
+ "easy": [
+  270,
+  510
+ ],
+ "gridCoverage": {
+  "regular/3": {
+   "n": 4620,
+   "km": [
+    20,
+    40
+   ],
+   "weeks": [
+    8,
+    18
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/4": {
+   "n": 6468,
+   "km": [
+    25,
+    55
+   ],
+   "weeks": [
+    8,
+    18
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/5": {
+   "n": 7392,
+   "km": [
+    30,
+    65
+   ],
+   "weeks": [
+    8,
+    18
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "regular/6": {
+   "n": 9240,
+   "km": [
+    35,
+    80
+   ],
+   "weeks": [
+    8,
+    18
+   ],
+   "vdot": [
+    30,
+    70
+   ],
+   "easy": [
+    270,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/3": {
+   "n": 1512,
+   "km": [
+    15,
+    30
+   ],
+   "weeks": [
+    10,
+    18
+   ],
+   "vdot": [
+    30,
+    40
+   ],
+   "easy": [
+    330,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  },
+  "beginner/4": {
+   "n": 1890,
+   "km": [
+    18,
+    35
+   ],
+   "weeks": [
+    10,
+    18
+   ],
+   "vdot": [
+    30,
+    40
+   ],
+   "easy": [
+    330,
+    510
+   ],
+   "race": [
+    "sat",
+    "sun"
+   ],
+   "recentLong": [
+    1000000000,
+    -1000000000
+   ]
+  }
+ },
+ "uncovered": [
+  "regular/3: VDOT max 80 (mreža do 70)",
+  "regular/4: VDOT max 80 (mreža do 70)",
+  "regular/5: VDOT max 80 (mreža do 70)",
+  "regular/6: VDOT max 80 (mreža do 70)",
+  "beginner/3: VDOT max 80 (mreža do 40)",
+  "beginner/3: lak tempo min 270 (mreža od 330)",
+  "beginner/4: VDOT max 80 (mreža do 40)",
+  "beginner/4: lak tempo min 270 (mreža od 330)"
+ ],
+ "edgeInputs": 192,
+ "generatorRejected": {
+  "WEEK_INFEASIBLE": 4
+ },
+ "generatorRejectedEx": {
+  "WEEK_INFEASIBLE": "regular/6/35km/8w/vmax/sat: Nedelja 4: nijedan cilj od 18 km naviše ne može da se sastavi po pravilima."
+ },
+ "plans": 188,
+ "plansUncovered": 60,
+ "uncoveredFlows": {
+  "flows": 5700,
+  "rejected": 0
+ },
+ "flows": 18800,
+ "rejectedFlows": 0,
+ "rejected": {},
+ "rejectedEx": {},
+ "common": {},
+ "commonEx": {},
+ "inv": {},
+ "invEx": {},
+ "by": {},
+ "seconds": 408.23
+}

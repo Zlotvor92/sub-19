@@ -1,0 +1,201 @@
+{
+  "gen": {
+    "n": {
+      "total": 25122,
+      "meta:text": 4176,
+      "after:aT": 1371,
+      "content:g": 165
+    },
+    "ex": {
+      "total": [
+        "d3-10w-25km-v30-A-sat",
+        "d3-10w-25km-v30-A-sun",
+        "d3-10w-25km-v30-B-sat",
+        "d3-10w-25km-v30-B-sun"
+      ],
+      "meta:text": [
+        "d3-10w-30km-v30-A-sat: WEEK_FITTED → WEEK_FITTED",
+        "d3-10w-30km-v30-A-sun: WEEK_FITTED → WEEK_FITTED",
+        "d3-10w-30km-v30-B-sat: WEEK_FITTED → WEEK_FITTED",
+        "d3-10w-30km-v30-B-sun: WEEK_FITTED → WEEK_FITTED"
+      ],
+      "after:aT": [
+        "d4-10w-30km-v55-A-sat",
+        "d4-10w-30km-v55-A-sun",
+        "d4-10w-30km-v55-B-sat",
+        "d4-10w-30km-v55-B-sun"
+      ],
+      "content:g": [
+        "d6-10w-40km-v60-A-sat",
+        "d6-10w-40km-v60-A-sun",
+        "d6-10w-40km-v60-B-sat",
+        "d6-10w-40km-v60-B-sun"
+      ]
+    }
+  },
+  "recent": {
+    "n": {
+      "total": 10905,
+      "content:b": 13,
+      "meta:text": 3381,
+      "after:a": 597,
+      "after:aT": 1170,
+      "content:a": 381
+    },
+    "ex": {
+      "total": [
+        "d3-10w-25km-v70-r5",
+        "d3-14w-25km-v70-r5",
+        "d3-20w-25km-v70-r5",
+        "d3-10w-30km-v70-r5"
+      ],
+      "content:b": [
+        "d3-10w-25km-v70-r5",
+        "d3-10w-30km-v70-r5",
+        "d3-10w-35km-v70-r5",
+        "d3-10w-40km-v45-r5"
+      ],
+      "meta:text": [
+        "d3-14w-25km-v70-r5: CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,LONG_SHORTER_THAN_QUALITY,TAPER_NO_QUALITY,WEEK_FITTED → CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,LONG_SHORTER_THAN_QUALITY,TAPER_NO_QUALITY,WEEK_FITTED",
+        "d3-20w-25km-v70-r5: CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,LONG_SHORTER_THAN_QUALITY,TAPER_NO_QUALITY,WEEK_FITTED → CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,LONG_SHORTER_THAN_QUALITY,TAPER_NO_QUALITY,WEEK_FITTED",
+        "d3-14w-30km-v70-r5: CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,LONG_SHORTER_THAN_QUALITY,TAPER_NO_QUALITY,WEEK_FITTED → CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,LONG_SHORTER_THAN_QUALITY,TAPER_NO_QUALITY,WEEK_FITTED",
+        "d3-20w-30km-v70-r5: CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_SHORTER_THAN_QUALITY,WEEK_FITTED → CAPACITY_LIMITED,DELOAD_NO_QUALITY,LONG_SHORTER_THAN_QUALITY,WEEK_FITTED"
+      ],
+      "after:a": [
+        "d4-10w-30km-v45-r5",
+        "d4-14w-30km-v45-r5",
+        "d4-20w-30km-v45-r5",
+        "d4-10w-30km-v70-r5"
+      ],
+      "after:aT": [
+        "d4-10w-30km-v70-r5",
+        "d4-14w-30km-v70-r5",
+        "d4-20w-30km-v70-r5",
+        "d4-10w-35km-v70-r5"
+      ],
+      "content:a": [
+        "d4-10w-40km-v70-r5",
+        "d4-10w-45km-v70-r5",
+        "d4-10w-50km-v70-r5",
+        "d4-10w-55km-v70-r5"
+      ]
+    }
+  },
+  "targeted": {
+    "n": {
+      "total": 16275,
+      "meta:text": 4418,
+      "content:b": 110,
+      "content:a": 1494,
+      "after:aT": 1676,
+      "meta:rules": 49,
+      "content:g": 99
+    },
+    "ex": {
+      "total": [
+        "d3-10w-25km-v30-A-sat/w3/pause35",
+        "d3-10w-25km-v30-A-sat/w3/pause20",
+        "d3-10w-25km-v30-A-sat/w3/pain5",
+        "d3-10w-25km-v30-A-sat/w4/pause35"
+      ],
+      "meta:text": [
+        "d3-10w-25km-v30-A-sat/w3/pause35: DELOAD_LONG_SHORTENED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,TAPER_NO_QUALITY → DELOAD_LONG_SHORTENED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,TAPER_NO_QUALITY",
+        "d3-10w-25km-v30-A-sat/w3/pain5: DELOAD_NO_QUALITY,LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY → DELOAD_NO_QUALITY,LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY",
+        "d3-10w-25km-v30-A-sat/w4/pause35: DELOAD_LONG_SHORTENED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,TAPER_NO_QUALITY → DELOAD_LONG_SHORTENED,DELOAD_NO_QUALITY,LONG_RUN_SHORT,TAPER_NO_QUALITY",
+        "d3-10w-25km-v30-A-sat/w4/pain5: LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY → LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY"
+      ],
+      "content:b": [
+        "d3-10w-25km-v30-A-sat/w3/pause20",
+        "d3-10w-25km-v30-A-sat/w4/pause20",
+        "d3-10w-25km-v30-A-sat/w5/pause20",
+        "d3-10w-30km-v40-A-sun/w3/pause20"
+      ],
+      "content:a": [
+        "d4-10w-30km-v70-B-sat/w3/pause20",
+        "d4-10w-30km-v70-B-sat/w3/pain5",
+        "d4-10w-30km-v70-B-sat/w4/pause20",
+        "d4-10w-30km-v70-B-sat/w4/pain5"
+      ],
+      "after:aT": [
+        "d4-10w-40km-v35-B-sun/w3/pause20",
+        "d4-10w-40km-v35-B-sun/w4/pause20",
+        "d4-10w-40km-v35-B-sun/w6/pain5",
+        "d4-10w-45km-v45-C-sat/w3/pause20"
+      ],
+      "meta:rules": [
+        "d4-11w-35km-v50-B-sat/w4/pain5: LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS → PLANNED_BELOW_TARGET_LIMITS",
+        "d4-13w-30km-v40-A-sat/w7/pain5: LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY → PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY",
+        "d4-14w-30km-v70-A-sat/w9/pain5: DELOAD_LONG_SHORTENED,LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY → DELOAD_LONG_SHORTENED,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY",
+        "d5-13w-40km-v35-A-sat/w6/pain5: LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS → PLANNED_BELOW_TARGET_LIMITS"
+      ],
+      "content:g": [
+        "d6-14w-40km-v60-A-sun/w3/pause35",
+        "d6-14w-40km-v60-A-sun/w3/pause20",
+        "d6-14w-40km-v60-A-sun/w3/pain5",
+        "d6-14w-40km-v60-A-sun/w4/pause35"
+      ]
+    }
+  },
+  "early": {
+    "n": {
+      "total": 114012,
+      "meta:text": 27350,
+      "content:b": 219,
+      "content:c": 630,
+      "meta:rules": 514,
+      "after:aT": 6020,
+      "content:a": 2824,
+      "content:x": 5
+    },
+    "ex": {
+      "total": [
+        "d3-10w-35km-v30-A-sat/pre1/none",
+        "d3-10w-35km-v30-A-sat/pre1/done100",
+        "d3-10w-35km-v30-A-sat/pre1/under50",
+        "d3-10w-35km-v30-A-sat/pre1/over120"
+      ],
+      "meta:text": [
+        "d3-10w-35km-v30-A-sat/pre1/none: CAPACITY_LIMITED,WEEK_FITTED → CAPACITY_LIMITED,WEEK_FITTED",
+        "d3-10w-35km-v30-A-sat/pre1/done100: CAPACITY_LIMITED,WEEK_FITTED → CAPACITY_LIMITED,WEEK_FITTED",
+        "d3-10w-35km-v30-A-sat/pre1/under50: CAPACITY_LIMITED,WEEK_FITTED → CAPACITY_LIMITED,WEEK_FITTED",
+        "d3-10w-35km-v30-A-sat/pre1/over120: CAPACITY_LIMITED,WEEK_FITTED → CAPACITY_LIMITED,WEEK_FITTED"
+      ],
+      "content:b": [
+        "d3-10w-35km-v30-A-sat/pre1/pause35",
+        "d3-10w-35km-v30-A-sat/pre3/pause35",
+        "d3-10w-35km-v30-A-sat/pre6/pause35",
+        "d3-15w-30km-v35-A-sat/w1wed/pause35"
+      ],
+      "content:c": [
+        "d3-10w-35km-v30-A-sat/pre1/fatigue",
+        "d3-10w-35km-v30-A-sat/pre3/fatigue",
+        "d3-10w-35km-v30-A-sat/pre6/fatigue",
+        "d3-12w-45km-v30-B-sun/pre1/fatigue"
+      ],
+      "meta:rules": [
+        "d3-10w-35km-v30-A-sat/w2wed/pause20: LONG_RUN_SHORT,TAPER_NO_QUALITY → TAPER_NO_QUALITY",
+        "d3-10w-35km-v30-A-sat/w2wed/pause35: DELOAD_NO_QUALITY,LONG_RUN_SHORT,TAPER_NO_QUALITY → DELOAD_NO_QUALITY,TAPER_NO_QUALITY",
+        "d3-10w-35km-v30-A-sat/w2wed/painPause: LONG_RUN_SHORT,PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY → PLANNED_BELOW_TARGET_LIMITS,TAPER_NO_QUALITY",
+        "d3-15w-30km-v35-A-sat/w5wed/pause20: DELOAD_NO_QUALITY,DOSE_DROPPED,LONG_RUN_SHORT,TAPER_NO_QUALITY → DELOAD_NO_QUALITY,DOSE_DROPPED,TAPER_NO_QUALITY"
+      ],
+      "after:aT": [
+        "d4-12w-55km-v45-A-sat/w3wed/pause35",
+        "d4-12w-55km-v45-A-sat/w3end/pause35",
+        "d4-12w-55km-v45-A-sat/w4wed/pause35",
+        "d4-12w-55km-v45-A-sat/w4end/pause35"
+      ],
+      "content:a": [
+        "d4-14w-45km-v45-B-sun/pre1/pause35",
+        "d4-14w-45km-v45-B-sun/pre3/pause35",
+        "d4-14w-45km-v45-B-sun/pre6/pause35",
+        "d4-14w-45km-v45-B-sun/w1wed/pause35"
+      ],
+      "content:x": [
+        "d3-12w-25km-v30-B-sat/w7wed/pause20",
+        "f-d3-15w-25km-e315-C/w10wed/pause10",
+        "f-d3-15w-25km-e315-C/w10wed/pause20",
+        "f-d3-15w-25km-e315-C/w10wed/chain"
+      ]
+    }
+  }
+}

@@ -1,11 +1,11 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
+import { FIVE_K_GENERATOR } from '../../domain/generators/select';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { seedState, type PersistedState } from '../../domain/state';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -112,7 +112,14 @@ describe('Plan (jedna nedelja)', () => {
   it('struktura sesije (npr. intervali) je u redu dana, ne samo kilometri', () => {
     const structured = days()
       .filter((d) => d.w === 2 && !d.rest)
-      .map((d) => ({ d, v: sessionView(d, { alt: undefined, easyPaceSec: null }) }))
+      .map((d) => ({
+        d,
+        v: sessionView(d, {
+          alt: undefined,
+          easyPaceSec: null,
+          rpeTarget: FIVE_K_GENERATOR.rpeTarget
+        })
+      }))
       .filter((x) => x.v.rows && x.v.core && x.v.core !== dayLabel(x.d, false));
     expect(structured.length).toBeGreaterThan(0);
     const { container } = render(<Screen />);

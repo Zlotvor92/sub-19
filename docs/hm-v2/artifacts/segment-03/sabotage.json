@@ -1,0 +1,140 @@
+[
+  {
+    "name": "S1 test u prvoj umesto poslednjoj nedelji baze (H16)",
+    "file": "src/domain/generators/halfMarathon/v2/periodize.ts",
+    "find": "  return phases.lastIndexOf('base') + 1;",
+    "replace": "  return phases.indexOf('base') + 1;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/feel.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/feelGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S2 test se računa kao doza: progresija Q1 napreduje u nedelji testa (H16)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "    : pickBuild(quality, frame.phase, targetKm, p, rule, relax, test);",
+    "replace": "    : pickBuild(quality, frame.phase, targetKm, p, rule, relax, false);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/feel.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/feelGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S3 početnik: lestvica faze sa I i R (H17 bez I/R)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  const l = ladderFor(phase, 'q1', rule.quality);",
+    "replace": "  const l = ladderFor(phase, 'q1', rule.beginner ? 2 : rule.quality);",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S4 početnik bez uvoda (introWeeks 2 → 0, H17)",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "    introWeeks: 2,",
+    "replace": "    introWeeks: 0,",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S5 trčanje/hodanje prihvaćeno (H17 RUN_WALK_NOT_SUPPORTED)",
+    "file": "src/domain/generators/halfMarathon/v2/input.ts",
+    "find": "  if (raw['runWalk'] === true)",
+    "replace": "  if (raw['runWalk'] === 'da')",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/input.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts"
+    ]
+  },
+  {
+    "name": "S6 dugi početnika 135 → 150 min (H17)",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "    longMaxSec: 8100,",
+    "replace": "    longMaxSec: 9000,",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts"
+    ]
+  },
+  {
+    "name": "S7 početnik: početni nivo ≤ 60 % plafona umesto prvog nivoa (HI10)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  if (beginner) return levels[0]!;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S8 procena VDOT-a iz sporog kraja E (0,62) umesto bržeg (H16)",
+    "file": "src/domain/generators/halfMarathon/v2/paces.ts",
+    "find": "  return vo2AtSpeed(60000 / easySecPerKm) / P.paces.eFractionFast;",
+    "replace": "  return vo2AtSpeed(60000 / easySecPerKm) / P.paces.eFractionSlow;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/feelGrid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/feel.node.test.ts"
+    ]
+  },
+  {
+    "name": "S9 RPE RP 6–7 → 7–8 (H16)",
+    "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+    "find": "      RP: { min: 6, max: 7, cue: 'ritam polumaratona' },",
+    "replace": "      RP: { min: 7, max: 8, cue: 'ritam polumaratona' },",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/feelGrid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/feel.node.test.ts"
+    ]
+  },
+  {
+    "name": "S10 HI13: rasterećenje u uvodu sa kvalitetom (pouka 31)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "    const fits = !intro && !test && d.doseM <= capM('T', targetKm);",
+    "replace": "    const fits = !test && d.doseM <= capM('T', targetKm);",
+    "tests": ["src/domain/generators/halfMarathon/v2/beginner.node.test.ts"]
+  },
+  {
+    "name": "S11 plan sa rezultatom dobija paceBasis (regresija bajt-isto prema HM-02)",
+    "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+    "find": "    ...(feel ? { paceBasis: 'feel' as const } : {}),",
+    "replace": "    ...(feel ? { paceBasis: 'feel' as const } : { paceBasis: 'result' as const }),",
+    "tests": ["src/domain/generators/halfMarathon/v2/grid.node.test.ts"]
+  },
+  {
+    "name": "S12 HI14 skraćivanje dugog rasterećenja isključeno",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  return withEasy(target10 * 10 - quality100, long10, easyDays);\n}",
+    "replace": "  return null;\n}",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts"
+    ]
+  },
+  {
+    "name": "S13 HI14 validator bez iste funkcije (očekuje uvek 0,8 × poslednji)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "        const exp10 = len ? len.long10 : want10;",
+    "replace": "        const exp10 = want10;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/beginnerGrid.node.test.ts",
+      "src/domain/generators/halfMarathon/v2/beginner.node.test.ts"
+    ]
+  },
+  {
+    "name": "S14 HI14 kvalitet otpada i kad lagani nisu ispod minimuma (regresija 3 d)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "      fits &&\n      deloadEasyShort(target10, km100(c.w!.km), c.dates.length, lastLong10, rule, p, roll10);",
+    "replace": "      fits;",
+    "tests": ["src/domain/generators/halfMarathon/v2/grid.node.test.ts"]
+  },
+  {
+    "name": "S15 dan testa nije kvalitetni dan za pouku 14 (odluka HM-03)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "        .filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test')",
+    "replace": "        .filter((d) => d.workout.kind === 'quality')",
+    "tests": ["src/domain/generators/halfMarathon/v2/feel.node.test.ts"]
+  }
+]

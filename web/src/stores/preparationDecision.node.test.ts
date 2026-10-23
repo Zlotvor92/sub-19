@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { resolvePlan } from '../domain/plan';
-import type { ReplanContext } from '../domain/plan/future';
+import type { ReplanContext } from '../domain/generators/select';
 import { getPlanRevisions } from '../domain/plan/versions';
 import { seedState, type GenPlanState, type PersistedState } from '../domain/state';
 import { hydratePersisted } from './index';

@@ -1,21 +1,19 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, PainRecord } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
+import { isLoadBearing } from './index';
+import { ACWR_MAX } from '../generators/fiveK/recovery/constants';
+import { chronicKm } from '../generators/fiveK/recovery/load';
+import { painStatus, returnToRunPhase } from '../generators/fiveK/recovery/pain';
+import { RW_BY_PAIN } from '../generators/fiveK/recovery/constants';
 import {
-  ACWR_MAX,
-  RW_BY_PAIN,
   applyInjuryProposal,
-  chronicKm,
   injuryProposal,
-  isLoadBearing,
-  painStatus,
-  returnToRunPhase,
   runWalkForPain,
   type RecoveryContext
-} from './index';
+} from '../generators/fiveK/recovery/proposal';
 
 /* parity: test/povreda.test.mjs, test/povratak-obim.test.mjs, test/opterecenje-pre-plana.test.mjs —
    namera i zahtevi (nikad naviše, od originala, dan trke se ne dira, bol van nosivih delova ne prepisuje

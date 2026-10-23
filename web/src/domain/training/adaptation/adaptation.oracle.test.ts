@@ -1,3 +1,8 @@
+import { adaptGeneratedPlan, byPlanProposal } from '@/test/generators';
+import type {
+  ProposalChange,
+  ProposalContext
+} from '@/domain/generators/halfMarathon/training/adaptation/proposal';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
@@ -6,7 +11,6 @@ import { addDays, type IsoDate } from '../../date';
 import { resolvePlan } from '../../plan/resolve';
 import { sessKind } from '../../plan/describe';
 import { paceForZone } from '../vdot/paceForZone';
-import { adaptGeneratedPlan } from '../../plan/adapt';
 import type { AltRecord, GenPlanState, LogEntry, VdotRecord } from '../../state';
 import { T3K_ID_PREFIX } from '../constants/product';
 import { generatePlan } from '@/test/legacyGenerator';
@@ -14,22 +18,14 @@ import type { PlanGenerationInput } from '../types';
 import { isT3kId } from '../vdot/limits';
 import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
 import {
-  applyVdotProposal,
   classifyMeasurement,
   currentVdot,
-  formVsPlan,
-  fitnessEvidence,
-  planVdotNow,
   matchPlanRows,
   dayZone,
   effectivePace,
   zoneForPredLabel,
-  type ProposalChange,
   recomputeVdotChain,
   sessionClassFor,
-  undoVdotAdjustments,
-  vdotProposal,
-  type ProposalContext,
   type StoredPredRow
 } from './index';
 
@@ -288,6 +284,16 @@ describe('prijem merenja naspram starog recordVdot', () => {
     expect(counts['not-measured']).toBeGreaterThan(5);
   });
 });
+
+/* Predlog tempa i dokaz forme računa generator distance plana (stari zajednički engine je obrisan). */
+const {
+  applyVdotProposal,
+  formVsPlan,
+  planVdotNow,
+  undoVdotAdjustments,
+  vdotProposal,
+  fitnessEvidence
+} = byPlanProposal;
 
 function proposalContext(s: Scenario): ProposalContext {
   return {

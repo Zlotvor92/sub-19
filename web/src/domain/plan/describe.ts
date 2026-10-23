@@ -1,15 +1,8 @@
-/* Imena i oznake dana/nedelje — čiste funkcije, bez DOM-a. */
+/* Imena i oznake dana/nedelje — čiste funkcije, bez DOM-a.
+   (Segment 5/5: opis automatskog propisa `describePrescription` premešten je doslovno u `./prescriptionText.ts`, jer ga
+   koristi samo stari `finalize.ts`; time prikazne oznake više ne vuku stare trenerske profile u produkcioni graf.) */
 
-import { addDays, type IsoDate } from '../date';
-import { EASY_EFFORT_NOTE } from '../training/generator/formPolicy';
 import type { DayTag } from '../state';
-import { fmtClock } from '../format';
-import type { Day, PlanMeta } from '../training/types';
-import { sessDesc } from '../training/sessions/calc';
-import { fuelText } from '../training/sessions/longRun';
-import { paceForZone } from '../training/vdot/paceForZone';
-import { profileFor } from '../training/distances';
-import { runWalkForWeek, runWalkText } from '../training/generator/runWalk';
 import type { ResolvedDay } from './types';
 
 export const TAG_LABELS: Readonly<Record<DayTag, string>> = {
@@ -37,22 +30,23 @@ export function safeTag(t: string | undefined | null): DayTag | '' {
 }
 
 /**
- * Šta je dan — za oznaku na kartici. Ručno izmenjen dan (`hasAlt`) i dalje nosi ORIGINALNU sesiju
- * (potrebna za predikciju/lap-detekciju), ali za PRIKAZ je zastarela: piramida promenjena u obično
+ * Šta je dan — za oznaku na kartici. Ručno izmenjen dan (`hasAlt`) se imenuje po tipu izmene, čak i kad
+ * izmena zadržava strukturu (`session`); original (`originSession`) služi samo istoriji i spajanju: piramida promenjena u obično
  * lako trčanje ne sme da se prikazuje kao „Piramida".
  */
 export function sessKind(
-  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session'>,
+  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'structure'>,
   hasAlt: boolean
 ): string {
   if (d.rest) return tagName('odmor');
   if (hasAlt) return tagName(d.tag);
-  return d.session?.kind ? d.session.kind : tagName(d.tag);
+  /* 5k-v2: vrsta iz strukture dana (generator), inače ime tipa dana. */
+  return d.session?.kind ? d.session.kind : (d.structure?.kind ?? tagName(d.tag));
 }
 
 /** Oznaka dana: vrsta + „ + Snaga" kad je uz trčanje dodata snaga. */
 export function dayLabel(
-  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'snaga'>,
+  d: Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'snaga' | 'structure'>,
   hasAlt: boolean
 ): string {
   return sessKind(d, hasAlt) + (d.snaga ? ' + Snaga' : '');
@@ -83,62 +77,5 @@ export function weekPhase(
   return 'VRHUNAC';
 }
 
-export interface RpeTarget {
-  min: number;
-  max: number;
-  txt: string;
-}
-
-const RPE_TARGET: Partial<Record<DayTag, RpeTarget>> = {
-  lako: { min: 3, max: 4, txt: 'Razgovorno — možeš da pričaš u punim rečenicama' },
-  rw: { min: 3, max: 4, txt: 'Razgovorno — deo za trčanje mora ostati lagan' },
-  lr: { min: 4, max: 5, txt: 'Razgovorno do postojano' },
-  tempo: { min: 7, max: 8, txt: 'Prijatno teško — kratke rečenice' },
-  int: { min: 8, max: 9, txt: 'Teško — ubrzano disanje, bez pričanja' },
-  test: { min: 9, max: 10, txt: 'Skoro maksimalno' },
-  trka: { min: 9, max: 10, txt: 'Maksimalno' }
-};
-
-/** Ciljni napor (RPE) po tipu dana; `null` za odmor i snagu. */
-export function rpeTarget(
-  d: Pick<ResolvedDay, 'rest' | 'tag'> | null | undefined
-): RpeTarget | null {
-  if (!d || d.rest) return null;
-  if (d.tag === 'snaga' || !d.tag) return null;
-  return RPE_TARGET[d.tag] ?? null;
-}
-
-/** Future automatic prescriptions are described from structure, never parsed from old prose. */
-export function describePrescription(d: Day, meta: PlanMeta, date?: IsoDate): string | null {
-  if (d.session) return sessDesc(d.session);
-  if (d.rest || d.tag === 'snaga' || d.tag === 'trka') return d.desc;
-  if (d.tag === 'rw') return `${d.km} km — ${runWalkText(d.runWalk)}`;
-  const vdot = meta.trainingVdot ?? meta.vdot0;
-  const pace = paceForZone(vdot, d.tag === 'lr' ? 'LR' : 'E');
-  const label = d.tag === 'lr' ? (d.mlr ? 'srednje-dugo' : 'LR') : 'lako';
-  const h = profileFor(meta.raceDistM)?.heuristic;
-  const fuel = d.tag === 'lr' && h ? fuelText(d.km, pace, h) : '';
-  const finish = d.finish
-    ? ` · poslednjih ${d.finish.km} km @ ${fmtClock(d.finish.paceSec)}/km (${d.finish.zone === 'M' ? 'maratonski' : 'tempo trke'})`
-    : '';
-  const strides = d.strides
-    ? ` + ${d.strides.reps}×${d.strides.runSec} s ubrzanja (pun oporavak ${d.strides.restSec} s)`
-    : '';
-  const effort = meta.formPolicy?.basis === 'effort-first' ? ` · ${EASY_EFFORT_NOTE}` : '';
-  const phase = meta.runWalk;
-  const transitionStart =
-    phase?.transitionStart ??
-    (phase ? addDays(meta.start, (phase.transitionWeek - 1) * 7) : undefined);
-  const rung = phase?.ladder.at(-1);
-  const lastRw = rung ? runWalkForWeek(1, [rung]) : null;
-  const trial =
-    date &&
-    transitionStart &&
-    date >= transitionStart &&
-    date < addDays(transitionStart, 7) &&
-    lastRw &&
-    !d.finish
-      ? ` · Prelaz na neprekidno trčanje je probni: radi ga samo ako su poslednja run/walk trčanja bila razgovorna (napor do 5/10) i bez bola. Ako nisu, ponovi korak „${lastRw.label}" i prilagodi plan u kartici „Prema odrađenim treninzima"`
-      : '';
-  return `${d.km} km ${label} (Z2) @ ~${fmtClock(pace)}/km${fuel}${finish}${strides}${effort}${trial}`;
-}
+/* Ciljni napor po tipu dana (`rpeTarget`) je trenerska smernica i od prenosa pripada generatoru distance plana
+   (`domain/generators/<distanca>/plan/describe.ts`). */

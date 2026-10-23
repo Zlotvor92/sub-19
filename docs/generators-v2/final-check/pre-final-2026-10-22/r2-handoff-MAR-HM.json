@@ -1,0 +1,96 @@
+{
+ "pair": "MAR>HM",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 60
+ },
+ "sources": 120,
+ "handoff": {
+  "calls": 720,
+  "ok": 309,
+  "noPrefix": 0,
+  "errors": {
+   "Trenutni obim # km je iznad # km za # dana trčanja. Obim podržava #–# dana trčanja.": 21,
+   "Plan od # nedelja je prekratak: polumaraton traži najmanje # nedelja; preporuka: #K plan. ": 36,
+   "Plan od # nedelja je prekratak: polumaraton traži najmanje # nedelja; preporuka: #K plan.": 135,
+   "Trenutni obim # km je iznad # km za # dana trčanja. Obim podržava #–# dana trčanja. Nema p": 3,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#.": 54,
+   "Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju unesi lagan t": 39,
+   "Trenutni obim # km je iznad # km za # dana trčanja. Obim podržava # dana trčanja.": 24,
+   "Trenutni obim # km je iznad # km za # dana trčanja. HM v# podržava najviše # km (# dana).": 36,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Trenutni obi": 6,
+   "Trenutni obim # km je iznad # km za # dana trčanja. HM v# podržava najviše # km (# dana). ": 3,
+   "Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–# km); uz ": 15,
+   "Početnik: plan polumaratona traži najmanje # nedelja (izabrano #); počni plan najkasnije #": 33,
+   "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Početnik sa ": 6
+  },
+  "errorEx": [
+   "d3-12w-50km-v35-B-sat/none/asOf 2026-11-14: Trenutni obim 50 km je iznad 45 km za 3 dana trčanja. Obim podržava 4–6 dana trčanja.",
+   "d3-12w-50km-v35-B-sat/under50/asOf 2026-11-14: Trenutni obim 50 km je iznad 45 km za 3 dana trčanja. Obim podržava 4–6 dana trčanja.",
+   "d3-12w-50km-v35-B-sat/pain8/asOf 2026-11-14: Trenutni obim 50 km je iznad 45 km za 3 dana trčanja. Obim podržava 4–6 dana trčanja.",
+   "d3-12w-50km-v35-B-sat/none/asOf 2026-12-12: Plan od 6 nedelja je prekratak: polumaraton traži najmanje 10 nedelja; preporuka: 10K plan. Trenutni obim 50 km je iznad 45 km za 3 dana trčanja. Obim podržava 4–6 dana trčanja."
+  ]
+ },
+ "adapt": {
+  "new": {
+   "flows": 21012,
+   "rejectedFlows": 83,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:EMPTY_WEEK": 31,
+    "WEEK_INFEASIBLE:Nedelja #": 52
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:EMPTY_WEEK": [
+     "new d3-14w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+     "new d3-19w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+     "new d3-19w-40km-v50-A-sat/pain8@2027-01-02→HM/t1wed 2027-01-06/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8)."
+    ],
+    "WEEK_INFEASIBLE:Nedelja #": [
+     "new d3-14w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.",
+     "new d3-14w-40km-v50-A-sat/pain8@2026-11-14→HM/t1end 2026-11-21/fatigue: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.",
+     "new d3-19w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1wed/pain8": 31,
+    "t1wed/fatigue": 26,
+    "t1end/fatigue": 26
+   }
+  },
+  "cum": {
+   "flows": 21012,
+   "rejectedFlows": 83,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:EMPTY_WEEK": 31,
+    "WEEK_INFEASIBLE:Nedelja #": 52
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:EMPTY_WEEK": [
+     "cum d3-14w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+     "cum d3-19w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8).",
+     "cum d3-19w-40km-v50-A-sat/pain8@2027-01-02→HM/t1wed 2027-01-06/pain8: EMPTY_WEEK: Nedelja bez treninga (Uslov 8)."
+    ],
+    "WEEK_INFEASIBLE:Nedelja #": [
+     "cum d3-14w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.",
+     "cum d3-14w-40km-v50-A-sat/pain8@2026-11-14→HM/t1end 2026-11-21/fatigue: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.",
+     "cum d3-19w-40km-v50-A-sat/pain8@2026-11-14→HM/t1wed 2026-11-18/fatigue: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "t1wed/pain8": 31,
+    "t1wed/fatigue": 26,
+    "t1end/fatigue": 26
+   }
+  }
+ },
+ "seconds": 880.14
+}

@@ -1,0 +1,13 @@
+{
+ "n": {
+  "total": 25122
+ },
+ "maxTgtDrop": 0,
+ "ex": {
+  "total": [
+   "d3-10w-25km-v30-A-sat",
+   "d3-10w-25km-v30-A-sun",
+   "d3-10w-25km-v30-B-sat"
+  ]
+ }
+}

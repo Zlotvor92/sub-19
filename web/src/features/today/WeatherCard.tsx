@@ -4,20 +4,16 @@ import {
   useSettingsStore,
   useTrainingStore
 } from '../../stores';
-import { currentVdot } from '../../domain/training/adaptation';
-import {
-  weatherCard,
-  trainingHour,
-  type ForecastHours,
-  type WeatherCardModel
-} from '../../domain/weather';
+import { trainingHour, type ForecastHours } from '../../domain/weather';
+import { generatorForPlan, type WeatherCardModel } from '../../domain/generators/select';
 import type { ResolvedDay } from '../../domain/plan';
 import { localHour } from '../../lib/clock';
 import { predRowsForDay } from '../../stores/dayActions';
 import type { StoredPredRow } from '../../domain/training/adaptation';
 import { Section } from '../../components/ui/primitives';
 
-/* VREME ZA DAN KOJI PREDSTOJI. Odluke (vrućina, hladniji sat, tempo uz vrućinu) su u `domain/weather`; domen vraća `null` kad prikaz nema smisla (odmor,
+/* VREME ZA DAN KOJI PREDSTOJI. Odluke (vrućina, hladniji sat, tempo uz vrućinu) su u generatoru distance plana
+   (`domain/generators/<distanca>/weather`), čitanje prognoze u `domain/weather`; domen vraća `null` kad prikaz nema smisla (odmor,
    prošlost, bez lokacije ili prognoze). Na Danas stoji JEDAN red (ono što menja odluku pre izlaska), a puna slika u Detaljima treninga. */
 export function useWeatherModel(day: ResolvedDay, today: string): WeatherCardModel | null {
   const geo = useSettingsStore((s) => s.ui.geo);
@@ -25,12 +21,16 @@ export function useWeatherModel(day: ResolvedDay, today: string): WeatherCardMod
   const hourSetting = useSettingsStore((s) => s.ui.satTreninga);
   const plan = useResolvedPlan();
   const vdotLog = useTrainingStore((s) => s.vdotLog);
-  const pred = useActiveGenPlan()?.pred;
+  const genPlan = useActiveGenPlan();
+  const pred = genPlan?.pred;
+  // Tempo uz vrućinu i savet pripadaju generatoru distance plana; bez generatora kartice nema.
+  const generator = generatorForPlan(genPlan);
 
   const sati = forecast?.['sati'];
   const cache = sati && typeof sati === 'object' ? { sati: sati as ForecastHours } : null;
   const rows = (pred ?? []).filter((r): r is StoredPredRow => typeof r.id === 'string');
-  return weatherCard({
+  if (!generator) return null;
+  return generator.weatherCard({
     day,
     today,
     nowHour: localHour(),
@@ -38,7 +38,7 @@ export function useWeatherModel(day: ResolvedDay, today: string): WeatherCardMod
     cache,
     hasLocation: !!geo,
     predPace: plan ? (predRowsForDay(plan, day, rows)[0]?.pt ?? null) : null,
-    vdot: currentVdot(vdotLog)
+    vdot: generator.currentVdot(vdotLog)
   });
 }
 

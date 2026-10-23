@@ -1,0 +1,126 @@
+[
+  {
+    "name": "S1 test u prvoj umesto poslednje nedelje baze (M16)",
+    "file": "src/domain/generators/marathon/v2/periodize.ts",
+    "find": "return phases.lastIndexOf('base') + 1;",
+    "replace": "return phases.indexOf('base') + 1;",
+    "tests": [
+      "src/domain/generators/marathon/v2/feel.node.test.ts",
+      "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S2 test se računa u dozu T (M16: u obimu, ne u dozi)",
+    "file": "src/domain/generators/marathon/v2/workouts.ts",
+    "find": "seg('test', 'test', km, sec, Math.round(sec / km), 'exact', 'estimated')",
+    "replace": "seg('continuous', 'T', km, sec, Math.round(sec / km), 'exact', 'estimated')",
+    "tests": [
+      "src/domain/generators/marathon/v2/feel.node.test.ts",
+      "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S3 početnik sa I/R (lestvica 4–6 dana umesto jednog kvaliteta, M17)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "const l = ladderFor(phase, 'q1', rule.quality);",
+    "replace": "const l = ladderFor(phase, 'q1', rule.beginner ? 2 : rule.quality);",
+    "tests": [
+      "src/domain/generators/marathon/v2/beginner.node.test.ts",
+      "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S4 početnik bez uvoda (kvalitet od ned 1, M17)",
+    "file": "src/domain/generators/marathon/v2/policy.ts",
+    "find": "    introWeeks: 2,",
+    "replace": "    introWeeks: 0,",
+    "tests": [
+      "src/domain/generators/marathon/v2/beginner.node.test.ts",
+      "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S5 trčanje/hodanje se ne odbija (M17)",
+    "file": "src/domain/generators/marathon/v2/input.ts",
+    "find": "if (raw['runWalk'] === true)",
+    "replace": "if (raw['runWalk'] === 'da')",
+    "tests": [
+      "src/domain/generators/marathon/v2/beginner.node.test.ts",
+      "src/domain/generators/marathon/v2/input.node.test.ts"
+    ]
+  },
+  {
+    "name": "S7 RPE MP 6–7 umesto 5–6 (M16)",
+    "file": "src/domain/generators/marathon/v2/policy.ts",
+    "find": "MP: { min: 5, max: 6, cue: 'ritam maratona' }",
+    "replace": "MP: { min: 6, max: 7, cue: 'ritam maratona' }",
+    "tests": [
+      "src/domain/generators/marathon/v2/feel.node.test.ts",
+      "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S8 procena VDOT-a iz sporog kraja E (M16)",
+    "file": "src/domain/generators/marathon/v2/paces.ts",
+    "find": "return vo2AtSpeed(60000 / easySecPerKm) / P.paces.eFractionFast;",
+    "replace": "return vo2AtSpeed(60000 / easySecPerKm) / P.paces.eFractionSlow;",
+    "tests": [
+      "src/domain/generators/marathon/v2/feel.node.test.ts",
+      "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S9 početnik: početni nivo 60 % plafona umesto prvog nivoa (M17)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "  if (beginner) return levels[0]!;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/marathon/v2/beginner.node.test.ts",
+      "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S6 udeo dugog 5 dana 38 % umesto 35 % (M15, merenje MAR-03)",
+    "file": "src/domain/generators/marathon/v2/policy.ts",
+    "find": "longMaxShare: 0.35,",
+    "replace": "longMaxShare: 0.38,",
+    "tests": [
+      "src/domain/generators/marathon/v2/policy.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S11 drugi član plafona MP isključen (trajanje ≤ dugi, pouka 14)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "      l1 === 'MP' && mpLong\n",
+    "replace": "      l1 === 'MP' && mpLong && false\n",
+    "tests": ["src/domain/generators/marathon/v2/grid.node.test.ts"]
+  },
+  {
+    "name": "S12 S2: dugi rasterećenja se ne skraćuje (test/početnik)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "      test || rule.beginner\n",
+    "replace": "      false\n",
+    "tests": [
+      "src/domain/generators/marathon/v2/feelGrid.node.test.ts",
+      "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S13 S3: MP vraćen u N−1 početnika",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "if (beginner && w.tShare === null) {",
+    "replace": "if (beginner && w.tShare === null && false) {",
+    "tests": ["src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"]
+  },
+  {
+    "name": "S14 izuzetak najnižeg nivoa MP od drugog člana isključen (M13a)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "  if (doseOf(s) <= doseOf(ladderLevels('MP')[0]!)) return true;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/marathon/v2/quality.node.test.ts",
+      "src/domain/generators/marathon/v2/recent.node.test.ts"
+    ]
+  }
+]

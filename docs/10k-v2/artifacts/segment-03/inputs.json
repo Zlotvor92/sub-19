@@ -1,0 +1,201 @@
+[
+  {
+    "id": "feel-d4-30km-e6:00-12w",
+    "group": "po osećaju",
+    "note": "4 dana uto/čet/sub/ned, 30 km, lagan 6:00/km, bez rezultata, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 30,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 360
+    }
+  },
+  {
+    "id": "feel-d3-20km-e7:30-10w",
+    "group": "po osećaju",
+    "note": "3 dana uto/čet/ned, 20 km, lagan 7:30/km, bez rezultata, 10 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 20,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 450
+    }
+  },
+  {
+    "id": "feel-d6-60km-e5:00-16w",
+    "group": "po osećaju",
+    "note": "6 dana pon–čet/sub/ned, 60 km, lagan 5:00/km, bez rezultata, 16 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": ["mon", "tue", "wed", "thu", "sat", "sun"],
+      "currentWeeklyKm": 60,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 300
+    }
+  },
+  {
+    "id": "feel-old-result-d5-40km-e5:30-14w",
+    "group": "po osećaju",
+    "note": "5 dana pon/uto/čet/sub/ned, 40 km, lagan 5:30/km, rezultat 10 km VDOT 45 star 120 dana, 14 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["mon", "tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 40,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 2716,
+        "date": "2026-07-05"
+      },
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 330
+    }
+  },
+  {
+    "id": "feel-vdot-lt30-d3-20km-e8:15-12w",
+    "group": "po osećaju",
+    "note": "3 dana uto/čet/ned, 20 km, lagan 8:15/km, rezultat 10 km sa VDOT < 30, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 20,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3894,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 495
+    }
+  },
+  {
+    "id": "beg-d3-15km-e7:30-12w",
+    "group": "početnik",
+    "note": "početnik, 3 dana uto/čet/ned, 15 km, lagan 7:30/km, bez rezultata, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 15,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 450,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "beg-d4-25km-result-v35-14w",
+    "group": "početnik",
+    "note": "početnik, 4 dana uto/čet/sub/ned, 25 km, rezultat 10 km VDOT 35, 14 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 25,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3365,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "beg-d4-18km-e8:00-10w",
+    "group": "početnik",
+    "note": "početnik, 4 dana uto/čet/sub/ned, 18 km, lagan 8:00/km, bez rezultata, 10 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 18,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 480,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "rej-feel-no-easy-pace",
+    "group": "odbijeni",
+    "note": "bez rezultata i bez laganog tempa",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 30,
+      "recentResult": null,
+      "goalTimeSec": null
+    }
+  },
+  {
+    "id": "rej-beginner-5-days",
+    "group": "odbijeni",
+    "note": "početnik, 5 dana",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["mon", "tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 30,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 390,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "rej-beginner-8-weeks",
+    "group": "odbijeni",
+    "note": "početnik, 8 nedelja",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2026-12-27",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 20,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 390,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "rej-beginner-d3-12km",
+    "group": "odbijeni",
+    "note": "početnik, 3 dana, 12 km",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 12,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 450,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "rej-run-walk",
+    "group": "odbijeni",
+    "note": "trčanje/hodanje",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 20,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 480,
+      "runWalk": true
+    }
+  }
+]

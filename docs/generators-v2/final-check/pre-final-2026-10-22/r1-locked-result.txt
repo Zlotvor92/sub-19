@@ -1,0 +1,4 @@
+5K { tokova: 108, odbijeno: 0 } []
+10K { tokova: 1960, odbijeno: 0 } []
+HM { tokova: 1916, odbijeno: 0 } []
+MAR { tokova: 3078, odbijeno: 0 } []

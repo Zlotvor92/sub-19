@@ -1,0 +1,430 @@
+{
+  "grid": {
+    "n": 21840,
+    "rejected": "0 → 0",
+    "rejectedPre": {},
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "0 → 0",
+      "deload": "0 → 0",
+      "taper": "9618 → 0"
+    },
+    "lowest": {
+      "build": "0 → 0",
+      "deload": "0 → 0",
+      "taper": "8748 → 15384"
+    },
+    "lowestMaxMin": 25.9,
+    "zonesPre": {
+      "MP": 9618
+    },
+    "overPlansPre": 17226,
+    "lsqPlans": "0 → 0",
+    "doseDropped": "342 → 342",
+    "w1BelowStart": "1638 → 1638",
+    "changed": 9618,
+    "changedWhy": {
+      "pre dan > dugi": 9618
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 0,
+      "maxDropKm": 0,
+      "ex": []
+    },
+    "w1": {
+      "changed": 0,
+      "belowStart": 0,
+      "ex": []
+    }
+  },
+  "recent": {
+    "n": 35910,
+    "rejected": "930 → 930",
+    "rejectedPre": {
+      "RECENT_LONG_TOO_SHORT:undefined": 930
+    },
+    "rejectedPost": {
+      "RECENT_LONG_TOO_SHORT:undefined": 930
+    },
+    "aboveLowest": {
+      "build": "14937 → 0",
+      "deload": "2175 → 0",
+      "taper": "13800 → 0"
+    },
+    "lowest": {
+      "build": "3522 → 10242",
+      "deload": "894 → 2133",
+      "taper": "23637 → 29031"
+    },
+    "lowestMaxMin": 41.9,
+    "zonesPre": {
+      "T": 11475,
+      "R": 5109,
+      "I": 1146,
+      "MP": 13182
+    },
+    "overPlansPre": 30762,
+    "lsqPlans": "2145 → 1830",
+    "doseDropped": "576 → 576",
+    "w1BelowStart": "10599 → 10635",
+    "changed": 14496,
+    "changedWhy": {
+      "pre dan > dugi": 14496
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 708,
+      "maxDropKm": 4.6,
+      "ex": [
+        "recent-d4-12w-50km-v70-A-r8: 55.9 → 55.4",
+        "recent-d4-12w-50km-v70-C-r7: 52.9 → 51.9",
+        "recent-d4-16w-50km-v70-A-r5: 56.2 → 55.9",
+        "recent-d4-16w-50km-v70-A-r8: 66.7 → 65.9",
+        "recent-d4-16w-50km-v70-B-r6: 59.6 → 58.7"
+      ]
+    },
+    "w1": {
+      "changed": 972,
+      "belowStart": 972,
+      "ex": [
+        "recent-d5-12w-55km-v70-B-r9: 52.3 → 51.3",
+        "recent-d5-16w-55km-v70-B-r9: 52.3 → 51.3",
+        "recent-d5-24w-55km-v70-B-r9: 52.3 → 51.3",
+        "recent-d5-12w-60km-v70-B-r9: 52.3 → 51.3",
+        "recent-d5-12w-60km-v70-C-r10: 56.1 → 55.3"
+      ]
+    }
+  },
+  "dense": {
+    "n": 156954,
+    "rejected": "0 → 0",
+    "rejectedPre": {},
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "105 → 0",
+      "deload": "55 → 0",
+      "taper": "35176 → 0"
+    },
+    "lowest": {
+      "build": "22 → 0",
+      "deload": "0 → 0",
+      "taper": "81798 → 102118"
+    },
+    "lowestMaxMin": 30.6,
+    "zonesPre": {
+      "MP": 35170,
+      "T": 161,
+      "R": 5
+    },
+    "overPlansPre": 113179,
+    "lsqPlans": "58 → 0",
+    "doseDropped": "0 → 0",
+    "w1BelowStart": "6081 → 6081",
+    "changed": 34933,
+    "changedWhy": {
+      "pre dan > dugi": 34933
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 1,
+      "maxDropKm": 0.1,
+      "ex": ["dense-d4-35.4km-v80: 50.3 → 50.2"]
+    },
+    "w1": {
+      "changed": 0,
+      "belowStart": 0,
+      "ex": []
+    }
+  },
+  "feel": {
+    "n": 8190,
+    "rejected": "0 → 0",
+    "rejectedPre": {},
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "0 → 0",
+      "deload": "0 → 0",
+      "taper": "3156 → 0"
+    },
+    "lowest": {
+      "build": "0 → 0",
+      "deload": "0 → 0",
+      "taper": "4548 → 6966"
+    },
+    "lowestMaxMin": 22.9,
+    "zonesPre": {
+      "MP": 3156
+    },
+    "overPlansPre": 7074,
+    "lsqPlans": "0 → 0",
+    "doseDropped": "183 → 183",
+    "w1BelowStart": "1170 → 1170",
+    "changed": 3156,
+    "changedWhy": {
+      "pre dan > dugi": 3156
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 0,
+      "maxDropKm": 0,
+      "ex": []
+    },
+    "w1": {
+      "changed": 0,
+      "belowStart": 0,
+      "ex": []
+    }
+  },
+  "beg": {
+    "n": 1890,
+    "rejected": "0 → 0",
+    "rejectedPre": {},
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "0 → 0",
+      "deload": "0 → 0",
+      "taper": "0 → 0"
+    },
+    "lowest": {
+      "build": "0 → 0",
+      "deload": "27 → 27",
+      "taper": "54 → 54"
+    },
+    "lowestMaxMin": 6.8,
+    "zonesPre": {},
+    "overPlansPre": 54,
+    "lsqPlans": "0 → 27",
+    "doseDropped": "0 → 0",
+    "w1BelowStart": "0 → 0",
+    "changed": 27,
+    "changedWhy": {
+      "pre dan > dugi": 27
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 0,
+      "maxDropKm": 0,
+      "ex": []
+    },
+    "w1": {
+      "changed": 0,
+      "belowStart": 0,
+      "ex": []
+    }
+  },
+  "a04": {
+    "n": 6236,
+    "rejected": "0 → 0",
+    "rejectedPre": {},
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "594 → 526",
+      "deload": "26 → 6",
+      "taper": "683 → 120"
+    },
+    "lowest": {
+      "build": "173 → 182",
+      "deload": "69 → 76",
+      "taper": "2339 → 2898"
+    },
+    "lowestMaxMin": 42.3,
+    "zonesPre": {
+      "MP": 837,
+      "T": 260,
+      "R": 156,
+      "I": 50
+    },
+    "overPlansPre": 2981,
+    "lsqPlans": "78 → 113",
+    "doseDropped": "479 → 488",
+    "w1BelowStart": "150 → 150",
+    "changed": 843,
+    "changedWhy": {
+      "pre dan > dugi": 840,
+      "generator: dan > dugi": 3
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 0,
+      "maxDropKm": 0,
+      "ex": []
+    },
+    "w1": {
+      "changed": 0,
+      "belowStart": 0,
+      "ex": []
+    }
+  },
+  "early": {
+    "n": 45101,
+    "rejected": "0 → 0",
+    "rejectedPre": {},
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "7237 → 3163",
+      "deload": "787 → 0",
+      "taper": "12972 → 178"
+    },
+    "lowest": {
+      "build": "2223 → 2765",
+      "deload": "1279 → 1639",
+      "taper": "23582 → 31228"
+    },
+    "lowestMaxMin": 43.7,
+    "zonesPre": {
+      "MP": 13930,
+      "T": 4574,
+      "I": 1438,
+      "R": 1054
+    },
+    "overPlansPre": 32370,
+    "lsqPlans": "2550 → 2374",
+    "doseDropped": "13181 → 14073",
+    "w1BelowStart": "3201 → 3201",
+    "changed": 16338,
+    "changedWhy": {
+      "pre dan > dugi": 16288,
+      "izuzetak (odluka organizatora)": 5,
+      "generator: dan > dugi": 45
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 125,
+      "maxDropKm": 5.2,
+      "ex": [
+        "d4-21w-35km-v70-B-sat/w4wed/pause20: 49.9 → 49.7",
+        "d5-17w-70km-v40-C-sat/w9wed/pain5: 98.4 → 97.6",
+        "d5-19w-85km-v30-C-sat/w14wed/pain5: 81.2 → 80",
+        "d6-17w-95km-v35-C-sat/w9wed/pain5: 110.7 → 109.5",
+        "feel-d5-12w-40km-e270-A/w4wed/pause10: 45.8 → 44.9"
+      ]
+    },
+    "w1": {
+      "changed": 0,
+      "belowStart": 0,
+      "ex": []
+    }
+  },
+  "pre": {
+    "n": 4050,
+    "rejected": "810 → 0",
+    "rejectedPre": {
+      "WEEK_INFEASIBLE:Nedelja #": 810
+    },
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "330 → 0",
+      "deload": "62 → 0",
+      "taper": "1000 → 0"
+    },
+    "lowest": {
+      "build": "470 → 464",
+      "deload": "156 → 168",
+      "taper": "1760 → 2967"
+    },
+    "lowestMaxMin": 39.4,
+    "zonesPre": {
+      "MP": 967,
+      "R": 57,
+      "T": 296,
+      "I": 72
+    },
+    "overPlansPre": 2388,
+    "lsqPlans": "175 → 255",
+    "doseDropped": "15 → 27",
+    "w1BelowStart": "864 → 1674",
+    "changed": 2018,
+    "changedWhy": {
+      "pre odbijen": 810,
+      "pre dan > dugi": 1208
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 7,
+      "maxDropKm": 0.7,
+      "ex": [
+        "feel-d4-12w-35km-e270-A/s-1/pause10: 43.1 → 42.8",
+        "feel-d4-12w-35km-e270-A/s-3/pause10: 43.1 → 42.8",
+        "feel-d4-12w-35km-e270-A/s-6/pause10: 43.1 → 42.8",
+        "feel-d5-12w-40km-e270-A/s-1/pain5: 45.6 → 44.9",
+        "feel-d5-12w-40km-e270-A/s-3/pain5: 45.6 → 44.9"
+      ]
+    },
+    "w1": {
+      "changed": 0,
+      "belowStart": 0,
+      "ex": []
+    }
+  },
+  "wide": {
+    "n": 267927,
+    "rejected": "1358 → 0",
+    "rejectedPre": {
+      "WEEK_INFEASIBLE:Nedelja #": 690,
+      "RECENT_LONG_TOO_SHORT:Skorašnji najduži trk (# km) je prekratak za # km ": 666,
+      "PLAN_VIOLATES_POLICY:BASE_PLATEAU": 2
+    },
+    "rejectedPost": {},
+    "aboveLowest": {
+      "build": "92070 → 10671",
+      "deload": "9637 → 0",
+      "taper": "83778 → 547"
+    },
+    "lowest": {
+      "build": "35796 → 69869",
+      "deload": "9206 → 14665",
+      "taper": "143751 → 191968"
+    },
+    "lowestMaxMin": 45,
+    "zonesPre": {
+      "R": 26792,
+      "T": 60732,
+      "MP": 85027,
+      "I": 12934
+    },
+    "overPlansPre": 202828,
+    "lsqPlans": "17402 → 17274",
+    "doseDropped": "51228 → 54021",
+    "w1BelowStart": "58021 → 59377",
+    "changed": 100973,
+    "changedWhy": {
+      "pre odbijen": 1358,
+      "pre dan > dugi": 99362,
+      "generator: dan > dugi": 247,
+      "izuzetak (odluka organizatora)": 6
+    },
+    "otherChanged": 0,
+    "otherEx": [],
+    "K4": {
+      "lower": 2512,
+      "maxDropKm": 5.7,
+      "ex": [
+        "feel-d5-17w-85km-e405-B/2026-12-30/pain5: 96.6 → 94.1",
+        "feel-d5-17w-85km-e405-B/2026-12-30/pain8: 96.6 → 94.1",
+        "feel-d5-17w-85km-e405-B/2027-01-06/pain5: 96.6 → 94.1",
+        "feel-d5-17w-85km-e405-B/2027-01-06/pain8: 96.6 → 94.1",
+        "feel-d5-17w-85km-e405-B/2027-01-13/pain5: 96.6 → 96.4"
+      ]
+    },
+    "w1": {
+      "changed": 2494,
+      "belowStart": 2494,
+      "ex": [
+        "recent-d5-24w-75km-v70-A-r9/2026-11-01/none: 55.5 → 53.7",
+        "recent-d5-24w-75km-v70-A-r9/2026-11-01/done100: 55.5 → 53.7",
+        "recent-d5-24w-75km-v70-A-r9/2026-11-01/under50: 55.5 → 53.7",
+        "recent-d5-24w-75km-v70-A-r9/2026-11-01/over120: 55.5 → 53.7",
+        "recent-d5-24w-75km-v70-A-r9/2026-11-01/pause20: 38.8 → 37.6"
+      ]
+    }
+  }
+}

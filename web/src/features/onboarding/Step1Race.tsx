@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { brojNedelja } from '../../domain/format';
 import type { WizardState, weeksHint } from '../../domain/onboarding';
 import { Chips, RACE_DISTS } from './controls';
@@ -9,13 +10,16 @@ export function Step1Race({
   set,
   today,
   hint,
-  err
+  err,
+  extra
 }: {
   w: WizardState;
   set: (p: Partial<WizardState>) => void;
   today: string;
   hint: ReturnType<typeof weeksHint>;
   err: string;
+  /** Dodatna napomena pod datumom (5K v2: trajanje plana u celim nedeljama). */
+  extra?: ReactNode;
 }) {
   return (
     <div className="ob-step active">
@@ -72,6 +76,7 @@ export function Step1Race({
             </>
           ) : null}
         </div>
+        {extra}
         <div className="ob-err" id="ob-err-1" role="alert">
           {err}
         </div>

@@ -1,0 +1,128 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 253,
+ "excludedPermanent": 9,
+ "plans": 253,
+ "first": {
+  "flows": 4301,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 137632,
+   "rejectedFlows": 86,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": 116
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": [
+     "new beg-d4-16w-25km-v30-C/w3end/under50→+3/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "new beg-d4-16w-25km-v30-C/w3end/under50→+7/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "new beg-d4-16w-25km-v30-C/w3end/pause10→+3/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15)."
+    ]
+   },
+   "common": {},
+   "commonEx": {},
+   "inv": {
+    "ograničenje: doza raste ned #": 1
+   },
+   "invEx": {
+    "ograničenje: doza raste ned #": [
+     "new d3-15w-45km-v30-C-sat/w2wed/over120→+7/pause20: ograničenje: doza raste ned 5"
+    ]
+   },
+   "by": {
+    "under50→faster": 2,
+    "pause10→faster": 2,
+    "pause20→faster": 2,
+    "pause35→faster": 18,
+    "pain5→faster": 6,
+    "pain8→faster": 6,
+    "faster→under50": 2,
+    "faster→pause10": 4,
+    "faster→pause20": 4,
+    "faster→pause35": 16,
+    "faster→pain5": 5,
+    "faster→pain8": 4,
+    "faster→chain": 4,
+    "faster→painPause": 5,
+    "chain→faster": 2,
+    "painPause→faster": 4
+   }
+  },
+  "cum": {
+   "flows": 137632,
+   "rejectedFlows": 90,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:TEST": 4,
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": 116
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:TEST": [
+     "cum feel-d5-15w-65km-e315-C/w3end/locked→+3/pause20: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+     "cum feel-d5-15w-65km-e315-C/w3end/locked→+3/pain5: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+     "cum feel-d5-15w-65km-e315-C/w3end/locked→+3/pain8: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17)."
+    ],
+    "PLAN_VIOLATES_POLICY:WEEK_MIN_VOLUME": [
+     "cum beg-d4-16w-25km-v30-C/w3end/under50→+3/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "cum beg-d4-16w-25km-v30-C/w3end/under50→+7/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).",
+     "cum beg-d4-16w-25km-v30-C/w3end/pause10→+3/faster: WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15)."
+    ]
+   },
+   "common": {
+    "DUGI<LAGAN": 157
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum d3-15w-45km-v30-C-sat/w2wed/locked→+3/under50",
+     "cum d3-15w-45km-v30-C-sat/w2wed/locked→+3/pause10",
+     "cum d3-15w-45km-v30-C-sat/w2wed/locked→+3/pause20"
+    ]
+   },
+   "inv": {
+    "ograničenje: doza raste ned #": 1
+   },
+   "invEx": {
+    "ograničenje: doza raste ned #": [
+     "cum d3-15w-45km-v30-C-sat/w2wed/over120→+7/pause20: ograničenje: doza raste ned 5"
+    ]
+   },
+   "by": {
+    "locked→pause20": 1,
+    "locked→pain5": 1,
+    "locked→pain8": 1,
+    "locked→painPause": 1,
+    "under50→faster": 2,
+    "pause10→faster": 2,
+    "pause20→faster": 2,
+    "pause35→faster": 18,
+    "pain5→faster": 6,
+    "pain8→faster": 6,
+    "faster→under50": 2,
+    "faster→pause10": 4,
+    "faster→pause20": 4,
+    "faster→pause35": 16,
+    "faster→pain5": 5,
+    "faster→pain8": 4,
+    "faster→chain": 4,
+    "faster→painPause": 5,
+    "chain→faster": 2,
+    "painPause→faster": 4
+   }
+  }
+ },
+ "seconds": 4654.465
+}
+

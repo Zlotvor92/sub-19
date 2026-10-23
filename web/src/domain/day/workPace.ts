@@ -1,6 +1,6 @@
 /* UPIS OSTVARENOG TEMPA RADNOG DELA (kvalitetna sesija) → predikcija + lanac forme.
 
-   Tri ulaza, ista pravila (`adaptation.classifyMeasurement`):
+   Tri ulaza, ista pravila (`classifyMeasurement` generatora AKTIVNOG plana, `ctx.form`):
    - RUČNI unos: tempo se UVEK upisuje u `pred` i zaključava (`predLock`) — to je korisnikova izričita tvrdnja — a u lanac forme ulazi
      samo ako je verodostojan (zasićenje tablice, moguć VDOT; sesija koja ne meri formu ostaje van lanca);
    - AUTOMATSKI (Strava/icu): odbijen tempo se NE upisuje nigde (polovično stanje — tempo bez VDOT-a — je gore od praznog), dan se
@@ -8,18 +8,17 @@
      kao ručni, samo ne ulazi u lanac;
    - BRISANJE: uklonjena sesija ne sme da ostane u lancu.
 
+   Klasifikacija (tolerancija automatskog merenja), uglađivanje lanca (α) i trenutna forma su politika generatora plana
+   (A1): ovde se ne odlučuje ništa, samo se upisuju sirova merenja (`measured`, datum, ID izvora) i poziva `ctx.form`.
+   Plan bez generatora (nepodržana distanca ili nepoznata verzija politike) nema politiku forme: merenje se ne prihvata
+   (`no-generator`), a sačuvani lanac ostaje kakav jeste.
+
    Čiste funkcije: primaju delove stanja, vraćaju nove. */
 
 import type { ResolvedDay } from '../plan/types';
 import type { LogEntry, VdotRecord } from '../state/types';
-import {
-  classifyMeasurement,
-  currentVdot,
-  recomputeVdotChain,
-  sessionClassFor,
-  type MeasureOutcome,
-  type StoredPredRow
-} from '../training/adaptation';
+import type { StoredPredRow } from '../training/adaptation';
+import type { FormPolicy, MeasureOutcome as GeneratorOutcome } from '../generators/select';
 import { isT3kId } from '../training/vdot/limits';
 import { sessKind } from '../plan/describe';
 
@@ -30,7 +29,11 @@ export interface WorkPaceState {
   log: Readonly<Record<string, LogEntry>>;
 }
 
+export type MeasureOutcome = GeneratorOutcome | { status: 'rejected'; reason: 'no-generator' };
+
 export interface WorkPaceContext {
+  /** Politika prijema merenja generatora aktivnog plana; `null` kad plan nema generator. */
+  form: FormPolicy | null;
   rows: readonly StoredPredRow[];
   /** Polazna forma plana (`meta.vdot0`). */
   baselineVdot: number | null;
@@ -38,12 +41,15 @@ export interface WorkPaceContext {
   hasAlt: boolean;
 }
 
-/** Lanac forme iznova iz izmerenih vrednosti (v. `recomputeVdotChain`). */
-export const recomputeChain = (list: readonly VdotRecord[], ctx: WorkPaceContext): VdotRecord[] =>
-  recomputeVdotChain(list, ctx.baselineVdot, (id) => {
+/** Lanac forme iznova iz izmerenih vrednosti (`recomputeVdotChain` generatora plana); bez generatora lanac ostaje. */
+export const recomputeChain = (list: readonly VdotRecord[], ctx: WorkPaceContext): VdotRecord[] => {
+  const form = ctx.form;
+  if (!form) return [...list];
+  return form.recomputeVdotChain(list, ctx.baselineVdot, (id) => {
     const row = ctx.rows.find((r) => r.id === id);
-    return sessionClassFor(isT3kId(id), row?.l, row?.zone);
+    return form.sessionClassFor(isT3kId(id), row?.l, row?.zone);
   });
+};
 
 function upsert(
   list: readonly VdotRecord[],
@@ -68,16 +74,18 @@ function measure(
   state: WorkPaceState,
   ctx: WorkPaceContext
 ): MeasureOutcome {
+  const form = ctx.form;
+  if (!form) return { status: 'rejected', reason: 'no-generator' };
   const row = ctx.rows.find((r) => r.id === predId);
   const chain = recomputeChain(state.vdotLog, ctx);
-  return classifyMeasurement({
+  return form.classifyMeasurement({
     row,
     zone: day.session?.zone,
     paceSec: pace,
     kind: sessKind(day, ctx.hasAlt),
     auto,
     retagged: !!day.origin.tag && day.origin.tag !== day.tag,
-    currentVdot: currentVdot(chain),
+    currentVdot: form.currentVdot(chain),
     baselineVdot: ctx.baselineVdot
   });
 }

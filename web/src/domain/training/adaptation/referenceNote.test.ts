@@ -1,9 +1,12 @@
+import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan } from '../../plan/adapt';
 import type { GenPlanState } from '../../state/types';
-import { generatePlan } from '../generator/generatePlan';
 import type { PlanGenerationInput } from '../types';
-import { refreshSessionPace, restoreSessionPace } from './proposal';
+/* Plan u ovom testu je 10K. */
+import {
+  refreshSessionPace,
+  restoreSessionPace
+} from '@/domain/generators/tenK/training/adaptation/proposal';
 
 const U06: PlanGenerationInput = {
   startDate: '2026-10-12',

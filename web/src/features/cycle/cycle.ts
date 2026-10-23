@@ -1,10 +1,12 @@
 /* MODEL CIKLUSA ZA PRIKAZ: pet faza (BAZA · RAZVOJ · VRHUNAC · TAPER · TRKA), svaka nedelja sa stanjem (urađena / tekuća / buduća) i kilometrima.
-   Samo čitanje postojećih funkcija domena (`weekPhase`, `weekOf`, `weekPlanKm`, `weekRealKm`) — nijedno pravilo plana se ovde ne menja ni ne dodaje.
+   Samo čitanje: faza nedelje dolazi od generatora plana (`phaseOf` = `phaseReaderFor`, A3), ostalo iz domena (`weekOf`, `weekPlanKm`,
+   `weekRealKm`) — nijedno pravilo plana se ovde ne menja ni ne dodaje.
    Rasterećenje (DELOAD) pripada fazi u kojoj se nalazi po redosledu, kao u `planPhases`; za razliku od njega, TAPER i TRKA ostaju zasebne faze. */
 
 import { addDays, type IsoDate } from '../../domain/date';
 import { weekPlanKm, weekRealKm } from '../../domain/day';
-import { weekOf, weekPhase, type ResolvedPlan } from '../../domain/plan';
+import { weekOf, type ResolvedPlan, type ResolvedWeek } from '../../domain/plan';
+import type { WeekPhase } from '../../domain/generators/select';
 import type { LogEntry } from '../../domain/state';
 import { PHASE_COLOR, PHASE_LINE, PHASE_ORDER, type PhaseKey } from '../../components/ui/phase';
 
@@ -39,11 +41,12 @@ export interface CycleModel {
 
 /** Faza nedelje za prikaz: rasterećenje nasleđuje fazu prethodne nedelje (nedelja 1 bez prethodne je BAZA). */
 function phaseOfWeek(
-  w: Parameters<typeof weekPhase>[0],
+  w: ResolvedWeek,
   total: number,
-  prev: PhaseKey | null
+  prev: PhaseKey | null,
+  phaseOf: (w: ResolvedWeek, total: number) => WeekPhase
 ): PhaseKey {
-  const p = weekPhase(w, total);
+  const p = phaseOf(w, total);
   if (p === 'DELOAD' || p === '') return prev ?? 'BAZA';
   return p;
 }
@@ -51,7 +54,8 @@ function phaseOfWeek(
 export function cycleModel(
   plan: ResolvedPlan,
   log: Readonly<Record<string, LogEntry>>,
-  today: IsoDate
+  today: IsoDate,
+  phaseOf: (w: ResolvedWeek, total: number) => WeekPhase
 ): CycleModel {
   const total = plan.weeks.length;
   const now = weekOf(plan, today);
@@ -60,7 +64,7 @@ export function cycleModel(
   const afterPlan = !!last && today > addDays(last.start, 6);
   let prev: PhaseKey | null = null;
   const weeks: CycleWeek[] = plan.weeks.map((wk) => {
-    const phase = phaseOfWeek(wk, total, prev);
+    const phase = phaseOfWeek(wk, total, prev, phaseOf);
     prev = phase;
     const state: CycleState = afterPlan
       ? 'done'

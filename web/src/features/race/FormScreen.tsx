@@ -7,7 +7,18 @@ import { fmtClock, fmtDayLong, fmtNum } from '../../domain/format';
 import { T3K_DIST_M } from '../../domain/training/constants/product';
 import { t3kVdot } from '../../domain/training/test3k';
 import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
+import {
+  isFiveKV2Plan,
+  isHmV2Plan,
+  isMarathonV2Plan,
+  isTenKV2Plan
+} from '../../domain/generators/select';
+import { useActiveGenPlan } from '../../stores';
 import { useUIStore } from '../../stores/uiStore';
+import { FormHmV2 } from './FormHmV2';
+import { FormMarathonV2 } from './FormMarathonV2';
+import { FormTenKV2 } from './FormTenKV2';
+import { FormV2 } from './FormV2';
 import { Journey } from './Journey';
 import { TrendAi } from './TrendAi';
 import { PaceChart, PredictionChart, VdotTrendChart } from './charts';
@@ -28,6 +39,15 @@ const secWord = (s: number): string =>
    PROJEKCIJA (šta plan obećava). Ranije je ovo bilo pet kartica sa istim brojem u svakoj; sada je jedan ekran u kome se svaka brojka pojavljuje jednom.
    Čitanje: odgovor → procena po distancama → trend → predikcija kroz plan → test na 3 km. Predlog za prilagođavanje tempa je u Plan → Prilagodi plan. */
 export function FormScreen() {
+  const plan = useActiveGenPlan();
+  /* 5K v2 (08b), 10K v2 (06), HM v2 (HM-06), maraton v2 (MAR-06): forma samo iz rezultata, bez lanca forme v1. */
+  if (plan && isMarathonV2Plan(plan)) return <FormMarathonV2 plan={plan} />;
+  if (plan && isHmV2Plan(plan)) return <FormHmV2 plan={plan} />;
+  if (plan && isTenKV2Plan(plan)) return <FormTenKV2 plan={plan} />;
+  return plan && isFiveKV2Plan(plan) ? <FormV2 plan={plan} /> : <FormV1 />;
+}
+
+function FormV1() {
   const m = useFormModel();
   const openSheet = useUIStore((s) => s.openSheet);
   const [sel, setSel] = useState<{ vdot: number | null; pred: number | null; pace: number | null }>(

@@ -1,0 +1,64 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08k/sabotage-08k.json",
+ "head": "3949a61",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 3.5,
+ "hashBefore": "14feb55bf5f0e718c413649b8c2102bf225aaa048fc854010bf1451b7d96e3b3",
+ "hashAfter": "14feb55bf5f0e718c413649b8c2102bf225aaa048fc854010bf1451b7d96e3b3",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08k-1 baza: zadržana R doza bez plafona trajanja na novom tempu (stara strana)",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08k.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08k.node.test.ts",
+    "test": "08k (1) plafon ponavljanja na novom tempu > organizatorov primer: 65 km / 5 dana, trka 5 km 1700 s na dan starta → prihvaćeno, svako R ≤ 120 s",
+    "message": "Error: [{\"rule\":\"R_REP\",\"severity\":\"error\",\"message\":\"R ponavljanje 123 s > 120 s.\",\"week\":2}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "14feb55bf5f0e718c413649b8c2102bf225aaa048fc854010bf1451b7d96e3b3",
+   "hashSabotaged": "a4d095e6641a9b2907363c650cd3644770a7828d0d980b2c5600ac6d96331f80",
+   "hashAfter": "14feb55bf5f0e718c413649b8c2102bf225aaa048fc854010bf1451b7d96e3b3",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.8
+  },
+  {
+   "index": 2,
+   "name": "08k-6 rezultat van opsega VDOT se primenjuje",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08k.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08k.node.test.ts",
+    "test": "08k (2) rezultat van opsega VDOT > plan VDOT 30 + sporiji rezultat (VDOT 28) → RESULT_IGNORED sa vrednošću i opsegom, adaptacija prihvaćena",
+    "message": "AssertionError: expected 28 to be 30 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "14feb55bf5f0e718c413649b8c2102bf225aaa048fc854010bf1451b7d96e3b3",
+   "hashSabotaged": "37e347ca3c7eab312df625867b7eb03805744d32bf0b142685d39571add34b66",
+   "hashAfter": "14feb55bf5f0e718c413649b8c2102bf225aaa048fc854010bf1451b7d96e3b3",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
+  }
+ ]
+}

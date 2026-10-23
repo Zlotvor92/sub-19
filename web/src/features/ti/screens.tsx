@@ -15,7 +15,34 @@ import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
-import { changeGoalTime } from '../plan/planActions';
+import {
+  isFiveKV2Plan,
+  isHmV2Plan,
+  isMarathonV2Plan,
+  isTenKV2Plan
+} from '../../domain/generators/select';
+import {
+  useFiveKV2Setting,
+  useFiveKV2ToggleVisible,
+  setFiveKV2Setting,
+  useTenKV2Setting,
+  useTenKV2ToggleVisible,
+  useHmV2Setting,
+  useHmV2ToggleVisible,
+  setHmV2Setting,
+  useMarathonV2Setting,
+  useMarathonV2ToggleVisible,
+  setMarathonV2Setting,
+  setTenKV2Setting
+} from '../../stores/generatorFlags';
+import {
+  changeGoalTime,
+  changeGoalTimeHmV2,
+  changeGoalTimeMarathonV2,
+  changeGoalTimeTenKV2,
+  changeGoalTimeV2
+} from '../plan/planActions';
+import { GoalAssessmentLine } from '../plan/GoalAssessment';
 import { useFormModel } from '../race/useFormModel';
 import { AccountBody, useAccountInfo } from './accountSection';
 import { AppRefresh } from './AppRefresh';
@@ -98,6 +125,7 @@ export function GoalScreen() {
         <span className="hero-v goal num">{m.goalText}</span>
       </div>
       {rows.length ? <Facts items={rows.map((r) => ({ label: r.label, value: r.value }))} /> : null}
+      <GoalAssessmentLine meta={genPlan?.meta} />
       {genPlan?.ulaz ? (
         <Section title="Promeni ciljno vreme">
           <div className="f-field">
@@ -136,6 +164,161 @@ export function GoalScreen() {
             </p>
           </Help>
         </Section>
+      ) : genPlan && isFiveKV2Plan(genPlan) ? (
+        <Section title="Promeni ciljno vreme">
+          <div className="f-field">
+            <label htmlFor="pl-goal">Novo ciljno vreme</label>
+            <input
+              id="pl-goal"
+              inputMode="numeric"
+              placeholder={m.goalText}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+          </div>
+          <div className="btnrow start">
+            <button
+              type="button"
+              className="btn"
+              id="pl-goal-ok"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void changeGoalTimeV2(genPlan, goal, today)
+                  .then((ok) => {
+                    if (ok) setGoal('');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Promeni cilj
+            </button>
+          </div>
+          <Help summary="Šta se menja kad promeniš cilj">
+            <p>
+              U planu 5K v2 cilj se samo <b>procenjuje</b> (izvodljiv, ambiciozan, nerealan…) iz
+              trenutne forme. Treninzi, tempo i obim ostaju isti — tempo menja samo nov rezultat
+              (test 3 km ili trka), kroz Plan → Prilagodi plan.
+            </p>
+          </Help>
+        </Section>
+      ) : genPlan && isTenKV2Plan(genPlan) ? (
+        <Section title="Promeni ciljno vreme">
+          <div className="f-field">
+            <label htmlFor="pl-goal">Novo ciljno vreme</label>
+            <input
+              id="pl-goal"
+              inputMode="numeric"
+              placeholder={m.goalText}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+          </div>
+          <div className="btnrow start">
+            <button
+              type="button"
+              className="btn"
+              id="pl-goal-ok"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void changeGoalTimeTenKV2(genPlan, goal, today)
+                  .then((ok) => {
+                    if (ok) setGoal('');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Promeni cilj
+            </button>
+          </div>
+          <Help summary="Šta se menja kad promeniš cilj">
+            <p>
+              U planu 10K v2 cilj se samo <b>procenjuje</b> (realističan, ambiciozan, nerealan) iz
+              trenutne forme; plan po osećaju ocenu dobija posle rezultata. Treninzi, tempo i obim
+              ostaju isti — tempo menja samo nov rezultat (test 5 km, test 3 km ili trka), kroz Plan
+              → Prilagodi plan.
+            </p>
+          </Help>
+        </Section>
+      ) : genPlan && isHmV2Plan(genPlan) ? (
+        <Section title="Promeni ciljno vreme">
+          <div className="f-field">
+            <label htmlFor="pl-goal">Novo ciljno vreme</label>
+            <input
+              id="pl-goal"
+              inputMode="numeric"
+              placeholder={m.goalText}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+          </div>
+          <div className="btnrow start">
+            <button
+              type="button"
+              className="btn"
+              id="pl-goal-ok"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void changeGoalTimeHmV2(genPlan, goal, today)
+                  .then((ok) => {
+                    if (ok) setGoal('');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Promeni cilj
+            </button>
+          </div>
+          <Help summary="Šta se menja kad promeniš cilj">
+            <p>
+              U planu polumaratona v2 cilj se samo <b>procenjuje</b> (realističan, ambiciozan,
+              nerealan) iz trenutne forme; plan po osećaju ocenu dobija posle rezultata. Treninzi,
+              tempo i obim ostaju isti — tempo menja samo nov rezultat (test 5 km plana ili trka),
+              kroz Plan → Prilagodi plan.
+            </p>
+          </Help>
+        </Section>
+      ) : genPlan && isMarathonV2Plan(genPlan) ? (
+        <Section title="Promeni ciljno vreme">
+          <div className="f-field">
+            <label htmlFor="pl-goal">Novo ciljno vreme</label>
+            <input
+              id="pl-goal"
+              inputMode="numeric"
+              placeholder={m.goalText}
+              value={goal}
+              onChange={(e) => setGoal(e.target.value)}
+            />
+          </div>
+          <div className="btnrow start">
+            <button
+              type="button"
+              className="btn"
+              id="pl-goal-ok"
+              disabled={busy}
+              onClick={() => {
+                setBusy(true);
+                void changeGoalTimeMarathonV2(genPlan, goal, today)
+                  .then((ok) => {
+                    if (ok) setGoal('');
+                  })
+                  .finally(() => setBusy(false));
+              }}
+            >
+              Promeni cilj
+            </button>
+          </div>
+          <Help summary="Šta se menja kad promeniš cilj">
+            <p>
+              U planu maratona v2 cilj se samo <b>procenjuje</b> (realističan, ambiciozan, nerealan)
+              iz trenutne forme; plan po osećaju ocenu dobija posle rezultata. Treninzi, tempo i
+              obim ostaju isti — tempo menja samo nov rezultat (test 5 km plana ili trka), kroz Plan
+              → Prilagodi plan.
+            </p>
+          </Help>
+        </Section>
       ) : genPlan ? (
         <Section>
           <p className="note-src">
@@ -164,12 +347,26 @@ export function GoalScreen() {
 /* ------------------------------------------------------------- Zone i postavke treninga */
 
 export function TrainingSettingsScreen() {
+  /* 08b: prekidač 5K v2 vidi samo razvoj (VITE_FIVEK_V2) ili administrator; 10K v2 (segment 05) isto (VITE_TENK_V2),
+     HM v2 (segment HM-05) isto (VITE_HM_V2), maraton v2 (segment MAR-05) isto (VITE_MARATHON_V2). */
+  const toggle = useFiveKV2ToggleVisible();
+  const tenK = useTenKV2ToggleVisible();
+  const hm = useHmV2ToggleVisible();
+  const marathon = useMarathonV2ToggleVisible();
   return (
     <ScreenFrame>
       <Head title="Zone i postavke treninga" />
       <Section title="Zone pulsa">
         <ZonesList />
       </Section>
+      {toggle || tenK || hm || marathon ? (
+        <Section title="Generator plana">
+          {toggle ? <FiveKV2Toggle /> : null}
+          {tenK ? <TenKV2Toggle /> : null}
+          {hm ? <HmV2Toggle /> : null}
+          {marathon ? <MarathonV2Toggle /> : null}
+        </Section>
+      ) : null}
       <Section title="Vreme i lokacija">
         <WeatherBody />
       </Section>
@@ -402,5 +599,98 @@ export function OwnerScreen() {
         <UsersBody />
       </Section>
     </ScreenFrame>
+  );
+}
+
+/** Prekidač 5K v2 (podrazumevano isključen): utiče samo na NOV 5K plan; postojeći plan ostaje na svom generatoru. */
+function FiveKV2Toggle() {
+  const { on, setting, forced } = useFiveKV2Setting();
+  return (
+    <>
+      <label className="note-src" htmlFor="set-fivek-v2">
+        <input
+          type="checkbox"
+          id="set-fivek-v2"
+          checked={setting}
+          onChange={(e) => setFiveKV2Setting(e.target.checked)}
+        />{' '}
+        Novi 5K plan pravi generator v2 (probno)
+      </label>
+      <p className="note-src">
+        Važi samo za novi 5K plan iz čarobnjaka. Postojeći plan se ne menja. Plan v2 se prilagođava
+        kroz Plan → Prilagodi plan (pregled pa potvrda).
+        {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+      </p>
+    </>
+  );
+}
+
+/** Prekidač 10K v2 (podrazumevano isključen): utiče samo na NOV 10K plan; postojeći plan ostaje na svom generatoru. */
+function TenKV2Toggle() {
+  const { on, setting, forced } = useTenKV2Setting();
+  return (
+    <>
+      <label className="note-src" htmlFor="set-tenk-v2">
+        <input
+          type="checkbox"
+          id="set-tenk-v2"
+          checked={setting}
+          onChange={(e) => setTenKV2Setting(e.target.checked)}
+        />{' '}
+        Novi 10K plan pravi generator v2 (probno)
+      </label>
+      <p className="note-src">
+        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja.
+        {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+      </p>
+    </>
+  );
+}
+
+/** Prekidač HM v2 (podrazumevano isključen): utiče samo na NOV plan polumaratona; postojeći plan ostaje na svom
+ *  generatoru. */
+function HmV2Toggle() {
+  const { on, setting, forced } = useHmV2Setting();
+  return (
+    <>
+      <label className="note-src" htmlFor="set-hm-v2">
+        <input
+          type="checkbox"
+          id="set-hm-v2"
+          checked={setting}
+          onChange={(e) => setHmV2Setting(e.target.checked)}
+        />{' '}
+        Novi plan polumaratona pravi generator v2 (probno)
+      </label>
+      <p className="note-src">
+        Važi samo za novi plan polumaratona iz čarobnjaka. Postojeći plan se ne menja. Plan
+        polumaratona v2 se prilagođava kroz Plan → Prilagodi plan (pregled, pa potvrda).
+        {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+      </p>
+    </>
+  );
+}
+
+/** Prekidač maratona v2 (podrazumevano isključen): utiče samo na NOV plan maratona; postojeći plan ostaje na svom
+ *  generatoru. */
+function MarathonV2Toggle() {
+  const { on, setting, forced } = useMarathonV2Setting();
+  return (
+    <>
+      <label className="note-src" htmlFor="set-marathon-v2">
+        <input
+          type="checkbox"
+          id="set-marathon-v2"
+          checked={setting}
+          onChange={(e) => setMarathonV2Setting(e.target.checked)}
+        />{' '}
+        Novi plan maratona pravi generator v2 (probno)
+      </label>
+      <p className="note-src">
+        Važi samo za novi plan maratona iz čarobnjaka. Postojeći plan se ne menja. Plan maratona v2
+        se prilagođava kroz Plan → Prilagodi plan (pregled, pa potvrda).
+        {forced ? ` Razvojno podešavanje ga trenutno ${on ? 'uključuje' : 'isključuje'}.` : ''}
+      </p>
+    </>
   );
 }

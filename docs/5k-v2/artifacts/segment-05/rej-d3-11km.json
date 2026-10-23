@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "WEEKLY_KM_OUT_OF_RANGE",
+      "message": "Trenutni obim 11 km: ispod 12 km na 3 dana nema prostora za kvalitet; počni laganim trčanjem ili izaberi 4 dana."
+    }
+  ],
+  "violations": []
+}

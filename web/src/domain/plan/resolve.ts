@@ -5,7 +5,7 @@
 
 import { addDays, isIsoDate, parseIsoDate, type IsoDate } from '../date';
 import type { AltRecord, StoredWeek } from '../state';
-import type { Session } from '../training/types';
+import type { Session, WorkoutStructure } from '../training/types';
 import type { DayOrigin, ResolvedDay, ResolvedPlan, ResolvedWeek } from './types';
 
 export interface Overlay {
@@ -15,6 +15,39 @@ export interface Overlay {
 }
 
 export class InvalidPlanError extends Error {}
+
+/** Izmena zadržava strukturu sesije kad su tip, km i opis isti kao u originalu dana. */
+function keepsStructure(alt: AltRecord, origin: DayOrigin): boolean {
+  return (
+    !origin.rest &&
+    alt.tag === origin.tag &&
+    (alt.km ?? null) === origin.km &&
+    alt.desc === (origin.desc ?? '')
+  );
+}
+
+/** 5k-v2 (08b): ručni tempo izmene koja menja SAMO tempo ide u korake rada strukture (zagrevanje, oporavak, ubrzanja,
+ *  hlađenje ostaju). Zadata veličina koraka ostaje, procenjena se računa iz novog tempa; zbir treninga prati razliku. */
+function withWorkPace(s: WorkoutStructure, pace: number): WorkoutStructure {
+  let dKm = 0;
+  let dSec = 0;
+  const blocks = s.blocks.map((b) => {
+    const st = b.step;
+    if (st.kind !== 'work' || st.paceSec === pace) return b;
+    const byTime = st.secBasis === 'exact' && st.sec != null;
+    const km = byTime ? Math.round((st.sec! / pace) * 100) / 100 : st.km;
+    const sec = !byTime && st.km != null ? Math.round(st.km * pace) : st.sec;
+    dKm += b.reps * ((km ?? 0) - (st.km ?? 0));
+    dSec += b.reps * ((sec ?? 0) - (st.sec ?? 0));
+    return { ...b, step: { ...st, paceSec: pace, km, sec } };
+  });
+  return {
+    ...s,
+    blocks,
+    km: s.km == null ? null : Math.round((s.km + dKm) * 100) / 100,
+    sec: s.sec == null ? null : Math.round(s.sec + dSec)
+  };
+}
 
 export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): ResolvedPlan {
   const byId = new Map<string, ResolvedDay>();
@@ -58,6 +91,8 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         ...(d.strides ? { strides: d.strides } : {}),
         snaga: false,
         session: d.session,
+        originSession: d.session,
+        ...('structure' in d && d.structure ? { structure: d.structure } : {}),
         mlr: 'mlr' in d && d.mlr === true,
         test: isTest,
         origin
@@ -73,6 +108,14 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
         if (alt.rw) resolved.runWalk = alt.rw;
         else if (origin.runWalk !== undefined) resolved.runWalk = origin.runWalk;
         resolved.snaga = !!(alt.snaga && !resolved.rest);
+        /* VAŽEĆI PROPIS (nalaz 4): struktura sesije važi samo dok izmena ne dira tip, km i opis (menja samo tempo,
+           ritam ili snagu). Inače dan nema strukturu — prikaz, sat i merenje čitaju opis izmene; original ostaje u
+           `originSession`. */
+        if (!keepsStructure(alt, origin)) {
+          resolved.session = undefined;
+          delete resolved.structure;
+        } else if (resolved.structure && alt.pace != null && alt.pace > 0)
+          resolved.structure = withWorkPace(resolved.structure, alt.pace);
       }
       byId.set(id, resolved);
       if (!isTest) {
@@ -92,6 +135,7 @@ export function resolvePlan(weeks: readonly StoredWeek[], overlay: Overlay): Res
       deload: !!wk.deload,
       focus: wk.focus,
       ...(wk.taper === true ? { taper: true as const } : {}),
+      ...(typeof wk.phase === 'string' ? { phase: wk.phase } : {}),
       days
     });
   }

@@ -1,0 +1,61 @@
+[
+  {
+    "id": "beg-d3-15km-e7:30-12w",
+    "note": "početnik, 3 dana uto/čet/ned, 15 km, lagan 7:30/km, bez rezultata, 12 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 15,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 450,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "beg-d4-18km-e8:00-10w",
+    "note": "početnik, 4 dana uto/čet/sub/ned, 18 km, lagan 8:00/km, bez rezultata, 10 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 18,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 480,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "beg-d3-20km-e6:30-14w",
+    "note": "početnik, 3 dana uto/čet/ned, 20 km, lagan 6:30/km, bez rezultata, 14 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["tue", "thu", "sun"],
+      "currentWeeklyKm": 20,
+      "recentResult": null,
+      "goalTimeSec": null,
+      "easyPaceSecPerKm": 390,
+      "experience": "beginner"
+    }
+  },
+  {
+    "id": "beg-d4-25km-result-v35-14w",
+    "note": "početnik, 4 dana uto/čet/sub/ned, 25 km, rezultat 10 km VDOT 35, 14 ned",
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": ["tue", "thu", "sat", "sun"],
+      "currentWeeklyKm": 25,
+      "recentResult": {
+        "distanceM": 10000,
+        "timeSec": 3365,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": null,
+      "experience": "beginner"
+    }
+  }
+]

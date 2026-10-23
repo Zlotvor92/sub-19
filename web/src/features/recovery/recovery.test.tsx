@@ -1,13 +1,13 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IsoDate } from '../../domain/date';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan } from '../../domain/plan';
-import { acwrNow, acwrPosition, acwrText } from '../../domain/recovery';
+import { acwrNow } from '../../domain/generators/fiveK/recovery/load';
+import { acwrPosition, acwrText } from '../../domain/generators/fiveK/recovery/view';
 import { seedState, type PersistedState, type WellnessRecord } from '../../domain/state';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { hydratePersisted, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';

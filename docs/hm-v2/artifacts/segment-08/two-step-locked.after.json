@@ -1,0 +1,72 @@
+{
+ "dist": "HM",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 212,
+ "excludedPermanent": 6,
+ "plans": 212,
+ "first": {
+  "flows": 212,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 6784,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {},
+   "commonEx": {},
+   "inv": {},
+   "invEx": {},
+   "by": {}
+  },
+  "cum": {
+   "flows": 6784,
+   "rejectedFlows": 12,
+   "rejected": {
+    "PLAN_VIOLATES_POLICY:TEST": 12
+   },
+   "rejectedEx": {
+    "PLAN_VIOLATES_POLICY:TEST": [
+     "cum f-d3-12w-35km-e405-C/w2wed/locked→+3/pause20: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).",
+     "cum f-d3-12w-35km-e405-C/w2wed/locked→+3/pain5: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).",
+     "cum f-d3-12w-35km-e405-C/w2wed/locked→+3/pain8: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17)."
+    ]
+   },
+   "common": {
+    "DUGI<LAGAN": 114
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum d3-12w-25km-v30-B-sat/w6wed/locked→+3/pause20",
+     "cum d3-12w-25km-v30-B-sat/w6wed/locked→+3/pain5",
+     "cum d3-12w-25km-v30-B-sat/w6wed/locked→+3/pain8"
+    ]
+   },
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "locked→pause20": 2,
+    "locked→pain5": 2,
+    "locked→pain8": 2,
+    "locked→fatigue": 1,
+    "locked→faster": 1,
+    "locked→slower": 1,
+    "locked→test5k": 1,
+    "locked→painPause": 2
+   }
+  }
+ },
+ "seconds": 155.388
+}

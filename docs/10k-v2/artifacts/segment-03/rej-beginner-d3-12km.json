@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "WEEKLY_KM_TOO_LOW",
+      "message": "Početnik sa 3 dana trčanja: trenutni obim 12 km je ispod 15 km — preporuka je 5K plan pre 10K plana."
+    }
+  ]
+}

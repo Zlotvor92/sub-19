@@ -1,0 +1,190 @@
+{
+ "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-06/sabotage-06.json",
+ "head": "a3913f8",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 43.5,
+ "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+ "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "06-a činjenice prevedene na dva mesta (forma sama čita Analizu trke)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/form.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+    "test": "jedno mesto prevoda činjenica (pouke 16–20) > samo facts.ts čita sirove podatke aplikacije (Analiza trke, ID aktivnosti, polje testa) i pravi činjenice",
+    "message": "AssertionError: form.ts: expected '/* HM v2 → aplikacija: NAPREDAK → FOR…' not to match /raceAi|stravaId|icuId|\\[TEST_FIELD\\]|…/"
+   },
+   "failedCount": 1,
+   "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "hashSabotaged": "feb865c8f32681287066baf3f079f2474abdbcd3745bbb6f5ecbf30c601e815f",
+   "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.1
+  },
+  {
+   "index": 2,
+   "name": "06-b traka za staro ograničenje (bol bez novog zapisa)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+    "src/features/plan/hmV2Adapt.test.tsx"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+    "test": "pregled prilagođavanja (adaptPreview) > bol, pauza: traka; zaštita urađenog i ručno izmenjenog dana; posle primene istog dana bez trake",
+    "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "hashSabotaged": "cb72f237140065b3fca6a148c112731190ee353188affb6ed65c2860b13b61ad",
+   "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 8.3
+  },
+  {
+   "index": 3,
+   "name": "06-c promena cilja menja treninge (plan iznova, bez koraka i zaključanih dana)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+    "test": "vraćanje verzije, promena cilja, forma, članovi (b) > promena cilja: treninzi bajt-isti, menja se samo ocena; po osećaju bez ocene; neispravan cilj odbijen",
+    "message": "AssertionError: expected [ { w: 1, …(5) }, …(12) ] to deeply equal [ { w: 1, …(5) }, …(12) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "hashSabotaged": "c1659c7be1d3c36a87c4f7394a2bb03590d6cd86fd8a07f0495034bdda3e0d69",
+   "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6
+  },
+  {
+   "index": 4,
+   "name": "06-d vraćanje verzije prepisuje urađene dane",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+    "test": "vraćanje verzije, promena cilja, forma, članovi (b) > vraćanje: budući nezaštićeni dani iz verzije, urađeni ostaju; isti plan → 0 dana",
+    "message": "AssertionError: expected { title: 'Lagano 6,8 km', …(6) } to deeply equal { title: 'Lagano 5,0 km', …(6) }"
+   },
+   "failedCount": 1,
+   "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "hashSabotaged": "24261bb12a98f131dca80371b1cd79d1b95910a8b51871b001a676b1ae94bfdf",
+   "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5.7
+  },
+  {
+   "index": 5,
+   "name": "06-e član (b) poziva HM v1 (executionBasis)",
+   "files": [
+    "src/domain/generators/select.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/app.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/app.node.test.ts",
+    "test": "ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad HM v1), (c) sopstvena kopija procene stanja > tabela pokriva svaki član ugovora tačno jednom; nijedna funkcija nije funkcija HM v1",
+    "message": "AssertionError: executionBasis: expected [Function executionBasis] not to be [Function executionBasis] // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "hashSabotaged": "36229f75e8b7d92e756e5698d75fedc0b79a4a27592760e33e37872f6c780b59",
+   "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6
+  },
+  {
+   "index": 6,
+   "name": "06-f struktura iz celog plana umesto nedelje (pouka 16)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/plan.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+    "test": "pregled prilagođavanja (adaptPreview) > plan po osećaju + test 5 km na danu testa → tempo iz rezultata od sledeće nedelje (struktura po nedelji)",
+    "message": "AssertionError: g1d2: expected undefined to be defined"
+   },
+   "failedCount": 1,
+   "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "hashSabotaged": "b4a663742d243ea5be5fe5199631f92f2eccae671bea7b934fae16d42391f6ef",
+   "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5.5
+  },
+  {
+   "index": 7,
+   "name": "06-g zastarela sinhronizacija kao potpuna pokrivenost",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/facts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+    "test": "činjenice iz aplikacije (facts.ts) > pokrivenost: samo potpuna sinhronizacija danas ili potvrda; neobrađena aktivnost pomera početak",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "hashSabotaged": "8a1309684176e44dd549a3f49fd348bc17a22189f2140024ae2ec32c20f7a034",
+   "hashAfter": "bfeaf575b1da4be252089696b545a6296c81714230d8298f454f12e825727d18",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5.4
+  }
+ ]
+}

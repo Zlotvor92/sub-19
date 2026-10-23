@@ -1,0 +1,320 @@
+{
+  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-03/sabotage.json",
+  "head": "bfb82c9",
+  "level": "brz",
+  "bail": true,
+  "parallel": 1,
+  "vitestArgs": [],
+  "durationS": 101.4,
+  "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+  "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "S1 test u prvoj umesto poslednje nedelje baze (M16)",
+      "files": ["src/domain/generators/marathon/v2/periodize.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+        "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Test 5 km tačno jednom, u poslednjoj nedelji baze (4) (M16).\"}]"
+      },
+      "failedCount": 2,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "f37bdfbbc909ab38d86df7ae3fc1b97015b66ee8e398e64b2718d1a4375fb797",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 12.7
+    },
+    {
+      "index": 2,
+      "name": "S2 test se računa u dozu T (M16: u obimu, ne u dozi)",
+      "files": ["src/domain/generators/marathon/v2/workouts.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+        "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ZONE_CAP: T 5000 m > 10 % cilja 40.5 km (M11).\",\"week\":4},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Test: dan thu, WU 15 min + 5 km + CD 10 min, u obimu, bez doze (M16).\",\"week\":4}]"
+      },
+      "failedCount": 2,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "e002d7176b1b98e5933bc7ad2eb136c8580b058b172c126e8a04bbd3b925f3f8",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 11.5
+    },
+    {
+      "index": 3,
+      "name": "S3 početnik sa I/R (lestvica 4–6 dana umesto jednog kvaliteta, M17)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/beginner.node.test.ts",
+        "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/beginner.node.test.ts",
+        "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+        "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Početnik: R (R) ≠ T_continuous u fazi base (M17).\",\"week\":3},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Početnik: R (R) ≠ T_continuous u fazi base (M17).\",\"week\":5},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Početnik: I (I) ≠ T_cruise u fazi development (M17).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Početnik: I (I) ≠ T_cruise u fazi development (M17).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Početnik: I (I) ≠ T_cruise u fazi development (M17).\",\"week\":9},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Početnik: I (I) ≠ T_cruise u fazi development (M17).\",\"week\":10}]"
+      },
+      "failedCount": 2,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "06c38e413be9a0c9ee459fe9beb208ed9734d3c1d4b353118d88fa8e22166c17",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.4
+    },
+    {
+      "index": 4,
+      "name": "S4 početnik bez uvoda (kvalitet od ned 1, M17)",
+      "files": ["src/domain/generators/marathon/v2/policy.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/beginner.node.test.ts",
+        "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/beginner.node.test.ts",
+        "test": "M17 plan > uvod: nedelje 1–2 bez kvaliteta (dan kvaliteta lagan), uz napomenu; zatim jedan kvalitet nedeljno, bez I i R",
+        "message": "AssertionError: expected true to be false // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "19d915df29fb7b7720977eda9a66b27c5641c6278ac7274f97dbfa35ff1f2dee",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.8
+    },
+    {
+      "index": 5,
+      "name": "S5 trčanje/hodanje se ne odbija (M17)",
+      "files": ["src/domain/generators/marathon/v2/input.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/beginner.node.test.ts",
+        "src/domain/generators/marathon/v2/input.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/input.node.test.ts",
+        "test": "M1 ulaz > oblik, datumi, cilj, trčanje/hodanje (M17)",
+        "message": "AssertionError: expected [] to deeply equal [ 'RUN_WALK_NOT_SUPPORTED' ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "757fab65b5ca78396a518e23da87e0e3f060cdb3c35431820ee9901d31e77c5c",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.8
+    },
+    {
+      "index": 6,
+      "name": "S7 RPE MP 6–7 umesto 5–6 (M16)",
+      "files": ["src/domain/generators/marathon/v2/policy.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "test": "M16 tempo i plan > svaki kvalitet (i oštrenje) nosi RPE zone: T 6–7, I 8, R 8, MP 5–6 „ritam maratona\"; plan sa rezultatom bez RPE",
+        "message": "AssertionError: expected { min: 6, max: 7, …(1) } to deeply equal { min: 5, max: 6, …(1) }"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "c48601425990eb765c62eeb94e4eaef6ab26e24cdeb77aa8022b4ee51caa2df7",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.8
+    },
+    {
+      "index": 7,
+      "name": "S8 procena VDOT-a iz sporog kraja E (M16)",
+      "files": ["src/domain/generators/marathon/v2/paces.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "src/domain/generators/marathon/v2/feelGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/feel.node.test.ts",
+        "test": "M16 tempo i plan > E = lagan ± 15 s; procena VDOT-a = VDOT čiji je brži kraj E (0,70) jednak laganom tempu, 25–60; MP iz procene uz korekciju obima (M2)",
+        "message": "AssertionError: expected 60 to be 66.2 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "4fdb6085bdea113581ab13c414bbdce01ffeb3de90eeb64bcf5a4c51f75d69d8",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.5
+    },
+    {
+      "index": 8,
+      "name": "S9 početnik: početni nivo 60 % plafona umesto prvog nivoa (M17)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/beginner.node.test.ts",
+        "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/beginner.node.test.ts",
+        "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+        "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"START_LEVEL: q1: početni nivo T_continuous 2000 m ≠ 1500 m (≤ 60 % plafona, M12).\",\"week\":3}]"
+      },
+      "failedCount": 2,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "571161cb9c3e0e9aa28b2fe5498aad210f60c28080d53c83e0fa2ac2f4efec24",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.5
+    },
+    {
+      "index": 9,
+      "name": "S6 udeo dugog 5 dana 38 % umesto 35 % (M15, merenje MAR-03)",
+      "files": ["src/domain/generators/marathon/v2/policy.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/policy.node.test.ts",
+        "src/domain/generators/marathon/v2/grid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/policy.node.test.ts",
+        "test": "politika maraton v2 (M1–M17, M7a, M10a, M13a) > M1 opseg ulaza i M15 tabela 3/4/5/6 dana; 1/2/7 dana van tabele",
+        "message": "AssertionError: expected { Object (quality, easy, ...) } to deeply equal { Object (quality, easy, ...) }"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "da44ed1d98530f9b20eb0c5e9027a584591a727653a39341c91850a578855622",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.7
+    },
+    {
+      "index": 10,
+      "name": "S11 drugi član plafona MP isključen (trajanje ≤ dugi, pouka 14)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": ["src/domain/generators/marathon/v2/grid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/grid.node.test.ts",
+        "test": "mreža 02: 21 840 planova (3–6 dana × 12–24 ned) — uzorak > = bazna linija segment03.baseline.json (vrh, dugi, doza, rasterećenja, taper, upozorenja, heš plana)",
+        "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "1cceaae0d454e4ce68254b10d357d5ad82a6cbed066eb1d424a52e34b64793aa",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 36.5
+    },
+    {
+      "index": 11,
+      "name": "S12 S2: dugi rasterećenja se ne skraćuje (test/početnik)",
+      "files": ["src/domain/generators/marathon/v2/week.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/feelGrid.node.test.ts",
+        "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts",
+        "test": "mreža 03 početnika: 1890 planova — uzorak > K1: 0 odbijanja i 0 grešaka validatora za ulaze u opsegu",
+        "message": "AssertionError: expected [ …(155) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "26adbee89ed4fc0f9951248fd6c70ba49bff6478bef6bcf85bc2c2bd0173c12b",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 13.3
+    },
+    {
+      "index": 12,
+      "name": "S13 S3: MP vraćen u N−1 početnika",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": ["src/domain/generators/marathon/v2/beginnerGrid.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/beginnerGrid.node.test.ts",
+        "test": "mreža 03 početnika: 1890 planova — uzorak > K1: 0 odbijanja i 0 grešaka validatora za ulaze u opsegu",
+        "message": "AssertionError: expected [ …(128) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "3fad643d832cb0a8b74036d044e3411729e9798e80e87fc42eba477bb00b3409",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.4
+    },
+    {
+      "index": 13,
+      "name": "S14 izuzetak najnižeg nivoa MP od drugog člana isključen (M13a)",
+      "files": ["src/domain/generators/marathon/v2/quality.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "src/domain/generators/marathon/v2/recent.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/quality.node.test.ts",
+        "test": "M11 plafon MP, drugi član (pouka 14, odluka organizatora MAR-03) > mpFitsLong: MP dan (WU + MP + oporavci + CD) ≤ trajanje dugog",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "hashSabotaged": "583aaf26964247066633d36dc9c014eec32e7eff0f025af2e13cbe53a79653fe",
+      "hashAfter": "36b70abb567695411b530f92c172200970200b32cd215c53344ca2bfe89c5eca",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.4
+    }
+  ]
+}

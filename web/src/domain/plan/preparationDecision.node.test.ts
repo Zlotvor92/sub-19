@@ -3,23 +3,27 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { type IsoDate } from '../date';
 import type { GenPlanState } from '../state';
-import type { ExecutionAnalysis } from '../training/execution';
-import {
-  buildExecutionAdjustment,
-  executionBasis,
-  type ExecutionAdjustmentOptions
-} from './executionAdjustment';
-import { graftFuturePlan, type ReplanContext } from './future';
-import { isDemanding } from './finalize';
 import { preparationSummary } from './preparation';
-import {
-  basisFromPlan,
-  buildPreparationChoice,
-  preparationDecision,
-  type PreparationChoice
-} from './preparationDecision';
 import { resolvePlan } from './resolve';
 import { getPlanRevisions, recordPlanRevision } from './versions';
+import type {
+  ExecutionAdjustmentOptions,
+  PreparationChoice,
+  ReplanContext
+} from '@/domain/generators/select';
+import type { ExecutionAnalysis } from '@/domain/generators/halfMarathon/training/execution';
+import { routedEngine } from '@/test/generators';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const {
+  basisFromPlan,
+  buildExecutionAdjustment,
+  buildPreparationChoice,
+  executionBasis,
+  graftFuturePlan,
+  isDemanding,
+  preparationDecision
+} = routedEngine(5000);
 
 type Event = {
   input: {

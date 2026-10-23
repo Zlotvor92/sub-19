@@ -1,0 +1,250 @@
+{
+ "dist": "5K",
+ "step": {
+  "R": 30,
+  "F": 30,
+  "B": 20
+ },
+ "sampled": 138,
+ "excludedPermanent": 0,
+ "plans": 138,
+ "first": {
+  "flows": 2346,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 75072,
+   "rejectedFlows": 3624,
+   "rejected": {
+    "VALIDATOR:VOLUME_RESET": 3025,
+    "VALIDATOR:VOLUME_PEAK": 58,
+    "VALIDATOR:VOLUME_GROWTH": 717
+   },
+   "rejectedEx": {
+    "VALIDATOR:VOLUME_RESET": [
+     "new r-d3-6w-16km-v32-1/w2wed/under50→+3/none: Cilj 18.5 km > cilj adaptacije 14.8 km.",
+     "new r-d3-6w-16km-v32-1/w2wed/under50→+3/done100: Cilj 18.5 km > cilj adaptacije 14.8 km.",
+     "new r-d3-6w-16km-v32-1/w2wed/under50→+3/fatigue: Cilj 18.5 km > cilj adaptacije 14.8 km."
+    ],
+    "VALIDATOR:VOLUME_PEAK": [
+     "new r-d5-8w-25km-v32-1/w4wed/pause35→+3/none: Cilj 29.1 km > peakKm(15) = 19.5 km.",
+     "new r-d5-8w-25km-v32-1/w4wed/pause35→+3/done100: Cilj 29.1 km > peakKm(15) = 19.5 km.",
+     "new r-d5-8w-25km-v32-1/w4wed/pause35→+3/fatigue: Cilj 29.1 km > peakKm(15) = 19.5 km."
+    ],
+    "VALIDATOR:VOLUME_GROWTH": [
+     "new r-d3-9w-16km-v32-1/w2wed/under50→+3/none: Rast 13.8 → 18.5 km > 10%.",
+     "new r-d3-9w-16km-v32-1/w2wed/under50→+3/done100: Rast 13.8 → 18.5 km > 10%.",
+     "new r-d3-9w-16km-v32-1/w2wed/under50→+3/over120: Rast 13.8 → 18.5 km > 10%."
+    ]
+   },
+   "common": {
+    "DUGI<LAGAN": 6
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "new f-d4-14w-15km-e360-0/w7wed/pause10→+3/locked",
+     "new f-d4-14w-15km-e360-0/w7wed/chain→+3/locked",
+     "new b-d3-12w-12km-v32-0/w2wed/pause10→+3/locked"
+    ]
+   },
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "under50→none": 69,
+    "under50→done100": 69,
+    "under50→fatigue": 61,
+    "under50→faster": 69,
+    "under50→slower": 69,
+    "under50→test5k": 69,
+    "under50→incomplete": 69,
+    "over120→none": 24,
+    "over120→done100": 24,
+    "over120→fatigue": 25,
+    "over120→faster": 34,
+    "over120→slower": 21,
+    "over120→test5k": 32,
+    "over120→incomplete": 24,
+    "pause10→none": 69,
+    "pause10→done100": 69,
+    "pause10→fatigue": 67,
+    "pause10→faster": 69,
+    "pause10→slower": 68,
+    "pause10→test5k": 69,
+    "pause10→incomplete": 69,
+    "pause20→none": 65,
+    "pause20→done100": 65,
+    "pause20→pain5": 65,
+    "pause20→pain8": 65,
+    "pause20→fatigue": 63,
+    "pause20→faster": 65,
+    "pause20→slower": 65,
+    "pause20→test5k": 65,
+    "pause20→incomplete": 65,
+    "pause35→none": 69,
+    "pause35→done100": 69,
+    "pause35→pain5": 63,
+    "pause35→pain8": 63,
+    "pause35→fatigue": 62,
+    "pause35→faster": 69,
+    "pause35→slower": 69,
+    "pause35→test5k": 69,
+    "pause35→incomplete": 69,
+    "chain→none": 69,
+    "chain→done100": 69,
+    "chain→fatigue": 67,
+    "chain→faster": 69,
+    "chain→slower": 68,
+    "chain→test5k": 69,
+    "chain→incomplete": 69,
+    "painPause→none": 62,
+    "painPause→done100": 62,
+    "painPause→pain5": 62,
+    "painPause→pain8": 62,
+    "painPause→fatigue": 58,
+    "painPause→faster": 62,
+    "painPause→slower": 62,
+    "painPause→test5k": 62,
+    "painPause→incomplete": 62,
+    "pause10→pain5": 22,
+    "pause10→pain8": 22,
+    "pause35→locked": 22,
+    "chain→pain5": 22,
+    "chain→pain8": 22,
+    "painPause→locked": 14,
+    "pause20→locked": 4,
+    "under50→over120": 23,
+    "under50→pain5": 22,
+    "under50→pain8": 22,
+    "pause10→over120": 23,
+    "pause20→over120": 19,
+    "chain→over120": 23,
+    "pause10→locked": 2,
+    "chain→locked": 2,
+    "over120→locked": 2
+   }
+  },
+  "cum": {
+   "flows": 75072,
+   "rejectedFlows": 3696,
+   "rejected": {
+    "VALIDATOR:VOLUME_RESET": 3097,
+    "VALIDATOR:VOLUME_PEAK": 58,
+    "VALIDATOR:VOLUME_GROWTH": 717
+   },
+   "rejectedEx": {
+    "VALIDATOR:VOLUME_RESET": [
+     "cum r-d3-6w-16km-v32-1/w2wed/under50→+3/none: Cilj 18.5 km > cilj adaptacije 14.8 km.",
+     "cum r-d3-6w-16km-v32-1/w2wed/under50→+3/done100: Cilj 18.5 km > cilj adaptacije 14.8 km.",
+     "cum r-d3-6w-16km-v32-1/w2wed/under50→+3/fatigue: Cilj 18.5 km > cilj adaptacije 14.8 km."
+    ],
+    "VALIDATOR:VOLUME_PEAK": [
+     "cum r-d5-8w-25km-v32-1/w4wed/pause35→+3/none: Cilj 29.1 km > peakKm(15) = 19.5 km.",
+     "cum r-d5-8w-25km-v32-1/w4wed/pause35→+3/done100: Cilj 29.1 km > peakKm(15) = 19.5 km.",
+     "cum r-d5-8w-25km-v32-1/w4wed/pause35→+3/fatigue: Cilj 29.1 km > peakKm(15) = 19.5 km."
+    ],
+    "VALIDATOR:VOLUME_GROWTH": [
+     "cum r-d3-9w-16km-v32-1/w2wed/under50→+3/none: Rast 13.8 → 18.5 km > 10%.",
+     "cum r-d3-9w-16km-v32-1/w2wed/under50→+3/done100: Rast 13.8 → 18.5 km > 10%.",
+     "cum r-d3-9w-16km-v32-1/w2wed/under50→+3/over120: Rast 13.8 → 18.5 km > 10%."
+    ]
+   },
+   "common": {
+    "DUGI<LAGAN": 159
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum r-d3-6w-16km-v32-1/w2wed/locked→+3/pause20",
+     "cum r-d3-6w-16km-v32-1/w2wed/locked→+3/pain5",
+     "cum r-d3-6w-16km-v32-1/w2wed/locked→+3/pain8"
+    ]
+   },
+   "inv": {},
+   "invEx": {},
+   "by": {
+    "under50→none": 69,
+    "under50→done100": 69,
+    "under50→fatigue": 61,
+    "under50→faster": 69,
+    "under50→slower": 69,
+    "under50→test5k": 69,
+    "under50→incomplete": 69,
+    "over120→none": 24,
+    "over120→done100": 24,
+    "over120→pause10": 24,
+    "over120→pause35": 24,
+    "over120→fatigue": 25,
+    "over120→faster": 34,
+    "over120→slower": 21,
+    "over120→test5k": 32,
+    "over120→incomplete": 24,
+    "over120→chain": 24,
+    "pause10→none": 69,
+    "pause10→done100": 69,
+    "pause10→fatigue": 67,
+    "pause10→faster": 69,
+    "pause10→slower": 68,
+    "pause10→test5k": 69,
+    "pause10→incomplete": 69,
+    "pause20→none": 65,
+    "pause20→done100": 65,
+    "pause20→pain5": 65,
+    "pause20→pain8": 65,
+    "pause20→fatigue": 63,
+    "pause20→faster": 65,
+    "pause20→slower": 65,
+    "pause20→test5k": 65,
+    "pause20→incomplete": 65,
+    "pause35→none": 69,
+    "pause35→done100": 69,
+    "pause35→pain5": 63,
+    "pause35→pain8": 63,
+    "pause35→fatigue": 62,
+    "pause35→faster": 69,
+    "pause35→slower": 69,
+    "pause35→test5k": 69,
+    "pause35→incomplete": 69,
+    "chain→none": 69,
+    "chain→done100": 69,
+    "chain→fatigue": 67,
+    "chain→faster": 69,
+    "chain→slower": 68,
+    "chain→test5k": 69,
+    "chain→incomplete": 69,
+    "painPause→none": 62,
+    "painPause→done100": 62,
+    "painPause→pain5": 62,
+    "painPause→pain8": 62,
+    "painPause→fatigue": 58,
+    "painPause→faster": 62,
+    "painPause→slower": 62,
+    "painPause→test5k": 62,
+    "painPause→incomplete": 62,
+    "pause10→pain5": 22,
+    "pause10→pain8": 22,
+    "pause35→locked": 22,
+    "chain→pain5": 22,
+    "chain→pain8": 22,
+    "painPause→locked": 14,
+    "pause20→locked": 4,
+    "under50→over120": 23,
+    "under50→pain5": 22,
+    "under50→pain8": 22,
+    "pause10→over120": 23,
+    "pause20→over120": 19,
+    "chain→over120": 23,
+    "pause10→locked": 2,
+    "chain→locked": 2,
+    "over120→locked": 2
+   }
+  }
+ },
+ "seconds": 575.479
+}

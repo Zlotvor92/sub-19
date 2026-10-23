@@ -1,6 +1,6 @@
 import type { IsoDate } from '../date';
 import type { DayTag } from '../state';
-import type { FastFinish, Strides, RunWalk, Session } from '../training/types';
+import type { FastFinish, Strides, RunWalk, Session, WorkoutStructure } from '../training/types';
 
 /** Original dana kakav ga je generator napravio — za poređenje i vraćanje izmena. */
 export interface DayOrigin {
@@ -37,8 +37,14 @@ export interface ResolvedDay {
   finish?: FastFinish;
   strides?: Strides;
   snaga: boolean;
-  /** Originalna struktura sesije (i posle ručne izmene — služi predikciji i lap-detekciji). */
+  /** VAŽEĆI propis: struktura onoga što korisnik sada treba da odradi. `undefined` kad je dan ručno izmenjen tako da
+   *  izmena nema strukturu (drugi tip, km ili opis) — tada važi opis izmene. Odlučuje samo `resolvePlan`. */
   session: Session | undefined;
+  /** ORIGINALNI propis generatora, i posle ručne izmene: istorija, spajanje sa redom predikcije, ručno zaključan tempo. */
+  originSession: Session | undefined;
+  /** 5k-v2 (08a): VAŽEĆA struktura treninga (deo po deo); ista pravila kao `session` — ručna izmena tipa, km ili opisa je
+   *  uklanja. Polja nema kod planova bez strukture. */
+  structure?: WorkoutStructure;
   mlr: boolean;
   test: boolean;
   origin: DayOrigin;
@@ -51,6 +57,8 @@ export interface ResolvedWeek {
   focus: string;
   /** Taper nedelja (zastavica iz generatora; stariji planovi je nemaju). */
   taper?: true;
+  /** Faza nedelje koju je upisao generator plana (A3); stariji planovi je nemaju. */
+  phase?: string;
   days: ResolvedDay[];
 }
 

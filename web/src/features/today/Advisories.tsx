@@ -7,6 +7,10 @@ import { downloadText } from '../../lib/download';
 import { useSettingsStore, useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { useIsOwner } from '../../stores/owner';
+import { useFiveKV2Needed } from '../../stores/fiveKV2Actions';
+import { useHmV2Needed } from '../../stores/hmV2Actions';
+import { useMarathonV2Needed } from '../../stores/marathonV2Actions';
+import { useTenKV2Needed } from '../../stores/tenKV2Actions';
 import { useUIStore } from '../../stores/uiStore';
 import { useAdjustments } from '../plan/useAdjustments';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
@@ -34,6 +38,17 @@ export function Advisories({ today }: { today: string }) {
   const setWizard = useUIStore((s) => s.setWizard);
   const rec = useRecoveryModel();
   const adj = useAdjustments();
+  const needed5k = useFiveKV2Needed();
+  const needed10k = useTenKV2Needed();
+  const neededHm = useHmV2Needed();
+  const neededMarathon = useMarathonV2Needed();
+  const needed = needed5k.length
+    ? needed5k
+    : needed10k.length
+      ? needed10k
+      : neededHm.length
+        ? neededHm
+        : neededMarathon;
 
   const foreign = foreignPlanWithEntries({ hasGenPlan, isOwner: owner, log });
   const injury = rec?.proposal ?? null;
@@ -90,6 +105,20 @@ export function Advisories({ today }: { today: string }) {
         actions={[{ label: 'Pogledaj oporavak', onClick: () => openScreen({ kind: 'oporavak' }) }]}
       >
         {rec.ready.action ?? rec.ready.why}
+      </Notice>
+    );
+
+  /* 5K v2 (08b), 10K v2 (06): aktivno ograničenje iz činjenica → traka sa istim pregledom (Prilagodi plan); bez automatskog
+     upisa. */
+  if (needed.length)
+    items.push(
+      <Notice
+        key="v2-needed"
+        tone="warn"
+        title="Plan treba prilagoditi"
+        actions={[{ label: 'Pregledaj', onClick: () => openScreen({ kind: 'plan-prilagodi' }) }]}
+      >
+        {needed.join(' ')}
       </Notice>
     );
 

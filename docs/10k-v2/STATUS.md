@@ -1,0 +1,230 @@
+# 10K v2 — STATUS
+
+Novi 10K generator sa jednim vlasnikom svake odluke (D1–D22, D22b, D23, D25–D32) i adaptacijom (A1–A16),
+izolovan u `web/src/domain/generators/tenK/v2/`. 10K v1 (`tenK/` van `v2/`) je nepromenjen i podrazumevan; od
+segmenta 05 v2 je u aplikaciji iza prekidača (`ui.generatorV2TenK` / `VITE_TENK_V2`), samo kroz adapter `v2/app/`;
+od segmenta 06 i prilagođavanje (činjenice → pregled → potvrda → revizija), vraćanje verzije, cilj i Forma.
+
+## Kako se koristi
+
+```ts
+import { adaptTenKV2, generateTenKV2 } from "./tenK/v2/index.ts";
+const r = generateTenKV2({
+  startDate: "2026-11-02", // prvi dan nedelje 1
+  raceDate: "2027-02-07", // poslednji dan poslednje nedelje (8–18 celih nedelja; početnik 10–18)
+  runDays: ["tue", "thu", "sat", "sun"], // 3–6 dana (D17); početnik 3–4 (D28)
+  currentWeeklyKm: 40, // 3: 20–40, 4: 25–55, 5: 30–65, 6: 35–80; početnik 3: 15–30, 4: 18–35
+  recentResult: { distanceM: 10000, timeSec: 2700, date: "2026-10-19" }, // ili easyPaceSecPerKm (D26)
+  experience: "regular", // ili "beginner" (D28); runWalk: true → RUN_WALK_NOT_SUPPORTED (D29)
+});
+// r.ok → r.plan (policyId '10k-v2', policyVersion '10k-v2.4.1', paceBasis, faza nedelje, upozorenja)
+const a = adaptTenKV2(r.plan, facts, "2026-12-09"); // asOf je ulaz (bez čitanja sata)
+// facts: { workouts: [{ date, dayId?, km, durationSec, completed, rpe?, pain? }], results: [{ distM, sec,
+// date, kind: "test" | "race" }], lockedDayIds, coverage: { from, to, complete }, breaks: [{ kind: "break", from, to }] }
+// a.ok → a.plan (plan.adaptation: asOf, steps, mixedWeeks, lockedDayIds), a.changes, a.reasons
+// !a.ok → a.reasons (ADAPT_PLAN_INVALID, ADAPT_AS_OF_INVALID, ADAPT_FACT_*, ADAPT_PROTECTION, …), a.violations
+```
+
+- `construct(input, steps)` je isti konstruktor za generate (`[]`) i adaptaciju (koraci iz `assess.ts`).
+- `validatePlan(plan)` samo prijavljuje; adaptiran plan proverava po nedelji (tempo, okvir, obim iz koraka).
+- Primeri: iz korena repoa `node docs/10k-v2/artifacts/segment-04/run.ts` (traži `web/node_modules`) →
+  `inputs.json`, `<id>.json`, `examples.md`; dva pokretanja daju bajt-isti izlaz. `segment-01/` …
+  `segment-03b/` su zamrznuti izlazi 10k-v2.0.0 … 2.3.1. Bol A–E (06b, pre/posle):
+  `node docs/10k-v2/artifacts/segment-06b/run.ts <checkout e6540a5>`.
+- Testovi: iz `web/` `npx vitest run --project node src/domain/generators/tenK/v2` (≈ 140 s).
+- Bazne linije: `segment03.baseline.json` (R 15 840), `segment03-feel.baseline.json` (F 11 880),
+  `segment03b-beginner.baseline.json` (B 3402); osvežavanje `TEN_K_V2_WRITE_BASELINE=1 npx vitest run
+--project node src/domain/generators/tenK/v2/<grid|feelGrid|beginnerGrid>.node.test.ts`, pa prettier.
+- Regresija prema b13ca17: `segment04.plan-hashes-b13ca17.json` (R, F, B bajt-isti; heš bez oznake verzije; piše ga
+  `artifacts/segment-04/regression-b13ca17.ts` iz checkouta b13ca17). Starije: 81bd351, 21c03f1, 49ad476 (`tenK/v2/`).
+- Regresija adaptacije prema e6540a5: `segment06b.adapt-hashes-e6540a5.json` (mreža 04: 2040, mreža bola P: 336; piše
+  ga `artifacts/segment-06b/regression-e6540a5.ts` iz checkouta e6540a5); menjaju se samo tokovi sa povratkom posle bola.
+
+## Trenutno stanje
+
+- Generator: 3–6 dana, 8–18 nedelja, rezultat ≤ 84 dana (VDOT 30–80) ili po osećaju (test 5 km na kraju
+  baze), početnik 3–4 dana / 10–18 ned (bez testa). Trajno odbijeno: 1, 2, 7 dana, obim van reda, < 8 /
+  > 18 ned, VDOT > 80, trčanje/hodanje.
+- Adaptacija (04): rezultat, manjak/višak, pauza 7–13 / 14–27 / ≥ 28 (nov start), bol, umor; povratni rast
+  do nivoa pre smanjenja; zaštita prošlosti/urađenog/zaključanog; lančani koraci; plan starije verzije. Bol (06b,
+  10k-v2.4.1): povratak od nedelje sidra r (asOf + 1), osnova min(0,7 × nivo pre bola, cilj nedelje r).
+- Poznata ograničenja: T 1,5 km ponovljen kod početnika 3 d 15 km; ponavljanje RP 2,5 / 3,5 i I 2,0 km; D25;
+  posle smanjenja WU/CD po pojasu ulaza (dugi < kvalitetni dan); mešovite nedelje se proveravaju po danu.
+- Izveštaji: `reports/SEGMENT-01-…` … `SEGMENT-06b-IMPLEMENTATION.md` (dalje: „Preostali problemi" iz 06b).
+
+## Segmenti 01–03b (10k-v2.0.0 … 2.3.1)
+
+- 01/01b: jezgro 4 dana, D1–D16; 02/02b: D17–D25 (3/5/6 dana, kratka priprema, trkačka ≤ taper).
+- 03 (`21c03f1` → `81bd351`): D26–D30 (po osećaju, test 5 km, početnik, bez trčanja/hodanja, RP ≥ 800 m).
+- 03b (`81bd351` → `b13ca17`): D31 (T 1,5 km početnika), D32 (početnik bez testa). `git log --grep "10K v2"`.
+
+## Segment 04 (10k-v2.4.0)
+
+- Polazni SHA `b13ca17`; commit „10K v2 Segment 04 (10k-v2.4.0): adaptacija — assess → construct → zaštita
+  → validate" (`git log --grep "10K v2 Segment 04"`).
+- Tok: `assess.ts` (A1–A10 → korak) → `construct(input, koraci)` (`steps.framesFor`, `volume.adaptNominal10`,
+  `pacesAt`, režim kvaliteta) → spajanje i zaštita (`adapt.ts`, samo provera) → `validatePlan` (adaptiran režim).
+- Odstupanja (DECISIONS sa ulazom): povratak do nivoa i iznad granice novog starta; 4 ned izgradnje posle pauze ≥ 28 →
+  faze ostaju; cilj adaptacije pre nižeg; dugi rasterećenja ≥ 3 km; test otpada kad dugi < 5 km; doza pada sa ciljem.
+- Regresija: R 15 840, F 11 880, B 3402 bajt-isti kao b13ca17. Mreža adaptacije 2040 (30 planova × 4 asOf ×
+  17 scenarija): 0 odbijanja, 0 grešaka, zaštita bajt-isto, invarijante 0, deterministička.
+- Testovi tenK/v2: 16 fajlova, 205 testova; radni skup 18 / 230. Na b13ca17 `adapt.node` pada ceo (31), +3;
+  sabotaže A3 11, A8 5, A9 4, A10 2, A11 3 od 31.
+- Provere pre commita: tsc domain/oracle, eslint, prettier exit 0; `npm run check` exit 0 (211 fajlova, 2601 testova).
+
+## Segment 05 (aplikacija iza prekidača; jezgro `10k-v2.4.0` nepromenjeno)
+
+- Polazni `068410b`; commit „10K v2 Segment 05: 10K v2 u aplikaciji iza prekidača — generisanje, čuvanje, prikaz,
+  čarobnjak, sat" (`git log --grep "10K v2 Segment 05"`); izveštaj `reports/SEGMENT-05-IMPLEMENTATION.md`.
+- Prekidač `flags.tenKV2Enabled` (podrazumevano isključen; vidljiv admin/`VITE_TENK_V2`); `select.ts`: `10k-v2` → v2
+  (`10k-v2.4.0`, ostalo `UNKNOWN_POLICY`). Adapter `tenK/v2/app/` bez uvoza van `tenK/v2/` (lokalni tipovi).
+- (b) adaptacija: nepodržano do 06 sa razlogom (nijedan član ne poziva v1). Uvoz u plan v2: zapisi van plana, `fullSync`
+  (08c). Sat: delovi po osećaju (procena tempa) se ne šalju, `skippedReasons`. Format: `GenPlanState.tenKV2`.
+- Bajt-isto: `tenK/v2/app/byteSame.node.test.ts` (140 heševa sa 068410b) + `importV1Snapshot`. `npm run check` 216 / 2642;
+  E2E `tenk-v2` 3/3, ceo 81 + 2 pada `pwa` (isti na 068410b).
+- Sledeće (06): činjenice → `adaptTenKV2` sa pregledom, revizije, cilj, Forma, predaja HM/maraton → 10K v2.
+
+## Segment 06 (adaptacija u aplikaciji; jezgro `10k-v2.4.0` nepromenjeno)
+
+- Polazni `2d8a594`; commit „10K v2 Segment 06: adaptacija 10K v2 u aplikaciji — činjenice, pregled, revizija, cilj,
+  Forma" (`git log --grep "10K v2 Segment 06"`); izveštaj `reports/SEGMENT-06-IMPLEMENTATION.md`.
+- Adapter: `facts.ts` (dnevnik/uvoz, van plana, bol, test 5 km `test5kSec`, test 3 km, trke, pokrivenost samo `fullSync`
+  ili potvrda, pauze, zaključani dani `meta.tenKV2Edits`), `adapt.ts` (pregled, traka, `restoreMerge`, `goalChange`),
+  `form.ts`, `members.ts` (b kroz isti tok; nijedan član ne poziva v1). `plan.ts`: tempo/osnova strukture po nedelji.
+- UI: Plan → Prilagodi plan (`TenKV2Adjustment`), traka u Planu i Danas, Ti → Cilj, Napredak → Forma (`FormTenKV2`),
+  Detalji treninga dana testa (vreme 5 km). Predaja HM/maraton → 10K ostaje 10K v1 (test).
+- Nalaz za sledeći korak (jezgro): A4/A8 — nedelja sa krajem perioda bola zadržava pun cilj (i kod 5K v2); v. izveštaj.
+
+## Segment 06b (10k-v2.4.1): bol — povratak ne zavisi od dana u nedelji (A4/A8, A16)
+
+- Polazni `e6540a5`; commit „10K v2 Segment 06b (10k-v2.4.1): bol — povratak od prve nedelje bola, osnova 70 % nivoa pre
+  bola" (`git log --grep "10K v2 Segment 06b"`); izveštaj `reports/SEGMENT-06b-IMPLEMENTATION.md`.
+- Odluka organizatora: sidro = nedelja r koja sadrži asOf + 1 (cilj r ostaje); posle r rast od osnove min(round(0,7 ×
+  nivo pre bola), cilj nedelje r), pa A8/D6; rasterećenje posle sidra 0,8 × osnova; povratak samo kad je r izgradnja.
+  `assess.ts` (`returnFrom.week = r`), `volume.ts` (`returnAnchor`, `returnBase10`, `leaveWeek` — jedino mesto obima),
+  poruka PAIN sa osnovom iz konstruisanog cilja r (`adapt.ts`). Oblik koraka isti. `KNOWN_VERSIONS` = 4.0 + 4.1.
+- Slučajevi A–E (ned 5, e6540a5 → 4.1): A 27,6 → 32,7; B 47,6 → 32,7; C 47,6 → 34,5; D 47,6 → 34,5; E ned 4 35,9 → 23,8,
+  ned 5 47,6 → 32,7 (= računica organizatora).
+- Regresija: generator bajt-isti (R 15 840, F 11 880, B 3402; samo oznaka). Mreža 04: promenjeno 240/2040 (pain5, pain8,
+  painPause po 80), svi PAIN sa povratkom. Mreža bola P (`painGrid.node.test.ts`, 336): promenjeno 332, svi PAIN.
+- Invarijante P: I1, I2, I4, I5 bez prekršaja (e6540a5: I1 214/216, I2 13/23 grupa, I4 256/332); I3 — sudar sa D8/D23
+  (3 trkačke nedelje 18,8 → 22,8) i D19 (16 nedelja ≤ 0,06 km), nabrojano u testu, odluka organizatoru.
+- Sabotaže (od 267): (a) 10, (b) 12, (c) 1, (d) 12. tenK/v2: 21 fajl / 267 testova.
+- Otvoreno: korak sačuvan u 4.0 zadržava staro sidro (A14) — B/C prilagođeni u 4.0 pa u 4.1 bez činjenica: ned 5 47,6;
+  5K v2 isti problem (poseban segment).
+
+## Segment 06c (10k-v2.5.0, A17): rasterećenje odmah posle smanjenja otpada; tačna poruka bola
+
+- Tok: `888bf45` zaustavljeno (sudar A17/D5 kod 12 i 17 ned, J2/A8) → odluka organizatora → polazni `f2b0194`; commit
+  „10K v2 Segment 06c (10k-v2.5.0): rasterećenje odmah posle smanjenja otpada (A17); tačna poruka bola"
+  (`git log --grep "10K v2 Segment 06c"`); izveštaj `reports/SEGMENT-06c-IMPLEMENTATION.md`.
+- A17: nedelja smanjenja = (a) fromWeek koraka sa `reduced: true` (A2/A3; A6 `false`; korak pre 2.5.0 bez polja:
+  startKm i levelKm) ili (b) nedelja sidra bola; nov start ne ulazi. Redovno rasterećenje odmah posle se ukida u
+  `steps.framesFor` (jedino mesto; prinudno A5 nikad); izuzetak D5: od ukinute nedelje ≤ 5 izgradnji (`A17_MAX_RUN`),
+  inače se ne ukida (0 takvih); validator čita isti `dropped`. `volume.ts` bez izmene. Poruke A17 i N2.
+- Primer N1 (10w-25km-v30-A-sat, kraj ned 3) ned 5: pauza 17,0 → 23,3, bol 5 14,9 → 20,5, manjak 19,0 → 26,2.
+  17 ned bol 5 kraj ned 6: ned 8–12 23,0 → 31,6 (5 izgradnji).
+- Regresija prema 4917959 (heš bez oznake i polja reduced): promenjeni samo tokovi sa A17/N2 — 04 292/2040, P 88/336,
+  R 4855/18 193; samo polje reduced: 04 508, R 7019; 0 odbijanja. Generator bajt-isti (R 15 840, F 11 880, B 3402).
+- J1–J5 na mreži R (18 193): 0 prekršaja; J3 najduži niz 5. Test 5 km: otpada u 8 tokova po osećaju (ukinuto
+  rasterećenje sa testom D27, A9), ostaje/vraća se u 10.
+- Sabotaže (od 287): (a) 14, (b) 2, (c) 27, (d) 1, (e) 1. `KNOWN_VERSIONS` = 4.0, 4.1, 5.0.
+- Otvoreno: na 4917959 4 toka mreže R odbijena (`VOLUME_RULE`, rasterećenje sa testom D27 posle sidra bola,
+  f-d5-12w / f-d6-14w, kraj ned 2) — u 2.5.0 A17 ukida to rasterećenje, uzrok nije menjan; test 5 km uz A17 (gore).
+
+## Segment 06d (10k-v2.5.1, N7): prošlost = upisani dani; K1; trkačka posle skraćenog tapera; umor u uvodu
+
+- Tok: `fc40faa` zaustavljeno (nove klase u široj mreži, K2 ruši validator u construct; `reports/SEGMENT-06d-STOP.md`)
+  → odluke organizatora → commit „10K v2 Segment 06d (10k-v2.5.1): …" (`git log --grep "10K v2 Segment 06d"`);
+  izveštaj `reports/SEGMENT-06d-IMPLEMENTATION.md`, artefakti `artifacts/segment-06d/`.
+- Prošlost = upisani dani (A11): `written.ts` je jedino spajanje; konstruktor iz upisanih dana vodi najduži dugi
+  (`lengths.longestLong10`, D7), poslednji dugi, stanje doze, taper za trkačku nedelju; validacija u construct vidi upisani
+  plan; validator i u mešovitoj nedelji uzima poslednju T dozu (D31) iz upisanih dana.
+- K1 (D27): cilj rasterećenja sa testom iznad pravila samo ako nedelja ima test (faza (b) uklonjena, nedostižna).
+- N-a (D23): `week.raceWeekRest` — višak laganih dana trkačke nedelje postaje odmor (prvo dani bola); validator D20 ga
+  čita; 2/1308 ispod minimuma (D30b, RACE_WEEK_SHORT; uzak izuzetak u adaptInvariants). N-b (A5): prinudno rasterećenje u
+  uvodu početnika bez kvaliteta, 0,8 ×.
+- Merenje: N7 61 104 — 152 → 0 odbijanja; šira mreža S 847 392 — 3197 → 0. Promenjeni prihvaćeni: porodica 1 16 840 (S +
+  N7) i 18 (mreža 04), svi sa razlikom upisanog i sastavljenog zaštićenog dana, 0 prekršaja Uslova 8; N-b 576 (72 obim, 504
+  napomena); P i R bez promene. Generator bez činjenica bajt-isti.
+- Trajna mreža E (`earlyGrid*`, 65 699 tokova; brz nivo 20,4 s). Sabotaže 8/8 (alat). `KNOWN_VERSIONS` = 4.0, 4.1, 5.0, 5.1.
+- Otvoreno: 5K v2 — isto merenje i ista porodica (poseban segment).
+
+## Segment 06e (10k-v2.5.2, pouka 34): umor sa asOf pre starta plana; asOf pre starta u trajnoj mreži E
+
+- Commit „10K v2 Segment 06e (10k-v2.5.2): umor pre starta plana …" (`git log --grep "10K v2 Segment 06e"`); izveštaj
+  `reports/SEGMENT-06e-IMPLEMENTATION.md`, artefakti `artifacts/segment-06e/`.
+- Umor sa asOf < start: ned 1 prinudno rasterećenje 0,8 × planirana ned 1 (D5 sadržaj; početnik uvod); referenca = ned 1
+  generatora bez činjenica (`generate.preStartRef`), u koraku `preStart` (odluka `assess`); ned 2 = cilj planirane ned 1.
+  Konstruktor (`volume.adaptNominal10`, `week.buildWeek`) i validator čitaju korak.
+- Merenje (496 planova × 3 asOf × 9 scenarija): 1488 → 0 odbijanja; prihvaćeni bajt-isti; mreže 04/P/R/E bajt-iste.
+- Mreža E + 37 008 tokova pre starta (102 707). Sabotaže 3/3. `KNOWN_VERSIONS` = 4.0, 4.1, 5.0, 5.1, 5.2.
+
+## Segment 06f (10k-v2.6.0): pouke 36 i 18 (umor i bol vezani za zapise), traka u domenu, tekst prekidača, pouke 25 i 35
+
+- STANI posle merenja (`reports/SEGMENT-06f-STOP.md`, d892fb8), pa odluke organizatora (ponedeljak prihvaćen, pouka 35
+  opcija A, nalaz ponovljenog bola); izveštaj `reports/SEGMENT-06f-IMPLEMENTATION.md`, artefakti `artifacts/segment-06f/`.
+- Umor: prinudno rasterećenje = prva nedelja koja počinje posle poslednjeg RPE zapisa (asOf u njoj → ostatak tekuće
+  nedelje); rasterećenje već u planu pokriva iste zapise (`fatigue-repeat.ts 10K end` 903/963 → 0; `fatigue-monday.ts`
+  176/296 tekuća + 1 → 0). Zaštićeni dani (≤ asOf, zaključani, urađeni — `doneDayIds`) se ne sude po danu
+  (`locked-result.ts 10K` 1645/1960 → 0). Bol: isti zapis ne pravi nov period (nalaz RACE_WEEK_OVER_TAPER → 0).
+- Traka samo u domenu (`adaptBanner` + `steps.newLimits`); tekst prekidača bez „stiže uskoro"; pouka 25: WEEK_MIN_REST
+  i uz dane bola.
+- Pouka 35: drugi dan kvaliteta lagan kad bi dan kvaliteta bio duži od dugog (week.buildWeek; validator isti predikat).
+  Generator: tačno 858 ulaza promenjeno (fixture `segment06f.p35-plans-7ba9717.json`); trajne mreže 04/E/R/P: 76 / 5436 /
+  1668 / 0 tokova, svi sa poukom 35 (`segment06f.adapt-changed-7ba9717.json`).
+- early.ts 10K 193 97 29: 0 odbijanja, 0 prekršaja; measure-06f 269 760 tokova, 0 odbijanja. `KNOWN_VERSIONS` = 4.0, 4.1,
+  5.0, 5.1, 5.2, 6.0.
+- Otvoreno: nov zapis bola sutradan u istom slučaju i dalje RACE_WEEK_OVER_TAPER (trenerski izbor); pouka 35 u mešovitoj
+  nedelji asOf (467 tokova).
+
+## Segment 06g (10k-v2.6.1): trkačka samo sa danom pred trku, nedelja cela odmor, podela punih testova
+
+- Izveštaj `reports/SEGMENT-06g-IMPLEMENTATION.md`. Trkačka nedelja koja ni bez svih laganih dana nije ≤ tapera: dan pred
+  trku + trka, upozorenje RACE_WEEK_OVER_TAPER_EVE; nedelja čiji su svi dani odmor (bol) — WEEK_ALL_REST, ne EMPTY_WEEK;
+  D23 i uz mešovit taper. Trajna mreža nov bol 7/8 (ned N − 3 … N − 1, + 1 … + 7) → 0 odbijanja; ostala merenja bajt-ista
+  prema 06f. Pouka 35 u mešovitoj nedelji (467) — DECISIONS A19.
+- Puni testovi: p35 u 4 dela, trajne mreže ponavljanja u `repeatGrid` (16 delova, ≤ ~42 s). KNOWN_VERSIONS + 6.0.
+
+## Segment 06h (10k-v2.6.2): umor pre starta sa asOf = prvi dan plana
+
+- STANI (`reports/SEGMENT-06h-STOP.md`, 213cb75) → odluka organizatora: opcija A; izveštaj
+  `reports/SEGMENT-06h-IMPLEMENTATION.md`, artefakti `artifacts/segment-06h/`, DECISIONS A20.
+- Uzrok (pouka 23): referenca umora pre starta (`preStart`) čitana po fromWeek, a nedelja rasterećenja je od 06f
+  `deloadWeekOf` (asOf = start: ned 1 < fromWeek 2) → WEEK_INFEASIBLE u konstruktoru. Ispravka: konstruktor
+  (`volume.adaptVolume`, `generate.ctxAt`) i validator po `deloadWeekOf`.
+- Merenje: fatigue-startday 1245 → 0, fatigue-testweek 86 → 0, start-day 623 → 0 (adaptInvariants 0); start + 0 = start − 1
+  osim dana 1 (upisan) u 1245/1245. Regresija: 145 673 toka — promenjeno samo 779 ranije odbijenih (start + 0 umor).
+- Trajna mreža start + 0 u `repeatGrid` (24 672 toka na punom skupu, fixture `segment06h.startday-hashes-b8fcf22.json`).
+  Sabotaže 2/2. `KNOWN_VERSIONS` + 6.1.
+- Otvoreno: planirano ned 1 > cilj (upisan dan, pravilo mešovite nedelje) — pouka 37, zaseban segment za sve distance;
+  delovi `earlyGrid.<k>.full` ~278 s lokalno (beforeAll; CI blizu 600 s).
+
+## Faza 3, segment 3d-10K — 10K v2 kao cilj predaje „kraća distanca" (10k-v2.7.0, 2026-10-22)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: d491000
+- `app/handoffTarget.ts` `handoffFuture` (izvori HM v2 i maraton v2): generate iz činjenica ulaza (obim čarobnjaka, trka
+  istog datuma, start = granica nedelje posle potvrde) + `adaptTenKV2` sa sirovim činjenicama (bez `dayId`); potvrđena
+  pauza → `facts.ts` `confirmedBreakFact`. O6(b): prefiks nedelja izvora (`plan.ts` `tenKV2Prefix`), nedelje v2 broj
+  `offset + index`, id = id izvora istog datuma; adaptacija, vraćanje i promena cilja nose prefiks. Pokrivenost 'full'.
+  `KNOWN_VERSIONS` ∪ 10k-v2.6.2. Domen i pravila nepromenjeni (`policy.ts` samo `version`).
+- M3 kroz pravi kod: HM v2 → 10K v2 1 690 / 4 240, maraton v2 → 10K v2 1 175 / 5 060; odbijanje adaptacije 0, dupli
+  datum/id 0, id ≠ izvor 0, zajedničke provere 0. byteSame: samo 13 redova „10K v2" (maraton).
+- Testovi `app/handoffTarget.node.test.ts` 14; sabotaže 3d10 8/8 PALO (uz vrh opcije v2 cilja u izvorima HM/maraton v2).
+- Izveštaj: `docs/generators-v2/handoff/SEGMENT-3d-IMPLEMENTATION.md` (3d-10K).
+
+## Segment 06i (10k-v2.8.0): pouka 37 — mešovita nedelja, ostatak do cilja; K1, K2, K3, K5; earlyGrid u 12 delova
+
+- Izveštaj `reports/SEGMENT-06i-IMPLEMENTATION.md`, artefakti `artifacts/segment-06i/`, DECISIONS A21; polazni `46e72eb`,
+  spojeno 3d-10K (10k-v2.7.0) i grana do `c082abb`.
+- Pouka 37 (+ dopune 5K-08i i MAR-08): mešovita nedelja — preostali dani na ostatak = cilj − zbir zaštićenih po
+  činjenicama (pauza 0, zapis = upisani km, neurađen 0, poznat iz pokrivenosti bez zapisa 0), samo naniže; dugi se ne seče; lagani do 3,0; kvalitet otpada
+  samo kad time staje, inače ostaje uz MIXED_OVER_TARGET. Jedno mesto `week.mixedRemainder`, validator `week.mixedFloorKm`,
+  zbir `written.protectedKm`; nedelja nosi `keptKm`. Trkačka i nedelja pauze izuzete. mixed-deload 10K 367 → 24 (sve sa
+  upozorenjem). Regresija 279 545 tokova: promenjeno 11 353, svi sa pouke 37; promene cilja 612 objašnjene (D23/D8/D6).
+- K1 (zaključan dan testa): `steps.protectedTest` — locked-test 5 662 → 0, locked-pause 394 → 0. K2 (`week.restDaysWeek`):
+  last-weeks inv 141 → 0. K3 (lanac pre starta → ned 1; i 10K kao cilj predaje): 836 → 0, HM>10K 80 → 0, MAR>10K 44 → 0.
+  K5: invarijanta „dugi ≥ lagan" samo među preostalim danima.
+- Trajne mreže: `mixedGrid` (10 delova), `lockedTest` (4), `prestartChain` (4); `earlyGrid` 4 → 12 delova; fixture
+  `segment06i.adapt-changed-46e72eb.json` (promenjeno ⇔ pouka 37). Sabotaže 10/10. KNOWN_VERSIONS + 6.2, 7.0.
+- Otvoreno: RP tapera otpada već za 0,1–0,2 km (7 tokova, bez oštrenja) — trenerski izbor. 10K-06j otkazan (organizator: VDOT 80 nije realan korisnik).

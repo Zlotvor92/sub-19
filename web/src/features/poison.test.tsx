@@ -1,9 +1,8 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, cleanup, render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan } from '../domain/plan/adapt';
 import { migrateState, seedState, type PersistedState } from '../domain/state';
-import { generatePlan } from '../domain/training/generator/generatePlan';
 import { setApp } from '../app/appContext';
 import { createApp } from '../app/createApp';
 import { hydratePersisted } from '../stores';

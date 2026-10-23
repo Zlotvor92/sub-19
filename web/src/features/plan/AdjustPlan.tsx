@@ -7,11 +7,23 @@ import { useIcuConnected, useResolvedPlan, useTrainingStore } from '../../stores
 import { useIsOwner } from '../../stores/owner';
 import { applyProposal as applyInjury } from '../../stores/recoveryActions';
 import { applyProposal as applyPace, undoAdjustments } from '../../stores/raceActions';
+import { activePlanGenerator, activePlanUnsupportedReason } from '../../stores/executionActions';
+import {
+  isFiveKV2Plan,
+  isHmV2Plan,
+  isMarathonV2Plan,
+  isTenKV2Plan
+} from '../../domain/generators/select';
 import { useUIStore } from '../../stores/uiStore';
 import { useRecoveryModel } from '../recovery/useRecoveryModel';
 import { backToOwnPlan, recalibratePlan, startNewPlan } from './planActions';
 import { useAdjustments } from './useAdjustments';
 import { ExecutionAdjustment } from './ExecutionAdjustment';
+import { FiveKV2Adjustment } from './FiveKV2Adjustment';
+import { HmV2Adjustment } from './HmV2Adjustment';
+import { MarathonV2Adjustment } from './MarathonV2Adjustment';
+import { HandoffAppliedNotice } from './ShorterDistanceDecision';
+import { TenKV2Adjustment } from './TenKV2Adjustment';
 
 /* PRILAGODI PLAN: jedino mesto za sve što menja plan kao celinu — predlog zbog bola, predlog tempa prema formi, preračunavanje, novi plan. Predlozi se
    pojavljuju samo kad postoje (Danas tada nosi jedan red koji vodi ovamo). Pomeranje i izmena JEDNOG dana je u Detaljima treninga. */
@@ -26,9 +38,16 @@ export function AdjustPlan() {
   const openScreen = useUIStore((s) => s.openScreen);
   const setWizard = useUIStore((s) => s.setWizard);
   if (!plan) return null;
+  /* 5K v2 (08b), 10K v2 (segment 06), HM v2 (segment HM-06) i maraton v2 (segment MAR-06): prilagođavanje iz
+     činjenica sa pregledom i potvrdom (FiveKV2Adjustment, TenKV2Adjustment, HmV2Adjustment, MarathonV2Adjustment);
+     predlozi v1 (bol po danu, tempo iz forme) ne postoje za v2 — bol i rezultati ulaze u činjenice. */
+  const tenV2 = isTenKV2Plan(genPlan);
+  const hmV2 = isHmV2Plan(genPlan);
+  const marathonV2 = isMarathonV2Plan(genPlan);
+  const v2 = isFiveKV2Plan(genPlan) || tenV2 || hmV2 || marathonV2;
 
-  const injury = rec?.proposal ?? null;
-  const pace = adj.proposal;
+  const injury = v2 ? null : (rec?.proposal ?? null);
+  const pace = v2 ? null : adj.proposal;
 
   const applyInjuryProposal = async (): Promise<void> => {
     if (!injury) return;
@@ -110,7 +129,7 @@ export function AdjustPlan() {
             planski tempo“.
           </p>
         </Section>
-      ) : adj.adjusted ? (
+      ) : adj.adjusted && !v2 ? (
         <Section title="Tempi su prilagođeni tvojoj formi">
           <p className="prop-m">
             Ciljni tempo preostalih kvalitetnih treninga prati izmereni VDOT, a ne polaznu
@@ -131,13 +150,29 @@ export function AdjustPlan() {
         </Section>
       ) : null}
 
-      {adj.blockedReason ? <p className="note-src">{adj.blockedReason}</p> : null}
+      {adj.blockedReason && !v2 ? <p className="note-src">{adj.blockedReason}</p> : null}
 
-      {!injury && !pace && !adj.adjusted ? (
+      {!injury && !pace && !adj.adjusted && !v2 ? (
         <p className="empty">Trenutno nema predloga za prilagođavanje plana.</p>
       ) : null}
 
-      <ExecutionAdjustment plan={plan} today={todayStr} />
+      <HandoffAppliedNotice />
+
+      {marathonV2 ? (
+        <MarathonV2Adjustment today={todayStr} />
+      ) : hmV2 ? (
+        <HmV2Adjustment today={todayStr} />
+      ) : tenV2 ? (
+        <TenKV2Adjustment today={todayStr} />
+      ) : v2 ? (
+        <FiveKV2Adjustment today={todayStr} />
+      ) : activePlanGenerator() ? (
+        <ExecutionAdjustment plan={plan} today={todayStr} />
+      ) : (
+        <Section title="Prilagođavanje prema izvršenju">
+          <p className="note-src">{activePlanUnsupportedReason()}</p>
+        </Section>
+      )}
 
       <Section title="Plan">
         <div className="rows">
@@ -149,7 +184,7 @@ export function AdjustPlan() {
               onClick={() => void recalibratePlan(plan, todayStr)}
             />
           ) : null}
-          {genPlan?.ulaz ? (
+          {genPlan?.ulaz || v2 ? (
             <Row
               icon="target"
               title="Promeni ciljno vreme"

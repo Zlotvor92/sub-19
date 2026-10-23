@@ -1,8 +1,8 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { d6Snapshot } from '@/test/d6Snapshot';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, VdotRecord } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';
@@ -13,7 +13,7 @@ import {
   sessionFromDescription,
   thresholdPace,
   workoutsForWatch
-} from './index';
+} from '../generators/fiveK/watch/icuWorkouts';
 
 /* parity: icuTempo, icuTrajanje, icuRazdaljina, icuIzOpisa, icuTekstDana, icuDaniZaSlanje, icuPragTekst (app.js). */
 
@@ -129,6 +129,7 @@ describe('slanje na sat naspram starog koda', () => {
     let events = 0;
     let withSkipped = 0;
     let structured = 0;
+    let watchChanged = 0;
     for (const basePlan of plans()) {
       for (let variant = 0; variant < 7; variant++) {
         const plan = variant === 6 ? withoutVdot(basePlan) : basePlan;
@@ -170,7 +171,33 @@ describe('slanje na sat naspram starog koda', () => {
         const meta = plan.meta as { vdot0?: number };
         const vdot = vdotLog.length ? 47.4 : (meta.vdot0 ?? null);
         const mine = workoutsForWatch(resolved, TODAY, 14, vdot);
-        d6Snapshot('watch', `${plan.meta?.raceDistM}/${plan.weeks.length}/${variant}`, mine);
+        /* NAMERNA RAZLIKA (nalaz 4): dan čija izmena nema strukturu ide na sat po opisu izmene, ne po ORIGINALNOJ
+           sesiji. Otisak D6 se proverava u starom obliku (`session` ← `originSession`), a novi izlaz sme da se razlikuje
+           samo na tim danima. */
+        const dropped = new Set(
+          resolved.dated.filter((d) => !d.session && d.originSession).map((d) => d.id)
+        );
+        const asOld = workoutsForWatch(
+          {
+            weeks: resolved.weeks.map((w) => ({
+              ...w,
+              days: w.days.map((d) => (dropped.has(d.id) ? { ...d, session: d.originSession } : d))
+            }))
+          },
+          TODAY,
+          14,
+          vdot
+        );
+        d6Snapshot('watch', `${plan.meta?.raceDistM}/${plan.weeks.length}/${variant}`, asOld);
+        const byDay = (e: { externalId?: unknown }) => String(e.externalId);
+        for (const [i, e] of mine.events.entries())
+          if (JSON.stringify(e) !== JSON.stringify(asOld.events[i])) {
+            expect(
+              [...dropped].some((id) => byDay(e).endsWith(id)),
+              byDay(e)
+            ).toBe(true);
+            watchChanged++;
+          }
         // D6 changes workout names/steps. Preserve scheduling and identity; exact new steps are tested in icuWorkouts.test.ts.
         const identity = (e: { date?: unknown; externalId?: unknown }) => [e.date, e.externalId];
         expect(mine.events.map(identity), `${plan.meta?.raceDistM} v${variant}`).toEqual(
@@ -184,6 +211,7 @@ describe('slanje na sat naspram starog koda', () => {
     }
     expect(events).toBeGreaterThan(150);
     expect(structured).toBeGreaterThan(30);
+    expect(watchChanged).toBeGreaterThan(0);
     expect(withSkipped).toBeGreaterThan(0);
   });
 

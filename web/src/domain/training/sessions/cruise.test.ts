@@ -1,10 +1,18 @@
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
-import { generatePlan } from '../generator/generatePlan';
 import type { Day } from '../types';
-import { sessInt, sessProg } from './build';
+import { sessInt, sessProg } from '@/domain/generators/fiveK/training/sessions/build';
 import { sessDesc, sessKm, sessQKm } from './calc';
-import { constrainSession, constrainWeek } from './constraints';
-import { cruiseIntervals, type CruiseParams } from './cruise';
+import {
+  constrainSession,
+  constrainWeek
+} from '@/domain/generators/fiveK/training/sessions/constraints';
+import {
+  cruiseIntervals,
+  type CruiseParams
+} from '@/domain/generators/fiveK/training/sessions/cruise';
+
+/* Stari zajednički engine je obrisan: provera ide nad 5K kopijom (iste su u 5K, 10K i maratonskom generatoru). */
 
 const PARAMS: CruiseParams = {
   floorCapKm: 3,

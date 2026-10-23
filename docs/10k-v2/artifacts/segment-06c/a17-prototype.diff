@@ -1,0 +1,212 @@
+diff --git a/web/src/domain/generators/tenK/v2/adapt.ts b/web/src/domain/generators/tenK/v2/adapt.ts
+index a6783ce..188b173 100644
+--- a/web/src/domain/generators/tenK/v2/adapt.ts
++++ b/web/src/domain/generators/tenK/v2/adapt.ts
+@@ -10,6 +10,7 @@ import { dayNumber, mustDay } from './dates.ts';
+ import { construct } from './generate.ts';
+ import { checkInput } from './input.ts';
+ import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
++import { baseFrames, framesFor } from './steps.ts';
+ import type {
+   AdaptChange,
+   AdaptReason,
+@@ -50,6 +51,9 @@ function checkPlan(raw: unknown): TenKV2Plan | null {
+   return p;
+ }
+ 
++/** A7: uslovi obima koji postavljaju cilj koraka (A17: poruka ukinutog rasterećenja). */
++const VOLUME: readonly AdaptReason['condition'][] = ['PAUSE', 'UNDER_EXECUTION', 'OVER_EXECUTION'];
++
+ const dayLabel = (d: PlanDay | undefined): string => (d ? `${d.role}: ${d.workout.title}` : '—');
+ 
+ /** Razlike prethodnog i novog plana (plan: tempo, cilj; nedelja: faza, rasterećenje, test, cilj,
+@@ -168,11 +172,36 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
+   // koraka ga smanjuje, A3); računa je volume.returnBase10 (assess.painReturnNote). A13: test premešten ili
+   // uklonjen (odluka okvira, steps.framesFor) — zapis u reasons.
+   const rf = as.step.returnFrom;
+-  const reasons: AdaptReason[] = as.reasons.map((x) =>
+-    rf && x.condition === 'PAIN'
+-      ? { ...x, message: x.message + painReturnNote(as.step, to10(c.weeks[rf.week - 1]!.targetKm)) }
+-      : x
++  // A17: rasterećenje ukinuto zbog ovog koraka (isti podatak kao konstruktor, steps.framesFor) — rečenica
++  // u poruci uslova koji je smanjio nedelju (cilj koraka: pauza/manjak; inače bol).
++  const dropped = new Map<number, number>();
++  const base = baseFrames(
++    chk.input.startDate,
++    chk.weeks,
++    chk.pace.kind === 'feel' && chk.rule.feelTest
+   );
++  if (base)
++    framesFor(base, chk.pattern, chk.input.runDays, chk.input.raceDate, chk.pace, steps, dropped);
++  const own = [...dropped].filter(([, k]) => k === steps.length - 1).map(([w]) => w);
++  const byTarget = (w: number): boolean =>
++    as.step.startKm !== null && as.step.levelKm !== null && as.step.fromWeek === w - 1;
++  const a17 = (x: AdaptReason): string =>
++    own
++      .filter((w) =>
++        x.condition === 'PAIN' ? !byTarget(w) : VOLUME.includes(x.condition) && byTarget(w)
++      )
++      .map(
++        (w) => ` Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena (A17).`
++      )
++      .join('');
++  const reasons: AdaptReason[] = as.reasons.map((x) => {
++    const pain =
++      rf && x.condition === 'PAIN'
++        ? painReturnNote(as.step, to10(c.weeks[rf.week - 1]!.targetKm))
++        : '';
++    const note = pain + (x.applied ? a17(x) : '');
++    return note ? { ...x, message: x.message + note } : x;
++  });
+   const testOf = (p: TenKV2Plan): number | null =>
+     p.weeks.find((w) => w.days.some((d) => d.role === 'test'))?.index ?? null;
+   const tb = testOf(plan);
+diff --git a/web/src/domain/generators/tenK/v2/assess.ts b/web/src/domain/generators/tenK/v2/assess.ts
+index 450c977..526923c 100644
+--- a/web/src/domain/generators/tenK/v2/assess.ts
++++ b/web/src/domain/generators/tenK/v2/assess.ts
+@@ -41,8 +41,14 @@ const growthNote = (level: number): string =>
+  */
+ export function painReturnNote(step: TenKV2AdaptStep, targetR10: number): string {
+   const rf = step.returnFrom!;
+-  const base = returnBase10(returnAnchor(rf.share, step.levelKm), targetR10);
+-  return ` Posle nedelje ${rf.week} rast kreće od ${rf.share * 100} % nivoa pre bola (${km(base / 10)} km).${growthNote(step.levelKm!)}`;
++  const a = returnAnchor(rf.share, step.levelKm);
++  const base = returnBase10(a, targetR10);
++  // 10k-v2.5.0 (N2): kad deluje min sa ciljem nedelje r, broj je cilj nedelje r, ne udeo nivoa.
++  const from =
++    a.base10 !== null && base < a.base10
++      ? `${km(base / 10)} km (cilj nedelje ${rf.week}; ${rf.share * 100} % nivoa pre bola bilo bi ${km(a.base10 / 10)} km)`
++      : `${rf.share * 100} % nivoa pre bola (${km(base / 10)} km)`;
++  return ` Posle nedelje ${rf.week} rast kreće od ${from}.${growthNote(step.levelKm!)}`;
+ }
+ 
+ export interface CheckedFacts {
+diff --git a/web/src/domain/generators/tenK/v2/steps.ts b/web/src/domain/generators/tenK/v2/steps.ts
+index ca7fd9e..d41cfff 100644
+--- a/web/src/domain/generators/tenK/v2/steps.ts
++++ b/web/src/domain/generators/tenK/v2/steps.ts
+@@ -108,13 +108,28 @@ export function limitsOf(
+ export const restartWeeks = (steps: readonly TenKV2AdaptStep[]): Set<number> =>
+   new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
+ 
++/**
++ * A17: nedelje smanjenja koraka — (a) cilj koraka uz nivo pre smanjenja (pauza A3, manjak A2; višak A6
++ * nema nivo) → fromWeek; (b) bol sa povratkom → nedelja sidra r; (c) nov start se ne računa (rePeriodize
++ * gradi raspored od novog starta).
++ */
++export function reducedWeeks(s: TenKV2AdaptStep): number[] {
++  if (s.restart) return [];
++  const out: number[] = [];
++  if (s.startKm !== null && s.levelKm !== null) out.push(s.fromWeek);
++  if (s.returnFrom !== null && !out.includes(s.returnFrom.week)) out.push(s.returnFrom.week);
++  return out;
++}
++
+ /**
+  * Okviri nedelja posle koraka (redom): nov start → rePeriodize od fromWeek (A12; nema rasporeda po D5 →
+  * faze ostaju, odstupanje A3); umor → fromWeek je rasterećenje (samo izgradnja; redovno rasterećenje
+- * odmah posle se ukida, A5); novi rezultat → nema testa posle asOf (A13); ograničenja po datumima
++ * odmah posle se ukida, A5); A17: redovno rasterećenje odmah posle nedelje smanjenja (reducedWeeks) se
++ * ukida (prinudno A5 nikad); novi rezultat → nema testa posle asOf (A13); ograničenja po datumima
+  * (limitsOf). A13: test posle poslednjeg asOf u nedelji sa ograničenjem kvaliteta, prinudnim
+  * rasterećenjem ili van izgradnje → prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja dok je
+- * plan po osećaju; nema je → bez testa. `base` = okviri generatora.
++ * plan po osećaju; nema je → bez testa. `base` = okviri generatora. `dropped` (izlaz, A17): ukinuta
++ * rasterećenja — nedelja → indeks koraka (isti podatak za validator D5 i poruku koraka).
+  */
+ export function framesFor(
+   base: readonly WeekFrame[],
+@@ -122,19 +137,33 @@ export function framesFor(
+   runDays: readonly Weekday[],
+   raceDate: IsoDate,
+   pace: PaceInput,
+-  steps: readonly TenKV2AdaptStep[]
++  steps: readonly TenKV2AdaptStep[],
++  dropped: Map<number, number> | null = null
+ ): WeekFrame[] {
+   let frames: WeekFrame[] = base.map((f) => ({ ...f }));
+   if (steps.length === 0) return frames;
+-  for (const s of steps) {
++  const forced = new Set<number>();
++  for (const [k, s] of steps.entries()) {
+     const n = s.fromWeek;
+-    if (s.restart) frames = (rePeriodize(frames, n) ?? frames).map((f) => ({ ...f }));
++    if (s.restart) {
++      frames = (rePeriodize(frames, n) ?? frames).map((f) => ({ ...f }));
++      for (const w of [...forced]) if (w >= n) forced.delete(w);
++      if (dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);
++    }
+     const fn = frames[n - 1];
+     if (s.deload && fn && isBuildPhase(fn.phase) && !fn.deload) {
+       fn.deload = true;
++      forced.add(n);
+       const next = frames[n];
+       if (next && next.deload && isBuildPhase(next.phase)) next.deload = false;
+     }
++    for (const w of reducedWeeks(s)) {
++      const next = frames[w];
++      if (next && next.deload && isBuildPhase(next.phase) && !forced.has(next.index)) {
++        next.deload = false;
++        dropped?.set(next.index, k);
++      }
++    }
+     if (s.vdot !== null)
+       frames = frames.map((f) =>
+         f.test && mustDay(testDateOf(f, pattern)) > mustDay(s.asOf) ? withoutTest(f) : f
+diff --git a/web/src/domain/generators/tenK/v2/validate.ts b/web/src/domain/generators/tenK/v2/validate.ts
+index fbe3f90..80ab7cb 100644
+--- a/web/src/domain/generators/tenK/v2/validate.ts
++++ b/web/src/domain/generators/tenK/v2/validate.ts
+@@ -181,9 +181,11 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+   const feelW = (w: { index: number }): boolean =>
+     pace ? basisAt(pace, steps, w.index) === 'feel' : feel;
+   const base0 = pace ? periodize(input.startDate, N, pace.kind === 'feel' && rule.feelTest) : null;
++  /** A17: ukinuta redovna rasterećenja (isti podatak kao konstruktor, steps.framesFor). */
++  const dropped = new Map<number, number>();
+   const frames =
+     pace && base0 && base0.length === N
+-      ? framesFor(base0, plan.pattern, input.runDays, input.raceDate, pace, steps)
++      ? framesFor(base0, plan.pattern, input.runDays, input.raceDate, pace, steps, dropped)
+       : null;
+   const restarts = pace && base0 ? appliedRestarts(base0, steps) : new Set<number>();
+   /** A3: nov start počinje progresiju doze iznova i kad faze ostaju (odstupanje A3). */
+@@ -250,14 +252,16 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+   const phases = weeks.map((w) => w.phase);
+ 
+   // --- D5: gde su rasterećenja. Segment 04: relativno od novog starta (A12); prinudno rasterećenje (A5)
+-  // sme bilo gde u izgradnji, a niz posle njega (ukinuto redovno rasterećenje) nije ograničen.
++  // sme bilo gde u izgradnji, a niz posle njega (ukinuto redovno rasterećenje) nije ograničen. A17: od
++  // rasterećenja ukinutog posle nedelje smanjenja najviše exceptionRun uzastopnih nedelja izgradnje.
+   let run = 0;
+   let afterForced = false;
++  let afterDropped = false;
+   for (const w of weeks) {
+     const s0 = segStart(w.index);
+     const rel = phases.slice(s0 - 1);
+     const k = w.index - s0 + 1;
+-    if (restarts.has(w.index)) [run, afterForced] = [0, false];
++    if (restarts.has(w.index)) [run, afterForced, afterDropped] = [0, false, false];
+     if (w.deload && checked(w) && !forced(w) && !deloadAllowed(rel, k)) {
+       const why = !isBuildPhase(w.phase)
+         ? `u fazi ${w.phase}`
+@@ -269,10 +273,16 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+       err('DELOAD_PLACEMENT', `Rasterećenje ${why} (D5).`, w.index);
+     }
+     if (!isBuildPhase(w.phase)) continue;
+-    if (w.deload) [run, afterForced] = [0, forced(w)];
++    if (w.deload) [run, afterForced, afterDropped] = [0, forced(w), false];
+     else {
+-      if (!buildAllowed(rel, k, run) && !afterForced && checked(w))
+-        err('DELOAD_RUN', `${run + 1} uzastopne nedelje izgradnje bez rasterećenja (D5).`, w.index);
++      if (dropped.has(w.index)) [run, afterDropped] = [0, true];
++      const allowed = afterDropped ? run + 1 <= P.deload.exceptionRun : buildAllowed(rel, k, run);
++      if (!allowed && !afterForced && checked(w))
++        err(
++          'DELOAD_RUN',
++          `${run + 1} uzastopne nedelje izgradnje bez rasterećenja (D5${afterDropped ? ', A17' : ''}).`,
++          w.index
++        );
+       run++;
+     }
+   }

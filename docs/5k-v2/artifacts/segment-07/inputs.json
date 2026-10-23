@@ -1,0 +1,1279 @@
+{
+  "dev-04-pauza-20": {
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": [
+        "mon",
+        "wed",
+        "fri",
+        "sat"
+      ],
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1197,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1170
+    },
+    "asOf": "2026-12-20",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-10-05",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-07",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-09",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-10",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-12",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-14",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-16",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-17",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-19",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-21",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-23",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-24",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-26",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-28",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-30",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-31",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-11-02",
+          "dayId": "2026-11-02",
+          "km": 6.8,
+          "durationSec": 2050,
+          "completed": true
+        },
+        {
+          "date": "2026-11-04",
+          "dayId": "2026-11-04",
+          "km": 6,
+          "durationSec": 1803,
+          "completed": true
+        },
+        {
+          "date": "2026-11-06",
+          "dayId": "2026-11-06",
+          "km": 10,
+          "durationSec": 3199,
+          "completed": true
+        },
+        {
+          "date": "2026-11-07",
+          "dayId": "2026-11-07",
+          "km": 12.2,
+          "durationSec": 3941,
+          "completed": true
+        },
+        {
+          "date": "2026-11-09",
+          "dayId": "2026-11-09",
+          "km": 6.8,
+          "durationSec": 2050,
+          "completed": true
+        },
+        {
+          "date": "2026-11-11",
+          "dayId": "2026-11-11",
+          "km": 6.5,
+          "durationSec": 1931,
+          "completed": true
+        },
+        {
+          "date": "2026-11-13",
+          "dayId": "2026-11-13",
+          "km": 11.3,
+          "durationSec": 3619,
+          "completed": true
+        },
+        {
+          "date": "2026-11-14",
+          "dayId": "2026-11-14",
+          "km": 13.2,
+          "durationSec": 4264,
+          "completed": true
+        },
+        {
+          "date": "2026-11-16",
+          "dayId": "2026-11-16",
+          "km": 7.6,
+          "durationSec": 2273,
+          "completed": true
+        },
+        {
+          "date": "2026-11-18",
+          "dayId": "2026-11-18",
+          "km": 7,
+          "durationSec": 2058,
+          "completed": true
+        },
+        {
+          "date": "2026-11-20",
+          "dayId": "2026-11-20",
+          "km": 12,
+          "durationSec": 3845,
+          "completed": true
+        },
+        {
+          "date": "2026-11-21",
+          "dayId": "2026-11-21",
+          "km": 14.2,
+          "durationSec": 4587,
+          "completed": true
+        },
+        {
+          "date": "2026-11-23",
+          "dayId": "2026-11-23",
+          "km": 6.3,
+          "durationSec": 1888,
+          "completed": true
+        },
+        {
+          "date": "2026-11-25",
+          "dayId": "2026-11-25",
+          "km": 7.5,
+          "durationSec": 2423,
+          "completed": true
+        },
+        {
+          "date": "2026-11-27",
+          "dayId": "2026-11-27",
+          "km": 7.4,
+          "durationSec": 2390,
+          "completed": true
+        },
+        {
+          "date": "2026-11-28",
+          "dayId": "2026-11-28",
+          "km": 11.4,
+          "durationSec": 3682,
+          "completed": true
+        },
+        {
+          "date": "2026-11-30",
+          "dayId": "2026-11-30",
+          "km": 7.6,
+          "durationSec": 2273,
+          "completed": true
+        },
+        {
+          "date": "2026-12-02",
+          "dayId": "2026-12-02",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-04",
+          "dayId": "2026-12-04",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-05",
+          "dayId": "2026-12-05",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-07",
+          "dayId": "2026-12-07",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-09",
+          "dayId": "2026-12-09",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-11",
+          "dayId": "2026-12-11",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-12",
+          "dayId": "2026-12-12",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-14",
+          "dayId": "2026-12-14",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-16",
+          "dayId": "2026-12-16",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-18",
+          "dayId": "2026-12-18",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-19",
+          "dayId": "2026-12-19",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        }
+      ],
+      "coverage": {
+        "from": "2026-10-05",
+        "to": "2026-12-20",
+        "complete": true
+      }
+    }
+  },
+  "d5-30km-pauza-35": {
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-24",
+      "runDays": [
+        "mon",
+        "tue",
+        "thu",
+        "sat",
+        "sun"
+      ],
+      "currentWeeklyKm": 30,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1340,
+        "date": "2026-10-19"
+      }
+    },
+    "asOf": "2026-12-13",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-10-05",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-06",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-08",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-10",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-11",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-12",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-13",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-15",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-17",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-18",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-19",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-20",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-22",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-24",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-25",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-26",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-27",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-29",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-10-31",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-11-01",
+          "km": 6,
+          "durationSec": 2160,
+          "completed": true
+        },
+        {
+          "date": "2026-11-02",
+          "dayId": "2026-11-02",
+          "km": 4.9,
+          "durationSec": 1732,
+          "completed": true
+        },
+        {
+          "date": "2026-11-03",
+          "dayId": "2026-11-03",
+          "km": 5.6,
+          "durationSec": 1892,
+          "completed": true
+        },
+        {
+          "date": "2026-11-05",
+          "dayId": "2026-11-05",
+          "km": 5.5,
+          "durationSec": 1825,
+          "completed": true
+        },
+        {
+          "date": "2026-11-07",
+          "dayId": "2026-11-07",
+          "km": 5,
+          "durationSec": 1768,
+          "completed": true
+        },
+        {
+          "date": "2026-11-08",
+          "dayId": "2026-11-08",
+          "km": 9,
+          "durationSec": 3231,
+          "completed": true
+        },
+        {
+          "date": "2026-11-09",
+          "dayId": "2026-11-09",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-10",
+          "dayId": "2026-11-10",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-12",
+          "dayId": "2026-11-12",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-14",
+          "dayId": "2026-11-14",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-15",
+          "dayId": "2026-11-15",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-16",
+          "dayId": "2026-11-16",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-17",
+          "dayId": "2026-11-17",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-19",
+          "dayId": "2026-11-19",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-21",
+          "dayId": "2026-11-21",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-22",
+          "dayId": "2026-11-22",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-23",
+          "dayId": "2026-11-23",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-24",
+          "dayId": "2026-11-24",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-26",
+          "dayId": "2026-11-26",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-28",
+          "dayId": "2026-11-28",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-29",
+          "dayId": "2026-11-29",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-11-30",
+          "dayId": "2026-11-30",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-01",
+          "dayId": "2026-12-01",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-03",
+          "dayId": "2026-12-03",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-05",
+          "dayId": "2026-12-05",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-06",
+          "dayId": "2026-12-06",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-07",
+          "dayId": "2026-12-07",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-08",
+          "dayId": "2026-12-08",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-10",
+          "dayId": "2026-12-10",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-12",
+          "dayId": "2026-12-12",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        },
+        {
+          "date": "2026-12-13",
+          "dayId": "2026-12-13",
+          "km": 0,
+          "durationSec": 0,
+          "completed": false
+        }
+      ],
+      "coverage": {
+        "from": "2026-10-05",
+        "to": "2026-12-13",
+        "complete": true
+      }
+    }
+  },
+  "dev-04-nepotpun-unos": {
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-07",
+      "runDays": [
+        "mon",
+        "wed",
+        "fri",
+        "sat"
+      ],
+      "currentWeeklyKm": 35,
+      "recentResult": {
+        "distanceM": 5000,
+        "timeSec": 1197,
+        "date": "2026-10-19"
+      },
+      "goalTimeSec": 1170
+    },
+    "asOf": "2026-12-20",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-10-05",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-07",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-09",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-10",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-12",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-14",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-16",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-17",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-19",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-21",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-23",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-24",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-26",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-28",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-30",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-10-31",
+          "km": 8.8,
+          "durationSec": 3168,
+          "completed": true
+        },
+        {
+          "date": "2026-11-02",
+          "dayId": "2026-11-02",
+          "km": 6.8,
+          "durationSec": 2050,
+          "completed": true
+        },
+        {
+          "date": "2026-11-04",
+          "dayId": "2026-11-04",
+          "km": 6,
+          "durationSec": 1803,
+          "completed": true
+        },
+        {
+          "date": "2026-11-06",
+          "dayId": "2026-11-06",
+          "km": 10,
+          "durationSec": 3199,
+          "completed": true
+        },
+        {
+          "date": "2026-11-07",
+          "dayId": "2026-11-07",
+          "km": 12.2,
+          "durationSec": 3941,
+          "completed": true
+        },
+        {
+          "date": "2026-11-09",
+          "dayId": "2026-11-09",
+          "km": 6.8,
+          "durationSec": 2050,
+          "completed": true
+        },
+        {
+          "date": "2026-11-11",
+          "dayId": "2026-11-11",
+          "km": 6.5,
+          "durationSec": 1931,
+          "completed": true
+        },
+        {
+          "date": "2026-11-13",
+          "dayId": "2026-11-13",
+          "km": 11.3,
+          "durationSec": 3619,
+          "completed": true
+        },
+        {
+          "date": "2026-11-14",
+          "dayId": "2026-11-14",
+          "km": 13.2,
+          "durationSec": 4264,
+          "completed": true
+        },
+        {
+          "date": "2026-11-16",
+          "dayId": "2026-11-16",
+          "km": 7.6,
+          "durationSec": 2273,
+          "completed": true
+        },
+        {
+          "date": "2026-11-18",
+          "dayId": "2026-11-18",
+          "km": 7,
+          "durationSec": 2058,
+          "completed": true
+        },
+        {
+          "date": "2026-11-20",
+          "dayId": "2026-11-20",
+          "km": 12,
+          "durationSec": 3845,
+          "completed": true
+        },
+        {
+          "date": "2026-11-21",
+          "dayId": "2026-11-21",
+          "km": 14.2,
+          "durationSec": 4587,
+          "completed": true
+        },
+        {
+          "date": "2026-11-23",
+          "dayId": "2026-11-23",
+          "km": 6.3,
+          "durationSec": 1888,
+          "completed": true
+        },
+        {
+          "date": "2026-11-25",
+          "dayId": "2026-11-25",
+          "km": 7.5,
+          "durationSec": 2423,
+          "completed": true
+        },
+        {
+          "date": "2026-11-27",
+          "dayId": "2026-11-27",
+          "km": 7.4,
+          "durationSec": 2390,
+          "completed": true
+        },
+        {
+          "date": "2026-11-28",
+          "dayId": "2026-11-28",
+          "km": 11.4,
+          "durationSec": 3682,
+          "completed": true
+        },
+        {
+          "date": "2026-11-30",
+          "dayId": "2026-11-30",
+          "km": 7.6,
+          "durationSec": 2273,
+          "completed": true
+        },
+        {
+          "date": "2026-12-02",
+          "dayId": "2026-12-02",
+          "km": 7.5,
+          "durationSec": 2186,
+          "completed": true
+        },
+        {
+          "date": "2026-12-04",
+          "dayId": "2026-12-04",
+          "km": 13.5,
+          "durationSec": 4330,
+          "completed": true
+        },
+        {
+          "date": "2026-12-05",
+          "dayId": "2026-12-05",
+          "km": 15.4,
+          "durationSec": 4974,
+          "completed": true
+        },
+        {
+          "date": "2026-12-07",
+          "dayId": "2026-12-07",
+          "km": 9.27,
+          "durationSec": 2770,
+          "completed": true
+        },
+        {
+          "date": "2026-12-09",
+          "dayId": "2026-12-09",
+          "km": 9.18,
+          "durationSec": 2695,
+          "completed": true
+        },
+        {
+          "date": "2026-12-11",
+          "dayId": "2026-12-11",
+          "km": 11.55,
+          "durationSec": 3731,
+          "completed": true
+        },
+        {
+          "date": "2026-12-12",
+          "dayId": "2026-12-12",
+          "km": 15.5,
+          "durationSec": 5007,
+          "completed": true
+        },
+        {
+          "date": "2026-12-14",
+          "dayId": "2026-12-14",
+          "km": 9.42,
+          "durationSec": 2800,
+          "completed": true
+        }
+      ],
+      "coverage": {
+        "from": "2026-10-05",
+        "to": "2026-12-20",
+        "complete": false
+      }
+    }
+  },
+  "rw-10-projekcija": {
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat"
+      ],
+      "currentWeeklyKm": 0,
+      "experience": "beginner",
+      "canRun30Min": false
+    },
+    "asOf": null,
+    "facts": null
+  },
+  "rw-10-posle-3-ned": {
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-01-10",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat"
+      ],
+      "currentWeeklyKm": 0,
+      "experience": "beginner",
+      "canRun30Min": false
+    },
+    "asOf": "2026-11-22",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-11-03",
+          "dayId": "2026-11-03",
+          "km": 0,
+          "durationSec": 1920,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-05",
+          "dayId": "2026-11-05",
+          "km": 0,
+          "durationSec": 1920,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-07",
+          "dayId": "2026-11-07",
+          "km": 0,
+          "durationSec": 1950,
+          "completed": true,
+          "rpe": 7
+        },
+        {
+          "date": "2026-11-10",
+          "dayId": "2026-11-10",
+          "km": 0,
+          "durationSec": 1950,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-12",
+          "dayId": "2026-11-12",
+          "km": 0,
+          "durationSec": 1920,
+          "completed": true,
+          "rpe": 5
+        }
+      ],
+      "coverage": {
+        "from": "2026-11-02",
+        "to": "2026-11-22",
+        "complete": true
+      }
+    }
+  },
+  "rw-16-prelaz": {
+    "input": {
+      "startDate": "2026-11-02",
+      "raceDate": "2027-02-21",
+      "runDays": [
+        "tue",
+        "thu",
+        "sat"
+      ],
+      "currentWeeklyKm": 0,
+      "experience": "beginner",
+      "canRun30Min": false,
+      "typicalEasyPaceSecPerKm": 420
+    },
+    "asOf": "2026-12-27",
+    "facts": {
+      "workouts": [
+        {
+          "date": "2026-11-03",
+          "dayId": "2026-11-03",
+          "km": 0,
+          "durationSec": 1920,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-05",
+          "dayId": "2026-11-05",
+          "km": 0,
+          "durationSec": 1920,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-07",
+          "dayId": "2026-11-07",
+          "km": 0,
+          "durationSec": 1950,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-10",
+          "dayId": "2026-11-10",
+          "km": 0,
+          "durationSec": 1950,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-12",
+          "dayId": "2026-11-12",
+          "km": 0,
+          "durationSec": 1920,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-14",
+          "dayId": "2026-11-14",
+          "km": 0,
+          "durationSec": 1920,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-17",
+          "dayId": "2026-11-17",
+          "km": 0,
+          "durationSec": 1980,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-19",
+          "dayId": "2026-11-19",
+          "km": 0,
+          "durationSec": 1980,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-21",
+          "dayId": "2026-11-21",
+          "km": 0,
+          "durationSec": 2280,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-24",
+          "dayId": "2026-11-24",
+          "km": 0,
+          "durationSec": 2280,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-26",
+          "dayId": "2026-11-26",
+          "km": 0,
+          "durationSec": 2070,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-11-28",
+          "dayId": "2026-11-28",
+          "km": 0,
+          "durationSec": 2070,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-01",
+          "dayId": "2026-12-01",
+          "km": 0,
+          "durationSec": 2220,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-03",
+          "dayId": "2026-12-03",
+          "km": 0,
+          "durationSec": 2220,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-05",
+          "dayId": "2026-12-05",
+          "km": 0,
+          "durationSec": 2580,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-08",
+          "dayId": "2026-12-08",
+          "km": 0,
+          "durationSec": 2580,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-10",
+          "dayId": "2026-12-10",
+          "km": 0,
+          "durationSec": 2460,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-12",
+          "dayId": "2026-12-12",
+          "km": 0,
+          "durationSec": 2460,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-15",
+          "dayId": "2026-12-15",
+          "km": 0,
+          "durationSec": 1800,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-17",
+          "dayId": "2026-12-17",
+          "km": 0,
+          "durationSec": 1800,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-19",
+          "dayId": "2026-12-19",
+          "km": 0,
+          "durationSec": 2100,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-22",
+          "dayId": "2026-12-22",
+          "km": 0,
+          "durationSec": 2100,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-24",
+          "dayId": "2026-12-24",
+          "km": 0,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        },
+        {
+          "date": "2026-12-26",
+          "dayId": "2026-12-26",
+          "km": 0,
+          "durationSec": 2400,
+          "completed": true,
+          "rpe": 5
+        }
+      ],
+      "coverage": {
+        "from": "2026-11-02",
+        "to": "2026-12-27",
+        "complete": true
+      }
+    }
+  }
+}

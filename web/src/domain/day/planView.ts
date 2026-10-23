@@ -1,10 +1,10 @@
 /* IZVEDENI PRIKAZ ZA PLAN TAB: kratak opis radnog dela, faze, geometrija prstenova i grafikona nedeljne kilometraže. */
 
 import { fmtClock, fmtKm } from '../format';
-import { weekPhase } from '../plan/describe';
 import type { ResolvedDay, ResolvedPlan, ResolvedWeek } from '../plan/types';
 import type { LogEntry } from '../state/types';
 import { weekPlanKm, weekRealKm } from './stats';
+import { structureCore } from './structure';
 
 type Log = Readonly<Record<string, LogEntry>>;
 
@@ -14,8 +14,13 @@ const text = (x: unknown): string => (typeof x === 'string' ? x : '');
  * Kratak opis SAMOG RADNOG dela (jedan red u listi, bez zagrevanja i hlađenja). Za generisan plan iz `session`, inače iz teksta opisa.
  * „smirivanje" se čita uz „hlađenje": sačuvani planovi (localStorage i server) još nose staru reč.
  */
-export function sessionCore(d: Pick<ResolvedDay, 'rest' | 'session' | 'desc'> | null): string {
+export function sessionCore(
+  d: Pick<ResolvedDay, 'rest' | 'session' | 'desc' | 'structure'> | null
+): string {
   if (!d || d.rest) return d?.desc || 'Odmor';
+  /* 5k-v2: strukturisan dan — rad iz strukture; lagan/dugi dan bez radnog dela pada na opis (naslov). */
+  const core = d.structure ? structureCore(d.structure) : '';
+  if (core) return core;
   const s = d.session;
   if (s) {
     if (s.type === 'int' && s.reps && s.repM)
@@ -47,12 +52,16 @@ export interface PhaseGroup {
   weeks: ResolvedWeek[];
 }
 
-/** Faze za grupisanje nedelja: rasterećenje ostaje u grupi kojoj pripada po redosledu, a TAPER i TRKA su jedna grupa. */
-export function planPhases(plan: Pick<ResolvedPlan, 'weeks'>): PhaseGroup[] {
+/** Faze za grupisanje nedelja: rasterećenje ostaje u grupi kojoj pripada po redosledu, a TAPER i TRKA su jedna grupa.
+ *  Fazu nedelje daje generator plana (`phaseOf`, A3); ovde nema sopstvenog pravila faze. */
+export function planPhases(
+  plan: Pick<ResolvedPlan, 'weeks'>,
+  phaseOf: (w: ResolvedWeek, totalWeeks: number) => string
+): PhaseGroup[] {
   const groups: PhaseGroup[] = [];
   let cur: PhaseGroup | null = null;
   for (const w of plan.weeks) {
-    let f: string = weekPhase(w, plan.weeks.length);
+    let f: string = phaseOf(w, plan.weeks.length);
     if (f === 'DELOAD') f = cur ? cur.name : 'BAZA';
     if (f === 'TAPER' || f === 'TRKA') f = 'TAPER I TRKA';
     if (!cur || cur.name !== f) {

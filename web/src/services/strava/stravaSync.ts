@@ -3,12 +3,20 @@
    `recordAutoPace`, …); ovde je samo tok poziva.
 
    Stanje se čita jednom, menja na lokalnoj kopiji, i upisuje JEDNOM na kraju — neuspeh usred posla ne ostavlja polovično stanje
-   (stari kod je mutirao globalno stanje u hodu). Greška pojedinačnog dana (streamovi) ne obara ceo uvoz; greška spiska aktivnosti da. */
+   (stari kod je mutirao globalno stanje u hodu). Greška pojedinačnog dana (streamovi) ne obara ceo uvoz; greška spiska aktivnosti da.
+
+   08c, SAMO ZA PLAN v2 — 5K v2, od segmenta 05 10K v2, od HM-05 HM v2, od MAR-05 maraton v2 (plan v1 se uvozi
+   bajt-isto): trčanje koje nije upareno sa
+   danom plana postaje zapis van plana
+   (`vanPlanaV2`, `recordOffPlanRuns`), a pored `lastSync` (spisak preuzet i upisan — isto značenje kao ranije) veza nosi
+   `fullSync` (sve aktivnosti perioda preuzete i obrađene: spisak ceo, svaka stavka prepoznata, svaki traženi tok/krug
+   preuzet), `fullSyncFrom` i `syncIssues` (šta nije obrađeno, sa danom). Delimičan uspeh ne pomera `fullSync`. */
 
 import { z } from 'zod';
 import { addDays, toEpochDay, type IsoDate } from '../../domain/date';
 import {
   PERKM_VERSION,
+  activityIssue,
   decouplingPerKm,
   detectWorkSegments,
   hasDetails,
@@ -17,25 +25,35 @@ import {
   importedDay,
   perKmDetail,
   perKmStale,
-  realignPlan,
+  recordOffPlanRuns,
   runsByDate,
+  stravaActivityIssue,
+  syncStatus,
   workLapsPace,
   type ActivityStreams,
   type StravaActivity
 } from '../../domain/activities';
-import { recordAutoPace, syncSideRecords, type WorkPaceContext } from '../../domain/day';
+import {
+  recomputeChain,
+  recordAutoPace,
+  syncSideRecords,
+  type WorkPaceContext
+} from '../../domain/day';
 import {
   planBaselineVdot,
   resolvePlan,
   type ResolvedDay,
   type ResolvedPlan
 } from '../../domain/plan';
+import { generatorForPlan, tracksOffPlanRuns } from '../../domain/generators/select';
 import { planBoundary, recordOutOfPlan } from '../../domain/recovery';
 import type {
   AltRecord,
   GenPlanState,
   LogEntry,
+  OffPlanRun,
   PainRecord,
+  SyncIssue,
   VdotRecord,
   WeightRecord
 } from '../../domain/state';
@@ -44,6 +62,7 @@ import {
   matchWeekRows,
   type StoredPredRow
 } from '../../domain/training/adaptation';
+import type { Result } from '../http';
 import { parseLaps, parseStreams } from '../streams';
 import type { StravaApi, StravaLinkStore } from './stravaApi';
 
@@ -58,6 +77,8 @@ export interface ImportState {
   alts: Record<string, AltRecord>;
   moves: Record<string, unknown>;
   vanPlana: Record<string, number>;
+  /** 08c: trčanja van plana (samo plan 5K v2); izostavljeno = nema ih. */
+  vanPlanaV2?: Record<string, OffPlanRun>;
   knee: PainRecord[];
   kg: WeightRecord[];
 }
@@ -120,6 +141,11 @@ const HrZones = z.object({
     .optional()
 });
 
+/** 08c: Strava nema tokove/krugove za aktivnost (ručno uneta, bez senzora): 404 ili prazan niz. To je odgovor, ne
+ *  neuspeh — inače bi takva aktivnost trajno držala `fullSync` (isto kao `icu-bez-strukture`). */
+const nothingThere = (r: Result<unknown>): boolean =>
+  r.ok ? Array.isArray(r.data) && r.data.length === 0 : r.status === 404;
+
 export const STREAM_KEYS_QUALITY = 'distance,time,heartrate,cadence,watts,moving,altitude,temp';
 export const STREAM_KEYS_EASY = 'distance,heartrate,cadence,time,moving,altitude,temp,watts';
 
@@ -158,23 +184,44 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
       moves: { ...start.moves }
     };
     const genPlan = start.genPlan;
+    /* 08c: zapis van plana i `fullSync` samo za plan v2 (5K v2; 10K v2 od 05, HM v2 od HM-05, maraton v2 od MAR-05 — ista
+       infrastruktura). */
+    const v2 = tracksOffPlanRuns(genPlan);
+    const issues: SyncIssue[] = [];
     const resolve = (): ResolvedPlan =>
       resolvePlan(genPlan.weeks, { alts: s.alts, moves: s.moves });
     let plan = resolve();
     const boundary = planBoundary(plan);
     if (!boundary) return { ok: false, error: 'Plan je prazan.' };
-    const after = toEpochDay(addDays(boundary as IsoDate, -28)) * 86400;
+    const afterDate = addDays(boundary as IsoDate, -28);
+    const after = toEpochDay(afterDate) * 86400;
 
     await refreshZones();
 
     const acts: StravaActivity[] = [];
+    /* Ceo spisak (poslednja strana nepuna i svaka stavka prepoznata) je istina za svoj period (`recordOffPlanRuns`). */
+    let whole = false;
+    let unknown = 0;
     for (let page = 1; page <= 4; page++) {
       const r = await api.get(`/athlete/activities?after=${after}&per_page=100&page=${page}`);
       if (!r.ok) return { ok: false, error: r.error };
       const list = parseActivities(r.data);
       if (!list) return { ok: false, error: 'Strava je vratila neočekivan odgovor.' };
       acts.push(...list);
-      if ((Array.isArray(r.data) ? r.data.length : 0) < 100) break;
+      const raw = Array.isArray(r.data) ? r.data.length : 0;
+      unknown += raw - list.length;
+      if (raw < 100) {
+        whole = true;
+        break;
+      }
+    }
+    if (unknown > 0)
+      issues.push(activityIssue(null, null, `${unknown} stavki spiska aktivnosti nije prepoznato`));
+    if (!whole)
+      issues.push(activityIssue(null, null, 'spisak aktivnosti nije preuzet ceo (više od 400)'));
+    for (const a of acts) {
+      const why = stravaActivityIssue(a);
+      if (why) issues.push(activityIssue(String(a.start_date_local ?? '').slice(0, 10), a.id, why));
     }
     const byDate = runsByDate(acts);
 
@@ -182,7 +229,9 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
     if (van) s.vanPlana = van;
 
     /* Pomeri plan PRE glavne petlje da trčanje odmah nađe par. */
-    const realigned = realignPlan({
+    /* Zamena dana pripada generatoru distance plana; plan bez podržane distance se ne preraspoređuje automatski. */
+    const generator = generatorForPlan(genPlan);
+    const realignInput = {
       weeks: genPlan.weeks,
       alts: s.alts,
       moves: s.moves,
@@ -193,13 +242,18 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
           list.map((a) => ({ distance: a.distance ?? 0 }))
         ])
       )
-    });
+    };
+    const realigned = generator
+      ? generator.realignPlan(realignInput)
+      : { moves: { ...s.moves }, moved: 0 };
     s.moves = realigned.moves;
     plan = resolve();
 
     const rows = genPlan.pred.filter((r): r is StoredPredRow => typeof r.id === 'string');
     const baseline = planBaselineVdot(genPlan.meta);
+    /* Prijem automatskog merenja (tolerancija, lanac) je politika generatora plana (A1). */
     const paceCtx = (d: ResolvedDay): WorkPaceContext => ({
+      form: generator,
       rows,
       baselineVdot: baseline,
       hasAlt: !!s.alts[d.id]
@@ -213,6 +267,7 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
 
     let imported = 0;
     let paces = 0;
+    const paired = new Set<string>();
     const writePace = (d: ResolvedDay, rowId: string, pace: number, date: string): void => {
       const r = recordAutoPace(d, rowId, pace, date, s, paceCtx(d));
       s.pred = { ...r.pred };
@@ -232,6 +287,7 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
         current
       } = importedDay(byDate[date] ?? [], d.tag, s.log[d.id], d.km, 'strava');
       if (!a || !merged.taken.length) continue;
+      for (const x of merged.taken) paired.add(String(x.id));
       const imp = importedEntry(current, date, merged, a);
       s.log[d.id] = imp.entry;
       if (imp.imported) {
@@ -259,11 +315,15 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
             );
             if (!r.ok) {
               failed = true;
+              if (!nothingThere(r))
+                issues.push(activityIssue(date, cand.id, `tokovi nisu preuzeti (${r.error})`));
               break;
             }
             const stK = parseStreams(r.data);
             if (!stK) {
               failed = true;
+              if (!nothingThere(r))
+                issues.push(activityIssue(date, cand.id, 'tokovi nisu ispravni'));
               break;
             }
             const segK = detectWorkSegments(stK);
@@ -302,7 +362,8 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
                 if (r.ok) {
                   const t = workLapsPace(parseLaps(r.data), spec);
                   if (t) writePace(d, rowId, t, date);
-                }
+                } else if (!nothingThere(r))
+                  issues.push(activityIssue(date, source.id, `krugovi nisu preuzeti (${r.error})`));
               }
             }
           }
@@ -317,6 +378,14 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
           `/activities/${a.id}/streams?keys=${STREAM_KEYS_EASY}&key_by_type=true`
         );
         const st = r.ok ? parseStreams(r.data) : null;
+        if (!st && !nothingThere(r))
+          issues.push(
+            activityIssue(
+              date,
+              a.id,
+              r.ok ? 'tokovi nisu ispravni' : `tokovi nisu preuzeti (${r.error})`
+            )
+          );
         const perKm = st ? perKmDetail(st) : [];
         const entry = s.log[d.id];
         if (perKm.length && entry) {
@@ -333,13 +402,33 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
       }
     }
 
-    const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, baseline);
+    const aligned = alignVdotDates(s.vdotLog, plan, rows, s.log, (list) =>
+      recomputeChain(list, { form: generator, rows, baselineVdot: baseline, hasAlt: false })
+    );
     if (aligned.changed) s.vdotLog = aligned.vdotLog;
+
+    if (v2) {
+      const off = recordOffPlanRuns({
+        current: s.vanPlanaV2 ?? {},
+        src: 'strava',
+        byDate,
+        paired,
+        planStart: boundary,
+        today: deps.today(),
+        window: whole && unknown === 0 ? { from: afterDate, to: deps.today() } : null
+      });
+      if (off) s.vanPlanaV2 = off;
+    }
 
     if (deps.accountKey?.() !== owner) return { ok: false, error: 'Nalog je promenjen.' };
     ports.commit(s);
     const cur = link.get();
-    if (cur) link.set({ ...cur, lastSync: deps.now() });
+    if (cur)
+      link.set({
+        ...cur,
+        lastSync: deps.now(),
+        ...(v2 ? syncStatus(cur, issues, afterDate, deps.now()) : {})
+      });
     return { ok: true, imported, paces, moved: realigned.moved };
   }
 

@@ -343,7 +343,21 @@ export function WatchBody() {
                 <br />
                 intervals.icu prosleđuje Garminu otprilike nedelju dana unapred, pa dalji dani stižu
                 kasnije sami.
-                {batch.skipped ? (
+                {batch.skipped && batch.skippedReasons?.length ? (
+                  /* 10K v2: generator navodi razlog za svaki preskočen dan (deo po osećaju, ručna izmena). */
+                  <>
+                    <br />
+                    <b>Preskočeno dana trčanja: {batch.skipped}</b> — na satu bi izašli bez ciljnog
+                    tempa:
+                    <span id="icu-skipped">
+                      {batch.skippedReasons.map((r) => (
+                        <span key={r}>
+                          <br />· {r}
+                        </span>
+                      ))}
+                    </span>
+                  </>
+                ) : batch.skipped ? (
                   <>
                     <br />
                     <b>Preskočeno dana trčanja: {batch.skipped}</b> — za njih nije poznat lagan

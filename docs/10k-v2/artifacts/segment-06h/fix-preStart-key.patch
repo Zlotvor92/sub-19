@@ -1,0 +1,78 @@
+diff --git a/web/src/domain/generators/tenK/v2/generate.ts b/web/src/domain/generators/tenK/v2/generate.ts
+index 154cbe7..5f3957c 100644
+--- a/web/src/domain/generators/tenK/v2/generate.ts
++++ b/web/src/domain/generators/tenK/v2/generate.ts
+@@ -17,7 +17,15 @@ import {
+   type WeekPicks
+ } from './quality.ts';
+ import { longestLong10 } from './lengths.ts';
+-import { basePaces, basisAt, framesFor, pacesAt, restartWeeks, stepVdotAt } from './steps.ts';
++import {
++  basePaces,
++  basisAt,
++  deloadWeekOf,
++  framesFor,
++  pacesAt,
++  restartWeeks,
++  stepVdotAt
++} from './steps.ts';
+ import type {
+   GenerateResult,
+   PlanDay,
+@@ -128,7 +136,8 @@ export function construct(
+   const ctxAt = (w: number): WeekContext => {
+     if (!av) return ctx0;
+     // A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja iz koraka (assess, preStartRef).
+-    const ps = steps.find((s) => s.preStart && s.fromWeek === w)?.preStart;
++    // 10k-v2.6.2: nedelja rasterećenja koraka (steps.deloadWeekOf), ne fromWeek — asOf = start: ned 1.
++    const ps = steps.find((s) => s.preStart && deloadWeekOf(s) === w)?.preStart;
+     const extra = {
+       ...(w >= av.reducedFrom ? { adapted: true } : {}),
+       ...(ps ? { preStart: ps } : {})
+diff --git a/web/src/domain/generators/tenK/v2/validate.ts b/web/src/domain/generators/tenK/v2/validate.ts
+index 5ae34c2..5c2625a 100644
+--- a/web/src/domain/generators/tenK/v2/validate.ts
++++ b/web/src/domain/generators/tenK/v2/validate.ts
+@@ -1035,7 +1035,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
+     const rest = restOf(w);
+     // A5 (10k-v2.5.2, pouka 34): umor pre starta — referenca prinudnog rasterećenja (dugi, doza) je nedelja 1
+     // generatora bez činjenica, iz koraka (isto što čita konstruktor).
+-    const ref = steps.find((x) => x.preStart && x.fromWeek === w.index)?.preStart;
++    const ref = steps.find((x) => x.preStart && deloadWeekOf(x) === w.index)?.preStart;
+     if (w.deload && (seenSteady || ref) && checked(w)) {
+       // D5/D18: poslednja doza T slota, min 2,0 km; D31 početnik: poslednja T doza, min 1,5 km.
+       const lastT = ref ? ref.tDoseM : rule.beginner ? lastTDose : (lastSlot[tSlot]?.doseM ?? 0);
+diff --git a/web/src/domain/generators/tenK/v2/volume.ts b/web/src/domain/generators/tenK/v2/volume.ts
+index 63689d2..ff46a29 100644
+--- a/web/src/domain/generators/tenK/v2/volume.ts
++++ b/web/src/domain/generators/tenK/v2/volume.ts
+@@ -5,6 +5,7 @@
+ import { longShareCap10, longTimeCap10 } from './lengths.ts';
+ import { isBuildPhase } from './periodize.ts';
+ import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
++import { deloadWeekOf } from './steps.ts';
+ import type { Paces, PlanWeek, WeekFrame } from './types.ts';
+ 
+ const EPS = 1e-9;
+@@ -170,8 +171,10 @@ export interface VolumeStep {
+   restart: boolean;
+   levelKm: number | null;
+   returnFrom: { week: number; share: number } | null;
+-  /** A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja nedelje fromWeek (= 1). */
++  /** A5 (10k-v2.5.2): umor pre starta — referenca prinudnog rasterećenja nedelje 1 (steps.deloadWeekOf). */
+   preStart?: { buildKm: number };
++  /** Pouka 36 (10k-v2.6.0): nedelja prinudnog rasterećenja iz zapisa umora (asOf u njoj: < fromWeek). */
++  deloadWeek?: number;
+ }
+ 
+ /** Pravila obima iz koraka po nedelji (konstruktor i validator čitaju isto). */
+@@ -222,7 +225,8 @@ export function adaptVolume(steps: readonly VolumeStep[]): AdaptVolume {
+   const anchors = new Map<number, ReturnAnchor>();
+   const preStart = new Map<number, number>();
+   for (const s of steps) {
+-    if (s.preStart) preStart.set(s.fromWeek, to10(s.preStart.buildKm));
++    // 10k-v2.6.2 (pouka 23): referenca važi za nedelju rasterećenja (asOf = start: ned 1 < fromWeek 2).
++    if (s.preStart) preStart.set(deloadWeekOf(s), to10(s.preStart.buildKm));
+     if (s.startKm !== null) {
+       reset.set(s.fromWeek, to10(s.startKm));
+       if (s.restart) restart.set(s.fromWeek, to10(s.startKm));

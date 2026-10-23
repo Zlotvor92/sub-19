@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { WeatherCardModel } from '../../domain/weather';
+import type { WeatherCardModel } from '../../domain/generators/select';
 import { weatherLine } from './WeatherCard';
 
 const model = (rain: string, note: string): WeatherCardModel =>

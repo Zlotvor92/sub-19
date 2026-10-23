@@ -1,0 +1,59 @@
+{
+  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-07/sabotage-07b.json",
+  "head": "46a3e22",
+  "level": "brz",
+  "bail": true,
+  "parallel": 1,
+  "vitestArgs": [],
+  "durationS": 18.2,
+  "hashBefore": "376b0a1dd305982654ab6226d7a7b12a9fbc6ea004c04f7601f16fa3aa15400d",
+  "hashAfter": "376b0a1dd305982654ab6226d7a7b12a9fbc6ea004c04f7601f16fa3aa15400d",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "07b provera po danu bez preskakanja zaštićenih dana (WU/CD po tempu nedelje)",
+      "files": ["src/domain/generators/marathon/v2/validate.ts"],
+      "tests": [
+        "src/domain/generators/marathon/v2/segment07.node.test.ts",
+        "src/domain/generators/marathon/v2/earlyGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/segment07.node.test.ts",
+        "test": "MAR-07b (pouka 4, stalni uslov 4): provere po danu preskaču zaštićene dane — validator ne sudi činjenicama > d4-r-16w: brži rezultat kraj ned 5 + zaključan Q1 sledeće nedelje → plan se vraća, dan bajt-isti",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"WARMUP: Zagrevanje mora biti 15 min E (M14).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"COOLDOWN: Hlađenje mora biti 10 min E (M14).\",\"week\":6}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "376b0a1dd305982654ab6226d7a7b12a9fbc6ea004c04f7601f16fa3aa15400d",
+      "hashSabotaged": "0b8cefdd63288b2b11723f60bb698bfdde7a1cfaabe400d44783283f9f3c5129",
+      "hashAfter": "376b0a1dd305982654ab6226d7a7b12a9fbc6ea004c04f7601f16fa3aa15400d",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 15.7
+    },
+    {
+      "index": 2,
+      "name": "07b urađen dan posle asOf nije zaštićen (doneDayIds se ne čita)",
+      "files": ["src/domain/generators/marathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/marathon/v2/segment07.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/marathon/v2/segment07.node.test.ts",
+        "test": "MAR-07b (pouka 4, stalni uslov 4): provere po danu preskaču zaštićene dane — validator ne sudi činjenicama > urađen Q2 sledeće nedelje (dayId, trčan dan ranije) + brži rezultat → plan se vraća, dan bajt-isti",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"WARMUP: Zagrevanje mora biti 15 min E (M14).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"COOLDOWN: Hlađenje mora biti 10 min E (M14).\",\"week\":6}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "376b0a1dd305982654ab6226d7a7b12a9fbc6ea004c04f7601f16fa3aa15400d",
+      "hashSabotaged": "86dd4b044b9be3544d1c597dab469c8f552de5bebc01aea3d6532f2060387678",
+      "hashAfter": "376b0a1dd305982654ab6226d7a7b12a9fbc6ea004c04f7601f16fa3aa15400d",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.3
+    }
+  ]
+}

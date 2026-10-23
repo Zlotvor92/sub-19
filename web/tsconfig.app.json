@@ -29,7 +29,14 @@
     "src/**/*.oracle.test.ts",
     "src/**/*.node.test.ts",
     "src/test/legacyOracle.ts",
+    "src/test/level.ts",
     "src/test/fingerprint.ts",
-    "src/test/d6Snapshot.ts"
+    "src/test/d6Snapshot.ts",
+    "src/test/fiveK/**",
+    "src/test/tenK/**",
+    "src/test/halfMarathon/**",
+    "src/test/marathon/**",
+    "src/test/personal/**",
+    "src/test/guidance/**"
   ]
 }

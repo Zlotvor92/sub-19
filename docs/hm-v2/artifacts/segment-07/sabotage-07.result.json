@@ -1,0 +1,166 @@
+{
+  "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-07/sabotage-07.json",
+  "head": "5af0538",
+  "level": "brz",
+  "bail": true,
+  "parallel": 1,
+  "vitestArgs": [],
+  "durationS": 40,
+  "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+  "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "07-a pouka 35 samo u generatoru (validator ne čita funkciju)",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/segment07.node.test.ts",
+        "test": "pouka 35 (N5): dva dana kvaliteta samo kad dugi ostaje najduži > generator: drugi dan kvaliteta lagan (napomena), prvi ostaje, dugi raste; validator čita istu funkciju",
+        "message": "AssertionError: expected [ 'ARITHMETIC', 'DOSE_DROP' ] to include 'SECOND_QUALITY'"
+      },
+      "failedCount": 1,
+      "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "hashSabotaged": "28dc9a8d727908633c01988c2834ab5a0e8a2ed0ae1f231f7fb3074bdafc458b",
+      "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.8
+    },
+    {
+      "index": 2,
+      "name": "07-b RP bez poda (N6)",
+      "files": ["src/domain/generators/halfMarathon/v2/quality.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/segment07.node.test.ts",
+        "test": "N6: RP nikad ispod najnižeg nivoa (2 × 2000 m) > d3-11w-40km-v70-A-sun, pauza 35 kraj ned 3: bez RP < 4000 m (bilo „RP 2,0 km kontinuirano\"); validator RP_FLOOR",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RP_FLOOR: RP 2400 m < najniži nivo 4000 m (H10).\",\"week\":7}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "hashSabotaged": "cc4034cd9ff5e4fc6b57a71bed0da2c725960ca6e225e56c8b5079b83e8eacb9",
+      "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2
+    },
+    {
+      "index": 3,
+      "name": "07-c ned 2 sa dozom planirane ned 2 (pouka 34 dopuna N7)",
+      "files": ["src/domain/generators/halfMarathon/v2/steps.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 34: umor pre starta > asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"START_LEVEL: q1: početni nivo T_continuous 2500 m ≠ 2000 m (≤ 60 % plafona, H12).\",\"week\":2}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "hashSabotaged": "46282d4f08c1b99194b8c7268c3bf79e4aa81ba7964aac590cefb0b4783621e6",
+      "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 3.9
+    },
+    {
+      "index": 4,
+      "name": "07-d LONG_RUN_SHORT preko proverenih nedelja (N9)",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/segment07.node.test.ts",
+        "test": "N9: LONG_RUN_SHORT preko SVIH nedelja plana (i mešovitih) > d4-11w-35km-v50-B-sat, bol 5 sreda ned 4: najduži 16,6 ≥ 16 → bez upozorenja (bilo lažno)",
+        "message": "AssertionError: expected [ 'PLANNED_BELOW_TARGET_LIMITS', …(1) ] to not include 'LONG_RUN_SHORT'"
+      },
+      "failedCount": 1,
+      "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "hashSabotaged": "b7a92a213427a582218721d8d5744d22762ce98d51e0766ccb1e89fbe555babf",
+      "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2
+    },
+    {
+      "index": 5,
+      "name": "07-e traka u aplikaciji umesto domena (pouka 20)",
+      "files": ["src/domain/generators/halfMarathon/v2/app/adapt.ts"],
+      "tests": [
+        "src/domain/generators/halfMarathon/v2/segment07.node.test.ts",
+        "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts",
+        "test": "pregled prilagođavanja (adaptPreview) > plan po osećaju + test 5 km na danu testa → tempo iz rezultata od sledeće nedelje (struktura po nedelji)",
+        "message": "AssertionError: expected [] to deeply equal [ Array(1) ]"
+      },
+      "failedCount": 1,
+      "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "hashSabotaged": "a532c528b601ddf2d713726a48d6f9490608f2f8a8b7f3df352749c3f018b8d6",
+      "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 10.5
+    },
+    {
+      "index": 6,
+      "name": "07-f WEEK_FITTED po nedelji (N11)",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/segment07.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/segment07.node.test.ts",
+        "test": "N11: upozorenja jednom po planu; tehnička napomena ne ide korisniku > cele mreže (uzorak): WEEK_FITTED, CAPACITY_LIMITED, DELOAD_LONG_SHORTENED najviše jednom; plan bez napomene kapaciteta",
+        "message": "AssertionError: d3-10w-40km-v40-C-sun WEEK_FITTED: expected 2 to be less than or equal to 1"
+      },
+      "failedCount": 1,
+      "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "hashSabotaged": "2acd2d41387ffe5373753b1521b1d2f60d3e05fb0c69db071bb1ba288be69a3b",
+      "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 2.3
+    },
+    {
+      "index": 7,
+      "name": "07-g umor vezan za asOf (pouka 36)",
+      "files": ["src/domain/generators/halfMarathon/v2/assess.ts"],
+      "tests": [
+        "src/domain/generators/halfMarathon/v2/fatigueRepeat.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/fatigueRepeat.node.test.ts",
+        "test": "pouka 36: isti zapisi umora ponovo (asOf + 1 … + 7) — 0 novih rasterećenja (deo 1/2) > 0 novih rasterećenja, 0 odbijanja, traka bez ponovljenog umora",
+        "message": "AssertionError: expected [ …(216) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "hashSabotaged": "63758e44fafb701efce0ae0895bc7e44369c28c6b56272f127333048897c3393",
+      "hashAfter": "c4564a76ed99c0901f3a7de85c5b239a3fd13db7b84eda9eb1ef8bde0a683764",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 16.9
+    }
+  ]
+}

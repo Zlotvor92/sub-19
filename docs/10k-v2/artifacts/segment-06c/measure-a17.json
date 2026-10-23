@@ -1,0 +1,170 @@
+{
+ "stat": {
+  "04/none": {
+   "tokova": 120
+  },
+  "04/done100": {
+   "tokova": 120
+  },
+  "04/under50": {
+   "tokova": 120,
+   "samo reduced": 40,
+   "promenjeno": 40,
+   "A17": 40
+  },
+  "04/over120": {
+   "tokova": 120,
+   "samo reduced": 80
+  },
+  "04/pause10": {
+   "tokova": 120,
+   "samo reduced": 80,
+   "promenjeno": 40,
+   "A17": 40,
+   "test pomeren/otpao/ostao": 1
+  },
+  "04/pause20": {
+   "tokova": 120,
+   "samo reduced": 80,
+   "promenjeno": 40,
+   "A17": 40,
+   "test pomeren/otpao/ostao": 1
+  },
+  "04/pause35": {
+   "tokova": 120,
+   "samo reduced": 120
+  },
+  "04/pain5": {
+   "tokova": 120,
+   "promenjeno": 20,
+   "A17": 20,
+   "test pomeren/otpao/ostao": 1
+  },
+  "04/pain8": {
+   "tokova": 120,
+   "promenjeno": 20,
+   "A17": 20,
+   "test pomeren/otpao/ostao": 1
+  },
+  "04/fatigue": {
+   "tokova": 120
+  },
+  "04/faster": {
+   "tokova": 120
+  },
+  "04/slower": {
+   "tokova": 120
+  },
+  "04/test5k": {
+   "tokova": 120
+  },
+  "04/incomplete": {
+   "tokova": 120
+  },
+  "04/locked": {
+   "tokova": 120
+  },
+  "04/chain": {
+   "tokova": 120,
+   "promenjeno": 60,
+   "A17": 60,
+   "samo reduced": 60,
+   "test pomeren/otpao/ostao": 5
+  },
+  "04/painPause": {
+   "tokova": 120,
+   "promenjeno": 72,
+   "N2": 56,
+   "samo reduced": 48,
+   "A17": 40,
+   "test pomeren/otpao/ostao": 1
+  },
+  "P/p4": {
+   "tokova": 84,
+   "promenjeno": 22,
+   "A17": 22
+  },
+  "P/p5": {
+   "tokova": 84,
+   "promenjeno": 22,
+   "A17": 22
+  },
+  "P/p7": {
+   "tokova": 84,
+   "promenjeno": 22,
+   "A17": 22
+  },
+  "P/p8": {
+   "tokova": 84,
+   "promenjeno": 22,
+   "A17": 22
+  },
+  "R/pause10": {
+   "tokova": 2599,
+   "samo reduced": 1860,
+   "promenjeno": 739,
+   "A17": 739,
+   "test pomeren/otpao/ostao": 3
+  },
+  "R/pause20": {
+   "tokova": 2599,
+   "samo reduced": 1860,
+   "promenjeno": 739,
+   "A17": 739,
+   "test pomeren/otpao/ostao": 1
+  },
+  "R/pain5": {
+   "tokova": 2599,
+   "promenjeno": 739,
+   "A17": 739,
+   "test pomeren/otpao/ostao": 2
+  },
+  "R/pain8": {
+   "tokova": 2599,
+   "promenjeno": 739,
+   "A17": 739,
+   "test pomeren/otpao/ostao": 1
+  },
+  "R/under": {
+   "tokova": 2599,
+   "samo reduced": 1860,
+   "promenjeno": 739,
+   "A17": 739
+  },
+  "R/fatigue": {
+   "tokova": 2599
+  },
+  "R/pause10pain5": {
+   "tokova": 2599,
+   "samo reduced": 1439,
+   "promenjeno": 1160,
+   "A17": 739,
+   "N2": 540,
+   "test pomeren/otpao/ostao": 2
+  }
+ },
+ "rejected": [],
+ "odd": [],
+ "testChanges": [
+  "04 d4-f-14w/w2end/pause20: test ned — → 5",
+  "04 d4-f-14w/w2end/pain5: test ned 4 → —",
+  "04 d4-f-14w/w2end/pain8: test ned — → 5",
+  "04 d4-f-14w/w2end/painPause: test ned — → 5",
+  "04 d6-f-14w/w2end/chain: test ned — → 4",
+  "04 d3-f-18w/w2end/chain: test ned — → 6",
+  "04 d3-f-18w/w6wed/pause10: test ned 9 → 8",
+  "04 d4-f-18w/w2end/chain: test ned — → 6",
+  "04 d5-f-18w/w2end/chain: test ned — → 6",
+  "04 d6-f-18w/w2end/chain: test ned — → 6",
+  "R f-d4-14w-35km-e270-A-sat/w2/pause10: test ned 4 → —",
+  "R f-d4-14w-35km-e270-A-sat/w2/pain5: test ned 4 → —",
+  "R f-d4-14w-35km-e270-A-sat/w2/pause10pain5: test ned 4 → —",
+  "R f-d5-12w-35km-e270-A-sat/w2/pause10: test ned 4 → —",
+  "R f-d5-14w-35km-e405-A-sat/w2/pause20: test ned — → 5",
+  "R f-d5-14w-35km-e405-A-sat/w2/pain5: test ned 4 → —",
+  "R f-d5-14w-35km-e405-A-sat/w2/pain8: test ned — → 5",
+  "R f-d5-14w-35km-e405-A-sat/w2/pause10pain5: test ned 4 → —",
+  "R f-d6-14w-35km-e405-A-sat/w2/pause10: test ned 4 → —"
+ ],
+ "sec": 191
+}

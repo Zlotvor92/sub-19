@@ -1,0 +1,100 @@
+{
+ "flows": 269760,
+ "rejectedBefore": 1057,
+ "rejectedAfter": 0,
+ "changed": {
+  "ponovljen bol heš": 20046,
+  "ponovljen umor heš traka": 2906,
+  "ponovljen umor heš traka (manje rasterećenja)": 5466,
+  "ponovljen umor heš": 789,
+  "prvi korak heš": 2945,
+  "ponovljen drugi heš": 2000,
+  "prvi korak (pouka 35) heš": 618,
+  "ponovljen drugi (pouka 35) heš": 505,
+  "ponovljen bol (pouka 35) heš": 185,
+  "ponovljen umor (pouka 35) heš traka": 10,
+  "ponovljen umor (pouka 35) heš": 133,
+  "ponovljen umor (pouka 35) heš traka (manje rasterećenja)": 18,
+  "ponovljen bol heš traka": 1
+ },
+ "examples": {
+  "ponovljen bol heš": [
+   "d3-8w-30km-v30-A-sat/pre1/pain5/+1: rasterećenja 1 → 1, traka 0 → 0",
+   "d3-8w-30km-v30-A-sat/pre1/pain8/+1: rasterećenja 1 → 1, traka 0 → 0",
+   "d3-8w-30km-v30-A-sat/pre1/painPause/+1: rasterećenja 1 → 1, traka 0 → 0"
+  ],
+  "ponovljen umor heš traka": [
+   "d3-8w-30km-v30-A-sat/pre1/fatigue/+1: rasterećenja undefined → 2, traka undefined → 0",
+   "d3-8w-30km-v30-A-sat/pre1/fatigue/+2: rasterećenja undefined → 2, traka undefined → 0",
+   "d3-8w-30km-v30-A-sat/pre1/fatigue/+3: rasterećenja undefined → 2, traka undefined → 0"
+  ],
+  "ponovljen umor heš traka (manje rasterećenja)": [
+   "d3-8w-30km-v30-A-sat/w2end/fatigue/+1: rasterećenja 2 → 1, traka 1 → 0",
+   "d3-8w-30km-v30-A-sat/w2end/fatigue/+2: rasterećenja 2 → 1, traka 1 → 0",
+   "d3-8w-30km-v30-A-sat/w2end/fatigue/+3: rasterećenja 2 → 1, traka 1 → 0"
+  ],
+  "ponovljen umor heš": [
+   "d3-8w-30km-v30-A-sat/w5end/fatigue/+1: rasterećenja 2 → 2, traka 0 → 0",
+   "d3-8w-30km-v30-A-sat/w5end/fatigue/+2: rasterećenja 2 → 2, traka 0 → 0",
+   "d3-8w-30km-v30-A-sat/w5end/fatigue/+3: rasterećenja 2 → 2, traka 0 → 0"
+  ],
+  "prvi korak heš": [
+   "d4-8w-40km-v40-B-sat/w1wed/pause35: rasterećenja 1 → 1, traka 1 → 1",
+   "d4-8w-40km-v40-B-sat/w1end/pause35: rasterećenja 1 → 1, traka 1 → 1",
+   "d4-8w-40km-v40-B-sat/w2wed/pause35: rasterećenja 1 → 1, traka 1 → 1"
+  ],
+  "ponovljen drugi heš": [
+   "d4-8w-40km-v40-B-sat/w1wed/pause35/+1: rasterećenja 1 → 1, traka 0 → 0",
+   "d4-8w-40km-v40-B-sat/w1end/pause35/+1: rasterećenja 1 → 1, traka 0 → 0",
+   "d4-8w-40km-v40-B-sat/w2wed/pause35/+1: rasterećenja 1 → 1, traka 0 → 0"
+  ],
+  "prvi korak (pouka 35) heš": [
+   "d5-9w-40km-v55-C-sun/w1wed/pause20: rasterećenja 1 → 1, traka 1 → 1",
+   "d5-9w-40km-v55-C-sun/w1wed/pause35: rasterećenja 1 → 1, traka 1 → 1",
+   "d5-9w-40km-v55-C-sun/w1wed/painPause: rasterećenja 1 → 1, traka 2 → 2"
+  ],
+  "ponovljen drugi (pouka 35) heš": [
+   "d5-9w-40km-v55-C-sun/w1wed/pause20/+1: rasterećenja 1 → 1, traka 0 → 0",
+   "d5-9w-40km-v55-C-sun/w1wed/pause35/+1: rasterećenja 1 → 1, traka 0 → 0",
+   "d5-9w-40km-v55-C-sun/w2wed/pause20/+1: rasterećenja 0 → 0, traka 0 → 0"
+  ],
+  "ponovljen bol (pouka 35) heš": [
+   "d5-9w-40km-v55-C-sun/w1wed/painPause/+1: rasterećenja 1 → 1, traka 0 → 0",
+   "d5-9w-40km-v55-C-sun/w2wed/painPause/+1: rasterećenja 0 → 0, traka 0 → 0",
+   "d5-9w-40km-v55-C-sun/w3wed/painPause/+1: rasterećenja 0 → 0, traka 0 → 0"
+  ],
+  "ponovljen umor (pouka 35) heš traka": [
+   "f-d6-12w-35km-e270-A-sat/pre1/fatigue/+1: rasterećenja undefined → 3, traka undefined → 0",
+   "f-d6-12w-35km-e270-A-sat/pre1/fatigue/+2: rasterećenja undefined → 3, traka undefined → 0",
+   "f-d6-12w-35km-e270-A-sat/pre1/fatigue/+3: rasterećenja undefined → 3, traka undefined → 0"
+  ],
+  "ponovljen umor (pouka 35) heš": [
+   "f-d6-12w-35km-e270-A-sat/pre1/fatigue/+4: rasterećenja 3 → 3, traka 0 → 0",
+   "f-d6-12w-35km-e270-A-sat/pre1/fatigue/+5: rasterećenja 3 → 3, traka 0 → 0",
+   "f-d6-12w-35km-e270-A-sat/pre1/fatigue/+6: rasterećenja 3 → 3, traka 0 → 0"
+  ],
+  "ponovljen umor (pouka 35) heš traka (manje rasterećenja)": [
+   "f-d6-12w-35km-e270-A-sat/w2end/fatigue/+1: rasterećenja 3 → 2, traka 1 → 0",
+   "f-d6-12w-35km-e270-A-sat/w2end/fatigue/+2: rasterećenja 3 → 2, traka 1 → 0",
+   "f-d6-12w-35km-e270-A-sat/w2end/fatigue/+3: rasterećenja 3 → 2, traka 1 → 0"
+  ],
+  "ponovljen bol heš traka": [
+   "b-d4-11w-18km-v35-B-sat/w9end/pain8/+1: rasterećenja undefined → 2, traka undefined → 0"
+  ]
+ },
+ "repeatedFatigueMoreDeloads": {
+  "before": 5484,
+  "after": 0
+ },
+ "bannerNewVsOldSameCode": 0,
+ "bannerEx": [],
+ "p35": {
+  "genPlans": 0,
+  "adaptFlows": 934,
+  "adaptFlowsBefore": 7136
+ },
+ "p25": {
+  "before": 0,
+  "after": 0
+ }
+}

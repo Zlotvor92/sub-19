@@ -11,7 +11,7 @@ import { useTrainingStore } from '../../stores';
 import { setStatus } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
 import { sessionView } from '../session/sessionModel';
-import { useEasyPace } from '../session/useEasyPace';
+import { useEasyPace, usePlanRpe } from '../session/useEasyPace';
 import { Advisories } from './Advisories';
 import { Description, type DayStatus } from './DayCard';
 import { TodayHero } from './TodayHero';
@@ -47,10 +47,11 @@ function TrainingToday({
   const alts = useTrainingStore((s) => s.alts);
   const openScreen = useUIStore((s) => s.openScreen);
   const easy = useEasyPace();
+  const rpe = usePlanRpe();
   const weather = useWeatherModel(day, today);
   return (
     <TodayHero
-      view={sessionView(day, { alt: alts[day.id], easyPaceSec: easy })}
+      view={sessionView(day, { alt: alts[day.id], easyPaceSec: easy, rpeTarget: rpe })}
       status={(log[day.id]?.status || 'pending') as DayStatus}
       entry={log[day.id]}
       weather={weather ? weatherLine(weather) : null}

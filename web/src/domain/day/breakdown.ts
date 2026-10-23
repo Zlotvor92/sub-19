@@ -3,19 +3,30 @@
    regex-i. Ne menja se ništa: samo se čita. */
 
 import { fmtClock, fmtKm } from '../format';
-import { rpeTarget } from '../plan/describe';
 import type { ResolvedDay } from '../plan/types';
 import { runWalkText } from '../training/generator/runWalk';
+import { structureRows } from './structure';
 
 export type BreakdownRow = readonly [label: string, value: string, highlight?: true];
 
 const text = (x: unknown): string => (typeof x === 'string' ? x : '');
 const pace = (sec: number): string => fmtClock(sec);
 
-type Day = Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'desc' | 'runWalk'>;
+type Day = Pick<ResolvedDay, 'rest' | 'tag' | 'session' | 'desc' | 'runWalk' | 'structure'>;
 
-export function sessionBreakdown(d: Day | null | undefined): BreakdownRow[] | null {
+/** Ciljni napor dana — smernicu daje generator distance plana (pozivalac ga prosleđuje). */
+export type RpeFor = (d: Pick<ResolvedDay, 'rest' | 'tag'>) => { min: number; max: number } | null;
+
+export function sessionBreakdown(
+  d: Day | null | undefined,
+  rpeTarget: RpeFor
+): BreakdownRow[] | null {
   if (!d || d.rest) return null;
+  /* 5k-v2: strukturisan dan — redovi iz strukture (napor iz strukture, ne iz smernice po tipu dana). */
+  if (d.structure) {
+    const rows = structureRows(d.structure, d.runWalk ? runWalkText(d.runWalk) : null);
+    return rows.length >= 2 || d.runWalk ? rows : null;
+  }
   const rows: BreakdownRow[] = [];
   const s = d.session;
   if (s) {

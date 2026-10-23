@@ -1,0 +1,94 @@
+[
+  {
+    "name": "S1 udeo dugog 5 dana 40 % umesto 35 % (M15)",
+    "file": "src/domain/generators/marathon/v2/policy.ts",
+    "find": "longMaxShare: 0.35,",
+    "replace": "longMaxShare: 0.4,",
+    "tests": [
+      "src/domain/generators/marathon/v2/policy.node.test.ts",
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S2 3 dana: I umesto T cruise u razvoju (M15 bez I/R)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "phase === 'development' ? 'T_cruise' : 'MP'",
+    "replace": "phase === 'development' ? 'I' : 'MP'",
+    "tests": [
+      "src/domain/generators/marathon/v2/quality.node.test.ts",
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S3 piramida M10a isključena (I 5000 bez druge strukture)",
+    "file": "src/domain/generators/marathon/v2/workouts.ts",
+    "find": "if (out.length === 1) {",
+    "replace": "if (out.length === 99) {",
+    "tests": [
+      "src/domain/generators/marathon/v2/quality.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S4 granica recentLongRunKm: 5 km odbijen (M13a)",
+    "file": "src/domain/generators/marathon/v2/input.ts",
+    "find": "recent >= q.recentLongMinKm",
+    "replace": "recent > q.recentLongMinKm",
+    "tests": ["src/domain/generators/marathon/v2/input.node.test.ts"]
+  },
+  {
+    "name": "S5 skok dugog 20 % umesto 10 % (M13a)",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "Math.max(q.factor * L, L + q.addKm * 10)",
+    "replace": "Math.max(1.2 * L, L + q.addKm * 10)",
+    "tests": [
+      "src/domain/generators/marathon/v2/volume.node.test.ts",
+      "src/domain/generators/marathon/v2/recent.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S6 lagani nejednaki 5/6 dana (ceo višak na prvi lagan)",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "each + (i < total10 - each * n ? 1 : 0)",
+    "replace": "each + (i === 0 ? total10 - each * n : 0)",
+    "tests": [
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S7 kotrljajuće pravilo isključeno (plafon skoka samo ned 1)",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "const jump10 = longJumpCap10(longs10, frame.index, recent);",
+    "replace": "const jump10 = frame.index === 1 ? longJumpCap10(longs10, frame.index, recent) : null;",
+    "tests": [
+      "src/domain/generators/marathon/v2/volume.node.test.ts",
+      "src/domain/generators/marathon/v2/recent.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "S8 odbijanje RECENT_LONG_TOO_SHORT isključeno (pouka 6)",
+    "file": "src/domain/generators/marathon/v2/generate.ts",
+    "find": "if (!fit && recent !== null)",
+    "replace": "if (!fit && recent === -1)",
+    "tests": [
+      "src/domain/generators/marathon/v2/volume.node.test.ts",
+      "src/domain/generators/marathon/v2/recent.node.test.ts"
+    ]
+  },
+  {
+    "name": "S9 3 dana: T u taperu N−2 (jedan kvalitet, M7/M15)",
+    "file": "src/domain/generators/marathon/v2/quality.ts",
+    "find": "w.tShare === null || quality === 1",
+    "replace": "w.tShare === null",
+    "tests": [
+      "src/domain/generators/marathon/v2/quality.node.test.ts",
+      "src/domain/generators/marathon/v2/week.node.test.ts",
+      "src/domain/generators/marathon/v2/grid.node.test.ts"
+    ]
+  }
+]

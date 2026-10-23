@@ -1,0 +1,274 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-08g/sabotage-08g.json",
+ "head": "16b8906",
+ "level": "brz",
+ "bail": true,
+ "parallel": 2,
+ "vitestArgs": [],
+ "durationS": 78.7,
+ "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+ "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08g-1 premeštanje testa se gubi (test iz periodize, ne iz upisanog plana)",
+   "files": [
+    "src/domain/generators/fiveK/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "test": "08g trajna rana mreža (194 plana × 17 scenarija + lanac + ponovljen umor = 104 800 tokova) — deo 1 > 5 planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema f4b257d",
+    "message": "AssertionError: expected [ …(3) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "ba286fb5bfc5cf3c5b856b02184381167f219c36dd03ecf338e81838c2d2b16e",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.9
+  },
+  {
+   "index": 2,
+   "name": "08g-2a validator poredi km umesto jedinice doze",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "test": "08g N2b — sporiji rezultat u bazi: jedinica doze i plafon ispred progresije (odluka organizatora D) > (i) plafon dozvoljava prethodnu R, a R padne → i dalje BASE_R_DECREASE",
+    "message": "AssertionError: expected [] to include 'BASE_R_DECREASE'"
+   },
+   "failedCount": 1,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "f934ecd0648c27db92fcddc90418e000e79657ff808b5bc34433d57924abd665",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 15.9
+  },
+  {
+   "index": 3,
+   "name": "08g-2b izuzetak R bez provere plafona",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "test": "08g N2b — sporiji rezultat u bazi: jedinica doze i plafon ispred progresije (odluka organizatora D) > (i) plafon dozvoljava prethodnu R, a R padne → i dalje BASE_R_DECREASE",
+    "message": "AssertionError: expected [] to include 'BASE_R_DECREASE'"
+   },
+   "failedCount": 1,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "8bcdf31c0d2e339a1654080986fb45457a95b3a0aaad1e3f73b9eb88bbd14b15",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.1
+  },
+  {
+   "index": 4,
+   "name": "08g-2c konstruktor bez DOSE_DROPPED",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "test": "08g N2b — sporiji rezultat u bazi: jedinica doze i plafon ispred progresije (odluka organizatora D) > (i) r-d5-14w-60km-v32-1, sreda ned 3: plafon R 2,34 km < 2,40 km → R 2,10 km, napomena + upozorenje DOSE_DROPPED",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "b8ecbfd75eb8c72d21eb6939f2a9bddf4588e312b9ff00548fec170b110dd712",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.1
+  },
+  {
+   "index": 5,
+   "name": "08g-3 trkačka nedelja bez pouke 30",
+   "files": [
+    "src/domain/generators/fiveK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "test": "08g trajna rana mreža (194 plana × 17 scenarija + lanac + ponovljen umor = 104 800 tokova) — deo 1 > 5 planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema f4b257d",
+    "message": "AssertionError: expected [ …(2) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "c70058f9ffd8bd8e33e6a9b31075606ec8af2a3de8f0e2b02690412b96c3b572",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 15.5
+  },
+  {
+   "index": 6,
+   "name": "08g-4 stanje doze iz sastavljene umesto upisane nedelje",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "test": "08g trajna rana mreža (194 plana × 17 scenarija + lanac + ponovljen umor = 104 800 tokova) — deo 1 > 5 planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema f4b257d",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "d7065f7b6bfcb10a20d45b45f5bd25f9b8a79883426f41965996e09dedf5c89b",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.3
+  },
+  {
+   "index": 7,
+   "name": "08g-5 validator preskače mešovitu nedelju (lanac doze)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "test": "08g N4 — validator ne preskače mešovitu nedelju (pouka 29) > isti par kvaliteta posle mešovite nedelje → QUALITY_REPEAT",
+    "message": "AssertionError: expected [ 'PEAK_MAIN_FLOOR' ] to include 'QUALITY_REPEAT'"
+   },
+   "failedCount": 1,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "6ed6ac762e0b62490a6269d3b69d35d44f991c75b2f596111d63ee1da3bb6989",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.9
+  },
+  {
+   "index": 8,
+   "name": "08g-6 umor vezan za asOf (pouka 36)",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts",
+    "test": "08g trajna rana mreža (194 plana × 17 scenarija + lanac + ponovljen umor = 104 800 tokova) — deo 1 > 5 planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema f4b257d",
+    "message": "AssertionError: expected [ …(10) ] to deeply equal []"
+   },
+   "failedCount": 2,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "b439eae1b52a545b5448d7ec36c74934e04aed4247fe5a9aaa54bc19f337fa71",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.8
+  },
+  {
+   "index": 9,
+   "name": "08g-7 zaključan budući dan ulazi u lanac doze (MAR-07 nalaz)",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "test": "08g MAR-07 nalaz u 5K — zaključan dan kvaliteta u nedelji posle novog rezultata > r-d3-12w-16km-v38-0, faster kraj ned 1 + zaključan Q1 ned 2 → prihvaćen, dan zadržan",
+    "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "53dadae2615eb2d6793956ff69250f839bbd77e7d5ca824df001cd4f719006ef",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.7
+  },
+  {
+   "index": 10,
+   "name": "08g-8 umor: rasterećenje uvek sledeće nedelje (pouka 36, ponedeljak)",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+    "test": "08g pouka 36 (precizno) — rasterećenje = nedelja posle nedelje poslednjeg zapisa umora > zapisi iz ned 1, asOf ponedeljak ned 2 → rasterećenje tekuće nedelje 2 (ostatak)",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "hashSabotaged": "7f227e35e4d2b544ccc0490a700194b93797576ac5a2c3af38333c25b2cea72e",
+   "hashAfter": "8e3341578454f18a75d7e8ece896c7b67309342e012958984ffc8644103f6479",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14.4
+  }
+ ]
+}

@@ -2,18 +2,26 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../date';
 import type { GenPlanState } from '../state';
-import { analyzeExecution, type ExecutionAnalysis } from '../training/execution';
 import { matchPlanRows } from '../training/adaptation/matching';
-import { generatePlan } from '../training/generator/generatePlan';
 import { sessDesc } from '../training/sessions/calc';
 import type { PlanGenerationInput } from '../training/types';
-import { adaptGeneratedPlan } from './adapt';
-import { alignAutomaticOverlays } from './automaticAlts';
-import { buildExecutionAdjustment, type ExecutionAdjustmentOptions } from './executionAdjustment';
-import { deliveredWeeks, isDemanding } from './finalize';
-import { graftFuturePlan, type ReplanContext } from './future';
 import { resolvePlan } from './resolve';
 import { getPlanRevisions, recordPlanRevision } from './versions';
+import type { ExecutionAdjustmentOptions, ReplanContext } from '@/domain/generators/select';
+import type { ExecutionAnalysis } from '@/domain/generators/halfMarathon/training/execution';
+import { routedEngine } from '@/test/generators';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const {
+  adaptGeneratedPlan,
+  alignAutomaticOverlays,
+  analyzeExecution,
+  buildExecutionAdjustment,
+  deliveredWeeks,
+  generatePlan,
+  graftFuturePlan,
+  isDemanding
+} = routedEngine(5000);
 
 type Event = {
   today?: IsoDate;

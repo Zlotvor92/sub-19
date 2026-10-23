@@ -1,0 +1,102 @@
+[
+  {
+    "name": "08g-1 premeštanje testa se gubi (test iz periodize, ne iz upisanog plana)",
+    "file": "src/domain/generators/fiveK/v2/steps.ts",
+    "find": "  const written = prior ? writtenTest(prior) : null;",
+    "replace": "  const written = null as { week: number | null; done: boolean } | null;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-2a validator poredi km umesto jedinice doze",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "  const rDose = (w: PlanWeek): Dose => doseOf(qualityDays(w), ['R']);",
+    "replace": "  const rDose = (w: PlanWeek): Dose => ({\n    m: Math.round(qualityDays(w).reduce((a, d) => a + d.workout.workKm.R, 0) * 1000),\n    s: 0\n  });",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-2b izuzetak R bez provere plafona",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "    if (unitOf(rDose(a)) === 'm' && ceilM < rDose(a).m)",
+    "replace": "    if (unitOf(rDose(a)) === 'm' && ceilM >= 0)",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-2c konstruktor bez DOSE_DROPPED",
+    "file": "src/domain/generators/fiveK/v2/workouts.ts",
+    "find": "  return pm && workOf(r) + 1e-9 < workOf(pm) && budgetR + 1e-9 < workOf(pm)",
+    "replace": "  return false && pm && workOf(r) + 1e-9 < workOf(pm) && budgetR + 1e-9 < workOf(pm)",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-3 trkačka nedelja bez pouke 30",
+    "file": "src/domain/generators/fiveK/v2/week.ts",
+    "find": "  const raceRest = cap ? raceWeekRest(days, raceDate, pain, cap.km, cap.fixed) : [];",
+    "replace": "  const raceRest: string[] = [];",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-4 stanje doze iz sastavljene umesto upisane nedelje",
+    "file": "src/domain/generators/fiveK/v2/generate.ts",
+    "find": "    if (r.dose && qOf(written[written.length - 1]!) === qOf(r.week)) lastDose[f.phase] = r.dose;",
+    "replace": "    if (r.dose) lastDose[f.phase] = r.dose;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-5 validator preskače mešovitu nedelju (lanac doze)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "      segOf(w) !== null\n  );",
+    "replace": "      segOf(w) !== null &&\n      checked(w)\n  );",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-6 umor vezan za asOf (pouka 36)",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "    const dw = Math.max(r, ra <= N && day(weeks[ra - 1]!.startDate) < day(after) ? ra + 1 : ra);",
+    "replace": "    const dw = ra > 0 ? n : n;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-7 zaključan budući dan ulazi u lanac doze (MAR-07 nalaz)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "    if (qd.some(lockedFuture)) return -w.index;",
+    "replace": "    if (qd.some(lockedFuture) && false) return -w.index;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08g-8 umor: rasterećenje uvek sledeće nedelje (pouka 36, ponedeljak)",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "      if (dw !== n) step.deloadWeek = dw;",
+    "replace": "      if (dw !== n && false) step.deloadWeek = dw;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08g.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08g.grid.node.test.ts"
+    ]
+  }
+]

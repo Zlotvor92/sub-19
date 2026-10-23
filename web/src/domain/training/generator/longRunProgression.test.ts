@@ -1,11 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { HEURISTIC_21K, HEURISTIC_42K } from '../constants/distances';
-import { PROFILE_21K } from '../distances/profile21k';
-import { PROFILE_42K } from '../distances/profile42k';
-import type { QualityRequest } from '../distances/types';
+import { HEURISTIC_21K } from '@/domain/generators/halfMarathon/training/constants/distances';
+import { PROFILE_21K } from '@/domain/generators/halfMarathon/training/distances/profile21k';
+import type { QualityRequest } from '@/domain/generators/halfMarathon/training/distances/types';
+import {
+  nextLongRunTarget as hmNextLongRunTarget,
+  type LongRunProgressionRequest
+} from '@/domain/generators/halfMarathon/training/generator/longRunProgression';
+import { HEURISTIC_42K as M_HEURISTIC_42K } from '@/domain/generators/marathon/training/constants/distances';
+import { PROFILE_42K as M_PROFILE_42K } from '@/domain/generators/marathon/training/distances/profile42k';
+import { nextLongRunTarget as marathonNextLongRunTarget } from '@/domain/generators/marathon/training/generator/longRunProgression';
 import { sessQKm } from '../sessions/calc';
 import { ZONE_FOR_KIND } from '../vdot/zoneForKind';
-import { nextLongRunTarget, type LongRunProgressionRequest } from './longRunProgression';
+
+/* Stari zajednički engine je obrisan. Polumaratonska heuristika ide polumaratonskom generatoru, maratonska maratonskom
+   (kao u aplikaciji); tipovi kopija su strukturno isti, pa se maratonske vrednosti ovde vide kroz HM tip. */
+const HEURISTIC_42K = M_HEURISTIC_42K as unknown as typeof HEURISTIC_21K;
+const PROFILE_42K = M_PROFILE_42K as unknown as typeof PROFILE_21K;
+const nextLongRunTarget = (r: LongRunProgressionRequest & { marathon?: boolean }) =>
+  r.heuristic === HEURISTIC_42K ? marathonNextLongRunTarget(r as never) : hmNextLongRunTarget(r);
 
 const base: LongRunProgressionRequest = {
   heuristic: HEURISTIC_21K,

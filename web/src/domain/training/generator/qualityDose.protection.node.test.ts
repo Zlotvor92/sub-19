@@ -1,7 +1,7 @@
+import { generatePlan } from '@/test/generators';
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import type { PlanGenerationInput } from '../types';
-import { generatePlan } from './generatePlan';
 
 const QA_BASE = {
   startDate: '2026-10-12',

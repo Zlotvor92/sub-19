@@ -1,12 +1,12 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../domain/date';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan, type ResolvedPlan } from '../../domain/plan';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
 import { createIcuApi } from '../api/icuApi';
 import { createAppApi } from '../api/appApi';
 import type { IcuLink } from '../../domain/icu';
 import { createWatchPush } from './icuPush';
+import { FIVE_K_GENERATOR } from '../../domain/generators/select';
 
 /* parity: icuPosalji (app.js) — uslovi odbijanja, telo poziva, zapis `lastPush`, poruke grešaka. Tekst događaja je dokazan u
    `domain/watch` naspram starog koda. */
@@ -59,6 +59,7 @@ function make(opts: { link: IcuLink | null; plan?: ResolvedPlan | null; response
     api,
     link: { get: () => link, set: (v) => void (link = v) },
     plan: () => (opts.plan === undefined ? plan() : opts.plan),
+    generator: () => FIVE_K_GENERATOR,
     vdot: () => 47,
     now: () => 1234,
     today: () => TODAY

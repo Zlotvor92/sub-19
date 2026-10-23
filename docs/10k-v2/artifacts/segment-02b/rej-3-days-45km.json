@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "WEEKLY_KM_TOO_HIGH",
+      "message": "Trenutni obim 45 km je iznad 40 km za 3 dana trčanja: za 45 km plan podržava 4–6 dana trčanja."
+    }
+  ]
+}

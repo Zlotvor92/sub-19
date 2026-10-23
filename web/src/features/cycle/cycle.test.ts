@@ -1,8 +1,8 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import type { IsoDate } from '../../domain/date';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import { resolvePlan } from '../../domain/plan';
-import { generatePlan } from '../../domain/training/generator/generatePlan';
+import { TEN_K_GENERATOR, generateFiveKV2Plan } from '../../domain/generators/select';
 import { cycleCaption, cycleModel, PHASE_ORDER } from './cycle';
 import { kindOf, weekCells } from './dayCells';
 
@@ -29,7 +29,7 @@ describe('cycleModel', () => {
   const plan = planOf('2026-04-12');
 
   it('faze idu redom BAZA → … → TAPER → TRKA, svaka nedelja pripada tačno jednoj', () => {
-    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate);
+    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate, TEN_K_GENERATOR.phaseOfWeek);
     const keys = m.phases.map((p) => p.key);
     expect(keys[0]).toBe('BAZA');
     expect(keys[keys.length - 1]).toBe('TRKA');
@@ -39,7 +39,7 @@ describe('cycleModel', () => {
   });
 
   it('tekuća nedelja je jedna, ranije su urađene, kasnije buduće', () => {
-    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate);
+    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate, TEN_K_GENERATOR.phaseOfWeek);
     expect(m.current?.w).toBe(2);
     expect(m.weeks.filter((w) => w.state === 'now')).toHaveLength(1);
     expect(m.weeks.filter((w) => w.state === 'done').map((w) => w.w)).toEqual([1]);
@@ -48,18 +48,18 @@ describe('cycleModel', () => {
   });
 
   it('pre početka sve je buduće i nema tekuće nedelje; posle trke sve je urađeno', () => {
-    const before = cycleModel(plan, {}, '2025-12-20' as IsoDate);
+    const before = cycleModel(plan, {}, '2025-12-20' as IsoDate, TEN_K_GENERATOR.phaseOfWeek);
     expect(before.current).toBeNull();
     expect(before.weeks.every((w) => w.state === 'future')).toBe(true);
     expect(cycleCaption(before)).toBeNull();
-    const after = cycleModel(plan, {}, '2026-06-01' as IsoDate);
+    const after = cycleModel(plan, {}, '2026-06-01' as IsoDate, TEN_K_GENERATOR.phaseOfWeek);
     expect(after.current).toBeNull();
     expect(after.weeks.every((w) => w.state === 'done')).toBe(true);
     expect(after.phases.every((p) => p.state === 'done')).toBe(true);
   });
 
   it('rasterećenje nasleđuje fazu prethodne nedelje (ne pravi svoju fazu)', () => {
-    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate);
+    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate, TEN_K_GENERATOR.phaseOfWeek);
     const deloads = m.weeks.filter((w) => w.deload);
     expect(deloads.length).toBeGreaterThan(0);
     for (const d of deloads) {
@@ -70,7 +70,7 @@ describe('cycleModel', () => {
   });
 
   it('kilometri faze su zbir njenih nedelja', () => {
-    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate);
+    const m = cycleModel(plan, {}, '2026-01-14' as IsoDate, TEN_K_GENERATOR.phaseOfWeek);
     for (const p of m.phases)
       expect(p.planKm).toBeCloseTo(
         p.weeks.reduce((s, w) => s + w.planKm, 0),
@@ -114,5 +114,36 @@ describe('weekCells', () => {
     expect(kindOf('lr')).toBe('l');
     expect(kindOf('snaga')).toBe('s');
     expect(kindOf('lako')).toBe('e');
+  });
+
+  it('5K v2: nedelja koja ne počinje ponedeljkom — ćelija je dan u nedelji datuma, ne pozicija', () => {
+    const r = generateFiveKV2Plan({
+      startDate: '2026-11-01', // nedelja; trka u subotu
+      raceDate: '2027-01-09',
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 25,
+      recentResult: { distanceM: 5000, timeSec: 1500, date: '2026-10-20' }
+    });
+    if (!r.ok) throw new Error('plan');
+    const wk = resolvePlan(r.plan.weeks, { alts: {}, moves: {} }).weeks[0]!;
+    const cells = weekCells(wk, {}, '2026-10-30' as IsoDate);
+    expect(cells.map((c) => c.label.slice(0, 3))).toEqual([
+      'Pon',
+      'Uto',
+      'Sre',
+      'Čet',
+      'Pet',
+      'Sub',
+      'Ned'
+    ]);
+    expect(cells.map((c) => c.state === 'rest')).toEqual([
+      true,
+      false,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]);
   });
 });

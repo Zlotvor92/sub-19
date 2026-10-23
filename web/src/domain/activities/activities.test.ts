@@ -1,7 +1,6 @@
+import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
-import { generatePlan } from '../training/generator/generatePlan';
 import type { GenPlanState } from '../state';
 import {
   decouplingPerKm,
@@ -11,12 +10,12 @@ import {
   keepWorkItems,
   mergeDay,
   perKmDetail,
-  realignPlan,
   selectIcuWorkLaps,
   selectWorkLaps,
   workLapsPace,
   type ActivityStreams
 } from './index';
+import { realignPlan } from '../generators/fiveK/activities/realign';
 
 /* parity: test/intervali-radni-deo.test.mjs, test/spojevi.test.mjs, test/doslednost.test.mjs.
    Brojčana jednakost sa starim kodom je u `activities.oracle.test.ts`; ovde su NAMERA i poznate zamke. */

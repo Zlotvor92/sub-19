@@ -1,0 +1,168 @@
+{
+ "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-08b/sabotage-08b.json",
+ "head": "d73b83a",
+ "level": "brz",
+ "bail": true,
+ "parallel": 2,
+ "vitestArgs": [],
+ "durationS": 56.2,
+ "hashBefore": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+ "hashAfter": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "08b-a zaključan test se ne štiti (kept ignorisan, A13c)",
+   "files": [
+    "src/domain/generators/marathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "test": "MAR-08b K1 (pouka 38): zaključan dan testa se ne premešta > feel-d4-14w-55km-e360-A pause10 asOf 2026-11-22, zaključan test 2026-11-26 → jedan test, na zaključanom danu",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "hashSabotaged": "52bc49bef1adcf19df12443dc2de8ea018a639883778f9a82854fc3d50e8b6fc",
+   "hashAfter": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.5
+  },
+  {
+   "index": 2,
+   "name": "08b-b nedelja bez treninga (svi dani odmor) ponovo EMPTY_WEEK",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "test": "MAR-08b K3: lanac pre starta → ned 1 > bol 8 → bol 8 (sreda ned 1): nedelja 1 bez treninga = WEEK_ALL_REST (upozorenje), ne EMPTY_WEEK",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EMPTY_WEEK: Nedelja bez treninga (Uslov 8).\",\"week\":1}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "hashSabotaged": "8a9851b12d8c82e3ae2b3b0e739ec841de87db9d5c58806cfff49107daf390f0",
+   "hashAfter": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 26.9
+  },
+  {
+   "index": 3,
+   "name": "08b-c rasterećenje bez reference dugog (bez deloadRef)",
+   "files": [
+    "src/domain/generators/marathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "test": "MAR-08b K3: lanac pre starta → ned 1 > bol 8 → umor (sreda ned 1): rasterećenje ned 2 iz reference nedelje 1 generatora (pouka 34)",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 2: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.\",\"week\":2}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "hashSabotaged": "bc060f1b9cebdd1f2b824d14095d55af8407f3a77ccb24a5a358785cfdda17bf",
+   "hashAfter": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 24.5
+  },
+  {
+   "index": 4,
+   "name": "08b-d lagani na minimumu zaokruženi kao i inače (Math.round)",
+   "files": [
+    "src/domain/generators/marathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "test": "MAR-08b K4: cilj na minimumu nedelje — planirano ≥ minimum (zaokruživanje laganih naviše) > beg-d4-16w-25km-v30-C, ned 2: rezultat pon + bol 5 čet, asOf čet → prihvaćeno, svaka nedelja ≥ 20 km",
+    "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"WEEK_MIN_VOLUME: Nedelja 19.98 km < 20 km (Uslov 8, M15).\",\"week\":15}],\"violations\":[]}"
+   },
+   "failedCount": 1,
+   "hashBefore": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "hashSabotaged": "e1f58470dc4d40b5234ec0505439a9ff720049a32b1818ce45e8e308b603ab15",
+   "hashAfter": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 23.3
+  },
+  {
+   "index": 5,
+   "name": "08b-e dan poznat iz pokrivenosti bez zapisa = plan (ne 0)",
+   "files": [
+    "src/domain/generators/marathon/v2/mixed.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment08b.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment08b.node.test.ts",
+    "test": "MAR-08b pouka 37: dan poznat iz potpune pokrivenosti bez zapisa = 0 > factKmOf: pauza 0, zapis = km (neodrađen 0), poznat bez zapisa 0, nepoznat = null (plan)",
+    "message": "AssertionError: expected null to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "hashSabotaged": "85c8a5fac818eb591985fdbd9311c14fd3b8ecad7b4dd1871540b4a1c73d884f",
+   "hashAfter": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7
+  },
+  {
+   "index": 6,
+   "name": "08b-f zaključan test se ne štiti — samo trajna mreža (protectGrid)",
+   "files": [
+    "src/domain/generators/marathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/protectGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/protectGrid.node.test.ts",
+    "test": "MAR-08b zaključan dan testa (105 planova) — uzorak > 0 odbijanja i adaptInvariants prazno (K1, Uslov 8, pouka 23)",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "hashSabotaged": "52bc49bef1adcf19df12443dc2de8ea018a639883778f9a82854fc3d50e8b6fc",
+   "hashAfter": "8913b2e4f81feea4609213858dee68dededb851703d7797ceb1026155b999722",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 13
+  }
+ ]
+}

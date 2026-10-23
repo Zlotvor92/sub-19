@@ -1,9 +1,14 @@
-/* SLANJE PLANIRANIH TRENINGA NA SAT preko intervals.icu. Šta se šalje je odluka domena (`workoutsForWatch`); ovde je samo tok poziva:
+/* SLANJE PLANIRANIH TRENINGA NA SAT preko intervals.icu. Šta se šalje je odluka generatora distance plana
+   (`workoutsForWatch`); ovde je samo tok poziva:
    provera veze → sastavljanje dana → poziv servera → zapis vremena poslednjeg slanja u vezu. */
 
 import { icuConnected } from '../../domain/icu';
 import type { ResolvedPlan } from '../../domain/plan';
-import { thresholdPace, workoutsForWatch, type WatchBatch } from '../../domain/watch';
+import {
+  UNSUPPORTED_DISTANCE,
+  type PlanGenerator,
+  type WatchBatch
+} from '../../domain/generators/select';
 import type { IcuApi } from '../api/icuApi';
 import type { IcuLinkStore, IcuResult } from './icuSync';
 
@@ -11,6 +16,8 @@ export interface WatchPushDeps {
   api: IcuApi;
   link: IcuLinkStore;
   plan: () => ResolvedPlan | null;
+  /** Generator distance aktivnog plana: on odlučuje šta i kako ide na sat (`null` = distanca bez generatora). */
+  generator: () => Pick<PlanGenerator, 'workoutsForWatch' | 'thresholdPace'> | null;
   /** Tekuća forma, a kad je nema polazna (`null` kad plan nema ni jedno). */
   vdot: () => number | null;
   now: () => number;
@@ -23,14 +30,16 @@ export function createWatchPush(deps: WatchPushDeps) {
   /** Doslovno ono što bi otišlo — za pregled. */
   function preview(days: number = WATCH_DAYS): WatchBatch {
     const plan = deps.plan();
-    if (!plan) return { events: [], skipped: 0 };
-    return workoutsForWatch(plan, deps.today(), days, deps.vdot());
+    const generator = deps.generator();
+    if (!plan || !generator) return { events: [], skipped: 0 };
+    return generator.workoutsForWatch(plan, deps.today(), days, deps.vdot());
   }
 
   /** `replace`: server briše ranije poslato i pravi iznova („Iz početka"). Ne baca. */
   async function push(days: number, replace: boolean): Promise<IcuResult<{ n: number }>> {
     const cur = deps.link.get();
     if (!cur || !icuConnected(cur)) return { ok: false, error: 'intervals.icu nije povezan.' };
+    if (deps.plan() && !deps.generator()) return { ok: false, error: UNSUPPORTED_DISTANCE };
     const batch = preview(days);
     if (!batch.events.length) return { ok: false, error: 'Nema treninga u tom periodu.' };
     const r = await deps.api.pushWorkouts(cur, batch.events, replace);
@@ -41,7 +50,7 @@ export function createWatchPush(deps: WatchPushDeps) {
   }
 
   /** Prag tempa za intervals.icu (M:SS) ili null. */
-  const threshold = (): string | null => thresholdPace(deps.vdot());
+  const threshold = (): string | null => deps.generator()?.thresholdPace(deps.vdot()) ?? null;
 
   return { preview, push, threshold };
 }

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "A1 plafon zone bez člana trajanja (pouka 32)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  return dayFits\n    ? dayFits(ladder, s, doseOf(s) <= doseOf(ladderLevels(ladder, beginner)[0]!))\n    : 'fits';",
+    "replace": "  return 'fits';",
+    "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "A2 rasterećenje i taper bez člana trajanja (reducedStructure)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  if (fit(top) !== 'over') return top;",
+    "replace": "  return top;",
+    "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "A3 Q1 se bira uz Q2 najniže doze u osnovnoj strukturi (ne sa najviše km)",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "        .reduce((a, w) => (km100(w.km) > km100(a.km) ? w : a))",
+    "replace": "        .reduce((a) => a)",
+    "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "A4 izuzeće najnižeg nivoa preskače i proveru drugog dana",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "    return (exempt || qualityDaySec(d, c.paces, c.wc) <= long) && (other?.sec ?? 0) <= long",
+    "replace": "    return exempt || (qualityDaySec(d, c.paces, c.wc) <= long && (other?.sec ?? 0) <= long)",
+    "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "A5 dugi rasterećenja sa testom se ne podiže (minLong10 zanemaren)",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  const long10 = Math.max(base10, Math.min(minLong10, cap10));",
+    "replace": "  const long10 = base10;",
+    "tests": ["src/domain/generators/halfMarathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "A6 validator: pad doze zbog trajanja bez provere najvišeg nivoa",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "          (nl !== null && doseOf(nl) <= cap && fit(b, role, ladder, nl) === 'fits') ||\n",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/validate.node.test.ts"]
+  }
+]

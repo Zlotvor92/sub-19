@@ -2,15 +2,22 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../date';
 import type { GenPlanState, LogEntry } from '../state';
-import type { ExecutionAnalysis } from '../training/execution';
 import { matchPlanRows } from '../training/adaptation/matching';
-import { buildExecutionAdjustment, executionBasis } from './executionAdjustment';
-import { isDemanding } from './finalize';
-import { graftFuturePlan, type ReplanContext } from './future';
-import { buildPreparationChoice } from './preparationDecision';
-import { planRecalibrated, planWithNewGoal } from './replan';
 import { resolvePlan } from './resolve';
 import { getPlanRevisions, recordPlanRevision } from './versions';
+import type { ReplanContext } from '@/domain/generators/select';
+import type { ExecutionAnalysis } from '@/domain/generators/halfMarathon/training/execution';
+import { routedEngine } from '@/test/generators';
+import { preparationForPlan } from '@/domain/generators/select';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const {
+  buildExecutionAdjustment,
+  graftFuturePlan,
+  isDemanding,
+  planRecalibrated,
+  planWithNewGoal
+} = routedEngine(5000);
 
 interface FatigueFixture {
   today: IsoDate;
@@ -29,7 +36,7 @@ const view = (p: GenPlanState, ctx: ReplanContext) =>
 
 describe('final integration: sequential changes cannot bypass recovery or protected history', () => {
   it.each([false, true])(
-    'fatigue → goal → measured recalibration → base choice → JSON revision → restore (protected conflicts: %s)',
+    'fatigue → goal → measured recalibration → JSON revision → restore (protected conflicts: %s)',
     (withProtectedConflicts) => {
       const e = fixture();
       const original = e.input.current;
@@ -104,11 +111,10 @@ describe('final integration: sequential changes cannot bypass recovery or protec
       const recalibrated = planRecalibrated(goal, 50, e.today, ctx);
       if ('error' in recalibrated) throw new Error(recalibrated.error);
       check(recalibrated);
-      const basis = executionBasis(recalibrated, e.today, e.analysis, {});
-      if ('error' in basis) throw new Error(basis.error);
-      const base = buildPreparationChoice(recalibrated, e.today, basis, { kind: 'base' }, ctx);
-      if ('error' in base) throw new Error(base.error);
-      check(base.result);
+      /* Korak „izbor pripreme" iz starog engine-a ne postoji za 5K (`preparationForPlan` → null); lanac ide dalje od
+         rekalibrisanog plana kao u aplikaciji. */
+      expect(preparationForPlan(recalibrated)).toBeNull();
+      const base = { result: recalibrated, summary: 'Rekalibracija' };
       const persisted = JSON.parse(
         JSON.stringify(
           recordPlanRevision(original, base.result, {

@@ -1,0 +1,35 @@
+[
+  {
+    "name": "06h-a stara strana: referenca umora pre starta po fromWeek (konstruktor i validator)",
+    "edits": [
+      {
+        "file": "src/domain/generators/tenK/v2/volume.ts",
+        "find": "    if (s.preStart) preStart.set(deloadWeekOf(s), to10(s.preStart.buildKm));",
+        "replace": "    if (s.preStart) preStart.set(s.fromWeek + 0 * deloadWeekOf(s), to10(s.preStart.buildKm));"
+      },
+      {
+        "file": "src/domain/generators/tenK/v2/generate.ts",
+        "find": "    const ps = steps.find((s) => s.preStart && deloadWeekOf(s) === w)?.preStart;",
+        "replace": "    const ps = steps.find((s) => s.preStart && s.fromWeek + 0 * deloadWeekOf(s) === w)?.preStart;"
+      },
+      {
+        "file": "src/domain/generators/tenK/v2/validate.ts",
+        "find": "    const ref = steps.find((x) => x.preStart && deloadWeekOf(x) === w.index)?.preStart;",
+        "replace": "    const ref = steps.find((x) => x.preStart && x.fromWeek === w.index)?.preStart;"
+      }
+    ],
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06h-b trajna mreža bez start + 0 (asOf mreže = start − 1)",
+    "file": "src/domain/generators/tenK/v2/testInputs.ts",
+    "find": "export const start0AsOf = (plan: PlanLike): string => plan.weeks[0]!.startDate;",
+    "replace": "export const start0AsOf = (plan: PlanLike): string => addDays(plan.weeks[0]!.startDate, -1);",
+    "tests": [
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  }
+]

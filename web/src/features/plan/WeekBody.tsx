@@ -1,6 +1,7 @@
 import { addDays } from '../../domain/date';
 import { fmtDayMonth } from '../../domain/format';
-import { weekPhase, type ResolvedWeek } from '../../domain/plan';
+import type { ResolvedWeek } from '../../domain/plan';
+import type { WeekPhase } from '../../domain/generators/select';
 import type { AltRecord, LogEntry } from '../../domain/state';
 import { Row } from '../../components/ui/primitives';
 import { DayRow } from './DayRow';
@@ -15,6 +16,7 @@ const byDate = (a: { date: string }, b: { date: string }): number => {
 export function WeekBody({
   week,
   totalWeeks,
+  phaseOf,
   current,
   log,
   alts,
@@ -25,6 +27,8 @@ export function WeekBody({
 }: {
   week: ResolvedWeek;
   totalWeeks: number;
+  /** Faza nedelje iz generatora plana (`phaseReaderFor`, A3). */
+  phaseOf: (w: ResolvedWeek, totalWeeks: number) => WeekPhase;
   current: boolean;
   log: Readonly<Record<string, LogEntry>>;
   alts: Readonly<Record<string, AltRecord | undefined>>;
@@ -35,7 +39,7 @@ export function WeekBody({
 }) {
   const dows = week.days.filter((d) => !d.test).map((d) => d.dow);
   const endOffset = week.w === totalWeeks && dows.length ? Math.max(...dows) : 6;
-  const phase = weekPhase(week, totalWeeks);
+  const phase = phaseOf(week, totalWeeks);
   const sub = phase === 'DELOAD' ? week.focus : week.focus ? `${phase} · ${week.focus}` : phase;
   return (
     <div className="pl-body">

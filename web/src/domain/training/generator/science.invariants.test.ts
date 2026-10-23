@@ -13,15 +13,14 @@
 
    parity: test/nauka.test.mjs — svih 13 testova. */
 
+import { generatePlan, profileFor } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
-import { profileFor } from '../distances';
 import { sessQKm } from '../sessions/calc';
 import type { Day, PlanGenerationInput, TrainingPlan, Week } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
 import { raceTimeForVdot } from '../vdot/racePrediction';
 import { vdotFromPace } from '../vdot/vdotFromPace';
-import { generatePlan } from './generatePlan';
 
 /** Ponedeljak — da nijedan dan nedelje 1 ne bude odsečen datumom početka. */
 const START = parseIsoDate('2026-01-05') as IsoDate;
@@ -403,8 +402,8 @@ describe('Odluke koje moraju da prate CEO plan, ne polaznu tačku', () => {
     /* Prag se čita IZ PROFILA, ne iz mreže testa: 5K i 10K ga namerno nemaju. */
     const demanding = PROFILES.filter(
       (P) =>
-        ((profileFor(P.distM) as NonNullable<ReturnType<typeof profileFor>>).product
-          .recommendedMinRunDays ?? 0) > 3
+        ((profileFor(P.distM)?.product as { recommendedMinRunDays?: number } | undefined)
+          ?.recommendedMinRunDays ?? 0) > 3
     );
     expect(demanding.length).toBeGreaterThanOrEqual(2);
     for (const P of demanding) {

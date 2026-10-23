@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "SCHEDULE_NO_RECOVERY",
+      "message": "U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi sub)."
+    }
+  ]
+}

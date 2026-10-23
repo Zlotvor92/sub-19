@@ -1,0 +1,86 @@
+[
+  {
+    "name": "06f-a umor vezan za asOf (sidro iz asOf + 1, ne iz zapisa, pouka 36)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    const anchor = addDays(asOf, Math.max(...easyHard.map((x) => day(x.date))) - t + 1);",
+    "replace": "    const anchor = addDays(asOf, 1);",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-b traka u aplikaciji (bez domenskog adaptBanner: svaki primenjen uslov)",
+    "file": "src/domain/generators/tenK/v2/app/adapt.ts",
+    "find": "    needed: adaptBanner(v2, r, built.facts, src.today)",
+    "replace": "    needed: (void adaptBanner, r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS').map((x) => x.message))",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/adaptFlow.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-c tekst prekidača 10K v2 vraćen („Prilagođavanje … stiže uskoro.\")",
+    "file": "src/features/ti/screens.tsx",
+    "find": "        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja.\n",
+    "replace": "        Važi samo za novi 10K plan iz čarobnjaka. Postojeći plan se ne menja. Prilagođavanje 10K v2\n        plana stiže uskoro.\n",
+    "tests": [
+      "src/features/onboarding/tenKV2Flow.test.tsx"
+    ]
+  },
+  {
+    "name": "06f-d pouka 35 isključena (drugi dan kvaliteta ostaje i kad je dan kvaliteta duži od dugog)",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  if (frame.deload || !qualityOverLong(two.days)) return two;",
+    "replace": "  if (frame.deload || two.days.length > 0) return two;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p35.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-e bol vezan za asOf (isti zapis bola ponovo pravi nov period, nalaz 3)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "find((s) => s.pain !== null && day(s.asOf) >= lastHurt)",
+    "replace": "find((s) => s.pain !== null && day(s.asOf) > t)",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-f umor ponedeljkom u sledećoj nedelji (bez deloadWeek, tekuća + 1)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "      if (f !== n) step.deloadWeek = f;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06f-g validator sudi zaštićenom danu po tempu nedelje (WU/CD posle novog rezultata)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "      if (protectedDay(d)) continue;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06g-h trkačka samo sa danom pred trku > tapera ostaje greška (bez RACE_WEEK_OVER_TAPER_EVE)",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "if (restD23.length > 0 && raceWeekEveOnly(rw.days))",
+    "replace": "if (restD23.length < 0 && raceWeekEveOnly(rw.days))",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "06g-i nedelja cela odmor (bol) ostaje EMPTY_WEEK",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "      if (allRest)\n",
+    "replace": "      if (allRest && w.index < 0)\n",
+    "tests": [
+      "src/domain/generators/tenK/v2/repeatGrid.node.test.ts"
+    ]
+  }
+]

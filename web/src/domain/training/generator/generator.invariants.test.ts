@@ -8,13 +8,15 @@
    parity: test/generator.test.mjs — svih 21 testova (generatePlan + buildDaySlots).
    Datumi su APSOLUTNI (stari testovi su zavisili od današnjeg dana). */
 
+import { generatePlan, profileFor } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
-import { profileFor } from '../distances';
 import type { Day, PlanGenerationInput, TrainingPlan, Week } from '../types';
-import { buildDaySlots } from './daySlots';
-import { generatePlan } from './generatePlan';
-import { rampStep } from './volume';
+import * as fiveKSlots from '@/domain/generators/fiveK/training/generator/daySlots';
+import * as tenKSlots from '@/domain/generators/tenK/training/generator/daySlots';
+import * as hmSlots from '@/domain/generators/halfMarathon/training/generator/daySlots';
+import * as marathonSlots from '@/domain/generators/marathon/training/generator/daySlots';
+import { rampStep } from '@/domain/generators/fiveK/training/generator/volume'; // isti u sva četiri generatora
 
 const DIST = { '5K': 5000, '10K': 10000, HM: 21097.5, Maraton: 42195 } as const;
 const MIN_WEEKS: Record<number, number> = { 5000: 6, 10000: 8, 21097.5: 10, 42195: 12 };
@@ -288,7 +290,12 @@ describe('generatePlan — trenerske invarijante', () => {
   });
 });
 
-describe('buildDaySlots', () => {
+describe.each([
+  ['5K', fiveKSlots.buildDaySlots],
+  ['10K', tenKSlots.buildDaySlots],
+  ['polumaraton', hmSlots.buildDaySlots],
+  ['maraton', marathonSlots.buildDaySlots]
+] as const)('buildDaySlots (%s generator)', (_name, buildDaySlots) => {
   const count = (slots: Record<number, string>, pred: (r: string) => boolean): number =>
     Object.values(slots).filter(pred).length;
 

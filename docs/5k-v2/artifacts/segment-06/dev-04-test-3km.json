@@ -1,0 +1,128 @@
+{
+  "asOf": "2026-12-20",
+  "reasons": [
+    {
+      "condition": "NEW_RESULT",
+      "applied": true,
+      "message": "Test 3K 11:21 (2026-12-19): VDOT 51 od nedelje 8 (bilo 50)."
+    }
+  ],
+  "changes": [
+    {
+      "week": 0,
+      "field": "vdot",
+      "before": "50",
+      "after": "51"
+    },
+    {
+      "week": 0,
+      "field": "predicted5kSec",
+      "before": "1196",
+      "after": "1176"
+    },
+    {
+      "week": 0,
+      "field": "goal",
+      "before": "ambitious",
+      "after": "feasible"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-21",
+      "field": "day",
+      "before": "q1: I: 2 × 1200 m (oporavak 285 s lagano)",
+      "after": "q1: I: 2 × 1200 m (oporavak 270 s lagano)"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-23",
+      "field": "day",
+      "before": "easy: Lagano 8.26 km",
+      "after": "easy: Lagano 8.29 km"
+    },
+    {
+      "week": 9,
+      "date": "2026-12-28",
+      "field": "day",
+      "before": "q1: I: 4 × 800 m (oporavak 195 s lagano)",
+      "after": "q1: I: 4 × 800 m (oporavak 180 s lagano)"
+    },
+    {
+      "week": 9,
+      "date": "2027-01-01",
+      "field": "day",
+      "before": "easy: Lagano 10.88 km",
+      "after": "easy: Lagano 10.6 km"
+    },
+    {
+      "week": 9,
+      "date": "2027-01-02",
+      "field": "day",
+      "before": "long: Dugi lagano 15.5 km",
+      "after": "long: Dugi lagano 15.9 km"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-08",
+      "field": "day",
+      "before": "easy: Lagano 12.38 km",
+      "after": "easy: Lagano 11.98 km"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-09",
+      "field": "day",
+      "before": "long: Dugi lagano 15.5 km",
+      "after": "long: Dugi lagano 15.9 km"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-15",
+      "field": "day",
+      "before": "easy: Lagano 12.09 km",
+      "after": "easy: Lagano 11.69 km"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-16",
+      "field": "day",
+      "before": "long: Dugi lagano 15.5 km",
+      "after": "long: Dugi lagano 15.9 km"
+    },
+    {
+      "week": 14,
+      "field": "targetKm",
+      "before": "19.49",
+      "after": "19.52"
+    },
+    {
+      "week": 14,
+      "field": "plannedKm",
+      "before": "19.49",
+      "after": "19.52"
+    }
+  ],
+  "steps": [
+    {
+      "asOf": "2026-12-20",
+      "firstWeek": 8,
+      "fromWeek": 8,
+      "result": {
+        "distM": 3000,
+        "sec": 681,
+        "date": "2026-12-19",
+        "kind": "test"
+      },
+      "vdot": 51,
+      "startKm": null,
+      "pauseRemainder": false,
+      "restart": false,
+      "deload": false,
+      "noQuality": [],
+      "oneQuality": [],
+      "rest": null,
+      "pain": null,
+      "orientation": false
+    }
+  ]
+}

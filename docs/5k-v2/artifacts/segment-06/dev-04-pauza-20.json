@@ -1,0 +1,325 @@
+{
+  "asOf": "2026-12-20",
+  "reasons": [
+    {
+      "condition": "PAUSE",
+      "applied": true,
+      "message": "Pauza 20 dana (obim 7 dana pre pauze 33.9 km): cilj 23.7 km; prva nedelja bez kvaliteta, druga 1 kvalitet."
+    },
+    {
+      "condition": "UNDER_EXECUTION",
+      "applied": false,
+      "message": "Izvršeno 0 od 45.5 km u 7 dana (< 60%): nadjačano ili nema sledeće nedelje izgradnje."
+    }
+  ],
+  "changes": [
+    {
+      "week": 8,
+      "field": "targetKm",
+      "before": "36.4",
+      "after": "23.7"
+    },
+    {
+      "week": 8,
+      "field": "plannedKm",
+      "before": "36.4",
+      "after": "23.7"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-21",
+      "field": "day",
+      "before": "q1: I: 2 × 1200 m (oporavak 285 s lagano)",
+      "after": "easy: Lagano 5.1 km"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-23",
+      "field": "day",
+      "before": "easy: Lagano 8.26 km",
+      "after": "easy: Lagano 5.3 km"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-25",
+      "field": "day",
+      "before": "easy: Lagano 8.2 km",
+      "after": "easy: Lagano 5.1 km"
+    },
+    {
+      "week": 8,
+      "date": "2026-12-26",
+      "field": "day",
+      "before": "long: Dugi lagano 12.7 km",
+      "after": "long: Dugi lagano 8.2 km"
+    },
+    {
+      "week": 9,
+      "field": "targetKm",
+      "before": "45.5",
+      "after": "25.5"
+    },
+    {
+      "week": 9,
+      "field": "plannedKm",
+      "before": "45.5",
+      "after": "25.5"
+    },
+    {
+      "week": 9,
+      "date": "2026-12-28",
+      "field": "day",
+      "before": "q1: I: 4 × 800 m (oporavak 195 s lagano)",
+      "after": "q1: I: 2 × 1000 m (oporavak 240 s lagano)"
+    },
+    {
+      "week": 9,
+      "date": "2026-12-30",
+      "field": "day",
+      "before": "q2: T cruise: 2 × 2000 m (oporavak 60 s)",
+      "after": "easy: Lagano 5.29 km"
+    },
+    {
+      "week": 9,
+      "date": "2027-01-01",
+      "field": "day",
+      "before": "easy: Lagano 10.88 km",
+      "after": "easy: Lagano 5.1 km"
+    },
+    {
+      "week": 9,
+      "date": "2027-01-02",
+      "field": "day",
+      "before": "long: Dugi lagano 15.5 km",
+      "after": "long: Dugi lagano 8.9 km"
+    },
+    {
+      "week": 10,
+      "field": "targetKm",
+      "before": "45.5",
+      "after": "25.5"
+    },
+    {
+      "week": 10,
+      "field": "plannedKm",
+      "before": "45.5",
+      "after": "25.5"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-04",
+      "field": "day",
+      "before": "q1: RP: 3 × 1000 m (oporavak 120 s lagano)",
+      "after": "q1: RP: 3 × 500 m (oporavak 60 s lagano)"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-06",
+      "field": "day",
+      "before": "q2: R: 7 × 300 m (oporavak 300 m lagano)",
+      "after": "q2: R: 4 × 300 m (oporavak 300 m lagano)"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-08",
+      "field": "day",
+      "before": "easy: Lagano 12.38 km",
+      "after": "easy: Lagano 5.64 km"
+    },
+    {
+      "week": 10,
+      "date": "2027-01-09",
+      "field": "day",
+      "before": "long: Dugi lagano 15.5 km",
+      "after": "long: Dugi lagano 8.9 km"
+    },
+    {
+      "week": 11,
+      "field": "targetKm",
+      "before": "45.5",
+      "after": "25.5"
+    },
+    {
+      "week": 11,
+      "field": "plannedKm",
+      "before": "45.5",
+      "after": "25.5"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-11",
+      "field": "day",
+      "before": "q1: RP: 4 × 800 m (oporavak 90 s lagano)",
+      "after": "q1: RP: 2 × 800 m (oporavak 90 s lagano)"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-13",
+      "field": "day",
+      "before": "q2: R: 7 × 300 m (oporavak 300 m lagano)",
+      "after": "q2: R: 4 × 300 m (oporavak 300 m lagano)"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-15",
+      "field": "day",
+      "before": "easy: Lagano 12.09 km",
+      "after": "easy: Lagano 5.63 km"
+    },
+    {
+      "week": 11,
+      "date": "2027-01-16",
+      "field": "day",
+      "before": "long: Dugi lagano 15.5 km",
+      "after": "long: Dugi lagano 8.9 km"
+    },
+    {
+      "week": 12,
+      "field": "targetKm",
+      "before": "38.7",
+      "after": "21.7"
+    },
+    {
+      "week": 12,
+      "field": "plannedKm",
+      "before": "38.7",
+      "after": "21.7"
+    },
+    {
+      "week": 12,
+      "date": "2027-01-18",
+      "field": "day",
+      "before": "q1: RP: 3 × 1000 m (oporavak 120 s lagano)",
+      "after": "q1: RP: 2 × 800 m (oporavak 90 s lagano)"
+    },
+    {
+      "week": 12,
+      "date": "2027-01-20",
+      "field": "day",
+      "before": "q2: T: 2 km kontinuirano",
+      "after": "q2: T: 1.5 km kontinuirano"
+    },
+    {
+      "week": 12,
+      "date": "2027-01-22",
+      "field": "day",
+      "before": "easy: Lagano 11.48 km",
+      "after": "easy: Lagano 5.83 km"
+    },
+    {
+      "week": 12,
+      "date": "2027-01-23",
+      "field": "day",
+      "before": "long: Dugi lagano 13.5 km",
+      "after": "long: Dugi lagano 7.5 km"
+    },
+    {
+      "week": 13,
+      "field": "targetKm",
+      "before": "31.9",
+      "after": "17.8"
+    },
+    {
+      "week": 13,
+      "field": "plannedKm",
+      "before": "31.9",
+      "after": "17.8"
+    },
+    {
+      "week": 13,
+      "date": "2027-01-25",
+      "field": "day",
+      "before": "q1: RP: 2 × 1000 m (oporavak 120 s lagano)",
+      "after": "q1: RP: 2 × 600 m (oporavak 75 s lagano)"
+    },
+    {
+      "week": 13,
+      "date": "2027-01-27",
+      "field": "day",
+      "before": "easy: Lagano 7.54 km + 4 × 20 s ubrzanja",
+      "after": "easy: Lagano 3.88 km + 4 × 20 s ubrzanja"
+    },
+    {
+      "week": 13,
+      "date": "2027-01-29",
+      "field": "day",
+      "before": "easy: Lagano 7.4 km + 4 × 20 s ubrzanja",
+      "after": "easy: Lagano 3.8 km + 4 × 20 s ubrzanja"
+    },
+    {
+      "week": 13,
+      "date": "2027-01-30",
+      "field": "day",
+      "before": "long: Dugi lagano 11.1 km",
+      "after": "long: Dugi lagano 6.2 km"
+    },
+    {
+      "week": 14,
+      "field": "targetKm",
+      "before": "19.49",
+      "after": "12.73"
+    },
+    {
+      "week": 14,
+      "field": "plannedKm",
+      "before": "19.49",
+      "after": "12.73"
+    },
+    {
+      "week": 14,
+      "date": "2027-02-01",
+      "field": "day",
+      "before": "easy: Lagano 5.5 km",
+      "after": "easy: Lagano 3.1 km"
+    },
+    {
+      "week": 14,
+      "date": "2027-02-03",
+      "field": "day",
+      "before": "q1: Oštrenje: 4 × 400 m RP (oporavak 45 s lagano)",
+      "after": "q1: Oštrenje: 2 × 400 m RP (oporavak 45 s lagano)"
+    },
+    {
+      "week": 14,
+      "date": "2027-02-05",
+      "field": "day",
+      "before": "easy: Lagano 5.5 km",
+      "after": "easy: Lagano 3.1 km"
+    },
+    {
+      "week": 14,
+      "date": "2027-02-06",
+      "field": "day",
+      "before": "easy: Lagano 4 km + 4 × 20 s ubrzanja",
+      "after": "easy: Lagano 3.1 km + 4 × 20 s ubrzanja"
+    }
+  ],
+  "steps": [
+    {
+      "asOf": "2026-12-20",
+      "firstWeek": 8,
+      "fromWeek": 8,
+      "result": null,
+      "vdot": null,
+      "startKm": 23.7,
+      "pauseRemainder": true,
+      "restart": false,
+      "deload": false,
+      "noQuality": [
+        {
+          "from": "2026-12-21",
+          "to": "2026-12-27"
+        }
+      ],
+      "oneQuality": [
+        {
+          "from": "2026-12-28",
+          "to": "2027-01-03"
+        }
+      ],
+      "rest": null,
+      "pain": null,
+      "orientation": false
+    }
+  ]
+}

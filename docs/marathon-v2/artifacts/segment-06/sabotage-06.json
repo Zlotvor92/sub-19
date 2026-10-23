@@ -1,0 +1,65 @@
+[
+  {
+    "name": "06-a činjenice prevedene na dva mesta (forma sama čita Analizu trke)",
+    "file": "src/domain/generators/marathon/v2/app/form.ts",
+    "find": "  const facts = buildFacts({ today: src.today, plan: src.plan, log: src.log ?? {} }, v2).facts\n    .results;",
+    "replace": "  void buildFacts;\n  const facts = Object.values(src.log ?? {}).flatMap((e) => {\n    const c = (e['raceAi'] as { context?: { date: string; distanceM: 5000; officialSec: number } } | undefined)\n      ?.context;\n    return c ? [{ distM: c.distanceM, sec: c.officialSec, date: c.date as IsoDate, kind: 'race' as const }] : [];\n  });",
+    "tests": ["src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"]
+  },
+  {
+    "name": "06-b traka za staro ograničenje (bol bez novog zapisa, domen adaptBanner)",
+    "file": "src/domain/generators/marathon/v2/adapt.ts",
+    "find": "(x.condition !== 'PAIN' || newPain)",
+    "replace": "true",
+    "tests": [
+      "src/domain/generators/marathon/v2/adapt.node.test.ts",
+      "src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts",
+      "src/features/plan/marathonV2Adapt.test.tsx"
+    ]
+  },
+  {
+    "name": "06-c promena cilja menja treninge (plan iznova, bez koraka i zaključanih dana)",
+    "file": "src/domain/generators/marathon/v2/app/adapt.ts",
+    "find": "  const r = adaptMarathonV2({ ...v2, input: c.input }, { lockedDayIds: locked }, today);",
+    "replace": "  void locked;\n  const r = adaptMarathonV2({ ...v2, input: c.input, adaptation: undefined }, {}, today);",
+    "tests": ["src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"]
+  },
+  {
+    "name": "06-d vraćanje verzije prepisuje urađene dane",
+    "file": "src/domain/generators/marathon/v2/app/adapt.ts",
+    "find": "      .filter(([, e]) => e?.status === 'done')",
+    "replace": "      .filter(() => false)",
+    "tests": ["src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"]
+  },
+  {
+    "name": "06-e član (b) poziva maraton v1 (executionBasis)",
+    "file": "src/domain/generators/select.ts",
+    "find": "  executionBasis: m2.executionBasis,",
+    "replace": "  executionBasis: marathon.executionBasis,",
+    "tests": ["src/domain/generators/marathon/v2/app/app.node.test.ts"]
+  },
+  {
+    "name": "06-f struktura iz celog plana umesto nedelje (pouka 16)",
+    "file": "src/domain/generators/marathon/v2/app/plan.ts",
+    "find": "  const chk = steps.length > 0 ? checkInput(plan.input) : null;",
+    "replace": "  const chk = steps.length < 0 ? checkInput(plan.input) : null;",
+    "tests": ["src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"]
+  },
+  {
+    "name": "06-g zastarela sinhronizacija kao potpuna pokrivenost",
+    "file": "src/domain/generators/marathon/v2/app/facts.ts",
+    "find": "    (s) => s.lastSuccessDate !== null && isIsoDate(s.lastSuccessDate) && s.lastSuccessDate >= today",
+    "replace": "    (s) => s.lastSuccessDate !== null && isIsoDate(s.lastSuccessDate)",
+    "tests": ["src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"]
+  },
+  {
+    "name": "06-h aplikacija sama računa traku (bez domenskog adaptBanner: svaki primenjen uslov)",
+    "file": "src/domain/generators/marathon/v2/app/adapt.ts",
+    "find": "    needed: adaptBanner(v2, r, built.facts, src.today)",
+    "replace": "    needed: (void adaptBanner, r.reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS').map((x) => x.message))",
+    "tests": [
+      "src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts",
+      "src/features/plan/marathonV2Adapt.test.tsx"
+    ]
+  }
+]

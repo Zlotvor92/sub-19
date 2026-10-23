@@ -1,10 +1,11 @@
+import { generatePlan } from '@/test/generators';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { canonical, shaOf } from '@/test/fingerprint';
+import { logCompared, sample } from '@/test/level';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import type { PlanGenerationInput } from '../types';
-import { generatePlan } from './generatePlan';
 
 /* DIFERENCIJALNI TEST (zamrznut): slučajni (seeded, ponovljivi) ulazi koje otisak NE pokriva — `goalSec`, `lrDow`, `qDows`, `runDows`, `quality:1`, početak
    usred nedelje, dan trke u bilo kom danu (otisak ima trku uvek u ponedeljak!), razni PB. Dok je stari generator postojao, ovde su se poredili izlazi
@@ -108,18 +109,29 @@ describe('generatePlan: D6 zamrznuti izlazi na slučajnim ulazima', () => {
   it('1 500 slučajnih ulaza daje isti SHA-256 kao pregledani D6 generator (ili istu grešku)', () => {
     const r = rng(recorded.seed);
     let errors = 0;
-    let withGoal = 0;
     const problems: string[] = [];
     const shas: string[] = [];
     const update = process.env['UPDATE_FINGERPRINT'] === '1';
-    for (let i = 0; i < recorded.count; i++) {
-      const inp = randomInput(r);
+    /* Ulazi se uvek prave svi (isti niz slučajnih brojeva), pa se `withGoal` broji nad celim skupom u oba nivoa. Brz nivo
+       (src/test/level.ts) generiše plan za svaki 3. ulaz unutar svake distance (prvi uvek); pun i osvežavanje — za sve.
+       Greške se broje nad generisanim planovima: zapisano je 0, pa ista tvrdnja važi i za uzorak. */
+    const inputs = Array.from({ length: recorded.count }, () => randomInput(r));
+    const withGoal = inputs.filter((inp) => inp['goalSec'] != null).length;
+    const indices = inputs.map((_, i) => i);
+    const checked = update ? indices : sample(indices, 3, (i) => String(inputs[i]!['raceDistM']));
+    if (!update)
+      logCompared(
+        'differential.shas',
+        checked.map((i) => `#${i}`)
+      );
+    for (const i of checked) {
+      const inp = inputs[i]!;
       const plan = run(() => generatePlan(inp as unknown as PlanGenerationInput));
       if ((plan as { greska?: string }).greska) errors++;
-      if (inp['goalSec'] != null) withGoal++;
-      shas.push(shaOf(plan));
-      if (!update && shaOf(plan) !== recorded.shas[i])
-        problems.push(`#${i} ${JSON.stringify(inp)}`);
+      // SHA se računa jednom (ranije dvaput za isti plan).
+      const sha = shaOf(plan);
+      shas.push(sha);
+      if (!update && sha !== recorded.shas[i]) problems.push(`#${i} ${JSON.stringify(inp)}`);
       if (problems.length >= 5) break;
     }
     if (update) {

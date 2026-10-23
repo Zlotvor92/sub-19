@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "BEGINNER_SHORT",
+      "message": "Početnik: 10K plan traži najmanje 10 nedelja (izabrano 8); počni plan najkasnije 2026-10-19."
+    }
+  ]
+}

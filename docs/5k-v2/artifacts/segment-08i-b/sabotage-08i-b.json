@@ -1,0 +1,50 @@
+[
+  {
+    "name": "08i-b-1 zbir zaštićenih po planu, ne po činjenicama (stara strana)",
+    "file": "src/domain/generators/fiveK/v2/generate.ts",
+    "find": "    const keptKm = protectedKm(kept, prior.factKm);",
+    "replace": "    const keptKm = protectedKm(kept);",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08i-b-2 validator ne čita protectedKm (zbir po planu)",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "      const keptKm = w.protectedKm ?? kmOf(kept);",
+    "replace": "      const keptKm = kmOf(kept) + 0 * (w.protectedKm ?? 0);",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08i-b-3 test se premešta i na zaključan dan",
+    "file": "src/domain/generators/fiveK/v2/steps.ts",
+    "find": "    if (next && kept) testLost?.set(next.index, day!);",
+    "replace": "    if (next && kept && false) testLost?.set(next.index, day!);",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08i.node.test.ts",
+      "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08i-b-4 trajna mreža bez zaključanog dana u planu po osećaju",
+    "file": "src/domain/generators/fiveK/v2/segment08i.harness.node.test.ts",
+    "find": "    const q = p.weeks[k]!.days.find((d) => d.workout.kind === 'quality');",
+    "replace": "    const q = p.vdot === null ? undefined : p.weeks[k]!.days.find((d) => d.workout.kind === 'quality');",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08i.grid.node.test.ts"
+    ]
+  },
+  {
+    "name": "08i-b-5 upisana nedelja bez drugog kvaliteta ne nosi dozu prvog (lanac)",
+    "file": "src/domain/generators/fiveK/v2/generate.ts",
+    "find": "    else if (r.dose && q2Gone)\n",
+    "replace": "    else if (r.dose && q2Gone && false)\n",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment08i.node.test.ts"
+    ]
+  }
+]

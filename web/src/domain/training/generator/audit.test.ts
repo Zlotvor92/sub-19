@@ -1,10 +1,9 @@
+import { generatePlan, profileFor } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../date';
-import { profileFor } from '../distances';
 import { sessQKm } from '../sessions/calc';
 import type { PlanGenerationInput, TrainingPlan } from '../types';
 import { paceForZone } from '../vdot/paceForZone';
-import { generatePlan } from './generatePlan';
 
 const START = '2026-10-05' as IsoDate;
 function plan(over: Partial<PlanGenerationInput> = {}, weeks = 16): TrainingPlan {

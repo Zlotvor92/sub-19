@@ -2,10 +2,10 @@
    polumaratonu i maratonu. Pre izmene je prikaz pozicijom označavao samo pretposlednju nedelju, pa je prva taper nedelja HM/maratona
    (sa obimom već smanjenim na 80 %) stajala kao „VRHUNAC". */
 
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../date';
-import { generatePlan } from '../training/generator/generatePlan';
-import { HEURISTIC_5K } from '../training/constants/distances';
+import { HEURISTIC_5K } from '@/domain/generators/fiveK/training/constants/distances';
 import { weekPhase } from './describe';
 
 const START = parseIsoDate('2026-10-05') as IsoDate;

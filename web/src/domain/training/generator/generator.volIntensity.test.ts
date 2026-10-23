@@ -2,12 +2,12 @@
    Legacy inputs without volIntensity still use intensity for volume progression;
    the former arbitrary intensity-dependent fitness projection is retired. */
 
+import { generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import type { Intensity, PlanGenerationInput, TrainingPlan } from '../types';
-import { generatePlan } from './generatePlan';
 import { sessQKm } from '../sessions/calc';
-import { HEURISTIC_5K } from '../constants/distances';
+import { HEURISTIC_5K } from '@/domain/generators/fiveK/training/constants/distances';
 
 const START = parseIsoDate('2026-10-05') as IsoDate;
 const INTENSITIES: readonly Intensity[] = ['kons', 'std', 'agr'];

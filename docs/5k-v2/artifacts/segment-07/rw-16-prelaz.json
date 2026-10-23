@@ -1,0 +1,42 @@
+{
+  "asOf": "2026-12-27",
+  "reasons": [
+    {
+      "condition": "LEVEL",
+      "applied": true,
+      "message": "Nivo 2026-12-27: L12 (bilo L1; +11 posle po 2 uzastopne sesije RPE ≤ 6 bez bola); ostatak projekcije od L12."
+    },
+    {
+      "condition": "TRANSITION",
+      "applied": true,
+      "message": "L12 dostignut, do trke 8 nedelja: od nedelje 9 kontinuirani plan početnika (po osećaju, 12.9 km = 3 × 30 min tipičnim laganim tempom), isti konstruktor kao generator."
+    }
+  ],
+  "steps": [
+    {
+      "asOf": "2026-12-27",
+      "level": 12,
+      "good": 0,
+      "pauseDays": 1,
+      "transitionWeek": 9
+    }
+  ],
+  "weeks": [
+    "| 1 | L1, L1, L2* | L1, L1, L2* |  |",
+    "| 2 | L2*, L3*, L3* | L2*, L3*, L3* |  |",
+    "| 3 | L4*, L4*, L5* | L4*, L4*, L5* |  |",
+    "| 4 | L5*, L6*, L6* | L5*, L6*, L6* |  |",
+    "| 5 | L7*, L7*, L8* | L7*, L7*, L8* |  |",
+    "| 6 | L8*, L9*, L9* | L8*, L9*, L9* |  |",
+    "| 7 | L10*, L10*, L11* | L10*, L10*, L11* |  |",
+    "| 8 | L11*, L12*, L12* | L11*, L12*, L12* |  |",
+    "| 9 | L12*, L12*, L12* | kontinuirano: base 12.9 / 12.9 km, ubrzanja | kontinuirani plan početnika (prelaz) |",
+    "| 10 | L12*, L12*, L12* | kontinuirano: base (r) 10.3 / 10.3 km, ubrzanja | kontinuirani plan početnika (prelaz) |",
+    "| 11 | L12*, L12*, L12* | kontinuirano: peak T 13.5 / 13.5 km, TEST_3K | kontinuirani plan početnika (prelaz) |",
+    "| 12 | L12*, L12*, L12* | kontinuirano: peak 14.1 / 14.1 km, FARTLEK | kontinuirani plan početnika (prelaz) |",
+    "| 13 | L12*, L12*, L12* | kontinuirano: sharpen 14.1 / 14.1 km, FARTLEK_RP | kontinuirani plan početnika (prelaz) |",
+    "| 14 | L12*, L12*, L12* | kontinuirano: taper 12 / 12 km, FARTLEK_RP | kontinuirani plan početnika (prelaz) |",
+    "| 15 | L12*, L12*, L12* | kontinuirano: taper 9.9 / 9.9 km, FARTLEK_RP | kontinuirani plan početnika (prelaz) |",
+    "| 16 | L11*, L11*, trka L12* | kontinuirano: race 7.1 / 7.1 km, FARTLEK_RP | kontinuirani plan početnika (prelaz) |"
+  ]
+}

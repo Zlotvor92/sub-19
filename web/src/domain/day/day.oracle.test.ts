@@ -1,9 +1,12 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
+// Ciljni napor je smernica generatora; stari frontend je imao jednu za sve distance, ista je u svakoj kopiji.
+import { rpeTarget } from '../generators/fiveK/plan/describe';
+import { FIVE_K_GENERATOR } from '../generators/select';
 import { resolvePlan } from '../plan/resolve';
 import type {
   AltRecord,
@@ -117,6 +120,7 @@ describe('tekst i struktura naspram starog koda', () => {
   it('sessionBreakdown / sessionNote: svi dani sva 4 plana, i sa ručno promenjenim opisom', () => {
     const r = rng(2);
     let withRows = 0;
+    let changed = 0;
     for (const plan of PLANS) {
       const alts: Record<string, AltRecord> = {};
       for (const w of plan.weeks)
@@ -138,15 +142,23 @@ describe('tekst i struktura naspram starog koda', () => {
       const resolved = resolvePlan(plan.weeks, { alts, moves: {} });
       for (const d of resolved.dated) {
         const old = j<unknown>(legacy.evalIn(`sessBreakdown(BY_ID[${JSON.stringify(d.id)}])`));
-        const mine = sessionBreakdown(d);
-        expect(firstDiff(canonical(j(mine)), canonical(old)), `${d.id} razlaganje`).toBeNull();
-        expect(sessionNote(d), `${d.id} napomena`).toBe(
+        const mine = sessionBreakdown(d, rpeTarget);
+        /* NAMERNA RAZLIKA (nalaz 4): stari kod je posle izmene bez strukture razlagao ORIGINALNU sesiju; stari izlaz je
+           tačno razlaganje originala, a novi čita opis izmene. */
+        const asOld = !d.session && d.originSession ? { ...d, session: d.originSession } : d;
+        if (asOld !== d && firstDiff(canonical(j(mine)), canonical(old)) !== null) changed++;
+        expect(
+          firstDiff(canonical(j(sessionBreakdown(asOld, rpeTarget))), canonical(old)),
+          `${d.id} razlaganje`
+        ).toBeNull();
+        expect(sessionNote(asOld), `${d.id} napomena`).toBe(
           legacy.evalIn(`sessNote(BY_ID[${JSON.stringify(d.id)}])`)
         );
         if (mine) withRows++;
       }
     }
     expect(withRows).toBeGreaterThan(100);
+    expect(changed).toBeGreaterThan(0);
   });
 });
 
@@ -337,7 +349,7 @@ describe('upis tempa radnog dela naspram starog recordVdot / brisanja / upisiAut
       const pace = Math.round(row.pt + (r() - 0.5) * 60);
       const mode = pick(r, ['manual', 'auto', 'clear'] as const);
       const date = addDays(START, 40);
-      const wctx = { rows: pred, baselineVdot: base, hasAlt: false };
+      const wctx = { form: FIVE_K_GENERATOR, rows: pred, baselineVdot: base, hasAlt: false };
       const state0 = { pred: {}, predLock: {}, vdotLog, log };
       ctx()['__d'] = day.id;
       let mine;

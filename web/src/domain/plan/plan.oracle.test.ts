@@ -1,3 +1,4 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
@@ -6,7 +7,6 @@ import { addDays, parseIsoDate, type IsoDate } from '../date';
 import type { AltRecord, GenPlanState } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';
 import type { PlanGenerationInput } from '../training/types';
-import { adaptGeneratedPlan } from './adapt';
 import { sessKind, tagName, weekPhase } from './describe';
 import { setAlt, swapDays, undoWeekMoves } from './edit';
 import { resolvePlan } from './resolve';

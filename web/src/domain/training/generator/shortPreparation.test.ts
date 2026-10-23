@@ -1,3 +1,4 @@
+import { generatePlan, adaptGeneratedPlan, routedEngine, profileFor } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../../date';
 import {
@@ -7,12 +8,11 @@ import {
   weeksHint,
   wizardWarnings
 } from '../../onboarding';
-import { adaptGeneratedPlan } from '../../plan/adapt';
-import { planWithNewGoal } from '../../plan/replan';
-import { profileFor } from '../distances';
+
+/* Stari zajednički engine je obrisan: promena cilja ide generatoru distance plana. */
+const { planWithNewGoal } = routedEngine();
 import { sessKm } from '../sessions/calc';
 import type { PlanGenerationInput } from '../types';
-import { generatePlan } from './generatePlan';
 
 const start = parseIsoDate('2026-10-05') as IsoDate;
 const distances = [5000, 10000, 21097.5, 42195];

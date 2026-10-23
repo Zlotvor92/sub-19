@@ -1,0 +1,357 @@
+{
+  "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-04/sabotage.json",
+  "head": "8de8525",
+  "level": "brz",
+  "bail": true,
+  "parallel": 2,
+  "vitestArgs": [],
+  "durationS": 76.6,
+  "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+  "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+  "ok": true,
+  "results": [
+    {
+      "index": 1,
+      "name": "B1 ukidanje rasterećenja (A17) ukida i prinudno",
+      "files": ["src/domain/generators/halfMarathon/v2/steps.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "A17 / pouka 22: redovno rasterećenje posle smanjene nedelje otpada; prinudno ostaje > prinudno rasterećenje (umor) odmah posle nedelje sidra bola ostaje (pouka 22 ukida samo redovno)",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "da8f355108a322aaf8062bade1af4237b61a27eb89eeafac38b7a3c1d2b4c407",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.8
+    },
+    {
+      "index": 2,
+      "name": "B2 reduced se ne čita (A6 postaje smanjenje)",
+      "files": ["src/domain/generators/halfMarathon/v2/steps.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "A17 / pouka 22: redovno rasterećenje posle smanjene nedelje otpada; prinudno ostaje > višak (A6, reduced = false) nije smanjenje: redovno rasterećenje posle nedelje bez rasta ostaje",
+        "message": "AssertionError: expected false to be true // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "b1954258d19c75739e2034b9de2250513cfd2f19602f3248d95a8db328c0eedc",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 5.1
+    },
+    {
+      "index": 3,
+      "name": "B3 sidro bola = poslednja nedelja bola (pouka 18)",
+      "files": ["src/domain/generators/halfMarathon/v2/assess.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 7 > (a) posle pauze cilj raste +10 %/ned do nivoa pre pauze — ne ravno do trke i ne skokom; nikad sporije od H6",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"PHASE_QUALITY: Rasterećenje: jedini kvalitet je T (T_continuous) na danu Q2 (H5).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ONE_QUALITY: Nedelja sa ograničenjem: najviše 1 kvalitet doze rasterećenja T 2000 m (A4, A9).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ONE_QUALITY: Nedelja sa ograničenjem: najviše 1 kvalitet doze rasterećenja T 2400 m (A4, A9).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4).\",\"week\":6}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "b654a844b365fd8838a0c5540cd76a6a880bf7395bdaa1c65bc5967d06ddd90c",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 1.6
+    },
+    {
+      "index": 4,
+      "name": "B4 validator vidi sastavljen, a ne upisan plan (pouka 29)",
+      "files": ["src/domain/generators/halfMarathon/v2/generate.ts"],
+      "tests": [
+        "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "src/domain/generators/halfMarathon/v2/earlyGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 29: prošlost = upisani dani (stanje doze, dugi) > pauza 10 u sredu = dan Q1 (upisan T kont. 3000 m): ned 5 spušta T cruise sa 3,0 km (stanje iz upisanog dana)",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DOSE_DROP: q1: spuštanje doze bez razloga iz plafona zone (pouka 32: najviši nivo čiji dan nije duži od dugog).\",\"week\":5}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "cf520197dd0d3f219473b1b59a37e89f541a1cf126f460149cbf7be338134197",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 20.3
+    },
+    {
+      "index": 5,
+      "name": "B5 trkačka nedelja bez pravila pouke 30",
+      "files": ["src/domain/generators/halfMarathon/v2/generate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 30: trkačka nedelja ≤ taper i kad taper ima dane odmora/bola > bol 8 u sredu tapera: trkačka ≤ planirano tapera; skraćena ispod minimuma → RACE_WEEK_SHORT",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK: Trkačka nedelja: dani tue, thu, sat ≠ H8 (thu, sat).\",\"week\":12},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK_OVER_TAPER: Trkačka nedelja 11.08 km > taper 10.75 km (H8, pouka 5).\",\"week\":12}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "a5ada185a5a3a44eb090a8970dc95742e2159840317843fa13875e6732353327",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 11.5
+    },
+    {
+      "index": 6,
+      "name": "B6 uvod početnika: prinudno rasterećenje sa kvalitetom (pouka 31)",
+      "files": ["src/domain/generators/halfMarathon/v2/week.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 34: umor pre starta > asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ROLES: Dani easy@sat, easy@tue, long@sun, q1@thu ≠ šablon easy@sat, easy@thu, easy@tue, long@sun (H9).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"INTRO: Nedelja uvoda 1 ima kvalitet (H17, HI13).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DELOAD_CONTENT: Rasterećenje u uvodu: bez kvaliteta (HI13).\",\"week\":1}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "1232aa3a1a76cb4d0e6f99896b2c925e91a537dfe92175d405ecf8249c0be3a8",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 5.6
+    },
+    {
+      "index": 7,
+      "name": "B7 bez dana zabrane kvaliteta",
+      "files": ["src/domain/generators/halfMarathon/v2/steps.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/grid04.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/grid04.node.test.ts",
+        "test": "mreža 04: adaptacija (MASTER § 3) > 0 odbijanja (validator na upisanom planu) i adaptInvariants prazno (Uslov 8)",
+        "message": "AssertionError: expected [ …(27) ] to deeply equal []"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "0e10417c9651faf6d3d3d2404d7042369b6fd677c3ca1981837e6f3c7bfc22d4",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 11.7
+    },
+    {
+      "index": 8,
+      "name": "B8 konstruktor: najduži dugi iz sastavljenih, ne upisanih nedelja",
+      "files": ["src/domain/generators/halfMarathon/v2/generate.ts"],
+      "tests": [
+        "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "src/domain/generators/halfMarathon/v2/grid04.node.test.ts",
+        "src/domain/generators/halfMarathon/v2/earlyGrid.node.test.ts"
+      ],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 29: najduži dugi iz upisanih dana > 3 dana, pauza 10 do ponedeljka ned 8 (ostatak nedelje smanjen): dugi tapera = 0,6 × upisan dugi ned 8 (15,7 km, nedelja), ne sastavljen",
+        "message": "AssertionError: expected 9 to be 9.4 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "7ce9623506beeaf5d83396d7e1125570adbbdf468ecaf6a52a958766cde19642",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 25.1
+    },
+    {
+      "index": 9,
+      "name": "B9 rasterećenje posle smanjenja bez dugog ≥ 4 km (A18)",
+      "files": ["src/domain/generators/halfMarathon/v2/lengths.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "odluke A1–A15 > A3: pauza 7–13 → 80 % i 1 kvalitet; 14–27 → 70 %, bez kvaliteta pa 1; ≥ 28 → nov start; < 10 ned do trke → orijentir",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 11: nijedan cilj od 16 km naviše ne može da se sastavi po pravilima.\",\"week\":11}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "5a5e944e26ee74301869c6b3651c99bf5756bbfa5f187e6df2a5fd344fbde04b",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 3.8
+    },
+    {
+      "index": 10,
+      "name": "B10 validator: posle mešovite nedelje stanje doze nepoznato (ne iz upisanih dana)",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 29: prošlost = upisani dani (stanje doze, dugi) > pauza 10 u sredu = dan Q1 (upisan T kont. 3000 m): ned 5 spušta T cruise sa 3,0 km (stanje iz upisanog dana)",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DOSE_DROP: q1: spuštanje doze bez razloga iz plafona zone (pouka 32: najviši nivo čiji dan nije duži od dugog).\",\"week\":5}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "6b297d1109d3c9ba9db00f2958fb2cef867a4f9890d516c25f484af3a90f081d",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 8.1
+    },
+    {
+      "index": 11,
+      "name": "B11 validator: pouka 30 samo uz proveren (ne mešovit) taper",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 30: trkačka nedelja ≤ taper i kad taper ima dane odmora/bola > početnik 4 dana, bol 8 u sredu tapera (taper mešovit): višak laganog trkačke nedelje je odmor — validator čita upisan taper",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"RACE_WEEK: Trkačka nedelja: dani thu, sat ≠ H8 (tue, thu, sat).\",\"week\":20}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "7b4120ff0b2fbb23a66bc5af39e0392719e6956a9a87ad438b16802350303279",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 13
+    },
+    {
+      "index": 12,
+      "name": "B12 validator: trkačka nedelja samo sa trkom (dani odmora) je prazna",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 30: trkačka nedelja ≤ taper i kad taper ima dane odmora/bola > 3 dana, bol 8 u nedelju pred trkačku: oba dana pre trke su odmor — trkačka ima samo trku (dani odmora A4, ne EMPTY_WEEK; trka ≥ minimum nedelje)",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EMPTY_WEEK: Nedelja bez treninga (Uslov 8).\",\"week\":12}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "c5ace3b9135d30bc59f6cb7441e363578f9afa9228c2606bddaf4f36fe2859b7",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 12.5
+    },
+    {
+      "index": 13,
+      "name": "B13 taper „samo RP\": drugi član za nedelju sa dva dana kvaliteta",
+      "files": ["src/domain/generators/halfMarathon/v2/week.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "nalazi široke pretrage (wide04.ts) > taper „samo RP\" (druga pretraga): drugi član plafona za nedelju sa jednim danom kvaliteta — RP spušten da dan ne bude duži od dugog (pouka 32)",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_OVER_LONG: RP 5000 m: dan 55 min > dugi 41 min (pouka 32, plafon zone).\",\"week\":19},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TAPER_QUALITY: Taper: RP 4000 m (≈ 60 % poslednje doze) (H7).\",\"week\":19}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "929f666da4f03029ec4995166f29c48ee13f1f0d8637869bfa87745dc4a0a271",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 5.5
+    },
+    {
+      "index": 14,
+      "name": "B14 validator: nedelja 1 tempom plana posle novog rezultata",
+      "files": ["src/domain/generators/halfMarathon/v2/validate.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "nalazi široke pretrage (wide04.ts) > novi rezultat na kraju ned 1: nedelja 1 se proverava tempom nedelje 1 (WEEK1_BELOW_START, A1)",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"WEEK1_BELOW_START: Nedelja 1 50.8 km < trenutni obim 60 km, a dugi nije na 18.7 km (150 min, 24 km, skorašnji najduži; H6, pouka 9, HI8).\",\"week\":1}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "341c8d7bf59bc665689ff07cd3b60ae52955a124220095ff783f296fa54f8df8",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 5.5
+    },
+    {
+      "index": 15,
+      "name": "B15 umor pre starta bez reference (početno stanje prazno)",
+      "files": ["src/domain/generators/halfMarathon/v2/steps.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 34: umor pre starta > asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora",
+        "message": "Error: {\"ok\":false,\"reasons\":[{\"code\":\"WEEK_INFEASIBLE\",\"message\":\"Nedelja 1: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.\",\"week\":1}],\"violations\":[]}"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "df12608b4db525644057b74ed135547b7310a2c7af0526e3adb33ef94faf9469",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.4
+    },
+    {
+      "index": 16,
+      "name": "B16 umor pre starta: ned 2 raste (bez pouke 34)",
+      "files": ["src/domain/generators/halfMarathon/v2/volume.ts"],
+      "tests": ["src/domain/generators/halfMarathon/v2/adapt.node.test.ts"],
+      "status": "pao",
+      "pao": true,
+      "firstFailed": {
+        "file": "src/domain/generators/halfMarathon/v2/adapt.node.test.ts",
+        "test": "pouka 34: umor pre starta > asOf start − 1/− 3/− 6: ned 1 prinudno rasterećenje 0,8 × planirana ned 1, ned 2 = planirana ned 1 bez rasta; referenca = ned 1 generatora",
+        "message": "AssertionError: d3-r-10w 2026-11-01: expected 30.4 to be 30 // Object.is equality"
+      },
+      "failedCount": 1,
+      "hashBefore": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "hashSabotaged": "823bf58f6396076461b7c6640aee448ae8eebd2c034adae133d24ae059485462",
+      "hashAfter": "ab795253dd88414f64d143ea21af17db63f885a054d64f5b7848728f4fa36946",
+      "restored": true,
+      "error": null,
+      "vitestExit": 1,
+      "durationS": 4.7
+    }
+  ]
+}

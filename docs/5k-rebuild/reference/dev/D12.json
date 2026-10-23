@@ -1,0 +1,3298 @@
+{
+ "id": "D12",
+ "set": "dev",
+ "label": "Rezultat na 10K bez datuma, nepotpuna istorija",
+ "covers": "PB druge distance; bez datuma; bez dužine/kontinuiteta/iskustva (sve pretpostavke); 35 km, 5 dana",
+ "today": "2026-10-15",
+ "wizard": {
+  "raceDate": "2027-01-03",
+  "pbDist": 10000,
+  "pbMin": "46",
+  "pbSec": "00",
+  "weeklyKm": "35",
+  "runDays": 5,
+  "quality": 2
+ },
+ "wizardRejects": [],
+ "weeksHint": {
+  "kind": "enough",
+  "weeks": 12,
+  "nameInSentence": "5K"
+ },
+ "input": {
+  "startDate": "2026-10-15",
+  "raceDate": "2027-01-03",
+  "raceDistM": 5000,
+  "pb": {
+   "distM": 10000,
+   "sec": 2760
+  },
+  "weeklyKm": 35,
+  "runDays": 5,
+  "quality": 2,
+  "lrDow": 7,
+  "qDows": [],
+  "runDows": [],
+  "intensity": "std",
+  "volIntensity": "std",
+  "goalSec": null,
+  "trainedRecently": true
+ },
+ "generatorId": "5k",
+ "deterministic": true,
+ "hash": {
+  "generated": "3fa61851985b780f",
+  "stored": "87d9262b7f0d06b3"
+ },
+ "analysis": {
+  "summary": {
+   "weeks": 12,
+   "baseWeeks": 0,
+   "vdot0": 44.1,
+   "predictedSec": 1331,
+   "predicted": "22:11",
+   "racePace": "4:26",
+   "goal": null,
+   "realno": null,
+   "qualityReadiness": "developing",
+   "speedConfidence": "undated-result",
+   "formPolicy": null,
+   "runDays": 5,
+   "effQ": 2,
+   "paces": {
+    "E": "5:39",
+    "LR": "5:47",
+    "T": "4:42",
+    "I": "4:15",
+    "R": "4:05"
+   },
+   "inputWeeklyKm": 35,
+   "firstFullWeek": {
+    "w": 2,
+    "vol": 32.2
+   },
+   "peakVol": 44.8,
+   "peakOverInput": 1.28,
+   "peakLr": 11.5,
+   "taper": {
+    "w": 11,
+    "vol": 25.1,
+    "ofPeak": 0.56,
+    "quality": 2
+   },
+   "raceWeek": {
+    "w": 12,
+    "vol": 15.5,
+    "days": 7
+   },
+   "preparation": {
+    "label": "Izdržljivost još nije potvrđena",
+    "peakLongRunKm": 11.5,
+    "peakWeeklyKm": 44.8
+   },
+   "warnings": 6,
+   "issues": 0,
+   "deloadCount": 2,
+   "deloadsWithQuality": 0,
+   "rSessions": 0,
+   "maxIWorkKmWeek": 2.4,
+   "maxQualityMinWeek": 22.9,
+   "maxLrShareFullWeek": 0.27,
+   "maxGrowthFullRef": 1.09,
+   "adjacentHardDays": 0
+  },
+  "weeks": [
+   {
+    "w": 1,
+    "days": 4,
+    "fullWeek": false,
+    "vol": 13,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "",
+    "displayPhase": "BAZA",
+    "runs": 2,
+    "quality": 0,
+    "sessions": [],
+    "zoneKm": {},
+    "zoneMin": {},
+    "qualityMin": 0,
+    "pctI": 0,
+    "pctT": 0,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [],
+    "lrKm": 8,
+    "lrShare": 0.62,
+    "lrMin": 46.3,
+    "maxEasy": 5,
+    "easyOverLr": false,
+    "strides": 0,
+    "runWalk": 0,
+    "labels": [
+     "Snaga",
+     "Lako 5",
+     "·",
+     "Dugo (LR) 8"
+    ]
+   },
+   {
+    "w": 2,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 32.2,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "Fartlek",
+    "displayPhase": "BAZA",
+    "runs": 5,
+    "quality": 1,
+    "sessions": [
+     "d2 T Fartlek 3×45s@4:42"
+    ],
+    "zoneKm": {
+     "T": 0.48
+    },
+    "zoneMin": {
+     "T": 2.3
+    },
+    "qualityMin": 2.3,
+    "pctI": 0,
+    "pctT": 1.5,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [
+     {
+      "z": "T",
+      "sec": 45
+     }
+    ],
+    "lrKm": 8.4,
+    "lrShare": 0.26,
+    "lrMin": 48.6,
+    "maxEasy": 6.4,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 6.4",
+     "Fartlek 6.4",
+     "Lako 5.8",
+     "Snaga",
+     "Lako 5.2",
+     "·",
+     "Dugo (LR) 8.4"
+    ]
+   },
+   {
+    "w": 3,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 35.1,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "Piramida + Tempo isprekidan",
+    "displayPhase": "BAZA",
+    "runs": 5,
+    "quality": 2,
+    "sessions": [
+     "d2 I Piramida 400-500-400@4:15",
+     "d5 T Tempo isprekidan 2×1100m@4:42 r90s"
+    ],
+    "zoneKm": {
+     "I": 1.3,
+     "T": 2.2
+    },
+    "zoneMin": {
+     "I": 5.5,
+     "T": 10.3
+    },
+    "qualityMin": 15.8,
+    "pctI": 3.7,
+    "pctT": 6.3,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [
+     {
+      "z": "I",
+      "sec": 127.5
+     },
+     {
+      "z": "T",
+      "sec": 310.20000000000005
+     }
+    ],
+    "lrKm": 8.8,
+    "lrShare": 0.25,
+    "lrMin": 50.9,
+    "maxEasy": 6.3,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 6.3",
+     "Piramida 6.7",
+     "Lako 5.8",
+     "Snaga",
+     "Tempo isprekidan 7.5",
+     "·",
+     "Dugo (LR) 8.8"
+    ]
+   },
+   {
+    "w": 4,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 24.5,
+    "deload": true,
+    "taper": false,
+    "race": false,
+    "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+    "displayPhase": "DELOAD",
+    "runs": 5,
+    "quality": 0,
+    "sessions": [],
+    "zoneKm": {},
+    "zoneMin": {},
+    "qualityMin": 0,
+    "pctI": 0,
+    "pctT": 0,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [],
+    "lrKm": 6.6,
+    "lrShare": 0.27,
+    "lrMin": 38.2,
+    "maxEasy": 5.3,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 5.3",
+     "Lako 4.6",
+     "Lako 4.1",
+     "Snaga",
+     "Lako 3.9",
+     "·",
+     "Dugo (LR) 6.6"
+    ]
+   },
+   {
+    "w": 5,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 38.1,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "Intervali + Tempo isprekidan",
+    "displayPhase": "RAZVOJ",
+    "runs": 5,
+    "quality": 2,
+    "sessions": [
+     "d2 I Intervali 2×1000m@4:15 r191s",
+     "d5 T Tempo isprekidan 2×1200m@4:42 r90s"
+    ],
+    "zoneKm": {
+     "I": 2,
+     "T": 2.4
+    },
+    "zoneMin": {
+     "I": 8.5,
+     "T": 11.3
+    },
+    "qualityMin": 19.8,
+    "pctI": 5.2,
+    "pctT": 6.3,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [
+     {
+      "z": "I",
+      "sec": 255
+     },
+     {
+      "z": "T",
+      "sec": 338.4
+     }
+    ],
+    "lrKm": 9.3,
+    "lrShare": 0.24,
+    "lrMin": 53.8,
+    "maxEasy": 7.4,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 7.4",
+     "Intervali 7.3",
+     "Lako 6.4",
+     "Snaga",
+     "Tempo isprekidan 7.7",
+     "·",
+     "Dugo (LR) 9.3"
+    ]
+   },
+   {
+    "w": 6,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 39.5,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "Fartlek + Tempo",
+    "displayPhase": "RAZVOJ",
+    "runs": 5,
+    "quality": 2,
+    "sessions": [
+     "d2 I Fartlek 5×60s@4:15",
+     "d5 T Tempo 2.8km@4:42"
+    ],
+    "zoneKm": {
+     "I": 1.18,
+     "T": 2.8
+    },
+    "zoneMin": {
+     "I": 5,
+     "T": 13.2
+    },
+    "qualityMin": 18.2,
+    "pctI": 3,
+    "pctT": 7.1,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [
+     {
+      "z": "I",
+      "sec": 60
+     },
+     {
+      "z": "T",
+      "sec": 789.5999999999999
+     }
+    ],
+    "lrKm": 9.8,
+    "lrShare": 0.25,
+    "lrMin": 56.7,
+    "maxEasy": 7.4,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 7.4",
+     "Fartlek 7.4",
+     "Lako 6.8",
+     "Snaga",
+     "Tempo 8.1",
+     "·",
+     "Dugo (LR) 9.8"
+    ]
+   },
+   {
+    "w": 7,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 41.5,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "Intervali + Tempo isprekidan",
+    "displayPhase": "RAZVOJ",
+    "runs": 5,
+    "quality": 2,
+    "sessions": [
+     "d2 I Intervali 2×1000m@4:15 r191s",
+     "d5 T Tempo isprekidan 2×1400m@4:42 r90s"
+    ],
+    "zoneKm": {
+     "I": 2,
+     "T": 2.8
+    },
+    "zoneMin": {
+     "I": 8.5,
+     "T": 13.2
+    },
+    "qualityMin": 21.7,
+    "pctI": 4.8,
+    "pctT": 6.7,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [
+     {
+      "z": "I",
+      "sec": 255
+     },
+     {
+      "z": "T",
+      "sec": 394.79999999999995
+     }
+    ],
+    "lrKm": 10.3,
+    "lrShare": 0.25,
+    "lrMin": 59.6,
+    "maxEasy": 7.8,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 7.8",
+     "Intervali 7.7",
+     "Lako 7.2",
+     "Snaga",
+     "Tempo isprekidan 8.5",
+     "·",
+     "Dugo (LR) 10.3"
+    ]
+   },
+   {
+    "w": 8,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 28.7,
+    "deload": true,
+    "taper": false,
+    "race": false,
+    "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+    "displayPhase": "DELOAD",
+    "runs": 5,
+    "quality": 0,
+    "sessions": [],
+    "zoneKm": {},
+    "zoneMin": {},
+    "qualityMin": 0,
+    "pctI": 0,
+    "pctT": 0,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [],
+    "lrKm": 7.7,
+    "lrShare": 0.27,
+    "lrMin": 44.5,
+    "maxEasy": 6.2,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 6.2",
+     "Lako 5.4",
+     "Lako 4.8",
+     "Snaga",
+     "Lako 4.6",
+     "·",
+     "Dugo (LR) 7.7"
+    ]
+   },
+   {
+    "w": 9,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 43.1,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "Trkački ritam + Tempo",
+    "displayPhase": "VRHUNAC",
+    "runs": 5,
+    "quality": 2,
+    "sessions": [
+     "d2 RP Trkački ritam 2×1000m@4:26 r90s",
+     "d5 T Tempo 2.7km@4:42"
+    ],
+    "zoneKm": {
+     "RP": 2,
+     "T": 2.7
+    },
+    "zoneMin": {
+     "RP": 8.9,
+     "T": 12.7
+    },
+    "qualityMin": 21.6,
+    "pctI": 0,
+    "pctT": 6.3,
+    "pctR": 0,
+    "pctRP": 4.6,
+    "maxRepSec": [
+     {
+      "z": "RP",
+      "sec": 266
+     },
+     {
+      "z": "T",
+      "sec": 761.4000000000001
+     }
+    ],
+    "lrKm": 10.9,
+    "lrShare": 0.25,
+    "lrMin": 63,
+    "maxEasy": 8.7,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 8.7",
+     "Trkački ritam 7.7",
+     "Lako 7.6",
+     "Snaga",
+     "Tempo 8.2",
+     "·",
+     "Dugo (LR) 10.9"
+    ]
+   },
+   {
+    "w": 10,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 44.8,
+    "deload": false,
+    "taper": false,
+    "race": false,
+    "focus": "Intervali + Tempo",
+    "displayPhase": "VRHUNAC",
+    "runs": 5,
+    "quality": 2,
+    "sessions": [
+     "d2 I Intervali 4×600m@4:15 r115s",
+     "d5 T Tempo 2.7km@4:42"
+    ],
+    "zoneKm": {
+     "I": 2.4,
+     "T": 2.7
+    },
+    "zoneMin": {
+     "I": 10.2,
+     "T": 12.7
+    },
+    "qualityMin": 22.9,
+    "pctI": 5.4,
+    "pctT": 6,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [
+     {
+      "z": "I",
+      "sec": 153
+     },
+     {
+      "z": "T",
+      "sec": 761.4000000000001
+     }
+    ],
+    "lrKm": 11.5,
+    "lrShare": 0.26,
+    "lrMin": 66.5,
+    "maxEasy": 8.7,
+    "easyOverLr": false,
+    "strides": 1,
+    "runWalk": 0,
+    "labels": [
+     "Lako 8.7",
+     "Intervali 8.4",
+     "Lako 8",
+     "Snaga",
+     "Tempo 8.2",
+     "·",
+     "Dugo (LR) 11.5"
+    ]
+   },
+   {
+    "w": 11,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 25.1,
+    "deload": false,
+    "taper": true,
+    "race": false,
+    "focus": "Taper · Trkački ritam + Tempo",
+    "displayPhase": "TAPER",
+    "runs": 5,
+    "quality": 2,
+    "sessions": [
+     "d2 RP Trkački ritam 3×400m@4:26 r90s",
+     "d5 T Tempo 1.9km@4:42"
+    ],
+    "zoneKm": {
+     "RP": 1.2,
+     "T": 1.9
+    },
+    "zoneMin": {
+     "RP": 5.3,
+     "T": 8.9
+    },
+    "qualityMin": 14.2,
+    "pctI": 0,
+    "pctT": 7.6,
+    "pctR": 0,
+    "pctRP": 4.8,
+    "maxRepSec": [
+     {
+      "z": "RP",
+      "sec": 106.4
+     },
+     {
+      "z": "T",
+      "sec": 535.8
+     }
+    ],
+    "lrKm": 6.9,
+    "lrShare": 0.27,
+    "lrMin": 39.9,
+    "maxEasy": 5.5,
+    "easyOverLr": false,
+    "strides": 0,
+    "runWalk": 0,
+    "labels": [
+     "Lako 5.5",
+     "Trkački ritam 3.4",
+     "Lako 4.8",
+     "Snaga",
+     "Tempo 4.5",
+     "·",
+     "Dugo (LR) 6.9"
+    ]
+   },
+   {
+    "w": 12,
+    "days": 7,
+    "fullWeek": true,
+    "vol": 15.5,
+    "deload": false,
+    "taper": false,
+    "race": true,
+    "focus": "TRKA",
+    "displayPhase": "TRKA",
+    "runs": 4,
+    "quality": 0,
+    "sessions": [],
+    "zoneKm": {},
+    "zoneMin": {},
+    "qualityMin": 0,
+    "pctI": 0,
+    "pctT": 0,
+    "pctR": 0,
+    "pctRP": 0,
+    "maxRepSec": [],
+    "lrKm": 0,
+    "lrShare": 0,
+    "lrMin": 0,
+    "maxEasy": 3,
+    "easyOverLr": false,
+    "strides": 0,
+    "runWalk": 0,
+    "labels": [
+     "·",
+     "Lako 3",
+     "Lako 3",
+     "·",
+     "Aktivacija 4.5",
+     "·",
+     "TRKA 5"
+    ]
+   }
+  ],
+  "growth": [
+   {
+    "w": 2,
+    "from": 1,
+    "refPartial": true,
+    "ratio": 2.48,
+    "deltaKm": 19.2
+   },
+   {
+    "w": 3,
+    "from": 2,
+    "refPartial": false,
+    "ratio": 1.09,
+    "deltaKm": 2.9
+   },
+   {
+    "w": 5,
+    "from": 3,
+    "refPartial": false,
+    "ratio": 1.09,
+    "deltaKm": 3
+   },
+   {
+    "w": 6,
+    "from": 5,
+    "refPartial": false,
+    "ratio": 1.04,
+    "deltaKm": 1.4
+   },
+   {
+    "w": 7,
+    "from": 6,
+    "refPartial": false,
+    "ratio": 1.05,
+    "deltaKm": 2
+   },
+   {
+    "w": 9,
+    "from": 7,
+    "refPartial": false,
+    "ratio": 1.04,
+    "deltaKm": 1.6
+   },
+   {
+    "w": 10,
+    "from": 9,
+    "refPartial": false,
+    "ratio": 1.04,
+    "deltaKm": 1.7
+   }
+  ],
+  "deloads": [
+   {
+    "w": 4,
+    "ratio": 0.7,
+    "quality": 0
+   },
+   {
+    "w": 8,
+    "ratio": 0.69,
+    "quality": 0
+   }
+  ],
+  "adjacency": [],
+  "afterLongRun": [
+   {
+    "date": "2026-10-19",
+    "lr": 8,
+    "easy": 6.4,
+    "ratio": 0.8
+   },
+   {
+    "date": "2026-10-26",
+    "lr": 8.4,
+    "easy": 6.3,
+    "ratio": 0.75
+   },
+   {
+    "date": "2026-11-02",
+    "lr": 8.8,
+    "easy": 5.3,
+    "ratio": 0.6
+   },
+   {
+    "date": "2026-11-09",
+    "lr": 6.6,
+    "easy": 7.4,
+    "ratio": 1.12
+   },
+   {
+    "date": "2026-11-16",
+    "lr": 9.3,
+    "easy": 7.4,
+    "ratio": 0.8
+   },
+   {
+    "date": "2026-11-23",
+    "lr": 9.8,
+    "easy": 7.8,
+    "ratio": 0.8
+   },
+   {
+    "date": "2026-11-30",
+    "lr": 10.3,
+    "easy": 6.2,
+    "ratio": 0.6
+   },
+   {
+    "date": "2026-12-07",
+    "lr": 7.7,
+    "easy": 8.7,
+    "ratio": 1.13
+   },
+   {
+    "date": "2026-12-14",
+    "lr": 10.9,
+    "easy": 8.7,
+    "ratio": 0.8
+   },
+   {
+    "date": "2026-12-21",
+    "lr": 11.5,
+    "easy": 5.5,
+    "ratio": 0.48
+   }
+  ],
+  "issues": [],
+  "warnings": [
+   "Skorašnja ponovljiva dužina nije uneta; početna dužina je oprezno izvedena iz nedeljnog obima.",
+   "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+   "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+   "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+   "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+   "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+  ]
+ },
+ "adaptation": {
+  "today": "2026-11-19",
+  "start": "2026-10-12",
+  "before": [
+   39.5,
+   41.5,
+   28.7,
+   43.1,
+   44.8,
+   25.1,
+   15.5
+  ],
+  "beforeQuality": [
+   2,
+   2,
+   0,
+   2,
+   2,
+   2,
+   0
+  ],
+  "done": {
+   "recommendation": {
+    "kind": null,
+    "reason": "Dnevnik trenutno ne pokazuje razlog za promenu plana.",
+    "actionable": false,
+    "requiresConfirmation": false,
+    "weeklyKm": 33.7,
+    "recentLongRunKm": 8.8,
+    "reasons": []
+   },
+   "reasons": [],
+   "reduce": {
+    "error": "Dnevnik trenutno ne pokazuje razlog za promenu plana."
+   }
+  },
+  "miss": {
+   "recommendation": {
+    "kind": null,
+    "reason": "Dnevnik trenutno ne pokazuje razlog za promenu plana.",
+    "actionable": false,
+    "requiresConfirmation": false,
+    "weeklyKm": 33.7,
+    "recentLongRunKm": 8.8,
+    "reasons": []
+   },
+   "reasons": [],
+   "reduce": {
+    "error": "Dnevnik trenutno ne pokazuje razlog za promenu plana."
+   }
+  },
+  "under": {
+   "recommendation": {
+    "kind": "reduce",
+    "reason": "Ponovljeni propušteni, preteški laki treninzi ili manji odrađeni obim opravdavaju pregled opterećenja.",
+    "actionable": true,
+    "requiresConfirmation": true,
+    "weeklyKm": 26.6,
+    "recentLongRunKm": 8.4,
+    "reasons": [
+     "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+    ]
+   },
+   "reasons": [
+    "Najmanje dve pokrivene pune nedelje imaju manje od 80% planiranih kilometara."
+   ],
+   "reduce": {
+    "summary": "Plan prema manjem izvršenom obimu 26.6 km",
+    "after": [
+     34.5,
+     28.4,
+     30,
+     22,
+     29.5,
+     19.5,
+     13
+    ],
+    "afterQuality": [
+     1,
+     0,
+     1,
+     0,
+     2,
+     2,
+     0
+    ],
+    "notes": 6,
+    "hash": "7bc93592b763d2be"
+   }
+  },
+  "high": {
+   "recommendation": {
+    "kind": "reduce",
+    "reason": "Ponovljeni propušteni, preteški laki treninzi ili manji odrađeni obim opravdavaju pregled opterećenja.",
+    "actionable": true,
+    "requiresConfirmation": true,
+    "weeklyKm": 33.7,
+    "recentLongRunKm": 8.8,
+    "reasons": [
+     "Najmanje dva laka treninga imaju upisan napor 7–10; proveri umor pre težeg rada."
+    ]
+   },
+   "reasons": [
+    "Najmanje dva laka treninga imaju upisan napor 7–10; proveri umor pre težeg rada."
+   ],
+   "reduce": {
+    "summary": "Rasterećenje zbog visokog napora, baza 28.6 km",
+    "after": [
+     33.8,
+     28.4,
+     31.9,
+     23.1,
+     31.1,
+     19.7,
+     13.3
+    ],
+    "afterQuality": [
+     1,
+     0,
+     1,
+     0,
+     2,
+     2,
+     0
+    ],
+    "notes": 7,
+    "hash": "5ce97070c2c7cce8"
+   }
+  },
+  "gap": {
+   "recommendation": {
+    "kind": "return",
+    "reason": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa.",
+    "actionable": false,
+    "requiresConfirmation": true,
+    "breakDays": 13,
+    "weeklyKm": 32.2,
+    "recentLongRunKm": 8.4,
+    "reasons": [
+     "Nedovoljno upisanih kilometara: neupisani treninzi nisu dokaz da nisi trčao."
+    ]
+   },
+   "reasons": [
+    "Nedovoljno upisanih kilometara: neupisani treninzi nisu dokaz da nisi trčao."
+   ],
+   "reduce": {
+    "error": "Dnevnik nema novije trčanje. Potvrdi da li si pravio pauzu ili trenirao bez upisa."
+   }
+  }
+ },
+ "plan": {
+  "generated": {
+   "weeks": [
+    {
+     "w": 1,
+     "vol": 13,
+     "days": [
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "lako",
+       "km": 5,
+       "desc": "5 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 8,
+       "desc": "8 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": ""
+    },
+    {
+     "w": 2,
+     "vol": 32.2,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 6.4,
+       "desc": "6.4 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 6.4,
+       "desc": "Fartlek — 2.8 km zagrevanje + 3×45 s brzo @ ~4:42/km (90 s laganog trčanja) + 2.3 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "fartlek",
+        "kind": "Fartlek",
+        "wuKm": 2.8,
+        "cdKm": 2.3,
+        "reps": 3,
+        "repSec": 45,
+        "restSec": 90,
+        "paceSec": 282,
+        "easyPaceSec": 339,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 5.8,
+       "desc": "5.8 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "lako",
+       "km": 5.2,
+       "desc": "5.2 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 8.4,
+       "desc": "8.4 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Fartlek"
+    },
+    {
+     "w": 3,
+     "vol": 35.1,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 6.3,
+       "desc": "6.3 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 6.7,
+       "desc": "Piramida — 2.8 km zagrevanje + 400-500-400 m @ 4:15/km (1:36 min hoda između ponavljanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "pyramid",
+        "kind": "Piramida",
+        "wuKm": 2.8,
+        "reps": [
+         400,
+         500,
+         400
+        ],
+        "paceSec": 255,
+        "restSec": 96,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 5.8,
+       "desc": "5.8 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "tempo",
+       "km": 7.5,
+       "desc": "Tempo isprekidan — 2.8 km zagrevanje + 2×1100 m @ 4:42/km (1:30 min laganog trčanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 2.8,
+        "reps": 2,
+        "repM": 1100,
+        "paceSec": 282,
+        "restSec": 90,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 8.8,
+       "desc": "8.8 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Piramida + Tempo isprekidan"
+    },
+    {
+     "w": 4,
+     "vol": 24.5,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 5.3,
+       "desc": "5.3 km lako (Z2) @ ~5:39/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+       "strides": {
+        "reps": 4,
+        "runSec": 15,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 4.6,
+       "desc": "4.6 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 4.1,
+       "desc": "4.1 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "lako",
+       "km": 3.9,
+       "desc": "3.9 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 6.6,
+       "desc": "6.6 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": true,
+     "focus": "DELOAD — obim dole, ostaje kratka oštrina"
+    },
+    {
+     "w": 5,
+     "vol": 38.1,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 7.4,
+       "desc": "7.4 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 7.3,
+       "desc": "Intervali — 2.8 km zagrevanje + 2×1000 m @ 4:15/km (3:11 min hoda) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Intervali",
+        "wuKm": 2.8,
+        "reps": 2,
+        "repM": 1000,
+        "paceSec": 255,
+        "restSec": 191,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 6.4,
+       "desc": "6.4 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "tempo",
+       "km": 7.7,
+       "desc": "Tempo isprekidan — 2.8 km zagrevanje + 2×1200 m @ 4:42/km (1:30 min laganog trčanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 2.8,
+        "reps": 2,
+        "repM": 1200,
+        "paceSec": 282,
+        "restSec": 90,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 9.3,
+       "desc": "9.3 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Intervali + Tempo isprekidan"
+    },
+    {
+     "w": 6,
+     "vol": 39.5,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 7.4,
+       "desc": "7.4 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 7.4,
+       "desc": "Fartlek — 2.9 km zagrevanje + 5×60 s brzo @ ~4:15/km (60 s laganog trčanja) + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "fartlek",
+        "kind": "Fartlek",
+        "wuKm": 2.9,
+        "cdKm": 2.4,
+        "reps": 5,
+        "repSec": 60,
+        "restSec": 60,
+        "paceSec": 255,
+        "easyPaceSec": 339,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 6.8,
+       "desc": "6.8 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "tempo",
+       "km": 8.1,
+       "desc": "Tempo — 2.9 km zagrevanje + 2.8 km @ 4:42/km + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 2.9,
+        "qKm": 2.8,
+        "paceSec": 282,
+        "cdKm": 2.4,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 9.8,
+       "desc": "9.8 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Fartlek + Tempo"
+    },
+    {
+     "w": 7,
+     "vol": 41.5,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 7.8,
+       "desc": "7.8 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 7.7,
+       "desc": "Intervali — 3 km zagrevanje + 2×1000 m @ 4:15/km (3:11 min hoda) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Intervali",
+        "wuKm": 3,
+        "reps": 2,
+        "repM": 1000,
+        "paceSec": 255,
+        "restSec": 191,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 7.2,
+       "desc": "7.2 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "tempo",
+       "km": 8.5,
+       "desc": "Tempo isprekidan — 3 km zagrevanje + 2×1400 m @ 4:42/km (1:30 min laganog trčanja) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 3,
+        "reps": 2,
+        "repM": 1400,
+        "paceSec": 282,
+        "restSec": 90,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 10.3,
+       "desc": "10.3 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Intervali + Tempo isprekidan"
+    },
+    {
+     "w": 8,
+     "vol": 28.7,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 6.2,
+       "desc": "6.2 km lako (Z2) @ ~5:39/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+       "strides": {
+        "reps": 4,
+        "runSec": 15,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 5.4,
+       "desc": "5.4 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 4.8,
+       "desc": "4.8 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "lako",
+       "km": 4.6,
+       "desc": "4.6 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 7.7,
+       "desc": "7.7 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": true,
+     "focus": "DELOAD — obim dole, ostaje kratka oštrina"
+    },
+    {
+     "w": 9,
+     "vol": 43.1,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 8.7,
+       "desc": "8.7 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 7.7,
+       "desc": "Trkački ritam — 3 km zagrevanje + 2×1000 m @ 4:26/km (1:30 min hoda) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Trkački ritam",
+        "purpose": "RP",
+        "wuKm": 3,
+        "reps": 2,
+        "repM": 1000,
+        "paceSec": 266,
+        "restSec": 90,
+        "cdKm": 2.5,
+        "overrides": {},
+        "zone": "RP",
+        "paceSource": "race-specific",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 7.6,
+       "desc": "7.6 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "tempo",
+       "km": 8.2,
+       "desc": "Tempo — 3 km zagrevanje + 2.7 km @ 4:42/km + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 3,
+        "qKm": 2.7,
+        "paceSec": 282,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 10.9,
+       "desc": "10.9 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Trkački ritam + Tempo"
+    },
+    {
+     "w": 10,
+     "vol": 44.8,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 8.7,
+       "desc": "8.7 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       }
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 8.4,
+       "desc": "Intervali — 3 km zagrevanje + 4×600 m @ 4:15/km (1:55 min hoda) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Intervali",
+        "wuKm": 3,
+        "reps": 4,
+        "repM": 600,
+        "paceSec": 255,
+        "restSec": 115,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 8,
+       "desc": "8 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "tempo",
+       "km": 8.2,
+       "desc": "Tempo — 3 km zagrevanje + 2.7 km @ 4:42/km + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 3,
+        "qKm": 2.7,
+        "paceSec": 282,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 11.5,
+       "desc": "11.5 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Intervali + Tempo"
+    },
+    {
+     "w": 11,
+     "vol": 25.1,
+     "days": [
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 5.5,
+       "desc": "5.5 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 2,
+       "tag": "int",
+       "km": 3.4,
+       "desc": "Trkački ritam — 1.1 km zagrevanje + 3×400 m @ 4:26/km (1:30 min hoda) + 0.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Trkački ritam",
+        "purpose": "RP",
+        "wuKm": 1.1,
+        "reps": 3,
+        "repM": 400,
+        "paceSec": 266,
+        "restSec": 90,
+        "cdKm": 0.8,
+        "overrides": {},
+        "zone": "RP",
+        "paceSource": "race-specific",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 4.8,
+       "desc": "4.8 km lako (Z2) @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)"
+      },
+      {
+       "dow": 5,
+       "tag": "tempo",
+       "km": 4.5,
+       "desc": "Tempo — 1.5 km zagrevanje + 1.9 km @ 4:42/km + 1.1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 1.5,
+        "qKm": 1.9,
+        "paceSec": 282,
+        "cdKm": 1.1,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "lr",
+       "km": 6.9,
+       "desc": "6.9 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje"
+      }
+     ],
+     "deload": false,
+     "focus": "Taper · Trkački ritam + Tempo",
+     "taper": true
+    },
+    {
+     "w": 12,
+     "vol": 15.5,
+     "days": [
+      {
+       "dow": 1,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 3,
+       "desc": "3 km shakeout @ ~5:39/km"
+      },
+      {
+       "dow": 3,
+       "tag": "lako",
+       "km": 3,
+       "desc": "3 km shakeout @ ~5:39/km"
+      },
+      {
+       "dow": 4,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 5,
+       "tag": "int",
+       "km": 4.5,
+       "desc": "Aktivacija — 1.5 km zagrevanje + 3×200 m @ 4:22/km (2 min hoda) + 2.1 km hlađenje · Kratka aktivacija približno na ritmu trke, bez sprinta; oporavak 120 s hoda.",
+       "session": {
+        "type": "int",
+        "kind": "Aktivacija",
+        "purpose": "activation",
+        "wuKm": 1.5,
+        "reps": 3,
+        "repM": 200,
+        "paceSec": 262,
+        "restSec": 120,
+        "cdKm": 2.1,
+        "overrides": {},
+        "zone": "RP",
+        "paceSource": "race-specific",
+        "notes": "Kratka aktivacija približno na ritmu trke, bez sprinta; oporavak 120 s hoda."
+       }
+      },
+      {
+       "dow": 6,
+       "rest": true,
+       "desc": null
+      },
+      {
+       "dow": 7,
+       "tag": "trka",
+       "km": 5,
+       "desc": "🏁 TRKA 5 km (5K) — preporučeni ritam 4:26/km (oko 22:10, prema unetom rezultatu) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja."
+      }
+     ],
+     "deload": false,
+     "focus": "TRKA"
+    }
+   ],
+   "pred": [
+    {
+     "w": 2,
+     "l": "N2 · Fartlek",
+     "q": 0.5,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 3,
+     "l": "N3 · Piramida",
+     "q": 1.3,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I"
+    },
+    {
+     "w": 3,
+     "l": "N3 · Tempo isprekidan",
+     "q": 2.2,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 5,
+     "l": "N5 · Intervali",
+     "q": 2,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I"
+    },
+    {
+     "w": 5,
+     "l": "N5 · Tempo isprekidan",
+     "q": 2.4,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 6,
+     "l": "N6 · Fartlek",
+     "q": 1.2,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I"
+    },
+    {
+     "w": 6,
+     "l": "N6 · Tempo",
+     "q": 2.8,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 7,
+     "l": "N7 · Intervali",
+     "q": 2,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I"
+    },
+    {
+     "w": 7,
+     "l": "N7 · Tempo isprekidan",
+     "q": 2.8,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 9,
+     "l": "N9 · Trkački ritam",
+     "q": 2,
+     "pt": 266,
+     "p5k": 1331,
+     "zone": "RP",
+     "nemeri": true
+    },
+    {
+     "w": 9,
+     "l": "N9 · Tempo",
+     "q": 2.7,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 10,
+     "l": "N10 · Intervali",
+     "q": 2.4,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I"
+    },
+    {
+     "w": 10,
+     "l": "N10 · Tempo",
+     "q": 2.7,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 11,
+     "l": "N11 · Trkački ritam",
+     "q": 1.2,
+     "pt": 266,
+     "p5k": 1331,
+     "zone": "RP",
+     "nemeri": true
+    },
+    {
+     "w": 11,
+     "l": "N11 · Tempo",
+     "q": 1.9,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T"
+    },
+    {
+     "w": 12,
+     "l": "N12 · Aktivacija",
+     "q": 0.6,
+     "pt": 262,
+     "p5k": 1331,
+     "zone": "RP",
+     "nemeri": true
+    }
+   ],
+   "qs": {
+    "n3d2": [
+     400,
+     500,
+     400
+    ],
+    "n3d5": [
+     1100
+    ],
+    "n5d2": [
+     1000
+    ],
+    "n5d5": [
+     1200
+    ],
+    "n6d5": [
+     2800
+    ],
+    "n7d2": [
+     1000
+    ],
+    "n7d5": [
+     1400
+    ],
+    "n9d2": [
+     1000
+    ],
+    "n9d5": [
+     2700
+    ],
+    "n10d2": [
+     600
+    ],
+    "n10d5": [
+     2700
+    ],
+    "n11d2": [
+     400
+    ],
+    "n11d5": [
+     1900
+    ],
+    "n12d5": [
+     200
+    ]
+   },
+   "meta": {
+    "assessmentBasis": "current-fitness",
+    "vdot0": 44.1,
+    "vdotGoal": 44.1,
+    "predictedSec": 1331,
+    "realno": null,
+    "goalVdot": null,
+    "athlete": {
+     "qualityReadiness": "developing",
+     "weeklyBaseKm": 35,
+     "repeatableLongRunKm": 8,
+     "longRunBasis": "inferred",
+     "consistentWeeks": null,
+     "breakWeeks": 0,
+     "resultAgeDays": null,
+     "speedConfidence": "undated-result",
+     "assumptions": [
+      "Skorašnja ponovljiva dužina nije uneta; početna dužina je oprezno izvedena iz nedeljnog obima.",
+      "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+      "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+      "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+     ]
+    },
+    "trainingVdot": 44.1,
+    "start": "2026-10-12",
+    "weeks": 12,
+    "intensity": "std",
+    "racePace": 266,
+    "runDays": 5,
+    "quality": 2,
+    "dayWarnings": [
+     "Skorašnja ponovljiva dužina nije uneta; početna dužina je oprezno izvedena iz nedeljnog obima.",
+     "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+     "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+     "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+     "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+     "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+    ],
+    "raceDistM": 5000,
+    "raceName": "5K",
+    "baseWeeks": 0,
+    "raceDate": "2027-01-03",
+    "goalSec": null,
+    "preparation": {
+     "endurance": "developing",
+     "goalStatus": "endurance-limited",
+     "peakLongRunKm": 11.5,
+     "peakWeeklyKm": 44.8,
+     "demandingDaysMax": 2,
+     "reasons": [
+      "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+      "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+     ],
+     "forecastBasis": "result-and-delivered-preparation"
+    }
+   }
+  },
+  "stored": {
+   "weeks": [
+    {
+     "w": 1,
+     "start": "2026-10-12",
+     "deload": false,
+     "focus": "",
+     "days": [
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g1d4"
+      },
+      {
+       "dow": 4,
+       "tag": "lako",
+       "km": 5,
+       "desc": "5 km lako (Z2) @ ~5:39/km",
+       "id": "g1d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g1d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 8,
+       "desc": "8 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g1d7"
+      }
+     ]
+    },
+    {
+     "w": 2,
+     "start": "2026-10-19",
+     "deload": false,
+     "focus": "Fartlek",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 6.4,
+       "desc": "6.4 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g2d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 6.4,
+       "desc": "Fartlek — 2.8 km zagrevanje + 3×45 s brzo @ ~4:42/km (90 s laganog trčanja) + 2.3 km hlađenje · Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "fartlek",
+        "kind": "Fartlek",
+        "wuKm": 2.8,
+        "cdKm": 2.3,
+        "reps": 3,
+        "repSec": 45,
+        "restSec": 90,
+        "paceSec": 282,
+        "easyPaceSec": 339,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Uvod u kvalitet: kontrolisane deonice, bez sprinta, uz lagan oporavak. · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g2d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 5.8,
+       "desc": "5.8 km lako (Z2) @ ~5:39/km",
+       "id": "g2d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g2d4"
+      },
+      {
+       "dow": 4,
+       "tag": "lako",
+       "km": 5.2,
+       "desc": "5.2 km lako (Z2) @ ~5:39/km",
+       "id": "g2d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g2d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 8.4,
+       "desc": "8.4 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g2d7"
+      }
+     ]
+    },
+    {
+     "w": 3,
+     "start": "2026-10-26",
+     "deload": false,
+     "focus": "Piramida + Tempo isprekidan",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 6.3,
+       "desc": "6.3 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g3d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 6.7,
+       "desc": "Piramida — 2.8 km zagrevanje + 400-500-400 m @ 4:15/km (1:36 min hoda između ponavljanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "pyramid",
+        "kind": "Piramida",
+        "wuKm": 2.8,
+        "reps": [
+         400,
+         500,
+         400
+        ],
+        "paceSec": 255,
+        "restSec": 96,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g3d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 5.8,
+       "desc": "5.8 km lako (Z2) @ ~5:39/km",
+       "id": "g3d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g3d4"
+      },
+      {
+       "dow": 4,
+       "tag": "tempo",
+       "km": 7.5,
+       "desc": "Tempo isprekidan — 2.8 km zagrevanje + 2×1100 m @ 4:42/km (1:30 min laganog trčanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 2.8,
+        "reps": 2,
+        "repM": 1100,
+        "paceSec": 282,
+        "restSec": 90,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g3d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g3d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 8.8,
+       "desc": "8.8 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g3d7"
+      }
+     ]
+    },
+    {
+     "w": 4,
+     "start": "2026-11-02",
+     "deload": true,
+     "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 5.3,
+       "desc": "5.3 km lako (Z2) @ ~5:39/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+       "strides": {
+        "reps": 4,
+        "runSec": 15,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g4d1"
+      },
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 4.6,
+       "desc": "4.6 km lako (Z2) @ ~5:39/km",
+       "id": "g4d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 4.1,
+       "desc": "4.1 km lako (Z2) @ ~5:39/km",
+       "id": "g4d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g4d4"
+      },
+      {
+       "dow": 4,
+       "tag": "lako",
+       "km": 3.9,
+       "desc": "3.9 km lako (Z2) @ ~5:39/km",
+       "id": "g4d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g4d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 6.6,
+       "desc": "6.6 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g4d7"
+      }
+     ]
+    },
+    {
+     "w": 5,
+     "start": "2026-11-09",
+     "deload": false,
+     "focus": "Intervali + Tempo isprekidan",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 7.4,
+       "desc": "7.4 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g5d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 7.3,
+       "desc": "Intervali — 2.8 km zagrevanje + 2×1000 m @ 4:15/km (3:11 min hoda) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Intervali",
+        "wuKm": 2.8,
+        "reps": 2,
+        "repM": 1000,
+        "paceSec": 255,
+        "restSec": 191,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g5d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 6.4,
+       "desc": "6.4 km lako (Z2) @ ~5:39/km",
+       "id": "g5d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g5d4"
+      },
+      {
+       "dow": 4,
+       "tag": "tempo",
+       "km": 7.7,
+       "desc": "Tempo isprekidan — 2.8 km zagrevanje + 2×1200 m @ 4:42/km (1:30 min laganog trčanja) + 2.3 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 2.8,
+        "reps": 2,
+        "repM": 1200,
+        "paceSec": 282,
+        "restSec": 90,
+        "cdKm": 2.3,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g5d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g5d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 9.3,
+       "desc": "9.3 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g5d7"
+      }
+     ]
+    },
+    {
+     "w": 6,
+     "start": "2026-11-16",
+     "deload": false,
+     "focus": "Fartlek + Tempo",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 7.4,
+       "desc": "7.4 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g6d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 7.4,
+       "desc": "Fartlek — 2.9 km zagrevanje + 5×60 s brzo @ ~4:15/km (60 s laganog trčanja) + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "fartlek",
+        "kind": "Fartlek",
+        "wuKm": 2.9,
+        "cdKm": 2.4,
+        "reps": 5,
+        "repSec": 60,
+        "restSec": 60,
+        "paceSec": 255,
+        "easyPaceSec": 339,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g6d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 6.8,
+       "desc": "6.8 km lako (Z2) @ ~5:39/km",
+       "id": "g6d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g6d4"
+      },
+      {
+       "dow": 4,
+       "tag": "tempo",
+       "km": 8.1,
+       "desc": "Tempo — 2.9 km zagrevanje + 2.8 km @ 4:42/km + 2.4 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 2.9,
+        "qKm": 2.8,
+        "paceSec": 282,
+        "cdKm": 2.4,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g6d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g6d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 9.8,
+       "desc": "9.8 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g6d7"
+      }
+     ]
+    },
+    {
+     "w": 7,
+     "start": "2026-11-23",
+     "deload": false,
+     "focus": "Intervali + Tempo isprekidan",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 7.8,
+       "desc": "7.8 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g7d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 7.7,
+       "desc": "Intervali — 3 km zagrevanje + 2×1000 m @ 4:15/km (3:11 min hoda) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Intervali",
+        "wuKm": 3,
+        "reps": 2,
+        "repM": 1000,
+        "paceSec": 255,
+        "restSec": 191,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g7d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 7.2,
+       "desc": "7.2 km lako (Z2) @ ~5:39/km",
+       "id": "g7d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g7d4"
+      },
+      {
+       "dow": 4,
+       "tag": "tempo",
+       "km": 8.5,
+       "desc": "Tempo isprekidan — 3 km zagrevanje + 2×1400 m @ 4:42/km (1:30 min laganog trčanja) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Tempo isprekidan",
+        "wuKm": 3,
+        "reps": 2,
+        "repM": 1400,
+        "paceSec": 282,
+        "restSec": 90,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g7d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g7d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 10.3,
+       "desc": "10.3 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g7d7"
+      }
+     ]
+    },
+    {
+     "w": 8,
+     "start": "2026-11-30",
+     "deload": true,
+     "focus": "DELOAD — obim dole, ostaje kratka oštrina",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 6.2,
+       "desc": "6.2 km lako (Z2) @ ~5:39/km + 4×15 s ubrzanja (lagani ubrzani koraci)",
+       "strides": {
+        "reps": 4,
+        "runSec": 15,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g8d1"
+      },
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 5.4,
+       "desc": "5.4 km lako (Z2) @ ~5:39/km",
+       "id": "g8d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 4.8,
+       "desc": "4.8 km lako (Z2) @ ~5:39/km",
+       "id": "g8d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g8d4"
+      },
+      {
+       "dow": 4,
+       "tag": "lako",
+       "km": 4.6,
+       "desc": "4.6 km lako (Z2) @ ~5:39/km",
+       "id": "g8d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g8d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 7.7,
+       "desc": "7.7 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g8d7"
+      }
+     ]
+    },
+    {
+     "w": 9,
+     "start": "2026-12-07",
+     "deload": false,
+     "focus": "Trkački ritam + Tempo",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 8.7,
+       "desc": "8.7 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g9d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 7.7,
+       "desc": "Trkački ritam — 3 km zagrevanje + 2×1000 m @ 4:26/km (1:30 min hoda) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Trkački ritam",
+        "purpose": "RP",
+        "wuKm": 3,
+        "reps": 2,
+        "repM": 1000,
+        "paceSec": 266,
+        "restSec": 90,
+        "cdKm": 2.5,
+        "overrides": {},
+        "zone": "RP",
+        "paceSource": "race-specific",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g9d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 7.6,
+       "desc": "7.6 km lako (Z2) @ ~5:39/km",
+       "id": "g9d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g9d4"
+      },
+      {
+       "dow": 4,
+       "tag": "tempo",
+       "km": 8.2,
+       "desc": "Tempo — 3 km zagrevanje + 2.7 km @ 4:42/km + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 3,
+        "qKm": 2.7,
+        "paceSec": 282,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g9d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g9d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 10.9,
+       "desc": "10.9 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g9d7"
+      }
+     ]
+    },
+    {
+     "w": 10,
+     "start": "2026-12-14",
+     "deload": false,
+     "focus": "Intervali + Tempo",
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 8.7,
+       "desc": "8.7 km lako (Z2) @ ~5:39/km + 6×20 s ubrzanja (lagani ubrzani koraci, pun oporavak)",
+       "strides": {
+        "reps": 6,
+        "runSec": 20,
+        "restSec": 60,
+        "paceSec": 245
+       },
+       "id": "g10d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 8.4,
+       "desc": "Intervali — 3 km zagrevanje + 4×600 m @ 4:15/km (1:55 min hoda) + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Intervali",
+        "wuKm": 3,
+        "reps": 4,
+        "repM": 600,
+        "paceSec": 255,
+        "restSec": 115,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "I",
+        "zone": "I",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g10d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 8,
+       "desc": "8 km lako (Z2) @ ~5:39/km",
+       "id": "g10d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g10d4"
+      },
+      {
+       "dow": 4,
+       "tag": "tempo",
+       "km": 8.2,
+       "desc": "Tempo — 3 km zagrevanje + 2.7 km @ 4:42/km + 2.5 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 3,
+        "qKm": 2.7,
+        "paceSec": 282,
+        "cdKm": 2.5,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g10d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g10d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 11.5,
+       "desc": "11.5 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g10d7"
+      }
+     ]
+    },
+    {
+     "w": 11,
+     "start": "2026-12-21",
+     "deload": false,
+     "focus": "Taper · Trkački ritam + Tempo",
+     "taper": true,
+     "days": [
+      {
+       "dow": 0,
+       "tag": "lako",
+       "km": 5.5,
+       "desc": "5.5 km lako (Z2) @ ~5:39/km",
+       "id": "g11d1"
+      },
+      {
+       "dow": 1,
+       "tag": "int",
+       "km": 3.4,
+       "desc": "Trkački ritam — 1.1 km zagrevanje + 3×400 m @ 4:26/km (1:30 min hoda) + 0.8 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "int",
+        "kind": "Trkački ritam",
+        "purpose": "RP",
+        "wuKm": 1.1,
+        "reps": 3,
+        "repM": 400,
+        "paceSec": 266,
+        "restSec": 90,
+        "cdKm": 0.8,
+        "overrides": {},
+        "zone": "RP",
+        "paceSource": "race-specific",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g11d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 4.8,
+       "desc": "4.8 km lako (Z2) @ ~5:39/km",
+       "id": "g11d3"
+      },
+      {
+       "dow": 3,
+       "tag": "snaga",
+       "km": null,
+       "desc": "Mobilnost + snaga po sopstvenom programu — opciono (bez trčanja)",
+       "id": "g11d4"
+      },
+      {
+       "dow": 4,
+       "tag": "tempo",
+       "km": 4.5,
+       "desc": "Tempo — 1.5 km zagrevanje + 1.9 km @ 4:42/km + 1.1 km hlađenje · Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju.",
+       "session": {
+        "type": "tempo",
+        "kind": "Tempo",
+        "wuKm": 1.5,
+        "qKm": 1.9,
+        "paceSec": 282,
+        "cdKm": 1.1,
+        "overrides": {},
+        "purpose": "T",
+        "zone": "T",
+        "paceSource": "current-fitness",
+        "notes": "Doza kvalitetnog rada prilagođena kontinuitetu i izabranom opterećenju."
+       },
+       "id": "g11d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g11d6"
+      },
+      {
+       "dow": 6,
+       "tag": "lr",
+       "km": 6.9,
+       "desc": "6.9 km LR (Z2) @ ~5:47/km — najduže trčanje te nedelje",
+       "id": "g11d7"
+      }
+     ]
+    },
+    {
+     "w": 12,
+     "start": "2026-12-28",
+     "deload": false,
+     "focus": "TRKA",
+     "days": [
+      {
+       "dow": 0,
+       "rest": true,
+       "desc": null,
+       "id": "g12d1"
+      },
+      {
+       "dow": 1,
+       "tag": "lako",
+       "km": 3,
+       "desc": "3 km shakeout @ ~5:39/km",
+       "id": "g12d2"
+      },
+      {
+       "dow": 2,
+       "tag": "lako",
+       "km": 3,
+       "desc": "3 km shakeout @ ~5:39/km",
+       "id": "g12d3"
+      },
+      {
+       "dow": 3,
+       "rest": true,
+       "desc": null,
+       "id": "g12d4"
+      },
+      {
+       "dow": 4,
+       "tag": "int",
+       "km": 4.5,
+       "desc": "Aktivacija — 1.5 km zagrevanje + 3×200 m @ 4:22/km (2 min hoda) + 2.1 km hlađenje · Kratka aktivacija približno na ritmu trke, bez sprinta; oporavak 120 s hoda.",
+       "session": {
+        "type": "int",
+        "kind": "Aktivacija",
+        "purpose": "activation",
+        "wuKm": 1.5,
+        "reps": 3,
+        "repM": 200,
+        "paceSec": 262,
+        "restSec": 120,
+        "cdKm": 2.1,
+        "overrides": {},
+        "zone": "RP",
+        "paceSource": "race-specific",
+        "notes": "Kratka aktivacija približno na ritmu trke, bez sprinta; oporavak 120 s hoda."
+       },
+       "id": "g12d5"
+      },
+      {
+       "dow": 5,
+       "rest": true,
+       "desc": null,
+       "id": "g12d6"
+      },
+      {
+       "dow": 6,
+       "tag": "trka",
+       "km": 5,
+       "desc": "🏁 TRKA 5 km (5K) — preporučeni ritam 4:26/km (oko 22:10, prema unetom rezultatu) · Spremnost nije potvrđena: ovaj ritam je referenca iz rezultata, ne potvrda završetka distance ili ostvarenja cilja.",
+       "id": "g12d7"
+      }
+     ]
+    }
+   ],
+   "pred": [
+    {
+     "w": 2,
+     "l": "N2 · Fartlek",
+     "q": 0.5,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g2_0"
+    },
+    {
+     "w": 3,
+     "l": "N3 · Piramida",
+     "q": 1.3,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I",
+     "id": "g3_1"
+    },
+    {
+     "w": 3,
+     "l": "N3 · Tempo isprekidan",
+     "q": 2.2,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g3_2"
+    },
+    {
+     "w": 5,
+     "l": "N5 · Intervali",
+     "q": 2,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I",
+     "id": "g5_3"
+    },
+    {
+     "w": 5,
+     "l": "N5 · Tempo isprekidan",
+     "q": 2.4,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g5_4"
+    },
+    {
+     "w": 6,
+     "l": "N6 · Fartlek",
+     "q": 1.2,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I",
+     "id": "g6_5"
+    },
+    {
+     "w": 6,
+     "l": "N6 · Tempo",
+     "q": 2.8,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g6_6"
+    },
+    {
+     "w": 7,
+     "l": "N7 · Intervali",
+     "q": 2,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I",
+     "id": "g7_7"
+    },
+    {
+     "w": 7,
+     "l": "N7 · Tempo isprekidan",
+     "q": 2.8,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g7_8"
+    },
+    {
+     "w": 9,
+     "l": "N9 · Trkački ritam",
+     "q": 2,
+     "pt": 266,
+     "p5k": 1331,
+     "zone": "RP",
+     "nemeri": true,
+     "id": "g9_9"
+    },
+    {
+     "w": 9,
+     "l": "N9 · Tempo",
+     "q": 2.7,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g9_10"
+    },
+    {
+     "w": 10,
+     "l": "N10 · Intervali",
+     "q": 2.4,
+     "pt": 255,
+     "p5k": 1331,
+     "zone": "I",
+     "id": "g10_11"
+    },
+    {
+     "w": 10,
+     "l": "N10 · Tempo",
+     "q": 2.7,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g10_12"
+    },
+    {
+     "w": 11,
+     "l": "N11 · Trkački ritam",
+     "q": 1.2,
+     "pt": 266,
+     "p5k": 1331,
+     "zone": "RP",
+     "nemeri": true,
+     "id": "g11_13"
+    },
+    {
+     "w": 11,
+     "l": "N11 · Tempo",
+     "q": 1.9,
+     "pt": 282,
+     "p5k": 1331,
+     "zone": "T",
+     "id": "g11_14"
+    },
+    {
+     "w": 12,
+     "l": "N12 · Aktivacija",
+     "q": 0.6,
+     "pt": 262,
+     "p5k": 1331,
+     "zone": "RP",
+     "nemeri": true,
+     "id": "g12_15"
+    }
+   ],
+   "qs": {
+    "g3d2": [
+     400,
+     500,
+     400
+    ],
+    "g3d5": [
+     1100
+    ],
+    "g5d2": [
+     1000
+    ],
+    "g5d5": [
+     1200
+    ],
+    "g6d5": [
+     2800
+    ],
+    "g7d2": [
+     1000
+    ],
+    "g7d5": [
+     1400
+    ],
+    "g9d2": [
+     1000
+    ],
+    "g9d5": [
+     2700
+    ],
+    "g10d2": [
+     600
+    ],
+    "g10d5": [
+     2700
+    ],
+    "g11d2": [
+     400
+    ],
+    "g11d5": [
+     1900
+    ],
+    "g12d5": [
+     200
+    ]
+   },
+   "meta": {
+    "assessmentBasis": "current-fitness",
+    "vdot0": 44.1,
+    "vdotGoal": 44.1,
+    "predictedSec": 1331,
+    "realno": null,
+    "goalVdot": null,
+    "athlete": {
+     "qualityReadiness": "developing",
+     "weeklyBaseKm": 35,
+     "repeatableLongRunKm": 8,
+     "longRunBasis": "inferred",
+     "consistentWeeks": null,
+     "breakWeeks": 0,
+     "resultAgeDays": null,
+     "speedConfidence": "undated-result",
+     "assumptions": [
+      "Skorašnja ponovljiva dužina nije uneta; početna dužina je oprezno izvedena iz nedeljnog obima.",
+      "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+      "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+      "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine."
+     ]
+    },
+    "trainingVdot": 44.1,
+    "start": "2026-10-12",
+    "weeks": 12,
+    "intensity": "std",
+    "racePace": 266,
+    "runDays": 5,
+    "quality": 2,
+    "dayWarnings": [
+     "Skorašnja ponovljiva dužina nije uneta; početna dužina je oprezno izvedena iz nedeljnog obima.",
+     "Kontinuitet nije potvrđen; kvalitet i dužina uvode se postepeno.",
+     "Iskustvo sa kvalitetnim treningom nije potvrđeno; brz rezultat ga ne zamenjuje.",
+     "Datum rezultata nije unet; tempa su referenca tog rezultata, bez potvrde njegove svežine.",
+     "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+     "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+    ],
+    "raceDistM": 5000,
+    "raceName": "5K",
+    "baseWeeks": 0,
+    "raceDate": "2027-01-03",
+    "goalSec": null,
+    "preparation": {
+     "endurance": "developing",
+     "goalStatus": "endurance-limited",
+     "peakLongRunKm": 11.5,
+     "peakWeeklyKm": 44.8,
+     "demandingDaysMax": 2,
+     "reasons": [
+      "Nema potvrđenog kontinuiteta od najmanje osam nedelja; izdržljivost se ne zaključuje samo iz PB-a.",
+      "Referentni rezultat nije potvrđena skorašnja forma u trenutnoj pripremi; tempo proveri novim rezultatom ili kontrolisanim treningom."
+     ],
+     "forecastBasis": "result-and-delivered-preparation"
+    }
+   },
+   "ulaz": {
+    "startDate": "2026-10-15",
+    "raceDate": "2027-01-03",
+    "raceDistM": 5000,
+    "pb": {
+     "distM": 10000,
+     "sec": 2760
+    },
+    "weeklyKm": 35,
+    "runDays": 5,
+    "quality": 2,
+    "lrDow": 7,
+    "qDows": [],
+    "runDows": [],
+    "intensity": "std",
+    "volIntensity": "std",
+    "goalSec": null,
+    "trainedRecently": true
+   }
+  }
+ }
+}

@@ -1,0 +1,89 @@
+{
+ "input": "/home/user/sub-19/docs/10k-v2/artifacts/segment-06e/sabotage-06e.json",
+ "head": "bd07eec",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 87.3,
+ "hashBefore": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+ "hashAfter": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "06e-a umor pre starta bez reference generatora",
+   "files": [
+    "src/domain/generators/tenK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 43 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+   "hashSabotaged": "09d153d32e60f829c790d3086468edf580725c583e17dad708b04c47c291e225",
+   "hashAfter": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 28.8
+  },
+  {
+   "index": 2,
+   "name": "06e-b ned 2 posle prinudnog sa rastom",
+   "files": [
+    "src/domain/generators/tenK/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected [ …(35) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+   "hashSabotaged": "977365cac2fbfefd644f2e590f32ea8d731060067ec5a23c2d80abe6cfd77dda",
+   "hashAfter": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 28.3
+  },
+  {
+   "index": 3,
+   "name": "06e-c početnik pri umoru pre starta sa kvalitetom",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/earlyGrid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/earlyGrid.node.test.ts",
+    "test": "mreža E: rana adaptacija i pred nedeljom testa (N7) > 0 odbijanja i adaptInvariants prazno (Uslov 8)",
+    "message": "AssertionError: expected 12 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+   "hashSabotaged": "89231d68cf2e7df449d8c7ecdf5ac345ec437f66e807c3f553f20e0c794b3c22",
+   "hashAfter": "eea678f1e58d1959097e2c5925231b4badfc672e9f986d5e9f08a3622f88383c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 29.8
+  }
+ ]
+}

@@ -1,9 +1,9 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { phase3ImportExpectation } from '@/test/phase3ImportOracle';
 import { addDays, type IsoDate } from '../../domain/date';
 import { resolvePlan } from '../../domain/plan';
-import { adaptGeneratedPlan } from '../../domain/plan/adapt';
 import type { GenPlanState, LogEntry, VdotRecord, WellnessRecord } from '../../domain/state';
 import { generatePlan } from '@/test/legacyGenerator';
 import type { Result } from '../http';

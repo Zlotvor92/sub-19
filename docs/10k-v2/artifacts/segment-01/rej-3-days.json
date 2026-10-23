@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "reasons": [
+    {
+      "code": "SUPPORTED_FROM_SEGMENT_02",
+      "message": "3 dana trčanja biće podržano od segmenta 02 (sada tačno 4 dana)."
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 193,
+  "F": 97,
+  "B": 29
+ },
+ "sampled": 253,
+ "excludedPermanent": 9,
+ "plans": 253,
+ "first": {
+  "flows": 4301,
+  "rejectedFlows": 0,
+  "rejected": {},
+  "rejectedEx": {},
+  "common": {},
+  "commonEx": {},
+  "inv": {},
+  "invEx": {},
+  "by": {}
+ },
+ "second": {
+  "new": {
+   "flows": 137632,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {},
+   "commonEx": {},
+   "inv": {
+    "ograničenje: doza raste ned #": 1
+   },
+   "invEx": {
+    "ograničenje: doza raste ned #": [
+     "new d3-15w-45km-v30-C-sat/w2wed/over120→+7/pause20: ograničenje: doza raste ned 5"
+    ]
+   },
+   "by": {}
+  },
+  "cum": {
+   "flows": 137632,
+   "rejectedFlows": 0,
+   "rejected": {},
+   "rejectedEx": {},
+   "common": {
+    "DUGI<LAGAN": 157
+   },
+   "commonEx": {
+    "DUGI<LAGAN": [
+     "cum d3-15w-45km-v30-C-sat/w2wed/locked→+3/under50",
+     "cum d3-15w-45km-v30-C-sat/w2wed/locked→+3/pause10",
+     "cum d3-15w-45km-v30-C-sat/w2wed/locked→+3/pause20"
+    ]
+   },
+   "inv": {
+    "ograničenje: doza raste ned #": 1
+   },
+   "invEx": {
+    "ograničenje: doza raste ned #": [
+     "cum d3-15w-45km-v30-C-sat/w2wed/over120→+7/pause20: ograničenje: doza raste ned 5"
+    ]
+   },
+   "by": {}
+  }
+ },
+ "seconds": 4774.099
+}
+

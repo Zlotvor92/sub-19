@@ -1,0 +1,4165 @@
+{
+  "policyId": "hm-v2",
+  "policyVersion": "hm-v2.0.0",
+  "input": {
+    "startDate": "2026-11-01",
+    "raceDate": "2027-02-20",
+    "runDays": ["mon", "tue", "thu", "sat"],
+    "longRunDay": "sat",
+    "currentWeeklyKm": 50,
+    "recentResult": {
+      "distanceM": 10000,
+      "timeSec": 3834,
+      "date": "2026-10-18"
+    },
+    "goalTimeSec": null
+  },
+  "vdot": 30,
+  "paces": {
+    "vdot": 30,
+    "E": { "fast": 459, "slow": 503 },
+    "T": 384,
+    "I": 354,
+    "R": 334,
+    "RP": 402
+  },
+  "predictedHmSec": 8477,
+  "goal": null,
+  "pattern": { "long": "sat", "q1": "tue", "q2": "thu", "easy": ["mon"] },
+  "startKm": 50,
+  "peakCapKm": 70,
+  "peakKm": 57.8,
+  "notes": [
+    "4 dana ne nose ovaj obim uz dugi ≤ 150 min. Vrh 57,8 km umesto do 70,0 km (H6)."
+  ],
+  "weeks": [
+    {
+      "index": 1,
+      "startDate": "2026-11-01",
+      "endDate": "2026-11-07",
+      "phase": "base",
+      "deload": false,
+      "targetKm": 49,
+      "plannedKm": 49.02,
+      "nominalKm": 50,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2026-11-02",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-11-03",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "R",
+            "title": "WU 20 min + R 6 × 200 m (oporavak 200 m džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "R",
+                "reps": 6,
+                "rep": { "m": 200 },
+                "recovery": { "m": 200 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 6.56,
+            "sec": 2982,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 1.2, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 67, "RP": 0 },
+            "dose": {
+              "ladder": "R",
+              "zone": "R",
+              "doseM": 1200,
+              "structure": { "form": "reps", "reps": 6, "repM": 200 },
+              "step": "start"
+            }
+          }
+        },
+        {
+          "date": "2026-11-05",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 2,5 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 2.5 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 6.86,
+            "sec": 3060,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 2.5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 960, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_continuous",
+              "zone": "T",
+              "doseM": 2500,
+              "structure": { "form": "continuous", "km": 2.5 },
+              "step": "start"
+            }
+          }
+        },
+        {
+          "date": "2026-11-07",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 50,0 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 49,0 km (H6)."
+      ]
+    },
+    {
+      "index": 2,
+      "startDate": "2026-11-08",
+      "endDate": "2026-11-14",
+      "phase": "base",
+      "deload": false,
+      "targetKm": 50.3,
+      "plannedKm": 50.32,
+      "nominalKm": 51.9,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2026-11-09",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-11-10",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "R",
+            "title": "WU 20 min + R 8 × 200 m (oporavak 200 m džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "R",
+                "reps": 8,
+                "rep": { "m": 200 },
+                "recovery": { "m": 200 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 7.36,
+            "sec": 3308,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 1.6, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 67, "RP": 0 },
+            "dose": {
+              "ladder": "R",
+              "zone": "R",
+              "doseM": 1600,
+              "structure": { "form": "reps", "reps": 8, "repM": 200 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-11-12",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 3,0 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 3 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 3,
+                "sec": 1152,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 7.36,
+            "sec": 3252,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 3, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 1152, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_continuous",
+              "zone": "T",
+              "doseM": 3000,
+              "structure": { "form": "continuous", "km": 3 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-11-14",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 51,9 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 50,3 km (H6)."
+      ]
+    },
+    {
+      "index": 3,
+      "startDate": "2026-11-15",
+      "endDate": "2026-11-21",
+      "phase": "base",
+      "deload": false,
+      "targetKm": 51.6,
+      "plannedKm": 51.62,
+      "nominalKm": 53.3,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2026-11-16",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-11-17",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "R",
+            "title": "WU 20 min + R 6 × 300 m (oporavak 300 m džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "R",
+                "reps": 6,
+                "rep": { "m": 300 },
+                "recovery": { "m": 300 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.3,
+                "sec": 100,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.3,
+                "sec": 144,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.3,
+                "sec": 100,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.3,
+                "sec": 144,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.3,
+                "sec": 100,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.3,
+                "sec": 144,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.3,
+                "sec": 100,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.3,
+                "sec": 144,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.3,
+                "sec": 100,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.3,
+                "sec": 144,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.3,
+                "sec": 100,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 7.66,
+            "sec": 3420,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 1.8, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 100, "RP": 0 },
+            "dose": {
+              "ladder": "R",
+              "zone": "R",
+              "doseM": 1800,
+              "structure": { "form": "reps", "reps": 6, "repM": 300 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-11-19",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 4,0 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 4 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 4,
+                "sec": 1536,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 8.36,
+            "sec": 3636,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 4, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 1536, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_continuous",
+              "zone": "T",
+              "doseM": 4000,
+              "structure": { "form": "continuous", "km": 4 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-11-21",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 53,3 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 51,6 km (H6)."
+      ]
+    },
+    {
+      "index": 4,
+      "startDate": "2026-11-22",
+      "endDate": "2026-11-28",
+      "phase": "base",
+      "deload": true,
+      "targetKm": 41.3,
+      "plannedKm": 41.26,
+      "nominalKm": 41.3,
+      "fitted": null,
+      "days": [
+        {
+          "date": "2026-11-23",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 10,4 km",
+            "blocks": [{ "kind": "easy", "km": 10.4 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 10.4,
+                "sec": 5002,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 10.4,
+            "sec": 5002,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-11-24",
+          "weekday": "tue",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 10,3 km",
+            "blocks": [{ "kind": "easy", "km": 10.3 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 10.3,
+                "sec": 4954,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 10.3,
+            "sec": 4954,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-11-26",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 2,0 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 2 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 2,
+                "sec": 768,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 6.36,
+            "sec": 2868,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 2, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 768, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_continuous",
+              "zone": "T",
+              "doseM": 2000,
+              "structure": { "form": "continuous", "km": 2 },
+              "step": "deload"
+            }
+          }
+        },
+        {
+          "date": "2026-11-28",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 14,2 km lagano",
+            "blocks": [{ "kind": "long", "km": 14.2 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 14.2,
+                "sec": 6830,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 14.2,
+            "sec": 6830,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Rasterećenje: cilj 41,3 km, jedan kvalitet (T 2,0 km), dugi 0,8 × poslednji ne-rasteretni (H5)."
+      ]
+    },
+    {
+      "index": 5,
+      "startDate": "2026-11-29",
+      "endDate": "2026-12-05",
+      "phase": "base",
+      "deload": false,
+      "targetKm": 53.1,
+      "plannedKm": 53.12,
+      "nominalKm": 54.7,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2026-11-30",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-12-01",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "R",
+            "title": "WU 20 min + R 10 × 200 m (oporavak 200 m džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "R",
+                "reps": 10,
+                "rep": { "m": 200 },
+                "recovery": { "m": 200 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.2,
+                "sec": 96,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "rep",
+                "zone": "R",
+                "km": 0.2,
+                "sec": 67,
+                "paceSecPerKm": 334,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 8.16,
+            "sec": 3634,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 2, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 67, "RP": 0 },
+            "dose": {
+              "ladder": "R",
+              "zone": "R",
+              "doseM": 2000,
+              "structure": { "form": "reps", "reps": 10, "repM": 200 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-12-03",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 5,0 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 5 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 5,
+                "sec": 1920,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.36,
+            "sec": 4020,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 1920, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_continuous",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "continuous", "km": 5 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-12-05",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 54,7 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 53,1 km (H6)."
+      ]
+    },
+    {
+      "index": 6,
+      "startDate": "2026-12-06",
+      "endDate": "2026-12-12",
+      "phase": "development",
+      "deload": false,
+      "targetKm": 52.9,
+      "plannedKm": 52.91,
+      "nominalKm": 56.3,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2026-12-07",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-12-08",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "I",
+            "title": "WU 20 min + I 3 × 800 m (oporavak 4:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "I",
+                "reps": 3,
+                "rep": { "m": 800 },
+                "recovery": { "sec": 240 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 0.8,
+                "sec": 283,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.5,
+                "sec": 240,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 0.8,
+                "sec": 283,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.5,
+                "sec": 240,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 0.8,
+                "sec": 283,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 7.76,
+            "sec": 3429,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 2.4, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 283, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "I",
+              "zone": "I",
+              "doseM": 2400,
+              "structure": { "form": "reps", "reps": 3, "repM": 800 },
+              "step": "transition"
+            }
+          }
+        },
+        {
+          "date": "2026-12-10",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_cruise",
+            "title": "WU 20 min + T 2 × 2500 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "T",
+                "reps": 2,
+                "rep": { "m": 2500 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.55,
+            "sec": 4110,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 960, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2500 },
+              "step": "transition"
+            }
+          }
+        },
+        {
+          "date": "2026-12-12",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 56,3 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 52,9 km (H6)."
+      ]
+    },
+    {
+      "index": 7,
+      "startDate": "2026-12-13",
+      "endDate": "2026-12-19",
+      "phase": "development",
+      "deload": false,
+      "targetKm": 53.3,
+      "plannedKm": 53.32,
+      "nominalKm": 56.1,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2026-12-14",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-12-15",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "I",
+            "title": "WU 20 min + I 3 × 1000 m (oporavak 4:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "I",
+                "reps": 3,
+                "rep": { "m": 1000 },
+                "recovery": { "sec": 240 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 1,
+                "sec": 354,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.5,
+                "sec": 240,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 1,
+                "sec": 354,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.5,
+                "sec": 240,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 1,
+                "sec": 354,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 8.36,
+            "sec": 3642,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 3, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 354, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "I",
+              "zone": "I",
+              "doseM": 3000,
+              "structure": { "form": "reps", "reps": 3, "repM": 1000 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-12-17",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 5,0 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 5 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 5,
+                "sec": 1920,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.36,
+            "sec": 4020,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 1920, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "continuous", "km": 5 },
+              "step": "alt"
+            }
+          }
+        },
+        {
+          "date": "2026-12-19",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 56,1 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 53,3 km (H6)."
+      ]
+    },
+    {
+      "index": 8,
+      "startDate": "2026-12-20",
+      "endDate": "2026-12-26",
+      "phase": "development",
+      "deload": true,
+      "targetKm": 42.6,
+      "plannedKm": 42.6,
+      "nominalKm": 42.6,
+      "fitted": null,
+      "days": [
+        {
+          "date": "2026-12-21",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 10,4 km",
+            "blocks": [{ "kind": "easy", "km": 10.4 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 10.4,
+                "sec": 5002,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 10.4,
+            "sec": 5002,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-12-22",
+          "weekday": "tue",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 10,4 km",
+            "blocks": [{ "kind": "easy", "km": 10.4 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 10.4,
+                "sec": 5002,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 10.4,
+            "sec": 5002,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-12-24",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_cruise",
+            "title": "WU 20 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "T",
+                "reps": 3,
+                "rep": { "m": 1000 },
+                "recovery": { "sec": 60 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.12,
+                "sec": 60,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.12,
+                "sec": 60,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 7.6,
+            "sec": 3372,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 3, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 384, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 3000,
+              "structure": { "form": "reps", "reps": 3, "repM": 1000 },
+              "step": "deload"
+            }
+          }
+        },
+        {
+          "date": "2026-12-26",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 14,2 km lagano",
+            "blocks": [{ "kind": "long", "km": 14.2 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 14.2,
+                "sec": 6830,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 14.2,
+            "sec": 6830,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Rasterećenje: cilj 42,6 km, jedan kvalitet (T 3,0 km), dugi 0,8 × poslednji ne-rasteretni (H5)."
+      ]
+    },
+    {
+      "index": 9,
+      "startDate": "2026-12-27",
+      "endDate": "2027-01-02",
+      "phase": "development",
+      "deload": false,
+      "targetKm": 55,
+      "plannedKm": 55.01,
+      "nominalKm": 56.5,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2026-12-28",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2026-12-29",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "I",
+            "title": "WU 20 min + I 4 × 1000 m (oporavak 4:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "I",
+                "reps": 4,
+                "rep": { "m": 1000 },
+                "recovery": { "sec": 240 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 1,
+                "sec": 354,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.5,
+                "sec": 240,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 1,
+                "sec": 354,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.5,
+                "sec": 240,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 1,
+                "sec": 354,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.5,
+                "sec": 240,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "I",
+                "km": 1,
+                "sec": 354,
+                "paceSecPerKm": 354,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.86,
+            "sec": 4236,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 4, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 354, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "I",
+              "zone": "I",
+              "doseM": 4000,
+              "structure": { "form": "reps", "reps": 4, "repM": 1000 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2026-12-31",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_cruise",
+            "title": "WU 20 min + T 2 × 2500 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "T",
+                "reps": 2,
+                "rep": { "m": 2500 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.55,
+            "sec": 4110,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 960, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2500 },
+              "step": "alt"
+            }
+          }
+        },
+        {
+          "date": "2027-01-02",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 56,5 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 55,0 km (H6)."
+      ]
+    },
+    {
+      "index": 10,
+      "startDate": "2027-01-03",
+      "endDate": "2027-01-09",
+      "phase": "specific",
+      "deload": false,
+      "targetKm": 53.5,
+      "plannedKm": 53.51,
+      "nominalKm": 58.3,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2027-01-04",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-01-05",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "RP",
+            "title": "WU 20 min + RP 2 × 2000 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "RP",
+                "reps": 2,
+                "rep": { "m": 2000 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2,
+                "sec": 804,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2,
+                "sec": 804,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 8.55,
+            "sec": 3798,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 4 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 804 },
+            "dose": {
+              "ladder": "RP",
+              "zone": "RP",
+              "doseM": 4000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2000 },
+              "step": "transition"
+            }
+          }
+        },
+        {
+          "date": "2027-01-07",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 5,0 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 5 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 5,
+                "sec": 1920,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.36,
+            "sec": 4020,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 1920, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "continuous", "km": 5 },
+              "step": "alt"
+            }
+          }
+        },
+        {
+          "date": "2027-01-09",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 58,3 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 53,5 km (H6)."
+      ]
+    },
+    {
+      "index": 11,
+      "startDate": "2027-01-10",
+      "endDate": "2027-01-16",
+      "phase": "specific",
+      "deload": false,
+      "targetKm": 54.7,
+      "plannedKm": 54.7,
+      "nominalKm": 56.7,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2027-01-11",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-01-12",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "RP",
+            "title": "WU 20 min + RP 2 × 2500 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "RP",
+                "reps": 2,
+                "rep": { "m": 2500 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2.5,
+                "sec": 1005,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2.5,
+                "sec": 1005,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.55,
+            "sec": 4200,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 5 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 1005 },
+            "dose": {
+              "ladder": "RP",
+              "zone": "RP",
+              "doseM": 5000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2500 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2027-01-14",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_cruise",
+            "title": "WU 20 min + T 2 × 2500 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "T",
+                "reps": 2,
+                "rep": { "m": 2500 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.55,
+            "sec": 4110,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 960, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2500 },
+              "step": "alt"
+            }
+          }
+        },
+        {
+          "date": "2027-01-16",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 56,7 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 54,7 km (H6)."
+      ]
+    },
+    {
+      "index": 12,
+      "startDate": "2027-01-17",
+      "endDate": "2027-01-23",
+      "phase": "specific",
+      "deload": true,
+      "targetKm": 43.8,
+      "plannedKm": 43.8,
+      "nominalKm": 43.8,
+      "fitted": null,
+      "days": [
+        {
+          "date": "2027-01-18",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 11,0 km",
+            "blocks": [{ "kind": "easy", "km": 11 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 11,
+                "sec": 5291,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 11,
+            "sec": 5291,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-01-19",
+          "weekday": "tue",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 11,0 km",
+            "blocks": [{ "kind": "easy", "km": 11 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 11,
+                "sec": 5291,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 11,
+            "sec": 5291,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-01-21",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_cruise",
+            "title": "WU 20 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "T",
+                "reps": 3,
+                "rep": { "m": 1000 },
+                "recovery": { "sec": 60 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.12,
+                "sec": 60,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.12,
+                "sec": 60,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 7.6,
+            "sec": 3372,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 3, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 384, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 3000,
+              "structure": { "form": "reps", "reps": 3, "repM": 1000 },
+              "step": "deload"
+            }
+          }
+        },
+        {
+          "date": "2027-01-23",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 14,2 km lagano",
+            "blocks": [{ "kind": "long", "km": 14.2 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 14.2,
+                "sec": 6830,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 14.2,
+            "sec": 6830,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Rasterećenje: cilj 43,8 km, jedan kvalitet (T 3,0 km), dugi 0,8 × poslednji ne-rasteretni (H5)."
+      ]
+    },
+    {
+      "index": 13,
+      "startDate": "2027-01-24",
+      "endDate": "2027-01-30",
+      "phase": "specific",
+      "deload": false,
+      "targetKm": 55.5,
+      "plannedKm": 55.51,
+      "nominalKm": 58,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2027-01-25",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-01-26",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "RP",
+            "title": "WU 20 min + RP 2 × 3000 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "RP",
+                "reps": 2,
+                "rep": { "m": 3000 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 3,
+                "sec": 1206,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 3,
+                "sec": 1206,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 10.55,
+            "sec": 4602,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 6 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 1206 },
+            "dose": {
+              "ladder": "RP",
+              "zone": "RP",
+              "doseM": 6000,
+              "structure": { "form": "reps", "reps": 2, "repM": 3000 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2027-01-28",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_continuous",
+            "title": "WU 20 min + T 5,0 km kontinuirano + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              { "kind": "continuous", "zone": "T", "km": 5 },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "continuous",
+                "zone": "T",
+                "km": 5,
+                "sec": 1920,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.36,
+            "sec": 4020,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 1920, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "continuous", "km": 5 },
+              "step": "alt"
+            }
+          }
+        },
+        {
+          "date": "2027-01-30",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 58,0 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 55,5 km (H6)."
+      ]
+    },
+    {
+      "index": 14,
+      "startDate": "2027-01-31",
+      "endDate": "2027-02-06",
+      "phase": "specific",
+      "deload": false,
+      "targetKm": 57.8,
+      "plannedKm": 57.76,
+      "nominalKm": 58.8,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2027-02-01",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 17,8 km",
+            "blocks": [{ "kind": "easy", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-02-02",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "RP",
+            "title": "WU 20 min + RP 2 × 4000 m (oporavak 2:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "RP",
+                "reps": 2,
+                "rep": { "m": 4000 },
+                "recovery": { "sec": 120 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 4,
+                "sec": 1608,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.25,
+                "sec": 120,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 4,
+                "sec": 1608,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 12.61,
+            "sec": 5436,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 8 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 1608 },
+            "dose": {
+              "ladder": "RP",
+              "zone": "RP",
+              "doseM": 8000,
+              "structure": { "form": "reps", "reps": 2, "repM": 4000 },
+              "step": "next"
+            }
+          }
+        },
+        {
+          "date": "2027-02-04",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_cruise",
+            "title": "WU 20 min + T 2 × 2500 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "T",
+                "reps": 2,
+                "rep": { "m": 2500 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 2.5,
+                "sec": 960,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 9.55,
+            "sec": 4110,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 5, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 960, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 5000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2500 },
+              "step": "alt"
+            }
+          }
+        },
+        {
+          "date": "2027-02-06",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 17,8 km lagano",
+            "blocks": [{ "kind": "long", "km": 17.8 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 17.8,
+                "sec": 8562,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 17.8,
+            "sec": 8562,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 58,8 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 57,8 km (H6)."
+      ]
+    },
+    {
+      "index": 15,
+      "startDate": "2027-02-07",
+      "endDate": "2027-02-13",
+      "phase": "taper",
+      "deload": false,
+      "targetKm": 37.3,
+      "plannedKm": 37.35,
+      "nominalKm": 40.5,
+      "fitted": "down",
+      "days": [
+        {
+          "date": "2027-02-08",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 10,6 km",
+            "blocks": [{ "kind": "easy", "km": 10.6 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 10.6,
+                "sec": 5099,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 10.6,
+            "sec": 5099,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-02-09",
+          "weekday": "tue",
+          "role": "q1",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "RP",
+            "title": "WU 20 min + RP 2 × 2000 m (oporavak 1:30 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "RP",
+                "reps": 2,
+                "rep": { "m": 2000 },
+                "recovery": { "sec": 90 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2,
+                "sec": 804,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.19,
+                "sec": 90,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2,
+                "sec": 804,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 8.55,
+            "sec": 3798,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 4 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 804 },
+            "dose": {
+              "ladder": "RP",
+              "zone": "RP",
+              "doseM": 4000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2000 },
+              "step": "taper"
+            }
+          }
+        },
+        {
+          "date": "2027-02-11",
+          "weekday": "thu",
+          "role": "q2",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "T_cruise",
+            "title": "WU 20 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "T",
+                "reps": 3,
+                "rep": { "m": 1000 },
+                "recovery": { "sec": 60 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.12,
+                "sec": 60,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.12,
+                "sec": 60,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "T",
+                "km": 1,
+                "sec": 384,
+                "paceSecPerKm": 384,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 7.6,
+            "sec": 3372,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 3, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 384, "I": 0, "R": 0, "RP": 0 },
+            "dose": {
+              "ladder": "T_cruise",
+              "zone": "T",
+              "doseM": 3000,
+              "structure": { "form": "reps", "reps": 3, "repM": 1000 },
+              "step": "taper"
+            }
+          }
+        },
+        {
+          "date": "2027-02-13",
+          "weekday": "sat",
+          "role": "long",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "long",
+            "qualityType": null,
+            "title": "Dugi 10,6 km lagano",
+            "blocks": [{ "kind": "long", "km": 10.6 }],
+            "segments": [
+              {
+                "kind": "long",
+                "zone": "E",
+                "km": 10.6,
+                "sec": 5099,
+                "paceSecPerKm": 481,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              }
+            ],
+            "km": 10.6,
+            "sec": 5099,
+            "kmBasis": "exact",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Cilj po pravilu 40,5 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj 37,3 km (H6).",
+        "Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,6 × najduži (H7)."
+      ]
+    },
+    {
+      "index": 16,
+      "startDate": "2027-02-14",
+      "endDate": "2027-02-20",
+      "phase": "race",
+      "deload": false,
+      "targetKm": 17.4,
+      "plannedKm": 17.35,
+      "nominalKm": 17.4,
+      "fitted": null,
+      "days": [
+        {
+          "date": "2027-02-15",
+          "weekday": "mon",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 35 min",
+            "blocks": [{ "kind": "easy_time", "sec": 2100 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 4.37,
+                "sec": 2100,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 4.37,
+            "sec": 2100,
+            "kmBasis": "estimated",
+            "secBasis": "exact",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-02-16",
+          "weekday": "tue",
+          "role": "sharpener",
+          "hard": true,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "quality",
+            "qualityType": "RP_sharpener",
+            "title": "WU 20 min + RP 2 × 2000 m (oporavak 2:00 džog) + CD 15 min",
+            "blocks": [
+              { "kind": "warmup", "sec": 1200 },
+              {
+                "kind": "reps",
+                "zone": "RP",
+                "reps": 2,
+                "rep": { "m": 2000 },
+                "recovery": { "sec": 120 }
+              },
+              { "kind": "cooldown", "sec": 900 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 2.49,
+                "sec": 1200,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2,
+                "sec": 804,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "recovery",
+                "zone": "jog",
+                "km": 0.25,
+                "sec": 120,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "rep",
+                "zone": "RP",
+                "km": 2,
+                "sec": 804,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.87,
+                "sec": 900,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 8.61,
+            "sec": 3828,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 4 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 804 },
+            "dose": {
+              "ladder": "RP_sharpener",
+              "zone": "RP",
+              "doseM": 4000,
+              "structure": { "form": "reps", "reps": 2, "repM": 2000 },
+              "step": "sharpener"
+            }
+          }
+        },
+        {
+          "date": "2027-02-18",
+          "weekday": "thu",
+          "role": "easy",
+          "hard": false,
+          "countsToWeek": true,
+          "workout": {
+            "kind": "easy",
+            "qualityType": null,
+            "title": "Lagano 35 min",
+            "blocks": [{ "kind": "easy_time", "sec": 2100 }],
+            "segments": [
+              {
+                "kind": "easy",
+                "zone": "E",
+                "km": 4.37,
+                "sec": 2100,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 4.37,
+            "sec": 2100,
+            "kmBasis": "estimated",
+            "secBasis": "exact",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        },
+        {
+          "date": "2027-02-20",
+          "weekday": "sat",
+          "role": "race",
+          "hard": true,
+          "countsToWeek": false,
+          "workout": {
+            "kind": "race",
+            "qualityType": null,
+            "title": "Trka 21,1 km (WU 10 min + CD 10 min)",
+            "blocks": [
+              { "kind": "warmup", "sec": 600 },
+              { "kind": "race", "km": 21.1 },
+              { "kind": "cooldown", "sec": 600 }
+            ],
+            "segments": [
+              {
+                "kind": "warmup",
+                "zone": "E",
+                "km": 1.25,
+                "sec": 600,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              },
+              {
+                "kind": "race",
+                "zone": "RP",
+                "km": 21.1,
+                "sec": 8477,
+                "paceSecPerKm": 402,
+                "kmBasis": "exact",
+                "secBasis": "estimated"
+              },
+              {
+                "kind": "cooldown",
+                "zone": "E",
+                "km": 1.25,
+                "sec": 600,
+                "paceSecPerKm": 481,
+                "kmBasis": "estimated",
+                "secBasis": "exact"
+              }
+            ],
+            "km": 23.6,
+            "sec": 9677,
+            "kmBasis": "estimated",
+            "secBasis": "estimated",
+            "workKm": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "maxBoutSec": { "T": 0, "I": 0, "R": 0, "RP": 0 },
+            "dose": null
+          }
+        }
+      ],
+      "notes": [
+        "Trkačka nedelja: oštrenje 2 × 2000 m RP (≤ RP doza tapera 4,0 km), trka 21,1 km se ne računa u obim (H8)."
+      ]
+    }
+  ],
+  "warnings": [
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 49 km (pravilo 50 km).",
+      "week": 1
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 50.3 km (pravilo 51.9 km).",
+      "week": 2
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 51.6 km (pravilo 53.3 km).",
+      "week": 3
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 53.1 km (pravilo 54.7 km).",
+      "week": 5
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 52.9 km (pravilo 56.3 km).",
+      "week": 6
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 53.3 km (pravilo 56.1 km).",
+      "week": 7
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 55 km (pravilo 56.5 km).",
+      "week": 9
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 53.5 km (pravilo 58.3 km).",
+      "week": 10
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 54.7 km (pravilo 56.7 km).",
+      "week": 11
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 55.5 km (pravilo 58 km).",
+      "week": 13
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 57.8 km (pravilo 58.8 km).",
+      "week": 14
+    },
+    {
+      "rule": "WEEK_FITTED",
+      "severity": "warning",
+      "message": "Nedelja spuštena na izvodljiv cilj 37.3 km (pravilo 40.5 km).",
+      "week": 15
+    },
+    {
+      "rule": "CAPACITY_LIMITED",
+      "severity": "warning",
+      "message": "4 dana ne nose ovaj obim uz dugi ≤ 150 min."
+    }
+  ]
+}

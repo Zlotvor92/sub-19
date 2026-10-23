@@ -1,0 +1,54 @@
+{
+  "dev-04-pauza-20": {
+    "weeks": [
+      "base 35 / 35, R + T_short",
+      "base 37.8 / 37.8, R + T_short",
+      "base 40.8 / 40.8, R + T_short",
+      "base (r) 32.6 / 32.6, R",
+      "base 44 / 44, R + T_short",
+      "peak 45.5 / 45.5, I + T_cruise",
+      "peak 45.5 / 45.5, I + T_cruise",
+      "peak (r) 23.7 / 23.7, —",
+      "peak 25.5 / 25.5, I",
+      "sharpen 25.5 / 25.5, RP + R_sharpen",
+      "sharpen 25.5 / 25.5, RP + R_sharpen",
+      "taper 21.7 / 21.7, RP + T_short",
+      "taper 17.8 / 17.8, RP",
+      "race 12.73 / 12.73, RP_sharpener"
+    ]
+  },
+  "d5-30km-pauza-35": {
+    "weeks": [
+      "base 30 / 30, R + T_short",
+      "base 32.4 / 32.4, R + T_short",
+      "base 34.9 / 34.9, R + T_short",
+      "base (r) 27.9 / 27.9, R",
+      "peak 37.6 / 37.6, I + T_cruise",
+      "peak 39 / 39, I + T_cruise",
+      "base 25 / 25, —",
+      "peak 27 / 27, I",
+      "sharpen 27 / 27, RP + R_sharpen",
+      "taper 25 / 25, RP + T_short",
+      "taper 25 / 25, RP",
+      "race 13.5 / 13.5, RP_sharpener"
+    ]
+  },
+  "dev-04-nepotpun-unos": {
+    "weeks": [
+      "base 35 / 35, R + T_short",
+      "base 37.8 / 37.8, R + T_short",
+      "base 40.8 / 40.8, R + T_short",
+      "base (r) 32.6 / 32.6, R",
+      "base 44 / 44, R + T_short",
+      "peak 45.5 / 45.5, I + T_cruise",
+      "peak 45.5 / 45.5, I + T_cruise",
+      "peak (r) 29.1 / 29.1, I",
+      "peak 31.4 / 31.4, I + T_cruise",
+      "sharpen 31.4 / 31.4, RP + R_sharpen",
+      "sharpen 31.4 / 31.4, RP + R_sharpen",
+      "taper 26.7 / 26.7, RP + T_short",
+      "taper 22 / 22, RP",
+      "race 15.36 / 15.36, RP_sharpener"
+    ]
+  }
+}

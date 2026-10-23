@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { parseIsoDate } from '../date';
 import type { AltRecord, GenPlanState } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
-import { assessRunWalkProgress } from '../training/runWalkProgress';
 import type { PlanGenerationInput } from '../training/types';
-import { adaptGeneratedPlan } from './adapt';
-import { buildRunWalkAdjustment, runWalkLadderFor } from './runWalkAdjustment';
 import { resolvePlan } from './resolve';
+import { routedEngine } from '@/test/generators';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const {
+  adaptGeneratedPlan,
+  assessRunWalkProgress,
+  buildRunWalkAdjustment,
+  generatePlan,
+  runWalkLadderFor
+} = routedEngine(5000);
 
 const U01: PlanGenerationInput = {
   startDate: '2026-10-12',

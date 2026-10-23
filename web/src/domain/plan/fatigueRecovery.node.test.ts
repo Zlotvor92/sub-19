@@ -2,17 +2,17 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../date';
 import type { GenPlanState, LogEntry } from '../state';
-import { generatePlan } from '../training/generator/generatePlan';
 import type { PlanGenerationInput } from '../training/types';
-import type { ExecutionAnalysis } from '../training/execution';
 import { matchPlanRows } from '../training/adaptation/matching';
-import { buildExecutionAdjustment, type ExecutionAdjustmentOptions } from './executionAdjustment';
-import { executionBasis } from './executionAdjustment';
-import { buildPreparationChoice } from './preparationDecision';
-import { isDemanding } from './finalize';
-import type { ReplanContext } from './future';
-import { planRecalibrated, planWithNewGoal } from './replan';
 import { resolvePlan } from './resolve';
+import type { ExecutionAdjustmentOptions, ReplanContext } from '@/domain/generators/select';
+import type { ExecutionAnalysis } from '@/domain/generators/halfMarathon/training/execution';
+import { routedEngine } from '@/test/generators';
+import { preparationForPlan } from '@/domain/generators/select';
+
+/* Stari zajednički engine je obrisan: svaka funkcija ide generatoru distance plana o kome je reč (`routedEngine`). */
+const { buildExecutionAdjustment, generatePlan, isDemanding, planRecalibrated, planWithNewGoal } =
+  routedEngine(5000);
 
 type Event = {
   today: IsoDate;
@@ -157,25 +157,11 @@ describe('historical continuity and immediate fatigue recovery', () => {
       })
     ).toHaveProperty('error');
   });
-  it('a preparation choice keeps immediate recovery and does not turn reduced execution into a break', () => {
+  it('5K plan does not offer a preparation choice (only HM/marathon generators own it)', () => {
+    /* Stari zajednički engine je nudio izbor pripreme i za 5K; aplikacija ga nikad nije pozivala za 5K/10K
+       (`preparationForPlan` → null), pa 5K generator taj korak nema. */
     const e = fixture();
-    const basis = executionBasis(e.input.current, e.today, e.analysis, e.input.options);
-    if ('error' in basis) throw new Error(basis.error);
-    for (const choice of [
-      { kind: 'base' } as const,
-      { kind: 'extend', raceDate: '2027-02-21' as IsoDate } as const
-    ]) {
-      const built = buildPreparationChoice(e.input.current, e.today, basis, choice, {
-        log: e.input.log
-      });
-      if ('error' in built) throw new Error(built.error);
-      expect(built.result.meta!.fatigueRecovery).toBeDefined();
-      expect(
-        view(built.result)
-          .dated.filter((d) => d.date > e.today && d.date < '2026-12-07')
-          .some(isDemanding)
-      ).toBe(false);
-    }
+    expect(preparationForPlan(e.input.current)).toBeNull();
   });
   it('a goal change after the calendar period clears temporary fatigue without erasing its history', () => {
     const e = fixture();

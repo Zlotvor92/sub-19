@@ -1,0 +1,56 @@
+[
+  {
+    "name": "08b-a zaštićen test se premešta (samo ≤ asOf, bez zaključanog/urađenog)",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "  return mustDay(td) <= mustDay(steps[steps.length - 1]!.asOf) || guarded.has(td) ? td : null;",
+    "replace": "  return mustDay(td) <= mustDay(steps[steps.length - 1]!.asOf) ? td : null;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-c nedelja svih dana odmora = EMPTY_WEEK (stara strana)",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "      restOf(w).size > 0 &&",
+    "replace": "      restOf(w).size < 0 &&",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-d rasterećenje bez reference dugog (stara strana)",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "      r = Math.round(s.deloadRefLongKm * 10);",
+    "replace": "      r = null;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-e invarijanta trkačke nedelje bez izuzetka dana odmora",
+    "file": "src/domain/generators/halfMarathon/v2/adaptInvariants.ts",
+    "find": "    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest && !a4Rest)",
+    "replace": "    if (race.plannedKm + P.raceWeek.raceKm + EPS < min && !d23Rest)",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-f dan iz potpune pokrivenosti bez zapisa po planu (stara strana)",
+    "file": "src/domain/generators/halfMarathon/v2/adapt.ts",
+    "find": "        !!cov?.complete && mustDay(cov.from) <= x && x <= mustDay(cov.to) && rec.length === 0;",
+    "replace": "        !!cov?.complete && mustDay(cov.from) <= x && x <= mustDay(cov.to) && rec.length < 0;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+    ]
+  },
+  {
+    "name": "08b-g validator sudi mesto zaštićenog testa",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "    const judged = tests.filter((x) => !guarded(x.d));",
+    "replace": "    const judged = tests;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment08b.node.test.ts"
+    ]
+  }
+]

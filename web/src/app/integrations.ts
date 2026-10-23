@@ -14,8 +14,8 @@ import { createIcuSync } from '../services/icu/icuSync';
 import { createWeather, type GeoPort } from '../services/weather/weatherSync';
 import type { ForecastCache } from '../domain/weather';
 import { createWatchPush } from '../services/icu/icuPush';
+import { generatorForPlan } from '../domain/generators/select';
 import { planBaselineVdot, resolvePlan, type ResolvedPlan } from '../domain/plan';
-import { currentVdot } from '../domain/training/adaptation';
 import {
   ICU_REJECTED_MESSAGE,
   STRAVA_REJECTED_MESSAGE,
@@ -139,6 +139,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         alts: t.alts,
         moves: t.moves,
         vanPlana: r.vanPlana,
+        ...(r.vanPlanaV2 ? { vanPlanaV2: r.vanPlanaV2 } : {}),
         knee: r.knee,
         kg: r.kg
       };
@@ -149,6 +150,8 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
       r.setPain(n.knee, 'soon');
       r.setWeight(n.kg, 'soon');
       r.setOutOfPlan(n.vanPlana);
+      /* 08c: puni ga samo uvoz za plan 5K v2. */
+      if (n.vanPlanaV2 && n.vanPlanaV2 !== r.vanPlanaV2) r.setOffPlanRuns(n.vanPlanaV2);
       t.patch({
         log: n.log,
         pred: n.pred,
@@ -208,9 +211,12 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         return null;
       }
     },
+    generator: () => generatorForPlan(activeGenPlan()),
     vdot: () => {
       const t = useTrainingStore.getState();
-      return currentVdot(t.vdotLog) || planBaselineVdot(activeGenPlan()?.meta);
+      const plan = activeGenPlan();
+      // Trenutna forma iz lanca je politika generatora aktivnog plana (A1).
+      return generatorForPlan(plan)?.currentVdot(t.vdotLog) || planBaselineVdot(plan?.meta);
     },
     now,
     today: deps.today

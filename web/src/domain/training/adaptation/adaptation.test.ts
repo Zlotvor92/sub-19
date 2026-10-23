@@ -1,25 +1,27 @@
+import type { ProposalContext } from '@/domain/generators/tenK/training/adaptation/proposal';
+import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../date';
-import { adaptGeneratedPlan } from '../../plan/adapt';
 import { resolvePlan } from '../../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, VdotRecord } from '../../state';
-import { generatePlan } from '../generator/generatePlan';
 import { sessKm, sessDesc } from '../sessions/calc';
 import type { FartlekSession } from '../types';
 import { VDOT_PROPOSAL_MIN_MEASUREMENTS, VDOT_PROPOSAL_THRESHOLD } from '../constants/heuristics';
 import {
-  applyVdotProposal,
   classifyMeasurement,
   matchPlanRows,
   recomputeVdotChain,
   sessionClassFor,
   smoothVdot,
-  undoVdotAdjustments,
-  vdotProposal,
   zoneForPredLabel,
-  type ProposalContext,
   type StoredPredRow
 } from './index';
+/* Plan u ovom testu je 10K: predlog tempa i dokaz forme su funkcije 10K generatora. */
+import {
+  applyVdotProposal,
+  undoVdotAdjustments,
+  vdotProposal
+} from '@/domain/generators/tenK/training/adaptation/proposal';
 
 /* parity: test/vdot-plan.test.mjs („Kada se predlog uopšte javlja", „Šta se NE sme dirati",
    „Generisan plan — i opis sesije prati novi tempo"), test/forma-vs-plan.test.mjs, test/revizija3.test.mjs

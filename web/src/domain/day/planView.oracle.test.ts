@@ -1,10 +1,11 @@
+import { adaptGeneratedPlan } from '@/test/generators';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
-import { adaptGeneratedPlan } from '../plan/adapt';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry } from '../state';
 import { generatePlan } from '@/test/legacyGenerator';
+import { phaseReaderFor } from '../generators/select';
 import { planPhases, ringView, sessionCore, weekChart, weekPlanKm, weekRealKm } from './index';
 
 /* parity: sessCore, planFaze, prstenSVG, chartWeeks (app.js) — Plan tab. */
@@ -67,6 +68,7 @@ function load(plan: GenPlanState, over: Record<string, unknown>): void {
 describe('Plan tab naspram starog koda', () => {
   it('sessionCore: svaki dan sva 4 plana, i sa ručno promenjenim opisom', () => {
     const r = rng(7);
+    let changed = 0;
     const descs = [
       'Tempo 3 km zagrevanje + 4 km @ 4:25/km (2 min hoda) + 2 km hlađenje · pazi na puls',
       '3 km WU + 2 km smirivanje',
@@ -92,13 +94,18 @@ describe('Plan tab naspram starog koda', () => {
       load(plan, { alts });
       const mine = resolvePlan(plan.weeks, { alts, moves: {} });
       for (const d of mine.dated) {
-        expect(sessionCore(d), d.id).toBe(
-          legacy.evalIn(`sessCore(BY_ID[${JSON.stringify(d.id)}])`)
-        );
+        const old = legacy.evalIn(`sessCore(BY_ID[${JSON.stringify(d.id)}])`);
+        /* NAMERNA RAZLIKA (nalaz 4): stari kod je posle izmene bez strukture prikazivao ORIGINALNU sesiju. Razlika
+           sme postojati samo tu, i stari izlaz je tačno prikaz originala. */
+        if (!d.session && d.originSession) {
+          expect(sessionCore({ ...d, session: d.originSession }), d.id).toBe(old);
+          if (sessionCore(d) !== old) changed++;
+        } else expect(sessionCore(d), d.id).toBe(old);
         checked++;
       }
     }
     expect(checked).toBeGreaterThan(300);
+    expect(changed).toBeGreaterThan(0);
   });
 
   it('planPhases: isto grupisanje nedelja kao planFaze — jedina namerna razlika je prva od DVE taper nedelje (ENGINE_CHANGES D5)', () => {
@@ -106,7 +113,7 @@ describe('Plan tab naspram starog koda', () => {
     for (const plan of PLANS) {
       load(plan, {});
       const resolved = resolvePlan(plan.weeks, { alts: {}, moves: {} });
-      const mine = planPhases(resolved);
+      const mine = planPhases(resolved, phaseReaderFor(plan));
       const old = j<Array<[string, number[]]>>(
         legacy.evalIn('planFaze().map(g=>[g.ime,g.nedelje.map(w=>w.w)])')
       );

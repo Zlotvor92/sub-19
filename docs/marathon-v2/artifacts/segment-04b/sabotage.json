@@ -1,0 +1,65 @@
+[
+  {
+    "name": "B1 drugi član samo za MP (T/I/R bez trajanja dana)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "    return (exempt || q.sec <= long) && (other?.sec ?? 0) <= long;",
+    "replace": "    return (exempt || ladder !== 'MP' || q.sec <= long) && (other?.sec ?? 0) <= long;",
+    "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "B2 najniži nivo zone nije izuzet od drugog člana",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "    return (exempt || q.sec <= long) && (other?.sec ?? 0) <= long;",
+    "replace": "    return q.sec <= long && (other?.sec ?? 0) <= long;",
+    "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "B3 validator bez iste funkcije (plafon slota samo M11)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "    fitsDay(ladder, s, role === 'q1' && beginner, slotFits(b, role));",
+    "replace": "    fitsDay(ladder, s, role === 'q1' && beginner);",
+    "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "B4 validator rasterećenja bez drugog člana",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "    const wantT = !w.deload\n      ? wantT0\n",
+    "replace": "    const wantT = !w.deload || true\n      ? wantT0\n",
+    "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "N1a umor pre starta bez reference generatora",
+    "file": "src/domain/generators/marathon/v2/assess.ts",
+    "find": "      if (pre) step.preStart = pre;",
+    "replace": "",
+    "tests": ["src/domain/generators/marathon/v2/preStart.node.test.ts"]
+  },
+  {
+    "name": "N1b nedelja 2 posle umora pre starta raste (bez cilja reference)",
+    "file": "src/domain/generators/marathon/v2/volume.ts",
+    "find": "  if (pre10 !== null) reset.set(2, pre10);",
+    "replace": "",
+    "tests": ["src/domain/generators/marathon/v2/preStart.node.test.ts"]
+  },
+  {
+    "name": "N2 BASE_PLATEAU preskače T slot nedelje testa",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "    if (tb) prevT = b;",
+    "replace": "    if (tb && !b.test) prevT = b;",
+    "tests": ["src/domain/generators/marathon/v2/preStart.node.test.ts"]
+  },
+  {
+    "name": "B5 izuzetak IDENTICAL_WEEKS bez uslova (3) (sledeći nivo staje)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "            (!nl || !slotOk(b, r, lad, nl))",
+    "replace": "            true",
+    "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"]
+  },
+  {
+    "name": "B6 izuzetak IDENTICAL_WEEKS bez uslova (2') (druga struktura staje)",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "              (x) => !sameStructure(x, d.structure) && slotOk(b, r, lad, x)\n",
+    "replace": "              (x) => !sameStructure(x, d.structure) && false\n",
+    "tests": ["src/domain/generators/marathon/v2/dayCap.node.test.ts"]
+  }
+]
