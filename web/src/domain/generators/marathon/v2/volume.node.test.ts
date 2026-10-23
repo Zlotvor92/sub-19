@@ -174,7 +174,7 @@ describe('M13a (pouka 28): skok dugog ≤ max(1,1 × L; L + 1,0), L = najduži d
     if (r.ok) return;
     expect(r.reasons[0]!.code).toBe('RECENT_LONG_TOO_SHORT');
     expect(r.reasons[0]!.message).toMatch(
-      /Skorašnji najduži trk \(5,0 km\) je prekratak za 35,0 km nedeljno sa 4 dana i 12 nedelja do trke.*preporuka: duža priprema, manji početni obim ili više dana, ili polumaraton/
+      /Skorašnji najduži trk 5,0 km je prekratak za 35,0 km nedeljno sa 4 dana i 12 nedelja do trke: dugi raste najviše max\(10 %, 1 km\).*Preporuka: produži dugi trk, duža priprema, manji početni obim ili više dana, ili polumaraton/
     );
   });
 

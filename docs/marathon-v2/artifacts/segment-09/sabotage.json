@@ -1,0 +1,83 @@
+[
+ {
+  "name": "09-1 raceOnlyWeek traži odmor koraka",
+  "file": "src/domain/generators/marathon/v2/week.ts",
+  "find": "return w.phase === 'race' && w.days.length === 1 && w.days[0]!.role === 'race';",
+  "replace": "return w.phase === 'race' && w.days.length === 1 && w.days[0]!.role === 'race' && w.days.length > 1;",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-2 L skoka ignoriše činjenice",
+  "file": "src/domain/generators/marathon/v2/lengths.ts",
+  "find": "if (l === null || r === undefined) return l;",
+  "replace": "if (l === null || r === undefined || l > 0) return l;",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-4 plafon 150 min tempom plana",
+  "file": "src/domain/generators/marathon/v2/lengths.ts",
+  "find": "longTimeCap10(pacesOf(x.w))",
+  "replace": "longTimeCap10(pacesOf(weeks.length))",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-5 napomena ne vidi najnižu dozu",
+  "file": "src/domain/generators/marathon/v2/week.ts",
+  "find": "${longer ? 'najniža",
+  "replace": "${false && longer ? 'najniža",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z1 kvalitet otpada uz upisani višak",
+  "file": "src/domain/generators/marathon/v2/mixed.ts",
+  "find": "    keptFact100 > keptPlan100 &&",
+  "replace": "    keptFact100 > keptPlan100 + 1e9 &&",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z2 userText bez prevoda",
+  "file": "src/domain/generators/marathon/v2/app/format.ts",
+  "find": "export function userText(s: string): string {\n  let t = s;",
+  "replace": "export function userText(s: string): string {\n  let t = s;\n  if (s) return s;",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z3 VDOT van opsega se primenjuje",
+  "file": "src/domain/generators/marathon/v2/assess.ts",
+  "find": "if (v < q.vdotMin || v > q.vdotMax) out.set(x, 'range');",
+  "replace": "if (v < 0) out.set(x, 'range');",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z4 vraćanje posle prilagođavanja",
+  "file": "src/domain/generators/marathon/v2/app/adapt.ts",
+  "find": "if (!same(cur.adaptation?.steps ?? [], snap.adaptation?.steps ?? []))",
+  "replace": "if (cur.weeks.length < 0)",
+  "tests": [
+   "src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z2b RECENT_LONG bez praga",
+  "file": "src/domain/generators/marathon/v2/generate.ts",
+  "find": "      return k * RECENT_STEP_KM;",
+  "replace": "      return null;",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment09.node.test.ts"
+  ]
+ }
+]

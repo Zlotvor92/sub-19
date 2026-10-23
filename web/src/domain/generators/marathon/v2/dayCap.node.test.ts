@@ -83,7 +83,7 @@ describe('pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži 
     const t = r.plan.weeks.filter((w) => w.phase === 'taper');
     const mp = t.flatMap((w) => w.days.map((d) => d.workout.dose).filter((d) => d?.zone === 'MP'));
     expect(mp.every((d) => d!.doseM >= doseOf(P.taper.mpMin))).toBe(true);
-    expect(t.some((w) => w.notes.some((n) => n.includes('plafon zone')))).toBe(true);
+    expect(t.some((w) => w.notes.some((n) => n.includes('pouka 32')))).toBe(true);
   });
 });
 

@@ -13,6 +13,7 @@ import {
   adaptedLongCap10,
   deloadLengths,
   jumpBase10,
+  jumpLongs10,
   longCap10,
   longestLong10,
   longJumpCap10,
@@ -578,7 +579,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       if (m.over && same(m.days, rest))
         warn(
           'MIXED_WEEK_OVER',
-          `Planirano ${(keptKm100(kept, ad.factKm) + planned100(rest)) / 100} km > cilj ${w.targetKm} km: zaštićeni dani (urađeno/zaključano/prošlost) i najmanji preostali dani ne staju u cilj (pouka 37, 14); preporuka: preostale dane trčite lagano, a ako umor traje, preskočite lagan dan.`,
+          `Planirano ${(keptKm100(kept, ad.factKm) + planned100(rest)) / 100} km > cilj ${w.targetKm} km: zaštićeni dani (urađeno/zaključano/prošlost) i najmanji preostali dani ne staju u cilj (pouka 37, 14); preporuka: preostale dane trči lagano; ako umor traje, preskoči lagan dan.`,
           w.index
         );
       else
@@ -686,7 +687,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // M13: najduži dugi < 26 km (početnik 24 km, M17). N11: kad ga ograničava trajanje (150 min, namerna granica M13)
   // — rečenica u opisu plana (konstruktor, ista funkcija lengths.longShortOf), ne upozorenje; inače upozorenje sa
   // savetom više dana/obima.
-  const ls = longShortOf(weeks, rule.longShortKm, p);
+  const ls = longShortOf(weeks, rule.longShortKm, (i) => pw({ index: i }));
   if (ls?.timeCapped) {
     if (!plan.notes.includes(longTimeCapNote(ls.longestKm, rule.longShortKm, beginner)))
       err('LONG_SHORT_NOTE', 'Najduži dugi ograničen trajanjem bez napomene plana (M13, N11).');
@@ -893,9 +894,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // konstruktor (week.ts *DayLimit, quality.fitsDay / pickDeload / taperDoses).
   const dlcOf = (w: PlanWeek): DayLimitContext =>
     dayLimitContext(pw(w), wc, rule, w.limits, () => dateIn(w, pat.long));
-  /** M13a: plafon skoka nedelje iz upisanih dugih (isto kao konstruktor, lengths.longsOf). */
+  /** M13a: plafon skoka nedelje iz upisanih dugih i činjenica (isto kao konstruktor, lengths.jumpLongs10). */
   const jumpOf = (w: PlanWeek): number | null =>
-    longJumpCap10(longsOf(weeks.slice(0, w.index - 1)), w.index, recentJ);
+    longJumpCap10(jumpLongs10(weeks.slice(0, w.index - 1), steps, w.index), w.index, recentJ);
   const fitsMemo = new Map<string, DayFits>();
   const slotFits = (b: PlanWeek, role: 'q1' | 'q2'): DayFits => {
     const key = `${b.index}${role}`;
@@ -1187,15 +1188,16 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // --- M13a (pouka 28): dugi svake nedelje ≤ max(1,1 × L; L + 1,0), L = najduži dugi prethodne 4 nedelje
   // (skorašnji najduži = nedelja 0); bez ulaza napomena nedelje 1 sa pragom.
   const recent = input.recentLongRunKm ?? null;
-  // Pouka 29: dugi prethodnih nedelja iz plana kakav se upisuje (isto kao konstruktor, lengths.longsOf); zaključan
-  // dan (A11) se ne proverava.
+  // Pouka 29: dugi prethodnih nedelja iz plana kakav se upisuje i činjenica (MAR-09 t. 2; isto kao konstruktor,
+  // lengths.jumpLongs10); zaštićen dan (≤ asOf, zaključan, urađen — A11) se ne sudi.
   const longs10 = longsOf(weeks);
   weeks.forEach((w, i) => {
     const l10 = longs10[i];
     if (l10 === null || l10 === undefined) return;
     const longDay = w.days.find((d) => d.role === 'long')!;
-    if (lockedIds.has(longDay.date)) return;
-    const jump = longJumpCap10(longs10.slice(0, i), w.index, recentJ);
+    if (protectedDay(longDay)) return;
+    const jl10 = jumpLongs10(weeks.slice(0, i), steps, w.index);
+    const jump = longJumpCap10(jl10, w.index, recentJ);
     if (jump !== null && l10 > jump)
       err(
         'LONG_JUMP',
@@ -1210,8 +1212,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       !painOf(w).has(longDay.date) &&
       jump < longCap10(to10(w.targetKm), rule, pw(w));
     const note =
-      jump !== null &&
-      w.notes.includes(longJumpNote(l10, jumpBase10(longs10.slice(0, i), w.index, recentJ)!));
+      jump !== null && w.notes.includes(longJumpNote(l10, jumpBase10(jl10, w.index, recentJ)!));
     if (bound && !note) err('LONG_JUMP', 'Dugi na plafonu skoka bez napomene (M13a).', w.index);
   });
   const w1 = weeks[0]!;
@@ -1305,12 +1306,12 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     to10(plan.startKm) !== start10
   )
     err('VOLUME_PEAK', 'Vrh, granica izgradnje ili start ≠ M6.');
-  const limited = capacityWeeks(weeks, rule, p, recentJ).length > 0;
+  const limited = capacityWeeks(weeks, rule, (i) => pw({ index: i }), recentJ, steps).length > 0;
   if (limited) {
     const msg = capacityMessage(
       input.runDays.length,
       rule,
-      capacityLimits(weeks, rule, p, recentJ)
+      capacityLimits(weeks, rule, (i) => pw({ index: i }), recentJ, steps)
     );
     // N11: jednom po planu — upozorenje nosi isti tekst kao napomena plana (prikaz bez ponavljanja).
     const note = plan.notes.find((n) => n.startsWith(msg));
@@ -1397,7 +1398,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           lastLong10,
           rule,
           pk,
-          longJumpCap10(longsOf(weeks.slice(0, w.index - 1)), w.index, recentJ),
+          longJumpCap10(jumpLongs10(weeks.slice(0, w.index - 1), steps, w.index), w.index, recentJ),
           w.test === true || beginner || w.index >= reducedFrom,
           w.index >= reducedFrom
         );

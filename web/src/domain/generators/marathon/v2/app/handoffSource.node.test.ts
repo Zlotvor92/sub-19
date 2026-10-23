@@ -7,11 +7,13 @@ import type { IsoDate } from '../../../../date';
 import type { GenPlanState } from '../../../../state';
 import { adaptMarathonV2 } from '../adapt.ts';
 import { generateMarathonV2 } from '../generate.ts';
+import { checkInput } from '../input.ts';
 import { longShortOf, longTimeCapNote } from '../lengths.ts';
 import { MARATHON_V2_POLICY } from '../policy.ts';
 import { longShortKmOf, shorterOffer } from '../shorter.ts';
 import * as TM from '../testInputs.ts';
-import type { MarathonV2Plan } from '../types.ts';
+import { pacesAt } from '../steps.ts';
+import type { MarathonV2Plan, Paces } from '../types.ts';
 import { generatedPlan, storedPlan } from './plan.ts';
 import { MARATHON_V2_SOURCE_FORMAT, rawFacts } from './preparation.ts';
 
@@ -53,6 +55,15 @@ const longest = (p: MarathonV2Plan): number =>
 const datesOf = (p: GenPlanState) =>
   p.weeks.flatMap((w) => w.days.map((d) => [addDays(w.start, d.dow), d] as const));
 
+/** MAR-09 t. 4: tempo nedelje (isti kao konstruktor i validator, steps.pacesAt). */
+const weekPaces =
+  (p: MarathonV2Plan) =>
+  (w: number): Paces => {
+    const c = checkInput(p.input);
+    if (!c.ok) throw new Error('ulaz');
+    return pacesAt(c.pace, p.adaptation?.steps ?? [], w, p.input.currentWeeklyKm);
+  };
+
 describe('3e: okidač (O1) — jedna funkcija, prelaz', () => {
   it('pauza 35 d: adaptirani plan < 26 km, plan generatora ≥ 26 km → ponuda; MARATHON_LONG_SHORT iz iste funkcije', () => {
     const v2 = adapted(BASE, 'pause35', AS_OF);
@@ -60,13 +71,13 @@ describe('3e: okidač (O1) — jedna funkcija, prelaz', () => {
     expect(longest(v2)).toBe(18.5);
     expect(shorterOffer(v2, AS_OF)).toBe(true);
     expect(shorterOffer(v2, v2.input.raceDate)).toBe(false); // trka nije posle asOf
-    expect(longShortOf(v2.weeks, 26, v2.paces)?.timeCapped).toBe(false);
+    expect(longShortOf(v2.weeks, 26, weekPaces(v2))?.timeCapped).toBe(false);
     expect(v2.warnings.some((w) => w.rule === 'MARATHON_LONG_SHORT')).toBe(true);
   });
 
   it('rezultat (test 5 km): dugi ograničen trajanjem (N11: bez upozorenja, rečenica plana) → ponuda iz istog praga', () => {
     const v2 = adapted(BASE, 'test5k', AS_OF);
-    const ls = longShortOf(v2.weeks, 26, v2.paces)!;
+    const ls = longShortOf(v2.weeks, 26, weekPaces(v2))!;
     expect(ls).toEqual({ longestKm: 21.9, timeCapped: true });
     expect(v2.warnings.some((w) => w.rule === 'MARATHON_LONG_SHORT')).toBe(false);
     expect(v2.notes).toContain(longTimeCapNote(21.9, 26, false));

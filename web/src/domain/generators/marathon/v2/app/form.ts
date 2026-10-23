@@ -4,12 +4,13 @@
    (A1, M18), pa nije ni tačka forme. Prognoza maratona: iz MP tempa nedelje (pacesAt — VDOT umanjen za korekciju obima M2,
    isto kao plan). */
 
+import { prevResultOf, resultFates } from '../assess.ts';
+import { mustDay } from '../dates.ts';
 import { checkInput } from '../input.ts';
 import { predictedMarathon, round1, vdotFromResult } from '../paces.ts';
 import { MARATHON_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import { v2Of } from './adapt.ts';
-import { diffDays } from './date.ts';
 import { buildFacts } from './facts.ts';
 import { goalOf } from './plan.ts';
 import type { AppPlan, IsoDate, LogEntry } from './types.ts';
@@ -78,28 +79,26 @@ export function formHistory(src: {
         status: 'used'
       });
     }
-  // Rezultati iz aplikacije koji još nisu u planu (isti prevod kao adaptacija).
-  const lastUsed =
-    points
-      .map((p) => p.date)
-      .sort()
-      .at(-1) ?? null;
+  // Rezultati iz aplikacije koji još nisu u planu (isti prevod kao adaptacija); status iz odluke jezgra (Z3,
+  // assess.resultFates — ista funkcija kao adaptacija).
   const facts = buildFacts({ today: src.today, plan: src.plan, log: src.log ?? {} }, v2).facts
     .results;
+  const fates = resultFates(facts, prevResultOf(v2), mustDay(src.today));
   for (const x of facts) {
     if (used.has(`${x.date}|${x.distM}|${x.sec}`)) continue;
-    const fresh = diffDays(x.date, src.today) <= P.input.resultMaxAgeDays;
-    const newer = lastUsed === null || x.date > lastUsed;
+    const f = fates.get(x);
     points.push({
       date: x.date,
       vdot: round1(vdotFromResult(x.distM, x.sec)),
       kind: x.kind,
       label: `${x.kind === 'test' ? 'Test' : 'Trka'} ${dist(x.distM)} ${mmss(x.sec)}${
-        fresh && newer
+        f === 'apply'
           ? ' — čeka prilagođavanje plana'
-          : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
+          : f === 'range'
+            ? ` — VDOT van ${P.input.vdotMin}–${P.input.vdotMax}, ne menja tempo`
+            : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
       }`,
-      status: fresh && newer ? 'pending' : 'old'
+      status: f === 'apply' ? 'pending' : 'old'
     });
   }
   points.sort((a, b) => a.date.localeCompare(b.date));

@@ -70,13 +70,15 @@ describe('N1 (pouka 30): trkačka nedelja samo sa trkom — RACE_WEEK_SHORT, ne 
     q.weeks[3]!.days = [];
     q.weeks[3]!.plannedKm = 0;
     expect(errors(q)).toContain('EMPTY_WEEK@4');
-    // Trkačka nedelja samo sa trkom bez dana odmora koraka nije izuzetak.
+    // MAR-09 t. 1: trkačka nedelja nikad nije prazna (ima trku) — jedna definicija (week.raceOnlyWeek); trkačka samo
+    // sa trkom bez dana odmora koraka/pouke 30 obara RACE_WEEK (dani ≠ M8), ne EMPTY_WEEK.
     const r = structuredClone(p);
     const rw = r.weeks.at(-1)!;
     rw.days = rw.days.filter((d) => d.role === 'race');
     rw.plannedKm = 0;
     rw.targetKm = 0;
-    expect(errors(r)).toContain(`EMPTY_WEEK@${rw.index}`);
+    expect(errors(r)).toContain(`RACE_WEEK@${rw.index}`);
+    expect(errors(r)).not.toContain(`EMPTY_WEEK@${rw.index}`);
   });
 });
 

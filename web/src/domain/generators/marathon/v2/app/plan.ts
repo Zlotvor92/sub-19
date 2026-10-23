@@ -16,6 +16,7 @@ import { basisAt, pacesAt } from '../steps.ts';
 import type { GoalAssessment, MarathonV2Plan, Paces, Phase, PlanDay } from '../types.ts';
 import { technicalNote } from '../volume.ts';
 import { addDays, diffDays } from './date.ts';
+import { userText } from './format.ts';
 import { workoutStructure } from './structure.ts';
 import type {
   GoalAssessmentView,
@@ -46,6 +47,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
     'marathon-v2.4.1',
     'marathon-v2.4.2',
     'marathon-v2.5.0',
+    'marathon-v2.5.1',
     P.version
   ])
 ];
@@ -164,8 +166,10 @@ function weeksOf(plan: MarathonV2Plan): GeneratedWeek[] {
       ),
       deload: wk.deload,
       // N11: tehničke napomene nedelje (domen: volume.technicalNote) ne idu korisniku.
+      // Z2: korisnički tekst bez internih oznaka (format.userText).
       focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes.filter((n) => !technicalNote(n))]
         .filter(Boolean)
+        .map(userText)
         .join(' '),
       ...(wk.phase === 'taper' ? { taper: true as const } : {})
     };
@@ -174,13 +178,15 @@ function weeksOf(plan: MarathonV2Plan): GeneratedWeek[] {
 
 export function goalOf(plan: MarathonV2Plan): GoalAssessmentView | undefined {
   const g = plan.goal;
-  return g ? { status: g.status, label: GOAL_LABEL[g.status], message: g.message } : undefined;
+  return g
+    ? { status: g.status, label: GOAL_LABEL[g.status], message: userText(g.message) }
+    : undefined;
 }
 
-/** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja). */
+/** Napomene i upozorenja plana za „Na šta da paziš" (iz v2, korisnički tekst — Z2, bez ponavljanja). */
 function planWarnings(plan: MarathonV2Plan): string[] {
   const out: string[] = [];
-  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)])
+  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)].map(userText))
     if (t && !out.includes(t)) out.push(t);
   return out;
 }

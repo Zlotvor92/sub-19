@@ -401,6 +401,14 @@ const DECISIONS: readonly Decision[] = [
       'lengths.ts easyTotal10, weekMin10 (buildLengths, deloadLengths, taperLengths); volume.ts',
     rationale:
       'Organizator (result-pain.ts MAR 193 97 29: 60/73 188; two-step.ts 13/31 008; prestart-chain 6): WEEK_MIN_VOLUME „19,98 km < 20 km" — lagani zaokruženi naniže dok je dan kvaliteta u 0,01 km. Generator nepromenjen (takve nedelje su ranije bile odbijene).'
+  },
+  {
+    id: 'MAR-09',
+    rule: 'Ispravke posle dubinske provere (marathon-v2.6.0): (1) trkačka nedelja nikad nije prazna — jedna definicija „trkačka samo sa trkom" (week.raceOnlyWeek: faza race i samo trka; RACE_WEEK_SHORT), koji dani smeju da otpadnu proverava RACE_WEEK (raceWeekRuns + raceWeekRest); (2) L skoka dugog (M13a), pouka 37 za L: cela prošla nedelja poznata iz činjenica (potpuna pokrivenost ili pauza; dan bez zapisa = 0) ulazi u L najviše sa najdužim odrađenim trkom (manje od 5 km: nije L) — samo za nedelje građene posle tog koraka (step.ranLongs, lengths.jumpLongs10); činjenice samo spuštaju L, prazan prozor zadržava upisani L; nedelje 1–4 (skorašnji najduži) bez promene; (3) vraćanje revizije samo kad posle snimka nema prilagođavanja i vraćen plan prolazi validatePlan; (4) plafon 150 min tempom nedelje (pacesAt) u longShortOf i capacityWeeks/capacityLimits; (5) napomena spuštene doze kaže kad dan ostaje duži od dugog (najniži nivo izuzet); (6) Z1: mešovita nedelja čiji je jedini višak upisani višak zadržava kvalitet do planiranog ≤ 1,10 × cilj (MIXED_WEEK_OVER); Z2: korisnički tekst bez internih oznaka (app/format.userText), RECENT_LONG_TOO_SHORT sa max(10 %, 1 km) i pragom; Z3: Forma čita odluku jezgra o rezultatu (assess.resultFates).',
+    place:
+      'week.ts raceOnlyWeek; assess.ts (ranLongs, resultFates, prevResultOf); lengths.ts jumpLongs10, longShortOf; volume.ts capacityWeeks/capacityLimits; mixed.ts mixedRest; generate.ts (recentTooShort, recentThreshold); app/format.ts userText; app/plan.ts, app/adapt.ts (restoreMerge), app/generate.ts, app/form.ts; validate.ts',
+    rationale:
+      'Organizator: docs/generators-v2/audit/fixes/MAR.md i 00-common.md (zaključan spisak). Merenja pre → posle u docs/marathon-v2/reports/SEGMENT-09-IMPLEMENTATION.md.'
   }
 ];
 
@@ -411,7 +419,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.5.1',
+  version: 'marathon-v2.6.0',
 
   /** M1 (dani i obim: M15). */
   input: {
@@ -685,6 +693,10 @@ export const MARATHON_V2_POLICY = {
 
   /** Tehnička tolerancija: planirano vs cilj (zaokruženje dana na 0,1 km). */
   tolerance: { plannedKm: 0.1 },
+
+  /** Z1 (MAR-09, dopuna pouke 37): mešovita nedelja čiji je jedini višak upisani višak zadržava kvalitet do
+      planiranog ≤ overShare × cilj. */
+  mixed: { overShare: 1.1 },
 
   /** M18 (segment 04): adaptacija (A1–A17). Rezultat: starost i VDOT kao ulaz; donja granica cilja: weekMinKm
       (M15, A9); lagan ≥ lengths.easyMinKm. */

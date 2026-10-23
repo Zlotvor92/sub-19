@@ -92,6 +92,45 @@ export interface CheckedFacts {
   breaks: BreakFact[];
 }
 
+/** A1: datum rezultata u upotrebi (poslednji primenjen u koracima, inače rezultat ulaza). */
+export function prevResultOf(plan: {
+  input: { recentResult?: { date: IsoDate } | null };
+  adaptation?: { steps: readonly MarathonV2AdaptStep[] };
+}): IsoDate | undefined {
+  const steps = plan.adaptation?.steps ?? [];
+  return [...steps].reverse().find((s) => s.result)?.result?.date ?? plan.input.recentResult?.date;
+}
+
+/** A1 (Z3, MAR-09 t. 6): sudbina svakog rezultata (dan `t`) — 'apply' (primenjuje se), 'old' (stariji od 84 dana),
+    'notNewer' (nije noviji od rezultata u upotrebi), 'range' (VDOT van opsega), 'notLatest' (noviji je primenjen).
+    JEDINA odluka: adaptacija (assess) i Forma (app/form.ts) je čitaju. Redosled: najnoviji prvi, pa veći VDOT. */
+export function resultFates(
+  results: readonly ResultFact[],
+  prevResult: IsoDate | undefined,
+  t: number
+): Map<ResultFact, 'apply' | 'old' | 'notNewer' | 'range' | 'notLatest'> {
+  const q = P.input;
+  const vdotOf = (x: ResultFact): number => round1(vdotFromResult(x.distM, x.sec));
+  const out = new Map<ResultFact, 'apply' | 'old' | 'notNewer' | 'range' | 'notLatest'>();
+  const fresh = results.filter((x) => t - mustDay(x.date) <= q.resultMaxAgeDays);
+  for (const x of results) if (!fresh.includes(x)) out.set(x, 'old');
+  const newer = fresh
+    .filter((x) => prevResult === undefined || mustDay(x.date) > mustDay(prevResult))
+    .sort((a, b) => mustDay(b.date) - mustDay(a.date) || vdotOf(b) - vdotOf(a));
+  for (const x of fresh) if (!newer.includes(x)) out.set(x, 'notNewer');
+  let applied = false;
+  for (const x of newer) {
+    const v = vdotOf(x);
+    if (v < q.vdotMin || v > q.vdotMax) out.set(x, 'range');
+    else if (applied) out.set(x, 'notLatest');
+    else {
+      out.set(x, 'apply');
+      applied = true;
+    }
+  }
+  return out;
+}
+
 /** A10: da li su svi dani [from, to] poznati (pokriveni potpunim zapisom). */
 export function coveredDays(c: FactsCoverage | null, from: number, to: number): boolean {
   return c !== null && c.complete && mustDay(c.from) <= from && mustDay(c.to) >= to;
@@ -299,39 +338,31 @@ export function assess(
     returnFrom: null
   };
 
-  // A1: novi rezultat (≤ 84 dana, noviji od rezultata u upotrebi, VDOT 30–80).
-  const prevResult =
-    [...steps].reverse().find((s) => s.result)?.result?.date ?? plan.input.recentResult?.date;
+  // A1: novi rezultat (≤ 84 dana, noviji od rezultata u upotrebi, VDOT 30–80) — resultFates.
   const vdotOf = (x: ResultFact): number => round1(vdotFromResult(x.distM, x.sec));
   const label = (x: ResultFact): string =>
     `${x.kind === 'test' ? 'Test' : 'Trka'} ${x.distM === 21097.5 ? 'polumaraton' : x.distM === 42195 ? 'maraton' : `${x.distM / 1000} km`} ${fmt(x.sec)} (${x.date})`;
   const q = P.input;
-  const fresh = facts.results.filter((x) => t - day(x.date) <= q.resultMaxAgeDays);
-  for (const x of facts.results)
-    if (!fresh.includes(x))
+  const fate = resultFates(facts.results, prevResultOf(plan), t);
+  let res: ResultFact | null = null;
+  for (const [x, f] of fate)
+    if (f === 'old')
       reason(
         'RESULT_IGNORED',
         false,
         `${label(x)}: stariji od ${q.resultMaxAgeDays} dana — ne menja tempo (A1).`
       );
-  const newer = fresh
-    .filter((x) => prevResult === undefined || day(x.date) > day(prevResult))
-    .sort((a, b) => day(b.date) - day(a.date) || vdotOf(b) - vdotOf(a));
-  for (const x of fresh)
-    if (!newer.includes(x))
+    else if (f === 'notNewer')
       reason('RESULT_IGNORED', false, `${label(x)}: nije noviji od rezultata u upotrebi (A1).`);
-  let res: ResultFact | null = null;
-  for (const x of newer) {
-    const v = vdotOf(x);
-    if (v < q.vdotMin || v > q.vdotMax)
+    else if (f === 'range')
       reason(
         'RESULT_IGNORED',
         false,
-        `${label(x)}: VDOT ${km(v)} van ${q.vdotMin}–${q.vdotMax} — rezultat se ne primenjuje (A1).`
+        `${label(x)}: VDOT ${km(vdotOf(x))} van ${q.vdotMin}–${q.vdotMax} — rezultat se ne primenjuje (A1).`
       );
-    else if (res) reason('RESULT_IGNORED', false, `${label(x)}: nije najnoviji rezultat (A1).`);
+    else if (f === 'notLatest')
+      reason('RESULT_IGNORED', false, `${label(x)}: nije najnoviji rezultat (A1).`);
     else res = x;
-  }
   if (res) {
     const v = vdotOf(res);
     if (n <= N) {
@@ -510,5 +541,25 @@ export function assess(
     facts.breaks.length === 0
   )
     reason('NO_FACTS', true, 'Nema činjenica: budući deo plana ostaje isti.');
+  // MAR-09 t. 2 (pouka 37 za L, M13a): cela prošla nedelja (kraj ≤ asOf) čiji su SVI dani poznati iz činjenica
+  // (potpuna pokrivenost ili prijavljena pauza; dan bez zapisa = 0) → najduži odrađen trk te nedelje [km]; čita ga
+  // lengths.jumpLongs10.
+  const ranLongs: Record<string, number> = {};
+  const knownDay = (d: number): boolean =>
+    coveredDays(facts.coverage, d, d) ||
+    facts.breaks.some((b) => day(b.from) <= d && d <= day(b.to));
+  for (const w of weeks) {
+    const s = day(w.startDate);
+    const e = day(w.endDate);
+    if (e > t || !w.days.some((d) => d.role === 'long')) continue;
+    let known = true;
+    for (let d = s; d <= e && known; d++) known = knownDay(d);
+    if (!known) continue;
+    ranLongs[String(w.index)] = Math.max(
+      0,
+      ...runs.filter((x) => day(x.date) >= s && day(x.date) <= e).map((x) => x.km)
+    );
+  }
+  if (Object.keys(ranLongs).length > 0) step.ranLongs = ranLongs;
   return { step, reasons: out };
 }

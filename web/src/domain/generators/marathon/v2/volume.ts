@@ -2,7 +2,15 @@
    nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija nedelje
    (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longCap10, longJumpCap10, longShareCap10, longTimeCap10, weekMin10 } from './lengths.ts';
+import {
+  jumpLongs10,
+  longCap10,
+  longJumpCap10,
+  longShareCap10,
+  longsOf,
+  longTimeCap10,
+  weekMin10
+} from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import {
   BEGINNER_DAYS_COUNTS,
@@ -12,7 +20,7 @@ import {
   RUN_DAYS_COUNTS
 } from './policy.ts';
 import { deloadWeekOf, preStartOf } from './steps.ts';
-import type { Paces, PlanWeek, PreStartRef, WeekFrame } from './types.ts';
+import type { MarathonV2AdaptStep, Paces, PlanWeek, PreStartRef, WeekFrame } from './types.ts';
 import { fmtKm } from './workouts.ts';
 
 const EPS = 1e-9;
@@ -75,22 +83,29 @@ export const technicalNote = (note: string): boolean =>
 
 /** Spuštene (fitted 'down') ne-rasteretne nedelje izgradnje koje seče kapacitet broja dana. Nedelja čiji je
     dugi na plafonu skoka M13a (niži od plafona M13) nije ograničenje kapaciteta (pouka 28). Jedna funkcija za
-    konstruktor i validator (pouka 24). */
+    konstruktor i validator (pouka 24). Tempo nedelje `pacesOf(index)` (plafon 150 min istim tempom kojim je nedelja
+    građena, MAR-09 t. 4); L iz upisanih dugih i činjenica (lengths.jumpLongs10, MAR-09 t. 2). */
 export function capacityWeeks(
   weeks: readonly PlanWeek[],
   rule: DayRule,
-  p: Paces,
-  recentLongRunKm: number | null | undefined
+  pacesOf: (week: number) => Paces,
+  recentLongRunKm: number | null | undefined,
+  steps: readonly MarathonV2AdaptStep[]
 ): PlanWeek[] {
-  const longs10 = weeks.map((w) => {
-    const l = w.days.find((d) => d.role === 'long');
-    return l ? to10(l.workout.km) : null;
-  });
+  const longs10 = longsOf(weeks);
   return weeks.filter((w, i) => {
     if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') return false;
-    const jump = longJumpCap10(longs10.slice(0, i), w.index, recentLongRunKm);
+    const jump = longJumpCap10(
+      jumpLongs10(weeks.slice(0, i), steps, w.index),
+      w.index,
+      recentLongRunKm
+    );
     const l = longs10[i];
-    return !(jump !== null && l === jump && jump < longCap10(to10(w.targetKm), rule, p));
+    return !(
+      jump !== null &&
+      l === jump &&
+      jump < longCap10(to10(w.targetKm), rule, pacesOf(w.index))
+    );
   });
 }
 
@@ -99,16 +114,17 @@ export function capacityWeeks(
 export function capacityLimits(
   weeks: readonly PlanWeek[],
   rule: DayRule,
-  p: Paces,
-  recentLongRunKm: number | null | undefined
+  pacesOf: (week: number) => Paces,
+  recentLongRunKm: number | null | undefined,
+  steps: readonly MarathonV2AdaptStep[]
 ): CapacityLimit[] {
   let time = false;
   let share = false;
-  for (const w of capacityWeeks(weeks, rule, p, recentLongRunKm)) {
+  for (const w of capacityWeeks(weeks, rule, pacesOf, recentLongRunKm, steps)) {
     const long = w.days.find((d) => d.role === 'long');
     if (!long) continue;
     const l10 = to10(long.workout.km);
-    if (l10 === longTimeCap10(p)) time = true;
+    if (l10 === longTimeCap10(pacesOf(w.index))) time = true;
     if (l10 === longShareCap10(to10(w.targetKm), rule)) share = true;
   }
   return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
