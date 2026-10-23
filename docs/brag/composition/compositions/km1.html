@@ -1,0 +1,62 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: #f6f7f5;
+    }
+    .km1-shot {
+      position: absolute;
+      inset: 0;
+    }
+    #km1-a img,
+    #km1-b img {
+      position: absolute;
+    }
+    .km1-veil {
+      position: absolute;
+      background: #e6eee5;
+    }
+  </style>
+  <div id="root" data-composition-id="km1" data-width="1080" data-height="1920">
+    <!-- 0 -> 1 km. Shot A: real wizard step 2, 21:30 typed. -->
+    <div id="km1-a" class="km1-shot" data-layout-allow-overflow>
+      <img src="assets/ui/result-head.png" alt="" style="left: 15px; top: 370px; width: 1050.6px; height: 374px" />
+      <img src="assets/ui/result-fields.png" alt="" style="left: 15px; top: 770px; width: 1050.6px; height: 212.5px" />
+      <img id="km1-min1" src="assets/ui/result-min1.png" alt="" style="left: 72px; top: 847.35px; width: 434.35px; height: 124.95px" />
+      <img id="km1-min2" src="assets/ui/result-min2.png" alt="" style="left: 72px; top: 847.35px; width: 434.35px; height: 124.95px" />
+      <img id="km1-sec1" src="assets/ui/result-sec1.png" alt="" style="left: 573.45px; top: 847.35px; width: 434.35px; height: 124.95px" />
+      <img id="km1-sec2" src="assets/ui/result-sec2.png" alt="" style="left: 573.45px; top: 847.35px; width: 434.35px; height: 124.95px" />
+    </div>
+    <!-- Shots B/C: the real "Tvoja forma" panel (45,8 VDOT, every pace from one number); paces pop one per eighth. -->
+    <div id="km1-b" class="km1-shot" data-layout-allow-overflow>
+      <div id="km1-panel" style="position: absolute; left: 20px; top: 400px; width: 1040.4px; height: 639px">
+        <img src="assets/ui/forma-panel.png" alt="" style="left: 0; top: 0; width: 1040.4px; height: 639px" />
+        <div id="km1-v1" class="km1-veil" style="left: 54px; top: 463px; width: 257px; height: 109px"></div>
+        <div id="km1-v2" class="km1-veil" style="left: 311px; top: 463px; width: 246px; height: 109px"></div>
+        <div id="km1-v3" class="km1-veil" style="left: 557px; top: 463px; width: 244px; height: 109px"></div>
+        <div id="km1-v4" class="km1-veil" style="left: 801px; top: 463px; width: 198px; height: 109px"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const B = 0.5457;
+    gsap.set(["#km1-min1", "#km1-min2", "#km1-sec1", "#km1-sec2"], { opacity: 0 });
+    gsap.set("#km1-b", { opacity: 0 });
+    // Shot A (scene 0 = gun, 1.09 s): slam in, digits on the sixteenths.
+    tl.fromTo("#km1-a", { scale: 1.06 }, { scale: 1, duration: 0.18, ease: "expo.out", transformOrigin: "50% 40%" }, 0);
+    tl.set("#km1-min1", { opacity: 1 }, B / 2);
+    tl.set("#km1-min2", { opacity: 1 }, (B * 3) / 4);
+    tl.set("#km1-sec1", { opacity: 1 }, B);
+    tl.set("#km1-sec2", { opacity: 1 }, (B * 5) / 4);
+    // Shot B (2.18 s): hard cut to Tvoja forma.
+    tl.set("#km1-a", { opacity: 0 }, 2 * B);
+    tl.set("#km1-b", { opacity: 1 }, 2 * B);
+    tl.fromTo("#km1-panel", { scale: 1.08 }, { scale: 1, duration: 0.2, ease: "expo.out", transformOrigin: "50% 50%", immediateRender: false }, 2 * B);
+    // Shot C (3.27 s): punch in on the paces; Lako, Tempo, Interval, Rep pop on the eighths.
+    tl.set("#km1-panel", { scale: 1.12, y: -80, transformOrigin: "520px 517px" }, 4 * B);
+    ["#km1-v1", "#km1-v2", "#km1-v3", "#km1-v4"].forEach((v, i) => tl.set(v, { opacity: 0 }, 4 * B + i * (B / 2)));
+    window.__timelines["km1"] = tl;
+  </script>
+</template>

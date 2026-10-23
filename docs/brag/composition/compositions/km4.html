@@ -1,0 +1,95 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: #f6f7f5;
+    }
+    .km4-shot {
+      position: absolute;
+      inset: 0;
+    }
+    #km4-goal {
+      position: absolute;
+      left: 15px;
+      top: 430px;
+      width: 1050.6px;
+      height: 578.85px;
+    }
+    #km4-card {
+      position: absolute;
+      left: 29px;
+      top: 560px;
+      width: 1022.4px;
+      height: 415.8px;
+    }
+    #km4-card img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1022.4px;
+      height: 415.8px;
+    }
+    .km4-dim {
+      position: absolute;
+      background: #f6ead2;
+    }
+    #km4-form {
+      position: absolute;
+      left: 0;
+      top: 360px;
+      width: 1080.3px;
+      height: 928.2px;
+    }
+    #km4-form img {
+      position: absolute;
+    }
+  </style>
+  <div id="root" data-composition-id="km4" data-width="1080" data-height="1920">
+    <!-- 3 -> 4 km. A: goal 19:59 in the real goal field. -->
+    <div id="km4-a" class="km4-shot" data-layout-allow-overflow>
+      <img id="km4-goal" src="assets/ui/goal-full.png" alt="" />
+    </div>
+    <!-- B: the app's own warning card; all but "Cilj je sačuvan kao želja" dims. -->
+    <div id="km4-b" class="km4-shot" data-layout-allow-overflow>
+      <div id="km4-card">
+        <img src="assets/ui/wish-card.png" alt="" />
+        <div class="km4-dim" style="left: 49.5px; top: 36px; width: 949.5px; height: 171.9px"></div>
+        <div class="km4-dim" style="left: 49.5px; top: 207.9px; width: 567.9px; height: 55.8px"></div>
+        <div class="km4-dim" style="left: 154.8px; top: 263.7px; width: 844.2px; height: 56.7px"></div>
+        <div class="km4-dim" style="left: 49.5px; top: 320.4px; width: 949.5px; height: 62.1px"></div>
+      </div>
+    </div>
+    <!-- C: the real Forma screen after one 3 km test: "Da ▲ VDOT +2,2", bar 21:29 -> 20:38. -->
+    <div id="km4-c" class="km4-shot" data-layout-allow-overflow>
+      <div id="km4-form">
+        <img src="assets/ui/form-base.png" alt="" style="left: 0; top: 0; width: 1080.3px; height: 928.2px" />
+        <img id="km4-fill" src="assets/ui/form-fill.png" alt="" style="left: 131.1px; top: 545.38px; width: 491.19px; height: 68.17px" />
+        <img id="km4-da" src="assets/ui/form-da.png" alt="" style="left: 52.44px; top: 170.43px; width: 489.44px; height: 117.99px" />
+        <img id="km4-line" src="assets/ui/form-line.png" alt="" style="left: 43.7px; top: 321.63px; width: 970.14px; height: 57.68px" />
+        <img id="km4-label" src="assets/ui/form-label.png" alt="" style="left: 471.96px; top: 431.76px; width: 244.72px; height: 103.13px" />
+      </div>
+    </div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const B = 0.5457;
+    gsap.set(["#km4-b", "#km4-c", ".km4-dim", "#km4-line", "#km4-label"], { opacity: 0 });
+    gsap.set("#km4-fill", { clipPath: "inset(0px 100% 0px 0px)" });
+    // Scene 0 = 11.46 s. A: slam.
+    tl.fromTo("#km4-goal", { scale: 1.07 }, { scale: 1, duration: 0.18, ease: "expo.out", transformOrigin: "0% 40%" }, 0);
+    // B (12.01 s): hard cut to the card, dim on the next sixteenth.
+    tl.set("#km4-a", { opacity: 0 }, B);
+    tl.set("#km4-b", { opacity: 1 }, B);
+    tl.fromTo("#km4-card", { scale: 1.08 }, { scale: 1, duration: 0.18, ease: "expo.out", transformOrigin: "50% 50%", immediateRender: false }, B);
+    tl.to(".km4-dim", { opacity: 0.82, duration: 0.1, ease: "power2.out" }, B + B / 4);
+    // C (13.10 s): hard cut to Forma; "Da" slams with the cut. beat-locked: 13.10s
+    tl.set("#km4-b", { opacity: 0 }, 3 * B);
+    tl.set("#km4-c", { opacity: 1 }, 3 * B);
+    tl.fromTo("#km4-da", { scale: 1.2 }, { scale: 1, duration: 0.18, ease: "expo.out", transformOrigin: "0% 50%", immediateRender: false }, 3 * B);
+    tl.set("#km4-line", { opacity: 1 }, 3 * B + B / 4);
+    tl.fromTo("#km4-fill", { clipPath: "inset(0px 100% 0px 0px)" }, { clipPath: "inset(0px 0% 0px 0px)", duration: 0.4, ease: "power3.inOut", immediateRender: false }, 3 * B + B / 4);
+    tl.set("#km4-label", { opacity: 1 }, 4 * B);
+    window.__timelines["km4"] = tl;
+  </script>
+</template>

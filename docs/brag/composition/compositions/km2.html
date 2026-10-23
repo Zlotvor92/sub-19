@@ -1,0 +1,37 @@
+<template>
+  <style>
+    #root {
+      position: absolute;
+      inset: 0;
+      background: #f6f7f5;
+    }
+    .km2-shot {
+      position: absolute;
+      left: 15px;
+      width: 1050.6px;
+    }
+  </style>
+  <div id="root" data-composition-id="km2" data-width="1080" data-height="1920">
+    <!-- 1 -> 2 km: the generated plan (Plan tab title), today's workout (Danas), the week's rows. -->
+    <img id="km2-a" class="km2-shot" src="assets/ui/plan-title-tight.png" alt="" style="left: 40px; width: 1000px; top: 560px; height: 341.8px" />
+    <img id="km2-b" class="km2-shot" src="assets/ui/danas-hero.png" alt="" style="top: 430px; height: 518.5px" />
+    <img id="km2-c" class="km2-shot" src="assets/ui/plan-rows.png" alt="" style="top: 420px; height: 552.5px" />
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const B = 0.5457;
+    const shots = [
+      ["#km2-a", 0, B],
+      ["#km2-b", B, 3 * B],
+      ["#km2-c", 3 * B, 5 * B]
+    ];
+    gsap.set(["#km2-b", "#km2-c"], { opacity: 0 });
+    // Scene 0 = 4.91 s. Hard cuts on the beats; every shot slams in slightly large.
+    shots.forEach(([id, t0, t1], i) => {
+      if (i > 0) tl.set(shots[i - 1][0], { opacity: 0 }, t0);
+      tl.set(id, { opacity: 1 }, t0);
+      tl.fromTo(id, { scale: 1.07 }, { scale: 1, duration: 0.18, ease: "expo.out", transformOrigin: "0% 50%", immediateRender: false }, t0);
+    });
+    window.__timelines["km2"] = tl;
+  </script>
+</template>

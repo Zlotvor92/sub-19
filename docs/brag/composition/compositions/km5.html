@@ -1,0 +1,92 @@
+<template>
+  <style>
+    @font-face {
+      font-family: "Figtree";
+      font-weight: 300 900;
+      src: url("assets/fonts/figtree-latin.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2191, U+2193, U+2212;
+    }
+    @font-face {
+      font-family: "Figtree";
+      font-weight: 300 900;
+      src: url("assets/fonts/figtree-latin-ext.woff2") format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F;
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      background: #f6f7f5;
+      font-family: "Figtree", sans-serif;
+      color: #19251e;
+    }
+    #km5-win {
+      position: absolute;
+      left: 0;
+      top: 340px;
+      width: 1080px;
+      height: 990px;
+      overflow: hidden;
+    }
+    #km5-final {
+      position: absolute;
+      left: -77.5px;
+      top: -320px;
+      width: 1236px;
+      height: 1062px;
+    }
+    #km5-gap {
+      position: absolute;
+      left: 37px;
+      top: 620px;
+      width: 1005.9px;
+      height: 138.6px;
+    }
+    #km5-line {
+      position: absolute;
+      left: 60px;
+      top: 560px;
+      width: 960px;
+      font-size: 136px;
+      line-height: 1.05;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+    #km5-line span {
+      display: inline-block;
+      margin-right: 0.2em;
+    }
+  </style>
+  <div id="root" data-composition-id="km5" data-width="1080" data-height="1920">
+    <!-- 4 -> 5 km. A: the real Forma bar at 3x; then a hard punch-in on "Do cilja 19:59 fali 39 s." -->
+    <div id="km5-win" data-layout-allow-overflow>
+      <img id="km5-final" src="assets/ui/form-final.png" alt="" />
+    </div>
+    <!-- A2: the same line from the Forma screen, cut in at 2.1x. -->
+    <img id="km5-gap" src="assets/ui/form-gap.png" alt="" />
+    <!-- B: the app's own footnote as the last line before the sprint. -->
+    <div id="km5-line"><span>Procena</span><span>nije</span><span>obećanje.</span></div>
+  </div>
+  <script>
+    const tl = gsap.timeline({ paused: true });
+    const B = 0.5457;
+    gsap.set(["#km5-line", "#km5-gap"], { opacity: 0 });
+    // Scene 0 = 14.73 s.
+    tl.fromTo("#km5-final", { scale: 1.06 }, { scale: 1, duration: 0.18, ease: "expo.out", transformOrigin: "916px 640px" }, 0);
+    // Punch-in cut on the beat (15.28 s): "Do cilja 19:59 fali 39 s." alone, big.
+    tl.set("#km5-win", { opacity: 0 }, B);
+    tl.set("#km5-gap", { opacity: 1 }, B);
+    tl.fromTo("#km5-gap", { scale: 1.12 }, { scale: 1, duration: 0.15, ease: "expo.out", transformOrigin: "0% 50%", immediateRender: false }, B);
+    // B (15.82 s): hard cut to the line; words slam.
+    tl.set("#km5-gap", { opacity: 0 }, 2 * B);
+    tl.set("#km5-line", { opacity: 1 }, 2 * B);
+    tl.fromTo(
+      "#km5-line span",
+      { opacity: 0, scale: 1.15, filter: "blur(6px)" },
+      { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.12, ease: "expo.out", stagger: 0.05, immediateRender: false },
+      2 * B
+    );
+    // The sprint (16.92 s) is drawn by the HUD on top; the line leaves under it.
+    tl.set("#km5-line", { opacity: 0 }, 4 * B);
+    window.__timelines["km5"] = tl;
+  </script>
+</template>

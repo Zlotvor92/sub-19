@@ -1,18 +1,18 @@
-# Review — sub20 brag reel (v2, fast cut)
+# Review — sub20 brag reel (v3, "Ovaj reel je trka na 5 km")
 
 ## Creative calls
-- v2 re-cut on request ("brže, oštriji cutovi"): 24.0 s → 20.0 s, 120 BPM track (vol-1) instead of vol-12, hard cuts / whips / zoom-through on the beat grid, race-clock hook (19:55 → 19:59), "7 nedelja kasnije" replaced by the real Plan headers of weeks 2–8 flicking past.
-- Story unchanged: the app named after 19:59 saves that goal "kao želja" and ends its estimate with "Procena nije obećanje."
-- Real UI only: captures of the running app (mocked backend, fictional demo runner). Weeks 2–8 captured by pressing "Sledeća nedelja" in the app.
+- New concept from scratch on request (v1/v2 were a linear walkthrough): the reel is a 5 km race. A broadcast-style clock runs from the gun to 19:59, a green split card hits every kilometre, the app flies by between splits in hard cuts on the beat, and the clock stops at 19:59 on the finish.
+- Split times on the cards (3:59 / 7:59 / 11:59 / 15:59) and the clock are the video's framing (even sub-20 pace), not app data; every app screen is a capture of the real app (mocked backend, fictional demo runner). New captures: weeks 9-13 including "Faza TRKA: Dan trke" and the race-day row, and the "Tvoja forma" panel from wizard step 2.
+- Music changed to vol-10 ("compact loop, punchy"), entered where every beat is a strong cue.
 
 ## Measured vs looked at
-- `hyperframes check`: 0 errors, 0 warnings (lint, runtime, layout, contrast 9/9, craft).
-- Snapshots of every scene and transition read; decoded frames of the final file checked.
-- Render: 20.0 s, 600 frames, 30 fps. Audio measured, not heard: renderer mix −24.4 LUFS → two-pass loudnorm (dynamic) to −14.1 LUFS, peak −1.2 dB. Re-renders come out quiet again until that step is repeated.
-- Poster: frame at 1.5 s (green "19:59 / Jedna sekunda.") baked as frame 0.
+- `hyperframes check`: 0 errors, 0 warnings (lint, runtime, layout, contrast 12/12, craft).
+- Snapshots of every shot and of each split; decoded frames of the final file checked.
+- Render: 19.65 s, 590 frames, 30 fps. Audio measured, not heard: renderer mix −23.7 LUFS → two-pass loudnorm to −14.1 LUFS, peak −1.3 dB. Re-renders come out quiet until that step is repeated.
+- Poster: the finish frame (18.6 s: mark, "19:59", "sub20", address) baked as frame 0.
 
 ## Weakest shot
-13.0–13.5 s: "Da li napredujem?" with an empty space until "Da" lands half a second later. With more time: land "Da" on the cut itself and use the half beat for the bar.
+10.37-10.91 s: the race-day row ("Nedelja 12 · TRKA · 5 km") is real but visually thin for a payoff beat. With more time: punch-in on "TRKA" with the week-13 header behind it.
 
 ## Warnings kept on purpose
-- None open. Audio-reactive treatment intentionally absent (the app's design system forbids glow/pulse).
+- None open. The HUD clock text changes every frame by design (a function of time, deterministic on seek).

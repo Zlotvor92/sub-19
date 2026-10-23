@@ -1,1 +1,1 @@
-sub20 pravi plan treninga za 5K, 10K, polumaraton i maraton iz jednog tvog rezultata. Upiši cilj 19:59 i aplikacija ga sačuva „kao želju" dok ga test ne potvrdi — procena nije obećanje. sub-19.vercel.app
+Ovaj reel je trka na 5 km. sub20 od jednog tvog rezultata izračuna svaki tempo i napravi plan do dana trke — sat staje na 19:59. sub-19.vercel.app
