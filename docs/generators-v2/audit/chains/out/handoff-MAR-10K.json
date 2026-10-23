@@ -1,0 +1,444 @@
+{
+ "pair": "MAR>10K",
+ "seed": 20261023,
+ "from": 0,
+ "to": 600,
+ "chains": 600,
+ "sourceOk": 2280,
+ "sourceRejected": 46,
+ "handoffCalls": 2280,
+ "handoffOk": 520,
+ "handoffErr": {
+  "Nema pouzdanog rezultata (rezultat je star # dana (> #)): za plan po osećaju unesi lagan tempo (easy": 282,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Nema pouzdanog rezultata (rezultat": 229,
+  "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava #–# dana trčanja.": 112,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Trenutni obim # km je iznad # km n": 115,
+  "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava #–# dana trčanja. Nema pou": 58,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#.": 99,
+  "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana trčanja. Nema pouzd": 67,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja.": 145,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Početnik sa # dana trčanja: trenut": 6,
+  "Trenutni obim # km je iznad # km za # dana trčanja: za # km plan podržava # dana trčanja.": 90,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Trenutni obim # km je iznad # km z": 123,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Trenutni obim # km je ": 73,
+  "Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana. Nema pouzdanog rezultata (rezultat": 97,
+  "Plan od # nedelja je prekratak: #K plan traži najmanje # nedelja. Početnik: #K plan radi sa #–# dana": 15,
+  "Trenutni obim # km je iznad # km nedeljno, van opsega ovog plana.": 178,
+  "Početnik sa # dana trčanja: trenutni obim # km je iznad # km (opseg početnika #–# km); uz ovaj obim ": 11,
+  "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana. Početnik: trenutni obim": 18,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Početnik: #K plan radi": 7,
+  "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana.": 12,
+  "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#. Početnik: #K p": 5,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Nema pouzdanog rezulta": 8,
+  "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#.": 4,
+  "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#. Početnik sa # ": 2,
+  "Plan od # nedelja je predug (najviše #): počni plan kasnije, najranije #-#-#. Početnik sa # dana trč": 1,
+  "Početnik: #K plan traži najmanje # nedelja (izabrano #); počni plan najkasnije #-#-#. Nema pouzdanog": 2,
+  "Početnik: #K plan radi sa #–# dana trčanja (izabrano #); preporuka #–# dana. Nema pouzdanog rezultat": 1
+ },
+ "handoffErrEx": [
+  "8 d6-21w-85km-v55-B-sun~67 asOf 2027-02-05: Nema pouzdanog rezultata (rezultat je star 109 dana (> 84)): za plan po osećaju unesi lagan tempo (easyPaceSecPerKm, 4:30–8:30/km) ili rezultat 3/5/10 km ili polumaratona ne stariji od 84 dana.",
+  "9 d4-20w-55km-v60-C-sat~67 asOf 2027-03-19: Nema pouzdanog rezultata (rezultat je star 100 dana (> 84)): za plan po osećaju unesi lagan tempo (easyPaceSecPerKm, 4:30–8:30/km) ili rezultat 3/5/10 km ili polumaratona ne stariji od 84 dana.",
+  "10 d4-16w-45km-v55-C-sun~132 asOf 2027-05-22: Plan od 5 nedelja je prekratak: 10K plan traži najmanje 8 nedelja. Nema pouzdanog rezultata (rezultat je star 104 dana (> 84)): za plan po osećaju unesi lagan tempo (easyPaceSecPerKm, 4:30–8:30/km) ili rezultat 3/5/10 km",
+  "11 d4-17w-55km-v70-B-sun~65 asOf 2027-01-15: Trenutni obim 57 km je iznad 55 km za 4 dana trčanja: za 57 km plan podržava 5–6 dana trčanja.",
+  "32 d4-14w-35km-v60-C-sat~-34 asOf 2026-10-11: Nema pouzdanog rezultata (rezultat je star 97 dana (> 84)): za plan po osećaju unesi lagan tempo (easyPaceSecPerKm, 4:30–8:30/km) ili rezultat 3/5/10 km ili polumaratona ne stariji od 84 dana.",
+  "40 d6-24w-95km-v55-C-sun~-56 asOf 2026-12-28: Plan od 7 nedelja je prekratak: 10K plan traži najmanje 8 nedelja. Trenutni obim 107 km je iznad 80 km nedeljno, van opsega ovog plana. Nema pouzdanog rezultata (rezultat je star 122 dana (> 84)): za plan po osećaju unes"
+ ],
+ "targetSteps": 1042,
+ "real": 491,
+ "cls": {
+  "IDEMP:WEEKS": {
+   "real": 26,
+   "unreal": 1,
+   "shortest": {
+    "i": 233,
+    "len": 2,
+    "source": {
+     "id": "d5-12w-50km-v70-B-sat~53",
+     "steps": [
+      {
+       "asOf": "2027-01-15",
+       "regime": "plan",
+       "events": [
+        "missed@2027-01-14",
+        "slower:race21097.5@2027-01-12v66.3"
+       ],
+       "locked": []
+      }
+     ]
+    },
+    "handoffAsOf": "2027-01-15",
+    "target": [
+     {
+      "asOf": "2027-01-15",
+      "regime": "mixed",
+      "events": [],
+      "locked": []
+     },
+     {
+      "asOf": "2027-01-24",
+      "regime": "miss",
+      "events": [
+       "pain6@2027-01-23"
+      ],
+      "locked": []
+     }
+    ],
+    "detail": "[PAIN+UNDER_EXECUTION] ned 2 targetKm 45.6→36.5"
+   },
+   "ex": [
+    "10/2: [UNDER_EXECUTION] ned 2 targetKm 32.9→26.3",
+    "104/2: [UNDER_EXECUTION] ned 3 targetKm 32.4→25.9",
+    "180/2: [NEW_RESULT+UNDER_EXECUTION] ned 2 targetKm 37.3→29.8"
+   ]
+  },
+  "BUDUCA_NEDELJA<40%CILJA": {
+   "real": 8,
+   "unreal": 2,
+   "shortest": {
+    "i": 15,
+    "len": 1,
+    "source": {
+     "id": "d6-12w-70km-v70-C-sun~30",
+     "steps": [
+      {
+       "asOf": "2026-12-04",
+       "regime": "pauseSilent",
+       "events": [],
+       "locked": [
+        "2026-12-07"
+       ]
+      },
+      {
+       "asOf": "2026-12-08",
+       "regime": "plan",
+       "events": [
+        "pain8@2026-12-08"
+       ],
+       "locked": [
+        "2026-12-10"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2026-12-08",
+    "target": [
+     {
+      "asOf": "2026-12-08",
+      "regime": "pauseBreak",
+      "events": [],
+      "locked": []
+     }
+    ],
+    "detail": "ned 1 28.7/73.5 base long,easy,easy"
+   },
+   "ex": [
+    "15/0: ned 1 28.7/73.5 base long,easy,easy",
+    "49/0: ned 1 12.2/39.2 base easy,easy",
+    "63/0: ned 1 30/76 base long,easy,easy,easy"
+   ]
+  },
+  "REJECT:WEEK_INFEASIBLE": {
+   "real": 1,
+   "unreal": 0,
+   "shortest": {
+    "i": 107,
+    "len": 2,
+    "source": {
+     "id": "d5-14w-40km-v60-C-sat~2",
+     "steps": [
+      {
+       "asOf": "2026-11-22",
+       "regime": "under",
+       "events": [
+        "fatigue@2026-11-21,2026-11-20"
+       ],
+       "locked": []
+      },
+      {
+       "asOf": "2026-11-29",
+       "regime": "pauseBreak",
+       "events": [
+        "pain8@2026-11-27"
+       ],
+       "locked": []
+      }
+     ]
+    },
+    "handoffAsOf": "2026-11-29",
+    "target": [
+     {
+      "asOf": "2026-11-29",
+      "regime": "over",
+      "events": [],
+      "locked": []
+     },
+     {
+      "asOf": "2026-12-04",
+      "regime": "plan",
+      "events": [
+       "pain7@2026-12-04",
+       "fatigue@2026-12-04,2026-12-03"
+      ],
+      "locked": [
+       "2026-12-14",
+       "2026-12-19",
+       "2026-12-21"
+      ]
+     }
+    ],
+    "detail": "Nedelja 6: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima."
+   },
+   "ex": [
+    "107/1: Nedelja 6: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima."
+   ]
+  },
+  "REJECT:PLAN_VIOLATES_POLICY": {
+   "real": 2,
+   "unreal": 0,
+   "shortest": {
+    "i": 126,
+    "len": 3,
+    "source": {
+     "id": "feel-d6-19w-70km-e450-A~119",
+     "steps": [
+      {
+       "asOf": "2027-05-22",
+       "regime": "plan",
+       "events": [
+        "fatigue@2027-05-22,2027-05-20"
+       ],
+       "locked": [
+        "2027-05-24",
+        "2027-05-25",
+        "2027-05-27"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2027-05-22",
+    "target": [
+     {
+      "asOf": "2027-05-22",
+      "regime": "pauseBreak",
+      "events": [
+       "slower:test5000@2027-05-19v27.3"
+      ],
+      "locked": [
+       "2027-06-01"
+      ]
+     },
+     {
+      "asOf": "2027-05-23",
+      "regime": "plan",
+      "events": [
+       "pain5@2027-05-21"
+      ],
+      "locked": [
+       "2027-05-27",
+       "2027-05-30",
+       "2027-06-01"
+      ]
+     },
+     {
+      "asOf": "2027-05-30",
+      "regime": "plan",
+      "events": [],
+      "locked": []
+     }
+    ],
+    "detail": "LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4)."
+   },
+   "ex": [
+    "126/2: LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4).",
+    "306/2: LIMITS: Trening na dan odmora (A4). | LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4)."
+   ]
+  },
+  "P37_MESOVITA_IZNAD_CILJA_BEZ_UPOZORENJA": {
+   "real": 1,
+   "unreal": 0,
+   "shortest": {
+    "i": 176,
+    "len": 2,
+    "source": {
+     "id": "d3-14w-35km-v35-B-sun~-28",
+     "steps": [
+      {
+       "asOf": "2026-10-13",
+       "regime": "pauseSilent",
+       "events": [
+        "faster:race21097.5@2026-10-12v36.6"
+       ],
+       "locked": []
+      },
+      {
+       "asOf": "2026-10-27",
+       "regime": "under",
+       "events": [],
+       "locked": []
+      }
+     ]
+    },
+    "handoffAsOf": "2026-10-27",
+    "target": [
+     {
+      "asOf": "2026-10-27",
+      "regime": "miss",
+      "events": [
+       "fatigue@2026-10-25,2026-10-24",
+       "faster:race10000@2026-10-27v39"
+      ],
+      "locked": [
+       "2026-11-14"
+      ]
+     },
+     {
+      "asOf": "2026-11-10",
+      "regime": "miss",
+      "events": [
+       "pain9@2026-11-09"
+      ],
+      "locked": [
+       "2026-11-14"
+      ]
+     }
+    ],
+    "detail": ""
+   },
+   "ex": []
+  },
+  "IDEMP:ODBIJENO:PLAN_VIOLATES_POLICY": {
+   "real": 1,
+   "unreal": 0,
+   "shortest": {
+    "i": 382,
+    "len": 3,
+    "source": {
+     "id": "feel-d5-19w-70km-e510-A~76",
+     "steps": [
+      {
+       "asOf": "2027-02-28",
+       "regime": "plan",
+       "events": [
+        "slower:race21097.5@2027-02-28v24.6"
+       ],
+       "locked": []
+      },
+      {
+       "asOf": "2027-03-07",
+       "regime": "pauseSilent",
+       "events": [],
+       "locked": [
+        "2027-03-15",
+        "2027-03-22",
+        "2027-03-25"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2027-03-07",
+    "target": [
+     {
+      "asOf": "2027-03-07",
+      "regime": "mixed",
+      "events": [],
+      "locked": [
+       "2027-03-14"
+      ]
+     },
+     {
+      "asOf": "2027-03-21",
+      "regime": "mixed",
+      "events": [],
+      "locked": [
+       "2027-03-25"
+      ]
+     },
+     {
+      "asOf": "2027-03-22",
+      "regime": "pauseBreak",
+      "events": [
+       "pain6@2027-03-20",
+       "pain6@2027-03-21"
+      ],
+      "locked": [
+       "2027-03-30",
+       "2027-04-03"
+      ]
+     }
+    ],
+    "detail": "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32)."
+   },
+   "ex": [
+    "382/2: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32)."
+   ]
+  },
+  "NEXT_DAY:ODBIJENO:PLAN_VIOLATES_POLICY": {
+   "real": 1,
+   "unreal": 0,
+   "shortest": {
+    "i": 382,
+    "len": 3,
+    "source": {
+     "id": "feel-d5-19w-70km-e510-A~76",
+     "steps": [
+      {
+       "asOf": "2027-02-28",
+       "regime": "plan",
+       "events": [
+        "slower:race21097.5@2027-02-28v24.6"
+       ],
+       "locked": []
+      },
+      {
+       "asOf": "2027-03-07",
+       "regime": "pauseSilent",
+       "events": [],
+       "locked": [
+        "2027-03-15",
+        "2027-03-22",
+        "2027-03-25"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2027-03-07",
+    "target": [
+     {
+      "asOf": "2027-03-07",
+      "regime": "mixed",
+      "events": [],
+      "locked": [
+       "2027-03-14"
+      ]
+     },
+     {
+      "asOf": "2027-03-21",
+      "regime": "mixed",
+      "events": [],
+      "locked": [
+       "2027-03-25"
+      ]
+     },
+     {
+      "asOf": "2027-03-22",
+      "regime": "pauseBreak",
+      "events": [
+       "pain6@2027-03-20",
+       "pain6@2027-03-21"
+      ],
+      "locked": [
+       "2027-03-30",
+       "2027-04-03"
+      ]
+     }
+    ],
+    "detail": "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32)."
+   },
+   "ex": [
+    "382/2: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32)."
+   ]
+  }
+ },
+ "seconds": 433.231
+}

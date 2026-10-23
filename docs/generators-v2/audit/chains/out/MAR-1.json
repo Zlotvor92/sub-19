@@ -1,0 +1,281 @@
+{
+ "dist": "MAR",
+ "seed": 20261023,
+ "from": 10000,
+ "to": 20000,
+ "chains": 10000,
+ "generated": 10000,
+ "genFailed": 0,
+ "real": 9407,
+ "steps": 38588,
+ "stepsReal": 36250,
+ "rejectedChains": 625,
+ "cls": {
+  "IDEMP:WEEKS": {
+   "real": 2134,
+   "unreal": 160,
+   "flowsReal": 3046,
+   "flowsUnreal": 231,
+   "shortest": {
+    "i": 10410,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-12-30",
+      "regime": "pauseSilent",
+      "events": [
+       "missed@2026-12-27"
+      ],
+      "locked": [
+       "2026-12-31"
+      ]
+     }
+    ],
+    "id": "feel-d4-16w-40km-e315-A~13",
+    "detail": "[UNDER_EXECUTION] ned 8 targetKm 34.2→32"
+   },
+   "ex": [
+    "10001/2: [UNDER_EXECUTION] ned 16 targetKm 61.2→49",
+    "10003/2: [PAIN+UNDER_EXECUTION] ned 7 targetKm 22.1→17.7",
+    "10003/3: [FATIGUE] ned 7 targetKm 22.1→17.7"
+   ]
+  },
+  "P37_MESOVITA_IZNAD_CILJA_BEZ_UPOZORENJA": {
+   "real": 41,
+   "unreal": 4,
+   "flowsReal": 41,
+   "flowsUnreal": 4,
+   "shortest": {
+    "i": 11071,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-03-21",
+      "regime": "over",
+      "events": [
+       "pain5@2027-03-19"
+      ],
+      "locked": [
+       "2027-03-29",
+       "2027-04-12"
+      ]
+     },
+     {
+      "asOf": "2027-04-04",
+      "regime": "pauseBreak",
+      "events": [],
+      "locked": [
+       "2027-04-10"
+      ]
+     }
+    ],
+    "id": "feel-d3-20w-45km-e270-C~90",
+    "detail": ""
+   },
+   "ex": []
+  },
+  "REJECT:PLAN_VIOLATES_POLICY": {
+   "real": 598,
+   "unreal": 27,
+   "flowsReal": 598,
+   "flowsUnreal": 27,
+   "shortest": {
+    "i": 10331,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-09-29",
+      "regime": "mixed",
+      "events": [
+       "faster:race21097.5@2026-09-29v37.2"
+      ],
+      "locked": [
+       "2026-10-05"
+      ]
+     }
+    ],
+    "id": "feel-d5-20w-85km-e405-C~-64",
+    "detail": "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17)."
+   },
+   "ex": [
+    "10031/4: LIMITS: Trening na dan odmora (A4).",
+    "10092/2: LIMITS: Trening na dan odmora (A4).",
+    "10102/5: LIMITS: Trening na dan odmora (A4)."
+   ]
+  },
+  "NEXT_DAY:CILJ_PAO>10%": {
+   "real": 134,
+   "unreal": 8,
+   "flowsReal": 146,
+   "flowsUnreal": 10,
+   "shortest": {
+    "i": 10350,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-11-14",
+      "regime": "plan",
+      "events": [
+       "pain5@2026-11-14",
+       "pain2@2026-11-14"
+      ],
+      "locked": [
+       "2026-11-27"
+      ]
+     }
+    ],
+    "id": "d6-14w-105km-v60-B-sat~-23",
+    "detail": "[PAIN] ned 8 70.2→60.2"
+   },
+   "ex": [
+    "10085/4: [NEW_RESULT+PAIN] ned 9 105.6→88.2, ned 10 114.5→97, ned 11 119.5→106.7",
+    "10191/1: [PAIN+UNDER_EXECUTION] ned 11 68→53.1, ned 12 54.4→42.5, ned 13 72.1→58.4",
+    "10350/0: [PAIN] ned 8 70.2→60.2"
+   ]
+  },
+  "BUDUCA_NEDELJA<40%CILJA": {
+   "real": 277,
+   "unreal": 11,
+   "flowsReal": 308,
+   "flowsUnreal": 12,
+   "shortest": {
+    "i": 10120,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-03-23",
+      "regime": "under",
+      "events": [
+       "pain8@2027-03-22"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "d6-16w-105km-v40-C-sun~58",
+    "detail": "ned 13 27.6/120 specific long,easy,easy"
+   },
+   "ex": [
+    "10120/0: ned 13 27.6/120 specific long,easy,easy",
+    "10128/4: ned 3 17.7/62.4 base easy,easy,easy",
+    "10160/1: ned 5 13.6/41.1 base long,easy"
+   ]
+  },
+  "INV:taper > poslednja izgradnja": {
+   "real": 3,
+   "unreal": 0,
+   "flowsReal": 3,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 15841,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-10-08",
+      "regime": "pauseBreak",
+      "events": [
+       "pain4@2026-10-06"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2026-10-15",
+      "regime": "pauseSilent",
+      "events": [
+       "fatigue@2026-10-08,2026-10-07",
+       "pain5@2026-10-14"
+      ],
+      "locked": [
+       "2026-10-17",
+       "2026-10-26",
+       "2026-11-02"
+      ]
+     }
+    ],
+    "id": "feel-d5-13w-80km-e315-C~-65",
+    "detail": "taper > poslednja izgradnja"
+   },
+   "ex": [
+    "10659/2: taper > poslednja izgradnja",
+    "14202/2: taper > poslednja izgradnja",
+    "15841/1: taper > poslednja izgradnja"
+   ]
+  },
+  "IDEMP:ODBIJENO:PLAN_VIOLATES_POLICY": {
+   "real": 31,
+   "unreal": 0,
+   "flowsReal": 31,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 10830,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-11-09",
+      "regime": "mixed",
+      "events": [
+       "pain7@2026-11-08",
+       "slower:race21097.5@2026-11-08v23.8"
+      ],
+      "locked": [
+       "2026-11-17"
+      ]
+     }
+    ],
+    "id": "feel-d6-14w-95km-e510-B~-3",
+    "detail": "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17)."
+   },
+   "ex": [
+    "10830/0: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+    "10883/0: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+    "11152/1: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17)."
+   ]
+  },
+  "NEXT_DAY:ODBIJENO:PLAN_VIOLATES_POLICY": {
+   "real": 28,
+   "unreal": 0,
+   "flowsReal": 28,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 10830,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-11-09",
+      "regime": "mixed",
+      "events": [
+       "pain7@2026-11-08",
+       "slower:race21097.5@2026-11-08v23.8"
+      ],
+      "locked": [
+       "2026-11-17"
+      ]
+     }
+    ],
+    "id": "feel-d6-14w-95km-e510-B~-3",
+    "detail": "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17)."
+   },
+   "ex": [
+    "10830/0: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+    "10883/0: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).",
+    "11152/1: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17)."
+   ]
+  }
+ },
+ "seconds": 2806.927
+}

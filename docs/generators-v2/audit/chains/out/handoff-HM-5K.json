@@ -1,0 +1,264 @@
+{
+ "pair": "HM>5K",
+ "seed": 20261023,
+ "from": 0,
+ "to": 600,
+ "chains": 600,
+ "sourceOk": 2730,
+ "sourceRejected": 22,
+ "handoffCalls": 2730,
+ "handoffOk": 457,
+ "handoffErr": {
+  "Trenutni obim mora biti #–# km nedeljno za # dana.": 224,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #. Bez pouzdanog rezultata (nema ga ili je stariji": 122,
+  "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno; zadato #. Bez pouz": 80,
+  "Rezultat #: distanca mora biti #, # ili # m.": 65,
+  "Bez pouzdanog rezultata (nema ga ili je stariji od # nedelja) potreban je uobičajen lagan tempo (typ": 251,
+  "Rezultat #: distanca mora biti #, # ili # m. Rezultat #: distanca mora biti #, # ili # m.": 3,
+  "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno za # dana. Bez pouzda": 88,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni obim mora biti #–# km nedeljno. Bez po": 93,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #.": 212,
+  "VDOT rezultata (#) mora biti #–#.": 55,
+  "Trenutni obim mora biti #–# km nedeljno za # dana. Bez pouzdanog rezultata (nema ga ili je stariji o": 120,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni obim mora biti #–# km nedeljno.": 155,
+  "Početnik: najviše # dana trčanja nedeljno; zadato #.": 51,
+  "Plan mora trajati #–# nedelja; sada #. Bez pouzdanog rezultata (nema ga ili je stariji od # nedelja)": 150,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni obim mora biti #–# km nedeljno. VDOT r": 25,
+  "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno za # dana.": 73,
+  "Plan mora trajati #–# nedelja; sada #.": 148,
+  "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni": 125,
+  "Trenutni obim mora biti #–# km nedeljno za # dana. Rezultat mora biti sa #K, #K ili #K.": 6,
+  "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno; zadato #.": 58,
+  "Trenutni obim mora biti #–# km nedeljno za # dana. VDOT rezultata (#) mora biti #–#.": 35,
+  "Početnik: najviše # dana trčanja nedeljno; zadato #. Bez pouzdanog rezultata (nema ga ili je stariji": 13,
+  "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno; zadato #. VDOT rez": 5,
+  "Plan mora trajati #–# nedelja; sada #. VDOT rezultata (#) mora biti #–#.": 24,
+  "Plan mora trajati #–# nedelja; sada #. Početnik: najviše # dana trčanja nedeljno; zadato #.": 18,
+  "Rezultat mora biti sa #K, #K ili #K.": 16,
+  "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno za # dana. Rezultat m": 1,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #. VDOT rezultata (#) mora biti #–#.": 28,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #. Trenutni obim mora biti #–# km nedeljno. Rezult": 5,
+  "Plan mora trajati #–# nedelja; sada #. Trenutni obim mora biti #–# km nedeljno za # dana. VDOT rezul": 8,
+  "Podržano je #, #, # dana trčanja nedeljno; zadato #. Rezultat mora biti sa #K, #K ili #K.": 3,
+  "Plan mora trajati #–# nedelja; sada #. Početnik: najviše # dana trčanja nedeljno; zadato #. Bez pouz": 6,
+  "Do trke nema cele nedelje posle dana predaje.": 1,
+  "Plan mora trajati #–# nedelja; sada #. Rezultat mora biti sa #K, #K ili #K.": 3,
+  "Plan mora trajati #–# nedelja; sada #. Podržano je #, #, # dana trčanja nedeljno; zadato #. Rezultat": 2,
+  "Početnik: najviše # dana trčanja nedeljno; zadato #. Rezultat mora biti sa #K, #K ili #K.": 1
+ },
+ "handoffErrEx": [
+  "0 d5-16w-70km-v40-C-sat~-50 asOf 2026-11-12: Trenutni obim mora biti 25–65 km nedeljno za 5 dana.",
+  "8 d6-18w-60km-v35-C-sat~67 asOf 2027-02-02: Podržano je 3, 4, 5 dana trčanja nedeljno; zadato 6. Bez pouzdanog rezultata (nema ga ili je stariji od 12 nedelja) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm).",
+  "9 d6-19w-70km-v30-C-sun~-41 asOf 2026-12-29: Plan mora trajati 6–16 nedelja; sada 4. Podržano je 3, 4, 5 dana trčanja nedeljno; zadato 6. Bez pouzdanog rezultata (nema ga ili je stariji od 12 nedelja) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm).",
+  "10 f-d5-13w-65km-e315-B~17 asOf 2026-11-21: Trenutni obim mora biti 25–65 km nedeljno za 5 dana.",
+  "11 f-d5-12w-75km-e450-B~133 asOf 2027-03-19: Rezultat 1: distanca mora biti 3000, 5000 ili 10000 m.",
+  "12 d5-17w-55km-v55-C-sat~44 asOf 2027-02-17: Bez pouzdanog rezultata (nema ga ili je stariji od 12 nedelja) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm)."
+ ],
+ "targetSteps": 931,
+ "real": 449,
+ "cls": {
+  "IDEMP:WEEKS": {
+   "real": 21,
+   "unreal": 0,
+   "shortest": {
+    "i": 155,
+    "len": 2,
+    "source": {
+     "id": "d5-17w-60km-v60-A-sat~41",
+     "steps": [
+      {
+       "asOf": "2027-01-11",
+       "regime": "over",
+       "events": [
+        "missed@2027-01-07"
+       ],
+       "locked": [
+        "2027-01-17",
+        "2027-01-23"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2027-01-11",
+    "target": [
+     {
+      "asOf": "2027-01-11",
+      "regime": "under",
+      "events": [
+       "test:test3000@2027-01-09v61"
+      ],
+      "locked": [
+       "2027-01-23"
+      ]
+     },
+     {
+      "asOf": "2027-01-25",
+      "regime": "under",
+      "events": [
+       "slower:race5000@2027-01-22v58.2",
+       "pain2@2027-01-24"
+      ],
+      "locked": [
+       "2027-02-06"
+      ]
+     }
+    ],
+    "detail": "[NEW_RESULT+UNDER_EXECUTION] ned 3 targetKm 52→41.6"
+   },
+   "ex": [
+    "14/2: [PAIN] ned 3 notes/ostalo",
+    "38/2: [PAIN+UNDER_EXECUTION] ned 2 targetKm 20.8→16.6",
+    "155/1: [NEW_RESULT+UNDER_EXECUTION] ned 3 targetKm 52→41.6"
+   ]
+  },
+  "BUDUCA_NEDELJA<40%CILJA": {
+   "real": 9,
+   "unreal": 0,
+   "shortest": {
+    "i": 16,
+    "len": 1,
+    "source": {
+     "id": "f-d4-19w-30km-e450-A~137",
+     "steps": [
+      {
+       "asOf": "2027-06-16",
+       "regime": "under",
+       "events": [
+        "done@2027-06-13"
+       ],
+       "locked": []
+      },
+      {
+       "asOf": "2027-06-17",
+       "regime": "over",
+       "events": [
+        "pain7@2027-06-15"
+       ],
+       "locked": [
+        "2027-06-26"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2027-06-17",
+    "target": [
+     {
+      "asOf": "2027-06-17",
+      "regime": "under",
+      "events": [
+       "pain8@2027-06-17"
+      ],
+      "locked": [
+       "2027-07-03"
+      ]
+     }
+    ],
+    "detail": "ned 1 9.9/32.5 base easy,easy"
+   },
+   "ex": [
+    "16/0: ned 1 9.9/32.5 base easy,easy",
+    "62/0: ned 1 12.4/41 base easy,easy",
+    "103/0: ned 1 9.6/25 base easy,easy"
+   ]
+  },
+  "REJECT:VALIDATOR:QUALITY_REPEAT": {
+   "real": 1,
+   "unreal": 0,
+   "shortest": {
+    "i": 104,
+    "len": 2,
+    "source": {
+     "id": "d5-11w-35km-v40-B-sat~-8",
+     "steps": [
+      {
+       "asOf": "2026-11-13",
+       "regime": "pauseSilent",
+       "events": [],
+       "locked": [
+        "2026-12-02"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2026-11-13",
+    "target": [
+     {
+      "asOf": "2026-11-13",
+      "regime": "plan",
+      "events": [
+       "test:test3000@2026-11-10v41.6"
+      ],
+      "locked": [
+       "2026-11-16",
+       "2026-11-18",
+       "2026-11-22"
+      ]
+     },
+     {
+      "asOf": "2026-11-27",
+      "regime": "over",
+      "events": [
+       "faster:test3000@2026-11-26v43.2"
+      ],
+      "locked": [
+       "2026-12-16"
+      ]
+     }
+    ],
+    "detail": "Isti par kvaliteta kao nedelja 4."
+   },
+   "ex": [
+    "104/1: Isti par kvaliteta kao nedelja 4."
+   ]
+  },
+  "REJECT:VALIDATOR:LIMITS": {
+   "real": 5,
+   "unreal": 0,
+   "shortest": {
+    "i": 390,
+    "len": 2,
+    "source": {
+     "id": "f-d5-18w-55km-e315-B~-56",
+     "steps": [
+      {
+       "asOf": "2026-10-17",
+       "regime": "miss",
+       "events": [],
+       "locked": [
+        "2026-10-19",
+        "2026-10-23"
+       ]
+      }
+     ]
+    },
+    "handoffAsOf": "2026-10-17",
+    "target": [
+     {
+      "asOf": "2026-10-17",
+      "regime": "miss",
+      "events": [
+       "pain5@2026-10-17"
+      ],
+      "locked": [
+       "2026-10-19",
+       "2026-11-04"
+      ]
+     },
+     {
+      "asOf": "2026-10-19",
+      "regime": "miss",
+      "events": [],
+      "locked": []
+     }
+    ],
+    "detail": "Ubrzanja u periodu bola."
+   },
+   "ex": [
+    "223/2: Trening na dan odmora (bol ≥ 7). | Ubrzanja u periodu bola.",
+    "259/2: Ubrzanja u periodu bola.",
+    "306/2: Trening na dan odmora (bol ≥ 7)."
+   ]
+  }
+ },
+ "seconds": 582.402
+}
