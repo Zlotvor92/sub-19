@@ -100,7 +100,7 @@ export function EntryForm(p: EntryFormProps) {
           id={fid('sec')}
           type="text"
           inputMode="numeric"
-          placeholder="4233 = 42:33"
+          placeholder="npr. 42:33"
           {...bind('sec')}
         />
       </div>

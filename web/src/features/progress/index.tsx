@@ -252,7 +252,7 @@ export default function ProgressPage() {
         </Section>
       )}
 
-      {records.length ? (
+      {records.length && !fresh ? (
         <Section title="Rekordi">
           <dl className="facts">
             {records.map((r) => (

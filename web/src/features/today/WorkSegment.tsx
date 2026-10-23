@@ -93,7 +93,7 @@ export function WorkSegment(p: WorkSegmentProps) {
         </div>
         <div className="wseg-info">
           <div className="wseg-l">
-            {p.label} · Q {fmtNum(p.q, 1)} km
+            {p.label} · rad {fmtNum(p.q, 1)} km
           </div>
           <div className="wseg-plan">
             plan <b>{fmtClock(p.planPace)} /km</b>
