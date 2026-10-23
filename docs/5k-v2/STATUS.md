@@ -229,5 +229,5 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Merenje: M1 1 090 → 0, M5 308 → 0, M6 352 → 0; fuzz F4 bez upozorenja 943 → 0 (trećina); planovi sa planirano < cilj
   4 → 2 266; otisci regresije ponovo prema b9c4728 (`segment10.*-b9c4728.json`, `fixes/5K/fixture10.ts`).
 - Pun nivo 5K 790/790; run-all 5K 0 nečistih; lanci odbijeni 1 → 0, IDEMP 40 → 34; sabotaže 11/11; E2E 3/3. Van foldera:
-  byteSame 10K/HM/MAR redovi „5K v2“ i `fiveKV2Flow` oznaka — patch `artifacts/segment10/byteSame-5Kv2.patch` čeka organizatora.
+  byteSame 10K/HM/MAR redovi „5K v2“ i `fiveKV2Flow` oznaka — patch `artifacts/segment10/byteSame-5Kv2.patch` primenjen (odobrenje organizatora).
 - Izveštaj: `reports/SEGMENT-10-IMPLEMENTATION.md`.
