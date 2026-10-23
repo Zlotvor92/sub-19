@@ -76,8 +76,11 @@ describe('T3: posle novog starta taper zadržava 1 kvalitet, trkačka oštrenje'
     const asOf = g.weeks[7]!.endDate;
     const p = ok(adaptMarathonV2(g, factsOf(g, 'pause35', asOf), asOf));
     expect(p.adaptation!.steps.at(-1)!.restart).toBe(true);
-    for (const w of p.weeks.filter((x) => x.phase === 'taper'))
+    for (const w of p.weeks.filter((x) => x.phase === 'taper')) {
       expect(w.days.filter((d) => d.workout.dose?.zone === 'MP').length, `ned ${w.index}`).toBe(1);
+      expect(w.days.filter((d) => d.workout.kind === 'quality').length, `ned ${w.index}`).toBe(1);
+      expect(w.notes.some((n) => n.includes('posle novog starta: jedan kvalitet MP'))).toBe(true);
+    }
     expect(p.weeks.at(-1)!.days.some((d) => d.role === 'sharpener')).toBe(true);
   });
 });
@@ -135,6 +138,20 @@ describe('Lanci: C3 (zaštićen test + nov rezultat), Z8 (bol vezan za zapise)',
     );
     expect(
       p.weeks
+        .flatMap((w) => w.days)
+        .filter((d) => d.role === 'test')
+        .map((d) => d.date)
+    ).toEqual([td]);
+  });
+  it('C3 (lanac i=175): bol + zaključan dan testa, ista adaptacija ponovo → prihvaćeno, jedan test', () => {
+    const g = planOf(feelInputs().find((c) => c.id === 'feel-d3-17w-40km-e450-C')!.input);
+    const td = g.weeks.flatMap((w) => w.days).find((d) => d.role === 'test')!.date;
+    const asOf = addDays(td, -3);
+    const f = { ...painFacts(asOf, 9), lockedDayIds: [td] };
+    const a1 = ok(adaptMarathonV2(g, f, asOf));
+    const a2 = ok(adaptMarathonV2(a1, f, asOf));
+    expect(
+      a2.weeks
         .flatMap((w) => w.days)
         .filter((d) => d.role === 'test')
         .map((d) => d.date)

@@ -234,12 +234,14 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     for (const d of w.days)
       if (d.role === 'easy' && d.workout.km > long.workout.km + 1e-9)
         no(`dugi < lagan ned ${w.index}`);
-    // MAR-11 (T1): izgradnja — lagan ≤ 0,8 × dugi, ≥ 5 km i ≥ 20 min (nezavisno od lengths.ts).
+    // MAR-11 (T1): izgradnja — lagan ≤ 0,8 × dugi (kad 0,8 × dugi ≥ 5 km; inače ≤ dugi), ≥ 5 km i ≥ 20 min
+    // (nezavisno od lengths.ts).
     if (isSteady(w))
       for (const d of w.days)
         if (
           d.role === 'easy' &&
-          (to10(d.workout.km) > Math.floor(0.8 * to10(long.workout.km) + 1e-9) ||
+          ((to10(d.workout.km) > Math.floor(0.8 * to10(long.workout.km) + 1e-9) &&
+            Math.floor(0.8 * to10(long.workout.km) + 1e-9) >= 50) ||
             d.workout.km + 1e-9 < 5 ||
             d.workout.sec + 1 < 1200)
         )

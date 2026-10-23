@@ -1,0 +1,289 @@
+{
+ "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-11/sabotage-11.json",
+ "head": "9f60257",
+ "level": "brz",
+ "bail": true,
+ "parallel": 2,
+ "vitestArgs": [],
+ "durationS": 26.4,
+ "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+ "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "11-T1 lagan bez plafona 0,8 × dugi",
+   "files": [
+    "src/domain/generators/marathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "T1: lagan ≤ 0,8 × dugi u izgradnji; najkraći max(5 km, 20 min) > 4 dana, 45 km, VDOT 40: svaka nedelja izgradnje lagan ≤ 0,8 × dugi; cilj spušten uz CAPACITY_LIMITED",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 15 km van granica nedelje izgradnje (≤ 0.8 × dugi 18 km, ≥ 5 km i 20 min).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 19.2 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 20.9 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 22.2 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":10},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 20.8 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":11}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "64aff6ff10c30d1f8143cfcdbe16d031c8182d78030f8f4dc390f4cfea6924c2",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.9
+  },
+  {
+   "index": 2,
+   "name": "11-T2 MP tapera se ne skraćuje",
+   "files": [
+    "src/domain/generators/marathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "T2: u taperu dan MP ne traje duže od dugog iste nedelje > 3 dana, 30 km, VDOT 30 (1b nalaz 3): MP N−1 skraćen do trajanja dugog, doza ne raste",
+    "message": "AssertionError: ned 11: expected 4200 to be less than or equal to 3848"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "79f733565bccd47b288bfd5f20498818faa477e250af18adb0d09d9bc20f539e",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.5
+  },
+  {
+   "index": 3,
+   "name": "11-T3 taper posle novog starta kao bez pauze",
+   "files": [
+    "src/domain/generators/marathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "T3: posle novog starta taper zadržava 1 kvalitet, trkačka oštrenje > 4 d, 50 km, VDOT 45, pauza 35 do kraja ned 8: obe nedelje tapera MP, trkačka 2 × 2000 m MP",
+    "message": "AssertionError: ned 16: expected 2 to be 1 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "ae3bf8bac41976e69a453e14c451815645b58609271fcdc975d56c7c13b4176f",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.5
+  },
+  {
+   "index": 4,
+   "name": "11-T3 trkačka posle novog starta bez oštrenja",
+   "files": [
+    "src/domain/generators/marathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "T3: posle novog starta taper zadržava 1 kvalitet, trkačka oštrenje > 4 d, 50 km, VDOT 45, pauza 35 do kraja ned 8: obe nedelje tapera MP, trkačka 2 × 2000 m MP",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "3fe98562e71536104ea100f7fbc073b2c2925ed4277f5e2c1643d89f59c4ec45",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.5
+  },
+  {
+   "index": 5,
+   "name": "11-C6 bol ne vraća progresiju doze",
+   "files": [
+    "src/domain/generators/marathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "T6 C6: posle bola progresija doze kreće ispočetka od r + 1 > doseRestartWeeks sadrži r + 1; plan sa bolom 5 u ned 6 prolazi validator",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "fcb1a7d50518258a2ce06b9f4738286ce2b4b3c71664ab4f58f99fc585665224",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3
+  },
+  {
+   "index": 6,
+   "name": "11-C11 pouka 35 ne važi u nedelji testa",
+   "files": [
+    "src/domain/generators/marathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "T6 C11: pouka 35 i u nedelji testa > po osećaju 4 d, 50 km, skorašnji najduži 8 km: nedelja testa sa danom dužim od dugog — Q2 lagan, test ostaje",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_DAYS: Dan kvaliteta duži od dugog uz dva kvaliteta, a nedelja sa jednim je izvodljiva — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":3}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "fac66a0ae419278106d1bc5f7e0bbe454eb38f5dca3a8bdb33468a646f3e0b29",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4
+  },
+  {
+   "index": 7,
+   "name": "11-T7 skorašnji najduži bez provere obima",
+   "files": [
+    "src/domain/generators/marathon/v2/input.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "T7: skorašnji najduži > trenutni nedeljni obim → odbijanje > 40 km nedeljno, skorašnji najduži 41 km → RECENT_LONG_INVALID sa „proveri unos\"",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "7359027d1dc32c3af4ddddc1c5aef6514aac9338d9cd541de2b060d777bc0315",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.1
+  },
+  {
+   "index": 8,
+   "name": "11-C3 zaštićen test se broji kao test plana",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "Lanci: C3 (zaštićen test + nov rezultat), Z8 (bol vezan za zapise) > C3 (lanac i=18): plan po osećaju, zaključan dan testa i nov rezultat → prihvaćeno, jedan test",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "ca5c12c0f301aace0edd5488310c1efe393dc49c40fd525cc99129becd74ca7f",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.3
+  },
+  {
+   "index": 9,
+   "name": "11-Z8 bol ne vidi raniji korak istog zapisa",
+   "files": [
+    "src/domain/generators/marathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "Lanci: C3 (zaštićen test + nov rezultat), Z8 (bol vezan za zapise) > Z8: ista adaptacija bola dvaput i „sutra bez novih zapisa\" ne seku cilj ponovo",
+    "message": "AssertionError: expected [ 50, 53, 56.2, 45, 59.6, 63.2, …(12) ] to deeply equal [ 50, 53, 56.2, 45, 59.6, 63.2, …(12) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "1afca9219a6c782d4970c751be96ac74336864544852b6ee5eac8627958c8c37",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5
+  },
+  {
+   "index": 10,
+   "name": "11-C8 bez upozorenja kad je vlasnik pauza",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "C8: mešovita nedelja čiji je vlasnik pravilo pauze — upozorenje kad je planirano > cilj > pauza 14 dana (potpuna pokrivenost) + zaključan dugi 23,6 km → MIXED_WEEK_OVER za tu nedelju",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "95895710a4d4ed3c00b5d8a47c0ac4444f65e64090b38681f245860cd3bde33b",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.9
+  },
+  {
+   "index": 11,
+   "name": "11-C3b okviri pre koraka bez zaštićenih dana",
+   "files": [
+    "src/domain/generators/marathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "Lanci: C3 (zaštićen test + nov rezultat), Z8 (bol vezan za zapise) > C3 (lanac i=175): bol + zaključan dan testa, ista adaptacija ponovo → prihvaćeno, jedan test",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "hashSabotaged": "ee521ba8362ab369d6f3e6808660b79e8561847aa8daa936fc8554ba9c430d4d",
+   "hashAfter": "ce6dd3871bc978f5f9cc83406b65d01ac3c825fc59752450a4e7f3e756060c9a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.9
+  }
+ ]
+}

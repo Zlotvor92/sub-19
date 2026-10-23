@@ -559,7 +559,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       for (const d of w.days)
         if (d.role === 'easy' && !protectedDay(d)) {
           const e10 = to10(d.workout.km);
-          if (e10 > easyCap10(to10(long0.workout.km)) || e10 < easyFloor10(pw(w)))
+          const f10 = easyFloor10(pw(w));
+          if (e10 > easyCap10(to10(long0.workout.km), f10) || e10 < f10)
             err(
               'EASY_LONG_SHARE',
               `Lagan ${d.workout.km} km van granica nedelje izgradnje (≤ ${P.lengths.easyLongShare} × dugi ${long0.workout.km} km, ≥ ${P.lengths.easyMinKm} km i ${P.lengths.easyMinSec / 60} min).`,

@@ -263,7 +263,9 @@ export function framesFor(
   // MAR-07c (pouke 23, 36): dan testa plana pre ovog koraka ≤ asOf → test je zaštićen (upisan); rasterećenje koje
   // ovaj korak stavi na nedelju testa pomera dan testa okvira (Q1 → T slot) posle asOf, a to bi bio drugi test.
   // Okvir tada nema test; nema ni premeštanja.
-  const before = framesFor(base, pattern, runDays, raceDate, pace, steps.slice(0, -1));
+  // MAR-11 (C3, pouka 38): okviri pre ovog koraka sa istim zaštićenim danima — zaštićen test iz ranijeg koraka se
+  // ni tamo ne premešta (inače ponovljen korak vidi premešten test kao drugi).
+  const before = framesFor(base, pattern, runDays, raceDate, pace, steps.slice(0, -1), null, kept);
   const tw = before.find((f) => f.test);
   if (tw && mustDay(testDateOf(tw, pattern)) <= mustDay(last))
     frames = frames.map((f) =>

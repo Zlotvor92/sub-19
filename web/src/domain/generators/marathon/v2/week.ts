@@ -533,7 +533,8 @@ export function buildWeek(
   mode: QualityMode = 'rule',
   jump10: number | null = null,
   drop = 0,
-  under = false
+  under = false,
+  relaxT1 = false
 ): BuiltWeek | null {
   const p = ctx.paces;
   const pat = ctx.pattern;
@@ -852,7 +853,7 @@ export function buildWeek(
     dates = dates.slice(0, dates.length - drop);
   }
   const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
-  let len = buildLengths(target10, q100, dates.length, rule, p, jump10, under);
+  let len = buildLengths(target10, q100, dates.length, rule, p, jump10, under, relaxT1);
   if (!len) return null;
   const notes: string[] = oneLow
     ? [

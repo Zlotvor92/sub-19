@@ -145,14 +145,15 @@ function withEasy(
   target10: number,
   rule: DayRule,
   t1: Paces | null = null,
-  under = false
+  under = false,
+  relax = false
 ): Lengths | null {
   const min10 = t1 ? easyFloor10(t1) : EASY_MIN10;
   const top = Math.min(cap10, jump10 ?? Infinity);
   const long10 = Math.min(top, Math.floor((rest100 - n * min10 * 10) / 10));
   if (long10 < min10) return null;
   let easy10 = splitEasy(easyTotal10(rest100 - long10 * 10, target10, rule), n);
-  const max10 = t1 ? easyCap10(long10) : long10;
+  const max10 = t1 ? easyCap10(long10, min10, relax) : long10;
   const jumpBound = jump10 !== null && jump10 < cap10 && long10 === jump10;
   if (easy10.some((e) => e < min10)) return null;
   if (easy10.some((e) => e > max10)) {
@@ -164,9 +165,13 @@ function withEasy(
   return { long10, easy10, jumpBound };
 }
 
-/** MAR-11 (T1): u nedelji izgradnje svaki lagan ≤ 0,8 × dugi iste nedelje [0,1 km, naniže]. */
-export function easyCap10(long10: number): number {
-  return Math.floor(P.lengths.easyLongShare * long10 + EPS);
+/** MAR-11 (T1): u nedelji izgradnje svaki lagan ≤ 0,8 × dugi iste nedelje [0,1 km, naniže]. Kad je 0,8 × dugi kraći
+    od najkraćeg laganog (`floor10`; dugi < 6,25 km, npr. plafon skoka posle pauze) granice su nespojive — tada (`relax`;
+    konstruktor tek kao poslednji pokušaj, generate.ts) važi lagan ≤ dugi (pouka 2) kao pre T1 (otvoreno pitanje
+    organizatoru, izveštaj MAR-11). JEDNA funkcija za konstruktor (withEasy) i validator (EASY_LONG_SHARE). */
+export function easyCap10(long10: number, floor10: number, relax = true): number {
+  const cap = Math.floor(P.lengths.easyLongShare * long10 + EPS);
+  return cap >= floor10 || !relax ? cap : long10;
 }
 
 /** MAR-11 (T1): najkraći lagan nedelje izgradnje [0,1 km] = max(5 km, 20 min laganim tempom — tempo laganog dana,
@@ -186,7 +191,8 @@ export function buildLengths(
   rule: DayRule,
   p: Paces,
   jump10: number | null = null,
-  under = false
+  under = false,
+  relax = false
 ): Lengths | null {
   return withEasy(
     target10 * 10 - quality100,
@@ -196,7 +202,8 @@ export function buildLengths(
     target10,
     rule,
     p,
-    under
+    under,
+    relax
   );
 }
 

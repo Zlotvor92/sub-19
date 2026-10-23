@@ -257,8 +257,22 @@ export function construct(
     // danima (lagani u granicama 0,8 × dugi i ≥ 5 km / 20 min ne nose cilj).
     let drop = 0;
     let under = false;
+    let relaxT1 = false;
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, taper, mode, jump10, drop, under);
+      buildWeek(
+        ctx,
+        frame,
+        t10,
+        quality,
+        lastLong10,
+        longest10,
+        taper,
+        mode,
+        jump10,
+        drop,
+        under,
+        relaxT1
+      );
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts 'relax'): M11 ispred M12 u izgradnji, zona tapera koja ne staje u plafon otpada. Segment 04
     // (A9): pa jedan kvalitet doze rasterećenja, pa bez kvaliteta; ograničenje kvaliteta nedelje (A3/A4)
@@ -298,15 +312,25 @@ export function construct(
     }
     // Pa (i dalje ništa) lagani na 0,8 × dugi uz planirano < cilj, najmanje dana odmora.
     const maxDrop = ctx.pattern.easy.length;
-    const tries: [number, boolean][] =
+    // Poslednje: kad je 0,8 × dugi kraći od najkraćeg laganog (granice T1 nespojive), lagan ≤ dugi (lengths.easyCap10).
+    const tries: [number, boolean, boolean][] =
       taper === null && !frame.deload
         ? [
-            ...Array.from({ length: maxDrop }, (_, i): [number, boolean] => [i + 1, false]),
-            ...Array.from({ length: maxDrop + 1 }, (_, i): [number, boolean] => [i, true])
+            ...Array.from({ length: maxDrop }, (_, i): [number, boolean, boolean] => [
+              i + 1,
+              false,
+              false
+            ]),
+            ...Array.from({ length: maxDrop + 1 }, (_, i): [number, boolean, boolean] => [
+              i,
+              true,
+              false
+            ]),
+            [0, false, true]
           ]
         : [];
     for (const t of fit ? [] : tries) {
-      [drop, under] = t;
+      [drop, under, relaxT1] = t;
       for (const m of modes) {
         fit = fit10(
           nominal,
@@ -323,7 +347,7 @@ export function construct(
       }
       if (fit) break;
     }
-    if (!fit) [drop, under] = [0, false];
+    if (!fit) [drop, under, relaxT1] = [0, false, false];
     // M13a (pouka 6): RECENT_LONG_TOO_SHORT samo kad je uzrok zaista skok dugog iz ulaza — isti plan bez
     // skorašnjeg najdužeg trka ne zastaje na ovoj ni ranijoj nedelji; inače WEEK_INFEASIBLE (MAR-04b: umor pre
     // starta je odbijan sa ovom porukom, a uzrok je bio nedostatak reference rasterećenja).

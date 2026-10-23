@@ -22,7 +22,7 @@ const r = generateMarathonV2({
   recentLongRunKm: 18, // opciono, 5–42 km: skok dugog ≤ 10 % (M13a)
   // bez rezultata: easyPaceSecPerKm: 360 (po osećaju, M16); experience: 'beginner' (M17)
 });
-// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.6.0', paceBasis, faza nedelje, upozorenja)
+// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.7.0', paceBasis, faza nedelje, upozorenja)
 // !r.ok → r.reasons (kod + poruka sa preporukom: npr. PLAN_TOO_SHORT → polumaraton)
 const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → { ok, plan, changes, reasons } ili odbijanje
 // a.ok → a.newLimits (pouka 20: nova ograničenja poslednjeg koraka, steps.newLimits)
@@ -41,7 +41,14 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
   `segment01.baseline.json` + `segment02.regression-01.json`.
 - Sabotaže: `node scripts/sabotage.mjs ../docs/marathon-v2/artifacts/segment-03/sabotage.json`.
 
-## Trenutno stanje (marathon-v2.6.1)
+## Trenutno stanje (marathon-v2.7.0)
+
+- MAR-11 (krug T, trenerska pravila + dopuna lanaca): T1 lagan ≤ 0,8 × dugi u izgradnji (najkraći max(5 km, 20 min);
+  ostatak → niži cilj / lagan dan odmora / planirano < cilj, dugi se ne produžava); T2 dan MP tapera ≤ dugi (MP blok
+  skraćen, najmanje 1,0 km); T3 posle novog starta taper 1 kvalitet (MP ≈ 60 % poslednje posle povratka) i oštrenje
+  u trkačkoj; T6 C6 doza ispočetka od r + 1 posle bola, C11 pouka 35 i u nedelji testa i u taperu; T7 skorašnji
+  najduži > obim → odbijanje; C3 zaštićen test, Z8 bol vezan za zapise, C8 MIXED_WEEK_OVER kad je vlasnik pauza.
+  KNOWN_VERSIONS ∪ 2.6.1. Otisci: `segment11.stable-b9c4728.json`. Izveštaj `reports/SEGMENT-11-IMPLEMENTATION.md`.
 
 - MAR-10 (lanci): Z7 manjak izvršenja vezan za zapise (step.underFrom, kao umor); Z6 LIMITS preskače zaštićen dan
   (protectedDay); Z4 vraćanje revizije = spoj → validatePlan + sledeća adaptacija (neposredno poništavanje prolazi).
@@ -125,4 +132,9 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
 - Polazni SHA `81e4d1d`; izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md` § MAR-10; `artifacts/segment-09/mar10/`,
   `artifacts/segment-09/sabotage-10.json` (3/3).
 
+
+## Segment MAR-11 (marathon-v2.7.0)
+
+- Polazni SHA `b9c4728`; izveštaj `reports/SEGMENT-11-IMPLEMENTATION.md`; `artifacts/segment-11/` (sabotaže 10/10,
+  classify.ts, grid.ts, vol.ts, merenja).
 ## Sledeće: 3g (UI predaje), 10K v2 kao cilj (3d).
