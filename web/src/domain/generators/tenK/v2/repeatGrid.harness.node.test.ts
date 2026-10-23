@@ -39,7 +39,6 @@ import {
   factsOf,
   painFacts,
   planHash06c,
-  dump08,
   START0_SCENARIOS,
   start0AsOf,
   mark07
@@ -346,7 +345,6 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             for (const v of adaptInvariants(p0, r.plan, at, facts)) bad.push(`${key}: ${v}`);
             const old = START0.hashes[idx.get(b.id)! * START0_SCENARIOS.length + j]!;
             const h = planHash06c(r);
-            dump08('start0', key, r);
             runs37.push({
               key,
               hash: h,
@@ -379,10 +377,10 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
         // 06i: prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37; 10K-07: tokovi koje 10k-v2.9.0
         // menja (fixture, uzrok) — pre provere „promenjen prema b8fcf22" (koja ih čita preko at46e).
         const e37 = p37FlowErrors('start0', runs37).slice(0, 10);
-        const e07 = [
-          ...p07FlowErrors('start0', runs37),
-          ...p08Errors('start0', runs37)
-        ].slice(0, 10);
+        const e07 = [...p07FlowErrors('start0', runs37), ...p08Errors('start0', runs37)].slice(
+          0,
+          10
+        );
         expect(n).toBeGreaterThan(FULL ? 600 : 300);
         // Na b8fcf22 umor sa asOf = start odbijen u svakom planu (organizator: 1245/1245).
         expect(fixed).toBe(n / START0_SCENARIOS.length);

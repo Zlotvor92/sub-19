@@ -43,7 +43,6 @@ import {
   earlyGridBases,
   EARLY_06D,
   planHash06c,
-  dump08,
   mark07
 } from './testInputs.ts';
 import type { TenKV2Facts, TenKV2Plan } from './types.ts';
@@ -131,7 +130,6 @@ export function runEarly(f: EarlyFlow): EarlyRun {
   const bad = adaptInvariants(p0, r.plan, f.asOf, facts as unknown as TenKV2Facts).map(
     (v) => `${f.key}: ${v}`
   );
-  dump08('early', f.key, r);
   return {
     ok: true,
     bad,

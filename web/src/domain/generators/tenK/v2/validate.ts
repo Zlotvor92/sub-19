@@ -57,6 +57,7 @@ import {
   raceWeekRest,
   restDaysWeek,
   sharpenerReps,
+  T1_DELOAD,
   T1_OFF
 } from './week.ts';
 import {
@@ -1257,7 +1258,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       if (long && refLong10 !== null && (ref || longKnown) && !hurt) {
         // Odstupanje A9 (D13 ispred D5): posle smanjenja obima dugi ≥ 3 km.
         const want10 = Math.max(
-          w.index >= reducedFrom ? to10(P.lengths.easyMinKm) : 0,
+          w.index >= reducedFrom || w.notes.includes(T1_DELOAD) ? to10(P.lengths.easyMinKm) : 0,
           Math.min(
             Math.floor(P.deload.longFactor * refLong10 + 1e-9),
             longCap10(to10(w.targetKm), rule, pk)
@@ -1272,7 +1273,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         );
         // A9 (odstupanje): posle smanjenja obima isto pravilo i bez testa.
         const shortened =
-          (w.test || w.index >= reducedFrom) &&
+          (w.test || w.index >= reducedFrom || w.notes.includes(T1_DELOAD)) &&
           l10 < want10 &&
           easyMax <= to10(P.lengths.easyMinKm) + 1 &&
           w.notes.some((n) => n.includes('skraćen'));

@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { logCompared } from '@/test/level';
-import { atB9c, GRID_TIMEOUT, p08Errors } from './level.harness.node.test.ts';
+import { atB9c, changed08, GRID_TIMEOUT, p08Errors } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays, mustDay } from './dates.ts';
@@ -23,7 +23,6 @@ import {
   painFacts,
   painGridBases,
   planHash06c,
-  dump08,
   planHash81,
   type PainCase
 } from './testInputs.ts';
@@ -134,7 +133,6 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
       for (const c of painCases(b.id, p0)) {
         const facts = painFacts(c.asOf, c.level) as unknown as TenKV2Facts;
         flows.push({ ...c, p0, facts, res: adaptTenKV2(p0, facts, c.asOf) });
-        dump08('pain', c.key, flows[flows.length - 1]!.res);
       }
     }
   }, GRID_TIMEOUT);
@@ -181,8 +179,12 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     const by: Record<string, number> = {};
     for (const f of changed) by[`p${f.level}`] = (by[`p${f.level}`] ?? 0) + 1;
     expect(by).toEqual(CHANGED_P_06C);
-    expect(changed.filter((f) => !marked(f)).map((f) => f.key)).toEqual([]);
-    expect(flows.filter((f) => marked(f) && !changed.includes(f)).map((f) => f.key)).toEqual([]);
+    // 10K-08: oznake (napomene) su današnje — tokovi promenjeni prema b9c4728 se po njima ne sude.
+    const now = (f: Flow): boolean => !changed08('pain', f.key);
+    expect(changed.filter((f) => now(f) && !marked(f)).map((f) => f.key)).toEqual([]);
+    expect(
+      flows.filter((f) => now(f) && marked(f) && !changed.includes(f)).map((f) => f.key)
+    ).toEqual([]);
     // Samo bol: korak bez cilja (startKm) nema polje reduced.
     expect(flows.filter((f) => planHash81(f.res) !== planHash06c(f.res)).length).toBe(0);
   });

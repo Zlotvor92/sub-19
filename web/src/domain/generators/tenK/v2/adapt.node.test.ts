@@ -20,7 +20,8 @@ import {
   p35FlowErrors,
   p37FlowErrors,
   p07FlowErrors,
-  p08Errors
+  p08Errors,
+  changed08
 } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
@@ -38,7 +39,6 @@ import {
   fnv1a,
   inputOf,
   planHash06c,
-  dump08,
   planHash81,
   runsIn,
   SCENARIOS,
@@ -196,7 +196,6 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       hashes.push(fnv1a(JSON.stringify(r)));
       h81[`${id}/${k}/${s}`] = planHash81(r);
       h06c[`${id}/${k}/${s}`] = planHash06c(r);
-      dump08('grid04', `${id}/${k}/${s}`, r);
       p35Flows.push({ key: `${id}/${k}/${s}`, id, hash: planHash06c(r), res: r });
       const notes = r.ok ? r.plan.notes : [];
       if (notes.some((x) => x.includes('(A17)'))) a17.add(`${id}/${k}/${s}`);
@@ -311,8 +310,9 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
         const s = key.split('/')[2]!;
         if (painApplied.has(key)) changed[s] = (changed[s] ?? 0) + 1;
         else if (a17.has(key)) byA17[s] = (byA17[s] ?? 0) + 1;
-        else notPain.push(key);
-      } else if (painBack.has(key)) unchangedBack.push(key);
+        // 10K-08: oznake toka su današnje; tok promenjen prema b9c4728 se po njima ne sudi.
+        else if (!changed08('grid04', key)) notPain.push(key);
+      } else if (painBack.has(key) && !changed08('grid04', key)) unchangedBack.push(key);
     }
     expect(notPain).toEqual([]);
     expectCounts(changed, CHANGED_06B);
@@ -342,11 +342,12 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       const h = asOf51(key, h0);
       const s = key.split('/')[2]!;
       const marked = a17.has(key) || n2.has(key);
+      const c08 = changed08('grid04', key);
       if (ref.grid04[key] !== h) {
         changed[s] = (changed[s] ?? 0) + 1;
-        if (!marked) other.push(key);
+        if (!marked && !c08) other.push(key);
       } else {
-        if (marked) same.push(key);
+        if (marked && !c08) same.push(key);
         // Polje reduced je isto u 51a924f i sada (isti koraci): poredi se par novog koda.
         if (h81[key] !== h0) reducedOnly[s] = (reducedOnly[s] ?? 0) + 1;
       }

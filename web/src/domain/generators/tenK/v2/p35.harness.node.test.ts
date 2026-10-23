@@ -8,10 +8,10 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { FULL, part } from '@/test/level';
 import { generateTenKV2 } from './generate.ts';
-import { GRID_TIMEOUT, missingParts, P35_PLANS } from './level.harness.node.test.ts';
+import { CHANGED_08, GRID_TIMEOUT, missingParts, P35_PLANS } from './level.harness.node.test.ts';
 import { beginnerGridInputs, feelGridInputs, grid02Inputs, gridInputs } from './testInputs.ts';
 import type { PlanWeek } from './types.ts';
-import { P35_DROP, qualityOverLong } from './week.ts';
+import { P35_DROP, P35_KEEP, qualityOverLong } from './week.ts';
 
 export const P35_PARTS = 4;
 /** Nedelje sa drugim danom kvaliteta laganim po delu punog nivoa (zbir = 1854 = brz nivo). */
@@ -49,10 +49,13 @@ export function describeP35Grid(title: string, partIndex: number): void {
             continue;
           }
           for (const w of r.plan.weeks.filter(steady)) {
-            if (qualityOverLong(w.days)) bad.push(`${c.id} ned ${w.index}`);
+            // 10K-08: dva ostaju uz napomenu P35_KEEP (nedelja sa jednim nije izvodljiva — validator: upozorenje).
+            if (qualityOverLong(w.days) && !w.notes.includes(P35_KEEP))
+              bad.push(`${c.id} ned ${w.index}`);
             if (p35(w)) dropped++;
           }
-          if (P35_PLANS.has(c.id) && !r.plan.weeks.some(p35)) bad.push(`${c.id}: bez pouke 35`);
+          // 10K-08: plan promenjen prema b9c4728 (T1) ne mora više imati nedelju pouke 35.
+          if (P35_PLANS.has(c.id) && !CHANGED_08.gen[c.id] && !r.plan.weeks.some(p35)) bad.push(`${c.id}: bez pouke 35`);
         }
         expect(bad.slice(0, 10)).toEqual([]);
         // Nedelje sa drugim danom kvaliteta laganim (na 7ba9717 2022 nedelje sa 2 kvaliteta dužim od dugog; posle

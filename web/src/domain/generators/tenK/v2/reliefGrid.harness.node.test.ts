@@ -21,7 +21,6 @@ import { planRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import {
   fnv1a,
   planHash06c,
-  dump08,
   planHash81,
   RELIEF_SCENARIOS,
   type ReliefScenario,
@@ -43,6 +42,7 @@ import {
   p37FlowErrors,
   p07FlowErrors,
   p08Errors,
+  changed08,
   pick,
   sumOf
 } from './level.harness.node.test.ts';
@@ -257,7 +257,6 @@ export function runReliefGrid(
     const res = adaptTenKV2(p0, facts, f.asOf);
     out.flows++;
     out.hash[key] = planHash06c(res);
-    dump08('relief', key, res);
     out.h81[key] = planHash81(res);
     if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
     if (hasP37(res)) out.p37.add(key);
@@ -389,12 +388,14 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       for (const [key, h] of Object.entries(g.hash)) {
         const s = key.split('/').at(-1)!;
         const marked = g.a17.has(key) || g.n2.has(key);
+        // 10K-08: tok promenjen prema b9c4728 — heš stanja b9c4728 (atB9c u lancu), oznake toka su današnje (ne sude se).
+        const c08 = changed08('relief', key);
         // 06f (pouka 35): stanje 7ba9717 za tokove koje 06f menja.
         if (ref.gridR[key] !== at7ba('relief', key, h)) {
           changed[s] = (changed[s] ?? 0) + 1;
-          if (!marked) other.push(key);
+          if (!marked && !c08) other.push(key);
         } else {
-          if (marked) same.push(key);
+          if (marked && !c08) same.push(key);
           if (g.h81[key] !== h) reducedOnly[s] = (reducedOnly[s] ?? 0) + 1;
         }
       }

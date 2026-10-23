@@ -78,7 +78,13 @@ export interface WeekContext {
   keepSharpener?: boolean;
   /** T1 (10K-08): nijedan cilj nedelje izgradnje nije izvodljiv sa granicama laganog — nedelja bez T1 (napomena T1_OFF). */
   t1Off?: boolean;
+  /** T1 (10K-08): redovno rasterećenje nije izvodljivo po D5 (dugi 0,8 × poslednji) — pravilo A9 (napomena T1_DELOAD). */
+  t1Deload?: boolean;
 }
+
+/** T1: napomena rasterećenja sastavljenog po pravilu A9 jer po D5 nije izvodljivo (validator: ADAPT_DELOAD_LONG). */
+export const T1_DELOAD =
+  'Rasterećenje: dugi 0,8 × poslednji ne ostavlja lagane ≥ 3 km — dugi skraćen (kao posle smanjenja obima).';
 
 /** T1: napomena nedelje izgradnje sastavljene bez granica laganog (validator: upozorenje EASY_VS_LONG_SMALL). */
 export const T1_OFF =
@@ -297,6 +303,7 @@ export function buildWeek(
                 ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); dugi 0,8 × poslednji ne-rasteretni.`
                 : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(rule.beginner ? P.beginner.tFirstKm : P.deload.tMinKm)} km ne staje u plafon ${P.caps.T * 100} % (D11 ispred D5, odstupanje); dugi 0,8 × poslednji ne-rasteretni.`,
       ...(test ? [testNote] : []),
+      ...(ctx.t1Deload ? [T1_DELOAD] : []),
       ...(ref
         ? [
             `Umor pre starta (A5): referenca rasterećenja je nedelja ${weekLabel(ctx.input, 1)} plana bez činjenica — cilj ${fmtKm(ref.buildKm)} km, dugi ${fmtKm(ref.longKm)} km${ref.tDoseM > 0 ? `, T ${ref.tDoseM} m` : ''}.`

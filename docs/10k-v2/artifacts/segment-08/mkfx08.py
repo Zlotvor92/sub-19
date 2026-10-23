@@ -27,6 +27,10 @@ for k, v in new.items():
     if o[0] != v[0]:
         c = o[1] if o[1] not in ('', 'rej') else ('ranije odbijen' if o[1] == 'rej' else ('novo odbijanje' if v[1] == 'rej' else 'kaskada'))
         flows[k[0]][k[1]] = [int(o[0]), c]; cnt[(k[0], c)] += 1
+# Tok koji novi dump nema (kuka posle provere odbijanja: međuverzija ga je odbijala) — u fixture sa starim hešom.
+for k in miss:
+    if k in old and k not in new and k[0] != 'gen':
+        flows[k[0]][k[1]] = [int(old[k][0]), 'T1 (rasterećenje A9)']; cnt[(k[0], 'T1 (rasterećenje A9)')] += 1
 tot = collections.Counter(k[0] for k in new)
 for k in sorted(cnt): print(k, cnt[k])
 print('ukupno po mreži', dict(tot), 'gen', len(go), 'nesparenih ključeva', len(miss), list(miss)[:5])

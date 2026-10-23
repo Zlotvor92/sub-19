@@ -76,10 +76,7 @@ export const ADAPT_CHANGED_07 = (
     [planHash06c na b9c4728, uzrok]. Starije regresije porede stanje b9c4728 (`atB9c`, dno lanca at7ba → at46e →
     atC13; generator: planGrid.runPlanGrid zamenjuje heš, uzrok 07 i red); tačan skup proverava `p08Errors`. */
 export const CHANGED_08 = JSON.parse(
-  readFileSync(
-    fileURLToPath(new URL('./segment08.changed-b9c4728.json', import.meta.url)),
-    'utf8'
-  )
+  readFileSync(fileURLToPath(new URL('./segment08.changed-b9c4728.json', import.meta.url)), 'utf8')
 ) as {
   against: string;
   gen: Record<string, [number, string | null, unknown]>;

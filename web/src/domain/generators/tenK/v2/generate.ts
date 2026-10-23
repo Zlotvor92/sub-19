@@ -322,8 +322,11 @@ export function construct(
     for (const t1 of [true, false]) {
       if (fit) break;
       if (!t1) {
-        if (!isBuildPhase(frame.phase) || frame.deload) break;
-        ctxB = { ...ctx, t1Off: true };
+        if (!isBuildPhase(frame.phase)) break;
+        // T1 (10K-08): dugi izgradnje za stvaran broj laganih dana može biti duži nego ranije, pa redovno rasterećenje
+        // (dugi = 0,8 × poslednji) ne ostavlja lagane ≥ 3 km — tada pravilo rasterećenja posle smanjenja (A9: dugi ≤ 0,8 ×,
+        // najduži koji ostavlja lagane ≥ 3 km), uz napomenu T1_DELOAD.
+        ctxB = frame.deload ? { ...ctx, adapted: true, t1Deload: true } : { ...ctx, t1Off: true };
         if (downOnly)
           for (const m of modes)
             if (can(nominal, m)) {
