@@ -131,7 +131,7 @@ export function WorkoutWhy({
       {phase ? (
         <p className="note-src">
           Faza <b>{phase}</b>: {PHASE_LINE[phase]}
-          {weekFocus ? ` Fokus nedelje: ${weekFocus}.` : ''}
+          {weekFocus ? ` Fokus nedelje: ${weekFocus.replace(/[.\s]+$/, '')}.` : ''}
         </p>
       ) : null}
     </Section>

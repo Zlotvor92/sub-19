@@ -146,6 +146,10 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     ako asOf već pada u nju, rasterećenje važi za njen ostatak (prošli dani zaštićeni). Tako ista prijava u nedelju i u
     ponedeljak daje isti plan (zapisi pet/ned, asOf ponedeljak: maraton tekuća nedelja; HM/10K/5K su davali sledeću —
     to krši „isti zapisi = isti plan" i odlaže oporavak za nedelju).
+    Dopuna (organizator, dubinska provera, ugao 5 a): umor zapisan u nedelji REDOVNOG rasterećenja daje prinudno
+    rasterećenje sledeće nedelje istog cilja (0,8 × poslednja izgradnja) — dve uzastopne nedelje rasterećenja, druga
+    nije niža od prve (u 5K/10K/HM/MAR 100 % takvih slučajeva; van prethodnog redovnog rasterećenja 0). Svesna odluka:
+    treća nedelja smanjenja bez podatka da je potrebna nije opravdana; „nije niže od prethodne" nije nalaz.
 37. (organizator, 10K-06h sudar) Mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen): cilj nedelje važi
     za CELU nedelju. Vlasnik obima sastavlja preostale dane na ostatak = cilj − zbir zaštićenih dana, SAMO NANIŽE:
     nikad više nego što bi za te dane sastavio bez zaštićenih (manjak se ne nadoknađuje). Redosled smanjenja
@@ -160,6 +164,16 @@ Polazište: 10K v2 (`10k-v2.5.x`) i 5K v2 (`5k-v2.7.x`) su tehnički obrazac (ko
     pravilo pauze određuje ostatak nedelje pauze, ono je vlasnik te nedelje. Kvalitet otpada SAMO ako time ostatak
     staje u cilj; ako ni bez kvaliteta ne staje, kvalitet ostaje (MAR-08: otpadanje bez dobitka, npr. 0,12 km, gubi
     stimulus i lomi progresiju doze — kaskada cilja ±1 km).
+    Dopuna (organizator, dubinska provera, ugao 5 b — odluka): kad je jedini uzrok viška UPISANI višak (zaštićeni po
+    činjenicama > planirani zaštićeni) i planirano sa zadržanim kvalitetom ≤ 1,10 × cilj, kvalitet ostaje, lagani na
+    minimum, upozorenje MIXED (pouka 14). Nađeno: kvalitet je otpadao samo u scenariju „trkač je ranije u nedelji trčao
+    120 %" (5K 149, 10K 1 741, HM 1 538, maraton 1 759 tokova; višak ≤ 10 % u 136 / 1 349 / 1 321 / 1 588). Trener:
+    višak koji je trkač sam napravio laganim km nije razlog da izgubi dan kvaliteta. Mišljenje organizatora (prag 10 %
+    bez izvora). Važi za sve 4 distance.
+    Dopuna (organizator, dubinska provera, ugao 1b nalaz 5): pravilo pokrivenosti (dan POZNAT bez zapisa = 0) važi i za
+    osnovu plafona skoka dugog (L): planiran a netrčan dugi nije osnova za sledeći skok (HM 6 d 75 km: 19 dana bez
+    trčanja i bol → dugi 8,5 → 21,4 km sledeće nedelje; HM 1 060/9 058, maraton 3 584/25 718 tokova iznad plafona
+    računatog iz trčanog). Nedelje 1–4 (pretpostavljeni skorašnji trk iz čarobnjaka) ostaju po ulazu.
 38. (organizator, rani prolaz završne provere K1) Zaštićen test se ne premešta: test čiji je dan zaštićen (≤ asOf,
     zaključan, urađen) ostaje gde jeste, a nijedan okvir ne dobija drugi test; pravila koja premeštaju test (pauza,
     umor, bol, rasterećenje — A13) važe samo za test čiji dan nije zaštićen. Jedna funkcija „zaštićen test" (proširen
