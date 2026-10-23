@@ -129,3 +129,12 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - locked-test 3193 → 0, locked-pause 258 → 0, last-weeks inv 6 → 0, prestart-chain 177 → 0, MAR→HM 136 → 0.
   Izveštaj `reports/SEGMENT-08b-IMPLEMENTATION.md`, artefakti `artifacts/segment-08b/`, mreža `segment08b`.
 
+
+## Segment HM-09 (hm-v2.7.0): ispravke posle dubinske provere (audit/fixes/HM.md)
+
+- B1/B2 `steps.longRef10` (jedna referenca dugog rasterećenja po nedelji); B3 dugi tapera ≥ 4 km (`TAPER_LONG_MIN`);
+  L skoka iz trčanog (`step.ranLongKm`/`ranPart`, `rollingCapRan10`); pouka 35 u taperu (`taperSecondEasy`);
+  napomena tapera; uvod početnika; Z1 `mixedQualityStays`; Z2 `userText`; Z3 `resultUse`; Z4 vraćanje samo bez
+  prilagođavanja posle verzije; Z5b početnik iznad opsega → bez oznake; K1/F6 invarijante.
+- B2 19 490 → 0, B1 3 758 → 0, B3 8 → 0, skok 1 060 → 0, Z4 1 565 → 0, Z3 495 → 0, Z1 1 321 → 0, taper dva dana
+  552/636 → 0, napomena 909/546 → 0, Z2 oznake 16 511 → 0. Izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md`.

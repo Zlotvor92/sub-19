@@ -2,7 +2,13 @@
    trkačke nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longKmCap10, longShareCap10, longTimeCap10, rollingCapRan10 } from './lengths.ts';
+import {
+  longKmCap10,
+  longShareCap10,
+  longsOf10,
+  longTimeCap10,
+  rollingLongCap10
+} from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import { userText } from './userText.ts';
 import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
@@ -73,7 +79,8 @@ export function capacityLimits(
   rule: PlanRule,
   p: Paces,
   recentKm: number | null | undefined = null,
-  ranAt: (w: number) => Readonly<Record<string, number>> = () => ({})
+  /** Kotrljajuća granica nedelje (validator: ista funkcija kao konstruktor, rollingCapRan10). */
+  rollAt: (w: number) => number = (w) => rollingLongCap10(w, longsOf10(weeks), recentKm)
 ): CapacityLimit[] {
   const hit = new Set<CapacityLimit>();
   for (const w of weeks) {
@@ -84,7 +91,7 @@ export function capacityLimits(
     if (l10 === longTimeCap10(p, rule.longMaxSec)) hit.add('time');
     if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
     if (l10 === longKmCap10()) hit.add('km');
-    if (l10 === rollingCapRan10(w.index, weeks, ranAt(w.index), recentKm)) hit.add('rolling');
+    if (l10 === rollAt(w.index)) hit.add('rolling');
   }
   return (['time', 'share', 'km', 'rolling'] as const).filter((l) => hit.has(l));
 }

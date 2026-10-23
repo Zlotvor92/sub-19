@@ -338,14 +338,14 @@ export function deloadRefLong10(steps: readonly HmV2AdaptStep[], w: number): num
 }
 
 /** HM-09 (pouka 28 × 37) — JEDNA funkcija: najduži trčan po činjenicama koji važi za L skoka nedelje `w` — koraci
-    čiji je firstWeek ≤ w (kasniji korak preklapa raniji). Prošle nedelje koraka se rekonstruišu kao kad su
-    sastavljene (ista mapa). Konstruktor i validator (lengths.longsOf10). */
+    čiji je fromWeek ≤ w — samo cele buduće nedelje koraka (kasniji korak preklapa raniji); tekuća i prošle nedelje
+    se rekonstruišu kao kad su sastavljene. Konstruktor i validator (lengths.longsOf10). */
 export function ranLongFor(
   steps: readonly HmV2AdaptStep[],
   w: number
 ): Readonly<Record<string, number>> {
   let r: Record<string, number> = {};
-  for (const s of steps) if (s.ranLongKm && s.firstWeek <= w) r = { ...r, ...s.ranLongKm };
+  for (const s of steps) if (s.ranLongKm && s.fromWeek <= w) r = { ...r, ...s.ranLongKm };
   return r;
 }
 

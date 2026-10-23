@@ -219,12 +219,13 @@ export function longsOf10(
 /** HM-09 (1b #5; pouka 37 i za L skoka) — JEDNA funkcija kotrljajuće granice dugog nedelje `index` sa činjenicama:
     `ran` = najduži trčan prošlih nedelja cele poznate (steps.ranLongFor). L iz trčanog važi od nedelje 5 (nedelje
     1–4 nose pretpostavljeni skorašnji najduži trk — ostaju kao pre); kad ništa nije trčano (L = 0), granica je
-    kao pre. Nikad labavija od granice iz upisanih dugih. Konstruktor, validator i poruka kapaciteta. */
+    kao pre; ne ispod `floor10` (ranCapFloor10). Nikad labavija od granice iz upisanih dugih. Konstruktor, validator i poruka kapaciteta. */
 export function rollingCapRan10(
   index: number,
   weeks: readonly { index?: number; days: readonly { role: string; workout: { km: number } }[] }[],
   ran: Readonly<Record<string, number>>,
-  recentKm: number | null | undefined
+  recentKm: number | null | undefined,
+  floor10 = 0
 ): number {
   const plan = rollingLongCap10(index, longsOf10(weeks), recentKm);
   const w = P.recentLong.windowWeeks;
@@ -235,8 +236,13 @@ export function rollingCapRan10(
       .slice(Math.max(0, index - 1 - w), index - 1)
       .filter((x): x is number => x !== null)
   );
-  return L > 0 ? Math.min(plan, stepCap10(L)) : plan;
+  return L > 0 ? Math.min(plan, Math.max(stepCap10(L), floor10)) : plan;
 }
+
+/** HM-09: najmanji dugi nedelje minimuma [0,1 km] — dugi ≥ lagan (pouka 2) i ≥ 4 km: granica iz trčanog ne pada
+    ispod njega (nedelja minimuma A9 ostaje izvodljiva). */
+export const ranCapFloor10 = (weekMinKm: number, runDays: number): number =>
+  Math.max(EASY_MIN10, Math.ceil((weekMinKm * 10) / runDays - EPS));
 
 /** H7 / pouka 29: najduži dugi plana — jedna definicija za konstruktor (iz upisanih dana, written.ts) i
     validator (dani nedelja pre tapera). */

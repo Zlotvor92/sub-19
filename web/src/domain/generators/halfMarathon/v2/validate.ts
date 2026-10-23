@@ -17,6 +17,7 @@ import {
   longShareCap10,
   longestLong10,
   longRunShort,
+  ranCapFloor10,
   rollingCapRan10,
   taperLengths,
   taperLongCap10,
@@ -655,7 +656,14 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // --- H13: dužine (dugi ≤ udeo i ≤ 150 min; dugi ≥ svaki lagan; korak 0,1 km).
   /** Pouka 28: dugi svake nedelje (null bez dugog) i „nedelja 0" (pouka 34) — iste funkcije kao konstruktor. */
   // HM-09: L skoka nedelje i — upisani dugi uz najduži trčan koraka koji važe za nju (steps.ranLongFor).
-  const rollAt = (i: number): number => rollingCapRan10(i, weeks, ranLongFor(steps, i), recentJ);
+  const rollAt = (i: number): number =>
+    rollingCapRan10(
+      i,
+      weeks,
+      ranLongFor(steps, i),
+      recentJ,
+      ranCapFloor10(rule.weekMinKm, input.runDays.length)
+    );
   const recentJ = jumpRecentKm(input.recentLongRunKm, steps);
   for (const w of weeks) {
     const long = w.days.find((d) => d.role === 'long');
@@ -1849,7 +1857,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       `${capacityMessage(
         input.runDays.length,
         rule,
-        capacityLimits(weeks, rule, p, input.recentLongRunKm ?? null, (i) => ranLongFor(steps, i))
+        capacityLimits(weeks, rule, p, input.recentLongRunKm ?? null, rollAt)
       )} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (H6).`
     );
 

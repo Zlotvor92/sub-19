@@ -11,6 +11,7 @@ import {
   longestLong10,
   recentLongCap10,
   recentLongNeeded10,
+  ranCapFloor10,
   rollingCapRan10,
   week1LongCap10
 } from './lengths.ts';
@@ -236,7 +237,13 @@ export function construct(
       ? adaptNominal10(frame, h, start10, rule, av)
       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
     const longest10 = longestLong10(written);
-    const roll10 = rollingCapRan10(frame.index, written, ranLongFor(steps, frame.index), recentJ);
+    const roll10 = rollingCapRan10(
+      frame.index,
+      written,
+      ranLongFor(steps, frame.index),
+      recentJ,
+      ranCapFloor10(rule.weekMinKm, input.runDays.length)
+    );
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
         ctx,

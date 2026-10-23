@@ -29,7 +29,7 @@
   {
     "name": "09-4 L skoka iz planiranog, ne trčanog",
     "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
-    "find": "return L > 0 ? Math.min(plan, stepCap10(L)) : plan;",
+    "find": "return L > 0 ? Math.min(plan, Math.max(stepCap10(L), floor10)) : plan;",
     "replace": "return plan;",
     "tests": [
       "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
