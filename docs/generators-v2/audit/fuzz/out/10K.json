@@ -1,0 +1,2491 @@
+{
+ "dist": "10K",
+ "seed": 20261023,
+ "from": 0,
+ "to": 100000,
+ "inputs": 100000,
+ "plans": 83693,
+ "realInputs": 75691,
+ "realPlans": 63918,
+ "rejected": {
+  "SCHEDULE_NO_RECOVERY:U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedn": 492,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu bit": 548,
+  "VDOT_TOO_HIGH:VDOT # je iznad #, van opsega plana.": 2091,
+  "SCHEDULE_NO_RECOVERY:U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 538,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu bit": 513,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu bit": 85,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mog": 248,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu bit": 538,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu bit": 556,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedn": 203,
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 552,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu bit": 539,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mog": 150,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu bit": 563,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mog": 496,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu bit": 488,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu bit": 106,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mog": 127,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu bit": 503,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mog": 132,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu bit": 99,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedn": 216,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu bit": 553,
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedn": 215,
+  "SCHEDULE_NO_RECOVERY:U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 90,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu bit": 581,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedn": 205,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu bit": 494,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mog": 126,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu bit": 93,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mog": 375,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mog": 271,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu bit": 525,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu bit": 91,
+  "WEEK_INFEASIBLE:Nedelja #: nijedan cilj od # km naviše ne može da se sastavi": 280,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mog": 231,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedn": 201,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mog": 501,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mog": 141,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu bit": 95,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu bit": 81,
+  "SCHEDULE_NO_RECOVERY:U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedn": 194,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu bit": 93,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mog": 241,
+  "SCHEDULE_NO_RECOVERY:U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 103,
+  "SCHEDULE_NO_RECOVERY:U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu bit": 100,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu bit": 256,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu bit": 252,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mog": 264,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu bit": 74,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mog": 109
+ },
+ "rejectedReal": {
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu bit": 463,
+  "SCHEDULE_NO_RECOVERY:U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 452,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu bit": 432,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedn": 349,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mog": 215,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu bit": 447,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu bit": 471,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedn": 146,
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 462,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mog": 120,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu bit": 468,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu bit": 415,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu bit": 92,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu bit": 455,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu bit": 432,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mog": 114,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedn": 143,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu bit": 483,
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedn": 140,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mog": 417,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu bit": 498,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu bit": 405,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mog": 100,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu bit": 79,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mog": 311,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mog": 234,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu bit": 441,
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedn": 132,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mog": 434,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mog": 119,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu bit": 90,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu bit": 78,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu bit": 67,
+  "SCHEDULE_NO_RECOVERY:U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedn": 138,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu bit": 81,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu bit": 67,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mog": 205,
+  "SCHEDULE_NO_RECOVERY:U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 88,
+  "SCHEDULE_NO_RECOVERY:U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu bit": 84,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu bit": 79,
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu bit": 223,
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu bit": 217,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mog": 219,
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mog": 193,
+  "SCHEDULE_NO_RECOVERY:U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu bit": 70,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mog": 108,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu bit": 63,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedn": 138,
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mog": 96
+ },
+ "rejectedEx": {
+  "SCHEDULE_NO_RECOVERY:U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedn~nerealan": [
+   {
+    "i": 7109,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-01-22\",\"raceDate\":\"2027-03-18\",\"runDays\":[\"mon\",\"sun\",\"sat\"],\"currentWeeklyKm\":20,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3920,\"date\":\"2026-11-12\"},\"goalTimeSec\":null} → U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sub, ned (dugi ned)."
+   },
+   {
+    "i": 16726,
+    "size": 8021,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-10-27\",\"raceDate\":\"2026-12-21\",\"runDays\":[\"sat\",\"sun\",\"mon\"],\"currentWeeklyKm\":21,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2026-08-23\"},\"goalTimeSec\":null} → U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sub, ned (dugi ned)."
+   },
+   {
+    "i": 88097,
+    "size": 8026.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-11\",\"raceDate\":\"2027-02-04\",\"runDays\":[\"sat\",\"mon\",\"sun\"],\"currentWeeklyKm\":26.6,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3770,\"date\":\"2026-12-11\"},\"goalTimeSec\":null} → U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, sub, ned (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 9425,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-01-29\",\"raceDate\":\"2028-03-24\",\"runDays\":[\"tue\",\"fri\",\"wed\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":283,\"goalTimeSec\":null} → U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi sub)."
+   },
+   {
+    "i": 12332,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-04-10\",\"raceDate\":\"2027-06-04\",\"runDays\":[\"sat\",\"tue\",\"wed\",\"fri\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2648,\"date\":\"2027-04-10\"},\"goalTimeSec\":2433} → U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi sub)."
+   },
+   {
+    "i": 19630,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-06-12\",\"raceDate\":\"2028-08-06\",\"runDays\":[\"sat\",\"tue\",\"fri\",\"wed\"],\"currentWeeklyKm\":25,\"recentResult\":null,\"easyPaceSecPerKm\":459,\"goalTimeSec\":3166} → U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi sub)."
+   }
+  ],
+  "VDOT_TOO_HIGH:VDOT # je iznad #, van opsega plana.~nerealan": [
+   {
+    "i": 6233,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-09\",\"raceDate\":\"2028-03-04\",\"runDays\":[\"tue\",\"thu\",\"sat\"],\"currentWeeklyKm\":20,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-11-02\"},\"goalTimeSec\":null} → VDOT 80.1 je iznad 80, van opsega plana."
+   },
+   {
+    "i": 7559,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-05\",\"raceDate\":\"2027-01-29\",\"runDays\":[\"sat\",\"tue\",\"thu\"],\"currentWeeklyKm\":20,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2026-11-27\"},\"goalTimeSec\":null} → VDOT 80.1 je iznad 80, van opsega plana."
+   },
+   {
+    "i": 14323,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-17\",\"raceDate\":\"2028-03-12\",\"runDays\":[\"sat\",\"wed\",\"sun\"],\"currentWeeklyKm\":20,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-10-25\"},\"goalTimeSec\":null} → VDOT 80.1 je iznad 80, van opsega plana."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 3241,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-02-06\",\"raceDate\":\"2028-04-01\",\"runDays\":[\"sat\",\"mon\",\"fri\",\"sun\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":6217,\"date\":\"2027-12-18\"},\"goalTimeSec\":null} → U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 21134,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-09-05\",\"raceDate\":\"2028-10-30\",\"runDays\":[\"fri\",\"sun\",\"sat\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3829,\"date\":\"2028-08-30\"},\"goalTimeSec\":null} → U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi pet)."
+   },
+   {
+    "i": 23739,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-10-29\",\"raceDate\":\"2027-12-23\",\"runDays\":[\"sat\",\"fri\",\"mon\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2673,\"date\":\"2027-05-13\"},\"easyPaceSecPerKm\":321,\"goalTimeSec\":null} → U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, sub, ned (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 6145,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-08-21\",\"raceDate\":\"2027-10-15\",\"runDays\":[\"mon\",\"fri\",\"sun\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1017,\"date\":\"2027-08-15\"},\"goalTimeSec\":null} → U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi ned)."
+   },
+   {
+    "i": 41037,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-01\",\"raceDate\":\"2028-01-25\",\"runDays\":[\"fri\",\"mon\",\"thu\",\"sun\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1280,\"date\":\"2027-11-18\"},\"goalTimeSec\":null} → U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi ned)."
+   },
+   {
+    "i": 53253,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-03-16\",\"raceDate\":\"2028-05-10\",\"runDays\":[\"sun\",\"thu\",\"fri\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4779,\"date\":\"2027-12-23\"},\"goalTimeSec\":null} → U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedn": [
+   {
+    "i": 10297,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-06-03\",\"raceDate\":\"2027-07-28\",\"runDays\":[\"sun\",\"sat\",\"mon\"],\"currentWeeklyKm\":20,\"recentResult\":null,\"easyPaceSecPerKm\":298,\"goalTimeSec\":null} → U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sub, ned (dugi ned)."
+   },
+   {
+    "i": 15227,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-03-27\",\"raceDate\":\"2028-05-21\",\"runDays\":[\"sun\",\"sat\",\"mon\"],\"currentWeeklyKm\":20,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2046,\"date\":\"2028-01-03\"},\"goalTimeSec\":1952} → U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, sub, ned (dugi pon)."
+   },
+   {
+    "i": 20770,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-03-13\",\"raceDate\":\"2028-05-07\",\"runDays\":[\"sun\",\"mon\",\"sat\"],\"currentWeeklyKm\":20,\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null} → U danima pon, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 52451,
+    "size": 8028.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-22\",\"raceDate\":\"2027-10-16\",\"runDays\":[\"thu\",\"sun\",\"wed\",\"tue\"],\"currentWeeklyKm\":28.6,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":844,\"date\":\"2027-05-30\"},\"goalTimeSec\":1685} → U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 43999,
+    "size": 8032,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-05-23\",\"raceDate\":\"2028-07-17\",\"runDays\":[\"sun\",\"tue\",\"thu\",\"wed\"],\"currentWeeklyKm\":32,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-05-23\"},\"goalTimeSec\":null} → U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 74780,
+    "size": 8036,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-24\",\"raceDate\":\"2027-12-18\",\"runDays\":[\"tue\",\"wed\",\"sun\",\"thu\"],\"currentWeeklyKm\":36,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-10-24\"},\"goalTimeSec\":null} → U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 24289,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2026-11-11\",\"raceDate\":\"2027-01-05\",\"runDays\":[\"fri\",\"thu\",\"wed\",\"sun\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2227,\"date\":\"2026-11-02\"},\"goalTimeSec\":2083} → U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 33929,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-12-30\",\"raceDate\":\"2028-02-23\",\"runDays\":[\"wed\",\"thu\",\"sat\",\"fri\",\"sun\"],\"currentWeeklyKm\":30,\"longRunDay\":\"thu\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":2880} → U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 36010,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-10-10\",\"raceDate\":\"2027-12-04\",\"runDays\":[\"fri\",\"wed\",\"thu\",\"sun\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":295,\"goalTimeSec\":2824} → U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, sub, ned (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 2927,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-01-24\",\"raceDate\":\"2027-03-20\",\"runDays\":[\"wed\",\"tue\",\"thu\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1806,\"date\":\"2026-11-01\"},\"goalTimeSec\":null} → U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi čet)."
+   },
+   {
+    "i": 3122,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-04-20\",\"raceDate\":\"2027-06-14\",\"runDays\":[\"tue\",\"fri\",\"wed\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4133,\"date\":\"2027-04-10\"},\"goalTimeSec\":null} → U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi sre)."
+   },
+   {
+    "i": 8829,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-07-01\",\"raceDate\":\"2027-08-25\",\"runDays\":[\"tue\",\"fri\",\"thu\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":346,\"goalTimeSec\":2768} → U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 4513,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-08-25\",\"raceDate\":\"2028-10-19\",\"runDays\":[\"mon\",\"sat\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"recentResult\":null,\"easyPaceSecPerKm\":493,\"goalTimeSec\":null} → U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 12579,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-08-04\",\"raceDate\":\"2028-09-28\",\"runDays\":[\"sat\",\"sun\",\"tue\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":8868,\"date\":\"2028-05-21\"},\"easyPaceSecPerKm\":510,\"goalTimeSec\":2894} → U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 31831,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-08-22\",\"raceDate\":\"2027-10-16\",\"runDays\":[\"sun\",\"tue\",\"mon\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2081,\"date\":\"2027-06-15\"},\"goalTimeSec\":null} → U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedn": [
+   {
+    "i": 37315,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-04-25\",\"raceDate\":\"2027-06-19\",\"runDays\":[\"mon\",\"tue\",\"wed\"],\"currentWeeklyKm\":20,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1883,\"date\":\"2027-04-07\"},\"easyPaceSecPerKm\":371,\"goalTimeSec\":2916} → U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, sre (dugi pon)."
+   },
+   {
+    "i": 43082,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-11-16\",\"raceDate\":\"2028-01-10\",\"runDays\":[\"tue\",\"mon\",\"wed\"],\"currentWeeklyKm\":20,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":1076,\"date\":\"2027-08-24\"},\"goalTimeSec\":3653} → U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, sre (dugi pon)."
+   },
+   {
+    "i": 51257,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-02-23\",\"raceDate\":\"2027-04-19\",\"runDays\":[\"tue\",\"mon\",\"wed\"],\"currentWeeklyKm\":20,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":579,\"date\":\"2027-02-16\"},\"goalTimeSec\":null} → U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, sre (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 1403,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-07-10\",\"raceDate\":\"2027-09-03\",\"runDays\":[\"sat\",\"sun\",\"fri\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":null,\"easyPaceSecPerKm\":396,\"goalTimeSec\":null} → U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 2540,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-05-07\",\"raceDate\":\"2028-07-01\",\"runDays\":[\"sun\",\"fri\",\"sat\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2000,\"date\":\"2027-07-24\"},\"easyPaceSecPerKm\":392,\"goalTimeSec\":null} → U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi pet)."
+   },
+   {
+    "i": 3759,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-01-17\",\"raceDate\":\"2028-03-12\",\"runDays\":[\"sun\",\"thu\",\"fri\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1841,\"date\":\"2027-12-27\"},\"goalTimeSec\":4115} → U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 25720,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-27\",\"raceDate\":\"2027-06-21\",\"runDays\":[\"tue\",\"mon\",\"sat\",\"fri\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1676,\"date\":\"2027-03-08\"},\"goalTimeSec\":null} → U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 63146,
+    "size": 8025.1,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-22\",\"raceDate\":\"2027-09-15\",\"runDays\":[\"fri\",\"tue\",\"mon\",\"sat\"],\"currentWeeklyKm\":25.1,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1691,\"date\":\"2027-06-20\"},\"goalTimeSec\":null} → U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 83248,
+    "size": 8033.3,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-06-18\",\"raceDate\":\"2027-08-12\",\"runDays\":[\"sat\",\"tue\",\"mon\",\"fri\"],\"currentWeeklyKm\":33.3,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":491,\"date\":\"2027-05-27\"},\"goalTimeSec\":null} → U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi pet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 28386,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-04-19\",\"raceDate\":\"2027-06-13\",\"runDays\":[\"thu\",\"tue\",\"sun\",\"wed\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3829,\"date\":\"2027-04-04\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 88643,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-12-24\",\"raceDate\":\"2029-02-17\",\"runDays\":[\"sun\",\"tue\",\"sat\",\"thu\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":283,\"goalTimeSec\":3087} → U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 17735,
+    "size": 8031,
+    "s": "realan {\"startDate\":\"2027-03-08\",\"raceDate\":\"2027-05-02\",\"runDays\":[\"thu\",\"sat\",\"sun\",\"wed\",\"tue\"],\"currentWeeklyKm\":31,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2200,\"date\":\"2027-01-14\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 909,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-12-10\",\"raceDate\":\"2029-02-03\",\"runDays\":[\"wed\",\"tue\",\"mon\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1132,\"date\":\"2028-11-25\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   },
+   {
+    "i": 1453,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-04-02\",\"raceDate\":\"2027-05-27\",\"runDays\":[\"tue\",\"wed\",\"thu\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi sub)."
+   },
+   {
+    "i": 8092,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-04-06\",\"raceDate\":\"2028-05-31\",\"runDays\":[\"thu\",\"mon\",\"tue\",\"wed\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2251,\"date\":\"2027-05-01\"},\"easyPaceSecPerKm\":377,\"goalTimeSec\":null} → U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 64844,
+    "size": 8031.1,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-06\",\"raceDate\":\"2027-05-31\",\"runDays\":[\"mon\",\"sun\",\"sat\",\"wed\",\"tue\"],\"currentWeeklyKm\":31.1,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-03-03\"},\"goalTimeSec\":1702} → U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub, ned (dugi pon)."
+   },
+   {
+    "i": 20611,
+    "size": 8032.2,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-11-09\",\"raceDate\":\"2029-01-03\",\"runDays\":[\"sat\",\"mon\",\"wed\",\"sun\",\"tue\"],\"currentWeeklyKm\":32.2,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-11-05\"},\"goalTimeSec\":null} → U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub, ned (dugi pon)."
+   },
+   {
+    "i": 97674,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-09-19\",\"raceDate\":\"2028-11-13\",\"runDays\":[\"sat\",\"sun\",\"tue\",\"wed\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":863,\"date\":\"2028-08-01\"},\"goalTimeSec\":null} → U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub, ned (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 454,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-08-31\",\"raceDate\":\"2028-10-25\",\"runDays\":[\"mon\",\"tue\",\"wed\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":365,\"goalTimeSec\":null} → U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, ned (dugi sre)."
+   },
+   {
+    "i": 9729,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-08-13\",\"raceDate\":\"2027-10-07\",\"runDays\":[\"wed\",\"mon\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3829,\"date\":\"2027-07-13\"},\"goalTimeSec\":3593} → U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi ned)."
+   },
+   {
+    "i": 12583,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-02-23\",\"raceDate\":\"2027-04-19\",\"runDays\":[\"wed\",\"mon\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1127,\"date\":\"2026-08-03\"},\"easyPaceSecPerKm\":390,\"goalTimeSec\":3127} → U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 58466,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-08-26\",\"raceDate\":\"2027-10-20\",\"runDays\":[\"fri\",\"wed\",\"mon\",\"tue\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":2996} → U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet (dugi pon)."
+   },
+   {
+    "i": 63132,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-17\",\"raceDate\":\"2028-02-10\",\"runDays\":[\"fri\",\"tue\",\"mon\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":992,\"date\":\"2027-11-30\"},\"goalTimeSec\":null} → U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet (dugi pon)."
+   },
+   {
+    "i": 77883,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-08-25\",\"raceDate\":\"2027-10-19\",\"runDays\":[\"wed\",\"fri\",\"mon\",\"tue\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":364,\"goalTimeSec\":null} → U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 84507,
+    "size": 8034.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-11-24\",\"raceDate\":\"2028-01-18\",\"runDays\":[\"wed\",\"mon\",\"sat\",\"tue\",\"fri\"],\"currentWeeklyKm\":34.9,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-09-18\"},\"goalTimeSec\":1624} → U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet, sub (dugi pon)."
+   },
+   {
+    "i": 126,
+    "size": 8037.1,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-01-26\",\"raceDate\":\"2027-03-22\",\"runDays\":[\"mon\",\"fri\",\"sat\",\"tue\",\"wed\"],\"currentWeeklyKm\":37.1,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2026-11-03\"},\"goalTimeSec\":null} → U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet, sub (dugi pon)."
+   },
+   {
+    "i": 1509,
+    "size": 8050,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-11-14\",\"raceDate\":\"2027-01-08\",\"runDays\":[\"mon\",\"sat\",\"fri\",\"wed\",\"tue\"],\"currentWeeklyKm\":50,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":478,\"date\":\"2026-08-29\"},\"goalTimeSec\":null} → U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 5084,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-01-01\",\"raceDate\":\"2027-02-25\",\"runDays\":[\"tue\",\"sat\",\"fri\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 9476,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-28\",\"raceDate\":\"2028-02-21\",\"runDays\":[\"fri\",\"mon\",\"tue\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 10118,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-04-06\",\"raceDate\":\"2027-05-31\",\"runDays\":[\"fri\",\"tue\",\"sat\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1326,\"date\":\"2026-07-27\"},\"easyPaceSecPerKm\":451,\"goalTimeSec\":null} → U danima pon, uto, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 18924,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-25\",\"raceDate\":\"2028-02-18\",\"runDays\":[\"sun\",\"wed\",\"tue\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 25144,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-14\",\"raceDate\":\"2028-02-07\",\"runDays\":[\"wed\",\"sun\",\"tue\",\"sat\"],\"currentWeeklyKm\":25,\"recentResult\":null,\"easyPaceSecPerKm\":478,\"goalTimeSec\":3073} → U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 35318,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-10-30\",\"raceDate\":\"2027-12-24\",\"runDays\":[\"sat\",\"tue\",\"wed\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":277,\"goalTimeSec\":null} → U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, sub, ned (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mog": [
+   {
+    "i": 35401,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-07-18\",\"raceDate\":\"2028-09-11\",\"runDays\":[\"fri\",\"thu\",\"sat\",\"tue\",\"mon\"],\"currentWeeklyKm\":30,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":504,\"goalTimeSec\":null} → U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 84897,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-03-19\",\"raceDate\":\"2027-05-13\",\"runDays\":[\"thu\",\"sat\",\"mon\",\"tue\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3829,\"date\":\"2027-01-16\"},\"goalTimeSec\":3812} → U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 62818,
+    "size": 8033,
+    "s": "realan {\"startDate\":\"2027-06-30\",\"raceDate\":\"2027-08-24\",\"runDays\":[\"tue\",\"sat\",\"fri\",\"mon\",\"thu\"],\"currentWeeklyKm\":33,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":409,\"goalTimeSec\":null} → U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 10926,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-23\",\"raceDate\":\"2027-02-16\",\"runDays\":[\"tue\",\"mon\",\"sun\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2026-10-01\"},\"goalTimeSec\":1595} → U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 36970,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-06\",\"raceDate\":\"2027-05-31\",\"runDays\":[\"sun\",\"mon\",\"tue\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1698,\"date\":\"2027-04-06\"},\"goalTimeSec\":null} → U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 44204,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-07\",\"raceDate\":\"2027-12-01\",\"runDays\":[\"tue\",\"sat\",\"sun\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-07-24\"},\"goalTimeSec\":1635} → U danima pon, uto, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 91488,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-11\",\"raceDate\":\"2027-11-05\",\"runDays\":[\"sun\",\"mon\",\"sat\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-07-06\"},\"goalTimeSec\":1599} → U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 7447,
+    "size": 8025.3,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-22\",\"raceDate\":\"2027-06-16\",\"runDays\":[\"sun\",\"fri\",\"mon\",\"sat\"],\"currentWeeklyKm\":25.3,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":466,\"date\":\"2027-01-28\"},\"goalTimeSec\":null} → U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi pet)."
+   },
+   {
+    "i": 98870,
+    "size": 8025.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-16\",\"raceDate\":\"2028-04-11\",\"runDays\":[\"mon\",\"sun\",\"fri\",\"sat\"],\"currentWeeklyKm\":25.6,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1749,\"date\":\"2027-12-04\"},\"goalTimeSec\":null} → U danima pon, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 23864,
+    "size": 8025.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-04\",\"raceDate\":\"2028-01-28\",\"runDays\":[\"thu\",\"mon\",\"tue\",\"sun\"],\"currentWeeklyKm\":25.6,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-11-10\"},\"goalTimeSec\":null} → U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, ned (dugi uto)."
+   },
+   {
+    "i": 54030,
+    "size": 8031.8,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-07-17\",\"raceDate\":\"2028-09-10\",\"runDays\":[\"sun\",\"mon\",\"thu\",\"tue\"],\"currentWeeklyKm\":31.8,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-07-17\"},\"goalTimeSec\":null} → U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, ned (dugi uto)."
+   },
+   {
+    "i": 83454,
+    "size": 9025.5,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-19\",\"raceDate\":\"2028-04-21\",\"runDays\":[\"sun\",\"tue\",\"mon\",\"thu\"],\"currentWeeklyKm\":25.5,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-01-25\"},\"goalTimeSec\":null} → U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedn": [
+   {
+    "i": 28841,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-07-16\",\"raceDate\":\"2027-09-09\",\"runDays\":[\"wed\",\"thu\",\"tue\"],\"currentWeeklyKm\":20,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":305,\"goalTimeSec\":3101} → U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sre, čet (dugi uto)."
+   },
+   {
+    "i": 40039,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-06-24\",\"raceDate\":\"2027-08-18\",\"runDays\":[\"wed\",\"thu\",\"tue\"],\"currentWeeklyKm\":20,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null} → U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sre, čet (dugi uto)."
+   },
+   {
+    "i": 50123,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-08-16\",\"raceDate\":\"2028-10-10\",\"runDays\":[\"tue\",\"thu\",\"wed\"],\"currentWeeklyKm\":20,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":1016,\"date\":\"2028-07-04\"},\"goalTimeSec\":null} → U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sre, čet (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 355,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-11-28\",\"raceDate\":\"2029-01-22\",\"runDays\":[\"thu\",\"sat\",\"wed\",\"fri\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":5398,\"date\":\"2027-12-24\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":2879} → U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 7103,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-11-18\",\"raceDate\":\"2029-01-12\",\"runDays\":[\"wed\",\"thu\",\"sat\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi pet)."
+   },
+   {
+    "i": 14472,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-04-20\",\"raceDate\":\"2028-06-14\",\"runDays\":[\"sat\",\"fri\",\"thu\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":800,\"date\":\"2028-02-23\"},\"goalTimeSec\":2926} → U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedn": [
+   {
+    "i": 34240,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-08-10\",\"raceDate\":\"2027-10-04\",\"runDays\":[\"thu\",\"sat\",\"fri\"],\"currentWeeklyKm\":20,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3259,\"date\":\"2027-05-18\"},\"goalTimeSec\":null} → U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedni. Predlog: čet, pet, sub (dugi čet)."
+   },
+   {
+    "i": 87276,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-06-13\",\"raceDate\":\"2028-08-07\",\"runDays\":[\"thu\",\"sat\",\"fri\"],\"currentWeeklyKm\":20,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":505,\"goalTimeSec\":null} → U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedni. Predlog: čet, pet, sub (dugi čet)."
+   },
+   {
+    "i": 12526,
+    "size": 8022,
+    "s": "realan {\"startDate\":\"2028-11-21\",\"raceDate\":\"2029-01-15\",\"runDays\":[\"sat\",\"fri\",\"thu\"],\"currentWeeklyKm\":22,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2402,\"date\":\"2028-08-29\"},\"goalTimeSec\":null} → U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedni. Predlog: čet, pet, sub (dugi čet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 2247,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-12-19\",\"raceDate\":\"2029-02-12\",\"runDays\":[\"wed\",\"sat\",\"fri\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-12-19\"},\"goalTimeSec\":null} → U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 78116,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-15\",\"raceDate\":\"2027-10-09\",\"runDays\":[\"sun\",\"sat\",\"wed\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-07-18\"},\"goalTimeSec\":null} → U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 3820,
+    "size": 8032,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-30\",\"raceDate\":\"2027-10-24\",\"runDays\":[\"sun\",\"wed\",\"sat\",\"fri\"],\"currentWeeklyKm\":32,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-08-30\"},\"goalTimeSec\":1692} → U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 2830,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-10-17\",\"raceDate\":\"2028-12-11\",\"runDays\":[\"wed\",\"sun\",\"mon\",\"tue\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1768,\"date\":\"2028-07-07\"},\"easyPaceSecPerKm\":418,\"goalTimeSec\":null} → U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub, ned (dugi pon)."
+   },
+   {
+    "i": 5367,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-12-19\",\"raceDate\":\"2028-02-12\",\"runDays\":[\"sun\",\"sat\",\"tue\",\"wed\",\"mon\"],\"currentWeeklyKm\":30,\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":3203} → U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 5552,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-01-13\",\"raceDate\":\"2027-03-09\",\"runDays\":[\"wed\",\"sat\",\"mon\",\"sun\",\"tue\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":7062,\"date\":\"2026-10-21\"},\"goalTimeSec\":null} → U danima pon, uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 5936,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-09-30\",\"raceDate\":\"2027-11-24\",\"runDays\":[\"wed\",\"sat\",\"thu\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3163,\"date\":\"2026-12-28\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":null} → U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi čet)."
+   },
+   {
+    "i": 11804,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-04\",\"raceDate\":\"2028-01-28\",\"runDays\":[\"wed\",\"thu\",\"sun\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":null,\"easyPaceSecPerKm\":436,\"goalTimeSec\":null} → U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi čet)."
+   },
+   {
+    "i": 15599,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-01-15\",\"raceDate\":\"2027-03-11\",\"runDays\":[\"sun\",\"thu\",\"sat\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":731,\"date\":\"2026-10-25\"},\"goalTimeSec\":2540} → U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedn~nerealan": [
+   {
+    "i": 10299,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-11-15\",\"raceDate\":\"2027-01-09\",\"runDays\":[\"mon\",\"sun\",\"tue\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2026-10-23\"},\"goalTimeSec\":1599} → U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, ned (dugi uto)."
+   },
+   {
+    "i": 29352,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-21\",\"raceDate\":\"2027-06-15\",\"runDays\":[\"sun\",\"tue\",\"mon\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-04-21\"},\"goalTimeSec\":null} → U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, ned (dugi uto)."
+   },
+   {
+    "i": 59873,
+    "size": 8024.2,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-03-28\",\"raceDate\":\"2027-05-22\",\"runDays\":[\"mon\",\"sun\",\"tue\"],\"currentWeeklyKm\":24.2,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-01-03\"},\"goalTimeSec\":null} → U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 8612,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-09-17\",\"raceDate\":\"2027-11-11\",\"runDays\":[\"thu\",\"sun\",\"mon\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":661,\"date\":\"2027-09-04\"},\"goalTimeSec\":2168} → U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   },
+   {
+    "i": 30676,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-03-29\",\"raceDate\":\"2027-05-23\",\"runDays\":[\"thu\",\"sun\",\"mon\",\"wed\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4386,\"date\":\"2026-12-12\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":2893} → U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi ned)."
+   },
+   {
+    "i": 31725,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-03-11\",\"raceDate\":\"2027-05-05\",\"runDays\":[\"wed\",\"mon\",\"sun\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":579,\"date\":\"2027-03-01\"},\"goalTimeSec\":null} → U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi čet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 24010,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-09-16\",\"raceDate\":\"2027-11-10\",\"runDays\":[\"fri\",\"wed\",\"sun\",\"thu\",\"mon\"],\"currentWeeklyKm\":30,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":585,\"date\":\"2027-07-24\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet, ned (dugi pon)."
+   },
+   {
+    "i": 39220,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-07-21\",\"raceDate\":\"2028-09-14\",\"runDays\":[\"thu\",\"sun\",\"mon\",\"fri\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":6697,\"date\":\"2028-04-28\"},\"goalTimeSec\":3022} → U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet, ned (dugi pon)."
+   },
+   {
+    "i": 69688,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-02-24\",\"raceDate\":\"2027-04-20\",\"runDays\":[\"wed\",\"sun\",\"thu\",\"fri\",\"mon\"],\"currentWeeklyKm\":30,\"longRunDay\":\"thu\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet, ned (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 19848,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-10-30\",\"raceDate\":\"2028-12-24\",\"runDays\":[\"fri\",\"thu\",\"sun\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":3207} → U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   },
+   {
+    "i": 32153,
+    "size": 8029.1,
+    "s": "realan {\"startDate\":\"2026-11-27\",\"raceDate\":\"2027-01-21\",\"runDays\":[\"wed\",\"thu\",\"fri\",\"sun\"],\"currentWeeklyKm\":29.1,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":5761,\"date\":\"2026-09-24\"},\"goalTimeSec\":null} → U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   },
+   {
+    "i": 67353,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-12-15\",\"raceDate\":\"2028-02-08\",\"runDays\":[\"fri\",\"thu\",\"wed\",\"sun\"],\"currentWeeklyKm\":30,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":872,\"date\":\"2027-12-15\"},\"goalTimeSec\":2836} → U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 77025,
+    "size": 8040.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-11-30\",\"raceDate\":\"2028-01-24\",\"runDays\":[\"wed\",\"sun\",\"thu\",\"mon\",\"fri\"],\"currentWeeklyKm\":40.9,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-09-21\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet, ned (dugi pon)."
+   },
+   {
+    "i": 12722,
+    "size": 8042,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-07-08\",\"raceDate\":\"2028-09-01\",\"runDays\":[\"sun\",\"fri\",\"thu\",\"wed\",\"mon\"],\"currentWeeklyKm\":42,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-06-16\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet, ned (dugi pon)."
+   },
+   {
+    "i": 5554,
+    "size": 8052.8,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-24\",\"raceDate\":\"2027-10-18\",\"runDays\":[\"sun\",\"mon\",\"thu\",\"wed\",\"fri\"],\"currentWeeklyKm\":52.8,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-08-22\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet, ned (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 3555,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-01-17\",\"raceDate\":\"2028-03-12\",\"runDays\":[\"thu\",\"sat\",\"mon\",\"wed\",\"sun\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":7489,\"date\":\"2028-01-17\"},\"goalTimeSec\":null} → U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 29314,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-09-25\",\"raceDate\":\"2028-11-19\",\"runDays\":[\"thu\",\"mon\",\"wed\",\"sat\",\"sun\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":5000,\"timeSec\":973,\"date\":\"2028-09-17\"},\"goalTimeSec\":2015} → U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 38660,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-05-26\",\"raceDate\":\"2028-07-20\",\"runDays\":[\"wed\",\"mon\",\"thu\",\"sat\",\"sun\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":3000,\"timeSec\":770,\"date\":\"2028-02-09\"},\"easyPaceSecPerKm\":477,\"goalTimeSec\":null} → U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 7033,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-01-28\",\"raceDate\":\"2028-03-23\",\"runDays\":[\"thu\",\"mon\",\"wed\",\"tue\",\"sun\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":298,\"goalTimeSec\":null} → U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 60312,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-11-21\",\"raceDate\":\"2028-01-15\",\"runDays\":[\"tue\",\"wed\",\"sun\",\"thu\",\"mon\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":286,\"goalTimeSec\":3119} → U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 68120,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-10-13\",\"raceDate\":\"2028-12-07\",\"runDays\":[\"mon\",\"tue\",\"sun\",\"wed\",\"thu\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null} → U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 11286,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-12-14\",\"raceDate\":\"2029-02-07\",\"runDays\":[\"thu\",\"tue\",\"fri\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":6343,\"date\":\"2028-11-19\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi čet)."
+   },
+   {
+    "i": 12036,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-06-07\",\"raceDate\":\"2027-08-01\",\"runDays\":[\"fri\",\"tue\",\"mon\",\"thu\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1615,\"date\":\"2027-06-05\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 34353,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-08-21\",\"raceDate\":\"2028-10-15\",\"runDays\":[\"fri\",\"tue\",\"thu\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":580,\"date\":\"2028-08-21\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi pet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 61905,
+    "size": 8028,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-04-09\",\"raceDate\":\"2028-06-03\",\"runDays\":[\"tue\",\"wed\",\"thu\",\"sat\"],\"currentWeeklyKm\":28,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":844,\"date\":\"2028-03-20\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   },
+   {
+    "i": 11762,
+    "size": 8030.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-03-05\",\"raceDate\":\"2027-04-29\",\"runDays\":[\"wed\",\"sat\",\"thu\",\"tue\"],\"currentWeeklyKm\":30.9,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":477,\"date\":\"2027-03-05\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   },
+   {
+    "i": 72804,
+    "size": 8034,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-04-11\",\"raceDate\":\"2028-06-05\",\"runDays\":[\"wed\",\"thu\",\"tue\",\"sat\"],\"currentWeeklyKm\":34,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-01-18\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   }
+  ],
+  "WEEK_INFEASIBLE:Nedelja #: nijedan cilj od # km naviše ne može da se sastavi~nerealan": [
+   {
+    "i": 1328,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-07-03\",\"raceDate\":\"2028-08-27\",\"runDays\":[\"fri\",\"thu\",\"sun\",\"tue\",\"sat\",\"wed\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2028-06-08\"},\"goalTimeSec\":null} → Nedelja 4: nijedan cilj od 18 km naviše ne može da se sastavi po pravilima."
+   },
+   {
+    "i": 2813,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-09-15\",\"raceDate\":\"2028-11-09\",\"runDays\":[\"thu\",\"tue\",\"sun\",\"mon\",\"sat\",\"wed\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":5000,\"timeSec\":865,\"date\":\"2028-06-23\"},\"goalTimeSec\":null} → Nedelja 4: nijedan cilj od 18 km naviše ne može da se sastavi po pravilima."
+   },
+   {
+    "i": 7885,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-05-27\",\"raceDate\":\"2027-07-21\",\"runDays\":[\"mon\",\"wed\",\"fri\",\"sun\",\"sat\",\"thu\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-03-04\"},\"goalTimeSec\":null} → Nedelja 4: nijedan cilj od 18 km naviše ne može da se sastavi po pravilima."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 25274,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-11-13\",\"raceDate\":\"2029-01-07\",\"runDays\":[\"wed\",\"fri\",\"sat\",\"tue\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":471,\"date\":\"2028-10-04\"},\"goalTimeSec\":null} → U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi pet)."
+   },
+   {
+    "i": 51289,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-08-15\",\"raceDate\":\"2028-10-09\",\"runDays\":[\"sat\",\"tue\",\"fri\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":878,\"date\":\"2028-06-14\"},\"goalTimeSec\":null} → U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi sub)."
+   },
+   {
+    "i": 14732,
+    "size": 8026,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-12-03\",\"raceDate\":\"2029-01-27\",\"runDays\":[\"tue\",\"wed\",\"sat\",\"fri\"],\"currentWeeklyKm\":26,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-12-03\"},\"goalTimeSec\":null} → U danima uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 53994,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-06-04\",\"raceDate\":\"2028-07-29\",\"runDays\":[\"thu\",\"sat\",\"wed\",\"tue\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3861,\"date\":\"2028-05-25\"},\"goalTimeSec\":1646} → U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 11311,
+    "size": 8031.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-18\",\"raceDate\":\"2027-11-12\",\"runDays\":[\"sat\",\"fri\",\"thu\",\"wed\",\"tue\"],\"currentWeeklyKm\":31.9,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1680,\"date\":\"2027-09-18\"},\"goalTimeSec\":1654} → U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 12024,
+    "size": 8034.1,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-29\",\"raceDate\":\"2027-12-23\",\"runDays\":[\"wed\",\"tue\",\"sat\",\"thu\",\"fri\"],\"currentWeeklyKm\":34.1,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-08-19\"},\"goalTimeSec\":null} → U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, pet, sub (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedn": [
+   {
+    "i": 18858,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-04-21\",\"raceDate\":\"2028-06-15\",\"runDays\":[\"thu\",\"wed\",\"fri\"],\"currentWeeklyKm\":20,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":920,\"date\":\"2028-03-21\"},\"goalTimeSec\":null} → U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedni. Predlog: sre, čet, pet (dugi sre)."
+   },
+   {
+    "i": 27114,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2026-12-27\",\"raceDate\":\"2027-02-20\",\"runDays\":[\"wed\",\"thu\",\"fri\"],\"currentWeeklyKm\":20,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":946,\"date\":\"2026-07-31\"},\"easyPaceSecPerKm\":510,\"goalTimeSec\":3202} → U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedni. Predlog: sre, čet, pet (dugi sre)."
+   },
+   {
+    "i": 44731,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-01-07\",\"raceDate\":\"2028-03-02\",\"runDays\":[\"thu\",\"wed\",\"fri\"],\"currentWeeklyKm\":20,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1763,\"date\":\"2027-09-07\"},\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedni. Predlog: sre, čet, pet (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 2013,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-08-06\",\"raceDate\":\"2028-09-30\",\"runDays\":[\"thu\",\"sat\",\"mon\",\"sun\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":426,\"goalTimeSec\":null} → U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub, ned (dugi pon)."
+   },
+   {
+    "i": 7804,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-06-21\",\"raceDate\":\"2028-08-15\",\"runDays\":[\"mon\",\"sat\",\"thu\",\"fri\",\"sun\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":3000,\"timeSec\":1076,\"date\":\"2028-04-22\"},\"goalTimeSec\":null} → U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 15037,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-10-19\",\"raceDate\":\"2028-12-13\",\"runDays\":[\"thu\",\"sat\",\"fri\",\"mon\",\"sun\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4422,\"date\":\"2028-10-19\"},\"goalTimeSec\":null} → U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 5461,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-05-29\",\"raceDate\":\"2027-07-23\",\"runDays\":[\"wed\",\"sun\",\"fri\",\"tue\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":494,\"goalTimeSec\":2833} → U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 30326,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-05-20\",\"raceDate\":\"2028-07-14\",\"runDays\":[\"sun\",\"sat\",\"fri\",\"tue\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 96015,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2026-12-23\",\"raceDate\":\"2027-02-16\",\"runDays\":[\"sun\",\"tue\",\"fri\",\"sat\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":515,\"date\":\"2026-12-03\"},\"goalTimeSec\":null} → U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 13443,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-06-25\",\"raceDate\":\"2028-08-19\",\"runDays\":[\"tue\",\"sun\",\"thu\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1626,\"date\":\"2028-04-05\"},\"goalTimeSec\":null} → U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, ned (dugi uto)."
+   },
+   {
+    "i": 29097,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-06-07\",\"raceDate\":\"2027-08-01\",\"runDays\":[\"mon\",\"sun\",\"tue\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1374,\"date\":\"2026-06-07\"},\"easyPaceSecPerKm\":403,\"goalTimeSec\":null} → U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, ned (dugi uto)."
+   },
+   {
+    "i": 73785,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-04-28\",\"raceDate\":\"2028-06-22\",\"runDays\":[\"tue\",\"mon\",\"thu\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":8477,\"date\":\"2028-04-28\"},\"goalTimeSec\":null} → U danima pon, uto, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 1082,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-02-01\",\"raceDate\":\"2027-03-28\",\"runDays\":[\"fri\",\"tue\",\"thu\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-02-01\"},\"goalTimeSec\":null} → U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi pet)."
+   },
+   {
+    "i": 78306,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-16\",\"raceDate\":\"2027-06-10\",\"runDays\":[\"thu\",\"tue\",\"wed\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-03-07\"},\"goalTimeSec\":null} → U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi čet)."
+   },
+   {
+    "i": 95787,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-01-26\",\"raceDate\":\"2027-03-22\",\"runDays\":[\"wed\",\"tue\",\"thu\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2026-11-09\"},\"goalTimeSec\":null} → U danima uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi čet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 8273,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-03-17\",\"raceDate\":\"2028-05-11\",\"runDays\":[\"sat\",\"mon\",\"tue\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2761,\"date\":\"2028-03-17\"},\"goalTimeSec\":null} → U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub (dugi pon)."
+   },
+   {
+    "i": 10095,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-11-26\",\"raceDate\":\"2029-01-20\",\"runDays\":[\"wed\",\"mon\",\"tue\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1507,\"date\":\"2028-09-05\"},\"goalTimeSec\":2817} → U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub (dugi pon)."
+   },
+   {
+    "i": 64341,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2026-12-26\",\"raceDate\":\"2027-02-19\",\"runDays\":[\"wed\",\"tue\",\"mon\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":397,\"goalTimeSec\":null} → U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 14016,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-31\",\"raceDate\":\"2028-03-26\",\"runDays\":[\"thu\",\"wed\",\"mon\",\"tue\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":503,\"date\":\"2027-11-23\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   },
+   {
+    "i": 83898,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-24\",\"raceDate\":\"2027-12-18\",\"runDays\":[\"thu\",\"tue\",\"wed\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-08-01\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi sub)."
+   },
+   {
+    "i": 33750,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-09-02\",\"raceDate\":\"2028-10-27\",\"runDays\":[\"mon\",\"thu\",\"wed\",\"tue\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":5000,\"timeSec\":816,\"date\":\"2028-06-10\"},\"goalTimeSec\":1598} → U danima pon, uto, sre, čet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 6851,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-09-01\",\"raceDate\":\"2027-10-26\",\"runDays\":[\"thu\",\"fri\",\"sat\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":312,\"goalTimeSec\":null} → U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 23777,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-03-15\",\"raceDate\":\"2028-05-09\",\"runDays\":[\"mon\",\"sat\",\"fri\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":390,\"goalTimeSec\":3177} → U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 54359,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-06-12\",\"raceDate\":\"2027-08-06\",\"runDays\":[\"fri\",\"thu\",\"mon\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":309,\"goalTimeSec\":2844} → U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 33163,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-17\",\"raceDate\":\"2028-03-12\",\"runDays\":[\"sun\",\"wed\",\"mon\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-10-25\"},\"goalTimeSec\":null} → U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi ned)."
+   },
+   {
+    "i": 49030,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-04-29\",\"raceDate\":\"2028-06-23\",\"runDays\":[\"thu\",\"mon\",\"wed\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-04-14\"},\"goalTimeSec\":1595} → U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   },
+   {
+    "i": 64075,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-11-18\",\"raceDate\":\"2028-01-12\",\"runDays\":[\"thu\",\"mon\",\"wed\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":864,\"date\":\"2027-11-14\"},\"goalTimeSec\":null} → U danima pon, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedn": [
+   {
+    "i": 16277,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-05-23\",\"raceDate\":\"2027-07-17\",\"runDays\":[\"fri\",\"sat\",\"sun\"],\"currentWeeklyKm\":20,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1497,\"date\":\"2026-11-25\"},\"easyPaceSecPerKm\":348,\"goalTimeSec\":null} → U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pet, sub, ned (dugi pet)."
+   },
+   {
+    "i": 30271,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-01-18\",\"raceDate\":\"2027-03-14\",\"runDays\":[\"sat\",\"fri\",\"sun\"],\"currentWeeklyKm\":20,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2278,\"date\":\"2027-01-04\"},\"goalTimeSec\":null} → U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pet, sub, ned (dugi pet)."
+   },
+   {
+    "i": 32574,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-04-11\",\"raceDate\":\"2027-06-05\",\"runDays\":[\"fri\",\"sun\",\"sat\"],\"currentWeeklyKm\":20,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":367,\"goalTimeSec\":2663} → U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pet, sub, ned (dugi pet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 5242,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-12-04\",\"raceDate\":\"2029-01-28\",\"runDays\":[\"thu\",\"fri\",\"mon\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":7244,\"date\":\"2028-09-15\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 54414,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-05-05\",\"raceDate\":\"2027-06-29\",\"runDays\":[\"wed\",\"mon\",\"thu\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":698,\"date\":\"2027-05-05\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 81754,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-05-23\",\"raceDate\":\"2027-07-17\",\"runDays\":[\"fri\",\"wed\",\"mon\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":1076,\"date\":\"2027-05-23\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 88470,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-05-08\",\"raceDate\":\"2028-07-02\",\"runDays\":[\"thu\",\"sat\",\"sun\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-03-01\"},\"goalTimeSec\":null} → U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi čet)."
+   },
+   {
+    "i": 61671,
+    "size": 8025.4,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-06-01\",\"raceDate\":\"2027-07-26\",\"runDays\":[\"wed\",\"sat\",\"thu\",\"sun\"],\"currentWeeklyKm\":25.4,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-03-29\"},\"goalTimeSec\":1684} → U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 83936,
+    "size": 8030.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-06-22\",\"raceDate\":\"2027-08-16\",\"runDays\":[\"sun\",\"wed\",\"sat\",\"thu\"],\"currentWeeklyKm\":30.9,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3852,\"date\":\"2027-04-18\"},\"goalTimeSec\":1672} → U danima sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 8329,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-02-12\",\"raceDate\":\"2028-04-07\",\"runDays\":[\"thu\",\"wed\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":8742,\"date\":\"2027-12-09\"},\"easyPaceSecPerKm\":353,\"goalTimeSec\":null} → U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 8831,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-08-07\",\"raceDate\":\"2027-10-01\",\"runDays\":[\"tue\",\"thu\",\"wed\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":620,\"date\":\"2027-08-07\"},\"goalTimeSec\":2244} → U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 97627,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-04-23\",\"raceDate\":\"2027-06-17\",\"runDays\":[\"sun\",\"thu\",\"tue\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":373,\"goalTimeSec\":null} → U danima uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 41480,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-03-19\",\"raceDate\":\"2028-05-13\",\"runDays\":[\"sat\",\"tue\",\"mon\",\"fri\",\"sun\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":565,\"date\":\"2028-02-20\"},\"goalTimeSec\":null} → U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 88465,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-06-14\",\"raceDate\":\"2027-08-08\",\"runDays\":[\"tue\",\"mon\",\"fri\",\"sun\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":427,\"goalTimeSec\":3043} → U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 94984,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-05-29\",\"raceDate\":\"2027-07-23\",\"runDays\":[\"tue\",\"mon\",\"fri\",\"sun\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":1147,\"date\":\"2027-04-05\"},\"easyPaceSecPerKm\":391,\"goalTimeSec\":3000} → U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 19718,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-11-29\",\"raceDate\":\"2029-01-23\",\"runDays\":[\"fri\",\"tue\",\"sun\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":275,\"goalTimeSec\":null} → U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 46381,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-01-30\",\"raceDate\":\"2028-03-25\",\"runDays\":[\"sun\",\"fri\",\"tue\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null} → U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 52246,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2026-11-08\",\"raceDate\":\"2027-01-02\",\"runDays\":[\"sun\",\"tue\",\"fri\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1936,\"date\":\"2026-01-17\"},\"easyPaceSecPerKm\":381,\"goalTimeSec\":null} → U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 46018,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-07-14\",\"raceDate\":\"2027-09-07\",\"runDays\":[\"tue\",\"fri\",\"sat\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":2774} → U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 51199,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-10-24\",\"raceDate\":\"2027-12-18\",\"runDays\":[\"thu\",\"fri\",\"sat\",\"tue\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":5568,\"date\":\"2027-04-07\"},\"easyPaceSecPerKm\":503,\"goalTimeSec\":null} → U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 88178,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-05-07\",\"raceDate\":\"2027-07-01\",\"runDays\":[\"fri\",\"sat\",\"thu\",\"tue\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4488,\"date\":\"2027-05-07\"},\"goalTimeSec\":null} → U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 92615,
+    "size": 8028.4,
+    "s": "realan {\"startDate\":\"2028-02-11\",\"raceDate\":\"2028-04-06\",\"runDays\":[\"thu\",\"sat\",\"wed\",\"tue\"],\"currentWeeklyKm\":28.4,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1841,\"date\":\"2028-01-26\"},\"goalTimeSec\":3992} → U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   },
+   {
+    "i": 61678,
+    "size": 8029,
+    "s": "realan {\"startDate\":\"2027-05-13\",\"raceDate\":\"2027-07-07\",\"runDays\":[\"sat\",\"tue\",\"thu\",\"wed\"],\"currentWeeklyKm\":29,\"longRunDay\":\"wed\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   },
+   {
+    "i": 69281,
+    "size": 8029.2,
+    "s": "realan {\"startDate\":\"2028-05-17\",\"raceDate\":\"2028-07-11\",\"runDays\":[\"sat\",\"wed\",\"tue\",\"thu\"],\"currentWeeklyKm\":29.2,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":1130,\"date\":\"2028-03-23\"},\"easyPaceSecPerKm\":489,\"goalTimeSec\":null} → U danima uto, sre, čet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 13648,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-29\",\"raceDate\":\"2028-04-24\",\"runDays\":[\"tue\",\"mon\",\"thu\",\"fri\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2028-02-03\"},\"goalTimeSec\":1709} → U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 41071,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-10-07\",\"raceDate\":\"2028-12-01\",\"runDays\":[\"fri\",\"tue\",\"thu\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-07-31\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 18967,
+    "size": 8031,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-09\",\"raceDate\":\"2027-09-02\",\"runDays\":[\"thu\",\"mon\",\"fri\",\"tue\"],\"currentWeeklyKm\":31,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-07-07\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi pet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 35552,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-04-28\",\"raceDate\":\"2028-06-22\",\"runDays\":[\"wed\",\"sat\",\"sun\",\"tue\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-03-15\"},\"goalTimeSec\":1642} → U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 42273,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-26\",\"raceDate\":\"2028-03-21\",\"runDays\":[\"sat\",\"tue\",\"sun\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-11-27\"},\"goalTimeSec\":null} → U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, sub, ned (dugi sre)."
+   },
+   {
+    "i": 83637,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-09-18\",\"raceDate\":\"2028-11-12\",\"runDays\":[\"tue\",\"sun\",\"wed\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-08-12\"},\"goalTimeSec\":null} → U danima uto, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 41009,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-05-13\",\"raceDate\":\"2027-07-07\",\"runDays\":[\"sat\",\"tue\",\"fri\",\"mon\",\"sun\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-03-15\"},\"goalTimeSec\":null} → U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 45342,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-07\",\"raceDate\":\"2028-01-31\",\"runDays\":[\"mon\",\"sat\",\"sun\",\"tue\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-11-02\"},\"goalTimeSec\":null} → U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 3862,
+    "size": 8030.5,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-06-16\",\"raceDate\":\"2028-08-10\",\"runDays\":[\"sun\",\"mon\",\"tue\",\"fri\",\"sat\"],\"currentWeeklyKm\":30.5,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2028-03-24\"},\"goalTimeSec\":null} → U danima pon, uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 5650,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2026-11-05\",\"raceDate\":\"2026-12-30\",\"runDays\":[\"mon\",\"sat\",\"sun\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2278,\"date\":\"2026-08-30\"},\"goalTimeSec\":2290} → U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, sub, ned (dugi pon)."
+   },
+   {
+    "i": 11726,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-12-05\",\"raceDate\":\"2029-01-29\",\"runDays\":[\"sun\",\"mon\",\"sat\",\"wed\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":5407,\"date\":\"2028-10-22\"},\"goalTimeSec\":null} → U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 15510,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-05-09\",\"raceDate\":\"2027-07-03\",\"runDays\":[\"wed\",\"sat\",\"mon\",\"sun\"],\"currentWeeklyKm\":25,\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null} → U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 3262,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-09\",\"raceDate\":\"2028-02-02\",\"runDays\":[\"mon\",\"sun\",\"thu\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1841,\"date\":\"2027-12-08\"},\"goalTimeSec\":null} → U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi pon)."
+   },
+   {
+    "i": 19039,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-11-16\",\"raceDate\":\"2029-01-10\",\"runDays\":[\"sat\",\"thu\",\"sun\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":3000,\"timeSec\":560,\"date\":\"2028-10-03\"},\"goalTimeSec\":null} → U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 39178,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-07-02\",\"raceDate\":\"2027-08-26\",\"runDays\":[\"sun\",\"mon\",\"sat\",\"thu\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1048,\"date\":\"2027-06-30\"},\"goalTimeSec\":null} → U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mog": [
+   {
+    "i": 30765,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-09-22\",\"raceDate\":\"2028-11-16\",\"runDays\":[\"thu\",\"wed\",\"tue\",\"mon\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":401,\"goalTimeSec\":null} → U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 41583,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-11-30\",\"raceDate\":\"2028-01-24\",\"runDays\":[\"fri\",\"tue\",\"wed\",\"mon\",\"thu\"],\"currentWeeklyKm\":30,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":2686} → U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 43077,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-03-07\",\"raceDate\":\"2028-05-01\",\"runDays\":[\"thu\",\"fri\",\"tue\",\"wed\",\"mon\"],\"currentWeeklyKm\":30,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":655,\"date\":\"2028-03-07\"},\"goalTimeSec\":2324} → U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, pet (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 20126,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-08-05\",\"raceDate\":\"2028-09-29\",\"runDays\":[\"mon\",\"sun\",\"tue\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":877,\"date\":\"2028-07-13\"},\"goalTimeSec\":null} → U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 84843,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-12-22\",\"raceDate\":\"2029-02-15\",\"runDays\":[\"tue\",\"sun\",\"wed\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-09-29\"},\"goalTimeSec\":null} → U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, ned (dugi sre)."
+   },
+   {
+    "i": 28686,
+    "size": 8029,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-03-22\",\"raceDate\":\"2028-05-16\",\"runDays\":[\"tue\",\"wed\",\"sun\",\"mon\"],\"currentWeeklyKm\":29,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":506,\"date\":\"2027-12-30\"},\"goalTimeSec\":null} → U danima pon, uto, sre, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, ned (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 2713,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-12-11\",\"raceDate\":\"2029-02-04\",\"runDays\":[\"sun\",\"thu\",\"fri\",\"mon\",\"sat\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2028-11-22\"},\"goalTimeSec\":null} → U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 28339,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-26\",\"raceDate\":\"2027-11-20\",\"runDays\":[\"fri\",\"sun\",\"mon\",\"thu\",\"sat\"],\"currentWeeklyKm\":30,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-08-03\"},\"goalTimeSec\":null} → U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub, ned (dugi pon)."
+   },
+   {
+    "i": 33314,
+    "size": 8031.4,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-04-10\",\"raceDate\":\"2028-06-04\",\"runDays\":[\"thu\",\"mon\",\"sun\",\"sat\",\"fri\"],\"currentWeeklyKm\":31.4,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-04-10\"},\"goalTimeSec\":null} → U danima pon, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub, ned (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mog": [
+   {
+    "i": 28258,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-02-21\",\"raceDate\":\"2028-04-16\",\"runDays\":[\"tue\",\"wed\",\"thu\",\"sat\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":4246,\"date\":\"2028-01-17\"},\"easyPaceSecPerKm\":362,\"goalTimeSec\":null} → U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 50243,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-06-21\",\"raceDate\":\"2027-08-15\",\"runDays\":[\"fri\",\"sat\",\"thu\",\"wed\",\"tue\"],\"currentWeeklyKm\":30,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4170,\"date\":\"2027-03-29\"},\"goalTimeSec\":null} → U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 87549,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-09-28\",\"raceDate\":\"2027-11-22\",\"runDays\":[\"wed\",\"sat\",\"fri\",\"tue\",\"thu\"],\"currentWeeklyKm\":30,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":8206,\"date\":\"2027-02-14\"},\"easyPaceSecPerKm\":490,\"goalTimeSec\":3020} → U danima uto, sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, pet, sub (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 23040,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-05-30\",\"raceDate\":\"2027-07-24\",\"runDays\":[\"sun\",\"fri\",\"wed\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3598,\"date\":\"2027-04-16\"},\"goalTimeSec\":null} → U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 40591,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-02-26\",\"raceDate\":\"2028-04-21\",\"runDays\":[\"wed\",\"sun\",\"fri\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1118,\"date\":\"2028-02-20\"},\"goalTimeSec\":2233} → U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 13767,
+    "size": 8034,
+    "s": "realan {\"startDate\":\"2028-04-26\",\"raceDate\":\"2028-06-20\",\"runDays\":[\"sat\",\"sun\",\"fri\",\"wed\"],\"currentWeeklyKm\":34,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":509,\"goalTimeSec\":null} → U danima sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 61697,
+    "size": 8031,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-25\",\"raceDate\":\"2027-06-19\",\"runDays\":[\"sun\",\"wed\",\"thu\",\"mon\",\"sat\"],\"currentWeeklyKm\":31,\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-01-31\"},\"goalTimeSec\":null} → U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 23906,
+    "size": 8033.3,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-02-03\",\"raceDate\":\"2027-03-30\",\"runDays\":[\"thu\",\"sat\",\"sun\",\"mon\",\"wed\"],\"currentWeeklyKm\":33.3,\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2026-11-21\"},\"goalTimeSec\":1656} → U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 59403,
+    "size": 8037.2,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-10\",\"raceDate\":\"2027-11-04\",\"runDays\":[\"sun\",\"sat\",\"mon\",\"wed\",\"thu\"],\"currentWeeklyKm\":37.2,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-08-22\"},\"goalTimeSec\":null} → U danima pon, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, sub, ned (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 64461,
+    "size": 8038,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-04\",\"raceDate\":\"2027-01-28\",\"runDays\":[\"fri\",\"tue\",\"mon\",\"wed\",\"thu\"],\"currentWeeklyKm\":38,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":493,\"date\":\"2026-09-11\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 45000,
+    "size": 8041.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-05-03\",\"raceDate\":\"2028-06-27\",\"runDays\":[\"thu\",\"tue\",\"fri\",\"mon\",\"wed\"],\"currentWeeklyKm\":41.9,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2028-02-09\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 55758,
+    "size": 8051,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-21\",\"raceDate\":\"2027-02-14\",\"runDays\":[\"mon\",\"thu\",\"fri\",\"tue\",\"wed\"],\"currentWeeklyKm\":51,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2026-12-21\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, pet (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mog": [
+   {
+    "i": 10841,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-10-25\",\"raceDate\":\"2028-12-19\",\"runDays\":[\"wed\",\"fri\",\"sat\",\"mon\",\"tue\"],\"currentWeeklyKm\":30,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":6640,\"date\":\"2028-10-25\"},\"goalTimeSec\":null} → U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet, sub (dugi pon)."
+   },
+   {
+    "i": 19909,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-11-25\",\"raceDate\":\"2028-01-19\",\"runDays\":[\"mon\",\"sat\",\"wed\",\"tue\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":8477,\"date\":\"2027-11-16\"},\"goalTimeSec\":null} → U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet, sub (dugi pon)."
+   },
+   {
+    "i": 39577,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-02-06\",\"raceDate\":\"2027-04-02\",\"runDays\":[\"mon\",\"tue\",\"sat\",\"fri\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1841,\"date\":\"2026-11-14\"},\"goalTimeSec\":null} → U danima pon, uto, sre, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu bit": [
+   {
+    "i": 13079,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2026-12-24\",\"raceDate\":\"2027-02-17\",\"runDays\":[\"mon\",\"tue\",\"fri\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":null,\"easyPaceSecPerKm\":389,\"goalTimeSec\":null} → U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, ned (dugi uto)."
+   },
+   {
+    "i": 59721,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-10-09\",\"raceDate\":\"2027-12-03\",\"runDays\":[\"fri\",\"mon\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":540,\"date\":\"2027-08-24\"},\"goalTimeSec\":null} → U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, ned (dugi uto)."
+   },
+   {
+    "i": 91635,
+    "size": 8029.3,
+    "s": "realan {\"startDate\":\"2028-06-04\",\"raceDate\":\"2028-07-29\",\"runDays\":[\"tue\",\"sun\",\"fri\",\"mon\"],\"currentWeeklyKm\":29.3,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1166,\"date\":\"2028-06-04\"},\"goalTimeSec\":2208} → U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 44933,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-03-08\",\"raceDate\":\"2028-05-02\",\"runDays\":[\"fri\",\"sun\",\"thu\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-01-08\"},\"goalTimeSec\":1595} → U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi sub)."
+   },
+   {
+    "i": 46472,
+    "size": 8027.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-20\",\"raceDate\":\"2027-12-14\",\"runDays\":[\"fri\",\"sun\",\"sat\",\"thu\"],\"currentWeeklyKm\":27.6,\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-07-28\"},\"goalTimeSec\":1595} → U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 97784,
+    "size": 8028.7,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-11-12\",\"raceDate\":\"2028-01-06\",\"runDays\":[\"sat\",\"fri\",\"sun\",\"thu\"],\"currentWeeklyKm\":28.7,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-11-10\"},\"goalTimeSec\":1663} → U danima čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi sub)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedn~nerealan": [
+   {
+    "i": 22556,
+    "size": 8025.7,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-31\",\"raceDate\":\"2027-02-24\",\"runDays\":[\"fri\",\"thu\",\"wed\"],\"currentWeeklyKm\":25.7,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2026-10-30\"},\"goalTimeSec\":1656} → U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedni. Predlog: sre, čet, pet (dugi sre)."
+   },
+   {
+    "i": 90687,
+    "size": 9020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-28\",\"raceDate\":\"2027-12-29\",\"runDays\":[\"wed\",\"thu\",\"fri\"],\"currentWeeklyKm\":20,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3661,\"date\":\"2027-10-25\"},\"goalTimeSec\":null} → U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedni. Predlog: sre, čet, pet (dugi sre)."
+   },
+   {
+    "i": 91789,
+    "size": 9025.1,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-03-06\",\"raceDate\":\"2027-05-07\",\"runDays\":[\"wed\",\"thu\",\"fri\"],\"currentWeeklyKm\":25.1,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-01-10\"},\"goalTimeSec\":null} → U danima sre, čet, pet kvalitet i dugi ne mogu biti nesusedni. Predlog: sre, čet, pet (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedn": [
+   {
+    "i": 18199,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-04-01\",\"raceDate\":\"2028-05-26\",\"runDays\":[\"tue\",\"mon\",\"sun\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1841,\"date\":\"2028-01-08\"},\"goalTimeSec\":4064} → U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, ned (dugi uto)."
+   },
+   {
+    "i": 40065,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-05-31\",\"raceDate\":\"2027-07-25\",\"runDays\":[\"mon\",\"tue\",\"sun\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":752,\"date\":\"2027-05-31\"},\"goalTimeSec\":null} → U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, ned (dugi uto)."
+   },
+   {
+    "i": 40213,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-09-18\",\"raceDate\":\"2027-11-12\",\"runDays\":[\"tue\",\"mon\",\"sun\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":null,\"easyPaceSecPerKm\":494,\"goalTimeSec\":2852} → U danima pon, uto, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 30171,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-01\",\"raceDate\":\"2027-10-26\",\"runDays\":[\"thu\",\"fri\",\"sun\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-07-27\"},\"goalTimeSec\":null} → U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi ned)."
+   },
+   {
+    "i": 33686,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-11-07\",\"raceDate\":\"2027-01-01\",\"runDays\":[\"sun\",\"fri\",\"thu\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1749,\"date\":\"2026-08-30\"},\"goalTimeSec\":null} → U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi ned)."
+   },
+   {
+    "i": 37198,
+    "size": 8026,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-29\",\"raceDate\":\"2028-02-22\",\"runDays\":[\"mon\",\"sun\",\"thu\",\"fri\"],\"currentWeeklyKm\":26,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-12-29\"},\"goalTimeSec\":1649} → U danima pon, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, ned (dugi pet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 1979,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-07\",\"raceDate\":\"2027-08-31\",\"runDays\":[\"sun\",\"wed\",\"sat\",\"thu\",\"tue\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":488,\"date\":\"2027-07-01\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 2872,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-11-21\",\"raceDate\":\"2028-01-15\",\"runDays\":[\"thu\",\"sat\",\"wed\",\"tue\",\"sun\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-10-25\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 13788,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-01\",\"raceDate\":\"2027-08-25\",\"runDays\":[\"thu\",\"sun\",\"tue\",\"sat\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1674,\"date\":\"2027-04-08\"},\"goalTimeSec\":null} → U danima uto, sre, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, čet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 16393,
+    "size": 8036.7,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-18\",\"raceDate\":\"2028-03-13\",\"runDays\":[\"thu\",\"wed\",\"fri\",\"sun\"],\"currentWeeklyKm\":36.7,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1720,\"date\":\"2028-01-12\"},\"goalTimeSec\":null} → U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   },
+   {
+    "i": 47105,
+    "size": 8043,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-06-14\",\"raceDate\":\"2027-08-08\",\"runDays\":[\"thu\",\"wed\",\"fri\",\"sun\"],\"currentWeeklyKm\":43,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":475,\"date\":\"2027-06-12\"},\"goalTimeSec\":null} → U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   },
+   {
+    "i": 35891,
+    "size": 8048.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-26\",\"raceDate\":\"2027-02-19\",\"runDays\":[\"thu\",\"fri\",\"wed\",\"sun\"],\"currentWeeklyKm\":48.9,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":839,\"date\":\"2026-11-23\"},\"goalTimeSec\":1776} → U danima sre, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, ned (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedn~nerealan": [
+   {
+    "i": 81248,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-26\",\"raceDate\":\"2027-10-20\",\"runDays\":[\"sat\",\"fri\",\"thu\"],\"currentWeeklyKm\":20,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-06-06\"},\"goalTimeSec\":null} → U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedni. Predlog: čet, pet, sub (dugi čet)."
+   },
+   {
+    "i": 99531,
+    "size": 8023,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-09-05\",\"raceDate\":\"2028-10-30\",\"runDays\":[\"thu\",\"fri\",\"sat\"],\"currentWeeklyKm\":23,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-08-31\"},\"goalTimeSec\":null} → U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedni. Predlog: čet, pet, sub (dugi čet)."
+   },
+   {
+    "i": 72250,
+    "size": 8032.8,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-10-12\",\"raceDate\":\"2028-12-06\",\"runDays\":[\"fri\",\"sat\",\"thu\"],\"currentWeeklyKm\":32.8,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-08-01\"},\"goalTimeSec\":1606} → U danima čet, pet, sub kvalitet i dugi ne mogu biti nesusedni. Predlog: čet, pet, sub (dugi čet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 7777,
+    "size": 8027.1,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-27\",\"raceDate\":\"2028-03-22\",\"runDays\":[\"mon\",\"fri\",\"tue\",\"wed\"],\"currentWeeklyKm\":27.1,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1839,\"date\":\"2027-12-25\"},\"goalTimeSec\":1858} → U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet (dugi pon)."
+   },
+   {
+    "i": 72117,
+    "size": 8033.8,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-11-24\",\"raceDate\":\"2029-01-18\",\"runDays\":[\"mon\",\"wed\",\"fri\",\"tue\"],\"currentWeeklyKm\":33.8,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":470,\"date\":\"2028-09-21\"},\"goalTimeSec\":null} → U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet (dugi pon)."
+   },
+   {
+    "i": 16286,
+    "size": 8040.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-25\",\"raceDate\":\"2028-02-18\",\"runDays\":[\"tue\",\"fri\",\"mon\",\"wed\"],\"currentWeeklyKm\":40.6,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-10-02\"},\"goalTimeSec\":1703} → U danima pon, uto, sre, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, pet (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 19707,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-18\",\"raceDate\":\"2027-09-11\",\"runDays\":[\"wed\",\"sat\",\"thu\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-05-16\"},\"goalTimeSec\":null} → U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 35651,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-01-10\",\"raceDate\":\"2027-03-06\",\"runDays\":[\"thu\",\"fri\",\"wed\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1839,\"date\":\"2026-12-31\"},\"goalTimeSec\":1721} → U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi sub)."
+   },
+   {
+    "i": 49359,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-06-06\",\"raceDate\":\"2027-07-31\",\"runDays\":[\"thu\",\"wed\",\"sat\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1826,\"date\":\"2027-04-17\"},\"goalTimeSec\":null} → U danima sre, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, pet, sub (dugi pet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 26238,
+    "size": 8031.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-29\",\"raceDate\":\"2028-02-22\",\"runDays\":[\"thu\",\"sun\",\"sat\",\"mon\"],\"currentWeeklyKm\":31.9,\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-12-26\"},\"goalTimeSec\":null} → U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 25033,
+    "size": 8040,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-12-12\",\"raceDate\":\"2027-02-05\",\"runDays\":[\"mon\",\"sun\",\"thu\",\"sat\"],\"currentWeeklyKm\":40,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":854,\"date\":\"2026-09-19\"},\"goalTimeSec\":null} → U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi pon)."
+   },
+   {
+    "i": 43906,
+    "size": 9040.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-01\",\"raceDate\":\"2028-02-01\",\"runDays\":[\"sat\",\"thu\",\"sun\",\"mon\"],\"currentWeeklyKm\":40.6,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-09-15\"},\"goalTimeSec\":null} → U danima pon, čet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, sub, ned (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mog": [
+   {
+    "i": 44404,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-01-15\",\"raceDate\":\"2027-03-11\",\"runDays\":[\"sun\",\"tue\",\"mon\",\"fri\",\"thu\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":886,\"date\":\"2027-01-15\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, ned (dugi uto)."
+   },
+   {
+    "i": 67814,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2027-05-19\",\"raceDate\":\"2027-07-13\",\"runDays\":[\"tue\",\"mon\",\"fri\",\"thu\",\"sun\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":6217,\"date\":\"2027-05-11\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, ned (dugi uto)."
+   },
+   {
+    "i": 99081,
+    "size": 8030,
+    "s": "realan {\"startDate\":\"2028-02-18\",\"raceDate\":\"2028-04-13\",\"runDays\":[\"thu\",\"fri\",\"mon\",\"sun\",\"tue\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":null,\"easyPaceSecPerKm\":510,\"goalTimeSec\":null} → U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 74346,
+    "size": 8031.5,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-06-06\",\"raceDate\":\"2028-07-31\",\"runDays\":[\"mon\",\"sat\",\"fri\",\"thu\"],\"currentWeeklyKm\":31.5,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":488,\"date\":\"2028-04-03\"},\"goalTimeSec\":null} → U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 27382,
+    "size": 8042,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-17\",\"raceDate\":\"2028-04-12\",\"runDays\":[\"sat\",\"mon\",\"thu\",\"fri\"],\"currentWeeklyKm\":42,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-11-25\"},\"goalTimeSec\":1710} → U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 86023,
+    "size": 8049,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-28\",\"raceDate\":\"2027-11-22\",\"runDays\":[\"sat\",\"fri\",\"thu\",\"mon\"],\"currentWeeklyKm\":49,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":464,\"date\":\"2027-09-16\"},\"goalTimeSec\":null} → U danima pon, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, čet, pet, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 20684,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-11-19\",\"raceDate\":\"2029-01-13\",\"runDays\":[\"wed\",\"fri\",\"sat\",\"sun\",\"tue\"],\"currentWeeklyKm\":30,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-09-16\"},\"goalTimeSec\":1699} → U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 3065,
+    "size": 8046,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-09-20\",\"raceDate\":\"2028-11-14\",\"runDays\":[\"tue\",\"wed\",\"fri\",\"sun\",\"sat\"],\"currentWeeklyKm\":46,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-07-20\"},\"goalTimeSec\":null} → U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 70947,
+    "size": 8058,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-05-11\",\"raceDate\":\"2028-07-05\",\"runDays\":[\"fri\",\"sat\",\"wed\",\"tue\",\"sun\"],\"currentWeeklyKm\":58,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-05-06\"},\"goalTimeSec\":null} → U danima uto, sre, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, sre, pet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedn~nerealan": [
+   {
+    "i": 74763,
+    "size": 8021,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-28\",\"raceDate\":\"2027-09-21\",\"runDays\":[\"sun\",\"sat\",\"fri\"],\"currentWeeklyKm\":21,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3750,\"date\":\"2027-06-23\"},\"goalTimeSec\":null} → U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pet, sub, ned (dugi pet)."
+   },
+   {
+    "i": 96503,
+    "size": 8035.5,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-30\",\"raceDate\":\"2027-12-24\",\"runDays\":[\"sun\",\"fri\",\"sat\"],\"currentWeeklyKm\":35.5,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1713,\"date\":\"2027-08-15\"},\"goalTimeSec\":null} → U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pet, sub, ned (dugi pet)."
+   },
+   {
+    "i": 39638,
+    "size": 8040,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-05-10\",\"raceDate\":\"2027-07-04\",\"runDays\":[\"fri\",\"sat\",\"sun\"],\"currentWeeklyKm\":40,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1689,\"date\":\"2027-03-16\"},\"goalTimeSec\":null} → U danima pet, sub, ned kvalitet i dugi ne mogu biti nesusedni. Predlog: pet, sub, ned (dugi pet)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 6165,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-06-22\",\"raceDate\":\"2027-08-16\",\"runDays\":[\"tue\",\"thu\",\"sat\",\"mon\",\"fri\"],\"currentWeeklyKm\":30,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1713,\"date\":\"2027-06-13\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 96598,
+    "size": 8039.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-24\",\"raceDate\":\"2028-02-17\",\"runDays\":[\"tue\",\"mon\",\"fri\",\"sat\",\"thu\"],\"currentWeeklyKm\":39.6,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-10-16\"},\"goalTimeSec\":1663} → U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, sub (dugi pon)."
+   },
+   {
+    "i": 2912,
+    "size": 8045,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-20\",\"raceDate\":\"2027-11-14\",\"runDays\":[\"tue\",\"thu\",\"fri\",\"sat\",\"mon\"],\"currentWeeklyKm\":45,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":485,\"date\":\"2027-07-10\"},\"goalTimeSec\":1751} → U danima pon, uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 83050,
+    "size": 8026.8,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-07-29\",\"raceDate\":\"2028-09-22\",\"runDays\":[\"sun\",\"mon\",\"wed\",\"sat\"],\"currentWeeklyKm\":26.8,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-05-17\"},\"goalTimeSec\":null} → U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, sub, ned (dugi pon)."
+   },
+   {
+    "i": 76190,
+    "size": 8032,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-01-27\",\"raceDate\":\"2027-03-23\",\"runDays\":[\"wed\",\"mon\",\"sat\",\"sun\"],\"currentWeeklyKm\":32,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3980,\"date\":\"2026-11-04\"},\"goalTimeSec\":null} → U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   },
+   {
+    "i": 43845,
+    "size": 8036,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-11-06\",\"raceDate\":\"2027-12-31\",\"runDays\":[\"mon\",\"sun\",\"sat\",\"wed\"],\"currentWeeklyKm\":36,\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-08-26\"},\"goalTimeSec\":null} → U danima pon, sre, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, pet, sub, ned (dugi ned)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 13150,
+    "size": 8037.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-11\",\"raceDate\":\"2027-12-05\",\"runDays\":[\"sat\",\"tue\",\"fri\",\"thu\"],\"currentWeeklyKm\":37.9,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-09-20\"},\"goalTimeSec\":null} → U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 9799,
+    "size": 8046.7,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-03-19\",\"raceDate\":\"2028-05-13\",\"runDays\":[\"tue\",\"thu\",\"fri\",\"sat\"],\"currentWeeklyKm\":46.7,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-03-19\"},\"goalTimeSec\":null} → U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   },
+   {
+    "i": 47308,
+    "size": 8051.7,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-02-03\",\"raceDate\":\"2027-03-30\",\"runDays\":[\"sat\",\"thu\",\"tue\",\"fri\"],\"currentWeeklyKm\":51.7,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":469,\"date\":\"2026-12-16\"},\"goalTimeSec\":null} → U danima uto, čet, pet, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, čet, pet, sub (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedn~nerealan": [
+   {
+    "i": 26800,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-02\",\"raceDate\":\"2027-08-26\",\"runDays\":[\"mon\",\"tue\",\"wed\"],\"currentWeeklyKm\":20,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-05-23\"},\"goalTimeSec\":1663} → U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, sre (dugi pon)."
+   },
+   {
+    "i": 85876,
+    "size": 8025.3,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-10-27\",\"raceDate\":\"2027-12-21\",\"runDays\":[\"wed\",\"tue\",\"mon\"],\"currentWeeklyKm\":25.3,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-09-12\"},\"goalTimeSec\":null} → U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, sre (dugi pon)."
+   },
+   {
+    "i": 36902,
+    "size": 8031.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-11-29\",\"raceDate\":\"2029-01-23\",\"runDays\":[\"wed\",\"mon\",\"tue\"],\"currentWeeklyKm\":31.9,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":458,\"date\":\"2028-11-22\"},\"goalTimeSec\":null} → U danima pon, uto, sre kvalitet i dugi ne mogu biti nesusedni. Predlog: pon, uto, sre (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 16261,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-11-18\",\"raceDate\":\"2027-01-12\",\"runDays\":[\"sun\",\"tue\",\"thu\",\"mon\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2026-09-07\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 40175,
+    "size": 8039,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-06-12\",\"raceDate\":\"2027-08-06\",\"runDays\":[\"mon\",\"tue\",\"sun\",\"wed\",\"thu\"],\"currentWeeklyKm\":39,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3826,\"date\":\"2027-03-20\"},\"goalTimeSec\":null} → U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, ned (dugi uto)."
+   },
+   {
+    "i": 92637,
+    "size": 8046,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-21\",\"raceDate\":\"2027-11-15\",\"runDays\":[\"wed\",\"sun\",\"thu\",\"mon\",\"tue\"],\"currentWeeklyKm\":46,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-06-29\"},\"goalTimeSec\":1626} → U danima pon, uto, sre, čet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, čet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 64224,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2026-11-21\",\"raceDate\":\"2027-01-15\",\"runDays\":[\"mon\",\"wed\",\"sat\",\"tue\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":473,\"date\":\"2026-09-20\"},\"goalTimeSec\":null} → U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub (dugi pon)."
+   },
+   {
+    "i": 19083,
+    "size": 8034,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-04-19\",\"raceDate\":\"2028-06-13\",\"runDays\":[\"mon\",\"wed\",\"tue\",\"sat\"],\"currentWeeklyKm\":34,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4073,\"date\":\"2028-01-26\"},\"goalTimeSec\":null} → U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub (dugi pon)."
+   },
+   {
+    "i": 32868,
+    "size": 8038.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-29\",\"raceDate\":\"2028-03-24\",\"runDays\":[\"wed\",\"tue\",\"mon\",\"sat\"],\"currentWeeklyKm\":38.6,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1850,\"date\":\"2027-12-06\"},\"goalTimeSec\":1894} → U danima pon, uto, sre, sub dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, sre, sub (dugi pon)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 26550,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-06\",\"raceDate\":\"2027-10-31\",\"runDays\":[\"sat\",\"sun\",\"fri\",\"thu\",\"wed\"],\"currentWeeklyKm\":30,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":504,\"date\":\"2027-09-06\"},\"goalTimeSec\":null} → U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 7410,
+    "size": 8030.1,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-25\",\"raceDate\":\"2027-10-19\",\"runDays\":[\"wed\",\"thu\",\"sat\",\"sun\",\"fri\"],\"currentWeeklyKm\":30.1,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":830,\"date\":\"2027-06-04\"},\"goalTimeSec\":1659} → U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, sub, ned (dugi sre)."
+   },
+   {
+    "i": 91636,
+    "size": 8047.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-03-26\",\"raceDate\":\"2027-05-20\",\"runDays\":[\"wed\",\"fri\",\"sun\",\"thu\",\"sat\"],\"currentWeeklyKm\":47.6,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-01-21\"},\"goalTimeSec\":null} → U danima sre, čet, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: sre, čet, pet, sub, ned (dugi sre)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 77026,
+    "size": 8029,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-05-28\",\"raceDate\":\"2028-07-22\",\"runDays\":[\"tue\",\"fri\",\"sun\",\"sat\"],\"currentWeeklyKm\":29,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-05-06\"},\"goalTimeSec\":null} → U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 40848,
+    "size": 8042,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-18\",\"raceDate\":\"2027-10-12\",\"runDays\":[\"tue\",\"sun\",\"fri\",\"sat\"],\"currentWeeklyKm\":42,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":509,\"date\":\"2027-06-11\"},\"goalTimeSec\":null} → U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi uto)."
+   },
+   {
+    "i": 27986,
+    "size": 10037,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-09-22\",\"raceDate\":\"2028-11-30\",\"runDays\":[\"fri\",\"sun\",\"sat\",\"tue\"],\"currentWeeklyKm\":37,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2028-08-26\"},\"goalTimeSec\":1595} → U danima uto, pet, sub, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: uto, pet, sub, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedn~nerealan": [
+   {
+    "i": 20234,
+    "size": 8030.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-12-11\",\"raceDate\":\"2029-02-04\",\"runDays\":[\"wed\",\"thu\",\"tue\"],\"currentWeeklyKm\":30.6,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":846,\"date\":\"2028-12-11\"},\"goalTimeSec\":null} → U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sre, čet (dugi uto)."
+   },
+   {
+    "i": 31537,
+    "size": 8032.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-11-27\",\"raceDate\":\"2029-01-21\",\"runDays\":[\"thu\",\"tue\",\"wed\"],\"currentWeeklyKm\":32.9,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":480,\"date\":\"2028-11-15\"},\"goalTimeSec\":null} → U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sre, čet (dugi uto)."
+   },
+   {
+    "i": 65510,
+    "size": 8036.2,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-03-02\",\"raceDate\":\"2028-04-26\",\"runDays\":[\"wed\",\"thu\",\"tue\"],\"currentWeeklyKm\":36.2,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-02-16\"},\"goalTimeSec\":null} → U danima uto, sre, čet kvalitet i dugi ne mogu biti nesusedni. Predlog: uto, sre, čet (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mog~nerealan": [
+   {
+    "i": 74898,
+    "size": 8040.9,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-10-23\",\"raceDate\":\"2028-12-17\",\"runDays\":[\"fri\",\"thu\",\"mon\",\"sun\",\"tue\"],\"currentWeeklyKm\":40.9,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4088,\"date\":\"2028-10-05\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, ned (dugi uto)."
+   },
+   {
+    "i": 10918,
+    "size": 8062.6,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-04-29\",\"raceDate\":\"2027-06-23\",\"runDays\":[\"tue\",\"thu\",\"mon\",\"fri\",\"sun\"],\"currentWeeklyKm\":62.6,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":479,\"date\":\"2027-02-04\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, ned (dugi uto)."
+   },
+   {
+    "i": 16282,
+    "size": 10031,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-17\",\"raceDate\":\"2028-02-24\",\"runDays\":[\"sun\",\"mon\",\"fri\",\"tue\",\"thu\"],\"currentWeeklyKm\":31,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":457,\"date\":\"2027-12-07\"},\"goalTimeSec\":null} → U danima pon, uto, čet, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, čet, pet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 96380,
+    "size": 8029,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-11-03\",\"raceDate\":\"2027-12-28\",\"runDays\":[\"fri\",\"tue\",\"sun\",\"mon\"],\"currentWeeklyKm\":29,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-10-11\"},\"goalTimeSec\":1660} → U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, ned (dugi uto)."
+   },
+   {
+    "i": 21948,
+    "size": 8052,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-02\",\"raceDate\":\"2027-09-26\",\"runDays\":[\"mon\",\"tue\",\"sun\",\"fri\"],\"currentWeeklyKm\":52,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3924,\"date\":\"2027-05-26\"},\"goalTimeSec\":null} → U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, ned (dugi uto)."
+   },
+   {
+    "i": 94031,
+    "size": 11033.2,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-03-01\",\"raceDate\":\"2027-05-16\",\"runDays\":[\"mon\",\"sun\",\"fri\",\"tue\"],\"currentWeeklyKm\":33.2,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3938,\"date\":\"2027-01-18\"},\"goalTimeSec\":null} → U danima pon, uto, pet, ned dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, uto, pet, ned (dugi uto)."
+   }
+  ],
+  "SCHEDULE_NO_RECOVERY:U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu bit~nerealan": [
+   {
+    "i": 57066,
+    "size": 8048.7,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-06-22\",\"raceDate\":\"2028-08-16\",\"runDays\":[\"mon\",\"thu\",\"wed\",\"fri\"],\"currentWeeklyKm\":48.7,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":827,\"date\":\"2028-06-14\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 42393,
+    "size": 8049,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-19\",\"raceDate\":\"2028-04-14\",\"runDays\":[\"mon\",\"fri\",\"wed\",\"thu\"],\"currentWeeklyKm\":49,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1771,\"date\":\"2027-11-27\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi pon)."
+   },
+   {
+    "i": 50708,
+    "size": 8055,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-04\",\"raceDate\":\"2027-08-28\",\"runDays\":[\"thu\",\"wed\",\"fri\",\"mon\"],\"currentWeeklyKm\":55,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-07-04\"},\"goalTimeSec\":null} → U danima pon, sre, čet, pet dva kvaliteta i dugi ne mogu biti međusobno nesusedni. Predlog: pon, sre, čet, pet (dugi pon)."
+   }
+  ]
+ },
+ "throws": {},
+ "throwEx": {},
+ "validatorErr": {},
+ "validatorWarn": {
+  "DOSE_DROPPED": 1270,
+  "WEEK_FITTED": 163198,
+  "CAPACITY_LIMITED": 21199,
+  "LONG_SHORTER_THAN_QUALITY": 3288,
+  "DELOAD_NO_QUALITY": 13465,
+  "GOAL_UNREALISTIC": 4828,
+  "TAPER_NO_QUALITY": 2662,
+  "TEST_DELOAD_LONG": 674,
+  "TAPER_RP_ONLY": 63,
+  "BUILD_NO_QUALITY": 129
+ },
+ "validatorErrEx": {},
+ "inv": {},
+ "invEx": {},
+ "find": {
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base≤5min": {
+   "real": 539,
+   "unreal": 1954
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development≤5min": {
+   "real": 14,
+   "unreal": 1165
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@specific≤5min": {
+   "real": 0,
+   "unreal": 750
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje≤5min": {
+   "real": 254,
+   "unreal": 899
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development-rasterećenje>5min": {
+   "real": 174,
+   "unreal": 173
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base-rasterećenje≤5min": {
+   "real": 417,
+   "unreal": 0
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@development-rasterećenje≤5min": {
+   "real": 179,
+   "unreal": 739
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@specific-rasterećenje≤5min": {
+   "real": 1,
+   "unreal": 254
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@specific-rasterećenje≤5min": {
+   "real": 29,
+   "unreal": 389
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality+test@base>5min": {
+   "real": 393,
+   "unreal": 0
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base-rasterećenje>5min": {
+   "real": 592,
+   "unreal": 0
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base≤5min": {
+   "real": 289,
+   "unreal": 0
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development-rasterećenje≤5min": {
+   "real": 217,
+   "unreal": 479
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base>5min": {
+   "real": 0,
+   "unreal": 648
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development>5min": {
+   "real": 0,
+   "unreal": 222
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base-rasterećenje>5min": {
+   "real": 66,
+   "unreal": 254
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base-rasterećenje≤5min": {
+   "real": 171,
+   "unreal": 197
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base>5min": {
+   "real": 198,
+   "unreal": 0
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@development-rasterećenje>5min": {
+   "real": 5,
+   "unreal": 62
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@test@base>5min": {
+   "real": 4,
+   "unreal": 0
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@test@base-rasterećenje>5min": {
+   "real": 62,
+   "unreal": 0
+  },
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@test@base≤5min": {
+   "real": 2,
+   "unreal": 0
+  }
+ },
+ "findEx": {
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base≤5min~nerealan": [
+   {
+    "i": 249,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-02-26\",\"raceDate\":\"2027-04-22\",\"runDays\":[\"thu\",\"sat\",\"tue\"],\"currentWeeklyKm\":20,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2026-12-04\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 4153,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-19\",\"raceDate\":\"2028-04-14\",\"runDays\":[\"wed\",\"sat\",\"tue\"],\"currentWeeklyKm\":20,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-12-25\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 4906,
+    "size": 8020,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-01-15\",\"raceDate\":\"2028-03-10\",\"runDays\":[\"tue\",\"fri\",\"sat\"],\"currentWeeklyKm\":20,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2027-12-26\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development≤5min~nerealan": [
+   {
+    "i": 308,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-07-10\",\"raceDate\":\"2028-09-03\",\"runDays\":[\"tue\",\"fri\",\"mon\",\"sun\",\"thu\",\"wed\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4053,\"date\":\"2028-06-25\"},\"goalTimeSec\":1727}"
+   },
+   {
+    "i": 10593,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-05-31\",\"raceDate\":\"2028-07-25\",\"runDays\":[\"wed\",\"fri\",\"sat\",\"sun\",\"thu\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":508,\"date\":\"2028-03-08\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 12534,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-06\",\"raceDate\":\"2028-04-01\",\"runDays\":[\"mon\",\"wed\",\"tue\",\"thu\",\"sun\",\"sat\"],\"currentWeeklyKm\":35,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":872,\"date\":\"2027-12-21\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@specific≤5min~nerealan": [
+   {
+    "i": 7343,
+    "size": 10015,
+    "s": "nerealan(VDOT>70,početnik VDOT>45) {\"startDate\":\"2028-01-30\",\"raceDate\":\"2028-04-08\",\"runDays\":[\"wed\",\"sat\",\"sun\"],\"currentWeeklyKm\":15,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-12-31\"},\"experience\":\"beginner\",\"goalTimeSec\":1595}"
+   },
+   {
+    "i": 7433,
+    "size": 10015,
+    "s": "nerealan(VDOT>70,početnik VDOT>45) {\"startDate\":\"2027-05-12\",\"raceDate\":\"2027-07-20\",\"runDays\":[\"mon\",\"wed\",\"thu\"],\"currentWeeklyKm\":15,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-04-10\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   },
+   {
+    "i": 8949,
+    "size": 10015,
+    "s": "nerealan(VDOT>70,početnik VDOT>45) {\"startDate\":\"2027-08-09\",\"raceDate\":\"2027-10-17\",\"runDays\":[\"mon\",\"wed\",\"sat\"],\"currentWeeklyKm\":15,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-08-09\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje≤5min": [
+   {
+    "i": 24499,
+    "size": 12025,
+    "s": "realan {\"startDate\":\"2027-11-06\",\"raceDate\":\"2028-01-28\",\"runDays\":[\"fri\",\"wed\",\"sat\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4334,\"date\":\"2027-09-18\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 26932,
+    "size": 12025,
+    "s": "realan {\"startDate\":\"2027-02-05\",\"raceDate\":\"2027-04-29\",\"runDays\":[\"thu\",\"mon\",\"fri\",\"wed\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":958,\"date\":\"2026-12-08\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 31289,
+    "size": 12025,
+    "s": "realan {\"startDate\":\"2026-11-27\",\"raceDate\":\"2027-02-18\",\"runDays\":[\"sun\",\"fri\",\"tue\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":529,\"date\":\"2026-10-26\"},\"goalTimeSec\":1837}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base≤5min": [
+   {
+    "i": 129,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2026-11-23\",\"raceDate\":\"2027-01-17\",\"runDays\":[\"sun\",\"sat\",\"fri\",\"tue\",\"thu\",\"wed\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1683,\"date\":\"2026-08-21\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 1054,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2027-07-01\",\"raceDate\":\"2027-08-25\",\"runDays\":[\"sat\",\"fri\",\"thu\",\"sun\",\"tue\",\"mon\"],\"currentWeeklyKm\":35,\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 1225,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2028-10-07\",\"raceDate\":\"2028-12-01\",\"runDays\":[\"sun\",\"wed\",\"tue\",\"sat\",\"thu\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":527,\"date\":\"2028-07-28\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development-rasterećenje>5min": [
+   {
+    "i": 129,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2026-11-23\",\"raceDate\":\"2027-01-17\",\"runDays\":[\"sun\",\"sat\",\"fri\",\"tue\",\"thu\",\"wed\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1683,\"date\":\"2026-08-21\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 1054,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2027-07-01\",\"raceDate\":\"2027-08-25\",\"runDays\":[\"sat\",\"fri\",\"thu\",\"sun\",\"tue\",\"mon\"],\"currentWeeklyKm\":35,\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 1225,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2028-10-07\",\"raceDate\":\"2028-12-01\",\"runDays\":[\"sun\",\"wed\",\"tue\",\"sat\",\"thu\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":527,\"date\":\"2028-07-28\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base-rasterećenje≤5min": [
+   {
+    "i": 1940,
+    "size": 12020,
+    "s": "realan {\"startDate\":\"2028-02-28\",\"raceDate\":\"2028-05-21\",\"runDays\":[\"sun\",\"mon\",\"tue\"],\"currentWeeklyKm\":20,\"recentResult\":null,\"easyPaceSecPerKm\":486,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 16758,
+    "size": 12020,
+    "s": "realan {\"startDate\":\"2028-05-08\",\"raceDate\":\"2028-07-30\",\"runDays\":[\"sat\",\"tue\",\"fri\"],\"currentWeeklyKm\":20,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2577,\"date\":\"2027-09-01\"},\"easyPaceSecPerKm\":457,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 36429,
+    "size": 12020,
+    "s": "realan {\"startDate\":\"2027-04-16\",\"raceDate\":\"2027-07-08\",\"runDays\":[\"fri\",\"sat\",\"mon\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":null,\"easyPaceSecPerKm\":495,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@development-rasterećenje≤5min~nerealan": [
+   {
+    "i": 27439,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-10-05\",\"raceDate\":\"2028-11-29\",\"runDays\":[\"fri\",\"wed\",\"mon\",\"sun\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1852,\"date\":\"2028-09-23\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 40528,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-03-30\",\"raceDate\":\"2027-05-24\",\"runDays\":[\"mon\",\"fri\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":492,\"date\":\"2027-03-18\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 46004,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-12-27\",\"raceDate\":\"2028-02-20\",\"runDays\":[\"tue\",\"wed\",\"sun\",\"thu\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":3000,\"timeSec\":496,\"date\":\"2027-10-25\"},\"goalTimeSec\":1726}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@specific-rasterećenje≤5min~nerealan": [
+   {
+    "i": 15650,
+    "size": 11018,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2027-03-28\",\"raceDate\":\"2027-06-12\",\"runDays\":[\"thu\",\"mon\",\"tue\",\"fri\"],\"currentWeeklyKm\":18,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2325,\"date\":\"2027-03-20\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   },
+   {
+    "i": 35435,
+    "size": 11018,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-10-30\",\"raceDate\":\"2029-01-14\",\"runDays\":[\"fri\",\"sun\",\"sat\",\"wed\"],\"currentWeeklyKm\":18,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":624,\"date\":\"2028-10-28\"},\"experience\":\"beginner\",\"goalTimeSec\":2266}"
+   },
+   {
+    "i": 36441,
+    "size": 11018,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2027-10-27\",\"raceDate\":\"2028-01-11\",\"runDays\":[\"sat\",\"sun\",\"thu\",\"fri\"],\"currentWeeklyKm\":18,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":9159,\"date\":\"2027-10-25\"},\"easyPaceSecPerKm\":301,\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@specific-rasterećenje≤5min~nerealan": [
+   {
+    "i": 66196,
+    "size": 11018,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2027-04-14\",\"raceDate\":\"2027-06-29\",\"runDays\":[\"fri\",\"sun\",\"thu\",\"mon\"],\"currentWeeklyKm\":18,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":291,\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   },
+   {
+    "i": 2126,
+    "size": 11019.5,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-10-06\",\"raceDate\":\"2028-12-21\",\"runDays\":[\"mon\",\"sun\",\"tue\",\"wed\"],\"currentWeeklyKm\":19.5,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2030,\"date\":\"2028-07-14\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   },
+   {
+    "i": 42179,
+    "size": 11020,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-06-30\",\"raceDate\":\"2028-09-14\",\"runDays\":[\"sun\",\"sat\",\"tue\",\"mon\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4261,\"date\":\"2028-04-07\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality+test@base>5min": [
+   {
+    "i": 4613,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-12-07\",\"raceDate\":\"2029-01-31\",\"runDays\":[\"tue\",\"sat\",\"wed\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 5147,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2026-12-06\",\"raceDate\":\"2027-01-30\",\"runDays\":[\"thu\",\"tue\",\"sun\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":836,\"date\":\"2026-03-05\"},\"easyPaceSecPerKm\":306,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 6223,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-01-07\",\"raceDate\":\"2027-03-03\",\"runDays\":[\"sat\",\"fri\",\"mon\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":2039,\"date\":\"2026-11-19\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":2842}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base-rasterećenje>5min": [
+   {
+    "i": 738,
+    "size": 12020,
+    "s": "realan {\"startDate\":\"2027-10-10\",\"raceDate\":\"2028-01-01\",\"runDays\":[\"sat\",\"mon\",\"tue\"],\"currentWeeklyKm\":20,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":278,\"goalTimeSec\":3022}"
+   },
+   {
+    "i": 4296,
+    "size": 12020,
+    "s": "realan {\"startDate\":\"2026-11-26\",\"raceDate\":\"2027-02-17\",\"runDays\":[\"thu\",\"wed\",\"tue\"],\"currentWeeklyKm\":20,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":3033,\"date\":\"2026-01-25\"},\"easyPaceSecPerKm\":394,\"goalTimeSec\":2950}"
+   },
+   {
+    "i": 11080,
+    "size": 12020,
+    "s": "realan {\"startDate\":\"2028-07-11\",\"raceDate\":\"2028-10-02\",\"runDays\":[\"wed\",\"sat\",\"thu\"],\"currentWeeklyKm\":20,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":354,\"goalTimeSec\":2776}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@development-rasterećenje≤5min": [
+   {
+    "i": 1391,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-05-23\",\"raceDate\":\"2027-07-17\",\"runDays\":[\"wed\",\"mon\",\"fri\",\"sat\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":938,\"date\":\"2027-04-30\"},\"goalTimeSec\":1944}"
+   },
+   {
+    "i": 1706,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-03-02\",\"raceDate\":\"2028-04-26\",\"runDays\":[\"fri\",\"mon\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1974,\"date\":\"2027-12-09\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 3348,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-08-31\",\"raceDate\":\"2028-10-25\",\"runDays\":[\"sat\",\"thu\",\"fri\",\"mon\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1861,\"date\":\"2028-07-04\"},\"goalTimeSec\":1767}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@specific-rasterećenje≤5min": [
+   {
+    "i": 177,
+    "size": 18045.1,
+    "s": "realan {\"startDate\":\"2028-07-11\",\"raceDate\":\"2028-11-13\",\"runDays\":[\"sat\",\"tue\",\"fri\",\"thu\",\"mon\",\"wed\"],\"currentWeeklyKm\":45.1,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4180,\"date\":\"2028-06-18\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base≤5min": [
+   {
+    "i": 4639,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-10-27\",\"raceDate\":\"2027-12-21\",\"runDays\":[\"thu\",\"fri\",\"mon\"],\"currentWeeklyKm\":20,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":4440,\"date\":\"2027-09-29\"},\"easyPaceSecPerKm\":300,\"goalTimeSec\":2983}"
+   },
+   {
+    "i": 5347,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-07-31\",\"raceDate\":\"2028-09-24\",\"runDays\":[\"fri\",\"tue\",\"mon\"],\"currentWeeklyKm\":20,\"recentResult\":null,\"easyPaceSecPerKm\":318,\"goalTimeSec\":2794}"
+   },
+   {
+    "i": 7037,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2027-05-29\",\"raceDate\":\"2027-07-23\",\"runDays\":[\"sun\",\"wed\",\"thu\"],\"currentWeeklyKm\":20,\"recentResult\":null,\"easyPaceSecPerKm\":323,\"goalTimeSec\":3145}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development-rasterećenje≤5min~nerealan": [
+   {
+    "i": 220,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-03-25\",\"raceDate\":\"2027-05-19\",\"runDays\":[\"sun\",\"wed\",\"thu\",\"fri\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1759,\"date\":\"2027-02-11\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 8968,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-05-15\",\"raceDate\":\"2027-07-09\",\"runDays\":[\"mon\",\"sat\",\"wed\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":816,\"date\":\"2027-04-20\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 10402,
+    "size": 8025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-10-12\",\"raceDate\":\"2028-12-06\",\"runDays\":[\"fri\",\"sat\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":811,\"date\":\"2028-08-14\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje≤5min~nerealan": [
+   {
+    "i": 2295,
+    "size": 12020.5,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2027-08-28\",\"raceDate\":\"2027-11-19\",\"runDays\":[\"wed\",\"mon\",\"fri\",\"sat\"],\"currentWeeklyKm\":20.5,\"longRunDay\":\"sat\",\"recentResult\":null,\"easyPaceSecPerKm\":319,\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   },
+   {
+    "i": 68208,
+    "size": 12021,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-11-14\",\"raceDate\":\"2029-02-05\",\"runDays\":[\"wed\",\"thu\",\"mon\",\"tue\"],\"currentWeeklyKm\":21,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":5080,\"date\":\"2028-11-12\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   },
+   {
+    "i": 36278,
+    "size": 12021.8,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2027-07-21\",\"raceDate\":\"2027-10-12\",\"runDays\":[\"fri\",\"sun\",\"sat\",\"mon\"],\"currentWeeklyKm\":21.8,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2140,\"date\":\"2027-06-05\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development-rasterećenje>5min~nerealan": [
+   {
+    "i": 308,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-07-10\",\"raceDate\":\"2028-09-03\",\"runDays\":[\"tue\",\"fri\",\"mon\",\"sun\",\"thu\",\"wed\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4053,\"date\":\"2028-06-25\"},\"goalTimeSec\":1727}"
+   },
+   {
+    "i": 10593,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-05-31\",\"raceDate\":\"2028-07-25\",\"runDays\":[\"wed\",\"fri\",\"sat\",\"sun\",\"thu\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":508,\"date\":\"2028-03-08\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 12534,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-06\",\"raceDate\":\"2028-04-01\",\"runDays\":[\"mon\",\"wed\",\"tue\",\"thu\",\"sun\",\"sat\"],\"currentWeeklyKm\":35,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":872,\"date\":\"2027-12-21\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base>5min~nerealan": [
+   {
+    "i": 40904,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-02-10\",\"raceDate\":\"2028-04-05\",\"runDays\":[\"wed\",\"sun\",\"thu\",\"fri\",\"mon\",\"tue\"],\"currentWeeklyKm\":35,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":866,\"date\":\"2028-02-10\"},\"goalTimeSec\":1865}"
+   },
+   {
+    "i": 59789,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-07-07\",\"raceDate\":\"2028-08-31\",\"runDays\":[\"sat\",\"sun\",\"tue\",\"fri\",\"wed\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":871,\"date\":\"2028-07-04\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 62988,
+    "size": 8035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-08-24\",\"raceDate\":\"2028-10-18\",\"runDays\":[\"tue\",\"wed\",\"sun\",\"thu\",\"mon\",\"fri\"],\"currentWeeklyKm\":35,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3990,\"date\":\"2028-07-08\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development>5min~nerealan": [
+   {
+    "i": 946,
+    "size": 10018,
+    "s": "nerealan(VDOT>70,početnik VDOT>45) {\"startDate\":\"2027-05-02\",\"raceDate\":\"2027-07-10\",\"runDays\":[\"thu\",\"mon\",\"sat\",\"fri\"],\"currentWeeklyKm\":18,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3725,\"date\":\"2027-02-08\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   },
+   {
+    "i": 2943,
+    "size": 10018,
+    "s": "nerealan(VDOT>70,početnik VDOT>45) {\"startDate\":\"2028-05-19\",\"raceDate\":\"2028-07-27\",\"runDays\":[\"mon\",\"thu\",\"wed\",\"sat\"],\"currentWeeklyKm\":18,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":828,\"date\":\"2028-05-19\"},\"experience\":\"beginner\",\"goalTimeSec\":1777}"
+   },
+   {
+    "i": 6475,
+    "size": 10018,
+    "s": "nerealan(VDOT>70,početnik VDOT>45) {\"startDate\":\"2028-03-11\",\"raceDate\":\"2028-05-19\",\"runDays\":[\"thu\",\"mon\",\"wed\",\"fri\"],\"currentWeeklyKm\":18,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2028-03-11\"},\"experience\":\"beginner\",\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base-rasterećenje>5min~nerealan": [
+   {
+    "i": 6648,
+    "size": 12035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-12-18\",\"raceDate\":\"2029-03-11\",\"runDays\":[\"sat\",\"wed\",\"mon\",\"fri\",\"tue\",\"sun\"],\"currentWeeklyKm\":35,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":506,\"date\":\"2028-10-27\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 8209,
+    "size": 12035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-05-16\",\"raceDate\":\"2027-08-07\",\"runDays\":[\"tue\",\"thu\",\"sun\",\"wed\",\"fri\",\"sat\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":496,\"date\":\"2027-04-17\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 9411,
+    "size": 12035,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-12-21\",\"raceDate\":\"2029-03-14\",\"runDays\":[\"mon\",\"sat\",\"wed\",\"sun\",\"thu\",\"tue\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1808,\"date\":\"2028-10-13\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base-rasterećenje≤5min": [
+   {
+    "i": 18411,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2028-01-08\",\"raceDate\":\"2028-03-31\",\"runDays\":[\"fri\",\"wed\",\"sat\",\"sun\",\"mon\",\"tue\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":3000,\"timeSec\":569,\"date\":\"2028-01-05\"},\"goalTimeSec\":1954}"
+   },
+   {
+    "i": 42279,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2026-10-30\",\"raceDate\":\"2027-01-21\",\"runDays\":[\"mon\",\"thu\",\"fri\",\"wed\",\"sun\",\"sat\"],\"currentWeeklyKm\":35,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1027,\"date\":\"2026-10-03\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 54609,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2027-06-12\",\"raceDate\":\"2027-09-03\",\"runDays\":[\"tue\",\"wed\",\"fri\",\"sun\",\"mon\",\"sat\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":1003,\"date\":\"2027-06-12\"},\"goalTimeSec\":1929}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base-rasterećenje>5min": [
+   {
+    "i": 6992,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2028-04-16\",\"raceDate\":\"2028-07-08\",\"runDays\":[\"fri\",\"wed\",\"mon\",\"sun\",\"sat\",\"thu\"],\"currentWeeklyKm\":35,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":932,\"date\":\"2028-04-16\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 70262,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2027-11-09\",\"raceDate\":\"2028-01-31\",\"runDays\":[\"sun\",\"wed\",\"thu\",\"fri\",\"sat\",\"tue\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4272,\"date\":\"2027-11-09\"},\"goalTimeSec\":1889}"
+   },
+   {
+    "i": 73822,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2028-09-13\",\"raceDate\":\"2028-12-05\",\"runDays\":[\"mon\",\"sun\",\"tue\",\"fri\",\"sat\",\"thu\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4410,\"date\":\"2028-07-18\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development-rasterećenje≤5min": [
+   {
+    "i": 4613,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-12-07\",\"raceDate\":\"2029-01-31\",\"runDays\":[\"tue\",\"sat\",\"wed\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 6223,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-01-07\",\"raceDate\":\"2027-03-03\",\"runDays\":[\"sat\",\"fri\",\"mon\",\"thu\"],\"currentWeeklyKm\":25,\"longRunDay\":\"thu\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":2039,\"date\":\"2026-11-19\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":2842}"
+   },
+   {
+    "i": 14455,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-12-15\",\"raceDate\":\"2028-02-08\",\"runDays\":[\"fri\",\"sun\",\"wed\",\"sat\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1324,\"date\":\"2027-04-26\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@base-rasterećenje≤5min~nerealan": [
+   {
+    "i": 835,
+    "size": 12025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-02-24\",\"raceDate\":\"2027-05-18\",\"runDays\":[\"sun\",\"wed\",\"tue\",\"thu\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2027-02-24\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 6437,
+    "size": 12025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-07-31\",\"raceDate\":\"2027-10-22\",\"runDays\":[\"fri\",\"tue\",\"sat\",\"thu\"],\"currentWeeklyKm\":25,\"recentResult\":{\"distanceM\":10000,\"timeSec\":1682,\"date\":\"2027-07-31\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 17950,
+    "size": 12025,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2028-06-24\",\"raceDate\":\"2028-09-15\",\"runDays\":[\"fri\",\"wed\",\"tue\",\"sun\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1662,\"date\":\"2028-04-01\"},\"goalTimeSec\":1595}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@specific-rasterećenje≤5min": [
+   {
+    "i": 16222,
+    "size": 11035,
+    "s": "realan {\"startDate\":\"2026-12-13\",\"raceDate\":\"2027-02-27\",\"runDays\":[\"sun\",\"tue\",\"wed\",\"sat\",\"mon\",\"thu\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1877,\"date\":\"2026-09-20\"},\"goalTimeSec\":1849}"
+   },
+   {
+    "i": 34258,
+    "size": 11035,
+    "s": "realan {\"startDate\":\"2026-12-08\",\"raceDate\":\"2027-02-22\",\"runDays\":[\"thu\",\"sat\",\"sun\",\"tue\",\"fri\",\"wed\"],\"currentWeeklyKm\":35,\"longRunDay\":\"fri\",\"recentResult\":{\"distanceM\":3000,\"timeSec\":518,\"date\":\"2026-12-08\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 39847,
+    "size": 11035,
+    "s": "realan {\"startDate\":\"2027-01-27\",\"raceDate\":\"2027-04-13\",\"runDays\":[\"fri\",\"tue\",\"sat\",\"wed\",\"thu\",\"sun\"],\"currentWeeklyKm\":35,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":900,\"date\":\"2027-01-16\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@test@base>5min": [
+   {
+    "i": 6291,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-06-10\",\"raceDate\":\"2028-08-04\",\"runDays\":[\"sun\",\"tue\",\"mon\"],\"currentWeeklyKm\":20,\"recentResult\":{\"distanceM\":3000,\"timeSec\":1133,\"date\":\"2028-06-01\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 7675,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-06-04\",\"raceDate\":\"2028-07-29\",\"runDays\":[\"sat\",\"tue\",\"thu\"],\"currentWeeklyKm\":20,\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":3090}"
+   },
+   {
+    "i": 8993,
+    "size": 8020,
+    "s": "realan {\"startDate\":\"2028-04-13\",\"raceDate\":\"2028-06-07\",\"runDays\":[\"tue\",\"fri\",\"sat\"],\"currentWeeklyKm\":20,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@quality@development≤5min": [
+   {
+    "i": 5325,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2027-01-27\",\"raceDate\":\"2027-03-23\",\"runDays\":[\"thu\",\"fri\",\"tue\",\"mon\",\"wed\",\"sun\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":5000,\"timeSec\":897,\"date\":\"2026-11-04\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 9184,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2028-12-31\",\"raceDate\":\"2029-02-24\",\"runDays\":[\"fri\",\"sat\",\"wed\",\"thu\",\"sun\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4113,\"date\":\"2028-11-16\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 11686,
+    "size": 8035,
+    "s": "realan {\"startDate\":\"2027-05-25\",\"raceDate\":\"2027-07-19\",\"runDays\":[\"tue\",\"thu\",\"wed\",\"sun\",\"fri\",\"sat\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4103,\"date\":\"2027-03-02\"},\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@development-rasterećenje>5min~nerealan": [
+   {
+    "i": 68923,
+    "size": 8027.3,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-01-31\",\"raceDate\":\"2027-03-27\",\"runDays\":[\"fri\",\"sun\",\"mon\",\"wed\"],\"currentWeeklyKm\":27.3,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":798,\"date\":\"2026-12-31\"},\"goalTimeSec\":1608}"
+   },
+   {
+    "i": 2964,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-09-13\",\"raceDate\":\"2027-11-07\",\"runDays\":[\"wed\",\"mon\",\"sat\",\"fri\",\"tue\"],\"currentWeeklyKm\":30,\"longRunDay\":\"mon\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-06-21\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 4861,
+    "size": 8030,
+    "s": "nerealan(VDOT>70) {\"startDate\":\"2027-08-09\",\"raceDate\":\"2027-10-03\",\"runDays\":[\"fri\",\"sat\",\"tue\",\"mon\",\"sun\"],\"currentWeeklyKm\":30,\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":3657,\"date\":\"2027-08-09\"},\"goalTimeSec\":1598}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@test@base>5min": [
+   {
+    "i": 66071,
+    "size": 15035,
+    "s": "realan {\"startDate\":\"2028-06-13\",\"raceDate\":\"2028-09-25\",\"runDays\":[\"sat\",\"fri\",\"sun\",\"mon\",\"thu\",\"wed\"],\"currentWeeklyKm\":35,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4836,\"date\":\"2027-08-11\"},\"easyPaceSecPerKm\":276,\"goalTimeSec\":2720}"
+   },
+   {
+    "i": 79897,
+    "size": 15035,
+    "s": "realan {\"startDate\":\"2028-06-02\",\"raceDate\":\"2028-09-14\",\"runDays\":[\"sun\",\"wed\",\"mon\",\"tue\",\"thu\",\"fri\"],\"currentWeeklyKm\":35,\"recentResult\":null,\"easyPaceSecPerKm\":275,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 3594,
+    "size": 16035,
+    "s": "realan {\"startDate\":\"2027-11-06\",\"raceDate\":\"2028-02-25\",\"runDays\":[\"fri\",\"sat\",\"wed\",\"thu\",\"mon\",\"sun\"],\"currentWeeklyKm\":35,\"longRunDay\":\"sun\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":8206,\"date\":\"2027-07-18\"},\"easyPaceSecPerKm\":281,\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@test@base-rasterećenje>5min": [
+   {
+    "i": 12822,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2027-02-22\",\"raceDate\":\"2027-05-16\",\"runDays\":[\"thu\",\"tue\",\"sat\",\"wed\",\"fri\",\"sun\"],\"currentWeeklyKm\":35,\"longRunDay\":\"fri\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 17791,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2028-11-22\",\"raceDate\":\"2029-02-13\",\"runDays\":[\"wed\",\"thu\",\"sun\",\"fri\",\"tue\",\"mon\"],\"currentWeeklyKm\":35,\"longRunDay\":\"tue\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 21634,
+    "size": 12035,
+    "s": "realan {\"startDate\":\"2028-11-04\",\"raceDate\":\"2029-01-26\",\"runDays\":[\"fri\",\"thu\",\"wed\",\"tue\",\"sun\",\"mon\"],\"currentWeeklyKm\":35,\"recentResult\":{\"distanceM\":3000,\"timeSec\":571,\"date\":\"2028-05-04\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   }
+  ],
+  "i:KVALITET>DUGI_TRAJANJE_sa_upozorenjem@test@base≤5min": [
+   {
+    "i": 6871,
+    "size": 15036,
+    "s": "realan {\"startDate\":\"2027-04-01\",\"raceDate\":\"2027-07-14\",\"runDays\":[\"wed\",\"mon\",\"fri\",\"tue\",\"thu\",\"sun\"],\"currentWeeklyKm\":36,\"longRunDay\":\"thu\",\"recentResult\":null,\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 85118,
+    "size": 16036,
+    "s": "realan {\"startDate\":\"2027-05-14\",\"raceDate\":\"2027-09-02\",\"runDays\":[\"mon\",\"fri\",\"sat\",\"wed\",\"sun\",\"thu\"],\"currentWeeklyKm\":36,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":2668,\"date\":\"2027-01-05\"},\"easyPaceSecPerKm\":270,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@development-rasterećenje>5min": [
+   {
+    "i": 44447,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-02-17\",\"raceDate\":\"2027-04-13\",\"runDays\":[\"tue\",\"fri\",\"sun\",\"mon\"],\"currentWeeklyKm\":25,\"longRunDay\":\"tue\",\"recentResult\":{\"distanceM\":5000,\"timeSec\":923,\"date\":\"2026-12-24\"},\"goalTimeSec\":null}"
+   },
+   {
+    "i": 90152,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2028-03-07\",\"raceDate\":\"2028-05-01\",\"runDays\":[\"mon\",\"sat\",\"wed\",\"fri\"],\"currentWeeklyKm\":25,\"longRunDay\":\"sat\",\"recentResult\":{\"distanceM\":21097.5,\"timeSec\":4223,\"date\":\"2028-01-29\"},\"goalTimeSec\":1838}"
+   },
+   {
+    "i": 96117,
+    "size": 8025,
+    "s": "realan {\"startDate\":\"2027-06-26\",\"raceDate\":\"2027-08-20\",\"runDays\":[\"fri\",\"sun\",\"sat\",\"wed\"],\"currentWeeklyKm\":25,\"longRunDay\":\"wed\",\"recentResult\":{\"distanceM\":10000,\"timeSec\":1912,\"date\":\"2027-06-26\"},\"goalTimeSec\":null}"
+   }
+  ]
+ },
+ "basis": {
+  "stale": 10117,
+  "lowVdot": 5004,
+  "result": 54672,
+  "feel": 30207
+ },
+ "warnings": {
+  "DOSE_DROPPED": 1073,
+  "WEEK_FITTED": 25864,
+  "CAPACITY_LIMITED": 21199,
+  "LONG_SHORTER_THAN_QUALITY": 3288,
+  "DELOAD_NO_QUALITY": 9521,
+  "GOAL_UNREALISTIC": 4828,
+  "TAPER_NO_QUALITY": 2662,
+  "TEST_DELOAD_LONG": 674,
+  "TAPER_RP_ONLY": 63,
+  "BUILD_NO_QUALITY": 25
+ },
+ "seconds": 235.474
+}
