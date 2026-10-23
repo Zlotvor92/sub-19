@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { adaptTenKV2 } from './adapt.ts';
+import { addDays } from './dates.ts';
 import { generateTenKV2 } from './generate.ts';
 import type { AdaptResult, TenKV2Plan } from './types.ts';
 
@@ -53,6 +54,21 @@ describe('10K-07 dopuna: lanci adaptacija', () => {
         const again = adaptTenKV2(x.r.plan, JSON.parse(JSON.stringify(x.facts)), x.asOf);
         expect(weeks(again), `${i}#${k}`).toEqual(weeks(x.r));
       }
+  });
+
+  it('Z8 i=1855: sutra bez novih zapisa (bol, umor presuđen) — umor se ne primenjuje, budući ciljevi ne padaju', () => {
+    const x = run(1855)[0]!;
+    if (!x.r.ok) throw new Error('odbijeno');
+    const next = addDays(x.asOf, 1);
+    const r = adaptTenKV2(x.r.plan, JSON.parse(JSON.stringify(x.facts)), next);
+    if (!r.ok) throw new Error('sutra odbijeno');
+    expect(r.reasons.some((y) => y.condition === 'FATIGUE' && y.applied)).toBe(false);
+    const before = new Map(x.r.plan.weeks.map((w) => [w.index, w.targetKm]));
+    expect(
+      r.plan.weeks
+        .filter((w) => w.startDate > next && w.targetKm < before.get(w.index)! * 0.9 - 0.05)
+        .map((w) => w.index)
+    ).toEqual([]);
   });
 
   it('C7 i=5771: zaključan dan trkačke drži trkačku > taper → upozorenje', () => {

@@ -246,7 +246,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       under50: { n: 120, UNDER_EXECUTION: 80, same: 40 },
       // 06i (pouka 37): zaštićeni dani po činjenicama (× 1,2) prelaze sastavljene → preostali dani na ostatak do cilja
       // (mešovita nedelja; same 44 → 14); 1 tok: test otpada sa kvalitetom koji ne staje (TEST_MOVED).
-      over120: { n: 120, OVER_EXECUTION: 80, same: 14, mixed: 60, TEST_MOVED: 1 },
+      // 10K-07 (Z1): TEST_MOVED 1 → 0 — test mešovite nedelje ostaje uz upisani višak zaštićenih dana (≤ 10 %).
+      over120: { n: 120, OVER_EXECUTION: 80, same: 14, mixed: 60 },
       pause10: { n: 120, PAUSE: 120, mixed: 50, TEST_MOVED: 5 },
       pause20: { n: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 },
       pause35: { n: 120, PAUSE: 120, mixed: 60, TEST_MOVED: 13 },

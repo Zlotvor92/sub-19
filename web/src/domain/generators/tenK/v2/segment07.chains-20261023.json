@@ -3588,8 +3588,8 @@
               {
                 "date": "2026-11-14",
                 "dayId": "2026-11-14",
-                "km": 5.54,
-                "durationSec": 2752,
+                "km": 7.18,
+                "durationSec": 3566,
                 "completed": true,
                 "rpe": 3
               },
@@ -3604,16 +3604,16 @@
               {
                 "date": "2026-11-17",
                 "dayId": "2026-11-17",
-                "km": 5.22,
-                "durationSec": 2593,
+                "km": 6.76,
+                "durationSec": 3362,
                 "completed": true,
                 "rpe": 6
               },
               {
                 "date": "2026-11-19",
                 "dayId": "2026-11-19",
-                "km": 4.31,
-                "durationSec": 2028,
+                "km": 6.68,
+                "durationSec": 3319,
                 "completed": true,
                 "rpe": 6,
                 "pain": 8
@@ -4020,8 +4020,8 @@
               {
                 "date": "2026-11-14",
                 "dayId": "2026-11-14",
-                "km": 5.54,
-                "durationSec": 2752,
+                "km": 7.18,
+                "durationSec": 3566,
                 "completed": true,
                 "rpe": 3
               },
@@ -4036,16 +4036,16 @@
               {
                 "date": "2026-11-17",
                 "dayId": "2026-11-17",
-                "km": 5.22,
-                "durationSec": 2593,
+                "km": 6.76,
+                "durationSec": 3362,
                 "completed": true,
                 "rpe": 6
               },
               {
                 "date": "2026-11-19",
                 "dayId": "2026-11-19",
-                "km": 4.31,
-                "durationSec": 2028,
+                "km": 6.68,
+                "durationSec": 3319,
                 "completed": true,
                 "rpe": 6,
                 "pain": 8
@@ -4060,8 +4060,8 @@
               {
                 "date": "2026-11-24",
                 "dayId": "2026-11-24",
-                "km": 3.9,
-                "durationSec": 1938,
+                "km": 4.9,
+                "durationSec": 2435,
                 "completed": true,
                 "rpe": 5
               }
@@ -4467,8 +4467,8 @@
               {
                 "date": "2026-11-14",
                 "dayId": "2026-11-14",
-                "km": 5.54,
-                "durationSec": 2752,
+                "km": 7.18,
+                "durationSec": 3566,
                 "completed": true,
                 "rpe": 3
               },
@@ -4483,16 +4483,16 @@
               {
                 "date": "2026-11-17",
                 "dayId": "2026-11-17",
-                "km": 5.22,
-                "durationSec": 2593,
+                "km": 6.76,
+                "durationSec": 3362,
                 "completed": true,
                 "rpe": 6
               },
               {
                 "date": "2026-11-19",
                 "dayId": "2026-11-19",
-                "km": 4.31,
-                "durationSec": 2028,
+                "km": 6.68,
+                "durationSec": 3319,
                 "completed": true,
                 "rpe": 6,
                 "pain": 8
@@ -4507,40 +4507,40 @@
               {
                 "date": "2026-11-24",
                 "dayId": "2026-11-24",
-                "km": 3.9,
-                "durationSec": 1938,
+                "km": 4.9,
+                "durationSec": 2435,
                 "completed": true,
                 "rpe": 5
               },
               {
                 "date": "2026-11-28",
                 "dayId": "2026-11-28",
-                "km": 4.07,
-                "durationSec": 2024,
+                "km": 5.02,
+                "durationSec": 2497,
                 "completed": true,
                 "rpe": 4
               },
               {
                 "date": "2026-11-29",
                 "dayId": "2026-11-29",
-                "km": 7.57,
-                "durationSec": 3763,
+                "km": 8.55,
+                "durationSec": 4249,
                 "completed": true,
                 "rpe": 3
               },
               {
                 "date": "2026-12-01",
                 "dayId": "2026-12-01",
-                "km": 4.03,
-                "durationSec": 2002,
+                "km": 4.97,
+                "durationSec": 2469,
                 "completed": true,
                 "rpe": 3
               },
               {
                 "date": "2026-12-03",
                 "dayId": "2026-12-03",
-                "km": 3.79,
-                "durationSec": 1884,
+                "km": 4.67,
+                "durationSec": 2323,
                 "completed": true,
                 "rpe": 4
               }
@@ -4557,6 +4557,2569 @@
             "coverage": {
               "from": "2026-08-14",
               "to": "2026-12-03",
+              "complete": true
+            }
+          },
+          "rejected": false
+        }
+      ]
+    },
+    "1855": {
+      "id": "d5-14w-50km-v40-A-sat~56",
+      "input": {
+        "startDate": "2026-12-27",
+        "raceDate": "2027-04-17",
+        "runDays": ["mon", "tue", "thu", "sat", "sun"],
+        "longRunDay": "sun",
+        "currentWeeklyKm": 54.5,
+        "recentResult": {
+          "distanceM": 10000,
+          "timeSec": 2914,
+          "date": "2026-12-18"
+        },
+        "goalTimeSec": null,
+        "experience": "regular",
+        "easyPaceSecPerKm": null
+      },
+      "steps": [
+        {
+          "asOf": "2027-03-08",
+          "facts": {
+            "workouts": [
+              {
+                "date": "2026-12-13",
+                "km": 11.15,
+                "durationSec": 4013,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-14",
+                "km": 10.69,
+                "durationSec": 3847,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-15",
+                "km": 11.38,
+                "durationSec": 4098,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-17",
+                "km": 11.2,
+                "durationSec": 4033,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-19",
+                "km": 11.44,
+                "durationSec": 4117,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-20",
+                "km": 11.11,
+                "durationSec": 3999,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-21",
+                "km": 10.8,
+                "durationSec": 3890,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-22",
+                "km": 10.87,
+                "durationSec": 3915,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-24",
+                "km": 10.72,
+                "durationSec": 3859,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-26",
+                "km": 10.98,
+                "durationSec": 3952,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-27",
+                "dayId": "2026-12-27",
+                "km": 16.2,
+                "durationSec": 6076,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-28",
+                "dayId": "2026-12-28",
+                "km": 10.33,
+                "durationSec": 3874,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-29",
+                "dayId": "2026-12-29",
+                "km": 8.98,
+                "durationSec": 3192,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-31",
+                "dayId": "2026-12-31",
+                "km": 9.64,
+                "durationSec": 3375,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-02",
+                "dayId": "2027-01-02",
+                "km": 9.62,
+                "durationSec": 3606,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-03",
+                "dayId": "2027-01-03",
+                "km": 15.55,
+                "durationSec": 5830,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-04",
+                "dayId": "2027-01-04",
+                "km": 11.51,
+                "durationSec": 4318,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-05",
+                "dayId": "2027-01-05",
+                "km": 9.75,
+                "durationSec": 3443,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-07",
+                "dayId": "2027-01-07",
+                "km": 9.57,
+                "durationSec": 3324,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-09",
+                "dayId": "2027-01-09",
+                "km": 11.18,
+                "durationSec": 4194,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-10",
+                "dayId": "2027-01-10",
+                "km": 16.1,
+                "durationSec": 6036,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-11",
+                "dayId": "2027-01-11",
+                "km": 12.01,
+                "durationSec": 4504,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-12",
+                "dayId": "2027-01-12",
+                "km": 10.18,
+                "durationSec": 3587,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-14",
+                "dayId": "2027-01-14",
+                "km": 9.94,
+                "durationSec": 3428,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-16",
+                "dayId": "2027-01-16",
+                "km": 11.74,
+                "durationSec": 4404,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-17",
+                "dayId": "2027-01-17",
+                "km": 13.12,
+                "durationSec": 4920,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-18",
+                "dayId": "2027-01-18",
+                "km": 9.04,
+                "durationSec": 3392,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-19",
+                "dayId": "2027-01-19",
+                "km": 8.98,
+                "durationSec": 3369,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-21",
+                "dayId": "2027-01-21",
+                "km": 8.7,
+                "durationSec": 3100,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-23",
+                "dayId": "2027-01-23",
+                "km": 9.16,
+                "durationSec": 3435,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-24",
+                "dayId": "2027-01-24",
+                "km": 16.05,
+                "durationSec": 6020,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-25",
+                "dayId": "2027-01-25",
+                "km": 12.57,
+                "durationSec": 4716,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-26",
+                "dayId": "2027-01-26",
+                "km": 10.7,
+                "durationSec": 3736,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-28",
+                "dayId": "2027-01-28",
+                "km": 11.43,
+                "durationSec": 3917,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-30",
+                "dayId": "2027-01-30",
+                "km": 12.77,
+                "durationSec": 4789,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-31",
+                "dayId": "2027-01-31",
+                "km": 15.5,
+                "durationSec": 5814,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-01",
+                "dayId": "2027-02-01",
+                "km": 13.73,
+                "durationSec": 5148,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-02",
+                "dayId": "2027-02-02",
+                "km": 11.18,
+                "durationSec": 3877,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-04",
+                "dayId": "2027-02-04",
+                "km": 11.91,
+                "durationSec": 4077,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-06",
+                "dayId": "2027-02-06",
+                "km": 13.62,
+                "durationSec": 5107,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-07",
+                "dayId": "2027-02-07",
+                "km": 16.29,
+                "durationSec": 6110,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-08",
+                "dayId": "2027-02-08",
+                "km": 14.61,
+                "durationSec": 5479,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-09",
+                "dayId": "2027-02-09",
+                "km": 10.9,
+                "durationSec": 3737,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-11",
+                "dayId": "2027-02-11",
+                "km": 11.78,
+                "durationSec": 4036,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-13",
+                "dayId": "2027-02-13",
+                "km": 14.37,
+                "durationSec": 5388,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-14",
+                "dayId": "2027-02-14",
+                "km": 13.35,
+                "durationSec": 5007,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-15",
+                "dayId": "2027-02-15",
+                "km": 11,
+                "durationSec": 4127,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-16",
+                "dayId": "2027-02-16",
+                "km": 11.23,
+                "durationSec": 4212,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-18",
+                "dayId": "2027-02-18",
+                "km": 10.09,
+                "durationSec": 3540,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-20",
+                "dayId": "2027-02-20",
+                "km": 11.5,
+                "durationSec": 4313,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-21",
+                "dayId": "2027-02-21",
+                "km": 15.94,
+                "durationSec": 5977,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-22",
+                "dayId": "2027-02-22",
+                "km": 13.88,
+                "durationSec": 5205,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-23",
+                "dayId": "2027-02-23",
+                "km": 12.67,
+                "durationSec": 4337,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-25",
+                "dayId": "2027-02-25",
+                "km": 13.39,
+                "durationSec": 4537,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-27",
+                "dayId": "2027-02-27",
+                "km": 14.32,
+                "durationSec": 5371,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-28",
+                "dayId": "2027-02-28",
+                "km": 16.45,
+                "durationSec": 6167,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-01",
+                "dayId": "2027-03-01",
+                "km": 13.74,
+                "durationSec": 5153,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-03-02",
+                "dayId": "2027-03-02",
+                "km": 13.68,
+                "durationSec": 4625,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-04",
+                "dayId": "2027-03-04",
+                "km": 13.11,
+                "durationSec": 4423,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-03-06",
+                "dayId": "2027-03-06",
+                "km": 13.48,
+                "durationSec": 5055,
+                "completed": true,
+                "rpe": 4,
+                "pain": 4
+              },
+              {
+                "date": "2027-03-07",
+                "dayId": "2027-03-07",
+                "km": 16.01,
+                "durationSec": 6005,
+                "completed": true,
+                "rpe": 9
+              },
+              {
+                "date": "2027-03-08",
+                "dayId": "2027-03-08",
+                "km": 14.4,
+                "durationSec": 5401,
+                "completed": true,
+                "rpe": 9
+              }
+            ],
+            "results": [],
+            "breaks": [],
+            "lockedDayIds": [],
+            "coverage": {
+              "from": "2026-12-13",
+              "to": "2027-03-08",
+              "complete": true
+            }
+          },
+          "rejected": false
+        },
+        {
+          "asOf": "2027-03-08",
+          "facts": {
+            "workouts": [
+              {
+                "date": "2026-12-13",
+                "km": 11.15,
+                "durationSec": 4013,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-14",
+                "km": 10.69,
+                "durationSec": 3847,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-15",
+                "km": 11.38,
+                "durationSec": 4098,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-17",
+                "km": 11.2,
+                "durationSec": 4033,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-19",
+                "km": 11.44,
+                "durationSec": 4117,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-20",
+                "km": 11.11,
+                "durationSec": 3999,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-21",
+                "km": 10.8,
+                "durationSec": 3890,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-22",
+                "km": 10.87,
+                "durationSec": 3915,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-24",
+                "km": 10.72,
+                "durationSec": 3859,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-26",
+                "km": 10.98,
+                "durationSec": 3952,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-27",
+                "dayId": "2026-12-27",
+                "km": 16.2,
+                "durationSec": 6076,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-28",
+                "dayId": "2026-12-28",
+                "km": 10.33,
+                "durationSec": 3874,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-29",
+                "dayId": "2026-12-29",
+                "km": 8.98,
+                "durationSec": 3192,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-31",
+                "dayId": "2026-12-31",
+                "km": 9.64,
+                "durationSec": 3375,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-02",
+                "dayId": "2027-01-02",
+                "km": 9.62,
+                "durationSec": 3606,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-03",
+                "dayId": "2027-01-03",
+                "km": 15.55,
+                "durationSec": 5830,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-04",
+                "dayId": "2027-01-04",
+                "km": 11.51,
+                "durationSec": 4318,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-05",
+                "dayId": "2027-01-05",
+                "km": 9.75,
+                "durationSec": 3443,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-07",
+                "dayId": "2027-01-07",
+                "km": 9.57,
+                "durationSec": 3324,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-09",
+                "dayId": "2027-01-09",
+                "km": 11.18,
+                "durationSec": 4194,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-10",
+                "dayId": "2027-01-10",
+                "km": 16.1,
+                "durationSec": 6036,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-11",
+                "dayId": "2027-01-11",
+                "km": 12.01,
+                "durationSec": 4504,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-12",
+                "dayId": "2027-01-12",
+                "km": 10.18,
+                "durationSec": 3587,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-14",
+                "dayId": "2027-01-14",
+                "km": 9.94,
+                "durationSec": 3428,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-16",
+                "dayId": "2027-01-16",
+                "km": 11.74,
+                "durationSec": 4404,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-17",
+                "dayId": "2027-01-17",
+                "km": 13.12,
+                "durationSec": 4920,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-18",
+                "dayId": "2027-01-18",
+                "km": 9.04,
+                "durationSec": 3392,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-19",
+                "dayId": "2027-01-19",
+                "km": 8.98,
+                "durationSec": 3369,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-21",
+                "dayId": "2027-01-21",
+                "km": 8.7,
+                "durationSec": 3100,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-23",
+                "dayId": "2027-01-23",
+                "km": 9.16,
+                "durationSec": 3435,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-24",
+                "dayId": "2027-01-24",
+                "km": 16.05,
+                "durationSec": 6020,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-25",
+                "dayId": "2027-01-25",
+                "km": 12.57,
+                "durationSec": 4716,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-26",
+                "dayId": "2027-01-26",
+                "km": 10.7,
+                "durationSec": 3736,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-28",
+                "dayId": "2027-01-28",
+                "km": 11.43,
+                "durationSec": 3917,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-30",
+                "dayId": "2027-01-30",
+                "km": 12.77,
+                "durationSec": 4789,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-31",
+                "dayId": "2027-01-31",
+                "km": 15.5,
+                "durationSec": 5814,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-01",
+                "dayId": "2027-02-01",
+                "km": 13.73,
+                "durationSec": 5148,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-02",
+                "dayId": "2027-02-02",
+                "km": 11.18,
+                "durationSec": 3877,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-04",
+                "dayId": "2027-02-04",
+                "km": 11.91,
+                "durationSec": 4077,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-06",
+                "dayId": "2027-02-06",
+                "km": 13.62,
+                "durationSec": 5107,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-07",
+                "dayId": "2027-02-07",
+                "km": 16.29,
+                "durationSec": 6110,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-08",
+                "dayId": "2027-02-08",
+                "km": 14.61,
+                "durationSec": 5479,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-09",
+                "dayId": "2027-02-09",
+                "km": 10.9,
+                "durationSec": 3737,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-11",
+                "dayId": "2027-02-11",
+                "km": 11.78,
+                "durationSec": 4036,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-13",
+                "dayId": "2027-02-13",
+                "km": 14.37,
+                "durationSec": 5388,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-14",
+                "dayId": "2027-02-14",
+                "km": 13.35,
+                "durationSec": 5007,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-15",
+                "dayId": "2027-02-15",
+                "km": 11,
+                "durationSec": 4127,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-16",
+                "dayId": "2027-02-16",
+                "km": 11.23,
+                "durationSec": 4212,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-18",
+                "dayId": "2027-02-18",
+                "km": 10.09,
+                "durationSec": 3540,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-20",
+                "dayId": "2027-02-20",
+                "km": 11.5,
+                "durationSec": 4313,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-21",
+                "dayId": "2027-02-21",
+                "km": 15.94,
+                "durationSec": 5977,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-22",
+                "dayId": "2027-02-22",
+                "km": 13.88,
+                "durationSec": 5205,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-23",
+                "dayId": "2027-02-23",
+                "km": 12.67,
+                "durationSec": 4337,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-25",
+                "dayId": "2027-02-25",
+                "km": 13.39,
+                "durationSec": 4537,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-27",
+                "dayId": "2027-02-27",
+                "km": 14.32,
+                "durationSec": 5371,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-28",
+                "dayId": "2027-02-28",
+                "km": 16.45,
+                "durationSec": 6167,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-01",
+                "dayId": "2027-03-01",
+                "km": 13.74,
+                "durationSec": 5153,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-03-02",
+                "dayId": "2027-03-02",
+                "km": 13.68,
+                "durationSec": 4625,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-04",
+                "dayId": "2027-03-04",
+                "km": 13.11,
+                "durationSec": 4423,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-03-06",
+                "dayId": "2027-03-06",
+                "km": 13.48,
+                "durationSec": 5055,
+                "completed": true,
+                "rpe": 4,
+                "pain": 4
+              },
+              {
+                "date": "2027-03-07",
+                "dayId": "2027-03-07",
+                "km": 0,
+                "durationSec": 0,
+                "completed": false
+              },
+              {
+                "date": "2027-03-08",
+                "dayId": "2027-03-08",
+                "km": 14.4,
+                "durationSec": 5401,
+                "completed": true,
+                "rpe": 9
+              }
+            ],
+            "results": [],
+            "breaks": [],
+            "lockedDayIds": ["2027-03-15"],
+            "coverage": {
+              "from": "2026-12-13",
+              "to": "2027-03-08",
+              "complete": true
+            }
+          },
+          "rejected": false
+        },
+        {
+          "asOf": "2027-03-09",
+          "facts": {
+            "workouts": [
+              {
+                "date": "2026-12-13",
+                "km": 11.15,
+                "durationSec": 4013,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-14",
+                "km": 10.69,
+                "durationSec": 3847,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-15",
+                "km": 11.38,
+                "durationSec": 4098,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-17",
+                "km": 11.2,
+                "durationSec": 4033,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-19",
+                "km": 11.44,
+                "durationSec": 4117,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-20",
+                "km": 11.11,
+                "durationSec": 3999,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-21",
+                "km": 10.8,
+                "durationSec": 3890,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-22",
+                "km": 10.87,
+                "durationSec": 3915,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-24",
+                "km": 10.72,
+                "durationSec": 3859,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-26",
+                "km": 10.98,
+                "durationSec": 3952,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-27",
+                "dayId": "2026-12-27",
+                "km": 16.2,
+                "durationSec": 6076,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-28",
+                "dayId": "2026-12-28",
+                "km": 10.33,
+                "durationSec": 3874,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-29",
+                "dayId": "2026-12-29",
+                "km": 8.98,
+                "durationSec": 3192,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-31",
+                "dayId": "2026-12-31",
+                "km": 9.64,
+                "durationSec": 3375,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-02",
+                "dayId": "2027-01-02",
+                "km": 9.62,
+                "durationSec": 3606,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-03",
+                "dayId": "2027-01-03",
+                "km": 15.55,
+                "durationSec": 5830,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-04",
+                "dayId": "2027-01-04",
+                "km": 11.51,
+                "durationSec": 4318,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-05",
+                "dayId": "2027-01-05",
+                "km": 9.75,
+                "durationSec": 3443,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-07",
+                "dayId": "2027-01-07",
+                "km": 9.57,
+                "durationSec": 3324,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-09",
+                "dayId": "2027-01-09",
+                "km": 11.18,
+                "durationSec": 4194,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-10",
+                "dayId": "2027-01-10",
+                "km": 16.1,
+                "durationSec": 6036,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-11",
+                "dayId": "2027-01-11",
+                "km": 12.01,
+                "durationSec": 4504,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-12",
+                "dayId": "2027-01-12",
+                "km": 10.18,
+                "durationSec": 3587,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-14",
+                "dayId": "2027-01-14",
+                "km": 9.94,
+                "durationSec": 3428,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-16",
+                "dayId": "2027-01-16",
+                "km": 11.74,
+                "durationSec": 4404,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-17",
+                "dayId": "2027-01-17",
+                "km": 13.12,
+                "durationSec": 4920,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-18",
+                "dayId": "2027-01-18",
+                "km": 9.04,
+                "durationSec": 3392,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-19",
+                "dayId": "2027-01-19",
+                "km": 8.98,
+                "durationSec": 3369,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-21",
+                "dayId": "2027-01-21",
+                "km": 8.7,
+                "durationSec": 3100,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-23",
+                "dayId": "2027-01-23",
+                "km": 9.16,
+                "durationSec": 3435,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-24",
+                "dayId": "2027-01-24",
+                "km": 16.05,
+                "durationSec": 6020,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-25",
+                "dayId": "2027-01-25",
+                "km": 12.57,
+                "durationSec": 4716,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-26",
+                "dayId": "2027-01-26",
+                "km": 10.7,
+                "durationSec": 3736,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-28",
+                "dayId": "2027-01-28",
+                "km": 11.43,
+                "durationSec": 3917,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-30",
+                "dayId": "2027-01-30",
+                "km": 12.77,
+                "durationSec": 4789,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-31",
+                "dayId": "2027-01-31",
+                "km": 15.5,
+                "durationSec": 5814,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-01",
+                "dayId": "2027-02-01",
+                "km": 13.73,
+                "durationSec": 5148,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-02",
+                "dayId": "2027-02-02",
+                "km": 11.18,
+                "durationSec": 3877,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-04",
+                "dayId": "2027-02-04",
+                "km": 11.91,
+                "durationSec": 4077,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-06",
+                "dayId": "2027-02-06",
+                "km": 13.62,
+                "durationSec": 5107,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-07",
+                "dayId": "2027-02-07",
+                "km": 16.29,
+                "durationSec": 6110,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-08",
+                "dayId": "2027-02-08",
+                "km": 14.61,
+                "durationSec": 5479,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-09",
+                "dayId": "2027-02-09",
+                "km": 10.9,
+                "durationSec": 3737,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-11",
+                "dayId": "2027-02-11",
+                "km": 11.78,
+                "durationSec": 4036,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-13",
+                "dayId": "2027-02-13",
+                "km": 14.37,
+                "durationSec": 5388,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-14",
+                "dayId": "2027-02-14",
+                "km": 13.35,
+                "durationSec": 5007,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-15",
+                "dayId": "2027-02-15",
+                "km": 11,
+                "durationSec": 4127,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-16",
+                "dayId": "2027-02-16",
+                "km": 11.23,
+                "durationSec": 4212,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-18",
+                "dayId": "2027-02-18",
+                "km": 10.09,
+                "durationSec": 3540,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-20",
+                "dayId": "2027-02-20",
+                "km": 11.5,
+                "durationSec": 4313,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-21",
+                "dayId": "2027-02-21",
+                "km": 15.94,
+                "durationSec": 5977,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-22",
+                "dayId": "2027-02-22",
+                "km": 13.88,
+                "durationSec": 5205,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-23",
+                "dayId": "2027-02-23",
+                "km": 12.67,
+                "durationSec": 4337,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-25",
+                "dayId": "2027-02-25",
+                "km": 13.39,
+                "durationSec": 4537,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-27",
+                "dayId": "2027-02-27",
+                "km": 14.32,
+                "durationSec": 5371,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-28",
+                "dayId": "2027-02-28",
+                "km": 16.45,
+                "durationSec": 6167,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-01",
+                "dayId": "2027-03-01",
+                "km": 13.74,
+                "durationSec": 5153,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-03-02",
+                "dayId": "2027-03-02",
+                "km": 13.68,
+                "durationSec": 4625,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-04",
+                "dayId": "2027-03-04",
+                "km": 13.11,
+                "durationSec": 4423,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-03-06",
+                "dayId": "2027-03-06",
+                "km": 13.48,
+                "durationSec": 5055,
+                "completed": true,
+                "rpe": 4,
+                "pain": 4
+              },
+              {
+                "date": "2027-03-07",
+                "dayId": "2027-03-07",
+                "km": 0,
+                "durationSec": 0,
+                "completed": false
+              },
+              {
+                "date": "2027-03-08",
+                "dayId": "2027-03-08",
+                "km": 14.4,
+                "durationSec": 5401,
+                "completed": true,
+                "rpe": 9
+              }
+            ],
+            "results": [],
+            "breaks": [
+              {
+                "kind": "break",
+                "from": "2027-03-09",
+                "to": "2027-03-09"
+              }
+            ],
+            "lockedDayIds": ["2027-03-25"],
+            "coverage": {
+              "from": "2026-12-13",
+              "to": "2027-03-09",
+              "complete": true
+            }
+          },
+          "rejected": false
+        },
+        {
+          "asOf": "2027-03-09",
+          "facts": {
+            "workouts": [
+              {
+                "date": "2026-12-13",
+                "km": 11.15,
+                "durationSec": 4013,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-14",
+                "km": 10.69,
+                "durationSec": 3847,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-15",
+                "km": 11.38,
+                "durationSec": 4098,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-17",
+                "km": 11.2,
+                "durationSec": 4033,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-19",
+                "km": 11.44,
+                "durationSec": 4117,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-20",
+                "km": 11.11,
+                "durationSec": 3999,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-21",
+                "km": 10.8,
+                "durationSec": 3890,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-22",
+                "km": 10.87,
+                "durationSec": 3915,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-24",
+                "km": 10.72,
+                "durationSec": 3859,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-26",
+                "km": 10.98,
+                "durationSec": 3952,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-27",
+                "dayId": "2026-12-27",
+                "km": 16.2,
+                "durationSec": 6076,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-28",
+                "dayId": "2026-12-28",
+                "km": 10.33,
+                "durationSec": 3874,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-29",
+                "dayId": "2026-12-29",
+                "km": 8.98,
+                "durationSec": 3192,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-31",
+                "dayId": "2026-12-31",
+                "km": 9.64,
+                "durationSec": 3375,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-02",
+                "dayId": "2027-01-02",
+                "km": 9.62,
+                "durationSec": 3606,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-03",
+                "dayId": "2027-01-03",
+                "km": 15.55,
+                "durationSec": 5830,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-04",
+                "dayId": "2027-01-04",
+                "km": 11.51,
+                "durationSec": 4318,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-05",
+                "dayId": "2027-01-05",
+                "km": 9.75,
+                "durationSec": 3443,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-07",
+                "dayId": "2027-01-07",
+                "km": 9.57,
+                "durationSec": 3324,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-09",
+                "dayId": "2027-01-09",
+                "km": 11.18,
+                "durationSec": 4194,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-10",
+                "dayId": "2027-01-10",
+                "km": 16.1,
+                "durationSec": 6036,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-11",
+                "dayId": "2027-01-11",
+                "km": 12.01,
+                "durationSec": 4504,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-12",
+                "dayId": "2027-01-12",
+                "km": 10.18,
+                "durationSec": 3587,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-14",
+                "dayId": "2027-01-14",
+                "km": 9.94,
+                "durationSec": 3428,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-16",
+                "dayId": "2027-01-16",
+                "km": 11.74,
+                "durationSec": 4404,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-17",
+                "dayId": "2027-01-17",
+                "km": 13.12,
+                "durationSec": 4920,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-18",
+                "dayId": "2027-01-18",
+                "km": 9.04,
+                "durationSec": 3392,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-19",
+                "dayId": "2027-01-19",
+                "km": 8.98,
+                "durationSec": 3369,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-21",
+                "dayId": "2027-01-21",
+                "km": 8.7,
+                "durationSec": 3100,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-23",
+                "dayId": "2027-01-23",
+                "km": 9.16,
+                "durationSec": 3435,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-24",
+                "dayId": "2027-01-24",
+                "km": 16.05,
+                "durationSec": 6020,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-25",
+                "dayId": "2027-01-25",
+                "km": 12.57,
+                "durationSec": 4716,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-26",
+                "dayId": "2027-01-26",
+                "km": 10.7,
+                "durationSec": 3736,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-28",
+                "dayId": "2027-01-28",
+                "km": 11.43,
+                "durationSec": 3917,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-30",
+                "dayId": "2027-01-30",
+                "km": 12.77,
+                "durationSec": 4789,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-31",
+                "dayId": "2027-01-31",
+                "km": 15.5,
+                "durationSec": 5814,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-01",
+                "dayId": "2027-02-01",
+                "km": 13.73,
+                "durationSec": 5148,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-02",
+                "dayId": "2027-02-02",
+                "km": 11.18,
+                "durationSec": 3877,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-04",
+                "dayId": "2027-02-04",
+                "km": 11.91,
+                "durationSec": 4077,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-06",
+                "dayId": "2027-02-06",
+                "km": 13.62,
+                "durationSec": 5107,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-07",
+                "dayId": "2027-02-07",
+                "km": 16.29,
+                "durationSec": 6110,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-08",
+                "dayId": "2027-02-08",
+                "km": 14.61,
+                "durationSec": 5479,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-09",
+                "dayId": "2027-02-09",
+                "km": 10.9,
+                "durationSec": 3737,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-11",
+                "dayId": "2027-02-11",
+                "km": 11.78,
+                "durationSec": 4036,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-13",
+                "dayId": "2027-02-13",
+                "km": 14.37,
+                "durationSec": 5388,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-14",
+                "dayId": "2027-02-14",
+                "km": 13.35,
+                "durationSec": 5007,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-15",
+                "dayId": "2027-02-15",
+                "km": 11,
+                "durationSec": 4127,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-16",
+                "dayId": "2027-02-16",
+                "km": 11.23,
+                "durationSec": 4212,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-18",
+                "dayId": "2027-02-18",
+                "km": 10.09,
+                "durationSec": 3540,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-20",
+                "dayId": "2027-02-20",
+                "km": 11.5,
+                "durationSec": 4313,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-21",
+                "dayId": "2027-02-21",
+                "km": 15.94,
+                "durationSec": 5977,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-22",
+                "dayId": "2027-02-22",
+                "km": 13.88,
+                "durationSec": 5205,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-23",
+                "dayId": "2027-02-23",
+                "km": 12.67,
+                "durationSec": 4337,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-25",
+                "dayId": "2027-02-25",
+                "km": 13.39,
+                "durationSec": 4537,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-27",
+                "dayId": "2027-02-27",
+                "km": 14.32,
+                "durationSec": 5371,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-28",
+                "dayId": "2027-02-28",
+                "km": 16.45,
+                "durationSec": 6167,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-01",
+                "dayId": "2027-03-01",
+                "km": 13.74,
+                "durationSec": 5153,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-03-02",
+                "dayId": "2027-03-02",
+                "km": 13.68,
+                "durationSec": 4625,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-04",
+                "dayId": "2027-03-04",
+                "km": 13.11,
+                "durationSec": 4423,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-03-06",
+                "dayId": "2027-03-06",
+                "km": 13.48,
+                "durationSec": 5055,
+                "completed": true,
+                "rpe": 4,
+                "pain": 4
+              },
+              {
+                "date": "2027-03-07",
+                "dayId": "2027-03-07",
+                "km": 0,
+                "durationSec": 0,
+                "completed": false
+              },
+              {
+                "date": "2027-03-08",
+                "dayId": "2027-03-08",
+                "km": 14.4,
+                "durationSec": 5401,
+                "completed": true,
+                "rpe": 9,
+                "pain": 2
+              }
+            ],
+            "results": [],
+            "breaks": [
+              {
+                "kind": "break",
+                "from": "2027-03-09",
+                "to": "2027-03-09"
+              }
+            ],
+            "lockedDayIds": ["2027-03-15", "2027-03-21"],
+            "coverage": {
+              "from": "2026-12-13",
+              "to": "2027-03-09",
+              "complete": true
+            }
+          },
+          "rejected": false
+        },
+        {
+          "asOf": "2027-03-10",
+          "facts": {
+            "workouts": [
+              {
+                "date": "2026-12-13",
+                "km": 11.15,
+                "durationSec": 4013,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-14",
+                "km": 10.69,
+                "durationSec": 3847,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-15",
+                "km": 11.38,
+                "durationSec": 4098,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-17",
+                "km": 11.2,
+                "durationSec": 4033,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-19",
+                "km": 11.44,
+                "durationSec": 4117,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-20",
+                "km": 11.11,
+                "durationSec": 3999,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-21",
+                "km": 10.8,
+                "durationSec": 3890,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2026-12-22",
+                "km": 10.87,
+                "durationSec": 3915,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-24",
+                "km": 10.72,
+                "durationSec": 3859,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2026-12-26",
+                "km": 10.98,
+                "durationSec": 3952,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2026-12-27",
+                "dayId": "2026-12-27",
+                "km": 16.2,
+                "durationSec": 6076,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-28",
+                "dayId": "2026-12-28",
+                "km": 10.33,
+                "durationSec": 3874,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-29",
+                "dayId": "2026-12-29",
+                "km": 8.98,
+                "durationSec": 3192,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2026-12-31",
+                "dayId": "2026-12-31",
+                "km": 9.64,
+                "durationSec": 3375,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-02",
+                "dayId": "2027-01-02",
+                "km": 9.62,
+                "durationSec": 3606,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-03",
+                "dayId": "2027-01-03",
+                "km": 15.55,
+                "durationSec": 5830,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-04",
+                "dayId": "2027-01-04",
+                "km": 11.51,
+                "durationSec": 4318,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-05",
+                "dayId": "2027-01-05",
+                "km": 9.75,
+                "durationSec": 3443,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-07",
+                "dayId": "2027-01-07",
+                "km": 9.57,
+                "durationSec": 3324,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-09",
+                "dayId": "2027-01-09",
+                "km": 11.18,
+                "durationSec": 4194,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-10",
+                "dayId": "2027-01-10",
+                "km": 16.1,
+                "durationSec": 6036,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-11",
+                "dayId": "2027-01-11",
+                "km": 12.01,
+                "durationSec": 4504,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-12",
+                "dayId": "2027-01-12",
+                "km": 10.18,
+                "durationSec": 3587,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-14",
+                "dayId": "2027-01-14",
+                "km": 9.94,
+                "durationSec": 3428,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-16",
+                "dayId": "2027-01-16",
+                "km": 11.74,
+                "durationSec": 4404,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-17",
+                "dayId": "2027-01-17",
+                "km": 13.12,
+                "durationSec": 4920,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-18",
+                "dayId": "2027-01-18",
+                "km": 9.04,
+                "durationSec": 3392,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-19",
+                "dayId": "2027-01-19",
+                "km": 8.98,
+                "durationSec": 3369,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-21",
+                "dayId": "2027-01-21",
+                "km": 8.7,
+                "durationSec": 3100,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-23",
+                "dayId": "2027-01-23",
+                "km": 9.16,
+                "durationSec": 3435,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-24",
+                "dayId": "2027-01-24",
+                "km": 16.05,
+                "durationSec": 6020,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-01-25",
+                "dayId": "2027-01-25",
+                "km": 12.57,
+                "durationSec": 4716,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-01-26",
+                "dayId": "2027-01-26",
+                "km": 10.7,
+                "durationSec": 3736,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-01-28",
+                "dayId": "2027-01-28",
+                "km": 11.43,
+                "durationSec": 3917,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-30",
+                "dayId": "2027-01-30",
+                "km": 12.77,
+                "durationSec": 4789,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-01-31",
+                "dayId": "2027-01-31",
+                "km": 15.5,
+                "durationSec": 5814,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-01",
+                "dayId": "2027-02-01",
+                "km": 13.73,
+                "durationSec": 5148,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-02",
+                "dayId": "2027-02-02",
+                "km": 11.18,
+                "durationSec": 3877,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-04",
+                "dayId": "2027-02-04",
+                "km": 11.91,
+                "durationSec": 4077,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-06",
+                "dayId": "2027-02-06",
+                "km": 13.62,
+                "durationSec": 5107,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-07",
+                "dayId": "2027-02-07",
+                "km": 16.29,
+                "durationSec": 6110,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-08",
+                "dayId": "2027-02-08",
+                "km": 14.61,
+                "durationSec": 5479,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-09",
+                "dayId": "2027-02-09",
+                "km": 10.9,
+                "durationSec": 3737,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-11",
+                "dayId": "2027-02-11",
+                "km": 11.78,
+                "durationSec": 4036,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-13",
+                "dayId": "2027-02-13",
+                "km": 14.37,
+                "durationSec": 5388,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-14",
+                "dayId": "2027-02-14",
+                "km": 13.35,
+                "durationSec": 5007,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-15",
+                "dayId": "2027-02-15",
+                "km": 11,
+                "durationSec": 4127,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-16",
+                "dayId": "2027-02-16",
+                "km": 11.23,
+                "durationSec": 4212,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-18",
+                "dayId": "2027-02-18",
+                "km": 10.09,
+                "durationSec": 3540,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-20",
+                "dayId": "2027-02-20",
+                "km": 11.5,
+                "durationSec": 4313,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-21",
+                "dayId": "2027-02-21",
+                "km": 15.94,
+                "durationSec": 5977,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-02-22",
+                "dayId": "2027-02-22",
+                "km": 13.88,
+                "durationSec": 5205,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-02-23",
+                "dayId": "2027-02-23",
+                "km": 12.67,
+                "durationSec": 4337,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-25",
+                "dayId": "2027-02-25",
+                "km": 13.39,
+                "durationSec": 4537,
+                "completed": true,
+                "rpe": 3
+              },
+              {
+                "date": "2027-02-27",
+                "dayId": "2027-02-27",
+                "km": 14.32,
+                "durationSec": 5371,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-02-28",
+                "dayId": "2027-02-28",
+                "km": 16.45,
+                "durationSec": 6167,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-01",
+                "dayId": "2027-03-01",
+                "km": 13.74,
+                "durationSec": 5153,
+                "completed": true,
+                "rpe": 6
+              },
+              {
+                "date": "2027-03-02",
+                "dayId": "2027-03-02",
+                "km": 13.68,
+                "durationSec": 4625,
+                "completed": true,
+                "rpe": 5
+              },
+              {
+                "date": "2027-03-04",
+                "dayId": "2027-03-04",
+                "km": 13.11,
+                "durationSec": 4423,
+                "completed": true,
+                "rpe": 4
+              },
+              {
+                "date": "2027-03-06",
+                "dayId": "2027-03-06",
+                "km": 13.48,
+                "durationSec": 5055,
+                "completed": true,
+                "rpe": 9,
+                "pain": 4
+              },
+              {
+                "date": "2027-03-07",
+                "dayId": "2027-03-07",
+                "km": 0,
+                "durationSec": 0,
+                "completed": false
+              },
+              {
+                "date": "2027-03-08",
+                "dayId": "2027-03-08",
+                "km": 14.4,
+                "durationSec": 5401,
+                "completed": true,
+                "rpe": 9,
+                "pain": 2
+              }
+            ],
+            "results": [
+              {
+                "distM": 10000,
+                "sec": 2788,
+                "date": "2027-03-09",
+                "kind": "race"
+              }
+            ],
+            "breaks": [
+              {
+                "kind": "break",
+                "from": "2027-03-09",
+                "to": "2027-03-09"
+              },
+              {
+                "kind": "break",
+                "from": "2027-03-10",
+                "to": "2027-03-10"
+              }
+            ],
+            "lockedDayIds": [],
+            "coverage": {
+              "from": "2026-12-13",
+              "to": "2027-03-10",
               "complete": true
             }
           },
