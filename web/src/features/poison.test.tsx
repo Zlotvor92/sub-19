@@ -2,6 +2,10 @@ import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, cleanup, render } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import bodyMF from './recovery/body/m-front.webp';
+import bodyMB from './recovery/body/m-back.webp';
+import bodyFF from './recovery/body/f-front.webp';
+import bodyFB from './recovery/body/f-back.webp';
 import { migrateState, seedState, type PersistedState } from '../domain/state';
 import { setApp } from '../app/appContext';
 import { createApp } from '../app/createApp';
@@ -56,12 +60,15 @@ const FORBIDDEN_TAGS = 'script,iframe,object,embed,img,link,meta,style,base,form
 const DANGEROUS_STYLE =
   /position\s*:\s*(fixed|absolute|sticky)|inset\s*:|z-index\s*:\s*\d{3,}|url\(/i;
 
+const STATIC_IMAGES = new Set(['./icon-192.png', bodyMF, bodyMB, bodyFF, bodyFB]);
+
 /** Sve što bi značilo da je tekst iz stanja postao KOD: nedozvoljen element, rukovalac događaja, `javascript:` adresa ili CSS koji aplikacija sama ne emituje. */
 function injected(root: ParentNode): string[] {
   const found: string[] = [];
   for (const el of Array.from(root.querySelectorAll(FORBIDDEN_TAGS))) {
-    /* Jedina slika koju aplikacija sama iscrtava je njen znak (statična adresa); sve ostalo bi značilo da je adresa došla iz stanja. */
-    if (el.tagName === 'IMG' && el.getAttribute('src') === './icon-192.png') continue;
+    /* Slike koje aplikacija sama iscrtava su njen znak i slike tela na mapi bola (statične adrese iz izgradnje); sve ostalo bi značilo da je adresa
+       došla iz stanja. */
+    if (el.tagName === 'IMG' && STATIC_IMAGES.has(el.getAttribute('src') ?? '')) continue;
     found.push(`<${el.tagName.toLowerCase()}>`);
   }
   for (const el of Array.from(root.querySelectorAll('*'))) {
@@ -148,6 +155,7 @@ function poisoned(p: string): PersistedState {
   }
   s.wellness = wellness;
   (s.ui as Record<string, unknown>)['bodyView'] = p;
+  (s.ui as Record<string, unknown>)['bodyFigure'] = p;
   s.zajed = { vidljiv: true, nadimak: p };
   return s;
 }
