@@ -14,7 +14,7 @@ import { createApp } from '../../app/createApp';
 import { collectPersisted, hydratePersisted, useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
-import { ADMIN_UID } from '../../services/config';
+import { ADMIN_UID, APP_VERSION } from '../../services/config';
 import { LS_KEY, SB_KEY } from '../../services/storage/keys';
 import { createKeyValueStore, type StorageLike } from '../../services/storage/kv';
 import { emptySession } from '../../services/supabase/session';
@@ -777,7 +777,7 @@ describe('Prijava problema i ranije verzije', () => {
       context: { version: string };
     };
     expect(body.description).toBe('ne radi');
-    expect(body.context.version).toBe('288');
+    expect(body.context.version).toBe(APP_VERSION);
   });
 
   it('ranije verzije: spisak sa servera, „Vrati" traži potvrdu i vraća stanje', async () => {
