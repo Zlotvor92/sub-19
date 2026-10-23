@@ -1,0 +1,7 @@
+UGAO 4 — JEDAN VLASNIK (čitanje koda). Folder: docs/generators-v2/audit/owner/
+
+Za svaku distancu (fiveK, tenK, halfMarathon, marathon /v2):
+1. Napravi tabelu veličina koje koriste dva ili više delova (konstruktor: generate/periodize/volume/lengths/quality/week/schedule; validator: validate.ts, adaptInvariants, gridInvariants; adaptacija: adapt.ts, app/): najduži dugi, poslednja nedelja izgradnje, minimum nedelje, plafon zone/doze, plafon trajanja, osnova povratka posle pauze, okviri nedelja (početak/kraj, delimična prva nedelja), WU/CD, doza kvaliteta, rasterećenje, taper, cilj nedelje, prag „lagan < dugi". Za svaku: VLASNIK (fajl:funkcija) i svi korisnici.
+2. Nalaz = dve definicije iste stvari (pouka 24) ili validator koji sam računa ono što konstruktor odlučuje. Za svaki nalaz pokušaj da konstruišeš ULAZ na kome se dve definicije razilaze (kratka skripta) — ako ga nađeš, nalaz je B; ako ne, „razilaženje nije nađeno" i zašto.
+3. Proveri stalne uslove iz AGENTS.md 1–7 za svaku distancu: petlje uzastopnog skraćivanja/dopune; dva limita za istu stvar; WU/CD kao pufer za km; adaptacija — uslovi poznati unapred ulaze u konstruktor, završna zaštita samo štiti; predaja — cilj sam određuje politiku; policyId/policyVersion i faza iz odluke generatora; nula uvoza van foldera distance (proveri da test izolacije zaista pokriva SVE fajlove, i app/, i šta je na listi izuzetaka).
+Samo čitanje + male merne skripte u svom folderu.

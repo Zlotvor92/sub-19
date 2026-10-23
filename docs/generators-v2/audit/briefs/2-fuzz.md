@@ -1,0 +1,7 @@
+UGAO 2 — NASUMIČNI ULAZI (fuzz). Folder: docs/generators-v2/audit/fuzz/
+
+1. Iz koda odredi DOZVOLJEN domen ulaza po distanci: validatori ulaza (v2/input.ts i sl.) i ograničenja čarobnjaka u v2/app/. Zapiši domen u REPORT.md (polje → opseg, izvor fajl:linija).
+2. Seeded generator slučajnih dozvoljenih ulaza VAN postojećih mreža (testInputs.ts, adaptInputs.ts, trajne mreže): datum starta bilo koji dan, dan trke bilo koji dan, broj nedelja min..max, dani u nedelji i raspored (koji dani, dan dugog), obim na granicama, rezultat star 0..84 dana, VDOT na granicama, početnik, ciljno vreme, najduži skorašnji trening, run/walk za 5K.
+3. Po distanci ≥ 100 000 ulaza (prvo izmeri brzinu; ako ne stigneš za ~2 h po distanci, uzmi koliko stigneš i napiši broj).
+4. Provere po planu: throw; odbijanje — dokumentovano (kod + poruka/preporuka) ili ne; prijave validatora na generisanom planu; postojeće invarijante distance (adaptInvariants/gridInvariants gde postoje); nezavisne provere upotrebljivosti (AGENTS.md uslov 8): nedelja ispod minimalnog smislenog obima (prag zapiši), prazan trening (0 km ili bez koraka), dugi < lagan iste nedelje, dan kvaliteta duži od dugog, kvalitet bez WU/CD, nedostaje policyId/policyVersion ili faza nedelje, trening pre starta ili posle trke, dan trke nije poslednji.
+5. Svaki nalaz razdvoji na realan i nerealan ulaz (pravila iz zajedničkog dela). Za svaku klasu nalaza: broj, 3 najmanja ulaza koji je reprodukuju, uzrok ako ga nađeš.
