@@ -8,7 +8,7 @@ import { resolvePlan } from '../../domain/plan';
 import { acwrNow } from '../../domain/generators/fiveK/recovery/load';
 import { acwrPosition, acwrText } from '../../domain/generators/fiveK/recovery/view';
 import { seedState, type PersistedState, type WellnessRecord } from '../../domain/state';
-import { hydratePersisted, useTrainingStore } from '../../stores';
+import { hydratePersisted, useSettingsStore, useTrainingStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
 import { AdjustPlan } from '../plan/AdjustPlan';
@@ -198,6 +198,53 @@ describe('Bol', () => {
     await user.click(within(sheet).getByRole('button', { name: 'Obriši unos' }));
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useRecoveryStore.getState().knee).toEqual([]));
+  });
+
+  it('mapa tela: muškarac i žena, spreda i otpozadi — svaka figura ima sve delove tela, a izbor se pamti', async () => {
+    const user = userEvent.setup();
+    hydratePersisted(
+      freshState({
+        knee: [{ id: 'k1', date: day(1), pain: 4, part: 'koleno-D', act: 'Trčanje', note: '' }]
+      })
+    );
+    render(<Bol />);
+    const ids = (): string[] =>
+      [...document.querySelectorAll('.bodymap [data-bp]')]
+        .map((el) => el.getAttribute('data-bp') ?? '')
+        .sort();
+    const FRONT = ['glava', 'vrat', 'grudi', 'trbuh', 'prepone'];
+    const BACK = ['glava', 'vrat', 'gornja-ledja', 'donja-ledja'];
+    const sides = (parts: string[]): string[] => parts.flatMap((p) => [`${p}-L`, `${p}-D`]);
+    const ARM = ['rame', 'nadlaktica', 'podlaktica', 'saka'];
+    const front = [
+      ...FRONT,
+      ...sides([...ARM, 'kuk', 'kvadriceps', 'koleno', 'potkolenica', 'stopalo'])
+    ].sort();
+    const back = [
+      ...BACK,
+      ...sides([...ARM, 'gluteus', 'zadnja-loza', 'koleno', 'list', 'ahilova', 'peta'])
+    ].sort();
+
+    expect(ids()).toEqual(front);
+    expect(document.querySelector('.bodymap img')?.getAttribute('src')).toMatch(/m-front/);
+    // bol na desnom kolenu je obojena mrlja ispod nevidljive zone
+    expect(document.querySelector('.bp-spot.l2')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Desno koleno — bol 4' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Žena' }));
+    expect(ids()).toEqual(front);
+    expect(document.querySelector('.bodymap img')?.getAttribute('src')).toMatch(/f-front/);
+    await user.click(screen.getByRole('button', { name: 'Otpozadi' }));
+    expect(ids()).toEqual(back);
+    expect(document.querySelector('.bodymap img')?.getAttribute('src')).toMatch(/f-back/);
+    expect(
+      screen.getByText('Otpozadi: leva strana slike je tvoja leva strana.')
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Muškarac' }));
+    expect(ids()).toEqual(back);
+    expect(document.querySelector('.bodymap img')?.getAttribute('src')).toMatch(/m-back/);
+    expect(useSettingsStore.getState().ui['bodyFigure']).toBe('m');
+    expect(useSettingsStore.getState().ui['bodyView']).toBe('back');
   });
 });
 

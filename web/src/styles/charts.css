@@ -511,44 +511,78 @@
 }
 
 /* ───────── BOL ───────── */
+.bodyctl {
+  display: flex;
+  gap: var(--s-2);
+}
+.bodyctl .seg {
+  flex: 1 1 0;
+}
+.bodyctl .seg.bodyfig {
+  flex: none;
+}
+.bodyctl .bodyfig button {
+  min-width: 52px;
+}
+.bodyhint {
+  margin-top: var(--s-2);
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--text-2);
+}
 .bodywrap {
   display: flex;
   justify-content: center;
-  max-width: 260px;
   margin: var(--s-4) auto 0;
 }
+/* Slika tela i preko nje SVG istih dimenzija: zone za dodir su nevidljive, bol je meka mrlja u obliku zone (multiply = utopljena u kožu). */
 .bodymap {
+  position: relative;
+  height: min(62dvh, 540px);
+  max-width: 100%;
+}
+.bodymap-img,
+.bodymap-svg {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+}
+.bodymap-img {
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.bodymap-svg {
+  position: absolute;
+  inset: 0;
 }
 .bp {
-  fill: var(--line-strong);
-  stroke: var(--bg);
-  stroke-width: 1.4;
+  fill: transparent;
+  stroke: none;
   cursor: pointer;
-  transition: fill var(--dur-1);
 }
 .bp:focus-visible {
   stroke: var(--focus);
   stroke-width: 2.5;
+  stroke-dasharray: 4 3;
   outline: none;
 }
-.bp.l0 {
-  fill: color-mix(in srgb, var(--ok) 38%, var(--surface-2));
+.bp-spot {
+  pointer-events: none;
+  fill-opacity: 0.62;
+  mix-blend-mode: multiply;
 }
-.bp.l1 {
-  fill: color-mix(in srgb, var(--warn) 45%, var(--surface-2));
+.bp-spot.l0 {
+  fill: var(--pain-0);
 }
-.bp.l2 {
-  fill: var(--warn);
-  stroke: var(--text);
-  stroke-width: 1.6;
+.bp-spot.l1 {
+  fill: var(--pain-1);
 }
-.bp.l3 {
-  fill: var(--bad);
-  stroke: var(--text);
-  stroke-width: 1.6;
+.bp-spot.l2 {
+  fill: var(--pain-2);
+}
+.bp-spot.l3 {
+  fill: var(--pain-3);
 }
 .bodylegend {
   display: flex;
@@ -570,20 +604,20 @@
   flex: none;
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border-radius: 50%;
   background: var(--line-strong);
 }
 .bodylegend i.l0 {
-  background: color-mix(in srgb, var(--ok) 38%, var(--surface-2));
+  background: var(--pain-0);
 }
 .bodylegend i.l1 {
-  background: color-mix(in srgb, var(--warn) 45%, var(--surface-2));
+  background: var(--pain-1);
 }
 .bodylegend i.l2 {
-  background: var(--warn);
+  background: var(--pain-2);
 }
 .bodylegend i.l3 {
-  background: var(--bad);
+  background: var(--pain-3);
 }
 .krow .kp {
   flex: none;

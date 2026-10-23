@@ -8,7 +8,7 @@ import { partName } from '../../domain/recovery';
 import { useSettingsStore } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
-import { BodyMap, type BodyView } from './BodyMap';
+import { BodyMap, type BodyFigure, type BodyView } from './BodyMap';
 import { PainChart } from './charts';
 import { useRecoveryModel } from './useRecoveryModel';
 
@@ -23,7 +23,9 @@ export function BolScreen() {
   const openSheet = useUIStore((s) => s.openSheet);
   const [painSel, setPainSel] = useState<number | null>(null);
   const today = parseIsoDate(todayStr);
+  const bodyFigure = useSettingsStore((s) => s.ui['bodyFigure']);
   const view: BodyView = bodyView === 'back' ? 'back' : 'front';
+  const figure: BodyFigure = bodyFigure === 'f' ? 'f' : 'm';
   if (!m || !today) return null;
 
   const history = knee.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -45,23 +47,51 @@ export function BolScreen() {
         </p>
       </header>
 
-      <div className="seg" role="group" aria-label="Pogled na telo">
-        {(['front', 'back'] as const).map((v) => (
-          <button
-            type="button"
-            key={v}
-            data-bv={v}
-            className={view === v ? 'on' : ''}
-            aria-pressed={view === v}
-            onClick={() => patchUi({ bodyView: v })}
-          >
-            {v === 'front' ? 'Prednja' : 'Zadnja'}
-          </button>
-        ))}
+      <div className="bodyctl">
+        <div className="seg" role="group" aria-label="Pogled na telo">
+          {(['front', 'back'] as const).map((v) => (
+            <button
+              type="button"
+              key={v}
+              data-bv={v}
+              className={view === v ? 'on' : ''}
+              aria-pressed={view === v}
+              onClick={() => patchUi({ bodyView: v })}
+            >
+              {v === 'front' ? 'Spreda' : 'Otpozadi'}
+            </button>
+          ))}
+        </div>
+        <div className="seg bodyfig" role="group" aria-label="Figura">
+          {(['m', 'f'] as const).map((f) => (
+            <button
+              type="button"
+              key={f}
+              data-bf={f}
+              className={figure === f ? 'on' : ''}
+              aria-pressed={figure === f}
+              aria-label={f === 'm' ? 'Muškarac' : 'Žena'}
+              onClick={() => patchUi({ bodyFigure: f })}
+            >
+              {f === 'm' ? 'M' : 'Ž'}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="bodywrap">
-        <BodyMap view={view} pain={knee} today={today} onPart={(p) => openPart(p)} />
+        <BodyMap
+          view={view}
+          figure={figure}
+          pain={knee}
+          today={today}
+          onPart={(p) => openPart(p)}
+        />
       </div>
+      <p className="bodyhint">
+        {view === 'front'
+          ? 'Spreda: leva strana slike je tvoja desna strana.'
+          : 'Otpozadi: leva strana slike je tvoja leva strana.'}
+      </p>
       <ul className="bodylegend" aria-label="Nivoi bola">
         <li>
           <i className="l0" />0
