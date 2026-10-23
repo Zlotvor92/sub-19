@@ -56,8 +56,25 @@ nedelja: **0** na sve 4 distance i posle predaje.
 Neidempotentnost van manjka (5K 47/7 027 koraka, 10K 39/7 032; uključuje i NO_FACTS 5K 7/3 757) — mala, uzrok nepoznat,
 primeri u `out/idemp-*.json` (`ex`).
 
-HM i maraton razlaganje C2/C6 (`idemp-HM.json`, `idemp-MAR.json`) i 10K klasifikacija odbijanja (`rej-10K.json`):
-IDEMP_HM_MAR_REJ10K
+Razlaganje C2/C6 po uslovu (`idemp.ts`, prvih 2 000 lanaca po distanci; „isti" = ista adaptacija dvaput, „sutra" =
+asOf + 1 bez treninga u planu, iste činjenice):
+
+| | 5K | 10K | HM | maraton |
+|---|---|---|---|---|
+| isti — manjak izvršenja | 423/475 | 617/635 | 608/630 | 600/627 |
+| isti — ostali uslovi | 47/7 027 | 39/7 032 | 32/7 081 | 57/7 012 |
+| sutra — manjak izvršenja (cilj pada > 10 %) | 174/227 | 240/256 | 195/222 | 215/242 |
+| sutra — bol bez manjka | 21/882 | 17/650 | 16/772 | 16/821 |
+
+Klasifikacija odbijanja (`classify-rej.ts`, prvih 3 000 lanaca): 5K 202 (LIMITS 167, TEST_WEEK 14, QUALITY_REPEAT 9,
+RACE_WEEK_TAPER 7, DOSE_PROGRESSION 3, ostalo 2), 10K 153 (svi LIMITS), HM 138 (LIMITS 136, TEST 1, WEEK_INFEASIBLE 1),
+maraton 192 (LIMITS 149, TEST 42, LONG_JUMP 1). „lock-ranije" = poslednji korak prolazi kad se iz ranijih koraka skinu
+zaključani dani; ostatak LIMITS su dani koje je trkač posle zaključavanja i URADIO (isti koren, C1).
+
+Odnos prema poznatom: C6 (bol) je merenje stavke consistency C14 („ponovljen isti zapis bola … posledica u aplikaciji
+nepotvrđena", samo čitanje) — novo: broj tokova, kaskada do tapera, i 10K (koji ima zaštitu „već u planu") takođe pada
+17/650. C1–C5, C7, C10 nisu u POSLE-MERGE/FINAL/ODLUKE-4a ni u izveštajima drugih uglova (grep LIMITS/UNDER_EXECUTION/
+idempot).
 
 ## Realno / nerealno
 
@@ -73,11 +90,14 @@ pomeren ili drugi test u prihvaćenom planu) 0 — ali vidi C3/C4 (odbijanje ume
 
 ## Ograničenja merenja
 
+- Tokom merenja na granu je stigao d2f812a (organizator) sa izmenom `web/src/features/session/WorkoutParts.tsx` (+ test):
+  samo UI, van `domain/generators`; uvozi mernih skripti (generatori, `app/handoffTarget`, `app/plan`, `app/preparation`)
+  na 670700e su bajt-isti. Merenja važe za kod 670700e.
 - Činjenice se pune po planu u tom trenutku; trkač koji svojevoljno trči dan odmora bez zaključavanja nije generisan
   (dan odmora nije dan plana) — C1 zato meri samo put kroz zaključavanje.
 - „Ručne izmene" = `lockedDayIds` (jezgro ne prima sadržaj izmene).
 - Pri međucommitu `git pull --rebase` je prepisao fajlove u koje su pisali idemp/rej procesi; ponovljeni su (rezultati
-  isti seed). Uzorci idemp/rej: 2 000 (5K, 10K) odnosno 3 000 lanaca (HM, MAR, rej svi).
+  isti seed). Uzorci: idemp 2 000 lanaca po distanci, rej 3 000.
 
 ## Fajlovi
 
