@@ -5,7 +5,7 @@
    - 0 odbijanja (konstruktor ne sastavlja ono što validator odbija);
    - testInputs.earlyChecks (Uslov 8): prošlost bajt-ista, prazan trening, dugi ≥ lagan, trkačka ≤ taper;
    - 'none' = generator (nedelje bajt-iste);
-   - regresija (5K-09) prema c13c258 (segment09.x08g-c13c258.json, otisak bez korisničkog teksta): tok van spiska
+   - regresija (5K-10) prema b9c4728 (segment10.x08g-b9c4728.json, otisak bez korisničkog teksta): tok van spiska
      promenjenih bajt-isti (zbir po planu); promenjen tok nosi razlog segmenta 09 (segment09.harness). Ranije
      razloge prema f4b257d (N2, N3, N4, C, F, P, M, K) opisuju izveštaji SEGMENT-08g…08l.
    - pouka 36: posle umora isti zapisi ponovo asOf + 1 … + 7 → 0 novih rasterećenja.
@@ -72,9 +72,9 @@ export function describeEarlyGrid(label: string, part: number): void {
     : all.filter((b) => BRZ_PLANOVI.includes(b.id));
   describe(label, () => {
     it(
-      `${bases.length} planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema c13c258`,
+      `${bases.length} planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema b9c4728`,
       () => {
-        expect(REF.against).toBe('c13c258');
+        expect(REF.against).toBe('b9c4728'); // 5K-10: segment10.x08g-b9c4728.json
         const bad = bases.flatMap((b) => checkPlan(b.id, b.input));
         expect(bad.slice(0, 10)).toEqual([]);
       },

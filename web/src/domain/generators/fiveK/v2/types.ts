@@ -239,6 +239,10 @@ export interface PlanWeek extends WeekFrame {
   budgets: QualityBudgets;
   /** 2.1.0: lagani dani su ograničeni na dužinu dugog, pa je plannedKm < targetKm (namerno). */
   easyCappedAtLong: boolean;
+  /** 5k-v2.12.0 (T1): broj laganih dana šablona koji su odmor jer lagan ≥ minimuma ne staje uz dugi (lengths.weekLengths). */
+  easyRest?: number;
+  /** 5k-v2.12.0 (T2): zagrevanje/hlađenje kvaliteta na najnižem pojasu jer bi dan kvaliteta bio duži od dugog. */
+  wuMin?: boolean;
   /** 2.3.0 (Odluka 5): rasteretna nedelja čiji je kvalitet samo ubrzanja na laganom danu.
       2.4.0: i nedelje 1–2 početnika (samo lagano + ubrzanja). */
   stridesOnly: boolean;

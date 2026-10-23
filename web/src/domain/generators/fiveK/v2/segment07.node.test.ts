@@ -133,7 +133,8 @@ const rwCov = (asOf: string, complete = true): FactsCoverage => ({
   complete
 });
 /** Odluka 5: nivo k-te sesije (od 1) bez adaptacije. */
-const projected = (k: number): number => Math.min(12, 1 + Math.floor((k - 1) / 2));
+/** 5k-v2.12.0 (T5): lestvica do L14. */
+const projected = (k: number): number => Math.min(14, 1 + Math.floor((k - 1) / 2));
 
 /* ---------- A) ispravke adaptacije ---------- */
 
@@ -153,9 +154,11 @@ describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)
       expect(t[i]).toBeGreaterThan(25.5);
       expect(t[i]).toBe(Math.min(floor1(t[i - 1]! * 1.1), 40.8));
     }
-    expect([r.plan.weeks[9]!.phase, r.plan.weeks[10]!.phase]).toEqual(['sharpen', 'sharpen']);
-    // Taper i trka od novog vrha (31,4), ne od 25,5.
-    expect(t[11]).toBe(round1(31.4 * 0.85));
+    // 5k-v2.12.0 (T4): taper 1 nedelja — ned 10 vrhunac, ned 11 oštrenje.
+    expect([r.plan.weeks[9]!.phase, r.plan.weeks[10]!.phase]).toEqual(['peak', 'sharpen']);
+    // 5k-v2.12.0 (T4): taper 1 nedelja — oštrenje ned 12 raste dalje (34,5), taper od novog vrha, ne od 25,5.
+    expect(t[11]).toBe(floor1(31.4 * 1.1));
+    expect(t[12]).toBe(round1(t[11]! * 0.85));
   });
 
   it('kad cilj dostigne nivo, važe redovna pravila (oštrenje drži); povratak ne usporava rast', () => {
@@ -169,7 +172,8 @@ describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)
     expect(t[5]).toBe(36.4); // izvršenje: 80% planiranog
     expect(t[6]).toBe(floor1(36.4 * 1.1)); // +10% (ispod nivoa 40,8)
     expect(t[8]).toBe(43.2); // redovnih +8% (veće od povratka ograničenog nivoom)
-    expect([t[9], t[10]]).toEqual([43.2, 43.2]); // iznad nivoa oštrenje drži
+    // 5k-v2.12.0 (T4): ned 10 je vrhunac (+8 %, do vrha 45,5), ned 11 oštrenje drži.
+    expect([t[9], t[10]]).toEqual([45.5, 45.5]);
   });
 
   // 5k-v2.6.1 (Segment 08d, Odluka 1 dopuna): osnova = min(0,7 × nivo pre bola 40,8, cilj nedelje sidra
@@ -184,7 +188,7 @@ describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)
     expect(r.plan.weeks[4]!.plannedKm).toBeLessThan(44);
     expect(t[5]).toBe(floor1(round1(0.7 * 40.8) * 1.1));
     expect(t[8]).toBe(37.9);
-    expect([t[9], t[10]]).toEqual([40.8, 40.8]);
+    expect([t[9], t[10]]).toEqual([40.9, 40.9]); // 5k-v2.12.0 (T4): ned 10 vrhunac (+8 % od 37,9), ned 11 drži
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 5, share: 0.7 });
   });
 });
@@ -205,7 +209,7 @@ describe('Odluka 2: donja granica cilja = minimum nedelje (izgradnja: broj dana 
     const r = adapt(plan, { workouts: pause(plan, asOf, 35), coverage: full(asOf) }, asOf);
     const after = r.plan.weeks.filter((w) => w.index > 6);
     const taper = after.filter((w) => w.phase === 'taper');
-    expect(taper.length).toBe(2);
+    expect(taper.length).toBe(1); // 5k-v2.12.0 (T4)
     for (const w of taper) {
       expect(w.targetKm).toBeLessThan(25);
       expect(w.targetKm).toBeGreaterThanOrEqual(12.5);
@@ -281,19 +285,21 @@ describe('Odluka 3: potpunost činjenica (coverage) i eksplicitna pauza', () => 
 /* ---------- B) trčanje/hodanje ---------- */
 
 describe('Odluka 4: lestvica trčanja/hodanja (policy.runWalk, jedna tabela)', () => {
-  it('12 nivoa; L1 1:00/2:00 × 8, L10/L11/L12 kontinuirano 20/25/30 min; aktivno 20–35 min', () => {
+  it('14 nivoa (5k-v2.12.0, T5); L1 1:00/2:00 × 8, L10–L14 kontinuirano 20/25/30/35/40 min; aktivno 20–40 min', () => {
     const L = P.runWalk.levels;
-    expect(L).toHaveLength(12);
+    expect(L).toHaveLength(14);
     expect(L[0]).toEqual({ level: 1, runSec: 60, walkSec: 120, reps: 8 });
     expect(L.slice(9).map((l) => [l.runSec, l.walkSec, l.reps])).toEqual([
       [1200, 0, 1],
       [1500, 0, 1],
-      [1800, 0, 1]
+      [1800, 0, 1],
+      [2100, 0, 1],
+      [2400, 0, 1]
     ]);
     L.forEach((l, i) => {
       const active = l.reps * l.runSec + (l.reps - 1) * l.walkSec;
       expect(active).toBeGreaterThanOrEqual(20 * 60);
-      expect(active).toBeLessThanOrEqual(35 * 60);
+      expect(active).toBeLessThanOrEqual(40 * 60);
       if (i > 0) {
         expect(l.runSec).toBeGreaterThan(L[i - 1]!.runSec);
         expect(l.walkSec).toBeLessThanOrEqual(L[i - 1]!.walkSec);
@@ -431,7 +437,7 @@ describe('Odluka 7: trka — odnos poslednjeg nivoa ako je < L12, cilj „završ
     ]);
   });
 
-  it('12 nedelja: L12 → trka bez hodanja; pon/sre/pet → sesije sre i pet', () => {
+  it('12 nedelja: L14 (5k-v2.12.0, T5) → trka bez hodanja; pon/sre/pet → sesije sre i pet (L13)', () => {
     const p = rwPlanOf(rwInput(12, { runDays: ['mon', 'wed', 'fri'] }));
     expect(raceOf(p).race.continuous).toBe(true);
     expect(
@@ -440,8 +446,8 @@ describe('Odluka 7: trka — odnos poslednjeg nivoa ako je < L12, cilj „završ
         .days.filter((d) => d.role === 'session')
         .map((d) => [d.weekday, d.level])
     ).toEqual([
-      ['wed', 11],
-      ['fri', 11]
+      ['wed', 13],
+      ['fri', 13]
     ]);
   });
 });
@@ -607,7 +613,7 @@ describe('Mreža B: trčanje/hodanje 6/8/12/16 ned × 6 scenarija → 0 grešaka
       for (const d of before) expect(S(after.find((x) => x.date === d.date))).toBe(S(d));
       const c = r.plan.continuous;
       if (c) {
-        expect(r.plan.adaptation!.steps.at(-1)!.level).toBe(12);
+        expect(r.plan.adaptation!.steps.at(-1)!.level).toBeGreaterThanOrEqual(12);
         expect(c.plan.weeks.at(-1)!.endDate).toBe(p.input.raceDate);
       } else expect(raceOf(r.plan).date).toBe(p.input.raceDate);
       if (name === 'sve' && !c)
@@ -638,8 +644,8 @@ describe('Mreža B: trčanje/hodanje 6/8/12/16 ned × 6 scenarija → 0 grešaka
 
 /* ---------- Regresija: generisanje bez adaptacije ---------- */
 
-describe('Generisanje bez adaptacije: regresija prema c13c258 (5K-09, otisak bez teksta)', () => {
-  it('700 ulaza (644 plana): tok van spiska promenjenih bajt-isti; promenjeni (F2, C1, C13) nose razlog', () => {
+describe('Generisanje bez adaptacije: regresija prema b9c4728 (5K-10, otisak bez teksta)', () => {
+  it('700 ulaza (644 plana): tok van spiska promenjenih bajt-isti; promenjeni (T1, T2, T4) nose razlog', () => {
     const ref = ref09('g07');
     const flows = regressionInputs().map(([key, input]) => ({ key, res: generateFiveKV2(input) }));
     expect(flows).toHaveLength(700);

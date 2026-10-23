@@ -218,3 +218,16 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Dopuna T (`fixes/02-text-addendum.md`): „dugo trčanje", „tempo treninga i dalje zavisi od rezultata" (isto 5k-v2.11.1).
 - Izveštaj: `reports/SEGMENT-09-IMPLEMENTATION.md`.
 
+
+## Segment 10 — krug T: trenerska pravila T1, T2, T4, T5, C3, C5, C11 (5k-v2.12.0, 2026-10-23)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: b9c4728 | spisak `docs/generators-v2/audit/fixes/03-coach-rules.md`, `T-assign.md`
+- T1 lagan ≤ 0,8 × dugi i ≥ max(3 km, 20 min) u izgradnji (`lengths.easyCapKm/easyMinKm`; lagan dan manje ili
+  planirano < cilj uz upozorenje; kapacitet ostaje „lagan ≤ dugi"); T2 WU/CD na minimum pa `LONG_SHORTER_THAN_QUALITY`;
+  T4 trkač: taper 1 nedelja, ≤ 8 ned bez rasterećenja, rasterećenje ne pre ned 4, glavni I/RP ≥ 80 % budžeta;
+  T5 L13/L14; C3 test mešovite nedelje ostaje; C5 prvo otpada oštrenje; C11 pouka 35 osim trkačke.
+- Merenje: M1 1 090 → 0, M5 308 → 0, M6 352 → 0; fuzz F4 bez upozorenja 943 → 0 (trećina); planovi sa planirano < cilj
+  4 → 2 266; otisci regresije ponovo prema b9c4728 (`segment10.*-b9c4728.json`, `fixes/5K/fixture10.ts`).
+- Pun nivo 5K 790/790; run-all 5K 0 nečistih; lanci odbijeni 1 → 0, IDEMP 40 → 34; sabotaže 11/11; E2E 3/3. Van foldera:
+  byteSame 10K/HM/MAR redovi „5K v2“ i `fiveKV2Flow` oznaka — patch `artifacts/segment10/byteSame-5Kv2.patch` čeka organizatora.
+- Izveštaj: `reports/SEGMENT-10-IMPLEMENTATION.md`.

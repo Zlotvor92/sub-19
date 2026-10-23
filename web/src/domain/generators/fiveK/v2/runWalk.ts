@@ -20,6 +20,8 @@ import type {
 
 const RW = P.runWalk;
 export const MAX_LEVEL = RW.levels.length;
+/** 5k-v2.12.0 (T5): L12 — trka bez hodanja i prelaz na kontinuirani plan; L13–L14 samo produžavaju lestvicu. */
+export const TRANSITION_LEVEL = RW.continuousLevel;
 const r2 = (x: number): number => Math.round(x * 100) / 100;
 const mmss = (sec: number): string =>
   `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
@@ -55,7 +57,7 @@ export function runWalkSession(level: number, easyPace: number | null): RunWalkS
     nivoa, hod = raceWalkSec; L12: bez hodanja. */
 export function runWalkRace(level: number): RunWalkRace {
   const l = levelOf(level);
-  const continuous = l.level >= MAX_LEVEL;
+  const continuous = l.level >= TRANSITION_LEVEL;
   const walkSec = continuous ? 0 : l.walkSec > 0 ? l.walkSec : RW.raceWalkSec;
   return {
     distanceKm: RW.raceKm,
@@ -194,7 +196,7 @@ export function constructRunWalk(
 export function transitionInput(input: FiveKV2Input, week: number): Record<string, unknown> | null {
   const pace = input.typicalEasyPaceSecPerKm ?? null;
   if (pace === null) return null;
-  const top = levelOf(MAX_LEVEL);
+  const top = levelOf(TRANSITION_LEVEL);
   return {
     startDate: addDays(input.startDate, (week - 1) * 7),
     raceDate: input.raceDate,

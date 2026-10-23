@@ -490,8 +490,13 @@ export function qualitySession(
         q.iRepMaxSec,
         isI ? q.iRepMinSec : 0
       ] as const;
+      // 5k-v2.12.0 (T4): glavni I (vrhunac) / RP (oštrenje) trkača sa rezultatom — prvo najmanji korak naviše sa radom
+      // ≥ peakMainMinShare budžeta; nema ga u ponudi → postojeći prag mainMinShareOfBudget (ne naglo, bez odbijanja).
       const c = progression
-        ? chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict')
+        ? ((phase === 'peak' || phase === 'sharpen'
+            ? chooseProgressiveReps(...args, q.peakMainMinShare, progression.prev, 'strict')
+            : null) ??
+          chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict'))
         : chooseReps(...args);
       if (!c)
         return progression?.prev

@@ -107,10 +107,13 @@ function feasibility(p: PaceModel, a: Athlete): { lo: number; ok: boolean[] } {
           easyCount(a, s.q1 !== null, s.q2 !== null),
           f.phase,
           p,
-          a
+          a,
+          f.deload
         );
         if (L.shares.some((x) => x + 1e-9 < L.easyMin)) return true;
-        return !(L.capped && L.longKm + 1e-9 >= longCapKm(t, p, a));
+        // 5k-v2.12.0 (T1): lagan dan manje (minimum laganog ne staje uz dugi) je donja granica obima, ne kapacitet.
+        if (L.shares.length < easyCount(a, s.q1 !== null, s.q2 !== null)) return true;
+        return !(L.overLong && L.longKm + 1e-9 >= longCapKm(t, p, a));
       })
     );
   }

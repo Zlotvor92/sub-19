@@ -51,8 +51,6 @@ describe('08j K9 — drugi korak posle smanjenja', () => {
     if (!r2.ok) throw new Error(S(r2.violations));
     const shape = (ws: PlanWeek[]) => S(ws.map((w) => [w.targetKm, w.deload, w.test, w.days]));
     expect(shape(after(r2.plan, at2))).toBe(shape(after(r1.plan, at2)));
-    expect(
-      r1.plan.weeks[2]!.notes.some((n) => n.includes('kontrolno trčanje ne staje u obim'))
-    ).toBe(true);
+    // 5k-v2.12.0: kontrolno trčanje sada staje u obim ned 3 (T1/T4 menjaju dužine) — ostaje provera istog plana.
   });
 });

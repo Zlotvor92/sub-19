@@ -93,13 +93,18 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
     const plan = planOf(
       inputOf({ weeks: 12, km: 30, distanceM: 5000, timeSec: 1230, days: ['mon', 'wed', 'sat'] })
     );
+    // 5k-v2.12.0 (T1): nedelja sa oznakom granice laganog ima lagane = 0,8 × dugi i planirano < cilj; ostale = cilj.
     for (const w of plan.weeks) {
-      expect(w.easyCappedAtLong).toBe(false);
-      expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);
+      const long = w.days.find((d) => d.role === 'long');
+      if (w.easyCappedAtLong && long) {
+        for (const d of w.days.filter((x) => x.role === 'easy'))
+          expect(d.workout.km).toBeCloseTo(Math.floor(long.workout.km * 8 + 1e-9) / 10, 6);
+        expect(w.plannedKm).toBeLessThan(w.targetKm);
+      } else expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);
     }
   });
 
-  it('mreža sa rezultatom 3/4/5 dana: 0 nedelja „lagan = dugi" (PLANNED_BELOW_TARGET) van trkačke', () => {
+  it('mreža sa rezultatom 3/4/5 dana: 0 nedelja „lagan = dugi" van trkačke (5k-v2.12.0, T1: granica 0,8 × dugi uz PLANNED_BELOW_TARGET)', () => {
     const KM = { 3: [12, 15, 22, 28, 35], 4: [15, 22, 30, 38, 45], 5: [25, 35, 45, 55, 65] };
     let capped = 0;
     let weeks = 0;
@@ -112,9 +117,16 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
             if (!r.ok || r.plan.planType === 'runWalk') continue;
             for (const x of r.plan.weeks.filter((y) => y.phase !== 'race')) {
               weeks++;
-              if (x.easyCappedAtLong) capped++;
+              const long = x.days.find((d) => d.role === 'long');
+              if (
+                long &&
+                x.days.some((d) => d.role === 'easy' && d.workout.km >= long.workout.km - 1e-9)
+              )
+                capped++;
             }
-            expect(r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toEqual([]);
+            expect(
+              r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)
+            ).toEqual(r.plan.weeks.filter((x) => x.easyCappedAtLong).map((x) => x.index));
           }
     expect(weeks).toBeGreaterThan(1000);
     expect(capped).toBe(0);
@@ -147,7 +159,7 @@ describe('Odluka 3: bez višeg nivoa — ista doza druge strukture (vrhunac I i 
     const plan = planOf(inputOf(FAST_SMALL_11));
     expect(plan.weeks.some((w) => w.notes.some((n) => n.includes('I zadržan')))).toBe(false);
     const peak = plan.weeks.filter((w) => w.phase === 'peak' && !w.deload);
-    expect(peak.some((w) => w.notes.some((n) => n.includes('ista doza')))).toBe(true);
+    // 5k-v2.12.0 (T4): I kreće od ≥ 80 % budžeta, pa ista doza druge strukture nije uvek potrebna (ranije: jeste).
     for (let i = 1; i < peak.length; i++) {
       const a = roleDay(peak[i - 1]!, 'q1')!.workout;
       const b = roleDay(peak[i]!, 'q1')!.workout;
@@ -465,12 +477,15 @@ function specOf(b: Branch, km: number, weeks: number, v: number, d: Weekday[]): 
 function checkStanding(plan: FiveKV2Plan, n: 3 | 4 | 5): void {
   expect(validatePlan(plan).filter((v) => v.severity === 'error')).toEqual([]);
   expect([plan.policyId, plan.policyVersion]).toEqual([P.id, P.version]);
-  expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toEqual([]);
+  // 5k-v2.12.0 (T1): planirano < cilj (upozorenje) samo u nedelji sa granicom laganog 0,8 × dugi.
+  expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
+    plan.weeks.filter((w) => w.easyCappedAtLong).map((w) => w.index)
+  );
   for (const w of plan.weeks) {
     expect(['base', 'peak', 'sharpen', 'taper', 'race']).toContain(w.phase);
     const min = w.phase === 'race' ? P.week.minRaceWeekKm : P.days[n].minWeekKm;
-    expect(w.plannedKm).toBeGreaterThanOrEqual(min);
-    if (w.phase !== 'race') expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);
+    expect(w.easyRest ? w.targetKm : w.plannedKm).toBeGreaterThanOrEqual(min);
+    if (w.phase !== 'race' && !w.easyCappedAtLong) expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);
     const long = roleDay(w, 'long');
     for (const day of w.days) {
       expect(day.workout.km).toBeGreaterThan(0);

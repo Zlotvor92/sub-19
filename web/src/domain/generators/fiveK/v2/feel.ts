@@ -365,7 +365,7 @@ export function simpleWeekQuality(
     // Kvalitet staje u nedelju samo ako dužine (weekLengths, iste kao week.ts) daju lagan ≥ minimum i
     // lagan ≤ dugi; inače rasterećenje samo sa ubrzanjima (npr. početnik, 4 dana, 15 km → 12 km).
     const room = (w: Workout): boolean => {
-      const L = weekLengths(targetKm, w.km, easyCount(a, true, false), f.phase, p, a);
+      const L = weekLengths(targetKm, w.km, easyCount(a, true, false), f.phase, p, a, f.deload);
       return !L.capped && L.shares.every((x) => x + 1e-9 >= L.easyMin);
     };
     for (const kind of chain) {

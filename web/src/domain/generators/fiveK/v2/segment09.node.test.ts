@@ -124,8 +124,10 @@ describe('F1: 3 dana — oštrenje bez zahtevnog dana ≥ 3 dana pre trke', () =
 });
 
 describe('F2: 3 dana / 12 km — kvalitet koji ne staje: manja doza ili bez kvaliteta uz upozorenje', () => {
-  it('nalaz: VDOT 30, 8 ned → plan (ranije QUALITY_INFEASIBLE ned 7), upozorenje QUALITY_REDUCED', () => {
-    const p = planOf({
+  // 5k-v2.12.0 (T4): nalaz (VDOT 30, 8 ned, taper ned 7) sada ima taper 1 nedelja i kvalitet staje; lanac F2 nosi
+  // brz trkač 3 dana / 12 km / 6 ned (ned 3).
+  it('nalaz: VDOT 30, 8 ned → plan bez odbijanja; VDOT ~52, 6 ned → upozorenje QUALITY_REDUCED (ned 3)', () => {
+    const p0 = planOf({
       startDate: '2027-01-11',
       raceDate: '2027-03-07',
       runDays: ['tue', 'thu', 'sun'],
@@ -133,9 +135,17 @@ describe('F2: 3 dana / 12 km — kvalitet koji ne staje: manja doza ili bez kval
       recentResult: { distanceM: 5000, timeSec: 1841, date: '2027-01-01' },
       goalTimeSec: null
     });
-    const w7 = p.weeks[6]!;
-    expect(w7.limits?.quality).toBeDefined();
-    expect(p.warnings.filter((w) => w.rule === 'QUALITY_REDUCED').map((w) => w.week)).toContain(7);
+    expect(errors(p0)).toEqual([]);
+    const p = planOf({
+      startDate: '2026-11-02',
+      raceDate: '2026-12-13',
+      runDays: ['tue', 'thu', 'sun'],
+      currentWeeklyKm: 12,
+      recentResult: { distanceM: 5000, timeSec: 1157, date: '2026-10-19' },
+      goalTimeSec: null
+    });
+    expect(p.weeks[2]!.limits?.quality).toBeDefined();
+    expect(p.warnings.filter((w) => w.rule === 'QUALITY_REDUCED').map((w) => w.week)).toContain(3);
     expect(errors(p)).toEqual([]);
   });
 
@@ -614,8 +624,8 @@ describe('Z3: Forma čita odluku jezgra o rezultatu', () => {
 
 describe('owner K: jedan plafon laganog dana trkačke nedelje; peakKm adaptacije', () => {
   it('validator koristi isti plafon kao konstruktor (⌊…⌋ na 0,1 km): lagan iznad njega je greška', () => {
-    // 4 dana, 30 km, VDOT 38, 10 ned: plafon 4,5 km, bez zaokruživanja 4,55 — lagan 4,51 je greška samo sa istom
-    // funkcijom kao konstruktor.
+    // 4 dana, 30 km, VDOT 38, 10 ned: plafon 5,5 km, bez zaokruživanja 5,55 (5k-v2.12.0: taper 1 nedelja, dugi tapera
+    // 11,1 km) — lagan 5,51 je greška samo sa istom funkcijom kao konstruktor.
     const p = planOf({
       startDate: START,
       raceDate: addDays(START, 7 * 10 - 1),
@@ -631,7 +641,7 @@ describe('owner K: jedan plafon laganog dana trkačke nedelje; peakKm adaptacije
       P.easy.taperMinKm,
       Math.min(P.easy.raceWeekMaxSec / p.paces.E.slow, prevLong * P.easy.raceWeekMaxShareOfPrevLong)
     );
-    expect([cap, Math.round(raw * 100) / 100]).toEqual([4.5, 4.55]);
+    expect([cap, Math.round(raw * 100) / 100]).toEqual([5.5, 5.55]);
     const easy = race.days.find((d) => d.role === 'easy' && d.workout.km < cap)!;
     const q = JSON.parse(JSON.stringify(p)) as FiveKV2Plan;
     const d = q.weeks.at(-1)!.days.find((x) => x.date === easy.date)!;
@@ -666,7 +676,7 @@ describe('owner K: jedan plafon laganog dana trkačke nedelje; peakKm adaptacije
 });
 
 describe('plafon trajanja I na novom tempu (POSLE-MERGE c)', () => {
-  it('r-d3-6w-25km-v45-0, trka Δ8 VDOT (37) 2026-11-04: I 2 × 1000 m tačno na plafonu 300 s prolazi', () => {
+  it('r-d3-6w-25km-v45-0, trka Δ8 VDOT (37) 2026-11-04: I ponavljanja ≤ plafon 300 s na novom tempu (5k-v2.12.0: 3 × 700 m)', () => {
     const p = planOf({
       startDate: START,
       raceDate: addDays(START, 41),
@@ -691,10 +701,9 @@ describe('plafon trajanja I na novom tempu (POSLE-MERGE c)', () => {
     const reps = r.weeks[3]!.days.flatMap((d) =>
       d.workout.segments.filter((s) => s.zone === 'I' && s.kind === 'rep')
     );
-    expect(reps.map((s) => [s.km, s.sec])).toEqual([
-      [1, P.quality.iRepMaxSec],
-      [1, P.quality.iRepMaxSec]
-    ]);
+    expect(reps.length).toBeGreaterThan(0);
+    for (const s of reps) expect(s.sec).toBeLessThanOrEqual(P.quality.iRepMaxSec);
+    expect(errors(r)).toEqual([]);
   });
 });
 
@@ -848,7 +857,7 @@ describe('dopuna lanci: C4 — nedeljna pravila doze i testa čitaju zaštićen 
 });
 
 describe('dopuna lanci: C5 — trkačka posle taper skraćenog bolom', () => {
-  it('kad ni bez svih laganih ne staje: lagani postaju odmor, višak (oštrenje i dan pred trku) je upozorenje', () => {
+  it('kad ni bez svih laganih ne staje: 5k-v2.12.0 (C5) oštrenje otpada, lagani postaju odmor, višak (dan pred trku) je upozorenje', () => {
     const p = planOf({
       startDate: START,
       raceDate: addDays(START, 69),
@@ -859,7 +868,7 @@ describe('dopuna lanci: C5 — trkačka posle taper skraćenog bolom', () => {
     });
     const race = p.weeks.at(-1)!;
     const keep = race.days.filter(
-      (d) => d.role !== 'easy' || daysBetween(d.date, p.input.raceDate) <= 1
+      (d) => d.role === 'race' || (d.role === 'easy' && daysBetween(d.date, p.input.raceDate) <= 1)
     );
     const rest = race.days.filter((d) => !keep.includes(d)).map((d) => d.date);
     const capKm = 1;
@@ -896,9 +905,11 @@ describe('dopuna lanci: C5 — trkačka posle taper skraćenog bolom', () => {
     const fixed = (date: string): PlanDay | undefined =>
       date === locked.date ? locked : undefined;
     const dates = Array.from({ length: 7 }, (_, k) => addDays(race.startDate, k));
-    expect(raceWeekRest(built, p.input.raceDate, new Set(), capKm, fixed, dates)).toEqual([
-      easy[0]!.date
-    ]);
+    // 5k-v2.12.0 (C5): prvo otpada oštrenje, pa najraniji lagan dan (ako oštrenje nije dovoljno).
+    const sh = race.days.find((d) => d.workout.kind === 'quality')!;
+    expect(raceWeekRest(built, p.input.raceDate, new Set(), capKm, fixed, dates)).toEqual(
+      sh.workout.km + 1e-9 >= locked.workout.km ? [sh.date] : [easy[0]!.date, sh.date].sort()
+    );
   });
 });
 

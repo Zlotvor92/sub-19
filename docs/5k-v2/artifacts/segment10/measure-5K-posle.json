@@ -1,0 +1,67 @@
+{
+ "dist": "5K",
+ "kG": 1,
+ "kA": 60,
+ "M1_laganJednakDugi": {
+  "plans": 3816,
+  "ok": 3816,
+  "withEq": 0,
+  "withNear": 0,
+  "byDays": {
+   "3R": [
+    550,
+    0
+   ],
+   "3F": [
+    440,
+    0
+   ],
+   "4R": [
+    660,
+    0
+   ],
+   "4F": [
+    528,
+    0
+   ],
+   "5R": [
+    550,
+    0
+   ],
+   "5F": [
+    440,
+    0
+   ],
+   "3B": [
+    360,
+    0
+   ],
+   "4B": [
+    288,
+    0
+   ]
+  },
+  "ex": []
+ },
+ "M5_laganUzDugiSusedniDan": {
+  "plans": 0,
+  "weeks": 0,
+  "ex": []
+ },
+ "M6_laganKraciOd20min": {
+  "plans": 0,
+  "minSec": null,
+  "ex": []
+ },
+ "M2_M3_napomene": {
+  "flows": 5210,
+  "ok": 5210,
+  "notePlannedMismatch": 0,
+  "notePlannedMismatchOver015": 0,
+  "flowsWithMismatch": 0,
+  "deloadNoteOnNonDeload": 0,
+  "flowsWithDeloadNote": 0,
+  "ex2": [],
+  "ex3": []
+ }
+}

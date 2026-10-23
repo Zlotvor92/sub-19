@@ -1,5 +1,6 @@
-/* 5K-09 (5k-v2.11.0) — regresija prema c13c258 (zajednički kod; bez testova). Otisci segment09.<mreža>-c13c258.json
-   pravi docs/generators-v2/audit/fixes/5K/fixture09.ts (polazni kod c13c258 i tekući, ista mreža). Kanon
+/* 5K-09 (5k-v2.11.0), 5K-10 (5k-v2.12.0) — regresija (zajednički kod; bez testova). Otisci segment10.<mreža>-b9c4728.json (5K-10;
+   ranije segment09.<mreža>-c13c258.json)
+   pravi docs/generators-v2/audit/fixes/5K/fixture10.ts (polazni kod b9c4728 i tekući, ista mreža). Kanon
    (testInputs.canon09) ne poredi korisnički tekst (Z2 ga menja u svakom planu), oznaku verzije ni peakKm (owner K;
    vrednost proverava segment09.node.test.ts). Tok van spiska `changed` je bajt-isti u kanonu; tok na spisku je
    promenjen i nosi razlog (testInputs.Why09) sa oznakom na tekućem rezultatu (testInputs.mark09) — CH: prvi korak
@@ -18,9 +19,11 @@ export interface Ref09 {
   changed: Record<string, { h: string; why: Why09 }>;
 }
 
+/** 5K-10 (krug T, 5k-v2.12.0): otisci prema b9c4728 (segment10.<mreža>-b9c4728.json, fixes/5K/fixture10.ts) zamenjuju
+    otiske prema c13c258; razlozi promene Why09 T1/T2/T4/T5/C3/C5/C11 (testInputs.mark10). */
 export const ref09 = (net: 'g07' | 'n08d' | 'e08e' | 'x08g'): Ref09 =>
   JSON.parse(
-    readFileSync(new URL(`./segment09.${net}-c13c258.json`, import.meta.url), 'utf8')
+    readFileSync(new URL(`./segment10.${net}-b9c4728.json`, import.meta.url), 'utf8')
   ) as Ref09;
 
 export const hash09 = (r: unknown): string =>
@@ -76,6 +79,6 @@ export function regressGroup09(
   }
   if (ref.plans![group] === undefined) bad.push(`${group}: nema u otisku`);
   else if (digest09(same) !== ref.plans![group])
-    bad.push(`${group}: nepromenjeni tokovi nisu bajt-isti prema c13c258`);
+    bad.push(`${group}: nepromenjeni tokovi nisu bajt-isti prema b9c4728`);
   return bad;
 }

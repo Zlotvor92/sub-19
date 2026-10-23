@@ -138,12 +138,14 @@ describe('08g N3 — trkačka nedelja ≤ planirano tapera (pouka 30)', () => {
   const p = planOf('r-d3-9w-20km-v45-1');
   const at = p.weeks[6]!.endDate;
   const r = run(p, 'pain8', at);
-  it('bol 8 kraj ned 7: taper 7,9 km, trkačka 9,3 → 6,6 km (najraniji lagan postaje odmor)', () => {
+  // 5k-v2.12.0 (T4, C5): taper je 1 nedelja (ned 8, ceo u periodu bola: samo dugi 9,5 km); trkačka bez oštrenja
+  // (zabrana kvaliteta), najraniji lagan postaje odmor.
+  it('bol 8 kraj ned 7: taper 9,5 km, trkačka 12,1 → 7 km (najraniji lagan postaje odmor)', () => {
     expect(errors(r)).toEqual([]);
     if (!r.ok) return;
     const [taper, race] = r.plan.weeks.slice(-2) as [PlanWeek, PlanWeek];
-    expect(taper.plannedKm).toBe(7.9);
-    expect(race.plannedKm).toBe(6.6);
+    expect(taper.plannedKm).toBe(9.5);
+    expect(race.plannedKm).toBe(7);
     expect(race.raceRest).toEqual([race.startDate]);
     expect(race.days.some((d) => d.role === 'race')).toBe(true);
     expect(race.days.some((d) => addDays(d.date, 1) === p.input.raceDate)).toBe(true);
@@ -151,24 +153,33 @@ describe('08g N3 — trkačka nedelja ≤ planirano tapera (pouka 30)', () => {
       []
     );
   });
-  it('raceWeekRest: prvo dani bola, pa najraniji lagani; dan pred trku i trka nikad; kad ne staje — svi lagani (5k-v2.11.1, C5)', () => {
+  it('raceWeekRest: 5k-v2.12.0 (C5) prvo oštrenje, pa dani bola, pa najraniji lagani; dan pred trku i trka nikad; kad ne staje — oštrenje i svi lagani', () => {
     if (!r.ok) throw new Error('N3');
     const p0 = p.weeks[8]!;
     const race = p.input.raceDate;
     const easy = p0.days
       .filter((d) => d.role === 'easy' && addDays(d.date, 1) !== race)
       .map((d) => d.date);
+    const sh = p0.days.find((d) => d.workout.kind === 'quality')!;
+    const r2 = (x: number): number => Math.round(x * 100) / 100;
     expect(raceWeekRest(p0.days, race, new Set(), p0.plannedKm)).toEqual([]);
-    expect(raceWeekRest(p0.days, race, new Set(), 7.9)).toEqual([easy[0]]);
-    // Dan bola ima prednost pred najranijim laganim (sintetički drugi lagan dan posle prvog).
+    expect(raceWeekRest(p0.days, race, new Set(), r2(p0.plannedKm - sh.workout.km))).toEqual([
+      sh.date
+    ]);
+    expect(raceWeekRest(p0.days, race, new Set(), 7.9)).toEqual([easy[0], sh.date].sort());
+    // Posle oštrenja dan bola ima prednost pred najranijim laganim (sintetički drugi lagan dan posle prvog).
     const e0 = p0.days.find((d) => d.date === easy[0])!;
     const extra = { ...e0, date: addDays(e0.date, 1) };
     const days2 = [...p0.days, extra].sort((a, b) => a.date.localeCompare(b.date));
-    const cap = Math.round((p0.plannedKm + extra.workout.km - e0.workout.km) * 100) / 100;
-    expect(raceWeekRest(days2, race, new Set(), cap)).toEqual([e0.date]);
-    expect(raceWeekRest(days2, race, new Set([extra.date]), cap)).toEqual([extra.date]);
-    expect(raceWeekRest(days2, race, new Set([addDays(race, -1)]), cap)).toEqual([e0.date]);
-    expect(raceWeekRest(p0.days, race, new Set(), 1)).toEqual([...easy].sort());
+    const cap = r2(p0.plannedKm + extra.workout.km - e0.workout.km - sh.workout.km);
+    expect(raceWeekRest(days2, race, new Set(), cap)).toEqual([e0.date, sh.date].sort());
+    expect(raceWeekRest(days2, race, new Set([extra.date]), cap)).toEqual(
+      [extra.date, sh.date].sort()
+    );
+    expect(raceWeekRest(days2, race, new Set([addDays(race, -1)]), cap)).toEqual(
+      [e0.date, sh.date].sort()
+    );
+    expect(raceWeekRest(p0.days, race, new Set(), 1)).toEqual([...easy, sh.date].sort());
   });
   it('validator: trkačka > taper → RACE_WEEK_TAPER; skraćena ispod minimuma → upozorenje RACE_WEEK_SHORT', () => {
     if (!r.ok) throw new Error('N3');
@@ -180,8 +191,8 @@ describe('08g N3 — trkačka nedelja ≤ planirano tapera (pouka 30)', () => {
             ...d,
             workout: {
               ...d.workout,
-              km: d.workout.km + 2,
-              segments: d.workout.segments.map((x, i) => (i === 0 ? { ...x, km: x.km + 2 } : x))
+              km: d.workout.km + 3,
+              segments: d.workout.segments.map((x, i) => (i === 0 ? { ...x, km: x.km + 3 } : x))
             }
           }
         : d
@@ -192,7 +203,21 @@ describe('08g N3 — trkačka nedelja ≤ planirano tapera (pouka 30)', () => {
     expect(errRules(t)).toContain('RACE_WEEK_TAPER');
     const u = JSON.parse(S(r.plan)) as FiveKV2Plan;
     const uw = u.weeks[u.weeks.length - 1]!;
-    uw.days = uw.days.filter((d) => d.role !== 'easy' || addDays(d.date, 1) === p.input.raceDate);
+    // Dan pred trku kraći (3 km), ostali lagani u odmor: trkačka < minimuma trkačke nedelje.
+    uw.days = uw.days
+      .filter((d) => d.role !== 'easy' || addDays(d.date, 1) === p.input.raceDate)
+      .map((d) =>
+        d.role === 'easy'
+          ? {
+              ...d,
+              workout: {
+                ...d.workout,
+                km: d.workout.km - 1,
+                segments: d.workout.segments.map((x, i) => (i === 0 ? { ...x, km: x.km - 1 } : x))
+              }
+            }
+          : d
+      );
     uw.raceRest = [
       ...new Set([
         ...uw.raceRest!,
@@ -227,7 +252,8 @@ describe('08g N4 — stanje zavisno od prošlosti iz upisanih dana (pouka 29)', 
     // Upisan dan kvaliteta ned 5 = dan prethodnog plana (≤ asOf); f4b257d je progresiju ned 7 vodio od sastavljene
     // (neupisane) doze ned 5 → I 2 × 700 m; posle: nov segment od asOf + 1 → I 2 × 600 m (prvi izbor bez prethodne).
     expect(q1(r.plan.weeks[4]!)).toBe(q1(p.weeks[4]!));
-    expect(q1(r.plan.weeks[6]!)).toBe('I: 2 × 600 m');
+    // 5k-v2.12.0 (T4): prvi izbor bez prethodne je najmanji rad ≥ 80 % budžeta → I 2 × 700 m.
+    expect(q1(r.plan.weeks[6]!)).toBe('I: 2 × 700 m');
   });
 });
 

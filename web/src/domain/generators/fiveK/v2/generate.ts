@@ -91,7 +91,13 @@ export function construct(
   const paces: PaceModel =
     vdot === null ? feelPaces(input.typicalEasyPaceSecPerKm!) : pacesFromVdot(vdot);
   const totalWeeks = (daysBetween(input.startDate, input.raceDate) + 1) / 7;
-  const frames0 = periodize(input.startDate, totalWeeks, rules.deloadEvery, controlTest(a));
+  const frames0 = periodize(
+    input.startDate,
+    totalWeeks,
+    rules.deloadEvery,
+    controlTest(a),
+    a.beginner
+  );
   const vol = planVolume(frames0, input.currentWeeklyKm, paces, a);
   const dropped = new Map<number, number>();
   /** 2.10.1: nedelja → dan testa koji je zaštićen (test otpada, steps.framesFor). */
@@ -233,7 +239,7 @@ export function construct(
         p,
         lastDose[f.phase] ?? null,
         aw,
-        phaseCounts(totalWeeks).taper
+        phaseCounts(totalWeeks, a.beginner).taper
       );
     let r = build(f);
     // 2.10.2 (K9): kontrolno trčanje koje ne staje otpada PRVO samo (ista ograničenja, isti obim); tek onda manje

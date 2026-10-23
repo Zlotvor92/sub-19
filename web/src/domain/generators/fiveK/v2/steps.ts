@@ -5,7 +5,7 @@
 import { addDays, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
 import { hasFreshResult } from './input.ts';
 import { feelPaces, pacesFromVdot, vdotFromResult } from './paces.ts';
-import { controlTest, isShortPrep, periodize, rePeriodize } from './periodize.ts';
+import { controlTest, noRegularDeload, periodize, rePeriodize } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete, type RunDaysCount } from './policy.ts';
 import type {
   AdaptStep,
@@ -105,20 +105,22 @@ export function limitsOf(
     sam pravi u osnovnom rasporedu (periodize, svi planovi sa rasterećenjem: input.planWeeks bez kratke pripreme;
     deloadEvery 4: 5 nedelja, plan od 11; početnik 3: 3) + 1. Izvedeno iz periodize — bez novog broja. */
 const maxRuns = new Map<number, number>();
-export function reliefMaxRun(deloadEvery: number): number {
-  const known = maxRuns.get(deloadEvery);
+export function reliefMaxRun(deloadEvery: number, beginner = true): number {
+  // 5k-v2.12.0 (T4): raspored trkača (taper 1 nedelja, plan ≤ 8 nedelja bez rasterećenja) ima svoj najduži niz.
+  const key = deloadEvery * 2 + (beginner ? 1 : 0);
+  const known = maxRuns.get(key);
   if (known !== undefined) return known;
   let longest = 0;
   for (let n = P.input.planWeeks.min; n <= P.input.planWeeks.max; n++) {
-    if (isShortPrep(n)) continue;
+    if (noRegularDeload(n, beginner)) continue;
     let run = 0;
     // Datum ne utiče na raspored (periodize: faze i rasterećenja zavise samo od broja nedelja).
-    for (const f of periodize('2026-01-05', n, deloadEvery)) {
+    for (const f of periodize('2026-01-05', n, deloadEvery, false, beginner)) {
       run = isBuild(f) && !f.deload ? run + 1 : 0;
       longest = Math.max(longest, run);
     }
   }
-  maxRuns.set(deloadEvery, longest + 1);
+  maxRuns.set(key, longest + 1);
   return longest + 1;
 }
 
@@ -164,7 +166,7 @@ export function framesFor(
 ): WeekFrame[] {
   const a = baseAthlete(input);
   const every = rulesOf(a).deloadEvery;
-  let frames = periodize(input.startDate, totalWeeks, every, controlTest(a));
+  let frames = periodize(input.startDate, totalWeeks, every, controlTest(a), a.beginner);
   if (steps.length === 0) return frames;
   // 2.8.0 (pouka 29, N2a): kontrolno trčanje iz prethodnog (upisanog) plana — test u zaštićenom danu je urađen
   // (ostaje u svojoj nedelji, ne premešta se); inače nedelja testa prethodnog plana (premeštanje iz ranijeg
@@ -172,7 +174,7 @@ export function framesFor(
   const written = prior ? writtenTest(prior) : null;
   if (written) frames = frames.map((f) => ({ ...f, test: f.index === written.week }));
   const forced = new Set<number>();
-  const maxRun = reliefMaxRun(every);
+  const maxRun = reliefMaxRun(every, a.beginner);
   /** Uzastopne nedelje izgradnje od nedelje w + 1 do prvog rasterećenja ili kraja izgradnje. */
   const runFrom = (w: number): number => {
     let k = w + 1;
@@ -182,7 +184,7 @@ export function framesFor(
   for (const [k, s] of steps.entries()) {
     const n = s.fromWeek;
     if (s.restart) {
-      frames = rePeriodize(frames, n, every);
+      frames = rePeriodize(frames, n, every, a.beginner);
       // Nov raspored od fromWeek zamenjuje i prinudna i ukinuta rasterećenja od te nedelje.
       for (const w of [...forced]) if (w >= n) forced.delete(w);
       if (dropped) for (const w of [...dropped.keys()]) if (w >= n) dropped.delete(w);

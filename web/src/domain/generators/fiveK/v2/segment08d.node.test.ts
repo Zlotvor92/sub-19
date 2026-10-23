@@ -166,16 +166,16 @@ describe('regresija prema bf47249 (heš bez oznake verzije)', () => {
 
   // 5K-09: otisci prema bf47249 su zamenjeni otiskom prema c13c258 bez korisničkog teksta (Z2); promene bf47249 →
   // c13c258 (s06/pain5, mreža bola P, pouka 35) su u istoriji (SEGMENT-08d…08l izveštaji).
-  it('postojeće mreže (732) i mreža bola P (392): regresija prema c13c258 — promenjeni nose razlog (C1, C13, lanac); 0 odbijanja', () => {
+  it('postojeće mreže (732) i mreža bola P (392): regresija prema b9c4728 (5K-10) — promenjeni nose razlog (T1, T2, T4, T5, lanac); 0 odbijanja', () => {
     const ref = ref09('n08d');
-    expect([ref.against, ref.count]).toEqual(['c13c258', 1124]);
+    expect([ref.against, ref.count]).toEqual(['b9c4728', 1124]);
     const net = adaptNetworkFlows(api, raceTimeForVdot).map((f) => ({ key: f.key, res: f.result }));
     expect(net).toHaveLength(732);
     expect(flows.length).toBe(392);
     expect(regress09(ref, [...net, ...flows]).slice(0, 10)).toEqual([]);
     expect([...net, ...flows].filter((f) => !(f.res as Res).ok).map((f) => f.key)).toEqual([]);
-    // Mreža bola P: 380 tokova sa povratkom (r izgradnja), 12 bez (r je taper) — kao na bf47249.
-    expect(flows.filter((f) => painBack(f.res)).length).toBe(380);
+    // Mreža bola P: 388 tokova sa povratkom (r izgradnja), 4 bez (r je taper) — 5k-v2.12.0 (T4: taper 1 nedelja; bilo 380).
+    expect(flows.filter((f) => painBack(f.res)).length).toBe(388);
   });
 
   it('odbijanja na bf47249 (44: 22 BASE_R_DECREASE + 22 trčanje/hodanje VOLUME_GROWTH) su sada prihvaćena', () => {
@@ -211,7 +211,8 @@ describe('sudar 1 (odluka organizatora): korak bola sa povratkom počinje novu p
         expect(doseResetAt(st, after.weeks), f.key).toBeNull();
       }
     }
-    expect([reset, none]).toEqual([292, 88]);
+    // 5k-v2.12.0 (T4): taper 1 nedelja — više nedelja r + 1 je izgradnja (bilo [292, 88]).
+    expect([reset, none]).toEqual([348, 40]);
     const pause = {
       ...contOf(okFlows[0]!.res.plan).adaptation!.steps[0]!,
       startKm: 20,
@@ -289,7 +290,7 @@ describe('mreža bola P: korak, poruka, I1–I5', () => {
         )
       );
     }
-    expect(back).toBe(380);
+    expect(back).toBe(388); // 5k-v2.12.0 (T4): bilo 380
   });
 
   it('I1: cilj nedelje r + 1 = povratni rast od osnove (rasterećenje: 0,8 × osnova); ≤ osnova + 10% i ≤ nivo pre bola (osim donje granice nedelje, nabrojano)', () => {
@@ -313,7 +314,7 @@ describe('mreža bola P: korak, poruka, I1–I5', () => {
       if (w.targetKm > Math.max(floor, a.L) + EPS) bad.push(`${f.key}: > nivo`);
     }
     expect(bad.slice(0, 10)).toEqual([]);
-    expect(n).toBe(292);
+    expect(n).toBe(348); // 5k-v2.12.0 (T4): bilo 292
     // 5k-v2.6.1: 124; 5k-v2.7.0 (Odluka 9): svako redovno rasterećenje odmah posle sidra otpada.
     expect(deloads).toBe(0);
     // Donja granica nedelje (Uslov 8; volume.adaptFloorKm) iznad osnova + 10%: nijednom u mreži P.
@@ -484,9 +485,9 @@ describe('pauza 20 dana + bol 8 u istom koraku: osnova = min(0,7 × nivo koraka,
       }
     }
     expect(bad).toEqual([]);
-    expect(n).toBe(9);
+    expect(n).toBe(11); // 5k-v2.12.0 (T4): bilo 9
     // min sa ciljem nedelje r mora da deluje (cilj pauze < 0,7 × nivo) — inače test ne bi video sabotažu (c).
-    expect(bites).toBe(7);
+    expect(bites).toBe(9); // 5k-v2.12.0 (T4): bilo 7
   });
 });
 
@@ -526,7 +527,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 4, share: 0.7 });
     expect(rows(r.plan.weeks)).toEqual([
       [36.5, 26.6, 0],
-      [33.2, 33.2, 2],
+      [33.2, 32.6, 2], // 5k-v2.12.0 (T1): lagan ≤ 0,8 × dugi → planirano < cilj
       [36.5, 36.5, 2]
     ]);
     expect(r.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
@@ -538,7 +539,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     const r = run('2026-11-15', '2026-11-14', 8);
     expect(rows(r.plan.weeks)).toEqual([
       [36.5, 21.1, 0],
-      [33.2, 30.95, 1],
+      [33.2, 30.8, 1],
       [36.5, 36.5, 2]
     ]);
   });
@@ -548,7 +549,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 4, share: 0.7 });
     expect(rows(r.plan.weeks)).toEqual([
       [36.5, 28.6, 1],
-      [35, 32.55, 1],
+      [35, 32.6, 1],
       [38.5, 38.5, 2]
     ]);
   });
@@ -569,7 +570,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(r.plan.weeks[3]!.deload).toBe(false);
     expect(rows(r.plan.weeks)).toEqual([
       [33.2, 25, 0],
-      [36.5, 36.5, 2],
+      [36.5, 36.1, 2],
       [40.1, 40.1, 2]
     ]);
   });

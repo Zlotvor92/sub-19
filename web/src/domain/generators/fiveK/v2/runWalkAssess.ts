@@ -12,7 +12,14 @@ import type { CheckedFacts } from './assess.ts';
 import { addDays, mustDay } from './dates.ts';
 import { checkInput, weekLabel } from './input.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
-import { initialStep, MAX_LEVEL, transitionInput, weekCount, weekOfDate } from './runWalk.ts';
+import {
+  initialStep,
+  MAX_LEVEL,
+  TRANSITION_LEVEL,
+  transitionInput,
+  weekCount,
+  weekOfDate
+} from './runWalk.ts';
 import type { AdaptReason, FiveKV2RunWalkPlan, IsoDate, RunWalkStep } from './types.ts';
 
 const RW = P.runWalk;
@@ -163,14 +170,14 @@ export function assessRunWalk(
   const k = mustDay(addDays(asOf, 1)) - start;
   const n = k <= 0 ? 1 : Math.ceil(k / 7) + 1;
   let transitionWeek: number | null = null;
-  if (level === MAX_LEVEL) {
+  if (level >= TRANSITION_LEVEL) {
     const left = N - n + 1;
     const vi = transitionInput(input, n);
     const c = vi ? checkInput(vi) : null;
     const lockedAfter = facts.lockedDayIds.some((d) => weekOfDate(input, d) >= n);
     const why =
       left < RW.transitionMinWeeks
-        ? `do trke ostaje ${left} nedelja (< ${RW.transitionMinWeeks}); plan ostaje trčanje/hodanje (L${MAX_LEVEL})`
+        ? `do trke ostaje ${left} nedelja (< ${RW.transitionMinWeeks}); plan ostaje trčanje/hodanje (L${level})`
         : vi === null
           ? 'prelaz traži uobičajen lagan tempo (typicalEasyPaceSecPerKm); plan ostaje trčanje/hodanje'
           : c && !c.ok
@@ -183,8 +190,8 @@ export function assessRunWalk(
       'TRANSITION',
       why === null,
       why === null
-        ? `L${MAX_LEVEL} dostignut, do trke ${left} nedelja: od nedelje ${weekLabel(n, input.weekOffset)} kontinuirani plan početnika (po osećaju, ${vi!['currentWeeklyKm'] as number} km = 3 × 30 min tipičnim laganim tempom), isti konstruktor kao generator.`
-        : `L${MAX_LEVEL} dostignut: ${why}.`
+        ? `L${TRANSITION_LEVEL} dostignut, do trke ${left} nedelja: od nedelje ${weekLabel(n, input.weekOffset)} kontinuirani plan početnika (po osećaju, ${vi!['currentWeeklyKm'] as number} km = 3 × 30 min tipičnim laganim tempom), isti konstruktor kao generator.`
+        : `L${TRANSITION_LEVEL} dostignut: ${why}.`
     );
   }
   return { step: { asOf, level, good, pauseDays, transitionWeek }, reasons: out };

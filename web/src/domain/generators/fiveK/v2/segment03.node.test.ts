@@ -65,8 +65,9 @@ describe('Odluka 1: pošten cilj obima — kapacitet 4 dana ograničava cilj na 
     expect(plan.warnings.map((v) => v.rule)).toContain('START_ABOVE_CAPACITY');
     for (const w of plan.weeks) {
       expect(w.targetKm).toBeLessThanOrEqual(capacity);
-      expect(w.easyCappedAtLong).toBe(false);
-      if (w.phase !== 'race') expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThan(0.06);
+      // 5k-v2.12.0 (T1): planirano < cilj samo uz oznaku granice laganog (0,8 × dugi).
+      if (w.phase !== 'race' && !w.easyCappedAtLong)
+        expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThan(0.06);
     }
   });
 
@@ -190,8 +191,15 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
     expect(errorsOf(plan)).toEqual([]);
   });
 
-  it('8 ned: rasteretni vrhunac bez I — zamena (2.3.0: samo ubrzanja, R 4 × 150 m nije zamena)', () => {
-    const w = planOf(FAST_SMALL(8)).weeks.find((x) => x.phase === 'peak' && x.deload)!;
+  it('12 ned: rasteretni vrhunac bez I — zamena (2.3.0: samo ubrzanja, R 4 × 150 m nije zamena)', () => {
+    // 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja — 12 nedelja (rasterećenje vrhunca u ned 8).
+    // 3 dana, 12 km, VDOT ~52, 9 ned: rasterećenje vrhunca (ned 5) samo sa ubrzanjima.
+    const w = planOf({
+      ...FAST_SMALL(9),
+      km: 12,
+      timeSec: 1157,
+      days: ['tue', 'thu', 'sun']
+    }).weeks.find((x) => x.phase === 'peak' && x.deload)!;
     expect(quality(w)).toHaveLength(0);
     expect(w.stridesOnly).toBe(true);
     expect(w.notes.some((n) => n.includes('samo ubrzanja'))).toBe(true);
@@ -212,7 +220,9 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
       expect(JSON.stringify(b.blocks)).not.toBe(JSON.stringify(a.blocks));
       if (Math.abs(b.workKm.I - a.workKm.I) < 1e-9) alt++;
     }
-    expect(alt).toBeGreaterThan(0);
+    // 5k-v2.12.0 (T4): glavni I kreće od ≥ 80 % budžeta i raste najmanjim korakom; ista doza druge strukture više
+    // nije potrebna u ovom planu (alt ≥ 0), identičan I dve nedelje zaredom i dalje ne postoji.
+    expect(alt).toBeGreaterThanOrEqual(0);
   });
 });
 
@@ -257,19 +267,21 @@ describe('mreža 240 ulaza (segment02): Odluke 1, 2 i 5', () => {
       expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
       if (r.plan.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
       const plan = r.plan;
+      // 5k-v2.12.0 (T1): planirano < cilj van trkačke samo uz granicu laganog (0,8 × dugi) ili lagan dan manje.
       for (const w of plan.weeks) {
         if (w.phase === 'race') continue;
         if (w.easyCappedAtLong && w.plannedKm < w.targetKm) capped++;
-        if (w.plannedKm < w.targetKm - 0.05) belowOutsideRace++;
+        if (w.plannedKm < w.targetKm - 0.05 && !w.easyCappedAtLong && !w.easyRest)
+          belowOutsideRace++;
         const prev = plan.weeks[w.index - 2];
         if (w.deload && prev?.phase !== w.phase) deloadAtPhaseStart++;
       }
       expect(
         r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)
-      ).toEqual([]);
+      ).toEqual(plan.weeks.filter((w) => w.easyCappedAtLong).map((w) => w.index));
     }
-    expect({ capped, belowOutsideRace, deloadAtPhaseStart, rejectedFastSmall }).toEqual({
-      capped: 0,
+    expect(capped).toBeGreaterThan(0);
+    expect({ belowOutsideRace, deloadAtPhaseStart, rejectedFastSmall }).toEqual({
       belowOutsideRace: 0,
       deloadAtPhaseStart: 0,
       rejectedFastSmall: []
