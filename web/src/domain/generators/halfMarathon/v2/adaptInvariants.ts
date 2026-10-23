@@ -183,7 +183,8 @@ export function adaptInvariants(
     taper.targetKm > lastBuild.targetKm + EPS
   )
     bad.push('taper > poslednja izgradnja');
-  extra(before, after, steps, mixed, t, locked, bad);
+  // HM-09 (C9/Z6): zaštićeni = zaključani i urađeni (činjenice).
+  extra(before, after, steps, mixed, t, new Set([...locked, ...done]), bad);
   return bad;
 }
 
@@ -315,6 +316,9 @@ function extra(
   W.forEach((w, i) => {
     const l = longs[i];
     if (l == null || mustDay(w.endDate) <= t) return;
+    // HM-09 (C9): zaključan ili urađen dugi je činjenica (zaštićen) — ne sudi mu se.
+    const ld = w.days.find((d) => d.role === 'long')!.date;
+    if (locked.has(ld)) return;
     const prev = longs.slice(Math.max(0, i - 4), i).filter((x): x is number => x !== null);
     if (r != null && i < 4) prev.push(Math.round(r * 10));
     // Pouka 34 (Faza 4a N10.3): posle umora pre starta dugi reference (ned 1 generatora) je „nedelja 0".

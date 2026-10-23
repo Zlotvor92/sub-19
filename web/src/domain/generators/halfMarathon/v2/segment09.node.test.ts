@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { adaptHmV2 } from './adapt.ts';
 import { adaptBases, factsOf } from './adaptInputs.ts';
 import { MIXED_NOTE } from './week.ts';
+import { adaptNominal10, adaptVolume } from './volume.ts';
+import { planRule } from './policy.ts';
 import { validatePlan } from './validate.ts';
 import { restoreMerge } from './app/adapt.ts';
 import { generatedPlan, storedPlan } from './app/plan.ts';
@@ -199,5 +201,73 @@ describe('HM-09 Z4: vraćanje verzije = spoj → validatePlan (jezgro)', () => {
   it('d3-r-10w under50 +8 dana: spoj krši pravila plana → odbijanje sa razlogom', () => {
     const r = restoreMerge(store(cur), store(g), addDays(asOf, 8) as never);
     expect(conflicts(r)[0]).toMatch(/ne zadovoljava pravila plana/);
+  });
+});
+
+describe('HM-09 dopuna lanaca: Z6, Z7, Z8, C7', () => {
+  const b = adaptBases().find((x) => x.id === 'd4-r-14w')!;
+  const g = ok(generateHmV2(b.input));
+  const asOf = g.weeks[2]!.endDate;
+  it('Z7: ista adaptacija dvaput (manjak, iste činjenice, isti asOf) ne seče cilj ponovo', () => {
+    const f = factsOf(g, 'under50', asOf);
+    const a1 = ok(adaptHmV2(g, f, asOf));
+    const a2 = ok(adaptHmV2(a1, f, asOf));
+    expect(a2.weeks.map((w) => w.targetKm)).toEqual(a1.weeks.map((w) => w.targetKm));
+  });
+  it('Z8: bol — ista adaptacija dvaput i „sutra bez novih zapisa" bez kaskade', () => {
+    // asOf subota: sutra (nedelja) sidro bola bi prešlo u sledeću nedelju (kaskada pre Z8).
+    const sat = addDays(asOf, -1);
+    const f = factsOf(g, 'pain5', sat);
+    const a1 = ok(adaptHmV2(g, f, sat));
+    const a2 = ok(adaptHmV2(a1, f, sat));
+    expect(a2.weeks.map((w) => w.targetKm)).toEqual(a1.weeks.map((w) => w.targetKm));
+    const a3 = ok(adaptHmV2(a1, f, asOf));
+    expect(a3.weeks.map((w) => w.targetKm)).toEqual(a1.weeks.map((w) => w.targetKm));
+  });
+  it('Z6: dan kvaliteta zaključan u ranijem koraku pa prošao (≤ asOf) u periodu bola nije LIMITS', () => {
+    const q = g.weeks
+      .slice(3)
+      .flatMap((w) => w.days)
+      .find((d) => d.role === 'q1')!;
+    const a0 = addDays(q.date, -2);
+    const a1 = ok(adaptHmV2(g, { ...factsOf(g, 'pain5', a0), lockedDayIds: [q.date] }, a0));
+    expect(a1.weeks.flatMap((w) => w.days).find((d) => d.date === q.date)!.workout.kind).toBe(
+      'quality'
+    );
+    const r = adaptHmV2(a1, {}, addDays(q.date, 1));
+    expect(r.ok, JSON.stringify(!r.ok && r.reasons)).toBe(true);
+  });
+});
+
+describe('HM-09 C7: taper posle smanjenja bez ne-rasteretne izgradnje', () => {
+  it('osnova tapera = osnova rasterećenja (lastBuild), ne 0 → minimum nedelje', () => {
+    const frame = { index: 13, phase: 'taper', deload: false } as never;
+    const h = { lastBuild10: 665, peak10: 950, cap10: 950, peakRef10: 0, tailCap10: null };
+    const av = adaptVolume([]);
+    const rule = planRule(6, 'regular')!;
+    expect(adaptNominal10(frame, h, 750, rule, av).nominal).toBe(Math.round(0.7 * 665));
+  });
+});
+
+describe('HM-09 C3: zaštićen test ostaje činjenica i u sledećem koraku (pouka 38)', () => {
+  it('test zaključan u koraku umora (nedelja testa postaje rasterećenje), pa prošao → jedan test, prihvaćeno', () => {
+    const b = adaptBases().find((x) => x.id.includes('-f-') && x.id.startsWith('d6'))!;
+    const g = ok(generateHmV2(b.input));
+    const td = g.weeks.flatMap((w) => w.days).find((d) => d.role === 'test')!.date;
+    const wk = g.weeks.find((w) => w.days.some((d) => d.date === td))!;
+    // Umor u nedelji pre testa → nedelja testa je rasterećenje (A13 bi premestio test); dan testa zaključan.
+    const a0 = addDays(wk.startDate, -2);
+    const a1 = ok(
+      adaptHmV2(g, { ...fat(addDays(a0, -1), addDays(a0, -2)), lockedDayIds: [td] }, a0)
+    );
+    const tests1 = a1.weeks.flatMap((w) => w.days).filter((d) => d.role === 'test');
+    expect(tests1.map((d) => d.date)).toEqual([td]);
+    // Sledeći korak posle dana testa, bez zaključavanja i bez zapisa testa.
+    const a2 = adaptHmV2(a1, {}, td);
+    expect(a2.ok, JSON.stringify(!a2.ok && a2.reasons)).toBe(true);
+    const tests2 = ok(a2)
+      .weeks.flatMap((w) => w.days)
+      .filter((d) => d.role === 'test');
+    expect(tests2.length).toBe(1);
   });
 });

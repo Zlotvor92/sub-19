@@ -138,3 +138,9 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   validatePlan (neposredno poništavanje prolazi); Z5b početnik iznad opsega → bez oznake; K1/F6 invarijante.
 - B2 19 490 → 0, B1 3 758 → 0, B3 8 → 0, skok 1 060 → 0, Z4 vraćeni koji krše validator 1 565 → 0 (poništavanje 1 056/1 056), Z3 495 → 0, Z1 1 321 → 0, taper dva dana
   552/636 → 0, napomena 909/546 → 0, Z2 oznake 16 511 → 0. Izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md`.
+
+## HM-09 dopuna lanaca (hm-v2.7.1): Z6, Z7, Z8, C3, C7, C9, C10
+
+- Z6 LIMITS preskače zaštićen dan; Z7/Z8 manjak i bol vezani za zapise; C3 `step.testKept`; C7 taper posle bola bez
+  izgradnje → osnova rasterećenja; C9 invarijanta; C10 rešen Z6. chains HM 2 000: odbijeni 95 → 0; idemp isti
+  643 → 25, sutra 218 → 21 (manjak → 0). Izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md` (dopuna lanaca).

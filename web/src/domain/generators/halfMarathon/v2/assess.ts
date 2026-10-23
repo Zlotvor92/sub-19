@@ -409,7 +409,18 @@ export function assess(
   // A4: bol (uvek, po datumima; prethodni koraci ostaju, pa ponovni bol produžava period). Pouka 18:
   // sidro povratka = nedelja r (prvi dan odmora ili bola), ne poslednja nedelja bola.
   const hurt = W.filter((x) => t - day(x.date) < A.painLookbackDays && (x.pain ?? 0) >= A.painMin);
-  if (hurt.length > 0) {
+  // HM-09 (Z8, kao umor — pouka 36): bol je vezan za ZAPISE — kad je raniji korak bola već video najnoviji zapis
+  // bola (asOf koraka ≥ datum zapisa), nov korak bola se ne pravi (sidro i osnova ostaju iz tog koraka; bez kaskade).
+  const lastHurt = hurt.length > 0 ? Math.max(...hurt.map((x) => day(x.date))) : null;
+  const painSeen =
+    lastHurt !== null ? steps.find((s) => s.pain !== null && day(s.asOf) >= lastHurt) : undefined;
+  if (painSeen)
+    reason(
+      'PAIN',
+      false,
+      `Bol ${Math.max(...hurt.map((x) => x.pain!))}/10: za ove zapise ograničenja su već u planu (prilagođavanje ${painSeen.asOf}).`
+    );
+  else if (hurt.length > 0) {
     const max = Math.max(...hurt.map((x) => x.pain!));
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };
@@ -522,7 +533,17 @@ export function assess(
     const p2 = plannedKm(...w2);
     const a2 = sumKm(...w2);
     const tn = build(n) ? target(n) : null;
-    if (p2 > 0 && a2 < A.underShare * p2) {
+    // HM-09 (Z7, kao umor — pouka 36): manjak je vezan za ZAPISE — korak čiji se prozor zapisa preklapa sa prozorom
+    // ranijeg primenjenog koraka manjka ne pravi novi (isti zapisi ne seku cilj ponovo).
+    const seen = steps.find((s) => s.underFrom !== undefined && day(s.asOf) >= w2[0]);
+    if (p2 > 0 && a2 < A.underShare * p2 && seen) {
+      volumeRule = true;
+      reason(
+        'UNDER_EXECUTION',
+        false,
+        `Izvršeno ${km(a2)} od ${km(p2)} km u 7 dana: manjak za ove zapise je već u planu (prilagođavanje ${seen.asOf}).`
+      );
+    } else if (p2 > 0 && a2 < A.underShare * p2) {
       const ok = !volumeRule && tn !== null;
       if (ok) {
         step.startKm = round1(
@@ -532,6 +553,7 @@ export function assess(
           )
         );
         step.reduced = true;
+        step.underFrom = addDays(asOf, w2[0] - t);
         step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
       }
@@ -566,6 +588,15 @@ export function assess(
   )
     reason('NO_FACTS', true, 'Nema činjenica: budući deo plana ostaje isti.');
   // HM-09: L skoka iz stvarno trčanog (pouka 28 × 37) — važi od firstWeek ovog koraka (steps.ranLongFor).
+  // HM-09 (C3, pouka 38): zaštićen dan testa upisanog plana (≤ asOf, zaključan, urađen) je činjenica.
+  const testDay = weeks.flatMap((w) => w.days).find((d) => d.role === 'test');
+  if (
+    testDay &&
+    (day(testDay.date) <= t ||
+      facts.lockedDayIds.includes(testDay.date) ||
+      facts.workouts.some((x) => x.completed && (x.dayId ?? x.date) === testDay.date))
+  )
+    step.testKept = testDay.date;
   const { ran, part } = ranLongOf(plan, facts, t);
   if (Object.keys(ran).length > 0) step.ranLongKm = ran;
   if (part) step.ranPart = part;

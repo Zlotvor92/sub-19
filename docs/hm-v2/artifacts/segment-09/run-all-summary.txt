@@ -1,20 +1,18 @@
-  early-HM                      1454s  0/114012
-! edges-HM                       290s  0/20400  ⇒ inv {'povratni rast > nivo ned #': 26}
+  early-HM                      1452s  0/114012
+! edges-HM                       275s  0/20400  ⇒ inv {'povratni rast > nivo ned #': 26}
   fatigue-repeat-HM               38s  HM { tokova: 777, drugo_rasterecenje: 0, odbijeno_drugi: 0 }
-  fatigue-startday-HM             94s  tokova 4020
-  fatigue-testweek-HM             84s  0/3556
-  handoff-adapt-HM-10K           961s  predaja 663/1272; new 0/45084; cum 0/45084
-  handoff-adapt-HM-5K            324s  predaja 492/1272; new 0/33456; cum 0/33456
-  handoff-adapt-MAR-HM          1448s  predaja 702/1518; new 0/47736; cum 0/47736
-  last-weeks-HM                  862s  0/74836
-  locked-pause-HM                453s  0/35408
+  fatigue-startday-HM             92s  tokova 4020
+  fatigue-testweek-HM             87s  0/3556
+  handoff-adapt-MAR-HM          1346s  predaja 702/1518; new 0/47736; cum 0/47736
+  last-weeks-HM                  846s  0/74836
+  locked-pause-HM                460s  0/35408
   locked-result-HM                37s  HM { tokova: 1916, odbijeno: 0 } []
   locked-test-HM                 146s  locked 0/4550; control 0/4550
-  result-pain-HM                 625s  0/49608
-  shorter-HM                    1413s  offer 3285 longLost 3027 timeCapped 0
-  start-day-HM                   484s  0/34170
+  result-pain-HM                 620s  0/49608
+  shorter-HM                    1364s  offer 3285 longLost 3027 timeCapped 0
+  start-day-HM                   480s  0/34170
   targeted-HM                    282s  1138 B (pregled ručno)
-  two-step-HM                   3277s  first 0/3604; new 0/115328; cum 0/115328
-  warnings-HM                      4s  4945 B (pregled ručno)
+  two-step-HM                   3167s  first 0/3604; new 0/115328; cum 0/115328
+  warnings-HM                      3s  4945 B (pregled ručno)
 
-18 poslova, nečistih: 1
+16 poslova, nečistih: 1

@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-09/sabotage-09.json",
- "head": "71af52a",
+ "head": "a3931a0",
  "level": "brz",
  "bail": true,
  "parallel": 3,
  "vitestArgs": [],
- "durationS": 45.9,
- "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
- "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+ "durationS": 46.1,
+ "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+ "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
  "ok": true,
  "results": [
   {
@@ -27,13 +27,13 @@
     "message": "Error: Nedelja 2: nijedan cilj od 16 km naviše ne može da se sastavi po pravilima."
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "62e76697261ebb57268c1946133732cecee2ca6b421d7f4043611b0725227417",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "743eff7d664403562956fd74cd661f7d75f3b4f5ff8971ff2dc8b34789969872",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6
+   "durationS": 2.5
   },
   {
    "index": 2,
@@ -52,13 +52,13 @@
     "message": "Error: DELOAD_LONG: Dugi rasterećenja 11.2 km ≠ 10.5 km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14)."
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "d70e5bf8b0a49d62c2037003ae8718164e373afa835c23b7f551d8e9b89a11d8",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "d1ae57a58fba3e91722a13aa10a15b534f82a23833a71bfe27705b7b0b1cd8bc",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.4
+   "durationS": 2
   },
   {
    "index": 3,
@@ -77,9 +77,9 @@
     "message": "AssertionError: expected 39 to be 40 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "36bc5b5081da2034affc154608e8eea032e396dd0fedd56e9f5a458cb7622d35",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "2eb640f32f26981033cec6d68eff3f7a1e8650fd01832269c1703d175d941ad8",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
@@ -102,13 +102,13 @@
     "message": "AssertionError: expected 214 to be less than or equal to 95"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "0cd7839e6d4a17c2ac8494b30e9085617c701066c718e257d1db6397ec2e8197",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "e0582de939164522df7f86ddaa25358b529440e0df0ee9bc7b7ab72b6a906d7f",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3
+   "durationS": 2.5
   },
   {
    "index": 5,
@@ -127,13 +127,13 @@
     "message": "AssertionError: expected [ …(40) ] to deeply equal []"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "2c0dd2e042ca9e83d4328862112a9c99b107d9bb2c14ebb943250fb9d58bca82",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "3fc3c8e1c05781aad56c28a0b6f412be60f88394e150090dacf8b14c38c2c5d5",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 7.7
+   "durationS": 6.4
   },
   {
    "index": 6,
@@ -152,13 +152,13 @@
     "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "8c8fdb8599e55d2ee770f3b59548b68abd586df0d1c41a6a7e5d052ce421da08",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "c919fe7832fd62ea2fd4dae02777a6619fb13b0a64613a830eae1782d2c06322",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 7.5
+   "durationS": 6.4
   },
   {
    "index": 7,
@@ -177,13 +177,13 @@
     "message": "AssertionError: expected [ '2026-11-10' ] to deeply equal [ '2026-11-10', '2026-11-12' ]"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "75cbae1e144a85096148a7e635b64a369690dd0b5c8e4f540acd35681d150daa",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "1870ae0935c034f1e756a432a0c6b81d96009df89a7b229e5b1b8eed812e0adf",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 8.4
+   "durationS": 7
   },
   {
    "index": 8,
@@ -202,13 +202,13 @@
     "message": "AssertionError: expected 'Plafon 10 % (, odstupanje); dugi skra…' to be 'Plafon 10 % (odstupanje); dugi skraće…' // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "1594e5f2e6d8167438634453d3e0e1bb0bd59e9e6fa12cc97d100abbdf2017a0",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "d94c867a6a58d13ff6046f82dacb201f7702966b58a9df0c468bbf992237d99d",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.7
+   "durationS": 1.4
   },
   {
    "index": 9,
@@ -227,13 +227,13 @@
     "message": "AssertionError: expected 'pending' to be 'old' // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "48ed409e4a9fc0b1809db37fbe93805cb5f5fab2546654e9498b1ed583bc27f2",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "3130503d0ef4aae6e090e7cbb7f4437b00ced2ebaf03f2b99626a678540ef8a4",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 23.4
+   "durationS": 18.5
   },
   {
    "index": 10,
@@ -253,13 +253,13 @@
     "message": "TypeError: .toMatch() expects to receive a string, but got undefined"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "e7088fdface07e6d30f2e093783864f781506fcc431e5ba2bc0ea551a68146ea",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "c9006e0f54cfde5e5581607401add647b489371d688a07873167adbfcd0e88d4",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 9.6
+   "durationS": 8.6
   },
   {
    "index": 11,
@@ -278,13 +278,13 @@
     "message": "AssertionError: expected 'Početnik sa 4 dana trčanja: trenutni …' to be undefined"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "e12d92c5ee147507863ffaeed4e25ea22b9ee6aa60a9cf0fa5e78e36e7a59fab",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "5953df78662aab771fcfa255e9d61fb1882ae1112ab993bc4463a13cfc4cd61f",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 24.6
+   "durationS": 22.3
   },
   {
    "index": 12,
@@ -303,13 +303,138 @@
     "message": "AssertionError: expected [ 'F6: ned 4' ] to deeply equal []"
    },
    "failedCount": 1,
-   "hashBefore": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
-   "hashSabotaged": "e63ef0f4277e0e1740fc161aac8351896933528074b5b627bf916f12231aca16",
-   "hashAfter": "252d212f228cf6b0398419abb0b6fdd0601ea0eeede724316876112f4e20304f",
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "23831ac513d40ab0207e4b2b1d122c89d9b179b5ea6c457138b4374d0b5e4b56",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 7.9
+   "durationS": 6.8
+  },
+  {
+   "index": 13,
+   "name": "09-Z6 LIMITS sudi zaštićenom danu",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 dopuna lanaca: Z6, Z7, Z8, C7 > Z6: dan kvaliteta zaključan u ranijem koraku pa prošao (≤ asOf) u periodu bola nije LIMITS",
+    "message": "AssertionError: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4).\",\"week\":5}]: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "b4751ea3a9980b1b8b26e35d64671b1cfbdc9179019ceb23e6fa8f3bb259c7d0",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.6
+  },
+  {
+   "index": 14,
+   "name": "09-Z7 manjak ponovo seče",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 dopuna lanaca: Z6, Z7, Z8, C7 > Z7: ista adaptacija dvaput (manjak, iste činjenice, isti asOf) ne seče cilj ponovo",
+    "message": "AssertionError: expected [ Array(14) ] to deeply equal [ 40, 42.4, 44.9, 28.7, 31.6, …(9) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "59c30832bf45a0082720cd22b730f66a2fa83ac8c7fb7e85be013876cf3c1273",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.7
+  },
+  {
+   "index": 15,
+   "name": "09-Z8 bol ponovo pravi korak",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 dopuna lanaca: Z6, Z7, Z8, C7 > Z8: bol — ista adaptacija dvaput i „sutra bez novih zapisa\" bez kaskade",
+    "message": "AssertionError: expected [ Array(14) ] to deeply equal [ Array(14) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "bb1d04e281bd23fcbaacd770b2372df268c35a9a761d4b7c2fa4099669221e5e",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.1
+  },
+  {
+   "index": 16,
+   "name": "09-C7 taper iz peakRef 0",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 C7: taper posle smanjenja bez ne-rasteretne izgradnje > osnova tapera = osnova rasterećenja (lastBuild), ne 0 → minimum nedelje",
+    "message": "AssertionError: expected +0 to be 465 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "4ea0d53248860c7103df5ecbe397c45261a1a05880e5f389f8a7703a10b14669",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.3
+  },
+  {
+   "index": 17,
+   "name": "09-C3 zaštićen test se ne pamti",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 C3: zaštićen test ostaje činjenica i u sledećem koraku (pouka 38) > test zaključan u koraku umora (nedelja testa postaje rasterećenje), pa prošao → jedan test, prihvaćeno",
+    "message": "AssertionError: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).\"}]: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "2aafcbd0b3e6a602ec07b35de20340577f0a2fe36e8810c3822ae5ebf7491136",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.5
   }
  ]
 }

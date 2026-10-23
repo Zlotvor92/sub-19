@@ -353,7 +353,10 @@ export function adaptNominal10(
   let downOnly = false;
   const reset = av.reset.get(i);
   if (frame.phase === 'taper') {
-    t = Math.round(P.taper.factor * h.peakRef10);
+    // HM-09 (C7): posle smanjenja nijedna ne-rasteretna nedelja izgradnje (npr. sidro bola, pa prinudno
+    // rasterećenje pred taper) → osnova tapera je osnova kojom se računalo i rasterećenje (lastBuild10), ne 0
+    // (inače taper pada na minimum nedelje: svi dani 4 km).
+    t = Math.round(P.taper.factor * (h.peakRef10 > 0 ? h.peakRef10 : (h.lastBuild10 ?? 0)));
     if (h.tailCap10 !== null && h.tailCap10 < t) [t, downOnly] = [h.tailCap10, true];
   } else if (reset !== undefined) [t, downOnly] = [reset, true];
   else if (h.lastBuild10 === null) t = start10;

@@ -476,12 +476,21 @@ const DECISIONS: readonly Decision[] = [
       'steps.ts longRef10; assess.ts (A5, resultUse); generate.ts; validate.ts (DELOAD_*, TAPER_LONG_MIN, SECOND_QUALITY taper, MIXED_WEEK_OVER); lengths.ts taperLongCap10, longsOf10; assess.ts ranLongOf, steps.ts ranLongFor; week.ts taperSecondEasy, mixedQualityStays, uvod; userText.ts; app/form.ts, app/adapt.ts restoreMerge, app/handoffTarget.ts; adaptInvariants/gridInvariants (K1, F6)',
     rationale:
       'Dubinska provera v2 (owner B1 3 758/13 860, B2 19 490/19 490, B3 8 tokova, T1 495/528; coach-hm-mar 1b #1/#2/#5; consistency Z1; app A1/A2; fuzz F6) — brojevi pre → posle u docs/hm-v2/reports/SEGMENT-09-IMPLEMENTATION.md.'
+  },
+  /* ---------- HM-09 dopuna lanaca (hm-v2.7.1): audit/fixes/01-chains-addendum.md. ---------- */
+  {
+    id: 'HM-09-CHAINS',
+    rule: 'Z6: zaštićen dan (≤ poslednji asOf, zaključan, urađen — validate guarded) je činjenica i u proveri LIMITS (i oštrenje). Z7: manjak izvršenja vezan za zapise — korak čiji se prozor zapisa preklapa sa ranijim primenjenim manjkom (step.underFrom) ne pravi nov. Z8: bol vezan za zapise — kad je raniji korak bola video najnoviji zapis bola, nov korak bola se ne pravi (bez kaskade sidra). C3 (pouka 38): zaštićen dan testa upisanog plana je činjenica koraka (step.testKept) — ostaje i kad se zaključavanje ne ponavlja (steps.protectedTestDate). C7: taper posle smanjenja bez ne-rasteretne izgradnje → osnova = lastBuild10 (osnova rasterećenja), ne 0. C9: invarijanta pouke 28 ne sudi zaključanom/urađenom dugom. C10 (i=1888): rešen Z6.',
+    place:
+      'validate.ts (guarded u LIMITS); assess.ts (underFrom, painSeen, testKept); steps.ts protectedTestDate; volume.ts adaptNominal10; adaptInvariants.ts',
+    rationale:
+      'chains.ts HM 20261023 0 2000: odbijeni lanci 95 → 0; idemp.ts: isti 643 → 25, sutra 218 → 21 (manjak 361/113 → 0); C7 i=4878 taper 24 km (svi dani 4 km) → 46,5 km.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.7.0',
+  version: 'hm-v2.7.1',
 
   /** H1 (dani i obim: H15). */
   input: {

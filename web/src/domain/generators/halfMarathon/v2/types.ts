@@ -432,6 +432,12 @@ export interface HmV2AdaptStep {
       samo gde je kraći od upisanog dugog; ključ = broj nedelje. Važi za L skoka nedelja od firstWeek ovog koraka
       (steps.ranLongFor). Samo kad ih ima. */
   ranLongKm?: Record<string, number>;
+  /** HM-09 (Z7): primenjen manjak izvršenja — prvi dan prozora zapisa (7 dana do asOf); kasniji korak čiji se prozor
+      preklapa ne pravi nov manjak. Samo kad ga ima. */
+  underFrom?: IsoDate;
+  /** HM-09 (C3, pouka 38): dan testa upisanog plana koji je zaštićen (≤ asOf, zaključan ili urađen) — činjenica;
+      ostaje na mestu i u sledećim koracima (steps.protectedTestDate). Samo kad ga ima. */
+  testKept?: IsoDate;
   /** HM-09: nedelja koja sadrži asOf, poznata od početka do asOf, i najduži trčan u tom delu — sledeći korak
       dopunjuje ostatak nedelje (assess.ranLongOf). Samo kad postoji. */
   ranPart?: { week: number; km: number };

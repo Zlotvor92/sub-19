@@ -107,5 +107,50 @@
     "tests": [
       "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
     ]
+  },
+  {
+    "name": "09-Z6 LIMITS sudi zaštićenom danu",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "      if (steps.length === 0 || guarded(d) || d.role === 'race') continue;",
+    "replace": "      if (steps.length === 0 || locked.has(d.date) || d.role === 'race') continue;",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-Z7 manjak ponovo seče",
+    "file": "src/domain/generators/halfMarathon/v2/assess.ts",
+    "find": "if (p2 > 0 && a2 < A.underShare * p2 && seen) {",
+    "replace": "if (p2 > 0 && a2 < A.underShare * p2 && seen && false) {",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-Z8 bol ponovo pravi korak",
+    "file": "src/domain/generators/halfMarathon/v2/assess.ts",
+    "find": "  if (painSeen)\n",
+    "replace": "  if (painSeen && false)\n",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-C7 taper iz peakRef 0",
+    "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+    "find": "(h.peakRef10 > 0 ? h.peakRef10 : (h.lastBuild10 ?? 0))",
+    "replace": "h.peakRef10",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
+  },
+  {
+    "name": "09-C3 zaštićen test se ne pamti",
+    "file": "src/domain/generators/halfMarathon/v2/steps.ts",
+    "find": "  if (kept !== undefined) return kept;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+    ]
   }
 ]

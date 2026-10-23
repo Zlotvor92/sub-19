@@ -254,6 +254,9 @@ export function protectedTestDate(
   guarded: ReadonlySet<string>
 ): IsoDate | null {
   if (steps.length === 0) return null;
+  // HM-09 (C3): zaštićen test upisanog plana (činjenica koraka) ostaje — i kad se zaključavanje ne ponavlja.
+  const kept = [...steps].reverse().find((s) => s.testKept !== undefined)?.testKept;
+  if (kept !== undefined) return kept;
   const before = framesFor(
     base,
     pattern,

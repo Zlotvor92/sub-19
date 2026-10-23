@@ -1666,7 +1666,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     const s0 = sharp[0];
     const st = s0?.workout.dose?.structure;
     const a9 = rw.notes.some((n) => n.includes('(A9, pouka 5)'));
-    if (s0 && bannedR.has(s0.date))
+    if (s0 && bannedR.has(s0.date) && !guarded(s0))
       err('LIMITS', 'Oštrenje na dan zabrane kvaliteta (A3/A4).', rw.index, s0.date);
     if (!taperOk) {
       // Mešovit taper: oštrenje i lagani trkačke nedelje zavise od konstruisanog tapera.
@@ -1928,7 +1928,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // bol → bez ubrzanja.
   for (const w of weeks)
     for (const d of w.days) {
-      if (steps.length === 0 || locked.has(d.date) || d.role === 'race') continue;
+      // HM-09 (Z6): zaštićen dan (≤ asOf, zaključan, urađen) je činjenica — ista funkcija kao ostale provere po danu.
+      if (steps.length === 0 || guarded(d) || d.role === 'race') continue;
       const inAny = (pick: (x: (typeof steps)[number]) => readonly (DateRange | null)[]): boolean =>
         steps.some((x) => pick(x).some((r) => inRange(d.date, r)));
       if (inAny((x) => [x.rest])) err('LIMITS', 'Trening na dan odmora (A4).', w.index, d.date);

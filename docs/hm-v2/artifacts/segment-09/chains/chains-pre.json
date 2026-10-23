@@ -1,0 +1,324 @@
+{
+ "dist": "HM",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "chains": 2000,
+ "generated": 2000,
+ "genFailed": 0,
+ "real": 1864,
+ "steps": 7807,
+ "stepsReal": 7271,
+ "rejectedChains": 95,
+ "cls": {
+  "IDEMP:WEEKS": {
+   "real": 404,
+   "unreal": 25,
+   "flowsReal": 600,
+   "flowsUnreal": 40,
+   "shortest": {
+    "i": 201,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-11-22",
+      "regime": "pauseSilent",
+      "events": [
+       "test:test10000@2026-11-21v44.8",
+       "missed@2026-11-21"
+      ],
+      "locked": [
+       "2026-11-26",
+       "2026-12-03"
+      ]
+     }
+    ],
+    "id": "f-d4-19w-35km-e360-C~-67",
+    "detail": "[NEW_RESULT+UNDER_EXECUTION] ned 14 targetKm 38.1→30.5"
+   },
+   "ex": [
+    "0/2: [UNDER_EXECUTION] ned 7 targetKm 68→54.4",
+    "2/3: [PAIN+UNDER_EXECUTION] ned 5 targetKm 54.1→43.3",
+    "5/1: [NEW_RESULT+UNDER_EXECUTION] ned 9 targetKm 33→26.4"
+   ]
+  },
+  "BUDUCA_NEDELJA<40%CILJA": {
+   "real": 38,
+   "unreal": 5,
+   "flowsReal": 43,
+   "flowsUnreal": 7,
+   "shortest": {
+    "i": 6,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-13",
+      "regime": "under",
+      "events": [
+       "pain9@2027-01-13"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "f-d5-14w-55km-e450-B~31",
+    "detail": "ned 7 23.1/64.2 development long,easy,easy"
+   },
+   "ex": [
+    "6/0: ned 7 23.1/64.2 development long,easy,easy",
+    "90/5: ned 10 25.7/72.1 development easy,easy,easy",
+    "126/3: ned 5 12/33.6 base easy,easy,easy"
+   ]
+  },
+  "NEXT_DAY:CILJ_PAO>10%": {
+   "real": 21,
+   "unreal": 1,
+   "flowsReal": 23,
+   "flowsUnreal": 1,
+   "shortest": {
+    "i": 6,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-13",
+      "regime": "under",
+      "events": [
+       "pain9@2027-01-13"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "f-d5-14w-55km-e450-B~31",
+    "detail": "[PAIN] ned 9 35.2→31.2"
+   },
+   "ex": [
+    "6/0: [PAIN] ned 9 35.2→31.2",
+    "26/2: [NEW_RESULT+PAIN] ned 3 42.5→31.2, ned 4 34→25, ned 5 45.1→34.3",
+    "29/3: [PAIN+FATIGUE] ned 17 32.2→23.7"
+   ]
+  },
+  "INV:dugi > pouka # ned #": {
+   "real": 38,
+   "unreal": 5,
+   "flowsReal": 43,
+   "flowsUnreal": 5,
+   "shortest": {
+    "i": 408,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-03-03",
+      "regime": "pauseBreak",
+      "events": [
+       "pain5@2027-03-01",
+       "pain3@2027-03-03"
+      ],
+      "locked": [
+       "2027-03-22",
+       "2027-03-28"
+      ]
+     }
+    ],
+    "id": "d4-19w-35km-v40-B-sat~114",
+    "detail": "dugi > pouka 28 ned 5"
+   },
+   "ex": [
+    "17/3: dugi > pouka 28 ned 2",
+    "20/1: dugi > pouka 28 ned 6",
+    "74/1: dugi > pouka 28 ned 4"
+   ]
+  },
+  "REJECT:PLAN_VIOLATES_POLICY": {
+   "real": 90,
+   "unreal": 5,
+   "flowsReal": 90,
+   "flowsUnreal": 5,
+   "shortest": {
+    "i": 44,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-14",
+      "regime": "mixed",
+      "events": [
+       "pain4@2027-01-13"
+      ],
+      "locked": [
+       "2027-01-21"
+      ]
+     },
+     {
+      "asOf": "2027-01-21",
+      "regime": "mixed",
+      "events": [
+       "slower:race21097.5@2027-01-18v35.4"
+      ],
+      "locked": [
+       "2027-02-05"
+      ]
+     }
+    ],
+    "id": "f-d6-11w-65km-e360-C~44",
+    "detail": "LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4)."
+   },
+   "ex": [
+    "44/1: LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4).",
+    "99/2: LIMITS: Trening na dan odmora (A4). | LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4).",
+    "124/2: LIMITS: Trening na dan odmora (A4)."
+   ]
+  },
+  "IDEMP:ODBIJENO:PLAN_VIOLATES_POLICY": {
+   "real": 3,
+   "unreal": 0,
+   "flowsReal": 3,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 341,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-13",
+      "regime": "mixed",
+      "events": [
+       "slower:race21097.5@2027-01-10v29.6"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2027-01-27",
+      "regime": "miss",
+      "events": [
+       "pain6@2027-01-26"
+      ],
+      "locked": [
+       "2027-01-30",
+       "2027-02-04"
+      ]
+     }
+    ],
+    "id": "f-d4-12w-60km-e450-A~68",
+    "detail": "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17)."
+   },
+   "ex": [
+    "341/1: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).",
+    "1581/2: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).",
+    "1995/1: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17)."
+   ]
+  },
+  "NEXT_DAY:ODBIJENO:PLAN_VIOLATES_POLICY": {
+   "real": 3,
+   "unreal": 0,
+   "flowsReal": 3,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 341,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-13",
+      "regime": "mixed",
+      "events": [
+       "slower:race21097.5@2027-01-10v29.6"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2027-01-27",
+      "regime": "miss",
+      "events": [
+       "pain6@2027-01-26"
+      ],
+      "locked": [
+       "2027-01-30",
+       "2027-02-04"
+      ]
+     }
+    ],
+    "id": "f-d4-12w-60km-e450-A~68",
+    "detail": "TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17)."
+   },
+   "ex": [
+    "341/1: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).",
+    "1581/2: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).",
+    "1995/1: TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17)."
+   ]
+  },
+  "COMMON:TRKACKA>TAPER": {
+   "real": 1,
+   "unreal": 0,
+   "flowsReal": 1,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 1522,
+    "len": 4,
+    "step": 3,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-28",
+      "regime": "pauseSilent",
+      "events": [
+       "pain6@2027-01-26"
+      ],
+      "locked": [
+       "2027-02-02",
+       "2027-02-14"
+      ]
+     },
+     {
+      "asOf": "2027-01-29",
+      "regime": "plan",
+      "events": [
+       "missed@2027-01-28"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2027-02-04",
+      "regime": "over",
+      "events": [
+       "slower:race21097.5@2027-02-04v68.6",
+       "faster:race21097.5@2027-02-03v72.3"
+      ],
+      "locked": [
+       "2027-02-17"
+      ]
+     },
+     {
+      "asOf": "2027-02-04",
+      "regime": "plan",
+      "events": [
+       "pain8@2027-02-04",
+       "faster:test10000@2027-02-01v75.2"
+      ],
+      "locked": [
+       "2027-02-06",
+       "2027-02-16"
+      ]
+     }
+    ],
+    "id": "d5-10w-55km-v70-C-sat~41",
+    "detail": ""
+   },
+   "ex": []
+  }
+ },
+ "seconds": 618.254
+}
+
+real	10m18.739s
+user	10m10.120s
+sys	0m5.934s

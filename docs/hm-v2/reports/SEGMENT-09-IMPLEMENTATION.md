@@ -76,3 +76,25 @@ bez izmene (neposredno poništavanje). „.." je ispravio organizator (`WorkoutP
   nije na spisku.
 - Formule u tekstu za korisnika („max(1,1 × najduži, najduži + 1 km)") ostaju (Z2 traži samo oznake).
 - Validator i dalje računa sam trajanje dugog, km WU/CD, lagan trkačke (owner, algebarski isto) — nije na spisku.
+
+## Dopuna lanaca (`fixes/01-chains-addendum.md`, hm-v2.7.1, DECISIONS `HM-09-CHAINS`)
+
+Merenja na seed 20261023, lanci 0–2000, pre = `a3931a0`, posle = ova dopuna (`artifacts/segment-09/chains/`).
+
+| stavka | ispravka | pre → posle |
+| --- | --- | --- |
+| Z6 (C1) LIMITS na zaštićenom danu | `validate` LIMITS i oštrenje preskaču `guarded` (≤ poslednji asOf, zaključan, urađen) — ista funkcija kao ostale provere po danu | odbijeni realni lanci `chains.ts`: 95 → **0** (svi LIMITS osim C3) |
+| Z7 (C2) manjak nije idempotentan | `assess`: `step.underFrom`; korak čiji se prozor zapisa preklapa sa ranijim manjkom ne pravi nov | `idemp.ts` isti: manjak 361 / 374 → **0** / 280; sutra 113 → **0** |
+| Z8 (C6) bol — kaskada sidra | `assess`: raniji korak bola koji je video najnoviji zapis → nov korak bola se ne pravi | idemp ukupno isti 643 → **25**, sutra 218 → **21** (ostatak: umor posle ukinutog redovnog rasterećenja i stvarna nova pauza — produžena pokrivenost daje 7 poznatih dana bez trčanja; nije kaskada bola) |
+| C3 zaštićen test | `step.testKept` (dan testa upisanog plana ≤ asOf / zaključan / urađen) → `steps.protectedTestDate` ga čita; ne zavisi od ponovljenog zaključavanja | TEST odbijanja 1 (+ 3 idemp) → **0** |
+| C7 taper posle bola (i=4878) | potvrđeno degenerisano (taper 24 km = minimum, svi dani 4 km): posle sidra bola prinudno rasterećenje → „najveći cilj izgradnje posle smanjenja" = 0; `adaptNominal10` tada uzima `lastBuild10` (osnova rasterećenja) | taper 24 km / dugi 4 km → **46,5 km / 13,9 km** |
+| C10 (i=1888) | na `a3931a0` odbijanje je LIMITS (trening na urađenom danu odmora) — rešeno Z6; WEEK_INFEASIBLE se ne javlja | odbijen → **prihvaćen** |
+| C9 (K) | `adaptInvariants`: zaključan/urađen dugi se ne sudi (pouka 28) | invarijanta „dugi > pouka 28" 38 → **1** lanac |
+
+Testovi: `segment09.node.test.ts` + Z6, Z7, Z8, C7, C3 (padaju bez ispravke — sabotaže 09-Z6/Z7/Z8/C7/C3). Otisci
+generatora se ne menjaju (ispravke su samo u adaptaciji); redovi „HM v2" u `marathon/v2/app/byteSame.9443676.json`
+ponovo snimljeni (verzija i koraci).
+
+Testovi posle dopune lanaca: brz HM 40 / 351; pun HM 83 / 452 exit 0; `--changed 670700e` 333 / 3 737 exit 0; E2E
+hm-v2 3/3; sabotaže 17/17 (`sabotage-09.json`). run-all `'.*-HM'` (16 poslova): 1 nečist = edges-HM inv 26 (poznato);
+two-step 0/115 328, early 0/114 012, MAR→HM 0/47 736.
