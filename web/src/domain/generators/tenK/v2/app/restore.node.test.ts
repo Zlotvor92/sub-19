@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { adaptTenKV2 } from '../adapt.ts';
 import { addDays } from '../dates.ts';
 import { generateTenKV2 } from '../generate.ts';
-import { adaptBases, asOfOf, factsOf } from '../testInputs.ts';
+import { adaptBases, AS_OF_KINDS, asOfOf, factsOf, SCENARIOS } from '../testInputs.ts';
 import type { TenKV2Plan } from '../types.ts';
 import { validatePlan } from '../validate.ts';
 import { restoreMerge } from './adapt.ts';
@@ -69,5 +69,34 @@ describe('10K v2 — vraćanje revizije kroz jezgro (10K-07, O-3)', () => {
     }
     expect(restored).toBeGreaterThan(30);
     expect(refused).toBeGreaterThan(0);
+  });
+
+  it('neposredno poništavanje (Z4, organizator): verzija tik pre poslednje adaptacije, isti dan, bez novih zapisa — uvek prolazi', () => {
+    let n = 0;
+    for (const b of adaptBases().filter((_, i) => i % 6 === 0)) {
+      const g = generateTenKV2(b.input);
+      if (!g.ok) throw new Error('generate');
+      for (const kind of AS_OF_KINDS) {
+        const at = asOfOf(g.plan, kind);
+        for (const s of SCENARIOS) {
+          const cur = adaptTenKV2(g.plan, factsOf(g.plan, s, at), at);
+          if (!cur.ok) continue;
+          n++;
+          const id = `${b.id} ${kind} ${s}`;
+          const r = restoreMerge(store(cur.plan), store(g.plan), at, {});
+          const fc = (r.meta as unknown as Record<string, unknown>)['futureChanges'] as {
+            conflicts: string[];
+          };
+          expect(fc.conflicts, id).toEqual([]);
+          const core = (r as { tenKV2: TenKV2Plan }).tenKV2;
+          expect(
+            validatePlan(core).filter((v) => v.severity === 'error'),
+            id
+          ).toEqual([]);
+          expect(adaptTenKV2(core, {}, at).ok, id).toBe(true);
+        }
+      }
+    }
+    expect(n).toBeGreaterThan(300);
   });
 });

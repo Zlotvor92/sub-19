@@ -519,7 +519,8 @@ export function recordedExcessKeepsQuality(
     free.some((d) => d.workout.kind === 'quality' || d.workout.kind === 'test') &&
     keptKm > plannedKeptKm + 1e-9 &&
     targetKm - plannedKeptKm + P.tolerance.plannedKm + 1e-9 >= withQ &&
-    targetKm - keptKm + P.tolerance.plannedKm + 1e-9 < withQ &&
+    // Isti kriterijum kao mixedRemainder (ostatak sa svim kvalitetima i laganima na minimumu, bez tolerancije).
+    targetKm - keptKm + 1e-6 < withQ &&
     keptKm + withQ <= P.adapt.mixedKeepQualityMax * targetKm + 1e-9
   );
 }
