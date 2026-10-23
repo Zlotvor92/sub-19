@@ -1,0 +1,79 @@
+
+Running 1 test using 1 worker
+
+izvor: experience="beginner"
+pregled: Pregled promene
+
+Prilagođavanje 2026-01-27: pauza
+
+Posle ovog prilagođavanja plan nije puna priprema za maraton: može se izabrati kraća distanca istog datuma ili zadržati plan.
+
+Odluka o pripremi se prikazuje ovde kada primeniš prikazanu promenu.
+
+Pauza (prijavljena) 35 dana (obim 7 dana pre pauze 40,0 km): cilj 20,0 km; prva nedelja bez kvaliteta, druga 1 kvalitet; nov start (faze preostale izgradnje ponovo, vrh od novog starta) (A3). Povratak do 40,0 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8).
+Nedelja	Cilj, km	Plan, km	Kvalitet
+2	42,0 → 20,0	42,0 → 
+odluka: Odluka o pripremi
+
+Posle prilagođavanja najduži dugi u planu je 16 km, ispod 24 km: ovo nije puna priprema za maraton.
+
+Kraća distanca: Polumaraton istog datuma
+
+Isporučen plan ispunjava pravila pune pripreme za Polumaraton. Vremenski cilj maratona se ne prenosi.
+
+10.05.2026. · najduže 21,6 km · vrhunac 55,0 km/ned · ispunjava pravila pune pripreme
+
+Pregledaj opciju
+
+Zadrži plan v2: plan maratona ostaje kakav je posle prilagođavanja; kraća distanca je samo predlog.
+
+Opcija je samo pregled: distanca se menja tek kada primeniš prikazanu promenu; prethodni plan ostaje u istoriji.
+
+Zatvori
+cilj: experience=beginner weekOffset=2 offset=2; napomene sa brojem ≠ kalendarskog: [{"calWeek":3,"says":1,"focus":"Uvod (H17): nedelja 1 od 2 bez kvaliteta — dan kvaliteta je lagan. Dugi nedelje 3 16,0 km ≤ 19,8 km (skorašnji najduži 18,0 km, pouka 28)."},{"calWeek":4,"says":2,"focus":"Uvod (H17): nedelja 2 od 2 bez kvaliteta — dan kvaliteta je lagan."}]
+na ekranu (Nedelja 3): []
+na ekranu dana: ["Uvod (H17): nedelja 1 od 2 bez kvaliteta — dan kvaliteta je lagan. Dugi nedelje 3 16,0 km ≤ 19,8 km (skorašnji najduži 18,0 km, pouka 28)."]
+  ✘  1 ../docs/generators-v2/audit/app/beginner-handoff.spec.ts:20:1 › predaja: početnik maraton v2 → HM v2 — brojevi nedelja u napomenama nedelja ciljnog plana (18.4s)
+
+
+  1) ../docs/generators-v2/audit/app/beginner-handoff.spec.ts:20:1 › predaja: početnik maraton v2 → HM v2 — brojevi nedelja u napomenama nedelja ciljnog plana 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 12
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "calWeek": 3,
+    +     "focus": "Uvod (H17): nedelja 1 od 2 bez kvaliteta — dan kvaliteta je lagan. Dugi nedelje 3 16,0 km ≤ 19,8 km (skorašnji najduži 18,0 km, pouka 28).",
+    +     "says": 1,
+    +   },
+    +   Object {
+    +     "calWeek": 4,
+    +     "focus": "Uvod (H17): nedelja 2 od 2 bez kvaliteta — dan kvaliteta je lagan.",
+    +     "says": 2,
+    +   },
+    + ]
+
+      94 |   console.log(`na ekranu dana: ${JSON.stringify(onDay.map((b) => b.focus))}`);
+      95 |   await page.getByText(/Fokus nedelje/).screenshot({ path: `${process.env['SHOT_DIR'] ?? '.'}/beginner-hm-day.png` }).catch(() => page.screenshot({ path: `${process.env['SHOT_DIR'] ?? '.'}/beginner-hm-day.png` }));
+    > 96 |   expect(bad).toEqual([]);
+         |               ^
+      97 | });
+      98 |
+        at /home/user/sub-19/docs/generators-v2/audit/app/beginner-handoff.spec.ts:96:15
+
+    Error Context: ../docs/generators-v2/audit/app/test-results/beginner-handoff-predaja-p-94aa8-enama-nedelja-ciljnog-plana/error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../docs/generators-v2/audit/app/test-results/beginner-handoff-predaja-p-94aa8-enama-nedelja-ciljnog-plana/trace.zip
+    Usage:
+
+        npx playwright show-trace ../docs/generators-v2/audit/app/test-results/beginner-handoff-predaja-p-94aa8-enama-nedelja-ciljnog-plana/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    ../docs/generators-v2/audit/app/beginner-handoff.spec.ts:20:1 › predaja: početnik maraton v2 → HM v2 — brojevi nedelja u napomenama nedelja ciljnog plana 
