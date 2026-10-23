@@ -43,8 +43,10 @@ Zajednička pravila u svim distancama (odluke organizatora):
   Forma čita odluku jezgra (jedan vlasnik).
 - Z4 Vraćanje revizije (`app/adapt.ts` restoreMerge): izmeri obrascem `docs/generators-v2/audit/owner/tenK-restore.ts`
   (vraćen plan prolazi validatePlan; sledeća adaptacija nije odbijena). Ako ima kršenja: vraćanje kroz jezgro
-  (writtenWeeks + validatePlan); ako to nije izvodljivo bez velikog zahvata — vraćanje se nudi samo kad posle snimka
-  nema adaptacija, uz jasnu poruku. Cilj: vraćen plan koji krši validator = 0.
+  (writtenWeeks + validatePlan). Pojašnjenje organizatora (07:20): vraćanje je pre svega „poništi prilagođavanje" — NE
+  odbija se samo zato što posle snimka postoji adaptacija. Spoj pa validatePlan istom funkcijom jezgra: prolazi →
+  primeni; ne prolazi → odbij sa jasnom porukom. Neposredno poništavanje (verzija tik pre poslednje adaptacije, bez
+  novih zapisa posle) mora da prođe (test). Cilj: vraćen plan koji krši validator = 0; odbijena vraćanja = broj + razlozi.
 - Z5 Cilj predaje (`app/handoffTarget.ts`, samo 5K/10K/HM kao ciljevi): cilj sam određuje politiku (uslov 5) —
   (a) rezultat izvora nepodržane distance → plan bez rezultata (po osećaju / lak tempo izvora), ne odbijanje;
   (b) početnik izvora iznad maksimuma tabele početnika cilja → plan bez oznake početnika (kako poruka WEEKLY_KM_TOO_HIGH
