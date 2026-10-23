@@ -1,0 +1,44 @@
+## HM painPause asOf 2027-01-10; zapisi 2026-12-08 … 2027-01-10 (bol 6)
+upozorenja: PLANNED_BELOW_TARGET_LIMITS
+ned 1 2026-11-02 base: cilj 75, dugi 21.4, trčano najduži 0
+ned 2 2026-11-09 base: cilj 79, dugi 21.4, trčano najduži 0
+ned 3 2026-11-16 base: cilj 83, dugi 21.4, trčano najduži 0
+ned 4 2026-11-23 base R: cilj 66.4, dugi 17.1, trčano najduži 0
+ned 5 2026-11-30 base: cilj 87, dugi 21.4, trčano najduži 0
+ned 6 2026-12-07 development: cilj 91, dugi 21.4, trčano najduži 21.4
+ned 7 2026-12-14 development: cilj 95, dugi 21.4, trčano najduži 21.4
+ned 8 2026-12-21 development R: cilj 76, dugi 17.1, trčano najduži 0
+ned 9 2026-12-28 development: cilj 95, dugi 21.4, trčano najduži 0
+ned 10 2027-01-04 development: cilj 95, dugi 21.4, trčano najduži 0
+ned 11 2027-01-11 specific: cilj 66.5, dugi 8.5 | Adaptacija: nedelja bez kvaliteta (ograničenje koraka, A3/A4). / Adaptacija: period bola (dugi ≤ 60 min, lagani × 0,7 ≥ 4,0 km, bez ubrzanja), planirano ≤ cilj obima (A4).
+ned 12 2027-01-18 specific: cilj 73.2, dugi 21.4 | Adaptacija: jedan kvalitet doze rasterećenja (ograničenje koraka, A3/A4).
+ned 13 2027-01-25 specific: cilj 80.5, dugi 21.4 | 
+ned 14 2027-02-01 specific: cilj 88.6, dugi 21.4 | 
+ned 15 2027-02-08 specific: cilj 95, dugi 21.4 | 
+ned 16 2027-02-15 taper: cilj 66.5, dugi 12.8 | Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,6 × najduži (H7).
+ned 17 2027-02-22 race: cilj 24.1, dugi — | Trkačka nedelja: oštrenje 2 × 2000 m RP (≤ RP doza tapera 5,0 km), trka 21,1 km se ne računa u obim (H8).
+## MAR painPause asOf 2027-01-31; zapisi 2026-12-29 … 2027-01-31 (bol 6)
+upozorenja: PLANNED_BELOW_TARGET_LIMITS, DOSE_DROPPED
+ned 1 2026-11-02 base: cilj 70, dugi 24.5, trčano najduži 0
+ned 2 2026-11-09 base: cilj 74.2, dugi 25.9, trčano najduži 0
+ned 3 2026-11-16 base: cilj 78.7, dugi 27.2, trčano najduži 0
+ned 4 2026-11-23 base R: cilj 63, dugi 21.7, trčano najduži 0
+ned 5 2026-11-30 base: cilj 83.4, dugi 27.2, trčano najduži 0
+ned 6 2026-12-07 base: cilj 88.4, dugi 27.2, trčano najduži 0
+ned 7 2026-12-14 base: cilj 93.4, dugi 27.2, trčano najduži 0
+ned 8 2026-12-21 development: cilj 98.4, dugi 27.2, trčano najduži 0
+ned 9 2026-12-28 development R: cilj 78.7, dugi 21.7, trčano najduži 21.7
+ned 10 2027-01-04 development: cilj 100, dugi 27.2, trčano najduži 27.2
+ned 11 2027-01-11 development: cilj 100, dugi 27.2, trčano najduži 0
+ned 12 2027-01-18 development: cilj 100, dugi 27.2, trčano najduži 0
+ned 13 2027-01-25 development R: cilj 80, dugi 21.7, trčano najduži 0
+ned 14 2027-02-01 development: cilj 70, dugi 10.9 | Adaptacija: nedelja bez kvaliteta (ograničenje koraka, A3/A4). / Adaptacija: period bola (dugi ≤ 60 min, lagani × 0,7 ≥ 5 km, bez ubrzanja), planirano ≤ cilj obima (A4).
+ned 15 2027-02-08 specific: cilj 77, dugi 26.9 | Adaptacija: jedan kvalitet doze rasterećenja (ograničenje koraka, A3/A4).
+ned 16 2027-02-15 specific: cilj 84.7, dugi 27.2 | Q2: T spušten sa 9,6 na 8,0 km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (M11 ispred M12).
+ned 17 2027-02-22 specific R: cilj 67.8, dugi 21.7 | Rasterećenje: cilj 67,8 km, jedan kvalitet (T), dugi 0,8 × poslednji ne-rasteretni (M5).
+ned 18 2027-03-01 specific: cilj 93.2, dugi 27.2 | 
+ned 19 2027-03-08 specific: cilj 100, dugi 27.2 | 
+ned 20 2027-03-15 specific: cilj 100, dugi 27.2 | 
+ned 21 2027-03-22 taper: cilj 80, dugi 17.6 | Taper (N−2): cilj 0,8 × vrh, MP i T ≈ 60 % poslednje doze, dugi ≤ 0,7 × najduži (M7).
+ned 22 2027-03-29 taper: cilj 60, dugi 12.2 | Taper (N−1): cilj 0,6 × vrh, MP ≈ 50 % poslednje doze, bez T, dugi ≤ 0,5 × najduži (M7). / Taper (N−1): MP 6,0 km umesto 8,0 km — dan kvaliteta ne sme biti duži od dugog (pouka 32, plafon zone).
+ned 23 2027-04-05 race: cilj 27.9, dugi — | Trkačka nedelja: oštrenje 2 × 2000 m MP (≤ MP doza poslednje nedelje tapera 6,0 km); maraton 42,2 km se ne računa u obim (M8).
