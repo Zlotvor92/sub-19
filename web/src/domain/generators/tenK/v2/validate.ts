@@ -1360,11 +1360,9 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const rd = rw.days.find((d) => d.role === 'race');
     if (!rd || rd.date !== input.raceDate || rd.countsToWeek)
       err('RACE_DAY', 'Trka je jednom, na dan trke, van obima (D8).', rw.index);
-    // C7 (10K-07): zaštićen budući dan trkačke (zaključan ili urađen — činjenica, ne skida se) drži trkačku > taper
+    // C7 (10K-07): zaštićen dan trkačke (prošao, zaključan ili urađen — činjenica, ne skida se) drži trkačku > taper
     // → upozorenje (ranije tišina).
-    const fixed = ad
-      ? rw.days.filter((d) => protectedDay(d) && mustDay(d.date) > mustDay(ad.asOf))
-      : [];
+    const fixed = ad ? rw.days.filter((d) => protectedDay(d) && d.role !== 'race') : [];
     if (
       taperW &&
       fixed.length > 0 &&
@@ -1372,7 +1370,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     )
       warn(
         'RACE_WEEK_OVER_TAPER_LOCKED',
-        `Trkačka nedelja ${rw.plannedKm} km > taper ${taperW.plannedKm} km — zaključan ili urađen dan (${fixed.map((d) => d.date).join(', ')}) ostaje kakav je (D23).`,
+        `Trkačka nedelja ${rw.plannedKm} km > taper ${taperW.plannedKm} km — zaštićen dan (prošao, zaključan ili urađen: ${fixed.map((d) => d.date).join(', ')}) ostaje kakav je (D23).`,
         rw.index
       );
   } else if (rw.phase === 'race') {
