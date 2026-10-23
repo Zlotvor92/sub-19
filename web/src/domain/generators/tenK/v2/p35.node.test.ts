@@ -25,20 +25,17 @@ const rules = (p: TenKV2Plan, w: number) =>
     .map((v) => `${v.severity}:${v.rule}`);
 
 describe('pouka 35 u generatoru', () => {
-  it('10 ned, 25 km, VDOT 70, 4 dana: ned 1 — T dan je lagan, dugi 5,6 → 8,2 km (34 min) duži od R dana (32 min)', () => {
-    const p = planOf(4, { weeks: 10, km: 25, vdot: 70 });
+  it('12 ned, 35 km, VDOT 70, 6 dana: ned 1 — T dan je lagan (10K-08: na 10 ned / 25 km / 4 dana lagani su odmor po T1, dugi 8,2 km je najduži)', () => {
+    const p = planOf(6, { weeks: 12, km: 35, vdot: 70 });
     const w = p.weeks[0]!;
-    expect(w.days.map((d) => d.role).sort()).toEqual(['easy', 'easy', 'long', 'q1']);
-    const long = w.days.find((d) => d.role === 'long')!.workout;
-    const q1 = w.days.find((d) => d.role === 'q1')!.workout;
-    expect([long.km, Math.round(long.sec / 60), Math.round(q1.sec / 60)]).toEqual([8.2, 34, 32]);
-    expect(w.targetKm).toBe(25);
-    expect(w.notes.find((n) => n.startsWith(P35_DROP))).toBe(
-      `${P35_DROP} (WU 15 min + T 2,0 km kontinuirano + CD 10 min) je lagan — sa dva dana kvaliteta dan kvaliteta bio bi duži od dugog.`
+    expect(w.days.filter((d) => d.workout.kind === 'quality')).toHaveLength(1);
+    expect(w.targetKm).toBe(35);
+    expect(w.notes.find((n) => n.startsWith(P35_DROP))).toMatch(
+      /^Pouka 35: drugi dan kvaliteta \(WU 20 min \+ T 2,0 km kontinuirano \+ CD 15 min\) je lagan/
     );
-    // Ned 3: dva dana kvaliteta, dugi najduži.
-    expect(qualityOverLong(p.weeks[2]!.days)).toBe(false);
-    expect(p.weeks[2]!.days.filter((d) => d.workout.kind === 'quality')).toHaveLength(2);
+    const q = planOf(4, { weeks: 10, km: 25, vdot: 70 });
+    expect(q.weeks[0]!.days.map((d) => d.role).sort()).toEqual(['long', 'q1', 'q2']);
+    expect(qualityOverLong(q.weeks[0]!.days)).toBe(false);
   });
 
   it('6 dana, 35 km, VDOT 70: prvi dan kvaliteta i dalje duži od dugog → napomena + upozorenje D25', () => {
@@ -83,9 +80,10 @@ describe('pouka 35 u validatoru (isti predikat)', () => {
   });
 
   it('drugi dan kvaliteta lagan bez napomene pouke 35 → ROLES (validator čita odluku konstruktora)', () => {
+    const p6 = planOf(6, { weeks: 12, km: 35, vdot: 70 });
     const noNote: TenKV2Plan = {
-      ...p,
-      weeks: p.weeks.map((w, k) =>
+      ...p6,
+      weeks: p6.weeks.map((w, k) =>
         k !== 0 ? w : { ...w, notes: w.notes.filter((n) => !p35({ ...w, notes: [n] })) }
       )
     };

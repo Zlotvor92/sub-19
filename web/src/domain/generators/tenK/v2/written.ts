@@ -28,12 +28,22 @@ export function keptDays(prev: PlanWeek, w: Written): PlanDay[] {
 }
 
 /**
- * Pouka 37 (10k-v2.8.0, dopuna 5K-08i) — JEDINA definicija zbira zaštićenih dana mešovite nedelje: po činjenicama, ne
- * po planu — dan u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km (neurađen 0), ostali zaštićeni (asOf
- * bez zapisa, zaključan, urađen posle asOf bez km) planirani km. Neodrađen dan tako ne „jede" cilj nedelje.
+ * Pouka 37 (10k-v2.8.0, dopuna 5K-08i) — JEDINA definicija zbira zaštićenih dana mešovite nedelje: dani ≤ asOf po
+ * činjenicama, ne po planu — dan u prijavljenoj pauzi 0, dan sa upisanim treningom upisani km (neurađen 0), ≤ asOf
+ * bez zapisa po pokrivenosti/planu (factKm). C4 (10K-08, MASTER pouka 37, kao 5K/MAR): zaštićen dan POSLE asOf
+ * (urađen unapred, zaključan) = planirani km. Neodrađen dan tako ne „jede" cilj nedelje.
  */
 export function protectedKm(kept: readonly PlanDay[], w: Written): number {
-  return kept.reduce((a, d) => a + Math.round(w.factKm(d) * 100), 0) / 100;
+  return (
+    kept.reduce(
+      (a, d) =>
+        a +
+        Math.round(
+          (mustDay(d.date) > w.asOf ? (d.countsToWeek ? d.workout.km : 0) : w.factKm(d)) * 100
+        ),
+      0
+    ) / 100
+  );
 }
 
 /** Pouka 37 (organizator, jedno pravilo za sve 4 distance; uzor 5K-08i-b): km dana po činjenicama (adapt.ts gradi
@@ -63,9 +73,12 @@ export function writtenDays(
   w: Written
 ): readonly PlanDay[] {
   if (mustDay(prev.endDate) <= w.asOf) return prev.days;
+  // 10K-08 (T1): dan ≤ asOf koga prethodni plan nema (odmor) ostaje odmor — prošlost se ne dopisuje.
   return [
     ...prev.days.filter(w.keep),
-    ...built.filter((d) => !prev.days.some((x) => x.date === d.date && w.keep(x)))
+    ...built.filter(
+      (d) => mustDay(d.date) > w.asOf && !prev.days.some((x) => x.date === d.date && w.keep(x))
+    )
   ].sort((x, y) => x.date.localeCompare(y.date));
 }
 

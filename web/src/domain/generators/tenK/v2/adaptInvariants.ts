@@ -5,6 +5,7 @@
 import { daysBetween, mustDay } from './dates.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import type { PlanDay, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
+import { t1Short } from './gridInvariants.ts';
 import { deloadWeekOf } from './steps.ts';
 import { raceWeekEveOnly, restDaysWeek } from './week.ts';
 
@@ -96,7 +97,8 @@ export function adaptInvariants(
       w.phase !== 'race' &&
       (limited
         ? w.plannedKm > w.targetKm + P.tolerance.plannedKm + EPS
-        : Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
+        : Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS) &&
+      !t1Short(w, after)
     )
       bad.push(`planirano ≠ cilj ned ${w.index}`);
     // Uslov 8 i A9.

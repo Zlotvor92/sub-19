@@ -19,7 +19,8 @@ import {
   GRID_TIMEOUT,
   p35FlowErrors,
   p37FlowErrors,
-  p07FlowErrors
+  p07FlowErrors,
+  p08Errors
 } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
@@ -37,6 +38,7 @@ import {
   fnv1a,
   inputOf,
   planHash06c,
+  dump08,
   planHash81,
   runsIn,
   SCENARIOS,
@@ -194,6 +196,7 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       hashes.push(fnv1a(JSON.stringify(r)));
       h81[`${id}/${k}/${s}`] = planHash81(r);
       h06c[`${id}/${k}/${s}`] = planHash06c(r);
+      dump08('grid04', `${id}/${k}/${s}`, r);
       p35Flows.push({ key: `${id}/${k}/${s}`, id, hash: planHash06c(r), res: r });
       const notes = r.ok ? r.plan.notes : [];
       if (notes.some((x) => x.includes('(A17)'))) a17.add(`${id}/${k}/${s}`);
@@ -372,6 +375,7 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
   it('06i (10k-v2.8.0): prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37', () => {
     expect(p37FlowErrors('grid04', p35Flows)).toEqual([]);
     // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
+    expect(p08Errors('grid04', p35Flows)).toEqual([]);
     expect(
       p07FlowErrors(
         'grid04',
@@ -630,9 +634,12 @@ describe('odluke A1–A15', () => {
           expect(d.workout.rpe !== undefined, `ned ${w.index}`).toBe(w.index < 7);
     // Obim: pravilo D6 nezavisno od tempa (ciljevi isti kao pre; trkačka nedelja = planirano, D8, zavisi
     // od tempa 35 min E).
-    expect(r.plan.weeks.slice(0, -1).map((w) => w.nominalKm)).toEqual(
-      p.weeks.slice(0, -1).map((w) => w.nominalKm)
+    // 10K-08 (T1): najkraći lagan = 20 min laganim tempom — kapacitet nedelje zavisi od tempa, pa od prve nedelje
+    // spuštene na novom tempu (ned 10) nominalni ciljevi slede stvarno dobijen cilj (D6), ne plan pre rezultata.
+    expect(r.plan.weeks.slice(0, 9).map((w) => w.nominalKm)).toEqual(
+      p.weeks.slice(0, 9).map((w) => w.nominalKm)
     );
+    expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
     // Plan sa rezultatom: ocena cilja za nedelje od rezultata do trke.
     const pr = plan('d4-r-14w');
     const rr = ok(adaptTenKV2(pr, factsOf(pr, 'faster', asOf), asOf));

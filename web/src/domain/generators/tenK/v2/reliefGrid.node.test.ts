@@ -70,8 +70,9 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
     ]);
     const pause = adapt(id, 3, 'pause10');
     expect(rows(pause.plan, 4, 7)).toEqual([
-      [21.2, false],
-      [23.3, false],
+      // 10K-08 (T1, lagan ≤ 0,8 × dugi i ≥ 20 min): 21,2 / 23,3 → 21,1 / 23,2.
+      [21.1, false],
+      [23.2, false],
       [25, false],
       [26.5, false]
     ]);
@@ -209,8 +210,9 @@ describe('A17: polje reduced, prinudno rasterećenje, nov start, stari korak', (
     old.policyVersion = '10k-v2.4.1';
     const again = ok(adaptTenKV2(old, {}, asOf)).plan;
     expect(again.weeks.slice(3, 7).map((w) => [w.targetKm, w.deload])).toEqual([
-      [21.2, false],
-      [23.3, false],
+      // 10K-08 (T1, lagan ≤ 0,8 × dugi i ≥ 20 min): 21,2 / 23,3 → 21,1 / 23,2.
+      [21.1, false],
+      [23.2, false],
       [25, false],
       [26.5, false]
     ]);

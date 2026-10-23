@@ -20,7 +20,13 @@ import {
   runPlanGrid,
   summaryBad
 } from './planGrid.harness.node.test.ts';
-import { expectByDays, GRID_TIMEOUT, missingParts, P35_PLANS } from './level.harness.node.test.ts';
+import {
+  expectByDays,
+  GRID_TIMEOUT,
+  missingParts,
+  P35_PLANS,
+  p08Errors
+} from './level.harness.node.test.ts';
 
 export const FEEL_PARTS = 4;
 /** Brz nivo: svaki K-ti ulaz unutar (broj dana × nedelje). */
@@ -141,6 +147,16 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
       // 06f (pouka 35): planovi sa nedeljom pouke 35 na 7ba9717 se menjaju (p35.node.test.ts); ostali tačno.
       const keep = new Set([...ids].filter((id) => !P35_PLANS.has(id)));
       expect(only(g.rows, keep)).toEqual(only(base.plans, keep));
+    });
+
+    it('10K-08: planovi promenjeni prema b9c4728 (segment08.changed-b9c4728.json) imaju drugi heš; ostale porede starije regresije', () => {
+      expect(
+        p08Errors(
+          'gen',
+          Object.entries(g.h81now).map(([key, hash]) => ({ key, hash })),
+          true
+        ).slice(0, 10)
+      ).toEqual([]);
     });
 
     it('regresija 03b: ceo plan po osećaju bajt-isti kao 81bd351 (heš bez oznake verzije) za svih 11 880', () => {

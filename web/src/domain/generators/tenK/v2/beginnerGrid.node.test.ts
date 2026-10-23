@@ -14,7 +14,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL, logCompared } from '@/test/level';
-import { expectByDays, expectCounts, GRID_TIMEOUT } from './level.harness.node.test.ts';
+import { expectByDays, expectCounts, GRID_TIMEOUT, p08Errors } from './level.harness.node.test.ts';
 import {
   hashesAgain,
   only,
@@ -157,6 +157,16 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
     logCompared('tenK.v2.segment03b-beginner.baseline', Object.keys(g.rows));
     expect(g.rows).toEqual(only(base.plans, ids));
   });
+  it('10K-08: planovi promenjeni prema b9c4728 (segment08.changed-b9c4728.json) imaju drugi heš; ostale porede starije regresije', () => {
+    expect(
+      p08Errors(
+        'gen',
+        Object.entries(g.h81now).map(([key, hash]) => ({ key, hash })),
+        true
+      ).slice(0, 10)
+    ).toEqual([]);
+  });
+
   it('regresija 04: generate = construct(input, []) — ceo plan početnika bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 3402', () => {
     const fx = JSON.parse(readFileSync(HASHES_B13, 'utf8')) as {
       against: string;

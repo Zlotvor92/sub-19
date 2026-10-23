@@ -37,7 +37,7 @@ export const POLICY_VERSION = P.version;
 export const LEGACY_POLICY_ID = 'legacy-10k';
 /** Verzije koje trenutni kod ume da adaptira (istorijske implementacije v2 se ne čuvaju): 10k-v2.4.0, 10k-v2.4.1, 10k-v2.5.0,
  *  10k-v2.5.1, 10k-v2.5.2, 10k-v2.6.0, 10k-v2.6.1, 10k-v2.6.2, 10k-v2.7.0 (3d-10K — plan sa nedeljama izvora predaje,
- *  `PREFIX_KEY`), 10k-v2.8.0 (06i), 10k-v2.8.1 (3i, ulaz `weekOffset`) i tekuća 10k-v2.9.0 (10K-07). Sačuvan plan 4.0 … 7.0 ostaje plan 10K v2; prilagođavanje ga gradi tekućim pravilima (A15),
+ *  `PREFIX_KEY`), 10k-v2.8.0 (06i), 10k-v2.8.1 (3i, ulaz `weekOffset`) 10k-v2.9.0 (10K-07) i tekuća 10k-v2.10.0 (10K-08, krug T). Sačuvan plan 4.0 … 7.0 ostaje plan 10K v2; prilagođavanje ga gradi tekućim pravilima (A15),
  *  rezultat nosi tekuću oznaku. Svaka druga verzija je „unknown" (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.4.0',
@@ -51,6 +51,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
   '10k-v2.7.0',
   '10k-v2.8.0',
   '10k-v2.8.1',
+  '10k-v2.9.0',
   P.version
 ];
 

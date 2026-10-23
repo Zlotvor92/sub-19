@@ -71,11 +71,45 @@ export const ADAPT_CHANGED_07 = (
     >;
   }
 ).flows;
-/** Heš toka u stanju c13c258: promenjen u 10K-07 → heš iz fixture-a, inače današnji. */
+/** Segment 10K-08 (10k-v2.10.0, krug T): planovi generatora i tokovi trajnih mreža adaptacije koje 10K-08 menja prema
+    b9c4728 (segment08.changed-b9c4728.json): generator → [planHash81, cause07, red bazne linije] na b9c4728; tok →
+    [planHash06c na b9c4728, uzrok]. Starije regresije porede stanje b9c4728 (`atB9c`, dno lanca at7ba → at46e →
+    atC13; generator: planGrid.runPlanGrid zamenjuje heš, uzrok 07 i red); tačan skup proverava `p08Errors`. */
+export const CHANGED_08 = JSON.parse(
+  readFileSync(
+    fileURLToPath(new URL('./segment08.changed-b9c4728.json', import.meta.url)),
+    'utf8'
+  )
+) as {
+  against: string;
+  gen: Record<string, [number, string | null, unknown]>;
+  flows: Record<string, Record<string, [number, string]>>;
+};
+/** 10K-08: tok mreže `net` je promenjen prema b9c4728. */
+export const changed08 = (net: string, key: string): boolean =>
+  CHANGED_08.flows[net]?.[key] !== undefined;
+/** Heš toka u stanju b9c4728: promenjen u 10K-08 → heš iz fixture-a, inače današnji. */
+export const atB9c = (net: string, key: string, h: number): number =>
+  CHANGED_08.flows[net]?.[key]?.[0] ?? h;
+/** 10K-08: prekršaji fixture-a — tok/plan u fixture-u mora imati heš različit od b9c4728 (tok van fixture-a koji se
+    promenio hvataju starije regresije, koje porede stanje b9c4728). */
+export function p08Errors(
+  net: string,
+  flows: readonly { key: string; hash: number }[],
+  gen = false
+): string[] {
+  const bad: string[] = [];
+  for (const f of flows) {
+    const e = gen ? CHANGED_08.gen[f.key] : CHANGED_08.flows[net]?.[f.key];
+    if (e && e[0] === f.hash) bad.push(`${f.key}: u fixture-u 10K-08, heš isti`);
+  }
+  return bad;
+}
+/** Heš toka u stanju c13c258: promenjen u 10K-07 → heš iz fixture-a, inače stanje b9c4728 (10K-08). */
 export const atC13 = (net: string, key: string, h: number): number =>
   (ADAPT_CHANGED_07 as Record<string, Record<string, [number, string]> | undefined>)[net]?.[
     key
-  ]?.[0] ?? h;
+  ]?.[0] ?? atB9c(net, key, h);
 /** 10K-07: tok mreže `net` je u fixture-u tačno kad se razlikuje od c13c258, sa uzrokom: oznaka mark07 (Z1, F3, O-1b,
     C7, C8, Z7) ili ranije odbijen tok (Z6/C3, heš 0 u mreži E / oznaka u fixture-u). Vraća prekršaje. */
 export function p07FlowErrors(
@@ -85,6 +119,8 @@ export function p07FlowErrors(
   const fx = ADAPT_CHANGED_07[net] ?? {};
   const bad: string[] = [];
   for (const f of flows) {
+    // 10K-08: tok promenjen prema b9c4728 — oznaka 07 se čita na b9c4728 (p08Errors).
+    if (changed08(net, f.key)) continue;
     const e = fx[f.key];
     if (!e) continue;
     if (e[0] === f.hash) bad.push(`${f.key}: u fixture-u 10K-07, heš isti`);
@@ -107,6 +143,7 @@ export function p37FlowErrors(
 ): string[] {
   const bad: string[] = [];
   for (const f of flows) {
+    if (changed08(net, f.key)) continue;
     const old = ADAPT_CHANGED_46E[net][f.key];
     if (old !== undefined && (old === f.hash || !hasP37(f.res)))
       bad.push(`${f.key}: u fixture-u 06i, ${old === f.hash ? 'heš isti' : 'bez pouke 37'}`);
@@ -125,6 +162,7 @@ export function p35FlowErrors(
 ): string[] {
   const bad: string[] = [];
   for (const f of flows) {
+    if (changed08(net, f.key)) continue;
     const old = ADAPT_CHANGED_7BA[net][f.key];
     const p35 = hasP35(f.res) || P35_PLANS.has(f.id);
     if (old !== undefined && (old === f.hash || !p35))

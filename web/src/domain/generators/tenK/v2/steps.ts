@@ -110,9 +110,51 @@ export function limitsOf(
 export const deloadWeekOf = (s: { fromWeek: number; deloadWeek?: number }): number =>
   s.deloadWeek ?? s.fromWeek;
 
-/** A3: nedelje novog starta (početak nove progresije doze, D16; granica izgradnje D6 od novog starta). */
+/** Nedelje u kojima progresija doze kreće iznova (stanje doze se briše; D16): A3 nov start (fromWeek) i pouka 18 —
+    posle sidra bola r nedelja r + 1 (C6, 10K-08; kao HM). Jedna funkcija za konstruktor i validator. */
 export const restartWeeks = (steps: readonly TenKV2AdaptStep[]): Set<number> =>
-  new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
+  new Set(
+    steps.flatMap((s) => [
+      ...(s.restart ? [s.fromWeek] : []),
+      ...(s.returnFrom ? [s.returnFrom.week + 1] : [])
+    ])
+  );
+
+/** T3 (10K-08): poslednji nov start pre nedelje `before` (fromWeek) ili null. */
+export function lastRestartBefore(
+  steps: readonly TenKV2AdaptStep[],
+  before: number
+): number | null {
+  let r: number | null = null;
+  for (const s of steps) if (s.restart && s.fromWeek < before) r = Math.max(r ?? 0, s.fromWeek);
+  return r;
+}
+
+/**
+ * T3 (10K-08, organizator; jedna funkcija za konstruktor i validator): posle novog starta taper zadržava jedan kvalitet
+ * kad je posle povratka (nedelje ≥ fromWeek novog starta, pre tapera) bar jedna nedelja izgradnje sa kvalitetom.
+ */
+export function restartKeepsTaperQuality(
+  steps: readonly TenKV2AdaptStep[],
+  weeks: readonly {
+    index: number;
+    phase: string;
+    days: readonly { workout: { kind: string } }[];
+  }[],
+  taperWeek: number
+): boolean {
+  const r = lastRestartBefore(steps, taperWeek);
+  return (
+    r !== null &&
+    weeks.some(
+      (w) =>
+        w.index >= r &&
+        w.index < taperWeek &&
+        isBuildPhase(w.phase as WeekFrame['phase']) &&
+        w.days.some((d) => d.workout.kind === 'quality')
+    )
+  );
+}
 
 /** A17: najviše uzastopnih nedelja izgradnje od ukinutog rasterećenja (uključujući ukinutu nedelju) do
     sledećeg redovnog rasterećenja — D5 izuzetak 4 + ukinuta nedelja. framesFor i validator (D5). */

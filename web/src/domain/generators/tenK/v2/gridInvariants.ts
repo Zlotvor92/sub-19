@@ -106,6 +106,28 @@ export const emptyStats = (): GridStats => ({
 });
 
 /** Nezavisne invarijante jednog plana (sve mreže). */
+/** T1 (10K-08), nezavisno od validatora: nedelja izgradnje bez laganog dana sa planiranim < cilj za manje od jednog
+    laganog od 20 min (brzim E tempom). */
+export function t1Short(
+  w: {
+    phase: string;
+    deload: boolean;
+    plannedKm: number;
+    targetKm: number;
+    days: readonly { role: string }[];
+  },
+  p: { paces: { E: { fast: number } } }
+): boolean {
+  const gap = w.targetKm - w.plannedKm;
+  return (
+    ['base', 'development', 'specific'].includes(w.phase) &&
+    !w.deload &&
+    !w.days.some((d) => d.role === 'easy') &&
+    gap > 0 &&
+    gap <= 1200 / p.paces.E.fast + 0.1 + EPS
+  );
+}
+
 export function checkPlan(
   id: string,
   n: Days,
@@ -149,7 +171,7 @@ export function checkPlan(
   for (const w of p.weeks) {
     const tag = `ned ${w.index}`;
     // planirano = cilj (tehnička tolerancija 0,1 km); trkačka: cilj = planirano.
-    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS)
+    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS && !t1Short(w, p))
       no('PLANNED_EQ_TARGET', `${tag} ${w.plannedKm} ≠ ${w.targetKm}`);
     // Uslov 8 (D15/D17): nedelja ≥ minimum po broju dana; trkačka: planirano + trka 10 km (D30).
     if (w.phase !== 'race' && w.plannedKm + EPS < WEEK_MIN[n]) no('WEEK_MIN', tag);

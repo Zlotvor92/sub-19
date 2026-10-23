@@ -406,7 +406,7 @@ const DECISIONS: readonly Decision[] = [
   /* ---------- Segment 06i (10k-v2.8.0): pouka 37 — mešovita nedelja, ostatak do cilja (samo naniže). ---------- */
   {
     id: 'A21',
-    rule: 'Pouka 37 (MASTER § 2, obe dopune): mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen) — cilj važi za CELU nedelju. Vlasnik obima (week.mixedRemainder, poziva generate.construct posle izbora cilja) sastavlja preostale dane na ostatak = cilj − zbir zaštićenih dana po ČINJENICAMA (written.protectedKm, jedno pravilo za 4 distance: eksplicitna pauza 0, dan sa zapisom upisani km — neurađen 0, dan poznat iz potpune pokrivenosti bez zapisa 0, ostali — bez zapisa i pokrivenosti, zaključan budući — planirani km), SAMO NANIŽE (nijedan dan duži od sastavljenog; manjak se ne nadoknađuje; razlika u toleranciji planiranog 0,1 km — bez izmene). Redosled: dugi se ne skraćuje; lagani do 3,0 km (lagan ≤ dugi samo među preostalim danima); pa otpada kvalitet (Q2, pa Q1/test — dan postaje lagan, doza se ne beleži) SAMO kad time ostatak staje (dopuna MAR-08); ni minimum preostalih dana bez kvaliteta (week.mixedFloorKm) ne staje → kvalitet ostaje, lagani na minimumu, planirano > cilj uz upozorenje MIXED_OVER_TARGET (pouka 14), ne odbijanje. Izuzeci: trkačka nedelja (pouka 30), nedelja pauze čiji cilj ostatka određuje pravilo pauze (volume remainder). Nedelja nosi keptKm (zbir zaštićenih po činjenicama) i napomenu; validator čita istu funkciju (preostali ≤ cilj − keptKm ili MIXED_OVER_TARGET, inače MIXED_REMAINDER). Pouka 25: dani odmora koraka (bol) — isti predikat week.restDaysWeek za validator (WEEK_MIN_REST) i adaptInvariants (trkačka + trka < minimum).',
+    rule: 'Pouka 37 (MASTER § 2, obe dopune): mešovita nedelja (deo dana zaštićen: ≤ asOf, zaključan, urađen) — cilj važi za CELU nedelju. Vlasnik obima (week.mixedRemainder, poziva generate.construct posle izbora cilja) sastavlja preostale dane na ostatak = cilj − zbir zaštićenih dana po ČINJENICAMA (written.protectedKm, jedno pravilo za 4 distance: eksplicitna pauza 0, dan sa zapisom upisani km — neurađen 0, dan poznat iz potpune pokrivenosti bez zapisa 0, ostali — bez zapisa i pokrivenosti — planirani km; C4, 10K-08: zaštićen dan posle asOf — urađen ili zaključan — planirani km), SAMO NANIŽE (nijedan dan duži od sastavljenog; manjak se ne nadoknađuje; razlika u toleranciji planiranog 0,1 km — bez izmene). Redosled: dugi i test (C3, 10K-08) se ne skraćuju; lagani do 3,0 km (lagan ≤ dugi samo među preostalim danima); pa otpada kvalitet (Q2, pa Q1 — dan postaje lagan, doza se ne beleži) SAMO kad time ostatak staje (dopuna MAR-08); ni minimum preostalih dana bez kvaliteta (week.mixedFloorKm) ne staje → kvalitet ostaje, lagani na minimumu, planirano > cilj uz upozorenje MIXED_OVER_TARGET (pouka 14), ne odbijanje. Izuzeci: trkačka nedelja (pouka 30), nedelja pauze čiji cilj ostatka određuje pravilo pauze (volume remainder). Nedelja nosi keptKm (zbir zaštićenih po činjenicama) i napomenu; validator čita istu funkciju (preostali ≤ cilj − keptKm ili MIXED_OVER_TARGET, inače MIXED_REMAINDER). Pouka 25: dani odmora koraka (bol) — isti predikat week.restDaysWeek za validator (WEEK_MIN_REST) i adaptInvariants (trkačka + trka < minimum).',
     place:
       'week.ts mixedRemainder, mixedFloorKm, restDaysWeek; written.ts protectedKm, factKmOf, keptDays, writtenWeeks; generate.ts mixed37; adapt.ts (Written.factKm); validate.ts (MIXED_OVER_TARGET, MIXED_REMAINDER); adaptInvariants.ts; types.ts PlanWeek.keptKm; app/plan.ts KNOWN_VERSIONS',
     rationale:
@@ -429,12 +429,21 @@ const DECISIONS: readonly Decision[] = [
       'app/adapt.ts restoreMerge; app/handoffTarget.ts targetInput; workouts.ts sharpenerWarmupCooldown; validate.ts (D25, WARMUP/COOLDOWN oštrenja, MIXED_OVER_TARGET); policy.ts kmFit/daysForKm; input.ts; volume.ts capacityMessage/fewerDaysAdvice; week.ts (uvod, recordedExcessKeepsQuality, mixedRemainder); generate.ts mixed37; assess.ts resultVdotUsable; app/form.ts; app/format.ts userText; steps.ts framesAndTest; app/plan.ts KNOWN_VERSIONS',
     rationale:
       'Nalazi provere v2 (docs/generators-v2/audit: owner O-1a/O-1b/O-3/K, fuzz F3, coach M4, app A1/A2/A5, consistency mixed-drop) i odluke organizatora Z1–Z8 (fixes/00-common.md, fixes/10K.md, fixes/01-chains-addendum.md). Brojevi pre → posle u docs/10k-v2/reports/SEGMENT-07-IMPLEMENTATION.md.'
+  },
+  /* ---------- Segment 10K-08 (10k-v2.10.0): krug T — trenerska pravila (organizator, fixes/03-coach-rules.md). ---------- */
+  {
+    id: 'A24',
+    rule: '10K-08 (zaključan spisak T-assign: T1, T3, T6 C3/C4/C6/C11): (T1) nedelja izgradnje (ne rasterećenje, taper, trkačka) — svaki lagan ≤ 0,8 × dugi iste nedelje i ≥ max(3 km, 20 min laganim tempom) (lengths.buildEasyBounds10, konstruktor i validator EASY_VS_LONG); dugi je dužina D13 za stvaran broj laganih dana (≤ plafon udela/105 min, višak se u dugi ne prebacuje); ostatak premali za sve lagane dane → manje laganih dana (odmor: prvo dan pre dugog, pa najraniji; keptEasyDates), ni jedan lagan ne staje → svi lagani dani odmor i planirano < cilj (upozorenje EASY_REST_BELOW_TARGET sa preporukom manje dana); lagan > 0,8 × dugi → cilj nije izvodljiv, ista pretraga D6 (fit10) daje najbliži izvodljiv cilj (planirano < cilj po pravilu, WEEK_FITTED/CAPACITY_LIMITED sa preporukom više dana); tek kad nijedan cilj nije izvodljiv (mali obim adaptacije) nedelja po ranijem pravilu uz napomenu T1_OFF i upozorenje EASY_VS_LONG_SMALL; (T3) posle novog starta (pauza ≥ 35 dana) taper zadržava jedan kvalitet (≈ 60 % poslednje doze posle povratka, najmanje najniži nivo — i iznad plafona D11) kad je posle povratka bar jedna nedelja izgradnje sa kvalitetom (steps.restartKeepsTaperQuality), trkačka nedelja najmanje kratko oštrenje 2 × 1000 m RP (week.sharpenerReps, van perioda bola); (C3) test se u mešovitoj nedelji ne odbacuje radi ostatka (kao HM/MAR; week.mixedRemainder/mixedFloorKm); (C4) urađen/zaključan dan posle asOf u zbiru zaštićenih = planirani km (MASTER pouka 37; written.protectedKm); (C6) posle sidra bola r progresija doze kreće iznova od r + 1 (steps.restartWeeks, kao HM); (C11) pouka 35 u svim nedeljama osim trkačke — i taper sa dva dana kvaliteta (samo RP, drugi dan lagan).',
+    place:
+      'lengths.ts buildEasyBounds10, buildLengths, keptEasyDates, easyRestShort; week.ts buildWeek (T1, taper C11), T1_OFF, sharpenerReps, mixedRemainder, mixedFloorKm, recordedExcessKeepsQuality; quality.ts pickTaper (keepOne); steps.ts restartWeeks, lastRestartBefore, restartKeepsTaperQuality; written.ts protectedKm; generate.ts construct (T1 pretraga, T3 ctx); validate.ts (EASY_VS_LONG, EASY_VS_LONG_SMALL, EASY_REST_BELOW_TARGET, ROLES, ZONE_CAP, TAPER_QUALITY, RACE_SHARPENER, pouka 35); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Odluke organizatora (krug T, 23. 10.; trenersko mišljenje, granice zona po Danielsu kao opšte smernice). Nalazi: coach-5k-10k M1 (lagan ≈ dugi u 28 % planova), M5, M6 (lagan < 20 min), pauza 35 (taper bez kvaliteta, trkačka bez oštrenja), consistency C3/C4/C6/C11. Tumačenja zapisana u izveštaju SEGMENT-08: dugi za stvaran broj laganih dana (inače bi dugi ostao skraćen za lagane koji ne postoje), T3 iznad plafona (inače pravilo ne bi delovalo — najniži nivo RP 2 × 1000 m je iznad 10 % malog tapera), T1_OFF kao poslednji prolaz pretrage.'
   }
 ];
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.9.0',
+  version: '10k-v2.10.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
@@ -670,7 +679,13 @@ export const TEN_K_V2_POLICY = {
   caps: { R: 0.05, I: 0.08, T: 0.1, RP: 0.1 },
 
   /** D13 (udeo dugog: D17). */
-  lengths: { longMaxSec: 6300, easyMinKm: 3.0 },
+  lengths: {
+    longMaxSec: 6300,
+    easyMinKm: 3.0,
+    /** T1 (10K-08): nedelja izgradnje — lagan ≥ easyMinSec laganim tempom (i ≥ easyMinKm), ≤ easyMaxLongShare × dugi. */
+    easyMinSec: 1200,
+    easyMaxLongShare: 0.8
+  },
 
   /** D16: početni nivo slota ≤ udeo plafona zone (D11). */
   startLevel: { capShare: 0.6 },

@@ -31,7 +31,26 @@ function run(i: number): { before: TenKV2Plan; r: AdaptResult; asOf: string; fac
   let p = g.plan;
   const out: { before: TenKV2Plan; r: AdaptResult; asOf: string; facts: unknown }[] = [];
   for (const s of c.steps) {
-    const facts = JSON.parse(JSON.stringify(s.facts)) as unknown;
+    // 10K-08 (T1): činjenice lanca su iz plana 10k-v2.9.0; dan koji je sada odmor (lagan od 20 min ne staje) nije dan
+    // plana — zapis tog dana ostaje bez dayId (van plana), zaključavanje tog dana otpada. Ostali lanci: bez promene.
+    const ids = new Set(p.weeks.flatMap((w) => w.days.map((d) => d.date)));
+    const raw = JSON.parse(JSON.stringify(s.facts)) as {
+      workouts?: { dayId?: string }[];
+      lockedDayIds?: string[];
+    };
+    const facts = {
+      ...raw,
+      ...(raw.workouts
+        ? {
+            workouts: raw.workouts.map((x) => {
+              if (!x.dayId || ids.has(x.dayId)) return x;
+              const { dayId: _d, ...y } = x;
+              return y;
+            })
+          }
+        : {}),
+      ...(raw.lockedDayIds ? { lockedDayIds: raw.lockedDayIds.filter((d) => ids.has(d)) } : {})
+    } as unknown;
     const r = adaptTenKV2(p, facts, s.asOf);
     out.push({ before: p, r, asOf: s.asOf, facts });
     if (!r.ok) break;

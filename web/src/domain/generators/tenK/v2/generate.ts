@@ -16,6 +16,7 @@ import {
   type QualityState,
   type WeekPicks
 } from './quality.ts';
+import { mustDay } from './dates.ts';
 import { longestLong10 } from './lengths.ts';
 import {
   basePaces,
@@ -23,6 +24,8 @@ import {
   deloadWeekOf,
   framesFor,
   pacesAt,
+  lastRestartBefore,
+  restartKeepsTaperQuality,
   restartWeeks,
   stepVdotAt
 } from './steps.ts';
@@ -116,8 +119,9 @@ function mixed37(
   if (kept.length === 0) return w;
   const keptDates = new Set(kept.map((d) => d.date));
   const keptKm = protectedKm(kept, prior);
+  // Preostali dani: posle asOf i nezaštićeni (dan ≤ asOf koga prethodni plan nema se ne upisuje, written.writtenDays).
   const m = mixedRemainder(
-    w.days.filter((d) => !keptDates.has(d.date)),
+    w.days.filter((d) => !keptDates.has(d.date) && mustDay(d.date) > prior.asOf),
     keptKm,
     target10 / 10,
     ctx.paces,
@@ -228,7 +232,20 @@ export function construct(
   let taperEasy10 = Infinity;
   const out: PlanWeek[] = [];
   for (const frame of frames) {
-    const ctx = ctxAt(frame.index);
+    const ctx0w = ctxAt(frame.index);
+    // T3 (10K-08): posle novog starta — taper zadržava jedan kvalitet (kad posle povratka ima nedelja sa kvalitetom),
+    // trkačka nedelja kratko oštrenje (steps.restartKeepsTaperQuality / lastRestartBefore, iste funkcije kao validator).
+    const ctx: WeekContext =
+      frame.phase === 'taper' &&
+      restartKeepsTaperQuality(
+        steps,
+        out.map((w, i) => ({ index: w.index, phase: w.phase, days: written[i]!.days })),
+        frame.index
+      )
+        ? { ...ctx0w, keepTaperQuality: true }
+        : frame.phase === 'race' && lastRestartBefore(steps, frame.index + 1) !== null
+          ? { ...ctx0w, keepSharpener: true }
+          : ctx0w;
     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
     if (frame.phase === 'race') {
       const prev = out[out.length - 1];
@@ -266,8 +283,11 @@ export function construct(
       ? adaptNominal10(frame, h, start10, rule, av)
       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
     const longest10 = longestLong10(written);
+    // T1 (10K-08): pretraga cilja najpre sa granicama laganog (lengths.buildEasyBounds10); tek kad nijedan cilj nije
+    // izvodljiv (mali obim adaptacije: dugi < 20 min / 0,8) — ista pretraga bez T1, uz napomenu (validator: upozorenje).
+    let ctxB: WeekContext = ctx;
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode);
+      buildWeek(ctxB, frame, t10, quality, lastLong10, longest10, mode);
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts buildWeek 'relax'): D11 ispred D12 u izgradnji, rasterećenje bez kvaliteta, taper samo RP.
     // Segment 04 (A9): pa jedan kvalitet doze rasterećenja, pa bez kvaliteta; ograničenje kvaliteta
@@ -299,19 +319,32 @@ export function construct(
           [fit, mode] = [{ target10: nominal, fitted: null }, m];
           break;
         }
-    for (const m of fit ? [] : modes) {
-      fit = fit10(
-        nominal,
-        frame,
-        av ? h.cap10 : cap10,
-        rule,
-        (t10) => can(t10, m),
-        h.lastBuild10,
-        downOnly
-      );
-      if (fit) {
-        mode = m;
-        break;
+    for (const t1 of [true, false]) {
+      if (fit) break;
+      if (!t1) {
+        if (!isBuildPhase(frame.phase) || frame.deload) break;
+        ctxB = { ...ctx, t1Off: true };
+        if (downOnly)
+          for (const m of modes)
+            if (can(nominal, m)) {
+              [fit, mode] = [{ target10: nominal, fitted: null }, m];
+              break;
+            }
+      }
+      for (const m of fit ? [] : modes) {
+        fit = fit10(
+          nominal,
+          frame,
+          av ? h.cap10 : cap10,
+          rule,
+          (t10) => can(t10, m),
+          h.lastBuild10,
+          downOnly
+        );
+        if (fit) {
+          mode = m;
+          break;
+        }
       }
     }
     if (!fit)
@@ -319,7 +352,7 @@ export function construct(
         `Nedelja ${weekLabel(input, frame.index)}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
         frame.index
       );
-    const w = mixed37(make(fit.target10, mode)!, frame, fit.target10, ctx, prior, av);
+    const w = mixed37(make(fit.target10, mode)!, frame, fit.target10, ctxB, prior, av);
     const notes = [...w.notes];
     if (fit.fitted)
       notes.unshift(

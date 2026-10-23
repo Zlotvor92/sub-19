@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { generateTenKV2 } from './generate.ts';
+import { t1Short } from './gridInvariants.ts';
 import { checkInput } from './input.ts';
 import { pacesFromVdot, predicted10k } from './paces.ts';
 import { isBuildPhase, periodize } from './periodize.ts';
@@ -49,16 +50,25 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
     const qq: QualityState = q;
     const ll: number | null = lastLong;
     const lo: number = longest;
-    const make = (t: number): BuiltWeek | null => buildWeek(ctx, f, t, qq, ll, lo);
-    out.push((t) => make(t) !== null);
-    const fit: { target10: number } = fit10(
-      nominal10(f, vol, s10, c10, rule),
-      f,
-      c10,
-      rule,
-      (t) => make(t) !== null,
-      vol.lastBuild10
-    )!;
+    // Kao generate.construct: prolaz po pravilu, pa (10K-08: i kad T1 obara sve ciljeve po pravilu) druga pretraga.
+    let make = (t: number): BuiltWeek | null => buildWeek(ctx, f, t, qq, ll, lo);
+    const fitOf = () =>
+      fit10(
+        nominal10(f, vol, s10, c10, rule),
+        f,
+        c10,
+        rule,
+        (t) => make(t) !== null,
+        vol.lastBuild10
+      );
+    let fit0 = fitOf();
+    if (!fit0) {
+      make = (t: number): BuiltWeek | null => buildWeek(ctx, f, t, qq, ll, lo, 'relax');
+      fit0 = fitOf();
+    }
+    const mk = make;
+    out.push((t) => mk(t) !== null);
+    const fit: { target10: number } = fit0!;
     const w: BuiltWeek = make(fit.target10)!;
     if (w.long10 !== null) longest = Math.max(longest, w.long10);
     if (isBuildPhase(f.phase) && !f.deload) {
@@ -97,7 +107,8 @@ function checkRule(p: TenKV2Plan): void {
       expect(w.fitted, `ned ${w.index}`).toBe(w.targetKm < nominal ? 'down' : 'up');
       expect(w.notes.some((n) => n.includes('najbliži izvodljiv'))).toBe(true);
     } else expect(w.fitted).toBeNull();
-    expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
+    // 10K-08 (T1): nedelja bez laganih dana (lagan od 20 min ne staje) sme planirano < cilj.
+    if (!t1Short(w, p)) expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
     if (isBuildPhase(w.phase) && !w.deload) {
       expect(w.targetKm).toBeLessThanOrEqual(cap(start, days));
       last = w.targetKm;
@@ -133,10 +144,12 @@ describe('D6: obim', () => {
     }
   });
 
-  it('ned 1 = trenutni obim kad ga konstrukcija nosi (01b: VDOT 50 nosi ceo opseg 25–55 km)', () => {
+  it('ned 1 = trenutni obim kad ga konstrukcija nosi (01b: VDOT 50 nosi ceo opseg 25–55 km; 10K-08: 25–45 km)', () => {
+    // 10K-08 (T1, lagan ≤ 0,8 × dugi): 25–45 km cilj = trenutni obim (25 km: lagani dani odmor, planirano < cilj); 50 i
+    // 55 km → najbliži izvodljiv 48,2 km (lagan 12,7 = 0,8 × dugi 15,9).
     for (const km of [25, 30, 35, 40, 45, 50, 55]) {
       const r = generateTenKV2(inputOf({ weeks: 12, km, vdot: 50, days: SCHEDULES.A.days }));
-      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km);
+      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km <= 45 ? km : 48.2);
     }
   });
 
@@ -187,13 +200,14 @@ describe('D6: obim', () => {
     expect(p.peakKm).toBeLessThan(p.peakCapKm);
     expect(feas[peakWeek.index - 1]!(t10)).toBe(true);
     expect(feas[peakWeek.index - 1]!(t10 + 1)).toBe(false);
-    // Uzrok: dugi je na 105 min sporim E i lagan bi morao biti duži od dugog.
+    // Uzrok: dugi je na 105 min sporim E i lagan bi morao biti duži od 0,8 × dugi (10K-08, T1; ranije: od dugog).
     const long = peakWeek.days.find((d) => d.role === 'long')!.workout.km;
     expect(long).toBe(Math.floor((6300 / p.paces.E.slow) * 10) / 10);
     const easy = peakWeek.days.find((d) => d.role === 'easy')!.workout.km;
-    expect(easy).toBeGreaterThanOrEqual(long - 0.1 - 1e-9);
+    expect(easy).toBeGreaterThanOrEqual(Math.floor(8 * long) / 10 - 0.1 - 1e-9);
     expect(p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')).toBe(true);
-    const msg = '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana.';
+    const msg =
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 80 % dugog; preporuka 5–6 dana.';
     expect(p.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(msg);
     expect(p.notes.some((n) => n.startsWith(msg))).toBe(true);
     checkRule(p);
@@ -209,17 +223,17 @@ describe('D6: obim', () => {
     // 4 dana, 25 km, VDOT 30: spuštene nedelje seče udeo 33 % (01b: poruka je pogrešno navodila 105 min). 10K-07
     // (O-1b): 5 dana (30–65) i 6 dana (35–80) ne podržavaju 25 km (ulaz bi ih odbio) → bez preporuke.
     expect(msgOf({ weeks: 12, km: 25, vdot: 30, days: d[4].A.days, long: 'sun' })).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje, lagan ≤ 80 % dugog.'
     );
     // 02b (D17 udeo 3 dana 0,45): isti ulaz je u 10k-v2.2.0 sekao i udeo 40 %; sada samo 105 min.
     expect(msgOf({ weeks: 17, km: 30, vdot: 35, days: d[3].A.days, long: 'sun' })).toBe(
-      '3 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 4–5 dana.'
+      '3 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 45 % nedelje, lagan ≤ 80 % dugog; preporuka 4–5 dana.'
     );
     expect(msgOf({ weeks: 12, km: 65, vdot: 30, days: d[5].A.days, long: 'sun' })).toBe(
-      '5 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 6 dana.'
+      '5 dana ne nose ovaj obim uz dugi ≤ 105 min, lagan ≤ 80 % dugog; preporuka 6 dana.'
     );
     expect(msgOf({ weeks: 12, km: 80, vdot: 30, days: d[6].A.days, long: 'sun' })).toBe(
-      '6 dana ne nose ovaj obim uz dugi ≤ 105 min.'
+      '6 dana ne nose ovaj obim uz dugi ≤ 105 min, lagan ≤ 80 % dugog.'
     );
   });
 

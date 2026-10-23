@@ -31,7 +31,8 @@ import {
   missingParts,
   p35FlowErrors,
   p37FlowErrors,
-  p07FlowErrors
+  p07FlowErrors,
+  p08Errors
 } from './level.harness.node.test.ts';
 import {
   EARLY_NAMED,
@@ -42,6 +43,7 @@ import {
   earlyGridBases,
   EARLY_06D,
   planHash06c,
+  dump08,
   mark07
 } from './testInputs.ts';
 import type { TenKV2Facts, TenKV2Plan } from './types.ts';
@@ -129,6 +131,7 @@ export function runEarly(f: EarlyFlow): EarlyRun {
   const bad = adaptInvariants(p0, r.plan, f.asOf, facts as unknown as TenKV2Facts).map(
     (v) => `${f.key}: ${v}`
   );
+  dump08('early', f.key, r);
   return {
     ok: true,
     bad,
@@ -214,6 +217,8 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       expect(p37FlowErrors('early', runs).slice(0, 10)).toEqual([]);
       // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
       expect(p07FlowErrors('early', runs).slice(0, 10)).toEqual([]);
+      // 10K-08: tokovi koje 10k-v2.10.0 menja prema b9c4728 (fixture).
+      expect(p08Errors('early', runs).slice(0, 10)).toEqual([]);
     });
 
     it('regresija: tok prihvaćen na 51a924f (pre starta: bd07eec) bajt-isti (heš bez oznake verzije), osim porodice 1 i A5 u uvodu (ti se menjaju)', () => {

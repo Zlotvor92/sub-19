@@ -21,6 +21,7 @@ import { planRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import {
   fnv1a,
   planHash06c,
+  dump08,
   planHash81,
   RELIEF_SCENARIOS,
   type ReliefScenario,
@@ -41,6 +42,7 @@ import {
   p35FlowErrors,
   p37FlowErrors,
   p07FlowErrors,
+  p08Errors,
   pick,
   sumOf
 } from './level.harness.node.test.ts';
@@ -255,6 +257,7 @@ export function runReliefGrid(
     const res = adaptTenKV2(p0, facts, f.asOf);
     out.flows++;
     out.hash[key] = planHash06c(res);
+    dump08('relief', key, res);
     out.h81[key] = planHash81(res);
     if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
     if (hasP37(res)) out.p37.add(key);
@@ -421,6 +424,8 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       expect(p37FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
       // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
       expect(p07FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
+      // 10K-08: tokovi koje 10k-v2.10.0 menja prema b9c4728 (fixture).
+      expect(p08Errors('relief', runs).slice(0, 10)).toEqual([]);
     });
 
     it('J1: posle nedelje smanjenja sledeća nedelja nikad nije redovno rasterećenje (i nijedno nije zadržano zbog > 5 izgradnji); ukinuto po scenariju', () => {

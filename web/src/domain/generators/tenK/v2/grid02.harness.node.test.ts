@@ -27,6 +27,7 @@ import {
   GRID_TIMEOUT,
   missingParts,
   P35_PLANS,
+  p08Errors,
   sumOf
 } from './level.harness.node.test.ts';
 
@@ -301,6 +302,16 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         ],
         true
       );
+    });
+
+    it('10K-08: planovi promenjeni prema b9c4728 (segment08.changed-b9c4728.json) imaju drugi heš; ostale porede starije regresije', () => {
+      expect(
+        p08Errors(
+          'gen',
+          Object.entries(g.h81now).map(([key, hash]) => ({ key, hash })),
+          true
+        ).slice(0, 10)
+      ).toEqual([]);
     });
 
     it('regresija 03b: ceo plan sa rezultatom bajt-isti kao 81bd351 (heš bez oznake verzije) za svih 15 840', () => {
