@@ -267,7 +267,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'K3-CHAIN',
       '3i-WEEK-LABEL',
       'HM-09',
-      'HM-09-CHAINS'
+      'HM-09-CHAINS',
+      'HM-10'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

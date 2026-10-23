@@ -419,7 +419,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const t1Warned = new Set<number>();
   const t1Exempt = (w: PlanWeek): boolean => {
     if (!t1MinWeek(to10(w.targetKm), rule)) return false;
-    const busy = new Set(w.days.filter((d) => d.role !== 'easy').map((d) => d.date));
+    const busy = new Set([
+      dateIn(w, pat.long),
+      ...w.days.filter((d) => d.role !== 'easy').map((d) => d.date)
+    ]);
     const n = [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter(
       (wd) => !busy.has(dateIn(w, wd))
     ).length;
@@ -431,8 +434,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // T1 (krug T): lagani dani nedelje izgradnje koji su odmor — najkasniji kandidati za lagan kad najkraći lagan ne
   // staje ispod 0,8 × dugi (lengths.buildLengths, ista funkcija kao konstruktor).
   const t1Rest = (w: PlanWeek): Set<string> => {
-    if (!isSteady(w) || !w.days.some((d) => d.role === 'long')) return new Set();
-    const busy = new Set(w.days.filter((d) => d.role !== 'easy').map((d) => d.date));
+    if (!isSteady(w)) return new Set();
+    const busy = new Set([
+      dateIn(w, pat.long),
+      ...w.days.filter((d) => d.role !== 'easy').map((d) => d.date)
+    ]);
     const cand = [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy]
       .map((wd) => dateIn(w, wd))
       .filter((d) => !busy.has(d))
@@ -1538,7 +1544,18 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       const tT = (f?: DayFits): Dose | null =>
         B ? beginnerTaperT(state, f) : restartTaperT(state, ns, f);
       const bt0 = !rpFits ? tT() : null;
-      const bt = bt0 && bt0.doseM <= capM('T', w.targetKm) ? tT(tl.q1) : null;
+      const tl1 = B
+        ? tl
+        : taperDayLimit(
+            dlOf(w),
+            to10(w.targetKm),
+            qDaysN - 1 + pat.easy.length,
+            longest10,
+            rollAt(w.index),
+            1,
+            capLong
+          );
+      const bt = bt0 && bt0.doseM <= capM('T', w.targetKm) ? tT(tl1.q1) : null;
       if (noneQ(w)) {
         if (rp || t) err('TAPER_QUALITY', 'Taper bez kvaliteta (adaptacija, A3/A4/A9).', w.index);
       } else if (bt) {

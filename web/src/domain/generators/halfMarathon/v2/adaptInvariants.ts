@@ -351,7 +351,11 @@ function extra(
       const back = Math.min(level, prev + Math.max(10, Math.round(prev * 0.1)));
       // H6: nedelja na najbližem izvodljivom cilju (fitted, napomena) — poredi se cilj po pravilu.
       const rule10 = w.fitted !== null ? Math.round(w.nominalKm * 10) : t10;
-      if (rule10 > Math.max(normal, back)) bad.push(`povratni rast > nivo ned ${w.index}`);
+      // HM-10: nedelja početka koraka sa startom (A3) nosi start koraka, ne rast od prethodne (koja može biti
+      // spuštena po T1).
+      const reset = steps.some((s) => s.startKm !== null && s.fromWeek === w.index);
+      if (rule10 > Math.max(normal, back) && !reset)
+        bad.push(`povratni rast > nivo ned ${w.index}`);
     }
     prev = t10;
   }

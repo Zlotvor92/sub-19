@@ -235,7 +235,8 @@ export function buildDayLimit(
       buildLengthsT1(target10, q100, easyDays, c.rule, c.paces, roll10, easyDays) ??
       (t1MinWeek(target10, c.rule)
         ? longOf(q100)
-        : buildLengths(target10, keep(q100), easyDays + 1, c.rule, c.paces, roll10));
+        : (buildLengths(target10, keep(q100), easyDays + 1, c.rule, c.paces, roll10) ??
+          longOf(q100)));
   const q2Low = q2Ladder
     ? structuresForDose(q2Ladder, doseOf(ladderLevels(q2Ladder)[0]!))
         .map((s) => qualityWorkout(doseFor(q2Ladder, s), c.paces, c.wc))
@@ -643,7 +644,19 @@ export function buildWeek(
           : restartTaperT(quality, ctx.newStart === true, f);
       const bt0 = !rpFits && mode !== 'none' ? tT() : null;
       const btFits = bt0 !== null && bt0.doseM <= capM('T', targetKm);
-      const bt = btFits ? tT(tl.q1) : bt0;
+      // T3: T posle novog starta je jedini dan kvaliteta — drugi član za nedelju sa jednim danom.
+      const tl1 = rule.beginner
+        ? tl
+        : taperDayLimit(
+            { paces: p, wc: ctx.wc, rule },
+            target10,
+            qDays.length - 1 + pat.easy.length,
+            longest10,
+            roll10,
+            1,
+            capLong
+          );
+      const bt = btFits ? tT(tl1.q1) : bt0;
       const tFits = t0.q2 !== null && t0.q2.doseM <= capM('T', targetKm);
       if ((mode === 'rule' || one) && (!(rpFits || btFits) || (t.q2 !== null && !tFits)))
         return null;
