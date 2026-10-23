@@ -854,6 +854,7 @@ const D25_NEW =
   /Dan kvaliteta ili testa duži od dugog po trajanju u (\d+) od (\d+) nedelja izgradnje \(nedelja (\d+): (\d+) > (\d+) min\)/g;
 const ADV_NEW =
   /; preporuka ([\d–]+) dana \(plan sa manje dana podržava obim ([^ ]+) km, dugi dobija veći udeo; (D17|D28)\)/g;
+const GOAL_NEW = /tempo treninga i dalje zavisi od rezultata\./g;
 const UVOD_NEW = /Uvod: (\d+)\. od (\d+) nedelje uvoda bez kvaliteta/g;
 
 /**
@@ -903,6 +904,7 @@ export function undo07<T>(result: T): T {
   const text = (t: string): string =>
     t
       .replace(UVOD_NEW, 'Uvod (D28): nedelja $1 od $2 bez kvaliteta')
+      .replace(GOAL_NEW, 'tempo treninga ostaje prema rezultatu.')
       .replace(
         D25_NEW,
         'Kvalitetni dan duži od dugog po trajanju u $1 od $2 nedelja izgradnje (ned $3: $4 > $5 min; D25)'
@@ -913,6 +915,9 @@ export function undo07<T>(result: T): T {
       );
   for (const w of plan.weeks) w.notes = w.notes.map(text);
   for (const v of plan.warnings) v.message = text(v.message);
+  // Dopuna T (02-text-addendum): poruka ocene cilja.
+  const goal = (plan as { goal?: { message: string } | null }).goal;
+  if (goal) goal.message = text(goal.message);
   if (Array.isArray(r.changes)) {
     // `changes`: pre = plan sa koracima bez poslednjeg, posle = ovaj plan; oštrenje iz oznake dana ili iz plana.
     const rw = plan.weeks.find((w) => w.phase === 'race');

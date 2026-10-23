@@ -575,7 +575,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     // Mešovita nedelja: zadržani dani (prošlost) i konstruisani dani nisu ista nedelja (samo provere dana).
     if (!checked(w)) continue;
     if (!long) {
-      if (!restOf(w).has(dateIn(w, pat.long))) err('ROLES', 'Nedelja nema dugi trk.', w.index);
+      if (!restOf(w).has(dateIn(w, pat.long))) err('ROLES', 'Nedelja nema dugo trčanje.', w.index);
       continue;
     }
     const pk = pw(w);
@@ -600,7 +600,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
         long.date
       );
     if (long.workout.segments.some((s) => s.zone !== 'E'))
-      err('LONG_NOT_EASY', 'Dugi trk je samo lagan.', w.index, long.date);
+      err('LONG_NOT_EASY', 'Dugo trčanje je samo lagano.', w.index, long.date);
     // D19: lagani dani jednaki (zaokruženje 0,1 km, razlika ≤ 0,1 km).
     const easyKm = w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km));
     if (easyKm.length > 1 && Math.max(...easyKm) - Math.min(...easyKm) > 1 && painOf(w).size === 0)
