@@ -373,6 +373,14 @@ export function assess(
   }
 
   let volumeRule = false;
+  /** Z7/Z8 (10K-07): od prethodnog koraka nema novog zapisa ni planiranog dana — prethodni korak je već sudio svim
+      zapisima manjka i umora (vezano za zapise, kao pouka 36). */
+  const prevAt = steps.length > 0 ? day(steps[steps.length - 1]!.asOf) : null;
+  const nothingNew =
+    prevAt !== null &&
+    prevAt <= t &&
+    !W.some((x) => day(x.date) > prevAt && day(x.date) <= t) &&
+    plannedKm(prevAt + 1, t) === 0;
 
   // A3: pauza — uzastopni POZNATI dani bez trčanja do asOf (A10: samo u potpunoj pokrivenosti) ili
   // eksplicitna pauza (završena u poslednjih 7 dana i posle prethodne adaptacije).
@@ -445,8 +453,10 @@ export function assess(
     // (umor pre starta, korak.preStart) — rasterećenje je već u planu, drugo (nedelja 2) se ne pravi.
     const pre1 =
       ra === 1 && wk(1)?.deload === true && steps.some((x) => x.preStart && deloadWeekOf(x) === 1);
-    const covered = (f < n && wk(f)?.deload === true) || pre1;
-    const ok = !volumeRule && !pre1 && build(f) && !wk(f)!.deload;
+    // Z7/Z8 (10K-07): zapisi umora kojima je prethodni korak već sudio (bez novih zapisa od njega) ne prave novo
+    // rasterećenje — npr. korak bola je ukinuo redovno rasterećenje (A17), sutra isti zapisi umora bi ga vratili.
+    const covered = (f < n && wk(f)?.deload === true) || pre1 || nothingNew;
+    const ok = !volumeRule && !pre1 && !nothingNew && build(f) && !wk(f)!.deload;
     // 10k-v2.5.2 (pouka 34): asOf pre starta (n = 1, nema prethodne izgradnje) — referenca rasterećenja je
     // nedelja 1 generatora bez činjenica. 10k-v2.8.0 (K3, pouke 33 i 34): isto kad pre nedelje f nema nedelje
     // izgradnje (ne-rasteretne) sa dugim — npr. bol pre starta pa umor u nedelji 1 — inače rasterećenje bez reference.
@@ -475,7 +485,10 @@ export function assess(
     const a2 = sumKm(...w2);
     const tn = build(n) ? target(n) : null;
     if (p2 > 0 && a2 < A.underShare * p2) {
-      const ok = !volumeRule && tn !== null;
+      // Z7/Z8 (10K-07, C2/C6; kao umor, pouka 36): manjak je vezan za ZAPISE — prethodni korak je već sudio istim
+      // zapisima (nothingNew), pa ponovna ili sutrašnja adaptacija bez novih zapisa ne seče cilj ponovo.
+      const covered = nothingNew;
+      const ok = !volumeRule && tn !== null && !covered;
       if (ok) {
         step.startKm = round1(
           Math.max(
@@ -490,7 +503,7 @@ export function assess(
       reason(
         'UNDER_EXECUTION',
         ok,
-        `Izvršeno ${km(a2)} od ${km(p2)} km u 7 dana (< ${A.underShare * 100} %): ${ok ? `nedelja ${wl(n)} ne raste, cilj ${km(step.startKm!)} km (A2).${growthNote(step.levelKm!)}` : volumeRule ? 'nadjačano (A7).' : 'sledeća nedelja nije izgradnja (A2).'}`
+        `Izvršeno ${km(a2)} od ${km(p2)} km u 7 dana (< ${A.underShare * 100} %): ${ok ? `nedelja ${wl(n)} ne raste, cilj ${km(step.startKm!)} km (A2).${growthNote(step.levelKm!)}` : volumeRule ? 'nadjačano (A7).' : covered ? 'smanjenje posle ovih zapisa je već u planu (A2).' : 'sledeća nedelja nije izgradnja (A2).'}`
       );
     } else if (coveredDays(cov, w1[0], t)) {
       const p1 = plannedKm(...w1);

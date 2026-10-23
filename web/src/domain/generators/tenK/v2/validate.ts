@@ -497,6 +497,22 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
           );
       }
     }
+    // C8 (10K-07): mešovita nedelja pauze (vlasnik ostatka je pravilo pauze, bez keptKm) — planirano > cilj zbog
+    // zaštićenih dana → upozorenje (ranije tišina).
+    if (
+      ad &&
+      w.keptKm === undefined &&
+      mixed.has(w.index) &&
+      w.phase !== 'race' &&
+      mustDay(w.endDate) > mustDay(ad.asOf) &&
+      w.days.some((d) => protectedDay(d)) &&
+      w.plannedKm > w.targetKm + P.tolerance.plannedKm + EPS
+    )
+      warn(
+        'MIXED_OVER_TARGET',
+        `Mešovita nedelja posle pauze: zaštićeni dani (urađeni, zaključani ili prošli) drže planirano ${w.plannedKm} km > cilj ${w.targetKm} km.`,
+        w.index
+      );
     // Segment 04: mešovita nedelja — samo dani; nedelja sa danima bola/odmora (A4): planirano ≤ cilj.
     if (!checked(w)) continue;
     const limited = restOf(w).size > 0 || painOf(w).size > 0;
@@ -1344,6 +1360,21 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const rd = rw.days.find((d) => d.role === 'race');
     if (!rd || rd.date !== input.raceDate || rd.countsToWeek)
       err('RACE_DAY', 'Trka je jednom, na dan trke, van obima (D8).', rw.index);
+    // C7 (10K-07): zaštićen budući dan trkačke (zaključan ili urađen — činjenica, ne skida se) drži trkačku > taper
+    // → upozorenje (ranije tišina).
+    const fixed = ad
+      ? rw.days.filter((d) => protectedDay(d) && mustDay(d.date) > mustDay(ad.asOf))
+      : [];
+    if (
+      taperW &&
+      fixed.length > 0 &&
+      to100(rw.plannedKm) > to100(taperW.plannedKm) + to100(P.tolerance.plannedKm)
+    )
+      warn(
+        'RACE_WEEK_OVER_TAPER_LOCKED',
+        `Trkačka nedelja ${rw.plannedKm} km > taper ${taperW.plannedKm} km — zaključan ili urađen dan (${fixed.map((d) => d.date).join(', ')}) ostaje kakav je (D23).`,
+        rw.index
+      );
   } else if (rw.phase === 'race') {
     const q = P.raceWeek;
     const race = input.raceDate;
@@ -1435,7 +1466,7 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
     const sd = sharp[0];
     const st: Structure | undefined = sd?.workout.dose?.structure;
     const a9 = rw.notes.some((n) => n.includes('(A9, D23)'));
-    if (sd && bannedR.has(sd.date))
+    if (sd && bannedR.has(sd.date) && !protectedDay(sd))
       err('LIMITS', 'Oštrenje na dan zabrane kvaliteta (A3/A4).', rw.index, sd.date);
     if (!taperOk) {
       // Mešovit taper: oštrenje i lagani trkačke nedelje zavise od konstruisanog tapera.
@@ -1743,10 +1774,11 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
   // --- Segment 04 (A3, A4): ograničenja koraka po datumima (i u mešovitim nedeljama; zaključan dan i trka
   // izuzeti) — dan odmora bez treninga; zabrana kvaliteta / bol / odmor → bez kvaliteta, testa i oštrenja;
   // bol → bez ubrzanja.
-  const locked = new Set(ad?.lockedDayIds ?? []);
+  // Z6 (10K-07, C1): preskače se svaki ZAŠTIĆEN dan (protectedDay: ≤ asOf, zaključan, urađen) — dan zaključan u ranijem
+  // koraku je posle upisan kakav jeste (prošlost); validator ne sudi činjenicama (kao MAR-07).
   for (const w of weeks)
     for (const d of w.days) {
-      if (steps.length === 0 || locked.has(d.date) || d.role === 'race') continue;
+      if (steps.length === 0 || protectedDay(d) || d.role === 'race') continue;
       const inAny = (pick: (x: (typeof steps)[number]) => readonly (DateRangeLike | null)[]) =>
         steps.some((x) => pick(x).some((r) => inRange(d.date, r)));
       if (inAny((x) => [x.rest])) err('LIMITS', 'Trening na dan odmora (A4).', w.index, d.date);

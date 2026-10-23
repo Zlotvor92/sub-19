@@ -71,7 +71,21 @@ export function p37FlowErrors(
   if (process.env['DUMP07'])
     appendFileSync(
       process.env['DUMP07'],
-      flows.map((f) => `${net}\t${f.key}\t${f.hash}\n`).join('')
+      flows
+        .map((f) => {
+          const r = f.res as { ok?: boolean; plan?: { warnings: { rule: string }[] }; reasons?: { message: string }[] };
+          const w = (r.plan?.warnings ?? []).map((x) => x.rule);
+          const txt = JSON.stringify(r.reasons ?? []);
+          const m = [
+            w.includes('RACE_WEEK_OVER_TAPER_LOCKED') ? 'C7' : '',
+            JSON.stringify(r).includes('Mešovita nedelja posle pauze') ? 'C8' : '',
+            JSON.stringify(r).includes('(više od planiranog)') ? 'Z1' : '',
+            w.includes('LONG_SHORTER_THAN_QUALITY') ? 'F3' : '',
+            txt.includes('posle ovih zapisa je već u planu') ? 'Z7' : ''
+          ].filter(Boolean).join('+');
+          return `${net}\t${f.key}\t${f.hash}\t${r.ok ? 1 : 0}\t${m || '-'}\n`;
+        })
+        .join('')
     );
   for (const f of flows) {
     const old = ADAPT_CHANGED_46E[net][f.key];

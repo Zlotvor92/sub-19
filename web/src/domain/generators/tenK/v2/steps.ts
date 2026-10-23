@@ -149,7 +149,7 @@ export function reducedWeeks(s: TenKV2AdaptStep): number[] {
  * dok je plan po osećaju; nema je → bez testa. `base` = okviri generatora. `dropped` (izlaz, A17): ukinuta
  * rasterećenja — nedelja → indeks koraka (isti podatak za validator D5 i poruku koraka, adapt.ts).
  */
-export function framesFor(
+function framesAndTest(
   base: readonly WeekFrame[],
   pattern: Pattern,
   runDays: readonly Weekday[],
@@ -158,18 +158,15 @@ export function framesFor(
   steps: readonly TenKV2AdaptStep[],
   dropped: Map<number, number> | null = null,
   locked: ReadonlySet<string> = new Set()
-): WeekFrame[] {
+): { frames: WeekFrame[]; test: IsoDate | null } {
   let frames: WeekFrame[] = base.map((f) => ({ ...f }));
-  if (steps.length === 0) return frames;
-  // A13b (10k-v2.8.0, organizator K1; obrazac maraton A13b): dan testa iz plana pre koraka.
-  const prevTest = (() => {
-    const pf =
-      steps.length > 1
-        ? framesFor(base, pattern, runDays, raceDate, pace, steps.slice(0, -1))
-        : base;
-    const f = pf.find((x) => x.test);
-    return f ? testDateOf(f, pattern) : null;
-  })();
+  if (steps.length === 0) return { frames, test: baseTest(base, pattern) };
+  // A13b (10k-v2.8.0, organizator K1; obrazac maraton A13b): dan testa iz plana pre koraka. C3 (10K-07): zaštićen test
+  // ranijeg koraka (upisan, okvir ga ne nosi) ostaje test i za sledeći korak — isti skup zaštićenih dana.
+  const prevTest =
+    steps.length > 1
+      ? framesAndTest(base, pattern, runDays, raceDate, pace, steps.slice(0, -1), null, locked).test
+      : baseTest(base, pattern);
   const forced = new Set<number>();
   /** Uzastopne nedelje izgradnje od nedelje i (indeks u nizu) do prvog rasterećenja ili kraja izgradnje. */
   const runFrom = (i: number): number => {
@@ -248,7 +245,29 @@ export function framesFor(
     );
     if (j >= 0) frames[j] = { ...frames[j]!, test: true };
   }
-  return frames;
+  const own = frames.find((f) => f.test);
+  return {
+    frames,
+    test: protectedTest(prevTest, last, locked) ? prevTest : own ? testDateOf(own, pattern) : null
+  };
+}
+
+const baseTest = (base: readonly WeekFrame[], pattern: Pattern): IsoDate | null => {
+  const f = base.find((x) => x.test);
+  return f ? testDateOf(f, pattern) : null;
+};
+
+export function framesFor(
+  base: readonly WeekFrame[],
+  pattern: Pattern,
+  runDays: readonly Weekday[],
+  raceDate: IsoDate,
+  pace: PaceInput,
+  steps: readonly TenKV2AdaptStep[],
+  dropped: Map<number, number> | null = null,
+  locked: ReadonlySet<string> = new Set()
+): WeekFrame[] {
+  return framesAndTest(base, pattern, runDays, raceDate, pace, steps, dropped, locked).frames;
 }
 
 /**
