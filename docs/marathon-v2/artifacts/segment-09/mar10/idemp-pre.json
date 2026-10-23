@@ -1,0 +1,359 @@
+{
+ "dist": "MAR",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "steps": 7640,
+ "same": {
+  "NO_FACTS": [
+   3663,
+   0
+  ],
+  "UNDER_EXECUTION": [
+   408,
+   393
+  ],
+  "PAIN": [
+   923,
+   5
+  ],
+  "NEW_RESULT": [
+   1433,
+   0
+  ],
+  "NEW_RESULT+PAUSE": [
+   108,
+   6
+  ],
+  "NEW_RESULT+PAIN": [
+   155,
+   1
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   63,
+   0
+  ],
+  "OVER_EXECUTION": [
+   26,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   9,
+   0
+  ],
+  "PAUSE": [
+   286,
+   25
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   128,
+   124
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   15,
+   0
+  ],
+  "FATIGUE": [
+   173,
+   12
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   6,
+   0
+  ],
+  "PAIN+TEST_MOVED": [
+   19,
+   0
+  ],
+  "FATIGUE+PAIN": [
+   14,
+   1
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   78,
+   72
+  ],
+  "PAIN+PAUSE": [
+   69,
+   2
+  ],
+  "FATIGUE+NEW_RESULT": [
+   29,
+   3
+  ],
+  "PAUSE+TEST_MOVED": [
+   4,
+   0
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   9,
+   8
+  ],
+  "NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   2,
+   2
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   5,
+   0
+  ],
+  "OVER_EXECUTION+PAIN": [
+   4,
+   0
+  ],
+  "OVER_EXECUTION+PAIN+TEST_MOVED": [
+   2,
+   1
+  ],
+  "FATIGUE+NEW_RESULT+PAIN": [
+   1,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   2,
+   0
+  ],
+  "TEST_MOVED": [
+   3,
+   0
+  ],
+  "FATIGUE+TEST_MOVED": [
+   1,
+   1
+  ],
+  "PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   2,
+   1
+  ]
+ },
+ "next": {
+  "NO_FACTS": [
+   1207,
+   3
+  ],
+  "UNDER_EXECUTION": [
+   142,
+   131
+  ],
+  "PAIN": [
+   630,
+   11
+  ],
+  "NEW_RESULT": [
+   427,
+   1
+  ],
+  "NEW_RESULT+PAIN": [
+   109,
+   2
+  ],
+  "OVER_EXECUTION": [
+   10,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   4,
+   0
+  ],
+  "PAUSE": [
+   94,
+   1
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   8,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   20,
+   0
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   4,
+   0
+  ],
+  "PAIN+TEST_MOVED": [
+   11,
+   0
+  ],
+  "FATIGUE": [
+   51,
+   4
+  ],
+  "FATIGUE+PAIN": [
+   10,
+   2
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   48,
+   37
+  ],
+  "PAIN+PAUSE": [
+   45,
+   1
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   46,
+   43
+  ],
+  "FATIGUE+NEW_RESULT": [
+   12,
+   0
+  ],
+  "PAUSE+TEST_MOVED": [
+   2,
+   0
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   3,
+   2
+  ],
+  "NEW_RESULT+PAUSE": [
+   39,
+   1
+  ],
+  "NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   1,
+   1
+  ],
+  "OVER_EXECUTION+PAIN": [
+   2,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+PAIN": [
+   1,
+   0
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   1,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   1,
+   0
+  ],
+  "OVER_EXECUTION+PAIN+TEST_MOVED": [
+   1,
+   0
+  ],
+  "PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   2,
+   1
+  ]
+ },
+ "ex": {
+  "same UNDER_EXECUTION": [
+   "0/2",
+   "0/3"
+  ],
+  "next UNDER_EXECUTION": [
+   "0/3",
+   "39/1"
+  ],
+  "same NEW_RESULT+PAUSE": [
+   "2/2",
+   "252/1"
+  ],
+  "next PAIN": [
+   "6/1",
+   "208/1"
+  ],
+  "same NEW_RESULT+UNDER_EXECUTION": [
+   "13/2",
+   "39/2"
+  ],
+  "same PAUSE": [
+   "79/2",
+   "82/3"
+  ],
+  "same PAIN+UNDER_EXECUTION": [
+   "93/1",
+   "96/1"
+  ],
+  "next PAIN+UNDER_EXECUTION": [
+   "93/1",
+   "96/1"
+  ],
+  "next NEW_RESULT+UNDER_EXECUTION": [
+   "98/2",
+   "131/4"
+  ],
+  "next NO_FACTS": [
+   "118/2",
+   "632/3"
+  ],
+  "same FATIGUE": [
+   "159/2",
+   "182/2"
+  ],
+  "same NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "162/2",
+   "292/3"
+  ],
+  "next NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "162/2",
+   "568/4"
+  ],
+  "same PAIN": [
+   "175/0",
+   "253/0"
+  ],
+  "same PAIN+PAUSE": [
+   "187/2",
+   "1369/2"
+  ],
+  "next PAIN+PAUSE": [
+   "199/2"
+  ],
+  "same NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   "224/1",
+   "1401/2"
+  ],
+  "next NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   "224/1"
+  ],
+  "same OVER_EXECUTION+PAIN+TEST_MOVED": [
+   "330/4"
+  ],
+  "next NEW_RESULT+PAUSE": [
+   "546/3"
+  ],
+  "same FATIGUE+NEW_RESULT": [
+   "772/2",
+   "1942/5"
+  ],
+  "next FATIGUE": [
+   "832/2",
+   "914/2"
+  ],
+  "next FATIGUE+PAIN": [
+   "907/1",
+   "1846/1"
+  ],
+  "next PAUSE": [
+   "980/4"
+  ],
+  "same NEW_RESULT+PAIN": [
+   "1152/1"
+  ],
+  "next NEW_RESULT+PAIN": [
+   "1152/1",
+   "1621/1"
+  ],
+  "next NEW_RESULT": [
+   "1170/2"
+  ],
+  "same FATIGUE+TEST_MOVED": [
+   "1322/4"
+  ],
+  "same PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   "1632/1"
+  ],
+  "next PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   "1632/1"
+  ],
+  "same FATIGUE+PAIN": [
+   "1846/1"
+  ]
+ },
+ "seconds": 2123.846
+}

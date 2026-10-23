@@ -41,7 +41,11 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
   `segment01.baseline.json` + `segment02.regression-01.json`.
 - Sabotaže: `node scripts/sabotage.mjs ../docs/marathon-v2/artifacts/segment-03/sabotage.json`.
 
-## Trenutno stanje (marathon-v2.6.0)
+## Trenutno stanje (marathon-v2.6.1)
+
+- MAR-10 (lanci): Z7 manjak izvršenja vezan za zapise (step.underFrom, kao umor); Z6 LIMITS preskače zaštićen dan
+  (protectedDay); Z4 vraćanje revizije = spoj → validatePlan + sledeća adaptacija (neposredno poništavanje prolazi).
+  KNOWN_VERSIONS ∪ 2.6.0.
 
 - MAR-09 (ispravke posle dubinske provere): trkačka nedelja nikad prazna (jedna definicija raceOnlyWeek); L skoka
   dugog iz činjenica za potpuno poznate prošle nedelje (pouka 37 za L, lengths.jumpLongs10); vraćanje revizije samo
@@ -115,5 +119,10 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
 
 - Polazni SHA `618a7f6`; izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md`; `artifacts/segment-09/` (sabotaže 9/9,
   kopije mernih skripti sa novim potpisom, mar-restore.ts).
+
+## Segment MAR-10 (marathon-v2.6.1)
+
+- Polazni SHA `81e4d1d`; izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md` § MAR-10; `artifacts/segment-09/mar10/`,
+  `artifacts/segment-09/sabotage-10.json` (3/3).
 
 ## Sledeće: 3g (UI predaje), 10K v2 kao cilj (3d).
