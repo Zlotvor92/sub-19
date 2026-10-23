@@ -1,0 +1,514 @@
+{
+ "input": "/home/user/sub-19/docs/5k-v2/artifacts/segment-09/sabotage-09.json",
+ "head": "c13c258",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 65.5,
+ "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+ "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "09-F1 bez rezervnog dana oštrenja",
+   "files": [
+    "src/domain/generators/fiveK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "F1: 3 dana — oštrenje bez zahtevnog dana ≥ 3 dana pre trke > nalaz: uto/pet/ned + trka ned → plan (ranije WEEK_INFEASIBLE); oštrenje na laganom danu ≥ 2 dana pre trke",
+    "message": "Error: [{\"code\":\"WEEK_INFEASIBLE\",\"week\":10,\"message\":\"Trkačka nedelja: nema dana trčanja ≥ 2 dana pre trke za oštrenje.\"}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "3fb1eae82135bb32eb0739025c9cb6cc9f4a848d6a7cacb62b69680570458956",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.7
+  },
+  {
+   "index": 2,
+   "name": "09-F1 rezervni dan uz zahtevni dan prethodne nedelje",
+   "files": [
+    "src/domain/generators/fiveK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "F1: 3 dana — oštrenje bez zahtevnog dana ≥ 3 dana pre trke > svi skupovi 3 dana × dan trke (245): 0 WEEK_INFEASIBLE, 0 odbijanja",
+    "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "20122287986c1e2192f1d98b342e9ec2e453f5c145861eddec282ebc69c266a5",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  },
+  {
+   "index": 3,
+   "name": "09-F2 lanac samo u adaptaciji",
+   "files": [
+    "src/domain/generators/fiveK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "F2: 3 dana / 12 km — kvalitet koji ne staje: manja doza ili bez kvaliteta uz upozorenje > nalaz: VDOT 30, 8 ned → plan (ranije QUALITY_INFEASIBLE ned 7), upozorenje QUALITY_REDUCED",
+    "message": "Error: [{\"code\":\"QUALITY_INFEASIBLE\",\"week\":7,\"message\":\"Nedelja 7: RP ponavljanja: budžet 0,8 km nije dovoljan za najmanji smislen trening po pravilima.\"}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "03eeda0afca906260094b243fcd5ad1582998ee78ef56bb1a6acc684ea82b3ce",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  },
+  {
+   "index": 4,
+   "name": "09-C8 VDOT < 30 odbijanje",
+   "files": [
+    "src/domain/generators/fiveK/v2/input.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "C8: VDOT ispod opsega → plan po osećaju (kao 10K); iznad → odbijanje > 5 km 31:40 (VDOT < 30) + lak tempo → po osećaju, rezultat kao informacija",
+    "message": "Error: [{\"code\":\"VDOT_OUT_OF_RANGE\",\"message\":\"VDOT ispod opsega.\"}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "474bf09e91364c5d2711df6eef3c16d6ec62df32f29b399046508d3a97ee1eea",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.9
+  },
+  {
+   "index": 5,
+   "name": "09-Z5a rezultat izvora bez filtra distance",
+   "files": [
+    "src/domain/generators/fiveK/v2/app/handoffTarget.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "Z5: 5K kao cilj predaje sam određuje politiku > Z5a: rezultat polumaratona → plan po osećaju (lak tempo iz rezultata), ne RESULT_DISTANCE_UNSUPPORTED",
+    "message": "AssertionError: expected { distanceM: 21097.5, …(2) } to be null"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "73c3df0878f9fccdea2f4f2eb1f7e56602e1753d1255bcd985dd301ce45e830e",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.7
+  },
+  {
+   "index": 6,
+   "name": "09-Z5b početnik izvora bez granice dana",
+   "files": [
+    "src/domain/generators/fiveK/v2/app/handoffTarget.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "Z5: 5K kao cilj predaje sam određuje politiku > Z5b: početnik izvora sa 5 dana (više od maksimuma početnika 5K) → plan bez oznake početnika",
+    "message": "AssertionError: expected 'beginner' to be 'regular' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "a65173c2461f061256123d1891425602c613d0791926ff34c49c0eba9327eb2c",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.7
+  },
+  {
+   "index": 7,
+   "name": "09-Z4 spajanje bez mešovitih nedelja i bez provere",
+   "files": [
+    "src/domain/generators/fiveK/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "Z4: vraćanje revizije kroz spajanje jezgra > nalaz: v45-d3-15km-7w, bol 5 na kraju ned 2, vraćanje verzije bez adaptacije posle 4 dana — vraćen plan prolazi validator, sledeća adaptacija nije odbijena",
+    "message": "AssertionError: expected [ 'ROLES', 'PLANNED_VS_TARGET', …(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "2a9bdbca6fbfaeffbab26c4da274acd1a85940dd2d49aa727f4f53cc3014f16d",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.9
+  },
+  {
+   "index": 8,
+   "name": "09-M2 broj planiranog pre upisa",
+   "files": [
+    "src/domain/generators/fiveK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "M2/M3: napomene adaptacije > M2: napomena odmora/bola nema broj planiranog pre upisa (bez „planirano X km < cilj\")",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "fce83d27d19177e1c42908a725e17f048339172bcd4b262aa33233ab68302539",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.6
+  },
+  {
+   "index": 9,
+   "name": "09-M3 Rasterećenje: u nedelji koja nije rasteretna",
+   "files": [
+    "src/domain/generators/fiveK/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "M2/M3: napomene adaptacije > M3: „Rasterećenje:\" samo u rasteretnoj nedelji (jedan kvalitet doze rasterećenja posle pauze)",
+    "message": "AssertionError: expected [ …(2) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "7520770e37f86f34625e3738221a1f569ab8295c6d838b2f0759184d364a02fa",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.9
+  },
+  {
+   "index": 10,
+   "name": "09-C1 rasterećenje u ned 2",
+   "files": [
+    "src/domain/generators/fiveK/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "C1: početnik — rasterećenje nikad u nedeljama 1–2 (pouka 4) > nalaz b-d3-8w-12km-e420-0: ciljevi 12 → 9,6 R → … postaje rasterećenje u ned 4 (kao 10K/HM „izuzetno 4\")",
+    "message": "AssertionError: expected [] to deeply equal [ 4 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "197ec635f840bd00fda4444c8661993690632fd17446c565849d8ab50a3e540a",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.7
+  },
+  {
+   "index": 11,
+   "name": "09-C2 zapis bez dayId po datumu",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "C2: zapis umora bez dayId je van plana (lagan) > nalaz r-d4-6w-20km-v32-1: RPE 8/7 bez dayId na dan kvaliteta → FATIGUE (ranije bez umora)",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "36872f68bd9d7a69e5087bf4c0cce65d75d4ea2c63e3f701a981fa6cdc15362b",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.7
+  },
+  {
+   "index": 12,
+   "name": "09-N1 poslednja izgradnja bez koraka",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "N1: jedna „poslednja izgradnja\" (assess = adaptVolume = validator) > nalaz r-d3-6w-20km-v45-1: bol 5 (2026-11-15) pa višak (2026-11-22) — „plan se ne povećava\" drži osnovu povratka (14), ne +10 % (15,4)",
+    "message": "AssertionError: expected 15.4 to be 14 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "4c9c357a1de2bf6cffa5742f6f0371726f03013c77199b666439bcd66dec70f6",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.8
+  },
+  {
+   "index": 13,
+   "name": "09-C13 početnik sa kontrolnim trčanjem",
+   "files": [
+    "src/domain/generators/fiveK/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment05.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment05.node.test.ts",
+    "test": "Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj) > početnik 3 dana, 10 ned (po osećaju): bez kontrolnog trčanja",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "ffb091106d1ab1a295be2e498ae14f4e7ae9a53933bae6bd54ce0af65cb8c189",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.5
+  },
+  {
+   "index": 14,
+   "name": "09-Z1 upisani višak skida kvalitet",
+   "files": [
+    "src/domain/generators/fiveK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "Z1: mešovita nedelja — upisani višak ≤ 10 % ne skida kvalitet > nalaz r-d4-7w-15km-v38-1, višak 120 % do 2026-11-10: kvalitet ned 2 ostaje, upozorenje MIXED_OVER_TARGET",
+    "message": "AssertionError: expected 1 to be 2 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "53d23a8a3b101b27f1e17b6a1c88a6095725c7dd0dec4534b791f878d2a63e3e",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.9
+  },
+  {
+   "index": 15,
+   "name": "09-Z2 decimalna tačka",
+   "files": [
+    "src/domain/generators/fiveK/v2/text.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "Z2: tekst korisniku (decimalni zarez, km ≤ 1 decimala, oporavak m:ss, bez internih oznaka) > format: userText je idempotentan",
+    "message": "AssertionError: expected 'Lagano 9,6 km (oporavak 1:30), VDOT 4…' to be 'Lagano 9,6 km (oporavak 1:30), VDOT 4…' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "6076c1f48a51a5516b94a35c6476d8dd71b435c65a66f26eff83afe28e41397b",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.9
+  },
+  {
+   "index": 16,
+   "name": "09-Z3 Forma bez odluke jezgra",
+   "files": [
+    "src/domain/generators/fiveK/v2/app/form.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "Z3: Forma čita odluku jezgra o rezultatu > rezultat sa VDOT van opsega (test 3 km 7:00) → „ne menja tempo\", ne „čeka prilagođavanje\"",
+    "message": "AssertionError: expected 'pending' to be 'old' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "a9174086058d1d4b07a0e25f2ce7da69c536d75ca8e8c52e5ef4d4a942230c70",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.6
+  },
+  {
+   "index": 17,
+   "name": "09-K plafon laganog bez zaokruživanja u validatoru",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "owner K: jedan plafon laganog dana trkačke nedelje; peakKm adaptacije > validator koristi isti plafon kao konstruktor (⌊…⌋ na 0,1 km): lagan iznad njega je greška",
+    "message": "AssertionError: expected [] to deeply equal [ '2027-01-09' ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "7b2a6edca55edbfde71d9c2cd84da02a3f9ad3e1c2fe10ac31d82c3c1c7d4d77",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.5
+  },
+  {
+   "index": 18,
+   "name": "09-K peakKm adaptacije = najveći cilj izgradnje",
+   "files": [
+    "src/domain/generators/fiveK/v2/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "owner K: jedan plafon laganog dana trkačke nedelje; peakKm adaptacije > peakKm adaptiranog plana = vrh za taper iz konstrukcije, ne najveći cilj izgradnje (nalaz r-d3-6w-20km-v32-0, pauza 20 d)",
+    "message": "AssertionError: expected [ 20, 20 ] to deeply equal [ 15.4, 20 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "3f3164b66a9000ee6a3da631aa1bf40fa66f80f0b62352c41740536fbaaaa51f",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.4
+  },
+  {
+   "index": 19,
+   "name": "09-plafon I na novom tempu < umesto <=",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "plafon trajanja I na novom tempu (POSLE-MERGE c) > r-d3-6w-25km-v45-0, trka Δ8 VDOT (37) 2026-11-04: I 2 × 1000 m tačno na plafonu 300 s prolazi",
+    "message": "AssertionError: expected [ [ 0.5, 150 ], [ 0.5, 150 ], …(2) ] to deeply equal [ [ 1, 300 ], [ 1, 300 ] ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "4f7354b355dadff78f43a372b6ca6abe210d6edf92b614aae20e27cff77be3d5",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5.4
+  },
+  {
+   "index": 20,
+   "name": "09-N1 višak posle bola bez donje granice",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/segment09.node.test.ts",
+    "test": "N1 posledica: višak posle bola ne spušta cilj ispod donje granice nedelje > r-d3-6w-12km-v38-1, bol 5 (2026-11-15) pa višak (2026-11-22): prihvaćeno (ranije VOLUME_RESET), cilj ned 4 = granica 9 km",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"Adaptiran plan krši 1 pravila; plan se ne vraća.\"}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "hashSabotaged": "ed97e7cfc8d95e451743867a7a4531ae0b9c8ed5dd81130fec9b11007fa98dbf",
+   "hashAfter": "5d766f4cd8e79683c0df0d504c7ea9081c3ea6e9f9f6da16b489eb1ebb2dd41c",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3
+  }
+ ]
+}

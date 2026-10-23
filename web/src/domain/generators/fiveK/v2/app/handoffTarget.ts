@@ -4,8 +4,8 @@
    Izvor predaje samo činjenice: ulaz čarobnjaka bez izvedenih polja, potvrđeno izvršenje i sirove činjenice (`raw`).
    Ovaj cilj iz njih sam gradi plan:
    1. generate: ulaz cilja iz činjenica ulaza. Obim je iz čarobnjaka izvora (O3a), trka istog datuma. Start je prva
-      granica nedelje posle dana potvrde (`alignedStart(trka, asOf + 1)`). Rezultat ide doslovno (distancu proverava
-      ulaz 5K v2: 3K/5K/10K); lak tempo samo ako ga izvor ima. Početnik: plan izvora je kontinuirano trčanje (HM v2
+      granica nedelje posle dana potvrde (`alignedStart(trka, asOf + 1)`). Rezultat 3K/5K/10K ide doslovno; rezultat
+      druge distance (HM/MAR) se ne koristi — plan po osećaju (5k-v2.11.0, Z5a; lak tempo izvora ili iz rezultata). Početnik: plan izvora je kontinuirano trčanje (HM v2
       nema trčanje/hodanje), pa `canRun30Min: true` — činjenica izvora, ne nov broj. Dan dugog 5K v2 bira sam.
    2. adapt(plan, raw, asOf): povratnu politiku (pauza, manjak, bol, umor) određuje adaptacija OVOG generatora; nema
       novih brojeva. Potvrđena pauza iz izvršenja je činjenica pauze. `dayId` i zaključani dani izvora se ne čitaju
@@ -20,6 +20,8 @@
 
 import { adaptFiveKV2 } from '../adapt.ts';
 import { generateFiveKV2 } from '../generate.ts';
+import { pacesFromVdot, vdotFromResult } from '../paces.ts';
+import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import type { Weekday } from '../types.ts';
 import { addDays, isIsoDate } from './date.ts';
 import { confirmedBreakFact } from './facts.ts';
@@ -68,11 +70,25 @@ export function targetFacts(facts: HandoffFacts): Record<string, unknown> {
       ? [confirmedBreakFact(e.date, e.breakDays)]
       : [];
   const breaks = [...((raw['breaks'] as unknown[] | undefined) ?? []), ...brk];
+  // 5k-v2.11.0 (Z5a): rezultat distance koju 5K ne podržava (polumaraton, maraton) nije rezultat za ovaj plan.
+  const results = raw['results'] as Record<string, unknown>[] | undefined;
   return {
     ...raw,
     ...(workouts ? { workouts: workouts.map(({ dayId: _d, ...w }) => w) } : {}),
+    ...(results ? { results: results.filter((x) => supportedDistance(x['distM'])) } : {}),
     ...(breaks.length ? { breaks } : {})
   };
+}
+
+const supportedDistance = (d: unknown): boolean =>
+  (P.input.resultDistancesM as readonly unknown[]).includes(d);
+
+/** Z5a: lak tempo [s/km] iz rezultata izvora — sporija granica E po modelu tempa 5K, u opsegu laganog tempa ulaza. */
+function easyPaceOf(distM: number, sec: number): number | undefined {
+  if (!(distM > 0 && sec > 0)) return undefined;
+  const e = pacesFromVdot(vdotFromResult(distM, sec)).E.slow;
+  const r = P.input.easyPaceSecPerKm;
+  return Math.min(r.max, Math.max(r.min, e));
 }
 
 /** Ulaz 5K v2 iz činjenica ulaza izvora (bez izvedenih polja izvora). */
@@ -81,15 +97,22 @@ export function targetInput(
   start: string,
   weekOffset = 0
 ): Record<string, unknown> {
-  const pb = input.pb;
-  const beginner = input.trainedRecently === false;
+  // 5k-v2.11.0 (Z5a, uslov 5): cilj sam određuje politiku. Rezultat nepodržane distance → plan bez rezultata (po
+  // osećaju): lak tempo izvora, a bez njega lak tempo iz rezultata izvora po modelu tempa ovog plana.
+  const pb = input.pb && supportedDistance(input.pb.distM) ? input.pb : undefined;
+  const easyPace =
+    input.easyPaceSecPerKm ??
+    (input.pb && !pb ? easyPaceOf(input.pb.distM, input.pb.sec) : undefined);
+  // Z5b: početnik izvora sa više dana nego što početnik 5K dozvoljava → plan bez oznake početnika.
+  const runDays = (input.runDows ?? []).map((d) => WEEKDAYS[d - 1]);
+  const beginner = input.trainedRecently === false && runDays.length <= P.beginner.maxRunDays;
   return {
     startDate: start,
     raceDate: input.raceDate,
-    runDays: (input.runDows ?? []).map((d) => WEEKDAYS[d - 1]),
+    runDays,
     currentWeeklyKm: input.weeklyKm,
     recentResult: pb && pb.date ? { distanceM: pb.distM, timeSec: pb.sec, date: pb.date } : null,
-    ...(input.easyPaceSecPerKm != null ? { typicalEasyPaceSecPerKm: input.easyPaceSecPerKm } : {}),
+    ...(easyPace != null ? { typicalEasyPaceSecPerKm: easyPace } : {}),
     experience: beginner ? 'beginner' : 'regular',
     ...(beginner ? { canRun30Min: true } : {}),
     goalTimeSec: null,

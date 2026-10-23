@@ -79,7 +79,7 @@ describe('generisanje kroz adapter', () => {
     const p = planOf(WITH_RESULT);
     expect(p.meta).toMatchObject({
       policyId: '5k-v2',
-      policyVersion: '5k-v2.10.4',
+      policyVersion: '5k-v2.11.0',
       raceDistM: 5000
     });
     expect(p.weeks).toHaveLength(10);
@@ -107,7 +107,7 @@ describe('generisanje kroz adapter', () => {
     expect(p.weeks[2]!.phase).toBe('DELOAD');
     expect(p.weeks[9]!.phase).toBe('TRKA');
     // Ceo izlaz v2 doslovno (osnova adaptacije, 08b); `pred` prazan (v2 nema redove predikcije).
-    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.10.4');
+    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.11.0');
     expect(p.pred).toEqual([]);
     expect(p.ulaz).toBeUndefined();
   });
@@ -271,7 +271,7 @@ describe('prikaz iz strukture (Plan tab, dan)', () => {
     expect(rows.map((r) => r[0])).toEqual(['Zagrevanje', 'Radni deo', 'Odmor', 'Hlađenje']);
     expect(rows[2]![1]).toBe('3 min kaskanje');
     const easy = days.find((d) => d.id === 'g4d6')!;
-    expect(coreOf(easy)).toBe('Lagano 6.8 km'); // bez radnog dela → naslov
+    expect(coreOf(easy)).toBe('Lagano 6,8 km'); // bez radnog dela → naslov
   });
 
   it('po osećaju: napor (RPE) umesto tempa, ništa izmišljeno', () => {
@@ -317,7 +317,7 @@ describe('izvoz na sat iz strukture', () => {
   it('sa rezultatom: ponavljanja sa oporavkom, E opseg, distanca/vreme po osnovi', () => {
     const b = watch(planOf(WITH_RESULT), '2026-11-23', 6);
     const q = b.events.find((e) => e.externalId === 'sub19-g4d2')!;
-    expect(q.name).toBe('I: 3 × 600 m (oporavak 180 s lagano)');
+    expect(q.name).toBe('I: 3 × 600 m (oporavak 3:00 lagano)');
     expect(q.description).toMatch(
       /^Zagrevanje\n- [\d.]+km \d:\d\d-\d:\d\d\/km Pace\n\nRadni deo 2x\n- 600mtr \d:\d\d\/km Pace\n- Oporavak kaskanje 3m /
     );

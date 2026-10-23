@@ -6,6 +6,7 @@
      su procenjeni sredinom E opsega (vreme × E tempo). */
 
 import { daysRule, FIVE_K_V2_POLICY as P, type RunDaysCount } from './policy.ts';
+import { userText } from './text.ts';
 import type {
   Basis,
   BlockSpec,
@@ -156,7 +157,8 @@ export function buildWorkout(
   return {
     kind,
     qualityType,
-    title,
+    // 5k-v2.11.0 (Z2): naslov u formatu teksta korisniku (text.userText).
+    title: userText(title),
     blocks,
     segments,
     km: r2(segments.reduce((a, s) => a + s.km, 0)),
@@ -721,7 +723,7 @@ function baseWeek(
 function rDropNotes(budgetR: number, pm: RepChoice | null, r: RepChoice): string[] {
   return pm && workOf(r) + 1e-9 < workOf(pm) && budgetR + 1e-9 < workOf(pm)
     ? [
-        `R doza pala: plafon R ${km(budgetR)} km < prethodne ${km(workOf(pm))} km — najveća struktura koja staje (DOSE_DROPPED).`
+        `R doza pala: plafon R ${km(budgetR)} km < prethodne ${km(workOf(pm))} km — najveća struktura koja staje.`
       ]
     : [];
 }

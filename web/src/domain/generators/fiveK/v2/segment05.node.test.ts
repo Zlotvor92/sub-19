@@ -245,8 +245,7 @@ describe('Odluka 4: bez rezultata — E iz korisnikovog tempa, kvalitet po oseć
 describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)', () => {
   it.each([
     ['4 dana, 12 ned', EX.feel4],
-    ['3 dana, 10 ned', EX.feel3],
-    ['početnik 3 dana, 10 ned', EX.beg3]
+    ['3 dana, 10 ned', EX.feel3]
   ] as const)('%s', (_, s) => {
     const plan = planOf(raw(s));
     const tests = plan.weeks.filter((w) => w.days.some((d) => d.workout.qualityType === 'TEST_3K'));
@@ -262,6 +261,16 @@ describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)
     expect(t.workKm).toEqual({ E: 0, T: 0, I: 0, R: 0, RP: 0 });
     expect(plan.notes.some((n) => n.includes('ostaje po osećaju') && n.includes('adaptacij'))).toBe(
       true
+    );
+  });
+
+  // 5k-v2.11.0 (C13, MASTER pouka 13): početnik po osećaju nema kontrolno trčanje.
+  it('početnik 3 dana, 10 ned (po osećaju): bez kontrolnog trčanja', () => {
+    const plan = planOf(raw(EX.beg3));
+    expect(plan.paceMode).toBe('feel');
+    expect(plan.weeks.some((w) => w.test)).toBe(false);
+    expect(plan.weeks.flatMap((w) => w.days).some((d) => d.workout.qualityType === 'TEST_3K')).toBe(
+      false
     );
   });
 

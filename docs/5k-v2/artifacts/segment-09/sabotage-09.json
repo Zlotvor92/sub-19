@@ -1,0 +1,196 @@
+[
+ {
+  "name": "09-F1 bez rezervnog dana oštrenja",
+  "file": "src/domain/generators/fiveK/v2/week.ts",
+  "find": "  return { days: easy, onEasyDay: true, minGap: P.schedule.sharpenerEasyMinGapDays };",
+  "replace": "  return { days: easy.slice(0, 0), onEasyDay: true, minGap: P.schedule.sharpenerEasyMinGapDays };",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-F1 rezervni dan uz zahtevni dan prethodne nedelje",
+  "file": "src/domain/generators/fiveK/v2/week.ts",
+  "find": "    pref.every((h) => 7 + gapToRace(h) - gapToRace(w) >= P.schedule.minHardGapDays)",
+  "replace": "    pref.every((h) => 7 + gapToRace(h) - gapToRace(w) >= 0)",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-F2 lanac samo u adaptaciji",
+  "file": "src/domain/generators/fiveK/v2/generate.ts",
+  "find": "      if (r.ok || (q === 'one' && f.limits?.quality !== undefined)) continue;",
+  "replace": "      if (r.ok || !adaptive || (q === 'one' && f.limits?.quality !== undefined)) continue;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C8 VDOT < 30 odbijanje",
+  "file": "src/domain/generators/fiveK/v2/input.ts",
+  "find": "      if (vdot < P.input.vdot.min) feelKnown = true;",
+  "replace": "      if (vdot < P.input.vdot.min) add('VDOT_OUT_OF_RANGE', 'VDOT ispod opsega.');",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z5a rezultat izvora bez filtra distance",
+  "file": "src/domain/generators/fiveK/v2/app/handoffTarget.ts",
+  "find": "  const pb = input.pb && supportedDistance(input.pb.distM) ? input.pb : undefined;",
+  "replace": "  const pb = input.pb;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z5b početnik izvora bez granice dana",
+  "file": "src/domain/generators/fiveK/v2/app/handoffTarget.ts",
+  "find": "  const beginner = input.trainedRecently === false && runDays.length <= P.beginner.maxRunDays;",
+  "replace": "  const beginner = input.trainedRecently === false;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z4 spajanje bez mešovitih nedelja i bez provere",
+  "edits": [
+   {
+    "file": "src/domain/generators/fiveK/v2/app/adapt.ts",
+    "find": "  if (m.mixed.length === 0) return { ...base, weeks: m.weeks };",
+    "replace": "  if (m.mixed.length >= 0) return { ...base, weeks: m.weeks };"
+   },
+   {
+    "file": "src/domain/generators/fiveK/v2/app/adapt.ts",
+    "find": "    validatePlan(merged).some((v) => v.severity === 'error') ||",
+    "replace": "    validatePlan(merged).some((v) => v.severity === 'none') ||"
+   },
+   {
+    "file": "src/domain/generators/fiveK/v2/app/adapt.ts",
+    "find": "    !adaptFiveKV2(merged as unknown, {}, today).ok",
+    "replace": "    !adaptFiveKV2(merged as unknown, {}, today).reasons"
+   }
+  ],
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-M2 broj planiranog pre upisa",
+  "file": "src/domain/generators/fiveK/v2/week.ts",
+  "find": "planirano ≤ cilj obima ${kmText(target)} km.`",
+  "replace": "planirano ${plannedKm} km < cilj obima ${target} km.`",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-M3 Rasterećenje: u nedelji koja nije rasteretna",
+  "file": "src/domain/generators/fiveK/v2/quality.ts",
+  "find": "const notDeload = (n: string): string => n.replace(/^Rasterećenje:/, 'Doza rasterećenja:');",
+  "replace": "const notDeload = (n: string): string => n;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C1 rasterećenje u ned 2",
+  "file": "src/domain/generators/fiveK/v2/periodize.ts",
+  "find": "    if (at !== n && at + offset < P.volume.deloadFirstWeek) at = n + 1;",
+  "replace": "",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C2 zapis bez dayId po datumu",
+  "file": "src/domain/generators/fiveK/v2/assess.ts",
+  "find": "    const d = x.dayId !== undefined ? byId.get(x.dayId) : undefined;",
+  "replace": "    const d = byId.get(x.dayId ?? x.date);",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-N1 poslednja izgradnja bez koraka",
+  "file": "src/domain/generators/fiveK/v2/assess.ts",
+  "find": "  const lastBuild = planLastBuildKm(weeks, steps, n);",
+  "replace": "  const lastBuild = planLastBuildKm(weeks, [], n);",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-C13 početnik sa kontrolnim trčanjem",
+  "file": "src/domain/generators/fiveK/v2/periodize.ts",
+  "find": "  a.feel && !a.beginner;",
+  "replace": "  a.feel;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment05.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z1 upisani višak skida kvalitet",
+  "file": "src/domain/generators/fiveK/v2/week.ts",
+  "find": "    keptKm + withQ <= P.mixed.keepQualityMaxShare * targetKm + 1e-9",
+  "replace": "    keptKm + withQ <= 0",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z2 decimalna tačka",
+  "file": "src/domain/generators/fiveK/v2/text.ts",
+  "find": "    .replace(/(\\d)\\.(\\d)/g, '$1,$2');",
+  "replace": ";",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-Z3 Forma bez odluke jezgra",
+  "file": "src/domain/generators/fiveK/v2/app/form.ts",
+  "find": "    const pending = use === 'apply' && (lastUsed === null || r.date > lastUsed);",
+  "replace": "    const pending = use !== 'old' && use !== 'notNewer' && (lastUsed === null || r.date > lastUsed);",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-K plafon laganog bez zaokruživanja u validatoru",
+  "file": "src/domain/generators/fiveK/v2/validate.ts",
+  "find": "      const easyCap = raceWeekEasyCap(pw(w), prevLong);",
+  "replace": "      const easyCap = Math.max(\n        P.easy.taperMinKm,\n        Math.min(P.easy.raceWeekMaxSec / pw(w).E.slow, prevLong * P.easy.raceWeekMaxShareOfPrevLong)\n      );",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-K peakKm adaptacije = najveći cilj izgradnje",
+  "file": "src/domain/generators/fiveK/v2/adapt.ts",
+  "find": "    peakKm: c.peakRefKm,",
+  "replace": "    peakKm: Math.max(...weeks.map((w) => w.targetKm)),",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-plafon I na novom tempu < umesto <=",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "  const all: RepChoice[] = [];\n  for (const repKm of options) {\n    const sec = repKm * paceSecPerKm;\n    if (sec > maxRepSec || sec < minRepSec) continue;",
+  "replace": "  const all: RepChoice[] = [];\n  for (const repKm of options) {\n    const sec = repKm * paceSecPerKm;\n    if (sec >= maxRepSec || sec < minRepSec) continue;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ },
+ {
+  "name": "09-N1 višak posle bola bez donje granice",
+  "file": "src/domain/generators/fiveK/v2/assess.ts",
+  "find": "          step.startKm = round1(Math.max(Math.min(tn, lastBuild ?? tn), Math.min(tn, floorKm)));",
+  "replace": "          step.startKm = round1(Math.min(tn, lastBuild ?? tn));",
+  "tests": [
+   "src/domain/generators/fiveK/v2/segment09.node.test.ts"
+  ]
+ }
+]

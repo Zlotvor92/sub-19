@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.10.4',
+  version: '5k-v2.11.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -124,6 +124,8 @@ export const FIVE_K_V2_POLICY = {
     peakCapFactor: 1.3,
     /** Svaka N-ta nedelja (po rednom broju plana) u izgradnji je rasteretna (heuristika). */
     deloadEvery: 4,
+    /** 5k-v2.11.0 (C1, MASTER pouka 4): najranija nedelja rasterećenja (nikad u nedeljama 1–2). */
+    deloadFirstWeek: 3,
     /** Rasteretna nedelja ≈ ovaj udeo prethodne nedelje (heuristika). */
     deloadFactor: 0.8,
     /** Taper: udeo vrha po nedelji tapera (heuristika). */
@@ -247,10 +249,13 @@ export const FIVE_K_V2_POLICY = {
       'a kvalitet je zadat trajanjem i naporom (RPE), bez brojčanog tempa. Km kvaliteta su procena iz E tempa.',
     testNote:
       'Kontrolno trčanje 3 km u nedelji {week}: plan i dalje ostaje po osećaju do kraja; tempo iz testa ' +
-      'ulazi tek kroz adaptaciju (segment 06).',
+      'ulazi tek kroz adaptaciju.',
     forecastNote: 'Prognoza 5K: nedovoljno podataka (nema pouzdanog rezultata).',
     oldResultNote:
-      'Rezultat {result} ({date}) je stariji od 12 nedelja: prikazan samo kao informacija, ne koristi se za tempo ni prognozu.'
+      'Rezultat {result} ({date}) je stariji od 12 nedelja: prikazan samo kao informacija, ne koristi se za tempo ni prognozu.',
+    /** 5k-v2.11.0 (C8): rezultat sporiji od opsega tabela tempa (VDOT < input.vdot.min). */
+    slowResultNote:
+      'Rezultat {result} ({date}) je sporiji od opsega tabela tempa: plan je po osećaju (lagan tempo), rezultat je samo informacija.'
   },
 
   /** 2.4.0: početnik (trči redovno < 6 meseci, mora 30 min kontinuirano). Heuristike konzervativnog
@@ -317,8 +322,15 @@ export const FIVE_K_V2_POLICY = {
     minHardGapDays: 2,
     /** Oštrenje u trkačkoj nedelji: najmanje 3 dana pre trke (2.1.0: dva dana pred trku bez
         kvaliteta); od dozvoljenih bira se najbliži trci. */
-    sharpenerMinGapDays: 3
+    sharpenerMinGapDays: 3,
+    /** 5k-v2.11.0 (F1, trenerska odluka organizatora): kad nijedan zahtevni dan šablona nije ≥ 3 dana pre
+        trke, oštrenje ide na lagan dan trčanja ≥ 2 dana pre trke (najbliži trci) umesto odbijanja plana. */
+    sharpenerEasyMinGapDays: 2
   },
+
+  /** 5k-v2.11.0 (Z1, odluka organizatora): mešovita nedelja čiji je jedini uzrok viška upisani višak (zaštićeni dani po
+      činjenicama > planirani) zadržava kvalitet kad je planirano sa njim ≤ ovaj udeo cilja (week.mixedOver). */
+  mixed: { keepQualityMaxShare: 1.1 },
 
   /** 2.5.0: adaptacija (assess.ts). Svi pragovi su TRENERSKE HEURISTIKE (v. DECISIONS 5k-v2.5.0). */
   adapt: {
@@ -853,5 +865,32 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'poruka jezgra sa brojem nedelje ide kroz jednu funkciju input.weekLabel; forma (app/form.ts) čita isti pomak, bez ' +
       'duplog sabiranja. Bez pomaka bajt-isto (generator 3 816, regresija 148 163 toka bez promene). Merenje review3d (5K): ' +
       'labelMismatch 0, reasonMismatch 0. Sačuvan plan 5k-v2.10.3 i stariji prilagođavaju se po 2.10.4 (KNOWN_VERSIONS).'
+  },
+  {
+    version: '5k-v2.11.0',
+    decision:
+      '5K-09 (organizator, ispravke posle dubinske provere; docs/generators-v2/audit/fixes/5K.md). (F1) Oštrenje ' +
+      'trkačke nedelje: jedan vlasnik week.sharpenerCandidates (konstruktor i validator SHARPENER_GAP) — prvo zahtevni ' +
+      'dan šablona ≥ 3 dana pre trke; ako ga nema (trenerska odluka organizatora) lagan dan trčanja ≥ 2 dana pre trke ' +
+      '(prvo dani ≥ 3), ne uz zahtevni dan prethodne nedelje, uz napomenu. 3 dana: 12/245 → 0 WEEK_INFEASIBLE. ' +
+      '(F2) Kvalitet koji ne staje u obim i u generatoru ide kroz postojeći lanac konstruktora (jedan kvalitet doze ' +
+      'rasterećenja → bez kvaliteta, kao adaptacija) uz napomenu i upozorenje QUALITY_REDUCED umesto odbijanja ' +
+      '(3 d / 12 km: 273/1 023 → 0). (C8) VDOT rezultata < 30 → plan po osećaju (kao 10K; lagan tempo obavezan, ' +
+      'rezultat informacija); > 60 i dalje odbijanje; jedno mesto input.hasFreshResult. (Z5) Cilj predaje: rezultat ' +
+      'nepodržane distance (HM/maraton) → plan po osećaju (lak tempo izvora ili iz rezultata po modelu tempa 5K), u ' +
+      'adaptaciji se takav rezultat ne prosleđuje; početnik izvora sa > 4 dana → plan bez oznake početnika. (Z4) ' +
+      'Vraćanje revizije spaja kroz written.writtenWeeks i vraća se samo ako plan prolazi validator i sledeću ' +
+      'adaptaciju, inače jasno odbijanje. (M2) napomena odmora/bola bez broja planiranog pre upisa; (M3) ' +
+      '„Rasterećenje:" samo u rasteretnoj nedelji („Doza rasterećenja:" inače). (C1, pouka 4) Rasterećenje nikad u ned ' +
+      '1–2: pomereno unazad u ned < 3 ide na nedelju posle n (početnik 8 ned: 2 → 4, kao 10K/HM „izuzetno 4"; granica ' +
+      'niza Odluke 9 ostaje 4). (C2) Zapis umora bez dayId je van plana = lagan (kao 10K/HM/MAR). (N1) Jedna ' +
+      '„poslednja izgradnja" volume.lastBuildKm/planLastBuildKm (assess, adaptVolume, validator; cilj koraka i ' +
+      'osnova povratka posle bola). (C13, pouka 13) Početnik nema kontrolno trčanje (periodize.controlTest). (Z1) ' +
+      'Mešovita nedelja: kvalitet ostaje kad je jedini uzrok viška upisani višak i planirano sa njim ≤ 1,10 × cilj ' +
+      '(week.mixedOver, isto u validatoru). (Z2) Tekst korisniku: jedan format text.ts (decimalni zarez, km ≤ 1 ' +
+      'decimala, oporavak m:ss, bez internih oznaka). (Z3) Forma čita odluku jezgra o rezultatu (assess.resultUse). ' +
+      '(owner K) plafon laganog dana trkačke nedelje jedna funkcija week.raceWeekEasyCap; peakKm adaptacije = vrh iz ' +
+      'konstrukcije. Brojevi pre → posle: docs/5k-v2/reports/SEGMENT-09-IMPLEMENTATION.md. Sačuvan plan 5k-v2.10.4 i ' +
+      'stariji prilagođavaju se po 2.11.0 (KNOWN_VERSIONS).'
   }
 ];

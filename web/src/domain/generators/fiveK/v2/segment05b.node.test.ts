@@ -174,7 +174,9 @@ describe('Odluka 3 + mreža regular sa rezultatom: vrh(2.4.1) ≥ vrh(7b4b574)',
       }
     }
     expect(lower).toEqual([]);
-    expect(plans).toBe(828);
+    // 5k-v2.11.0 (F2): 12 ulaza 3 dana / 12 km koje je 7b4b574 odbijao (QUALITY_INFEASIBLE) sada daju plan sa smanjenom
+    // dozom kvaliteta (quality.weekQuality, reducedQuality).
+    expect(plans).toBe(840);
   });
 });
 

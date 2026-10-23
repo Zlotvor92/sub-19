@@ -54,7 +54,7 @@ describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', (
       r.plan.warnings.filter((v) => v.rule === 'MIXED_OVER_TARGET').map((v) => v.week)
     ).toEqual([3]);
     expect(r.plan.warnings.find((v) => v.rule === 'MIXED_OVER_TARGET')!.message).toContain(
-      'ostatak do cilja 9.16 km < najmanji preostali dani bez kvaliteta 10.1 km'
+      'ostatak do cilja 9,2 km < najmanji preostali dani bez kvaliteta 10,1 km'
     );
   });
 

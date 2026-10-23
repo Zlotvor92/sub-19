@@ -24,7 +24,7 @@ import type {
   ResultFact,
   WorkoutFact
 } from './types.ts';
-import { adaptFloorKm, returnBaseKm, returnShareKm } from './volume.ts';
+import { adaptFloorKm, planLastBuildKm, returnBaseKm, returnShareKm } from './volume.ts';
 
 const A = P.adapt;
 const round1 = (x: number): number => Math.round(x * 10) / 10;
@@ -199,6 +199,27 @@ export function checkFacts(
     : { ok: true, facts: { workouts, results, lockedDayIds, coverage, breaks } };
 }
 
+export type ResultUse = 'apply' | 'old' | 'notNewer' | 'outOfRange';
+
+/**
+ * 5k-v2.11.0 (Z3): JEDNA odluka o rezultatu (assess i Forma, app/form.ts): 'old' = stariji od resultMaxAgeDays na
+ * asOf; 'notNewer' = nije noviji od rezultata u upotrebi; 'outOfRange' = VDOT van opsega ulaza (RESULT_IGNORED);
+ * 'apply' = adaptacija ga primenjuje (od više takvih — najnoviji).
+ */
+export function resultUse(
+  plan: FiveKV2Plan,
+  x: { distM: number; sec: number; date: IsoDate },
+  asOf: IsoDate
+): ResultUse {
+  if (mustDay(asOf) - mustDay(x.date) > A.resultMaxAgeDays) return 'old';
+  const steps = plan.adaptation?.steps ?? [];
+  const prev =
+    [...steps].reverse().find((s) => s.result)?.result?.date ?? plan.input.recentResult?.date;
+  if (prev !== undefined && mustDay(x.date) <= mustDay(prev)) return 'notNewer';
+  const v = round1(vdotFromResult(x.distM, x.sec));
+  return v >= P.input.vdot.min && v <= P.input.vdot.max ? 'apply' : 'outOfRange';
+}
+
 /**
  * Ograničenja iz činjenica (Odluke 1–7). Nedelja r sadrži asOf + 1; n = prva puna nedelja posle asOf
  * („sledeća nedelja"). Pravila obima sledeće nedelje (pauza > umor > izvršenje) — primenjuje se samo
@@ -227,8 +248,9 @@ export function assess(
     const x = wk(w);
     return x !== null && (x.phase === 'base' || x.phase === 'peak' || x.phase === 'sharpen');
   };
-  let lastBuild: number | null = null;
-  for (const w of weeks) if (w.index < n && !w.deload && build(w.index)) lastBuild = w.targetKm;
+  // 5k-v2.11.0 (N1): jedna definicija „poslednja izgradnja" (volume.planLastBuildKm; cilj koraka i osnova povratka
+  // posle bola, kao adaptVolume i validator).
+  const lastBuild = planLastBuildKm(weeks, steps, n);
   const out: AdaptReason[] = [];
   const reason = (condition: AdaptReason['condition'], applied: boolean, message: string): void => {
     out.push({ condition, applied, message });
@@ -283,10 +305,9 @@ export function assess(
     levelKm: null,
     returnFrom: null
   };
-  const prevResult =
-    [...steps].reverse().find((s) => s.result)?.result?.date ?? plan.input.recentResult?.date;
   const vdotOf = (x: ResultFact): number => round1(vdotFromResult(x.distM, x.sec));
-  const fresh = facts.results.filter((x) => t - day(x.date) <= A.resultMaxAgeDays);
+  const kindOf = (x: ResultFact): ResultUse => resultUse(plan, x, asOf);
+  const fresh = facts.results.filter((x) => kindOf(x) !== 'old');
   for (const x of facts.results)
     if (!fresh.includes(x))
       reason(
@@ -295,15 +316,14 @@ export function assess(
         `Rezultat ${x.date} je stariji od 12 nedelja — ne menja tempo.`
       );
   const newer = fresh
-    .filter((x) => prevResult === undefined || day(x.date) > day(prevResult))
+    .filter((x) => kindOf(x) !== 'notNewer')
     .sort((a, b) => day(b.date) - day(a.date) || vdotOf(b) - vdotOf(a));
   for (const x of fresh)
     if (!newer.includes(x))
       reason('RESULT_IGNORED', false, `Rezultat ${x.date} nije noviji od rezultata u upotrebi.`);
   // 2.10.3 (08k, kao 10K A1): rezultat sa VDOT van opsega ulaza se ne primenjuje (RESULT_IGNORED sa vrednošću i
   // opsegom); adaptacija se nastavlja sa ostalim činjenicama — ne odbija se cela. Generator (input.ts) i dalje odbija ulaz.
-  const inRange = (x: ResultFact): boolean =>
-    vdotOf(x) >= P.input.vdot.min && vdotOf(x) <= P.input.vdot.max;
+  const inRange = (x: ResultFact): boolean => kindOf(x) === 'apply';
   for (const x of newer)
     if (!inRange(x))
       reason(
@@ -399,14 +419,15 @@ export function assess(
     reason(
       'PAUSE',
       true,
-      `${explicit ? 'Pauza (prijavljena)' : 'Pauza'} ${pause} dana (obim 7 dana pre pauze ${round1(pre)} km): cilj ${km} km${km > round1(raw) ? ` (ne ispod ${floorKm} km za ${plan.input.runDays.length} dana)` : ''}; ${tier === 'short' ? 'prva nedelja 1 kvalitet' : 'prva nedelja bez kvaliteta, druga 1 kvalitet'}${step.restart ? '; nov start (faze preostale izgradnje ponovo)' : ''}${step.orientation ? `; ${A.orientationMessage}` : ''}.${growthNote(step.levelKm)}`
+      `${explicit ? 'Pauza (prijavljena)' : 'Pauza'} ${pause} dana (obim 7 dana pre pauze ${round1(pre)} km): cilj ${km} km${km > round1(raw) ? ` (ne ispod ${floorKm} km za ${plan.input.runDays.length} dana)` : ''}; ${tier === 'short' ? 'prva nedelja 1 kvalitet' : 'prva nedelja bez kvaliteta, druga 1 kvalitet'}${step.restart ? '; nov start (faze preostale izgradnje ponovo)' : ''}${step.orientation ? `; ${A.orientationMessage.replace(/\.$/, '')}` : ''}.${growthNote(step.levelKm)}`
     );
   }
 
-  // Odluka 5: umor (lagani = lagan ili dugi dan plana; trening van plana se računa kao lagan).
+  // Odluka 5: umor (lagani = lagan ili dugi dan plana; trening van plana se računa kao lagan). 5k-v2.11.0 (C2, kao
+  // 10K/HM/MAR): zapis bez dayId je van plana (lagan), ne uparuje se po datumu.
   const byId = new Map(planDays.map((d) => [d.date, d]));
   const easyHard = runs.filter((x) => {
-    const d = byId.get(x.dayId ?? x.date);
+    const d = x.dayId !== undefined ? byId.get(x.dayId) : undefined;
     return (
       t - day(x.date) < A.windowDays &&
       (x.rpe ?? 0) >= A.fatigueRpe &&
@@ -468,7 +489,9 @@ export function assess(
       if (p1 > 0 && p2 > 0 && a1 > A.overShare * p1 && a2 > A.overShare * p2) {
         const ok = !volumeRule && build(n) && tn !== null && !wk(n)!.deload;
         if (ok) {
-          step.startKm = round1(Math.min(tn, lastBuild ?? tn));
+          // 5k-v2.11.0 (N1): poslednja izgradnja posle bola je osnova povratka — kao kod manjka, ne ispod
+          // min(planirano, donja granica volume.adaptFloorKm).
+          step.startKm = round1(Math.max(Math.min(tn, lastBuild ?? tn), Math.min(tn, floorKm)));
           step.reduced = false;
           volumeRule = true;
         }

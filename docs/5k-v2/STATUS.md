@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.10.4`, 08l) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.11.0`, 09) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -198,3 +198,17 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   `input.weekLabel`; forma čita isti pomak.
 - review3d-5K: reasonMismatch 112 → 0, labelMismatch 0; bez pomaka bajt-isto; sabotaže 3/3.
 - Izveštaj: `reports/SEGMENT-08l-IMPLEMENTATION.md`.
+
+## Segment 09 — ispravke posle dubinske provere (5k-v2.11.0, 2026-10-23)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: c13c258 | spisak `docs/generators-v2/audit/fixes/5K.md`
+- F1 oštrenje na laganom danu ≥ 2 dana pre trke (3 d: 12/245 → 0); F2 lanac „jedan kvalitet → bez kvaliteta" i u
+  generatoru + QUALITY_REDUCED (273 → 0); Z5 cilj predaje (HM/MAR rezultat → po osećaju; početnik > 4 dana → regular);
+  C8 VDOT < 30 → po osećaju; Z4 vraćanje kroz writtenWeeks + validator (376 → 0); M2/M3 napomene (1 114 / 2 221 → 0);
+  C1 rasterećenje nikad u ned 1–2 (72 → 0); C2 umor bez dayId = lagan (355 → 0); N1 jedna „poslednja izgradnja" (9 759 → 0);
+  višak posle bola ne ispod donje granice (kao manjak); C13 početnik bez testa (324 → 0); Z1 kvalitet ostaje uz upisani višak ≤ 10 % (136 → 0); Z2 jedan format teksta
+  (`text.ts`); Z3 Forma čita `assess.resultUse` (12 124 → 0); K plafon laganog trkačke nedelje, peakKm adaptacije
+  (2 474 → 0), izolacija; test granice plafona I.
+- Otisci regresije prema c13c258 bez teksta (`segment09.*-c13c258.json`, `fixes/5K/fixture09.ts`).
+- Izveštaj: `reports/SEGMENT-09-IMPLEMENTATION.md`.
+

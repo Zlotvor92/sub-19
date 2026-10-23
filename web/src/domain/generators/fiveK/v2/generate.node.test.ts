@@ -203,7 +203,8 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
     // 2.4.0: star rezultat više nije odbijanje — bez laganog tempa traži se MISSING_EASY_PACE.
     ['rezultat 85 dana', inputOf({ ...ok, resultDaysBefore: 85 }), 'MISSING_EASY_PACE'],
     ['rezultat posle starta', inputOf({ ...ok, resultDaysBefore: -1 }), 'RESULT_AFTER_START'],
-    ['VDOT < 30', inputOf({ ...ok, distanceM: 5000, timeSec: 1860 }), 'VDOT_OUT_OF_RANGE'],
+    // 5k-v2.11.0 (C8, kao 10K): VDOT < 30 → plan po osećaju; bez laganog tempa MISSING_EASY_PACE.
+    ['VDOT < 30', inputOf({ ...ok, distanceM: 5000, timeSec: 1860 }), 'MISSING_EASY_PACE'],
     ['VDOT > 60', inputOf({ ...ok, distanceM: 5000, timeSec: 1000 }), 'VDOT_OUT_OF_RANGE'],
     [
       'polumaraton',

@@ -12,7 +12,6 @@
    pre); redovno rasterećenje odmah posle nedelje sidra otpada — izmenjena očekivanja: nekadašnji BASE_R_DECREASE
    (ned 4 više nije rasterećenje), I1 (broj rasterećenja r + 1), primer E. */
 
-import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { adaptFiveKV2 } from './adapt.ts';
@@ -22,9 +21,7 @@ import { raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import {
   adaptNetworkFlows,
-  canonResult08e,
   doneFacts,
-  hasSecondEasy,
   historyFacts,
   PAIN_GRID,
   painCases,
@@ -45,16 +42,14 @@ import type {
 import { doseResetAt } from './steps.ts';
 import { validatePlan } from './validate.ts';
 import { capacityKm, fitTargetKm } from './volume.ts';
+import { userText } from './text.ts';
+import { ref09, regress09 } from './segment09.harness.node.test.ts';
 
 const A = P.adapt;
-/** 08h (5k-v2.8.1, pouka 35): tokovi postojećih mreža promenjeni jer je drugi dan kvaliteta lagan. */
-const P35_NETWORK = 1;
 const EPS = 1e-6;
 const round1 = (x: number): number => Math.round(x * 10) / 10;
 const floor1 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
 const S = JSON.stringify;
-const hash = (r: unknown): string =>
-  createHash('sha256').update(canonResult08e(r)).digest('hex').slice(0, 16);
 const REF = JSON.parse(
   readFileSync(new URL('./segment08d.adapt-hashes-bf47249.json', import.meta.url), 'utf8')
 ) as {
@@ -169,53 +164,18 @@ describe('regresija prema bf47249 (heš bez oznake verzije)', () => {
     expect(REF.count).toEqual({ network: 732, gridP: 392 });
   });
 
-  it('postojeće mreže (s06 420, s07a 120, s07b 192): promenjeno samo s06/pain5 (60/60, svi PAIN sa povratkom); 0 odbijanja', () => {
-    const net = adaptNetworkFlows(api, raceTimeForVdot);
-    expect(net.map((f) => f.key).sort()).toEqual(Object.keys(REF.network).sort());
-    const changed: Record<string, number> = {};
-    const notBack: string[] = [];
-    const backSame: string[] = [];
-    let p35 = 0;
-    for (const f of net) {
-      const r = f.result as Res;
-      const s = f.key.split('/');
-      const scenario = `${s[0]}/${s.slice(2).join('/')}`;
-      if (REF.network[f.key] !== hash(r)) {
-        // 08h (5k-v2.8.1, pouka 35): promena tokova sa drugim danom kvaliteta laganim (testInputs.hasSecondEasy).
-        if (!painBack(r) && hasSecondEasy(r)) p35++;
-        else {
-          changed[scenario] = (changed[scenario] ?? 0) + 1;
-          if (!painBack(r)) notBack.push(f.key);
-        }
-      } else if (painBack(r)) backSame.push(f.key);
-    }
-    expect(changed).toEqual({ 's06/pain5': 60 });
-    expect(p35).toBe(P35_NETWORK);
-    expect(notBack).toEqual([]);
-    expect(backSame).toEqual([]);
-    expect(net.filter((f) => !(f.result as Res).ok).map((f) => f.key)).toEqual([]);
-    expect(REF.rejectedNetwork).toEqual([]);
-  });
-
-  it('mreža bola P: 392 toka; promenjeno 380 = svi tokovi sa povratkom; 12 bez povratka (r je taper) bajt-isto; 0 odbijanja', () => {
-    expect(PAIN_GRID.length).toBe(7);
+  // 5K-09: otisci prema bf47249 su zamenjeni otiskom prema c13c258 bez korisničkog teksta (Z2); promene bf47249 →
+  // c13c258 (s06/pain5, mreža bola P, pouka 35) su u istoriji (SEGMENT-08d…08l izveštaji).
+  it('postojeće mreže (732) i mreža bola P (392): regresija prema c13c258 — promenjeni nose razlog (C1, C13, lanac); 0 odbijanja', () => {
+    const ref = ref09('n08d');
+    expect([ref.against, ref.count]).toEqual(['c13c258', 1124]);
+    const net = adaptNetworkFlows(api, raceTimeForVdot).map((f) => ({ key: f.key, res: f.result }));
+    expect(net).toHaveLength(732);
     expect(flows.length).toBe(392);
-    expect(flows.map((f) => f.key).sort()).toEqual(Object.keys(REF.gridP).sort());
-    // Uslov prihvatanja (odluka organizatora, sudar 1): nijedan tok bola sa povratkom nije odbijen.
-    expect(flows.filter((f) => !f.res.ok).map((f) => f.key)).toEqual([]);
-    const changed = flows.filter((f) => REF.gridP[f.key] !== hash(f.res));
-    const back = flows.filter((f) => painBack(f.res));
-    expect(changed.length).toBe(380);
-    expect(back.length).toBe(380);
-    expect(
-      changed.filter((f) => !painBack(f.res) && !hasSecondEasy(f.res)).map((f) => f.key)
-    ).toEqual([]);
-    expect(back.filter((f) => !changed.includes(f)).map((f) => f.key)).toEqual([]);
-    // Nepromenjeni: bez povratka (nedelja asOf pred taperom → r je taper).
-    for (const f of flows.filter((x) => !changed.includes(x))) {
-      const st = contOf((f.res as Extract<Res, { ok: true }>).plan).adaptation!.steps.at(-1)!;
-      expect(st.returnFrom ?? null, f.key).toBeNull();
-    }
+    expect(regress09(ref, [...net, ...flows]).slice(0, 10)).toEqual([]);
+    expect([...net, ...flows].filter((f) => !(f.res as Res).ok).map((f) => f.key)).toEqual([]);
+    // Mreža bola P: 380 tokova sa povratkom (r izgradnja), 12 bez (r je taper) — kao na bf47249.
+    expect(flows.filter((f) => painBack(f.res)).length).toBe(380);
   });
 
   it('odbijanja na bf47249 (44: 22 BASE_R_DECREASE + 22 trčanje/hodanje VOLUME_GROWTH) su sada prihvaćena', () => {
@@ -324,7 +284,9 @@ describe('mreža bola P: korak, poruka, I1–I5', () => {
       // Bez pauze cilj nedelje r ≥ 0,7 × nivo: osnova = 70% nivoa (min ne deluje).
       expect(a.base, f.key).toBe(a.share);
       expect(msg, f.key).toContain(
-        `Posle nedelje ${a.r} rast kreće od 70% nivoa pre bola (${a.base} km). Povratak do ${a.L} km (nivo pre smanjenja)`
+        userText(
+          `Posle nedelje ${a.r} rast kreće od 70% nivoa pre bola (${a.base} km). Povratak do ${a.L} km (nivo pre smanjenja)`
+        )
       );
     }
     expect(back).toBe(380);
@@ -504,11 +466,13 @@ describe('pauza 20 dana + bol 8 u istom koraku: osnova = min(0,7 × nivo koraka,
           bites++;
           if (
             !msg.includes(
-              `Posle nedelje ${a.r} rast kreće od ${a.base} km (cilj nedelje ${a.r}; 70% nivoa pre bola bilo bi ${a.share} km).`
+              userText(
+                `Posle nedelje ${a.r} rast kreće od ${a.base} km (cilj nedelje ${a.r}; 70% nivoa pre bola bilo bi ${a.share} km).`
+              )
             )
           )
             bad.push(`${b.id}/${asOf}: poruka ${msg}`);
-        } else if (!msg.includes(`rast kreće od 70% nivoa pre bola (${a.base} km)`))
+        } else if (!msg.includes(userText(`rast kreće od 70% nivoa pre bola (${a.base} km)`)))
           bad.push(`${b.id}/${asOf}: poruka ${msg}`);
         const w = r.plan.weeks[a.r];
         if (!w || !isBuild(w)) continue;
@@ -566,7 +530,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
       [36.5, 36.5, 2]
     ]);
     expect(r.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
-      'Posle nedelje 4 rast kreće od 70% nivoa pre bola (30.2 km). Povratak do 43.2 km (nivo pre smanjenja) po +10%/ned'
+      'Posle nedelje 4 rast kreće od 70% nivoa pre bola (30,2 km). Povratak do 43,2 km (nivo pre smanjenja) po +10%/ned'
     );
   });
 

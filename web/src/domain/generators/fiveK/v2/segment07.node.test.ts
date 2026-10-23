@@ -3,14 +3,13 @@
    testInputs, validate), da bi na c9003aa padali pojedinačno na proveri (plan trčanje/hodanje tamo
    pada na RUN_WALK_NOT_SUPPORTED_YET), a ne na uvozu. */
 
-import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { adaptFiveKV2 } from './adapt.ts';
 import { addDays } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
 import * as policy from './policy.ts';
-import { adaptNetwork, doneFacts, hasSecondEasy, historyFacts, START } from './testInputs.ts';
+import { ref09, regress09 } from './segment09.harness.node.test.ts';
+import { adaptNetwork, doneFacts, historyFacts, regressionInputs, START } from './testInputs.ts';
 import type {
   AdaptFacts,
   AdaptResult,
@@ -639,93 +638,13 @@ describe('Mreža B: trčanje/hodanje 6/8/12/16 ned × 6 scenarija → 0 grešaka
 
 /* ---------- Regresija: generisanje bez adaptacije ---------- */
 
-function regressionInputs(): [string, Record<string, unknown>][] {
-  const out: [string, Record<string, unknown>][] = [];
-  const DAYS: Record<number, string[][]> = {
-    3: [
-      ['tue', 'thu', 'sun'],
-      ['mon', 'wed', 'sat']
-    ],
-    4: [
-      ['tue', 'thu', 'sat', 'sun'],
-      ['mon', 'wed', 'fri', 'sat']
-    ],
-    5: [['mon', 'tue', 'thu', 'sat', 'sun']]
-  };
-  const KM: Record<number, number[]> = {
-    3: [12, 18, 28, 35],
-    4: [15, 22, 35, 45],
-    5: [25, 38, 50, 65]
-  };
-  for (const d of [3, 4, 5])
-    for (const days of DAYS[d]!)
-      for (const km of KM[d]!)
-        for (const weeks of [6, 7, 8, 10, 12, 14, 16])
-          for (const mode of ['v45', 'v36', 'feel', 'beg', 'begRes']) {
-            const input: Record<string, unknown> = {
-              startDate: START,
-              raceDate: addDays(START, weeks * 7 - 1),
-              runDays: days,
-              currentWeeklyKm: km
-            };
-            if (mode === 'v45')
-              input['recentResult'] = { distanceM: 5000, timeSec: 1340, date: addDays(START, -14) };
-            if (mode === 'v36')
-              input['recentResult'] = {
-                distanceM: 10000,
-                timeSec: 3400,
-                date: addDays(START, -20)
-              };
-            if (mode === 'feel') input['typicalEasyPaceSecPerKm'] = 375;
-            if (mode === 'beg')
-              Object.assign(input, {
-                experience: 'beginner',
-                canRun30Min: true,
-                typicalEasyPaceSecPerKm: 430
-              });
-            if (mode === 'begRes')
-              Object.assign(input, {
-                experience: 'beginner',
-                canRun30Min: true,
-                recentResult: { distanceM: 5000, timeSec: 1800, date: addDays(START, -10) }
-              });
-            if (mode !== 'v45' && mode !== 'v36') input['goalTimeSec'] = 1600;
-            out.push([`d${d}-${days.join('')}-${km}-${weeks}-${mode}`, input]);
-          }
-  return out;
-}
-
-/** 08h: broj planova regresione mreže sa drugim danom kvaliteta laganim (pouka 35). */
-const P35_CHANGED = 14;
-
-describe('Generisanje bez adaptacije: postojeće grane bajt-iste kao c9003aa (osim policyVersion)', () => {
-  it('700 ulaza (640 planova): heš JSON-a = fixture sa c9003aa', () => {
-    const fixture = JSON.parse(
-      readFileSync(new URL('./segment07.generate-c9003aa.json', import.meta.url), 'utf8')
-    ) as Record<string, string>;
-    const got: Record<string, string> = {};
-    for (const [id, input] of regressionInputs()) {
-      const r = generateFiveKV2(input);
-      got[id] = r.ok
-        ? createHash('sha256')
-            .update(S({ ...r.plan, policyVersion: '-' }))
-            .digest('hex')
-            .slice(0, 16)
-        : `REJ:${r.reasons.map((x) => x.code).join(',')}`;
-    }
-    expect(Object.keys(got)).toHaveLength(700);
-    expect(Object.values(got).filter((x) => !x.startsWith('REJ')).length).toBe(640);
-    // 08h (5k-v2.8.1, pouka 35): planovi sa drugim danom kvaliteta laganim se menjaju (testInputs.hasSecondEasy),
-    // svi ostali bajt-isti.
-    const p35 = [...regressionInputs()]
-      .filter(([, input]) => hasSecondEasy(generateFiveKV2(input)))
-      .map(([id]) => id);
-    for (const id of p35) {
-      expect(got[id], id).not.toBe(fixture[id]);
-      delete got[id];
-      delete fixture[id];
-    }
-    expect(p35.length).toBe(P35_CHANGED);
-    expect(got).toEqual(fixture);
+describe('Generisanje bez adaptacije: regresija prema c13c258 (5K-09, otisak bez teksta)', () => {
+  it('700 ulaza (644 plana): tok van spiska promenjenih bajt-isti; promenjeni (F2, C1, C13) nose razlog', () => {
+    const ref = ref09('g07');
+    const flows = regressionInputs().map(([key, input]) => ({ key, res: generateFiveKV2(input) }));
+    expect(flows).toHaveLength(700);
+    expect(regress09(ref, flows).slice(0, 10)).toEqual([]);
+    // 5k-v2.11.0 (F2): 4 ulaza 3 dana / 12 km koje je c13c258 odbijao (QUALITY_INFEASIBLE) daju plan (640 → 644).
+    expect(flows.filter((f) => f.res.ok)).toHaveLength(644);
   });
 });

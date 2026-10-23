@@ -5,7 +5,7 @@
 import { addDays, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
 import { hasFreshResult } from './input.ts';
 import { feelPaces, pacesFromVdot, vdotFromResult } from './paces.ts';
-import { isShortPrep, periodize, rePeriodize } from './periodize.ts';
+import { controlTest, isShortPrep, periodize, rePeriodize } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete, type RunDaysCount } from './policy.ts';
 import type {
   AdaptStep,
@@ -164,7 +164,7 @@ export function framesFor(
 ): WeekFrame[] {
   const a = baseAthlete(input);
   const every = rulesOf(a).deloadEvery;
-  let frames = periodize(input.startDate, totalWeeks, every, a.feel);
+  let frames = periodize(input.startDate, totalWeeks, every, controlTest(a));
   if (steps.length === 0) return frames;
   // 2.8.0 (pouka 29, N2a): kontrolno trčanje iz prethodnog (upisanog) plana — test u zaštićenom danu je urađen
   // (ostaje u svojoj nedelji, ne premešta se); inače nedelja testa prethodnog plana (premeštanje iz ranijeg

@@ -7,13 +7,11 @@
      J3: 0 odbijanja od validatora (dozvoljeno samo VDOT_OUT_OF_RANGE — rezultat ±2 VDOT van opsega ulaza);
      J4 (Uslov 8): km > 0, dugi ≥ lagan, nedelja ≥ minimum (u nedelji sa danima bola: cilj), nema kvaliteta ni
      ubrzanja u danima bola/odmora, prošlost bajt-ista; polje reduced tačno; rečenica Odluke 9 tačno za ukinute
-     nedelje; regresija prema 51a924f (segment08e.adapt-hashes-51a924f.json, heš bez oznake verzije i polja reduced):
-     svaki promenjen tok ima rečenicu Odluke 9 ili je na 51a924f bio odbijen.
+     nedelje; regresija (5K-09) prema c13c258 (segment09.e08e-c13c258.json, otisak bez korisničkog teksta): svaki
+     promenjen tok nosi razlog segmenta 09 (segment09.harness).
    - BRZ nivo: uska pretraga — svaki 6. tok po scenariju; šira — samo nedelje 1–3 („rana"), svaki 5. tok po scenariju;
      + imenovani tokovi (primeri). PUN nivo: uska cela (glavni fajl), šira cela (deo 2). */
 
-import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL, sample } from '@/test/level';
 import { adaptFiveKV2 } from './adapt.ts';
@@ -21,9 +19,8 @@ import { generateFiveKV2 } from './generate.ts';
 import { raceTimeForVdot } from './paces.ts';
 import { isShortPrep, periodize } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
+import { ref09, regress09 } from './segment09.harness.node.test.ts';
 import {
-  canonResult08e,
-  family08g,
   RELIEF_NARROW,
   RELIEF_WIDE,
   reliefBases,
@@ -63,16 +60,6 @@ export const LIMIT = {
   beginner: longestRun(P.beginner.deloadEvery) + 1
 };
 export const bound = (beginner: boolean): number => (beginner ? LIMIT.beginner : LIMIT.regular);
-const hash = (r: unknown): string =>
-  createHash('sha256').update(canonResult08e(r)).digest('hex').slice(0, 16);
-export const REF = JSON.parse(
-  readFileSync(new URL('./segment08e.adapt-hashes-51a924f.json', import.meta.url), 'utf8')
-) as {
-  policyVersion: string;
-  narrow: { hashes: Record<string, string>; rejected: Record<string, string> };
-  wide: { hashes: Record<string, string>; rejected: Record<string, string> };
-};
-
 let basesCache: { narrow?: ReliefBase[]; wide?: ReliefBase[] } = {};
 export const basesOf = (search: Search): ReliefBase[] =>
   (basesCache = {
@@ -158,35 +145,26 @@ export function usability(f: GridFlow): string[] {
   return bad;
 }
 
-/** Brojke celog skupa (pun nivo) po pretrazi: tokova, ukinuto, zadržano granicom, promenjeno prema 51a924f. */
+/** Brojke celog skupa (pun nivo) po pretrazi: tokova, ukinuto, zadržano granicom. */
 export const TOTALS: Record<
   Search,
   {
     flows: number;
     dropped: number;
     kept: number;
-    changed: number;
-    formerlyRejected: number;
-    /** 08g: promenjeni tokovi porodice N3/N4/F (testInputs.family08g; uska 75 N3/N4 + 8 P; šira 7 N3/N4 + 270 F + 33 P (08h, pouka 35));
-        08i (pouka 37, M): uska + 920, šira + 1355 (promenjeno isto toliko više); 08i-b (zbir po činjenicama): šira + 496; 08j (K9, test otpada sam): uska + 10, šira + 21; 08k: šira + 104 ranije odbijenih (VDOT van opsega → RESULT_IGNORED). */
-    family08g: number;
+    /* 5K-09: brojke promena prema 51a924f (changed, formerlyRejected, family08g) uklonjene su sa tim otiskom — regresija
+       je prema c13c258 (segment09.e08e-c13c258.json). */
   }
 > = {
   narrow: {
     flows: 5952,
     dropped: 988,
-    kept: 0,
-    changed: 2032,
-    formerlyRejected: 31,
-    family08g: 1013
+    kept: 0
   },
   wide: {
     flows: 10852,
     dropped: 978,
-    kept: 0,
-    changed: 3293,
-    formerlyRejected: 133,
-    family08g: 2182
+    kept: 0
   }
 };
 
@@ -199,10 +177,8 @@ export function describeReliefGrid(title: string, search: Search): void {
         flows.push({ b, c, res, k: reliefCheck(res, bound, b.plan) });
       }
     }, GRID_TIMEOUT);
-    const ref = REF[search];
 
     it('J3: 0 odbijanja od validatora (dozvoljeno samo VDOT_OUT_OF_RANGE: rezultat van opsega ulaza)', () => {
-      expect(REF.policyVersion).toBe('5k-v2.6.1');
       expect(LIMIT).toEqual({ regular: 6, beginner: 4 });
       if (FULL) expect(flows.length).toBe(TOTALS[search].flows);
       else expect(flows.length).toBeGreaterThan(search === 'narrow' ? 900 : 400);
@@ -239,7 +215,7 @@ export function describeReliefGrid(title: string, search: Search): void {
           bad.push(`${f.c.key}: reduced ${f.k.reduced!.got} ≠ ${f.k.reduced!.want}`);
         for (const x of f.res.reasons)
           for (const m of x.message.matchAll(
-            /Redovno rasterećenje u nedelji (\d+) otpada: nedelja (\d+) je smanjena \(Odluka 9\)\./g
+            /Redovno rasterećenje u nedelji (\d+) otpada: nedelja (\d+) je smanjena\./g
           ))
             if (Number(m[2]) !== Number(m[1]) - 1) bad.push(`${f.c.key}: ${m[0]}`);
       }
@@ -250,36 +226,16 @@ export function describeReliefGrid(title: string, search: Search): void {
       expect(flows.flatMap(usability).slice(0, 10)).toEqual([]);
     });
 
-    it('regresija prema 51a924f: promenjen tok ⇔ rečenica Odluke 9 ili odbijen na 51a924f; ostali bajt-isti', () => {
-      const bad: string[] = [];
-      let changed = 0;
-      let formerly = 0;
-      let later = 0;
-      for (const f of flows) {
-        const was = ref.hashes[f.c.key];
-        if (was === undefined) {
-          bad.push(`${f.c.key}: nema u fixture-u`);
-          continue;
-        }
-        const same = was === hash(f.res);
-        const noted = f.k.noted.length > 0;
-        const rejected = ref.rejected[f.c.key] !== undefined;
-        if (!same) changed++;
-        if (!same && !noted && rejected) formerly++;
-        // 08g/08h/08i: promena iz porodice N3/N4/F/P/M (testInputs.family08g) — pouke 30, 29, 36, 35, 37.
-        const fam =
-          !same && !noted && !rejected ? family08g(f.b.plan, f.c.facts, f.c.asOf, f.res) : null;
-        if (fam) later++;
-        if (!same && !noted && !rejected && !fam) bad.push(`${f.c.key}: promenjen bez Odluke 9`);
-        if (same && noted) bad.push(`${f.c.key}: rečenica bez promene`);
-      }
+    // 5K-09: otisak prema 51a924f (sa tekstom) zamenjen otiskom prema c13c258 bez korisničkog teksta (Z2); promene
+    // 51a924f → c13c258 (Odluka 9, N3/N4/F/P/M/K, 08k) su u istoriji (SEGMENT-08e…08l izveštaji).
+    it('regresija prema c13c258 (5K-09, otisak bez teksta): promenjeni tokovi nose razlog segmenta 09', () => {
+      const ref = ref09('e08e');
+      expect(ref.against).toBe('c13c258');
+      const bad = regress09(
+        ref,
+        flows.map((f) => ({ key: `${search}:${f.c.key}`, res: f.res }))
+      );
       expect(bad.slice(0, 10)).toEqual([]);
-      if (FULL)
-        expect([changed, formerly, later]).toEqual([
-          TOTALS[search].changed,
-          TOTALS[search].formerlyRejected,
-          TOTALS[search].family08g
-        ]);
     });
 
     it('determinizam (svaki 9. tok)', () => {

@@ -79,10 +79,10 @@ describe('08g N2b — sporiji rezultat u bazi: jedinica doze i plafon ispred pro
     expect(r.plan.warnings.filter((w) => w.rule === 'DOSE_DROPPED').map((w) => w.week)).toEqual([
       5
     ]);
-    expect(r.plan.weeks[4]!.notes.some((n) => n.includes('DOSE_DROPPED'))).toBe(true);
-    expect(r.plan.weeks.filter((w) => w.notes.some((n) => n.includes('DOSE_DROPPED'))).length).toBe(
-      1
-    );
+    expect(r.plan.weeks[4]!.notes.some((n) => n.startsWith('R doza pala:'))).toBe(true);
+    expect(
+      r.plan.weeks.filter((w) => w.notes.some((n) => n.startsWith('R doza pala:'))).length
+    ).toBe(1);
   });
   it('(i) plafon dozvoljava prethodnu R, a R padne → i dalje BASE_R_DECREASE', () => {
     const p = planOf('r-d5-14w-60km-v32-1');

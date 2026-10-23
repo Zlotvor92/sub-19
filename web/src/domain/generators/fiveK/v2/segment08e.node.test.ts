@@ -45,7 +45,7 @@ const rows = (p: FiveKV2Plan, from: number, to: number) =>
 const text = (r: Extract<AdaptResult, { ok: true }>, c: string): string =>
   r.reasons.find((x) => x.condition === c)?.message ?? '';
 const RELIEF = (w: number) =>
-  `Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena (Odluka 9).`;
+  `Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena.`;
 
 describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-v2.7.0)', () => {
   it('bazni plan: rasterećenja ned 4 i 8; granica niza = najduži niz generatora + 1: 6 (plan od 11 ned: 5), početnik 4', () => {
@@ -266,7 +266,7 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
       [12, true]
     ]);
     expect(text(r, 'PAIN')).toContain(
-      'Posle nedelje 2 rast kreće od 70% nivoa pre bola (10.5 km).'
+      'Posle nedelje 2 rast kreće od 70% nivoa pre bola (10,5 km).'
     );
     expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
   });
@@ -302,7 +302,7 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
     expect(r.plan.warnings).toContainEqual({
       rule: 'PLANNED_BELOW_TARGET_LIMITS',
       severity: 'warning',
-      message: 'Planirano 7.3 km < cilj obima 7.5 km (odmor/bol, adaptacija).',
+      message: 'Planirano 7,3 km < cilj obima 7,5 km (odmor/bol, adaptacija).',
       week: 9
     });
     // Cilj ispod minimuma ostaje greška konstruktora.

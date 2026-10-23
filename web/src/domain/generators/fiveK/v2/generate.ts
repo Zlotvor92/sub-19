@@ -2,7 +2,8 @@
    Bez čitanja sata: svi datumi dolaze iz ulaza. Ista vrednost ulaza → isti JSON. */
 
 import { addDays, daysBetween, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
-import { checkInput, weekLabel } from './input.ts';
+import { checkInput, vdotBelowRange, weekLabel } from './input.ts';
+import { userResult, userText } from './text.ts';
 import {
   assessGoal,
   beginnerGoal,
@@ -11,7 +12,7 @@ import {
   pacesFromVdot,
   raceTimeForVdot
 } from './paces.ts';
-import { isShortPrep, periodize, phaseCounts } from './periodize.ts';
+import { controlTest, isShortPrep, periodize, phaseCounts } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { buildRunWalkPlan } from './runWalk.ts';
 import { choosePattern } from './schedule.ts';
@@ -90,7 +91,7 @@ export function construct(
   const paces: PaceModel =
     vdot === null ? feelPaces(input.typicalEasyPaceSecPerKm!) : pacesFromVdot(vdot);
   const totalWeeks = (daysBetween(input.startDate, input.raceDate) + 1) / 7;
-  const frames0 = periodize(input.startDate, totalWeeks, rules.deloadEvery, a.feel);
+  const frames0 = periodize(input.startDate, totalWeeks, rules.deloadEvery, controlTest(a));
   const vol = planVolume(frames0, input.currentWeeklyKm, paces, a);
   const dropped = new Map<number, number>();
   /** 2.10.1: nedelja → dan testa koji je zaštićen (test otpada, steps.framesFor). */
@@ -114,7 +115,9 @@ export function construct(
   const written: PlanWeek[] = [];
   const wt = prior && steps.length > 0 ? writtenTest(prior) : null;
   const testDone = wt?.done ? wt.week : null;
-  const push = (w: PlanWeek): void => {
+  const push = (w0: PlanWeek): void => {
+    // 5k-v2.11.0 (Z2): napomene nedelje u formatu teksta korisniku pre spajanja (prethodni plan je u istom formatu).
+    const w = { ...w0, notes: w0.notes.map(userText) };
     weeks.push(w);
     written.push(prior ? writtenWeek(prior.weeks[w.index - 1]!, w, prior).week : w);
   };
@@ -140,9 +143,9 @@ export function construct(
     const owner = steps.some(
       (s) => s.firstWeek === f.index && pauseRemainderKm(s, f, w.targetKm) !== null
     );
-    const m = owner ? null : mixedWeek(w, kept, keptKm, p);
-    const out = m?.week ?? w;
     const planKm = protectedKm(kept);
+    const m = owner ? null : mixedWeek(w, kept, keptKm, p, planKm);
+    const out = m?.week ?? w;
     const keptDates = new Set(kept.map((d) => d.date));
     const freeKm = out.days
       .filter((d) => !keptDates.has(d.date) && d.countsToWeek)
@@ -242,14 +245,17 @@ export function construct(
         r = t;
       }
     }
+    // 5k-v2.11.0 (F2): isti lanac i u generatoru (bez adaptacije) — kvalitet koji ne staje u obim (npr. 3 dana / 12 km)
+    // → jedan kvalitet doze rasterećenja → bez kvaliteta, uz napomenu i upozorenje QUALITY_REDUCED, umesto odbijanja
+    // plana (QUALITY_INFEASIBLE). Jedan vlasnik: ovaj lanac; validator čita ograničenje nedelje (limits.quality).
     for (const q of ['one', 'none'] as const) {
-      if (r.ok || !adaptive || (q === 'one' && f.limits?.quality !== undefined)) continue;
+      if (r.ok || (q === 'one' && f.limits?.quality !== undefined)) continue;
       const { swap: _swap, ...rest } = f.limits ?? {};
       // 2.6.0: kontrolno trčanje je glavni kvalitet nedelje — kad ne staje, otpada sa njim.
       r = build({ ...f, test: false, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
       if (r.ok)
         r.week.notes.push(
-          `Adaptacija: kvalitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}${f.test && testDone !== f.index ? ' (bez kontrolnog trčanja)' : ''}.`
+          `${adaptive ? 'Adaptacija: k' : 'K'}valitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}${f.test && testDone !== f.index ? ' (bez kontrolnog trčanja)' : ''}${adaptive ? '' : '; više obima ili 4 dana trčanja daju puni kvalitet'}.`
         );
     }
     if (!r.ok) {
@@ -322,7 +328,12 @@ function dateIn(f: WeekFrame, w: Weekday): string {
   return addDays(f.startDate, offset);
 }
 
+/** 5k-v2.11.0 (Z2): tekst korisniku rezultata kroz text.userResult (jedini format). */
 export function generateFiveKV2(raw: unknown): GenerateResult {
+  return userResult(generateRaw(raw));
+}
+
+function generateRaw(raw: unknown): GenerateResult {
   const checked = checkInput(raw);
   if (!checked.ok) return { ok: false, reasons: checked.reasons, violations: [] };
   const input: FiveKV2Input = checked.input;
@@ -373,7 +384,17 @@ export function generateFiveKV2(raw: unknown): GenerateResult {
       );
     notes.push(P.feel.forecastNote);
     const old = input.recentResult;
-    if (old)
+    if (
+      old &&
+      daysBetween(old.date, input.startDate) <= P.input.resultMaxAgeDays &&
+      vdotBelowRange(old)
+    )
+      notes.push(
+        P.feel.slowResultNote
+          .replace('{result}', `${old.distanceM / 1000}K ${fmt(old.timeSec)}`)
+          .replace('{date}', old.date)
+      );
+    else if (old)
       notes.push(
         P.feel.oldResultNote
           .replace('{result}', `${old.distanceM / 1000}K ${fmt(old.timeSec)}`)
