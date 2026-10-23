@@ -142,6 +142,14 @@ const easyDays = (dates: readonly string[], easy10: readonly number[], p: Paces)
 /** A4: dani odmora se ne prave; na danima bola dugi ≤ 60 min, lagani × 0,7 (≥ 5 km, ne duži od planiranog),
     dan pred trku bez ubrzanja; svaki lagan ≤ dugi (pouka 2). Bez dana bola/odmora dani ostaju isti. Vraća i
     dugi posle ograničenja [0,1 km]. */
+/** A4: dugi posle ograničenja koraka [0,1 km] — na danu odmora nema ga (null), na danu bola ≤ 60 min (painLong10).
+    JEDNO mesto za limitDays i napomenu spuštene doze (MAR-09 t. 5). */
+function limitedLong10(frame: WeekFrame, date: string, long10: number, p: Paces): number | null {
+  const L = frame.limits;
+  if (L?.rest?.includes(date)) return null;
+  return L?.pain?.includes(date) ? painLong10(long10, p) : long10;
+}
+
 function limitDays(
   frame: WeekFrame,
   days: PlanDay[],
@@ -153,12 +161,7 @@ function limitDays(
   const rest = new Set(L.rest ?? []);
   const pain = new Set(L.pain ?? []);
   const long = days.find((d) => d.role === 'long');
-  const l10 =
-    !long || rest.has(long.date)
-      ? null
-      : pain.has(long.date)
-        ? painLong10(Math.round(long.workout.km * 10), p)
-        : Math.round(long.workout.km * 10);
+  const l10 = long ? limitedLong10(frame, long.date, Math.round(long.workout.km * 10), p) : null;
   const out = days
     .filter((d) => !rest.has(d.date))
     .map((d) => {
@@ -451,9 +454,18 @@ export const secondEasyWeek = (w: { notes: readonly string[] }): boolean =>
     tekst to kaže umesto tvrdnje da ne sme biti duži. */
 const lowerNote = (what: string, rule: Dose, got: Dose, longer: boolean): string =>
   `${what}: ${got.zone} ${fmtKm(got.doseM / 1000)} km umesto ${fmtKm(rule.doseM / 1000)} km — ${longer ? 'najniža doza zone; dan kvaliteta ostaje duži od dugog (pouka 32, najniži nivo izuzet)' : 'dan kvaliteta ne sme biti duži od dugog (pouka 32, plafon zone)'}.`;
-/** MAR-09 t. 5: trening `w` traje duže od dugog `long10` [0,1 km]. */
-const longerThanLong = (w: Workout | null, long10: number, p: Paces): boolean =>
-  w !== null && w.sec > longWorkout(long10 / 10, p).sec;
+/** MAR-09 t. 5: trening `w` traje duže od dugog nedelje posle ograničenja koraka (limitedLong10; dan dugog
+    `longDate`, dužina `long10` [0,1 km]); bez dugog (dan odmora) — ne. */
+const longerThanLong = (
+  w: Workout | null,
+  frame: WeekFrame,
+  longDate: string,
+  long10: number,
+  p: Paces
+): boolean => {
+  const l10 = limitedLong10(frame, longDate, long10, p);
+  return w !== null && l10 !== null && w.sec > longWorkout(l10 / 10, p).sec;
+};
 
 /** A4/A9: dan jedinog kvaliteta — željeni dan šablona, a kad je u zabrani kvaliteta drugi dan kvaliteta. */
 function oneQualityDay(frame: WeekFrame, pat: Pattern, pref: Weekday): Weekday | null {
@@ -558,7 +570,14 @@ export function buildWeek(
     const long0 = Math.min(Math.floor(P.deload.longFactor * lastLong10 + 1e-9), jump10 ?? Infinity);
     const lowered =
       t && t0 && t.doseM < t0.doseM
-        ? [lowerNote('Rasterećenje', t0, t, longerThanLong(tw, len.long10, p))]
+        ? [
+            lowerNote(
+              'Rasterećenje',
+              t0,
+              t,
+              longerThanLong(tw, frame, dateOf(frame, pat.long), len.long10, p)
+            )
+          ]
         : [];
     const why = test ? 'M16' : rule.beginner ? 'M17' : 'A9, pouka 33';
     const longText = len.shortened
@@ -676,12 +695,19 @@ export function buildWeek(
               `Taper (N−${2 - taper})`,
               (tRule.mp ?? tRule.t)!,
               q1Dose,
-              longerThanLong(w1, len.long10, p)
+              longerThanLong(w1, frame, dateOf(frame, pat.long), len.long10, p)
             )
           ]
         : []),
       ...(w2 && t?.t && tRule?.t && t.t.doseM < tRule.t.doseM
-        ? [lowerNote(`Taper (N−${2 - taper})`, tRule.t, t.t, longerThanLong(w2, len.long10, p))]
+        ? [
+            lowerNote(
+              `Taper (N−${2 - taper})`,
+              tRule.t,
+              t.t,
+              longerThanLong(w2, frame, dateOf(frame, pat.long), len.long10, p)
+            )
+          ]
         : [])
     ];
     const mp = t?.mp ?? null;
@@ -776,7 +802,14 @@ export function buildWeek(
   let len = buildLengths(target10, q100, dates.length, rule, p, jump10);
   if (!len) return null;
   const notes: string[] = oneLow
-    ? [lowerNote('Adaptacija', oneLow[0], oneLow[1], longerThanLong(wo, len.long10, p))]
+    ? [
+        lowerNote(
+          'Adaptacija',
+          oneLow[0],
+          oneLow[1],
+          longerThanLong(wo, frame, dateOf(frame, pat.long), len.long10, p)
+        )
+      ]
     : [];
   // Pouka 35: dva dana kvaliteta samo kad dugi ostaje najduži — inače drugi dan kvaliteta je lagan (stanje slota Q2
   // se ne menja, picks.q2 = null), prvi ostaje.
