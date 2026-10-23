@@ -1,0 +1,46 @@
+{
+ "dist": "HM",
+ "from": 0,
+ "to": 3000,
+ "rejected": 138,
+ "out": {
+  "LIMITS": {
+   "lock-ranije": 68,
+   "ostalo": 58
+  },
+  "LIMITS (nerealno)": {
+   "ostalo": 5,
+   "lock-ranije": 5
+  },
+  "TEST": {
+   "lock-ranije": 1
+  },
+  "WEEK_INFEASIBLE": {
+   "ostalo": 1
+  }
+ },
+ "ex": {
+  "LIMITS lock-ranije": [
+   "i=44 koraka 2",
+   "i=139 koraka 4"
+  ],
+  "LIMITS ostalo": [
+   "i=99 koraka 3",
+   "i=124 koraka 3"
+  ],
+  "LIMITS (nerealno) ostalo": [
+   "i=613 koraka 2",
+   "i=1035 koraka 4"
+  ],
+  "LIMITS (nerealno) lock-ranije": [
+   "i=747 koraka 3",
+   "i=762 koraka 5"
+  ],
+  "TEST lock-ranije": [
+   "i=1581 koraka 4"
+  ],
+  "WEEK_INFEASIBLE ostalo": [
+   "i=1888 koraka 1"
+  ]
+ }
+}
