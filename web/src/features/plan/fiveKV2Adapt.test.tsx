@@ -174,8 +174,8 @@ describe('Napredak → Forma (5K v2) i km nedelje', () => {
     useUIStore.setState({ today: '2027-01-06' });
     render(<PlanPage />);
     const v2 = p['fiveKV2'] as { weeks: Array<{ plannedKm: number }> };
-    const hero = document.querySelector('.weekkm .hero-v')!.textContent;
-    expect(Number(hero.replace(',', '.'))).toBeCloseTo(v2.weeks[9]!.plannedKm, 1);
+    const km = document.querySelector('.weekkm .weekkm-v')!.textContent.replace(/\s*km$/, '');
+    expect(Number(km.replace(',', '.'))).toBeCloseTo(v2.weeks[9]!.plannedKm, 1);
     await waitFor(() =>
       expect(document.getElementById('week-race-km')!.textContent).toMatch(
         /^\+ trka 5 km \(dan trke \d+[.,]?\d* km sa zagrevanjem i hlađenjem\) — van obima nedelje$/
