@@ -416,16 +416,19 @@ describe('upozorenja (plan ostaje ispravan)', () => {
     for (const wk of drops) expect(r.plan.weeks[wk! - 1]!.fitted).toBe('down');
   });
 
-  it('M7a: 12 ned / 35 km — MP N−1 6,0 km iznad plafona 20 % (5,96 km): TAPER_MP_OVER_CAP, MP u N−1 i oštrenje 2 × 2000 m', () => {
+  it('M7a + MAR-11 T2: 12 ned / 35 km — MP N−1 skraćen do trajanja dugog (5,0 km), oštrenje 2 × 2000 m', () => {
     const p = plan({ weeks: 12, km: 35, vdot: 45 });
     const t1 = p.weeks.at(-2)!;
     expect(t1.targetKm).toBe(29.8);
-    expect(t1.days.find((d) => d.role === 'q1')!.workout.dose!.doseM).toBe(6000);
-    expect(warnings(p)).toContain('TAPER_MP_OVER_CAP');
+    // MAR-11 (T2): 2 × 3000 m bi trajao duže od dugog N−1 → MP 5,0 km kontinuirano (ispod plafona, bez upozorenja).
+    const q1 = t1.days.find((d) => d.role === 'q1')!;
+    expect(q1.workout.dose!.doseM).toBe(5000);
+    expect(q1.workout.sec).toBeLessThanOrEqual(t1.days.find((d) => d.role === 'long')!.workout.sec);
+    expect(warnings(p)).not.toContain('TAPER_MP_OVER_CAP');
     expect(errors(p)).toEqual([]);
     const s = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
     expect(s.workout.dose!.structure).toEqual({ form: 'reps', reps: 2, repM: 2000 });
-    expect(mutate((q) => (q.weeks.at(-2)!.notes = []), p)).toContain('TAPER_QUALITY');
+    // MAR-11 (T2): MP ispod plafona — napomena M7a (MP iznad plafona) se ne traži.
     // MP izgradnje i dalje pod plafonom 20 %.
     expect(mutate((q) => (dayOf(steady(q).at(-1)!, 'q1').workout.workKm.MP = 20), p)).toContain(
       'ZONE_CAP'

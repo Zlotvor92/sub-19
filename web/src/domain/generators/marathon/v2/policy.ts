@@ -417,6 +417,14 @@ const DECISIONS: readonly Decision[] = [
       'assess.ts (UNDER_EXECUTION, underFrom); types.ts; validate.ts (LIMITS); app/adapt.ts (restoreMerge); app/plan.ts KNOWN_VERSIONS',
     rationale:
       'Organizator: docs/generators-v2/audit/fixes/MAR-10.md (zaključan spisak, isti obrazac kao HM-09 hm-v2.7.1). Merenja pre → posle u docs/marathon-v2/reports/SEGMENT-09-IMPLEMENTATION.md § MAR-10.'
+  },
+  {
+    id: 'MAR-11',
+    rule: 'Trenerska pravila krug T (marathon-v2.7.0). T1: u nedelji izgradnje (ne rasterećenje, taper, trkačka) svaki lagan ≤ 0,8 × dugi iste nedelje i ≥ max(5 km, 20 min laganim tempom) — lengths.easyCap10/easyFloor10 u buildLengths (konstruktor) i EASY_LONG_SHARE (validator); ostatak koji ne staje: pretraga cilja (M6) uzima najbliži izvodljiv cilj naniže (CAPACITY_LIMITED sa preporukom; ned 1 sme ispod obima i kad je dugi na udelu M15), a kad nijedan cilj nije izvodljiv — manje laganih dana (odmor, napomena), pa lagani na 0,8 × dugi uz planirano < cilj (PLANNED_BELOW_TARGET); dugi se zbog toga ne produžava. T2: u taperu dan MP ≤ dugi iste nedelje — MP blok ispod 2 × 3000 m se skraćuje (kontinuirano, korak 0,5 km, najmanje 1,0 km) do trajanja dugog (quality.taperMpFit u taperDoses). T3: posle novog starta, kad je posle povratka bar jedna nedelja sa kvalitetom, taper zadržava jedan kvalitet MP ≈ 60 % poslednje MP doze posle povratka (najmanje 2 × 3000 m, T2), bez T (QualityState.restart); trkačka nedelja zadržava oštrenje 2 × 2000 m MP (hasSharpener, zabrana kvaliteta bola važi). T6 C6: progresija doze kreće ispočetka i od r + 1 posle bola (steps.doseRestartWeeks). T6 C11: pouka 35 i u nedelji testa i u taperu (week.taperSecondEasy). T7: skorašnji najduži > trenutni nedeljni obim → RECENT_LONG_INVALID (proveri unos). Lanci: C3 — zaštićen test (≤ asOf, zaključan, urađen) se ne broji kao „test plana po osećaju" (pouka 38); Z8 — bol vezan za zapise (raniji korak bola koji je video najnoviji zapis → nov korak se ne pravi); C8 — mešovita nedelja čiji je vlasnik pravilo pauze: zaštićeni + preostali > cilj → MIXED_WEEK_OVER.',
+    place:
+      'lengths.ts (easyCap10, easyFloor10, buildLengths under); week.ts (drop, easyRestNote, EASY_UNDER_NOTE, taperSecondEasy, hasSharpener, napomena tapera posle novog starta); generate.ts (redosled pokušaja, doseRestarts, restarted); quality.ts (taperMpFit, restart); steps.ts doseRestartWeeks; assess.ts (painSeen); input.ts (T7); validate.ts (EASY_LONG_SHARE, PLANNED_BELOW_TARGET, VOLUME_START, TEST, MIXED_WEEK_OVER, TAPER_QUALITY, RACE_SHARPENER, QUALITY_DAYS)',
+    rationale:
+      'Organizator: docs/generators-v2/audit/fixes/03-coach-rules.md (T1–T7, trenersko mišljenje) i T-assign.md; dopuna lanaca 01-chains-addendum.md (C3, Z8, C8). Merenja pre → posle u docs/marathon-v2/reports/SEGMENT-11-IMPLEMENTATION.md.'
   }
 ];
 
@@ -427,7 +435,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.6.1',
+  version: 'marathon-v2.7.0',
 
   /** M1 (dani i obim: M15). */
   input: {
@@ -590,6 +598,8 @@ export const MARATHON_V2_POLICY = {
       longFactor: number;
     }[],
     mpMin: reps(2, 3000),
+    /** MAR-11 (T2): najkraći skraćen MP blok tapera [km]. */
+    mpShortMinKm: 1.0,
     tMinKm: 2.0
   },
 
@@ -675,7 +685,14 @@ export const MARATHON_V2_POLICY = {
   caps: { R: 0.05, I: 0.08, T: 0.1, MP: 0.2 },
 
   /** M13 (udeo dugog: M15). */
-  lengths: { longMaxSec: 9000, easyMinKm: 5.0, longShortKm: 26 },
+  lengths: {
+    longMaxSec: 9000,
+    easyMinKm: 5.0,
+    longShortKm: 26,
+    /** MAR-11 (T1): izgradnja — lagan ≤ easyLongShare × dugi; najkraći lagan i ≥ easyMinSec laganim tempom. */
+    easyLongShare: 0.8,
+    easyMinSec: 1200
+  },
 
   /** M13a (pouka 28, izmena organizatora MAR-02): dugi ≤ max(factor × L; L + addKm), L = najduži dugi
       prethodnih `windowWeeks` nedelja (skorašnji najduži iz ulaza = „nedelja 0"). */
@@ -709,6 +726,9 @@ export const MARATHON_V2_POLICY = {
   /** M18 (segment 04): adaptacija (A1–A17). Rezultat: starost i VDOT kao ulaz; donja granica cilja: weekMinKm
       (M15, A9); lagan ≥ lengths.easyMinKm. */
   adapt: {
+    /** MAR-11 (T3): taper posle novog starta — jedan kvalitet MP ≈ restartTaperShare × poslednja MP doza posle
+        povratka (najmanje 2 × 3000 m); trkačka nedelja zadržava oštrenje (osim u periodu bola). */
+    restartTaperShare: 0.6,
     /** A2/A5/A6: prozor [dana]. */
     windowDays: 7,
     /** A2: izvršeno < underShare planiranog → cilj max(izvršeno, underFloorShare × cilj nedelje). */

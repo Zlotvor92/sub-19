@@ -92,7 +92,12 @@ describe('N2: BASE_PLATEAU posle nedelje testa (pouka 23)', () => {
     const t = r.plan.weeks.find((w) => w.test)!;
     const tAt = (i: number) => r.plan.weeks[i - 1]!.days.find((d) => d.role === 'q2')?.workout.dose;
     // Test zamenjuje samo Q1: T slot nedelje testa je stvarni kvalitet i progresija ide preko njega.
-    expect(tAt(t.index)).toBeDefined();
-    expect(tAt(t.index + 1)!.structure).not.toEqual(tAt(t.index)!.structure);
+    // MAR-11 (C11): kad bi uz test i Q2 neki dan bio duži od dugog, Q2 nedelje testa je lagan (pouka 35).
+    if (t.notes.some((n) => n.startsWith('Q2: dan kvaliteta je lagan')))
+      expect(tAt(t.index)).toBeUndefined();
+    else {
+      expect(tAt(t.index)).toBeDefined();
+      expect(tAt(t.index + 1)!.structure).not.toEqual(tAt(t.index)!.structure);
+    }
   });
 });

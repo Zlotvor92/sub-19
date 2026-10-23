@@ -6,6 +6,7 @@
 import { type DayRule, MARATHON_V2_POLICY as P } from './policy.ts';
 import type { Paces, PlanDay } from './types.ts';
 import { fmtKm } from './workouts.ts';
+import { midEasy } from './paces.ts';
 
 const EPS = 1e-9;
 const EASY_MIN10 = Math.round(P.lengths.easyMinKm * 10);
@@ -20,6 +21,8 @@ export interface Lengths {
   shortened?: true;
   /** Rasterećenje posle smanjenja (A9, odstupanje): 0,8 × poslednji < 5 km → dugi 5 km (dugi ≥ lagan ≥ 5 km). */
   raised?: true;
+  /** MAR-11 (T1): lagani na 0,8 × dugi ne nose ostatak — planirano < cilj (poslednje rešenje, generate.ts). */
+  under?: true;
 }
 
 /** M13: plafon dugog od 150 min sporim E [0,1 km]. */
@@ -140,25 +143,50 @@ function withEasy(
   n: number,
   jump10: number | null,
   target10: number,
-  rule: DayRule
+  rule: DayRule,
+  t1: Paces | null = null,
+  under = false
 ): Lengths | null {
+  const min10 = t1 ? easyFloor10(t1) : EASY_MIN10;
   const top = Math.min(cap10, jump10 ?? Infinity);
-  const long10 = Math.min(top, Math.floor((rest100 - n * EASY_MIN10 * 10) / 10));
-  if (long10 < EASY_MIN10) return null;
-  const easy10 = splitEasy(easyTotal10(rest100 - long10 * 10, target10, rule), n);
-  if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
-  return { long10, easy10, jumpBound: jump10 !== null && jump10 < cap10 && long10 === jump10 };
+  const long10 = Math.min(top, Math.floor((rest100 - n * min10 * 10) / 10));
+  if (long10 < min10) return null;
+  let easy10 = splitEasy(easyTotal10(rest100 - long10 * 10, target10, rule), n);
+  const max10 = t1 ? easyCap10(long10) : long10;
+  const jumpBound = jump10 !== null && jump10 < cap10 && long10 === jump10;
+  if (easy10.some((e) => e < min10)) return null;
+  if (easy10.some((e) => e > max10)) {
+    // MAR-11 (T1): poslednje rešenje (generate.ts) — lagani na 0,8 × dugi, planirano < cilj.
+    if (!under || max10 < min10) return null;
+    easy10 = easy10.map((e) => Math.min(e, max10));
+    return { long10, easy10, jumpBound, under: true };
+  }
+  return { long10, easy10, jumpBound };
+}
+
+/** MAR-11 (T1): u nedelji izgradnje svaki lagan ≤ 0,8 × dugi iste nedelje [0,1 km, naniže]. */
+export function easyCap10(long10: number): number {
+  return Math.floor(P.lengths.easyLongShare * long10 + EPS);
+}
+
+/** MAR-11 (T1): najkraći lagan nedelje izgradnje [0,1 km] = max(5 km, 20 min laganim tempom — tempo laganog dana,
+    workouts.easyWorkout), naviše. */
+export function easyFloor10(p: Paces): number {
+  return Math.max(EASY_MIN10, Math.ceil((P.lengths.easyMinSec / midEasy(p)) * 10 - EPS));
 }
 
 /** Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + `easyDays` laganih; `jump10` = plafon skoka M13a
-    (null kad ga nema). */
+    (null kad ga nema). MAR-11 (T1): lagani u granicama easyFloor10…easyCap10; ostatak cilja koji tu ne staje čini
+    nedelju neizvodljivom — pretraga cilja (M6, vlasnik obima) uzima najbliži izvodljiv cilj naniže (planirano <
+    cilj po pravilu, CAPACITY_LIMITED sa preporukom); dugi se zbog toga ne produžava. */
 export function buildLengths(
   target10: number,
   quality100: number,
   easyDays: number,
   rule: DayRule,
   p: Paces,
-  jump10: number | null = null
+  jump10: number | null = null,
+  under = false
 ): Lengths | null {
   return withEasy(
     target10 * 10 - quality100,
@@ -166,7 +194,9 @@ export function buildLengths(
     easyDays,
     jump10,
     target10,
-    rule
+    rule,
+    p,
+    under
   );
 }
 

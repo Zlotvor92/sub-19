@@ -1,0 +1,72 @@
+[
+ {
+  "name": "11-T1 lagan bez plafona 0,8 × dugi",
+  "file": "src/domain/generators/marathon/v2/lengths.ts",
+  "find": "  const max10 = t1 ? easyCap10(long10) : long10;",
+  "replace": "  const max10 = long10;",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-T2 MP tapera se ne skraćuje",
+  "file": "src/domain/generators/marathon/v2/quality.ts",
+  "find": "  if (!limit || doseOf(mp) > doseOf(P.taper.mpMin) || limit.q1('MP', mp, false)) return mp;",
+  "replace": "  if (!limit || doseOf(mp) > 0) return mp;",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-T3 taper posle novog starta kao bez pauze",
+  "file": "src/domain/generators/marathon/v2/quality.ts",
+  "find": "  if (state.restart && (state.q1 !== null || state.q2 !== null))",
+  "replace": "  if (state.restart && false)",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-T3 trkačka posle novog starta bez oštrenja",
+  "file": "src/domain/generators/marathon/v2/week.ts",
+  "find": "  return restarted || taperMpM >= s.reps * s.repM;",
+  "replace": "  return taperMpM >= s.reps * s.repM;",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-C6 bol ne vraća progresiju doze",
+  "file": "src/domain/generators/marathon/v2/steps.ts",
+  "find": "      ...(s.returnFrom ? [s.returnFrom.week + 1] : [])",
+  "replace": "      ...(s.returnFrom ? [] : [])",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-C11 pouka 35 ne važi u nedelji testa",
+  "file": "src/domain/generators/marathon/v2/week.ts",
+  "find": "    w1 && w2 && (picks?.q1 || test) && picks?.q2",
+  "replace": "    w1 && w2 && picks?.q1 && picks?.q2 && !test",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-T7 skorašnji najduži bez provere obima",
+  "file": "src/domain/generators/marathon/v2/input.ts",
+  "find": "  else if (isNum(recent) && isNum(km) && recent > km)",
+  "replace": "  else if (isNum(recent) && isNum(km) && recent > km + 1000)",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-C3 zaštićen test se broji kao test plana",
+  "file": "src/domain/generators/marathon/v2/validate.ts",
+  "find": "    const t0 = tests.find((x) => !protectedDay(x.d));",
+  "replace": "    const t0 = tests[0];",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-Z8 bol ne vidi raniji korak istog zapisa",
+  "file": "src/domain/generators/marathon/v2/assess.ts",
+  "find": "  if (painSeen)",
+  "replace": "  if (painSeen && false)",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ },
+ {
+  "name": "11-C8 bez upozorenja kad je vlasnik pauza",
+  "file": "src/domain/generators/marathon/v2/validate.ts",
+  "find": "      pauseOwned(steps, w.index) &&",
+  "replace": "      pauseOwned(steps, w.index) && false &&",
+  "tests": ["src/domain/generators/marathon/v2/segment11.node.test.ts"]
+ }
+]

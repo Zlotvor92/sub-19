@@ -385,7 +385,18 @@ export function assess(
   // A4: bol (uvek, po datumima; prethodni koraci ostaju, pa ponovni bol produžava period). Pouka 18: sidro
   // povratka = nedelja r (prvi dan odmora ili bola) — isti bol daje isti plan bez obzira na dan u nedelji.
   const hurt = W.filter((x) => t - day(x.date) < A.painLookbackDays && (x.pain ?? 0) >= A.painMin);
-  if (hurt.length > 0) {
+  // MAR-11 (Z8, kao umor — pouka 36; HM-09): bol je vezan za ZAPISE — kad je raniji korak bola već video najnoviji
+  // zapis bola (asOf koraka ≥ datum zapisa), nov korak bola se ne pravi (sidro i osnova ostaju; bez kaskade).
+  const lastHurt = hurt.length > 0 ? Math.max(...hurt.map((x) => day(x.date))) : null;
+  const painSeen =
+    lastHurt !== null ? steps.find((s) => s.pain !== null && day(s.asOf) >= lastHurt) : undefined;
+  if (painSeen)
+    reason(
+      'PAIN',
+      false,
+      `Bol ${Math.max(...hurt.map((x) => x.pain!))}/10: za ove zapise ograničenja su već u planu (prilagođavanje ${painSeen.asOf}).`
+    );
+  else if (hurt.length > 0) {
     const max = Math.max(...hurt.map((x) => x.pain!));
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };

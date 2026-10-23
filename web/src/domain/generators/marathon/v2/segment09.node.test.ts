@@ -150,7 +150,10 @@ describe('t. 5: napomena spuštene doze vidi najnižu dozu', () => {
       );
     });
     expect(contra.map((w) => w.index)).toEqual([]);
-    expect(p.weeks.some((w) => w.notes.some((n) => n.includes('ostaje duži od dugog')))).toBe(true);
+    // MAR-11 (T2): dan MP tapera više nije duži od dugog — napomena „ostaje duži" ovde više ne postoji.
+    expect(p.weeks.some((w) => w.notes.some((n) => n.includes('ostaje duži od dugog')))).toBe(
+      false
+    );
   });
 });
 
@@ -194,7 +197,8 @@ describe('t. 6 (Z2): RECENT_LONG_TOO_SHORT sa pravilom max(10 %, 1 km) i pragom'
     expect(g.ok).toBe(false);
     const m = !g.ok ? g.reasons[0]!.message : '';
     expect(m).toContain('max(10 %, 1 km)');
-    expect(m).toContain('Plan je izvodljiv od 8,0 km.');
+    // MAR-11 (T1): prag 7,5 km (bilo 8,0) — nedelja izgradnje sme da ima lagan dan odmora.
+    expect(m).toContain('Plan je izvodljiv od 7,5 km.');
     // Prag je tačan: sa njim plan postoji.
     expect(
       generateMarathonV2({
@@ -206,7 +210,7 @@ describe('t. 6 (Z2): RECENT_LONG_TOO_SHORT sa pravilom max(10 %, 1 km) i pragom'
         recentResult: null,
         goalTimeSec: null,
         easyPaceSecPerKm: 330,
-        recentLongRunKm: 8
+        recentLongRunKm: 7.5
       }).ok
     ).toBe(true);
   });

@@ -37,8 +37,11 @@ export const BASELINE_01 = join(HERE, 'segment01.baseline.json');
 /** MAR-04b (pouka 32 za sve zone, marathon-v2.3.1): planovi mreža 02, 03 po osećaju i 03 početnika BEZ ijednog dana
     kvaliteta dužeg od dugog na bd07eec (marathon-v2.3.0; docs/marathon-v2/artifacts/segment-04b/measure.ts) —
     bajt-isti prema baznim linijama; ostali (dan kvaliteta duži od dugog na bd07eec) jedini smeju da se promene. */
+/** MAR-11 (marathon-v2.7.0, T1/T2): od njih bajt-isti ostaju samo planovi koji na b9c4728 nemaju ni lagan > 0,8 ×
+    dugi u nedelji izgradnje (T1) ni dan MP tapera duži od dugog (T2) — segment11.stable-b9c4728.json (podskup
+    segment04b.stable-bd07eec.json; docs/marathon-v2/artifacts/segment-11/classify.ts). */
 export const STABLE = new Set(
-  JSON.parse(readFileSync(join(HERE, 'segment04b.stable-bd07eec.json'), 'utf8')) as string[]
+  JSON.parse(readFileSync(join(HERE, 'segment11.stable-b9c4728.json'), 'utf8')) as string[]
 );
 
 export const ALL: readonly GridInput[] = gridInputs();
@@ -231,6 +234,16 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     for (const d of w.days)
       if (d.role === 'easy' && d.workout.km > long.workout.km + 1e-9)
         no(`dugi < lagan ned ${w.index}`);
+    // MAR-11 (T1): izgradnja — lagan ≤ 0,8 × dugi, ≥ 5 km i ≥ 20 min (nezavisno od lengths.ts).
+    if (isSteady(w))
+      for (const d of w.days)
+        if (
+          d.role === 'easy' &&
+          (to10(d.workout.km) > Math.floor(0.8 * to10(long.workout.km) + 1e-9) ||
+            d.workout.km + 1e-9 < 5 ||
+            d.workout.sec + 1 < 1200)
+        )
+          no(`T1 lagan ned ${w.index}`);
     if (to10(long.workout.km) > Math.floor(rule.longMaxShare * to10(w.targetKm) + 1e-9))
       no(`dugi > udeo ned ${w.index}`);
     if (long.workout.km * p.paces.E.slow > 9000 + 1e-6) no(`dugi > 150 min ned ${w.index}`);
@@ -288,7 +301,9 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     if (to10(l) > Math.floor(Math.max(1.1 * m, m + 1) * 10 + 1e-9)) no(`skok dugog ned ${i}`);
   }
   if (w1.targetKm > p.startKm) no('ned 1 iznad obima');
-  if (w1.targetKm < p.startKm && l1 !== longTimeCap10(p.paces) && l1 !== rCap)
+  // MAR-11 (T1): i dugi na udelu nedelje (lagani ≤ 0,8 × dugi ne nose ostatak — kapacitet).
+  const shareCap1 = Math.floor(rule.longMaxShare * to10(w1.targetKm) + 1e-9);
+  if (w1.targetKm < p.startKm && l1 !== longTimeCap10(p.paces) && l1 !== rCap && l1 !== shareCap1)
     no('ned 1 ispod obima bez dugog na plafonu');
   // Taper (M7): cilj ≤ 0,8 / 0,6 × vrh; N−1 bez T.
   const [t0, t1, rw] = [W[N - 3]!, W[N - 2]!, W[N - 1]!];
@@ -302,8 +317,19 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
   // M7/M7a: obe nedelje tapera imaju MP ≥ 2 × 3000 m; N−2 ≥ N−1 (cilj i planirano); taper ≤ poslednja
   // izgradnja (odluka organizatora posle STANI, nalaz 1).
   for (const t of beginner ? [t0] : [t0, t1]) {
-    const mp = t.days.find((d) => d.workout.dose?.zone === 'MP')?.workout.dose?.doseM ?? 0;
-    if (mp < 6000) no(`taper ned ${t.index} bez MP ≥ 6000 m`);
+    const mpd = t.days.find((d) => d.workout.dose?.zone === 'MP');
+    const mp = mpd?.workout.dose?.doseM ?? 0;
+    const tl = t.days.find((d) => d.role === 'long');
+    // MAR-11 (T2): dan MP tapera ≤ dugi iste nedelje; ispod 2 × 3000 m samo skraćen kontinuirani blok.
+    if (
+      mpd &&
+      tl &&
+      mpd.workout.sec > tl.workout.sec &&
+      !(mpd.workout.dose?.structure.form === 'continuous' && mpd.workout.dose.doseM === 1000)
+    )
+      no(`T2 MP duži od dugog ned ${t.index}`);
+    if (!mpd || (mp < 6000 && mpd.workout.dose?.structure.form !== 'continuous'))
+      no(`taper ned ${t.index} bez MP ≥ 6000 m`);
   }
   if (t0.targetKm < t1.targetKm || t0.plannedKm < t1.plannedKm) no('N−2 < N−1');
   const lastBuild = W.filter(isSteady).at(-1)!;
@@ -530,8 +556,9 @@ export function describeGrid(
       // MAR-04b: menja se samo plan sa danom kvaliteta dužim od dugog na bd07eec (STABLE = ostali); vrh ne pada.
       const diff = Object.entries(rows).filter(([id, row]) => base[id] !== row && STABLE.has(id));
       expect(diff.slice(0, 10)).toEqual([]);
+      // MAR-11 (T1): vrh sme da padne u planu koji se menja (lagani ≤ 0,8 × dugi, CAPACITY_LIMITED).
       const lower = Object.entries(rows).filter(
-        ([id, row]) => Number(row.split('|')[0]) < Number(base[id]!.split('|')[0])
+        ([id, row]) => STABLE.has(id) && Number(row.split('|')[0]) < Number(base[id]!.split('|')[0])
       );
       expect(lower.slice(0, 10)).toEqual([]);
     });

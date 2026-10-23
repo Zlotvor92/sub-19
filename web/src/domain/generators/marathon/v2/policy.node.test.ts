@@ -15,7 +15,7 @@ import { doseOf } from './workouts.ts';
 describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.6.1');
+    expect(P.version).toBe('marathon-v2.7.0');
   });
 
   it('DECISIONS: M1–M18, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), A1–A15 i A17 (adaptacija, M18), svaka sa pravilom, mestom i obrazloženjem', () => {
@@ -24,7 +24,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     ids.splice(10, 0, 'M10a');
     ids.splice(7, 0, 'M7a');
     ids.push('M18', ...Array.from({ length: 15 }, (_, i) => `A${i + 1}`), 'A17');
-    // MAR-07 (Faza 4a): N1, pouka 35 (N5), pouka 36, N8, N9, N10.4–N10.7, N11; MAR-07b A11b; MAR-07c A13b; MAR-08 A11c; MAR-08b A13c, K3, K4; MAR-09; MAR-10.
+    // MAR-07 (Faza 4a): N1, pouka 35 (N5), pouka 36, N8, N9, N10.4–N10.7, N11; MAR-07b A11b; MAR-07c A13b; MAR-08 A11c; MAR-08b A13c, K3, K4; MAR-09; MAR-10; MAR-11.
     ids.push(
       'N1',
       'N5',
@@ -43,7 +43,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'K3',
       'K4',
       'MAR-09',
-      'MAR-10'
+      'MAR-10',
+      'MAR-11'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -136,6 +137,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
         { factor: 0.6, mpShare: 0.5, tShare: null, longFactor: 0.45 }
       ],
       mpMin: { form: 'reps', reps: 2, repM: 3000 },
+      mpShortMinKm: 1,
       tMinKm: 2
     });
     expect(P.raceWeek).toEqual({
@@ -188,7 +190,13 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('M11 plafoni, M12 početni nivo, M13 dužine, M14 WU/CD i oporavci', () => {
     expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, MP: 0.2 });
     expect(P.startLevel).toEqual({ capShare: 0.6 });
-    expect(P.lengths).toEqual({ longMaxSec: 9000, easyMinKm: 5, longShortKm: 26 });
+    expect(P.lengths).toEqual({
+      longMaxSec: 9000,
+      easyMinKm: 5,
+      longShortKm: 26,
+      easyLongShare: 0.8,
+      easyMinSec: 1200
+    });
     expect(P.longJump).toEqual({ factor: 1.1, addKm: 1, windowWeeks: 4 });
     expect(P.workout).toEqual({
       warmupCooldown: [

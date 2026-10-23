@@ -15,12 +15,20 @@ export function describeRecent(title: string, inputs: readonly GridInput[]): voi
     const other: string[] = [];
     const tooShort: number[] = [];
     const bad: string[] = [];
+    let implausible = 0;
     beforeAll(() => {
       for (const g of inputs) {
         const r = generateMarathonV2(g.input);
         if (r.ok) bad.push(...invariants(g.id, r.plan));
         else if (r.reasons.length === 1 && r.reasons[0]!.code === 'RECENT_LONG_TOO_SHORT')
           tooShort.push(g.input['recentLongRunKm'] as number);
+        // MAR-11 (T7): skorašnji najduži > trenutni nedeljni obim → odbijanje (proveri unos).
+        else if (
+          r.reasons.length === 1 &&
+          r.reasons[0]!.code === 'RECENT_LONG_INVALID' &&
+          (g.input['recentLongRunKm'] as number) > (g.input['currentWeeklyKm'] as number)
+        )
+          implausible++;
         else other.push(`${g.id}: ${r.reasons.map((x) => x.message).join('; ')}`);
       }
     }, 600_000);
@@ -28,6 +36,11 @@ export function describeRecent(title: string, inputs: readonly GridInput[]): voi
     it('K1: nijedno drugo odbijanje ni greška validatora; RECENT_LONG_TOO_SHORT samo pri r ≤ 8 km', () => {
       expect(other.slice(0, 10)).toEqual([]);
       expect(Math.max(0, ...tooShort)).toBeLessThanOrEqual(8);
+      expect(implausible).toBe(
+        inputs.filter(
+          (g) => (g.input['recentLongRunKm'] as number) > (g.input['currentWeeklyKm'] as number)
+        ).length
+      );
     });
 
     it('invarijante (skok dugog ≤ max(1,1 m; m + 1), Uslov 8, …): 0 prekršaja', () => {

@@ -49,6 +49,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
     'marathon-v2.5.0',
     'marathon-v2.5.1',
     'marathon-v2.6.0',
+    'marathon-v2.6.1',
     P.version
   ])
 ];

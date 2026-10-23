@@ -238,6 +238,12 @@ export function checkInput(raw: unknown): InputCheck {
       'RECENT_LONG_INVALID',
       `Skorašnje najduže trčanje mora biti ${q.recentLongMinKm}–${q.recentLongMaxKm} km (unet ${String(recent)}).`
     );
+  // MAR-11 (T7, plauzibilnost): skorašnji najduži trk duži od trenutnog nedeljnog obima nije moguć u jednoj nedelji.
+  else if (isNum(recent) && isNum(km) && recent > km)
+    no(
+      'RECENT_LONG_INVALID',
+      `Skorašnje najduže trčanje ${String(recent).replace('.', ',')} km je duže od trenutnog nedeljnog obima ${String(km).replace('.', ',')} km — proveri unos.`
+    );
 
   // Rezultat → VDOT; bez pouzdanog rezultata plan po osećaju (M16).
   const res = raw['recentResult'] as MarathonV2Result | null | undefined;

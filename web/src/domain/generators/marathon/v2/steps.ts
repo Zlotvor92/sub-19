@@ -159,6 +159,16 @@ export function limitsOf(
 export const restartWeeks = (steps: readonly MarathonV2AdaptStep[]): Set<number> =>
   new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
 
+/** Pouka 18 (MAR-11, T6 C6; kao HM): nedelje od kojih progresija doze kreće ispočetka (M12) — nov start (A3) i
+    nedelja posle sidra povratka bola (r + 1). JEDNA funkcija za konstruktor (generate.ts) i validator. */
+export const doseRestartWeeks = (steps: readonly MarathonV2AdaptStep[]): Set<number> =>
+  new Set(
+    steps.flatMap((s) => [
+      ...(s.restart ? [s.fromWeek] : []),
+      ...(s.returnFrom ? [s.returnFrom.week + 1] : [])
+    ])
+  );
+
 /** A17 (pouka 22): najviše uzastopnih nedelja izgradnje od ukinutog rasterećenja (uključujući ukinutu nedelju)
     do sledećeg redovnog rasterećenja — izuzetak M5 4 + ukinuta nedelja. framesFor i validator (M5). */
 export const A17_MAX_RUN = P.deload.exceptionRun + 1;
