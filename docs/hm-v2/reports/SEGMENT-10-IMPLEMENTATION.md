@@ -68,3 +68,10 @@ validator WEEK_MIN_LIMITS) — T1 čini lagane u nedelji bola većim, × 0,7 ih 
 ## Primećeno, nije rađeno
 
 - Ostatak T3 (143/36 gore) bez daljeg razlaganja.
+
+## Odluke organizatora (24. 10.)
+
+1. T1 izuzetak na minimumu nedelje (lagan ≤ dugi + EASY_BUILD_MIN_WEEK) — potvrđeno.
+2. T3 ne ide iznad plafona zone — jedan plafon (uslov 2) ima prednost; 44 toka bez kvaliteta prihvaćeno.
+3. i 4. (ostatak T3, taper dan kvaliteta duži od dugog) ostaju kao poznati ostatak; organizator ih prijavljuje korisniku.
+Krug T za HM zatvoren.
