@@ -12,6 +12,12 @@ Sve izmene, od sada pa nadalje, rade se na grani **`claude/generator-isolation-5
 - Grana sadrži sva četiri izdvojena generatora (5K, 10K, polumaraton, maraton). Stanje izdvajanja:
   `docs/generator-isolation/STATUS.md`.
 
+## Vreme — OBAVEZNO
+
+Sva vremena koja se javljaju korisniku (iz baze, logova, CI-ja, bilo odakle) navode se
+isključivo po beogradskom vremenu (`Europe/Belgrade`, CET/CEST), ne u UTC. U SQL-u:
+`... at time zone 'Europe/Belgrade'`.
+
 ## Stalni uslovi za v2 generatore (sve distance)
 
 Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
