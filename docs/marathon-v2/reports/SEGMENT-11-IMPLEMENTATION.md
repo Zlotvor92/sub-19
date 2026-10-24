@@ -113,14 +113,16 @@ Testovi baznih linija (uzorak i pun nivo) prolaze: nijedan plan van klasifikacij
 
 ## run-all (`run-all.sh … 3 '.*-MAR'`, f20c7ec; early-MAR i edges-MAR ponovljeni na baeb435)
 
-13 poslova (two-step-MAR: vidi dopunu ispod), **nečistih 1: edges-MAR** — 3 odbijanja generatora
+14 poslova, **nečistih 2: edges-MAR i two-step-MAR** — 3 odbijanja generatora
 RECENT_LONG_TOO_SHORT (skorašnji najduži 5 km uz VDOT 70 i najveći obim reda: pouka 6, poruka sa pragom i preporukom)
 + u adaptaciji 3 × RECENT_LONG_TOO_SHORT i 1 × WEEK_INFEASIBLE (ned 11, taper) posle rezultata na dnu opsega (VDOT 30)
 na planu `4 d / 65 km / 12 ned / rl 5` koji je na b9c4728 generator odbijao (nov tok; posledica T1 + odmora laganog dana).
 early-MAR 1 → **0 / 164 394** posle baeb435 (pouka 32 uz lagan dan odmora). Ostali: fatigue-repeat 0/990,
 fatigue-startday 5 108 tokova, fatigue-testweek 0/4 592, last-weeks 0/89 309, locked-pause 0/54 848, locked-result
 0/3 078, locked-test 0/5 880 (+ kontrola 0/5 880), result-pain 0/73 188, start-day 0/43 418, targeted i warnings
-(pregled ručno, bez odbijanja).
+(pregled ručno, bez odbijanja). two-step-MAR (baeb435): odbijanja 0 (first 0/4 301, new 0/137 632, cum 0/137 632),
+invarijanta „taper > poslednja izgradnja" 2 toka (ista klasa kao lanac i=289 — T1 spušta poslednju izgradnju u periodu
+bola/ograničenja ispod tapera; otvoreno). Sažetak: `artifacts/segment-11/run-all-summary.txt`.
 
 ## Otvoreno / pitanja (odluka nije zapisana — urađeno najmanje, čeka organizatora)
 
@@ -136,6 +138,8 @@ fatigue-startday 5 108 tokova, fatigue-testweek 0/4 592, last-weeks 0/89 309, lo
    oštrenje samo posle novog starta. Pitanje: oštrenje „kao bez T2" i ovde?
 4. **T1 planirano < cilj ispod minimuma nedelje.** Poslednje rešenje (lagani na 0,8 × dugi) sme dati nedelju ispod
    minimuma M15 (upozorenje WEEK_MIN_LIMITS, kao dani odmora A4), npr. 3 d posle pauze 35: 13,5 km < 15 km. Potvrda?
+6. **Taper > poslednja izgradnja** (two-step 2 toka, lanci 1): kad T1 spusti poslednju nedelju izgradnje (bol/manjak),
+   taper ostaje iznad nje. Da li taper treba vezati i za spuštenu poslednju izgradnju (ne samo za vrh)?
 5. **T3 bez kvaliteta kad obim tapera ne nosi najmanji MP dan** (pauza kasno, 4 d, taper 23,6 km: MP dan ≈ 9 km + 3 dana
    ≥ 5 km) — taper ostaje bez kvaliteta (pretraga cilja tapera samo naniže). Oštrenje u trkačkoj ostaje.
 
