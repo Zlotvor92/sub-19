@@ -490,7 +490,12 @@ export function validatePlan(plan: TenKV2Plan): Violation[] {
       (restOf(w).size > 0 &&
         input.runDays.every((wd) => {
           const d = dateIn(w, wd);
-          return restOf(w).has(d) || w.days.some((x) => x.date === d && x.role === 'race');
+          // 10K-08 (T1): dan bez treninga u planu (lagan dan je odmor) — i on je odmor.
+          return (
+            restOf(w).has(d) ||
+            !w.days.some((x) => x.date === d) ||
+            w.days.some((x) => x.date === d && x.role === 'race')
+          );
         })) ||
       // Trkačka nedelja samo sa trkom: ostali dani odmor ili otpali po D23 (taper sa danima odmora/bola).
       (w.phase === 'race' &&

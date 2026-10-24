@@ -351,6 +351,27 @@ export function construct(
         );
         if (fit) {
           mode = m;
+          // 10K-08 (T1): cilj po pravilu spušten (lagan ≤ 0,8 × dugi) — kad druga pretraga ('relax', D11 ispred D12) daje
+          // bliži izvodljiv cilj nedelje izgradnje, važi ona (inače npr. nedelja bez kvaliteta na polovini cilja).
+          const relax = modes[modes.indexOf(m) + 1];
+          if (
+            m === 'rule' &&
+            relax === 'relax' &&
+            fit.fitted === 'down' &&
+            isBuildPhase(frame.phase) &&
+            !frame.deload
+          ) {
+            const r = fit10(
+              nominal,
+              frame,
+              av ? h.cap10 : cap10,
+              rule,
+              (t10) => can(t10, relax),
+              h.lastBuild10,
+              downOnly
+            );
+            if (r && r.target10 > fit.target10) [fit, mode] = [r, relax];
+          }
           break;
         }
       }

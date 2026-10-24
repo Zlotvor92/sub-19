@@ -114,17 +114,20 @@ export function t1Short(
     deload: boolean;
     plannedKm: number;
     targetKm: number;
-    days: readonly { role: string }[];
+    days: readonly { role: string; workout: { km: number; sec: number } }[];
   },
-  p: { paces: { E: { fast: number } } }
+  _p?: unknown
 ): boolean {
   const gap = w.targetKm - w.plannedKm;
+  // Tempo nedelje iz njenog dugog (lagan tempo; adaptacija sme da promeni tempo po nedelji).
+  const long = w.days.find((d) => d.role === 'long');
   return (
     ['base', 'development', 'specific'].includes(w.phase) &&
     !w.deload &&
     !w.days.some((d) => d.role === 'easy') &&
+    long !== undefined &&
     gap > 0 &&
-    gap <= 1200 / p.paces.E.fast + 0.1 + EPS
+    gap * (long.workout.sec / long.workout.km) <= 1200 + 60
   );
 }
 
