@@ -330,7 +330,12 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
       !(mpd.workout.dose?.structure.form === 'continuous' && mpd.workout.dose.doseM === 1000)
     )
       no(`T2 MP duži od dugog ned ${t.index}`);
-    if (!mpd || (mp < 6000 && mpd.workout.dose?.structure.form !== 'continuous'))
+    // Odluka organizatora posle MAR-11: ni 1,0 km MP ne staje u trajanje dugog → MP otpada (napomena).
+    const mpLight = t.notes.some((n) => n.includes('dan MP je lagan'));
+    if (
+      (!mpd && !mpLight) ||
+      (mpd && mp < 6000 && mpd.workout.dose?.structure.form !== 'continuous')
+    )
       no(`taper ned ${t.index} bez MP ≥ 6000 m`);
   }
   if (t0.targetKm < t1.targetKm || t0.plannedKm < t1.plannedKm) no('N−2 < N−1');
@@ -344,7 +349,9 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
   for (const d of rw.days) {
     if (
       d.role === 'sharpener' &&
-      ((d.workout.dose?.doseM ?? 0) > mpN1 || daysBetween(d.date, p.input.raceDate) < 3)
+      // Odluka organizatora posle MAR-11: oštrenje ≤ MP doza N−1, najmanje 2 × 1000 m.
+      ((d.workout.dose?.doseM ?? 0) > Math.max(2000, mpN1) ||
+        daysBetween(d.date, p.input.raceDate) < 3)
     )
       no('oštrenje');
     if (d.role === 'eve' && d.workout.sec > 1800) no('dan pred trku > 30 min');

@@ -221,9 +221,9 @@ export function construct(
       const prev100 = planned100Of(prevDays);
       let w = raceWeek(rctx, frame, taperMpM, prevHard, taperEasy10);
       let noSharpener = false;
-      // A9: oštrenje otpada kad bi trkačka nedelja bila veća od poslednje nedelje tapera (M8).
+      // A9: oštrenje otpada kad bi trkačka nedelja bila veća od poslednje nedelje tapera (M8). Odluka organizatora
+      // posle MAR-11 (oštrenje i uz kratak MP N−1): važi i u generatoru.
       if (
-        av &&
         prev?.phase === 'taper' &&
         w.days.some((d) => d.role === 'sharpener') &&
         w.planned100 > prev100

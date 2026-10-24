@@ -118,7 +118,7 @@ import {
   deloadDayLimit,
   EASY_UNDER_NOTE,
   easyRestDates,
-  hasSharpener,
+  sharpenerStructure,
   lowestBuild,
   oneDayLimit,
   allRestWeek,
@@ -1528,9 +1528,11 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         if (mp || t) err('TAPER_QUALITY', 'Taper bez kvaliteta (adaptacija, A3/A4/A9).', w.index);
       } else if (reducedQ(w)) {
         // A4/A9: samo glavni kvalitet — MP po M7 (M7a); početnik N−1: T kontinuirano.
-        const okOne = want.mp
-          ? !!mp && mp.zone === 'MP' && mp.doseM === wantMp && !t
-          : !!mp && mp.zone === 'T' && mp.doseM === wantT && !t;
+        const okOne = want.mpDropped
+          ? !mp && !t
+          : want.mp
+            ? !!mp && mp.zone === 'MP' && mp.doseM === wantMp && !t
+            : !!mp && mp.zone === 'T' && mp.doseM === wantT && !t;
         if (!okOne)
           err(
             'TAPER_QUALITY',
@@ -1538,7 +1540,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
             w.index
           );
       } else {
-        if (!want.mp) {
+        if (!want.mp && !want.mpDropped) {
           // M17: početnik u N−1 — jedini kvalitet T kontinuirano na danu Q1, bez MP (staje u plafon T).
           const wantT1 = doseOf(want.t!);
           if (
@@ -1556,7 +1558,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
             );
         }
         const tFits = want0.t !== null && doseOf(want0.t) <= capM('T', w.targetKm);
-        const okMp = !!mp && mp.zone === 'MP' && mp.doseM === wantMp;
+        // MAR-11 (T2): MP otpao (ni najkraći blok ne staje u trajanje dugog) — dan Q1 je lagan.
+        const okMp = want.mpDropped ? !mp : !!mp && mp.zone === 'MP' && mp.doseM === wantMp;
         // MAR-11 (T6 C11, pouka 35 u taperu): T dan lagan samo kad bi sa njim neki dan kvaliteta bio duži od dugog
         // (ista funkcija kao konstruktor, week.taperSecondEasy, dužine sa oba dana).
         const second = w.notes.some((n) => n.includes(TAPER_SECOND_EASY));
@@ -1598,7 +1601,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
             );
         }
         const okT = second ? !t : tFits ? !!t && t.zone === 'T' && t.doseM === wantT : !t;
-        if (want.mp && (!okMp || !okT))
+        if ((want.mp || want.mpDropped) && (!okMp || !okT))
           err(
             'TAPER_QUALITY',
             `Taper N−${2 - step}: MP ${wantMp} m${wantT === null ? ', bez T' : `, T ${tFits ? `${wantT} m` : 'otpada (plafon)'}`} (M7, M7a, M11).`,
@@ -1858,7 +1861,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     const prevHard = lastTaper?.days.filter((d) => d.hard).pop()?.date ?? null;
     const bannedR = new Set(rw.limits?.noQuality ?? []);
     const restarted = [...realRestarts].some((r) => r <= rw.index);
-    const canSharpen = hasSharpener(taperMpM, restarted);
+    const wantS = sharpenerStructure(taperMpM, restarted, beginner);
+    const canSharpen = wantS !== null;
     const cand = canSharpen
       ? [...wantDays]
           .reverse()
@@ -1887,16 +1891,11 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       );
     for (const d of sharp) {
       const dz = d.workout.dose;
-      if (
-        !dz ||
-        dz.structure.form !== 'reps' ||
-        dz.structure.reps !== s.reps ||
-        dz.structure.repM !== s.repM ||
-        (dz.doseM > taperMpM && !restarted)
-      )
+      // Odluka organizatora posle MAR-11: doza = min(2 × 2000 m, MP doza N−1), najmanje 2 × 1000 m (sharpenerStructure).
+      if (!dz || !wantS || JSON.stringify(dz.structure) !== JSON.stringify(wantS))
         err(
           'RACE_SHARPENER',
-          `Oštrenje ${s.reps} × ${s.repM} m MP ≤ MP doza N−1 (M8).`,
+          `Oštrenje ${wantS && wantS.form === 'reps' ? `${wantS.reps} × ${wantS.repM}` : '—'} m MP (≤ MP doza N−1, najmanje ${s.reps} × ${q.sharpenerMinRepM} m) (M8).`,
           rw.index,
           d.date
         );

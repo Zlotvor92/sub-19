@@ -143,6 +143,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     expect(P.raceWeek).toEqual({
       maxRunDays: 5,
       sharpener: { reps: 2, repM: 2000, recoverySec: 120 },
+      sharpenerMinRepM: 1000,
       sharpenerMinGapDays: 3,
       eveEasySec: 1200,
       eveStrides: { reps: 4, sec: 20 },

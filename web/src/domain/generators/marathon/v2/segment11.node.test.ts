@@ -191,3 +191,24 @@ describe('C8: mešovita nedelja čiji je vlasnik pravilo pauze — upozorenje ka
     expect(p.warnings.some((v) => v.rule === 'MIXED_WEEK_OVER' && v.week === 10)).toBe(true);
   });
 });
+
+describe('Odluke organizatora posle MAR-11: T2 MP otpada, oštrenje prema MP N−1', () => {
+  it('T2: pauza 35 (3 d, VDOT 60) — N−1 kad ni MP 1,0 km ne staje u dugi: dan lagan, nijedan dan kvaliteta duži od dugog', () => {
+    const g = planOf(grid('d3-16w-30km-v60-C-sat'));
+    const asOf = '2026-11-18';
+    const p = ok(adaptMarathonV2(g, factsOf(g, 'pause35', asOf), asOf));
+    const t1 = p.weeks.filter((w) => w.phase === 'taper').at(-1)!;
+    expect(t1.days.some((d) => d.workout.kind === 'quality')).toBe(false);
+    expect(t1.notes.some((n) => n.includes('dan MP je lagan'))).toBe(true);
+    for (const w of p.weeks.filter((x) => x.phase === 'taper'))
+      for (const d of w.days.filter((x) => x.workout.kind === 'quality'))
+        expect(d.workout.sec).toBeLessThanOrEqual(longOf(w)!.workout.sec);
+  });
+  it('M8: N−1 MP skraćen (T2) — trkačka ima oštrenje = min(2 × 2000 m, MP N−1), najmanje 2 × 1000 m', () => {
+    const p = planOf(grid('d4-12w-35km-v70-B-sat'));
+    const mp = p.weeks.at(-2)!.days.find((d) => d.workout.dose?.zone === 'MP')!.workout.dose!.doseM;
+    expect(mp).toBeLessThan(4000);
+    const s = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
+    expect(s.workout.dose!.doseM).toBe(Math.max(2000, Math.floor(Math.min(4000, mp) / 200) * 200));
+  });
+});

@@ -27,10 +27,10 @@
   ]
  },
  {
-  "name": "11-T3 trkačka posle novog starta bez oštrenja",
+  "name": "11-M8 oštrenje uvek 2 × 2000 m (ne prema MP N−1)",
   "file": "src/domain/generators/marathon/v2/week.ts",
-  "find": "  return restarted || taperMpM >= s.reps * s.repM;",
-  "replace": "  return taperMpM >= s.reps * s.repM;",
+  "find": "  const dose = taperMpM > 0 ? Math.max(min, Math.min(max, taperMpM)) : min;",
+  "replace": "  const dose = max;",
   "tests": [
    "src/domain/generators/marathon/v2/segment11.node.test.ts"
   ]
@@ -94,6 +94,15 @@
   "file": "src/domain/generators/marathon/v2/steps.ts",
   "find": "steps.slice(0, -1), null, kept);",
   "replace": "steps.slice(0, -1));",
+  "tests": [
+   "src/domain/generators/marathon/v2/segment11.node.test.ts"
+  ]
+ },
+ {
+  "name": "11-T2b MP ostaje 1,0 km kad ne staje",
+  "file": "src/domain/generators/marathon/v2/quality.ts",
+  "find": "  const min = P.taper.mpShortMinKm;\n  let best: Structure | null = null;",
+  "replace": "  const min = P.taper.mpShortMinKm;\n  let best: Structure | null = { form: 'continuous', km: min };",
   "tests": [
    "src/domain/generators/marathon/v2/segment11.node.test.ts"
   ]

@@ -143,6 +143,25 @@ bola/ograničenja ispod tapera; otvoreno). Sažetak: `artifacts/segment-11/run-a
 5. **T3 bez kvaliteta kad obim tapera ne nosi najmanji MP dan** (pauza kasno, 4 d, taper 23,6 km: MP dan ≈ 9 km + 3 dana
    ≥ 5 km) — taper ostaje bez kvaliteta (pretraga cilja tapera samo naniže). Oštrenje u trkačkoj ostaje.
 
+## Odluke organizatora posle MAR-11 (poslednji krug; urađeno 1 i 3)
+
+1. **T2, ni MP 1,0 km ne staje → MP otpada** (dan lagan, WU/CD se ne seku — uslov 3): `quality.taperMpFit` vraća null,
+   `taperDoses.mpDropped`; napomena „Taper (N−x): dan MP je lagan — ni najkraći MP blok ne staje u trajanje dugog
+   trčanja te nedelje"; validator TAPER_QUALITY čita isto. Adaptacija, taper dan kvaliteta > dugi: **303 → 7** — u svih 7 MP dan više ne postoji; preostao je T na
+   najnižoj dozi 2,0 km (izuzetak pouke 32, nije MP). Kad MP otpadne, T se bira uz jedan lagan dan više (`TaperLimit.alone`).
+   (U generatoru se to dešava samo u gustoj mreži ned 1 za VDOT ≈ 75–80; invarijanta prihvata uz napomenu.)
+2. T1, 0,8 × dugi < 5 km: prihvaćeno (lagan ≤ dugi kao poslednji pokušaj). Bez izmene.
+3. **T2 × M8, oštrenje** (regresija ovog kruga): `week.sharpenerStructure` — N−1 sa MP danom bilo koje dužine → doza
+   min(2 × 2000 m, MP doza N−1), najmanje 2 × 1000 m (2 jednake deonice, korak 100 m); N−1 bez MP (bol, pauza, T2) →
+   2 × 1000 m; početnik bez novog starta (N−1 bez MP po M17) bez oštrenja. A9 (oštrenje otpada kad bi trkačka bila >
+   taper) sada važi i u generatoru. Trkačka bez oštrenja (uzorak 1/5, 6 384): **1 194 → 378** (= b9c4728); cela mreža (31 920)
+   1 890 = b9c4728 (1 890).
+4. Planirano < cilj ispod minimuma nedelje: samo u adaptaciji; u generatoru **0** (31 920 planova: napomena planirano < cilj 0, upozorenja PLANNED_BELOW_TARGET / WEEK_MIN_LIMITS 0).
+5. Taper > poslednja izgradnja spuštena adaptacijom: prihvaćeno (2 toka two-step, lanac i=289). Bez izmene.
+- chain2 „dayId nije dan plana" (38): greška alata, zapisano. Skener odbijanja posle odluka: 66 132 toka, 38 odbijanja,
+  svih 38 ta klasa (pravih 0). Testovi posle odluka: segment11 13 testova, pun nivo foldera 90 fajlova / 541 test,
+  sabotaže 12/12 (stavka T3-oštrenje zamenjena sa „oštrenje uvek 2 × 2000 m", dodata „MP ostaje 1,0 km").
+
 ## Primećeno, nije rađeno
 
 - Lanac i=289: T1 spušta poslednju nedelju izgradnje u periodu bola (82,8 → 75 km), taper N−2 76,3 km je iznad nje

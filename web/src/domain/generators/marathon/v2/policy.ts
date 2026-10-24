@@ -607,6 +607,8 @@ export const MARATHON_V2_POLICY = {
   raceWeek: {
     maxRunDays: 5,
     sharpener: { reps: 2, repM: 2000, recoverySec: 120 },
+    /** Odluka organizatora posle MAR-11: najkraća deonica oštrenja [m] (oštrenje ≤ MP doza N−1, najmanje 2 × 1000 m). */
+    sharpenerMinRepM: 1000,
     sharpenerMinGapDays: 3,
     eveEasySec: 1200,
     eveStrides: { reps: 4, sec: 20 },

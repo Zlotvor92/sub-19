@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-11/sabotage-11.json",
- "head": "baeb435",
+ "head": "70bc867",
  "level": "brz",
  "bail": true,
  "parallel": 2,
  "vitestArgs": [],
- "durationS": 17.4,
- "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
- "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "durationS": 28.6,
+ "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+ "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
  "ok": true,
  "results": [
   {
@@ -27,13 +27,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 15 km van granica nedelje izgradnje (≤ 0.8 × dugi 18 km, ≥ 5 km i 20 min).\",\"week\":1},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 19.2 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 20.9 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":8},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 22.2 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":10},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"EASY_LONG_SHARE: Lagan 20.8 km van granica nedelje izgradnje (≤ 0.8 × dugi 22.2 km, ≥ 5 km i 20 min).\",\"week\":11}]"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "b4abb3bb893b4266d8556378f727023ffaffc51f451985b41b0b8acbe59e3a0f",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "8ffb4052b23560a48d00121d2e874cf468f860abbc74a631c549845601b2ea20",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.6
+   "durationS": 2.6
   },
   {
    "index": 2,
@@ -52,13 +52,13 @@
     "message": "AssertionError: ned 11: expected 4200 to be less than or equal to 3848"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "c0948e39373862a56bb0af1f1a32467ce2f745a0106fb6d5570f5f424dbe85a2",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "c0133ceedc1e100b02c9f152843f73858e2d62dfdaee444c33af626662e1cdca",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.2
+   "durationS": 2.7
   },
   {
    "index": 3,
@@ -77,17 +77,17 @@
     "message": "AssertionError: ned 16: expected 2 to be 1 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "599a98a02f71d2fe7bc4cf59421f07f95de8bfb2f9a7c9ae95376df1736104cb",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "fc5729ce8de9291319609cfffa5fb49eba01492f0d82c7c5d203a0a65e1980b8",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.7
+   "durationS": 3.2
   },
   {
    "index": 4,
-   "name": "11-T3 trkačka posle novog starta bez oštrenja",
+   "name": "11-M8 oštrenje uvek 2 × 2000 m (ne prema MP N−1)",
    "files": [
     "src/domain/generators/marathon/v2/week.ts"
    ],
@@ -98,17 +98,17 @@
    "pao": true,
    "firstFailed": {
     "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
-    "test": "T3: posle novog starta taper zadržava 1 kvalitet, trkačka oštrenje > 4 d, 50 km, VDOT 45, pauza 35 do kraja ned 8: obe nedelje tapera MP, trkačka 2 × 2000 m MP",
-    "message": "AssertionError: expected false to be true // Object.is equality"
+    "test": "Odluke organizatora posle MAR-11: T2 MP otpada, oštrenje prema MP N−1 > M8: N−1 MP skraćen (T2) — trkačka ima oštrenje = min(2 × 2000 m, MP N−1), najmanje 2 × 1000 m",
+    "message": "AssertionError: expected 4000 to be 2400 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "481db1a663f699c27396519a2a0de2bca799cd37f92fe75f03e379a7a920c5eb",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "16738de733dfc8c050bbfc7438e3bb3611405430375abc6d88ff59c9597018fe",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.1
+   "durationS": 5.5
   },
   {
    "index": 5,
@@ -127,13 +127,13 @@
     "message": "AssertionError: expected false to be true // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "9a9876c220278ebf6551e1d277d8706adc08812bce88df25e19fd845713797cc",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "dee62071f013869c0b71303ef5ca66971092d8d6a45e8ef94ca0189facaf4aed",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.3
+   "durationS": 3.3
   },
   {
    "index": 6,
@@ -152,13 +152,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"QUALITY_DAYS: Dan kvaliteta duži od dugog uz dva kvaliteta, a nedelja sa jednim je izvodljiva — drugi dan kvaliteta je lagan (pouka 35).\",\"week\":3}]"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "56db45708d5151fc24a5362849e01857cbc646165a7982842ff81ab81294d606",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "f382bb6cff0371a4e71e524144f95afe1d39688b3b8588eac37c270c41de55aa",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.4
+   "durationS": 2.9
   },
   {
    "index": 7,
@@ -177,13 +177,13 @@
     "message": "AssertionError: expected true to be false // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "58f9f4e0fa866c09121f0634f17244fc5415b1cec4553b97636b2c536769f755",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "9dcdf56336e3df716ec2d404a8b15b3f31f3f1288b7999cb89a37c232d692ade",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.7
+   "durationS": 3.1
   },
   {
    "index": 8,
@@ -202,13 +202,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}]"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "1bc98b47b698663fe27604af44082aa43dc7c5ed5ad50002a5239599e8dcecfc",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "2d42fd2eadd184f30da53f820c1a477eaf34d17d2fbbb74ac716a7239c95134a",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.7
+   "durationS": 3.2
   },
   {
    "index": 9,
@@ -227,13 +227,13 @@
     "message": "AssertionError: expected [ 50, 53, 56.2, 45, 59.6, 63.2, …(12) ] to deeply equal [ 50, 53, 56.2, 45, 59.6, 63.2, …(12) ]"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "0e145ce00005da2667380545bdc2d39a36111f09c81e9d629e1b6dda5ddd9afd",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "15db5e9e4ba1df67fe9436ce2f53d581decae768d46e1c8609b97bf4d6e6090f",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.6
+   "durationS": 4.5
   },
   {
    "index": 10,
@@ -252,13 +252,13 @@
     "message": "AssertionError: expected false to be true // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "720fa8f21ac1bba9a3aed2213d7a3bb44a14a6010c7886d76ab09632d38b730f",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "332175489b85aa1321f5cdffe51568bb72175c888c9902f5873df7e4ed3540fb",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.5
+   "durationS": 4
   },
   {
    "index": 11,
@@ -277,13 +277,38 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, M17).\"}]"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "905ea804fdb24cfbfdb73a6b0d0ef416fe7b130c9bdc16d7fbe07d258cf5e07a",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "7173960733e85f6588ac325f50fe229543021c7b0430d193c461f2bb94755c3a",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.7
+   "durationS": 4.2
+  },
+  {
+   "index": 12,
+   "name": "11-T2b MP ostaje 1,0 km kad ne staje",
+   "files": [
+    "src/domain/generators/marathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment11.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment11.node.test.ts",
+    "test": "Odluke organizatora posle MAR-11: T2 MP otpada, oštrenje prema MP N−1 > T2: pauza 35 (3 d, VDOT 60) — N−1 kad ni MP 1,0 km ne staje u dugi: dan lagan, nijedan dan kvaliteta duži od dugog",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "hashSabotaged": "be976b61329e89d1f1b25e5d2590b2caa05c1b9e676ef98b2e8b0b1956e56c94",
+   "hashAfter": "ad58959c1c3193f448384d5f1c67efedde5d3581d304a5c13357a95d6307dd08",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5.1
   }
  ]
 }
