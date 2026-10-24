@@ -63,7 +63,10 @@ describe('M1 ulaz', () => {
   });
 
   it('M13a: recentLongRunKm opcion, 5–42 km; van opsega odbijanje', () => {
-    expect(codes(base({ recentLongRunKm: 5 }))).toEqual([]);
+    expect(codes(base({ recentLongRunKm: 5, currentWeeklyKm: 35 }))).toEqual([]);
+    // F3: kraće od nedeljnog obima / 7 (granica 7 dana) → proveri unos.
+    expect(codes(base({ recentLongRunKm: 6.4 }))).toEqual(['RECENT_LONG_INVALID']);
+    expect(codes(base({ recentLongRunKm: 6.5 }))).toEqual([]);
     expect(codes(base({ recentLongRunKm: 42 }))).toEqual([]);
     expect(codes(base({ recentLongRunKm: 4.9 }))).toEqual(['RECENT_LONG_INVALID']);
     expect(codes(base({ recentLongRunKm: 42.1 }))).toEqual(['RECENT_LONG_INVALID']);

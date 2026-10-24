@@ -6,6 +6,8 @@ import {
   jumpLongs10,
   longCap10,
   longJumpCap10,
+  longMaxSecOf,
+  longRuleOf,
   longShareCap10,
   longsOf,
   longTimeCap10,
@@ -55,6 +57,28 @@ export function capacityMessage(
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
 
+/** F1: „planirano < cilj" ide korisniku samo kad je razlika ≥ 1 km ili ≥ 3 % cilja (manja razlika je šum
+    zaokruživanja). JEDNA definicija za upozorenja (validate.ts) i napomenu nedelje (app/plan.ts). */
+export function belowTargetShown(plannedKm: number, targetKm: number): boolean {
+  const d = targetKm - plannedKm;
+  return d >= 1 - EPS || d >= 0.03 * targetKm - EPS;
+}
+
+/** M6: napomena plana CAPACITY_LIMITED = poruka kapaciteta + vrh prema granici izgradnje; vrh se navodi samo kad se
+    posle zaokruživanja razlikuje od granice (F1: bez „Vrh 75 km umesto do 75 km"). */
+export function capacityNote(
+  runDays: number,
+  rule: PlanRule,
+  limits: readonly CapacityLimit[],
+  peakKm: number,
+  peakCapKm: number
+): string {
+  const msg = capacityMessage(runDays, rule, limits);
+  return fmtKm(peakKm) === fmtKm(peakCapKm)
+    ? msg
+    : `${msg} Vrh ${fmtKm(peakKm)} km umesto do ${fmtKm(peakCapKm)} km (M6).`;
+}
+
 /** Pouka 14 (N10.5, kao HM HI3): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele M15
     (početnik: tabela M17) podržava trenutni obim; prazno kad ih nema. */
 export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number, rule: PlanRule): string {
@@ -85,6 +109,9 @@ export const technicalNote = (note: string): boolean =>
     dugi na plafonu skoka M13a (niži od plafona M13) nije ograničenje kapaciteta (pouka 28). Jedna funkcija za
     konstruktor i validator (pouka 24). Tempo nedelje `pacesOf(index)` (plafon 150 min istim tempom kojim je nedelja
     građena, MAR-09 t. 4); L iz upisanih dugih i činjenica (lengths.jumpLongs10, MAR-09 t. 2). */
+/** F2: pravilo plana (PlanRule) nosi `beginner`; goli red tabele (DayRule) nije početnik. */
+const beginnerOf = (rule: DayRule): boolean => (rule as Partial<PlanRule>).beginner === true;
+
 export function capacityWeeks(
   weeks: readonly PlanWeek[],
   rule: DayRule,
@@ -104,7 +131,12 @@ export function capacityWeeks(
     return !(
       jump !== null &&
       l === jump &&
-      jump < longCap10(to10(w.targetKm), rule, pacesOf(w.index))
+      jump <
+        longCap10(
+          to10(w.targetKm),
+          longRuleOf(rule, beginnerOf(rule), weeks, w.index),
+          pacesOf(w.index)
+        )
     );
   });
 }
@@ -124,8 +156,9 @@ export function capacityLimits(
     const long = w.days.find((d) => d.role === 'long');
     if (!long) continue;
     const l10 = to10(long.workout.km);
-    if (l10 === longTimeCap10(pacesOf(w.index))) time = true;
-    if (l10 === longShareCap10(to10(w.targetKm), rule)) share = true;
+    const lr = longRuleOf(rule, beginnerOf(rule), weeks, w.index);
+    if (l10 === longTimeCap10(pacesOf(w.index), longMaxSecOf(lr))) time = true;
+    if (l10 === longShareCap10(to10(w.targetKm), lr)) share = true;
   }
   return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
 }

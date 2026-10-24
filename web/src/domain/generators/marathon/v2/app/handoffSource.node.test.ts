@@ -78,7 +78,7 @@ describe('3e: okidač (O1) — jedna funkcija, prelaz', () => {
   it('rezultat (test 5 km): dugi ograničen trajanjem (N11: bez upozorenja, rečenica plana) → ponuda iz istog praga', () => {
     const v2 = adapted(BASE, 'test5k', AS_OF);
     const ls = longShortOf(v2.weeks, 26, weekPaces(v2))!;
-    expect(ls).toEqual({ longestKm: 21.9, timeCapped: true });
+    expect(ls).toEqual({ longestKm: 21.9, timeCapped: true, capSec: 9000 });
     expect(v2.warnings.some((w) => w.rule === 'MARATHON_LONG_SHORT')).toBe(false);
     expect(v2.notes).toContain(longTimeCapNote(21.9, 26, false));
     expect(shorterOffer(v2, AS_OF)).toBe(true);

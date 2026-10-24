@@ -18,6 +18,9 @@ import {
   longestLong10,
   longJumpCap10,
   longJumpNote,
+  longMaxSecOf,
+  longRuleOf,
+  longShareCap10,
   longShortOf,
   longsOf,
   longTimeCap10,
@@ -100,6 +103,7 @@ import {
   adaptNominal10,
   adaptVolume,
   capacityLimits,
+  belowTargetShown,
   capacityMessage,
   capacityWeeks,
   enterWeek,
@@ -132,6 +136,7 @@ import {
 } from './week.ts';
 import {
   doseOf,
+  fmtKm,
   ladderLevels,
   qualityDaySec,
   qualityWorkout,
@@ -639,7 +644,10 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     // (manje = upozorenje).
     if (!checked(w)) continue;
     if (limitedDays(w) && w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS) {
-      if (w.plannedKm + P.tolerance.plannedKm + EPS < w.targetKm)
+      if (
+        w.plannedKm + P.tolerance.plannedKm + EPS < w.targetKm &&
+        belowTargetShown(w.plannedKm, w.targetKm)
+      )
         warn(
           'PLANNED_BELOW_TARGET_LIMITS',
           `Planirano ${w.plannedKm} km < cilj obima ${w.targetKm} km (odmor/bol, A4).`,
@@ -648,14 +656,16 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     } else if (
       w.notes.includes(EASY_UNDER_NOTE) &&
       w.plannedKm + P.tolerance.plannedKm + EPS < w.targetKm
-    )
-      // MAR-11 (T1): lagani najviše 0,8 × dugi ne nose cilj — planirano < cilj uz upozorenje (dugi se ne produžava).
-      warn(
-        'PLANNED_BELOW_TARGET',
-        `Nedelja ${w.index}: planirano ${String(w.plannedKm).replace('.', ',')} km < cilj ${String(w.targetKm).replace('.', ',')} km — lagani treninzi su najviše 0,8 × dugi; preporuka: više dana trčanja ili manji obim.`,
-        w.index
-      );
-    else if (Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
+    ) {
+      // MAR-11 (T1): lagani najviše 0,8 × dugi ne nose cilj — planirano < cilj uz upozorenje (dugi se ne produžava);
+      // F1: upozorenje samo za razliku ≥ 1 km ili ≥ 3 % cilja.
+      if (belowTargetShown(w.plannedKm, w.targetKm))
+        warn(
+          'PLANNED_BELOW_TARGET',
+          `Nedelja ${w.index}: planirano ${String(w.plannedKm).replace('.', ',')} km < cilj ${String(w.targetKm).replace('.', ',')} km — lagani treninzi su najviše 0,8 × dugi; preporuka: više dana trčanja ili manji obim.`,
+          w.index
+        );
+    } else if (Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
       err('PLANNED_VS_TARGET', `Planirano ${w.plannedKm} km ≠ cilj ${w.targetKm} km.`, w.index);
     // A9: donja granica adaptiranog cilja = minimum nedelje (M15).
     if (w.index >= firstAdapted && w.phase !== 'race' && to10(w.targetKm) < weekMin10(rule))
@@ -704,16 +714,18 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     }
     // A4: dugi na danu bola ≤ 60 min; lagani na danima bola nisu jednaki (× 0,7).
     const pk = pw(w);
+    // F2: pravilo dugog nedelje (početnik u vrhu dugog: 50 % / 180 min).
+    const lr = longRuleOf(rule, beginner, weeks, w.index);
     const longMaxSec = painOf(w).has(long.date)
-      ? Math.min(P.lengths.longMaxSec, P.adapt.painLongMaxSec)
-      : P.lengths.longMaxSec;
+      ? Math.min(longMaxSecOf(lr), P.adapt.painLongMaxSec)
+      : longMaxSecOf(lr);
     const l10 = to10(long.workout.km);
     if (Math.abs(long.workout.km * 10 - l10) > EPS)
       err('LENGTH_STEP', 'Dugi nije u koraku 0,1 km (M13).', w.index, long.date);
-    if (l10 > Math.floor(rule.longMaxShare * to10(w.targetKm) + 1e-9))
+    if (l10 > Math.floor(lr.longMaxShare * to10(w.targetKm) + 1e-9))
       err(
         'LONG_SHARE',
-        `Dugi ${long.workout.km} km > ${Math.round(rule.longMaxShare * 100)} % cilja ${w.targetKm} km (M13, M15).`,
+        `Dugi ${long.workout.km} km > ${Math.round(lr.longMaxShare * 100)} % cilja ${w.targetKm} km (M13, M15).`,
         w.index,
         long.date
       );
@@ -749,17 +761,39 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // M13: najduži dugi < 26 km (početnik 24 km, M17). N11: kad ga ograničava trajanje (150 min, namerna granica M13)
   // — rečenica u opisu plana (konstruktor, ista funkcija lengths.longShortOf), ne upozorenje; inače upozorenje sa
   // savetom više dana/obima.
-  const ls = longShortOf(weeks, rule.longShortKm, (i) => pw({ index: i }));
+  const ls = longShortOf(
+    weeks,
+    rule.longShortKm,
+    (i) => pw({ index: i }),
+    (i) => longMaxSecOf(longRuleOf(rule, beginner, weeks, i))
+  );
   if (ls?.timeCapped) {
-    if (!plan.notes.includes(longTimeCapNote(ls.longestKm, rule.longShortKm, beginner)))
+    if (!plan.notes.includes(longTimeCapNote(ls.longestKm, rule.longShortKm, beginner, ls.capSec)))
       err('LONG_SHORT_NOTE', 'Najduži dugi ograničen trajanjem bez napomene plana (M13, N11).');
-  } else if (ls)
+  } else if (ls) {
+    // F1 t. 4: stvarni razlog — dugi na udelu nedelje, na plafonu skoka dugog ili (inače) obim nedelje.
+    const tops = weeks.flatMap((w) =>
+      w.days.filter((d) => d.role === 'long' && d.workout.km === ls.longestKm).map(() => w)
+    );
+    const share = tops.some(
+      (w) =>
+        to10(ls.longestKm) ===
+        longShareCap10(to10(w.targetKm), longRuleOf(rule, beginner, weeks, w.index))
+    );
+    const jumped = !share && tops.some((w) => w.notes.some((n) => n.includes('plafon skoka')));
+    const moreDays = input.runDays.length < (beginner ? BEGINNER_DAYS_MAX : RUN_DAYS_MAX);
     warn(
       'MARATHON_LONG_SHORT',
-      `Najduže dugo trčanje u planu je ${String(ls.longestKm).replace('.', ',')} km; za maraton se preporučuje bar ${rule.longShortKm} km (${beginner ? 'M17' : 'M13'}). ` +
-        (beginner ? 'Početnik: cilj je završiti maraton. ' : '') +
-        `Ograničava ga udeo dugog (≤ ${Math.round(rule.longMaxShare * 100)} % nedelje sa ${input.runDays.length} dana): veći nedeljni obim${input.runDays.length < (beginner ? BEGINNER_DAYS_MAX : RUN_DAYS_MAX) ? ' (više dana trčanja nose veći obim)' : ''} daje duže dugo trčanje.`
+      `Najduže dugo trčanje u planu je ${fmtKm(ls.longestKm)} km; za maraton se preporučuje bar ${String(rule.longShortKm).replace('.', ',')} km` +
+        (beginner
+          ? ' — duža priprema ili veći nedeljni obim bi pomogli. Početnik: cilj je završiti maraton.'
+          : share
+            ? `. Ograničava ga udeo dugog (najviše ${Math.round(rule.longMaxShare * 100)} % nedelje sa ${input.runDays.length} dana): veći nedeljni obim${moreDays ? ' (više dana trčanja nose veći obim)' : ''} daje duže dugo trčanje.`
+            : jumped
+              ? '. Ograničava ga postepen rast dugog trčanja (najviše 10 % ili 1 km nedeljno od najdužeg u prethodne 4 nedelje): duža priprema daje duže dugo trčanje.'
+              : `. Ograničava ga nedeljni obim: veći nedeljni obim${moreDays ? ' (više dana trčanja nose veći obim)' : ''} daje duže dugo trčanje.`)
     );
+  }
   // Pouka 14/32: kvalitetni dan duži od dugog po trajanju u nedelji izgradnje ili rasterećenja (upozorenje; posle
   // pouke 32 samo najniži nivo zone — iznad njega greška QUALITY_OVER_LONG).
   const longer = weeks.flatMap((w) => {
@@ -1276,7 +1310,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       isSteady(w) &&
       checked(w) &&
       !painOf(w).has(longDay.date) &&
-      jump < longCap10(to10(w.targetKm), rule, pw(w));
+      jump < longCap10(to10(w.targetKm), longRuleOf(rule, beginner, weeks, w.index), pw(w));
     const note =
       jump !== null && w.notes.includes(longJumpNote(l10, jumpBase10(jl10, w.index, recentJ)!));
     if (bound && !note) err('LONG_JUMP', 'Dugi na plafonu skoka bez napomene (M13a).', w.index);

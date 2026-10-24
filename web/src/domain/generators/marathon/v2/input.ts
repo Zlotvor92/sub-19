@@ -244,6 +244,13 @@ export function checkInput(raw: unknown): InputCheck {
       'RECENT_LONG_INVALID',
       `Skorašnje najduže trčanje ${String(recent).replace('.', ',')} km je duže od trenutnog nedeljnog obima ${String(km).replace('.', ',')} km — proveri unos.`
     );
+  // F3 (plauzibilnost): kraće od nedeljnog obima / 7 — ni sa 7 dana trčanja nedelja ne može biti tolika (granica 7
+  // dana, ne broj dana plana: trenutno trčanje može biti na više dana).
+  else if (isNum(recent) && isNum(km) && recent * 7 < km)
+    no(
+      'RECENT_LONG_INVALID',
+      `Skorašnje najduže trčanje ${String(recent).replace('.', ',')} km je prekratko za trenutni nedeljni obim ${String(km).replace('.', ',')} km (ni sa 7 dana trčanja nedelja ne može biti tolika) — proveri unos.`
+    );
 
   // Rezultat → VDOT; bez pouzdanog rezultata plan po osećaju (M16).
   const res = raw['recentResult'] as MarathonV2Result | null | undefined;

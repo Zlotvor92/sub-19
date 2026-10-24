@@ -425,6 +425,14 @@ const DECISIONS: readonly Decision[] = [
       'lengths.ts (easyCap10, easyFloor10, buildLengths under); week.ts (drop, easyRestNote, EASY_UNDER_NOTE, taperSecondEasy, hasSharpener, napomena tapera posle novog starta); generate.ts (redosled pokušaja, doseRestarts, restarted); quality.ts (taperMpFit, restart); steps.ts doseRestartWeeks; assess.ts (painSeen); input.ts (T7); validate.ts (EASY_LONG_SHARE, PLANNED_BELOW_TARGET, VOLUME_START, TEST, MIXED_WEEK_OVER, TAPER_QUALITY, RACE_SHARPENER, QUALITY_DAYS)',
     rationale:
       'Organizator: docs/generators-v2/audit/fixes/03-coach-rules.md (T1–T7, trenersko mišljenje) i T-assign.md; dopuna lanaca 01-chains-addendum.md (C3, Z8, C8). Merenja pre → posle u docs/marathon-v2/reports/SEGMENT-11-IMPLEMENTATION.md.'
+  },
+  {
+    id: 'F-final',
+    rule: 'Poslednje ispravke (marathon-v2.8.0). F1: tekst korisniku bez internih oznaka, decimalni zarez, bez poruka čije su obe vrednosti iste posle zaokruživanja, „planirano < cilj" tek od razlike ≥ 1 km ili ≥ 3 %, stvarni razlog kratkog dugog (udeo, skok dugog ili obim); kodovi ostaju. F2: početnik — u poslednje 3 nedelje izgradnje pred taperom (ne rasterećenje) dugi do 50 % nedelje i do 180 min (lengths.longRuleOf, jedna funkcija za konstruktor i validator), ciljni vrh dugog 26 km (MARATHON_LONG_SHORT sa porukom običnim rečima). F3: skorašnji najduži trk < nedeljni obim / 7 → odbijanje RECENT_LONG_INVALID („… — proveri unos", kao T7).',
+    place:
+      'policy.ts beginner.peakLong; lengths.ts (longRuleOf, longTimeCap10, longCap10, longShortOf, longTimeCapNote); generate.ts; volume.ts; validate.ts; input.ts (F3); app/format.ts userText (F1)',
+    rationale:
+      'Odluka korisnika 24. 10. 2026: docs/generators-v2/audit/fixes/04-final.md (F1–F3), iz trenerske ocene audit/coach-final/MAR.md (problemi 4 i 5, nemoguć unos skorašnjeg dugog).'
   }
 ];
 
@@ -435,7 +443,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.7.0',
+  version: 'marathon-v2.8.0',
 
   /** M1 (dani i obim: M15). */
   input: {
@@ -490,8 +498,11 @@ export const MARATHON_V2_POLICY = {
     peakAddKm: 25,
     /** Prvi nivo lestvice T kontinuirano početnika = najmanja T doza rasterećenja početnika [km]. */
     tFirstKm: 1.5,
-    /** Upozorenje MARATHON_LONG_SHORT („cilj: završiti") kad je najduži dugi < longShortKm. */
-    longShortKm: 24,
+    /** Upozorenje MARATHON_LONG_SHORT kad je najduži dugi < longShortKm (F2: ciljni vrh dugog početnika). */
+    longShortKm: 26,
+    /** F2: poslednjih `weeks` nedelja izgradnje pred taperom (ne rasterećenje) dugi do `longMaxShare` nedelje i do
+        `longMaxSec` laganim tempom; skok dugog (M13a), T1 i rast obima ostaju. */
+    peakLong: { weeks: 3, longMaxShare: 0.5, longMaxSec: 10800 },
     /** WU/CD uvek prvi pojas M14. */
     warmupSec: 900,
     cooldownSec: 600
@@ -785,6 +796,8 @@ export interface DayRule {
   readonly peakMaxKm: number;
   readonly longMaxShare: number;
   readonly weekMinKm: number;
+  /** F2 (početnik, vrh dugog): plafon trajanja dugog [s]; bez polja M13 (lengths.longMaxSec). */
+  readonly longMaxSec?: number;
 }
 
 export const RUN_DAYS_COUNTS = Object.keys(MARATHON_V2_POLICY.days)

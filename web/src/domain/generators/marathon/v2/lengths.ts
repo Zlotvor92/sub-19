@@ -25,9 +25,31 @@ export interface Lengths {
   under?: true;
 }
 
-/** M13: plafon dugog od 150 min sporim E [0,1 km]. */
-export function longTimeCap10(p: Paces): number {
-  return Math.floor((P.lengths.longMaxSec / p.E.slow) * 10 + EPS);
+/** M13: plafon dugog od 150 min sporim E [0,1 km]; `sec` = plafon trajanja nedelje (F2: longRuleOf). */
+export function longTimeCap10(p: Paces, sec: number = P.lengths.longMaxSec): number {
+  return Math.floor((sec / p.E.slow) * 10 + EPS);
+}
+
+/** Plafon trajanja dugog pravila nedelje [s] (M13; F2: početnik u vrhu dugog). */
+export const longMaxSecOf = (rule: DayRule): number => rule.longMaxSec ?? P.lengths.longMaxSec;
+
+/** F2: pravilo dugog nedelje `week` — početnik (`beginner`) u poslednjih `peakLong.weeks` nedelja pred prvom nedeljom
+    tapera, osim rasterećenja: dugi do 50 % nedelje i do 180 min. Inače isto pravilo (isti objekat). JEDNA funkcija za
+    konstruktor (generate.ts), validator (LONG_SHARE, LONG_DURATION, LONG_JUMP) i kapacitet (volume.ts). */
+export function longRuleOf<R extends DayRule>(
+  rule: R,
+  beginner: boolean,
+  weeks: readonly { index: number; phase: string; deload?: boolean }[],
+  week: number
+): R {
+  if (!beginner) return rule;
+  const taper = weeks.find((w) => w.phase === 'taper')?.index;
+  const w = weeks.find((x) => x.index === week);
+  const q = P.beginner.peakLong;
+  if (taper === undefined || !w || w.deload || w.phase === 'taper' || w.phase === 'race')
+    return rule;
+  if (week < taper - q.weeks || week >= taper) return rule;
+  return { ...rule, longMaxShare: q.longMaxShare, longMaxSec: q.longMaxSec };
 }
 
 /** M13/M15: plafon dugog kao udeo cilja nedelje [0,1 km]. */
@@ -82,24 +104,34 @@ export function recentLongThreshold10(long10: number): number {
 export function longShortOf(
   weeks: readonly { index: number; days: readonly PlanDay[] }[],
   longShortKm: number,
-  pacesOf: (week: number) => Paces
-): { longestKm: number; timeCapped: boolean } | null {
+  pacesOf: (week: number) => Paces,
+  capSecOf: (week: number) => number = () => P.lengths.longMaxSec
+): { longestKm: number; timeCapped: boolean; capSec: number } | null {
   const longs = weeks.flatMap((w) =>
     w.days.filter((d) => d.role === 'long').map((d) => ({ d, w: w.index }))
   );
   const longestKm = Math.max(0, ...longs.map((x) => x.d.workout.km));
   if (longestKm + 1e-6 >= longShortKm) return null;
-  const timeCapped = longs.some(
+  const capped = longs.find(
     (x) =>
       x.d.workout.km === longestKm &&
-      Math.round(x.d.workout.km * 10) === longTimeCap10(pacesOf(x.w))
+      Math.round(x.d.workout.km * 10) === longTimeCap10(pacesOf(x.w), capSecOf(x.w))
   );
-  return { longestKm, timeCapped };
+  return {
+    longestKm,
+    timeCapped: capped !== undefined,
+    capSec: capped ? capSecOf(capped.w) : P.lengths.longMaxSec
+  };
 }
 
 /** N11: rečenica u opisu plana (plan.notes) kad najduži dugi ograničava trajanje (M13: ≤ 150 min) — ne upozorenje. */
-export function longTimeCapNote(longestKm: number, longShortKm: number, beginner: boolean): string {
-  return `Najduže dugo trčanje je ${fmtKm(longestKm)} km: ograničava ga trajanje (≤ ${P.lengths.longMaxSec / 60} min laganim tempom, ${beginner ? 'M17' : 'M13'}) — namerna granica opterećenja umesto preporučenih ${fmtKm(longShortKm)} km; ostatak obima nose ostali dani${beginner ? ', cilj je završiti maraton' : ''}.`;
+export function longTimeCapNote(
+  longestKm: number,
+  longShortKm: number,
+  beginner: boolean,
+  capSec: number = P.lengths.longMaxSec
+): string {
+  return `Najduže dugo trčanje je ${fmtKm(longestKm)} km: ograničava ga trajanje (≤ ${capSec / 60} min laganim tempom, ${beginner ? 'M17' : 'M13'}) — namerna granica opterećenja umesto preporučenih ${fmtKm(longShortKm)} km; ostatak obima nose ostali dani${beginner ? ', cilj je završiti maraton' : ''}.`;
 }
 
 /** M13a: napomena nedelje čiji je dugi na plafonu skoka (`L` = jumpBase10). */
@@ -114,7 +146,7 @@ export function recentLongNote(long10: number): string {
 
 /** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje. */
 export function longCap10(target10: number, rule: DayRule, p: Paces): number {
-  return Math.min(longShareCap10(target10, rule), longTimeCap10(p));
+  return Math.min(longShareCap10(target10, rule), longTimeCap10(p, longMaxSecOf(rule)));
 }
 
 /** `total10` na `n` jednakih delova u koraku 0,1 km; raniji dani dobijaju višak (razlika ≤ 0,1). */

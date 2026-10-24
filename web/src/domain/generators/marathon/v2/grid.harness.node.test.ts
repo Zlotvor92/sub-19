@@ -85,12 +85,38 @@ const oldText = <T>(v: T): T =>
         ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, oldText(x)]))
         : v) as T;
 
+/** F1 (marathon-v2.8.0, 04-final): vraća SAMO tekst — „Vrh X km umesto do Y km" u napomeni i upozorenju kapaciteta
+    (i kad su X i Y isti) i MARATHON_LONG_SHORT ne-početnika u obliku pre F1 (uvek „udeo dugog"). Početnik se menja i
+    sadržajem (F2). */
+function beforeFinal(p: MarathonV2Plan): MarathonV2Plan {
+  const km = (x: number): string => (Math.round(x * 10) / 10).toFixed(1).replace('.', ',');
+  const vrh = ` Vrh ${km(p.peakKm)} km umesto do ${km(p.peakCapKm)} km (M6).`;
+  const cap = (n: string): string =>
+    n.includes('ne nose ovaj obim') && !n.includes(' Vrh ') ? n + vrh : n;
+  p.notes = p.notes.map(cap);
+  const n = p.input.runDays.length;
+  if (p.input.experience === 'beginner') return p;
+  const rule = planRule(n)!;
+  for (const v of p.warnings) {
+    if (v.rule === 'CAPACITY_LIMITED') v.message = cap(v.message);
+    if (v.rule === 'MARATHON_LONG_SHORT') {
+      const longest = Math.max(
+        ...p.weeks.flatMap((x) => x.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
+      );
+      v.message =
+        `Najduže dugo trčanje u planu je ${String(longest).replace('.', ',')} km; za maraton se preporučuje bar ${rule.longShortKm} km (M13). ` +
+        `Ograničava ga udeo dugog (≤ ${Math.round(rule.longMaxShare * 100)} % nedelje sa ${n} dana): veći nedeljni obim${n < 6 ? ' (više dana trčanja nose veći obim)' : ''} daje duže dugo trčanje.`;
+    }
+  }
+  return p;
+}
+
 /** MAR-07 (N11, pouka 14): plan u obliku pre MAR-07 — vraća SAMO tekstualne izmene upozorenja i napomena (MARATHON_LONG_SHORT
     na 150 min → upozorenje umesto napomene plana, CAPACITY_LIMITED tekst poruke kapaciteta, DELOAD_LONG_SHORTENED po
     nedelji, LONG_SHORTER_THAN_QUALITY bez preporuke manje dana). Tako bazne linije pre MAR-07 ostaju dokaz da se
     sadržaj plana nije promenio; plan sa nedeljom pouke 35 se time ne vraća (mora biti van poređenja). */
 export function before07(p0: MarathonV2Plan): MarathonV2Plan {
-  const p = oldText(structuredClone(p0));
+  const p = oldText(beforeFinal(structuredClone(p0)));
   const beginner = p.input.experience === 'beginner';
   const rule = planRule(p.input.runDays.length, p.input.experience ?? 'regular')!;
   const EARLY = [
@@ -246,9 +272,13 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
             d.workout.sec + 1 < 1200)
         )
           no(`T1 lagan ned ${w.index}`);
-    if (to10(long.workout.km) > Math.floor(rule.longMaxShare * to10(w.targetKm) + 1e-9))
+    // F2 (nezavisno od lengths.ts): početnik u 3 nedelje izgradnje pred taperom (ne rasterećenje) — 50 % / 180 min.
+    const peakLong = beginner && isSteady(w) && w.index >= N - 2 - 3;
+    const share = peakLong ? 0.5 : rule.longMaxShare;
+    if (to10(long.workout.km) > Math.floor(share * to10(w.targetKm) + 1e-9))
       no(`dugi > udeo ned ${w.index}`);
-    if (long.workout.km * p.paces.E.slow > 9000 + 1e-6) no(`dugi > 150 min ned ${w.index}`);
+    if (long.workout.km * p.paces.E.slow > (peakLong ? 10800 : 9000) + 1e-6)
+      no(`dugi > ${peakLong ? 180 : 150} min ned ${w.index}`);
     // Plafoni po treningu (M11), iz politike — nezavisno od quality.capM. M7a: MP u taperu je doza M7
     // (minimum 2 × 3000 m ispred plafona) — proverava se ispod.
     for (const d of w.days)

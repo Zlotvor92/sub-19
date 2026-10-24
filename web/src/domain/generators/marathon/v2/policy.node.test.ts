@@ -15,7 +15,7 @@ import { doseOf } from './workouts.ts';
 describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.7.0');
+    expect(P.version).toBe('marathon-v2.8.0');
   });
 
   it('DECISIONS: M1–M18, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), A1–A15 i A17 (adaptacija, M18), svaka sa pravilom, mestom i obrazloženjem', () => {
@@ -44,7 +44,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'K4',
       'MAR-09',
       'MAR-10',
-      'MAR-11'
+      'MAR-11',
+      'F-final'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -229,7 +230,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     expect(P.test).toEqual({ km: 5 });
   });
 
-  it('M17 početnik: jedina tabela (4–5 dana, 16 ned, obim 25–45 / 30–50, uvod 2, +5 % 1,0–2,5, vrh 1,5× / +25, T 1,5, prag 24 km, WU/CD 15/10) i planRule', () => {
+  it('M17 početnik: jedina tabela (4–5 dana, 16 ned, obim 25–45 / 30–50, uvod 2, +5 % 1,0–2,5, vrh 1,5× / +25, T 1,5, prag 26 km, vrh dugog 3 ned 50 % / 180 min, WU/CD 15/10) i planRule', () => {
     expect(P.beginner).toEqual({
       days: { 4: { kmMin: 25, kmMax: 45 }, 5: { kmMin: 30, kmMax: 50 } },
       weeksMin: 16,
@@ -240,7 +241,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       peakFactor: 1.5,
       peakAddKm: 25,
       tFirstKm: 1.5,
-      longShortKm: 24,
+      longShortKm: 26,
+      peakLong: { weeks: 3, longMaxShare: 0.5, longMaxSec: 10800 },
       warmupSec: 900,
       cooldownSec: 600
     });
@@ -259,7 +261,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       introWeeks: 2,
       weeksMin: 16,
       feelTest: false,
-      longShortKm: 24,
+      longShortKm: 26,
       fixedWarmupCooldown: { warmupSec: 900, cooldownSec: 600 }
     });
     expect(planRule(5, 'beginner')).toMatchObject({ quality: 1, easy: 3, kmMin: 30, kmMax: 50 });

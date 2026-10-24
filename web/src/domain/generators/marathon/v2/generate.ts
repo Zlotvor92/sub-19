@@ -13,6 +13,8 @@ import {
   longestLong10,
   longJumpCap10,
   longJumpNote,
+  longRuleOf,
+  longMaxSecOf,
   longShortOf,
   longTimeCapNote,
   recentLongNote
@@ -47,7 +49,7 @@ import {
   adaptNominal10,
   adaptVolume,
   capacityLimits,
-  capacityMessage,
+  capacityNote,
   capacityWeeks,
   enterWeek,
   fit10,
@@ -208,7 +210,9 @@ export function construct(
   let taperEasy10 = Infinity;
   const out: PlanWeek[] = [];
   for (const frame of frames) {
-    const ctx = ctxAt(frame.index);
+    // F2: početnik u vrhu dugog — pravilo dugog nedelje (lengths.longRuleOf, isto u validatoru).
+    const ctxW = ctxAt(frame.index);
+    const ctx = { ...ctxW, rule: longRuleOf(ctxW.rule, rule.beginner, frames, frame.index) };
     if (doseRestarts.has(frame.index))
       quality = [...restarts].some((r) => r <= frame.index)
         ? { ...INITIAL_QUALITY, restart: true }
@@ -503,12 +507,20 @@ export function construct(
   const pW = (w: number): Paces => pacesAt(pace, steps, w, km);
   if (capacityWeeks(seen, rule, pW, recentJ, steps).length > 0)
     plan.notes.push(
-      `${capacityMessage(input.runDays.length, rule, capacityLimits(seen, rule, pW, recentJ, steps))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (M6).`
+      capacityNote(
+        input.runDays.length,
+        rule,
+        capacityLimits(seen, rule, pW, recentJ, steps),
+        plan.peakKm,
+        plan.peakCapKm
+      )
     );
   // N11: najduži dugi ograničen trajanjem (M13, namerna granica) — rečenica u opisu plana, ne upozorenje.
-  const ls = longShortOf(seen, rule.longShortKm, pW);
+  const ls = longShortOf(seen, rule.longShortKm, pW, (i) =>
+    longMaxSecOf(longRuleOf(rule, rule.beginner, seen, i))
+  );
   if (ls?.timeCapped)
-    plan.notes.push(longTimeCapNote(ls.longestKm, rule.longShortKm, rule.beginner));
+    plan.notes.push(longTimeCapNote(ls.longestKm, rule.longShortKm, rule.beginner, ls.capSec));
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)
     plan.adaptation = {

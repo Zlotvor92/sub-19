@@ -11,7 +11,7 @@ import { doseOf, ladderLevels } from './workouts.ts';
 
 /* M17: početnik — 4–5 dana, 16–24 ned, obim 25–45 / 30–50 km, uvod 2 ned bez kvaliteta, jedan kvalitet (T kont. →
    T cruise → MP, bez I/R), T kont. od 1,5 km, rast +5 % (1,0–2,5), vrh min(1,5×; +25), WU/CD 15/10, bez testa,
-   prag dugog 24 km („cilj: završiti"); trčanje/hodanje odbijeno. */
+   prag dugog 26 km, vrh dugog 3 nedelje pred taperom do 50 % / 180 min (F2) („cilj: završiti"); trčanje/hodanje odbijeno. */
 
 const begInput = (pr: Partial<Profile> = {}): Record<string, unknown> =>
   inputOf({
@@ -169,17 +169,18 @@ describe('M17 plan', () => {
     }
   });
 
-  it('bez testa (i po osećaju); upozorenje MARATHON_LONG_SHORT kad je najduži dugi < 24 km („cilj: završiti")', () => {
+  it('bez testa (i po osećaju); najduži dugi < 26 km ograničen trajanjem 180 min (F2) → rečenica plana („cilj: završiti")', () => {
     expect(B5F.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
     const longest = Math.max(
       ...B4.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
     );
-    expect(longest).toBeLessThan(24);
-    expect(longest).toBeGreaterThanOrEqual(20);
+    expect(longest).toBeLessThan(26);
+    expect(longest).toBeGreaterThanOrEqual(24);
     // N11 (MAR-07): najduži dugi početnika na 150 min → rečenica u opisu plana, ne upozorenje.
     expect(B4.warnings.some((x) => x.rule === 'MARATHON_LONG_SHORT')).toBe(false);
     const w = B4.notes.find((n) => n.startsWith('Najduže dugo trčanje je'))!;
-    expect(w).toMatch(/preporučenih 24,0 km/);
+    expect(w).toMatch(/preporučenih 26,0 km/);
+    expect(w).toMatch(/≤ 180 min/);
     expect(w).toMatch(/M17/);
     expect(w).toMatch(/cilj je završiti maraton/);
     expect(B4.notes.some((n) => n.startsWith('Početnik (M17)'))).toBe(true);

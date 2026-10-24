@@ -80,9 +80,65 @@ function cleanParen(inner: string): string {
   return kept.join('').trim();
 }
 
+/* F1 (04-final): interna imena i formule → šta znače za trkača. Primenjuje se pre uklanjanja oznaka. */
+const PHRASES: ReadonlyArray<readonly [RegExp, string]> = [
+  [
+    /Cilj po pravilu (\S+) km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj (\S+) km/g,
+    'Nedelja ima $2 km umesto $1 km: veći obim ne može da se rasporedi po danima'
+  ],
+  [
+    /Dugi (\S+) km = plafon skoka max\([^()]*\), L = (\S+) km \(najduže dugo trčanje prethodne (\d+) nedelje ili skorašnje najduže trčanje\)/g,
+    'Dugi $1 km: dugo trčanje raste najviše 10 % ili 1 km nedeljno od najdužeg u prethodne $3 nedelje ili skorašnjeg najdužeg ($2 km)'
+  ],
+  [/max\(1,1 × L; L \+ 1,0(?: km)?\)/g, '10 % ili 1 km iznad najdužeg dugog'],
+  [/max\(10 %, 1 km\)/g, '10 % ili 1 km'],
+  [/poslednji ne-rasteretni dugi|poslednji ne-rasteretni/g, 'poslednjeg dugog pre rasterećenja'],
+  [/poslednjeg ne-rasteretnog/g, 'poslednjeg dugog pre rasterećenja'],
+  [/ne-rasteretn\p{L}*/gu, 'pre rasterećenja'],
+  [/\(adaptacija, segment \d+[a-z]?\)/g, '(prilagođavanje plana)'],
+  [/adaptacija \(segment \d+[a-z]?\)/g, 'prilagođavanje plana'],
+  [/,? ?segment \d+[a-z]?/g, ''],
+  [
+    / — minimum tapera ispred plafona/g,
+    ' — u taperu najmanja MP doza ima prednost nad tom granicom'
+  ],
+  [
+    /minimum MP tapera(?: \([^()]*\))? ispred plafona (\d+) %(?: \([^()]*\))?, samo u taperu(?: \([^()]*\))?/g,
+    'u taperu najmanja MP doza ima prednost nad granicom od $1 % nedelje'
+  ],
+  [/(\d[\d.,]*) (m|km) > (\d+) % cilja (\S+) km/g, '$1 $2 je više od $3 % nedelje od $4 km'],
+  [/ \(plafon zone\)/g, ''],
+  [/, plafon zone/g, ''],
+  [/najniži nivo zone/g, 'već najkraća doza'],
+  [/uz „doza ne pada" i plafon/g, 'bez smanjenja doze i u dozvoljenom udelu nedelje u tom tempu'],
+  [/ne staje u plafon zone/g, 'ne staje u dozvoljeni udeo nedelje u tom tempu'],
+  [/ne staju u plafon zone/g, 'ne staju u dozvoljeni udeo nedelje u tom tempu'],
+  [/ne staje u plafon/g, 'ne staje u dozvoljeni udeo nedelje u tom tempu'],
+  [/ne staju u plafon/g, 'ne staju u dozvoljeni udeo nedelje u tom tempu'],
+  [/\(plafon, /g, '(dozvoljeni udeo nedelje u tom tempu, '],
+  [/ plafon skoka/g, ' granica rasta dugog'],
+  [/trkačka ≤ taper/g, 'trkačka nedelja nije veća od tapera'],
+  [/\bN−1\b/g, 'nedelja pre trke'],
+  [/\bN−2\b/g, '2 nedelje pre trke'],
+  [/Taper (nedelja pre trke|2 nedelje pre trke):/g, 'Taper ($1):'],
+  [
+    /dugi je ograničen skokom od skorašnjeg najdužeg/g,
+    'dugo trčanje raste postepeno od skorašnjeg najdužeg'
+  ],
+  [/\(ned (\d+):/g, '(nedelja $1:'],
+  [/T_cruise/g, 'T cruise'],
+  [/T_continuous/g, 'T kontinuirano'],
+  [/\bq1:/g, 'Prvi dan kvaliteta:'],
+  [/\bq2:/g, 'Drugi dan kvaliteta:'],
+  [/[Cc]ilj po pravilu/g, 'Cilj nedelje'],
+  [/ u konstrukciji nedelje/g, ' u rasporedu nedelje'],
+  [/obim po pravilu [A-Z]\d+[a-z]?/g, 'obim po pravilima plana']
+];
+
 /** Korisnički tekst iz poruke domena (Z2). */
 export function userText(s: string): string {
   let t = s;
+  for (const [re, to] of PHRASES) t = t.replace(re, to);
   // Zagrade bez ugnježđenih: (M8), (bol, A4; pouka 30), (plafon MP, pouka 14) → (bol), (plafon MP); zagrada
   // funkcije (max(…), min(…)) ostaje.
   for (let k = 0; k < 3; k++)

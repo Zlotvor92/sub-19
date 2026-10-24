@@ -116,8 +116,9 @@ describe('t. 6 (Z2): korisnički tekst bez internih oznaka', () => {
     expect(
       userText('Trkačka nedelja ima samo trku: dani pre trke su odmor (bol, A4; pouka 30).')
     ).toBe('Trkačka nedelja ima samo trku: dani pre trke su odmor (bol).');
+    // F1 (04-final): formula se prevodi.
     expect(userText('Dugi max(1,1 × L; L + 1,0 km) (M13a).')).toBe(
-      'Dugi max(1,1 × L; L + 1,0 km).'
+      'Dugi 10 % ili 1 km iznad najdužeg dugog.'
     );
     expect(userText('Planirano 19.98 km > cilj 18.5 km (pouka 37, 14)..')).toBe(
       'Planirano 20 km > cilj 18,5 km.'
