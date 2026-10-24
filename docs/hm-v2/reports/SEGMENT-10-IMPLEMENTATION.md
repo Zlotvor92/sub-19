@@ -32,16 +32,26 @@ Testovi K2/DAYS_COUNT nezavisnih invarijanti: nedelja 1 ispod obima i uz lagan n
 `adaptInvariants`: minimum nedelje u koraku 0,1 km (kao validator) i nedelja bola ispod minimuma dozvoljena (pouka 25,
 validator WEEK_MIN_LIMITS) — T1 čini lagane u nedelji bola većim, × 0,7 ih skraćuje.
 
-## Testovi
+## Testovi i provere (SHA e138af2)
 
 - `segment10.node.test.ts` (6) + `input.node.test.ts` T7: padaju na `b9c4728` (ponašanje: T1 1b #4 lagan 23,5/24;
   T3 taper bez kvaliteta; C4 factKm sa upisanim km; C12 RP lagan; T7 bez odbijanja).
 - Sabotaže `artifacts/segment-10/sabotage-10.json`: **9/9 palo** (`sabotage-10.result.json`), stanje src isto.
-- Brz HM: 41 fajl / 352 testa, 0 palih. Pun HM (`TEST_FULL=1`): vidi dole. `npm run check`: typecheck, lint, format OK;
-  test:fast 3 757 / 3 759 — pala 2 testa `marathon/v2/app/byteSame.node.test.ts` (redovi „HM v2" fixture-a
-  `byteSame.9443676.json` u folderu maratona; HM-10 namerno menja HM v2 plan i verziju). Folder nije moj — nove
-  vrednosti 15 redova su u `artifacts/segment-10/byteSame-mar-HMv2-rows.json` (javljeno organizatoru).
-- E2E `e2e/hm-v2*`: 3/3.
+- Brz HM 358 / 358; pun HM (`TEST_FULL=1`) 84 fajla / 459 testova, 0 palih; `npm run check`: typecheck, lint, format
+  OK, test:fast 3 757 / 3 759 — 2 pala su v1 `training/generator` (timeout pod opterećenjem paralelnog run-all;
+  zasebno 35/35). E2E `e2e/hm-v2*` 3/3.
+- `marathon/v2/app/byteSame.9443676.json`: samo 15 redova „HM v2" ponovo snimljeno (odobrenje organizatora), ostale
+  distance iste.
+- Ispravke posle prvog CI-ja (bb0c013 crven): pouka 32 uz T1 (`buildDayLimit` poredi sa dugim nedelje kakva će biti,
+  QUALITY_OVER_LONG u predaji 3 → 0), T3 drugi član za jedini dan tapera, ROLES u nedelji sa danima odmora (08b),
+  DECISIONS `HM-10`; invarijanta A8: nedelja početka koraka (i rasteretna) nosi start koraka (kao `leaveAdaptWeek`).
+- run-all `'.*-HM'` (16 poslova): early 0/114 012, two-step 0/115 328 (posle ispravke invarijante; pre nje 3 inv),
+  last-weeks 0/74 836, locked-pause 0/35 408, result-pain 0/49 608, start-day 0/34 170, locked-test 0/4 550,
+  MAR→HM 0/47 736, fatigue-testweek 0/3 556; edges-HM 0/19 900 tokova, generator odbija 1 ulaz T7 (početnik 40 km,
+  skorašnji najduži 42 km — namerno) i 4 RECENT_LONG_TOO_SHORT (VDOT max, r 5 km); poznata edges inv 26 → 0.
+- Lanci `chains.ts HM 20261023 0 2000`: odbijeni 0 → 0; klase (pre = 1a838c9 → posle): IDEMP:WEEKS 24 → 27,
+  BUDUCA_NEDELJA<40 % 38 → 38, NEXT_DAY 6 → 6, INV 1 → 1, TRKACKA>TAPER 1 → 1. `idemp.ts`: isti 25 → 28, sutra
+  21 → 22. Artefakti `artifacts/segment-10/chains/`.
 
 ## Otvoreno (pitanja organizatoru)
 
@@ -50,8 +60,9 @@ validator WEEK_MIN_LIMITS) — T1 čini lagane u nedelji bola većim, × 0,7 ih 
    EASY_BUILD_MIN_WEEK. Alternativa: planirano < minimum (degenerisana nedelja) ili odbijanje.
 2. T3 „najmanje najniži nivo": kad ni T 2,0 km ne staje u plafon T 10 % (taper < 20 km) — sada bez kvaliteta (jedan
    plafon po zoni, uslov 2). Da li T3 ide iznad plafona?
-3. `marathon/v2/app/byteSame.9443676.json`: redovi „HM v2" (15) — primeniti iz artefakta.
-4. Taper (nije T stavka za HM): dan kvaliteta duži od dugog tapera (measure.ts T1) generator 744 → 786, adaptacija
+3. (rešeno) byteSame HM v2 redovi primenjeni uz odobrenje.
+4. Idempotentnost lanaca: +3 (isti) / +1 (sutra) — nije razlagano (poslednji krug).
+5. Taper (nije T stavka za HM): dan kvaliteta duži od dugog tapera (measure.ts T1) generator 744 → 786, adaptacija
    682 → 777 — posledica dužih/kraćih dugih posle T1.
 
 ## Primećeno, nije rađeno

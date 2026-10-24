@@ -144,3 +144,11 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - Z6 LIMITS preskače zaštićen dan; Z7/Z8 manjak i bol vezani za zapise; C3 `step.testKept`; C7 taper posle bola bez
   izgradnje → osnova rasterećenja; C9 invarijanta; C10 rešen Z6. chains HM 2 000: odbijeni 95 → 0; idemp isti
   643 → 25, sutra 218 → 21 (manjak → 0). Izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md` (dopuna lanaca).
+
+## Segment HM-10 (hm-v2.8.0): krug T — T1, T3, C4, C12, T7
+
+- T1 `lengths.buildLengths` (lagan ≤ 0,8 × dugi, ≥ max(4 km, 20 min); manje laganih dana; izuzetak nedelje na
+  minimumu EASY_BUILD_MIN_WEEK); T3 `quality.restartTaperT`, `sharpenerAllowed` posle novog starta; C4 `factKmOf`;
+  C12 `freeKind` (RP najnižeg nivoa); T7 RECENT_LONG_OVER_WEEKLY.
+- lagan ≥ 0,9 × dugi 3 906 → 0; > 0,8 × 6 426 → 0; < 20 min 1 188 → 0; planovi sa spuštenom nedeljom 3 009 → 5 031;
+  T3 taper bez kvaliteta 227 → 143, trkačka bez oštrenja 227 → 36. Izveštaj `reports/SEGMENT-10-IMPLEMENTATION.md`.
