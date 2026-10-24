@@ -124,15 +124,17 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
         (n) => row(n).filter((_, i) => i !== 3),
         table.map((r) => r.filter((_, i) => i !== 3))
       );
-    expect(
-      DAYS.map((n) => {
+    // 10K-08 (T1): ned 1 ispod obima uz dugi 90 min 0 / 0 → 108 / 54 (lagan ≤ 0,8 × dugi).
+    byDays(
+      (n) => {
         const s = g.stats[n];
         return [s.belowTime, s.belowShare, s.longShorter, s.doseDropped, s.doseDroppedShare];
-      })
-    ).toEqual([
-      [0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0]
-    ]);
+      },
+      [
+        [108, 0, 0, 0, 0],
+        [54, 0, 0, 0, 0]
+      ]
+    );
   });
 
   it('D29: trčanje/hodanje odbijeno (svaki 20. ulaz mreže sa runWalk true)', () => {
