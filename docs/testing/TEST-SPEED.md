@@ -289,7 +289,8 @@ svi fajlovi, svi redovi, isti heševi; lokalno pun nivo posle izmena: 517 fajlov
 |---|---|---|
 | brz nivo, ceo (`vitest run`, isti stroj) | 596 s zid, 31 m 39 s CPU (341 fajl) | **339 s** zid, 19 m 24 s CPU (333 fajla) |
 | brz nivo, samo generatori | 445–526 s zid, 24 m 46 s CPU | **241 s** zid, 13 m 25 s CPU |
-| CI delovi punog nivoa | 18–32 min (zbir 3212–5297 s po delu, podela po broju fajlova) | v. § 11.1 (podela po trajanju) |
+| CI delovi punog nivoa (run 741 → run 747) | 18,3 / 22,8 / 19,9 / 21,0 / 32,1 / 18,5 min (zbir 132,6 min) | 11,7 / 10,9 / 7,6 / 11,7 / 11,1 / 12,0 min (zbir 65,0 min) + v1 posao 9,2 min kad se v1 ulazi menjaju |
+| CI run (zid) | 32,5 min | **12,4 min** (sada ga ograničava i posao `web` sa E2E, 10 min) |
 
 ### 11.1 Podela CI delova po trajanju (`web/scripts/testSequencer.ts`)
 
@@ -303,6 +304,8 @@ svi fajlovi, svi redovi, isti heševi; lokalno pun nivo posle izmena: 517 fajlov
 - Tabela: reporter `web/scripts/test-durations.mjs` (trajanje = sakupljanje + testovi + `beforeAll`), osvežavanje:
   `TEST_FULL=1 TEST_V1=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs`. Upisana iz punog
   lokalnog pokretanja posle izmena (517 fajlova, zbir 11 516 s): 6 delova po 28,2 min zbira ≈ 9,4 min zida lokalno.
+  Na CI-ju (run 747) delovi 7,6–12,0 min: tabela je lokalna, a jsdom/ui fajlovi su na CI-ju relativno sporiji —
+  osvežavanje iz CI izveštaja bi ujednačilo i deo 3.
 
 ### 11.2 Projekat `v1`
 
