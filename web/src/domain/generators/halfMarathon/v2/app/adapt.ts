@@ -139,7 +139,7 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     return {
       ok: false,
       reasons: [
-        { code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke HM v2 za prilagođavanje.' }
+        { code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke potrebne za prilagođavanje.' }
       ],
       coverage: null,
       notes: []
@@ -210,7 +210,8 @@ export function restoreMerge<T extends AppPlan>(
   });
   const cur = v2Of(current);
   const snap = v2Of(fresh);
-  if (!cur || !snap) return refuse('Sačuvana verzija nema plan HM v2, pa se ne može vratiti.');
+  if (!cur || !snap)
+    return refuse('Sačuvana verzija nema plan polumaratona, pa se ne može vratiti.');
   if (cur.weeks.length !== snap.weeks.length)
     return refuse('Sačuvana verzija ima drugi broj nedelja; vraćanje bi menjalo prošle nedelje.');
   // Zaštićeni datumi (po planu): do danas, urađeni dani i dani sa ručnom izmenom ili pomeranjem.
@@ -308,7 +309,9 @@ export function goalChange(plan: AppPlan, goalSec: number, today: IsoDate): Goal
   if (!v2)
     return {
       ok: false,
-      reasons: [{ code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke HM v2.' }]
+      reasons: [
+        { code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke potrebne za prilagođavanje.' }
+      ]
     };
   const c = checkInput({ ...v2.input, goalTimeSec: goalSec });
   if (!c.ok) return { ok: false, reasons: rejection(c.reasons) };

@@ -247,6 +247,13 @@ export function checkInput(raw: unknown): InputCheck {
       'RECENT_LONG_OVER_WEEKLY',
       `Skorašnje najduže trčanje (${String(recentLong).replace('.', ',')} km) je duže od trenutnog nedeljnog obima (${String(km).replace('.', ',')} km) — proveri unos.`
     );
+  // F3 (04-final): najduži trk < obim / 7 — ni sa 7 dana trčanja nedelja ne može biti tolika (granica 7 dana, ne
+  // broj dana plana).
+  else if (recentLong != null && isNum(km) && recentLong * 7 < km)
+    no(
+      'RECENT_LONG_UNDER_WEEKLY',
+      `Skorašnje najduže trčanje (${String(recentLong).replace('.', ',')} km) je kraće od sedmine trenutnog nedeljnog obima (${String(km).replace('.', ',')} km): ni sa 7 dana trčanja nedelja ne može biti tolika — proveri unos.`
+    );
 
   // Rezultat → VDOT (H1); bez pouzdanog rezultata plan po osećaju (H16).
   const res = raw['recentResult'] as HmV2Result | null | undefined;

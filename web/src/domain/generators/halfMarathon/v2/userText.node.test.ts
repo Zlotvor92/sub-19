@@ -14,11 +14,17 @@ import { FULL } from '../../../../test/level';
    jednom mestu (userText.ts); ovde se proverava ono što aplikacija prikazuje (app/plan.ts fokus i dayWarnings). */
 
 const LABEL = /\b(?:pouk[aeiu]|uslov|segment)\s+\d|\b(?:HI|H|A|M|N|K|D|F|Z)\d+[a-z]?\b/i;
+const JARGON =
+  /plafon|ne-rasteretn|po pravilu|max\(|T cruise|odstupanje|HM v2|\bQ[12]\b|[A-Z]{2,}_[A-Z]{2,}|T_cruise/;
 const problems = (s: string): string[] => [
   ...(LABEL.test(s) ? ['oznaka'] : []),
   ...(/\d\.\d/.test(s) ? ['tačka'] : []),
   ...(/\d[.,]\d{2,}\s*km\b/.test(s) ? ['km decimale'] : []),
-  ...(/(?<!\.)\.\.(?!\.)/.test(s) ? ['..'] : [])
+  ...(/(?<!\.)\.\.(?!\.)/.test(s) ? ['..'] : []),
+  // F1 (04-final): bez tehničkih izraza i besmislenih poređenja.
+  ...(JARGON.test(s) ? ['tehnički izraz'] : []),
+  ...(/\b(?:R|I|T|RP) \d{4,} m\b/.test(s) ? ['doza u m'] : []),
+  ...(/(\d+,\d) km umesto do \1 km/.test(s) ? ['isti brojevi'] : [])
 ];
 
 describe('HM-09 Z2: userText', () => {
@@ -27,15 +33,25 @@ describe('HM-09 Z2: userText', () => {
       userText(
         'Taper: RP ≈ 60 % poslednje doze (jedan kvalitetni dan, HI6), dugi ≤ 0,6 × najduži (H7).'
       )
-    ).toBe('Taper: RP ≈ 60 % poslednje doze (jedan kvalitetni dan), dugi ≤ 0,6 × najduži.');
-    expect(userText('Plafon 10 % (H11 ispred H5, odstupanje); dugi skraćen (HI14).')).toBe(
-      'Plafon 10 % (odstupanje); dugi skraćen.'
+    ).toBe('Taper: RP ≈ 60 % poslednje doze (jedan kvalitetni dan), dugi najviše 60 % najdužeg.');
+    expect(
+      userText(
+        'Rasterećenje: cilj 28,0 km bez kvaliteta — T 3,0 km ne staje u plafon 10 % (H11 ispred H5, odstupanje); dugi 0,8 × poslednji ne-rasteretni.'
+      )
+    ).toBe(
+      'Rasterećenje: cilj 28,0 km bez kvaliteta — T 3,0 km bi prešao 10 % nedeljnog obima; dugi 80 % poslednjeg dugog pre rasterećenja.'
+    );
+    expect(userText('Rasterećenje bez kvaliteta: T 3000 m.')).toBe(
+      'Rasterećenje bez kvaliteta: T 3,0 km.'
+    );
+    expect(userText('Q1: T 3,0 km ponovljen — sledeći nivo ne staje u plafon.')).toBe(
+      'Prvi kvalitetni trening: T 3,0 km ponovljen — sledeći nivo bi prešao dozvoljen udeo nedeljnog obima.'
     );
     expect(userText('Dugi (rasterećenje, najmanji obim; 0,8 × poslednji = 5,9 km; HI14).')).toBe(
       'Dugi (rasterećenje, najmanji obim; 0,8 × poslednji = 5,9 km).'
     );
     expect(userText('unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).')).toBe(
-      'unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km)).'
+      'unesi ga (dugi raste najviše 10 % ili 1 km iznad najdužeg).'
     );
     expect(userText('Planirano 30.04 km ≠ cilj 33.7 km (pouka 37, pouka 14)..')).toBe(
       'Planirano 30,0 km ≠ cilj 33,7 km.'
@@ -49,7 +65,7 @@ describe('HM-09 Z2: userText', () => {
     const check = (s: string, where: string): void => {
       n++;
       const p = problems(s);
-      if (p.length && bad.length < 10) bad.push(`${where}: ${p.join(', ')} — ${s.slice(0, 160)}`);
+      if (p.length && bad.length < 40) bad.push(`${where}: ${p.join(', ')} — ${s.slice(0, 160)}`);
     };
     const visible = (p: HmV2Plan, tag: string): void => {
       const g = generatedPlan(p);

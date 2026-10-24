@@ -42,7 +42,62 @@ function stripParens(s: string): string {
   });
 }
 
-/** Tekst jezgra za korisnika (Z2). */
+/** F1 (04-final): tehnički izrazi → šta znače za trkača. Redosled je bitan (duži izraz pre kraćeg). */
+const PLAIN: readonly [RegExp, string][] = [
+  [
+    /dugi ≤ max\(1,1 × najduži, najduži \+ 1 km\) prethodne 4 nedelje/g,
+    'dugi raste najviše 10 % ili 1 km iznad najdužeg u prethodne 4 nedelje'
+  ],
+  [
+    /dugi ≤ max\(1,1 × najduži, najduži \+ 1 km\)/g,
+    'dugi raste najviše 10 % ili 1 km iznad najdužeg'
+  ],
+  [/max\(10 %, 1 km\)/g, '10 % ili 1 km'],
+  [/0,8 × poslednj(?:i|eg) ne-rasteretn(?:i|og)/g, '80 % poslednjeg dugog pre rasterećenja'],
+  [/ne-rasteretn(?:a|e) nedelj(a|e) izgradnje/g, 'nedelj$1 izgradnje koja nije rasterećenje'],
+  [/ne-rasteretn\w*/g, 'pre rasterećenja'],
+  [/≤ 0,6 × najduži/g, 'najviše 60 % najdužeg'],
+  [/lagane ≤ 0,8 × dugi/g, 'lagani najviše 80 % dugog'],
+  [/\s*\(plafon zone[^)]*\)/g, ''],
+  [
+    /uz „doza ne pada" i plafon/g,
+    'jer doza ne sme da padne, a viša bi prešla dozvoljen udeo nedeljnog obima'
+  ],
+  [/ne staje u plafon (\d+) %(?: cilja)?/g, 'bi prešao $1 % nedeljnog obima'],
+  [
+    /\bni ([^;—]+?) ni ([^;—]+?) ne staju u plafon(?: cilja)?/g,
+    'i $1 i $2 bi prešli dozvoljen udeo nedeljnog obima'
+  ],
+  [/ne staju u plafon (\d+) %(?: cilja)?/g, 'bi prešli $1 % nedeljnog obima'],
+  [/ne staju u plafon(?: cilja)?/g, 'bi prešli dozvoljen udeo nedeljnog obima'],
+  [/ne staje u plafon(?: cilja)?/g, 'bi prešao dozvoljen udeo nedeljnog obima'],
+  [/staje u plafon(?: zone)?/g, 'staje u dozvoljen udeo nedeljnog obima'],
+  [/\bni ([^;—]+?) bi preša(o|li) /g, 'čak i $1 bi preša$2 '],
+  [/\s*\(odstupanje\)/g, ''],
+  [/,\s*odstupanje\)/g, ')'],
+  [
+    /Cilj po pravilu (\S+) km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj (\S+) km/g,
+    'Planirani obim $1 km ne može da se rasporedi na dane treninga; nedelja ima $2 km'
+  ],
+  [/obim po pravilu/g, 'obim po planu'],
+  [/T cruise/g, 'T deonice'],
+  [/ HM v2 podržava/g, ' Plan polumaratona podržava'],
+  [/HM v2 radi/g, 'plan polumaratona radi'],
+  [/HM v2 plan/g, 'plan polumaratona'],
+  [/≤ RP doza tapera/g, 'ne više od RP u taperu'],
+  [/trkačka ≤ taper/g, 'trkačka nedelja nije veća od tapera'],
+  [
+    /doza spuštena (\d+) → (\d+) m \(plafon, nijedan cilj nije izvodljiv bez toga\)/g,
+    'doza smanjena sa §$1§ na §$2§ km (viša bi prešla dozvoljen udeo nedeljnog obima)'
+  ],
+  [/\bT_cruise\b/g, 'T deonice'],
+  [/\bT_continuous\b/g, 'T kontinuirano'],
+  [/\b[qQ]1:/g, 'Prvi kvalitetni trening:'],
+  [/\b[qQ]2:/g, 'Drugi kvalitetni trening:'],
+  [/\b(R|I|T|RP) (\d{4,}) m\b/g, '$1 §$2§ km']
+];
+
+/** Tekst jezgra za korisnika (Z2, F1). */
 export function userText(s: string): string {
   let t = stripParens(s);
   // Oznaka van zagrade („H11 ispred H7", „— pouka 32") — sa veznikom ispred/kao.
@@ -55,6 +110,9 @@ export function userText(s: string): string {
       ''
     )
     .replace(LABEL_G, '');
+  for (const [re, to] of PLAIN) t = t.replace(re, to);
+  // Doza zone u metrima → km (§N§ iz PLAIN).
+  t = t.replace(/§(\d+)§/g, (_, m: string) => (Number(m) / 1000).toFixed(1));
   // km: najviše 1 decimala; decimalni zarez.
   t = t.replace(/(\d+)[.,](\d{2,})(?=\s*km\b)/g, (_, a: string, b: string) =>
     Number(`${a}.${b}`).toFixed(1)

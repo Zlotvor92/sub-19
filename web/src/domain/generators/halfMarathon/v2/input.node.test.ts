@@ -71,12 +71,20 @@ describe('H1 opseg ulaza', () => {
     expect(message(base({ recentLongRunKm: 40.1 }))).toBe(
       'Skorašnje najduže trčanje (40,1 km) je duže od trenutnog nedeljnog obima (40 km) — proveri unos.'
     );
+    // F3 (04-final): najduži < obim / 7 (granica 7 dana, ne broj dana plana) → RECENT_LONG_UNDER_WEEKLY.
+    expect(codes(base({ recentLongRunKm: 8, currentWeeklyKm: 56 }))).toEqual([]);
+    expect(codes(base({ recentLongRunKm: 8, currentWeeklyKm: 56.1 }))).toEqual([
+      'RECENT_LONG_UNDER_WEEKLY'
+    ]);
+    expect(message(base({ recentLongRunKm: 8, currentWeeklyKm: 59 }))).toBe(
+      'Skorašnje najduže trčanje (8 km) je kraće od sedmine trenutnog nedeljnog obima (59 km): ni sa 7 dana trčanja nedelja ne može biti tolika — proveri unos.'
+    );
     // Van opsega 5–42 ostaje samo RECENT_LONG_INVALID.
     expect(codes(base({ recentLongRunKm: 42.1 }))).toEqual(['RECENT_LONG_INVALID']);
   });
 
   it('HI7 (pouka 28): recentLongRunKm opcion, 5–42 km; u ulazu plana samo kad je dat', () => {
-    expect(codes(base({ recentLongRunKm: 5 }))).toEqual([]);
+    expect(codes(base({ recentLongRunKm: 5, currentWeeklyKm: 35 }))).toEqual([]);
     expect(codes(base({ recentLongRunKm: 42, currentWeeklyKm: 45 }))).toEqual([]);
     expect(codes(base({ recentLongRunKm: null }))).toEqual([]);
     expect(codes(base({ recentLongRunKm: 4.9 }))).toEqual(['RECENT_LONG_INVALID']);

@@ -674,7 +674,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     if (!checked(w)) continue;
     const limited = restOf(w).size > 0 || painOf(w).size > 0;
     if (limited && w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS) {
-      if (w.plannedKm + P.tolerance.plannedKm + EPS < w.targetKm)
+      // F1: „planirano < cilj" samo za razliku ≥ 1 km ili ≥ 3 % cilja.
+      if (
+        w.plannedKm + P.tolerance.plannedKm + EPS < w.targetKm &&
+        w.targetKm - w.plannedKm + EPS >= Math.min(1, 0.03 * w.targetKm)
+      )
         warn(
           'PLANNED_BELOW_TARGET_LIMITS',
           `Planirano ${w.plannedKm} km < cilj obima ${w.targetKm} km (odmor/bol, A4, pouka 25).`,
@@ -1921,12 +1925,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       return xs.length === 0
         ? []
         : [
-            `${xs.length} ned. ${what} za najviše ${fmtKm(Math.max(...xs.map((x) => x.gap10)) / 10)} km`
+            `${what} za najviše ${fmtKm(Math.max(...xs.map((x) => x.gap10)) / 10)} km u ${xs.length} ${xs.length === 1 ? 'nedelji' : xs.length % 10 >= 2 && xs.length % 10 <= 4 && (xs.length < 12 || xs.length > 14) ? 'nedelje' : 'nedelja'}`
           ];
     };
     warn(
       'WEEK_FITTED',
-      `Izvodljiv cilj umesto cilja po pravilu (H6): ${[...part('down', 'spušteno'), ...part('up', 'podignuto')].join(', ')} (nedelje ${fittedW.map((x) => wl(x.w)).join(', ')}).`,
+      `Obim prilagođen onome što dani treninga mogu da nose (H6): ${[...part('down', 'smanjen'), ...part('up', 'povećan')].join(', ')} (${fittedW.length === 1 ? 'nedelja' : 'nedelje'} ${fittedW.map((x) => wl(x.w)).join(', ')}).`,
       fittedW[0]!.w
     );
   }
@@ -1960,8 +1964,14 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       `${capacityMessage(
         input.runDays.length,
         rule,
-        capacityLimits(weeks, rule, p, input.recentLongRunKm ?? null, rollAt)
-      )} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (H6).`
+        capacityLimits(weeks, rule, p, input.recentLongRunKm ?? null, rollAt),
+        input.recentLongRunKm ?? null
+      )}${
+        // F1: bez „Vrh X km umesto do X km" kad su vrednosti posle zaokruživanja iste.
+        fmtKm(plan.peakKm) !== fmtKm(plan.peakCapKm)
+          ? ` Vrh plana ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (H6).`
+          : ''
+      }`
     );
 
   // --- H2 tempo, H3 cilj; H16 plan po osećaju (osnova tempa iz ulaza, bez prognoze i ocene cilja). Segment 04

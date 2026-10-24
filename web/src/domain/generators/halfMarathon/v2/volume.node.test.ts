@@ -79,19 +79,22 @@ describe('H6 pravilo obima', () => {
 
   it('poruka kapaciteta imenuje ograničenje i preporučuje veće brojeve dana iz H15 (HI8, HI9 a)', () => {
     expect(capacityMessage(4, rule, ['time'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5–6 dana.'
+      'Sa 4 dana trčanja ne staje ceo planirani obim: dugi najviše 150 min; preporuka 5–6 dana.'
     );
     expect(capacityMessage(4, rule, ['time', 'share'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
+      'Sa 4 dana trčanja ne staje ceo planirani obim: dugi najviše 150 min i najviše 40 % nedelje; preporuka 5–6 dana.'
     );
     expect(capacityMessage(3, dayRule(3)!, ['share', 'km'])).toBe(
-      '3 dana ne nose ovaj obim uz dugi ≤ 45 % nedelje i ≤ 24 km; preporuka 4–6 dana.'
+      'Sa 3 dana trčanja ne staje ceo planirani obim: dugi najviše 45 % nedelje i najviše 24 km; preporuka 4–6 dana.'
     );
     expect(capacityMessage(5, dayRule(5)!, ['rolling'])).toBe(
-      '5 dana ne nose ovaj obim uz dugi ≤ max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28); preporuka 6 dana.'
+      'Sa 5 dana trčanja ne staje ceo planirani obim: dugi raste najviše 10 % ili 1 km iznad najdužeg u prethodne 4 nedelje; preporuka 6 dana.'
     );
     expect(capacityMessage(6, dayRule(6)!, ['time'])).toBe(
-      '6 dana ne nose ovaj obim uz dugi ≤ 150 min.'
+      'Sa 6 dana trčanja ne staje ceo planirani obim: dugi najviše 150 min.'
+    );
+    expect(capacityMessage(4, rule, ['recent', 'easy'], 8)).toBe(
+      'Sa 4 dana trčanja ne staje ceo planirani obim: dugi raste najviše 10 % ili 1 km nedeljno, počevši od skorašnjeg najdužeg trčanja (8,0 km), a lagani najviše 80 % dugog; preporuka 5–6 dana.'
     );
   });
 

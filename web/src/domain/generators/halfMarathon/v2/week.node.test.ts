@@ -61,7 +61,7 @@ describe('H13 dužine (pouka 2)', () => {
     expect(p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')).toBe(true);
     // Faza 4a N11: kapacitet jednom po planu — upozorenje CAPACITY_LIMITED (sa vrhom), bez napomene plana.
     expect(p.warnings.find((v) => v.rule === 'CAPACITY_LIMITED')!.message).toContain(
-      'uz dugi ≤ 150 min'
+      'dugi najviše 150 min'
     );
   });
 });
@@ -104,7 +104,7 @@ describe('HI7 (pouka 28) skorašnji najduži trk', () => {
     expect(p8.weeks[0]!.targetKm).toBeLessThan(40);
     expect(p8.weeks[0]!.notes.join()).toContain('— na granici');
     expect(p8.warnings.find((v) => v.rule === 'CAPACITY_LIMITED')!.message).toContain(
-      'prethodne 4 nedelje (pouka 28)'
+      'počevši od skorašnjeg najdužeg trčanja (8,0 km)'
     );
     // Kotrljanje: 9,0 → 10,0 → 11,0 → 12,1 (max(1,1 × L, L + 1)); skok ned 1 → 2 ≤ 1 km ili 10 %.
     expect(l.slice(0, 4)).toEqual([9, 10, 11, 12.1]);

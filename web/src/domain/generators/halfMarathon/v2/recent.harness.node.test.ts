@@ -68,6 +68,7 @@ export function describeRecent(
     const tooShort: { id: string; r: number; days: number; week?: number; message: string }[] = [];
     const other: string[] = [];
     const overWeekly: string[] = [];
+    const underWeekly: string[] = [];
     const bad: Record<string, string[]> = {};
     let st: GridStats = emptyStats();
     beforeAll(() => {
@@ -88,6 +89,14 @@ export function describeRecent(
         const over = mayChange(`r-${g.id}`);
         // HM-10 (krug T): plan izuzetka koji menja i T1/T7 (CHANGED_10) proverava spisak promena, ne red izuzetka.
         const t10 = CHANGED_10.has(`r-${g.id}`);
+        // F3 (04-final): r < obim / 7 → odbijanje RECENT_LONG_UNDER_WEEKLY (menja ishod; proverava K1).
+        const f3 = g.r * 7 < g.km;
+        if (f3) {
+          if (res.ok || res.reasons.map((x) => x.code).join() !== 'RECENT_LONG_UNDER_WEEKLY')
+            other.push(`${g.id}: F3 očekivano RECENT_LONG_UNDER_WEEKLY`);
+          else underWeekly.push(g.id);
+          continue;
+        }
         if (ex && res.ok && !same && !t10) excepted[g.id] = rowOf(res.plan, ex.week);
         else if ((!same && !over) || (ex && !t10)) regression.push(g.id);
         if (res.ok) checkPlan(g.id, res.plan, bad, st);
@@ -100,11 +109,12 @@ export function describeRecent(
       }
     }, 120_000);
 
-    it('K1: odbijanja su RECENT_LONG_TOO_SHORT sa pragom (izmereno HM-10: ned 1, r ≤ 7 km) i T7 RECENT_LONG_OVER_WEEKLY tačno kad je r > obim', () => {
+    it('K1: odbijanja su RECENT_LONG_TOO_SHORT sa pragom (izmereno HM-10: ned 1, r ≤ 7 km) i T7 RECENT_LONG_OVER_WEEKLY tačno kad je r > obim; F3 RECENT_LONG_UNDER_WEEKLY tačno kad je r < obim / 7', () => {
       expect(inputs.length).toBeGreaterThan(0);
       expect(other).toEqual([]);
       expect(overWeekly.filter((x) => x !== '')).toEqual([]);
       expect(overWeekly.length).toBe(inputs.filter((g) => g.r > g.km).length);
+      expect(underWeekly.length).toBe(inputs.filter((g) => g.r * 7 < g.km).length);
       expect(
         tooShort.filter((x) => x.week !== 1 || x.r > 7 || !/izvodljiv od \d+,\d km/.test(x.message))
       ).toEqual([]);
@@ -124,7 +134,9 @@ export function describeRecent(
       expect(regression).toEqual([]);
       const ids = inputs
         .map((g) => g.id)
-        .filter((id) => id in EXCEPTIONS && !CHANGED_10.has(`r-${id}`));
+        .filter(
+          (id) => id in EXCEPTIONS && !CHANGED_10.has(`r-${id}`) && !underWeekly.includes(id)
+        );
       expect(Object.keys(excepted)).toEqual(ids);
       for (const id of ids) expect(excepted[id]).toEqual(EXCEPTIONS[id]!.after);
     });
