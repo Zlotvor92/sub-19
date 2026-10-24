@@ -1075,7 +1075,7 @@ export function vdotWeekQuality(
   if (!rp.ok) return rp;
   const tp =
     taperWeeks > 1
-      ? `Smanjenje obima pred trku (nedelja ${f.taperStep} od ${taperWeeks})`
+      ? `Smanjenje obima pred trku (${f.taperStep}. od ${taperWeeks} nedelje)`
       : 'Smanjenje obima pred trku';
   if (one) return single(rp.workout, [`${tp}: jedan kvalitet.`], null);
   if (f.taperStep === 1) {
@@ -1097,7 +1097,7 @@ export function vdotWeekQuality(
     q2: null,
     easyStrides: true,
     stridesOnly: false,
-    notes: ['Smanjenje obima pred trku (nedelja 2 od 2): jedan kvalitet.'],
+    notes: ['Smanjenje obima pred trku (2. od 2 nedelje): jedan kvalitet.'],
     dose: null
   };
 }
