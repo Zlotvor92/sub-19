@@ -1,3 +1,6 @@
+**10K-08 (10k-v2.10.0)**: krug T — T1 (lagan ≤ 0,8 × dugi, ≥ 20 min), T3 (taper/oštrenje posle novog starta), C3, C4, C6,
+C11 — `reports/SEGMENT-08-IMPLEMENTATION.md`.
+
 # 10K v2 — STATUS
 
 **10K-07 (10k-v2.9.0)**: ispravke posle dubinske provere v2 (vraćanje revizije kroz jezgro, predaja Z5, WU/CD

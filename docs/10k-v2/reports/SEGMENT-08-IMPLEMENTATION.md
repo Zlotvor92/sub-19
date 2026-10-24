@@ -10,7 +10,7 @@ Polazni SHA `b9c4728`. Zaključan spisak: `docs/generators-v2/audit/fixes/00-com
 | stavka | ispravka (jedan vlasnik) | test (pada na b9c4728 / prolazi) | merenje pre → posle |
 | --- | --- | --- | --- |
 | T1 lagan prema dugom | `lengths.buildEasyBounds10` (najkraći max(3 km, 20 min E), najduži 0,8 × dugi) — konstruktor `buildLengths` i validator `EASY_VS_LONG`; ostatak premali → manje laganih dana (odmor: prvo dan pre dugog, `keptEasyDates`), ni jedan ne staje → svi lagani odmor, planirano < cilj (`easyRestShort`, upozorenje EASY_REST_BELOW_TARGET + preporuka manje dana); lagan > 0,8 × dugi uz dugi na plafonu → cilj neizvodljiv, ista pretraga D6 → niži cilj (WEEK_FITTED, CAPACITY_LIMITED „lagan ≤ 80 % dugog" + preporuka više dana); cilj se zbog T1 ne podiže iznad pravila; validator ROLES za lagan dan-odmor zove istu `buildLengths` | `segment08.node.test.ts` T1 (d4-14w-50km-v45, d4-10w-25km-v70, validator) | `coach-5k-10k/measure.ts 10K 3 400`: M1 lagan ≥ 0,95 × dugi **2 912 → 0** planova, M5 dan pre dugog **974 → 0**, M6 lagan < 20 min **1 116 → 0**; `segment-08/t1-capacity.ts 3` (10 374): lagan > 0,8 × dugi **50 790 → 0** dana, < 20 min **8 772 → 0**; odbijanja 0 → 0 |
-| T1 cena (obim) | — | — | planova sa spuštenom nedeljom izgradnje (CAPACITY_LIMITED) **2 864 → 4 390** od 10 374; spuštenih nedelja 18 898 → 28 068; zbir km ispod nominalnog 42 160 → 67 954; lagani dani-odmor 0 → 4 694; planova sa EASY_REST_BELOW_TARGET (planirano < cilj) — vidi „Brojke" |
+| T1 cena (obim) | — | — | planova sa spuštenom nedeljom izgradnje (CAPACITY_LIMITED) **2 864 → 4 390** od 10 374; spuštenih nedelja 18 898 → 28 068; zbir km ispod nominalnog 42 160 → 67 954; lagani dani-odmor 0 → 4 694; planova sa planirano < cilj (EASY_REST_BELOW_TARGET) **0 → 426** (1 092 nedelje) |
 | T3 posle novog starta | taper: `steps.restartKeepsTaperQuality` (posle povratka bar 1 nedelja izgradnje sa kvalitetom) → `quality.pickTaper(keepOne)`: jedan kvalitet ≈ 60 % poslednje doze, najmanje najniži nivo, i iznad plafona D11 (validator ZONE_CAP/TAPER_QUALITY isti predikat); trkačka: `week.sharpenerReps(keepShort)` kratko oštrenje 2 × 1000 m RP posle novog starta, van perioda bola | `segment08` T3 (d3-8w-40km-v30-B-sat, pauza 35 kraj ned 3) | `segment-08/t3.ts 97` (2 916 tokova pauze 35): taper bez kvaliteta uz kvalitet posle povratka **628 / 2 260 → 283 / 2 154**, trkačka bez oštrenja **709 → 9**; preostalih 283: taper ne nosi ni RP 2 × 1000 m + WU/CD (konstrukcija neizvodljiva, pravilo ne zaobilazi dužine) |
 | C3 | test se u mešovitoj nedelji ne odbacuje radi ostatka (kao HM/MAR): `week.mixedRemainder` / `mixedFloorKm` / `recordedExcessKeepsQuality` | `segment08` C3 | `segment-08/c3.ts 7` (10 671 tokova, po osećaju, dan pre testa over120/done100/locked): test izgubljen **178 → 0** |
 | C4 | `written.protectedKm`: zaštićen dan POSLE asOf (urađen unapred, zaključan) = planirani km (MASTER pouka 37) | `segment08` C4 (d4-14w-40km, dugi urađen u utorak sa +5 km) | primer: b9c4728 keptKm 29,08, planirano 39,86 < cilj 44,9 → posle: nedelja na cilju |
@@ -28,8 +28,11 @@ Tumačenja (zapisana u A24, mišljenje — organizator može da preinači):
 4. Pouka 25 / invarijanta: nedelja sa danima bola sme planirano ispod minimuma (kao validator WEEK_MIN_REST) — uz T1 se
    to javlja i bez dana odmora.
 
-Usput ispravljeno (posledica T1, nalaz mreže zaključanog testa): dan ≤ asOf koga prethodni plan nema (odmor po T1) se ne
-dopisuje u prošlost (`written.writtenDays`, `generate.mixed37`).
+Usput ispravljeno (posledice T1 nađene mrežama): (a) dan ≤ asOf koga prethodni plan nema (odmor po T1) se ne dopisuje u
+prošlost (`written.writtenDays`, `generate.mixed37`); (b) cilj se zbog T1 ne podiže iznad pravila (umor pre starta: ned 2
+bez rasta); (c) kad je prva pretraga cilja ('rule') spuštena, a druga ('relax', D11 ispred D12) daje bliži izvodljiv cilj
+nedelje izgradnje, važi druga (two-step: ned 10 31,5 → 14,9 bez kvaliteta → 29,3); (d) nedelja u kojoj su svi dani odmor
+(bol + T1) je WEEK_ALL_REST, ne EMPTY_WEEK (start-day: 4 odbijanja → 0).
 
 ## Zamrznuti otisci (promena = objašnjena ispravka)
 
@@ -56,16 +59,21 @@ umesto 1 854, painGrid I3, primeri reliefGrid/painGrid/earlyGrid/adaptFlow) ažu
 ## Testovi
 
 - Pun nivo `TEST_FULL=1 npx vitest run --project node src/domain/generators/tenK`: **98 / 98 fajlova, 752 / 752**.
-- `npm run check` (uz NODE_OPTIONS=--max-old-space-size=8192 — eslint bez toga OOM): 334 / 336 fajlova; pada
-  `marathon/v2/app/byteSame` (redovi „10K v2", namerna promena — van mog foldera, pitanje organizatoru) i
-  `features/onboarding/tenKV2Flow` (oznaka verzije — ispravljeno, 9 / 9).
+- `npm run check` (posle `git pull`; uz NODE_OPTIONS=--max-old-space-size=8192 — eslint bez toga OOM): **339 / 339
+  fajlova, 3 797 / 3 797**. `marathon/v2/app/byteSame.9443676.json`: novi heševi SAMO 16 redova „10K v2" (odobrenje
+  organizatora; diff bez drugih redova); `features/onboarding/tenKV2Flow`: oznaka verzije.
 - E2E `npx playwright test e2e/tenk-v2`: **3 / 3**.
 - Sabotaže `artifacts/segment-08/sabotage-08.json` (`web/scripts/sabotage.mjs`, `--bail=1`): **8 / 8 palo**
   (T1 gornja granica, T1 20 min, T1 validator, T3, C3, C4, C6, C11), stanje `src` isto.
 
 ## run-all i lanci
 
-(popunjeno posle merenja — vidi poruku organizatoru)
+- `run-all.sh … '.*-10K'` (14 poslova, pre ispravki (b)–(d) i t1Short): 0 odbijanja osim start-day 4 (EMPTY_WEEK — ispravljeno
+  (d)); nečisto 7 — invarijanta „planirano ≠ cilj" (nedelje bez laganih dana po T1; `gridInvariants.t1Short` sada po tempu
+  nedelje — ispravljeno) i two-step „taper > poslednja izgradnja" 4 (ispravljeno (c)). Ponovljeni run-all: poruka organizatoru.
+- `chains.ts 10K 20261023 0 2000` (b9c4728 → posle): odbijenih lanaca 0 → 0; buduća nedelja < 40 % cilja 30 → 30;
+  IDEMP:WEEKS 3 → 3; trkačka > taper 3 → 5 (oba proverena primera sa zaključanim danom, klasa C7; ostali nepotvrđeni).
+  `idemp.ts`: same 3 → 3, next 2 → 1 (sve pauza).
 
 ## Primećeno, nije rađeno
 
