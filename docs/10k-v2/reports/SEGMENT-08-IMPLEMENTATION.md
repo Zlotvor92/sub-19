@@ -70,7 +70,8 @@ umesto 1 854, painGrid I3, primeri reliefGrid/painGrid/earlyGrid/adaptFlow) ažu
 
 - `run-all.sh … '.*-10K'` (14 poslova, pre ispravki (b)–(d) i t1Short): 0 odbijanja osim start-day 4 (EMPTY_WEEK — ispravljeno
   (d)); nečisto 7 — invarijanta „planirano ≠ cilj" (nedelje bez laganih dana po T1; `gridInvariants.t1Short` sada po tempu
-  nedelje — ispravljeno) i two-step „taper > poslednja izgradnja" 4 (ispravljeno (c)). Ponovljeni run-all: poruka organizatoru.
+  nedelje — ispravljeno) i two-step „taper > poslednja izgradnja" 4 (ispravljeno (c)). Ponovljeni run-all (posle ispravki, na 9941a06): **14 poslova, nečistih 0**, 0 odbijanja.
+- CI (Testovi, pun nivo): run 740 na 18f967c (sadrži 9941a06) — **success**.
 - `chains.ts 10K 20261023 0 2000` (b9c4728 → posle): odbijenih lanaca 0 → 0; buduća nedelja < 40 % cilja 30 → 30;
   IDEMP:WEEKS 3 → 3; trkačka > taper 3 → 5 (oba proverena primera sa zaključanim danom, klasa C7; ostali nepotvrđeni).
   `idemp.ts`: same 3 → 3, next 2 → 1 (sve pauza).
