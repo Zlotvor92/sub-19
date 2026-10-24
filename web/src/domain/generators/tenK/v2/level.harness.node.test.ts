@@ -131,7 +131,7 @@ export const at46e = (net: keyof typeof ADAPT_CHANGED_46E, key: string, h: numbe
   ADAPT_CHANGED_46E[net][key] ?? atC13(net, key, h);
 /** Pouka 37 u adaptiranom rezultatu (napomena konstruktora, week.MIXED_NOTE). */
 export const hasP37 = (r: unknown): boolean =>
-  JSON.stringify(r).includes('Mešovita nedelja (pouka 37)');
+  /Mešovita nedelja: zaštićeni dani [\d,]+ km(?! \(po činjenicama\))/.test(JSON.stringify(r));
 /** 06i: tok mreže `net` se razlikuje od 46e72eb (u fixture-u, heš drugačiji) tačno kad ima mešovitu nedelju pouke 37.
     Vraća prekršaje. */
 export function p37FlowErrors(
@@ -170,7 +170,8 @@ export function p35FlowErrors(
 }
 /** Pouka 35 u adaptiranom rezultatu (napomena konstruktora, week.ts) — tok sme da se razlikuje od starijih
     regresija adaptacije; bazni plan iz P35_PLANS takođe. */
-export const hasP35 = (r: unknown): boolean => JSON.stringify(r).includes('Pouka 35:');
+export const hasP35 = (r: unknown): boolean =>
+  /Drugi dan kvaliteta \(|Dva dana kvaliteta ostaju/.test(JSON.stringify(r));
 
 /** Fajlovi delova 2…`count` punog nivoa (`<ime>.<k>.full.node.test.ts` pored glavnog) koji NE postoje — unija
     delova je ceo skup samo ako postoje svi. */

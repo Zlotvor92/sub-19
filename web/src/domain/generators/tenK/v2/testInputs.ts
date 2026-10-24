@@ -4,8 +4,9 @@
 
 import { addDays, mustDay, weekdayOf } from './dates.ts';
 import { raceTimeForVdot, round1, vdotFromResult } from './paces.ts';
-import type { Structure, Weekday } from './types.ts';
+import type { Structure, TenKV2Plan, Weekday } from './types.ts';
 import { checkInput } from './input.ts';
+import { validatePlan } from './validate.ts';
 import { basisAt, pacesAt } from './steps.ts';
 import { qualityWorkout, repsOf, sharpenerWorkout, warmupCooldown } from './workouts.ts';
 
@@ -864,7 +865,347 @@ const UVOD_NEW = /Uvod: (\d+)\. od (\d+) nedelje uvoda bez kvaliteta/g;
  * dana D22 (O-1b), D25 sa testom (F3), Z1, vraćanje/predaju — to su izuzeci po uzroku. Nad izlazom pre 10K-07 ne
  * menja ništa (nema oštrenja sa WU/CD trke, nema novih tekstova).
  */
-export function undo07<T>(result: T): T {
+/* ---------- F1 (04-final): tekst korisnika bez internih oznaka ---------- */
+
+const dot = (s: string): string => s.replace(/(\d),(\d)/g, '$1.$2');
+const slotOld = (s: string): string => (s === 'Prvi' ? 'Q1' : 'Q2');
+const ladderOld = (n: string): string =>
+  n === 'T u deonicama' ? 'T_cruise' : n === 'T kontinuirano' ? 'T_continuous' : n;
+type Back = [RegExp, string | ((...a: string[]) => string)];
+/** Novi tekst (F1) → tekst 10k-v2.10.0 pre F1, nad JSON-om rezultata; redosled je bitan. */
+const F1_BACK: Back[] = [
+  // week.ts
+  [
+    /Test (\d+) km: kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat se koristi za prilagođavanje plana, do tada tempo ostaje procena\./g,
+    'Test $1 km (D27): kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat koristi adaptacija (segment 04), do tada tempo ostaje procena.'
+  ],
+  [
+    /(Prvi|Drugi) kvalitet: (\w+) ([\d,]+) km ponovljen — veća doza ne staje u najviše \d+ % nedelje u tom tempu, a drugačija podela iste doze ne postoji\./g,
+    (_, s, z, k) =>
+      `${slotOld(s)}: ${z} ${k} km ponovljen — sledeći nivo ne staje u plafon, a druga struktura iste doze ne postoji (D10).`
+  ],
+  [
+    /(Prvi|Drugi) kvalitet: (\w+) spušten sa ([\d,]+) na ([\d,]+) km — bez toga nijedan obim nedelje ne može da se sastavi uz najviše \d+ % nedelje u tom tempu\./g,
+    (_, s, z, a, b) =>
+      `${slotOld(s)}: ${z} spušten sa ${a} na ${b} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada\\" i plafon (D11 ispred D12).`
+  ],
+  [/(Adaptacija: [^"]*?planirano ≤ cilj obima)\./g, '$1 (A4).'],
+  [
+    /(Adaptacija: (?:jedan kvalitet doze rasterećenja|nedelja bez kvaliteta)) \(zbog pauze ili bola\)\./g,
+    '$1 (ograničenje koraka, A3/A4).'
+  ],
+  [
+    /(Adaptacija: kvalitet ne staje u obim [\d,]+ km — (?:jedan kvalitet doze rasterećenja|nedelja bez kvaliteta))\./g,
+    '$1 (A9).'
+  ],
+  [
+    /(Rasterećenje: cilj [\d,]+ km, test \d+ km umesto kvaliteta rasterećenja), dugi ([\d,]+) km — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja (\([\d,]+ km\)) da lagani ostanu ≥ ([\d,]+) km\./g,
+    '$1 (D27), dugi $2 km — skraćen sa 0,8 × poslednjeg ne-rasteretnog $3 da lagani ostanu ≥ $4 km (D27 ispred D5, odstupanje).'
+  ],
+  [
+    /(Rasterećenje: cilj [\d,]+ km, test \d+ km umesto kvaliteta rasterećenja), dugi 0,8 × dugog poslednje nedelje pre rasterećenja\./g,
+    '$1 (D27), dugi 0,8 × poslednji ne-rasteretni (D5).'
+  ],
+  [
+    /(Rasterećenje: cilj [\d,]+ km(?:, jedan kvalitet \(T\)| bez kvaliteta), dugi [\d,]+ km) — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja da lagani ostanu ≥ ([\d,]+) km\./g,
+    '$1 — skraćen sa 0,8 × poslednjeg ne-rasteretnog da lagani ostanu ≥ $2 km (A9, odstupanje).'
+  ],
+  [
+    /dan kvaliteta je lagan; rasterećenje zbog umora: (cilj [\d,]+ km, nedelja bez kvaliteta), dugi 0,8 × dugog poslednje nedelje pre rasterećenja\./g,
+    'dan kvaliteta je lagan; prinudno rasterećenje (A5): $1, dugi 0,8 × poslednji ne-rasteretni.'
+  ],
+  [
+    /(Rasterećenje: cilj [\d,]+ km, jedan kvalitet \(T\)), dugi 0,8 × dugog poslednje nedelje pre rasterećenja\./g,
+    '$1, dugi 0,8 × poslednji ne-rasteretni (D5).'
+  ],
+  [
+    /(Rasterećenje: cilj [\d,]+ km bez kvaliteta \(adaptacija\)); dugi 0,8 × dugog poslednje nedelje pre rasterećenja\./g,
+    '$1; dugi 0,8 × poslednji ne-rasteretni.'
+  ],
+  [
+    /(Rasterećenje: cilj [\d,]+ km bez kvaliteta — ni T [\d,]+ km) ne staje u najviše (\d+) % nedelje u tempu T; dugi 0,8 × dugog poslednje nedelje pre rasterećenja\./g,
+    '$1 ne staje u plafon $2 % (D11 ispred D5, odstupanje); dugi 0,8 × poslednji ne-rasteretni.'
+  ],
+  [/Umor pre starta: referenca/g, 'Umor pre starta (A5): referenca'],
+  [
+    /(Taper bez kvaliteta — ni RP \d+ × \d+ m ni T [\d,]+ km) ne staju u najviše (\d+) % nedelje u tom tempu;/g,
+    '$1 ne staju u plafon $2 % cilja (D11 ispred D7/D31, odstupanje);'
+  ],
+  [
+    /(Taper bez kvaliteta — ni RP \d+ × \d+ m) ne staje u najviše (\d+) % nedelje u tempu trke;/g,
+    '$1 ne staje u plafon $2 % cilja (D11 ispred D7, odstupanje);'
+  ],
+  [
+    /Taper: (RP \d+ × \d+ m) ne staje u najviše (\d+) % nedelje u tempu trke — T kontinuirano ≈ 60 % poslednje T doze \(najmanje ([\d,]+) km\);/g,
+    'Taper (D31): $1 ne staje u plafon $2 % cilja — T kontinuirano ≈ 60 % poslednje T doze (min $3 km);'
+  ],
+  [
+    /Taper: samo RP ≈ 60 % poslednje doze\. Drugi dan kvaliteta \(/g,
+    'Taper: samo RP ≈ 60 % poslednje doze — Pouka 35: drugi dan kvaliteta ('
+  ],
+  [
+    /Taper: samo RP ≈ 60 % poslednje doze — sa RP i T nijedan obim nedelje do 0,75 × vrha ne može da se sastavi;/g,
+    'Taper: samo RP ≈ 60 % poslednje doze — sa RP i T nijedan cilj ≤ 0,75 × vrh nije izvodljiv (D7, odstupanje);'
+  ],
+  [
+    /Taper: RP ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži\./g,
+    'Taper: RP ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži (D7, D18).'
+  ],
+  [
+    /Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži\./g,
+    'Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,75 × najduži (D7).'
+  ],
+  [
+    /(Bez kvaliteta: ni T [\d,]+ km kontinuirano) ne staje u najviše (\d+) % nedelje od ([\d,]+) km\./g,
+    '$1 ne staje u plafon $2 % cilja $3 km (D11 ispred D28, odstupanje).'
+  ],
+  [
+    /T kontinuirano umesto ([^:"]+): ni najkraći [^(]+ \(([\d,]+) km\) ne staje u najviše (\d+) % nedelje od ([\d,]+) km\./g,
+    (_, n, f, c, t) =>
+      `T kontinuirano (D31): prvi nivo ${ladderOld(n)} (${f} km) ne staje u plafon ${c} % cilja ${t} km.`
+  ],
+  [/"Drugi dan kvaliteta \(/g, '"Pouka 35: drugi dan kvaliteta ('],
+  [/\(preporuka: manje dana treninga\)/g, '(D25, preporuka manje dana)'],
+  [
+    /Dva dana kvaliteta ostaju — nedelja sa jednim kvalitetom ne može da se sastavi po pravilima; dan kvaliteta traje duže od dugog\./g,
+    'Pouka 35: dva dana kvaliteta ostaju — nedelja sa jednim kvalitetom nije izvodljiva po pravilima; dan kvaliteta duži od dugog (D25).'
+  ],
+  [
+    /"Mešovita nedelja: zaštićeni dani (?![^"]*po činjenicama)/g,
+    '"Mešovita nedelja (pouka 37): zaštićeni dani '
+  ],
+  [
+    /\(kraći od (\d+) min laganog; trkačka nedelja ne sme biti veća od tapera\)\./g,
+    '(kraći od $1 min E; trkačka ≤ taper, D23).'
+  ],
+  [
+    /(Trkačka nedelja: oštrenje \d+ × \d+ m RP \(≤ RP doza tapera [\d,]+ km\), trka \d+ km se ne računa u obim)\./g,
+    '$1 (D8).'
+  ],
+  [
+    /Trkačka nedelja: taper bez RP — bez oštrenja \(oštrenje ≤ RP doza tapera\); (trka \d+ km se ne računa u obim)\./g,
+    'Trkačka nedelja: taper bez RP — bez oštrenja (oštrenje ≤ RP doza tapera, D8); $1 (D20).'
+  ],
+  [
+    /(Trkačka nedelja: bez oštrenja — sa njim bi trkačka nedelja bila veća od tapera); (trka \d+ km se ne računa u obim)\./g,
+    '$1 (A9, D23); $2 (D20).'
+  ],
+  [
+    /(Trkačka nedelja: bez oštrenja — dan oštrenja je u zabrani kvaliteta \(adaptacija\); trka \d+ km se ne računa u obim)\./g,
+    '$1 (D20).'
+  ],
+  [
+    /(tapera — bez oštrenja); (trka \d+ km se ne računa u obim)\./g,
+    '$1 (D8, odstupanje); $2 (D20).'
+  ],
+  [
+    /Trkačka nedelja skraćena: taper je imao dane odmora\/bola\./g,
+    'Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).'
+  ],
+  // generate.ts
+  [
+    /Nedelja ne može da se sastavi na ([\d,]+) km \(redovan rast\) uz granice dužine dugog, laganih i kvaliteta; planirano je ([\d,]+) km\./g,
+    'Cilj po pravilu $1 km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj $2 km (D6).'
+  ],
+  [/"Plan po osećaju: /g, '"Plan po osećaju (D26): '],
+  [/(Test \d+ km: nedelja [^,"]+, \d{4}-\d\d-\d\d)\. Ocena cilja/g, '$1 (D27). Ocena cilja'],
+  [
+    /(Test \d+ km): nema ga u planu posle prilagođavanja \(primljen rezultat, ili nema nedelje izgradnje bez ograničenja\)\./g,
+    '$1: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).'
+  ],
+  [
+    /Početnik bez testa (\d+) km: kvalitet po osećaju napora \(RPE\); ocena cilja i prognoza 10K posle rezultata trke ili parkruna\./g,
+    'Početnik bez testa $1 km (D32): kvalitet po RPE; ocena cilja i prognoza 10K posle rezultata trke ili parkruna (adaptacija, segment 04).'
+  ],
+  [
+    /Nema rasporeda rasterećenja koji odgovara pravilima plana\./g,
+    'Nema rasporeda rasterećenja po pravilima D5.'
+  ],
+  [/(Vrh [\d,]+ km umesto do [\d,]+ km)\./g, '$1 (D6).'],
+  // paces.ts
+  [/Cilj je (?:realističan|ambiciozan|nerealan za ovaj ciklus): traži [^"]*?\)/g, (m) => dot(m)],
+  // validate.ts
+  [/svi dani su odmor \(bol\)\./g, 'svi dani su odmor (bol, A4).'],
+  [
+    /(Mešovita nedelja: zaštićeni dani [\d,]+ km \(po činjenicama\), ostatak do cilja [^"]*?cilj [\d,]+ km)\./g,
+    (_, a) => `${dot(a)} (pouka 37/14).`
+  ],
+  [/Mešovita nedelja posle pauze: [^"]*?km\./g, (m) => dot(m)],
+  [
+    /Planirano ([\d,]+) km < cilj obima ([\d,]+) km \(odmor\/bol\)\./g,
+    (_, a, b) => `Planirano ${dot(a)} km < cilj obima ${dot(b)} km (odmor/bol, A4).`
+  ],
+  [/(Nedelja [\d,]+ km < [\d,]+ km — dani odmora) \(bol\)\./g, (_, a) => `${dot(a)} (bol, A4).`],
+  [/(Nedelja [\d,]+ km < [\d,]+ km — dani bola)\./g, (_, a) => `${dot(a)} (A4, pouka 25).`],
+  [
+    /(Trkačka nedelja [\d,]+ km \+ trka \d+ km < [\d,]+ km) \(najmanji obim nedelje\)\./g,
+    (_, a) => `${dot(a)} (Uslov 8, D17, D30).`
+  ],
+  [
+    /Planirano < cilj u \d+ nedelja izgradnje \(nedelja [^:]+: [\d,]+ < [\d,]+ km\)/g,
+    (m) => dot(m)
+  ],
+  [
+    /(Lagan [\d,]+ km van [\d,]+–[\d,]+ km \(≥ \d+ min, ≤ \d+ % dugog [\d,]+ km)\)\./g,
+    (_, a) => `${dot(a)}; T1).`
+  ],
+  [
+    /Dva dana kvaliteta, dan kvaliteta duži od dugog — nedelja sa jednim kvalitetom ne može da se sastavi\./g,
+    'Dva dana kvaliteta, dan kvaliteta duži od dugog — nedelja sa jednim nije izvodljiva (pouka 35, D25).'
+  ],
+  [
+    /(Prvi|Drugi) kvalitet: doza spuštena (\d+) → (\d+) m \(bez toga[^)]*\)\./g,
+    (_, s, a, b) =>
+      `${s === 'Prvi' ? 'q1' : 'q2'}: doza spuštena ${a} → ${b} m (plafon, nijedan cilj nije izvodljiv bez toga).`
+  ],
+  [
+    /Nedelja bez kvaliteta: ni T ([\d,]+) km ne staje u najviše (\d+) % nedelje od ([\d,]+) km\./g,
+    (_, t, c, k) =>
+      `Nedelja bez kvaliteta: ni T ${dot(t)} km ne staje u plafon ${c} % cilja ${dot(k)} km (D11 ispred D28, D31).`
+  ],
+  [
+    /Rasterećenje bez kvaliteta: ni T (\d+) m ne staje u najviše \d+ % nedelje u tom tempu\./g,
+    'Rasterećenje bez kvaliteta: T $1 m ne staje u plafon.'
+  ],
+  [
+    /Taper bez kvaliteta: ni RP (\d+) m ne staje u najviše \d+ % nedelje u tempu trke\./g,
+    'Taper bez kvaliteta: RP $1 m ne staje u plafon.'
+  ],
+  [
+    /(Rasterećenje sa testom: dugi [\d,]+ km < [\d,]+ km da lagani ostanu ≥ [\d,]+ km)\./g,
+    (_, a) => `${dot(a)} (D27 ispred D5).`
+  ],
+  [
+    /Taper samo sa RP: sa RP i T dan kvaliteta bio bi duži od dugog\./g,
+    'Taper samo sa RP: sa RP i T dan kvaliteta bio bi duži od dugog (pouka 35).'
+  ],
+  [
+    /Taper samo sa RP: sa RP i T nijedan obim nedelje ne može da se sastavi\./g,
+    'Taper samo sa RP: sa RP i T nijedan cilj nije izvodljiv.'
+  ],
+  [
+    /(Trkačka nedelja [\d,]+ km > taper [\d,]+ km) (— zaštićen dan [^"]*?ostaje kakav je)\./g,
+    (_, a, b) => `${dot(a)} ${b} (D23).`
+  ],
+  [
+    /(Trkačka nedelja [\d,]+ km > taper [\d,]+ km — ostali su samo dan pred trku i trka)\./g,
+    (_, a) => `${dot(a)} (D23, pouka 30).`
+  ],
+  [
+    /Nedelja (spuštena|podignuta) na ([\d,]+) km, koliko nedelja može da se sastavi \(redovan rast ([\d,]+) km\)\./g,
+    (_, w, a, b) => `Nedelja ${w} na izvodljiv cilj ${dot(a)} km (pravilo ${dot(b)} km).`
+  ],
+  [
+    /(Procena VDOT [\d,]+ > \d+: orijentir na \d+; za ovaj tempo unesi rezultat)\./g,
+    (_, a) => `${dot(a)} (D26).`
+  ],
+  // assess.ts, policy.ts
+  [/(osim tapera i trkačke nedelje)\./g, '$1 (A8).'],
+  [/(: stariji od \d+ dana — ne menja tempo)\./g, '$1 (A1).'],
+  [/(: nije noviji od rezultata u upotrebi)\./g, '$1 (A1).'],
+  [/(: VDOT [\d,]+ van \d+–\d+ — rezultat se ne primenjuje)\./g, '$1 (A1).'],
+  [/(: nije najnoviji rezultat)\./g, '$1 (A1).'],
+  [
+    /; obim nedelje ostaje po planu, doza kvaliteta se nastavlja\./g,
+    '; obim po pravilu D6, doza se nastavlja (A1).'
+  ],
+  [/(: nema sledeće nedelje do trke — tempo ostaje)\./g, '$1 (A1).'],
+  [/(već u planu — period bola iz prilagođavanja \d{4}-\d\d-\d\d ostaje)\./g, '$1 (A4).'],
+  [/\(ne ispod minimuma nedelje ([\d,]+) km\)/g, '(ne ispod minimuma nedelje $1 km, A9)'],
+  [
+    /(Pauza(?: \(prijavljena\))? \d+ dana [^"]*?(?:prva nedelja 1 kvalitet|prva nedelja bez kvaliteta, druga 1 kvalitet)(?:; nov start \(faze preostale izgradnje ponovo, vrh od novog starta\))?)\./g,
+    '$1 (A3).'
+  ],
+  [/priprema nije potpuna\./g, 'priprema nije potpuna (A3).'],
+  [/potraži stručni pregled\./g, 'potraži stručni pregled (A4).'],
+  [
+    /(u 7 dana: nedelja \S+ je rasterećenje)( \(tekuća nedelja: ostatak posle danas\))?/g,
+    (_, a, t) => `${a} (A5${t ? ', tekuća nedelja: ostatak posle danas' : ''})`
+  ],
+  [/(rasterećenje posle ovih zapisa je već u planu \(nedelja [^)]+)\)\./g, '$1, A5).'],
+  [/(u 7 dana: )nadjačano pauzom\./g, '$1nadjačano pauzom (A7).'],
+  [/(u 7 dana: sledeća nedelja je već rasterećenje, taper ili trka)\./g, '$1 (A5).'],
+  [/(\(< \d+ %\): nedelja \S+ ne raste, cilj [\d,]+ km)\./g, '$1 (A2).'],
+  [/nadjačano pauzom ili umorom\./g, 'nadjačano (A7).'],
+  [
+    /smanjenje posle ovih zapisa je već u planu\./g,
+    'smanjenje posle ovih zapisa je već u planu (A2).'
+  ],
+  [/(\(< \d+ %\): sledeća nedelja nije izgradnja)\./g, '$1 (A2).'],
+  [/povećava rizik — drži se plana\./g, 'povećava rizik — drži se plana (A6).'],
+  [
+    /sledeća nedelja nije izgradnja bez rasterećenja\./g,
+    'sledeća nedelja nije izgradnja bez rasterećenja (A6).'
+  ],
+  // adapt.ts, input.ts, app/members.ts
+  [/Plan nije ispravan 10K v2 plan\./g, 'Plan nije ispravan 10K v2 plan (A15).'],
+  [
+    /Datum prilagođavanja mora biti pre dana trke \(datum trke se ne pomera\)\./g,
+    'asOf mora biti pre dana trke (datum trke se ne pomera, A11).'
+  ],
+  [
+    /Datum prilagođavanja ne sme biti pre prethodnog prilagođavanja \(([^)]*)\)\./g,
+    'asOf ne sme biti pre prethodne adaptacije ($1, A11).'
+  ],
+  [/Ulaz plana nije ispravan\./g, 'Ulaz plana nije ispravan (A15).'],
+  [/(bi bio promenjen; plan se ne vraća)\./g, '$1 (A11).'],
+  [/( Redovno rasterećenje u nedelji \S+ otpada: nedelja \S+ je smanjena)\./g, '$1 (A17).'],
+  [/(otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja)\./g, '$1 (A13).'],
+  [
+    /\(prva sledeća nedelja izgradnje bez rasterećenja i bez ograničenja\)\./g,
+    '(prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja, A13).'
+  ],
+  [/VDOT iz rezultata ([\d,]+) je ispod/g, (m) => dot(m)],
+  [/VDOT ([\d,]+) je iznad/g, (m) => dot(m)],
+  [/Plan 10K v2 nema trčanje\/hodanje\./g, 'Plan 10K v2 nema trčanje/hodanje (D29).']
+];
+
+const kmOld = (x: number): string => x.toFixed(1).replace('.', ',');
+
+/**
+ * F1 (04-final): izlaz posle F1 u obliku 10k-v2.10.0 pre F1 — samo tekst korisnika (bez oznaka pravila, decimalni
+ * zarez, bez „Vrh X umesto do X"). NE vraća upozorenja „planirano < cilj" koja F1 izostavlja za razliku < 1 km i
+ * < 3 % cilja. Nad izlazom pre F1 ne menja ništa.
+ */
+export function undoF1<T>(result: T): T {
+  if (result === undefined) return result;
+  const r0 = result as { ok?: boolean; plan?: TenKV2Plan };
+  let s = JSON.stringify(result);
+  if (r0?.ok && r0.plan && Array.isArray(r0.plan.warnings)) {
+    // Upozorenja „planirano < cilj" koja F1 izostavlja (razlika < 1 km i < 3 %): validator kao pre F1.
+    const below = new Set(['EASY_REST_BELOW_TARGET', 'PLANNED_BELOW_TARGET_LIMITS']);
+    const rest = (ws: readonly { rule: string }[]): string =>
+      JSON.stringify(ws.filter((w) => !below.has(w.rule)));
+    const all = validatePlan(r0.plan, { allBelowTarget: true });
+    if (rest(all) === rest(r0.plan.warnings))
+      s = JSON.stringify({ ...r0, plan: { ...r0.plan, warnings: all } });
+  }
+  for (const [re, to] of F1_BACK) s = s.replace(re, to as never);
+  const beginner =
+    (r0?.plan?.input as { experience?: string } | undefined)?.experience === 'beginner';
+  s = s.replace(
+    /podržava obim ([\d,]+) km, dugi dobija veći udeo\)/g,
+    (_, k: string) =>
+      `podržava obim ${dot(k)} km, dugi dobija veći udeo; ${beginner ? 'D28' : 'D17'})`
+  );
+  const r = JSON.parse(s) as { plan?: { notes?: string[]; peakKm?: number; peakCapKm?: number } };
+  const p = r?.plan;
+  if (
+    p &&
+    Array.isArray(p.notes) &&
+    typeof p.peakKm === 'number' &&
+    typeof p.peakCapKm === 'number'
+  )
+    p.notes = p.notes.map((n) =>
+      /^\d dana ne nose ovaj obim/.test(n) && !n.includes(' Vrh ')
+        ? `${n} Vrh ${kmOld(p.peakKm!)} km umesto do ${kmOld(p.peakCapKm!)} km (D6).`
+        : n
+    );
+  return r as T;
+}
+
+export function undo07<T>(result0: T): T {
+  const result = undoF1(result0);
   const r = JSON.parse(JSON.stringify(result)) as {
     plan?: U7Plan;
     changes?: { week: number; field: string; before: string; after: string }[];

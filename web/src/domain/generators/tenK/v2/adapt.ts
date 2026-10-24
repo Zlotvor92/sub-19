@@ -92,7 +92,7 @@ function diff(before: TenKV2Plan, after: TenKV2Plan): AdaptChange[] {
 
 export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): AdaptResult {
   const plan = checkPlan(rawPlan);
-  if (!plan) return reject('ADAPT_PLAN_INVALID', 'Plan nije ispravan 10K v2 plan (A15).');
+  if (!plan) return reject('ADAPT_PLAN_INVALID', 'Plan nije ispravan 10K v2 plan.');
   if (dayNumber(asOf) === null)
     return reject('ADAPT_AS_OF_INVALID', 'asOf mora biti ispravan datum YYYY-MM-DD.');
   const at = asOf as string;
@@ -100,21 +100,21 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
   if (t >= mustDay(plan.input.raceDate))
     return reject(
       'ADAPT_AS_OF_INVALID',
-      'asOf mora biti pre dana trke (datum trke se ne pomera, A11).'
+      'Datum prilagođavanja mora biti pre dana trke (datum trke se ne pomera).'
     );
   const prevSteps: readonly TenKV2AdaptStep[] = plan.adaptation?.steps ?? [];
   const prevAsOf = plan.adaptation?.asOf;
   if (prevAsOf !== undefined && (dayNumber(prevAsOf) === null || t < mustDay(prevAsOf)))
     return reject(
       'ADAPT_AS_OF_INVALID',
-      `asOf ne sme biti pre prethodne adaptacije (${String(prevAsOf)}, A11).`
+      `Datum prilagođavanja ne sme biti pre prethodnog prilagođavanja (${String(prevAsOf)}).`
     );
   const ids = new Set(plan.weeks.flatMap((w) => w.days.map((d) => d.date)));
   const cf = checkFacts(rawFacts, at, ids);
   if (!cf.ok) return { ok: false, reasons: cf.reasons, violations: [] };
   const facts = cf.facts;
   const chk = checkInput(plan.input);
-  if (!chk.ok) return reject('ADAPT_PLAN_INVALID', 'Ulaz plana nije ispravan (A15).');
+  if (!chk.ok) return reject('ADAPT_PLAN_INVALID', 'Ulaz plana nije ispravan.');
 
   // (1) Činjenice → ograničenja.
   const as = assess(plan, facts, at, chk.pace, dayRule(chk.input.runDays.length)!.weekMinKm, () =>
@@ -160,7 +160,7 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
         if (m.length !== 1 || !same(m[0], d))
           return reject(
             'ADAPT_PROTECTION',
-            `Zaštićen dan ${d.date} bi bio promenjen; plan se ne vraća (A11).`
+            `Zaštićen dan ${d.date} bi bio promenjen; plan se ne vraća.`
           );
       }
 
@@ -197,8 +197,7 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
         x.condition === 'PAIN' ? !byTarget(w) : REDUCING.includes(x.condition) && byTarget(w)
       )
       .map(
-        (w) =>
-          ` Redovno rasterećenje u nedelji ${wl(w)} otpada: nedelja ${wl(w - 1)} je smanjena (A17).`
+        (w) => ` Redovno rasterećenje u nedelji ${wl(w)} otpada: nedelja ${wl(w - 1)} je smanjena.`
       )
       .join('');
   const reasons: AdaptReason[] = as.reasons.map((x) => {
@@ -219,8 +218,8 @@ export function adaptTenKV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown):
       applied: true,
       message:
         ta === null
-          ? `Test ${P.test.km} km (nedelja ${tb === null ? tb : wl(tb)}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja (A13).`
-          : `Test ${P.test.km} km: nedelja ${tb === null ? '—' : wl(tb)} → ${wl(ta)} (prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja, A13).`
+          ? `Test ${P.test.km} km (nedelja ${tb === null ? tb : wl(tb)}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja.`
+          : `Test ${P.test.km} km: nedelja ${tb === null ? '—' : wl(tb)} → ${wl(ta)} (prva sledeća nedelja izgradnje bez rasterećenja i bez ograničenja).`
     });
   const applied = reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');
   const prevNotes = plan.notes.filter((x) => x.startsWith('Adaptacija '));

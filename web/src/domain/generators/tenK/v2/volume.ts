@@ -60,7 +60,7 @@ export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number, rule: 
     (n) => n < runDays
   );
   if (fewer.length === 0) return '';
-  return `; preporuka ${daysText(fewer)} dana (plan sa manje dana podržava obim ${currentWeeklyKm} km, dugi dobija veći udeo; ${rule.beginner ? 'D28' : 'D17'})`;
+  return `; preporuka ${daysText(fewer)} dana (plan sa manje dana podržava obim ${String(currentWeeklyKm).replace('.', ',')} km, dugi dobija veći udeo)`;
 }
 
 /** D22: ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 105 min

@@ -150,7 +150,7 @@ export function runMixed(f: MixedFlow): MixedRun {
     const freeKm = free.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0);
     if (freeKm <= w.targetKm - kf + TOL + EPS) continue;
     const warn = r.plan.warnings.find((v) => v.rule === 'MIXED_OVER_TARGET' && v.week === w.index);
-    if (warn && warn.message.includes('pouka 37')) over++;
+    if (warn && warn.message.includes('(po činjenicama)')) over++;
     else
       bad.push(
         `${f.key}: ned ${w.index} preostali ${freeKm.toFixed(2)} > cilj ${w.targetKm} − zaštićeni ${kf.toFixed(2)} bez upozorenja`

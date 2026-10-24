@@ -102,7 +102,7 @@ describe('primeri 06d (nove klase, 10k-v2.5.0 odbijeno)', () => {
       '2027-01-09:race:13.12'
     ]);
     expect(race.plannedKm).toBeLessThanOrEqual(taper.plannedKm);
-    expect(race.notes).toContain('Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).');
+    expect(race.notes).toContain('Trkačka nedelja skraćena: taper je imao dane odmora/bola.');
   });
 
   it('N-b: umor početnika kraj ned 1 — prinudno rasterećenje ned 2 u uvodu: 0,8 × (16 km), bez kvaliteta, dani uvoda', () => {
@@ -139,7 +139,7 @@ describe('primeri 06d (nove klase, 10k-v2.5.0 odbijeno)', () => {
 });
 
 describe('N-a × D30b (odluka organizatora): izuzetak invarijante samo za trkačku nedelju skraćenu po D23', () => {
-  const D23 = 'Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).';
+  const D23 = 'Trkačka nedelja skraćena: taper je imao dane odmora/bola.';
   const run = (id: string) => {
     const b = earlyGridBases().find((x) => x.id === id)!;
     const r0 = generateTenKV2(b.input);

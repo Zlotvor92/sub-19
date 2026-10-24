@@ -348,7 +348,7 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             runs37.push({
               key,
               hash: h,
-              res: hasP37(r) ? 'Mešovita nedelja (pouka 37)' : null,
+              res: hasP37(r) ? 'Mešovita nedelja: zaštićeni dani 0 km' : null,
               m07: mark07(r)
             });
             if (old === 0) {

@@ -267,9 +267,13 @@ export function checkInput(raw: unknown): InputCheck {
     else {
       vdotRaw = vdotFromResult(res.distanceM, res.timeSec);
       const v = round1(vdotRaw);
-      if (v < q.vdotMin) feelWhy = `VDOT iz rezultata ${v} je ispod ${q.vdotMin}`;
+      if (v < q.vdotMin)
+        feelWhy = `VDOT iz rezultata ${String(v).replace('.', ',')} je ispod ${q.vdotMin}`;
       else if (v > q.vdotMax)
-        no('VDOT_TOO_HIGH', `VDOT ${v} je iznad ${q.vdotMax}, van opsega plana.`);
+        no(
+          'VDOT_TOO_HIGH',
+          `VDOT ${String(v).replace('.', ',')} je iznad ${q.vdotMax}, van opsega plana.`
+        );
     }
   }
   // D26: plan po osećaju traži lagan tempo.

@@ -190,7 +190,7 @@ describe('T6', () => {
     const taper = p.weeks[8]!;
     expect(taper.phase).toBe('taper');
     expect(taper.days.filter((d) => d.workout.kind === 'quality')).toHaveLength(1);
-    expect(taper.notes.some((n) => n.includes('Pouka 35'))).toBe(true);
+    expect(taper.notes.some((n) => n.includes('Drugi dan kvaliteta'))).toBe(true);
     expect(p.warnings.map((v) => v.rule)).toContain('TAPER_RP_ONLY');
     expect(errors(p)).toEqual([]);
   });

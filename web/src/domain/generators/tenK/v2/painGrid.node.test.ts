@@ -165,7 +165,9 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
       flows.map((f) => f.key)
     );
     const marked = (f: Flow): boolean =>
-      ok(f.res).plan.notes.some((x) => x.includes('(A17)') || x.includes('bilo bi'));
+      ok(f.res).plan.notes.some(
+        (x) => x.includes('Redovno rasterećenje u nedelji') || x.includes('bilo bi')
+      );
     // 10K-08: stanje b9c4728 (atB9c); tačan skup promenjenih u 10K-08 — p08Errors.
     expect(
       p08Errors(

@@ -27,6 +27,7 @@ import { generateTenKV2 } from './generate.ts';
 import {
   at7ba,
   GRID_TIMEOUT,
+  hasP35,
   hasP37,
   missingParts,
   p35FlowErrors,
@@ -134,7 +135,7 @@ export function runEarly(f: EarlyFlow): EarlyRun {
     ok: true,
     bad,
     hash: planHash06c(r),
-    p35: JSON.stringify(r).includes('Pouka 35:'),
+    p35: hasP35(r),
     p37: hasP37(r),
     m07: mark07(r)
   };
@@ -200,7 +201,7 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
         key: f.key,
         id: f.base.id,
         hash: res[i]!.hash,
-        res: res[i]!.p35 ? 'Pouka 35:' : null
+        res: res[i]!.p35 ? 'Drugi dan kvaliteta (' : null
       }));
       expect(p35FlowErrors('early', runs).slice(0, 10)).toEqual([]);
     });
@@ -209,7 +210,7 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       const runs = flows.map((f, i) => ({
         key: f.key,
         hash: res[i]!.hash,
-        res: res[i]!.p37 ? 'Mešovita nedelja (pouka 37)' : null,
+        res: res[i]!.p37 ? 'Mešovita nedelja: zaštićeni dani 0 km' : null,
         m07: res[i]!.m07
       }));
       expect(p37FlowErrors('early', runs).slice(0, 10)).toEqual([]);

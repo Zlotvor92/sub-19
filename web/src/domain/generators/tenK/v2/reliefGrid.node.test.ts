@@ -77,7 +77,7 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
       [26.5, false]
     ]);
     expect(msg(pause, 'PAUSE')).toMatch(
-      / Redovno rasterećenje u nedelji 5 otpada: nedelja 4 je smanjena \(A17\)\.$/
+      / Redovno rasterećenje u nedelji 5 otpada: nedelja 4 je smanjena\.$/
     );
     const pain = adapt(id, 3, 'pain5');
     expect(rows(pain.plan, 4, 7)).toEqual([
@@ -90,7 +90,7 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
       'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (18,5 km).'
     );
     expect(msg(pain, 'PAIN')).toMatch(
-      / Redovno rasterećenje u nedelji 5 otpada: nedelja 4 je smanjena \(A17\)\.$/
+      / Redovno rasterećenje u nedelji 5 otpada: nedelja 4 je smanjena\.$/
     );
     const under = adapt(id, 3, 'under');
     expect(rows(under.plan, 4, 7)).toEqual([
@@ -99,11 +99,11 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
       [26.4, false],
       [28, false]
     ]);
-    expect(msg(under, 'UNDER_EXECUTION')).toMatch(/nedelja 4 je smanjena \(A17\)\.$/);
+    expect(msg(under, 'UNDER_EXECUTION')).toMatch(/nedelja 4 je smanjena\.$/);
     // Pauza + bol na kraju nedelje (r = n): jedna rečenica A17, u poruci pauze.
     const both = adapt(id, 3, 'pause10pain5');
-    expect(msg(both, 'PAUSE')).toMatch(/nedelja 4 je smanjena \(A17\)\.$/);
-    expect(msg(both, 'PAIN')).not.toContain('(A17)');
+    expect(msg(both, 'PAUSE')).toMatch(/nedelja 4 je smanjena\.$/);
+    expect(msg(both, 'PAIN')).not.toContain('Redovno rasterećenje u nedelji');
     // Umor: prinudno rasterećenje ned 4 (A5), redovno ned 5 ukida A5 — A17 bez dejstva.
     const tired = adapt(id, 3, 'fatigue');
     expect(rows(tired.plan, 4, 5)).toEqual([
@@ -165,7 +165,7 @@ describe('A17: polje reduced, prinudno rasterećenje, nov start, stari korak', (
     expect(end.plan.adaptation!.steps[0]!.reduced).toBe(false);
     expect(deloads(end.plan)).toEqual([4, 11]);
     expect(end.reasons.find((x) => x.condition === 'PAIN')!.message).toMatch(
-      / Redovno rasterećenje u nedelji 8 otpada: nedelja 7 je smanjena \(A17\)\.$/
+      / Redovno rasterećenje u nedelji 8 otpada: nedelja 7 je smanjena\.$/
     );
     expect(end.reasons.find((x) => x.condition === 'OVER_EXECUTION')!.message).not.toContain(
       '(A17)'

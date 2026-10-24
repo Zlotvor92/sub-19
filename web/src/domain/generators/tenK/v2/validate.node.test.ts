@@ -382,7 +382,7 @@ describe('validator', () => {
       [
         'warning',
         1,
-        'Dan kvaliteta ili testa duži od dugog po trajanju u 3 od 8 nedelja izgradnje (nedelja 1: 42 > 39 min); preporuka 3–5 dana (plan sa manje dana podržava obim 35 km, dugi dobija veći udeo; D17).'
+        'Dan kvaliteta ili testa duži od dugog po trajanju u 3 od 8 nedelja izgradnje (nedelja 1: 42 > 39 min); preporuka 3–5 dana (plan sa manje dana podržava obim 35 km, dugi dobija veći udeo).'
       ]
     ]);
     // 3 dana nema manji red — bez preporuke (i bez upozorenja).
@@ -422,7 +422,7 @@ describe('validator', () => {
     rw.targetKm = -1.5;
     const v = validatePlan(p3).filter((x) => x.rule === 'RACE_WEEK_SHORT');
     expect(v.map((x) => [x.severity, x.message])).toEqual([
-      ['warning', 'Trkačka nedelja -1.5 km + trka 10 km < 9 km (Uslov 8, D17, D30).']
+      ['warning', 'Trkačka nedelja -1,5 km + trka 10 km < 9 km (najmanji obim nedelje).']
     ]);
     // Rasterećenje bez kvaliteta kad T 2,0 km STAJE u plafon → greška.
     const p = fresh();

@@ -178,7 +178,7 @@ export function construct(
   const raceSec = predicted10k(paces);
   // D27/D32: test 5 km samo u planu po osećaju koji nije početnik.
   const base = periodize(input.startDate, weeks, feel && rule.feelTest);
-  if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima D5.');
+  if (!base) return infeasible('Nema rasporeda rasterećenja koji odgovara pravilima plana.');
   const adapted = steps.length > 0;
   const frames = adapted
     ? framesFor(
@@ -385,7 +385,7 @@ export function construct(
     const notes = [...w.notes];
     if (fit.fitted)
       notes.unshift(
-        `Cilj po pravilu ${fmtKm(nominal / 10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmtKm(fit.target10 / 10)} km (D6).`
+        `Nedelja ne može da se sastavi na ${fmtKm(nominal / 10)} km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je ${fmtKm(fit.target10 / 10)} km.`
       );
     // A9: test koji ne staje otpada sa kvalitetom (oznaka nedelje ⇔ dan testa).
     const { test: _test, ...noTest } = frame;
@@ -457,17 +457,28 @@ export function construct(
     const t = out.find((w) => w.test);
     const td = t?.days.find((d) => d.workout.kind === 'test');
     plan.notes.push(
-      `Plan po osećaju (D26): ${pace.why}. E = lagan tempo ${fmtPace(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
+      `Plan po osećaju: ${pace.why}. E = lagan tempo ${fmtPace(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
       t && td
-        ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date} (D27). Ocena cilja i prognoza 10K: posle testa.`
+        ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date}. Ocena cilja i prognoza 10K: posle testa.`
         : rule.feelTest
-          ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
-          : `Početnik bez testa ${P.test.km} km (D32): kvalitet po RPE; ocena cilja i prognoza 10K posle rezultata trke ili parkruna (adaptacija, segment 04).`
+          ? `Test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+          : `Početnik bez testa ${P.test.km} km: kvalitet po osećaju napora (RPE); ocena cilja i prognoza 10K posle rezultata trke ili parkruna.`
     );
   }
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
-      `${capacityMessage(input.runDays.length, input.currentWeeklyKm, rule, capacityLimits(out, rule, pN))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
+      [
+        capacityMessage(
+          input.runDays.length,
+          input.currentWeeklyKm,
+          rule,
+          capacityLimits(out, rule, pN)
+        ),
+        // F1: bez „Vrh X umesto do X" kad su posle zaokruživanja isti.
+        ...(fmtKm(plan.peakKm) !== fmtKm(plan.peakCapKm)
+          ? [`Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km.`]
+          : [])
+      ].join(' ')
     );
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)

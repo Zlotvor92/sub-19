@@ -48,7 +48,7 @@ import {
 } from './testInputs.ts';
 import type { AdaptResult, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { raceWeek, type WeekContext } from './week.ts';
+import { isA9Note, raceWeek, type WeekContext } from './week.ts';
 import { warmupCooldown } from './workouts.ts';
 import { checkInput } from './input.ts';
 
@@ -198,7 +198,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       h06c[`${id}/${k}/${s}`] = planHash06c(r);
       p35Flows.push({ key: `${id}/${k}/${s}`, id, hash: planHash06c(r), res: r });
       const notes = r.ok ? r.plan.notes : [];
-      if (notes.some((x) => x.includes('(A17)'))) a17.add(`${id}/${k}/${s}`);
+      if (notes.some((x) => x.includes('Redovno rasterećenje u nedelji')))
+        a17.add(`${id}/${k}/${s}`);
       if (notes.some((x) => x.includes('nivoa pre bola bilo bi'))) n2.add(`${id}/${k}/${s}`);
       if (applied(r, 'PAIN')) painApplied.add(`${id}/${k}/${s}`);
       if (r.ok && r.plan.adaptation!.steps.some((x) => x.returnFrom))
@@ -844,8 +845,8 @@ describe('odluke A1–A15', () => {
     const p = plan('beg-d3-f-14w');
     const asOf = asOfOf(p, 'w6wed');
     const r = ok(adaptTenKV2(p, factsOf(p, 'pause35', asOf), asOf));
-    expect(r.plan.weeks.some((w) => w.notes.some((n) => n.includes('(A9)')))).toBe(true);
-    for (const w of r.plan.weeks.filter((x) => x.notes.some((n) => n.includes('(A9)'))))
+    expect(r.plan.weeks.some((w) => w.notes.some(isA9Note))).toBe(true);
+    for (const w of r.plan.weeks.filter((x) => x.notes.some(isA9Note)))
       expect(quality(w)).toBeLessThanOrEqual(1);
     // Oštrenje: u zabrani kvaliteta (pauza 20 u taperu) nema ga, trkačka ≤ taper.
     const q = plan('d4-r-10w');
@@ -879,7 +880,7 @@ describe('odluke A1–A15', () => {
     expect(withS.days.map((d) => d.role)).toContain('sharpener');
     expect(noS.days.map((d) => d.role)).not.toContain('sharpener');
     expect(noS.days.length).toBe(withS.days.length);
-    expect(noS.notes[0]).toContain('(A9, D23)');
+    expect(noS.notes[0]).toContain('sa njim bi trkačka nedelja bila veća od tapera');
   });
 
   it('A10: dan bez zapisa je poznat samo u coverage complete; trčanje = completed i (km ili trajanje); bol i rezultat bez coverage', () => {

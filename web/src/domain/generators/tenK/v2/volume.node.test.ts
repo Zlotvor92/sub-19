@@ -105,7 +105,7 @@ function checkRule(p: TenKV2Plan): void {
     // Nijedna nedelja niža nego što D6 traži, osim pogođenih (oznaka + napomena).
     if (w.targetKm !== nominal) {
       expect(w.fitted, `ned ${w.index}`).toBe(w.targetKm < nominal ? 'down' : 'up');
-      expect(w.notes.some((n) => n.includes('najbliži izvodljiv'))).toBe(true);
+      expect(w.notes.some((n) => n.startsWith('Nedelja ne može da se sastavi na'))).toBe(true);
     } else expect(w.fitted).toBeNull();
     // 10K-08 (T1): nedelja bez laganih dana (lagan od 20 min ne staje) sme planirano < cilj.
     if (!t1Short(w, p)) expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
@@ -254,15 +254,15 @@ describe('D6: obim', () => {
     expect(fewerDaysAdvice(4, 45, reg(4))).toBe('');
     // D28: početnik — samo tabela početnika (3 dana 15–30 km).
     expect(fewerDaysAdvice(4, 25, planRule(4, 'beginner')!)).toBe(
-      '; preporuka 3 dana (plan sa manje dana podržava obim 25 km, dugi dobija veći udeo; D28)'
+      '; preporuka 3 dana (plan sa manje dana podržava obim 25 km, dugi dobija veći udeo)'
     );
     expect(fewerDaysAdvice(4, 25, reg(4))).toBe(
-      '; preporuka 3 dana (plan sa manje dana podržava obim 25 km, dugi dobija veći udeo; D17)'
+      '; preporuka 3 dana (plan sa manje dana podržava obim 25 km, dugi dobija veći udeo)'
     );
     // 10K-07 (O-1a): sirov obim kao ulaz — 40,04 km je iznad reda 3 dana (20–40), ulaz bi 3 dana odbio.
     expect(fewerDaysAdvice(4, 40.04, reg(4))).toBe('');
     expect(fewerDaysAdvice(5, 40.01, reg(5))).toBe(
-      '; preporuka 4 dana (plan sa manje dana podržava obim 40.01 km, dugi dobija veći udeo; D17)'
+      '; preporuka 4 dana (plan sa manje dana podržava obim 40,01 km, dugi dobija veći udeo)'
     );
   });
 });

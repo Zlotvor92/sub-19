@@ -36,6 +36,7 @@ import {
   at7ba,
   expectCounts,
   GRID_TIMEOUT,
+  hasP35,
   hasP37,
   missingParts,
   p35FlowErrors,
@@ -100,7 +101,7 @@ const gen = (input: unknown): TenKV2Plan => {
   return r.plan;
 };
 export const a17Of = (r: AdaptResult): boolean =>
-  r.ok && r.plan.notes.some((x) => x.includes('(A17)'));
+  r.ok && r.plan.notes.some((x) => x.includes('Redovno rasterećenje u nedelji'));
 const n2Of = (r: AdaptResult): boolean =>
   r.ok && r.plan.notes.some((x) => x.includes('nivoa pre bola bilo bi'));
 
@@ -258,7 +259,7 @@ export function runReliefGrid(
     out.flows++;
     out.hash[key] = planHash06c(res);
     out.h81[key] = planHash81(res);
-    if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
+    if (hasP35(res)) out.p35.add(key);
     if (hasP37(res)) out.p37.add(key);
     out.m07[key] = mark07(res);
     if (deter(f, i))
@@ -410,7 +411,7 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
         key: f.key,
         id: f.id,
         hash: g.hash[f.key]!,
-        res: g.p35.has(f.key) ? 'Pouka 35:' : null
+        res: g.p35.has(f.key) ? 'Drugi dan kvaliteta (' : null
       }));
       expect(p35FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
     });
@@ -419,7 +420,7 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       const runs = flows.map((f) => ({
         key: f.key,
         hash: g.hash[f.key]!,
-        res: g.p37.has(f.key) ? 'Mešovita nedelja (pouka 37)' : null,
+        res: g.p37.has(f.key) ? 'Mešovita nedelja: zaštićeni dani 0 km' : null,
         m07: g.m07[f.key] ?? ''
       }));
       expect(p37FlowErrors('relief', runs).slice(0, 10)).toEqual([]);

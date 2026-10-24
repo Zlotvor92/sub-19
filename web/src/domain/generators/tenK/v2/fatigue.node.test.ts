@@ -43,7 +43,7 @@ describe('pouka 36: umor vezan za zapise, ne za dan adaptacije', () => {
       const fat = a2.reasons.find((x) => x.condition === 'FATIGUE');
       expect(fat !== undefined).toBe(d <= 3);
       if (fat)
-        expect([fat.applied, fat.message.includes('već u planu (nedelja 3, A5)')]).toEqual([
+        expect([fat.applied, fat.message.includes('već u planu (nedelja 3)')]).toEqual([
           false,
           true
         ]);
@@ -158,7 +158,7 @@ describe('nalaz 3 (pouke 18 i 23): isti zapis bola poslat ponovo ne pravi nov pe
     const pain = a2.reasons.find((x) => x.condition === 'PAIN')!;
     expect([pain.applied, pain.message]).toEqual([
       false,
-      `Bol 8/10 (${at}): već u planu — period bola iz prilagođavanja ${at} ostaje (A4).`
+      `Bol 8/10 (${at}): već u planu — period bola iz prilagođavanja ${at} ostaje.`
     ]);
     expect(adaptBanner(a1.plan, a2, f, addDays(at, 1))).toEqual([]);
   });
@@ -248,7 +248,7 @@ describe('06h (pouke 23, 34, 36): umor pre starta sa asOf = prvi dan plana', () 
     // Dan 1 (≤ asOf, zaštićen) ostaje kakav je bio; nedelje 2…N kao start − 1.
     expect(w1.days[0]).toEqual(p.weeks[0]!.days[0]);
     expect(a.plan.weeks.slice(1)).toEqual(a0.plan.weeks.slice(1));
-    expect(w1.notes.some((n) => n.startsWith('Umor pre starta (A5)'))).toBe(true);
+    expect(w1.notes.some((n) => n.startsWith('Umor pre starta:'))).toBe(true);
     // 06i (pouka 37): cilj 16,0 važi za celu nedelju — upisan dugi 9,0 + lagani 3,5 + 3,5 (start − 1: 4,4 + 4,4; na
     // 10k-v2.6.2 planirano 17,8, A20).
     expect(a0.plan.weeks[0]!.days.slice(1).map((d) => d.workout.km)).toEqual([4.4, 4.4]);

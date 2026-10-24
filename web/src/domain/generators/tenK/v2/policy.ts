@@ -752,9 +752,9 @@ export const TEN_K_V2_POLICY = {
     returnGrowth: 0.1,
     returnGrowthMinKm: 1.0,
     orientationMessage:
-      'Cilj je orijentir: posle duge pauze do trke ostaje manje od 8 nedelja, priprema nije potpuna (A3).',
+      'Cilj je orijentir: posle duge pauze do trke ostaje manje od 8 nedelja, priprema nije potpuna.',
     painMessage:
-      'Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4).'
+      'Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled.'
   },
 
   DECISIONS

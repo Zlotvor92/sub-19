@@ -31,7 +31,7 @@ describe('pouka 35 u generatoru', () => {
     expect(w.days.filter((d) => d.workout.kind === 'quality')).toHaveLength(1);
     expect(w.targetKm).toBe(35);
     expect(w.notes.find((n) => n.startsWith(P35_DROP))).toMatch(
-      /^Pouka 35: drugi dan kvaliteta \(WU 20 min \+ T 2,0 km kontinuirano \+ CD 15 min\) je lagan/
+      /^Drugi dan kvaliteta \(WU 20 min \+ T 2,0 km kontinuirano \+ CD 15 min\) je lagan/
     );
     const q = planOf(4, { weeks: 10, km: 25, vdot: 70 });
     expect(q.weeks[0]!.days.map((d) => d.role).sort()).toEqual(['long', 'q1', 'q2']);
@@ -42,7 +42,7 @@ describe('pouka 35 u generatoru', () => {
     const p = planOf(6, { weeks: 12, km: 35, vdot: 70 });
     const w = p.weeks[0]!;
     expect(w.notes.find((n) => n.startsWith(P35_DROP))).toMatch(
-      /prvi dan kvaliteta i dalje traje duže od dugog \(D25/
+      /prvi dan kvaliteta i dalje traje duže od dugog \(preporuka: manje dana treninga\)/
     );
     expect(p.warnings.some((v) => v.rule === 'LONG_SHORTER_THAN_QUALITY')).toBe(true);
   });
