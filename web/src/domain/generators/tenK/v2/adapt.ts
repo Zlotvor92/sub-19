@@ -10,6 +10,7 @@ import { dayNumber, mustDay } from './dates.ts';
 import { construct, preStartRef } from './generate.ts';
 import { checkInput } from './input.ts';
 import { dayRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { same } from './same.ts';
 import { baseFrames, framesFor, newLimits, targetReducedWeek } from './steps.ts';
 import type {
   AdaptChange,
@@ -25,7 +26,6 @@ import { to10 } from './volume.ts';
 import { weekLabel } from './weekLabel.ts';
 import { factKmOf, type Written, writtenWeeks } from './written.ts';
 
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): AdaptResult => ({
   ok: false,
   reasons: [{ code, message }],

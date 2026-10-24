@@ -12,6 +12,7 @@ import { construct } from './generate.ts';
 import { assessGoal, beginnerGoal, goalWithoutData, raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { adaptRunWalk } from './runWalkAdapt.ts';
+import { same } from './same.ts';
 import { athleteAt, pacesAt, targetReducedWeek, vdotAt } from './steps.ts';
 import { userResult } from './text.ts';
 import type {
@@ -29,7 +30,6 @@ import { validatePlan } from './validate.ts';
 import { capacityKm } from './volume.ts';
 import { type Written, writtenWeeks } from './written.ts';
 
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): AdaptResult => ({
   ok: false,
   reasons: [{ code, message }],

@@ -66,6 +66,7 @@ import {
   type SlotState,
   taperDoses
 } from './quality.ts';
+import { same } from './same.ts';
 import { adjacentDays } from './schedule.ts';
 import {
   A17_MAX_RUN,
@@ -156,7 +157,6 @@ const HARD: readonly DayRole[] = ['q1', 'q2', 'long', 'sharpener', 'race', 'test
 const ZONES: readonly WorkZone[] = ['R', 'I', 'T', 'MP'];
 const to10 = (km: number): number => Math.round(km * 10);
 const to100 = (km: number): number => Math.round(km * 100);
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const planned100 = (ds: readonly PlanDay[]): number =>
   ds.reduce((a, d) => a + (d.countsToWeek ? to100(d.workout.km) : 0), 0);
 

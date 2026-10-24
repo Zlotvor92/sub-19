@@ -29,9 +29,24 @@ function civilFromDays(z0: number): [number, number, number] {
   return [yoe + era * 400 + (m <= 2 ? 1 : 0), m, d];
 }
 
+/* Keš dve čiste funkcije (isti ulaz → isti izlaz, pa je izlaz plana bajt-isti): isti datumi plana se čitaju hiljade
+   puta po generisanju i adaptaciji (profil mreža: ~15 % vremena). Ograničen na `CACHE_MAX` unosa. */
+const CACHE_MAX = 4096;
+const dayNumbers = new Map<string, number | null>();
+const isoDates = new Map<number, IsoDate>();
+
 /** Dan od 1970-01-01, ili null ako datum nije ispravan ISO kalendarski datum. */
 export function dayNumber(iso: unknown): number | null {
   if (typeof iso !== 'string') return null;
+  const hit = dayNumbers.get(iso);
+  if (hit !== undefined) return hit;
+  const n = parseDayNumber(iso);
+  if (dayNumbers.size >= CACHE_MAX) dayNumbers.clear();
+  dayNumbers.set(iso, n);
+  return n;
+}
+
+function parseDayNumber(iso: string): number | null {
   const m = ISO.exec(iso);
   if (!m) return null;
   const y = Number(m[1]);
@@ -44,8 +59,13 @@ export function dayNumber(iso: unknown): number | null {
 }
 
 export function isoFromDayNumber(n: number): IsoDate {
+  const hit = isoDates.get(n);
+  if (hit !== undefined) return hit;
   const [y, m, d] = civilFromDays(n);
-  return `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const iso = `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  if (isoDates.size >= CACHE_MAX) isoDates.clear();
+  isoDates.set(n, iso);
+  return iso;
 }
 
 /** Pretpostavlja ispravan datum (proveren u input.ts). */

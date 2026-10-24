@@ -6,6 +6,7 @@
    tenK/v2/written.ts (ne uvoz). */
 
 import { mustDay } from './dates.ts';
+import { same } from './same.ts';
 import type { PlanDay, PlanWeek } from './types.ts';
 
 /** Prethodni plan i zaštita dana (A11) — konstruktor ih zna unapred (Uslov 4). */
@@ -22,8 +23,6 @@ export interface Written {
   /** MAR-08 (pouka 37): km zaštićenih dana po činjenicama (mixed.factKmOf). */
   factKm: Readonly<Record<string, number>>;
 }
-
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Dani nedelje kakvi se upisuju: `prev` = ista nedelja prethodnog plana, `built` = sastavljeni dani. */
 export function writtenDays(

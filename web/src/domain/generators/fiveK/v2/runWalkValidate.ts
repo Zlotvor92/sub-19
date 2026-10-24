@@ -14,10 +14,10 @@ import {
   runWalkSession,
   weekCount
 } from './runWalk.ts';
+import { same } from './same.ts';
 import type { FiveKV2RunWalkPlan, Violation } from './types.ts';
 
 const RW = P.runWalk;
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 export function validateRunWalk(plan: FiveKV2RunWalkPlan): Violation[] {
   const out: Violation[] = [];

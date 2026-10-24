@@ -12,6 +12,7 @@ import { generateFiveKV2 } from './generate.ts';
 import { checkInput, weekLabel } from './input.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { constructRunWalk, transitionInput, weekCount } from './runWalk.ts';
+import { same } from './same.ts';
 import type {
   AdaptChange,
   AdaptFacts,
@@ -25,7 +26,6 @@ import type {
 } from './types.ts';
 import { validatePlan } from './validate.ts';
 
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): RunWalkAdaptResult => ({
   ok: false,
   reasons: [{ code, message }],

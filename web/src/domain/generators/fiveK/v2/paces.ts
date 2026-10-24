@@ -34,8 +34,22 @@ export function vdotFromResult(distanceM: number, timeSec: number): number {
   return vo2AtSpeed(distanceM / tMin) / fractionSustainable(tMin);
 }
 
+/* Keš bisekcije (čista funkcija, isti ulaz → isti izlaz): isti VDOT i distanca se traže za svaki tempo, dan
+   trke i proveru validatora. Ograničen na 4096 unosa. */
+const raceTimes = new Map<string, number>();
+
 /** Predviđeno vreme [s] za distancu pri datom VDOT-u (bisekcija, fiksno 80 koraka — deterministično). */
 export function raceTimeForVdot(vdot: number, distanceM: number): number {
+  const key = `${vdot}/${distanceM}`;
+  const hit = raceTimes.get(key);
+  if (hit !== undefined) return hit;
+  const sec = bisectRaceTime(vdot, distanceM);
+  if (raceTimes.size >= 4096) raceTimes.clear();
+  raceTimes.set(key, sec);
+  return sec;
+}
+
+function bisectRaceTime(vdot: number, distanceM: number): number {
   let lo = 1; // min
   let hi = 600; // min
   for (let k = 0; k < 80; k++) {

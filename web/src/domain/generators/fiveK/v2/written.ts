@@ -6,6 +6,7 @@
    računa iz upisanih dana, a validator vidi isti upisani plan. */
 
 import { mustDay } from './dates.ts';
+import { same } from './same.ts';
 import type { PlanDay, PlanWeek } from './types.ts';
 
 /** Prethodni plan i zaštita dana — konstruktor ih zna unapred (Uslov 4). */
@@ -21,7 +22,6 @@ export interface Written {
 }
 
 const r2 = (x: number): number => Math.round(x * 100) / 100;
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Dani nedelje kakvi se upisuju: `prev` = ista nedelja prethodnog plana, `built` = sastavljeni dani. */
 export function writtenDays(

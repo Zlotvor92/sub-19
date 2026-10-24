@@ -5,6 +5,7 @@
    doze D5/D7/D31, taper za trkačku nedelju D8/D23) i validacija u construct vide upisane dane. */
 
 import { mustDay } from './dates.ts';
+import { same } from './same.ts';
 import type { PlanDay, PlanWeek } from './types.ts';
 
 /** Prethodni plan i zaštita dana (A11) — konstruktor ih zna unapred (Uslov 4). */
@@ -63,8 +64,6 @@ export function factKmOf(
     return d.countsToWeek ? d.workout.km : 0;
   };
 }
-
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Dani nedelje kakvi se upisuju: `prev` = ista nedelja prethodnog plana, `built` = sastavljeni dani. */
 export function writtenDays(

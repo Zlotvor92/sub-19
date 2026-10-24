@@ -236,10 +236,17 @@ const doseFor = (ladder: LadderId, s: Structure): Dose => ({
 /** Km [0,01 km] i trajanje [s] dana kvaliteta (qualityWorkout, qualityDaySec) — keš po tempu (isti tempo nedelje
     u konstrukciji), samo brzina; ista vrednost kao bez keša. */
 const dayCache = new WeakMap<Paces, Map<string, { km100: number; sec: number }>>();
+/** Ključ strukture za keš: polja oblika (km, ponavljanja, piramida) bez JSON zapisa — ista vrednost dana. */
+const structureKey = (s: Structure): string =>
+  s.form === 'continuous'
+    ? `c${s.km}`
+    : s.form === 'reps'
+      ? `r${s.reps}x${s.repM}`
+      : `p${s.repsM.join(',')}`;
 function dayOf(c: DayLimitContext, ladder: LadderId, s: Structure): { km100: number; sec: number } {
   let m = dayCache.get(c.paces);
   if (!m) dayCache.set(c.paces, (m = new Map<string, { km100: number; sec: number }>()));
-  const key = `${c.wc.warmupSec}/${c.wc.cooldownSec}/${ladder}/${JSON.stringify(s)}`;
+  const key = `${c.wc.warmupSec}/${c.wc.cooldownSec}/${ladder}/${structureKey(s)}`;
   let v = m.get(key);
   if (!v) {
     const d = doseFor(ladder, s);

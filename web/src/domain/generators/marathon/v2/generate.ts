@@ -24,6 +24,7 @@ import { isBuildPhase, periodize, taperStep } from './periodize.ts';
 import { keptKm100, mixedNote, mixedRest, pauseOwned } from './mixed.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
+import { same } from './same.ts';
 import {
   basePaces,
   basisAt,
@@ -119,8 +120,6 @@ const writtenPicks = (days: readonly PlanDay[]): Picks => ({
   q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
   q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null
 });
-
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 export function generateMarathonV2(raw: unknown): GenerateResult {
   return construct(raw, []);
