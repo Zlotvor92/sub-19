@@ -336,6 +336,9 @@ function extra(
   );
   let prev: number | null = null;
   for (const w of W) {
+    // HM-10: rasteretna nedelja početka koraka sa startom (A3) postavlja osnovu rasta (volume.leaveAdaptWeek, reset).
+    if (isBuild(w) && w.deload && steps.some((s) => s.startKm !== null && s.fromWeek === w.index))
+      prev = Math.round(w.targetKm * 10);
     if (!isBuild(w) || w.deload) continue;
     const t10 = Math.round(w.targetKm * 10);
     if (prev !== null && w.index > reducedFrom && !mixed.has(w.index)) {
