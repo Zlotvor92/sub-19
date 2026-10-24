@@ -95,14 +95,55 @@ linijama. Klasifikacija svih 31 650 planova mreža na b9c4728 (`artifacts/segmen
 T2 11 292, T1+T2 11 106, T1 1 878 (C11 u mrežama generatora 0). Vrh sme da padne samo u planovima koji se menjaju (T1).
 Testovi baznih linija (uzorak i pun nivo) prolaze: nijedan plan van klasifikacije se ne menja.
 
-## Testovi
+## Testovi (na baeb435)
 
-TBD
+- `npm run check` (iz `web/`): **336 fajlova, 3 762 testa — zeleno** (tip, lint, format, brz nivo).
+- `TEST_FULL=1 npx vitest run --project node src/domain/generators/marathon`: **90 fajlova, 539 testova — zeleno**.
+- `npx playwright test e2e/marathon-v2`: **3/3**.
+- Namenski: `segment11.node.test.ts` (11 testova; svaki pada na b9c4728 — 8 proverenih kopiranjem u stablo b9c4728,
+  C11/C8/C3b pojedinačno); sabotaže **11/11**.
+- `--changed`: nije posebno pokretan — `npm run check` je pokrenuo ceo brz nivo (nadskup), pun nivo foldera maratona
+  zasebno.
+- Izmenjeni postojeći testovi (namerna promena plana, svaki sa komentarom MAR-11): verzija politike i KNOWN_VERSIONS,
+  P.lengths/P.taper, invarijante mreža (T1, T2, ned 1 na udelu), recent K1 (T7), dense K2, adaptInvariants
+  (planirano < cilj uz napomenu T1), dayCap (W1 ciljevi, 3 d primer r8 12 ned, taper MP, IDENTICAL_WEEKS: ponavljanje
+  više ne nastaje — test toka + validator obara ručno ponavljanje), segment07 (primer pouke 35), segment08b/08c, segment09
+  (prag 7,5 km, napomena „ostaje duži" više ne postoji), validate M7a (MP 5,0 km), adapt (Z8: stari zapis bola ne
+  pravi nov korak; podignut dugi A9 više ne nastaje u tim tokovima), preStart (C11), quality (T2 1,0 km).
 
-## Otvoreno / pitanja
+## run-all (`run-all.sh … 3 '.*-MAR'`, f20c7ec; early-MAR i edges-MAR ponovljeni na baeb435)
 
-TBD
+13 poslova (two-step-MAR: vidi dopunu ispod), **nečistih 1: edges-MAR** — 3 odbijanja generatora
+RECENT_LONG_TOO_SHORT (skorašnji najduži 5 km uz VDOT 70 i najveći obim reda: pouka 6, poruka sa pragom i preporukom)
++ u adaptaciji 3 × RECENT_LONG_TOO_SHORT i 1 × WEEK_INFEASIBLE (ned 11, taper) posle rezultata na dnu opsega (VDOT 30)
+na planu `4 d / 65 km / 12 ned / rl 5` koji je na b9c4728 generator odbijao (nov tok; posledica T1 + odmora laganog dana).
+early-MAR 1 → **0 / 164 394** posle baeb435 (pouka 32 uz lagan dan odmora). Ostali: fatigue-repeat 0/990,
+fatigue-startday 5 108 tokova, fatigue-testweek 0/4 592, last-weeks 0/89 309, locked-pause 0/54 848, locked-result
+0/3 078, locked-test 0/5 880 (+ kontrola 0/5 880), result-pain 0/73 188, start-day 0/43 418, targeted i warnings
+(pregled ručno, bez odbijanja).
+
+## Otvoreno / pitanja (odluka nije zapisana — urađeno najmanje, čeka organizatora)
+
+1. **T2, WU/CD ≥ dugi tapera.** Kad dugi N−1 traje koliko WU + CD (npr. 3 d, posle pauze: dugi 6,2 km / 29 min), ni
+   najkraći MP blok (1,0 km, `mpShortMinKm`) ne staje — dan MP ostaje duži od dugog (napomena „najniža doza; ostaje
+   duži"). Generator 0, adaptacija 303 / 64 692 toka. Pitanje: MP otpada (dan lagan) ili WU/CD na minimum (kao 5K T2)?
+2. **T1, nespojive granice.** Kad je 0,8 × dugi < najkraći lagan (5 km; dugi < 6,25 km — plafon skoka posle pauze),
+   nijedan lagan ne može da zadovolji oba uslova. Urađeno: strogi T1 (pa odmor, pa planirano < cilj) prvo; tek kad ni
+   to nije izvodljivo — lagan ≤ dugi (pouka 2) kao pre T1 (`easyCap10` relax, poslednji pokušaj u `generate.ts`).
+   Bez toga pauza 35 pravi odbijanja (merenje: 106 tokova WEEK_INFEASIBLE). Pitanje: da li je to prihvatljivo pravilo?
+3. **T2 × M8 oštrenje.** Oštrenje 2 × 2000 m MP traži MP dozu N−1 ≥ 4 km (M8); T2 skraćuje N−1 MP → trkačka bez
+   oštrenja u **1 194 / 6 384** plana uzorka (bilo 378; `artifacts/segment-11/sharp.ts`). Nije na spisku; T3 zadržava
+   oštrenje samo posle novog starta. Pitanje: oštrenje „kao bez T2" i ovde?
+4. **T1 planirano < cilj ispod minimuma nedelje.** Poslednje rešenje (lagani na 0,8 × dugi) sme dati nedelju ispod
+   minimuma M15 (upozorenje WEEK_MIN_LIMITS, kao dani odmora A4), npr. 3 d posle pauze 35: 13,5 km < 15 km. Potvrda?
+5. **T3 bez kvaliteta kad obim tapera ne nosi najmanji MP dan** (pauza kasno, 4 d, taper 23,6 km: MP dan ≈ 9 km + 3 dana
+   ≥ 5 km) — taper ostaje bez kvaliteta (pretraga cilja tapera samo naniže). Oštrenje u trkačkoj ostaje.
 
 ## Primećeno, nije rađeno
 
-TBD
+- Lanac i=289: T1 spušta poslednju nedelju izgradnje u periodu bola (82,8 → 75 km), taper N−2 76,3 km je iznad nje
+  (poznata klasa „taper > poslednja izgradnja", 2 → 3 lanca; plan prihvaćen).
+- `coach-hm-mar/measure.ts` i `chains` `chain2`: drugi korak pravi zapise iz plana generatora (dayId) — posle T1 taj dan
+  može biti dan odmora → „dayId nije dan plana" (38 tokova). Alat, ne plan.
+- Merenja `measure.ts` i run-all su pušteni pre poslednje sitne ispravke (abed8fc: odmor laganog dana samo dok nedelja ima
+  trening); ona menja samo tokove koji su pre nje bili odbijeni (EMPTY_WEEK), pun nivo testova je posle nje.

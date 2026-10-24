@@ -1,11 +1,11 @@
 {
  "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-11/sabotage-11.json",
- "head": "f20c7ec",
+ "head": "baeb435",
  "level": "brz",
  "bail": true,
  "parallel": 2,
  "vitestArgs": [],
- "durationS": 30.4,
+ "durationS": 17.4,
  "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
  "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
  "ok": true,
@@ -33,7 +33,7 @@
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3
+   "durationS": 1.6
   },
   {
    "index": 2,
@@ -58,7 +58,7 @@
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.4
+   "durationS": 2.2
   },
   {
    "index": 3,
@@ -83,7 +83,7 @@
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.6
+   "durationS": 2.7
   },
   {
    "index": 4,
@@ -103,12 +103,12 @@
    },
    "failedCount": 1,
    "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "f3f179fe4debd27ccc4c7ea67af94a9ee1f0c373e81233eb93aaa243f5f3faf1",
+   "hashSabotaged": "481db1a663f699c27396519a2a0de2bca799cd37f92fe75f03e379a7a920c5eb",
    "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.2
+   "durationS": 2.1
   },
   {
    "index": 5,
@@ -133,7 +133,7 @@
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 4.6
+   "durationS": 2.3
   },
   {
    "index": 6,
@@ -153,12 +153,12 @@
    },
    "failedCount": 1,
    "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "0856ba743e2678118cd51f1a2a30791d398036b1d45d94ab0bac72c0b5e5f1d3",
+   "hashSabotaged": "56db45708d5151fc24a5362849e01857cbc646165a7982842ff81ab81294d606",
    "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 5
+   "durationS": 2.4
   },
   {
    "index": 7,
@@ -183,7 +183,7 @@
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 5
+   "durationS": 2.7
   },
   {
    "index": 8,
@@ -203,12 +203,12 @@
    },
    "failedCount": 1,
    "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "57e2885e02b696611fde47ca5f39fc8abd5f8a6c8ff633033abee819df497158",
+   "hashSabotaged": "1bc98b47b698663fe27604af44082aa43dc7c5ed5ad50002a5239599e8dcecfc",
    "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 5.2
+   "durationS": 2.7
   },
   {
    "index": 9,
@@ -233,7 +233,7 @@
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 5.6
+   "durationS": 3.6
   },
   {
    "index": 10,
@@ -253,12 +253,12 @@
    },
    "failedCount": 1,
    "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "4a4d18882ca5dbb05a612958fcf05f296642d95af51439b07e7fe0d03400063c",
+   "hashSabotaged": "720fa8f21ac1bba9a3aed2213d7a3bb44a14a6010c7886d76ab09632d38b730f",
    "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.3
+   "durationS": 3.5
   },
   {
    "index": 11,
@@ -283,7 +283,7 @@
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 5.4
+   "durationS": 2.7
   }
  ]
 }
