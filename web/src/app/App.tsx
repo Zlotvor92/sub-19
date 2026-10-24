@@ -168,7 +168,7 @@ export function App() {
           let r = await app.sync.resolveConflict('push');
           if (!r.ok && r.reason === 'confirm-empty-needed') {
             const ok = await confirmAction(
-              'Na ovom uređaju još nema nijednog unosa, a na serveru ih ima.\n\n„Zadrži sa telefona" će OBRISATI sve sa servera — uključujući kilažu i povrede, koje se ne mogu vratiti ni sa Strave ni sa intervals.icu.\n\nSigurno?'
+              'Na ovom uređaju još nema nijednog unosa, a na serveru ih ima.\n\n„Zadrži sa telefona“ će OBRISATI sve sa servera — uključujući kilažu i povrede, koje se ne mogu vratiti ni sa Strave ni sa intervals.icu.\n\nSigurno?'
             );
             if (!ok) return;
             r = await app.sync.resolveConflict('push', { confirmedEmpty: true });

@@ -125,7 +125,7 @@ export function createStravaApi(deps: StravaApiDeps): StravaApi {
         ok: false,
         kind: 'http',
         status: 429,
-        error: `Strava rate limit (429) — sačekaj do isteka 15-min prozora pa pokušaj ponovo${msg ? ` · ${msg}` : ''}`
+        error: `Strava je privremeno ograničila broj zahteva (429) — sačekaj do 15 minuta pa pokušaj ponovo${msg ? ` · ${msg}` : ''}`
       };
     const errors =
       body.ok && body.value && typeof body.value === 'object' && 'errors' in body.value

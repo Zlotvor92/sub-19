@@ -27,7 +27,7 @@ export function FormMarathonV2({ plan }: { plan: GenPlanState }) {
     <ScreenFrame>
       <header className="screen-head">
         <h1>Forma i predikcija</h1>
-        <p>Polumaraton · plan v2</p>
+        <p>Maraton · plan v2</p>
       </header>
       <Section title="Forma plana" id="v2-form" extra={<ProvenanceBadge kind="estimated" />}>
         {m.mode === 'vdot' && m.current !== null ? (

@@ -110,7 +110,7 @@ export function StravaBody() {
           </button>
         </div>
         <Help summary="Šta se uvozi">
-          <p>Distanca, vreme i puls svakog trčanja, plus tempo kvalitetnih sesija iz lapova.</p>
+          <p>Distanca, vreme i puls svakog trčanja, plus tempo kvalitetnih sesija iz krugova.</p>
         </Help>
       </>
     );
@@ -147,7 +147,7 @@ export function StravaBody() {
           id="st-off"
           onClick={() => {
             void confirmAction(
-              'Otkači Stravu? Uvezeni podaci ostaju, samo prestaje sinhronizacija.'
+              'Otkačiti Stravu? Uvezeni podaci ostaju, samo prestaje sinhronizacija.'
             ).then((ok) => {
               if (!ok) return;
               getApp().strava.disconnect();
@@ -161,7 +161,7 @@ export function StravaBody() {
         <p>
           Strava ima prednost nad ručnim unosom. Ručna korekcija polja (km / vreme / puls){' '}
           <b>trajno</b> štiti taj trening od prepisivanja. Ako su dva trčanja istog dana, oba se
-          broje u kilometražu. Tempo intervala i tempa se čita iz lapova i upisuje u Predikciju.
+          broje u kilometražu. Tempo intervala i tempa se čita iz krugova i upisuje u Predikciju.
         </p>
       </Help>
     </>

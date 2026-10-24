@@ -281,7 +281,7 @@ export function Wizard({ today }: { today: string }) {
                 id="obCancel"
                 aria-label="Otkaži"
                 onClick={() => {
-                  void confirmAction('Otkazati generisanje plana?').then((ok) => {
+                  void confirmAction('Otkazati pravljenje plana?').then((ok) => {
                     if (ok) closeWizard(false);
                   });
                 }}

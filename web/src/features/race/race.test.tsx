@@ -108,7 +108,7 @@ describe('Forma i predikcija', () => {
     await user.click(screen.getByRole('button', { name: 'Unesi test na 3 km' }));
     const sheet = document.querySelector('#sheet') as HTMLElement;
     expect(within(sheet).getByRole('status')).toHaveTextContent(
-      'Unesi vreme pa se ispod prikaže šta znači.'
+      'Unesi vreme, pa se ispod prikaže šta znači.'
     );
     await user.type(within(sheet).getByLabelText('Vreme'), '600');
     expect(within(sheet).getByRole('status')).toHaveTextContent(

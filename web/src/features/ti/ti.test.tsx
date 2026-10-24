@@ -14,7 +14,7 @@ import { createApp } from '../../app/createApp';
 import { collectPersisted, hydratePersisted, useTrainingStore } from '../../stores';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
-import { ADMIN_UID } from '../../services/config';
+import { ADMIN_UID, APP_VERSION } from '../../services/config';
 import { LS_KEY, SB_KEY } from '../../services/storage/keys';
 import { createKeyValueStore, type StorageLike } from '../../services/storage/kv';
 import { emptySession } from '../../services/supabase/session';
@@ -536,7 +536,7 @@ describe('Strava', () => {
       expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Sinhronizacija gotova\./))
     );
     await user.click(screen.getByRole('button', { name: 'Otkači' }));
-    expect(useUIStore.getState().confirm?.text).toMatch(/^Otkači Stravu\?/);
+    expect(useUIStore.getState().confirm?.text).toMatch(/^Otkačiti Stravu\?/);
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(collectPersisted().strava).toBeNull());
     expect(Object.keys(useTrainingStore.getState().log)).toEqual([]); // uvezeni podaci ostaju (ovde ih nije ni bilo)
@@ -777,7 +777,7 @@ describe('Prijava problema i ranije verzije', () => {
       context: { version: string };
     };
     expect(body.description).toBe('ne radi');
-    expect(body.context.version).toBe('288');
+    expect(body.context.version).toBe(APP_VERSION);
   });
 
   it('ranije verzije: spisak sa servera, „Vrati" traži potvrdu i vraća stanje', async () => {
@@ -877,7 +877,7 @@ describe('Vlasnik (samo vlasnik)', () => {
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     send(c, () => json(200, { poslato: 1, palo: 0, sledeciOd: null }));
     render(<OwnerScreen />);
-    await user.click(screen.getByRole('button', { name: 'Proba na mene' }));
+    await user.click(screen.getByRole('button', { name: 'Probni mejl meni' }));
     await waitFor(() => expect(alert).toHaveBeenCalled());
     expect(bodies(c)).toEqual([{ posalji: true, samoNa: ['vlasnik@x.rs'] }]);
     expect(alert).toHaveBeenCalledWith('Poslato na vlasnik@x.rs. Proveri sanduče — i spam.');
@@ -954,7 +954,7 @@ describe('Vlasnik (samo vlasnik)', () => {
 
     await user.type(document.querySelector('#ku-loz') as HTMLElement, 'tajna');
     await user.click(screen.getByRole('button', { name: 'Zabrani' }));
-    expect(await screen.findByRole('button', { name: 'Odbrani' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Skini zabranu' })).toBeInTheDocument();
     expect(bodies(c).find((b) => b['admin'] === 'ban')).toEqual({
       admin: 'ban',
       banId: 'U2',

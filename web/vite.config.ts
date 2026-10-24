@@ -31,7 +31,7 @@ function serviceWorker(version: string): Plugin {
   };
 }
 
-const APP_VERSION = process.env['VITE_APP_VERSION'] || '288';
+const APP_VERSION = process.env['VITE_APP_VERSION'] || '290';
 
 export default defineConfig({
   plugins: [react(), serviceWorker(APP_VERSION)],

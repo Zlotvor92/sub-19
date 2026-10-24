@@ -135,20 +135,20 @@ describe('Danas', () => {
     expect(screen.getByText(/^Odrađeno · 8,5 km · 42:33 · 5:00 \/km/)).toBeInTheDocument();
   });
 
-  it('„Preskoči" traži potvrdu; odbijanje ne menja ništa, potvrda upisuje „skip", „Vrati" ga uklanja', async () => {
+  it('„Preskoči" traži potvrdu; odbijanje ne menja ništa, potvrda upisuje „skip", „Poništi" ga uklanja', async () => {
     const user = userEvent.setup();
     const d = firstOf((x) => !x.rest && x.tag === 'lako');
     goTo(d.date);
     render(<TodayPage />);
     await user.click(screen.getByRole('button', { name: 'Preskoči' }));
-    expect(useUIStore.getState().confirm?.text).toBe('Označi trening kao preskočen?');
+    expect(useUIStore.getState().confirm?.text).toBe('Označiti trening kao preskočen?');
     act(() => useUIStore.getState().confirm?.resolve(false));
     expect(useTrainingStore.getState().log[d.id]).toBeUndefined();
     await user.click(screen.getByRole('button', { name: 'Preskoči' }));
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useTrainingStore.getState().log[d.id]?.status).toBe('skip'));
     expect(screen.getByText('Preskočeno')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Vrati' }));
+    await user.click(screen.getByRole('button', { name: 'Poništi' }));
     expect(useTrainingStore.getState().log[d.id]?.status).toBe('pending');
   });
 

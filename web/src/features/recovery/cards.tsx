@@ -68,7 +68,7 @@ export function HrvSection({
           }
         />
       ) : (
-        <p className="note-src">Grafikon HRV-a se crta kad bude bar 4 dana zapisa.</p>
+        <p className="note-src">Grafikon HRV-a se crta kad budu bar 4 dana zapisa.</p>
       )}
       <p className="note-src">
         {sig?.note ? `${sig.note}. ` : ''}HRV se čita u odnosu na <b>tvoju</b> sedmodnevnu osnovu,
@@ -107,7 +107,7 @@ export function RestingHrSection({
           }
         />
       ) : (
-        <p className="note-src">Grafikon se crta kad bude bar 4 dana zapisa.</p>
+        <p className="note-src">Grafikon se crta kad budu bar 4 dana zapisa.</p>
       )}
       <dl className="facts">
         <div>
@@ -119,7 +119,7 @@ export function RestingHrSection({
         </div>
       </dl>
       <p className="note-src">
-        Kod pulsa u miru je <b>niže bolje</b> — obrnuto od HRV-a. Jedno jutro iznad osnove nije
+        Kod pulsa u miru je <b>niže bolje</b> — obrnuto od HRV-a. Jedno jutro iznad osnove ne znači
         ništa; nekoliko dana zaredom, pogotovo uz pad HRV-a i kratak san, znači da oporavak ne
         stiže. Porast od 5 i više otkucaja uz osećaj umora je razlog da se dan olakša.
       </p>
@@ -134,7 +134,7 @@ const zones = ({
   ACWR_HIGH,
   ACWR_SCALE
 }: StateAssessment): ReadonlyArray<{ cls: string; from: number; to: number; label: string }> => [
-  { cls: 'low', from: 0, to: ACWR_RETURN, label: 'nizak' },
+  { cls: 'low', from: 0, to: ACWR_RETURN, label: 'nisko' },
   { cls: 'ok', from: ACWR_RETURN, to: ACWR_MAX, label: 'bezbedno' },
   { cls: 'high', from: ACWR_MAX, to: ACWR_HIGH, label: '' },
   { cls: 'danger', from: ACWR_HIGH, to: ACWR_SCALE, label: 'opasno' }

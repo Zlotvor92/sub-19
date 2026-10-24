@@ -68,7 +68,7 @@ export function UsersSheet() {
         <input
           id="ku-loz"
           type="password"
-          placeholder="ADMIN_2FA iz Vercel-a"
+          placeholder="ADMIN_2FA iz Vercela"
           autoComplete="off"
           onChange={(e) => {
             password.current = e.target.value;
@@ -150,7 +150,7 @@ export function UsersSheet() {
                           ? 'Skidam…'
                           : 'Zabranjujem…'
                         : u.zabranjen
-                          ? 'Odbrani'
+                          ? 'Skini zabranu'
                           : 'Zabrani'}
                     </button>
                     <button

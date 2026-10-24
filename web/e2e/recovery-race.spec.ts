@@ -41,7 +41,7 @@ test('bol i masa: prazno stanje, unos bola, pa masa — sve stiže na server i p
   await page.getByRole('button', { name: 'Sačuvaj merenje' }).click();
   await expect.poll(() => list('kg').length).toBe(1);
   expect(list('kg')[0]).toMatchObject({ kg: 80.5 });
-  await expect(page.getByText('Još nema merenja — unesi prvo ispod.')).toHaveCount(0);
+  await expect(page.getByText('Još nema merenja — unesi prvo merenje ispod.')).toHaveCount(0);
 
   await page.reload();
   await openProgress(page, /^Bol/);

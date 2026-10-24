@@ -121,7 +121,7 @@ export function BugSheet() {
         id="bug-desc"
         rows={5}
         aria-label="Opis problema"
-        placeholder={'Npr. kad dodirnem „Završi trening" na ekranu Danas, ništa se ne desi…'}
+        placeholder={'Npr. kad dodirnem „Završi trening“ na ekranu Danas, ništa se ne desi…'}
         value={desc}
         onChange={(e) => setDesc(e.target.value)}
         className="plain-area"
@@ -193,7 +193,7 @@ export function HistorySheet() {
   const restore = (x: HistoryEntry): void => {
     const label = when(x);
     void confirmAction(
-      `Vratiti podatke na ${label}?\n\nSve uneseno posle tog trenutka nestaje sa ekrana. Zatečeno stanje se čuva kao verzija, pa se ovo može poništiti.`
+      `Vratiti podatke na ${label}?\n\nSve uneto posle tog trenutka nestaje sa ekrana. Zatečeno stanje se čuva kao verzija, pa se ovo može poništiti.`
     ).then(async (ok) => {
       if (!ok) return;
       setBusy(String(x.id));
@@ -234,7 +234,7 @@ export function HistorySheet() {
             </div>
           </>
         ) : list === null ? (
-          <div className="empty">Povlačim spisak…</div>
+          <div className="empty">Učitavam spisak…</div>
         ) : list.length === 0 ? (
           <div className="empty">
             Još nema ranijih verzija.
@@ -264,8 +264,8 @@ export function HistorySheet() {
         )}
       </div>
       <div className="note-src">
-        Vraćanje menja <b>celo</b> stanje na taj trenutak — sve uneseno posle njega nestaje sa
-        ekrana. I zatečeno stanje se pre toga sačuva kao verzija, pa se i vraćanje može poništiti.
+        Vraćanje menja <b>celo</b> stanje na taj trenutak — sve uneto posle njega nestaje sa ekrana.
+        I zatečeno stanje se pre toga sačuva kao verzija, pa se i vraćanje može poništiti.
       </div>
     </>
   );

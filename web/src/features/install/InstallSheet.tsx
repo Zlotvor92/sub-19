@@ -49,7 +49,7 @@ export function InstallSteps({ kind }: { kind: 'ios' | 'android' }) {
         </li>
         <li>Otvaraj sub20 sa početnog ekrana, ne iz pregledača.</li>
       </ol>
-      <p>Na telefonu na srpskom isti koraci imaju prevedene nazive.</p>
+      <p>Ako je telefon na srpskom, nazivi su prevedeni.</p>
       <p>Na iPhone-u podsetnici za trening stižu samo u instaliranoj aplikaciji.</p>
     </>
   ) : (

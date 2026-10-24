@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { fmtClock, fmtDayMonth, fmtKm } from '../../domain/format';
+import { fmtClock, fmtDayMonth, fmtKm, pl3 } from '../../domain/format';
 import { ScreenFrame } from '../../components/ui/Shell';
 import { Row } from '../../components/ui/primitives';
 import { dowShort } from '../../domain/format';
@@ -24,7 +24,9 @@ export function ActivitiesScreen() {
       <header className="screen-head">
         <h1>Sve aktivnosti</h1>
         <p>
-          {rows.length ? `${rows.length} ${rows.length === 1 ? 'aktivnost' : 'aktivnosti'}` : ''}
+          {rows.length
+            ? `${rows.length} ${pl3(rows.length, 'aktivnost', 'aktivnosti', 'aktivnosti')}`
+            : ''}
         </p>
       </header>
       {rows.length ? (

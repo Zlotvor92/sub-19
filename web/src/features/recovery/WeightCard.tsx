@@ -37,7 +37,7 @@ export function WeightCard({
       {model ? (
         <WeightChart model={model} selected={sel} onSelect={setSel} />
       ) : (
-        <p className="empty">Još nema merenja — unesi prvo ispod.</p>
+        <p className="empty">Još nema merenja — unesi prvo merenje ispod.</p>
       )}
       <div className="f-grid">
         <div className="f-field">

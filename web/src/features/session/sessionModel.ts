@@ -32,6 +32,8 @@ export interface SessionView {
   paceSec: number | null;
   /** Tempo je korisnikov sopstveni cilj za taj dan (ručna izmena), a ne procena iz forme. */
   paceOwn: boolean;
+  /** Tempo važi samo za radni deo (deonice, tempo deo), ne za ceo trening — lagani delovi idu sporije. */
+  workPace: boolean;
   km: number | null;
   minutes: number | null;
   rpe: RpeTarget | null;
@@ -174,11 +176,16 @@ export function sessionView(
   const segments = hasAlt ? null : sessionSegments(day, ctx.easyPaceSec);
   const pace = targetPace(day, ctx.alt);
   const rows = sessionBreakdown(day, ctx.rpeTarget);
+  const workPace =
+    !hasAlt &&
+    pace.sec != null &&
+    !!(rows?.some((r) => r[0] === 'Radni deo') || segments?.some((x) => x.kind === 'rep'));
   return {
     title: dayLabel(day, hasAlt),
     core: sessionCore(day),
     paceSec: pace.sec,
     paceOwn: pace.own,
+    workPace,
     km: day.km,
     minutes: estimateMinutes(day, segments, ctx.easyPaceSec),
     rpe: ctx.rpeTarget(day),

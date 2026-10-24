@@ -166,7 +166,8 @@ function RaceAnalysisForm({ initialId }: { initialId?: string }) {
   return (
     <section className="race-analysis" aria-label="Kontekst trke">
       <p className="muted">
-        Izaberi već odrađeno trčanje, čak i ako nije bilo trka u planu, ili unesi rezultat ručno.
+        Izaberi već odrađeno trčanje, čak i ako u planu nije označeno kao trka, ili unesi rezultat
+        ručno.
       </p>
       <div className="field">
         <label htmlFor={fieldId + '-1'}>Trčanje</label>
