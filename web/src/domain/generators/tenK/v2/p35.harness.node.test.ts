@@ -1,3 +1,4 @@
+import { appendFileSync } from 'node:fs';
 /* Pouka 35 (10K 06f/06g): mreža generatora — zajednički kod za p35.node.test.ts (deo 1) i p35.<k>.full.node.test.ts.
    Brz nivo: planovi pouke 35 sa 7ba9717 (P35_PLANS, 966 id-jeva); pun nivo: sve mreže (01, 02, F, B) u P35_PARTS
    delova (`part`). Po planu: generator prihvata, nijedna nedelja izgradnje sa 2 dana kvaliteta i danom kvaliteta
@@ -62,7 +63,7 @@ export function describeP35Grid(title: string, partIndex: number): void {
         // Nedelje sa drugim danom kvaliteta laganim (na 7ba9717 2022 nedelje sa 2 kvaliteta dužim od dugog; posle
         // prve takve nedelje progresija q2 kreće kasnije, pa deo kasnijih ne treba).
         expect(P35_DROPPED.reduce((a, b) => a + b, 0)).toBe(1854);
-        if (process.env['PRINT08']) console.log('PRINT08', `p35 ${partIndex}`, dropped);
+        if (process.env['PRINT08']) appendFileSync(process.env['PRINT08'], '\n' + JSON.stringify([`p35 ${partIndex}`, dropped]));
         else expect(dropped).toBe(FULL ? P35_DROPPED[partIndex - 1] : 1854);
       },
       GRID_TIMEOUT

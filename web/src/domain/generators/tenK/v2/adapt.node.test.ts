@@ -7,7 +7,7 @@
    A17): regresija prema 4917959 — menjaju se samo tokovi sa ukinutim rasterećenjem ili porukom N2
    (segment06c.adapt-hashes-4917959.json; heš bez oznake verzije i polja reduced); mreža R: reliefGrid. */
 
-import { readFileSync } from 'node:fs';
+import { appendFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -278,7 +278,7 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     full: Record<string, Record<string, number>>
   ): void {
     if (process.env['PRINT08']) {
-      console.log('PRINT08', expect.getState().currentTestName, JSON.stringify(got));
+      appendFileSync(process.env['PRINT08'], '\n' + JSON.stringify([expect.getState().currentTestName, got]));
       return;
     }
     if (FULL) {

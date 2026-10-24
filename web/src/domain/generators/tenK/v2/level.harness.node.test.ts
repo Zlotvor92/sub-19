@@ -3,7 +3,7 @@
    Mreža se računa u `beforeAll` (ne u telu `describe`): vitest raspoređuje fajlove po zabeleženom trajanju, a ono
    ne uključuje fazu collect; uz to filter imena / `--bail` ne računa mrežu za describe čiji se testovi ne pokreću. */
 
-import { existsSync, readFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'vitest';
@@ -246,7 +246,7 @@ export function expectByDays<D extends number>(
 ): void {
   const want = days.map((d) => table[all.indexOf(d)]);
   if (process.env['PRINT08']) {
-    console.log('PRINT08', expect.getState().currentTestName, JSON.stringify({ days, got: days.map(get), want }));
+    appendFileSync(process.env['PRINT08'], '\n' + JSON.stringify([expect.getState().currentTestName, { days, got: days.map(get), want }]));
     return;
   }
   if (FULL) {
