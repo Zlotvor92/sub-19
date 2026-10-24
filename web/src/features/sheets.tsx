@@ -7,6 +7,7 @@ import { BugSheet, DeleteAccountSheet, HistorySheet } from './ti/AccountSheets';
 import { UsersSheet } from './ti/UsersSheet';
 import { KneeSheet } from './recovery/KneeSheet';
 import { InstallSheet } from './install/InstallSheet';
+import { PushPromptSheet } from './ti/pushPrompt';
 
 /* REGISTAR LISTOVA: `kind` → sadržaj. Mali listovi odozdo za kratke izmene (izmena treninga, pomeranje, test na 3 km, unos bola, istorija verzija…).
    Veći sadržaj ima svoj ekran (`features/screens`). Svojstva (`props`) dolaze iz `openSheet` i proveravaju se OVDE, na granici — komponenta dobija samo
@@ -18,6 +19,8 @@ const SHEETS: Record<string, (props: Record<string, unknown>) => ReactNode> = {
   users: () => <UsersSheet />,
   install: (p) =>
     p['kind'] === 'ios' || p['kind'] === 'android' ? <InstallSheet kind={p['kind']} /> : null,
+  'push-prompt': (p) =>
+    p['kind'] === 'off' || p['kind'] === 'denied' ? <PushPromptSheet kind={p['kind']} /> : null,
   alt: (p) => (typeof p['id'] === 'string' ? <AltSheet id={p['id']} /> : null),
   swap: (p) =>
     typeof p['w'] === 'number' ? (
