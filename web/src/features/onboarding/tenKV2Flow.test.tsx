@@ -21,6 +21,7 @@ import { FormScreen } from '../race/FormScreen';
 import { sessionView } from '../session/sessionModel';
 import { TrainingSettingsScreen } from '../ti/screens';
 import { Wizard } from './Wizard';
+import { userText } from '../../domain/generators/tenK/v2/app/format.ts';
 
 /* SEGMENT 05 — čarobnjak 10K v2 iza prekidača: polja v2 (rezultat ili lagan tempo, iskustvo, trčanje/hodanje, dani i dan
    dugog, cilj), plan v2 u skladištu, prikaz strukture (orijentir + RPE, test 5 km), prilagođavanje v2 (segment 06),
@@ -114,7 +115,7 @@ describe('10K v2 iza prekidača', () => {
     const saved = collectPersisted();
     expect(saved.genPlan!.meta).toMatchObject({
       policyId: '10k-v2',
-      policyVersion: '10k-v2.8.1',
+      policyVersion: '10k-v2.10.0',
       paceBasis: 'result',
       goalSec: 2580
     });
@@ -201,11 +202,11 @@ describe('10K v2 iza prekidača', () => {
     useUIStore.setState({ today: test.date });
     render(<PlanPage />);
     expect(screen.getAllByText(/5 km — orijentir \(procena\)/).length).toBeGreaterThan(0);
-    // Napomene i upozorenja v2 doslovno u „Na šta da paziš".
+    // Napomene i upozorenja v2 u „Na šta da paziš" — kao tekst za korisnika (10K-07 Z2: bez internih oznaka).
     expect(screen.getByText('Na šta da paziš u ovom planu')).toBeTruthy();
     const notes = (plan['tenKV2'] as { notes: string[] }).notes;
     expect(notes.length).toBeGreaterThan(0);
-    for (const n of notes) expect(document.body.textContent).toContain(n);
+    for (const n of notes) expect(document.body.textContent).toContain(userText(n));
   });
 
   it('trčanje/hodanje: odbijanje v2 doslovno sa preporukom 5K, dalje se ne ide, plan se ne pravi', async () => {

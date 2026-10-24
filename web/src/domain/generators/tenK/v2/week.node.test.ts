@@ -217,7 +217,17 @@ describe('D13 + D19: dužine', () => {
           expect(long).toBe(Math.min(cap, rest));
           // 06f (pouka 35): drugi dan kvaliteta lagan → jedan lagan više.
           const p35 = w.notes.some((x) => x.startsWith(P35_DROP));
-          expect(easy.length).toBe(n === 3 ? 1 : n - 3 + (p35 ? 1 : 0));
+          // 10K-08 (T1): lagani dani koji su odmor (napomena konstruktora).
+          const t1 = w.notes.find((x) => x.includes('odmor — ostatak obima ne staje u lagane'));
+          const all = n === 3 ? 1 : n - 3 + (p35 ? 1 : 0);
+          const t1Rest = !t1
+            ? 0
+            : t1.startsWith('Svi')
+              ? all
+              : t1.startsWith('Jedan')
+                ? 1
+                : Number(/^(\d+) lagana/.exec(t1)![1]);
+          expect(easy.length).toBe(all - t1Rest);
         }
       }
     }
@@ -230,7 +240,7 @@ const band = (km: number): [number, number] =>
   km < 35 ? [900, 600] : km < 45 ? [1200, 900] : [1500, 900];
 
 describe('D14: WU/CD i oporavci', () => {
-  it('WU/CD po pojasu obima za sve brojeve dana (< 35: 15/10, 35–44,9: 20/15, ≥ 45: 25/15 min; trka 15/10); oporavci po pravilu', () => {
+  it('WU/CD po pojasu obima za sve brojeve dana (< 35: 15/10, 35–44,9: 20/15, ≥ 45: 25/15 min; trka i oštrenje 15/10, 10K-07); oporavci po pravilu', () => {
     const seen = new Set<string>();
     let iRecs = 0;
     for (const p of plans) {
@@ -239,8 +249,12 @@ describe('D14: WU/CD i oporavci', () => {
         for (const d of w.days) {
           const wo = d.workout;
           if (wo.kind !== 'quality' && wo.kind !== 'race') continue;
-          const [wu, cdSec] = wo.kind === 'race' ? [900, 600] : band(p.input.currentWeeklyKm);
-          if (wo.kind === 'quality') seen.add(`${p.input.runDays.length}:${wu}/${cdSec}`);
+          const [wu, cdSec] =
+            wo.kind === 'race' || d.role === 'sharpener'
+              ? [900, 600]
+              : band(p.input.currentWeeklyKm);
+          if (wo.kind === 'quality' && d.role !== 'sharpener')
+            seen.add(`${p.input.runDays.length}:${wu}/${cdSec}`);
           const s = wo.segments;
           expect([s[0]!.kind, s[0]!.sec, s[0]!.km]).toEqual([
             'warmup',

@@ -1,0 +1,237 @@
+{
+ "dist": "HM",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "chains": 2000,
+ "generated": 2000,
+ "genFailed": 0,
+ "real": 1866,
+ "steps": 7929,
+ "stepsReal": 7401,
+ "rejectedChains": 0,
+ "cls": {
+  "BUDUCA_NEDELJA<40%CILJA": {
+   "real": 38,
+   "unreal": 5,
+   "flowsReal": 43,
+   "flowsUnreal": 7,
+   "shortest": {
+    "i": 6,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-13",
+      "regime": "under",
+      "events": [
+       "pain9@2027-01-13"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "f-d5-14w-55km-e450-B~31",
+    "detail": "ned 7 23.1/64.2 development long,easy,easy"
+   },
+   "ex": [
+    "6/0: ned 7 23.1/64.2 development long,easy,easy",
+    "90/5: ned 10 25.7/72.1 development easy,easy,easy",
+    "154/0: ned 1 21.6/58 base easy,easy,easy"
+   ]
+  },
+  "IDEMP:WEEKS": {
+   "real": 27,
+   "unreal": 1,
+   "flowsReal": 27,
+   "flowsUnreal": 1,
+   "shortest": {
+    "i": 99,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-03-22",
+      "regime": "mixed",
+      "events": [
+       "test:test10000@2027-03-20v38"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2027-03-23",
+      "regime": "mixed",
+      "events": [
+       "fatigue@2027-03-22,2027-03-21",
+       "pain9@2027-03-22"
+      ],
+      "locked": [
+       "2027-03-26",
+       "2027-03-29"
+      ]
+     }
+    ],
+    "id": "d4-16w-60km-v35-B-sat~96",
+    "detail": "[PAIN] ned 8 targetKm 47.6→34.6"
+   },
+   "ex": [
+    "79/2: [PAUSE] ned 12 targetKm 34.4→27.5",
+    "81/2: [PAIN] ned 4 targetKm 35.1→25.5",
+    "99/1: [PAIN] ned 8 targetKm 47.6→34.6"
+   ]
+  },
+  "NEXT_DAY:CILJ_PAO>10%": {
+   "real": 6,
+   "unreal": 0,
+   "flowsReal": 6,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 99,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-03-22",
+      "regime": "mixed",
+      "events": [
+       "test:test10000@2027-03-20v38"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2027-03-23",
+      "regime": "mixed",
+      "events": [
+       "fatigue@2027-03-22,2027-03-21",
+       "pain9@2027-03-22"
+      ],
+      "locked": [
+       "2027-03-26",
+       "2027-03-29"
+      ]
+     }
+    ],
+    "id": "d4-16w-60km-v35-B-sat~96",
+    "detail": "[PAIN] ned 8 47.6→34.6"
+   },
+   "ex": [
+    "81/2: [PAIN] ned 4 35.1→25.5",
+    "99/1: [PAIN] ned 8 47.6→34.6",
+    "236/3: [NEW_RESULT+PAIN] ned 5 19.6→16"
+   ]
+  },
+  "INV:dugi > pouka # ned #": {
+   "real": 1,
+   "unreal": 0,
+   "flowsReal": 1,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 1167,
+    "len": 3,
+    "step": 2,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-12-16",
+      "regime": "miss",
+      "events": [
+       "pain8@2026-12-15"
+      ],
+      "locked": [
+       "2027-01-03"
+      ]
+     },
+     {
+      "asOf": "2026-12-26",
+      "regime": "plan",
+      "events": [
+       "fatigue@2026-12-26,2026-12-24",
+       "missed@2026-12-22"
+      ],
+      "locked": [
+       "2026-12-28",
+       "2027-01-02",
+       "2027-01-03"
+      ]
+     },
+     {
+      "asOf": "2027-01-05",
+      "regime": "pauseBreak",
+      "events": [
+       "pain2@2027-01-03",
+       "test:test10000@2027-01-04v46.6"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "f-d5-15w-35km-e360-A~48",
+    "detail": "dugi > pouka 28 ned 3"
+   },
+   "ex": [
+    "1167/2: dugi > pouka 28 ned 3"
+   ]
+  },
+  "COMMON:TRKACKA>TAPER": {
+   "real": 1,
+   "unreal": 0,
+   "flowsReal": 3,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 1522,
+    "len": 4,
+    "step": 3,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-28",
+      "regime": "pauseSilent",
+      "events": [
+       "pain6@2027-01-26"
+      ],
+      "locked": [
+       "2027-02-02",
+       "2027-02-14"
+      ]
+     },
+     {
+      "asOf": "2027-01-29",
+      "regime": "plan",
+      "events": [
+       "missed@2027-01-28"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2027-02-04",
+      "regime": "over",
+      "events": [
+       "slower:race21097.5@2027-02-04v68.6",
+       "faster:race21097.5@2027-02-03v72.3"
+      ],
+      "locked": [
+       "2027-02-17"
+      ]
+     },
+     {
+      "asOf": "2027-02-04",
+      "regime": "plan",
+      "events": [
+       "pain8@2027-02-04",
+       "faster:test10000@2027-02-01v75.2"
+      ],
+      "locked": [
+       "2027-02-06",
+       "2027-02-16"
+      ]
+     }
+    ],
+    "id": "d5-10w-55km-v70-C-sat~41",
+    "detail": ""
+   },
+   "ex": []
+  }
+ },
+ "seconds": 526.471
+}

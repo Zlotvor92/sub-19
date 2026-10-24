@@ -506,6 +506,8 @@ async function runVitest(webDir, tests, opts) {
   const env = { ...process.env };
   delete env.TEST_FULL;
   if (opts.full) env.TEST_FULL = '1';
+  // Projekat `v1` (testovi poređenja v1 sa referencama) je u brzom nivou isključen; sabotaža zadaje fajlove izričito.
+  env.TEST_V1 = '1';
   if (opts.capture) env.NO_COLOR = '1';
   const bin = join(webDir, 'node_modules', '.bin', 'vitest');
   const [cmd, cmdArgs] = existsSync(bin) ? [bin, args] : ['npx', ['vitest', ...args]];

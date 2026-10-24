@@ -365,7 +365,7 @@ export function simpleWeekQuality(
     // Kvalitet staje u nedelju samo ako dužine (weekLengths, iste kao week.ts) daju lagan ≥ minimum i
     // lagan ≤ dugi; inače rasterećenje samo sa ubrzanjima (npr. početnik, 4 dana, 15 km → 12 km).
     const room = (w: Workout): boolean => {
-      const L = weekLengths(targetKm, w.km, easyCount(a, true, false), f.phase, p, a);
+      const L = weekLengths(targetKm, w.km, easyCount(a, true, false), f.phase, p, a, f.deload);
       return !L.capped && L.shares.every((x) => x + 1e-9 >= L.easyMin);
     };
     for (const kind of chain) {
@@ -391,7 +391,7 @@ export function simpleWeekQuality(
         stridesOnly: false,
         notes: [
           sub
-            ? `Rasterećenje: ${SPEC[k.main].label} ne staje u budžet — ${s.label} umesto toga, uz ubrzanja.`
+            ? `Rasterećenje: ${SPEC[k.main].label} nema mesta u obimu nedelje — umesto toga ${s.label.toLowerCase()}, uz ubrzanja.`
             : 'Rasterećenje: jedan kratak kvalitet.'
         ],
         dose: null
@@ -404,7 +404,7 @@ export function simpleWeekQuality(
       easyStrides: false,
       stridesOnly: true,
       notes: [
-        `Rasterećenje: nijedan kvalitet ne staje u budžet ni u nedelju — samo ubrzanja ${so.reps} × ${so.sec} s na laganom.`
+        `Rasterećenje: nijedan kvalitet nema mesta u obimu nedelje — samo ubrzanja ${so.reps} × ${so.sec} s na laganom.`
       ],
       dose: null
     };
@@ -425,7 +425,9 @@ export function simpleWeekQuality(
     if (!main && k.other) {
       main = progress(k.other, f.phase, b, p, pf[k.other], holdOk(k.other));
       if (main)
-        notes.push(`${SPEC[k.main].label} ne staje u budžet — ${SPEC[k.other].label} umesto toga.`);
+        notes.push(
+          `${SPEC[k.main].label} nema mesta u obimu nedelje — umesto toga ${SPEC[k.other].label.toLowerCase()}.`
+        );
     }
     if (!main)
       return fail(
@@ -474,9 +476,13 @@ export function simpleWeekQuality(
   }
   for (const x of [main, second])
     if (x?.how === 'alt')
-      notes.push(`${SPEC[x.kind].label}: bez višeg nivoa u budžetu — ista doza, druga struktura.`);
+      notes.push(
+        `${SPEC[x.kind].label}: ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), drugačija podela.`
+      );
     else if (x?.how === 'hold')
-      notes.push(`${SPEC[x.kind].label}: doza zadržana; drugi kvalitet menja strukturu.`);
+      notes.push(
+        `${SPEC[x.kind].label}: ista količina kao prošle nedelje; drugi kvalitet se menja.`
+      );
 
   const feel: Partial<Record<FeelKind, FeelDose>> = { ...pf };
   if (main) feel[main.kind] = main.d;

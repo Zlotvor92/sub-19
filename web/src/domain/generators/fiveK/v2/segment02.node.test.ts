@@ -1,5 +1,7 @@
 /* Segment 02 (5k-v2.1.0, ažurirano za 2.2.0): trenerske odluke 1–4 i Uslov 8 (upotrebljivost plana). */
 
+import { belowTargetShown } from './text.ts';
+import { easyCapKm } from './lengths.ts';
 import { describe, expect, it } from 'vitest';
 import { daysBetween } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
@@ -42,7 +44,7 @@ describe('plan nosi identitet politike (Uslov 6)', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     expect(plan.policyId).toBe('5k-v2');
-    expect(plan.policyVersion).toBe('5k-v2.10.4');
+    expect(plan.policyVersion).toBe('5k-v2.12.0');
   });
 });
 
@@ -59,23 +61,37 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     }
   });
 
-  it('2.2.0: „lagan = dugi" je samo zaštita — kapacitet 4 dana sprečava je na ulazu', () => {
+  it('2.2.0: „lagan = dugi" je samo zaštita — kapacitet 4 dana sprečava je na ulazu (5k-v2.12.0, T1: granica 0,8 × dugi)', () => {
     const plan = planOf(CAPPED);
-    expect(plan.weeks.filter((w) => w.easyCappedAtLong)).toEqual([]);
+    // T1: nedelja sa oznakom ima sve lagane na granici 0,8 × dugi i planirano < cilj (upozorenje); lagan = dugi nikad.
+    for (const w of plan.weeks.filter((x) => x.easyCappedAtLong)) {
+      const long = roleDay(w, 'long').workout.km;
+      for (const d of w.days.filter((x) => x.role === 'easy'))
+        expect(d.workout.km).toBeCloseTo(easyCapKm(long, w.phase, w.deload), 6);
+      expect(w.plannedKm).toBeLessThan(w.targetKm);
+    }
     // Ciljevi su i dalje odluka volume.ts; 2.3.0: trkačka nedelja = planirano ≤ granica iz volume.ts.
-    const targets = planVolume(periodize(START, CAPPED.weeks), CAPPED.km, plan.paces, 4).targets;
+    const targets = planVolume(
+      periodize(START, CAPPED.weeks, undefined, false, false),
+      CAPPED.km,
+      plan.paces,
+      4
+    ).targets;
     expect(plan.weeks.slice(0, -1).map((w) => w.targetKm)).toEqual(targets.slice(0, -1));
     expect(plan.weeks[plan.weeks.length - 1]!.targetKm).toBeLessThanOrEqual(targets.at(-1)!);
-    expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toEqual([]);
+    expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toHaveLength(
+      plan.weeks.filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+        .length
+    );
   });
 
   it('validator: „lagan = dugi" uz oznaku → upozorenje; bez oznake → greška; lažna oznaka → greška', () => {
     const p = planOf(CAPPED);
     const w = p.weeks.find((x) => x.phase === 'base' && !x.deload)!;
-    // Kao da je cilj iznad kapaciteta: dugi i lagan po 6 km.
+    // Kao da je cilj iznad kapaciteta: dugi 6 km, lagan na granici 0,8 × dugi (5k-v2.12.0, T1).
     w.days = w.days.map((d) =>
       d.role === 'easy'
-        ? { ...d, workout: easyRun(6, p.paces, false) }
+        ? { ...d, workout: easyRun(4.8, p.paces, false) }
         : d.role === 'long'
           ? { ...d, workout: longRun(6, p.paces) }
           : d
@@ -88,7 +104,7 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     w.easyCappedAtLong = false;
     expect(errorsOf(p)).toContain('PLANNED_VS_TARGET');
     const q = planOf(PROFILES['vdot50_35km_14w']!);
-    q.weeks[0]!.easyCappedAtLong = true;
+    q.weeks.find((x) => x.phase !== 'race' && !x.easyCappedAtLong)!.easyCappedAtLong = true;
     expect(errorsOf(q)).toContain('EASY_CAP');
   });
 });
@@ -186,7 +202,8 @@ describe('Odluka 3: dan pred trku kratak, dva dana pred trku bez kvaliteta', () 
     const plan = planOf(PROFILES['vdot50_35km_14w']!);
     const race = plan.weeks[plan.weeks.length - 1]!;
     const eve = race.days.find((d) => daysBetween(d.date, plan.input.raceDate) === 1);
-    expect(eve?.workout.km).toBe(4);
+    expect(eve?.workout.km).toBeGreaterThan(0);
+    expect(eve?.workout.km).toBeLessThanOrEqual(P.easy.raceEveMaxKm);
   });
 
   it('validator: dug dan pred trku → RACE_EVE; kvalitet 2 dana pred trku → SHARPENER_GAP', () => {

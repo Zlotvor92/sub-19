@@ -95,7 +95,7 @@ describe('D28: početnik — plan', () => {
         expect(quality(w)).toEqual([]);
         expect(w.days.find((d) => d.weekday === p.pattern.q1)!.role).toBe('easy');
         expect(w.days.filter((d) => d.role === 'easy').length).toBe(days - 1);
-        expect(w.notes.some((n) => n.startsWith('Uvod (D28)'))).toBe(true);
+        expect(w.notes.some((n) => n.startsWith('Uvod: '))).toBe(true);
       }
       const ladders = p.weeks
         .filter(steady)
@@ -244,7 +244,7 @@ describe('D31: početnik — T kontinuirano od 1,5 km pri malom obimu', () => {
     expect(build.map((w) => w.targetKm)).toEqual([17, 18, 19, 19.5, 19.5, 19.5]);
     for (const w of build.filter((x) => x.phase !== 'base'))
       expect(
-        w.notes.some((n) => n.startsWith('T kontinuirano (D31)')),
+        w.notes.some((n) => n.startsWith('T kontinuirano umesto')),
         `ned ${w.index}`
       ).toBe(true);
     // Ned 4: 0,8 × 17 = 13,6 km, plafon 1,36 km < 1,5 km; ned 9: 15,6 km, plafon 1,56 km. Taper 0,75 ×
@@ -277,7 +277,7 @@ describe('D31: početnik — T kontinuirano od 1,5 km pri malom obimu', () => {
       '-'
     ]);
     expect(p.weeks.slice(5, 8).map((w) => w.targetKm)).toEqual([22.1, 23.2, 23.4]);
-    expect(p.weeks[8]!.notes.some((n) => n.startsWith('Taper (D31)'))).toBe(true);
+    expect(p.weeks[8]!.notes.some((n) => n.startsWith('Taper: RP 2 × 1000 m ne staje'))).toBe(true);
     expect(p.weeks[9]!.days.some((d) => d.role === 'sharpener')).toBe(false);
     expect(errors(p)).toEqual([]);
   });
@@ -327,7 +327,7 @@ describe('D32: početnik bez testa', () => {
       const p = plan(raw);
       expect(p.paceBasis).toBe('feel');
       expect(p.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
-      expect(p.notes.some((n) => n.startsWith('Početnik bez testa 5 km (D32)'))).toBe(true);
+      expect(p.notes.some((n) => n.startsWith('Početnik bez testa 5 km:'))).toBe(true);
       expect([p.goal, p.predicted10kSec]).toEqual([null, null]);
       expect(p.warnings.some((x) => x.rule === 'TEST_DELOAD_LONG')).toBe(false);
       for (const w of p.weeks.filter((x) => x.deload)) {

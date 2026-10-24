@@ -22,9 +22,10 @@ const errRules = (p: FiveKV2Plan): string[] =>
 const isBuild = (w: PlanWeek): boolean => ['base', 'peak', 'sharpen'].includes(w.phase);
 
 describe('08h pouka 35 — dugi ostaje najduži u nedelji izgradnje', () => {
-  const p = planOf('f-d4-6w-15km-e300-0');
-  const w1 = p.weeks[0]!;
-  it('f-d4-6w-15km-e300-0 ned 1: drugi dan kvaliteta lagan (napomena), jedan kvalitet, dugi ≥ svaki dan kvaliteta', () => {
+  // 5k-v2.12.0 (T1/T2): f-d4-6w-15km-e300-0 ned 1 ima lagan dan manje i dugi najduži bez pouke 35 — primer je ned 3.
+  const p = planOf('f-d4-6w-15km-e420-0');
+  const w1 = p.weeks[2]!;
+  it('f-d4-6w-15km-e420-0 ned 3: drugi dan kvaliteta lagan (napomena), jedan kvalitet, dugi ≥ svaki dan kvaliteta', () => {
     expect(w1.notes.some((n) => n.includes(SECOND_EASY_NOTE))).toBe(true);
     const q = w1.days.filter((d) => d.workout.kind === 'quality');
     const long = w1.days.find((d) => d.role === 'long')!;
@@ -48,7 +49,7 @@ describe('08h pouka 35 — dugi ostaje najduži u nedelji izgradnje', () => {
   });
   it('validator: dva dana kvaliteta kad bi dugi bio kraći → SECOND_QUALITY; oznaka bez drugog dana → ROLES', () => {
     const t = JSON.parse(S(p)) as FiveKV2Plan;
-    const w = t.weeks[0]!;
+    const w = t.weeks[2]!;
     const q1 = w.days.find((d) => d.role === 'q1')!;
     const q2day = p.pattern.q2!;
     // Drugi dan kvaliteta duži od dugog (1 h): sa njim dugi ne bi bio najduži.
@@ -62,7 +63,7 @@ describe('08h pouka 35 — dugi ostaje najduži u nedelji izgradnje', () => {
       Math.round(w.days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0) * 100) / 100;
     expect(errRules(t)).toContain('SECOND_QUALITY');
     const u = JSON.parse(S(p)) as FiveKV2Plan;
-    u.weeks[0]!.notes = u.weeks[0]!.notes.filter((n) => !n.includes(SECOND_EASY_NOTE));
+    u.weeks[2]!.notes = u.weeks[2]!.notes.filter((n) => !n.includes(SECOND_EASY_NOTE));
     expect(errRules(u)).toContain('ROLES');
   });
 });

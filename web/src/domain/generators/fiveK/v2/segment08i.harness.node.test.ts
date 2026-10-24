@@ -15,11 +15,10 @@ import { FULL } from '@/test/level';
 import { adaptFiveKV2 } from './adapt.ts';
 import { addDays, mustDay } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
-import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { BRZ_PLANOVI } from './segment08g.harness.node.test.ts';
 import { earlyGridBases, earlyGridInputs } from './testInputs.ts';
 import type { FiveKV2Plan, PlanDay } from './types.ts';
-import { MIXED_NOTE } from './week.ts';
+import { easyMinOf, MIXED_NOTE } from './week.ts';
 
 export const GRID_TIMEOUT = 300_000;
 const S = JSON.stringify;
@@ -87,7 +86,8 @@ export function mixedBad(id: string, input: Record<string, unknown>): MixedStats
         if (w.notes.some((n) => n.includes(MIXED_NOTE))) st.trimmed++;
         const before = p.weeks[w.index - 1]!.days.filter(prot);
         if (S(kept) !== S(before)) st.bad.push(`${key}/w${w.index}: zaštićen dan promenjen`);
-        const easyMin = w.phase === 'taper' ? P.easy.taperMinKm : P.easy.minKm;
+        // 5k-v2.12.0 (T1): minimum laganog iz istog mesta kao konstruktor (week.easyMinOf).
+        const easyMin = easyMinOf(w.phase, r.plan.paces, w.deload);
         const long = free.find((x) => x.role === 'long');
         for (const x of free)
           if (

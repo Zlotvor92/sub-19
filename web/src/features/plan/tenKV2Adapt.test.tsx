@@ -161,7 +161,7 @@ describe('Plan → Prilagodi plan (10K v2)', () => {
     render(<AdjustPlan />);
     const box = document.getElementById('v2-adapt-rejected')!;
     expect(within(box).getByRole('status').textContent).toMatch(
-      /Plan nije prilagođen\. Razlozi:asOf mora biti pre dana trke/
+      /Plan nije prilagođen\. Razlozi:Datum prilagođavanja mora biti pre dana trke/
     );
     expect(document.getElementById('plan-change-preview')).toBeNull();
     expect(stored()).toEqual(p);

@@ -16,17 +16,22 @@ const OFF = 100;
 /** Broj nedelje u tekstu (uz opseg „a–b" i premeštaj „a → b"); km, broj kvaliteta („prva nedelja 1 kvalitet") i redni
  *  broj uvoda nisu broj nedelje. */
 const WEEK =
-  /(nedelj[a-z]*|Nedelj[a-z]*|ned\.?)\s+(\d+)(?![\d,.]*\s*km)(?!\s+od\s)(?!\s+kvalitet)(?:(\s*[–→]\s*)(\d+))?/g;
+  /(nedelj[a-z]*|Nedelj[a-z]*|ned\.?)\s+(\d+(?:, \d{1,3}(?![\d-]))*)(?![\d,.]*\s*km)(?!\s+od\s)(?!\s+kvalitet)(?:(\s*[–→]\s*)(\d+))?/g;
 const HAS = new RegExp(WEEK.source);
 const EXEMPT = /u nedeljama 1–2/g;
 
 /** Tekst sa offsetom → tekst bez offseta (n − OFF); `low` skuplja brojeve nedelje < OFF + 1 (poruka mimo weekLabel). */
 function unshift(s: string, low: string[]): string {
-  const sub = (n: string): string => {
-    const k = Number(n);
-    if (k <= OFF) low.push(s);
-    return String(k - OFF);
-  };
+  // HM-10: i spisak „nedelje a, b" (WEEK_FITTED sa više nedelja).
+  const sub = (n: string): string =>
+    n
+      .split(', ')
+      .map((x) => {
+        const k = Number(x);
+        if (k <= OFF) low.push(s);
+        return String(k - OFF);
+      })
+      .join(', ');
   return s
     .split(EXEMPT)
     .map((part) =>

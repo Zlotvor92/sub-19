@@ -1,0 +1,16 @@
+{
+ "stride": 4,
+ "bases": 6281,
+ "flows": 13860,
+ "deloadLongRejected": 3758,
+ "outcomes": {
+  "ok-K3x2": 10094,
+  "REJ:PLAN_VIOLATES_POLICY:DELOAD_LONG": 3758,
+  "REJ:WEEK_INFEASIBLE:": 8
+ }
+}
+d3-10w-40km-v35-B-sat-rl10 asOf 2026-11-04/2026-11-07/2026-11-14 ref2=11 — ned 3: DELOAD_LONG: Dugi rasterećenja 9.6 km ≠ 8.8 km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14). | gen L1/L2 = 11/12.1
+d3-10w-40km-v45-B-sat-rl10 asOf 2026-11-04/2026-11-07/2026-11-14 ref2=11 — ned 3: DELOAD_LONG: Dugi rasterećenja 9.6 km ≠ 8.8 km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14). | gen L1/L2 = 11/12.1
+d3-10w-40km-v55-B-sat-rl10 asOf 2026-11-04/2026-11-07/2026-11-14 ref2=11 — ned 3: DELOAD_LONG: Dugi rasterećenja 9.3 km ≠ 8.8 km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14). | gen L1/L2 = 11/12.1
+prvi REJ:PLAN_VIOLATES_POLICY:DELOAD_LONG: d3-10w-40km-v35-B-sat-rl10 asOf 2026-11-04/2026-11-07/2026-11-14: DELOAD_LONG: Dugi rasterećenja 9.6 km ≠ 8.8 km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14).
+prvi REJ:WEEK_INFEASIBLE:: b-d5-12w-25km-e390-A-rl10 asOf 2026-11-05/2026-11-08/2026-11-15: Nedelja 11: nijedan cilj od 20 km naviše ne može da se sastavi po pravilima.

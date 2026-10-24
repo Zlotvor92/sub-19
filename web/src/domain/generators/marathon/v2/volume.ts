@@ -2,7 +2,17 @@
    nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija nedelje
    (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longCap10, longJumpCap10, longShareCap10, longTimeCap10, weekMin10 } from './lengths.ts';
+import {
+  jumpLongs10,
+  longCap10,
+  longJumpCap10,
+  longMaxSecOf,
+  longRuleOf,
+  longShareCap10,
+  longsOf,
+  longTimeCap10,
+  weekMin10
+} from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
 import {
   BEGINNER_DAYS_COUNTS,
@@ -12,7 +22,7 @@ import {
   RUN_DAYS_COUNTS
 } from './policy.ts';
 import { deloadWeekOf, preStartOf } from './steps.ts';
-import type { Paces, PlanWeek, PreStartRef, WeekFrame } from './types.ts';
+import type { MarathonV2AdaptStep, Paces, PlanWeek, PreStartRef, WeekFrame } from './types.ts';
 import { fmtKm } from './workouts.ts';
 
 const EPS = 1e-9;
@@ -47,6 +57,28 @@ export function capacityMessage(
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
 
+/** F1: „planirano < cilj" ide korisniku samo kad je razlika ≥ 1 km ili ≥ 3 % cilja (manja razlika je šum
+    zaokruživanja). JEDNA definicija za upozorenja (validate.ts) i napomenu nedelje (app/plan.ts). */
+export function belowTargetShown(plannedKm: number, targetKm: number): boolean {
+  const d = targetKm - plannedKm;
+  return d >= 1 - EPS || d >= 0.03 * targetKm - EPS;
+}
+
+/** M6: napomena plana CAPACITY_LIMITED = poruka kapaciteta + vrh prema granici izgradnje; vrh se navodi samo kad se
+    posle zaokruživanja razlikuje od granice (F1: bez „Vrh 75 km umesto do 75 km"). */
+export function capacityNote(
+  runDays: number,
+  rule: PlanRule,
+  limits: readonly CapacityLimit[],
+  peakKm: number,
+  peakCapKm: number
+): string {
+  const msg = capacityMessage(runDays, rule, limits);
+  return fmtKm(peakKm) === fmtKm(peakCapKm)
+    ? msg
+    : `${msg} Vrh ${fmtKm(peakKm)} km umesto do ${fmtKm(peakCapKm)} km (M6).`;
+}
+
 /** Pouka 14 (N10.5, kao HM HI3): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele M15
     (početnik: tabela M17) podržava trenutni obim; prazno kad ih nema. */
 export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number, rule: PlanRule): string {
@@ -75,22 +107,37 @@ export const technicalNote = (note: string): boolean =>
 
 /** Spuštene (fitted 'down') ne-rasteretne nedelje izgradnje koje seče kapacitet broja dana. Nedelja čiji je
     dugi na plafonu skoka M13a (niži od plafona M13) nije ograničenje kapaciteta (pouka 28). Jedna funkcija za
-    konstruktor i validator (pouka 24). */
+    konstruktor i validator (pouka 24). Tempo nedelje `pacesOf(index)` (plafon 150 min istim tempom kojim je nedelja
+    građena, MAR-09 t. 4); L iz upisanih dugih i činjenica (lengths.jumpLongs10, MAR-09 t. 2). */
+/** F2: pravilo plana (PlanRule) nosi `beginner`; goli red tabele (DayRule) nije početnik. */
+const beginnerOf = (rule: DayRule): boolean => (rule as Partial<PlanRule>).beginner === true;
+
 export function capacityWeeks(
   weeks: readonly PlanWeek[],
   rule: DayRule,
-  p: Paces,
-  recentLongRunKm: number | null | undefined
+  pacesOf: (week: number) => Paces,
+  recentLongRunKm: number | null | undefined,
+  steps: readonly MarathonV2AdaptStep[]
 ): PlanWeek[] {
-  const longs10 = weeks.map((w) => {
-    const l = w.days.find((d) => d.role === 'long');
-    return l ? to10(l.workout.km) : null;
-  });
+  const longs10 = longsOf(weeks);
   return weeks.filter((w, i) => {
     if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') return false;
-    const jump = longJumpCap10(longs10.slice(0, i), w.index, recentLongRunKm);
+    const jump = longJumpCap10(
+      jumpLongs10(weeks.slice(0, i), steps, w.index),
+      w.index,
+      recentLongRunKm
+    );
     const l = longs10[i];
-    return !(jump !== null && l === jump && jump < longCap10(to10(w.targetKm), rule, p));
+    return !(
+      jump !== null &&
+      l === jump &&
+      jump <
+        longCap10(
+          to10(w.targetKm),
+          longRuleOf(rule, beginnerOf(rule), weeks, w.index),
+          pacesOf(w.index)
+        )
+    );
   });
 }
 
@@ -99,17 +146,19 @@ export function capacityWeeks(
 export function capacityLimits(
   weeks: readonly PlanWeek[],
   rule: DayRule,
-  p: Paces,
-  recentLongRunKm: number | null | undefined
+  pacesOf: (week: number) => Paces,
+  recentLongRunKm: number | null | undefined,
+  steps: readonly MarathonV2AdaptStep[]
 ): CapacityLimit[] {
   let time = false;
   let share = false;
-  for (const w of capacityWeeks(weeks, rule, p, recentLongRunKm)) {
+  for (const w of capacityWeeks(weeks, rule, pacesOf, recentLongRunKm, steps)) {
     const long = w.days.find((d) => d.role === 'long');
     if (!long) continue;
     const l10 = to10(long.workout.km);
-    if (l10 === longTimeCap10(p)) time = true;
-    if (l10 === longShareCap10(to10(w.targetKm), rule)) share = true;
+    const lr = longRuleOf(rule, beginnerOf(rule), weeks, w.index);
+    if (l10 === longTimeCap10(pacesOf(w.index), longMaxSecOf(lr))) time = true;
+    if (l10 === longShareCap10(to10(w.targetKm), lr)) share = true;
   }
   return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
 }
@@ -396,7 +445,7 @@ export function adaptNominal10(
 }
 
 /** Posle nedelje `frame` sa ciljem `target10`: osnov rasta (ne-rasteretna izgradnja; cilj koraka i kad je
-    rasteretna, A8), vrh, sidro bola (A4: osnova povratka returnBase10). */
+    rasteretna, A8), vrh, sidro bola (A4: osnova povratka returnBase10); taper: gornja granica sledeće nedelje tapera. */
 export function leaveWeek(
   h: AdaptHistory,
   frame: WeekFrame,
@@ -404,6 +453,10 @@ export function leaveWeek(
   av: AdaptVolume
 ): AdaptHistory {
   const out = { ...h };
+  // M7 (MAR-09): taper samo naniže — cilj sledeće nedelje tapera ≤ ostvaren cilj ove (N−2 spuštena npr. plafonom
+  // skoka dugog posle pauze/bola ne sme ispod N−1).
+  if (frame.phase === 'taper')
+    out.tailCap10 = out.tailCap10 === null ? target10 : Math.min(out.tailCap10, target10);
   if (!isBuildPhase(frame.phase)) return out;
   const i = frame.index;
   if (!frame.deload || av.reset.has(i)) {

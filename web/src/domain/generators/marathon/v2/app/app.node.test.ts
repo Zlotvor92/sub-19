@@ -13,6 +13,7 @@ import {
 import { initialWizard, toGenerationInput } from '../../../../onboarding';
 import { personalPlan } from '../../../../personal';
 import { resolvePlan, type ResolvedDay } from '../../../../plan';
+import { userText } from './format.ts';
 import { getPlanRevisions, recordPlanRevision } from '../../../../plan/versions';
 import {
   buildBackup,
@@ -235,7 +236,7 @@ describe('generisanje kroz adapter', () => {
       label: { realistic: 'realističan', ambitious: 'ambiciozan', unrealistic: 'nerealan' }[
         v2.goal!.status as 'realistic'
       ],
-      message: v2.goal!.message
+      message: userText(v2.goal!.message)
     });
     const feel = planOf(FEEL);
     const fm = feel.meta as Record<string, unknown>;
@@ -250,9 +251,9 @@ describe('generisanje kroz adapter', () => {
       'racePace'
     ])
       expect(fm, k).not.toHaveProperty(k);
-    // Upozorenja i napomene v2 doslovno.
-    for (const n of v2Of(feel).notes) expect(fm['dayWarnings']).toContain(n);
-    for (const v of v2Of(feel).warnings) expect(fm['dayWarnings']).toContain(v.message);
+    // Upozorenja i napomene v2 kao korisnički tekst (Z2, format.userText).
+    for (const n of v2Of(feel).notes) expect(fm['dayWarnings']).toContain(userText(n));
+    for (const v of v2Of(feel).warnings) expect(fm['dayWarnings']).toContain(userText(v.message));
   });
 
   it('plan po osećaju: rad kvaliteta nosi RPE i tempo kao procenu; test 5 km; sa rezultatom tempo je propisan', () => {
@@ -456,6 +457,10 @@ describe('prekidač i rutiranje po oznaci politike', () => {
         'marathon-v2.4.1',
         'marathon-v2.4.2',
         'marathon-v2.5.0',
+        'marathon-v2.5.1',
+        'marathon-v2.6.0',
+        'marathon-v2.6.1',
+        'marathon-v2.7.0',
         VERSION
       ])
     ]);

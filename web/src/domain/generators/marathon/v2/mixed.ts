@@ -154,6 +154,19 @@ export function mixedRest(
     d.role === role && km10(d) > min10 && !mpFloor(d);
   const drop = (days: readonly PlanDay[], role: 'q1' | 'q2'): PlanDay[] =>
     days.map((d) => (drops(d, role) ? easyDay(d, km10(d), p) : d));
+  // Z1 (MAR-09 t. 6, dopuna pouke 37): jedini uzrok viška je upisani višak (zaštićeni po činjenicama > planirani
+  // zaštićeni, a sa planiranim zaštićenim preostali dani staju) i planirano sa zadržanim kvalitetom ≤ 1,10 × cilj →
+  // kvalitet ostaje, lagani na minimumu, planirano > cilj (MIXED_WEEK_OVER).
+  const keptPlan100 = keptKm100(kept);
+  const keptFact100 = keptKm100(kept, fk);
+  if (
+    keptFact100 > keptPlan100 &&
+    sum100(rest) <= target10 * 10 - keptPlan100 + km100(P.tolerance.plannedKm)
+  ) {
+    const x = shape(rest);
+    if (!x.fits && keptFact100 + sum100(x.days) <= P.mixed.overShare * target10 * 10 + 1e-6)
+      return { ...base, days: x.days, cut: true, over: true };
+  }
   const variants: PlanDay[][] = [[...rest]];
   for (const role of ['q2', 'q1'] as const)
     if (rest.some((d) => drops(d, role))) variants.push(drop(variants[variants.length - 1]!, role));

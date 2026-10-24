@@ -79,6 +79,8 @@ export type ReasonCode =
   | 'GOAL_INVALID'
   /** Pouka 28: skorašnji najduži trk van 5–42 km. */
   | 'RECENT_LONG_INVALID'
+  | 'RECENT_LONG_OVER_WEEKLY'
+  | 'RECENT_LONG_UNDER_WEEKLY'
   /** Pouka 28 (HI7): sa datim skorašnjim najdužim trkom nedelja nije izvodljiva (prag u poruci). */
   | 'RECENT_LONG_TOO_SHORT'
   | 'SCHEDULE_NO_RECOVERY'
@@ -428,6 +430,19 @@ export interface HmV2AdaptStep {
       ne-rasteretne izgradnje (npr. ned 1 cela u odmoru bola) — dugi poslednje ne-rasteretne izgradnje generatora
       pre te nedelje (steps.deloadRefLong10). Samo kad ga ima. */
   deloadRefLongKm?: number;
+  /** HM-09 (pouka 28 × 37): najduži trčan po činjenicama prošlih nedelja celih poznatih (pokrivenost ili pauza),
+      samo gde je kraći od upisanog dugog; ključ = broj nedelje. Važi za L skoka nedelja od firstWeek ovog koraka
+      (steps.ranLongFor). Samo kad ih ima. */
+  ranLongKm?: Record<string, number>;
+  /** HM-09 (Z7): primenjen manjak izvršenja — prvi dan prozora zapisa (7 dana do asOf); kasniji korak čiji se prozor
+      preklapa ne pravi nov manjak. Samo kad ga ima. */
+  underFrom?: IsoDate;
+  /** HM-09 (C3, pouka 38): dan testa upisanog plana koji je zaštićen (≤ asOf, zaključan ili urađen) — činjenica;
+      ostaje na mestu i u sledećim koracima (steps.protectedTestDate). Samo kad ga ima. */
+  testKept?: IsoDate;
+  /** HM-09: nedelja koja sadrži asOf, poznata od početka do asOf, i najduži trčan u tom delu — sledeći korak
+      dopunjuje ostatak nedelje (assess.ranLongOf). Samo kad postoji. */
+  ranPart?: { week: number; km: number };
 }
 
 /** Pouka 34: nedelja 1 generatora bez činjenica — cilj, dugi i doze slotova. */

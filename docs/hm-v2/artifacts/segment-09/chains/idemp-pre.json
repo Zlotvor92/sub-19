@@ -1,0 +1,328 @@
+{
+ "dist": "HM",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "steps": 7712,
+ "same": {
+  "NO_FACTS": [
+   3783,
+   0
+  ],
+  "UNDER_EXECUTION": [
+   374,
+   361
+  ],
+  "OVER_EXECUTION": [
+   20,
+   0
+  ],
+  "NEW_RESULT": [
+   1414,
+   0
+  ],
+  "PAIN": [
+   915,
+   7
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   81,
+   80
+  ],
+  "NEW_RESULT+PAIN": [
+   163,
+   1
+  ],
+  "FATIGUE": [
+   172,
+   8
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   153,
+   145
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   18,
+   18
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   8,
+   0
+  ],
+  "TEST_MOVED": [
+   13,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   61,
+   0
+  ],
+  "PAUSE": [
+   265,
+   9
+  ],
+  "FATIGUE+PAIN": [
+   23,
+   2
+  ],
+  "FATIGUE+NEW_RESULT": [
+   37,
+   5
+  ],
+  "PAIN+PAUSE": [
+   62,
+   1
+  ],
+  "NEW_RESULT+PAUSE": [
+   94,
+   1
+  ],
+  "PAIN+TEST_MOVED": [
+   18,
+   0
+  ],
+  "OVER_EXECUTION+PAIN": [
+   4,
+   0
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   4,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION+PAIN": [
+   1,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   12,
+   0
+  ],
+  "PAUSE+TEST_MOVED": [
+   3,
+   0
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   6,
+   0
+  ],
+  "PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   1,
+   1
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   2,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   4,
+   4
+  ],
+  "FATIGUE+TEST_MOVED": [
+   1,
+   0
+  ]
+ },
+ "next": {
+  "NO_FACTS": [
+   1281,
+   1
+  ],
+  "NEW_RESULT+PAIN": [
+   114,
+   2
+  ],
+  "NEW_RESULT": [
+   458,
+   0
+  ],
+  "PAIN": [
+   591,
+   11
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   5,
+   0
+  ],
+  "FATIGUE": [
+   69,
+   4
+  ],
+  "UNDER_EXECUTION": [
+   122,
+   113
+  ],
+  "PAUSE": [
+   79,
+   2
+  ],
+  "FATIGUE+NEW_RESULT": [
+   12,
+   0
+  ],
+  "PAIN+PAUSE": [
+   31,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   24,
+   0
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   46,
+   40
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   3,
+   0
+  ],
+  "NEW_RESULT+PAUSE": [
+   38,
+   1
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   46,
+   37
+  ],
+  "FATIGUE+PAIN": [
+   15,
+   2
+  ],
+  "PAIN+TEST_MOVED": [
+   12,
+   0
+  ],
+  "OVER_EXECUTION": [
+   9,
+   0
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   8,
+   5
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   4,
+   0
+  ],
+  "PAUSE+TEST_MOVED": [
+   2,
+   0
+  ],
+  "TEST_MOVED": [
+   3,
+   0
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   3,
+   0
+  ],
+  "OVER_EXECUTION+PAIN": [
+   2,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   1,
+   0
+  ]
+ },
+ "ex": {
+  "same UNDER_EXECUTION": [
+   "0/2",
+   "9/3"
+  ],
+  "same PAIN+UNDER_EXECUTION": [
+   "2/3",
+   "117/4"
+  ],
+  "same NEW_RESULT+UNDER_EXECUTION": [
+   "5/1",
+   "39/1"
+  ],
+  "same NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "5/5",
+   "382/2"
+  ],
+  "next PAIN": [
+   "6/0",
+   "99/1"
+  ],
+  "next UNDER_EXECUTION": [
+   "20/1",
+   "69/1"
+  ],
+  "next NEW_RESULT+PAIN": [
+   "26/2",
+   "236/3"
+  ],
+  "same PAUSE": [
+   "79/2",
+   "110/1"
+  ],
+  "next PAUSE": [
+   "79/2",
+   "1452/3"
+  ],
+  "same PAIN": [
+   "81/2",
+   "99/1"
+  ],
+  "next NEW_RESULT+UNDER_EXECUTION": [
+   "92/3",
+   "147/3"
+  ],
+  "next PAIN+UNDER_EXECUTION": [
+   "209/1",
+   "241/3"
+  ],
+  "same NEW_RESULT+PAIN": [
+   "236/3"
+  ],
+  "same FATIGUE+PAIN": [
+   "328/1",
+   "1954/2"
+  ],
+  "same FATIGUE": [
+   "355/2",
+   "886/4"
+  ],
+  "next FATIGUE": [
+   "355/2",
+   "681/2"
+  ],
+  "next NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "393/2",
+   "641/1"
+  ],
+  "next NO_FACTS": [
+   "681/3"
+  ],
+  "same FATIGUE+NEW_RESULT": [
+   "781/2",
+   "1094/2"
+  ],
+  "same PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   "1094/1"
+  ],
+  "same NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   "1210/3",
+   "1580/2"
+  ],
+  "same PAIN+PAUSE": [
+   "1550/3"
+  ],
+  "next FATIGUE+PAIN": [
+   "1685/2",
+   "1954/2"
+  ],
+  "same NEW_RESULT+PAUSE": [
+   "1881/5"
+  ],
+  "next NEW_RESULT+PAUSE": [
+   "1881/5"
+  ]
+ },
+ "seconds": 808.108
+}
+
+real	13m28.648s
+user	13m18.232s
+sys	0m7.467s

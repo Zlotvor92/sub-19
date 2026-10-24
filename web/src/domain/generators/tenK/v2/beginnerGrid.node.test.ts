@@ -14,7 +14,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL, logCompared } from '@/test/level';
-import { expectByDays, expectCounts, GRID_TIMEOUT } from './level.harness.node.test.ts';
+import { expectByDays, expectCounts, GRID_TIMEOUT, p08Errors } from './level.harness.node.test.ts';
 import {
   hashesAgain,
   only,
@@ -83,7 +83,8 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
     byDays(
       (n) => [g.stats[n].beginnerT, g.stats[n].taperT],
       [
-        [2184, 432],
+        // 10K-08 (T1): 3 dana 2184 / 432 → 2634 / 540.
+        [2634, 540],
         [1050, 378]
       ]
     );
@@ -111,8 +112,9 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
   it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja; ned 1 ispod obima, D25, DOSE_DROPPED', () => {
     // 81bd351: [1512, 588, 192, 1.229, 1200, 0, 774, 0], [1890, 324, 240, 1.281, 1116, 0, 378, 0].
     const table = [
-      [1512, 588, 2580, 1.227, 462, 0, 378, 0],
-      [1890, 324, 168, 1.28, 192, 0, 0, 0]
+      // 10K-08 (T1): CAPACITY_LIMITED 588 / 324 → 810 / 594, vrh/start 1,227 / 1,28 → 1,187 / 1,251.
+      [1512, 810, 2532, 1.187, 462, 0, 378, 0],
+      [1890, 594, 168, 1.251, 192, 0, 0, 0]
     ];
     // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti b13ca17).
     const row = (n: 3 | 4): number[] => statsRow(g.stats[n]);
@@ -122,15 +124,17 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
         (n) => row(n).filter((_, i) => i !== 3),
         table.map((r) => r.filter((_, i) => i !== 3))
       );
-    expect(
-      DAYS.map((n) => {
+    // 10K-08 (T1): ned 1 ispod obima uz dugi 90 min 0 / 0 → 108 / 54 (lagan ≤ 0,8 × dugi).
+    byDays(
+      (n) => {
         const s = g.stats[n];
         return [s.belowTime, s.belowShare, s.longShorter, s.doseDropped, s.doseDroppedShare];
-      })
-    ).toEqual([
-      [0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0]
-    ]);
+      },
+      [
+        [108, 0, 0, 0, 0],
+        [54, 0, 0, 0, 0]
+      ]
+    );
   });
 
   it('D29: trčanje/hodanje odbijeno (svaki 20. ulaz mreže sa runWalk true)', () => {
@@ -157,6 +161,16 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
     logCompared('tenK.v2.segment03b-beginner.baseline', Object.keys(g.rows));
     expect(g.rows).toEqual(only(base.plans, ids));
   });
+  it('10K-08: planovi promenjeni prema b9c4728 (segment08.changed-b9c4728.json) imaju drugi heš; ostale porede starije regresije', () => {
+    expect(
+      p08Errors(
+        'gen',
+        Object.entries(g.h81now).map(([key, hash]) => ({ key, hash })),
+        true
+      ).slice(0, 10)
+    ).toEqual([]);
+  });
+
   it('regresija 04: generate = construct(input, []) — ceo plan početnika bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 3402', () => {
     const fx = JSON.parse(readFileSync(HASHES_B13, 'utf8')) as {
       against: string;

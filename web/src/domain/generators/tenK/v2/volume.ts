@@ -2,9 +2,9 @@
    faktori cilja rasterećenja, tapera i trkačke nedelje; D22 poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula. */
 
-import { longShareCap10, longTimeCap10 } from './lengths.ts';
+import { buildEasyBounds10, longShareCap10, longTimeCap10 } from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
-import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { daysForKm, type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import { deloadWeekOf } from './steps.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
 
@@ -12,49 +12,55 @@ const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
 
 /** D22: šta je seklo spuštenu nedelju izgradnje — dugi na 105 min ('time') i/ili na udelu D17 ('share'). */
-export type CapacityLimit = 'time' | 'share';
+export type CapacityLimit = 'time' | 'share' | 'easy';
 
 /**
- * D22: poruka CAPACITY_LIMITED — imenuje stvarno ograničenje i preporučuje više dana samo kad veći broj
- * dana postoji u tabeli D17 (6 dana: bez preporuke; početnik: samo 3–4 dana, D28).
+ * D22: poruka CAPACITY_LIMITED — imenuje stvarno ograničenje i preporučuje više dana samo za brojeve dana iz tabele
+ * D17 (početnik: D28) čiji red podržava trenutni obim (policy.ts `daysForKm`, ista funkcija kao ulaz; 10K-07) — bez
+ * takvog broja nema preporuke.
  */
 export function capacityMessage(
   runDays: number,
+  currentWeeklyKm: number,
   rule: PlanRule,
   limits: readonly CapacityLimit[]
 ): string {
   const min = `${Math.round(rule.longMaxSec / 60)} min`;
   const share = `${Math.round(rule.longMaxShare * 100)} % nedelje`;
-  const what =
-    limits.length === 2
-      ? ` uz dugi ≤ ${min} i ≤ ${share}`
-      : limits[0] === 'time'
-        ? ` uz dugi ≤ ${min}`
-        : limits[0] === 'share'
-          ? ` uz dugi ≤ ${share}`
+  const long = limits.filter((l) => l !== 'easy');
+  const dugi =
+    long.length === 2
+      ? `dugi ≤ ${min} i ≤ ${share}`
+      : long[0] === 'time'
+        ? `dugi ≤ ${min}`
+        : long[0] === 'share'
+          ? `dugi ≤ ${share}`
           : '';
-  const more = rule.dayCounts.filter((n) => n > runDays);
-  const advice =
-    more.length === 0
-      ? ''
-      : `; preporuka ${more.length === 1 ? more[0] : `${more[0]}–${more[more.length - 1]}`} dana`;
+  // T1 (10K-08): lagan ≤ 0,8 × dugi.
+  const easy = limits.includes('easy')
+    ? `lagan ≤ ${Math.round(P.lengths.easyMaxLongShare * 100)} % dugog`
+    : '';
+  const what = dugi || easy ? ` uz ${[dugi, easy].filter(Boolean).join(', ')}` : '';
+  const more = daysForKm(currentWeeklyKm, rule.beginner ? 'beginner' : 'regular').filter(
+    (n) => n > runDays
+  );
+  const advice = more.length === 0 ? '' : `; preporuka ${daysText(more)} dana`;
   return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
 }
 
+const daysText = (ns: readonly number[]): string =>
+  ns.length === 1 ? `${ns[0]}` : `${ns[0]}–${ns[ns.length - 1]}`;
+
 /**
  * D25: preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele D17 (početnik: tabele D28)
- * podržava trenutni obim (kmMin ≤ obim ≤ kmMax); prazno kad ih nema.
+ * podržava trenutni obim (policy.ts `daysForKm`, sirov obim — ista funkcija kao ulaz; 10K-07); prazno kad ih nema.
  */
 export function fewerDaysAdvice(runDays: number, currentWeeklyKm: number, rule: PlanRule): string {
-  const km10 = to10(currentWeeklyKm);
-  const row = (n: number): { kmMin: number; kmMax: number } =>
-    rule.beginner ? P.beginner.days[n as 3 | 4] : P.days[n as 3 | 4 | 5 | 6];
-  const fewer = rule.dayCounts.filter(
-    (n) => n < runDays && to10(row(n).kmMin) <= km10 && km10 <= to10(row(n).kmMax)
+  const fewer = daysForKm(currentWeeklyKm, rule.beginner ? 'beginner' : 'regular').filter(
+    (n) => n < runDays
   );
   if (fewer.length === 0) return '';
-  const days = fewer.length === 1 ? `${fewer[0]}` : `${fewer[0]}–${fewer[fewer.length - 1]}`;
-  return `; preporuka ${days} dana (red ${rule.beginner ? 'D28' : 'D17'} sa manje dana podržava obim ${currentWeeklyKm} km, dugi dobija veći udeo)`;
+  return `; preporuka ${daysText(fewer)} dana (plan sa manje dana podržava obim ${String(currentWeeklyKm).replace('.', ',')} km, dugi dobija veći udeo)`;
 }
 
 /** D22: ograničenja spuštenih (fitted 'down') ne-rasteretnih nedelja izgradnje: dugi = plafon 105 min
@@ -66,6 +72,7 @@ export function capacityLimits(
 ): CapacityLimit[] {
   let time = false;
   let share = false;
+  let easy = false;
   for (const w of weeks) {
     if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') continue;
     const long = w.days.find((d) => d.role === 'long');
@@ -73,8 +80,15 @@ export function capacityLimits(
     const l10 = to10(long.workout.km);
     if (l10 === longTimeCap10(p, rule.longMaxSec)) time = true;
     if (l10 === longShareCap10(to10(w.targetKm), rule.longMaxShare)) share = true;
+    // T1 (10K-08): lagan na gornjoj granici 0,8 × dugi (lengths.buildEasyBounds10).
+    const max10 = buildEasyBounds10(l10, p).max10;
+    if (w.days.some((d) => d.role === 'easy' && to10(d.workout.km) === max10)) easy = true;
   }
-  return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
+  return [
+    ...(time ? ['time' as const] : []),
+    ...(share ? ['share' as const] : []),
+    ...(easy ? ['easy' as const] : [])
+  ];
 }
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */

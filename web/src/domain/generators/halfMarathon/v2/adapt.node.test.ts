@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { adaptHmV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { adaptBases, factsOf, painFacts, runsIn } from './adaptInputs.ts';
+import { deloadLong10 } from './lengths.ts';
 import { addDays, mustDay, weekdayOf } from './dates.ts';
 import { construct, generateHmV2 } from './generate.ts';
 import { round1, vdotFromResult } from './paces.ts';
@@ -575,8 +576,14 @@ describe('A18: rasterećenje posle smanjenja obima — dugi ≥ 4 km', () => {
     const r = adapt(p, factsOf(p, 'pause35', at), at);
     const w = r.plan.weeks[8]!;
     expect(w.deload).toBe(true);
-    expect(r.plan.weeks[7]!.days.find((d) => d.role === 'long')!.workout.km).toBe(4.5);
-    expect(w.days.find((d) => d.role === 'long')!.workout.km).toBe(4);
+    // HM-10 (T1): uz lagane ≤ 0,8 × dugi nedelja 8 ima manje laganih dana i duži dugi (7 km, bilo 4,5 km); A18
+    // pravilo dužine proverava se neposredno (deloadLong10: 4,5 km → 4 km, ne 3,6 km).
+    const prev = r.plan.weeks[7]!.days.find((d) => d.role === 'long')!.workout.km;
+    const dl = w.days.find((d) => d.role === 'long')!.workout.km;
+    expect(dl).toBeGreaterThanOrEqual(4);
+    expect(dl).toBeLessThanOrEqual(deloadLong10(Math.round(prev * 10), true) / 10);
+    expect(deloadLong10(45, true)).toBe(40);
+    expect(deloadLong10(45)).toBe(36);
   });
 });
 

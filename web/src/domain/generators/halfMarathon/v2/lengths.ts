@@ -15,6 +15,8 @@ export const EASY_MIN10 = Math.round(P.lengths.easyMinKm * 10);
 export interface LongRule {
   readonly longMaxShare: number;
   readonly longMaxSec: number;
+  /** T1 izuzetak (nedelja na minimumu, buildLengths); pravilo plana ga nosi (H15). */
+  readonly weekMinKm?: number;
 }
 
 export interface Lengths {
@@ -90,10 +92,16 @@ export function longCap10(target10: number, rule: LongRule, p: Paces, roll10 = I
   );
 }
 
-/** H7: plafon dugog tapera — 0,6 × najduži dugi plana [0,1 km]. */
+/** H7: plafon dugog tapera — 0,6 × najduži dugi plana [0,1 km]. HM-09 (B3, kao A18 deloadLong10): najmanje 4 km —
+    posle smanjenja (najduži < 6,7 km) 0,6 × bi bio kraći od laganog minimuma i taper nije izvodljiv (pouka 2);
+    validator tada upozorava TAPER_LONG_MIN. */
 export function taperLongCap10(longest10: number): number {
-  return Math.floor(P.taper.longFactor * longest10 + EPS);
+  return Math.max(EASY_MIN10, Math.floor(P.taper.longFactor * longest10 + EPS));
 }
+
+/** HM-09 (B3): dugi tapera je na minimumu 4 km iznad 0,6 × najduži (taperLongCap10). */
+export const taperLongAtMin = (long10: number, longest10: number): boolean =>
+  long10 > Math.floor(P.taper.longFactor * longest10 + EPS);
 
 /** H5: dugi rasterećenja — 0,8 × poslednji ne-rasteretni dugi [0,1 km]. A18 (adaptirana nedelja, kao 10K
     deloadLengths): najmanje 4 km — posle povratka sa dugim 4 km 0,8 × bi bio kraći od laganog minimuma. */
@@ -117,7 +125,61 @@ function withEasy(rest100: number, cap10: number, n: number): Lengths | null {
   return { long10, easy10 };
 }
 
-/** Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + `easyDays` laganih. */
+/** T1 (krug T): najkraći lagan nedelje izgradnje [0,1 km] — max(4 km, 20 min laganim tempom: srednji E, kao
+    easyWorkout). Jedna funkcija za konstruktor (buildLengths) i validator (EASY_BUILD). */
+export function buildEasyMin10(p: Paces): number {
+  const mid = (p.E.fast + p.E.slow) / 2;
+  let k = EASY_MIN10;
+  while (Math.round((k / 10) * mid) < P.lengths.easyMinSec) k++;
+  return k;
+}
+
+/** T1 (krug T): najduži lagan nedelje izgradnje uz dugi `long10` [0,1 km] — 0,8 × dugi (naniže). */
+export const buildEasyCap10 = (long10: number): number =>
+  Math.floor(P.lengths.easyLongMaxShare * long10 + EPS);
+
+/** Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + `easyDays` laganih. T1 (krug T, JEDNO mesto): dugi
+    kao i do sada (najduži dozvoljen, laganima ostaje ≥ najkraći lagan buildEasyMin10); svaki lagan ≤ 0,8 × dugi
+    (buildEasyCap10). Kad najkraći lagan ne staje ispod 0,8 × dugi (mali obim), manje laganih dana: najkasniji
+    lagani dani postaju odmor (`easy10` kraći od `easyDays`; week.easyDays, validator ROLES). Ostatak cilja koji ne
+    staje u lagane u tim granicama ne produžava dugi: nedelja nije izvodljiva sa ovim ciljem (null) — pretraga
+    cilja (volume.fit10) spušta nedelju na najbliži izvodljiv cilj (planirano < cilj po pravilu, upozorenje
+    CAPACITY_LIMITED sa preporukom više dana). Konstruktor i validator. */
+export function buildLengthsT1(
+  target10: number,
+  quality100: number,
+  easyDays: number,
+  rule: LongRule,
+  p: Paces,
+  roll10 = Infinity,
+  /** Najmanje laganih dana (podrazumevano 1; `easyDays` = bez dana odmora, week.secondQualityEasy). */
+  minEasy = 1
+): Lengths | null {
+  const min10 = buildEasyMin10(p);
+  const rest100 = target10 * 10 - quality100;
+  const cap10 = longCap10(target10, rule, p, roll10);
+  for (let k = easyDays; k >= Math.max(1, minEasy); k--) {
+    const long10 = Math.min(cap10, Math.floor((rest100 - k * min10 * 10) / 10));
+    if (long10 < EASY_MIN10) continue;
+    const easy10 = splitEasy(Math.round((rest100 - long10 * 10) / 10), k);
+    const hi10 = buildEasyCap10(long10);
+    if (easy10.every((e) => e >= min10 && e <= hi10)) return { long10, easy10 };
+  }
+  if (easyDays === 0) {
+    const long10 = Math.min(cap10, Math.floor(rest100 / 10));
+    return long10 >= EASY_MIN10 ? { long10, easy10: [] } : null;
+  }
+  return null;
+}
+
+/** T1 izuzetak (otvoreno pitanje organizatoru): nedelja NA MINIMUMU obima (H15, A9 — cilj se ne spušta ispod njega)
+    u kojoj granice T1 nisu izvodljive ni sa manje laganih dana (npr. 3 dana, 12 km: dugi ≤ 45 % = 5,4 km, lagan
+    ≥ 4 km i ≤ 0,8 × dugi) → dužine kao pre T1 (lagan ≤ dugi, pouka 2), validator upozorava EASY_BUILD_MIN_WEEK. */
+export const t1MinWeek = (target10: number, rule: LongRule): boolean =>
+  rule.weekMinKm !== undefined && target10 <= Math.round(rule.weekMinKm * 10);
+
+/** Nedelja izgradnje (JEDNO mesto): T1 (buildLengthsT1), a u nedelji na minimumu kad T1 nije izvodljiv izuzetak
+    t1MinWeek. Konstruktor i validator. */
 export function buildLengths(
   target10: number,
   quality100: number,
@@ -126,7 +188,12 @@ export function buildLengths(
   p: Paces,
   roll10 = Infinity
 ): Lengths | null {
-  return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p, roll10), easyDays);
+  return (
+    buildLengthsT1(target10, quality100, easyDays, rule, p, roll10) ??
+    (t1MinWeek(target10, rule)
+      ? withEasy(target10 * 10 - quality100, longCap10(target10, rule, p, roll10), easyDays)
+      : null)
+  );
 }
 
 /** H7: taper — dugi ≤ 0,6 × najduži dugi plana (i H13). */
@@ -196,15 +263,47 @@ export function longFor10(sec: number, p: Paces): number {
 }
 
 /** Pouka 28 (pouka 24): dugi svake nedelje [0,1 km] (null bez dugog) — osnov kotrljajuće granice; jedna
-    definicija za konstruktor (upisani dani, written.ts) i validator (dani plana). */
+    definicija za konstruktor (upisani dani, written.ts) i validator (dani plana). HM-09: `ran` (ključ = broj
+    nedelje) = najduži trčan po činjenicama — dugi te nedelje je min(upisani, trčan), 0 kad nije trčano. */
 export function longsOf10(
-  weeks: readonly { days: readonly { role: string; workout: { km: number } }[] }[]
+  weeks: readonly { index?: number; days: readonly { role: string; workout: { km: number } }[] }[],
+  ran: Readonly<Record<string, number>> = {}
 ): (number | null)[] {
-  return weeks.map((w) => {
+  return weeks.map((w, i) => {
     const l = w.days.find((d) => d.role === 'long');
-    return l ? Math.round(l.workout.km * 10) : null;
+    const r = ran[String(w.index ?? i + 1)];
+    const l10 = l ? Math.round(l.workout.km * 10) : null;
+    return r === undefined || l10 === null ? l10 : Math.min(l10, Math.round(r * 10));
   });
 }
+
+/** HM-09 (1b #5; pouka 37 i za L skoka) — JEDNA funkcija kotrljajuće granice dugog nedelje `index` sa činjenicama:
+    `ran` = najduži trčan prošlih nedelja cele poznate (steps.ranLongFor). L iz trčanog važi od nedelje 5 (nedelje
+    1–4 nose pretpostavljeni skorašnji najduži trk — ostaju kao pre); kad ništa nije trčano (L = 0), granica je
+    kao pre; ne ispod `floor10` (ranCapFloor10). Nikad labavija od granice iz upisanih dugih. Konstruktor, validator i poruka kapaciteta. */
+export function rollingCapRan10(
+  index: number,
+  weeks: readonly { index?: number; days: readonly { role: string; workout: { km: number } }[] }[],
+  ran: Readonly<Record<string, number>>,
+  recentKm: number | null | undefined,
+  floor10 = 0
+): number {
+  const plan = rollingLongCap10(index, longsOf10(weeks), recentKm);
+  const w = P.recentLong.windowWeeks;
+  if (index <= w || Object.keys(ran).length === 0) return plan;
+  const L = Math.max(
+    0,
+    ...longsOf10(weeks, ran)
+      .slice(Math.max(0, index - 1 - w), index - 1)
+      .filter((x): x is number => x !== null)
+  );
+  return L > 0 ? Math.min(plan, Math.max(stepCap10(L), floor10)) : plan;
+}
+
+/** HM-09: najmanji dugi nedelje minimuma [0,1 km] — dugi ≥ lagan (pouka 2) i ≥ 4 km: granica iz trčanog ne pada
+    ispod njega (nedelja minimuma A9 ostaje izvodljiva). */
+export const ranCapFloor10 = (weekMinKm: number, runDays: number): number =>
+  Math.max(EASY_MIN10, Math.ceil((weekMinKm * 10) / runDays - EPS));
 
 /** H7 / pouka 29: najduži dugi plana — jedna definicija za konstruktor (iz upisanih dana, written.ts) i
     validator (dani nedelja pre tapera). */

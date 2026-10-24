@@ -79,7 +79,7 @@ describe('generisanje kroz adapter', () => {
     const p = planOf(WITH_RESULT);
     expect(p.meta).toMatchObject({
       policyId: '5k-v2',
-      policyVersion: '5k-v2.10.4',
+      policyVersion: '5k-v2.12.0',
       raceDistM: 5000
     });
     expect(p.weeks).toHaveLength(10);
@@ -104,10 +104,13 @@ describe('generisanje kroz adapter', () => {
     expect(p.weeks.map((w) => w.phase)).toEqual(
       v2weeks.map((w) => (w.deload ? 'DELOAD' : MAP[w.phase]))
     );
-    expect(p.weeks[2]!.phase).toBe('DELOAD');
+    // 5k-v2.12.0 (T4): redovno rasterećenje trkača ne pre nedelje 4.
+    const dl = v2weeks.findIndex((w) => w.deload);
+    expect(dl).toBeGreaterThanOrEqual(3);
+    expect(p.weeks[dl]!.phase).toBe('DELOAD');
     expect(p.weeks[9]!.phase).toBe('TRKA');
     // Ceo izlaz v2 doslovno (osnova adaptacije, 08b); `pred` prazan (v2 nema redove predikcije).
-    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.10.4');
+    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.12.0');
     expect(p.pred).toEqual([]);
     expect(p.ulaz).toBeUndefined();
   });
@@ -228,7 +231,8 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     expect(JSON.stringify(stampForStorage(v1))).toBe(JSON.stringify(fiveK.stampPlan(v1)));
     const v2 = planOf(WITH_RESULT);
     expect(JSON.stringify(stampForStorage(v2))).toBe(JSON.stringify(v2));
-    expect(phaseReaderFor(v2)(view(v2).weeks[2], 10)).toBe('DELOAD');
+    const dl = v2.weeks.findIndex((w) => w.deload); // 5k-v2.12.0 (T4): ne pre nedelje 4
+    expect(phaseReaderFor(v2)(view(v2).weeks[dl], 10)).toBe('DELOAD');
     // 08b: plan v2 se prilagođava tokom v2 (činjenice → pregled → potvrda); v1 plan kao do sada.
     expect(isFiveKV2Plan(v2)).toBe(true);
     expect(isFiveKV2Plan(v1)).toBe(false);
@@ -266,12 +270,12 @@ describe('prikaz iz strukture (Plan tab, dan)', () => {
     const days = view(planOf(WITH_RESULT)).dated;
     const q = days.find((d) => d.id === 'g4d2')!;
     expect(q.structure?.kind).toBe('Intervali');
-    expect(coreOf(q)).toMatch(/^3 × 600 m @ \d:\d\d\/km$/);
+    expect(coreOf(q)).toMatch(/^3 × 700 m @ \d:\d\d\/km$/); // 5k-v2.12.0 (T4): I ≥ 80 % budžeta
     const rows = breakdownOrNull(q)!;
     expect(rows.map((r) => r[0])).toEqual(['Zagrevanje', 'Radni deo', 'Odmor', 'Hlađenje']);
-    expect(rows[2]![1]).toBe('3 min kaskanje');
+    expect(rows[2]![1]).toBe('3:30 min kaskanje');
     const easy = days.find((d) => d.id === 'g4d6')!;
-    expect(coreOf(easy)).toBe('Lagano 6.8 km'); // bez radnog dela → naslov
+    expect(coreOf(easy)).toBe('Lagano 7,9 km'); // bez radnog dela → naslov (5k-v2.12.0: obim T1/T4)
   });
 
   it('po osećaju: napor (RPE) umesto tempa, ništa izmišljeno', () => {
@@ -317,11 +321,11 @@ describe('izvoz na sat iz strukture', () => {
   it('sa rezultatom: ponavljanja sa oporavkom, E opseg, distanca/vreme po osnovi', () => {
     const b = watch(planOf(WITH_RESULT), '2026-11-23', 6);
     const q = b.events.find((e) => e.externalId === 'sub19-g4d2')!;
-    expect(q.name).toBe('I: 3 × 600 m (oporavak 180 s lagano)');
+    expect(q.name).toBe('I: 3 × 700 m (oporavak 3:30 lagano)'); // 5k-v2.12.0 (T4)
     expect(q.description).toMatch(
-      /^Zagrevanje\n- [\d.]+km \d:\d\d-\d:\d\d\/km Pace\n\nRadni deo 2x\n- 600mtr \d:\d\d\/km Pace\n- Oporavak kaskanje 3m /
+      /^Zagrevanje\n- [\d.]+km \d:\d\d-\d:\d\d\/km Pace\n\nRadni deo 2x\n- 700mtr \d:\d\d\/km Pace\n- Oporavak kaskanje 210s /
     );
-    expect(q.description).toMatch(/\n\nPoslednja deonica\n- 600mtr \d:\d\d\/km Pace\n\nHlađenje\n/);
+    expect(q.description).toMatch(/\n\nPoslednja deonica\n- 700mtr \d:\d\d\/km Pace\n\nHlađenje\n/);
     expect(b.skipped).toBe(0);
   });
 

@@ -1,0 +1,34 @@
+{
+ "dist": "10K",
+ "from": 0,
+ "to": 3000,
+ "rejected": 153,
+ "out": {
+  "LIMITS": {
+   "lock-ranije": 92,
+   "ostalo": 53
+  },
+  "LIMITS (nerealno)": {
+   "lock-ranije": 5,
+   "ostalo": 3
+  }
+ },
+ "ex": {
+  "LIMITS lock-ranije": [
+   "i=34 koraka 5",
+   "i=69 koraka 4"
+  ],
+  "LIMITS ostalo": [
+   "i=274 koraka 3",
+   "i=291 koraka 3"
+  ],
+  "LIMITS (nerealno) lock-ranije": [
+   "i=696 koraka 4",
+   "i=957 koraka 3"
+  ],
+  "LIMITS (nerealno) ostalo": [
+   "i=1905 koraka 3",
+   "i=2131 koraka 3"
+  ]
+ }
+}

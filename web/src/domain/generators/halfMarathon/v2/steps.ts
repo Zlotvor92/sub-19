@@ -122,6 +122,12 @@ export const restartWeeks = (steps: readonly HmV2AdaptStep[]): Set<number> =>
     ])
   );
 
+/** T3 (krug T): nedelja `w` je posle novog starta (A3, pauza ≥ 35 dana / restart) — taper zadržava jedan kvalitet
+    (quality.restartTaperT), trkačka nedelja kratko oštrenje kao bez pauze (week.sharpenerAllowed). Konstruktor i
+    validator. */
+export const newStartAt = (steps: readonly HmV2AdaptStep[], w: number): boolean =>
+  steps.some((s) => s.restart && s.fromWeek <= w);
+
 /** A17 (pouka 22): najviše uzastopnih nedelja izgradnje od ukinutog rasterećenja (uključujući ukinutu
     nedelju) do sledećeg redovnog rasterećenja — H5 izuzetak 4 + ukinuta nedelja. framesFor i validator. */
 export const A17_MAX_RUN = P.deload.exceptionRun + 1;
@@ -254,6 +260,9 @@ export function protectedTestDate(
   guarded: ReadonlySet<string>
 ): IsoDate | null {
   if (steps.length === 0) return null;
+  // HM-09 (C3): zaštićen test upisanog plana (činjenica koraka) ostaje — i kad se zaključavanje ne ponavlja.
+  const kept = [...steps].reverse().find((s) => s.testKept !== undefined)?.testKept;
+  if (kept !== undefined) return kept;
   const before = framesFor(
     base,
     pattern,
@@ -335,6 +344,30 @@ export function deloadRefLong10(steps: readonly HmV2AdaptStep[], w: number): num
     if (s.deload && s.deloadRefLongKm !== undefined && deloadWeekOf(s) === w)
       r = Math.round(s.deloadRefLongKm * 10);
   return r;
+}
+
+/** HM-09 (pouka 28 × 37) — JEDNA funkcija: najduži trčan po činjenicama koji važi za L skoka nedelje `w` — koraci
+    čiji je fromWeek ≤ w — samo cele buduće nedelje koraka (kasniji korak preklapa raniji); tekuća i prošle nedelje
+    se rekonstruišu kao kad su sastavljene. Konstruktor i validator (lengths.longsOf10). */
+export function ranLongFor(
+  steps: readonly HmV2AdaptStep[],
+  w: number
+): Readonly<Record<string, number>> {
+  let r: Record<string, number> = {};
+  for (const s of steps) if (s.ranLongKm && s.fromWeek <= w) r = { ...r, ...s.ranLongKm };
+  return r;
+}
+
+/** HM-09 (B1/B2, pouka 24) — JEDNA funkcija „dugi reference rasterećenja nedelje w" [0,1 km] za konstruktor i
+    validator: poslednji UPISANI dugi ne-rasteretne izgradnje pre nedelje (`lastLong10`, iz upisanih dana novog plana);
+    kad ga nema, a nedelja je rasterećenje — referenca koraka za tu nedelju (deloadRefLong10). Ne pamti se između
+    nedelja: svako rasterećenje bez upisanog dugog čita sopstvenu referencu. */
+export function longRef10(
+  lastLong10: number | null,
+  steps: readonly HmV2AdaptStep[],
+  w: { index: number; deload: boolean }
+): number | null {
+  return w.deload && lastLong10 === null ? deloadRefLong10(steps, w.index) : lastLong10;
 }
 
 /** Pouka 28/34 (Faza 4a N10.3, oblik maratona): skorašnji najduži trk kao dugi „nedelje 0" kotrljajuće granice —

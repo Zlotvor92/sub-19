@@ -12,6 +12,9 @@ import { adaptFiveKV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import { initialStep } from '../runWalk.ts';
+import { mustDay } from '../dates.ts';
+import { validatePlan } from '../validate.ts';
+import { writtenWeeks } from '../written.ts';
 import type { AdaptChange, AdaptReason, FiveKV2Plan, PlanWeek, RunWalkWeek } from '../types.ts';
 import type { GenPlanState, IsoDate, LogEntry } from '../../exchange.ts';
 import {
@@ -279,27 +282,49 @@ function sameShape(a: AnyV2Plan, b: AnyV2Plan): boolean {
   );
 }
 
+/** 5k-v2.11.0 (Z4): kontinuirani plan se spaja JEDNIM spajanjem jezgra (`written.writtenWeeks`, kao adaptacija):
+ *  prošla nedelja različita od verzije i nedelja sa zadržanim danima su mešovite, i kad verzija nema adaptaciju
+ *  (ranije su se tada mešovite nedelje gubile, pa je vraćen plan kršio validator). Granica zaštite = danas. */
 function mergeContinuous(
   cur: FiveKV2Plan,
   snap: FiveKV2Plan,
   keep: (d: string) => boolean,
   today: IsoDate
 ): FiveKV2Plan {
-  const m = mergeWeeks(cur.weeks, snap.weeks, keep, today);
+  const m = writtenWeeks(snap.weeks, {
+    weeks: cur.weeks,
+    keep: (d) => keep(d.date),
+    asOf: mustDay(today),
+    at: today
+  });
+  const base = copy(snap);
+  if (m.mixed.length === 0) return { ...base, weeks: m.weeks };
+  const ad = base.adaptation;
   return {
-    ...copy(snap),
+    ...base,
     weeks: m.weeks,
-    ...(snap.adaptation
-      ? {
-          adaptation: {
-            ...snap.adaptation,
-            mixedWeeks: [...new Set([...snap.adaptation.mixedWeeks, ...m.mixed])].sort(
-              (a, b) => a - b
-            )
-          }
-        }
-      : {})
+    adaptation: {
+      asOf: ad && ad.asOf > today ? ad.asOf : today,
+      steps: ad?.steps ?? [],
+      lockedDayIds: ad?.lockedDayIds ?? [],
+      mixedWeeks: [...new Set([...(ad?.mixedWeeks ?? []), ...m.mixed])].sort((a, b) => a - b)
+    }
   };
+}
+
+/** Z4: zašto spoj vraćanja nije plan (prazno = vraća se): pravila validatora sa greškom i kod odbijanja sledeće
+ *  adaptacije bez činjenica (`NEXT:<kod>`). Merenje razloga: docs/generators-v2/audit/fixes/5K/fiveK-restore.ts. */
+export function restoreProblems(merged: AnyV2Plan, today: IsoDate): string[] {
+  const rules = [
+    ...new Set(
+      validatePlan(merged)
+        .filter((v) => v.severity === 'error')
+        .map((v) => v.rule)
+    )
+  ];
+  if (rules.length > 0) return rules;
+  const next = adaptFiveKV2(merged as unknown, {}, today);
+  return next.ok ? [] : next.reasons.map((x) => `NEXT:${x.code}`);
 }
 
 /** Vraćanje sačuvane verzije (`graftFuturePlan`): budući dani posle danas iz verzije, osim urađenih i ručno izmenjenih
@@ -315,11 +340,16 @@ export function restoreMerge(
     moves?: Readonly<Record<string, unknown>>;
   } = {}
 ): GenPlanState {
-  const refuse = (why: string): GenPlanState => ({
+  const refuse = (why: string, problems: string[] = []): GenPlanState => ({
     ...current,
     meta: {
       ...(current.meta ?? {}),
-      futureChanges: { changedDays: 0, conflicts: [why] }
+      // `problems` (interno, ne prikazuje se): pravila/kodovi zbog kojih se ne vraća (restoreProblems).
+      futureChanges: {
+        changedDays: 0,
+        conflicts: [why],
+        ...(problems.length > 0 ? { problems } : {})
+      }
     } as GenPlanState['meta']
   });
   const cur = v2Of(current);
@@ -358,6 +388,14 @@ export function restoreMerge(
           : null
     };
   } else merged = mergeContinuous(cur as FiveKV2Plan, snap as FiveKV2Plan, keep, today);
+  // Z4 (pojašnjenje organizatora): vraćanje = poništi prilagođavanje — primenjuje se kad spoj prolazi validator jezgra
+  // i sledeću adaptaciju (kao svaka adaptacija); inače odbijanje sa jasnom porukom.
+  const problems = restoreProblems(merged, today);
+  if (problems.length > 0)
+    return refuse(
+      'Sačuvana verzija se ne može vratiti: spoj urađenih dana i sačuvane verzije ne bi bio ispravan plan. Plan ostaje kakav jeste.',
+      problems
+    );
   const stored = storedPlan(generatedPlan(merged), prefixOf(current));
   const before = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   let changedDays = 0;

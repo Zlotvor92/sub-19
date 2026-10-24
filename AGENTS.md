@@ -12,6 +12,12 @@ Sve izmene, od sada pa nadalje, rade se na grani **`claude/generator-isolation-5
 - Grana sadrži sva četiri izdvojena generatora (5K, 10K, polumaraton, maraton). Stanje izdvajanja:
   `docs/generator-isolation/STATUS.md`.
 
+## Vreme — OBAVEZNO
+
+Sva vremena koja se javljaju korisniku (iz baze, logova, CI-ja, bilo odakle) navode se
+isključivo po beogradskom vremenu (`Europe/Belgrade`, CET/CEST), ne u UTC. U SQL-u:
+`... at time zone 'Europe/Belgrade'`.
+
 ## Stalni uslovi za v2 generatore (sve distance)
 
 Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
@@ -40,12 +46,17 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
   <polazni SHA>` (vitest sam bira testove koji uvoze promenjene fajlove; sa `TEST_FULL=1` i pun nivo tih testova) +
   E2E dirane distance. Pun nivo celog foldera samo kad je menjan generator te distance:
   `TEST_FULL=1 npx vitest run --project node <folder>`.
+- v1 generatori (podrazumevani u produkciji, kod se ne menja): testovi poređenja sa referencama starog koda su
+  vitest projekat `v1` — u brzom nivou (`npm run check`, `--changed`) isključen, u punom uključen. Kad se dira v1 (folderi
+  distanci van `v2/`, `select.ts`, `handoff.ts`, zajednički domen, `src/test/`): još `npm run test:v1` (pun) ili
+  `TEST_V1=1 npx vitest run --project v1` (brz).
   `npm run check:full` (45–75 min, skoro sve su mreže generatora) se lokalno pokreće SAMO kad je menjan domenski kod
   (`web/src/domain/**` — generatori v1/v2, zajednički domen, reference) ili test infrastruktura, i tada jednom, pre
   mergea u main; nikad po segmentu. Izmene koje ne diraju `src/domain/**` ni test infrastrukturu (ekrani, stil, tekst,
   `features/`, `components/`, dokumentacija): `npm run check` + E2E dirnutih ekrana + `npm run build` — bez lokalnog
-  `check:full`, ni pre mergea. Pun nivo u svakom slučaju pokreće CI (`npm test`, 6 paralelnih delova) na svaki push
-  koda (push samo `docs/**` ga ne pokreće; dok run radi, čeka samo najnoviji push iste grane); u main tek kad je CI zelen.
-  Nivoi, uzorci i merenja: `docs/testing/TEST-SPEED.md`.
+  `check:full`, ni pre mergea. Pun nivo u svakom slučaju pokreće CI na svaki push koda (`npm test` bez projekta `v1`,
+  6 delova uravnoteženih po trajanju; projekat `v1` poseban posao kad se od poslednjeg zelenog run-a menja nešto što
+  v1 koristi, na `main`-u uvek; push samo `docs/**` ga ne pokreće; dok run radi, čeka samo najnoviji push iste grane);
+  u main tek kad je CI zelen. Nivoi, uzorci i merenja: `docs/testing/TEST-SPEED.md`.
 - Sabotaže samo kroz `web/scripts/sabotage.mjs`, na fajlovima koji treba da ih uhvate, sa `--bail=1`; nikad ceo
   skup. Uputstvo: `docs/testing/SABOTAGE.md`.

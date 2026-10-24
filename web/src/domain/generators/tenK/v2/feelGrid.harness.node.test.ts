@@ -20,7 +20,13 @@ import {
   runPlanGrid,
   summaryBad
 } from './planGrid.harness.node.test.ts';
-import { expectByDays, GRID_TIMEOUT, missingParts, P35_PLANS } from './level.harness.node.test.ts';
+import {
+  expectByDays,
+  GRID_TIMEOUT,
+  missingParts,
+  P35_PLANS,
+  p08Errors
+} from './level.harness.node.test.ts';
 
 export const FEEL_PARTS = 4;
 /** Brz nivo: svaki K-ti ulaz unutar (broj dana × nedelje). */
@@ -87,21 +93,23 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
       byDays(
         (n) => [g.stats[n].testDeload, g.stats[n].testDeloadLong, g.stats[n].testDeloadUp],
         [
+          // 10K-08 (T1): duži dugi izgradnje (za stvaran broj laganih dana) → češće skraćen dugi rasterećenja sa testom.
           [540, 144, 0],
-          [756, 36, 0],
-          [864, 18, 0],
+          [756, 72, 0],
+          [864, 36, 0],
           [1080, 36, 0]
         ]
       );
-      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 36, 18, 36]);
+      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 72, 36, 36]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja; ned 1 ispod obima (105 min / udeo), D25, DOSE_DROPPED (od toga udeo)', () => {
       const table = [
-        [1980, 864, 48, 1.229, 288, 0, 36, 0],
-        [2772, 1350, 36, 1.215, 0, 0, 0, 0],
-        [3168, 930, 0, 1.261, 0, 0, 0, 0],
-        [3960, 846, 0, 1.238, 0, 0, 0, 0]
+        // 10K-08 (T1): CAPACITY_LIMITED 864 / 1350 / 930 / 846 → 1128 / 2046 / 1398 / 1404, vrh/start niži.
+        [1980, 1128, 384, 1.186, 288, 0, 36, 0],
+        [2772, 2046, 96, 1.155, 0, 18, 0, 0],
+        [3168, 1398, 0, 1.224, 0, 18, 0, 0],
+        [3960, 1404, 0, 1.204, 0, 180, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -116,12 +124,14 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
           const s = g.stats[n];
           return [s.belowTime, s.belowShare, s.longShorter, s.doseDropped, s.doseDroppedShare];
         },
-        // 06f (pouka 35): D25 (kolona 3) 0 / 78 / 78 / 132 → 0 / 36 / 24 / 78 planova.
+        // 06f (pouka 35): D25 (kolona 3) 0 / 78 / 78 / 132 → 0 / 36 / 24 / 78 planova. 10K-07 (F3): D25 obuhvata i dan
+        // testa → 144 / 228 / 204 / 294.
         [
-          [396, 0, 0, 84, 0],
-          [660, 132, 36, 156, 6],
-          [396, 0, 24, 0, 0],
-          [396, 0, 78, 0, 0]
+          // 10K-08 (T1): ned 1 ispod obima i uz udeo D17 (lagan ≤ 0,8 × dugi).
+          [462, 132, 108, 84, 0],
+          [0, 1518, 222, 276, 186],
+          [660, 66, 156, 42, 0],
+          [792, 0, 270, 0, 0]
         ]
       );
     });
@@ -142,15 +152,27 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
       expect(only(g.rows, keep)).toEqual(only(base.plans, keep));
     });
 
+    it('10K-08: planovi promenjeni prema b9c4728 (segment08.changed-b9c4728.json) imaju drugi heš; ostale porede starije regresije', () => {
+      expect(
+        p08Errors(
+          'gen',
+          Object.entries(g.h81now).map(([key, hash]) => ({ key, hash })),
+          true
+        ).slice(0, 10)
+      ).toEqual([]);
+    });
+
     it('regresija 03b: ceo plan po osećaju bajt-isti kao 81bd351 (heš bez oznake verzije) za svih 11 880', () => {
       const fx = read<{ against: string; feel: Record<string, number> }>(HASHES_81);
       expect(fx.against).toBe('81bd351');
       expect(Object.keys(fx.feel).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.81bd351.feel', Object.keys(g.h81));
-      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
-      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id])).toEqual(
-        Object.keys(g.h81).filter((id) => P35_PLANS.has(id))
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717; 10K-07: i planovi sa uzrokom cause07
+      // (posle undo07), ostali bajt-isti.
+      const no07 = (id: string): boolean => !g.c07[id];
+      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id] && no07(id))).toEqual(
+        Object.keys(g.h81).filter((id) => P35_PLANS.has(id) && no07(id))
       );
     });
     it('regresija 04: generate = construct(input, []) — ceo plan po osećaju bajt-isti kao b13ca17 (heš bez oznake verzije) za svih 11880', () => {
@@ -159,9 +181,11 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
       expect(Object.keys(fx.feel).sort()).toEqual(all.map((c) => c.id).sort());
       expect(Object.keys(g.h81).sort()).toEqual([...ids].sort());
       logCompared('tenK.v2.b13ca17.feel', Object.keys(g.h81));
-      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717.
-      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id])).toEqual(
-        Object.keys(g.h81).filter((id) => P35_PLANS.has(id))
+      // 06f (pouka 35): menjaju se tačno planovi sa nedeljom pouke 35 na 7ba9717; 10K-07: i planovi sa uzrokom cause07
+      // (posle undo07), ostali bajt-isti.
+      const no07 = (id: string): boolean => !g.c07[id];
+      expect(Object.keys(g.h81).filter((id) => g.h81[id] !== fx.feel[id] && no07(id))).toEqual(
+        Object.keys(g.h81).filter((id) => P35_PLANS.has(id) && no07(id))
       );
     });
 

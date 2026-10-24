@@ -1,0 +1,440 @@
+{
+ "input": "/home/user/sub-19/docs/hm-v2/artifacts/segment-09/sabotage-09.json",
+ "head": "a3931a0",
+ "level": "brz",
+ "bail": true,
+ "parallel": 3,
+ "vitestArgs": [],
+ "durationS": 46.1,
+ "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+ "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "09-1 B2 referenca samo bez upisanog dugog (assess)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09: jedan vlasnik reference dugog rasterećenja (B1, B2) > B2: bol 8 (odmor pokriva dugi ned 1) + umor u ISTOM koraku → rasterećenje ned 2 sa referencom",
+    "message": "Error: Nedelja 2: nijedan cilj od 16 km naviše ne može da se sastavi po pravilima."
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "743eff7d664403562956fd74cd661f7d75f3b4f5ff8971ff2dc8b34789969872",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.5
+  },
+  {
+   "index": 2,
+   "name": "09-2 B1 validator pamti referencu (dve definicije)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09: jedan vlasnik reference dugog rasterećenja (B1, B2) > B1: recentLongRunKm 12, bol → umor → umor: rasterećenje ned 3 sudi sopstvenom referencom",
+    "message": "Error: DELOAD_LONG: Dugi rasterećenja 11.2 km ≠ 10.5 km (0,8 × poslednji, H5; skraćen samo da lagani ostanu ≥ 4 km, HI14)."
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "d1ae57a58fba3e91722a13aa10a15b534f82a23833a71bfe27705b7b0b1cd8bc",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2
+  },
+  {
+   "index": 3,
+   "name": "09-3 B3 dugi tapera bez poda 4 km",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 B3: taper posle smanjenja — dugi tapera najmanje 4 km > b-d5-12w-25km-e390-A u 3 koraka: najduži 6,6 km → taper prihvaćen, dugi 4 km, TAPER_LONG_MIN",
+    "message": "AssertionError: expected 39 to be 40 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "2eb640f32f26981033cec6d68eff3f7a1e8650fd01832269c1703d175d941ad8",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.2
+  },
+  {
+   "index": 4,
+   "name": "09-4 L skoka iz planiranog, ne trčanog",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 1b #5: L skoka dugog iz stvarno trčanog (pouka 37 i za pouku 28) > 6 d 75 km, painPause asOf 2027-01-10: ned 12 dugi ≤ max(1,1 L, L + 1) iz trčanog (8,5 km)",
+    "message": "AssertionError: expected 214 to be less than or equal to 95"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "e0582de939164522df7f86ddaa25358b529440e0df0ee9bc7b7ab72b6a906d7f",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.5
+  },
+  {
+   "index": 5,
+   "name": "09-7 pouka 35 u taperu isključena",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 1b #1/#2: taper — dva dana kvaliteta i dugi > mreža (svaki 41. plan): taper bez dva dana kvaliteta dužih od dugog; „ne sme biti duži\" samo kad nije",
+    "message": "AssertionError: expected [ …(40) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "3fc3c8e1c05781aad56c28a0b6f412be60f88394e150090dacf8b14c38c2c5d5",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.4
+  },
+  {
+   "index": 6,
+   "name": "09-8 napomena tapera uvek „ne sme biti duži\"",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 1b #1/#2: taper — dva dana kvaliteta i dugi > mreža (svaki 41. plan): taper bez dva dana kvaliteta dužih od dugog; „ne sme biti duži\" samo kad nije",
+    "message": "AssertionError: expected [ Array(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "c919fe7832fd62ea2fd4dae02777a6619fb13b0a64613a830eae1782d2c06322",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.4
+  },
+  {
+   "index": 7,
+   "name": "09-Z1 kvalitet otpada i uz višak ≤ 10 %",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 Z1: mešovita nedelja — kvalitet ostaje uz upisani višak ≤ 10 % > d4-10w-35km-v50-C-sat, over120, asOf 2026-11-09: kvalitet ned 2 ostaje, MIXED_WEEK_OVER",
+    "message": "AssertionError: expected [ '2026-11-10' ] to deeply equal [ '2026-11-10', '2026-11-12' ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "1870ae0935c034f1e756a432a0c6b81d96009df89a7b229e5b1b8eed812e0adf",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7
+  },
+  {
+   "index": 8,
+   "name": "09-Z2 userText ne skida oznake",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/userText.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/userText.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/userText.node.test.ts",
+    "test": "HM-09 Z2: userText > primeri: oznake otpadaju, ostali delovi zagrade ostaju, decimale",
+    "message": "AssertionError: expected 'Plafon 10 % (, odstupanje); dugi skra…' to be 'Plafon 10 % (odstupanje); dugi skraće…' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "d94c867a6a58d13ff6046f82dacb201f7702966b58a9df0c468bbf992237d99d",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.4
+  },
+  {
+   "index": 9,
+   "name": "09-Z3 Forma bez opsega VDOT",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/form.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/form.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/form.node.test.ts",
+    "test": "HM-09 Z3: Forma čita odluku jezgra o rezultatu (assess.resultUse) > owner T1: početnik, trka 5 km 36:00 (VDOT 24,7 van 30–80) — jezgro ignoriše, Forma ne piše „čeka\"",
+    "message": "AssertionError: expected 'pending' to be 'old' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "3130503d0ef4aae6e090e7cbb7f4437b00ced2ebaf03f2b99626a678540ef8a4",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 18.5
+  },
+  {
+   "index": 10,
+   "name": "09-Z4 vraćanje bez validatePlan",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "src/domain/generators/halfMarathon/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 Z4: vraćanje verzije = spoj → validatePlan (jezgro) > d3-r-10w under50 +8 dana: spoj krši pravila plana → odbijanje sa razlogom",
+    "message": "TypeError: .toMatch() expects to receive a string, but got undefined"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "c9006e0f54cfde5e5581607401add647b489371d688a07873167adbfcd0e88d4",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 8.6
+  },
+  {
+   "index": 11,
+   "name": "09-Z5b početnik iznad opsega odbijen",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/app/handoffTarget.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/app/handoffTarget.node.test.ts",
+    "test": "HM-09 Z5b: početnik izvora iznad opsega početnika cilja > MAR v2 početnik 45 km → ponuda HM v2 postoji (plan bez oznake početnika)",
+    "message": "AssertionError: expected 'Početnik sa 4 dana trčanja: trenutni …' to be undefined"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "5953df78662aab771fcfa255e9d61fb1882ae1112ab993bc4463a13cfc4cd61f",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 22.3
+  },
+  {
+   "index": 12,
+   "name": "09-F6 invarijanta bez izuzetka pouke 32",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/gridInvariants.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 fuzz F6: invarijanta DELOAD_LONG zna izuzetak pouke 32 (dugi podignut zbog testa) > #8208: nedelja 4 dugi 10,2 > 0,8 × 12,6 uz napomenu „podignut\" → bez DELOAD_LONG",
+    "message": "AssertionError: expected [ 'F6: ned 4' ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "23831ac513d40ab0207e4b2b1d122c89d9b179b5ea6c457138b4374d0b5e4b56",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.8
+  },
+  {
+   "index": 13,
+   "name": "09-Z6 LIMITS sudi zaštićenom danu",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 dopuna lanaca: Z6, Z7, Z8, C7 > Z6: dan kvaliteta zaključan u ranijem koraku pa prošao (≤ asOf) u periodu bola nije LIMITS",
+    "message": "AssertionError: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LIMITS: Kvalitet ili test na dan zabrane kvaliteta (A3/A4).\",\"week\":5}]: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "b4751ea3a9980b1b8b26e35d64671b1cfbdc9179019ceb23e6fa8f3bb259c7d0",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.6
+  },
+  {
+   "index": 14,
+   "name": "09-Z7 manjak ponovo seče",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 dopuna lanaca: Z6, Z7, Z8, C7 > Z7: ista adaptacija dvaput (manjak, iste činjenice, isti asOf) ne seče cilj ponovo",
+    "message": "AssertionError: expected [ Array(14) ] to deeply equal [ 40, 42.4, 44.9, 28.7, 31.6, …(9) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "59c30832bf45a0082720cd22b730f66a2fa83ac8c7fb7e85be013876cf3c1273",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.7
+  },
+  {
+   "index": 15,
+   "name": "09-Z8 bol ponovo pravi korak",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 dopuna lanaca: Z6, Z7, Z8, C7 > Z8: bol — ista adaptacija dvaput i „sutra bez novih zapisa\" bez kaskade",
+    "message": "AssertionError: expected [ Array(14) ] to deeply equal [ Array(14) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "bb1d04e281bd23fcbaacd770b2372df268c35a9a761d4b7c2fa4099669221e5e",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.1
+  },
+  {
+   "index": 16,
+   "name": "09-C7 taper iz peakRef 0",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 C7: taper posle smanjenja bez ne-rasteretne izgradnje > osnova tapera = osnova rasterećenja (lastBuild), ne 0 → minimum nedelje",
+    "message": "AssertionError: expected +0 to be 465 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "4ea0d53248860c7103df5ecbe397c45261a1a05880e5f389f8a7703a10b14669",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.3
+  },
+  {
+   "index": 17,
+   "name": "09-C3 zaštićen test se ne pamti",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/steps.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segment09.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segment09.node.test.ts",
+    "test": "HM-09 C3: zaštićen test ostaje činjenica i u sledećem koraku (pouka 38) > test zaključan u koraku umora (nedelja testa postaje rasterećenje), pa prošao → jedan test, prihvaćeno",
+    "message": "AssertionError: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"TEST: Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, H17).\"}]: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "hashSabotaged": "2aafcbd0b3e6a602ec07b35de20340577f0a2fe36e8810c3822ae5ebf7491136",
+   "hashAfter": "d502d57915685b0bfea0839b7c81f2cf6ef80cae5baea7e5b5ee023c7d98ffc7",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.5
+  }
+ ]
+}

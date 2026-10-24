@@ -69,8 +69,9 @@ const CASES: [string, Record<string, unknown>][] = [
     inputOf({ weeks: 16, km: 60, vdot: 70, days: d[4].A.days, long: d[4].A.long, race: 'sat' })
   ],
   [
-    '4 d 40 km VDOT 70, skorašnji najduži 5 km (pouka 28)',
-    inputOf({ weeks: 10, km: 40, vdot: 70, days: d[4].A.days, recentLongRunKm: 5 })
+    // HM-10 (T1): sa skorašnjim najdužim 5 km plan se odbija (RECENT_LONG_TOO_SHORT, prag 5,5 km) — 6 km.
+    '4 d 40 km VDOT 70, skorašnji najduži 6 km (pouka 28)',
+    inputOf({ weeks: 10, km: 40, vdot: 70, days: d[4].A.days, recentLongRunKm: 6 })
   ],
   [
     '4 d 30,2 km VDOT 79 (Q2 najniže doze druge strukture skraćuje dugi: Q1 R 6 × 200)',
@@ -90,7 +91,8 @@ describe('pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone)', () => 
 
   it('pad doze zbog trajanja: napomena i upozorenje DOSE_DROPPED, plan prihvaćen', () => {
     const p = plan(
-      inputOf({ weeks: 13, km: 40, vdot: 70, days: d[6].A.days, long: d[6].A.long, race: 'sat' })
+      // HM-10 (T1): VDOT 70 više nema pad doze (drugi dan kvaliteta lagan pre pada) — VDOT 65.
+      inputOf({ weeks: 13, km: 40, vdot: 65, days: d[6].A.days, long: d[6].A.long, race: 'sat' })
     );
     const drops = p.weeks.flatMap((w) =>
       w.days.filter((x) => x.workout.dose?.step === 'drop').map(() => w)
@@ -133,9 +135,10 @@ describe('pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone)', () => 
       structure: { form: 'reps', reps: 8, repM: 200 },
       step: 'next'
     };
-    // Izuzet sopstveni dan (najniži nivo Q2) ne izuzima Q1: 2 × 1000 m skraćuje dugi ispod Q1.
+    // Izuzet sopstveni dan (najniži nivo Q2) ne izuzima Q1: Q1 R 8 × 200 m je duži od dugog uz obe strukture Q2.
+    // HM-10 (T1): dugi ostavlja mesta za najkraći lagan od 20 min, pa i 2,0 km kontinuirano ostaje 'over' (bilo 'fits').
     expect(lim.q2(q1)('T_continuous', { form: 'reps', reps: 2, repM: 1000 }, true)).toBe('over');
-    expect(lim.q2(q1)('T_continuous', { form: 'continuous', km: 2 }, true)).toBe('fits');
+    expect(lim.q2(q1)('T_continuous', { form: 'continuous', km: 2 }, true)).toBe('over');
   });
 
   it('rasterećenje sa testom: dugi naviše do trajanja testa u granicama (deloadLengths, pouka 32)', () => {

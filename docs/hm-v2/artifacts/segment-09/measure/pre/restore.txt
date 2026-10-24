@@ -1,0 +1,14 @@
+{"controlRejected":0,"flows":3168,"refused":0,"restored":3168,"invalid":1565,"nextRejected":236}
+greške validatora na vraćenom planu (broj tokova po pravilu): {"PLANNED_VS_TARGET":847,"DOSE_STALL":60,"BASE_PLATEAU":115,"SLOT_REPEAT":36,"IDENTICAL_WEEKS":18,"DOSE_JUMP":645,"LONG_ROLLING":407,"VOLUME_RULE":514,"ROLES":372,"EASY_UNEQUAL":686,"MAIN_DOSE_DECREASE":252,"LONG_SHORTER_THAN_EASY":60,"DOSE_DECREASE":106,"WARMUP":180,"COOLDOWN":180,"FRAMES":330,"PHASE_QUALITY":228,"DELOAD_SCHEDULE":33,"TEST":20,"RPE":108,"ONE_QUALITY":216,"ZONE_CAP":24,"MIXED_OVER_TARGET":37,"DOSE_DROP":16,"DELOAD_CONTENT":192,"DELOAD_LONG":147,"TRANSITION_DOSE":16,"DELOAD_PLACEMENT":22,"START_LEVEL":144,"BUILD_NO_QUALITY":27}
+sledeća adaptacija odbijena (pravilo/kod → broj): {"PLAN_VIOLATES_POLICY":482,"WEEK_INFEASIBLE":6}
+  d3-r-10w 2026-11-11 rev1 under50 +8: PLANNED_VS_TARGET@3: Planirano 30.04 km ≠ cilj 33.7 km. | DOSE_STALL@3: q1: sledeći nivo 3000 m staje u plafon, a nije uzet (H12).
+  d3-r-10w 2026-11-11 rev1 pause10 +1: PLANNED_VS_TARGET@2: Planirano 31.27 km ≠ cilj 31.8 km. | DOSE_STALL@2: q1: sledeći nivo 2500 m staje u plafon, a nije uzet (H12).
+  d3-r-10w 2026-11-11 rev1 pause10 +4: PLANNED_VS_TARGET@2: Planirano 27.77 km ≠ cilj 24 km. | LONG_ROLLING@3: Dugi 15.1 km > 14.8 km = max(1,1 × L, L + 1 km), L najduži prethodne 4 nedelje (u ned 1–4 i skorašnji najduži) (pouka 28).
+  d3-r-10w 2026-11-11 rev1 pause10 +8: PLANNED_VS_TARGET@2: Planirano 27.77 km ≠ cilj 24 km. | PLANNED_VS_TARGET@3: Planirano 28.27 km ≠ cilj 33.7 km.
+  d3-r-10w 2026-11-11 rev1 pause20 +1: ROLES@2: Dani easy@thu, easy@tue, long@sun ≠ šablon easy@tue, long@sun, q1@thu (H9). | PLANNED_VS_TARGET@2: Planirano 30.8 km ≠ cilj 31.8 km.
+  d3-r-10w 2026-11-11 rev1 pause20 +4: ROLES@2: Dani easy@thu, easy@tue, long@sun ≠ šablon easy@tue, long@sun, q1@thu (H9). | PLANNED_VS_TARGET@2: Planirano 25.9 km ≠ cilj 21 km.
+sledeća adaptacija odbijena po (snimak/scenario): {"rev1/pause10":46,"rev1/fatigue":27,"rev-adapted/pause10":46,"rev-adapted/fatigue":27,"rev1/pause20":24,"rev1/pain5":21,"rev-adapted/pause20":24,"rev-adapted/pain5":21}
+  d3-r-10w 2026-12-13 rev1 pause10 danas=2026-12-21: DOSE_STALL: q1: sledeći nivo 5000 m staje u plafon, a nije uzet (H12). | SLOT_REPEAT: q1: ista doza iste strukture, a druga struktura postoji (H12).
+  d3-r-10w 2026-12-13 rev1 fatigue danas=2026-12-21: DOSE_STALL: q1: sledeći nivo 5000 m staje u plafon, a nije uzet (H12). | SLOT_REPEAT: q1: ista doza iste strukture, a druga struktura postoji (H12).
+  d3-r-10w 2026-12-13 rev-adapted pause10 danas=2026-12-21: DOSE_STALL: q1: sledeći nivo 5000 m staje u plafon, a nije uzet (H12). | SLOT_REPEAT: q1: ista doza iste strukture, a druga struktura postoji (H12).
+  d3-r-10w 2026-12-13 rev-adapted fatigue danas=2026-12-21: DOSE_STALL: q1: sledeći nivo 5000 m staje u plafon, a nije uzet (H12). | SLOT_REPEAT: q1: ista doza iste strukture, a druga struktura postoji (H12).

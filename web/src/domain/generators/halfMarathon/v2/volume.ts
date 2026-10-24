@@ -2,8 +2,16 @@
    trkačke nedelje; poruka kapaciteta. Rad u desetinkama km. Izvodljivost proverava STVARNA konstrukcija
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula (pouke 1 i 9). */
 
-import { longKmCap10, longShareCap10, longTimeCap10, rollingLongCap10 } from './lengths.ts';
+import {
+  buildEasyCap10,
+  longKmCap10,
+  longShareCap10,
+  longsOf10,
+  longTimeCap10,
+  rollingLongCap10
+} from './lengths.ts';
 import { isBuildPhase } from './periodize.ts';
+import { userText } from './userText.ts';
 import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
 import { preStartOf } from './steps.ts';
 import type { Paces, PlanWeek, WeekFrame } from './types.ts';
@@ -12,29 +20,42 @@ const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
 
 /** Šta je seklo spuštenu nedelju izgradnje — dugi na 150 min ('time'), na udelu H15 ('share'), na 24 km
-    ('km'; HI8) i/ili na kotrljajućoj granici pouke 28 ('rolling'; HI7). */
-export type CapacityLimit = 'time' | 'share' | 'km' | 'rolling';
+    ('km'; HI8) i/ili na kotrljajućoj granici pouke 28 ('rolling'; HI7); 'recent' — kotrljajuća granica u
+    nedeljama 1–4 kad je dat skorašnji najduži (F1: stvarni razlog je skorašnji najduži). */
+export type CapacityLimit = 'time' | 'share' | 'km' | 'rolling' | 'recent' | 'easy';
 
-/** H6/HI8: poruka CAPACITY_LIMITED — imenuje stvarna ograničenja; preporučuje više dana samo kad veći broj
-    dana postoji u tabeli H15 (HI9 a: 4 dana → 5–6 dana; početnik samo 4 → 5, H17). */
+/** H6/HI8: poruka CAPACITY_LIMITED — imenuje stvarna ograničenja običnim rečima (F1); preporučuje više dana samo
+    kad veći broj dana postoji u tabeli H15 (HI9 a: 4 dana → 5–6 dana; početnik samo 4 → 5, H17). */
 export function capacityMessage(
   runDays: number,
   rule: PlanRule,
-  limits: readonly CapacityLimit[]
+  limits: readonly CapacityLimit[],
+  recentKm: number | null = null
 ): string {
   const text: Record<CapacityLimit, string> = {
-    time: `${Math.round(rule.longMaxSec / 60)} min`,
-    share: `${Math.round(rule.longMaxShare * 100)} % nedelje`,
-    km: `${P.lengths.longMaxKm} km`,
-    rolling: 'max(1,1 × najduži, najduži + 1 km) prethodne 4 nedelje (pouka 28)'
+    time: `najviše ${Math.round(rule.longMaxSec / 60)} min`,
+    share: `najviše ${Math.round(rule.longMaxShare * 100)} % nedelje`,
+    km: `najviše ${P.lengths.longMaxKm} km`,
+    rolling: 'raste najviše 10 % ili 1 km iznad najdužeg u prethodne 4 nedelje',
+    recent: `raste najviše 10 % ili 1 km nedeljno, počevši od skorašnjeg najdužeg trčanja (${fmt(to10(recentKm ?? 0))} km)`,
+    easy: ''
   };
-  const what = limits.length > 0 ? ` uz dugi ≤ ${limits.map((l) => text[l]).join(' i ≤ ')}` : '';
+  const longL = limits.filter(
+    (l) => l !== 'easy' && !(l === 'rolling' && limits.includes('recent'))
+  );
+  const parts = [
+    ...(longL.length > 0 ? [`dugi ${longL.map((l) => text[l]).join(' i ')}`] : []),
+    // T1 (krug T): lagan ≤ 0,8 × dugi.
+    ...(limits.includes('easy')
+      ? [`lagani najviše ${Math.round(P.lengths.easyLongMaxShare * 100)} % dugog`]
+      : [])
+  ];
   const more = rule.dayCounts.filter((n) => n > runDays);
   const advice =
     more.length === 0
       ? ''
       : `; preporuka ${more.length === 1 ? more[0] : `${more[0]}–${more[more.length - 1]}`} dana`;
-  return `${runDays} dana ne nose ovaj obim${what}${advice}.`;
+  return `Sa ${runDays} dana trčanja ne staje ceo planirani obim: ${parts.join(', a ')}${advice}.`;
 }
 
 /** H6: napomena nedelje spuštene/podignute na izvodljiv cilj — tehnička (validator je čita kao oznaku VOLUME_RULE);
@@ -46,7 +67,7 @@ const fmt = (k10: number): string => (k10 / 10).toFixed(1).replace('.', ',');
 /** Faza 4a N11 (jedan vlasnik — domen): napomene nedelje za korisnika — bez tehničke napomene izvodljivog cilja
     (fittedNote). Aplikacija samo prikazuje ovo. */
 export const userWeekNotes = (w: { notes: readonly string[] }): string[] =>
-  w.notes.filter((n) => !n.includes('nije izvodljiv u konstrukciji nedelje'));
+  w.notes.filter((n) => !n.includes('nije izvodljiv u konstrukciji nedelje')).map(userText);
 
 /** HI3 (pouka 14): preporuka manje dana — brojevi dana manji od `runDays` čiji red tabele H15 (početnik:
     tabela H17) podržava trenutni obim; prazno kad ih nema. */
@@ -71,13 +92,11 @@ export function capacityLimits(
   weeks: readonly PlanWeek[],
   rule: PlanRule,
   p: Paces,
-  recentKm: number | null | undefined = null
+  recentKm: number | null | undefined = null,
+  /** Kotrljajuća granica nedelje (validator: ista funkcija kao konstruktor, rollingCapRan10). */
+  rollAt: (w: number) => number = (w) => rollingLongCap10(w, longsOf10(weeks), recentKm)
 ): CapacityLimit[] {
   const hit = new Set<CapacityLimit>();
-  const longs10 = weeks.map((w) => {
-    const l = w.days.find((d) => d.role === 'long');
-    return l ? to10(l.workout.km) : null;
-  });
   for (const w of weeks) {
     if (!isBuildPhase(w.phase) || w.deload || w.fitted !== 'down') continue;
     const long = w.days.find((d) => d.role === 'long');
@@ -86,9 +105,11 @@ export function capacityLimits(
     if (l10 === longTimeCap10(p, rule.longMaxSec)) hit.add('time');
     if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
     if (l10 === longKmCap10()) hit.add('km');
-    if (l10 === rollingLongCap10(w.index, longs10, recentKm)) hit.add('rolling');
+    if (l10 === rollAt(w.index)) hit.add(recentKm != null && w.index <= 4 ? 'recent' : 'rolling');
+    if (w.days.some((d) => d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(l10)))
+      hit.add('easy');
   }
-  return (['time', 'share', 'km', 'rolling'] as const).filter((l) => hit.has(l));
+  return (['time', 'share', 'km', 'rolling', 'recent', 'easy'] as const).filter((l) => hit.has(l));
 }
 
 /** Trenutni obim = cilj nedelje 1 [0,1 km]. */
@@ -348,7 +369,10 @@ export function adaptNominal10(
   let downOnly = false;
   const reset = av.reset.get(i);
   if (frame.phase === 'taper') {
-    t = Math.round(P.taper.factor * h.peakRef10);
+    // HM-09 (C7): posle smanjenja nijedna ne-rasteretna nedelja izgradnje (npr. sidro bola, pa prinudno
+    // rasterećenje pred taper) → osnova tapera je osnova kojom se računalo i rasterećenje (lastBuild10), ne 0
+    // (inače taper pada na minimum nedelje: svi dani 4 km).
+    t = Math.round(P.taper.factor * (h.peakRef10 > 0 ? h.peakRef10 : (h.lastBuild10 ?? 0)));
     if (h.tailCap10 !== null && h.tailCap10 < t) [t, downOnly] = [h.tailCap10, true];
   } else if (reset !== undefined) [t, downOnly] = [reset, true];
   else if (h.lastBuild10 === null) t = start10;

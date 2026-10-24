@@ -58,16 +58,15 @@ describe('datumi, faze, trkačka nedelja', () => {
     const last = plan.weeks[plan.weeks.length - 1]!;
     expect(last.endDate).toBe(plan.input.raceDate);
     expect(last.phase).toBe('race');
-    expect(plan.weeks.slice(-3, -1).map((w) => [w.phase, w.taperStep])).toEqual([
-      ['taper', 1],
-      ['taper', 2]
-    ]);
+    // 5k-v2.12.0 (T4): trkač (ne-početnik) — taper 1 nedelja pa trkačka.
+    expect(plan.weeks.slice(-2, -1).map((w) => [w.phase, w.taperStep])).toEqual([['taper', 1]]);
+    expect(plan.weeks[plan.weeks.length - 3]!.phase).not.toBe('taper');
     const races = plan.weeks.flatMap((w) => w.days.filter((d) => d.role === 'race'));
     expect(races.map((d) => d.date)).toEqual([plan.input.raceDate]);
     expect(races[0]!.countsToWeek).toBe(false);
     // Faza je podatak plana: ista kao periodizacija iz ulaza.
     expect(plan.weeks.map((w) => [w.phase, w.deload])).toEqual(
-      periodize(START, p.weeks).map((f) => [f.phase, f.deload])
+      periodize(START, p.weeks, undefined, false, false).map((f) => [f.phase, f.deload])
     );
     // Faze idu redom i nema dana posle trke.
     const order = ['base', 'peak', 'sharpen', 'taper', 'race'];
@@ -203,7 +202,8 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
     // 2.4.0: star rezultat više nije odbijanje — bez laganog tempa traži se MISSING_EASY_PACE.
     ['rezultat 85 dana', inputOf({ ...ok, resultDaysBefore: 85 }), 'MISSING_EASY_PACE'],
     ['rezultat posle starta', inputOf({ ...ok, resultDaysBefore: -1 }), 'RESULT_AFTER_START'],
-    ['VDOT < 30', inputOf({ ...ok, distanceM: 5000, timeSec: 1860 }), 'VDOT_OUT_OF_RANGE'],
+    // 5k-v2.11.0 (C8, kao 10K): VDOT < 30 → plan po osećaju; bez laganog tempa MISSING_EASY_PACE.
+    ['VDOT < 30', inputOf({ ...ok, distanceM: 5000, timeSec: 1860 }), 'MISSING_EASY_PACE'],
     ['VDOT > 60', inputOf({ ...ok, distanceM: 5000, timeSec: 1000 }), 'VDOT_OUT_OF_RANGE'],
     [
       'polumaraton',
@@ -226,7 +226,8 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
   });
 
   it('2.2.0: 15 km i VDOT ~53 → I ne staje u rasteretnu nedelju, zamena umesto odbijanja', () => {
-    const r = generateFiveKV2(inputOf({ ...PROFILES['edge_15km_8w']!, timeSec: 1110 }));
+    // 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja — 12 nedelja (rasterećenje u ned 4).
+    const r = generateFiveKV2(inputOf({ ...PROFILES['edge_15km_8w']!, weeks: 12, timeSec: 1110 }));
     expect(r.ok).toBe(true);
     if (r.ok && r.plan.planType !== 'runWalk') {
       const w4 = r.plan.weeks[3]!;

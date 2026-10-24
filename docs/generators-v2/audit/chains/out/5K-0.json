@@ -1,0 +1,530 @@
+{
+ "dist": "5K",
+ "seed": 20261023,
+ "from": 0,
+ "to": 10000,
+ "chains": 10000,
+ "generated": 10000,
+ "genFailed": 0,
+ "real": 10000,
+ "steps": 38033,
+ "stepsReal": 38033,
+ "rejectedChains": 667,
+ "cls": {
+  "P37_MESOVITA_IZNAD_CILJA_BEZ_UPOZORENJA": {
+   "real": 32,
+   "unreal": 0,
+   "flowsReal": 35,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 3056,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-11-24",
+      "regime": "plan",
+      "events": [
+       "faster:test3000@2026-11-22v42.8"
+      ],
+      "locked": [
+       "2026-12-02",
+       "2026-12-20"
+      ]
+     },
+     {
+      "asOf": "2026-12-08",
+      "regime": "pauseSilent",
+      "events": [
+       "faster:race5000@2026-12-06v43.5"
+      ],
+      "locked": [
+       "2026-12-09"
+      ]
+     }
+    ],
+    "id": "f-d5-13w-25km-e300-1~29",
+    "detail": ""
+   },
+   "ex": []
+  },
+  "IDEMP:WEEKS": {
+   "real": 1639,
+   "unreal": 0,
+   "flowsReal": 2294,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 106,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-07",
+      "regime": "pauseBreak",
+      "events": [
+       "missed@2027-01-02",
+       "test:test3000@2027-01-05v41.3"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "f-d3-11w-16km-e480-1~45",
+    "detail": "[NEW_RESULT+UNDER_EXECUTION] ned 5 targetKm 15→12"
+   },
+   "ex": [
+    "9/1: [UNDER_EXECUTION] ned 3 targetKm 24.8→19.8",
+    "9/3: [UNDER_EXECUTION] ned 6 targetKm 26.2→21",
+    "17/1: [UNDER_EXECUTION] ned 3 targetKm 24.6→19.7"
+   ]
+  },
+  "NEXT_DAY:ODBIJENO:TEST_WEEK": {
+   "real": 4,
+   "unreal": 0,
+   "flowsReal": 4,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 288,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-12-21",
+      "regime": "mixed",
+      "events": [
+       "test:test3000@2026-12-19v42",
+       "faster:test3000@2026-12-18v44.1"
+      ],
+      "locked": [
+       "2026-12-22",
+       "2027-01-02"
+      ]
+     }
+    ],
+    "id": "f-d5-8w-60km-e420-0~36",
+    "detail": "Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju."
+   },
+   "ex": [
+    "17/2: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.",
+    "288/0: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.",
+    "554/2: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju."
+   ]
+  },
+  "REJECT:VALIDATOR:TEST_WEEK": {
+   "real": 51,
+   "unreal": 0,
+   "flowsReal": 51,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 288,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-12-21",
+      "regime": "mixed",
+      "events": [
+       "test:test3000@2026-12-19v42",
+       "faster:test3000@2026-12-18v44.1"
+      ],
+      "locked": [
+       "2026-12-22",
+       "2027-01-02"
+      ]
+     },
+     {
+      "asOf": "2026-12-24",
+      "regime": "plan",
+      "events": [
+       "fatigue@2026-12-24,2026-12-22"
+      ],
+      "locked": [
+       "2026-12-28",
+       "2026-12-31",
+       "2027-01-03"
+      ]
+     }
+    ],
+    "id": "f-d5-8w-60km-e420-0~36",
+    "detail": "Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju."
+   },
+   "ex": [
+    "17/3: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.",
+    "288/1: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.",
+    "289/2: Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju."
+   ]
+  },
+  "BUDUCA_NEDELJA<40%CILJA": {
+   "real": 188,
+   "unreal": 0,
+   "flowsReal": 210,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 332,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-03",
+      "regime": "pauseSilent",
+      "events": [
+       "pain9@2027-01-01"
+      ],
+      "locked": [
+       "2027-01-27"
+      ]
+     }
+    ],
+    "id": "f-d4-13w-35km-e360-1~-7",
+    "detail": "ned 11 16/42.2 sharpen easy,long"
+   },
+   "ex": [
+    "18/1: ned 7 9.7/27 peak easy,easy,easy",
+    "266/2: ned 1 4.3/22.4 base easy",
+    "291/1: ned 9 8.6/22.1 taper easy,q1"
+   ]
+  },
+  "NEXT_DAY:CILJ_PAO>10%": {
+   "real": 55,
+   "unreal": 0,
+   "flowsReal": 56,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 2773,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-12-30",
+      "regime": "pauseBreak",
+      "events": [
+       "pain5@2026-12-29",
+       "fatigue@2026-12-29,2026-12-27"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "b-d3-10w-20km-v36-0~49",
+    "detail": "[PAIN] ned 3 13.5→9.8"
+   },
+   "ex": [
+    "33/4: [PAIN] ned 10 31.4→25.1, ned 11 26.7→21.3, ned 12 22→17.6",
+    "34/1: [PAIN] ned 3 13.5→10.7, ned 4 14.8→11.7, ned 5 16.2→12.8",
+    "39/1: [PAIN+FATIGUE] ned 8 40.7→32.5, ned 9 44.7→35.7, ned 10 49.1→39.2"
+   ]
+  },
+  "REJECT:VALIDATOR:QUALITY_REPEAT": {
+   "real": 40,
+   "unreal": 0,
+   "flowsReal": 40,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 45,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-02-16",
+      "regime": "plan",
+      "events": [],
+      "locked": [
+       "2027-02-23"
+      ]
+     }
+    ],
+    "id": "b-d3-14w-30km-e480-0~71",
+    "detail": "Isti par kvaliteta kao nedelja 6."
+   },
+   "ex": [
+    "45/0: Isti par kvaliteta kao nedelja 6.",
+    "303/1: Isti par kvaliteta kao nedelja 8.",
+    "367/1: Isti par kvaliteta kao nedelja 3."
+   ]
+  },
+  "REJECT:VALIDATOR:LIMITS": {
+   "real": 549,
+   "unreal": 0,
+   "flowsReal": 549,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 84,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-03-07",
+      "regime": "miss",
+      "events": [
+       "pain7@2027-03-05",
+       "pain2@2027-03-06"
+      ],
+      "locked": [
+       "2027-03-12",
+       "2027-03-19",
+       "2027-03-22"
+      ]
+     },
+     {
+      "asOf": "2027-03-14",
+      "regime": "pauseSilent",
+      "events": [],
+      "locked": [
+       "2027-03-19",
+       "2027-03-31"
+      ]
+     }
+    ],
+    "id": "r-d4-7w-20km-v52-1~130",
+    "detail": "Kvalitet na dan zabrane kvaliteta (adaptacija)."
+   },
+   "ex": [
+    "57/3: Ubrzanja u periodu bola.",
+    "65/3: Trening na dan odmora (bol ≥ 7).",
+    "80/3: Kvalitet na dan zabrane kvaliteta (adaptacija)."
+   ]
+  },
+  "REJECT:VALIDATOR:RACE_WEEK_TAPER": {
+   "real": 21,
+   "unreal": 0,
+   "flowsReal": 21,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 2650,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-04-21",
+      "regime": "pauseSilent",
+      "events": [
+       "fatigue@2027-04-21,2027-04-19",
+       "slower:test3000@2027-04-19v36.8"
+      ],
+      "locked": [
+       "2027-04-28",
+       "2027-05-10"
+      ]
+     },
+     {
+      "asOf": "2027-04-30",
+      "regime": "over",
+      "events": [
+       "pain8@2027-04-29"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "r-d4-11w-20km-v38-1~125",
+    "detail": "Trkačka nedelja 9.44 km > planirano tapera 5.4 km (pouka 30)."
+   },
+   "ex": [
+    "107/4: Trkačka nedelja 14.99 km > planirano tapera 13.6 km (pouka 30).",
+    "312/3: Trkačka nedelja 11.73 km > planirano tapera 10 km (pouka 30).",
+    "546/2: Trkačka nedelja 8.2 km > planirano tapera 6 km (pouka 30)."
+   ]
+  },
+  "NEXT_DAY:ODBIJENO:QUALITY_REPEAT": {
+   "real": 4,
+   "unreal": 0,
+   "flowsReal": 4,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 5599,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-12",
+      "regime": "over",
+      "events": [
+       "test:test3000@2027-01-11v37"
+      ],
+      "locked": [
+       "2027-01-13",
+       "2027-01-16",
+       "2027-01-18"
+      ]
+     }
+    ],
+    "id": "b-d3-13w-16km-v32-1~2",
+    "detail": "Isti par kvaliteta kao nedelja 11."
+   },
+   "ex": [
+    "938/1: Isti par kvaliteta kao nedelja 2.",
+    "4900/1: Isti par kvaliteta kao nedelja 9.",
+    "5599/0: Isti par kvaliteta kao nedelja 11."
+   ]
+  },
+  "REJECT:VALIDATOR:DOSE_PROGRESSION": {
+   "real": 4,
+   "unreal": 0,
+   "flowsReal": 4,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 9115,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-10-31",
+      "regime": "mixed",
+      "events": [
+       "fatigue@2026-10-29,2026-10-27",
+       "missed@2026-10-27"
+      ],
+      "locked": [
+       "2026-11-05",
+       "2026-11-12",
+       "2026-11-26"
+      ]
+     },
+     {
+      "asOf": "2026-11-06",
+      "regime": "plan",
+      "events": [
+       "fatigue@2026-11-05,2026-11-03"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "r-d3-12w-30km-v45-0~-25",
+    "detail": "Glavni I rad 1800 m manji od prethodne nedelje (2000 m)."
+   },
+   "ex": [
+    "1425/3: Glavni I rad 1400 m manji od prethodne nedelje (1800 m).",
+    "1877/2: Glavni RP rad 1800 m manji od prethodne nedelje (2000 m).",
+    "1882/4: Glavni I rad 720 s manji od prethodne nedelje (900 s)."
+   ]
+  },
+  "REJECT:VALIDATOR:BASE_R_DECREASE": {
+   "real": 2,
+   "unreal": 0,
+   "flowsReal": 2,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 6392,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-09-24",
+      "regime": "pauseSilent",
+      "events": [
+       "test:test3000@2026-09-24v35.1"
+      ],
+      "locked": [
+       "2026-09-29",
+       "2026-10-03"
+      ]
+     },
+     {
+      "asOf": "2026-09-30",
+      "regime": "plan",
+      "events": [
+       "fatigue@2026-09-29,2026-09-28"
+      ],
+      "locked": [
+       "2026-10-03"
+      ]
+     }
+    ],
+    "id": "r-d5-16w-50km-v32-0~-44",
+    "detail": "R u bazi 2000 m < prethodne 2100 m."
+   },
+   "ex": [
+    "4158/4: R u bazi 225 s < prethodne 270 s.",
+    "6392/1: R u bazi 2000 m < prethodne 2100 m."
+   ]
+  },
+  "NEXT_DAY:ODBIJENO:RACE_WEEK_TAPER": {
+   "real": 7,
+   "unreal": 0,
+   "flowsReal": 7,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 5054,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-12-06",
+      "regime": "pauseSilent",
+      "events": [
+       "pain8@2026-12-06"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2026-12-13",
+      "regime": "plan",
+      "events": [
+       "test:test3000@2026-12-12v35.2"
+      ],
+      "locked": [
+       "2026-12-16"
+      ]
+     }
+    ],
+    "id": "r-d3-6w-25km-v32-1~0",
+    "detail": "Trkačka nedelja 8.7 km > planirano tapera 7.5 km (pouka 30)."
+   },
+   "ex": [
+    "4439/3: Trkačka nedelja 6 km > planirano tapera 3.92 km (pouka 30).",
+    "5054/1: Trkačka nedelja 8.7 km > planirano tapera 7.5 km (pouka 30).",
+    "5152/4: Trkačka nedelja 6.97 km > planirano tapera 2 km (pouka 30)."
+   ]
+  },
+  "IDEMP:ODBIJENO:QUALITY_REPEAT": {
+   "real": 2,
+   "unreal": 0,
+   "flowsReal": 2,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 7511,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-12-24",
+      "regime": "pauseSilent",
+      "events": [],
+      "locked": [
+       "2026-12-27"
+      ]
+     },
+     {
+      "asOf": "2027-01-02",
+      "regime": "pauseSilent",
+      "events": [
+       "done@2026-12-28"
+      ],
+      "locked": [
+       "2027-01-09",
+       "2027-01-16"
+      ]
+     }
+    ],
+    "id": "f-d5-9w-30km-e480-0~45",
+    "detail": "Isti par kvaliteta kao nedelja 4."
+   },
+   "ex": [
+    "7295/2: Isti par kvaliteta kao nedelja 4.",
+    "7511/1: Isti par kvaliteta kao nedelja 4."
+   ]
+  }
+ },
+ "seconds": 1372.415
+}

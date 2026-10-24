@@ -10,13 +10,13 @@ import {
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.8.1', () => {
+describe('policy 10k-v2.10.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.8.1');
+    expect(P.version).toBe('10k-v2.10.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i) i A22 (3i), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i), A22 (3i), A23 (10K-07) i A24 (10K-08), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +29,7 @@ describe('policy 10k-v2.8.1', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 22 }, (_, i) => `A${i + 1}`)
+      ...Array.from({ length: 24 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -285,7 +285,12 @@ describe('policy 10k-v2.8.1', () => {
     expect([1, 2, 7].map(dayRule)).toEqual([null, null, null]);
     for (const n of RUN_DAYS_COUNTS) expect(dayRule(n)!.quality + dayRule(n)!.easy + 1).toBe(n);
     // Nema pojedinačnih brojeva 4 dana van tabele.
-    expect(P.lengths).toEqual({ longMaxSec: 105 * 60, easyMinKm: 3 });
+    expect(P.lengths).toEqual({
+      longMaxSec: 105 * 60,
+      easyMinKm: 3,
+      easyMinSec: 1200,
+      easyMaxLongShare: 0.8
+    });
     expect('peakMaxKm' in P.volume).toBe(false);
     expect('week' in P).toBe(false);
   });

@@ -1,0 +1,72 @@
+{
+ "dist": "5K",
+ "from": 0,
+ "to": 3000,
+ "rejected": 202,
+ "out": {
+  "TEST_WEEK": {
+   "lock-ranije": 14
+  },
+  "QUALITY_REPEAT": {
+   "lock-sada": 4,
+   "lock-ranije": 5
+  },
+  "LIMITS": {
+   "lock-ranije": 120,
+   "ostalo": 47
+  },
+  "RACE_WEEK_TAPER": {
+   "lock-sada": 3,
+   "ostalo": 4
+  },
+  "TEST_WEEK+LIMITS": {
+   "ostalo": 1
+  },
+  "DOSE_PROGRESSION": {
+   "lock-ranije": 3
+  },
+  "QUALITY_REPEAT+BASE_PLATEAU": {
+   "lock-ranije": 1
+  }
+ },
+ "ex": {
+  "TEST_WEEK lock-ranije": [
+   "i=17 koraka 4",
+   "i=288 koraka 2"
+  ],
+  "QUALITY_REPEAT lock-sada": [
+   "i=45 koraka 1",
+   "i=367 koraka 2"
+  ],
+  "LIMITS lock-ranije": [
+   "i=57 koraka 4",
+   "i=80 koraka 4"
+  ],
+  "LIMITS ostalo": [
+   "i=65 koraka 4",
+   "i=187 koraka 6"
+  ],
+  "RACE_WEEK_TAPER lock-sada": [
+   "i=107 koraka 5",
+   "i=546 koraka 3"
+  ],
+  "QUALITY_REPEAT lock-ranije": [
+   "i=303 koraka 2",
+   "i=938 koraka 3"
+  ],
+  "RACE_WEEK_TAPER ostalo": [
+   "i=312 koraka 4",
+   "i=1385 koraka 6"
+  ],
+  "TEST_WEEK+LIMITS ostalo": [
+   "i=341 koraka 3"
+  ],
+  "DOSE_PROGRESSION lock-ranije": [
+   "i=1425 koraka 4",
+   "i=1877 koraka 3"
+  ],
+  "QUALITY_REPEAT+BASE_PLATEAU lock-ranije": [
+   "i=2656 koraka 2"
+  ]
+ }
+}

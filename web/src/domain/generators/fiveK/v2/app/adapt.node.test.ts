@@ -306,7 +306,7 @@ describe('B. tok prilagođavanja: pregled → potvrda → nova revizija → vra�
       })
     );
     const x = pr.reasons.find((r) => r.condition === 'RESULT_IGNORED')!;
-    expect(x.message).toMatch(/VDOT \d+(\.\d)? van 30–60 — rezultat se ne primenjuje\.$/);
+    expect(x.message).toMatch(/VDOT \d+(,\d)? van 30–60 — rezultat se ne primenjuje\.$/);
     expect(pr.reasons.some((r) => r.condition === 'NEW_RESULT')).toBe(false);
   });
 
@@ -333,7 +333,9 @@ describe('B. tok prilagođavanja: pregled → potvrda → nova revizija → vra�
   });
 
   it('7b. test 3 km u planu po osećaju → prelaz na tempo (traka, pregled)', () => {
-    const plan = planOf(FEEL);
+    // 5k-v2.11.0 (C13): početnik po osećaju nema kontrolno trčanje — test ima plan po osećaju iskusnog trkača.
+    const { experience: _e, canRun30Min: _c, ...regular } = FEEL;
+    const plan = planOf(regular);
     const test = view(plan).dated.find((x) => x.tag === 'test')!;
     const pr = ok(
       fiveKV2AdaptPreview(plan, test.date, {
@@ -371,7 +373,7 @@ describe('B. tok prilagođavanja: pregled → potvrda → nova revizija → vra�
     const pr = ok(fiveKV2AdaptPreview(plan, today, { log: logOf(5) }));
     const level = pr.reasons.find((r) => r.condition === 'LEVEL')!;
     expect(level.message).toMatch(
-      /: L2 \(bilo L1; \+1 posle po 2 uzastopne sesije RPE ≤ 6 bez bola\)/
+      /: 2 \(bilo 1; \+1 posle po 2 uzastopne sesije RPE ≤ 6 bez bola\)/
     );
     const v2 = pr.result['fiveKV2'] as { adaptation: { steps: Array<{ level: number }> } };
     expect(v2.adaptation.steps.at(-1)!.level).toBe(2);
@@ -380,7 +382,7 @@ describe('B. tok prilagođavanja: pregled → potvrda → nova revizija → vra�
     expect(pr.needed).toEqual([]);
     // RPE 7: nivo ostaje L1, projekcija se pomera → pregled i traka.
     const hard = ok(fiveKV2AdaptPreview(plan, today, { log: logOf(7) }));
-    expect(hard.reasons.find((r) => r.condition === 'LEVEL')!.message).toMatch(/: L1 \(bilo L1\)/);
+    expect(hard.reasons.find((r) => r.condition === 'LEVEL')!.message).toMatch(/: 1 \(bilo 1\)/);
     expect(hard.weeks.length).toBeGreaterThan(0);
     expect(hard.needed).toEqual(['3 sesija sa RPE ≥ 7: nivo se na njima ne povećava.']);
   });
@@ -599,7 +601,10 @@ describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
       '5k-v2.10.1',
       '5k-v2.10.2',
       '5k-v2.10.3',
-      '5k-v2.10.4'
+      '5k-v2.10.4',
+      '5k-v2.11.0',
+      '5k-v2.11.1',
+      '5k-v2.12.0'
     ]);
     const plan = planOf(WITH_RESULT);
     const old = JSON.parse(JSON.stringify(plan)) as GenPlanState;
@@ -620,18 +625,15 @@ describe('08d (5k-v2.6.1): sačuvan plan 5k-v2.6.0', () => {
     // Bol 5 u sredu 11. 11., asOf četvrtak 12. 11.: sidro r = ned 2 (sadrži 13. 11.), ne ned 3 (kraj bola 19. 11.).
     const pain = { facts: { pain: [{ date: '2026-11-11', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-12'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.10.4' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.12.0' });
     const v2 = v2Of(pr.result)!;
     if (v2.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
-    expect(v2.policyVersion).toBe('5k-v2.10.4');
+    expect(v2.policyVersion).toBe('5k-v2.12.0');
     expect(v2.adaptation!.steps[0]!.returnFrom).toEqual({ week: 2, share: 0.7 });
-    // Odluka 9 (5k-v2.7.0): redovno rasterećenje ned 3 posle nedelje sidra otpada (niz 3–7 = 5 ≤ 6).
+    // 5k-v2.12.0 (T4): plan trkača nema redovno rasterećenje pre nedelje 4 (ranije ned 3, Odluka 9 ga je ukidala).
     expect(v2.weeks[2]!.deload).toBe(false);
     expect(pr.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
-      'Posle nedelje 2 rast kreće od 70% nivoa pre bola (17.5 km).'
-    );
-    expect(pr.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
-      'Redovno rasterećenje u nedelji 3 otpada: nedelja 2 je smanjena (Odluka 9).'
+      'Posle nedelje 2 rast kreće od 70% nivoa pre bola (17,5 km).'
     );
   });
 });
@@ -668,14 +670,14 @@ describe('08e (5k-v2.7.0): sačuvan plan 5k-v2.6.1', () => {
     // Bol 5 u sredu 18. 11., asOf četvrtak 19. 11.: sidro r = ned 3; ned 4 (redovno rasterećenje) otpada.
     const pain = { facts: { pain: [{ date: '2026-11-18', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-19'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.10.4' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.12.0' });
     const v2 = v2Of(pr.result)!;
     if (v2.planType === 'runWalk') throw new Error('očekivan kontinuirani plan');
     expect(v2.adaptation!.steps[0]!.returnFrom).toEqual({ week: 3, share: 0.7 });
     expect(v2.weeks[3]!.deload).toBe(false);
     expect(v2.weeks[7]!.deload).toBe(true);
     expect(pr.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
-      'Redovno rasterećenje u nedelji 4 otpada: nedelja 3 je smanjena (Odluka 9).'
+      'Redovno rasterećenje u nedelji 4 otpada: nedelja 3 je smanjena.'
     );
   });
 });
@@ -694,6 +696,6 @@ describe('08g (5k-v2.8.0): sačuvan plan 5k-v2.7.0', () => {
     expect(generatorForPlan(old)).toBe(FIVE_K_V2_GENERATOR);
     const pain = { facts: { pain: [{ date: '2026-11-18', pain: 5 }] } };
     const pr = ok(fiveKV2AdaptPreview(old, d('2026-11-19'), pain));
-    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.10.4' });
+    expect(pr.result.meta).toMatchObject({ policyId: '5k-v2', policyVersion: '5k-v2.12.0' });
   });
 });

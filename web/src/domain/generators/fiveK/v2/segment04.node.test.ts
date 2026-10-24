@@ -70,13 +70,14 @@ const S04: Record<string, Profile> = {
   d3_25km_7w: { weeks: 7, km: 25, distanceM: 5000, timeSec: 1380, days: ['tue', 'thu', 'sun'] }
 };
 const S04_ALL = Object.entries(S04);
-/** Brz trkač, mali obim (15 km, VDOT ~53), 4 dana (Segment 03). */
+/** Brz trkač, mali obim (Segment 03). 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja, a 4 dana / 15 km
+    sada nosi kvalitet u rasterećenju — rasterećenje samo sa ubrzanjima: 3 dana, 12 km, VDOT ~52, 9 ned (ned 5). */
 const FAST_SMALL_8: Profile = {
-  weeks: 8,
-  km: 15,
+  weeks: 9,
+  km: 12,
   distanceM: 5000,
-  timeSec: 1110,
-  days: ['tue', 'thu', 'sat', 'sun']
+  timeSec: 1157,
+  days: ['tue', 'thu', 'sun']
 };
 
 describe('Odluka 1: šablon po broju dana', () => {

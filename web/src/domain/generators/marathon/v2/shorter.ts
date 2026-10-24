@@ -26,7 +26,8 @@ export function longShortKmOf(plan: MarathonV2Plan): number | null {
 
 /** Plan je ispod praga MARATHON_LONG_SHORT (isti uslov kao validator, bez obzira na uzrok — udeo ili trajanje). */
 export function belowLongShort(plan: MarathonV2Plan, longShortKm: number): boolean {
-  return longShortOf(plan.weeks, longShortKm, plan.paces) !== null;
+  // Samo prag (timeCapped se ne čita) — tempo ne utiče na ishod.
+  return longShortOf(plan.weeks, longShortKm, () => plan.paces) !== null;
 }
 
 /** O1: adaptirani plan je ispod praga, a plan generatora za isti ulaz nije; trka je posle `asOf` (bez `asOf`: ne

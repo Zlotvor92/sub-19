@@ -21,7 +21,10 @@ const STATEMENT =
   /(?:^|[;\n])\s*(import|export)\s+(type\s+)?((?:[\w*$\s,]*\{[^}]*\}|[\w*$\s,]+?|\*\s+as\s+\w+|\*))\s+from\s+['"]([^'"]+)['"]/g;
 const SIDE_EFFECT = /(?:^|[;\n])\s*import\s+['"]([^'"]+)['"]/g;
 
-/** Uvozi v2 izvornog fajla koji izlaze iz v2/ (a nisu type-only). */
+/** 5k-v2.11.0 (owner K): jedini dozvoljen type-only uvoz van v2/ (neutralni tipovi; `fiveK/exchange.ts`). */
+const EXCHANGE = resolve(V2, '../exchange.ts');
+
+/** Uvozi v2 izvornog fajla koji izlaze iz v2/ (a nisu type-only ka fiveK/exchange.ts). */
 export function escapingImports(file: string, src: string): string[] {
   const out: string[] = [];
   const code = strip(src);
@@ -31,7 +34,9 @@ export function escapingImports(file: string, src: string): string[] {
     const spec = m[4]!;
     const target = spec.startsWith('.') ? resolve(dirname(file), spec) : null;
     const inside = target !== null && (target === V2 || target.startsWith(V2 + '/'));
-    if (!inside && !typeOnly) out.push(`${relative(V2, file)} → ${spec}`);
+    const exchange =
+      target !== null && target.replace(/\.ts$/, '') === EXCHANGE.replace(/\.ts$/, '');
+    if (!inside && !(typeOnly && exchange)) out.push(`${relative(V2, file)} → ${spec}`);
   }
   for (const m of code.matchAll(SIDE_EFFECT))
     out.push(`${relative(V2, file)} → side-effect ${m[1]}`);
@@ -48,7 +53,7 @@ describe('5K v2 je izolovan', () => {
     expect(bad).toEqual([]);
   });
 
-  it('provera hvata izvršni uvoz van v2/, a propušta type-only', () => {
+  it('provera hvata izvršni uvoz van v2/ i type-only van fiveK/exchange.ts, a propušta type-only ka exchange', () => {
     const f = join(V2, 'x.ts');
     expect(
       escapingImports(f, "import { vdotFromRace } from '../training/vdot/calculateVDOT';")
@@ -56,8 +61,13 @@ describe('5K v2 je izolovan', () => {
     expect(escapingImports(f, "import { x } from '../../tenK';")).not.toEqual([]);
     expect(escapingImports(f, "import { z } from 'zod';")).not.toEqual([]);
     expect(escapingImports(f, "const m = import('../plan');")).not.toEqual([]);
-    expect(escapingImports(f, "import type { IsoDate } from '../date';")).toEqual([]);
-    expect(escapingImports(f, "import { type IsoDate } from '../date';")).toEqual([]);
+    expect(escapingImports(f, "import type { IsoDate } from '../exchange.ts';")).toEqual([]);
+    expect(escapingImports(f, "import { type IsoDate } from '../exchange';")).toEqual([]);
+    expect(
+      escapingImports(join(V2, 'app', 'x.ts'), "import type { T } from '../../exchange.ts';")
+    ).toEqual([]);
+    expect(escapingImports(f, "import type { IsoDate } from '../date';")).not.toEqual([]);
+    expect(escapingImports(f, "import type { X } from '../../tenK/v2/types.ts';")).not.toEqual([]);
     expect(escapingImports(f, "import { a } from './policy.ts';")).toEqual([]);
   });
 
@@ -79,6 +89,8 @@ describe('5K v2 je izolovan', () => {
         if (target !== null && (target === V2 || target.startsWith(V2 + '/')))
           edges.push(`${relative(SRC, f)} → ${relative(SRC, target)}`);
       }
+      // 5k-v2.11.0 (owner K): i uvoz preko aliasa `@/…/fiveK/v2` (kao HM/MAR).
+      if (/generators\/fiveK\/v2/.test(code)) edges.push(`${relative(SRC, f)} → alias v2`);
     }
     expect(edges).toEqual([
       'domain/generators/fiveK/index.ts → domain/generators/fiveK/v2/app/index.ts'

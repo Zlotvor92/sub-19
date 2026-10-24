@@ -33,7 +33,7 @@ export function weekQuality(
       q2: null,
       easyStrides: false,
       stridesOnly: false,
-      notes: ['Adaptacija: nedelja bez kvaliteta (samo lagano, bez ubrzanja na danima zabrane).'],
+      notes: ['Nedelja bez kvaliteta (samo lagano, bez ubrzanja na danima zabrane).'],
       dose: null
     };
   const g =
@@ -50,9 +50,13 @@ export function weekQuality(
   return {
     ...s,
     dose: null,
-    notes: ['Adaptacija: jedan kvalitet, doza rasterećenja.', ...s.notes]
+    // 5k-v2.11.0: ograničenje postavlja adaptacija ili (F2) konstruktor generatora — napomena bez „Adaptacija:".
+    notes: ['Jedan kvalitet, doza rasterećenja.', ...s.notes.map(notDeload)]
   };
 }
+
+/** 5k-v2.11.0 (M3): napomena doze rasterećenja u nedelji koja nije rasteretna ne počinje sa „Rasterećenje:". */
+const notDeload = (n: string): string => n.replace(/^Rasterećenje:/, 'Doza rasterećenja:');
 
 /** Oštrenje trkačke nedelje: sa rezultatom RP (i početnik), bez rezultata RP po osećaju. */
 export function raceWeekSharpener(budgetKm: number, boundKm: number, p: PaceModel): SessionResult {

@@ -1,0 +1,274 @@
+{
+ "dist": "MAR",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "chains": 2000,
+ "generated": 2000,
+ "genFailed": 0,
+ "real": 1880,
+ "steps": 7949,
+ "stepsReal": 7472,
+ "rejectedChains": 0,
+ "cls": {
+  "IDEMP:WEEKS": {
+   "real": 45,
+   "unreal": 10,
+   "flowsReal": 45,
+   "flowsUnreal": 10,
+   "shortest": {
+    "i": 137,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-02-13",
+      "regime": "under",
+      "events": [
+       "faster:race21097.5@2027-02-13v59"
+      ],
+      "locked": [
+       "2027-02-28"
+      ]
+     },
+     {
+      "asOf": "2027-02-20",
+      "regime": "pauseBreak",
+      "events": [
+       "fatigue@2027-02-12,2027-02-10"
+      ],
+      "locked": [
+       "2027-03-03"
+      ]
+     }
+    ],
+    "id": "d4-17w-60km-v60-B-sun~84",
+    "detail": "[PAUSE] ned 4 notes/ostalo"
+   },
+   "ex": [
+    "2/2: [NEW_RESULT+PAUSE] ned 13 notes/ostalo",
+    "79/2: [PAUSE] ned 12 targetKm 38→30.4",
+    "82/3: [PAUSE] ned 5 notes/ostalo"
+   ]
+  },
+  "BUDUCA_NEDELJA<40%CILJA": {
+   "real": 64,
+   "unreal": 1,
+   "flowsReal": 70,
+   "flowsUnreal": 1,
+   "shortest": {
+    "i": 109,
+    "len": 1,
+    "step": 0,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-05-19",
+      "regime": "plan",
+      "events": [
+       "pain9@2027-05-17"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "feel-d6-21w-90km-e405-C~101",
+    "detail": "ned 15 34.8/103.8 specific easy,easy,easy"
+   },
+   "ex": [
+    "6/1: ned 11 25.8/72 development long,easy,easy",
+    "18/2: ned 5 19.1/54.6 base easy,easy,easy",
+    "18/3: ned 5 19.1/54.6 base easy,easy,easy"
+   ]
+  },
+  "IDEMP:WARNINGS": {
+   "real": 42,
+   "unreal": 6,
+   "flowsReal": 45,
+   "flowsUnreal": 6,
+   "shortest": {
+    "i": 9,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-01-16",
+      "regime": "under",
+      "events": [],
+      "locked": [
+       "2027-01-18",
+       "2027-01-19",
+       "2027-01-30"
+      ]
+     },
+     {
+      "asOf": "2027-01-23",
+      "regime": "pauseBreak",
+      "events": [
+       "pain3@2027-01-22"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "d4-20w-55km-v60-C-sat~67",
+    "detail": ""
+   },
+   "ex": []
+  },
+  "INV:taper > poslednja izgradnja": {
+   "real": 3,
+   "unreal": 0,
+   "flowsReal": 3,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 808,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-02-11",
+      "regime": "plan",
+      "events": [
+       "pain9@2027-02-10"
+      ],
+      "locked": [
+       "2027-02-25"
+      ]
+     },
+     {
+      "asOf": "2027-02-25",
+      "regime": "miss",
+      "events": [
+       "pain8@2027-02-23"
+      ],
+      "locked": []
+     }
+    ],
+    "id": "d6-14w-100km-v35-C-sat~54",
+    "detail": "taper > poslednja izgradnja"
+   },
+   "ex": [
+    "289/3: taper > poslednja izgradnja",
+    "808/1: taper > poslednja izgradnja",
+    "1639/1: taper > poslednja izgradnja"
+   ]
+  },
+  "INV:skok dugog ned #": {
+   "real": 1,
+   "unreal": 0,
+   "flowsReal": 2,
+   "flowsUnreal": 0,
+   "shortest": {
+    "i": 312,
+    "len": 5,
+    "step": 4,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2026-10-27",
+      "regime": "under",
+      "events": [
+       "done@2026-10-27"
+      ],
+      "locked": [
+       "2026-11-12"
+      ]
+     },
+     {
+      "asOf": "2026-10-28",
+      "regime": "under",
+      "events": [
+       "missed@2026-10-22"
+      ],
+      "locked": []
+     },
+     {
+      "asOf": "2026-11-07",
+      "regime": "mixed",
+      "events": [
+       "test:test10000@2026-11-04v72.4"
+      ],
+      "locked": [
+       "2026-11-16"
+      ]
+     },
+     {
+      "asOf": "2026-11-16",
+      "regime": "pauseBreak",
+      "events": [
+       "done@2026-11-11"
+      ],
+      "locked": [
+       "2026-11-17",
+       "2026-11-26",
+       "2026-11-28"
+      ]
+     },
+     {
+      "asOf": "2026-11-30",
+      "regime": "pauseSilent",
+      "events": [
+       "faster:race21097.5@2026-11-27v74.4"
+      ],
+      "locked": [
+       "2026-12-03"
+      ]
+     }
+    ],
+    "id": "d6-19w-55km-v70-C-sun~-11",
+    "detail": "skok dugog ned 6"
+   },
+   "ex": [
+    "312/4: skok dugog ned 6",
+    "312/5: skok dugog ned 6"
+   ]
+  },
+  "NEXT_DAY:CILJ_PAO>10%": {
+   "real": 2,
+   "unreal": 1,
+   "flowsReal": 2,
+   "flowsUnreal": 1,
+   "shortest": {
+    "i": 1152,
+    "len": 2,
+    "step": 1,
+    "real": true,
+    "steps": [
+     {
+      "asOf": "2027-04-17",
+      "regime": "miss",
+      "events": [
+       "done@2027-04-15",
+       "fatigue@2027-04-17,2027-04-16"
+      ],
+      "locked": [
+       "2027-05-06"
+      ]
+     },
+     {
+      "asOf": "2027-04-20",
+      "regime": "over",
+      "events": [
+       "slower:race21097.5@2027-04-20v46.7",
+       "pain7@2027-04-18"
+      ],
+      "locked": [
+       "2027-04-23",
+       "2027-04-24"
+      ]
+     }
+    ],
+    "id": "d5-21w-85km-v50-C-sun~124",
+    "detail": "[NEW_RESULT+PAIN] ned 8 72.6→52.8"
+   },
+   "ex": [
+    "724/5: [PAIN] ned 4 53.2→38.7",
+    "1152/1: [NEW_RESULT+PAIN] ned 8 72.6→52.8",
+    "1926/3: [PAIN] ned 12 85.1→61.9"
+   ]
+  }
+ },
+ "seconds": 860.066
+}

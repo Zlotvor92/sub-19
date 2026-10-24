@@ -53,7 +53,7 @@ describe('cutover konfiguracija', () => {
     const { installCommand, buildCommand, outputDirectory, ...rest } = cutover;
     expect(rest).toEqual(legacy);
     expect(installCommand).toBe('npm ci --prefix web');
-    expect(buildCommand).toBe('npm run build --prefix web');
+    expect(buildCommand).toBe('VITE_V2_DEFAULT_ON=1 npm run build --prefix web'); // v2 generatori uključeni za sve (stores/generatorFlags.ts)
     expect(outputDirectory).toBe('web/dist');
     expect(legacy).not.toHaveProperty('outputDirectory'); // stanje pre prelaza: nema build koraka
   });

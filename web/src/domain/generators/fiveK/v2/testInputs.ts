@@ -6,6 +6,7 @@ import { assess, checkFacts } from './assess.ts';
 import { mustDay } from './dates.ts';
 import { construct, generateFiveKV2 } from './generate.ts';
 import { raceTimeForVdot } from './paces.ts';
+import { MIXED_NOTE, SECOND_EASY_NOTE } from './week.ts';
 import type { AdaptResult, FiveKV2Plan, PlanDay } from './types.ts';
 import type { Weekday } from './types.ts';
 
@@ -1171,7 +1172,9 @@ export function earlyFlows(
       if (s === 'chain' && res.ok) {
         const at2 = addDays(asOf, 7);
         if (at2 < p.input.raceDate) {
-          const f2 = earlyChain2(ep, at2);
+          // 5k-v2.12.0: zapisi drugog koraka iz ADAPTIRANOG plana (dani posle asOf su njegovi; T1 lagan dan manje
+          // u prvoj adaptaciji — dan polaznog plana više ne postoji, ADAPT_DAY_UNKNOWN).
+          const f2 = earlyChain2(res.plan as unknown as EarlyPlan, at2);
           out.push({
             key: `${key}/2`,
             plan: res.plan,
@@ -1206,7 +1209,7 @@ export function hasSecondEasy(res: unknown): boolean {
     continuous?: { plan: unknown } | null;
   } | null;
   if (!plan) return false;
-  if (plan.weeks?.some((w) => w.notes.some((n) => n.includes('(pouka 35)')))) return true;
+  if (plan.weeks?.some((w) => w.notes.some((n) => n.includes(SECOND_EASY_NOTE)))) return true;
   return plan.continuous ? hasSecondEasy(plan.continuous.plan) : false;
 }
 
@@ -1223,7 +1226,7 @@ export function hasMixedRemainder(res: unknown): boolean {
   if (
     plan.weeks?.some(
       (w) =>
-        w.notes.some((n) => n.includes('(pouka 37)')) ||
+        w.notes.some((n) => n.includes(MIXED_NOTE)) ||
         (w as { protectedKm?: number }).protectedKm !== undefined
     )
   )
@@ -1240,4 +1243,288 @@ export function hasTestDroppedAlone(res: unknown): boolean {
       w.notes.some((n) => n.includes('kontrolno trčanje ne staje u obim') && n.endsWith('otpada.'))
     )
   );
+}
+
+/* ---------- Segment 07: regresiona mreža generatora ---------- */
+
+/** Regresiona mreža generatora segmenta 07 (700 ulaza; premeštena iz segment07.node.test.ts u 5K-09 da je koristi i
+    skripta otisaka docs/generators-v2/audit/fixes/5K/fixture09.ts). */
+export function regressionInputs(): [string, Record<string, unknown>][] {
+  const out: [string, Record<string, unknown>][] = [];
+  const DAYS: Record<number, string[][]> = {
+    3: [
+      ['tue', 'thu', 'sun'],
+      ['mon', 'wed', 'sat']
+    ],
+    4: [
+      ['tue', 'thu', 'sat', 'sun'],
+      ['mon', 'wed', 'fri', 'sat']
+    ],
+    5: [['mon', 'tue', 'thu', 'sat', 'sun']]
+  };
+  const KM: Record<number, number[]> = {
+    3: [12, 18, 28, 35],
+    4: [15, 22, 35, 45],
+    5: [25, 38, 50, 65]
+  };
+  for (const d of [3, 4, 5])
+    for (const days of DAYS[d]!)
+      for (const km of KM[d]!)
+        for (const weeks of [6, 7, 8, 10, 12, 14, 16])
+          for (const mode of ['v45', 'v36', 'feel', 'beg', 'begRes']) {
+            const input: Record<string, unknown> = {
+              startDate: START,
+              raceDate: addDays(START, weeks * 7 - 1),
+              runDays: days,
+              currentWeeklyKm: km
+            };
+            if (mode === 'v45')
+              input['recentResult'] = { distanceM: 5000, timeSec: 1340, date: addDays(START, -14) };
+            if (mode === 'v36')
+              input['recentResult'] = {
+                distanceM: 10000,
+                timeSec: 3400,
+                date: addDays(START, -20)
+              };
+            if (mode === 'feel') input['typicalEasyPaceSecPerKm'] = 375;
+            if (mode === 'beg')
+              Object.assign(input, {
+                experience: 'beginner',
+                canRun30Min: true,
+                typicalEasyPaceSecPerKm: 430
+              });
+            if (mode === 'begRes')
+              Object.assign(input, {
+                experience: 'beginner',
+                canRun30Min: true,
+                recentResult: { distanceM: 5000, timeSec: 1800, date: addDays(START, -10) }
+              });
+            if (mode !== 'v45' && mode !== 'v36') input['goalTimeSec'] = 1600;
+            out.push([`d${d}-${days.join('')}-${km}-${weeks}-${mode}`, input]);
+          }
+  return out;
+}
+
+/* ---------- 5K-09 (5k-v2.11.0): otisci regresije bez korisničkog teksta ---------- */
+
+/** Ključevi koji se ne porede: korisnički tekst (Z2 — decimalni zarez, km na 1 decimalu, oporavak m:ss, bez internih
+    oznaka — menja ga u svakom planu), oznaka verzije i `peakKm` (owner K: adaptacija upisuje vrh iz konstrukcije umesto
+    najvećeg cilja izgradnje — menja ga u većini adaptiranih planova; provera vrednosti je u segment09.node.test.ts). */
+const SKIP09 = new Set(['title', 'notes', 'message', 'before', 'after', 'peakKm']);
+/** F1 (04-final): „planirano manje od cilja" je poruka korisniku koja se prikazuje samo za razliku ≥ 1 km ili ≥ 3 %
+    (text.belowTargetShown) — kao tekst, ne poredi se; planirano i cilj nedelje se i dalje porede. */
+const BELOW09 = new Set(['PLANNED_BELOW_TARGET', 'PLANNED_BELOW_TARGET_LIMITS']);
+
+/** Kanon otiska regresije prema c13c258 (5K-09). */
+export const canon09 = (r: unknown): string =>
+  JSON.stringify(r, (k, v: unknown) =>
+    k === 'policyVersion'
+      ? '-'
+      : SKIP09.has(k)
+        ? undefined
+        : k === 'warnings' && Array.isArray(v)
+          ? v.filter((x: { rule?: string }) => !BELOW09.has(x.rule ?? ''))
+          : v
+  );
+
+/** Razlog promene toka prema c13c258 (ispravka segmenta 09); CH = drugi korak lanca posle promenjenog prvog. */
+export type Why09 =
+  | 'F1'
+  | 'F2'
+  | 'C1'
+  | 'C8'
+  | 'C13'
+  | 'C2'
+  | 'N1'
+  | 'Z1'
+  | 'Z6'
+  | 'Z7'
+  | 'Z8'
+  | 'LC4'
+  | 'LC5'
+  | 'LC8'
+  | 'CH'
+  /* 5K-10 (krug T, 5k-v2.12.0), otisci prema b9c4728 (segment10.*-b9c4728.json, fixes/5K/fixture10.ts). */
+  | 'T1'
+  | 'T2'
+  | 'T4'
+  | 'T5'
+  | 'C3'
+  | 'C5'
+  | 'C11'
+  /** Mreža 08g: ulazni plan generatora (isti ulaz) promenjen krugom T — zapis izmena/mešovitih nedelja adaptacije. */
+  | 'GEN';
+
+interface MarkPlan {
+  planType?: string;
+  experience?: string;
+  paceMode?: string;
+  pattern?: { q1: string; q2: string | null; long: string };
+  weeks: {
+    index: number;
+    phase: string;
+    deload: boolean;
+    test?: boolean;
+    taperStep?: number | null;
+    wuMin?: boolean;
+    notes?: string[];
+    limits?: { quality?: string; rest?: string[] };
+    days: {
+      weekday: string;
+      role: string;
+      date?: string;
+      level?: number;
+      workout: { kind: string; qualityType?: string | null };
+    }[];
+  }[];
+  warnings?: { rule: string }[];
+  adaptation?: {
+    steps: { deload?: boolean; deloadWeek?: number; fromWeek: number; underFrom?: string }[];
+    mixedWeeks?: number[];
+  };
+  continuous?: { plan: MarkPlan } | null;
+}
+const plansOf = (r: unknown): MarkPlan[] => {
+  const x = r as { ok?: boolean; plan?: MarkPlan };
+  const p = x.ok === undefined ? (r as MarkPlan) : x.ok ? x.plan! : null;
+  if (!p) return [];
+  return p.continuous ? [p, p.continuous.plan] : [p];
+};
+
+const reasonsOf = (r: unknown): { condition: string; applied: boolean }[] => {
+  const x = r as { ok?: boolean; reasons?: { condition?: string; applied?: boolean }[] };
+  return x.ok
+    ? (x.reasons ?? []).map((y) => ({ condition: y.condition ?? '', applied: y.applied === true }))
+    : [];
+};
+
+/** 5K-10 (krug T): oznaka razloga promene prema b9c4728 na TEKUĆEM rezultatu (fixture10.ts bira prvi koji važi:
+    CH, T5, T4, T1, T2, C5, C3, C11). */
+export function mark10(why: Why09, r: unknown): boolean {
+  const ps = plansOf(r);
+  const cont = ps.filter((p) => p.planType !== 'runWalk');
+  switch (why) {
+    case 'T5':
+      // Plan trčanje/hodanje: lestvica do L14.
+      return ps.some((p) => p.planType === 'runWalk');
+    case 'T4':
+      // Trkač (ne-početnik): taper 1 nedelja, bez redovnog rasterećenja pre ned 4, glavni I/RP ≥ 80 % budžeta.
+      return cont.some(
+        (p) =>
+          p.experience !== 'beginner' && p.weeks.filter((w) => w.phase === 'taper').length === 1
+      );
+    case 'T1':
+      // Nedelje izgradnje sa laganim danom: lagan ≤ 0,8 × dugi i ≥ 20 min.
+      return cont.some((p) =>
+        p.weeks.some(
+          (w) =>
+            !w.deload &&
+            ['base', 'peak', 'sharpen'].includes(w.phase) &&
+            w.days.some((d) => d.role === 'easy')
+        )
+      );
+    case 'T2':
+      // WU/CD na minimumu ili upozorenje „dan kvaliteta duži od dugog" (pouka 14).
+      return cont.some(
+        (p) =>
+          p.weeks.some((w) => w.wuMin === true) ||
+          (p.warnings ?? []).some((w) => w.rule === 'LONG_SHORTER_THAN_QUALITY')
+      );
+    case 'C5':
+      return cont.some((p) =>
+        p.weeks.some((w) => (w.notes ?? []).some((n) => n.startsWith('Bez oštrenja: sa njim')))
+      );
+    case 'C3':
+      return cont.some((p) =>
+        p.weeks.some(
+          (w) =>
+            (p.adaptation?.mixedWeeks ?? []).includes(w.index) &&
+            w.days.some((d) => d.workout.qualityType === 'TEST_3K')
+        )
+      );
+    case 'C11':
+      return cont.some((p) =>
+        p.weeks.some(
+          (w) =>
+            (w.phase === 'taper' || (w.limits?.rest?.length ?? 0) > 0) &&
+            (w.notes ?? []).some((n) => n.includes('drugi dan kvaliteta je lagan'))
+        )
+      );
+    default:
+      return mark09(why, r);
+  }
+}
+
+/** Oznaka razloga na TEKUĆEM rezultatu (provera u testu; razlog određuje skripta otisaka poređenjem sa c13c258). */
+export function mark09(why: Why09, r: unknown): boolean {
+  const ps = plansOf(r);
+  switch (why) {
+    case 'F1':
+      // Oštrenje trkačke nedelje na danu koji nije zahtevni dan šablona (week.sharpenerCandidates).
+      return ps.some((p) => {
+        const race = p.weeks[p.weeks.length - 1]!;
+        const q = race.days.find((d) => d.workout.kind === 'quality');
+        return (
+          !!q && !!p.pattern && ![p.pattern.q1, p.pattern.q2, p.pattern.long].includes(q.weekday)
+        );
+      });
+    case 'F2':
+      // Generator: kvalitet ograničen jer ne staje (generate.construct, upozorenje QUALITY_REDUCED).
+      return ps.some((p) => (p.warnings ?? []).some((w) => w.rule === 'QUALITY_REDUCED'));
+    case 'C1':
+      // Početnik: redovno rasterećenje nikad u nedeljama 1–2 (prinudno — umor — sme).
+      return ps.some((p) => {
+        const forced = new Set(
+          (p.adaptation?.steps ?? []).filter((x) => x.deload).map((x) => x.deloadWeek ?? x.fromWeek)
+        );
+        return (
+          p.experience === 'beginner' &&
+          !p.weeks.some((w) => w.index <= 2 && w.deload && !forced.has(w.index))
+        );
+      });
+    case 'C8':
+      return ps.some((p) => p.paceMode === 'feel');
+    case 'C13':
+      // Početnik (plan po osećaju ili posle rezultata koji ga prevodi na tempo): bez kontrolnog trčanja.
+      return ps.some((p) => p.experience === 'beginner' && !p.weeks.some((w) => w.test));
+    case 'Z7':
+      // Korak manjka nosi prozor svojih zapisa, ili isti zapisi ne prave nov korak (5k-v2.11.1).
+      return (
+        ps.some((p) => (p.adaptation?.steps ?? []).some((x) => x.underFrom !== undefined)) ||
+        reasonsOf(r).some((x) => x.condition === 'UNDER_EXECUTION' && !x.applied)
+      );
+    case 'Z8':
+      return reasonsOf(r).some((x) => x.condition === 'PAIN' && !x.applied);
+    case 'Z6':
+    case 'LC4':
+    case 'LC5':
+      // Ranije odbijen tok (LIMITS / pravila doze i testa / RACE_WEEK_TAPER) sada prolazi.
+      return (r as { ok?: boolean }).ok === true;
+    case 'LC8':
+      return ps.some((p) =>
+        (p.warnings ?? []).some(
+          (w) =>
+            w.rule === 'MIXED_OVER_TARGET' &&
+            (w as { message?: string }).message?.includes('posle pauze') === true
+        )
+      );
+    case 'Z1':
+      // Kvalitet zadržan u mešovitoj nedelji (planirano iznad cilja uz MIXED_OVER_TARGET ili u toleranciji).
+      return ps.some(
+        (p) =>
+          (p.warnings ?? []).some((w) => w.rule === 'MIXED_OVER_TARGET') ||
+          (p.adaptation?.mixedWeeks?.length ?? 0) > 0
+      );
+    case 'T1':
+    case 'T2':
+    case 'T4':
+    case 'T5':
+    case 'C3':
+    case 'C5':
+    case 'C11':
+      return mark10(why, r);
+    default:
+      // C2/N1 (adaptacija: umor / poslednja izgradnja) i CH (lanac) — nema oznake na samom planu; spisak je u otisku.
+      return true;
+  }
 }

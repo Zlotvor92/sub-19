@@ -1,0 +1,88 @@
+{
+ "dist": "5K",
+ "kG": 1,
+ "kA": 60,
+ "M1_laganJednakDugi": {
+  "plans": 3816,
+  "ok": 3816,
+  "withEq": 646,
+  "withNear": 1090,
+  "byDays": {
+   "3R": [
+    550,
+    72
+   ],
+   "3F": [
+    440,
+    48
+   ],
+   "4R": [
+    660,
+    44
+   ],
+   "4F": [
+    528,
+    76
+   ],
+   "5R": [
+    550,
+    66
+   ],
+   "5F": [
+    440,
+    152
+   ],
+   "3B": [
+    360,
+    94
+   ],
+   "4B": [
+    288,
+    94
+   ]
+  },
+  "ex": [
+   "r-d3-6w-25km-v32-0",
+   "f-d3-6w-25km-e480-0",
+   "r-d3-6w-25km-v32-1",
+   "f-d3-6w-25km-e480-1",
+   "r-d3-6w-30km-v32-0",
+   "r-d3-6w-30km-v38-0"
+  ]
+ },
+ "M5_laganUzDugiSusedniDan": {
+  "plans": 308,
+  "weeks": 747,
+  "ex": [
+   "r-d4-6w-35km-v32-0",
+   "f-d4-6w-35km-e420-0",
+   "f-d4-6w-35km-e480-0",
+   "r-d4-6w-40km-v32-0",
+   "f-d4-6w-40km-e360-0",
+   "f-d4-6w-40km-e420-0"
+  ]
+ },
+ "M6_laganKraciOd20min": {
+  "plans": 352,
+  "minSec": 832,
+  "ex": [
+   "r-d3-6w-12km-v45-0",
+   "r-d3-6w-12km-v52-0",
+   "r-d3-6w-12km-v58-0",
+   "f-d3-6w-12km-e300-0",
+   "f-d3-6w-12km-e360-0",
+   "r-d3-6w-12km-v45-1"
+  ]
+ },
+ "M2_M3_napomene": {
+  "flows": 5210,
+  "ok": 5210,
+  "notePlannedMismatch": 0,
+  "notePlannedMismatchOver015": 0,
+  "flowsWithMismatch": 0,
+  "deloadNoteOnNonDeload": 0,
+  "flowsWithDeloadNote": 0,
+  "ex2": [],
+  "ex3": []
+ }
+}

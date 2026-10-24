@@ -165,7 +165,7 @@ export function executionBasis(
   options: { breakDays?: number; weeklyKm?: number; recentLongRunKm?: number }
 ): (Basis & { returning: boolean; base: number; weeklyKm: number }) | { error: string } {
   const v2 = v2Of(current);
-  if (!v2 || !isIsoDate(today)) return { error: 'Plan nema podatke HM v2.' };
+  if (!v2 || !isIsoDate(today)) return { error: 'Plan nema podatke potrebne za ovu odluku.' };
   const brk = options.breakDays;
   if (brk !== undefined && (!Number.isInteger(brk) || brk < 7 || brk > 365))
     return { error: 'Potvrdi trajanje pauze od 7 do 365 dana.' };

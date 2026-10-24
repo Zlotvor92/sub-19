@@ -1,0 +1,260 @@
+{
+ "dist": "5K",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "steps": 7502,
+ "same": {
+  "NO_FACTS": [
+   3757,
+   7
+  ],
+  "NEW_RESULT": [
+   1457,
+   2
+  ],
+  "NEW_RESULT+PAIN": [
+   174,
+   0
+  ],
+  "PAIN": [
+   943,
+   11
+  ],
+  "PAUSE": [
+   285,
+   11
+  ],
+  "NEW_RESULT+PAUSE": [
+   111,
+   2
+  ],
+  "UNDER_EXECUTION": [
+   280,
+   246
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   122,
+   109
+  ],
+  "FATIGUE": [
+   148,
+   9
+  ],
+  "PAIN+PAUSE": [
+   69,
+   0
+  ],
+  "FATIGUE+PAIN": [
+   16,
+   1
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   55,
+   53
+  ],
+  "OVER_EXECUTION": [
+   12,
+   0
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   11,
+   0
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   18,
+   15
+  ],
+  "FATIGUE+NEW_RESULT": [
+   29,
+   4
+  ],
+  "OVER_EXECUTION+PAIN": [
+   6,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+PAIN": [
+   2,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   7,
+   0
+  ]
+ },
+ "next": {
+  "NO_FACTS": [
+   1758,
+   1
+  ],
+  "NEW_RESULT": [
+   684,
+   0
+  ],
+  "NEW_RESULT+PAIN": [
+   129,
+   1
+  ],
+  "PAUSE": [
+   141,
+   3
+  ],
+  "PAIN": [
+   686,
+   17
+  ],
+  "FATIGUE": [
+   74,
+   2
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   54,
+   39
+  ],
+  "UNDER_EXECUTION": [
+   128,
+   103
+  ],
+  "PAIN+PAUSE": [
+   47,
+   0
+  ],
+  "NEW_RESULT+PAUSE": [
+   49,
+   1
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   35,
+   26
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   4,
+   0
+  ],
+  "OVER_EXECUTION": [
+   6,
+   0
+  ],
+  "FATIGUE+NEW_RESULT": [
+   12,
+   1
+  ],
+  "FATIGUE+PAIN": [
+   11,
+   2
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   10,
+   6
+  ],
+  "FATIGUE+NEW_RESULT+PAIN": [
+   2,
+   1
+  ],
+  "OVER_EXECUTION+PAIN": [
+   3,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   3,
+   0
+  ]
+ },
+ "ex": {
+  "same UNDER_EXECUTION": [
+   "9/1",
+   "9/3"
+  ],
+  "same NEW_RESULT+UNDER_EXECUTION": [
+   "17/2",
+   "20/2"
+  ],
+  "next NEW_RESULT+UNDER_EXECUTION": [
+   "28/1",
+   "70/1"
+  ],
+  "next UNDER_EXECUTION": [
+   "28/2",
+   "72/3"
+  ],
+  "next PAIN": [
+   "33/4",
+   "107/3"
+  ],
+  "same PAIN+UNDER_EXECUTION": [
+   "79/2",
+   "96/1"
+  ],
+  "next PAIN+UNDER_EXECUTION": [
+   "79/2",
+   "101/4"
+  ],
+  "same NO_FACTS": [
+   "95/2",
+   "110/0"
+  ],
+  "same NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "161/4",
+   "298/1"
+  ],
+  "same FATIGUE": [
+   "246/2",
+   "309/2"
+  ],
+  "next FATIGUE": [
+   "246/2",
+   "1459/2"
+  ],
+  "same PAIN": [
+   "259/0",
+   "411/1"
+  ],
+  "next FATIGUE+NEW_RESULT+PAIN": [
+   "322/1"
+  ],
+  "same PAUSE": [
+   "389/1",
+   "621/1"
+  ],
+  "next NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "612/1",
+   "736/2"
+  ],
+  "same NEW_RESULT+PAUSE": [
+   "616/2",
+   "1386/1"
+  ],
+  "next PAUSE": [
+   "621/1",
+   "718/1"
+  ],
+  "same FATIGUE+NEW_RESULT": [
+   "667/3",
+   "772/1"
+  ],
+  "next FATIGUE+NEW_RESULT": [
+   "667/3"
+  ],
+  "next NO_FACTS": [
+   "838/2"
+  ],
+  "next NEW_RESULT+PAIN": [
+   "988/4"
+  ],
+  "next FATIGUE+PAIN": [
+   "1099/2",
+   "1954/3"
+  ],
+  "same NEW_RESULT": [
+   "1313/0",
+   "1345/0"
+  ],
+  "next NEW_RESULT+PAUSE": [
+   "1386/1"
+  ],
+  "same FATIGUE+PAIN": [
+   "1954/3"
+  ]
+ },
+ "seconds": 282.333
+}

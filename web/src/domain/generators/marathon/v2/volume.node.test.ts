@@ -141,7 +141,7 @@ describe('M13a (pouka 28): skok dugog ≤ max(1,1 × L; L + 1,0), L = najduži d
     // Prag napomene: X/1,1 naviše na 0,1 (X ≥ 11 km), X − 1 za X < 11 km.
     expect([140, 180, 100].map(recentLongThreshold10)).toEqual([128, 164, 90]);
     expect(recentLongNote(180)).toBe(
-      'Dugi 18,0 km: ako ti je skorašnji najduži trk kraći od 16,4 km, unesi ga — plan počinje od njega (M13a).'
+      'Dugi 18,0 km: ako ti je skorašnje najduže trčanje kraće od 16,4 km, unesi ga — plan počinje od njega (M13a).'
     );
   });
 
@@ -174,7 +174,7 @@ describe('M13a (pouka 28): skok dugog ≤ max(1,1 × L; L + 1,0), L = najduži d
     if (r.ok) return;
     expect(r.reasons[0]!.code).toBe('RECENT_LONG_TOO_SHORT');
     expect(r.reasons[0]!.message).toMatch(
-      /Skorašnji najduži trk \(5,0 km\) je prekratak za 35,0 km nedeljno sa 4 dana i 12 nedelja do trke.*preporuka: duža priprema, manji početni obim ili više dana, ili polumaraton/
+      /Skorašnje najduže trčanje 5,0 km je prekratko za 35,0 km nedeljno sa 4 dana i 12 nedelja do trke: dugi raste najviše max\(10 %, 1 km\).*Preporuka: produži dugo trčanje, duža priprema, manji početni obim ili više dana, ili polumaraton/
     );
   });
 

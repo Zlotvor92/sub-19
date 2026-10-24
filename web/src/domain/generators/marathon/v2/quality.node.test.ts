@@ -371,6 +371,7 @@ describe('M11 plafon zone, drugi član (pouka 32; MAR-03 za MP, MAR-04b za sve z
     const t0 = taperDoses(st, 0, 2);
     const t1 = taperDoses(st, 0, 2, false, { q1: () => false, q2: () => () => false });
     expect(doseOf(t0.mp!)).toBeGreaterThan(6000);
-    expect([doseOf(t1.mp!), doseOf(t1.t!)]).toEqual([6000, 2000]);
+    // MAR-11 (T2, odluka organizatora): ni najkraći MP blok (1,0 km) ne staje u dugi → MP otpada (dan lagan).
+    expect([t1.mp, t1.mpDropped, doseOf(t1.t!)]).toEqual([null, true, 2000]);
   });
 });

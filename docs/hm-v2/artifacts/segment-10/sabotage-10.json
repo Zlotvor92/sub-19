@@ -1,0 +1,65 @@
+[
+  {
+    "name": "10-1 T1 lagan bez plafona 0,8 × dugi (konstruktor)",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "    const hi10 = buildEasyCap10(long10);\n    if (easy10.every((e) => e >= min10 && e <= hi10)) return { long10, easy10 };",
+    "replace": "    const hi10 = long10;\n    if (easy10.every((e) => e >= min10 && e <= hi10)) return { long10, easy10 };",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-2 T1 validator ne proverava plafon laganog",
+    "file": "src/domain/generators/halfMarathon/v2/validate.ts",
+    "find": "          } else if (e10 > buildEasyCap10(l10) || e10 < buildEasyMin10(pk))",
+    "replace": "          } else if (e10 < buildEasyMin10(pk))",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-3 T1 najkraći lagan bez 20 min",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  while (Math.round((k / 10) * mid) < P.lengths.easyMinSec) k++;",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-4 T1 bez manje laganih dana",
+    "file": "src/domain/generators/halfMarathon/v2/lengths.ts",
+    "find": "  for (let k = easyDays; k >= Math.max(1, minEasy); k--) {",
+    "replace": "  for (let k = easyDays; k >= Math.max(easyDays, minEasy); k--) {",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-5 T3 taper posle novog starta bez kvaliteta",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  if (!newStart || (state.q1 === null && state.q2 === null)) return null;",
+    "replace": "  if (newStart || !newStart) return null;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-6 T3 trkačka posle novog starta bez oštrenja",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "  return (newStart && !pain) || (taperRpM > 0 && s.reps * s.repM <= taperRpM);",
+    "replace": "  return taperRpM > 0 && s.reps * s.repM <= taperRpM;",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-7 C4 urađen dan posle asOf po upisanim km",
+    "file": "src/domain/generators/halfMarathon/v2/adapt.ts",
+    "find": "      const rec = x > t ? [] : facts.workouts.filter((r) => (r.dayId ?? r.date) === d.date);",
+    "replace": "      const rec = facts.workouts.filter((r) => (r.dayId ?? r.date) === d.date);",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-8 C12 RP najnižeg nivoa otpada u mešovitoj nedelji",
+    "file": "src/domain/generators/halfMarathon/v2/week.ts",
+    "find": "  return d.role === 'long' || d.role === 'test' || rpFloorDay(d)",
+    "replace": "  return d.role === 'long' || d.role === 'test'",
+    "tests": ["src/domain/generators/halfMarathon/v2/segment10.node.test.ts"]
+  },
+  {
+    "name": "10-9 T7 bez provere najdužeg prema nedeljnom obimu",
+    "file": "src/domain/generators/halfMarathon/v2/input.ts",
+    "find": "  else if (recentLong != null && isNum(km) && recentLong > km)",
+    "replace": "  else if (recentLong != null && isNum(km) && recentLong > km + 100)",
+    "tests": ["src/domain/generators/halfMarathon/v2/input.node.test.ts"]
+  }
+]

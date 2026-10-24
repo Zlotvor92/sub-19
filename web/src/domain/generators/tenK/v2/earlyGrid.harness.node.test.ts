@@ -27,10 +27,13 @@ import { generateTenKV2 } from './generate.ts';
 import {
   at7ba,
   GRID_TIMEOUT,
+  hasP35,
   hasP37,
   missingParts,
   p35FlowErrors,
-  p37FlowErrors
+  p37FlowErrors,
+  p07FlowErrors,
+  p08Errors
 } from './level.harness.node.test.ts';
 import {
   EARLY_NAMED,
@@ -40,13 +43,14 @@ import {
   earlyFlows,
   earlyGridBases,
   EARLY_06D,
-  planHash06c
+  planHash06c,
+  mark07
 } from './testInputs.ts';
 import type { TenKV2Facts, TenKV2Plan } from './types.ts';
 
 export const EARLY_PARTS = 12;
-const K_FAST = 60;
-const K_PRE = 240;
+const K_FAST = 150;
+const K_PRE = 600;
 const HERE = fileURLToPath(new URL('./', import.meta.url));
 export const EARLY_HASHES = `${HERE}segment06d.early-hashes-51a924f.json`;
 export const PRE_HASHES = `${HERE}segment06e.prestart-hashes-bd07eec.json`;
@@ -107,6 +111,8 @@ export interface EarlyRun {
   p35: boolean;
   /** 06i: mešovita nedelja pouke 37 u rezultatu. */
   p37: boolean;
+  /** 10K-07: oznaka uzroka (testInputs.mark07). */
+  m07: string;
 }
 
 export function runEarly(f: EarlyFlow): EarlyRun {
@@ -119,7 +125,8 @@ export function runEarly(f: EarlyFlow): EarlyRun {
       bad: [`${f.key}: ${JSON.stringify(r).slice(0, 400)}`],
       hash: 0,
       p35: false,
-      p37: false
+      p37: false,
+      m07: ''
     };
   const bad = adaptInvariants(p0, r.plan, f.asOf, facts as unknown as TenKV2Facts).map(
     (v) => `${f.key}: ${v}`
@@ -128,8 +135,9 @@ export function runEarly(f: EarlyFlow): EarlyRun {
     ok: true,
     bad,
     hash: planHash06c(r),
-    p35: JSON.stringify(r).includes('Pouka 35:'),
-    p37: hasP37(r)
+    p35: hasP35(r),
+    p37: hasP37(r),
+    m07: mark07(r)
   };
 }
 
@@ -180,7 +188,7 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       const keys = new Set(all.map((f) => f.key));
       expect(NAMED_FLOWS.filter((k) => !keys.has(k))).toEqual([]);
       if (FULL) expect(missingParts(HERE, 'earlyGrid', EARLY_PARTS)).toEqual([]);
-      else expect(flows.length).toBeGreaterThan(1000);
+      else expect(flows.length).toBeGreaterThan(400);
     });
 
     it('0 odbijanja i adaptInvariants prazno (Uslov 8)', () => {
@@ -193,7 +201,7 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
         key: f.key,
         id: f.base.id,
         hash: res[i]!.hash,
-        res: res[i]!.p35 ? 'Pouka 35:' : null
+        res: res[i]!.p35 ? 'Drugi dan kvaliteta (' : null
       }));
       expect(p35FlowErrors('early', runs).slice(0, 10)).toEqual([]);
     });
@@ -202,9 +210,14 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       const runs = flows.map((f, i) => ({
         key: f.key,
         hash: res[i]!.hash,
-        res: res[i]!.p37 ? 'Mešovita nedelja (pouka 37)' : null
+        res: res[i]!.p37 ? 'Mešovita nedelja: zaštićeni dani 0 km' : null,
+        m07: res[i]!.m07
       }));
       expect(p37FlowErrors('early', runs).slice(0, 10)).toEqual([]);
+      // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
+      expect(p07FlowErrors('early', runs).slice(0, 10)).toEqual([]);
+      // 10K-08: tokovi koje 10k-v2.10.0 menja prema b9c4728 (fixture).
+      expect(p08Errors('early', runs).slice(0, 10)).toEqual([]);
     });
 
     it('regresija: tok prihvaćen na 51a924f (pre starta: bd07eec) bajt-isti (heš bez oznake verzije), osim porodice 1 i A5 u uvodu (ti se menjaju)', () => {

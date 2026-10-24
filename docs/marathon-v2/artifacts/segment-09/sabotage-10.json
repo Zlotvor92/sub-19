@@ -1,0 +1,23 @@
+[
+ {
+  "name": "10-Z7 manjak ne vidi raniji korak istih zapisa",
+  "file": "src/domain/generators/marathon/v2/assess.ts",
+  "find": "const seen = steps.find((s) => s.underFrom !== undefined && day(s.asOf) >= w2[0]);",
+  "replace": "const seen = steps.find((s) => s.underFrom !== undefined && day(s.asOf) >= w2[0] && false);",
+  "tests": ["src/domain/generators/marathon/v2/segment10.node.test.ts"]
+ },
+ {
+  "name": "10-Z6 LIMITS samo zaključani tekućeg koraka",
+  "file": "src/domain/generators/marathon/v2/validate.ts",
+  "find": "      if (steps.length === 0 || protectedDay(d) || d.role === 'race') continue;",
+  "replace": "      if (steps.length === 0 || lockedIds.has(d.date) || d.role === 'race') continue;",
+  "tests": ["src/domain/generators/marathon/v2/segment10.node.test.ts"]
+ },
+ {
+  "name": "10-Z4 vraćanje odbija posle prilagođavanja",
+  "file": "src/domain/generators/marathon/v2/app/adapt.ts",
+  "find": "  const errors = validatePlan(merged).filter((v) => v.severity === 'error');",
+  "replace": "  const errors = validatePlan(merged).filter((v) => v.severity === 'error');\n  if (!same(cur.adaptation?.steps ?? [], snap.adaptation?.steps ?? [])) return refuse('x');",
+  "tests": ["src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"]
+ }
+]

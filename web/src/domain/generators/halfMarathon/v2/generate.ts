@@ -9,10 +9,10 @@ import { mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   longestLong10,
-  longsOf10,
   recentLongCap10,
   recentLongNeeded10,
-  rollingLongCap10,
+  ranCapFloor10,
+  rollingCapRan10,
   week1LongCap10
 } from './lengths.ts';
 import { assessGoal, predictedHm } from './paces.ts';
@@ -22,11 +22,13 @@ import { advance, INITIAL_QUALITY, type QualityState, type WeekPicks } from './q
 import {
   basePaces,
   basisAt,
-  deloadRefLong10,
+  longRef10,
+  ranLongFor,
   framesFor,
   initialState,
   jumpRecentKm,
   pacesAt,
+  newStartAt,
   restartWeeks,
   stepVdotAt
 } from './steps.ts';
@@ -71,7 +73,7 @@ function recentLongNote(long10: number, ctx: WeekContext): string {
   const r = ctx.input.recentLongRunKm;
   const km = fmtKm(long10 / 10);
   if (r == null)
-    return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km pretpostavlja skorašnji najduži trk od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
+    return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km pretpostavlja skorašnje najduže trčanje od bar ${fmtKm(recentLongNeeded10(long10) / 10)} km; ako je bio kraći, unesi ga (dugi ≤ max(1,1 × najduži, najduži + 1 km), pouka 28).`;
   const cap10 = recentLongCap10(r);
   const at = long10 === cap10 && long10 === week1LongCap10(ctx.paces, r, ctx.rule.longMaxSec);
   return `Dugi nedelje ${weekLabel(ctx.input, 1)} ${km} km ≤ ${fmtKm(cap10 / 10)} km (skorašnji najduži ${fmtKm(r)} km, pouka 28)${at ? ' — na granici' : ''}.`;
@@ -114,7 +116,7 @@ function recentTooShort(
     reasons: [
       {
         code: 'RECENT_LONG_TOO_SHORT',
-        message: `Skorašnji najduži trk ${fmtKm(r)} km je prekratak za plan od ${days} dana, ${fmtKm(input.currentWeeklyKm)} km nedeljno: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${weekLabel(input, week)} ne može da se sastavi po pravilima (pouka 28).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, dužu pripremu, manji obim, više dana ili 10K plan.`,
+        message: `Skorašnje najduže trčanje ${fmtKm(r)} km je prekratko za plan od ${days} dana, ${fmtKm(input.currentWeeklyKm)} km nedeljno: dugi raste najviše max(10 %, 1 km) iznad najdužeg u prethodne 4 nedelje, pa nedelja ${weekLabel(input, week)} ne može da se sastavi po pravilima (pouka 28).${threshold !== null ? ` Plan je izvodljiv od ${fmtKm(threshold)} km.` : ''} Preporuka: produži dugi trk, dužu pripremu, manji obim, više dana ili 10K plan.`,
         week
       }
     ]
@@ -176,7 +178,10 @@ export function construct(
   // koji ne staje otpada samo posle smanjenja obima.
   const ctxAt = (w: number): WeekContext => {
     if (!av) return ctx0;
-    const reduced = w >= av.reducedFrom ? { adapted: true } : {};
+    const reduced = {
+      ...(w >= av.reducedFrom ? { adapted: true } : {}),
+      ...(newStartAt(steps, w) ? { newStart: true } : {})
+    };
     if (stepVdotAt(steps, w) === null) return { ...ctx0, ...reduced };
     const p = pacesAt(pace, steps, w);
     return { ...ctx0, paces: p, raceSec: predictedHm(p), feel: false, ...reduced };
@@ -236,14 +241,20 @@ export function construct(
       ? adaptNominal10(frame, h, start10, rule, av)
       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
     const longest10 = longestLong10(written);
-    const roll10 = rollingLongCap10(frame.index, longsOf10(written), recentJ);
+    const roll10 = rollingCapRan10(
+      frame.index,
+      written,
+      ranLongFor(steps, frame.index),
+      recentJ,
+      ranCapFloor10(rule.weekMinKm, input.runDays.length)
+    );
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
         ctx,
         frame,
         t10,
         quality,
-        frame.deload && lastLong10 === null ? deloadRefLong10(steps, frame.index) : lastLong10,
+        longRef10(lastLong10, steps, frame),
         longest10,
         mode,
         roll10

@@ -1,0 +1,293 @@
+{
+ "dist": "HM",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "steps": 7929,
+ "same": {
+  "NO_FACTS": [
+   4111,
+   0
+  ],
+  "UNDER_EXECUTION": [
+   284,
+   0
+  ],
+  "OVER_EXECUTION": [
+   24,
+   0
+  ],
+  "NEW_RESULT": [
+   1520,
+   0
+  ],
+  "PAIN": [
+   831,
+   6
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   55,
+   0
+  ],
+  "NEW_RESULT+PAIN": [
+   127,
+   1
+  ],
+  "FATIGUE": [
+   182,
+   3
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   133,
+   0
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   14,
+   0
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   8,
+   0
+  ],
+  "TEST_MOVED": [
+   13,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   62,
+   0
+  ],
+  "PAUSE": [
+   294,
+   10
+  ],
+  "FATIGUE+PAIN": [
+   20,
+   2
+  ],
+  "FATIGUE+NEW_RESULT": [
+   42,
+   3
+  ],
+  "PAIN+PAUSE": [
+   56,
+   1
+  ],
+  "NEW_RESULT+PAUSE": [
+   98,
+   2
+  ],
+  "PAIN+TEST_MOVED": [
+   17,
+   0
+  ],
+  "OVER_EXECUTION+PAIN": [
+   5,
+   0
+  ],
+  "FATIGUE+TEST_MOVED": [
+   3,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION+PAIN": [
+   1,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   11,
+   0
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   4,
+   0
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   6,
+   0
+  ],
+  "PAUSE+TEST_MOVED": [
+   2,
+   0
+  ],
+  "PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   1,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   4,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   1,
+   0
+  ]
+ },
+ "next": {
+  "NO_FACTS": [
+   1442,
+   5
+  ],
+  "NEW_RESULT+PAIN": [
+   92,
+   2
+  ],
+  "NEW_RESULT": [
+   501,
+   0
+  ],
+  "PAIN": [
+   527,
+   5
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   5,
+   0
+  ],
+  "FATIGUE": [
+   73,
+   2
+  ],
+  "UNDER_EXECUTION": [
+   91,
+   0
+  ],
+  "PAUSE": [
+   92,
+   2
+  ],
+  "FATIGUE+NEW_RESULT": [
+   13,
+   0
+  ],
+  "PAIN+PAUSE": [
+   29,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   23,
+   0
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   40,
+   0
+  ],
+  "NEW_RESULT+PAUSE": [
+   41,
+   1
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   29,
+   3
+  ],
+  "FATIGUE+PAIN": [
+   14,
+   1
+  ],
+  "PAIN+TEST_MOVED": [
+   10,
+   0
+  ],
+  "OVER_EXECUTION": [
+   12,
+   0
+  ],
+  "TEST_MOVED": [
+   4,
+   0
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   2,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   3,
+   0
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   7,
+   1
+  ],
+  "PAUSE+TEST_MOVED": [
+   1,
+   0
+  ],
+  "OVER_EXECUTION+PAIN": [
+   3,
+   0
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   3,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   1,
+   0
+  ]
+ },
+ "ex": {
+  "next NEW_RESULT+PAIN": [
+   "26/2",
+   "236/3"
+  ],
+  "same PAUSE": [
+   "79/2",
+   "110/1"
+  ],
+  "next PAUSE": [
+   "79/2",
+   "1452/3"
+  ],
+  "same PAIN": [
+   "81/2",
+   "99/1"
+  ],
+  "next PAIN": [
+   "99/1",
+   "261/3"
+  ],
+  "same NEW_RESULT+PAUSE": [
+   "176/5",
+   "1881/5"
+  ],
+  "same NEW_RESULT+PAIN": [
+   "236/3"
+  ],
+  "next NO_FACTS": [
+   "279/3",
+   "520/4"
+  ],
+  "same FATIGUE+PAIN": [
+   "328/1",
+   "485/1"
+  ],
+  "same FATIGUE": [
+   "355/2",
+   "886/4"
+  ],
+  "next FATIGUE": [
+   "355/2",
+   "681/2"
+  ],
+  "next FATIGUE+PAIN": [
+   "485/1"
+  ],
+  "next NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "641/1"
+  ],
+  "same FATIGUE+NEW_RESULT": [
+   "781/2",
+   "1425/2"
+  ],
+  "next PAIN+UNDER_EXECUTION": [
+   "1008/3",
+   "1277/3"
+  ],
+  "same PAIN+PAUSE": [
+   "1550/3"
+  ],
+  "next NEW_RESULT+PAUSE": [
+   "1881/5"
+  ]
+ },
+ "seconds": 683.246
+}

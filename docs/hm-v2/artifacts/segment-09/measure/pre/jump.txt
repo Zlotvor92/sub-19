@@ -1,0 +1,32 @@
+{
+ "dist": "HM",
+ "flows": 9058,
+ "rejected": 0,
+ "hit": 1060,
+ "byScenario": {
+  "painPause": 377,
+  "pause35": 266,
+  "chain2": 136,
+  "pause20": 72,
+  "pause10": 94,
+  "chain": 94,
+  "under50": 21
+ },
+ "overKm": {
+  ">3 km": 162,
+  "1–3 km": 386,
+  "≤1 km": 512
+ },
+ "maxOver": 11.9,
+ "maxEx": "painPause asOf 2027-01-10 ({\"startDate\":\"2026-11-02\",\"raceDate\":\"2027-02-28\",\"runDays\":[\"tue\",\"wed\",\"thu\",\"fri\",\"sat\",\"sun\"],\"longRunDay\":\"sun\",\"currentWeeklyKm\":75,\"recentResult\":null,\"goalTimeSec\":null,\"easyPaceSecPerKm\":405}): ned 12 dugi 21.4, L činjenice 8.5, L upisano 21.4",
+ "ex": [
+  "painPause asOf 2026-11-21: ned 5 dugi 15.6, L činjenice 8 (plafon 9), L upisano 20",
+  "painPause asOf 2026-11-28: ned 6 dugi 15.6, L činjenice 8 (plafon 9), L upisano 20",
+  "painPause asOf 2026-12-05: ned 7 dugi 16.5, L činjenice 8 (plafon 9), L upisano 20",
+  "painPause asOf 2026-12-12: ned 8 dugi 16.9, L činjenice 8 (plafon 9), L upisano 20",
+  "painPause asOf 2026-12-19: ned 9 dugi 10.8, L činjenice 8 (plafon 9), L upisano 20",
+  "pause35 asOf 2026-11-21: ned 5 dugi 5.8, L činjenice 4.5 (plafon 5.5), L upisano 12.6",
+  "painPause asOf 2026-11-21: ned 6 dugi 10.1, L činjenice 8.9 (plafon 9.9), L upisano 12.6",
+  "chain2 asOf 2026-11-28: ned 7 dugi 9.9, L činjenice 8.6 (plafon 9.6), L upisano 12.6"
+ ]
+}

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { FULL } from '@/test/level';
 import { generateHmV2 } from './generate.ts';
-import { mayChange } from './grid.harness.node.test.ts';
+import { mayChange, mayLower } from './grid.harness.node.test.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
 import { type Grid03Input, planHash } from './testInputs.ts';
 
@@ -112,9 +112,11 @@ export function describeGrid03(
         (g) => JSON.stringify(res.rows[g.id]) !== JSON.stringify(base[g.id])
       );
       expect(changed.filter((g) => !mayChange(g.id)).map((g) => g.id)).toEqual([]);
-      expect(changed.filter((g) => res.rows[g.id]![0] < base[g.id]![0]).map((g) => g.id)).toEqual(
-        []
-      );
+      expect(
+        changed
+          .filter((g) => res.rows[g.id]![0] < base[g.id]![0] && !mayLower(g.id))
+          .map((g) => g.id)
+      ).toEqual([]);
     });
 
     extra?.();

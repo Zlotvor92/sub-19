@@ -1,0 +1,60 @@
+
+Running 1 test using 1 worker
+
+izvor: experience="beginner"
+pregled: Pregled promene
+
+Prilagođavanje 2026-01-27: pauza
+
+Posle ovog prilagođavanja plan nije puna priprema za maraton: može se izabrati kraća distanca istog datuma ili zadržati plan.
+
+Odluka o pripremi se prikazuje ovde kada primeniš prikazanu promenu.
+
+Pauza (prijavljena) 35 dana (obim 7 dana pre pauze 45,0 km): cilj 22,5 km; prva nedelja bez kvaliteta, druga 1 kvalitet; nov start (faze preostale izgradnje ponovo, vrh od novog starta) (A3). Povratak do 45,0 km (nivo pre smanjenja) po +10 %/ned (min 1,0 km), osim tapera i trkačke nedelje (A8).
+Nedelja	Cilj, km	Plan, km	Kvalitet
+2	47,3 → 22,5	47,3 → 
+odluka: Odluka o pripremi
+
+Posle prilagođavanja najduži dugi u planu je 18 km, ispod 24 km: ovo nije puna priprema za maraton.
+
+Polumaraton: Početnik sa 4 dana trčanja: trenutni obim 45 km je iznad 40 km (opseg početnika 20–40 km); uz ovaj obim plan bez oznake početnika.
+10K: Početnik sa 4 dana trčanja: trenutni obim 45 km je iznad 35 km (opseg početnika 18–35 km); uz ovaj obim plan bez oznake početnika.
+
+Zadrži plan v2: plan maratona ostaje kakav je posle prilagođavanja; kraća distanca je samo predlog.
+
+Opcija je samo pregled: distanca se menja tek kada primeniš prikazanu promenu; prethodni plan ostaje u istoriji.
+
+Zatvori
+  ✘  1 ../docs/generators-v2/audit/app/beginner-handoff.spec.ts:20:1 › predaja: početnik maraton v2 → HM v2 — brojevi nedelja u napomenama nedelja ciljnog plana (2.0m)
+
+
+  1) ../docs/generators-v2/audit/app/beginner-handoff.spec.ts:20:1 › predaja: početnik maraton v2 → HM v2 — brojevi nedelja u napomenama nedelja ciljnog plana 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+      - waiting for locator('#plan-decision').getByRole('button', { name: 'Pregledaj opciju: Kraća distanca: 10K istog datuma' })
+
+
+      61 |   console.log(`odluka: ${await decision.innerText()}`);
+      62 |   const title = process.env['BEG_TITLE'] ?? 'Kraća distanca: Polumaraton istog datuma';
+    > 63 |   await decision.getByRole('button', { name: `Pregledaj opciju: ${title}` }).click();
+         |                                                                              ^
+      64 |   await preview.getByRole('button', { name: 'Primeni prikazanu promenu' }).click();
+      65 |   await expect.poll(() => serverPlan(backend), SYNC).toContain(`"summary":"${title}"`);
+      66 |   const g = serverGen(backend)!;
+        at /home/user/sub-19/docs/generators-v2/audit/app/beginner-handoff.spec.ts:63:78
+
+    Error Context: ../docs/generators-v2/audit/app/test-results/beginner-handoff-predaja-p-94aa8-enama-nedelja-ciljnog-plana/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../docs/generators-v2/audit/app/test-results/beginner-handoff-predaja-p-94aa8-enama-nedelja-ciljnog-plana/trace.zip
+    Usage:
+
+        npx playwright show-trace ../docs/generators-v2/audit/app/test-results/beginner-handoff-predaja-p-94aa8-enama-nedelja-ciljnog-plana/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    ../docs/generators-v2/audit/app/beginner-handoff.spec.ts:20:1 › predaja: početnik maraton v2 → HM v2 — brojevi nedelja u napomenama nedelja ciljnog plana 

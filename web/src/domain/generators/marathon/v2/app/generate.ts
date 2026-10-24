@@ -8,6 +8,7 @@ import { assessGoal, mpCorrection, raceTimeForVdot, round1, vdotFromResult } fro
 import { MARATHON_V2_POLICY as P } from '../policy.ts';
 import type { Reason, Weekday } from '../types.ts';
 import { addDays, diffDays } from './date.ts';
+import { userText } from './format.ts';
 import { generatedPlan, storedPlan, type GeneratedV2Plan } from './plan.ts';
 import type {
   PlanRejectionReason,
@@ -34,11 +35,12 @@ export function alignedStart(raceDate: string, today: string): string | null {
   return weeks >= 1 ? addDays(raceDate, -7 * weeks + 1) : null;
 }
 
-/** Odbijanje v2 doslovno, u obliku razmene (greške validatora v2 su već razlozi `PLAN_VIOLATES_POLICY`). */
+/** Odbijanje v2 u obliku razmene (greške validatora v2 su već razlozi `PLAN_VIOLATES_POLICY`); poruka je korisnički
+    tekst (Z2, format.userText), `code` ostaje. */
 export function rejection(reasons: readonly Reason[]): PlanRejectionReason[] {
   return reasons.map((x) => ({
     code: x.code,
-    message: x.message,
+    message: userText(x.message),
     ...(x.week != null ? { week: x.week } : {})
   }));
 }

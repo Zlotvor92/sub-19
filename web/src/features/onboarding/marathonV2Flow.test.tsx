@@ -7,6 +7,7 @@ import {
   MARATHON_V2_GENERATOR,
   generatorForPlan
 } from '../../domain/generators/select';
+import { userText } from '../../domain/generators/marathon/v2/app/format';
 import { resolvePlan } from '../../domain/plan';
 import { seedState, type PersistedState } from '../../domain/state';
 import { ADMIN_UID } from '../../services/config';
@@ -222,7 +223,8 @@ describe('maraton v2 iza prekidača', () => {
     expect(screen.getByText('Na šta da paziš u ovom planu')).toBeTruthy();
     const notes = (plan['marathonV2'] as { notes: string[] }).notes;
     expect(notes.length).toBeGreaterThan(0);
-    for (const n of notes) expect(document.body.textContent).toContain(n);
+    // MAR-09 (Z2): napomene v2 kao korisnički tekst (bez internih oznaka; marathonV2.userText).
+    for (const n of notes) expect(document.body.textContent).toContain(userText(n));
   });
 
   it('trčanje/hodanje: odbijanje v2 doslovno sa preporukom kraće distance, dalje se ne ide, plan se ne pravi', async () => {

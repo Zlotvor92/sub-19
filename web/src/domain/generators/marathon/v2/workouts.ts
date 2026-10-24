@@ -428,14 +428,22 @@ export function eveWorkout(p: Paces, strides = true): Workout {
 }
 
 /** M8: oštrenje trkačke nedelje — WU + 2 × 2000 m MP (2:00) + CD (WU/CD po M14); `feel` uz RPE MP (M16). */
-export function sharpenerWorkout(p: Paces, wc: WarmupCooldown, feel = false): Workout {
-  const s = P.raceWeek.sharpener;
+export function sharpenerWorkout(
+  p: Paces,
+  wc: WarmupCooldown,
+  feel = false,
+  structure: Structure = {
+    form: 'reps',
+    reps: P.raceWeek.sharpener.reps,
+    repM: P.raceWeek.sharpener.repM
+  }
+): Workout {
   return qualityWorkout(
     {
       ladder: 'MP_sharpener',
       zone: 'MP',
-      doseM: s.reps * s.repM,
-      structure: { form: 'reps', reps: s.reps, repM: s.repM },
+      doseM: doseOf(structure),
+      structure,
       step: 'sharpener'
     },
     p,

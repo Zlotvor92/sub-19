@@ -107,10 +107,13 @@ function feasibility(p: PaceModel, a: Athlete): { lo: number; ok: boolean[] } {
           easyCount(a, s.q1 !== null, s.q2 !== null),
           f.phase,
           p,
-          a
+          a,
+          f.deload
         );
         if (L.shares.some((x) => x + 1e-9 < L.easyMin)) return true;
-        return !(L.capped && L.longKm + 1e-9 >= longCapKm(t, p, a));
+        // 5k-v2.12.0 (T1): lagan dan manje (minimum laganog ne staje uz dugi) je donja granica obima, ne kapacitet.
+        if (L.shares.length < easyCount(a, s.q1 !== null, s.q2 !== null)) return true;
+        return !(L.overLong && L.longKm + 1e-9 >= longCapKm(t, p, a));
       })
     );
   }
@@ -265,6 +268,49 @@ export function nextBuildKm(
 const isBuildFrame = (f: Pick<WeekFrame, 'phase'>): boolean =>
   f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen';
 
+/**
+ * 5k-v2.11.0 (N1): JEDNA definicija „poslednja izgradnja" pre nedelje `before` — cilj poslednje nedelje izgradnje
+ * koja nije rasteretna ili nosi cilj koraka (`reset`); od nedelje sidra bola osnova povratka (`anchor`). Zovu je
+ * adaptVolume (stanje koraka u konstrukciji), validator i assess (planLastBuildKm).
+ */
+export function lastBuildKm(
+  weeks: readonly Pick<WeekFrame, 'phase' | 'deload'>[],
+  targets: readonly number[],
+  before: number,
+  reset: (week: number) => boolean,
+  anchor: (week: number, km: number) => number | null
+): number | null {
+  let x: number | null = null;
+  for (let i = 0; i < before - 1 && i < weeks.length; i++) {
+    if (!isBuildFrame(weeks[i]!)) continue;
+    if (!weeks[i]!.deload || reset(i + 1)) x = targets[i]!;
+    const base = anchor(i + 1, targets[i]!);
+    if (base !== null) x = base;
+  }
+  return x;
+}
+
+/** N1: poslednja izgradnja plana sa koracima adaptacije (cilj koraka = `startKm` sa `fromWeek`; sidro = `returnFrom`). */
+export function planLastBuildKm(
+  weeks: readonly (Pick<WeekFrame, 'phase' | 'deload'> & { targetKm: number })[],
+  steps: readonly VolumeStep[],
+  before: number
+): number | null {
+  return lastBuildKm(
+    weeks,
+    weeks.map((w) => w.targetKm),
+    before,
+    (w) => steps.some((st) => st.startKm !== null && st.fromWeek === w),
+    (w, km) => {
+      let base: number | null = null;
+      for (const st of steps)
+        if (st.returnFrom && st.returnFrom.week === w)
+          base = returnBaseKm(st.returnFrom.share, st.levelKm, km);
+      return base;
+    }
+  );
+}
+
 /** 2.5.0 (Odluka 3): cilj ostatka tekuće nedelje pauze (firstWeek < fromWeek, nedelja izgradnje — i rasteretna) =
     min(cilj pauze, cilj nedelje `targetKm`); null = korak nema ostatak pauze. 2.7.0 (P2, VOLUME_DELOAD): JEDINO
     mesto pravila — adaptVolume i validator (rasterećenje u kom počinje pauza sme ispod 0,8 × prethodne). */
@@ -310,11 +356,10 @@ export function adaptVolume(
   /** 2.6.1: nedelja sidra bola r → udeo i nivo koraka; posle nje rast kreće od osnove returnBaseKm (važi i
       za kasnije korake). */
   const anchors = new Map<number, { share: number; levelKm: number | null }>();
-  const anchored = (i: number, lastBuild: number | null): number | null => {
-    const back = anchors.get(i + 1);
-    return back === undefined || !isBuildFrame(frames[i]!)
-      ? lastBuild
-      : returnBaseKm(back.share, back.levelKm, targets[i]!);
+  const isReset = (w: number): boolean => resets.has(w);
+  const anchorKm = (w: number, km: number): number | null => {
+    const back = anchors.get(w);
+    return back === undefined ? null : returnBaseKm(back.share, back.levelKm, km);
   };
   const fitAt = (w: number, t: number): number => {
     const { p, a } = ctx(w);
@@ -333,20 +378,11 @@ export function adaptVolume(
     const r = s.firstWeek;
     const remainder = pauseRemainderKm(s, frames[r - 1], targets[r - 1]!);
     if (remainder !== null) targets[r - 1] = fitAt(r, remainder);
-    let lastBuild: number | null = null;
-    for (let i = 0; i < n - 1 && i < frames.length; i++) {
-      if (isBuildFrame(frames[i]!) && (!frames[i]!.deload || resets.has(i + 1)))
-        lastBuild = targets[i]!;
-      lastBuild = anchored(i, lastBuild);
-    }
+    let lastBuild = lastBuildKm(frames, targets, n, isReset, anchorKm);
     // 2.8.0 (pouka 36): prinudno rasterećenje tekuće nedelje (r < n) — deloadFactor × poslednja izgradnja pre nje.
     const dw = s.deload ? (s.deloadWeek ?? n) : n;
     if (dw < n && frames[dw - 1]?.deload) {
-      let lb: number | null = null;
-      for (let i = 0; i < dw - 1; i++) {
-        if (isBuildFrame(frames[i]!) && (!frames[i]!.deload || resets.has(i + 1))) lb = targets[i]!;
-        lb = anchored(i, lb);
-      }
+      const lb = lastBuildKm(frames, targets, dw, isReset, anchorKm);
       targets[dw - 1] = fitAt(dw, round1((lb ?? startRef) * P.volume.deloadFactor));
     }
     for (let i = n - 1; i < frames.length && isBuildFrame(frames[i]!); i++) {
@@ -367,7 +403,7 @@ export function adaptVolume(
       if (!f.deload || (i === n - 1 && s.startKm !== null) || resets.has(i + 1)) lastBuild = t;
       targets[i] = t;
       // Bol: nedelja sidra zadržava cilj (dani su ograničeni), rast posle nje kreće od osnove povratka.
-      lastBuild = anchored(i, lastBuild);
+      lastBuild = anchorKm(i + 1, targets[i]!) ?? lastBuild;
     }
     if (s.startKm !== null) {
       resets.add(n);

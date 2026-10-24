@@ -1,0 +1,88 @@
+[
+  {
+    "name": "08-1 T1 bez gornje granice 0,8 × dugi",
+    "file": "src/domain/generators/tenK/v2/lengths.ts",
+    "find": "    max10: Math.floor(P.lengths.easyMaxLongShare * long10 + EPS)",
+    "replace": "    max10: long10",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-2 T1 najkraći lagan samo 3 km (bez 20 min)",
+    "file": "src/domain/generators/tenK/v2/lengths.ts",
+    "find": "    min10: Math.max(EASY_MIN10, Math.ceil((P.lengths.easyMinSec / midEasy(p)) * 10 - EPS)),",
+    "replace": "    min10: EASY_MIN10,",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-3 T1 validator ne proverava lagan prema dugom",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "    if (isSteady(w) && restOf(w).size === 0 && painOf(w).size === 0) {\n      const b = buildEasyBounds10(l10, pk);",
+    "replace": "    if (false as boolean) {\n      const b = buildEasyBounds10(l10, pk);",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-4 T3 taper posle novog starta bez zadržanog kvaliteta",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "    if (keepOne) return { q1: pick('RP', rp, 'taper'), q2: null };",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-5 C3 test otpada u mešovitoj nedelji",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ],
+    "edits": [
+      {
+        "file": "src/domain/generators/tenK/v2/week.ts",
+        "find": "  const qs = free.filter((d) => d.workout.kind === 'quality').sort((a, b) => rank(a) - rank(b));",
+        "replace": "  const qs = free\n    .filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test')\n    .sort((a, b) => rank(a) - rank(b));"
+      },
+      {
+        "file": "src/domain/generators/tenK/v2/week.ts",
+        "find": "    const fixed = free.filter((d) => d.workout.kind === 'test');",
+        "replace": "    const fixed: PlanDay[] = [];"
+      },
+      {
+        "file": "src/domain/generators/tenK/v2/week.ts",
+        "find": "          d.workout.kind === 'test' ||\n          (withQuality && d.workout.kind === 'quality')",
+        "replace": "          (withQuality && (d.workout.kind === 'quality' || d.workout.kind === 'test'))"
+      }
+    ]
+  },
+  {
+    "name": "08-6 C4 urađen dan posle asOf po upisanim km",
+    "file": "src/domain/generators/tenK/v2/written.ts",
+    "find": "(mustDay(d.date) > w.asOf ? (d.countsToWeek ? d.workout.km : 0) : w.factKm(d)) * 100",
+    "replace": "w.factKm(d) * 100",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-7 C6 bez restarta doze posle sidra bola",
+    "file": "src/domain/generators/tenK/v2/steps.ts",
+    "find": "      ...(s.returnFrom ? [s.returnFrom.week + 1] : [])\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ]
+  },
+  {
+    "name": "08-8 C11 pouka 35 ne važi u taperu",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "    const p35 = w2full !== null && qualityOverLong(twoT.days);",
+    "replace": "    const p35 = false as boolean;",
+    "tests": [
+      "src/domain/generators/tenK/v2/segment08.node.test.ts"
+    ]
+  }
+]

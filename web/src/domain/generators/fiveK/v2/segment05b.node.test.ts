@@ -3,6 +3,7 @@
    (fitTargetKm), korak dugog 0,1 km za sve brojeve dana; Odluka 3 — vrh ≥ vrh na 7b4b574 (fixture,
    stari kod se ne pokreće). Testovi 1–2 padaju na 349fd64 na proveri (vrh 17,1 / 41,3). */
 
+import { belowTargetShown } from './text.ts';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,15 +47,18 @@ const roleDay = (w: PlanWeek, role: PlanDay['role']): PlanDay | undefined =>
 const build = (w: PlanWeek): boolean =>
   w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen';
 
-/** Stalni uslovi na planu: 0 grešaka validatora, 0 „lagan > dugi", 0 PLANNED_BELOW_TARGET van trke. */
+/** Stalni uslovi na planu: 0 grešaka validatora, 0 „lagan > dugi"; 5k-v2.12.0 (T1): PLANNED_BELOW_TARGET van trke
+    samo u nedelji sa granicom laganog (0,8 × dugi), inače planirano = cilj. */
 function checkPlan(plan: FiveKV2Plan): void {
   expect(validatePlan(plan).filter((v) => v.severity === 'error')).toEqual([]);
-  expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toEqual([]);
+  expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
+    plan.weeks
+      .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+      .map((w) => w.index)
+  );
   for (const w of plan.weeks) {
-    if (w.phase !== 'race') {
-      expect(w.easyCappedAtLong).toBe(false);
+    if (w.phase !== 'race' && !w.easyCappedAtLong && !w.easyRest)
       expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);
-    }
     const long = roleDay(w, 'long');
     if (long)
       for (const d of w.days.filter((x) => x.role === 'easy'))
@@ -174,7 +178,9 @@ describe('Odluka 3 + mreža regular sa rezultatom: vrh(2.4.1) ≥ vrh(7b4b574)',
       }
     }
     expect(lower).toEqual([]);
-    expect(plans).toBe(828);
+    // 5k-v2.11.0 (F2): 12 ulaza 3 dana / 12 km koje je 7b4b574 odbijao (QUALITY_INFEASIBLE) sada daju plan sa smanjenom
+    // dozom kvaliteta (quality.weekQuality, reducedQuality).
+    expect(plans).toBe(840);
   });
 });
 

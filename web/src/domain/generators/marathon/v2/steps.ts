@@ -159,6 +159,16 @@ export function limitsOf(
 export const restartWeeks = (steps: readonly MarathonV2AdaptStep[]): Set<number> =>
   new Set(steps.filter((s) => s.restart).map((s) => s.fromWeek));
 
+/** Pouka 18 (MAR-11, T6 C6; kao HM): nedelje od kojih progresija doze kreće ispočetka (M12) — nov start (A3) i
+    nedelja posle sidra povratka bola (r + 1). JEDNA funkcija za konstruktor (generate.ts) i validator. */
+export const doseRestartWeeks = (steps: readonly MarathonV2AdaptStep[]): Set<number> =>
+  new Set(
+    steps.flatMap((s) => [
+      ...(s.restart ? [s.fromWeek] : []),
+      ...(s.returnFrom ? [s.returnFrom.week + 1] : [])
+    ])
+  );
+
 /** A17 (pouka 22): najviše uzastopnih nedelja izgradnje od ukinutog rasterećenja (uključujući ukinutu nedelju)
     do sledećeg redovnog rasterećenja — izuzetak M5 4 + ukinuta nedelja. framesFor i validator (M5). */
 export const A17_MAX_RUN = P.deload.exceptionRun + 1;
@@ -253,7 +263,9 @@ export function framesFor(
   // MAR-07c (pouke 23, 36): dan testa plana pre ovog koraka ≤ asOf → test je zaštićen (upisan); rasterećenje koje
   // ovaj korak stavi na nedelju testa pomera dan testa okvira (Q1 → T slot) posle asOf, a to bi bio drugi test.
   // Okvir tada nema test; nema ni premeštanja.
-  const before = framesFor(base, pattern, runDays, raceDate, pace, steps.slice(0, -1));
+  // MAR-11 (C3, pouka 38): okviri pre ovog koraka sa istim zaštićenim danima — zaštićen test iz ranijeg koraka se
+  // ni tamo ne premešta (inače ponovljen korak vidi premešten test kao drugi).
+  const before = framesFor(base, pattern, runDays, raceDate, pace, steps.slice(0, -1), null, kept);
   const tw = before.find((f) => f.test);
   if (tw && mustDay(testDateOf(tw, pattern)) <= mustDay(last))
     frames = frames.map((f) =>

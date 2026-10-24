@@ -1,0 +1,51 @@
+{
+ "dist": "5K",
+ "k": 13,
+ "generator": {
+  "plans": 291,
+  "deloads": 431,
+  "notLower": 0,
+  "ex": []
+ },
+ "adapt": {
+  "flows": 1660,
+  "rejected": 0,
+  "newDeload": 1305,
+  "notLower": 425,
+  "targetGePrev": 425,
+  "byPrev": {
+   "prethodna rasteretna": 425
+  },
+  "prevDeloadFlows": 431,
+  "prevDeloadNew": 431,
+  "sameTitles": 73,
+  "ex": [
+   "b-d3-8w-12km-e420-0 asOf 2026-11-16 ned 3 (peak): cilj 9.6 plan 9.6; prethodna R cilj 9.6 plan 9.6 [prethodna rasteretna]",
+   "b-d3-8w-12km-e420-1 asOf 2026-11-16 ned 3 (peak): cilj 9.6 plan 9.6; prethodna R cilj 9.6 plan 9.6 [prethodna rasteretna]",
+   "b-d3-8w-16km-e420-0 asOf 2026-11-16 ned 3 (peak): cilj 12.8 plan 12.8; prethodna R cilj 12.8 plan 12.8 [prethodna rasteretna]",
+   "b-d3-8w-16km-e420-1 asOf 2026-11-16 ned 3 (peak): cilj 12.8 plan 12.8; prethodna R cilj 12.8 plan 12.8 [prethodna rasteretna]",
+   "b-d3-8w-20km-e420-0 asOf 2026-11-16 ned 3 (peak): cilj 15.9 plan 15.9; prethodna R cilj 15.9 plan 15.9 [prethodna rasteretna]",
+   "b-d3-8w-20km-e420-1 asOf 2026-11-16 ned 3 (peak): cilj 15.9 plan 17.89; prethodna R cilj 15.9 plan 15.9 [prethodna rasteretna]"
+  ],
+  "byFam": {
+   "B": 105,
+   "R": 206,
+   "F": 114
+  },
+  "byPhase": {
+   "peak": 250,
+   "sharpen": 74,
+   "base": 101
+  },
+  "diffKm": {
+   "med": 0,
+   "p90": 2.3,
+   "max": 5.3
+  },
+  "diffPct": {
+   "med": 0,
+   "p90": 13.7,
+   "max": 19
+  }
+ }
+}

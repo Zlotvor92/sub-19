@@ -129,3 +129,26 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - locked-test 3193 → 0, locked-pause 258 → 0, last-weeks inv 6 → 0, prestart-chain 177 → 0, MAR→HM 136 → 0.
   Izveštaj `reports/SEGMENT-08b-IMPLEMENTATION.md`, artefakti `artifacts/segment-08b/`, mreža `segment08b`.
 
+
+## Segment HM-09 (hm-v2.7.0): ispravke posle dubinske provere (audit/fixes/HM.md)
+
+- B1/B2 `steps.longRef10` (jedna referenca dugog rasterećenja po nedelji); B3 dugi tapera ≥ 4 km (`TAPER_LONG_MIN`);
+  L skoka iz trčanog (`step.ranLongKm`/`ranPart`, `rollingCapRan10`); pouka 35 u taperu (`taperSecondEasy`);
+  napomena tapera; uvod početnika; Z1 `mixedQualityStays`; Z2 `userText`; Z3 `resultUse`; Z4 vraćanje = spoj →
+  validatePlan (neposredno poništavanje prolazi); Z5b početnik iznad opsega → bez oznake; K1/F6 invarijante.
+- B2 19 490 → 0, B1 3 758 → 0, B3 8 → 0, skok 1 060 → 0, Z4 vraćeni koji krše validator 1 565 → 0 (poništavanje 1 056/1 056), Z3 495 → 0, Z1 1 321 → 0, taper dva dana
+  552/636 → 0, napomena 909/546 → 0, Z2 oznake 16 511 → 0. Izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md`.
+
+## HM-09 dopuna lanaca (hm-v2.7.1): Z6, Z7, Z8, C3, C7, C9, C10
+
+- Z6 LIMITS preskače zaštićen dan; Z7/Z8 manjak i bol vezani za zapise; C3 `step.testKept`; C7 taper posle bola bez
+  izgradnje → osnova rasterećenja; C9 invarijanta; C10 rešen Z6. chains HM 2 000: odbijeni 95 → 0; idemp isti
+  643 → 25, sutra 218 → 21 (manjak → 0). Izveštaj `reports/SEGMENT-09-IMPLEMENTATION.md` (dopuna lanaca).
+
+## Segment HM-10 (hm-v2.8.0): krug T — T1, T3, C4, C12, T7
+
+- T1 `lengths.buildLengths` (lagan ≤ 0,8 × dugi, ≥ max(4 km, 20 min); manje laganih dana; izuzetak nedelje na
+  minimumu EASY_BUILD_MIN_WEEK); T3 `quality.restartTaperT`, `sharpenerAllowed` posle novog starta; C4 `factKmOf`;
+  C12 `freeKind` (RP najnižeg nivoa); T7 RECENT_LONG_OVER_WEEKLY.
+- lagan ≥ 0,9 × dugi 3 906 → 0; > 0,8 × 6 426 → 0; < 20 min 1 188 → 0; planovi sa spuštenom nedeljom 3 009 → 5 031;
+  T3 taper bez kvaliteta 227 → 143, trkačka bez oštrenja 227 → 36. Izveštaj `reports/SEGMENT-10-IMPLEMENTATION.md`.

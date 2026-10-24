@@ -70,13 +70,15 @@ describe('N1 (pouka 30): trkačka nedelja samo sa trkom — RACE_WEEK_SHORT, ne 
     q.weeks[3]!.days = [];
     q.weeks[3]!.plannedKm = 0;
     expect(errors(q)).toContain('EMPTY_WEEK@4');
-    // Trkačka nedelja samo sa trkom bez dana odmora koraka nije izuzetak.
+    // MAR-09 t. 1: trkačka nedelja nikad nije prazna (ima trku) — jedna definicija (week.raceOnlyWeek); trkačka samo
+    // sa trkom bez dana odmora koraka/pouke 30 obara RACE_WEEK (dani ≠ M8), ne EMPTY_WEEK.
     const r = structuredClone(p);
     const rw = r.weeks.at(-1)!;
     rw.days = rw.days.filter((d) => d.role === 'race');
     rw.plannedKm = 0;
     rw.targetKm = 0;
-    expect(errors(r)).toContain(`EMPTY_WEEK@${rw.index}`);
+    expect(errors(r)).toContain(`RACE_WEEK@${rw.index}`);
+    expect(errors(r)).not.toContain(`EMPTY_WEEK@${rw.index}`);
   });
 });
 
@@ -91,7 +93,7 @@ const easy35 = (w: PlanWeek): boolean => w.notes.some((n) => n.endsWith('(pouka 
 
 describe('pouka 35: dva dana kvaliteta samo kad dugi ostaje najduži', () => {
   it('generator (M13a, kratak skorašnji dugi): drugi dan kvaliteta lagan, dugi raste; inače nedelja sa jednim kvalitetom nije izvodljiva', () => {
-    const p = planOf(recentInputs().find((x) => x.id === 'recent-d5-16w-70km-v45-C-r5')!.input);
+    const p = planOf(recentInputs().find((x) => x.id === 'recent-d5-12w-40km-v70-A-r6')!.input);
     const w = p.weeks.find(easy35)!;
     expect(w).toBeDefined();
     expect(w.days.filter((d) => d.role === 'q2')).toEqual([]);
@@ -218,13 +220,13 @@ describe('N11: upozorenja i napomene', () => {
     );
     expect(slow.notes).toContain(longTimeCapNote(longest, 26, false));
     const q = structuredClone(slow);
-    q.notes = q.notes.filter((n) => !n.startsWith('Najduži dugi trk je'));
+    q.notes = q.notes.filter((n) => !n.startsWith('Najduže dugo trčanje je'));
     expect(errors(q)).toContain('LONG_SHORT_NOTE@-');
     const fast = planOf(
       inputOf({ weeks: 16, km: 35, vdot: 70, days: ['tue', 'thu', 'sat', 'sun'], long: 'sun' })
     );
     expect(rules(fast)).toContain('MARATHON_LONG_SHORT');
-    expect(fast.notes.some((n) => n.startsWith('Najduži dugi trk je'))).toBe(false);
+    expect(fast.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
   });
 
   it('napomena „Cilj po pravilu … nije izvodljiv" ostaje u planu (validator), ne ide korisniku (aplikacija)', () => {

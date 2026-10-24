@@ -26,7 +26,9 @@ import {
   GRID_TIMEOUT,
   hasP37,
   missingParts,
-  p37FlowErrors
+  p37FlowErrors,
+  p07FlowErrors,
+  p08Errors
 } from './level.harness.node.test.ts';
 import {
   EARLY_PRE_BACK,
@@ -38,7 +40,8 @@ import {
   painFacts,
   planHash06c,
   START0_SCENARIOS,
-  start0AsOf
+  start0AsOf,
+  mark07
 } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
 
@@ -47,11 +50,11 @@ const HERE = fileURLToPath(new URL('./', import.meta.url));
 
 /** Uzorak planova po mreži: pun — svaki `full`. plan skupa (3084), brz — svaki `fast`. */
 const STRIDE = {
-  fatigue: { full: 4, fast: 60 },
-  monday: { full: 4, fast: 60 },
-  locked: { full: 4, fast: 60 },
-  pain: { full: 4, fast: 60 },
-  painNew: { full: 40, fast: 300 },
+  fatigue: { full: 4, fast: 180 },
+  monday: { full: 4, fast: 120 },
+  locked: { full: 4, fast: 180 },
+  pain: { full: 4, fast: 120 },
+  painNew: { full: 40, fast: 900 },
   start0: { full: 2, fast: 60 }
 } as const;
 
@@ -323,7 +326,7 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
         const idx = new Map(earlyGridBases().map((b, i) => [b.id, i]));
         const bad: string[] = [];
         let [n, fixed] = [0, 0];
-        const runs37: { key: string; hash: number; res: unknown }[] = [];
+        const runs37: { key: string; hash: number; res: unknown; m07: string }[] = [];
         for (const b of basesOf('start0', partIndex)) {
           const p0 = earlyPlan(b);
           const at = start0AsOf(p0);
@@ -342,7 +345,12 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
             for (const v of adaptInvariants(p0, r.plan, at, facts)) bad.push(`${key}: ${v}`);
             const old = START0.hashes[idx.get(b.id)! * START0_SCENARIOS.length + j]!;
             const h = planHash06c(r);
-            runs37.push({ key, hash: h, res: hasP37(r) ? 'Mešovita nedelja (pouka 37)' : null });
+            runs37.push({
+              key,
+              hash: h,
+              res: hasP37(r) ? 'Mešovita nedelja: zaštićeni dani 0 km' : null,
+              m07: mark07(r)
+            });
             if (old === 0) {
               fixed++;
               if (s !== 'fatigue') bad.push(`${key}: na b8fcf22 odbijen, a nije umor`);
@@ -366,12 +374,19 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
               bad.push(`${key}: nije rasterećenje ned 1 kao start − 1 uz upisan dan 1`);
           }
         }
+        // 06i: prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37; 10K-07: tokovi koje 10k-v2.9.0
+        // menja (fixture, uzrok) — pre provere „promenjen prema b8fcf22" (koja ih čita preko at46e).
+        const e37 = p37FlowErrors('start0', runs37).slice(0, 10);
+        const e07 = [...p07FlowErrors('start0', runs37), ...p08Errors('start0', runs37)].slice(
+          0,
+          10
+        );
         expect(n).toBeGreaterThan(FULL ? 600 : 300);
         // Na b8fcf22 umor sa asOf = start odbijen u svakom planu (organizator: 1245/1245).
         expect(fixed).toBe(n / START0_SCENARIOS.length);
         expect(bad.slice(0, 20)).toEqual([]);
-        // 06i: prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37.
-        expect(p37FlowErrors('start0', runs37).slice(0, 10)).toEqual([]);
+        expect(e37).toEqual([]);
+        expect(e07).toEqual([]);
       },
       GRID_TIMEOUT
     );

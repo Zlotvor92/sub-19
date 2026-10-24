@@ -187,7 +187,12 @@ export function adaptInvariants(
         maxDose[z] = Math.max(maxDose[z] ?? 0, d.workout.dose!.doseM);
       }
     if (m) continue;
-    const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
+    // MAR-11 (T1): nedelja izgradnje čiji lagani (≤ 0,8 × dugi) ne nose cilj — planirano < cilj (napomena), kao
+    // nedelja sa danima odmora.
+    const limited =
+      (w.limits?.pain?.length ?? 0) > 0 ||
+      (w.limits?.rest?.length ?? 0) > 0 ||
+      w.notes.some((n) => n.startsWith('Nedelja izgradnje: planirano je manje od cilja'));
     // Planirano = cilj (pouka 25: uz dane bola/odmora ≤ cilj).
     if (
       w.phase !== 'race' &&

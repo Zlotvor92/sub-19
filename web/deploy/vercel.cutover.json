@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "npm ci --prefix web",
-  "buildCommand": "npm run build --prefix web",
+  "buildCommand": "VITE_V2_DEFAULT_ON=1 npm run build --prefix web",
   "outputDirectory": "web/dist",
   "crons": [
     {

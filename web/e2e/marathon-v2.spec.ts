@@ -190,7 +190,7 @@ test('maraton v2: čarobnjak (rezultat, 4 dana, cilj 3:30:00) → plan v2 → Pl
   await expect.poll(() => serverPlan(backend), SYNC).toContain('Prilagođavanje 2026-02-04: pauza');
   expect(serverPlan(backend)).toContain('"policyId":"marathon-v2"');
   expect(serverPlan(backend)).toContain('"asOf":"2026-02-04"');
-  // Vraćanje te revizije: pregled (ništa se ne upisuje) → primena → druga revizija; plan ostaje maraton v2.
+  // MAR-10 (Z4): vraćanje te revizije: pregled (ništa se ne upisuje) → primena → druga revizija; plan ostaje maraton v2.
   const adapted = serverPlan(backend);
   await page
     .getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-02-04: pauza' })

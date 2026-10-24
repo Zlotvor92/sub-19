@@ -11,6 +11,8 @@
 
 import { adaptBanner, adaptHmV2 } from '../adapt.ts';
 import { checkInput } from '../input.ts';
+import { userText } from '../userText.ts';
+import { validatePlan } from '../validate.ts';
 import { shorterOffer } from '../shorter.ts';
 import { HM_V2_POLICY as P } from '../policy.ts';
 import type { AdaptChange, AdaptReason, AdaptResult, PlanWeek, HmV2Plan } from '../types.ts';
@@ -53,7 +55,7 @@ function adaptRejection(r: Extract<AdaptResult, { ok: false }>): PlanRejectionRe
       .filter((v) => v.severity === 'error')
       .map((v) => ({
         code: v.rule,
-        message: v.message,
+        message: userText(v.message),
         ...(v.week != null ? { week: v.week } : {})
       }))
   ];
@@ -137,7 +139,7 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     return {
       ok: false,
       reasons: [
-        { code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke HM v2 za prilagođavanje.' }
+        { code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke potrebne za prilagođavanje.' }
       ],
       coverage: null,
       notes: []
@@ -160,12 +162,12 @@ export function adaptPreview(src: FactsSource): AdaptOutcome {
     ok: true,
     result,
     summary,
-    reasons: r.reasons,
+    reasons: r.reasons.map((x) => ({ ...x, message: userText(x.message) })),
     weeks,
     notes,
     coverage: built.coverage,
     // Pouka 20: pravilo trake živi samo u domenu (`adaptBanner`); aplikacija ga samo zove.
-    needed: adaptBanner(v2, r, built.facts, src.today),
+    needed: adaptBanner(v2, r, built.facts, src.today).map(userText),
     ...(shorterOffer(after, src.today) ? { shorterOffer: true as const } : {})
   };
 }
@@ -208,7 +210,8 @@ export function restoreMerge<T extends AppPlan>(
   });
   const cur = v2Of(current);
   const snap = v2Of(fresh);
-  if (!cur || !snap) return refuse('Sačuvana verzija nema plan HM v2, pa se ne može vratiti.');
+  if (!cur || !snap)
+    return refuse('Sačuvana verzija nema plan polumaratona, pa se ne može vratiti.');
   if (cur.weeks.length !== snap.weeks.length)
     return refuse('Sačuvana verzija ima drugi broj nedelja; vraćanje bi menjalo prošle nedelje.');
   // Zaštićeni datumi (po planu): do danas, urađeni dani i dani sa ručnom izmenom ili pomeranjem.
@@ -230,7 +233,12 @@ export function restoreMerge<T extends AppPlan>(
   const mixed: number[] = [];
   const weeks: PlanWeek[] = snap.weeks.map((s, i) => {
     const c = cur.weeks[i]!;
-    if (c.endDate <= today) return c;
+    // Z4 (kao jezgro written.writtenWeeks): cela prošla nedelja iz trenutnog plana; kad se razlikuje od verzije,
+    // nedelja je mešovita (validator na njoj proverava samo dane).
+    if (c.endDate <= today) {
+      if (!same(c, s)) mixed.push(s.index);
+      return c;
+    }
     const days = [
       ...c.days.filter((d) => keep(d.date)),
       ...s.days.filter((d) => !keep(d.date))
@@ -259,6 +267,18 @@ export function restoreMerge<T extends AppPlan>(
         }
       : {})
   };
+  // Z4 (HM-09): spoj → validatePlan (ista funkcija jezgra); prolazi → vraća se, ne prolazi → odbijanje sa razlogom.
+  const errors = validatePlan(merged).filter((v) => v.severity === 'error');
+  if (errors.length > 0)
+    return refuse(
+      `Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (${userText(errors[0]!.message)}), pa se ne vraća.`
+    );
+  // Vraćen plan mora da se dalje prilagođava (isto jezgro, bez novih činjenica).
+  const next = adaptHmV2(merged, {}, today);
+  if (!next.ok)
+    return refuse(
+      `Sačuvana verzija uz treninge posle nje ne može dalje da se prilagođava (${userText((next.reasons[0]?.message ?? '').replace(/^[A-Z0-9_]+: /, ''))}), pa se ne vraća.`
+    );
   const out = stored(merged, metaOf(current)[EDITS_KEY], prefixOf(current));
   const prev = new Map(current.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   let changedDays = 0;
@@ -289,7 +309,9 @@ export function goalChange(plan: AppPlan, goalSec: number, today: IsoDate): Goal
   if (!v2)
     return {
       ok: false,
-      reasons: [{ code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke HM v2.' }]
+      reasons: [
+        { code: 'ADAPT_PLAN_INVALID', message: 'Plan nema podatke potrebne za prilagođavanje.' }
+      ]
     };
   const c = checkInput({ ...v2.input, goalTimeSec: goalSec });
   if (!c.ok) return { ok: false, reasons: rejection(c.reasons) };

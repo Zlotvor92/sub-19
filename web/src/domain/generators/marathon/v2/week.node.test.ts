@@ -190,7 +190,7 @@ describe('M13 upozorenje MARATHON_LONG_SHORT', () => {
     expect(short.warnings.map((w) => w.rule)).toContain('MARATHON_LONG_SHORT');
     const capped = plan({ km: 40, vdot: 40 });
     expect(capped.warnings.map((w) => w.rule)).not.toContain('MARATHON_LONG_SHORT');
-    expect(capped.notes.some((n) => n.startsWith('Najduži dugi trk je'))).toBe(true);
+    expect(capped.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(true);
     const long = plan({ weeks: 20, km: 65, vdot: 60 });
     const longest = Math.max(
       ...long.weeks.flatMap((w) => role(w, 'long').map((d) => d.workout.km))

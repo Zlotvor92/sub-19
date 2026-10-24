@@ -106,6 +106,31 @@ export const emptyStats = (): GridStats => ({
 });
 
 /** Nezavisne invarijante jednog plana (sve mreže). */
+/** T1 (10K-08), nezavisno od validatora: nedelja izgradnje bez laganog dana sa planiranim < cilj za manje od jednog
+    laganog od 20 min (brzim E tempom). */
+export function t1Short(
+  w: {
+    phase: string;
+    deload: boolean;
+    plannedKm: number;
+    targetKm: number;
+    days: readonly { role: string; workout: { km: number; sec: number } }[];
+  },
+  _p?: unknown
+): boolean {
+  const gap = w.targetKm - w.plannedKm;
+  // Tempo nedelje iz njenog dugog (lagan tempo; adaptacija sme da promeni tempo po nedelji).
+  const long = w.days.find((d) => d.role === 'long');
+  return (
+    ['base', 'development', 'specific'].includes(w.phase) &&
+    !w.deload &&
+    !w.days.some((d) => d.role === 'easy') &&
+    long !== undefined &&
+    gap > 0 &&
+    gap * (long.workout.sec / long.workout.km) <= 1200 + 60
+  );
+}
+
 export function checkPlan(
   id: string,
   n: Days,
@@ -149,7 +174,7 @@ export function checkPlan(
   for (const w of p.weeks) {
     const tag = `ned ${w.index}`;
     // planirano = cilj (tehnička tolerancija 0,1 km); trkačka: cilj = planirano.
-    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS)
+    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS && !t1Short(w, p))
       no('PLANNED_EQ_TARGET', `${tag} ${w.plannedKm} ≠ ${w.targetKm}`);
     // Uslov 8 (D15/D17): nedelja ≥ minimum po broju dana; trkačka: planirano + trka 10 km (D30).
     if (w.phase !== 'race' && w.plannedKm + EPS < WEEK_MIN[n]) no('WEEK_MIN', tag);
@@ -191,11 +216,13 @@ export function checkPlan(
       }
       if (wo.kind !== 'quality') continue;
       const s = wo.segments;
+      // D8 (10K-07): oštrenje trkačke nedelje nosi WU/CD trke (15 + 10 min), ne pojas D14.
+      const sharp = d.role === 'sharpener';
       if (
         s[0]!.kind !== 'warmup' ||
-        s[0]!.sec !== wu ||
+        s[0]!.sec !== (sharp ? 900 : wu) ||
         s.at(-1)!.kind !== 'cooldown' ||
-        s.at(-1)!.sec !== cd
+        s.at(-1)!.sec !== (sharp ? 600 : cd)
       )
         no('WU_CD_BAND', `${tag} ${d.date}`);
       const zone = wo.dose!.zone;
@@ -367,14 +394,19 @@ export function checkPlan(
     )
       no('RACE_EASY_D23', `${d.date}`);
   if (byKm && raceEasy.length > 0) st.raceKmEasy++;
-  // D25: upozorenje TAČNO kad je u ne-rasteretnoj nedelji izgradnje kvalitetni dan duži od dugog po
-  // trajanju; preporuka manje dana tačno kad red sa manje dana podržava trenutni obim.
+  // D25: upozorenje TAČNO kad je u ne-rasteretnoj nedelji izgradnje kvalitetni dan, ili u bilo kojoj nedelji
+  // izgradnje dan testa (10K-07), duži od dugog po trajanju; preporuka manje dana tačno kad red sa manje dana podržava
+  // trenutni obim.
   const longer = p.weeks.some((w) => {
     const l = w.days.find((d) => d.role === 'long');
     return (
-      steady(w) &&
       !!l &&
-      w.days.some((d) => d.workout.kind === 'quality' && d.workout.sec > l.workout.sec)
+      w.days.some(
+        (d) =>
+          ((steady(w) && d.workout.kind === 'quality') ||
+            (w.phase !== 'taper' && w.phase !== 'race' && d.workout.kind === 'test')) &&
+          d.workout.sec > l.workout.sec
+      )
     );
   });
   const d25 = p.warnings.filter((x) => x.rule === 'LONG_SHORTER_THAN_QUALITY');

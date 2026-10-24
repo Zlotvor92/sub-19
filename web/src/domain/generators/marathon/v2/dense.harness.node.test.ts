@@ -4,6 +4,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { generateMarathonV2 } from './generate.ts';
 import { invariants } from './grid.harness.node.test.ts';
 import { longTimeCap10 } from './lengths.ts';
+import { planRule } from './policy.ts';
 import { denseInputs, type GridInput } from './testInputs.ts';
 
 export const DENSE_PARTS = 8;
@@ -28,7 +29,14 @@ export function describeDense(title: string, inputs: readonly GridInput[]): void
         if (w1.targetKm < r.plan.startKm) {
           below++;
           const l = w1.days.find((d) => d.role === 'long')!.workout.km;
-          if (Math.round(l * 10) !== longTimeCap10(r.plan.paces)) belowNoCap++;
+          // MAR-11 (T1): i dugi na udelu nedelje (lagani ≤ 0,8 × dugi ne nose ostatak obima).
+          const share = Math.floor(
+            planRule((g.input['runDays'] as unknown[]).length, 'regular')!.longMaxShare *
+              Math.round(w1.targetKm * 10) +
+              1e-9
+          );
+          if (Math.round(l * 10) !== longTimeCap10(r.plan.paces) && Math.round(l * 10) !== share)
+            belowNoCap++;
         }
       }
     }, 600_000);

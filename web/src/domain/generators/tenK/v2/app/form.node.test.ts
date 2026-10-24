@@ -90,3 +90,25 @@ describe('3h: Forma na planu 10K v2 sa prefiksom izvora', () => {
     );
   });
 });
+
+describe('10K-07 Z3: Forma čita odluku jezgra o rezultatu', () => {
+  it('rezultat VDOT van 30–80 (5 km 31:46 ≈ 28,8) ne „čeka prilagođavanje"; jezgro ga ignoriše (RESULT_IGNORED)', () => {
+    const plan = handedOff();
+    const v2w = (plan as unknown as { tenKV2: { weeks: { startDate: string }[] } }).tenKV2.weeks;
+    const day = addDays(v2w[1]!.startDate, 2);
+    const slow: LogEntry = {
+      ...race(day),
+      sec: 1906,
+      raceAi: { context: { date: day, distanceM: 5000, officialSec: 1906, intent: 'race' } }
+    };
+    const today = addDays(day, 1);
+    const f = select.tenKV2FormHistory({ plan, today, log: { trka: slow } })!;
+    const p = f.points.find((x) => x.date === day)!;
+    expect(p.status).toBe('old');
+    expect(p.label).not.toMatch(/čeka prilagođavanje/);
+    expect(p.label).toMatch(/VDOT van 30–80/);
+    const a = select.tenKV2AdaptPreview(plan, today, { log: { trka: slow } });
+    if (!a.ok) throw new Error(JSON.stringify(a.reasons));
+    expect(a.reasons.some((r) => r.condition === 'RESULT_IGNORED' && !r.applied)).toBe(true);
+  });
+});

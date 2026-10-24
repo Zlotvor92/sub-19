@@ -173,10 +173,10 @@ describe('N11: upozorenja jednom po planu; tehnička napomena ne ide korisniku',
       if (fw.length > 0) {
         fitted++;
         expect(r.plan.warnings.find((v) => v.rule === 'WEEK_FITTED')!.message).toContain(
-          `nedelje ${fw.map((w) => w.index).join(', ')}`
+          `${fw.length === 1 ? 'nedelja' : 'nedelje'} ${fw.map((w) => w.index).join(', ')}`
         );
       }
-      expect(r.plan.notes.some((n) => n.includes('ne nose ovaj obim'))).toBe(false);
+      expect(r.plan.notes.some((n) => n.includes('ne staje ceo planirani obim'))).toBe(false);
       for (const w of r.plan.weeks)
         expect(userWeekNotes(w).some((n) => n.includes('nije izvodljiv u konstrukciji'))).toBe(
           false

@@ -45,7 +45,7 @@ const rows = (p: FiveKV2Plan, from: number, to: number) =>
 const text = (r: Extract<AdaptResult, { ok: true }>, c: string): string =>
   r.reasons.find((x) => x.condition === c)?.message ?? '';
 const RELIEF = (w: number) =>
-  `Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena (Odluka 9).`;
+  `Redovno rasterećenje u nedelji ${w} otpada: nedelja ${w - 1} je smanjena.`;
 
 describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-v2.7.0)', () => {
   it('bazni plan: rasterećenja ned 4 i 8; granica niza = najduži niz generatora + 1: 6 (plan od 11 ned: 5), početnik 4', () => {
@@ -103,14 +103,15 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
     expect(text(r, 'PAIN')).not.toContain('otpada');
   });
 
-  it('primer organizatora: v45-d3-15km-10w kraj ned 1, pauza 10 — ned 3 rasterećenje 9,6 → 13,2 (niz 3–7 = 5 ≤ 6)', () => {
+  it('primer organizatora: v45-d3-15km-10w kraj ned 1, pauza 10 — ned 3 13,2 (5k-v2.12.0: bez rasterećenja pre ned 4)', () => {
     const r = run('v45-d3-15km-10w', '2026-11-08', 'pause10');
     expect(rows(r.plan, 2, 4)).toEqual([
       [12, false],
       [13.2, false],
       [14.5, false]
     ]);
-    expect(text(r, 'PAUSE')).toContain(RELIEF(3));
+    // 5k-v2.12.0 (T4): plan trkača nema rasterećenja u ned 3 (prvo je ned 5) — nema šta da otpadne.
+    expect(text(r, 'PAUSE')).not.toContain(RELIEF(3));
   });
 
   it('granica: niz od ukinute nedelje bio bi > 6 → rasterećenje ostaje (sintetički koraci; u mrežama 0 tokova)', () => {
@@ -118,7 +119,8 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
     // bi zatim ukinuo ned 4 sa nizom 4–10 = 7 > 6 → ostaje. Obrnut redosled: oba ukinuta (svaki niz meri se od
     // ukinute nedelje napred: 4–6 = 3, 7–10 = 4).
     const p = basesOf('narrow').find((b) => b.id === 'd5-60km-16w-v58')!.plan as FiveKV2Plan;
-    expect(p.weeks.filter((w) => w.deload).map((w) => w.index)).toEqual([4, 7, 11]);
+    // 5k-v2.12.0 (T4): rasterećenja trkača 4, 8, 12 (bilo 4, 7, 11) — sidra 7 i 3.
+    expect(p.weeks.filter((w) => w.deload).map((w) => w.index)).toEqual([4, 8, 12]);
     const pain = (r: number): AdaptStep => ({
       asOf: p.weeks[r - 1]!.endDate,
       firstWeek: r + 1,
@@ -142,12 +144,12 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
       const fr = framesFor(p.input, steps, p.pattern, p.weeks.length, dropped);
       return [fr.filter((f) => f.deload).map((f) => f.index), [...dropped]];
     };
-    expect(deloads([pain(6), pain(3)])).toEqual([[4, 11], [[7, 0]]]);
-    expect(deloads([pain(3), pain(6)])).toEqual([
-      [11],
+    expect(deloads([pain(7), pain(3)])).toEqual([[4, 12], [[8, 0]]]);
+    expect(deloads([pain(3), pain(7)])).toEqual([
+      [12],
       [
         [4, 0],
-        [7, 1]
+        [8, 1]
       ]
     ]);
   });
@@ -266,14 +268,14 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
       [12, true]
     ]);
     expect(text(r, 'PAIN')).toContain(
-      'Posle nedelje 2 rast kreće od 70% nivoa pre bola (10.5 km).'
+      'Posle nedelje 2 rast kreće od 70% nivoa pre bola (10,5 km).'
     );
     expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
   });
 
   it('VOLUME_DELOAD: pauza 20, asOf sreda nedelje rasterećenja — ostatak nedelje = cilj pauze (volume.pauseRemainderKm) < 0,8 × prethodne: prihvaćeno (3 toka)', () => {
     const cases: [string, string, number, number, number][] = [
-      ['v38-d4-38km-10w', '2026-11-18', 3, 29.9, 26.2],
+      ['v38-d4-38km-10w', '2026-12-02', 5, 29.9, 26.2], // 5k-v2.12.0 (T4): rasterećenje ned 5 (bilo 3)
       ['v38-d4-38km-14w', '2026-11-25', 4, 29.9, 26.2],
       ['v45-d4-38km-14w', '2026-12-23', 8, 33, 28.9]
     ];
@@ -291,20 +293,22 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
       const w = r.plan.weeks[week - 1]!;
       expect([w.deload, w.targetKm], id).toEqual([true, after]);
       expect(after / p.weeks[week - 2]!.targetKm, id).toBeLessThan(P.volume.deloadFactor - 0.05);
-      expect(r.plan.adaptation!.mixedWeeks, id).not.toContain(week);
+      // 5k-v2.12.0: v38-d4-38km-10w (rasterećenje ned 5, T4) je i mešovita nedelja (upisani dani do asOf ≠ sastavljeni);
+      // vlasnik ostatka je i dalje pravilo pauze (pauseRemainder), validator bez greške.
+      if (id !== 'v38-d4-38km-10w') expect(r.plan.adaptation!.mixedWeeks, id).not.toContain(week);
+      expect(
+        validatePlan(r.plan).filter((v) => v.severity === 'error'),
+        id
+      ).toEqual([]);
     }
   });
 
-  it('WEEK_MIN_VOLUME: beg-feel-d3-12km-10w pauza 10 + bol 5 kraj ned 8 — ned 9 cilj 7,5 = minimum, planirano 7,3 zbog dana bola: upozorenje', () => {
+  it('WEEK_MIN_VOLUME: beg-feel-d3-12km-10w pauza 10 + bol 5 kraj ned 8 — ned 9 cilj 7,5 = minimum, planirano 7,3 zbog dana bola: bez poruke (razlika < 1 km i < 3 %)', () => {
     const r = run('beg-feel-d3-12km-10w', '2026-12-27', 'pause10pain5');
     const w9 = r.plan.weeks[8]!;
     expect([w9.targetKm, w9.plannedKm]).toEqual([7.5, 7.3]);
-    expect(r.plan.warnings).toContainEqual({
-      rule: 'PLANNED_BELOW_TARGET_LIMITS',
-      severity: 'warning',
-      message: 'Planirano 7.3 km < cilj obima 7.5 km (odmor/bol, adaptacija).',
-      week: 9
-    });
+    // F1 (04-final): razlika 0,2 km (< 1 km i < 3 % cilja) — bez poruke „manje od cilja".
+    expect(r.plan.warnings.map((v) => v.rule)).not.toContain('PLANNED_BELOW_TARGET_LIMITS');
     // Cilj ispod minimuma ostaje greška konstruktora.
     const low = JSON.parse(JSON.stringify(r.plan)) as FiveKV2Plan;
     low.weeks[8]!.targetKm = 7.2;

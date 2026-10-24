@@ -216,11 +216,14 @@ describe('HM v2 iza prekidača', () => {
     useUIStore.setState({ today: test.date });
     render(<PlanPage />);
     expect(screen.getAllByText(/5 km — orijentir \(procena\)/).length).toBeGreaterThan(0);
-    // Napomene i upozorenja v2 doslovno u „Na šta da paziš".
+    // Napomene v2 u „Na šta da paziš" kao tekst za korisnika (HM-09 Z2: bez internih oznaka pravila).
     expect(screen.getByText('Na šta da paziš u ovom planu')).toBeTruthy();
     const notes = (plan['hmV2'] as { notes: string[] }).notes;
     expect(notes.length).toBeGreaterThan(0);
-    for (const n of notes) expect(document.body.textContent).toContain(n);
+    const text = document.body.textContent ?? '';
+    expect(text).toContain('Plan po osećaju: bez rezultata trke.');
+    expect(text).toMatch(/Test 5 km: nedelja \d+, \d{4}-\d{2}-\d{2}\. Prognoza polumaratona/);
+    expect(text).not.toMatch(/\((?:H|HI|A)\d+\)/);
   });
 
   it('trčanje/hodanje: odbijanje v2 doslovno sa preporukom 5K, dalje se ne ide, plan se ne pravi', async () => {

@@ -18,7 +18,10 @@ import {
   expectCounts,
   GRID_TIMEOUT,
   p35FlowErrors,
-  p37FlowErrors
+  p37FlowErrors,
+  p07FlowErrors,
+  p08Errors,
+  changed08
 } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
@@ -40,11 +43,12 @@ import {
   runsIn,
   SCENARIOS,
   SCHEDULES_BY_DAYS,
-  timeForVdot
+  timeForVdot,
+  mark07
 } from './testInputs.ts';
 import type { AdaptResult, PlanWeek, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { raceWeek, type WeekContext } from './week.ts';
+import { isA9Note, raceWeek, type WeekContext } from './week.ts';
 import { warmupCooldown } from './workouts.ts';
 import { checkInput } from './input.ts';
 
@@ -194,7 +198,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       h06c[`${id}/${k}/${s}`] = planHash06c(r);
       p35Flows.push({ key: `${id}/${k}/${s}`, id, hash: planHash06c(r), res: r });
       const notes = r.ok ? r.plan.notes : [];
-      if (notes.some((x) => x.includes('(A17)'))) a17.add(`${id}/${k}/${s}`);
+      if (notes.some((x) => x.includes('Redovno rasterećenje u nedelji')))
+        a17.add(`${id}/${k}/${s}`);
       if (notes.some((x) => x.includes('nivoa pre bola bilo bi'))) n2.add(`${id}/${k}/${s}`);
       if (applied(r, 'PAIN')) painApplied.add(`${id}/${k}/${s}`);
       if (r.ok && r.plan.adaptation!.steps.some((x) => x.returnFrom))
@@ -244,13 +249,15 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       under50: { n: 120, UNDER_EXECUTION: 80, same: 40 },
       // 06i (pouka 37): zaštićeni dani po činjenicama (× 1,2) prelaze sastavljene → preostali dani na ostatak do cilja
       // (mešovita nedelja; same 44 → 14); 1 tok: test otpada sa kvalitetom koji ne staje (TEST_MOVED).
-      over120: { n: 120, OVER_EXECUTION: 80, same: 14, mixed: 60, TEST_MOVED: 1 },
+      // 10K-07 (Z1): TEST_MOVED 1 → 0 — test mešovite nedelje ostaje uz upisani višak zaštićenih dana (≤ 10 %).
+      over120: { n: 120, OVER_EXECUTION: 80, same: 14, mixed: 60 },
       pause10: { n: 120, PAUSE: 120, mixed: 50, TEST_MOVED: 5 },
       pause20: { n: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 },
       pause35: { n: 120, PAUSE: 120, mixed: 60, TEST_MOVED: 13 },
       // 06c (A17): TEST_MOVED 5 → 6 — d4-f-14w w2end: rasterećenje ned 4 sa testom (D27) ukinuto; u izgradnji
       // 27,0 km test i Q2 ne staju → jedan kvalitet doze rasterećenja, test otpada (A9/A13).
-      pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 6 },
+      // 10K-08 (T1): TEST_MOVED 6 → 5.
+      pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 5 },
       // 06b (10k-v2.4.1): TEST_MOVED 10 → 9 — viši cilj posle sidra, test 5 km ostaje u svojoj nedelji.
       pain8: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 9 },
       // 06i (pouka 37): 3 toka sa ostatkom do cilja (zapis umora 6 km na zaštićenom danu > sastavljeno); same 40 → 37.
@@ -262,7 +269,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       locked: { n: 120, same: 120 },
       // 06c (A17): TEST_MOVED 13 → 8 — d6-f-14w i d3/d4/d5/d6-f-18w w2end: prvi korak (pauza) ukida rasterećenje
       // sa testom, drugi korak (manjak) više ne uklanja test.
-      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 8 },
+      // 10K-08 (T1): TEST_MOVED 8 → 7.
+      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 7 },
       // 06b (10k-v2.4.1): TEST_MOVED 13 → 9 — osnova min(0,7 × nivo, cilj pauze) umesto 0,7 × cilj pauze.
       painPause: { n: 120, PAIN: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 }
     });
@@ -305,8 +313,9 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
         const s = key.split('/')[2]!;
         if (painApplied.has(key)) changed[s] = (changed[s] ?? 0) + 1;
         else if (a17.has(key)) byA17[s] = (byA17[s] ?? 0) + 1;
-        else notPain.push(key);
-      } else if (painBack.has(key)) unchangedBack.push(key);
+        // 10K-08: oznake toka su današnje; tok promenjen prema b9c4728 se po njima ne sudi.
+        else if (!changed08('grid04', key)) notPain.push(key);
+      } else if (painBack.has(key) && !changed08('grid04', key)) unchangedBack.push(key);
     }
     expect(notPain).toEqual([]);
     expectCounts(changed, CHANGED_06B);
@@ -336,11 +345,12 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       const h = asOf51(key, h0);
       const s = key.split('/')[2]!;
       const marked = a17.has(key) || n2.has(key);
+      const c08 = changed08('grid04', key);
       if (ref.grid04[key] !== h) {
         changed[s] = (changed[s] ?? 0) + 1;
-        if (!marked) other.push(key);
+        if (!marked && !c08) other.push(key);
       } else {
-        if (marked) same.push(key);
+        if (marked && !c08) same.push(key);
         // Polje reduced je isto u 51a924f i sada (isti koraci): poredi se par novog koda.
         if (h81[key] !== h0) reducedOnly[s] = (reducedOnly[s] ?? 0) + 1;
       }
@@ -368,6 +378,14 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
 
   it('06i (10k-v2.8.0): prema 46e72eb menjaju se tačno tokovi sa mešovitom nedeljom pouke 37', () => {
     expect(p37FlowErrors('grid04', p35Flows)).toEqual([]);
+    // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
+    expect(p08Errors('grid04', p35Flows)).toEqual([]);
+    expect(
+      p07FlowErrors(
+        'grid04',
+        p35Flows.map((f) => ({ ...f, m07: mark07(f.res) }))
+      )
+    ).toEqual([]);
   });
 
   it('06c: reduced === true tačno u koracima A2/A3 (manjak, pauza — i nov start), === false tačno u koracima A6 (višak), odsutno u svim ostalim', () => {
@@ -620,9 +638,12 @@ describe('odluke A1–A15', () => {
           expect(d.workout.rpe !== undefined, `ned ${w.index}`).toBe(w.index < 7);
     // Obim: pravilo D6 nezavisno od tempa (ciljevi isti kao pre; trkačka nedelja = planirano, D8, zavisi
     // od tempa 35 min E).
-    expect(r.plan.weeks.slice(0, -1).map((w) => w.nominalKm)).toEqual(
-      p.weeks.slice(0, -1).map((w) => w.nominalKm)
+    // 10K-08 (T1): najkraći lagan = 20 min laganim tempom — kapacitet nedelje zavisi od tempa, pa od prve nedelje
+    // spuštene na novom tempu (ned 10) nominalni ciljevi slede stvarno dobijen cilj (D6), ne plan pre rezultata.
+    expect(r.plan.weeks.slice(0, 9).map((w) => w.nominalKm)).toEqual(
+      p.weeks.slice(0, 9).map((w) => w.nominalKm)
     );
+    expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
     // Plan sa rezultatom: ocena cilja za nedelje od rezultata do trke.
     const pr = plan('d4-r-14w');
     const rr = ok(adaptTenKV2(pr, factsOf(pr, 'faster', asOf), asOf));
@@ -824,8 +845,8 @@ describe('odluke A1–A15', () => {
     const p = plan('beg-d3-f-14w');
     const asOf = asOfOf(p, 'w6wed');
     const r = ok(adaptTenKV2(p, factsOf(p, 'pause35', asOf), asOf));
-    expect(r.plan.weeks.some((w) => w.notes.some((n) => n.includes('(A9)')))).toBe(true);
-    for (const w of r.plan.weeks.filter((x) => x.notes.some((n) => n.includes('(A9)'))))
+    expect(r.plan.weeks.some((w) => w.notes.some(isA9Note))).toBe(true);
+    for (const w of r.plan.weeks.filter((x) => x.notes.some(isA9Note)))
       expect(quality(w)).toBeLessThanOrEqual(1);
     // Oštrenje: u zabrani kvaliteta (pauza 20 u taperu) nema ga, trkačka ≤ taper.
     const q = plan('d4-r-10w');
@@ -859,7 +880,7 @@ describe('odluke A1–A15', () => {
     expect(withS.days.map((d) => d.role)).toContain('sharpener');
     expect(noS.days.map((d) => d.role)).not.toContain('sharpener');
     expect(noS.days.length).toBe(withS.days.length);
-    expect(noS.notes[0]).toContain('(A9, D23)');
+    expect(noS.notes[0]).toContain('sa njim bi trkačka nedelja bila veća od tapera');
   });
 
   it('A10: dan bez zapisa je poznat samo u coverage complete; trčanje = completed i (km ili trajanje); bol i rezultat bez coverage', () => {

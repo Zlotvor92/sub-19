@@ -1,0 +1,407 @@
+{
+ "dist": "5K",
+ "seed": 20261023,
+ "from": 0,
+ "to": 34000,
+ "inputs": 34000,
+ "plans": 29978,
+ "realInputs": 30596,
+ "realPlans": 26696,
+ "rejected": {
+  "WEEK_INFEASIBLE:Trkačka nedelja: nema zahtevnog dana šablona ≥ # dana pre tr": 700,
+  "RUN_DAYS_SPACING:Izabrani dani ne dozvoljavaju # zahtevna dana (# kvaliteta +": 3136,
+  "QUALITY_INFEASIBLE:Nedelja #: RP ponavljanja: budžet # km nije dovoljan za najm": 41,
+  "QUALITY_INFEASIBLE:Nedelja #: I ponavljanja: budžet # km nije dovoljan za najma": 170,
+  "QUALITY_INFEASIBLE:Nedelja #: Tempo po osećaju: budžet # km nema dozu po pravil": 3
+ },
+ "rejectedReal": {
+  "WEEK_INFEASIBLE:Trkačka nedelja: nema zahtevnog dana šablona ≥ # dana pre tr": 578,
+  "RUN_DAYS_SPACING:Izabrani dani ne dozvoljavaju # zahtevna dana (# kvaliteta +": 3136,
+  "QUALITY_INFEASIBLE:Nedelja #: RP ponavljanja: budžet # km nije dovoljan za najm": 41,
+  "QUALITY_INFEASIBLE:Nedelja #: I ponavljanja: budžet # km nije dovoljan za najma": 170,
+  "QUALITY_INFEASIBLE:Nedelja #: Tempo po osećaju: budžet # km nema dozu po pravil": 3
+ },
+ "rejectedEx": {
+  "WEEK_INFEASIBLE:Trkačka nedelja: nema zahtevnog dana šablona ≥ # dana pre tr": [
+   {
+    "i": 3640,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2026-11-30\",\"raceDate\":\"2027-01-10\",\"runDays\":[\"sun\",\"fri\",\"mon\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":3000,\"timeSec\":842,\"date\":\"2026-11-30\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null} → Trkačka nedelja: nema zahtevnog dana šablona ≥ 3 dana pre trke za oštrenje."
+   },
+   {
+    "i": 4249,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2028-07-30\",\"raceDate\":\"2028-09-09\",\"runDays\":[\"thu\",\"fri\",\"sat\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":10000,\"timeSec\":3100,\"date\":\"2028-07-05\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null} → Trkačka nedelja: nema zahtevnog dana šablona ≥ 3 dana pre trke za oštrenje."
+   },
+   {
+    "i": 7703,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2028-11-16\",\"raceDate\":\"2028-12-27\",\"runDays\":[\"tue\",\"wed\",\"mon\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":3000,\"timeSec\":924,\"date\":\"2028-08-24\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null} → Trkačka nedelja: nema zahtevnog dana šablona ≥ 3 dana pre trke za oštrenje."
+   }
+  ],
+  "RUN_DAYS_SPACING:Izabrani dani ne dozvoljavaju # zahtevna dana (# kvaliteta +": [
+   {
+    "i": 403,
+    "size": 6015,
+    "s": "realan {\"startDate\":\"2028-04-27\",\"raceDate\":\"2028-06-07\",\"runDays\":[\"tue\",\"wed\",\"mon\",\"thu\"],\"currentWeeklyKm\":15,\"typicalEasyPaceSecPerKm\":366,\"goalTimeSec\":null} → Izabrani dani ne dozvoljavaju 3 zahtevna dana (2 kvaliteta + dugi) bez uzastopnih dana. Izaberi razmaknutije dane."
+   },
+   {
+    "i": 472,
+    "size": 6015,
+    "s": "realan {\"startDate\":\"2027-09-15\",\"raceDate\":\"2027-10-26\",\"runDays\":[\"fri\",\"sun\",\"mon\",\"sat\"],\"currentWeeklyKm\":15,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1371,\"date\":\"2027-06-26\"},\"goalTimeSec\":null} → Izabrani dani ne dozvoljavaju 3 zahtevna dana (2 kvaliteta + dugi) bez uzastopnih dana. Izaberi razmaknutije dane."
+   },
+   {
+    "i": 521,
+    "size": 6015,
+    "s": "realan {\"startDate\":\"2027-06-28\",\"raceDate\":\"2027-08-08\",\"runDays\":[\"fri\",\"tue\",\"thu\",\"wed\"],\"currentWeeklyKm\":15,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1654,\"date\":\"2027-05-19\"},\"goalTimeSec\":null} → Izabrani dani ne dozvoljavaju 3 zahtevna dana (2 kvaliteta + dugi) bez uzastopnih dana. Izaberi razmaknutije dane."
+   }
+  ],
+  "WEEK_INFEASIBLE:Trkačka nedelja: nema zahtevnog dana šablona ≥ # dana pre tr~nerealan": [
+   {
+    "i": 5958,
+    "size": 6012,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-10-19\",\"raceDate\":\"2028-11-29\",\"runDays\":[\"mon\",\"tue\",\"wed\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2426,\"date\":\"2028-10-12\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1084} → Trkačka nedelja: nema zahtevnog dana šablona ≥ 3 dana pre trke za oštrenje."
+   },
+   {
+    "i": 6420,
+    "size": 6012,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-04-03\",\"raceDate\":\"2028-05-14\",\"runDays\":[\"sun\",\"sat\",\"fri\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2591,\"date\":\"2028-01-24\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null} → Trkačka nedelja: nema zahtevnog dana šablona ≥ 3 dana pre trke za oštrenje."
+   },
+   {
+    "i": 17561,
+    "size": 6012,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-04-03\",\"raceDate\":\"2028-05-14\",\"runDays\":[\"fri\",\"sun\",\"sat\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2668,\"date\":\"2028-01-10\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null} → Trkačka nedelja: nema zahtevnog dana šablona ≥ 3 dana pre trke za oštrenje."
+   }
+  ],
+  "QUALITY_INFEASIBLE:Nedelja #: RP ponavljanja: budžet # km nije dovoljan za najm": [
+   {
+    "i": 802,
+    "size": 8012,
+    "s": "realan {\"startDate\":\"2027-07-13\",\"raceDate\":\"2027-09-06\",\"runDays\":[\"sat\",\"fri\",\"thu\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":3000,\"timeSec\":681,\"date\":\"2027-04-20\"},\"goalTimeSec\":null} → Nedelja 7: RP ponavljanja: budžet 0.77 km nije dovoljan za najmanji smislen trening po pravilima."
+   },
+   {
+    "i": 1829,
+    "size": 8012,
+    "s": "realan {\"startDate\":\"2028-05-22\",\"raceDate\":\"2028-07-16\",\"runDays\":[\"mon\",\"fri\",\"sun\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1051,\"date\":\"2028-03-29\"},\"goalTimeSec\":1082} → Nedelja 7: RP ponavljanja: budžet 0.77 km nije dovoljan za najmanji smislen trening po pravilima."
+   },
+   {
+    "i": 4397,
+    "size": 8012,
+    "s": "realan {\"startDate\":\"2027-01-09\",\"raceDate\":\"2027-03-05\",\"runDays\":[\"sat\",\"sun\",\"wed\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":3000,\"timeSec\":836,\"date\":\"2027-01-09\"},\"goalTimeSec\":null} → Nedelja 7: RP ponavljanja: budžet 0.77 km nije dovoljan za najmanji smislen trening po pravilima."
+   }
+  ],
+  "QUALITY_INFEASIBLE:Nedelja #: I ponavljanja: budžet # km nije dovoljan za najma": [
+   {
+    "i": 845,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2027-03-02\",\"raceDate\":\"2027-04-12\",\"runDays\":[\"fri\",\"tue\",\"mon\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1114,\"date\":\"2027-03-02\"},\"goalTimeSec\":null} → Nedelja 3: I ponavljanja: budžet 1.11 km nije dovoljan za najmanji smislen trening po pravilima."
+   },
+   {
+    "i": 1341,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2027-01-10\",\"raceDate\":\"2027-02-20\",\"runDays\":[\"mon\",\"fri\",\"thu\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2414,\"date\":\"2027-01-10\"},\"goalTimeSec\":1113} → Nedelja 3: I ponavljanja: budžet 1.11 km nije dovoljan za najmanji smislen trening po pravilima."
+   },
+   {
+    "i": 1835,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2028-04-05\",\"raceDate\":\"2028-05-16\",\"runDays\":[\"mon\",\"sat\",\"wed\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2187,\"date\":\"2028-01-12\"},\"goalTimeSec\":null} → Nedelja 3: I ponavljanja: budžet 1.11 km nije dovoljan za najmanji smislen trening po pravilima."
+   }
+  ],
+  "QUALITY_INFEASIBLE:Nedelja #: Tempo po osećaju: budžet # km nema dozu po pravil": [
+   {
+    "i": 20521,
+    "size": 15012,
+    "s": "realan {\"startDate\":\"2026-10-24\",\"raceDate\":\"2027-02-05\",\"runDays\":[\"fri\",\"sat\",\"tue\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":290,\"goalTimeSec\":1326} → Nedelja 6: Tempo po osećaju: budžet 1.56 km nema dozu po pravilima."
+   },
+   {
+    "i": 3844,
+    "size": 16012,
+    "s": "realan {\"startDate\":\"2028-02-27\",\"raceDate\":\"2028-06-17\",\"runDays\":[\"sat\",\"sun\",\"tue\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":289,\"goalTimeSec\":null} → Nedelja 6: Tempo po osećaju: budžet 1.56 km nema dozu po pravilima."
+   },
+   {
+    "i": 30287,
+    "size": 16012,
+    "s": "realan {\"startDate\":\"2028-02-09\",\"raceDate\":\"2028-05-30\",\"runDays\":[\"mon\",\"fri\",\"tue\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":315,\"goalTimeSec\":1362} → Nedelja 6: Tempo po osećaju: budžet 1.56 km nema dozu po pravilima."
+   }
+  ]
+ },
+ "throws": {},
+ "throwEx": {},
+ "validatorErr": {},
+ "validatorWarn": {
+  "START_ABOVE_CAPACITY": 7776,
+  "PLANNED_BELOW_TARGET": 48
+ },
+ "validatorErrEx": {},
+ "inv": {},
+ "invEx": {},
+ "find": {
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base≤5min": {
+   "real": 345,
+   "unreal": 78
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje≤5min": {
+   "real": 137,
+   "unreal": 109
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak-rasterećenje≤5min": {
+   "real": 160,
+   "unreal": 123
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak≤5min": {
+   "real": 409,
+   "unreal": 83
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak>5min": {
+   "real": 112,
+   "unreal": 13
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base>5min": {
+   "real": 81,
+   "unreal": 0
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje>5min": {
+   "real": 8,
+   "unreal": 0
+  },
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak-rasterećenje>5min": {
+   "real": 10,
+   "unreal": 0
+  }
+ },
+ "findEx": {
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base≤5min": [
+   {
+    "i": 426,
+    "size": 12012,
+    "s": "realan {\"startDate\":\"2028-08-21\",\"raceDate\":\"2028-11-12\",\"runDays\":[\"thu\",\"wed\",\"sat\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":401,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 1013,
+    "size": 12012,
+    "s": "realan {\"startDate\":\"2027-12-08\",\"raceDate\":\"2028-02-29\",\"runDays\":[\"thu\",\"mon\",\"sat\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":270,\"goalTimeSec\":1368}"
+   },
+   {
+    "i": 1045,
+    "size": 12012,
+    "s": "realan {\"startDate\":\"2027-02-23\",\"raceDate\":\"2027-05-17\",\"runDays\":[\"fri\",\"mon\",\"tue\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":420,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje≤5min": [
+   {
+    "i": 3166,
+    "size": 9012,
+    "s": "realan {\"startDate\":\"2028-02-12\",\"raceDate\":\"2028-04-14\",\"runDays\":[\"mon\",\"sat\",\"fri\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":364,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 4671,
+    "size": 9012,
+    "s": "realan {\"startDate\":\"2028-09-20\",\"raceDate\":\"2028-11-21\",\"runDays\":[\"mon\",\"sun\",\"sat\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1371,\"date\":\"2028-07-21\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 5923,
+    "size": 9012,
+    "s": "realan {\"startDate\":\"2028-06-05\",\"raceDate\":\"2028-08-06\",\"runDays\":[\"thu\",\"mon\",\"tue\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":3000,\"timeSec\":787,\"date\":\"2028-05-08\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak-rasterećenje≤5min": [
+   {
+    "i": 8988,
+    "size": 8015,
+    "s": "realan {\"startDate\":\"2028-01-13\",\"raceDate\":\"2028-03-08\",\"runDays\":[\"tue\",\"fri\",\"thu\",\"sat\"],\"currentWeeklyKm\":15,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1087,\"date\":\"2027-04-25\"},\"typicalEasyPaceSecPerKm\":510,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 9708,
+    "size": 8015,
+    "s": "realan {\"startDate\":\"2026-12-22\",\"raceDate\":\"2027-02-15\",\"runDays\":[\"fri\",\"mon\",\"sun\",\"tue\"],\"currentWeeklyKm\":15,\"typicalEasyPaceSecPerKm\":270,\"goalTimeSec\":1403}"
+   },
+   {
+    "i": 10250,
+    "size": 8015,
+    "s": "realan {\"startDate\":\"2026-11-28\",\"raceDate\":\"2027-01-22\",\"runDays\":[\"thu\",\"sat\",\"mon\",\"fri\"],\"currentWeeklyKm\":15,\"typicalEasyPaceSecPerKm\":270,\"goalTimeSec\":1472}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak≤5min": [
+   {
+    "i": 81,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2028-12-19\",\"raceDate\":\"2029-01-29\",\"runDays\":[\"sat\",\"sun\",\"tue\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":336,\"goalTimeSec\":1416}"
+   },
+   {
+    "i": 440,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2028-11-08\",\"raceDate\":\"2028-12-19\",\"runDays\":[\"wed\",\"tue\",\"sat\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":506,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 456,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2027-08-30\",\"raceDate\":\"2027-10-10\",\"runDays\":[\"tue\",\"sun\",\"thu\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":510,\"goalTimeSec\":1291}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak>5min": [
+   {
+    "i": 499,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2028-04-19\",\"raceDate\":\"2028-05-30\",\"runDays\":[\"thu\",\"wed\",\"sat\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":510,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 537,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2028-01-21\",\"raceDate\":\"2028-03-02\",\"runDays\":[\"sun\",\"tue\",\"wed\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":452,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 1084,
+    "size": 6012,
+    "s": "realan {\"startDate\":\"2027-01-20\",\"raceDate\":\"2027-03-02\",\"runDays\":[\"wed\",\"sun\",\"tue\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":428,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak≤5min~nerealan": [
+   {
+    "i": 1676,
+    "size": 6012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2027-02-15\",\"raceDate\":\"2027-03-28\",\"runDays\":[\"sun\",\"wed\",\"fri\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":306,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 1878,
+    "size": 6012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-07-12\",\"raceDate\":\"2028-08-22\",\"runDays\":[\"tue\",\"mon\",\"fri\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":270,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 6432,
+    "size": 6012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2026-11-18\",\"raceDate\":\"2026-12-29\",\"runDays\":[\"wed\",\"fri\",\"thu\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":3000,\"timeSec\":521,\"date\":\"2026-02-08\"},\"typicalEasyPaceSecPerKm\":308,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base≤5min~nerealan": [
+   {
+    "i": 11540,
+    "size": 12012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-03-23\",\"raceDate\":\"2028-06-14\",\"runDays\":[\"fri\",\"sat\",\"thu\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":324,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 15375,
+    "size": 12012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2026-12-11\",\"raceDate\":\"2027-03-04\",\"runDays\":[\"mon\",\"fri\",\"sun\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":270,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1511}"
+   },
+   {
+    "i": 18946,
+    "size": 12012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-09-15\",\"raceDate\":\"2028-12-07\",\"runDays\":[\"tue\",\"sat\",\"fri\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":270,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1403}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje≤5min~nerealan": [
+   {
+    "i": 7925,
+    "size": 9012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2027-10-29\",\"raceDate\":\"2027-12-30\",\"runDays\":[\"sat\",\"wed\",\"thu\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":274,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 15133,
+    "size": 9012,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-01-17\",\"raceDate\":\"2028-03-19\",\"runDays\":[\"thu\",\"sun\",\"mon\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":10000,\"timeSec\":2122,\"date\":\"2027-11-28\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":946}"
+   },
+   {
+    "i": 20579,
+    "size": 9012,
+    "s": "nerealan(početnik VDOT>45) {\"startDate\":\"2028-11-13\",\"raceDate\":\"2029-01-14\",\"runDays\":[\"wed\",\"thu\",\"sun\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":3000,\"timeSec\":590,\"date\":\"2028-09-15\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base>5min": [
+   {
+    "i": 1265,
+    "size": 12012,
+    "s": "realan {\"startDate\":\"2028-01-23\",\"raceDate\":\"2028-04-15\",\"runDays\":[\"sat\",\"sun\",\"wed\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":470,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1402}"
+   },
+   {
+    "i": 11991,
+    "size": 12012,
+    "s": "realan {\"startDate\":\"2028-04-21\",\"raceDate\":\"2028-07-13\",\"runDays\":[\"wed\",\"sat\",\"fri\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":473,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1386}"
+   },
+   {
+    "i": 13987,
+    "size": 12012,
+    "s": "realan {\"startDate\":\"2026-12-17\",\"raceDate\":\"2027-03-10\",\"runDays\":[\"sat\",\"fri\",\"tue\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":415,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@base-rasterećenje>5min": [
+   {
+    "i": 17102,
+    "size": 10015,
+    "s": "realan {\"startDate\":\"2027-05-10\",\"raceDate\":\"2027-07-18\",\"runDays\":[\"thu\",\"wed\",\"fri\",\"mon\"],\"currentWeeklyKm\":15,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1301,\"date\":\"2026-05-17\"},\"typicalEasyPaceSecPerKm\":421,\"goalTimeSec\":1346}"
+   },
+   {
+    "i": 1068,
+    "size": 11015,
+    "s": "realan {\"startDate\":\"2026-12-18\",\"raceDate\":\"2027-03-04\",\"runDays\":[\"sun\",\"wed\",\"tue\",\"thu\"],\"currentWeeklyKm\":15,\"typicalEasyPaceSecPerKm\":421,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 16604,
+    "size": 11015,
+    "s": "realan {\"startDate\":\"2027-08-27\",\"raceDate\":\"2027-11-11\",\"runDays\":[\"tue\",\"thu\",\"mon\",\"sun\"],\"currentWeeklyKm\":15,\"typicalEasyPaceSecPerKm\":405,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak-rasterećenje≤5min~nerealan": [
+   {
+    "i": 7925,
+    "size": 9012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2027-10-29\",\"raceDate\":\"2027-12-30\",\"runDays\":[\"sat\",\"wed\",\"thu\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":274,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 14979,
+    "size": 9012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-05-19\",\"raceDate\":\"2028-07-20\",\"runDays\":[\"fri\",\"sun\",\"tue\"],\"currentWeeklyKm\":12,\"recentResult\":{\"distanceM\":5000,\"timeSec\":903,\"date\":\"2027-09-07\"},\"typicalEasyPaceSecPerKm\":310,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 22156,
+    "size": 9012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-01-13\",\"raceDate\":\"2028-03-15\",\"runDays\":[\"wed\",\"sun\",\"thu\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":304,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1420}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak>5min~nerealan": [
+   {
+    "i": 3431,
+    "size": 8012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-07-21\",\"raceDate\":\"2028-09-14\",\"runDays\":[\"thu\",\"tue\",\"sat\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":286,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 21751,
+    "size": 8012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-05-31\",\"raceDate\":\"2028-07-25\",\"runDays\":[\"sun\",\"wed\",\"fri\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":270,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1392}"
+   },
+   {
+    "i": 23552,
+    "size": 8012,
+    "s": "nerealan(početnik lagan<330) {\"startDate\":\"2028-08-17\",\"raceDate\":\"2028-10-11\",\"runDays\":[\"tue\",\"sat\",\"thu\"],\"currentWeeklyKm\":12,\"typicalEasyPaceSecPerKm\":270,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   }
+  ],
+  "T:KVALITET>DUGI_TRAJANJE_bez_upozorenja@quality@peak-rasterećenje>5min": [
+   {
+    "i": 28861,
+    "size": 9015,
+    "s": "realan {\"startDate\":\"2028-01-15\",\"raceDate\":\"2028-03-17\",\"runDays\":[\"mon\",\"sun\",\"thu\",\"tue\"],\"currentWeeklyKm\":15,\"typicalEasyPaceSecPerKm\":398,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   },
+   {
+    "i": 10377,
+    "size": 9015.6,
+    "s": "realan {\"startDate\":\"2026-11-26\",\"raceDate\":\"2027-01-27\",\"runDays\":[\"thu\",\"mon\",\"sat\",\"wed\"],\"currentWeeklyKm\":15.6,\"typicalEasyPaceSecPerKm\":444,\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":1447}"
+   },
+   {
+    "i": 6358,
+    "size": 11015,
+    "s": "realan {\"startDate\":\"2028-08-23\",\"raceDate\":\"2028-11-07\",\"runDays\":[\"fri\",\"sun\",\"tue\",\"wed\"],\"currentWeeklyKm\":15,\"recentResult\":{\"distanceM\":5000,\"timeSec\":1500,\"date\":\"2028-08-23\"},\"experience\":\"beginner\",\"canRun30Min\":true,\"goalTimeSec\":null}"
+   }
+  ]
+ },
+ "basis": {
+  "result": 17238,
+  "feel": 10937,
+  "runWalk": 2747,
+  "stale": 3078
+ },
+ "warnings": {
+  "GOAL_STATUS": 6727,
+  "START_ABOVE_CAPACITY": 7776,
+  "PLANNED_BELOW_TARGET": 48
+ },
+ "seconds": 220.926
+}

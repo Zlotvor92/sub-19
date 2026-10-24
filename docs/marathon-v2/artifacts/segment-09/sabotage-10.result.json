@@ -1,0 +1,89 @@
+{
+ "input": "/home/user/sub-19/docs/marathon-v2/artifacts/segment-09/sabotage-10.json",
+ "head": "81e4d1d",
+ "level": "brz",
+ "bail": true,
+ "parallel": 3,
+ "vitestArgs": [],
+ "durationS": 25.8,
+ "hashBefore": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+ "hashAfter": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "10-Z7 manjak ne vidi raniji korak istih zapisa",
+   "files": [
+    "src/domain/generators/marathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment10.node.test.ts",
+    "test": "Z7: manjak izvršenja vezan za zapise (kao umor, pouka 36) > iste činjenice, isti asOf → isti plan (nema novog seka cilja)",
+    "message": "AssertionError: expected [ { index: 1, …(10) }, …(18) ] to deeply equal [ { index: 1, …(10) }, …(18) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+   "hashSabotaged": "739cfabe66572df2a1b0c922e898f763702c8d9173e9bd4644ff15ac4191e7c5",
+   "hashAfter": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 9.6
+  },
+  {
+   "index": 2,
+   "name": "10-Z6 LIMITS samo zaključani tekućeg koraka",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/segment10.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/segment10.node.test.ts",
+    "test": "Z6: LIMITS preskače zaštićen dan (≤ asOf, zaključan u bilo kom koraku, urađen) > dan kvaliteta zaključan u koraku bola, kasnije prošao → sledeći korak nije odbijen",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+   "hashSabotaged": "0d43493e3c1d9e9336821fdc6235615be9bcd15baad706679cb7d8906d39b9f9",
+   "hashAfter": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.6
+  },
+  {
+   "index": 3,
+   "name": "10-Z4 vraćanje odbija posle prilagođavanja",
+   "files": [
+    "src/domain/generators/marathon/v2/app/adapt.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/app/adaptFlow.node.test.ts",
+    "test": "vraćanje verzije, promena cilja, forma, članovi (b) > vraćanje (MAR-10 Z4): spoj → validatePlan; neposredno poništavanje prolazi; plan koji krši pravila se ne vraća",
+    "message": "AssertionError: expected [ 'x' ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+   "hashSabotaged": "ffbf31b0a7271544c431ab179c9b76d2f04cbfc2379a4f0a5813216ce6328ba0",
+   "hashAfter": "4c424fc2d46b85a14ae8092f72526ac37b4ac86fd6abd4e53f5a19621298ed48",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 12.6
+  }
+ ]
+}

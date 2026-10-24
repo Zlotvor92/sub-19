@@ -1,0 +1,156 @@
+[
+  {
+    "name": "07-1 vraćanje bez jezgra (kopija verzije)",
+    "file": "src/domain/generators/tenK/v2/app/adapt.ts",
+    "find": "  const r = adaptTenKV2(base, { lockedDayIds: [...locked].sort() }, today);",
+    "replace": "  const r = { ok: true as const, plan: { ...copy(snap), weeks: snap.weeks.map((s, i) => (cur.weeks[i]!.endDate <= today ? cur.weeks[i]! : s)) }, changes: [], reasons: [] };",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/restore.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-2 Z5a maraton rezultat se prenosi",
+    "file": "src/domain/generators/tenK/v2/app/handoffTarget.ts",
+    "find": "input.pb && P.input.resultDistancesM.includes(input.pb.distM)",
+    "replace": "input.pb",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-3 Z5b početnik iznad reda ostaje početnik",
+    "file": "src/domain/generators/tenK/v2/app/handoffTarget.ts",
+    "find": "kmFit(days, 'beginner', input.weeklyKm) !== 'high'",
+    "replace": "true",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/handoffTarget.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-4 oštrenje sa pojasom D14",
+    "file": "src/domain/generators/tenK/v2/workouts.ts",
+    "find": "  return { warmupSec: P.raceWeek.raceWarmupSec, cooldownSec: P.raceWeek.raceCooldownSec };",
+    "replace": "  return { warmupSec: 1200, cooldownSec: 900 };",
+    "tests": [
+      "src/domain/generators/tenK/v2/week.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-5 D25 bez testa",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "        .filter((d) => d.workout.kind === 'test' || (d.workout.kind === 'quality' && isSteady(w)))",
+    "replace": "        .filter((d) => d.workout.kind === 'quality' && isSteady(w))",
+    "tests": [
+      "src/domain/generators/tenK/v2/feelGrid.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-6 preporuka više dana bez provere reda",
+    "file": "src/domain/generators/tenK/v2/volume.ts",
+    "find": "  const more = daysForKm(currentWeeklyKm, rule.beginner ? 'beginner' : 'regular').filter(",
+    "replace": "  const more = rule.dayCounts.filter(",
+    "tests": [
+      "src/domain/generators/tenK/v2/volume.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-6b preporuka manje dana zaokružen obim",
+    "file": "src/domain/generators/tenK/v2/policy.ts",
+    "find": "  return km < r.kmMin ? 'low' : km > r.kmMax ? 'high' : 'ok';",
+    "replace": "  const k = Math.round(km * 10) / 10;\n  return k < r.kmMin ? 'low' : k > r.kmMax ? 'high' : 'ok';",
+    "tests": [
+      "src/domain/generators/tenK/v2/volume.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-7 uvod sa brojem nedelje",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "      `Uvod: ${frame.index}. od ${rule.introWeeks} nedelje uvoda bez kvaliteta — dan kvaliteta je lagan.`",
+    "replace": "      `Uvod (D28): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`",
+    "tests": [
+      "src/domain/generators/tenK/v2/beginner.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-Z1 kvalitet otpada uprkos upisanom višku",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  const excess = recordedExcessKeepsQuality(free, keptKm, plannedKeptKm, targetKm);",
+    "replace": "  const excess = false;",
+    "tests": [
+      "src/domain/generators/tenK/v2/mixedZ1.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-Z2 tekst bez userText",
+    "file": "src/domain/generators/tenK/v2/app/format.ts",
+    "find": "  let t = s\n    .replace(/^Pouka \\d+:\\s*/u, '')",
+    "replace": "  return s;\n  let t = s\n    .replace(/^Pouka \\d+:\\s*/u, '')",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/userText.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-Z3 Forma ne čita jezgro",
+    "file": "src/domain/generators/tenK/v2/app/form.ts",
+    "find": "    const usable = resultVdotUsable(x.distM, x.sec);",
+    "replace": "    const usable = true;",
+    "tests": [
+      "src/domain/generators/tenK/v2/app/form.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-Z6 LIMITS sudi zaštićenom danu",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "      if (steps.length === 0 || protectedDay(d) || d.role === 'race') continue;",
+    "replace": "      if (steps.length === 0 || (ad?.lockedDayIds ?? []).includes(d.date) || d.role === 'race') continue;",
+    "tests": [
+      "src/domain/generators/tenK/v2/chains07.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-Z7 manjak nije vezan za zapise",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "      const covered = nothingNew;",
+    "replace": "      const covered = false;",
+    "tests": [
+      "src/domain/generators/tenK/v2/chains07.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-Z8 umor nije vezan za zapise",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    const judged = prevAt !== null && easyHard.every((x) => day(x.date) <= prevAt);",
+    "replace": "    const judged = false;",
+    "tests": [
+      "src/domain/generators/tenK/v2/fatigue.node.test.ts",
+      "src/domain/generators/tenK/v2/chains07.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-C3 test pre koraka bez zaštite",
+    "file": "src/domain/generators/tenK/v2/steps.ts",
+    "find": "    test: protectedTest(prevTest, last, locked) ? prevTest : own ? testDateOf(own, pattern) : null",
+    "replace": "    test: own ? testDateOf(own, pattern) : null",
+    "tests": [
+      "src/domain/generators/tenK/v2/chains07.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-C7 bez upozorenja trkačke",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "    const fixed = ad ? rw.days.filter((d) => protectedDay(d) && d.role !== 'race') : [];",
+    "replace": "    const fixed: typeof rw.days = [];",
+    "tests": [
+      "src/domain/generators/tenK/v2/chains07.node.test.ts"
+    ]
+  },
+  {
+    "name": "07-C8 bez upozorenja pauze",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "      w.days.some((d) => protectedDay(d)) &&",
+    "replace": "      false &&",
+    "tests": [
+      "src/domain/generators/tenK/v2/chains07.node.test.ts"
+    ]
+  }
+]

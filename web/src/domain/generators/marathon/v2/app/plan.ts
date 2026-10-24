@@ -14,8 +14,10 @@ import { checkInput } from '../input.ts';
 import { MARATHON_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import type { GoalAssessment, MarathonV2Plan, Paces, Phase, PlanDay } from '../types.ts';
-import { technicalNote } from '../volume.ts';
+import { belowTargetShown, technicalNote } from '../volume.ts';
+import { EASY_UNDER_NOTE } from '../week.ts';
 import { addDays, diffDays } from './date.ts';
+import { userText } from './format.ts';
 import { workoutStructure } from './structure.ts';
 import type {
   GoalAssessmentView,
@@ -36,7 +38,7 @@ export const POLICY_VERSION = P.version;
 /** v2 nema plan pre oznake politike: svaki v2 plan nosi `marathon-v2`; plan bez oznake je maraton v1 (`legacy-marathon`). */
 export const LEGACY_POLICY_ID = 'legacy-marathon';
 /** Verzije koje trenutni kod ume da prikaže i adaptira (istorijske implementacije v2 se ne čuvaju): sve koje su mogle
- *  biti sačuvane posle MAR-05 (aplikacija je od MAR-05 pisala samo `marathon-v2.3.1`), 2.4.0, 2.4.1, 2.4.2, 2.5.0 i tekuća. Sačuvan stariji plan
+ *  biti sačuvane posle MAR-05 (aplikacija je od MAR-05 pisala samo `marathon-v2.3.1`), 2.4.0, 2.4.1, 2.4.2, 2.5.0, 2.5.1, 2.6.0, 2.6.1, 2.7.0 i tekuća. Sačuvan stariji plan
  *  ostaje plan maratona v2; prilagođavanje ga gradi tekućim pravilima, a rezultat nosi tekuću oznaku. Svaka druga
  *  verzija je „unknown" (UNKNOWN_POLICY). */
 export const KNOWN_VERSIONS: readonly string[] = [
@@ -46,6 +48,10 @@ export const KNOWN_VERSIONS: readonly string[] = [
     'marathon-v2.4.1',
     'marathon-v2.4.2',
     'marathon-v2.5.0',
+    'marathon-v2.5.1',
+    'marathon-v2.6.0',
+    'marathon-v2.6.1',
+    'marathon-v2.7.0',
     P.version
   ])
 ];
@@ -164,8 +170,18 @@ function weeksOf(plan: MarathonV2Plan): GeneratedWeek[] {
       ),
       deload: wk.deload,
       // N11: tehničke napomene nedelje (domen: volume.technicalNote) ne idu korisniku.
-      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes.filter((n) => !technicalNote(n))]
+      // Z2: korisnički tekst bez internih oznaka (format.userText).
+      // F1: „planirano je manje od cilja" samo za razliku ≥ 1 km ili ≥ 3 % (volume.belowTargetShown).
+      focus: [
+        wk.deload ? 'Rasterećenje.' : '',
+        ...wk.notes.filter(
+          (n) =>
+            !technicalNote(n) &&
+            (n !== EASY_UNDER_NOTE || belowTargetShown(wk.plannedKm, wk.targetKm))
+        )
+      ]
         .filter(Boolean)
+        .map(userText)
         .join(' '),
       ...(wk.phase === 'taper' ? { taper: true as const } : {})
     };
@@ -174,13 +190,15 @@ function weeksOf(plan: MarathonV2Plan): GeneratedWeek[] {
 
 export function goalOf(plan: MarathonV2Plan): GoalAssessmentView | undefined {
   const g = plan.goal;
-  return g ? { status: g.status, label: GOAL_LABEL[g.status], message: g.message } : undefined;
+  return g
+    ? { status: g.status, label: GOAL_LABEL[g.status], message: userText(g.message) }
+    : undefined;
 }
 
-/** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja). */
+/** Napomene i upozorenja plana za „Na šta da paziš" (iz v2, korisnički tekst — Z2, bez ponavljanja). */
 function planWarnings(plan: MarathonV2Plan): string[] {
   const out: string[] = [];
-  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)])
+  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)].map(userText))
     if (t && !out.includes(t)) out.push(t);
   return out;
 }

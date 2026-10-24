@@ -1,0 +1,16 @@
+  early-MAR                     3561s  0/164394
+! edges-MAR                      451s  4/20100; generator {'RECENT_LONG_TOO_SHORT': 3}  ⇒ odbijeno 4 {'RECENT_LONG_TOO_SHORT:Skorašnje najduže trčanje # km je prekratko za # km nedeljno sa # dana': 3, 'WEEK_INFEASIBLE:Nedelja #': 1}
+  fatigue-repeat-MAR              64s  MAR { tokova: 990, drugo_rasterecenje: 0, odbijeno_drugi: 0 }
+  fatigue-startday-MAR           168s  tokova 5108
+  fatigue-testweek-MAR           131s  0/4592
+  last-weeks-MAR                1784s  0/89309
+  locked-pause-MAR              1084s  0/54848
+  locked-result-MAR               77s  MAR { tokova: 3078, odbijeno: 0 } []
+  locked-test-MAR                267s  locked 0/5880; control 0/5880
+  result-pain-MAR               1806s  0/73188
+  start-day-MAR                  976s  0/43418
+  targeted-MAR                   990s  1208 B (pregled ručno)
+! two-step-MAR                  5869s  first 0/4301; new 0/137632; cum 0/137632  ⇒ new inv {'taper > poslednja izgradnja': 2}; cum inv {'taper > poslednja izgradnja': 2}
+  warnings-MAR                    20s  5805 B (pregled ručno)
+
+14 poslova, nečistih: 2

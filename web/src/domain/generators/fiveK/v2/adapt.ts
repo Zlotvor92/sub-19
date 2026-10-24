@@ -12,7 +12,9 @@ import { construct } from './generate.ts';
 import { assessGoal, beginnerGoal, goalWithoutData, raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { adaptRunWalk } from './runWalkAdapt.ts';
+import { same } from './same.ts';
 import { athleteAt, pacesAt, targetReducedWeek, vdotAt } from './steps.ts';
+import { userResult } from './text.ts';
 import type {
   AdaptChange,
   AdaptReason,
@@ -28,7 +30,6 @@ import { validatePlan } from './validate.ts';
 import { capacityKm } from './volume.ts';
 import { type Written, writtenWeeks } from './written.ts';
 
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const reject = (code: Reason['code'], message: string): AdaptResult => ({
   ok: false,
   reasons: [{ code, message }],
@@ -67,14 +68,16 @@ function diff(before: FiveKV2Plan, after: FiveKV2Plan): AdaptChange[] {
     push(w.index, 'targetKm', o.targetKm, w.targetKm);
     push(w.index, 'plannedKm', o.plannedKm, w.plannedKm);
     const dates = [...new Set([...o.days, ...w.days].map((d) => d.date))].sort();
-    for (const d of dates)
-      push(
-        w.index,
-        'day',
-        dayLabel(o.days.find((x) => x.date === d)),
-        dayLabel(w.days.find((x) => x.date === d)),
-        d
-      );
+    // 5k-v2.11.0 (Z2): naslov laganog/dugog ima km na 1 decimalu — izmena se meri na naslovu i km tog dana (kao ranije
+    // naslov sa km na 2 decimale).
+    const key = (x: PlanDay | undefined): string =>
+      x ? `${dayLabel(x)}${x.workout.kind === 'quality' ? '' : `|${x.workout.km}`}` : '—';
+    for (const d of dates) {
+      const x = o.days.find((y) => y.date === d);
+      const y = w.days.find((z) => z.date === d);
+      if (key(x) !== key(y))
+        out.push({ week: w.index, date: d, field: 'day', before: dayLabel(x), after: dayLabel(y) });
+    }
   });
   return out;
 }
@@ -100,9 +103,12 @@ export function adaptFiveKV2(
     typeof rawPlan === 'object' &&
     rawPlan !== null &&
     (rawPlan as { planType?: unknown }).planType === 'runWalk';
-  return runWalk
-    ? adaptRunWalk(rawPlan, rawFacts, asOf, adaptContinuous)
-    : adaptContinuous(rawPlan, rawFacts, asOf);
+  // 5k-v2.11.0 (Z2): tekst korisniku kroz text.userResult (jedini format).
+  return userResult(
+    runWalk
+      ? adaptRunWalk(rawPlan, rawFacts, asOf, adaptContinuous)
+      : adaptContinuous(rawPlan, rawFacts, asOf)
+  );
 }
 
 function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): AdaptResult {
@@ -157,7 +163,7 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
       )
       .map(
         (w) =>
-          ` Redovno rasterećenje u nedelji ${weekLabel(w, plan.input.weekOffset)} otpada: nedelja ${weekLabel(w - 1, plan.input.weekOffset)} je smanjena (Odluka 9).`
+          ` Redovno rasterećenje u nedelji ${weekLabel(w, plan.input.weekOffset)} otpada: nedelja ${weekLabel(w - 1, plan.input.weekOffset)} je smanjena.`
       )
       .join('');
   const reasons: AdaptReason[] = as.reasons.map((x) => {
@@ -209,9 +215,6 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
       ? [P.adapt.orientationMessage]
       : [])
   ];
-  const build = weeks.filter(
-    (w) => w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen'
-  );
   const out: FiveKV2Plan = {
     policyId: P.id,
     policyVersion: P.version,
@@ -224,7 +227,9 @@ function adaptContinuous(rawPlan: unknown, rawFacts: unknown, asOf: unknown): Ad
     goal,
     pattern: c.pattern,
     startKm: plan.startKm,
-    peakKm: Math.max(...build.map((w) => w.targetKm)),
+    // 5k-v2.11.0 (owner K): vrh iz konstrukcije (vrh za taper/trkačku nedelju, volume.adaptVolume) — isto polje kao
+    // generator (vol.peakKm = vrh bez koraka), ne najveći cilj izgradnje.
+    peakKm: c.peakRefKm,
     capacityKm: capacityKm(paces, a),
     notes,
     weeks,

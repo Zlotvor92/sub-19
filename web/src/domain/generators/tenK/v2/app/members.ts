@@ -42,7 +42,7 @@ export const NO_PREPARATION_DECISION =
 export const RECALIBRATION_NOT_USED =
   'Plan 10K v2 se ne preračunava prema formi iz treninga: tempo menja nov rezultat (test 5 km, test 3 km ili trka), kroz Plan → Prilagodi plan.';
 /** 10K v2 nema plan trčanje/hodanje (D29). */
-export const NO_RUN_WALK = 'Plan 10K v2 nema trčanje/hodanje (D29).';
+export const NO_RUN_WALK = 'Plan 10K v2 nema trčanje/hodanje.';
 
 /** Ostale činjenice aplikacije (oblik `ReplanContext.facts`). */
 interface Sources {

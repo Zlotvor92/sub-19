@@ -11,10 +11,11 @@ import {
   type Row,
   summaryRow
 } from './gridInvariants.ts';
-import { fnv1a, type GridCase, planHash81 } from './testInputs.ts';
+import { cause07, fnv1a, type GridCase, planHash81 } from './testInputs.ts';
 import type { GenerateResult, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { sample } from '@/test/level';
+import { CHANGED_08 } from './level.harness.node.test.ts';
 
 export interface PlanGrid {
   /** Izračunati ulazi (redosled mreže). */
@@ -23,6 +24,10 @@ export interface PlanGrid {
   /** fnv1a(JSON) rezultata po ulazu (redosled `cases`) — determinizam. */
   hashes: number[];
   h81: Record<string, number>;
+  /** 10K-07: uzrok promene toka (testInputs.cause07); null = mora biti bajt-isti posle undo07. */
+  c07: Record<string, string | null>;
+  /** 10K-08: današnji planHash81 planova promenjenih prema b9c4728 (h81, c07 i red nose stanje b9c4728). */
+  h81now: Record<string, number>;
   rejected: string[];
   errors: Record<string, number>;
   /** `<dana>:<pravilo upozorenja>` → broj planova. */
@@ -52,6 +57,8 @@ export function runPlanGrid(
     rows: {},
     hashes: [],
     h81: {},
+    c07: {},
+    h81now: {},
     rejected: [],
     errors: {},
     warned: {},
@@ -62,6 +69,10 @@ export function runPlanGrid(
     const r = generateTenKV2(c.input);
     g.hashes.push(fnv1a(JSON.stringify(r)));
     g.h81[c.id] = planHash81(r);
+    g.c07[c.id] = cause07(r);
+    // 10K-08: plan promenjen prema b9c4728 — starije regresije vide stanje b9c4728 (fixture), p08Errors današnje.
+    const ch = CHANGED_08.gen[c.id];
+    if (ch) [g.h81now[c.id], g.h81[c.id], g.c07[c.id]] = [g.h81[c.id]!, ch[0], ch[1]];
     if (!r.ok) {
       g.rejected.push(`${c.id}: ${r.reasons.map((x) => x.code).join(',')}`);
       continue;
@@ -70,7 +81,7 @@ export function runPlanGrid(
       if (v.severity === 'error') g.errors[v.rule] = (g.errors[v.rule] ?? 0) + 1;
     for (const k of new Set(r.plan.warnings.map((w) => w.rule)))
       g.warned[`${c.days}:${k}`] = (g.warned[`${c.days}:${k}`] ?? 0) + 1;
-    g.rows[c.id] = summaryRow(r.plan);
+    g.rows[c.id] = ch ? (ch[2] as Row) : summaryRow(r.plan);
     checkPlan(c.id, c.days as Days, r.plan, g.bad, g.stats[c.days as Days]);
     each(c, r.plan, r);
   }

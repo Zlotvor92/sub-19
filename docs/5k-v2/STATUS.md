@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.10.4`, 08l) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.11.1`, 09) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -198,3 +198,36 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
   `input.weekLabel`; forma čita isti pomak.
 - review3d-5K: reasonMismatch 112 → 0, labelMismatch 0; bez pomaka bajt-isto; sabotaže 3/3.
 - Izveštaj: `reports/SEGMENT-08l-IMPLEMENTATION.md`.
+
+## Segment 09 — ispravke posle dubinske provere (5k-v2.11.0, 2026-10-23)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: c13c258 | spisak `docs/generators-v2/audit/fixes/5K.md`
+- F1 oštrenje na laganom danu ≥ 2 dana pre trke (3 d: 12/245 → 0); F2 lanac „jedan kvalitet → bez kvaliteta" i u
+  generatoru + QUALITY_REDUCED (273 → 0); Z5 cilj predaje (HM/MAR rezultat → po osećaju; početnik > 4 dana → regular);
+  C8 VDOT < 30 → po osećaju; Z4 vraćanje kroz writtenWeeks + validator (376 → 0); M2/M3 napomene (1 114 / 2 221 → 0);
+  C1 rasterećenje nikad u ned 1–2 (72 → 0); C2 umor bez dayId = lagan (355 → 0); N1 jedna „poslednja izgradnja" (9 759 → 0);
+  višak posle bola ne ispod donje granice (kao manjak); C13 početnik bez testa (324 → 0); Z1 kvalitet ostaje uz upisani višak ≤ 10 % (136 → 0); Z2 jedan format teksta
+  (`text.ts`); Z3 Forma čita `assess.resultUse` (12 124 → 0); K plafon laganog trkačke nedelje, peakKm adaptacije
+  (2 474 → 0), izolacija; test granice plafona I.
+- Dopuna lanci (`fixes/01-chains-addendum.md`, 5k-v2.11.1): Z6 jedna definicija zaštićenog dana u validatoru (i LIMITS);
+  Z7/Z8 manjak i bol vezani za zapise (ponovna primena ne seče cilj ponovo); C4 doza/test čitaju zaštićen dan kao
+  činjenicu (`PlanWeek.doseFact`); C5 trkačka posle tapera skraćenog bolom — odmor laganih + upozorenje, zbir po svim
+  datumima nedelje; C8 upozorenje „posle pauze" (zbir kao pouka 37). `chains.ts 5K 20261023 0 2000`: odbijeni lanci
+  131 → 1 (i=1299 QUALITY_REPEAT, van spiska), IDEMP:WEEKS 327 → 40; `idemp.ts` same 462 → 41, next 203 → 30.
+- Otisci regresije prema c13c258 bez teksta (`segment09.*-c13c258.json`, `fixes/5K/fixture09.ts`).
+- Dopuna T (`fixes/02-text-addendum.md`): „dugo trčanje", „tempo treninga i dalje zavisi od rezultata" (isto 5k-v2.11.1).
+- Izveštaj: `reports/SEGMENT-09-IMPLEMENTATION.md`.
+
+
+## Segment 10 — krug T: trenerska pravila T1, T2, T4, T5, C3, C5, C11 (5k-v2.12.0, 2026-10-23)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: b9c4728 | spisak `docs/generators-v2/audit/fixes/03-coach-rules.md`, `T-assign.md`
+- T1 lagan ≤ 0,8 × dugi i ≥ max(3 km, 20 min) u izgradnji (`lengths.easyCapKm/easyMinKm`; lagan dan manje ili
+  planirano < cilj uz upozorenje; kapacitet ostaje „lagan ≤ dugi"); T2 WU/CD na minimum pa `LONG_SHORTER_THAN_QUALITY`;
+  T4 trkač: taper 1 nedelja, ≤ 8 ned bez rasterećenja, rasterećenje ne pre ned 4, glavni I/RP ≥ 80 % budžeta;
+  T5 L13/L14; C3 test mešovite nedelje ostaje; C5 prvo otpada oštrenje; C11 pouka 35 osim trkačke.
+- Merenje: M1 1 090 → 0, M5 308 → 0, M6 352 → 0; fuzz F4 bez upozorenja 943 → 0 (trećina); planovi sa planirano < cilj
+  4 → 2 266; otisci regresije ponovo prema b9c4728 (`segment10.*-b9c4728.json`, `fixes/5K/fixture10.ts`).
+- Pun nivo 5K 790/790; run-all 5K 0 nečistih; lanci odbijeni 1 → 0, IDEMP 40 → 34; sabotaže 11/11; E2E 3/3. Van foldera:
+  byteSame 10K/HM/MAR redovi „5K v2“ i `fiveKV2Flow` oznaka — patch `artifacts/segment10/byteSame-5Kv2.patch` primenjen (odobrenje organizatora).
+- Izveštaj: `reports/SEGMENT-10-IMPLEMENTATION.md`.

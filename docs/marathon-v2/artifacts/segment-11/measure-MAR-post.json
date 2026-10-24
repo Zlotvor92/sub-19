@@ -1,0 +1,51 @@
+{
+ "dist": "MAR",
+ "step": {
+  "R": 400,
+  "F": 200,
+  "B": 100
+ },
+ "generator": {
+  "plans": 31650,
+  "rejected": 0,
+  "unrealistic": 270,
+  "t1": 0,
+  "t1contra": 0,
+  "t1two": 0,
+  "t1maxOver": 0,
+  "t1ex": [],
+  "t2": 0,
+  "t2adj": 0,
+  "t2maxEasy": 0,
+  "t2ex": [],
+  "t1ByDays": {},
+  "t1worst": "",
+  "t2worst": "",
+  "t2worstKm": 0,
+  "t2adjMinutes": {},
+  "t2ByDays": {},
+  "t1Warn": {}
+ },
+ "adaptation": {
+  "bases": 110,
+  "flows": 64692,
+  "rejected": 38,
+  "t1": 7,
+  "t1two": 0,
+  "t1contra": 0,
+  "t1noWarn": 7,
+  "byScenario": {
+   "pause35": 5,
+   "pause20": 1,
+   "painPause": 1
+  },
+  "ex": [
+   "d4-15w-40km-v50-A-sat / pause35 / asOf 2026-12-19: ned 13 34>32 min",
+   "d4-17w-55km-v35-B-sat / pause35 / asOf 2027-01-02: ned 15 46>43 min",
+   "d6-14w-90km-v60-C-sat / pause35 / asOf 2026-12-30: ned 12 47>46 min",
+   "feel-d4-20w-65km-e450-C / pause35 / asOf 2027-01-27: ned 18 48>46 min",
+   "feel-d4-24w-40km-e270-A / pause35 / asOf 2027-03-03: ned 22 32>30 min",
+   "beg-d4-18w-30km-v40-B / pause20 / asOf 2027-01-20: ned 17 33>32 min"
+  ]
+ }
+}

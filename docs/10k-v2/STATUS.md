@@ -1,4 +1,10 @@
+**10K-08 (10k-v2.10.0)**: krug T — T1 (lagan ≤ 0,8 × dugi, ≥ 20 min), T3 (taper/oštrenje posle novog starta), C3, C4, C6,
+C11 — `reports/SEGMENT-08-IMPLEMENTATION.md`.
+
 # 10K v2 — STATUS
+
+**10K-07 (10k-v2.9.0)**: ispravke posle dubinske provere v2 (vraćanje revizije kroz jezgro, predaja Z5, WU/CD
+oštrenja, D25 sa testom, jedna funkcija reda tabele, Z1–Z3, lanci Z6–Z8/C3/C7/C8) — `reports/SEGMENT-07-IMPLEMENTATION.md`.
 
 Novi 10K generator sa jednim vlasnikom svake odluke (D1–D22, D22b, D23, D25–D32) i adaptacijom (A1–A16),
 izolovan u `web/src/domain/generators/tenK/v2/`. 10K v1 (`tenK/` van `v2/`) je nepromenjen i podrazumevan; od

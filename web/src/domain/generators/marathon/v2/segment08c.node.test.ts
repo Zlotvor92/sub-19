@@ -33,7 +33,9 @@ it('mešovite nedelje ulaze u najveću dosadašnju dozu: ograničena ned 5 (T 24
     r.plan.weeks[i - 1]!.days.filter((d) => d.workout.dose?.zone === 'T').map(
       (d) => d.workout.dose!.doseM
     );
-  expect([t(2), t(3), t(5)]).toEqual([[3000], [4000], [2400]]);
+  // MAR-11 (T1): plan se menja (lagani ≤ 0,8 × dugi) — ned 3 T 3000; ograničena ned 5 = ≈ 60 % najveće upisane
+  // (3000 → najmanje 2000 m), nije rast.
+  expect([t(2), t(3), t(5)]).toEqual([[3000], [3000], [2000]]);
   expect(r.plan.adaptation!.mixedWeeks).toEqual(expect.arrayContaining([2, 3]));
   expect(adaptInvariants(r1.plan, r.plan, at2, f2)).toEqual([]);
 });

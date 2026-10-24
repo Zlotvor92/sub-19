@@ -245,7 +245,8 @@ describe('validator', () => {
     expect(rules).toContain('WEEK_FITTED');
     expect(rules).toContain('CAPACITY_LIMITED');
     expect(r.plan.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 105 min; preporuka 5–6 dana.'
+      // 10K-08 (T1): i lagan ≤ 80 % dugog (CapacityLimit 'easy').
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 80 % dugog; preporuka 5–6 dana.'
     );
     expect(r.plan.warnings.every((w) => w.severity === 'warning')).toBe(true);
   });
@@ -370,9 +371,10 @@ describe('validator', () => {
     const p4 = planOf(4, { weeks: 10, km: 25, vdot: 70 });
     expect(errors(p4)).toEqual([]);
     expect(warns(p4)).toEqual([]);
+    // 10K-08 (T1): lagan od 20 min ne staje — lagani dani su odmor, dugi 8,2 km najduži; pouka 35 nije potrebna.
     expect(
       p4.weeks.filter((w) => w.notes.some((n) => n.startsWith(P35_DROP))).map((w) => w.index)
-    ).toEqual([1, 2]);
+    ).toEqual([]);
     // 6 dana, 35 km, VDOT 70: i posle pouke 35 prvi dan kvaliteta duži od dugog → upozorenje, preporuka 3–5 dana.
     const p6 = planOf(6, { weeks: 12, km: 35, vdot: 70 });
     expect(errors(p6)).toEqual([]);
@@ -380,7 +382,7 @@ describe('validator', () => {
       [
         'warning',
         1,
-        'Kvalitetni dan duži od dugog po trajanju u 3 od 8 nedelja izgradnje (ned 1: 42 > 39 min; D25); preporuka 3–5 dana (red D17 sa manje dana podržava obim 35 km, dugi dobija veći udeo).'
+        'Dan kvaliteta ili testa duži od dugog po trajanju u 3 od 8 nedelja izgradnje (nedelja 1: 42 > 39 min); preporuka 3–5 dana (plan sa manje dana podržava obim 35 km, dugi dobija veći udeo).'
       ]
     ]);
     // 3 dana nema manji red — bez preporuke (i bez upozorenja).
@@ -420,7 +422,7 @@ describe('validator', () => {
     rw.targetKm = -1.5;
     const v = validatePlan(p3).filter((x) => x.rule === 'RACE_WEEK_SHORT');
     expect(v.map((x) => [x.severity, x.message])).toEqual([
-      ['warning', 'Trkačka nedelja -1.5 km + trka 10 km < 9 km (Uslov 8, D17, D30).']
+      ['warning', 'Trkačka nedelja -1,5 km + trka 10 km < 9 km (najmanji obim nedelje).']
     ]);
     // Rasterećenje bez kvaliteta kad T 2,0 km STAJE u plafon → greška.
     const p = fresh();

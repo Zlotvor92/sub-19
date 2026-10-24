@@ -276,7 +276,8 @@ export function pickTaper(
   state: QualityState,
   targetKm: number,
   rule: PlanRule,
-  relax = false
+  relax = false,
+  keepOne = false
 ): Picks | null | 'none' {
   const t = P.taper;
   const quality = rule.quality;
@@ -286,9 +287,12 @@ export function pickTaper(
     if (rule.beginner) {
       const floor = ladderLevels('T_continuous', true)[0]!;
       const tt = reduced('T_continuous', state.t, t.doseShare, floor, true);
-      if (doseOf(tt) <= capM('T', targetKm))
+      if (doseOf(tt) <= capM('T', targetKm) || keepOne)
         return { q1: pick('T_continuous', tt, 'taper'), q2: null };
     }
+    // T3 (10K-08): posle novog starta sa kvalitetom posle povratka taper zadržava jedan kvalitet (≈ 60 % poslednje
+    // doze, najmanje najniži nivo) i kad je iznad plafona D11 (week.ctx.keepTaperQuality).
+    if (keepOne) return { q1: pick('RP', rp, 'taper'), q2: null };
     return relax ? 'none' : null;
   }
   if (quality === 1 || relax) return { q1: pick('RP', rp, 'taper'), q2: null };

@@ -6,6 +6,7 @@
    računa iz upisanih dana, a validator vidi isti upisani plan. */
 
 import { mustDay } from './dates.ts';
+import { same } from './same.ts';
 import type { PlanDay, PlanWeek } from './types.ts';
 
 /** Prethodni plan i zaštita dana — konstruktor ih zna unapred (Uslov 4). */
@@ -21,7 +22,6 @@ export interface Written {
 }
 
 const r2 = (x: number): number => Math.round(x * 100) / 100;
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Dani nedelje kakvi se upisuju: `prev` = ista nedelja prethodnog plana, `built` = sastavljeni dani. */
 export function writtenDays(
@@ -30,9 +30,13 @@ export function writtenDays(
   w: Written
 ): readonly PlanDay[] {
   if (mustDay(prev.endDate) <= w.asOf) return prev.days;
+  // 5k-v2.12.0: sastavljen dan na datumu ≤ asOf koji prethodni plan nema (npr. lagan dan manje, T1) ne ulazi — prošlost
+  // su samo upisani dani.
   return [
     ...prev.days.filter(w.keep),
-    ...built.filter((d) => !prev.days.some((x) => x.date === d.date && w.keep(x)))
+    ...built.filter(
+      (d) => mustDay(d.date) > w.asOf && !prev.days.some((x) => x.date === d.date && w.keep(x))
+    )
   ].sort((x, y) => x.date.localeCompare(y.date));
 }
 

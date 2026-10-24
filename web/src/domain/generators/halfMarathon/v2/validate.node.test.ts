@@ -252,6 +252,14 @@ describe('validator', () => {
     expect(errors(r.plan)).toEqual([]);
     const a = clone(r.plan);
     delete a.input.recentLongRunKm;
+    // HM-10 (T1): bez skorašnjeg najdužeg nedelja 1 je ispod obima i zbog laganih ≤ 0,8 × dugi (lagan na 0,8 × dugi)
+    // — ispravno; bez oba razloga (lagan ispod 0,8 × dugi) → WEEK1_BELOW_START.
+    const w1 = a.weeks[0]!;
+    const cap = Math.floor(0.8 * dayOf(w1, 'long').workout.km * 10 + 1e-9) / 10;
+    expect(w1.days.some((d) => d.role === 'easy' && d.workout.km === cap)).toBe(true);
+    expect(errors(a)).not.toContain('WEEK1_BELOW_START');
+    for (const d of w1.days)
+      if (d.role === 'easy' && d.workout.km === cap) d.workout = easyWorkout(cap - 0.1, a.paces);
     expect(errors(a)).toContain('WEEK1_BELOW_START');
   });
 

@@ -71,6 +71,7 @@ describe('validate.ts prijavljuje svako pravilo i ne menja plan', () => {
       'PLANNED_VS_TARGET',
       (p) => {
         p.weeks[1]!.targetKm *= 1.2;
+        p.weeks[1]!.easyCappedAtLong = false; // 5k-v2.12.0 (T1): bez oznake granice laganog
       }
     ],
     [
@@ -95,7 +96,7 @@ describe('validate.ts prijavljuje svako pravilo i ne menja plan', () => {
     [
       'VOLUME_TAPER',
       (p) => {
-        week(p, (w) => w.taperStep === 2).targetKm *= 1.2;
+        week(p, (w) => w.taperStep === 1).targetKm *= 1.2; // 5k-v2.12.0 (T4): taper 1 nedelja
       }
     ],
     [

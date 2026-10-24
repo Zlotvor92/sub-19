@@ -212,7 +212,8 @@ async function javiVlasniku(naslov, redovi, req) {
    pokušaja koliko mu treba.
 
    Poređenje konstantnog trajanja štiti od merenja vremena, ne od broja pokušaja.
-   Odloženo brisanje od 7 dana je oporavak POSLE proboja, ne prepreka proboju.
+   Brisanje je trenutno i nepovratno, pa posle proboja nema oporavka — ovo je
+   jedina prepreka.
    Vercel Hobby plan ne nudi ograničenje zahteva.
 
    Sada je redosled obrnut: SVAKI pokušaj se prvo izbroji, pa se lozinka
@@ -244,11 +245,6 @@ async function razornaKapija(req, body, token, radnja) {
   }
   return { ok: true };
 }
-
-/* Koliko dana nalog stoji zabranjen pre nego što se podaci stvarno obrišu.
-   Kraće od 30 dana koje politika privatnosti navodi kao rok, pa je usklađeno;
-   dovoljno dugo da se pogrešna ili zlonamerna radnja primeti i poništi. */
-const DANA_DO_BRISANJA = 7;
 
 const TABELE = [
   'user_state',
@@ -311,52 +307,37 @@ async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {
     } catch (e) {}
     if (!meta || !meta.id) return res.status(404).json({ error: 'Taj nalog ne postoji.' });
 
-    /* ODLOŽENO IZVRŠENJE. Nalog se ZABRANI (pristup prestaje u istom trenutku,
-       dakle svrha je ispunjena odmah) i OZNAČI. Podaci se stvarno uklanjaju tek
-       kad jutarnji posao vidi da je rok istekao — v. supabase/admin-brisanje.sql.
+    /* BRISANJE ODMAH, BEZ ZABRANE. Brisanje služi da nalog i podaci ne stoje
+       u bazi, ne da se čovek kazni: posle njega može ponovo da se registruje.
+       Ranije se nalog zabranjivao i brisao tek posle 7 dana, pa je čovek u
+       međuvremenu dobijao poruku da je banovan. Od preuzete vlasnikove sesije
+       i dalje štite ADMIN_2FA, brojač pokušaja i dnevni limit iznad.
 
-       Zašto ne odmah: jedan HTTP poziv koji nepovratno briše tuđ nalog je, u
-       rukama nekoga ko je preuzeo vlasnikovu sesiju, alat za uništenje svih
-       korisnika. Sa odlaganjem ista ta radnja postaje nešto što se u roku od
-       nedelju dana poništi jednim dugmetom. */
-    try {
-      const r = await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
-        method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ban_duration: '876000h' })
-      });
-      if (!r.ok) return res.status(502).json({ error: 'Nalog nije zabranjen (' + r.status + '), pa nije ni označen za brisanje.' });
-    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan. Nalog NIJE dirnut.' }); }
-
-    const rok = new Date(Date.now() + DANA_DO_BRISANJA * 864e5).toISOString();
-    try {
-      const r = await fetchRok(baza + '/rest/v1/nalog_za_brisanje', {
-        method: 'POST',
-        headers: { ...srvHead, 'Content-Type': 'application/json',
-                   Prefer: 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify({ user_id: cilj, email: meta.email || null,
-                               oznacio: vlasnik.email, izvrsi_posle: rok })
-      });
-      if (!r.ok) {
-        /* Zabrana je prošla a oznaka nije: nalog bi ostao zaključan zauvek, bez
-           traga zašto. Skida se zabrana da stanje ne bude polovično. */
-        console.error('[admin][ALARM] oznaka za brisanje nije upisana za %s — HTTP %s; skidam zabranu', cilj, r.status);
-        try {
-          await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj), {
-            method: 'PUT', headers: { ...srvHead, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ban_duration: 'none' })
-          });
-        } catch (e2) {}
-        return res.status(502).json({ error: 'Nalog nije označen za brisanje (' + r.status + '). Zabrana je skinuta — ništa nije promenjeno. Pusti supabase/admin-brisanje.sql ako nije pušten.' });
+       Nalog TEK NA KRAJU, i samo ako su svi podaci prošli — isti redosled kao
+       izvrsiOdlozenaBrisanja u api/daily-report.js. Obrnut ostavlja podatke na
+       serveru bez naloga kome pripadaju. */
+    for (const t of TABELE) {
+      let pao = null;
+      try {
+        const r = await fetchRok(baza + '/rest/v1/' + t + '?user_id=eq.' + encodeURIComponent(cilj),
+          { method: 'DELETE', headers: { ...srvHead, Prefer: 'return=minimal' } });
+        if (!r.ok && r.status !== 404) pao = 'HTTP ' + r.status;
+      } catch (e) { pao = e.message; }
+      if (pao) {
+        console.error('[admin][ALARM] brisanje %s za %s palo — %s; nalog nije obrisan', t, cilj, pao);
+        return res.status(502).json({ error: 'Podaci nisu obrisani (' + t + ': ' + pao + '). Nalog NIJE obrisan — pokušaj ponovo.' });
       }
-    } catch (e) { return res.status(503).json({ error: 'Server nije dostupan. Nalog NIJE označen.' }); }
+    }
+    try {
+      const r = await fetchRok(baza + '/auth/v1/admin/users/' + encodeURIComponent(cilj),
+        { method: 'DELETE', headers: srvHead });
+      if (!r.ok) return res.status(502).json({ error: 'Podaci su obrisani, ali nalog nije (' + r.status + '). Pokušaj ponovo.' });
+    } catch (e) { return res.status(503).json({ error: 'Podaci su obrisani, ali server nije odgovorio za nalog. Pokušaj ponovo.' }); }
 
-    console.log('[admin] %s oznacio nalog %s (%s) za brisanje posle %s', vlasnik.email, meta.email || '—', cilj, rok);
-    await javiVlasniku('nalog označen za brisanje', [
-      'Nalog: ' + (meta.email || cilj),
-      'Pristup mu je zabranjen ODMAH.',
-      'Podaci se brišu posle: ' + rok,
-      'Do tada se može poništiti: Podešavanja → Korisnici.'], req);
-    return res.status(200).json({ ok: true, email: meta.email || null, odlozeno: true, izvrsiPosle: rok });
+    console.log('[admin] %s obrisao nalog %s (%s)', vlasnik.email, meta.email || '—', cilj);
+    await javiVlasniku('nalog obrisan', [
+      'Obrisan je nalog i svi njegovi podaci: ' + (meta.email || cilj)], req);
+    return res.status(200).json({ ok: true, email: meta.email || null });
   }
 
   /* ---------- PONIŠTAVANJE OZNAKE ----------

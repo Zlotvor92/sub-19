@@ -121,7 +121,7 @@ describe('D26: plan po osećaju', () => {
       easyPaceSecPerKm: 495
     };
     expect(plan(low).paceBasis).toBe('feel');
-    expect(plan(low).notes[0]).toMatch(/VDOT iz rezultata 29\.\d je ispod 30/);
+    expect(plan(low).notes[0]).toMatch(/VDOT iz rezultata 29,\d je ispod 30/);
     // Lagan tempo uz pouzdan rezultat se ne koristi (osnova je rezultat).
     expect(plan({ ...base, easyPaceSecPerKm: 330 }).paceBasis).toBe('result');
     expect(codes({ ...base, recentResult: null })).toEqual(['EASY_PACE_REQUIRED']);
@@ -211,7 +211,7 @@ describe('D27: test 5 km', () => {
       expect(Object.values(d.workout.workKm)).toEqual([0, 0, 0, 0]);
       // Q2 (4–6 dana) ostaje u nedelji testa.
       expect(w.days.some((x) => x.role === 'q2')).toBe(days > 3);
-      expect(w.notes.some((n) => n.includes('Test 5 km (D27)'))).toBe(true);
+      expect(w.notes.some((n) => n.startsWith('Test 5 km: kontrolisano'))).toBe(true);
     }
   });
 

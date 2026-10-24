@@ -34,8 +34,22 @@ export function vdotFromResult(distanceM: number, timeSec: number): number {
   return vo2AtSpeed(distanceM / tMin) / fractionSustainable(tMin);
 }
 
+/* Keš bisekcije (čista funkcija, isti ulaz → isti izlaz): isti VDOT i distanca se traže za svaki tempo, dan
+   trke i proveru validatora. Ograničen na 4096 unosa. */
+const raceTimes = new Map<string, number>();
+
 /** Predviđeno vreme [s] za distancu pri datom VDOT-u (bisekcija, fiksno 80 koraka — deterministično). */
 export function raceTimeForVdot(vdot: number, distanceM: number): number {
+  const key = `${vdot}/${distanceM}`;
+  const hit = raceTimes.get(key);
+  if (hit !== undefined) return hit;
+  const sec = bisectRaceTime(vdot, distanceM);
+  if (raceTimes.size >= 4096) raceTimes.clear();
+  raceTimes.set(key, sec);
+  return sec;
+}
+
+function bisectRaceTime(vdot: number, distanceM: number): number {
   let lo = 1; // min
   let hi = 600; // min
   for (let k = 0; k < 80; k++) {
@@ -97,6 +111,9 @@ export function predicted10k(p: Paces): number {
 }
 
 /** D3: ocena cilja (jedino mesto). Ne odbija i ne menja tempo. Poređenje u desetinkama VDOT-a. */
+/** Broj u tekstu korisnika: jedna decimala, decimalni zarez (F1). */
+const dec = (x: number): string => x.toFixed(1).replace('.', ',');
+
 export function assessGoal(vdot: number, goalTimeSec: number, weeks: number): GoalAssessment {
   const goalVdot = round1(vdotFromResult(P.paces.raceDistanceM, goalTimeSec));
   const gap10 = Math.round(goalVdot * 10) - Math.round(vdot * 10);
@@ -107,9 +124,9 @@ export function assessGoal(vdot: number, goalTimeSec: number, weeks: number): Go
     gap10 <= realistic ? 'realistic' : gap10 <= ambitious ? 'ambitious' : 'unrealistic';
   const message =
     status === 'realistic'
-      ? `Cilj je realističan: traži ${Math.max(0, vdotGap).toFixed(1)} VDOT za ${weeks} nedelja (≤ ${(realistic / 10).toFixed(1)}).`
+      ? `Cilj je realističan: traži ${dec(Math.max(0, vdotGap))} VDOT za ${weeks} nedelja (≤ ${dec(realistic / 10)}).`
       : status === 'ambitious'
-        ? `Cilj je ambiciozan: traži ${vdotGap.toFixed(1)} VDOT za ${weeks} nedelja (realistično ≤ ${(realistic / 10).toFixed(1)}); tempo treninga ostaje prema rezultatu.`
-        : `Cilj je nerealan za ovaj ciklus: traži ${vdotGap.toFixed(1)} VDOT za ${weeks} nedelja (ambiciozno ≤ ${(ambitious / 10).toFixed(1)}); tempo treninga ostaje prema rezultatu.`;
+        ? `Cilj je ambiciozan: traži ${dec(vdotGap)} VDOT za ${weeks} nedelja (realistično ≤ ${dec(realistic / 10)}); tempo treninga i dalje zavisi od rezultata.`
+        : `Cilj je nerealan za ovaj ciklus: traži ${dec(vdotGap)} VDOT za ${weeks} nedelja (ambiciozno ≤ ${dec(ambitious / 10)}); tempo treninga i dalje zavisi od rezultata.`;
   return { goalTimeSec, goalVdot, vdotGap, weeks, status, message };
 }

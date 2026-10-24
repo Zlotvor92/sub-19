@@ -1,0 +1,101 @@
+[
+  {
+    "name": "10-T1a granica laganog 0,8 → 1,0 (lagan = dugi)",
+    "file": "src/domain/generators/fiveK/v2/lengths.ts",
+    "find": "return easyVsLongWeek(phase, deload) ? floor1(longKm * P.easy.buildMaxShareOfLong) : longKm;",
+    "replace": "return longKm;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-T1b minimum laganog bez 20 min",
+    "file": "src/domain/generators/fiveK/v2/lengths.ts",
+    "find": "    ? Math.max(P.easy.minKm, ceil1(P.easy.minSec / p.E.fast))",
+    "replace": "    ? P.easy.minKm",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-T2 WU/CD se ne spušta na minimum",
+    "file": "src/domain/generators/fiveK/v2/week.ts",
+    "find": "  if (phase !== 'base' && phase !== 'peak' && phase !== 'sharpen') return false;",
+    "replace": "  return false;",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-T4a taper trkača 2 nedelje",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "runner: { taperWeeks: 1, noDeloadMaxWeeks: 8, deloadFirstWeek: 4 },",
+    "replace": "runner: { taperWeeks: 2, noDeloadMaxWeeks: 8, deloadFirstWeek: 4 },",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-T4b glavni I bez praga 80 %",
+    "file": "src/domain/generators/fiveK/v2/workouts.ts",
+    "find": "            ? chooseProgressiveReps(...args, q.peakMainMinShare, progression.prev, 'strict')",
+    "replace": "            ? chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict')",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-T5 lestvica do L12",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "      { level: 14, runSec: 2400, walkSec: 0, reps: 1 }\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-C3 test mešovite nedelje otpada",
+    "file": "src/domain/generators/fiveK/v2/week.ts",
+    "find": "(d.role === 'long' || isTestDay(d) || (withQuality && d.workout.kind === 'quality')",
+    "replace": "(d.role === 'long' || (withQuality && d.workout.kind === 'quality')",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-C5 oštrenje ne otpada prvo",
+    "file": "src/domain/generators/fiveK/v2/week.ts",
+    "find": "  const order = [\n    ...sharp,\n",
+    "replace": "  const order = [\n",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-C11 pouka 35 samo u izgradnji bez odmora",
+    "file": "src/domain/generators/fiveK/v2/week.ts",
+    "find": "    s.q2 !== null &&\n    secondQualityEasy(",
+    "replace": "    s.q2 !== null &&\n    (f.phase === 'base' || f.phase === 'peak' || f.phase === 'sharpen') &&\n    !(L?.rest?.length ?? 0) &&\n    secondQualityEasy(",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-W prošlost prima sastavljen dan ≤ asOf",
+    "file": "src/domain/generators/fiveK/v2/written.ts",
+    "find": "      (d) => mustDay(d.date) > w.asOf && !prev.days.some((x) => x.date === d.date && w.keep(x))",
+    "replace": "      (d) => !prev.days.some((x) => x.date === d.date && w.keep(x))",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  },
+  {
+    "name": "10-T1c bez izuzetka uvodnih nedelja i dana bola",
+    "file": "src/domain/generators/fiveK/v2/week.ts",
+    "find": "    (f.limits?.pain?.length ?? 0) > 0 ||\n    (beginner && f.phase === 'base' && f.index <= P.beginner.introWeeks)",
+    "replace": "    false",
+    "tests": [
+      "src/domain/generators/fiveK/v2/segment10.node.test.ts"
+    ]
+  }
+]

@@ -26,7 +26,8 @@ import {
   type ReliefScenario,
   reliefAsOfs,
   reliefFacts,
-  reliefGridBases
+  reliefGridBases,
+  mark07
 } from './testInputs.ts';
 import type { AdaptResult, PlanWeek, TenKV2AdaptStep, TenKV2Facts, TenKV2Plan } from './types.ts';
 import { validatePlan } from './validate.ts';
@@ -35,10 +36,14 @@ import {
   at7ba,
   expectCounts,
   GRID_TIMEOUT,
+  hasP35,
   hasP37,
   missingParts,
   p35FlowErrors,
   p37FlowErrors,
+  p07FlowErrors,
+  p08Errors,
+  changed08,
   pick,
   sumOf
 } from './level.harness.node.test.ts';
@@ -96,7 +101,7 @@ const gen = (input: unknown): TenKV2Plan => {
   return r.plan;
 };
 export const a17Of = (r: AdaptResult): boolean =>
-  r.ok && r.plan.notes.some((x) => x.includes('(A17)'));
+  r.ok && r.plan.notes.some((x) => x.includes('Redovno rasterećenje u nedelji'));
 const n2Of = (r: AdaptResult): boolean =>
   r.ok && r.plan.notes.some((x) => x.includes('nivoa pre bola bilo bi'));
 
@@ -203,6 +208,8 @@ export interface ReliefSummary {
   p35: Set<string>;
   /** 06i: tokovi sa mešovitom nedeljom pouke 37 u rezultatu. */
   p37: Set<string>;
+  /** 10K-07: oznaka uzroka po toku (testInputs.mark07). */
+  m07: Record<string, string>;
   a17: Set<string>;
   n2: Set<string>;
   dropped: Record<string, number>;
@@ -228,6 +235,7 @@ export function runReliefGrid(
     h81: {},
     p35: new Set(),
     p37: new Set(),
+    m07: {},
     a17: new Set(),
     n2: new Set(),
     dropped: {},
@@ -251,8 +259,9 @@ export function runReliefGrid(
     out.flows++;
     out.hash[key] = planHash06c(res);
     out.h81[key] = planHash81(res);
-    if (JSON.stringify(res).includes('Pouka 35:')) out.p35.add(key);
+    if (hasP35(res)) out.p35.add(key);
     if (hasP37(res)) out.p37.add(key);
+    out.m07[key] = mark07(res);
     if (deter(f, i))
       out.deter.push({ key, p0, facts, asOf: f.asOf, json: fnv1a(JSON.stringify(res)) });
     if (!res.ok) {
@@ -380,12 +389,14 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       for (const [key, h] of Object.entries(g.hash)) {
         const s = key.split('/').at(-1)!;
         const marked = g.a17.has(key) || g.n2.has(key);
+        // 10K-08: tok promenjen prema b9c4728 — heš stanja b9c4728 (atB9c u lancu), oznake toka su današnje (ne sude se).
+        const c08 = changed08('relief', key);
         // 06f (pouka 35): stanje 7ba9717 za tokove koje 06f menja.
         if (ref.gridR[key] !== at7ba('relief', key, h)) {
           changed[s] = (changed[s] ?? 0) + 1;
-          if (!marked) other.push(key);
+          if (!marked && !c08) other.push(key);
         } else {
-          if (marked) same.push(key);
+          if (marked && !c08) same.push(key);
           if (g.h81[key] !== h) reducedOnly[s] = (reducedOnly[s] ?? 0) + 1;
         }
       }
@@ -400,7 +411,7 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
         key: f.key,
         id: f.id,
         hash: g.hash[f.key]!,
-        res: g.p35.has(f.key) ? 'Pouka 35:' : null
+        res: g.p35.has(f.key) ? 'Drugi dan kvaliteta (' : null
       }));
       expect(p35FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
     });
@@ -409,9 +420,14 @@ export function describeReliefGrid(title: string, scenarios: readonly ReliefScen
       const runs = flows.map((f) => ({
         key: f.key,
         hash: g.hash[f.key]!,
-        res: g.p37.has(f.key) ? 'Mešovita nedelja (pouka 37)' : null
+        res: g.p37.has(f.key) ? 'Mešovita nedelja: zaštićeni dani 0 km' : null,
+        m07: g.m07[f.key] ?? ''
       }));
       expect(p37FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
+      // 10K-07: tokovi koje 10k-v2.9.0 menja (fixture, uzrok).
+      expect(p07FlowErrors('relief', runs).slice(0, 10)).toEqual([]);
+      // 10K-08: tokovi koje 10k-v2.10.0 menja prema b9c4728 (fixture).
+      expect(p08Errors('relief', runs).slice(0, 10)).toEqual([]);
     });
 
     it('J1: posle nedelje smanjenja sledeća nedelja nikad nije redovno rasterećenje (i nijedno nije zadržano zbog > 5 izgradnji); ukinuto po scenariju', () => {

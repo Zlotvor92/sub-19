@@ -1,0 +1,39 @@
+{"controlRejected":0,"flows":4224,"refused":1476,"restored":2748,"invalid":0,"nextRejected":0,"undoFlows":1056,"undoRestored":1056}
+razlozi odbijanja: {
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Planirano # km ≠ cilj # km.), pa se ne vr": 403,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@thu, easy@tue, long@sun ≠ šablo": 60,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Zagrevanje mora biti # min E (km po sredn": 54,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (q#: više od jednog nivoa (# → # m).), pa ": 199,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Planirano # km > cilj # km, a preostali d": 169,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dugi # km > # km = max(# × L, L + # km), ": 121,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Rasterećenja #, # ≠ raspored #.), pa se n": 8,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@tue, long@sun, q#@thu ≠ šablon ": 3,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Kvalitet T nosi RPE #–# („udobno teško, k": 41,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Kvalitet RP nosi RPE #–# („ritam polumara": 20,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@sat, easy@tue, long@sun, q#@thu": 30,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@sat, easy@thu, long@sun, q#@tue": 36,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@sat, easy@thu, easy@tue, long@s": 24,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@sat, long@sun, q#@tue, q#@thu ≠": 1,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Kvalitet R nosi RPE #–# („brzo, opušteno\"": 11,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@mon, easy@sat, easy@tue, long@s": 30,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@mon, easy@sat, easy@thu, long@s": 36,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@mon, easy@sat, easy@thu, easy@t": 48,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@mon, easy@sat, long@sun, q#@tue": 1,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@mon, easy@sat, easy@tue, easy@w": 30,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@mon, easy@sat, easy@thu, easy@w": 36,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Dani easy@mon, easy@sat, easy@wed, long@s": 1,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Rasterećenja #, #, #, # ≠ raspored #, #, ": 11,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Rasterećenje: # kvalitet T # m (≈ # % pos": 17,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Kvalitet I nosi RPE #–# („teško, izdrživo": 18,
+ "Sačuvana verzija uz treninge posle nje ne može dalje da se prilagođava (q#: doza # m < # m.), pa se ne vraća.": 2,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Rasterećenje na prvoj nedelji faze.), pa ": 11,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (q#: početni nivo I # m ≠ # m (≤ # % plafo": 18,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Lagani dani # / # / # km.), pa se ne vrać": 2,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Nominalni cilj # km ≠ # km po pravilu.), ": 10,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (q#: početni nivo RP # m ≠ # m (prvi nivo)": 20,
+ "Sačuvana verzija uz treninge posle nje ne zadovoljava pravila plana (Rasterećenja #, #, #, #, # ≠ raspored #, ": 3,
+ "Sačuvana verzija uz treninge posle nje ne može dalje da se prilagođava (q#: T_cruise # m < poslednje T_continu": 2
+}
+greške validatora na vraćenom planu (broj tokova po pravilu): {}
+sledeća adaptacija odbijena (pravilo/kod → broj): {}
+sledeća adaptacija odbijena po (snimak/scenario): {}

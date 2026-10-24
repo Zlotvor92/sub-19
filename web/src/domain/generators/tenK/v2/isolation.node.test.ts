@@ -37,6 +37,24 @@ export function escapingImports(file: string, src: string): string[] {
   return out;
 }
 
+/** Ivice ka tenK/v2/ iz fajla van v2: relativni uvoz u v2 (putanja) i svaki pomen `generators/tenK/v2` van relativnog
+    uvoza — alias `@/…/tenK/v2`, dinamički uvoz (10K-07, owner K). */
+export function v2Edges(file: string, src: string): string[] {
+  const code = strip(src);
+  const edges: string[] = [];
+  let rel = code;
+  for (const m of code.matchAll(STATEMENT)) {
+    const spec = m[4]!;
+    const target = spec.startsWith('.') ? resolve(dirname(file), spec) : null;
+    if (target !== null && (target === V2 || target.startsWith(V2 + '/'))) {
+      edges.push(`${relative(SRC, file)} → ${relative(SRC, target)}`);
+      rel = rel.replace(m[0], '');
+    }
+  }
+  if (/generators\/tenK\/v2(?![\w-])/.test(rel)) edges.push(`${relative(SRC, file)} → alias v2`);
+  return edges;
+}
+
 describe('10K v2 je izolovan (Uslov 7)', () => {
   const own = walk(V2).filter((f) => !isTest(f));
 
@@ -67,18 +85,23 @@ describe('10K v2 je izolovan (Uslov 7)', () => {
 
   it('segment 05: van tenK/v2/ v2 uvozi SAMO tenK/index.ts, i to samo adapter app/index.ts (select.ts → tenK)', () => {
     const outside = walk(SRC).filter((f) => !f.startsWith(V2 + '/') && !isTest(f));
-    const edges: string[] = [];
-    for (const f of outside) {
-      const code = strip(readFileSync(f, 'utf8'));
-      for (const m of code.matchAll(STATEMENT)) {
-        const spec = m[4]!;
-        const target = spec.startsWith('.') ? resolve(dirname(f), spec) : null;
-        if (target !== null && (target === V2 || target.startsWith(V2 + '/')))
-          edges.push(`${relative(SRC, f)} → ${relative(SRC, target)}`);
-      }
-    }
+    const edges = outside.flatMap((f) => v2Edges(f, readFileSync(f, 'utf8')));
     expect(edges).toEqual([
       'domain/generators/tenK/index.ts → domain/generators/tenK/v2/app/index.ts'
     ]);
+  });
+
+  it('10K-07: ivica van v2 hvata i alias `@/…/tenK/v2` i dinamički uvoz (kao HM/MAR)', () => {
+    const f = join(SRC, 'x.ts');
+    expect(v2Edges(f, "import { a } from '@/domain/generators/tenK/v2/app/index.ts';")).toEqual([
+      'x.ts → alias v2'
+    ]);
+    expect(v2Edges(f, "const m = await import('@/domain/generators/tenK/v2');")).toEqual([
+      'x.ts → alias v2'
+    ]);
+    expect(v2Edges(f, "import { a } from './domain/generators/tenK/v2/app/index.ts';")).toEqual([
+      'x.ts → domain/generators/tenK/v2/app/index.ts'
+    ]);
+    expect(v2Edges(f, "import { a } from '@/domain/generators/tenK';")).toEqual([]);
   });
 });

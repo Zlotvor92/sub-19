@@ -4,7 +4,11 @@ import type { GenPlanState } from '../../../../state';
 import * as select from '../../../select';
 import { HM_V2_POLICY } from '../../../halfMarathon/v2/policy.ts';
 import { factsOf } from '../../../halfMarathon/v2/adaptInputs.ts';
-import { feelInputs, grid02Inputs } from '../../../halfMarathon/v2/testInputs.ts';
+import {
+  feelInputs,
+  grid02Inputs,
+  inputOf as hmInputOf
+} from '../../../halfMarathon/v2/testInputs.ts';
 import {
   contractInput as hmContractInput,
   HM_V2_SOURCE_FORMAT
@@ -174,6 +178,25 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
     expect(out.some((x) => Number(x) > 16) && out.some((x) => Number(x) < 6)).toBe(true);
   });
 
+  it('5K-09 Z5a: HM izvor sa rezultatom polumaratona → 5K cilj postoji (plan po osećaju, lak tempo iz rezultata); ranije RESULT_DISTANCE_UNSUPPORTED', () => {
+    const src = source(
+      hmInputOf({
+        weeks: 14,
+        km: 30,
+        result: { distanceM: 21097.5, timeSec: 6600 },
+        days: ['tue', 'thu', 'sat', 'sun']
+      })
+    )!;
+    expect(contract(src).pb?.distM).toBe(21097.5);
+    const asOf = addDays(src.weeks[src.weeks.length - 9]!.start, 3);
+    for (const s of ['none', 'pause35'] as const) {
+      const r = handoff(src, asOf, s);
+      expect(r.error, s).toBeUndefined();
+      const v2 = (select.stampForStorage(r.result!) as unknown as { fiveKV2: FiveKV2Plan }).fiveKV2;
+      expect([v2.paceMode, v2.input.recentResult], s).toEqual(['feel', null]);
+    }
+  });
+
   it('plan v2 po osećaju: bez laganog tempa u ulazu cilja → MISSING_EASY_PACE doslovno; sa njim radi', () => {
     const c = feelInputs().find((x) => {
       const s = source(x.input);
@@ -306,7 +329,7 @@ describe('3d: format i izbor', () => {
     )(10000)!;
     expect(ten).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.10.4, KNOWN_VERSIONS ∪ 5k-v2.10.3`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.12.0, KNOWN_VERSIONS ∪ 5k-v2.11.1`, () => {
     const r = select.generateFiveKV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 10 - 1),
@@ -317,11 +340,11 @@ describe('3d: format i izbor', () => {
     } as never);
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.10.4');
+    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.12.0');
     expect(r.plan.weeks.map((w) => w.days.map((d) => d.id))[0]![0]).toBe('g1d1');
     expect(
       select.FIVE_K_V2_GENERATOR.planPolicy({
-        meta: { policyId: '5k-v2', policyVersion: '5k-v2.10.3' }
+        meta: { policyId: '5k-v2', policyVersion: '5k-v2.11.1' }
       } as never).status
     ).toBe('current');
   });

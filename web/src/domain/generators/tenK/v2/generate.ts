@@ -16,6 +16,7 @@ import {
   type QualityState,
   type WeekPicks
 } from './quality.ts';
+import { mustDay } from './dates.ts';
 import { longestLong10 } from './lengths.ts';
 import {
   basePaces,
@@ -23,6 +24,8 @@ import {
   deloadWeekOf,
   framesFor,
   pacesAt,
+  lastRestartBefore,
+  restartKeepsTaperQuality,
   restartWeeks,
   stepVdotAt
 } from './steps.ts';
@@ -116,11 +119,13 @@ function mixed37(
   if (kept.length === 0) return w;
   const keptDates = new Set(kept.map((d) => d.date));
   const keptKm = protectedKm(kept, prior);
+  // Preostali dani: posle asOf i nezaštićeni (dan ≤ asOf koga prethodni plan nema se ne upisuje, written.writtenDays).
   const m = mixedRemainder(
-    w.days.filter((d) => !keptDates.has(d.date)),
+    w.days.filter((d) => !keptDates.has(d.date) && mustDay(d.date) > prior.asOf),
     keptKm,
     target10 / 10,
-    ctx.paces
+    ctx.paces,
+    kept.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0) / 100
   );
   if (!m) return w;
   const days = w.days.map((d) => m.days.find((x) => x.date === d.date) ?? d);
@@ -135,7 +140,9 @@ function mixed37(
     notes: [
       ...w.notes,
       m.over
-        ? `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, ostatak do cilja ${fmt2(m.remainderKm)} km < najmanji preostali dani bez kvaliteta ${fmt2(floor)} km — lagani na minimumu, kvalitet ostaje, planirano > cilj ${fmtKm(target10 / 10)} km.`
+        ? m.excess
+          ? `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km (više od planiranog), ostatak do cilja ${fmt2(m.remainderKm)} km — kvalitet ostaje, lagani na minimumu, planirano > cilj ${fmtKm(target10 / 10)} km (≤ 10 % iznad cilja).`
+          : `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, ostatak do cilja ${fmt2(m.remainderKm)} km < najmanji preostali dani bez kvaliteta ${fmt2(floor)} km — lagani na minimumu, kvalitet ostaje, planirano > cilj ${fmtKm(target10 / 10)} km.`
         : `${MIXED_NOTE}: zaštićeni dani ${fmt2(keptKm)} km, preostali dani skraćeni na ostatak do cilja ${fmt2(m.remainderKm)} km${m.droppedQuality ? ' (kvalitet koji ne staje otpada)' : ''}.`
     ],
     keptKm
@@ -171,7 +178,7 @@ export function construct(
   const raceSec = predicted10k(paces);
   // D27/D32: test 5 km samo u planu po osećaju koji nije početnik.
   const base = periodize(input.startDate, weeks, feel && rule.feelTest);
-  if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima D5.');
+  if (!base) return infeasible('Nema rasporeda rasterećenja koji odgovara pravilima plana.');
   const adapted = steps.length > 0;
   const frames = adapted
     ? framesFor(
@@ -225,7 +232,20 @@ export function construct(
   let taperEasy10 = Infinity;
   const out: PlanWeek[] = [];
   for (const frame of frames) {
-    const ctx = ctxAt(frame.index);
+    const ctx0w = ctxAt(frame.index);
+    // T3 (10K-08): posle novog starta — taper zadržava jedan kvalitet (kad posle povratka ima nedelja sa kvalitetom),
+    // trkačka nedelja kratko oštrenje (steps.restartKeepsTaperQuality / lastRestartBefore, iste funkcije kao validator).
+    const ctx: WeekContext =
+      frame.phase === 'taper' &&
+      restartKeepsTaperQuality(
+        steps,
+        out.map((w, i) => ({ index: w.index, phase: w.phase, days: written[i]!.days })),
+        frame.index
+      )
+        ? { ...ctx0w, keepTaperQuality: true }
+        : frame.phase === 'race' && lastRestartBefore(steps, frame.index + 1) !== null
+          ? { ...ctx0w, keepSharpener: true }
+          : ctx0w;
     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
     if (frame.phase === 'race') {
       const prev = out[out.length - 1];
@@ -263,8 +283,11 @@ export function construct(
       ? adaptNominal10(frame, h, start10, rule, av)
       : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
     const longest10 = longestLong10(written);
+    // T1 (10K-08): pretraga cilja najpre sa granicama laganog (lengths.buildEasyBounds10); tek kad nijedan cilj nije
+    // izvodljiv (mali obim adaptacije: dugi < 20 min / 0,8) — ista pretraga bez T1, uz napomenu (validator: upozorenje).
+    let ctxB: WeekContext = ctx;
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
-      buildWeek(ctx, frame, t10, quality, lastLong10, longest10, mode);
+      buildWeek(ctxB, frame, t10, quality, lastLong10, longest10, mode);
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts buildWeek 'relax'): D11 ispred D12 u izgradnji, rasterećenje bez kvaliteta, taper samo RP.
     // Segment 04 (A9): pa jedan kvalitet doze rasterećenja, pa bez kvaliteta; ograničenje kvaliteta
@@ -284,7 +307,12 @@ export function construct(
     const testDeload = frame.deload && frame.test === true;
     const can = (t10: number, m: QualityMode): boolean => {
       const b = make(t10, m);
-      return b !== null && (!testDeload || t10 <= nominal || b.days.some((d) => d.role === 'test'));
+      return (
+        b !== null &&
+        (!testDeload || t10 <= nominal || b.days.some((d) => d.role === 'test')) &&
+        // T1 (10K-08): cilj se ne podiže iznad pravila da bi nedelja bila planirano < cilj (lagani dani odmor).
+        (t10 <= nominal || b.planned100 + P.tolerance.plannedKm * 100 >= t10 * 10)
+      );
     };
     let fit: ReturnType<typeof fit10> = null;
     let mode: QualityMode = 'rule';
@@ -296,19 +324,56 @@ export function construct(
           [fit, mode] = [{ target10: nominal, fitted: null }, m];
           break;
         }
-    for (const m of fit ? [] : modes) {
-      fit = fit10(
-        nominal,
-        frame,
-        av ? h.cap10 : cap10,
-        rule,
-        (t10) => can(t10, m),
-        h.lastBuild10,
-        downOnly
-      );
-      if (fit) {
-        mode = m;
-        break;
+    for (const t1 of [true, false]) {
+      if (fit) break;
+      if (!t1) {
+        if (!isBuildPhase(frame.phase)) break;
+        // T1 (10K-08): dugi izgradnje za stvaran broj laganih dana može biti duži nego ranije, pa redovno rasterećenje
+        // (dugi = 0,8 × poslednji) ne ostavlja lagane ≥ 3 km — tada pravilo rasterećenja posle smanjenja (A9: dugi ≤ 0,8 ×,
+        // najduži koji ostavlja lagane ≥ 3 km), uz napomenu T1_DELOAD.
+        ctxB = frame.deload ? { ...ctx, adapted: true, t1Deload: true } : { ...ctx, t1Off: true };
+        if (downOnly)
+          for (const m of modes)
+            if (can(nominal, m)) {
+              [fit, mode] = [{ target10: nominal, fitted: null }, m];
+              break;
+            }
+      }
+      for (const m of fit ? [] : modes) {
+        fit = fit10(
+          nominal,
+          frame,
+          av ? h.cap10 : cap10,
+          rule,
+          (t10) => can(t10, m),
+          h.lastBuild10,
+          downOnly
+        );
+        if (fit) {
+          mode = m;
+          // 10K-08 (T1): cilj po pravilu spušten (lagan ≤ 0,8 × dugi) — kad druga pretraga ('relax', D11 ispred D12) daje
+          // bliži izvodljiv cilj nedelje izgradnje, važi ona (inače npr. nedelja bez kvaliteta na polovini cilja).
+          const relax = modes[modes.indexOf(m) + 1];
+          if (
+            m === 'rule' &&
+            relax === 'relax' &&
+            fit.fitted === 'down' &&
+            isBuildPhase(frame.phase) &&
+            !frame.deload
+          ) {
+            const r = fit10(
+              nominal,
+              frame,
+              av ? h.cap10 : cap10,
+              rule,
+              (t10) => can(t10, relax),
+              h.lastBuild10,
+              downOnly
+            );
+            if (r && r.target10 > fit.target10) [fit, mode] = [r, relax];
+          }
+          break;
+        }
       }
     }
     if (!fit)
@@ -316,11 +381,11 @@ export function construct(
         `Nedelja ${weekLabel(input, frame.index)}: nijedan cilj od ${rule.weekMinKm} km naviše ne može da se sastavi po pravilima.`,
         frame.index
       );
-    const w = mixed37(make(fit.target10, mode)!, frame, fit.target10, ctx, prior, av);
+    const w = mixed37(make(fit.target10, mode)!, frame, fit.target10, ctxB, prior, av);
     const notes = [...w.notes];
     if (fit.fitted)
       notes.unshift(
-        `Cilj po pravilu ${fmtKm(nominal / 10)} km nije izvodljiv u konstrukciji nedelje; nedelja ide na najbliži izvodljiv cilj ${fmtKm(fit.target10 / 10)} km (D6).`
+        `Nedelja ne može da se sastavi na ${fmtKm(nominal / 10)} km (redovan rast) uz granice dužine dugog, laganih i kvaliteta; planirano je ${fmtKm(fit.target10 / 10)} km.`
       );
     // A9: test koji ne staje otpada sa kvalitetom (oznaka nedelje ⇔ dan testa).
     const { test: _test, ...noTest } = frame;
@@ -392,17 +457,28 @@ export function construct(
     const t = out.find((w) => w.test);
     const td = t?.days.find((d) => d.workout.kind === 'test');
     plan.notes.push(
-      `Plan po osećaju (D26): ${pace.why}. E = lagan tempo ${fmtPace(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
+      `Plan po osećaju: ${pace.why}. E = lagan tempo ${fmtPace(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE.`,
       t && td
-        ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date} (D27). Ocena cilja i prognoza 10K: posle testa.`
+        ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date}. Ocena cilja i prognoza 10K: posle testa.`
         : rule.feelTest
-          ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
-          : `Početnik bez testa ${P.test.km} km (D32): kvalitet po RPE; ocena cilja i prognoza 10K posle rezultata trke ili parkruna (adaptacija, segment 04).`
+          ? `Test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+          : `Početnik bez testa ${P.test.km} km: kvalitet po osećaju napora (RPE); ocena cilja i prognoza 10K posle rezultata trke ili parkruna.`
     );
   }
   if (out.some((w) => isBuildPhase(w.phase) && !w.deload && w.fitted === 'down'))
     plan.notes.push(
-      `${capacityMessage(input.runDays.length, rule, capacityLimits(out, rule, pN))} Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km (D6).`
+      [
+        capacityMessage(
+          input.runDays.length,
+          input.currentWeeklyKm,
+          rule,
+          capacityLimits(out, rule, pN)
+        ),
+        // F1: bez „Vrh X umesto do X" kad su posle zaokruživanja isti.
+        ...(fmtKm(plan.peakKm) !== fmtKm(plan.peakCapKm)
+          ? [`Vrh ${fmtKm(plan.peakKm)} km umesto do ${fmtKm(plan.peakCapKm)} km.`]
+          : [])
+      ].join(' ')
     );
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)

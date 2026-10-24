@@ -239,6 +239,10 @@ export interface PlanWeek extends WeekFrame {
   budgets: QualityBudgets;
   /** 2.1.0: lagani dani su ograničeni na dužinu dugog, pa je plannedKm < targetKm (namerno). */
   easyCappedAtLong: boolean;
+  /** 5k-v2.12.0 (T1): broj laganih dana šablona koji su odmor jer lagan ≥ minimuma ne staje uz dugi (lengths.weekLengths). */
+  easyRest?: number;
+  /** 5k-v2.12.0 (T2): zagrevanje/hlađenje kvaliteta na najnižem pojasu jer bi dan kvaliteta bio duži od dugog. */
+  wuMin?: boolean;
   /** 2.3.0 (Odluka 5): rasteretna nedelja čiji je kvalitet samo ubrzanja na laganom danu.
       2.4.0: i nedelje 1–2 početnika (samo lagano + ubrzanja). */
   stridesOnly: boolean;
@@ -250,6 +254,9 @@ export interface PlanWeek extends WeekFrame {
   /** 2.10.1 (pouka 37): mešovita nedelja — zbir zaštićenih dana po činjenicama (assess.factKmOf), samo kad se
       razlikuje od planiranih km tih dana; validator ga čita umesto planiranih km. */
   protectedKm?: number;
+  /** 5k-v2.11.1 (C4): doza kvaliteta nedelje je iz zaštićenih (upisanih) dana, ne iz konstrukcije — nedelja je van
+      lanca doze (generate.construct; validator je čita). */
+  doseFact?: true;
 }
 
 /** 2.3.0: q2 = null za 3 dana (jedan kvalitet); easy = lagani dani šablona (1 za 3–4, 2 za 5 dana).
@@ -405,6 +412,8 @@ export interface AdaptStep {
       izvršenja; false: „više od plana"; izostavljeno: korak bez cilja ili korak sačuvan pre 5k-v2.7.0
       (steps.targetReducedWeek: rezervni put). */
   reduced?: boolean;
+  /** 5k-v2.11.1 (Z7): prozor zapisa [from, asOf] iz kog je manjak izvršenja napravio ovaj korak (samo kad je primenjen). */
+  underFrom?: IsoDate;
 }
 
 export interface FiveKV2Adaptation {

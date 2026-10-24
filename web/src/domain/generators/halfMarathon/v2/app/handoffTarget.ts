@@ -19,6 +19,7 @@ import { adaptHmV2 } from '../adapt.ts';
 import { generateHmV2 } from '../generate.ts';
 import { longRunShort } from '../lengths.ts';
 import { longWarnKmOf } from '../shorter.ts';
+import { userText } from '../userText.ts';
 import type { Weekday } from '../types.ts';
 import { addDays, isIsoDate } from './date.ts';
 import { confirmedBreakFact } from './facts.ts';
@@ -54,7 +55,7 @@ export interface HandoffFacts {
 export type Coverage = 'full' | 'distance' | 'insufficient';
 
 const fail = (reasons: readonly { message: string }[]): { error: string } => ({
-  error: reasons.map((r) => r.message).join(' ')
+  error: reasons.map((r) => userText(r.message)).join(' ')
 });
 
 /** Činjenice za adaptaciju cilja: sirove činjenice izvora bez `dayId` i bez zaključanih dana izvora; potvrđena pauza
@@ -121,7 +122,16 @@ export function handoffFuture(
     offset: at.w - 1,
     weeks: current.weeks.filter((w) => w.start < start) as unknown as StoredWeek[]
   };
-  const g = generateHmV2(targetInput(input, start, prefix.offset));
+  const ti = targetInput(input, start, prefix.offset);
+  // Z5b (uslov 5): politiku određuje cilj — početnik izvora iznad opsega početnika OVOG generatora
+  // (WEEKLY_KM_TOO_HIGH, odluka input.checkInput) → plan bez oznake početnika, kako poruka i kaže.
+  let g = generateHmV2(ti);
+  if (
+    !g.ok &&
+    ti['experience'] === 'beginner' &&
+    g.reasons.some((r) => r.code === 'WEEKLY_KM_TOO_HIGH')
+  )
+    g = generateHmV2({ ...ti, experience: 'regular' });
   if (!g.ok) return fail(rejection(g.reasons));
   const a = adaptHmV2(g.plan, targetFacts(facts), today);
   if (!a.ok)

@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { logCompared } from '@/test/level';
-import { GRID_TIMEOUT } from './level.harness.node.test.ts';
+import { atB9c, changed08, GRID_TIMEOUT, p08Errors } from './level.harness.node.test.ts';
 import { adaptTenKV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays, mustDay } from './dates.ts';
@@ -49,13 +49,19 @@ const I3_RACE_WEEK = [
   // 06c (10k-v2.5.0, A17): d5-f-18w asOf 02-05/02-06 otpadaju (r = 14, ukinuto rasterećenje ned 15); d4-r-14w
   // asOf 01-09 nov (r = 10, ukinuto rasterećenje ned 11; uz bol 8 ned 12 ima dan bola → 1 kvalitet, RP tapera
   // 2000 m umesto 2400 m, lagan tapera 4,2 umesto 3,8 km → trkačka 16,4 umesto 16,0, D23/D8).
-  'd4-r-14w/w10/2027-01-09/p8 ned 14: 16 → 16.4',
-  'd5-f-18w/w14/2027-02-07/p8 ned 18: 18.8 → 22.8'
+  // 10K-07 (10k-v2.9.0, D8): oštrenje nosi WU/CD trke (15 + 10 min) umesto pojasa D14 — ista dva toka, trkačka
+  // nedelja (cilj = planirano) kraća za razliku WU/CD oštrenja (2,1 / 2,5 km); razlika bol 8 − bol 5 ista.
+  // 10K-08 (10k-v2.10.0, T1/C6): bazni planovi i povratak posle bola su drugi (lagan ≤ 0,8 × dugi, doza iznova od r + 1)
+  // — prethodna dva toka više nisu viša, nova tri d6-r-18w (trkačka: cilj = planirano, D8/D23; uzrok je drugi taper
+  // posle T1/C6, mehanizam I3 isti).
+  'd6-r-18w/w12/2027-01-22/p8 ned 18: 22.3 → 22.5',
+  'd6-r-18w/w12/2027-01-23/p8 ned 18: 22.3 → 22.5',
+  'd6-r-18w/w12/2027-01-24/p8 ned 18: 19.9 → 20.1'
 ];
 /** I3 — nedelje sa istim ciljem bez dana bola u kojima je planirano uz bol 8 veće za ≤ 0,1 km (D19). 06c
     (A17): 16 → 14 — d5-f-18w asOf 02-05/02-06 ned 17 (taper) otpadaju zajedno sa trkačkom (ukinuto
     rasterećenje ned 15); d4-r-14w asOf 2026-11-21 ned 7 ostaje, cilj 34,7 → 37,1 (ukinuto rasterećenje ned 4). */
-const I3_ROUNDING = 14;
+const I3_ROUNDING = 20; // 10K-08: 14 → 20 (T1/C6 — drugi bazni planovi i povratak)
 
 const to10 = (km: number): number => Math.round(km * 10);
 const km1 = (x10: number): string => (x10 / 10).toFixed(1).replace('.', ',');
@@ -131,7 +137,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     }
   }, GRID_TIMEOUT);
 
-  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.8.1', () => {
+  it('336 tokova, svi primenjuju PAIN; 0 odbijanja; plan nosi 10k-v2.9.0', () => {
     expect(PAIN_GRID.length).toBe(6);
     expect(flows.length).toBe(336);
     expect(flows.filter((f) => !f.res.ok).map((f) => f.key)).toEqual([]);
@@ -141,7 +147,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.8.1');
+      expect(r.plan.policyVersion).toBe('10k-v2.10.0');
     }
   });
 
@@ -159,13 +165,28 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
       flows.map((f) => f.key)
     );
     const marked = (f: Flow): boolean =>
-      ok(f.res).plan.notes.some((x) => x.includes('(A17)') || x.includes('bilo bi'));
-    const changed = flows.filter((f) => ref.gridP[f.key] !== planHash06c(f.res));
+      ok(f.res).plan.notes.some(
+        (x) => x.includes('Redovno rasterećenje u nedelji') || x.includes('bilo bi')
+      );
+    // 10K-08: stanje b9c4728 (atB9c); tačan skup promenjenih u 10K-08 — p08Errors.
+    expect(
+      p08Errors(
+        'pain',
+        flows.map((f) => ({ key: f.key, hash: planHash06c(f.res) }))
+      )
+    ).toEqual([]);
+    const changed = flows.filter(
+      (f) => ref.gridP[f.key] !== atB9c('pain', f.key, planHash06c(f.res))
+    );
     const by: Record<string, number> = {};
     for (const f of changed) by[`p${f.level}`] = (by[`p${f.level}`] ?? 0) + 1;
     expect(by).toEqual(CHANGED_P_06C);
-    expect(changed.filter((f) => !marked(f)).map((f) => f.key)).toEqual([]);
-    expect(flows.filter((f) => marked(f) && !changed.includes(f)).map((f) => f.key)).toEqual([]);
+    // 10K-08: oznake (napomene) su današnje — tokovi promenjeni prema b9c4728 se po njima ne sude.
+    const now = (f: Flow): boolean => !changed08('pain', f.key);
+    expect(changed.filter((f) => now(f) && !marked(f)).map((f) => f.key)).toEqual([]);
+    expect(
+      flows.filter((f) => now(f) && marked(f) && !changed.includes(f)).map((f) => f.key)
+    ).toEqual([]);
     // Samo bol: korak bez cilja (startKm) nema polje reduced.
     expect(flows.filter((f) => planHash81(f.res) !== planHash06c(f.res)).length).toBe(0);
   });
@@ -262,6 +283,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     const bad: string[] = [];
     const race: string[] = [];
     let rounding = 0;
+    const t1: string[] = [];
     const at = new Map(flows.map((f) => [f.key, f] as const));
     for (const f of flows.filter((x) => x.level === 8)) {
       const five = ok(at.get(f.key.replace(/p8$/, 'p5'))!.res).plan;
@@ -282,6 +304,14 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
           w.plannedKm - o.plannedKm <= P.tolerance.plannedKm + EPS
         )
           rounding++;
+        // 10K-08 (T1): isti cilj, bol 5 ima nedelju izgradnje bez laganih dana (lagan od 20 min ne staje — odmor,
+        // planirano < cilj), bol 8 lagane ima (drugi kvalitet otpao) — nabrojano.
+        else if (
+          w.targetKm === o.targetKm &&
+          o.plannedKm + P.tolerance.plannedKm + EPS < o.targetKm &&
+          !o.days.some((d) => d.role === 'easy')
+        )
+          t1.push(`${f.key} ned ${w.index}`);
         else
           bad.push(
             `${f.key} ned ${w.index}: cilj ${o.targetKm} → ${w.targetKm}, planirano ${o.plannedKm} → ${w.plannedKm}`
@@ -291,6 +321,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     expect(bad).toEqual([]);
     expect(race).toEqual(I3_RACE_WEEK);
     expect(rounding).toBe(I3_ROUNDING);
+    expect(t1).toEqual(['d4-r-14w/w3/2026-11-22/p8 ned 5', 'd4-r-14w/w3/2026-11-22/p8 ned 6']);
   });
 
   it('I4: od r + 1 do nivoa svaka nedelja izgradnje ≤ prethodna ne-rasteretna (prva: osnova) + max(10 %, 1,0 km)', () => {
@@ -404,58 +435,60 @@ describe('primeri A–E: 4 dana, 13 ned od 2026-10-26, 40 km, 10 km 45:00, cilj 
   const p0 = g.plan;
   const run = (asOf: string, day: string, pain: number) =>
     ok(adaptTenKV2(p0, painFacts(day, pain), asOf)).plan.weeks;
+  // 10K-08 (T1): bazni plan ima niže ciljeve (lagan ≤ 0,8 × dugi — ned 5 47,6 → 44,3), pa su brojke primera niže za
+  // 0,1–0,3 km; nazivi testova zadržavaju brojke 10k-v2.9.0 (mehanizam bola isti).
   const row = (ws: PlanWeek[], i: number) => {
     const w = ws[i - 1]!;
     return [w.targetKm, w.plannedKm, w.days.filter((d) => d.workout.kind === 'quality').length];
   };
 
   it('bazni plan: ned 3 = 44,9, ned 4 rasterećenje 35,9, ned 5 = 47,6', () => {
-    expect([3, 4, 5].map((i) => p0.weeks[i - 1]!.targetKm)).toEqual([44.9, 35.9, 47.6]);
+    expect([3, 4, 5].map((i) => p0.weeks[i - 1]!.targetKm)).toEqual([44.6, 35.7, 44.3]);
     expect(p0.weeks[3]!.deload).toBe(true);
   });
 
   it('A: asOf 2026-11-15, bol 5 dana 2026-11-14 → r = 4, nivo 42,4, osnova 29,7; ned 5 = 32,7 (e6540a5: 27,6)', () => {
     const ws = run('2026-11-15', '2026-11-14', 5);
     expect([4, 5, 6].map((i) => row(ws, i))).toEqual([
-      [35.9, 26.6, 0],
-      [32.7, 32.67, 2],
-      [36, 36, 2]
+      [35.7, 26.6, 0],
+      [32.5, 32.5, 2],
+      [35.8, 35.83, 2]
     ]);
   });
 
   it('B: isto, bol 8 → ned 5 = 32,7 (pon–sre ograničeni; e6540a5: pun cilj 47,6)', () => {
     const ws = run('2026-11-15', '2026-11-14', 8);
     expect([4, 5, 6].map((i) => row(ws, i))).toEqual([
-      [35.9, 21, 0],
-      [32.7, 30.59, 1],
-      [36, 35.97, 2]
+      [35.7, 21, 0],
+      [32.5, 30.39, 1],
+      [35.8, 35.8, 2]
     ]);
   });
 
   it('C: asOf 2026-11-18, bol 5 → r = 4, nivo 44,9, osnova 31,4; ned 5 = 34,5 (e6540a5: 47,6 sa kvalitetom)', () => {
     const ws = run('2026-11-18', '2026-11-18', 5);
     expect([4, 5, 6].map((i) => row(ws, i))).toEqual([
-      [35.9, 29.1, 0],
-      [34.5, 32.19, 1],
-      [38, 37.97, 2]
+      [35.7, 29, 0],
+      [34.3, 31.99, 1],
+      [37.7, 37.7, 2]
     ]);
   });
 
   it('D: isto, bol 8 → ned 5 = 34,5 (e6540a5: 47,6 / 37,9)', () => {
     const ws = run('2026-11-18', '2026-11-18', 8);
     expect([4, 5, 6].map((i) => row(ws, i))).toEqual([
-      [35.9, 17.9, 0],
-      [34.5, 27.3, 0],
-      [38, 37.97, 2]
+      [35.7, 17.8, 0],
+      [34.3, 27.2, 0],
+      [37.7, 37.7, 2]
     ]);
   });
 
   it('E: asOf 2026-11-13, bol 7 → r = 3, nivo 42,4, osnova 29,7; 06c (A17): rasterećenje ned 4 ukinuto → ned 4 = 32,7 (4.1: 23,8), ned 5 = 36,0, ned 6 = 39,6', () => {
     const ws = run('2026-11-13', '2026-11-13', 7);
     expect([4, 5, 6].map((i) => row(ws, i))).toEqual([
-      [32.7, 25.1, 0],
-      [36, 35.97, 2],
-      [39.6, 39.6, 2]
+      [32.5, 25, 0],
+      [35.8, 35.8, 2],
+      [39.4, 39.43, 2]
     ]);
     expect(ws[3]!.deload).toBe(false);
   });

@@ -1,0 +1,21 @@
+{
+ "flows": 66216,
+ "ok": 66216,
+ "rejected": {},
+ "rejEx": {},
+ "maxRatio": {
+  "I": 1,
+  "T": 1,
+  "R": 0.958
+ },
+ "maxEx": {
+  "I": "r-d3-6w-25km-v45-0 asOf 2026-11-04 Δ8 race ned 4 I: 2 × 1000 m (oporavak 300 s lagano)",
+  "T": "f-d4-6w-15km-e480-0 asOf 2026-12-02 Δ0 race ned 5 Tempo po osećaju: 10 min (RPE 6–7, može da se priča u kratkim rečenicama)",
+  "R": "f-d5-16w-60km-e480-1 asOf 2026-12-09 Δ2 test ned 7 R: 4 × 400 m (oporavak 400 m lagano)"
+ },
+ "over95": {
+  "I": 20942,
+  "T": 7382,
+  "R": 1158
+ }
+}

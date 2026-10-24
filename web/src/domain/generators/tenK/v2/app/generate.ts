@@ -3,6 +3,7 @@
    Pravila ulaza, plana i odbijanja su v2 (`../generate.ts`, `../input.ts`); ovde je samo prevod oblika. Odbijanje se
    vraća sa razlozima v2 doslovno (aplikacija ga prikazuje kao poruku). */
 
+import { userText } from './format.ts';
 import { generateTenKV2 } from '../generate.ts';
 import { assessGoal, raceTimeForVdot, round1, vdotFromResult } from '../paces.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
@@ -38,7 +39,7 @@ export function alignedStart(raceDate: string, today: string): string | null {
 export function rejection(reasons: readonly Reason[]): PlanRejectionReason[] {
   return reasons.map((x) => ({
     code: x.code,
-    message: x.message,
+    message: userText(x.message),
     ...(x.week != null ? { week: x.week } : {})
   }));
 }

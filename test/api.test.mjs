@@ -1715,33 +1715,35 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
     assert.equal(pozivi.filter(x => x.includes('nalog_za_brisanje')).length, 0);
   });
 
-  test('NE brise odmah — zabrani i oznaci', async () => {
-    /* Jedan HTTP poziv koji nepovratno brise tudj nalog je, u rukama nekoga ko
-       je preuzeo vlasnikovu sesiju, alat za unistenje svih korisnika. Sada
-       pristup prestaje odmah, a podaci se uklanjaju tek posle roka. */
+  test('brise ODMAH — podatke pa nalog, BEZ zabrane', async () => {
+    /* Brisanje sluzi da nalog ne stoji u bazi, ne da se covek kazni. Zabrana
+       je ranije davala obrisanom coveku poruku da je banovan. */
     const pozivi = stub(VLASNIK);
     const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: LOZ });
     assert.equal(res.code, 200);
-    assert.equal(res.body.odlozeno, true);
-    assert.ok(res.body.izvrsiPosle, 'nije vracen rok');
-    assert.ok(new Date(res.body.izvrsiPosle).getTime() > Date.now(), 'rok je u proslosti');
-    assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/')).length, 0,
-      'nalog je obrisan odmah');
-    assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/rest/v1/user_state?')).length, 0,
-      'podaci su obrisani odmah');
-    assert.ok(pozivi.some(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/')), 'nalog nije zabranjen');
-    assert.ok(pozivi.some(x => x.includes('nalog_za_brisanje')), 'nalog nije oznacen');
+    assert.equal(pozivi.filter(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/')).length, 0,
+      'nalog je zabranjen');
+    assert.equal(pozivi.filter(x => x.includes('nalog_za_brisanje')).length, 0, 'nalog je oznacen umesto obrisan');
+    const iz = readRepoFile('api/broadcast.js');
+    const tabele = JSON.parse(/const TABELE = (\[[\s\S]*?\]);/.exec(iz)[1].replace(/'/g, '"'));
+    for (const t of tabele) {
+      assert.ok(pozivi.some(x => x.startsWith('DELETE') && x.includes('/rest/v1/' + t + '?user_id=eq.k1')),
+        'nisu obrisani podaci iz ' + t);
+    }
+    const naloga = pozivi.findIndex(x => x.startsWith('DELETE') && x.endsWith('/auth/v1/admin/users/k1'));
+    assert.ok(naloga >= 0, 'nalog nije obrisan');
+    const poslednjiPodatak = pozivi.reduce((n, x, i) => (x.startsWith('DELETE') && x.includes('/rest/v1/') ? i : n), -1);
+    assert.ok(naloga > poslednjiPodatak, 'nalog je obrisan pre podataka');
   });
 
-  test('kad oznaka ne prodje, zabrana se SKIDA', async () => {
-    /* Inace bi nalog ostao zakljucan zauvek, bez ijednog zapisa zasto —
-       polovicno stanje koje niko ne bi umeo da razmrsi. */
-    const pozivi = stub(VLASNIK, { oznakaPada: true });
+  test('kad brisanje podataka padne, nalog se NE brise', async () => {
+    /* Obrnuto bi ostavilo podatke na serveru bez naloga kome pripadaju. */
+    const pozivi = stub(VLASNIK, { obrisiPada: 'ai_posao' });
     const res = await zovi({ admin: 'obrisi', obrisiId: 'k1', lozinka: LOZ });
     assert.equal(res.code, 502);
-    assert.match(res.body.error, /Zabrana je skinuta/);
-    const putovi = pozivi.filter(x => x.startsWith('PUT') && x.includes('/auth/v1/admin/users/'));
-    assert.equal(putovi.length, 2, 'zabrana nije skinuta posle neuspele oznake');
+    assert.match(res.body.error, /ai_posao/);
+    assert.equal(pozivi.filter(x => x.startsWith('DELETE') && x.includes('/auth/v1/admin/users/')).length, 0,
+      'nalog je obrisan iako podaci nisu');
   });
 
   test('ponistavanje skida i oznaku i zabranu, BEZ lozinke', async () => {
@@ -1939,7 +1941,7 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
         return jsonRes(1);
       }
       if (/\/auth\/v1\/admin\/users\//.test(u)) return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
-      if (u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (/\/rest\/v1\/[a-z_]+\?user_id=/.test(u)) return jsonRes([]);
       if (u.includes('api.resend.com')) return jsonRes({ id: 'm' });
       throw new Error('neocekivan poziv: ' + u);
     };
@@ -1964,7 +1966,7 @@ describe('/api/broadcast {admin} — kapija vlasnika', () => {
       if (u.includes('/auth/v1/user')) return jsonRes(VLASNIK);
       if (u.includes('/rest/v1/rpc/check_and_bump_endpoint')) return jsonRes(1);
       if (/\/auth\/v1\/admin\/users\//.test(u)) return jsonRes({ id: 'k1', email: 'prvi@t.rs' });
-      if (u.includes('nalog_za_brisanje')) return jsonRes([]);
+      if (/\/rest\/v1\/[a-z_]+\?user_id=/.test(u)) return jsonRes([]);
       if (u.includes('api.resend.com')) throw new Error('Resend pao');
       throw new Error('neocekivan poziv: ' + u);
     };

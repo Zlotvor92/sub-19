@@ -147,9 +147,12 @@ export function checkInput(raw: unknown): InputCheck {
       }
     }
     // 2.6.0: trčanje/hodanje — rezultat je samo informacija (bez opsega VDOT-a).
+    // 5k-v2.11.0 (C8, kao 10K): VDOT ispod opsega → plan po osećaju (lagan tempo obavezan, rezultat je informacija);
+    // iznad opsega → odbijanje.
     if (fresh && !runWalk && distOk && isNum(time) && time > 0) {
       const vdot = Math.round(vdotFromResult(dist as number, time) * 10) / 10;
-      if (vdot < P.input.vdot.min || vdot > P.input.vdot.max)
+      if (vdot < P.input.vdot.min) feelKnown = true;
+      else if (vdot > P.input.vdot.max)
         add(
           'VDOT_OUT_OF_RANGE',
           `VDOT rezultata (${vdot}) mora biti ${P.input.vdot.min}–${P.input.vdot.max}.`
@@ -165,7 +168,7 @@ export function checkInput(raw: unknown): InputCheck {
   if (feelKnown && !runWalk && !hasEp)
     add(
       'MISSING_EASY_PACE',
-      `Bez pouzdanog rezultata (nema ga ili je stariji od ${P.input.resultMaxAgeDays / 7} nedelja) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm).`
+      `Bez pouzdanog rezultata (nema ga, stariji je od ${P.input.resultMaxAgeDays / 7} nedelja ili je sporiji od opsega tabela tempa) potreban je uobičajen lagan tempo (typicalEasyPaceSecPerKm).`
     );
   if (hasEp && (!isNum(ep) || ep < epRange.min || ep > epRange.max))
     add(
@@ -209,7 +212,8 @@ export function checkInput(raw: unknown): InputCheck {
   return { ok: true, input: wo ? { ...input, weekOffset: wo as number } : input };
 }
 
-/** 2.4.0: rezultat je pouzdan ako postoji i nije stariji od resultMaxAgeDays (jedino mesto odluke). */
+/** 2.4.0: rezultat je pouzdan ako postoji i nije stariji od resultMaxAgeDays (jedino mesto odluke). 5k-v2.11.0 (C8):
+ *  i VDOT nije ispod opsega (ispod → plan po osećaju; iznad opsega ulaz odbija). */
 export function hasFreshResult(
   input: FiveKV2Input
 ): input is FiveKV2Input & { recentResult: FiveKV2Result } {
@@ -217,6 +221,12 @@ export function hasFreshResult(
   return (
     r !== undefined &&
     r !== null &&
-    daysBetween(r.date, input.startDate) <= P.input.resultMaxAgeDays
+    daysBetween(r.date, input.startDate) <= P.input.resultMaxAgeDays &&
+    !vdotBelowRange(r)
   );
+}
+
+/** C8: VDOT rezultata ispod opsega plana (zaokružen na 0,1, kao ulaz). */
+export function vdotBelowRange(r: FiveKV2Result): boolean {
+  return Math.round(vdotFromResult(r.distanceM, r.timeSec) * 10) / 10 < P.input.vdot.min;
 }

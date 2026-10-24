@@ -20,6 +20,8 @@ import type {
 
 const RW = P.runWalk;
 export const MAX_LEVEL = RW.levels.length;
+/** 5k-v2.12.0 (T5): L12 — trka bez hodanja i prelaz na kontinuirani plan; L13–L14 samo produžavaju lestvicu. */
+export const TRANSITION_LEVEL = RW.continuousLevel;
 const r2 = (x: number): number => Math.round(x * 100) / 100;
 const mmss = (sec: number): string =>
   `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
@@ -47,7 +49,7 @@ export function runWalkSession(level: number, easyPace: number | null): RunWalkS
     runTotalSec,
     estRunKm: easyPace === null ? null : r2(runTotalSec / easyPace),
     effort: { ...RW.effort },
-    title: `L${l.level}: ${continuous ? `${mmss(l.runSec)} trčanja bez prekida` : `${l.reps} × (${mmss(l.runSec)} trčanje / ${mmss(l.walkSec)} hod)`}, 5 min hoda pre i posle`
+    title: `Nivo ${l.level}: ${continuous ? `${mmss(l.runSec)} trčanja bez prekida` : `${l.reps} × (${mmss(l.runSec)} trčanje / ${mmss(l.walkSec)} hod)`}, 5 min hoda pre i posle`
   };
 }
 
@@ -55,7 +57,7 @@ export function runWalkSession(level: number, easyPace: number | null): RunWalkS
     nivoa, hod = raceWalkSec; L12: bez hodanja. */
 export function runWalkRace(level: number): RunWalkRace {
   const l = levelOf(level);
-  const continuous = l.level >= MAX_LEVEL;
+  const continuous = l.level >= TRANSITION_LEVEL;
   const walkSec = continuous ? 0 : l.walkSec > 0 ? l.walkSec : RW.raceWalkSec;
   return {
     distanceKm: RW.raceKm,
@@ -66,7 +68,7 @@ export function runWalkRace(level: number): RunWalkRace {
     cooldownWalkSec: RW.cooldownWalkSec,
     goal: 'finish',
     effort: { ...RW.effort, cue: 'ravnomerno, kao na treningu; cilj je završiti' },
-    title: `Trka ${RW.raceKm} km — ${continuous ? 'trčanje bez prekida' : `${mmss(l.runSec)} trčanje / ${mmss(walkSec)} hod (odnos nivoa L${l.level})`}; cilj: završiti`
+    title: `Trka ${RW.raceKm} km — ${continuous ? 'trčanje bez prekida' : `u trci smeš da hodaš: ${mmss(l.runSec)} trčanja, pa ${mmss(walkSec)} hoda, i tako do cilja`}; cilj: završiti`
   };
 }
 
@@ -182,7 +184,7 @@ export function constructRunWalk(
       phase: 'race',
       days,
       notes: [
-        `Trkačka nedelja: ${RW.raceWeekSessions} lakše sesije (L${easier}), pa trka ${RW.raceKm} km (${race.continuous ? 'bez hodanja' : `odnos nivoa L${L.level}`}); cilj: završiti.`
+        `Trkačka nedelja: ${RW.raceWeekSessions} lakše sesije (nivo ${easier}), pa trka ${RW.raceKm} km ${race.continuous ? 'bez hodanja' : `uz hodanje: ${mmss(race.runSec)} trčanja, pa ${mmss(race.walkSec)} hoda, i tako do cilja`}; cilj: završiti.`
       ]
     });
   }
@@ -194,7 +196,7 @@ export function constructRunWalk(
 export function transitionInput(input: FiveKV2Input, week: number): Record<string, unknown> | null {
   const pace = input.typicalEasyPaceSecPerKm ?? null;
   if (pace === null) return null;
-  const top = levelOf(MAX_LEVEL);
+  const top = levelOf(TRANSITION_LEVEL);
   return {
     startDate: addDays(input.startDate, (week - 1) * 7),
     raceDate: input.raceDate,

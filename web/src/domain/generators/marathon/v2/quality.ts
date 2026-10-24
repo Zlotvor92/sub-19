@@ -25,6 +25,8 @@ export interface QualityState {
   q2: SlotState | null;
   /** M5: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje [m] (0 = nema). */
   t: number;
+  /** MAR-11 (T3): stanje posle novog starta (A3; q1/q2 = doze posle povratka). */
+  restart?: true;
 }
 
 export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0 };
@@ -274,7 +276,12 @@ export function advance(picks: Picks, prev: QualityState): QualityState {
   const slot = (d: Dose | null, before: SlotState | null): SlotState | null =>
     d ? { ladder: d.ladder as LadderId, doseM: d.doseM, structure: d.structure } : before;
   const t = [picks.q1, picks.q2].filter((d) => d?.zone === 'T').pop();
-  return { q1: slot(picks.q1, prev.q1), q2: slot(picks.q2, prev.q2), t: t ? t.doseM : prev.t };
+  return {
+    q1: slot(picks.q1, prev.q1),
+    q2: slot(picks.q2, prev.q2),
+    t: t ? t.doseM : prev.t,
+    ...(prev.restart ? { restart: true as const } : {})
+  };
 }
 
 /** Struktura doze `minM` u lestvici: nivo sa tom dozom, inače prva struktura iste doze (M10). */
@@ -338,6 +345,8 @@ export interface TaperPicks {
   /** null = početnik u N−1 (M17: bez MP). */
   mp: Dose | null;
   t: Dose | null;
+  /** MAR-11 (T2): MP otpao — ni najkraći blok ne staje u trajanje dugog (dan je lagan). */
+  mpDropped?: true;
 }
 
 /** M7: doza nedelje tapera `step` po pravilu — MP ≈ share × poslednja MP doza (naniže, min 2 × 3000 m);
@@ -353,7 +362,7 @@ export function taperDoses(
   quality: 1 | 2,
   beginner = false,
   limit?: TaperLimit
-): { mp: Structure | null; t: Structure | null; tLadder: LadderId } {
+): { mp: Structure | null; t: Structure | null; tLadder: LadderId; mpDropped?: true } {
   const w = P.taper.weeks[step]!;
   if (beginner && w.tShare === null) {
     const floor = floorOf('T_continuous', deloadMinM(true), true);
@@ -365,7 +374,16 @@ export function taperDoses(
   }
   // Poslednja MP doza izgradnje (slot Q1; početnik čija specifična faza nije imala MP: 0 → minimum).
   const lastMp = state.q1?.ladder === 'MP' ? state.q1.doseM : 0;
-  const mp = reduced('MP', lastMp, w.mpShare, P.taper.mpMin, false, limit?.q1);
+  // MAR-11 (T3): posle novog starta, kad je posle povratka bar jedna nedelja sa kvalitetom — taper zadržava jedan
+  // kvalitet: MP ≈ 60 % poslednje MP doze posle povratka (najmanje najniži nivo 2 × 3000 m, T2 skraćenje), bez T.
+  if (state.restart && (state.q1 !== null || state.q2 !== null)) {
+    const mp = taperMpFit(
+      reduced('MP', lastMp, P.adapt.restartTaperShare, P.taper.mpMin, false, limit?.q1),
+      limit
+    );
+    return { mp, t: null, tLadder: 'T_cruise', ...(mp ? {} : { mpDropped: true as const }) };
+  }
+  const mp = taperMpFit(reduced('MP', lastMp, w.mpShare, P.taper.mpMin, false, limit?.q1), limit);
   const t =
     w.tShare === null || quality === 1
       ? null
@@ -375,15 +393,36 @@ export function taperDoses(
           w.tShare,
           taperTFloor(),
           false,
-          limit?.q2(pick('MP', mp, 'taper'))
+          mp
+            ? limit?.q2(pick('MP', mp, 'taper'))
+            : (limit?.alone ?? limit?.q2(pick('MP', P.taper.mpMin, 'taper')))
         );
-  return { mp, t, tLadder: 'T_cruise' };
+  return { mp, t, tLadder: 'T_cruise', ...(mp ? {} : { mpDropped: true as const }) };
+}
+
+/** MAR-11 (T2): u taperu dan MP ne traje duže od dugog iste nedelje — kad ni najmanja doza (2 × 3000 m, izuzeta od
+    drugog člana pouke 32) ne staje, MP blok se skraćuje (kontinuirano, korak 0,5 km naviše od 1,0 km) do najdužeg
+    koji staje; doza tapera nikad ne raste. Ni 1,0 km ne staje (WU/CD već traju koliko dugi) → MP otpada, dan je lagan
+    (odluka organizatora posle MAR-11; WU/CD se ne seku — uslov 3). Jedno mesto (taperDoses) za konstruktor i
+    validator. */
+function taperMpFit(mp: Structure, limit?: TaperLimit): Structure | null {
+  if (!limit || doseOf(mp) > doseOf(P.taper.mpMin) || limit.q1('MP', mp, false)) return mp;
+  const min = P.taper.mpShortMinKm;
+  let best: Structure | null = null;
+  for (let km = min; km * 1000 < doseOf(mp); km += 0.5) {
+    const s: Structure = { form: 'continuous', km };
+    if (!limit.q1('MP', s, false)) break;
+    best = s;
+  }
+  return best;
 }
 
 /** Pouka 32 u taperu (week.ts taperDayLimit): MP (početnik N−1: T) uz T na najmanjoj dozi, pa T uz izabran MP. */
 export interface TaperLimit {
   q1: DayFits;
   q2: (mp: Dose) => DayFits;
+  /** MAR-11 (T2): T kao jedini dan kvaliteta (MP otpao). */
+  alone?: DayFits;
 }
 
 /** M7: najmanja T doza tapera (2,0 km; T cruise nema taj nivo → kontinuirano). */
@@ -406,6 +445,8 @@ export function pickTaper(
   const d0 = taperDoses(state, step, quality, beginner);
   const d = limit ? taperDoses(state, step, quality, beginner, limit) : d0;
   const t = d0.t && doseOf(d0.t) <= capM('T', targetKm) ? pick(d.tLadder, d.t!, 'taper') : null;
+  // MAR-11 (T2): MP otpao (ni najkraći blok ne staje u trajanje dugog) — dan je lagan, T ostaje kao po pravilu.
+  if (!d.mp && d.mpDropped) return { mp: null, t, mpDropped: true };
   if (!d.mp) return t ? { mp: null, t } : null;
   if (!relax && d0.t !== null && !t) return null;
   return { mp: pick('MP', d.mp, 'taper'), t };

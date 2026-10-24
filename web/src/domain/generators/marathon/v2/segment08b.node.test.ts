@@ -5,6 +5,7 @@
    pokrivenosti bez zapisa = 0 u zbiru zaštićenih dana. Na d73b83a (marathon-v2.5.0) prvi testovi K1, K3 i K4 padaju. */
 
 import { describe, expect, it } from 'vitest';
+import { easyRestDates } from './week.ts';
 import { adaptMarathonV2 } from './adapt.ts';
 import { adaptInvariants } from './adaptInvariants.ts';
 import { addDays } from './dates.ts';
@@ -96,7 +97,10 @@ describe('MAR-08b K4: cilj na minimumu nedelje — planirano ≥ minimum (zaokru
     const at = addDays(mon, 3);
     const f = merge(factsOf(p, 'faster', mon), factsOf(p, 'pain5', at));
     const r = ok(adaptMarathonV2(p, f, at));
-    for (const w of r.plan.weeks.filter((x) => x.phase !== 'race' && !x.limits?.rest))
+    // MAR-11 (T1): nedelja sa laganim danom odmora (napomena) sme ispod — lagani ≤ 0,8 × dugi.
+    for (const w of r.plan.weeks.filter(
+      (x) => x.phase !== 'race' && !x.limits?.rest && easyRestDates(x).length === 0
+    ))
       expect(w.plannedKm, `ned ${w.index}`).toBeGreaterThanOrEqual(20);
   });
 });

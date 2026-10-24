@@ -18,7 +18,7 @@ import {
 } from './testInputs.ts';
 import type { AdaptResult, FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { MIXED_NOTE, mixedFloorKm, mixedRemainder, protectedKm } from './week.ts';
+import { easyMinOf, MIXED_NOTE, mixedFloorKm, mixedRemainder, protectedKm } from './week.ts';
 import { easyRun } from './workouts.ts';
 
 const S = JSON.stringify;
@@ -45,16 +45,17 @@ describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', (
     const p = planOf('b-d3-8w-25km-v36-1');
     const r = fatigue(p, p.weeks[2]!.startDate);
     const w = r.plan.weeks[2]!;
-    expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 15.9, 18.28]);
-    // Zaštićen lagan 6,74 (asOf); ostatak 9,16 < minimum preostalih bez kvaliteta: 3 + dugi 7,1 (ne skraćuje se) →
+    // 5k-v2.12.0 (T1): zaštićen lagan 6,4 (granica 0,8 × dugi 8 km u sastavljenoj nedelji).
+    expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 15.9, 17.94]);
+    // Zaštićen lagan 6,4 (asOf); ostatak 9,5 < minimum preostalih bez kvaliteta: 3 + dugi 7,1 (ne skraćuje se) →
     // kvalitet ostaje (dopuna MAR-08), planirano > cilj uz upozorenje.
-    expect(roles(w)).toBe('easy:6.74 q1:4.44 long:7.1');
+    expect(roles(w)).toBe('easy:6.4 q1:4.44 long:7.1');
     expect(w.notes.some((n) => n.includes(MIXED_NOTE))).toBe(true);
     expect(
       r.plan.warnings.filter((v) => v.rule === 'MIXED_OVER_TARGET').map((v) => v.week)
     ).toEqual([3]);
     expect(r.plan.warnings.find((v) => v.rule === 'MIXED_OVER_TARGET')!.message).toContain(
-      'ostatak do cilja 9.16 km < najmanji preostali dani bez kvaliteta 10.1 km'
+      'ostatak do cilja 9,5 km < najmanji preostali dani bez kvaliteta 10,1 km'
     );
   });
 
@@ -62,8 +63,9 @@ describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', (
     const p = planOf('r-d4-10w-40km-v52-1');
     const r = fatigue(p, p.weeks[3]!.startDate);
     const w = r.plan.weeks[3]!;
-    expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 34.6, 34.6]);
-    expect(roles(w)).toBe('easy:12.12 q1:6.72 easy:3.66 long:12.1');
+    // 5k-v2.12.0 (T1/T4): veći obim izgradnje (bez rasterećenja pre ned 4), rasterećenje 0,8 × 46,6 km.
+    expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 37.3, 37.3]);
+    expect(roles(w)).toBe('easy:12.67 q1:7.22 easy:4.41 long:13');
     expect(r.plan.warnings.some((v) => v.rule === 'MIXED_OVER_TARGET')).toBe(false);
   });
 
@@ -91,11 +93,13 @@ describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', (
           expect(d.workout.km).toBeLessThanOrEqual(
             w.days.find((x) => x.date === d.date)!.workout.km
           );
-        const floor = mixedFloorKm(w.days.slice(1), w.phase === 'taper' ? 2 : 3);
+        const floor = mixedFloorKm(w.days.slice(1), easyMinOf(w.phase, p.paces, w.deload));
         if (m!.over) {
           over++;
           expect(m!.remainderKm).toBeLessThan(floor);
-          expect(km(free)).toBe(mixedFloorKm(w.days.slice(1), w.phase === 'taper' ? 2 : 3, true));
+          expect(km(free)).toBe(
+            mixedFloorKm(w.days.slice(1), easyMinOf(w.phase, p.paces, w.deload), true)
+          );
         } else {
           fit++;
           expect(km(free)).toBeLessThanOrEqual(m!.remainderKm + 1e-9);
@@ -157,17 +161,19 @@ describe('08i-b (5k-v2.10.1): zbir zaštićenih dana po činjenicama; test se ne
   it('pauza 10 (r-d4-10w-15km-v38-1, asOf čet ned 4): neodrađeni zaštićeni dani = 0 → preostali dani kao sastavljeni, bez upozorenja', () => {
     const r = run('r-d4-10w-15km-v38-1', 'pause10', '2026-11-26');
     const w = r.plan.weeks[3]!;
-    expect(w.protectedKm).toBe(0);
-    expect(roles(w)).toBe('easy:4.04 q1:3.86 easy:3.04 long:3.1');
+    // 5k-v2.12.0 (T1): sastavljena nedelja ima lagan dan manje i staje u cilj i sa planiranim km zaštićenih — zbir po
+    // činjenicama (0) nije potreban validatoru (generate.mixedOf).
+    expect(w.protectedKm ?? 0).toBe(0);
+    expect(roles(w)).toBe('easy:4.57 q1:4.13 long:4.7');
     expect(w.notes.some((n) => n.includes(MIXED_NOTE))).toBe(false);
     expect(r.plan.warnings.some((v) => v.rule === 'MIXED_OVER_TARGET')).toBe(false);
   });
 
-  it('više od plana (r-d4-10w-15km-v38-1, asOf čet ned 1): urađeni km 7,92 ulaze u zbir → ni bez kvaliteta ne staje: kvalitet ostaje + upozorenje', () => {
+  it('više od plana (r-d4-10w-15km-v38-1, asOf čet ned 1): urađeni km 8,16 ulaze u zbir → ni bez kvaliteta ne staje: kvalitet ostaje + upozorenje', () => {
     const r = run('r-d4-10w-15km-v38-1', 'over120', '2026-11-05');
     const w = r.plan.weeks[0]!;
-    expect(w.protectedKm).toBe(7.92);
-    expect(roles(w)).toBe('easy:3.05 q1:3.55 q2:3.5 long:4.9');
+    expect(w.protectedKm).toBe(8.16); // 5k-v2.12.0 (T1): lagan 6,8 km (granica 0,8 × dugi) × 120 %
+    expect(roles(w)).toBe('easy:3.25 q1:3.55 q2:3.5 long:4.7');
     expect(
       r.plan.warnings.filter((v) => v.rule === 'MIXED_OVER_TARGET').map((v) => v.week)
     ).toEqual([1]);

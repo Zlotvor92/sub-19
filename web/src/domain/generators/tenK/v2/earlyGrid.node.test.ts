@@ -91,17 +91,18 @@ describe('primeri N7 (10k-v2.5.0 odbijeno)', () => {
 
 describe('primeri 06d (nove klase, 10k-v2.5.0 odbijeno)', () => {
   const kinds = (w: { days: { role: string }[] }) => w.days.map((d) => d.role);
-  it('N-a: bol 8 na kraju ned 8 (10 ned) — taper 8,2 km; trkačka skraćena: dan bola 01-03 postaje odmor, 7,1 ≤ 8,2 (D23)', () => {
+  it('N-a: bol 8 na kraju ned 8 (10 ned) — taper 7,0 km (10k-v2.9.0: 8,2); trkačka skraćena: dan bola 01-03 postaje odmor, 6,5 ≤ 7,0 (D23)', () => {
     const { p } = adapt('10w-25km-v30-A-sat', 'pain8', '2026-12-26');
     const [taper, race] = [p.weeks[8]!, p.weeks[9]!];
-    expect(taper.plannedKm).toBe(8.2);
+    // 10K-08 (T1): bazni plan niži (lagan ≤ 0,8 × dugi) — taper 8,2 → 7,0 km, lagan tapera 4,1 → 3,5 km; mehanizam isti.
+    expect(taper.plannedKm).toBe(7);
     expect(race.days.map((d) => `${d.date}:${d.role}:${d.workout.km}`)).toEqual([
       '2027-01-05:easy:3',
-      '2027-01-07:easy:4.1',
+      '2027-01-07:easy:3.5',
       '2027-01-09:race:13.12'
     ]);
     expect(race.plannedKm).toBeLessThanOrEqual(taper.plannedKm);
-    expect(race.notes).toContain('Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).');
+    expect(race.notes).toContain('Trkačka nedelja skraćena: taper je imao dane odmora/bola.');
   });
 
   it('N-b: umor početnika kraj ned 1 — prinudno rasterećenje ned 2 u uvodu: 0,8 × (16 km), bez kvaliteta, dani uvoda', () => {
@@ -124,17 +125,21 @@ describe('primeri 06d (nove klase, 10k-v2.5.0 odbijeno)', () => {
     });
   });
 
-  it('N-d: pauza 20, sreda ned 11 = dan Q1 (upisan RP 3600) — poslednja T doza 3600 (ned 10), taper bez kvaliteta (T 2000 > plafon)', () => {
+  it('N-d: pauza 20, sreda ned 11 = dan Q1 (upisan RP 3600) — poslednja T doza 3600 (ned 10); 10K-08: taper T kontinuirano 1,5 km (10k-v2.9.0 bez kvaliteta)', () => {
     const { p } = adapt('b-d3-16w-30km-e330-B-sun', 'pause20', '2027-01-13');
     const taper = p.weeks[14]!;
     expect(taper.phase).toBe('taper');
-    expect(taper.days.some((d) => d.workout.kind === 'quality')).toBe(false);
-    expect(taper.notes.some((n) => n.includes('Taper bez kvaliteta'))).toBe(true);
+    // 10K-08 (T1): bazni plan je drugi (lagan ≤ 0,8 × dugi) — taper ima T kontinuirano 1,5 km (≈ 60 % poslednje T doze,
+    // min 1,5 km, D31), koji staje u plafon 10 % cilja; 10k-v2.9.0: taper bez kvaliteta.
+    expect(
+      taper.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.dose?.doseM)
+    ).toEqual([1500]);
+    expect(taper.notes.some((n) => n.includes('T kontinuirano ≈ 60 %'))).toBe(true);
   });
 });
 
 describe('N-a × D30b (odluka organizatora): izuzetak invarijante samo za trkačku nedelju skraćenu po D23', () => {
-  const D23 = 'Trkačka nedelja skraćena: taper je imao dane odmora/bola (D23).';
+  const D23 = 'Trkačka nedelja skraćena: taper je imao dane odmora/bola.';
   const run = (id: string) => {
     const b = earlyGridBases().find((x) => x.id === id)!;
     const r0 = generateTenKV2(b.input);
@@ -200,7 +205,7 @@ describe('06e (10k-v2.5.2, pouka 34): umor sa asOf pre starta — 10k-v2.5.1 odb
     expect([w1!.deload, w1!.targetKm]).toEqual([true, 14.4]);
     expect(w1!.days.some((d) => d.workout.kind === 'quality')).toBe(false);
     expect(kinds(w1!).sort()).toEqual(kinds(p0.weeks[0]!).sort());
-    expect(w1!.notes.some((n) => n.includes('Uvod (D28)'))).toBe(true);
+    expect(w1!.notes.some((n) => n.includes('Uvod: '))).toBe(true);
     expect([w2!.deload, w2!.targetKm]).toEqual([false, p0.weeks[0]!.targetKm]);
     expect(w2!.days.some((d) => d.workout.kind === 'quality')).toBe(false);
   });

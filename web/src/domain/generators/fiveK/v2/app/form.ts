@@ -2,6 +2,7 @@
    plana, primenjeni rezultati adaptacije, novi rezultati koji čekaju prilagođavanje) i ocena cilja v2 doslovno. Lanac
    forme iz treninga (v1) se ne koristi. */
 
+import { resultUse } from '../assess.ts';
 import { raceTimeForVdot, vdotFromResult } from '../paces.ts';
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import { weekLabel } from '../input.ts';
@@ -9,7 +10,6 @@ import { baseVdot, vdotAt } from '../steps.ts';
 import type { FiveKV2Plan } from '../types.ts';
 import type { GenPlanState, IsoDate, LogEntry, T3kRecord } from '../../exchange.ts';
 import { v2Of } from './adapt.ts';
-import { diffDays } from './date.ts';
 import { buildFacts } from './facts.ts';
 import { goalOf, prefixOf } from './plan.ts';
 
@@ -86,8 +86,10 @@ export function formHistory(src: {
   ).facts.results;
   for (const r of facts) {
     if (used.has(`${r.date}|${r.distM}|${r.sec}`)) continue;
-    const fresh = diffDays(r.date as IsoDate, src.today) <= P.adapt.resultMaxAgeDays;
-    const newer = lastUsed === null || r.date > lastUsed;
+    // 5k-v2.11.0 (Z3): odluka jezgra (assess.resultUse) — Forma ne piše „čeka prilagođavanje" za rezultat koji jezgro
+    // ne primenjuje (npr. VDOT van opsega).
+    const use = cont ? resultUse(cont, r, src.today) : null;
+    const pending = use === 'apply' && (lastUsed === null || r.date > lastUsed);
     points.push({
       date: r.date,
       vdot: round1(vdotFromResult(r.distM, r.sec)),
@@ -95,11 +97,13 @@ export function formHistory(src: {
       label: `${r.kind === 'test' ? 'Test' : 'Trka'} ${r.distM / 1000}K ${mmss(r.sec)}${
         v2.planType === 'runWalk' && !cont
           ? ' — plan trčanje/hodanje ne koristi tempo'
-          : fresh && newer
+          : pending
             ? ' — čeka prilagođavanje plana'
-            : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
+            : use === 'outOfRange'
+              ? ` — ne menja tempo (VDOT van opsega plana ${P.input.vdot.min}–${P.input.vdot.max})`
+              : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
       }`,
-      status: fresh && newer && cont ? 'pending' : 'old'
+      status: pending ? 'pending' : 'old'
     });
   }
   points.sort((a, b) => a.date.localeCompare(b.date));

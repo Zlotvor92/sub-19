@@ -1,0 +1,7 @@
+{"controlRejected":0,"flows":3840,"refused":3840,"restored":0,"invalid":0,"nextRejected":0,"stampMismatch":0,"undoFlows":960,"undoRestored":0}
+razlozi odbijanja: {
+ "Plan je prilagođavan posle sačuvane verzije; vraćanje bi spojilo dva različita plana. Vratiti se može samo ver": 3840
+}
+greške validatora na vraćenom planu (broj tokova po pravilu): {}
+sledeća adaptacija odbijena (pravilo/kod → broj): {}
+sledeća adaptacija odbijena po (snimak/scenario): {}

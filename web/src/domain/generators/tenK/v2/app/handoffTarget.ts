@@ -18,8 +18,10 @@
    Pokrivenost: 10K v2 nema pojam nepotpune pripreme (plan koji generator i adaptacija prihvate je plan 10K po
    pravilima 10K v2), pa je prihvaćen plan 'full'. */
 
+import { userText } from './format.ts';
 import { adaptTenKV2 } from '../adapt.ts';
 import { generateTenKV2 } from '../generate.ts';
+import { kmFit, TEN_K_V2_POLICY as P } from '../policy.ts';
 import type { Weekday } from '../types.ts';
 import { addDays, isIsoDate } from './date.ts';
 import { confirmedBreakFact } from './facts.ts';
@@ -54,7 +56,7 @@ export interface HandoffFacts {
 export type Coverage = 'full' | 'distance' | 'insufficient';
 
 const fail = (reasons: readonly { message: string }[]): { error: string } => ({
-  error: reasons.map((r) => r.message).join(' ')
+  error: reasons.map((r) => userText(r.message)).join(' ')
 });
 
 /** Činjenice za adaptaciju cilja: sirove činjenice izvora bez `dayId` i bez zaključanih dana izvora; potvrđena pauza
@@ -75,13 +77,19 @@ export function targetFacts(facts: HandoffFacts): Record<string, unknown> {
   };
 }
 
-/** Ulaz 10K v2 iz činjenica ulaza izvora (bez izvedenih polja izvora). */
+/** Ulaz 10K v2 iz činjenica ulaza izvora (bez izvedenih polja izvora). Cilj sam određuje politiku (uslov 5, 10K-07
+ *  Z5): (a) rezultat distance koju 10K v2 ne koristi (npr. maraton) se ne prenosi — plan je po osećaju (lak tempo
+ *  izvora), ne odbijanje; (b) početnik izvora čiji obim je iznad reda početnika 10K (D28, `kmFit`, ista funkcija kao
+ *  ulaz) dobija plan bez oznake početnika, kako poruka WEEKLY_KM_TOO_HIGH i kaže. */
 export function targetInput(
   input: HandoffInput,
   start: string,
   weekOffset = 0
 ): Record<string, unknown> {
-  const pb = input.pb;
+  const pb = input.pb && P.input.resultDistancesM.includes(input.pb.distM) ? input.pb : undefined;
+  const days = input.runDows?.length ?? 0;
+  const beginner =
+    input.trainedRecently === false && kmFit(days, 'beginner', input.weeklyKm) !== 'high';
   return {
     startDate: start,
     raceDate: input.raceDate,
@@ -90,7 +98,7 @@ export function targetInput(
     currentWeeklyKm: input.weeklyKm,
     recentResult: pb && pb.date ? { distanceM: pb.distM, timeSec: pb.sec, date: pb.date } : null,
     ...(input.easyPaceSecPerKm != null ? { easyPaceSecPerKm: input.easyPaceSecPerKm } : {}),
-    experience: input.trainedRecently === false ? 'beginner' : 'regular',
+    experience: beginner ? 'beginner' : 'regular',
     goalTimeSec: null,
     // 3i: broj nedelja prefiksa izvora — poznat uslov jezgra (broj nedelje u porukama = broj u kalendaru).
     ...(weekOffset > 0 ? { weekOffset } : {})

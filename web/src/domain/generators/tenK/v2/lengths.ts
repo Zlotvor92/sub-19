@@ -3,6 +3,8 @@
    početnik 90 min, D28 — i da svaki lagan ostane ≥ 3 km); lagani dele ostatak na jednake delove (razlika
    ≤ 0,1 km). Dugi ≥ svaki lagan je tvrdo pravilo: kad ne može da se ispuni, nedelja nije izvodljiva (D6). */
 
+import { daysBetween } from './dates.ts';
+import { midEasy } from './paces.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
 import type { Paces, PlanDay } from './types.ts';
 
@@ -52,15 +54,77 @@ function withEasy(rest100: number, cap10: number, n: number): Lengths | null {
   return { long10, easy10 };
 }
 
-/** Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + `easyDays` laganih. */
+/**
+ * T1 (10K-08, organizator; jedna funkcija za konstruktor i validator): granice laganog dana NEDELJE IZGRADNJE (ne
+ * rasterećenje, taper, trkačka) [0,1 km] — najkraći max(3 km, 20 min laganim tempom), najduži 0,8 × dugi iste nedelje.
+ */
+export function buildEasyBounds10(long10: number, p: Paces): { min10: number; max10: number } {
+  return {
+    min10: Math.max(EASY_MIN10, Math.ceil((P.lengths.easyMinSec / midEasy(p)) * 10 - EPS)),
+    max10: Math.floor(P.lengths.easyMaxLongShare * long10 + EPS)
+  };
+}
+
+/**
+ * Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + do `easyDays` laganih. Dugi kao i do sada (withEasy: ≤ plafon
+ * D13, lagani ≥ 3 km); T1 (10K-08): ostatak u lagane u granicama buildEasyBounds10 — premali za sve lagane dane → manje
+ * laganih dana (ostali su odmor; `easy10` kraći od `easyDays`), prevelik (lagan > 0,8 × dugi) → null: cilj nije
+ * izvodljiv, volume.fit10 traži najbliži izvodljiv (planirano < cilj po pravilu, CAPACITY_LIMITED uz preporuku); ni
+ * jedan lagan ne staje → svi lagani dani odmor, planirano < cilj (easyRestShort). Dugi je uvek dužina D13 za stvaran
+ * broj laganih dana (≤ plafon udela/105 min); višak se u dugi ne prebacuje.
+ */
 export function buildLengths(
   target10: number,
   quality100: number,
   easyDays: number,
   rule: LongRule,
-  p: Paces
+  p: Paces,
+  t1 = true
 ): Lengths | null {
-  return withEasy(target10 * 10 - quality100, longCap10(target10, rule, p), easyDays);
+  const rest100 = target10 * 10 - quality100;
+  const cap10 = longCap10(target10, rule, p);
+  const base = withEasy(rest100, cap10, easyDays);
+  if (!base || easyDays === 0 || !t1) return base;
+  for (let n = easyDays; n >= 1; n--) {
+    // Dugi po D13 za stvaran broj laganih dana (withEasy: ≤ plafon, ostavlja lagane ≥ 3 km) — nikad iznad plafona.
+    const len = n === easyDays ? base : withEasy(rest100, cap10, n);
+    if (!len) return null;
+    const { min10, max10 } = buildEasyBounds10(len.long10, p);
+    if (len.easy10[0]! > max10) {
+      // Dugi na plafonu: sa manje laganih dana lagan je još duži — cilj nije izvodljiv. Inače je dugi skraćen da lagani
+      // ostanu ≥ 3 km; sa manje laganih dana dugi raste (do plafona).
+      if (len.long10 >= cap10) return null;
+      continue;
+    }
+    if (len.easy10[n - 1]! >= min10) return len;
+  }
+  // Ni jedan lagan od 20 min ne staje: svi lagani dani su odmor, dugi po D13 (≤ plafon, ≤ ostatak), ostatak iznad
+  // plafona dugog se ne planira — planirano < cilj (easyRestShort, upozorenje validatora).
+  const long10 = Math.min(cap10, Math.floor(rest100 / 10));
+  return long10 < EASY_MIN10 ? null : { long10, easy10: [] };
+}
+
+/** T1: nedelja izgradnje bez ijednog laganog dana iako ih šablon ima — ostatak cilja (cilj − planirano) manji od
+    najkraćeg laganog (buildLengths). Jedan predikat za validator (planirano < cilj → upozorenje). */
+export function easyRestShort(
+  target10: number,
+  planned100: number,
+  easyCount: number,
+  long10: number,
+  p: Paces
+): boolean {
+  const gap100 = target10 * 10 - planned100;
+  return easyCount === 0 && gap100 > 0 && gap100 < buildEasyBounds10(long10, p).min10 * 10;
+}
+
+/** T1: koji lagani datumi ostaju kad nedelja izgradnje ima `n` laganih dana od `dates` (rastuće): odmor je prvo dan pre
+    dugog (`longDate`), pa najraniji. */
+export function keptEasyDates(dates: readonly string[], n: number, longDate: string): string[] {
+  if (n >= dates.length) return [...dates];
+  const prev = dates.filter((d) => daysBetween(d, longDate) === 1);
+  const order = [...prev, ...dates.filter((d) => !prev.includes(d))];
+  const drop = new Set(order.slice(0, dates.length - n));
+  return dates.filter((d) => !drop.has(d));
 }
 
 /** D7: najduži dugi plana [0,1 km] — JEDNA definicija (10k-v2.5.1) za konstruktor i validator: dani uloge

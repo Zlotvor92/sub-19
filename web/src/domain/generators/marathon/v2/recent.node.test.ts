@@ -1,4 +1,4 @@
-/* Mreža skorašnjeg najdužeg trka (M13a, MAR-02): 35 910 ulaza. Brz nivo: svaki 10. unutar broja dana i r;
+/* Mreža skorašnjeg najdužeg trka (M13a, MAR-02): 35 910 ulaza. Brz nivo: svaki 30. unutar broja dana i r;
    pun nivo: deo 1/3 ovde, delovi 2–3 u recent.<k>.full.node.test.ts. */
 
 import { existsSync } from 'node:fs';
@@ -12,7 +12,7 @@ describeRecent(
   `mreža skorašnjeg najdužeg (M13a): 35 910 ulaza${FULL ? ` — deo 1/${RECENT_PARTS}` : ' — uzorak'}`,
   FULL
     ? part(RECENT, 1, RECENT_PARTS)
-    : sample(RECENT, 10, (g) => `${g.days}-${String(g.input['recentLongRunKm'])}`)
+    : sample(RECENT, 30, (g) => `${g.days}-${String(g.input['recentLongRunKm'])}`)
 );
 
 it('mreža M13a: 35 910 ulaza; delovi 2…N postoje', () => {

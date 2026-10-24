@@ -116,8 +116,9 @@ export function adaptInvariants(
         : Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
     )
       bad.push(`planirano ≠ cilj ned ${w.index}`);
-    // Uslov 8 i A9.
-    if (w.phase !== 'race' && w.plannedKm + EPS < min && !(w.limits?.rest?.length ?? 0))
+    // Uslov 8 i A9 (u koraku 0,1 km, kao validator). Krug T (T1 — lagani u nedelji bola veći, × 0,7 ih skraćuje):
+    // nedelja sa danima bola ili odmora sme ispod minimuma (pouka 25, upozorenje WEEK_MIN_LIMITS validatora).
+    if (w.phase !== 'race' && Math.round(w.plannedKm * 10) < Math.round(min * 10) && !limited)
       bad.push(`nedelja < minimum ned ${w.index}`);
     if (w.phase !== 'race' && w.index >= first && w.targetKm + EPS < min)
       bad.push(`cilj < minimum ned ${w.index}`);
@@ -183,7 +184,8 @@ export function adaptInvariants(
     taper.targetKm > lastBuild.targetKm + EPS
   )
     bad.push('taper > poslednja izgradnja');
-  extra(before, after, steps, mixed, t, locked, bad);
+  // HM-09 (C9/Z6): zaštićeni = zaključani i urađeni (činjenice).
+  extra(before, after, steps, mixed, t, new Set([...locked, ...done]), bad);
   return bad;
 }
 
@@ -315,6 +317,9 @@ function extra(
   W.forEach((w, i) => {
     const l = longs[i];
     if (l == null || mustDay(w.endDate) <= t) return;
+    // HM-09 (C9): zaključan ili urađen dugi je činjenica (zaštićen) — ne sudi mu se.
+    const ld = w.days.find((d) => d.role === 'long')!.date;
+    if (locked.has(ld)) return;
     const prev = longs.slice(Math.max(0, i - 4), i).filter((x): x is number => x !== null);
     if (r != null && i < 4) prev.push(Math.round(r * 10));
     // Pouka 34 (Faza 4a N10.3): posle umora pre starta dugi reference (ned 1 generatora) je „nedelja 0".
@@ -331,6 +336,9 @@ function extra(
   );
   let prev: number | null = null;
   for (const w of W) {
+    // HM-10: rasteretna nedelja početka koraka sa startom (A3) postavlja osnovu rasta (volume.leaveAdaptWeek, reset).
+    if (isBuild(w) && w.deload && steps.some((s) => s.startKm !== null && s.fromWeek === w.index))
+      prev = Math.round(w.targetKm * 10);
     if (!isBuild(w) || w.deload) continue;
     const t10 = Math.round(w.targetKm * 10);
     if (prev !== null && w.index > reducedFrom && !mixed.has(w.index)) {
@@ -340,11 +348,17 @@ function extra(
           .filter((s) => s.fromWeek <= w.index && s.levelKm !== null)
           .map((s) => Math.round(s.levelKm! * 10))
       );
-      const normal = prev + Math.min(40, Math.max(10, Math.round(prev * (beg ? 0.05 : 0.06))));
+      // H17 (owner K1): početnik najviše 2,0 km rasta (kao gridInvariants), ostali 4,0 km.
+      const normal =
+        prev + Math.min(beg ? 20 : 40, Math.max(10, Math.round(prev * (beg ? 0.05 : 0.06))));
       const back = Math.min(level, prev + Math.max(10, Math.round(prev * 0.1)));
       // H6: nedelja na najbližem izvodljivom cilju (fitted, napomena) — poredi se cilj po pravilu.
       const rule10 = w.fitted !== null ? Math.round(w.nominalKm * 10) : t10;
-      if (rule10 > Math.max(normal, back)) bad.push(`povratni rast > nivo ned ${w.index}`);
+      // HM-10: nedelja početka koraka sa startom (A3) nosi start koraka, ne rast od prethodne (koja može biti
+      // spuštena po T1).
+      const reset = steps.some((s) => s.startKm !== null && s.fromWeek === w.index);
+      if (rule10 > Math.max(normal, back) && !reset)
+        bad.push(`povratni rast > nivo ned ${w.index}`);
     }
     prev = t10;
   }

@@ -1,0 +1,100 @@
+{
+ "dist": "5K",
+ "kG": 1,
+ "kA": 60,
+ "M1_laganJednakDugi": {
+  "plans": 3816,
+  "ok": 3786,
+  "withEq": 634,
+  "withNear": 1090,
+  "byDays": {
+   "3R": [
+    520,
+    72
+   ],
+   "3F": [
+    440,
+    48
+   ],
+   "4R": [
+    660,
+    44
+   ],
+   "4F": [
+    528,
+    76
+   ],
+   "5R": [
+    550,
+    66
+   ],
+   "5F": [
+    440,
+    152
+   ],
+   "3B": [
+    360,
+    86
+   ],
+   "4B": [
+    288,
+    90
+   ]
+  },
+  "ex": [
+   "r-d3-6w-25km-v32-0",
+   "f-d3-6w-25km-e480-0",
+   "r-d3-6w-25km-v32-1",
+   "f-d3-6w-25km-e480-1",
+   "r-d3-6w-30km-v32-0",
+   "r-d3-6w-30km-v38-0"
+  ]
+ },
+ "M5_laganUzDugiSusedniDan": {
+  "plans": 308,
+  "weeks": 741,
+  "ex": [
+   "r-d4-6w-35km-v32-0",
+   "f-d4-6w-35km-e420-0",
+   "f-d4-6w-35km-e480-0",
+   "r-d4-6w-40km-v32-0",
+   "f-d4-6w-40km-e360-0",
+   "f-d4-6w-40km-e420-0"
+  ]
+ },
+ "M6_laganKraciOd20min": {
+  "plans": 326,
+  "minSec": 832,
+  "ex": [
+   "r-d3-6w-12km-v45-0",
+   "f-d3-6w-12km-e300-0",
+   "f-d3-6w-12km-e360-0",
+   "r-d3-6w-12km-v45-1",
+   "f-d3-6w-12km-e300-1",
+   "f-d3-6w-12km-e360-1"
+  ]
+ },
+ "M2_M3_napomene": {
+  "flows": 5170,
+  "ok": 5170,
+  "notePlannedMismatch": 1122,
+  "notePlannedMismatchOver015": 1116,
+  "flowsWithMismatch": 1114,
+  "deloadNoteOnNonDeload": 2961,
+  "flowsWithDeloadNote": 2221,
+  "ex2": [
+   "r-d3-6w-12km-v32-0/painPause@2026-11-11 ned 2: napomena 9 ≠ planirano 9.6",
+   "r-d3-6w-12km-v32-0/pain5@2026-11-18 ned 3: napomena 13 ≠ planirano 13.32",
+   "r-d3-6w-12km-v32-0/pain8@2026-11-18 ned 3: napomena 10 ≠ planirano 10.32",
+   "r-d3-6w-12km-v32-0/painPause@2026-11-18 ned 3: napomena 9 ≠ planirano 10.12",
+   "r-d3-6w-12km-v32-0/pain5@2026-11-25 ned 4: napomena 13.8 ≠ planirano 14.16"
+  ],
+  "ex3": [
+   "r-d3-6w-12km-v32-0/pain5@2026-11-11 ned 3 (peak): Rasterećenje: I, kratak T (≥ 1 km) ni R (≥ 1.2 km) ne staju u budžet — kvalitet ",
+   "r-d3-6w-12km-v32-0/painPause@2026-11-11 ned 4 (peak): Rasterećenje: I, kratak T (≥ 1 km) ni R (≥ 1.2 km) ne staju u budžet — kvalitet ",
+   "r-d3-6w-12km-v32-0/pause20@2026-11-11 ned 4 (peak): Rasterećenje: I, kratak T (≥ 1 km) ni R (≥ 1.2 km) ne staju u budžet — kvalitet ",
+   "r-d3-6w-12km-v32-0/pain5@2026-11-15 ned 4 (peak): Rasterećenje: I, kratak T (≥ 1 km) ni R (≥ 1.2 km) ne staju u budžet — kvalitet ",
+   "r-d3-6w-12km-v32-0/pain8@2026-11-15 ned 4 (peak): Rasterećenje: I, kratak T (≥ 1 km) ni R (≥ 1.2 km) ne staju u budžet — kvalitet "
+  ]
+ }
+}

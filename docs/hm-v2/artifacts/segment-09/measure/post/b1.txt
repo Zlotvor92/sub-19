@@ -1,0 +1,9 @@
+{
+ "stride": 4,
+ "bases": 6281,
+ "flows": 13860,
+ "deloadLongRejected": 0,
+ "outcomes": {
+  "ok-K3x2": 13860
+ }
+}

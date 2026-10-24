@@ -1,0 +1,385 @@
+{
+ "dist": "10K",
+ "seed": 20261023,
+ "from": 0,
+ "to": 2000,
+ "steps": 7667,
+ "same": {
+  "NO_FACTS": [
+   3843,
+   0
+  ],
+  "PAUSE": [
+   278,
+   9
+  ],
+  "NEW_RESULT": [
+   1407,
+   0
+  ],
+  "PAIN": [
+   750,
+   8
+  ],
+  "UNDER_EXECUTION": [
+   405,
+   391
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   137,
+   134
+  ],
+  "PAIN+PAUSE": [
+   64,
+   1
+  ],
+  "FATIGUE": [
+   188,
+   15
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   98,
+   0
+  ],
+  "NEW_RESULT+PAIN": [
+   113,
+   0
+  ],
+  "NEW_RESULT+PAUSE": [
+   118,
+   1
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   12,
+   0
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   10,
+   0
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   73,
+   72
+  ],
+  "FATIGUE+PAIN": [
+   14,
+   0
+  ],
+  "FATIGUE+NEW_RESULT": [
+   36,
+   2
+  ],
+  "PAIN+TEST_MOVED": [
+   29,
+   0
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   10,
+   10
+  ],
+  "FATIGUE+TEST_MOVED": [
+   5,
+   0
+  ],
+  "OVER_EXECUTION": [
+   25,
+   0
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   4,
+   1
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   1,
+   0
+  ],
+  "PAUSE+TEST_MOVED": [
+   8,
+   1
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   7,
+   0
+  ],
+  "TEST_MOVED": [
+   12,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION+PAIN": [
+   2,
+   0
+  ],
+  "OVER_EXECUTION+PAIN": [
+   5,
+   0
+  ],
+  "PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   1,
+   1
+  ],
+  "TEST_MOVED+UNDER_EXECUTION": [
+   3,
+   3
+  ],
+  "PAIN+PAUSE+TEST_MOVED": [
+   2,
+   1
+  ],
+  "NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   6,
+   6
+  ],
+  "NEW_RESULT+OVER_EXECUTION+TEST_MOVED": [
+   1,
+   0
+  ]
+ },
+ "next": {
+  "NO_FACTS": [
+   1369,
+   1
+  ],
+  "NEW_RESULT": [
+   546,
+   1
+  ],
+  "PAIN": [
+   479,
+   14
+  ],
+  "PAUSE": [
+   110,
+   4
+  ],
+  "PAIN+PAUSE": [
+   49,
+   1
+  ],
+  "NEW_RESULT+PAIN": [
+   76,
+   0
+  ],
+  "UNDER_EXECUTION": [
+   154,
+   142
+  ],
+  "NEW_RESULT+TEST_MOVED": [
+   46,
+   0
+  ],
+  "NEW_RESULT+PAUSE": [
+   41,
+   1
+  ],
+  "NEW_RESULT+PAIN+PAUSE": [
+   10,
+   0
+  ],
+  "FATIGUE": [
+   86,
+   7
+  ],
+  "PAIN+UNDER_EXECUTION": [
+   50,
+   47
+  ],
+  "FATIGUE+PAIN": [
+   10,
+   1
+  ],
+  "FATIGUE+NEW_RESULT": [
+   13,
+   0
+  ],
+  "NEW_RESULT+UNDER_EXECUTION": [
+   45,
+   44
+  ],
+  "OVER_EXECUTION": [
+   10,
+   0
+  ],
+  "FATIGUE+NEW_RESULT+TEST_MOVED": [
+   1,
+   0
+  ],
+  "NEW_RESULT+PAIN+TEST_MOVED": [
+   5,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION": [
+   4,
+   0
+  ],
+  "PAUSE+TEST_MOVED": [
+   2,
+   0
+  ],
+  "PAIN+TEST_MOVED": [
+   14,
+   0
+  ],
+  "TEST_MOVED": [
+   2,
+   0
+  ],
+  "NEW_RESULT+OVER_EXECUTION+PAIN": [
+   2,
+   0
+  ],
+  "OVER_EXECUTION+PAIN": [
+   4,
+   0
+  ],
+  "FATIGUE+TEST_MOVED": [
+   3,
+   0
+  ],
+  "PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   1,
+   1
+  ],
+  "TEST_MOVED+UNDER_EXECUTION": [
+   2,
+   2
+  ],
+  "NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   2,
+   2
+  ],
+  "NEW_RESULT+OVER_EXECUTION+TEST_MOVED": [
+   1,
+   0
+  ],
+  "NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   2,
+   2
+  ],
+  "NEW_RESULT+PAUSE+TEST_MOVED": [
+   1,
+   0
+  ],
+  "PAIN+PAUSE+TEST_MOVED": [
+   1,
+   1
+  ]
+ },
+ "ex": {
+  "same UNDER_EXECUTION": [
+   "8/3",
+   "10/1"
+  ],
+  "same NEW_RESULT+UNDER_EXECUTION": [
+   "8/4",
+   "17/2"
+  ],
+  "next UNDER_EXECUTION": [
+   "20/1",
+   "28/2"
+  ],
+  "same PAIN": [
+   "30/4",
+   "112/2"
+  ],
+  "next PAIN": [
+   "30/4",
+   "35/1"
+  ],
+  "same PAIN+UNDER_EXECUTION": [
+   "34/3",
+   "40/1"
+  ],
+  "next PAIN+UNDER_EXECUTION": [
+   "34/3",
+   "83/1"
+  ],
+  "same PAUSE": [
+   "72/5",
+   "560/4"
+  ],
+  "next NEW_RESULT+UNDER_EXECUTION": [
+   "100/1",
+   "104/1"
+  ],
+  "same NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "161/5",
+   "405/4"
+  ],
+  "same FATIGUE": [
+   "218/0",
+   "309/2"
+  ],
+  "next FATIGUE+PAIN": [
+   "233/2"
+  ],
+  "same PAUSE+TEST_MOVED": [
+   "481/1"
+  ],
+  "same NEW_RESULT+PAUSE+TEST_MOVED": [
+   "518/1"
+  ],
+  "same NEW_RESULT+PAUSE": [
+   "520/1"
+  ],
+  "next NEW_RESULT+PAUSE": [
+   "520/1"
+  ],
+  "same FATIGUE+NEW_RESULT": [
+   "607/1",
+   "1642/3"
+  ],
+  "next FATIGUE": [
+   "607/2",
+   "856/2"
+  ],
+  "next NEW_RESULT": [
+   "874/4"
+  ],
+  "same PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   "902/4"
+  ],
+  "next PAIN+TEST_MOVED+UNDER_EXECUTION": [
+   "902/4"
+  ],
+  "same TEST_MOVED+UNDER_EXECUTION": [
+   "902/5",
+   "1034/1"
+  ],
+  "next TEST_MOVED+UNDER_EXECUTION": [
+   "902/5",
+   "1034/1"
+  ],
+  "next NEW_RESULT+PAIN+UNDER_EXECUTION": [
+   "1065/1",
+   "1494/2"
+  ],
+  "next PAUSE": [
+   "1079/4",
+   "1452/2"
+  ],
+  "same PAIN+PAUSE": [
+   "1249/2"
+  ],
+  "next PAIN+PAUSE": [
+   "1249/2 odbijeno PLAN_VIOLATES_POLICY"
+  ],
+  "same NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   "1315/3",
+   "1405/2"
+  ],
+  "next NEW_RESULT+TEST_MOVED+UNDER_EXECUTION": [
+   "1405/2",
+   "1669/3"
+  ],
+  "same PAIN+PAUSE+TEST_MOVED": [
+   "1867/1"
+  ],
+  "next PAIN+PAUSE+TEST_MOVED": [
+   "1867/1"
+  ],
+  "next NO_FACTS": [
+   "1998/5"
+  ]
+ },
+ "seconds": 504.063
+}

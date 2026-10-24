@@ -114,7 +114,8 @@ describe('Plan → Prilagodi plan (maraton v2)', () => {
     expect(getPlanRevisions(after)).toHaveLength(1);
     expect(after.weeks.slice(0, 2)).toEqual(p.weeks.slice(0, 2));
     expect(after.weeks.slice(2)).not.toEqual(p.weeks.slice(2));
-    // Vraćanje revizije (sledećeg dana): pregled pa potvrda; budući dani iz sačuvane verzije.
+    // MAR-10 (Z4): vraćanje revizije (sledećeg dana) = spoj → validatePlan jezgra; pregled pa potvrda; budući dani iz
+    // sačuvane verzije.
     useUIStore.setState({ today: '2026-11-16' });
     await user.click(
       screen.getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-11-15: pauza' })

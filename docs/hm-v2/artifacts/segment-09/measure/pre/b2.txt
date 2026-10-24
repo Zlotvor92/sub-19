@@ -1,0 +1,9 @@
+{
+ "stride": 1,
+ "recent": [],
+ "flows": 19490,
+ "out": {
+  "REJ WEEK_INFEASIBLE@2": 19490
+ }
+}
+REJ WEEK_INFEASIBLE@2: d3-10w-25km-v30-A-sun asOf 2026-11-05: Nedelja 2: nijedan cilj od 12 km naviše ne može da se sastavi po pravilima.
