@@ -69,7 +69,9 @@ JSON niz. Putanje su relativne na `web/`.
   primenjuje redom; `find` se broji u sadržaju posle prethodnih izmena. Ako bilo koja izmena ne prođe, sabotaža se ne
   primenjuje uopšte (GREŠKA), alat ide dalje, izlaz je ≠ 0.
 - Poklapanje je bajt-tačno (razmaci, `\n`); fajl mora biti ispravan UTF-8. Izmena koja ne menja fajl je greška.
-- `tests`: postojeći fajlovi; `*.full.node.test.ts` samo uz `--full` (u brzom nivou nisu u projektu `node`).
+- `tests`: postojeći fajlovi; `*.full.node.test.ts` samo uz `--full` (u brzom nivou nisu u projektu `node`). Alat
+  postavlja `TEST_V1=1`, pa i testovi projekta `v1` (poređenje v1 sa referencama, u brzom nivou inače isključen) mogu
+  da budu cilj sabotaže.
 - Dodatni ključevi (npr. `"opis"`) se ignorišu; imena moraju biti jedinstvena.
 - Novu sabotažu prvo proveri sa `--dry-run --only <ime>`.
 

@@ -76,14 +76,34 @@ const TEXT_T: [RegExp, string][] = [
     '(najduži dugi prethodne 4 nedelje ili skorašnji najduži trk)'
   ]
 ];
-const oldText = <T>(v: T): T =>
-  (typeof v === 'string'
-    ? TEXT_T.reduce((s, [re, to]) => s.replace(re, to), v as string)
-    : Array.isArray(v)
-      ? v.map(oldText)
-      : v && typeof v === 'object'
-        ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, oldText(x)]))
-        : v) as T;
+/** Svaki izraz iz TEXT_T sadrži jedno od ovoga, pa niska bez njih ostaje ista. */
+const TEXT_T_HINT = /dugo trčanje|najduže trčanje|zavisi od rezultata/;
+/** Isti rezultat kao zamena u svakoj niski kopije plana, ali deo stabla bez izmene ostaje isti objekat (plan je već
+    kopija — before07). Ranije: osam regex zamena nad svakom niskom i nov objekat za svaki čvor (~⅓ vremena mreže). */
+const oldText = <T>(v: T): T => {
+  if (typeof v === 'string')
+    return (
+      TEXT_T_HINT.test(v) ? TEXT_T.reduce((s, [re, to]) => s.replace(re, to), v as string) : v
+    ) as T;
+  if (Array.isArray(v)) {
+    let out: unknown[] | undefined;
+    v.forEach((x: unknown, i) => {
+      const y = oldText(x);
+      if (y !== x) (out ??= v.slice())[i] = y;
+    });
+    return (out ?? v) as T;
+  }
+  if (v && typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    let out: Record<string, unknown> | undefined;
+    for (const [k, x] of Object.entries(o)) {
+      const y = oldText(x);
+      if (y !== x) (out ??= { ...o })[k] = y;
+    }
+    return (out ?? v) as T;
+  }
+  return v;
+};
 
 /** F1 (marathon-v2.8.0, 04-final): vraća SAMO tekst — „Vrh X km umesto do Y km" u napomeni i upozorenju kapaciteta
     (i kad su X i Y isti) i MARATHON_LONG_SHORT ne-početnika u obliku pre F1 (uvek „udeo dugog"). Početnik se menja i
@@ -109,6 +129,14 @@ function beforeFinal(p: MarathonV2Plan): MarathonV2Plan {
     }
   }
   return p;
+}
+
+/** before07 jednom po planu mreže: tri poređenja sa baznim linijama čitaju isti vraćeni plan (niko ga ne menja). */
+const before07Cache = new WeakMap<MarathonV2Plan, MarathonV2Plan>();
+function before07Of(p: MarathonV2Plan): MarathonV2Plan {
+  let q = before07Cache.get(p);
+  if (!q) before07Cache.set(p, (q = before07(p)));
+  return q;
 }
 
 /** MAR-07 (N11, pouka 14): plan u obliku pre MAR-07 — vraća SAMO tekstualne izmene upozorenja i napomena (MARATHON_LONG_SHORT
@@ -584,7 +612,7 @@ export function describeGrid(
 
     it(`= bazna linija ${baseline.split('/').pop()} (vrh, dugi, doza, rasterećenja, taper, upozorenja, heš plana)`, () => {
       // MAR-07: poređenje sa baznim linijama pre MAR-07 — tekst upozorenja/napomena vraćen (before07).
-      const rows = Object.fromEntries([...run.plans].map(([id, p]) => [id, rowOf(before07(p))]));
+      const rows = Object.fromEntries([...run.plans].map(([id, p]) => [id, rowOf(before07Of(p))]));
       if (WRITE) {
         expect(FULL && inputs.length === all.length).toBe(true);
         writeFileSync(baseline, `${JSON.stringify(rows, null, 0)}\n`);
@@ -608,7 +636,7 @@ export function describeGrid(
         const fields = (row: string): string => row.split('|').slice(0, -1).join('|');
         const bad: string[] = [];
         for (const [id, p07] of run.plans) {
-          const p = before07(p07);
+          const p = before07Of(p07);
           const row = base[id]!;
           const longer = row.split('|')[8]!.split('.').includes('LONG_SHORTER_THAN_QUALITY');
           const same = planHash02(p) === row.split('|').pop() && fields(rowOf(p)) === fields(row);
@@ -634,7 +662,7 @@ export function describeGrid(
         const bad: string[] = [];
         const fields = (row: string): string => row.split('|').slice(0, -1).join('|');
         for (const [id, p07] of run.plans) {
-          const p = before07(p07);
+          const p = before07Of(p07);
           // MAR-04b: plan sa danom kvaliteta dužim od dugog na bd07eec (van STABLE) sme da se promeni.
           if (!id.startsWith('d4-') || !STABLE.has(id)) continue;
           const old = id.slice(3);

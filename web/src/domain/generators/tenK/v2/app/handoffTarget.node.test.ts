@@ -61,7 +61,7 @@ const SOURCES: readonly Source[] = [
     },
     contract: (v2) => ({ ...hmContractInput(v2) }),
     facts: (v2, s, asOf) => hmFactsOf(v2, s as never, asOf),
-    inputs: () => TH.grid02Inputs().filter((_, i) => i % (FULL ? 89 : 307) === 41)
+    inputs: () => TH.grid02Inputs().filter((_, i) => i % (FULL ? 89 : 1229) === 41)
   },
   {
     name: 'MAR',
@@ -73,7 +73,7 @@ const SOURCES: readonly Source[] = [
     },
     contract: (v2) => ({ ...marContractInput(v2) }),
     facts: (v2, s, asOf) => TM.factsOf(v2, s as never, asOf),
-    inputs: () => TM.gridInputs().filter((_, i) => i % (FULL ? 97 : 389) === 48)
+    inputs: () => TM.gridInputs().filter((_, i) => i % (FULL ? 97 : 1553) === 48)
   }
 ];
 const v2Of = (s: Source, src: GenPlanState): V2 => (src as unknown as Record<string, V2>)[s.key]!;

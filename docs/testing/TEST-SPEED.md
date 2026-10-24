@@ -279,3 +279,92 @@ Run 665 (d473e5d) pao je na timeout beforeAll-a pod opterećenjem.
 Pokrivenost ista (isti `npm test`, isti fajlovi; zbir delova = svi fajlovi). Posledica: proverava se vrh grane (najnoviji push koji je čekao), ne svaki međukorak — organizator čita CI na vrhu
 grane.
 
+
+## 11. Ubrzanje 24. 10. (zahtev korisnika: „popravi sve što će ubrzati i optimizovati testove")
+
+Merenja: lokalno 4 jezgra, 3 radnika, serijski; CI = run 741 (`13ed1b3`, pre izmena). Pokrivenost punog nivoa ista:
+svi fajlovi, svi redovi, isti heševi; lokalno pun nivo posle izmena: 517 fajlova, 4393 testa, sve prolazi (65 min).
+
+| | pre | posle |
+|---|---|---|
+| brz nivo, ceo (`vitest run`, isti stroj) | 596 s zid, 31 m 39 s CPU (341 fajl) | **339 s** zid, 19 m 24 s CPU (333 fajla) |
+| brz nivo, samo generatori | 445–526 s zid, 24 m 46 s CPU | **241 s** zid, 13 m 25 s CPU |
+| CI delovi punog nivoa | 18–32 min (zbir 3212–5297 s po delu, podela po broju fajlova) | v. § 11.1 (podela po trajanju) |
+
+### 11.1 Podela CI delova po trajanju (`web/scripts/testSequencer.ts`)
+
+- Vitest `--shard` deli po BROJU fajlova (sortiranih po hešu putanje), a bez keša pokreće VEĆE fajlove prvo — delovi
+  punog nivoa (`*.full.node.test.ts`, 15–30 redova, a do 490 s) padali su nasumično i kretali poslednji. Run 741: deo 5 =
+  5297 s zbira (32 min, rep: HM `segment07b.2` 338 s i `fatigueRepeat.2` 207 s), deo 6 = 3212 s.
+- `DurationSequencer` (vitest `sequence.sequencer`): `shard` raspoređuje pohlepno po težini iz
+  `web/scripts/test-durations.json` (najteži prvo, u deo sa najmanjim zbirom; nepoznat fajl = 1 s); `sort` pokreće pale
+  prvo, pa najduže (keš poslednjeg lokalnog pokretanja, inače tabela). Svaki posao računa istu podelu (isti fajlovi, ista
+  tabela); unija delova = svi fajlovi bez preklapanja — dokazuje `web/scripts/testSequencer.node.test.ts`.
+- Tabela: reporter `web/scripts/test-durations.mjs` (trajanje = sakupljanje + testovi + `beforeAll`), osvežavanje:
+  `TEST_FULL=1 TEST_V1=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs`. Upisana iz punog
+  lokalnog pokretanja posle izmena (517 fajlova, zbir 11 516 s): 6 delova po 28,2 min zbira ≈ 9,4 min zida lokalno.
+
+### 11.2 Projekat `v1`
+
+- Testovi poređenja v1 generatora sa referencama starog koda (`generators/*/equivalence*`, `otherDistances*`,
+  `runtimeIsolation*`, `personalPlan`, `guidance`, `training/generator/generator.{differential,fingerprint}`; 46 fajlova
+  u punom nivou) su vitest projekat `v1`: brz nivo ga isključuje (osim `TEST_V1=1`), pun ga uključuje (osim
+  `TEST_V1=0`). `npm run test:v1` = pun nivo samo tog projekta. Sabotaže postavljaju `TEST_V1=1`.
+- v1 kod se ne menja (0 od poslednjih 101 commita na grani), a v1 je podrazumevan u produkciji, pa se testovi ne brišu.
+  Udeo u CI run-a 741: 1713 s od 22 838 s (7,5 %; brojka od 59 % iz § 4.2 je stanje pre v2 mreža).
+- CI: delovi `web-test` rade `TEST_V1=0`; posao `v1-changes` traži poslednji zeleni run grane (`gh run list --status
+  success`) i pokreće `web-test-v1` (jedan posao, ~10 min) samo ako se od tog commita menja nešto što v1 koristi: domen
+  van `generators/*/v2/`, `src/test/`, `docs/qa/`, `package*.json`, `vitest.config.ts`, workflow. Na `main`-u, ručno i
+  bez zelenog run-a — uvek. Zeleni run je zelen i kad je posao preskočen, pa svaki zeleni commit ima v1 proveren direktno
+  ili preko prethodnog zelenog.
+
+### 11.3 Brzina produkcije, bajt-isti izlaz (v2, sve četiri distance)
+
+CPU profil (`node:inspector` u `setupFiles`) mreža brzog nivoa: 80–90 % vremena je kod generatora.
+
+| izmena | gde | profil pre |
+|---|---|---|
+| `same` = `JSON.stringify(a) === JSON.stringify(b)` → `v2/same.ts`: isti rezultat bez pravljenja niski (staje na prvoj razlici; vrednost koja nije čist podatak → JSON.stringify celog para) | `written.ts`, `adapt.ts`, `generate.ts`/`validate.ts` (MAR), `runWalk*.ts` (5K) | 10K 22 %, 5K 28 %, MAR 18 %, HM 9 % self, uz GC |
+| keš `dayNumber`/`isoFromDayNumber` (čiste funkcije, ≤ 4096 unosa) | `v2/dates.ts` | MAR: `mustDay` 18 % uključivo |
+| keš `raceTimeForVdot` (bisekcija, 80 koraka) | `v2/paces.ts` | MAR: `fractionSustainable` 4–6 % |
+| ključ keša `dayOf` iz polja strukture umesto `JSON.stringify` | `marathon/v2/week.ts` | MAR 6–10 % |
+
+- Ekvivalencija `same`: `src/domain/generators/sameJson.node.test.ts` (sve četiri kopije; rubni slučajevi JSON-a —
+  `undefined`/funkcija/simbol u objektu i nizu, NaN/±Infinity, -0, redosled ključeva, `toJSON`, Date, Map, boxed — i
+  20 000 nasumičnih parova). Bajt-isti izlaz generatora: heševi svih mreža punog nivoa.
+- Maraton `earlyGrid` (brz, pod profilom): 53 157 → 29 991 uzoraka (−44 %). Ceo brz nivo generatora: v2 deo zbira
+  654 → 463 s pre promene uzoraka (§ 11.4; JSON izveštaj, bez `beforeAll`; polazno `dc17dbd`, između su i 3 commita
+  drugih sesija).
+- Politika (policyVersion) se ne menja: izlaz je isti.
+
+### 11.4 Test strana
+
+- `marathon/v2/grid.harness`: `oldText` (vraćanje teksta za stare bazne linije) menja samo nisku sa izrazom iz
+  `TEXT_T` i deli nepromenjene delove stabla; `before07` se računa jednom po planu (ranije u tri `it`). Brz: 51,8 → 39,8 s
+  pre promene uzorka.
+- Uzorci brzog nivoa (pun nivo isti; pragovi brzog nivoa srazmerni uzorku); trajanje fajla sa `beforeAll`:
+
+| fajl (`generators/…`) | uzorak pre → posle | brz pre → posle (s) |
+|---|---|---|
+| `tenK/v2/repeatGrid` | korak planova: umor 60 → 180, ponedeljak 60 → 120, zaštićeni 60 → 180, bol 60 → 120, nov bol 300 → 900 (start0 60) | 71,9 → 31,4 |
+| `marathon/v2/grid` | k 6 → 18 | 47,3 → 16,7 |
+| `tenK/v2/app/handoffTarget` | izvori HM 1/307 → 1/1229, MAR 1/389 → 1/1553 | 46,5 → 18,6 |
+| `tenK/v2/grid` (grid02) | K 11 → 35 (+ svi imenovani) | 38,7 → 16,5 |
+| `tenK/v2/earlyGrid` | K_FAST 60 → 150, K_PRE 240 → 600; prag tokova > 1000 → > 400 | 38,7 → 21,3 |
+| `marathon/v2/segment09` (mreža teksta) | svaki 9. → brz svaki 36. | 27,7 → 6,5 |
+| `marathon/v2/recent` | k 10 → 30 | 27,7 → 9,6 |
+| `halfMarathon/v2/grid` | k 5 → 15 | 27,1 → 10,6 |
+| `marathon/v2/feelGrid` | k 6 → 18 | 24,5 → 3,8 |
+
+- Sabotaže posle izmena: `sabotage-06c.json` 5/5 PAO (87 s), `sabotage-proof.json` 6/6 PAO (91 s, uključujući v1 preko
+  `TEST_V1=1`). Mreže koje hvataju 06c (`painGrid`, `reliefGrid`, `feelGrid` 10K) nisu dirane.
+- `npm run lint`/`lint:cache`: `NODE_OPTIONS=--max-old-space-size=4096` — u kontejneru sa podrazumevanim heap-om od
+  2 GB eslint je padao (OOM) i na nepromenjenom HEAD-u.
+
+### 11.5 Otvoreno (odluka korisnika)
+
+Lanac starih regresija (`changed-<sha>.json`, `at7ba → at46e → atC13 → atB9c`, `undo07`/`undoF1` u
+`tenK/v2/testInputs.ts`, `before07`/`oldText` u maratonu, 42 MB JSON-a u `generators/*/v2/`) i dalje nosi deo vremena:
+profil 10K `earlyGrid` 24 % (`planHash06c` → `undo07` → `undoF1`), 5K `segment08g.grid` ~7 % (`canon09`). Sabijanje na jednu
+aktuelnu baznu liniju po mreži uklanja taj trošak i šimove, ali gubi automatski dokaz uzroka svake stare izmene — nije
+urađeno bez odluke.

@@ -1,7 +1,7 @@
 /* Mreža 02 (MASTER § 3): svaki broj dana (3–6) × nedelje 10–20 × obim reda H15 (korak 5) × VDOT {30…70} × 3
    rasporeda po broju dana × trka sub/ned = 16 896 planova (hm-v2.1.0): K1 = 0, nezavisne invarijante
    (gridInvariants.ts), determinizam, regresija 4 dana prema HM-01 (segment01.baseline.json i
-   segment01.norm-hashes-3979237.json), bazna linija segment02.baseline.json. Brz nivo: uzorak (svaki 5. unutar
+   segment01.norm-hashes-3979237.json), bazna linija segment02.baseline.json. Brz nivo: uzorak (svaki 15. unutar
    dana × nedelje × obima, + imenovani primeri); pun: deo 1/4 ovde, delovi 2–4 u grid.<k>.full.node.test.ts.
    Bazna linija se piše samo uz TEST_FULL=1 i HM_V2_WRITE_BASELINE=1 nad celim skupom (ovaj fajl). */
 
@@ -30,7 +30,7 @@ describeGrid(
       : part(ALL, 1, GRID_PARTS)
     : sample(
         ALL,
-        5,
+        15,
         (g) => `${g.days}/${g.weeks}/${g.km}`,
         (g) => NAMED.has(g.id)
       ),

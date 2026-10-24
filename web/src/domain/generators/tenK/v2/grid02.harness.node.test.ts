@@ -34,7 +34,7 @@ import {
 
 export const GRID02_PARTS = 4;
 /** Brz nivo: svaki K-ti ulaz unutar (broj dana × nedelje). */
-const K = 11;
+const K = 35;
 const HERE = fileURLToPath(new URL('./', import.meta.url));
 const BASELINE = `${HERE}segment03.baseline.json`;
 const BASELINE_21 = `${HERE}segment02b.baseline.json`;

@@ -49,8 +49,8 @@ import {
 import type { TenKV2Facts, TenKV2Plan } from './types.ts';
 
 export const EARLY_PARTS = 12;
-const K_FAST = 60;
-const K_PRE = 240;
+const K_FAST = 150;
+const K_PRE = 600;
 const HERE = fileURLToPath(new URL('./', import.meta.url));
 export const EARLY_HASHES = `${HERE}segment06d.early-hashes-51a924f.json`;
 export const PRE_HASHES = `${HERE}segment06e.prestart-hashes-bd07eec.json`;
@@ -188,7 +188,7 @@ export function describeEarlyGrid(title: string, partIndex: number): void {
       const keys = new Set(all.map((f) => f.key));
       expect(NAMED_FLOWS.filter((k) => !keys.has(k))).toEqual([]);
       if (FULL) expect(missingParts(HERE, 'earlyGrid', EARLY_PARTS)).toEqual([]);
-      else expect(flows.length).toBeGreaterThan(1000);
+      else expect(flows.length).toBeGreaterThan(400);
     });
 
     it('0 odbijanja i adaptInvariants prazno (Uslov 8)', () => {

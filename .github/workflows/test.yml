@@ -6,7 +6,8 @@ name: Testovi
 #   pa bi svaki push dokumentacije pokretao run i otkazivao run koda;
 # - jedna grupa po grani: run koji radi se završava, a od pusheva koji stignu u međuvremenu čeka samo najnoviji
 #   (GitHub otkazuje stariji koji čeka) — tako se i pri čestim pushevima run završava, a vrh grane se uvek testira;
-# - testovi weba idu u 6 paralelnih delova (vitest --shard).
+# - testovi weba idu u 6 paralelnih delova (vitest --shard), podeljenih po izmerenom trajanju (TEST-SPEED.md § 11);
+# - testovi v1 generatora: poseban posao, samo kad se menja nešto što v1 koristi (TEST-SPEED.md § 12).
 on:
   push:
     branches: ['**']
@@ -72,8 +73,8 @@ jobs:
             web/test-results/
           if-no-files-found: warn
 
-  # Unit/domain/zamrznuti oracle/node testovi (pun nivo, `npm test`) u 6 delova; delovi se biraju heš-putanjom fajla
-  # (vitest), pa svaki deo dobija deo velikih `*.full.node.test.ts`.
+  # Unit/domain/zamrznuti oracle/node testovi (pun nivo, `npm test`) u 6 delova, BEZ projekta `v1` (posao ispod). Delove
+  # bira web/scripts/testSequencer.ts po izmerenom trajanju fajla (TEST-SPEED.md § 11), ne po broju fajlova.
   web-test:
     runs-on: ubuntu-latest
     strategy:
@@ -93,7 +94,58 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - name: Testovi (deo ${{ matrix.shard }}/6)
-        run: npm test -- --shard=${{ matrix.shard }}/6
+        run: TEST_V1=0 npm test -- --shard=${{ matrix.shard }}/6
+
+  # v1 generatori (TEST-SPEED.md § 12): podrazumevani u produkciji, a kod im se ne menja. Testovi poređenja sa
+  # referencama starog koda (vitest projekat `v1`) rade kad se od POSLEDNJEG ZELENOG run-a ove grane promenilo nešto što
+  # v1 koristi (domen van `generators/*/v2/`, `src/test/`, `docs/qa/`, zavisnosti, konfiguracija testova, ovaj
+  # workflow); na `main`-u, ručno pokretanje i bez zelenog run-a — uvek. Zeleni run je zelen i kad je ovaj posao
+  # preskočen, pa lanac ostaje zatvoren: svaki zeleni commit ima v1 proveren direktno ili preko prethodnog zelenog.
+  v1-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run=true
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF_NAME" != main ]; then
+            base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow test.yml --branch "$GITHUB_REF_NAME" \
+              --status success --limit 1 --json headSha --jq '.[0].headSha // empty' || true)
+            if [ -n "$base" ] && git fetch --no-tags --depth=1 origin "$base"; then
+              changed=$(git diff --name-only "$base" HEAD)
+              hits=$(printf '%s\n' "$changed" | grep -Ev '^web/src/domain/generators/[^/]+/v2/' |
+                grep -E '^(web/src/domain/|web/src/test/|docs/qa/|web/package(-lock)?\.json$|web/vitest\.config\.ts$|\.github/workflows/test\.yml$)' || true)
+              echo "Poslednji zeleni run: $base"
+              if [ -z "$hits" ]; then run=false; else printf 'Menja v1 ulaze:\n%s\n' "$hits" | head -20; fi
+            fi
+          fi
+          echo "v1 testovi: $run"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+
+  web-test-v1:
+    needs: v1-changes
+    if: needs.v1-changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: v1 testovi (pun nivo, ~10 min)
+        run: npm run test:v1
 
   database:
     runs-on: ubuntu-latest

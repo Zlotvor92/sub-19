@@ -2,6 +2,7 @@
    c13c258 (pre ispravke). */
 
 import { describe, expect, it } from 'vitest';
+import { FULL } from '@/test/level';
 import { adaptMarathonV2 } from './adapt.ts';
 import { resultFates } from './assess.ts';
 import { addDays, mustDay } from './dates.ts';
@@ -127,7 +128,7 @@ describe('t. 6 (Z2): korisnički tekst bez internih oznaka', () => {
   it('mreža: napomene, fokus nedelje, upozorenja i razlozi bez oznaka; decimalni zarez', () => {
     const bad: string[] = [];
     for (const [i, x] of gridInputs().entries()) {
-      if (i % 9 !== 0) continue;
+      if (i % (FULL ? 9 : 36) !== 0) continue;
       const g = generateMarathonV2(x.input);
       if (!g.ok) continue;
       const app = generatedPlan(g.plan);

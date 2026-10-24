@@ -1,5 +1,5 @@
 /* Mreža 03 po osećaju (M16): lagan {270,315,360,405,450,510} × 3–6 dana × obim po redu (korak 5) × 12–24 ned ×
-   A/B/C = 8190 planova. Brz nivo: uzorak (svaki 6. po broju dana i nedeljama + imenovani); pun nivo: deo 1/3
+   A/B/C = 8190 planova. Brz nivo: uzorak (svaki 18. po broju dana i nedeljama + imenovani); pun nivo: deo 1/3
    ovde, 2–3 u feelGrid.<k>.full.node.test.ts. Snimanje bazne linije (MARATHON_V2_WRITE_BASELINE=1) samo uz
    TEST_FULL=1 i samo ovaj fajl (ceo skup). */
 
@@ -28,7 +28,7 @@ const inputs = FULL
     : part(FEEL, 1, FEEL_PARTS)
   : sample(
       FEEL,
-      6,
+      18,
       (g) => `${g.days}-${g.weeks}`,
       (g) => NAMED.has(g.id)
     );

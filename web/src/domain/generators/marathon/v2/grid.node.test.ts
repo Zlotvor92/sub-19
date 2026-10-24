@@ -1,6 +1,6 @@
 /* Mreža 02 (MASTER § 3): svaki broj dana 3–6 × 12–24 ned × obim po redu M15 (korak 5) × VDOT
    {30,35,40,45,50,55,60,70} × 3 rasporeda po broju dana × trka sub/ned = 21 840 planova (red 4 dana = mreža 01).
-   Brz nivo: uzorak (svaki 6. unutar broja dana i nedelja + imenovani rubni slučajevi); pun nivo: deo 1/6 ovde,
+   Brz nivo: uzorak (svaki 18. unutar broja dana i nedelja + imenovani rubni slučajevi); pun nivo: deo 1/6 ovde,
    delovi 2–6 u grid.<k>.full.node.test.ts. Snimanje bazne linije (MARATHON_V2_WRITE_BASELINE=1) samo uz
    TEST_FULL=1 i samo ovaj fajl (ceo skup). */
 
@@ -36,7 +36,7 @@ const inputs = FULL
     : part(ALL, 1, GRID_PARTS)
   : sample(
       ALL,
-      6,
+      18,
       (g) => `${g.days}-${g.weeks}`,
       (g) => NAMED.has(g.id)
     );

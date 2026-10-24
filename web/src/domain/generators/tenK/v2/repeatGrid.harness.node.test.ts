@@ -50,11 +50,11 @@ const HERE = fileURLToPath(new URL('./', import.meta.url));
 
 /** Uzorak planova po mreži: pun — svaki `full`. plan skupa (3084), brz — svaki `fast`. */
 const STRIDE = {
-  fatigue: { full: 4, fast: 60 },
-  monday: { full: 4, fast: 60 },
-  locked: { full: 4, fast: 60 },
-  pain: { full: 4, fast: 60 },
-  painNew: { full: 40, fast: 300 },
+  fatigue: { full: 4, fast: 180 },
+  monday: { full: 4, fast: 120 },
+  locked: { full: 4, fast: 180 },
+  pain: { full: 4, fast: 120 },
+  painNew: { full: 40, fast: 900 },
   start0: { full: 2, fast: 60 }
 } as const;
 

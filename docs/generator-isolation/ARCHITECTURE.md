@@ -190,11 +190,12 @@ Iz `web/`:
 
 ```
 npm run check                                              # typecheck + lint + prettier + vitest (svi projekti)
-npx vitest run --project node generators/                  # arhitektura, izolacija, ekvivalencija, lični plan, runtime izolacija
+npx vitest run --project node generators/                  # arhitektura, izolacija, v2
+TEST_V1=1 npx vitest run --project v1 generators/          # ekvivalencija v1, lični plan, runtime izolacija (projekat v1)
 npx vitest run --project node generators/architecture      # statičke granice i dostižnost iz main.tsx
-npx vitest run --project node generators/runtimeIsolation  # izolacija u izvršavanju
-npx vitest run --project node generators/personalPlan      # lični plan → HM
-npx vitest run --project node generators/guidance          # preneta logika van plana: 4 kopije = referenca
+TEST_V1=1 npx vitest run --project v1 generators/runtimeIsolation  # izolacija u izvršavanju
+TEST_V1=1 npx vitest run --project v1 generators/personalPlan      # lični plan → HM
+TEST_V1=1 npx vitest run --project v1 generators/guidance          # preneta logika van plana: 4 kopije = referenca
 npx vitest run --project ui Flow.test personalPlanGenerator # aplikacione putanje
 npm run build
 npx playwright test
