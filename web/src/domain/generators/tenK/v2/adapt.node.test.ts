@@ -7,7 +7,7 @@
    A17): regresija prema 4917959 — menjaju se samo tokovi sa ukinutim rasterećenjem ili porukom N2
    (segment06c.adapt-hashes-4917959.json; heš bez oznake verzije i polja reduced); mreža R: reliefGrid. */
 
-import { appendFileSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -255,7 +255,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       pause35: { n: 120, PAUSE: 120, mixed: 60, TEST_MOVED: 13 },
       // 06c (A17): TEST_MOVED 5 → 6 — d4-f-14w w2end: rasterećenje ned 4 sa testom (D27) ukinuto; u izgradnji
       // 27,0 km test i Q2 ne staju → jedan kvalitet doze rasterećenja, test otpada (A9/A13).
-      pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 6 },
+      // 10K-08 (T1): TEST_MOVED 6 → 5.
+      pain5: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 5 },
       // 06b (10k-v2.4.1): TEST_MOVED 10 → 9 — viši cilj posle sidra, test 5 km ostaje u svojoj nedelji.
       pain8: { n: 120, PAIN: 120, mixed: 54, TEST_MOVED: 9 },
       // 06i (pouka 37): 3 toka sa ostatkom do cilja (zapis umora 6 km na zaštićenom danu > sastavljeno); same 40 → 37.
@@ -267,7 +268,8 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       locked: { n: 120, same: 120 },
       // 06c (A17): TEST_MOVED 13 → 8 — d6-f-14w i d3/d4/d5/d6-f-18w w2end: prvi korak (pauza) ukida rasterećenje
       // sa testom, drugi korak (manjak) više ne uklanja test.
-      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 8 },
+      // 10K-08 (T1): TEST_MOVED 8 → 7.
+      chain: { n: 120, UNDER_EXECUTION: 80, mixed: 50, same: 40, TEST_MOVED: 7 },
       // 06b (10k-v2.4.1): TEST_MOVED 13 → 9 — osnova min(0,7 × nivo, cilj pauze) umesto 0,7 × cilj pauze.
       painPause: { n: 120, PAIN: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 9 }
     });
@@ -277,10 +279,6 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
     got: Record<string, Record<string, number>>,
     full: Record<string, Record<string, number>>
   ): void {
-    if (process.env['PRINT08']) {
-      appendFileSync(process.env['PRINT08'], '\n' + JSON.stringify([expect.getState().currentTestName, got]));
-      return;
-    }
     if (FULL) {
       expect(got).toEqual(full);
       return;

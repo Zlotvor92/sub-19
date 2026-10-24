@@ -146,7 +146,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
     });
 
     it('D30a: ponavljanje slota 1224 / 192 / 144 / 144 → 240 / 48 / 0 / 0 nedelja (organizator na 21c03f1: isto)', () => {
-      byDays((n) => g.stats[n].repeats, [240, 48, 0, 0]);
+      // 10K-08 (T1): 240 / 48 / 0 / 0 → 456 / 42 / 0 / 0.
+      byDays((n) => g.stats[n].repeats, [456, 42, 0, 0]);
     });
 
     it('D30b: RACE_WEEK_SHORT 6 + 90 → 0 (trkačka + trka 10 km ≥ minimum nedelje)', () => {
@@ -155,25 +156,34 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
     });
 
     it('bez promene od 21c03f1: ned 1 ispod obima samo uz 105 min, trkačka ≤ taper (lagan u km), D25, DOSE_DROPPED', () => {
-      byDays((n) => g.stats[n].belowTime, [330, 660, 264, 264]);
-      // 02b: ned 1 ispod obima i DOSE_DROPPED SAMO uz dugi na 105 min (nikad samo na udelu D17).
-      expect(days.map((n) => [g.stats[n].belowShare, g.stats[n].doseDroppedShare])).toEqual(
-        days.map(() => [0, 0])
+      // 10K-08 (T1, lagan ≤ 0,8 × dugi): ned 1 ispod obima 330 / 660 / 264 / 264 → nove brojke; ispod obima i uz udeo D17.
+      byDays((n) => g.stats[n].belowTime, [396, 0, 660, 660]);
+      // 02b: ned 1 ispod obima i DOSE_DROPPED SAMO uz dugi na 105 min (nikad samo na udelu D17); 10K-08 (T1): i uz udeo.
+      byDays(
+        (n) => [g.stats[n].belowShare, g.stats[n].doseDroppedShare],
+        [
+          [132, 0],
+          [1518, 168],
+          [0, 0],
+          [0, 0]
+        ]
       );
-      byDays((n) => g.stats[n].raceKmEasy, [636, 1428, 2004, 2538]);
+      byDays((n) => g.stats[n].raceKmEasy, [636, 1470, 2004, 2538]);
       // 06f (pouka 35): D25 0 / 132 / 132 / 330 → 0 / 0 / 0 / 132 planova (drugi dan kvaliteta lagan, dugi raste).
       byDays((n) => g.stats[n].longShorter, [0, 0, 0, 132]);
-      byDays((n) => g.stats[n].doseDropped, [0, 162, 0, 0]);
+      // 10K-08 (T1): DOSE_DROPPED 0 / 162 / 0 / 0 → 84 / 432 / 24 / 258.
+      byDays((n) => g.stats[n].doseDropped, [84, 432, 24, 258]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja', () => {
       // 10k-v2.2.1: [2640, 828, 1224, 1.258, 528, 0, 48, 6], [3696, 1320, 192, 1.25, …],
       // [4224, 810, 144, 1.279, …], [5280, 732, 144, 1.25, 0, 6, 0, 90].
       const table = [
-        [2640, 828, 240, 1.259, 528, 0, 48, 0],
-        [3696, 1320, 48, 1.25, 0, 0, 0, 0],
-        [4224, 810, 0, 1.279, 0, 0, 0, 0],
-        [5280, 732, 0, 1.25, 0, 6, 0, 0]
+        // 10K-08 (T1): CAPACITY_LIMITED 828 / 1320 / 810 / 732 → 1056 / 2106 / 1302 / 1326, vrh/start niži, D25 (kolona 5).
+        [2640, 1056, 456, 1.225, 528, 0, 48, 0],
+        [3696, 2106, 42, 1.208, 0, 96, 0, 0],
+        [4224, 1302, 0, 1.254, 0, 222, 0, 0],
+        [5280, 1326, 0, 1.228, 0, 450, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -298,10 +308,11 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       byDays(
         (n) => cause[n],
         [
-          { same: 1500, D30a: 1134, D30b: 6, 'D30a+D30b': 0 },
-          { same: 3120, D30a: 576, D30b: 0, 'D30a+D30b': 0 },
-          { same: 3792, D30a: 432, D30b: 0, 'D30a+D30b': 0 },
-          { same: 5064, D30a: 126, D30b: 72, 'D30a+D30b': 18 }
+          // 10K-08: planovi promenjeni prema b9c4728 (T1/C11) su svoj razred; ostali razvrstani kao ranije.
+          { same: 708, D30a: 672, D30b: 6, 'D30a+D30b': 0, '10K-08': 1254 },
+          { same: 1008, D30a: 114, D30b: 0, 'D30a+D30b': 0, '10K-08': 2574 },
+          { same: 1980, D30a: 216, D30b: 0, 'D30a+D30b': 0, '10K-08': 2028 },
+          { same: 3081, D30a: 54, D30b: 27, 'D30a+D30b': 0, '10K-08': 2118 }
         ],
         true
       );

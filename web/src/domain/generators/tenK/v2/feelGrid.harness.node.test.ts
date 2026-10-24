@@ -93,21 +93,23 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
       byDays(
         (n) => [g.stats[n].testDeload, g.stats[n].testDeloadLong, g.stats[n].testDeloadUp],
         [
+          // 10K-08 (T1): duži dugi izgradnje (za stvaran broj laganih dana) → češće skraćen dugi rasterećenja sa testom.
           [540, 144, 0],
-          [756, 36, 0],
-          [864, 18, 0],
+          [756, 72, 0],
+          [864, 36, 0],
           [1080, 36, 0]
         ]
       );
-      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 36, 18, 36]);
+      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 72, 36, 36]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja; ned 1 ispod obima (105 min / udeo), D25, DOSE_DROPPED (od toga udeo)', () => {
       const table = [
-        [1980, 864, 48, 1.229, 288, 0, 36, 0],
-        [2772, 1350, 36, 1.215, 0, 0, 0, 0],
-        [3168, 930, 0, 1.261, 0, 0, 0, 0],
-        [3960, 846, 0, 1.238, 0, 0, 0, 0]
+        // 10K-08 (T1): CAPACITY_LIMITED 864 / 1350 / 930 / 846 → 1128 / 2046 / 1398 / 1404, vrh/start niži.
+        [1980, 1128, 384, 1.186, 288, 0, 36, 0],
+        [2772, 2046, 96, 1.155, 0, 18, 0, 0],
+        [3168, 1398, 0, 1.224, 0, 18, 0, 0],
+        [3960, 1404, 0, 1.204, 0, 180, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -125,10 +127,11 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         // 06f (pouka 35): D25 (kolona 3) 0 / 78 / 78 / 132 → 0 / 36 / 24 / 78 planova. 10K-07 (F3): D25 obuhvata i dan
         // testa → 144 / 228 / 204 / 294.
         [
-          [396, 0, 144, 84, 0],
-          [660, 132, 228, 156, 6],
-          [396, 0, 204, 0, 0],
-          [396, 0, 294, 0, 0]
+          // 10K-08 (T1): ned 1 ispod obima i uz udeo D17 (lagan ≤ 0,8 × dugi).
+          [462, 132, 108, 84, 0],
+          [0, 1518, 222, 276, 186],
+          [660, 66, 156, 42, 0],
+          [792, 0, 270, 0, 0]
         ]
       );
     });

@@ -83,7 +83,8 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
     byDays(
       (n) => [g.stats[n].beginnerT, g.stats[n].taperT],
       [
-        [2184, 432],
+        // 10K-08 (T1): 3 dana 2184 / 432 → 2634 / 540.
+        [2634, 540],
         [1050, 378]
       ]
     );
@@ -111,8 +112,9 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
   it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja; ned 1 ispod obima, D25, DOSE_DROPPED', () => {
     // 81bd351: [1512, 588, 192, 1.229, 1200, 0, 774, 0], [1890, 324, 240, 1.281, 1116, 0, 378, 0].
     const table = [
-      [1512, 588, 2580, 1.227, 462, 0, 378, 0],
-      [1890, 324, 168, 1.28, 192, 0, 0, 0]
+      // 10K-08 (T1): CAPACITY_LIMITED 588 / 324 → 810 / 594, vrh/start 1,227 / 1,28 → 1,187 / 1,251.
+      [1512, 810, 2532, 1.187, 462, 0, 378, 0],
+      [1890, 594, 168, 1.251, 192, 0, 0, 0]
     ];
     // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti b13ca17).
     const row = (n: 3 | 4): number[] => statsRow(g.stats[n]);
