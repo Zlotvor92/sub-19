@@ -303,16 +303,12 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
     }
   });
 
-  it('WEEK_MIN_VOLUME: beg-feel-d3-12km-10w pauza 10 + bol 5 kraj ned 8 — ned 9 cilj 7,5 = minimum, planirano 7,3 zbog dana bola: upozorenje', () => {
+  it('WEEK_MIN_VOLUME: beg-feel-d3-12km-10w pauza 10 + bol 5 kraj ned 8 — ned 9 cilj 7,5 = minimum, planirano 7,3 zbog dana bola: bez poruke (razlika < 1 km i < 3 %)', () => {
     const r = run('beg-feel-d3-12km-10w', '2026-12-27', 'pause10pain5');
     const w9 = r.plan.weeks[8]!;
     expect([w9.targetKm, w9.plannedKm]).toEqual([7.5, 7.3]);
-    expect(r.plan.warnings).toContainEqual({
-      rule: 'PLANNED_BELOW_TARGET_LIMITS',
-      severity: 'warning',
-      message: 'Planirano 7,3 km < cilj obima 7,5 km (odmor/bol, adaptacija).',
-      week: 9
-    });
+    // F1 (04-final): razlika 0,2 km (< 1 km i < 3 % cilja) — bez poruke „manje od cilja".
+    expect(r.plan.warnings.map((v) => v.rule)).not.toContain('PLANNED_BELOW_TARGET_LIMITS');
     // Cilj ispod minimuma ostaje greška konstruktora.
     const low = JSON.parse(JSON.stringify(r.plan)) as FiveKV2Plan;
     low.weeks[8]!.targetKm = 7.2;

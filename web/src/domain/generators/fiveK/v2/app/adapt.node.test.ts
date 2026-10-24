@@ -373,7 +373,7 @@ describe('B. tok prilagođavanja: pregled → potvrda → nova revizija → vra�
     const pr = ok(fiveKV2AdaptPreview(plan, today, { log: logOf(5) }));
     const level = pr.reasons.find((r) => r.condition === 'LEVEL')!;
     expect(level.message).toMatch(
-      /: L2 \(bilo L1; \+1 posle po 2 uzastopne sesije RPE ≤ 6 bez bola\)/
+      /: 2 \(bilo 1; \+1 posle po 2 uzastopne sesije RPE ≤ 6 bez bola\)/
     );
     const v2 = pr.result['fiveKV2'] as { adaptation: { steps: Array<{ level: number }> } };
     expect(v2.adaptation.steps.at(-1)!.level).toBe(2);
@@ -382,7 +382,7 @@ describe('B. tok prilagođavanja: pregled → potvrda → nova revizija → vra�
     expect(pr.needed).toEqual([]);
     // RPE 7: nivo ostaje L1, projekcija se pomera → pregled i traka.
     const hard = ok(fiveKV2AdaptPreview(plan, today, { log: logOf(7) }));
-    expect(hard.reasons.find((r) => r.condition === 'LEVEL')!.message).toMatch(/: L1 \(bilo L1\)/);
+    expect(hard.reasons.find((r) => r.condition === 'LEVEL')!.message).toMatch(/: 1 \(bilo 1\)/);
     expect(hard.weeks.length).toBeGreaterThan(0);
     expect(hard.needed).toEqual(['3 sesija sa RPE ≥ 7: nivo se na njima ne povećava.']);
   });

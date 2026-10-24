@@ -117,7 +117,7 @@ export function assessRunWalk(
       reason(
         'PAIN',
         true,
-        `Bol ${e.pain}/10 (${e.date}): nivo L${was} → L${level}. ${RW.painMessage}`
+        `Bol ${e.pain}/10 (${e.date}): nivo ${was} → ${level}. ${RW.painMessage}`
       );
     } else if (e.kind === 'pause') {
       const was = level;
@@ -126,7 +126,7 @@ export function assessRunWalk(
       reason(
         'PAUSE',
         e.drop > 0,
-        `Pauza ${e.days} dana: ${e.drop > 0 ? `nivo L${was} → L${level}` : 'već primenjeno u prethodnoj adaptaciji'}.`
+        `Pauza ${e.days} dana: ${e.drop > 0 ? `nivo ${was} → ${level}` : 'već primenjeno u prethodnoj adaptaciji'}.`
       );
     } else if (e.kind === 'miss') good = 0;
     else if (e.rpe === undefined || e.rpe >= RW.holdRpe || e.rpe > RW.goodRpeMax) {
@@ -161,7 +161,7 @@ export function assessRunWalk(
     reason(
       'LEVEL',
       true,
-      `Nivo ${asOf}: L${level} (bilo L${prev.level}${ups > 0 ? `; +${ups} posle po 2 uzastopne sesije RPE ≤ ${RW.goodRpeMax} bez bola` : ''}); ostatak projekcije od L${level}.`
+      `Nivo ${asOf}: ${level} (bilo ${prev.level}${ups > 0 ? `; +${ups} posle po 2 uzastopne sesije RPE ≤ ${RW.goodRpeMax} bez bola` : ''}); dalje se ide od nivoa ${level}.`
     );
 
   // Odluka 8: prelaz na kontinuirani plan početnika.
@@ -177,7 +177,7 @@ export function assessRunWalk(
     const lockedAfter = facts.lockedDayIds.some((d) => weekOfDate(input, d) >= n);
     const why =
       left < RW.transitionMinWeeks
-        ? `do trke ostaje ${left} nedelja (< ${RW.transitionMinWeeks}); plan ostaje trčanje/hodanje (L${level})`
+        ? `do trke ostaje ${left} nedelja (< ${RW.transitionMinWeeks}); plan ostaje trčanje/hodanje (nivo ${level})`
         : vi === null
           ? 'prelaz traži uobičajen lagan tempo (typicalEasyPaceSecPerKm); plan ostaje trčanje/hodanje'
           : c && !c.ok
@@ -190,8 +190,8 @@ export function assessRunWalk(
       'TRANSITION',
       why === null,
       why === null
-        ? `L${TRANSITION_LEVEL} dostignut, do trke ${left} nedelja: od nedelje ${weekLabel(n, input.weekOffset)} kontinuirani plan početnika (po osećaju, ${vi!['currentWeeklyKm'] as number} km = 3 × 30 min tipičnim laganim tempom), isti konstruktor kao generator.`
-        : `L${TRANSITION_LEVEL} dostignut: ${why}.`
+        ? `Nivo ${TRANSITION_LEVEL} (30 min trčanja bez prekida) dostignut, do trke ${left} nedelja: od nedelje ${weekLabel(n, input.weekOffset)} kontinuirani plan početnika (po osećaju, ${vi!['currentWeeklyKm'] as number} km = 3 × 30 min tipičnim laganim tempom), isti konstruktor kao generator.`
+        : `Nivo ${TRANSITION_LEVEL} (30 min trčanja bez prekida) dostignut: ${why}.`
     );
   }
   return { step: { asOf, level, good, pauseDays, transitionWeek }, reasons: out };

@@ -1311,11 +1311,20 @@ export function regressionInputs(): [string, Record<string, unknown>][] {
     oznaka — menja ga u svakom planu), oznaka verzije i `peakKm` (owner K: adaptacija upisuje vrh iz konstrukcije umesto
     najvećeg cilja izgradnje — menja ga u većini adaptiranih planova; provera vrednosti je u segment09.node.test.ts). */
 const SKIP09 = new Set(['title', 'notes', 'message', 'before', 'after', 'peakKm']);
+/** F1 (04-final): „planirano manje od cilja" je poruka korisniku koja se prikazuje samo za razliku ≥ 1 km ili ≥ 3 %
+    (text.belowTargetShown) — kao tekst, ne poredi se; planirano i cilj nedelje se i dalje porede. */
+const BELOW09 = new Set(['PLANNED_BELOW_TARGET', 'PLANNED_BELOW_TARGET_LIMITS']);
 
 /** Kanon otiska regresije prema c13c258 (5K-09). */
 export const canon09 = (r: unknown): string =>
   JSON.stringify(r, (k, v: unknown) =>
-    k === 'policyVersion' ? '-' : SKIP09.has(k) ? undefined : v
+    k === 'policyVersion'
+      ? '-'
+      : SKIP09.has(k)
+        ? undefined
+        : k === 'warnings' && Array.isArray(v)
+          ? v.filter((x: { rule?: string }) => !BELOW09.has(x.rule ?? ''))
+          : v
   );
 
 /** Razlog promene toka prema c13c258 (ispravka segmenta 09); CH = drugi korak lanca posle promenjenog prvog. */

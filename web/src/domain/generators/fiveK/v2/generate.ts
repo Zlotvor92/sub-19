@@ -224,7 +224,7 @@ export function construct(
         );
         if (short && r.ok)
           r.week.notes.push(
-            `Adaptacija: oštrenje ne staje u granicu ${target} km (nedelja bi bila < ${P.week.minRaceWeekKm} km).`
+            `Adaptacija: oštrenje ne staje u granicu ${target} km (nedelja bi imala manje od ${P.week.minRaceWeekKm} km).`
           );
       }
       if (r.ok) push(r.week);
@@ -412,7 +412,7 @@ function generateRaw(raw: unknown): GenerateResult {
   }
   if (a.beginner)
     notes.push(
-      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez I; rast obima ≤ ${rules.maxBuildGrowth * 100}%, dugi ≤ ${rules.longMaxSec / 60} min, vrh ≤ ${rules.peakCapFactor} × start, rasterećenje svake ${rules.deloadEvery}. nedelje.`
+      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez intervala (I); obim raste najviše ${Math.round(rules.maxBuildGrowth * 100)} % nedeljno, dugi trk najviše ${rules.longMaxSec / 60} min, najveći nedeljni obim najviše ${Math.round((rules.peakCapFactor - 1) * 100)} % iznad početnog, rasterećenje svake ${rules.deloadEvery}. nedelje.`
     );
 
   const plan: FiveKV2Plan = {

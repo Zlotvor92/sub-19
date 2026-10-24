@@ -49,7 +49,7 @@ export function runWalkSession(level: number, easyPace: number | null): RunWalkS
     runTotalSec,
     estRunKm: easyPace === null ? null : r2(runTotalSec / easyPace),
     effort: { ...RW.effort },
-    title: `L${l.level}: ${continuous ? `${mmss(l.runSec)} trčanja bez prekida` : `${l.reps} × (${mmss(l.runSec)} trčanje / ${mmss(l.walkSec)} hod)`}, 5 min hoda pre i posle`
+    title: `Nivo ${l.level}: ${continuous ? `${mmss(l.runSec)} trčanja bez prekida` : `${l.reps} × (${mmss(l.runSec)} trčanje / ${mmss(l.walkSec)} hod)`}, 5 min hoda pre i posle`
   };
 }
 
@@ -68,7 +68,7 @@ export function runWalkRace(level: number): RunWalkRace {
     cooldownWalkSec: RW.cooldownWalkSec,
     goal: 'finish',
     effort: { ...RW.effort, cue: 'ravnomerno, kao na treningu; cilj je završiti' },
-    title: `Trka ${RW.raceKm} km — ${continuous ? 'trčanje bez prekida' : `${mmss(l.runSec)} trčanje / ${mmss(walkSec)} hod (odnos nivoa L${l.level})`}; cilj: završiti`
+    title: `Trka ${RW.raceKm} km — ${continuous ? 'trčanje bez prekida' : `u trci smeš da hodaš: ${mmss(l.runSec)} trčanja, pa ${mmss(walkSec)} hoda, i tako do cilja`}; cilj: završiti`
   };
 }
 
@@ -184,7 +184,7 @@ export function constructRunWalk(
       phase: 'race',
       days,
       notes: [
-        `Trkačka nedelja: ${RW.raceWeekSessions} lakše sesije (L${easier}), pa trka ${RW.raceKm} km (${race.continuous ? 'bez hodanja' : `odnos nivoa L${L.level}`}); cilj: završiti.`
+        `Trkačka nedelja: ${RW.raceWeekSessions} lakše sesije (nivo ${easier}), pa trka ${RW.raceKm} km ${race.continuous ? 'bez hodanja' : `uz hodanje: ${mmss(race.runSec)} trčanja, pa ${mmss(race.walkSec)} hoda, i tako do cilja`}; cilj: završiti.`
       ]
     });
   }

@@ -3,6 +3,7 @@
    (fitTargetKm), korak dugog 0,1 km za sve brojeve dana; Odluka 3 — vrh ≥ vrh na 7b4b574 (fixture,
    stari kod se ne pokreće). Testovi 1–2 padaju na 349fd64 na proveri (vrh 17,1 / 41,3). */
 
+import { belowTargetShown } from './text.ts';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -51,7 +52,9 @@ const build = (w: PlanWeek): boolean =>
 function checkPlan(plan: FiveKV2Plan): void {
   expect(validatePlan(plan).filter((v) => v.severity === 'error')).toEqual([]);
   expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
-    plan.weeks.filter((w) => w.easyCappedAtLong).map((w) => w.index)
+    plan.weeks
+      .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+      .map((w) => w.index)
   );
   for (const w of plan.weeks) {
     if (w.phase !== 'race' && !w.easyCappedAtLong && !w.easyRest)

@@ -13,7 +13,7 @@ import {
 } from './lengths.ts';
 import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';
 import { raceWeekSharpener, weekQuality } from './quality.ts';
-import { kmText } from './text.ts';
+import { belowTargetShown, kmText } from './text.ts';
 import type {
   DayRole,
   PaceModel,
@@ -201,15 +201,15 @@ export function buildTrainingWeek(
     );
   if (easyRest > 0)
     notes.push(
-      `Lagan dan manje (${easyRest}): lagan trening ≥ ${kmText(easyMin)} km ne staje uz dugi ${kmText(longKm)} km.`
+      `Lagan dan manje (${easyRest}): lagan trening od bar ${kmText(easyMin)} km ne staje uz dugi ${kmText(longKm)} km.`
     );
-  if (easyCappedAtLong)
+  if (easyCappedAtLong && belowTargetShown(plannedKm, target))
     notes.push(
-      `Lagan trk ograničen na ${kmText(easyCapKm(longKm, f.phase, t1Off))} km uz dugi ${kmText(longKm)} km: planirano < cilj ${kmText(target)} km; više dana trčanja ili manji obim.`
+      `Lagan trk najviše ${kmText(easyCapKm(longKm, f.phase, t1Off))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; za pun obim treba više dana trčanja.`
     );
   if (rest.size > 0 || pain.size > 0)
     notes.push(
-      `Adaptacija: ${rest.size > 0 ? `${rest.size} dan(a) odmora, ` : ''}${pain.size > 0 ? 'period bola (dugi ≤ 60 min, lagani −30%, bez ubrzanja), ' : ''}planirano ≤ cilj obima ${kmText(target)} km.`
+      `Adaptacija: ${rest.size > 0 ? `${rest.size} dan(a) odmora, ` : ''}${pain.size > 0 ? 'period bola (dugi ≤ 60 min, lagani −30%, bez ubrzanja), ' : ''}planirano najviše ${kmText(target)} km.`
     );
   return {
     ok: true,
@@ -714,7 +714,8 @@ export function buildRaceWeek(
   const notes = ['Trkačka nedelja: trka se ne računa u nedeljni obim.'];
   const sharpRest = sharp && sharpDay ? raceRest.includes(dateOfWeekday(f, sharpDay)) : false;
   if (!sharp) notes.push('Adaptacija: bez oštrenja (dan oštrenja u zabrani kvaliteta).');
-  else if (sharpRest) notes.push('Bez oštrenja: sa njim bi trkačka nedelja bila veća od tapera.');
+  else if (sharpRest)
+    notes.push('Bez oštrenja: sa njim bi trkačka nedelja bila veća od nedelje pred njom.');
   else if (onEasyDay)
     notes.push(
       `Oštrenje je na laganom danu: nijedan zahtevan dan nije ${P.schedule.sharpenerMinGapDays} ili više dana pre trke.`
@@ -722,16 +723,16 @@ export function buildRaceWeek(
   const dropped = others.length - n;
   if (dropped > 0)
     notes.push(
-      `Izostavljeno laganih dana: ${dropped} (ostatak < ${P.easy.taperMinKm} km po trku).`
+      `Izostavljeno laganih dana: ${dropped} (ostalo bi manje od ${P.easy.taperMinKm} km po trčanju).`
     );
   if (withEve) notes.push(`Dan pred trku: lagano ${eveKm} km sa ubrzanjima.`);
   if (raceRest.length > 0)
     notes.push(
-      `Trkačka nedelja skraćena: taper je imao dane odmora/bola — trkačka nedelja ≤ planirano tapera ${cap!.km} km (odmor: ${raceRest.join(', ')}).`
+      `Trkačka nedelja skraćena: nedelja pred njom je imala dane odmora/bola, pa trkačka nedelja ima najviše ${cap!.km} km (odmor: ${raceRest.join(', ')}).`
     );
   const plannedKm = r2(days.reduce((a, d) => a + (d.countsToWeek ? d.workout.km : 0), 0));
   notes.push(
-    `Cilj trkačke nedelje = planirano ${plannedKm} km (gornja granica ${bound} km = ${P.volume.raceWeekFactor * 100}% vrha; lagan dan ≤ ${easyCap} km).`
+    `Trkačka nedelja: ${plannedKm} km (najviše ${bound} km, ${P.volume.raceWeekFactor * 100} % najvećeg nedeljnog obima; lagan dan najviše ${easyCap} km).`
   );
   return {
     ok: true,

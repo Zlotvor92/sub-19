@@ -350,8 +350,10 @@ describe('M2/M3: napomene adaptacije', () => {
       )
     );
     const notes = r.weeks.flatMap((w) => w.notes);
-    expect(notes.some((n) => n.includes('planirano ≤ cilj obima'))).toBe(true);
-    expect(notes.filter((n) => /planirano [\d,.]+ km < cilj/.test(n))).toEqual([]);
+    expect(notes.some((n) => n.includes('planirano najviše'))).toBe(true);
+    expect(notes.filter((n) => /planirano [\d,.]+ km < cilj|umesto [\d,.]+ km/.test(n))).toEqual(
+      []
+    );
   });
   it('M3: „Rasterećenje:" samo u rasteretnoj nedelji (jedan kvalitet doze rasterećenja posle pauze)', () => {
     const p = g();

@@ -3,6 +3,7 @@
    Testovi koriste samo javni API i module koji postoje od 2.3.0, da bi na 7b4b574 padali na proveri,
    a ne na uvozu. */
 
+import { belowTargetShown } from './text.ts';
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
@@ -126,7 +127,11 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
             }
             expect(
               r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)
-            ).toEqual(r.plan.weeks.filter((x) => x.easyCappedAtLong).map((x) => x.index));
+            ).toEqual(
+              r.plan.weeks
+                .filter((x) => x.easyCappedAtLong && belowTargetShown(x.plannedKm, x.targetKm))
+                .map((x) => x.index)
+            );
           }
     expect(weeks).toBeGreaterThan(1000);
     expect(capped).toBe(0);
@@ -173,7 +178,11 @@ describe('Odluka 3: bez višeg nivoa — ista doza druge strukture (vrhunac I i 
     expect(errorsOf(plan)).toEqual([]);
     expect(
       plan.weeks.some((w) =>
-        w.notes.some((n) => /ista doza, (kraći oporavak|druga struktura)/.test(n))
+        w.notes.some((n) =>
+          /ista količina kao prošle nedelje \(obim nedelje ne dozvoljava više\), (kraći oporavak|drugačija podela)/.test(
+            n
+          )
+        )
       )
     ).toBe(true);
   });
@@ -479,7 +488,9 @@ function checkStanding(plan: FiveKV2Plan, n: 3 | 4 | 5): void {
   expect([plan.policyId, plan.policyVersion]).toEqual([P.id, P.version]);
   // 5k-v2.12.0 (T1): planirano < cilj (upozorenje) samo u nedelji sa granicom laganog 0,8 × dugi.
   expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
-    plan.weeks.filter((w) => w.easyCappedAtLong).map((w) => w.index)
+    plan.weeks
+      .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+      .map((w) => w.index)
   );
   for (const w of plan.weeks) {
     expect(['base', 'peak', 'sharpen', 'taper', 'race']).toContain(w.phase);

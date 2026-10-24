@@ -423,7 +423,7 @@ function tSession(t: TDose, targetKm: number, p: Paces): SessionResult & { ok: t
     workout: buildWorkout(
       'quality',
       'T_cruise',
-      `T cruise: ${t.reps} × ${m(t.repKm)} (oporavak ${rec} s)`,
+      `T: ${t.reps} × ${m(t.repKm)} (oporavak ${rec} s)`,
       [
         wu,
         { kind: 'reps', zone: 'T', reps: t.reps, rep: { km: t.repKm }, recovery: { sec: rec } },
@@ -728,13 +728,13 @@ function baseWeek(
 function rDropNotes(budgetR: number, pm: RepChoice | null, r: RepChoice): string[] {
   return pm && workOf(r) + 1e-9 < workOf(pm) && budgetR + 1e-9 < workOf(pm)
     ? [
-        `R doza pala: plafon R ${km(budgetR)} km < prethodne ${km(workOf(pm))} km — najveća struktura koja staje.`
+        `R: manje nego prošle nedelje (${km(workOf(pm))} km) jer obim nedelje dozvoljava najviše ${km(budgetR)} km R — najveća podela koja staje.`
       ]
     : [];
 }
 
 const altNote = (what: string, c: RepChoice): string =>
-  `${what} bez višeg nivoa u budžetu — ista doza, ${c.recRatio !== undefined ? 'kraći oporavak' : 'druga struktura'}.`;
+  `${what}: ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), ${c.recRatio !== undefined ? 'kraći oporavak' : 'drugačija podela'}.`;
 
 /**
  * 2.4.0 (Odluka 3): ista doza druge strukture za glavni I (vrhunac) / RP (oštrenje) kad ponuda nema viši
@@ -791,7 +791,7 @@ function peakWeek(
   if (up.ok) i = up;
   else if (alt) {
     i = intervalSession('I', alt, targetKm, p);
-    notes.push(altNote('Vrhunac: I', alt));
+    notes.push(altNote('Vrhunac (I)', alt));
   } else {
     const w = pm ? workOf(pm) : 0;
     if (!pm || w > b.I + 1e-9 || w + 1e-9 < b.I * q.mainMinShareOfBudget)
@@ -799,7 +799,7 @@ function peakWeek(
     i = intervalSession('I', pm, targetKm, p);
     held = true;
     notes.push(
-      'Vrhunac: I zadržan (ponuda nema viši nivo ni drugu strukturu u budžetu); T menja strukturu.'
+      'Vrhunac: I ostaje isti kao prošle nedelje (obim nedelje ne dozvoljava više ni drugačiju podelu); T se menja.'
     );
   }
   const shortest = Math.min(...q.repOptionsKm.Tcruise);
@@ -903,7 +903,9 @@ function baseWeekOne(
   const order: ('R' | 'T')[] = want === 'R' ? ['R', 'T'] : ['T', 'R'];
   for (const kind of order) {
     const notes =
-      kind === want ? [] : [`Baza (3 dana): ${want} ne staje u budžet — ${kind} umesto njega.`];
+      kind === want
+        ? []
+        : [`Osnovna faza: ${want} nema mesta u obimu nedelje — umesto njega ${kind}.`];
     if (kind === 'R') {
       const r = pickR();
       if (r)
@@ -949,11 +951,11 @@ function peakWeekOne(
   const pm = prev?.main;
   const alt = pm ? altMain('I', b.I, p, pm) : null;
   if (!alt) return { ok: false, message: up.message };
-  return single(
-    intervalSession('I', alt, targetKm, p).workout,
-    [altNote('Vrhunac (3 dana): I', alt)],
-    { main: alt, t: null, same: 1 }
-  );
+  return single(intervalSession('I', alt, targetKm, p).workout, [altNote('Vrhunac (I)', alt)], {
+    main: alt,
+    t: null,
+    same: 1
+  });
 }
 
 /**
@@ -991,7 +993,7 @@ function deloadWeek(
       stridesOnly: false,
       notes: [
         sub
-          ? `Rasterećenje: ${main} ne staje u budžet — ${type === 'R' ? 'R' : 'kratak T'} umesto njega, uz ubrzanja.`
+          ? `Rasterećenje: ${main} nema mesta u obimu nedelje — umesto njega ${type === 'R' ? 'R' : 'kratak T'}, uz ubrzanja.`
           : 'Rasterećenje: jedan kratak kvalitet.'
       ],
       dose: null
@@ -1005,7 +1007,7 @@ function deloadWeek(
     easyStrides: false,
     stridesOnly: true,
     notes: [
-      `Rasterećenje: ${main}, kratak T (≥ ${P.quality.shortTMinKm} km) ni R (≥ ${minR} km) ne staju u budžet — kvalitet nedelje su samo ubrzanja ${so.reps} × ${so.sec} s na laganom.`
+      `Rasterećenje: ${main}, kratak T (bar ${P.quality.shortTMinKm} km) ni R (bar ${minR} km) nemaju mesta u obimu nedelje — kvalitet nedelje su samo ubrzanja ${so.reps} × ${so.sec} s na laganom.`
     ],
     dose: null
   };
@@ -1051,7 +1053,7 @@ export function vdotWeekQuality(
       const alt = altMain('RP', b.I, p, pm);
       if (alt) {
         rp = intervalSession('RP', alt, targetKm, p);
-        notes.push(altNote('Oštrenje: RP', alt));
+        notes.push(altNote('Oštrenje (RP)', alt));
       }
     }
     if (!rp.ok) return rp;
@@ -1071,8 +1073,11 @@ export function vdotWeekQuality(
   }
   const rp = qualitySession('RP', b.I, targetKm, p, f.phase);
   if (!rp.ok) return rp;
-  const tp = `Taper ${f.taperStep}/${taperWeeks}`;
-  if (one) return single(rp.workout, [`${tp}: jedan kvalitet (3 dana).`], null);
+  const tp =
+    taperWeeks > 1
+      ? `Smanjenje obima pred trku (nedelja ${f.taperStep} od ${taperWeeks})`
+      : 'Smanjenje obima pred trku';
+  if (one) return single(rp.workout, [`${tp}: jedan kvalitet.`], null);
   if (f.taperStep === 1) {
     const t = qualitySession('T_short', b.T, targetKm, p, f.phase);
     if (!t.ok) return t;
@@ -1092,7 +1097,7 @@ export function vdotWeekQuality(
     q2: null,
     easyStrides: true,
     stridesOnly: false,
-    notes: ['Taper 2/2: jedan kvalitet.'],
+    notes: ['Smanjenje obima pred trku (nedelja 2 od 2): jedan kvalitet.'],
     dose: null
   };
 }

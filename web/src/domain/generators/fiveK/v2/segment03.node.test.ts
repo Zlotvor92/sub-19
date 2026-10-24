@@ -1,5 +1,6 @@
 /* Segment 03 (5k-v2.2.0): preostale trenerske odluke 4-dnevnog jezgra (Odluke 1–6) i mreža 240 ulaza. */
 
+import { belowTargetShown } from './text.ts';
 import { describe, expect, it } from 'vitest';
 import { generateFiveKV2 } from './generate.ts';
 import { pacesFromVdot } from './paces.ts';
@@ -278,7 +279,11 @@ describe('mreža 240 ulaza (segment02): Odluke 1, 2 i 5', () => {
       }
       expect(
         r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)
-      ).toEqual(plan.weeks.filter((w) => w.easyCappedAtLong).map((w) => w.index));
+      ).toEqual(
+        plan.weeks
+          .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+          .map((w) => w.index)
+      );
     }
     expect(capped).toBeGreaterThan(0);
     expect({ belowOutsideRace, deloadAtPhaseStart, rejectedFastSmall }).toEqual({

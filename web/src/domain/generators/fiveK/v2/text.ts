@@ -1,3 +1,5 @@
+import { FIVE_K_V2_POLICY } from './policy.ts';
+
 /* 5k-v2.11.0 (Z2): JEDINO mesto formatiranja brojeva u tekstu korisniku (naslovi treninga, napomene, upozorenja,
    razlozi): decimalni zarez, km najviše 1 decimala, trajanje oporavka m:ss. Podaci plana (km, sec) se ne menjaju. */
 
@@ -5,6 +7,15 @@
 export function num(x: number, d = 1): string {
   const f = 10 ** d;
   return String(Math.round(x * f + (x >= 0 ? 1e-9 : -1e-9)) / f).replace('.', ',');
+}
+
+/** F1 (04-final): poruka „planirano manje od cilja" (napomena nedelje i upozorenje) samo kad je razlika stvarna —
+ *  bar 1 km ili bar 3 % cilja, i ne kad su obe vrednosti iste posle zaokruživanja. Jedino mesto ove odluke. */
+export function belowTargetShown(plannedKm: number, targetKm: number): boolean {
+  const T = FIVE_K_V2_POLICY.tolerance;
+  const gap = targetKm - plannedKm;
+  if (kmText(plannedKm) === kmText(targetKm)) return false;
+  return gap >= T.belowTargetNoticeKm - 1e-9 || gap >= targetKm * T.belowTargetNoticeShare - 1e-9;
 }
 
 /** Kilometri u tekstu: najviše 1 decimala. */

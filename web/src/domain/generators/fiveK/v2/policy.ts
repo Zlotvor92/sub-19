@@ -118,7 +118,7 @@ export const FIVE_K_V2_POLICY = {
         plan: rasterećenje ne pre nedelje deloadFirstWeek. */
     runner: { taperWeeks: 1, noDeloadMaxWeeks: 8, deloadFirstWeek: 4 },
     /** Napomena plana kratke pripreme. */
-    shortNote: 'Kratka priprema: malo vremena za izgradnju; cilj prikazati kao orijentir.'
+    shortNote: 'Kratka priprema: malo vremena za izgradnju; cilj shvati kao orijentir.'
   },
 
   volume: {
@@ -450,7 +450,13 @@ export const FIVE_K_V2_POLICY = {
   },
 
   /** Tolerancija aritmetike (km) i planirano/ciljno (udeo). */
-  tolerance: { arithmeticKm: 0.011, plannedVsTarget: 0.05 }
+  tolerance: {
+    arithmeticKm: 0.011,
+    plannedVsTarget: 0.05,
+    /** F1 (04-final): poruka „nedelja ima manje od cilja" samo kad je razlika ≥ 1 km ili ≥ 3 % cilja (text.belowTargetShown). */
+    belowTargetNoticeKm: 1,
+    belowTargetNoticeShare: 0.03
+  }
 } as const;
 
 export type FiveKV2Policy = typeof FIVE_K_V2_POLICY;

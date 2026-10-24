@@ -16,6 +16,7 @@ import {
 } from './periodize.ts';
 import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { validateRunWalk } from './runWalkValidate.ts';
+import { belowTargetShown } from './text.ts';
 import { easyCapKm, easyMinKm, weekLengths } from './lengths.ts';
 import {
   easyMinOf,
@@ -620,19 +621,21 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       w.plannedKm < w.targetKm;
     if (w.easyCappedAtLong && !cappedOk && !limited(w))
       err('EASY_CAP', 'Oznaka „lagan = dugi" ne odgovara danima nedelje.', w.index);
-    if (cappedOk)
-      warn(
-        'PLANNED_BELOW_TARGET',
-        `Planirano ${w.plannedKm} km < cilj ${w.targetKm} km (lagan na granici ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner))} km uz dugi ${long.workout.km} km; više dana trčanja ili manji obim).`,
-        w.index
-      );
-    else if (limited(w) && w.plannedKm <= w.targetKm + tolKm)
-      warn(
-        'PLANNED_BELOW_TARGET_LIMITS',
-        `Planirano ${w.plannedKm} km < cilj obima ${w.targetKm} km (odmor/bol, adaptacija).`,
-        w.index
-      );
-    else if (w.phase !== 'race' && dev > P.tolerance.plannedVsTarget + EPS)
+    if (cappedOk) {
+      if (belowTargetShown(w.plannedKm, w.targetKm))
+        warn(
+          'PLANNED_BELOW_TARGET',
+          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner))} km uz dugi ${long.workout.km} km; za pun obim treba više dana trčanja).`,
+          w.index
+        );
+    } else if (limited(w) && w.plannedKm <= w.targetKm + tolKm) {
+      if (belowTargetShown(w.plannedKm, w.targetKm))
+        warn(
+          'PLANNED_BELOW_TARGET_LIMITS',
+          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (dani odmora ili bola).`,
+          w.index
+        );
+    } else if (w.phase !== 'race' && dev > P.tolerance.plannedVsTarget + EPS)
       err('PLANNED_VS_TARGET', `Planirano ${w.plannedKm} km vs cilj ${w.targetKm} km.`, w.index);
     // Uslov 8: degenerisan plan — nedelja ispod minimalnog smislenog obima, prazan trening.
     // 2.5.0: nedelja sa danima odmora (bol ≥ 7) je namerno manja. 2.7.0 (P2, odluka 2): u nedelji sa danima
@@ -655,7 +658,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       if (w.phase === 'race' && (w.raceRest?.length ?? 0) > 0)
         warn(
           'RACE_WEEK_SHORT',
-          `Trkačka nedelja ${weekKm} km < ${minKm} km — skraćena na planirano tapera.`,
+          `Trkačka nedelja ima ${weekKm} km, manje od ${minKm} km — skraćena da ne bude veća od nedelje pred njom.`,
           w.index
         );
       else err('WEEK_MIN_VOLUME', `Nedelja ${weekKm} km < ${minKm} km.`, w.index);
@@ -851,7 +854,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     if (plan.input.currentWeeklyKm > capacity + 0.05)
       warn(
         'START_ABOVE_CAPACITY',
-        `Trenutni obim ${plan.input.currentWeeklyKm} km > kapacitet ${nDays} dana ${capacity} km; plan kreće od kapaciteta.`,
+        `Trenutni obim (${plan.input.currentWeeklyKm} km) je veći od onoga što ${nDays} dana nose (${capacity} km); plan kreće od ${capacity} km.`,
         1
       );
   }
@@ -1045,7 +1048,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     if (unitOf(rDose(a)) === 'm' && ceilM < rDose(a).m)
       warn(
         'DOSE_DROPPED',
-        `R u bazi ${fmtDose(rDose(b))} < prethodne ${fmtDose(rDose(a))}: plafon R ${ceilM} m (${P.quality.rMaxShare * 100}% cilja ${b.targetKm} km) je ispod prethodne doze.`,
+        `R u osnovnoj fazi ${fmtDose(rDose(b))}, manje nego prethodne nedelje (${fmtDose(rDose(a))}): R sme biti najviše ${P.quality.rMaxShare * 100} % nedelje (${ceilM} m od ${b.targetKm} km).`,
         b.index
       );
     else

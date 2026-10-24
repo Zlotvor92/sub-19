@@ -2,6 +2,7 @@
    docs/generators-v2/audit/fixes/03-coach-rules.md. Svaki test pada na b9c4728 i prolazi posle; merne skripte i brojevi
    pre → posle su u docs/5k-v2/reports/SEGMENT-10-IMPLEMENTATION.md. */
 
+import { belowTargetShown } from './text.ts';
 import { describe, expect, it } from 'vitest';
 import { adaptFiveKV2 } from './adapt.ts';
 import { addDays, daysBetween } from './dates.ts';
@@ -88,10 +89,12 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
     expect(capped.length).toBeGreaterThan(0);
     for (const w of capped) {
       expect(w.plannedKm).toBeLessThan(w.targetKm);
-      expect(w.notes.some((n) => n.includes('više dana trčanja ili manji obim'))).toBe(true);
+      // F1 (04-final): napomena i upozorenje samo kad je razlika ≥ 1 km ili ≥ 3 % cilja.
+      const shown = belowTargetShown(w.plannedKm, w.targetKm);
+      expect(w.notes.some((n) => n.includes('za pun obim treba više dana trčanja'))).toBe(shown);
     }
     expect(p.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
-      capped.map((w) => w.index)
+      capped.filter((w) => belowTargetShown(w.plannedKm, w.targetKm)).map((w) => w.index)
     );
   });
 

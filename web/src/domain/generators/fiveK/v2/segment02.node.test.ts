@@ -1,5 +1,6 @@
 /* Segment 02 (5k-v2.1.0, ažurirano za 2.2.0): trenerske odluke 1–4 i Uslov 8 (upotrebljivost plana). */
 
+import { belowTargetShown } from './text.ts';
 import { easyCapKm } from './lengths.ts';
 import { describe, expect, it } from 'vitest';
 import { daysBetween } from './dates.ts';
@@ -79,7 +80,8 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     expect(plan.weeks.slice(0, -1).map((w) => w.targetKm)).toEqual(targets.slice(0, -1));
     expect(plan.weeks[plan.weeks.length - 1]!.targetKm).toBeLessThanOrEqual(targets.at(-1)!);
     expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET')).toHaveLength(
-      plan.weeks.filter((w) => w.easyCappedAtLong).length
+      plan.weeks.filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+        .length
     );
   });
 
