@@ -1,0 +1,9 @@
+node_modules/
+out/
+build/
+# kopije tuđih izvora samo za lokalnu proveru
+assets/sources/AIS_*.pdf
+# veliki binarni fajlovi koji se ponovo prave skriptama (make_music.py, finalize.sh)
+public/audio/music.wav
+deliverables/*.mp4
+deliverables/*.wav
