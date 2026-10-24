@@ -1,0 +1,23 @@
+{
+  "name": "nitrati-trcanje-reel",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Edukativni Instagram Reel (9:16) o prehrambenim nitratima i trčanju — Remotion projekat",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts NitratiReel out/video_raw.mp4",
+    "still": "remotion still src/index.ts"
+  },
+  "dependencies": {
+    "@fontsource/barlow-condensed": "^5.1.0",
+    "@fontsource/inter": "^5.1.0",
+    "@remotion/cli": "^4.0.538",
+    "@remotion/noise": "^4.0.538",
+    "@remotion/paths": "^4.0.538",
+    "@types/react": "^18.3.12",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.538",
+    "typescript": "^5.6.3"
+  }
+}
