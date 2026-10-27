@@ -42,7 +42,7 @@ export function TenKV2TestResult({ dayId }: { dayId: string }) {
             <label htmlFor="v2-test-sec">Vreme 5 km (samo test, bez zagrevanja i hlađenja)</label>
             <input
               id="v2-test-sec"
-              inputMode="numeric"
+              inputMode="decimal"
               placeholder="mm:ss"
               value={raw}
               onChange={(e) => setRaw(e.target.value)}

@@ -101,7 +101,7 @@ export function WorkSegment(p: WorkSegmentProps) {
           </div>
           <DraftInput
             className="wseg-in"
-            inputMode="numeric"
+            inputMode="decimal"
             placeholder="356"
             aria-label="Ostvaren tempo radnog dela"
             value={p.pace ? fmtClock(p.pace) : ''}
