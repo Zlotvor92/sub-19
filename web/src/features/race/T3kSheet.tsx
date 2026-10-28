@@ -63,7 +63,7 @@ export function T3kSheet({ id, today }: { id: string | null; today: string }) {
           <label htmlFor="t3-time">Vreme</label>
           <input
             type="text"
-            inputMode="numeric"
+            inputMode="decimal"
             id="t3-time"
             placeholder="11:42"
             value={time}

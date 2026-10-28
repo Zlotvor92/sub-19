@@ -21,10 +21,12 @@ export function usePushInfo(status: PushStatus | null): SectionInfo {
   };
 }
 
-/** Stanje obaveštenja (pretplata i ključ se pitaju asinhrono). Osvežava se i posle svake radnje. */
+/** Stanje obaveštenja (pretplata i ključ se pitaju asinhrono). Osvežava se posle svake radnje i kad se zapamćeno stanje promeni van sekcije
+ *  (ponuda pri pokretanju, v. `pushPrompt`). */
 export function usePushStatus(): [PushStatus | null, () => void] {
   const [status, setStatus] = useState<PushStatus | null>(null);
   const [tick, setTick] = useState(0);
+  const stored = useSettingsStore((s) => s.ui['push'] === true);
   useEffect(() => {
     let alive = true;
     void getApp()
@@ -35,7 +37,7 @@ export function usePushStatus(): [PushStatus | null, () => void] {
     return () => {
       alive = false;
     };
-  }, [tick]);
+  }, [tick, stored]);
   return [status, () => setTick((n) => n + 1)];
 }
 

@@ -99,7 +99,7 @@ export function EntryForm(p: EntryFormProps) {
         <DraftInput
           id={fid('sec')}
           type="text"
-          inputMode="numeric"
+          inputMode="decimal"
           placeholder="npr. 42:33"
           {...bind('sec')}
         />

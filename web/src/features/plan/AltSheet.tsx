@@ -223,7 +223,7 @@ export function AltSheet({ id }: { id: string }) {
           <div className="inline-pair">
             <input
               type="text"
-              inputMode="numeric"
+              inputMode="decimal"
               id="alt-pace"
               placeholder="410 = 4:10"
               value={paceText ?? (cur.pace != null ? fmtClock(cur.pace) : '')}

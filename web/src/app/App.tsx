@@ -21,6 +21,7 @@ import { useToday } from './useToday';
 import { BANNER, useSystemBanners } from './useSystemBanners';
 import { SheetHost } from '../features/sheets';
 import { Wizard } from '../features/onboarding';
+import { usePushPrompt } from '../features/ti/pushPrompt';
 
 /* LJUSKA APLIKACIJE: ekrani po tabovima (sa ekranima iznad njih), traka tabova, list, dijalog potvrde, trake i kapija za prijavu. Nema trajnog zaglavlja:
    svaki ekran nosi svoj naslov. */
@@ -199,6 +200,7 @@ export function App() {
   );
 
   useSwipeNav(ready && gate === null && !wizard && hasPlan && !sheet && screens.length === 0);
+  usePushPrompt(ready && gate === null && !wizard && hasPlan);
 
   if (!ready) return null;
 

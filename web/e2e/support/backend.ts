@@ -175,9 +175,12 @@ export async function fixToday(page: Page, iso = '2026-01-14T09:00:00'): Promise
   await page.clock.setFixedTime(new Date(iso));
 }
 
-/** Stranica se ponaša kao aplikacija sa početnog ekrana: tamo se korisnik prijavljuje (u pregledaču na telefonu kapija prvo traži instalaciju). */
+/** Stranica se ponaša kao aplikacija sa početnog ekrana: tamo se korisnik prijavljuje (u pregledaču na telefonu kapija prvo traži instalaciju).
+    Dozvola za obaveštenja je „default" (sveže instalirana, pitanje još nije postavljeno): headless Chromium u CI-ju vraća „denied", pa bi
+    ponuda obaveštenja pri pokretanju prekrila ekran u svakom testu instalirane aplikacije. */
 export async function asInstalledApp(target: Page | BrowserContext): Promise<void> {
   await target.addInitScript(() => {
     Object.defineProperty(navigator, 'standalone', { value: true, configurable: true });
+    Object.defineProperty(Notification, 'permission', { get: () => 'default', configurable: true });
   });
 }
