@@ -91,7 +91,7 @@ slabijom zaštitom, i to se ne vidi kao greška.
 Claude čita zdravstvene podatke kroz `/api/mcp` (v. zaglavlje tog fajla). Prijava ide preko Supabase OAuth 2.1
 servera (beta). Redosled je obavezan:
 
-1. **Migracija `20261030120000_oauth_samo_mcp.sql` PRE uključivanja.** Supabase OAuth token ima ista prava kao sesija
+1. **Migracija `20261030074317_oauth_samo_mcp.sql` PRE uključivanja** (puštena 30. 10. 2026. u 08:43 po Beogradu). Supabase OAuth token ima ista prava kao sesija
    aplikacije; ta migracija ga zaključava van baze. Pre nje bi Claude-ov token mogao da čita i menja ceo `user_state`.
 2. **OAuth Server → uključen.** Authorization Path: **`/`** (v. `OAUTH_CONSENT_PATH` u
    `web/src/app/oauthConsent.ts`). Supabase šalje na `<Site URL>/?authorization_id=…`, pa Site URL (URL
