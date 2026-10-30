@@ -45,7 +45,7 @@ function ucitajProveru(fajl, { env = {}, fetch: mreza } = {}) {
   const pozivi = [];
   const ctx = {
     console, Object, Array, String, Number, Boolean, JSON, Math, Date, RegExp, Error, Map, Set, Promise,
-    AbortSignal, AbortController,
+    AbortSignal, AbortController, Buffer,
     process: { env: Object.assign({ SUPABASE_URL: 'https://x.supabase.co', SUPABASE_ANON_KEY: 'anon' }, env) },
     fetch: async (u, o) => {
       pozivi.push({ url: String(u), opcije: o });
@@ -68,6 +68,8 @@ function ucitajProveru(fajl, { env = {}, fetch: mreza } = {}) {
 }
 
 const saTokenom = t => ({ headers: { authorization: 'Bearer ' + t } });
+/* JWT oblika kakav izdaje Supabase OAuth server (Claude konektor): telo nosi `client_id`. */
+const jwtSa = telo => ['e30', Buffer.from(JSON.stringify(telo)).toString('base64url'), 'potpis'].join('.');
 
 /* Scenariji se pišu JEDNOM i puštaju kroz svih sedam kopija. Ako se ijedna
    razidje, pada tačno ona i poruka kaže koja. */
@@ -101,6 +103,19 @@ const SCENARIJI = [
     const q = mk({ env: { SUPABASE_URL: '', SUPABASE_ANON_KEY: '' } });
     const r = await q.zovi(saTokenom('dobar'));
     assert.equal(r.ok, false); assert.equal(r.status, 500);
+  }],
+  ['OAuth token (Claude konektor) dobija 403, bez mreže i bez keša', async p => {
+    /* Taj token sme samo da čita zdravstvene podatke kroz /api/mcp. Da prođe ovde,
+       mogao bi da obriše nalog (delete-account) ili troši kvote — a Supabase bi
+       ga potvrdio kao ispravnu sesiju. */
+    const r = await p.zovi(saTokenom(jwtSa({ sub: 'u1', client_id: 'claude' })));
+    assert.equal(r.ok, false); assert.equal(r.status, 403);
+    assert.equal(p.pozivi.length, 0, 'OAuth token je stigao do Supabase-a');
+    assert.equal(p.kesVelicina(), 0);
+  }],
+  ['token aplikacije (bez `client_id`) i dalje prolazi', async p => {
+    const r = await p.zovi(saTokenom(jwtSa({ sub: 'u1', role: 'authenticated' })));
+    assert.equal(r.ok, true); assert.equal(r.userId, 'u1');
   }],
   ['ispravan token vraća korisnika i njegov id', async p => {
     const r = await p.zovi(saTokenom('dobar'));

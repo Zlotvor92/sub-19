@@ -6,7 +6,7 @@ Novi frontend poziva ovo isključivo kroz `src/services/api/*` (nikad `fetch` iz
 
 ## 1. Vercel funkcije (`/api/*`)
 
-Zajedničko: izlazni rok ispod `maxDuration`; JWT (`Authorization: Bearer <supabase access token>`) proverava se kod Supabase-a (`/auth/v1/user`), potvrđeni token se kešira 30 s u instanci; greške su JSON `{error}`. Hobby plan: **max 12 funkcija** (sada 9).
+Zajedničko: izlazni rok ispod `maxDuration`; JWT (`Authorization: Bearer <supabase access token>`) proverava se kod Supabase-a (`/auth/v1/user`), potvrđeni token se kešira 30 s u instanci; greške su JSON `{error}`. OAuth token Claude konektora (JWT sa `client_id`) svuda osim `/api/mcp` dobija **403**. Hobby plan: **max 12 funkcija** (sada 10).
 
 | Endpoint | Metoda / grana | Auth | Telo / upit | Odgovor | Upstream | Limit | Klijent (stari) | Novi modul | Pročitano |
 |---|---|---|---|---|---|---|---|---|---|
@@ -32,6 +32,8 @@ Zajedničko: izlazni rok ispod `maxDuration`; JWT (`Authorization: Bearer <supab
 | `/api/daily-report` | GET | `CRON_SECRET` (Vercel Cron 05:00 UTC) | | mejl vlasniku | Supabase service-role, Resend | — | — (samo cron) | — | ✔ zaglavlje |
 | `/api/delete-account` | POST `{potvrda:'OBRISI'}` (case/dijakritika neosetljivo) | JWT, `Content-Type: application/json` obavezan | | `{ok, obrisano[]}` | Supabase service-role (DELETE redova pa `auth/v1/admin/users/<id>`) | — | `openObrisiNalogSheet` | `accountApi.delete` | ✔ |
 | `/api/report-bug` | POST `{description≤3000, context:{version,tab,userAgent}}` | JWT | | `{ok}` | Resend | 10/dan (`bug_report_usage`) | `openBugSheet` | `supportApi.reportBug` | ✔ |
+| `/api/mcp` | POST JSON-RPC (MCP Streamable HTTP, bez stanja): `initialize`, `ping`, `tools/list`, `tools/call zdravstveni_podaci {od?, do?}` | **samo** OAuth token Claude konektora (JWT sa `client_id`); bez njega 401 + `WWW-Authenticate … resource_metadata` | do 400 dana | jutarnja merenja iz `data->wellness` (samo čitanje) | Supabase Auth (`/auth/v1/user`), Supabase service-role (`select=wellness:data->wellness`) | — | — (zove Claude) | — | ✔ |
+| | GET `?metadata` | — | | OAuth Protected Resource Metadata (RFC 9728) | — | — | — | — | ✔ |
 
 **Brisanje naloga**: redosled je nosiv (prvo podaci, tek pa nalog; ako podaci ne odu, nalog se ne briše). Isti redosled mora ostati u UI-ju (poruke za delimičan ishod). Javna adresa `privacy.html#brisanje` se ne dira.
 

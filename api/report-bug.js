@@ -56,6 +56,14 @@ async function requireUser(req) {
   const h = req.headers.authorization || req.headers.Authorization || '';
   const m = /^Bearer\s+(.+)$/i.exec(String(h).trim());
   if (!m) return { ok: false, status: 401, error: 'Nedostaje prijava.' };
+  /* OAuth token (Claude konektor, v. api/mcp.js) nosi `client_id` i sme SAMO da čita zdravstvene podatke kroz
+     /api/mcp. Odbija se pre keša i mreže: isti token bi ovde mogao da obriše nalog ili troši kvote. Potpis se ne
+     proverava — lažan `client_id` samo sebi zatvara vrata, a pravi OAuth token ga uvek nosi u potpisanom telu. */
+  let oauthKlijent = null;
+  try {
+    oauthKlijent = JSON.parse(Buffer.from(String(m[1]).split('.')[1] || '', 'base64url').toString('utf8')).client_id || null;
+  } catch (e) { oauthKlijent = null; }
+  if (oauthKlijent) return { ok: false, status: 403, error: 'Ovaj pristup (Claude konektor) sme samo da čita zdravstvene podatke.' };
   const kes = AUTH_KES.get(m[1]);
   if (kes && kes.doKada > Date.now()) return { ok: true, userId: kes.id, email: kes.email, token: m[1] };
   try {

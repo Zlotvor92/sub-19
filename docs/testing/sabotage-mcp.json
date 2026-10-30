@@ -1,0 +1,30 @@
+[
+  {
+    "name": "mcp-a Claude prepoznat samo po domenu",
+    "file": "src/services/supabase/oauthServer.ts",
+    "find": "export const isClaudeRedirect = (uri: string): boolean => uri.split('?')[0] === CLAUDE_CALLBACK;",
+    "replace": "export const isClaudeRedirect = (uri: string): boolean => uri.startsWith('https://claude.ai');",
+    "tests": ["src/services/supabase/oauthServer.test.ts"]
+  },
+  {
+    "name": "mcp-b tuđ zahtev dobija „Dozvoli“",
+    "file": "src/features/oauth/OAuthConsent.tsx",
+    "find": "        ) : isClaudeRedirect(view.req.redirectUri) ? (",
+    "replace": "        ) : view.req.redirectUri ? (",
+    "tests": ["src/features/oauth/OAuthConsent.test.tsx"]
+  },
+  {
+    "name": "mcp-c odbijen tuđ zahtev vodi na tuđu adresu",
+    "file": "src/features/oauth/OAuthConsent.tsx",
+    "find": "    if (!isClaudeRedirect(req.redirectUri) || !isClaudeRedirect(r.data)) {",
+    "replace": "    if (false) {",
+    "tests": ["src/features/oauth/OAuthConsent.test.tsx"]
+  },
+  {
+    "name": "mcp-d zahtev se pamti i van korena",
+    "file": "src/app/oauthConsent.ts",
+    "find": "  if ((loc.pathname || '/') !== OAUTH_CONSENT_PATH) return false;",
+    "replace": "",
+    "tests": ["src/app/oauthConsent.test.ts"]
+  }
+]

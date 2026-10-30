@@ -158,8 +158,15 @@ describe('izgrađeni izlaz', () => {
       if (name === 'connect-src' || name === 'img-src')
         for (const s of sources) if (s.startsWith('https://')) allowed.add(s.slice(8));
     }
-    /* Ne šalju se nikuda: XML imenski prostori, tekst poruka greške biblioteke, oznake šeme, spoljne veze koje čovek otvara dodirom (video vežbe). */
-    const inert = new Set(['www.w3.org', 'react.dev', 'json-schema.org', 'www.youtube.com']);
+    /* Ne šalju se nikuda: XML imenski prostori, tekst poruka greške biblioteke, oznake šeme, spoljne veze koje čovek otvara dodirom (video vežbe),
+       Claude-ova povratna adresa (samo se poredi i na nju se PRELAZI posle odobrenja konektora — `services/supabase/oauthServer.ts`). */
+    const inert = new Set([
+      'www.w3.org',
+      'react.dev',
+      'json-schema.org',
+      'www.youtube.com',
+      'claude.ai'
+    ]);
     const hosts = new Set<string>();
     for (const f of files().filter((x) => /^assets\/.*\.js$/.test(x)))
       for (const m of readFileSync(join(out, f), 'utf8').matchAll(/https?:\/\/([a-zA-Z0-9.-]+)/g))

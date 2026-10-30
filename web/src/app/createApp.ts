@@ -43,6 +43,7 @@ import { createUserStateApi, type UserStateApi } from '../services/api/userState
 import { createActivityApi } from '../services/api/activityApi';
 import { createAppApi, type AppApi } from '../services/api/appApi';
 import { createAccountApi, type AccountApi } from '../services/api/accountApi';
+import { createOAuthServerApi, type OAuthServerApi } from '../services/supabase/oauthServer';
 import {
   buildBackup,
   importBackup,
@@ -122,6 +123,8 @@ export interface App {
   /** Naši /api endpointi sa prijavom. */
   appApi: AppApi;
   account: AccountApi;
+  /** Odobrenje pristupa za Claude konektor (Supabase OAuth server, ekran na `/?authorization_id=…`). */
+  oauthServer: OAuthServerApi;
   sync: SyncEngine;
   saver: StateSaver;
   /** Pokretanje posle učitavanja: povratak sa prijave, provera sesije, sinhronizacija. */
@@ -292,6 +295,7 @@ export function createApp(deps: AppDeps): App {
     }
   });
   const account = createAccountApi(appApi);
+  const oauthServer = createOAuthServerApi({ fetcher, session, supabaseUrl, anonKey });
 
   /* 3. Čuvanje: svaki upis na uređaj okida odloženo slanje na server. */
   const ref: { engine?: SyncEngine } = {};
@@ -461,6 +465,7 @@ export function createApp(deps: AppDeps): App {
     api,
     appApi,
     account,
+    oauthServer,
     sync: engine,
     saver,
     async start() {

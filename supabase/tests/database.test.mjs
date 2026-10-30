@@ -19,7 +19,7 @@ async function role(name,uid,fn){
 }
 before(async()=>{
  await db.exec(`
- CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN;
+ CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE authenticator NOLOGIN;
  CREATE ROLE service_role NOLOGIN BYPASSRLS; CREATE ROLE supabase_admin NOLOGIN;
  CREATE SCHEMA auth; GRANT USAGE ON SCHEMA auth,public TO anon,authenticated,service_role;
  CREATE TABLE auth.users(id uuid PRIMARY KEY,email text);
@@ -171,4 +171,25 @@ test('aktivnost: star nalog bez treninga i bez znaka života je kandidat za bris
  await db.query("UPDATE auth.users SET created_at=now()-interval '60 days' WHERE id=$1",[u2]);
  const r=await scalar('SELECT status,kandidat_za_brisanje,dana_neaktivan FROM public.admin_aktivnost WHERE user_id=$1',[u2]);
  assert.equal(r.status,'neaktivan');assert.equal(r.kandidat_za_brisanje,true);assert.equal(r.dana_neaktivan,60);
+});
+// Pre-request funkcija zahteva: tvrdnje se zadaju cele (OAuth token nosi `client_id`), a ishod je tekst greške ili 'prolaz'.
+async function preRequest(name,claims){
+ await db.exec('BEGIN');
+ try{
+  await db.query("SELECT set_config('request.jwt.claims',$1,true)",[claims]);
+  await db.exec('SET LOCAL ROLE '+name);
+  await db.query('SELECT public.odbij_oauth_token()');
+  return 'prolaz';
+ }catch(e){return e.message;}finally{await db.exec('ROLLBACK');}
+}
+test('OAuth token (Claude konektor) ne prolazi kroz Data API; aplikacija, anon i service_role prolaze',async()=>{
+ assert.match(await preRequest('authenticated',JSON.stringify({sub:u1,role:'authenticated',client_id:'claude'})),/OAUTH_SAMO_MCP/);
+ assert.equal(await preRequest('authenticated',JSON.stringify({sub:u1,role:'authenticated'})),'prolaz');
+ assert.equal(await preRequest('anon',JSON.stringify({role:'anon'})),'prolaz');
+ assert.equal(await preRequest('service_role',JSON.stringify({role:'service_role'})),'prolaz');
+ // Funkcija radi na SVAKOM zahtevu: prazne ili nečitljive tvrdnje ne smeju da obore aplikaciju.
+ assert.equal(await preRequest('anon',''),'prolaz');
+ assert.equal(await preRequest('anon','nije-json'),'prolaz');
+ const cfg=await scalar("SELECT rolconfig FROM pg_roles WHERE rolname='authenticator'");
+ assert.ok(cfg.rolconfig.includes('pgrst.db_pre_request=public.odbij_oauth_token'),String(cfg.rolconfig));
 });

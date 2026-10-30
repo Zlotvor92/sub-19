@@ -38,6 +38,7 @@ with ocekivano as (
     'funkcija:user_state_zapamti','funkcija:zajednica_profil_dodirni',
     'funkcija:zajednica_vidljiv_ja',
     'funkcija:korisnik_dogadjaj_iz_stanja','funkcija:zabelezi_otvaranje',
+    'funkcija:odbij_oauth_token',
     -- okidači
     'okidač:ai_posao_kvota_zastiti_trg','okidač:ai_posao_dodirni_trg','okidač:ai_posao_nov_trg','okidač:ai_posao_prelaz_trg',
     'okidač:push_pretplata_dodirni_trg','okidač:user_state_touch_trg',
