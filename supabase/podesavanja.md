@@ -86,6 +86,29 @@ slabijom zaštitom, i to se ne vidi kao greška.
 
 ---
 
+## Supabase → Authentication → OAuth Server (Claude konektor)
+
+Claude čita zdravstvene podatke kroz `/api/mcp` (v. zaglavlje tog fajla). Prijava ide preko Supabase OAuth 2.1
+servera (beta). Redosled je obavezan:
+
+1. **Migracija `20261030074317_oauth_samo_mcp.sql` PRE uključivanja** (puštena 30. 10. 2026. u 08:43 po Beogradu). Supabase OAuth token ima ista prava kao sesija
+   aplikacije; ta migracija ga zaključava van baze. Pre nje bi Claude-ov token mogao da čita i menja ceo `user_state`.
+2. **OAuth Server → uključen.** Authorization Path: **`/`** (v. `OAUTH_CONSENT_PATH` u
+   `web/src/app/oauthConsent.ts`). Supabase šalje na `<Site URL>/?authorization_id=…`, pa Site URL (URL
+   Configuration) mora biti adresa aplikacije u produkciji. Koren je izabran zato što ga Vercel već služi — druga
+   putanja bi tražila rewrite u `vercel.json`, a njega drži test `web/deploy/cutover.node.test.ts`.
+3. **Dynamic Client Registration → isključen.** Umesto toga, **OAuth Apps → Add a new client**: ime `Claude`, tip
+   **Public**, Redirect URI tačno `https://claude.ai/api/mcp/auth_callback`. Client ID se unosi u Claude-u pri
+   dodavanju konektora (polje za client secret ostaje prazno). Ekran odobrenja ionako odobrava samo tu povratnu adresu.
+4. **Claude** (claude.ai, sa računara): dodaj custom connector sa adresom `https://<domen>/api/mcp`, upiši Client ID,
+   poveži se i odobri na ekranu sub20. Konektor dodat na claude.ai radi i u Claude aplikaciji na telefonu.
+
+Provera posle uključivanja (javna adresa, bez ključa):
+`https://<projekat>.supabase.co/.well-known/oauth-authorization-server/auth/v1` mora da vrati JSON, ne
+`feature_disabled`.
+
+---
+
 ## Vercel → Settings → Environment Variables
 
 Samo IMENA. Vrednosti ne idu ni u ovaj fajl ni bilo gde u repozitorijum.

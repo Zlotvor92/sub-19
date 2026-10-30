@@ -17,6 +17,8 @@ export const ICU_STATE_KEY = 'sub19-icu-state';
 export const TAB_KEY = 'sub19-tab';
 /** Uvodni ekran viđen u ovoj sesiji (sessionStorage). */
 export const INTRO_SEEN_KEY = 'sub20-uvod';
+/** Zahtev Claude konektora koji čeka odobrenje (sessionStorage; preživljava povratak sa prijave). */
+export const OAUTH_CONSENT_KEY = 'sub20-oauth-odobrenje';
 
 /** Sve što „zaboravi sve na ovom uređaju" briše (v. `lokalnoZaboraviSve`). */
 export const ALL_LOCAL_KEYS = [

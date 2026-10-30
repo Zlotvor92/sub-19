@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { PAGES } from '../features/registry';
 import { ScreenHost } from '../features/screens';
 import { AuthGate, Page, Tabbar } from '../components/ui/Shell';
@@ -22,6 +22,24 @@ import { BANNER, useSystemBanners } from './useSystemBanners';
 import { SheetHost } from '../features/sheets';
 import { Wizard } from '../features/onboarding';
 import { usePushPrompt } from '../features/ti/pushPrompt';
+import { OAuthConsent } from '../features/oauth/OAuthConsent';
+import { clearConsent, pendingConsent } from './oauthConsent';
+
+/** Zahtev Claude konektora koji čeka odobrenje u ovoj kartici (v. `oauthConsent.ts`). */
+function readPendingConsent(): string | null {
+  try {
+    return pendingConsent(window.sessionStorage, Date.now());
+  } catch {
+    return null;
+  }
+}
+function forgetConsent(): void {
+  try {
+    clearConsent(window.sessionStorage);
+  } catch {
+    /* privatni režim */
+  }
+}
 
 /* LJUSKA APLIKACIJE: ekrani po tabovima (sa ekranima iznad njih), traka tabova, list, dijalog potvrde, trake i kapija za prijavu. Nema trajnog zaglavlja:
    svaki ekran nosi svoj naslov. */
@@ -49,6 +67,11 @@ export function App() {
   const plan = useResolvedPlan();
   const wizard = useUIStore((s) => s.wizard);
   const hasPlan = useActiveGenPlanPresent();
+  const [consentId, setConsentId] = useState(readPendingConsent);
+  const closeConsent = useCallback(() => {
+    forgetConsent();
+    setConsentId(null);
+  }, []);
   /* List nosi polja u koja se kuca (beleška); zatvaranje ih uklanja pre `blur`-a, pa se zakazan upis završava ovde. */
   const onSheetClose = useCallback(() => {
     requestPersist('now');
@@ -199,13 +222,16 @@ export function App() {
     [today]
   );
 
-  useSwipeNav(ready && gate === null && !wizard && hasPlan && !sheet && screens.length === 0);
-  usePushPrompt(ready && gate === null && !wizard && hasPlan);
+  useSwipeNav(
+    ready && gate === null && !consentId && !wizard && hasPlan && !sheet && screens.length === 0
+  );
+  usePushPrompt(ready && gate === null && !consentId && !wizard && hasPlan);
 
   if (!ready) return null;
 
-  /* Bez plana čarobnjak je jedini ekran (nema iza čega da se zatvori); sa planom se otvara iz Podešavanja. */
-  const showWizard = gate === null && (wizard || !hasPlan);
+  /* Bez plana čarobnjak je jedini ekran (nema iza čega da se zatvori); sa planom se otvara iz Podešavanja. Odobrenje za
+     Claude ima prednost: čovek je došao iz Claude-a i tamo se vraća. */
+  const showWizard = gate === null && !consentId && (wizard || !hasPlan);
 
   return (
     <>
@@ -234,7 +260,17 @@ export function App() {
       </div>
       <ConfirmHost />
       <BannerHost onAction={onBannerAction} />
-      {gate !== null ? <AuthGate message={gate} onLogin={() => getApp().login()} /> : null}
+      {gate === null && consentId ? (
+        <OAuthConsent
+          id={consentId}
+          api={getApp().oauthServer}
+          forget={forgetConsent}
+          close={closeConsent}
+        />
+      ) : null}
+      {gate !== null ? (
+        <AuthGate message={gate} onLogin={() => getApp().login()} skipInstall={!!consentId} />
+      ) : null}
     </>
   );
 }

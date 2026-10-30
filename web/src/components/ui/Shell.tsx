@@ -73,8 +73,19 @@ export function Tabbar({ onSelect }: { onSelect?: (tab: Tab) => void }) {
 /* KAPIJA ZA PRIJAVU. Na telefonu u pregledaču prvo traži instalaciju, a prijava ide u instaliranoj aplikaciji: na iPhone-u aplikacija sa
    početnog ekrana ne vidi sesiju iz Safarija, pa bi prijava u pregledaču ionako morala da se ponovi. Prijava u pregledaču ostaje kao sporedni
    izlaz za pregledače u kojima instalacija ne postoji (ugrađeni pregledači društvenih mreža). */
-export function AuthGate({ message, onLogin }: { message: string; onLogin: () => void }) {
-  const { kind, installed, busy, install } = useInstall();
+export function AuthGate({
+  message,
+  onLogin,
+  skipInstall = false
+}: {
+  message: string;
+  onLogin: () => void;
+  /** Prijava radi odobrenja za Claude konektor: dešava se u pregledaču iz kog je Claude otvorio stranicu, pa instalacija nema smisla. */
+  skipInstall?: boolean;
+}) {
+  const offer = useInstall();
+  const { installed, busy, install } = offer;
+  const kind = skipInstall ? null : offer.kind;
   return (
     <div
       id="sb-gate"

@@ -4,6 +4,7 @@ import { App } from './app/App';
 import { setApp } from './app/appContext';
 import { createApp } from './app/createApp';
 import { initialRoute } from './app/tabs';
+import { captureConsent } from './app/oauthConsent';
 import { localDate } from './lib/clock';
 import { applyTheme, readTheme } from './lib/theme';
 import { browserGeo } from './lib/geo';
@@ -24,6 +25,15 @@ captureInstallPrompt(window);
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Nedostaje #root u index.html');
+
+/* Dolazak sa Claude konektora (`/?authorization_id=…`): zahtev se pamti za ovu karticu, a upit se briše iz adrese —
+   ostatak aplikacije (prijava, tabovi) radi kao i uvek, a ekran odobrenja se otvara iz `App`. */
+try {
+  if (captureConsent(window.location, window.sessionStorage, Date.now()))
+    window.history.replaceState(null, '', '/');
+} catch {
+  /* privatni režim bez skladišta */
+}
 
 const app = createApp({
   today: localDate,

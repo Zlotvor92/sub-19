@@ -120,7 +120,7 @@ describe("Ništa izvršno ne stoji inline u HTML-u (uslov za script-src 'self')"
 
 describe('Politika privatnosti pominje sve treće strane kojima podaci odlaze', () => {
   const privacy = readRepoFile('privacy.html');
-  for (const strana of ['Supabase', 'Strava', 'intervals', 'Resend', 'Gemini', 'Vercel']) {
+  for (const strana of ['Supabase', 'Strava', 'intervals', 'Resend', 'Gemini', 'Vercel', 'Anthropic']) {
     test(`pominje ${strana}`, () => {
       assert.ok(new RegExp(strana, 'i').test(privacy), `privacy.html ne pominje ${strana}`);
     });
