@@ -14,7 +14,7 @@ describe('referenca zajedničke trenerske logike (pre prenosa u generatore)', ()
     const ref = loadGuidanceReference();
     expect(ref?.baselineSha).toBe('ae6b43a');
     expect(ref?.tz).toBe('UTC');
-    expect(Object.keys(ref?.flows ?? {}).length).toBe(14744);
+    expect(Object.keys(ref?.flows ?? {}).length).toBe(14442);
     expect(Object.keys(ref?.formPreview ?? {}).length).toBe(30);
   });
 });

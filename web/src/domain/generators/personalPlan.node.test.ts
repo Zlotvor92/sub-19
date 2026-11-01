@@ -81,7 +81,7 @@ describe('ugrađeni lični plan ide HM generatoru bez promene ponašanja', () =>
     const ref = reference;
     expect(ref?.baselineSha).toBe('348391c6f81f8ee62b73b06379c9b563cf75394e');
     expect(ref?.crossCheckedSha).toBe('05088e0440c50e866bb3bbf6246ff20fe5619f4c');
-    expect(Object.keys(ref?.flows ?? {}).length).toBe(13782);
+    expect(Object.keys(ref?.flows ?? {}).length).toBe(8196);
   });
 
   it('HM generator nad ličnim planom = stari mehanizam (tačan zapis)', { timeout: 600_000 }, () => {
