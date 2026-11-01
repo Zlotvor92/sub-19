@@ -25,6 +25,9 @@ export const PERSONAL = {
   pb5kSec: 1237,
   /** Polazna tačka za polumaraton: Niš polumaraton (n2d6). Dok nije upisan, polazna je PB na 5K. */
   startingDay: 'n2d6',
+  /** Niš je iz ranijeg plana (pre 2.11) i nije među današnjim nedeljama: planirani km i datum za unos koji ih nema. */
+  startingDayKm: 21.1,
+  startingDayDate: '2026-10-03',
   /** Tekst cilja koji se prikazuje umesto vremena. */
   goalText: '1:40:00',
   /** Opis cilja za AI. */
@@ -99,7 +102,7 @@ export function startingRace(
   const l = log?.[PERSONAL.startingDay];
   if (!l || l.status !== 'done' || !(Number(l.sec) > 0)) return null;
   const sec = Number(l.sec);
-  const km = l.km != null ? +l.km : plannedKm(PERSONAL.startingDay);
+  const km = l.km != null ? +l.km : (plannedKm(PERSONAL.startingDay) ?? PERSONAL.startingDayKm);
   if (km == null || !(km >= 20 && km <= 25)) return null;
   const v = vdotFromRace(km * 1000, sec);
   if (!Number.isFinite(v) || v < 20 || v > 90) return null;
@@ -108,7 +111,10 @@ export function startingRace(
     vdot: r1(v),
     sec,
     km,
-    date: typeof own === 'string' ? own.slice(0, 10) : dayDate(PERSONAL.startingDay)
+    date:
+      typeof own === 'string'
+        ? own.slice(0, 10)
+        : (dayDate(PERSONAL.startingDay) ?? PERSONAL.startingDayDate)
   };
 }
 
