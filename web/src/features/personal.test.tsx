@@ -7,7 +7,6 @@ import { seedState, type PersistedState } from '../domain/state';
 import { ADMIN_UID } from '../services/config';
 import { hydratePersisted, useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
-import { editField, setStatus } from '../stores/dayActions';
 import { useUIStore } from '../stores/uiStore';
 import { Advisories } from './today/Advisories';
 import { AdjustPlan } from './plan/AdjustPlan';
@@ -60,11 +59,12 @@ afterEach(() => {
 });
 
 describe('ko vidi ugrađeni plan', () => {
-  it('vlasnik bez generisanog plana: 12 nedelja ugrađenog plana, tekuća je N2', () => {
+  it('vlasnik bez generisanog plana: 6 nedelja ugrađenog plana (od 2.11.)', () => {
     asUser(ADMIN_UID);
     const { result } = renderHook(() => useResolvedPlan());
-    expect(result.current?.weeks).toHaveLength(12);
-    expect(result.current?.weeks[1]?.days.some((d) => d.id === 'n2d6')).toBe(true);
+    expect(result.current?.weeks).toHaveLength(6);
+    expect(result.current?.weeks[0]?.days[0]?.id).toBe('n1d1b');
+    expect(result.current?.weeks[0]?.days[0]?.date).toBe('2026-11-02');
     // perzistirano stanje ostaje čisto: ugrađeni plan se NIKAD ne upisuje
     expect(useTrainingStore.getState().genPlan).toBeNull();
   });
@@ -75,7 +75,7 @@ describe('ko vidi ugrađeni plan', () => {
     expect(none.result.current).toBeNull();
     act(() => useTrainingStore.setState({ log: { n2d1: { status: 'done' } } }));
     const some = renderHook(() => useResolvedPlan());
-    expect(some.result.current?.weeks).toHaveLength(12);
+    expect(some.result.current?.weeks).toHaveLength(6);
   });
 
   it('generisan plan ima prednost nad ugrađenim i za vlasnika', () => {
@@ -168,7 +168,7 @@ describe('Plan → Prilagodi plan: radnje nad planom', () => {
     expect(useUIStore.getState().confirm?.text).toMatch(/^Vratiti se na tvoj originalni plan\?/);
     act(() => useUIStore.getState().confirm?.resolve(true));
     await vi.waitFor(() => expect(useTrainingStore.getState().genPlan).toBeNull());
-    expect(renderHook(() => useResolvedPlan()).result.current?.weeks).toHaveLength(12);
+    expect(renderHook(() => useResolvedPlan()).result.current?.weeks).toHaveLength(6);
   });
 
   it('tuđ nalog sa generisanim planom: „Napravi novi plan“, ne „Vrati na moj plan“', () => {
@@ -181,21 +181,22 @@ describe('Plan → Prilagodi plan: radnje nad planom', () => {
 });
 
 describe('polazni dan (Niš polumaraton)', () => {
-  it('upis km i vremena menja POLAZNI VDOT plana i preračunava lanac forme u istom upisu', () => {
+  /* Niš (n2d6) je iz ranijeg plana i više nije među danima ugrađenog plana (plan počinje 2.11.), pa se ne upisuje kroz plan.
+     Već upisan rezultat i dalje određuje POLAZNI VDOT; bez km u unosu uzima se planirani km iz `PERSONAL`. */
+  it('upisan rezultat polaznog dana menja POLAZNI VDOT aktivnog plana', () => {
     asUser(ADMIN_UID);
     const before = personalBaselineVdot({});
     const plan = renderHook(() => useResolvedPlan()).result.current;
-    const day = plan?.byId.get(PERSONAL.startingDay);
-    if (!day) throw new Error('nema polaznog dana');
-    act(() => {
-      setStatus(day, 'done', TODAY);
-      editField(day, 'km', '21,1', TODAY);
-      editField(day, 'sec', '13000', TODAY); // 1:30:00
-    });
-    const log = useTrainingStore.getState().log;
+    expect(plan?.byId.get(PERSONAL.startingDay)).toBeUndefined();
+    const log = { [PERSONAL.startingDay]: { status: 'done' as const, km: 21.1, sec: 6102 } };
+    act(() => useTrainingStore.setState({ log }));
     const after = personalBaselineVdot(log);
     expect(after).not.toBe(before);
     const active = renderHook(() => useActiveGenPlan()).result.current;
     expect((active?.meta as { vdot0?: number }).vdot0).toBe(after);
+    // unos bez km: planirani 21,1 km iz PERSONAL
+    expect(personalBaselineVdot({ [PERSONAL.startingDay]: { status: 'done', sec: 6102 } })).toBe(
+      after
+    );
   });
 });
