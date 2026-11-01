@@ -21,7 +21,17 @@ test('vlasnik bez generisanog plana vidi ugrađeni plan (Bokeški polumaraton), 
   await expect(
     page
       .locator('.screen')
-      .getByText(/1:35:00/)
+      .getByText(/1:40:00/)
       .first()
   ).toBeVisible();
+});
+
+test('vlasnik: plan od 1.11. — nedelja 8 sa pragom 3×1600 m, cilj 1:40:00', async ({ page }) => {
+  await fixToday(page, '2026-11-10T09:00:00');
+  await seedSession(page, { email: 'vlasnik@sub20.test', userId: OWNER });
+  await installBackend(page);
+  await page.goto('/');
+  await tab(page, 'Plan').click();
+  await expect(page.getByRole('heading', { level: 2, name: 'Nedelja 8 od 12' })).toBeVisible();
+  await expect(page.getByText(/3×1600 m @ 4:40\/km/).first()).toBeVisible();
 });

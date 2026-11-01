@@ -1,8 +1,12 @@
-/* LIČNI (UGRAĐENI) PLAN VLASNIKA — nedelje 1–3 (21.09–11.10) su iz ranijeg plana, nedelje 4–12 (od 12.10) iz Plan_Bokeski_1h35.xlsx (cilj 1:35:00, tempo 4:30/km).
+/* LIČNI (UGRAĐENI) PLAN VLASNIKA — nedelje 1–3 (21.09–11.10) su iz ranijeg plana, nedelje 4–6 (12.10–1.11) iz Plan_Bokeski_1h35.xlsx (cilj 1:35:00, tempo 4:30/km),
+   nedelje 7–12 (2.11–13.12) iz plana od 1.11.2026 (cilj 1:40:00, tempo 4:44/km): povratak posle 4 nedelje skoro bez trčanja (virus posle Niša), izgradnja, test cilja
+   29.11, taper. Tempo zone su iz HM 1:40:00 (lagano/prag/tempo trke) i iz 5K 20:25 (intervali).
 
    Nije podrazumevani plan aplikacije nego NEČIJI STVARNI plan: pokazuje se SAMO vlasniku (ili nalogu koji je već upisivao treninge na njega), v. `domain/personal`.
-   Excel nedelja k (12.10–13.12) je ovde N(k+3). Sredom/petkom i dužinom upravlja Excel: dan odmora posle svakog trčanja, bez snage i pliometrije; „hlađenje" = Excelovo „rastrčavanje" (tako ga parsiraju WU/CD obrasci).
-   Sutrašnji dan 11.10 (n3d7) je ručno 6 km lagano. Datum trke je 13.12 (nedelja). ID-jevi dana su u „n" prostoru (generisani planovi su u „g"). */
+   Excel nedelja k (12.10–1.11) je ovde N(k+3): dan odmora posle svakog trčanja, bez snage i pliometrije; „hlađenje" = Excelovo „rastrčavanje" (tako ga parsiraju WU/CD obrasci).
+   Sutrašnji dan 11.10 (n3d7) je ručno 6 km lagano. Datum trke je 13.12 (nedelja). ID-jevi dana su u „n" prostoru (generisani planovi su u „g").
+   Nedelje 7–12 nose ID-jeve sa nastavkom „b" (n7d1b…): vlasnik ima ručne izmene (`alts`) na danima starog plana n7–n12 (snaga na danima odmora, jedan tempo), a izmena
+   se veže za ID dana — sa starim ID-jevima pregazila bi nove treninge. Snaga A/B iz tih izmena je preneta u dane odmora novog plana. */
 
 import type { GenPlanState } from '../domain/state';
 
@@ -306,315 +310,330 @@ export const PERSONAL_WEEKS = [
   {
     w: 7,
     start: '2026-11-02',
-    focus: 'Plan 1:35 · ned. 4 — HM tempo',
+    focus: 'Plan 1:40 · ned. 1 — Povratak · 28 km, samo lagano',
     days: [
       {
-        id: 'n7d1',
+        id: 'n7d1b',
         dow: 0,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga B — snaga nogu, bez pliometrije · ~40 min\nSNAGA (odmor između serija 60–90 s):\n• Goblet čučanj: 3×10 · 1× zvono 8 kg\n• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg\n• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg\n• Most na jednoj nozi: 3×10/noga · Zvono 8 kg na kuku (od ned. 5)\n• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg\n• Mrtva buba: 2×8/strana'
       },
       {
-        id: 'n7d2',
+        id: 'n7d2b',
         dow: 1,
-        tag: 'tempo',
-        km: 11,
-        desc: 'Tempo — 2 km zagrevanje + 6 km @ 4:30/km + 3 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. 6 km kontinuirano na tempu; ostatak treninga lagano.'
+        tag: 'lako',
+        km: 6,
+        desc: 'Lako trčanje 6 km · puls ≤150, razgovorno · na kraju 4×100 m ubrzanja (hod ili lagani džog nazad)'
       },
       {
-        id: 'n7d3',
+        id: 'n7d3b',
         dow: 2,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora za sutrašnje trčanje\n• Podizanje prstiju uz zid (tibialis): 2×15\n• Dorsifleksija sa trakom: 2×12/noga · Traka\n• Inverzija i everzija sa trakom: 2×12 svaka · Traka\n• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)\n• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)\n• Hod na prstima / na petama: 2×20 m\n• Odvođenje kuka stojeći: 2×12/noga · Traka\n• Pallof pritisak: 2×8/strana · Traka\n• Bočna plank: 2×20 s'
       },
       {
-        id: 'n7d4',
+        id: 'n7d4b',
         dow: 3,
-        tag: 'tempo',
-        km: 11.29,
-        desc: 'Tempo — 2 km zagrevanje + 3×3000 m @ 4:30/km (200 m vrlo lagano između) + 3,09 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. 6 km na tempu kroz 2 × 3 km. Između 200 m vrlo lagano; ne ubrzavaj drugi blok.'
+        tag: 'lako',
+        km: 7,
+        desc: 'Lako trčanje 7 km · puls ≤150, razgovorno · na kraju 6×100 m ubrzanja (hod ili lagani džog nazad)'
       },
       {
-        id: 'n7d5',
+        id: 'n7d5b',
         dow: 4,
         rest: true,
         desc: 'Odmor'
       },
       {
-        id: 'n7d6',
+        id: 'n7d6b',
         dow: 5,
-        tag: 'lr',
-        km: 15.5,
-        desc: 'Dugo trčanje 15,5 km · po osećaju (razgovorni)'
+        tag: 'lako',
+        km: 5,
+        desc: 'Lako trčanje 5 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n7d7',
+        id: 'n7d7b',
         dow: 6,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'lr',
+        km: 10,
+        desc: 'Dugo trčanje 10 km · puls ≤150, razgovorno'
       }
     ]
   },
   {
     w: 8,
     start: '2026-11-09',
-    focus: 'Plan 1:35 · ned. 5 — Produženje tempa',
+    focus: 'Plan 1:40 · ned. 2 — Izgradnja · 37 km, prvi prag',
     days: [
       {
-        id: 'n8d1',
+        id: 'n8d1b',
         dow: 0,
-        tag: 'tempo',
-        km: 10,
-        desc: 'Tempo — 2 km zagrevanje + 7 km @ 4:30/km + 1 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. 7 km kontinuirano na tempu. Ako napor odlazi prema maksimumu, skrati deonicu.'
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga B — snaga nogu, bez pliometrije · ~40 min\nSNAGA (odmor između serija 60–90 s):\n• Goblet čučanj: 3×10 · 1× zvono 8 kg\n• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg\n• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg\n• Most na jednoj nozi: 3×10/noga · Zvono 8 kg na kuku (od ned. 5)\n• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg\n• Mrtva buba: 2×8/strana'
       },
       {
-        id: 'n8d2',
+        id: 'n8d2b',
         dow: 1,
-        rest: true,
-        desc: 'Odmor'
-      },
-      {
-        id: 'n8d3',
-        dow: 2,
         tag: 'tempo',
-        km: 10,
-        desc: 'Tempo — 2 km zagrevanje + 3×3000 m @ 4:30/km (200 m vrlo lagano između) + 1,8 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. 6 km na tempu kroz 2 × 3 km; cilj je ujednačenost i normalan oporavak.'
+        km: 9.1,
+        desc: 'Tempo — 2 km zagrevanje + 3×1600 m @ 4:40/km (400 m lagano između) + 1,5 km hlađenje · prag, 6–7/10; ne brže od 4:33'
       },
       {
-        id: 'n8d4',
-        dow: 3,
-        rest: true,
-        desc: 'Odmor'
-      },
-      {
-        id: 'n8d5',
-        dow: 4,
+        id: 'n8d3b',
+        dow: 2,
         tag: 'lako',
-        km: 5.31,
-        desc: 'Lako trčanje 5,31 km · po osećaju (razgovorni)'
+        km: 5,
+        desc: 'Lako trčanje 5 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n8d6',
+        id: 'n8d4b',
+        dow: 3,
+        tag: 'lako',
+        km: 6,
+        desc: 'Lako trčanje 6 km · puls ≤150, razgovorno · na kraju 6×100 m ubrzanja (hod ili lagani džog nazad)'
+      },
+      {
+        id: 'n8d5b',
+        dow: 4,
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred vikend\n• Podizanje prstiju uz zid (tibialis): 2×15\n• Dorsifleksija sa trakom: 2×12/noga · Traka\n• Inverzija i everzija sa trakom: 2×12 svaka · Traka\n• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)\n• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)\n• Hod na prstima / na petama: 2×20 m\n• Odvođenje kuka stojeći: 2×12/noga · Traka\n• Pallof pritisak: 2×8/strana · Traka\n• Bočna plank: 2×20 s'
+      },
+      {
+        id: 'n8d6b',
         dow: 5,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'lako',
+        km: 4,
+        desc: 'Lako trčanje 4 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n8d7',
+        id: 'n8d7b',
         dow: 6,
         tag: 'lr',
-        km: 15.5,
-        desc: 'Dugo trčanje 15,5 km · po osećaju (razgovorni)'
+        km: 13,
+        desc: 'Dugo trčanje 13 km · puls ≤150, razgovorno'
       }
     ]
   },
   {
     w: 9,
     start: '2026-11-16',
-    focus: 'Plan 1:35 · ned. 6 — Kontrola cilja',
+    focus: 'Plan 1:40 · ned. 3 — Izgradnja · 43 km, intervali + prag',
     days: [
       {
-        id: 'n9d1',
+        id: 'n9d1b',
         dow: 0,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga B — snaga nogu, bez pliometrije · ~40 min\nSNAGA (odmor između serija 60–90 s):\n• Goblet čučanj: 3×10 · 1× zvono 8 kg\n• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg\n• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg\n• Most na jednoj nozi: 3×10/noga · Zvono 8 kg na kuku (od ned. 5)\n• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg\n• Mrtva buba: 2×8/strana'
       },
       {
-        id: 'n9d2',
+        id: 'n9d2b',
         dow: 1,
-        tag: 'tempo',
-        km: 13.5,
-        desc: 'Tempo — 2 km zagrevanje + 8 km @ 4:30/km + 3,5 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Kontrola cilja: 8 km kontinuirano na 4:30/km. Prati održivost tempa i oporavak; nije garancija rezultata.'
+        tag: 'int',
+        km: 10.6,
+        desc: 'Intervali — 2 km zagrevanje + 5×1000 m @ 4:08/km (400 m lagano između) + 2 km hlađenje · 8–9/10; ujednačeno, poslednji ne brži od prvog'
       },
       {
-        id: 'n9d3',
+        id: 'n9d3b',
         dow: 2,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'lako',
+        km: 5,
+        desc: 'Lako trčanje 5 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n9d4',
+        id: 'n9d4b',
         dow: 3,
         tag: 'tempo',
-        km: 13.53,
-        desc: 'Tempo — 2 km zagrevanje + 3×3000 m @ 4:30/km (200 m vrlo lagano između) + 5,33 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Drugi tempo: 2 × 3 km, ukupno 6 km na tempu. Ostatak kilometraže tog dana je lagan.'
+        km: 9,
+        desc: 'Tempo — 2 km zagrevanje + 2×2500 m @ 4:38/km (500 m lagano između) + 1,5 km hlađenje · prag, 6–7/10'
       },
       {
-        id: 'n9d5',
+        id: 'n9d5b',
         dow: 4,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred vikend\n• Podizanje prstiju uz zid (tibialis): 2×15\n• Dorsifleksija sa trakom: 2×12/noga · Traka\n• Inverzija i everzija sa trakom: 2×12 svaka · Traka\n• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)\n• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)\n• Hod na prstima / na petama: 2×20 m\n• Odvođenje kuka stojeći: 2×12/noga · Traka\n• Pallof pritisak: 2×8/strana · Traka\n• Bočna plank: 2×20 s'
       },
       {
-        id: 'n9d6',
+        id: 'n9d6b',
         dow: 5,
-        tag: 'lr',
-        km: 17.05,
-        desc: 'Dugo trčanje 17,05 km · po osećaju (razgovorni)'
+        tag: 'lako',
+        km: 4,
+        desc: 'Lako trčanje 4 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n9d7',
+        id: 'n9d7b',
         dow: 6,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'lr',
+        km: 14,
+        desc: 'Dugo trčanje 14 km · puls ≤150, razgovorno'
       }
     ]
   },
   {
     w: 10,
     start: '2026-11-23',
-    focus: 'Plan 1:35 · ned. 7 — Vrh obima',
+    focus: 'Plan 1:40 · ned. 4 — Vrh obima · 44 km, test cilja',
     days: [
       {
-        id: 'n10d1',
+        id: 'n10d1b',
         dow: 0,
-        tag: 'tempo',
-        km: 11.5,
-        desc: 'Tempo — 2 km zagrevanje + 8 km @ 4:30/km + 1,5 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Poslednji veći kontinuirani tempo: 8 km na 4:30/km. Bez ubrzavanja završnice.'
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga B — snaga nogu, bez pliometrije · ~40 min\nSNAGA (odmor između serija 60–90 s):\n• Goblet čučanj: 3×10 · 1× zvono 8 kg\n• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg\n• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg\n• Most na jednoj nozi: 3×10/noga · Zvono 8 kg na kuku (od ned. 5)\n• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg\n• Mrtva buba: 2×8/strana'
       },
       {
-        id: 'n10d2',
+        id: 'n10d2b',
         dow: 1,
-        rest: true,
-        desc: 'Odmor'
-      },
-      {
-        id: 'n10d3',
-        dow: 2,
         tag: 'tempo',
-        km: 11.5,
-        desc: 'Tempo — 2 km zagrevanje + 4×4000 m @ 4:30/km (200 m vrlo lagano između) + 1,3 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Poslednji veći blokovi: 2 × 4 km na 4:30/km, između 200 m vrlo lagano.'
+        km: 12,
+        desc: 'Tempo — 2 km zagrevanje + 3×2500 m @ 4:36/km (500 m lagano između) + 1,5 km hlađenje · prag, 6–7/10'
       },
       {
-        id: 'n10d4',
-        dow: 3,
-        rest: true,
-        desc: 'Odmor'
-      },
-      {
-        id: 'n10d5',
-        dow: 4,
+        id: 'n10d3b',
+        dow: 2,
         tag: 'lako',
-        km: 6.21,
-        desc: 'Lako trčanje 6,21 km · po osećaju (razgovorni)'
+        km: 5,
+        desc: 'Lako trčanje 5 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n10d6',
+        id: 'n10d4b',
+        dow: 3,
+        tag: 'lako',
+        km: 6,
+        desc: 'Lako trčanje 6 km · puls ≤150, razgovorno · na kraju 6×100 m ubrzanja (hod ili lagani džog nazad)'
+      },
+      {
+        id: 'n10d5b',
+        dow: 4,
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga A — cevanice, stopalo, kuk · ~25 min, lagano, bez umora pred vikend\n• Podizanje prstiju uz zid (tibialis): 2×15\n• Dorsifleksija sa trakom: 2×12/noga · Traka\n• Inverzija i everzija sa trakom: 2×12 svaka · Traka\n• Podizanje na prste, pravo koleno: 3×15 obe noge · Zvono 8 kg u ruci (od ned. 3)\n• Podizanje na prste, savijeno koleno (soleus): 3×12/noga · Zvono 8 kg (od ned. 3)\n• Hod na prstima / na petama: 2×20 m\n• Odvođenje kuka stojeći: 2×12/noga · Traka\n• Pallof pritisak: 2×8/strana · Traka\n• Bočna plank: 2×20 s'
+      },
+      {
+        id: 'n10d6b',
         dow: 5,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'lako',
+        km: 4,
+        desc: 'Lako trčanje 4 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n10d7',
+        id: 'n10d7b',
         dow: 6,
         tag: 'lr',
-        km: 18.4,
-        desc: 'Dugo trčanje 18,4 km · po osećaju (razgovorni)'
+        km: 17,
+        desc: 'Dugo sa tempom trke — 4 km zagrevanje + 2×4000 m @ 4:44/km (1 km lagano između) + 4 km hlađenje · TEST CILJA; proba gela pre prvog bloka. Prosečan puls drugog bloka: ≤~165 i lako → cilj 1:39–1:40; 166–172 → 1:40, start 4:46; ne drži 4:44 ili >172 → cilj 1:41:30 (4:49) u nedeljama 5–6'
       }
     ]
   },
   {
     w: 11,
     start: '2026-11-30',
-    focus: 'Plan 1:35 · ned. 8 — Taper 1 · 2 tempa',
+    focus: 'Plan 1:40 · ned. 5 — Taper 1 · 35 km',
     days: [
       {
-        id: 'n11d1',
+        id: 'n11d1b',
         dow: 0,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'snaga',
+        km: null,
+        desc: 'Snaga B — snaga nogu, bez pliometrije · ~40 min\nSNAGA (odmor između serija 60–90 s):\n• Goblet čučanj: 2×10 · 1× zvono 8 kg\n• Bugarski čučanj: 2×8/noga · 2× zvono 8 kg\n• Rumunsko mrtvo dizanje na jednoj nozi: 2×8/noga · 1–2× zvono 8 kg\n• Most na jednoj nozi: 2×10/noga · Zvono 8 kg na kuku (od ned. 5)\n• Podizanje na prste, jedna noga: 2×12 · Zvono 8 kg\n• Mrtva buba: 2×8/strana\nNapomena: Taper — lagano, bez rada do otkaza.'
       },
       {
-        id: 'n11d2',
+        id: 'n11d2b',
         dow: 1,
-        tag: 'tempo',
-        km: 10,
-        desc: 'Tempo — 2 km zagrevanje + 6 km @ 4:30/km + 2 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Taper 1: 6 km kontinuirano na tempu. Kraće od vršne nedelje, bez dodatnih deonica.'
+        tag: 'int',
+        km: 10.8,
+        desc: 'Intervali — 2 km zagrevanje + 6×800 m @ 4:05/km (400 m lagano između) + 2 km hlađenje · 8–9/10; taper: obim dole, intenzitet ostaje'
       },
       {
-        id: 'n11d3',
+        id: 'n11d3b',
         dow: 2,
-        rest: true,
-        desc: 'Odmor'
+        tag: 'lako',
+        km: 5,
+        desc: 'Lako trčanje 5 km · puls ≤150, razgovorno'
       },
       {
-        id: 'n11d4',
+        id: 'n11d4b',
         dow: 3,
-        tag: 'tempo',
-        km: 9.99,
-        desc: 'Tempo — 2 km zagrevanje + 4 km @ 4:30/km + 3,99 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Taper 1: drugi tempo, 4 km kontinuirano. Završiti svež.'
+        tag: 'lako',
+        km: 5,
+        desc: 'Lako trčanje 5 km · puls ≤150, razgovorno · na kraju 6×100 m ubrzanja (hod ili lagani džog nazad)'
       },
       {
-        id: 'n11d5',
+        id: 'n11d5b',
         dow: 4,
         rest: true,
         desc: 'Odmor'
       },
       {
-        id: 'n11d6',
+        id: 'n11d6b',
         dow: 5,
-        tag: 'lr',
-        km: 13.33,
-        desc: 'Dugo trčanje 13,33 km · po osećaju (razgovorni)'
-      },
-      {
-        id: 'n11d7',
-        dow: 6,
         rest: true,
         desc: 'Odmor'
+      },
+      {
+        id: 'n11d7b',
+        dow: 6,
+        tag: 'lr',
+        km: 14,
+        desc: 'Dugo sa tempom trke — 9 km zagrevanje + 4 km @ 4:44/km (ili 4:49 ako je test 29.11. tako odredio) + 1 km hlađenje · ponovi gel kao na trci'
       }
     ]
   },
   {
     w: 12,
     start: '2026-12-07',
-    focus: 'Plan 1:35 · ned. 9 — Taper 2 · trka',
+    focus: 'Plan 1:40 · ned. 6 — Taper 2 · trka',
     days: [
       {
-        id: 'n12d1',
+        id: 'n12d1b',
         dow: 0,
-        tag: 'tempo',
-        km: 6,
-        desc: 'Tempo — 2 km zagrevanje + 3 km @ 4:30/km + 1 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Nedelja trke: 3 km kontinuirano na tempu. Podsetnik na ritam; ne test forme.'
+        rest: true,
+        desc: 'Odmor'
       },
       {
-        id: 'n12d2',
+        id: 'n12d2b',
         dow: 1,
-        rest: true,
-        desc: 'Odmor'
-      },
-      {
-        id: 'n12d3',
-        dow: 2,
         tag: 'tempo',
-        km: 6,
-        desc: 'Tempo — 2 km zagrevanje + 2 km @ 4:30/km + 2 km hlađenje · kontrolisano 6–7/10; pauze su uračunate u ukupan km. Nedelja trke: 2 km kontinuirano na tempu. Kratka aktivacija četiri dana pre starta.'
+        km: 8.6,
+        desc: 'Tempo trke — 2 km zagrevanje + 3×1600 m @ 4:44/km (400 m lagano između) + 1 km hlađenje · podsetnik na ritam, ne test; tempo po odluci od 29.11.'
       },
       {
-        id: 'n12d4',
-        dow: 3,
+        id: 'n12d3b',
+        dow: 2,
         rest: true,
         desc: 'Odmor'
       },
       {
-        id: 'n12d5',
+        id: 'n12d4b',
+        dow: 3,
+        tag: 'lako',
+        km: 5,
+        desc: 'Lako trčanje 5 km · puls ≤150, razgovorno · na kraju 4×100 m ubrzanja (hod ili lagani džog nazad)'
+      },
+      {
+        id: 'n12d5b',
         dow: 4,
+        rest: true,
+        desc: 'Odmor · putovanje'
+      },
+      {
+        id: 'n12d6b',
+        dow: 5,
         tag: 'lako',
         km: 3,
-        desc: 'Lako trčanje 3 km · po osećaju (razgovorni)'
+        desc: 'Lako trčanje 3 km · puls ≤150, razgovorno · na kraju 3×100 m ubrzanja; po mogućstvu na delu staze'
       },
       {
-        id: 'n12d6',
-        dow: 5,
-        rest: true,
-        desc: 'Odmor'
-      },
-      {
-        id: 'n12d7',
+        id: 'n12d7b',
         dow: 6,
         tag: 'trka',
         km: 21.1,
-        desc: '🏁 BOKEŠKI POLUMARATON — cilj 1:35:00 · ritam 4:30/km · Start 09:00; prva 2 km oko 4:35, zatim oko 4:29–4:30; ubrzanje posle 17 km ako imaš rezervu'
+        desc: '🏁 BOKEŠKI POLUMARATON — cilj 1:40:00 · ritam 4:44/km · Start 09:00; km 1–5 na 4:46–4:48, km 6–16 na 4:43–4:45, od 17. km po osećaju; na usponu drži napor, ne tempo · gel oko 40.–50. minuta'
       }
     ]
   }
@@ -628,7 +647,7 @@ export const PERSONAL_PRED = [
     l: 'N5 · Tempo trke',
     q: 4,
     pt: 270,
-    p5k: 5700,
+    p5k: 6000,
     nemeri: true
   },
   {
@@ -637,7 +656,7 @@ export const PERSONAL_PRED = [
     l: 'N5 · Tempo trke',
     q: 5,
     pt: 270,
-    p5k: 5700,
+    p5k: 6000,
     nemeri: true
   },
   {
@@ -646,7 +665,7 @@ export const PERSONAL_PRED = [
     l: 'N6 · Tempo trke',
     q: 5,
     pt: 270,
-    p5k: 5700,
+    p5k: 6000,
     nemeri: true
   },
   {
@@ -655,115 +674,61 @@ export const PERSONAL_PRED = [
     l: 'N6 · Tempo trke',
     q: 5,
     pt: 270,
-    p5k: 5700,
+    p5k: 6000,
     nemeri: true
   },
   {
-    id: 'p14',
-    w: 7,
-    l: 'N7 · Tempo trke',
-    q: 6,
-    pt: 270,
-    p5k: 5700,
-    nemeri: true
-  },
-  {
-    id: 'p15',
-    w: 7,
-    l: 'N7 · Tempo trke',
-    q: 6,
-    pt: 270,
-    p5k: 5700,
-    nemeri: true
-  },
-  {
-    id: 'p16',
+    id: 'p26',
     w: 8,
-    l: 'N8 · Tempo trke',
-    q: 7,
-    pt: 270,
-    p5k: 5700,
+    l: 'N8 · Tempo',
+    q: 4.8,
+    pt: 280,
+    p5k: 6000,
     nemeri: true
   },
   {
-    id: 'p17',
-    w: 8,
-    l: 'N8 · Tempo trke',
-    q: 6,
-    pt: 270,
-    p5k: 5700,
-    nemeri: true
-  },
-  {
-    id: 'p18',
+    id: 'p27',
     w: 9,
-    l: 'N9 · Tempo trke',
-    q: 8,
-    pt: 270,
-    p5k: 5700,
+    l: 'N9 · Intervali',
+    q: 5,
+    pt: 248,
+    p5k: 6000,
     nemeri: true
   },
   {
-    id: 'p19',
+    id: 'p28',
     w: 9,
-    l: 'N9 · Tempo trke',
-    q: 6,
-    pt: 270,
-    p5k: 5700,
+    l: 'N9 · Tempo',
+    q: 5,
+    pt: 278,
+    p5k: 6000,
     nemeri: true
   },
   {
-    id: 'p20',
+    id: 'p29',
     w: 10,
-    l: 'N10 · Tempo trke',
-    q: 8,
-    pt: 270,
-    p5k: 5700,
+    l: 'N10 · Tempo',
+    q: 7.5,
+    pt: 276,
+    p5k: 6000,
     nemeri: true
   },
   {
-    id: 'p21',
-    w: 10,
-    l: 'N10 · Tempo trke',
-    q: 8,
-    pt: 270,
-    p5k: 5700,
-    nemeri: true
-  },
-  {
-    id: 'p22',
+    id: 'p30',
     w: 11,
-    l: 'N11 · Tempo trke',
-    q: 6,
-    pt: 270,
-    p5k: 5700,
+    l: 'N11 · Intervali',
+    q: 4.8,
+    pt: 245,
+    p5k: 6000,
     nemeri: true
   },
   {
-    id: 'p23',
-    w: 11,
-    l: 'N11 · Tempo trke',
-    q: 4,
-    pt: 270,
-    p5k: 5700,
-    nemeri: true
-  },
-  {
-    id: 'p24',
+    id: 'p31',
     w: 12,
     l: 'N12 · Tempo trke',
-    q: 3,
-    pt: 270,
-    p5k: 5700,
-    nemeri: true
-  },
-  {
-    id: 'p25',
-    w: 12,
-    l: 'N12 · Tempo trke',
-    q: 2,
-    pt: 270,
-    p5k: 5700,
+    q: 4.8,
+    pt: 284,
+    p5k: 6000,
     nemeri: true
   }
 ] as unknown as GenPlanState['pred'];
@@ -774,16 +739,10 @@ export const PERSONAL_QS: Record<string, number[]> = {
   n5d4: [5000],
   n6d1: [5000],
   n6d3: [5000],
-  n7d2: [6000],
-  n7d4: [3000],
-  n8d1: [7000],
-  n8d3: [3000],
-  n9d2: [8000],
-  n9d4: [3000],
-  n10d1: [8000],
-  n10d3: [4000],
-  n11d2: [6000],
-  n11d4: [4000],
-  n12d1: [3000],
-  n12d3: [2000]
+  n8d2b: [1600],
+  n9d2b: [1000],
+  n9d4b: [2500],
+  n10d2b: [2500],
+  n11d2b: [800],
+  n12d2b: [1600]
 };

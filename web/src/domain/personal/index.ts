@@ -21,14 +21,14 @@ import { vdotFromRace } from '../training/vdot/calculateVDOT';
 export const PERSONAL = {
   raceName: 'Bokeški polumaraton',
   raceDistM: 21097.5,
-  goalSec: 5700,
+  goalSec: 6000,
   pb5kSec: 1237,
   /** Polazna tačka za polumaraton: Niš polumaraton (n2d6). Dok nije upisan, polazna je PB na 5K. */
   startingDay: 'n2d6',
   /** Tekst cilja koji se prikazuje umesto vremena. */
-  goalText: '1:35:00',
+  goalText: '1:40:00',
   /** Opis cilja za AI. */
-  goalContext: 'Bokeški polumaraton 13.12.2026 — cilj 1:35:00 (4:30/km)'
+  goalContext: 'Bokeški polumaraton 13.12.2026 — cilj 1:40:00 (4:44/km)'
 } as const;
 
 const r1 = (x: number): number => Math.round(x * 10) / 10;

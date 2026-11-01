@@ -53,15 +53,15 @@ const sha = (x: unknown): string =>
     .digest('hex');
 
 describe('podaci ličnog plana su isti kao u starom kodu', () => {
-  it('PLAN, PRED i QS: nepromenjen sadržaj (SHA-256; nedelje 4–12 iz Plan_Bokeski_1h35.xlsx, n3d7 = 6 km lagano)', () => {
+  it('PLAN, PRED i QS: nepromenjen sadržaj (SHA-256; nedelje 4–6 iz Plan_Bokeski_1h35.xlsx, 7–12 iz plana od 1.11.2026, n3d7 = 6 km lagano)', () => {
     expect(sha(PERSONAL_WEEKS)).toBe(
-      '2364db90ae411ced045c4b8cc8fce81f9ef6dc502cae18f9bcb7b2442ff6de33'
+      'bad2504dbfcbfb2f0da40563663c7953fee1bfc4918d08c66d35148beefa70bf'
     );
     expect(sha(PERSONAL_PRED)).toBe(
-      '222b794d25a83d76e2b215d2b4f0169cd7fa5dd8ab0620f4336f3c396e066412'
+      '97d6a3445f7bfa8a2eee5b38a61f00e6bdfef14a75a1741e0a8891edef999494'
     );
     expect(sha(PERSONAL_QS)).toBe(
-      'c7f829c405e7d68736310b31e25a28702ebf0440308ec11989766adbf8863974'
+      'e5a0fcdbf9d39f9ab8b80dd79b010bd1eda81d6deda30f149db5a9d3a173c7d1'
     );
   });
 
@@ -78,17 +78,17 @@ describe('podaci ličnog plana su isti kao u starom kodu', () => {
     ]).toEqual([
       '2026-09-21',
       '2026-12-13',
-      '1:35:00',
+      '1:40:00',
       21097.5,
-      5700,
+      6000,
       1237,
       'n2d6',
       'Bokeški polumaraton'
     ]);
-    expect(PERSONAL.goalContext).toBe('Bokeški polumaraton 13.12.2026 — cilj 1:35:00 (4:30/km)');
+    expect(PERSONAL.goalContext).toBe('Bokeški polumaraton 13.12.2026 — cilj 1:40:00 (4:44/km)');
   });
 
-  it('12 nedelja, 80 dana i 403,2 km; Excel ned. k je N(k+3), nedelje 1–3 su raniji plan', () => {
+  it('12 nedelja, 80 dana i 387,7 km; Excel ned. k je N(k+3) do N6, nedelje 1–3 su raniji plan, 7–12 plan od 1.11.', () => {
     expect(PERSONAL_WEEKS).toHaveLength(12);
     expect(PERSONAL_WEEKS[0]?.start).toBe('2026-09-21');
     expect(PERSONAL_WEEKS[11]?.start).toBe('2026-12-07');
@@ -97,27 +97,62 @@ describe('podaci ličnog plana su isti kao u starom kodu', () => {
     expect(nis?.tag).toBe('lr'); // Niš polumaraton je LAGANO — ne sme biti označen kao trka
     const days = PERSONAL_WEEKS.flatMap((w) => w.days);
     const km = days.reduce((s, d) => s + (typeof d.km === 'number' ? d.km : 0), 0);
-    expect(Math.round(km * 10) / 10).toBe(403.2);
-    // sutra (11.10) je 6 km lagano; ostatak Excela: 16 tempo dana, trka 21,1 km
+    expect(Math.round(km * 10) / 10).toBe(387.7);
+    // sutra (11.10) je 6 km lagano; Excel (N4–N6): 4 tempo dana; plan od 1.11. (N7–N12): 4 tempa, 2 intervala, trka 21,1 km
     const sun = days.find((d) => d.id === 'n3d7');
     expect([sun?.tag, sun?.km]).toEqual(['lako', 6]);
-    expect(days.filter((d) => d.tag === 'tempo')).toHaveLength(16);
+    expect(days.filter((d) => d.tag === 'tempo')).toHaveLength(8);
+    expect(days.filter((d) => d.tag === 'int')).toHaveLength(2);
     const weekKm = PERSONAL_WEEKS.slice(3).map(
       (w) =>
         Math.round(w.days.reduce((s, d) => s + (typeof d.km === 'number' ? d.km : 0), 0) * 100) /
         100
     );
-    expect(weekKm).toEqual([30, 32.4, 34.99, 37.79, 40.81, 44.08, 47.61, 33.32, 36.1]);
-    // ID-jevi su u „n" prostoru, nikad „g"
-    for (const d of days) expect(d.id).toMatch(/^n\d+d\d$/);
+    expect(weekKm).toEqual([30, 32.4, 34.99, 28, 37.1, 42.6, 44, 34.8, 37.7]);
+    // ID-jevi su u „n" prostoru, nikad „g"; N7–N12 sa nastavkom „b", da se ručne izmene (`alts`) starih dana n7–n12 ne vežu za nove treninge
+    for (const w of PERSONAL_WEEKS)
+      for (const d of w.days) expect(d.id).toMatch(w.w <= 6 ? /^n\d+d\d$/ : /^n\d+d\db$/);
+    expect(new Set(days.map((d) => d.id)).size).toBe(days.length);
   });
 
-  it('tipovi sesija: odmor posle svakog trčanja, bez snage', () => {
-    const days = PERSONAL_WEEKS.slice(3).flatMap((w) => w.days);
+  it('tipovi sesija (Excel, N4–N6): odmor posle svakog trčanja, bez snage', () => {
+    const days = PERSONAL_WEEKS.slice(3, 6).flatMap((w) => w.days);
     expect(days.some((d) => d.tag === 'snaga')).toBe(false);
     for (let i = 1; i < days.length; i++)
       expect(!!days[i]?.rest || !!days[i - 1]?.rest, days[i]?.id).toBe(true);
-    expect(days.at(-1)?.tag).toBe('trka');
+  });
+
+  it('plan od 1.11. (N7–N12): kvalitet, dugo, snaga i trka po nedeljama; bez degenerisanih dana', () => {
+    const weeks = PERSONAL_WEEKS.slice(6);
+    expect(weeks.map((w) => w.start)).toEqual([
+      '2026-11-02',
+      '2026-11-09',
+      '2026-11-16',
+      '2026-11-23',
+      '2026-11-30',
+      '2026-12-07'
+    ]);
+    const count = (tags: string[]) =>
+      weeks.map((w) => w.days.filter((d) => !d.rest && tags.includes(String(d.tag))).length);
+    expect(count(['tempo', 'int'])).toEqual([0, 1, 2, 1, 1, 1]);
+    expect(count(['lr'])).toEqual([1, 1, 1, 1, 1, 0]);
+    expect(count(['snaga'])).toEqual([2, 2, 2, 2, 1, 0]);
+    for (const w of weeks) {
+      expect(w.days.map((d) => d.dow)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+      const runs = w.days.filter((d) => !d.rest && d.tag !== 'snaga');
+      // nijedan trening bez km ni prazan opis; dugo je najduže trčanje nedelje
+      for (const d of runs) expect(typeof d.km === 'number' && d.km > 0, d.id).toBe(true);
+      for (const d of w.days) expect(String(d.desc).trim().length > 0, d.id).toBe(true);
+      const lr = runs.find((d) => d.tag === 'lr');
+      const easy = runs.filter((d) => d.tag === 'lako').map((d) => d.km);
+      if (lr) expect(lr.km).toBeGreaterThan(Math.max(...easy));
+    }
+    const last = weeks.at(-1)?.days.at(-1);
+    expect([last?.id, last?.tag, last?.km]).toEqual(['n12d7b', 'trka', 21.1]);
+    // svaki kvalitetni dan ima spec deonica za Strava lap-detekciju
+    for (const d of weeks.flatMap((w) => w.days))
+      if (d.tag === 'tempo' || d.tag === 'int')
+        expect(PERSONAL_QS[String(d.id)], d.id).toBeDefined();
   });
 });
 
@@ -131,8 +166,8 @@ describe('izvedene vrednosti naspram starog koda', () => {
   it('baseline i ciljni VDOT: PB 20:37 na 5K → polumaraton 1:40:00', () => {
     setLog({});
     expect(personalBaselineVdot({})).toBe(legacy.evalIn('baselineVdot()'));
-    expect(personalGoalVdot()).toBe(47.9);
-    expect(PERSONAL.goalSec).toBe(5700);
+    expect(personalGoalVdot()).toBe(45.1);
+    expect(PERSONAL.goalSec).toBe(6000);
     expect(PERSONAL.raceDistM).toBe(21097.5);
   });
 
@@ -176,8 +211,8 @@ describe('izvedene vrednosti naspram starog koda', () => {
         const day = new Date(`${w.start}T12:00:00Z`);
         day.setUTCDate(day.getUTCDate() + k);
         const today = day.toISOString().slice(0, 10);
-        // N4 je baza bez tempa (nema p5k reda), od N5 je referenca ciljni VDOT
-        const old = w.w < 5 ? null : 47.9;
+        // N4 je baza bez tempa (nema p5k reda), od N5 je referenca ciljni VDOT (N7 bez kvaliteta nasleđuje N6)
+        const old = w.w < 5 ? null : 45.1;
         const mine = planVdotNow({ today, plan, meta, pred: PERSONAL_PRED });
         expect(mine, today).toBe(old);
         checked++;
@@ -185,7 +220,7 @@ describe('izvedene vrednosti naspram starog koda', () => {
     expect(checked).toBeGreaterThan(30);
     // pre prve i posle poslednje nedelje
     for (const today of ['2026-09-01', '2027-02-01'])
-      expect(planVdotNow({ today, plan, meta, pred: PERSONAL_PRED })).toBe(47.9);
+      expect(planVdotNow({ today, plan, meta, pred: PERSONAL_PRED })).toBe(45.1);
     expect(weekOf(plan, '2026-10-01')?.w).toBe(2);
   });
 
