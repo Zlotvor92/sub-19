@@ -62,7 +62,7 @@ const reference = loadGuidanceReference();
 describe('trenerska logika van plana: svaki generator ima svoju kopiju, ponašanje očuvano', () => {
   it('referenca postoji i uzeta je iz aplikacionog koda pre prenosa', () => {
     expect(reference?.baselineSha).toBe('ae6b43a');
-    expect(Object.keys(reference?.flows ?? {}).length).toBe(14744);
+    expect(Object.keys(reference?.flows ?? {}).length).toBe(14442);
   });
 
   for (const [name, mod] of GENERATORS)
