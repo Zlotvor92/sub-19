@@ -10,7 +10,7 @@ const dist = distOf("HM");
 const dir = new URL(".", import.meta.url).pathname;
 type Seg = { kind: string; zone?: string; km: number; sec: number };
 type Day = { role: string; date: string; workout: { kind: string; km: number; sec: number; segments: Seg[]; dose?: { zone: string; doseM: number } | null } };
-type Wk = { index: number; phase: string; deload: boolean; targetKm: number; plannedKm: number; days: Day[] };
+type Wk = { index: number; phase: string; deload: boolean; targetKm: number; plannedKm: number; days: (Day & { hard: boolean })[]; notes: string[] };
 const rows: Record<string, unknown>[] = [];
 for (const c of grid("HM")) {
   const r = dist.generate(c.input);
@@ -18,7 +18,7 @@ for (const c of grid("HM")) {
   const plan = r.plan as Plan;
   const W = plan.weeks as unknown as Wk[];
   const blocks: number[] = []; let rpTrainMax = 0; let longestDay = 0;
-  const fastPct: number[] = []; const types: string[] = [];
+  const fastPct: number[] = []; const types: string[] = []; const fastA: number[] = []; const fastB: number[] = []; let hardMax = 0; let missing = 0, bWant = 0;
   for (const w of W) {
     const long = w.days.find((d) => d.role === "long");
     const b = long ? long.workout.segments.filter((s) => s.zone === "RP").reduce((a, s) => a + s.km, 0) : 0;
@@ -31,12 +31,20 @@ for (const c of grid("HM")) {
     if (w.phase === "specific") {
       let f = 0, t = 0;
       for (const d of w.days) for (const s of d.workout.segments) { t += s.km; if (s.zone && !["E", "jog", "walk"].includes(s.zone)) f += s.km; }
-      fastPct.push(t > 0 ? Math.round((1000 * f) / t) / 10 : 0);
-      if (!w.deload) types.push(b > 0 ? "B" : "A");
+      const pct = t > 0 ? Math.round((1000 * f) / t) / 10 : 0;
+      fastPct.push(pct);
+      if (!w.deload) { types.push(b > 0 ? "B" : "A"); (b > 0 ? fastB : fastA).push(pct); }
+      if (b > 0) bWant++;
+      if (w.notes.some((n) => n.startsWith("Dugi bez bloka u trkačkom tempu"))) { missing++; bWant++; }
+    }
+    if (["base", "development", "specific"].includes(w.phase) && !w.deload) {
+      const hq = w.days.filter((d) => d.workout.kind === "quality" || d.workout.kind === "test").length;
+      const hl = w.days.some((d) => d.role === "long" && d.workout.segments.some((s) => s.zone === "RP")) ? 1 : 0;
+      hardMax = Math.max(hardMax, hq + hl);
     }
   }
   rows.push({ id: c.id, family: c.family, days: c.days, weeks: c.weeks, policyVersion: plan["policyVersion"], m: metrics("HM", plan),
-    p1: { blocks, rpTrainMax: Math.round(rpTrainMax * 10) / 10, longestDay: Math.round(longestDay * 10) / 10, fastPct, types: types.join("") },
+    p1: { blocks, rpTrainMax: Math.round(rpTrainMax * 10) / 10, longestDay: Math.round(longestDay * 10) / 10, fastPct, fastA, fastB, hardMax, missing, bWant, types: types.join("") },
     hash: JSON.stringify(plan.weeks).length, weeksJson: JSON.stringify(plan.weeks.map((w) => w.days)) });
 }
 writeFileSync(`${dir}raw-HM-${tag}.json`, JSON.stringify(rows));

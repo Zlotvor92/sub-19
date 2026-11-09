@@ -51,4 +51,10 @@ const b50 = B.filter((r) => r.m && r.family === "R" && Number(/-(\d+)km-/.exec(r
 console.log(`orijentir: R ≥ 50 km/ned, najveći RP trening ≥ 10 km: ${b50.filter((r) => (r.p1?.rpTrainMax ?? 0) >= 10).length}/${b50.length}`);
 const types = B.filter((r) => r.p1).reduce((acc: Record<string, number>, r) => { acc[r.p1.types] = (acc[r.p1.types] ?? 0) + 1; return acc; }, {});
 console.log(`niz tipova specifičnih ne-rasteretnih nedelja (posle): ${JSON.stringify(types)}`);
+const fa = B.filter((r) => r.p1).flatMap((r) => r.p1.fastA ?? []), fb = B.filter((r) => r.p1).flatMap((r) => r.p1.fastB ?? []);
+console.log(`% km bržih od E (${b}), ne-rasteretne specifične: nedelja A ${cell(fa)} (n ${fa.length}); nedelja B ${cell(fb)} (n ${fb.length})`);
+console.log(`najviše zahtevnih treninga (kvalitet/test + dugi sa blokom) u nedelji izgradnje (${b}): ${JSON.stringify(B.filter((r) => r.p1).reduce((acc: Record<string, number>, r) => { acc[r.p1.hardMax] = (acc[r.p1.hardMax] ?? 0) + 1; return acc; }, {}))}`);
+const grp: Record<string, [number, number, number, number]> = {};
+for (const r of B.filter((x) => x.p1)) { const g = (grp[`${r.family} d${r.days}`] ??= [0, 0, 0, 0]); g[0]++; if (r.p1.missing) g[1]++; g[2] += r.p1.missing; g[3] += r.p1.bWant; }
+console.log("B ne staje (P-a, napomena) po grupi — planova / nedelja po rasporedu B: " + Object.entries(grp).map(([g, [n, p, m, w]]) => `${g} ${p}/${n} planova (${Math.round((100 * p) / n)} %), ${m}/${w} ned`).join("; "));
 if (process.argv[4] === "ids") console.log(changedIds.join("\n"));
