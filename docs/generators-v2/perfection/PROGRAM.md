@@ -65,7 +65,7 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | Segment | Sadržaj | Stanje |
 |---|---|---|
 | P0 | Merna osnova trenerskih metrika, sve 4 distance, bez izmene generatora | gotovo (`53b2dd4`, `reports/P0-REPORT.md`) |
-| T1 | Brži CI i testovi: izbor po dometu izmene, E2E, v1 (uporedo sa P0) | u toku |
+| T1 | Brži CI i testovi: izbor po dometu izmene, E2E u 3 dela, keš zavisnosti | gotovo (`c4aff71`, `reports/T1-REPORT.md`) |
 | V1a | Uklanjanje v1: popis i plan (bez koda) | gotovo (`d7df09e`, `reports/V1a-REPORT.md`) |
 | V1b | Uklanjanje v1 za 5K/10K/maraton + prevođenje testova (posle T1 i P1) | čeka T1, P1 |
 | V1c | Brisanje HM v1 (posle trke vlasnika 13. 12. 2026) | čeka datum |
@@ -109,3 +109,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 9. 11. 2026 (noć): P3 STOP (`9c0fa49`): nedelja B (I održavanja) ne staje u 14–22 % planova 4–6 dana (dan I ima manje km od T dana, nedelja na kapacitetu). Odluka: P-b — niži izvodljiv cilj do 3,0 km, inače nedelja A; lestvica RP + 4 × 1600, 5 × 1600 m; I održavanja = najveća I doza razvoja; D30 ostaje; ukupni RP 18,4 km prihvaćen.
 - 9. 11. 2026 (noć): P2 STOP (`9f4cbc8`): nedelja B bez MP treninga spušta ukupni MP 52 → 50 km; O2 (B zadržava MP trening) daje 69 km ali 177 nedelja > 25 % brzih km. Odluka: O3 (blok jedan nivo iznad max(blok, MP trening), MP trening nastavlja od max) + MP tapera od max; prag pada ukupnog MP ≤ 5 % po grupi (inače samo prijaviti); dugi ≤ 32 km uz 180 min; 3 dana i početnik bez nedelje B. Maraton se svesno razlikuje od HM (HM: B zadržava RP trening).
 - 9. 11. 2026 (noć): P1 STOP 2 (`0b6e944`): S1+S2 ugrađeni (ukupno RP 30 → 43 km, 2 duga sa blokom, 0 odbijanja, baza/razvoj bajt-isti); sudar pojasa plafona sa taperom (1365 planova bez kvaliteta u taperu). Odluka: RP tapera = najviši nivo ≤ min(60 %, plafon), min 2 × 2000 m; blok podleže plafonu RP; F 5–6 d bez B i 81 nedelja > 25 % prihvaćeni.
+- 10. 11. 2026 00:15: T1 primljen (tab je čekao dozvolu za poruku; izveštaj pročitan iz repoa). CI po dometu izmene: jedna distanca v2 12,7 → 5,6 min zida (≈ 90 → 32 runner-min), samo ekran 5,4 min (≈ 15 runner-min), `.claude/**` ne pokreće web poslove, „sve" 9,4–9,7 min. Pokrivenost „sve" ista (524 → 525 fajlova, razlika je nov test izbora). Otvoreno za V1b: 10 delova za „sve" (zid ≈ 8 min) i sabijanje lanca starih regresija 10K `earlyGrid` (≈ 8 % punog nivoa) — odluka: 10 delova da, sabijanje lanca ne (gubi dokaz uzroka starih izmena).
