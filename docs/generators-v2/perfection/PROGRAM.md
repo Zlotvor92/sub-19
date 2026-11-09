@@ -31,6 +31,18 @@ Ostale tri distance organizator još nije merio — zato je prvi segment merna o
   koja je ponavlja. Odvoj izmereno od mišljenja.
 - Na kraju: commit + push na radnu granu, pa poruka organizatoru (ID sesije je u instrukciji) sa SHA i putanjom izveštaja.
 
+## Izbor modela po segmentu (nalog korisnika, 9. 11. 2026)
+
+Najjači dozvoljen model taba je Opus 5.5. Organizator za svaki segment bira najslabiji model koji ga pouzdano rešava
+uz precizan zadatak:
+
+- Opus 5.5: izmena pravila generatora, sudari pravila, adaptacija, dizajn merenja.
+- Sonnet 5.5: jasno omeđene izmene (tekst za korisnika, usklađivanje već odlučenog pravila, dopuna testa, ponavljanje
+  merenja postojećom skriptom).
+- Haiku 5.5: mehanički poslovi (pokretanje gotove skripte i prepis brojeva, formatiranje, provera spiska).
+
+Slabiji model dobija uži zadatak: tačni fajlovi i funkcije, očekivani izlaz, komanda provere, šta ne dira.
+
 ## Redosled (privremen; zaključava se posle P0)
 
 | Segment | Sadržaj | Stanje |
@@ -52,4 +64,5 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 
 ## Dnevnik odluka
 
-- 9. 11. 2026: program otvoren; P0 izdat.
+- 9. 11. 2026: program otvoren; P0 izdat (Opus 5.5, sesija session_01GnHHiWjtxT9rm68GZMbjHY).
+- 9. 11. 2026: korisnik — za manje poslove slabiji modeli uz precizno navođenje.
