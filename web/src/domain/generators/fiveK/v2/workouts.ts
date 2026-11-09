@@ -172,11 +172,18 @@ export function buildWorkout(
 
 /* ---------- Budžeti i veličine ---------- */
 
+/** 5k-v2.13.0 (P4 S1): udeo I (uključujući RP) za cilj nedelje — poslednji red `iMaxShareByTargetKm` sa fromKm ≤ cilj. */
+export function iMaxShareOf(targetKm: number): number {
+  let share: number = P.quality.iMaxShareByTargetKm[0].share;
+  for (const r of P.quality.iMaxShareByTargetKm) if (targetKm + 1e-9 >= r.fromKm) share = r.share;
+  return share;
+}
+
 /** Budžet [km] = udeo × cilj nedelje, zaokružen NANIŽE na 10 m (zaokruživanje ne sme da probije udeo). */
 export function qualityBudgets(targetKm: number): QualityBudgets {
   const floor2 = (x: number): number => Math.floor(x * 100 + 1e-9) / 100;
   return {
-    I: floor2(targetKm * P.quality.iMaxShare),
+    I: floor2(targetKm * iMaxShareOf(targetKm)),
     T: floor2(targetKm * P.quality.tMaxShare),
     R: floor2(targetKm * P.quality.rMaxShare)
   };
@@ -761,9 +768,12 @@ function altMain(type: 'I' | 'RP', budgetKm: number, p: Paces, prev: PrevDose): 
   if (other) return other;
   const w = workOf(prev);
   if (w > budgetKm + 1e-9 || w + 1e-9 < budgetKm * q.mainMinShareOfBudget) return null;
+  const pace = isI ? p.I : p.RP;
+  // 5k-v2.13.0 (P4, pouka 23): zadržane dužine ponavljanja staju u iRepMaxSec na TEKUĆEM tempu (posle sporijeg rezultata
+  // isti metri traju duže; kao validator I_REP i baza R).
+  if (!repFits(prev, pace, q.iRepMaxSec)) return null;
   const ratio = recRatioOf(type, prev) - q.denser.step;
   if (ratio + 1e-9 < q.denser.minRatio[type]) return null;
-  const pace = isI ? p.I : p.RP;
   const sec = (r: number): number => roundRecoverySec(prev.repKm * pace * r);
   if (sec(ratio) === sec(recRatioOf(type, prev))) return null;
   return { reps: prev.reps, repKm: prev.repKm, recRatio: ratio };
@@ -794,7 +804,13 @@ function peakWeek(
     notes.push(altNote('Vrhunac (I)', alt));
   } else {
     const w = pm ? workOf(pm) : 0;
-    if (!pm || w > b.I + 1e-9 || w + 1e-9 < b.I * q.mainMinShareOfBudget)
+    // 5k-v2.13.0 (P4, pouka 23): zadržan I i dalje staje u iRepMaxSec na tekućem tempu.
+    if (
+      !pm ||
+      w > b.I + 1e-9 ||
+      w + 1e-9 < b.I * q.mainMinShareOfBudget ||
+      !repFits(pm, p.I, q.iRepMaxSec)
+    )
       return { ok: false, message: up.message };
     i = intervalSession('I', pm, targetKm, p);
     held = true;

@@ -7,7 +7,7 @@
      J3: 0 odbijanja od validatora (dozvoljeno samo VDOT_OUT_OF_RANGE — rezultat ±2 VDOT van opsega ulaza);
      J4 (Uslov 8): km > 0, dugi ≥ lagan, nedelja ≥ minimum (u nedelji sa danima bola: cilj), nema kvaliteta ni
      ubrzanja u danima bola/odmora, prošlost bajt-ista; polje reduced tačno; rečenica Odluke 9 tačno za ukinute
-     nedelje; regresija (5K-10) prema b9c4728 (segment10.e08e-b9c4728.json, otisak bez korisničkog teksta): svaki
+     nedelje; regresija (P4) prema a859ca7 (segment13.e08e-a859ca7.json; ranije 5K-10 prema b9c4728, otisak bez korisničkog teksta): svaki
      promenjen tok nosi razlog segmenta 09 (segment09.harness).
    - BRZ nivo: uska pretraga — svaki 6. tok po scenariju; šira — samo nedelje 1–3 („rana"), svaki 5. tok po scenariju;
      + imenovani tokovi (primeri). PUN nivo: uska cela (glavni fajl), šira cela (deo 2). */
@@ -155,7 +155,7 @@ export const TOTALS: Record<
     dropped: number;
     kept: number;
     /* 5K-09: brojke promena prema 51a924f (changed, formerlyRejected, family08g) uklonjene su sa tim otiskom — regresija
-       je prema b9c4728 (segment10.e08e-b9c4728.json, 5K-10). */
+       je prema a859ca7 (segment13.e08e-a859ca7.json, P4; ranije b9c4728, 5K-10). */
   }
 > = {
   // 5k-v2.12.0 (T4): manje redovnih rasterećenja trkača (taper 1, ≤ 8 ned bez, ne pre ned 4) → manje ukinutih
@@ -232,10 +232,10 @@ export function describeReliefGrid(title: string, search: Search): void {
 
     // 5K-09: otisak prema 51a924f (sa tekstom) zamenjen otiskom prema c13c258 bez korisničkog teksta (Z2); promene
     // 51a924f → c13c258 (Odluka 9, N3/N4/F/P/M/K, 08k) su u istoriji (SEGMENT-08e…08l izveštaji).
-    // 5K-10 (krug T): otisak prema b9c4728 (segment10.e08e-b9c4728.json, fixes/5K/fixture10.ts).
-    it('regresija prema b9c4728 (5K-10, otisak bez teksta): promenjeni tokovi nose razlog kruga T', () => {
+    // P4: otisak prema a859ca7 (segment13.e08e-a859ca7.json, docs/generators-v2/perfection/P4/fixture13.ts).
+    it('regresija prema a859ca7 (P4, otisak bez teksta): promenjeni tokovi nose razlog P4', () => {
       const ref = ref09('e08e');
-      expect(ref.against).toBe('b9c4728');
+      expect(ref.against).toBe('a859ca7');
       const bad = regress09(
         ref,
         flows.map((f) => ({ key: `${search}:${f.c.key}`, res: f.res }))

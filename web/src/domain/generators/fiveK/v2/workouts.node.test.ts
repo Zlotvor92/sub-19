@@ -104,7 +104,9 @@ describe('workouts.ts: km i trajanje iz komponenti', () => {
   });
 
   it('budžet se zaokružuje naniže', () => {
-    expect(qualityBudgets(19.9)).toEqual({ I: 1.59, T: 1.99, R: 0.99 });
+    // 5k-v2.13.0 (P4 S1): I 10 % ispod 40 km, 12 % od 40 km.
+    expect(qualityBudgets(19.9)).toEqual({ I: 1.99, T: 1.99, R: 0.99 });
+    expect(qualityBudgets(41.3)).toEqual({ I: 4.95, T: 4.13, R: 2.06 });
   });
 });
 

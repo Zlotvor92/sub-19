@@ -55,6 +55,8 @@ export type ReasonCode =
   | 'MISSING_EASY_PACE'
   | 'EASY_PACE_OUT_OF_RANGE'
   | 'VDOT_OUT_OF_RANGE'
+  /* 5k-v2.13.0 (P4 S2, B2): 3 dana + obim < 12,1 km + VDOT ≥ 66. */
+  | 'VOLUME_LOW_FOR_PACE'
   | 'GOAL_INVALID'
   | 'QUALITY_INFEASIBLE'
   | 'WEEK_INFEASIBLE'

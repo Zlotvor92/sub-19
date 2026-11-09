@@ -1329,6 +1329,8 @@ export const canon09 = (r: unknown): string =>
 
 /** Razlog promene toka prema c13c258 (ispravka segmenta 09); CH = drugi korak lanca posle promenjenog prvog. */
 export type Why09 =
+  /* P4 (5k-v2.13.0): S1 budžet I/RP 10/12 % ili S2 VDOT > 60 (markP4). */
+  | 'P4'
   | 'F1'
   | 'F2'
   | 'C1'
@@ -1360,9 +1362,12 @@ interface MarkPlan {
   experience?: string;
   paceMode?: string;
   pattern?: { q1: string; q2: string | null; long: string };
+  vdot?: number | null;
   weeks: {
     index: number;
     phase: string;
+    targetKm: number;
+    budgets: { I: number };
     deload: boolean;
     test?: boolean;
     taperStep?: number | null;
@@ -1455,10 +1460,25 @@ export function mark10(why: Why09, r: unknown): boolean {
   }
 }
 
+/** P4 (5k-v2.13.0): kontinuirani plan sa nedeljom čiji je budžet I iznad starog plafona 8 % cilja (S1) ili VDOT > 60 (S2). */
+export function markP4(r: unknown): boolean {
+  return plansOf(r)
+    .filter((p) => p.planType !== 'runWalk')
+    .some(
+      (p) =>
+        (p.vdot ?? 0) > 60 ||
+        p.weeks.some(
+          (w) => w.phase !== 'race' && w.budgets.I > Math.floor(w.targetKm * 8 + 1e-9) / 100 + 1e-9
+        )
+    );
+}
+
 /** Oznaka razloga na TEKUĆEM rezultatu (provera u testu; razlog određuje skripta otisaka poređenjem sa c13c258). */
 export function mark09(why: Why09, r: unknown): boolean {
   const ps = plansOf(r);
   switch (why) {
+    case 'P4':
+      return markP4(r);
     case 'F1':
       // Oštrenje trkačke nedelje na danu koji nije zahtevni dan šablona (week.sharpenerCandidates).
       return ps.some((p) => {

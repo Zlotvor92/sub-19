@@ -65,7 +65,7 @@ describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', (
     const w = r.plan.weeks[3]!;
     // 5k-v2.12.0 (T1/T4): veći obim izgradnje (bez rasterećenja pre ned 4), rasterećenje 0,8 × 46,6 km.
     expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 37.3, 37.3]);
-    expect(roles(w)).toBe('easy:12.67 q1:7.22 easy:4.41 long:13');
+    expect(roles(w)).toBe('easy:11.16 q1:9.24 easy:3.9 long:13'); // 5k-v2.13.0 (P4 S1): veći kvalitet, kraći lagani
     expect(r.plan.warnings.some((v) => v.rule === 'MIXED_OVER_TARGET')).toBe(false);
   });
 
@@ -164,7 +164,7 @@ describe('08i-b (5k-v2.10.1): zbir zaštićenih dana po činjenicama; test se ne
     // 5k-v2.12.0 (T1): sastavljena nedelja ima lagan dan manje i staje u cilj i sa planiranim km zaštićenih — zbir po
     // činjenicama (0) nije potreban validatoru (generate.mixedOf).
     expect(w.protectedKm ?? 0).toBe(0);
-    expect(roles(w)).toBe('easy:4.57 q1:4.13 long:4.7');
+    expect(roles(w)).toBe('easy:3.98 q1:4.72 long:4.7'); // 5k-v2.13.0 (P4 S1): bilo easy 4,57 / q1 4,13
     expect(w.notes.some((n) => n.includes(MIXED_NOTE))).toBe(false);
     expect(r.plan.warnings.some((v) => v.rule === 'MIXED_OVER_TARGET')).toBe(false);
   });

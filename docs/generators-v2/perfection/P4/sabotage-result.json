@@ -1,0 +1,214 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P4/sabotage.json",
+ "head": "2e1a981",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 19.5,
+ "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+ "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P4-S1 plafon I 15 % ispod 40 km",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 S1 — budžet I/RP po cilju nedelje > tabela: cilj < 40 km 10 %, ≥ 40 km 12 % (bilo 8 %)",
+    "message": "AssertionError: expected 0.15 to be 0.1 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "9b7cc4bceb6be57781c491b5b37b6c25883f8b54be130b40cfb9635787f7ca28",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 0.9
+  },
+  {
+   "index": 2,
+   "name": "P4-S1b plafon I 15 % od 40 km",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 S1 — budžet I/RP po cilju nedelje > tabela: cilj < 40 km 10 %, ≥ 40 km 12 % (bilo 8 %)",
+    "message": "AssertionError: expected 0.15 to be 0.12 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "ed4e7ee3f0bdb75496ee6d0ec6e71b5eea25bafef21c0924187d0c6138d874d3",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 0.9
+  },
+  {
+   "index": 3,
+   "name": "P4-S2 granica VDOT 75",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 S2 — VDOT do 70 > VDOT 70 daje plan, iznad 70 odbijanje VDOT_OUT_OF_RANGE",
+    "message": "AssertionError: expected 75 to be 70 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "8fc0846077469dc42ab6bc292151fb57e14fc70c589ba6d8f76144511e122743",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.4
+  },
+  {
+   "index": 4,
+   "name": "P4-B2 odbijanje od VDOT 67 (degenerisana nedelja na 66,3)",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 B2 — 3 dana, 12 km, VDOT ≥ 66 > klasa: samo 3 dana, < 12,1 km, VDOT ≥ 66",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "afa198c360007100bbcc944132e9a3c0a3ba911d201f360c8806dd2947b6e419",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.7
+  },
+  {
+   "index": 5,
+   "name": "P4-B2v validator ne proverava klasu",
+   "files": [
+    "src/domain/generators/fiveK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 B2 — 3 dana, 12 km, VDOT ≥ 66 > validator obara plan te klase (ista funkcija kao ulaz)",
+    "message": "AssertionError: expected [ 'QUALITY_REDUCED', …(4) ] to include 'VOLUME_LOW_FOR_PACE'"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "fd0f848a8ed80074e282019c33afe207626634da496d081e1f78f3d042abec19",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.8
+  },
+  {
+   "index": 6,
+   "name": "P4-B2a adaptacija primenjuje rezultat klase",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 B2 — 3 dana, 12 km, VDOT ≥ 66 > adaptacija: nov rezultat VDOT 68 na planu 3 dana / 12 km se ne primenjuje (RESULT_IGNORED)",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "11cf856a44534fc8ddf8304c218bad0a2e27f37cd0ea0315b6e562acc7275502",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.9
+  },
+  {
+   "index": 7,
+   "name": "P4-F1a gušći oporavak bez provere trajanja deonice",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 F1 — zadržana I doza posle sporijeg rezultata staje u iRepMaxSec na tekućem tempu (pouka 23) > r-d5-12w-60km-v38-1 i r-d5-13w-50km-v38-0, sporiji rezultat u vrhuncu: plan bez I_REP (bilo 10 odbijanja)",
+    "message": "AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "dc0e0ad638535df2452ed04dd432645a0722705ac1d3f5d388e31f70b65de8ed",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.7
+  },
+  {
+   "index": 8,
+   "name": "P4-F1b zadržan I bez provere trajanja deonice",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p4.node.test.ts",
+    "test": "P4 F1 — zadržana I doza posle sporijeg rezultata staje u iRepMaxSec na tekućem tempu (pouka 23) > r-d5-12w-60km-v38-1 i r-d5-13w-50km-v38-0, sporiji rezultat u vrhuncu: plan bez I_REP (bilo 10 odbijanja)",
+    "message": "AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "hashSabotaged": "167ce2947729ceccbfc05a195a0b1b86af99784557004ba8cf3ea3ef722b14f3",
+   "hashAfter": "0a80501b6b3f820586c2d23d84b777ba2d21e14a385c8552917f852970f623bf",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.7
+  }
+ ]
+}

@@ -506,3 +506,24 @@ export function simpleWeekQuality(
         }
   };
 }
+
+/**
+ * P4 (S3, samo merenje — ne bira ništa): zašto doza `d` vrste `kind` nije veća. Ista ponuda i procena kao `choose`
+ * ('up': veći procenjeni rad I duže ukupno trajanje). 'step' = veća doza staje u budžet (≤ 1 korak nedeljno / kraj
+ * faze); 'budget' = veća postoji samo uz veći budžet (plafon udela zone); 'offer' = veće nema u ponudi (kraj ponude:
+ * maxReps / bouts / plafon T bloka faze).
+ */
+export function feelDoseHeld(
+  kind: FeelKind,
+  phase: Phase,
+  budgetKm: number,
+  p: PaceModel,
+  d: FeelDose
+): 'step' | 'budget' | 'offer' {
+  const s = SPEC[kind];
+  const w = s.est(d, p);
+  const t = d.reps * d.len;
+  const up = s.cands(phase).filter((c) => s.est(c, p) > w + 1e-9 && c.reps * c.len > t + 1e-9);
+  if (up.some((c) => s.est(c, p) <= budgetKm + 1e-9)) return 'step';
+  return up.length > 0 ? 'budget' : 'offer';
+}

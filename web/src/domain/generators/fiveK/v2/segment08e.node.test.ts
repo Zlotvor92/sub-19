@@ -275,8 +275,9 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
 
   it('VOLUME_DELOAD: pauza 20, asOf sreda nedelje rasterećenja — ostatak nedelje = cilj pauze (volume.pauseRemainderKm) < 0,8 × prethodne: prihvaćeno (3 toka)', () => {
     const cases: [string, string, number, number, number][] = [
-      ['v38-d4-38km-10w', '2026-12-02', 5, 29.9, 26.2], // 5k-v2.12.0 (T4): rasterećenje ned 5 (bilo 3)
-      ['v38-d4-38km-14w', '2026-11-25', 4, 29.9, 26.2],
+      // 5k-v2.13.0 (P4 S1): kapacitet uz I 10 % — rasterećenje v38 30,6, ostatak pauze 26,8 / 26,6 (bilo 29,9 / 26,2).
+      ['v38-d4-38km-10w', '2026-12-02', 5, 30.6, 26.8], // 5k-v2.12.0 (T4): rasterećenje ned 5 (bilo 3)
+      ['v38-d4-38km-14w', '2026-11-25', 4, 30.6, 26.6],
       ['v45-d4-38km-14w', '2026-12-23', 8, 33, 28.9]
     ];
     for (const [id, asOf, week, before, after] of cases) {
@@ -295,7 +296,9 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
       expect(after / p.weeks[week - 2]!.targetKm, id).toBeLessThan(P.volume.deloadFactor - 0.05);
       // 5k-v2.12.0: v38-d4-38km-10w (rasterećenje ned 5, T4) je i mešovita nedelja (upisani dani do asOf ≠ sastavljeni);
       // vlasnik ostatka je i dalje pravilo pauze (pauseRemainder), validator bez greške.
-      if (id !== 'v38-d4-38km-10w') expect(r.plan.adaptation!.mixedWeeks, id).not.toContain(week);
+      // 5k-v2.13.0 (P4 S1): da li je nedelja i mešovita (upisani dani do asOf ≠ sastavljeni) zavisi od doze kvaliteta
+      // (posle S1: oba toka 14w da, 10w ne); vlasnik ostatka je u svim slučajevima pravilo pauze (pauseRemainder gore),
+      // validator bez greške.
       expect(
         validatePlan(r.plan).filter((v) => v.severity === 'error'),
         id

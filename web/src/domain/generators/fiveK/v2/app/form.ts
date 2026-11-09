@@ -2,7 +2,7 @@
    plana, primenjeni rezultati adaptacije, novi rezultati koji čekaju prilagođavanje) i ocena cilja v2 doslovno. Lanac
    forme iz treninga (v1) se ne koristi. */
 
-import { resultUse } from '../assess.ts';
+import { outOfRangeText, resultUse } from '../assess.ts';
 import { raceTimeForVdot, vdotFromResult } from '../paces.ts';
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import { weekLabel } from '../input.ts';
@@ -100,7 +100,7 @@ export function formHistory(src: {
           : pending
             ? ' — čeka prilagođavanje plana'
             : use === 'outOfRange'
-              ? ` — ne menja tempo (VDOT van opsega plana ${P.input.vdot.min}–${P.input.vdot.max})`
+              ? ` — ne menja tempo (${outOfRangeText(round1(vdotFromResult(r.distM, r.sec)), 'plana')})`
               : ' — ne menja tempo (stariji od rezultata u upotrebi ili od 12 nedelja)'
       }`,
       status: pending ? 'pending' : 'old'

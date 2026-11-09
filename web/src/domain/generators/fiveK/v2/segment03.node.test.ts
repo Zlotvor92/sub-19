@@ -194,11 +194,12 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
 
   it('12 ned: rasteretni vrhunac bez I — zamena (2.3.0: samo ubrzanja, R 4 × 150 m nije zamena)', () => {
     // 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja — 12 nedelja (rasterećenje vrhunca u ned 8).
-    // 3 dana, 12 km, VDOT ~52, 9 ned: rasterećenje vrhunca (ned 5) samo sa ubrzanjima.
+    // 3 dana, 12 km, VDOT ~52, 9 ned: rasterećenje vrhunca (ned 5) samo sa ubrzanjima. 5k-v2.13.0 (P4 S1: I 10 %): na
+    // VDOT ~52 kvalitet staje — samo ubrzanja tek na VDOT 62 (S2).
     const w = planOf({
       ...FAST_SMALL(9),
       km: 12,
-      timeSec: 1157,
+      timeSec: 994,
       days: ['tue', 'thu', 'sun']
     }).weeks.find((x) => x.phase === 'peak' && x.deload)!;
     expect(quality(w)).toHaveLength(0);

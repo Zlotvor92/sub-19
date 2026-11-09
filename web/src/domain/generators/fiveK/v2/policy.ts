@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.12.0',
+  version: '5k-v2.13.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -62,8 +62,21 @@ export const FIVE_K_V2_POLICY = {
       'ispod 12 km na 3 dana nema prostora za kvalitet; počni laganim trčanjem ili izaberi 4 dana',
     /** Distance rezultata iz kojih se računa VDOT. */
     resultDistancesM: [3000, 5000, 10000] as const,
-    /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena). */
-    vdot: { min: 30, max: 60 },
+    /** Opseg VDOT-a za koji v2 pravi plan (heuristika opsega; van toga pravila nisu proverena).
+        5k-v2.13.0 (P4 S2, heuristika): gornja granica 60 → 70 — tempo, deonice, WU/CD i dugi provereni na VDOT 62/65/68/70
+        (docs/generators-v2/perfection/reports/P4-REPORT.md). */
+    vdot: { min: 30, max: 70 },
+    /** 5k-v2.13.0 (P4 S2, heuristika; odluka organizatora B2 posle STOP 2): 3 dana, obim < 12,1 km (dno tabele 3 dana,
+        12 km) i VDOT ≥ 66 → odbijanje VOLUME_LOW_FOR_PACE. Pri toj brzini lagan ≥ 20 min ne staje uz dugi, pa nedelja
+        vrhunca kratkog plana ostaje samo sa dugim (WEEK_DEGENERATE od VDOT-a 66,3, samo 12,0 km × 6–7 ned). Jedno mesto:
+        input.lowVolumeForPace (ulaz, assess A1, validator, Forma). */
+    lowVolumeForPace: {
+      runDays: 3,
+      belowKm: 12.1,
+      fromVdot: 66,
+      message:
+        'pri ovoj brzini 3 dana i 12 km nedeljno ne daju smislenu nedelju (lagan trening ne staje uz dugi); povećaj obim ili izaberi 4 dana'
+    },
     /** Trajanje plana u celim nedeljama (heuristika opsega). 2.3.0: od 6 (kratka priprema). */
     planWeeks: { min: 6, max: 16 },
     /** Cilj [s] mora da odgovara VDOT-u u ovom opsegu da bi uopšte bio procenjen (sanity granica). */
@@ -147,8 +160,13 @@ export const FIVE_K_V2_POLICY = {
   },
 
   quality: {
-    /** I (uključujući RP) ≤ 8% nedeljnog obima; ponavljanje ≤ 5 min (Daniels-ova heuristika). */
-    iMaxShare: 0.08,
+    /** 5k-v2.13.0 (P4 S1, heuristika): JEDAN plafon I (uključujući RP) = udeo cilja nedelje po tabeli — poslednji red
+        čiji je `fromKm` ≤ cilj: cilj < 40 km → 10 %, cilj ≥ 40 km → 12 % (do 5k-v2.12.0 8 % za sve). Jedino mesto
+        čitanja: workouts.iMaxShareOf (budžet konstruktora i validator I_SHARE). Ponavljanje ≤ 5 min (iRepMaxSec). */
+    iMaxShareByTargetKm: [
+      { fromKm: 0, share: 0.1 },
+      { fromKm: 40, share: 0.12 }
+    ],
     iRepMaxSec: 300,
     /** T ≤ 10% nedeljnog obima (heuristika). */
     tMaxShare: 0.1,
@@ -959,5 +977,29 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'prvo otpada oštrenje, pa lagani u odmor (week.raceWeekRest). (C11, pouka 35) U svim nedeljama osim trkačke (i ' +
       'taper, i uz dane odmora). Sačuvan plan 5k-v2.11.1 i stariji prilagođavaju se po 2.12.0 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/5k-v2/reports/SEGMENT-10-IMPLEMENTATION.md.'
+  },
+  {
+    version: '5k-v2.13.0',
+    decision:
+      'P4 (program „trenerski kvalitet v2", odluke organizatora; sve HEURISTIKE). (S1) Jedan plafon I (uključujući RP): ' +
+      'udeo cilja nedelje po tabeli quality.iMaxShareByTargetKm — cilj < 40 km 10 %, ≥ 40 km 12 % (bilo 8 %); jedino ' +
+      'mesto workouts.iMaxShareOf (qualityBudgets: konstruktor, po osećaju, početnik; validator I_SHARE). R 5 %, T 10 %, ' +
+      'maxReps, iRepMaxSec, trajanje T i „≤ 1 korak nedeljno" bez promene. Mreža P0 (trkač sa rezultatom, medijana): I rad ' +
+      'najveći 11 → 13,7 min, najveći RP trening 2,5 → 3,2 km, ukupno RP 6,5 → 8,5 km; profil (b) I vrh 10 → 14 min. ' +
+      'Na 5 dana vrh I/RP posle izmene drži maxReps (I 50 %, RP 69 % planova) — prijavljeno, ne menja se. (S2) Opseg VDOT-a ' +
+      '30–60 → 30–70; plan proveren na VDOT 62/65/68/70 (tempo, deonice, WU/CD, dugi). Svesna odluka (O-d): oštrenje ' +
+      'trkačke nedelje 2–3 × 300 m RP traje 54–59 s na VDOT ≥ 63 (33 od 1 056 planova po VDOT-u) — prihvaćeno, to je ' +
+      'oštrenje, ne I trening; pravilo „deonica ≥ 60 s" važi za I/RP u izgradnji (tamo 0 na svim VDOT-ima). (B2) 3 dana, ' +
+      'obim < 12,1 km, VDOT ≥ 66 → odbijanje VOLUME_LOW_FOR_PACE sa preporukom (input.lowVolumeForPace; ulaz, assess A1 ' +
+      'RESULT_IGNORED, validator, Forma): bez toga nedelja vrhunca ima samo dugi (WEEK_DEGENERATE od VDOT-a 66,3, samo ' +
+      '12,0 km × 6–7 ned; uzrok T1 lagan ≥ 20 min uz lagan ≤ 0,8 × dugi). Fina mreža (3 dana × 12–14 km korak 0,1 × 6–16 ' +
+      'ned × VDOT 62–70 korak 0,5 = 3 927): odbijeno 99 (svi ranije odbijani zbog VDOT > 60), WEEK_DEGENERATE 0. (S3) ' +
+      'Samo merenje (feel.feelDoseHeld): dozu po osećaju i početnika drži dužina faze u 88–89 % slučajeva. (F1, dopuna ' +
+      'pouke 23 za I/RP; odluka organizatora posle STOP 3) Zadržana I/RP doza — ista doza gušćeg oporavka (workouts.' +
+      'altMain) i zadržan I vrhunca (peakWeek) — mora da stane u iRepMaxSec na TEKUĆEM tempu; inače postojeći lanac ' +
+      'doze (jedan kvalitet doze rasterećenja). Bez toga sporiji rezultat u vrhuncu (5 d / 50–60 km / VDOT 38, 6 × 1000 m) ' +
+      'davao je I_REP 306 s > 300 s: 10 odbijenih tokova od 104 800 trajne rane mreže 08g → 0. Sačuvan plan ' +
+      '5k-v2.12.0 i stariji prilagođavaju se po 2.13.0 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P4-REPORT.md.'
   }
 ];

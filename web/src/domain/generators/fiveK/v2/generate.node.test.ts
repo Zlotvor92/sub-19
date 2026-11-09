@@ -204,7 +204,8 @@ describe('odbijanje nepodržanog i neizvodljivog ulaza', () => {
     ['rezultat posle starta', inputOf({ ...ok, resultDaysBefore: -1 }), 'RESULT_AFTER_START'],
     // 5k-v2.11.0 (C8, kao 10K): VDOT < 30 → plan po osećaju; bez laganog tempa MISSING_EASY_PACE.
     ['VDOT < 30', inputOf({ ...ok, distanceM: 5000, timeSec: 1860 }), 'MISSING_EASY_PACE'],
-    ['VDOT > 60', inputOf({ ...ok, distanceM: 5000, timeSec: 1000 }), 'VDOT_OUT_OF_RANGE'],
+    // 5k-v2.13.0 (P4 S2): gornja granica 70.
+    ['VDOT > 70', inputOf({ ...ok, distanceM: 5000, timeSec: 860 }), 'VDOT_OUT_OF_RANGE'],
     [
       'polumaraton',
       { ...inputOf(ok), recentResult: { distanceM: 21097, timeSec: 6000, date: '2026-10-20' } },

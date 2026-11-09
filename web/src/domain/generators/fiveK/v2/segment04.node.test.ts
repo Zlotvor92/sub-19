@@ -71,12 +71,13 @@ const S04: Record<string, Profile> = {
 };
 const S04_ALL = Object.entries(S04);
 /** Brz trkač, mali obim (Segment 03). 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja, a 4 dana / 15 km
-    sada nosi kvalitet u rasterećenju — rasterećenje samo sa ubrzanjima: 3 dana, 12 km, VDOT ~52, 9 ned (ned 5). */
+    sada nosi kvalitet u rasterećenju — rasterećenje samo sa ubrzanjima: 3 dana, 12 km, VDOT ~52, 9 ned (ned 5).
+    5k-v2.13.0 (P4 S1: I 10 % cilja) i VDOT ~52 / 12 km nosi kvalitet u rasterećenju — samo ubrzanja: VDOT 62 (S2). */
 const FAST_SMALL_8: Profile = {
   weeks: 9,
   km: 12,
   distanceM: 5000,
-  timeSec: 1157,
+  timeSec: 994,
   days: ['tue', 'thu', 'sun']
 };
 
@@ -239,7 +240,7 @@ describe('Odluka 4: trkačka nedelja — cilj = planirano, 50% vrha je gornja gr
 });
 
 describe('Odluka 5: zamena u rasterećenju — R ≥ 1,2 km, inače samo ubrzanja 6 × 20 s', () => {
-  it('15 km + VDOT ~53, 8 ned: rasteretni vrhunac = samo ubrzanja 6 × 20 s, ne R 4 × 150 m', () => {
+  it('3 dana, 12 km, VDOT 62, 9 ned: rasteretni vrhunac = samo ubrzanja 6 × 20 s, ne R 4 × 150 m', () => {
     const plan = planOf(FAST_SMALL_8);
     const w = plan.weeks.find((x) => x.phase === 'peak' && x.deload)!;
     expect(w.stridesOnly).toBe(true);

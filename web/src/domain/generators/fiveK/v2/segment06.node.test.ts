@@ -186,7 +186,8 @@ describe('Tok i zaštita (Uslov 4)', () => {
     // 2.10.3 (08k, kao 10K A1): rezultat van opsega VDOT se ne primenjuje (RESULT_IGNORED), adaptacija se ne odbija.
     const fast = adaptFiveKV2(
       plan,
-      { results: [{ distM: 5000, sec: 900, date: asOf, kind: 'race' }] },
+      // 5k-v2.13.0 (P4 S2): gornja granica 70 — 5 km 14:20 (VDOT ~73).
+      { results: [{ distM: 5000, sec: 860, date: asOf, kind: 'race' }] },
       asOf
     );
     expect(fast.ok && fast.reasons.some((x) => x.condition === 'RESULT_IGNORED')).toBe(true);

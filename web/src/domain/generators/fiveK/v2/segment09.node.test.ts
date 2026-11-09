@@ -126,7 +126,7 @@ describe('F1: 3 dana — oštrenje bez zahtevnog dana ≥ 3 dana pre trke', () =
 describe('F2: 3 dana / 12 km — kvalitet koji ne staje: manja doza ili bez kvaliteta uz upozorenje', () => {
   // 5k-v2.12.0 (T4): nalaz (VDOT 30, 8 ned, taper ned 7) sada ima taper 1 nedelja i kvalitet staje; lanac F2 nosi
   // brz trkač 3 dana / 12 km / 6 ned (ned 3).
-  it('nalaz: VDOT 30, 8 ned → plan bez odbijanja; VDOT ~52, 6 ned → upozorenje QUALITY_REDUCED (ned 3)', () => {
+  it('nalaz: VDOT 30, 8 ned → plan bez odbijanja; VDOT 62 (5k-v2.13.0; ranije ~52), 6 ned → upozorenje QUALITY_REDUCED (ned 3)', () => {
     const p0 = planOf({
       startDate: '2027-01-11',
       raceDate: '2027-03-07',
@@ -141,7 +141,8 @@ describe('F2: 3 dana / 12 km — kvalitet koji ne staje: manja doza ili bez kval
       raceDate: '2026-12-13',
       runDays: ['tue', 'thu', 'sun'],
       currentWeeklyKm: 12,
-      recentResult: { distanceM: 5000, timeSec: 1157, date: '2026-10-19' },
+      // 5k-v2.13.0 (P4 S1: I 10 %): na VDOT ~52 kvalitet staje — QUALITY_REDUCED ostaje samo na VDOT 62–65 (S2).
+      recentResult: { distanceM: 5000, timeSec: 994, date: '2026-10-19' },
       goalTimeSec: null
     });
     expect(p.weeks[2]!.limits?.quality).toBeDefined();
@@ -270,10 +271,10 @@ describe('C8: VDOT ispod opsega → plan po osećaju (kao 10K); iznad → odbija
     expect([p.paceMode, p.vdot]).toEqual(['feel', null]);
     expect(p.notes.some((n) => n.includes('sporiji od opsega tabela tempa'))).toBe(true);
   });
-  it('bez laganog tempa MISSING_EASY_PACE; VDOT > 60 VDOT_OUT_OF_RANGE', () => {
+  it('bez laganog tempa MISSING_EASY_PACE; VDOT > 70 (5k-v2.13.0, P4 S2) VDOT_OUT_OF_RANGE', () => {
     const codes = (r: Gen) => (r.ok ? [] : r.reasons.map((x) => x.code));
     expect(codes(generateFiveKV2(input(1900)))).toEqual(['MISSING_EASY_PACE']);
-    expect(codes(generateFiveKV2(input(900, 420)))).toEqual(['VDOT_OUT_OF_RANGE']);
+    expect(codes(generateFiveKV2(input(860, 420)))).toEqual(['VDOT_OUT_OF_RANGE']);
   });
 });
 
@@ -626,14 +627,14 @@ describe('Z3: Forma čita odluku jezgra o rezultatu', () => {
 
 describe('owner K: jedan plafon laganog dana trkačke nedelje; peakKm adaptacije', () => {
   it('validator koristi isti plafon kao konstruktor (⌊…⌋ na 0,1 km): lagan iznad njega je greška', () => {
-    // 4 dana, 30 km, VDOT 38, 10 ned: plafon 5,5 km, bez zaokruživanja 5,55 (5k-v2.12.0: taper 1 nedelja, dugi tapera
-    // 11,1 km) — lagan 5,51 je greška samo sa istom funkcijom kao konstruktor.
+    // 4 dana, 30 km, VDOT 34, 8 ned: plafon 5,3 km, bez zaokruživanja 5,35 (5k-v2.13.0, P4: S1 menja dugi tapera; ulaz
+    // 10 ned / VDOT 38 više nema zaokruživanja) — lagan 5,31 je greška samo sa istom funkcijom kao konstruktor.
     const p = planOf({
       startDate: START,
-      raceDate: addDays(START, 7 * 10 - 1),
+      raceDate: addDays(START, 7 * 8 - 1),
       runDays: ['tue', 'thu', 'sat', 'sun'],
       currentWeeklyKm: 30,
-      recentResult: result(38, addDays(START, -10)),
+      recentResult: result(34, addDays(START, -10)),
       goalTimeSec: null
     });
     const race = p.weeks.at(-1)!;
@@ -643,7 +644,7 @@ describe('owner K: jedan plafon laganog dana trkačke nedelje; peakKm adaptacije
       P.easy.taperMinKm,
       Math.min(P.easy.raceWeekMaxSec / p.paces.E.slow, prevLong * P.easy.raceWeekMaxShareOfPrevLong)
     );
-    expect([cap, Math.round(raw * 100) / 100]).toEqual([5.5, 5.55]);
+    expect([cap, Math.round(raw * 100) / 100]).toEqual([5.3, 5.35]);
     const easy = race.days.find((d) => d.role === 'easy' && d.workout.km < cap)!;
     const q = JSON.parse(JSON.stringify(p)) as FiveKV2Plan;
     const d = q.weeks.at(-1)!.days.find((x) => x.date === easy.date)!;

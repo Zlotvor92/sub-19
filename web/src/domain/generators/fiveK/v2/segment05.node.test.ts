@@ -11,6 +11,7 @@ import * as policy from './policy.ts';
 import { inputOf, START, type Profile } from './testInputs.ts';
 import type { FiveKV2Plan, Paces, PlanDay, PlanWeek, ReasonCode, Weekday } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { iMaxShareOf } from './workouts.ts';
 
 const P = policy.FIVE_K_V2_POLICY;
 const D3: Weekday[] = ['tue', 'thu', 'sun'];
@@ -337,7 +338,7 @@ describe('Odluka 7: isti procentualni budžeti, bez donjeg praga 70%', () => {
         sum.T += d.workout.workKm.T;
         sum.R += d.workout.workKm.R;
       }
-      expect(sum.I).toBeLessThanOrEqual(w.targetKm * P.quality.iMaxShare + 1e-6);
+      expect(sum.I).toBeLessThanOrEqual(w.targetKm * iMaxShareOf(w.targetKm) + 1e-6);
       expect(sum.T).toBeLessThanOrEqual(w.targetKm * P.quality.tMaxShare + 1e-6);
       expect(sum.R).toBeLessThanOrEqual(w.targetKm * P.quality.rMaxShare + 1e-6);
     }

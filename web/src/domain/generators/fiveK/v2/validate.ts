@@ -4,7 +4,7 @@
    2.8.0 (pouka 29): provere koje zavise od prošlosti (dugi prethodne nedelje za trkačku, lanac doze, kontrolno
    trčanje) čitaju upisani plan i u mešovitoj nedelji (bez preskakanja); pouka 30: trkačka ≤ taper. */
 
-import { weekLabel } from './input.ts';
+import { lowVolumeForPace, weekLabel } from './input.ts';
 import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import {
   controlTest,
@@ -53,7 +53,7 @@ import {
   returnBaseKm,
   returnLevelAt
 } from './volume.ts';
-import { qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
+import { iMaxShareOf, qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
 
 const PHASE_ORDER: readonly Phase[] = ['base', 'peak', 'sharpen', 'taper', 'race'];
 /** 2.4.0: + treninzi po osećaju (feel.ts) i kontrolno trčanje (samo nedelja testa, v. TEST_WEEK). */
@@ -463,6 +463,12 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       'PACE_MODE',
       'Način tempa ne odgovara ulazu (po osećaju ⇔ nema rezultata mlađeg od 12 nedelja ni novog rezultata).'
     );
+  // 5k-v2.13.0 (P4 S2, B2): VDOT u upotrebi uz 3 dana / 12 km ne sme da proizvede plan (ista funkcija kao ulaz).
+  if (
+    vNow !== null &&
+    lowVolumeForPace(plan.input.runDays.length, plan.input.currentWeeklyKm, vNow)
+  )
+    err('VOLUME_LOW_FOR_PACE', `VDOT ${vNow}: ${P.input.lowVolumeForPace.message}.`);
   if (a.feel) {
     const e = plan.input.typicalEasyPaceSecPerKm ?? NaN;
     const s = P.feel.easySpreadSec;
@@ -929,8 +935,12 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       // Ubrzanja (stride) su R tempo, ali ih ne računamo u R udeo; trajanje im se ipak proverava.
       bout.R = Math.max(bout.R, b.R);
     }
-    if (sum.I > base * q.iMaxShare + EPS)
-      err('I_SHARE', `I/RP ${sum.I.toFixed(2)} km > ${q.iMaxShare * 100}% od ${base} km.`, w.index);
+    if (sum.I > base * iMaxShareOf(base) + EPS)
+      err(
+        'I_SHARE',
+        `I/RP ${sum.I.toFixed(2)} km > ${Math.round(iMaxShareOf(base) * 100)}% od ${base} km.`,
+        w.index
+      );
     if (sum.T > base * q.tMaxShare + EPS)
       err('T_SHARE', `T ${sum.T.toFixed(2)} km > ${q.tMaxShare * 100}% od ${base} km.`, w.index);
     if (sum.R > base * q.rMaxShare + EPS)

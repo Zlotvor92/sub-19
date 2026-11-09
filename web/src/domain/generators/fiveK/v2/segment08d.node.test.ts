@@ -166,9 +166,9 @@ describe('regresija prema bf47249 (heš bez oznake verzije)', () => {
 
   // 5K-09: otisci prema bf47249 su zamenjeni otiskom prema c13c258 bez korisničkog teksta (Z2); promene bf47249 →
   // c13c258 (s06/pain5, mreža bola P, pouka 35) su u istoriji (SEGMENT-08d…08l izveštaji).
-  it('postojeće mreže (732) i mreža bola P (392): regresija prema b9c4728 (5K-10) — promenjeni nose razlog (T1, T2, T4, T5, lanac); 0 odbijanja', () => {
+  it('postojeće mreže (732) i mreža bola P (392): regresija prema a859ca7 (P4) — promenjeni nose razlog (P4, lanac); 0 odbijanja', () => {
     const ref = ref09('n08d');
-    expect([ref.against, ref.count]).toEqual(['b9c4728', 1124]);
+    expect([ref.against, ref.count]).toEqual(['a859ca7', 1124]);
     const net = adaptNetworkFlows(api, raceTimeForVdot).map((f) => ({ key: f.key, res: f.result }));
     expect(net).toHaveLength(732);
     expect(flows.length).toBe(392);
@@ -515,9 +515,9 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
       return [w.targetKm, w.plannedKm, w.days.filter((d) => d.workout.kind === 'quality').length];
     });
 
-  it('bazni plan: ned 2 = 43,2, ned 3 = 45,6, ned 4 rasterećenje 36,5, ned 5–6 = 45,6', () => {
+  it('bazni plan: ned 2 = 43,2, ned 3 = 46,6, ned 4 rasterećenje 37,3, ned 5–6 = 46,6 (5k-v2.13.0, P4 S1: kapacitet uz I 10/12 %; bilo 45,6 / 36,5)', () => {
     expect([2, 3, 4, 5, 6].map((i) => p0.weeks[i - 1]!.targetKm)).toEqual([
-      43.2, 45.6, 36.5, 45.6, 45.6
+      43.2, 46.6, 37.3, 46.6, 46.6
     ]);
     expect(p0.weeks[3]!.deload).toBe(true);
   });
@@ -526,7 +526,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     const r = run('2026-11-15', '2026-11-14', 5);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 4, share: 0.7 });
     expect(rows(r.plan.weeks)).toEqual([
-      [36.5, 26.6, 0],
+      [37.3, 26.8, 0], // 5k-v2.13.0 (P4 S1): bilo 36,5 / 26,6
       [33.2, 32.6, 2], // 5k-v2.12.0 (T1): lagan ≤ 0,8 × dugi → planirano < cilj
       [36.5, 36.5, 2]
     ]);
@@ -538,35 +538,35 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
   it('B: isto, bol 8 → ned 5 = 33,2 (pon–sre odmor; bf47249: pun cilj 45,6)', () => {
     const r = run('2026-11-15', '2026-11-14', 8);
     expect(rows(r.plan.weeks)).toEqual([
-      [36.5, 21.1, 0],
+      [37.3, 21.2, 0],
       [33.2, 30.8, 1],
       [36.5, 36.5, 2]
     ]);
   });
 
-  it('C: asOf 2026-11-18 (sre), bol 5 → r = 4, nivo 45,6, osnova 31,9; ned 5 = 35,0 (bf47249: 45,6 sa kvalitetom)', () => {
+  it('C: asOf 2026-11-18 (sre), bol 5 → r = 4, nivo 46,6, osnova 32,6; ned 5 = 35,8 (5k-v2.12.0: 45,6 / 31,9 / 35,0; bf47249: 45,6 sa kvalitetom)', () => {
     const r = run('2026-11-18', '2026-11-18', 5);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 4, share: 0.7 });
     expect(rows(r.plan.weeks)).toEqual([
-      [36.5, 28.6, 1],
-      [35, 32.6, 1],
-      [38.5, 38.5, 2]
+      [37.3, 28.9, 1],
+      [35.8, 33.3, 1],
+      [39.3, 39.3, 2]
     ]);
   });
 
-  it('D: isto, bol 8 → ned 5 = 35,0 (bf47249: 45,6 / 36,3)', () => {
+  it('D: isto, bol 8 → ned 5 = 35,8 (5k-v2.12.0: 35,0; bf47249: 45,6 / 36,3)', () => {
     const r = run('2026-11-18', '2026-11-18', 8);
     expect(rows(r.plan.weeks)).toEqual([
-      [36.5, 16.8, 1],
-      [35, 28.1, 0],
-      [38.5, 38.5, 2]
+      [37.3, 16.8, 1],
+      [35.8, 28.6, 0],
+      [39.3, 39.3, 2]
     ]);
   });
 
   it('E: asOf 2026-11-13 (pet), bol 7 → r = 3, nivo 43,2, osnova 30,2; 08e (Odluka 9): ned 4 nije rasterećenje — 33,2 = osnova + 10% (5k-v2.6.1: rasterećenje 24,2 = 0,8 × osnova; bf47249: ned 5 45,6, dva kvaliteta)', () => {
     const r = run('2026-11-13', '2026-11-13', 7);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 3, share: 0.7 });
-    expect(r.plan.weeks[2]!.targetKm).toBe(45.6);
+    expect(r.plan.weeks[2]!.targetKm).toBe(46.6); // 5k-v2.13.0 (P4 S1): bilo 45,6
     expect(r.plan.weeks[3]!.deload).toBe(false);
     expect(rows(r.plan.weeks)).toEqual([
       [33.2, 25, 0],

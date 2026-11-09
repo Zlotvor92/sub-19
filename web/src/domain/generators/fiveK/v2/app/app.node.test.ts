@@ -79,7 +79,7 @@ describe('generisanje kroz adapter', () => {
     const p = planOf(WITH_RESULT);
     expect(p.meta).toMatchObject({
       policyId: '5k-v2',
-      policyVersion: '5k-v2.12.0',
+      policyVersion: '5k-v2.13.0',
       raceDistM: 5000
     });
     expect(p.weeks).toHaveLength(10);
@@ -110,7 +110,7 @@ describe('generisanje kroz adapter', () => {
     expect(p.weeks[dl]!.phase).toBe('DELOAD');
     expect(p.weeks[9]!.phase).toBe('TRKA');
     // Ceo izlaz v2 doslovno (osnova adaptacije, 08b); `pred` prazan (v2 nema redove predikcije).
-    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.12.0');
+    expect((p['fiveKV2'] as { policyVersion: string }).policyVersion).toBe('5k-v2.13.0');
     expect(p.pred).toEqual([]);
     expect(p.ulaz).toBeUndefined();
   });
@@ -270,12 +270,12 @@ describe('prikaz iz strukture (Plan tab, dan)', () => {
     const days = view(planOf(WITH_RESULT)).dated;
     const q = days.find((d) => d.id === 'g4d2')!;
     expect(q.structure?.kind).toBe('Intervali');
-    expect(coreOf(q)).toMatch(/^3 × 700 m @ \d:\d\d\/km$/); // 5k-v2.12.0 (T4): I ≥ 80 % budžeta
+    expect(coreOf(q)).toMatch(/^4 × 700 m @ \d:\d\d\/km$/); // 5k-v2.13.0 (P4 S1): I ≥ 80 % budžeta 10 %
     const rows = breakdownOrNull(q)!;
     expect(rows.map((r) => r[0])).toEqual(['Zagrevanje', 'Radni deo', 'Odmor', 'Hlađenje']);
     expect(rows[2]![1]).toBe('3:30 min kaskanje');
     const easy = days.find((d) => d.id === 'g4d6')!;
-    expect(coreOf(easy)).toBe('Lagano 7,9 km'); // bez radnog dela → naslov (5k-v2.12.0: obim T1/T4)
+    expect(coreOf(easy)).toBe('Lagano 6,7 km'); // bez radnog dela → naslov (5k-v2.13.0, P4 S1: veći kvalitet, kraći lagan)
   });
 
   it('po osećaju: napor (RPE) umesto tempa, ništa izmišljeno', () => {
@@ -321,9 +321,9 @@ describe('izvoz na sat iz strukture', () => {
   it('sa rezultatom: ponavljanja sa oporavkom, E opseg, distanca/vreme po osnovi', () => {
     const b = watch(planOf(WITH_RESULT), '2026-11-23', 6);
     const q = b.events.find((e) => e.externalId === 'sub19-g4d2')!;
-    expect(q.name).toBe('I: 3 × 700 m (oporavak 3:30 lagano)'); // 5k-v2.12.0 (T4)
+    expect(q.name).toBe('I: 4 × 700 m (oporavak 3:30 lagano)'); // 5k-v2.13.0 (P4 S1)
     expect(q.description).toMatch(
-      /^Zagrevanje\n- [\d.]+km \d:\d\d-\d:\d\d\/km Pace\n\nRadni deo 2x\n- 700mtr \d:\d\d\/km Pace\n- Oporavak kaskanje 210s /
+      /^Zagrevanje\n- [\d.]+km \d:\d\d-\d:\d\d\/km Pace\n\nRadni deo 3x\n- 700mtr \d:\d\d\/km Pace\n- Oporavak kaskanje 210s /
     );
     expect(q.description).toMatch(/\n\nPoslednja deonica\n- 700mtr \d:\d\d\/km Pace\n\nHlađenje\n/);
     expect(b.skipped).toBe(0);

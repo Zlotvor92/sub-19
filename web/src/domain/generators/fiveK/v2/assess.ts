@@ -6,7 +6,7 @@
    nivo pre bola; osnovu računa volume.returnBaseKm. 2.7.0 (Odluka 9): oznaka `reduced` (cilj koraka je
    smanjenje: pauza, manjak — da; višak — ne); rasterećenja ukida steps.framesFor. */
 
-import { weekLabel } from './input.ts';
+import { lowVolumeForPace, weekLabel } from './input.ts';
 import { addDays, dayNumber, mustDay } from './dates.ts';
 import { vdotFromResult } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
@@ -201,6 +201,16 @@ export function checkFacts(
 
 export type ResultUse = 'apply' | 'old' | 'notNewer' | 'outOfRange';
 
+/** 5k-v2.13.0 (P4 S2, B2): zašto je rezultat 'outOfRange' (tekst assess i Forme). */
+export function outOfRangeText(vdot: number, form?: 'plana'): string {
+  if (vdot < P.input.vdot.min || vdot > P.input.vdot.max)
+    return form
+      ? `VDOT van opsega plana ${P.input.vdot.min}–${P.input.vdot.max}`
+      : `van ${P.input.vdot.min}–${P.input.vdot.max}`;
+  const g = P.input.lowVolumeForPace;
+  return `${form ? `VDOT ${String(vdot).replace('.', ',')} ` : ''}uz ${g.runDays} dana i ovaj obim (${g.message})`;
+}
+
 /**
  * 5k-v2.11.0 (Z3): JEDNA odluka o rezultatu (assess i Forma, app/form.ts): 'old' = stariji od resultMaxAgeDays na
  * asOf; 'notNewer' = nije noviji od rezultata u upotrebi; 'outOfRange' = VDOT van opsega ulaza (RESULT_IGNORED);
@@ -217,7 +227,12 @@ export function resultUse(
     [...steps].reverse().find((s) => s.result)?.result?.date ?? plan.input.recentResult?.date;
   if (prev !== undefined && mustDay(x.date) <= mustDay(prev)) return 'notNewer';
   const v = round1(vdotFromResult(x.distM, x.sec));
-  return v >= P.input.vdot.min && v <= P.input.vdot.max ? 'apply' : 'outOfRange';
+  // 5k-v2.13.0 (P4 S2, B2): i VDOT u opsegu, ali uz ulaz 3 dana / 12 km (input.lowVolumeForPace) — van opsega plana.
+  return v >= P.input.vdot.min &&
+    v <= P.input.vdot.max &&
+    !lowVolumeForPace(plan.input.runDays.length, plan.input.currentWeeklyKm, v)
+    ? 'apply'
+    : 'outOfRange';
 }
 
 /**
@@ -329,7 +344,7 @@ export function assess(
       reason(
         'RESULT_IGNORED',
         false,
-        `${x.kind === 'test' ? 'Test' : 'Trka'} ${x.distM / 1000}K ${fmt(x.sec)} (${x.date}): VDOT ${vdotOf(x)} van ${P.input.vdot.min}–${P.input.vdot.max} — rezultat se ne primenjuje.`
+        `${x.kind === 'test' ? 'Test' : 'Trka'} ${x.distM / 1000}K ${fmt(x.sec)} (${x.date}): VDOT ${vdotOf(x)} ${outOfRangeText(vdotOf(x))} — rezultat se ne primenjuje.`
       );
   const res = newer.find(inRange);
   if (res) {

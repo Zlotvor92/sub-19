@@ -1,0 +1,116 @@
+ulaza 328; odbijeno pre 135, posle 6; nova odbijanja 0; greške 0
+promenjenih planova (oba ok) 189/193: G R 4 d 24/24, G R 5 d 48/48, P0 B 3 d 8/8, P0 B 4 d 8/8, P0 F 3 d 8/8, P0 F 4 d 8/8, P0 F 5 d 4/8, P0 R 3 d 27/27, P0 R 4 d 27/27, P0 R 5 d 27/27
+
+## P0 R (VDOT 35/45/55) (n 81 / 81) | pre | posle |
+| I rad prvi [min] | 10.3 [4.3–18.3] | 12.5 [4.3–26] |
+| I rad najveći [min] | 11 [4.3–20.8] | 13.7 [5.1–26] |
+| RP rad prvi [min] | 10.5 [3.7–19.4] | 13 [4.4–26.2] |
+| RP rad najveći [min] | 10.9 [3.7–21.6] | 13.5 [4.4–26.2] |
+| R rad najveći [min] | 6.4 [2.1–12] | 6.4 [2.1–12] |
+| T rad najveći [min] | 13.9 [3.9–27.8] | 13.9 [3.9–27.8] |
+| najveći RP trening [km] | 2.5 [1–5] | 3.2 [1.2–6] |
+| najveći RP trening, % trke | 50 [20–100] | 64 [24–120] |
+| ukupno RP u planu [km] | 6.5 [1.6–15.4] | 8.5 [1.8–19.6] |
+| M2 udeo rada, dan najvećeg rada [%] | 0.4 [0.2–0.5] | 0.3 [0.3–0.5] |
+| M4 najduži dugi [km] | 12 [6.5–17] | 12 [6.2–17] |
+| M7 baza % | 11.5 [6.1–15.1] | 11.5 [6.1–15.1] |
+| M7 vrhunac % | 12.7 [7.7–16.7] | 15 [9–20.3] |
+| M7 oštrenje % | 11.7 [8.1–12.5] | 13.3 [9.7–16.5] |
+| M7 taper % | 11.5 [7.1–13.8] | 13.8 [8.8–17.6] |
+
+## P0 R VDOT 65 (n 0 / 27) | pre | posle |
+| I rad prvi [min] | — | 10.1 [4.4–22.8] |
+| I rad najveći [min] | — | 11.1 [4.4–22.8] |
+| RP rad prvi [min] | — | 9.6 [3.8–19.1] |
+| RP rad najveći [min] | — | 10.2 [3.8–19.1] |
+| R rad najveći [min] | — | 4.7 [1.8–9.5] |
+| T rad najveći [min] | — | 11 [3.4–22] |
+| najveći RP trening [km] | — | 3.2 [1.2–6] |
+| najveći RP trening, % trke | — | 64 [24–120] |
+| ukupno RP u planu [km] | — | 8.7 [1.8–19.6] |
+| M2 udeo rada, dan najvećeg rada [%] | — | 0.3 [0.3–0.4] |
+| M4 najduži dugi [km] | — | 14 [6.5–19.5] |
+| M7 baza % | — | 11.8 [6.6–15.1] |
+| M7 vrhunac % | — | 15 [9.3–20.3] |
+| M7 oštrenje % | — | 13.8 [10.2–14.9] |
+| M7 taper % | — | 15.1 [9.2–17.6] |
+
+## P0 F (n 24 / 24) | pre | posle |
+| I rad prvi [min] | 12 [4.5–14] | 14 [6–14] |
+| I rad najveći [min] | 12.8 [4.5–16] | 14 [6–16] |
+| RP rad prvi [min] | 19.5 [16.5–22.5] | 19.5 [16.5–22.5] |
+| RP rad najveći [min] | 19.5 [16.5–22.5] | 19.5 [16.5–22.5] |
+| R rad najveći [min] | 6.8 [3–9] | 6.8 [3–9] |
+| T rad najveći [min] | 16 [10–30] | 16 [10–30] |
+| najveći RP trening [km] | 3 [3–3] | 3 [3–3] |
+| najveći RP trening, % trke | 60 [60–60] | 60 [60–60] |
+| ukupno RP u planu [km] | 6.2 [4.1–11.8] | 6.6 [4.4–11.8] |
+| M2 udeo rada, dan najvećeg rada [%] | 0.5 [0.4–0.6] | 0.5 [0.4–0.6] |
+| M4 najduži dugi [km] | 10.6 [6.2–15.5] | 10.6 [6–15.5] |
+| M7 baza % | 10.1 [4.9–13.1] | 10.1 [4.9–13.1] |
+| M7 vrhunac % | 11.6 [6.9–20.5] | 12.1 [7.8–21] |
+| M7 oštrenje % | 7.8 [6.3–9.4] | 8.5 [6.3–11.2] |
+| M7 taper % | 11.8 [6.2–14] | 12.4 [7.3–15.2] |
+
+## P0 B (n 16 / 16) | pre | posle |
+| I rad prvi [min] | — | — |
+| I rad najveći [min] | — | — |
+| RP rad prvi [min] | 6.8 [4.3–12] | 8.1 [4.9–14] |
+| RP rad najveći [min] | 7.3 [4.3–13.5] | 8.7 [4.9–15] |
+| R rad najveći [min] | 4.2 [2.5–7.5] | 4.2 [2.5–7.5] |
+| T rad najveći [min] | 10 [7–15] | 10 [7–15] |
+| najveći RP trening [km] | 1.1 [0.8–1.9] | 1.4 [0.9–2.1] |
+| najveći RP trening, % trke | 21 [15.4–37.8] | 28.7 [18–42] |
+| ukupno RP u planu [km] | 3.9 [2.2–6.9] | 4.9 [3–8.3] |
+| M2 udeo rada, dan najvećeg rada [%] | 0.3 [0.2–0.4] | 0.3 [0.2–0.4] |
+| M4 najduži dugi [km] | 7.2 [5.7–8] | 7.2 [5.7–8] |
+| M7 baza % | 3.9 [1–6] | 3.9 [1–6] |
+| M7 vrhunac % | 7.4 [6.4–9] | 7.4 [6.4–9] |
+| M7 oštrenje % | 8 [6.8–8.9] | 8.9 [8.4–11.7] |
+| M7 taper % | 8 [7–10.7] | 9.4 [8.5–11.5] |
+
+## G R (4–5 d, 30–65 km) (n 72 / 72) | pre | posle |
+| I rad prvi [min] | 12.8 [8.7–17.1] | 19.3 [11.6–26] |
+| I rad najveći [min] | 14.5 [10.1–20.5] | 21.7 [12.7–26] |
+| RP rad prvi [min] | 13.2 [9.2–17.6] | 21 [11.7–26.2] |
+| RP rad najveći [min] | 14 [9.2–21] | 21.8 [11.7–26.2] |
+| R rad najveći [min] | 8.4 [6.1–12] | 8.4 [6.1–12] |
+| T rad najveći [min] | 18.5 [12.6–27.8] | 18.5 [12.6–27.8] |
+| najveći RP trening [km] | 3.6 [2.5–5] | 5 [3.2–6] |
+| najveći RP trening, % trke | 72 [50–100] | 100 [64–120] |
+| ukupno RP u planu [km] | 10.4 [5.7–15.4] | 14.4 [7.8–19.6] |
+| M2 udeo rada, dan najvećeg rada [%] | 0.4 [0.4–0.5] | 0.4 [0.3–0.5] |
+| M4 najduži dugi [km] | 14.5 [11.7–17] | 14.5 [11.7–17] |
+| M7 baza % | 12.1 [10.6–14.7] | 12.1 [10.6–14.7] |
+| M7 vrhunac % | 14.4 [12.9–16.7] | 17.7 [15–20.6] |
+| M7 oštrenje % | 11.9 [11–12.5] | 14.9 [12.8–16.5] |
+| M7 taper % | 12 [10.1–14.2] | 15.3 [12.9–17.6] |
+
+uzrok vrha I/RP, R (P0+G+V) pre: {"I":{"plafon udela zone":80,"≤ 1 korak nedeljno / kraj faze":73},"RP":{"plafon udela zone":92,"≤ 1 korak nedeljno / kraj faze":34}}
+  3 d: {"I":{"plafon udela zone":18,"≤ 1 korak nedeljno / kraj faze":9},"RP":{"plafon udela zone":18}}
+  4 d: {"I":{"plafon udela zone":21,"≤ 1 korak nedeljno / kraj faze":30},"RP":{"plafon udela zone":26,"≤ 1 korak nedeljno / kraj faze":16}}
+  5 d: {"I":{"≤ 1 korak nedeljno / kraj faze":34,"plafon udela zone":41},"RP":{"plafon udela zone":48,"≤ 1 korak nedeljno / kraj faze":18}}
+
+uzrok vrha I/RP, R (P0+G+V) posle: {"I":{"≤ 1 korak nedeljno / kraj faze":95,"plafon udela zone":127,"maxReps":60},"RP":{"plafon udela zone":112,"≤ 1 korak nedeljno / kraj faze":34,"maxReps":66}}
+  3 d: {"I":{"≤ 1 korak nedeljno / kraj faze":31,"plafon udela zone":35},"RP":{"plafon udela zone":44}}
+  4 d: {"I":{"≤ 1 korak nedeljno / kraj faze":46,"plafon udela zone":50},"RP":{"plafon udela zone":44,"≤ 1 korak nedeljno / kraj faze":28}}
+  5 d: {"I":{"≤ 1 korak nedeljno / kraj faze":18,"plafon udela zone":42,"maxReps":60},"RP":{"plafon udela zone":24,"maxReps":66,"≤ 1 korak nedeljno / kraj faze":6}}
+
+S3 uzrok doze po osećaju / početnik (posle); step = ≤ 1 korak/kraj faze, budget = plafon udela, offer = kraj ponude
+  F 3 d (n 8): {"HILLS":{"step":7,"budget":1},"FARTLEK_I":{"step":8},"FARTLEK_RP":{"step":4},"TEMPO":{"budget":1,"step":4}}
+  F 4 d (n 8): {"HILLS":{"step":6,"offer":2},"TEMPO":{"budget":3,"step":5},"FARTLEK_I":{"step":8},"FARTLEK_T":{"step":2},"FARTLEK_RP":{"step":4}}
+  F 5 d (n 8): {"HILLS":{"step":5,"offer":3},"TEMPO":{"step":6,"offer":2},"FARTLEK_I":{"step":8},"FARTLEK_RP":{"step":4}}
+  B 3 d (n 8): {"FARTLEK_T":{"step":8},"FARTLEK_RP":{"step":4},"RP_SHORT":{"step":4},"HILLS":{"step":4},"TEMPO":{"budget":2,"step":2}}
+  B 4 d (n 8): {"FARTLEK_T":{"step":8},"FARTLEK_RP":{"step":4},"RP_SHORT":{"step":4},"HILLS":{"step":4},"TEMPO":{"step":4}}
+S3 isto (pre): F {"HILLS":{"step":18,"budget":1,"offer":5},"FARTLEK_I":{"step":23,"budget":1},"FARTLEK_RP":{"step":12},"TEMPO":{"budget":4,"step":15,"offer":2}}; B {"FARTLEK_T":{"step":16},"FARTLEK_RP":{"step":8},"RP_SHORT":{"step":7,"budget":1},"HILLS":{"step":8}}
+
+nedelja > 25 % km bržih od E (pre): 4 — F-d3-12km-6w-e330#3 peak 25.6%, F-d3-12km-16w-e330#3 base 25.6%, F-d4-15km-6w-e330#3 peak 26.2%, F-d4-15km-16w-e330#3 base 26.5%
+
+nedelja > 25 % km bržih od E (posle): 4 — F-d3-12km-6w-e330#3 peak 25.6%, F-d3-12km-16w-e330#3 base 25.6%, F-d4-15km-6w-e330#3 peak 26.2%, F-d4-15km-16w-e330#3 base 26.5%
+S2/STOP (pre): I/RP deonica < 60 s: 0 planova; oporavak > 2 × rad (bez R): 0 planova ; dan kvaliteta duži od dugog po trajanju (van trkačke): 6 planova, bez upozorenja 0 ()
+  upozorenja (planova): {"QUALITY_REDUCED":1,"PLANNED_BELOW_TARGET":97,"LONG_SHORTER_THAN_QUALITY":6,"START_ABOVE_CAPACITY":37}
+S2/STOP (posle): I/RP deonica < 60 s: 6 planova; oporavak > 2 × rad (bez R): 0 planova ; dan kvaliteta duži od dugog po trajanju (van trkačke): 6 planova, bez upozorenja 0 ()
+  upozorenja (planova): {"PLANNED_BELOW_TARGET":147,"QUALITY_REDUCED":3,"LONG_SHORTER_THAN_QUALITY":6,"START_ABOVE_CAPACITY":37}
+
+mreža V (VDOT 62–70, posle): 102 planova; I najveći 11.3 [4.4–23.6] min; RP trening 3.6 [1.2–6] km; dugi 14 [6.2–19.5] km / 62 [27–85] min
+orijentir: najveći RP trening ≥ 3 km medijana (P0 R ≤ 60): pre 2.5, posle 3.2

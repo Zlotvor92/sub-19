@@ -255,8 +255,9 @@ describe('08g N4 — stanje zavisno od prošlosti iz upisanih dana (pouka 29)', 
     // Upisan dan kvaliteta ned 5 = dan prethodnog plana (≤ asOf); f4b257d je progresiju ned 7 vodio od sastavljene
     // (neupisane) doze ned 5 → I 2 × 700 m; posle: nov segment od asOf + 1 → I 2 × 600 m (prvi izbor bez prethodne).
     expect(q1(r.plan.weeks[4]!)).toBe(q1(p.weeks[4]!));
-    // 5k-v2.12.0 (T4): prvi izbor bez prethodne je najmanji rad ≥ 80 % budžeta → I 2 × 700 m.
-    expect(q1(r.plan.weeks[6]!)).toBe('I: 2 × 700 m');
+    // 5k-v2.12.0 (T4): prvi izbor bez prethodne je najmanji rad ≥ 80 % budžeta → I 2 × 700 m; 5k-v2.13.0 (P4 S1: budžet
+    // I 10 %) → I 3 × 600 m.
+    expect(q1(r.plan.weeks[6]!)).toBe('I: 3 × 600 m');
   });
 });
 

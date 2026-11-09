@@ -10,6 +10,12 @@ const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFin
 
 /** 2.10.4 (3i) — JEDINA funkcija broja nedelje u porukama jezgra: redni broj nedelje plana `n` + pomak
     (ulaz weekOffset — nedelje izvora predaje ispred plana). Bez pomaka = n (bajt-isto). */
+/** 5k-v2.13.0 (P4 S2, B2): ulaz koji pri brzini rezultata daje degenerisanu nedelju (policy.input.lowVolumeForPace). */
+export function lowVolumeForPace(runDays: number, weeklyKm: number, vdot: number): boolean {
+  const g = P.input.lowVolumeForPace;
+  return runDays === g.runDays && weeklyKm < g.belowKm && vdot >= g.fromVdot;
+}
+
 export function weekLabel(n: number, offset: number | undefined = 0): number {
   return n + (offset ?? 0);
 }
@@ -157,6 +163,8 @@ export function checkInput(raw: unknown): InputCheck {
           'VDOT_OUT_OF_RANGE',
           `VDOT rezultata (${vdot}) mora biti ${P.input.vdot.min}–${P.input.vdot.max}.`
         );
+      else if (isNum(km) && lowVolumeForPace(n, km, vdot))
+        add('VOLUME_LOW_FOR_PACE', `VDOT ${vdot}: ${P.input.lowVolumeForPace.message}.`);
     }
   }
 

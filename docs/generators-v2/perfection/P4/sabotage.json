@@ -1,0 +1,74 @@
+[
+  {
+    "name": "P4-S1 plafon I 15 % ispod 40 km",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "{ fromKm: 0, share: 0.1 },",
+    "replace": "{ fromKm: 0, share: 0.15 },",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  },
+  {
+    "name": "P4-S1b plafon I 15 % od 40 km",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "{ fromKm: 40, share: 0.12 }",
+    "replace": "{ fromKm: 40, share: 0.15 }",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  },
+  {
+    "name": "P4-S2 granica VDOT 75",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "vdot: { min: 30, max: 70 },",
+    "replace": "vdot: { min: 30, max: 75 },",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  },
+  {
+    "name": "P4-B2 odbijanje od VDOT 67 (degenerisana nedelja na 66,3)",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "      fromVdot: 66,",
+    "replace": "      fromVdot: 67,",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  },
+  {
+    "name": "P4-B2v validator ne proverava klasu",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "lowVolumeForPace(plan.input.runDays.length, plan.input.currentWeeklyKm, vNow)",
+    "replace": "lowVolumeForPace(plan.input.runDays.length, plan.input.currentWeeklyKm, vNow) && false",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  },
+  {
+    "name": "P4-B2a adaptacija primenjuje rezultat klase",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "!lowVolumeForPace(plan.input.runDays.length, plan.input.currentWeeklyKm, v)",
+    "replace": "true",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  },
+  {
+    "name": "P4-F1a gušći oporavak bez provere trajanja deonice",
+    "file": "src/domain/generators/fiveK/v2/workouts.ts",
+    "find": "  if (!repFits(prev, pace, q.iRepMaxSec)) return null;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  },
+  {
+    "name": "P4-F1b zadržan I bez provere trajanja deonice",
+    "file": "src/domain/generators/fiveK/v2/workouts.ts",
+    "find": " ||\n      !repFits(pm, p.I, q.iRepMaxSec)\n",
+    "replace": "\n",
+    "tests": [
+      "src/domain/generators/fiveK/v2/p4.node.test.ts"
+    ]
+  }
+]
