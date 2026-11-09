@@ -66,8 +66,9 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 |---|---|---|
 | P0 | Merna osnova trenerskih metrika, sve 4 distance, bez izmene generatora | gotovo (`53b2dd4`, `reports/P0-REPORT.md`) |
 | T1 | Brži CI i testovi: izbor po dometu izmene, E2E, v1 (uporedo sa P0) | u toku |
-| V1a | Uklanjanje v1: popis i plan (bez koda) — `briefs/V1a-uklanjanje-v1-popis.md` | u toku |
-| V1b | Uklanjanje v1: izvođenje (posle V1a i T1) | čeka |
+| V1a | Uklanjanje v1: popis i plan (bez koda) | gotovo (`d7df09e`, `reports/V1a-REPORT.md`) |
+| V1b | Uklanjanje v1 za 5K/10K/maraton + prevođenje testova (posle T1 i P1) | čeka T1, P1 |
+| V1c | Brisanje HM v1 (posle trke vlasnika 13. 12. 2026) | čeka datum |
 | P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP — `briefs/P1-hm-specificnost.md` | u toku |
 | P2 | Maraton: ista klasa (MP u dugom, doza) | čeka |
 | P3 | 10K | čeka |
@@ -94,3 +95,11 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
   15 → 20 %, lestvica RP do 3 × 5000 m. T/I početna doza, ubrzanja i WU/CD idu u P6 (sve distance), petlja forme u P5.
 - 9. 11. 2026: korisnik — v1 se briše; lični plan vlasnika mora da preživi; korisnici v1 planova generišu nov (baza: 19 v1 planova, 15 bez unosa, nijedan menjan posle 18. 10.). Deploy ostaje odluka korisnika.
 - 9. 11. 2026: P1 STOP (`89f31c8`): prvi nacrt S1 (nedelja B bez RP treninga) vraća ukupni RP na 30 km i sudara se sa H12 (102/192). Odluka: nedelja B zadržava RP trening, T dan postaje lagan (mehanizam pouke 35), blok u dugom 4–6–8 km; samo redovan plan 4–6 dana; poslednja nedelja izgradnje je B; H12 po O1; plafon RP 15 % ispod 40 km cilja, 20 % od 40 km (`briefs/P1-odluke-posle-stop.md`).
+- 9. 11. 2026: V1a primljen. Ispravka ranije tvrdnje organizatora: v2 je u produkciji podrazumevan od 24. 10. 2026.
+  (`vercel.json` buildCommand `VITE_V2_DEFAULT_ON=1`), ne v1. Odluke za V1b: (1) lični plan — opcija A vremenski
+  ograničena: HM v1 ostaje zamrznut samo za `meta.licni === true` do posle trke 13. 12. 2026, pa V1c; 5K/10K/maraton v1
+  se brišu u V1b; (2) baza se ne dira, postojeće ponašanje „Generiši nov plan" (briše unose starog plana) se u V1b ne
+  menja — korisnik obaveštava vlasnike v1 planova; (3) V1b čeka T1 i P1; (4) testovi koji prave ulaz v1 generatorom
+  prelaze na v2 generatore; zamrznute fiksture samo za testove prikaza starog (v1) formata plana, koji mora i dalje da
+  se otvara; (5) `docs/qa`: brišu se samo folderi koje nijedan živ test ne čita; (6) raspon nedelja ostaje odbijanje sa
+  porukom (već je tako u produkciji).
