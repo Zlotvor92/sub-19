@@ -70,8 +70,8 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | V1b | Uklanjanje v1 za 5K/10K/maraton + prevođenje testova (posle T1 i P1) | čeka T1, P1 |
 | V1c | Brisanje HM v1 (posle trke vlasnika 13. 12. 2026) | čeka datum |
 | P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP — `briefs/P1-hm-specificnost.md` | u toku |
-| P2 | Maraton: ista klasa (MP u dugom, doza) | čeka |
-| P3 | 10K | čeka |
+| P2 | Maraton: dugi sa MP blokom, dugi do 180 min — `briefs/P2-maraton-specificnost.md` | u toku |
+| P3 | 10K: plafon/lestvica RP, održavanje I — `briefs/P3-10k-specificnost.md` | u toku |
 | P4 | 5K | čeka |
 | P5 | Petlja forme: kontrolna tačka u planu sa rezultatom; izvršenje kvaliteta u adaptaciji | čeka |
 | P6 | Ubrzanja na laganim danima; WU/CD srazmerno treningu | čeka |
@@ -103,3 +103,6 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
   prelaze na v2 generatore; zamrznute fiksture samo za testove prikaza starog (v1) formata plana, koji mora i dalje da
   se otvara; (5) `docs/qa`: brišu se samo folderi koje nijedan živ test ne čita; (6) raspon nedelja ostaje odbijanje sa
   porukom (već je tako u produkciji).
+- 9. 11. 2026 (noć): korisnik — raditi celu noć bez pitanja, odrešene ruke. Organizator: P2 i P3 izdati uporedo sa P1
+  (odvojeni folderi distanci). Redosled dalje: V1b (posle T1, P1, P2, P3) → P4 (5K) → P5 (petlja forme) → P6 (ubrzanja,
+  WU/CD) → P7. Granica koju organizator sam drži: ništa u `main`, bez deploya i bez izmene baze dok korisnik ne potvrdi.
