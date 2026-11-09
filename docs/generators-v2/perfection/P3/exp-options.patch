@@ -1,0 +1,43 @@
+--- a/web/src/domain/generators/tenK/v2/week.ts	2026-11-09 21:21:22.419928635 +0000
++++ b/web/src/domain/generators/tenK/v2/week.ts	2026-11-09 21:21:22.395971221 +0000
+@@ -244,8 +244,15 @@
+   // se sastavi pri cilju, ili bi drugi dan kvaliteta otpao po pouci 35) nedelja je A uz napomenu, sledeća je B.
+   if (!ctx.specB || frame.phase !== 'specific' || frame.deload || (mode !== 'rule' && mode !== 'relax'))
+     return one(false);
+-  const b = one(true);
++  // P3 STOP — samo merenje opcija (P3_EXP): pb = bez pada na A u prolazu 'rule' (pretraga cilja traži niži cilj za B);
++  // pc = nedelja B bez granica laganog T1 (lagan ≤ dugi, ≥ 3 km).
++  const EXP = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env['P3_EXP'];
++  const b =
++    EXP === 'pc'
++      ? buildWeekOf({ ...ctx, t1Off: true }, frame, target10, quality, lastLong10, longest10, mode, true)
++      : one(true);
+   if (b && b.picks?.q2?.ladder === 'I') return b;
++  if (EXP === 'pb') return null;
+   const a = one(false);
+   const i = quality.i;
+   const why = !i
+--- a/web/src/domain/generators/tenK/v2/generate.ts	2026-11-09 21:21:22.419730245 +0000
++++ b/web/src/domain/generators/tenK/v2/generate.ts	2026-11-09 21:21:22.397502385 +0000
+@@ -250,6 +250,7 @@
+     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
+     // D34/A25 (P3): tip specifične nedelje iz nedelja kakve se upisuju (specific.ts, isto što čita validator).
+     if (
++      (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env['P3_EXP'] !== 's1' &&
+       frame.phase === 'specific' &&
+       !frame.deload &&
+       specificTypeNext(
+--- a/web/src/domain/generators/tenK/v2/validate.ts	2026-11-09 21:21:22.419871180 +0000
++++ b/web/src/domain/generators/tenK/v2/validate.ts	2026-11-09 21:21:22.399231928 +0000
+@@ -992,7 +992,10 @@
+ 
+   // --- D34/A25: tip specifične nedelje (A / B) — ista funkcija kao konstruktor (specific.specificTypeNext) nad
+   // prethodnim nedeljama plana (upisanim). Nedelja A umesto B samo uz napomenu konstruktora (B ne staje).
+-  if (hasSpecificTypes(rule))
++  if (
++    hasSpecificTypes(rule) &&
++    (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env['P3_EXP'] !== 's1'
++  )
+     weeks.forEach((w, k) => {
+       if (!isSteady(w) || !typedWeek(w) || !checked(w)) return;
+       const want = specificTypeNext(weeks.slice(0, k), rule);
