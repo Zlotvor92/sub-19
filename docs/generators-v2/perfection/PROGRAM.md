@@ -43,6 +43,23 @@ uz precizan zadatak:
 
 Slabiji model dobija uži zadatak: tačni fajlovi i funkcije, očekivani izlaz, komanda provere, šta ne dira.
 
+## Testovi — štednja vremena (nalog korisnika, 9. 11. 2026)
+
+Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
+
+- Segment bez izmene `web/src/**` (merenje, izveštaj, dokumentacija): nijedan test.
+- U toku rada: samo namenski test fajla koji se menja (`npx vitest run <fajl>`), brz nivo.
+- Jednom na kraju segmenta: `npm run check` + `npx vitest run --changed <polazni SHA>` + pun nivo SAMO foldera dirane
+  distance (`TEST_FULL=1 npx vitest run --project node <folder>/v2`). Ne ponavljati posle izmena koje ne diraju taj kod.
+- Zabranjeno tabu: `npm run check:full`, pun nivo drugih distanci, projekat `v1` (v1 se ne dira), ceo skup sabotaža.
+  Sabotaža: samo novo pravilo, kroz `web/scripts/sabotage.mjs` sa `--bail=1`.
+- Više trenerskih izmena iste distance ide u jedan segment, da pun nivo te distance trči jednom, ne po izmeni.
+- Push koda pokreće CI (pun nivo): jedan push po segmentu, na kraju. Međukoraci se ne pushuju; push samo `docs/**` CI ne
+  pokreće.
+- Test koji traje > 15 min ili visi: prekini, zabeleži komandu i trajanje u izveštaj, ne pokreći ponovo bez odluke
+  organizatora.
+- Izveštaj navodi svaku pokrenutu komandu testa i njeno trajanje.
+
 ## Redosled (privremen; zaključava se posle P0)
 
 | Segment | Sadržaj | Stanje |
@@ -65,4 +82,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 ## Dnevnik odluka
 
 - 9. 11. 2026: program otvoren; P0 izdat (Opus 5.5, sesija session_01GnHHiWjtxT9rm68GZMbjHY).
-- 9. 11. 2026: korisnik — za manje poslove slabiji modeli uz precizno navođenje.
+- 9. 11. 2026: korisnik — za manje poslove slabiji modeli uz precizno navođenje; testovi štedljivo (odeljak „Testovi").
