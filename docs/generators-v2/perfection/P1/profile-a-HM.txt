@@ -91,16 +91,16 @@ ned 14 2027-02-01…2027-02-07 faza specific — cilj 56 / plan 56.03 km
   napomena: Specifična nedelja sa blokom: poslednjih 6,0 km dugog u trkačkom tempu; drugi dan kvaliteta (tempo) je lagan.
 
 ned 15 2027-02-08…2027-02-14 faza taper — cilj 39.2 / plan 39.2 km
-  2027-02-09 easy      8.60 km 51 min — Lagano 8,6 km
-  2027-02-11 easy      8.60 km 51 min — Lagano 8,6 km
-  2027-02-13 easy      8.60 km 51 min — Lagano 8,6 km
+  2027-02-09 q1        11.14 km 61 min, rad 24.2 min — WU 20 min + RP 2 × 2500 m (oporavak 1:30 džog) + CD 15 min [doza RP 5000 m, korak taper]
+  2027-02-11 q2        8.46 km 47 min, rad 11.3 min — WU 20 min + T 2 × 1200 m (oporavak 1:00 džog) + CD 15 min [doza T_cruise 2400 m, korak taper]
+  2027-02-13 easy      6.20 km 37 min — Lagano 6,2 km
   2027-02-14 long      13.40 km 80 min — Dugi 13,4 km lagano
-  napomena: Taper bez kvaliteta — ni RP 2 × 2000 m ne staje u plafon 15 % cilja (H11 ispred H7, odstupanje); dugi ≤ 0,6 × najduži.
+  napomena: Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,6 × najduži (H7).
+  napomena: Taper: RP 5,0 km umesto 6,0 km (≈ 60 %) — najviše 15 % nedeljnog obima tapera.
 
-ned 16 2027-02-15…2027-02-21 faza race — cilj 15.7 / plan 15.71 km
+ned 16 2027-02-15…2027-02-21 faza race — cilj 20.1 / plan 20.05 km
   2027-02-16 easy      5.89 km 35 min — Lagano 35 min
-  2027-02-18 easy      5.89 km 35 min — Lagano 35 min
+  2027-02-18 sharpener 10.23 km 56 min, rad 19.3 min — WU 20 min + RP 2 × 2000 m (oporavak 2:00 džog) + CD 15 min [doza RP_sharpener 4000 m, korak sharpener]
   2027-02-20 eve       3.93 km 23 min, ubrzanja — Lagano 20 min + 4 × 20 s ubrzanja
   2027-02-21 race      24.46 km 122 min, rad 102.0 min — Trka 21,1 km (WU 10 min + CD 10 min)
-  napomena: Trkačka nedelja: taper bez RP 2 × 2000 m — bez oštrenja (oštrenje ≤ RP doza tapera, H8); trka 21,1 km se ne računa u obim.
-upozorenje undefined: Taper bez kvaliteta: RP 6000 m.
+  napomena: Trkačka nedelja: oštrenje 2 × 2000 m RP (≤ RP doza tapera 5,0 km), trka 21,1 km se ne računa u obim (H8).

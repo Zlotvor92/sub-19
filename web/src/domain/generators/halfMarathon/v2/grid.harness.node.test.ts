@@ -59,9 +59,24 @@ export const CHANGED_10 = new Map(
     >
   )
 );
-/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07, HM-09 ili HM-10. */
+/** P1 (hm-v2.9.0): planovi čiji se rezultat menja prema a952769, sa klasom — b S1 (dugi sa blokom RP, nedelja tipa B; uz
+    to S2), s S2 (plafon RP po pojasu cilja, lestvica do 3 × 5000 m) bez bloka. Nedelje baze i razvoja bajt-iste u svim.
+    Izvor: docs/generators-v2/perfection/P1/changedP1.ts. */
+export const CHANGED_P1 = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(join(DIR, 'segmentP1.changed-a952769.json'), 'utf8')) as Record<
+      string,
+      string
+    >
+  )
+);
+/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07, HM-09, HM-10 ili P1. */
 export const mayChange = (id: string): boolean =>
-  OVER_LONG.has(id) || CHANGED_07.has(id) || CHANGED_09.has(id) || CHANGED_10.has(id);
+  OVER_LONG.has(id) ||
+  CHANGED_07.has(id) ||
+  CHANGED_09.has(id) ||
+  CHANGED_10.has(id) ||
+  CHANGED_P1.has(id);
 /** HM-10 (T1): vrh sme da padne — namerno manji obim kad lagani ne staju u granice T1. */
 export const mayLower = (id: string): boolean => ['l', 'm', 'x'].includes(CHANGED_10.get(id) ?? '');
 

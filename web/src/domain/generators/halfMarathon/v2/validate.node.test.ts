@@ -123,7 +123,8 @@ describe('validator', () => {
   it('H11: jedan plafon po zoni', () => {
     const a = clone(base());
     const w = week(a, 8);
-    dayOf(w, 'q1').workout = quality(a, 'RP', 'RP', { form: 'reps', reps: 3, repM: 3000 });
+    // P1-S2: RP do 20 % cilja ≥ 40 km — 3 × 4000 m je iznad plafona nedelje 8.
+    dayOf(w, 'q1').workout = quality(a, 'RP', 'RP', { form: 'reps', reps: 3, repM: 4000 });
     expect(errors(a)).toEqual(expect.arrayContaining(['ZONE_CAP']));
   });
 
@@ -164,7 +165,13 @@ describe('validator', () => {
   it('H7 taper: doza, dugi, dani', () => {
     const a = clone(base());
     const t = a.weeks.find((w) => w.phase === 'taper')!;
-    dayOf(t, 'q1').workout = quality(a, 'RP', 'RP', { form: 'reps', reps: 2, repM: 2500 });
+    // Doza RP tapera različita od ≈ 60 % poslednje (P1-S2: poslednja RP doza je veća).
+    const rpT = dayOf(t, 'q1').workout.dose!.doseM;
+    dayOf(t, 'q1').workout = quality(a, 'RP', 'RP', {
+      form: 'reps',
+      reps: 2,
+      repM: rpT === 5000 ? 3000 : 2500
+    });
     expect(errors(a)).toContain('TAPER_QUALITY');
     const b = clone(base());
     const tb = b.weeks.find((w) => w.phase === 'taper')!;
@@ -303,7 +310,11 @@ describe('validator', () => {
     // Ned 8: Q2 T iznad najnižeg nivoa staje (hm-v2.3.0: 2 × 1600 m; hm-v2.4.0, pouka 35 u ranijim nedeljama: duži
     // dugi → viši nivo); spuštanje na 2 × 1200 m (najniži) sa napomenom nije najviši nivo.
     const a = clone(p.plan);
-    const w = week(a, 8);
+    // P1-S1: nedelja 8 je sada tip B (Q2 lagan) — uzima se prva nedelja od 7 sa Q2 iznad najnižeg nivoa.
+    const wi = a.weeks.findIndex(
+      (x, i) => i >= 6 && (x.days.find((d) => d.role === 'q2')?.workout.dose?.doseM ?? 0) > 2400
+    );
+    const w = a.weeks[wi]!;
     const q2 = dayOf(w, 'q2');
     expect(q2.workout.dose!.doseM).toBeGreaterThan(2400);
     q2.workout.dose = {
@@ -318,7 +329,7 @@ describe('validator', () => {
     expect(errors(a)).toContain('DOSE_DROP');
     // Dan iznad najnižeg nivoa duži od dugog: dugi ned 8 skraćen na 8 km.
     const b = clone(p.plan);
-    dayOf(week(b, 8), 'long').workout = longWorkout(8, b.paces);
+    dayOf(b.weeks[wi]!, 'long').workout = longWorkout(8, b.paces);
     expect(errors(b)).toContain('QUALITY_OVER_LONG');
   });
 

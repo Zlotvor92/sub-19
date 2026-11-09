@@ -152,3 +152,14 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
   C12 `freeKind` (RP najnižeg nivoa); T7 RECENT_LONG_OVER_WEEKLY.
 - lagan ≥ 0,9 × dugi 3 906 → 0; > 0,8 × 6 426 → 0; < 20 min 1 188 → 0; planovi sa spuštenom nedeljom 3 009 → 5 031;
   T3 taper bez kvaliteta 227 → 143, trkačka bez oštrenja 227 → 36. Izveštaj `reports/SEGMENT-10-IMPLEMENTATION.md`.
+
+## Segment P1 (hm-v2.9.0): specifičnost polumaratona (program „trenerski kvalitet v2")
+
+- S1 `specific.ts` (jedno mesto): nedelja tipa B — RP trening po lestvici, Q2 lagan, dugi sa završnim blokom RP 4 → 6 → 8
+  km (≤ 40 % dugog, ≤ 150 min, ≤ plafon RP, Q1 ≤ dugi sa blokom); raspored unazad od poslednje ne-rasteretne specifične
+  (B, A, B …); samo 4–6 dana, ne početnik; B ne staje → A uz napomenu. H12 O1 (glavna doza sa blokom, poređenje unutar
+  tipa). S2: plafon RP po pojasu cilja (< 40 km 15 %, ≥ 40 km 20 %), lestvica + 3 × 5000 m; P1-T: RP tapera ≤ plafon
+  tapera. S3: umor ne broji dugi sa blokom; ograničenja/povratak/nov start → lagan dugi. S4: naslov, struktura, sat.
+- Mreža P0: ukupno RP medijana 30 → 45 km, dugih sa blokom 0 → 2, 0 odbijanja; mreže 02/03/pouka 28 (36 066): promena
+  31 212 (b 27 651, s 3 561, x 0), baza i razvoj bajt-isti. Izveštaj
+  `docs/generators-v2/perfection/reports/P1-REPORT.md` (STOP-ovi: `P1-STOP.md`, `P1-STOP2.md`).

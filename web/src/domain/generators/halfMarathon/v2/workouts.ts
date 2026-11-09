@@ -407,6 +407,35 @@ export function longWorkout(km: number, p: Paces): Workout {
   );
 }
 
+/** P1-S1: dugi sa završnim blokom u RP — `km` ukupno (dužina dugog iz lengths.ts), poslednjih `blockKm` kontinuirano u
+    trkačkom tempu (RP), ostatak lagano; `feel` → RPE zone RP (H16). Jedino mesto sastava dugog sa blokom. */
+export function longBlockWorkout(km: number, blockKm: number, p: Paces, feel = false): Workout {
+  const eKm = Math.round((km - blockKm) * 10) / 10;
+  const w = assemble(
+    'long',
+    null,
+    `Dugi ${fmtKm(km)} km: ${fmtKm(eKm)} km lagano + ${fmtKm(blockKm)} km u trkačkom tempu`,
+    [
+      { kind: 'long', km: eKm },
+      { kind: 'continuous', zone: 'RP', km: blockKm }
+    ],
+    [
+      distEasy('long', eKm, p),
+      seg('continuous', 'RP', blockKm, Math.round(blockKm * p.RP), p.RP, 'exact', 'estimated')
+    ],
+    null
+  );
+  return feel ? { ...w, rpe: rpeOf('RP') } : w;
+}
+
+/** P1-S1: km bloka u RP na kraju dugog (0 = lagan dugi). Jedna funkcija za konstruktor, validator, adaptaciju (A5). */
+export const longBlockKm = (w: Pick<Workout, 'kind' | 'workKm'>): number =>
+  w.kind === 'long' ? w.workKm.RP : 0;
+
+/** P1-S1: trajanje dugog sa blokom za granicu dugog — lagan deo sporim E + blok RP [s]. */
+export const longBlockSec = (km: number, blockKm: number, p: Paces): number =>
+  Math.round((km - blockKm) * p.E.slow + blockKm * p.RP);
+
 /** H8: lagan trening zadat vremenom (35 min E). */
 export function easyTimeWorkout(sec: number, p: Paces): Workout {
   return assemble(

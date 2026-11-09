@@ -23,6 +23,12 @@ const band = (km: number): [number, number] =>
   km < 40 ? [900, 600] : km < 60 ? [1200, 900] : [1500, 900];
 /** H11: plafon po treningu. */
 const CAPS = { R: 0.05, I: 0.08, T: 0.1, RP: 0.15 } as const;
+/** H11 (P1-S2): RP 15 % pri cilju < 40 km, 20 % pri cilju ≥ 40 km (nezavisno od policy.ts). */
+const capOf = (z: keyof typeof CAPS, targetKm: number): number =>
+  z === 'RP' && Math.round(targetKm * 10) >= 400 ? 0.2 : CAPS[z];
+/** P1-S1: dugi sa blokom RP (nedelja tipa B). */
+const blockOf = (w: PlanWeek): number =>
+  w.days.find((d) => d.role === 'long' && d.workout.kind === 'long')?.workout.workKm.RP ?? 0;
 /** H10: doze lestvica [m]. */
 const T_C = [2000, 2500, 3000, 4000, 5000, 6000, 7000];
 /** H17: T kontinuirano početnika [1,5; 2,0; …]. */
@@ -196,10 +202,13 @@ export function checkPlan(
     for (const d of w.days) {
       const z = d.workout.dose?.zone;
       const r = d.workout.rpe;
-      if (d.workout.kind === 'quality' && feel) {
-        if (!z || !r || r.min !== RPE[z]![0] || r.max !== RPE[z]![1])
+      // P1-S1: dugi sa blokom RP po osećaju nosi RPE zone RP.
+      const zz = d.workout.kind === 'long' && d.workout.workKm.RP > 0 ? 'RP' : z;
+      if ((d.workout.kind === 'quality' || zz === 'RP') && feel && zz) {
+        if (!r || r.min !== RPE[zz]![0] || r.max !== RPE[zz]![1])
           no('RPE', `ned ${w.index} ${d.date}`);
-      } else if (r !== undefined) no('RPE', `ned ${w.index} ${d.date} bez kvaliteta/rezultat`);
+      } else if (d.workout.kind === 'quality' && feel) no('RPE', `ned ${w.index} ${d.date}`);
+      else if (r !== undefined) no('RPE', `ned ${w.index} ${d.date} bez kvaliteta/rezultat`);
     }
 
   // H16: test 5 km — plan po osećaju koji nije početnik: tačno jedan, u poslednjoj nedelji baze, na danu Q1
@@ -284,6 +293,7 @@ export function checkPlan(
   let lastQ2 = 0;
   let lastT = 0;
   let prevSteady: PlanWeek | null = null;
+  let prevB: PlanWeek | null = null;
   let dropped = false;
   let longer = false;
   let lowestOver = false;
@@ -293,7 +303,12 @@ export function checkPlan(
     if (got > rule || got < min) return false;
     if (got < rule) {
       st.reducedDeloadTaper++;
-      if (!w.notes.some((n) => n.includes('pouka 32')))
+      // P1 (posle STOP 2): RP tapera spušten na plafon RP cilja tapera (najviši nivo u plafonu) — uz napomenu.
+      const capped =
+        what === 'RP tapera' &&
+        rule > Math.floor(capOf('RP', w.targetKm) * w.targetKm * 1000 + 1e-6) &&
+        w.notes.some((n) => n.includes('nedeljnog obima tapera'));
+      if (!capped && !w.notes.some((n) => n.includes('pouka 32')))
         no('POUKA32_NOTE', `ned ${w.index} ${what}`);
     }
     return true;
@@ -347,7 +362,10 @@ export function checkPlan(
       // H11: plafon po treningu.
       for (const d of w.days)
         for (const z of ['R', 'I', 'T', 'RP'] as const)
-          if (d.workout.workKm[z] * 1000 > Math.floor(CAPS[z] * w.targetKm * 1000 + 1e-6) + 1e-6)
+          if (
+            d.workout.workKm[z] * 1000 >
+            Math.floor(capOf(z, w.targetKm) * w.targetKm * 1000 + 1e-6) + 1e-6
+          )
             no('ZONE_CAP', `${tag} ${z}`);
     }
     // Pouka 32: dan kvaliteta iznad najnižeg nivoa zone ≤ dugi po trajanju (WU + rad + oporavci + CD; džog
@@ -442,8 +460,13 @@ export function checkPlan(
       // +5 % (1,0–2,0 km), ≤ granica; nedelja 1 = trenutni (pouka 9).
       const nq = w.days.filter((d) => d.workout.kind === 'quality').length;
       // Pouka 35 (Faza 4a N5): drugi dan kvaliteta lagan (napomena) — dan Q2 šablona je lagan.
+      // P1-S1: nedelja B (dugi sa blokom RP) — Q2 lagan kao u pouci 35, samo specifična faza, 4–6 dana.
+      const bw = blockOf(w) > 0;
+      if (bw && (one || beg || w.phase !== 'specific' || w.deload)) no('POUKA35', `${tag} blok`);
       const second =
-        row.q === 2 && w.notes.some((n) => n.includes('(pouka 35)')) && p.pattern.q2 !== null
+        row.q === 2 &&
+        (bw || w.notes.some((n) => n.includes('(pouka 35)'))) &&
+        p.pattern.q2 !== null
           ? w.days.find((d) => d.weekday === p.pattern.q2)?.role === 'easy'
           : false;
       if (second) st.secondEasyWeeks++;
@@ -493,6 +516,7 @@ export function checkPlan(
         const q1Carries = one || w.phase === prevSteady.phase || w.phase === 'specific';
         // Pouka 35: nedelja bez drugog dana kvaliteta ne poredi Q2 ni glavnu dozu (stanje Q2 ostaje).
         if ((!second && q2 < lastQ2) || (q1Carries && q1 < lastQ1)) no('DOSE_DECREASE', tag);
+        // H12 (O1, P1): glavna doza sa blokom; nedelja B sa poslednjom B, ostale sa poslednjom ne-B.
         const main = (x: PlanWeek): number =>
           x.days.reduce(
             (a, d) =>
@@ -501,8 +525,11 @@ export function checkPlan(
                 ? d.workout.workKm.T + d.workout.workKm.I + d.workout.workKm.RP
                 : 0),
             0
-          );
-        if (!second && main(w) + 1e-6 < main(prevSteady)) no('MAIN_DOSE_DECREASE', tag);
+          ) + blockOf(x);
+        if (
+          bw ? prevB && main(w) + 1e-6 < main(prevB) : !second && main(w) + 1e-6 < main(prevSteady)
+        )
+          no('MAIN_DOSE_DECREASE', tag);
         const key = (x: PlanWeek): string =>
           JSON.stringify(
             x.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.blocks)
@@ -530,6 +557,7 @@ export function checkPlan(
       const tz = w.days.filter((d) => d.workout.dose?.zone === 'T').pop();
       if (tz) lastT = tz.workout.dose!.doseM;
       if (counted && !second) prevSteady = w;
+      if (counted && bw) prevB = w;
     }
     if (w.phase === 'taper') {
       // H7: cilj ≤ 0,7 × vrh; RP i T ≈ 60 % (min 2 × 2000 m, 2,0 km); dugi ≤ 0,6 × najduži.
@@ -544,7 +572,8 @@ export function checkPlan(
         st.beginnerTaperT++;
         if (!beg || !lowered(w, q1d.doseM, reduced(T_C_BEG, lastT, 1500), 1500, 'T tapera'))
           no('TAPER_T', `${tag} početnik`);
-        if (4000 <= Math.floor(0.15 * w.targetKm * 1000 + 1e-6)) no('TAPER_T', `${tag} RP staje`);
+        if (4000 <= Math.floor(capOf('RP', w.targetKm) * w.targetKm * 1000 + 1e-6))
+          no('TAPER_T', `${tag} RP staje`);
       } else if (rp === 0 || (!one && t === 0)) st.taperRelaxed++;
       if (rp !== 0 && !lowered(w, rp, reduced(RP, lastQ1, 4000), 4000, 'RP tapera'))
         no('TAPER_RP', `${tag} ${rp}`);

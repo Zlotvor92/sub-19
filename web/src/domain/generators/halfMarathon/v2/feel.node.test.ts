@@ -9,6 +9,7 @@ import { HM_V2_POLICY as P } from './policy.ts';
 import { feelInputs, gridInputs, inputOf, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { HmV2Plan, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
+import { rpeOf } from './workouts.ts';
 
 const FEEL = feelInputs();
 const plan = (id: string, o: Record<string, unknown> = {}): HmV2Plan => {
@@ -61,6 +62,9 @@ describe('H16 tempo po osećaju', () => {
         const z = d.workout.dose?.zone;
         if (d.workout.kind === 'quality')
           seen.set(z!, `${d.workout.rpe!.min}–${d.workout.rpe!.max}`);
+        // P1-S1: dugi sa blokom u trkačkom tempu nosi RPE zone RP.
+        else if (d.workout.kind === 'long' && d.workout.workKm.RP > 0)
+          expect(d.workout.rpe).toEqual(rpeOf('RP'));
         else expect(d.workout.rpe).toBeUndefined();
       }
     expect(Object.fromEntries(seen)).toEqual({ R: '8–8', T: '6–7', I: '8–8', RP: '6–7' });

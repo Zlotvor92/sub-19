@@ -185,7 +185,9 @@ export type DoseStep =
   | 'drop'
   | 'deload'
   | 'taper'
-  | 'sharpener';
+  | 'sharpener'
+  /** P1-S1: nedelja tipa B — I održavanja (doza = poslednja I doza razvoja, ne raste). */
+  | 'maintain';
 
 export interface Dose {
   ladder: LadderId | 'RP_sharpener';

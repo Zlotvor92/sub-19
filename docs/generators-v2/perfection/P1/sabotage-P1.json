@@ -9,38 +9,57 @@
       },
       {
         "file": "src/domain/generators/halfMarathon/v2/week.ts",
-        "find": "          day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),\n          ...easyDays(dates, len.easy10, p)\n        ],\n        len.long10,\n        null,\n        [note, ...doseNotes]",
-        "replace": "          day(dateOf(frame, pat.long), 'long', longBlockWorkout(len.long10 / 10, 4, p)),\n          ...easyDays(dates, len.easy10, p)\n        ],\n        len.long10,\n        null,\n        [note, ...doseNotes]"
+        "find": "          day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),\n          ...easyDays(dates, len.easy10, p)\n        ],\n        len.long10,\n        null,\n        [note, ...capNote, ...doseNotes]",
+        "replace": "          day(dateOf(frame, pat.long), 'long', longBlockWorkout(len.long10 / 10, 4, p)),\n          ...easyDays(dates, len.easy10, p)\n        ],\n        len.long10,\n        null,\n        [note, ...capNote, ...doseNotes]"
       }
     ],
-    "tests": ["src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"]
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"
+    ]
   },
   {
     "name": "P1-S1b nedelja B zadržava Q2 (dva stimulusa uz blok)",
     "file": "src/domain/generators/halfMarathon/v2/week.ts",
     "find": "let w2 = picks?.q2 && !bWeek ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
     "replace": "let w2 = picks?.q2 ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
-    "tests": ["src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"]
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"
+    ]
   },
   {
     "name": "P1-S2 plafon RP 25 %",
     "file": "src/domain/generators/halfMarathon/v2/policy.ts",
     "find": "{ fromKm: 40, share: 0.2 }",
     "replace": "{ fromKm: 40, share: 0.25 }",
-    "tests": ["src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"]
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"
+    ]
   },
   {
     "name": "P1-S3 dugi sa blokom brojan kao lagan (umor)",
     "file": "src/domain/generators/halfMarathon/v2/assess.ts",
     "find": "(d.workout.kind === 'long' && longBlockKm(d.workout) === 0)",
     "replace": "d.workout.kind === 'long'",
-    "tests": ["src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"]
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"
+    ]
   },
   {
     "name": "P1-H12 glavna doza B poredi se sa A",
     "file": "src/domain/generators/halfMarathon/v2/specific.ts",
     "find": "  return hasLongBlock(w.days) ? refs.b : refs.a;",
     "replace": "  return refs.a ?? refs.b;",
-    "tests": ["src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"]
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"
+    ]
+  },
+  {
+    "name": "P1-T RP tapera bez plafona cilja tapera",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "Number.isFinite(targetKm) ? capM('RP', targetKm) : Infinity",
+    "replace": "Infinity",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"
+    ]
   }
 ]

@@ -18,7 +18,8 @@ import {
 import { assessGoal, predictedHm } from './paces.ts';
 import { isBuildPhase, periodize } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
-import { advance, INITIAL_QUALITY, type QualityState, type WeekPicks } from './quality.ts';
+import { advance, INITIAL_QUALITY, type QualityState, weekPicksOf } from './quality.ts';
+import { scheduledType } from './specific.ts';
 import {
   basePaces,
   basisAt,
@@ -126,12 +127,6 @@ function recentTooShort(
 /** Planirano nedelje iz dana [0,01 km] (dani koji se računaju u obim). */
 const planned100Of = (days: readonly PlanDay[]): number =>
   days.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0);
-
-/** Pouka 29: izbor doze nedelje (stanje H12/HI10) iz upisanih dana kvaliteta. */
-const writtenPicks = (days: readonly PlanDay[]): WeekPicks => ({
-  q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
-  q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null
-});
 
 /**
  * Konstruktor plana — JEDAN za generate i adapt. `steps` = koraci adaptacije redom (A14); bez njih je ovo
@@ -248,6 +243,9 @@ export function construct(
       recentJ,
       ranCapFloor10(rule.weekMinKm, input.runDays.length)
     );
+    // P1-S1/S3: raspored A/B iz okvira (jedno mesto: specific.scheduledType); povratak i nov start (cilj samo
+    // naniže, A8/A3) — dugi lagan.
+    const spec = scheduledType(frames, frame.index - 1) === 'B' ? { regular: !downOnly } : null;
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
         ctx,
@@ -257,7 +255,8 @@ export function construct(
         longRef10(lastLong10, steps, frame),
         longest10,
         mode,
-        roll10
+        roll10,
+        spec
       );
     // HI2: druga pretraga ('relax') samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja.
     // A9: pa jedan kvalitet doze rasterećenja, pa bez kvaliteta; ograničenje kvaliteta nedelje (A3/A4)
@@ -332,7 +331,7 @@ export function construct(
       if (long) lastLong10 = Math.round(long.workout.km * 10);
       if (w.picks)
         quality = advance(
-          JSON.stringify(wd) === JSON.stringify(w.days) ? w.picks : writtenPicks(wd),
+          JSON.stringify(wd) === JSON.stringify(w.days) ? w.picks : weekPicksOf(wd),
           quality
         );
     }

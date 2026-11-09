@@ -55,6 +55,7 @@ import {
   restartTaperT,
   buildLadder,
   capM,
+  capShare,
   carries,
   deloadDose,
   deloadLadder,
@@ -69,8 +70,21 @@ import {
   pickSlot,
   type QualityState,
   startLevel,
-  taperDoses
+  taperDoses,
+  weekPicksOf
 } from './quality.ts';
+import {
+  bAllowed,
+  blockFits,
+  blockLevels,
+  chooseBlockKm,
+  hasLongBlock,
+  mainDoseM,
+  mainDoseNext,
+  mainDoseRef,
+  scheduledType,
+  wantBlockKm
+} from './specific.ts';
 import { adjacentDays } from './schedule.ts';
 import {
   longRef10,
@@ -127,6 +141,7 @@ import {
   oneDayLimit,
   raceWeekRest,
   raceWeekRuns,
+  B_MISSING_NOTE,
   SECOND_EASY_NOTE,
   secondQualityEasy,
   taperSecondEasy,
@@ -141,6 +156,8 @@ import {
   doseOf,
   fmtKm,
   ladderLevels,
+  longBlockKm,
+  longBlockWorkout,
   qualityDaySec,
   qualityWorkout,
   recoveryOf,
@@ -190,16 +207,8 @@ const SLOT_TYPES_BEGINNER: SlotTypes = {
 const isSteady = (w: PlanWeek): boolean => isBuildPhase(w.phase) && !w.deload;
 const slotDose = (w: PlanWeek, role: 'q1' | 'q2'): Dose | null =>
   w.days.find((d) => d.role === role)?.workout.dose ?? null;
-/** H12: glavna doza = rad T + I + RP u treninzima kvaliteta [m]. */
-export const mainDoseM = (w: PlanWeek): number =>
-  w.days.reduce(
-    (a, d) =>
-      a +
-      (d.workout.kind === 'quality'
-        ? Math.round((d.workout.workKm.T + d.workout.workKm.I + d.workout.workKm.RP) * 1000)
-        : 0),
-    0
-  );
+/** H12 (P1-S1): glavna doza = rad T + I + RP u treninzima kvaliteta + blok RP u dugom [m] (specific.mainDoseM). */
+export { mainDoseM };
 const hasQuality = (w: PlanWeek): boolean => w.days.some((d) => d.workout.kind === 'quality');
 const qualityKey = (w: PlanWeek): string =>
   JSON.stringify(
@@ -498,6 +507,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       if (w.phase === 'taper' || rule.beginner) return has(r) ? r : 'easy';
       // Pouka 35: drugi dan kvaliteta lagan (opravdanost proverava progresija doze, ista funkcija).
       if (r === 'q2' && w.notes.some((n) => n.includes(SECOND_EASY_NOTE))) return 'easy';
+      // P1-S1: nedelja B — drugi dan kvaliteta je lagan.
+      if (r === 'q2' && hasLongBlock(w.days)) return 'easy';
       return r;
     };
     const want = [
@@ -762,8 +773,54 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         w.index,
         long.date
       );
-    if (long.workout.segments.some((s) => s.zone !== 'E'))
+    // P1-S1: dugi je lagan, osim u nedelji tipa B — završni blok RP (specific.ts, iste funkcije kao konstruktor).
+    const bk = longBlockKm(long.workout);
+    if (bk === 0 && long.workout.segments.some((s) => s.zone !== 'E'))
       err('LONG_NOT_EASY', 'Dugo trčanje je samo lagano.', w.index, long.date);
+    else if (bk > 0) {
+      const seg = long.workout.segments;
+      const want = longBlockWorkout(long.workout.km, bk, pk, feelW(w));
+      if (!bAllowed(w, true, rule))
+        err(
+          'LONG_BLOCK',
+          'Blok u trkačkom tempu samo u ne-rasteretnoj nedelji specifične faze bez ograničenja, plan 4–6 dana (P1-S1).',
+          w.index,
+          long.date
+        );
+      if (
+        seg.length !== 2 ||
+        seg[0]!.zone !== 'E' ||
+        seg[1]!.zone !== 'RP' ||
+        seg[1]!.kind !== 'continuous' ||
+        (!guarded(long) && JSON.stringify(want) !== JSON.stringify(long.workout))
+      )
+        err(
+          'LONG_BLOCK',
+          'Dugi sa blokom: lagan deo, pa blok RP kontinuirano na kraju (P1-S1).',
+          w.index,
+          long.date
+        );
+      if (!blockLevels().includes(bk) || !blockFits(long.workout.km, bk, rule, pk))
+        err(
+          'LONG_BLOCK',
+          `Blok ${fmtKm(bk)} km: nivo lestvice ${blockLevels().join(' / ')} km, ≤ 40 % dugog, trajanje ≤ ${rule.longMaxSec / 60} min (P1-S1).`,
+          w.index,
+          long.date
+        );
+      // Nedelja B: RP trening ostaje, drugi dan kvaliteta (T) je lagan.
+      if (w.days.some((d) => d.role === 'q2' && d.workout.kind === 'quality'))
+        err(
+          'B_WEEK_T',
+          'Nedelja sa blokom u dugom nema drugi dan kvaliteta (T je lagan, P1-S1).',
+          w.index
+        );
+      if (scheduledType(weeks, w.index - 1) !== 'B')
+        err(
+          'B_WEEK_ORDER',
+          'Nedelja sa blokom samo po rasporedu: poslednja ne-rasteretna specifična je B, unazad A, B, … (P1-S1).',
+          w.index
+        );
+    }
     const easyKm = w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km));
     if (easyKm.length > 1 && Math.max(...easyKm) - Math.min(...easyKm) > 1 && painOf(w).size === 0)
       err('EASY_UNEQUAL', `Lagani dani ${easyKm.map((x) => x / 10).join(' / ')} km.`, w.index);
@@ -871,7 +928,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         if (m > capM(z, w.targetKm))
           err(
             'ZONE_CAP',
-            `${z} ${m} m > ${P.caps[z] * 100} % cilja ${w.targetKm} km (H11).`,
+            `${z} ${m} m > ${capShare(z, w.targetKm) * 100} % cilja ${w.targetKm} km (H11).`,
             w.index,
             d.date
           );
@@ -888,8 +945,17 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       const mid = midEasy(pk);
       const feelD = feelW(w);
       const wo = d.workout;
-      if (wo.kind !== 'quality' && wo.rpe !== undefined)
-        err('RPE', 'RPE samo na treningu kvaliteta (H16).', w.index, d.date);
+      // P1-S1: dugi sa blokom u planu po osećaju nosi RPE zone RP (blok); ostali dani bez RPE.
+      const blockRpe = feelD && longBlockKm(wo) > 0;
+      if (wo.kind !== 'quality' && (blockRpe ? !wo.rpe : wo.rpe !== undefined))
+        err(
+          'RPE',
+          blockRpe
+            ? 'Blok RP u dugom nosi RPE zone RP (H16).'
+            : 'RPE samo na treningu kvaliteta (H16).',
+          w.index,
+          d.date
+        );
       if (wo.kind === 'test') {
         const seg = wo.segments;
         const t = seg.filter((x) => x.kind === 'test');
@@ -1089,6 +1155,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     }
   let lastOf: Record<'q1' | 'q2', Dose | null> = { q1: null, q2: null };
   let prevMain: PlanWeek | null = null;
+  /** H12 (O1): osnove poređenja glavne doze po tipu nedelje (specific.mainDoseRef). */
+  let mainRefs: { a: PlanWeek | null; b: PlanWeek | null } = { a: null, b: null };
   let prevW: PlanWeek | null = null;
   // Pouka 32: drugi član plafona zone po slotu — isti predikat kao konstruktor (week.buildDayLimit).
   const dlOf = (w: { index: number }): DayLimitContext => ({
@@ -1113,12 +1181,14 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   for (const c of chain) {
     if (typeof c === 'string') {
       [lastOf, prevMain, prevW] = [{ q1: null, q2: null }, null, null];
+      mainRefs = { a: null, b: null };
       continue;
     }
     if ('state' in c) {
       for (const role of ['q1', 'q2'] as const)
         lastOf[role] = slotDose(c.state, role) ?? lastOf[role];
       [prevMain, prevW] = [null, null];
+      mainRefs = { a: null, b: null };
       continue;
     }
     const b = c;
@@ -1247,13 +1317,15 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     }
     // H16/H17: nedelja testa i uvoda ne ulaze u poređenje glavne doze.
     const counted = !b.test && !intro(b);
-    if (counted && prevMain && mainDoseM(b) < mainDoseM(prevMain) && !dropped)
+    // H12 (O1): nedelja B sa poslednjom B, ostale sa poslednjom ne-B (glavna doza sa blokom).
+    const ref = mainDoseRef(mainRefs, b);
+    if (counted && ref && mainDoseM(b) < mainDoseM(ref) && !dropped)
       err(
         'MAIN_DOSE_DECREASE',
-        `Glavna doza ${mainDoseM(b)} m < ${mainDoseM(prevMain)} m (H12, pouka 3).`,
+        `Glavna doza ${mainDoseM(b)} m < ${mainDoseM(ref)} m (H12, pouka 3; nedelja ${hasLongBlock(b.days) ? 'B' : 'A'} sa poslednjom istog tipa).`,
         b.index
       );
-    if (counted) prevMain = b;
+    if (counted) [prevMain, mainRefs] = [b, mainDoseNext(mainRefs, b)];
     if (prevW) {
       const repeat = (['q1', 'q2'] as const).some((r) => slotDose(b, r)?.step === 'repeat');
       if (hasQuality(b) && qualityKey(prevW) === qualityKey(b)) {
@@ -1536,8 +1608,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         kept,
         capLong
       );
-      const want0 = taperDoses(state, nqT);
-      const want = taperDoses(state, nqT, tl);
+      const want0 = taperDoses(state, nqT, undefined, w.targetKm);
+      const want = taperDoses(state, nqT, tl, w.targetKm);
       let rp = slotDose(w, 'q1');
       let t = slotDose(w, 'q2');
       if (one && !rp && t) [rp, t] = [t, null];
@@ -1598,7 +1670,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           2,
           capLong
         );
-        const two = taperDoses(state, 2, tl2);
+        const two = taperDoses(state, 2, tl2, w.targetKm);
         const w1 = qualityWorkout(two.q1, pw(w), wcQ, feelW(w));
         const w2 = two.q2 ? qualityWorkout(two.q2, pw(w), wcQ, feelW(w)) : null;
         const len2 = taperLengths(
@@ -1675,7 +1747,56 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       if (long) lastLong10 = to10(long.workout.km);
       // Slot bez treninga (test, uvod) zadržava stanje pre nedelje (H16); t = poslednja T doza (HI10). Pouka 29:
       // iz upisanih dana i u mešovitoj nedelji; pouka 24: ista funkcija kao konstruktor (quality.advance).
-      if (!reducedQ(w)) state = advance({ q1: slotDose(w, 'q1'), q2: slotDose(w, 'q2') }, state);
+      // P1-S1: blok nedelje B — nivo po pravilu ili najviši niži koji staje (ista funkcija kao konstruktor); nedelja po
+      // rasporedu B bez bloka — blok zaista ne staje (P-a, napomena). Plan bez adaptacije (povratak čita samo konstruktor).
+      const bk = long ? longBlockKm(long.workout) : 0;
+      const q1d = w.days.find((d) => d.role === 'q1' && d.workout.kind === 'quality');
+      if (bk > 0 && checked(w) && !guarded(long!)) {
+        const secs = w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.sec);
+        const want = chooseBlockKm(
+          to10(long!.workout.km),
+          state.blockM ?? 0,
+          rule,
+          pk,
+          secs,
+          w.targetKm
+        );
+        if (want !== bk)
+          err(
+            'LONG_BLOCK',
+            `Blok ${fmtKm(bk)} km ≠ ${want === null ? 'bez bloka' : `${fmtKm(want)} km`} (po pravilu ${fmtKm(wantBlockKm(state.blockM ?? 0))} km, jedan nivo po nedelji B; najviši koji staje; P1-S1).`,
+            w.index
+          );
+      } else if (
+        !ad &&
+        bk === 0 &&
+        long &&
+        q1d &&
+        scheduledType(weeks, w.index - 1) === 'B' &&
+        bAllowed(w, true, rule)
+      ) {
+        const len = buildLengths(
+          to10(w.targetKm),
+          to100(q1d.workout.km),
+          pat.easy.length + 1,
+          rule,
+          pk,
+          rollAt(w.index)
+        );
+        const fits =
+          len !== null &&
+          chooseBlockKm(len.long10, state.blockM ?? 0, rule, pk, [q1d.workout.sec], w.targetKm) !==
+            null;
+        if (fits || !w.notes.includes(B_MISSING_NOTE))
+          err(
+            'B_WEEK_MISSING',
+            fits
+              ? 'Nedelja po rasporedu B: blok staje, a dugi je bez bloka (P1-S1).'
+              : 'Nedelja po rasporedu B bez bloka nema napomenu (P1-S1, P-a).',
+            w.index
+          );
+      }
+      if (!reducedQ(w)) state = advance(weekPicksOf(w.days), state);
     }
   }
 
@@ -2046,7 +2167,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       const inAny = (pick: (x: (typeof steps)[number]) => readonly (DateRange | null)[]): boolean =>
         steps.some((x) => pick(x).some((r) => inRange(d.date, r)));
       if (inAny((x) => [x.rest])) err('LIMITS', 'Trening na dan odmora (A4).', w.index, d.date);
-      const hard = d.workout.kind === 'quality' || d.workout.kind === 'test';
+      // P1-S1/S3: dugi sa blokom RP je kvalitet (bol, zabrana kvaliteta → lagan dugi).
+      const hard =
+        d.workout.kind === 'quality' || d.workout.kind === 'test' || longBlockKm(d.workout) > 0;
       if (hard && inAny((x) => [...x.noQuality, x.pain, x.rest]))
         err('LIMITS', 'Kvalitet ili test na dan zabrane kvaliteta (A3/A4).', w.index, d.date);
       if (inAny((x) => [x.pain]) && d.workout.segments.some((x) => x.kind === 'stride'))

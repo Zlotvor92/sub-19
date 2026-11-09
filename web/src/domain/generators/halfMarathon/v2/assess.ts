@@ -28,6 +28,7 @@ import type {
   WorkoutFact
 } from './types.ts';
 import { weekLabel } from './weekLabel.ts';
+import { longBlockKm } from './workouts.ts';
 
 /**
  * HM-09 (pouka 28 × pouka 37): najduži trčan po ČINJENICAMA prošlih nedelja (cele ≤ asOf) čiji je svaki dan poznat
@@ -490,14 +491,17 @@ export function assess(
     );
   }
 
-  // A5: umor (lagani = lagan ili dugi dan plana; zapis bez dayId = van plana, računa se kao lagan).
+  // A5: umor (lagani = lagan ili dugi dan plana bez bloka RP; zapis bez dayId = van plana, računa se kao lagan).
   const byId = new Map(planDays.map((d) => [d.date, d]));
   const easyHard = runs.filter((x) => {
     const d = x.dayId !== undefined ? byId.get(x.dayId) : undefined;
     return (
       t - day(x.date) < A.windowDays &&
       (x.rpe ?? 0) >= A.fatigueRpe &&
-      (!d || d.workout.kind === 'easy' || d.workout.kind === 'long')
+      // P1-S3: dugi sa blokom RP je kvalitet, ne lagan trening (workouts.longBlockKm).
+      (!d ||
+        d.workout.kind === 'easy' ||
+        (d.workout.kind === 'long' && longBlockKm(d.workout) === 0))
     );
   });
   if (easyHard.length >= A.fatigueCount) {

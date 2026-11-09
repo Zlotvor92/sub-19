@@ -131,7 +131,8 @@ export function describeSegment07bNet(index: number, parts: number): void {
     it('rasterećenje = nedelja k, isti plan kraj k − 1 / početak k, 0 odbijanja sa zaštićenim danima', () => {
       expect(n.applied).toBeGreaterThan(100);
       expect(n.pairs).toBeGreaterThan(5);
-      expect(n.chain).toBeGreaterThan(5);
+      // P1-S1: nedelja tipa B nema Q2 (lagan), pa je lanaca sa zaključanim Q1 + Q2 u brzom nivou manje.
+      expect(n.chain).toBeGreaterThan(2);
       expect(bad.slice(0, 20)).toEqual([]);
     });
   });

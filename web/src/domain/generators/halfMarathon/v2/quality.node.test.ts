@@ -109,7 +109,7 @@ describe('H12 progresija', () => {
   it('početni nivo = najviši ≤ 60 % plafona, najmanje prvi nivo', () => {
     expect(fmt(startLevel('T_continuous', 40)!)).toBe('2 kont'); // 60 % od 4000 = 2400 → 2,0
     expect(fmt(startLevel('T_continuous', 60)!)).toBe('3 kont'); // 3600 → 3,0
-    expect(fmt(startLevel('RP', 60)!)).toBe('2x2500'); // 60 % od 9000 = 5400
+    expect(fmt(startLevel('RP', 60)!)).toBe('2x3000'); // P1-S2: 60 % od 12 000 (20 %) = 7200
     expect(fmt(startLevel('I', 30)!)).toBe('2x1000'); // 1440 < prvi nivo → prvi nivo
     expect(startLevel('RP', 20)).toBeNull();
   });
@@ -176,14 +176,14 @@ describe('H12 progresija', () => {
       50,
       p45
     )!;
-    expect(rp.doseM).toBe(5000);
+    expect(rp.doseM).toBe(6000); // P1-S2: početni nivo pri 50 km (20 %) = 6000 ≥ poslednje I 4800
     const rpStart = pickSlot(
       { ladder: 'I', doseM: 2000, structure: { form: 'reps', reps: 2, repM: 1000 } },
       'RP',
       60,
       p45
     )!;
-    expect(rpStart.doseM).toBe(5000); // početni nivo 60 km (≤ 5400) > poslednje I
+    expect(rpStart.doseM).toBe(6000); // P1-S2: početni nivo 60 km (≤ 7200) > poslednje I
   });
 
   it('pouka 12: doza pada samo uz allowDrop (druga pretraga, nedelja ograničena kapacitetom)', () => {

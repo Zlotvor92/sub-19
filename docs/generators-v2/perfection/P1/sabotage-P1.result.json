@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/generators-v2/perfection/P1/sabotage-P1.json",
- "head": "a952769",
+ "head": "997fc64",
  "level": "brz",
  "bail": true,
  "parallel": 1,
  "vitestArgs": [],
- "durationS": 26.6,
- "hashBefore": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
- "hashAfter": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
+ "durationS": 44.8,
+ "hashBefore": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+ "hashAfter": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
  "ok": true,
  "results": [
   {
@@ -27,13 +27,13 @@
     "message": "LONG_BLOCK: Blok u trkačkom tempu samo u ne-rasteretnoj nedelji specifične faze bez ograničenja, plan 4–6 dana (P1-S1). | B_WEEK_ORDER: Nedelja sa blokom samo po rasporedu: poslednja ne-rasteretna specifična je B, unazad A, B, … (P1-S1). | LONG_BLOCK: Blok u trkačkom tempu samo u ne-rasteretnoj nedelji specifične faze bez ograničenja, plan 4–6 dana (P1-S1). | LONG_BLOCK: Blok 4,0 km: nivo lestvice 4 / 6 / 8 km, ≤ 40 % dugog, trajanje ≤ 150 min (P1-S1). | B_WEEK_ORDER: Nedelja sa blokom samo po rasporedu: poslednja ne-rasteretna specifična je B, unazad A, B, … (P1-S1). | ZONE_CAP: RP 4000 m > 15 % cilja 24 km (H11). | ZONE_CAP: RP 4000 m > 15 % cilja 24.5 km (H11)."
    },
    "failedCount": 1,
-   "hashBefore": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
-   "hashSabotaged": "96491bad4e4a2f11abdbe22efc07063f1270e78035187228ed6bb060cc7fb86a",
-   "hashAfter": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
+   "hashBefore": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+   "hashSabotaged": "3ac375b1fef5cd0594dcc70b3d4e2b1cb661b3326f067ea4872c5741a2380d97",
+   "hashAfter": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 1.2
   },
   {
    "index": 2,
@@ -52,13 +52,13 @@
     "message": "ROLES: Dani easy@mon, long@sat, q1@tue, q2@thu ≠ šablon easy@mon, easy@thu, long@sat, q1@tue (H9). | ROLES: Dani easy@mon, long@sat, q1@tue, q2@thu ≠ šablon easy@mon, easy@thu, long@sat, q1@tue (H9). | B_WEEK_T: Nedelja sa blokom u dugom nema drugi dan kvaliteta (T je lagan, P1-S1). | B_WEEK_T: Nedelja sa blokom u dugom nema drugi dan kvaliteta (T je lagan, P1-S1). | DOSE_STALL: q2: sledeći nivo 4000 m staje u plafon, a nije uzet (H12). | SLOT_REPEAT: q2: ista doza iste strukture, a druga struktura postoji (H12). | TAPER_QUALITY: Taper: T 2400 m (≈ 60 % poslednje doze) (H7)."
    },
    "failedCount": 1,
-   "hashBefore": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
-   "hashSabotaged": "15bae678a960d66fde0f4821a51b664f950192f0b9a6e0a1d3066fe367ea3093",
-   "hashAfter": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
+   "hashBefore": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+   "hashSabotaged": "c73f8f09ef251827022ed43011e1ad5901795966c2b90c51e8a334926938fb51",
+   "hashAfter": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.4
+   "durationS": 1.5
   },
   {
    "index": 3,
@@ -77,9 +77,9 @@
     "message": "AssertionError: expected { ZONE_CAP: [ …(368) ] } to deeply equal {}"
    },
    "failedCount": 1,
-   "hashBefore": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
-   "hashSabotaged": "a41699ea17fa5d5f4efa8535b821cc2e3db1d1e877efe471ebb8da6a1d1feaf9",
-   "hashAfter": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
+   "hashBefore": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+   "hashSabotaged": "76b350cd8c66386be1c2d0edf042336e8421e84dd3d426edb8f85dd857996a83",
+   "hashAfter": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
    "restored": true,
    "error": null,
    "vitestExit": 1,
@@ -102,13 +102,13 @@
     "message": "AssertionError: expected true to be false // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
-   "hashSabotaged": "3c39dd87ea1d88af9078b75bddd6597dbe7e074380e5e3a0aa6ff8d04e0adc8f",
-   "hashAfter": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
+   "hashBefore": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+   "hashSabotaged": "f622e75dec00abf25f7eb2919ced3867b20bd8e5a77d021a174d886f8cdbba93",
+   "hashAfter": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 13.1
+   "durationS": 16.9
   },
   {
    "index": 5,
@@ -127,13 +127,38 @@
     "message": "MAIN_DOSE_DECREASE: Glavna doza 13000 m < 14400 m (H12, pouka 3; nedelja B sa poslednjom istog tipa)."
    },
    "failedCount": 1,
-   "hashBefore": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
-   "hashSabotaged": "f2bfb3909a2a59aceb05714fdb6015b130fd2a48c0807801bb909c04cefeb315",
-   "hashAfter": "a814668036ea5574294b9d275ee39bf49bb30117d66716a68c0df4f9db45f9e2",
+   "hashBefore": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+   "hashSabotaged": "c2fab62a70d725333d5e34c3646c49d4df3343b16813e652584b896e39da5cc9",
+   "hashAfter": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
    "restored": true,
    "error": null,
    "vitestExit": 1,
    "durationS": 1.5
+  },
+  {
+   "index": 6,
+   "name": "P1-T RP tapera bez plafona cilja tapera",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP1.node.test.ts",
+    "test": "P1-T: taper > RP tapera ≤ plafon RP cilja tapera; taper ima RP kad 2 × 2000 m staje u plafon",
+    "message": "AssertionError: expected 4000 to be greater than 5775"
+   },
+   "failedCount": 1,
+   "hashBefore": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+   "hashSabotaged": "d23327db56543b7f64678616eca5e9e5a801a4c9969f2310fd9745089520381b",
+   "hashAfter": "cbd8e70479a1559e8b88f6f93985c76de6c11ee0356a4f9eb4e3d30064643b5a",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 14
   }
  ]
 }

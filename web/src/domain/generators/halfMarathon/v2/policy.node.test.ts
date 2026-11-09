@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.8.0');
+    expect(P.version).toBe('hm-v2.9.0');
   });
 
   it('H1 opseg ulaza', () => {
@@ -129,7 +129,7 @@ describe('HM v2 politika (MASTER § 4)', () => {
     expect(P.ladders.T_continuous).toEqual([2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0]);
     expect(d(P.ladders.T_cruise)).toEqual([2400, 3000, 3200, 4000, 4800, 6000, 6400, 8000, 9000]);
     expect(d(P.ladders.I)).toEqual([2000, 2400, 3000, 4000, 4800, 5000, 6000]);
-    expect(d(P.ladders.RP)).toEqual([4000, 5000, 6000, 8000, 9000, 10000, 12000]);
+    expect(d(P.ladders.RP)).toEqual([4000, 5000, 6000, 8000, 9000, 10000, 12000, 15000]);
     expect(P.alternatives).toEqual({
       repsMin: 2,
       repsMax: 5,
@@ -148,7 +148,16 @@ describe('HM v2 politika (MASTER § 4)', () => {
   });
 
   it('H11 plafoni, H12 početni nivo, H13 dužine, H14 WU/CD i oporavci', () => {
-    expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, RP: 0.15 });
+    // P1-S2: RP po pojasu cilja nedelje (< 40 km 15 %, ≥ 40 km 20 %).
+    expect(P.caps).toEqual({
+      R: 0.05,
+      I: 0.08,
+      T: 0.1,
+      RP: [
+        { fromKm: 0, share: 0.15 },
+        { fromKm: 40, share: 0.2 }
+      ]
+    });
     expect(P.startLevel).toEqual({ capShare: 0.6 });
     // H13: dugi ≤ 24 km (odluka organizatora HM-01 → 02); pouka 28 (HI7).
     // T1 (krug T): lagan izgradnje ≤ 0,8 × dugi i ≥ 20 min.
@@ -268,7 +277,11 @@ describe('HM v2 politika (MASTER § 4)', () => {
       '3i-WEEK-LABEL',
       'HM-09',
       'HM-09-CHAINS',
-      'HM-10'
+      'HM-10',
+      'P1-S1',
+      'P1-S2',
+      'P1-S3',
+      'P1-T'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
