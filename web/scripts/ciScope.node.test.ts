@@ -67,18 +67,12 @@ const HM_OLD = 'src/domain/generators/halfMarathon/v2/app/old.node.test.ts';
 const MAR_GRID = 'src/domain/generators/marathon/v2/grid.node.test.ts';
 const A = 'src/features/A.test.tsx';
 const B = 'src/features/B.test.tsx';
-const OTHER = 'src/domain/generators/otherDistances.node.test.ts';
 const PWA = 'src/pwa/static.node.test.ts';
 
 describe('izbor po dometu izmene (veštačko stablo)', () => {
   it.each([
-    ['jedna distanca (kod v2)', [`${HM}/core.ts`], [A, OTHER, HM_GRID, PWA].sort(), true],
-    [
-      'dve distance',
-      [`${HM}/core.ts`, `${MAR}/core.ts`],
-      [A, OTHER, HM_GRID, MAR_GRID, PWA].sort(),
-      true
-    ],
+    ['jedna distanca (kod v2)', [`${HM}/core.ts`], [A, HM_GRID, PWA].sort(), true],
+    ['dve distance', [`${HM}/core.ts`, `${MAR}/core.ts`], [A, HM_GRID, MAR_GRID, PWA].sort(), true],
     ['ekran', ['web/src/features/B.tsx'], [B, PWA], false],
     ['ekran u grafu aplikacije', ['web/src/features/A.tsx'], [A, PWA], true],
     ['bazna linija (fs, ne uvoz)', [`${HM}/baseline.json`], [HM_GRID, PWA], false],
@@ -98,7 +92,7 @@ describe('izbor po dometu izmene (veštačko stablo)', () => {
     expect(d.all).toEqual(tests);
     expect(d.e2e).toBe(e2e);
     expect(d.static).toBe(true);
-    expect(d.v1Files).toEqual(d.all.filter((t) => t === OTHER));
+    expect([d.v1, d.v1Files]).toEqual(['none', []]); // v1 samo u `all` (posao kao danas)
   });
 
   it.each([
@@ -201,7 +195,7 @@ describe('izbor nad stvarnim stablom', () => {
     const own = tests
       .map((t) => t.slice(4))
       .filter((t) => t.startsWith('src/domain/generators/halfMarathon/'));
-    expect(own.filter((t) => !hm.testFiles.includes(t) && !hm.v1Files.includes(t))).toEqual([]);
+    expect(own.filter((t) => !isV1(t) && !hm.testFiles.includes(t))).toEqual([]);
     const marGrids = hm.testFiles.filter(
       (t) =>
         t.startsWith('src/domain/generators/marathon/v2/') &&

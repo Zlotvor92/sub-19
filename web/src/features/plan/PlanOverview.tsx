@@ -217,5 +217,3 @@ export function PlanOverview() {
     </ScreenFrame>
   );
 }
-
-// T1: proba dometa CI-ja za ekran (bezopasan komentar, uklanja se u sledećem commitu).

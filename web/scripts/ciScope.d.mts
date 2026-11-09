@@ -4,7 +4,6 @@ export const ALL_SHARDS: number;
 export const V1_ALL_SHARDS: number;
 export const E2E_SHARDS: number;
 export const MAX_SHARDS: number;
-export const MAX_V1_SHARDS: number;
 export const TARGET_S: number;
 export const ALL_RULES: Array<[RegExp, string]>;
 export const CWD_READS: Record<string, string[]>;

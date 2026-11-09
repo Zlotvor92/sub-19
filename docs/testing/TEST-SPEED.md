@@ -387,16 +387,16 @@ Posao `scope` (bez `npm ci`, ~10 s) poziva `web/scripts/ciScope.mjs` sa commitom
 
 | izmena od poslednjeg zelenog | web-test (pun nivo) | v1 | E2E | statičke |
 |---|---|---|---|---|
-| `main`, ručno, bez zelenog run-a, commit se ne dohvata | sve, 8 delova | sve, 2 dela | 3 dela | da |
+| `main`, ručno, bez zelenog run-a, commit se ne dohvata | sve, 8 delova | sve (jedan posao, kao pre T1) | 3 dela | da |
 | `.github/**`, `docs/qa/**`, `web/src/test/**`, `web/scripts/**` (osim `test-durations.json`), `web/package*.json`, `vitest.config.ts`, `vite.config.ts`, `tsconfig*.json`, domen van `generators/<D>/v2/` (zajednički domen, v1, koren `generators/*.ts`, nepoznata distanca), nepoznat fajl u `web/` | sve | sve | da | da |
-| ostalo (`generators/<D>/v2/**`, ekrani, `public/`, `sw/`, `e2e/`, …, fajlovi van `web/`) | fajlovi čiji domet sadrži izmenu | isto | ako je izmena u grafu `src/main.tsx`, `public/`, `sw/`, `index.html`, `e2e/`, `playwright.config.ts` | ako je izmena u `web/` |
+| ostalo (`generators/<D>/v2/**`, ekrani, `public/`, `sw/`, `e2e/`, …, fajlovi van `web/`) | fajlovi čiji domet sadrži izmenu | ne (kao raniji `v1-changes` za v2 i van domena) | ako je izmena u grafu `src/main.tsx`, `public/`, `sw/`, `index.html`, `e2e/`, `playwright.config.ts` | ako je izmena u `web/` |
 
 Domet test fajla = zatvorenje grafa uvoza (statički, `export … from`, dinamički sa literalom, `vi.mock`, `?raw`, `@/`)
 + fajlovi koje modul u zatvorenju može da čita: `import.meta.url`/`__dirname`/`import.meta.glob` → ceo folder modula i
 svaka relativna putanja napisana u njemu (`` `./seg.${n}.json` `` → prefiks); `process.cwd()` → ceo `web/` (pregledan
 spisak `CWD_READS`, test traži da bude potpun); nerazrešen uvoz → ta putanja kao prefiks (nov ili obrisan fajl);
 `child_process` ili apsolutan uvoz → domet je sve (izuzeci pregledani u `PROCESS_READS`). Broj delova u izboru:
-zbir trajanja izabranih fajlova / 600 s (≈ 3,5 min na CI-ju), najviše 6 (v1: 2).
+zbir trajanja izabranih fajlova / 600 s (≈ 3,5 min na CI-ju), najviše 6.
 
 Brz nivo za neizabrane ne trči: test čiji se nijedan ulaz nije promenio od zelenog run-a ne može da promeni ishod.
 
@@ -423,6 +423,7 @@ polazni.
 - `web` = samo statičke provere (tipovi, lint, format, build); E2E je poseban posao `web-e2e` u 3 dela
   (`playwright --shard`), pregledač iz keša (`~/.cache/ms-playwright`).
 - `.github/actions/web-deps`: `node_modules` iz keša po hešu `package-lock.json` (snima se odmah posle `npm ci`).
-- `web-test-v1`: 2 dela; ranije jedan posao ~10 min.
+- `web-test-v1`: kao pre T1 (jedan posao `npm run test:v1`, ~10 min) — organizator 9. 11.: v1 se briše u V1b, posao se
+  ne optimizuje; trči kad je izbor „sve" (nadskup ranijeg `v1-changes`).
 - Posao „sve" upisuje trajanje svakog fajla (`TEST_DURATIONS_OUT`, reporter `scripts/test-durations.mjs`) kao artefakt
-  `test-durations-*`; `test-durations.json` je osvežen iz run-a 765 (469 fajlova), pa je 8 delova istog zbira.
+  `test-durations-*`; `test-durations.json` je prosek run-ova 765 i 766 (479 fajlova). Merenja pre/posle: T1-REPORT.md § 1.

@@ -188,39 +188,18 @@ jobs:
           path: ${{ runner.temp }}/durations.json
           if-no-files-found: ignore
 
-  # v1 generatori (TEST-SPEED.md § 11.2, § 13): testovi poređenja sa referencama starog koda (vitest projekat `v1`),
-  # pun nivo, u delovima; `select` kad graf kaže da izmena ulazi u domet nekog v1 fajla.
+  # v1 generatori (TEST-SPEED.md § 11.2, § 13): testovi poređenja sa referencama starog koda (vitest projekat `v1`).
+  # Posao kao pre T1 (organizator, 9. 11.: v1 se briše u V1b): jedan posao, pun nivo, kad je izbor `all` (main, ručno, bez
+  # zelenog run-a, zajednička izmena — nadskup ranijeg `v1-changes`); izmena koja nije „sve" ga ne pokreće.
   web-test-v1:
     needs: scope
-    if: needs.scope.outputs.v1 != 'none'
+    if: needs.scope.outputs.v1 == 'all'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: ${{ fromJSON(needs.scope.outputs.v1_shards) }}
-    name: web-test-v1 (${{ matrix.shard }}/${{ strategy.job-total }})
     defaults:
       run:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/web-deps
-      - name: v1 testovi (${{ needs.scope.outputs.v1 }}, deo ${{ matrix.shard }}/${{ strategy.job-total }})
-        env:
-          TESTS: ${{ needs.scope.outputs.v1 }}
-          FILES: ${{ needs.scope.outputs.v1_files }}
-          SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
-        run: |
-          if [ "$TESTS" = all ]; then
-            TEST_FULL=1 TEST_V1=1 TEST_DURATIONS_OUT="$RUNNER_TEMP/durations.json" npx vitest run --project v1 \
-              --shard="$SHARD" --reporter=default --reporter=./scripts/test-durations.mjs
-          else
-            # shellcheck disable=SC2086
-            TEST_FULL=1 TEST_V1=1 npx vitest run --project v1 --shard="$SHARD" $FILES
-          fi
-      - if: needs.scope.outputs.v1 == 'all'
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-durations-v1-${{ matrix.shard }}
-          path: ${{ runner.temp }}/durations.json
-          if-no-files-found: ignore
+      - name: v1 testovi (pun nivo, ~10 min)
+        run: npm run test:v1

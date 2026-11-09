@@ -101,5 +101,3 @@ export function isWeekday(x: unknown): x is Weekday {
 }
 
 export { WEEKDAYS };
-
-// T1: proba dometa CI-ja (bezopasan komentar, uklanja se u sledećem commitu).

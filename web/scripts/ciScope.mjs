@@ -38,10 +38,9 @@ export const V1_REFERENCE = [
 /* Broj delova. `all`: fiksno (podela po trajanju, scripts/testSequencer.ts). `select`: koliko treba da deo nosi oko
    `TARGET_S` sekundi iz tabele trajanja (≈ 3,5 min na CI-ju; tabela je od 9. 11. iz CI run-a 765), najviše `MAX_*`. */
 export const ALL_SHARDS = 8;
-export const V1_ALL_SHARDS = 2;
+export const V1_ALL_SHARDS = 1;
 export const E2E_SHARDS = 3;
 export const MAX_SHARDS = 6;
-export const MAX_V1_SHARDS = 2;
 export const TARGET_S = 600;
 const UNKNOWN_S = 1;
 
@@ -232,9 +231,11 @@ export function decide({ changed, files, read, weights = {}, force = null }) {
   });
   const app = scopeOf(graph, APP_ENTRY, { importsOnly: true });
   const e2e = changed.some((c) => E2E_DIRECT.test(c) || app.exact.has(c));
+  /* v1 (organizator, 9. 11.: v1 se briše u V1b, posao ostaje kao danas): projekat `v1` trči samo u režimu `all` (jedan
+     posao, `npm run test:v1`); izmena koja nije „sve" ga ne pokreće, kao raniji `v1-changes` (v2 i van domena → ne). */
   const web = selected.map((t) => t.slice(4));
   const testFiles = web.filter((t) => !isV1(t));
-  const v1Files = web.filter(isV1);
+  const v1Files = [];
   return {
     mode: selected.length ? 'select' : 'none',
     reasons: [],
@@ -244,8 +245,8 @@ export function decide({ changed, files, read, weights = {}, force = null }) {
     tests: testFiles.length ? 'select' : 'none',
     testShards: testFiles.length ? shardsFor(testFiles, weights, MAX_SHARDS) : [],
     testFiles,
-    v1: v1Files.length ? 'select' : 'none',
-    v1Shards: v1Files.length ? shardsFor(v1Files, weights, MAX_V1_SHARDS) : [],
+    v1: 'none',
+    v1Shards: [],
     v1Files
   };
 }
