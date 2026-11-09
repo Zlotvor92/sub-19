@@ -67,13 +67,13 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | P0 | Merna osnova trenerskih metrika, sve 4 distance, bez izmene generatora | gotovo (`53b2dd4`, `reports/P0-REPORT.md`) |
 | T1 | Brži CI i testovi: izbor po dometu izmene, E2E u 3 dela, keš zavisnosti | gotovo (`c4aff71`, `reports/T1-REPORT.md`) |
 | V1a | Uklanjanje v1: popis i plan (bez koda) | gotovo (`d7df09e`, `reports/V1a-REPORT.md`) |
-| V1b | Uklanjanje v1 za 5K/10K/maraton + prevođenje testova (posle T1 i P1) | čeka T1, P1 |
+| V1b | Uklanjanje v1 za 5K/10K/maraton + prevođenje testova — `briefs/V1b-uklanjanje-v1.md` | u toku |
 | V1c | Brisanje HM v1 (posle trke vlasnika 13. 12. 2026) | čeka datum |
 | P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP | gotovo (`3a57a15`, hm-v2.9.0, `reports/P1-REPORT.md`) |
 | P2 | Maraton: dugi sa MP blokom, dugi do 180 min / 32 km | gotovo (`320edc5`, marathon-v2.9.0, `reports/P2-REPORT.md`) |
-| P3 | 10K: plafon/lestvica RP, održavanje I — `briefs/P3-10k-specificnost.md` | u toku |
+| P3 | 10K: plafon/lestvica RP, održavanje I | gotovo (`7484b05`, 10k-v2.11.0, `reports/P3-REPORT.md`) |
 | P4 | 5K: budžet I/RP 10–12 %, VDOT do 70 — `briefs/P4-5k-doza.md` | gotovo (5k-v2.13.0, `reports/P4-REPORT.md`), čeka prijem |
-| P5 | Po distanci (4 taba): kontrolni test u planu sa rezultatom, kvalitet u adaptaciji, ubrzanja, početna doza T/I — `briefs/P5-forma-ubrzanja-pocetna-doza.md` | 5K, HM, MAR u toku; 10K posle P3 |
+| P5 | Po distanci (4 taba): kontrolni test u planu sa rezultatom, kvalitet u adaptaciji, ubrzanja, početna doza T/I — `briefs/P5-forma-ubrzanja-pocetna-doza.md` | sve 4 u toku |
 | P7 | Nezavisna slepa trenerska ocena pre/posle + merenje ishoda u aplikaciji (prognoza prema rezultatu) | čeka |
 
 ## Kada je gotovo
@@ -114,3 +114,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 10. 11. 2026 00:45: P4 STOP (`42c24f7`): S1 bez nalaza (I 11 → 13,7 min, najveći RP 2,5 → 3,2 km, profil (b) I 14 min); S2 (VDOT 70) daje degenerisanu nedelju samo za 3 d / 12 km / VDOT ≥ 67 i oštrenje 300 m ispod 60 s. Odluka: VDOT do 70 uz odbijanje te klase ulaza sa preporukom; oštrenje ispod 60 s prihvaćeno; maxReps na 5 dana se ne dira.
 - 10. 11. 2026 00:50: P4 primljen. I rad 11 → 13,7 min, najveći RP 2,5 → 3,2 km, odbijanja VDOT 65 27 → 0; B2 (3 d, < 12,1 km, VDOT ≥ 66 → odbijanje sa preporukom); F1 (dopuna pouke 23: trajanje deonice I/RP na tekućem tempu; 10 odbijanja rane mreže → 0); pun nivo 787/787, sabotaže 8/8. Za P7: vrh 6 × 1000 m RP (120 % trke) kod velikog obima; maxReps drži vrh na 5 dana. Za P5: posle sporijeg rezultata u vrhuncu doza pada na jedan kvalitet.
 - 10. 11. 2026 00:55: P5 i P6 spojeni u jedan zadatak po distanci (jedan pun nivo po distanci). Odluke: F1 test u planu sa rezultatom ≥ 12 ned (5K ≥ 10) u poslednjoj ne-rasteretnoj nedelji razvoja; F2 dva uzastopna kvaliteta preskočena ili RPE ≥ 9 → sledeća nedelja bez rasta doze; F3 jedan lagan dan nedeljno sa ubrzanjima 4/6 × 20 s (10K, HM, MAR); F4 početni nivo T i I ≤ 80 % plafona (10K, HM, MAR). WU/CD se NE skraćuje (uslov 3): mali udeo rada se rešava većom početnom dozom.
+- 10. 11. 2026 00:58: P3 primljen. Najveći RP 4 → 5 km (≥ 6 km u planovima ≥ 40 km: 22/84 → 62/84), ukupno RP 15,4 → 18,4 km, I u specifičnoj fazi 0 → 10,4 min, 0 novih odbijanja; pun nivo 736/736, sabotaže 8/8. Prihvaćeno: vrh plana niži u 6 % planova (do 2,1 km), F 5/6 d po 1 plan bez nedelje B, tri fajla van foldera (oznake verzije, 13 heševa byteSame). Izdati P5-10K i V1b (uporedo sa P5 tabovima).
