@@ -73,8 +73,7 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | P2 | Maraton: dugi sa MP blokom, dugi do 180 min / 32 km | gotovo (`320edc5`, marathon-v2.9.0, `reports/P2-REPORT.md`) |
 | P3 | 10K: plafon/lestvica RP, održavanje I — `briefs/P3-10k-specificnost.md` | u toku |
 | P4 | 5K: budžet I/RP 10–12 %, VDOT do 70 — `briefs/P4-5k-doza.md` | gotovo (5k-v2.13.0, `reports/P4-REPORT.md`), čeka prijem |
-| P5 | Petlja forme: kontrolna tačka u planu sa rezultatom; izvršenje kvaliteta u adaptaciji | čeka |
-| P6 | Ubrzanja na laganim danima; WU/CD srazmerno treningu | čeka |
+| P5 | Po distanci (4 taba): kontrolni test u planu sa rezultatom, kvalitet u adaptaciji, ubrzanja, početna doza T/I — `briefs/P5-forma-ubrzanja-pocetna-doza.md` | 5K, HM, MAR u toku; 10K posle P3 |
 | P7 | Nezavisna slepa trenerska ocena pre/posle + merenje ishoda u aplikaciji (prognoza prema rezultatu) | čeka |
 
 ## Kada je gotovo
@@ -114,3 +113,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 10. 11. 2026 00:30: P2 primljen (profil (a) pregledan: nedelje 10 i 13 dugi 24 km sa 8 i 12 km MP, MP trening 2 × 5000 m između). Ukupno MP 52 → 52 km (trening 36 → 20, blok 0 → 20); najduži dugi 24,2 → 26,2 km; nedelja > 25 % brzih 97 → 76; 0 novih odbijanja na 31 920 planova; pun nivo 528 testova, sabotaže 9/9. Potvrđena tumačenja T1 (izuzetak spuštene doze preko tipova), T2 (prelaz I → MP iznad bloka samo kad staje u plafon), T3 (tip nedelje u adaptaciji iz rasporeda, prošlost se ne preslaže). Prihvaćeno: 6 dana −8,1 % ukupnog MP (blok ≤ 50 % dugog). T na plafonu 10 % ostaje (Daniels), nije tema P6.
 - 10. 11. 2026 00:45: P4 STOP (`42c24f7`): S1 bez nalaza (I 11 → 13,7 min, najveći RP 2,5 → 3,2 km, profil (b) I 14 min); S2 (VDOT 70) daje degenerisanu nedelju samo za 3 d / 12 km / VDOT ≥ 67 i oštrenje 300 m ispod 60 s. Odluka: VDOT do 70 uz odbijanje te klase ulaza sa preporukom; oštrenje ispod 60 s prihvaćeno; maxReps na 5 dana se ne dira.
 - 10. 11. 2026 00:50: P4 primljen. I rad 11 → 13,7 min, najveći RP 2,5 → 3,2 km, odbijanja VDOT 65 27 → 0; B2 (3 d, < 12,1 km, VDOT ≥ 66 → odbijanje sa preporukom); F1 (dopuna pouke 23: trajanje deonice I/RP na tekućem tempu; 10 odbijanja rane mreže → 0); pun nivo 787/787, sabotaže 8/8. Za P7: vrh 6 × 1000 m RP (120 % trke) kod velikog obima; maxReps drži vrh na 5 dana. Za P5: posle sporijeg rezultata u vrhuncu doza pada na jedan kvalitet.
+- 10. 11. 2026 00:55: P5 i P6 spojeni u jedan zadatak po distanci (jedan pun nivo po distanci). Odluke: F1 test u planu sa rezultatom ≥ 12 ned (5K ≥ 10) u poslednjoj ne-rasteretnoj nedelji razvoja; F2 dva uzastopna kvaliteta preskočena ili RPE ≥ 9 → sledeća nedelja bez rasta doze; F3 jedan lagan dan nedeljno sa ubrzanjima 4/6 × 20 s (10K, HM, MAR); F4 početni nivo T i I ≤ 80 % plafona (10K, HM, MAR). WU/CD se NE skraćuje (uslov 3): mali udeo rada se rešava većom početnom dozom.
