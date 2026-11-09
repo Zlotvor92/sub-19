@@ -78,7 +78,7 @@ import {
   hasLongBlock,
   mainDoseM,
   nextBlockKm,
-  specificTypes
+  specificTypesOver
 } from './specific.ts';
 import { adjacentDays } from './schedule.ts';
 import {
@@ -409,7 +409,23 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   }
   const phases = weeks.map((w) => w.phase);
   // M19: raspored tipova A/B (iste funkcije kao konstruktor; okviri = nedelje plana).
-  const types = specificTypes(weeks, rule);
+  const typeOf = specificTypesOver(
+    rule,
+    steps.map((s) => s.firstWeek),
+    (k) =>
+      k === steps.length || !base0 || base0.length !== N
+        ? (frames ?? weeks)
+        : framesFor(
+            base0,
+            plan.pattern,
+            input.runDays,
+            input.raceDate,
+            pace,
+            steps.slice(0, k),
+            new Map(),
+            lockedIds
+          )
+  );
   if (phases.filter((x) => x === 'taper').length !== P.phases.taperWeeks)
     err('TAPER_WEEKS', `Taper mora imati ${P.phases.taperWeeks} nedelje (M4, M7).`);
 
@@ -772,7 +788,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       err('LONG_NOT_EASY', 'Dugo trčanje je samo lagano.', w.index, long.date);
     else if (bk > 0 && !protectedDay(long)) {
       const want = longBlockWorkout(long.workout.km, bk, pk, feelW(w));
-      if (types.get(w.index) !== 'B' || !bAllowed(w, true))
+      if (typeOf(w.index) !== 'B' || !bAllowed(w, true))
         err(
           'LONG_BLOCK',
           'Blok u maratonskom tempu samo u ne-rasteretnoj nedelji B specifične faze (poslednja pred taper, smena unazad), bez testa i ograničenja (M19).',
@@ -802,7 +818,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       if (!w.notes.includes(bWeekNote(bk)))
         err('LONG_BLOCK', 'Nedelja sa blokom bez napomene (M19).', w.index);
     }
-    if (w.notes.includes(B_AS_A_NOTE) && (types.get(w.index) !== 'B' || bk > 0))
+    if (w.notes.includes(B_AS_A_NOTE) && (typeOf(w.index) !== 'B' || bk > 0))
       err('LONG_BLOCK', 'Napomena „nedelja B kao A" van nedelje B po rasporedu (M19).', w.index);
     const easyKm = w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km));
     if (easyKm.length > 1 && Math.max(...easyKm) - Math.min(...easyKm) > 1 && painOf(w).size === 0)

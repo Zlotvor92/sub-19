@@ -25,7 +25,7 @@ import { keptKm100, mixedNote, mixedRest, pauseOwned } from './mixed.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
 import { same } from './same.ts';
-import { bAllowed, specificTypes } from './specific.ts';
+import { bAllowed, specificTypesOver } from './specific.ts';
 import {
   basePaces,
   basisAt,
@@ -199,7 +199,24 @@ export function construct(
     return { ...ctx0, paces: p, raceSec: predictedMarathon(p), feel: false, ...reduced };
   };
   // M19: raspored tipova A/B specifične faze iz okvira (posle koraka adaptacije: iz adaptiranih okvira, S3).
-  const types = specificTypes(frames, rule);
+  const kept = new Set([...(prior?.lockedDayIds ?? []), ...(prior?.doneDayIds ?? [])]);
+  const typeOf = specificTypesOver(
+    rule,
+    steps.map((s) => s.firstWeek),
+    (k) =>
+      k === steps.length
+        ? frames
+        : framesFor(
+            base,
+            pattern,
+            input.runDays,
+            input.raceDate,
+            pace,
+            steps.slice(0, k),
+            null,
+            kept
+          )
+  );
   const restarts = restartWeeks(steps);
   const doseRestarts = doseRestartWeeks(steps);
 
@@ -271,7 +288,7 @@ export function construct(
     let relaxT1 = false;
     // M19 (S3): nedelja tipa B po rasporedu, bez ograničenja koraka i testa, sa ciljem po pravilu (ne povratak ni nov
     // start koji ide samo naniže, A3/A8).
-    const bWeek = types.get(frame.index) === 'B' && bAllowed(frame, !downOnly);
+    const bWeek = typeOf(frame.index) === 'B' && bAllowed(frame, !downOnly);
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
         ctx,

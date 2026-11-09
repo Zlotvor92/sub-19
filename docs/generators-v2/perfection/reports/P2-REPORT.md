@@ -48,6 +48,11 @@
 - T2 prelaz I → MP (prva nedelja B pre ijedne nedelje A): MP trening A kreće od nivoa iznad bloka samo kad taj nivo
   staje u plafon MP 20 %; inače prelaz po M12 (pre izmene: 6 planova 4 d / 35 km odbijeno DOSE_DROP).
 
+- T3 raspored A/B u adaptaciji: tip nedelje iz rasporeda okvira sa koracima koji važe za tu nedelju
+  (`specific.specificTypesOver`: nedelja pre prve nedelje koraka zadržava raspored bez tog koraka). Bez toga korak koji
+  menja okvire (npr. A17 ukida rasterećenje) preslaže A/B i za prošle nedelje, rekonstruisana prošlost se razlikuje od
+  upisane i validator odbija obim (pun nivo, 1. put: 200+ tokova rane adaptacije i mešovitih nedelja).
+
 ## Komande merenja (iz `web/`, svaka ≈ 1–2 s osim K5)
 
 - **K1** `node ../docs/generators-v2/perfection/P2/measure.ts pre` na `38fd091`; `… measure.ts posle` na ovom kodu.
@@ -135,7 +140,17 @@ po pravilu; zamenjena.
 
 ## Testovi (komanda — trajanje)
 
-TESTOVI_POPUNITI
+Sve iz `web/`, 9. 11. 2026 posle 21:30 (Europe/Belgrade):
+
+| komanda | trajanje | ishod |
+|---|---|---|
+| `npx vitest run --project node src/domain/generators/marathon/v2` (brz, u toku rada, više puta) | ≈ 32 s | na kraju 39 fajlova zeleno |
+| `TEST_FULL=1 npx vitest run --project node src/domain/generators/marathon/v2` (1. put) | 622 s | 23 fajla palo (rana adaptacija VOLUME_PEAK/RULE 200+, mešovite nedelje, gusta ned 1 „glavna doza opada") |
+| isto, posle ispravke (T3 ispod, invarijanta T1) | 603 s | 77 fajlova, 528 testova zeleno |
+| `npm run check` | 295 s (prvi pokušaj 122 s — prettier JSON fajla) | 342 fajla, 3856 testova zeleno |
+| `npx vitest run --changed 38fd091` | 114 s | 159 fajlova, 1603 testa zeleno |
+| `npx playwright test e2e/marathon-v2.spec.ts --trace off` | 29 s | 3/3 |
+| `node scripts/sabotage.mjs ../docs/generators-v2/perfection/P2/sabotage.json --quiet` | 8,8 s | 9/9 palo |
 
 ## Mišljenje (odvojeno od merenja)
 

@@ -368,9 +368,15 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     w.days.some((d) => d.role === 'long' && d.workout.workKm.MP > 0);
   for (const kind of [true, false]) {
     const seq = steady.filter((w) => isB(w) === kind);
-    for (let i = 1; i < seq.length; i++)
-      if (mainM(seq[i]!) < mainM(seq[i - 1]!) && seq[i]!.fitted !== 'down')
+    for (let i = 1; i < seq.length; i++) {
+      // M19 (tumačenje T1): spuštena doza slota (korak drop, pouka 12/32) u nedelji posle nedelje poređenja nosi
+      // izuzetak i u sledeću nedelju istog tipa.
+      const dropBetween = W.slice(seq[i - 1]!.index, seq[i]!.index).some((x) =>
+        x.days.some((d) => d.workout.dose?.step === 'drop')
+      );
+      if (mainM(seq[i]!) < mainM(seq[i - 1]!) && seq[i]!.fitted !== 'down' && !dropBetween)
         no(`glavna doza opada ned ${seq[i]!.index}`);
+    }
   }
   // Ned 1 = trenutni obim; ispod samo uz dugi na 150 min (pouka 9) ili na pragu skorašnjeg najdužeg
   // max(1,1 r; r + 1) (pouka 28) — prag računat ovde, nezavisno od lengths.ts.

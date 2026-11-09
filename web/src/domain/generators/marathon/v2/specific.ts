@@ -36,6 +36,24 @@ export function specificTypes(
   return out;
 }
 
+/** M19 (S3): tip nedelje u adaptiranom planu — raspored (specificTypes) iz okvira sa koracima koji važe za tu nedelju:
+    nedelja pre prve nedelje koraka (`firstWeeks[k]`) zadržava raspored iz okvira sa prvih k koraka (prošlost se ne
+    preslaže), od nje dalje važi raspored posle koraka. `framesWith(k)` = okviri sa prvih k koraka (k = svi: okviri
+    plana). Jedna funkcija za konstruktor i validator. */
+export function specificTypesOver(
+  rule: Pick<PlanRule, 'quality' | 'beginner'>,
+  firstWeeks: readonly number[],
+  framesWith: (k: number) => readonly FrameLike[]
+): (week: number) => SpecificType | undefined {
+  const cache = new Map<number, Map<number, SpecificType>>();
+  return (week) => {
+    const k = firstWeeks.filter((f) => f <= week).length;
+    let m = cache.get(k);
+    if (!m) cache.set(k, (m = specificTypes(framesWith(k), rule)));
+    return m.get(week);
+  };
+}
+
 /** M19 (S3): nedelja tipa B po rasporedu sme da se sastavi kao B — bez testa i bez ograničenja koraka (bol, odmor,
     zabrana kvaliteta, jedan kvalitet); `regular` = cilj po pravilu (adaptacija: ne povratak posle smanjenja ni nov
     start koji još nije dostigao redovan cilj). */

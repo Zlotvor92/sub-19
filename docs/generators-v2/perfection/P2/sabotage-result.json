@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/generators-v2/perfection/P2/sabotage.json",
- "head": "5a3581d",
+ "head": "9279d1e",
  "level": "brz",
  "bail": true,
  "parallel": 1,
  "vitestArgs": [],
- "durationS": 9.8,
- "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
- "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+ "durationS": 8.8,
+ "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+ "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
  "ok": true,
  "results": [
   {
@@ -27,13 +27,13 @@
     "message": "AssertionError: expected 'BABA' to be 'ABAB' // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "9b8106e331230402666812858c16af0069a036a92cdbbaaa9ce9022226410301",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "96054e5ede126897b85a25eb095c52f574263f1531347f32bc2e573989adeae8",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.1
+   "durationS": 1
   },
   {
    "index": 2,
@@ -52,13 +52,13 @@
     "message": "AssertionError: expected [ 6, 8, 10, 10 ] to deeply equal [ 6, 8, 10, 12 ]"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "9ab48b11bb971df8461ad3158015bfb2d2ffe588e8df156ee28b0ac601701ede",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "3cc5fa9eff853726721d634dac1502bc97b4f0a4251a18f8799bcb3c026b775f",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 0.9
   },
   {
    "index": 3,
@@ -77,13 +77,13 @@
     "message": "AssertionError: expected 16 to be 10 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "b442aeddaac82ba7aa1c0b1b3143f7e4b0ea1aa149296ea75cdfc9704ee9cf70",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "9afd21d300fea9f600e5f26ac19e2d906ddba1168d0351be3949492f9f2a6568",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.1
+   "durationS": 0.9
   },
   {
    "index": 4,
@@ -102,13 +102,13 @@
     "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DOSE_STALL: q1: sledeći nivo 10000 m staje u plafon, a nije uzet (M12).\",\"week\":11},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"SLOT_REPEAT: q1: ista doza iste strukture, a druga struktura postoji (M12).\",\"week\":11}]"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "4ecb8d1352a0f72372ebe1bcff372820722e21a98e1d88f95d5d7a3f62fff719",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "d51d6e703cbe08da3a22f0bfb91d142d4929396dd672817002abe8db7b95cf2f",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 0.8
   },
   {
    "index": 5,
@@ -127,13 +127,13 @@
     "message": "AssertionError: expected [ 'DOSE_STALL', 'SLOT_REPEAT' ] to include 'LONG_BLOCK'"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "5a8b5dd1dff829d8541ab7a876895ef60c1e3b4341910d06fc2bdb7157047cd7",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "6e265a53689c8d8af20e8bc144210e5b765bec867686a48d6c46d7dcb55a8821",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 0.9
   },
   {
    "index": 6,
@@ -152,13 +152,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 33,6 km > 32,0 km (M13).\",\"week\":5},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 35,2 km > 32,0 km (M13).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,8 km > 32,0 km (M13).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":9},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":10},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":11},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":12},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":14},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":15},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":17}]"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "8f975d1bb68b60f64c89c0da7d428385fa4d2f71470ff3783aa2b5656d8a49fc",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "ae304ba673ac3a194425502c25ce19e5d15afaec120b8a3c9d2b7d5876b8a7b6",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 0.9
   },
   {
    "index": 7,
@@ -177,13 +177,13 @@
     "message": "AssertionError: expected 288 to be 240 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "fc80f8268b71528494456cf003926e820a037e1dbbc35c9c4c28d99b6edaa176",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "0c6546c961d1aa6450bdaea4845673e54d02dadb1389f2b57ef25c770a4e178f",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 0.9
   },
   {
    "index": 8,
@@ -202,13 +202,13 @@
     "message": "AssertionError: expected true to be false // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "db8f33351825d0069a87bb517ff955399f05e40b00e8f9899c78bd7dbc6f97c8",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "3f9d4d940cc4577adc1136f605dc8c3aa3c3b28c9b65ad5bcecf8de954f8668a",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 0.9
   },
   {
    "index": 9,
@@ -227,13 +227,13 @@
     "message": "AssertionError: expected [ 'LONG_BLOCK', 'LONG_BLOCK', …(2) ] to include 'LIMITS'"
    },
    "failedCount": 1,
-   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
-   "hashSabotaged": "4f90a64ea99a49f33c1d33461e59f2a1d387016a371cd72127c9140e0b61747c",
-   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashBefore": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
+   "hashSabotaged": "0b91e1c7cb8ad23016a679d242307254faf1afd36ad108176b8f41873148b562",
+   "hashAfter": "fca878ba8b985d58e2b90c354d079b04bb4455b72afe365bfea6cdc47f9a82ba",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.1
+   "durationS": 1
   }
  ]
 }
