@@ -14,11 +14,13 @@ Izvor: GitHub Actions API (`list_workflow_jobs` za run).
 | jedna distanca v2 (5K, komentar) | 764 (sve) | 12,7 min | ≈ 89,7 | 767 (`122548f`) | 5,6 min | ≈ 32,1 (bez v1 ≈ 21,6) |
 | samo ekran (`PlanOverview.tsx`) | 764 (sve) | 12,7 min | ≈ 89,7 | 768 (`4f4033a`) | 5,4 min | ≈ 14,6 |
 | van koda aplikacije (`.claude/**`) | 758, 759 (sve) | 12,9 / 12,8 min | ≈ 90 | — (izbor `none`, test) | ≈ 0,3 min | ≈ 0,6 |
-| poslednji push (sve, v1 kao danas) | — | — | — | RUN769 | RUN769_ZID | RUN769_RM |
+| poslednji push (sve, v1 kao danas) | — | — | — | 769 (`e08d125`) | 9,7 min | ≈ 88,2 |
 
 Ciljevi: distanca ≤ 7 min — ispunjeno (5,6). Ekran ≤ 6 min — ispunjeno (5,4; ograničava E2E deo 1/3, 4,6 min testova). „Sve" ≤ 9 min — 766: 9,4 min (delovi 4,8–8,8
 min: šum trajanja fajlova na CI-ju je veći od razlike koju tabela ispravlja); posle odluke da v1 ostane jedan posao
-(~10 min) zid „sve" ograničava v1 posao — RUN769_NAPOMENA.
+(run 769: v1 6,5 min posla) zid „sve" i dalje ograničavaju delovi web-test (769: 6,7–9,2 min testova; zbir delova
+66,8 min prema 57,8 u 766 za iste fajlove — razlika je brzina runner-a). Cilj ≤ 9 min nije stabilno dostignut (9,4 i
+9,7 min); stabilno ispod 9 traži 9–10 delova (+1–2 runner-min po delu) ili manje posla (§ 7) — odluka organizatora.
 
 Pojedinačno (run 766 prema 764): statičke provere 11,4 → 1,9 min posla (E2E izdvojen; keš `node_modules`: `npm ci`
 35–47 s → 2–6 s); E2E 7,6 min u jednom poslu → 3 dela 1,7 / 4,8 / 2,7 min; delovi web-test 6,7–11,9 → 4,8–8,8 min.
@@ -64,10 +66,10 @@ Pojedinačno (run 766 prema 764): statičke provere 11,4 → 1,9 min posla (E2E 
 |---|---|---|---|
 | (a) komentar u `fiveK/v2/dates.ts` (umesto HM: P1 radi u HM v2) | `122548f`, run 767 | 5K testovi i oni koji ih uvoze, bez mreža drugih distanci, E2E da | `select`: 186 web fajlova (3 dela), 0 mreža `tenK/HM/MAR v2`; v1 43 (tada još graf; posle odluke v1 ne trči na v2) |
 | ekran: komentar u `PlanOverview.tsx` | `4f4033a`, run 768 | njegovi UI testovi + čitači `web/`, E2E, bez mreža | `select`: 20 web fajlova (1 deo), v1 ništa |
-| (b) komentar u `web/src/test/level.ts` | RUN769_SHA, run 769 | sve | RUN769_B |
+| (b) komentar u `web/src/test/level.ts` | `e08d125`, run 769 | sve | `all` (razlog među ostalima: `web/src/test/level.ts: zajednička test infrastruktura`); 8 + v1 + 3 E2E + statičke |
 
-Komentari (a) i ekran su vraćeni u RUN769_SHA (poruka `4f4033a` kaže „vraćen komentar u fiveK/v2" — netačno: posle
-`git pull` je `HEAD~1` bio commit dokumentacije, pa je `4f4033a` čista proba ekrana; vraćanje je u RUN769_SHA).
+Komentari (a) i ekran su vraćeni u `e08d125` (poruka `4f4033a` kaže „vraćen komentar u fiveK/v2" — netačno: posle
+`git pull` je `HEAD~1` bio commit dokumentacije, pa je `4f4033a` čista proba ekrana; vraćanje je u `e08d125`).
 Komentar (b) ostaje (dokumentuje pravilo).
 
 ## 6. v1 kad nestane (V1b)
@@ -105,8 +107,8 @@ Procena (mišljenje, ekstrapolacija sa jednog dela po porodici): ≈ 810 s od �
 
 ## 9. Šta nije urađeno / otvoreno
 
-1. „Sve" ≤ 9 min: run 766 9,4 min; posle odluke o v1 zid „sve" ≈ v1 posao (~10–11 min) dok v1 postoji. Posle V1b
-   očekivano ≈ 9 min (delovi), ne izmereno.
+1. „Sve" ≤ 9 min nije dostignuto: 766 9,4 min, 769 9,7 min (ograničavaju delovi web-test, ne v1). Runner-min „sve"
+   ≈ 78–88 prema ≈ 90 pre (nije povećano). Opcije: 10 delova (zid ≈ 7,5–8 min, +≈ 1 runner-min) ili sabijanje lanca (§ 7).
 2. Šum trajanja na CI-ju: isti fajlovi su između run-ova 765 i 766 imali do ±30 % po delu; tabela je prosek dva run-a.
    Bolja ravnoteža bi tražila više merenja (artefakti `test-durations-*` se skupljaju u svakom run-u „sve").
 3. Graf je sopstveni parser (ne vitest), proveren kao nadskup na 40 fajlova; nov oblik čitanja fajla (npr. putanja
