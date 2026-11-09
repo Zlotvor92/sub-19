@@ -36,12 +36,12 @@ export const V1_REFERENCE = [
 ];
 
 /* Broj delova. `all`: fiksno (podela po trajanju, scripts/testSequencer.ts). `select`: koliko treba da deo nosi oko
-   `TARGET_S` sekundi iz tabele trajanja (≈ 3,5 min na CI-ju), najviše `MAX_*`. */
+   `TARGET_S` sekundi iz tabele trajanja (≈ 3,5 min na CI-ju; tabela je od 9. 11. iz CI run-a 765), najviše `MAX_*`. */
 export const ALL_SHARDS = 8;
-export const V1_ALL_SHARDS = 3;
-export const E2E_SHARDS = 2;
+export const V1_ALL_SHARDS = 2;
+export const E2E_SHARDS = 3;
 export const MAX_SHARDS = 6;
-export const MAX_V1_SHARDS = 3;
+export const MAX_V1_SHARDS = 2;
 export const TARGET_S = 600;
 const UNKNOWN_S = 1;
 
@@ -98,6 +98,12 @@ export const CWD_READS = {
   'web/src/pwa/uvod.node.test.ts': ['web/'],
   'web/deploy/cutover.node.test.ts': ['web/', 'vercel.json', '.vercelignore']
 };
+/* `child_process` → domet SVE, osim pregledanih: ovaj izbor pokreće `git` samo u CLI-ju (ne pri uvozu), a njegov test
+   pokreće samo `git ls-files` i tvrdi samo o web/. */
+export const PROCESS_READS = {
+  'web/scripts/ciScope.mjs': ['web/'],
+  'web/scripts/ciScope.node.test.ts': ['web/']
+};
 const REL_LITERAL = /['"`](\.\.?(?:\/[^'"`]*)?)['"`]/g;
 
 /** Direktne zavisnosti jednog modula. `files`: skup svih fajlova repozitorijuma. */
@@ -128,7 +134,10 @@ export function moduleDeps(path, code, files) {
       else if (r === undefined && m[1].startsWith('/')) why.push(`apsolutan uvoz: ${m[1]}`);
       else if (r === undefined) prefixes.add(m[1].startsWith('@/') ? `web/src/${m[1].slice(2)}` : posix.normalize(posix.join(dir, m[1].replace(/\?.*$/, ''))));
     }
-  if (RUNS_PROCESS.test(code)) why.push('child_process');
+  if (RUNS_PROCESS.test(code)) {
+    if (PROCESS_READS[path]) for (const p of PROCESS_READS[path]) prefixes.add(p);
+    else why.push('child_process');
+  }
   if (READS_CWD.test(code)) for (const p of CWD_READS[path] ?? ['web/']) prefixes.add(p);
   if (READS_OWN_FOLDER.test(code) || DYNAMIC_NON_LITERAL.test(code)) {
     prefixes.add(`${dir}/`);

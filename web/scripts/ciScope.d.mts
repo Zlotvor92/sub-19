@@ -8,6 +8,7 @@ export const MAX_V1_SHARDS: number;
 export const TARGET_S: number;
 export const ALL_RULES: Array<[RegExp, string]>;
 export const CWD_READS: Record<string, string[]>;
+export const PROCESS_READS: Record<string, string[]>;
 export interface ModuleDeps {
   imports: Set<string>;
   exact: Set<string>;
