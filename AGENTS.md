@@ -54,9 +54,14 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
   (`web/src/domain/**` — generatori v1/v2, zajednički domen, reference) ili test infrastruktura, i tada jednom, pre
   mergea u main; nikad po segmentu. Izmene koje ne diraju `src/domain/**` ni test infrastrukturu (ekrani, stil, tekst,
   `features/`, `components/`, dokumentacija): `npm run check` + E2E dirnutih ekrana + `npm run build` — bez lokalnog
-  `check:full`, ni pre mergea. Pun nivo u svakom slučaju pokreće CI na svaki push koda (`npm test` bez projekta `v1`,
-  6 delova uravnoteženih po trajanju; projekat `v1` poseban posao kad se od poslednjeg zelenog run-a menja nešto što
-  v1 koristi, na `main`-u uvek; push samo `docs/**` ga ne pokreće; dok run radi, čeka samo najnoviji push iste grane);
-  u main tek kad je CI zelen. Nivoi, uzorci i merenja: `docs/testing/TEST-SPEED.md`.
+  `check:full`, ni pre mergea. CI na svaki push koda bira po DOMETU IZMENE od poslednjeg zelenog run-a grane
+  (`web/scripts/ciScope.mjs`, TEST-SPEED.md § 13): „sve" (pun nivo `npm test` u 8 delova, `v1` u 2, E2E u 3, statičke
+  provere) na `main`-u, ručno, bez zelenog run-a i kad push dira bilo šta zajedničko ili nepoznato (`web/src/test/`,
+  `web/scripts/`, `docs/qa/`, zavisnosti, konfiguracija, workflow, domen van `generators/<D>/v2/`); inače pun nivo
+  samo test fajlova čiji graf uvoza ili fajlovi koje čitaju sadrže promenjen fajl (izmena jedne distance v2 → njeni
+  testovi + oni koji je uvoze; ekran → njegovi UI testovi), E2E samo kad se menja aplikacija, statičke provere kad se
+  menja `web/`; push koji ne dira kod koji testovi vide (npr. `.claude/`) ne pokreće web poslove; push samo `docs/**`
+  ne pokreće CI; dok run radi, čeka samo najnoviji push iste grane. U main tek kad je CI zelen. Nivoi, uzorci i
+  merenja: `docs/testing/TEST-SPEED.md`.
 - Sabotaže samo kroz `web/scripts/sabotage.mjs`, na fajlovima koji treba da ih uhvate, sa `--bail=1`; nikad ceo
   skup. Uputstvo: `docs/testing/SABOTAGE.md`.

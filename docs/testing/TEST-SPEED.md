@@ -371,3 +371,58 @@ Lanac starih regresija (`changed-<sha>.json`, `at7ba → at46e → atC13 → atB
 profil 10K `earlyGrid` 24 % (`planHash06c` → `undo07` → `undoF1`), 5K `segment08g.grid` ~7 % (`canon09`). Sabijanje na jednu
 aktuelnu baznu liniju po mreži uklanja taj trošak i šimove, ali gubi automatski dokaz uzroka svake stare izmene — nije
 urađeno bez odluke.
+
+
+## 13. CI po dometu izmene (T1, 9. 11. 2026, nalog korisnika: „ubrzati testove i CI")
+
+Izveštaj sa svim brojkama i komandama: `docs/generators-v2/perfection/reports/T1-REPORT.md`. (Pozivi „§ 12" u starijim
+komentarima znače § 11.2.)
+
+### 13.1 Šta CI pokreće
+
+Posao `scope` (bez `npm ci`, ~10 s) poziva `web/scripts/ciScope.mjs` sa commitom POSLEDNJEG ZELENOG run-a grane
+(`gh run list --status success`, isti lanac kao raniji `v1-changes`) i `git diff --no-renames` (ranije bez
+`--no-renames`: preimenovanje je sakrivalo staru putanju). Odluka je jedna funkcija, `decide` (test:
+`web/scripts/ciScope.node.test.ts`):
+
+| izmena od poslednjeg zelenog | web-test (pun nivo) | v1 | E2E | statičke |
+|---|---|---|---|---|
+| `main`, ručno, bez zelenog run-a, commit se ne dohvata | sve, 8 delova | sve, 2 dela | 3 dela | da |
+| `.github/**`, `docs/qa/**`, `web/src/test/**`, `web/scripts/**` (osim `test-durations.json`), `web/package*.json`, `vitest.config.ts`, `vite.config.ts`, `tsconfig*.json`, domen van `generators/<D>/v2/` (zajednički domen, v1, koren `generators/*.ts`, nepoznata distanca), nepoznat fajl u `web/` | sve | sve | da | da |
+| ostalo (`generators/<D>/v2/**`, ekrani, `public/`, `sw/`, `e2e/`, …, fajlovi van `web/`) | fajlovi čiji domet sadrži izmenu | isto | ako je izmena u grafu `src/main.tsx`, `public/`, `sw/`, `index.html`, `e2e/`, `playwright.config.ts` | ako je izmena u `web/` |
+
+Domet test fajla = zatvorenje grafa uvoza (statički, `export … from`, dinamički sa literalom, `vi.mock`, `?raw`, `@/`)
++ fajlovi koje modul u zatvorenju može da čita: `import.meta.url`/`__dirname`/`import.meta.glob` → ceo folder modula i
+svaka relativna putanja napisana u njemu (`` `./seg.${n}.json` `` → prefiks); `process.cwd()` → ceo `web/` (pregledan
+spisak `CWD_READS`, test traži da bude potpun); nerazrešen uvoz → ta putanja kao prefiks (nov ili obrisan fajl);
+`child_process` ili apsolutan uvoz → domet je sve (izuzeci pregledani u `PROCESS_READS`). Broj delova u izboru:
+zbir trajanja izabranih fajlova / 600 s (≈ 3,5 min na CI-ju), najviše 6 (v1: 2).
+
+Brz nivo za neizabrane ne trči: test čiji se nijedan ulaz nije promenio od zelenog run-a ne može da promeni ishod.
+
+### 13.2 Zašto je izbor bezbedan
+
+- Graf je nadskup `vitest --changed` (graf uvoza samog vitest-a): 40 izvornih fajlova (10 izabranih + 30 nasumičnih),
+  u svakom slučaju `select` 0 fajlova koje vitest bira a izbor ne; fajlovi za koje je odluka `all` pokreću sve.
+- `isTestFile` = tačno spisak `vitest list --filesOnly` punog nivoa sa svim projektima (524 fajla + nov test izbora).
+- Fajlovi koje testovi čitaju kroz `fs` (bazne linije, `docs/qa`, izvor za provere izolacije) ulaze kroz pravilo
+  foldera/niske/`cwd`; test izbora proverava stvarno stablo (nijedan test sa dometom „sve", `CWD_READS` potpun, HM v2 →
+  svi HM testovi i nijedna mreža maratona, bazna linija → bez E2E).
+- Nepoznato → sve.
+
+### 13.3 Lanac
+
+Zeleni run je zelen i kad je posao preskočen. Za svaki zeleni commit C sa polaznim (prethodnim zelenim) B: svaki test
+fajl je ili izabran i prošao na C, ili mu se nijedan ulaz (domet) nije promenio od B, pa mu je ishod na C isti kao na B,
+gde je proveren direktno ili, indukcijom, preko B-ovog polaznog. Zavisnosti i okruženje (lock, node, konfiguracija,
+workflow) su pravilo „sve". `main` uvek pokreće sve, pa se lanac grane zatvara pri spajanju. Otkazan ili pao run nije
+polazni.
+
+### 13.4 Ostalo u workflow-u
+
+- `web` = samo statičke provere (tipovi, lint, format, build); E2E je poseban posao `web-e2e` u 3 dela
+  (`playwright --shard`), pregledač iz keša (`~/.cache/ms-playwright`).
+- `.github/actions/web-deps`: `node_modules` iz keša po hešu `package-lock.json` (snima se odmah posle `npm ci`).
+- `web-test-v1`: 2 dela; ranije jedan posao ~10 min.
+- Posao „sve" upisuje trajanje svakog fajla (`TEST_DURATIONS_OUT`, reporter `scripts/test-durations.mjs`) kao artefakt
+  `test-durations-*`; `test-durations.json` je osvežen iz run-a 765 (469 fajlova), pa je 8 delova istog zbira.
