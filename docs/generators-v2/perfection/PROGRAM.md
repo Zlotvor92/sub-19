@@ -69,7 +69,7 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | V1a | Uklanjanje v1: popis i plan (bez koda) | gotovo (`d7df09e`, `reports/V1a-REPORT.md`) |
 | V1b | Uklanjanje v1 za 5K/10K/maraton + prevođenje testova (posle T1 i P1) | čeka T1, P1 |
 | V1c | Brisanje HM v1 (posle trke vlasnika 13. 12. 2026) | čeka datum |
-| P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP — `briefs/P1-hm-specificnost.md` | u toku |
+| P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP | gotovo (`3a57a15`, hm-v2.9.0, `reports/P1-REPORT.md`) |
 | P2 | Maraton: dugi sa MP blokom, dugi do 180 min — `briefs/P2-maraton-specificnost.md` | u toku |
 | P3 | 10K: plafon/lestvica RP, održavanje I — `briefs/P3-10k-specificnost.md` | u toku |
 | P4 | 5K | čeka |
@@ -110,3 +110,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 9. 11. 2026 (noć): P2 STOP (`9f4cbc8`): nedelja B bez MP treninga spušta ukupni MP 52 → 50 km; O2 (B zadržava MP trening) daje 69 km ali 177 nedelja > 25 % brzih km. Odluka: O3 (blok jedan nivo iznad max(blok, MP trening), MP trening nastavlja od max) + MP tapera od max; prag pada ukupnog MP ≤ 5 % po grupi (inače samo prijaviti); dugi ≤ 32 km uz 180 min; 3 dana i početnik bez nedelje B. Maraton se svesno razlikuje od HM (HM: B zadržava RP trening).
 - 9. 11. 2026 (noć): P1 STOP 2 (`0b6e944`): S1+S2 ugrađeni (ukupno RP 30 → 43 km, 2 duga sa blokom, 0 odbijanja, baza/razvoj bajt-isti); sudar pojasa plafona sa taperom (1365 planova bez kvaliteta u taperu). Odluka: RP tapera = najviši nivo ≤ min(60 %, plafon), min 2 × 2000 m; blok podleže plafonu RP; F 5–6 d bez B i 81 nedelja > 25 % prihvaćeni.
 - 10. 11. 2026 00:15: T1 primljen (tab je čekao dozvolu za poruku; izveštaj pročitan iz repoa). CI po dometu izmene: jedna distanca v2 12,7 → 5,6 min zida (≈ 90 → 32 runner-min), samo ekran 5,4 min (≈ 15 runner-min), `.claude/**` ne pokreće web poslove, „sve" 9,4–9,7 min. Pokrivenost „sve" ista (524 → 525 fajlova, razlika je nov test izbora). Otvoreno za V1b: 10 delova za „sve" (zid ≈ 8 min) i sabijanje lanca starih regresija 10K `earlyGrid` (≈ 8 % punog nivoa) — odluka: 10 delova da, sabijanje lanca ne (gubi dokaz uzroka starih izmena).
+- 10. 11. 2026 00:20: P1 primljen i proveren (organizator nezavisno generisao profil (a): poslednja nedelja izgradnje RP 2 × 5000 m + dugi 22,4 km sa 6 km RP; taper RP 2 × 2500 m + oštrenje). Ukupno RP 30 → 45 km, 2 duga sa blokom, 0 odbijanja, baza/razvoj bajt-isti; pun nivo HM v2 439/439, sabotaže 6/6. Prihvaćeno: fajl `marathon/v2/app/byteSame` (samo HM ključevi), prag lanaca u `segment07b`, B_WEEK_MISSING samo za plan bez adaptacije. Poznato, ostaje za P7: 16 nedelja tipa B sa 30–33 % brzih km (cilj 42–49 km).
