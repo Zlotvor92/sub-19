@@ -1,0 +1,108 @@
+ulaz: {"startDate":"2026-11-02","raceDate":"2027-02-21","runDays":["tue","thu","sat","sun"],"currentWeeklyKm":40,"recentResult":{"distanceM":10000,"timeSec":2760,"date":"2026-10-19"},"goalTimeSec":12693,"longRunDay":"sun","recentLongRunKm":14}
+policy marathon-v2 marathon-v2.8.0; vdot 44.1; nedelja 16
+
+ned 1 2026-11-02…2026-11-08 faza base — cilj 40 / plan 40 km
+  2026-11-03 q1        6.40 km 36 min, rad 4.9 min — WU 15 min + R 6 × 200 m (oporavak 200 m džog) + CD 10 min [doza R 1200 m, korak start]
+  2026-11-05 q2        6.20 km 34 min, rad 9.4 min — WU 15 min + T 2,0 km kontinuirano + CD 10 min [doza T_continuous 2000 m, korak start]
+  2026-11-07 easy      12.00 km 71 min — Lagano 12,0 km
+  2026-11-08 long      15.40 km 92 min — Dugi 15,4 km lagano
+  napomena: Dugi 15,4 km = plafon skoka max(1,1 × L; L + 1,0 km), L = 14,0 km (najduže dugo trčanje prethodne 4 nedelje ili skorašnje najduže trčanje) (M13a).
+
+ned 2 2026-11-09…2026-11-15 faza base — cilj 42.4 / plan 42.4 km
+  2026-11-10 q1        7.20 km 40 min, rad 6.5 min — WU 15 min + R 8 × 200 m (oporavak 200 m džog) + CD 10 min [doza R 1600 m, korak next]
+  2026-11-12 q2        7.20 km 39 min, rad 14.1 min — WU 15 min + T 3,0 km kontinuirano + CD 10 min [doza T_continuous 3000 m, korak next]
+  2026-11-14 easy      11.10 km 66 min — Lagano 11,1 km
+  2026-11-15 long      16.90 km 100 min — Dugi 16,9 km lagano
+
+ned 3 2026-11-16…2026-11-22 faza base — cilj 44.9 / plan 44.9 km
+  2026-11-17 q1        7.50 km 41 min, rad 7.4 min — WU 15 min + R 6 × 300 m (oporavak 300 m džog) + CD 10 min [doza R 1800 m, korak next]
+  2026-11-19 q2        8.20 km 44 min, rad 18.8 min — WU 15 min + T 4,0 km kontinuirano + CD 10 min [doza T_continuous 4000 m, korak next]
+  2026-11-21 easy      11.30 km 67 min — Lagano 11,3 km
+  2026-11-22 long      17.90 km 106 min — Dugi 17,9 km lagano
+
+ned 4 2026-11-23…2026-11-29 faza base RASTEREĆENJE — cilj 35.9 / plan 35.9 km
+  2026-11-24 easy      7.70 km 46 min — Lagano 7,7 km
+  2026-11-26 q2        6.20 km 34 min, rad 9.4 min — WU 15 min + T 2,0 km kontinuirano + CD 10 min [doza T_continuous 2000 m, korak deload]
+  2026-11-28 easy      7.70 km 46 min — Lagano 7,7 km
+  2026-11-29 long      14.30 km 85 min — Dugi 14,3 km lagano
+  napomena: Rasterećenje: cilj 35,9 km, jedan kvalitet (T), dugi 0,8 × poslednji ne-rasteretni (M5).
+
+ned 5 2026-11-30…2026-12-06 faza development — cilj 47.6 / plan 47.62 km
+  2026-12-01 q1        6.87 km 38 min, rad 8.7 min — WU 15 min + I 2 × 1000 m (oporavak 4:00 džog) + CD 10 min [doza I 2000 m, korak transition]
+  2026-12-03 q2        8.45 km 45 min, rad 18.8 min — WU 15 min + T 2 × 2000 m (oporavak 1:30 džog) + CD 10 min [doza T_cruise 4000 m, korak transition]
+  2026-12-05 easy      13.30 km 79 min — Lagano 13,3 km
+  2026-12-06 long      19.00 km 113 min — Dugi 19,0 km lagano
+
+ned 6 2026-12-07…2026-12-13 faza development — cilj 50.5 / plan 50.48 km
+  2026-12-08 q1        8.54 km 46 min, rad 13.0 min — WU 15 min + I 3 × 1000 m (oporavak 4:00 džog) + CD 10 min [doza I 3000 m, korak next]
+  2026-12-10 q2        9.34 km 50 min, rad 22.6 min — WU 15 min + T 3 × 1600 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 4800 m, korak next]
+  2026-12-12 easy      12.40 km 74 min — Lagano 12,4 km
+  2026-12-13 long      20.20 km 120 min — Dugi 20,2 km lagano
+
+ned 7 2026-12-14…2026-12-20 faza development — cilj 53.5 / plan 53.46 km
+  2026-12-15 q1        10.21 km 54 min, rad 17.3 min — WU 15 min + I 4 × 1000 m (oporavak 4:00 džog) + CD 10 min [doza I 4000 m, korak next]
+  2026-12-17 q2        9.25 km 49 min, rad 22.6 min — WU 15 min + T 2 × 2400 m (oporavak 1:30 džog) + CD 10 min [doza T_cruise 4800 m, korak alt]
+  2026-12-19 easy      12.60 km 75 min — Lagano 12,6 km
+  2026-12-20 long      21.40 km 127 min — Dugi 21,4 km lagano
+
+ned 8 2026-12-21…2026-12-27 faza development RASTEREĆENJE — cilj 42.8 / plan 42.77 km
+  2026-12-22 easy      9.50 km 56 min — Lagano 9,5 km
+  2026-12-24 q2        6.77 km 37 min, rad 11.3 min — WU 15 min + T 2 × 1200 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 2400 m, korak deload]
+  2026-12-26 easy      9.40 km 56 min — Lagano 9,4 km
+  2026-12-27 long      17.10 km 102 min — Dugi 17,1 km lagano
+  napomena: Rasterećenje: cilj 42,8 km, jedan kvalitet (T), dugi 0,8 × poslednji ne-rasteretni (M5).
+
+ned 9 2026-12-28…2027-01-03 faza specific — cilj 56.7 / plan 56.69 km
+  2026-12-29 q1        10.45 km 57 min, rad 30.7 min — WU 15 min + MP 2 × 3000 m (oporavak 1:30 džog) + CD 10 min [doza MP 6000 m, korak transition]
+  2026-12-31 q2        9.34 km 50 min, rad 22.6 min — WU 15 min + T 3 × 1600 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 4800 m, korak alt]
+  2027-01-02 easy      14.30 km 85 min — Lagano 14,3 km
+  2027-01-03 long      22.60 km 134 min — Dugi 22,6 km lagano
+
+ned 10 2027-01-04…2027-01-10 faza specific — cilj 60 / plan 60 km
+  2027-01-05 q1        12.45 km 67 min, rad 40.9 min — WU 15 min + MP 2 × 4000 m (oporavak 1:30 džog) + CD 10 min [doza MP 8000 m, korak next]
+  2027-01-07 q2        9.25 km 49 min, rad 22.6 min — WU 15 min + T 2 × 2400 m (oporavak 1:30 džog) + CD 10 min [doza T_cruise 4800 m, korak alt]
+  2027-01-09 easy      14.30 km 85 min — Lagano 14,3 km
+  2027-01-10 long      24.00 km 143 min — Dugi 24,0 km lagano
+
+ned 11 2027-01-11…2027-01-17 faza specific — cilj 60 / plan 59.98 km
+  2027-01-12 q1        14.54 km 78 min, rad 51.2 min — WU 15 min + MP 2 × 5000 m (oporavak 2:00 džog) + CD 10 min [doza MP 10000 m, korak next]
+  2027-01-14 q2        9.34 km 50 min, rad 22.6 min — WU 15 min + T 3 × 1600 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 4800 m, korak alt]
+  2027-01-16 easy      12.10 km 72 min — Lagano 12,1 km
+  2027-01-17 long      24.00 km 143 min — Dugi 24,0 km lagano
+
+ned 12 2027-01-18…2027-01-24 faza specific RASTEREĆENJE — cilj 48 / plan 47.97 km
+  2027-01-19 easy      11.00 km 65 min — Lagano 11,0 km
+  2027-01-21 q2        6.77 km 37 min, rad 11.3 min — WU 15 min + T 2 × 1200 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 2400 m, korak deload]
+  2027-01-23 easy      11.00 km 65 min — Lagano 11,0 km
+  2027-01-24 long      19.20 km 114 min — Dugi 19,2 km lagano
+  napomena: Rasterećenje: cilj 48,0 km, jedan kvalitet (T), dugi 0,8 × poslednji ne-rasteretni (M5).
+
+ned 13 2027-01-25…2027-01-31 faza specific — cilj 60 / plan 60.05 km
+  2027-01-26 q1        16.20 km 86 min, rad 61.4 min — WU 15 min + MP 12,0 km kontinuirano + CD 10 min [doza MP 12000 m, korak next]
+  2027-01-28 q2        9.25 km 49 min, rad 22.6 min — WU 15 min + T 2 × 2400 m (oporavak 1:30 džog) + CD 10 min [doza T_cruise 4800 m, korak alt]
+  2027-01-30 easy      10.60 km 63 min — Lagano 10,6 km
+  2027-01-31 long      24.00 km 143 min — Dugi 24,0 km lagano
+
+ned 14 2027-02-01…2027-02-07 faza taper — cilj 48 / plan 48.02 km
+  2027-02-02 q1        10.45 km 57 min, rad 30.7 min — WU 15 min + MP 2 × 3000 m (oporavak 1:30 džog) + CD 10 min [doza MP 6000 m, korak taper]
+  2027-02-04 q2        6.77 km 37 min, rad 11.3 min — WU 15 min + T 2 × 1200 m (oporavak 1:00 džog) + CD 10 min [doza T_cruise 2400 m, korak taper]
+  2027-02-06 easy      15.20 km 90 min — Lagano 15,2 km
+  2027-02-07 long      15.60 km 93 min — Dugi 15,6 km lagano
+  napomena: Taper (N−2): cilj 0,8 × vrh, MP i T ≈ 60 % poslednje doze, dugi ≤ 0,7 × najduži (M7).
+
+ned 15 2027-02-08…2027-02-14 faza taper — cilj 36 / plan 36.05 km
+  2027-02-09 q1        10.45 km 57 min, rad 30.7 min — WU 15 min + MP 2 × 3000 m (oporavak 1:30 džog) + CD 10 min [doza MP 6000 m, korak taper]
+  2027-02-11 easy      7.40 km 44 min — Lagano 7,4 km
+  2027-02-13 easy      7.40 km 44 min — Lagano 7,4 km
+  2027-02-14 long      10.80 km 64 min — Dugi 10,8 km lagano
+  napomena: Taper (N−1): cilj 0,6 × vrh, MP ≈ 50 % poslednje doze, bez T, dugi ≤ 0,5 × najduži (M7).
+
+ned 16 2027-02-15…2027-02-21 faza race — cilj 17.5 / plan 17.52 km
+  2027-02-16 easy      5.05 km 30 min — Lagano 30 min
+  2027-02-18 sharpener 8.54 km 47 min, rad 20.5 min — WU 15 min + MP 2 × 2000 m (oporavak 2:00 džog) + CD 10 min [doza MP_sharpener 4000 m, korak sharpener]
+  2027-02-20 eve       3.93 km 23 min, ubrzanja — Lagano 20 min + 4 × 20 s ubrzanja
+  2027-02-21 race      43.04 km 221 min, rad 215.9 min — Maraton 42,2 km (WU 5 min)
+  napomena: Trkačka nedelja: oštrenje 2 × 2000 m MP (≤ MP doza poslednje nedelje tapera 6,0 km); maraton 42,2 km se ne računa u obim (M8).
+upozorenje undefined: Najduže dugo trčanje u planu je 24,0 km; za maraton se preporučuje bar 26 km. Ograničava ga udeo dugog (najviše 40 % nedelje sa 4 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duže dugo trčanje.
+
+metrike: {"weeks":16,"m1":{"T":{"firstWeek":1,"firstMin":9.4,"maxMin":22.6,"maxWeek":7},"I":{"firstWeek":5,"firstMin":8.7,"maxMin":17.3,"maxWeek":7},"R":{"firstWeek":1,"firstMin":4.9,"maxMin":7.4,"maxWeek":3},"RP":{"firstWeek":9,"firstMin":30.7,"maxMin":61.4,"maxWeek":13}},"m2":{"first":0.14,"atMax":0.71},"m3":{"maxKm":12,"maxPct":28.4,"totalKm":52,"weeksWith":7},"m4":{"maxKm":24,"maxMin":143,"pct":56.9,"withFast":0,"plateau":3},"m5":0,"m6":{"tests":0,"weeksToRace":16,"paceVariants":{"R":1,"T":1,"I":1,"RP":1}},"m7":{"base":9.6,"development":12.9,"specific":20.2,"taper":17.1,"race":24.7},"m8":{"peakOverStart":1.5,"peakOverCurrent":1.5,"longShareAtPeak":0.4},"hold":{"R":"≤ 1 nivo nedeljno (faza se završila)","T":"plafon udela zone","I":"plafon udela zone","RP":"plafon udela zone"},"repro":{"checked":20,"same":20,"diff":[]}}

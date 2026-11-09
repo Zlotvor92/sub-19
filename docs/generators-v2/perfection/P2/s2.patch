@@ -1,0 +1,73 @@
+diff --git a/web/src/domain/generators/marathon/v2/policy.ts b/web/src/domain/generators/marathon/v2/policy.ts
+index 7d04021..93b8fd5 100644
+--- a/web/src/domain/generators/marathon/v2/policy.ts
++++ b/web/src/domain/generators/marathon/v2/policy.ts
+@@ -503,6 +503,8 @@ export const MARATHON_V2_POLICY = {
+     /** F2: poslednjih `weeks` nedelja izgradnje pred taperom (ne rasterećenje) dugi do `longMaxShare` nedelje i do
+         `longMaxSec` laganim tempom; skok dugog (M13a), T1 i rast obima ostaju. */
+     peakLong: { weeks: 3, longMaxShare: 0.5, longMaxSec: 10800 },
++    /** M13/M17 (P2-S2): plafon trajanja dugog početnika [s] sporim E — bez promene (150 min); vrh dugog: peakLong. */
++    longMaxSec: 9000,
+     /** WU/CD uvek prvi pojas M14. */
+     warmupSec: 900,
+     cooldownSec: 600
+@@ -699,7 +701,9 @@ export const MARATHON_V2_POLICY = {
+ 
+   /** M13 (udeo dugog: M15). */
+   lengths: {
+-    longMaxSec: 9000,
++    /** M13 (P2-S2, marathon-v2.9.0): plafon trajanja dugog redovnog plana [s] sporim E (pre 9000). Početnik:
++        beginner.longMaxSec. */
++    longMaxSec: 10800,
+     easyMinKm: 5.0,
+     longShortKm: 26,
+     /** MAR-11 (T1): izgradnja — lagan ≤ easyLongShare × dugi; najkraći lagan i ≥ easyMinSec laganim tempom. */
+@@ -855,6 +859,7 @@ export function planRule(count: number, experience: Experience = 'regular'): Pla
+       weeksMin: P.input.weeksMin,
+       feelTest: true,
+       longShortKm: P.lengths.longShortKm,
++      longMaxSec: P.lengths.longMaxSec,
+       fixedWarmupCooldown: null
+     };
+   const b = P.beginner;
+@@ -876,6 +881,7 @@ export function planRule(count: number, experience: Experience = 'regular'): Pla
+     weeksMin: b.weeksMin,
+     feelTest: false,
+     longShortKm: b.longShortKm,
++    longMaxSec: b.longMaxSec,
+     fixedWarmupCooldown: { warmupSec: b.warmupSec, cooldownSec: b.cooldownSec }
+   };
+ }
+diff --git a/web/src/domain/generators/marathon/v2/validate.ts b/web/src/domain/generators/marathon/v2/validate.ts
+index dcbb767..746e744 100644
+--- a/web/src/domain/generators/marathon/v2/validate.ts
++++ b/web/src/domain/generators/marathon/v2/validate.ts
+@@ -1388,11 +1388,13 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
+       // MAR-11 (T1): i dugi na udelu M15 — lagani ≤ 0,8 × dugi ne nose ostatak obima (kapacitet, CAPACITY_LIMITED).
+       if (
+         l10 === null ||
+-        (l10 !== longTimeCap10(pw(w)) && l10 !== longCap10(t10, rule, pw(w)) && l10 !== jump1)
++        (l10 !== longTimeCap10(pw(w), longMaxSecOf(rule)) &&
++          l10 !== longCap10(t10, rule, pw(w)) &&
++          l10 !== jump1)
+       )
+         err(
+           'VOLUME_START',
+-          `Ned 1 ${w.targetKm} km < trenutni obim bez dugog na ${P.lengths.longMaxSec / 60} min ili na pragu skorašnjeg najdužeg (M6, pouke 9 i 28).`,
++          `Ned 1 ${w.targetKm} km < trenutni obim bez dugog na ${longMaxSecOf(rule) / 60} min ili na pragu skorašnjeg najdužeg (M6, pouke 9 i 28).`,
+           1
+         );
+     }
+diff --git a/web/src/domain/generators/marathon/v2/volume.ts b/web/src/domain/generators/marathon/v2/volume.ts
+index 7be321c..cb95602 100644
+--- a/web/src/domain/generators/marathon/v2/volume.ts
++++ b/web/src/domain/generators/marathon/v2/volume.ts
+@@ -39,7 +39,7 @@ export function capacityMessage(
+   rule: PlanRule,
+   limits: readonly CapacityLimit[]
+ ): string {
+-  const min = `${Math.round(P.lengths.longMaxSec / 60)} min`;
++  const min = `${Math.round(longMaxSecOf(rule) / 60)} min`;
+   const share = `${Math.round(rule.longMaxShare * 100)} % nedelje`;
+   const what =
+     limits.length === 2
