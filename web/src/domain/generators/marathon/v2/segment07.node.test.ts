@@ -230,7 +230,8 @@ describe('N11: upozorenja i napomene', () => {
   });
 
   it('napomena „Cilj po pravilu … nije izvodljiv" ostaje u planu (validator), ne ide korisniku (aplikacija)', () => {
-    const p = planOf(grid('d3-12w-30km-v30-A-sat'));
+    // P2-S2 (dugi do 180 min): d3-12w-30km-v30 više nema neizvodljiv cilj — d3-12w-35km-v30.
+    const p = planOf(grid('d3-12w-35km-v30-A-sat'));
     const w = p.weeks.find((x) =>
       x.notes.some((n) => n.includes('nije izvodljiv u konstrukciji'))
     )!;

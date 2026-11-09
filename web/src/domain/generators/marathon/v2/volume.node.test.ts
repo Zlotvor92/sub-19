@@ -66,35 +66,47 @@ describe('M6 pravilo obima', () => {
 
   it('poruka kapaciteta imenuje ograničenje; preporuka više dana samo kad veći broj dana postoji u M15 (6 dana bez)', () => {
     expect(capacityMessage(4, rule, ['time'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5–6 dana.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 180 min; preporuka 5–6 dana.'
     );
     expect(capacityMessage(4, rule, ['share'])).toBe(
       '4 dana ne nose ovaj obim uz dugi ≤ 40 % nedelje; preporuka 5–6 dana.'
     );
     expect(capacityMessage(4, rule, ['time', 'share'])).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 150 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 180 min i ≤ 40 % nedelje; preporuka 5–6 dana.'
     );
     expect(capacityMessage(3, planRule(3)!, ['share'])).toBe(
       '3 dana ne nose ovaj obim uz dugi ≤ 50 % nedelje; preporuka 4–6 dana.'
     );
     expect(capacityMessage(5, planRule(5)!, ['time'])).toBe(
-      '5 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 6 dana.'
+      '5 dana ne nose ovaj obim uz dugi ≤ 180 min; preporuka 6 dana.'
     );
     expect(capacityMessage(6, planRule(6)!, ['time'])).toBe(
-      '6 dana ne nose ovaj obim uz dugi ≤ 150 min.'
+      '6 dana ne nose ovaj obim uz dugi ≤ 180 min.'
+    );
+    // P2-S2: gornja granica dugog 32 km (lengths.longKmCap10).
+    expect(capacityMessage(6, planRule(6)!, ['time', 'km', 'share'])).toBe(
+      '6 dana ne nose ovaj obim uz dugi ≤ 180 min i ≤ 32,0 km i ≤ 32 % nedelje.'
+    );
+    // Početnik: 150 min (bez promene, P2-S2).
+    expect(capacityMessage(4, planRule(4, 'beginner')!, ['time'])).toBe(
+      '4 dana ne nose ovaj obim uz dugi ≤ 150 min; preporuka 5 dana.'
     );
   });
 });
 
 describe('M6 u planu (pouke 1 i 9)', () => {
-  it('pouka 9: spor trkač velikog obima — ned 1 ispod obima samo uz dugi ned 1 na 150 min', () => {
+  it('pouka 9: spor trkač velikog obima — ned 1 ispod obima samo uz dugi ned 1 na plafonu (180 min ili udeo M15)', () => {
     const r = generateMarathonV2(inputOf({ weeks: 16, km: 65, vdot: 30, days: SCHEDULES.A.days }));
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const w1 = r.plan.weeks[0]!;
     expect(w1.targetKm).toBeLessThan(65);
     const long = w1.days.find((d) => d.role === 'long')!;
-    expect(Math.round(long.workout.km * 10)).toBe(longTimeCap10(r.plan.paces));
+    // MAR-11 (T1) i P2-S2: dugi ned 1 na plafonu trajanja (180 min) ili na udelu nedelje (lagani ≤ 0,8 × dugi).
+    expect([
+      longTimeCap10(r.plan.paces),
+      Math.floor(0.4 * Math.round(w1.targetKm * 10) + 1e-9)
+    ]).toContain(Math.round(long.workout.km * 10));
     expect(r.plan.warnings.map((w) => w.rule)).toContain('CAPACITY_LIMITED');
   });
 

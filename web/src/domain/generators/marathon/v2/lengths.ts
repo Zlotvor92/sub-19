@@ -144,9 +144,17 @@ export function recentLongNote(long10: number): string {
   return `Dugi ${fmtKm(long10 / 10)} km: ako ti je skorašnje najduže trčanje kraće od ${fmtKm(recentLongThreshold10(long10) / 10)} km, unesi ga — plan počinje od njega (M13a).`;
 }
 
-/** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje. */
+/** M13 (P2-S2): gornja granica dužine dugog [0,1 km] — 32,0 km. JEDNA funkcija za konstruktor (longCap10), validator
+    (LONG_KM) i poruku (capacityLimits 'km'). */
+export const longKmCap10 = (): number => Math.round(P.lengths.longMaxKm * 10);
+
+/** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje — min(udeo M15, trajanje, 32 km). */
 export function longCap10(target10: number, rule: DayRule, p: Paces): number {
-  return Math.min(longShareCap10(target10, rule), longTimeCap10(p, longMaxSecOf(rule)));
+  return Math.min(
+    longShareCap10(target10, rule),
+    longTimeCap10(p, longMaxSecOf(rule)),
+    longKmCap10()
+  );
 }
 
 /** `total10` na `n` jednakih delova u koraku 0,1 km; raniji dani dobijaju višak (razlika ≤ 0,1). */

@@ -15,7 +15,7 @@ import { doseOf } from './workouts.ts';
 describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.8.0');
+    expect(P.version).toBe('marathon-v2.9.0');
   });
 
   it('DECISIONS: M1–M18, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), A1–A15 i A17 (adaptacija, M18), svaka sa pravilom, mestom i obrazloženjem', () => {
@@ -45,7 +45,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'MAR-09',
       'MAR-10',
       'MAR-11',
-      'F-final'
+      'F-final',
+      'M19'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -193,7 +194,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, MP: 0.2 });
     expect(P.startLevel).toEqual({ capShare: 0.6 });
     expect(P.lengths).toEqual({
-      longMaxSec: 9000,
+      longMaxSec: 10800,
+      longMaxKm: 32,
       easyMinKm: 5,
       longShortKm: 26,
       easyLongShare: 0.8,
@@ -243,6 +245,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       tFirstKm: 1.5,
       longShortKm: 26,
       peakLong: { weeks: 3, longMaxShare: 0.5, longMaxSec: 10800 },
+      longMaxSec: 9000,
       warmupSec: 900,
       cooldownSec: 600
     });
@@ -262,6 +265,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       weeksMin: 16,
       feelTest: false,
       longShortKm: 26,
+      longMaxSec: 9000,
       fixedWarmupCooldown: { warmupSec: 900, cooldownSec: 600 }
     });
     expect(planRule(5, 'beginner')).toMatchObject({ quality: 1, easy: 3, kmMin: 30, kmMax: 50 });
@@ -279,8 +283,13 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
         weeksMin: 12,
         feelTest: true,
         longShortKm: 26,
+        longMaxSec: 10800,
         fixedWarmupCooldown: null
       });
+  });
+
+  it('M19 (P2-S1): smena A/B — lestvica bloka 8–16 km, blok ≤ 50 % dugog', () => {
+    expect(P.specific).toEqual({ blockKm: [8, 10, 12, 14, 16], blockMaxLongShare: 0.5 });
   });
 
   it('pouka 10 (M17): T kont. 1,5 km i T cruise staju u plafon pri najmanjem obimu početnika (i 1,5 km u rasterećenju); MP 2 × 3000 m tek od 30 km (T kont. umesto MP)', () => {

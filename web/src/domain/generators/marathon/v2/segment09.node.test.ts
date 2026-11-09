@@ -87,7 +87,8 @@ describe('t. 2: L skoka dugog po činjenicama (pouka 37 za L)', () => {
     // Ned 11–13 nisu trčane (pokrivenost): nisu L.
     const jl = jumpLongs10(r.plan.weeks, r.plan.adaptation!.steps, 15);
     expect(jl.slice(10, 13)).toEqual([null, null, null]);
-    expect(jl[9]).toBe(272);
+    // P2-S2: planirani dugi ned 10 = 32,0 km (180 min, granica 32 km; pre 27,2).
+    expect(jl[9]).toBe(320);
   });
 });
 

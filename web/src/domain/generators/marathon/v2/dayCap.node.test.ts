@@ -75,7 +75,8 @@ describe('pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži 
   });
 
   it('taper: MP spušten po lestvici, ispod 2 × 3000 m samo skraćen do trajanja dugog (M7a, MAR-11 T2), uz napomenu', () => {
-    const c = gridInputs().find((x) => x.id === 'd4-21w-55km-v45-A-sat')!;
+    // P2-S2 (dugi do 180 min): d4-21w-55km-v45 više nema taper spušten pouci 32 — primer sa manjim obimom.
+    const c = gridInputs().find((x) => x.id === 'd4-12w-35km-v35-A-sat')!;
     const r = generateMarathonV2(c.input);
     if (!r.ok) throw new Error(JSON.stringify(r.reasons));
     const t = r.plan.weeks.filter((w) => w.phase === 'taper');

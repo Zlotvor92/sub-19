@@ -1,0 +1,239 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P2/sabotage.json",
+ "head": "5a3581d",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 9.8,
+ "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+ "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P2-S1a raspored: prva nedelja od kraja je A (smena obrnuta)",
+   "files": [
+    "src/domain/generators/marathon/v2/specific.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S1 (M19): smena A/B, blok MP u dugom > profil (a): poslednja ne-rasteretna specifična nedelja je B, unazad smena; nedelja B bez MP treninga",
+    "message": "AssertionError: expected 'BABA' to be 'ABAB' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "9b8106e331230402666812858c16af0069a036a92cdbbaaa9ce9022226410301",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.1
+  },
+  {
+   "index": 2,
+   "name": "P2-S1b blok ne gleda poslednju MP dozu",
+   "files": [
+    "src/domain/generators/marathon/v2/specific.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S1 (M19): smena A/B, blok MP u dugom > profil (a): MP stimulus raste kroz obe vrste nedelja (O3) — MP 6 → blok 8 → MP 10 → blok 12 km",
+    "message": "AssertionError: expected [ 6, 8, 10, 10 ] to deeply equal [ 6, 8, 10, 12 ]"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "9ab48b11bb971df8461ad3158015bfb2d2ffe588e8df156ee28b0ac601701ede",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 3,
+   "name": "P2-S1c blok > 50 % dugog",
+   "files": [
+    "src/domain/generators/marathon/v2/specific.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S1 (M19): smena A/B, blok MP u dugom > blok: jedan nivo iznad max(poslednji blok, poslednja MP doza), ≤ 50 % dugog, ne opada",
+    "message": "AssertionError: expected 16 to be 10 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "b442aeddaac82ba7aa1c0b1b3143f7e4b0ea1aa149296ea75cdfc9704ee9cf70",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.1
+  },
+  {
+   "index": 4,
+   "name": "P2-S1d taper i MP trening ne nastavljaju od bloka (mpCarry bez dejstva)",
+   "files": [
+    "src/domain/generators/marathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "[{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DOSE_STALL: q1: sledeći nivo 10000 m staje u plafon, a nije uzet (M12).\",\"week\":11},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"SLOT_REPEAT: q1: ista doza iste strukture, a druga struktura postoji (M12).\",\"week\":11}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "4ecb8d1352a0f72372ebe1bcff372820722e21a98e1d88f95d5d7a3f62fff719",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 5,
+   "name": "P2-S1e validator ne proverava nivo bloka",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S1 (M19): smena A/B, blok MP u dugom > validator: blok van nedelje B, pogrešan nivo, MP trening u nedelji B, bez napomene → greška",
+    "message": "AssertionError: expected [ 'DOSE_STALL', 'SLOT_REPEAT' ] to include 'LONG_BLOCK'"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "5a8b5dd1dff829d8541ab7a876895ef60c1e3b4341910d06fc2bdb7157047cd7",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 6,
+   "name": "P2-S2a bez gornje granice dugog 32 km",
+   "files": [
+    "src/domain/generators/marathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S2 (M13): dugi do 180 min sporim E i do 32 km; početnik 150 min > veliki obim, brz trkač: najduži dugi tačno 32,0 km; validator LONG_KM",
+    "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 33,6 km > 32,0 km (M13).\",\"week\":5},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 35,2 km > 32,0 km (M13).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,8 km > 32,0 km (M13).\",\"week\":7},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":9},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":10},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":11},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":12},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":14},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":15},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"LONG_KM: Dugi 36,9 km > 32,0 km (M13).\",\"week\":17}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "8f975d1bb68b60f64c89c0da7d428385fa4d2f71470ff3783aa2b5656d8a49fc",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 7,
+   "name": "P2-S2b početnik dobija 180 min",
+   "files": [
+    "src/domain/generators/marathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S2 (M13): dugi do 180 min sporim E i do 32 km; početnik 150 min > plafon dugog: redovan 180 min, početnik 150 min, gornja granica 32,0 km",
+    "message": "AssertionError: expected 288 to be 240 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "fc80f8268b71528494456cf003926e820a037e1dbbc35c9c4c28d99b6edaa176",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 8,
+   "name": "P2-S3a umor broji dugi sa blokom kao lagan",
+   "files": [
+    "src/domain/generators/marathon/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S3 (A4, A5): adaptacija > umor: RPE ≥ 7 na dugom sa blokom se ne broji kao lagan trening (lagan dugi se broji)",
+    "message": "AssertionError: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "db8f33351825d0069a87bb517ff955399f05e40b00e8f9899c78bd7dbc6f97c8",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 9,
+   "name": "P2-S3b validator: dugi sa blokom na danu bola nije kvalitet (LIMITS)",
+   "files": [
+    "src/domain/generators/marathon/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/marathon/v2/p2.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/marathon/v2/p2.node.test.ts",
+    "test": "S3 (A4, A5): adaptacija > bol: nedelja sa ograničenjima nije tip B (dugi lagan); validator LIMITS za blok na danu bola",
+    "message": "AssertionError: expected [ 'LONG_BLOCK', 'LONG_BLOCK', …(2) ] to include 'LIMITS'"
+   },
+   "failedCount": 1,
+   "hashBefore": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "hashSabotaged": "4f90a64ea99a49f33c1d33461e59f2a1d387016a371cd72127c9140e0b61747c",
+   "hashAfter": "c10b5d921da71f8fe4c793d8be5d7fcff3c9a88c22b96be51b4f48eec31643ad",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.1
+  }
+ ]
+}

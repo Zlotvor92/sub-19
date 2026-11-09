@@ -16,12 +16,14 @@ import {
   taperTop10
 } from './lengths.ts';
 import { MARATHON_V2_POLICY as P, type PlanRule } from './policy.ts';
+import { chooseBlockKm } from './specific.ts';
 import {
   type BuildLimit,
   capM,
   type DayFits,
   deloadSlot,
   ladderFor,
+  lastMpM,
   pickBuild,
   pickDeload,
   pickTaper,
@@ -53,6 +55,7 @@ import {
   eveWorkout,
   fmtKm,
   ladderLevels,
+  longBlockWorkout,
   longWorkout,
   qualityDaySec,
   qualityWorkout,
@@ -559,7 +562,56 @@ export function buildWeek(
   jump10: number | null = null,
   drop = 0,
   under = false,
-  relaxT1 = false
+  relaxT1 = false,
+  bWeek = false
+): BuiltWeek | null {
+  const args = [
+    ctx,
+    frame,
+    target10,
+    quality,
+    lastLong10,
+    longest10,
+    taper,
+    mode,
+    jump10,
+    drop,
+    under,
+    relaxT1
+  ] as const;
+  // M19: nedelja tipa B po rasporedu (generate.ts: specific.specificTypes + bAllowed) — kad ne može da se sastavi
+  // (dužine, T dan, blok ne staje), nedelja je tip A uz napomenu.
+  if (bWeek && taper === null && !frame.deload && (mode === 'rule' || mode === 'relax')) {
+    const b = buildWeekIn(...args, true);
+    if (b) return b;
+    const a = buildWeekIn(...args, false);
+    return a ? { ...a, notes: [...a.notes, B_AS_A_NOTE] } : null;
+  }
+  return buildWeekIn(...args, false);
+}
+
+/** M19: napomena nedelje tipa B po rasporedu koja je sastavljena kao tip A (validator je čita). */
+export const B_AS_A_NOTE =
+  'Specifična nedelja: dugo trčanje sa delom u maratonskom tempu ove nedelje ne staje u granice dugog — nedelja ima trening u maratonskom tempu i lagan dugi (M19).';
+
+/** M19: napomena nedelje tipa B. */
+export const bWeekNote = (blockKm: number): string =>
+  `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog trčanja u maratonskom tempu; dan treninga u maratonskom tempu je lagan (M19).`;
+
+function buildWeekIn(
+  ctx: WeekContext,
+  frame: WeekFrame,
+  target10: number,
+  quality: QualityState,
+  lastLong10: number | null,
+  longest10: number,
+  taper: number | null,
+  mode: QualityMode,
+  jump10: number | null,
+  drop: number,
+  under: boolean,
+  relaxT1: boolean,
+  asB: boolean
 ): BuiltWeek | null {
   const p = ctx.paces;
   const pat = ctx.pattern;
@@ -841,6 +893,9 @@ export function buildWeek(
       if (d0 && d.doseM < d0.doseM) oneLow = [d0, d];
     }
   } else {
+    // M19: nedelja B — dan Q1 (MP trening) je lagan (stanje MP slota se ne menja), Q2 = T cruise po svojoj progresiji
+    // (drugi član pouke 32 uz jedan lagan dan više i bez Q1).
+    if (asB && (test || intro)) return null;
     picks = pickBuild(
       quality,
       frame.phase,
@@ -848,11 +903,11 @@ export function buildWeek(
       p,
       rule,
       mode === 'relax',
-      test,
+      test || asB,
       buildDayLimit(
         dlc,
         target10,
-        pat.easy.length - drop,
+        pat.easy.length - drop + (asB ? 1 : 0),
         jump10,
         rule.quality === 2 ? ladderFor(frame.phase, 'q2') : null,
         test ? testWorkout(p, ctx.wc) : null
@@ -885,6 +940,20 @@ export function buildWeek(
   const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
   let len = buildLengths(target10, q100, dates.length, rule, p, jump10, under, relaxT1);
   if (!len) return null;
+  // M19: blok MP na kraju dugog (dužina dugog ostaje ona iz lengths.ts); ne staje → nedelja nije tip B.
+  const blockKm = asB
+    ? chooseBlockKm(
+        len.long10,
+        quality.blockM ?? 0,
+        lastMpM(quality),
+        rule,
+        p,
+        w2 ? [w2.sec] : [],
+        longWorkout(len.long10 / 10, p).sec
+      )
+    : null;
+  if (asB && (blockKm === null || !w2)) return null;
+  if (blockKm !== null && picks) picks = { ...picks, blockM: Math.round(blockKm * 1000) };
   const notes: string[] = oneLow
     ? [
         lowerNote(
@@ -919,6 +988,7 @@ export function buildWeek(
       `Uvod (M17): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`
     );
   else if (test) notes.push(testNote);
+  else if (blockKm !== null) notes.push(bWeekNote(blockKm));
   else if (reduced) {
     // Napomena režima (limitNote).
   } else if (!w1)
@@ -948,7 +1018,13 @@ export function buildWeek(
       ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
       ...(w2 ? [day(dateOf(frame, pat.q2!), 'q2', w2)] : []),
       ...(one && wo ? [day(dateOf(frame, one.day), one.day === pat.q1 ? 'q1' : 'q2', wo)] : []),
-      day(dateOf(frame, pat.long), 'long', longWorkout(len.long10 / 10, p)),
+      day(
+        dateOf(frame, pat.long),
+        'long',
+        blockKm !== null
+          ? longBlockWorkout(len.long10 / 10, blockKm, p, ctx.feel)
+          : longWorkout(len.long10 / 10, p)
+      ),
       ...easyDays(dates, len.easy10, p)
     ],
     len.long10,

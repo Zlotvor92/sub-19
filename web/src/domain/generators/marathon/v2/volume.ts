@@ -6,6 +6,7 @@ import {
   jumpLongs10,
   longCap10,
   longJumpCap10,
+  longKmCap10,
   longMaxSecOf,
   longRuleOf,
   longShareCap10,
@@ -29,7 +30,7 @@ const EPS = 1e-9;
 export const to10 = (km: number): number => Math.round(km * 10);
 
 /** Šta je seklo spuštenu nedelju izgradnje — dugi na 150 min ('time') i/ili na udelu M15 ('share'). */
-export type CapacityLimit = 'time' | 'share';
+export type CapacityLimit = 'time' | 'share' | 'km';
 
 /** M6: poruka CAPACITY_LIMITED — imenuje stvarno ograničenje; preporučuje više dana samo kad veći broj
     dana postoji u tabeli M15 (početnik: M17) (6 dana, početnik 5 → bez preporuke dana; preporuka kraće
@@ -39,16 +40,12 @@ export function capacityMessage(
   rule: PlanRule,
   limits: readonly CapacityLimit[]
 ): string {
-  const min = `${Math.round(P.lengths.longMaxSec / 60)} min`;
-  const share = `${Math.round(rule.longMaxShare * 100)} % nedelje`;
-  const what =
-    limits.length === 2
-      ? ` uz dugi ≤ ${min} i ≤ ${share}`
-      : limits[0] === 'time'
-        ? ` uz dugi ≤ ${min}`
-        : limits[0] === 'share'
-          ? ` uz dugi ≤ ${share}`
-          : '';
+  const parts = [
+    ...(limits.includes('time') ? [`${Math.round(longMaxSecOf(rule) / 60)} min`] : []),
+    ...(limits.includes('km') ? [`${fmtKm(longKmCap10() / 10)} km`] : []),
+    ...(limits.includes('share') ? [`${Math.round(rule.longMaxShare * 100)} % nedelje`] : [])
+  ];
+  const what = parts.length > 0 ? ` uz dugi ≤ ${parts.join(' i ≤ ')}` : '';
   const more = (rule.beginner ? BEGINNER_DAYS_COUNTS : RUN_DAYS_COUNTS).filter((n) => n > runDays);
   const advice =
     more.length === 0
@@ -152,6 +149,7 @@ export function capacityLimits(
 ): CapacityLimit[] {
   let time = false;
   let share = false;
+  let km = false;
   for (const w of capacityWeeks(weeks, rule, pacesOf, recentLongRunKm, steps)) {
     const long = w.days.find((d) => d.role === 'long');
     if (!long) continue;
@@ -159,8 +157,13 @@ export function capacityLimits(
     const lr = longRuleOf(rule, beginnerOf(rule), weeks, w.index);
     if (l10 === longTimeCap10(pacesOf(w.index), longMaxSecOf(lr))) time = true;
     if (l10 === longShareCap10(to10(w.targetKm), lr)) share = true;
+    if (l10 === longKmCap10()) km = true;
   }
-  return [...(time ? ['time' as const] : []), ...(share ? ['share' as const] : [])];
+  return [
+    ...(time ? ['time' as const] : []),
+    ...(km ? ['km' as const] : []),
+    ...(share ? ['share' as const] : [])
+  ];
 }
 
 /** M15 (Uslov 8, pouka 24): minimum nedelje [0,1 km] — JEDNA definicija za pretragu cilja (fit10), donju granicu

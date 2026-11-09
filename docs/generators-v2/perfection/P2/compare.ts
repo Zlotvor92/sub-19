@@ -67,3 +67,15 @@ console.log(`orijentir: R sa vrhom ≥ 60 km/ned, najveći blok ≥ 14 km: ${b60
 const v45 = B.filter((r) => r.m && r.family === "R" && vdot(r) >= 45);
 console.log(`orijentir: R VDOT ≥ 45, najduži dugi ≥ 28 km: ${v45.filter((r) => r.m.m4.maxKm >= 28).length}/${v45.length}`);
 if (process.argv[4] === "ids") console.log(changedIds.join("\n"));
+console.log("\n## ukupno MP po grupi dana (sve porodice; prag organizatora: pad medijane ≤ 5 %)");
+for (const d of [3, 4, 5, 6]) {
+  const xa = A.filter((r) => r.m && r.days === d).map((r) => r.m.m3.totalKm), xb = B.filter((r) => r.m && r.days === d).map((r) => r.m.m3.totalKm);
+  const ma = med(xa), mb = med(xb);
+  console.log(`  ${d} d: ${r1(ma)} → ${r1(mb)} (${r1((100 * (mb - ma)) / ma)} %), n ${xb.length}`);
+}
+for (const fam of ["R", "F"]) for (const d of [4, 5, 6]) {
+  const xa = A.filter((r) => r.m && r.days === d && r.family === fam).map((r) => r.m.m3.totalKm), xb = B.filter((r) => r.m && r.days === d && r.family === fam).map((r) => r.m.m3.totalKm);
+  console.log(`  ${fam} ${d} d: ${r1(med(xa))} → ${r1(med(xb))} (${r1((100 * (med(xb) - med(xa))) / med(xa))} %)`);
+}
+const at32 = B.filter((r) => r.m && r.m.m4.maxKm >= 32 - 1e-9);
+console.log(`planova sa najdužim dugim = 32,0 km (${b}): ${at32.length}; ${a} > 32 km: ${A.filter((r) => r.m && r.m.m4.maxKm > 32 + 1e-9).length}`);

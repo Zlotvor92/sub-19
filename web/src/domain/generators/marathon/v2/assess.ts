@@ -12,6 +12,7 @@ import { isBuildPhase } from './periodize.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { stepVdotAt } from './steps.ts';
 import { returnAnchor, returnBase10 } from './volume.ts';
+import { longBlockKm } from './workouts.ts';
 import type {
   AdaptReason,
   BreakFact,
@@ -473,7 +474,10 @@ export function assess(
     return (
       t - day(x.date) < A.windowDays &&
       (x.rpe ?? 0) >= A.fatigueRpe &&
-      (!d || d.workout.kind === 'easy' || d.workout.kind === 'long')
+      // M19 (S3): dugi sa blokom u MP nije lagan trening (RPE ≥ 7 tu ne znači umor).
+      (!d ||
+        d.workout.kind === 'easy' ||
+        (d.workout.kind === 'long' && longBlockKm(d.workout) === 0))
     );
   });
   if (easyHard.length >= A.fatigueCount) {

@@ -28,7 +28,7 @@ import { MARATHON_V2_SOURCE_FORMAT, rawFacts } from './preparation.ts';
 
 const ofId = (id: string) => TM.gridInputs().find((c) => c.id === id)!.input;
 /** 13 nedelja, 3 dana, 35 km, VDOT 55: najduži dugi 26,2 km. Pauza 35 d u nedelji 2 → 18,5 km; test 5 km (25:00) →
- *  21,9 km (ograničen trajanjem 150 min). Trka subota 2027-01-30 / nedelja 2027-01-31. */
+ *  21,9 km (ograničen trajanjem 150 min; P2-S2: 180 min — test 5 km 27:30 → 23,6 km). Trka subota 2027-01-30 / nedelja 2027-01-31. */
 const BASE = ofId('d3-13w-35km-v55-A-sat');
 const BASE_SUN = ofId('d3-13w-35km-v55-A-sun');
 const AS_OF = '2026-11-14' as IsoDate;
@@ -42,6 +42,19 @@ function adapted(input: unknown, scenario: TM.Scenario, asOf: string): MarathonV
   const g = generateMarathonV2(input);
   if (!g.ok) throw new Error('generator odbio ulaz');
   const r = adaptMarathonV2(g.plan, TM.factsOf(g.plan, scenario, asOf), asOf);
+  if (!r.ok) throw new Error('adaptacija odbijena');
+  return r.plan;
+}
+/** P2-S2 (dugi do 180 min): test 5 km 27:30 — dugi ostaje ograničen trajanjem ispod praga 26 km (sa 24:30 iz
+    scenarija test5k najduži dugi sada prelazi prag). */
+function adaptedSlowTest(input: unknown, asOf: string): MarathonV2Plan {
+  const g = generateMarathonV2(input);
+  if (!g.ok) throw new Error('generator odbio ulaz');
+  const r = adaptMarathonV2(
+    g.plan,
+    { results: [{ distM: 5000, sec: 1650, date: asOf as IsoDate, kind: 'test' }] },
+    asOf
+  );
   if (!r.ok) throw new Error('adaptacija odbijena');
   return r.plan;
 }
@@ -76,11 +89,11 @@ describe('3e: okidač (O1) — jedna funkcija, prelaz', () => {
   });
 
   it('rezultat (test 5 km): dugi ograničen trajanjem (N11: bez upozorenja, rečenica plana) → ponuda iz istog praga', () => {
-    const v2 = adapted(BASE, 'test5k', AS_OF);
+    const v2 = adaptedSlowTest(BASE, AS_OF);
     const ls = longShortOf(v2.weeks, 26, weekPaces(v2))!;
-    expect(ls).toEqual({ longestKm: 21.9, timeCapped: true, capSec: 9000 });
+    expect(ls).toEqual({ longestKm: 23.6, timeCapped: true, capSec: 10800 });
     expect(v2.warnings.some((w) => w.rule === 'MARATHON_LONG_SHORT')).toBe(false);
-    expect(v2.notes).toContain(longTimeCapNote(21.9, 26, false));
+    expect(v2.notes).toContain(longTimeCapNote(23.6, 26, false));
     expect(shorterOffer(v2, AS_OF)).toBe(true);
   });
 
@@ -256,7 +269,7 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     // nema rezultat do tog dana → v1 nedostupan; potvrđeno izvršenje (start = sutra) nosi rezultat koraka → HM v1.
     const feel = TM.feelInputs().find((c) => c.id === 'feel-d4-14w-50km-e270-B')!.input;
     const at = '2026-11-15' as IsoDate;
-    const v2 = adapted(feel, 'test5k', at);
+    const v2 = adaptedSlowTest(feel, at);
     expect(shorterOffer(v2, at)).toBe(true);
     const step = v2.adaptation!.steps.find((x) => x.result)!.result!;
     const src = stored(v2);

@@ -25,6 +25,7 @@ import { keptKm100, mixedNote, mixedRest, pauseOwned } from './mixed.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
 import { same } from './same.ts';
+import { bAllowed, specificTypes } from './specific.ts';
 import {
   basePaces,
   basisAt,
@@ -63,7 +64,7 @@ import {
   startKm10
 } from './volume.ts';
 import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
-import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
+import { fmtKm, fmtSec, longBlockKm, warmupCooldown } from './workouts.ts';
 import { type Written, writtenDays, writtenWeeks } from './written.ts';
 
 const infeasible = (message: string, week?: number): GenerateResult => ({
@@ -116,10 +117,15 @@ const planned100Of = (days: readonly PlanDay[]): number =>
   days.reduce((a, d) => a + (d.countsToWeek ? Math.round(d.workout.km * 100) : 0), 0);
 
 /** Prošlost = upisani dani (pouka 29): izbor doze nedelje (stanje M12) iz upisanih dana kvaliteta. */
-const writtenPicks = (days: readonly PlanDay[]): Picks => ({
-  q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
-  q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null
-});
+const writtenPicks = (days: readonly PlanDay[]): Picks => {
+  const long = days.find((d) => d.role === 'long');
+  const blockM = long ? Math.round(longBlockKm(long.workout) * 1000) : 0;
+  return {
+    q1: days.find((d) => d.role === 'q1')?.workout.dose ?? null,
+    q2: days.find((d) => d.role === 'q2')?.workout.dose ?? null,
+    ...(blockM > 0 ? { blockM } : {})
+  };
+};
 
 export function generateMarathonV2(raw: unknown): GenerateResult {
   return construct(raw, []);
@@ -192,6 +198,8 @@ export function construct(
     const p = pacesAt(pace, steps, w, km);
     return { ...ctx0, paces: p, raceSec: predictedMarathon(p), feel: false, ...reduced };
   };
+  // M19: raspored tipova A/B specifične faze iz okvira (posle koraka adaptacije: iz adaptiranih okvira, S3).
+  const types = specificTypes(frames, rule);
   const restarts = restartWeeks(steps);
   const doseRestarts = doseRestartWeeks(steps);
 
@@ -261,6 +269,9 @@ export function construct(
     let drop = 0;
     let under = false;
     let relaxT1 = false;
+    // M19 (S3): nedelja tipa B po rasporedu, bez ograničenja koraka i testa, sa ciljem po pravilu (ne povratak ni nov
+    // start koji ide samo naniže, A3/A8).
+    const bWeek = types.get(frame.index) === 'B' && bAllowed(frame, !downOnly);
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
         ctx,
@@ -274,7 +285,8 @@ export function construct(
         jump10,
         drop,
         under,
-        relaxT1
+        relaxT1,
+        bWeek
       );
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
     // (week.ts 'relax'): M11 ispred M12 u izgradnji, zona tapera koja ne staje u plafon otpada. Segment 04

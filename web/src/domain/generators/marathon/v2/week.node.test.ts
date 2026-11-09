@@ -24,12 +24,14 @@ describe('izgradnja (M10, M13, M14)', () => {
   beforeAll(() => {
     p = plan();
   });
-  it('uloge po šablonu, dugi = min(40 % cilja, 150 min) i ≥ lagan, lagan ≥ 5 km, planirano = cilj', () => {
+  it('uloge po šablonu, dugi = min(40 % cilja, 180 min, 32 km) i ≥ lagan, lagan ≥ 5 km, planirano = cilj', () => {
     for (const w of p.weeks.filter(
       (x) => !x.deload && ['base', 'development', 'specific'].includes(x.phase)
     )) {
+      // M19: nedelja B — dan MP treninga (Q1) je lagan, dugi nosi blok MP.
+      const b = role(w, 'long')[0]!.workout.workKm.MP > 0;
       expect(w.days.map((d) => `${d.weekday}:${d.role}`)).toEqual([
-        'tue:q1',
+        b ? 'tue:easy' : 'tue:q1',
         'thu:q2',
         'sat:easy',
         'sun:long'
@@ -37,7 +39,7 @@ describe('izgradnja (M10, M13, M14)', () => {
       const long = role(w, 'long')[0]!;
       const easy = role(w, 'easy')[0]!;
       expect(to10(long.workout.km)).toBe(
-        Math.min(Math.floor(0.4 * to10(w.targetKm) + 1e-9), longTimeCap10(p.paces))
+        Math.min(Math.floor(0.4 * to10(w.targetKm) + 1e-9), longTimeCap10(p.paces), 320)
       );
       expect(long.workout.km).toBeGreaterThanOrEqual(easy.workout.km);
       expect(easy.workout.km).toBeGreaterThanOrEqual(5);
@@ -185,10 +187,11 @@ describe('M8 trkačka nedelja', () => {
 
 describe('M13 upozorenje MARATHON_LONG_SHORT', () => {
   it('najduži dugi < 26 km → upozorenje; ≥ 26 km → bez upozorenja', () => {
-    // N11 (MAR-07): upozorenje samo kad dugi NIJE na 150 min (VDOT 40: 150 min → napomena plana; VDOT 70: udeo).
+    // N11 (MAR-07): upozorenje samo kad dugi NIJE na plafonu trajanja (P2-S2: 180 min; VDOT 32: 180 min → napomena
+    // plana; VDOT 70: udeo).
     const short = plan({ km: 40, vdot: 70 });
     expect(short.warnings.map((w) => w.rule)).toContain('MARATHON_LONG_SHORT');
-    const capped = plan({ km: 40, vdot: 40 });
+    const capped = plan({ km: 40, vdot: 32 });
     expect(capped.warnings.map((w) => w.rule)).not.toContain('MARATHON_LONG_SHORT');
     expect(capped.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(true);
     const long = plan({ weeks: 20, km: 65, vdot: 60 });

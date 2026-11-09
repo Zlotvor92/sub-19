@@ -93,7 +93,8 @@ describe('F1: tekst korisniku', () => {
   });
 
   it('„Vrh X km umesto do X km" se ne prikazuje kad su vrednosti iste', () => {
-    const p = planOf({ weeks: 18, km: 50, days: D4, vdot: 45 });
+    // P2-S2 (dugi do 180 min): VDOT 45 više ne seče kapacitet — VDOT 40.
+    const p = planOf({ weeks: 18, km: 50, days: D4, vdot: 40 });
     const cap = p.notes.find((n) => n.includes('ne nose ovaj obim'))!;
     expect(cap).toBeDefined();
     expect(p.peakKm).toBe(p.peakCapKm);
@@ -118,7 +119,7 @@ describe('F1: tekst korisniku', () => {
 });
 
 describe('F2: najduži dugi početnika', () => {
-  it('poslednje 3 nedelje izgradnje pred taperom (ne rasterećenje): dugi do 50 % i 180 min; ostale nedelje 40 % / 150 min', () => {
+  it('poslednje 3 nedelje izgradnje pred taperom (ne rasterećenje): dugi do 50 % i 180 min; ostale nedelje 40 % / 150 min (P2-S2: početnik bez promene)', () => {
     const input = inputOf({ weeks: 20, km: 30, days: D4, easyPace: 420, experience: 'beginner' });
     const p = planOf({ weeks: 20, km: 30, days: D4, easyPace: 420, experience: 'beginner' });
     const rule = planRule(4, 'beginner')!;
@@ -127,7 +128,7 @@ describe('F2: najduži dugi početnika', () => {
       const r = longRuleOf(rule, true, p.weeks, w.index);
       const peak = w.index >= taper - 3 && w.index < taper && !w.deload;
       expect(r.longMaxShare, `ned ${w.index}`).toBe(peak ? 0.5 : rule.longMaxShare);
-      expect(r.longMaxSec ?? P.lengths.longMaxSec).toBe(peak ? 10800 : P.lengths.longMaxSec);
+      expect(r.longMaxSec).toBe(peak ? 10800 : P.beginner.longMaxSec);
     }
     // Pre: 18,0 km (udeo 40 %); posle: duži, uz skok dugog.
     expect(longest(p)).toBeGreaterThan(18);

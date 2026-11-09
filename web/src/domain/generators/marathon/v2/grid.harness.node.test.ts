@@ -40,8 +40,11 @@ export const BASELINE_01 = join(HERE, 'segment01.baseline.json');
 /** MAR-11 (marathon-v2.7.0, T1/T2): od njih bajt-isti ostaju samo planovi koji na b9c4728 nemaju ni lagan > 0,8 ×
     dugi u nedelji izgradnje (T1) ni dan MP tapera duži od dugog (T2) — segment11.stable-b9c4728.json (podskup
     segment04b.stable-bd07eec.json; docs/marathon-v2/artifacts/segment-11/classify.ts). */
+/** P2 (marathon-v2.9.0, M19 / S2): od njih bajt-isti ostaju samo planovi koje P2 ne menja na 38fd091 —
+    segmentP2.stable-38fd091.json (podskup segment11.stable-b9c4728.json; docs/generators-v2/perfection/P2/classify.ts,
+    promenjeni po klasi u P2/changed-38fd091.json). */
 export const STABLE = new Set(
-  JSON.parse(readFileSync(join(HERE, 'segment11.stable-b9c4728.json'), 'utf8')) as string[]
+  JSON.parse(readFileSync(join(HERE, 'segmentP2.stable-38fd091.json'), 'utf8')) as string[]
 );
 
 export const ALL: readonly GridInput[] = gridInputs();
@@ -172,7 +175,8 @@ export function before07(p0: MarathonV2Plan): MarathonV2Plan {
       message:
         `Najduži dugi trk u planu je ${String(longest).replace('.', ',')} km; za maraton se preporučuje bar ${rule.longShortKm} km (${beginner ? 'M17' : 'M13'}). ` +
         (beginner ? 'Početnik: cilj je završiti maraton. ' : '') +
-        `Ograničava ga trajanje (≤ ${P.lengths.longMaxSec / 60} min laganim tempom) — namerna granica opterećenja; ostatak obima nose ostali dani.`
+        // Tekst pre MAR-07 (bazne linije): granica je tada bila 150 min za sve (P2-S2 je menja samo za redovan plan).
+        `Ograničava ga trajanje (≤ 150 min laganim tempom) — namerna granica opterećenja; ostatak obima nose ostali dani.`
     });
   }
   for (const v of w) {
@@ -264,7 +268,9 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     // Pouka 35 (MAR-07): drugi dan kvaliteta lagan kad bi dan kvaliteta bio duži od dugog (napomena nedelje); nedelja
     // sa dva kvaliteta i danom dužim od dugog ostaje samo uz upozorenje pouke 14 (jedan kvalitet neizvodljiv).
     const easy35 = w.notes.some((n) => n.endsWith('(pouka 35).'));
-    if (isSteady(w) && q.length !== want - (easy35 ? 1 : 0))
+    // M19: nedelja B — dan MP treninga je lagan, dugi sa blokom MP je drugi zahtevni dan (zamenjuje kvalitet).
+    const block = w.days.some((d) => d.role === 'long' && d.workout.workKm.MP > 0) ? 1 : 0;
+    if (isSteady(w) && q.length + block !== want - (easy35 ? 1 : 0))
       no(`izgradnja bez ${want} kvaliteta ned ${w.index}`);
     const long0 = w.days.find((d) => d.role === 'long');
     if (
@@ -305,8 +311,23 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     const share = peakLong ? 0.5 : rule.longMaxShare;
     if (to10(long.workout.km) > Math.floor(share * to10(w.targetKm) + 1e-9))
       no(`dugi > udeo ned ${w.index}`);
-    if (long.workout.km * p.paces.E.slow > (peakLong ? 10800 : 9000) + 1e-6)
-      no(`dugi > ${peakLong ? 180 : 150} min ned ${w.index}`);
+    // P2-S2: redovan plan 180 min i ≤ 32 km; početnik 150 min (vrh dugog F2: 180 min).
+    const capSec = peakLong || !beginner ? 10800 : 9000;
+    if (long.workout.km * p.paces.E.slow > capSec + 1e-6)
+      no(`dugi > ${capSec / 60} min ned ${w.index}`);
+    if (long.workout.km > 32 + 1e-9) no(`dugi > 32 km ned ${w.index}`);
+    // M19 (nezavisno od specific.ts): blok MP u dugom samo u ne-rasteretnoj specifičnoj nedelji redovnog plana 4–6
+    // dana, ≤ 50 % dugog, na kraju dugog, uz lagan dan MP treninga (bez MP treninga te nedelje).
+    const blk = long.workout.workKm.MP;
+    if (blk > 0) {
+      const seg = long.workout.segments;
+      if (beginner || rule.quality !== 2 || w.phase !== 'specific' || w.deload)
+        no(`blok MP van nedelje B ned ${w.index}`);
+      if (blk > 0.5 * long.workout.km + 1e-9) no(`blok > 50 % dugog ned ${w.index}`);
+      if (seg[seg.length - 1]?.zone !== 'MP') no(`blok nije na kraju dugog ned ${w.index}`);
+      if (w.days.some((d) => d.workout.kind === 'quality' && d.workout.workKm.MP > 0))
+        no(`nedelja B sa MP treningom ned ${w.index}`);
+    }
     // Plafoni po treningu (M11), iz politike — nezavisno od quality.capM. M7a: MP u taperu je doza M7
     // (minimum 2 × 3000 m ispred plafona) — proverava se ispod.
     for (const d of w.days)
@@ -342,9 +363,15 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
       !w.notes.some((n) => n.endsWith('(pouka 35).')) &&
       w.days.some((d) => d.workout.kind === 'quality')
   );
-  for (let i = 1; i < steady.length; i++)
-    if (mainM(steady[i]!) < mainM(steady[i - 1]!) && steady[i]!.fitted !== 'down')
-      no(`glavna doza opada ned ${steady[i]!.index}`);
+  // M19 (O1): poređenje unutar tipa — nedelja sa blokom MP u dugom (B) sa prethodnom B, ostale sa prethodnom ne-B.
+  const isB = (w: PlanWeek): boolean =>
+    w.days.some((d) => d.role === 'long' && d.workout.workKm.MP > 0);
+  for (const kind of [true, false]) {
+    const seq = steady.filter((w) => isB(w) === kind);
+    for (let i = 1; i < seq.length; i++)
+      if (mainM(seq[i]!) < mainM(seq[i - 1]!) && seq[i]!.fitted !== 'down')
+        no(`glavna doza opada ned ${seq[i]!.index}`);
+  }
   // Ned 1 = trenutni obim; ispod samo uz dugi na 150 min (pouka 9) ili na pragu skorašnjeg najdužeg
   // max(1,1 r; r + 1) (pouka 28) — prag računat ovde, nezavisno od lengths.ts.
   const w1 = W[0]!;
@@ -363,7 +390,13 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
   if (w1.targetKm > p.startKm) no('ned 1 iznad obima');
   // MAR-11 (T1): i dugi na udelu nedelje (lagani ≤ 0,8 × dugi ne nose ostatak — kapacitet).
   const shareCap1 = Math.floor(rule.longMaxShare * to10(w1.targetKm) + 1e-9);
-  if (w1.targetKm < p.startKm && l1 !== longTimeCap10(p.paces) && l1 !== rCap && l1 !== shareCap1)
+  if (
+    w1.targetKm < p.startKm &&
+    l1 !== longTimeCap10(p.paces, beginner ? 9000 : 10800) &&
+    l1 !== 320 &&
+    l1 !== rCap &&
+    l1 !== shareCap1
+  )
     no('ned 1 ispod obima bez dugog na plafonu');
   // Taper (M7): cilj ≤ 0,8 / 0,6 × vrh; N−1 bez T.
   const [t0, t1, rw] = [W[N - 3]!, W[N - 2]!, W[N - 1]!];
