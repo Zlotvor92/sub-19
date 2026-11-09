@@ -65,6 +65,7 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | Segment | Sadržaj | Stanje |
 |---|---|---|
 | P0 | Merna osnova trenerskih metrika, sve 4 distance, bez izmene generatora | u toku |
+| T1 | Brži CI i testovi: izbor po dometu izmene, E2E, v1 (uporedo sa P0) | u toku |
 | P1 | HM: specifičan dugi, doza T/RP | čeka P0 |
 | P2 | Maraton: ista klasa (MP u dugom, doza) | čeka |
 | P3 | 10K | čeka |
@@ -83,3 +84,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 
 - 9. 11. 2026: program otvoren; P0 izdat (Opus 5.5, sesija session_01GnHHiWjtxT9rm68GZMbjHY).
 - 9. 11. 2026: korisnik — za manje poslove slabiji modeli uz precizno navođenje; testovi štedljivo (odeljak „Testovi").
+- 9. 11. 2026: korisnik — ubrzati testove i CI; izdat T1 (CI run 764: 12,7 min zida, ≈ 85 runner-minuta, sve na svaki push).
