@@ -66,6 +66,8 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 |---|---|---|
 | P0 | Merna osnova trenerskih metrika, sve 4 distance, bez izmene generatora | gotovo (`53b2dd4`, `reports/P0-REPORT.md`) |
 | T1 | Brži CI i testovi: izbor po dometu izmene, E2E, v1 (uporedo sa P0) | u toku |
+| V1a | Uklanjanje v1: popis i plan (bez koda) — `briefs/V1a-uklanjanje-v1-popis.md` | u toku |
+| V1b | Uklanjanje v1: izvođenje (posle V1a i T1) | čeka |
 | P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP — `briefs/P1-hm-specificnost.md` | u toku |
 | P2 | Maraton: ista klasa (MP u dugom, doza) | čeka |
 | P3 | 10K | čeka |
@@ -90,3 +92,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
   rezultatom nema tačku merenja forme; 10K/HM/MAR bez ubrzanja; RPE/tempo kvaliteta bez efekta u adaptaciji.
 - 9. 11. 2026: odluka P1 (HM): smena nedelja A/B u specifičnoj fazi (RP trening / dugi sa RP blokom 4–6–8 km), plafon RP
   15 → 20 %, lestvica RP do 3 × 5000 m. T/I početna doza, ubrzanja i WU/CD idu u P6 (sve distance), petlja forme u P5.
+- 9. 11. 2026: korisnik — v1 se briše; lični plan vlasnika mora da preživi; korisnici v1 planova generišu nov (baza: 19 v1 planova, 15 bez unosa, nijedan menjan posle 18. 10.). Deploy ostaje odluka korisnika.
