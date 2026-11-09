@@ -1,0 +1,48 @@
+ulaz {"startDate":"2026-11-02","raceDate":"2026-12-13","runDays":["tue","thu","sun"],"currentWeeklyKm":12,"goalTimeSec":null,"recentResult":{"distanceM":10000,"timeSec":1862,"date":"2026-10-19"}}
+tempo {"vdot":70,"E":{"fast":234,"slow":258},"T":194,"I":179,"R":168,"RP":179}
+policy 5k-v2 5k-v2.13.0; vdot 70; nedelja 6
+
+ned 1 2026-11-02…2026-11-08 faza base — cilj 12 / plan 8.95 km
+  2026-11-05 q1        3.55 km 14 min, rad 1.7 min — R: 4 × 150 m (oporavak 150 m lagano)
+  2026-11-08 long      5.40 km 22 min — Dugi lagano 5,4 km
+  napomena: Lagan dan manje (1): lagan trening od bar 5,2 km ne staje uz dugi 5,4 km.
+  napomena: Lagan trk najviše 4,3 km uz dugi 5,4 km, pa nedelja ima 9 km umesto 12 km; za pun obim treba više dana trčanja.
+
+ned 2 2026-11-09…2026-11-15 faza base — cilj 12.9 / plan 9.3 km
+  2026-11-12 q1        3.50 km 13 min, rad 3.2 min — T: 1 km kontinuirano
+  2026-11-15 long      5.80 km 24 min — Dugi lagano 5,8 km
+  napomena: Lagan dan manje (1): lagan trening od bar 5,2 km ne staje uz dugi 5,8 km.
+  napomena: Lagan trk najviše 4,6 km uz dugi 5,8 km, pa nedelja ima 9,3 km umesto 12,9 km; za pun obim treba više dana trčanja.
+
+ned 3 2026-11-16…2026-11-22 faza peak — cilj 13.9 / plan 6.2 km
+  2026-11-22 long      6.20 km 25 min — Dugi lagano 6,2 km
+  napomena: Jedan kvalitet, doza rasterećenja.
+  napomena: Doza rasterećenja: I, kratak T (bar 1 km) ni R (bar 1,2 km) nemaju mesta u obimu nedelje — kvalitet nedelje su samo ubrzanja 6 × 20 s na laganom.
+  napomena: Lagan dan manje (2): lagan trening od bar 5,2 km ne staje uz dugi 6,2 km.
+  napomena: Lagan trk najviše 4,9 km uz dugi 6,2 km, pa nedelja ima 6,2 km umesto 13,9 km; za pun obim treba više dana trčanja.
+  napomena: Kvalitet ne staje u obim 13,9 km — jedan kvalitet doze rasterećenja; više obima ili 4 dana trčanja daju puni kvalitet.
+
+ned 4 2026-11-23…2026-11-29 faza peak — cilj 15 / plan 11.07 km
+  2026-11-26 q1        4.37 km 16 min, rad 4.2 min — I: 2 × 700 m (oporavak 2:00 lagano)
+  2026-11-29 long      6.70 km 27 min — Dugi lagano 6,7 km
+  napomena: Lagan dan manje (1): lagan trening od bar 5,2 km ne staje uz dugi 6,7 km.
+  napomena: Lagan trk najviše 5,3 km uz dugi 6,7 km, pa nedelja ima 11,1 km umesto 15 km; za pun obim treba više dana trčanja.
+
+ned 5 2026-11-30…2026-12-06 faza taper — cilj 12.8 / plan 12.8 km
+  2026-12-01 easy      3.17 km 13 min, ubrzanja — Lagano 3,2 km + 4 × 20 s ubrzanja
+  2026-12-03 q1        3.93 km 15 min, rad 3.6 min — RP: 2 × 600 m (oporavak 1:00 lagano)
+  2026-12-06 long      5.70 km 23 min — Dugi lagano 5,7 km
+  napomena: Smanjenje obima pred trku: jedan kvalitet.
+
+ned 6 2026-12-07…2026-12-13 faza race — cilj 6.02 / plan 6.02 km
+  2026-12-08 easy      2.80 km 11 min — Lagano 2,8 km
+  2026-12-10 q1        3.22 km 13 min, rad 1.8 min — Oštrenje: 2 × 300 m RP (oporavak 0:30 lagano)
+  2026-12-13 race      8.50 km 29 min, rad 14.9 min — Trka 5K
+  napomena: Trkačka nedelja: trka se ne računa u nedeljni obim.
+  napomena: Trkačka nedelja: 6 km (najviše 7,5 km, 50 % najvećeg nedeljnog obima; lagan dan najviše 2,8 km).
+upozorenje undefined: Nedelja 3: kvalitet ne staje u obim 13,9 km — jedan kvalitet doze rasterećenja; više obima ili 4 dana trčanja daju puni kvalitet.
+upozorenje undefined: Nedelja ima 9 km umesto 12 km (lagan trk najviše 4,3 km uz dugi 5,4 km; za pun obim treba više dana trčanja).
+upozorenje undefined: Nedelja ima 9,3 km umesto 12,9 km (lagan trk najviše 4,6 km uz dugi 5,8 km; za pun obim treba više dana trčanja).
+upozorenje undefined: Nedelja ima 6,2 km umesto 13,9 km (lagan trk najviše 4,9 km uz dugi 6,2 km; za pun obim treba više dana trčanja).
+upozorenje undefined: Nedelja 3 ima jedan trening: lagan trening ne staje uz dugi.
+upozorenje undefined: Nedelja ima 11,1 km umesto 15 km (lagan trk najviše 5,3 km uz dugi 6,7 km; za pun obim treba više dana trčanja).

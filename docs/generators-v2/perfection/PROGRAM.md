@@ -72,7 +72,7 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | P1 | HM: specifičan dugi (RP blok), plafon i lestvica RP | gotovo (`3a57a15`, hm-v2.9.0, `reports/P1-REPORT.md`) |
 | P2 | Maraton: dugi sa MP blokom, dugi do 180 min / 32 km | gotovo (`320edc5`, marathon-v2.9.0, `reports/P2-REPORT.md`) |
 | P3 | 10K: plafon/lestvica RP, održavanje I — `briefs/P3-10k-specificnost.md` | u toku |
-| P4 | 5K: budžet I/RP 10–12 %, VDOT do 70 — `briefs/P4-5k-doza.md` | u toku |
+| P4 | 5K: budžet I/RP 10–12 %, VDOT do 70 — `briefs/P4-5k-doza.md` | STOP (`reports/P4-STOP.md`), čeka odluku |
 | P5 | Petlja forme: kontrolna tačka u planu sa rezultatom; izvršenje kvaliteta u adaptaciji | čeka |
 | P6 | Ubrzanja na laganim danima; WU/CD srazmerno treningu | čeka |
 | P7 | Nezavisna slepa trenerska ocena pre/posle + merenje ishoda u aplikaciji (prognoza prema rezultatu) | čeka |
