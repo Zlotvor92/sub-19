@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { configDefaults, defineConfig } from 'vitest/config';
+import { V1_REFERENCE } from './scripts/ciScope.mjs';
 import { DurationSequencer } from './scripts/testSequencer.ts';
 
 // Recorded local-time fixtures were captured in UTC.
@@ -14,17 +15,9 @@ const FULL_ONLY = FULL ? [] : ['**/*.full.node.test.ts'];
 /* V1 (TEST-SPEED.md § 12): poređenje zamrznutih v1 generatora (podrazumevani u produkciji) sa referencama starog koda.
    v1 kod se ne menja, a ovi fajlovi nose najveći deo punog nivoa, pa su izdvojeni u projekat `v1`: u brzom nivou
    isključen (osim `TEST_V1=1`), u punom uključen (osim `TEST_V1=0` — CI delovi; CI ga pokreće posebnim poslom kad se
-   od poslednjeg zelenog run-a promeni nešto što v1 koristi). */
+   od poslednjeg zelenog run-a promeni nešto što v1 koristi). Spisak fajlova: `V1_REFERENCE` u scripts/ciScope.mjs (isti
+   spisak koristi izbor testova na CI-ju). */
 const V1 = process.env['TEST_V1'] === '1' || (FULL && process.env['TEST_V1'] !== '0');
-const V1_REFERENCE = [
-  'src/domain/generators/*/equivalence*.node.test.ts',
-  'src/domain/generators/otherDistances*.node.test.ts',
-  'src/domain/generators/runtimeIsolation*.node.test.ts',
-  'src/domain/generators/personalPlan.node.test.ts',
-  'src/domain/generators/guidance.node.test.ts',
-  'src/domain/training/generator/generator.differential.node.test.ts',
-  'src/domain/training/generator/generator.fingerprint.node.test.ts'
-];
 
 const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) };
 

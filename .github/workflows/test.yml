@@ -1,21 +1,27 @@
 name: Testovi
 
-# Ubrzanje (organizator, 22. 10.; v. docs/testing/TEST-SPEED.md § 10):
+# Ubrzanje (v. docs/testing/TEST-SPEED.md § 10–13):
 # - samo dokumentacija (docs/** osim docs/qa/** koje testovi čitaju, *.md u korenu) ne pokreće testove;
 # - samo `push` (bez `pull_request`): PR prikazuje rezultat run-a svog commita; `paths` kod `pull_request` gleda ceo PR,
 #   pa bi svaki push dokumentacije pokretao run i otkazivao run koda;
 # - jedna grupa po grani: run koji radi se završava, a od pusheva koji stignu u međuvremenu čeka samo najnoviji
 #   (GitHub otkazuje stariji koji čeka) — tako se i pri čestim pushevima run završava, a vrh grane se uvek testira;
-# - testovi weba idu u 6 paralelnih delova (vitest --shard), podeljenih po izmerenom trajanju (TEST-SPEED.md § 11);
-# - testovi v1 generatora: poseban posao, samo kad se menja nešto što v1 koristi (TEST-SPEED.md § 12).
+# - IZBOR PO DOMETU IZMENE (§ 13): posao `scope` (web/scripts/ciScope.mjs, test ciScope.node.test.ts) poredi vrh grane
+#   sa commitom POSLEDNJEG ZELENOG run-a grane i bira: `all` (isto što i pre: sve, svi delovi) na `main`-u, ručno, bez
+#   zelenog run-a i za svaku zajedničku ili nepoznatu izmenu; inače pun nivo samo test fajlova čiji domet (graf uvoza +
+#   fajlovi koje čitaju) sadrži promenjen fajl; E2E samo kad se menja aplikacija; statičke provere kad se menja web/.
+#   Zeleni run je zelen i kad je deo preskočen: test koji nije izabran ima iste ulaze kao u prethodnom zelenom run-u,
+#   pa svaki zeleni commit ima svaku oblast proverenu direktno ili preko prethodnog zelenog (lanac, § 13.3);
+# - pun nivo u delovima (vitest --shard) podeljenim po izmerenom trajanju (web/scripts/testSequencer.ts, § 11);
+#   v1 projekat i E2E takođe u delovima; node_modules i Playwright pregledač iz keša (.github/actions/web-deps).
 on:
   push:
-    branches: ['**']
+    branches: ["**"]
     paths:
-      - '**'
-      - '!docs/**'
-      - 'docs/qa/**'
-      - '!*.md'
+      - "**"
+      - "!docs/**"
+      - "docs/qa/**"
+      - "!*.md"
   workflow_dispatch:
 
 concurrency:
@@ -29,7 +35,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
       # Backend i konfiguracija repozitorijuma. Nema `npm install` — testovi nemaju zavisnosti, sve je iz standardne biblioteke.
       - name: Provera sintakse
         run: |
@@ -37,20 +43,71 @@ jobs:
       - name: Testovi
         run: node --test "test/**/*.test.mjs"
 
-  # Frontend (web/) — v. docs/REWRITE_PLAN.md. Odvojen posao: testovi backenda iznad rade bez `npm install`.
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: supabase/tests/package-lock.json
+      - run: npm ci --prefix supabase/tests
+      - run: npm test --prefix supabase/tests
+
+  # Izbor po dometu izmene (TEST-SPEED.md § 13). Bez npm ci: skripta koristi samo standardnu biblioteku i git.
+  scope:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      mode: ${{ steps.pick.outputs.mode }}
+      static: ${{ steps.pick.outputs.static }}
+      e2e: ${{ steps.pick.outputs.e2e }}
+      e2e_shards: ${{ steps.pick.outputs.e2e_shards }}
+      tests: ${{ steps.pick.outputs.tests }}
+      test_shards: ${{ steps.pick.outputs.test_shards }}
+      test_files: ${{ steps.pick.outputs.test_files }}
+      v1: ${{ steps.pick.outputs.v1 }}
+      v1_shards: ${{ steps.pick.outputs.v1_shards }}
+      v1_files: ${{ steps.pick.outputs.v1_files }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - id: base
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != push ]; then echo "all=ručno pokretanje ($GITHUB_EVENT_NAME)" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ "$GITHUB_REF_NAME" = main ]; then echo "all=main" >> "$GITHUB_OUTPUT"; exit 0; fi
+          base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow test.yml --branch "$GITHUB_REF_NAME" \
+            --status success --limit 1 --json headSha --jq '.[0].headSha // empty' || true)
+          if [ -n "$base" ] && git fetch --no-tags --depth=1 origin "$base"; then
+            echo "sha=$base" >> "$GITHUB_OUTPUT"
+          else
+            echo "all=nema zelenog run-a grane (ili se commit ne dohvata)" >> "$GITHUB_OUTPUT"
+          fi
+      - id: pick
+        env:
+          ALL: ${{ steps.base.outputs.all }}
+          BASE: ${{ steps.base.outputs.sha }}
+        run: |
+          if [ -n "$ALL" ]; then node web/scripts/ciScope.mjs --all "$ALL"; else node web/scripts/ciScope.mjs --base "$BASE"; fi
+
+  # Statičke provere (web/): tipovi, lint, format, build — kad se menja bilo šta u web/.
   web:
+    needs: scope
+    if: needs.scope.outputs.static == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - run: npm ci
+      - uses: ./.github/actions/web-deps
       - name: Tipovi (strict)
         run: npm run typecheck
       - name: Lint (izolacija domena, a11y, zabrana dangerouslySetInnerHTML)
@@ -59,102 +116,111 @@ jobs:
         run: npm run format:check
       - name: Build
         run: npm run build
-      - name: E2E
-        run: |
-          npx playwright install --with-deps chromium
-          npm run e2e
+
+  # E2E (Playwright) u delovima, kad se menja aplikacija (graf od src/main.tsx, public/, sw/, index.html, e2e/).
+  web-e2e:
+    needs: scope
+    if: needs.scope.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.scope.outputs.e2e_shards) }}
+    name: web-e2e (${{ matrix.shard }}/${{ strategy.job-total }})
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/web-deps
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('web/package-lock.json') }}
+      - name: Pregledač (keš) i sistemske zavisnosti
+        run: npx playwright install --with-deps chromium
+      - name: E2E (deo ${{ matrix.shard }}/${{ strategy.job-total }})
+        run: npx playwright test --shard=${{ matrix.shard }}/${{ strategy.job-total }}
       - name: Preserve generator A/B browser evidence
         if: always() && startsWith(github.head_ref || github.ref_name, 'qa/generator-ab')
         uses: actions/upload-artifact@v4
         with:
-          name: generator-ab-browser-evidence
+          name: generator-ab-browser-evidence-${{ matrix.shard }}
           path: |
             web/playwright-report/
             web/test-results/
           if-no-files-found: warn
 
-  # Unit/domain/zamrznuti oracle/node testovi (pun nivo, `npm test`) u 6 delova, BEZ projekta `v1` (posao ispod). Delove
-  # bira web/scripts/testSequencer.ts po izmerenom trajanju fajla (TEST-SPEED.md § 11), ne po broju fajlova.
+  # Unit/domain/zamrznuti oracle/node testovi, pun nivo, BEZ projekta `v1` (posao ispod). `all`: `npm test` u delovima
+  # (testSequencer.ts po izmerenom trajanju) + tabela trajanja ovog run-a kao artefakt; `select`: samo izabrani fajlovi.
   web-test:
+    needs: scope
+    if: needs.scope.outputs.tests != 'none'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4, 5, 6]
-    name: web-test (${{ matrix.shard }}/6)
+        shard: ${{ fromJSON(needs.scope.outputs.test_shards) }}
+    name: web-test (${{ matrix.shard }}/${{ strategy.job-total }})
     defaults:
       run:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - run: npm ci
-      - name: Testovi (deo ${{ matrix.shard }}/6)
-        run: TEST_V1=0 npm test -- --shard=${{ matrix.shard }}/6
-
-  # v1 generatori (TEST-SPEED.md § 12): podrazumevani u produkciji, a kod im se ne menja. Testovi poređenja sa
-  # referencama starog koda (vitest projekat `v1`) rade kad se od POSLEDNJEG ZELENOG run-a ove grane promenilo nešto što
-  # v1 koristi (domen van `generators/*/v2/`, `src/test/`, `docs/qa/`, zavisnosti, konfiguracija testova, ovaj
-  # workflow); na `main`-u, ručno pokretanje i bez zelenog run-a — uvek. Zeleni run je zelen i kad je ovaj posao
-  # preskočen, pa lanac ostaje zatvoren: svaki zeleni commit ima v1 proveren direktno ili preko prethodnog zelenog.
-  v1-changes:
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-    outputs:
-      run: ${{ steps.check.outputs.run }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: check
+      - uses: ./.github/actions/web-deps
+      - name: Testovi (${{ needs.scope.outputs.tests }}, deo ${{ matrix.shard }}/${{ strategy.job-total }})
         env:
-          GH_TOKEN: ${{ github.token }}
+          TESTS: ${{ needs.scope.outputs.tests }}
+          FILES: ${{ needs.scope.outputs.test_files }}
+          SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
         run: |
-          run=true
-          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF_NAME" != main ]; then
-            base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow test.yml --branch "$GITHUB_REF_NAME" \
-              --status success --limit 1 --json headSha --jq '.[0].headSha // empty' || true)
-            if [ -n "$base" ] && git fetch --no-tags --depth=1 origin "$base"; then
-              changed=$(git diff --name-only "$base" HEAD)
-              hits=$(printf '%s\n' "$changed" | grep -Ev '^web/src/domain/generators/[^/]+/v2/' |
-                grep -E '^(web/src/domain/|web/src/test/|docs/qa/|web/package(-lock)?\.json$|web/vitest\.config\.ts$|\.github/workflows/test\.yml$)' || true)
-              echo "Poslednji zeleni run: $base"
-              if [ -z "$hits" ]; then run=false; else printf 'Menja v1 ulaze:\n%s\n' "$hits" | head -20; fi
-            fi
+          if [ "$TESTS" = all ]; then
+            TEST_V1=0 TEST_DURATIONS_OUT="$RUNNER_TEMP/durations.json" npm test -- --shard="$SHARD" \
+              --reporter=default --reporter=./scripts/test-durations.mjs
+          else
+            # shellcheck disable=SC2086
+            TEST_V1=0 TEST_FULL=1 npx vitest run --shard="$SHARD" $FILES
           fi
-          echo "v1 testovi: $run"
-          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - if: needs.scope.outputs.tests == 'all'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-durations-web-${{ matrix.shard }}
+          path: ${{ runner.temp }}/durations.json
+          if-no-files-found: ignore
 
+  # v1 generatori (TEST-SPEED.md § 11.2, § 13): testovi poređenja sa referencama starog koda (vitest projekat `v1`),
+  # pun nivo, u delovima; `select` kad graf kaže da izmena ulazi u domet nekog v1 fajla.
   web-test-v1:
-    needs: v1-changes
-    if: needs.v1-changes.outputs.run == 'true'
+    needs: scope
+    if: needs.scope.outputs.v1 != 'none'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.scope.outputs.v1_shards) }}
+    name: web-test-v1 (${{ matrix.shard }}/${{ strategy.job-total }})
     defaults:
       run:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/web-deps
+      - name: v1 testovi (${{ needs.scope.outputs.v1 }}, deo ${{ matrix.shard }}/${{ strategy.job-total }})
+        env:
+          TESTS: ${{ needs.scope.outputs.v1 }}
+          FILES: ${{ needs.scope.outputs.v1_files }}
+          SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
+        run: |
+          if [ "$TESTS" = all ]; then
+            TEST_FULL=1 TEST_V1=1 TEST_DURATIONS_OUT="$RUNNER_TEMP/durations.json" npx vitest run --project v1 \
+              --shard="$SHARD" --reporter=default --reporter=./scripts/test-durations.mjs
+          else
+            # shellcheck disable=SC2086
+            TEST_FULL=1 TEST_V1=1 npx vitest run --project v1 --shard="$SHARD" $FILES
+          fi
+      - if: needs.scope.outputs.v1 == 'all'
+        uses: actions/upload-artifact@v4
         with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - run: npm ci
-      - name: v1 testovi (pun nivo, ~10 min)
-        run: npm run test:v1
-
-  database:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: supabase/tests/package-lock.json
-      - run: npm ci --prefix supabase/tests
-      - run: npm test --prefix supabase/tests
+          name: test-durations-v1-${{ matrix.shard }}
+          path: ${{ runner.temp }}/durations.json
+          if-no-files-found: ignore
