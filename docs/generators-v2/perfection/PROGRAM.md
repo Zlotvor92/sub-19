@@ -106,3 +106,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 9. 11. 2026 (noć): korisnik — raditi celu noć bez pitanja, odrešene ruke. Organizator: P2 i P3 izdati uporedo sa P1
   (odvojeni folderi distanci). Redosled dalje: V1b (posle T1, P1, P2, P3) → P4 (5K) → P5 (petlja forme) → P6 (ubrzanja,
   WU/CD) → P7. Granica koju organizator sam drži: ništa u `main`, bez deploya i bez izmene baze dok korisnik ne potvrdi.
+- 9. 11. 2026 (noć): P3 STOP (`9c0fa49`): nedelja B (I održavanja) ne staje u 14–22 % planova 4–6 dana (dan I ima manje km od T dana, nedelja na kapacitetu). Odluka: P-b — niži izvodljiv cilj do 3,0 km, inače nedelja A; lestvica RP + 4 × 1600, 5 × 1600 m; I održavanja = najveća I doza razvoja; D30 ostaje; ukupni RP 18,4 km prihvaćen.
