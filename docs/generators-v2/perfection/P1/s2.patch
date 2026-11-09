@@ -1,0 +1,47 @@
+diff --git a/web/src/domain/generators/halfMarathon/v2/policy.ts b/web/src/domain/generators/halfMarathon/v2/policy.ts
+index 4c5a56d..7e47618 100644
+--- a/web/src/domain/generators/halfMarathon/v2/policy.ts
++++ b/web/src/domain/generators/halfMarathon/v2/policy.ts
+@@ -499,7 +499,7 @@ const DECISIONS: readonly Decision[] = [
+ 
+ export const HM_V2_POLICY = {
+   id: 'hm-v2',
+-  version: 'hm-v2.8.0',
++  version: 'hm-v2.9.0',
+ 
+   /** H1 (dani i obim: H15). */
+   input: {
+@@ -706,7 +706,8 @@ export const HM_V2_POLICY = {
+       { reps: 2, repM: 4000 },
+       { reps: 3, repM: 3000 },
+       { reps: 2, repM: 5000 },
+-      { reps: 3, repM: 4000 }
++      { reps: 3, repM: 4000 },
++      { reps: 3, repM: 5000 }
+     ] as readonly Rep[]
+   },
+ 
+@@ -731,7 +732,7 @@ export const HM_V2_POLICY = {
+   },
+ 
+   /** H11: jedan plafon po zoni, po treningu, udeo ciljnog obima nedelje. */
+-  caps: { R: 0.05, I: 0.08, T: 0.1, RP: 0.15 },
++  caps: { R: 0.05, I: 0.08, T: 0.1, RP: 0.2 },
+ 
+   /** H13 (udeo dugog: H15). longMaxKm: odluka organizatora HM-01 → 02 (≈ 1,15 × trka). */
+   lengths: {
+@@ -792,6 +793,14 @@ export const HM_V2_POLICY = {
+       'Bol: 7 dana bez kvaliteta i ubrzanja, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled (A4).'
+   },
+ 
++  /** P1-S1 (hm-v2.9.0): specifična faza — smena nedelja A/B; tip B: završni blok dugog u RP (lestvica km po nedelji
++      tipa B, jedan nivo po nedelji B), blok ≤ blockMaxLongShare dužine dugog. */
++  specific: {
++    blockKm: [4, 6, 8] as readonly number[],
++    blockKmBeginner: [2, 3, 4] as readonly number[],
++    blockMaxLongShare: 0.4
++  },
++
+   /** H12: početni nivo slota ≤ udeo plafona zone (H11). */
+   startLevel: { capShare: 0.6 },
+ 
