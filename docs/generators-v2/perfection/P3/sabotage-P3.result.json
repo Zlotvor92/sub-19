@@ -1,0 +1,216 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P3/sabotage-P3.json",
+ "head": "9c0fa49",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 70.7,
+ "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+ "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P3-S1a plafon RP bez tabele (10 % i od 40 km)",
+   "files": [
+    "src/domain/generators/tenK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/quality.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/quality.node.test.ts",
+    "test": "D18: 3 dana — jedan kvalitet > prelazi: T cruise ≥ poslednje T kontinuirano; RP ≥ max(D16, poslednje T) kad staje u plafon",
+    "message": "AssertionError: expected 3000 to be 4000 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "2f63b7f8b463b79a8b4130252debd9f2a0929829755941f48c717c7c2a15bfdb",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 9.2
+  },
+  {
+   "index": 2,
+   "name": "P3-S1b lestvica RP bez nivoa 5 × 1600 m",
+   "files": [
+    "src/domain/generators/tenK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/quality.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/quality.node.test.ts",
+    "test": "D16: početni nivo > prelaz faze (4–6 dana): I = početni nivo; RP = najmanji nivo ≥ max(početni nivo, poslednje I) kad staje",
+    "message": "AssertionError: 5: expected 6400 to be 8000 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "f662bbeeee192445adb466036ef508dfe9f2a4bdba84885feecfcc248e1b2488",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 10.1
+  },
+  {
+   "index": 3,
+   "name": "P3-S2a nema nedelje B (uvek A)",
+   "files": [
+    "src/domain/generators/tenK/v2/specific.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/quality.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/quality.node.test.ts",
+    "test": "D34: održavanje I u specifičnoj fazi (4–6 dana) > smena A/B (prva A; A umesto B samo uz napomenu); I održavanja = najveća I doza, u plafonu I (inače najviši nivo koji staje)",
+    "message": "AssertionError: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "74d0fd11bebe774eb0fd22d0ff3494d83f7ce2063877d4f23b0ad9d63019bf9a",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 10.2
+  },
+  {
+   "index": 4,
+   "name": "P3-S2b I održavanja bez naizmenične strukture i bez plafona I",
+   "files": [
+    "src/domain/generators/tenK/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/grid.node.test.ts",
+    "test": "mreža 02 sa rezultatom: 15 840 planova (3/4/5/6 dana × 8–18 ned) > 15 840 ulaza, 0 odbijanja, 0 grešaka validatora (BASE_PLATEAU 0)",
+    "message": "AssertionError: expected [ …(9) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "899cbb16f1060d65b2c78a576be0e6c19942e1eda1cc4bb966d462675a43aa93",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 9.1
+  },
+  {
+   "index": 5,
+   "name": "P3-S2c nedelja B menja stanje T slota",
+   "files": [
+    "src/domain/generators/tenK/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/week.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/week.node.test.ts",
+    "test": "uzorak mreže 02 se generiše bez odbijanja",
+    "message": "AssertionError: expected [ …(1095) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "72cc45712fe4d34966e4b59e90842b4a1a61f9b5804117ecb94a04a14888170c",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6
+  },
+  {
+   "index": 6,
+   "name": "P3-S2d glavna doza bez poređenja unutar tipa (validator)",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/grid.node.test.ts",
+    "test": "mreža 02 sa rezultatom: 15 840 planova (3/4/5/6 dana × 8–18 ned) > 15 840 ulaza, 0 odbijanja, 0 grešaka validatora (BASE_PLATEAU 0)",
+    "message": "AssertionError: expected [ …(20) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "17c279d01793eebfd72465cc0afeb85f6ec8ec440fb12e76ee56e8b0e411c07b",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 5.3
+  },
+  {
+   "index": 7,
+   "name": "P3-S2e nedelja B bez granice 3,0 km (cilj naniže bez ograničenja)",
+   "files": [
+    "src/domain/generators/tenK/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/volume.node.test.ts",
+    "src/domain/generators/tenK/v2/grid.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/volume.node.test.ts",
+    "test": "D6: obim > pravilo važi u svakoj nedelji uzorka mreže 02 (planirano = cilj ± 0,1)",
+    "message": "AssertionError: d4-8w-50km-v35-A-sun: expected false to be true // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "8dfd240ce4018eb46e8ac0c69723c6f491b36e5aadcb9447502bdef97818a038",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 8.5
+  },
+  {
+   "index": 8,
+   "name": "P3-S3 tip nedelje iz sastavljenih umesto upisanih dana",
+   "files": [
+    "src/domain/generators/tenK/v2/generate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+    "src/domain/generators/tenK/v2/adapt.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/mixedGrid.node.test.ts",
+    "test": "mreža pouke 37: mešovita nedelja (umor svaki dan nedelje, zaključan/urađen dan) > 0 odbijanja i adaptInvariants prazno; mešovita nedelja: preostali ≤ cilj − zaštićeni (po činjenicama) ili MIXED_OVER_TARGET",
+    "message": "AssertionError: expected 6 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "hashSabotaged": "235b4ef3ddeb20e552fbc398bcecc88721f3fa78962cfdcaa7f86c69fbce70ba",
+   "hashAfter": "50d0cfdc204f6cf204204723af34d7e46ca71093363eca38a164e9ea444d316f",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 11.5
+  }
+ ]
+}

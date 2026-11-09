@@ -4,19 +4,21 @@
 import { describe, expect, it } from 'vitest';
 import {
   BEGINNER_DAYS_COUNTS,
+  capPct,
+  capShare,
   dayRule,
   planRule,
   RUN_DAYS_COUNTS,
   TEN_K_V2_POLICY as P
 } from './policy.ts';
 
-describe('policy 10k-v2.10.0', () => {
+describe('policy 10k-v2.11.0', () => {
   it('oznaka politike', () => {
     expect(P.id).toBe('10k-v2');
-    expect(P.version).toBe('10k-v2.10.0');
+    expect(P.version).toBe('10k-v2.11.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i), A22 (3i), A23 (10K-07) i A24 (10K-08), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i), A22 (3i), A23 (10K-07), A24 (10K-08), D33, D34 i A25 (P3), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -29,7 +31,9 @@ describe('policy 10k-v2.10.0', () => {
       'D30',
       'D31',
       'D32',
-      ...Array.from({ length: 24 }, (_, i) => `A${i + 1}`)
+      'D33',
+      'D34',
+      ...Array.from({ length: 25 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);
@@ -349,7 +353,8 @@ describe('policy 10k-v2.10.0', () => {
     expect(P.ladders.T_continuous).toEqual([2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]);
     expect(km(P.ladders.T_cruise)).toEqual([2.0, 2.4, 3.0, 3.6, 4.0, 4.8, 5.0, 6.0, 6.4, 8.0]);
     expect(km(P.ladders.I)).toEqual([2.0, 2.4, 3.0, 3.6, 4.0, 4.8, 5.0, 6.0]);
-    expect(km(P.ladders.RP)).toEqual([2.4, 3.0, 4.0, 4.5, 5.0, 6.0]);
+    // D33 (10k-v2.11.0): do 8,0 km (4 × 1600, 5 × 1600 m; 4 × 2000 m samo druga struktura).
+    expect(km(P.ladders.RP)).toEqual([2.4, 3.0, 4.0, 4.5, 5.0, 6.0, 6.4, 8.0]);
     expect(P.alternatives).toEqual({
       repsMin: 2,
       repsMax: 5,
@@ -366,7 +371,19 @@ describe('policy 10k-v2.10.0', () => {
   });
 
   it('D11 jedan plafon po zoni', () => {
-    expect(P.caps).toEqual({ R: 0.05, I: 0.08, T: 0.1, RP: 0.1 });
+    // D33 (10k-v2.11.0): RP po cilju nedelje — < 40 km 10 %, ≥ 40 km 15 % (jedini pristup capShare).
+    expect(P.caps).toEqual({
+      R: 0.05,
+      I: 0.08,
+      T: 0.1,
+      RP: [
+        { fromKm: 0, share: 0.1 },
+        { fromKm: 40, share: 0.15 }
+      ]
+    });
+    expect([39.9, 40, 55].map((t) => capShare('RP', t))).toEqual([0.1, 0.15, 0.15]);
+    expect(capShare('T', 55)).toBe(0.1);
+    expect(capPct('RP', 40)).toBe(15);
   });
 
   it('D14, D16', () => {

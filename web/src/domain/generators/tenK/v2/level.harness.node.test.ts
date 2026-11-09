@@ -75,12 +75,31 @@ export const ADAPT_CHANGED_07 = (
     b9c4728 (segment08.changed-b9c4728.json): generator → [planHash81, cause07, red bazne linije] na b9c4728; tok →
     [planHash06c na b9c4728, uzrok]. Starije regresije porede stanje b9c4728 (`atB9c`, dno lanca at7ba → at46e →
     atC13; generator: planGrid.runPlanGrid zamenjuje heš, uzrok 07 i red); tačan skup proverava `p08Errors`. */
-export const CHANGED_08 = JSON.parse(
-  readFileSync(fileURLToPath(new URL('./segment08.changed-b9c4728.json', import.meta.url)), 'utf8')
-) as {
+interface Changed {
   against: string;
   gen: Record<string, [number, string | null, unknown]>;
   flows: Record<string, Record<string, [number, string]>>;
+}
+/** P3 (10k-v2.11.0, D33/D34/A25): planovi generatora i tokovi trajnih mreža adaptacije koje P3 menja prema 38fd091
+    (segmentP3.changed-38fd091.json, isti oblik kao 10K-08). Plan/tok koji 10K-08 nije menjao ima na 38fd091 stanje
+    b9c4728 — zato se spaja u CHANGED_08 (starije regresije porede stanje b9c4728; p08Errors proverava da se razlikuje);
+    plan/tok koji su menjali oba ostaje sa stanjem b9c4728 iz 10K-08. */
+export const CHANGED_P3 = JSON.parse(
+  readFileSync(fileURLToPath(new URL('./segmentP3.changed-38fd091.json', import.meta.url)), 'utf8')
+) as Changed;
+const CHANGED_08_ONLY = JSON.parse(
+  readFileSync(fileURLToPath(new URL('./segment08.changed-b9c4728.json', import.meta.url)), 'utf8')
+) as Changed;
+/** 10K-08 (bez P3): plan je promenjen u 10K-08 (razred '10K-08' u brojanjima po uzroku). */
+export const changed08Gen = (id: string): boolean => CHANGED_08_ONLY.gen[id] !== undefined;
+export const CHANGED_08: Changed = {
+  against: CHANGED_08_ONLY.against,
+  gen: { ...CHANGED_P3.gen, ...CHANGED_08_ONLY.gen },
+  flows: Object.fromEntries(
+    [...new Set([...Object.keys(CHANGED_08_ONLY.flows), ...Object.keys(CHANGED_P3.flows)])].map(
+      (n) => [n, { ...CHANGED_P3.flows[n], ...CHANGED_08_ONLY.flows[n] }]
+    )
+  )
 };
 /** 10K-08: tok mreže `net` je promenjen prema b9c4728. */
 export const changed08 = (net: string, key: string): boolean =>

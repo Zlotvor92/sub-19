@@ -1,3 +1,7 @@
+**P3 (10k-v2.11.0)**: specifičnost 10K — D33 plafon RP po cilju nedelje (< 40 km 10 %, ≥ 40 km 15 %) i lestvica RP do
+8,0 km; D34 smena A (Q2 T) / B (Q2 I održavanja = najveća I doza razvoja) u specifičnoj fazi 4–6 dana, nedelja B sme
+cilj do 3,0 km niži; A25 tip nedelje iz upisanih nedelja — `docs/generators-v2/perfection/reports/P3-REPORT.md`.
+
 **10K-08 (10k-v2.10.0)**: krug T — T1 (lagan ≤ 0,8 × dugi, ≥ 20 min), T3 (taper/oštrenje posle novog starta), C3, C4, C6,
 C11 — `reports/SEGMENT-08-IMPLEMENTATION.md`.
 

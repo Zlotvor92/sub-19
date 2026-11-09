@@ -89,7 +89,7 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.10.0');
+    expect(r.plan.policyVersion).toBe('10k-v2.11.0');
   });
 });
 
@@ -223,7 +223,9 @@ describe('D5: gde su rasterećenja', () => {
           (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific')
         ) {
           last = w;
-          lastT = w.days.find((d) => d.role === tSlot)?.workout.dose!.doseM ?? lastT;
+          // D34: Q2 nedelje B (I održavanja) ne menja poslednju T dozu.
+          const t = w.days.find((d) => d.role === tSlot)?.workout.dose;
+          if (t && t.ladder !== 'I') lastT = t.doseM;
         }
       }
     }

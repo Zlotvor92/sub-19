@@ -4,7 +4,7 @@
    slota = poslednji izbor slota u ne-rasteretnoj nedelji izgradnje (test D27 i nedelja bez kvaliteta ga ne
    menjaju). `quality` = broj kvalitetnih dana iz pravila plana (1 ili 2). */
 
-import { type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { capShare, type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import type { Dose, LadderId, Paces, Phase, Structure, WorkZone } from './types.ts';
 import {
   doseOf,
@@ -28,9 +28,12 @@ export interface QualityState {
   /** D31: poslednja doza u zoni T iz ne-rasteretne nedelje izgradnje [m] (0 = nema); čita je samo
       rasterećenje i taper početnika. */
   t: number;
+  /** D34: najveća I doza iz ne-rasteretne nedelje izgradnje (pri istoj dozi poslednja struktura) — doza i struktura I
+      održavanja (null = nema). */
+  i: SlotState | null;
 }
 
-export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0 };
+export const INITIAL_QUALITY: QualityState = { q1: null, q2: null, t: 0, i: null };
 
 /** D10: lestvica slota po fazi izgradnje (4–6 dana); D18: jedan kvalitet — baza T kontinuirano, razvoj
     T cruise, specifično RP (bez I i R). */
@@ -59,9 +62,9 @@ export function carries(from: LadderId, to: LadderId): boolean {
   );
 }
 
-/** D11: plafon zone za trening, u metrima, za ciljni obim nedelje. */
+/** D11/D33: plafon zone za trening, u metrima, za ciljni obim nedelje (policy.capShare). */
 export function capM(zone: WorkZone, targetKm: number): number {
-  return Math.floor(P.caps[zone] * targetKm * 1000 + 1e-6);
+  return Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6);
 }
 
 const pick = (ladder: LadderId, s: Structure, step: Dose['step']): Dose => ({
@@ -194,9 +197,35 @@ export function buildLadder(phase: Phase, targetKm: number, rule: PlanRule): Lad
   return firstLevelOverCap('T_continuous', targetKm, true) ? null : 'T_continuous';
 }
 
+/** D34: I održavanja nedelje B — doza = NAJVEĆA I doza (razvoj; ne raste), ograničena plafonom I (D11) cilja nedelje:
+    kad ne staje, najviši nivo lestvice I koji staje. Struktura: pri istoj dozi druga struktura iste doze kad postoji
+    (naizmenično; inače ista), pri nižoj dozi nivo lestvice. null = nema I doze ili ni prvi nivo I ne staje u plafon. */
+export function maintainIDoseM(maxIM: number, targetKm: number): number | null {
+  const cap = capM('I', targetKm);
+  if (maxIM <= cap) return maxIM;
+  const lv = ladderLevels('I')
+    .filter((s) => doseOf(s) <= cap)
+    .pop();
+  return lv ? doseOf(lv) : null;
+}
+
+export function pickMaintainI(state: QualityState, targetKm: number, p: Paces): Dose | null {
+  const i = state.i;
+  const m = i ? maintainIDoseM(i.doseM, targetKm) : null;
+  if (!i || m === null) return null;
+  if (m === i.doseM)
+    return pick('I', otherStructure('I', m, i.structure, p) ?? i.structure, 'maintain');
+  return pick(
+    'I',
+    ladderLevels('I').find((s) => doseOf(s) === m)!,
+    'maintain'
+  );
+}
+
 /** Slotovi nedelje izgradnje: Q1 i Q2 (4–6 dana) ili samo Q1 (3 dana i početnik, D18/D28). `skipQ1` =
     test na danu Q1 (D27). Početnik: lestvica Q1 po D31; kad ni 1,5 km ne staje u plafon, Q1 = null
-    (nedelja bez kvaliteta, odstupanje D28). null = nedelja nije izvodljiva pri ovom cilju. */
+    (nedelja bez kvaliteta, odstupanje D28). `weekB` (D34): Q2 = I održavanja. null = nedelja nije izvodljiva
+    pri ovom cilju. */
 export function pickBuild(
   state: QualityState,
   phase: Phase,
@@ -204,7 +233,8 @@ export function pickBuild(
   p: Paces,
   rule: PlanRule,
   allowDrop = false,
-  skipQ1 = false
+  skipQ1 = false,
+  weekB = false
 ): WeekPicks | null {
   const quality = rule.quality;
   const l1 = buildLadder(phase, targetKm, rule);
@@ -214,17 +244,27 @@ export function pickBuild(
     if (!q1) return null;
   }
   if (quality === 1) return { q1, q2: null };
-  const q2 = pickSlot(state.q2, ladderFor(phase, 'q2', quality), targetKm, p, allowDrop);
+  const q2 = weekB
+    ? pickMaintainI(state, targetKm, p)
+    : pickSlot(state.q2, ladderFor(phase, 'q2', quality), targetKm, p, allowDrop);
   return q2 ? { q1, q2 } : null;
 }
 
 /** Stanje posle nedelje izgradnje: slot bez izbora zadržava stanje pre nedelje (D27: progresija se posle
-    testa nastavlja od stanja pre testa); `t` = poslednja doza u zoni T (D31). */
+    testa nastavlja od stanja pre testa); `t` = poslednja doza u zoni T (D31). D34: I održavanja na Q2 (nedelja B) ne
+    menja stanje T slota; `i` = poslednji izbor u lestvici I. */
 export function advance(picks: WeekPicks, prev: QualityState): QualityState {
   const slot = (d: Dose | null, before: SlotState | null): SlotState | null =>
     d ? { ladder: d.ladder as LadderId, doseM: d.doseM, structure: d.structure } : before;
   const t = [picks.q1, picks.q2].filter((d) => d?.zone === 'T').pop();
-  return { q1: slot(picks.q1, prev.q1), q2: slot(picks.q2, prev.q2), t: t ? t.doseM : prev.t };
+  // D34: `i` = najveća I doza (pri istoj dozi poslednja struktura — naizmenična struktura održavanja).
+  const i = [picks.q1, picks.q2].filter((d) => d?.ladder === 'I').pop() ?? null;
+  return {
+    q1: slot(picks.q1, prev.q1),
+    q2: picks.q2?.ladder === 'I' ? prev.q2 : slot(picks.q2, prev.q2),
+    t: t ? t.doseM : prev.t,
+    i: i && (!prev.i || i.doseM >= prev.i.doseM) ? slot(i, prev.i) : prev.i
+  };
 }
 
 /** ≈ share × poslednja doza, nivo lestvice naniže (`beginner`: lestvica početnika, D31); ispod najnižeg

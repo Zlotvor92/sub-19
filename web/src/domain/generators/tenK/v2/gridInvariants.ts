@@ -35,11 +35,19 @@ export const isBuild = (ph: Phase): boolean =>
 export const steady = (w: PlanWeek): boolean => isBuild(w.phase) && !w.deload;
 const T_C = [2000, 2500, 3000, 3500, 4000, 4500, 5000];
 const T_CRUISE = [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000, 6400, 8000];
-const RP = [2400, 3000, 4000, 4500, 5000, 6000];
+/** D33 (10k-v2.11.0): lestvica RP do 8,0 km. */
+const RP = [2400, 3000, 4000, 4500, 5000, 6000, 6400, 8000];
+/** D10: lestvica I (doze). */
+const I_LADDER = [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000];
 /** D31: lestvica T kontinuirano početnika (od 1,5 km); 1,5 km = najmanja T doza početnika. */
 const T_C_BEG = [1500, ...T_C];
 /** D11: plafon zone 10 % (T, RP) cilja nedelje [m]. */
 const cap10 = (targetKm: number): number => Math.floor(0.1 * targetKm * 1000 + 1e-6);
+/** D33: plafon RP — cilj < 40 km 10 %, ≥ 40 km 15 % [m]. */
+const capRp = (targetKm: number): number =>
+  Math.floor((targetKm >= 40 - 1e-9 ? 0.15 : 0.1) * targetKm * 1000 + 1e-6);
+/** D11: plafon I 8 % [m]. */
+const capI = (targetKm: number): number => Math.floor(0.08 * targetKm * 1000 + 1e-6);
 /** ≈ 60 % poslednje doze, nivo lestvice naniže, najmanje `min` (D5/D7/D31). */
 const reduced = (ladder: readonly number[], last: number, min: number): number =>
   ladder.filter((m) => m <= 0.6 * last + 1e-6 && m >= min).pop() ?? min;
@@ -167,6 +175,9 @@ export function checkPlan(
   /** D31 (početnik): poslednja doza u zoni T i poslednja doza jedinog slota. */
   let lastTZone = 0;
   let lastQ1 = 0;
+  /** D34: najveća I doza i tip poslednje specifične nedelje. */
+  let maxI = 0;
+  let lastSpec: 'A' | 'B' | null = null;
   let noQualityWeeks = 0;
   let qualityAfterIntro = 0;
   let deloadBelow4 = false;
@@ -337,7 +348,7 @@ export function checkPlan(
         const cap = cap10(w.targetKm);
         const rp = reduced(RP, lastQ1, 2000);
         const t = reduced(T_C_BEG, lastTZone, 1500);
-        const want = rp <= cap ? `RP:${rp}` : t <= cap ? `T:${t}:continuous` : '';
+        const want = rp <= capRp(w.targetKm) ? `RP:${rp}` : t <= cap ? `T:${t}:continuous` : '';
         const d = quality[0]?.workout.dose;
         const got = d ? `${d.zone}:${d.doseM}${d.zone === 'T' ? `:${d.structure.form}` : ''}` : '';
         if (quality.length > 1 || got !== want) no('BEGINNER_TAPER', `${tag} ${got} ≠ ${want}`);
@@ -348,10 +359,33 @@ export function checkPlan(
     }
     // D20: dana sa trkom = min(broj dana, 5).
     if (w.phase === 'race' && w.days.length !== Math.min(n, 5)) no('RACE_DAYS', tag);
+    // D34 (10k-v2.11.0): redovan plan 4–6 dana — ne-rasteretne specifične nedelje bez ograničenja se smenjuju A (Q2 T)
+    // / B (Q2 I održavanja), prva A; A umesto B samo uz napomenu; I održavanja = najveća I doza (u plafonu I 8 %; inače
+    // najviši nivo I koji staje).
+    const q2Dose = w.days.find((d) => d.role === 'q2')?.workout.dose;
+    const isB = q2Dose?.ladder === 'I';
+    if (!oneSlot && steady(w) && w.phase === 'specific' && !w.limits?.quality) {
+      const want: 'A' | 'B' = lastSpec === 'A' ? 'B' : 'A';
+      const got: 'A' | 'B' = isB ? 'B' : 'A';
+      if (
+        got !== want &&
+        !(want === 'B' && w.notes.some((x) => x.startsWith('Nedelja B ne staje')))
+      )
+        no('SPEC_AB', `${tag} ${got} ≠ ${want}`);
+      if (isB) {
+        const cap = capI(w.targetKm);
+        const iWant = maxI <= cap ? maxI : (I_LADDER.filter((m) => m <= cap).pop() ?? -1);
+        if (q2Dose.doseM !== iWant) no('I_MAINTAIN', `${tag} I ${q2Dose.doseM} ≠ ${iWant}`);
+      }
+      lastSpec = got;
+    }
     if (steady(w)) {
       last = w;
+      for (const d of quality)
+        if (d.workout.dose!.ladder === 'I') maxI = Math.max(maxI, d.workout.dose!.doseM);
       const t = w.days.find((d) => d.role === tSlot)?.workout.dose;
-      if (t) lastT = t.doseM;
+      // D34: Q2 nedelje B (I održavanja) ne menja poslednju T dozu.
+      if (t && t.ladder !== 'I') lastT = t.doseM;
       for (const d of quality) if (d.workout.dose!.zone === 'T') lastTZone = d.workout.dose!.doseM;
       const q1 = w.days.find((d) => d.role === 'q1')?.workout.dose;
       if (q1) lastQ1 = q1.doseM;

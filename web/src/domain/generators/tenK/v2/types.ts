@@ -174,6 +174,8 @@ export type DoseStep =
   | 'repeat'
   /** D11 ispred D12: nijedan cilj nije izvodljiv uz „doza ne pada" → najviši nivo u plafonu. */
   | 'drop'
+  /** D34: I održavanja nedelje B (najveća I doza u plafonu I, ne raste). */
+  | 'maintain'
   | 'deload'
   | 'taper'
   | 'sharpener';

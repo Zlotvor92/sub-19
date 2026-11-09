@@ -67,7 +67,8 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
       [27.4, false],
       [21.9, true],
       [27.9, false],
-      [30, false]
+      // P3 (10k-v2.11.0, D34): ned 7 je specifična nedelja B — cilj 30,0 → 27,9 (nedelja B sme do 3,0 km niže).
+      [27.9, false]
     ]);
     const pause = adapt(id, 3, 'pause10');
     expect(rows(pause.plan, 4, 7)).toEqual([

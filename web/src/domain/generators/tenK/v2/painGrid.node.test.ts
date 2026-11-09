@@ -54,14 +54,19 @@ const I3_RACE_WEEK = [
   // 10K-08 (10k-v2.10.0, T1/C6): bazni planovi i povratak posle bola su drugi (lagan ≤ 0,8 × dugi, doza iznova od r + 1)
   // — prethodna dva toka više nisu viša, nova tri d6-r-18w (trkačka: cilj = planirano, D8/D23; uzrok je drugi taper
   // posle T1/C6, mehanizam I3 isti).
-  'd6-r-18w/w12/2027-01-22/p8 ned 18: 22.3 → 22.5',
-  'd6-r-18w/w12/2027-01-23/p8 ned 18: 22.3 → 22.5',
-  'd6-r-18w/w12/2027-01-24/p8 ned 18: 19.9 → 20.1'
+  // P3 (10k-v2.11.0, D33/D34): drugi RP tapera (plafon RP 15 % od 40 km, lestvica do 8,0 km) i specifične nedelje A/B —
+  // tri toka d6-r-18w više nisu viša; novih pet (d4-r-14w, d5-f-18w) trkačka nedelja uz bol 8 viša za 0,4 km (cilj =
+  // planirano, D8/D23; uzrok je drugi taper posle P3); mehanizam I3 isti.
+  'd4-r-14w/w3/2026-11-21/p8 ned 14: 15.8 → 16.2',
+  'd4-r-14w/w3/2026-11-22/p8 ned 14: 14.5 → 14.9',
+  'd5-f-18w/w14/2027-02-05/p8 ned 18: 18.9 → 19.3',
+  'd5-f-18w/w14/2027-02-06/p8 ned 18: 18.9 → 19.3',
+  'd5-f-18w/w14/2027-02-07/p8 ned 18: 16.5 → 16.9'
 ];
 /** I3 — nedelje sa istim ciljem bez dana bola u kojima je planirano uz bol 8 veće za ≤ 0,1 km (D19). 06c
     (A17): 16 → 14 — d5-f-18w asOf 02-05/02-06 ned 17 (taper) otpadaju zajedno sa trkačkom (ukinuto
     rasterećenje ned 15); d4-r-14w asOf 2026-11-21 ned 7 ostaje, cilj 34,7 → 37,1 (ukinuto rasterećenje ned 4). */
-const I3_ROUNDING = 20; // 10K-08: 14 → 20 (T1/C6 — drugi bazni planovi i povratak)
+const I3_ROUNDING = 12; // 10K-08: 14 → 20 (T1/C6 — drugi bazni planovi i povratak); P3: 20 → 12 (D33/D34)
 
 const to10 = (km: number): number => Math.round(km * 10);
 const km1 = (x10: number): string => (x10 / 10).toFixed(1).replace('.', ',');
@@ -147,7 +152,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.10.0');
+      expect(r.plan.policyVersion).toBe('10k-v2.11.0');
     }
   });
 

@@ -13,7 +13,8 @@ import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import { grid02Inputs, gridInputs, inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { TenKV2Plan } from './types.ts';
 import { fewerDaysAdvice, fit10, nominal10, peakCap10, startKm10 } from './volume.ts';
-import { buildWeek, type BuiltWeek } from './week.ts';
+import { specificTypeNext, type TypedWeek } from './specific.ts';
+import { buildWeek, type BuiltWeek, type WeekContext } from './week.ts';
 import { warmupCooldown } from './workouts.ts';
 
 /** Nezavisno pravilo D6: +6 % (min 1,0, max 3,0; korak 0,1) do min(1,4×, +15, max nedelje D17). */
@@ -29,7 +30,7 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
   if (c.pace.kind !== 'result') throw new Error('ulaz bez rezultata');
   const paces = pacesFromVdot(c.pace.vdotRaw);
   const rule = planRule(c.input.runDays.length, 'regular')!;
-  const ctx = {
+  const ctx: WeekContext = {
     input: c.input,
     paces,
     pattern: c.pattern,
@@ -45,32 +46,41 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
   let lastLong: number | null = null;
   let longest = 0;
   const out: ((t10: number) => boolean)[] = [];
+  const done: TypedWeek[] = [];
   for (const f of periodize(c.input.startDate, c.weeks)!) {
     if (f.phase === 'race') break;
     const qq: QualityState = q;
     const ll: number | null = lastLong;
     const lo: number = longest;
+    const nom = nominal10(f, vol, s10, c10, rule);
+    // D34: nedelja B — najpre samo B, cilj naniže najviše 3,0 km; inače B ili A uz napomenu (kao generate.construct).
+    const b = f.phase === 'specific' && !f.deload && specificTypeNext(done, rule) === 'B';
+    let ctxF: WeekContext = b ? { ...ctx, specB: 'B', specBMin10: nom - 30 } : ctx;
+    const inB = (t: number): boolean => ctxF.specB !== 'B' || (t <= nom && t >= nom - 30);
     // Kao generate.construct: prolaz po pravilu, pa (10K-08: i kad T1 obara sve ciljeve po pravilu) druga pretraga.
-    let make = (t: number): BuiltWeek | null => buildWeek(ctx, f, t, qq, ll, lo);
-    const fitOf = () =>
-      fit10(
-        nominal10(f, vol, s10, c10, rule),
-        f,
-        c10,
-        rule,
-        (t) => make(t) !== null,
-        vol.lastBuild10
-      );
+    let make = (t: number): BuiltWeek | null => (inB(t) ? buildWeek(ctxF, f, t, qq, ll, lo) : null);
+    const fitOf = () => fit10(nom, f, c10, rule, (t) => make(t) !== null, vol.lastBuild10);
     let fit0 = fitOf();
     if (!fit0) {
-      make = (t: number): BuiltWeek | null => buildWeek(ctx, f, t, qq, ll, lo, 'relax');
+      make = (t: number): BuiltWeek | null =>
+        inB(t) ? buildWeek(ctxF, f, t, qq, ll, lo, 'relax') : null;
       fit0 = fitOf();
+    }
+    if (!fit0 && b) {
+      ctxF = { ...ctx, specB: 'BorA', specBMin10: nom - 30 };
+      make = (t: number): BuiltWeek | null => buildWeek(ctxF, f, t, qq, ll, lo);
+      fit0 = fitOf();
+      if (!fit0) {
+        make = (t: number): BuiltWeek | null => buildWeek(ctxF, f, t, qq, ll, lo, 'relax');
+        fit0 = fitOf();
+      }
     }
     const mk = make;
     out.push((t) => mk(t) !== null);
     const fit: { target10: number } = fit0!;
     const w: BuiltWeek = make(fit.target10)!;
     if (w.long10 !== null) longest = Math.max(longest, w.long10);
+    done.push({ phase: f.phase, deload: f.deload, notes: w.notes, days: w.days });
     if (isBuildPhase(f.phase) && !f.deload) {
       vol.lastBuild10 = fit.target10;
       vol.peak10 = Math.max(vol.peak10, fit.target10);

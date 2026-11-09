@@ -328,7 +328,8 @@ describe('validator', () => {
     d.workout.dose!.structure = { form: 'reps', reps: 5, repM: 500 };
     expect(errors(p)).toContain('REP_MIN');
     // RP 3 × 800 m (D30a) u planu: bez greške; ista struktura u T zoni: REP_MIN.
-    const q = planOf(4, { weeks: 16, km: 35, vdot: 35 });
+    // 10k-v2.11.0 (D33): RP deonice < 1000 m ostaju u planovima malog obima (3 dana, 20 km).
+    const q = planOf(3, { weeks: 13, km: 20, vdot: 45 });
     const rp = q.weeks
       .flatMap((w) => w.days)
       .find(

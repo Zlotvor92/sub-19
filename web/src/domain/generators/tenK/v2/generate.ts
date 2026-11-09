@@ -38,6 +38,7 @@ import type {
   TenKV2Plan,
   WeekFrame
 } from './types.ts';
+import { specificTypeNext } from './specific.ts';
 import { validatePlan } from './validate.ts';
 import {
   adaptNominal10,
@@ -235,7 +236,7 @@ export function construct(
     const ctx0w = ctxAt(frame.index);
     // T3 (10K-08): posle novog starta — taper zadržava jedan kvalitet (kad posle povratka ima nedelja sa kvalitetom),
     // trkačka nedelja kratko oštrenje (steps.restartKeepsTaperQuality / lastRestartBefore, iste funkcije kao validator).
-    const ctx: WeekContext =
+    let ctx: WeekContext =
       frame.phase === 'taper' &&
       restartKeepsTaperQuality(
         steps,
@@ -247,6 +248,16 @@ export function construct(
           ? { ...ctx0w, keepSharpener: true }
           : ctx0w;
     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
+    // D34/A25 (P3): tip specifične nedelje iz nedelja kakve se upisuju (specific.ts, isto što čita validator).
+    if (
+      frame.phase === 'specific' &&
+      !frame.deload &&
+      specificTypeNext(
+        out.map((w, i) => ({ ...w, days: written[i]!.days })),
+        rule
+      ) === 'B'
+    )
+      ctx = { ...ctx, specB: 'B' };
     if (frame.phase === 'race') {
       const prev = out[out.length - 1];
       const prevDays = written[written.length - 1]?.days ?? [];
@@ -285,7 +296,10 @@ export function construct(
     const longest10 = longestLong10(written);
     // T1 (10K-08): pretraga cilja najpre sa granicama laganog (lengths.buildEasyBounds10); tek kad nijedan cilj nije
     // izvodljiv (mali obim adaptacije: dugi < 20 min / 0,8) — ista pretraga bez T1, uz napomenu (validator: upozorenje).
-    let ctxB: WeekContext = ctx;
+    // D34 (P3): nedelja B — prvi prolaz pretrage cilja samo sa nedeljom B (ctx.specB 'B'), cilj samo naniže i najviše
+    // bMaxDropKm ispod cilja po pravilu; nijedan takav cilj → ista pretraga sa 'BorA' (nedelja A uz napomenu).
+    let ctxS: WeekContext = ctx;
+    let ctxB: WeekContext = ctxS;
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(ctxB, frame, t10, quality, lastLong10, longest10, mode);
     // Samo kad nijedan cilj nije izvodljiv po pravilu — ista pretraga cilja, drugi put, sa popuštanjem
@@ -305,7 +319,10 @@ export function construct(
     // poslednje izgradnje) samo kad sastavljena nedelja ima test; inače cilj ≤ pravilu (samo naniže), a test
     // otpada (A9) kad ga sastavljena nedelja nema.
     const testDeload = frame.deload && frame.test === true;
+    const bLo10 = nominal - Math.round(P.specific.bMaxDropKm * 10);
     const can = (t10: number, m: QualityMode): boolean => {
+      // D34: prolaz 'B' — samo naniže (donju granicu cilja nedelje B drži buildWeek, ctx.specBMin10) i samo po pravilu.
+      if (ctxS.specB === 'B' && (t10 > nominal || (m !== 'rule' && m !== 'relax'))) return false;
       const b = make(t10, m);
       return (
         b !== null &&
@@ -316,63 +333,71 @@ export function construct(
     };
     let fit: ReturnType<typeof fit10> = null;
     let mode: QualityMode = 'rule';
-    // A9: cilj adaptacije (cilj koraka, povratak, donja granica) se zadržava — najpre svi prolazi kvaliteta
-    // na tom cilju, tek onda (ista pretraga D6) niži izvodljiv cilj.
-    if (downOnly)
-      for (const m of modes)
-        if (can(nominal, m)) {
-          [fit, mode] = [{ target10: nominal, fitted: null }, m];
-          break;
-        }
-    for (const t1 of [true, false]) {
+    for (const pass of ctx.specB ? (['B', 'BorA'] as const) : [null]) {
       if (fit) break;
-      if (!t1) {
-        if (!isBuildPhase(frame.phase)) break;
-        // T1 (10K-08): dugi izgradnje za stvaran broj laganih dana može biti duži nego ranije, pa redovno rasterećenje
-        // (dugi = 0,8 × poslednji) ne ostavlja lagane ≥ 3 km — tada pravilo rasterećenja posle smanjenja (A9: dugi ≤ 0,8 ×,
-        // najduži koji ostavlja lagane ≥ 3 km), uz napomenu T1_DELOAD.
-        ctxB = frame.deload ? { ...ctx, adapted: true, t1Deload: true } : { ...ctx, t1Off: true };
-        if (downOnly)
-          for (const m of modes)
-            if (can(nominal, m)) {
-              [fit, mode] = [{ target10: nominal, fitted: null }, m];
-              break;
-            }
-      }
-      for (const m of fit ? [] : modes) {
-        fit = fit10(
-          nominal,
-          frame,
-          av ? h.cap10 : cap10,
-          rule,
-          (t10) => can(t10, m),
-          h.lastBuild10,
-          downOnly
-        );
-        if (fit) {
-          mode = m;
-          // 10K-08 (T1): cilj po pravilu spušten (lagan ≤ 0,8 × dugi) — kad druga pretraga ('relax', D11 ispred D12) daje
-          // bliži izvodljiv cilj nedelje izgradnje, važi ona (inače npr. nedelja bez kvaliteta na polovini cilja).
-          const relax = modes[modes.indexOf(m) + 1];
-          if (
-            m === 'rule' &&
-            relax === 'relax' &&
-            fit.fitted === 'down' &&
-            isBuildPhase(frame.phase) &&
-            !frame.deload
-          ) {
-            const r = fit10(
-              nominal,
-              frame,
-              av ? h.cap10 : cap10,
-              rule,
-              (t10) => can(t10, relax),
-              h.lastBuild10,
-              downOnly
-            );
-            if (r && r.target10 > fit.target10) [fit, mode] = [r, relax];
+      if (pass) ctxS = { ...ctx, specB: pass, specBMin10: bLo10 };
+      ctxB = ctxS;
+      // A9: cilj adaptacije (cilj koraka, povratak, donja granica) se zadržava — najpre svi prolazi kvaliteta
+      // na tom cilju, tek onda (ista pretraga D6) niži izvodljiv cilj.
+      if (downOnly)
+        for (const m of modes)
+          if (can(nominal, m)) {
+            [fit, mode] = [{ target10: nominal, fitted: null }, m];
+            break;
           }
-          break;
+      for (const t1 of [true, false]) {
+        if (fit) break;
+        if (!t1) {
+          // D34: nedelja B samo uz granice laganog (T1); bez nje → nedelja A (prolaz 'BorA').
+          if (!isBuildPhase(frame.phase) || ctxS.specB === 'B') break;
+          // T1 (10K-08): dugi izgradnje za stvaran broj laganih dana može biti duži nego ranije, pa redovno rasterećenje
+          // (dugi = 0,8 × poslednji) ne ostavlja lagane ≥ 3 km — tada pravilo rasterećenja posle smanjenja (A9: dugi ≤ 0,8 ×,
+          // najduži koji ostavlja lagane ≥ 3 km), uz napomenu T1_DELOAD.
+          ctxB = frame.deload
+            ? { ...ctxS, adapted: true, t1Deload: true }
+            : { ...ctxS, t1Off: true };
+          if (downOnly)
+            for (const m of modes)
+              if (can(nominal, m)) {
+                [fit, mode] = [{ target10: nominal, fitted: null }, m];
+                break;
+              }
+        }
+        for (const m of fit ? [] : modes) {
+          fit = fit10(
+            nominal,
+            frame,
+            av ? h.cap10 : cap10,
+            rule,
+            (t10) => can(t10, m),
+            h.lastBuild10,
+            downOnly
+          );
+          if (fit) {
+            mode = m;
+            // 10K-08 (T1): cilj po pravilu spušten (lagan ≤ 0,8 × dugi) — kad druga pretraga ('relax', D11 ispred D12) daje
+            // bliži izvodljiv cilj nedelje izgradnje, važi ona (inače npr. nedelja bez kvaliteta na polovini cilja).
+            const relax = modes[modes.indexOf(m) + 1];
+            if (
+              m === 'rule' &&
+              relax === 'relax' &&
+              fit.fitted === 'down' &&
+              isBuildPhase(frame.phase) &&
+              !frame.deload
+            ) {
+              const r = fit10(
+                nominal,
+                frame,
+                av ? h.cap10 : cap10,
+                rule,
+                (t10) => can(t10, relax),
+                h.lastBuild10,
+                downOnly
+              );
+              if (r && r.target10 > fit.target10) [fit, mode] = [r, relax];
+            }
+            break;
+          }
         }
       }
     }

@@ -33,7 +33,7 @@ const floor10 = (x: number): number => Math.floor(x * 10 + 1e-9) / 10;
 /** D17 nezavisno: udeo dugog (02b: 3 dana 0,45) i minimum nedelje po broju dana. */
 const SHARE: Record<number, number> = { 3: 0.45, 4: 0.33, 5: 0.3, 6: 0.27 };
 const WEEK_MIN: Record<number, number> = { 3: 9, 4: 12, 5: 15, 6: 18 };
-const RP_LADDER = [2400, 3000, 4000, 4500, 5000, 6000];
+const RP_LADDER = [2400, 3000, 4000, 4500, 5000, 6000, 6400, 8000];
 const T_CRUISE = [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000, 6400, 8000];
 const down = (ladder: number[], last: number, floor: number): number =>
   ladder.filter((m) => m <= 0.6 * last + 1e-6 && m >= floor).pop() ?? floor;
@@ -54,8 +54,10 @@ describe('D7: taper', () => {
       const tt = t.days.find((d) => d.role === 'q2')?.workout.dose;
       const wantRp = down(RP_LADDER, lastRp, 2000);
       if (!rp) {
-        // Odstupanje D7 (D11 ispred D7): ni RP po pravilu ne staje u plafon 10 % cilja.
-        expect(wantRp).toBeGreaterThan(Math.floor(0.1 * t.targetKm * 1000 + 1e-6));
+        // Odstupanje D7 (D11 ispred D7): ni RP po pravilu ne staje u plafon RP cilja (D33: 10 %, od 40 km 15 %).
+        expect(wantRp).toBeGreaterThan(
+          Math.floor((t.targetKm >= 40 ? 0.15 : 0.1) * t.targetKm * 1000 + 1e-6)
+        );
         expect(t.notes.some((x) => x.includes('bez kvaliteta'))).toBe(true);
         seen.none++;
       } else {
@@ -71,7 +73,12 @@ describe('D7: taper', () => {
         );
         if (rp) seen.rpOnly++;
       } else {
-        const lastT = last.days.find((d) => d.role === 'q2')!.workout.dose!.doseM;
+        // D34: poslednja T doza — nedelja B (Q2 I održavanja) je ne menja.
+        const lastT = p.weeks
+          .filter(steady)
+          .map((w) => w.days.find((d) => d.role === 'q2')?.workout.dose)
+          .filter((d) => d && d.ladder !== 'I')
+          .pop()!.doseM;
         expect(tt.zone).toBe('T');
         expect(tt.doseM).toBe(down(T_CRUISE, lastT, 2000));
       }

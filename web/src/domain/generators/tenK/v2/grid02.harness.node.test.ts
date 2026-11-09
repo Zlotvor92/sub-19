@@ -26,7 +26,7 @@ import {
   expectByDays,
   GRID_TIMEOUT,
   missingParts,
-  CHANGED_08,
+  changed08Gen,
   P35_PLANS,
   p08Errors,
   sumOf
@@ -68,6 +68,13 @@ const LOWER_49_SET = ['d3-17w-30km-v35: 35.6 → 35.2', 'd3-18w-30km-v35: 35.6 �
 const isLower49 = (id: string): boolean => /^d3-1[78]w-30km-v35-[ABC]-(sat|sun)$/.test(id);
 
 /** D30a marker u NOVOM planu: RP deonica < 1000 m (10k-v2.2.1 ih nije imao, D22b). */
+/** P3 (10k-v2.11.0): stanje 38fd091 planova mreže 02 koje menja samo P3 (segmentP3.grid02-38fd091.json):
+    id → [planHashes21 pun, bez RACE_WEEK_SHORT, RP deonica < 1000 m]. */
+const P3_GRID02 = (
+  JSON.parse(
+    readFileSync(fileURLToPath(new URL('./segmentP3.grid02-38fd091.json', import.meta.url)), 'utf8')
+  ) as { plans: Record<string, [number, number, boolean]> }
+).plans;
 const rpBelow1000 = (p: TenKV2Plan): boolean =>
   p.weeks.some((w) =>
     w.days.some((d) => {
@@ -107,10 +114,12 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         throw new Error('TEN_K_V2_WRITE_BASELINE: samo ceo skup (TEST_FULL=1, glavni fajl)');
       all = DAYS.flatMap((n) => grid02Inputs(n));
       g = runPlanGrid(grid02Cases(days), (c, plan, r) => {
+        // P3: plan promenjen samo prema 38fd091 — heševi 21c03f1 i RP < 1000 m su stanja 38fd091 (fixture).
+        const b = P3_GRID02[c.id];
         reg[c.id] = {
           days: c.days as Days,
-          h: planHashes21(r),
-          rp800: rpBelow1000(plan),
+          h: b ? [b[0], b[1]] : planHashes21(r),
+          rp800: b ? b[2] : rpBelow1000(plan),
           capacity: plan.warnings.some((x) => x.rule === 'CAPACITY_LIMITED'),
           rws: plan.warnings.some((x) => x.rule === 'RACE_WEEK_SHORT')
         };
@@ -168,11 +177,13 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
           [0, 0]
         ]
       );
-      byDays((n) => g.stats[n].raceKmEasy, [636, 1470, 2004, 2538]);
+      // P3 (10k-v2.11.0): lagan trkačke nedelje u km 636 / 1470 / 2004 / 2538 → 672 / 1584 / 2148 / 2718 (drugi taper).
+      byDays((n) => g.stats[n].raceKmEasy, [672, 1584, 2148, 2718]);
       // 06f (pouka 35): D25 0 / 132 / 132 / 330 → 0 / 0 / 0 / 132 planova (drugi dan kvaliteta lagan, dugi raste).
       byDays((n) => g.stats[n].longShorter, [0, 0, 0, 132]);
       // 10K-08 (T1): DOSE_DROPPED 0 / 162 / 0 / 0 → 84 / 432 / 24 / 258.
-      byDays((n) => g.stats[n].doseDropped, [84, 432, 24, 258]);
+      // P3 (10k-v2.11.0, D33: plafon RP 15 % od 40 km): 84 / 432 / 24 / 258 → 84 / 294 / 0 / 0.
+      byDays((n) => g.stats[n].doseDropped, [84, 294, 0, 0]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja', () => {
@@ -180,10 +191,12 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       // [4224, 810, 144, 1.279, …], [5280, 732, 144, 1.25, 0, 6, 0, 90].
       const table = [
         // 10K-08 (T1): CAPACITY_LIMITED 828 / 1320 / 810 / 732 → 1056 / 2106 / 1302 / 1326, vrh/start niži, D25 (kolona 5).
-        [2640, 1056, 456, 1.225, 528, 0, 48, 0],
-        [3696, 2106, 42, 1.208, 0, 96, 0, 0],
-        [4224, 1302, 0, 1.254, 0, 222, 0, 0],
-        [5280, 1326, 0, 1.228, 0, 450, 0, 0]
+        // P3 (10k-v2.11.0, D33/D34): CAPACITY_LIMITED 1056 / 2106 / 1302 / 1326 → 1050 / 2142 / 1260 / 1266, taper samo RP
+        // (kolona 5) 0 / 96 / 222 / 450 → 0 / 132 / 282 / 522 (veći RP dan tapera, D7), vrh/start.
+        [2640, 1050, 456, 1.226, 528, 0, 48, 0],
+        [3696, 2142, 42, 1.213, 0, 132, 0, 0],
+        [4224, 1260, 0, 1.262, 0, 282, 0, 0],
+        [5280, 1266, 0, 1.234, 0, 522, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -294,7 +307,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         // 06f (pouka 35): uzrok na 7ba9717 (plan se menja, p35.node.test.ts).
         const p35 = P35_CAUSE21[id];
         // 10K-08: plan promenjen prema b9c4728 (T1/C11) — svoj razred (stanje b9c4728 su proverile ove regresije).
-        if (CHANGED_08.gen[id]) c['10K-08'] = (c['10K-08'] ?? 0) + 1;
+        // P3 (10k-v2.11.0): plan promenjen samo prema 38fd091 razvrstava se po stanju 38fd091 (= b9c4728, fixture P3).
+        if (changed08Gen(id)) c['10K-08'] = (c['10K-08'] ?? 0) + 1;
         else if (p35) c[p35]!++;
         // D30b uklanja samo upozorenje RACE_WEEK_SHORT; D30a daje RP deonicu < 1000 m.
         else if (x.h[0] === h0) c['same']!++;

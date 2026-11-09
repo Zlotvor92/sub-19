@@ -35,6 +35,8 @@ const p35 = (w: PlanWeek): boolean => w.notes.some((n) => n.startsWith(P35_DROP)
 const slot = (w: PlanWeek, r: 'q1' | 'q2'): Dose | undefined =>
   w.days.find((d) => d.role === r)?.workout.dose ?? undefined;
 const same = (a: Structure, b: Structure): boolean => JSON.stringify(a) === JSON.stringify(b);
+/** D34: nedelja B (specifična, Q2 = I održavanja; samo 4–6 dana). */
+const isB = (w: PlanWeek): boolean => w.phase === 'specific' && slot(w, 'q2')?.ladder === 'I';
 
 /** Lestvice iz odluke D10 (m u zoni). */
 const LADDER: Record<string, number[]> = {
@@ -42,11 +44,13 @@ const LADDER: Record<string, number[]> = {
   T_continuous: [2000, 2500, 3000, 3500, 4000, 4500, 5000],
   T_cruise: [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000, 6400, 8000],
   I: [2000, 2400, 3000, 3600, 4000, 4800, 5000, 6000],
-  RP: [2400, 3000, 4000, 4500, 5000, 6000]
+  /* D33 (10k-v2.11.0): do 8,0 km. */
+  RP: [2400, 3000, 4000, 4500, 5000, 6000, 6400, 8000]
 };
+/** D11; D33: RP 10 % ispod 40 km cilja, 15 % od 40 km. */
 const CAP = { R: 0.05, I: 0.08, T: 0.1, RP: 0.1 } as const;
 const capOf = (zone: keyof typeof CAP, targetKm: number): number =>
-  Math.floor(CAP[zone] * targetKm * 1000 + 1e-6);
+  Math.floor((zone === 'RP' && targetKm >= 40 - 1e-9 ? 0.15 : CAP[zone]) * targetKm * 1000 + 1e-6);
 const fits = (zone: keyof typeof CAP, m: number, targetKm: number): boolean =>
   m <= capOf(zone, targetKm);
 const ZONE: Record<string, keyof typeof CAP> = {
@@ -250,7 +254,8 @@ describe('D10/D22/D30: lestvice i strukture', () => {
         const [q1, q2] = SLOT[w.phase];
         expect(q1).toContain(slot(w, 'q1')!.ladder);
         if (p35(w)) expect(slot(w, 'q2')).toBeUndefined();
-        else expect(q2).toContain(slot(w, 'q2')!.ladder);
+        // D34: specifična nedelja B — Q2 I održavanja.
+        else if (!isB(w)) expect(q2).toContain(slot(w, 'q2')!.ladder);
       }
   });
 });
@@ -300,7 +305,7 @@ describe('D18: 3 dana — jedan kvalitet', () => {
 });
 
 describe('D11: jedan plafon po zoni, po treningu', () => {
-  it('R ≤ 5 %, I ≤ 8 %, T ≤ 10 %, RP ≤ 10 % ciljnog obima (nedelje 1..N−1)', () => {
+  it('R ≤ 5 %, I ≤ 8 %, T ≤ 10 %, RP ≤ 10 % (cilj ≥ 40 km: 15 %, D33) ciljnog obima (nedelje 1..N−1)', () => {
     for (const p of plans)
       for (const w of p.weeks.filter((x) => x.phase !== 'race'))
         for (const d of w.days)
@@ -362,7 +367,18 @@ describe('D12: progresija', () => {
         const a = s[i - 1]!;
         const b = s[i]!;
         for (const r of ['q1', 'q2'] as const) {
-          const da = slot(a, r);
+          // D34: Q2 nedelje B (I održavanja) nije deo lanca T slota; T se poredi sa poslednjom nedeljom bez I na Q2.
+          if (r === 'q2' && isB(b)) continue;
+          const da =
+            r === 'q2'
+              ? slot(
+                  s
+                    .slice(0, i)
+                    .filter((x) => !isB(x))
+                    .pop() ?? a,
+                  r
+                )
+              : slot(a, r);
           const db = slot(b, r);
           if (!da || !db) continue;
           // D11 ispred D12: spuštanje doze (napomena, DOSE_DROPPED) proverava validator.
@@ -417,7 +433,17 @@ describe('D12: progresija', () => {
         const b = s[i]!;
         // 06f (pouka 35): nedelja sa drugim danom kvaliteta laganim sme imati manju glavnu dozu; ima jedan slot.
         const dropped = slot(b, 'q1')?.step === 'drop' || slot(b, 'q2')?.step === 'drop' || p35(b);
-        if (!dropped) expect(main(b), `${b.index}`).toBeGreaterThanOrEqual(main(a));
+        // D34: specifična faza 4–6 dana — poređenje unutar tipa (A sa poslednjom A ili nedeljom pre specifične faze, B sa
+        // poslednjom B; prva B se ne poredi).
+        const prev = s.slice(0, i);
+        const ref =
+          one(p) || b.phase !== 'specific'
+            ? a
+            : isB(b)
+              ? prev.filter((x) => x.phase === 'specific' && isB(x)).pop()
+              : (prev.filter((x) => x.phase === 'specific' && !isB(x)).pop() ??
+                prev.filter((x) => x.phase !== 'specific').pop());
+        if (!dropped && ref) expect(main(b), `${b.index}`).toBeGreaterThanOrEqual(main(ref));
         if (key(b) === key(a)) {
           // Odstupanje D12: samo 3 dana (ili nedelja pouke 35), jedini slot bez druge strukture (napomena).
           expect(one(p) || p35(b)).toBe(true);
@@ -442,10 +468,51 @@ describe('D12: progresija', () => {
         const after = p.weeks.slice(i + 1).find(steady);
         if (!after || after.phase !== before.phase) return;
         for (const r of ['q1', 'q2'] as const) {
-          const da = slot(before, r);
+          // D34: T slot (Q2) se poredi bez nedelja B.
+          if (r === 'q2' && isB(after)) continue;
+          const b0 =
+            r === 'q2'
+              ? p.weeks
+                  .slice(0, i)
+                  .filter((x) => steady(x) && !isB(x))
+                  .pop()
+              : before;
+          const da = b0 ? slot(b0, r) : undefined;
           const db = slot(after, r);
           if (da && db && db.step !== 'drop') expect(db.doseM).toBeGreaterThanOrEqual(da.doseM);
         }
       });
+  });
+});
+
+describe('D34: održavanje I u specifičnoj fazi (4–6 dana)', () => {
+  it('smena A/B (prva A; A umesto B samo uz napomenu); I održavanja = najveća I doza, u plafonu I (inače najviši nivo koji staje)', () => {
+    let b = 0;
+    for (const p of plans.filter((x) => !one(x))) {
+      let last: 'A' | 'B' | null = null;
+      let maxI = 0;
+      for (const w of p.weeks.filter(steady)) {
+        if (w.phase === 'specific') {
+          const want: 'A' | 'B' = last === 'A' ? 'B' : 'A';
+          const got: 'A' | 'B' = isB(w) ? 'B' : 'A';
+          if (got !== want) {
+            expect(want, `${w.index}`).toBe('B');
+            expect(w.notes.some((n) => n.startsWith('Nedelja B ne staje'))).toBe(true);
+          }
+          if (got === 'B') {
+            b++;
+            // Nedelja B: cilj najviše 3,0 km ispod cilja po pravilu (odluka organizatora posle STOP 9c0fa49).
+            expect(w.targetKm, `${w.index}`).toBeGreaterThanOrEqual(w.nominalKm - 3 - 1e-9);
+            const cap = capOf('I', w.targetKm);
+            const iWant = maxI <= cap ? maxI : LADDER.I!.filter((m) => m <= cap).pop();
+            expect(slot(w, 'q2')!.doseM, `${w.index}`).toBe(iWant);
+          }
+          last = got;
+        }
+        for (const r of ['q1', 'q2'] as const)
+          if (slot(w, r)?.ladder === 'I') maxI = Math.max(maxI, slot(w, r)!.doseM);
+      }
+    }
+    expect(b).toBeGreaterThan(100);
   });
 });
