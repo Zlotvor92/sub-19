@@ -340,3 +340,17 @@ Plan P9 (do kraja):
   rast RP, plafon minuta „ne dirati"); K3-E test ≤ 2 × doza (test 3 km ugrađen u app i ekrane van foldera); K3-F dan
   manje (983 plana, menja broj dana — tražilo bi poseban segment).
 - Odluka: na 10K se K3-D/E/F samo mere, ugrađuju se A, B, C. K3-10K (Opus) pokrenut; K3-MAR u toku; K3-HM sledi.
+
+### 10. 11. 2026, 20:10 — K3-MAR završen (marathon-v2.13.0), tab arhiviran; K3-HM pokrenut
+
+- `85b8049`, izveštaj `reports/K3-MAR-REPORT.md`. Nezavisna provera organizatora: brzi nivo `marathon/v2` 453/453. Po
+  tabu: pun nivo 555/555, `--changed` 1772 ✔, E2E 3/3, `npm run check` 3387 ✔, sabotaže 4/4; 31 920 planova, 0 novih
+  odbijanja.
+- Ugrađeno: K3-A najduži dugi (p01/p02 22,4 → 25,2; p06 17,6 → 20,3; ostali uz rečenicu preporuke;
+  MARATHON_LONG_SHORT R 6126 → 3648, F 2562 → 1170); K3-B usko (početnik ≤ 1,30 × i ≤ 7,5 h, p12 75 → 64,2 km; dno
+  tabele zadržava 1,5 × jer bi bilo 159 odbijanja); K3-C deo (3 dana lagan 0,70); K3-E (a) brzi: blok do 18 km.
+- Nije ugrađeno: K3-D vrh pre tapera (sudar sa strogim rastom doze, M12/M19); K3-E (b) dan pred dugi ≤ 50 % (67
+  odbijanja, vrh −10 % u 600–700 planova); MP početnika u dugi; K3-F talas (pogađa 14 772/21 840 — traži odluku);
+  blok u dugom za 3 dana (nov tip slota); dan manje.
+- Posledica K3-B: početnik ređe dostiže dugi 24 km (upozorenje 669 → 1020) — za sud trenera u krugu 3.
+- K3-HM (Opus) pokrenut sa suženim obimom: ugrađuje A, B, deo C, E; D, F, G samo meri. K3-10K u toku.
