@@ -1040,6 +1040,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         w.index
       );
     // 2.4.0: donji prag ne važi bez tempa (po osećaju) ni za početnika (nema I; RP kratko).
+    // 5k-v2.15.1 (P8 završetak, odluka 2): u vrhuncu prag važi samo za prvi I lanca — posle ranije nedelje vrhunca sa
+    // I radom doza raste najviše jedan korak lestvice (workouts.iStepUp), pa sme da ostane ispod praga budžeta.
     if (
       (w.phase === 'peak' || w.phase === 'sharpen') &&
       !w.deload &&
@@ -1047,6 +1049,16 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       !w.test &&
       !w.hold &&
       !aw(w).feel &&
+      !(
+        w.phase === 'peak' &&
+        weeks.some(
+          (x) =>
+            x.index < w.index &&
+            x.phase === 'peak' &&
+            !x.deload &&
+            x.days.some((d) => d.workout.workKm.I > 0)
+        )
+      ) &&
       !a.beginner
     ) {
       const zone = w.phase === 'peak' ? 'I' : 'RP';

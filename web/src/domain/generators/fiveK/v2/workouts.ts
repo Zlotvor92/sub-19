@@ -400,6 +400,25 @@ export function roundRecoverySec(sec: number): number {
   return Math.max(step, Math.round(sec / step) * step);
 }
 
+/** 5k-v2.15.1 (P8 završetak, odluka 2; heuristika, odluka organizatora: p07 3 × 1000 → 6 × 800 m u jednoj nedelji nije
+    dozvoljeno): sledeći korak I lestvice posle doze `prev` — najmanji rad iz ponude I strogo veći od prethodnog koji
+    staje u plafon zone `budgetKm` (workouts.zoneBudget); nema ga → null. JEDINO mesto koraka I u vrhuncu. */
+export function iStepUp(budgetKm: number, p: Paces, prev: PrevDose): RepChoice | null {
+  const q = P.quality;
+  return chooseProgressiveReps(
+    budgetKm,
+    q.repOptionsKm.I,
+    p.I,
+    q.minReps.I,
+    q.maxReps.I,
+    q.iRepMaxSec,
+    q.iRepMinSec,
+    0,
+    prev,
+    'strict'
+  );
+}
+
 export type SessionResult =
   { ok: true; workout: Workout; choice: RepChoice | null } | { ok: false; message: string };
 
@@ -586,11 +605,15 @@ export function qualitySession(
       ] as const;
       // 5k-v2.12.0 (T4): glavni I (vrhunac) / RP (oštrenje) trkača sa rezultatom — prvo najmanji korak naviše sa radom
       // ≥ peakMainMinShare budžeta; nema ga u ponudi → postojeći prag mainMinShareOfBudget (ne naglo, bez odbijanja).
+      // 5k-v2.15.1 (P8 završetak, odluka 2): I u vrhuncu posle prethodnog I (i smanjenog prvog) raste najviše jedan
+      // korak lestvice nedeljno — najmanji rad iz ponude strogo veći od prethodnog, bez donjeg praga budžeta.
       const c = progression
-        ? ((phase === 'peak' || phase === 'sharpen'
-            ? chooseProgressiveReps(...args, q.peakMainMinShare, progression.prev, 'strict')
-            : null) ??
-          chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict'))
+        ? isI && phase === 'peak' && progression.prev
+          ? iStepUp(budgetKm, p, progression.prev)
+          : ((phase === 'peak' || phase === 'sharpen'
+              ? chooseProgressiveReps(...args, q.peakMainMinShare, progression.prev, 'strict')
+              : null) ??
+            chooseProgressiveReps(...args, q.mainMinShareOfBudget, progression.prev, 'strict'))
         : chooseReps(...args);
       if (!c)
         return progression?.prev

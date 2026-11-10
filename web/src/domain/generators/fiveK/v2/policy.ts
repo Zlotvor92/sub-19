@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.15.0',
+  version: '5k-v2.15.1',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -364,6 +364,10 @@ export const FIVE_K_V2_POLICY = {
     /** 5k-v2.15.0 (P8 dopuna G6, odluka organizatora po glavnom treneru): plan sa 4 i više dana — lagan ≤ 0,70 × dugi
         (3 dana ostaje buildMaxShareOfLong 0,8). Jedino mesto: lengths.easyCapKm. */
     buildMaxShareOfLong4: 0.7,
+    /* 5k-v2.15.1 (P8 završetak, odluka organizatora 1): varijanta B (0,75 uz spuštanje cilja kroz tabelu izvodljivih
+       ciljeva) izmerena i odbačena — vrh cilja pada > 10 % u 36–79 % planova svake grupe sa 4+ dana
+       (docs/generators-v2/perfection/P8-5K/g6.ts). Ostaje A: 0,70, cilj se ne spušta, planirano < cilj, upozorenje
+       jednom po planu u prikazu (text.userWarnings). */
     minSec: 1200,
     /** 2.1.0: dan pred trku lagan ≤ 4 km (ukupno, sa ubrzanjima) + 4 × 20 s ubrzanja (heuristika). */
     raceEveMaxKm: 4.0,
@@ -1087,5 +1091,38 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'bola, pauze, umora i manjka izvršenja (tada HARD_QUALITY applied false); isti zapisi ne prave nov korak (kao umor, ' +
       'pouka 36); taper i trkačka nedelja bez efekta. Sačuvan plan 5k-v2.13.0 i stariji prilagođavaju se po 2.14.0 ' +
       '(KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/P5-5K-REPORT.md.'
+  },
+  {
+    version: '5k-v2.15.0',
+    decision:
+      'P8 (ispravke po slepoj trenerskoj oceni i dopuna po glavnom treneru; odluke organizatora, HEURISTIKE). (a) budžet ' +
+      'I/RP 10 % za sve ciljeve (workouts.iMaxShareOf). (b) rasterećenje: rad zone ≤ 0,6 × poslednja ne-rasteretna doza, ' +
+      'dugi ≤ max(3 km, 0,8 × poslednji dugi) (generate.qualityCapOf). (c) prvi I posle R faze ≤ 0,7 × budžet I ' +
+      '(periodize.isFirstIWeek, workouts.firstIBudget). (d) WU/CD trke po pojasu vrha obima, najmanje 1,0 / 0,5 km ' +
+      '(workouts.raceWarmup). (e) početnik iznad kapaciteta plana početnika → redovan plan (steps.beginnerAboveTable). ' +
+      'G1 rast obima do kraja razvoja (volume.spreadKm), vrh ≤ start × 1,30 / 1,35 / 1,40 po dužini pripreme i satni ' +
+      'plafon nedelje 6 / 7 / 8 h po VDOT-u (volume.peakKm), korak < 3 % se ne primenjuje (volume.minStep). G2 plafon ' +
+      'zone ≥ prvi nivo lestvice (workouts.firstLevelBudget, feel.feelFirstLevel); ne važi u trkačkoj nedelji. G4 plafon ' +
+      'treninga u minutima rada: T 30, I 20 (VDOT < 40) / 24, RP 20 (workouts.minuteCapKm, feel.feelMinuteCap). G5 taper ' +
+      '≤ 60 % najvećeg rada zone u izgradnji; oštrenje trkačke nedelje 2 jednake deonice ≥ 400 m, ukupno ≤ 12 min, inače ' +
+      'ubrzanja (week.buildRaceWeek). G6 lagan ≤ 0,70 × dugi za 4+ dana (lengths.easyCapKm), cilj se ne spušta. G7 test ' +
+      'je jedini kvalitet nedelje i ne ide pre nedelje 4 (periodize.resultTestWeekOf, feel.test.minWeek; validator ' +
+      'ROLES). G3 tekst: trka kao trka, RPE trke 9, upozorenja zbirno u prikazu (text.userWarnings). Sačuvan plan ' +
+      '5k-v2.14.0 i stariji prilagođavaju se po 2.15.0 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P8-5K-REPORT.md.'
+  },
+  {
+    version: '5k-v2.15.1',
+    decision:
+      'P8 završetak (odluke organizatora posle STOP-a; HEURISTIKE). (1) G6: varijanta B (lagan ≤ 0,75 × dugi za 4+ dana ' +
+      'uz spuštanje cilja kroz volume.fitTargetKm) izmerena na mreži final-check (3 816 planova): vrh cilja pada > 10 % ' +
+      'u R 4 d 78,8 %, F 4 d 61,0 %, F 5 d 38,6 %, B 4 d 36,8 %, R 5 d 36,4 % planova — odbačena; ostaje A (0,70, cilj se ' +
+      'ne spušta, planirano < cilj, upozorenje jednom po planu u prikazu). (2) I doza u vrhuncu posle prethodnog I ' +
+      'treninga lanca (i smanjenog prvog, P8 c) raste najviše jedan korak lestvice nedeljno: najmanji rad iz ponude I ' +
+      'strogo veći od prethodnog, bez donjeg praga 70–80 % budžeta (ranije p07 3 × 1000 → 6 × 800 m). Jedino mesto: ' +
+      'workouts.iStepUp (u qualitySession); validator PEAK_MAIN_FLOOR važi samo za prvi I lanca. (3) Tumačenja 5k-v2.15.0 ' +
+      'prihvaćena: razvoj 5K = baza + vrhunac; „tabela početnika" = kapacitet plana početnika; WU/CD trke najmanje ' +
+      '1,0 / 0,5 km. Sačuvan plan 5k-v2.15.0 i stariji prilagođavaju se po 2.15.1 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
   }
 ];

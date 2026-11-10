@@ -1486,7 +1486,11 @@ export function markP4(r: unknown): boolean {
 export function markP8(r: unknown): boolean {
   return plansOf(r)
     .filter((p) => p.planType !== 'runWalk')
-    .some((p) => p.policyVersion === '5k-v2.15.0' && p.weeks.some((w) => w.phase === 'race'));
+    .some(
+      (p) =>
+        (p.policyVersion === '5k-v2.15.0' || p.policyVersion === '5k-v2.15.1') &&
+        p.weeks.some((w) => w.phase === 'race')
+    );
 }
 
 export function markP5(r: unknown): boolean {

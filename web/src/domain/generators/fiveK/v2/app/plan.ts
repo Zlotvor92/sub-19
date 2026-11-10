@@ -60,6 +60,7 @@ export const KNOWN_VERSIONS: readonly string[] = [
     '5k-v2.12.0',
     '5k-v2.13.0',
     '5k-v2.14.0',
+    '5k-v2.15.0',
     P.version
   ])
 ];
