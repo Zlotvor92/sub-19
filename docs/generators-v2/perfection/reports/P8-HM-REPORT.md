@@ -150,12 +150,12 @@ Testovi završetka (iz `web/`):
 | | komanda | trajanje | ishod |
 |---|---|---|---|
 | T1 | brz nivo HM v2 | ≈ 90 s | 363/363 |
-| T3 | `npx vitest run --changed 0181e25` | K3_TIME | K3_RES |
-| T4 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` | K4_TIME | K4_RES |
-| T5 | `npx playwright test e2e/hm-v2.spec.ts e2e/handoff-v2.spec.ts --trace off` | K5_TIME | K5_RES |
+| T3 | `npx vitest run --changed 0181e25` | 5 min 0 s | 199 fajlova, 2500/2500 |
+| T4 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` | 12 min 44 s | 75 fajlova, 455/455 |
+| T5 | `npx playwright test e2e/hm-v2.spec.ts e2e/handoff-v2.spec.ts --trace off` | 71 s | 5/5 |
 | S | sabotaže (18: prethodnih 14 + G8, G6 početnik, mesto testa × 2) | 56 s | 18/18 palo |
 
-Promenjeni planovi prema `0181e25` (ponovo snimljeno): K_CHANGED. `KNOWN_VERSIONS` + `hm-v2.11.0`; redovi politike
+Promenjeni planovi prema `0181e25` (ponovo snimljeno): 34 545 od 36 066 (`v` 22 469, `u` 12 001, `n` 66, `r` 9). `KNOWN_VERSIONS` + `hm-v2.11.0`; redovi politike
 `P8-G8`, `P8-G6b`, `P8-HMc`. Usklađeni testovi: `feel`, `segmentP5` (mesto testa), `adapt` (TEST_MOVED se u dva
 scenarija više ne javlja — test nije u toj nedelji), `beginner`, `segment10`, `earlyGrid` (27 300), `grid04` (5123),
 `segmentP8` (+ 3 provere). Ostaje otvoreno iz prvog dela: plato dugog (talas, krug 2) i pad ukupnog RP.
