@@ -315,3 +315,16 @@ Plan P9 (do kraja):
 - Organizator ponovo ispisao `P9/plans/10K` (10k-v2.14.0).
 - Verzije za krug 2: 5k-v2.15.3, 10k-v2.14.0, hm-v2.12.0, marathon-v2.12.0.
 - Poruka glavnom treneru (`session_01GnHHiWk1PhzvzdGjhxZ5ob`): oceniti `P9/plans` → `coach/ROUND-02.md` + `.json`.
+
+### 10. 11. 2026, 19:00 — krug 2 glavnog trenera; krug 3 (K3) pokrenut
+
+- `coach/ROUND-02.md` (`9f8615b`): prosek 54,6 → 59,0 (5K 54,7 → 58,0; 10K 55,0 → 59,2; HM 55,3 → 60,9; MAR 53,6 →
+  57,7). Bolji 37, isti 2, slabiji 9. Prvi planovi > 70 (HM p01 72, p02 71). Ispod 50: 5K p08, 10K p06, HM p11,
+  MAR p08, MAR p11.
+- Sud o ceni P8: satni plafoni dobri (ne dirati); trkački tempo nije premali u celini (jeste za VDOT ≥ 50 pri ≥ 80
+  km); 5K I 10,1 min premalo; maraton početnik 50 → 75 km ne (≤ 1,30 × i ≤ 7,5 h); 10K 4 dana 0,75; talas dugog da za
+  HM/MAR.
+- Odluka organizatora: ugrađuje se svih 6 stavki trenera, po distanci i po prioritetu, svako pravilo zaseban commit;
+  sudar → prethodno ponašanje + brojevi. Zadatak: `briefs/K3-krug-3.md`.
+- Tabovi (Opus, 2 uporedo): prvo MAR i 5K, zatim HM i 10K. Posle: ispis P9/plans, krug 3 kod trenera (provera),
+  `check:full`, pitanje vlasniku za spajanje u main.
