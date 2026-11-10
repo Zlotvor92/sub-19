@@ -1329,6 +1329,9 @@ export const canon09 = (r: unknown): string =>
 
 /** Razlog promene toka prema c13c258 (ispravka segmenta 09); CH = drugi korak lanca posle promenjenog prvog. */
 export type Why09 =
+  /* P8 (5k-v2.15.0): G1 obim do kraja razvoja, G2 prvi nivo lestvice, G3 tekst, (a) I 10 %, (b) rasterećenje/taper,
+     (c) prvi I, (d) trkački dan, (e) početnik iznad kapaciteta (markP8). */
+  | 'P8'
   /* P5 (5k-v2.14.0): F1 test u planu sa rezultatom ≥ 10 ned ili F2 zadržana doza / HARD_QUALITY (markP5). */
   | 'P5'
   /* P4 (5k-v2.13.0): S1 budžet I/RP 10/12 % ili S2 VDOT > 60 (markP4). */
@@ -1477,6 +1480,14 @@ export function markP4(r: unknown): boolean {
 
 /** P5 (5k-v2.14.0): kontinuirani plan trkača sa rezultatom ≥ 10 nedelja (F1: kontrolno trčanje u vrhuncu) ili rezultat
     adaptacije sa razlogom HARD_QUALITY / nedeljom zadržane doze (F2, Odluka 10). */
+/** P8 (5k-v2.15.0): pravila P8 menjaju skoro svaki plan (obim, doze, trkački dan); oznaka = plan neprekidnog trčanja
+    po pravilima 5k-v2.15.0 (trkački dan sa WU/CD iz workouts.raceWarmup). */
+export function markP8(r: unknown): boolean {
+  return plansOf(r)
+    .filter((p) => p.planType !== 'runWalk')
+    .some((p) => p.policyVersion === '5k-v2.15.0' && p.weeks.some((w) => w.phase === 'race'));
+}
+
 export function markP5(r: unknown): boolean {
   if (reasonsOf(r).some((x) => x.condition === 'HARD_QUALITY')) return true;
   return plansOf(r)
@@ -1492,6 +1503,8 @@ export function markP5(r: unknown): boolean {
 export function mark09(why: Why09, r: unknown): boolean {
   const ps = plansOf(r);
   switch (why) {
+    case 'P8':
+      return markP8(r);
     case 'P5':
       return markP5(r);
     case 'P4':

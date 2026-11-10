@@ -145,8 +145,10 @@ describe('F2: 3 dana / 12 km — kvalitet koji ne staje: manja doza ili bez kval
       recentResult: { distanceM: 5000, timeSec: 994, date: '2026-10-19' },
       goalTimeSec: null
     });
-    expect(p.weeks[2]!.limits?.quality).toBeDefined();
-    expect(p.warnings.filter((w) => w.rule === 'QUALITY_REDUCED').map((w) => w.week)).toContain(3);
+    // 5k-v2.15.0 (P8 G2): prvi nivo lestvice uvek staje — nedelja 3 ima I (2 × 700 m), bez QUALITY_REDUCED.
+    expect(p.weeks[2]!.limits?.quality).toBeUndefined();
+    expect(p.weeks[2]!.days.some((d) => d.workout.qualityType === 'I')).toBe(true);
+    expect(p.warnings.filter((w) => w.rule === 'QUALITY_REDUCED')).toEqual([]);
     expect(errors(p)).toEqual([]);
   });
 

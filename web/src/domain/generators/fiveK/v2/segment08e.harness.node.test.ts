@@ -232,10 +232,10 @@ export function describeReliefGrid(title: string, search: Search): void {
 
     // 5K-09: otisak prema 51a924f (sa tekstom) zamenjen otiskom prema c13c258 bez korisničkog teksta (Z2); promene
     // 51a924f → c13c258 (Odluka 9, N3/N4/F/P/M/K, 08k) su u istoriji (SEGMENT-08e…08l izveštaji).
-    // P5: otisak prema 8e87fd4 (segment14.e08e-8e87fd4.json, docs/generators-v2/perfection/P5-5K/fixture14.ts).
-    it('regresija prema 8e87fd4 (P5, otisak bez teksta): promenjeni tokovi nose razlog P5', () => {
+    // P8: otisak prema 9055e5b (segment15.e08e-9055e5b.json, docs/generators-v2/perfection/P8-5K/fixture15.ts); ranije P5 prema 8e87fd4.
+    it('regresija prema 9055e5b (P8, otisak bez teksta): promenjeni tokovi nose razlog P8', () => {
       const ref = ref09('e08e');
-      expect(ref.against).toBe('8e87fd4');
+      expect(ref.against).toBe('9055e5b');
       const bad = regress09(
         ref,
         flows.map((f) => ({ key: `${search}:${f.c.key}`, res: f.res }))

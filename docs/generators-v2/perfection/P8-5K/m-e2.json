@@ -1,0 +1,125 @@
+{
+ "tag": "e2",
+ "inputs": 3964,
+ "ok": 3962,
+ "rejected": 2,
+ "rejectedList": [
+  "f-d3-16w-12km-e300-0: PLAN_VIOLATES_POLICY",
+  "f-d3-16w-12km-e300-1: PLAN_VIOLATES_POLICY"
+ ],
+ "plateauLongAvg": 4.26,
+ "plateauVolAvg": 3.28,
+ "counts": {
+  "fam_B": 664,
+  "fam_F": 1430,
+  "fam_R": 1868,
+  "kraj_razvoja_ned_sum": 29372,
+  "kvalitet_duzi_od_dugog": 284,
+  "plato_dugog_>=6": 1035,
+  "plato_obima_>=6": 412,
+  "pocetnik": 386,
+  "poslednji_R_sec_sum": 1325208,
+  "prvi_I_posle_R_n": 3576,
+  "prvi_I_posle_R_sec_sum": 1994992,
+  "rasterecenje_I>60%": 363,
+  "rasterecenje_I>=pune": 62,
+  "rasterecenje_R>60%": 226,
+  "rasterecenje_T>60%": 39,
+  "taper_T>70%": 384,
+  "trka_10.0km": 744,
+  "trka_6.5km": 686,
+  "trka_7.5km": 333,
+  "trka_8.5km": 1494,
+  "trka_9.0km": 705,
+  "trka_najduzi_dan": 229,
+  "upozorenje_ponovljeno_LONG_SHORTER_THAN_QUALITY": 2,
+  "upozorenje_ponovljeno_PLANNED_BELOW_TARGET": 1380,
+  "vrh_dostignut_ned_sum": 24498
+ },
+ "examples": {
+  "trka_najduzi_dan": [
+   "P0:R-d3-12km-6w-v55",
+   "P0:R-d4-15km-6w-v35",
+   "P0:R-d4-15km-6w-v45",
+   "P0:R-d4-15km-6w-v55",
+   "P0:R-d4-15km-6w-v65",
+   "P0:F-d4-15km-6w-e330"
+  ],
+  "upozorenje_ponovljeno_PLANNED_BELOW_TARGET": [
+   "P0:R-d3-12km-6w-v55",
+   "P0:R-d3-12km-6w-v65",
+   "P0:F-d3-12km-6w-e330",
+   "P0:R-d3-12km-11w-v55",
+   "P0:R-d3-12km-11w-v65",
+   "P0:R-d3-12km-16w-v55"
+  ],
+  "kvalitet_duzi_od_dugog": [
+   "P0:F-d3-12km-6w-e450#3",
+   "P0:F-d3-12km-16w-e450#3",
+   "P0:R-d4-15km-16w-v35#4",
+   "P0:R-d4-15km-16w-v45#4",
+   "P0:R-d4-15km-16w-v55#4",
+   "P0:R-d4-15km-16w-v65#4"
+  ],
+  "rasterecenje_I>60%": [
+   "P0:R-d3-12km-11w-v35#7",
+   "P0:R-d3-12km-11w-v45#7",
+   "P0:R-d3-12km-11w-v55#7",
+   "P0:R-d3-12km-16w-v45#12",
+   "P0:R-d3-12km-16w-v55#12",
+   "P0:R-d3-24km-11w-v55#7"
+  ],
+  "rasterecenje_I>=pune": [
+   "P0:R-d3-12km-11w-v45#7",
+   "P0:R-d4-15km-11w-v55#7",
+   "r-d3-9w-12km-v38-0#5",
+   "r-d3-9w-12km-v45-0#5",
+   "r-d3-9w-12km-v38-1#5",
+   "r-d3-9w-12km-v45-1#5"
+  ],
+  "plato_dugog_>=6": [
+   "P0:R-d3-24km-16w-v35",
+   "P0:R-d3-35km-11w-v35",
+   "P0:R-d3-35km-11w-v45",
+   "P0:R-d3-35km-16w-v35",
+   "P0:R-d3-35km-16w-v45",
+   "P0:R-d3-35km-16w-v55"
+  ],
+  "plato_obima_>=6": [
+   "P0:R-d3-35km-11w-v35",
+   "P0:R-d3-35km-11w-v45",
+   "P0:R-d3-35km-16w-v35",
+   "P0:R-d3-35km-16w-v45",
+   "P0:F-d3-35km-16w-e450",
+   "P0:R-d4-45km-11w-v35"
+  ],
+  "rasterecenje_T>60%": [
+   "P0:F-d3-35km-16w-e330#8",
+   "P0:F-d3-35km-16w-e450#8",
+   "P0:B-d3-30km-16w-e420#8",
+   "f-d3-16w-16km-e420-0#8",
+   "f-d3-16w-16km-e480-0#8",
+   "f-d3-16w-16km-e420-1#8"
+  ],
+  "taper_T>70%": [
+   "P0:R-d4-15km-6w-v35#5",
+   "P0:R-d4-15km-6w-v45#5",
+   "P0:R-d4-15km-6w-v55#5",
+   "P0:R-d4-15km-6w-v65#5",
+   "P0:F-d4-15km-6w-e450#5",
+   "P0:R-d4-15km-11w-v35#10"
+  ],
+  "rasterecenje_R>60%": [
+   "P0:R-d4-15km-11w-v35#4",
+   "P0:R-d4-15km-11w-v45#4",
+   "P0:R-d4-15km-11w-v55#4",
+   "P0:R-d4-15km-11w-v65#4",
+   "P0:R-d4-15km-16w-v35#4",
+   "P0:R-d4-15km-16w-v35#8"
+  ],
+  "upozorenje_ponovljeno_LONG_SHORTER_THAN_QUALITY": [
+   "f-d4-16w-15km-e300-0",
+   "f-d4-16w-15km-e300-1"
+  ]
+ }
+}

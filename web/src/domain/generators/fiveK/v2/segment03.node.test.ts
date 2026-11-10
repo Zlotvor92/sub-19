@@ -192,7 +192,7 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
     expect(errorsOf(plan)).toEqual([]);
   });
 
-  it('12 ned: rasteretni vrhunac bez I — zamena (2.3.0: samo ubrzanja, R 4 × 150 m nije zamena)', () => {
+  it('rasteretni vrhunac malog obima: I prvog nivoa lestvice (P8 G2; ranije samo ubrzanja)', () => {
     // 5k-v2.12.0 (T4): plan trkača ≤ 8 nedelja nema rasterećenja — 12 nedelja (rasterećenje vrhunca u ned 8).
     // 3 dana, 12 km, VDOT ~52, 9 ned: rasterećenje vrhunca (ned 5) samo sa ubrzanjima. 5k-v2.13.0 (P4 S1: I 10 %): na
     // VDOT ~52 kvalitet staje — samo ubrzanja tek na VDOT 62 (S2).
@@ -202,12 +202,10 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
       timeSec: 994,
       days: ['tue', 'thu', 'sun']
     }).weeks.find((x) => x.phase === 'peak' && x.deload)!;
-    expect(quality(w)).toHaveLength(0);
-    expect(w.stridesOnly).toBe(true);
-    expect(w.notes.some((n) => n.includes('samo ubrzanja'))).toBe(true);
-    expect(
-      w.days.some((d) => d.role === 'easy' && d.workout.segments.some((s) => s.kind === 'stride'))
-    ).toBe(true);
+    // 5k-v2.15.0 (P8 G2): prvi nivo lestvice I uvek staje — jedan kratak I (2 × 700 m), ne samo ubrzanja.
+    expect(quality(w).map((d) => d.workout.qualityType)).toEqual(['I']);
+    expect(w.stridesOnly).toBe(false);
+    expect(w.notes.some((n) => n.includes('jedan kratak kvalitet'))).toBe(true);
   });
 
   // 2.4.0 (Segment 05, Odluka 3): bez višeg nivoa I više nije zadržan — ista doza druge strukture

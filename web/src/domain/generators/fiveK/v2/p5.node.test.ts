@@ -117,7 +117,9 @@ describe('P5 F1 — kontrolni test u planu sa rezultatom', () => {
     expect(testKindOf({ feel: true, beginner: false }, 6)).toBe('feel');
     expect(testKindOf({ feel: false, beginner: false }, 9)).toBeNull();
     expect(testKindOf({ feel: false, beginner: false }, 10)).toBe('result');
-    const beg = planOf({ ...inp(3, 20, 12, 35), experience: 'beginner', canRun30Min: true });
+    // 5k-v2.15.0 (P8 e): početnik u kapacitetu plana početnika (20 km je iznad → plan bez oznake početnika).
+    const beg = planOf({ ...inp(3, 12, 12, 35), experience: 'beginner', canRun30Min: true });
+    expect(beg.experience).toBe('beginner');
     expect(testDays(beg)).toHaveLength(0);
   });
 

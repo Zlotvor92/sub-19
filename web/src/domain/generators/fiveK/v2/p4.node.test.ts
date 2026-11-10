@@ -43,11 +43,12 @@ const build = (w: PlanWeek): boolean =>
   !w.deload && (w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen');
 
 describe('P4 S1 — budžet I/RP po cilju nedelje', () => {
-  it('tabela: cilj < 40 km 10 %, ≥ 40 km 12 % (bilo 8 %)', () => {
+  // 5k-v2.15.0 (P8 a): jedan broj 10 % za sve ciljeve (red ≥ 40 km → 12 % ukinut).
+  it('tabela: 10 % za sve ciljeve (P8; P4 je bio < 40 km 10 %, ≥ 40 km 12 %)', () => {
     expect(iMaxShareOf(39.9)).toBe(0.1);
-    expect(iMaxShareOf(40)).toBe(0.12);
+    expect(iMaxShareOf(40)).toBe(0.1);
     expect(qualityBudgets(30)).toEqual({ I: 3, T: 3, R: 1.5 });
-    expect(qualityBudgets(50)).toEqual({ I: 6, T: 5, R: 2.5 });
+    expect(qualityBudgets(50)).toEqual({ I: 5, T: 5, R: 2.5 });
   });
 
   it('plan koristi veći budžet, a I/RP nedelje ≤ udeo tabele', () => {

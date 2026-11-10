@@ -5,13 +5,13 @@ import { easyCapKm } from './lengths.ts';
 import { describe, expect, it } from 'vitest';
 import { daysBetween } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
-import { periodize, phaseCounts } from './periodize.ts';
+import { firstPeakIWeek, periodize, phaseCounts } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { inputOf, PROFILES, START, type Profile } from './testInputs.ts';
 import type { FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { planVolume } from './volume.ts';
-import { chooseProgressiveReps, easyRun, longRun, roundRecoverySec } from './workouts.ts';
+import { chooseProgressiveReps, easyRun, firstIBudget, longRun, roundRecoverySec } from './workouts.ts';
 
 function planOf(p: Profile): FiveKV2Plan {
   const r = generateFiveKV2(inputOf(p));
@@ -114,9 +114,13 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     const steady = plan.weeks.filter(isSteadyBuild);
+    // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget.
+    const first = firstPeakIWeek(plan.weeks);
     for (const w of steady.filter((x) => x.phase === 'peak' || x.phase === 'sharpen')) {
       expect(mainWork(w)).toBeGreaterThanOrEqual(
-        w.budgets.I * P.quality.mainMinShareOfBudget - 1e-9
+        (w.index === first ? firstIBudget(w.budgets.I) : w.budgets.I) *
+          P.quality.mainMinShareOfBudget -
+          1e-9
       );
       expect(mainWork(w)).toBeLessThanOrEqual(w.budgets.I + 1e-9);
     }

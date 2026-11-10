@@ -21,7 +21,8 @@ import {
   raceWeekRest,
   SECOND_EASY_NOTE
 } from './week.ts';
-import { easyRun } from './workouts.ts';
+import { easyRun, firstIBudget } from './workouts.ts';
+import { firstPeakIWeek } from './periodize.ts';
 
 const input = (id: string): Record<string, unknown> =>
   earlyGridInputs().find((x) => x.id === id)!.input;
@@ -84,7 +85,8 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
   });
 
   it('ostatak koji ne staje: planirano < cilj uz PLANNED_BELOW_TARGET i preporuku (više dana / manji obim)', () => {
-    const p = planOf(USER);
+    // 5k-v2.15.0 (P8 G1): na 30 km obim raste sporije i nijedna nedelja nije na granici — isti profil sa 35 km.
+    const p = planOf({ ...USER, currentWeeklyKm: 35 });
     const capped = p.weeks.filter((w) => w.easyCappedAtLong);
     expect(capped.length).toBeGreaterThan(0);
     for (const w of capped) {
@@ -207,9 +209,15 @@ describe('T4 (5K, trkač): taper 1 nedelja, rasterećenje, doza vrha', () => {
       'race'
     ]);
     expect(p.weeks.filter((w) => w.deload)).toEqual([]);
+    // 5k-v2.15.0 (P8 c): prvi I posle R faze ≤ firstIShareOfBudget × budžet I (izuzet od donjeg praga vrha).
+    const first = firstPeakIWeek(p.weeks);
     for (const w of p.weeks.filter((x) => x.phase === 'peak' || x.phase === 'sharpen')) {
       const q1 = w.days.find((d) => d.role === 'q1')!.workout;
       const main = w.phase === 'peak' ? q1.workKm.I : q1.workKm.RP;
+      if (w.index === first) {
+        expect(main).toBeLessThanOrEqual(firstIBudget(w.budgets.I) + 1e-9);
+        continue;
+      }
       expect(main).toBeGreaterThanOrEqual(P.quality.peakMainMinShare * w.budgets.I - 1e-9);
       expect(main).toBeLessThanOrEqual(w.budgets.I + 1e-9);
     }

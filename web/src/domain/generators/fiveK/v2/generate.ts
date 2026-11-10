@@ -364,7 +364,7 @@ const isBuildPhase = (ph: Phase): boolean => ph === 'base' || ph === 'peak' || p
  * 5k-v2.15.0 (P8 b, heuristika, odluka organizatora P8, nalaz slepe ocene) — JEDINO mesto granice: nedelja rasterećenja
  * (izgradnja) i tapera dobija granicu rada svake zone = udeo (quality.deloadQualityShare 0,6 / taperQualityShare 0,7) ×
  * rad te zone u poslednjoj UPISANOJ ne-rasteretnoj nedelji izgradnje sa tom zonom; rasterećenje i dugi ≤
- * deloadLongShare × dugi poslednje ne-rasteretne nedelje izgradnje. Zone bez ranije doze nemaju granicu. Najniži nivo
+ * max(easy.minKm, deloadLongShare × dugi poslednje ne-rasteretne nedelje izgradnje). Zone bez ranije doze nemaju granicu. Najniži nivo
  * lestvice uvek staje (workouts.cappedBudget, feel.cappedFeel).
  */
 export function qualityCapOf(f: WeekFrame, written: readonly PlanWeek[]): WeekFrame {
@@ -384,8 +384,12 @@ export function qualityCapOf(f: WeekFrame, written: readonly PlanWeek[]): WeekFr
       }
     }
   const lastLong = build[build.length - 1]?.days.find((d) => d.role === 'long')?.workout.km;
+  // Ne ispod najkraćeg laganog (easy.minKm): kraći dugi bi bio degenerisan (i lagan ≤ dugi ne bi stao).
   if (deload && lastLong !== undefined)
-    cap.longKm = Math.floor(lastLong * P.quality.deloadLongShare * 10 + 1e-9) / 10;
+    cap.longKm = Math.max(
+      P.easy.minKm,
+      Math.floor(lastLong * P.quality.deloadLongShare * 10 + 1e-9) / 10
+    );
   return Object.keys(cap).length > 0 ? { ...f, qcap: cap } : f;
 }
 

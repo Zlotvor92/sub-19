@@ -72,9 +72,9 @@ export function describeEarlyGrid(label: string, part: number): void {
     : all.filter((b) => BRZ_PLANOVI.includes(b.id));
   describe(label, () => {
     it(
-      `${bases.length} planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema 8e87fd4 (P5)`,
+      `${bases.length} planova: 0 odbijanja, Uslov 8, 'none' = generator, regresija prema 9055e5b (P8)`,
       () => {
-        expect(REF.against).toBe('8e87fd4'); // P5: segment14.x08g-8e87fd4.json
+        expect(REF.against).toBe('9055e5b'); // P8: segment15.x08g-9055e5b.json (ranije P5: 8e87fd4)
         const bad = bases.flatMap((b) => checkPlan(b.id, b.input));
         expect(bad.slice(0, 10)).toEqual([]);
       },

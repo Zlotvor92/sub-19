@@ -117,7 +117,8 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
             const days = { 3: D3, 4: D4, 5: D5 }[n];
             const r = generateFiveKV2(inputOf({ weeks: w, km, distanceM: 5000, timeSec, days }));
             if (!r.ok || r.plan.planType === 'runWalk') continue;
-            for (const x of r.plan.weeks.filter((y) => y.phase !== 'race')) {
+            // 5k-v2.15.0 (P8 b): rasterećenje sa dugim na granici (0,8 × poslednji dugi) sme lagan = dugi (planirano < cilj).
+            for (const x of r.plan.weeks.filter((y) => y.phase !== 'race' && !y.deload)) {
               weeks++;
               const long = x.days.find((d) => d.role === 'long');
               if (
@@ -427,7 +428,8 @@ describe('Odluka 9: početnik — rast ≤ 5%, dugi ≤ 60 min, vrh ≤ 1,2 × s
   it.each([
     ['bez rezultata, 3 dana, 12 km', EX.beg3],
     ['sa rezultatom, 4 dana, 18 km', EX.begRes4],
-    ['bez rezultata, 4 dana, 30 km, 16 ned', { ...EX.beg3, days: D4, km: 30, weeks: 16 }]
+    // 5k-v2.15.0 (P8 e): 30 km je iznad kapaciteta početnika 4 dana na 7:30 (28 km) → plan bez oznake početnika.
+    ['bez rezultata, 4 dana, 28 km, 16 ned', { ...EX.beg3, days: D4, km: 28, weeks: 16 }]
   ] as const)('%s', (_, s) => {
     const plan = planOf(raw(s));
     expect(plan.peakKm).toBeLessThanOrEqual(Math.floor(plan.startKm * 1.2 * 10 + 1e-9) / 10);

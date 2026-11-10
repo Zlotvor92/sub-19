@@ -241,17 +241,13 @@ describe('Odluka 4: trkačka nedelja — cilj = planirano, 50% vrha je gornja gr
 });
 
 describe('Odluka 5: zamena u rasterećenju — R ≥ 1,2 km, inače samo ubrzanja 6 × 20 s', () => {
-  it('3 dana, 12 km, VDOT 62, 9 ned: rasteretni vrhunac = samo ubrzanja 6 × 20 s, ne R 4 × 150 m', () => {
+  // 5k-v2.15.0 (P8 G2): najniži nivo lestvice uvek staje — rasteretni vrhunac ima I prvog nivoa (2 × 700 m), ne samo
+  // ubrzanja; samo ubrzanja ostaju kad kvalitet ne staje u dužine nedelje (početnik po osećaju, 4 dana, 15 km).
+  it('3 dana, 12 km, VDOT 62, 9 ned: rasteretni vrhunac = I prvog nivoa lestvice (G2), ne samo ubrzanja', () => {
     const plan = planOf(FAST_SMALL_8);
     const w = plan.weeks.find((x) => x.phase === 'peak' && x.deload)!;
-    expect(w.stridesOnly).toBe(true);
-    expect(quality(w)).toEqual([]);
-    const so = w.days.filter(
-      (d) => d.workout.segments.filter((s) => s.kind === 'stride').length === 6
-    );
-    expect(so).toHaveLength(1);
-    expect(so[0]!.workout.segments.find((s) => s.kind === 'stride')!.sec).toBe(20);
-    expect(w.notes.some((n) => n.includes('samo ubrzanja 6 × 20 s'))).toBe(true);
+    expect(w.stridesOnly).toBe(false);
+    expect(quality(w).map((d) => d.workout.title)).toEqual(['I: 2 × 700 m (oporavak 2:15 lagano)']);
     expect(errorsOf(plan)).toEqual([]);
   });
 
@@ -273,8 +269,20 @@ describe('Odluka 5: zamena u rasterećenju — R ≥ 1,2 km, inače samo ubrzanj
     w.stridesOnly = false;
     w.days[0] = { ...w.days[0]!, role: 'q1', hard: true, workout: r.workout };
     expect(errorsOf(plan)).toContain('DELOAD_R_MIN');
-    const plan2 = planOf(FAST_SMALL_8);
-    plan2.weeks.find((x) => x.stridesOnly)!.deload = false;
+    // 5k-v2.15.0 (P8 G2): nedelja samo sa ubrzanjima — početnik po osećaju, 4 dana, 15 km (kvalitet ne staje u dužine).
+    const r2 = generateFiveKV2({
+      startDate: '2026-11-02',
+      raceDate: '2027-01-03',
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 15,
+      typicalEasyPaceSecPerKm: 420,
+      experience: 'beginner',
+      canRun30Min: true,
+      goalTimeSec: null
+    });
+    if (!r2.ok) throw new Error('plan');
+    const plan2 = r2.plan as FiveKV2Plan;
+    plan2.weeks.find((x) => x.stridesOnly && x.deload)!.deload = false;
     expect(errorsOf(plan2)).toContain('DELOAD_STRIDES_ONLY');
   });
 });
