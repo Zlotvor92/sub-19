@@ -1,5 +1,7 @@
 # P8-5K — predaja (WIP)
 
+> **Završeno 10. 11. 2026** (5k-v2.15.1, `65f97994`): sve stavke ispod su rešene — v. `reports/P8-5K-REPORT.md` § Završetak. Tekst ispod je istorijska predaja.
+
 Sav rad je na grani (vrh posle `d62ae99`); `wip.patch` je prazan (nema lokalnog rada van grane).
 Detalji i brojevi: `reports/P8-5K-REPORT.md`; STOP: `reports/P8-5K-STOP.md`. Verzija 5k-v2.15.0.
 
