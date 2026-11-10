@@ -1,11 +1,11 @@
-5k-v2.15.0 exp regular start 12 peak 15.6 cap 28 days 3
+5k-v2.15.1 exp regular start 12 peak 15.6 cap 28 days 3
 1 base t12 p12 L5.4 max5.4 | q1:R: 4 × 150 m[3.5km,3m]
 2 base t12.9 p12.9 L5.8 max5.8 | q1:T: 1 km kontinuirano[3.5km,6m]
 3 base t13.8 p13.8 L6.2 max6.2 | q1:R: 4 × 150 m[3.5km,3m]
 4 peak t14.7 p14.7 L6.6 max6.6 | q1:I: 2 × 500 m[3.9km,5m]
 5 peak*D t11.8 p11.8 L5.2 max5.2 | q1:I: 2 × 400 m[3.6km,4m]
-6 peak*T t15.6 p15.6 L7 max7.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno[5.5km,22m]
+6 peak*T t15.6 p15.6 L7 max7.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno (RPE 9–10)[5.5km,22m]
 7 sharpen t15.6 p15.6 L7 max7.0 | q1:RP: 3 × 500 m[4.4km,9m]
 8 sharpen t15.6 p15.6 L7 max7.0 | q1:RP: 3 × 500 m[4.2km,9m]
-9 taper t13.3 p13.3 L5.9 max5.9 | q1:RP: 2 × 500 m[3.7km,6m]
-10 race t6.1 p6.1 L- max6.5 | q1:Oštrenje: 2 × 300 m RP[3.2km,3m] ; race:Trka 5K[6.5km,28m]
+9 taper t13.3 p13.3 L5.9 max5.9 | q1:RP: 2 × 400 m[3.5km,5m]
+10 race t6.36 p6.36 L- max6.5 | q1:Oštrenje: 2 × 400 m RP[3.5km,5m] ; race:Trka 5 km — prognoza 28:20 (pre trke 1 km lagano, posle 0,5 km)[6.5km,28m]

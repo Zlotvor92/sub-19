@@ -1,11 +1,13 @@
-5k-v2.15.0 exp regular start 65 peak 65 cap 65 days 5
-1 base t65 p65 L18 max18.0 | q1:R: 6 × 400 m[9.4km,8m] ; q2:T: 4 km kontinuirano[9.0km,15m]
-2 base t65 p65 L18 max18.0 | q1:R: 7 × 400 m[10.2km,9m] ; q2:T: 3 × 2000 m[11.4km,22m]
+5k-v2.15.1 exp regular start 65 peak 65 cap 65 days 5
+1 base t65 p61.6 L18 max18.0 | q1:R: 6 × 400 m[9.4km,8m] ; q2:T: 4 km kontinuirano[9.0km,15m]
+2 base t65 p64.82 L18 max18.0 | q1:R: 7 × 400 m[10.2km,9m] ; q2:T: 3 × 2000 m[11.4km,22m]
 3 base t65 p65 L18 max18.0 | q1:R: 8 × 400 m[11.0km,10m] ; q2:T: 4 × 1600 m[12.0km,23m]
 4 peak t65 p65 L18 max18.0 | q1:I: 4 × 1000 m[11.2km,14m] ; q2:T: 3 × 2000 m[11.4km,22m]
 5 peak*D t52 p52 L14.4 max14.4 | q1:I: 2 × 1200 m[8.2km,8m]
-6 peak*T t65 p65 L18 max18.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno[8.0km,14m] ; q2:T: 3 × 2000 m[11.4km,22m]
-7 sharpen t65 p65 L18 max18.0 | q1:RP: 6 × 1000 m[12.8km,21m] ; q2:R: 10 × 300 m[10.7km,10m]
-8 sharpen t65 p65 L18 max18.0 | q1:RP: 6 × 1000 m[11.8km,21m] ; q2:R: 10 × 300 m[10.7km,10m]
-9 taper t55.3 p55.3 L16.5 max16.5 | q1:RP: 4 × 1000 m[10.1km,14m] ; q2:T: 2,5 km kontinuirano[7.5km,9m]
-10 race t25.95 p25.95 L- max10.0 | q1:Oštrenje: 4 × 400 m RP[5.5km,5m] ; race:Trka 5K[10.0km,17m]
+6 peak*T t65 p63.8 L18 max18.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno (RPE 9–10)[8.0km,14m]
+7 sharpen t65 p65 L18 max18.0 | q1:RP: 6 × 800 m[11.1km,16m] ; q2:R: 10 × 300 m[10.7km,10m]
+8 sharpen t65 p65 L18 max18.0 | q1:RP: 5 × 1000 m[11.4km,17m] ; q2:R: 10 × 300 m[10.7km,10m]
+9 taper t55.3 p55.3 L16.5 max16.5 | q1:RP: 3 × 1000 m[8.7km,10m] ; q2:T: 2,5 km kontinuirano[7.5km,9m]
+10 race t27.21 p27.21 L- max10.0 | q1:Oštrenje: 2 × 1400 m RP[6.8km,10m] ; race:Trka 5 km — prognoza 17:03 (pre trke 3 km lagano, posle 2 km)[10.0km,17m]
+ W PLANNED_BELOW_TARGET 1 Nedelja ima 61,6 km umesto 65 km (lagan trk najviše 12,6 km uz dugi 18 km; sa 5 dana trčanja to je najviše što ova nedelja nosi).
+ W PLANNED_BELOW_TARGET 6 Nedelja ima 63,8 km umesto 65 km (lagan trk najviše 12,6 km uz dugi 18 km; sa 5 dana trčanja to je najviše što ova nedelja nosi).
