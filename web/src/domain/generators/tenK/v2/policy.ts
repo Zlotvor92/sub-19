@@ -369,7 +369,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D47',
-    rule: 'P8 dopuna G6 — nedelja izgradnje: lagan ≤ udeo dugog iste nedelje iz tabele D17 (easyMaxLongShare): 3 dana 0,80, 4–6 dana 0,70 (ranije 0,8 za sve); početnik 0,80 (beginner.easyMaxLongShare — STOP S9, do odluke organizatora: sa 0,70 početnik sa 4 dana gubi ≥ 10 % obima posle uvoda u 918 / 1890 planova mreže početnika, pre G6 54; sa 0,75 486). Višak cilja koji zato ne staje spušta postojeći mehanizam izvodljivog cilja (fit10) i saopštava se jednom (poruka o kapacitetu, G3).',
+    rule: 'P8 dopuna G6 — nedelja izgradnje: lagan ≤ udeo dugog iste nedelje iz tabele D17 (easyMaxLongShare): 3 dana 0,80, 4–6 dana 0,70 (ranije 0,8 za sve); početnik 0,80 (beginner.easyMaxLongShare — odluka organizatora S9: sa 0,70 početnik sa 4 dana gubi ≥ 10 % obima posle uvoda u 918 / 1890 planova mreže početnika, pre G6 54; sa 0,75 486). Višak cilja koji zato ne staje spušta postojeći mehanizam izvodljivog cilja (fit10) i saopštava se jednom (poruka o kapacitetu, G3).',
     place:
       'policy.ts days[n].easyMaxLongShare; lengths.ts buildEasyBounds10, buildLengths; volume.ts capacityMessage/capacityLimits; validate.ts EASY_VS_LONG',
     rationale:
@@ -666,9 +666,9 @@ export const TEN_K_V2_POLICY = {
     /** D31: prvi nivo lestvice T kontinuirano početnika (ispred 2,0 km) = najmanja T doza rasterećenja i
         tapera početnika [km]. */
     tFirstKm: 1.5,
-    /** S9 (P8 završetak, STOP — čeka odluku organizatora): lagan ≤ ovaj udeo dugog za početnika (3 i 4 dana). G6 (0,70 za
-        4+ dana) kod početnika sa 4 dana prelazi prag STOP-a zadatka (pad obima ≥ 10 % posle uvoda u 918 / 1890 planova), pa
-        do odluke ostaje vrednost pre G6. */
+    /** S9 (P8 završetak, odluka organizatora): početnik (jedan kvalitet nedeljno) — lagan ≤ 0,80 × dugi za 3 i 4 dana
+        (jedan red tabele početnika); G6 0,70 važi samo za redovan plan sa 4 i više dana. Sa 0,70 početnik sa 4 dana gubi
+        ≥ 10 % obima posle uvoda u 918 / 1890 planova mreže početnika (pre G6 i sa 0,80: 54; sa 0,75: 486). */
     easyMaxLongShare: 0.8,
     /** S3 (P8 završetak, D49): plafon T početnika = max(udeo × cilj nedelje; ovoliko km) — uz G4 (minuti). */
     tCapMinKm: 3.0

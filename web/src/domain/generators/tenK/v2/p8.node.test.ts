@@ -240,7 +240,7 @@ describe('P8 dopuna: G4 minuti rada, G5 oštrenje, G1a vrh, G6, G7 test, G8 dugi
         (x) => ['base', 'development', 'specific'].includes(x.phase) && !x.deload && !x.limits
       )) {
         const long = w.days.find((d) => d.role === 'long')!.workout.km;
-        // S9 (STOP, do odluke organizatora): početnik ostaje na 0,80.
+        // S9 (odluka organizatora): početnik ostaje na 0,80.
         const share = p.input.runDays.length >= 4 && p.input.experience !== 'beginner' ? 0.7 : 0.8;
         for (const e of w.days.filter((d) => d.role === 'easy'))
           expect(e.workout.km).toBeLessThanOrEqual(
@@ -372,7 +372,7 @@ describe('P8 završetak: S3 (D49), S7 (D50), S1/S5/S6/S8 (D51)', () => {
     }
   });
 
-  it('S9 (STOP, do odluke organizatora): početnik ostaje na lagan ≤ 0,80 × dugi — 4 dana, 30 km: obim ne pada kad uđe prvi kvalitet (sa 0,70: 31,0 → 27,x km)', () => {
+  it('S9 (odluka organizatora): početnik ostaje na lagan ≤ 0,80 × dugi — 4 dana, 30 km: obim ne pada kad uđe prvi kvalitet (sa 0,70: 31,0 → 27,x km)', () => {
     const c = beginnerGridInputs(4).find((x) => x.id === 'b-d4-18w-30km-e330-A-sat')!;
     const p = gen(c.input);
     expect(p.weeks[2]!.targetKm).toBeGreaterThan(p.weeks[1]!.targetKm);
