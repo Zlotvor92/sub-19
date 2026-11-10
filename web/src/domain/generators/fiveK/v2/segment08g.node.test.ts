@@ -98,14 +98,14 @@ describe('08g N2b — sporiji rezultat u bazi: jedinica doze i plafon ispred pro
     expect(errRules(t)).toContain('BASE_R_DECREASE');
     expect(validatePlan(t).map((v) => v.rule)).not.toContain('DOSE_DROPPED');
   });
-  it('(ii) b-d3-16w-20km-v32-1, sreda ned 4: usponi po vremenu 270 s → 300 s (km 0,63 → 0,60 nije doza) → prihvaćen, bez DOSE_DROPPED', () => {
-    const p = planOf('b-d3-16w-20km-v32-1');
+  it('(ii) b-d3-16w-16km-v32-1 (P8 e: 20 km je iznad kapaciteta početnika), sreda ned 4: usponi po vremenu 270 s → 300 s (km 0,63 → 0,60 nije doza) → prihvaćen, bez DOSE_DROPPED', () => {
+    const p = planOf('b-d3-16w-16km-v32-1');
     const r = run(p, 'slower', wed(p.weeks[3]!));
     expect(errors(r)).toEqual([]);
     if (r.ok) expect(r.plan.warnings.map((w) => w.rule)).not.toContain('DOSE_DROPPED');
   });
   it('(ii) doza po vremenu koja zaista padne → BASE_R_DECREASE', () => {
-    const p = planOf('b-d3-16w-20km-v32-1');
+    const p = planOf('b-d3-16w-16km-v32-1');
     const r = run(p, 'slower', wed(p.weeks[3]!));
     if (!r.ok) throw new Error('osnova');
     const t = JSON.parse(S(r.plan)) as FiveKV2Plan;
@@ -257,7 +257,8 @@ describe('08g N4 — stanje zavisno od prošlosti iz upisanih dana (pouka 29)', 
     expect(q1(r.plan.weeks[4]!)).toBe(q1(p.weeks[4]!));
     // 5k-v2.12.0 (T4): prvi izbor bez prethodne je najmanji rad ≥ 80 % budžeta → I 2 × 700 m; 5k-v2.13.0 (P4 S1: budžet
     // I 10 %) → I 3 × 600 m.
-    expect(q1(r.plan.weeks[6]!)).toBe('I: 3 × 600 m');
+    // 5k-v2.15.0 (P8 c, G1): ned 7 je prvi I posle R faze (budžet I × 0,7) → I 2 × 800 m.
+    expect(q1(r.plan.weeks[6]!)).toBe('I: 2 × 800 m');
   });
 });
 

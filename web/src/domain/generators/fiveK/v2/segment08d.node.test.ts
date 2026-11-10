@@ -223,14 +223,15 @@ describe('sudar 1 (odluka organizatora): korak bola sa povratkom počinje novu p
     ).toBe(5);
   });
 
-  it('nekadašnji BASE_R_DECREASE: doza počinje iznova od r + 1 — ned 5 (baza) R 0,80 + T 1,00 (bez novog starta: R 0,90 < 1,00, odbijeno); 08e: ned 4 nije rasterećenje (Odluka 9), 18,2 → ned 5 20,0 km', () => {
+  it('nekadašnji BASE_R_DECREASE: doza počinje iznova od r + 1 — ned 5 (baza) R 0,80 + T 1,00 (bez novog starta: R 0,90 < 1,00, odbijeno); 08e: ned 4 nije rasterećenje (Odluka 9), 17,6 → ned 5 19,3 km (P8 G1)', () => {
     for (const k of FORMERLY_REJECTED) {
       const p = contOf((at.get(k)!.res as Extract<Res, { ok: true }>).plan);
       // asOf pon–sub: r = 3; 5k-v2.6.1: ned 4 rasterećenje 13,3, ned 5 = 18,2; 5k-v2.7.0: ned 4 = 18,2 (povratni
       // rast od osnove 16,6), ned 5 = 20,0. asOf nedelja (2026-11-22): r = 4 je rasterećenje — bez promene.
       const sunday = k.includes('/2026-11-22/');
       expect([p.weeks[3]!.deload, p.weeks[3]!.targetKm, p.weeks[4]!.targetKm], k).toEqual(
-        sunday ? [true, 20.4, 18.2] : [false, 18.2, 20]
+        // 5k-v2.15.0 (P8 G1): sporiji rast baze — bilo [true, 20,4, 18,2] / [false, 18,2, 20].
+        sunday ? [true, 19, 17.6] : [false, 17.6, 19.3]
       );
       expect(validatePlan(p).filter((v) => v.severity === 'error')).toEqual([]);
     }
@@ -515,63 +516,64 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
       return [w.targetKm, w.plannedKm, w.days.filter((d) => d.workout.kind === 'quality').length];
     });
 
-  it('bazni plan: ned 2 = 43,2, ned 3 = 46,6, ned 4 rasterećenje 37,3, ned 5–6 = 46,6 (5k-v2.13.0, P4 S1: kapacitet uz I 10/12 %; bilo 45,6 / 36,5)', () => {
+  // 5k-v2.15.0 (P8 G1): obim raste do kraja razvoja (bilo 43,2 / 46,6 / 37,3 / 46,6 / 46,6, 5k-v2.13.0).
+  it('bazni plan: ned 2 = 41,1, ned 3 = 42,2, ned 4 rasterećenje 33,8, ned 5–6 = 43,3 / 43,8 (P8 G1)', () => {
     expect([2, 3, 4, 5, 6].map((i) => p0.weeks[i - 1]!.targetKm)).toEqual([
-      43.2, 46.6, 37.3, 46.6, 46.6
+      41.1, 42.2, 33.8, 43.3, 43.8
     ]);
     expect(p0.weeks[3]!.deload).toBe(true);
   });
 
-  it('A: asOf 2026-11-15 (ned), bol 5 dana 2026-11-14 → r = 4, nivo 43,2, osnova 30,2; ned 5 = 33,2 (bf47249: 28,0)', () => {
+  it('A: asOf 2026-11-15 (ned), bol 5 dana 2026-11-14 → r = 4, nivo 41,1, osnova 28,8; ned 5 = 31,6 (P8 G1; bilo 43,2 / 30,2 / 33,2)', () => {
     const r = run('2026-11-15', '2026-11-14', 5);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 4, share: 0.7 });
     expect(rows(r.plan.weeks)).toEqual([
-      [37.3, 26.8, 0], // 5k-v2.13.0 (P4 S1): bilo 36,5 / 26,6
-      [33.2, 32.6, 2], // 5k-v2.12.0 (T1): lagan ≤ 0,8 × dugi → planirano < cilj
-      [36.5, 36.5, 2]
+      [33.8, 25.4, 0], // 5k-v2.15.0 (P8 G1): bilo 37,3 / 26,8
+      [31.6, 30.9, 2], // 5k-v2.12.0 (T1): lagan ≤ 0,8 × dugi → planirano < cilj
+      [34.7, 34.7, 2]
     ]);
     expect(r.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
-      'Posle nedelje 4 rast kreće od 70% nivoa pre bola (30,2 km). Povratak do 43,2 km (nivo pre smanjenja) po +10%/ned'
+      'Posle nedelje 4 rast kreće od 70% nivoa pre bola (28,8 km). Povratak do 41,1 km (nivo pre smanjenja) po +10%/ned'
     );
   });
 
-  it('B: isto, bol 8 → ned 5 = 33,2 (pon–sre odmor; bf47249: pun cilj 45,6)', () => {
+  it('B: isto, bol 8 → ned 5 = 31,6 (pon–sre odmor; P8 G1, bilo 33,2)', () => {
     const r = run('2026-11-15', '2026-11-14', 8);
     expect(rows(r.plan.weeks)).toEqual([
-      [37.3, 21.2, 0],
-      [33.2, 30.8, 1],
-      [36.5, 36.5, 2]
+      [33.8, 20.3, 0],
+      [31.6, 29.4, 1],
+      [34.7, 34.7, 2]
     ]);
   });
 
-  it('C: asOf 2026-11-18 (sre), bol 5 → r = 4, nivo 46,6, osnova 32,6; ned 5 = 35,8 (5k-v2.12.0: 45,6 / 31,9 / 35,0; bf47249: 45,6 sa kvalitetom)', () => {
+  it('C: asOf 2026-11-18 (sre), bol 5 → r = 4, nivo 42,2, osnova 29,5; ned 5 = 32,4 (P8 G1; bilo 46,6 / 32,6 / 35,8)', () => {
     const r = run('2026-11-18', '2026-11-18', 5);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 4, share: 0.7 });
     expect(rows(r.plan.weeks)).toEqual([
-      [37.3, 28.9, 1],
-      [35.8, 33.3, 1],
-      [39.3, 39.3, 2]
+      [33.8, 27.1, 1],
+      [32.4, 30.1, 1],
+      [35.6, 35.6, 2]
     ]);
   });
 
-  it('D: isto, bol 8 → ned 5 = 35,8 (5k-v2.12.0: 35,0; bf47249: 45,6 / 36,3)', () => {
+  it('D: isto, bol 8 → ned 5 = 32,4 (P8 G1; bilo 35,8)', () => {
     const r = run('2026-11-18', '2026-11-18', 8);
     expect(rows(r.plan.weeks)).toEqual([
-      [37.3, 16.8, 1],
-      [35.8, 28.6, 0],
-      [39.3, 39.3, 2]
+      [33.8, 15.6, 1],
+      [32.4, 26, 0],
+      [35.6, 35.6, 2]
     ]);
   });
 
-  it('E: asOf 2026-11-13 (pet), bol 7 → r = 3, nivo 43,2, osnova 30,2; 08e (Odluka 9): ned 4 nije rasterećenje — 33,2 = osnova + 10% (5k-v2.6.1: rasterećenje 24,2 = 0,8 × osnova; bf47249: ned 5 45,6, dva kvaliteta)', () => {
+  it('E: asOf 2026-11-13 (pet), bol 7 → r = 3, nivo 41,1, osnova 28,8; 08e (Odluka 9): ned 4 nije rasterećenje — 31,6 = osnova + 10% (P8 G1; bilo 43,2 / 30,2 / 33,2)', () => {
     const r = run('2026-11-13', '2026-11-13', 7);
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 3, share: 0.7 });
-    expect(r.plan.weeks[2]!.targetKm).toBe(46.6); // 5k-v2.13.0 (P4 S1): bilo 45,6
+    expect(r.plan.weeks[2]!.targetKm).toBe(42.2); // 5k-v2.15.0 (P8 G1): bilo 46,6
     expect(r.plan.weeks[3]!.deload).toBe(false);
     expect(rows(r.plan.weeks)).toEqual([
-      [33.2, 25, 0],
-      [36.5, 36.1, 2],
-      [40.1, 40.1, 2]
+      [31.6, 24.3, 0],
+      [34.7, 33.5, 2],
+      [38.1, 38.1, 2]
     ]);
   });
 });

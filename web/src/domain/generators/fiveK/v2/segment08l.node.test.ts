@@ -22,8 +22,18 @@ import type { FiveKV2Plan } from './types.ts';
 const K = 7;
 /** Broj posle reči „nedelj…" je redni broj nedelje (ne km: „Trkačka nedelja 12.5 km"; ne broj: „12 nedelja", „prva nedelja 1 kvalitet"). */
 const WEEK_NO = /([Nn]edelj[a-z]*) (\d+)(?!\d|[.,]\d| km| kvalitet)/g;
-const shift = (s: string): string =>
-  s.replace(WEEK_NO, (_, w: string, n: string) => `${w} ${Number(n) + K}`);
+/** 5k-v2.15.0 (P8 G3): i spisak nedelja („u nedeljama 3, 6, 9 i 11") — svaki broj spiska je redni broj nedelje. */
+const WEEK_LIST = /([Nn]edeljama) (\d+(?:, \d+)* i \d+)/g;
+const shift = (s: string): string => {
+  const lists: string[] = [];
+  const t = s.replace(WEEK_LIST, (_, w: string, l: string) => {
+    lists.push(`${w} ${l.replace(/\d+/g, (n) => String(Number(n) + K))}`);
+    return `\u0000${lists.length - 1}\u0000`;
+  });
+  return t
+    .replace(WEEK_NO, (_, w: string, n: string) => `${w} ${Number(n) + K}`)
+    .replace(/\u0000(\d+)\u0000/g, (_, k: string) => lists[Number(k)]!);
+};
 const numbered = (s: string): boolean => new RegExp(WEEK_NO.source).test(s);
 
 type R = { ok: boolean } & Record<string, unknown>;

@@ -75,10 +75,11 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
     expect(r.changes).toContainEqual({ week: 4, field: 'deload', before: 'true', after: 'false' });
   });
 
-  it('bol 5: ned 4 rasterećenje 12,3 → 16,9 (od osnove povratka); manjak: 16,3 → 22,0', () => {
+  // 5k-v2.15.0 (P8 G1): ned 3 = 23,7 (bilo 25,5); manjak: 19,0 / 20,9 / 22,4 (bilo 20,4 / 22,0 / 23,7).
+  it('bol 5: ned 4 rasterećenje → 16,9 (od osnove povratka); manjak: ned 4 → 20,9', () => {
     const pain = run('v45-d4-22km-14w', '2026-11-15', 'pain5');
     expect(rows(pain.plan, 3, 5)).toEqual([
-      [25.5, false],
+      [23.7, false],
       [16.9, false],
       [18.5, false]
     ]);
@@ -86,9 +87,9 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
     expect(pain.plan.adaptation!.steps.at(-1)!.reduced).toBeUndefined();
     const under = run('v45-d4-22km-14w', '2026-11-15', 'missed');
     expect(rows(under.plan, 3, 5)).toEqual([
-      [20.4, false],
-      [22, false],
-      [23.7, false]
+      [19, false],
+      [20.9, false],
+      [22.4, false]
     ]);
     expect(text(under, 'UNDER_EXECUTION')).toContain(RELIEF(4));
   });
@@ -276,9 +277,10 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
   it('VOLUME_DELOAD: pauza 20, asOf sreda nedelje rasterećenja — ostatak nedelje = cilj pauze (volume.pauseRemainderKm) < 0,8 × prethodne: prihvaćeno (3 toka)', () => {
     const cases: [string, string, number, number, number][] = [
       // 5k-v2.13.0 (P4 S1): kapacitet uz I 10 % — rasterećenje v38 30,6, ostatak pauze 26,8 / 26,6 (bilo 29,9 / 26,2).
-      ['v38-d4-38km-10w', '2026-12-02', 5, 30.6, 26.8], // 5k-v2.12.0 (T4): rasterećenje ned 5 (bilo 3)
+      // 5k-v2.15.0 (P8 G1): sporiji rast — ostatak pauze 26,7 / 26,6 / 27,5, rasterećenje v45 32,2 (bilo 26,8 / 33 / 28,9).
+      ['v38-d4-38km-10w', '2026-12-02', 5, 30.6, 26.7], // 5k-v2.12.0 (T4): rasterećenje ned 5 (bilo 3)
       ['v38-d4-38km-14w', '2026-11-25', 4, 30.6, 26.6],
-      ['v45-d4-38km-14w', '2026-12-23', 8, 33, 28.9]
+      ['v45-d4-38km-14w', '2026-12-23', 8, 32.2, 27.5]
     ];
     for (const [id, asOf, week, before, after] of cases) {
       const p = basesOf('narrow').find((b) => b.id === id)!.plan as FiveKV2Plan;

@@ -141,23 +141,24 @@ const projected = (k: number): number => Math.min(14, 1 + Math.floor((k - 1) / 2
 describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)', () => {
   const plan = planOf(DEV04);
 
-  it('dev-04 pauza 20 dana: nedelje 9–11 rastu iznad 25,5 km (i u oštrenju), do nivoa 40,8', () => {
+  // 5k-v2.15.0 (P8 G1): baza raste sporije (do kraja razvoja) — nivo pre pauze 38 km (bilo 40,8), cilj pauze 22,6 km.
+  it('dev-04 pauza 20 dana: nedelje 9–11 rastu iznad cilja pauze (i u oštrenju), do nivoa 38', () => {
     const asOf = endOfWeek(7);
     const r = adapt(plan, { workouts: pause(plan, asOf, 20), coverage: full(asOf) }, asOf);
     expect(errors(r.plan)).toEqual([]);
     const step = r.plan.adaptation!.steps[0]!;
     // Nivo pre smanjenja = poslednja ne-rasteretna nedelja izgradnje završena pre pauze (ned 3).
-    expect(step.levelKm).toBe(40.8);
+    expect(step.levelKm).toBe(38);
     const t = targets(r.plan);
-    expect(t.slice(7, 11)).toEqual([23.7, 26, 28.6, 31.4]);
+    expect(t.slice(7, 11)).toEqual([22.6, 24.8, 27.2, 29.9]);
     for (const i of [8, 9, 10]) {
-      expect(t[i]).toBeGreaterThan(25.5);
-      expect(t[i]).toBe(Math.min(floor1(t[i - 1]! * 1.1), 40.8));
+      expect(t[i]).toBeGreaterThan(t[7]!);
+      expect(t[i]).toBe(Math.min(floor1(t[i - 1]! * 1.1), 38));
     }
     // 5k-v2.12.0 (T4): taper 1 nedelja — ned 10 vrhunac, ned 11 oštrenje.
     expect([r.plan.weeks[9]!.phase, r.plan.weeks[10]!.phase]).toEqual(['peak', 'sharpen']);
     // 5k-v2.12.0 (T4): taper 1 nedelja — oštrenje ned 12 raste dalje (34,5), taper od novog vrha, ne od 25,5.
-    expect(t[11]).toBe(floor1(31.4 * 1.1));
+    expect(t[11]).toBe(floor1(29.9 * 1.1));
     expect(t[12]).toBe(round1(t[11]! * 0.85));
   });
 
@@ -169,11 +170,12 @@ describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)
     const r = adapt(plan, { workouts: w, coverage: full(asOf) }, asOf);
     expect(errors(r.plan)).toEqual([]);
     const t = targets(r.plan);
-    expect(t[5]).toBe(36.4); // izvršenje: 80% planiranog
-    expect(t[6]).toBe(floor1(36.4 * 1.1)); // +10% (ispod nivoa 40,8)
-    expect(t[8]).toBe(43.2); // redovnih +8% (veće od povratka ograničenog nivoom)
+    // 5k-v2.15.0 (P8 G1): nivo 38 km, izvršenje 80 % od 41 km.
+    expect(t[5]).toBe(32.8); // izvršenje: 80% planiranog
+    expect(t[6]).toBe(floor1(32.8 * 1.1)); // +10% (ispod nivoa 38)
+    expect(t[8]).toBe(38.8); // redovnih +8% (veće od povratka ograničenog nivoom)
     // 5k-v2.12.0 (T4): ned 10 je vrhunac (+8 %, do vrha 45,5), ned 11 oštrenje drži.
-    expect([t[9], t[10]]).toEqual([45.5, 45.5]);
+    expect([t[9], t[10]]).toEqual([41.9, 41.9]);
   });
 
   // 5k-v2.6.1 (Segment 08d, Odluka 1 dopuna): osnova = min(0,7 × nivo pre bola 40,8, cilj nedelje sidra
@@ -184,11 +186,12 @@ describe('Odluka 1: povratni rast do nivoa pre smanjenja (+10%/ned, i oštrenje)
     const r = adapt(plan, { workouts: w, coverage: full(asOf) }, asOf);
     expect(errors(r.plan)).toEqual([]);
     const t = targets(r.plan);
-    expect(t[4]).toBe(44);
-    expect(r.plan.weeks[4]!.plannedKm).toBeLessThan(44);
-    expect(t[5]).toBe(floor1(round1(0.7 * 40.8) * 1.1));
-    expect(t[8]).toBe(37.9);
-    expect([t[9], t[10]]).toEqual([40.9, 40.9]); // 5k-v2.12.0 (T4): ned 10 vrhunac (+8 % od 37,9), ned 11 drži
+    // 5k-v2.15.0 (P8 G1): nedelja sidra 39,5 km, nivo pre bola 38 km.
+    expect(t[4]).toBe(39.5);
+    expect(r.plan.weeks[4]!.plannedKm).toBeLessThan(39.5);
+    expect(t[5]).toBe(floor1(round1(0.7 * 38) * 1.1));
+    expect(t[8]).toBe(35.3);
+    expect([t[9], t[10]]).toEqual([38.1, 38.1]); // ned 10 vrhunac (+8 % od 35,3), ned 11 drži
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 5, share: 0.7 });
   });
 });
