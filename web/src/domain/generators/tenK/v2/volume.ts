@@ -3,6 +3,7 @@
    nedelje (week.ts), koju ovaj modul dobija kao funkciju — kapacitet nije formula. */
 
 import { buildEasyBounds10, longShareCap10, longTimeCap10 } from './lengths.ts';
+import { midEasy } from './paces.ts';
 import { isBuildPhase } from './periodize.ts';
 import { daysForKm, type PlanRule, TEN_K_V2_POLICY as P } from './policy.ts';
 import { deloadWeekOf } from './steps.ts';
@@ -98,12 +99,19 @@ export function startKm10(currentWeeklyKm: number): number {
 
 /** D6: granica izgradnje min(start × 1,4; start + 15; max nedelje D17) [0,1 km] — početnik 1,3× / +10
     (D28); kapacitet konstrukcije je posebno. */
-export function peakCap10(start10: number, rule: PlanRule): number {
-  return Math.min(
+export function peakCap10(start10: number, rule: PlanRule, weeks: number, p: Paces): number {
+  const old = Math.min(
     Math.floor(start10 * rule.peakFactor + EPS),
     start10 + to10(rule.peakAddKm),
     to10(rule.peakMaxKm)
   );
+  // G1a (P8 dopuna, D45): faktor vrha po dužini pripreme i satni plafon nedelje (cilj × srednji lagan tempo) po VDOT-u;
+  // start iznad plafona → vrh = start (bez rasta, bez spuštanja ispod trenutnog obima).
+  const g = P.volume.peakG1a;
+  const factor = g.factorByWeeks.find((r) => weeks <= r.maxWeeks)!.factor;
+  const hours = g.hoursByVdot.find((r) => p.vdot < r.belowVdot)!.hours;
+  const hour10 = Math.floor(((hours * 3600) / midEasy(p)) * 10 + EPS);
+  return Math.max(start10, Math.min(old, Math.floor(start10 * factor + EPS), hour10));
 }
 
 /** D6: +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 3,0 km; korak 0,1) — početnik +5 % (min 1,0,
@@ -135,8 +143,12 @@ export function buildWeeksLeft(
     dostignut. Samo usporava (nikad ne ubrzava); `left` 0 ili vrh dostignut = D6. JEDINO mesto koraka rasta. */
 export function growthStep10(last10: number, cap10: number, rule: PlanRule, left: number): number {
   const g = growth10(last10, rule);
-  if (left <= 0 || last10 >= cap10) return g;
-  return Math.min(g, Math.max(1, Math.round((cap10 - last10) / left)));
+  const step =
+    left <= 0 || last10 >= cap10 ? g : Math.min(g, Math.max(1, Math.round((cap10 - last10) / left)));
+  // G1b (P8 dopuna, D45): stvarni rast (do granice) manji od 3 % tekućeg cilja se ne primenjuje — nedelja zadržava cilj,
+  // rast se prenosi na sledeću ne-rasteretnu nedelju (manje preostalih nedelja → veći korak).
+  const eff = Math.min(step, Math.max(0, cap10 - last10));
+  return eff > 0 && eff < P.volume.minStepShare * last10 - EPS ? 0 : step;
 }
 
 export interface VolumeHistory {
@@ -347,12 +359,14 @@ export function enterWeek(
   h: AdaptHistory,
   frame: WeekFrame,
   av: AdaptVolume,
-  rule: PlanRule
+  rule: PlanRule,
+  weeks: number,
+  p: Paces
 ): AdaptHistory {
   const i = frame.index;
   const out = { ...h };
   const r = av.restart.get(i);
-  if (r !== undefined) out.cap10 = peakCap10(r, rule);
+  if (r !== undefined) out.cap10 = peakCap10(r, rule, weeks, p);
   const reset = av.reset.get(i);
   if (reset !== undefined) {
     if (isBuildPhase(frame.phase)) [out.peakRef10, out.tailCap10] = [0, null];

@@ -205,7 +205,7 @@ export function construct(
     feel
   };
   const start10 = startKm10(input.currentWeeklyKm);
-  const cap10 = peakCap10(start10, rule);
+  const cap10 = peakCap10(start10, rule, weeks, paces);
   const av = adapted ? adaptVolume(steps) : null;
   // A1: tempo nedelje (rezultat iz adaptacije važi od svoje sledeće nedelje); A9: odstupanja za mali obim
   // samo posle smanjenja obima.
@@ -304,7 +304,7 @@ export function construct(
       });
       continue;
     }
-    if (av) h = enterWeek(h, frame, av, rule);
+    if (av) h = enterWeek(h, frame, av, rule, weeks, paces);
     // G1 (P8): rast do kraja razvoja — preostale ne-rasteretne nedelje izgradnje OSNOVNE periodizacije ulaza (bez
     // koraka adaptacije: nov start i prinudno rasterećenje ne menjaju korak prošlih nedelja, prošlost = upisano).
     const left = buildWeeksLeft(base, frame.index);

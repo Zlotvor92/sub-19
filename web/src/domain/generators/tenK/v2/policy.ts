@@ -670,7 +670,23 @@ export const TEN_K_V2_POLICY = {
     growthMinKm: 1.0,
     growthMaxKm: 3.0,
     peakFactor: 1.4,
-    peakAddKm: 15
+    peakAddKm: 15,
+    /** G1a (P8 dopuna, D45): vrh ≤ start × faktor po dužini pripreme i ≤ satni plafon nedelje (cilj × srednji lagan tempo)
+        po VDOT-u plana (po osećaju: procena); čita se samo kroz volume.peakCap10. */
+    peakG1a: {
+      factorByWeeks: [
+        { maxWeeks: 12, factor: 1.3 },
+        { maxWeeks: 15, factor: 1.35 },
+        { maxWeeks: Infinity, factor: 1.4 }
+      ],
+      hoursByVdot: [
+        { belowVdot: 40, hours: 6 },
+        { belowVdot: 50, hours: 7 },
+        { belowVdot: Infinity, hours: 8 }
+      ]
+    },
+    /** G1b (P8 dopuna, D45): korak rasta manji od ovog udela tekućeg cilja se ne primenjuje (nedelja zadržava cilj). */
+    minStepShare: 0.03
   },
 
   /** D7. */

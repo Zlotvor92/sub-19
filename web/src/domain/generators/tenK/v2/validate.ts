@@ -72,6 +72,7 @@ import {
 import {
   A17_MAX_RUN,
   appliedRestarts,
+  basePaces,
   basisAt,
   deloadWeekOf,
   framesFor,
@@ -1876,7 +1877,9 @@ export function validatePlan(
 
   // --- D6 obim: cilj po pravilu, izvodljiv cilj samo uz oznaku i napomenu.
   const start10 = startKm10(input.currentWeeklyKm);
-  const cap10 = peakCap10(start10, rule);
+  // G1a (P8 dopuna): satni plafon po tempu ulaza (osnovni tempo plana, ne tempo posle novog rezultata).
+  const p0 = pace ? basePaces(pace) : plan.paces;
+  const cap10 = peakCap10(start10, rule, N, p0);
   if (to10(plan.startKm) !== start10) err('VOLUME_START', 'Start ≠ trenutni obim (D6).');
   if (to10(plan.peakCapKm) !== cap10)
     err(
@@ -1894,7 +1897,7 @@ export function validatePlan(
   for (const w of weeks) {
     if (w.phase === 'race') continue;
     if (av) {
-      h = enterWeek(h, w, av, rule);
+      h = enterWeek(h, w, av, rule, N, p0);
       if (av.reset.has(w.index) && isBuildPhase(w.phase)) known = true;
     }
     const lastBuild = h.lastBuild10;
