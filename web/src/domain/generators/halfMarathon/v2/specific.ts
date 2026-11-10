@@ -52,13 +52,23 @@ export function blockFits(km: number, x: number, rule: PlanRule, p: Paces): bool
 
 /** S1: nivo bloka po pravilu — sledeći posle poslednjeg bloka `lastBlockM` [m] (jedan nivo po nedelji B; bez
     prethodnog prvi nivo; na vrhu vrh). */
-export function wantBlockKm(lastBlockM: number, hold = false): number {
+export function wantBlockKm(lastBlockM: number, hold = false, fast = false): number {
   const levels = blockLevels();
   // P5-F2: nedelja bez rasta doze — blok ostaje na poslednjem nivou (bez prethodnog bloka prvi nivo).
   if (hold && lastBlockM > 0)
     return levels.filter((x) => x * 1000 <= lastBlockM + 1e-6).pop() ?? levels[0]!;
-  return levels.find((x) => x * 1000 > lastBlockM + 1e-6) ?? levels[levels.length - 1]!;
+  const next = (m: number): number =>
+    levels.find((x) => x * 1000 > m + 1e-6) ?? levels[levels.length - 1]!;
+  // K3-E: brz trkač — više nivoa po nedelji B (fastBlock).
+  let x = next(lastBlockM);
+  if (fast && !hold) for (let i = 1; i < P.specific.fast.steps; i++) x = next(x * 1000);
+  return x;
 }
+
+/** K3-E: brz trkač za blok u dugom — VDOT tempa nedelje ≥ 50 i cilj nedelje ≥ 80 km. JEDNA funkcija (chooseBlockKm,
+    poruka validatora). */
+export const fastBlock = (p: Paces, targetKm: number): boolean =>
+  p.vdot >= P.specific.fast.vdotMin - 1e-9 && targetKm >= P.specific.fast.weekKmMin - 1e-9;
 
 /**
  * S1 — blok nedelje B (jedino mesto): najviši nivo ≤ nivoa po pravilu (wantBlockKm) koji staje u granice (blockFits),
@@ -78,7 +88,7 @@ export function chooseBlockKm(
   week?: BlockWeek
 ): number | null {
   const km = long10 / 10;
-  const want = wantBlockKm(lastBlockM, hold);
+  const want = wantBlockKm(lastBlockM, hold, fastBlock(p, targetKm));
   const easySec = longWorkout(km, p).sec;
   const levels = blockLevels().filter((x) => x <= want + 1e-9);
   for (let k = levels.length - 1; k >= 0; k--) {

@@ -112,3 +112,39 @@ describe('K3-B: taper RP ≤ 60 % poslednje doze', () => {
     expect(p.weeks.at(-1)!.days.some((x) => x.role === 'sharpener')).toBe(true);
   });
 });
+
+describe('K3-E: brz trkač — RP blok u dugom 4 → 6 → 8 km', () => {
+  const blocks = (p: HmV2Plan): { km: number; target: number; longKm: number }[] =>
+    p.weeks.flatMap((w) => {
+      const l = w.days.find((d) => d.role === 'long');
+      const rp = l
+        ? l.workout.segments.filter((s) => s.zone === 'RP').reduce((a, s) => a + s.km, 0)
+        : 0;
+      return rp > 0
+        ? [{ km: Math.round(rp * 10) / 10, target: w.targetKm, longKm: l!.workout.km }]
+        : [];
+    });
+
+  it('mreža 02 5–6 dana (svaki 5.): brzi (VDOT ≥ 50, cilj ≥ 80 km) dva nivoa po nedelji B, ostali jedan', () => {
+    let fast = 0;
+    let fastTop = 0;
+    const bad: string[] = [];
+    for (const c of grid02Inputs().filter((x, i) => x.days >= 5 && i % 5 === 0)) {
+      const p = gen(c.input);
+      const b = blocks(p);
+      if (b.length === 0) continue;
+      const isFast = p.vdot >= 50 && b[0]!.target >= 80;
+      for (const x of b)
+        if (x.km > 8 || x.km > 0.4 * x.longKm + 1e-9) bad.push(`${c.id}: blok ${x.km}`);
+      if (isFast) {
+        fast++;
+        if (b[0]!.km < 6) bad.push(`${c.id}: prvi blok brzog ${b[0]!.km} < 6`);
+        if (Math.max(...b.map((x) => x.km)) === 8) fastTop++;
+      } else if (b[0]!.km !== 4 && b[0]!.target < 80)
+        bad.push(`${c.id}: prvi blok ${b[0]!.km} ≠ 4`);
+    }
+    expect(bad).toEqual([]);
+    expect(fast).toBeGreaterThan(0);
+    expect(fastTop).toBeGreaterThan(0);
+  });
+});

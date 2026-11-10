@@ -88,7 +88,8 @@ import {
   mainDoseNext,
   mainDoseRef,
   scheduledType,
-  wantBlockKm
+  wantBlockKm,
+  fastBlock
 } from './specific.ts';
 import { adjacentDays } from './schedule.ts';
 import {
@@ -1921,7 +1922,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         if (want !== bk)
           err(
             'LONG_BLOCK',
-            `Blok ${fmtKm(bk)} km ≠ ${want === null ? 'bez bloka' : `${fmtKm(want)} km`} (po pravilu ${fmtKm(wantBlockKm(state.blockM ?? 0, held(w)))} km, jedan nivo po nedelji B; najviši koji staje; P1-S1).`,
+            `Blok ${fmtKm(bk)} km ≠ ${want === null ? 'bez bloka' : `${fmtKm(want)} km`} (po pravilu ${fmtKm(wantBlockKm(state.blockM ?? 0, held(w), fastBlock(pk, w.targetKm)))} km, jedan nivo po nedelji B — brz trkač dva, K3-E; najviši koji staje; P1-S1).`,
             w.index
           );
       } else if (

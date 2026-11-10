@@ -16,5 +16,14 @@
     "tests": [
       "src/domain/generators/halfMarathon/v2/k3.node.test.ts"
     ]
+  },
+  {
+    "name": "K3-E brz trkač jedan nivo bloka po nedelji B",
+    "file": "src/domain/generators/halfMarathon/v2/specific.ts",
+    "find": "  if (fast && !hold) for (let i = 1; i < P.specific.fast.steps; i++) x = next(x * 1000);",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/k3.node.test.ts"
+    ]
   }
 ]

@@ -670,6 +670,14 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts taper.rpShort; quality.ts taperRpFloor (jedno mesto), taperDoses; week.ts taper (strogo za kraću strukturu), sharpenerAllowed; validate.ts TAPER_QUALITY, REP_MIN, RP_FLOOR, RACE_SHARPENER (iste funkcije); gridInvariants.ts (nezavisno TAPER_RP, SHARPENER)',
     rationale:
       'Glavni trener, krug 2 (§ 2 nalaz 3, § 4.4): p03/p10 taper RP 25–26 min = 80 % doze. Merenje (mreže R/F/B 25 122 plana): taper > 60 % poslednje doze 10 617 → 0, 0 novih odbijanja; p03 24,7 → 18,6 min, p10 26,2 → 19,7 min, p11 23,5 → 14,1 min.'
+  },
+  {
+    id: 'K3-E',
+    rule: 'Brz trkač (VDOT tempa nedelje ≥ 50 i cilj nedelje ≥ 80 km): blok RP u dugom raste dva nivoa lestvice 4 → 6 → 8 km po nedelji B (ostali jedan nivo), dok blok staje u granice (≤ 40 % dugog, trajanje dugog), plafon RP cilja nedelje i ≤ 22 % vremena nedelje u RP.',
+    place:
+      'policy.ts specific.fast; specific.ts fastBlock, wantBlockKm, chooseBlockKm (jedno mesto); validate.ts LONG_BLOCK (ista funkcija); k3.node.test.ts (nezavisno)',
+    rationale:
+      'Glavni trener, krug 2 (§ 3a): za VDOT ≥ 50 pri ≥ 80 km/ned blok u dugom 4 → 6 → 8 km (danas 4 → 6). Merenje (mreže R/F): brzih 2943 planova, blok medijana 6 → 8 km (nizovi 4/6 → 6/8), 0 odbijanja; p05 4/6 → 6/8 km.'
   }
 ];
 
@@ -1041,7 +1049,10 @@ export const HM_V2_POLICY = {
     blockKm: [4, 6, 8] as readonly number[],
     blockMaxLongShare: 0.4,
     /** P8-HM (b): u nedelji sa blokom rad u trkačkom tempu (RP trening + blok) ≤ ovaj udeo VREMENA nedelje. */
-    rpWeekTimeShare: 0.22
+    rpWeekTimeShare: 0.22,
+    /** K3-E: brz trkač (VDOT ≥ vdotMin i cilj nedelje ≥ weekKmMin) — `steps` nivoa bloka po nedelji B (4 → 6 → 8 km
+        dok granice bloka, plafon RP i 22 % vremena dozvoljavaju). */
+    fast: { vdotMin: 50, weekKmMin: 80, steps: 2 }
   },
 
   /** P5-F3 (hm-v2.10.0): ubrzanja na kraju jednog laganog dana nedelje izgradnje i tapera (ne trkačka nedelja, ne uvod
