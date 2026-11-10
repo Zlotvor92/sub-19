@@ -130,3 +130,32 @@ describe('K3-A: najduži dugi', () => {
     );
   });
 });
+
+describe('K3-B: vrh obima početnika', () => {
+  it('p12 (50 km, 5 dana): vrh ≤ 1,30 × start (65 km) i ≤ 7,5 h; p11 (dno tabele, 25 km): vrh M17 ostaje 37,5 km', () => {
+    const p = prof('p12');
+    const build = p.weeks.filter(
+      (w) => !w.deload && ['base', 'development', 'specific'].includes(w.phase)
+    );
+    const peak = Math.max(...build.map((w) => w.targetKm));
+    expect(peak).toBeLessThanOrEqual(65);
+    expect(peak).toBeGreaterThan(60);
+    for (const w of p.weeks.filter((x) => x.phase !== 'race'))
+      expect(
+        w.days.filter((d) => d.countsToWeek).reduce((a, d) => a + d.workout.sec, 0)
+      ).toBeLessThanOrEqual(7.5 * 3600 + 60);
+    expect(Math.max(...prof('p11').weeks.map((w) => w.targetKm))).toBe(37.5);
+  });
+
+  it('početnik 40 km, lagan 5:30 (7,5 h ne veže): vrh ≤ 1,30 × 40 = 52 km', () => {
+    const r = generateMarathonV2({
+      ...PROFILES['p12']!,
+      runDays: D4,
+      currentWeeklyKm: 40,
+      easyPaceSecPerKm: 330
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(Math.max(...r.plan.weeks.map((w) => w.targetKm))).toBeLessThanOrEqual(52);
+  });
+});

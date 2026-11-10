@@ -57,7 +57,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'P8-G5',
       'P8-G6',
       'P8-G7',
-      'K3-A'
+      'K3-A',
+      'K3-B'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -277,6 +278,10 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       growthMaxKm: 2.5,
       peakFactor: 1.5,
       peakAddKm: 25,
+      // K3-B: vrh ≤ 1,30 × start i ≤ 7,5 h; dno tabele (start < kmMin + 5) zadržava 1,5 × / +25.
+      peakStartFactor: 1.3,
+      peakHours: 7.5,
+      peakKeepBelowKm: 5,
       tFirstKm: 1.5,
       // K3-A: cilj najdužeg početnika 24 km ili 180 min.
       longShortKm: 24,

@@ -275,6 +275,16 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
   const rule = planRule(p.input.runDays.length, beginner ? 'beginner' : 'regular')!;
   if (p.policyId !== 'marathon-v2' || p.policyVersion !== P.version) no('oznaka politike');
   bad.push(...feelBeginnerInvariants(id, p));
+  // K3-B (nezavisno od volume.ts): početnik van dna tabele (start ≥ kmMin + 5) — vrh izgradnje ≤ max(start; min(1,30 ×
+  // start; 7,5 h srednjim laganim tempom)).
+  if (beginner && p.startKm >= rule.kmMin + 5 - 1e-9) {
+    const h75 =
+      Math.floor(((7.5 * 3600) / ((p.paces.E.fast + p.paces.E.slow) / 2)) * 10 + 1e-9) / 10;
+    const top = Math.max(p.startKm, Math.min(Math.floor(p.startKm * 13 + 1e-9) / 10, h75));
+    for (const w of W)
+      if (!w.deload && BUILD.includes(w.phase) && w.targetKm > top + 1e-9)
+        no(`K3-B vrh početnika ned ${w.index}`);
+  }
   // Faze: taper tačno N−2 i N−1, trka N (M4/M7).
   if (
     W.map((w) => w.phase).join() !==

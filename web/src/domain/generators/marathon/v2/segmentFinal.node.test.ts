@@ -140,9 +140,9 @@ describe('F2: najduži dugi početnika', () => {
     );
   });
 
-  it('kad priprema i obim dozvoljavaju: vrh dugog ≥ 26 km', () => {
-    const p = planOf({ weeks: 20, km: 45, days: D5, easyPace: 360, experience: 'beginner' });
-    expect(longest(p)).toBeGreaterThanOrEqual(26);
+  it('kad priprema i obim dozvoljavaju: vrh dugog ≥ 24 km (K3-A cilj početnika; K3-B: vrh ≤ 1,30 × start)', () => {
+    const p = planOf({ weeks: 20, km: 50, days: D5, easyPace: 360, experience: 'beginner' });
+    expect(longest(p)).toBeGreaterThanOrEqual(24);
     expect(p.warnings.some((x) => x.rule === 'MARATHON_LONG_SHORT')).toBe(false);
   });
 

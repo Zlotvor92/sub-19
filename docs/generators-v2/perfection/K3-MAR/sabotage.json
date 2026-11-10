@@ -4,6 +4,17 @@
     "file": "src/domain/generators/marathon/v2/lengths.ts",
     "find": "  if (share <= rule.longMaxShare) return rule;",
     "replace": "  if (share <= 9) return rule;",
-    "tests": ["src/domain/generators/marathon/v2/k3.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/k3.node.test.ts"
+    ]
+  },
+  {
+    "name": "K3-B početnik bez faktora 1,30 (vrh M17 1,5 ×)",
+    "file": "src/domain/generators/marathon/v2/volume.ts",
+    "find": "          : Math.floor(start10 * P.beginner.peakStartFactor + EPS)",
+    "replace": "          : Infinity",
+    "tests": [
+      "src/domain/generators/marathon/v2/k3.node.test.ts"
+    ]
   }
 ]

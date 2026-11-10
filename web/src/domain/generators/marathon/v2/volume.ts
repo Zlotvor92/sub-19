@@ -203,10 +203,18 @@ export function growthCtx(
 const lastRow = <T>(rows: readonly T[], ok: (r: T) => boolean): T =>
   rows.filter(ok).pop() ?? rows[0]!;
 
-/** P8-G1a: satni plafon nedelje [0,1 km] — sati po VDOT-u plana × srednji lagan tempo. */
-export function hoursCap10(p: Paces): number {
-  const h = lastRow(P.volume.peakHours, (r) => r.fromVdot <= p.vdot + EPS).hours;
+/** P8-G1a: satni plafon nedelje [0,1 km] — sati po VDOT-u plana × srednji lagan tempo (K3-B: početnik 7,5 h). */
+export function hoursCap10(p: Paces, beginner = false): number {
+  const h = beginner
+    ? P.beginner.peakHours
+    : lastRow(P.volume.peakHours, (r) => r.fromVdot <= p.vdot + EPS).hours;
   return Math.floor(((h * 3600) / midEasy(p)) * 10 + EPS);
+}
+
+/** K3-B: početnik na dnu tabele (start < kmMin reda + peakKeepBelowKm) zadržava vrh M17 (1,5 × / +25, satni plafon
+    po VDOT-u): sa 1,30 × taper i minimum nedelje nisu izvodljivi (159 odbijanja mreže početnika). */
+export function beginnerKeepsPeak(start10: number, rule: PlanRule): boolean {
+  return rule.beginner && start10 < to10(rule.kmMin + P.beginner.peakKeepBelowKm) - EPS;
 }
 
 /** M6 + P8-G1a: granica izgradnje min(start × 1,5; start + 30; max nedelje M15; start × faktor po dužini pripreme;
@@ -219,9 +227,13 @@ export function peakCap10(start10: number, rule: PlanRule, g: GrowthCtx): number
       Math.floor(start10 * rule.peakFactor + EPS),
       start10 + to10(rule.peakAddKm),
       to10(rule.peakMaxKm),
-      // Početnik (M17) zadržava svoj faktor vrha: sa start × 1,40 taper na dnu tabele početnika nije izvodljiv.
-      rule.beginner ? Infinity : Math.floor(start10 * f + EPS),
-      hoursCap10(g.p)
+      // K3-B: početnik start × 1,30 i 7,5 h (zamenjuje S1-O1); dno tabele početnika (beginnerKeepsPeak) zadržava M17.
+      rule.beginner
+        ? beginnerKeepsPeak(start10, rule)
+          ? Infinity
+          : Math.floor(start10 * P.beginner.peakStartFactor + EPS)
+        : Math.floor(start10 * f + EPS),
+      hoursCap10(g.p, rule.beginner && !beginnerKeepsPeak(start10, rule))
     )
   );
 }

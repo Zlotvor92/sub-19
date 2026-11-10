@@ -531,6 +531,14 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts lengths.peakLong, lengths.longGoalSec, beginner.longShortKm/longGoalSec; lengths.ts longRuleOf, longShareCap10, peakShareOf, longShortOf; specific.ts blockFits/chooseBlockKm (plafon MP); validate.ts (LONG_SHARE, LONG_BLOCK, MARATHON_LONG_SHORT istim funkcijama)',
     rationale:
       'Heuristika, glavni trener krug 2 (coach/ROUND-02.md § 4.1): MAR p01/p02 22,4 km, p06 17,6 km. 5–6 dana (tabela 35 / 32 %) dobijaju 45 % kao 4 dana (tumačenje izvođača K3: „4+ dana"). Ponuda kraće distance (shorter.ts) i dalje čita prag u km.'
+  },
+  {
+    id: 'K3-B',
+    rule: 'Vrh obima početnika ≤ start × 1,30 i ≤ 7,5 h nedeljno srednjim laganim tempom (uz M17 1,5 × / +25 i max nedelje M15); zamenjuje P8 S1-O1. Dno tabele početnika (start < kmMin reda + 5 km: 4 dana 25, 5 dana 30 km) zadržava vrh M17 (1,5 × / +25, satni plafon po VDOT-u): sa 1,30 × taper i minimum nedelje nisu izvodljivi.',
+    place:
+      'policy.ts beginner.peakStartFactor/peakHours/peakKeepBelowKm; volume.ts peakCap10, hoursCap10, beginnerKeepsPeak; validate.ts (VOLUME_PEAK istom funkcijom)',
+    rationale:
+      'Glavni trener krug 2 (§ 3d): p12 50 → 75 km = 8,7 h za početnika. Izmereno: sa 1,30 × za sve početnike 159 / 1890 novih odbijanja (dno tabele: WEEK_MIN_VOLUME u taperu 102, WEEK_INFEASIBLE 57); opcija „taper N−1 naviše do izvodljivog" ugrađena i proverena — ostaje WEEK_MIN_VOLUME, zato 1,5 × samo za klasu koja se odbija (K3-MAR-REPORT § Otvoreno).'
   }
 ];
 
@@ -597,6 +605,12 @@ export const MARATHON_V2_POLICY = {
     growthMaxKm: 2.5,
     peakFactor: 1.5,
     peakAddKm: 25,
+    /** K3-B (marathon-v2.13.0, zamenjuje P8 S1-O1): vrh ≤ start × peakStartFactor i ≤ peakHours sati nedeljno
+        (cilj km × srednji lagan tempo). */
+    peakStartFactor: 1.3,
+    peakHours: 7.5,
+    /** K3-B: start < kmMin reda + peakKeepBelowKm (dno tabele) → vrh M17 (peakFactor / peakAddKm) bez 1,30 i 7,5 h. */
+    peakKeepBelowKm: 5,
     /** Prvi nivo lestvice T kontinuirano početnika = najmanja T doza rasterećenja početnika [km]. */
     tFirstKm: 1.5,
     /** Upozorenje MARATHON_LONG_SHORT kad je najduži dugi < longShortKm (F2: ciljni vrh dugog početnika). */
