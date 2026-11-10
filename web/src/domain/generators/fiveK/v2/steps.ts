@@ -18,6 +18,7 @@ import type {
   WeekLimits,
   Weekday
 } from './types.ts';
+import { capacityKm } from './volume.ts';
 import type { Written } from './written.ts';
 
 const isBuild = (f: Pick<WeekFrame, 'phase'>): boolean =>
@@ -27,10 +28,26 @@ export const inRange = (d: IsoDate, r: DateRange | null): boolean =>
   r !== null && mustDay(d) >= mustDay(r.from) && mustDay(d) <= mustDay(r.to);
 
 /** Trkač iz ulaza (isto kao generate): broj dana, početnik, plan po osećaju. */
+/**
+ * 5k-v2.15.0 (P8 e, heuristika, odluka organizatora P8, nalaz slepe ocene: početnik sa 45 km spušten na 30 km) —
+ * JEDINO mesto: početnik čiji je trenutni obim (na 0,1 km) iznad kapaciteta plana početnika za izabrane dane (tabela
+ * izvodljivih ciljeva početnika, volume.capacityKm) dobija plan bez oznake početnika (kao HM). Vraća kapacitet
+ * početnika kad važi, inače null.
+ */
+export function beginnerAboveTable(input: FiveKV2Input): number | null {
+  if (input.experience !== 'beginner') return null;
+  const days = input.runDays.length as RunDaysCount;
+  const feel = !hasFreshResult(input);
+  const v = baseVdot(input);
+  const p = v === null ? feelPaces(input.typicalEasyPaceSecPerKm!) : pacesFromVdot(v);
+  const cap = capacityKm(p, { days, beginner: true, feel });
+  return Math.round(input.currentWeeklyKm * 10) / 10 > cap + 1e-9 ? cap : null;
+}
+
 export function baseAthlete(input: FiveKV2Input): Athlete {
   return {
     days: input.runDays.length as RunDaysCount,
-    beginner: input.experience === 'beginner',
+    beginner: input.experience === 'beginner' && beginnerAboveTable(input) === null,
     feel: !hasFreshResult(input),
     ...(input.weekOffset ? { weekOffset: input.weekOffset } : {})
   };

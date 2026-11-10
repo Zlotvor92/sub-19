@@ -19,6 +19,7 @@ import { choosePattern } from './schedule.ts';
 import {
   athleteAt,
   baseAthlete,
+  beginnerAboveTable,
   baseVdot,
   doseResetAt,
   framesFor,
@@ -52,6 +53,8 @@ import {
 } from './week.ts';
 import { raceWarmup, type WeekDose } from './workouts.ts';
 import { type Written, writtenWeek } from './written.ts';
+
+const kmPlain = (x: number): string => String(x).replace('.', ',');
 
 const fmt = (sec: number): string =>
   `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`;
@@ -460,6 +463,11 @@ function generateRaw(raw: unknown): GenerateResult {
   if (rTest)
     notes.push(
       P.feel.resultTestNote.replace('{week}', String(weekLabel(rTest.index, input.weekOffset)))
+    );
+  const lifted = beginnerAboveTable(input);
+  if (lifted !== null)
+    notes.push(
+      `Trenutni obim ${kmPlain(input.currentWeeklyKm)} km je veći od onoga što plan za početnika nosi (${kmPlain(lifted)} km uz ${a.days} dana), pa plan kreće od tvog stvarnog obima, kao za redovnog trkača (sa dva kvaliteta nedeljno kad dani to dopuštaju). Ako ti je napor prevelik, unesi manji trenutni obim.`
     );
   if (a.beginner)
     notes.push(
