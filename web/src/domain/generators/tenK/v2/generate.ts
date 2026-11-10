@@ -516,7 +516,10 @@ export function construct(
       t && td
         ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date}. Ocena cilja i prognoza 10K: posle testa.`
         : rule.feelTest
-          ? `Test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+          ? adapted
+            ? `Test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+            : // K3 (10k-v2.15.0): nov plan bez nedelje za test (8 nedelja, D52) — bez „posle prilagođavanja".
+              `Test ${P.test.km} km: plan od ${weeks} nedelja nema nedelju za test; ocena cilja i prognoza 10K posle rezultata trke ili testa koji uneseš.`
           : `Početnik bez testa ${P.test.km} km: kvalitet po osećaju napora (RPE); ocena cilja i prognoza 10K posle rezultata trke ili parkruna.`
     );
   }
@@ -542,7 +545,9 @@ export function construct(
     plan.notes.push(
       t && td
         ? `Kontrolni test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date}. Unesi rezultat — tempo treninga se prilagođava od sledeće nedelje.`
-        : `Kontrolni test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+        : adapted
+          ? `Kontrolni test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+          : `Kontrolni test ${P.test.km} km: plan od ${weeks} nedelja nema nedelju za test.`
     );
   }
   // G8 (P8 dopuna, D48): početnik čiji najduži dugi ni sa 50 % cilja ne dostiže distancu — jedna rečenica šta fali.

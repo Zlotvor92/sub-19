@@ -228,7 +228,11 @@ describe('D27: test 5 km', () => {
       expect(errors(p)).toEqual([]);
       const p8 = plan(feelInput(days, { weeks: 8, km: 30, easy: 390 }));
       expect(p8.weeks.some((x) => x.test || x.days.some((d) => d.role === 'test'))).toBe(false);
-      expect(p8.notes.some((n) => n.startsWith('Test 5 km: nema ga'))).toBe(true);
+      // K3 (10k-v2.15.0): nov plan — napomena bez „posle prilagođavanja".
+      expect(p8.notes).toContain(
+        'Test 5 km: plan od 8 nedelja nema nedelju za test; ocena cilja i prognoza 10K posle rezultata trke ili testa koji uneseš.'
+      );
+      expect(p8.notes.some((n) => n.includes('posle prilagođavanja'))).toBe(false);
       expect(errors(p8)).toEqual([]);
     }
   });
