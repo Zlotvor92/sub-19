@@ -121,7 +121,8 @@ export function buildTrainingWeek(
       f.phase,
       p,
       a,
-      t1Off
+      t1Off,
+      f.qcap?.longKm
     );
   // 5k-v2.12.0 (T2): dan kvaliteta duži od dugog → zagrevanje/hlađenje na najnižem pojasu (qualityWarmupMin), dužine
   // jednom ponovo (oslobođeni km idu u lagane dane); i dalje duži → upozorenje LONG_SHORTER_THAN_QUALITY (validator).
@@ -211,10 +212,11 @@ export function buildTrainingWeek(
     notes.push(
       `Adaptacija: ${rest.size > 0 ? `${rest.size} dan(a) odmora, ` : ''}${pain.size > 0 ? 'period bola (dugi ≤ 60 min, lagani −30%, bez ubrzanja), ' : ''}planirano najviše ${kmText(target)} km.`
     );
+  const { qcap: _qcap, ...frame } = f;
   return {
     ok: true,
     week: {
-      ...f,
+      ...frame,
       targetKm: target,
       plannedKm,
       budgets,

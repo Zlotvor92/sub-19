@@ -123,6 +123,19 @@ export interface WeekFrame {
   limits?: WeekLimits;
   /** 5k-v2.14.0 (P5 F2, Odluka 10; steps.holdWeek): doza nijednog slota ne raste (ponavlja poslednju). */
   hold?: true;
+  /** 5k-v2.15.0 (P8 b): granica rada zone [km] u rasterećenju (deloadQualityShare) i taperu (taperQualityShare) ×
+      poslednja ne-rasteretna doza te zone, i dugi rasterećenja (deloadLongShare × poslednji dugi). Postavlja je samo
+      konstruktor (generate.qualityCapOf); ne ide u nedelju plana. */
+  qcap?: QualityCap;
+}
+
+/** 5k-v2.15.0 (P8 b): granice nedelje rasterećenja/tapera (WeekFrame.qcap). */
+export interface QualityCap {
+  I?: number;
+  RP?: number;
+  T?: number;
+  R?: number;
+  longKm?: number;
 }
 
 /** 2.5.0: ograničenja nedelje izvedena iz koraka adaptacije (datumski opsezi → dani nedelje). */

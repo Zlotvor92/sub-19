@@ -36,6 +36,7 @@ import type {
   Phase,
   PlanDay,
   PlanWeek,
+  QualityCap,
   Reason,
   WeekFrame,
   Weekday
@@ -231,6 +232,8 @@ export function construct(
       else reasons.push(r.reason);
       return;
     }
+    // 5k-v2.15.0 (P8 b): granica kvaliteta i dugog rasterećenja/tapera iz upisanih nedelja (qualityCapOf).
+    const fc = qualityCapOf(f, written);
     const build = (g: WeekFrame) =>
       buildTrainingWeek(
         g,
@@ -241,11 +244,11 @@ export function construct(
         aw,
         phaseCounts(totalWeeks, a.beginner).taper
       );
-    let r = build(f);
+    let r = build(fc);
     // 2.10.2 (K9): kontrolno trčanje koje ne staje otpada PRVO samo (ista ograničenja, isti obim); tek onda manje
     // kvaliteta — inače ponovljena adaptacija (bez testa u prethodnom planu) gradi drugu dozu.
     if (!r.ok && adaptive && f.test) {
-      const t = build({ ...f, test: false });
+      const t = build({ ...fc, test: false });
       if (t.ok) {
         t.week.notes.push(`Adaptacija: kontrolno trčanje ne staje u obim ${target} km — otpada.`);
         r = t;
@@ -258,7 +261,7 @@ export function construct(
       if (r.ok || (q === 'one' && f.limits?.quality !== undefined)) continue;
       const { swap: _swap, ...rest } = f.limits ?? {};
       // 2.6.0: kontrolno trčanje je glavni kvalitet nedelje — kad ne staje, otpada sa njim.
-      r = build({ ...f, test: false, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
+      r = build({ ...fc, test: false, limits: { ...(q === 'one' ? f.limits : rest), quality: q } });
       if (r.ok)
         r.week.notes.push(
           `${adaptive ? 'Adaptacija: k' : 'K'}valitet ne staje u obim ${target} km — ${q === 'one' ? 'jedan kvalitet doze rasterećenja' : 'nedelja bez kvaliteta'}${f.test && testDone !== f.index ? ' (bez kontrolnog trčanja)' : ''}${adaptive ? '' : '; više obima ili 4 dana trčanja daju puni kvalitet'}.`
@@ -330,6 +333,37 @@ export function construct(
       dropped
     }
   };
+}
+
+const isBuildPhase = (ph: Phase): boolean => ph === 'base' || ph === 'peak' || ph === 'sharpen';
+
+/**
+ * 5k-v2.15.0 (P8 b, heuristika, odluka organizatora P8, nalaz slepe ocene) — JEDINO mesto granice: nedelja rasterećenja
+ * (izgradnja) i tapera dobija granicu rada svake zone = udeo (quality.deloadQualityShare 0,6 / taperQualityShare 0,7) ×
+ * rad te zone u poslednjoj UPISANOJ ne-rasteretnoj nedelji izgradnje sa tom zonom; rasterećenje i dugi ≤
+ * deloadLongShare × dugi poslednje ne-rasteretne nedelje izgradnje. Zone bez ranije doze nemaju granicu. Najniži nivo
+ * lestvice uvek staje (workouts.cappedBudget, feel.cappedFeel).
+ */
+export function qualityCapOf(f: WeekFrame, written: readonly PlanWeek[]): WeekFrame {
+  const deload = f.deload && isBuildPhase(f.phase);
+  if (!deload && f.phase !== 'taper') return f;
+  const share = deload ? P.quality.deloadQualityShare : P.quality.taperQualityShare;
+  const build = written.filter((w) => !w.deload && isBuildPhase(w.phase));
+  const cap: QualityCap = {};
+  for (const z of ['I', 'RP', 'T', 'R'] as const)
+    for (let i = build.length - 1; i >= 0; i--) {
+      const work = build[i]!.days
+        .filter((d) => d.workout.kind === 'quality')
+        .reduce((x, d) => x + d.workout.workKm[z], 0);
+      if (work > 1e-9) {
+        cap[z] = Math.round(share * work * 100) / 100;
+        break;
+      }
+    }
+  const lastLong = build[build.length - 1]?.days.find((d) => d.role === 'long')?.workout.km;
+  if (deload && lastLong !== undefined)
+    cap.longKm = Math.floor(lastLong * P.quality.deloadLongShare * 10 + 1e-9) / 10;
+  return Object.keys(cap).length > 0 ? { ...f, qcap: cap } : f;
 }
 
 function dateIn(f: WeekFrame, w: Weekday): string {

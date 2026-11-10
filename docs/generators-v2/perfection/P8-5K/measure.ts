@@ -12,7 +12,7 @@ const dist = distOf("5K");
 type Seg = { kind: string; zone?: string; km: number; sec: number };
 type Day = { role: string; date: string; countsToWeek: boolean; workout: { kind: string; km: number; sec: number; qualityType?: string | null; segments: Seg[]; blocks?: { kind: string; km?: number }[] } };
 type Week = { index: number; phase: string; deload: boolean; test?: boolean; targetKm: number; plannedKm: number; days: Day[]; notes: string[] };
-const WORK = (s: Seg) => !["recovery", "warmup", "cooldown", "stride"].includes(s.kind) && s.zone !== undefined && !["E", "jog", "walk"].includes(s.zone);
+const WORK = (s: Seg) => !["recovery", "warmup", "cooldown", "stride", "test"].includes(s.kind) && s.zone !== undefined && !["E", "jog", "walk"].includes(s.zone);
 const zoneWork = (d: Day, z: string, unit: "km" | "sec") => d.workout.segments.filter((s) => WORK(s) && s.zone === z).reduce((a, s) => a + s[unit], 0);
 const BUILD = (w: Week) => ["base", "peak", "sharpen"].includes(w.phase);
 

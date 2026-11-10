@@ -211,6 +211,16 @@ export const FIVE_K_V2_POLICY = {
     /** Rasteretna nedelja: jedan kvalitet sa ovim udelom budžeta. 2.0.1: 1,0 — „kratak" dolazi od
         manjeg obima nedelje (80%) i jednog umesto dva kvaliteta (v. DECISIONS). */
     deloadBudgetScale: 1.0,
+    /** 5k-v2.15.0 (P8 b, heuristika, odluka organizatora P8, nalaz slepe ocene: rasterećenje i taper nisu smanjivali
+        kvalitet): rad zone u rasterećenju ≤ deloadQualityShare, u taperu ≤ taperQualityShare × poslednja ne-rasteretna
+        doza te zone (I, RP, T, R; rad u km), ali ne ispod prvog nivoa lestvice (G2); dugi rasterećenja ≤
+        deloadLongShare × poslednji ne-rasteretni dugi. Jedno mesto: generate.qualityCapOf (granica nedelje),
+        workouts.cappedBudget (budžet sesije), lengths.weekLengths (dugi). (c) prvi I posle R faze ≤ firstIShareOfBudget
+        × budžet I (workouts.peakWeek/peakWeekOne; validator PEAK_MAIN_FLOOR ga izuzima). */
+    deloadQualityShare: 0.6,
+    taperQualityShare: 0.7,
+    deloadLongShare: 0.8,
+    firstIShareOfBudget: 0.7,
     /** Oporavak: I = isto vreme lagano; R = ista distanca lagano; RP = pola vremena; T = 60 s.
         2.1.0: oporavak zadat vremenom zaokružuje se na `roundSec` (prikaz i obračun isti). */
     recovery: {

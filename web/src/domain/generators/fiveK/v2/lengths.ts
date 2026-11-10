@@ -79,13 +79,15 @@ export function weekLengths(
   phase: Phase,
   p: PaceModel,
   a: Athlete,
-  deload = false
+  deload = false,
+  maxLongKm = Infinity
 ): { longKm: number; shares: number[]; capped: boolean; overLong: boolean; easyMin: number } {
   const easyMin = easyMinKm(phase, p, deload);
   // 2.2.0: treći član na 0,1 km (ne 0,5): sa 0,5 km mala rasteretna nedelja (13 km) dobija dugi 3 km i
   // lagane 3,2 km, tj. lagan > dugi. 2.4.1: i udeo dana (longCapKm) je na 0,1 km za sve brojeve dana.
+  // 5k-v2.15.0 (P8 b): `maxLongKm` = granica dugog rasterećenja (deloadLongShare × poslednji dugi, generate.qualityCapOf).
   const longOf = (n: number): number =>
-    Math.min(longCapKm(target, p, a), floor1(target - qualityKm - n * easyMin));
+    Math.min(longCapKm(target, p, a), floor1(target - qualityKm - n * easyMin), maxLongKm);
   let n = nEasy;
   if (easyVsLongWeek(phase, deload))
     while (n > 0 && easyCapKm(longOf(n), phase, deload) + 1e-9 < easyMin) n--;

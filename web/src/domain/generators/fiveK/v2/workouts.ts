@@ -196,6 +196,56 @@ export function warmupBand(targetKm: number): { warmupKm: number; cooldownKm: nu
   return { warmupKm: band.warmupKm, cooldownKm: band.cooldownKm };
 }
 
+/** 5k-v2.15.0 (P8 b, G2): zona rada vrste kvaliteta (granica rasterećenja/tapera po zoni). */
+export function capZoneOf(type: QualityType): 'I' | 'RP' | 'T' | 'R' {
+  if (type === 'R' || type === 'R_sharpen') return 'R';
+  if (type === 'I') return 'I';
+  if (type === 'T_short' || type === 'T_cruise') return 'T';
+  return 'RP';
+}
+
+/** 5k-v2.15.0 (P8 G2): budžet [km] najnižeg nivoa lestvice vrste (najmanji smislen trening po pravilima: minReps ×
+    najkraće dozvoljeno ponavljanje na tempu; kratak T: shortTMinKm / shortTShareOfBudget); Infinity = nema ga. */
+export function firstLevelBudget(type: QualityType, p: Paces, phase: Phase): number {
+  const q = P.quality;
+  const reps = (opts: readonly number[], pace: number, min: number, maxSec: number, minSec = 0): number => {
+    const ok = opts.filter((o) => o * pace <= maxSec + 1e-9 && o * pace + 1e-9 >= minSec);
+    return ok.length ? Math.round(Math.min(...ok) * min * 100) / 100 : Infinity;
+  };
+  switch (type) {
+    case 'R':
+      return reps(q.repOptionsKm.R, p.R, q.minReps.R, q.rRepMaxSec);
+    case 'R_sharpen':
+      return reps(q.repOptionsKm.Rsharpen, p.R, q.minReps.R, q.rRepMaxSec);
+    case 'I':
+      return reps(q.repOptionsKm.I, p.I, q.minReps.I, q.iRepMaxSec, q.iRepMinSec);
+    case 'RP':
+      return reps(q.repOptionsKm.RP, p.RP, q.minReps.RP, q.iRepMaxSec);
+    case 'T_cruise':
+      return reps(q.repOptionsKm.Tcruise, p.T, q.minReps.T, tMaxSec(phase));
+    case 'T_short':
+      return Math.ceil((q.shortTMinKm / q.shortTShareOfBudget) * 100) / 100;
+    default:
+      return Infinity;
+  }
+}
+
+/** 5k-v2.15.0 (P8 b, G2): budžet sesije pod granicom zone `capWork` (rad u km; kratak T: rad = udeo budžeta, pa
+    budžet = rad / shortTShareOfBudget) — min(budžet, max(granica, prvi nivo lestvice)). Bez granice: budžet. JEDINO
+    mesto (rasterećenje i taper, sa rezultatom). */
+export function cappedBudget(
+  type: QualityType,
+  budgetKm: number,
+  capWork: number | undefined,
+  p: Paces,
+  phase: Phase
+): number {
+  if (capWork === undefined) return budgetKm;
+  const cap = type === 'T_short' ? capWork / P.quality.shortTShareOfBudget : capWork;
+  const floor2 = (x: number): number => Math.floor(x * 100 + 1e-9) / 100;
+  return Math.min(budgetKm, Math.max(floor2(cap), firstLevelBudget(type, p, phase)));
+}
+
 export interface RepChoice {
   reps: number;
   repKm: number;
@@ -1096,7 +1146,13 @@ function deloadWeek(
   for (const type of chain) {
     const s = qualitySession(
       type,
-      r2(budgetOf(type) * P.quality.deloadBudgetScale),
+      cappedBudget(
+        type,
+        r2(budgetOf(type) * P.quality.deloadBudgetScale),
+        f.qcap?.[capZoneOf(type)],
+        p,
+        f.phase
+      ),
       targetKm,
       p,
       f.phase
@@ -1210,7 +1266,8 @@ export function vdotWeekQuality(
       dose: { ...dose, ...(rs.choice ? { rs: rs.choice } : {}) }
     };
   }
-  const rp = qualitySession('RP', b.I, targetKm, p, f.phase);
+  // 5k-v2.15.0 (P8 b): taper — RP i T pod granicom tapera (f.qcap), ne ispod prvog nivoa lestvice.
+  const rp = qualitySession('RP', cappedBudget('RP', b.I, f.qcap?.RP, p, f.phase), targetKm, p, f.phase);
   if (!rp.ok) return rp;
   const tp =
     taperWeeks > 1
@@ -1218,7 +1275,13 @@ export function vdotWeekQuality(
       : 'Smanjenje obima pred trku';
   if (one) return single(rp.workout, [`${tp}: jedan kvalitet.`], null);
   if (f.taperStep === 1) {
-    const t = qualitySession('T_short', b.T, targetKm, p, f.phase);
+    const t = qualitySession(
+      'T_short',
+      cappedBudget('T_short', b.T, f.qcap?.T, p, f.phase),
+      targetKm,
+      p,
+      f.phase
+    );
     if (!t.ok) return t;
     return {
       ok: true,

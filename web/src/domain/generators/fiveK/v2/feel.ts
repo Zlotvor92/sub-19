@@ -307,6 +307,26 @@ function kindsOf(
 
 const fail = (message: string): WeekQuality => ({ ok: false, message });
 
+/** 5k-v2.15.0 (P8 b): zona rada vrste po osećaju (granica rasterećenja/tapera po zoni). */
+const CAP_ZONE: Record<FeelKind, 'I' | 'RP' | 'T' | 'R'> = {
+  HILLS: 'R',
+  TEMPO: 'T',
+  FARTLEK_T: 'T',
+  FARTLEK_I: 'I',
+  FARTLEK_RP: 'RP',
+  RP_SHORT: 'RP'
+};
+
+/** 5k-v2.15.0 (P8 b, G2): budžet vrste pod granicom zone (f.qcap) — min(budžet, max(granica, najniži nivo ponude
+    faze)); bez granice budžet. Isto pravilo kao workouts.cappedBudget (sa rezultatom). */
+function cappedFeel(kind: FeelKind, budgetKm: number, f: WeekFrame, p: PaceModel): number {
+  const cap = f.qcap?.[CAP_ZONE[kind]];
+  if (cap === undefined) return budgetKm;
+  const s = SPEC[kind];
+  const first = Math.min(...s.cands(f.phase).map((c) => s.est(c, p)));
+  return Math.min(budgetKm, Math.max(Math.floor(cap * 100 + 1e-9) / 100, first));
+}
+
 /**
  * Kvalitet nedelje po osećaju i/ili početnika (poziva ga samo weekQuality, quality.ts).
  * - početnik: jedan kvalitet; nedelje 1–2 samo lagano + ubrzanja; bez I (vrhunac fartlek „brzo ali
@@ -323,7 +343,7 @@ export function simpleWeekQuality(
   prev: WeekDose | null,
   a: Athlete
 ): WeekQuality {
-  const b = qualityBudgets(targetKm);
+  let b = qualityBudgets(targetKm);
   const two = rulesOf(a).qualityDays === 2;
   const so = P.quality.deloadSubstitute.stridesOnly;
   if (a.beginner && f.index <= P.beginner.introWeeks && isBuild(f.phase))
@@ -341,6 +361,11 @@ export function simpleWeekQuality(
   const k = kindsOf(f, a, two, prev);
   // Taper: bez progresije (svaka nedelja prvi izbor, kao sa rezultatom).
   const taper = f.phase === 'taper';
+  // 5k-v2.15.0 (P8 b): taper — budžet glavnog (RP) i drugog (T) pod granicom tapera (f.qcap).
+  if (taper && f.qcap) {
+    b = { ...b, [SPEC[k.main].budget]: cappedFeel(k.main, b[SPEC[k.main].budget], f, p) };
+    if (k.second) b = { ...b, [SPEC[k.second].budget]: cappedFeel(k.second, b[SPEC[k.second].budget], f, p) };
+  }
   const pf = taper ? {} : (prev?.feel ?? {});
   // Zadržana doza je dozvoljena samo uz drugi kvalitet ili kad prethodna nedelja nije bila ista vrsta.
   const holdOk = (kind: FeelKind): boolean => two || prev?.kind !== kind;
@@ -350,7 +375,16 @@ export function simpleWeekQuality(
     // Kvalitet staje u nedelju samo ako dužine (weekLengths, iste kao week.ts) daju lagan ≥ minimum i
     // lagan ≤ dugi; inače rasterećenje samo sa ubrzanjima (npr. početnik, 4 dana, 15 km → 12 km).
     const room = (w: Workout): boolean => {
-      const L = weekLengths(targetKm, w.km, easyCount(a, true, false), f.phase, p, a, f.deload);
+      const L = weekLengths(
+        targetKm,
+        w.km,
+        easyCount(a, true, false),
+        f.phase,
+        p,
+        a,
+        f.deload,
+        f.qcap?.longKm
+      );
       return !L.capped && L.shares.every((x) => x + 1e-9 >= L.easyMin);
     };
     for (const kind of chain) {
@@ -358,7 +392,7 @@ export function simpleWeekQuality(
       const d = choose(
         s.cands(f.phase),
         (x) => s.est(x, p),
-        r2(b[s.budget] * P.quality.deloadBudgetScale),
+        cappedFeel(kind, r2(b[s.budget] * P.quality.deloadBudgetScale), f, p),
         null,
         'first'
       );
