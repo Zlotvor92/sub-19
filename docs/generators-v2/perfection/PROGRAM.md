@@ -162,3 +162,15 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 10. 11. 2026 14:20: četiri Fable taba (P8-HM, P8-MAR, završeci 5K i 10K) pokrenuta oko 09:15–09:45 potrošila su petočasovni limit do 10:07 (≈ 1 h); od 10:07 do 14:10 bez rada, ništa nije gurnuto, grana i dalje crvena na 5K i 10K. Reset 14:10. Odluka: najviše 2 Fable taba uporedo, po prioritetu — prvo završeci 5K i 10K (poslato „nastavi"), P8-HM i P8-MAR tek kad oni završe. Limit koji je do sada zaustavljao rad je petočasovni, ne nedeljni (nedeljni je na upozorenju).
 - 10. 11. 2026 14:35: P8-10K završetak, međujavljanje: S1–S8 ugrađeni, 3/2040 odbijanja adaptacije → 0, 9/23 test fajla usklađeno. Novi nalaz S9: G6 0,70 kod početnika sa 4 dana obara obim (pad ≥ 10 % u 918/1890 planova; sa 0,80 54). Odluka (sve distance, upisano u dopunu P8): početnik ostaje na 0,80; 0,70 samo redovan plan 4+ dana. Prihvaćena rešenja taba: viši nivo T početnika samo kad ga nedelja nosi; rasterećenje bez kvaliteta samo kad najniža T ne staje.
 
+
+### 10. 11. 2026, 15:00 — P8-5K završetak primljen; dopuna 5k-v2.15.2
+
+- Izveštaj: `reports/P8-5K-REPORT.md` § Završetak; kod `65f9799`, verzija 5k-v2.15.1. Nezavisna provera organizatora:
+  brzi nivo `fiveK/v2` 800/800. Pun nivo po tabu 810/810, sabotaže 17/17, E2E 3/3.
+- G6 varijanta B (0,75 + spuštanje cilja) izmerena i odbačena (vrh cilja pada > 10 % u 36–79 % planova sa 4+ dana).
+- Nađeno proverom: izuzetak početnika (0,80) nije u kodu 5K. Poslata dopuna istom tabu:
+  1. početnik: lagan ≤ 0,80 × dugi bez obzira na broj dana;
+  2. korak I = najveći nivo lestvice sa radom ≤ 1,25 × prethodni (najmanje sledeći veći); razlog: medijana vrha I pala
+     13,1 → 9,4 min, premalo za 5K;
+  3. napomena nedelje G6 samo u prvoj takvoj nedelji.
+- `npm run check`/build i CI ostaju crveni samo zbog `tenK/v2` (P8-10K završetak u toku).
