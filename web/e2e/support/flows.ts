@@ -3,25 +3,21 @@ import { expect, type Page } from '@playwright/test';
 /* Ponovljivi koraci koje koriste više tokova. Sve ide kroz PRAVI interfejs (čarobnjak), ne kroz upis u skladište: plan koji test koristi je onaj koji
    aplikacija zaista pravi. */
 
+/* V1b: čarobnjak ima jednu putanju — korake generatora v2 izabrane distance (trka → rezultat → iskustvo → dani). Ulaz
+   testa: distanca, datum trke, skoriji rezultat (sa datumom), obim, dani i cilj. 10K/polumaraton/maraton pitaju i za 30
+   minuta bez prekida i dan dugog trčanja. */
 export interface PlanInput {
   dist: string;
   raceDate: string;
   pbDist: string;
   pbMin: string;
   pbSec: string;
+  pbHours?: string;
   weeklyKm: string;
   pbDate?: string;
-  history?: {
-    longRunKm: string;
-    consistentWeeks: string;
-    breakWeeks: string;
-    qualityExperience: 'none' | 'some' | 'experienced';
-  };
-  preferences?: {
-    difficulty: 'Konzervativno' | 'Standardno' | 'Agresivno';
-    volume: 'Konzervativno' | 'Standardno' | 'Agresivno';
-  };
-  goal?: { min: string; sec: string };
+  days?: string[];
+  longDay?: string;
+  goal?: { hours?: string; min: string; sec: string };
 }
 export const TEN_K: PlanInput = {
   dist: '10K',
@@ -29,6 +25,7 @@ export const TEN_K: PlanInput = {
   pbDist: '10 km',
   pbMin: '45',
   pbSec: '0',
+  pbDate: '2026-01-10',
   weeklyKm: '40',
   goal: { min: '42', sec: '0' }
 };
@@ -48,39 +45,31 @@ export async function runWizard(page: Page, input: PlanInput = TEN_K): Promise<v
     await expect(page.getByRole('button', { name: 'Dalje' })).toBeEnabled({ timeout: 2000 });
   }).toPass({ timeout: 20_000 });
   await page.getByRole('button', { name: 'Dalje' }).click();
-  // 2. poslednji rezultat
-  await group(page, 'Distanca rezultata')
-    .getByRole('button', { name: input.pbDist, exact: true })
-    .click();
+  // 2. skoriji rezultat
+  await page.getByRole('button', { name: 'Imam rezultat' }).click();
+  const dists = group(page, 'Distanca rezultata');
+  if (await dists.count())
+    await dists.getByRole('button', { name: input.pbDist, exact: true }).click();
+  if (input.pbHours) await page.getByLabel('sati').fill(input.pbHours);
   await page.getByLabel('minuti').fill(input.pbMin);
   await page.getByLabel('sekunde').fill(input.pbSec);
-  if (input.pbDate) await page.getByLabel('Datum rezultata').fill(input.pbDate);
-  await expect(page.getByText('Tvoja forma')).toBeVisible();
+  await page.getByLabel('Datum rezultata').fill(input.pbDate ?? '2026-01-10');
   await page.getByRole('button', { name: 'Dalje' }).click();
-  // 3. obim
+  // 3. iskustvo i obim (10K/HM/maraton: i 30 minuta bez prekida)
+  const run30 = group(page, '30 minuta bez prekida');
+  if (await run30.count()) await run30.getByRole('button', { name: 'Da', exact: true }).click();
   await page.getByLabel('Nedeljna kilometraža').fill(input.weeklyKm);
-  if (input.history) {
-    await page.getByText('Tvoja trenutna baza — opciono').click();
-    await page.getByLabel('Skorašnja ponovljiva dužina (km)').fill(input.history.longRunKm);
-    await page
-      .getByLabel('Kontinuitet — koliko nedelja trčiš redovno')
-      .fill(input.history.consistentWeeks);
-    await page.getByLabel('Skorašnja pauza (broj nedelja)').fill(input.history.breakWeeks);
-    await page
-      .getByLabel('Iskustvo sa intervalima i tempo treningom')
-      .selectOption(input.history.qualityExperience);
-  }
+  await page.getByRole('button', { name: 'Trčim redovno' }).click();
   await page.getByRole('button', { name: 'Dalje' }).click();
-  // 4. cilj i izrada
-  if (input.preferences) {
-    await group(page, 'Težina kvalitetnog rada')
-      .getByRole('button', { name: input.preferences.difficulty, exact: true })
-      .click();
-    await group(page, 'Tempo rasta obima')
-      .getByRole('button', { name: input.preferences.volume, exact: true })
-      .click();
-  }
+  // 4. dani, dan dugog, cilj
+  const days = group(page, 'Dani trčanja');
+  for (const d of input.days ?? ['Uto', 'Čet', 'Sub', 'Ned'])
+    await days.getByRole('button', { name: d, exact: true }).click();
+  const long = group(page, 'Dan dugog trčanja');
+  if (await long.count())
+    await long.getByRole('button', { name: input.longDay ?? 'Ned', exact: true }).click();
   if (input.goal) {
+    if (input.goal.hours) await page.getByLabel('sati').fill(input.goal.hours);
     await page.getByLabel('minuti').fill(input.goal.min);
     await page.getByLabel('sekunde').fill(input.goal.sec);
   }

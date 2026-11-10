@@ -28,13 +28,7 @@ test('return apply/reload/restore/reload preserves future alt, moved date, measu
   page.on('pageerror', (error) => errors.push(error.message));
   await createPlan(page, {
     ...TEN_K,
-    pbDate: '2025-12-20',
-    history: {
-      longRunKm: '12',
-      consistentWeeks: '24',
-      breakWeeks: '0',
-      qualityExperience: 'experienced'
-    }
+    pbDate: '2025-12-20'
   });
   await expect.poll(() => state().genPlan?.weeks.length ?? 0).toBeGreaterThan(2);
   // Public day links open the same Details screen as Plan/Danas; no injected navigation state.

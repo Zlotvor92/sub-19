@@ -46,18 +46,20 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
   <polazni SHA>` (vitest sam bira testove koji uvoze promenjene fajlove; sa `TEST_FULL=1` i pun nivo tih testova) +
   E2E dirane distance. Pun nivo celog foldera samo kad je menjan generator te distance:
   `TEST_FULL=1 npx vitest run --project node <folder>`.
-- v1 generatori (podrazumevani u produkciji, kod se ne menja): testovi poređenja sa referencama starog koda su
-  vitest projekat `v1` — u brzom nivou (`npm run check`, `--changed`) isključen, u punom uključen. Kad se dira v1 (folderi
-  distanci van `v2/`, `select.ts`, `handoff.ts`, zajednički domen, `src/test/`): još `npm run test:v1` (pun) ili
-  `TEST_V1=1 npx vitest run --project v1` (brz).
+- v1 generatori (V1b, 10. 11. 2026): 5K, 10K i maraton v1 su obrisani; nov plan pravi samo v2. Ostaje SAMO zamrznut
+  HM v1 (`halfMarathon/` van `v2/`, kod se ne menja) za ugrađeni lični plan vlasnika (`meta.licni`), do V1c posle
+  13. 12. 2026; dokaz `personalPlan.node.test.ts` trči u redovnom `node` projektu (projekat `v1` je ukinut). Planovi
+  starog generatora u bazi nemaju generator (`select.isLegacyPlan`): prikazuju se, unos radi, poruka + „Generiši nov
+  plan". Testovi prikaza nad planom starog formata koriste zamrznute fiksture `src/test/legacyPlans.ts` i
+  `src/test/legacyAdapt.ts` (snimljene jednom pre brisanja, ne prave se ponovo).
   `npm run check:full` (45–75 min, skoro sve su mreže generatora) se lokalno pokreće SAMO kad je menjan domenski kod
-  (`web/src/domain/**` — generatori v1/v2, zajednički domen, reference) ili test infrastruktura, i tada jednom, pre
+  (`web/src/domain/**` — generatori v2, zamrznut HM v1, zajednički domen, reference) ili test infrastruktura, i tada jednom, pre
   mergea u main; nikad po segmentu. Izmene koje ne diraju `src/domain/**` ni test infrastrukturu (ekrani, stil, tekst,
   `features/`, `components/`, dokumentacija): `npm run check` + E2E dirnutih ekrana + `npm run build` — bez lokalnog
   `check:full`, ni pre mergea. CI na svaki push koda bira po DOMETU IZMENE od poslednjeg zelenog run-a grane
-  (`web/scripts/ciScope.mjs`, TEST-SPEED.md § 13): „sve" (pun nivo `npm test` u 8 delova, `v1` jedan posao, E2E u 3,
+  (`web/scripts/ciScope.mjs`, TEST-SPEED.md § 13): „sve" (pun nivo `npm test` u 10 delova, E2E u 3,
   statičke provere) na `main`-u, ručno, bez zelenog run-a i kad push dira bilo šta zajedničko ili nepoznato (`web/src/test/`,
-  `web/scripts/`, `docs/qa/`, zavisnosti, konfiguracija, workflow, domen van `generators/<D>/v2/`); inače pun nivo
+  `web/scripts/`, zavisnosti, konfiguracija, workflow, domen van `generators/<D>/v2/`); inače pun nivo
   samo test fajlova čiji graf uvoza ili fajlovi koje čitaju sadrže promenjen fajl (izmena jedne distance v2 → njeni
   testovi + oni koji je uvoze; ekran → njegovi UI testovi), E2E samo kad se menja aplikacija, statičke provere kad se
   menja `web/`; push koji ne dira kod koji testovi vide (npr. `.claude/`) ne pokreće web poslove; push samo `docs/**`

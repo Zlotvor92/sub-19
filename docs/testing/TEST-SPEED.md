@@ -302,24 +302,18 @@ svi fajlovi, svi redovi, isti heševi; lokalno pun nivo posle izmena: 517 fajlov
   prvo, pa najduže (keš poslednjeg lokalnog pokretanja, inače tabela). Svaki posao računa istu podelu (isti fajlovi, ista
   tabela); unija delova = svi fajlovi bez preklapanja — dokazuje `web/scripts/testSequencer.node.test.ts`.
 - Tabela: reporter `web/scripts/test-durations.mjs` (trajanje = sakupljanje + testovi + `beforeAll`), osvežavanje:
-  `TEST_FULL=1 TEST_V1=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs`. Upisana iz punog
+  `TEST_FULL=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs`. Upisana iz punog
   lokalnog pokretanja posle izmena (517 fajlova, zbir 11 516 s): 6 delova po 28,2 min zbira ≈ 9,4 min zida lokalno.
   Na CI-ju (run 747) delovi 7,6–12,0 min: tabela je lokalna, a jsdom/ui fajlovi su na CI-ju relativno sporiji —
   osvežavanje iz CI izveštaja bi ujednačilo i deo 3.
 
-### 11.2 Projekat `v1`
+### 11.2 Projekat `v1` (ukinut u V1b, 10. 11. 2026)
 
-- Testovi poređenja v1 generatora sa referencama starog koda (`generators/*/equivalence*`, `otherDistances*`,
-  `runtimeIsolation*`, `personalPlan`, `guidance`, `training/generator/generator.{differential,fingerprint}`; 46 fajlova
-  u punom nivou) su vitest projekat `v1`: brz nivo ga isključuje (osim `TEST_V1=1`), pun ga uključuje (osim
-  `TEST_V1=0`). `npm run test:v1` = pun nivo samo tog projekta. Sabotaže postavljaju `TEST_V1=1`.
-- v1 kod se ne menja (0 od poslednjih 101 commita na grani), a v1 je podrazumevan u produkciji, pa se testovi ne brišu.
-  Udeo u CI run-a 741: 1713 s od 22 838 s (7,5 %; brojka od 59 % iz § 4.2 je stanje pre v2 mreža).
-- CI: delovi `web-test` rade `TEST_V1=0`; posao `v1-changes` traži poslednji zeleni run grane (`gh run list --status
-  success`) i pokreće `web-test-v1` (jedan posao, ~10 min) samo ako se od tog commita menja nešto što v1 koristi: domen
-  van `generators/*/v2/`, `src/test/`, `docs/qa/`, `package*.json`, `vitest.config.ts`, workflow. Na `main`-u, ručno i
-  bez zelenog run-a — uvek. Zeleni run je zelen i kad je posao preskočen, pa svaki zeleni commit ima v1 proveren direktno
-  ili preko prethodnog zelenog.
+- 5K, 10K i maraton v1 su obrisani zajedno sa svojim testovima poređenja (`equivalence*`, `otherDistances*`,
+  `runtimeIsolation*`, `guidance`, `generator.{differential,fingerprint}`). Ostaje zamrznut HM v1 samo za lični plan;
+  njegov dokaz `personalPlan.node.test.ts` (≈ 9 s) trči u redovnom projektu `node`. Projekat `v1`, `npm run test:v1`,
+  `TEST_V1` i CI posao `web-test-v1` ne postoje. Pre: projekat `v1` = 46 fajlova, 1 372 s lokalnog zbira (11,9 %),
+  1 713 s u CI run-u 741 (7,5 %). Izveštaj: `docs/generators-v2/perfection/reports/V1b-REPORT.md`.
 
 ### 11.3 Brzina produkcije, bajt-isti izlaz (v2, sve četiri distance)
 
@@ -423,7 +417,6 @@ polazni.
 - `web` = samo statičke provere (tipovi, lint, format, build); E2E je poseban posao `web-e2e` u 3 dela
   (`playwright --shard`), pregledač iz keša (`~/.cache/ms-playwright`).
 - `.github/actions/web-deps`: `node_modules` iz keša po hešu `package-lock.json` (snima se odmah posle `npm ci`).
-- `web-test-v1`: kao pre T1 (jedan posao `npm run test:v1`, ~10 min) — organizator 9. 11.: v1 se briše u V1b, posao se
-  ne optimizuje; trči kad je izbor „sve" (nadskup ranijeg `v1-changes`).
+- V1b: posao `web-test-v1` je ukinut; „sve" = `npm test` u 10 delova (`ALL_SHARDS`).
 - Posao „sve" upisuje trajanje svakog fajla (`TEST_DURATIONS_OUT`, reporter `scripts/test-durations.mjs`) kao artefakt
   `test-durations-*`; `test-durations.json` je prosek run-ova 765 i 766 (479 fajlova). Merenja pre/posle: T1-REPORT.md § 1.
