@@ -127,3 +127,35 @@ trke i broj nedelja; test po osećaju 14 nedelja). Produkcioni kod van `halfMara
 4. Ukupan RP pada 42 → 34,8 km (P0 medijana): posledica plafona u minutima; specifičnost je sada više u dugom sa
    blokom nego u treningu usred nedelje. Da li je to dovoljno — pitanje za trenera u krugu 2.
 5. Ispis za P9 treba da koristi korisnički tekst (`P8-HM/render.ts`), inače ocena jasnoće meri tehničke napomene.
+
+## Završetak — odluke po STOP-u (hm-v2.12.0, 10. 11. 2026)
+
+Odluke organizatora (poruka 16:38): S1 O1 (ostaje), S2 O2, S3 prihvaćeno oba, S4 O2, S5 O2, S6 potvrđeno, G6 početnik
+0,80. Pre = `3ebb0883` (hm-v2.11.0). Merenje: `node ../docs/generators-v2/perfection/P8-HM/measureStop.ts <pre/web> $PWD`.
+
+| odluka | mesto | pre → posle |
+|---|---|---|
+| S2 / G8-O2: udeo dugog početnika max(udeo reda; min(50 %, 16 km)) | `lengths.longShareCap10` (pravilo plana `longReach`) | mreža početnika 1890: najduži dugi ≥ 16 km 792 → 1326; ≥ 14 km 1239 → 1680; odbijanja 0 → 0; p11 (P7) 10,8 → 13,2 km |
+| — cena G8 | | planova koji gube > 10 % km laganih dana izgradnje: 666 od 1890 (najviše 23 %) — obim prelazi u dugi |
+| G6 početnik: lagan ≤ 0,80 × dugi | `policy.planRule` (nije bilo tako: bio 0,70 za 4–5 dana) | početnika sa planiranim vrhom < 0,9 × granice vrha: 51 → 0 |
+| S4 / HM (c)-O2: test u pretposlednjoj ne-rasteretnoj nedelji razvoja | `periodize.testWeekOf` | mreža P0: test u nedelji najvećeg cilja 84 / 112 → 17 / 128; nedelja od testa do trke medijana 8 → 9 [6–13] |
+| S5-O2: plan po osećaju 10–12 ned — test u prvoj nedelji razvoja | `periodize.testWeekOf` | planova po osećaju bez testa 1728 → 0 od 6336 |
+
+Preostalih 17 planova sa testom u nedelji najvećeg cilja: planovi u kojima rast staje pre pretposlednje nedelje razvoja
+(start na plafonu vrha ili korak ispod 3 %) — sve ne-rasteretne nedelje tada imaju isti cilj. Odbijanja: mreža 02
+(16 896) 0 → 0, početnik 0 → 0, po osećaju 0, P0 0. Sudara nije bilo; nijedna tačka nije vraćena.
+
+Testovi završetka (iz `web/`):
+
+| | komanda | trajanje | ishod |
+|---|---|---|---|
+| T1 | brz nivo HM v2 | ≈ 90 s | 363/363 |
+| T3 | `npx vitest run --changed 0181e25` | K3_TIME | K3_RES |
+| T4 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` | K4_TIME | K4_RES |
+| T5 | `npx playwright test e2e/hm-v2.spec.ts e2e/handoff-v2.spec.ts --trace off` | K5_TIME | K5_RES |
+| S | sabotaže (18: prethodnih 14 + G8, G6 početnik, mesto testa × 2) | 56 s | 18/18 palo |
+
+Promenjeni planovi prema `0181e25` (ponovo snimljeno): K_CHANGED. `KNOWN_VERSIONS` + `hm-v2.11.0`; redovi politike
+`P8-G8`, `P8-G6b`, `P8-HMc`. Usklađeni testovi: `feel`, `segmentP5` (mesto testa), `adapt` (TEST_MOVED se u dva
+scenarija više ne javlja — test nije u toj nedelji), `beginner`, `segment10`, `earlyGrid` (27 300), `grid04` (5123),
+`segmentP8` (+ 3 provere). Ostaje otvoreno iz prvog dela: plato dugog (talas, krug 2) i pad ukupnog RP.

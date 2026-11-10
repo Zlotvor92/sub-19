@@ -24,61 +24,61 @@ OCENA CILJA
 ------------------------------------------------------------
 NEDELJA 1 — faza: osnova
   02.11.–08.11. · cilj 45,0 km · planirano 45,0 km · ukupno 5 h 15 min
-  Ponedeljak 02.11.  Lagano 7,7 km
-      7,7 km · 54 min
-  Utorak     03.11.  Lagano 7,7 km
-      7,7 km · 54 min
-  Četvrtak   05.11.  Lagano 7,6 km
-      7,6 km · 53 min
-  Subota     07.11.  Lagano 7,6 km
-      7,6 km · 53 min
-  Nedelja    08.11.  Dugi 14,4 km lagano
-      14,4 km · 1 h 41 min
+  Ponedeljak 02.11.  Lagano 7,3 km
+      7,3 km · 51 min
+  Utorak     03.11.  Lagano 7,3 km
+      7,3 km · 51 min
+  Četvrtak   05.11.  Lagano 7,2 km
+      7,2 km · 50 min
+  Subota     07.11.  Lagano 7,2 km
+      7,2 km · 50 min
+  Nedelja    08.11.  Dugi 16,0 km lagano
+      16,0 km · 1 h 52 min
   Napomena: Uvod: prva od 2 uvodne nedelje, bez kvaliteta — dan kvaliteta je lagan.
-  Napomena: Dugi nedelje 1 14,4 km pretpostavlja skorašnje najduže trčanje od bar 13,1 km; ako je bio kraći, unesi ga (dugi raste najviše 10 % ili 1 km iznad najdužeg).
+  Napomena: Dugi nedelje 1 16,0 km pretpostavlja skorašnje najduže trčanje od bar 14,6 km; ako je bio kraći, unesi ga (dugi raste najviše 10 % ili 1 km iznad najdužeg).
 
 ------------------------------------------------------------
 NEDELJA 2 — faza: osnova
   09.11.–15.11. · cilj 47,0 km · planirano 47,0 km · ukupno 5 h 29 min
-  Ponedeljak 09.11.  Lagano 8,0 km
-      8,0 km · 56 min
-  Utorak     10.11.  Lagano 8,0 km
-      8,0 km · 56 min
-  Četvrtak   12.11.  Lagano 8,0 km
-      8,0 km · 56 min
-  Subota     14.11.  Lagano 8,0 km
-      8,0 km · 56 min
-  Nedelja    15.11.  Dugi 15,0 km lagano
-      15,0 km · 1 h 45 min
+  Ponedeljak 09.11.  Lagano 7,8 km
+      7,8 km · 55 min
+  Utorak     10.11.  Lagano 7,8 km
+      7,8 km · 55 min
+  Četvrtak   12.11.  Lagano 7,7 km
+      7,7 km · 54 min
+  Subota     14.11.  Lagano 7,7 km
+      7,7 km · 54 min
+  Nedelja    15.11.  Dugi 16,0 km lagano
+      16,0 km · 1 h 52 min
   Napomena: Uvod: druga od 2 uvodne nedelje, bez kvaliteta — dan kvaliteta je lagan.
 
 ------------------------------------------------------------
 NEDELJA 3 — faza: osnova
   16.11.–22.11. · cilj 49,0 km · planirano 49,0 km · ukupno 5 h 40 min
-  Ponedeljak 16.11.  Lagano 9,5 km
-      9,5 km · 1 h 07 min
-  Utorak     17.11.  Lagano 9,4 km, na kraju 4 × 20 s ubrzanja
-      9,4 km · 1 h 05 min
+  Ponedeljak 16.11.  Lagano 9,3 km
+      9,3 km · 1 h 05 min
+  Utorak     17.11.  Lagano 9,3 km, na kraju 4 × 20 s ubrzanja
+      9,3 km · 1 h 04 min
   Četvrtak   19.11.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
       5,1 km · 34 min · radnih 9 min
-  Subota     21.11.  Lagano 9,4 km
-      9,4 km · 1 h 06 min
-  Nedelja    22.11.  Dugi 15,6 km lagano
-      15,6 km · 1 h 49 min
+  Subota     21.11.  Lagano 9,3 km
+      9,3 km · 1 h 05 min
+  Nedelja    22.11.  Dugi 16,0 km lagano
+      16,0 km · 1 h 52 min
 
 ------------------------------------------------------------
 NEDELJA 4 — faza: osnova — RASTEREĆENJE
   23.11.–29.11. · cilj 39,2 km · planirano 39,2 km · ukupno 4 h 32 min
-  Ponedeljak 23.11.  Lagano 7,3 km
-      7,3 km · 51 min
-  Utorak     24.11.  Lagano 7,2 km, na kraju 4 × 20 s ubrzanja
-      7,2 km · 50 min
+  Ponedeljak 23.11.  Lagano 7,1 km
+      7,1 km · 50 min
+  Utorak     24.11.  Lagano 7,1 km, na kraju 4 × 20 s ubrzanja
+      7,1 km · 49 min
   Četvrtak   26.11.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
       5,1 km · 34 min · radnih 9 min
-  Subota     28.11.  Lagano 7,2 km
-      7,2 km · 50 min
-  Nedelja    29.11.  Dugi 12,4 km lagano
-      12,4 km · 1 h 27 min
+  Subota     28.11.  Lagano 7,1 km
+      7,1 km · 50 min
+  Nedelja    29.11.  Dugi 12,8 km lagano
+      12,8 km · 1 h 30 min
   Napomena: Rasterećenje: cilj 39,2 km, jedan kvalitet (T 1,5 km), dugi 80 % poslednjeg dugog pre rasterećenja.
 
 ------------------------------------------------------------

@@ -4,6 +4,9 @@
 čeka odluku organizatora. Brojevi: `P8-HM/measure.ts` (mreža P0 192 ulaza, velika mreža 27 930), `/P8-HM/out/*.json`,
 komande u `P8-HM-REPORT.md`.
 
+**Odluke organizatora (10. 11. 2026, 16:38): S1 → O1; S2 → O2; S3 → oba prihvaćena; S4 → O2; S5 → O2; S6 potvrđeno;
+G6 početnik 0,80. Ugrađeno u hm-v2.12.0 — vidi `P8-HM-REPORT.md` § Završetak.**
+
 ## S1 — G5 „taper ≤ 60 %" × G2 „najniži nivo uvek staje" (sudar pravila)
 
 Posle G4 najveći RP trening je 5–8 km (45 min), pa je najmanja doza tapera 2 × 2000 m često više od 60 % poslednje

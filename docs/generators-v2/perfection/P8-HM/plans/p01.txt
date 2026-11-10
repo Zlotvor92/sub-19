@@ -93,16 +93,17 @@ NEDELJA 6 — faza: razvoj
       20,1 km · 1 h 59 min
 
 ------------------------------------------------------------
-NEDELJA 7 — faza: razvoj
-  14.12.–20.12. · cilj 53,2 km · planirano 53,2 km · ukupno 5 h 03 min
-  Utorak     15.12.  WU 20 min + I 4 × 1000 m (oporavak 4:00 džog) + CD 15 min
-      11,9 km · 1 h 04 min · radnih 17 min
-  Četvrtak   17.12.  WU 20 min + T 3 × 1600 m (oporavak 1:00 džog) + CD 15 min
-      11,0 km · 60 min · radnih 23 min
-  Subota     19.12.  Lagano 9,1 km, na kraju 6 × 20 s ubrzanja
-      9,1 km · 53 min
+NEDELJA 7 — faza: razvoj — kontrolno trčanje
+  14.12.–20.12. · cilj 53,2 km · planirano 53,2 km · ukupno 5 h 08 min
+  Utorak     15.12.  WU 20 min + test 5 km kontrolisano maksimalno + CD 15 min
+      10,9 km · 57 min · radnih 22 min
+  Četvrtak   17.12.  Lagano 10,6 km
+      10,6 km · 1 h 03 min
+  Subota     19.12.  Lagano 10,5 km, na kraju 6 × 20 s ubrzanja
+      10,5 km · 1 h 02 min
   Nedelja    20.12.  Dugi 21,2 km lagano
       21,2 km · 2 h 06 min
+  Napomena: Kontrolni test 5 km: proverava formu posle faze razvoja — kontrolisano maksimalno posle zagrevanja; to je jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega (bolji ili sporiji).
 
 ------------------------------------------------------------
 NEDELJA 8 — faza: razvoj — RASTEREĆENJE
@@ -118,17 +119,16 @@ NEDELJA 8 — faza: razvoj — RASTEREĆENJE
   Napomena: Rasterećenje: cilj 42,6 km, jedan kvalitet (T 2,4 km), dugi 80 % poslednjeg dugog pre rasterećenja.
 
 ------------------------------------------------------------
-NEDELJA 9 — faza: razvoj — kontrolno trčanje
-  28.12.–03.01. · cilj 56,0 km · planirano 56,0 km · ukupno 5 h 24 min
-  Utorak     29.12.  WU 20 min + test 5 km kontrolisano maksimalno + CD 15 min
-      10,9 km · 57 min · radnih 22 min
-  Četvrtak   31.12.  Lagano 11,4 km
-      11,4 km · 1 h 08 min
-  Subota     02.01.  Lagano 11,3 km, na kraju 6 × 20 s ubrzanja
-      11,3 km · 1 h 06 min
+NEDELJA 9 — faza: razvoj
+  28.12.–03.01. · cilj 56,0 km · planirano 56,0 km · ukupno 5 h 20 min
+  Utorak     29.12.  WU 20 min + I 4 × 1000 m (oporavak 4:00 džog) + CD 15 min
+      11,9 km · 1 h 04 min · radnih 17 min
+  Četvrtak   31.12.  WU 20 min + T 3 × 1600 m (oporavak 1:00 džog) + CD 15 min
+      11,0 km · 60 min · radnih 23 min
+  Subota     02.01.  Lagano 10,7 km, na kraju 6 × 20 s ubrzanja
+      10,7 km · 1 h 03 min
   Nedelja    03.01.  Dugi 22,4 km lagano
       22,4 km · 2 h 13 min
-  Napomena: Kontrolni test 5 km: proverava formu posle faze razvoja — kontrolisano maksimalno posle zagrevanja; to je jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega (bolji ili sporiji).
 
 ------------------------------------------------------------
 NEDELJA 10 — faza: specifična

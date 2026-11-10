@@ -161,33 +161,33 @@ NEDELJA 10 — faza: razvoj
       18,8 km · 2 h 14 min
 
 ------------------------------------------------------------
-NEDELJA 11 — faza: razvoj
-  11.01.–17.01. · cilj 61,1 km · planirano 61,1 km · ukupno 7 h 01 min
-  Ponedeljak 11.01.  Lagano 11,2 km
-      11,2 km · 1 h 20 min
-  Utorak     12.01.  WU 20 min + I 3 × 1000 m (oporavak 4:00 džog) + CD 15 min
-      9,0 km · 59 min · radnih 16 min
-  Četvrtak   14.01.  WU 20 min + T 2 × 2500 m (oporavak 1:30 džog) + CD 15 min
-      10,1 km · 1 h 05 min · radnih 28 min
-  Subota     16.01.  Lagano 11,2 km, na kraju 6 × 20 s ubrzanja
-      11,2 km · 1 h 19 min
+NEDELJA 11 — faza: razvoj — kontrolno trčanje
+  11.01.–17.01. · cilj 61,1 km · planirano 61,1 km · ukupno 7 h 06 min
+  Ponedeljak 11.01.  Lagano 10,6 km
+      10,6 km · 1 h 16 min
+  Utorak     12.01.  WU 20 min + test 5 km kontrolisano maksimalno + CD 15 min
+      9,9 km · 1 h 02 min · radnih 27 min
+  Četvrtak   14.01.  Lagano 10,6 km
+      10,6 km · 1 h 16 min
+  Subota     16.01.  Lagano 10,5 km, na kraju 6 × 20 s ubrzanja
+      10,5 km · 1 h 14 min
   Nedelja    17.01.  Dugi 19,5 km lagano
       19,5 km · 2 h 19 min
+  Napomena: Kontrolni test 5 km: proverava formu posle faze razvoja — kontrolisano maksimalno posle zagrevanja; to je jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega (bolji ili sporiji).
 
 ------------------------------------------------------------
-NEDELJA 12 — faza: razvoj — kontrolno trčanje
-  18.01.–24.01. · cilj 63,1 km · planirano 63,1 km · ukupno 7 h 20 min
-  Ponedeljak 18.01.  Lagano 11,1 km
-      11,1 km · 1 h 19 min
-  Utorak     19.01.  WU 20 min + test 5 km kontrolisano maksimalno + CD 15 min
-      9,9 km · 1 h 02 min · radnih 27 min
-  Četvrtak   21.01.  Lagano 11,1 km
-      11,1 km · 1 h 19 min
-  Subota     23.01.  Lagano 11,0 km, na kraju 6 × 20 s ubrzanja
-      11,0 km · 1 h 17 min
+NEDELJA 12 — faza: razvoj
+  18.01.–24.01. · cilj 63,1 km · planirano 63,1 km · ukupno 7 h 15 min
+  Ponedeljak 18.01.  Lagano 12,0 km
+      12,0 km · 1 h 26 min
+  Utorak     19.01.  WU 20 min + I 3 × 1000 m (oporavak 4:00 džog) + CD 15 min
+      9,0 km · 59 min · radnih 16 min
+  Četvrtak   21.01.  WU 20 min + T 2 × 2500 m (oporavak 1:30 džog) + CD 15 min
+      10,1 km · 1 h 05 min · radnih 28 min
+  Subota     23.01.  Lagano 11,9 km, na kraju 6 × 20 s ubrzanja
+      11,9 km · 1 h 24 min
   Nedelja    24.01.  Dugi 20,0 km lagano
       20,0 km · 2 h 23 min
-  Napomena: Kontrolni test 5 km: proverava formu posle faze razvoja — kontrolisano maksimalno posle zagrevanja; to je jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega (bolji ili sporiji).
 
 ------------------------------------------------------------
 NEDELJA 13 — faza: razvoj — RASTEREĆENJE
