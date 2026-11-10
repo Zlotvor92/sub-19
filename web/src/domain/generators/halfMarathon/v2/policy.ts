@@ -915,7 +915,9 @@ export const HM_V2_POLICY = {
       nivo po nedelji B), blok ≤ blockMaxLongShare dužine dugog. */
   specific: {
     blockKm: [4, 6, 8] as readonly number[],
-    blockMaxLongShare: 0.4
+    blockMaxLongShare: 0.4,
+    /** P8-HM (b): u nedelji sa blokom rad u trkačkom tempu (RP trening + blok) ≤ ovaj udeo VREMENA nedelje. */
+    rpWeekTimeShare: 0.22
   },
 
   /** P5-F3 (hm-v2.10.0): ubrzanja na kraju jednog laganog dana nedelje izgradnje i tapera (ne trkačka nedelja, ne uvod

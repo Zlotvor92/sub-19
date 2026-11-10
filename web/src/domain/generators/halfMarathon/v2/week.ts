@@ -916,7 +916,8 @@ function buildWeekIn(
         p,
         [w1, w2].filter((x): x is Workout => !!x).map((x) => x.sec),
         targetKm,
-        ctx.hold === true
+        ctx.hold === true,
+        { easy10: len.easy10, rpTrainM: picks?.q1?.zone === 'RP' ? picks.q1.doseM : 0 }
       )
     : null;
   if (bWeek && blockKm === null) return null;

@@ -1884,7 +1884,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           pk,
           secs,
           w.targetKm,
-          held(w)
+          held(w),
+          {
+            easy10: w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km)),
+            rpTrainM: w.days
+              .filter((d) => d.workout.kind === 'quality')
+              .reduce((a, d) => a + Math.round(d.workout.workKm.RP * 1000), 0)
+          }
         );
         if (want !== bk)
           err(
@@ -1917,7 +1923,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
             pk,
             [q1d.workout.sec],
             w.targetKm,
-            held(w)
+            held(w),
+            { easy10: len.easy10, rpTrainM: Math.round(q1d.workout.workKm.RP * 1000) }
           ) !== null;
         if (fits || !w.notes.includes(B_MISSING_NOTE))
           err(

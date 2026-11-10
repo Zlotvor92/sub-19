@@ -73,7 +73,9 @@ export function chooseBlockKm(
   p: Paces,
   qualitySecs: readonly number[],
   targetKm: number,
-  hold = false
+  hold = false,
+  /** P8-HM (b): ostali dani nedelje — lagani [0,1 km] i RP rad treninga [m]; bez polja se udeo vremena ne proverava. */
+  week?: BlockWeek
 ): number | null {
   const km = long10 / 10;
   const want = wantBlockKm(lastBlockM, hold);
@@ -85,11 +87,36 @@ export function chooseBlockKm(
     if (
       blockFits(km, x, rule, p) &&
       Math.round(x * 1000) <= capM('RP', targetKm) &&
-      qualitySecs.every((s) => s > easySec || s <= sec)
+      qualitySecs.every((s) => s > easySec || s <= sec) &&
+      (!week || rpTimeShareOk(qualitySecs, week, sec, x, p))
     )
       return x;
   }
   return null;
+}
+
+/** P8-HM (b): lagani dani nedelje [0,1 km] i RP rad treninga usred nedelje [m]. */
+export interface BlockWeek {
+  easy10: readonly number[];
+  rpTrainM: number;
+}
+
+/** P8-HM (b) — rad u trkačkom tempu nedelje sa blokom (RP trening + blok `x` km) ≤ 22 % vremena nedelje: vreme nedelje =
+    dani kvaliteta + lagani srednjim laganim tempom + dugi sa blokom (`longSec`). Jedna funkcija (chooseBlockKm). */
+export function rpTimeShareOk(
+  qualitySecs: readonly number[],
+  week: BlockWeek,
+  longSec: number,
+  x: number,
+  p: Paces
+): boolean {
+  const midE = (p.E.fast + p.E.slow) / 2;
+  const weekSec =
+    qualitySecs.reduce((a, s) => a + s, 0) +
+    week.easy10.reduce((a, e) => a + (e / 10) * midE, 0) +
+    longSec;
+  const rpSec = (week.rpTrainM / 1000 + x) * p.RP;
+  return rpSec <= P.specific.rpWeekTimeShare * weekSec + 1e-6;
 }
 
 /** S1/S3: nedelja sme biti tip B — redovan plan 4–6 dana (3 dana i početnik nemaju nedelju B), ne-rasteretna
