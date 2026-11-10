@@ -144,8 +144,9 @@ describe('M16 test 5 km', () => {
   });
 
   it('3 dana: test na danu Q1 umesto jedinog kvaliteta nedelje izgradnje; P8-G7: 12 nedelja bez testa (bio bi u nedelji 3)', () => {
-    expect(tests(D3_12)).toHaveLength(0);
-    expect(D3_12.weeks.some((w) => w.test)).toBe(false);
+    // marathon-v2.12.0 (S4 O2): 12 nedelja — test u prvoj ne-rasteretnoj nedelji razvoja (nedelja 4).
+    expect(tests(D3_12).map((x) => x.week)).toEqual([4]);
+    expect(D3_12.weeks[3]!.phase).toBe('development');
     const t = tests(D3);
     expect(t).toHaveLength(1);
     const wk = D3.weeks[t[0]!.week - 1]!;

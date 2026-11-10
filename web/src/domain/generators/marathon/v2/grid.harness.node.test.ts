@@ -334,7 +334,8 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     // MAR-11 (T1): izgradnja — lagan ≤ 0,8 × dugi (kad 0,8 × dugi ≥ 5 km; inače ≤ dugi), ≥ 5 km i ≥ 20 min
     // (nezavisno od lengths.ts).
     // P8-G6: 4 i više dana trčanja 0,70 × dugi, 3 dana 0,80.
-    const easyShare = p.input.runDays.length >= 4 ? 0.7 : 0.8;
+    // marathon-v2.12.0: početnik 0,80 bez obzira na broj dana.
+    const easyShare = !beginner && p.input.runDays.length >= 4 ? 0.7 : 0.8;
     if (isSteady(w))
       for (const d of w.days)
         if (
@@ -615,7 +616,12 @@ export function feelBeginnerInvariants(id: string, p: MarathonV2Plan): string[] 
     const want =
       want0 === 0 || want0 >= 4
         ? want0
-        : (W.find((w) => w.index >= 4 && w.phase === W[want0 - 1]!.phase && !w.deload)?.index ?? 0);
+        : (W.find((w) => w.index >= 4 && w.phase === W[want0 - 1]!.phase && !w.deload)?.index ??
+          // marathon-v2.12.0 (S4 O2): plan po osećaju — prva ne-rasteretna nedelja ≥ 4 razvoja.
+          (feel
+            ? W.find((w) => w.index >= 4 && w.phase === 'development' && !w.deload)?.index
+            : 0) ??
+          0);
     if (want === 0 ? tests.length !== 0 : tests.length !== 1 || tests[0]!.w !== want)
       no(
         feel

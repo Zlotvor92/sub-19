@@ -146,6 +146,11 @@ export function testWeekOf(
   if (tw === 0 || tw >= min) return tw;
   for (let i = min; i <= phases.length; i++)
     if (phases[i - 1] === phases[tw - 1] && !deloads.includes(i)) return i;
+  // P8-S4 (marathon-v2.12.0, odluka organizatora): plan po osećaju čija baza nema nedelju ≥ minWeek (12–13 nedelja) —
+  // test u prvoj ne-rasteretnoj nedelji ≥ minWeek sledeće faze (razvoj).
+  if (kind === 'feel')
+    for (let i = min; i <= phases.length; i++)
+      if (phases[i - 1] === 'development' && !deloads.includes(i)) return i;
   return 0;
 }
 

@@ -209,6 +209,8 @@ function withEasy(
     kvalitet + lagani + dugi po redu tabele), 0,80 za 3 dana. JEDNA funkcija (easyCap10, tekst napomena, validator). */
 export function easyLongShareOf(rule: DayRule): number {
   const L = P.lengths;
+  // marathon-v2.12.0 (odluka organizatora): plan sa oznakom početnika — 0,80 bez obzira na broj dana.
+  if ((rule as { beginner?: boolean }).beginner === true) return L.easyLongShare;
   return rule.quality + rule.easy + 1 >= L.easyLongShareManyDays
     ? L.easyLongShareMany
     : L.easyLongShare;

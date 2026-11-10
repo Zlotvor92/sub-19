@@ -1,4 +1,4 @@
-/* P8 (marathon-v2.11.0): G1 vrh obima i rast do kraja razvoja, G2 prvi nivo lestvice uvek staje, G4 plafon treninga u
+/* P8 (marathon-v2.11.0; završetak marathon-v2.12.0: test kratkog plana po osećaju u razvoju, početnik lagan 0,80): G1 vrh obima i rast do kraja razvoja, G2 prvi nivo lestvice uvek staje, G4 plafon treninga u
    minutima rada, G5 taper i oštrenje u minutima, G6 lagan ≤ 0,70 × dugi (4+ dana), G7 test jedini kvalitet nedelje i
    ne pre nedelje 4, Maraton (a) dan kvaliteta tapera ni po km nije duži od dugog. Mere se čitaju iz plana (segmenti),
    nezavisno od funkcija konstruktora. */
@@ -198,7 +198,9 @@ describe('P8-G6: lagan dan prema dugom', () => {
     // Granica po broju dana (jedna funkcija, lengths.easyCap10): 20,0 km dugi → 14,0 km (4+ dana), 16,0 km (3 dana).
     expect(easyCap10(200, 50, planRule(4)!)).toBe(140);
     expect(easyCap10(200, 50, planRule(6)!)).toBe(140);
-    expect(easyCap10(200, 50, planRule(4, 'beginner')!)).toBe(140);
+    // marathon-v2.12.0: plan sa oznakom početnika 0,80 bez obzira na broj dana.
+    expect(easyCap10(200, 50, planRule(4, 'beginner')!)).toBe(160);
+    expect(easyCap10(200, 50, planRule(5, 'beginner')!)).toBe(160);
     expect(easyCap10(200, 50, planRule(3)!)).toBe(160);
   });
 });
@@ -212,10 +214,14 @@ describe('P8-G7: nedelja kontrolnog testa', () => {
       expect(mid(w)).toHaveLength(0);
     }
   });
-  it('plan po osećaju od 12 nedelja: test bi pao u nedelju 3 i baza nema kasniju nedelju — plan bez testa, sa rečenicom', () => {
-    const p = plan({ weeks: 12, km: 50, easyPace: 360, days: D(4) });
-    expect(p.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
-    expect(p.notes.some((n) => n.includes('Plan nema kontrolni test'))).toBe(true);
+  it('plan po osećaju od 12 i 13 nedelja (S4 O2): baza nema nedelju ≥ 4 — test u prvoj ne-rasteretnoj nedelji razvoja (4), jedini kvalitet', () => {
+    for (const weeks of [12, 13]) {
+      const p = plan({ weeks, km: 50, easyPace: 360, days: D(4) });
+      const w = p.weeks.filter((x) => x.test || x.days.some((d) => d.role === 'test'));
+      expect(w.map((x) => [x.index, x.phase, x.deload])).toEqual([[4, 'development', false]]);
+      expect(mid(w[0]!)).toHaveLength(0);
+      expect(p.notes.some((n) => n.includes('Plan nema kontrolni test'))).toBe(false);
+    }
   });
 });
 

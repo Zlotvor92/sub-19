@@ -68,7 +68,10 @@ describe('F1: kontrolni test u planu sa rezultatom', () => {
     ).toBe(4);
     // P8-G7: test koji bi pao pre nedelje 4 — prva ne-rasteretna nedelja ≥ 4 iste faze, inače bez testa.
     expect(testWeekOf(['base', 'development', 'development', 'specific'], 'result', [3])).toBe(0);
-    expect(testWeekOf(['base', 'base', 'base', 'development'], 'feel', [])).toBe(0);
+    // marathon-v2.12.0 (S4 O2): plan po osećaju bez nedelje ≥ 4 u bazi — prva ne-rasteretna nedelja ≥ 4 razvoja.
+    expect(testWeekOf(['base', 'base', 'base', 'development'], 'feel', [])).toBe(4);
+    expect(testWeekOf(['base', 'base', 'base', 'development', 'development'], 'feel', [4])).toBe(5);
+    expect(testWeekOf(['base', 'base', 'base', 'specific'], 'feel', [])).toBe(0);
     expect(testWeekOf(['base', 'base', 'base', 'base', 'base', 'development'], 'feel', [5])).toBe(
       5
     );

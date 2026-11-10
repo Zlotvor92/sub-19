@@ -510,7 +510,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'P8-G6',
-    rule: 'Nedelja izgradnje: lagan ≤ 0,70 × dugi iste nedelje za plan sa 4 i više dana trčanja (3 dana: 0,80, MAR-11 T1). Višak cilja koji ne staje spušta postojeći mehanizam izvodljivog cilja (M6).',
+    rule: 'Nedelja izgradnje: lagan ≤ 0,70 × dugi iste nedelje za redovan plan sa 4 i više dana trčanja (3 dana: 0,80, MAR-11 T1); plan sa oznakom početnika 0,80 bez obzira na broj dana (marathon-v2.12.0, odluka organizatora po izveštaju P8-MAR). Višak cilja koji ne staje spušta postojeći mehanizam izvodljivog cilja (M6).',
     place:
       'policy.ts lengths.easyLongShareMany; lengths.ts easyLongShareOf, easyCap10; validate.ts (EASY_LONG_SHARE)',
     rationale:
@@ -518,7 +518,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'P8-G7',
-    rule: 'Nedelja kontrolnog testa: test je jedini kvalitet (dan Q2 je lagan, stanje slotova se ne menja). Test ne ide pre nedelje 4: prva ne-rasteretna nedelja ≥ 4 iste faze, inače plan bez testa.',
+    rule: 'Nedelja kontrolnog testa: test je jedini kvalitet (dan Q2 je lagan, stanje slotova se ne menja). Test ne ide pre nedelje 4: prva ne-rasteretna nedelja ≥ 4 iste faze; plan po osećaju čija baza nema takvu nedelju (12–13 nedelja): prva ne-rasteretna nedelja ≥ 4 razvoja (marathon-v2.12.0, odluka organizatora po STOP S4, opcija O2); inače plan bez testa.',
     place:
       'policy.ts test.minWeek; periodize.ts testWeekOf; week.ts (nedelja testa); validate.ts (ROLES, TEST)',
     rationale:
@@ -533,7 +533,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.11.0',
+  version: 'marathon-v2.12.0',
 
   /** M1 (dani i obim: M15). */
   input: {
