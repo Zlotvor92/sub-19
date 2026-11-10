@@ -17,6 +17,7 @@ OCENA CILJA
   Cilj nije zadat ili nije ocenjen.
   Prognoza na osnovu rezultata: 56:02.
   Napomena plana: Kontrolni test 5 km: nedelja 11, 2027-01-12. Unesi rezultat — tempo treninga se prilagođava od sledeće nedelje.
+  Napomena plana: Nedeljni obim ostaje 50,0 km: to je već oko 6 sati trčanja nedeljno, pa plan ne dodaje kilometre — napredak donose treninzi u tempu i dugi.
 
 ------------------------------------------------------------
 NEDELJA 1 — faza: osnova

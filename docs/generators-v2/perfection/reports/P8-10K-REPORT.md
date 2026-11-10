@@ -5,8 +5,8 @@
 traže organizatora: `P8-10K-STOP.md` (S1–S8). Izmene samo u `web/src/domain/generators/tenK/v2/**` i dokumentaciji
 (van foldera samo oznaka verzije: `features/onboarding/tenKV2Flow.test.tsx`, `e2e/tenk-v2.spec.ts`).
 
-**Stanje testova: NIJE zeleno** (v. „Testovi"). Kod i merenja su gotovi; preostaje usklađivanje 23 test fajla
-(očekivanja starih pravila, nezavisne invarijante, referentni heševi) i 1 odbijanje adaptacije (S8).
+**Stanje testova: v. odeljak „Završetak" na kraju** (stanje posle prvog dela: 23 test fajla nisu bila zelena, 1 odbijanje
+adaptacije S8 — rešeno u završetku).
 
 ## Šta je ugrađeno (policy.ts D39–D48)
 
@@ -105,3 +105,101 @@ G1a, G6, G7, G8 i 10K c (15/15 zeleno).
 
 G2 + G3 + G4 + G5 oštrenje rešavaju najteže tvrde zamerke (početnik bez RP, taper bez kvaliteta, predugi treninzi,
 tekst). G1a doslovno pravi ravan plan kod sporog trkača sa većim obimom (S7) — ocena ga je već kaznila; treba odluka.
+
+## Završetak (10. 11. 2026, `briefs/P8-10K-zavrsetak.md`; verzija ostaje 10k-v2.13.0 — nije bila ni u jednom zelenom stanju)
+
+### Odluke organizatora i šta je ugrađeno (policy D49–D51)
+
+| odluka | ugrađeno | mesto |
+|---|---|---|
+| S1/S5/S6 donja granica ispred G5 | doza rasterećenja i tapera = max(najniži nivo; najviši nivo ≤ 60 % poslednje doze); jedna funkcija za konstruktor i validator; dugi rasterećenja 0,8 × poslednji, ne ispod najdužeg laganog (sme < 4 km) | `quality.reducedDoseM` (D51) |
+| S7 ravan obim | rečenica u planu: „Nedeljni obim ostaje X km: to je već oko N sati trčanja nedeljno, pa plan ne dodaje kilometre — napredak donose treninzi u tempu i dugi." Uslov: satni plafon je najniža granica vrha i rast do njega se ne primenjuje (start ≥ plafon ili preostali rast < 3 %, G1b) | `volume.flatByHours`, `generate.ts` (D50) |
+| S2 | bez izmene (G8 kako je izmereno) | — |
+| S3 T početnika | plafon T početnika = max(udeo × cilj; 3,0 km), uz G4 | `quality.capM`, `policy.beginner.tCapMinKm` (D49) |
+| S8 odbijanje adaptacije | validator: nedelja testa (G7, bez Q2) ne određuje stanje nijednog slota — kao konstruktor; ista funkcija smanjene doze | `validate.ts` (D51) |
+| S9 (nov STOP u završetku, odlučeno) | početnik (jedan kvalitet) ostaje na lagan ≤ 0,80 × dugi; 0,70 samo redovan plan sa 4+ dana | `policy.beginner.easyMaxLongShare` (D47) |
+| S4 i ostalo | ostaje kako je ugrađeno | — |
+
+### Sudari u završetku i rešenja (prihvatio organizator: 1 i 2; 3–5 rešeno po istom načelu, javljeno)
+
+1. **S3 × G6/dužine nedelje**: plafon 3,0 km bez uslova → 12 odbijanja na mreži B (4 dana, 18 km, 17 ned: dan T 3 × 1000 m ≈ 7,9 km
+   obara nedelju 21,5 → 17,9 km; rasterećenje i taper ne mogu da se sastave). Rešenje (jedan vlasnik, `quality.pickBuild`, predikat
+   konstrukcije `carriesAll` kao `keepsTwo` iz D37): viši nivo T samo kad ga nedelja nosi (dužine izvodljive pri cilju, nijedan lagan dan
+   nije odmor); inače doza te nedelje ne raste (napomena trkaču, validator: nedelja bez rasta doze kao D38).
+2. **Rasterećenje bez kvaliteta** samo u drugoj pretrazi i samo kad nedelja sa najnižom T dozom ne može da se sastavi; validator
+   proverava tvrdnju (dan T + dugi i lagani po 3 km > cilj). Na mreži B posle S9: 0 takvih nedelja.
+3. **S3 × prelaz T → RP**: T do 3,0 km > plafon RP 2 × 1200 m → upozorenje „doza spuštena" (206 planova u uzorku brzog nivoa).
+   Rešenje: početnik — prelaz u novu zonu nosi dozu najviše do plafona nove zone (`quality.cappedCarry`, konstruktor i validator);
+   to je prelaz, ne spuštanje. Posle: DOSE_DROPPED kod početnika 0.
+4. **G6 × početnik 4 dana (S9)**: v. tabelu ispod.
+5. **G8 × period bola u adaptaciji**: validator je u nedelji dugog do distance tražio dugi po udelu 50 %, a konstruktor ga u periodu
+   bola seče na 60 min (A4) → 3 odbijanja (reliefGrid 1, repeatGrid 2, početnik 4 dana). Validator sada čita istu funkciju
+   (`lengths.painLong10`); odbijanja 0.
+
+### Brojevi (mreža B = `beginnerGridInputs`, 3402 plana; merne skripte privremene, nisu u repou)
+
+| metrika (mreža B) | pre završetka (G1–G8) | posle |
+|---|---|---|
+| odbijanja generatora | 0 | 0 |
+| ne-rasteretne nedelje sa T 1,5 km | 4800 | 3474 |
+| planovi po najvećoj T dozi: 1,5 / 2,0 / 2,4–2,5 / 3,0 / ≥ 3,5 km | 378 / 936 / 1476 / 570 / 42 | 12 / 402 / 384 / 2406 / 198 |
+| nedelje u kojima T doza ostaje jer je nedelja ne nosi | — | 144 u 96 planova |
+| upozorenje DOSE_DROPPED / rasterećenje bez kvaliteta / taper bez kvaliteta | 0 / 0 / 0 | 0 / 0 / 0 |
+| planovi sa dugim rasterećenja < 4 km (3 / 4 dana; S1 dozvoljeno) | 6 / 14 | 18 / 42 |
+
+**S9 — G6 kod početnika sa 4 dana** (1890 planova; cilj nedelje 3, prve sa kvalitetom, prema startu):
+
+| lagan ≤ × dugi | pad ≥ 10 % | pad ≥ 20 % | plan se ne vrati na start |
+|---|---|---|---|
+| pre P8 (10c72e3) i pre G6 (81e2a98) | 54 | 0 | 108 |
+| 0,70 (kako je bilo ugrađeno) | 918 | 594 | 396 |
+| 0,75 | 486 | 162 | 150 |
+| 0,80 (odluka, ugrađeno) | 54 | 0 | 108 |
+
+Uz 0,70 padala je i postojeća invarijanta adaptacije I2 (`painGrid`: isti cilj nedelje za svaki dan bola) — sa 0,80 prolazi.
+Početnik 3 dana bez promene (216 / 108 / 270 od 1512, isto kao pre P8).
+
+**S8**: mreža adaptacije (`adaptBases` × asOf × scenariji, 2040 tokova): odbijeno 3 (d4/d5/d6-r-14w, w6wed, over120) → 0.
+Pun nivo trajnih mreža adaptacije (rana 102 707, rasterećenja 18 193, ponavljanja, bol): 0 odbijanja.
+
+**Mreža 02 (15 840) i F (11 880), ceo skup, 10k-v2.12.0 → 10k-v2.13.0** (tabele u `grid02.harness`, `feelGrid.harness`):
+
+| metrika (3 / 4 / 5 / 6 dana) | 02 pre | 02 posle | F pre | F posle |
+|---|---|---|---|---|
+| CAPACITY_LIMITED (planova) | 1044 / 1968 / 1188 / 1248 | 1002 / 2382 / 1308 / 1272 | 1104 / 1884 / 1314 / 1266 | 1014 / 2160 / 1224 / 1116 |
+| vrh / start (prosek) | 1,235 / 1,217 / 1,264 / 1,236 | 1,209 / 1,160 / 1,210 / 1,162 | 1,188 / 1,163 / 1,237 / 1,216 | 1,164 / 1,098 / 1,163 / 1,102 |
+| ned 1 ispod obima (105 min + udeo) | 528 / 1254 / 528 / 594 | 528 / 1782 / 726 / 924 | 594 / 1386 / 660 / 792 | 594 / 1782 / 858 / 1056 |
+| DOSE_DROPPED (planova) | 36 / 534 / 90 / 0 | 36 / 372 / 0 / 0 | 84 / 444 / 210 / 72 | 96 / 672 / 0 / 0 |
+| rasterećenje / taper bez kvaliteta | 528 / 48 (3 dana) | 0 / 0 | 288 / 36 (3 dana) | 0 / 0 |
+| ponavljanje slota (nedelja) | 456 / 42 / 0 / 0 | 264 / 174 / 0 / 0 | 384 / 96 / 126 / 240 | 432 / 342 / 132 / 240 |
+
+Prijava (nije sudar, G6 kako je odlučeno za redovne planove): redovan plan sa 4 dana češće ne nosi trenutni obim u nedelji 1
+(02: 1254 → 1782 planova; primer 10 ned, 25 km, VDOT 30: nedelja 1 = 23,4 km) i vrh/start je niži (G1a + G6).
+
+### Izmene očekivanja u testovima, po klasi (samo posledice odlučenih pravila)
+
+| klasa | fajlovi | šta |
+|---|---|---|
+| tabele pravila | `policy` | D43–D51, nova polja (minutesCap, peakG1a, minStepShare, test.minWeek, sharpener*, easyMaxLongShare, beginner.*) |
+| G7 test ne pre nedelje 4, jedini kvalitet | `periodize`, `feel`, `lockedTest`, `segment08`, `p5`, `schedule`, `week`, `quality`, `adapt` (tabela scenarija), `gridInvariants` | planovi po osećaju 8–11 ned bez testa; primeri prebačeni na 15 ned; nedelja testa bez Q2; TEST_MOVED niži |
+| G1/G1a/G1b rast i vrh | `volume` (nezavisno pravilo), `painGrid` A–E, `adaptFlow`, `beginner`, `reliefGrid`, `validate` | niži ciljevi nedelja u primerima; korak < 3 % se ne primenjuje |
+| G6 lagan ≤ 0,70 × dugi (redovan 4+ dana) | `volume`, `validate`, `reliefGrid`, `earlyGrid` primeri, `adapt` A1, tabele mreža 02 i F | poruke „lagan ≤ 70 % dugog", niži izvodljiv cilj, ned 1 ispod obima |
+| G4/G5 minuti i oštrenje | `quality` (nezavisan plafon), `week`, `beginner`, `earlyGrid`, `painGrid` I3 | oštrenje 2 jednake deonice; trkačka nedelja kraća za 0,2 km u primerima |
+| G2/S3/D49 početnik | `beginner`, `p8`, `gridInvariants`, tabele mreže B | lestvica T napreduje; T kontinuirano umesto lestvice faze i nedelje bez kvaliteta → 0 |
+| G8 | `gridInvariants` (LONG_CAP po udelu do 50 % u 3 poslednje nedelje izgradnje) | — |
+| invarijanta sa novim izuzetkom | `repeatGrid.harness` (pouka 36/37) | kad je zaštićeni ponedeljak k najduži dugi plana, taper i trkačka nedelja se ne porede (D7 čita najduži dugi upisanog plana); nedelje izgradnje posle k i dalje iste |
+| brojevi pouke 35 | `p35.harness` | brz 546 → 624; pun po delovima 112 / 112 / 125 / 125 → 145 / 145 / 167 / 167 |
+
+Skup tokova rane mreže (E) ostaje skup 06d (102 707): asOf „nedelja pre testa" se za plan po osećaju bez testa (G7) računa od
+mesta testa po D27 (`testInputs.earlyAsOfs`) — redni brojevi i referentni heševi isti.
+
+### Referentni heševi i fikstura promenjenih planova
+
+Po postojećem obrascu fikstura promenjenih planova čuva stanje starog stabla za planove/tokove koje segment menja, a koji nisu
+u ranijim fiksturama. `segmentP5.changed-72003c1.json` već sadrži SVE planove generatora (34 146) i SVE tokove trajnih mreža
+(rana 102 707, grid04 2040, bol 336, rasterećenja 18 193, start0 12 336), pa starije regresije porede stanja iz fikstura za
+svaki ključ; skup „promenjeno u P8, a nije u ranijim fiksturama" je prazan i nova fikstura nije potrebna. `p08Errors` na punom
+nivou dokazuje da se svaki plan i tok razlikuje od svog stanja u fiksturi. Dokaz po klasi (stari kod 10c72e3 → vrh grane): v.
+„Promenjeni planovi" ispod.
+
+### Testovi i sabotaže — v. kraj odeljka (popunjava se posle završnog punog nivoa)

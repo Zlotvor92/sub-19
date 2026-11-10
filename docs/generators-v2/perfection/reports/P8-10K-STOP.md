@@ -74,3 +74,12 @@ prihvatljiv ili satni plafon tada skraćuje pripremu / smanjuje broj dana — od
 Rasterećenje: 1 kvalitet T 2400 m (≈ 60 % od 4800 m) (D5)` (validator i konstruktor se ne slažu o T dozi
 rasterećenja posle A6 viška; verovatno G4 minuti menjaju poslednju T dozu različito u prošlosti i budućnosti). Generator
 bez odbijanja na 34 350 planova (01/02/F/B/P0/P7). Nije rešeno u ovom segmentu.
+
+## S9 — G6 × početnik 4 dana (završetak; ODLUČENO: početnik ostaje na 0,80)
+
+G6 (lagan ≤ 0,70 × dugi za 4+ dana) kod početnika sa 4 dana (1 kvalitet + 2 lagana + dugi 33 %) obara obim čim uđe prvi
+kvalitet: mreža B, 1890 planova, cilj nedelje 3 prema startu — pad ≥ 10 % u 918 (pre P8 54), ≥ 20 % u 594 (0), plan se ne vrati
+na start u 396 (108); sa 0,75: 486 / 162 / 150; sa 0,80: 54 / 0 / 108. Odluka organizatora (10. 11. 2026): početnik (jedan
+kvalitet nedeljno) ostaje na 0,80 — jedan red tabele početnika; 0,70 samo redovan plan sa 4 i više dana. Ugrađeno.
+
+Odluke S1–S8: `briefs/P8-10K-zavrsetak.md`; ugradnja i brojevi: `reports/P8-10K-REPORT.md` § Završetak.

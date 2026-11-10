@@ -66,36 +66,32 @@ NEDELJA 4 — faza: osnova — RASTEREĆENJE
 ------------------------------------------------------------
 NEDELJA 5 — faza: osnova
   30.11.–06.12. · cilj 16,8 km · planirano 16,8 km
-  Utorak     01.12.  Lagano 4,3 km + 4 × 20 s ubrzanja
-      4,3 km · 30 min
-  Četvrtak   03.12.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
-      5,0 km · 34 min · radnih 9 min
+  Utorak     01.12.  Lagano 3,8 km + 4 × 20 s ubrzanja
+      3,8 km · 26 min
+  Četvrtak   03.12.  WU 15 min + T 2,0 km kontinuirano + CD 10 min
+      5,5 km · 36 min · radnih 11 min
   Nedelja    06.12.  Dugi 7,5 km lagano
       7,5 km · 53 min
-  Napomena: Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 
 ------------------------------------------------------------
 NEDELJA 6 — faza: osnova
   07.12.–13.12. · cilj 16,8 km · planirano 16,8 km
-  Utorak     08.12.  Lagano 4,3 km + 4 × 20 s ubrzanja
-      4,3 km · 30 min
-  Četvrtak   10.12.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
-      5,0 km · 34 min · radnih 9 min
+  Utorak     08.12.  Lagano 3,3 km + 4 × 20 s ubrzanja
+      3,3 km · 23 min
+  Četvrtak   10.12.  WU 15 min + T 2,5 km kontinuirano + CD 10 min
+      6,0 km · 39 min · radnih 14 min
   Nedelja    13.12.  Dugi 7,5 km lagano
       7,5 km · 53 min
-  Napomena: Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 
 ------------------------------------------------------------
 NEDELJA 7 — faza: razvoj
   14.12.–20.12. · cilj 17,5 km · planirano 17,5 km
-  Utorak     15.12.  Lagano 4,7 km + 4 × 20 s ubrzanja
-      4,7 km · 33 min
-  Četvrtak   17.12.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
-      5,0 km · 34 min · radnih 9 min
-  Nedelja    20.12.  Dugi 7,8 km lagano
-      7,8 km · 56 min
-  Napomena: T kontinuirano umesto u deonicama — kraći rad u tempu odgovara obimu nedelje.
-  Napomena: Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
+  Utorak     15.12.  Lagano 3,0 km + 4 × 20 s ubrzanja
+      3,0 km · 21 min
+  Četvrtak   17.12.  WU 15 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 10 min
+      6,8 km · 44 min · radnih 17 min
+  Nedelja    20.12.  Dugi 7,7 km lagano
+      7,7 km · 55 min
 
 ------------------------------------------------------------
 NEDELJA 8 — faza: razvoj — RASTEREĆENJE
@@ -110,39 +106,33 @@ NEDELJA 8 — faza: razvoj — RASTEREĆENJE
 
 ------------------------------------------------------------
 NEDELJA 9 — faza: razvoj
-  28.12.–03.01. · cilj 18,2 km · planirano 18,2 km
-  Utorak     29.12.  Lagano 5,1 km + 4 × 20 s ubrzanja
-      5,1 km · 36 min
-  Četvrtak   31.12.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
-      5,0 km · 34 min · radnih 9 min
+  28.12.–03.01. · cilj 18,2 km · planirano 18,3 km
+  Utorak     29.12.  Lagano 3,5 km + 4 × 20 s ubrzanja
+      3,5 km · 24 min
+  Četvrtak   31.12.  WU 15 min + T 2 × 1500 m (oporavak 1:00 džog) + CD 10 min
+      6,7 km · 43 min · radnih 17 min
   Nedelja    03.01.  Dugi 8,1 km lagano
       8,1 km · 58 min
-  Napomena: T kontinuirano umesto u deonicama — kraći rad u tempu odgovara obimu nedelje.
-  Napomena: Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 
 ------------------------------------------------------------
 NEDELJA 10 — faza: razvoj
   04.01.–10.01. · cilj 18,9 km · planirano 18,9 km
-  Utorak     05.01.  Lagano 5,4 km + 4 × 20 s ubrzanja
-      5,4 km · 38 min
-  Četvrtak   07.01.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
-      5,0 km · 34 min · radnih 9 min
+  Utorak     05.01.  Lagano 3,9 km + 4 × 20 s ubrzanja
+      3,9 km · 27 min
+  Četvrtak   07.01.  WU 15 min + T 3,0 km kontinuirano + CD 10 min
+      6,5 km · 42 min · radnih 17 min
   Nedelja    10.01.  Dugi 8,5 km lagano
       8,5 km · 1 h 01 min
-  Napomena: T kontinuirano umesto u deonicama — kraći rad u tempu odgovara obimu nedelje.
-  Napomena: Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 
 ------------------------------------------------------------
 NEDELJA 11 — faza: razvoj
-  11.01.–17.01. · cilj 19,5 km · planirano 19,5 km
-  Utorak     12.01.  Lagano 5,8 km + 4 × 20 s ubrzanja
-      5,8 km · 41 min
-  Četvrtak   14.01.  WU 15 min + T 1,5 km kontinuirano + CD 10 min
-      5,0 km · 34 min · radnih 9 min
+  11.01.–17.01. · cilj 19,5 km · planirano 19,6 km
+  Utorak     12.01.  Lagano 4,2 km + 4 × 20 s ubrzanja
+      4,2 km · 29 min
+  Četvrtak   14.01.  WU 15 min + T 2 × 1500 m (oporavak 1:00 džog) + CD 10 min
+      6,7 km · 43 min · radnih 17 min
   Nedelja    17.01.  Dugi 8,7 km lagano
       8,7 km · 1 h 02 min
-  Napomena: T kontinuirano umesto u deonicama — kraći rad u tempu odgovara obimu nedelje.
-  Napomena: Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 
 ------------------------------------------------------------
 NEDELJA 12 — faza: razvoj — RASTEREĆENJE
