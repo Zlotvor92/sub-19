@@ -695,6 +695,14 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts specific.wave; lengths.ts longWave (jedno mesto odluke), waveCap10, WAVE_NOTE; generate.ts construct (dva prolaza, priorWave), constructWith (granica dugog kao pouka 28); volume.ts leaveWeek/leaveAdaptWeek (wave); validate.ts rollAt, LONG_WAVE; gridInvariants.ts WAVE, GROWTH',
     rationale:
       'Glavni trener, krug 3 (§ 3 stavka A): dugi 24 km svake nedelje na 3 dana. Merenje (mreže R/F, 3 dana): plafon > 3 zaredom 2535 planova → talas u 2109 (R 1578, F 531); 426 bez talasa (sudar sa lancem doza: nedelja talasa spušta cilj, plafon zone obara dozu; ili pad plafona); obim izgradnje planova sa talasom medijana −1,8 % (p10 −4,7 %, najviše −11,4 %), vrh < −10 % 0, 0 novih odbijanja. p08 24 km u ned 12/15/18 (bilo 12, 14–16, 18), između 20,4 km; p03/p10 15,7 km 3 puta.'
+  },
+  {
+    id: 'K4-B',
+    rule: 'Mali obim (sve distance, HM): u planu u kom bi najkraći lagan dan bio < 30 min u više od 2 ne-rasteretne nedelje izgradnje (plan bez tog pravila), u svakoj ne-rasteretnoj nedelji izgradnje bez ograničenja koraka čiji je najkraći lagan < 30 min taj dan (jedan po nedelji, među jednakima kasniji) je „odmor ili 20 min lagano po želji": dan šablona bez treninga (oblik T1 / dana odmora), napomena nedelje OPT_NOTE sa danom; njegovi km prelaze u ostale lagane do granice (≤ udeo × dugi), ostatak je planirano < cilj bez upozorenja po nedelji; nedelja ne pada ispod minimuma (H15). Jedna rečenica u napomeni plana. Broj dana i raspored (ekrani) se ne menjaju. Adaptacija: plan sa takvim nedeljama ostaje takav (činjenica plana).',
+    place:
+      'policy.ts lengths.optEasySec/optWeeks; lengths.ts optEasy (jedno mesto odluke), shortEasyPlan, OPT_NOTE; week.ts buildWeekIn (opt); generate.ts construct (uslov iz plana bez pravila), OPT_PLAN_NOTE; validate.ts ROLES (optRest), OPT_EASY, PLANNED_VS_TARGET; gridInvariants.ts OPT_EASY, DAYS_COUNT; adaptInvariants.ts',
+    rationale:
+      'Glavni trener, krug 3 (§ 3 stavka B): dan od 3–5 km ne vredi izlaska. Merenje (mreže R/F/B, 25 122 plana): lagan < 30 min u > 2 nedelje izgradnje 4297 → 389 planova (ostaju: nedelja bi pala ispod minimuma ili lagan i posle prenosa < 30 min); pogođeno 4240 planova, 28 500 nedelja; 0 novih odbijanja, vrh obima bez promene. Manjak obima ide u planirano < cilj: medijana po planu R-d4 30,9 km, R-d5 3,0 km, R-d6 ≈ 0; p06 −4,1 km (6 nedelja), p11 −2,0 km (14 nedelja).'
   }
 ];
 
@@ -1002,7 +1010,11 @@ export const HM_V2_POLICY = {
     easyLongMaxShare: 0.8,
     /** G6 (P8): plan sa 4 i više dana — lagan ≤ ovaj udeo dugog iste nedelje (3 dana ostaje easyLongMaxShare). */
     easyLongMaxShare4: 0.7,
-    easyMinSec: 1200
+    easyMinSec: 1200,
+    /** K4-B: plan u kom bi najkraći lagan dan bio < optEasySec u više od optWeeks nedelja izgradnje — taj dan je
+        „odmor ili 20 min lagano po želji" (ne računa se u obim nedelje). */
+    optEasySec: 1800,
+    optWeeks: 2
   },
 
   /** Pouka 28 (HI7): dugi svake nedelje ≤ max(factor × L, L + addKm), L = najduži dugi prethodnih

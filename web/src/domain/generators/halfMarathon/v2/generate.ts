@@ -16,6 +16,8 @@ import {
   recentLongNeeded10,
   ranCapFloor10,
   rollingCapRan10,
+  OPT_NOTE,
+  shortEasyPlan,
   WAVE_NOTE,
   waveCap10,
   week1LongCap10
@@ -155,8 +157,17 @@ export function construct(
   searchThreshold = false
 ): GenerateResult {
   // K4-A2: adaptacija — talas je činjenica plana (nedelje sa napomenom talasa u prethodnom planu, plafon iz njega).
-  if (steps.length > 0) return constructWith(raw, steps, prior, searchThreshold, priorWave(prior));
-  const g = constructWith(raw, steps, prior, searchThreshold, null);
+  // K4-B: adaptacija — plan sa kratkim laganim danima ostaje takav (napomena u prethodnom planu je činjenica).
+  if (steps.length > 0)
+    return constructWith(
+      raw,
+      steps,
+      prior,
+      searchThreshold,
+      priorWave(prior),
+      !!prior?.weeks.some((w) => w.notes.some((n) => n.startsWith(OPT_NOTE)))
+    );
+  const g = constructWith(raw, steps, prior, searchThreshold, null, false);
   if (!g.ok) return g;
   // K4-A2: talas dugog (3 dana, lengths.longWave — jedno mesto) iz plana bez talasa; plan sa talasom važi samo kad
   // zadrži isti plafon dugog — inače plan bez talasa (prethodno ponašanje).
@@ -176,8 +187,9 @@ export function construct(
       ? { quality: 1, beginner: true }
       : { quality: g.plan.pattern.q2 === null ? 1 : 2, beginner: false }
   );
-  if (!wave) return g;
-  const w2 = constructWith(raw, steps, prior, searchThreshold, wave);
+  // K4-B: kratki lagani dani (lengths.shortEasyPlan) iz plana bez talasa i bez dana „po želji".
+  const opt = shortEasyPlan(g.plan.weeks);
+  if (!wave && !opt) return g;
   const top = (p: HmV2Plan): number =>
     Math.max(
       ...p.weeks.map((w) =>
@@ -188,8 +200,17 @@ export function construct(
   // → plan bez talasa.
   const drops = (p: HmV2Plan): number =>
     p.weeks.reduce((a, w) => a + w.days.filter((d) => d.workout.dose?.step === 'drop').length, 0);
-  return w2.ok && top(w2.plan) === top(g.plan) && drops(w2.plan) <= drops(g.plan) ? w2 : g;
+  if (wave) {
+    const w2 = constructWith(raw, steps, prior, searchThreshold, wave, opt);
+    if (w2.ok && top(w2.plan) === top(g.plan) && drops(w2.plan) <= drops(g.plan)) return w2;
+  }
+  const o2 = opt ? constructWith(raw, steps, prior, searchThreshold, null, true) : null;
+  return o2?.ok ? o2 : g;
 }
+
+/** K4-B: napomena plana sa danima „po želji". */
+export const OPT_PLAN_NOTE =
+  'Mali obim: u nedeljama u kojima bi lagan trening bio kraći od 30 minuta, jedan lagan dan je „odmor ili 20 min lagano po želji" i ne računa se u obim nedelje — planirano je tada nešto manje od cilja.';
 
 /** K4-A2: talas dugog prethodnog plana kao činjenica — započete nedelje sa napomenom WAVE_NOTE, plafon = najduži dugi
     tog plana. */
@@ -215,7 +236,8 @@ function constructWith(
   steps: readonly HmV2AdaptStep[],
   prior: Written | undefined,
   searchThreshold: boolean,
-  wave: LongWave | null
+  wave: LongWave | null,
+  optEasy: boolean
 ): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
@@ -237,7 +259,8 @@ function constructWith(
     raceSec: predictedHm(paces),
     wc: warmupCooldown(input.currentWeeklyKm, rule.beginner),
     rule,
-    feel
+    feel,
+    ...(optEasy ? { optEasy: true } : {})
   };
   const start10 = startKm10(input.currentWeeklyKm);
   // G1 (P8): plafon vrha — dužina pripreme i tempo plana na startu.
@@ -518,6 +541,8 @@ function constructWith(
     );
   // Faza 4a N11: kapacitet (H6/HI8) ide korisniku jednom — upozorenje CAPACITY_LIMITED (validator, sa vrhom).
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
+  // K4-B: jedna rečenica u napomeni plana.
+  if (out.some((w) => w.notes.some((n) => n.startsWith(OPT_NOTE)))) plan.notes.push(OPT_PLAN_NOTE);
   if (adapted)
     plan.adaptation = {
       asOf: steps[steps.length - 1]!.asOf,

@@ -69,13 +69,14 @@ describe('P1-S1: nedelja tipa B', () => {
         if (three) {
           b3++;
           expect(w.days.filter((d) => d.workout.kind === 'quality')).toEqual([]);
-          expect(w.days.find((d) => d.weekday === plan.pattern.q1)!.role).toBe('easy');
+          // K4-B: dan „po želji" (bez treninga) je lagan dan šablona.
+          expect(w.days.find((d) => d.weekday === plan.pattern.q1)?.role ?? 'easy').toBe('easy');
         } else {
           expect(w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.role)).toEqual([
             'q1'
           ]);
           expect(w.days.find((d) => d.role === 'q1')!.workout.dose!.zone).toBe('RP');
-          expect(w.days.find((d) => d.weekday === plan.pattern.q2)!.role).toBe('easy');
+          expect(w.days.find((d) => d.weekday === plan.pattern.q2)?.role ?? 'easy').toBe('easy');
         }
         expect(long.workout.title).toMatch(
           /^Dugi \d+,\d km: \d+,\d km lagano \+ \d,\d km u trkačkom tempu$/

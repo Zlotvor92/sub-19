@@ -211,7 +211,10 @@ describe('HM v2 politika (MASTER § 4)', () => {
       easyLongMaxShare: 0.8,
       // P8 G6: 4+ dana.
       easyLongMaxShare4: 0.7,
-      easyMinSec: 1200
+      easyMinSec: 1200,
+      // K4-B: kratak lagan dan.
+      optEasySec: 1800,
+      optWeeks: 2
     });
     expect(P.recentLong).toEqual({
       minKm: 5,
@@ -345,7 +348,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'K3-B',
       'K3-E',
       'K4-A1',
-      'K4-A2'
+      'K4-A2',
+      'K4-B'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

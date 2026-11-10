@@ -78,6 +78,8 @@ export interface GridStats {
   buildNoQuality: number;
   /** K4-A2: nedelje talasa dugog. */
   waveWeeks: number;
+  /** K4-B: nedelje sa danom „po želji". */
+  optWeeks: number;
   /** K5. */
   raceOverTaper: number;
   dropOutsideCapacity: number;
@@ -128,6 +130,7 @@ export const emptyStats = (): GridStats => ({
   rollingCappedWeeks: 0,
   buildNoQuality: 0,
   waveWeeks: 0,
+  optWeeks: 0,
   raceOverTaper: 0,
   dropOutsideCapacity: 0,
   hardAdjacent: 0,
@@ -387,7 +390,18 @@ export function checkPlan(
   for (const w of p.weeks) {
     const tag = `ned ${w.index}`;
     // Pouka 1 / Uslov 8: planirano = cilj (0,1 km); nedelja ≥ minimum (trkačka + 21,1 km).
-    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS) no('PLANNED_EQ_TARGET', tag);
+    // K4-B (nezavisno): nedelja sa danom „po želji" — planirano ≤ cilj, manjak ≤ 30 min laganog (bržim krajem E).
+    const optW = w.notes.some((n) => n.startsWith('Kratak lagan dan'));
+    if (optW) {
+      st.optWeeks++;
+      if (
+        w.plannedKm > w.targetKm + 0.1 + EPS ||
+        w.targetKm - w.plannedKm > 1800 / p.paces.E.fast + EPS ||
+        w.deload ||
+        !isBuild(w.phase)
+      )
+        no('OPT_EASY', `${tag} ${w.plannedKm} / ${w.targetKm}`);
+    } else if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS) no('PLANNED_EQ_TARGET', tag);
     if (w.phase !== 'race' && w.plannedKm + EPS < WEEK_MIN) no('WEEK_MIN', tag);
     if (w.phase === 'race' && w.plannedKm + RACE_KM + EPS < WEEK_MIN) no('WEEK_MIN', `${tag} trka`);
     if (w.fitted) {
@@ -432,7 +446,10 @@ export function checkPlan(
         steady(w) &&
         w.days.length < nDays &&
         w.notes.some((n) => n.startsWith('Manje laganih dana'));
-      if (w.days.length !== nDays && !t1Rest) no('DAYS_COUNT', `${tag} ${w.days.length}`);
+      // K4-B: dan „po želji" je dan šablona bez treninga (jedan po nedelji).
+      const want = nDays - (optW ? 1 : 0);
+      if (w.days.length !== want && !(t1Rest && w.days.length < want))
+        no('DAYS_COUNT', `${tag} ${w.days.length}`);
       // H15 / H10: 3 dana bez I i R (ni jedan metar rada u tim zonama).
       if (one && w.days.some((d) => d.workout.workKm.I > 0 || d.workout.workKm.R > 0))
         no('THREE_DAYS_NO_IR', tag);
@@ -575,14 +592,16 @@ export function checkPlan(
       // K4-A: i 3 dana — tada je jedini dan kvaliteta (Q1 šablona) lagan.
       const bw = blockOf(w) > 0;
       if (bw && (beg || w.phase !== 'specific' || w.deload)) no('POUKA35', `${tag} blok`);
-      const firstEasy =
-        one && bw ? w.days.find((d) => d.weekday === p.pattern.q1)?.role === 'easy' : false;
+      // K4-B: dan šablona bez treninga (dan „po želji") je lagan dan.
+      const roleAt = (wd: string): string | undefined =>
+        w.days.find((d) => d.weekday === wd)?.role ?? (optW ? 'easy' : undefined);
+      const firstEasy = one && bw ? roleAt(p.pattern.q1) === 'easy' : false;
       if (one && bw && !firstEasy) no('POUKA35', `${tag} blok 3 dana uz kvalitet`);
       const second =
         row.q === 2 &&
         (bw || w.notes.some((n) => n.includes('(pouka 35)'))) &&
         p.pattern.q2 !== null
-          ? w.days.find((d) => d.weekday === p.pattern.q2)?.role === 'easy'
+          ? roleAt(p.pattern.q2) === 'easy'
           : false;
       if (second) st.secondEasyWeeks++;
       // P8 G7: u nedelji testa test je jedini kvalitet (drugi dan kvaliteta lagan).
@@ -600,7 +619,8 @@ export function checkPlan(
         const easyAtMin = w.days
           .filter((d) => d.role === 'easy')
           .every((d) => d.workout.sec < 1260);
-        if (to10(lw2.workout.km) < cap2 && !easyAtMin) no('POUKA35', tag);
+        // K4-B: dan „po želji" je posle odluke pouke 35 preneo km u ostale lagane (nisu više na najmanjoj dužini).
+        if (to10(lw2.workout.km) < cap2 && !easyAtMin && !optW) no('POUKA35', tag);
         else st.secondKeptAtCapWeeks++;
       }
       const t10 = to10(w.targetKm);

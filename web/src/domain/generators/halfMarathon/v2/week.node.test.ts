@@ -310,7 +310,10 @@ describe('Uslov 8: upotrebljivost', () => {
       for (const w of p.weeks) {
         for (const d of w.days) expect(d.workout.km).toBeGreaterThan(0);
         if (w.phase !== 'race') expect(w.plannedKm).toBeGreaterThanOrEqual(16);
-        expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
+        // K4-B: nedelja sa danom „po želji" — planirano ≤ cilj.
+        if (w.notes.some((n) => n.startsWith('Kratak lagan dan')))
+          expect(w.plannedKm).toBeLessThanOrEqual(w.targetKm + 0.1 + 1e-9);
+        else expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
       }
     }
   });

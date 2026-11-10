@@ -109,10 +109,11 @@ export function adaptInvariants(
       bad.push(`mešovita nedelja planirano > cilj bez upozorenja ned ${w.index}`);
     if (m) continue;
     const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
-    // Planirano = cilj.
+    // Planirano = cilj. K4-B: nedelja sa danom „po želji" — planirano ≤ cilj.
+    const optW = w.notes.some((n) => n.startsWith('Kratak lagan dan'));
     if (
       w.phase !== 'race' &&
-      (limited
+      (limited || optW
         ? w.plannedKm > w.targetKm + P.tolerance.plannedKm + EPS
         : Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
     )

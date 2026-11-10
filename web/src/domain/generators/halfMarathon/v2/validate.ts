@@ -10,6 +10,7 @@ import {
   buildEasyCap10,
   buildLengths,
   buildLengthsT1,
+  OPT_NOTE,
   WAVE_NOTE,
   waveCap10,
   t1MinWeek,
@@ -513,11 +514,30 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     const len = buildLengths(to10(w.targetKm), q100, cand.length, rule, pw(w), rollAt(w.index));
     return new Set(len ? cand.slice(len.easy10.length) : []);
   };
+  // K4-B: nedelja sa danom „po želji" (napomena OPT_NOTE) — tačno jedan dan šablona bez treninga van T1 (najkraći
+  // lagan, lengths.optEasy); samo ne-rasteretna izgradnja bez ograničenja koraka.
+  const optAt = (w: PlanWeek): boolean => w.notes.some((n) => n.startsWith(OPT_NOTE));
+  const optRest = (w: PlanWeek): Set<string> => {
+    if (!optAt(w)) return new Set();
+    const t1 = t1Rest(w);
+    const present = new Set(w.days.map((d) => d.date));
+    const free = [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy]
+      .map((wd) => dateIn(w, wd))
+      .filter((d) => !present.has(d) && !t1.has(d) && !restOf(w).has(d));
+    if (free.length !== 1 || !isSteady(w) || reducedQ(w))
+      err(
+        'OPT_EASY',
+        'Dan „po želji": tačno jedan lagan dan nedelje izgradnje bez ograničenja (K4-B).',
+        w.index
+      );
+    return new Set(free.slice(0, 1));
+  };
   for (const w of weeks) {
     if (w.phase === 'race' || !checked(w)) continue;
     const has = (r: DayRole): boolean => w.days.some((d) => d.role === r);
     const t1 = t1Rest(w);
-    const rest = new Set([...restOf(w), ...t1]);
+    const optR = optRest(w);
+    const rest = new Set([...restOf(w), ...t1, ...optR]);
     if (w.index >= firstAdapted && (reducedQ(w) || rest.size > 0)) {
       // A4/A9: dani odmora bez treninga; dan kvaliteta šablona sme biti lagan ili nositi jedini kvalitet
       // (uloga q1/q2), ukupno najviše dozvoljeno kvaliteta (ograničenje koraka; A9 manje od pravila).
@@ -576,7 +596,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       `long@${pat.long}`,
       ...pat.easy.map((wd) => `easy@${wd}`)
     ]
-      .filter((x) => !(x.startsWith('easy@') && t1.has(dateIn(w, x.slice(5)))))
+      .filter(
+        (x) =>
+          !(
+            x.startsWith('easy@') &&
+            (t1.has(dateIn(w, x.slice(5))) || optR.has(dateIn(w, x.slice(5))))
+          )
+      )
       .sort();
     const got = w.days.map((d) => `${d.role}@${d.weekday}`).sort();
     if (JSON.stringify(got) !== JSON.stringify(want))
@@ -813,6 +839,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           `Planirano ${w.plannedKm} km < cilj obima ${w.targetKm} km (odmor/bol, A4, pouka 25).`,
           w.index
         );
+    } else if (optAt(w) && w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS) {
+      // K4-B: dan „po želji" ne ulazi u obim — planirano ≤ cilj, bez upozorenja po nedelji (napomena plana).
     } else if (Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
       err('PLANNED_VS_TARGET', `Planirano ${w.plannedKm} km ≠ cilj ${w.targetKm} km.`, w.index);
     // Uslov 8: nedelja ≥ minimum (trkačka: planirano + trka, H8 — potpuno zadata, pa upozorenje). A4:

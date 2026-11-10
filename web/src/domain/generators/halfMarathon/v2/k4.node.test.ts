@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
-import { feelInputs, grid02Inputs } from './testInputs.ts';
+import { beginnerInputs, feelInputs, grid02Inputs } from './testInputs.ts';
 import type { HmV2Plan, PlanWeek } from './types.ts';
 
 const gen = (input: unknown): HmV2Plan => {
@@ -111,5 +111,64 @@ describe('K4-A2: talas dugog (3 dana)', () => {
     }
     expect(bad).toEqual([]);
     expect(waved).toBeGreaterThan(300);
+  });
+});
+
+describe('K4-B: kratak lagan dan — „odmor ili 20 min lagano po želji"', () => {
+  const OPT = 'Kratak lagan dan';
+  const build = (w: PlanWeek): boolean =>
+    !w.deload && ['base', 'development', 'specific'].includes(w.phase);
+  /** Nedelja sa danom „po želji": jedan dan trčanja manje, planirano ≤ cilj, manjak ≤ 30 min laganog, nedelja ≥ minimum;
+      plan nosi rečenicu u napomeni. Plan bez tih nedelja nema lagan < 30 min u više od 2 nedelje izgradnje osim kad bi
+      nedelja pala ispod minimuma. */
+  const check = (p: HmV2Plan): string[] => {
+    const bad: string[] = [];
+    const n = p.input.runDays.length;
+    const opt = p.weeks.filter((w) => w.notes.some((x) => x.startsWith(OPT)));
+    for (const w of opt) {
+      if (!build(w)) bad.push(`ned ${w.index}: van izgradnje`);
+      if (w.days.length > n - 1) bad.push(`ned ${w.index}: ${w.days.length} dana`);
+      if (w.plannedKm > w.targetKm + 0.1 + 1e-9) bad.push(`ned ${w.index}: planirano > cilj`);
+      if (w.targetKm - w.plannedKm > 1800 / p.paces.E.fast + 1e-9)
+        bad.push(`ned ${w.index}: manjak`);
+    }
+    if (opt.length > 0 && !p.notes.some((x) => x.includes('po želji')))
+      bad.push('bez napomene plana');
+    return bad;
+  };
+
+  it('p06 (5 dana, 35 km, 10 ned): lagan < 30 min najviše 2 nedelje, 6 nedelja sa danom po želji', () => {
+    const P06 = {
+      startDate: '2026-11-02',
+      raceDate: '2027-01-10',
+      runDays: ['mon', 'tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 35,
+      goalTimeSec: null,
+      longRunDay: 'sun',
+      recentResult: { distanceM: 21097.5, timeSec: 4828, date: '2026-10-19' }
+    };
+    for (const input of [P06]) {
+      const p = gen(input);
+      expect(check(p)).toEqual([]);
+      const short = p.weeks.filter(
+        (w) => build(w) && w.days.some((d) => d.role === 'easy' && d.workout.sec < 1800)
+      );
+      expect(short.length).toBeLessThanOrEqual(2);
+      expect(p.weeks.filter((w) => w.notes.some((x) => x.startsWith(OPT))).length).toBe(6);
+    }
+  });
+
+  it('uzorak mreža 02, 03 i početnika (svaki 7.): 0 prekršaja; pravilo pogađa planove', () => {
+    const bad: string[] = [];
+    let hit = 0;
+    for (const c of [...grid02Inputs(), ...feelInputs(), ...beginnerInputs()].filter(
+      (_, i) => i % 7 === 0
+    )) {
+      const p = gen(c.input);
+      if (p.weeks.some((w) => w.notes.some((x) => x.startsWith(OPT)))) hit++;
+      for (const x of check(p)) bad.push(`${c.id}: ${x}`);
+    }
+    expect(bad).toEqual([]);
+    expect(hit).toBeGreaterThan(300);
   });
 });

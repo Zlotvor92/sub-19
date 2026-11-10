@@ -1,0 +1,22 @@
+R-d3: n 2640 odb 0→0 prom 66 vrh<-10% 0 | peak 33.7→33.7 [31.6..35]; shortEasy 4→0 [0..2]; minEasy 1366→1864 [1766..2085]; optWeeks 0→4 [4..4]; optKm NaN→25.26 [23.66..25.66]; easySum 97.6→72.6 [33..108.4]; planned 305.33→280.33 [178.89..414.44]
+R-d4: n 3696 odb 0→0 prom 738 vrh<-10% 0 | peak 49→49 [39..70]; shortEasy 6→0 [0..2]; minEasy 1185→1903 [1763..3192]; optWeeks 0→6 [2..14]; optKm NaN→30.86 [10.38..63.88]; easySum 83→50.9 [10.6..167.5]; planned 455.74→418.26 [211.73..868.57]
+R-d5: n 4752 odb 0→0 prom 894 vrh<-10% 0 | peak 56→56 [44.2..80]; shortEasy 6→0 [0..4]; minEasy 1236→1822 [1390..2177]; optWeeks 0→6 [2..14]; optKm NaN→2.96 [0.06..23.35]; easySum 147.7→142.9 [62..278.1]; planned 524.59→513.33 [266.06..1007.94]
+R-d6: n 5808 odb 0→0 prom 1359 vrh<-10% 0 | peak 63→63 [50.5..90]; shortEasy 7→1 [0..11]; minEasy 1250→1792 [1562..2184]; optWeeks 0→6 [2..14]; optKm NaN→0 [-0.35..0.42]; easySum 203→203 [95.5..378.3]; planned 608.36→608.36 [326.32..1139.07]
+F-d3: n 990 odb 0→0 prom 27 vrh<-10% 0 | peak 35→35 [31.6..35]; shortEasy 3→0 [0..1]; minEasy 1551→1889 [1781..1916]; optWeeks 0→3 [3..3]; optKm NaN→18.65 [18.35..18.85]; easySum 114.2→95.4 [40.5..119.7]; planned 347.89→329.09 [185.49..419.38]
+F-d4: n 1386 odb 0→0 prom 189 vrh<-10% 0 | peak 50.5→50.5 [39..63]; shortEasy 5→0 [0..1]; minEasy 1208→1875 [1767..2726]; optWeeks 0→5 [3..14]; optKm NaN→27.48 [14.04..58.69]; easySum 80→51.5 [20.2..120.5]; planned 455.88→426.88 [219.34..761.1]
+F-d5: n 1782 odb 0→0 prom 180 vrh<-10% 0 | peak 53.5→53.5 [44.2..70]; shortEasy 7→0 [0..2]; minEasy 1281→1870 [1767..2122]; optWeeks 0→7 [3..13]; optKm NaN→2.94 [-0.14..12.26]; easySum 134.2→131.8 [78.5..251.1]; planned 491.03→488.13 [278.76..877.48]
+F-d6: n 2178 odb 0→0 prom 323 vrh<-10% 0 | peak 63→63 [50.5..85]; shortEasy 7→0 [0..9]; minEasy 1352→1808 [1592..2132]; optWeeks 0→6 [2..14]; optKm NaN→-0.05 [-0.2..0.1]; easySum 199.8→199.8 [108.5..365.2]; planned 608.22→608.22 [326.25..1084.06]
+B-d4: n 945 odb 0→0 prom 221 vrh<-10% 0 | peak 32→32 [26.1..42]; shortEasy 9→0 [0..3]; minEasy 1530→1980 [1769..2565]; optWeeks 0→9 [1..14]; optKm NaN→0.03 [-0.4..5.18]; easySum 105.9→103.7 [67.2..197.9]; planned 308.9→306.68 [184.72..528.02]
+B-d5: n 945 odb 0→0 prom 243 vrh<-10% 0 | peak 40.2→40.2 [32.2..49]; shortEasy 8→0 [0..2]; minEasy 1530→1803 [1749..2266]; optWeeks 0→8 [2..14]; optKm NaN→-0.12 [-0.43..0.04]; easySum 154.3→154.3 [104.6..283.2]; planned 384.13→384.13 [234.7..616.68]
+nova odbijanja: 0
+R-d3 pogođeno planova 66 nedelja 264 manjak km ukupno 1649.0 | lagan<30min >2 ned pre 66 posle 0
+R-d4 pogođeno planova 738 nedelja 4884 manjak km ukupno 23965.9 | lagan<30min >2 ned pre 738 posle 0
+R-d5 pogođeno planova 894 nedelja 5778 manjak km ukupno 3886.9 | lagan<30min >2 ned pre 894 posle 66
+R-d6 pogođeno planova 1359 nedelja 9210 manjak km ukupno -9.2 | lagan<30min >2 ned pre 1359 posle 229
+F-d3 pogođeno planova 27 nedelja 81 manjak km ukupno 502.6 | lagan<30min >2 ned pre 27 posle 0
+F-d4 pogođeno planova 189 nedelja 1116 manjak km ukupno 5482.2 | lagan<30min >2 ned pre 198 posle 9
+F-d5 pogođeno planova 180 nedelja 1218 manjak km ukupno 637.6 | lagan<30min >2 ned pre 180 posle 0
+F-d6 pogođeno planova 323 nedelja 2095 manjak km ukupno -15.4 | lagan<30min >2 ned pre 323 posle 35
+B-d4 pogođeno planova 221 nedelja 1946 manjak km ukupno 252.8 | lagan<30min >2 ned pre 242 posle 23
+B-d5 pogođeno planova 243 nedelja 1908 manjak km ukupno -30.1 | lagan<30min >2 ned pre 270 posle 27
+UKUPNO {"plans":4240,"weeks":28500,"short":4297,"after":389}

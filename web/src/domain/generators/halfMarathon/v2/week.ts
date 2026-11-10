@@ -18,6 +18,8 @@ import {
   EASY_MIN10,
   longFor10,
   mixedFloor100,
+  OPT_NOTE,
+  optEasy,
   remainderEasy10,
   type FreeKind,
   taperLengths
@@ -95,6 +97,8 @@ export interface WeekContext {
   newStart?: boolean;
   /** P5-F2: nedelja bez rasta doze (steps.holdAt). */
   hold?: boolean;
+  /** K4-B: plan sa kratkim laganim danima (lengths.shortEasyPlan; uslov poznat unapred, generate.construct). */
+  optEasy?: boolean;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (HI2: H11 ispred H12, rasterećenje
@@ -115,6 +119,17 @@ export interface BuiltWeek {
 export const HARD_ROLES: readonly DayRole[] = ['q1', 'q2', 'long', 'sharpener', 'race', 'test'];
 const km100 = (km: number): number => Math.round(km * 100);
 const km10 = (km: number): number => Math.round(km * 10);
+
+/** K4-B: ime dana u napomeni. */
+const WEEKDAY_SR: Record<Weekday, string> = {
+  mon: 'ponedeljak',
+  tue: 'utorak',
+  wed: 'sreda',
+  thu: 'četvrtak',
+  fri: 'petak',
+  sat: 'subota',
+  sun: 'nedelja'
+};
 
 function day(date: string, role: DayRole, workout: Workout, countsToWeek = true): PlanDay {
   return {
@@ -907,8 +922,22 @@ function buildWeekIn(
     [...qDays, ...pat.easy].filter((wd) => !busy.includes(wd))
   );
   const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
-  const len = easy2 ?? buildLengths(target10, q100, dates.length, rule, p, roll10);
-  if (!len) return null;
+  const len0 = easy2 ?? buildLengths(target10, q100, dates.length, rule, p, roll10);
+  if (!len0) return null;
+  // K4-B: najkraći lagan < 30 min → „odmor ili 20 min lagano po želji" (dan šablona bez treninga, kao T1), km u ostale
+  // lagane do granice, ostatak planirano < cilj (lengths.optEasy — jedno mesto). Pre bloka: blok vidi lagane nedelje.
+  const opt =
+    ctx.optEasy && !reduced && !frame.limits
+      ? optEasy(
+          len0,
+          rule,
+          (e10) => easyWorkout(e10 / 10, p).sec,
+          target10 - Math.round(rule.weekMinKm * 10)
+        )
+      : null;
+  const len = opt ? opt.len : len0;
+  const easyDates0 = dates.slice(0, len0.easy10.length);
+  const easyDatesW = opt ? easyDates0.filter((_, i) => i !== opt.opt) : easyDates0;
   // P1-S1: blok RP na kraju dugog (dužina dugog ostaje ona iz lengths.ts); ne staje → nedelja je tip A.
   const blockKm = bWeek
     ? chooseBlockKm(
@@ -935,8 +964,12 @@ function buildWeekIn(
         : `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.`
     );
   // T1 (krug T): manje laganih dana (lengths.buildLengths) — napomena za korisnika.
-  if (len.easy10.length < dates.length)
-    notes.push(t1RestNote(dates.length - len.easy10.length, rule.easyLongMaxShare));
+  if (len0.easy10.length < dates.length)
+    notes.push(t1RestNote(dates.length - len0.easy10.length, rule.easyLongMaxShare));
+  if (opt)
+    notes.push(
+      `${OPT_NOTE} (${WEEKDAY_SR[weekdayOf(easyDates0[opt.opt]!)]}): odmor ili 20 min lagano po želji — ne računa se u obim nedelje (lagan bi bio kraći od 30 min).`
+    );
   if (second)
     notes.push(
       easy2?.t1
@@ -989,7 +1022,7 @@ function buildWeekIn(
           ? longBlockWorkout(len.long10 / 10, blockKm, p, ctx.feel)
           : longWorkout(len.long10 / 10, p)
       ),
-      ...easyDays(dates, len.easy10, p)
+      ...easyDays(easyDatesW, len.easy10, p)
     ],
     len.long10,
     picksW,

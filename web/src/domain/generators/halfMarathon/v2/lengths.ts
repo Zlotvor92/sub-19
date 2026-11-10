@@ -436,3 +436,55 @@ export function longWave(
   }
   return wave.size > 0 ? { cap10: waveCap10(c10), weeks: wave } : null;
 }
+
+/** K4-B: napomena nedelje sa danom „po želji" (validator je čita kao oznaku). */
+export const OPT_NOTE = 'Kratak lagan dan';
+
+/**
+ * K4-B (JEDNO mesto odluke): nedelja izgradnje plana sa kratkim laganim danima — najkraći lagan (< 30 min, `easySec`)
+ * je „odmor ili 20 min lagano po želji": izlazi iz obaveznog obima, njegovi km prelaze u ostale lagane do granice
+ * (≤ udeo × dugi, buildEasyCap10), ostatak je planirano < cilj. `opt` = indeks tog dana u `len.easy10` (među jednakima
+ * kasniji); null = nijedan lagan nije kraći od 30 min.
+ */
+export function optEasy(
+  len: Lengths,
+  rule: { easyLongMaxShare?: number },
+  easySec: (easy10: number) => number,
+  /** Najveći dozvoljen manjak nedelje [0,1 km] (cilj − minimum nedelje, H15): nedelja ne pada ispod minimuma. */
+  maxShort10 = Infinity
+): { len: Lengths; opt: number } | null {
+  const e = len.easy10;
+  if (e.length === 0) return null;
+  const secs = e.map(easySec);
+  const min = Math.min(...secs);
+  if (min >= P.lengths.optEasySec) return null;
+  const opt = secs.lastIndexOf(min);
+  const rest = e.filter((_, i) => i !== opt);
+  if (rest.length === 0)
+    return e[opt]! > maxShort10 ? null : { len: { long10: len.long10, easy10: [] }, opt };
+  const total = Math.min(
+    rest.reduce((a, x) => a + x, 0) + e[opt]!,
+    rest.length * buildEasyCap10(len.long10, rule)
+  );
+  if (rest.reduce((a, x) => a + x, 0) + e[opt]! - total > maxShort10) return null;
+  return { len: { long10: len.long10, easy10: splitEasy(total, rest.length) }, opt };
+}
+
+/** K4-B: plan ima kratke lagane dane — najkraći lagan < 30 min u više od 2 ne-rasteretne nedelje izgradnje. */
+export function shortEasyPlan(
+  weeks: readonly {
+    phase: string;
+    deload: boolean;
+    days: readonly { role: string; workout: { km: number; sec: number } }[];
+  }[]
+): boolean {
+  const n = weeks.filter(
+    (w) =>
+      !w.deload &&
+      (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific') &&
+      w.days.some(
+        (d) => d.role === 'easy' && d.workout.km > 0 && d.workout.sec < P.lengths.optEasySec
+      )
+  ).length;
+  return n > P.lengths.optWeeks;
+}
