@@ -17,12 +17,13 @@ nedelja	657	2	Drugi kvalitetni trening je T u deonicama; interval (I) za održav
 nedelja	506	2	Prvi kvalitetni trening: RP 2,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 nedelja	499	7	2 lagana dana su odmor: posle kvaliteta i dugog ostaje premalo km za lagan trening od bar 20 min.
 nedelja	409	1	Prvi kvalitetni trening: I 5,0 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
+nedelja	394	6	Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 nedelja	382	4	T kontinuirano umesto u deonicama — kraći rad u tempu odgovara obimu nedelje.
-nedelja	382	6	Prvi kvalitetni trening: T 1,5 km kao prošli put — veći rad u tempu još nije srazmeran obimu nedelje.
 nedelja	288	1	Rasterećenje: lakša nedelja (18,0 km) sa testom 5 km umesto kvalitetnog treninga; dugi 4,4 km — kraći nego obično, da lagani treninzi ostanu bar 3 km.
 nedelja	213	7	Drugi kvalitetni trening ove nedelje je lagan. Kvalitetni dan i dalje traje duže od dugog — sa manje dana treninga dugi bi bio duži.
 nedelja	121	2	Prvi kvalitetni trening: T 3,6 km (prošli put 4,0 km), da rad u tempu ostane srazmeran obimu ove nedelje.
 nedelja	84	1	Prvi kvalitetni trening: I 2,0 km (prošli put 2,4 km), da rad u tempu ostane srazmeran obimu ove nedelje.
+nedelja	18	1	Mali obim nedelje: lagani dani ne mogu da budu i ≥ 20 min i ≤ 0,8 × dugi — nedelja po ranijem pravilu (lagan ≥ 3 km, ≤ dugi).
 nedelja	12	1	Drugi kvalitetni trening ove nedelje je lagan, da kvalitetni dan ne bude duži od dugog.
 nedelja	6	1	Taper: jedan kvalitetni trening u tempu trke (RP oko 60 % poslednjeg), dugi kraći — da na trku dođeš odmoran.
 plan	13864	1	Plan po osećaju: bez rezultata trke. E = lagan tempo 5:30/km ± 15 s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT 45,7 — trening vodi RPE.
@@ -57,5 +58,6 @@ plan	104	1	Rasterećenje (nedelje 4 i 8): dugi je kraći nego obično, da lagani
 plan	78	1	Obim pojedinih nedelja je malo niži od redovnog rasta: sa 4 dana treninga dugi trening je najviše 33 % nedelje, a lagan trening najviše 80 % dugog. Za veći obim: 5–6 dana treninga nedeljno.
 plan	78	1	Obim nedelje 1 je malo drugačiji od redovnog rasta, da treninzi ostanu u razumnim dužinama za zadate dane.
 plan	24	1	Rasterećenje (nedelje 4, 8 i 11): dugi je kraći nego obično, da lagani treninzi ostanu bar 3 km.
-plan	12	1	Obim nedelja 3 i 5 je malo drugačiji od redovnog rasta, da treninzi ostanu u razumnim dužinama za zadate dane.
+plan	18	1	Lagan 3,6 km van 3,7–5,1 km (≥ 20 min, ≤ 80 % dugog 6,4 km).
+plan	12	1	Obim pojedinih nedelja je malo niži od redovnog rasta: sa 4 dana treninga dugi trening je najviše 33 % nedelje.
 plan	6	1	Rasterećenje (nedelje 4, 8, 12 i 15): dugi je kraći nego obično, da lagani treninzi ostanu bar 3 km.
