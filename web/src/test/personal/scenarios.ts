@@ -10,8 +10,8 @@
 import { PERSONAL_RACE, PERSONAL_START } from '@/data/personalPlan';
 import { personalBaselineVdot, personalPlan } from '@/domain/personal';
 import type { GenPlanState } from '@/domain/state';
-import type { GeneratorApi } from '@/test/fiveK/legacyApi';
-import { attempt, buildContexts, type FlowResult } from '@/test/fiveK/scenarios';
+import type { GeneratorApi } from './legacyApi';
+import { attempt, buildContexts, type FlowResult } from './flows';
 
 type Api = GeneratorApi;
 

@@ -4,9 +4,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
-import { referenceRow } from '@/test/fiveK/exact';
-import type { GeneratorApi } from '@/test/fiveK/legacyApi';
-import type { ReferenceRow } from '@/test/fiveK/reference';
+import { referenceRow, type ReferenceRow } from './exact';
+import type { GeneratorApi } from './legacyApi';
 import { personalFlows } from './scenarios';
 
 export const PERSONAL_REFERENCE_FILE = fileURLToPath(

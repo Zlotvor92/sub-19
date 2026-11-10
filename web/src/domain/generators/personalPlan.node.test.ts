@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { personalPlan } from '../personal';
-import type { ReferenceRow } from '@/test/fiveK/reference';
-import type { GeneratorApi } from '@/test/fiveK/legacyApi';
+import type { ReferenceRow } from '@/test/personal/exact';
+import type { GeneratorApi } from '@/test/personal/legacyApi';
 import { logCompared } from '@/test/level';
 import { loadPersonalReference, personalRows } from '@/test/personal/reference';
-import { regeneratorForDistance } from './handoff';
+
 import * as hm from './halfMarathon';
-import { HALF_MARATHON_GENERATOR, generatorForPlan } from './select';
+import { LEGACY_PERSONAL_GENERATOR, generatorForPlan } from './select';
 
 /* UGRAĐENI LIČNI PLAN → HM GENERATOR (segment 5/5).
 
@@ -16,7 +16,7 @@ import { HALF_MARATHON_GENERATOR, generatorForPlan } from './select';
    daju tačno isti zapis kao stari mehanizam (`src/test/fixtures/personal-reference.json.gz`, snimljeno na `348391c`,
    ponovo u čistom worktree-ju na izvornom `main` `05088e0` — bajt-identično). Nijedno polje nije izostavljeno. */
 
-const handoff = regeneratorForDistance;
+const handoff = (): null => null;
 const api: GeneratorApi = {
   generatePlan: hm.generatePlan,
   assess: hm.assess,
@@ -71,7 +71,7 @@ function compare(
 
 describe('ugrađeni lični plan ide HM generatoru bez promene ponašanja', () => {
   it('aktivni lični plan bira HM generator', () => {
-    expect(generatorForPlan(personalPlan(48))).toBe(HALF_MARATHON_GENERATOR);
+    expect(generatorForPlan(personalPlan(48))).toBe(LEGACY_PERSONAL_GENERATOR);
   });
 
   // Referenca se učitava jednom (ranije u svakom `it` posebno; isti fajl, isti sadržaj).

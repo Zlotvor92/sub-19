@@ -1,45 +1,6 @@
-/* Golden-master otisak generatora: kanonski zapis plana + SHA-256, poređeno sa upisanim fixture-om (`fixtures/otisak-generatora.json`, uzet nad starim
-   generatorom APP_VERSION 282). Scenarije drži `generatorScenarios.ts`. Ne uvozi se iz produkcije. */
-import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-
-export type { Scenario } from './generatorScenarios';
-
-export const FIXTURE = fileURLToPath(new URL('./fixtures/otisak-generatora.json', import.meta.url));
-
-export interface FingerprintRow {
-  sha: string;
-  pregled: unknown;
-}
-export interface FingerprintFile {
-  sat: string;
-  pocetak: string;
-  scenarija: number;
-  ukupno: string;
-  redovi: Record<string, FingerprintRow>;
-}
-
-export function loadFingerprintFile(): FingerprintFile | null {
-  if (!existsSync(FIXTURE)) return null;
-  return JSON.parse(readFileSync(FIXTURE, 'utf8')) as FingerprintFile;
-}
-
-/** Jedan scenario = jedan red (diff u kom se vidi GDE se plan pomerio; v. komentar u `uzmiOtisak` starog alata). */
-export function writeFingerprintFile(f: FingerprintFile): void {
-  const rows = Object.keys(f.redovi)
-    .sort()
-    .map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(f.redovi[k])}`)
-    .join(',\n');
-  const text =
-    '{\n' +
-    `  "sat": ${JSON.stringify(f.sat)},\n` +
-    `  "pocetak": ${JSON.stringify(f.pocetak)},\n` +
-    `  "scenarija": ${f.scenarija},\n` +
-    `  "ukupno": ${JSON.stringify(f.ukupno)},\n` +
-    `  "redovi": {\n${rows}\n  }\n}\n`;
-  writeFileSync(FIXTURE, text);
-}
+/* Kanonski zapis za poređenje sa odgovorima starog frontenda (oracle testovi). V1b: golden-master otisak v1 generatora
+   (`fixtures/otisak-generatora.json`, `generatorScenarios.ts`) obrisan je zajedno sa v1 generatorima; ostaje samo
+   kanonski zapis. Ne uvozi se iz produkcije. */
 
 /**
  * Kanonski zapis: ključevi sortirani, brojevi na 3 decimale (isto kao stari `kanonski`).
@@ -62,8 +23,4 @@ export function canonical(x: unknown): unknown {
     return o;
   }
   return x;
-}
-
-export function shaOf(plan: unknown): string {
-  return createHash('sha256').update(JSON.stringify(plan)).digest('hex').slice(0, 16);
 }

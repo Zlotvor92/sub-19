@@ -1,4 +1,4 @@
-import { adaptGeneratedPlan } from '@/test/generators';
+import { adaptGeneratedPlan } from '@/test/legacyAdapt';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { canonical } from '@/test/fingerprint';
 import { firstDiff } from '@/test/firstDiff';
@@ -6,7 +6,10 @@ import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 // Ciljni napor je smernica generatora; stari frontend je imao jednu za sve distance, ista je u svakoj kopiji.
 import { rpeTarget } from '../generators/fiveK/plan/describe';
-import { FIVE_K_GENERATOR } from '../generators/select';
+/* V1b: politika forme starog plana. Stari frontend je merenja na planu svog formata klasifikovao i uglađivao kodom koji je
+   isti u sva četiri v1 generatora (`training/adaptation/*`, bajt-isti fajlovi); 5K v1 je obrisan, pa oracle koristi
+   zamrznut HM v1 (`LEGACY_PERSONAL_GENERATOR`, isti kod). Aplikacija stari plan ne prilagođava (`isLegacyPlan`). */
+import { LEGACY_PERSONAL_GENERATOR as LEGACY_FORM } from '../generators/select';
 import { resolvePlan } from '../plan/resolve';
 import type {
   AltRecord,
@@ -349,7 +352,7 @@ describe('upis tempa radnog dela naspram starog recordVdot / brisanja / upisiAut
       const pace = Math.round(row.pt + (r() - 0.5) * 60);
       const mode = pick(r, ['manual', 'auto', 'clear'] as const);
       const date = addDays(START, 40);
-      const wctx = { form: FIVE_K_GENERATOR, rows: pred, baselineVdot: base, hasAlt: false };
+      const wctx = { form: LEGACY_FORM, rows: pred, baselineVdot: base, hasAlt: false };
       const state0 = { pred: {}, predLock: {}, vdotLog, log };
       ctx()['__d'] = day.id;
       let mine;

@@ -1,5 +1,18 @@
-import { adaptGeneratedPlan } from '@/test/generators';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { adaptGeneratedPlan } from '@/test/legacyAdapt';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+
+/* V1b: stari frontend je merenja uvoza na planu svog formata klasifikovao i uglađivao kodom koji je isti u sva četiri v1
+   generatora (`training/adaptation/*`, bajt-isti fajlovi). Aplikacija plan starog formata više ne prilagođava
+   (`isLegacyPlan` → bez generatora); oracle i dalje poredi deljeni kod uvoza sa starim frontendom, pa za plan starog
+   formata daje zamrznut HM v1 (`LEGACY_PERSONAL_GENERATOR`, isti kod politike forme). */
+vi.mock('@/domain/generators/select', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@/domain/generators/select')>();
+  return {
+    ...real,
+    generatorForPlan: (p: Parameters<typeof real.generatorForPlan>[0]) =>
+      real.generatorForPlan(p) ?? (real.isLegacyPlan(p) ? real.LEGACY_PERSONAL_GENERATOR : null)
+  };
+});
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { phase3ImportExpectation } from '@/test/phase3ImportOracle';
 import { addDays, type IsoDate } from '../../domain/date';
