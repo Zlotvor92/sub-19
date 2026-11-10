@@ -71,10 +71,11 @@ describe('F1 (D35): kontrolni test u planu sa rezultatom', () => {
     expect(testWeeks(f)).toEqual([f.weeks.map((w) => w.phase).lastIndexOf('base') + 1]);
   });
 
-  it('O1: test nedelja sa spuštenim drugim slotom ne obara „glavna doza ne opada" (d5 48 km 18 ned VDOT 35)', () => {
+  it('O1 → P8 G7 (D46): nedelja testa nema drugi slot (test je jedini kvalitet), pa „glavna doza ne opada" preskače test nedelju (d5 48 km 18 ned VDOT 35)', () => {
     const p = planOf(5, { weeks: 18, km: 48, vdot: 35 });
     const t = p.weeks[testWeeks(p)[0]! - 1]!;
-    expect(t.days.find((d) => d.role === 'q2')!.workout.dose!.step).toBe('drop');
+    expect(t.days.some((d) => d.role === 'q2')).toBe(false);
+    expect(t.days.filter((d) => d.workout.kind === 'quality')).toEqual([]);
     expect(errors(p)).toEqual([]);
   });
 });

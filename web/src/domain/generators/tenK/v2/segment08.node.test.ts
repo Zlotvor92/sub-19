@@ -119,12 +119,13 @@ describe('T3: posle novog starta (pauza ≥ 35 dana)', () => {
 
 describe('T6', () => {
   it('C3: plan po osećaju, višak (over120) dan pre testa — test ostaje (na b9c4728 otpada)', () => {
-    // c3.ts: f-d3-8w-20km-e270-A-sat/over120@2026-11-11 (178 tokova na b9c4728 → 0).
+    // c3.ts: f-d3-8w-20km-e270-A-sat/over120@2026-11-11 (178 tokova na b9c4728 → 0). P8 G7 (D46): plan od 8 nedelja nema
+    // test (ne pre nedelje 4) — isti primer na 15 nedelja.
     const sc = SCHEDULES_BY_DAYS[3].A;
     const start = addDays('2026-11-02', -1);
     const g = generateTenKV2({
       startDate: start,
-      raceDate: addDays(start, 8 * 7 - 1),
+      raceDate: addDays(start, 15 * 7 - 1),
       runDays: sc.days,
       longRunDay: sc.long,
       currentWeeklyKm: 20,

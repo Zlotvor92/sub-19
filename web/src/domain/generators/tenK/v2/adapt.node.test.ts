@@ -651,9 +651,12 @@ describe('odluke A1–A15', () => {
     // od tempa 35 min E).
     // 10K-08 (T1): najkraći lagan = 20 min laganim tempom — kapacitet nedelje zavisi od tempa, pa od prve nedelje
     // spuštene na novom tempu (ned 10) nominalni ciljevi slede stvarno dobijen cilj (D6), ne plan pre rezultata.
-    expect(r.plan.weeks.slice(0, 9).map((w) => w.nominalKm)).toEqual(
-      p.weeks.slice(0, 9).map((w) => w.nominalKm)
+    // P8 G6 (D47, lagan ≤ 0,70 × dugi): prva nedelja na novom tempu (ned 7) je već spuštena na izvodljiv cilj, pa se
+    // nominalni ciljevi poklapaju do nje (ranije do ned 9).
+    expect(r.plan.weeks.slice(0, 7).map((w) => w.nominalKm)).toEqual(
+      p.weeks.slice(0, 7).map((w) => w.nominalKm)
     );
+    expect(r.plan.weeks[6]!.fitted).toBe('down');
     expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
     // Plan sa rezultatom: ocena cilja za nedelje od rezultata do trke.
     const pr = plan('d4-r-14w');
