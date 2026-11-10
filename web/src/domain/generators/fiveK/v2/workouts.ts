@@ -901,7 +901,9 @@ function biggerInOffer(type: 'I' | 'RP', p: Paces, prev: PrevDose): boolean {
   );
 }
 
-const why = (budget: boolean): string =>
+/** 5k-v2.15.0 (P8 G3): razlog zadržane doze — JEDINO mesto teksta (izvezeno radi testa: posle G4 kraj ponude se u mreži
+    generatora ne dostiže, pa se tvrdnja proverava neposredno). */
+export const why = (budget: boolean): string =>
   budget ? 'obim nedelje ne dozvoljava više' : 'to je najveća doza ovog treninga u planu';
 
 const altNote = (what: string, c: RepChoice, budget = true): string =>

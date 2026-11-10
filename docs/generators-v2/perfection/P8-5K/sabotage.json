@@ -106,5 +106,50 @@
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"
   ]
+ },
+ {
+  "name": "P8-G6 lagan 0,8 × dugi i za 4+ dana",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    buildMaxShareOfLong4: 0.7,",
+  "replace": "    buildMaxShareOfLong4: 0.8,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G7 test sme u nedelji 3",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    test: { km: 3, weeks: [4, 5] as const, minWeek: 4 },",
+  "replace": "    test: { km: 3, weeks: [3, 4] as const, minWeek: 3 },",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G1a vrh 1,5 × start za svaku dužinu",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "      { fromWeeks: 0, factor: 1.3 },",
+  "replace": "      { fromWeeks: 0, factor: 1.5 },",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G1b korak ispod 3 % se primenjuje",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    minStepShare: 0.03,",
+  "replace": "    minStepShare: 0,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-završetak odluka 2: I bez koraka lestvice (prag 80 % budžeta)",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "        ? isI && phase === 'peak' && progression.prev\n",
+  "replace": "        ? isI && phase === 'peak' && progression.prev && false\n",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
  }
 ]

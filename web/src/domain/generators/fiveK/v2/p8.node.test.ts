@@ -14,7 +14,7 @@ import { userWarnings } from './text.ts';
 import type { FiveKV2Plan, PlanWeek, QualityType } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { devWeeksLeft, peakKm, spreadKm } from './volume.ts';
-import { firstIBudget, firstLevelBudget, iMaxShareOf, raceWarmup } from './workouts.ts';
+import { firstIBudget, firstLevelBudget, iMaxShareOf, raceWarmup, why } from './workouts.ts';
 
 const EPS = 1e-6;
 const planOf = (input: unknown): FiveKV2Plan => {
@@ -241,5 +241,115 @@ describe('P8-5K: pojedinačna pravila', () => {
     // Dopuna G4 (plafon minuta) menja koje nedelje drže dozu; tvrdnja mora da važi kad napomena postoji.
     const notes = p.weeks.flatMap((w) => w.notes.filter((n) => n.includes('ista količina')));
     for (const n of notes) expect(n).toContain('to je najveća doza ovog treninga u planu');
+    // 5k-v2.15.1: posle G4 (plafon minuta) kraj ponude se u mreži ne dostiže (0 napomena u ranoj mreži) — razlog se
+    // proverava neposredno: budžet drži dozu → „obim …", kraj ponude → „najveća doza …".
+    expect(why(true)).toBe('obim nedelje ne dozvoljava više');
+    expect(why(false)).toBe('to je najveća doza ovog treninga u planu');
+  });
+});
+
+/* 5k-v2.15.1 (P8 dopuna i završetak): nezavisne invarijante mreže — brojevi pravila su ovde ispisani (ne čitaju se iz
+   funkcija konstruktora), da bi izmena pravila u kodu obarala test. */
+describe('P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I)', () => {
+  const dev = (w: PlanWeek): boolean => (w.phase === 'base' || w.phase === 'peak') && !w.deload;
+
+  it('G7: u nedelji kontrolnog testa test je jedini kvalitet i nedelja nije pre 4.', () => {
+    let tests = 0;
+    for (const { id, p } of SAMPLE)
+      for (const w of p.weeks.filter((x) => x.test)) {
+        tests++;
+        expect(w.index, id).toBeGreaterThanOrEqual(4);
+        const q = w.days.filter((d) => d.workout.kind === 'quality');
+        expect(
+          q.map((d) => d.workout.qualityType),
+          `${id} ned ${w.index}`
+        ).toEqual(['TEST_3K']);
+      }
+    expect(tests).toBeGreaterThan(30);
+  });
+
+  it('G1a: vrh ≤ start × 1,30 (≤ 12 ned) / 1,35 (13–15) / 1,40 (≥ 16) i ≤ satni plafon 6 / 7 / 8 h (ili start)', () => {
+    let hourBound = 0;
+    for (const { id, p } of SAMPLE) {
+      const n = p.weeks.length;
+      const factor = n >= 16 ? 1.4 : n >= 13 ? 1.35 : 1.3;
+      const peak = Math.max(...p.weeks.filter(isBuild).map((w) => w.targetKm));
+      expect(peak, id).toBeLessThanOrEqual(p.startKm * factor + EPS);
+      if (p.paces.vdot === null) continue;
+      const hours = p.paces.vdot < 40 ? 6 : p.paces.vdot < 50 ? 7 : 8;
+      const hourKm = (hours * 3600) / ((p.paces.E.fast + p.paces.E.slow) / 2);
+      expect(peak, id).toBeLessThanOrEqual(Math.max(hourKm, p.startKm) + EPS);
+      if (peak + 0.1 > hourKm) hourBound++;
+    }
+    expect(hourBound).toBeGreaterThan(0);
+  });
+
+  it('G1b: korak rasta razvoja manji od 3 % se ne primenjuje (osim koraka koji dostiže vrh)', () => {
+    let steps = 0;
+    for (const { id, p } of SAMPLE) {
+      const ws = p.weeks.filter(dev);
+      const peak = Math.max(...p.weeks.filter(isBuild).map((w) => w.targetKm));
+      for (let i = 1; i < ws.length; i++) {
+        const [a, b] = [ws[i - 1]!.targetKm, ws[i]!.targetKm];
+        if (b <= a + EPS || b >= peak - EPS) continue;
+        steps++;
+        expect(b - a, `${id} ned ${ws[i]!.index}: ${a} → ${b}`).toBeGreaterThanOrEqual(
+          a * 0.03 - EPS
+        );
+      }
+    }
+    expect(steps).toBeGreaterThan(100);
+  });
+
+  it('G6: plan sa 4+ dana — lagan ≤ 0,7 × dugi u nedelji izgradnje (3 dana 0,8); uvodne nedelje početnika lagan ≤ dugi', () => {
+    let weeks = 0;
+    let onCap = 0;
+    for (const { id, p } of SAMPLE) {
+      const share = p.input.runDays.length >= 4 ? 7 : 8;
+      for (const w of p.weeks.filter((x) => isBuild(x) && !x.deload)) {
+        const long = w.days.find((d) => d.role === 'long');
+        if (!long) continue;
+        weeks++;
+        const intro =
+          p.experience === 'beginner' && w.phase === 'base' && w.index <= P.beginner.introWeeks;
+        const cap = intro ? long.workout.km : Math.floor(long.workout.km * share + 1e-9) / 10;
+        for (const d of w.days.filter((x) => x.role === 'easy')) {
+          expect(d.workout.km, `${id} ned ${w.index}`).toBeLessThanOrEqual(cap + EPS);
+          if (share === 7 && !intro && d.workout.km > cap - EPS) onCap++;
+        }
+      }
+    }
+    expect(weeks).toBeGreaterThan(500);
+    expect(onCap).toBeGreaterThan(50);
+  });
+
+  it('odluka 2: I u vrhuncu posle prethodnog I raste najviše jedan korak lestvice nedeljno (i posle smanjenog prvog)', () => {
+    let pairs = 0;
+    let belowOldFloor = 0;
+    for (const { id, p } of SAMPLE) {
+      if (p.paceMode === 'feel' || p.experience === 'beginner') continue;
+      // Lestvica I: dužine ponude × broj ponavljanja 2–6, ponavljanje 2–5 min na I tempu plana.
+      const ladder = [
+        ...new Set(
+          [1.2, 1.0, 0.8, 0.7, 0.6, 0.5, 0.4]
+            .filter((km) => km * p.paces.I >= 120 - EPS && km * p.paces.I <= P.quality.iRepMaxSec)
+            .flatMap((km) => [2, 3, 4, 5, 6].map((r) => Math.round(r * km * 100)))
+        )
+      ].sort((x, y) => x - y);
+      const ws = p.weeks.filter((w) => w.phase === 'peak' && !w.deload && !w.test);
+      for (let i = 1; i < ws.length; i++) {
+        const a = Math.round(zoneWork(ws[i - 1]!, 'I') * 100);
+        const b = Math.round(zoneWork(ws[i]!, 'I') * 100);
+        if (a === 0 || b === 0) continue;
+        const next = ladder.find((x) => x > a);
+        if (next === undefined) continue;
+        pairs++;
+        expect(b, `${id} ned ${ws[i]!.index}: ${a} → ${b}`).toBeLessThanOrEqual(next);
+        if (b < ws[i]!.budgets.I * 100 * 0.7 - EPS) belowOldFloor++;
+      }
+    }
+    expect(pairs).toBeGreaterThan(50);
+    // Pravilo zaista deluje: bez njega bi svaka takva nedelja bila ≥ 70 % budžeta (stari donji prag).
+    expect(belowOldFloor).toBeGreaterThan(0);
   });
 });

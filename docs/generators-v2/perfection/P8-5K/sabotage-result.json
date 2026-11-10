@@ -1,14 +1,14 @@
 {
  "input": "/home/user/sub-19/docs/generators-v2/perfection/P8-5K/sabotage.json",
- "head": "1097d21",
+ "head": "d079b311",
  "level": "brz",
  "bail": true,
  "parallel": 1,
  "vitestArgs": [],
- "durationS": 80,
- "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
- "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
- "ok": false,
+ "durationS": 112.5,
+ "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+ "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+ "ok": true,
  "results": [
   {
    "index": 1,
@@ -27,13 +27,13 @@
     "message": "AssertionError: r-d3-6w-25km-v38-1 ned 2: expected 27 to be less than or equal to 26.800001"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "49202000f26038f3bcba8c179bf0195918fae09dd4e3c10776e712b82d0961bc",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "7f3ebbffec91e02e42024785f3fc8abe0effdfb02061552b9f1ddbf616c25eb5",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.5
+   "durationS": 6
   },
   {
    "index": 2,
@@ -52,13 +52,13 @@
     "message": "AssertionError: r-d3-8w-12km-v58-0 ned 4: expected 1.4 to be less than or equal to 1.2000009999999999"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "eff886a4ac6d5de8c6687b4c80cab9b9103c5dd6733ad07116a377b6cec65bf6",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "07489eef39d18198238f8759123137e604b2a2d21d0022943544a4c3314035ad",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.4
+   "durationS": 6.2
   },
   {
    "index": 3,
@@ -77,13 +77,13 @@
     "message": "AssertionError: f-d4-6w-15km-e300-1 ned 5 T: expected 1.2 to be less than or equal to 0.89"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "e29c3e3c358015c25520b16438640da140da12316565042b072b6ad011c16680",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "4ce149d6b539e7e9d2ccdf4d01fcef070b61f146c980d19cba9a94d171348555",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6
+   "durationS": 5.8
   },
   {
    "index": 4,
@@ -102,13 +102,13 @@
     "message": "AssertionError: expected 0.12 to be 0.1 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "bdbc3c8a06d1378ce74f801454bc19c59039618faed31863d549c6d2d9ad8a86",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "947d08a4f8a9c9b3911402d5060f79245d8c8f5b690447f330a388fa114fded9",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.8
+   "durationS": 6.7
   },
   {
    "index": 5,
@@ -127,13 +127,13 @@
     "message": "AssertionError: r-d3-9w-12km-v32-0 ned 5 I: expected 1 to be less than or equal to 0.8500000000000001"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "3636a35ee1352a70b617ad947d5f67f42deec0711ef62a603f5191e36267bd65",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "73cd846e5ae82ab758f390fc88e3af950094fae8499adfd3bcf82532949a44aa",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.7
+   "durationS": 6.8
   },
   {
    "index": 6,
@@ -152,13 +152,13 @@
     "message": "AssertionError: f-d4-6w-30km-e480-0 ned 5 T: expected 1.62 to be less than or equal to 1.534"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "0b9770ea3825971034e6ec30d25df203ccbd5e97ed35893bec95f438835eb090",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "746e691796671a9f64ae96b13ae38c11a7f1f912e59abd1636c2883a0dfe7763",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.6
+   "durationS": 6.5
   },
   {
    "index": 7,
@@ -177,13 +177,13 @@
     "message": "AssertionError: b-d3-8w-16km-e480-0 ned 4 dugi: expected 6.3 to be less than or equal to 5.600001"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "ddd7b43c1ff60290cece5572724e7c5c97d18685914c749c69e391c5af1b140c",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "b5482b2734f6d1c8bfc7d4548b2e299ba84cadeff800901f1fa2e23d1935dc6f",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.6
+   "durationS": 6.2
   },
   {
    "index": 8,
@@ -202,13 +202,13 @@
     "message": "AssertionError: r-d3-6w-12km-v32-0 ned 3: expected 1.2 to be less than or equal to 0.970001"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "bd824ece0b3f2cd7361e0b32821d8ee830b340ad9db0bff6da386001c6e74166",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "c5f6868c8f7cf4a3d6cb29c7c25012a61dd7232fc5dbbd3fce48e79801639e19",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.8
+   "durationS": 7.1
   },
   {
    "index": 9,
@@ -227,13 +227,13 @@
     "message": "AssertionError: expected 3.5 to be less than or equal to 2.5"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "dbba2615e61905fc1ceb87b1030e21915f62791df3ad1c5b961e45ecfd0ec228",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "dbbccb303e06f7ca3046880c51fa0629e83890e90177d2b0c39076a1780617c4",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.4
+   "durationS": 6.7
   },
   {
    "index": 10,
@@ -252,13 +252,13 @@
     "message": "AssertionError: expected 'beginner' to be 'regular' // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "22b2257bfa0513a69e435840ddcd650f442af88bcd0ce3439afa70260fd5b413",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "e024257ed18774540d1957d3c0f6d50afc80cd19c125e3c0123f7e67601fba4f",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 7.1
+   "durationS": 6.3
   },
   {
    "index": 11,
@@ -277,13 +277,13 @@
     "message": "AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]"
    },
    "failedCount": 1,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "0cd3726937ad5afb1138de4db07c7194073f3cab71cf33e1a7702e08354c584b",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "ea5cc6759ca070e0b07fd7652216c160030623092594dc43177ff8d2f759f76d",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 6.5
+   "durationS": 6.4
   },
   {
    "index": 12,
@@ -294,17 +294,146 @@
    "tests": [
     "src/domain/generators/fiveK/v2/p8.node.test.ts"
    ],
-   "status": "nije-pao",
-   "pao": false,
-   "firstFailed": null,
-   "failedCount": 0,
-   "hashBefore": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
-   "hashSabotaged": "0f54ee506eab58df166d57fb3616e00bb3470cdc6470e3d0ed1294af79dc3d43",
-   "hashAfter": "35ba70a6a289b4d4b954ecfe33119b3e5a978fdc51ca0672c509c0d59948e6a5",
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: pojedinačna pravila > G3: „ista količina … (obim ne dozvoljava više)\" samo kad veća doza postoji u ponudi; inače „najveća doza\"",
+    "message": "AssertionError: expected 'obim nedelje ne dozvoljava više' to be 'to je najveća doza ovog treninga u pl…' // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "01dbbed84ca24c199e203357b4b38e7660d7695761285007862dd4e8500bc253",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
    "restored": true,
    "error": null,
-   "vitestExit": 0,
-   "durationS": 6.8
+   "vitestExit": 1,
+   "durationS": 6.5
+  },
+  {
+   "index": 13,
+   "name": "P8-G6 lagan 0,8 × dugi i za 4+ dana",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G6: plan sa 4+ dana — lagan ≤ 0,7 × dugi u nedelji izgradnje (3 dana 0,8); uvodne nedelje početnika lagan ≤ dugi",
+    "message": "AssertionError: r-d4-6w-15km-v45-0 ned 2: expected 3.6 to be less than or equal to 3.2000010000000003"
+   },
+   "failedCount": 1,
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "1759d45f0667985a351de4eda9f763cef5add0dac6476b77fdc5f17beddd9f0f",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7
+  },
+  {
+   "index": 14,
+   "name": "P8-G7 test sme u nedelji 3",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G7: u nedelji kontrolnog testa test je jedini kvalitet i nedelja nije pre 4.",
+    "message": "AssertionError: f-d3-6w-12km-e480-0: expected 3 to be greater than or equal to 4"
+   },
+   "failedCount": 1,
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "342a46c0cd9ca7cc618f03bf59d1f683e86fc5ecb10bac6ac49b1375232b3d19",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.1
+  },
+  {
+   "index": 15,
+   "name": "P8-G1a vrh 1,5 × start za svaku dužinu",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > G1a: vrh ≤ start × 1,30 (≤ 12 ned) / 1,35 (13–15) / 1,40 (≥ 16) i ≤ satni plafon 6 / 7 / 8 h (ili start)",
+    "message": "AssertionError: r-d3-8w-12km-v32-0: expected 16.2 to be less than or equal to 15.600001"
+   },
+   "failedCount": 1,
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "71e25996fabdfae6fc655f529d98f24afdb57bea9826f4d9c923e0bb66d566d8",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.9
+  },
+  {
+   "index": 16,
+   "name": "P8-G1b korak ispod 3 % se primenjuje",
+   "files": [
+    "src/domain/generators/fiveK/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K: uzorak rane mreže > G1: ne-rasteretna nedelja razvoja ≤ poslednji + (vrh − poslednji) / preostale nedelje razvoja",
+    "message": "AssertionError: f-d4-6w-30km-e480-0 ned 3 korak: expected 0.9000000010000021 to be greater than or equal to 0.9269999999999999"
+   },
+   "failedCount": 1,
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "8d75ab4cf418ab352395df77b1bf39572efcf32275978d8b6c2c3a095ea8e4fe",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 6.5
+  },
+  {
+   "index": 17,
+   "name": "P8-završetak odluka 2: I bez koraka lestvice (prag 80 % budžeta)",
+   "files": [
+    "src/domain/generators/fiveK/v2/workouts.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p8.node.test.ts",
+    "test": "P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I) > odluka 2: I u vrhuncu posle prethodnog I raste najviše jedan korak lestvice nedeljno (i posle smanjenog prvog)",
+    "message": "AssertionError: r-d3-6w-12km-v32-0 ned 4: 80 → 120: expected 120 to be less than or equal to 100"
+   },
+   "failedCount": 1,
+   "hashBefore": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "hashSabotaged": "592bf77bc126550c87896726e759187530e097b1d300a07f7b528382611929ce",
+   "hashAfter": "0e3fbf224fbc37053eafd4dcf20d62d454874345aa15ea4b85bb13d78070fd7e",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7
   }
  ]
 }
