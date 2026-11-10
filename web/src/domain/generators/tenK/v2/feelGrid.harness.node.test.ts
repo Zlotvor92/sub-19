@@ -94,13 +94,14 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         (n) => [g.stats[n].testDeload, g.stats[n].testDeloadLong, g.stats[n].testDeloadUp],
         [
           // 10K-08 (T1): duži dugi izgradnje (za stvaran broj laganih dana) → češće skraćen dugi rasterećenja sa testom.
+          // P8 (10k-v2.13.0, G1 sporiji rast dugog, G6): 144 / 72 / 36 / 36 → 144 / 114 / 18 / 36.
           [540, 144, 0],
-          [756, 72, 0],
-          [864, 36, 0],
+          [756, 114, 0],
+          [864, 18, 0],
           [1080, 36, 0]
         ]
       );
-      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 72, 36, 36]);
+      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 114, 18, 36]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja; ned 1 ispod obima (105 min / udeo), D25, DOSE_DROPPED (od toga udeo)', () => {
@@ -110,10 +111,14 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         // 0 / 18 / 18 / 180 → 0 / 18 / 54 / 216, vrh/start.
         // P5 (10k-v2.12.0, D36/D37): CAPACITY_LIMITED 1122 / 2010 / 1398 / 1362 → 1104 / 1884 / 1314 / 1266, ponavljanja
         // (kolona 2) 384 / 96 / 0 / 0 → 384 / 96 / 126 / 240, taper samo RP 0 / 18 / 54 / 216 → 0 / 18 / 54 / 252, vrh/start.
-        [1980, 1104, 384, 1.188, 288, 0, 36, 0],
-        [2772, 1884, 96, 1.163, 0, 18, 0, 0],
-        [3168, 1314, 126, 1.237, 0, 54, 0, 0],
-        [3960, 1266, 240, 1.216, 0, 252, 0, 0]
+        // P8 (10k-v2.13.0, G1–G8): CAPACITY_LIMITED 1104 / 1884 / 1314 / 1266 → 1014 / 2160 / 1224 / 1116, ponavljanja
+        // 384 / 96 / 126 / 240 → 432 / 342 / 132 / 240, vrh/start 1,188 / 1,163 / 1,237 / 1,216 → 1,164 / 1,098 / 1,163 / 1,102
+        // (G1a), rasterećenje bez kvaliteta 288 → 0 i taper bez kvaliteta 36 → 0 (G2), taper samo RP 0 / 18 / 54 / 252 →
+        // 0 / 84 / 120 / 312.
+        [1980, 1014, 432, 1.164, 0, 0, 0, 0],
+        [2772, 2160, 342, 1.098, 0, 84, 0, 0],
+        [3168, 1224, 132, 1.163, 0, 120, 0, 0],
+        [3960, 1116, 240, 1.102, 0, 312, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -134,10 +139,12 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
           // 10K-08 (T1): ned 1 ispod obima i uz udeo D17 (lagan ≤ 0,8 × dugi).
           // P3 (10k-v2.11.0, D33): DOSE_DROPPED (kolona 4) 84 / 276 / 42 / 0 → 84 / 258 / 0 / 0.
           // P5 (D37): ned 1 ispod obima (udeo) 1518 → 1386 (4 d), 660 → 594 (5 d); DOSE_DROPPED 258 / 0 / 0 → 444 / 210 / 72.
-          [462, 132, 108, 84, 0],
-          [0, 1386, 222, 444, 186],
-          [594, 66, 156, 210, 0],
-          [792, 0, 270, 72, 0]
+          // P8 (G6 lagan ≤ 0,70 × dugi za 4+ dana, G1, G4): ned 1 ispod obima (udeo) 1386 → 1782 (4 d), uz 105 min 594 → 858
+          // (5 d), 792 → 1056 (6 d); DOSE_DROPPED 84 / 444 / 210 / 72 → 96 / 672 / 0 / 0.
+          [462, 132, 114, 96, 0],
+          [0, 1782, 270, 672, 444],
+          [858, 0, 144, 0, 0],
+          [1056, 0, 264, 0, 0]
         ]
       );
     });

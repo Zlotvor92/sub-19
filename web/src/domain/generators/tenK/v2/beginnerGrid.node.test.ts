@@ -83,16 +83,18 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
     byDays(
       (n) => [g.stats[n].beginnerT, g.stats[n].taperT],
       [
-        // 10K-08 (T1): 3 dana 2184 / 432 → 2634 / 540.
-        [2634, 540],
-        [1050, 378]
+        // 10K-08 (T1): 3 dana 2184 / 432 → 2634 / 540. P8 (G2: prvi nivo lestvice faze uvek staje, S3): 2634 / 540 i
+        // 1050 / 378 → 0 / 0.
+        [0, 0],
+        [0, 0]
       ]
     );
     byDays(
       (n) => [g.stats[n].deloadNoQuality, g.stats[n].taperNone],
       [
-        [462, 378],
-        [192, 0]
+        // P8 (G2, D51): rasterećenje i taper uvek imaju kvalitet — 462 / 378 i 192 / 0 → 0 / 0.
+        [0, 0],
+        [0, 0]
       ]
     );
   });
@@ -106,8 +108,9 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
       [0, 0, 0]
     ]);
     // P8 (G2, D40): T 1,5 km u rasterećenju 13 km (3 dana, 15 km; 4 dana, 18 km) skraćuje dugi ispod 4 km — 0 / 0 → 6 / 14
-    // planova (reports/P8-10K-STOP.md, odluka organizatora).
-    expect(DAYS.map((n) => g.stats[n].deloadLongBelow4)).toEqual([6, 14]);
+    // planova (reports/P8-10K-STOP.md, odluka organizatora S1: dugi rasterećenja ≥ najduži lagan, sme ispod 4 km). Završetak
+    // (S3 veći dan T, S9 početnik 0,80): 6 / 14 → 18 / 42 planova.
+    expect(DAYS.map((n) => g.stats[n].deloadLongBelow4)).toEqual([18, 42]);
     expect(DAYS.map((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0)).toEqual([0, 0]);
   });
 
@@ -115,8 +118,10 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
     // 81bd351: [1512, 588, 192, 1.229, 1200, 0, 774, 0], [1890, 324, 240, 1.281, 1116, 0, 378, 0].
     const table = [
       // 10K-08 (T1): CAPACITY_LIMITED 588 / 324 → 810 / 594, vrh/start 1,227 / 1,28 → 1,187 / 1,251.
-      [1512, 810, 2532, 1.187, 462, 0, 378, 0],
-      [1890, 594, 168, 1.251, 192, 0, 0, 0]
+      // P8 (10k-v2.13.0, G2/S3/G1a): ponavljanja T 1,5 km 2532 / 168 → 0 / 0, rasterećenje i taper bez kvaliteta → 0,
+      // CAPACITY_LIMITED 4 dana 594 → 582, vrh/start 1,187 / 1,251 → 1,186 / 1,242.
+      [1512, 810, 0, 1.186, 0, 0, 0, 0],
+      [1890, 582, 0, 1.242, 0, 0, 0, 0]
     ];
     // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti b13ca17).
     const row = (n: 3 | 4): number[] => statsRow(g.stats[n]);
