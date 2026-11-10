@@ -12,10 +12,12 @@ STOP nije bilo: 0 novih odbijanja, F4 ne spušta izvodljivost, F2 bez odbijanja 
   razvoja, dan Q1; progresija posle testa od stanja pre testa (postojeći mehanizam H16). Napomena nedelje
   `RESULT_TEST_NOTE` (čemu služi, unesi rezultat). Rezultat ulazi postojećim A1. **Odluka 01:07**: kontrolni test u
   nedelji sa ograničenjem otpada (ne premešta se) uz poruku TEST_MOVED; nedelja testa sa spuštenim slotom je referenca
-  glavne doze (validator). Test se broji u % brzih km (merni skript: zona `test`).
+  glavne doze (validator; mreža P0: 12 od 96 nedelja kontrolnog testa ima spušten slot — drugi dan lagan; na HM ni pre
+  te izmene nije bilo MAIN_DOSE_DECREASE — M4 0 novih odbijanja). Test se broji u % brzih km (zona `test`).
 - **F2** (`assess.qualityStrain` okidač; korak `qualityHold`/`qualitySeen`; `steps.holdAt`; `quality.pickSlot` hold;
   `specific.wantBlockKm` hold): Q1/Q2/dugi sa blokom (ne test), dva uzastopna u 14 dana, potpuno pokrivena, svaki
-  neodrađen ili RPE ≥ 9 → nedelja n (prva puna posle asOf) bez rasta doze: bez sledećeg nivoa (druga struktura, inače
+  neodrađen (**odluka 00:41**: tog datuma nijedno trčanje — ni zapis dana ni trčanje van plana/uvoz) ili RPE ≥ 9
+  (zapis tog dana) → nedelja n (prva puna posle asOf) bez rasta doze: bez sledećeg nivoa (druga struktura, inače
   ponavljanje uz napomenu), prelaz T kont. ↔ T cruise ista doza, blok RP na poslednjem nivou. Prelaz u novu zonu (I, RP)
   po H12 (početni nivo nije rast — **tumačenje taba**). Cilj obima isti. Ispod bola, pauze, umora, manjka (applied
   false). Isti zapisi jednom. n = rasterećenje/taper/trka → bez efekta (**tumačenje**: ne prenosi se na sledeću izgradnju).
@@ -29,6 +31,9 @@ STOP nije bilo: 0 novih odbijanja, F4 ne spušta izvodljivost, F2 bez odbijanja 
   (u postojećem mestu odluke, `pickSlot` grana početnog nivoa; validator START_LEVEL ista funkcija): najviši nivo ≤ 80 %
   čiji dan nije duži od dugog, inače nivo po 60 % (`fallbackShare`). Deo „ne izaziva pouku 35" **nije** ugrađen: traži
   novo mesto odluke (izbor nedelje unazad) → P-a; na HM F4 nedelje pouke 35 **smanjuje** (tabela dole).
+- Test infrastrukture (folder HM): `adaptGrid.harness` `runFlow` čuva SHA-256 JSON-a toka umesto celog JSON-a — sa
+  većim planovima (segmenti ubrzanja) deo `earlyGrid` punog nivoa je držao 3,3 GB heap-a i radnik je pucao na
+  podrazumevanom heap-u (OOM); posle izmene 169 MB. Provera determinizma ista (jednakost heša).
 - Van zadatka, nalaz: `app/plan.ts KNOWN_VERSIONS` nije sadržao `hm-v2.8.0` (verzija u `main`-u) otkad je P1 podigao
   verziju — sačuvan plan hm-v2.8.0 bi posle mergea bio „unknown". Dodati hm-v2.8.0 i hm-v2.9.0 (+ test).
 
@@ -61,15 +66,15 @@ Varijante za M6/M7: kopije v2 foldera sa pravilom isključenim u politici (`resu
 | udeo rada prvog I dana [%] (M3) | 21 [14–29] | 25 [16–36] | 24 | 28,5 |
 | T / I rad najveći [min] | 22 / 15,7 | 22,7 / 17,3 | 20,1 / 17,2 | 22,4 / 17,4 |
 | laganih dana sa ubrzanjima | 0 | 14 [9–19] | 0 | 14 [9–19] |
-| % brzih km baza (sa ubrz. / bez) | 9,5 | 11,6 / 11,1 | 10,4 | 12,4 / 11,7 |
-| % brzih km razvoj / specifična / taper (sa ubrz.) | 9,8 / 18,7 / 16,4 | 12,3 / 19,8 / 18,7 | 8,5 / 19,6 / 15,5 | 11,1 / 20,8 / 17,1 |
+| % brzih km bez ubrzanja: baza / razvoj | 9,5 / 9,8 | 11,1 / 11,3 | 10,4 / 8,5 | 11,7 / 10,2 |
+| % brzih km bez ubrzanja: specifična / taper | 18,7 / 16,4 | 18,8 / 17,5 | 19,6 / 15,4 | 20,1 / 16,2 |
 | vrh obima [km] / ukupno RP [km] | 59,5 / 45 | 59,5 / 45 | 55,5 / 45 | 55,5 / 45 |
 | planova sa WEEK_FITTED | 26 | 24 | 11 | 10 |
 | planova sa ned. 1 < trenutni obim | 12 | 6 | 6 | 6 |
 | planova sa promenjenim vrhom | — | 3 | — | 0 |
 
-- Nedelje izgradnje > 25 % brzih km (sve porodice): **bez ubrzanja 81 → 81**; sa km ubrzanja (zona R) 81 → 115 (+34,
-  sve 25,1–26,2 %); > 30 %: 16 → 18. Ubrzanja nisu rad zone (pravilo F3), pa za prag važi prvi broj.
+- Nedelje izgradnje > 25 % brzih km (sve porodice; ubrzanja se ne broje — odluka organizatora): **81 → 81**. Za
+  poređenje, sa km ubrzanja kao brzim: 115 (svih 34 dodatnih 25,1–26,2 %); > 30 % (sa ubrzanjima) 16 → 18.
 - Početnik (n 16): bez testa, T prvi 8,7 min (isto), ubrzanja 13 [9–17] (od 3. nedelje).
 - Test po pripremi (R): 10 ned bez testa; 15 ned ned 9, 6 ned do trke; 20 ned ned 12, 8 ned do trke; uvek razvoj.
 
@@ -110,12 +115,31 @@ nepromenjeni (RP 2 × 3000 → 2 × 5000, blok 4 i 6 km). T u razvoju/specifičn
 
 ## Testovi i trajanja
 
-TESTOVI_PLACEHOLDER
+| | komanda | trajanje | ishod |
+|---|---|---|---|
+| T1 | `npx vitest run --project node src/domain/generators/halfMarathon/v2` (brz, u toku rada, više puta) | 70–80 s | poslednji 358/358 |
+| T2 | `npm run check` (posle rebase-a na `5d2f32c`) | 5 min 42 s | typecheck, lint, format OK; 3918/3918 |
+| T3 | `npx vitest run --changed 8e87fd4` | 4 min 11 s | 249 fajlova, 2986/2986 |
+| T4 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2 --logHeapUsage` | 9 min 54 s | 75 fajlova, 450/450; najveći heap 336 MB |
+| T5 | `npx playwright test e2e/hm-v2.spec.ts e2e/handoff-v2.spec.ts --trace off` | 65 s | 8/8 |
+| S | `node scripts/sabotage.mjs ../docs/generators-v2/perfection/P5-HM/sabotage-P5.json --quiet` | 26,6 s | 7/7 palo (`sabotage-P5.result.json`) |
+
+Raniji pokušaji T4 (pre izmene harness-a): dva pada radnika na OOM (heap ≈ 2 GB, `earlyGrid` delovi); jednom pun nivo uz
+`NODE_OPTIONS=--max-old-space-size=6144 --maxWorkers=2` prošao 450/450 za 14 min 55 s (heap do 3,3 GB) — uzrok pa
+ispravka u harness-u, vidi „Pravila". Jedan pokušaj prekinut granicom alata (10 min), jedan restartom kontejnera.
+
+Novi/izmenjeni testovi: nov `segmentP5.node.test.ts` (F1–F4, prikaz, bol, F2 prioritet, trčanje van plana; 11 testova),
+`segmentP5.changed-8e87fd4.json`; usklađeni brojevi (bez slabljenja): `quality.node` (početni nivo 80 %),
+`policy.node`, `beginner.node`, `week.node` (rasterećenje T 2400), `validate.node` (DOSE_JUMP/STALL na drugim nedeljama,
+EASY_UNEQUAL na danima bez ubrzanja), `feel.node` (plan sa rezultatom 11 ned bez testa, 12 ned jedan), `adapt.node`
+(prioritet: + TEST_MOVED, QUALITY_STRAIN false), `app.node`, `adaptFlow.node`, `handoffTarget.node` (verzije),
+`earlyGrid`/`grid04` broj tokova (asOf nedelje testa: 27 062 → 27 300, 4919 → 5055), `gridInvariants` (nezavisno: test
+F1, ubrzanja F3, trajanje laganog dana sa ubrzanjima po km), `recent.harness` (oslabljeno, vidi gore).
 
 ## Van foldera
 
 `marathon/v2/app/byteSame.9443676.json` — snimak tokova svih generatora uključuje HM v2; ponovo snimljen
-(`BYTE_SAME_RECORD=1`) na verziji posle rebase-a, promenjeno tačno BYTESAME_PLACEHOLDER ključeva „HM v2 #…", 0 drugih.
+(`BYTE_SAME_RECORD=1`) na verziji posle rebase-a, promenjeno tačno 17 ključeva (prema verziji P5-MAR `e033718`) „HM v2 #…", 0 drugih.
 
 ## Otvoreno / mišljenje (odvojeno od merenja)
 
@@ -123,5 +147,6 @@ TESTOVI_PLACEHOLDER
    ipak, to je novo mesto odluke.
 2. F2 posle rasterećenja ne „čeka" sledeću nedelju izgradnje; ako treba, to je jedno polje koraka (`qualityHold` = prva
    ne-rasteretna nedelja izgradnje ≥ n).
-3. Sa ubrzanjima kao brzim km 34 nedelje prelaze 25 % (svih 25,1–26,2 %); po pravilu F3 to nije rad zone.
+3. F2 posle preciziranja 00:41: preskočeni dan sa trčanjem van plana tog datuma (uvoz) se ne broji — test u
+   `segmentP5`; mreža M5 nije ponavljana (njeni scenariji nemaju takvo trčanje na dan kvaliteta).
 4. T u specifičnoj fazi kod 4 dana često stoji na 4800 m (plafon 10 %) — nije tema P5.
