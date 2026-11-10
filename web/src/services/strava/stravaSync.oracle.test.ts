@@ -1,3 +1,4 @@
+import type * as SelectModule from '@/domain/generators/select';
 import { adaptGeneratedPlan } from '@/test/legacyAdapt';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -6,7 +7,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
    (`isLegacyPlan` → bez generatora); oracle i dalje poredi deljeni kod uvoza sa starim frontendom, pa za plan starog
    formata daje zamrznut HM v1 (`LEGACY_PERSONAL_GENERATOR`, isti kod politike forme). */
 vi.mock('@/domain/generators/select', async (importOriginal) => {
-  const real = await importOriginal<typeof import('@/domain/generators/select')>();
+  const real = await importOriginal<typeof SelectModule>();
   return {
     ...real,
     generatorForPlan: (p: Parameters<typeof real.generatorForPlan>[0]) =>

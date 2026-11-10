@@ -121,7 +121,6 @@ function v2Peaks(result: object, key: string): { longKm: number; weeklyKm: numbe
   return { longKm: Math.max(...longs), weeklyKm: p.peakKm };
 }
 
-
 /* 3d-dopuna (odluka organizatora): lak tempo iz čarobnjaka je činjenica korisnika → izvor ga šalje kad ga ulaz ima.
    v1 ciljevi ga ne čitaju (plan cilja bajt-isti sa i bez polja); 5K v2 cilj ga koristi za plan po osećaju. */
 describe('3d-dopuna: lak tempo izvora (činjenica čarobnjaka)', () => {
@@ -134,4 +133,3 @@ describe('3d-dopuna: lak tempo izvora (činjenica čarobnjaka)', () => {
     expect('easyPaceSecPerKm' in contractInput(without.plan)).toBe(false);
   });
 });
-

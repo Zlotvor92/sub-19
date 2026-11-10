@@ -11,11 +11,7 @@ import type { IcuActivity } from '../../../../activities';
 import { resolvePlan } from '../../../../plan';
 import type { GenPlanState } from '../../../../state';
 import type { MarathonV2PlanInput } from '../../../contract';
-import {
-  generateMarathonV2Plan,
-  isMarathonV2Plan,
-  stampForStorage
-} from '../../../select';
+import { generateMarathonV2Plan, isMarathonV2Plan, stampForStorage } from '../../../select';
 
 /* SEGMENT MAR-05 (pouka 8) — uvoz (Strava, intervals.icu) u plan maratona v2 koristi postojeću infrastrukturu 5K 08c
    (kao 10K v2 i HM v2): trčanje na dan plana se upari sa danom (dnevnik), trčanje na dan odmora postaje zapis van plana

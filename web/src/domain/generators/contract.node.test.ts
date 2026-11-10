@@ -33,8 +33,13 @@ function violations(sf: ts.SourceFile, allowGeneratorObjects: boolean): string[]
     const clause = ts.isImportDeclaration(st) ? st.importClause : undefined;
     const bindings = clause?.namedBindings;
     const base =
-      allowGeneratorObjects && ts.isImportDeclaration(st) && clause && !clause.isTypeOnly && !clause.name;
-    const ok = base && spec === `./${distanceOf(spec)}` && bindings && ts.isNamespaceImport(bindings);
+      allowGeneratorObjects &&
+      ts.isImportDeclaration(st) &&
+      clause &&
+      !clause.isTypeOnly &&
+      !clause.name;
+    const ok =
+      base && spec === `./${distanceOf(spec)}` && bindings && ts.isNamespaceImport(bindings);
     // V1b: adapter v2 se uvozi direktno (`import { fiveKV2 } from './fiveK/v2/app/index.ts'`) — samo vrednosni objekti.
     const okV2 =
       base &&

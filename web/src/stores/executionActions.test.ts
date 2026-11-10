@@ -6,11 +6,7 @@ import { getPlanRevisions } from '../domain/plan/versions';
 import { migrateState, seedState, type PersistedState } from '../domain/state';
 import type { PlanGenerationInput } from '../domain/training/types';
 import { hydratePersisted } from './index';
-import {
-  commitPlanChange,
-  positiveAdjustmentBlock,
-  previewExecution
-} from './executionActions';
+import { commitPlanChange, positiveAdjustmentBlock, previewExecution } from './executionActions';
 import { useRecoveryStore } from './recoveryStore';
 import { useTrainingStore } from './trainingStore';
 import { useUIStore } from './uiStore';
@@ -66,7 +62,6 @@ beforeEach(() => {
 });
 
 describe('execution preview and lifecycle', () => {
-
   it('preview is pure, uses future-only volume and commits one revision without touching evidence', () => {
     const old = useTrainingStore.getState().genPlan!;
     const stamp = JSON.stringify(old);

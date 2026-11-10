@@ -1,7 +1,7 @@
 /* TABELA TRAJANJA TEST FAJLOVA za `scripts/testSequencer.ts` (docs/testing/TEST-SPEED.md § 11) — vitest reporter.
 
    Osvežavanje (iz web/, pun nivo, svi projekti):
-     TEST_FULL=1 TEST_V1=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs
+     TEST_FULL=1 npx vitest run --reporter=default --reporter=./scripts/test-durations.mjs
 
    Na kraju pokretanja upisuje `scripts/test-durations.json`: putanja fajla (relativno na web/) → trajanje u sekundama
    (sakupljanje + testovi + `beforeAll`/`afterAll`). Fajl koji nije pokrenut zadržava staru vrednost; obrisan fajl ispada.

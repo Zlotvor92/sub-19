@@ -1,6 +1,4 @@
 import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
-import { raceTimeForVdot } from '../../domain/training/vdot/racePrediction';
-import { t3kVdot } from '../../domain/training/test3k';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
@@ -322,41 +320,6 @@ describe('Privatnost i podaci', () => {
 });
 
 describe('Cilj', () => {
-  it('promena cilja: samo nedelje koje tek dolaze; potvrda; plan se zamenjuje, prošlost ostaje', async () => {
-    const user = userEvent.setup();
-    boot(false);
-    useAuthStore.setState({ configured: false });
-    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
-    const before = useTrainingStore.getState().genPlan;
-    render(<GoalScreen />);
-    expect(screen.getByText('42:00')).toBeInTheDocument();
-    await user.type(screen.getByLabelText('Novo ciljno vreme'), '41:00');
-    await user.click(screen.getByRole('button', { name: 'Promeni cilj' }));
-    await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
-    expect(useUIStore.getState().confirm?.text).toMatch(/^Promeniti ciljno vreme na 41:00\?/);
-    act(() => useUIStore.getState().confirm?.resolve(true));
-    await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toBe(before));
-    const after = useTrainingStore.getState().genPlan;
-    expect((after?.meta as { goalSec?: number }).goalSec).toBe(2460);
-    // N1 je prošla (14.1. je u N2): ista nedelja; upis dodaje samo fazu iz generatora plana (A3).
-    const { phase: phase0, ...week0 } = after!.weeks[0]!;
-    expect(week0).toEqual(before?.weeks[0]);
-    expect(typeof phase0).toBe('string');
-    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Cilj promenjen\./));
-    alert.mockRestore();
-  });
-
-  it('generisan plan bez sačuvanih polaznih podataka: kaže zašto se cilj ne menja, ne laže da je ugrađen', () => {
-    const s = stateWithPlan();
-    if (s.genPlan) delete (s.genPlan as { ulaz?: unknown }).ulaz;
-    boot(false, s);
-    useAuthStore.setState({ configured: false });
-    render(<GoalScreen />);
-    expect(screen.getByText(/nema sačuvane polazne podatke/)).toBeInTheDocument();
-    expect(screen.queryByText(/Ugrađeni plan ima svoj cilj/)).toBeNull();
-    expect(screen.queryByLabelText('Novo ciljno vreme')).toBeNull();
-  });
-
   it('nemoguć unos se odbija porukom, plan se ne menja', async () => {
     const user = userEvent.setup();
     boot(false);
@@ -382,87 +345,9 @@ describe('Cilj', () => {
   });
 });
 
-describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
-  const withForm = (vdot: number, measurements: number): PersistedState => {
-    const s = stateWithPlan();
-    s.t3k = Array.from({ length: measurements }, (_, i) => ({
-      id: `t3k-2026-01-0${i + 6}-qa`,
-      date: `2026-01-0${i + 6}`,
-      sec: Math.round(raceTimeForVdot(vdot, 3000))
-    }));
-    s.vdotLog = s.t3k.map((test) => ({
-      id: test.id,
-      ts: test.date,
-      vdot,
-      prev: null,
-      delta: null,
-      measured: t3kVdot(test.sec)
-    }));
-    return s;
-  };
-  const run = async (state: PersistedState) => {
-    const user = userEvent.setup();
-    boot(false, state);
-    useAuthStore.setState({ configured: false });
-    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
-    render(<AdjustPlan />);
-    await user.click(screen.getByRole('button', { name: /^Preračunaj plan prema formi/ }));
-    return alert;
-  };
-
-  it('bez merenja forme: objašnjava zašto, plan se ne menja', async () => {
-    const before = stateWithPlan().genPlan;
-    const alert = await run(stateWithPlan());
-    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/bar 3 različita dana/));
-    expect(useUIStore.getState().confirm).toBeNull();
-    expect(useTrainingStore.getState().genPlan).toEqual(before);
-    alert.mockRestore();
-  });
-
-  it('forma se slaže sa planom: kaže da nema šta da se preračuna', async () => {
-    const planVdot = (stateWithPlan().genPlan?.meta as { vdot0: number }).vdot0;
-    const alert = await run(withForm(planVdot, 3));
-    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/se slažu/));
-    expect(useUIStore.getState().confirm).toBeNull();
-    alert.mockRestore();
-  });
-
-  it('forma se razilazi: potvrda sa brojevima, pa preračunavanje; prošla nedelja ostaje, polazna forma lanca se čuva', async () => {
-    const state = withForm(56, 3);
-    const before = state.genPlan;
-    const baseVdot = (before?.meta as { vdot0: number }).vdot0;
-    const alert = await run(state);
-    await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
-    const text = useUIStore.getState().confirm?.text ?? '';
-    expect(text).toMatch(/^Preračunati preostali plan prema izmerenoj formi\?/);
-    expect(text).toMatch(/Izmerena forma: VDOT 55,3 · plan je očekivao: VDOT 45,3/);
-    expect(text).toMatch(/istoriji plana/);
-    act(() => useUIStore.getState().confirm?.resolve(true));
-    await waitFor(() => expect(useTrainingStore.getState().genPlan).not.toEqual(before));
-    const after = useTrainingStore.getState().genPlan;
-    // N1 je prošla (14.1. je u N2): ista nedelja; upis dodaje samo fazu iz generatora plana (A3).
-    const { phase: phase0, ...week0 } = after!.weeks[0]!;
-    expect(week0).toEqual(before?.weeks[0]);
-    expect(typeof phase0).toBe('string');
-    const m = after?.meta as { vdotBase?: number; recalWeek?: number; vdotAtRecal?: number };
-    expect(m.vdotBase).toBe(baseVdot);
-    expect(m.recalWeek).toBe(2);
-    expect(m.vdotAtRecal).toBe(55.3);
-    expect(useTrainingStore.getState().vdotLog).toHaveLength(3); // lanac forme se ne dira
-    expect(alert).toHaveBeenCalledWith(expect.stringMatching(/^Plan preračunat\./));
-    alert.mockRestore();
-  });
-
-  it('odustajanje u potvrdi ne menja ništa', async () => {
-    const state = withForm(56, 3);
-    const alert = await run(state);
-    await waitFor(() => expect(useUIStore.getState().confirm).not.toBeNull());
-    act(() => useUIStore.getState().confirm?.resolve(false));
-    await waitFor(() => expect(useUIStore.getState().confirm).toBeNull());
-    expect(useTrainingStore.getState().genPlan).toEqual(state.genPlan);
-    alert.mockRestore();
-  });
-
+/* V1b: promena cilja i preračunavanje prema formi preko ulaza čarobnjaka v1 (`ulaz`) postoje samo za plan koji obrađuje
+   v1 generator; stari plan ga više nema, a lični plan se ne upisuje. Promena cilja plana v2: `*V2Flow.test.tsx`. */
+describe('Plan → Prilagodi plan: novi plan', () => {
   it('nov plan: potvrda; plan i unosi uz njega nestaju, otvara se čarobnjak', async () => {
     const user = userEvent.setup();
     boot(false);
@@ -470,7 +355,9 @@ describe('Plan → Prilagodi plan: preračunavanje i novi plan', () => {
     act(() => useTrainingStore.getState().patchLog('g1d1', { status: 'done' }));
     render(<AdjustPlan />);
     await user.click(screen.getByRole('button', { name: /Napravi novi plan/ }));
-    expect(useUIStore.getState().confirm?.text).toMatch(/TRAJNO brišu/);
+    // V1b: potvrda kaže šta se briše a šta ostaje.
+    expect(useUIStore.getState().confirm?.text).toMatch(/TRAJNO se briše/);
+    expect(useUIStore.getState().confirm?.text).toMatch(/Ostaje: test na 3 km/);
     act(() => useUIStore.getState().confirm?.resolve(true));
     await waitFor(() => expect(useTrainingStore.getState().genPlan).toBeNull());
     expect(useTrainingStore.getState().log).toEqual({});

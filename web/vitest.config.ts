@@ -1,7 +1,6 @@
 import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { configDefaults, defineConfig } from 'vitest/config';
-import { V1_REFERENCE } from './scripts/ciScope.mjs';
 import { DurationSequencer } from './scripts/testSequencer.ts';
 
 // Recorded local-time fixtures were captured in UTC.
@@ -11,13 +10,6 @@ process.env['TZ'] = 'UTC';
    `npm run check:full`, CI) poredi sve redove i uključuje delove velikih testova `*.full.node.test.ts`. */
 const FULL = process.env['TEST_FULL'] === '1';
 const FULL_ONLY = FULL ? [] : ['**/*.full.node.test.ts'];
-
-/* V1 (TEST-SPEED.md § 12): poređenje zamrznutih v1 generatora (podrazumevani u produkciji) sa referencama starog koda.
-   v1 kod se ne menja, a ovi fajlovi nose najveći deo punog nivoa, pa su izdvojeni u projekat `v1`: u brzom nivou
-   isključen (osim `TEST_V1=1`), u punom uključen (osim `TEST_V1=0` — CI delovi; CI ga pokreće posebnim poslom kad se
-   od poslednjeg zelenog run-a promeni nešto što v1 koristi). Spisak fajlova: `V1_REFERENCE` u scripts/ciScope.mjs (isti
-   spisak koristi izbor testova na CI-ju). */
-const V1 = process.env['TEST_V1'] === '1' || (FULL && process.env['TEST_V1'] !== '0');
 
 const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) };
 
@@ -67,29 +59,10 @@ export default defineConfig({
           ],
           /* `*.harness.node.test.ts`: zajednički kod glavnog fajla i delova punog nivoa (bez testova); ime *.test.ts ga
              čini test kodom za proveru izolacije i tsconfig. */
-          exclude: [
-            ...configDefaults.exclude,
-            '**/*.harness.node.test.ts',
-            ...FULL_ONLY,
-            ...V1_REFERENCE
-          ],
+          exclude: [...configDefaults.exclude, '**/*.harness.node.test.ts', ...FULL_ONLY],
           testTimeout: 120_000
         }
       },
-      ...(V1
-        ? [
-            {
-              extends: true,
-              test: {
-                name: 'v1',
-                environment: 'node',
-                include: V1_REFERENCE,
-                exclude: [...configDefaults.exclude, ...FULL_ONLY],
-                testTimeout: 120_000
-              }
-            }
-          ]
-        : []),
       {
         extends: true,
         test: {

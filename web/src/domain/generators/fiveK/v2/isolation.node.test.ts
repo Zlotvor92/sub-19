@@ -68,9 +68,9 @@ describe('5K v2 je izolovan', () => {
     expect(escapingImports(f, "const m = import('../plan');")).not.toEqual([]);
     expect(escapingImports(f, "import type { IsoDate } from './app/exchange.ts';")).toEqual([]);
     expect(escapingImports(f, "import { type IsoDate } from './app/exchange';")).toEqual([]);
-    expect(escapingImports(join(V2, 'app', 'x.ts'), "import type { T } from './exchange.ts';")).toEqual(
-      []
-    );
+    expect(
+      escapingImports(join(V2, 'app', 'x.ts'), "import type { T } from './exchange.ts';")
+    ).toEqual([]);
     expect(escapingImports(ex, "export type { T } from '../../../../state';")).toEqual([]);
     expect(escapingImports(ex, "export type { IsoDate } from '../../../../date';")).toEqual([]);
     expect(escapingImports(ex, "export { T } from '../../../../state';")).not.toEqual([]);

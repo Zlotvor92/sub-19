@@ -2,10 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfirmHost } from '../../components/ui/ConfirmHost';
-import {
-  MARATHON_V2_GENERATOR,
-  generatorForPlan
-} from '../../domain/generators/select';
+import { MARATHON_V2_GENERATOR, generatorForPlan } from '../../domain/generators/select';
 import { userText } from '../../domain/generators/marathon/v2/app/format';
 import { resolvePlan } from '../../domain/plan';
 import { seedState, type PersistedState } from '../../domain/state';
@@ -264,6 +261,4 @@ describe('maraton v2 iza prekidača', () => {
     expect(collectPersisted().genPlan).toBeNull();
     expect(screen.getByRole('dialog', { name: 'Pravljenje plana' })).toBeTruthy();
   });
-
 });
-

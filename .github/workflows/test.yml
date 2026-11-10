@@ -13,7 +13,8 @@ name: Testovi
 #   Zeleni run je zelen i kad je deo preskočen: test koji nije izabran ima iste ulaze kao u prethodnom zelenom run-u,
 #   pa svaki zeleni commit ima svaku oblast proverenu direktno ili preko prethodnog zelenog (lanac, § 13.3);
 # - pun nivo u delovima (vitest --shard) podeljenim po izmerenom trajanju (web/scripts/testSequencer.ts, § 11);
-#   v1 projekat i E2E takođe u delovima; node_modules i Playwright pregledač iz keša (.github/actions/web-deps).
+#   E2E takođe u delovima; node_modules i Playwright pregledač iz keša (.github/actions/web-deps). V1b: projekat `v1`
+#   i njegov posao su ukinuti zajedno sa v1 generatorima; „sve" je u 10 delova.
 on:
   push:
     branches: ["**"]
@@ -69,9 +70,6 @@ jobs:
       tests: ${{ steps.pick.outputs.tests }}
       test_shards: ${{ steps.pick.outputs.test_shards }}
       test_files: ${{ steps.pick.outputs.test_files }}
-      v1: ${{ steps.pick.outputs.v1 }}
-      v1_shards: ${{ steps.pick.outputs.v1_shards }}
-      v1_files: ${{ steps.pick.outputs.v1_files }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -151,7 +149,7 @@ jobs:
             web/test-results/
           if-no-files-found: warn
 
-  # Unit/domain/zamrznuti oracle/node testovi, pun nivo, BEZ projekta `v1` (posao ispod). `all`: `npm test` u delovima
+  # Unit/domain/zamrznuti oracle/node testovi, pun nivo. `all`: `npm test` u delovima
   # (testSequencer.ts po izmerenom trajanju) + tabela trajanja ovog run-a kao artefakt; `select`: samo izabrani fajlovi.
   web-test:
     needs: scope
@@ -175,11 +173,11 @@ jobs:
           SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
         run: |
           if [ "$TESTS" = all ]; then
-            TEST_V1=0 TEST_DURATIONS_OUT="$RUNNER_TEMP/durations.json" npm test -- --shard="$SHARD" \
+            TEST_DURATIONS_OUT="$RUNNER_TEMP/durations.json" npm test -- --shard="$SHARD" \
               --reporter=default --reporter=./scripts/test-durations.mjs
           else
             # shellcheck disable=SC2086
-            TEST_V1=0 TEST_FULL=1 npx vitest run --shard="$SHARD" $FILES
+            TEST_FULL=1 npx vitest run --shard="$SHARD" $FILES
           fi
       - if: needs.scope.outputs.tests == 'all'
         uses: actions/upload-artifact@v4
@@ -187,19 +185,3 @@ jobs:
           name: test-durations-web-${{ matrix.shard }}
           path: ${{ runner.temp }}/durations.json
           if-no-files-found: ignore
-
-  # v1 generatori (TEST-SPEED.md § 11.2, § 13): testovi poređenja sa referencama starog koda (vitest projekat `v1`).
-  # Posao kao pre T1 (organizator, 9. 11.: v1 se briše u V1b): jedan posao, pun nivo, kad je izbor `all` (main, ručno, bez
-  # zelenog run-a, zajednička izmena — nadskup ranijeg `v1-changes`); izmena koja nije „sve" ga ne pokreće.
-  web-test-v1:
-    needs: scope
-    if: needs.scope.outputs.v1 == 'all'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/web-deps
-      - name: v1 testovi (pun nivo, ~10 min)
-        run: npm run test:v1

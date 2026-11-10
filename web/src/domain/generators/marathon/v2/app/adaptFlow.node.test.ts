@@ -672,5 +672,4 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       expect(unsupportedPlanReason(p), version).toBe(UNKNOWN_POLICY);
     }
   });
-
 });

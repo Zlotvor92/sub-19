@@ -9,6 +9,8 @@ import { acwrNow } from '../../domain/generators/halfMarathon/recovery/load';
 import { acwrPosition, acwrText } from '../../domain/generators/halfMarathon/recovery/view';
 import { seedState, type PersistedState, type WellnessRecord } from '../../domain/state';
 import { hydratePersisted, useSettingsStore, useTrainingStore } from '../../stores';
+import { ADMIN_UID } from '../../services/config';
+import { useAuthStore } from '../../stores/authStore';
 import { useRecoveryStore } from '../../stores/recoveryStore';
 import { useUIStore } from '../../stores/uiStore';
 import { AdjustPlan } from '../plan/AdjustPlan';
@@ -69,13 +71,19 @@ describe('Oporavak', () => {
     expect(screen.getByRole('button', { name: /Poveži intervals\.icu/ })).toBeInTheDocument();
   });
 
-  it('jak bol: „STANI“ u stanju danas; predlog izmene plana je u Prilagodi plan i traži potvrdu', async () => {
+  /* V1b: predlog izmene plana zbog bola (v1) postoji za plan koji obrađuje v1 generator — posle brisanja v1 to je SAMO
+     ugrađeni lični plan vlasnika (zamrznut HM v1); plan v2 bol prima kao činjenicu prilagođavanja (`*V2Adapt.test.tsx`).
+     Predlog piše izmene dana (`alts`), što lični plan podržava. */
+  it('jak bol (lični plan): „STANI“ u stanju danas; predlog izmene plana je u Prilagodi plan i traži potvrdu', async () => {
     const user = userEvent.setup();
-    hydratePersisted(
-      freshState({
-        knee: [{ id: 'k1', date: TODAY, pain: 7, part: 'koleno-L', act: 'Trčanje', note: '' }]
-      })
-    );
+    const today = '2026-11-14';
+    useAuthStore.setState({ configured: true, hasSession: true, userId: ADMIN_UID, email: null });
+    hydratePersisted({
+      ...freshState(),
+      genPlan: null,
+      knee: [{ id: 'k1', date: today, pain: 7, part: 'koleno-L', act: 'Trčanje', note: '' }]
+    });
+    useUIStore.setState({ today });
     const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
     const view = render(<Oporavak />);
     expect(screen.getAllByText('STANI').length).toBeGreaterThan(0);
@@ -92,6 +100,7 @@ describe('Oporavak', () => {
     );
     expect(alert).toHaveBeenCalledWith(expect.stringMatching(/prilagođen/));
     alert.mockRestore();
+    useAuthStore.setState({ hasSession: false, userId: null });
   });
 
   it('jutarnja merenja: HRV prema sopstvenoj osnovi i puls u miru (obrnut smer)', () => {

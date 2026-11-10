@@ -23,22 +23,13 @@ import { pathToFileURL } from 'node:url';
 
 export const DISTANCES = ['fiveK', 'tenK', 'halfMarathon', 'marathon'];
 
-/* Projekat `v1` (TEST-SPEED.md § 11.2): poređenje zamrznutih v1 generatora sa referencama starog koda. Isti spisak
-   koristi `vitest.config.ts`. Relativno na web/. */
-export const V1_REFERENCE = [
-  'src/domain/generators/*/equivalence*.node.test.ts',
-  'src/domain/generators/otherDistances*.node.test.ts',
-  'src/domain/generators/runtimeIsolation*.node.test.ts',
-  'src/domain/generators/personalPlan.node.test.ts',
-  'src/domain/generators/guidance.node.test.ts',
-  'src/domain/training/generator/generator.differential.node.test.ts',
-  'src/domain/training/generator/generator.fingerprint.node.test.ts'
-];
+/* V1b: projekat `v1` je ukinut zajedno sa v1 generatorima (5K/10K/maraton obrisani; zamrznut HM v1 služi samo lični plan
+   vlasnika i njegov dokaz `personalPlan.node.test.ts` trči u redovnim delovima). */
 
 /* Broj delova. `all`: fiksno (podela po trajanju, scripts/testSequencer.ts). `select`: koliko treba da deo nosi oko
-   `TARGET_S` sekundi iz tabele trajanja (≈ 3,5 min na CI-ju; tabela je od 9. 11. iz CI run-a 765), najviše `MAX_*`. */
-export const ALL_SHARDS = 8;
-export const V1_ALL_SHARDS = 1;
+   `TARGET_S` sekundi iz tabele trajanja (≈ 3,5 min na CI-ju; tabela je od 9. 11. iz CI run-a 765), najviše `MAX_*`.
+   V1b (odluka posle T1): „sve" u 10 delova (zid ≈ 8 min). */
+export const ALL_SHARDS = 10;
 export const E2E_SHARDS = 3;
 export const MAX_SHARDS = 6;
 export const TARGET_S = 600;
@@ -90,6 +81,8 @@ const RUNS_PROCESS = /['"](node:)?child_process['"]/;
    ručno (test `ciScope.node.test.ts` traži da spisak modula sa `process.cwd()` bude tačno ovaj, da se nov pregleda). */
 export const CWD_READS = {
   'web/src/test/legacyOracle.ts': ['web/src/test/legacy-recordings/'],
+  'web/src/test/legacyAdapt.ts': ['web/src/test/fixtures/legacy-adapt.json.gz'],
+  'web/src/test/legacyPlans.ts': ['web/src/test/fixtures/legacy-plans.json.gz'],
   'web/src/clientSource.node.test.ts': ['web/src/'],
   'web/src/pwa/frozen.node.test.ts': ['web/'],
   'web/src/pwa/install-images.node.test.ts': ['web/'],
@@ -185,11 +178,6 @@ const hits = (scope, path) =>
 
 /* ---------- test fajlovi ---------- */
 
-const glob = (g) =>
-  new RegExp(`^${g.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*\*\//g, '(?:.*/)?').replace(/\*/g, '[^/]*')}$`);
-const V1_RE = V1_REFERENCE.map(glob);
-export const isV1 = (webPath) => V1_RE.some((re) => re.test(webPath));
-
 /** Test fajl punog nivoa (unija projekata iz vitest.config.ts), putanja relativna na web/. */
 export function isTestFile(webPath) {
   if (webPath.includes('node_modules/') || webPath.endsWith('.harness.node.test.ts')) return false;
@@ -216,10 +204,7 @@ export function decide({ changed, files, read, weights = {}, force = null }) {
       e2eShards: range(E2E_SHARDS),
       tests: 'all',
       testShards: range(ALL_SHARDS),
-      testFiles: [],
-      v1: 'all',
-      v1Shards: range(V1_ALL_SHARDS),
-      v1Files: []
+      testFiles: []
     };
   const graph = buildGraph(files, read);
   const tests = [...files]
@@ -231,11 +216,7 @@ export function decide({ changed, files, read, weights = {}, force = null }) {
   });
   const app = scopeOf(graph, APP_ENTRY, { importsOnly: true });
   const e2e = changed.some((c) => E2E_DIRECT.test(c) || app.exact.has(c));
-  /* v1 (organizator, 9. 11.: v1 se briše u V1b, posao ostaje kao danas): projekat `v1` trči samo u režimu `all` (jedan
-     posao, `npm run test:v1`); izmena koja nije „sve" ga ne pokreće, kao raniji `v1-changes` (v2 i van domena → ne). */
-  const web = selected.map((t) => t.slice(4));
-  const testFiles = web.filter((t) => !isV1(t));
-  const v1Files = [];
+  const testFiles = selected.map((t) => t.slice(4));
   return {
     mode: selected.length ? 'select' : 'none',
     reasons: [],
@@ -244,10 +225,7 @@ export function decide({ changed, files, read, weights = {}, force = null }) {
     e2eShards: e2e ? range(E2E_SHARDS) : [],
     tests: testFiles.length ? 'select' : 'none',
     testShards: testFiles.length ? shardsFor(testFiles, weights, MAX_SHARDS) : [],
-    testFiles,
-    v1: 'none',
-    v1Shards: [],
-    v1Files
+    testFiles
   };
 }
 
@@ -277,10 +255,7 @@ function main(argv) {
     e2e_shards: matrix(d.e2eShards),
     tests: d.tests,
     test_shards: matrix(d.testShards),
-    test_files: d.testFiles.join(' '),
-    v1: d.v1,
-    v1_shards: matrix(d.v1Shards),
-    v1_files: d.v1Files.join(' ')
+    test_files: d.testFiles.join(' ')
   };
   const lines = Object.entries(out).map(([k, v]) => `${k}=${v}`);
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join('\n')}\n`);
@@ -290,10 +265,9 @@ function main(argv) {
     ...d.reasons.slice(0, 20).map((r) => `- sve: ${r}`),
     `- statičke provere: ${d.static}; E2E: ${d.e2e} (${d.e2eShards.length} dela)`,
     `- web testovi: ${d.tests} — ${d.tests === 'all' ? 'svi' : d.testFiles.length} fajlova, ${d.testShards.length} delova`,
-    `- v1 testovi: ${d.v1} — ${d.v1 === 'all' ? 'svi' : d.v1Files.length} fajlova, ${d.v1Shards.length} delova`,
     ...(changed.length ? ['', '<details><summary>Promenjeni fajlovi</summary>', '', ...changed.map((c) => `- ${c}`), '</details>'] : []),
-    ...(d.testFiles.length || d.v1Files.length
-      ? ['', '<details><summary>Izabrani test fajlovi</summary>', '', ...[...d.testFiles, ...d.v1Files].map((t) => `- ${t}`), '</details>']
+    ...(d.testFiles.length
+      ? ['', '<details><summary>Izabrani test fajlovi</summary>', '', ...d.testFiles.map((t) => `- ${t}`), '</details>']
       : [])
   ].join('\n');
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`);

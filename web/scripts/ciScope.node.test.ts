@@ -7,11 +7,9 @@ import {
   CWD_READS,
   E2E_SHARDS,
   MAX_SHARDS,
-  V1_ALL_SHARDS,
   buildGraph,
   decide,
   isTestFile,
-  isV1,
   scopeOf
 } from './ciScope.mjs';
 
@@ -28,7 +26,6 @@ const TREE: Record<string, string> = {
   'web/src/features/B.test.tsx': "import { B } from './B.tsx';",
   'web/src/domain/generators/select.ts': `import { hm } from './halfMarathon/v2/app/index.ts';
      export { mar } from './marathon/v2/app';`,
-  'web/src/domain/generators/otherDistances.node.test.ts': "import { hm } from './select.ts';",
   [`${HM}/app/index.ts`]: "export * from '../core';",
   [`${HM}/core.ts`]: 'export const hm = 1;',
   [`${HM}/baseline.json`]: '{}',
@@ -58,7 +55,7 @@ const read = (f: string): string => TREE[f] ?? '';
 
 const pick = (changed: string[], force: string | null = null) => {
   const d = decide({ changed, files: FILES, read, force });
-  return { ...d, all: [...d.testFiles, ...d.v1Files].sort() };
+  return { ...d, all: [...d.testFiles].sort() };
 };
 
 const HM_GRID = 'src/domain/generators/halfMarathon/v2/grid.node.test.ts';
@@ -92,7 +89,6 @@ describe('izbor po dometu izmene (veštačko stablo)', () => {
     expect(d.all).toEqual(tests);
     expect(d.e2e).toBe(e2e);
     expect(d.static).toBe(true);
-    expect([d.v1, d.v1Files]).toEqual(['none', []]); // v1 samo u `all` (posao kao danas)
   });
 
   it.each([
@@ -111,9 +107,9 @@ describe('izbor po dometu izmene (veštačko stablo)', () => {
     const d = pick(changed);
     expect(d.mode).toBe('all');
     expect(d.reasons.length).toBeGreaterThan(0);
-    expect([d.tests, d.v1, d.static, d.e2e]).toEqual(['all', 'all', true, true]);
+    expect([d.tests, d.static, d.e2e]).toEqual(['all', true, true]);
     expect(d.testShards).toHaveLength(ALL_SHARDS);
-    expect(d.v1Shards).toHaveLength(V1_ALL_SHARDS);
+    expect(ALL_SHARDS).toBe(10); // V1b: „sve" u 10 delova
     expect(d.e2eShards).toHaveLength(E2E_SHARDS);
   });
 
@@ -127,14 +123,8 @@ describe('izbor po dometu izmene (veštačko stablo)', () => {
     ['van koda aplikacije', ['.claude/skills/x/SKILL.md']]
   ])('ništa: %s', (_, changed) => {
     const d = pick(changed);
-    expect([d.mode, d.tests, d.v1, d.static, d.e2e]).toEqual([
-      'none',
-      'none',
-      'none',
-      false,
-      false
-    ]);
-    expect([...d.testShards, ...d.v1Shards, ...d.e2eShards]).toEqual([]);
+    expect([d.mode, d.tests, d.static, d.e2e]).toEqual(['none', 'none', false, false]);
+    expect([...d.testShards, ...d.e2eShards]).toEqual([]);
   });
 
   it('dinamički uvoz bez literala: ceo folder + relativne niske; child_process: sve', () => {
@@ -179,10 +169,9 @@ describe('izbor nad stvarnim stablom', () => {
     expect(cwd.sort()).toEqual(Object.keys(CWD_READS).sort());
   });
 
-  it('svaki fajl iz tabele trajanja (pun nivo, svi projekti) je test fajl; v1 = projekat v1', () => {
+  it('svaki fajl iz tabele trajanja (pun nivo, svi projekti) je test fajl', () => {
     const known = Object.keys(WEIGHTS).filter((k) => REAL.has(`web/${k}`));
     expect(known.filter((k) => !isTestFile(k))).toEqual([]);
-    expect(known.filter(isV1).length).toBe(46);
   });
 
   it('HM v2: svi testovi foldera, nijedna mreža maratona; maraton isto obrnuto', () => {
@@ -195,7 +184,7 @@ describe('izbor nad stvarnim stablom', () => {
     const own = tests
       .map((t) => t.slice(4))
       .filter((t) => t.startsWith('src/domain/generators/halfMarathon/'));
-    expect(own.filter((t) => !isV1(t) && !hm.testFiles.includes(t))).toEqual([]);
+    expect(own.filter((t) => !hm.testFiles.includes(t))).toEqual([]);
     const marGrids = hm.testFiles.filter(
       (t) =>
         t.startsWith('src/domain/generators/marathon/v2/') &&

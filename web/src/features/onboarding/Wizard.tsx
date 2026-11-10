@@ -295,7 +295,6 @@ export function Wizard({ today }: { today: string }) {
           {isMarathonV2 && step === 4 ? (
             <MarathonV2Days v={mw} set={setMar} rejection={rejection} />
           ) : null}
-
         </div>
         <div className="ob-btnrow">
           {step > 1 ? (

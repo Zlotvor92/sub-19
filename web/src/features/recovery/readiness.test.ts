@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { IsoDate } from '../../domain/date';
 import type { PainStatus } from '../../domain/generators/halfMarathon/recovery/pain';
 import type { WellnessRecord } from '../../domain/state';
-import { readinessModel, splitAdvice } from '../../domain/generators/halfMarathon/recovery/readiness';
+import {
+  readinessModel,
+  splitAdvice
+} from '../../domain/generators/halfMarathon/recovery/readiness';
 
 const TODAY = '2026-01-14' as IsoDate;
 const OK: PainStatus = { cls: 'ok', t: 'Bez povreda', s: '0 = bez bola · 3–5 = pazi' };

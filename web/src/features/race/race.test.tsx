@@ -170,7 +170,7 @@ describe('Forma i predikcija', () => {
     );
   });
 
-  it('predlog tempa nad ličnim planom: Forma ne nosi radnju nad planom; plan se ne upisuje', async () => {
+  it('predlog tempa nad ličnim planom: Forma ne nosi radnju nad planom; plan se ne upisuje', () => {
     act(() => {
       addTest('2026-11-03', 600 + 40, 'a1a1a');
       addTest('2026-11-07', 600 + 30, 'a2a2a');
@@ -184,7 +184,6 @@ describe('Forma i predikcija', () => {
     render(<AdjustPlan />);
     expect(useTrainingStore.getState().genPlan).toBeNull();
   });
-
 });
 
 describe('Forma · AI trend', () => {

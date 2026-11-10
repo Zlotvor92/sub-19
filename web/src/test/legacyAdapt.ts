@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /* ZAMRZNUT PREVOD STAROG (v1) FORMATA PLANA ZA ORACLE TESTOVE (V1b).
 
    Oracle testovi (`*.oracle.test.ts`) prave ulaz zamrznutim generatorom APP_VERSION 282 (`legacyGenerator.ts`) i porede
@@ -11,10 +12,11 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { gunzipSync } from 'node:zlib';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import type { GenPlanState } from '@/domain/state';
 
-const FIXTURE = fileURLToPath(new URL('./fixtures/legacy-adapt.json.gz', import.meta.url));
+/* Putanja od korena `web/` (vitest se pokreće odatle): u jsdom okruženju `import.meta.url` nije `file:` adresa. */
+const FIXTURE = resolve(process.cwd(), 'src/test/fixtures/legacy-adapt.json.gz');
 
 export const legacyKey = (gen: unknown): string =>
   createHash('sha256')

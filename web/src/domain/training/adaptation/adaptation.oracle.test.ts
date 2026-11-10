@@ -290,7 +290,8 @@ describe('prijem merenja naspram starog recordVdot', () => {
 /* Predlog tempa i dokaz forme. V1b: v1 generatori 5K/10K/maraton su obrisani; njihov kod predloga i dokaza bio je bajt-isti
    kodu HM v1 (`training/adaptation/{proposal,evidence}.ts`), a zamrznut HM v1 i dalje služi lični plan vlasnika
    (`LEGACY_PERSONAL_GENERATOR`), pa oracle poredi HM v1 sa starim frontendom za sve planove. */
-const { applyVdotProposal, formVsPlan, planVdotNow, undoVdotAdjustments, vdotProposal } = hmProposal;
+const { applyVdotProposal, formVsPlan, planVdotNow, undoVdotAdjustments, vdotProposal } =
+  hmProposal;
 const { fitnessEvidence } = hmEvidence;
 
 function proposalContext(s: Scenario): ProposalContext {

@@ -1,8 +1,9 @@
+import type * as SelectModule from '@/domain/generators/select';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
-import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
+import { describe, expect, it, vi } from 'vitest';
+import { adaptGeneratedPlan, generatePlan } from '@/test/legacyPlans';
 import {
   emptyImportState,
   mixedScenario,
@@ -17,6 +18,18 @@ import type { GenPlanState } from '../domain/state';
    maraton, kroz Stravu i intervals.icu (automatski i ručno sa otkazom detalja). Snimak = svako upisano stanje + svaki
    upis veze + ishod; poredi se SHA-256 kanonskog JSON-a sa snimkom napravljenim na f09a50a (pre izmene 08c).
    Ponovno snimanje (samo na kodu PRE izmene): IMPORT_V1_RECORD=1. */
+
+/* V1b: planovi su zamrznuti planovi starog (v1) formata (`legacyPlans.ts`). Aplikacija stari plan više ne prilagođava
+   (bez generatora); snimak dokazuje da je DELJENI kod uvoza bajt-isti, pa test starom planu daje zamrznutu politiku forme
+   v1 (`LEGACY_PERSONAL_GENERATOR`: kod merenja forme bio je bajt-isti u sva četiri v1 generatora). */
+vi.mock('@/domain/generators/select', async (importOriginal) => {
+  const real = await importOriginal<typeof SelectModule>();
+  return {
+    ...real,
+    generatorForPlan: (p: Parameters<typeof real.generatorForPlan>[0]) =>
+      real.generatorForPlan(p) ?? (real.isLegacyPlan(p) ? real.LEGACY_PERSONAL_GENERATOR : null)
+  };
+});
 
 const FIXTURE = fileURLToPath(new URL('./importV1Snapshot.f09a50a.json', import.meta.url));
 const START = '2026-01-05';

@@ -160,5 +160,4 @@ describe('5K v2 iza prekidača', () => {
     expect(collectPersisted().genPlan).toBeNull();
     expect(screen.getByRole('dialog', { name: 'Pravljenje plana' })).toBeTruthy();
   });
-
 });

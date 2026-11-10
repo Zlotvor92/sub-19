@@ -1,4 +1,5 @@
 import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
+import * as legacy from '@/test/legacyPlans';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,6 +12,7 @@ import {
   useTrainingStore
 } from '../../stores';
 import { useRecoveryStore } from '../../stores/recoveryStore';
+import { ADMIN_UID } from '../../services/config';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { DayScreen } from '../day/DayScreen';
@@ -19,6 +21,23 @@ import TodayPage from './index';
 /* parity: dayCard / bindDayCard / bindForm / renderDanas (app.js) — sada dva ekrana: Danas (hero, status, napredak nedelje, upozorenja) i Detalji treninga
    (unos, tempo radnog dela, vreme, analiza posle trčanja). */
 
+const INPUT = {
+  startDate: '2026-01-05',
+  raceDate: '2026-04-12',
+  raceDistM: 10000,
+  pb: { distM: 10000, sec: 2700 },
+  weeklyKm: 40,
+  runDays: 5,
+  quality: 2,
+  intensity: 'std',
+  trainedRecently: true
+} as const;
+/** V1b: plan starog (v1) formata (redovi procene, radni deo) — zamrznut izlaz v1 za isti ulaz. */
+function legacyState(): PersistedState {
+  const s = JSON.parse(JSON.stringify(seedState())) as PersistedState;
+  s.genPlan = legacy.adaptGeneratedPlan(legacy.generatePlan(INPUT));
+  return s;
+}
 function freshState(): PersistedState {
   const s = JSON.parse(JSON.stringify(seedState())) as PersistedState;
   const a = adaptGeneratedPlan(
@@ -233,7 +252,10 @@ describe('Detalji treninga — unos', () => {
     expect(screen.getByText('sa Strave · ručno korigovano')).toBeInTheDocument();
   });
 
-  it('radni deo: ručni tempo se upisuje i zaključava; merilo pokazuje odstupanje; brisanje čisti lanac', async () => {
+  /* V1b: radni deo sa redom procene ima plan starog formata (v2 nema redove procene); stari plan nema generator, pa se
+     merenje upisuje i zaključava, a lanac forme se ne gradi. */
+  it('radni deo (stari plan): ručni tempo se upisuje i zaključava; merilo pokazuje odstupanje; brisanje čisti unos', async () => {
+    hydratePersisted(legacyState());
     const user = userEvent.setup();
     const d = firstOf((x) => x.tag === 'int' && !x.test);
     act(() => useTrainingStore.getState().patchLog(d.id, { status: 'done', ts: d.date }));
@@ -490,12 +512,18 @@ describe('Upozorenja na Danas', () => {
     expect(container.querySelector('.notices')).toBeNull();
   });
 
-  it('bol 6+: jedan red vodi na Prilagodi plan', async () => {
-    withUi({ lastBackup: '2026-01-13' });
+  /* V1b: predlog zbog bola (v1) ima samo lični plan vlasnika (zamrznut HM v1); plan v2 bol prima kao činjenicu. */
+  it('bol 6+ (lični plan): jedan red vodi na Prilagodi plan', async () => {
+    const st = freshState();
+    st.genPlan = null;
+    st.ui = { ...st.ui, lastBackup: '2026-11-13' };
+    useAuthStore.setState({ configured: true, hasSession: true, userId: ADMIN_UID, email: null });
+    hydratePersisted(st);
+    goTo('2026-11-14');
     act(() =>
       useRecoveryStore.setState({
         knee: [
-          { id: 'k1', date: '2026-01-14', pain: 7, part: 'koleno-L', act: 'Trčanje', note: '' }
+          { id: 'k1', date: '2026-11-14', pain: 7, part: 'koleno-L', act: 'Trčanje', note: '' }
         ]
       })
     );
@@ -503,5 +531,6 @@ describe('Upozorenja na Danas', () => {
     expect(screen.getByText('Plan se može prilagoditi')).toBeInTheDocument();
     await userEvent.setup().click(screen.getByRole('button', { name: /Prilagodi plan/ }));
     expect(useUIStore.getState().screens.at(-1)?.kind).toBe('plan-prilagodi');
+    useAuthStore.setState({ userId: null });
   });
 });
