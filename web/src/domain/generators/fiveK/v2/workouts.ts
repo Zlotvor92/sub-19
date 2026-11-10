@@ -246,21 +246,60 @@ export function firstLevelBudget(type: QualityType, p: Paces, phase: Phase, _tar
 
 /** 5k-v2.15.0 (P8 dopuna G4): plafon jednog treninga u km = minuti rada (quality.minuteCap) / tempo zone; Infinity za
     vrste bez plafona (R, oštrenje trkačke nedelje — G5). */
-export function minuteCapKm(type: QualityType, p: Paces): number {
+export function minuteCapKm(type: QualityType, p: Paces, targetKm = 0): number {
   const m = P.quality.minuteCap;
   const km = (min: number, pace: number): number =>
     Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
-  if (type === 'I') return km(p.vdot < m.iSlowVdot ? m.iSlowMin : m.iMin, p.I);
+  if (type === 'I')
+    return km(
+      iDoseRange(p.vdot, targetKm)?.hi ?? (p.vdot < m.iSlowVdot ? m.iSlowMin : m.iMin),
+      p.I
+    );
   if (type === 'RP') return km(m.rpMin, p.RP);
   if (type === 'T_short' || type === 'T_cruise') return km(m.tMin, p.T);
   return Infinity;
 }
 
+/** 5k-v2.16.0 (K3-A) — JEDINO mesto opsega rada jednog I treninga [min] po cilju nedelje (quality.iDose): null ispod
+    fromKm (važi G4); VDOT < iSlowVdot samo plafon (lo 0); inače pojas { lo: cilj vrha, hi: plafon }. */
+export function iDoseRange(vdot: number, targetKm: number): { lo: number; hi: number } | null {
+  const d = P.quality.iDose;
+  if (targetKm + 1e-9 < d.fromKm) return null;
+  if (vdot < P.quality.minuteCap.iSlowVdot) return { lo: 0, hi: d.slowHi };
+  let band: { lo: number; hi: number } = d.bands[0];
+  for (const b of d.bands) if (targetKm + 1e-9 >= b.fromKm) band = b;
+  return { lo: band.lo, hi: band.hi };
+}
+
+/** 5k-v2.16.0 (K3-A): budžet I nedelje vrhunca — sa donjom granicom opsega (iDoseRange) budžet je plafon minuta I
+    (gornja granica), inače udeo nedelje (qualityBudgets). Konstruktor (vdotWeekQuality) i validator (I_SHARE,
+    PEAK_MAIN_FLOOR). */
+export function iPeakBudget(budgetI: number, targetKm: number, p: Paces): number {
+  const r = iDoseRange(p.vdot, targetKm);
+  return r && r.lo > 0 ? Math.max(budgetI, minuteCapKm('I', p, targetKm)) : budgetI;
+}
+
+/** 5k-v2.16.0 (K3-A): budžet PRVOG I lanca (P8 c) uz opseg sa donjom granicom — najmanje lo / peakMainMinShare (izbor
+    sa radom ≥ peakMainMinShare budžeta je tada ≥ lo), najviše budžet I vrhunca; bez opsega firstIBudget. Konstruktor
+    (vdotWeekQuality) i validator (PEAK_MAIN_FLOOR). */
+export function firstIPeakBudget(budgetI: number, targetKm: number, p: Paces): number {
+  const r = iDoseRange(p.vdot, targetKm);
+  if (!r || r.lo <= 0) return firstIBudget(budgetI);
+  const lo = Math.ceil(((r.lo * 60) / p.I / P.quality.peakMainMinShare) * 100 - 1e-9) / 100;
+  return Math.min(budgetI, Math.max(firstIBudget(budgetI), lo));
+}
+
 /** 5k-v2.15.0 (P8 G2, G4) — JEDNA funkcija plafona zone (sa rezultatom): min(max(udeo × cilj, prvi nivo), minuti);
     u trkačkoj nedelji bez prvog nivoa (G5). Kratak T: budžet je osnov za udeo (rad = udeo × budžet). */
-export function zoneBudget(type: QualityType, budget0: number, p: Paces, phase: Phase): number {
+export function zoneBudget(
+  type: QualityType,
+  budget0: number,
+  p: Paces,
+  phase: Phase,
+  targetKm = 0
+): number {
   const first = phase === 'race' ? 0 : firstLevelBudget(type, p, phase);
-  const cap = minuteCapKm(type, p);
+  const cap = minuteCapKm(type, p, targetKm);
   const capB = type === 'T_short' ? cap / P.quality.shortTShareOfBudget : cap;
   return Math.min(Math.max(budget0, Number.isFinite(first) ? first : 0), capB);
 }
@@ -405,12 +444,20 @@ export function roundRecoverySec(sec: number): number {
     ponavljanja u granicama, staje u plafon zone `budgetKm`, workouts.zoneBudget) čiji je rad ≤ iStepMaxGrowth × rad
     prethodne I nedelje, a najmanje sledeći veći nivo; pri jednakom radu ranija (duža) opcija. Nema većeg nivoa → null.
     JEDINO mesto koraka I u vrhuncu. */
-export function iStepUp(budgetKm: number, p: Paces, prev: PrevDose): RepChoice | null {
+export function iStepUp(
+  budgetKm: number,
+  p: Paces,
+  prev: PrevDose,
+  targetKm = 0
+): RepChoice | null {
   const q = P.quality;
   const prevWork = workOf(prev);
   const top = prevWork * q.iStepMaxGrowth + 1e-9;
+  // 5k-v2.16.0 (K3-A): ispod donje granice opsega (iDoseRange) korak sme do najmanjeg nivoa ≥ donja granica.
+  const lo = ((iDoseRange(p.vdot, targetKm)?.lo ?? 0) * 60) / p.I;
   let next: RepChoice | null = null;
   let best: RepChoice | null = null;
+  let toLo: RepChoice | null = null;
   for (const repKm of q.repOptionsKm.I) {
     const sec = repKm * p.I;
     if (sec > q.iRepMaxSec || sec < q.iRepMinSec) continue;
@@ -421,8 +468,10 @@ export function iStepUp(budgetKm: number, p: Paces, prev: PrevDose): RepChoice |
       if (w <= prevWork + 1e-9) continue;
       if (!next || w < workOf(next) - 1e-9) next = c;
       if (w <= top && (!best || w > workOf(best) + 1e-9)) best = c;
+      if (lo > 0 && w + 1e-9 >= lo && (!toLo || w < workOf(toLo) - 1e-9)) toLo = c;
     }
   }
+  if (toLo && (!best || workOf(best) + 1e-9 < lo)) return toLo;
   return best ?? next;
 }
 
@@ -567,7 +616,7 @@ export function qualitySession(
   progression?: { prev: PrevDose | null }
 ): SessionResult {
   // 5k-v2.15.0 (P8 G2, G4): plafon zone = min(max(udeo × cilj nedelje, prvi nivo lestvice vrste), plafon minuta).
-  const budgetKm = zoneBudget(type, budget0, p, phase);
+  const budgetKm = zoneBudget(type, budget0, p, phase, targetKm);
   const q = P.quality;
   const band = warmupBand(targetKm);
   const wu: BlockSpec = { kind: 'warmup', km: band.warmupKm };
@@ -616,7 +665,7 @@ export function qualitySession(
       // korak lestvice nedeljno — najmanji rad iz ponude strogo veći od prethodnog, bez donjeg praga budžeta.
       const c = progression
         ? isI && phase === 'peak' && progression.prev
-          ? iStepUp(budgetKm, p, progression.prev)
+          ? iStepUp(budgetKm, p, progression.prev, targetKm)
           : ((phase === 'peak' || phase === 'sharpen'
               ? chooseProgressiveReps(...args, q.peakMainMinShare, progression.prev, 'strict')
               : null) ??
@@ -1311,7 +1360,9 @@ export function vdotWeekQuality(
     if (f.phase === 'base')
       return one ? baseWeekOne(b, targetKm, p, prev, hold) : baseWeek(b, targetKm, p, prev, hold);
     // 5k-v2.15.0 (P8 c): prvi I posle R faze — budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
-    const bp = f.firstI ? { ...b, I: firstIBudget(b.I) } : b;
+    // 5k-v2.16.0 (K3-A): budžet I vrhunca iz opsega po cilju nedelje (iPeakBudget).
+    const bI = f.phase === 'peak' ? { ...b, I: iPeakBudget(b.I, targetKm, p) } : b;
+    const bp = f.firstI ? { ...bI, I: firstIPeakBudget(bI.I, targetKm, p) } : bI;
     if (f.phase === 'peak')
       return one
         ? peakWeekOne(bp, targetKm, p, prev, hold, f.test)

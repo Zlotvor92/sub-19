@@ -531,7 +531,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(rows(r.plan.weeks)).toEqual([
       [33, 24.9, 0], // 5k-v2.15.0 (P8 G1, G1b): bilo 37,3 / 26,8
       [30.8, 29.2, 2], // 5k-v2.15.0 (P8 G6): lagan ≤ 0,7 × dugi → planirano < cilj
-      [33.8, 33.05, 2]
+      [33.8, 33.8, 2] // 5k-v2.16.0 (K3-A): I vrhunca iz opsega minuta → planirano = cilj
     ]);
     expect(r.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
       'Posle nedelje 4 rast kreće od 70% nivoa pre bola (28 km). Povratak do 40 km (nivo pre smanjenja) po +10%/ned'
@@ -543,7 +543,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(rows(r.plan.weeks)).toEqual([
       [33, 20, 0],
       [30.8, 28.7, 1],
-      [33.8, 33.05, 2]
+      [33.8, 33.8, 2] // 5k-v2.16.0 (K3-A): I vrhunca iz opsega minuta → planirano = cilj
     ]);
   });
 
@@ -553,7 +553,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(rows(r.plan.weeks)).toEqual([
       [33, 26.7, 1],
       [31.7, 29.5, 1],
-      [34.8, 33.55, 2]
+      [34.8, 34.8, 2] // 5k-v2.16.0 (K3-A): I vrhunca iz opsega minuta → planirano = cilj
     ]);
   });
 
@@ -562,7 +562,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(rows(r.plan.weeks)).toEqual([
       [33, 15.6, 1],
       [31.7, 25.4, 0],
-      [34.8, 33.55, 2]
+      [34.8, 34.8, 2] // 5k-v2.16.0 (K3-A): I vrhunca iz opsega minuta → planirano = cilj
     ]);
   });
 
@@ -574,7 +574,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(rows(r.plan.weeks)).toEqual([
       [30.8, 23.8, 0],
       [33.8, 31.8, 2],
-      [37.1, 36.39, 2]
+      [37.1, 37.1, 2] // 5k-v2.16.0 (K3-A): I vrhunca iz opsega minuta → planirano = cilj
     ]);
   });
 });

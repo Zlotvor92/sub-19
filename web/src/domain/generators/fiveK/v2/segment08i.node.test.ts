@@ -69,7 +69,8 @@ describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', (
     const w = r.plan.weeks[3]!;
     // 5k-v2.12.0 (T1/T4): veći obim izgradnje (bez rasterećenja pre ned 4), rasterećenje 0,8 × 46,6 km.
     expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 35.4, 35.4]);
-    expect(roles(w)).toBe('easy:11.2 q1:8.38 easy:3.52 long:12.3');
+    // 5k-v2.16.0 (K3-A): veći I u ned 3 (opseg minuta) → drugačiji lagan sastavljene nedelje 4 (bilo 11,2 / 3,52).
+    expect(roles(w)).toBe('easy:8.96 q1:8.38 easy:5.76 long:12.3');
     expect(r.plan.warnings.some((v) => v.rule === 'MIXED_OVER_TARGET')).toBe(false);
   });
 

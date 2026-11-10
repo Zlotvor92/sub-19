@@ -9,12 +9,19 @@ import { feelFirstLevelOf } from './feel.ts';
 import { generateFiveKV2 } from './generate.ts';
 import { firstPeakIWeek } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';
-import { earlyGridInputs } from './testInputs.ts';
+import { earlyGridInputs, k3ILoMin } from './testInputs.ts';
 import { userWarnings } from './text.ts';
 import type { FiveKV2Plan, Paces, PlanWeek, QualityType } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { devWeeksLeft, peakKm, spreadKm } from './volume.ts';
-import { firstIBudget, firstLevelBudget, iMaxShareOf, raceWarmup, why } from './workouts.ts';
+import {
+  firstIPeakBudget,
+  firstLevelBudget,
+  iMaxShareOf,
+  iPeakBudget,
+  raceWarmup,
+  why
+} from './workouts.ts';
 
 const EPS = 1e-6;
 const planOf = (input: unknown): FiveKV2Plan => {
@@ -124,7 +131,7 @@ describe('P8-5K: uzorak rane mreže', () => {
     expect(checked).toBeGreaterThan(200);
   });
 
-  it('(c) prvi I posle R faze ≤ 70 % budžeta I (ili prvi nivo lestvice)', () => {
+  it('(c) prvi I posle R faze ≤ 70 % budžeta I (ili prvi nivo lestvice; K3-A: opseg minuta)', () => {
     let n = 0;
     for (const { id, p } of SAMPLE) {
       if (p.paceMode !== 'vdot' || p.experience === 'beginner') continue;
@@ -134,7 +141,15 @@ describe('P8-5K: uzorak rane mreže', () => {
       if (!w || !q) continue;
       n++;
       expect(q.workout.workKm.I, `${id} ned ${w.index}`).toBeLessThanOrEqual(
-        Math.max(firstIBudget(w.budgets.I), firstLevelBudget('I', p.paces as never, 'peak')) + EPS
+        // 5k-v2.16.0 (K3-A): sa opsegom minuta budžet prvog I je najmanje donja granica / 0,8 (firstIPeakBudget).
+        Math.max(
+          firstIPeakBudget(
+            iPeakBudget(w.budgets.I, w.targetKm, p.paces as Paces),
+            w.targetKm,
+            p.paces as Paces
+          ),
+          firstLevelBudget('I', p.paces as never, 'peak')
+        ) + EPS
       );
     }
     expect(n).toBeGreaterThan(30);
@@ -354,8 +369,11 @@ describe('P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I)
         if (next === undefined) continue;
         pairs++;
         // 5k-v2.15.3: najveći nivo ≤ 1,25 × prethodni rad, a najmanje sledeći veći nivo.
+        // 5k-v2.16.0 (K3-A): ispod donje granice opsega minuta korak sme do najmanjeg nivoa ≥ donja granica.
+        const loKm = (k3ILoMin((p.paces as Paces).vdot, ws[i]!.targetKm) * 60) / paceI;
+        const toLo = loKm > 0 ? (ladder.find((x) => x + EPS >= loKm * 100) ?? 0) : 0;
         expect(b, `${id} ned ${ws[i]!.index}: ${a} → ${b}`).toBeLessThanOrEqual(
-          Math.max(next, a * 1.25 + EPS)
+          Math.max(next, a * 1.25 + EPS, toLo)
         );
         if (b > next) aboveNext++;
         if (b < ws[i]!.budgets.I * 100 * 0.7 - EPS) belowOldFloor++;

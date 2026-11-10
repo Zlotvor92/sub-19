@@ -335,7 +335,7 @@ describe('3d: format i izbor', () => {
     } as never);
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.15.3');
+    expect(r.plan.meta?.['policyVersion']).toBe('5k-v2.16.0');
     expect(r.plan.weeks.map((w) => w.days.map((d) => d.id))[0]![0]).toBe('g1d1');
     expect(
       select.FIVE_K_V2_GENERATOR.planPolicy({

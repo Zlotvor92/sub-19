@@ -12,7 +12,14 @@ import { feelPaces } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { choosePattern } from './schedule.ts';
 import { earlyGridInputs } from './testInputs.ts';
-import type { FiveKV2Plan, FiveKV2RunWalkPlan, PlanWeek, Weekday, WeekFrame } from './types.ts';
+import type {
+  FiveKV2Plan,
+  FiveKV2RunWalkPlan,
+  Paces,
+  PlanWeek,
+  Weekday,
+  WeekFrame
+} from './types.ts';
 import { validatePlan } from './validate.ts';
 import {
   buildTrainingWeek,
@@ -21,7 +28,7 @@ import {
   raceWeekRest,
   SECOND_EASY_NOTE
 } from './week.ts';
-import { easyRun, firstIBudget } from './workouts.ts';
+import { easyRun, firstIPeakBudget, iPeakBudget } from './workouts.ts';
 import { firstPeakIWeek } from './periodize.ts';
 
 const input = (id: string): Record<string, unknown> =>
@@ -229,8 +236,11 @@ describe('T4 (5K, trkač): taper 1 nedelja, rasterećenje, doza vrha', () => {
     for (const w of p.weeks.filter((x) => x.phase === 'peak' || x.phase === 'sharpen')) {
       const q1 = w.days.find((d) => d.role === 'q1')!.workout;
       const main = w.phase === 'peak' ? q1.workKm.I : q1.workKm.RP;
+      // 5k-v2.16.0 (K3-A): budžet I vrhunca iz opsega minuta po cilju nedelje (iPeakBudget, firstIPeakBudget).
+      const pc = p.paces as Paces;
+      const bI = w.phase === 'peak' ? iPeakBudget(w.budgets.I, w.targetKm, pc) : w.budgets.I;
       if (w.index === first) {
-        expect(main).toBeLessThanOrEqual(firstIBudget(w.budgets.I) + 1e-9);
+        expect(main).toBeLessThanOrEqual(firstIPeakBudget(bI, w.targetKm, pc) + 1e-9);
         prevI = main;
         continue;
       }
@@ -238,7 +248,7 @@ describe('T4 (5K, trkač): taper 1 nedelja, rasterećenje, doza vrha', () => {
       // prethodnog, bez praga 80 % budžeta); prag 80 % ostaje za RP u oštrenju.
       if (w.phase === 'peak') expect(main).toBeGreaterThan(prevI);
       else expect(main).toBeGreaterThanOrEqual(P.quality.peakMainMinShare * w.budgets.I - 1e-9);
-      expect(main).toBeLessThanOrEqual(w.budgets.I + 1e-9);
+      expect(main).toBeLessThanOrEqual(bI + 1e-9);
     }
     expect(errors(p)).toEqual([]);
   });

@@ -1,0 +1,9 @@
+[
+ {
+  "name": "K3-A bez opsega minuta I (G4 kao pre)",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "  if (targetKm + 1e-9 < d.fromKm) return null;",
+  "replace": "  if (targetKm > -1) return null;",
+  "tests": ["src/domain/generators/fiveK/v2/k3.node.test.ts"]
+ }
+]

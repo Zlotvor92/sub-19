@@ -7,14 +7,15 @@ import { daysBetween } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
 import { firstPeakIWeek, periodize, phaseCounts } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
-import { inputOf, PROFILES, START, type Profile } from './testInputs.ts';
+import { inputOf, k3ILoMin, PROFILES, START, type Profile } from './testInputs.ts';
 import type { FiveKV2Plan, Paces, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { planVolume } from './volume.ts';
 import {
   chooseProgressiveReps,
   easyRun,
-  firstIBudget,
+  firstIPeakBudget,
+  iPeakBudget,
   longRun,
   roundRecoverySec
 } from './workouts.ts';
@@ -141,22 +142,29 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
       )
     ].sort((x, y) => x - y);
     let prevI: number | null = null;
+    // 5k-v2.16.0 (K3-A): budžet I vrhunca iz opsega minuta po cilju nedelje (iPeakBudget, firstIPeakBudget).
+    const pc = plan.paces as Paces;
+    const bI = (w: PlanWeek): number =>
+      w.phase === 'peak' ? iPeakBudget(w.budgets.I, w.targetKm, pc) : w.budgets.I;
     for (const w of steady.filter((x) => x.phase === 'peak' || x.phase === 'sharpen')) {
       if (w.phase === 'sharpen' || prevI === null)
         expect(mainWork(w)).toBeGreaterThanOrEqual(
-          (w.index === first ? firstIBudget(w.budgets.I) : w.budgets.I) *
+          (w.index === first ? firstIPeakBudget(bI(w), w.targetKm, pc) : bI(w)) *
             P.quality.mainMinShareOfBudget -
             1e-9
         );
       else {
         const next = ladder.find((x) => x > Math.round(prevI! * 100));
         // 5k-v2.15.3: najveći nivo ≤ 1,25 × prethodni rad, a najmanje sledeći veći nivo.
+        // 5k-v2.16.0 (K3-A): ispod donje granice opsega minuta korak sme do najmanjeg nivoa ≥ donja granica.
+        const loKm = (k3ILoMin(pc.vdot, w.targetKm) * 60) / paceI;
+        const toLo = loKm > 0 ? (ladder.find((x) => x + 1e-6 >= loKm * 100) ?? 0) : 0;
         if (next !== undefined)
           expect(Math.round(mainWork(w) * 100)).toBeLessThanOrEqual(
-            Math.max(next, Math.round(prevI * 100) * 1.25 + 1e-6)
+            Math.max(next, Math.round(prevI * 100) * 1.25 + 1e-6, toLo)
           );
       }
-      expect(mainWork(w)).toBeLessThanOrEqual(w.budgets.I + 1e-9);
+      expect(mainWork(w)).toBeLessThanOrEqual(bI(w) + 1e-9);
       if (w.phase === 'peak') prevI = mainWork(w);
     }
     for (let i = 1; i < steady.length; i++) {

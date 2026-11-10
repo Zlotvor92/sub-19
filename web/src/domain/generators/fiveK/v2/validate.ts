@@ -74,6 +74,8 @@ import {
   firstIBudget,
   firstLevelBudget,
   iMaxShareOf,
+  firstIPeakBudget,
+  iPeakBudget,
   minuteCapKm,
   qualityBudgets,
   raceWarmup,
@@ -1012,7 +1014,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
             return Number.isFinite(fl) ? fl : 0;
           })
       );
-    const capI = Math.max(base * iMaxShareOf(base), firstOf('I'));
+    // 5k-v2.16.0 (K3-A): u vrhuncu (sa rezultatom) plafon I je i budžet iz opsega po cilju nedelje (workouts.iPeakBudget).
+    const vdotWeek = !aw(w).feel && !a.beginner && pw(w).vdot !== null;
+    const capI = Math.max(
+      base * iMaxShareOf(base),
+      firstOf('I'),
+      vdotWeek && w.phase === 'peak' ? iPeakBudget(w.budgets.I, base, pw(w) as Paces) : 0
+    );
     const capT = Math.max(base * q.tMaxShare, firstOf('T'));
     const capR = Math.max(base * q.rMaxShare, firstOf('R'));
     if (sum.I > capI + EPS)
@@ -1072,10 +1080,16 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       const work = mainWork(w);
       // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
       // 5k-v2.15.0 (P8 dopuna G4): i plafon minuta zone (workouts.minuteCapKm).
+      // 5k-v2.16.0 (K3-A): budžet I vrhunca i plafon minuta iz opsega po cilju nedelje (iPeakBudget, minuteCapKm).
+      const bI = zone === 'I' ? iPeakBudget(w.budgets.I, base, pw(w) as Paces) : w.budgets.I;
       const need =
         Math.min(
-          isFirstIWeek(w, weeks.slice(0, w.index - 1)) ? firstIBudget(w.budgets.I) : w.budgets.I,
-          minuteCapKm(zone, pw(w) as Paces)
+          isFirstIWeek(w, weeks.slice(0, w.index - 1))
+            ? zone === 'I'
+              ? firstIPeakBudget(bI, base, pw(w) as Paces)
+              : firstIBudget(bI)
+            : bI,
+          minuteCapKm(zone, pw(w) as Paces, base)
         ) * q.mainMinShareOfBudget;
       if (work + EPS < need)
         err(

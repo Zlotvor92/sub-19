@@ -10,9 +10,9 @@ import { lowVolumeForPace } from './input.ts';
 import { raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { earlyFlows, earlyGridBases, START } from './testInputs.ts';
-import type { FiveKV2Plan, PlanWeek, Weekday } from './types.ts';
+import type { FiveKV2Plan, Paces, PlanWeek, Weekday } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { iMaxShareOf, qualityBudgets } from './workouts.ts';
+import { iMaxShareOf, iPeakBudget, qualityBudgets } from './workouts.ts';
 
 const DAYS: Record<number, Weekday[]> = {
   3: ['tue', 'thu', 'sun'],
@@ -64,7 +64,12 @@ describe('P4 S1 — budžet I/RP po cilju nedelje', () => {
         for (const w of p.weeks) {
           if (w.phase === 'race') continue;
           // 5k-v2.15.0 (P8 a): budžet I/RP 10 % za sve ciljeve (red ≥ 40 km → 12 % ukinut).
-          expect(iWork(w)).toBeLessThanOrEqual(w.targetKm * 0.1 + 1e-6);
+          // 5k-v2.16.0 (K3-A): u vrhuncu plafon I je i budžet iz opsega minuta po cilju nedelje (iPeakBudget).
+          const capI =
+            w.phase === 'peak'
+              ? iPeakBudget(w.targetKm * 0.1, w.targetKm, p.paces as Paces)
+              : w.targetKm * 0.1;
+          expect(iWork(w)).toBeLessThanOrEqual(Math.max(capI, w.targetKm * 0.1) + 1e-6);
           if (iWork(w) > w.targetKm * 0.08 + 1e-6) above8++;
         }
       }
@@ -104,7 +109,9 @@ describe('P4 S1 — budžet I/RP po cilju nedelje', () => {
     const p = planOf(inp(4, 30, 12, 50));
     const w = p.weeks.find((x) => build(x) && x.phase === 'peak')!;
     const q = w.days.find((d) => d.workout.qualityType === 'I')!;
-    q.workout.workKm.I = w.targetKm * 0.1 + 0.5;
+    // 5k-v2.16.0 (K3-A): plafon vrhunca = max(udeo, budžet iz opsega minuta).
+    q.workout.workKm.I =
+      Math.max(w.targetKm * 0.1, iPeakBudget(0, w.targetKm, p.paces as Paces)) + 0.5;
     expect(validatePlan(p).some((v) => v.rule === 'I_SHARE' && v.severity === 'error')).toBe(true);
   });
 });

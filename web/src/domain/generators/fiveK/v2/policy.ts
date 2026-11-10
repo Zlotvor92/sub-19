@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.15.3',
+  version: '5k-v2.16.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -241,6 +241,20 @@ export const FIVE_K_V2_POLICY = {
         tempu zone (član iste funkcije plafona zone, workouts.zoneBudget / feel): I ≤ 20 min za VDOT < 40, inače 24; RP
         ≤ 20 min; T ≤ 30 min. Po osećaju VDOT je procena (paces.vdotOrEstimate). Plafon minuta je iznad prvog nivoa. */
     minuteCap: { iSlowVdot: 40, iSlowMin: 20, iMin: 24, rpMin: 20, tMin: 30 },
+    /** 5k-v2.16.0 (K3-A, glavni trener krug 2 § 3b, heuristika): opseg rada JEDNOG I treninga [min] po cilju nedelje
+        (vrh obima — I je u vrhuncu): od fromKm, VDOT ≥ iSlowVdot po pojasu (lo = cilj vrha, hi = plafon), VDOT ispod
+        njega samo plafon slowHi; ispod fromKm sadašnje vrednosti (G4). Gornja granica je plafon minuta I (G4 24 ostaje
+        najveći); u vrhuncu budžet I = plafon, a korak lestvice (iStepUp) sme do donje granice. Jedino mesto:
+        workouts.iDoseRange (minuteCapKm, iPeakBudget; validator isto). */
+    iDose: {
+      fromKm: 30,
+      slowHi: 18,
+      bands: [
+        { fromKm: 30, lo: 12, hi: 16 },
+        { fromKm: 45, lo: 16, hi: 20 },
+        { fromKm: 65, lo: 18, hi: 24 }
+      ]
+    },
     deloadQualityShare: 0.6,
     /** 5k-v2.15.0 (P8 dopuna G5): taper ≤ 60 % NAJVEĆEG rada iste zone u izgradnji (bilo 0,7 × poslednji). */
     taperQualityShare: 0.6,
@@ -1149,5 +1163,15 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'week.EASY_CAP_NOTE); upozorenja PLANNED_BELOW_TARGET ostaju po nedelji, zbirno u prikazu. Sačuvan plan 5k-v2.15.2 ' +
       'i stariji prilagođavaju se po 2.15.3 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
+  },
+  {
+    version: '5k-v2.16.0',
+    decision:
+      'K3 (glavni trener, krug 2 § 3–4; HEURISTIKE). K3-A: rad jednog I treninga po cilju nedelje (VDOT ≥ 40): ' +
+      '30–45 km 12–16 min, 45–65 km 16–20 min, ≥ 65 km 18–24 min; VDOT < 40 najviše 18 min od 30 km; ispod 30 km ' +
+      'sadašnje vrednosti. Gornja granica je plafon minuta I, u vrhuncu i budžet I; korak lestvice sme do donje granice. ' +
+      'Jedino mesto: workouts.iDoseRange (minuteCapKm, iPeakBudget, iStepUp; validator I_SHARE / PEAK_MAIN_FLOOR isto). ' +
+      'Sačuvan plan 5k-v2.15.3 i stariji prilagođavaju se po 2.16.0 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/K3-5K-REPORT.md.'
   }
 ];

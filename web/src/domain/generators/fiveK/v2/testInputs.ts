@@ -1489,7 +1489,9 @@ export function markP8(r: unknown): boolean {
     .some(
       (p) =>
         (p.policyVersion === '5k-v2.15.0' ||
-          ['5k-v2.15.1', '5k-v2.15.2', '5k-v2.15.3'].includes(p.policyVersion ?? '')) &&
+          ['5k-v2.15.1', '5k-v2.15.2', '5k-v2.15.3', '5k-v2.16.0'].includes(
+            p.policyVersion ?? ''
+          )) &&
         p.weeks.some((w) => w.phase === 'race')
     );
 }
@@ -1584,3 +1586,27 @@ export function mark09(why: Why09, r: unknown): boolean {
       return true;
   }
 }
+
+/** 5k-v2.16.0 (K3-A, glavni trener krug 2 § 3b) — NEZAVISNO od policy.ts (brojevi pravila ispisani ovde): donja granica
+    rada jednog I treninga [min] po cilju nedelje (VDOT ≥ 40): 30–45 km 12, 45–65 km 16, ≥ 65 km 18; inače 0. */
+export const k3ILoMin = (vdot: number, targetKm: number): number =>
+  vdot < 40 || targetKm < 30 - 1e-9
+    ? 0
+    : targetKm < 45 - 1e-9
+      ? 12
+      : targetKm < 65 - 1e-9
+        ? 16
+        : 18;
+/** Gornja granica [min] (plafon): VDOT < 40 od 30 km 18; VDOT ≥ 40: 16 / 20 / 24; ispod 30 km G4 (20 / 24). */
+export const k3IHiMin = (vdot: number, targetKm: number): number =>
+  targetKm < 30 - 1e-9
+    ? vdot < 40
+      ? 20
+      : 24
+    : vdot < 40
+      ? 18
+      : targetKm < 45 - 1e-9
+        ? 16
+        : targetKm < 65 - 1e-9
+          ? 20
+          : 24;
