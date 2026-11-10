@@ -1,0 +1,237 @@
+/* P8-5K (5k-v2.15.0): ispravke po slepoj trenerskoj oceni — G1 obim raste do kraja razvoja, G2 prvi nivo lestvice uvek
+   staje, G3 tekst za trkača, (a) I 10 %, (b) rasterećenje ≤ 60 % / taper ≤ 70 % poslednje doze zone, dugi rasterećenja
+   ≤ 0,8 × poslednji, (c) prvi I posle R faze ≤ 70 % budžeta I, (d) WU/CD trkačkog dana po vrhu obima, (e) početnik
+   iznad kapaciteta plana početnika → plan bez oznake početnika. Izveštaj: docs/generators-v2/perfection/reports/
+   P8-5K-REPORT.md. */
+
+import { describe, expect, it } from 'vitest';
+import { feelFirstLevelOf } from './feel.ts';
+import { generateFiveKV2 } from './generate.ts';
+import { firstPeakIWeek } from './periodize.ts';
+import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';
+import { earlyGridInputs } from './testInputs.ts';
+import { userWarnings } from './text.ts';
+import type { FiveKV2Plan, PlanWeek, QualityType } from './types.ts';
+import { validatePlan } from './validate.ts';
+import { devWeeksLeft, peakKm, spreadKm } from './volume.ts';
+import { firstIBudget, firstLevelBudget, iMaxShareOf, raceWarmup } from './workouts.ts';
+
+const EPS = 1e-6;
+const planOf = (input: unknown): FiveKV2Plan => {
+  const r = generateFiveKV2(input);
+  if (!r.ok || r.plan.planType === 'runWalk') throw new Error(JSON.stringify(r).slice(0, 300));
+  return r.plan;
+};
+const athleteOf = (p: FiveKV2Plan): Athlete => ({
+  days: p.input.runDays.length as Athlete['days'],
+  beginner: p.experience === 'beginner',
+  feel: p.paceMode === 'feel'
+});
+const isBuild = (w: PlanWeek): boolean =>
+  w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen';
+const zoneWork = (w: PlanWeek, z: 'I' | 'RP' | 'T' | 'R'): number =>
+  w.days.filter((d) => d.workout.kind === 'quality').reduce((a, d) => a + d.workout.workKm[z], 0);
+/** Uzorak rane mreže generatora (svaki 4.), bez trčanja/hodanja. */
+const SAMPLE = earlyGridInputs()
+  .filter((_, i) => i % 4 === 0)
+  .map((c) => ({ id: c.id, r: generateFiveKV2(c.input) }))
+  .filter(
+    (x): x is { id: string; r: Extract<typeof x.r, { ok: true }> } =>
+      x.r.ok && x.r.plan.planType !== 'runWalk'
+  )
+  .map((x) => ({ id: x.id, p: x.r.plan as FiveKV2Plan }));
+
+describe('P8-5K: uzorak rane mreže', () => {
+  it('uzorak je dovoljno velik i bez grešaka validatora', () => {
+    expect(SAMPLE.length).toBeGreaterThan(150);
+    for (const { id, p } of SAMPLE)
+      expect(
+        validatePlan(p)
+          .filter((v) => v.severity === 'error')
+          .map((v) => v.rule),
+        id
+      ).toEqual([]);
+  });
+
+  it('G1: ne-rasteretna nedelja razvoja ≤ poslednji + (vrh − poslednji) / preostale nedelje razvoja', () => {
+    let slowed = 0;
+    for (const { id, p } of SAMPLE) {
+      const cap = peakKm(p.startKm, p.capacityKm, athleteOf(p));
+      let last: number | null = null;
+      p.weeks.forEach((w, i) => {
+        if (!isBuild(w) || w.deload) return;
+        if (last !== null && (w.phase === 'base' || w.phase === 'peak')) {
+          const lim = spreadKm(last, cap, devWeeksLeft(p.weeks, i));
+          expect(w.targetKm, `${id} ned ${w.index}`).toBeLessThanOrEqual(lim + EPS);
+          if (Number.isFinite(lim) && lim < Math.floor(last * 1.08 * 10 + 1e-9) / 10) slowed++;
+        }
+        last = w.targetKm;
+      });
+    }
+    expect(slowed).toBeGreaterThan(50);
+  });
+
+  it('(b) rasterećenje: rad zone ≤ max(0,6 × poslednja doza, prvi nivo); taper ≤ max(0,7 ×, prvi nivo); dugi ≤ 0,8 ×', () => {
+    let checked = 0;
+    for (const { id, p } of SAMPLE) {
+      const last: Partial<Record<'I' | 'RP' | 'T' | 'R', number>> = {};
+      let lastLong: number | null = null;
+      for (const w of p.weeks) {
+        const share = w.deload && isBuild(w) ? 0.6 : w.phase === 'taper' ? 0.7 : null;
+        if (share !== null)
+          for (const z of ['I', 'RP', 'T', 'R'] as const) {
+            const v = zoneWork(w, z);
+            if (!v || last[z] === undefined) continue;
+            checked++;
+            const first = Math.max(
+              0,
+              ...w.days
+                .filter((d) => d.workout.kind === 'quality' && d.workout.workKm[z] > 0)
+                .map((d) => {
+                  const t = d.workout.qualityType as QualityType;
+                  const v = firstLevelBudget(t, p.paces as never, w.phase);
+                  return Number.isFinite(v)
+                    ? v
+                    : feelFirstLevelOf(t, z === 'RP' ? 'I' : z, w.phase, p.paces);
+                })
+                .filter(Number.isFinite)
+            );
+            expect(v, `${id} ned ${w.index} ${z}`).toBeLessThanOrEqual(
+              Math.max(share * last[z]!, first) + 0.05
+            );
+          }
+        if (w.deload && isBuild(w) && lastLong !== null) {
+          const L = w.days.find((d) => d.role === 'long')!.workout.km;
+          expect(L, `${id} ned ${w.index} dugi`).toBeLessThanOrEqual(
+            Math.max(P.easy.minKm, Math.floor(lastLong * 0.8 * 10 + 1e-9) / 10) + EPS
+          );
+        }
+        if (isBuild(w) && !w.deload) {
+          for (const z of ['I', 'RP', 'T', 'R'] as const)
+            if (zoneWork(w, z) > 0) last[z] = zoneWork(w, z);
+          lastLong = w.days.find((d) => d.role === 'long')?.workout.km ?? lastLong;
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(200);
+  });
+
+  it('(c) prvi I posle R faze ≤ 70 % budžeta I (ili prvi nivo lestvice)', () => {
+    let n = 0;
+    for (const { id, p } of SAMPLE) {
+      if (p.paceMode !== 'vdot' || p.experience === 'beginner') continue;
+      const k = firstPeakIWeek(p.weeks);
+      const w = k === null ? undefined : p.weeks[k - 1];
+      const q = w?.days.find((d) => d.role === 'q1' && d.workout.qualityType === 'I');
+      if (!w || !q) continue;
+      n++;
+      expect(q.workout.workKm.I, `${id} ned ${w.index}`).toBeLessThanOrEqual(
+        Math.max(firstIBudget(w.budgets.I), firstLevelBudget('I', p.paces as never, 'peak')) + EPS
+      );
+    }
+    expect(n).toBeGreaterThan(30);
+  });
+
+  it('(d) trkački dan: WU/CD = raceWarmup(vrh, najduži trening); nije najduži dan plana kad se može izbeći', () => {
+    for (const { id, p } of SAMPLE) {
+      const race = p.weeks.at(-1)!.days.find((d) => d.role === 'race')!;
+      const longest = Math.max(
+        ...p.weeks.slice(0, -1).flatMap((w) => w.days.map((d) => d.workout.km))
+      );
+      const b = raceWarmup(p.peakKm, longest);
+      const seg = (k: string): number => race.workout.segments.find((s) => s.kind === k)!.km;
+      expect([seg('warmup'), seg('cooldown')], id).toEqual([b.warmupKm, b.cooldownKm]);
+      const min = P.warmup.raceMin.warmupKm + 5 + P.warmup.raceMin.cooldownKm;
+      if (longest > min + EPS) expect(race.workout.km, id).toBeLessThan(longest);
+      if (p.peakKm <= 20) expect(b.warmupKm + b.cooldownKm).toBeLessThanOrEqual(2.5);
+    }
+  });
+});
+
+describe('P8-5K: pojedinačna pravila', () => {
+  it('(a) budžet I/RP 10 % za svaki cilj', () => {
+    for (const km of [12, 39.9, 40, 65]) expect(iMaxShareOf(km)).toBe(0.1);
+  });
+
+  it('G2: rasteretni vrhunac malog obima ima I prvog nivoa (ne samo ubrzanja); po osećaju tempo staje u 12 km', () => {
+    const p = planOf({
+      startDate: '2026-11-02',
+      raceDate: '2027-01-03',
+      runDays: ['tue', 'thu', 'sun'],
+      currentWeeklyKm: 12,
+      recentResult: { distanceM: 5000, timeSec: 994, date: '2026-10-19' },
+      goalTimeSec: null
+    });
+    const d = p.weeks.find((w) => w.phase === 'peak' && w.deload)!;
+    expect(d.days.some((x) => x.workout.qualityType === 'I')).toBe(true);
+    const f = planOf({
+      startDate: '2026-11-02',
+      raceDate: '2027-02-21',
+      runDays: ['tue', 'thu', 'sun'],
+      currentWeeklyKm: 12,
+      typicalEasyPaceSecPerKm: 300,
+      goalTimeSec: null
+    });
+    expect(
+      f.weeks.some(
+        (w) => w.phase === 'base' && w.days.some((x) => x.workout.qualityType === 'TEMPO_FEEL')
+      )
+    ).toBe(true);
+  });
+
+  it('(e) početnik iznad kapaciteta plana početnika → plan bez oznake početnika, uz napomenu; u kapacitetu ostaje početnik', () => {
+    const base = {
+      startDate: '2026-11-02',
+      raceDate: '2027-01-10',
+      runDays: ['tue', 'thu', 'sat', 'sun'],
+      goalTimeSec: null,
+      recentResult: null,
+      typicalEasyPaceSecPerKm: 420,
+      experience: 'beginner',
+      canRun30Min: true
+    };
+    const hi = planOf({ ...base, currentWeeklyKm: 45 });
+    expect(hi.experience).toBe('regular');
+    expect(hi.startKm).toBeGreaterThan(30); // kapacitet početnika 29,9 km; trkač 4 dana nosi više
+    expect(hi.notes.some((n) => n.includes('plan kreće od tvog stvarnog obima'))).toBe(true);
+    expect(planOf({ ...base, currentWeeklyKm: 25 }).experience).toBe('beginner');
+  });
+
+  it('G3: isto upozorenje jednom po planu (zbirno), tekst bez internih izraza', () => {
+    const ws = [
+      { rule: 'PLANNED_BELOW_TARGET', message: 'Nedelja ima 50 km umesto 52 km.', week: 3 },
+      { rule: 'PLANNED_BELOW_TARGET', message: 'Nedelja ima 49 km umesto 52 km.', week: 5 },
+      { rule: 'PLANNED_BELOW_TARGET', message: 'Nedelja ima 48 km umesto 52 km.', week: 6 },
+      { rule: 'GOAL_STATUS', message: 'Cilj je ambiciozan.' }
+    ];
+    expect(userWarnings(ws)).toEqual([
+      'Nedelja 3 ima 50 km umesto 52 km. Slično i u nedeljama 5 i 6.',
+      'Cilj je ambiciozan.'
+    ]);
+    for (const { id, p } of SAMPLE.filter((_, i) => i % 3 === 0)) {
+      const txt = [...p.notes, ...p.weeks.flatMap((w) => w.notes), ...userWarnings(p.warnings)];
+      for (const bad of ['nije izvodljiv', 'odstupanje', 'cilj po pravilu', 'pouka', 'Odluka'])
+        expect(
+          txt.filter((t) => t.includes(bad)),
+          id
+        ).toEqual([]);
+      expect(new Set(userWarnings(p.warnings)).size).toBe(
+        new Set(p.warnings.map((v) => v.rule)).size
+      );
+    }
+  });
+
+  it('G3: „ista količina … (obim ne dozvoljava više)" samo kad veća doza postoji u ponudi; inače „najveća doza"', () => {
+    const p = planOf({
+      startDate: '2026-11-02',
+      raceDate: '2027-01-10',
+      runDays: ['mon', 'tue', 'thu', 'sat', 'sun'],
+      currentWeeklyKm: 65,
+      recentResult: { distanceM: 5000, timeSec: 1022, date: '2026-10-19' },
+      goalTimeSec: null
+    });
+    const notes = p.weeks.flatMap((w) => w.notes.filter((n) => n.includes('ista količina')));
+    expect(notes.length).toBeGreaterThan(0);
+    for (const n of notes) expect(n).toContain('to je najveća doza ovog treninga u planu');
+  });
+});

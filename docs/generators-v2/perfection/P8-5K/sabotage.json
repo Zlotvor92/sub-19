@@ -1,0 +1,110 @@
+[
+ {
+  "name": "P8-G1 rast bez raspodele do kraja razvoja",
+  "file": "src/domain/generators/fiveK/v2/volume.ts",
+  "find": "else t = Math.min(floor1(lastBuild * (1 + growth)), cap, spreadKm(lastBuild, cap, devWeeksLeft(frames, i)));",
+  "replace": "else t = Math.min(floor1(lastBuild * (1 + growth)), cap);",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G2 bez prvog nivoa lestvice (sa rezultatom)",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "  const budgetKm = Math.max(budget0, firstLevelBudget(type, p, phase, targetKm));",
+  "replace": "  const budgetKm = budget0;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G2 bez prvog nivoa lestvice (po osećaju)",
+  "file": "src/domain/generators/fiveK/v2/feel.ts",
+  "find": "  const budget = Math.max(b[s.budget], feelFirstLevel(kind, phase, p));",
+  "replace": "  const budget = b[s.budget];",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-a budžet I 12 % od 40 km",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    iMaxShareByTargetKm: [{ fromKm: 0, share: 0.1 }],",
+  "replace": "    iMaxShareByTargetKm: [\n      { fromKm: 0, share: 0.1 },\n      { fromKm: 40, share: 0.12 }\n    ],",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-b rasterećenje bez granice kvaliteta",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    deloadQualityShare: 0.6,",
+  "replace": "    deloadQualityShare: 1.0,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-b taper bez granice kvaliteta",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    taperQualityShare: 0.7,",
+  "replace": "    taperQualityShare: 1.0,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-b dugi rasterećenja bez granice",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    deloadLongShare: 0.8,",
+  "replace": "    deloadLongShare: 1.0,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-c prvi I bez smanjenog budžeta",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "    const bp = f.firstI ? { ...b, I: firstIBudget(b.I) } : b;",
+  "replace": "    const bp = b;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-d trka uvek 2,0 / 1,5 km",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "  for (const b of [warmupBand(peakKm), P.warmup.bands[0], min])",
+  "replace": "  for (const b of [{ warmupKm: 2.0, cooldownKm: 1.5 }])",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-e početnik spušten na kapacitet početnika",
+  "file": "src/domain/generators/fiveK/v2/steps.ts",
+  "find": "    beginner: input.experience === 'beginner' && beginnerAboveTable(input) === null,",
+  "replace": "    beginner: input.experience === 'beginner',",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G3 upozorenja nisu zbirna",
+  "file": "src/domain/generators/fiveK/v2/text.ts",
+  "find": "    if (g.length === 1) {",
+  "replace": "    if (g.length >= 1) {",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G3 „obim ne dozvoljava\" i na kraju ponude",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "  budget ? 'obim nedelje ne dozvoljava više' : 'to je najveća doza ovog treninga u planu';",
+  "replace": "  'obim nedelje ne dozvoljava više';",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ }
+]
