@@ -202,4 +202,42 @@ svaki ključ; skup „promenjeno u P8, a nije u ranijim fiksturama" je prazan i 
 nivou dokazuje da se svaki plan i tok razlikuje od svog stanja u fiksturi. Dokaz po klasi (stari kod 10c72e3 → vrh grane): v.
 „Promenjeni planovi" ispod.
 
-### Testovi i sabotaže — v. kraj odeljka (popunjava se posle završnog punog nivoa)
+### Promenjeni planovi (stari kod 10c72e3 → vrh grane; `docs/10k-v2/artifacts/segment-08/gen-dump.ts` i privremena kuka snimka tokova na oba stabla, pun nivo)
+
+Planovi generatora: 01 3024 / 3024, 02 15 840 / 15 840, F 11 880 / 11 880, B 3402 / 3402 — svi promenjeni, 0 odbijenih.
+Tokovi adaptacije: rana 102 707 / 102 707, grid04 2040 / 2040, bol 336 / 336, rasterećenja 18 193 / 18 193, start0 12 336 /
+12 336 — svi promenjeni, 0 odbijenih, isti skup ključeva na oba stabla.
+
+### Sabotaže
+
+`node scripts/sabotage.mjs ../docs/generators-v2/perfection/P8-10K/sabotage-P8-zavrsetak.json --quiet` — **14 / 14 palo**, 189 s
+(`sabotage-P8-zavrsetak.result.json`): G4, G5, G1a, G6, G7 (2), G8, D49 (3: plafon 3,0 km, uslov „nedelja nosi", prelaz zone),
+D50, D51 (2: donja granica, stanje slota u nedelji testa), S9. Prvi deo (G1–G3, D42): 9 / 9, ranije.
+
+### Testovi (komanda — trajanje — ishod), sve po beogradskom vremenu 10. 11. 2026
+
+- `npx vitest run --project node src/domain/generators/tenK/v2` (brz): 2 min 08 s na početku — 23 fajla / 63 testa pada; posle
+  završetka ≈ 4 min pod opterećenjem — 147 fajlova, 0 padova.
+- `TEST_FULL=1 npx vitest run --project node src/domain/generators/tenK/v2` (pun, jednom čisto, 15:34–16:01): **26 min 33 s —
+  259 fajlova, 765 testova, 0 padova.** Pre toga jedan pun prolaz za čitanje tabela (28 min, 38 fajlova palo — tabele celog
+  skupa i 3 odbijanja adaptacije, v. sudar 5) i ponovljeni samo pali fajlovi (mreža 02: 2 min 52 s × 3; F, B, adapt, p35,
+  rasterećenja: 6 min + 3 min).
+- `npm run check` (ceo `web/`, brz nivo): 6 min 46 s — typecheck, lint, format prolaze; 298 fajlova, 3357 testova, 1 pad
+  (`beginnerGrid`: broj „dugi rasterećenja < 4 km" pisan kao tačan broj celog skupa) — ispravljeno i potvrđeno na oba nivoa
+  (fajl sam, brz i pun); ceo `check` posle toga nije ponavljan.
+- `npx vitest run --changed 10c72e3` (polazno stablo pre P8-10K; 9055e5b1 nije u plitkom klonu, 10c72e3 je roditelj prvog
+  P8-10K commit-a): 4 min 31 s — 164 fajla, 2130 testova, 0 padova.
+- `npx playwright test e2e/tenk-v2.spec.ts --trace off`: 23 s — 3 / 3.
+- `npm run build`: 7 s — prolazi.
+- Posle čistog punog nivoa menjano je samo: uklonjena neiskorišćena promenljiva (`week.ts`), `w.days.length` umesto filtera
+  bez dejstva (`validate.ts`), pretvaranje tipa u `testInputs.ts`, format dva fajla, jedan red testa — pun nivo nije ponavljan
+  (pokriveno brzim nivoom i `--changed`).
+
+### Šta nije urađeno / otvoreno
+
+1. Zamerka „dugi plato" (krug 2) i G3 „nazivi faza na srpskom svuda" van `app/plan.ts` — nije dirano.
+2. G8 u nedelji smanjenog obima (adaptacija, povratak): duži dugi istiskuje lagane dane (primer b-d4-18w-18km-v40, ned 14 posle
+   pauze + bola: 2 dana trčanja, planirano 15,5 < cilj 18,0) — posledica prihvaćenog S2/G8, prijava za krug 2.
+3. Redovan plan sa 4 dana i malim obimom / sporim tempom ne nosi trenutni obim u nedelji 1 (G6 0,70) — brojevi u tabeli gore;
+   odluka organizatora ako slepa ocena to kazni (opcija: 0,75 za 4 dana).
+4. `byteSame` fiksture sa 10K ključevima u drugim distancama: ne postoje u repou (posle V1b) — nema šta da se snima.
