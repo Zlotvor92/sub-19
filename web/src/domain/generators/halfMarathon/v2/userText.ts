@@ -73,6 +73,17 @@ const PLAIN: readonly [RegExp, string][] = [
   [/ne staje u plafon(?: cilja)?/g, 'bi prešao dozvoljen udeo nedeljnog obima'],
   [/staje u plafon(?: zone)?/g, 'staje u dozvoljen udeo nedeljnog obima'],
   [/\bni ([^;—]+?) bi preša(o|li) /g, 'čak i $1 bi preša$2 '],
+  // G3 (P8): tekst za trkača.
+  [/\s*\(adaptacija\)/g, ''],
+  [/ \(ne više od RP u taperu [\d.,]+ km\)/g, ''],
+  [/ \(≤ RP doza tapera [\d.,]+ km\)/g, ''],
+  [/Drugi kvalitetni trening: drugi dan kvaliteta je lagan — /g, 'Drugi kvalitetni trening je ove nedelje lagano trčanje: '],
+  [/[qQ]2: drugi dan kvaliteta je lagan — /g, 'Drugi kvalitetni trening je ove nedelje lagano trčanje: '],
+  [/; drugi dan kvaliteta je lagan — /g, '; drugi kvalitetni trening je lagano trčanje — '],
+  [/trka ([\d.,]+) km se ne računa u obim/g, 'trka $1 km nije uračunata u obim nedelje'],
+  [/\(najniži nivo zone ili test\)/g, '(najkraći trening te vrste ili test)'],
+  [/; najniži nivo zone ili test\)/g, '; najkraći trening te vrste ili test)'],
+  [/trening vodi RPE/g, 'trening vodi osećaj napora (RPE)'],
   [/\s*\(odstupanje\)/g, ''],
   [/,\s*odstupanje\)/g, ')'],
   [

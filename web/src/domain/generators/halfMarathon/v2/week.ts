@@ -147,10 +147,10 @@ export const dateOf = (frame: { startDate: string; index: number }, wd: Weekday)
 };
 
 /** H16: napomena nedelje testa. */
-export const TEST_NOTE = `Test ${P.test.km} km (H16): kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat koristi adaptacija (segment 04), do tada tempo ostaje procena.`;
+export const TEST_NOTE = `Test ${P.test.km} km (H16): kontrolisano maksimalno posle zagrevanja — jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega; do tada tempo ostaje procena.`;
 
 /** P5-F1: napomena nedelje kontrolnog testa u planu sa rezultatom (čemu služi, da se rezultat unese). */
-export const RESULT_TEST_NOTE = `Kontrolni test ${P.test.km} km umesto prvog kvaliteta nedelje (F1): posle faze razvoja proverava formu — kontrolisano maksimalno posle zagrevanja. Unesi rezultat: tempo treninga od sledeće nedelje računa se iz njega (bolji ili sporiji). Računa se u obim nedelje, ne u dozu kvaliteta; progresija se posle testa nastavlja.`;
+export const RESULT_TEST_NOTE = `Kontrolni test ${P.test.km} km (F1): proverava formu posle faze razvoja — kontrolisano maksimalno posle zagrevanja; to je jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega (bolji ili sporiji).`;
 
 /** P5-F2: napomena nedelje bez rasta doze (validator je čita kao oznaku). */
 export const HOLD_NOTE =
@@ -811,6 +811,14 @@ function buildWeekIn(
                     : !w2
                       ? 'Taper: samo RP ≈ 60 % poslednje doze — sa RP i T nijedan cilj ≤ 0,7 × vrh nije izvodljiv (H7, odstupanje); dugi ≤ 0,6 × najduži.'
                       : 'Taper: RP i T ≈ 60 % poslednje doze, dugi ≤ 0,6 × najduži (H7).';
+      // G3 (P8): napomena tvrdi samo ono što brojevi pokazuju — RP na najmanjoj dozi iznad 60 % poslednje.
+      const lastRpM = quality.q1?.ladder === 'RP' ? quality.q1.doseM : 0;
+      const floorNote =
+        w1 && q1d === t.q1 && lastRpM > 0 && t.q1.doseM > P.taper.doseShare * lastRpM + 1e-6
+          ? [
+              `Taper: RP ${fmtKm(t.q1.doseM / 1000)} km je najmanja doza u trkačkom tempu (više od 60 % poslednje doze ${fmtKm(lastRpM / 1000)} km).`
+            ]
+          : [];
       const capNote =
         w1 && q1d === t.q1 && t0.q1.doseM < tCap.doseM
           ? [
@@ -826,7 +834,7 @@ function buildWeekIn(
         ],
         len.long10,
         null,
-        [note, ...capNote, ...doseNotes]
+        [note, ...capNote, ...floorNote, ...doseNotes]
       );
     };
     return taper(mode, false);
@@ -919,7 +927,7 @@ function buildWeekIn(
   const notes: string[] = [];
   if (blockKm !== null)
     notes.push(
-      `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; drugi dan kvaliteta (tempo) je lagan.`
+      `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.`
     );
   // T1 (krug T): manje laganih dana (lengths.buildLengths) — napomena za korisnika.
   if (len.easy10.length < dates.length) notes.push(t1RestNote(dates.length - len.easy10.length, rule.easyLongMaxShare));

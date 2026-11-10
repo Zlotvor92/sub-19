@@ -1,0 +1,234 @@
+PLAN — polumaraton
+Profil: po osećaju, spor, lagan tempo 7:30/km, 3 dana, dno obima, najduža priprema
+
+Početak: 2026-11-02 (20 nedelja), trka: 2027-03-21.
+Dani trčanja: uto, čet, ned; dugi trk: ned.
+Trenutni obim: 25 km nedeljno.
+Bez rezultata trke; lagan tempo 7:30/km.
+Ciljno vreme: nije zadato.
+
+============================================================
+
+TEMPO ZONE (min/km)
+  lagano 7:15–7:45 · T (prag) 6:16 · I (interval) 5:47 · R (repeticije) 5:27 · tempo trke 6:33
+  VDOT 30.8
+
+OCENA CILJA
+  Cilj nije zadat ili nije ocenjen.
+  Prognoza: nema pouzdanog rezultata.
+  Napomena plana: Plan po osećaju: bez rezultata trke. E = lagan tempo 7:30/km ± 15 s; tempo T/I/R/RP je orijentir (procena) iz procene VDOT 30,8 — trening vodi osećaj napora (RPE).
+  Napomena plana: Test 5 km: nedelja 7, 2026-12-17. Prognoza polumaratona i ocena cilja: posle testa; do tada RP po RPE.
+
+------------------------------------------------------------
+NEDELJA 1 — faza: osnova
+  02.11.–08.11. · cilj 25,0 km · planirano 25,0 km · ukupno 3 h 05 min
+  Utorak     03.11.  Lagano 8,5 km, na kraju 4 × 20 s ubrzanja
+      8,5 km · 1 h 03 min
+  Četvrtak   05.11.  WU 15 min + T 2,0 km kontinuirano + CD 10 min
+      5,3 km · 38 min · radnih 13 min
+  Nedelja    08.11.  Dugi 11,2 km lagano
+      11,2 km · 1 h 24 min
+  Napomena: Dugi nedelje 1 11,2 km pretpostavlja skorašnje najduže trčanje od bar 10,2 km; ako je bio kraći, unesi ga (dugi raste najviše 10 % ili 1 km iznad najdužeg).
+
+------------------------------------------------------------
+NEDELJA 2 — faza: osnova
+  09.11.–15.11. · cilj 26,1 km · planirano 26,1 km · ukupno 3 h 12 min
+  Utorak     10.11.  Lagano 8,6 km, na kraju 4 × 20 s ubrzanja
+      8,6 km · 1 h 04 min
+  Četvrtak   12.11.  WU 15 min + T 2,5 km kontinuirano + CD 10 min
+      5,8 km · 41 min · radnih 16 min
+  Nedelja    15.11.  Dugi 11,7 km lagano
+      11,7 km · 1 h 28 min
+
+------------------------------------------------------------
+NEDELJA 3 — faza: osnova
+  16.11.–22.11. · cilj 27,2 km · planirano 27,2 km · ukupno 3 h 20 min
+  Utorak     17.11.  Lagano 9,0 km, na kraju 4 × 20 s ubrzanja
+      9,0 km · 1 h 07 min
+  Četvrtak   19.11.  WU 15 min + T 2 × 1250 m (oporavak 1:00 džog) + CD 10 min
+      6,0 km · 42 min · radnih 16 min
+  Nedelja    22.11.  Dugi 12,2 km lagano
+      12,2 km · 1 h 32 min
+
+------------------------------------------------------------
+NEDELJA 4 — faza: osnova — RASTEREĆENJE
+  23.11.–29.11. · cilj 21,8 km · planirano 21,8 km · ukupno 2 h 41 min
+  Utorak     24.11.  Lagano 6,8 km, na kraju 4 × 20 s ubrzanja
+      6,8 km · 51 min
+  Četvrtak   26.11.  WU 15 min + T 2,0 km kontinuirano + CD 10 min
+      5,3 km · 38 min · radnih 13 min
+  Nedelja    29.11.  Dugi 9,7 km lagano
+      9,7 km · 1 h 13 min
+  Napomena: Rasterećenje: cilj 21,8 km, jedan kvalitet (T 2,0 km), dugi 80 % poslednjeg dugog pre rasterećenja.
+
+------------------------------------------------------------
+NEDELJA 5 — faza: osnova
+  30.11.–06.12. · cilj 28,3 km · planirano 28,3 km · ukupno 3 h 29 min
+  Utorak     01.12.  Lagano 9,8 km, na kraju 4 × 20 s ubrzanja
+      9,8 km · 1 h 13 min
+  Četvrtak   03.12.  WU 15 min + T 2,5 km kontinuirano + CD 10 min
+      5,8 km · 41 min · radnih 16 min
+  Nedelja    06.12.  Dugi 12,7 km lagano
+      12,7 km · 1 h 35 min
+
+------------------------------------------------------------
+NEDELJA 6 — faza: osnova
+  07.12.–13.12. · cilj 29,4 km · planirano 29,4 km · ukupno 3 h 37 min
+  Utorak     08.12.  Lagano 10,2 km, na kraju 4 × 20 s ubrzanja
+      10,2 km · 1 h 16 min
+  Četvrtak   10.12.  WU 15 min + T 2 × 1250 m (oporavak 1:00 džog) + CD 10 min
+      6,0 km · 42 min · radnih 16 min
+  Nedelja    13.12.  Dugi 13,2 km lagano
+      13,2 km · 1 h 39 min
+
+------------------------------------------------------------
+NEDELJA 7 — faza: osnova — kontrolno trčanje
+  14.12.–20.12. · cilj 30,5 km · planirano 30,5 km · ukupno 3 h 41 min
+  Utorak     15.12.  Lagano 8,5 km, na kraju 4 × 20 s ubrzanja
+      8,5 km · 1 h 03 min
+  Četvrtak   17.12.  WU 15 min + test 5 km kontrolisano maksimalno + CD 10 min
+      8,3 km · 55 min · radnih 30 min
+  Nedelja    20.12.  Dugi 13,7 km lagano
+      13,7 km · 1 h 43 min
+  Napomena: Test 5 km: kontrolisano maksimalno posle zagrevanja — jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega; do tada tempo ostaje procena.
+
+------------------------------------------------------------
+NEDELJA 8 — faza: razvoj
+  21.12.–27.12. · cilj 31,6 km · planirano 31,6 km · ukupno 3 h 53 min
+  Utorak     22.12.  Lagano 10,8 km, na kraju 6 × 20 s ubrzanja
+      10,8 km · 1 h 20 min
+  Četvrtak   24.12.  WU 15 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 10 min
+      6,6 km · 46 min · radnih 19 min
+  Nedelja    27.12.  Dugi 14,2 km lagano
+      14,2 km · 1 h 47 min
+
+------------------------------------------------------------
+NEDELJA 9 — faza: razvoj — RASTEREĆENJE
+  28.12.–03.01. · cilj 25,3 km · planirano 25,3 km · ukupno 3 h 06 min
+  Utorak     29.12.  Lagano 8,5 km, na kraju 6 × 20 s ubrzanja
+      8,5 km · 1 h 03 min
+  Četvrtak   31.12.  WU 15 min + T 2 × 1000 m (oporavak 1:00 džog) + CD 10 min
+      5,5 km · 39 min · radnih 13 min
+  Nedelja    03.01.  Dugi 11,3 km lagano
+      11,3 km · 1 h 25 min
+  Napomena: Rasterećenje: cilj 25,3 km, jedan kvalitet (T 2,0 km), dugi 80 % poslednjeg dugog pre rasterećenja.
+
+------------------------------------------------------------
+NEDELJA 10 — faza: razvoj
+  04.01.–10.01. · cilj 32,7 km · planirano 32,7 km · ukupno 4 h 00 min
+  Utorak     05.01.  Lagano 11,3 km, na kraju 6 × 20 s ubrzanja
+      11,3 km · 1 h 24 min
+  Četvrtak   07.01.  WU 15 min + T 2 × 1600 m (oporavak 1:00 džog) + CD 10 min
+      6,7 km · 46 min · radnih 20 min
+  Nedelja    10.01.  Dugi 14,7 km lagano
+      14,7 km · 1 h 50 min
+
+------------------------------------------------------------
+NEDELJA 11 — faza: razvoj
+  11.01.–17.01. · cilj 33,8 km · planirano 33,8 km · ukupno 4 h 09 min
+  Utorak     12.01.  Lagano 12,1 km, na kraju 6 × 20 s ubrzanja
+      12,1 km · 1 h 30 min
+  Četvrtak   14.01.  WU 15 min + T 3,2 km kontinuirano + CD 10 min
+      6,5 km · 45 min · radnih 20 min
+  Nedelja    17.01.  Dugi 15,2 km lagano
+      15,2 km · 1 h 54 min
+
+------------------------------------------------------------
+NEDELJA 12 — faza: razvoj
+  18.01.–24.01. · cilj 34,9 km · planirano 34,9 km · ukupno 4 h 17 min
+  Utorak     19.01.  Lagano 12,5 km, na kraju 6 × 20 s ubrzanja
+      12,5 km · 1 h 33 min
+  Četvrtak   21.01.  WU 15 min + T 2 × 1600 m (oporavak 1:00 džog) + CD 10 min
+      6,7 km · 46 min · radnih 20 min
+  Nedelja    24.01.  Dugi 15,7 km lagano
+      15,7 km · 1 h 58 min
+
+------------------------------------------------------------
+NEDELJA 13 — faza: razvoj — RASTEREĆENJE
+  25.01.–31.01. · cilj 27,9 km · planirano 27,9 km · ukupno 3 h 26 min
+  Utorak     26.01.  Lagano 9,9 km, na kraju 6 × 20 s ubrzanja
+      9,9 km · 1 h 14 min
+  Četvrtak   28.01.  WU 15 min + T 2 × 1000 m (oporavak 1:00 džog) + CD 10 min
+      5,5 km · 39 min · radnih 13 min
+  Nedelja    31.01.  Dugi 12,5 km lagano
+      12,5 km · 1 h 34 min
+  Napomena: Rasterećenje: cilj 27,9 km, jedan kvalitet (T 2,0 km), dugi 80 % poslednjeg dugog pre rasterećenja.
+
+------------------------------------------------------------
+NEDELJA 14 — faza: specifična
+  01.02.–07.02. · cilj 34,9 km · planirano 34,9 km · ukupno 4 h 18 min
+  Utorak     02.02.  Lagano 11,7 km, na kraju 6 × 20 s ubrzanja
+      11,7 km · 1 h 27 min
+  Četvrtak   04.02.  WU 15 min + RP 2 × 2000 m (oporavak 1:30 džog) + CD 10 min
+      7,5 km · 53 min · radnih 26 min
+  Nedelja    07.02.  Dugi 15,7 km lagano
+      15,7 km · 1 h 58 min
+
+------------------------------------------------------------
+NEDELJA 15 — faza: specifična
+  08.02.–14.02. · cilj 34,9 km · planirano 34,9 km · ukupno 4 h 17 min
+  Utorak     09.02.  Lagano 10,7 km, na kraju 6 × 20 s ubrzanja
+      10,7 km · 1 h 20 min
+  Četvrtak   11.02.  WU 15 min + RP 2 × 2500 m (oporavak 1:30 džog) + CD 10 min
+      8,5 km · 59 min · radnih 33 min
+  Nedelja    14.02.  Dugi 15,7 km lagano
+      15,7 km · 1 h 58 min
+
+------------------------------------------------------------
+NEDELJA 16 — faza: specifična
+  15.02.–21.02. · cilj 34,9 km · planirano 34,9 km · ukupno 4 h 17 min
+  Utorak     16.02.  Lagano 10,9 km, na kraju 6 × 20 s ubrzanja
+      10,9 km · 1 h 21 min
+  Četvrtak   18.02.  WU 15 min + RP 5,0 km kontinuirano + CD 10 min
+      8,3 km · 58 min · radnih 33 min
+  Nedelja    21.02.  Dugi 15,7 km lagano
+      15,7 km · 1 h 58 min
+
+------------------------------------------------------------
+NEDELJA 17 — faza: specifična — RASTEREĆENJE
+  22.02.–28.02. · cilj 27,9 km · planirano 27,9 km · ukupno 3 h 26 min
+  Utorak     23.02.  Lagano 9,9 km, na kraju 6 × 20 s ubrzanja
+      9,9 km · 1 h 14 min
+  Četvrtak   25.02.  WU 15 min + T 2 × 1000 m (oporavak 1:00 džog) + CD 10 min
+      5,5 km · 39 min · radnih 13 min
+  Nedelja    28.02.  Dugi 12,5 km lagano
+      12,5 km · 1 h 34 min
+  Napomena: Rasterećenje: cilj 27,9 km, jedan kvalitet (T 2,0 km), dugi 80 % poslednjeg dugog pre rasterećenja.
+
+------------------------------------------------------------
+NEDELJA 18 — faza: specifična
+  01.03.–07.03. · cilj 34,9 km · planirano 34,9 km · ukupno 4 h 17 min
+  Utorak     02.03.  Lagano 10,7 km, na kraju 6 × 20 s ubrzanja
+      10,7 km · 1 h 20 min
+  Četvrtak   04.03.  WU 15 min + RP 2 × 2500 m (oporavak 1:30 džog) + CD 10 min
+      8,5 km · 59 min · radnih 33 min
+  Nedelja    07.03.  Dugi 15,7 km lagano
+      15,7 km · 1 h 58 min
+
+------------------------------------------------------------
+NEDELJA 19 — faza: taper
+  08.03.–14.03. · cilj 24,4 km · planirano 24,4 km · ukupno 2 h 59 min
+  Utorak     09.03.  Lagano 7,5 km, na kraju 6 × 20 s ubrzanja
+      7,5 km · 56 min
+  Četvrtak   11.03.  WU 15 min + RP 2 × 2000 m (oporavak 1:30 džog) + CD 10 min
+      7,5 km · 53 min · radnih 26 min
+  Nedelja    14.03.  Dugi 9,4 km lagano
+      9,4 km · 1 h 11 min
+  Napomena: Taper: RP ≈ 60 % poslednje doze (jedan kvalitetni dan), dugi najviše 60 % najdužeg.
+  Napomena: Taper: RP 4,0 km je najmanja doza u trkačkom tempu (više od 60 % poslednje doze 5,0 km).
+
+------------------------------------------------------------
+NEDELJA 20 — faza: trka
+  15.03.–21.03. · cilj 10,1 km · planirano 10,1 km · ukupno 1 h 14 min
+  Utorak     16.03.  Lagano 35 min
+      4,7 km · 35 min
+  Četvrtak   18.03.  WU 15 min + RP 2 × 900 m (oporavak 2:00 džog) + CD 10 min
+      5,4 km · 39 min · radnih 12 min
+  Nedelja    21.03.  TRKA — polumaraton 21,1 km, procena 2:18:14; zagrevanje 10 min lagano pre starta (ne ulazi u obim nedelje)
+  Napomena: Trkačka nedelja: oštrenje 2 × 900 m RP, trka 21,1 km nije uračunata u obim nedelje.
+
+============================================================
+UPOZORENJA PLANA
+  - Najduži dugi 15,7 km < 16 km: preporuka više dana ili obima.
+  - nedelja 11: Obim prilagođen onome što dani treninga mogu da nose: smanjen za najviše 0,1 km u 2 nedelje (nedelje 11, 12).
+  - Sa 3 dana trčanja ne staje ceo planirani obim: dugi najviše 45 % nedelje, a lagani najviše 80 % dugog; preporuka 4–6 dana. Vrh plana 34,9 km umesto do 35,0 km.
