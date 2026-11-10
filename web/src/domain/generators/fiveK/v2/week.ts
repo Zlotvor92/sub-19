@@ -210,7 +210,7 @@ export function buildTrainingWeek(
     );
   else if (easyCappedAtLong && belowTargetShown(plannedKm, target))
     notes.push(
-      `Lagan trk najviše ${kmText(easyCapKm(longKm, f.phase, t1Off, a.days, a.beginner))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
+      `${EASY_CAP_NOTE} ${kmText(easyCapKm(longKm, f.phase, t1Off, a.days, a.beginner))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
     );
   if (rest.size > 0 || pain.size > 0)
     notes.push(
@@ -298,6 +298,10 @@ export function easyVsLongOff(
 
 /** Pouka 35: oznaka (napomena) nedelje u kojoj je drugi dan kvaliteta lagan — validator je čita. */
 /** 5k-v2.11.0 (Z2): bez interne oznake; stari tekst „… lagan (pouka 35)" sadrži ovaj, pa ga validator i dalje prepoznaje. */
+/** 5k-v2.15.3 (P8 G3/G6, odluka organizatora): početak napomene nedelje „planirano < cilj zbog granice laganog" — u
+    planu stoji samo u prvoj takvoj nedelji (generate.push, jedino mesto); upozorenja po nedelji se ne menjaju. */
+export const EASY_CAP_NOTE = 'Lagan trk najviše';
+
 export const SECOND_EASY_NOTE = 'drugi dan kvaliteta je lagan';
 
 /**

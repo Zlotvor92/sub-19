@@ -144,10 +144,10 @@
   ]
  },
  {
-  "name": "P8-završetak odluka 2: I bez koraka lestvice (prag 80 % budžeta)",
+  "name": "P8-završetak odluka 2: I skače na prag 80 % budžeta",
   "file": "src/domain/generators/fiveK/v2/workouts.ts",
-  "find": "        ? isI && phase === 'peak' && progression.prev\n",
-  "replace": "        ? isI && phase === 'peak' && progression.prev && false\n",
+  "find": "  return best ?? next;\n}\n\nexport type SessionResult",
+  "replace": "  return chooseProgressiveReps(budgetKm, q.repOptionsKm.I, p.I, q.minReps.I, q.maxReps.I, q.iRepMaxSec, q.iRepMinSec, q.peakMainMinShare, prev, 'strict') ?? best ?? next;\n}\n\nexport type SessionResult",
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"
   ]
@@ -157,6 +157,24 @@
   "file": "src/domain/generators/fiveK/v2/lengths.ts",
   "find": "  days >= 4 && !beginner ? P.easy.buildMaxShareOfLong4 : P.easy.buildMaxShareOfLong;",
   "replace": "  days >= 4 ? P.easy.buildMaxShareOfLong4 : P.easy.buildMaxShareOfLong;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-završetak odluka 2: korak I najsitniji (bez 1,25)",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    iStepMaxGrowth: 1.25,",
+  "replace": "    iStepMaxGrowth: 1,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G3/G6 napomena laganog u svakoj nedelji",
+  "file": "src/domain/generators/fiveK/v2/generate.ts",
+  "find": ".filter((n) => !seen || !n.startsWith(EASY_CAP_NOTE))",
+  "replace": ".filter((n) => true || !seen || !n.startsWith(EASY_CAP_NOTE))",
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"
   ]

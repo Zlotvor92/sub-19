@@ -47,6 +47,7 @@ import { adaptVolume, pauseRemainderKm, planVolume, type VolumePlan } from './vo
 import {
   buildRaceWeek,
   buildTrainingWeek,
+  EASY_CAP_NOTE,
   mixedWeek,
   protectedKm,
   secondEasyDose
@@ -127,7 +128,13 @@ export function construct(
   const testDone = wt?.done ? wt.week : null;
   const push = (w0: PlanWeek): void => {
     // 5k-v2.11.0 (Z2): napomene nedelje u formatu teksta korisniku pre spajanja (prethodni plan je u istom formatu).
-    const w = { ...w0, notes: w0.notes.map(userText) };
+    // 5k-v2.15.3 (P8 G3/G6): napomena o granici laganog samo u prvoj takvoj nedelji plana (ostale nedelje imaju
+    // upozorenje PLANNED_BELOW_TARGET, zbirno u prikazu).
+    const seen = weeks.some((x) => x.notes.some((n) => n.startsWith(EASY_CAP_NOTE)));
+    const w = {
+      ...w0,
+      notes: w0.notes.map(userText).filter((n) => !seen || !n.startsWith(EASY_CAP_NOTE))
+    };
     weeks.push(w);
     written.push(prior ? writtenWeek(prior.weeks[w.index - 1]!, w, prior).week : w);
   };

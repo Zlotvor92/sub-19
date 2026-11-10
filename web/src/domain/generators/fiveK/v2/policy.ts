@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.15.2',
+  version: '5k-v2.15.3',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -202,6 +202,10 @@ export const FIVE_K_V2_POLICY = {
     /** 5k-v2.12.0 (T4): trkač sa rezultatom — glavna doza vrhunca (I) i oštrenja (RP) ≥ ovaj udeo budžeta (plafon zone
         I 8 % nedeljnog obima); progresija ostaje strogo najmanji korak naviše (chooseProgressiveReps 'strict'). */
     peakMainMinShare: 0.8,
+    /** 5k-v2.15.3 (P8 završetak, odluka organizatora, heuristika): I doza u vrhuncu posle prethodne I nedelje raste do
+        najvećeg nivoa lestvice čiji je rad ≤ iStepMaxGrowth × prethodni rad (najmanje sledeći veći nivo). Jedino mesto:
+        workouts.iStepUp. */
+    iStepMaxGrowth: 1.25,
     /** Ponuda dužina ponavljanja [km] po tipu, od poželjnije ka manje poželjnoj (heuristika).
         Bira se PRVA opcija čiji ukupni rad dostiže `repFillShare` budžeta; ako nijedna, ona sa
         najvećim ukupnim radom. 2.0.1: dodate kraće opcije za nizak obim (v. DECISIONS). */
@@ -1134,5 +1138,16 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'redovan plan sa 4+ dana. Jedino mesto: lengths.easyShareOf (easyCapKm; konstruktor, mešovita nedelja, validator ' +
       'EASY_VS_LONG / PLANNED_BELOW_TARGET). Sačuvan plan 5k-v2.15.1 i stariji prilagođavaju se po 2.15.2 ' +
       '(KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
+  },
+  {
+    version: '5k-v2.15.3',
+    decision:
+      'P8 završetak, druga dopuna organizatora (HEURISTIKE). (2) Korak I u vrhuncu nije najsitniji: I doza sledeće ' +
+      'nedelje = najveći nivo lestvice čiji je rad ≤ 1,25 × rad prethodne I nedelje (quality.iStepMaxGrowth), a najmanje ' +
+      'sledeći veći nivo; i dalje ispod plafona minuta (G4) i budžeta. Jedino mesto: workouts.iStepUp. (3) Napomena ' +
+      'nedelje „Lagan trk najviše …" (G6, planirano < cilj) stoji samo u prvoj takvoj nedelji plana (generate.push, ' +
+      'week.EASY_CAP_NOTE); upozorenja PLANNED_BELOW_TARGET ostaju po nedelji, zbirno u prikazu. Sačuvan plan 5k-v2.15.2 ' +
+      'i stariji prilagođavaju se po 2.15.3 (KNOWN_VERSIONS). Brojevi: ' +
+      'docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
   }
 ];

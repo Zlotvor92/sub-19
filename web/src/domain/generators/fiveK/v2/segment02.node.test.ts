@@ -126,7 +126,7 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
     // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget.
     const first = firstPeakIWeek(plan.weeks);
     // 5k-v2.15.1 (P8 završetak, odluka 2): donji prag budžeta važi za prvi I vrhunca i za oštrenje; posle prvog I doza
-    // raste najviše jedan korak lestvice nedeljno (nezavisna lestvica iz ponude politike, ne iz workouts.iStepUp).
+    // raste najviše do 1,25 × prethodnog rada, a najmanje jedan nivo (nezavisna lestvica iz ponude politike, ne iz workouts.iStepUp).
     const q = P.quality;
     const paceI = (plan.paces as Paces).I;
     const ladder = [
@@ -150,7 +150,11 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
         );
       else {
         const next = ladder.find((x) => x > Math.round(prevI! * 100));
-        if (next !== undefined) expect(Math.round(mainWork(w) * 100)).toBeLessThanOrEqual(next);
+        // 5k-v2.15.3: najveći nivo ≤ 1,25 × prethodni rad, a najmanje sledeći veći nivo.
+        if (next !== undefined)
+          expect(Math.round(mainWork(w) * 100)).toBeLessThanOrEqual(
+            Math.max(next, Math.round(prevI * 100) * 1.25 + 1e-6)
+          );
       }
       expect(mainWork(w)).toBeLessThanOrEqual(w.budgets.I + 1e-9);
       if (w.phase === 'peak') prevI = mainWork(w);

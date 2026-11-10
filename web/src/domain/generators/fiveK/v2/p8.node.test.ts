@@ -330,9 +330,10 @@ describe('P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I)
     expect(begOver07).toBeGreaterThan(0);
   });
 
-  it('odluka 2: I u vrhuncu posle prethodnog I raste najviše jedan korak lestvice nedeljno (i posle smanjenog prvog)', () => {
+  it('odluka 2: I u vrhuncu posle prethodnog I raste najviše do 1,25 × prethodnog rada (najmanje jedan nivo lestvice)', () => {
     let pairs = 0;
     let belowOldFloor = 0;
+    let aboveNext = 0;
     for (const { id, p } of SAMPLE) {
       if (p.paceMode === 'feel' || p.experience === 'beginner') continue;
       // Lestvica I: dužine ponude × broj ponavljanja 2–6, ponavljanje 2–5 min na I tempu plana.
@@ -352,12 +353,32 @@ describe('P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I)
         const next = ladder.find((x) => x > a);
         if (next === undefined) continue;
         pairs++;
-        expect(b, `${id} ned ${ws[i]!.index}: ${a} → ${b}`).toBeLessThanOrEqual(next);
+        // 5k-v2.15.3: najveći nivo ≤ 1,25 × prethodni rad, a najmanje sledeći veći nivo.
+        expect(b, `${id} ned ${ws[i]!.index}: ${a} → ${b}`).toBeLessThanOrEqual(
+          Math.max(next, a * 1.25 + EPS)
+        );
+        if (b > next) aboveNext++;
         if (b < ws[i]!.budgets.I * 100 * 0.7 - EPS) belowOldFloor++;
       }
     }
     expect(pairs).toBeGreaterThan(50);
     // Pravilo zaista deluje: bez njega bi svaka takva nedelja bila ≥ 70 % budžeta (stari donji prag).
     expect(belowOldFloor).toBeGreaterThan(0);
+    // Korak nije najsitniji: ima nedelja koje preskaču sledeći nivo (do 1,25 × prethodnog rada).
+    expect(aboveNext).toBeGreaterThan(20);
+  });
+  it('G3/G6: napomena „Lagan trk najviše …" samo u prvoj takvoj nedelji plana; upozorenja ostaju po nedelji', () => {
+    let multi = 0;
+    for (const { id, p } of SAMPLE) {
+      const noted = p.weeks.filter((w) => w.notes.some((n) => n.startsWith('Lagan trk najviše')));
+      expect(noted.length, id).toBeLessThanOrEqual(1);
+      // Upozorenja ostaju po nedelji: plan sa više upozorenih nedelja i dalje ima samo jednu napomenu.
+      if (
+        p.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').length >= 2 &&
+        noted.length === 1
+      )
+        multi++;
+    }
+    expect(multi).toBeGreaterThan(20);
   });
 });

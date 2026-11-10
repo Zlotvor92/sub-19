@@ -98,11 +98,15 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
     const p = planOf({ ...USER, currentWeeklyKm: 35 });
     const capped = p.weeks.filter((w) => w.easyCappedAtLong);
     expect(capped.length).toBeGreaterThan(0);
+    // 5k-v2.15.3 (P8 G3/G6): napomena nedelje samo u PRVOJ takvoj nedelji plana; upozorenje ostaje za svaku.
+    const first = capped.find((w) => belowTargetShown(w.plannedKm, w.targetKm));
+    expect(first).toBeDefined();
     for (const w of capped) {
       expect(w.plannedKm).toBeLessThan(w.targetKm);
       // F1 (04-final): napomena i upozorenje samo kad je razlika ≥ 1 km ili ≥ 3 % cilja.
-      const shown = belowTargetShown(w.plannedKm, w.targetKm);
-      expect(w.notes.some((n) => n.includes('za pun obim treba više dana trčanja'))).toBe(shown);
+      expect(w.notes.some((n) => n.includes('za pun obim treba više dana trčanja'))).toBe(
+        w.index === first!.index
+      );
     }
     expect(p.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
       capped.filter((w) => belowTargetShown(w.plannedKm, w.targetKm)).map((w) => w.index)

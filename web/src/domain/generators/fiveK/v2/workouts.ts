@@ -400,23 +400,30 @@ export function roundRecoverySec(sec: number): number {
   return Math.max(step, Math.round(sec / step) * step);
 }
 
-/** 5k-v2.15.1 (P8 završetak, odluka 2; heuristika, odluka organizatora: p07 3 × 1000 → 6 × 800 m u jednoj nedelji nije
-    dozvoljeno): sledeći korak I lestvice posle doze `prev` — najmanji rad iz ponude I strogo veći od prethodnog koji
-    staje u plafon zone `budgetKm` (workouts.zoneBudget); nema ga → null. JEDINO mesto koraka I u vrhuncu. */
+/** 5k-v2.15.3 (P8 završetak, odluka 2 — dopuna organizatora; heuristika: p07 3 × 1000 → 6 × 800 m u jednoj nedelji nije
+    dozvoljeno, ali ni najsitniji korak nije namera): sledeća I doza posle doze `prev` — najveći nivo lestvice (ponuda I,
+    ponavljanja u granicama, staje u plafon zone `budgetKm`, workouts.zoneBudget) čiji je rad ≤ iStepMaxGrowth × rad
+    prethodne I nedelje, a najmanje sledeći veći nivo; pri jednakom radu ranija (duža) opcija. Nema većeg nivoa → null.
+    JEDINO mesto koraka I u vrhuncu. */
 export function iStepUp(budgetKm: number, p: Paces, prev: PrevDose): RepChoice | null {
   const q = P.quality;
-  return chooseProgressiveReps(
-    budgetKm,
-    q.repOptionsKm.I,
-    p.I,
-    q.minReps.I,
-    q.maxReps.I,
-    q.iRepMaxSec,
-    q.iRepMinSec,
-    0,
-    prev,
-    'strict'
-  );
+  const prevWork = workOf(prev);
+  const top = prevWork * q.iStepMaxGrowth + 1e-9;
+  let next: RepChoice | null = null;
+  let best: RepChoice | null = null;
+  for (const repKm of q.repOptionsKm.I) {
+    const sec = repKm * p.I;
+    if (sec > q.iRepMaxSec || sec < q.iRepMinSec) continue;
+    const most = Math.min(q.maxReps.I, Math.floor(budgetKm / repKm + 1e-9));
+    for (let reps = q.minReps.I; reps <= most; reps++) {
+      const c = { reps, repKm };
+      const w = workOf(c);
+      if (w <= prevWork + 1e-9) continue;
+      if (!next || w < workOf(next) - 1e-9) next = c;
+      if (w <= top && (!best || w > workOf(best) + 1e-9)) best = c;
+    }
+  }
+  return best ?? next;
 }
 
 export type SessionResult =

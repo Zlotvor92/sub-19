@@ -1489,7 +1489,7 @@ export function markP8(r: unknown): boolean {
     .some(
       (p) =>
         (p.policyVersion === '5k-v2.15.0' ||
-          ['5k-v2.15.1', '5k-v2.15.2'].includes(p.policyVersion ?? '')) &&
+          ['5k-v2.15.1', '5k-v2.15.2', '5k-v2.15.3'].includes(p.policyVersion ?? '')) &&
         p.weeks.some((w) => w.phase === 'race')
     );
 }
