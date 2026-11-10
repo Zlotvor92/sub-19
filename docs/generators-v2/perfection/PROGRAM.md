@@ -296,3 +296,11 @@ Plan P9 (do kraja):
 4. Po sudu trenera: krug 3 samo za nalaze koji to traže (kandidati: vrh I na 5K, pad RP/MP rada, G6 0,70 na 10K,
    talas dugog, cena G8) — Opus po distanci, jedan po jedan nalaz.
 5. `check:full` jednom + E2E sve 4 distance (organizator sam). Spajanje u main tek na izričitu potvrdu vlasnika.
+
+### 10. 11. 2026, 18:15 — P9a završen (Sonnet), tab arhiviran
+
+- `49674d5`: `P9/render.ts`, `P9/inputs.json`, `P9/plans/<D>/pNN.txt` (48 fajlova, 0 odbijenih), izveštaj
+  `reports/P9a-REPORT.md`. Interne oznake u ispisu: 0 pogodaka na sve četiri distance. Organizator pregledao uzorak
+  (5K p01). Kod aplikacije nije menjan.
+- Nalaz za kasnije (nije greška ispisa): 5K nema `userWeekNotes` ekvivalent — napomene idu sirove iz generatora.
+- Sledeće: čeka se P9b (10K, Opus, pun nivo u toku) → organizator ponovo ispisuje 10K → poruka glavnom treneru.
