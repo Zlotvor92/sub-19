@@ -328,3 +328,15 @@ Plan P9 (do kraja):
   sudar → prethodno ponašanje + brojevi. Zadatak: `briefs/K3-krug-3.md`.
 - Tabovi (Opus, 2 uporedo): prvo MAR i 5K, zatim HM i 10K. Posle: ispis P9/plans, krug 3 kod trenera (provera),
   `check:full`, pitanje vlasniku za spajanje u main.
+
+### 10. 11. 2026, 20:00 — K3-5K završen (5k-v2.16.0), tab arhiviran; K3-10K pokrenut
+
+- `036495a`, izveštaj `reports/K3-5K-REPORT.md`. Nezavisna provera organizatora: brzi nivo `fiveK/v2` 807/807. Po
+  tabu: pun nivo 817/817, `--changed` 1771 ✔, E2E 3/3, `npm run check` 3386 ✔, sabotaže 6/6; mreža 3964, 0 odbijanja.
+- Ugrađeno: K3-A doza I po obimu (medijana vrha I: 30–45 km 8,7 → 14,6 min; 45–65 km 13,3 → 17,9; ≥ 65 km 14,6 →
+  19,0; p01 15,2, p02 14,4, p05 20,3, p07 17,9); K3-B 4 dana 0,75 i nedelja 1 0,80; K3-C 3 dana 0,70 + ubrzanja u
+  dugom + ista doza najviše 2 puta.
+- Nije ugrađeno (sudari, brojevi u izveštaju): I blok ≥ 3 nedelje (vrhunac ≤ 4 nedelje); K3-D vrh pre tapera (strogi
+  rast RP, plafon minuta „ne dirati"); K3-E test ≤ 2 × doza (test 3 km ugrađen u app i ekrane van foldera); K3-F dan
+  manje (983 plana, menja broj dana — tražilo bi poseban segment).
+- Odluka: na 10K se K3-D/E/F samo mere, ugrađuju se A, B, C. K3-10K (Opus) pokrenut; K3-MAR u toku; K3-HM sledi.
