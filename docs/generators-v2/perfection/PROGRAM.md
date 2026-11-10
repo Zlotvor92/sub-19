@@ -252,3 +252,13 @@ Oba taba su čekala odluke organizatora; poslate su, tabovi ih ugrađuju i zavr�
 - Razlog za S5/S4 O2: plan po osećaju bez ijednog testa nikad ne kalibriše tempo — test je vredniji od jednog I.
 - Pravilo za tabove: ako odluka daje nova odbijanja ili sudar → ostaje prethodno ponašanje, samo brojevi.
 - Dug: isto pravilo testa za plan po osećaju 8–11 nedelja na 10K (tab arhiviran) — za sledeći krug.
+
+### 10. 11. 2026, 17:10 — P8-MAR završen (marathon-v2.12.0), tab arhiviran
+
+- Kod `146563f`, izveštaj `reports/P8-MAR-REPORT.md` § Završetak. Nezavisna provera organizatora: brzi nivo
+  `marathon/v2` 447/447. Po tabu: pun nivo 549/549, `npm run check` 3372 zeleno, E2E 3/3, sabotaže 17/17.
+- S4 O2: planova po osećaju bez testa 1260 → 0 (test u nedelji 4, razvoj), 0 odbijanja.
+- G6 početnik 0,80: početnik 4+ dana sa planiranim vrhom < 0,9 × granica 63 → 18; planova sa „planirano < cilj"
+  462 → 225.
+- Za krug 2 (sud glavnog trenera): pad ukupnog MP rada (S3), početnik 50 → 75 km (S1), DOSE_DROPPED posle bloka (S2).
+- Radi još samo P8-HM (hm-v2.12.0).
