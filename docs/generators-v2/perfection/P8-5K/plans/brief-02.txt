@@ -1,0 +1,9 @@
+5k-v2.15.0 exp regular start 30 peak 39 cap 47.6 days 4
+1 base t30 p30 L10.5 max10.5 | q1:R: 4 × 300 m[5.6km,5m] ; q2:T: 2 km kontinuirano[5.5km,9m]
+2 base t32.2 p32.2 L11.2 max11.2 | q1:R: 4 × 400 m[6.3km,6m] ; q2:T: 2,5 km kontinuirano[6.0km,11m]
+3 base t34.4 p34.4 L12 max12.0 | q1:R: 4 × 400 m[6.3km,6m] ; q2:T: 3 km kontinuirano[6.5km,13m]
+4 peak t36.7 p36.7 L12.8 max12.8 | q1:I: 3 × 700 m[7.1km,8m] ; q2:T: 2 × 1600 m[7.4km,14m]
+5 peak t39 p39 L13.6 max13.6 | q1:I: 4 × 800 m[8.9km,13m] ; q2:T: 2 × 1600 m[7.4km,14m]
+6 sharpen t39 p39 L13.6 max13.6 | q1:RP: 4 × 800 m[8.1km,13m] ; q2:R: 6 × 300 m[7.3km,7m]
+7 taper t33.2 p33.2 L11.6 max11.6 | q1:RP: 2 × 1000 m[5.8km,8m] ; q2:T: 2 km kontinuirano[5.5km,9m]
+8 race t14.29 p14.29 L- max9.0 | q1:Oštrenje: 4 × 400 m RP[4.5km,7m] ; race:Trka 5K[9.0km,20m]

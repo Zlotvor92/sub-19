@@ -1,0 +1,11 @@
+5k-v2.15.0 exp regular start 30 peak 39 cap 41.8 days 4
+1 base t30 p30 L10.5 max10.5 | q1:Kratki usponi: 8 × 45 s[6.2km,6m] ; q2:Tempo po osećaju: 2 × 6:30 min[5.8km,13m]
+2 base t32.2 p32.2 L11.2 max11.2 | q1:Kratki usponi: 9 × 45 s[6.6km,7m] ; q2:Tempo po osećaju: 14 min[5.8km,14m]
+3 base*T t34.4 p34.4 L12 max12.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno[6.5km,18m] ; q2:Tempo po osećaju: 3 × 5 min[6.3km,15m]
+4 peak t36.7 p36.7 L12.8 max12.8 | q1:Fartlek: 7 × 1:30 min brzo ali kontrolisano[7.2km,11m] ; q2:Tempo po osećaju: 3 × 5 min[6.8km,15m]
+5 peak*D t29.4 p29.4 L10.2 max10.2 | q1:Fartlek: 3 × 1:30 min brzo ali kontrolisano[4.7km,5m]
+6 peak t39 p38.8 L13.6 max13.6 | q1:Fartlek: 6 × 2 min brzo ali kontrolisano[7.6km,12m] ; q2:Tempo po osećaju: 2 × 8 min[6.8km,16m]
+7 sharpen t39 p38.76 L13.6 max13.6 | q1:RP po osećaju: 7 × 2 min malo ispod trkačkog napora za 5K[7.3km,14m] ; q2:Kratki usponi: 9 × 45 s[7.1km,7m]
+8 sharpen t39 p39 L13.6 max13.6 | q1:RP po osećaju: 10 × 1:30 min malo ispod trkačkog napora za 5K[7.6km,15m] ; q2:Kratki usponi: 10 × 45 s[7.5km,8m]
+9 taper t33.2 p33.2 L11.6 max11.6 | q1:RP po osećaju: 5 × 1:30 min malo ispod trkačkog napora za 5K[5.2km,8m] ; q2:Tempo po osećaju: 2 × 5 min[5.3km,10m]
+10 race t13.61 p13.61 L- max9.0 | q1:RP po osećaju: 3 × 2 min malo ispod trkačkog napora za 5K[3.8km,6m] ; race:Trka 5K[9.0km,30m]

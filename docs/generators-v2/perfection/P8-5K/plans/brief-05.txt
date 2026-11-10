@@ -1,0 +1,11 @@
+5k-v2.15.0 exp regular start 65 peak 65 cap 65 days 5
+1 base t65 p65 L18 max18.0 | q1:R: 6 × 400 m[9.4km,8m] ; q2:T: 4 km kontinuirano[9.0km,15m]
+2 base t65 p65 L18 max18.0 | q1:R: 7 × 400 m[10.2km,9m] ; q2:T: 3 × 2000 m[11.4km,22m]
+3 base t65 p65 L18 max18.0 | q1:R: 8 × 400 m[11.0km,10m] ; q2:T: 4 × 1600 m[12.0km,23m]
+4 peak t65 p65 L18 max18.0 | q1:I: 4 × 1000 m[11.2km,14m] ; q2:T: 3 × 2000 m[11.4km,22m]
+5 peak*D t52 p52 L14.4 max14.4 | q1:I: 2 × 1200 m[8.2km,8m]
+6 peak*T t65 p65 L18 max18.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno[8.0km,14m] ; q2:T: 3 × 2000 m[11.4km,22m]
+7 sharpen t65 p65 L18 max18.0 | q1:RP: 6 × 1000 m[12.8km,21m] ; q2:R: 10 × 300 m[10.7km,10m]
+8 sharpen t65 p65 L18 max18.0 | q1:RP: 6 × 1000 m[11.8km,21m] ; q2:R: 10 × 300 m[10.7km,10m]
+9 taper t55.3 p55.3 L16.5 max16.5 | q1:RP: 4 × 1000 m[10.1km,14m] ; q2:T: 2,5 km kontinuirano[7.5km,9m]
+10 race t25.95 p25.95 L- max10.0 | q1:Oštrenje: 4 × 400 m RP[5.5km,5m] ; race:Trka 5K[10.0km,17m]

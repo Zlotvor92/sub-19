@@ -1,0 +1,19 @@
+5k-v2.15.0 exp regular start 37.3 peak 37.3 cap 37.3 days 4
+1 base t37.3 p34.99 L12 max12.0 | q1:Kratki usponi: 9 × 45 s[6.7km,7m] ; q2:Tempo po osećaju: 2 × 9 min[6.7km,18m]
+2 base t37.3 p35.45 L12 max12.0 | q1:Kratki usponi: 10 × 45 s[7.0km,8m] ; q2:Tempo po osećaju: 2 × 9:30 min[6.9km,19m]
+3 base*T t37.3 p35.67 L12 max12.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno[7.0km,21m] ; q2:Tempo po osećaju: 3 × 6:30 min[7.1km,20m]
+4 peak t37.3 p35.74 L12 max12.0 | q1:Fartlek: 9 × 1:30 min brzo ali kontrolisano[7.6km,14m] ; q2:Tempo po osećaju: 18 min[6.6km,18m]
+5 peak*D t29.8 p29.8 L9.6 max9.6 | q1:Fartlek: 4 × 1:30 min brzo ali kontrolisano[5.0km,6m]
+6 peak t37.3 p36.02 L12 max12.0 | q1:Fartlek: 7 × 2 min brzo ali kontrolisano[7.7km,14m] ; q2:Tempo po osećaju: 19 min[6.7km,19m]
+7 sharpen t37.3 p35.14 L12 max12.0 | q1:RP po osećaju: 7 × 2 min malo ispod trkačkog napora za 5K[6.9km,14m] ; q2:Kratki usponi: 9 × 45 s[6.7km,7m]
+8 sharpen t37.3 p35.59 L12 max12.0 | q1:RP po osećaju: 10 × 1:30 min malo ispod trkačkog napora za 5K[7.0km,15m] ; q2:Kratki usponi: 10 × 45 s[7.0km,8m]
+9 taper t31.7 p31.7 L11 max11.0 | q1:RP po osećaju: 5 × 1:30 min malo ispod trkačkog napora za 5K[5.0km,8m] ; q2:Tempo po osećaju: 2 × 5 min[5.1km,10m]
+10 race t13.14 p13.14 L- max9.0 | q1:RP po osećaju: 4 × 1:30 min malo ispod trkačkog napora za 5K[3.6km,6m] ; race:Trka 5K[9.0km,35m]
+ W PLANNED_BELOW_TARGET 1 Nedelja ima 35 km umesto 37,3 km (lagan trk najviše 9,6 km uz dugi 12 km; za pun obim treba više dana trčanja)
+ W PLANNED_BELOW_TARGET 2 Nedelja ima 35,5 km umesto 37,3 km (lagan trk najviše 9,6 km uz dugi 12 km; za pun obim treba više dana trčanj
+ W PLANNED_BELOW_TARGET 3 Nedelja ima 35,7 km umesto 37,3 km (lagan trk najviše 9,6 km uz dugi 12 km; za pun obim treba više dana trčanj
+ W PLANNED_BELOW_TARGET 4 Nedelja ima 35,7 km umesto 37,3 km (lagan trk najviše 9,6 km uz dugi 12 km; za pun obim treba više dana trčanj
+ W PLANNED_BELOW_TARGET 6 Nedelja ima 36 km umesto 37,3 km (lagan trk najviše 9,6 km uz dugi 12 km; za pun obim treba više dana trčanja)
+ W PLANNED_BELOW_TARGET 7 Nedelja ima 35,1 km umesto 37,3 km (lagan trk najviše 9,6 km uz dugi 12 km; za pun obim treba više dana trčanj
+ W PLANNED_BELOW_TARGET 8 Nedelja ima 35,6 km umesto 37,3 km (lagan trk najviše 9,6 km uz dugi 12 km; za pun obim treba više dana trčanj
+ W START_ABOVE_CAPACITY 1 Trenutni obim (45 km) je veći od onoga što 4 dana nose (37,3 km); plan kreće od 37,3 km.

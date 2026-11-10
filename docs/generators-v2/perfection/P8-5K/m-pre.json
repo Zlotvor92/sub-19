@@ -13,7 +13,6 @@
   "fam_R": 1868,
   "kraj_razvoja_ned_sum": 29148,
   "kvalitet_duzi_od_dugog": 362,
-  "nedelje_>25%": 72,
   "plato_dugog_>=6": 1647,
   "plato_obima_>=6": 1458,
   "pocetnik": 664,
@@ -25,7 +24,7 @@
   "rasterecenje_R>60%": 2709,
   "rasterecenje_R>=pune": 38,
   "rasterecenje_T>60%": 330,
-  "taper_RP>70%": 3569,
+  "taper_RP>70%": 3536,
   "taper_T>70%": 1098,
   "trka_8.5km": 3964,
   "trka_najduzi_dan": 1105,
@@ -48,14 +47,6 @@
    "P0:R-d3-12km-11w-v55",
    "P0:R-d3-12km-11w-v65",
    "P0:R-d3-12km-16w-v55"
-  ],
-  "nedelje_>25%": [
-   "P0:F-d3-12km-6w-e330#3",
-   "P0:F-d3-12km-16w-e330#3",
-   "P0:F-d4-15km-6w-e330#3",
-   "P0:R-d4-15km-11w-v65#6",
-   "P0:R-d4-15km-16w-v65#11",
-   "P0:F-d4-15km-16w-e330#3"
   ],
   "kvalitet_duzi_od_dugog": [
    "P0:F-d3-12km-6w-e450#3",

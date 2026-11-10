@@ -1,0 +1,18 @@
+5k-v2.15.0 exp regular start 45 peak 52.1 cap 52.1 days 5
+1 base t45 p45 L12 max12.0 | q1:R: 4 × 400 m[7.8km,8m] ; q2:T: 2,5 km kontinuirano[7.5km,14m]
+2 base t45.8 p45.8 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 2 × 2000 m[9.1km,23m]
+3 base t46.7 p46.7 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 4 × 1000 m[9.4km,23m]
+4 base*D t37.4 p37.4 L9.6 max9.6 | q1:R: 4 × 300 m[6.1km,6m]
+5 base t47.6 p47.3 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 2,5 km kontinuirano[7.5km,14m]
+6 base t48.5 p48.5 L12 max12.0 | q1:R: 6 × 400 m[9.4km,12m] ; q2:T: 2 × 2000 m[9.1km,23m]
+7 base t49.4 p49.4 L12 max12.0 | q1:R: 6 × 400 m[9.4km,12m] ; q2:T: 3 × 1600 m[10.1km,27m]
+8 base*D t39.5 p39.5 L9.6 max9.6 | q1:R: 4 × 300 m[6.1km,6m]
+9 peak t50.3 p50.09 L12 max12.0 | q1:I: 5 × 600 m[9.8km,16m] ; q2:T: 2 × 2000 m[9.1km,23m]
+10 peak t51.2 p51.2 L12 max12.0 | q1:I: 6 × 700 m[11.7km,22m] ; q2:T: 2 × 2000 m[9.1km,23m]
+11 peak*T t52.1 p48.33 L12 max12.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno[8.0km,21m] ; q2:T: 2 × 2000 m[9.1km,23m]
+12 peak*D t41.7 p41.7 L9.6 max9.6 | q1:I: 3 × 800 m[7.5km,13m]
+13 sharpen t52.1 p52 L12 max12.0 | q1:RP: 6 × 800 m[11.3km,26m] ; q2:R: 8 × 300 m[9.5km,12m]
+14 sharpen t52.1 p51.15 L12 max12.0 | q1:RP: 6 × 800 m[10.4km,26m] ; q2:R: 8 × 300 m[9.5km,12m]
+15 taper t44.3 p44.3 L12 max12.0 | q1:RP: 4 × 800 m[8.1km,17m] ; q2:T: 1,5 km kontinuirano[5.5km,9m]
+16 race t21.49 p21.49 L- max10.0 | q1:Oštrenje: 4 × 400 m RP[5.5km,9m] ; race:Trka 5K[10.0km,27m]
+ W PLANNED_BELOW_TARGET 11 Nedelja ima 48,3 km umesto 52,1 km (lagan trk najviše 9,6 km uz dugi 12 km; sa 5 dana trčanja to je najviše št
