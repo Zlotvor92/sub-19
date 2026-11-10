@@ -273,14 +273,18 @@ function dayLimit(
   c: DayLimitContext,
   longOf: (quality100: number) => Lengths | null,
   top10: number,
-  other: FixedDay | null
+  other: FixedDay | null,
+  /** P8-MAR (a): u taperu dan kvaliteta ni po kilometrima nije duži od dugog (napomena „MP skraćen da dan ne bude
+      duži od dugog" mora da važi i za brojeve koje trkač vidi). */
+  byKm = false
 ): DayFits {
   return (ladder, s, exempt) => {
     const q = dayOf(c, ladder, s);
     const len = longOf(q.km100 + (other?.km100 ?? 0));
     const l10 = c.longAfter(len ? len.long10 : top10);
     const long = l10 === null ? Infinity : longWorkout(l10 / 10, c.paces).sec;
-    return (exempt || q.sec <= long) && (other?.sec ?? 0) <= long;
+    const kmOk = !byKm || l10 === null || q.km100 <= l10 * 10;
+    return (exempt || (q.sec <= long && kmOk)) && (other?.sec ?? 0) <= long;
   };
 }
 
@@ -403,8 +407,8 @@ export function taperDayLimit(
   const tLow = withT ? fixedDose(c, doseFor('T_cruise', taperTFloor()), true) : null;
   const mpMin = doseOf(P.taper.mpMin);
   return {
-    q1: dayLimit(c, longOf, top10, tLow),
-    q2: (mp) => dayLimit(c, longOf, top10, fixedDose(c, mp, mp.doseM <= mpMin)),
+    q1: dayLimit(c, longOf, top10, tLow, true),
+    q2: (mp) => dayLimit(c, longOf, top10, fixedDose(c, mp, mp.doseM <= mpMin), true),
     // MAR-11 (T2): MP otpao — dan MP je lagan (jedan lagan dan više).
     alone: dayLimit(
       c,
@@ -421,7 +425,8 @@ export function taperDayLimit(
           adapted
         ),
       top10,
-      null
+      null,
+      true
     )
   };
 }
@@ -830,7 +835,7 @@ function buildWeekIn(
                     ? `Taper (N−${2 - taper}): T ${fmtKm(P.taper.tMinKm)} km po pravilu ne staje u plafon zone (M11 ispred M7, odstupanje) — dan je lagan; ${lf} (M7).`
                     : taper === 0
                       ? `Taper (N−2): cilj ${fmtKm(tw.factor)} × vrh, MP i T ≈ 60 % poslednje doze, ${lf} (M7).`
-                      : `Taper (N−1): cilj ${fmtKm(tw.factor)} × vrh, MP ≈ 50 % poslednje doze, bez T, ${lf} (M7).`;
+                      : `Taper (N−1): cilj ${fmtKm(tw.factor)} × vrh, MP ≈ ${Math.round(tw.mpShare * 100)} % poslednje doze, bez T, ${lf} (M7).`;
     const lowered = [
       ...(w1 &&
       t &&
