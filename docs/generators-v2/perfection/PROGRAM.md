@@ -262,3 +262,19 @@ Oba taba su čekala odluke organizatora; poslate su, tabovi ih ugrađuju i zavr�
   462 → 225.
 - Za krug 2 (sud glavnog trenera): pad ukupnog MP rada (S3), početnik 50 → 75 km (S1), DOSE_DROPPED posle bloka (S2).
 - Radi još samo P8-HM (hm-v2.12.0).
+
+### 10. 11. 2026, 17:25 — P8-HM završen (hm-v2.12.0); P8 zatvoren, grana i CI zeleni
+
+- Kod `7fdab81`, izveštaj `reports/P8-HM-REPORT.md` § Završetak. Po tabu: pun nivo 455/455, `--changed` 2500/2500,
+  E2E 5/5, sabotaže 18/18, 0 novih odbijanja.
+- Nezavisna provera organizatora na `7fdab81`: `npm run check` ceo web — typecheck, lint, format prolaze,
+  299 fajlova / 3375 testova, 0 padova. CI: run 793 (`7fdab81`), 792 (`146563f`), 791 (`d3c9530`) — sva tri uspešna
+  (CI bira testove po dometu izmene; `check:full` nije pokretan — ide jednom pre mergea).
+- HM merenja: dugi početnika ≥ 16 km 792 → 1326 od 1890 (cena: 666 planova gubi > 10 % km laganih dana, najviše
+  23 %); početnik sa planiranim vrhom < 0,9 × granica 51 → 0; test u nedelji najvećeg cilja 84/112 → 17/128; planovi
+  po osećaju bez testa 1728 → 0.
+- Verzije na grani: 5k-v2.15.3, 10k-v2.13.0, hm-v2.12.0, marathon-v2.12.0. Svi P8 tabovi arhivirani; ostaje samo
+  glavni trener. Satni zadatak isključen.
+- ZA SLEDEĆI KRUG (čeka dogovor sa vlasnikom): krug 2 kod glavnog trenera (ispis kroz `userWeekNotes`/`userText`);
+  pad ukupnog RP/MP rada (HM 42 → 34,8 km; MAR 54 → 44); vrh I na 5K 10,1 min; G6 0,70 kod redovnog plana 4 dana na
+  10K; test za plan po osećaju 8–11 ned na 10K; talas dugog; cena G8; `check:full` + E2E 5K pre mergea.
