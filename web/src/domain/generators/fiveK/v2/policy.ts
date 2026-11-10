@@ -354,14 +354,18 @@ export const FIVE_K_V2_POLICY = {
   warmup: {
     /** Zagrevanje/hlađenje [km] po ciljnom km nedelje (heuristika). Zadatak: 2–3 / 1,5–2 km.
         2.0.1: ispod 25 km nedeljno 1,5 / 1,0 km, inače nedelja od 15–24 km nema mesta za lagan
-        trk (v. DECISIONS). Trka uvek koristi `race`. */
+        trk (v. DECISIONS). Trka: workouts.raceWarmup (5k-v2.15.0). */
     bands: [
       { fromWeekKm: 0, warmupKm: 1.5, cooldownKm: 1.0 },
       { fromWeekKm: 25, warmupKm: 2.0, cooldownKm: 1.5 },
       { fromWeekKm: 35, warmupKm: 2.5, cooldownKm: 1.5 },
       { fromWeekKm: 45, warmupKm: 3.0, cooldownKm: 2.0 }
     ],
-    race: { warmupKm: 2.0, cooldownKm: 1.5 }
+    /** 5k-v2.15.0 (P8 d, heuristika, odluka organizatora P8, nalaz slepe ocene: trka 8,5 km za sve nivoe): trkački dan
+        ima WU/CD pojasa `bands` za VRH obima plana (cilj ≤ 20 km/ned → prvi pojas 1,5 / 1,0 km); ako bi tako trkački
+        dan bio najduži dan plana (≥ najdužeg treninga), prvi pojas, pa `raceMin` (1,0 / 0,5 km — najkraće smisleno
+        zagrevanje pred trku; tumačenje taba). Jedino mesto: workouts.raceWarmup (konstruktor, validator WARMUP). */
+    raceMin: { warmupKm: 1.0, cooldownKm: 0.5 }
   },
 
   schedule: {

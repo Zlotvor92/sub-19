@@ -50,7 +50,7 @@ import {
   protectedKm,
   secondEasyDose
 } from './week.ts';
-import type { WeekDose } from './workouts.ts';
+import { raceWarmup, type WeekDose } from './workouts.ts';
 import { type Written, writtenWeek } from './written.ts';
 
 const fmt = (sec: number): string =>
@@ -182,6 +182,8 @@ export function construct(
       // 2.8.0 (pouka 30): trkačka nedelja ≤ planirano UPISANOG tapera (pouka 29); zaštićeni dani trkačke nedelje
       // ulaze u zbir (week.raceWeekRest).
       const taper = written[written.length - 1];
+      // 5k-v2.15.0 (P8 d): WU/CD trke po vrhu obima; trkački dan ne sme biti najduži dan plana (workouts.raceWarmup).
+      const raceBand = raceWarmup(adapted.peakKm, longestDayKm(written));
       const priorRace = prior?.weeks[f.index - 1];
       const cap = taper
         ? {
@@ -206,7 +208,8 @@ export function construct(
         p,
         prevLong,
         cap,
-        input.weekOffset
+        input.weekOffset,
+        raceBand
       );
       // 2.6.0: i kad oštrenje ostavlja nedelju ispod minimuma trkačke nedelje (mala granica posle
       // smanjenja) — oštrenje otpada (pravilo f), lagani dani nose granicu.
@@ -222,7 +225,8 @@ export function construct(
           p,
           prevLong,
           cap,
-          input.weekOffset
+          input.weekOffset,
+          raceBand
         );
         if (short && r.ok)
           r.week.notes.push(
@@ -337,6 +341,10 @@ export function construct(
     }
   };
 }
+
+/** 5k-v2.15.0 (P8 d): najduži trening upisanih nedelja [km] (konstruktor i validator, workouts.raceWarmup). */
+export const longestDayKm = (weeks: readonly PlanWeek[]): number =>
+  Math.max(0, ...weeks.flatMap((w) => w.days.filter((d) => d.role !== 'race').map((d) => d.workout.km)));
 
 const isBuildPhase = (ph: Phase): boolean => ph === 'base' || ph === 'peak' || ph === 'sharpen';
 

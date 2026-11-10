@@ -1376,20 +1376,38 @@ export function longRun(totalKm: number, p: PaceModel): Workout {
   );
 }
 
-/** 2.4.0: bez rezultata trka je po osećaju (trajanje procenjeno E tempom — gornja granica). */
-export function raceDay(p: PaceModel): Workout {
+/**
+ * 5k-v2.15.0 (P8 d) — JEDINO mesto WU/CD trkačkog dana: pojas za vrh obima plana (`peakKm`, warmupBand), pa ako bi
+ * trkački dan (WU + 5 km + CD) bio ≥ najdužeg treninga plana (`longestKm`), prvi pojas, pa warmup.raceMin; ni tada
+ * kraći → raceMin (ne može se izbeći). Konstruktor (generate) i validator (WARMUP) čitaju istu funkciju.
+ */
+export function raceWarmup(
+  peakKm: number,
+  longestKm: number
+): { warmupKm: number; cooldownKm: number } {
+  const race = P.paces.raceDistanceM / 1000;
+  const min = P.warmup.raceMin;
+  for (const b of [warmupBand(peakKm), P.warmup.bands[0], min])
+    if (b.warmupKm + race + b.cooldownKm + 1e-9 < longestKm)
+      return { warmupKm: b.warmupKm, cooldownKm: b.cooldownKm };
+  return { warmupKm: min.warmupKm, cooldownKm: min.cooldownKm };
+}
+
+/** 2.4.0: bez rezultata trka je po osećaju (trajanje procenjeno E tempom — gornja granica). 5k-v2.15.0: WU/CD iz
+    raceWarmup. */
+export function raceDay(p: PaceModel, band: { warmupKm: number; cooldownKm: number }): Workout {
   return buildWorkout(
     'race',
     null,
     'Trka 5K',
     [
-      { kind: 'warmup', km: P.warmup.race.warmupKm },
+      { kind: 'warmup', km: band.warmupKm },
       {
         kind: 'race',
         km: P.paces.raceDistanceM / 1000,
         ...(p.vdot === null ? { effort: P.feel.effort.race } : {})
       },
-      { kind: 'cooldown', km: P.warmup.race.cooldownKm }
+      { kind: 'cooldown', km: band.cooldownKm }
     ],
     p
   );

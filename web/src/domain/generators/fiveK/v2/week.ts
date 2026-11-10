@@ -632,7 +632,8 @@ export function buildRaceWeek(
   p: PaceModel,
   prevLongKm: number,
   cap: { km: number; fixed?: (date: string) => PlanDay | null | undefined } | null = null,
-  off = 0
+  off = 0,
+  raceBand: { warmupKm: number; cooldownKm: number } = P.warmup.bands[0]
 ): WeekResult {
   const budgets = qualityBudgets(bound);
   const gapToRace = (w: Weekday): number => daysBetween(dateOfWeekday(f, w), raceDate);
@@ -702,7 +703,7 @@ export function buildRaceWeek(
     role: 'race',
     hard: true,
     countsToWeek: false,
-    workout: raceDay(p)
+    workout: raceDay(p, raceBand)
   });
   days.sort((a, b) => a.date.localeCompare(b.date));
   // 2.8.0 (pouka 30): trkačka nedelja ≤ planirano tapera — višak laganih dana postaje odmor (raceWeekRest).

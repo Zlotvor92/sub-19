@@ -66,6 +66,7 @@ import {
   firstIBudget,
   iMaxShareOf,
   qualityBudgets,
+  raceWarmup,
   tFormOf,
   tMaxSec,
   warmupBand
@@ -1213,7 +1214,15 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       // 5k-v2.12.0 (T2): nedelja sa WU/CD na minimumu (week.qualityWarmupMin) — najniži pojas.
       const band =
         d.workout.kind === 'race'
-          ? P.warmup.race
+          ? raceWarmup(
+              peakRefAt(raceWeek.index),
+              Math.max(
+                0,
+                ...weeks
+                  .filter((x) => x.phase !== 'race')
+                  .flatMap((x) => x.days.map((y) => y.workout.km))
+              )
+            )
           : w.wuMin && isBuild(w)
             ? P.warmup.bands[0]
             : warmupBand(bandKm);
