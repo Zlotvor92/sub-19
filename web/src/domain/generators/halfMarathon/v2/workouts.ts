@@ -511,15 +511,25 @@ export function easyStridesWorkout(km: number, reps: number, p: Paces): Workout 
 export const stridesOf = (w: Pick<Workout, 'kind' | 'segments'>): number =>
   w.kind === 'easy' ? w.segments.filter((s) => s.kind === 'stride').length : 0;
 
-/** H8: oštrenje trkačke nedelje — WU + 2 × 2000 m RP (2:00) + CD (WU/CD po H14). */
+/** G5 (P8): deonica oštrenja [m] — najduža deljiva sa 100 m, ≤ 2000 m, za koju dve deonice u trkačkom tempu nedelje
+    traju ≤ 12 min; null kad ni 2 × 400 m ne staje (bez oštrenja). Jedna funkcija za konstruktor i validator. */
+export function sharpenerRepM(p: Paces): number | null {
+  const s = P.raceWeek.sharpener;
+  const byTime = Math.floor(((s.maxWorkSec / s.reps / p.RP) * 1000 + 1e-6) / s.roundM) * s.roundM;
+  const repM = Math.min(s.repM, byTime);
+  return repM >= s.minRepM ? repM : null;
+}
+
+/** H8/G5: oštrenje trkačke nedelje — WU + 2 × deonica RP (2:00) + CD (WU/CD po H14); deonica sharpenerRepM. */
 export function sharpenerWorkout(p: Paces, wc: WarmupCooldown, feel = false): Workout {
   const s = P.raceWeek.sharpener;
+  const repM = sharpenerRepM(p) ?? s.minRepM;
   return qualityWorkout(
     {
       ladder: 'RP_sharpener',
       zone: 'RP',
-      doseM: s.reps * s.repM,
-      structure: { form: 'reps', reps: s.reps, repM: s.repM },
+      doseM: s.reps * repM,
+      structure: { form: 'reps', reps: s.reps, repM },
       step: 'sharpener'
     },
     p,

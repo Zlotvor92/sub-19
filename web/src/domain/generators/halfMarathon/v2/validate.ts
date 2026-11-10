@@ -174,7 +174,8 @@ import {
   structuresForDose,
   warmupCooldown,
   zoneOf,
-  stridesOf
+  stridesOf,
+  sharpenerRepM
 } from './workouts.ts';
 import { weekLabel } from './weekLabel.ts';
 
@@ -1156,11 +1157,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       const s = dose.structure;
       const a = P.alternatives;
       // H10: T deonice ≥ 1000 m; RP deonice ≥ 2000 m, kontinuirano do 10 km (oštrenje: H8).
-      const repMin = dose.zone === 'T' ? a.tRepMinM : dose.zone === 'RP' ? a.rpRepMinM : 0;
+      // G5 (P8): oštrenje ima svoju deonicu (2 × ≤ 2000 m, ≤ 12 min rada) — proverava RACE_SHARPENER.
+      const sharp = dose.ladder === 'RP_sharpener';
+      const repMin = sharp ? 0 : dose.zone === 'T' ? a.tRepMinM : dose.zone === 'RP' ? a.rpRepMinM : 0;
       if (repsOf(s).some((m) => m < repMin))
         err('REP_MIN', `${dose.zone} deonica < ${repMin} m (H10).`, w.index, d.date);
       // Faza 4a N6: RP nikad ispod najnižeg nivoa (ista funkcija kao konstruktor, quality.floorM).
-      if (dose.zone === 'RP' && dose.doseM < floorM('RP', B0))
+      if (dose.zone === 'RP' && !sharp && dose.doseM < floorM('RP', B0))
         err(
           'RP_FLOOR',
           `RP ${dose.doseM} m < najniži nivo ${floorM('RP', B0)} m (H10).`,
@@ -1978,7 +1981,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     const bannedR = new Set(rw.limits?.noQuality ?? []);
     // T3 (krug T): posle novog starta kratko oštrenje kao bez pauze, osim u periodu bola (ista funkcija).
     const nsR = newStartAt(steps, rw.index) && painOf(rw).size === 0;
-    const sd = sharpenerAllowed(taperRpM, nsR)
+    const sd = sharpenerAllowed(taperRpM, nsR, false, pw(rw))
       ? sharpenerDate(wantDays, race, prevHard, bannedR)
       : null;
     const s0 = sharp[0];
@@ -2002,13 +2005,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       !st ||
       st.form !== 'reps' ||
       st.reps !== q.sharpener.reps ||
-      st.repM !== q.sharpener.repM ||
+      st.repM !== sharpenerRepM(pw(rw)) ||
       daysBetween(s0.date, race) < q.sharpenerMinGapDays ||
       s0.workout.segments.some((x) => x.kind === 'recovery' && x.sec !== q.sharpener.recoverySec)
     )
       err(
         'RACE_SHARPENER',
-        `Oštrenje: ${q.sharpener.reps} × ${q.sharpener.repM} m RP (2:00, ≤ RP doza tapera ${taperRpM} m) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (H8).`,
+        `Oštrenje: ${q.sharpener.reps} × ${sharpenerRepM(pw(rw))} m RP (2:00, ≤ 12 min rada, ≤ RP doza tapera ${taperRpM} m) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (H8).`,
         rw.index
       );
     if (s0 && s0.workout.dose && s0.workout.dose.doseM > taperRpM && !nsR)

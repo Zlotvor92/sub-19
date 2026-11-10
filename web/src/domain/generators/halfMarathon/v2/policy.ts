@@ -723,7 +723,9 @@ export const HM_V2_POLICY = {
   raceWeek: {
     /** Dana trčanja uključujući trku = min(broj dana, maxRunDays). */
     maxRunDays: 5,
-    sharpener: { reps: 2, repM: 2000, recoverySec: 120 },
+    /** G5 (P8): dve jednake deonice u trkačkom tempu, ukupno ≤ maxWorkSec rada (12 min) po tempu nedelje; deonica
+        deljiva sa roundM, najviše repM (2000 m), najmanje minRepM (ispod toga bez oštrenja — ubrzanja dana pred trku). */
+    sharpener: { reps: 2, repM: 2000, recoverySec: 120, maxWorkSec: 720, minRepM: 400, roundM: 100 },
     sharpenerMinGapDays: 3,
     eveEasySec: 1200,
     eveStrides: { reps: 4, sec: 20 },

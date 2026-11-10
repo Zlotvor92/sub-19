@@ -456,7 +456,9 @@ export function deloadDose(
   if (!rule.beginner) {
     const s = reducedStructure(
       ladder,
-      state[deloadSlot(rule.quality)]?.doseM ?? 0,
+      // G5 (P8): ≈ 60 % poslednje ne-rasteretne doze ISTE zone (T) — plan sa jednim kvalitetom u specifičnoj fazi
+      // ima RP u slotu, pa se čita poslednja T doza (`t`), ne doza slota.
+      rule.quality === 1 ? state.t : (state.q2?.doseM ?? 0),
       P.deload.tShare,
       tMinStructure(ladder, P.deload.tMinKm),
       false,

@@ -69,6 +69,7 @@ import {
   qualityWorkout,
   raceWorkout,
   structuresForDose,
+  sharpenerRepM,
   sharpenerWorkout,
   testWorkout,
   type WarmupCooldown,
@@ -1173,9 +1174,17 @@ export function remainderWeek(
 /** H8: oštrenje (2 × 2000 m RP) samo kad je ≤ RP doza tapera; taper bez RP → bez oštrenja. T3 (krug T): posle
     novog starta (`newStart`) trkačka nedelja zadržava kratko oštrenje kao bez pauze, osim u periodu bola (`pain`
     — dan bola u trkačkoj nedelji). Konstruktor i validator. */
-export function sharpenerAllowed(taperRpM: number, newStart = false, pain = false): boolean {
+export function sharpenerAllowed(
+  taperRpM: number,
+  newStart = false,
+  pain = false,
+  p?: Paces
+): boolean {
   const s = P.raceWeek.sharpener;
-  return (newStart && !pain) || (taperRpM > 0 && s.reps * s.repM <= taperRpM);
+  // G5 (P8): deonica po minutima rada (sharpenerRepM); ni 2 × 400 m ne staje → bez oštrenja.
+  const repM = p ? sharpenerRepM(p) : s.repM;
+  if (repM === null) return false;
+  return (newStart && !pain) || (taperRpM > 0 && s.reps * repM <= taperRpM);
 }
 
 /** H8: dani trčanja trkačke nedelje osim trke — ukupno sa trkom najviše min(broj dana, 5); otpada prvo
@@ -1302,7 +1311,8 @@ export function raceWeek(
   const allowed = sharpenerAllowed(
     taperRpM,
     ctx.newStart === true,
-    (frame.limits?.pain ?? []).length > 0
+    (frame.limits?.pain ?? []).length > 0,
+    p
   );
   const banned = new Set(frame.limits?.noQuality ?? []);
   const free = allowed ? sharpenerDate(runs, race, prevHard) : null;
@@ -1320,7 +1330,7 @@ export function raceWeek(
           `Trkačka nedelja: lagan ${fmtKm(easy.km)} km = najkraći lagan tapera (kraći od ${Math.round(q.otherEasySec / 60)} min E; trkačka ≤ taper, H8).`
         ]
       : [];
-  const s = q.sharpener;
+  const s = { reps: q.sharpener.reps, repM: sharpenerRepM(p) ?? q.sharpener.minRepM };
   const lim = limitDays(frame, days, null, p);
   return finish(lim.days, null, null, [
     sharpen && s.reps * s.repM > taperRpM

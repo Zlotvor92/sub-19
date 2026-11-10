@@ -487,7 +487,7 @@ export function checkPlan(
       const tSlot = one ? 'q1' : 'q2';
       const tWant = beg
         ? reduced(ladder, lastT, 1500)
-        : reduced(ladder, one ? lastQ1 : lastQ2, 2000);
+        : reduced(ladder, one ? lastT : lastQ2, 2000);
       if (
         qs.length > 1 ||
         (qs.length === 1 &&
@@ -665,7 +665,13 @@ export function checkPlan(
     const gap = daysBetween(d.date, p.input.raceDate);
     if (d.role === 'sharpener') {
       const dose = d.workout.dose!;
-      if (gap < 3 || dose.doseM !== 4000 || dose.doseM > taperRp) no('SHARPENER', d.date);
+      // G5 (P8, nezavisno): dve jednake deonice ≤ 2000 m, deljive sa 100 m, najduže za koje je rad ≤ 12 min.
+      const repM = Math.min(2000, Math.floor((360 / p.paces.RP) * 10 + 1e-9) * 100);
+      const workSec = d.workout.segments
+        .filter((x) => x.kind === 'rep')
+        .reduce((a, x) => a + x.sec, 0);
+      if (gap < 3 || dose.doseM !== 2 * repM || workSec > 722 || dose.doseM > taperRp)
+        no('SHARPENER', d.date);
     } else if (d.role === 'eve') {
       if (gap !== 1 || d.workout.sec > 1800) no('EVE', d.date);
     } else if (d.role === 'easy') {
