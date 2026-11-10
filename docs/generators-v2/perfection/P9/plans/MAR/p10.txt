@@ -1,4 +1,4 @@
-PLAN — maraton · marathon-v2.13.0
+PLAN — maraton · marathon-v2.14.0
 Profil: po osećaju, spor, lagan tempo 7:30/km, 3 dana, dno obima, najduža priprema
 
 Početak: 2026-11-02 (24 nedelja), trka: 2027-04-18.
@@ -18,6 +18,7 @@ OCENA CILJA
   Prognoza: nema pouzdanog rezultata.
   Napomena plana: Plan po osećaju: bez rezultata trke. E = lagan tempo 7:30/km ± 15 s; tempo T/I/R i MP je orijentir (procena) iz procene VDOT 30,8 — trening vodi RPE (MP 5–6 „ritam maratona").
   Napomena plana: Test 5 km: nedelja 8, 2026-12-24. Ocena cilja, prognoza maratona i MP tempo: posle testa (prilagođavanje plana).
+  Napomena plana: 3 dana ne nose ovaj obim; preporuka 4–6 dana.
 
 ------------------------------------------------------------
 NEDELJA 1 — faza: osnova
@@ -176,65 +177,67 @@ NEDELJA 15 — faza: razvoj
 
 ------------------------------------------------------------
 NEDELJA 16 — faza: specifična
-  15.02.–21.02. · cilj 42,0 km · planirano 42,0 km · ukupno 5 h 12 min
-  Utorak     16.02.  Lagano 11,5 km sa 6 × 20 s ubrzanja na kraju
-      11,5 km · 1 h 26 min
+  15.02.–21.02. · cilj 39,7 km · planirano 39,7 km · ukupno 4 h 55 min
+  Utorak     16.02.  Lagano 12,4 km sa 6 × 20 s ubrzanja na kraju
+      12,4 km · 1 h 32 min
   Četvrtak   18.02.  WU 15 min + MP 2 × 3000 m (oporavak 1:30 džog) + CD 10 min
       9,5 km · 1 h 09 min · radnih 43 min
-  Nedelja    21.02.  Dugi 21,0 km lagano
-      21,0 km · 2 h 38 min
+  Nedelja    21.02.  Dugi 17,8 km lagano
+      17,8 km · 2 h 14 min
 
 ------------------------------------------------------------
 NEDELJA 17 — faza: specifična — RASTEREĆENJE
-  22.02.–28.02. · cilj 33,6 km · planirano 33,6 km · ukupno 4 h 09 min
-  Utorak     23.02.  Lagano 11,5 km sa 6 × 20 s ubrzanja na kraju
-      11,5 km · 1 h 26 min
+  22.02.–28.02. · cilj 31,8 km · planirano 31,8 km · ukupno 3 h 56 min
+  Utorak     23.02.  Lagano 12,3 km sa 6 × 20 s ubrzanja na kraju
+      12,3 km · 1 h 32 min
   Četvrtak   25.02.  WU 15 min + T 2,0 km kontinuirano + CD 10 min
       5,3 km · 38 min · radnih 13 min
-  Nedelja    28.02.  Dugi 16,8 km lagano
-      16,8 km · 2 h 06 min
-  Napomena: Rasterećenje: cilj 33,6 km, jedan kvalitet (T), dugi 0,8 × poslednjeg dugog pre rasterećenja.
+  Nedelja    28.02.  Dugi 14,2 km lagano
+      14,2 km · 1 h 47 min
+  Napomena: Rasterećenje: cilj 31,8 km, jedan kvalitet (T), dugi 0,8 × poslednjeg dugog pre rasterećenja.
 
 ------------------------------------------------------------
 NEDELJA 18 — faza: specifična
   01.03.–07.03. · cilj 42,0 km · planirano 42,0 km · ukupno 5 h 11 min
-  Utorak     02.03.  Lagano 9,5 km sa 6 × 20 s ubrzanja na kraju
-      9,5 km · 1 h 11 min
-  Četvrtak   04.03.  WU 15 min + MP 2 × 4000 m (oporavak 1:30 džog) + CD 10 min
-      11,5 km · 1 h 23 min · radnih 57 min
-  Nedelja    07.03.  Dugi 21,0 km lagano
-      21,0 km · 2 h 38 min
+  Utorak     02.03.  Lagano 10,5 km
+      10,5 km · 1 h 19 min
+  Četvrtak   04.03.  Lagano 10,5 km sa 6 × 20 s ubrzanja na kraju
+      10,5 km · 1 h 18 min
+  Nedelja    07.03.  Dugi 21,0 km: 13,0 km lagano + 8,0 km u maratonskom tempu
+      21,0 km · 2 h 34 min · radnih 57 min
+  Napomena: Specifična nedelja sa blokom: poslednjih 8,0 km dugog trčanja u maratonskom tempu; dan treninga u maratonskom tempu je lagan.
 
 ------------------------------------------------------------
 NEDELJA 19 — faza: specifična
-  08.03.–14.03. · cilj 42,0 km · planirano 42,0 km · ukupno 5 h 11 min
-  Utorak     09.03.  Lagano 9,7 km sa 6 × 20 s ubrzanja na kraju
-      9,7 km · 1 h 12 min
+  08.03.–14.03. · cilj 41,5 km · planirano 41,5 km · ukupno 5 h 08 min
+  Utorak     09.03.  Lagano 12,4 km sa 6 × 20 s ubrzanja na kraju
+      12,4 km · 1 h 32 min
   Četvrtak   11.03.  WU 15 min + MP 8,0 km kontinuirano + CD 10 min
       11,3 km · 1 h 22 min · radnih 57 min
-  Nedelja    14.03.  Dugi 21,0 km lagano
-      21,0 km · 2 h 38 min
+  Nedelja    14.03.  Dugi 17,8 km lagano
+      17,8 km · 2 h 14 min
 
 ------------------------------------------------------------
 NEDELJA 20 — faza: specifična — RASTEREĆENJE
-  15.03.–21.03. · cilj 33,6 km · planirano 33,6 km · ukupno 4 h 09 min
-  Utorak     16.03.  Lagano 11,5 km sa 6 × 20 s ubrzanja na kraju
-      11,5 km · 1 h 26 min
+  15.03.–21.03. · cilj 33,2 km · planirano 33,2 km · ukupno 4 h 06 min
+  Utorak     16.03.  Lagano 13,7 km sa 6 × 20 s ubrzanja na kraju
+      13,7 km · 1 h 42 min
   Četvrtak   18.03.  WU 15 min + T 2,0 km kontinuirano + CD 10 min
       5,3 km · 38 min · radnih 13 min
-  Nedelja    21.03.  Dugi 16,8 km lagano
-      16,8 km · 2 h 06 min
-  Napomena: Rasterećenje: cilj 33,6 km, jedan kvalitet (T), dugi 0,8 × poslednjeg dugog pre rasterećenja.
+  Nedelja    21.03.  Dugi 14,2 km lagano
+      14,2 km · 1 h 47 min
+  Napomena: Rasterećenje: cilj 33,2 km, jedan kvalitet (T), dugi 0,8 × poslednjeg dugog pre rasterećenja.
 
 ------------------------------------------------------------
 NEDELJA 21 — faza: specifična
-  22.03.–28.03. · cilj 42,0 km · planirano 42,0 km · ukupno 5 h 11 min
-  Utorak     23.03.  Lagano 9,5 km sa 6 × 20 s ubrzanja na kraju
-      9,5 km · 1 h 11 min
-  Četvrtak   25.03.  WU 15 min + MP 2 × 4000 m (oporavak 1:30 džog) + CD 10 min
-      11,5 km · 1 h 23 min · radnih 57 min
-  Nedelja    28.03.  Dugi 21,0 km lagano
-      21,0 km · 2 h 38 min
+  22.03.–28.03. · cilj 41,5 km · planirano 41,5 km · ukupno 5 h 07 min
+  Utorak     23.03.  Lagano 10,4 km
+      10,4 km · 1 h 18 min
+  Četvrtak   25.03.  Lagano 10,4 km sa 6 × 20 s ubrzanja na kraju
+      10,4 km · 1 h 17 min
+  Nedelja    28.03.  Dugi 20,7 km: 12,7 km lagano + 8,0 km u maratonskom tempu
+      20,7 km · 2 h 32 min · radnih 57 min
+  Napomena: Specifična nedelja sa blokom: poslednjih 8,0 km dugog trčanja u maratonskom tempu; dan treninga u maratonskom tempu je lagan.
 
 ------------------------------------------------------------
 NEDELJA 22 — faza: taper
@@ -271,3 +274,4 @@ NEDELJA 24 — faza: trka
 ============================================================
 UPOZORENJA PLANA
   - Najduže dugo trčanje u planu je 21,0 km; za maraton se preporučuje bar 26 km. Ograničava ga udeo dugog (najviše 50 % nedelje sa 3 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duže dugo trčanje. Za maraton treba oko 52 km nedeljno u vrhu pripreme; preporuka: polumaraton ili duža priprema.
+  - 3 dana ne nose ovaj obim; preporuka 4–6 dana.
