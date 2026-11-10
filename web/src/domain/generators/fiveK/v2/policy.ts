@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.14.0',
+  version: '5k-v2.15.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -162,11 +162,10 @@ export const FIVE_K_V2_POLICY = {
   quality: {
     /** 5k-v2.13.0 (P4 S1, heuristika): JEDAN plafon I (uključujući RP) = udeo cilja nedelje po tabeli — poslednji red
         čiji je `fromKm` ≤ cilj: cilj < 40 km → 10 %, cilj ≥ 40 km → 12 % (do 5k-v2.12.0 8 % za sve). Jedino mesto
-        čitanja: workouts.iMaxShareOf (budžet konstruktora i validator I_SHARE). Ponavljanje ≤ 5 min (iRepMaxSec). */
-    iMaxShareByTargetKm: [
-      { fromKm: 0, share: 0.1 },
-      { fromKm: 40, share: 0.12 }
-    ],
+        čitanja: workouts.iMaxShareOf (budžet konstruktora i validator I_SHARE). Ponavljanje ≤ 5 min (iRepMaxSec).
+        5k-v2.15.0 (P8 a, heuristika, odluka organizatora P8, nalaz slepe ocene): jedan broj 10 % za sve ciljeve (red
+        ≥ 40 km → 12 % ukinut; preterao je kod većeg obima). */
+    iMaxShareByTargetKm: [{ fromKm: 0, share: 0.1 }],
     iRepMaxSec: 300,
     /** T ≤ 10% nedeljnog obima (heuristika). */
     tMaxShare: 0.1,
