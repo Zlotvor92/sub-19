@@ -8,7 +8,7 @@ import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import { weekLabel } from '../input.ts';
 import { baseVdot, vdotAt } from '../steps.ts';
 import type { FiveKV2Plan } from '../types.ts';
-import type { GenPlanState, IsoDate, LogEntry, T3kRecord } from '../../exchange.ts';
+import type { GenPlanState, IsoDate, LogEntry, T3kRecord } from './exchange.ts';
 import { v2Of } from './adapt.ts';
 import { buildFacts } from './facts.ts';
 import { goalOf, prefixOf } from './plan.ts';

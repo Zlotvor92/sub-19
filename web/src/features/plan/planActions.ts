@@ -282,11 +282,13 @@ export async function recalibratePlan(plan: ResolvedPlan, todayStr: string): Pro
   return true;
 }
 
+/** Šta „nov plan" briše a šta ostaje (`discardPlan` → `domain/plan/purge.ts`). V1b: potvrda to kaže doslovno. */
+export const NEW_PLAN_CONFIRM =
+  'Napraviti nov plan?\n\nTRAJNO se briše (nema arhive): postojeći plan i sve uz njegove treninge — upisana trčanja i napomene, procene vremena, izmene i pomeranja treninga, forma (VDOT) izmerena na tim treninzima i bol/težina upisani uz trening.\n\nOstaje: test na 3 km, bol i težina upisani ručno, jutarnja merenja i trčanja van plana.\n\nAko ti trebaju, prvo izvezi backup.';
+
 /** Novi plan umesto postojećeg generisanog: trajno briše postojeći plan i njegove unose, pa otvara čarobnjak. */
 export function startNewPlan(): void {
-  void confirmAction(
-    'Napraviti nov plan?\n\nPostojeći plan i svi unosi uz njega se TRAJNO brišu — nema arhive.\n\nAko ti trebaju, prvo izvezi backup.'
-  ).then((ok) => {
+  void confirmAction(NEW_PLAN_CONFIRM).then((ok) => {
     if (!ok) return;
     discardPlan();
     useUIStore.getState().setWizard(true);

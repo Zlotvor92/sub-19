@@ -19,7 +19,7 @@ import type {
   RunWalkDay
 } from '../types.ts';
 import { addDays, diffDays, type IsoDate } from './date.ts';
-import type { GenPlanState, StoredWeek } from '../../exchange.ts';
+import type { GenPlanState, StoredWeek } from './exchange.ts';
 import { runWalkRaceStructure, runWalkStructure, workoutStructure } from './structure.ts';
 import type {
   PlanMeta,

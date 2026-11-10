@@ -1,7 +1,7 @@
 /* 5K v2 → aplikacija: kalendarske funkcije sa potpisom formata razmene (brendirani `IsoDate`), nad aritmetikom
    `../dates.ts` (bez sata i vremenske zone). Iste vrednosti kao `fiveK/date` (kopija ponašanja, ne uvoz). */
 
-import type { IsoDate } from '../../exchange.ts';
+import type { IsoDate } from './exchange.ts';
 import { addDays as add, dayNumber, mustDay, weekdayIndexOfDay } from '../dates.ts';
 
 export type { IsoDate };

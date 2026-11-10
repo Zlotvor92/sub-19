@@ -4,7 +4,7 @@
    aplikacijom); razrešen plan i tereti ugovora su ovde lokalni STRUKTURNI oblici — `select.ts` ih proverava sa
    `satisfies PlanGenerator`, pa promena ugovora pada pri prevođenju umesto da se tiho razide. */
 
-import type { DayTag, GenPlanState, IsoDate, StoredWeek, StructuredDay } from '../../exchange.ts';
+import type { DayTag, GenPlanState, IsoDate, StoredWeek, StructuredDay } from './exchange.ts';
 
 export type { IsoDate };
 export type { StructuredDay };

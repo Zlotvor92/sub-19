@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
-import { brojNedelja } from '../../domain/format';
-import type { WizardState, weeksHint } from '../../domain/onboarding';
+import type { WizardState } from '../../domain/onboarding';
 import { Chips, RACE_DISTS } from './controls';
 
 /* Jedna rečenica za IZABRANU distancu umesto objašnjenja sve četiri odjednom. Isti sadržaj kao ranije (fokus, dugo trčanje, minimum nedelja). */
@@ -19,22 +18,20 @@ const DIST_WEEKS: Readonly<Record<number, string>> = {
   42195: '12 nedelja'
 };
 
-/* KORAK 1: ciljna distanca i datum trke. Poruka pod datumom (koliko nedelja ima do trke i da li je dovoljno) stiže gotova iz domena. */
+/* KORAK 1: ciljna distanca i datum trke. Poruku pod datumom (koliko nedelja ima plan) daje korak generatora v2 distance (`extra`). */
 
 export function Step1Race({
   w,
   set,
   today,
-  hint,
   err,
   extra
 }: {
   w: WizardState;
   set: (p: Partial<WizardState>) => void;
   today: string;
-  hint: ReturnType<typeof weeksHint>;
   err: string;
-  /** Dodatna napomena pod datumom (5K v2: trajanje plana u celim nedeljama). */
+  /** Napomena pod datumom (generator v2 distance: trajanje plana u celim nedeljama). */
   extra?: ReactNode;
 }) {
   return (
@@ -69,25 +66,6 @@ export function Step1Race({
             value={w.raceDate}
             onChange={(e) => set({ raceDate: e.target.value })}
           />
-        </div>
-        <div className="ob-hint" id="ob-weeks-hint" aria-live="polite">
-          {hint.kind === 'this-week' ? (
-            <>
-              Trka je <b>ove nedelje</b> — plan možeš da napraviš, ali nema vremena za punu
-              pripremu.
-            </>
-          ) : hint.kind === 'too-short' ? (
-            <>
-              Do trke: <b>{brojNedelja(hint.weeks)}</b> — za pun ciklus ({hint.name}) preporučuje se
-              najmanje <b>{hint.minWeeks}</b>, ali možeš napraviti plan za izabrani datum uz
-              napomenu o skraćenoj pripremi.
-            </>
-          ) : hint.kind === 'enough' ? (
-            <>
-              Do trke: <b>{brojNedelja(hint.weeks)}</b> — dovoljno za pun ciklus pripreme za{' '}
-              {hint.nameInSentence}, sa nedeljom rasterećenja i taperom.
-            </>
-          ) : null}
         </div>
         {extra}
         <div className="ob-err" id="ob-err-1" role="alert">

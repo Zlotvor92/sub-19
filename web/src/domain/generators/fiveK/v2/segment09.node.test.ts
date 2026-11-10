@@ -10,7 +10,7 @@ import { raceTimeForVdot } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { START } from './testInputs.ts';
 import { kmText, mss, userText } from './text.ts';
-import type { IsoDate } from '../exchange.ts';
+import type { IsoDate } from './app/exchange.ts';
 import type { AdaptResult, FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { raceWeekEasyCap, raceWeekRest, sharpenerCandidates } from './week.ts';

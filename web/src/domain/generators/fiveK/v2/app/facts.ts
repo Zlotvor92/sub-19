@@ -31,7 +31,7 @@ import type {
   PainRecord,
   SyncIssue,
   T3kRecord
-} from '../../exchange.ts';
+} from './exchange.ts';
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import type {
   AdaptFacts,

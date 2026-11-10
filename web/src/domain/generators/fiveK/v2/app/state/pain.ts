@@ -5,7 +5,7 @@
    unos. Ime polja `S.knee` je istorijsko: nosi mapu tela, ne samo jedan zglob. */
 
 import { addDays, diffDays, isIsoDate, type IsoDate } from '../date.ts';
-import type { PainRecord } from '../../../exchange.ts';
+import type { PainRecord } from '../exchange.ts';
 import {
   PAIN_DAYS_SEE_PHYSIO,
   PAIN_STOP,

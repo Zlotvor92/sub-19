@@ -15,7 +15,6 @@ import {
   unsupportedPlanReason,
   type DecisionPoint,
   type ExecutionAdjustmentOptions,
-  type GeneratorFlags,
   type PreparationChoice,
   type PreparationDecision,
   type ReplanContext,
@@ -28,7 +27,6 @@ import {
 } from '../domain/plan/versions';
 import type { AltRecord, GenPlanState } from '../domain/state';
 import { fiveKV2Sources } from './fiveKV2Actions';
-import { currentGeneratorFlags } from './generatorFlags';
 import { hmV2Sources } from './hmV2Actions';
 import { marathonV2Sources } from './marathonV2Actions';
 import { tenKV2Sources } from './tenKV2Actions';
@@ -360,17 +358,14 @@ export function previewExecution(
 }
 
 /** Options for the stored plan when it is already a limited long-distance preparation. */
-export function storedPreparationDecision(
-  todayStr: string,
-  flags: GeneratorFlags = currentGeneratorFlags()
-): PreparationDecision | null {
+export function storedPreparationDecision(todayStr: string): PreparationDecision | null {
   const t = useTrainingStore.getState();
   const today = parseIsoDate(todayStr);
   const baseMode =
     (t.genPlan?.meta?.['cycleDecision'] as { kind?: string } | undefined)?.kind === 'base';
-  // Odluka pripada generatoru distance plana (HM → HM, maraton → maraton); 5K/10K je nemaju. 3g: prekidači korisnika
-  // biraju cilj predaje izvora v2 (isti izvor kao za nov plan), a izvor v2 ocenjuje pripremu iz nedelja plana.
-  const preparation = preparationForPlan(t.genPlan, flags);
+  // Odluka pripada generatoru distance plana (HM v2, maraton v2); 5K/10K je nemaju. Cilj predaje je v2 te distance
+  // (V1b), a izvor v2 ocenjuje pripremu iz nedelja plana.
+  const preparation = preparationForPlan(t.genPlan);
   if (
     !preparation ||
     !t.genPlan?.meta ||
@@ -411,7 +406,7 @@ export function previewPreparationChoice(
   if (!t.genPlan || !today)
     return { ok: false, reason: 'Za odluku o pripremi treba generisan plan i ispravan datum.' };
   const generator = generatorForPlan(t.genPlan);
-  const preparation = preparationForPlan(t.genPlan, currentGeneratorFlags());
+  const preparation = preparationForPlan(t.genPlan);
   if (!generator) return { ok: false, reason: unsupportedPlanReason(t.genPlan) };
   if (!preparation)
     return { ok: false, reason: 'Odluka o pripremi postoji samo za polumaraton i maraton.' };

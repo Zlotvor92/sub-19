@@ -10,7 +10,7 @@
    Ovde se koristi kao ograda za doziranje povratka, ne kao predviđanje. */
 
 import { addDays, diffDays, isIsoDate, type IsoDate } from '../date.ts';
-import type { LogEntry } from '../../../exchange.ts';
+import type { LogEntry } from '../exchange.ts';
 import type { ResolvedDay, ResolvedPlan } from '../types.ts';
 import { BREAK_THRESHOLD, BREAK_WINDOW_DAYS } from './constants.ts';
 

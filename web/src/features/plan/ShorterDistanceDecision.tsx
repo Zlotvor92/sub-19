@@ -14,10 +14,9 @@ import {
   storedPreparationDecision,
   type PlanChangePreview
 } from '../../stores/executionActions';
-import { useGeneratorFlags } from '../../stores/generatorFlags';
 
 /* FAZA 3 (3g) — PREDAJA „KRAĆA DISTANCA" ZA IZVOR v2 (HM v2, maraton v2) u prilagođavanju plana. Ponudu, opcije, razloge
-   nedostupnosti i plan cilja daje domen (`storedPreparationDecision` → izvor v2 → cilj po prekidaču korisnika); ovde se
+   nedostupnosti i plan cilja daje domen (`storedPreparationDecision` → izvor v2 → cilj v2 te distance); ovde se
    samo prikazuju (pouka 20: nijedno pravilo u UI). Odluka postoji dok je sačuvani plan ograničena priprema (O1
    dopuna): prikazuje se pri svakom otvaranju i posle svake nove verzije plana, a „Zatvori" je sklanja do tada. „Zadrži
    plan v2" je samo zatvaranje — plan se ne menja. */
@@ -48,15 +47,10 @@ export function RaceChange({ change }: { change: { from: DecisionPoint; to: Deci
   );
 }
 
-/** Odluka o pripremi sačuvanog plana (prati plan, dan i prekidače korisnika). */
+/** Odluka o pripremi sačuvanog plana (prati plan i dan; cilj predaje je v2 te distance). */
 export function useStoredDecision(today: string): PreparationDecision | null {
   const genPlan = useTrainingStore((s) => s.genPlan);
-  const flags = useGeneratorFlags();
-  return useMemo(
-    // Cilj predaje bira prekidač korisnika (isti izvor kao za nov plan), pa promena prekidača menja opcije.
-    () => (genPlan ? storedPreparationDecision(today, flags) : null),
-    [genPlan, today, flags]
-  );
+  return useMemo(() => (genPlan ? storedPreparationDecision(today) : null), [genPlan, today]);
 }
 
 /** Poruka pregleda prilagođavanja kad domen javi ponudu (`shorterOffer`) i veza ka odluci o pripremi. */

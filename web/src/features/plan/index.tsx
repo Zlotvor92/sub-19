@@ -18,6 +18,7 @@ import { useCycleModel } from '../cycle/useCycleModel';
 import { useEasyPace } from '../session/useEasyPace';
 import { DayRow } from './DayRow';
 import { GoalAssessmentLine } from './GoalAssessment';
+import { LegacyPlanNotice } from './LegacyPlanNotice';
 
 const byDate = (a: { date: string }, b: { date: string }): number => {
   const da = a.date || '9999-99-99';
@@ -100,6 +101,7 @@ export default function PlanPage() {
         ) : null}
         <GoalAssessmentLine meta={gen?.meta} />
       </header>
+      <LegacyPlanNotice />
 
       <div className="weeknav">
         <div className="weeknav-t">

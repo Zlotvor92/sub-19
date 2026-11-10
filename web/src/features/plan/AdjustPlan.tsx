@@ -11,6 +11,7 @@ import { activePlanGenerator, activePlanUnsupportedReason } from '../../stores/e
 import {
   isFiveKV2Plan,
   isHmV2Plan,
+  isLegacyPlan,
   isMarathonV2Plan,
   isTenKV2Plan
 } from '../../domain/generators/select';
@@ -23,6 +24,7 @@ import { FiveKV2Adjustment } from './FiveKV2Adjustment';
 import { HmV2Adjustment } from './HmV2Adjustment';
 import { MarathonV2Adjustment } from './MarathonV2Adjustment';
 import { HandoffAppliedNotice } from './ShorterDistanceDecision';
+import { LegacyPlanNotice } from './LegacyPlanNotice';
 import { TenKV2Adjustment } from './TenKV2Adjustment';
 
 /* PRILAGODI PLAN: jedino mesto za sve što menja plan kao celinu — predlog zbog bola, predlog tempa prema formi, preračunavanje, novi plan. Predlozi se
@@ -45,6 +47,8 @@ export function AdjustPlan() {
   const hmV2 = isHmV2Plan(genPlan);
   const marathonV2 = isMarathonV2Plan(genPlan);
   const v2 = isFiveKV2Plan(genPlan) || tenV2 || hmV2 || marathonV2;
+  /* V1b: plan starog generatora se ne prilagođava — jedna poruka i „Generiši nov plan" (`LegacyPlanNotice`). */
+  const legacy = isLegacyPlan(genPlan);
 
   const injury = v2 ? null : (rec?.proposal ?? null);
   const pace = v2 ? null : adj.proposal;
@@ -77,6 +81,7 @@ export function AdjustPlan() {
         <h1>Prilagodi plan</h1>
         <p>Predlozi i radnje koje menjaju plan kao celinu.</p>
       </header>
+      <LegacyPlanNotice id="legacy-plan-adjust" />
 
       {injury ? (
         <Section title="Zbog bola" extra={injury.urgent ? 'Hitno' : 'Predlog'}>
@@ -168,7 +173,7 @@ export function AdjustPlan() {
         <FiveKV2Adjustment today={todayStr} />
       ) : activePlanGenerator() ? (
         <ExecutionAdjustment plan={plan} today={todayStr} />
-      ) : (
+      ) : legacy ? null : (
         <Section title="Prilagođavanje prema izvršenju">
           <p className="note-src">{activePlanUnsupportedReason()}</p>
         </Section>
@@ -176,7 +181,7 @@ export function AdjustPlan() {
 
       <Section title="Plan">
         <div className="rows">
-          {genPlan?.ulaz ? (
+          {genPlan?.ulaz && !legacy ? (
             <Row
               icon="refresh"
               title="Preračunaj plan prema formi"
@@ -184,7 +189,7 @@ export function AdjustPlan() {
               onClick={() => void recalibratePlan(plan, todayStr)}
             />
           ) : null}
-          {genPlan?.ulaz || v2 ? (
+          {(genPlan?.ulaz && !legacy) || v2 ? (
             <Row
               icon="target"
               title="Promeni ciljno vreme"
