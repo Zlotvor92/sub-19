@@ -276,7 +276,9 @@ export function firstLevelOverCap(
   p: Paces,
   beginner = false
 ): boolean {
-  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm, { p, beginner });
+  return (
+    doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm, { p, beginner })
+  );
 }
 
 /** Lestvica Q1 nedelje izgradnje: po fazi (M10/M15); početnik (M17) — T kontinuirano (od 1,5 km) kad prvi
@@ -490,7 +492,7 @@ export function taperDoses(
     );
     return { mp, t: null, tLadder: 'T_cruise', ...(mp ? {} : { mpDropped: true as const }) };
   }
-  const mp = taperMpFit(reduced('MP', lastMp, w.mpShare, P.taper.mpMin, false, limit?.q1), limit);
+  const mp = taperMpFit(taperMp(lastMp, w.mpShare, limit?.q1), limit);
   const t =
     w.tShare === null || quality === 1
       ? null
@@ -505,6 +507,20 @@ export function taperDoses(
             : (limit?.alone ?? limit?.q2(pick('MP', P.taper.mpMin, 'taper')))
         );
   return { mp, t, tLadder: 'T_cruise', ...(mp ? {} : { mpDropped: true as const }) };
+}
+
+/** P8-G5 — MP tapera u odnosu na najveći MP rad izgradnje `lastM` (poslednja MP doza: trening ili blok; bez MP u
+    izgradnji osnova je najniži nivo lestvice): najviši nivo lestvice ≤ `share` × osnova; kad ni najniži nivo (2 × 3000 m)
+    ne staje u udeo — kontinuirani blok naniže na 0,5 km, najmanje `mpShortMinKm`. Isti tempo, pa udeo metara = udeo
+    minuta. Drugi član plafona zone (`dayFits`) spušta nivo lestvice kao `reduced`. JEDNA funkcija (taperDoses) za
+    konstruktor i validator. */
+export function taperMp(lastM: number, share: number, dayFits?: DayFits): Structure {
+  const base = lastM > 0 ? lastM : doseOf(P.taper.mpMin);
+  const limit = share * base + 1e-6;
+  if (doseOf(P.taper.mpMin) <= limit)
+    return reduced('MP', base, share, P.taper.mpMin, false, dayFits);
+  const km = Math.max(P.taper.mpShortMinKm, Math.floor(limit / 500) * 0.5);
+  return { form: 'continuous', km };
 }
 
 /** MAR-11 (T2): u taperu dan MP ne traje duže od dugog iste nedelje — kad ni najmanja doza (2 × 3000 m, izuzeta od
@@ -553,7 +569,9 @@ export function pickTaper(
   const d0 = taperDoses(state, step, quality, beginner);
   const d = limit ? taperDoses(state, step, quality, beginner, limit) : d0;
   const t =
-    d0.t && doseOf(d0.t) <= capM('T', targetKm, { p, beginner }) ? pick(d.tLadder, d.t!, 'taper') : null;
+    d0.t && doseOf(d0.t) <= capM('T', targetKm, { p, beginner })
+      ? pick(d.tLadder, d.t!, 'taper')
+      : null;
   // MAR-11 (T2): MP otpao (ni najkraći blok ne staje u trajanje dugog) — dan je lagan, T ostaje kao po pravilu.
   if (!d.mp && d.mpDropped) return { mp: null, t, mpDropped: true };
   if (!d.mp) return t ? { mp: null, t } : null;

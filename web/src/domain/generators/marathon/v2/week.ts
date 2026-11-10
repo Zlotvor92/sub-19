@@ -1081,19 +1081,24 @@ export function allRestWeek(
 export function sharpenerStructure(
   taperMpM: number,
   restarted: boolean,
-  beginner: boolean
+  beginner: boolean,
+  p: Paces
 ): Structure | null {
   const s = P.raceWeek.sharpener;
-  const max = s.reps * s.repM;
   const min = s.reps * P.raceWeek.sharpenerMinRepM;
   if (taperMpM <= 0 && beginner && !restarted) return null;
-  const dose = taperMpM > 0 ? Math.max(min, Math.min(max, taperMpM)) : min;
+  // P8-G5: ukupan rad ≤ sharpenerMaxSec po tempu maratona (dve jednake deonice, korak 100 m, najmanje 2 × 400 m).
+  const max = Math.min(
+    s.reps * s.repM,
+    Math.floor((P.raceWeek.sharpenerMaxSec / p.MP) * 1000 + 1e-6)
+  );
+  const dose = Math.max(min, taperMpM > 0 ? Math.min(max, taperMpM) : max);
   return { form: 'reps', reps: s.reps, repM: Math.floor(dose / s.reps / 100) * 100 };
 }
 
 /** M8: trkačka ima oštrenje (sharpenerStructure). */
 export function hasSharpener(taperMpM: number, restarted = false, beginner = false): boolean {
-  return sharpenerStructure(taperMpM, restarted, beginner) !== null;
+  return !(taperMpM <= 0 && beginner && !restarted);
 }
 
 /** M8: dani trčanja trkačke nedelje osim trke — ukupno sa trkom najviše min(broj dana, 5); otpada prvo dan
@@ -1196,7 +1201,7 @@ export function raceWeek(
           cap100
         );
   const runs = runs0.filter((d) => !rested.includes(d));
-  const sharpS = sharpenerStructure(taperMpM, ctx.restarted === true, ctx.rule.beginner);
+  const sharpS = sharpenerStructure(taperMpM, ctx.restarted === true, ctx.rule.beginner, p);
   const sharpen = sharpS !== null;
   const banned = new Set(frame.limits?.noQuality ?? []);
   const cands = sharpen
@@ -1217,7 +1222,6 @@ export function raceWeek(
     else if (daysBetween(d, race) === 1) days.push(day(d, 'eve', eveWorkout(p)));
     else days.push(day(d, 'easy', easy));
   }
-  const s = q.sharpener;
   const shortened =
     easy.blocks[0]?.kind === 'easy' && days.some((d) => d.role === 'easy')
       ? [
@@ -1226,19 +1230,15 @@ export function raceWeek(
       : [];
   const lim = limitDays(frame, days, null, p);
   return finish(lim.days, null, null, [
-    sharpenDate && sharpS && taperMpM <= 0
-      ? `Trkačka nedelja: kratko oštrenje ${sharpS.form === 'reps' ? `${sharpS.reps} × ${sharpS.repM}` : ''} m MP (poslednja nedelja tapera bez MP); maraton ${fmtKm(q.raceKm)} km se ne računa u obim (M8).`
-      : sharpenDate && sharpS && doseOf(sharpS) === s.reps * s.repM
-        ? `Trkačka nedelja: oštrenje ${s.reps} × ${s.repM} m MP (≤ MP doza poslednje nedelje tapera ${fmtKm(taperMpM / 1000)} km); maraton ${fmtKm(q.raceKm)} km se ne računa u obim (M8).`
-        : sharpenDate && sharpS
-          ? `Trkačka nedelja: kraće oštrenje ${sharpS.form === 'reps' ? `${sharpS.reps} × ${sharpS.repM}` : ''} m MP (≤ MP doza poslednje nedelje tapera ${fmtKm(taperMpM / 1000)} km, najmanje ${s.reps} × ${P.raceWeek.sharpenerMinRepM} m); maraton ${fmtKm(q.raceKm)} km se ne računa u obim (M8).`
-          : !sharpen
-            ? `Trkačka nedelja: poslednja nedelja tapera bez MP — bez oštrenja (oštrenje ≤ MP doza tapera, M8); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
-            : cands.length > 0
-              ? noSharpener
-                ? `Trkačka nedelja: bez oštrenja — sa njim bi trkačka nedelja bila veća od poslednje nedelje tapera (A9, M8); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
-                : `Trkačka nedelja: bez oštrenja — dan oštrenja je u zabrani kvaliteta (adaptacija); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
-              : `Trkačka nedelja: nijedan dan trčanja nije ≥ ${q.sharpenerMinGapDays} dana pre trke i nesusedan poslednjem zahtevnom danu tapera — bez oštrenja (M8, odstupanje); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`,
+    sharpenDate && sharpS
+      ? `Trkačka nedelja: oštrenje ${sharpS.form === 'reps' ? `${sharpS.reps} × ${sharpS.repM}` : ''} m u tempu maratona — najviše ${Math.round(q.sharpenerMaxSec / 60)} min rada${taperMpM > 0 ? ' i ne više od rada u tempu maratona prethodne nedelje' : ''}; maraton ${fmtKm(q.raceKm)} km se ne računa u obim (M8).`
+      : !sharpen
+        ? `Trkačka nedelja: poslednja nedelja tapera bez MP — bez oštrenja (oštrenje ≤ MP doza tapera, M8); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
+        : cands.length > 0
+          ? noSharpener
+            ? `Trkačka nedelja: bez oštrenja — sa njim bi trkačka nedelja bila veća od poslednje nedelje tapera (A9, M8); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
+            : `Trkačka nedelja: bez oštrenja — dan oštrenja je u zabrani kvaliteta (adaptacija); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`
+          : `Trkačka nedelja: nijedan dan trčanja nije ≥ ${q.sharpenerMinGapDays} dana pre trke i nesusedan poslednjem zahtevnom danu tapera — bez oštrenja (M8, odstupanje); maraton ${fmtKm(q.raceKm)} km se ne računa u obim.`,
     ...shortened,
     ...(rested.length > 0
       ? ['Trkačka nedelja skraćena: taper je imao dane odmora/bola (pouka 30).']

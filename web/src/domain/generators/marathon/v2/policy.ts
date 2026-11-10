@@ -647,7 +647,7 @@ export const MARATHON_V2_POLICY = {
   taper: {
     weeks: [
       { factor: 0.8, mpShare: 0.6, tShare: 0.6, longFactor: 0.65 },
-      { factor: 0.6, mpShare: 0.5, tShare: null, longFactor: 0.45 }
+      { factor: 0.6, mpShare: 0.4, tShare: null, longFactor: 0.45 }
     ] as readonly {
       factor: number;
       mpShare: number;
@@ -665,7 +665,9 @@ export const MARATHON_V2_POLICY = {
     maxRunDays: 5,
     sharpener: { reps: 2, repM: 2000, recoverySec: 120 },
     /** Odluka organizatora posle MAR-11: najkraća deonica oštrenja [m] (oštrenje ≤ MP doza N−1, najmanje 2 × 1000 m). */
-    sharpenerMinRepM: 1000,
+    sharpenerMinRepM: 400,
+    /** P8-G5 (marathon-v2.11.0): ukupan rad oštrenja ≤ sharpenerMaxSec po tempu maratona te nedelje. */
+    sharpenerMaxSec: 600,
     sharpenerMinGapDays: 3,
     eveEasySec: 1200,
     eveStrides: { reps: 4, sec: 20 },

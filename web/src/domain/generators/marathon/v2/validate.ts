@@ -2084,7 +2084,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     const prevHard = lastTaper?.days.filter((d) => d.hard).pop()?.date ?? null;
     const bannedR = new Set(rw.limits?.noQuality ?? []);
     const restarted = [...realRestarts].some((r) => r <= rw.index);
-    const wantS = sharpenerStructure(taperMpM, restarted, beginner);
+    const wantS = sharpenerStructure(taperMpM, restarted, beginner, pw(rw));
     const canSharpen = wantS !== null;
     const cand = canSharpen
       ? [...wantDays]
