@@ -433,15 +433,14 @@ export function sharpenerWarmupCooldown(): WarmupCooldown {
   return { warmupSec: P.raceWeek.raceWarmupSec, cooldownSec: P.raceWeek.raceCooldownSec };
 }
 
-export function sharpenerWorkout(reps: number, p: Paces, feel = false): Workout {
+export function sharpenerWorkout(reps: number, repM: number, p: Paces, feel = false): Workout {
   const wc = sharpenerWarmupCooldown();
-  const s = P.raceWeek.sharpener;
   return qualityWorkout(
     {
       ladder: 'RP_sharpener',
       zone: 'RP',
-      doseM: reps * s.repM,
-      structure: { form: 'reps', reps, repM: s.repM },
+      doseM: reps * repM,
+      structure: { form: 'reps', reps, repM },
       step: 'sharpener'
     },
     p,

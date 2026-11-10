@@ -833,15 +833,22 @@ export function mixedRemainder(
   return null;
 }
 
-/** D8: oštrenje ≤ RP doza tapera — puno (3 × 1000 m) ako ga RP doza tapera nosi, inače 2 × 1000 m; taper
-    bez RP (odstupanje D7) → 0 (bez oštrenja). T3 (10K-08): `keepShort` — posle novog starta (van perioda bola trkačke
-    nedelje) najmanje kratko oštrenje 2 × 1000 m, kao bez pauze. Konstruktor i validator. */
-export function sharpenerReps(taperRpM: number, keepShort = false): number {
-  const s = P.raceWeek.sharpener;
-  if (taperRpM >= s.reps * s.repM) return s.reps;
-  return taperRpM >= P.raceWeek.sharpenerSmallReps * s.repM || keepShort
-    ? P.raceWeek.sharpenerSmallReps
-    : 0;
+/** D8 + G5 (P8 dopuna, D44): oštrenje trkačke nedelje = DVE jednake deonice u RP, ukupno ≤ raceWeek.sharpenerMaxWorkSec
+    (12 min) rada po RP tempu te nedelje, deonica deljiva sa 100 m (400–1500 m), zbir ≤ RP doza tapera; taper bez RP
+    (odstupanje D7) → null (bez oštrenja). T3 (10K-08): `keepShort` — posle novog starta (van perioda bola trkačke
+    nedelje) oštrenje i bez RP u taperu. Deonica < 400 m → null (ubrzanja dana pred trku ostaju). Konstruktor i validator. */
+export function sharpenerSpec(
+  taperRpM: number,
+  rpSecPerKm: number,
+  keepShort = false
+): { reps: number; repM: number } | null {
+  const q = P.raceWeek;
+  const reps = q.sharpenerSmallReps;
+  if (taperRpM < reps * q.sharpener.repM && !keepShort) return null;
+  const byTime = Math.floor((q.sharpenerMaxWorkSec / reps / rpSecPerKm) * 10 + 1e-9) * 100;
+  const byDose = keepShort ? Infinity : Math.floor(taperRpM / reps / 100) * 100;
+  const repM = Math.min(q.sharpenerRepMaxM, byTime, byDose);
+  return repM < q.sharpenerRepMinM ? null : { reps, repM };
 }
 
 /** D20: dani trčanja trkačke nedelje osim trke — ukupno sa trkom najviše min(broj dana, 5); otpada prvo
@@ -951,7 +958,9 @@ export function raceWeek(
           cap100
         );
   const runs = runs0.filter((d) => !rested.includes(d));
-  const reps = sharpenerReps(taperRpM, ctx.keepSharpener === true && !frame.limits?.pain?.length);
+  const spec = sharpenerSpec(taperRpM, p.RP, ctx.keepSharpener === true && !frame.limits?.pain?.length);
+  const reps = spec?.reps ?? 0;
+  const repM = spec?.repM ?? 0;
   // Segment 04: oštrenje ne pada na dan zabrane kvaliteta (A3/A4) i otpada kad trkačka nedelja sa njim ne
   // bi bila ≤ taper (`noSharpener`, A9).
   const banned = new Set(frame.limits?.noQuality ?? []);
@@ -969,7 +978,7 @@ export function raceWeek(
   const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
   const easy = raceEasyWorkout(taperEasy10, p);
   for (const d of runs) {
-    if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, p, ctx.feel)));
+    if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, repM, p, ctx.feel)));
     else if (daysBetween(d, race) === 1) days.push(day(d, 'eve', eveWorkout(p)));
     else days.push(day(d, 'easy', easy));
   }
@@ -982,9 +991,9 @@ export function raceWeek(
   const lim = limitDays(frame, days, null, p);
   return finish(lim.days, null, null, [
     sharpenDate
-      ? reps * q.sharpener.repM > taperRpM
-        ? `Trkačka nedelja: kratko oštrenje ${reps} × ${q.sharpener.repM} m RP posle novog starta (kao bez pauze), trka ${q.raceKm} km se ne računa u obim.`
-        : `Trkačka nedelja: oštrenje ${reps} × ${q.sharpener.repM} m RP (≤ RP doza tapera ${fmtKm(taperRpM / 1000)} km), trka ${q.raceKm} km se ne računa u obim.`
+      ? reps * repM > taperRpM
+        ? `Trkačka nedelja: kratko oštrenje ${reps} × ${repM} m RP posle novog starta (kao bez pauze), trka ${q.raceKm} km se ne računa u obim.`
+        : `Trkačka nedelja: oštrenje ${reps} × ${repM} m RP (≤ RP doza tapera ${fmtKm(taperRpM / 1000)} km, ≤ ${Math.round(q.sharpenerMaxWorkSec / 60)} min rada), trka ${q.raceKm} km se ne računa u obim.`
       : reps === 0
         ? `Trkačka nedelja: taper bez RP — bez oštrenja (oštrenje ≤ RP doza tapera); trka ${q.raceKm} km se ne računa u obim.`
         : cands.length > 0

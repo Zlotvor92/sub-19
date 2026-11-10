@@ -1269,7 +1269,8 @@ export function undo07<T>(result0: T): T {
       if (!rw || reps === 0) return 0;
       const paces = pacesAt(chk.pace, st, rw.index);
       const feel = basisAt(chk.pace, st, rw.index) === 'feel';
-      const dose = sharpenerWorkout(reps, paces, feel).dose!;
+      // Stari format (pre P8): deonice oštrenja 1000 m.
+      const dose = sharpenerWorkout(reps, 1000, paces, feel).dose!;
       return (
         Math.round(qualityWorkout(dose, paces, wcOld, feel).km * 100) -
         Math.round(qualityWorkout(dose, paces, raceWc, feel).km * 100)

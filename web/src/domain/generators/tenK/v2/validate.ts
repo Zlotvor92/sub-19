@@ -63,7 +63,7 @@ import {
   raceWeekEveOnly,
   raceWeekRest,
   restDaysWeek,
-  sharpenerReps,
+  sharpenerSpec,
   B_NOT_FIT,
   stridesChoice,
   T1_DELOAD,
@@ -1760,10 +1760,13 @@ export function validatePlan(
       taperW?.days.map((d) => d.workout.dose).find((x) => x?.zone === 'RP')?.doseM ?? 0;
     // Oštrenje ≤ RP doza tapera: taper bez RP (odstupanje D7) → bez oštrenja.
     // T3 (10K-08): posle novog starta kratko oštrenje i bez RP u taperu (van perioda bola) — ista funkcija kao konstruktor.
-    const reps = sharpenerReps(
+    const spec = sharpenerSpec(
       taperRpM,
+      pw(rw).RP,
       lastRestartBefore(steps, rw.index + 1) !== null && !rw.limits?.pain?.length
     );
+    const reps = spec?.reps ?? 0;
+    const repM = spec?.repM ?? 0;
     // Najkasniji dan ≥ 3 dana pre trke, nesusedan poslednjem zahtevnom danu prethodne nedelje (D8 + D9).
     const prevHard = N > 1 ? weeks[N - 2]!.days.filter((d) => d.hard).pop()?.date : undefined;
     const bannedR = new Set(rw.limits?.noQuality ?? []);
@@ -1800,12 +1803,12 @@ export function validatePlan(
       !st ||
       st.form !== 'reps' ||
       st.reps !== reps ||
-      st.repM !== q.sharpener.repM ||
+      st.repM !== repM ||
       sd.workout.segments.some((x) => x.kind === 'recovery' && x.sec !== q.sharpener.recoverySec)
     )
       err(
         'RACE_SHARPENER',
-        `Oštrenje: ${reps} × ${q.sharpener.repM} m RP (90 s, ≤ RP doza tapera ${taperRpM} m) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (D8).`,
+        `Oštrenje: ${reps} × ${repM} m RP (90 s, ≤ RP doza tapera ${taperRpM} m, ≤ ${q.sharpenerMaxWorkSec / 60} min rada) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (D8).`,
         rw.index
       );
     // D23: lagan = min(35 min E, najkraći lagan tapera); kraći se zadaje u km.

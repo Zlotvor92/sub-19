@@ -689,6 +689,10 @@ export const TEN_K_V2_POLICY = {
     /** Puno oštrenje kad je RP doza tapera ≥ reps × repM (3,0 km), inače sharpenerSmallReps. */
     sharpener: { reps: 3, repM: 1000, recoverySec: 90 },
     sharpenerSmallReps: 2,
+    /** G5 (P8 dopuna, D44): oštrenje = 2 jednake deonice RP, ukupno ≤ sharpenerMaxWorkSec rada, deonica 400–1500 m (100 m). */
+    sharpenerMaxWorkSec: 720,
+    sharpenerRepMinM: 400,
+    sharpenerRepMaxM: 1500,
     sharpenerMinGapDays: 3,
     eveEasySec: 1200,
     eveStrides: { reps: 4, sec: 20 },
