@@ -110,7 +110,9 @@ export function adaptInvariants(
     if (m) continue;
     const limited = (w.limits?.pain?.length ?? 0) > 0 || (w.limits?.rest?.length ?? 0) > 0;
     // Planirano = cilj. K4-B: nedelja sa danom „po želji" — planirano ≤ cilj.
-    const optW = w.notes.some((n) => n.startsWith('Kratak lagan dan'));
+    const optW = w.notes.some(
+      (n) => n.startsWith('Kratak lagan dan') || n.startsWith('Talas dugog')
+    );
     if (
       w.phase !== 'race' &&
       (limited || optW

@@ -466,13 +466,14 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   };
   for (const w of weeks)
     if (
+      steps.length === 0 &&
       waveAt(w.index) &&
       (rule.beginner ||
         rule.quality !== 1 ||
         w.deload ||
         !['base', 'development', 'specific'].includes(w.phase) ||
         hasLongBlock(w.days) ||
-        (steps.length === 0 && waveLong10(w.index) > waveCap10(top10)))
+        waveLong10(w.index) > waveCap10(top10))
     )
       err(
         'LONG_WAVE',
@@ -839,8 +840,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           `Planirano ${w.plannedKm} km < cilj obima ${w.targetKm} km (odmor/bol, A4, pouka 25).`,
           w.index
         );
-    } else if (optAt(w) && w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS) {
+    } else if (
+      (optAt(w) || waveAt(w.index)) &&
+      w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS
+    ) {
       // K4-B: dan „po želji" ne ulazi u obim — planirano ≤ cilj, bez upozorenja po nedelji (napomena plana).
+      // K4-A2: nedelja talasa sa kraćim dugim — planirano ≤ cilj (cilj po pravilu ostaje).
     } else if (Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
       err('PLANNED_VS_TARGET', `Planirano ${w.plannedKm} km ≠ cilj ${w.targetKm} km.`, w.index);
     // Uslov 8: nedelja ≥ minimum (trkačka: planirano + trka, H8 — potpuno zadata, pa upozorenje). A4:
@@ -960,7 +965,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           'Nedelja sa blokom u dugom nema drugi dan kvaliteta (T je lagan, P1-S1).',
           w.index
         );
-      if (scheduledType(weeks, w.index - 1) !== 'B')
+      // K4-A1: zaštićen dugi (≤ asOf, urađen, zaključan) sa blokom je činjenica — raspored se posle koraka pomera.
+      if (scheduledType(weeks, w.index - 1) !== 'B' && !guarded(long))
         err(
           'B_WEEK_ORDER',
           'Nedelja sa blokom samo po rasporedu: poslednja ne-rasteretna specifična je B, unazad A, B, … (P1-S1).',
@@ -2282,9 +2288,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         w.index
       );
     if (isSteady(w) && w.fitted === 'down') capacityCut = true;
-    h = av
-      ? leaveAdaptWeek(h, w, t10, av, waveAt(w.index))
-      : { ...h, ...leaveWeek(h, w, t10, waveAt(w.index)) };
+    h = av ? leaveAdaptWeek(h, w, t10, av) : { ...h, ...leaveWeek(h, w, t10) };
     if (!checked(w) && to10(w.nominalKm) !== nominal) known = false;
   }
   if (to10(plan.peakKm) !== h.peak10) err('VOLUME_PEAK', 'Vrh plana ≠ najveći cilj izgradnje.');

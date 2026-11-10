@@ -20,6 +20,7 @@ import {
   mixedFloor100,
   OPT_NOTE,
   optEasy,
+  waveLengths,
   remainderEasy10,
   type FreeKind,
   taperLengths
@@ -99,6 +100,8 @@ export interface WeekContext {
   hold?: boolean;
   /** K4-B: plan sa kratkim laganim danima (lengths.shortEasyPlan; uslov poznat unapred, generate.construct). */
   optEasy?: boolean;
+  /** K4-A2: nedelja talasa dugog (granica dugog je u roll10; dužine lengths.waveLengths). */
+  wave?: boolean;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (HI2: H11 ispred H12, rasterećenje
@@ -922,7 +925,11 @@ function buildWeekIn(
     [...qDays, ...pat.easy].filter((wd) => !busy.includes(wd))
   );
   const q100 = (w1 ? km100(w1.km) : 0) + (w2 ? km100(w2.km) : 0) + (wo ? km100(wo.km) : 0);
-  const len0 = easy2 ?? buildLengths(target10, q100, dates.length, rule, p, roll10);
+  const len0 =
+    easy2 ??
+    (ctx.wave
+      ? waveLengths(target10, q100, dates.length, rule, p, roll10)
+      : buildLengths(target10, q100, dates.length, rule, p, roll10));
   if (!len0) return null;
   // K4-B: najkraći lagan < 30 min → „odmor ili 20 min lagano po želji" (dan šablona bez treninga, kao T1), km u ostale
   // lagane do granice, ostatak planirano < cilj (lengths.optEasy — jedno mesto). Pre bloka: blok vidi lagane nedelje.

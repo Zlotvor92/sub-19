@@ -386,7 +386,7 @@ export interface LongWave {
 
 /** K4-A2: napomena nedelje talasa (validator je čita kao oznaku). */
 export const WAVE_NOTE =
-  'Talas dugog: dugi ove nedelje je kraći (≈ 85 % najdužeg) — najduži dugi je u nedeljama sa blokom u trkačkom tempu.';
+  'Talas dugog: dugi ove nedelje je kraći (≈ 85 % najdužeg), pa je nedelja nešto manja od cilja — najduži dugi se čuva za poslednje nedelje pred taper.';
 
 /** K4-A2: granica dugog nedelje talasa — ⌊0,85 × plafon⌋ [0,1 km]. JEDNA funkcija (konstruktor, validator). */
 export const waveCap10 = (ceiling10: number): number =>
@@ -487,4 +487,25 @@ export function shortEasyPlan(
       )
   ).length;
   return n > P.lengths.optWeeks;
+}
+
+/** K4-A2: dužine nedelje talasa (jedno mesto) — kad dužine po pravilu nisu izvodljive sa kraćim dugim (`roll10` nosi
+    granicu talasa), dugi = granica, svaki lagan = granica laganog (≤ udeo × dugi, ≥ najkraći); ostatak cilja je
+    planirano < cilj (cilj nedelje ostaje po pravilu, doza i rast obima se ne menjaju). */
+export function waveLengths(
+  target10: number,
+  quality100: number,
+  easyDays: number,
+  rule: LongRule,
+  p: Paces,
+  roll10: number
+): Lengths | null {
+  const len = buildLengths(target10, quality100, easyDays, rule, p, roll10);
+  if (len) return len;
+  const long10 = longCap10(target10, rule, p, roll10);
+  const hi10 = buildEasyCap10(long10, rule);
+  if (easyDays === 0 || hi10 < buildEasyMin10(p)) return null;
+  const rest10 = Math.floor((target10 * 10 - quality100) / 10) - long10;
+  if (rest10 <= easyDays * hi10) return null;
+  return { long10, easy10: Array.from({ length: easyDays }, () => hi10) };
 }

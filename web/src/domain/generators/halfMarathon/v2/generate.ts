@@ -26,7 +26,7 @@ import { assessGoal, predictedHm } from './paces.ts';
 import { isBuildPhase, periodize, testKindOf } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState, weekPicksOf } from './quality.ts';
-import { scheduledType } from './specific.ts';
+import { hasLongBlock, scheduledType } from './specific.ts';
 import {
   basePaces,
   basisAt,
@@ -158,15 +158,13 @@ export function construct(
 ): GenerateResult {
   // K4-A2: adaptacija — talas je činjenica plana (nedelje sa napomenom talasa u prethodnom planu, plafon iz njega).
   // K4-B: adaptacija — plan sa kratkim laganim danima ostaje takav (napomena u prethodnom planu je činjenica).
-  if (steps.length > 0)
-    return constructWith(
-      raw,
-      steps,
-      prior,
-      searchThreshold,
-      priorWave(prior),
-      !!prior?.weeks.some((w) => w.notes.some((n) => n.startsWith(OPT_NOTE)))
-    );
+  if (steps.length > 0) {
+    const opt = !!prior?.weeks.some((w) => w.notes.some((n) => n.startsWith(OPT_NOTE)));
+    const pw = priorWave(prior);
+    const a = constructWith(raw, steps, prior, searchThreshold, pw, opt);
+    // Sudar (K4, način rada 4): adaptacija plana sa talasom koju validator ne prihvata → budućnost i bez upisanog talasa.
+    return a.ok || !pw ? a : constructWith(raw, steps, prior, searchThreshold, null, opt);
+  }
   const g = constructWith(raw, steps, prior, searchThreshold, null, false);
   if (!g.ok) return g;
   // K4-A2: talas dugog (3 dana, lengths.longWave — jedno mesto) iz plana bez talasa; plan sa talasom važi samo kad
@@ -349,7 +347,8 @@ function constructWith(
       wave.weeks.has(frame.index) &&
       !frame.deload &&
       isBuildPhase(frame.phase) &&
-      scheduledType(frames, frame.index - 1) !== 'B';
+      // Adaptacija: započeta nedelja talasa je činjenica (raspored A/B se posle koraka računa iz novih okvira).
+      (adapted || scheduledType(frames, frame.index - 1) !== 'B');
     const roll10 = Math.min(
       rollingCapRan10(
         frame.index,
@@ -362,10 +361,18 @@ function constructWith(
     );
     // P1-S1/S3: raspored A/B iz okvira (jedno mesto: specific.scheduledType); povratak i nov start (cilj samo
     // naniže, A8/A3) — dugi lagan.
-    const spec = scheduledType(frames, frame.index - 1) === 'B' ? { regular: !downOnly } : null;
+    // K4-A1: 3 dana — tip nedelje koja je cela prošla je činjenica upisanog plana (nedelja B nosi više laganih dana, pa
+    // isti cilj kao A ne bi stao kad novi okviri pomere raspored).
+    const pastType =
+      rule.quality === 1 && prior && pastW && mustDay(pastW.endDate) <= prior.asOf
+        ? hasLongBlock(pastW.days)
+        : null;
+    const spec =
+      (pastType ?? scheduledType(frames, frame.index - 1) === 'B') ? { regular: !downOnly } : null;
+    const ctxW = inWave ? { ...ctx, wave: true } : ctx;
     const make = (t10: number, mode: QualityMode): BuiltWeek | null =>
       buildWeek(
-        ctx,
+        ctxW,
         frame,
         t10,
         quality,
@@ -485,8 +492,8 @@ function constructWith(
         );
     }
     h = av
-      ? leaveAdaptWeek(h, frame, fit.target10, av, inWave)
-      : { ...h, ...leaveWeek(h, frame, fit.target10, inWave) };
+      ? leaveAdaptWeek(h, frame, fit.target10, av)
+      : { ...h, ...leaveWeek(h, frame, fit.target10) };
   }
 
   // A1: nivo plana iz tempa poslednje nedelje (budućnost); ocena cilja za nedelje od rezultata do trke.

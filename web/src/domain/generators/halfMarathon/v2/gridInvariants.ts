@@ -401,6 +401,9 @@ export function checkPlan(
         !isBuild(w.phase)
       )
         no('OPT_EASY', `${tag} ${w.plannedKm} / ${w.targetKm}`);
+    } else if (w.notes.some((n) => n.startsWith('Talas dugog'))) {
+      // K4-A2 (nezavisno): nedelja talasa — planirano ≤ cilj (kraći dugi, lagani ≤ 0,8 × dugi).
+      if (w.plannedKm > w.targetKm + 0.1 + EPS) no('WAVE', `${tag} planirano > cilj`);
     } else if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS) no('PLANNED_EQ_TARGET', tag);
     if (w.phase !== 'race' && w.plannedKm + EPS < WEEK_MIN) no('WEEK_MIN', tag);
     if (w.phase === 'race' && w.plannedKm + RACE_KM + EPS < WEEK_MIN) no('WEEK_MIN', `${tag} trka`);
@@ -698,8 +701,7 @@ export function checkPlan(
       const lw = w.days.find((d) => d.role === 'long');
       if (lw && w.days.some((d) => d.workout.kind === 'quality' && d.workout.sec > lw.workout.sec))
         longer = true;
-      // K4-A2: nedelja talasa dugog je lakša nedelja — osnov rasta ostaje poslednja nedelja van talasa.
-      if (!w.notes.some((n) => n.startsWith('Talas dugog'))) lastBuild = t10;
+      lastBuild = t10;
       peak = Math.max(peak, t10);
       if (long !== null) lastLong = long;
       if (q1 > 0) lastQ1 = q1;
