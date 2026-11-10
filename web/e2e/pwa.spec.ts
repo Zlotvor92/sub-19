@@ -58,7 +58,7 @@ test('bez mreže: aplikacija se otvara iz keša sa podacima sa uređaja, bez ije
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Završi trening' })).toBeVisible();
   await tab(page, 'Plan').click();
-  await expect(page.getByRole('heading', { level: 2, name: 'Nedelja 1 od 13' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'Nedelja 1 od 12' })).toBeVisible();
   await tab(page, 'Danas').click();
   // radi i bez mreže: unos se čuva lokalno
   await page.getByRole('button', { name: 'Završi trening' }).click();

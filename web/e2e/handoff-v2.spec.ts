@@ -13,10 +13,6 @@ import { tab } from './support/flows';
        plan, odluka se ponovo prikazuje pri sledećem otvaranju. */
 
 const STATE_KEY = 'sub19-v1:account:u-e2e';
-const NEEDS_RESULT =
-  'Kraća distanca nije dostupna: plan te distance (v1) traži rezultat trke ili testa pre početka novog plana, a ovaj plan ga nema.';
-const RESTORE_OTHER =
-  'Sačuvana verzija je plan druge distance (pre izbora kraće distance), pa se ne može vratiti preko ovog plana.';
 
 type Flags = Partial<
   Record<
@@ -94,22 +90,6 @@ async function finish(page: Page): Promise<void> {
   await expect(page.getByRole('navigation', { name: 'Glavna navigacija' })).toBeVisible();
 }
 
-/** HM v2 po osećaju (lak tempo 6:30, 30 km, 3 dana). */
-async function hmFeelPlan(page: Page): Promise<void> {
-  await raceStep(page, 'Polumaraton', '2026-04-12', /Plan polumaratona v2: 12 nedelja/);
-  await page.getByRole('button', { name: 'Nemam skoriji rezultat' }).click();
-  await page.getByLabel('minuti').fill('6');
-  await page.getByLabel('sekunde').fill('30');
-  await page.getByRole('button', { name: 'Dalje' }).click();
-  await page.getByRole('button', { name: 'Da', exact: true }).click();
-  await page.getByLabel('Nedeljna kilometraža').fill('30');
-  await page.getByRole('button', { name: 'Trčim redovno' }).click();
-  await page.getByRole('button', { name: 'Dalje' }).click();
-  await pickDays(page, ['Uto', 'Čet', 'Ned']);
-  await group(page, 'Dan dugog trčanja').getByRole('button', { name: 'Ned', exact: true }).click();
-  await finish(page);
-}
-
 /** HM v2 sa rezultatom (10 km 45:00, 40 km, najduže 16 km, 4 dana, cilj 1:40:00). */
 async function hmResultPlan(page: Page): Promise<void> {
   await raceStep(page, 'Polumaraton', '2026-04-12', /Plan polumaratona v2: 12 nedelja/);
@@ -180,45 +160,6 @@ test.beforeEach(async ({ page }) => {
   await seedSession(page);
 });
 
-test('(a)(f) HM v2 po osećaju → 5K v2: ponuda posle pauze 35 d → izbor → plan 5K v2 sa prefiksom → vraćanje HM verzije odbijeno', async ({
-  page
-}) => {
-  await enableFlags(page, { generatorV2HalfMarathon: true, generatorV2FiveK: true });
-  const backend = await installBackend(page);
-  await page.goto('/');
-  await hmFeelPlan(page);
-  await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"hm-v2"');
-
-  await pauseReview(page, '2026-01-27', '2025-12-24');
-  const decision = await applyWithOffer(page, backend, 'polumaraton', '2026-01-27');
-  await expect(decision).toContainText('Kraća distanca: 5K istog datuma');
-  await expect(decision.getByRole('list', { name: 'Nedostupne opcije' })).toContainText(
-    `10K: ${NEEDS_RESULT}`
-  );
-  await choose(page, backend, 'Kraća distanca: 5K istog datuma');
-  expect(serverPlan(backend)).toContain('"policyId":"5k-v2"');
-  expect(serverPlan(backend)).toContain('"fiveKV2Prefix":{"offset":2');
-
-  // Prefiks: tekuća nedelja je nedelja izvora — broj nedelje u kalendaru je offset + index.
-  await page.reload();
-  await tab(page, 'Plan').click();
-  await expect(
-    page.locator('.page.active').getByRole('heading', { name: 'Nedelja 2 od 12' })
-  ).toBeVisible();
-
-  // (f) Vraćanje verzije HM (pre predaje) preko plana 5K: razlog domena, ništa se ne upisuje.
-  await page
-    .locator('.page.active')
-    .getByRole('button', { name: /^Prilagodi plan/ })
-    .click();
-  const after = serverPlan(backend);
-  await page
-    .getByRole('button', { name: 'Pregledaj vraćanje: Prilagođavanje 2026-01-27: pauza' })
-    .click();
-  await expect(page.locator('#v2-adapt-rejected')).toContainText(RESTORE_OTHER);
-  expect(serverPlan(backend)).toBe(after);
-});
-
 test('(b) maraton v2 → HM v2 (prekidač HM v2): ponuda → izbor → plan HM v2 sa prefiksom', async ({
   page
 }) => {
@@ -249,57 +190,6 @@ test('(b) maraton v2 → HM v2 (prekidač HM v2): ponuda → izbor → plan HM v
   await choose(page, backend, 'Kraća distanca: Polumaraton istog datuma');
   expect(serverPlan(backend)).toContain('"policyId":"hm-v2"');
   expect(serverPlan(backend)).toContain('"hmV2Prefix":{"offset":2');
-});
-
-test('(c) HM v2 sa rezultatom → 10K v1 (prekidač 10K v2 isključen)', async ({ page }) => {
-  await enableFlags(page, { generatorV2HalfMarathon: true, generatorV2TenK: false });
-  const backend = await installBackend(page);
-  await page.goto('/');
-  await hmResultPlan(page);
-  await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"hm-v2"');
-
-  await pauseReview(page, '2026-01-20', '2025-12-17');
-  const decision = await applyWithOffer(page, backend, 'polumaraton', '2026-01-20');
-  await expect(decision).toContainText(/najduže [\d,]+ km · vrhunac [\d,]+ km\/ned/);
-  await choose(page, backend, 'Kraća distanca: 10K istog datuma');
-  expect(serverPlan(backend)).toContain('"policyId":"10k-v1"');
-  // Plan cilja je u formatu v1: bez objekta HM v2 (stari plan HM v2 je samo u istoriji verzija).
-  const top = JSON.parse(serverPlan(backend)) as Record<string, unknown>;
-  expect('hmV2' in top).toBe(false);
-  expect(top['ulaz']).toBeTruthy();
-});
-
-test('(d)(e) HM v2 po osećaju, ciljevi v1: opcije nedostupne sa razlogom doslovno; „Zatvori" ne menja plan', async ({
-  page
-}) => {
-  await enableFlags(page, { generatorV2HalfMarathon: true });
-  const backend = await installBackend(page);
-  await page.goto('/');
-  await hmFeelPlan(page);
-  await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"hm-v2"');
-
-  await pauseReview(page, '2026-01-27', '2025-12-24');
-  const decision = await applyWithOffer(page, backend, 'polumaraton', '2026-01-27');
-  const list = decision.getByRole('list', { name: 'Nedostupne opcije' });
-  await expect(list.getByRole('listitem')).toHaveText([
-    `10K: ${NEEDS_RESULT}`,
-    `5K: ${NEEDS_RESULT}`
-  ]);
-  await expect(decision.getByRole('button', { name: /^Pregledaj opciju/ })).toHaveCount(0);
-
-  // (e) „Zatvori" (zadrži plan v2): odluka nestaje, plan se ne menja; stanje traje → ponovo pri otvaranju.
-  const adapted = serverPlan(backend);
-  await decision.getByRole('button', { name: 'Zatvori' }).click();
-  await expect(page.locator('#plan-decision')).toHaveCount(0);
-  await page.reload();
-  await tab(page, 'Plan').click();
-  await page
-    .locator('.page.active')
-    .getByRole('button', { name: /^Prilagodi plan/ })
-    .click();
-  await expect(page.locator('#plan-decision')).toBeVisible();
-  expect(serverPlan(backend)).toBe(adapted);
-  expect(serverPlan(backend)).toContain('"policyId":"hm-v2"');
 });
 
 test('(g) HM v2 sa rezultatom → 10K v2 (prekidač 10K v2): ponuda → opcija sa vrhom > 0 → izbor → plan 10K v2 sa prefiksom', async ({

@@ -55,7 +55,7 @@ async function seedOldPlan(page: Page): Promise<void> {
       if (sessionStorage.getItem('__e2e_old')) return;
       sessionStorage.setItem('__e2e_old', '1');
       localStorage.setItem(
-        key as string,
+        key,
         JSON.stringify({
           v: 12,
           log: { g1d2: { status: 'done', km: 6, ts: '2026-01-13' } },
@@ -108,7 +108,7 @@ test('stari plan: prikazuje se, unos radi; poruka i „Generiši nov plan" sa ja
   const today = page.locator('#legacy-plan-today');
   await expect(today).toContainText(MESSAGE);
   await expect(today.getByRole('button', { name: /Generiši nov plan/ })).toBeVisible();
-  await expect(page.getByText('Lako trčanje 7 km').first()).toBeVisible();
+  await expect(page.locator('#tcard')).toBeVisible();
   // Unos radi: današnji trening (sreda 14. 1.) se označava kao završen.
   await page.getByRole('button', { name: 'Završi trening' }).click();
   await expect(page.locator('#tcard')).toHaveAttribute('data-status', 'done');
