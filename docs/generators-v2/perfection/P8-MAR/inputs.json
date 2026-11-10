@@ -1,0 +1,254 @@
+{
+ "MAR": [
+  {
+   "title": "10 km 46:00, 40 km/ned, 4 dana, cilj = prognoza −2 %",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-02-21",
+    "runDays": [
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 40,
+    "goalTimeSec": 12450,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 10000,
+     "timeSec": 2760,
+     "date": "2026-10-19"
+    },
+    "recentLongRunKm": 14
+   }
+  },
+  {
+   "title": "5 km 20:25, 4 dana",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": [
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 40,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 5000,
+     "timeSec": 1225,
+     "date": "2026-10-19"
+    },
+    "recentLongRunKm": 14
+   }
+  },
+  {
+   "title": "spor, VDOT 33, dno obima, 3 dana, srednja priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": [
+     "tue",
+     "thu",
+     "sun"
+    ],
+    "currentWeeklyKm": 30,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 21097.5,
+     "timeSec": 7831,
+     "date": "2026-10-19"
+    }
+   }
+  },
+  {
+   "title": "spor, VDOT 35, 5 dana, sredina obima, najduža priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-04-18",
+    "runDays": [
+     "mon",
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 65,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 21097.5,
+     "timeSec": 7453,
+     "date": "2026-10-19"
+    }
+   }
+  },
+  {
+   "title": "brz, VDOT 60, vrh obima, 6 dana, srednja priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": [
+     "mon",
+     "tue",
+     "wed",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 110,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 21097.5,
+     "timeSec": 4689,
+     "date": "2026-10-19"
+    }
+   }
+  },
+  {
+   "title": "brz, mali obim, VDOT 58, dno obima za 5 dana, najkraća priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": [
+     "mon",
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 40,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 21097.5,
+     "timeSec": 4828,
+     "date": "2026-10-19"
+    }
+   }
+  },
+  {
+   "title": "srednji, VDOT 45, 5 dana, sredina obima, najkraća priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-01-24",
+    "runDays": [
+     "mon",
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 65,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 21097.5,
+     "timeSec": 6014,
+     "date": "2026-10-19"
+    }
+   }
+  },
+  {
+   "title": "srednji, VDOT 45, 3 dana, vrh obima za 3 dana, najduža priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-04-18",
+    "runDays": [
+     "tue",
+     "thu",
+     "sun"
+    ],
+    "currentWeeklyKm": 50,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 21097.5,
+     "timeSec": 6014,
+     "date": "2026-10-19"
+    }
+   }
+  },
+  {
+   "title": "po osećaju, lagan tempo 6:00/km, 4 dana, sredina obima, srednja priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": [
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 50,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": null,
+    "easyPaceSecPerKm": 360
+   }
+  },
+  {
+   "title": "po osećaju, spor, lagan tempo 7:30/km, 3 dana, dno obima, najduža priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-04-18",
+    "runDays": [
+     "tue",
+     "thu",
+     "sun"
+    ],
+    "currentWeeklyKm": 30,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": null,
+    "easyPaceSecPerKm": 450
+   }
+  },
+  {
+   "title": "početnik sa rezultatom (VDOT 35), 4 dana, dno tabele početnika, najduža priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-04-18",
+    "runDays": [
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 25,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": {
+     "distanceM": 21097.5,
+     "timeSec": 7453,
+     "date": "2026-10-19"
+    },
+    "experience": "beginner"
+   }
+  },
+  {
+   "title": "početnik po osećaju (lagan 7:00/km), 5 dana, vrh tabele početnika, srednja priprema",
+   "input": {
+    "startDate": "2026-11-02",
+    "raceDate": "2027-03-07",
+    "runDays": [
+     "mon",
+     "tue",
+     "thu",
+     "sat",
+     "sun"
+    ],
+    "currentWeeklyKm": 50,
+    "goalTimeSec": null,
+    "longRunDay": "sun",
+    "recentResult": null,
+    "easyPaceSecPerKm": 420,
+    "experience": "beginner"
+   }
+  }
+ ]
+}
