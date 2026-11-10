@@ -182,14 +182,15 @@ export function recentLongNote(long10: number): string {
     (LONG_KM) i poruku (capacityLimits 'km'). */
 export const longKmCap10 = (): number => Math.round(P.lengths.longMaxKm * 10);
 
-/** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje — min(udeo M15, trajanje, 32 km; K4-A talas dugog). */
+/** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje — min(udeo M15, trajanje, 32 km; K4-A talas dugog; K4-B dugi
+    nedelje malog obima). */
 export function longCap10(target10: number, rule: DayRule, p: Paces): number {
   const base = Math.min(
     longShareCap10(target10, rule, p),
     longTimeCap10(p, longMaxSecOf(rule)),
     longKmCap10()
   );
-  return Math.min(base, rule.longWave10 ?? Infinity);
+  return Math.min(base, rule.longWave10 ?? Infinity, rule.longKeep10 ?? Infinity);
 }
 
 /** K4-A — talas dugog (jedino mesto odluke): redovan plan sa 3 dana (`rule.quality` 1, ne početnik). Rep plana =

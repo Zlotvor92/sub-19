@@ -562,6 +562,14 @@ const DECISIONS: readonly Decision[] = [
       'specific.ts abPlan; week.ts buildWeekIn (nedelja B bez Q2 za 3 dana); policy.ts lengths.wave; lengths.ts longWave10, longCap10 (DayRule.longWave10); volume.ts nominalPeak10; generate.ts (pravilo dugog nedelje); validate.ts (LONG_WAVE, MAIN_DOSE_DECREASE/IDENTICAL_WEEKS sa nedeljom B, BUILD_NO_QUALITY)',
     rationale:
       'Heuristika, glavni trener krug 3 (coach/ROUND-03.md § 3, stavka A): 3 dana — dugi isti i do 50 % nedelje svake nedelje, bez drugog podražaja (MAR p08 29,3 km × 5). Tumačenje izvođača: treća nedelja na plafonu (pozicija 4) je u razvoju kad specifična faza ima samo 3 ne-rasteretne nedelje — tada bez bloka; blok samo u specifičnoj fazi (kasni razvoj se ne otvara).'
+  },
+  {
+    id: 'K4-B',
+    rule: 'Mali obim: kad bi u planu (sastavljenom bez ovog pravila) najkraći lagan dan bio kraći od 30 min u više od 2 ne-rasteretne nedelje izgradnje sa danom kvaliteta ili testa i bar dva lagana dana, u tim nedeljama jedan lagan dan (poslednji lagan dan šablona; lagani su jednaki) je dan odmora postojećim oblikom MAR-11 („odmor umesto laganog dana") uz oznaku „odmor ili 20 min lagano po želji"; dugi ostaje kakav je bio, km dana odmora prelaze u ostale lagane dane do granice udela dugog (0,70 / početnik 0,80), ostatak je planirano < cilj bez upozorenja po nedelji; jedna rečenica u napomeni plana. Broj dana i raspored šablona se ne menjaju. Drugi sastav koji ne prolazi validator → plan bez pravila.',
+    place:
+      'policy.ts lengths.shortEasy; week.ts shortEasyWeeks (jedino mesto odluke), shortRestNote, shortRestWeek, SHORT_REST_PLAN_NOTE; generate.ts construct (drugi sastav, longKeep10); lengths.ts longCap10 (DayRule.longKeep10); validate.ts (PLANNED_VS_TARGET grana K4-B, WEEK_MIN_LIMITS, SHORT_REST)',
+    rationale:
+      'Heuristika, glavni trener krug 3 (coach/ROUND-03.md § 3, stavka B): dan od 3–5 km ne vredi izlaska (MAR p06). Ekrani se ne diraju: dan odmora u danu trčanja već postoji (MAR-11, T1). 4 dana redovno (jedan lagan dan) i 3 dana nemaju drugi lagan dan — pravilo ih ne menja.'
   }
 ];
 
@@ -896,7 +904,11 @@ export const MARATHON_V2_POLICY = {
         ostale nedelje platoa ≤ `factor` × najduži dosadašnji dugi. Dugi „stoji" kad plafon nedelje pri NOMINALNOM
         cilju (udeo, trajanje, 32 km) nije veći od najdužeg za više od `standTol10` [0,1 km] (dugi koji raste nije
         plato). */
-    wave: { runMax: 3, maxTop: 3, factor: 0.85, standTol10: 1 }
+    wave: { runMax: 3, maxTop: 3, factor: 0.85, standTol10: 1 },
+    /** K4-B (marathon-v2.14.0): mali obim — kad bi najkraći lagan dan bio kraći od `minSec` u više od `weeksMax`
+        ne-rasteretnih nedelja izgradnje, u tim nedeljama jedan lagan dan je odmor („odmor ili 20 min lagano po
+        želji"), njegovi km prelaze u ostale lagane dane do granice udela dugog; ostatak je planirano < cilj. */
+    shortEasy: { minSec: 1800, weeksMax: 2 }
   },
 
   /** M13a (pouka 28, izmena organizatora MAR-02): dugi ≤ max(factor × L; L + addKm), L = najduži dugi
@@ -1025,6 +1037,9 @@ export interface DayRule {
   readonly longPeak?: { readonly share: number; readonly goalKm: number; readonly goalSec: number };
   /** K4-A (3 dana, talas dugog): plafon dugog nedelje [0,1 km] (lengths.longWave10). */
   readonly longWave10?: number;
+  /** K4-B (nedelja malog obima sa danom odmora): dugi nedelje ne duži od dugog iste nedelje plana bez K4-B [0,1 km] —
+      km dana odmora idu samo u lagane dane. */
+  readonly longKeep10?: number;
 }
 
 export const RUN_DAYS_COUNTS = Object.keys(MARATHON_V2_POLICY.days)

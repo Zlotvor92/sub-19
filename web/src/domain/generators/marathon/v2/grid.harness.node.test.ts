@@ -332,7 +332,19 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     const easy = w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km));
     if (easy.length > 1 && Math.max(...easy) - Math.min(...easy) > 1)
       no(`lagani nejednaki ned ${w.index}`);
-    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + 1e-9) no(`planirano ≠ cilj ned ${w.index}`);
+    // K4-B (nezavisno od week.ts): nedelja malog obima sa danom odmora (napomena „… odmor ili 20 min lagano po želji …") — planirano ≤ cilj,
+    // jedan dan šablona manje, rečenica u napomeni plana.
+    const k4b = w.notes.some(
+      (n) =>
+        n.startsWith('Nedelja izgradnje: odmor') && n.includes('odmor ili 20 min lagano po želji')
+    );
+    if (k4b) {
+      if (w.plannedKm > w.targetKm + 0.1 + 1e-9) no(`K4-B planirano > cilj ned ${w.index}`);
+      if (w.deload || !BUILD.includes(w.phase)) no(`K4-B van izgradnje ned ${w.index}`);
+      if (w.days.length !== p.input.runDays.length - 1) no(`K4-B dana ≠ šablon − 1 ned ${w.index}`);
+      if (!p.notes.some((n) => n.startsWith('Mali obim:'))) no('K4-B bez rečenice plana');
+    } else if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + 1e-9)
+      no(`planirano ≠ cilj ned ${w.index}`);
     const long = w.days.find((d) => d.role === 'long');
     if (!long) {
       no(`bez dugog ned ${w.index}`);

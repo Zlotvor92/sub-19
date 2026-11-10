@@ -147,6 +147,8 @@ import {
   deloadDayLimit,
   EASY_UNDER_NOTE,
   easyRestDates,
+  SHORT_REST_PLAN_NOTE,
+  shortRestWeek,
   sharpenerStructure,
   lowestBuild,
   oneDayLimit,
@@ -711,6 +713,15 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           w.index
         );
     } else if (
+      shortRestWeek(w) &&
+      w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS &&
+      easyRestDates(w).length === 1 &&
+      !w.deload &&
+      isBuildPhase(w.phase)
+    ) {
+      // K4-B: nedelja malog obima — jedan lagan dan je odmor, planirano ≤ cilj bez upozorenja po nedelji (rečenica
+      // u napomeni plana).
+    } else if (
       w.notes.includes(EASY_UNDER_NOTE) &&
       w.plannedKm + P.tolerance.plannedKm + EPS < w.targetKm
     ) {
@@ -742,7 +753,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         `Nedelja ${w.plannedKm} km < ${rule.weekMinKm} km — dani odmora/bola (A4, pouka 25).`,
         w.index
       );
-    else if (below && w.notes.includes(EASY_UNDER_NOTE))
+    else if (below && (w.notes.includes(EASY_UNDER_NOTE) || shortRestWeek(w)))
       warn(
         'WEEK_MIN_LIMITS',
         `Nedelja ${String(w.plannedKm).replace('.', ',')} km < ${rule.weekMinKm} km — lagani treninzi su najviše ${String(easyLongShareOf(rule)).replace('.', ',')} × dugi.`,
@@ -2047,6 +2058,12 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         err('TEST', 'Nedelja testa bez napomene (M16).', w.index);
     }
   }
+  // K4-B: rečenica u napomeni plana tačno kad plan ima nedelju malog obima sa danom odmora.
+  if (weeks.some(shortRestWeek) !== plan.notes.includes(SHORT_REST_PLAN_NOTE))
+    err(
+      'SHORT_REST',
+      'Napomena plana o malom obimu (K4-B) bez nedelje sa danom odmora ili obrnuto.'
+    );
   if (feel && !plan.notes.some((n) => n.startsWith('Plan po osećaju (M16)')))
     err('PACE_BASIS', 'Plan po osećaju bez napomene (M16).');
 

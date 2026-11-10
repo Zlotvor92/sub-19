@@ -61,7 +61,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'K3-B',
       'K3-C',
       'K3-E',
-      'K4-A'
+      'K4-A',
+      'K4-B'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -240,7 +241,9 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       longGoalSec: 9900,
       peakLong: { weeks: 3, share3: 0.5, shareMany: 0.45 },
       // K4-A: talas dugog 3 dana — plafon najviše 3 puta od kraja, ostalo 0,85 × najduži.
-      wave: { runMax: 3, maxTop: 3, factor: 0.85, standTol10: 1 }
+      wave: { runMax: 3, maxTop: 3, factor: 0.85, standTol10: 1 },
+      // K4-B: lagan < 30 min u više od 2 nedelje izgradnje → jedan lagan dan odmor.
+      shortEasy: { minSec: 1800, weeksMax: 2 }
     });
     expect(P.longJump).toEqual({ factor: 1.1, addKm: 1, windowWeeks: 4 });
     expect(P.workout).toEqual({

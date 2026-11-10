@@ -16,5 +16,14 @@
     "tests": [
       "src/domain/generators/marathon/v2/k4.node.test.ts"
     ]
+  },
+  {
+    "name": "K4-B bez pravila (shortEasyWeeks uvek prazno)",
+    "file": "src/domain/generators/marathon/v2/week.ts",
+    "find": "  return out.length > S.weeksMax ? out : [];",
+    "replace": "  return out.length > 999 ? out : [];",
+    "tests": [
+      "src/domain/generators/marathon/v2/k4.node.test.ts"
+    ]
   }
 ]

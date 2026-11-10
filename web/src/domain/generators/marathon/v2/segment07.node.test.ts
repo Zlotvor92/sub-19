@@ -93,7 +93,9 @@ const easy35 = (w: PlanWeek): boolean => w.notes.some((n) => n.endsWith('(pouka 
 
 describe('pouka 35: dva dana kvaliteta samo kad dugi ostaje najduži', () => {
   it('generator (M13a, kratak skorašnji dugi): drugi dan kvaliteta lagan, dugi raste; inače nedelja sa jednim kvalitetom nije izvodljiva', () => {
-    const p = planOf(recentInputs().find((x) => x.id === 'recent-d5-12w-40km-v70-A-r6')!.input);
+    // K4-B (marathon-v2.14.0): recent-d5-12w-40km-v70-A-r6 ima nedelje malog obima sa danom odmora (bez nedelje pouke
+    // 35) — primer iste mreže sa nedeljom pouke 35.
+    const p = planOf(recentInputs().find((x) => x.id === 'recent-d5-12w-50km-v70-A-r8')!.input);
     const w = p.weeks.find(easy35)!;
     expect(w).toBeDefined();
     expect(w.days.filter((d) => d.role === 'q2')).toEqual([]);

@@ -192,7 +192,12 @@ export function adaptInvariants(
     const limited =
       (w.limits?.pain?.length ?? 0) > 0 ||
       (w.limits?.rest?.length ?? 0) > 0 ||
-      w.notes.some((n) => n.startsWith('Nedelja izgradnje: planirano je manje od cilja'));
+      w.notes.some((n) => n.startsWith('Nedelja izgradnje: planirano je manje od cilja')) ||
+      // K4-B: nedelja malog obima sa danom odmora — planirano ≤ cilj.
+      w.notes.some(
+        (n) =>
+          n.startsWith('Nedelja izgradnje: odmor') && n.includes('odmor ili 20 min lagano po želji')
+      );
     // Planirano = cilj (pouka 25: uz dane bola/odmora ≤ cilj).
     if (
       w.phase !== 'race' &&

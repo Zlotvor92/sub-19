@@ -56,3 +56,33 @@ describe('K4-A: 3 dana — blok MP u dugom i talas dugog', () => {
     expect(Math.max(...tail(p).map((w) => w.targetKm))).toBe(60);
   });
 });
+
+describe('K4-B: mali obim — kratak lagan dan', () => {
+  it('p06 (5 dana, 40 km): nedelje sa danom odmora i oznakom, dugi isti, lagani ≥ 30 min; rečenica plana; bez upozorenja planirano < cilj', () => {
+    const p = prof('p06');
+    const tagged = p.weeks.filter((w) =>
+      w.notes.some((n) => n.includes('odmor ili 20 min lagano po želji'))
+    );
+    expect(tagged.length).toBeGreaterThan(2);
+    expect(p.notes.some((n) => n.startsWith('Mali obim:'))).toBe(true);
+    for (const w of tagged) {
+      expect(w.deload).toBe(false);
+      expect(w.days).toHaveLength(p.input.runDays.length - 1);
+      expect(w.plannedKm).toBeLessThanOrEqual(w.targetKm + 0.1);
+      for (const d of w.days.filter((x) => x.role === 'easy'))
+        expect(d.workout.sec).toBeGreaterThanOrEqual(1800);
+    }
+    expect(p.warnings.some((v) => v.rule === 'PLANNED_BELOW_TARGET')).toBe(false);
+    expect(errors(p)).toEqual([]);
+  });
+
+  it('plan bez kratkih laganih (p01) — bez dana odmora i bez rečenice', () => {
+    const p = prof('p01');
+    expect(p.notes.some((n) => n.startsWith('Mali obim:'))).toBe(false);
+    expect(
+      p.weeks.every((w) => !w.notes.some((n) => n.includes('odmor ili 20 min lagano po želji')))
+    ).toBe(true);
+    // Korisnički tekst bez interne oznake pravila.
+    for (const w of prof('p06').weeks) for (const n of w.notes) expect(n).not.toContain('K4-B');
+  });
+});

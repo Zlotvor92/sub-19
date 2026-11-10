@@ -86,6 +86,8 @@ export interface WeekContext {
   /** P5-F2 (A18): nedelja izgradnje bez rasta doze nijednog slota (assess: dva uzastopna preteška ili preskočena
       kvaliteta). */
   hold?: boolean;
+  /** K4-B: nedelja malog obima (shortEasyWeeks) — jedan lagan dan je odmor, planirano < cilj bez upozorenja. */
+  shortRest?: boolean;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (M11 ispred M12 u izgradnji; u
@@ -508,6 +510,44 @@ export const TAPER_SECOND_EASY =
 export const EASY_REST_NOTE = 'odmor umesto laganog dana';
 export const easyRestNote = (dates: readonly string[]): string =>
   `Nedelja izgradnje: ${EASY_REST_NOTE} (${dates.join(', ')}) — sa svim danima lagani ne bi stali u granice (najviše 70 % dugog, uz 3 dana trčanja 80 %; najmanje 5 km i 20 min).`;
+/** K4-B: napomena nedelje malog obima čiji je lagan dan `dates` odmor (isti oblik i početak kao easyRestNote —
+    easyRestDates je čita); planirano < cilj bez upozorenja (validator je čita). */
+export const SHORT_REST_TAG = 'odmor ili 20 min lagano po želji';
+export const shortRestNote = (dates: readonly string[]): string =>
+  `Nedelja izgradnje: ${EASY_REST_NOTE} (${dates.join(', ')}) — ${SHORT_REST_TAG}; lagan dan bi bio kraći od ${P.lengths.shortEasy.minSec / 60} min, njegovi kilometri prelaze u ostale lagane dane.`;
+export const shortRestWeek = (w: { notes: readonly string[] }): boolean =>
+  w.notes.some(
+    (n) => n.startsWith(`Nedelja izgradnje: ${EASY_REST_NOTE} (`) && n.includes(SHORT_REST_TAG)
+  );
+/** K4-B: rečenica u napomeni plana kad plan ima nedelje shortRestNote. */
+export const SHORT_REST_PLAN_NOTE = `Mali obim: u nedeljama u kojima bi lagan trening bio kraći od ${P.lengths.shortEasy.minSec / 60} minuta jedan lagan dan je ${SHORT_REST_TAG}; njegovi kilometri prelaze u ostale lagane dane, pa je planirano ponekad manje od cilja.`;
+/** K4-B — jedino mesto odluke: ne-rasteretne nedelje izgradnje (baza, razvoj, specifična) sa danom kvaliteta ili
+    testa i bar dva lagana dana, čiji je najkraći lagan kraći od shortEasy.minSec; vraća ih samo kad ih je više od shortEasy.weeksMax (inače
+    prazno). Čita se nad planom sastavljenim bez K4-B (generate.construct). */
+export function shortEasyWeeks(
+  weeks: readonly {
+    index: number;
+    phase: string;
+    deload: boolean;
+    days: readonly { role: string; countsToWeek: boolean; workout: { sec: number } }[];
+  }[]
+): number[] {
+  const S = P.lengths.shortEasy;
+  const out = weeks
+    .filter(
+      (w) =>
+        !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific')
+    )
+    .filter((w) => {
+      // Nedelja bez dana kvaliteta ili testa (uvod početnika, nedelja B sa 3 dana) — dan Q1 je lagan i ostaje.
+      if (!w.days.some((d) => d.role === 'q1' || d.role === 'q2' || d.role === 'test'))
+        return false;
+      const e = w.days.filter((d) => d.role === 'easy' && d.countsToWeek).map((d) => d.workout.sec);
+      return e.length >= 2 && Math.min(...e) < S.minSec - 1e-6;
+    })
+    .map((w) => w.index);
+  return out.length > S.weeksMax ? out : [];
+}
 /** MAR-11 (T1): napomena nedelje čiji su lagani na 0,8 × dugi, planirano < cilj (validator je čita). */
 export const EASY_UNDER_NOTE =
   'Nedelja izgradnje: planirano je manje od cilja — lagani su ograničeni prema dugom (najviše 70 % dugog, uz 3 dana trčanja 80 %), a dugi se zbog toga ne produžava.';
@@ -1012,8 +1052,8 @@ function buildWeekIn(
     ).filter((d) => !rested.includes(d));
     len = easy35;
   }
-  if (rested.length > 0) notes.push(easyRestNote(rested));
-  if (len.under) notes.push(EASY_UNDER_NOTE);
+  if (rested.length > 0) notes.push(ctx.shortRest ? shortRestNote(rested) : easyRestNote(rested));
+  if (len.under && !ctx.shortRest) notes.push(EASY_UNDER_NOTE);
   if (intro)
     notes.push(
       `Uvod (M17): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`

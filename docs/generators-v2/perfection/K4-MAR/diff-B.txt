@@ -1,0 +1,11 @@
+R-d3: n 3120 odb 0→0 prom 0 vrh<-10% 0
+R-d4: n 4368 odb 0→0 prom 0 vrh<-10% 0
+R-d5: n 6240 odb 0→0 prom 620 vrh<-10% 0 | peak 63→63 [50.5..84]; easyMin 22→32 [30..43]; shortEasyWeeks 6→0 [0..0]; longest 26→26 [19.1..29.4]
+R-d6: n 8112 odb 0→0 prom 848 vrh<-10% 0 | peak 77→77 [63.2..98]; easyMin 24→31 [26..40]; shortEasyWeeks 6→0 [0..8]; longest 26→26 [20.3..31.3]
+F-d3: n 1170 odb 0→0 prom 0 vrh<-10% 0
+F-d4: n 1638 odb 0→0 prom 0 vrh<-10% 0
+F-d5: n 2340 odb 0→0 prom 162 vrh<-10% 0 | peak 56.8→56.8 [50.5..77]; easyMin 22→31 [30..36]; shortEasyWeeks 5→0 [0..0]; longest 23.8→23.8 [19.6..26.9]
+F-d6: n 3042 odb 0→0 prom 161 vrh<-10% 0 | peak 71.5→71.5 [63.2..84]; easyMin 24→31 [30..35]; shortEasyWeeks 7→0 [0..0]; longest 26→26 [22.9..26.8]
+B-d4: n 945 odb 0→0 prom 32 vrh<-10% 0 | peak 37.1→37.1 [37.1..39]; easyMin 27→28 [28..33]; shortEasyWeeks 7→2 [0..2]; longest 16.5→16.5 [16.2..18.4]
+B-d5: n 945 odb 0→0 prom 45 vrh<-10% 0 | peak 44.3→44.3 [43.7..45.5]; easyMin 27→28 [28..31]; shortEasyWeeks 7→2 [0..2]; longest 16.7→16.7 [16.1..17.9]
+nova odbijanja: 0
