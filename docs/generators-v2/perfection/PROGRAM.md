@@ -181,3 +181,15 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
   P8-HM i P8-MAR. Završavaju samo dva taba koja rade: P8-5K dopuna (5k-v2.15.2) i P8-10K završetak.
 - Ako neki od ta dva stane na limitu, posle reseta dobija „nastavi"; ništa drugo.
 - Posle njihovih izveštaja: provera, upis, arhiviranje, pa čekanje dogovora o daljoj organizaciji.
+
+### 10. 11. 2026, 15:30 — P8-5K završen (5k-v2.15.3), tab arhiviran
+
+- Kod `4fc4084`, izveštaj `121a02b` (`reports/P8-5K-REPORT.md` § Završetak). Nezavisna provera organizatora: brzi nivo
+  `fiveK/v2` 801/801. Po tabu: pun nivo 811/811, sabotaže 20/20, mreža P8 3964/3964 bez odbijanja. E2E 5K nije
+  ponavljan posle 2.15.1 (tada 3/3) — ponoviti pre mergea.
+- 2.15.2: početnik lagan ≤ 0,80 × dugi (B 4 d sa planiranim vrhom < 0,9 × cilj: 30 → 0).
+- 2.15.3: korak I ≤ 1,25 × prethodni rad; napomena laganog samo u prvoj takvoj nedelji.
+- OTVORENO za krug 3 (odluka po sudu glavnog trenera): medijana vrha I doze 13,1 (pre P8) → 10,1 min; cilj ≥ 11 nije
+  dostignut. Uzrok po tabu (tumačenje): vrhunac ima 2–3 I nedelje, prvi I ≤ 70 % budžeta. Kandidati: prvi I 80 % ili
+  veći faktor koraka. Nazivi faza na srpskom nisu dirani.
+- Po nalogu vlasnika (15:10) ništa novo se ne pokreće; čeka se P8-10K završetak.
