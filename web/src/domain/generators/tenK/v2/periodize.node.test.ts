@@ -89,18 +89,18 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.13.0');
+    expect(r.plan.policyVersion).toBe('10k-v2.14.0');
   });
 });
 
 describe('D27: gde je test 5 km', () => {
-  it('poslednja nedelja baze za N = 12–18 (P8 G7: N = 8–11 bez testa, baza < 4 nedelje); oznaka samo u planu po osećaju i samo na toj nedelji', () => {
+  it('poslednja nedelja baze za N = 12–18; P9b (D52): N = 9–11 prva ne-rasteretna nedelja razvoja ≥ 4, N = 8 bez testa (razvoj 3–4, ned 4 rasterećenje); oznaka samo u planu po osećaju i samo na toj nedelji', () => {
     const want: Record<number, number> = {
-      // P8 G7 (D46): test ne pre nedelje 4 — baza kraća od 4 nedelje → plan po osećaju bez testa.
+      // P8 G7 (D46): test ne pre nedelje 4; P9b (D52): baza kraća od 4 nedelje → prva ne-rasteretna nedelja razvoja ≥ 4.
       8: 0,
-      9: 0,
-      10: 0,
-      11: 0,
+      9: 5,
+      10: 4,
+      11: 4,
       12: 4,
       13: 4,
       14: 4,
@@ -111,15 +111,21 @@ describe('D27: gde je test 5 km', () => {
     };
     for (let N = 8; N <= 18; N++) {
       const ph = phasesOf(N);
-      expect(testWeekOf(ph), `N=${N}`).toBe(want[N]);
+      const deloads = periodize('2026-11-02', N, null)!.flatMap((w) => (w.deload ? [w.index] : []));
+      expect(testWeekOf(ph, 'feel', deloads), `N=${N}`).toBe(want[N]);
       const f = periodize('2026-11-02', N, 'feel')!;
       if (want[N] === 0) {
         expect(ph.lastIndexOf('base') + 1, `N=${N}`).toBeLessThan(4);
         expect(f.some((w) => w.test)).toBe(false);
         continue;
       }
-      expect(ph[want[N]! - 1]).toBe('base');
-      expect(ph[want[N]!]).toBe('development');
+      if (N <= 11) {
+        expect(ph[want[N]! - 1], `N=${N}`).toBe('development');
+        expect(f[want[N]! - 1]!.deload, `N=${N}`).toBe(false);
+      } else {
+        expect(ph[want[N]! - 1]).toBe('base');
+        expect(ph[want[N]!]).toBe('development');
+      }
       expect(f.filter((w) => w.test).map((w) => w.index)).toEqual([want[N]]);
       expect(periodize('2026-11-02', N, null)!.some((w) => 'test' in w)).toBe(false);
     }

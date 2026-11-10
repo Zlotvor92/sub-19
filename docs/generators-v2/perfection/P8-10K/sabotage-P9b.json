@@ -1,0 +1,11 @@
+[
+  {
+    "name": "P9b plan po osećaju bez testa kad je baza < 4 nedelje (vraćen G7 bez dopune)",
+    "file": "src/domain/generators/tenK/v2/periodize.ts",
+    "find": "  if (kind === 'feel')\n    for (let i = min; i <= phases.length; i++)",
+    "replace": "  if (kind === 'feel' && min < 0)\n    for (let i = min; i <= phases.length; i++)",
+    "tests": [
+      "src/domain/generators/tenK/v2/feelGrid.node.test.ts"
+    ]
+  }
+]

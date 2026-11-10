@@ -2135,7 +2135,8 @@ export function validatePlan(
     } else if (plan.goal) err('GOAL', 'Bez cilja nema ocene (D3).');
   }
 
-  // --- D27: plan po osećaju ima tačno jedan test, u poslednjoj nedelji baze (dan: ROLES); D35 (P5 F1): plan sa
+  // --- D27: plan po osećaju ima tačno jedan test, u poslednjoj nedelji baze (G7/P9b D52: ne pre nedelje 4 — inače prva
+  // ne-rasteretna nedelja razvoja ≥ 4; nedelja: testWeekOf, dan: ROLES); D35 (P5 F1): plan sa
   // rezultatom (ne početnik) od test.controlMinWeeks nedelja tačno jedan kontrolni test, u poslednjoj ne-rasteretnoj
   // nedelji razvoja; kraći plan sa rezultatom i početnik (D32) nijedan.
   const testKind = testKindOf(feel, rule, N);
@@ -2179,7 +2180,7 @@ export function validatePlan(
       'TEST',
       withTest
         ? testKind === 'feel'
-          ? `Plan po osećaju: tačno jedan test, u poslednjoj nedelji baze ${wl(tw)} (sada: ${tests.map(wl).join(', ') || 'nijedan'}) (D27).`
+          ? `Plan po osećaju: tačno jedan test, u nedelji ${wl(tw)} (poslednja baze; G7/P9b: ne pre nedelje ${P.test.minWeek}) (sada: ${tests.map(wl).join(', ') || 'nijedan'}) (D27).`
           : `Plan sa rezultatom: tačno jedan kontrolni test, u poslednjoj ne-rasteretnoj nedelji razvoja ${wl(tw)} (sada: ${tests.map(wl).join(', ') || 'nijedan'}) (D35).`
         : feel
           ? 'Početnik nema test (D32).'

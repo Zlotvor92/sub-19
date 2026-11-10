@@ -182,7 +182,7 @@ describe('D26: plan po osećaju', () => {
 describe('D27: test 5 km', () => {
   it('tačno jedan test u poslednjoj nedelji baze, na danu Q1; WU (pojas) + 5 km + CD; u obimu, nije doza', () => {
     for (const [days, weeks, km] of [
-      // P8 G7 (D46): test ne pre nedelje 4 — plan od 10 nedelja (baza 3 nedelje) nema test; 15 nedelja: test u nedelji 5.
+      // P8 G7 (D46): test ne pre nedelje 4 (P9b: plan od 10 nedelja — test u prvoj nedelji razvoja); 15 nedelja: test u nedelji 5.
       [3, 15, 25],
       [4, 15, 30],
       [5, 16, 45],
@@ -217,11 +217,19 @@ describe('D27: test 5 km', () => {
     }
   });
 
-  it('P8 G7 (D46): plan po osećaju od 10 nedelja (baza 3 nedelje) nema test', () => {
+  it('P9b (D52): plan po osećaju od 10 nedelja (baza 3 nedelje) — test u nedelji 4 (prva razvoja), umesto I, jedini kvalitet; 8 nedelja bez testa', () => {
     for (const days of [3, 4] as const) {
       const p = plan(feelInput(days, { weeks: 10, km: 30, easy: 390 }));
-      expect(p.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
+      const tw = p.weeks.filter((w) => w.test || w.days.some((d) => d.role === 'test'));
+      expect(tw.map((w) => [w.index, w.phase, w.deload])).toEqual([[4, 'development', false]]);
+      const w = tw[0]!;
+      expect(w.days.find((d) => d.role === 'test')!.weekday).toBe(p.pattern.q1);
+      expect(w.days.filter((d) => d.workout.kind === 'quality')).toEqual([]);
       expect(errors(p)).toEqual([]);
+      const p8 = plan(feelInput(days, { weeks: 8, km: 30, easy: 390 }));
+      expect(p8.weeks.some((x) => x.test || x.days.some((d) => d.role === 'test'))).toBe(false);
+      expect(p8.notes.some((n) => n.startsWith('Test 5 km: nema ga'))).toBe(true);
+      expect(errors(p8)).toEqual([]);
     }
   });
 

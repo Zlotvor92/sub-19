@@ -129,7 +129,8 @@ export function testKindOf(feel: boolean, rule: PlanRule, weeks: number): TestKi
 }
 
 /** D27: nedelja testa 5 km = poslednja nedelja baze (1-indeks). D35 (kontrolni test): poslednja ne-rasteretna nedelja
-    razvoja (`deloads` = rasteretne nedelje D5); 0 = nema takve nedelje. */
+    razvoja (`deloads` = rasteretne nedelje D5). G7 (D46) / P9b (D52): ne pre test.minWeek; 0 = nema takve nedelje.
+    JEDINO mesto odluke o nedelji testa (konstruktor i validator). */
 export function testWeekOf(
   phases: readonly Phase[],
   kind: 'feel' | 'control' = 'feel',
@@ -149,6 +150,11 @@ export function testWeekOf(
     if (phases[i - 1] !== ph) break;
     if (!deloads.includes(i)) return i;
   }
+  // P9b (D52): plan po osećaju bez takve nedelje baze — prva ne-rasteretna nedelja razvoja ≥ minWeek (test umesto
+  // kvaliteta te nedelje, jedini kvalitet po G7); nema je → bez testa. Kontrolni test bez promene.
+  if (kind === 'feel')
+    for (let i = min; i <= phases.length; i++)
+      if (phases[i - 1] === 'development' && !deloads.includes(i)) return i;
   return 0;
 }
 

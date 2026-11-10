@@ -65,7 +65,7 @@ const I3_RACE_WEEK = [
 /** I3 — nedelje sa istim ciljem bez dana bola u kojima je planirano uz bol 8 veće za ≤ 0,1 km (D19). 06c
     (A17): 16 → 14 — d5-f-18w asOf 02-05/02-06 ned 17 (taper) otpadaju zajedno sa trkačkom (ukinuto
     rasterećenje ned 15); d4-r-14w asOf 2026-11-21 ned 7 ostaje, cilj 34,7 → 37,1 (ukinuto rasterećenje ned 4). */
-const I3_ROUNDING = 11; // 10K-08: 14 → 20 (T1/C6 — drugi bazni planovi i povratak); P3: 20 → 12 (D33/D34); P5: 12 → 9; P8 (G1/G2 drugi bazni planovi): 9 → 13; P8 dopuna (G1a/G4–G7): 13 → 11
+const I3_ROUNDING = 13; // 10K-08: 14 → 20 (T1/C6 — drugi bazni planovi i povratak); P3: 20 → 12 (D33/D34); P5: 12 → 9; P8 (G1/G2 drugi bazni planovi): 9 → 13; P8 dopuna (G1a/G4–G7): 13 → 11; P9b (D52: d3-f-10w dobija test u ned 4): 11 → 13 (d3-f-10w/w3 11-16 i 11-22 ned 7, 24,91 → 24,94)
 
 const to10 = (km: number): number => Math.round(km * 10);
 const km1 = (x10: number): string => (x10 / 10).toFixed(1).replace('.', ',');
@@ -151,7 +151,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.13.0');
+      expect(r.plan.policyVersion).toBe('10k-v2.14.0');
     }
   });
 
@@ -328,7 +328,12 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
     expect(bad).toEqual([]);
     expect(race).toEqual(I3_RACE_WEEK);
     expect(rounding).toBe(I3_ROUNDING);
-    expect(t1).toEqual(['d4-r-14w/w3/2026-11-22/p8 ned 5', 'd4-r-14w/w3/2026-11-22/p8 ned 6']);
+    // P9b (D52): d3-f-10w (plan po osećaju od 10 ned) dobija test u ned 4 — isti mehanizam T1 u ned 5 toka 11-22.
+    expect(t1).toEqual([
+      'd4-r-14w/w3/2026-11-22/p8 ned 5',
+      'd4-r-14w/w3/2026-11-22/p8 ned 6',
+      'd3-f-10w/w3/2026-11-22/p8 ned 5'
+    ]);
   });
 
   it('I4: od r + 1 do nivoa svaka nedelja izgradnje ≤ prethodna ne-rasteretna (prva: osnova) + max(10 %, 1,0 km)', () => {

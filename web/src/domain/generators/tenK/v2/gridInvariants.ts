@@ -180,11 +180,15 @@ export function checkPlan(
   const lastBase = control
     ? Math.max(...p.weeks.filter((w) => w.phase === 'development' && !w.deload).map((w) => w.index))
     : phases.lastIndexOf('base') + 1;
-  // P8 G7 (D46) nezavisno: test ne pre nedelje 4 — inače prva ne-rasteretna nedelja ≥ 4 iste faze, ili bez testa (0).
+  // P8 G7 (D46) nezavisno: test ne pre nedelje 4 — inače prva ne-rasteretna nedelja ≥ 4 iste faze; P9b (D52): plan po
+  // osećaju — inače prva ne-rasteretna nedelja razvoja ≥ 4; ili bez testa (0).
   const testWeek = ((): number => {
     if (lastBase >= 4 || lastBase <= 0) return Math.max(0, lastBase);
     for (let i = 4; i <= phases.length && phases[i - 1] === phases[lastBase - 1]; i++)
       if (!p.weeks[i - 1]!.deload) return i;
+    if (!control)
+      for (const w of p.weeks)
+        if (w.index >= 4 && w.phase === 'development' && !w.deload) return w.index;
     return 0;
   })();
   // P8 G8 (D48) nezavisno: početnik — u 3 poslednje ne-rasteretne nedelje izgradnje udeo dugog do min(50 %, 10 km / cilj).
@@ -492,6 +496,10 @@ export function checkPlan(
   } else if (tests.length > 0) no('TEST_NONE', `${tests.length}`);
   for (const w of p.weeks)
     if ((w.test === true) !== (withTest && w.index === testWeek)) no('TEST_FLAG', `ned ${w.index}`);
+  // G7 (D46) / P9b (D52) nezavisno: u nedelji testa nema drugog kvaliteta (ni I razvoja na koji je test došao).
+  for (const t of tests)
+    if (t.w.days.some((d) => d.role !== 'test' && d.workout.kind === 'quality'))
+      no('TEST_ONLY_QUALITY', `ned ${t.w.index}`);
   // D26: osnova tempa, E = lagan tempo ± 15 s, procena VDOT-a = VO2(lagan) / 0,70 (Daniels–Gilbert,
   // 0,1; 25–60), bez prognoze i ocene cilja.
   if (feel) {

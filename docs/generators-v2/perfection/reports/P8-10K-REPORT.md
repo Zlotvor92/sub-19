@@ -241,3 +241,26 @@ D50, D51 (2: donja granica, stanje slota u nedelji testa), S9. Prvi deo (G1–G3
 3. Redovan plan sa 4 dana i malim obimom / sporim tempom ne nosi trenutni obim u nedelji 1 (G6 0,70) — brojevi u tabeli gore;
    odluka organizatora ako slepa ocena to kazni (opcija: 0,75 za 4 dana).
 4. `byteSame` fiksture sa 10K ključevima u drugim distancama: ne postoje u repou (posle V1b) — nema šta da se snima.
+
+## P9b (10. 11. 2026, 10k-v2.14.0): test u planu po osećaju od 9–11 nedelja (red D52)
+
+- **Šta:** plan po osećaju (ne početnik) koji bi po G7 ostao bez testa (baza < 4 ned) dobija test u PRVOJ ne-rasteretnoj
+  nedelji razvoja ≥ 4, na danu Q1 umesto I/kvaliteta; po G7 jedini kvalitet nedelje. Nema takve nedelje → bez testa
+  (postojeća napomena). Planovi sa rezultatom i početnik bez promene. Ista odluka kao HM (P8-HMc) i maraton (P8-G7).
+- **Gde:** `periodize.ts testWeekOf` (jedino mesto; `validate.ts` TEST čita isto, poruka usklađena); `policy.ts` D52 +
+  10k-v2.14.0; `app/plan.ts` KNOWN_VERSIONS + 10k-v2.13.0. Nezavisno: `gridInvariants.ts` (nedelja testa po D52;
+  TEST_ONLY_QUALITY). `testInputs.earlyAsOfs`: tok „nedelja pre testa" ostaje pre poslednje nedelje baze (mreža E ista).
+- **Merenje** (mreža F 11 880, heš plana bez verzije): bez testa 4320 (8/9/10/11 ned × 1080) → 1080 (samo 8 ned: razvoj =
+  ned 3–4, ned 4 rasterećenje); test u razvoju 0 → 3240 (9 ned → ned 5; 10–11 → ned 4); nedelja testa sa drugim kvalitetom
+  0 → 0; odbijanja 0 → 0; promenjeno tačno 3240 (sve bivše bez testa), 7560 sa testom bajt-isti. Mreže 01/02/B (sa
+  rezultatom + početnici, 22 266): bajt-isti (0 razlika heša); bazne linije i heš-fiksture prolaze bez izmene.
+- **Usklađena očekivanja:** verzija (policy, app, adaptFlow, handoffTarget, periodize, painGrid, `tenKV2Flow.test.tsx`,
+  `e2e/tenk-v2.spec.ts`); `periodize` (N = 9/10/11 → 5/4/4, 8 → 0); `feel` (10 ned: test ned 4, jedini kvalitet; 8 ned
+  bez testa + napomena); `painGrid` I3 (d3-f-10w): zaokruženje 11 → 13, T1 + 1 tok; `adapt` mreža: TEST_MOVED +4 u
+  pause20/pause35/pain8/painPause/faster/slower/test5k; `feelGrid` brojke (CAPACITY_LIMITED, ponavljanja, vrh/start, taper
+  samo RP, DOSE_DROPPED — vrednosti u komentaru testa). Primeri na 15 nedelja nisu dirani.
+- **Sabotaža** (`P8-10K/sabotage-P9b.json`, `--bail=1`): isključena dopuna u `testWeekOf` → pada `feelGrid` (nezavisne
+  invarijante). 1/1.
+- **Testovi:** brz `tenK/v2` 40/437 zeleno; pun `tenK/v2` (≈ 29 min) 96 fajlova — 5 palih usklađeno (gore), ponovljeni pun
+  nivo tih fajlova zelen; `--changed 7f58ff6` 102/1014 zeleno; E2E `tenk-v2.spec.ts` 3/3; `npm run check` 299/3375 zeleno.
+- **Otvoreno:** napomena plana bez testa (8 ned) govori „posle prilagođavanja" — za nov plan od 8 nedelja nije precizna.

@@ -115,10 +115,13 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         // 384 / 96 / 126 / 240 → 432 / 342 / 132 / 240, vrh/start 1,188 / 1,163 / 1,237 / 1,216 → 1,164 / 1,098 / 1,163 / 1,102
         // (G1a), rasterećenje bez kvaliteta 288 → 0 i taper bez kvaliteta 36 → 0 (G2), taper samo RP 0 / 18 / 54 / 252 →
         // 0 / 84 / 120 / 312.
-        [1980, 1014, 432, 1.164, 0, 0, 0, 0],
-        [2772, 2160, 342, 1.098, 0, 84, 0, 0],
-        [3168, 1224, 132, 1.163, 0, 120, 0, 0],
-        [3960, 1116, 240, 1.102, 0, 312, 0, 0]
+        // P9b (10k-v2.14.0, D52: planovi od 9–11 nedelja dobijaju test u prvoj nedelji razvoja ≥ 4): CAPACITY_LIMITED
+        // 1014 / 2160 / 1224 / 1116 → 1014 / 2166 / 1230 / 1104, ponavljanja 432 / 342 → 456 / 288 (3 / 4 dana), vrh/start
+        // 1,164 / 1,098 → 1,169 / 1,097, taper samo RP 84 / 120 / 312 → 84 / 114 / 306.
+        [1980, 1014, 456, 1.169, 0, 0, 0, 0],
+        [2772, 2166, 288, 1.097, 0, 84, 0, 0],
+        [3168, 1230, 132, 1.163, 0, 114, 0, 0],
+        [3960, 1104, 240, 1.102, 0, 306, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -141,8 +144,10 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
           // P5 (D37): ned 1 ispod obima (udeo) 1518 → 1386 (4 d), 660 → 594 (5 d); DOSE_DROPPED 258 / 0 / 0 → 444 / 210 / 72.
           // P8 (G6 lagan ≤ 0,70 × dugi za 4+ dana, G1, G4): ned 1 ispod obima (udeo) 1386 → 1782 (4 d), uz 105 min 594 → 858
           // (5 d), 792 → 1056 (6 d); DOSE_DROPPED 84 / 444 / 210 / 72 → 96 / 672 / 0 / 0.
-          [462, 132, 114, 96, 0],
-          [0, 1782, 270, 672, 444],
+          // P9b (D52, test u prvoj nedelji razvoja planova od 9–11 nedelja): DOSE_DROPPED 96 / 672 → 84 / 588 (3 / 4 dana),
+          // od toga udeo (4 dana) 444 → 378.
+          [462, 132, 114, 84, 0],
+          [0, 1782, 270, 588, 378],
           [858, 0, 144, 0, 0],
           [1056, 0, 264, 0, 0]
         ]

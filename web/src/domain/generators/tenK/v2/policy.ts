@@ -408,6 +408,14 @@ const DECISIONS: readonly Decision[] = [
       'Odluka organizatora P8 (STOP S1, S5, S6, S8): rasterećenje i taper bez kvaliteta je zamerka ocene; najniža doza je trenerski minimum. S8: validator je posle nedelje testa bez Q2 (G7) računao poznato stanje T slota iz nedelje pre mešovite — 3 odbijanja u mreži adaptacije (2040 tokova) → 0.'
   },
   {
+    id: 'D52',
+    rule: 'P9b dopuna G7 — plan po osećaju (ne početnik) koji bi po G7 ostao bez testa (baza kraća od test.minWeek, planovi od 8–11 nedelja) dobija test u PRVOJ ne-rasteretnoj nedelji razvoja ≥ test.minWeek (4), na danu Q1 umesto I/kvaliteta te nedelje; po G7 test je jedini kvalitet te nedelje. Nema takve nedelje → bez testa (postojeća napomena plana). Planovi sa rezultatom (kontrolni test, D35) bez promene.',
+    place:
+      'periodize.ts testWeekOf (jedino mesto; validate.ts TEST čita isto); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Odluka organizatora P9b (ista kao HM P8-HMc i maraton P8-G7): po G7 plan po osećaju od 8–11 nedelja nije imao test — tempo se nikad nije kalibrisao.'
+  },
+  {
     id: 'A1',
     rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
     place:
@@ -604,7 +612,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.13.0',
+  version: '10k-v2.14.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
