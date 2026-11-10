@@ -89,7 +89,7 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.12.0');
+    expect(r.plan.policyVersion).toBe('10k-v2.13.0');
   });
 });
 
@@ -184,7 +184,7 @@ describe('D5: gde su rasterećenja', () => {
           if (r.ok) plans.push(r.plan);
         }
 
-  it('sadržaj: cilj 0,8 × poslednji ne-rasteretni, 1 kvalitet T ≈ 60 % (naniže, min 2,0; bez kvaliteta samo kad 2,0 km > 10 % cilja), dugi 0,8 ×, ostalo lagano', () => {
+  it('sadržaj: cilj 0,8 × poslednji ne-rasteretni, 1 kvalitet T ≈ 60 % (naniže, min 2,0; P8 G2: i kad 2,0 km > 10 % cilja), dugi ≤ 0,8 ×, ostalo lagano', () => {
     expect(plans.length).toBe(4 * 5 * 3 * 3);
     let none = 0;
     for (const p of plans) {
@@ -199,11 +199,11 @@ describe('D5: gde su rasterećenja', () => {
           if (w.fitted === null) expect(w.targetKm).toBe(nominal);
           else expect(w.targetKm).toBeLessThan(nominal);
           const q = w.days.filter((d) => d.workout.kind === 'quality');
-          if (q.length === 0) {
-            // Odstupanje D5 (D11 ispred D5): ni T 2,0 km ne staje u plafon 10 % cilja.
-            expect(2000).toBeGreaterThan(Math.floor(0.1 * w.targetKm * 1000 + 1e-6));
-            none++;
-          } else {
+          // P8 G2 (D40): plafon T nije ispod 2,0 km — rasterećenje uvek ima kvalitet (ranije bez kvaliteta kad 2,0 km > 10 %
+          // cilja); `small` broji rasterećenja u kojima 2,0 km > 10 % cilja.
+          expect(q.length).toBeGreaterThan(0);
+          if (2000 > Math.floor(0.1 * w.targetKm * 1000 + 1e-6)) none++;
+          {
             expect(q.length).toBe(1);
             expect(q[0]!.role).toBe(tSlot);
             expect(q[0]!.workout.dose!.zone).toBe('T');

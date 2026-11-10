@@ -168,7 +168,8 @@ export function raceWeekTarget10(planned100: number): number {
 
 /**
  * D6: nominalni cilj ako ga konstrukcija ispunjava; inače SAMO ova nedelja na najbliži izvodljiv cilj
- * (pri jednakoj udaljenosti niži). Izgradnja sme naviše do granice izgradnje; rasterećenje i taper samo
+ * (pri jednakoj udaljenosti niži). Izgradnja sme naviše do granice izgradnje (G1, P8: kad G1 spušta cilj — do cilja po
+ * D6 `upMax10`); rasterećenje i taper samo
  * naniže (smanjenje ne sme da poraste) — osim rasterećenja sa testom (D27, odstupanje): naviše najviše do
  * ispod poslednjeg cilja izgradnje `lastBuild10` (i dalje smanjenje). Donja granica je najmanji smislen
  * obim (D15, po broju dana D17). A8 (`downOnly`): cilj adaptacije i povratni rast samo naniže.
@@ -180,7 +181,8 @@ export function fit10(
   rule: PlanRule,
   feasible: (target10: number) => boolean,
   lastBuild10: number | null = null,
-  downOnly = false
+  downOnly = false,
+  upMax10: number | null = null
 ): { target10: number; fitted: 'down' | 'up' | null } | null {
   if (feasible(nominal)) return { target10: nominal, fitted: null };
   const lo = to10(rule.weekMinKm);
@@ -190,7 +192,10 @@ export function fit10(
       ? lastBuild10 - 1
       : frame.deload || frame.phase === 'taper'
         ? nominal
-        : cap10;
+        : // G1 (P8): kad G1 spusti cilj, izvodljiv cilj naviše najviše do cilja po D6 (G1 nikad ne ubrzava rast).
+          upMax10 !== null && upMax10 > nominal
+          ? Math.min(cap10, upMax10)
+          : cap10;
   for (let d = 1; nominal - d >= lo || nominal + d <= hi; d++) {
     if (nominal - d >= lo && feasible(nominal - d))
       return { target10: nominal - d, fitted: 'down' };

@@ -105,7 +105,9 @@ describe('mreža početnika: 3402 plana (3/4 dana × 10–18 ned × po osećaju 
       [0, 0, 0],
       [0, 0, 0]
     ]);
-    expect(DAYS.map((n) => g.stats[n].deloadLongBelow4)).toEqual([0, 0]);
+    // P8 (G2, D40): T 1,5 km u rasterećenju 13 km (3 dana, 15 km; 4 dana, 18 km) skraćuje dugi ispod 4 km — 0 / 0 → 6 / 14
+    // planova (reports/P8-10K-STOP.md, odluka organizatora).
+    expect(DAYS.map((n) => g.stats[n].deloadLongBelow4)).toEqual([6, 14]);
     expect(DAYS.map((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0)).toEqual([0, 0]);
   });
 

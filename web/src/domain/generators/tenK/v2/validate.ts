@@ -1912,6 +1912,14 @@ export function validatePlan(
           downOnly: false
         };
     const t10 = to10(w.targetKm);
+    // G1 (P8): cilj po D6 bez G1 — izvodljiv cilj naviše ne prelazi ga kad G1 spušta cilj.
+    const d6 = av
+      ? adaptNominal10(w, h, start10, rule, av, 0).nominal
+      : w.phase === 'taper' || lastBuild === null || w.deload
+        ? nominal
+        : Math.min(lastBuild + growthStep10(lastBuild, cap10, rule, 0), cap10);
+    if (checked(w) && known && w.fitted === 'up' && d6 > nominal && t10 > d6)
+      err('VOLUME_RULE', `Cilj ${w.targetKm} km naviše iznad redovnog rasta ${d6 / 10} km (G1 ne ubrzava rast).`, w.index);
     if (checked(w) && known) {
       if (to10(w.nominalKm) !== nominal)
         err(

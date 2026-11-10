@@ -311,6 +311,10 @@ export function construct(
     const { nominal, downOnly } = av
       ? adaptNominal10(frame, h, start10, rule, av, left)
       : { nominal: nominal10(frame, h, start10, cap10, rule, left), downOnly: false };
+    // G1 (P8): cilj po D6 bez G1 — gornja granica izvodljivog cilja naviše kad G1 spusti cilj.
+    const upMax10 = av
+      ? adaptNominal10(frame, h, start10, rule, av, 0).nominal
+      : nominal10(frame, h, start10, cap10, rule, 0);
     const longest10 = longestLong10(written);
     // T1 (10K-08): pretraga cilja najpre sa granicama laganog (lengths.buildEasyBounds10); tek kad nijedan cilj nije
     // izvodljiv (mali obim adaptacije: dugi < 20 min / 0,8) — ista pretraga bez T1, uz napomenu (validator: upozorenje).
@@ -389,7 +393,8 @@ export function construct(
             rule,
             (t10) => can(t10, m),
             h.lastBuild10,
-            downOnly
+            downOnly,
+            upMax10
           );
           if (fit) {
             mode = m;
@@ -410,7 +415,8 @@ export function construct(
                 rule,
                 (t10) => can(t10, relax),
                 h.lastBuild10,
-                downOnly
+                downOnly,
+                upMax10
               );
               if (r && r.target10 > fit.target10) [fit, mode] = [r, relax];
             }

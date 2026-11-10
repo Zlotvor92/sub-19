@@ -65,7 +65,7 @@ const I3_RACE_WEEK = [
 /** I3 — nedelje sa istim ciljem bez dana bola u kojima je planirano uz bol 8 veće za ≤ 0,1 km (D19). 06c
     (A17): 16 → 14 — d5-f-18w asOf 02-05/02-06 ned 17 (taper) otpadaju zajedno sa trkačkom (ukinuto
     rasterećenje ned 15); d4-r-14w asOf 2026-11-21 ned 7 ostaje, cilj 34,7 → 37,1 (ukinuto rasterećenje ned 4). */
-const I3_ROUNDING = 9; // 10K-08: 14 → 20 (T1/C6 — drugi bazni planovi i povratak); P3: 20 → 12 (D33/D34); P5: 12 → 9
+const I3_ROUNDING = 13; // 10K-08: 14 → 20 (T1/C6 — drugi bazni planovi i povratak); P3: 20 → 12 (D33/D34); P5: 12 → 9; P8 (G1/G2 drugi bazni planovi): 9 → 13
 
 const to10 = (km: number): number => Math.round(km * 10);
 const km1 = (x10: number): string => (x10 / 10).toFixed(1).replace('.', ',');
@@ -151,7 +151,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.12.0');
+      expect(r.plan.policyVersion).toBe('10k-v2.13.0');
     }
   });
 

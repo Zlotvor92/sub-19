@@ -251,7 +251,8 @@ describe('06h (pouke 23, 34, 36): umor pre starta sa asOf = prvi dan plana', () 
     expect(w1.notes.some((n) => n.startsWith('Umor pre starta:'))).toBe(true);
     // 06i (pouka 37): cilj 16,0 važi za celu nedelju — upisan dugi 9,0 + lagani 3,5 + 3,5 (start − 1: 4,4 + 4,4; na
     // 10k-v2.6.2 planirano 17,8, A20).
-    expect(a0.plan.weeks[0]!.days.slice(1).map((d) => d.workout.km)).toEqual([4.4, 4.4]);
+    // P8 G2 (D40): rasterećenje 16 km sa T 2,0 km (plafon T ≥ 2,0 km) — lagan 3,7 + dan kvaliteta 5,12 (ranije 4,4 + 4,4).
+    expect(a0.plan.weeks[0]!.days.slice(1).map((d) => d.workout.km)).toEqual([3.7, 5.12]);
     expect(w1.days.slice(1).map((d) => `${d.role} ${d.workout.km}`)).toEqual([
       'easy 3.5',
       'easy 3.5'

@@ -47,7 +47,13 @@ const cap10 = (targetKm: number): number => Math.floor(0.1 * targetKm * 1000 + 1
 const capRp = (targetKm: number): number =>
   Math.floor((targetKm >= 40 - 1e-9 ? 0.15 : 0.1) * targetKm * 1000 + 1e-6);
 /** D11: plafon I 8 % [m]. */
-const capI = (targetKm: number): number => Math.floor(0.08 * targetKm * 1000 + 1e-6);
+const capI0 = (targetKm: number): number => Math.floor(0.08 * targetKm * 1000 + 1e-6);
+/** G2 (P8, D40): plafon zone nije ispod prvog nivoa lestvice zone — T 2,0 km (početnik 1,5 km), I 2 × 1000 m, RP
+    2 × 1200 m (nezavisno od quality.capM). */
+const capT = (targetKm: number, beginner: boolean): number =>
+  Math.max(cap10(targetKm), beginner ? 1500 : 2000);
+const capRpG = (targetKm: number): number => Math.max(capRp(targetKm), 2400);
+const capI = (targetKm: number): number => Math.max(capI0(targetKm), 2000);
 /** ≈ 60 % poslednje doze, nivo lestvice naniže, najmanje `min` (D5/D7/D31). */
 const reduced = (ladder: readonly number[], last: number, min: number): number =>
   ladder.filter((m) => m <= 0.6 * last + 1e-6 && m >= min).pop() ?? min;
@@ -72,6 +78,8 @@ export interface GridStats {
   /** D27: test u rasterećenju; dugi skraćen (odstupanje); cilj rasterećenja sa testom podignut. */
   testDeload: number;
   testDeloadLong: number;
+  /** G2 (P8): rasterećenja bez testa sa dugim skraćenim da lagani ostanu ≥ 3 km. */
+  deloadLongShort: number;
   testDeloadUp: number;
   /** D28: nedelje izgradnje bez kvaliteta posle uvoda; planovi sa njima. */
   buildNoQuality: number;
@@ -103,6 +111,7 @@ export const emptyStats = (): GridStats => ({
   raceShort: 0,
   testDeload: 0,
   testDeloadLong: 0,
+  deloadLongShort: 0,
   testDeloadUp: 0,
   buildNoQuality: 0,
   buildNoQualityPlans: 0,
@@ -313,17 +322,19 @@ export function checkPlan(
       // kad staje u plafon; inače T kontinuirano = najviši nivo lestvice početnika ≤ plafon; bez kvaliteta
       // samo kad ni 1,5 km ne staje.
       if (beginner && !intro) {
-        const cap = cap10(w.targetKm);
+        // G2 (P8): plafon zone lestvice faze (T: ≥ 1,5 km; RP: ≥ 2 × 1200 m).
+        const cap = w.phase === 'specific' ? capRpG(w.targetKm) : capT(w.targetKm, true);
+        const capTb = capT(w.targetKm, true);
         const first = w.phase === 'base' ? 1500 : w.phase === 'development' ? 2000 : 2400;
         const phaseLadder =
           w.phase === 'base' ? 'T_continuous' : w.phase === 'development' ? 'T_cruise' : 'RP';
         const dose = quality[0]?.workout.dose;
-        if (nq !== cap < 1500) no('BEGINNER_NO_QUALITY', `${tag} plafon ${cap}`);
+        if (nq !== capTb < 1500) no('BEGINNER_NO_QUALITY', `${tag} plafon ${capTb}`);
         else if (dose && first <= cap && dose.ladder !== phaseLadder)
           no('BEGINNER_PHASE_LADDER', `${tag} ${dose.ladder}`);
         else if (dose && first > cap) {
           st.beginnerT++;
-          const want = T_C_BEG.filter((m) => m <= cap).pop();
+          const want = T_C_BEG.filter((m) => m <= capTb).pop();
           if (dose.ladder !== 'T_continuous' || dose.zone !== 'T' || dose.doseM !== want)
             no('BEGINNER_T_FALLBACK', `${tag} ${dose.ladder} ${dose.doseM} ≠ T ${want}`);
         }
@@ -363,7 +374,7 @@ export function checkPlan(
         // D5/D18: ≈ 60 % poslednje doze T slota, min 2,0 km; D31 početnik: poslednje T doze, min 1,5 km.
         const ladder = w.phase === 'base' ? (beginner ? T_C_BEG : T_C) : T_CRUISE;
         const want = beginner ? reduced(ladder, lastTZone, 1500) : reduced(ladder, lastT, 2000);
-        const cap = cap10(w.targetKm);
+        const cap = capT(w.targetKm, beginner);
         if (want > cap) {
           if (quality.length !== 0) no('DELOAD_CONTENT', `${tag} kvalitet uprkos plafonu`);
           st.deloadNoQuality++;
@@ -373,7 +384,11 @@ export function checkPlan(
           quality[0]!.workout.dose!.doseM !== want
         )
           no('DELOAD_CONTENT', `${tag} T ≠ ${want}`);
-        if (long !== wantLong) no('DELOAD_LONG', `${tag} ${long} ≠ ${wantLong}`);
+        // G2 (P8): kvalitet rasterećenja kod malog obima — dugi skraćen ispod 0,8 × samo da lagani ostanu ≥ 3 km (T1_DELOAD).
+        if (long! < wantLong && w.notes.some((x) => x.startsWith('Rasterećenje: dugi 0,8 × poslednji ne ostavlja'))) {
+          st.deloadLongShort++;
+          if (Math.max(...easy) > 31) no('DELOAD_LONG', `${tag} skraćen uz lagan > 3,1`);
+        } else if (long !== wantLong) no('DELOAD_LONG', `${tag} ${long} ≠ ${wantLong}`);
         if (easy.length !== n - 1 - quality.length) no('DELOAD_CONTENT', `${tag} lagani`);
         if (w.fitted === 'up') no('DELOAD_TARGET', `${tag} naviše`);
       }
@@ -386,10 +401,10 @@ export function checkPlan(
       // D7 + D31: početnik — RP ≈ 60 % poslednje doze slota (min 2 × 1000 m); kad ne staje, T kontinuirano
       // ≈ 60 % poslednje T doze (min 1,5 km); bez kvaliteta samo kad ni to ne staje.
       if (beginner) {
-        const cap = cap10(w.targetKm);
+        const cap = capT(w.targetKm, true);
         const rp = reduced(RP, lastQ1, 2000);
         const t = reduced(T_C_BEG, lastTZone, 1500);
-        const want = rp <= capRp(w.targetKm) ? `RP:${rp}` : t <= cap ? `T:${t}:continuous` : '';
+        const want = rp <= capRpG(w.targetKm) ? `RP:${rp}` : t <= cap ? `T:${t}:continuous` : '';
         const d = quality[0]?.workout.dose;
         const got = d ? `${d.zone}:${d.doseM}${d.zone === 'T' ? `:${d.structure.form}` : ''}` : '';
         if (quality.length > 1 || got !== want) no('BEGINNER_TAPER', `${tag} ${got} ≠ ${want}`);

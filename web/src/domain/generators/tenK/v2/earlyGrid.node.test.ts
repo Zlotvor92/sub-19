@@ -131,10 +131,11 @@ describe('primeri 06d (nove klase, 10k-v2.5.0 odbijeno)', () => {
     expect(taper.phase).toBe('taper');
     // 10K-08 (T1): bazni plan je drugi (lagan ≤ 0,8 × dugi) — taper ima T kontinuirano 1,5 km (≈ 60 % poslednje T doze,
     // min 1,5 km, D31), koji staje u plafon 10 % cilja; 10k-v2.9.0: taper bez kvaliteta.
+    // P8 G2 (D40): RP 2 × 1000 m staje (plafon RP ≥ 2 × 1200 m) — taper RP umesto T kontinuirano 1,5 km.
     expect(
       taper.days.filter((d) => d.workout.kind === 'quality').map((d) => d.workout.dose?.doseM)
-    ).toEqual([1500]);
-    expect(taper.notes.some((n) => n.includes('T kontinuirano ≈ 60 %'))).toBe(true);
+    ).toEqual([2000]);
+    expect(taper.notes.some((n) => n.startsWith('Taper: RP ≈ 60 %'))).toBe(true);
   });
 });
 
