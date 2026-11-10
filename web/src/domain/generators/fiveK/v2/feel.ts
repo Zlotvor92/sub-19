@@ -388,7 +388,10 @@ export function simpleWeekQuality(
         f.deload,
         f.qcap?.longKm
       );
-      return !L.capped && L.shares.every((x) => x + 1e-9 >= L.easyMin);
+      // 5k-v2.15.0 (P8 b): dugi na granici rasterećenja (qcap.longKm) — lagan = dugi, planirano < cilj (kao sa
+      // rezultatom, workouts.deloadWeek); kvalitet ostaje.
+      const atCap = f.qcap?.longKm !== undefined && L.longKm + 1e-9 >= f.qcap.longKm;
+      return (!L.capped || atCap) && L.shares.every((x) => x + 1e-9 >= L.easyMin);
     };
     for (const kind of chain) {
       const s = SPEC[kind];

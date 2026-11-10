@@ -204,7 +204,11 @@ export function buildTrainingWeek(
     notes.push(
       `Lagan dan manje (${easyRest}): lagan trening od bar ${kmText(easyMin)} km ne staje uz dugi ${kmText(longKm)} km.`
     );
-  if (easyCappedAtLong && belowTargetShown(plannedKm, target))
+  if (easyCappedAtLong && belowTargetShown(plannedKm, target) && f.deload)
+    notes.push(
+      `Rasterećenje: dugi ${kmText(longKm)} km i lagani najviše koliko dugi, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km.`
+    );
+  else if (easyCappedAtLong && belowTargetShown(plannedKm, target))
     notes.push(
       `Lagan trk najviše ${kmText(easyCapKm(longKm, f.phase, t1Off))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; za pun obim treba više dana trčanja.`
     );
