@@ -529,6 +529,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       if (r === 'q2' && w.notes.some((n) => n.includes(SECOND_EASY_NOTE))) return 'easy';
       // P1-S1: nedelja B — drugi dan kvaliteta je lagan.
       if (r === 'q2' && hasLongBlock(w.days)) return 'easy';
+      // G7 (P8): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan.
+      if (r === 'q2' && w.test) return 'easy';
       return r;
     };
     const want = [
@@ -588,6 +590,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           ? 'Početnik nema test 5 km (H17).'
           : `Plan sa rezultatom kraći od ${P.test.resultMinWeeks} nedelja nema test (H16, P5-F1).`
       );
+  } else if (wantTest === 0) {
+    // G7 (P8): test bi pao pre nedelje 4 — plan nema test (periodize.testWeekOf, ista funkcija).
+    if (tests.length > 0 || flagged.length > 0)
+      err('TEST', `Test ne ide pre nedelje ${P.test.minWeek}: plan u kome bi pao ranije nema test (G7).`);
   } else if (
     tests.length !== 1 ||
     flagged.join() !== String(wantTest) ||

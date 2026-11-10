@@ -401,7 +401,9 @@ export function construct(
       t && td
         ? `Test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date} (H16). Prognoza polumaratona i ocena cilja: posle testa; do tada RP po RPE.${goalNote}`
         : rule.feelTest
-          ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+          ? adapted
+            ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+            : `Plan je prekratak za test ${P.test.km} km (ne radi se u prve tri nedelje): kvalitet vodi osećaj napora; unesi rezultat trke ili testa kad ga budeš imao — tempo se tada računa iz njega.`
           : `Početnik bez testa ${P.test.km} km (H17): kvalitet po RPE; prognoza polumaratona i ocena cilja posle rezultata trke (adaptacija, segment 04).${goalNote}`
     );
   }

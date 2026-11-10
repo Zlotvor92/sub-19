@@ -130,9 +130,12 @@ export function testWeekOf(
   frames: readonly { phase: Phase; deload: boolean }[],
   kind: Exclude<TestKind, null>
 ): number {
-  if (kind === 'feel') return frames.map((f) => f.phase).lastIndexOf('base') + 1;
+  // G7 (P8): test ne ide pre nedelje 4 — nedelja testa je poslednja svoje faze po pravilu, pa kasnije nedelje iste
+  // faze nema: plan u kome bi test pao ranije nema test.
+  const notEarly = (w: number): number => (w >= P.test.minWeek ? w : 0);
+  if (kind === 'feel') return notEarly(frames.map((f) => f.phase).lastIndexOf('base') + 1);
   for (let i = frames.length - 1; i >= 0; i--)
-    if (frames[i]!.phase === 'development' && !frames[i]!.deload) return i + 1;
+    if (frames[i]!.phase === 'development' && !frames[i]!.deload) return notEarly(i + 1);
   return 0;
 }
 

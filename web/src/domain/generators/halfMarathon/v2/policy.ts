@@ -642,7 +642,8 @@ export const HM_V2_POLICY = {
 
   /** H16: test (plan po osećaju koji nije početnik); P5-F1: i plan sa rezultatom (ne početnik) sa ≥ resultMinWeeks
       nedelja — poslednja ne-rasteretna nedelja razvoja. */
-  test: { km: 5, resultMinWeeks: 12 },
+  /** G7 (P8): test ne ide pre nedelje minWeek; u nedelji testa test je jedini kvalitet. */
+  test: { km: 5, resultMinWeeks: 12, minWeek: 4 },
 
   /** H17: JEDINA tabela početnika (udeo dugog, minimum i max nedelje: red H15 za isti broj dana). */
   beginner: {

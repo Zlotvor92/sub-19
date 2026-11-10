@@ -874,7 +874,9 @@ function buildWeekIn(
       : null;
   // P1-S1: nedelja B — Q1 (RP) po lestvici kao u nedelji A, Q2 je lagan dan (mehanizam pouke 35: stanje T slota se ne
   // menja, oslobođen obim raspoređuje vlasnik dužina), dugi nosi blok RP.
-  let w2 = picks?.q2 && !bWeek ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
+  // G7 (P8): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan (stanje slota se ne menja).
+  let w2 =
+    picks?.q2 && !bWeek && !test ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
   const wo = one ? qualityWorkout(one.dose, p, ctx.wc, ctx.feel) : null;
   // Pouka 35: sa dva dana kvaliteta dugi mora ostati najduži — inače je drugi dan lagan (prvi ostaje).
   const easy2 =
@@ -883,7 +885,8 @@ function buildWeekIn(
       : null;
   const second = easy2 && w2 && picks?.q2 ? { w: w2, dose: picks.q2 } : null;
   if (easy2) w2 = null;
-  const picksW0: WeekPicks | null = (easy2 || bWeek) && picks ? { q1: picks.q1, q2: null } : picks;
+  const picksW0: WeekPicks | null =
+    (easy2 || bWeek || test) && picks ? { q1: picks.q1, q2: null } : picks;
   const busy = [
     ...(w1 ? [pat.q1] : []),
     ...(w2 && pat.q2 ? [pat.q2] : []),

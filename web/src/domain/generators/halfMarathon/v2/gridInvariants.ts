@@ -221,7 +221,11 @@ export function checkPlan(
   // koja nije rasterećenje (isti test kao po osećaju).
   let lastDev = 0;
   for (const w of p.weeks) if (w.phase === 'development' && !w.deload) lastDev = w.index;
-  const wantTest = beg ? 0 : feel ? lastBase : p.weeks.length >= 12 ? lastDev : 0;
+  // P8 G7 (nezavisno): test ne pre nedelje 4 (inače plan bez testa); u nedelji testa nema drugog kvaliteta.
+  const wantTest0 = beg ? 0 : feel ? lastBase : p.weeks.length >= 12 ? lastDev : 0;
+  const wantTest = wantTest0 >= 4 ? wantTest0 : 0;
+  for (const t of tests)
+    if (t.w.days.some((d) => d.workout.kind === 'quality')) no('TEST_ONLY_QUALITY', `ned ${t.w.index}`);
   if (wantTest > 0) {
     const t = tests[0];
     if (tests.length !== 1 || !t || t.w.index !== wantTest)
