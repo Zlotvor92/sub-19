@@ -1,4 +1,4 @@
-5k-v2.15.1 exp regular start 35 peak 35 cap 35 days 3
+5k-v2.15.2 exp regular start 35 peak 35 cap 35 days 3
 1 base t35 p32.9 L14.5 max14.5 | q1:R: 4 × 400 m[6.8km,6m]
 2 base t35 p32.1 L14.5 max14.5 | q1:T: 2 km kontinuirano[6.0km,9m]
 3 base t35 p32.9 L14.5 max14.5 | q1:R: 4 × 400 m[6.8km,6m]

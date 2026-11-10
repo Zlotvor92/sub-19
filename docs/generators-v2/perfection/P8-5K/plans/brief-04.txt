@@ -1,4 +1,4 @@
-5k-v2.15.1 exp regular start 45 peak 50.5 cap 51.6 days 5
+5k-v2.15.2 exp regular start 45 peak 50.5 cap 51.6 days 5
 1 base t45 p44.1 L12 max12.0 | q1:R: 4 × 400 m[7.8km,8m] ; q2:T: 2,5 km kontinuirano[7.5km,14m]
 2 base t45 p45 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 2 × 2000 m[9.1km,23m]
 3 base t45 p45 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 4 × 1000 m[9.4km,23m]

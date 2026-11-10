@@ -1,4 +1,4 @@
-5k-v2.15.1 exp regular start 40 peak 41.3 cap 41.3 days 4
+5k-v2.15.2 exp regular start 40 peak 41.3 cap 41.3 days 4
 1 base t40 p37.1 L14 max14.0 | q1:R: 4 × 400 m[6.8km,7m] ; q2:T: 2,5 km kontinuirano[6.5km,12m]
 2 base t40 p38.4 L14 max14.0 | q1:R: 5 × 400 m[7.6km,8m] ; q2:T: 3 km kontinuirano[7.0km,14m]
 3 base t40 p39.56 L14 max14.0 | q1:R: 5 × 400 m[7.6km,8m] ; q2:T: 2 × 2000 m[8.2km,19m]

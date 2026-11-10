@@ -1,4 +1,4 @@
-5k-v2.15.1 exp regular start 65 peak 65 cap 65 days 5
+5k-v2.15.2 exp regular start 65 peak 65 cap 65 days 5
 1 base t65 p61.6 L18 max18.0 | q1:R: 6 × 400 m[9.4km,8m] ; q2:T: 4 km kontinuirano[9.0km,15m]
 2 base t65 p64.82 L18 max18.0 | q1:R: 7 × 400 m[10.2km,9m] ; q2:T: 3 × 2000 m[11.4km,22m]
 3 base t65 p65 L18 max18.0 | q1:R: 8 × 400 m[11.0km,10m] ; q2:T: 4 × 1600 m[12.0km,23m]

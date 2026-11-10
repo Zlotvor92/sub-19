@@ -1,4 +1,4 @@
-5k-v2.15.1 exp regular start 45 peak 56.5 cap 60.6 days 5
+5k-v2.15.2 exp regular start 45 peak 56.5 cap 60.6 days 5
 1 base t45 p45 L13.5 max13.5 | q1:R: 4 × 400 m[7.8km,6m] ; q2:T: 3 km kontinuirano[8.0km,14m]
 2 base t48.6 p48.6 L14.5 max14.5 | q1:R: 5 × 400 m[8.6km,8m] ; q2:T: 2 × 2000 m[9.2km,19m]
 3 peak t52.4 p52.4 L14.5 max14.5 | q1:I: 3 × 1000 m[9.4km,13m] ; q2:T: 2 × 2000 m[9.2km,19m]

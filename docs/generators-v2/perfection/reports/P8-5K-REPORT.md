@@ -120,7 +120,7 @@ posle ispravke validatora VOLUME_PEAK (tempo sa koracima, kao konstruktor).
 
 Stanje testova i merenja posle dopune: odeljak „Završetak".
 
-## Završetak (5k-v2.15.1; `briefs/P8-5K-zavrsetak.md`)
+## Završetak (5k-v2.15.1 → 5k-v2.15.2; `briefs/P8-5K-zavrsetak.md`)
 
 Polazni vrh `d5c2ab9`; kod gurnut u `d079b311` (brzi nivo zelen) i `65f97994` (posle punog nivoa: tipovi, lint, format).
 
@@ -200,6 +200,15 @@ Otisci `segment15.*-9055e5b.json` nisu ponovo snimani (svi tokovi „P8 promenje
 | `npm run check` | 33 s | pada na `typecheck`: greške samo u `tenK/v2` (drugi tab); 5K bez grešaka tipova, linta i formata |
 | `npx playwright test e2e/fivek-v2.spec.ts --trace off` | 15 s | 3/3 (nad `npx vite build` + `npm run preview`) |
 | `npm run build` | — | pada na `tsc -b` zbog `tenK/v2`; `npx vite build` prolazi |
+
+### Dopuna odluke G6 — početnik 0,80 (5k-v2.15.2, `e42f8196`)
+
+Početnik ostaje na lagan ≤ 0,80 × dugi za svaki broj dana; 0,70 samo redovan plan sa 4+ dana (`lengths.easyShareOf`,
+jedino mesto; konstruktor, mešovita nedelja, validator). `g6.ts cmp A A2` (A2 = 2.15.2): B 4 d — planirani vrh < 0,9 ×
+vrh cilja 30 → 0 planova, „planirano < cilj" 186 → 156 planova; ostale grupe bez promene. Mreža P8 (`m-kraj.json`,
+2.15.2): 0 odbijanja; ponovljeno „planirano < cilj" 1 922 → 1 898 planova; ostale metrike tabele gore iste. Testovi
+posle dopune: brz nivo 800/800, pun nivo 810/810 (5 min 20 s), sabotaže 18/18 (+ „početnik sa 4 dana na 0,70"),
+`fiveKV2Flow.test.tsx` 3/3. Merenja i 12 profila u `P8-5K/` su ponovo snimljeni na 2.15.2. E2E nije ponavljan.
 
 ### Otvoreno (za organizatora)
 
