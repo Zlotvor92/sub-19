@@ -7,10 +7,14 @@ import {
   recentLongNote,
   recentLongThreshold10
 } from './lengths.ts';
+import { pacesFromVdot } from './paces.ts';
 import { planRule } from './policy.ts';
 import { inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { WeekFrame } from './types.ts';
 import { capacityMessage, fit10, growth10, nominal10, peakCap10 } from './volume.ts';
+
+/** P8-G1: priprema ≥ 16 nedelja (faktor 1,40), brz tempo (satni plafon ne veže), specifična faza (korak M6). */
+const G = { weeks: 16, p: pacesFromVdot(75, 75), rem: () => 0 };
 
 /* M6 obim (jedini vlasnik cilja; pouke 1 i 9), M5/M7 ciljevi rasterećenja i tapera. */
 
@@ -32,20 +36,31 @@ describe('M6 pravilo obima', () => {
     expect(growth10(900, rule)).toBe(50); // max 5,0
   });
 
-  it('granica izgradnje = min(start × 1,5; start + 30; 80 km)', () => {
-    expect(peakCap10(350, rule)).toBe(525);
-    expect(peakCap10(600, rule)).toBe(800);
-    expect(peakCap10(650, rule)).toBe(800);
+  it('granica izgradnje = min(start × 1,5; start + 30; 80 km; P8-G1: start × 1,40 za ≥ 16 nedelja)', () => {
+    expect(peakCap10(350, rule, G)).toBe(490);
+    expect(peakCap10(350, rule, { ...G, weeks: 12 })).toBe(455);
+    // Satni plafon: VDOT 35 → 9 h laganim tempom; start iznad plafona → vrh = start.
+    expect(peakCap10(1000, planRule(6)!, { ...G, p: pacesFromVdot(35, 35) })).toBe(1000);
+    expect(peakCap10(600, rule, G)).toBe(800);
+    expect(peakCap10(650, rule, G)).toBe(800);
   });
 
   it('cilj po pravilu: ned 1 start; izgradnja rast do granice; rasterećenje 0,8 ×; taper 0,8 / 0,6 × vrh', () => {
     const h = { lastBuild10: 500, peak10: 600 };
-    expect(nominal10(frame(), { lastBuild10: null, peak10: 0 }, 450, 675, null, rule)).toBe(450);
-    expect(nominal10(frame(), h, 450, 675, null, rule)).toBe(530);
-    expect(nominal10(frame(), { lastBuild10: 660, peak10: 660 }, 450, 675, null, rule)).toBe(675);
-    expect(nominal10(frame({ deload: true }), h, 450, 675, null, rule)).toBe(400);
-    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 0, rule)).toBe(480);
-    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 1, rule)).toBe(360);
+    expect(nominal10(frame(), { lastBuild10: null, peak10: 0 }, 450, 675, null, rule, G)).toBe(450);
+    expect(nominal10(frame(), h, 450, 675, null, rule, G)).toBe(530);
+    // P8-G1b: korak manji od 3 % tekućeg cilja (1,5 km na 66 km) se ne primenjuje.
+    expect(nominal10(frame(), { lastBuild10: 660, peak10: 660 }, 450, 675, null, rule, G)).toBe(
+      660
+    );
+    expect(nominal10(frame(), { lastBuild10: 640, peak10: 640 }, 450, 675, null, rule, G)).toBe(
+      675
+    );
+    // P8-G1: rast raspoređen na preostale ne-rasteretne nedelje do kraja razvoja (17,5 km / 7 = 2,5 km).
+    expect(nominal10(frame(), h, 450, 675, null, rule, { ...G, rem: () => 7 })).toBe(525);
+    expect(nominal10(frame({ deload: true }), h, 450, 675, null, rule, G)).toBe(400);
+    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 0, rule, G)).toBe(480);
+    expect(nominal10(frame({ phase: 'taper' }), h, 450, 675, 1, rule, G)).toBe(360);
   });
 
   it('pouka 1: neizvodljiv cilj → najbliži izvodljiv (pri jednakoj udaljenosti niži); ned 1, rasterećenje i taper samo naniže', () => {

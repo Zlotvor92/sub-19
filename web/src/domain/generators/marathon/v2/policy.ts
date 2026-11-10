@@ -476,6 +476,53 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts startLevel.zoneShare; quality.ts startShareOf, startLevel; validate.ts (START_LEVEL)',
     rationale:
       'Heuristika, odluka organizatora P5 (F4). P0 M1/M2: prvi T trening ≈ 9–12 min rada (12–16 % trajanja dana) uz WU/CD 25–40 min. WU/CD se ne skraćuje (Uslov 3): mali udeo rada se rešava većom početnom dozom.'
+  },
+  {
+    id: 'P8-G1',
+    rule: 'Vrh obima = min(granica M6; start × faktor po dužini pripreme: ≤ 12 ned 1,30, 13–15 ned 1,35, ≥ 16 ned 1,40; satni plafon nedelje — cilj km × srednji lagan tempo: VDOT < 40 9 h, 40–49,9 10 h, ≥ 50 11 h), nikad ispod starta. Korak rasta ne-rasteretne nedelje izgradnje = min(korak M6; (granica − poslednji ne-rasteretni cilj) / preostale ne-rasteretne nedelje izgradnje do kraja razvoja, uključujući tekuću), na 0,1 km; korak < 3 % tekućeg cilja se ne primenjuje (nedelja zadržava cilj). U specifičnoj fazi korak M6 do granice (isti prag 3 %). Dugi rasterećenja se skraćuje kad lagani ne bi ostali ≥ 5 km.',
+    place:
+      'policy.ts volume.peakByWeeks, peakHours, minStepShare; volume.ts growthCtx, hoursCap10, peakCap10, buildStep10 (jedino mesto); week.ts (shorten); validate.ts (VOLUME_RULE istim funkcijama)',
+    rationale:
+      'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, krug 1), nalaz slepe ocene i ocene trenera. P7: obim dostiže vrh u ned 5–10 pa plato; trener: 95 km ≈ 11 h nedeljno za VDOT 35, +50 % obima bez rezultata. Pravilo samo usporava rast i spušta vrh.'
+  },
+  {
+    id: 'P8-G2',
+    rule: 'Najniži nivo lestvice zone uvek staje u plafon zone: plafon = max(min(udeo cilja; minuti); doza prvog nivoa lestvice zone). U trkačkoj nedelji važi P8-G5.',
+    place: 'quality.ts capFloorM, capM',
+    rationale:
+      'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, krug 1), nalaz slepe ocene i ocene trenera. Na maratonu skoro bez efekta (tabela M15 počinje od 25–30 km; MP tapera je već bio izuzet od plafona, M7a).'
+  },
+  {
+    id: 'P8-G4',
+    rule: 'Plafon jednog treninga usred nedelje u minutima rada, po tempu zone te nedelje (drugi član iste funkcije plafona zone): T ≤ 30 min (cilj nedelje ≥ 80 km: 40 min); I ≤ 20 min za VDOT < 40, inače 24 min; MP ≤ 60 min, početnik ≤ 45 min. Nivo lestvice koji prelazi minute se ne bira — najviši nivo koji staje. Blok u dugom nije trening usred nedelje.',
+    place:
+      'policy.ts capsMin; quality.ts capSec, capM (jedna funkcija); validate.ts (ZONE_CAP, START_LEVEL istom funkcijom)',
+    rationale:
+      'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, krug 1), nalaz slepe ocene i ocene trenera. Trener: generator meri u km i udelima, trkač plaća u minutima (MP 2 × 7000 m = 85–90 min kod sporog i početnika, T 45 min, I 31 min).'
+  },
+  {
+    id: 'P8-G5',
+    rule: 'Taper: MP ≤ 60 % (N−2) i ≤ 40 % (N−1) najvećeg MP rada izgradnje (poslednja MP doza: trening ili blok) — najviši nivo lestvice koji staje, a kad ni 2 × 3000 m ne staje, kontinuirani blok naniže na 0,5 km (najmanje 1,0 km); T u N−2 ≈ 60 % (bez promene). Oštrenje trkačke nedelje: dve jednake deonice u tempu maratona, ukupno ≤ 10 min rada i ≤ MP doza N−1, deonica deljiva sa 100 m, najmanje 2 × 400 m. U taperu dan kvaliteta ni po km nije duži od dugog. Rasterećenje (M5) bez promene: jedan kvalitet ≈ 60 %, dugi 0,8 ×.',
+    place:
+      'policy.ts taper.weeks, raceWeek.sharpenerMaxSec/sharpenerMinRepM; quality.ts taperMp, taperDoses; week.ts sharpenerStructure, taperDayLimit; validate.ts (TAPER_QUALITY, RACE_SHARPENER istim funkcijama)',
+    rationale:
+      'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, krug 1), nalaz slepe ocene i ocene trenera. Trener: oštrenje 2 × 2000 m = 27–28 min MP tri dana pred maraton kod sporih; taper N−1 40–43 min MP. Zamenjuje minimum 2 × 3000 m ispred plafona (M7a) i najmanje 2 × 1000 m oštrenja (MAR-11).'
+  },
+  {
+    id: 'P8-G6',
+    rule: 'Nedelja izgradnje: lagan ≤ 0,70 × dugi iste nedelje za plan sa 4 i više dana trčanja (3 dana: 0,80, MAR-11 T1). Višak cilja koji ne staje spušta postojeći mehanizam izvodljivog cilja (M6).',
+    place:
+      'policy.ts lengths.easyLongShareMany; lengths.ts easyLongShareOf, easyCap10; validate.ts (EASY_LONG_SHARE)',
+    rationale:
+      'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, krug 1), nalaz slepe ocene i ocene trenera. P7: lagani dani 70–100 % dugog. Izmereno: vrh obima ne pada > 10 % ni u jednom planu mreže P0.'
+  },
+  {
+    id: 'P8-G7',
+    rule: 'Nedelja kontrolnog testa: test je jedini kvalitet (dan Q2 je lagan, stanje slotova se ne menja). Test ne ide pre nedelje 4: prva ne-rasteretna nedelja ≥ 4 iste faze, inače plan bez testa.',
+    place:
+      'policy.ts test.minWeek; periodize.ts testWeekOf; week.ts (nedelja testa); validate.ts (ROLES, TEST)',
+    rationale:
+      'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, krug 1), nalaz slepe ocene i ocene trenera. Trener: test + T + dugi u istoj nedelji; test u nedelji 3 uz male doze.'
   }
 ];
 
@@ -486,7 +533,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.10.0',
+  version: 'marathon-v2.11.0',
 
   /** M1 (dani i obim: M15). */
   input: {
@@ -685,6 +732,8 @@ export const MARATHON_V2_POLICY = {
     sharpenerMinRepM: 400,
     /** P8-G5 (marathon-v2.11.0): ukupan rad oštrenja ≤ sharpenerMaxSec po tempu maratona te nedelje. */
     sharpenerMaxSec: 600,
+    /** Kad poslednja nedelja tapera nema MP (bol, pauza, MP otpao): deonica oštrenja najviše sharpenerNoMpRepM [m]. */
+    sharpenerNoMpRepM: 1000,
     sharpenerMinGapDays: 3,
     eveEasySec: 1200,
     eveStrides: { reps: 4, sec: 20 },

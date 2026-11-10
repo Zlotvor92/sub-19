@@ -4,6 +4,7 @@ import { userText } from './app/format.ts';
 import { addDays, daysBetween } from './dates.ts';
 import { generateMarathonV2 } from './generate.ts';
 import { testKindOf, testWeekOf } from './periodize.ts';
+import { pacesFromVdot } from './paces.ts';
 import { MARATHON_V2_POLICY as P, planRule } from './policy.ts';
 import { pickSlot, startLevel, startShareOf } from './quality.ts';
 import { stridesDateOf } from './strides.ts';
@@ -12,6 +13,9 @@ import type { MarathonV2Facts, MarathonV2Plan, PlanDay, PlanWeek } from './types
 import { validatePlan } from './validate.ts';
 import { TEST_NOTE_RESULT } from './week.ts';
 import { doseOf, easyWorkout } from './workouts.ts';
+
+/** P8-G4: brz tempo — član plafona u minutima ne veže (testovi udela M11). */
+const FASTP = pacesFromVdot(75, 75);
 
 /* P5 (marathon-v2.10.0): F1 kontrolni test u planu sa rezultatom, F2 (A18) kvalitet u adaptaciji, F3 ubrzanja na
    laganom danu, F4 početna doza T/I ≤ 80 % plafona. */
@@ -165,10 +169,10 @@ describe('F4: početna doza T i I ≤ 80 % plafona, R i MP 60 %, početnik prvi 
     expect(startShareOf('R')).toBe(0.6);
     expect(startShareOf('MP')).toBe(0.6);
     // 50 km: T 5000 m → 4000 → T kont. 4,0; I 4000 → 3200 → 3 × 1000; R 2500 → 1500 → 6 × 200.
-    expect(doseOf(startLevel('T_continuous', 50)!)).toBe(4000);
-    expect(doseOf(startLevel('I', 50)!)).toBe(3000);
-    expect(doseOf(startLevel('R', 50)!)).toBe(1200);
-    expect(doseOf(startLevel('T_continuous', 50, true)!)).toBe(1500);
+    expect(doseOf(startLevel('T_continuous', 50, FASTP)!)).toBe(4000);
+    expect(doseOf(startLevel('I', 50, FASTP)!)).toBe(3000);
+    expect(doseOf(startLevel('R', 50, FASTP)!)).toBe(1200);
+    expect(doseOf(startLevel('T_continuous', 50, FASTP, true)!)).toBe(1500);
   });
   it('profil (a): prvi T 4,0 km ili više nego pre (2,0 km na marathon-v2.9.0); plan ispravan', () => {
     const t = A.weeks.flatMap((w) => w.days).find((d) => d.workout.dose?.zone === 'T')!.workout

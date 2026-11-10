@@ -219,7 +219,8 @@ export function peakCap10(start10: number, rule: PlanRule, g: GrowthCtx): number
       Math.floor(start10 * rule.peakFactor + EPS),
       start10 + to10(rule.peakAddKm),
       to10(rule.peakMaxKm),
-      Math.floor(start10 * f + EPS),
+      // Početnik (M17) zadržava svoj faktor vrha: sa start × 1,40 taper na dnu tabele početnika nije izvodljiv.
+      rule.beginner ? Infinity : Math.floor(start10 * f + EPS),
       hoursCap10(g.p)
     )
   );

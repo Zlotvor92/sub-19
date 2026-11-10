@@ -229,10 +229,15 @@ export function pickSlot(
     return lv ? pick(ladder, lv, 'drop') : null;
   };
   if (!prev) return start ? pick(ladder, start, 'start') : null;
+  // P8-G4: prethodna doza staje u udeo cilja, a ne staje u član plafona u minutima (blok u dugom veći od MP treninga
+  // — M19 O3; prag 80 km za T; sporiji tempo posle novog rezultata) → najviši nivo koji staje, bez pretrage cilja
+  // (član u minutima ne zavisi od cilja).
+  const minuteOnly = (): boolean =>
+    prev.doseM <= capM(zoneOf(ladder), targetKm, { p, beginner }, false);
   const progress = (): Dose | null => {
     const next = hold ? null : nextLevel(ladder, prev.doseM, beginner);
     if (next && ok(next)) return pick(ladder, next, 'next');
-    if (prev.doseM > cap) return drop();
+    if (prev.doseM > cap) return minuteOnly() ? longDrop() : drop();
     const alt = otherStructure(ladder, prev.doseM, prev.structure, p, ok);
     if (alt) return pick(ladder, alt, 'alt');
     return ok(prev.structure) ? pick(ladder, prev.structure, 'repeat') : longDrop();
@@ -251,7 +256,7 @@ export function pickSlot(
   const lv0 = lvMin && ok(lvMin) ? lvMin : levels.find((s) => doseOf(s) >= lo0);
   const lv = keep && lv0 && doseOf(lv0) > prev.doseM ? undefined : lv0;
   if (lv && ok(lv)) return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
-  if (prev.doseM > cap) return drop();
+  if (prev.doseM > cap) return minuteOnly() ? longDrop() : drop();
   // Nivo prelaza ne staje (plafon ili trajanje): ista doza druge strukture; nijedna ne staje u trajanje dugog →
   // najviši nivo koji staje (pouka 32).
   const all = structuresForDose(ladder, prev.doseM);

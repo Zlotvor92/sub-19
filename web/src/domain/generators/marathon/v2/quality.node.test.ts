@@ -33,6 +33,9 @@ import {
 /* M10 lestvice i druga struktura, M11 plafon, M12 progresija, M5/M7 doza rasterećenja i tapera, M14. */
 
 const p = pacesFromVdot(45, 45);
+/** P8-G4: brz tempo — član plafona u minutima ne veže (testovi udela M11). */
+const FASTP = pacesFromVdot(75, 75);
+const FAST = { p: FASTP, beginner: false };
 const reps = (n: number, m: number): Structure => ({ form: 'reps', reps: n, repM: m });
 const cont = (km: number): Structure => ({ form: 'continuous', km });
 const slot = (ladder: Parameters<typeof pickSlot>[1], s: Structure) => ({
@@ -165,21 +168,21 @@ describe('M10 lestvice po fazi i druga struktura (pouka 11)', () => {
 
 describe('M11 plafon i M12 progresija', () => {
   it('plafon po treningu: R 5 %, I 8 %, T 10 %, MP 20 % ciljnog obima', () => {
-    expect(capM('R', 40)).toBe(2000);
-    expect(capM('I', 40)).toBe(3200);
-    expect(capM('T', 40)).toBe(4000);
-    expect(capM('MP', 40)).toBe(8000);
-    expect(capM('MP', 29.8)).toBe(5960);
+    expect(capM('R', 40, FAST)).toBe(2000);
+    expect(capM('I', 40, FAST)).toBe(3200);
+    expect(capM('T', 40, FAST)).toBe(4000);
+    expect(capM('MP', 40, FAST)).toBe(8000);
+    expect(capM('MP', 29.8, FAST)).toBe(5960);
   });
 
   it('početni nivo = najviši nivo ≤ 80 % plafona za T i I, 60 % za R i MP (najmanje prvi nivo; P5-F4)', () => {
     // 60 km: T plafon 6,0 → 80 % = 4,8 → T kont. 4,0; MP plafon 12,0 → 60 % = 7,2 → 2 × 3000.
-    expect(startLevel('T_continuous', 60)).toEqual(cont(4));
-    expect(startLevel('MP', 60)).toEqual(reps(2, 3000));
-    expect(startLevel('MP', 80)).toEqual(reps(2, 4000));
+    expect(startLevel('T_continuous', 60, FASTP)).toEqual(cont(4));
+    expect(startLevel('MP', 60, FASTP)).toEqual(reps(2, 3000));
+    expect(startLevel('MP', 80, FASTP)).toEqual(reps(2, 4000));
     // 35 km: T plafon 3,5 → 80 % = 2,8 → T kont. 2,0.
-    expect(startLevel('T_continuous', 35)).toEqual(cont(2));
-    expect(startLevel('MP', 29)).toBeNull();
+    expect(startLevel('T_continuous', 35, FASTP)).toEqual(cont(2));
+    expect(startLevel('MP', 29, FASTP)).toBeNull();
   });
 
   it('sledeći nivo kad staje; inače ista doza druge strukture; bez nje ponavljanje', () => {
@@ -221,19 +224,30 @@ describe('M5 rasterećenje i M7 taper', () => {
   };
 
   it('rasterećenje: T ≈ 60 % poslednje T doze (nivo naniže), min 2,0 km; staje u plafon', () => {
-    const d = pickDeload(st, 'specific', 50)!;
+    const d = pickDeload(st, 'specific', 50, FASTP)!;
     expect(d.doseM).toBe(3000); // 0,6 × 6400 = 3840 → 3 × 1000
-    const low = pickDeload({ q1: null, q2: slot('T_continuous', cont(3)), t: 3000 }, 'base', 40)!;
+    const low = pickDeload(
+      { q1: null, q2: slot('T_continuous', cont(3)), t: 3000 },
+      'base',
+      40,
+      FASTP
+    )!;
     expect([low.doseM, low.structure]).toEqual([2000, cont(2)]);
     const dev = pickDeload(
       { q1: null, q2: slot('T_cruise', reps(2, 1200)), t: 2400 },
       'development',
-      40
+      40,
+      FASTP
     )!;
     expect([dev.doseM, dev.structure]).toEqual([2000, cont(2)]);
-    expect(pickDeload(st, 'specific', 25)).toBeNull();
+    expect(pickDeload(st, 'specific', 25, FASTP)).toBeNull();
     // 3 dana u specifičnoj fazi: jedini slot je MP — T se meri od poslednjeg T iz izgradnje (t).
-    const three = pickDeload({ q1: slot('MP', reps(2, 4000)), q2: null, t: 4800 }, 'specific', 40)!;
+    const three = pickDeload(
+      { q1: slot('MP', reps(2, 4000)), q2: null, t: 4800 },
+      'specific',
+      40,
+      FASTP
+    )!;
     expect(three.doseM).toBe(2400); // 0,6 × 4800 = 2880 → 2 × 1200
   });
 
@@ -275,15 +289,15 @@ describe('M5 rasterećenje i M7 taper', () => {
       q2: slot('T_cruise', reps(2, 1200)),
       t: 2400
     };
-    expect(pickTaper(small, 1, 29.8, 2)!.mp!.doseM).toBe(6000);
-    expect(pickTaper(small, 1, 29.8, 2)!.t).toBeNull();
+    expect(pickTaper(small, 1, 29.8, 2, FASTP)!.mp!.doseM).toBe(6000);
+    expect(pickTaper(small, 1, 29.8, 2, FASTP)!.t).toBeNull();
     // T 2,0 km > plafon 10 % pri 19 km: po pravilu null, relax bez T (MP ostaje).
-    expect(pickTaper(small, 0, 19, 2)).toBeNull();
-    const r = pickTaper(small, 0, 19, 2, true)!;
+    expect(pickTaper(small, 0, 19, 2, FASTP)).toBeNull();
+    const r = pickTaper(small, 0, 19, 2, FASTP, true)!;
     expect([r.mp!.doseM, r.t]).toEqual([6000, null]);
-    expect(pickTaper(small, 0, 30, 2)!.t!.doseM).toBe(2000);
+    expect(pickTaper(small, 0, 30, 2, FASTP)!.t!.doseM).toBe(2000);
     // 3 dana: po pravilu bez T i pri malom cilju.
-    expect(pickTaper(small, 0, 19, 1)!.t).toBeNull();
+    expect(pickTaper(small, 0, 19, 1, FASTP)!.t).toBeNull();
   });
 
   it('M17 (S3): početnik u N−1 bez MP — T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km); N−2 MP po M7', () => {
@@ -295,7 +309,7 @@ describe('M5 rasterećenje i M7 taper', () => {
     });
     expect(doseOf(taperDoses({ ...st, t: 5000 }, 1, 1, true).t!)).toBe(3000);
     expect(taperDoses(st, 0, 1, true).mp).toEqual(reps(2, 3000));
-    const r = pickTaper(st, 1, 22.5, 1, false, true)!;
+    const r = pickTaper(st, 1, 22.5, 1, FASTP, false, true)!;
     expect([r.mp, r.t!.ladder, r.t!.doseM]).toEqual([null, 'T_continuous', 1500]);
   });
 });
@@ -366,10 +380,10 @@ describe('M11 plafon zone, drugi član (pouka 32; MAR-03 za MP, MAR-04b za sve z
       q2: slot('T_cruise', reps(5, 1600)),
       t: 8000
     };
-    const rule = pickDeload(st, 'specific', 80)!;
-    const low = pickDeload(st, 'specific', 80, false, fitsLong(40))!;
+    const rule = pickDeload(st, 'specific', 80, FASTP)!;
+    const low = pickDeload(st, 'specific', 80, FASTP, false, fitsLong(40))!;
     expect(low.doseM).toBeLessThan(rule.doseM);
-    expect(pickDeload(st, 'specific', 80, false, () => false)!.doseM).toBe(2000);
+    expect(pickDeload(st, 'specific', 80, FASTP, false, () => false)!.doseM).toBe(2000);
     const t0 = taperDoses(st, 0, 2);
     const t1 = taperDoses(st, 0, 2, false, { q1: () => false, q2: () => () => false });
     expect(doseOf(t0.mp!)).toBeGreaterThan(6000);

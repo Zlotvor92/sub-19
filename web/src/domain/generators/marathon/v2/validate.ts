@@ -54,6 +54,7 @@ import { keptKm100, mixedRest, pauseOwned } from './mixed.ts';
 import { BEGINNER_DAYS_COUNTS, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 import {
   type CapCtx,
+  capFloorM,
   capM,
   carries,
   type DayFits,
@@ -979,7 +980,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           w.phase === 'base' ? 'T_continuous' : w.phase === 'development' ? 'T_cruise' : 'MP';
         const first = doseOf(P.ladders[phaseLadder][0]!);
         const zone: WorkZone = phaseLadder === 'MP' ? 'MP' : 'T';
-        const fits = first <= Math.floor(P.caps[zone] * w.targetKm * 1000 + 1e-6);
+        // P8-G2: prvi nivo lestvice zone uvek staje (plafon ≥ doza prvog nivoa).
+        const fits =
+          first <= Math.max(Math.floor(P.caps[zone] * w.targetKm * 1000 + 1e-6), capFloorM(zone));
         const wantLadder = fits ? phaseLadder : 'T_continuous';
         const tTypes: readonly QualityType[] = ['T_continuous', 'T_cruise'];
         const okType =
@@ -1466,7 +1469,13 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // --- M6: obim. Ned 1 = trenutni obim (ispod samo uz dugi na 150 min, pouka 9); izgradnja po pravilu ili
   // najbliži izvodljiv cilj (napomena); rasterećenje 0,8 ×, taper 0,8 / 0,6 × vrh samo naniže; vrh.
   const start10 = startKm10(input.currentWeeklyKm);
-  const g1 = growthCtx(weeks, p);
+  // Tempo polaznog plana (kao konstruktor: satni plafon se ne pomera novim rezultatom iz adaptacije).
+  const g1 = growthCtx(
+    // Okviri polaznog rasporeda (kao konstruktor): prinudno rasterećenje i nov start adaptacije ne menjaju korak rasta
+    // već upisanih nedelja.
+    periodize(input.startDate, N, testKindOf(rule, pace.kind === 'feel', N)) ?? weeks,
+    basePaces(pace, km)
+  );
   const cap10 = peakCap10(start10, rule, g1);
   // Segment 04: isti rekurent kao konstruktor (volume.adaptNominal10: cilj koraka, povratni rast, vrh od novog
   // starta, taper 0,8 / 0,6 × najveći cilj izgradnje posle poslednjeg smanjenja, donja granica); izvodljiv cilj

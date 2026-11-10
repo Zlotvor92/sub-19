@@ -2,12 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
 import { generateMarathonV2 } from './generate.ts';
 import { checkInput } from './input.ts';
+import { pacesFromVdot } from './paces.ts';
 import { planRule } from './policy.ts';
 import { buildLadder, pickDeload, startLevel } from './quality.ts';
 import { inputOf, SCHEDULES_BY_DAYS, START, type Profile } from './testInputs.ts';
 import type { MarathonV2Plan, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { doseOf, ladderLevels } from './workouts.ts';
+
+/** P8-G4: brz tempo — član plafona u minutima ne veže (testovi udela M11). */
+const FASTP = pacesFromVdot(75, 75);
 
 /* M17: početnik — 4–5 dana, 16–24 ned, obim 25–45 / 30–50 km, uvod 2 ned bez kvaliteta, jedan kvalitet (T kont. →
    T cruise → MP, bez I/R), T kont. od 1,5 km, rast +5 % (1,0–2,5), vrh min(1,5×; +25), WU/CD 15/10, bez testa,
@@ -132,23 +136,23 @@ describe('M17 plan', () => {
     expect(ladderLevels('T_continuous', true).map((s) => doseOf(s))).toEqual([
       1500, 2000, 3000, 4000, 5000, 6000, 8000
     ]);
-    expect(doseOf(startLevel('T_continuous', 45, true)!)).toBe(1500);
+    expect(doseOf(startLevel('T_continuous', 45, FASTP, true)!)).toBe(1500);
     // P5-F4: redovan plan T ≤ 80 % plafona (4500 m → 3000 m); početnik bez promene.
-    expect(doseOf(startLevel('T_continuous', 45)!)).toBe(3000);
+    expect(doseOf(startLevel('T_continuous', 45, FASTP)!)).toBe(3000);
     const first = steady(B4).find((w) => w.index === 3)!;
     expect(first.days.find((d) => d.role === 'q1')!.workout.dose!.doseM).toBe(1500);
   });
 
   it('T kont. umesto lestvice faze kad prvi nivo ne staje u plafon (MP 2 × 3000 m traži cilj ≥ 30 km); bez kvaliteta kad ni 1,5 km ne staje', () => {
     const rule = planRule(4, 'beginner')!;
-    expect(buildLadder('specific', 30, rule)).toBe('MP');
-    expect(buildLadder('specific', 29.9, rule)).toBe('T_continuous');
-    expect(buildLadder('development', 24, rule)).toBe('T_cruise');
-    expect(buildLadder('development', 23.9, rule)).toBe('T_continuous');
-    expect(buildLadder('base', 14.9, rule)).toBeNull();
-    expect(buildLadder('specific', 29.9, planRule(4)!)).toBe('MP');
+    expect(buildLadder('specific', 30, rule, FASTP)).toBe('MP');
+    expect(buildLadder('specific', 29.9, rule, FASTP)).toBe('T_continuous');
+    expect(buildLadder('development', 24, rule, FASTP)).toBe('T_cruise');
+    expect(buildLadder('development', 23.9, rule, FASTP)).toBe('T_continuous');
+    expect(buildLadder('base', 14.9, rule, FASTP)).toBeNull();
+    expect(buildLadder('specific', 29.9, planRule(4)!, FASTP)).toBe('MP');
     // Rasterećenje početnika: T ≈ 60 % poslednje T doze, min 1,5 km.
-    const d = pickDeload({ q1: null, q2: null, t: 2000 }, 'base', 25, true)!;
+    const d = pickDeload({ q1: null, q2: null, t: 2000 }, 'base', 25, FASTP, true)!;
     expect(d.doseM).toBe(1500);
   });
 

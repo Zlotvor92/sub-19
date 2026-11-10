@@ -294,7 +294,10 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     const want =
       w.index <= (beginner ? 2 : 0)
         ? 0
-        : rule.quality - (w.days.some((d) => d.role === 'test') ? 1 : 0);
+        : // P8-G7: u nedelji testa test je jedini kvalitet.
+          w.days.some((d) => d.role === 'test')
+          ? 0
+          : rule.quality;
     // Pouka 35 (MAR-07): drugi dan kvaliteta lagan kad bi dan kvaliteta bio duži od dugog (napomena nedelje); nedelja
     // sa dva kvaliteta i danom dužim od dugog ostaje samo uz upozorenje pouke 14 (jedan kvalitet neizvodljiv).
     const easy35 = w.notes.some((n) => n.endsWith('(pouka 35).'));
@@ -326,12 +329,14 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
         no(`dugi < lagan ned ${w.index}`);
     // MAR-11 (T1): izgradnja — lagan ≤ 0,8 × dugi (kad 0,8 × dugi ≥ 5 km; inače ≤ dugi), ≥ 5 km i ≥ 20 min
     // (nezavisno od lengths.ts).
+    // P8-G6: 4 i više dana trčanja 0,70 × dugi, 3 dana 0,80.
+    const easyShare = p.input.runDays.length >= 4 ? 0.7 : 0.8;
     if (isSteady(w))
       for (const d of w.days)
         if (
           d.role === 'easy' &&
-          ((to10(d.workout.km) > Math.floor(0.8 * to10(long.workout.km) + 1e-9) &&
-            Math.floor(0.8 * to10(long.workout.km) + 1e-9) >= 50) ||
+          ((to10(d.workout.km) > Math.floor(easyShare * to10(long.workout.km) + 1e-9) &&
+            Math.floor(easyShare * to10(long.workout.km) + 1e-9) >= 50) ||
             d.workout.km + 1e-9 < 5 ||
             easySec(d) + 1 < 1200)
         )
@@ -358,15 +363,35 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
       if (w.days.some((d) => d.workout.kind === 'quality' && d.workout.workKm.MP > 0))
         no(`nedelja B sa MP treningom ned ${w.index}`);
     }
-    // Plafoni po treningu (M11), iz politike — nezavisno od quality.capM. M7a: MP u taperu je doza M7
+    // Plafoni po treningu (M11; P8-G4 minuti rada usred nedelje; P8-G2 prvi nivo lestvice uvek staje), iz politike —
+    // nezavisno od quality.capM.
+    const capIndep = (z: 'R' | 'I' | 'T' | 'MP', targetKm: number, long: boolean): number => {
+      const share = Math.floor(P.caps[z] * targetKm * 1000 + 1e-6);
+      const sec =
+        long || z === 'R'
+          ? Infinity
+          : z === 'T'
+            ? targetKm >= 80 - 1e-9
+              ? 2400
+              : 1800
+            : z === 'I'
+              ? p.paces.vdot < 40
+                ? 1200
+                : 1440
+              : beginner
+                ? 2700
+                : 3600;
+      const time =
+        sec === Infinity ? Infinity : Math.floor((sec / p.paces[z as 'T']) * 1000 + 1e-6);
+      const first = { R: 1200, I: 2000, T: 2400, MP: 6000 }[z];
+      return Math.max(Math.min(share, time), first);
+    };
+    // M7a: MP u taperu je doza M7
     // (minimum 2 × 3000 m ispred plafona) — proverava se ispod.
     for (const d of w.days)
       for (const z of ['R', 'I', 'T', 'MP'] as const)
         if (!(w.phase === 'taper' && z === 'MP'))
-          if (
-            Math.round(d.workout.workKm[z] * 1000) >
-            Math.floor(P.caps[z] * w.targetKm * 1000 + 1e-6)
-          )
+          if (Math.round(d.workout.workKm[z] * 1000) > capIndep(z, w.targetKm, d.role === 'long'))
             no(`plafon ${z} ned ${w.index}`);
   }
   // Teški dani nesusedni, i preko granice nedelje (M9).
@@ -478,6 +503,9 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
       d.role === 'sharpener' &&
       // Odluka organizatora posle MAR-11: oštrenje ≤ MP doza N−1, najmanje 2 × 1000 m.
       ((d.workout.dose?.doseM ?? 0) > Math.max(2000, mpN1) ||
+        // P8-G5: ukupno ≤ 10 min rada po tempu maratona (najmanje 2 × 400 m).
+        ((d.workout.dose?.doseM ?? 0) > 800 &&
+          ((d.workout.dose?.doseM ?? 0) / 1000) * p.paces.MP > 600 + 1e-6) ||
         daysBetween(d.date, p.input.raceDate) < 3)
     )
       no('oštrenje');
@@ -578,8 +606,13 @@ export function feelBeginnerInvariants(id: string, p: MarathonV2Plan): string[] 
   // testa.
   const lastDev = [...W].reverse().find((w) => w.phase === 'development' && !w.deload)?.index ?? 0;
   if (!beginner) {
-    const want = feel ? lastBase : lastDev;
-    if (tests.length !== 1 || tests[0]!.w !== want)
+    const want0 = feel ? lastBase : lastDev;
+    // P8-G7: ne pre nedelje 4 — prva ne-rasteretna nedelja ≥ 4 iste faze, inače plan bez testa.
+    const want =
+      want0 === 0 || want0 >= 4
+        ? want0
+        : (W.find((w) => w.index >= 4 && w.phase === W[want0 - 1]!.phase && !w.deload)?.index ?? 0);
+    if (want === 0 ? tests.length !== 0 : tests.length !== 1 || tests[0]!.w !== want)
       no(
         feel
           ? 'test nije tačno jednom u poslednjoj nedelji baze'
@@ -694,7 +727,18 @@ export function describeGrid(
           )
             noQ++;
         for (const v of p.warnings)
-          if (v.rule === 'DOSE_DROPPED' && p.weeks[v.week! - 1]!.fitted !== 'down') dropOutside++;
+          if (
+            v.rule === 'DOSE_DROPPED' &&
+            p.weeks[v.week! - 1]!.fitted !== 'down' &&
+            // P8-G4: spuštanje zbog člana plafona u minutima (MP trening posle dužeg bloka u dugom, prag 80 km za T)
+            // ne zavisi od cilja nedelje.
+            // Pouka 32: doza spuštena jer bi dan kvaliteta trajao duže od dugog (posle P8-G1 dugi je kraći — 3/8190
+            // planova mreže po osećaju).
+            !p.weeks[v.week! - 1]!.notes.some(
+              (n) => n.includes('(P8-G4)') || n.includes('kvalitetni dan bi trajao duže od dugog')
+            )
+          )
+            dropOutside++;
       }
       expect([noQ, dropOutside]).toEqual([0, 0]);
     });

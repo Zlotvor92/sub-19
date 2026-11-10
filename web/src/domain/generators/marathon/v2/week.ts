@@ -1040,7 +1040,9 @@ function buildWeekIn(
       notes.push(
         (prev?.doseM ?? 0) <= capM(d.zone, targetKm, { p, beginner: rule.beginner })
           ? `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — kvalitetni dan bi trajao duže od dugog (plafon ${d.zone === 'MP' ? 'MP, pouka 14' : 'zone, pouka 32'}).`
-          : `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (M11 ispred M12).`
+          : (prev?.doseM ?? 0) <= capM(d.zone, targetKm, { p, beginner: rule.beginner }, false)
+            ? `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — trening usred nedelje ostaje u granici minuta rada za ovu zonu (P8-G4).`
+            : `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (M11 ispred M12).`
       );
   const built = done(
     [
@@ -1108,7 +1110,10 @@ export function sharpenerStructure(
     s.reps * s.repM,
     Math.floor((P.raceWeek.sharpenerMaxSec / p.MP) * 1000 + 1e-6)
   );
-  const dose = Math.max(min, taperMpM > 0 ? Math.min(max, taperMpM) : max);
+  const dose = Math.max(
+    min,
+    Math.min(max, taperMpM > 0 ? taperMpM : s.reps * P.raceWeek.sharpenerNoMpRepM)
+  );
   return { form: 'reps', reps: s.reps, repM: Math.floor(dose / s.reps / 100) * 100 };
 }
 

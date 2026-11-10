@@ -190,7 +190,9 @@ export function construct(
   const recentJ = jumpRecentKm(recent, steps);
   const pre = preStartOf(steps);
   const start10 = startKm10(km);
-  const g1 = growthCtx(frames, paces);
+  // P8-G1: okviri polaznog rasporeda — prinudno rasterećenje i nov start adaptacije ne menjaju korak rasta već
+  // upisanih nedelja.
+  const g1 = growthCtx(base, paces);
   const cap10 = peakCap10(start10, rule, g1);
   const av = adapted ? adaptVolume(steps) : null;
   // A1: tempo nedelje (rezultat iz adaptacije važi od svoje sledeće nedelje); A9/pouka 33: odstupanja za mali
