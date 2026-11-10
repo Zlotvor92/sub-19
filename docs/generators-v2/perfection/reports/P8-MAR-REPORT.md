@@ -100,7 +100,19 @@ verzija (a) nije pala — u test dodati profili (brz trkač, mali obim) na kojim
 
 ## Testovi (iz `web/`, 10. 11. 2026, Europe/Belgrade)
 
-TESTOVI_TABELA
+| komanda | trajanje | ishod |
+|---|---|---|
+| `npx vitest run --project node src/domain/generators/marathon/v2` (brz, više puta u toku rada) | 30–40 s | na kraju 0 padova |
+| `TEST_FULL=1 MARATHON_V2_WRITE_BASELINE=1 npx vitest run --project node {grid,feelGrid,beginnerGrid}.node.test.ts` (1. put, tri fajla uporedo) | 100 s | OOM u mrežama 02 i po osećaju; bazna linija početnika upisana |
+| isto, `grid` pa `feelGrid`, `NODE_OPTIONS=--max-old-space-size=10240 --maxWorkers=1` | 214 s + 75 s | bazne linije P8 upisane |
+| `TEST_FULL=1 npx vitest run --project node src/domain/generators/marathon/v2` (jednom, na kraju) | 781 s | 78 fajlova, 549 testova zeleno |
+| `npm run check` (1. put) | 178 s | stao na formatu 3 nove bazne linije (prettier) |
+| `npm run check` (posle `prettier --write` baznih linija) | 367 s | 296 fajlova, 3318 testova zeleno |
+| `npx vitest run --changed 0181e25f` | 99 s | 104 fajla, 1028 testova zeleno |
+| `npx playwright test e2e/marathon-v2.spec.ts --trace off` | 38 s | 3/3 |
+| `node scripts/sabotage.mjs …/P8-MAR/sabotage.json --quiet` | 20 s | 15/15 |
+
+Pisanje baznih linija celih mreža traži veći hip (harness drži sve planove): komanda je u drugom redu tabele.
 
 Prilagođeni testovi (očekivanje koje P8 menja, sa komentarom): adapt, beginner, dayCap, feel, p2, p5, policy, preStart,
 quality, segment07, segment08b, segment09, segment11, validate, volume, week, app/app, app/adaptFlow, app/handoffSource,
