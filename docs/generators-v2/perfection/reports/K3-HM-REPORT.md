@@ -59,3 +59,7 @@ p03/p10 je u minutima 18,6 / 19,7 jer je 60 % od 5 km sporim RP tempom ≈ 19–
 ## Testovi na kraju (iz `web/`, 10. 11. 2026, Europe/Belgrade)
 
 Brz nivo `halfMarathon/v2` posle svakog pravila zelen (363 → 365 → 367 → 368 testova).
+`TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` 76 fajlova / 460 testova zeleno (10 min 24 s);
+`npx vitest run --changed 2f109ed` 105 / 1019 zeleno (1 min 43 s); `npx playwright test e2e/hm-v2.spec.ts
+e2e/handoff-v2.spec.ts --trace off` 5/5 (65 s); `npm run check` 302 / 3392 zeleno (6 min 14 s); sabotaže 3/3. Ispis
+`P9/plans/HM/` (12) ponovo napravljen (hm-v2.13.0).
