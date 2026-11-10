@@ -6,8 +6,16 @@ import { describe, expect, it } from 'vitest';
 import { userText } from './app/format.ts';
 import { generateTenKV2 } from './generate.ts';
 import { pacesFromVdot } from './paces.ts';
-import { capM } from './quality.ts';
-import { beginnerGridInputs, feelGridInputs, grid02Inputs } from './testInputs.ts';
+import { adaptTenKV2 } from './adapt.ts';
+import { capM, reducedDoseM } from './quality.ts';
+import {
+  adaptBases,
+  asOfOf,
+  beginnerGridInputs,
+  factsOf,
+  feelGridInputs,
+  grid02Inputs
+} from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
 import { userPlanMessages, userWeekNotes } from './userNotes.ts';
 
@@ -254,6 +262,131 @@ describe('P8 dopuna: G4 minuti rada, G5 oštrenje, G1a vrh, G6, G7 test, G8 dugi
     );
     expect(longest).toBeGreaterThan(8.7);
     expect(p.notes.some((n) => n.startsWith('Najduži dugi je'))).toBe(longest < 10);
+  });
+});
+
+describe('P8 završetak: S3 (D49), S7 (D50), S1/S5/S6/S8 (D51)', () => {
+  const tDose = (w: PlanWeek): number | null =>
+    w.days.find((d) => d.workout.dose?.zone === 'T')?.workout.dose?.doseM ?? null;
+  const build = (w: PlanWeek): boolean =>
+    ['base', 'development', 'specific'].includes(w.phase) && !w.deload;
+  const plans = [...every(SAMPLE, 2), ...Object.values(P)].map(gen);
+
+  it('S3 (D49): plafon T početnika max(udeo × cilj; 3,0 km) — p11 lestvica T napreduje do 3,0 km, najviše 1 nivo nedeljno; T 1,5 km u najviše 2 nedelje izgradnje (ranije 9)', () => {
+    const v40 = pacesFromVdot(40);
+    expect(capM('T', 15, true, v40)).toBe(3000);
+    expect(capM('T', 35, true, v40)).toBe(3500);
+    expect(capM('T', 15, false, v40)).toBe(2000);
+    const p = gen(P.p11);
+    const ts = p.weeks
+      .filter(build)
+      .map(tDose)
+      .filter((x): x is number => x !== null);
+    expect(Math.max(...ts)).toBe(3000);
+    expect(ts.filter((x) => x === 1500).length).toBeLessThanOrEqual(2);
+    const LV = [1500, 2000, 2400, 2500, 3000];
+    for (let i = 1; i < ts.length; i++) {
+      expect(ts[i]!).toBeGreaterThanOrEqual(ts[i - 1]!);
+      expect(LV.filter((m) => m > ts[i - 1]! && m <= ts[i]!).length).toBeLessThanOrEqual(2);
+    }
+    // Prelaz T → RP nosi dozu do plafona RP (2 × 1200 m): prelaz, ne spuštanje doze.
+    expect(p.warnings.some((w) => w.rule === 'DOSE_DROPPED')).toBe(false);
+    const rp = p.weeks
+      .filter(build)
+      .find((w) => w.days.some((d) => d.workout.dose?.zone === 'RP'))!;
+    const d = rp.days.find((x) => x.workout.dose?.zone === 'RP')!.workout.dose!;
+    expect([d.doseM, d.step]).toEqual([2400, 'transition']);
+  });
+
+  it('S3 (D49): viši nivo T samo kad ga nedelja nosi — 4 dana, 18 km, 17 ned (bez uslova: odbijen plan, nedelja 21,5 → 17,9 km)', () => {
+    const c = beginnerGridInputs(4).find((x) => x.id === 'b-d4-17w-18km-e330-A-sat')!;
+    const p = gen(c.input);
+    const bw = p.weeks.filter(build);
+    for (let i = 1; i < bw.length; i++)
+      expect(bw[i]!.targetKm, `ned ${bw[i]!.index}`).toBeGreaterThanOrEqual(bw[i - 1]!.targetKm);
+    // Baza i razvoj: sva 4 dana trčanja ostaju (u 3 poslednje nedelje izgradnje G8 sme da zameni lagan dan dužim dugim).
+    for (const w of bw.filter((x) => x.index > 2 && x.phase !== 'specific'))
+      expect(w.days.filter((d) => d.workout.kind !== 'rest').length, `ned ${w.index}`).toBe(4);
+    for (const g of [3, 4] as const)
+      for (const x of every(beginnerGridInputs(g), 9)) {
+        const q = gen(x.input);
+        const b = q.weeks.filter(build);
+        for (let i = 1; i < b.length; i++) {
+          if (!b[i]!.notes.some((n) => n.startsWith('Trening u tempu ostaje iste dužine')))
+            continue;
+          // Tvrdnja napomene: ista T doza kao prošli put i svi lagani dani ostaju.
+          const prev = b
+            .slice(0, i)
+            .map(tDose)
+            .filter((m) => m !== null)
+            .pop();
+          expect(tDose(b[i]!), `${x.id} ned ${b[i]!.index}`).toBe(prev);
+          expect(b[i]!.days.filter((d) => d.workout.kind !== 'rest').length).toBe(g);
+        }
+      }
+  });
+
+  it('S7 (D50): start na satnom plafonu — ravan obim je ispravan plan sa jednom rečenicom zašto (p04: VDOT 35, 50 km, 5 dana)', () => {
+    const p04 = gen({
+      startDate: '2026-11-02',
+      raceDate: '2027-03-07',
+      runDays: DAYS[5],
+      currentWeeklyKm: 50,
+      goalTimeSec: null,
+      longRunDay: 'sun',
+      recentResult: { distanceM: 10000, timeSec: 3362, date: '2026-10-19' }
+    });
+    // Satni plafon 6 h ≈ 50,5 km: preostali rast 0,5 km < 3 % cilja se ne primenjuje (G1b) — vrh plana = start.
+    expect(p04.peakCapKm).toBeLessThan(51.5);
+    expect(p04.peakKm).toBe(50);
+    const flat = p04.notes.filter((n) => n.startsWith('Nedeljni obim ostaje 50,0 km'));
+    expect(flat.length).toBe(1);
+    expect(flat[0]).toContain('6 sati');
+    expect(flat[0]).toContain('treninzi u tempu i dugi');
+    expect(userPlanMessages(p04).filter((m) => m.includes('Nedeljni obim ostaje')).length).toBe(1);
+    // Plan čiji obim raste nema tu rečenicu.
+    expect(gen(P.p06).notes.some((n) => n.startsWith('Nedeljni obim ostaje'))).toBe(false);
+    expect(gen(P.p11).notes.some((n) => n.startsWith('Nedeljni obim ostaje'))).toBe(false);
+  });
+
+  it('S1/S5/S6 (D51): doza rasterećenja i tapera = max(najniži nivo; najviši nivo ≤ 60 % poslednje doze) — jedna funkcija', () => {
+    expect(reducedDoseM('T_cruise', 4800, 0.6, 2000)).toBe(2400);
+    expect(reducedDoseM('T_cruise', 3600, 0.6, 2000)).toBe(2000);
+    // Najniži nivo je ispred „≤ 60 %": 60 % od 2,4 km = 1,44 km → 2,0 km; početnik 60 % od 2,0 km → 1,5 km.
+    expect(reducedDoseM('T_cruise', 2400, 0.6, 2000)).toBe(2000);
+    expect(reducedDoseM('T_continuous', 2000, 0.6, 1500, true)).toBe(1500);
+    expect(reducedDoseM('RP', 2400, 0.6, 2000)).toBe(2000);
+    expect(reducedDoseM('RP', 5000, 0.6, 2000)).toBe(3000);
+    // Mreža: rasterećenje i taper nikad ispod najniže doze; taper uvek ima trkački tempo.
+    for (const p of plans) {
+      const beg = p.input.experience === 'beginner';
+      for (const w of p.weeks.filter((x) => x.deload && x.index > 2 && !x.test)) {
+        const t = tDose(w);
+        if (t !== null) expect(t, `ned ${w.index}`).toBeGreaterThanOrEqual(beg ? 1500 : 2000);
+        const long = w.days.find((d) => d.role === 'long')!.workout.km;
+        for (const e of w.days.filter((d) => d.role === 'easy'))
+          expect(long).toBeGreaterThanOrEqual(e.workout.km);
+      }
+      const taper = p.weeks.find((w) => w.phase === 'taper')!;
+      expect(zoneKm(taper, 'RP')).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('S9 (STOP, do odluke organizatora): početnik ostaje na lagan ≤ 0,80 × dugi — 4 dana, 30 km: obim ne pada kad uđe prvi kvalitet (sa 0,70: 31,0 → 27,x km)', () => {
+    const c = beginnerGridInputs(4).find((x) => x.id === 'b-d4-18w-30km-e330-A-sat')!;
+    const p = gen(c.input);
+    expect(p.weeks[2]!.targetKm).toBeGreaterThan(p.weeks[1]!.targetKm);
+    expect(p.weeks[2]!.days.some((d) => d.workout.kind === 'quality')).toBe(true);
+  });
+
+  it('S8 (D51): adaptacija posle nedelje testa bez drugog kvaliteta (G7) — tok d5-r-14w/w6wed/over120 prihvaćen (bio DELOAD_CONTENT)', () => {
+    for (const id of ['d4-r-14w', 'd5-r-14w', 'd6-r-14w']) {
+      const b = adaptBases().find((x) => x.id === id)!;
+      const p0 = gen(b.input);
+      const asOf = asOfOf(p0, 'w6wed');
+      const r = adaptTenKV2(p0, factsOf(p0, 'over120', asOf), asOf);
+      expect(r.ok, `${id}: ${JSON.stringify(r).slice(0, 300)}`).toBe(true);
+    }
   });
 });
 

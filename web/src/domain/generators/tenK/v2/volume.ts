@@ -114,8 +114,9 @@ export function peakCap10(start10: number, rule: PlanRule, weeks: number, p: Pac
   return Math.max(start10, Math.min(old, Math.floor(start10 * factor + EPS), hour10));
 }
 
-/** S7 (P8 završetak, D50): satni plafon nedelje [h] kad on sam drži vrh na startu (start ≥ satni plafon, a ostale
-    granice bi dopustile rast); inače null. Čita iste brojeve kao peakCap10 (jedino mesto: policy.volume.peakG1a). */
+/** S7 (P8 završetak, D50): satni plafon nedelje [h] kad on drži plan na ravnom obimu — satni plafon je najniža granica
+    vrha i rast do njega se ne primenjuje (start na plafonu ili iznad njega, ili je preostali rast manji od minStepShare
+    tekućeg cilja, G1b); inače null. Čita iste brojeve kao peakCap10 (jedino mesto: policy.volume.peakG1a). */
 export function flatByHours(
   start10: number,
   rule: PlanRule,
@@ -132,7 +133,8 @@ export function flatByHours(
     to10(rule.peakMaxKm),
     Math.floor(start10 * factor + EPS)
   );
-  return hour10 <= start10 && other > start10 ? hours : null;
+  const noGrowth = Math.max(hour10, start10) - start10 < P.volume.minStepShare * start10 - EPS;
+  return hour10 < other && noGrowth ? hours : null;
 }
 
 /** D6: +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 3,0 km; korak 0,1) — početnik +5 % (min 1,0,
