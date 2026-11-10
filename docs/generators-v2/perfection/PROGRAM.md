@@ -405,3 +405,16 @@ Plan P9 (do kraja):
 - `npm run check:full` (organizator, na `3399773` + samo docs): typecheck, lint, format ✔; pun nivo 441 fajl / 3928
   testova, 0 padova, 63 min. Ovo je međuprovera — ponavlja se na završnom vrhu posle K4.
 - Upozorenje nedeljnog limita (seven_day allowed_warning) vidljivo na oba K4 taba od 23:15.
+
+### 11. 11. 2026, 00:50 — K4-MAR završen (marathon-v2.14.0), tab arhiviran; K4-5K pokrenut
+
+- `747650b`, izveštaj `reports/K4-MAR-REPORT.md`. Nezavisna provera organizatora: brzi nivo `marathon/v2` 468/468. Po
+  tabu: pun nivo jednom — 20 fajlova crveno, ispravljeno (`09b50c7`), tih 20 ponovljeno zeleno (ceo pun nivo NIJE
+  ponovljen — pokriva ga završni `check:full`); `--changed` 1049 ✔, E2E 3/3, `npm run check` 3411 ✔, sabotaže 3/3.
+- K4-A (3 dana) ugrađeno celo: blok MP u dugom nedelje B (R-d3 0 → 3072/3120, F-d3 0 → 1152/1170, medijana 18 km),
+  MP dan te nedelje lagan; talas dugog (niz > 3 nedelje na najdužem R 2796 → 0, F 1026 → 9; p08 29,3 × 5 →
+  29,3 / 24,9 / 28,9+8 / 24,9 / 29,3+10); lagan 0,70 ostaje. 0 novih odbijanja.
+- K4-B ugrađeno postojećim oblikom (dan odmora + „odmor ili 20 min lagano po želji"): planova sa laganim < 30 min u
+  > 2 nedelje R 1840 → 402, F 362 → 39, B 77 → 0; ne pokriva 4 dana redovno (jedan lagan dan) ni 3 dana.
+- Otvoreno (izveštaj): 9 F planova sa nizom > 3; spori na plafonu trajanja −16 % obima u nedeljama 0,85.
+- K4-5K (Opus, samo K4-B) pokrenut; K4-HM u toku; K4-10K sledi.
