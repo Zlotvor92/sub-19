@@ -74,7 +74,9 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
 | P3 | 10K: plafon/lestvica RP, održavanje I | gotovo (`7484b05`, 10k-v2.11.0, `reports/P3-REPORT.md`) |
 | P4 | 5K: budžet I/RP 10–12 %, VDOT do 70 — `briefs/P4-5k-doza.md` | gotovo (5k-v2.13.0, `reports/P4-REPORT.md`), čeka prijem |
 | P5 | Po distanci (4 taba): kontrolni test u planu sa rezultatom, kvalitet u adaptaciji, ubrzanja, početna doza T/I — `briefs/P5-forma-ubrzanja-pocetna-doza.md` | 5K gotovo (`3f96c04`, 5k-v2.14.0, `reports/P5-5K-REPORT.md`); 10K, HM, MAR u toku |
-| P7 | Nezavisna slepa trenerska ocena pre/posle + merenje ishoda u aplikaciji (prognoza prema rezultatu) | čeka |
+| P7a | Priprema slepe ocene: anonimni ispisi planova pre/posle — `briefs/P7a-priprema-slepe-ocene.md` (Sonnet 5.5) | čeka P5, V1b |
+| P7b | Slepa trenerska ocena, 4 taba po distanci — `briefs/P7b-slepa-trenerska-ocena.md` (Opus 5.5: sud, ne mehanika) | čeka P7a |
+| P8 | Odluke i ispravke po nalazima P7; merenje ishoda u aplikaciji (prognoza prema rezultatu) | čeka P7b |
 
 ## Kada je gotovo
 
