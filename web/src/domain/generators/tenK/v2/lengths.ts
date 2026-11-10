@@ -198,3 +198,24 @@ export function deloadLengths(
   if (easy10.some((e) => e < EASY_MIN10 || e > long10)) return null;
   return { long10, easy10 };
 }
+
+/** G8 (P8 dopuna, D48): nedelje dugog do distance — početnik: poslednje `longToRaceWeeks` ne-rasteretne nedelje izgradnje
+    osnovne periodizacije (konstruktor i validator). */
+export function longToRaceWeeks(
+  frames: readonly { index: number; phase: string; deload: boolean }[],
+  beginner: boolean
+): Set<number> {
+  if (!beginner) return new Set();
+  const b = frames.filter(
+    (f) => (f.phase === 'base' || f.phase === 'development' || f.phase === 'specific') && !f.deload
+  );
+  return new Set(b.slice(-P.beginner.longToRaceWeeks).map((f) => f.index));
+}
+
+/** G8 (P8 dopuna, D48): udeo dugog nedelje — u nedeljama dugog do distance max(D17; min(longToRaceShare, distanca / cilj)),
+    inače D17. JEDINO mesto udela dugog (konstruktor i validator). */
+export function longShareOf(rule: LongRule, target10: number, toRace: boolean): number {
+  if (!toRace || target10 <= 0) return rule.longMaxShare;
+  const b = P.beginner;
+  return Math.max(rule.longMaxShare, Math.min(b.longToRaceShare, (b.longToRaceKm * 10) / target10));
+}

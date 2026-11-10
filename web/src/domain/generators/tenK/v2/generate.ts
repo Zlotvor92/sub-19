@@ -17,7 +17,7 @@ import {
   type WeekPicks
 } from './quality.ts';
 import { mustDay } from './dates.ts';
-import { longestLong10 } from './lengths.ts';
+import { longestLong10, longToRaceWeeks } from './lengths.ts';
 import {
   basePaces,
   basisAt,
@@ -196,6 +196,7 @@ export function construct(
       )
     : base;
   const ctx0: WeekContext = {
+    longToRace: longToRaceWeeks(base, rule.beginner),
     input,
     paces,
     pattern,
@@ -538,6 +539,15 @@ export function construct(
         ? `Kontrolni test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date}. Unesi rezultat — tempo treninga se prilagođava od sledeće nedelje.`
         : `Kontrolni test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
     );
+  }
+  // G8 (P8 dopuna, D48): početnik čiji najduži dugi ni sa 50 % cilja ne dostiže distancu — jedna rečenica šta fali.
+  if (rule.beginner) {
+    const lg = longestLong10(out.filter((w) => w.phase !== 'race'));
+    const b = P.beginner;
+    if (lg < b.longToRaceKm * 10)
+      plan.notes.push(
+        `Najduži dugi je ${fmtKm(lg / 10)} km, kraći od ${b.longToRaceKm} km: za dugi od ${b.longToRaceKm} km treba nedeljni obim od bar ${fmtKm(b.longToRaceKm / b.longToRaceShare)} km u nedeljama pred taper (ili više dana treninga).`
+      );
   }
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)

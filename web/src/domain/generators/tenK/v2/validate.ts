@@ -16,6 +16,8 @@ import {
   easyRestShort,
   keptEasyDates,
   longCap10,
+  longShareOf,
+  longToRaceWeeks,
   longestLong10
 } from './lengths.ts';
 import {
@@ -698,6 +700,7 @@ export function validatePlan(
       );
   }
 
+  const toRaceW = longToRaceWeeks(base0 ?? weeks, rule.beginner);
   // --- D13: dužine. Segment 04: mešovita nedelja — samo provere dana; A4 dugi na danu bola ≤ 60 min,
   // lagani na danima bola nisu jednaki (× 0,7); dugi na danu odmora otpada.
   for (const w of weeks) {
@@ -719,10 +722,12 @@ export function validatePlan(
     const l10 = to10(long.workout.km);
     if (Math.abs(long.workout.km * 10 - l10) > EPS)
       err('LENGTH_STEP', 'Dugi nije u koraku 0,1 km (D13).', w.index, long.date);
-    if (l10 > Math.floor(rule.longMaxShare * to10(w.targetKm) + 1e-9))
+    // G8 (P8 dopuna): udeo dugog iz lengths.longShareOf (nedelje dugog do distance iz osnovne periodizacije).
+    const lShare = longShareOf(rule, to10(w.targetKm), toRaceW.has(w.index));
+    if (l10 > Math.floor(lShare * to10(w.targetKm) + 1e-9))
       err(
         'LONG_SHARE',
-        `Dugi ${long.workout.km} km > ${Math.round(rule.longMaxShare * 100)} % cilja ${w.targetKm} km (D13, D17).`,
+        `Dugi ${long.workout.km} km > ${Math.round(lShare * 100)} % cilja ${w.targetKm} km (D13, D17, G8).`,
         w.index,
         long.date
       );

@@ -584,6 +584,11 @@ export const TEN_K_V2_POLICY = {
     peakFactor: 1.3,
     peakAddKm: 10,
     longMaxSec: 5400,
+    /** G8 (P8 dopuna, D48): u poslednjih longToRaceWeeks ne-rasteretnih nedelja izgradnje dugi sme do longToRaceShare
+        cilja nedelje da bi dostigao longToRaceKm (uz plafon trajanja i granice laganih). */
+    longToRaceKm: 10,
+    longToRaceShare: 0.5,
+    longToRaceWeeks: 3,
     /** D31: prvi nivo lestvice T kontinuirano početnika (ispred 2,0 km) = najmanja T doza rasterećenja i
         tapera početnika [km]. */
     tFirstKm: 1.5

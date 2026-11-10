@@ -11,6 +11,7 @@ import {
   keptEasyDates,
   limitedEasy10,
   longCap10,
+  longShareOf,
   painLong10,
   taperLengths
 } from './lengths.ts';
@@ -58,6 +59,8 @@ import {
 import { weekLabel } from './weekLabel.ts';
 
 export interface WeekContext {
+  /** G8 (P8 dopuna): nedelje dugog do distance (lengths.longToRaceWeeks). */
+  longToRace?: ReadonlySet<number>;
   input: TenKV2Input;
   paces: Paces;
   pattern: Pattern;
@@ -296,7 +299,11 @@ function buildWeekOf(
 ): BuiltWeek | null {
   const p = ctx.paces;
   const pat = ctx.pattern;
-  const rule = ctx.rule;
+  // G8 (P8 dopuna): u nedeljama dugog do distance udeo dugog po lengths.longShareOf.
+  const rule =
+    ctx.longToRace?.has(frame.index) === true
+      ? { ...ctx.rule, longMaxShare: longShareOf(ctx.rule, target10, true) }
+      : ctx.rule;
   const targetKm = target10 / 10;
   const relax = mode === 'relax';
   const reduced = mode === 'one' || mode === 'none';
