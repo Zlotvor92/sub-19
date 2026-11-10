@@ -81,8 +81,20 @@ export const CHANGED_P5 = new Map(
     >
   )
 );
+/** P8 (hm-v2.11.0): planovi čiji se rezultat menja prema 0181e25, sa klasom — v vrh obima niži (G1 plafon vrha, G6),
+    u vrh isti a plan promenjen (G1 raspored rasta, G2, G4, G5, G6, G7, HM (b), tekst), r plan → odbijanje, n odbijanje
+    → plan. Izvor: docs/generators-v2/perfection/P8-HM/changedP8.ts. */
+export const CHANGED_P8 = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(join(DIR, 'segmentP8.changed-0181e25.json'), 'utf8')) as Record<
+      string,
+      string
+    >
+  )
+);
 /** P5: plan čiji se obim, dužine ili broj kvaliteta nedelje menjaju (F1 ili F4); samo F3 (ubrzanja) ih ne menja. */
-export const p5Rows = (id: string): boolean => /[td]/.test(CHANGED_P5.get(id) ?? '');
+export const p5Rows = (id: string): boolean =>
+  /[td]/.test(CHANGED_P5.get(id) ?? '') || CHANGED_P8.has(id);
 /** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07, HM-09, HM-10, P1 ili P5. */
 export const mayChange = (id: string): boolean =>
   OVER_LONG.has(id) ||
@@ -90,9 +102,11 @@ export const mayChange = (id: string): boolean =>
   CHANGED_09.has(id) ||
   CHANGED_10.has(id) ||
   CHANGED_P1.has(id) ||
-  CHANGED_P5.has(id);
+  CHANGED_P5.has(id) ||
+  CHANGED_P8.has(id);
 /** HM-10 (T1): vrh sme da padne — namerno manji obim kad lagani ne staju u granice T1. */
-export const mayLower = (id: string): boolean => ['l', 'm', 'x'].includes(CHANGED_10.get(id) ?? '');
+export const mayLower = (id: string): boolean =>
+  ['l', 'm', 'x'].includes(CHANGED_10.get(id) ?? '') || CHANGED_P8.get(id) === 'v';
 
 /** Red bazne linije: vrh cilja, najduži dugi, heš celog plana bez oznake verzije (regresija sledećeg segmenta). */
 export type BaselineRow = [peakKm: number, longestKm: number, hash: string];
