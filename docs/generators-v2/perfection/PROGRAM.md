@@ -67,6 +67,14 @@ Pet Opus tabova uporedo potrošilo je petočasovnu granicu za ≈ 3,5 h; tabovi 
 commit-e posle svakog koraka; posle resetovanja organizator (satna provera) šalje svakom zaustavljenom tabu poruku
 „nastavi" — ne otvara nov tab dok stari ima lokalni rad.
 
+## Model tabova posle sledećeg limita (nalog korisnika, 10. 11. 2026, 05:20)
+
+Do sledećeg dostizanja limita važi dosadašnje (najjači Opus 5.5, najviše 3 teška taba). Kad se limit sledeći put
+dostigne: svi NOVI tabovi se otvaraju na `claude-fable-5-2` (potrošnja Fable-a se resetovanjem vraća u nedeljni limit;
+Opus ne). Tabovi koji već rade ostaju na svom modelu do kraja segmenta (model se ne menja usred sesije). Kad se dostigne
+nedeljni limit, korisnik radi „Fable reset" — organizator tada javlja i čeka. Mehanički poslovi (ispis planova, prepis
+brojeva) i dalje idu na najslabiji model koji ih rešava samo ako to ne troši nepovratni deo limita — u sumnji Fable.
+
 ## Redosled (privremen; zaključava se posle P0)
 
 | Segment | Sadržaj | Stanje |
