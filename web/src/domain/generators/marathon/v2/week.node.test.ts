@@ -18,6 +18,17 @@ function plan(pr: Partial<Profile> = {}): MarathonV2Plan {
 }
 const to10 = (km: number): number => Math.round(km * 10);
 const role = (w: PlanWeek, r: string) => w.days.filter((d) => d.role === r);
+/** K3-A (nezavisno od lengths.ts): plafon udela dugog [0,1 km] — u 3 nedelje vrha (ne rasterećenje) redovnog plana
+    udeo do 45 % (4+ dana) / 50 % (3 dana), ali najviše do min(26 km; 165 min sporim E). */
+function shareCap10(p: MarathonV2Plan, w: PlanWeek, share: number): number {
+  const base = Math.floor(share * to10(w.targetKm) + 1e-9);
+  const taper = p.weeks.find((x) => x.phase === 'taper')!.index;
+  const peak = !w.deload && w.phase !== 'taper' && w.index >= taper - 3 && w.index < taper;
+  if (!peak || p.input.experience === 'beginner') return base;
+  const k = p.input.runDays.length >= 4 ? 0.45 : 0.5;
+  const goal10 = Math.min(260, Math.floor((9900 / p.paces.E.slow) * 10 + 1e-9));
+  return Math.max(base, Math.min(Math.floor(k * to10(w.targetKm) + 1e-9), goal10));
+}
 
 describe('izgradnja (M10, M13, M14)', () => {
   let p: MarathonV2Plan;
@@ -41,7 +52,7 @@ describe('izgradnja (M10, M13, M14)', () => {
       const long = role(w, 'long')[0]!;
       const easy = role(w, 'easy')[0]!;
       expect(to10(long.workout.km)).toBe(
-        Math.min(Math.floor(0.4 * to10(w.targetKm) + 1e-9), longTimeCap10(p.paces), 320)
+        Math.min(shareCap10(p, w, 0.4), longTimeCap10(p.paces), 320)
       );
       expect(long.workout.km).toBeGreaterThanOrEqual(easy.workout.km);
       expect(easy.workout.km).toBeGreaterThanOrEqual(5);
@@ -100,8 +111,12 @@ describe('M5 rasterećenje', () => {
           .filter((d) => d.workout.kind === 'quality')
           .map((d) => `${d.role}:${d.workout.dose!.zone}`)
       ).toEqual(['q2:T']);
+      // K3-A: posle dužeg dugog vrha važi i udeo nedelje rasterećenja (M13: ≤ 40 % cilja).
       expect(to10(role(w, 'long')[0]!.workout.km)).toBe(
-        Math.floor(0.8 * to10(role(prev, 'long')[0]!.workout.km) + 1e-9)
+        Math.min(
+          Math.floor(0.8 * to10(role(prev, 'long')[0]!.workout.km) + 1e-9),
+          Math.floor(0.4 * to10(w.targetKm) + 1e-9)
+        )
       );
       expect(role(w, 'easy')).toHaveLength(2);
     }
@@ -201,7 +216,8 @@ describe('M13 upozorenje MARATHON_LONG_SHORT', () => {
     // P8-G1a: uz 40 km vrh je 54,3 km (satni plafon) i dugi je na udelu nedelje; primer plafona trajanja: 50 km.
     const capped = plan({ km: 50, vdot: 32 });
     expect(capped.warnings.map((w) => w.rule)).not.toContain('MARATHON_LONG_SHORT');
-    expect(capped.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(true);
+    // K3-A: 180 min ≥ cilj 165 min — bez rečenice plana.
+    expect(capped.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
     const long = plan({ weeks: 20, km: 65, vdot: 60 });
     const longest = Math.max(
       ...long.weeks.flatMap((w) => role(w, 'long').map((d) => d.workout.km))
@@ -258,7 +274,7 @@ describe('3/5/6 dana (M15)', () => {
         expect(e).toEqual([...e].sort((a, b) => b - a));
         const l = to10(role(w, 'long')[0]!.workout.km);
         expect(Math.max(...e)).toBeLessThanOrEqual(l);
-        expect(l).toBeLessThanOrEqual(Math.floor(share * to10(w.targetKm) + 1e-9));
+        expect(l).toBeLessThanOrEqual(shareCap10(p, w, share));
       }
     }
   });

@@ -978,7 +978,8 @@ function buildWeekIn(
         p,
         w2 ? [w2.sec] : [],
         longWorkout(len.long10 / 10, p).sec,
-        ctx.hold === true
+        ctx.hold === true,
+        capM('MP', target10 / 10, { p, beginner: rule.beginner }, false)
       )
     : null;
   if (asB && (blockKm === null || !w2)) return null;

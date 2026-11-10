@@ -1,0 +1,9 @@
+[
+  {
+    "name": "K3-A redovan plan bez vrha dugog (longRuleOf vraća red tabele)",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "  if (share <= rule.longMaxShare) return rule;",
+    "replace": "  if (share <= 9) return rule;",
+    "tests": ["src/domain/generators/marathon/v2/k3.node.test.ts"]
+  }
+]

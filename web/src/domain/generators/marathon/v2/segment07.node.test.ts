@@ -220,10 +220,10 @@ describe('N11: upozorenja i napomene', () => {
     const longest = Math.max(
       ...slow.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
     );
-    expect(slow.notes).toContain(longTimeCapNote(longest, 26, false));
-    const q = structuredClone(slow);
-    q.notes = q.notes.filter((n) => !n.startsWith('Najduže dugo trčanje je'));
-    expect(errors(q)).toContain('LONG_SHORT_NOTE@-');
+    // K3-A: cilj najdužeg je i trajanje (≥ 165 min sporim E) — dugi na 180 min ga dostiže: ni upozorenja ni rečenice.
+    expect(longest * slow.paces.E.slow).toBeGreaterThanOrEqual(9900);
+    expect(slow.notes).not.toContain(longTimeCapNote(longest, 26, false));
+    expect(errors(slow)).not.toContain('LONG_SHORT_NOTE@-');
     const fast = planOf(
       inputOf({ weeks: 16, km: 35, vdot: 70, days: ['tue', 'thu', 'sat', 'sun'], long: 'sun' })
     );

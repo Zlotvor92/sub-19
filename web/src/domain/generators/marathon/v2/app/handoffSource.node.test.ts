@@ -93,7 +93,9 @@ describe('3e: okidač (O1) — jedna funkcija, prelaz', () => {
     const ls = longShortOf(v2.weeks, 26, weekPaces(v2))!;
     expect(ls).toEqual({ longestKm: 23.6, timeCapped: true, capSec: 10800 });
     expect(v2.warnings.some((w) => w.rule === 'MARATHON_LONG_SHORT')).toBe(false);
-    expect(v2.notes).toContain(longTimeCapNote(23.6, 26, false));
+    // K3-A: dugi na 180 min dostiže cilj najdužeg po trajanju (165 min) — plan nema rečenicu; ponuda kraće
+    // distance i dalje čita prag u km (shorter.ts, bez izmene).
+    expect(v2.notes).not.toContain(longTimeCapNote(23.6, 26, false));
     expect(shorterOffer(v2, AS_OF)).toBe(true);
   });
 

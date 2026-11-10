@@ -157,7 +157,7 @@ export function capacityLimits(
     const l10 = to10(long.workout.km);
     const lr = longRuleOf(rule, beginnerOf(rule), weeks, w.index);
     if (l10 === longTimeCap10(pacesOf(w.index), longMaxSecOf(lr))) time = true;
-    if (l10 === longShareCap10(to10(w.targetKm), lr)) share = true;
+    if (l10 === longShareCap10(to10(w.targetKm), lr, pacesOf(w.index))) share = true;
     if (l10 === longKmCap10()) km = true;
   }
   return [

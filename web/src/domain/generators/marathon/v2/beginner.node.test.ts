@@ -179,20 +179,16 @@ describe('M17 plan', () => {
     }
   });
 
-  it('bez testa (i po osećaju); najduži dugi < 26 km ograničen trajanjem 180 min (F2) → rečenica plana („cilj: završiti")', () => {
+  it('bez testa (i po osećaju); najduži dugi 24–26 km = cilj početnika (K3-A: ≥ 24 km) → bez upozorenja i rečenice', () => {
     expect(B5F.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
     const longest = Math.max(
       ...B4.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
     );
     expect(longest).toBeLessThan(26);
     expect(longest).toBeGreaterThanOrEqual(24);
-    // N11 (MAR-07): najduži dugi početnika na 150 min → rečenica u opisu plana, ne upozorenje.
+    // K3-A: cilj najdužeg početnika je 24 km (ili 180 min) — dostignut: ni upozorenja ni rečenice plana.
     expect(B4.warnings.some((x) => x.rule === 'MARATHON_LONG_SHORT')).toBe(false);
-    const w = B4.notes.find((n) => n.startsWith('Najduže dugo trčanje je'))!;
-    expect(w).toMatch(/preporučenih 26,0 km/);
-    expect(w).toMatch(/≤ 180 min/);
-    expect(w).toMatch(/M17/);
-    expect(w).toMatch(/cilj je završiti maraton/);
+    expect(B4.notes.some((n) => n.startsWith('Najduže dugo trčanje je'))).toBe(false);
     expect(B4.notes.some((n) => n.startsWith('Početnik (M17)'))).toBe(true);
   });
 });

@@ -584,8 +584,12 @@ export function construct(
       )
     );
   // N11: najduži dugi ograničen trajanjem (M13, namerna granica) — rečenica u opisu plana, ne upozorenje.
-  const ls = longShortOf(seen, rule.longShortKm, pW, (i) =>
-    longMaxSecOf(longRuleOf(rule, rule.beginner, seen, i))
+  const ls = longShortOf(
+    seen,
+    rule.longShortKm,
+    pW,
+    (i) => longMaxSecOf(longRuleOf(rule, rule.beginner, seen, i)),
+    rule.longGoalSec
   );
   if (ls?.timeCapped)
     plan.notes.push(longTimeCapNote(ls.longestKm, rule.longShortKm, rule.beginner, ls.capSec));

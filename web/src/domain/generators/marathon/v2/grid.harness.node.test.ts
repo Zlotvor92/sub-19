@@ -347,10 +347,21 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
         )
           no(`T1 lagan ned ${w.index}`);
     // F2 (nezavisno od lengths.ts): početnik u 3 nedelje izgradnje pred taperom (ne rasterećenje) — 50 % / 180 min.
-    const peakLong = beginner && isSteady(w) && w.index >= N - 2 - 3;
+    const inPeak = isSteady(w) && w.index >= N - 2 - 3;
+    const peakLong = beginner && inPeak;
     const share = peakLong ? 0.5 : rule.longMaxShare;
-    if (to10(long.workout.km) > Math.floor(share * to10(w.targetKm) + 1e-9))
-      no(`dugi > udeo ned ${w.index}`);
+    // K3-A (nezavisno od lengths.ts): redovan plan u istim nedeljama vrha — udeo do 45 % (4+ dana) / 50 % (3 dana),
+    // ali najviše do cilja najdužeg min(26 km; 165 min sporim E).
+    const goal10 = Math.min(260, Math.floor((9900 / p.paces.E.slow) * 10 + 1e-9));
+    const kShare = p.input.runDays.length >= 4 ? 0.45 : 0.5;
+    const share10 =
+      !beginner && inPeak
+        ? Math.max(
+            Math.floor(share * to10(w.targetKm) + 1e-9),
+            Math.min(Math.floor(kShare * to10(w.targetKm) + 1e-9), goal10)
+          )
+        : Math.floor(share * to10(w.targetKm) + 1e-9);
+    if (to10(long.workout.km) > share10) no(`dugi > udeo ned ${w.index}`);
     // P2-S2: redovan plan 180 min i ≤ 32 km; početnik 150 min (vrh dugog F2: 180 min).
     const capSec = peakLong || !beginner ? 10800 : 9000;
     if (long.workout.km * p.paces.E.slow > capSec + 1e-6)

@@ -73,9 +73,18 @@ export const blockLevels = (): readonly number[] => P.specific.blockKm;
 
 /** M19: granice bloka `x` [km] u dugom od `km` — x ≤ 50 % dužine dugog i trajanje (lagan deo sporim E + blok u MP) ≤
     vremenska granica dugog nedelje (M13). */
-export function blockFits(km: number, x: number, rule: PlanRule, p: Paces): boolean {
+export function blockFits(
+  km: number,
+  x: number,
+  rule: PlanRule,
+  p: Paces,
+  /** K3-A: plafon zone MP za dugi (quality.capM, član udela) [m] — dugi do 45 % nedelje ne nosi blok preko plafona. */
+  capMm = Infinity
+): boolean {
   return (
-    x <= P.specific.blockMaxLongShare * km + 1e-9 && longBlockSec(km, x, p) <= longMaxSecOf(rule)
+    x <= P.specific.blockMaxLongShare * km + 1e-9 &&
+    x * 1000 <= capMm + 1e-6 &&
+    longBlockSec(km, x, p) <= longMaxSecOf(rule)
   );
 }
 
@@ -104,11 +113,12 @@ export function chooseBlockKm(
   easyLongSec: number,
   /** P5-F2: nedelja bez rasta doze — nivo po pravilu je najviši nivo ≤ max(poslednji blok, poslednja MP doza);
       nema ga (blok bi bio veći od poslednje MP doze) → null (nedelja A). */
-  hold = false
+  hold = false,
+  capMm = Infinity
 ): number | null {
   const km = long10 / 10;
   const ok = (x: number): boolean => {
-    if (x * 1000 < lastBlockM - 1e-6 || !blockFits(km, x, rule, p)) return false;
+    if (x * 1000 < lastBlockM - 1e-6 || !blockFits(km, x, rule, p, capMm)) return false;
     const sec = longBlockWorkout(km, x, p).sec;
     return qualitySecs.every((s) => s > easyLongSec || s <= sec);
   };

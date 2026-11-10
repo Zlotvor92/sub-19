@@ -523,6 +523,14 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts test.minWeek; periodize.ts testWeekOf; week.ts (nedelja testa); validate.ts (ROLES, TEST)',
     rationale:
       'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, krug 1), nalaz slepe ocene i ocene trenera. Trener: test + T + dugi u istoj nedelji; test u nedelji 3 uz male doze.'
+  },
+  {
+    id: 'K3-A',
+    rule: 'Najduži dugi: redovan plan u poslednje 3 nedelje izgradnje pred taperom (ne rasterećenje; isti prozor kao F2 početnika) — udeo dugog do 50 % (3 dana) / 45 % (4+ dana) cilja nedelje, ali samo do cilja najdužeg min(26 km; 165 min sporim E); plafon 180 min i 32 km ostaju; blok MP u dugom i dalje u plafonu zone MP (M11). Cilj najdužeg: redovan ≥ 26 km ili ≥ 165 min, početnik ≥ 24 km ili ≥ 180 min (F2 50 % / 180 min bez promene) — dostignut po trajanju: ni upozorenja ni rečenice plana. Kad ni tako ne staje: MARATHON_LONG_SHORT sa „Za maraton treba oko X km nedeljno u vrhu pripreme; preporuka: polumaraton ili duža priprema" (X = cilj / najveći udeo vrha).',
+    place:
+      'policy.ts lengths.peakLong, lengths.longGoalSec, beginner.longShortKm/longGoalSec; lengths.ts longRuleOf, longShareCap10, peakShareOf, longShortOf; specific.ts blockFits/chooseBlockKm (plafon MP); validate.ts (LONG_SHARE, LONG_BLOCK, MARATHON_LONG_SHORT istim funkcijama)',
+    rationale:
+      'Heuristika, glavni trener krug 2 (coach/ROUND-02.md § 4.1): MAR p01/p02 22,4 km, p06 17,6 km. 5–6 dana (tabela 35 / 32 %) dobijaju 45 % kao 4 dana (tumačenje izvođača K3: „4+ dana"). Ponuda kraće distance (shorter.ts) i dalje čita prag u km.'
   }
 ];
 
@@ -533,7 +541,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.12.0',
+  version: 'marathon-v2.13.0',
 
   /** M1 (dani i obim: M15). */
   input: {
@@ -592,7 +600,9 @@ export const MARATHON_V2_POLICY = {
     /** Prvi nivo lestvice T kontinuirano početnika = najmanja T doza rasterećenja početnika [km]. */
     tFirstKm: 1.5,
     /** Upozorenje MARATHON_LONG_SHORT kad je najduži dugi < longShortKm (F2: ciljni vrh dugog početnika). */
-    longShortKm: 26,
+    longShortKm: 24,
+    /** K3-A: cilj najdužeg dugog početnika — ≥ longShortKm ili ≥ longGoalSec laganim tempom (sporim E). */
+    longGoalSec: 10800,
     /** F2: poslednjih `weeks` nedelja izgradnje pred taperom (ne rasterećenje) dugi do `longMaxShare` nedelje i do
         `longMaxSec` laganim tempom; skok dugog (M13a), T1 i rast obima ostaju. */
     peakLong: { weeks: 3, longMaxShare: 0.5, longMaxSec: 10800 },
@@ -836,7 +846,13 @@ export const MARATHON_V2_POLICY = {
         easyLongShare). */
     easyLongShareMany: 0.7,
     easyLongShareManyDays: 4,
-    easyMinSec: 1200
+    easyMinSec: 1200,
+    /** K3-A (marathon-v2.13.0): cilj najdužeg dugog redovnog plana — ≥ longShortKm ili ≥ longGoalSec sporim E. */
+    longGoalSec: 9900,
+    /** K3-A: redovan plan — u poslednjih `weeks` ne-rasteretnih nedelja pred taperom (prozor kao F2 početnika) dugi
+        sme do `share3` (3 dana) / `shareMany` (4+ dana) cilja nedelje, ali samo do cilja najdužeg (longShortKm /
+        longGoalSec); plafon trajanja (longMaxSec) i 32 km ostaju. */
+    peakLong: { weeks: 3, share3: 0.5, shareMany: 0.45 }
   },
 
   /** M13a (pouka 28, izmena organizatora MAR-02): dugi ≤ max(factor × L; L + addKm), L = najduži dugi
@@ -952,6 +968,8 @@ export interface DayRule {
   readonly weekMinKm: number;
   /** F2 (početnik, vrh dugog): plafon trajanja dugog [s]; bez polja M13 (lengths.longMaxSec). */
   readonly longMaxSec?: number;
+  /** K3-A (redovan plan, vrh dugog): udeo dugog u nedeljama vrha — samo do cilja najdužeg (lengths.longShareCap10). */
+  readonly longPeak?: { readonly share: number; readonly goalKm: number; readonly goalSec: number };
 }
 
 export const RUN_DAYS_COUNTS = Object.keys(MARATHON_V2_POLICY.days)
@@ -988,6 +1006,8 @@ export interface PlanRule extends DayRule {
   readonly feelTest: boolean;
   /** M13/M17: prag upozorenja MARATHON_LONG_SHORT [km]. */
   readonly longShortKm: number;
+  /** K3-A: cilj najdužeg dugog po trajanju [s] sporim E (redovan 165 min, početnik 180 min). */
+  readonly longGoalSec: number;
   /** M14/M17: WU/CD fiksno (početnik); null = po pojasu trenutnog obima. */
   readonly fixedWarmupCooldown: { readonly warmupSec: number; readonly cooldownSec: number } | null;
 }
@@ -1009,6 +1029,7 @@ export function planRule(count: number, experience: Experience = 'regular'): Pla
       weeksMin: P.input.weeksMin,
       feelTest: true,
       longShortKm: P.lengths.longShortKm,
+      longGoalSec: P.lengths.longGoalSec,
       longMaxSec: P.lengths.longMaxSec,
       fixedWarmupCooldown: null
     };
@@ -1031,6 +1052,7 @@ export function planRule(count: number, experience: Experience = 'regular'): Pla
     weeksMin: b.weeksMin,
     feelTest: false,
     longShortKm: b.longShortKm,
+    longGoalSec: b.longGoalSec,
     longMaxSec: b.longMaxSec,
     fixedWarmupCooldown: { warmupSec: b.warmupSec, cooldownSec: b.cooldownSec }
   };
