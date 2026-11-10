@@ -988,7 +988,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       for (const z of ZONES) {
         if (guarded(d)) continue;
         const m = Math.round(d.workout.workKm[z] * 1000);
-        if (m > capM(z, w.targetKm))
+        if (m > capM(z, w.targetKm, d.role === 'long' ? undefined : pw(w)))
           err(
             'ZONE_CAP',
             `${z} ${m} m > ${capShare(z, w.targetKm) * 100} % cilja ${w.targetKm} km (H11).`,
@@ -1098,7 +1098,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         else if (
           isBuildPhase(w.phase) &&
           dose.ladder !==
-            (role === 'q1' ? buildLadder(w.phase, w.targetKm, rule) : ladderFor(w.phase, role, nq))
+            (role === 'q1' ? buildLadder(w.phase, w.targetKm, rule, pw(w)) : ladderFor(w.phase, role, nq))
         )
           err(
             'PHASE_QUALITY',
@@ -1208,7 +1208,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const steady = chain.filter((x): x is PlanWeek => typeof x !== 'string' && !('state' in x));
   for (const b of steady)
     if (B && !b.test && !intro(b) && !slotDose(b, 'q1')) {
-      if (doseOf(ladderLevels('T_continuous', true)[0]!) > capM('T', b.targetKm))
+      if (doseOf(ladderLevels('T_continuous', true)[0]!) > capM('T', b.targetKm, pw(b)))
         warn(
           'BUILD_NO_QUALITY',
           `Nedelja izgradnje bez kvaliteta: ni T ${P.beginner.tFirstKm} km ne staje u plafon (H11 ispred H17).`,
@@ -1310,7 +1310,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       if (db.step === 'drop') {
         dropped = true;
         const ladder = db.ladder as LadderId;
-        const cap = capM(db.zone, b.targetKm);
+        const cap = capM(db.zone, b.targetKm, pw(b));
         if (da && da.doseM > cap) {
           // Pouka 12: H11 ispred H12 samo u nedelji ograničenoj kapacitetom — prethodna doza ne staje u
           // plafon ove nedelje, najviši nivo lestvice u plafonu, uz napomenu.
@@ -1369,7 +1369,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           if (
             !held(b) &&
             nl &&
-            doseOf(nl) <= capM(db.zone, b.targetKm) &&
+            doseOf(nl) <= capM(db.zone, b.targetKm, pw(b)) &&
             fit(b, role, ladder, nl) !== 'over'
           )
             err(
@@ -1421,7 +1421,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           // Faza 4a N10.1 (MASTER pouka 32, kao maraton): ponavljanje doze je upozorenje kad za svaki slot ni druga
           // struktura iste doze ni sledeći nivo ne staju u plafon zone (oba člana, ista funkcija kao konstruktor).
           const inCap = (role: 'q1' | 'q2', lad: LadderId, x: Structure, zone: WorkZone): boolean =>
-            doseOf(x) <= capM(zone, b.targetKm) && fit(b, role, lad, x) !== 'over';
+            doseOf(x) <= capM(zone, b.targetKm, pw(b)) && fit(b, role, lad, x) !== 'over';
           const forced = (['q1', 'q2'] as const)
             .filter((r) => slotDose(b, r))
             .every((r) => {
@@ -1451,7 +1451,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           const tl = ta.ladder as LadderId;
           const nl = nextLevel(tl, ta.doseM, B);
           const blocked =
-            !nl || doseOf(nl) > capM('T', b.targetKm) || fit(b, dSlot, tl, nl) === 'over';
+            !nl || doseOf(nl) > capM('T', b.targetKm, pw(b)) || fit(b, dSlot, tl, nl) === 'over';
           // HI10: doza bez druge strukture (T 1,5 km) sme da se ponovi kad sledeći nivo ne staje; pouka 32:
           // druga struktura koja ne staje u trajanje dugog se ne računa.
           const only = !structuresForDose(tl, ta.doseM).some(
@@ -1498,11 +1498,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       const da = a ? slotDose(a, role) : null;
       const carry = da !== null && carries(da.ladder as LadderId, ladder);
       if (da && (da.ladder === ladder || (carry && zoneOf(da.ladder) === zoneOf(ladder)))) continue;
-      const st = startFit(ladder, b.targetKm, B, (s) => fit(b, role, ladder, s) !== 'over');
+      const st = startFit(ladder, b.targetKm, B, (s) => fit(b, role, ladder, s) !== 'over', pw(b));
       let want = st ? doseOf(st) : NaN;
       if (da && carry) {
         const lv = structuresOfLadder(ladder, B).find((m) => m >= Math.max(want, da.doseM));
-        if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm)) continue;
+        if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm, pw(b))) continue;
         want = lv;
       }
       if (db.doseM !== want)
@@ -1545,7 +1545,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       // H11 na dozi po pravilu; drugi član plafona zone (pouka 32) — ista funkcija kao konstruktor.
       const want0 = deloadDose(state, w.phase, rule);
       const want =
-        !w.test && !intro(w) && want0.doseM <= capM('T', w.targetKm)
+        !w.test && !intro(w) && want0.doseM <= capM('T', w.targetKm, pw(w))
           ? deloadDose(
               state,
               w.phase,
@@ -1588,7 +1588,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           minLong10,
           adaptedW(w)
         );
-      const tFits = want.doseM <= capM('T', w.targetKm);
+      const tFits = want.doseM <= capM('T', w.targetKm, pw(w));
       if (noneQ(w)) {
         if (nQuality !== 0 || nTest !== 0)
           err('DELOAD_CONTENT', 'Rasterećenje bez kvaliteta (adaptacija, A3/A4/A9).', w.index);
@@ -1699,12 +1699,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         kept,
         capLong
       );
-      const want0 = taperDoses(state, nqT, undefined, w.targetKm);
-      const want = taperDoses(state, nqT, tl, w.targetKm);
+      const want0 = taperDoses(state, nqT, undefined, w.targetKm, pw(w));
+      const want = taperDoses(state, nqT, tl, w.targetKm, pw(w));
       let rp = slotDose(w, 'q1');
       let t = slotDose(w, 'q2');
       if (one && !rp && t) [rp, t] = [t, null];
-      const rpFits = want0.q1.doseM <= capM('RP', w.targetKm);
+      const rpFits = want0.q1.doseM <= capM('RP', w.targetKm, pw(w));
       // HI10: početnik — RP ne staje → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km).
       // T3 (krug T): posle novog starta isto (quality.restartTaperT, ista funkcija kao konstruktor).
       const ns = newStartAt(steps, w.index);
@@ -1722,7 +1722,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
             1,
             capLong
           );
-      const bt = bt0 && bt0.doseM <= capM('T', w.targetKm) ? tT(tl1.q1) : null;
+      const bt = bt0 && bt0.doseM <= capM('T', w.targetKm, pw(w)) ? tT(tl1.q1) : null;
       if (noneQ(w)) {
         if (rp || t) err('TAPER_QUALITY', 'Taper bez kvaliteta (adaptacija, A3/A4/A9).', w.index);
       } else if (bt) {
@@ -1761,7 +1761,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           2,
           capLong
         );
-        const two = taperDoses(state, 2, tl2, w.targetKm);
+        const two = taperDoses(state, 2, tl2, w.targetKm, pw(w));
         const w1 = qualityWorkout(two.q1, pw(w), wcQ, feelW(w));
         const w2 = two.q2 ? qualityWorkout(two.q2, pw(w), wcQ, feelW(w)) : null;
         const len2 = taperLengths(
@@ -1825,7 +1825,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         qs.length > (noneQ(w) ? 0 : 1) ||
         (dose &&
           (dose.ladder !== deloadLadder(w.phase) ||
-            dose.doseM > capM('T', w.targetKm) ||
+            dose.doseM > capM('T', w.targetKm, pw(w)) ||
             !same(dose, want)))
       )
         err(

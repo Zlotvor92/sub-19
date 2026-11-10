@@ -566,7 +566,7 @@ function buildWeekIn(
     const slotDay = slot === 'q1' ? pat.q1 : pat.q2!;
     // A4/A9 ('one'): jedini kvalitet na danu slota, a kad je u zabrani na drugom danu kvaliteta.
     const tDay = mode === 'one' ? oneQualityDay(frame, pat, slotDay) : slotDay;
-    const fits = !intro && !test && mode !== 'none' && !!tDay && d0.doseM <= capM('T', targetKm);
+    const fits = !intro && !test && mode !== 'none' && !!tDay && d0.doseM <= capM('T', targetKm, p);
     if (!fits && (mode === 'rule' || mode === 'one') && !intro && !test) return null;
     const ad = ctx.adapted === true;
     const dl: DayLimitContext = { paces: p, wc: ctx.wc, rule, adapted: ad };
@@ -672,7 +672,7 @@ function buildWeekIn(
       // bio duži od dugog tapera.
       const one = mode === 'one';
       const nq: 1 | 2 = one ? 1 : rule.quality;
-      const t0 = taperDoses(quality, nq, undefined, targetKm);
+      const t0 = taperDoses(quality, nq, undefined, targetKm, p);
       // P1 (posle STOP 2): doza ≈ 60 % iznad plafona RP cilja tapera → najviši nivo u plafonu (napomena).
       const tCap = taperDoses(quality, nq).q1;
       // Pouka 32: drugi član poredi sa dugim nedelje kakva se sastavlja — druga pretraga („samo RP") ima jedan
@@ -687,8 +687,8 @@ function buildWeekIn(
         nqKept,
         capLong
       );
-      const t = taperDoses(quality, nq, tl, targetKm);
-      const rpFits = mode !== 'none' && t0.q1.doseM <= capM('RP', targetKm);
+      const t = taperDoses(quality, nq, tl, targetKm, p);
+      const rpFits = mode !== 'none' && t0.q1.doseM <= capM('RP', targetKm, p);
       // HI10: početnik — RP ne staje u plafon → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km).
       // T3 (krug T): posle novog starta isto — T ≈ 60 % poslednje T doze posle povratka (min 2,0 km).
       const tT = (f?: DayFits): Dose | null =>
@@ -696,7 +696,7 @@ function buildWeekIn(
           ? beginnerTaperT(quality, f)
           : restartTaperT(quality, ctx.newStart === true, f);
       const bt0 = !rpFits && mode !== 'none' ? tT() : null;
-      const btFits = bt0 !== null && bt0.doseM <= capM('T', targetKm);
+      const btFits = bt0 !== null && bt0.doseM <= capM('T', targetKm, p);
       // T3: T posle novog starta je jedini dan kvaliteta — drugi član za nedelju sa jednim danom.
       const tl1 = rule.beginner
         ? tl
@@ -710,7 +710,7 @@ function buildWeekIn(
             capLong
           );
       const bt = btFits ? tT(tl1.q1) : bt0;
-      const tFits = t0.q2 !== null && t0.q2.doseM <= capM('T', targetKm);
+      const tFits = t0.q2 !== null && t0.q2.doseM <= capM('T', targetKm, p);
       if ((mode === 'rule' || one) && (!(rpFits || btFits) || (t.q2 !== null && !tFits)))
         return null;
       const d1 = one ? oneQualityDay(frame, pat, pat.q1) : pat.q1;
@@ -800,7 +800,7 @@ function buildWeekIn(
     const slotDay = deloadSlot(rule.quality) === 'q1' ? pat.q1 : pat.q2!;
     const wd = oneQualityDay(frame, pat, slotDay);
     const d0 = deloadDose(quality, frame.phase, rule);
-    if (!wd || d0.doseM > capM('T', targetKm)) return null;
+    if (!wd || d0.doseM > capM('T', targetKm, p)) return null;
     const lim = oneDayLimit(
       { paces: p, wc: ctx.wc, rule },
       target10,
@@ -911,7 +911,7 @@ function buildWeekIn(
   for (const [slot, d, prev] of slots)
     if (d.step === 'drop')
       notes.push(
-        prev && prev.doseM > capM(d.zone, targetKm)
+        prev && prev.doseM > capM(d.zone, targetKm, p)
           ? `${slot}: ${d.zone} spušten sa ${fmtKm(prev.doseM / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (H11 ispred H12).`
           : `${slot}: ${d.zone} ${fmtKm(d.doseM / 1000)} km — viša doza bi dan kvaliteta učinila dužim od dugog (pouka 32, plafon zone; pad doze kao kapacitet, pouka 12).`
       );

@@ -809,7 +809,20 @@ export const HM_V2_POLICY = {
     RP: [
       { fromKm: 0, share: 0.15 },
       { fromKm: 40, share: 0.2 }
-    ] as readonly { fromKm: number; share: number }[]
+    ] as readonly { fromKm: number; share: number }[],
+    /** G4 (P8): rad jednog treninga usred nedelje u sekundama, po tempu zone te nedelje — T 30 min (cilj nedelje
+        ≥ 80 km: 40 min); I 20 min za VDOT < 40, inače 24 min; RP 45 min. Blok RP u dugom nije trening usred nedelje. */
+    workSec: {
+      T: [
+        { fromKm: 0, sec: 1800 },
+        { fromKm: 80, sec: 2400 }
+      ] as readonly { fromKm: number; sec: number }[],
+      I: [
+        { fromVdot: 0, sec: 1200 },
+        { fromVdot: 40, sec: 1440 }
+      ] as readonly { fromVdot: number; sec: number }[],
+      RP: 2700
+    }
   },
 
   /** H13 (udeo dugog: H15). longMaxKm: odluka organizatora HM-01 → 02 (≈ 1,15 × trka). */

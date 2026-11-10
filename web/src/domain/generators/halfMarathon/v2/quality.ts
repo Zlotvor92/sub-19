@@ -62,9 +62,25 @@ export function carries(from: LadderId, to: LadderId): boolean {
   );
 }
 
-/** H11: plafon zone za trening, u metrima, za ciljni obim nedelje. */
-export function capM(zone: WorkZone, targetKm: number): number {
-  return Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6);
+/** H11 + G4 (P8): plafon zone za jedan trening [m] — JEDNA funkcija sa članovima: udeo ciljnog obima nedelje (H11) i,
+    kad je dat tempo nedelje `p`, minuti rada po tempu zone (G4: trening usred nedelje; blok RP u dugom nije trening
+    usred nedelje — zove se bez `p`). `floorM` (G2): doza prvog nivoa lestvice uvek staje. */
+export function capM(zone: WorkZone, targetKm: number, p?: Paces, floorM = 0): number {
+  const share = Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6);
+  const minutes = p ? Math.floor((capSec(zone, targetKm, p) / p[zone]) * 1000 + 1e-6) : Infinity;
+  return Math.max(floorM, Math.min(share, minutes));
+}
+
+/** G4 (P8): najviše rada u jednom treningu usred nedelje [s] — T 30 min (cilj nedelje ≥ 80 km: 40 min), I 20 min za
+    VDOT < 40, inače 24 min, RP 45 min; R bez plafona u minutima. Jedna funkcija za konstruktor, validator i poruke. */
+export function capSec(zone: WorkZone, targetKm: number, p: Paces): number {
+  const q = P.caps.workSec;
+  if (zone === 'T') {
+    const t10 = Math.round(targetKm * 10);
+    return q.T.filter((b) => Math.round(b.fromKm * 10) <= t10).pop()!.sec;
+  }
+  if (zone === 'I') return q.I.filter((b) => b.fromVdot <= p.vdot).pop()!.sec;
+  return zone === 'RP' ? q.RP : Infinity;
 }
 
 /** H11 (P1-S2): udeo plafona zone za cilj nedelje — R/I/T jedan broj, RP po pojasu cilja (poslednji pojas sa
@@ -129,10 +145,11 @@ export function startLevel(
   ladder: LadderId,
   targetKm: number,
   beginner = false,
-  share: number = P.startLevel.capShare[zoneOf(ladder)]
+  share: number = P.startLevel.capShare[zoneOf(ladder)],
+  p?: Paces
 ): Structure | null {
   const levels = ladderLevels(ladder, beginner);
-  const cap = capM(zoneOf(ladder), targetKm);
+  const cap = capM(zoneOf(ladder), targetKm, p);
   if (doseOf(levels[0]!) > cap) return null;
   if (beginner) return levels[0]!;
   const limit = share * cap + 1e-6;
@@ -147,11 +164,12 @@ export function startFit(
   ladder: LadderId,
   targetKm: number,
   beginner: boolean,
-  dur: (s: Structure) => boolean
+  dur: (s: Structure) => boolean,
+  p?: Paces
 ): Structure | null {
-  const start = startLevel(ladder, targetKm, beginner);
+  const start = startLevel(ladder, targetKm, beginner, undefined, p);
   if (!start || beginner || dur(start)) return start;
-  const base = startLevel(ladder, targetKm, false, P.startLevel.fallbackShare)!;
+  const base = startLevel(ladder, targetKm, false, P.startLevel.fallbackShare, p)!;
   return (
     ladderLevels(ladder)
       .filter((s) => doseOf(s) < doseOf(start) && doseOf(s) > doseOf(base) && dur(s))
@@ -188,11 +206,11 @@ export function pickSlot(
   dayFits?: DayFits,
   hold = false
 ): Dose | null {
-  const cap = capM(zoneOf(ladder), targetKm);
+  const cap = capM(zoneOf(ladder), targetKm, p);
   const levels = ladderLevels(ladder, beginner);
   // Izbor po pravilu staje u drugi član osim kad je duži od dugog; spuštanje bira samo nivo koji staje.
   const dur = (s: Structure): boolean => fitsDay(ladder, s, beginner, dayFits) !== 'over';
-  const start = startFit(ladder, targetKm, beginner, dur);
+  const start = startFit(ladder, targetKm, beginner, dur, p);
   const fits = (s: Structure): boolean => doseOf(s) <= cap && dur(s);
   const fitsDrop = (s: Structure): boolean =>
     doseOf(s) <= cap && fitsDay(ladder, s, beginner, dayFits) === 'fits';
@@ -283,17 +301,27 @@ export interface WeekPicks {
 }
 
 /** Prvi nivo lestvice ne staje u plafon zone (H11) cilja nedelje; `beginner`: lestvica početnika (HI10). */
-export function firstLevelOverCap(ladder: LadderId, targetKm: number, beginner = false): boolean {
-  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm);
+export function firstLevelOverCap(
+  ladder: LadderId,
+  targetKm: number,
+  beginner = false,
+  p?: Paces
+): boolean {
+  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm, p);
 }
 
 /** Lestvica Q1 nedelje izgradnje: po fazi (H10, HI6); početnik (HI10) — T kontinuirano (od 1,5 km) kad prvi
     nivo lestvice faze ne staje u plafon; null = ni 1,5 km ne staje (bez kvaliteta, odstupanje H17). Jedna
     funkcija za konstruktor i validator (pouka 24). */
-export function buildLadder(phase: Phase, targetKm: number, rule: PlanRule): LadderId | null {
+export function buildLadder(
+  phase: Phase,
+  targetKm: number,
+  rule: PlanRule,
+  p?: Paces
+): LadderId | null {
   const l = ladderFor(phase, 'q1', rule.quality);
-  if (!rule.beginner || !firstLevelOverCap(l, targetKm, true)) return l;
-  return firstLevelOverCap('T_continuous', targetKm, true) ? null : 'T_continuous';
+  if (!rule.beginner || !firstLevelOverCap(l, targetKm, true, p)) return l;
+  return firstLevelOverCap('T_continuous', targetKm, true, p) ? null : 'T_continuous';
 }
 
 /** Slotovi nedelje izgradnje: Q1 i Q2 (4–6 dana) ili samo Q1 (3 dana i početnik). `skipQ1` = test na danu Q1
@@ -311,7 +339,7 @@ export function pickBuild(
   hold = false
 ): WeekPicks | null {
   const quality = rule.quality;
-  const l1 = buildLadder(phase, targetKm, rule);
+  const l1 = buildLadder(phase, targetKm, rule, p);
   let q1: Dose | null = null;
   if (!skipQ1 && l1) {
     q1 = pickSlot(
@@ -489,7 +517,8 @@ export function taperDoses(
   state: QualityState,
   quality: 1 | 2 = 2,
   limit?: { q1: DayFits; q2: (q1: Dose) => DayFits },
-  targetKm = Infinity
+  targetKm = Infinity,
+  p?: Paces
 ): Picks {
   const t = P.taper;
   const rpFloor: Structure = { form: 'reps', reps: t.rpMin.reps, repM: t.rpMin.repM };
@@ -504,7 +533,7 @@ export function taperDoses(
       rpFloor,
       false,
       limit?.q1,
-      Number.isFinite(targetKm) ? capM('RP', targetKm) : Infinity
+      Number.isFinite(targetKm) ? capM('RP', targetKm, p) : Infinity
     ),
     'taper'
   );
