@@ -143,3 +143,33 @@ test ≥ nedelja 4, STABLE P8 + nova bazna linija). Nov `p8.node.test.ts` (13).
 4. S4: plan po osećaju 12–13 nedelja bez testa (1260/8190) — po slovu G7; O2 test u razvoju?
 5. S5 i T1–T6: potvrda tumačenja.
 6. P9: ispis sirovih napomena (G3 ostatak) — ko čisti tekst za ocenjivača?
+
+## Završetak (10. 11. 2026, odluke organizatora po STOP-u) — marathon-v2.12.0
+
+Odluke: S1 O1 ostaje; S2 bez izmene; S3 i S6 prihvaćeni; S5 potvrđen; **S4 → O2** i **G6 početnik 0,80** ugrađeni.
+
+- **S4 O2** — `periodize.testWeekOf` (jedino mesto): plan po osećaju čija baza nema ne-rasteretnu nedelju ≥ 4 (12–13
+  nedelja) ima test u prvoj ne-rasteretnoj nedelji ≥ 4 razvoja; po G7 to je jedini kvalitet te nedelje. Red `P8-G7`.
+- **G6 početnik** — `lengths.easyLongShareOf` (jedino mesto, validator isto): plan sa oznakom početnika lagan ≤ 0,80 ×
+  dugi bez obzira na broj dana; 0,70 samo redovan plan 4+ dana. Red `P8-G6`.
+- `policyVersion` marathon-v2.12.0; `KNOWN_VERSIONS` ∪ marathon-v2.11.0.
+
+Merenje (iz `web/`: `node --max-old-space-size=6144 ../docs/generators-v2/perfection/P8-MAR/finish.ts <pre|posle>` →
+`P8-MAR/finish-{pre,posle}.json`; mreže po osećaju 8190 i početnika 1890, cele):
+
+| mera | pre (v2.11.0) | posle (v2.12.0) |
+|---|---|---|
+| planova po osećaju bez testa | 1260 / 8190 (12 ned 630, 13 ned 630) | 0 / 8190 (svih 1260: nedelja 4, razvoj) |
+| nedelja testa sa drugim kvalitetom | 0 | 0 |
+| odbijanja, po osećaju / početnik | 0 / 0 | 0 / 0 |
+| početnik 4+ dana: planiran vrh < 0,9 × granica vrha | 63 / 1890 | 18 / 1890 |
+| početnik: planova sa „planirano < cilj" ili spuštenim ciljem | 462 | 225 |
+| početnik: takvih nedelja | 2157 | 978 |
+| početnik: najveći lagan / dugi | 0,70 | 0,80 |
+
+Planovi sa rezultatom se ne menjaju (bazna linija mreže 02 ista); bazne linije P8 po osećaju i početnika ponovo upisane
+(jedna po jedna). Mreža 04 (adaptacija): 6468 → 6584 toka (kratki planovi po osećaju sada imaju tačku „pre testa").
+
+Sabotaže: 17/17 (dodato: S4 bez prelaska u razvoj; početnik 0,70), 22,5 s.
+
+ZAVRSETAK_TESTOVI
