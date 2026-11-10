@@ -79,6 +79,8 @@ function timed(
 interface KindSpec {
   label: string;
   budget: keyof QualityBudgets;
+  /** 5k-v2.15.0 (P8 G2): qualityType treninga koji vrsta gradi (validator: prvi nivo po vrsti). */
+  qualityType: QualityType;
   /** Ponuda doza (faza određuje plafon T bloka). */
   cands: (phase: Phase) => FeelDose[];
   est: (d: FeelDose, p: PaceModel) => number;
@@ -96,6 +98,7 @@ function fartlekSpec(
   return {
     label,
     budget,
+    qualityType: type,
     cands: () => repCands(o.boutsSec, o.minReps, o.maxReps),
     est: secEst,
     build: (d, t, p) => {
@@ -118,6 +121,7 @@ const SPEC: Record<FeelKind, KindSpec> = {
   HILLS: {
     label: 'Kratki usponi',
     budget: 'R',
+    qualityType: 'HILLS',
     cands: () => repCands(F.hills.boutsSec, F.hills.minReps, F.hills.maxReps),
     est: secEst,
     build: (d, t, p) => {
@@ -136,6 +140,7 @@ const SPEC: Record<FeelKind, KindSpec> = {
     }
   },
   TEMPO: {
+    qualityType: 'TEMPO_FEEL',
     label: 'Tempo po osećaju',
     budget: 'T',
     cands: (phase) => {
@@ -178,6 +183,7 @@ const SPEC: Record<FeelKind, KindSpec> = {
     F.effort.fartlekRP
   ),
   RP_SHORT: {
+    qualityType: 'RP',
     label: 'RP kratko',
     budget: 'I',
     cands: () => {
@@ -245,7 +251,8 @@ function progress(
   const s = SPEC[kind];
   const cands = s.cands(phase);
   const est = (d: FeelDose): number => s.est(d, p);
-  const budget = b[s.budget];
+  // 5k-v2.15.0 (P8 G2): plafon zone = max(udeo × cilj, prvi nivo ponude vrste) — najniži nivo uvek staje.
+  const budget = Math.max(b[s.budget], feelFirstLevel(kind, phase, p));
   for (const mode of prev ? (['up', 'alt'] as const) : (['first'] as const)) {
     const d = choose(cands, est, budget, prev ?? null, mode);
     if (d) return { kind, d, how: mode };
@@ -307,6 +314,31 @@ function kindsOf(
 }
 
 const fail = (message: string): WeekQuality => ({ ok: false, message });
+
+/** 5k-v2.15.0 (P8 G2): prvi nivo lestvice vrste po osećaju [km procene] — najmanja procena ponude faze. */
+export function feelFirstLevel(kind: FeelKind, phase: Phase, p: PaceModel): number {
+  const s = SPEC[kind];
+  const c = s.cands(phase);
+  return c.length ? Math.min(...c.map((x) => s.est(x, p))) : Infinity;
+}
+
+/** 5k-v2.15.0 (P8 G2, validator): prvi nivo za trening vrste `qt` u budžetu `bucket` (najveći među vrstama po osećaju
+    koje grade taj qualityType iz tog budžeta); 0 = nijedna. */
+export function feelFirstLevelOf(
+  qt: string,
+  bucket: 'I' | 'T' | 'R',
+  phase: Phase,
+  p: PaceModel
+): number {
+  let x = 0;
+  for (const kind of Object.keys(SPEC) as FeelKind[]) {
+    const s = SPEC[kind];
+    if (s.budget !== bucket || s.qualityType !== qt) continue;
+    const v = feelFirstLevel(kind, phase, p);
+    if (Number.isFinite(v)) x = Math.max(x, v);
+  }
+  return x;
+}
 
 /** 5k-v2.15.0 (P8 b): zona rada vrste po osećaju (granica rasterećenja/tapera po zoni). */
 const CAP_ZONE: Record<FeelKind, 'I' | 'RP' | 'T' | 'R'> = {
@@ -398,7 +430,10 @@ export function simpleWeekQuality(
       const d = choose(
         s.cands(f.phase),
         (x) => s.est(x, p),
-        cappedFeel(kind, r2(b[s.budget] * P.quality.deloadBudgetScale), f, p),
+        Math.max(
+          cappedFeel(kind, r2(b[s.budget] * P.quality.deloadBudgetScale), f, p),
+          f.qcap ? 0 : feelFirstLevel(kind, f.phase, p)
+        ),
         null,
         'first'
       );

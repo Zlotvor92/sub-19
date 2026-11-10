@@ -44,6 +44,7 @@ import type {
   FiveKV2Plan,
   FiveKV2RunWalkPlan,
   PaceModel,
+  Paces,
   Phase,
   PlanDay,
   PlanWeek,
@@ -62,8 +63,10 @@ import {
   returnBaseKm,
   returnLevelAt
 } from './volume.ts';
+import { feelFirstLevelOf } from './feel.ts';
 import {
   firstIBudget,
+  firstLevelBudget,
   iMaxShareOf,
   qualityBudgets,
   raceWarmup,
@@ -937,6 +940,15 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   }
 
   // --- Kvalitet: budžeti, udeli, dužine ponavljanja, donji prag u vrhuncu.
+  const VDOT_TYPES: ReadonlySet<string> = new Set([
+    'R',
+    'R_sharpen',
+    'T_short',
+    'T_cruise',
+    'I',
+    'RP',
+    'RP_sharpener'
+  ]);
   const firstIWeek = firstPeakIWeek(weeks);
   for (const w of weeks) {
     if (!checked(w)) continue;
@@ -959,15 +971,37 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       // Ubrzanja (stride) su R tempo, ali ih ne računamo u R udeo; trajanje im se ipak proverava.
       bout.R = Math.max(bout.R, b.R);
     }
-    if (sum.I > base * iMaxShareOf(base) + EPS)
+    // 5k-v2.15.0 (P8 G2): plafon zone = max(udeo × osnov, prvi nivo lestvice vrste treninga u toj zoni) — ista
+    // funkcija kao konstruktor (workouts.firstLevelBudget; po osećaju feel.feelFirstLevelOf).
+    const firstOf = (bucket: 'I' | 'T' | 'R'): number =>
+      Math.max(
+        0,
+        ...w.days
+          .filter((d) => d.countsToWeek && d.workout.kind === 'quality' && d.workout.qualityType)
+          .filter((d) => {
+            const k = d.workout.workKm;
+            return bucket === 'I' ? k.I + k.RP > 0 : k[bucket] > 0;
+          })
+          .map((d) => {
+            const t = d.workout.qualityType!;
+            const fl = VDOT_TYPES.has(t)
+              ? firstLevelBudget(t, pw(w) as Paces, w.phase)
+              : feelFirstLevelOf(t, bucket, w.phase, pw(w));
+            return Number.isFinite(fl) ? fl : 0;
+          })
+      );
+    const capI = Math.max(base * iMaxShareOf(base), firstOf('I'));
+    const capT = Math.max(base * q.tMaxShare, firstOf('T'));
+    const capR = Math.max(base * q.rMaxShare, firstOf('R'));
+    if (sum.I > capI + EPS)
       err(
         'I_SHARE',
         `I/RP ${sum.I.toFixed(2)} km > ${Math.round(iMaxShareOf(base) * 100)}% od ${base} km.`,
         w.index
       );
-    if (sum.T > base * q.tMaxShare + EPS)
+    if (sum.T > capT + EPS)
       err('T_SHARE', `T ${sum.T.toFixed(2)} km > ${q.tMaxShare * 100}% od ${base} km.`, w.index);
-    if (sum.R > base * q.rMaxShare + EPS)
+    if (sum.R > capR + EPS)
       err('R_SHARE', `R ${sum.R.toFixed(2)} km > ${q.rMaxShare * 100}% od ${base} km.`, w.index);
     if (bout.I > q.iRepMaxSec)
       err('I_REP', `I/RP ponavljanje ${bout.I} s > ${q.iRepMaxSec} s.`, w.index);

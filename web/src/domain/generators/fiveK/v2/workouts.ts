@@ -211,7 +211,12 @@ export function capZoneOf(type: QualityType): 'I' | 'RP' | 'T' | 'R' {
 
 /** 5k-v2.15.0 (P8 G2): budžet [km] najnižeg nivoa lestvice vrste (najmanji smislen trening po pravilima: minReps ×
     najkraće dozvoljeno ponavljanje na tempu; kratak T: shortTMinKm / shortTShareOfBudget); Infinity = nema ga. */
-export function firstLevelBudget(type: QualityType, p: Paces, phase: Phase): number {
+export function firstLevelBudget(
+  type: QualityType,
+  p: Paces,
+  phase: Phase,
+  _targetKm = 0
+): number {
   const q = P.quality;
   const reps = (opts: readonly number[], pace: number, min: number, maxSec: number, minSec = 0): number => {
     const ok = opts.filter((o) => o * pace <= maxSec + 1e-9 && o * pace + 1e-9 >= minSec);
@@ -230,6 +235,8 @@ export function firstLevelBudget(type: QualityType, p: Paces, phase: Phase): num
       return reps(q.repOptionsKm.Tcruise, p.T, q.minReps.T, tMaxSec(phase));
     case 'T_short':
       return Math.ceil((q.shortTMinKm / q.shortTShareOfBudget) * 100) / 100;
+    case 'RP_sharpener':
+      return reps(q.repOptionsKm.RPsharpener, p.RP, q.raceWeekSharpener.minReps, q.iRepMaxSec);
     default:
       return Infinity;
   }
@@ -504,12 +511,14 @@ function tSession(t: TDose, targetKm: number, p: Paces): SessionResult & { ok: t
  */
 export function qualitySession(
   type: QualityType,
-  budgetKm: number,
+  budget0: number,
   targetKm: number,
   p: Paces,
   phase: Phase,
   progression?: { prev: PrevDose | null }
 ): SessionResult {
+  // 5k-v2.15.0 (P8 G2): plafon zone = max(udeo × cilj nedelje, prvi nivo lestvice vrste) — najniži nivo uvek staje.
+  const budgetKm = Math.max(budget0, firstLevelBudget(type, p, phase, targetKm));
   const q = P.quality;
   const band = warmupBand(targetKm);
   const wu: BlockSpec = { kind: 'warmup', km: band.warmupKm };
