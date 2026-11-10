@@ -7,7 +7,7 @@
    Jednačine su objavljeni model; udeli po zonama su heuristike iz policy.ts. */
 
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
-import type { FeelPaces, GoalAssessment, Paces } from './types.ts';
+import type { FeelPaces, GoalAssessment, PaceModel, Paces } from './types.ts';
 
 const A = -4.6;
 const B = 0.182258;
@@ -122,4 +122,19 @@ export function beginnerGoal(g: GoalAssessment): GoalAssessment {
   return g.status === 'feasible'
     ? { ...g, status: 'orientation', message: P.beginner.goalMessage }
     : g;
+}
+
+/** 5k-v2.15.0 (P8 dopuna G1/G4): VDOT plana — sa rezultatom VDOT, po osećaju procena: VDOT (30–70, korak 0,5) čiji je
+    srednji lagan tempo najbliži korisnikovom. JEDINO mesto procene (satni plafon vrha, plafon I u minutima). */
+export function vdotOrEstimate(p: PaceModel): number {
+  if (p.vdot !== null) return p.vdot;
+  const mid = (p.E.fast + p.E.slow) / 2;
+  let best = 30;
+  let gap = Infinity;
+  for (let v = 30; v <= 70 + 1e-9; v += 0.5) {
+    const q = pacesFromVdot(v);
+    const g = Math.abs((q.E.fast + q.E.slow) / 2 - mid);
+    if (g < gap - 1e-9) [best, gap] = [v, g];
+  }
+  return best;
 }

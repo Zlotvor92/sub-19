@@ -217,6 +217,10 @@ export const FIVE_K_V2_POLICY = {
         deloadLongShare × poslednji ne-rasteretni dugi. Jedno mesto: generate.qualityCapOf (granica nedelje),
         workouts.cappedBudget (budžet sesije), lengths.weekLengths (dugi). (c) prvi I posle R faze ≤ firstIShareOfBudget
         × budžet I (workouts.peakWeek/peakWeekOne; validator PEAK_MAIN_FLOOR ga izuzima). */
+    /** 5k-v2.15.0 (P8 dopuna G4, odluka organizatora po glavnom treneru): plafon JEDNOG treninga u minutima rada po
+        tempu zone (član iste funkcije plafona zone, workouts.zoneBudget / feel): I ≤ 20 min za VDOT < 40, inače 24; RP
+        ≤ 20 min; T ≤ 30 min. Po osećaju VDOT je procena (paces.vdotOrEstimate). Plafon minuta je iznad prvog nivoa. */
+    minuteCap: { iSlowVdot: 40, iSlowMin: 20, iMin: 24, rpMin: 20, tMin: 30 },
     deloadQualityShare: 0.6,
     taperQualityShare: 0.7,
     deloadLongShare: 0.8,

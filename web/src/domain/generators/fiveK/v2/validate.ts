@@ -68,6 +68,7 @@ import {
   firstIBudget,
   firstLevelBudget,
   iMaxShareOf,
+  minuteCapKm,
   qualityBudgets,
   raceWarmup,
   tFormOf,
@@ -1036,9 +1037,12 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       const zone = w.phase === 'peak' ? 'I' : 'RP';
       const work = mainWork(w);
       // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
+      // 5k-v2.15.0 (P8 dopuna G4): i plafon minuta zone (workouts.minuteCapKm).
       const need =
-        (isFirstIWeek(w, weeks.slice(0, w.index - 1)) ? firstIBudget(w.budgets.I) : w.budgets.I) *
-        q.mainMinShareOfBudget;
+        Math.min(
+          isFirstIWeek(w, weeks.slice(0, w.index - 1)) ? firstIBudget(w.budgets.I) : w.budgets.I,
+          minuteCapKm(zone, pw(w) as Paces)
+        ) * q.mainMinShareOfBudget;
       if (work + EPS < need)
         err(
           w.phase === 'peak' ? 'PEAK_MAIN_FLOOR' : 'SHARPEN_MAIN_FLOOR',

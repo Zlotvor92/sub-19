@@ -242,6 +242,26 @@ export function firstLevelBudget(
   }
 }
 
+/** 5k-v2.15.0 (P8 dopuna G4): plafon jednog treninga u km = minuti rada (quality.minuteCap) / tempo zone; Infinity za
+    vrste bez plafona (R, oštrenje trkačke nedelje — G5). */
+export function minuteCapKm(type: QualityType, p: Paces): number {
+  const m = P.quality.minuteCap;
+  const km = (min: number, pace: number): number => Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
+  if (type === 'I') return km(p.vdot < m.iSlowVdot ? m.iSlowMin : m.iMin, p.I);
+  if (type === 'RP') return km(m.rpMin, p.RP);
+  if (type === 'T_short' || type === 'T_cruise') return km(m.tMin, p.T);
+  return Infinity;
+}
+
+/** 5k-v2.15.0 (P8 G2, G4) — JEDNA funkcija plafona zone (sa rezultatom): min(max(udeo × cilj, prvi nivo), minuti);
+    u trkačkoj nedelji bez prvog nivoa (G5). Kratak T: budžet je osnov za udeo (rad = udeo × budžet). */
+export function zoneBudget(type: QualityType, budget0: number, p: Paces, phase: Phase): number {
+  const first = phase === 'race' ? 0 : firstLevelBudget(type, p, phase);
+  const cap = minuteCapKm(type, p);
+  const capB = type === 'T_short' ? cap / P.quality.shortTShareOfBudget : cap;
+  return Math.min(Math.max(budget0, Number.isFinite(first) ? first : 0), capB);
+}
+
 /** 5k-v2.15.0 (P8 b, G2): budžet sesije pod granicom zone `capWork` (rad u km; kratak T: rad = udeo budžeta, pa
     budžet = rad / shortTShareOfBudget) — min(budžet, max(granica, prvi nivo lestvice)). Bez granice: budžet. JEDINO
     mesto (rasterećenje i taper, sa rezultatom). */
@@ -517,8 +537,8 @@ export function qualitySession(
   phase: Phase,
   progression?: { prev: PrevDose | null }
 ): SessionResult {
-  // 5k-v2.15.0 (P8 G2): plafon zone = max(udeo × cilj nedelje, prvi nivo lestvice vrste) — najniži nivo uvek staje.
-  const budgetKm = Math.max(budget0, firstLevelBudget(type, p, phase, targetKm));
+  // 5k-v2.15.0 (P8 G2, G4): plafon zone = min(max(udeo × cilj nedelje, prvi nivo lestvice vrste), plafon minuta).
+  const budgetKm = zoneBudget(type, budget0, p, phase);
   const q = P.quality;
   const band = warmupBand(targetKm);
   const wu: BlockSpec = { kind: 'warmup', km: band.warmupKm };
