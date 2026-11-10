@@ -47,7 +47,7 @@ export function capacityMessage(
     ...(longL.length > 0 ? [`dugi ${longL.map((l) => text[l]).join(' i ')}`] : []),
     // T1 (krug T): lagan ≤ 0,8 × dugi.
     ...(limits.includes('easy')
-      ? [`lagani najviše ${Math.round(P.lengths.easyLongMaxShare * 100)} % dugog`]
+      ? [`lagani najviše ${Math.round(rule.easyLongMaxShare * 100)} % dugog`]
       : [])
   ];
   const more = rule.dayCounts.filter((n) => n > runDays);
@@ -106,7 +106,7 @@ export function capacityLimits(
     if (l10 === longShareCap10(to10(w.targetKm), rule)) hit.add('share');
     if (l10 === longKmCap10()) hit.add('km');
     if (l10 === rollAt(w.index)) hit.add(recentKm != null && w.index <= 4 ? 'recent' : 'rolling');
-    if (w.days.some((d) => d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(l10)))
+    if (w.days.some((d) => d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(l10, rule)))
       hit.add('easy');
   }
   return (['time', 'share', 'km', 'rolling', 'recent', 'easy'] as const).filter((l) => hit.has(l));

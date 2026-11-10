@@ -916,7 +916,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         // T1 (krug T): nedelja izgradnje bez dana bola/odmora — lagan ≤ 0,8 × dugi i ≥ max(4 km, 20 min).
         if (isSteady(w) && restOf(w).size === 0 && painOf(w).size === 0) {
           const e10 = to10(d.workout.km);
-          if ((e10 > buildEasyCap10(l10) || e10 < buildEasyMin10(pk)) && t1Exempt(w)) {
+          if ((e10 > buildEasyCap10(l10, rule) || e10 < buildEasyMin10(pk)) && t1Exempt(w)) {
             if (!t1Warned.has(w.index)) {
               t1Warned.add(w.index);
               warn(
@@ -925,10 +925,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
                 w.index
               );
             }
-          } else if (e10 > buildEasyCap10(l10) || e10 < buildEasyMin10(pk))
+          } else if (e10 > buildEasyCap10(l10, rule) || e10 < buildEasyMin10(pk))
             err(
               'EASY_BUILD',
-              `Lagan ${d.workout.km} km van [${buildEasyMin10(pk) / 10}, ${buildEasyCap10(l10) / 10}] km (≥ 20 min, ≤ 0,8 × dugi ${long.workout.km} km; T1).`,
+              `Lagan ${d.workout.km} km van [${buildEasyMin10(pk) / 10}, ${buildEasyCap10(l10, rule) / 10}] km (≥ 20 min, ≤ ${rule.easyLongMaxShare} × dugi ${long.workout.km} km; T1).`,
               w.index,
               d.date
             );
@@ -2200,7 +2200,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     isBuildPhase(w1.phase) &&
     !w1.deload &&
     w1.days.some(
-      (d) => d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(to10(long1.workout.km))
+      (d) => d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(to10(long1.workout.km), rule)
     );
   if (
     firstAdapted > 1 &&

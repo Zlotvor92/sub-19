@@ -318,8 +318,8 @@ export const SECOND_EASY_NOTE = 'drugi dan kvaliteta je lagan (pouka 35)';
 
 /** T1 (krug T): napomena nedelje izgradnje sa manje laganih dana (oznaka za nezavisne invarijante). */
 export const T1_REST_NOTE = 'Manje laganih dana';
-const t1RestNote = (n: number): string =>
-  `${T1_REST_NOTE}: ${n === 1 ? 'jedan lagan dan je odmor' : `${n} lagana dana su odmor`} — uz ovaj obim lagani ne bi bili kraći od 0,8 × dugi uz najmanje 20 min.`;
+const t1RestNote = (n: number, share: number): string =>
+  `${T1_REST_NOTE}: ${n === 1 ? 'jedan lagan dan je odmor' : `${n} lagana dana su odmor`} — uz ovaj obim lagani ne bi bili kraći od ${String(share).replace('.', ',')} × dugi uz najmanje 20 min.`;
 
 /** G2 (P8): najmanje doze tapera [m] koje uvek staju u plafon zone — RP 2 × 2000 m (H7), T 2,0 km (početnik 1,5 km,
     HI10). Konstruktor i validator. */
@@ -922,11 +922,11 @@ function buildWeekIn(
       `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; drugi dan kvaliteta (tempo) je lagan.`
     );
   // T1 (krug T): manje laganih dana (lengths.buildLengths) — napomena za korisnika.
-  if (len.easy10.length < dates.length) notes.push(t1RestNote(dates.length - len.easy10.length));
+  if (len.easy10.length < dates.length) notes.push(t1RestNote(dates.length - len.easy10.length, rule.easyLongMaxShare));
   if (second)
     notes.push(
       easy2?.t1
-        ? `Q2: ${SECOND_EASY_NOTE} — sa dva dana kvaliteta lagani ne staju u granice (≤ 0,8 × dugi, ≥ 20 min) bez dana odmora; oslobođen obim ide u dugi (${fmtKm(len.long10 / 10)} km) i lagane.`
+        ? `Q2: ${SECOND_EASY_NOTE} — sa dva dana kvaliteta lagani ne staju u granice (≤ ${String(rule.easyLongMaxShare).replace('.', ',')} × dugi, ≥ 20 min) bez dana odmora; oslobođen obim ide u dugi (${fmtKm(len.long10 / 10)} km) i lagane.`
         : `Q2: ${SECOND_EASY_NOTE} — sa ${second.dose.zone} ${fmtKm(second.dose.doseM / 1000)} km (${Math.round(second.w.sec / 60)} min) dugi ne bi bio najduži trening nedelje; oslobođen obim ide u dugi (${fmtKm(len.long10 / 10)} km) i lagane.`
     );
   if (intro)

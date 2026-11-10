@@ -851,6 +851,8 @@ export const HM_V2_POLICY = {
     /** T1 (krug T, organizator 23. 10.): u nedelji izgradnje lagan ≤ ovaj udeo dugog iste nedelje (km) i
         ≥ max(easyMinKm, easyMinSec laganim tempom). */
     easyLongMaxShare: 0.8,
+    /** G6 (P8): plan sa 4 i više dana — lagan ≤ ovaj udeo dugog iste nedelje (3 dana ostaje easyLongMaxShare). */
+    easyLongMaxShare4: 0.7,
     easyMinSec: 1200
   },
 
@@ -996,6 +998,8 @@ export interface PlanRule extends DayRule {
   readonly beginner: boolean;
   /** H13/H17: plafon dugog sporim E [s]. */
   readonly longMaxSec: number;
+  /** T1/G6: u nedelji izgradnje lagan ≤ ovaj udeo dugog (3 dana 0,8; 4+ dana 0,7). */
+  readonly easyLongMaxShare: number;
   /** H13/H17: upozorenje kad je najduži dugi plana < longWarnKm. */
   readonly longWarnKm: number;
   /** H6/H17: rast nedelje izgradnje i granica vrha. */
@@ -1018,11 +1022,13 @@ export function planRule(count: number, experience: 'beginner' | 'regular'): Pla
   const d = dayRule(count);
   if (!d) return null;
   const P = HM_V2_POLICY;
+  const easyShare = count >= 4 ? P.lengths.easyLongMaxShare4 : P.lengths.easyLongMaxShare;
   if (experience === 'regular')
     return {
       ...d,
       beginner: false,
       longMaxSec: P.lengths.longMaxSec,
+      easyLongMaxShare: easyShare,
       longWarnKm: P.lengths.longWarnKm,
       growth: P.volume.growth,
       growthMinKm: P.volume.growthMinKm,
@@ -1045,6 +1051,7 @@ export function planRule(count: number, experience: 'beginner' | 'regular'): Pla
     kmMax: row.kmMax,
     beginner: true,
     longMaxSec: b.longMaxSec,
+    easyLongMaxShare: easyShare,
     longWarnKm: b.longWarnKm,
     growth: b.growth,
     growthMinKm: b.growthMinKm,

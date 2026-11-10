@@ -17,6 +17,8 @@ export interface LongRule {
   readonly longMaxSec: number;
   /** T1 izuzetak (nedelja na minimumu, buildLengths); pravilo plana ga nosi (H15). */
   readonly weekMinKm?: number;
+  /** T1/G6: lagan ≤ ovaj udeo dugog u nedelji izgradnje (pravilo plana; bez polja 0,8). */
+  readonly easyLongMaxShare?: number;
 }
 
 export interface Lengths {
@@ -135,8 +137,8 @@ export function buildEasyMin10(p: Paces): number {
 }
 
 /** T1 (krug T): najduži lagan nedelje izgradnje uz dugi `long10` [0,1 km] — 0,8 × dugi (naniže). */
-export const buildEasyCap10 = (long10: number): number =>
-  Math.floor(P.lengths.easyLongMaxShare * long10 + EPS);
+export const buildEasyCap10 = (long10: number, rule?: { easyLongMaxShare?: number }): number =>
+  Math.floor((rule?.easyLongMaxShare ?? P.lengths.easyLongMaxShare) * long10 + EPS);
 
 /** Nedelja izgradnje: kvalitet (zbir `quality100`) + dugi + `easyDays` laganih. T1 (krug T, JEDNO mesto): dugi
     kao i do sada (najduži dozvoljen, laganima ostaje ≥ najkraći lagan buildEasyMin10); svaki lagan ≤ 0,8 × dugi
@@ -162,7 +164,7 @@ export function buildLengthsT1(
     const long10 = Math.min(cap10, Math.floor((rest100 - k * min10 * 10) / 10));
     if (long10 < EASY_MIN10) continue;
     const easy10 = splitEasy(Math.round((rest100 - long10 * 10) / 10), k);
-    const hi10 = buildEasyCap10(long10);
+    const hi10 = buildEasyCap10(long10, rule);
     if (easy10.every((e) => e >= min10 && e <= hi10)) return { long10, easy10 };
   }
   if (easyDays === 0) {
