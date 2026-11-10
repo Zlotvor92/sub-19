@@ -640,7 +640,22 @@ export const MARATHON_V2_POLICY = {
     growthMinKm: 1.0,
     growthMaxKm: 5.0,
     peakFactor: 1.5,
-    peakAddKm: 30
+    peakAddKm: 30,
+    /** P8-G1a (marathon-v2.11.0): vrh ≤ start × faktor po dužini pripreme (poslednji red sa fromWeeks ≤ nedelja) i
+        ≤ satni plafon nedelje (cilj km × srednji lagan tempo) po VDOT-u plana (poslednji red sa fromVdot ≤ VDOT);
+        start iznad plafona → vrh = start. Važi i za početnika. */
+    peakByWeeks: [
+      { fromWeeks: 0, factor: 1.3 },
+      { fromWeeks: 13, factor: 1.35 },
+      { fromWeeks: 16, factor: 1.4 }
+    ] as readonly { fromWeeks: number; factor: number }[],
+    peakHours: [
+      { fromVdot: 0, hours: 9 },
+      { fromVdot: 40, hours: 10 },
+      { fromVdot: 50, hours: 11 }
+    ] as readonly { fromVdot: number; hours: number }[],
+    /** P8-G1b: korak rasta manji od minStepShare tekućeg cilja se ne primenjuje (nedelja zadržava cilj). */
+    minStepShare: 0.03
   },
 
   /** M7: nedelje tapera redom (N−2, N−1). tShare null = bez T. */

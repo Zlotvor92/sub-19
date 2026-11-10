@@ -60,6 +60,7 @@ import {
   initialAdaptHistory,
   leaveWeek,
   nominal10,
+  growthCtx,
   peakCap10,
   raceWeekTarget10,
   startKm10
@@ -189,7 +190,8 @@ export function construct(
   const recentJ = jumpRecentKm(recent, steps);
   const pre = preStartOf(steps);
   const start10 = startKm10(km);
-  const cap10 = peakCap10(start10, rule);
+  const g1 = growthCtx(frames, paces);
+  const cap10 = peakCap10(start10, rule, g1);
   const av = adapted ? adaptVolume(steps) : null;
   // A1: tempo nedelje (rezultat iz adaptacije važi od svoje sledeće nedelje); A9/pouka 33: odstupanja za mali
   // obim samo posle smanjenja obima.
@@ -281,10 +283,10 @@ export function construct(
       continue;
     }
     const taper = taperStep(phases, frame.index);
-    if (av) h = enterWeek(h, frame, av, rule);
+    if (av) h = enterWeek(h, frame, av, rule, g1);
     const { nominal, downOnly } = av
-      ? adaptNominal10(frame, h, start10, taper, rule, av)
-      : { nominal: nominal10(frame, h, start10, cap10, taper, rule), downOnly: false };
+      ? adaptNominal10(frame, h, start10, taper, rule, av, g1)
+      : { nominal: nominal10(frame, h, start10, cap10, taper, rule, g1), downOnly: false };
     const longest10 = longestLong10(written);
     const longs10 = jumpLongs10(written, steps, frame.index);
     const jump10 = longJumpCap10(longs10, frame.index, recentJ);

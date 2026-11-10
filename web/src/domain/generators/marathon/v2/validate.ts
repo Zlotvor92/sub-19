@@ -129,6 +129,7 @@ import {
   initialAdaptHistory,
   leaveWeek,
   nominal10,
+  growthCtx,
   peakCap10,
   startKm10,
   weekMin10
@@ -1463,7 +1464,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // --- M6: obim. Ned 1 = trenutni obim (ispod samo uz dugi na 150 min, pouka 9); izgradnja po pravilu ili
   // najbliži izvodljiv cilj (napomena); rasterećenje 0,8 ×, taper 0,8 / 0,6 × vrh samo naniže; vrh.
   const start10 = startKm10(input.currentWeeklyKm);
-  const cap10 = peakCap10(start10, rule);
+  const g1 = growthCtx(weeks, p);
+  const cap10 = peakCap10(start10, rule, g1);
   // Segment 04: isti rekurent kao konstruktor (volume.adaptNominal10: cilj koraka, povratni rast, vrh od novog
   // starta, taper 0,8 / 0,6 × najveći cilj izgradnje posle poslednjeg smanjenja, donja granica); izvodljiv cilj
   // adaptacije samo naniže. Posle mešovite nedelje čiji cilj nije po pravilu provera čeka sledeći cilj koraka.
@@ -1475,13 +1477,13 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     const t10 = to10(w.targetKm);
     const step = taperStep(phases, w.index);
     if (av) {
-      h = enterWeek(h, w, av, rule);
+      h = enterWeek(h, w, av, rule, g1);
       if (av.reset.has(w.index) && isBuildPhase(w.phase)) known = true;
     }
     // Cilj po pravilu iz iste funkcije kao konstruktor (volume.nominal10 / adaptNominal10, pouka 24).
     const { nominal, downOnly } = av
-      ? adaptNominal10(w, h, start10, step, rule, av)
-      : { nominal: nominal10(w, h, start10, cap10, step, rule), downOnly: false };
+      ? adaptNominal10(w, h, start10, step, rule, av, g1)
+      : { nominal: nominal10(w, h, start10, cap10, step, rule, g1), downOnly: false };
     if (checked(w) && known) {
       if (to10(w.nominalKm) !== nominal)
         err(
@@ -1641,7 +1643,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           rule,
           pk,
           longJumpCap10(jumpLongs10(weeks.slice(0, w.index - 1), steps, w.index), w.index, recentJ),
-          w.test === true || beginner || w.index >= reducedFrom,
+          true,
           w.index >= reducedFrom
         );
         const note = w.notes.some((n) => n.includes('skraćen sa 0,8 ×'));
@@ -1652,7 +1654,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
             w.index
           );
         if (len?.shortened)
-          shortened.push({ w: w.index, why: w.test ? 'M16' : beginner ? 'M17' : 'A9, pouka 33' });
+          shortened.push({ w: w.index, why: w.test ? 'M16' : beginner ? 'M17' : w.index >= reducedFrom ? 'A9, pouka 33' : 'P8-G1' });
       }
       if (
         w.days.filter((d) => d.role === 'easy').length !==

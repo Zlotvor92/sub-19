@@ -1,6 +1,7 @@
 /* P8-MAR — merenje u MINUTIMA (brojači glavnog trenera, coach/ROUND-01.md § 7) na 12 profila P7 i mreži P0.
    Pokretanje iz web/: node ../docs/generators-v2/perfection/P8-MAR/measure.ts <oznaka> [--plans]
    Izlaz: P8-MAR/raw-<oznaka>.json, P8-MAR/sum-<oznaka>.md; uz --plans ispisi u P8-MAR/plans-<oznaka>/. */
+import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { generateMarathonV2 } from "../../../../web/src/domain/generators/marathon/v2/generate.ts";
 import { grid } from "../P0/common.ts";
@@ -15,6 +16,7 @@ type Week = { index: number; phase: string; deload: boolean; test?: boolean; tar
 const FAST = (s: Seg) => s.zone !== undefined && !["E", "jog", "walk"].includes(s.zone) && s.kind !== "recovery" && s.kind !== "warmup" && s.kind !== "cooldown";
 const WORK = (s: Seg) => FAST(s) && s.kind !== "stride";
 const r1 = (x: number) => Math.round(x * 10) / 10;
+const r2 = (x: number) => Math.round(x * 100) / 100;
 const workMin = (d: Day, z?: string) => (d.workout.segments ?? []).filter((s) => WORK(s) && (!z || s.zone === z)).reduce((a, s) => a + s.sec, 0) / 60;
 
 function metrics(plan: { weeks: Week[]; warnings?: unknown[] }, startKm: number) {
@@ -50,7 +52,7 @@ function metrics(plan: { weeks: Week[]; warnings?: unknown[] }, startKm: number)
   const sharp = race?.days.find((d) => d.role === "sharpener");
   const testW = W.find((w) => w.days.some((d) => d.role === "test"));
   return {
-    weeks: W.length, startKm, peakKm: r1(peak), peakRatio: r1(peak / startKm * 100) / 100, peakHours: r1(hours),
+    weeks: W.length, startKm, peakKm: r1(peak), peakRatio: r2(peak / startKm), peakHours: r1(hours),
     peakWeek: build.find((w) => w.targetKm === peak)!.index,
     volPlateau: plateau((w) => w.targetKm), longPlateau: plateau((w) => longOf(w)?.workout.km ?? null),
     longMaxKm: r1(Math.max(0, ...W.map((w) => longOf(w)?.workout.km ?? 0))),
@@ -63,7 +65,7 @@ function metrics(plan: { weeks: Week[]; warnings?: unknown[] }, startKm: number)
     taper1MpMin: taper[1] ? r1(maxOf([taper[1]], (d) => workMin(d, "MP"))) : 0,
     taper1TMin: taper[1] ? r1(maxOf([taper[1]], (d) => workMin(d, "T"))) : 0,
     sharpMin: sharp ? r1(workMin(sharp)) : 0, sharpener: !!sharp,
-    easyLongMax: r1(ratio * 100) / 100, easyLongTaper: r1(ratioTaper * 100) / 100,
+    easyLongMax: r2(ratio), easyLongTaper: r2(ratioTaper),
     easyMaxMin: Math.round(Math.max(0, ...W.flatMap((w) => w.days.filter((d) => d.role === "easy").map((d) => d.workout.sec))) / 60),
     over25, qLongerKm, qLongerSec, mpTBlock, tinyGrow,
     test: testW ? testW.index : 0, testOnlyQ: testW ? (testW.days.filter((d) => d.role === "q1" || d.role === "q2").length === 0 ? 1 : 0) : null,
@@ -82,11 +84,11 @@ const rows: Record<string, unknown>[] = [];
 for (const c of cases) {
   const res = generateMarathonV2(c.input as never) as { ok: boolean; plan?: { weeks: Week[] }; reasons?: { code: string }[] };
   if (withPlans && c.family === "P7") writeFileSync(`${dir}plans-${tag}/${c.id}.txt`, renderPlan("MAR", c.title, c.input, res));
-  rows.push(res.ok ? { id: c.id, family: c.family, ok: true, ...metrics(res.plan as never, c.input["currentWeeklyKm"] as number) } : { id: c.id, family: c.family, ok: false, codes: res.reasons!.map((r) => r.code) });
+  rows.push(res.ok ? { id: c.id, family: c.family, ok: true, hash: createHash("sha1").update(JSON.stringify(res.plan!.weeks)).digest("hex").slice(0, 10), ...metrics(res.plan as never, c.input["currentWeeklyKm"] as number) } : { id: c.id, family: c.family, ok: false, codes: res.reasons!.map((r) => r.code) });
 }
 writeFileSync(`${dir}raw-${tag}.json`, JSON.stringify(rows));
 const med = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); return s.length ? s[Math.floor((s.length - 1) / 2)]! : 0; };
-const keys = Object.keys(rows.find((r) => r["ok"])!).filter((k) => !["id", "family", "ok"].includes(k));
+const keys = Object.keys(rows.find((r) => r["ok"])!).filter((k) => !["id", "family", "ok", "hash"].includes(k));
 const L: string[] = [`# P8-MAR merenje — ${tag}`, "", "## 12 profila P7", "", `| profil | ${keys.join(" | ")} |`, `|---|${keys.map(() => "---").join("|")}|`];
 for (const r of rows.filter((r) => r["family"] === "P7")) L.push(`| ${r["id"]} | ${r["ok"] ? keys.map((k) => r[k]).join(" | ") : "ODBIJENO " + r["codes"]} |`);
 L.push("", "## Mreža P0 (medijana [min–max]; Σ za brojače)", "", `| metrika | R | F | B |`, "|---|---|---|---|");

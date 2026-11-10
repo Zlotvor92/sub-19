@@ -660,7 +660,9 @@ function buildWeekIn(
     const intro = frame.index <= rule.introWeeks;
     const qDay = intro || mode === 'none' ? null : test ? pref : oneQualityDay(frame, pat, pref);
     // Pouka 32: drugi član plafona zone — T rasterećenja ≤ dugi rasterećenja (najmanja doza izuzeta).
-    const shorten = test || rule.beginner || ctx.adapted === true;
+    // P8-G1: i u redovnom planu — kad lagani ne bi ostali ≥ 5 km (sporiji rast po G1: rasterećenje blizu polaznog
+    // obima), dugi rasterećenja se skraćuje umesto da nedelja bude neizvodljiva.
+    const shorten = true;
     const dLimit = deloadDayLimit(
       dayLimitContext(p, ctx.wc, rule, frame.limits, () => dateOf(frame, pat.long)),
       target10,
@@ -702,7 +704,7 @@ function buildWeekIn(
             )
           ]
         : [];
-    const why = test ? 'M16' : rule.beginner ? 'M17' : 'A9, pouka 33';
+    const why = test ? 'M16' : rule.beginner ? 'M17' : ctx.adapted === true ? 'A9, pouka 33' : 'P8-G1';
     const longText = len.shortened
       ? `dugi ${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × poslednjeg ne-rasteretnog (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (${why} ispred M5, odstupanje)`
       : len.raised
