@@ -172,4 +172,7 @@ Planovi sa rezultatom se ne menjaju (bazna linija mreže 02 ista); bazne linije 
 
 Sabotaže: 17/17 (dodato: S4 bez prelaska u razvoj; početnik 0,70), 22,5 s.
 
-ZAVRSETAK_TESTOVI
+Testovi završetka (iz `web/`): brz nivo `marathon/v2` 447/447 (≈ 35 s); `TEST_FULL=1 npx vitest run --project node
+src/domain/generators/marathon/v2` 78 fajlova / 549 testova zeleno (761 s); `npm run check` 299 fajlova / 3372 testa zeleno
+(460 s; typecheck i lint čisti na vrhu grane); `npx playwright test e2e/marathon-v2.spec.ts --trace off` 3/3; pisanje
+baznih linija `feelGrid` 78 s, `beginnerGrid` 12 s (jedna po jedna, `NODE_OPTIONS=--max-old-space-size=10240`).
