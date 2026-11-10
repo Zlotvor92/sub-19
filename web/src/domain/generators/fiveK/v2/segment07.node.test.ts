@@ -644,7 +644,7 @@ describe('Mreža B: trčanje/hodanje 6/8/12/16 ned × 6 scenarija → 0 grešaka
 
 /* ---------- Regresija: generisanje bez adaptacije ---------- */
 
-describe('Generisanje bez adaptacije: regresija prema a859ca7 (P4, otisak bez teksta)', () => {
+describe('Generisanje bez adaptacije: regresija prema 8e87fd4 (P5, otisak bez teksta)', () => {
   it('700 ulaza (644 plana): tok van spiska promenjenih bajt-isti; promenjeni (P4) nose razlog', () => {
     const ref = ref09('g07');
     const flows = regressionInputs().map(([key, input]) => ({ key, res: generateFiveKV2(input) }));

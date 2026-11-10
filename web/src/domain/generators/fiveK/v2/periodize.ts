@@ -44,8 +44,38 @@ export function phaseCounts(totalWeeks: number, beginner = true): PhaseCounts {
 
 /** 5k-v2.11.0 (C13, MASTER pouka 13): kontrolno trčanje ima samo plan po osećaju iskusnog trkača — početnik nema test
     (jedino mesto; konstruktor, koraci adaptacije i validator). */
-export const controlTest = (a: { feel: boolean; beginner: boolean }): boolean =>
-  a.feel && !a.beginner;
+export const controlTest = (a: { feel: boolean; beginner: boolean }, totalWeeks: number): boolean =>
+  testKindOf(a, totalWeeks) !== null;
+
+/** 5k-v2.14.0 (P5 F1): vrsta kontrolnog trčanja plana (jedino mesto): 'feel' = plan po osećaju (nedelja 3/4);
+    'result' = plan sa rezultatom ≥ feel.resultTest.minWeeks nedelja (poslednja ne-rasteretna nedelja vrhunca);
+    null = bez testa (početnik, kraći plan sa rezultatom). */
+export function testKindOf(
+  a: { feel: boolean; beginner: boolean },
+  totalWeeks: number
+): 'feel' | 'result' | null {
+  if (a.beginner) return null;
+  if (a.feel) return 'feel';
+  return totalWeeks >= P.feel.resultTest.minWeeks ? 'result' : null;
+}
+
+/** 5k-v2.14.0 (P5 F1): nedelja testa plana sa rezultatom — poslednja ne-rasteretna nedelja vrhunca (faza pre
+    oštrenja); nema je → null. */
+export function resultTestWeekOf(frames: readonly Omit<WeekFrame, 'test'>[]): number | null {
+  for (let i = frames.length - 1; i >= 0; i--) {
+    const f = frames[i]!;
+    if (f.phase === 'peak' && !f.deload) return f.index;
+  }
+  return null;
+}
+
+/** 5k-v2.14.0: očekivana nedelja testa po vrsti (konstruktor i validator). */
+export function expectedTestWeek(
+  kind: 'feel' | 'result' | null,
+  frames: readonly Omit<WeekFrame, 'test'>[]
+): number | null {
+  return kind === 'feel' ? testWeekOf(frames) : kind === 'result' ? resultTestWeekOf(frames) : null;
+}
 
 /** 2.4.0: nedelja kontrolnog trčanja (plan po osećaju): prva od feel.test.weeks koja je ne-rasteretna
     nedelja izgradnje; inače null. */
@@ -91,13 +121,14 @@ function deloadWeeks(
   return deloads;
 }
 
-/** `deloadEvery`: 2.4.0 početnik 3 (rulesOf); `feel`: plan po osećaju dobija nedelju kontrolnog trčanja;
+/** `deloadEvery`: 2.4.0 početnik 3 (rulesOf); `feel`: plan po osećaju dobija nedelju kontrolnog trčanja (5k-v2.14.0:
+    'result' = plan sa rezultatom, resultTestWeekOf);
     `beginner` false = trkač (5k-v2.12.0, T4: taper 1 nedelja, rasterećenje noRegularDeload/deloadFirstOf). */
 export function periodize(
   startDate: IsoDate,
   totalWeeks: number,
   deloadEvery: number = P.volume.deloadEvery,
-  feel = false,
+  feel: boolean | 'feel' | 'result' | null = false,
   beginner = true
 ): WeekFrame[] {
   const c = phaseCounts(totalWeeks, beginner);
@@ -129,7 +160,7 @@ export function periodize(
       taperStep
     };
   });
-  const test = feel ? testWeekOf(frames) : null;
+  const test = expectedTestWeek(feel === true ? 'feel' : feel === false ? null : feel, frames);
   return frames.map((f) => ({ ...f, test: f.index === test }));
 }
 

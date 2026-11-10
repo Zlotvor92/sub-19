@@ -1,0 +1,256 @@
+{
+ "n": 104800,
+ "rej": 0,
+ "by": {
+  "none": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "done100": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "under50": {
+   "flows": 4192,
+   "hit": 59,
+   "weeks": 111,
+   "phases": {
+    "base": 22,
+    "sharpen": 45,
+    "taper": 34,
+    "peak": 10
+   },
+   "ex": [
+    "r-d4-7w-15km-v45-1/w1end/under50 ned 2,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2wed/under50 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2end/under50 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w3wed/under50 ned 5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w3end/under50 ned 6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w4wed/under50 ned 5,6 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "over120": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "pause10": {
+   "flows": 4192,
+   "hit": 90,
+   "weeks": 179,
+   "phases": {
+    "base": 53,
+    "sharpen": 53,
+    "taper": 47,
+    "peak": 26
+   },
+   "ex": [
+    "r-d4-7w-15km-v45-1/pre1/pause10 ned 2,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre3/pause10 ned 2,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre6/pause10 ned 2,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1wed/pause10 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1end/pause10 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2wed/pause10 ned 4,5,6 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "pause20": {
+   "flows": 4192,
+   "hit": 78,
+   "weeks": 148,
+   "phases": {
+    "sharpen": 66,
+    "taper": 54,
+    "base": 15,
+    "peak": 13
+   },
+   "ex": [
+    "r-d4-7w-15km-v45-1/pre1/pause20 ned 5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre3/pause20 ned 5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre6/pause20 ned 5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1wed/pause20 ned 5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1end/pause20 ned 5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2wed/pause20 ned 5,6 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "pause35": {
+   "flows": 4192,
+   "hit": 191,
+   "weeks": 340,
+   "phases": {
+    "peak": 39,
+    "taper": 148,
+    "sharpen": 133,
+    "base": 20
+   },
+   "ex": [
+    "r-d3-6w-16km-v58-0/pre1/pause35 ned 3 (pre adaptacije u planu: 0)",
+    "r-d3-6w-16km-v58-0/pre3/pause35 ned 3 (pre adaptacije u planu: 0)",
+    "r-d3-6w-16km-v58-0/pre6/pause35 ned 3 (pre adaptacije u planu: 0)",
+    "r-d4-6w-25km-v45-0/pre1/pause35 ned 5 (pre adaptacije u planu: 0)",
+    "r-d4-6w-25km-v45-0/pre3/pause35 ned 5 (pre adaptacije u planu: 0)",
+    "r-d4-6w-25km-v45-0/pre6/pause35 ned 5 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "pain5": {
+   "flows": 4192,
+   "hit": 112,
+   "weeks": 228,
+   "phases": {
+    "base": 84,
+    "peak": 37,
+    "sharpen": 58,
+    "taper": 49
+   },
+   "ex": [
+    "r-d4-7w-15km-v45-1/pre1/pain5 ned 2,3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre3/pain5 ned 2,3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre6/pain5 ned 2,3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1wed/pain5 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1end/pain5 ned 3,4,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2wed/pain5 ned 4,5,6 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "pain8": {
+   "flows": 4192,
+   "hit": 117,
+   "weeks": 196,
+   "phases": {
+    "peak": 28,
+    "sharpen": 50,
+    "taper": 49,
+    "base": 69
+   },
+   "ex": [
+    "r-d4-7w-15km-v45-1/pre1/pain8 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre3/pain8 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre6/pain8 ned 2,3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1wed/pain8 ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1end/pain8 ned 4,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2wed/pain8 ned 4,5,6 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "fatigue": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "fatigue/+k": {
+   "flows": 29344,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "faster": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "slower": {
+   "flows": 4192,
+   "hit": 10,
+   "weeks": 14,
+   "phases": {
+    "peak": 14
+   },
+   "ex": [
+    "r-d5-12w-60km-v38-1/w5wed/slower ned 6,7 (pre adaptacije u planu: 0)",
+    "r-d5-12w-60km-v38-1/w5end/slower ned 6,7 (pre adaptacije u planu: 0)",
+    "r-d5-12w-60km-v38-1/w6wed/slower ned 7 (pre adaptacije u planu: 0)",
+    "r-d5-12w-60km-v38-1/w6end/slower ned 7 (pre adaptacije u planu: 0)",
+    "r-d5-13w-50km-v38-0/w6wed/slower ned 7,9 (pre adaptacije u planu: 0)",
+    "r-d5-13w-50km-v38-0/w6end/slower ned 7,9 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "test5k": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "incomplete": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "locked": {
+   "flows": 4192,
+   "hit": 0,
+   "weeks": 0,
+   "phases": {},
+   "ex": []
+  },
+  "chain": {
+   "flows": 4192,
+   "hit": 90,
+   "weeks": 179,
+   "phases": {
+    "base": 53,
+    "sharpen": 53,
+    "taper": 47,
+    "peak": 26
+   },
+   "ex": [
+    "r-d4-7w-15km-v45-1/pre1/chain ned 2,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre3/chain ned 2,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre6/chain ned 2,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1wed/chain ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1end/chain ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2wed/chain ned 4,5,6 (pre adaptacije u planu: 0)"
+   ]
+  },
+  "chain/2": {
+   "flows": 4192,
+   "hit": 153,
+   "weeks": 357,
+   "phases": {
+    "peak": 92,
+    "taper": 66,
+    "base": 105,
+    "sharpen": 94
+   },
+   "ex": [
+    "r-d3-6w-16km-v58-0/w1wed/chain/2 ned 3 (pre adaptacije u planu: 0)",
+    "r-d3-6w-16km-v58-0/w1end/chain/2 ned 3 (pre adaptacije u planu: 0)",
+    "r-d3-6w-16km-v58-0/w2wed/chain/2 ned 4 (pre adaptacije u planu: 0)",
+    "r-d3-6w-16km-v58-0/w2end/chain/2 ned 4 (pre adaptacije u planu: 0)",
+    "r-d4-6w-25km-v45-0/w2end/chain/2 ned 5 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre1/chain/2 ned 2,3,5,6 (pre adaptacije u planu: 3)"
+   ]
+  },
+  "painPause": {
+   "flows": 4192,
+   "hit": 132,
+   "weeks": 220,
+   "phases": {
+    "peak": 42,
+    "sharpen": 79,
+    "taper": 53,
+    "base": 46
+   },
+   "ex": [
+    "r-d4-7w-15km-v45-1/pre1/painPause ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre3/painPause ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/pre6/painPause ned 3,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1wed/painPause ned 5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w1end/painPause ned 4,5,6 (pre adaptacije u planu: 0)",
+    "r-d4-7w-15km-v45-1/w2wed/painPause ned 5,6 (pre adaptacije u planu: 0)"
+   ]
+  }
+ }
+}

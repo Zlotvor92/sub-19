@@ -100,7 +100,8 @@ describe('Odluka 1: šablon po broju dana', () => {
       }
       const q = quality(w)[0]?.workout.qualityType;
       if (w.phase === 'base' && !w.deload) baseTypes.push(q === 'R' ? 'R' : 'T');
-      if (w.phase === 'peak' && !w.deload) expect(q).toBe('I');
+      // 5k-v2.14.0 (P5 F1): poslednja ne-rasteretna nedelja vrhunca je kontrolno trčanje.
+      if (w.phase === 'peak' && !w.deload) expect(q).toBe(w.test ? 'TEST_3K' : 'I');
       if (w.phase === 'sharpen') expect(q).toBe('RP');
     }
     expect(baseTypes.length).toBeGreaterThanOrEqual(2);

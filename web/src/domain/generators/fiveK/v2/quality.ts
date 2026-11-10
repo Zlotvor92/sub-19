@@ -4,7 +4,8 @@
    Isto važi za oštrenje trkačke nedelje.
    2.5.0: ograničenja adaptacije (f.limits.quality) ulaze ovde, pre izbora: 'none' = nedelja bez
    kvaliteta i bez ubrzanja; 'one' = jedan kvalitet doze rasterećenja (izgradnja: kao rasteretna nedelja,
-   taper: kao taper 2), bez progresije (dose null). */
+   taper: kao taper 2), bez progresije (dose null). 5k-v2.14.0 (P5): f.test u vrhuncu plana sa rezultatom (F1) i f.hold
+   (F2, Odluka 10: doza ne raste) čitaju oba izbora. */
 
 import { feelRaceSharpener, simpleWeekQuality } from './feel.ts';
 import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';

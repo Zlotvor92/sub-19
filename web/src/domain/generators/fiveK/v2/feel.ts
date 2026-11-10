@@ -27,6 +27,8 @@ import {
   qualityBudgets,
   roundRecoverySec,
   tFormOf,
+  HOLD_NOTE,
+  testRun,
   tMaxSec,
   warmupBand,
   type FeelDose,
@@ -228,7 +230,7 @@ function choose(
   return smallest((w) => w >= most * P.quality.repFillShare - 1e-9);
 }
 
-type Pick = { kind: FeelKind; d: FeelDose; how: Mode | 'hold' };
+type Pick = { kind: FeelKind; d: FeelDose; how: Mode | 'hold' | 'held' };
 
 /** Doza vrste `kind` u nedelji: prva u fazi → 'first'; inače veći rad → druga struktura → (hold). */
 function progress(
@@ -255,23 +257,6 @@ function progress(
   )
     return { kind, d: prev, how: 'hold' };
   return null;
-}
-
-/** Kontrolno trčanje (Odluka 5): WU, 3 km maksimalno ravnomerno, CD. Ne ulazi u udele I/T/R. */
-export function testRun(targetKm: number, p: PaceModel): Workout {
-  const band = warmupBand(targetKm);
-  const e = F.effort.test;
-  return buildWorkout(
-    'quality',
-    'TEST_3K',
-    `Kontrolno trčanje: ${F.test.km} km ${e.cue} (${rpe(e)})`,
-    [
-      { kind: 'warmup', km: band.warmupKm },
-      { kind: 'test', km: F.test.km, effort: e },
-      { kind: 'cooldown', km: band.cooldownKm }
-    ],
-    p
-  );
 }
 
 /** Oštrenje trkačke nedelje po osećaju: RP po osećaju, raceWeekSharpener ponavljanja, prvi izbor. */
@@ -411,6 +396,21 @@ export function simpleWeekQuality(
   }
 
   const notes: string[] = [];
+  // 5k-v2.14.0 (P5 F2, Odluka 10): nedelja zadržane doze (steps.holdWeek) — svaka vrsta sa poslednjom dozom te vrste u
+  // fazi, ako staje u budžet nedelje i ponudu faze; inače postojeći izbor (prva doza vrste nije rast).
+  const holdW = f.hold === true;
+  const pick = (kind: FeelKind, holdAllowed: boolean): Pick | null => {
+    const s = SPEC[kind];
+    const d = pf[kind];
+    if (
+      holdW &&
+      d &&
+      s.est(d, p) <= b[s.budget] + 1e-9 &&
+      s.cands(f.phase).some((c) => c.reps === d.reps && Math.abs(c.len - d.len) < 1e-9)
+    )
+      return { kind, d, how: 'held' };
+    return progress(kind, f.phase, b, p, d, holdAllowed);
+  };
   // Glavni kvalitet (ili kontrolno trčanje); jedan kvalitet bez smene ne sme da se drži (isti trening
   // dve nedelje zaredom), uz smenu ili drugi kvalitet sme.
   let main: Pick | null = null;
@@ -421,9 +421,9 @@ export function simpleWeekQuality(
       `Kontrolno trčanje ${F.test.km} km umesto glavnog kvaliteta; plan ostaje po osećaju (tempo iz testa ulazi tek kroz adaptaciju).`
     );
   } else {
-    main = progress(k.main, f.phase, b, p, pf[k.main], holdOk(k.main));
+    main = pick(k.main, holdOk(k.main));
     if (!main && k.other) {
-      main = progress(k.other, f.phase, b, p, pf[k.other], holdOk(k.other));
+      main = pick(k.other, holdOk(k.other));
       if (main)
         notes.push(
           `${SPEC[k.main].label} nema mesta u obimu nedelje — umesto toga ${SPEC[k.other].label.toLowerCase()}.`
@@ -439,9 +439,7 @@ export function simpleWeekQuality(
   // Drugi kvalitet (2 kvaliteta); tempo koji ne staje → fartlek u T budžetu.
   let second: Pick | null = null;
   if (k.second) {
-    second =
-      progress(k.second, f.phase, b, p, pf[k.second], true) ??
-      (k.second === 'TEMPO' ? progress('FARTLEK_T', f.phase, b, p, pf.FARTLEK_T, true) : null);
+    second = pick(k.second, true) ?? (k.second === 'TEMPO' ? pick('FARTLEK_T', true) : null);
     if (!second)
       return fail(`${SPEC[k.second].label}: budžet ${b[SPEC[k.second].budget]} km nije dovoljan.`);
     if (main?.how === 'hold' && second.how === 'hold')
@@ -464,7 +462,7 @@ export function simpleWeekQuality(
   };
   let key = keyOf(q2);
   let same = prev?.key === key ? prev.same + 1 : 1;
-  if (f.phase === 'base' && second && same > P.quality.baseSameDoseMaxWeeks) {
+  if (f.phase === 'base' && second && !holdW && same > P.quality.baseSameDoseMaxWeeks) {
     const s = SPEC[second.kind];
     const alt = choose(s.cands(f.phase), (x) => s.est(x, p), b[s.budget], second.d, 'alt');
     if (alt) {
@@ -474,6 +472,7 @@ export function simpleWeekQuality(
       same = prev?.key === key ? prev.same + 1 : 1;
     }
   }
+  if ([main, second].some((x) => x?.how === 'held')) notes.push(HOLD_NOTE);
   for (const x of [main, second])
     if (x?.how === 'alt')
       notes.push(

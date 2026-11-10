@@ -166,9 +166,9 @@ describe('regresija prema bf47249 (heš bez oznake verzije)', () => {
 
   // 5K-09: otisci prema bf47249 su zamenjeni otiskom prema c13c258 bez korisničkog teksta (Z2); promene bf47249 →
   // c13c258 (s06/pain5, mreža bola P, pouka 35) su u istoriji (SEGMENT-08d…08l izveštaji).
-  it('postojeće mreže (732) i mreža bola P (392): regresija prema a859ca7 (P4) — promenjeni nose razlog (P4, lanac); 0 odbijanja', () => {
+  it('postojeće mreže (732) i mreža bola P (392): regresija prema 8e87fd4 (P5) — promenjeni nose razlog (P5, lanac); 0 odbijanja', () => {
     const ref = ref09('n08d');
-    expect([ref.against, ref.count]).toEqual(['a859ca7', 1124]);
+    expect([ref.against, ref.count]).toEqual(['8e87fd4', 1124]);
     const net = adaptNetworkFlows(api, raceTimeForVdot).map((f) => ({ key: f.key, res: f.result }));
     expect(net).toHaveLength(732);
     expect(flows.length).toBe(392);

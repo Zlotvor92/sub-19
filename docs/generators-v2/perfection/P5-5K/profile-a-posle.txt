@@ -1,0 +1,30 @@
+5k-v2.14.0 VDOT 44.1; napomene plana:
+  · Kontrolno trčanje 3 km u nedelji 11 (umesto intervala): meri formu pred oštrenje. Unesi rezultat — tempo od sledeće nedelje se prilagođava.
+1 base cilj 40 plan 38.5: q1:R: 4 × 400 m (oporavak 400 m lagano) [6.8 km 38 min] | q2:T: 2,5 km kontinuirano [6.5 km 36 min] | easy:Lagano 11,2 km + 4 × 20 s ubrzanja [11.2 km 66 min] | long:Dugi lagano 14 km [14 km 83 min]
+    · Lagan trk najviše 11,2 km uz dugi 14 km, pa nedelja ima 38,5 km umesto 40 km; za pun obim treba više dana trčanja.
+2 base cilj 41.3 plan 39.8: q1:R: 5 × 400 m (oporavak 400 m lagano) [7.6 km 42 min] | q2:T: 3 km kontinuirano [7 km 38 min] | easy:Lagano 11,2 km + 4 × 20 s ubrzanja [11.2 km 66 min] | long:Dugi lagano 14 km [14 km 83 min]
+    · Lagan trk najviše 11,2 km uz dugi 14 km, pa nedelja ima 39,8 km umesto 41,3 km; za pun obim treba više dana trčanja.
+3 base cilj 41.3 plan 40.96: q1:R: 5 × 400 m (oporavak 400 m lagano) [7.6 km 42 min] | q2:T: 2 × 2000 m (oporavak 1:00) [8.16 km 44 min] | easy:Lagano 11,2 km + 4 × 20 s ubrzanja [11.2 km 66 min] | long:Dugi lagano 14 km [14 km 83 min]
+4 base* cilj 33 plan 33: q1:R: 4 × 400 m (oporavak 400 m lagano) [6.3 km 35 min] | easy:Lagano 7,6 km [7.6 km 45 min] | easy:Lagano 7,6 km [7.6 km 45 min] | long:Dugi lagano 11,5 km [11.5 km 68 min]
+    · Rasterećenje: jedan kratak kvalitet.
+5 base cilj 41.3 plan 41.28: q1:R: 5 × 400 m (oporavak 400 m lagano) [7.6 km 42 min] | q2:T: 4 × 1000 m (oporavak 1:00) [8.48 km 46 min] | easy:Lagano 11,2 km + 4 × 20 s ubrzanja [11.2 km 66 min] | long:Dugi lagano 14 km [14 km 83 min]
+6 base cilj 41.3 plan 39.8: q1:R: 5 × 400 m (oporavak 400 m lagano) [7.6 km 42 min] | q2:T: 3 km kontinuirano [7 km 38 min] | easy:Lagano 11,2 km + 4 × 20 s ubrzanja [11.2 km 66 min] | long:Dugi lagano 14 km [14 km 83 min]
+    · Lagan trk najviše 11,2 km uz dugi 14 km, pa nedelja ima 39,8 km umesto 41,3 km; za pun obim treba više dana trčanja.
+7 base cilj 41.3 plan 40.96: q1:R: 5 × 400 m (oporavak 400 m lagano) [7.6 km 42 min] | q2:T: 2 × 2000 m (oporavak 1:00) [8.16 km 44 min] | easy:Lagano 11,2 km + 4 × 20 s ubrzanja [11.2 km 66 min] | long:Dugi lagano 14 km [14 km 83 min]
+8 base* cilj 33 plan 33: q1:R: 4 × 400 m (oporavak 400 m lagano) [6.3 km 35 min] | easy:Lagano 7,6 km [7.6 km 45 min] | easy:Lagano 7,6 km [7.6 km 45 min] | long:Dugi lagano 11,5 km [11.5 km 68 min]
+    · Rasterećenje: jedan kratak kvalitet.
+9 peak cilj 41.3 plan 41.3: q1:I: 4 × 1000 m (oporavak 4:15 lagano) [10.04 km 54 min] | q2:T: 2 × 2000 m (oporavak 1:00) [8.16 km 44 min] | easy:Lagano 9,1 km [9.1 km 54 min] | long:Dugi lagano 14 km [14 km 83 min]
+10 peak cilj 41.3 plan 41.3: q1:I: 6 × 700 m (oporavak 3:00 lagano) [10.6 km 57 min] | q2:T: 2 × 2000 m (oporavak 1:00) [8.16 km 44 min] | easy:Lagano 8,5 km [8.54 km 51 min] | long:Dugi lagano 14 km [14 km 83 min]
+11 peak TEST cilj 41.3 plan 40.36: q1:Kontrolno trčanje: 3 km maksimalno ravnomerno (RPE 9–10) [7 km 42 min] | q2:T: 2 × 2000 m (oporavak 1:00) [8.16 km 44 min] | easy:Lagano 11,2 km [11.2 km 67 min] | long:Dugi lagano 14 km [14 km 83 min]
+    · Kontrolno trčanje 3 km umesto intervala: meri formu pred oštrenje. Unesi rezultat — tempo od sledeće nedelje se prilagođava.
+12 peak* cilj 33 plan 33: q1:I: 3 × 1000 m (oporavak 4:15 lagano) [7.86 km 42 min] | easy:Lagano 6,8 km [6.84 km 41 min] | easy:Lagano 6,8 km [6.8 km 40 min] | long:Dugi lagano 11,5 km [11.5 km 68 min]
+    · Rasterećenje: jedan kratak kvalitet.
+13 sharpen cilj 41.3 plan 41.3: q1:RP: 4 × 1000 m (oporavak 2:15 lagano) [9.08 km 48 min] | q2:R: 6 × 300 m (oporavak 300 m lagano) [7.3 km 40 min] | easy:Lagano 10,9 km [10.92 km 65 min] | long:Dugi lagano 14 km [14 km 83 min]
+14 sharpen cilj 41.3 plan 41.3: q1:RP: 6 × 800 m (oporavak 1:45 lagano) [10.2 km 54 min] | q2:R: 6 × 300 m (oporavak 300 m lagano) [7.3 km 40 min] | easy:Lagano 9,8 km [9.8 km 58 min] | long:Dugi lagano 14 km [14 km 83 min]
+15 taper cilj 35.1 plan 35.1: q1:RP: 3 × 1000 m (oporavak 2:15 lagano) [7.72 km 42 min] | q2:T: 2 km kontinuirano [6 km 33 min] | easy:Lagano 9,2 km [9.18 km 55 min] | long:Dugi lagano 12,2 km [12.2 km 73 min]
+    · Smanjenje obima pred trku.
+16 race cilj 14.68 plan 14.68: easy:Lagano 6,1 km [6.1 km 36 min] | q1:Oštrenje: 4 × 400 m RP (oporavak 1:00 lagano) [4.58 km 25 min] | easy:Lagano 4 km + 4 × 20 s ubrzanja [4 km 23 min] | race:Trka 5K [8.5 km 43 min]
+    · Trkačka nedelja: trka se ne računa u nedeljni obim.
+    · Dan pred trku: lagano 4 km sa ubrzanjima.
+    · Trkačka nedelja: 14,7 km (najviše 20,7 km, 50 % najvećeg nedeljnog obima; lagan dan najviše 6,1 km).
+upozorenja: PLANNED_BELOW_TARGET@1, PLANNED_BELOW_TARGET@2, PLANNED_BELOW_TARGET@6, GOAL_STATUS@-

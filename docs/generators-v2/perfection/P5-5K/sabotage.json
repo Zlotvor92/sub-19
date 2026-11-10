@@ -1,0 +1,79 @@
+[
+  {
+    "name": "P5-F1a test od 12 nedelja (bilo 10)",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "resultTest: { minWeeks: 10 },",
+    "replace": "resultTest: { minWeeks: 12 },",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F1b test u prvoj (ne poslednjoj) nedelji vrhunca",
+    "file": "src/domain/generators/fiveK/v2/periodize.ts",
+    "find": "  for (let i = frames.length - 1; i >= 0; i--) {\n    const f = frames[i]!;\n    if (f.phase === 'peak' && !f.deload) return f.index;",
+    "replace": "  for (let i = 0; i < frames.length; i++) {\n    const f = frames[i]!;\n    if (f.phase === 'peak' && !f.deload) return f.index;",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F1c početnik dobija test",
+    "file": "src/domain/generators/fiveK/v2/periodize.ts",
+    "find": "  if (a.beginner) return null;\n  if (a.feel) return 'feel';",
+    "replace": "  if (a.feel && !a.beginner) return 'feel';",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F1d validator ne proverava nedelju testa plana sa rezultatom",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "  const expectTest = expectedTestWeek(testKind, weeks);",
+    "replace": "  const expectTest = testKind === 'result' ? (weeks.find((w) => w.test)?.index ?? null) : expectedTestWeek(testKind, weeks);",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2a prag RPE 10 (bilo 9)",
+    "file": "src/domain/generators/fiveK/v2/policy.ts",
+    "find": "    hardRpe: 9,",
+    "replace": "    hardRpe: 10,",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2b neodrađen dan kvaliteta nije težak",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "    return done.length === 0 || done.some((x) => (x.rpe ?? 0) >= A.hardRpe);",
+    "replace": "    return done.some((x) => (x.rpe ?? 0) >= A.hardRpe);",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2c bol ne nadjačava",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "    over10.push('bol');\n",
+    "replace": "",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2d isti zapisi prave nov korak",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "    const seen = steps.find((s) => s.hard && day(s.hard.lastHard) >= day(lastHard));",
+    "replace": "    const seen = steps.find((s) => s.hard && day(s.hard.lastHard) > day(lastHard));",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2e konstruktor ne zadržava dozu (baza 4–5 dana)",
+    "file": "src/domain/generators/fiveK/v2/workouts.ts",
+    "find": "  const hr = hold ? heldReps(pm, b.R, p.R, q.rRepMaxSec) : null;",
+    "replace": "  const hr = null as RepChoice | null;",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2f validator ne proverava DOSE_HOLD",
+    "file": "src/domain/generators/fiveK/v2/validate.ts",
+    "find": "      if (a && zw(b, z) > zw(a, z) + EPS)",
+    "replace": "      if (a && zw(b, z) > zw(a, z) + EPS && false)",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  },
+  {
+    "name": "P5-F2g nedelja zadržavanja u taperu",
+    "file": "src/domain/generators/fiveK/v2/assess.ts",
+    "find": "      const ok = over10.length === 0 && x !== null && build(n) && !x.deload && !step.deload;",
+    "replace": "      const ok = over10.length === 0 && x !== null && !x.deload && !step.deload;",
+    "tests": ["src/domain/generators/fiveK/v2/p5.node.test.ts"]
+  }
+]

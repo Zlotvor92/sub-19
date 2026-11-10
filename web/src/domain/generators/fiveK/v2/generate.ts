@@ -12,7 +12,7 @@ import {
   pacesFromVdot,
   raceTimeForVdot
 } from './paces.ts';
-import { controlTest, isShortPrep, periodize, phaseCounts } from './periodize.ts';
+import { isShortPrep, periodize, phaseCounts, testKindOf } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { buildRunWalkPlan } from './runWalk.ts';
 import { choosePattern } from './schedule.ts';
@@ -95,7 +95,7 @@ export function construct(
     input.startDate,
     totalWeeks,
     rules.deloadEvery,
-    controlTest(a),
+    testKindOf(a, totalWeeks),
     a.beginner
   );
   const vol = planVolume(frames0, input.currentWeeklyKm, paces, a);
@@ -410,6 +410,12 @@ function generateRaw(raw: unknown): GenerateResult {
           .replace('{date}', old.date)
       );
   }
+  // 5k-v2.14.0 (P5 F1): plan sa rezultatom ≥ 10 nedelja — kontrolno trčanje pred oštrenje.
+  const rTest = a.feel ? undefined : frames.find((f) => f.test);
+  if (rTest)
+    notes.push(
+      P.feel.resultTestNote.replace('{week}', String(weekLabel(rTest.index, input.weekOffset)))
+    );
   if (a.beginner)
     notes.push(
       `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez intervala (I); obim raste najviše ${Math.round(rules.maxBuildGrowth * 100)} % nedeljno, dugi trk najviše ${rules.longMaxSec / 60} min, najveći nedeljni obim najviše ${Math.round((rules.peakCapFactor - 1) * 100)} % iznad početnog, rasterećenje svake ${rules.deloadEvery}. nedelje.`

@@ -4,7 +4,8 @@
    odluke 2, 3 i 6 se iz zapisa primenjuju samo na pokriven deo; bol, umor, rezultat i eksplicitna pauza
    (facts.breaks) uvek. 2.6.1 (Odluka 1 dopuna): bol — ovde se određuju samo sidro povratka (nedelja r) i
    nivo pre bola; osnovu računa volume.returnBaseKm. 2.7.0 (Odluka 9): oznaka `reduced` (cilj koraka je
-   smanjenje: pauza, manjak — da; višak — ne); rasterećenja ukida steps.framesFor. */
+   smanjenje: pauza, manjak — da; višak — ne); rasterećenja ukida steps.framesFor. 5k-v2.14.0 (P5 F2): Odluka 10 —
+   dva uzastopna kvaliteta preteška ili preskočena → sledeća nedelja izgradnje bez rasta doze (korak `hard`). */
 
 import { lowVolumeForPace, weekLabel } from './input.ts';
 import { addDays, dayNumber, mustDay } from './dates.ts';
@@ -375,6 +376,8 @@ export function assess(
   const lastHurt = hurt.length > 0 ? Math.max(...hurt.map((x) => day(x.date))) : null;
   const painSeen =
     lastHurt !== null ? steps.find((s) => s.pain !== null && day(s.asOf) >= lastHurt) : undefined;
+  /** 5k-v2.14.0 (P5 F2): aktivni uslovi koji nadjačavaju Odluku 10 (bol, pauza, umor, manjak izvršenja). */
+  const over10: string[] = [];
   if (painSeen)
     reason(
       'PAIN',
@@ -386,6 +389,7 @@ export function assess(
     const restN = max >= A.painRestMin ? A.restDays : 0;
     if (restN > 0) step.rest = { from: next, to: addDays(asOf, restN) };
     step.pain = { from: addDays(asOf, restN + 1), to: addDays(asOf, restN + A.painDays) };
+    over10.push('bol');
     if (r <= N && build(r)) {
       step.returnFrom = { week: r, share: A.painEasyFactor };
       step.levelKm = levelBefore(Math.min(...hurt.map((x) => day(x.date))));
@@ -442,6 +446,7 @@ export function assess(
     }
     step.orientation = step.restart && N - n + 1 < A.restartFullPrepWeeks;
     volumeRule = true;
+    over10.push('pauza');
     reason(
       'PAUSE',
       true,
@@ -474,6 +479,7 @@ export function assess(
       step.deload = true;
       if (dw !== n) step.deloadWeek = dw;
       volumeRule = true;
+      over10.push('umor');
     }
     reason(
       'FATIGUE',
@@ -514,6 +520,7 @@ export function assess(
         step.underFrom = addDays(asOf, w2[0] - t);
         step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
+        over10.push('manjak izvršenja');
       }
       reason(
         'UNDER_EXECUTION',
@@ -538,6 +545,58 @@ export function assess(
           `Izvršeno > ${Math.round(A.overShare * 100)}% planiranog dve nedelje zaredom (${round1(a1)}/${round1(p1)}, ${round1(a2)}/${round1(p2)} km): ${ok ? `plan se ne povećava (nedelja ${wl(n)}: ${step.startKm} km). Više od plana povećava rizik; drži se plana` : 'nadjačano, ili sledeća nedelja nije nedelja izgradnje bez rasterećenja'}.`
         );
       }
+    }
+  }
+  // Odluka 10 (5k-v2.14.0, P5 F2; heuristika, odluka organizatora): dani kvaliteta plana (Q1/Q2, ne test) u poslednjih
+  // hardLookbackDays dana do asOf; dan je poznat kad ima zapis (dayId, inače datum) ili je u potpunoj pokrivenosti ili
+  // u prijavljenoj pauzi. Težak = neodrađen (nijedan završen zapis sa km/trajanjem; poznat dan bez zapisa) ili završen
+  // sa RPE ≥ hardRpe. Dva uzastopna (po datumu) teška → sledeća nedelja izgradnje (n) ne podiže dozu nijednog slota
+  // (limits.hold; konstruktor quality.ts, validator DOSE_HOLD); cilj obima se ne menja. Ispod bola, pauze, umora i
+  // manjka izvršenja (tada applied false); isti zapisi ne prave nov korak (kao umor, pouka 36).
+  const qDays = planDays
+    .filter(
+      (d) =>
+        (d.role === 'q1' || d.role === 'q2') &&
+        d.workout.kind === 'quality' &&
+        d.workout.qualityType !== 'TEST_3K' &&
+        day(d.date) <= t &&
+        t - day(d.date) < A.hardLookbackDays
+    )
+    .sort((x, y) => day(x.date) - day(y.date));
+  const inBreak = (n0: number): boolean =>
+    facts.breaks.some((b) => day(b.from) <= n0 && n0 <= day(b.to));
+  const hardOf = (d: PlanDay): boolean | null => {
+    const recs = W.filter((x) => (x.dayId ?? x.date) === d.date);
+    if (recs.length === 0)
+      return coveredDays(cov, day(d.date), day(d.date)) || inBreak(day(d.date)) ? true : null;
+    const done = recs.filter((x) => x.completed && (x.km > 0 || x.durationSec > 0));
+    return done.length === 0 || done.some((x) => (x.rpe ?? 0) >= A.hardRpe);
+  };
+  let pair: [PlanDay, PlanDay] | null = null;
+  for (let i = 1; i < qDays.length; i++)
+    if (hardOf(qDays[i - 1]!) === true && hardOf(qDays[i]!) === true)
+      pair = [qDays[i - 1]!, qDays[i]!];
+  if (pair) {
+    const lastHard = pair[1].date;
+    const seen = steps.find((s) => s.hard && day(s.hard.lastHard) >= day(lastHard));
+    const dates = `${pair[0].date}, ${pair[1].date}`;
+    if (seen)
+      reason(
+        'HARD_QUALITY',
+        false,
+        `Treninzi kvaliteta ${dates} preteški ili preskočeni: za ove zapise doza je već zadržana ili nadjačana (prilagođavanje ${seen.asOf}).`
+      );
+    else {
+      const x = wk(n);
+      const ok = over10.length === 0 && x !== null && build(n) && !x.deload && !step.deload;
+      step.hard = { lastHard, hold: ok ? { from: x.startDate, to: x.endDate } : null };
+      reason(
+        'HARD_QUALITY',
+        ok,
+        ok
+          ? A.hardMessage.replace('{dates}', dates).replace('{week}', String(wl(n)))
+          : `Treninzi kvaliteta ${dates} preteški ili preskočeni: ${over10.length > 0 ? `nadjačano (${over10.join(', ')})` : 'sledeća nedelja je rasterećenje, taper ili trka — doza ionako ne raste'}.`
+      );
     }
   }
   if (

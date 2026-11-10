@@ -1329,6 +1329,8 @@ export const canon09 = (r: unknown): string =>
 
 /** Razlog promene toka prema c13c258 (ispravka segmenta 09); CH = drugi korak lanca posle promenjenog prvog. */
 export type Why09 =
+  /* P5 (5k-v2.14.0): F1 test u planu sa rezultatom ≥ 10 ned ili F2 zadržana doza / HARD_QUALITY (markP5). */
+  | 'P5'
   /* P4 (5k-v2.13.0): S1 budžet I/RP 10/12 % ili S2 VDOT > 60 (markP4). */
   | 'P4'
   | 'F1'
@@ -1473,10 +1475,25 @@ export function markP4(r: unknown): boolean {
     );
 }
 
+/** P5 (5k-v2.14.0): kontinuirani plan trkača sa rezultatom ≥ 10 nedelja (F1: kontrolno trčanje u vrhuncu) ili rezultat
+    adaptacije sa razlogom HARD_QUALITY / nedeljom zadržane doze (F2, Odluka 10). */
+export function markP5(r: unknown): boolean {
+  if (reasonsOf(r).some((x) => x.condition === 'HARD_QUALITY')) return true;
+  return plansOf(r)
+    .filter((p) => p.planType !== 'runWalk')
+    .some(
+      (p) =>
+        p.weeks.some((w) => (w as { hold?: boolean }).hold === true) ||
+        (p.experience !== 'beginner' && p.paceMode === 'vdot' && p.weeks.length >= 10)
+    );
+}
+
 /** Oznaka razloga na TEKUĆEM rezultatu (provera u testu; razlog određuje skripta otisaka poređenjem sa c13c258). */
 export function mark09(why: Why09, r: unknown): boolean {
   const ps = plansOf(r);
   switch (why) {
+    case 'P5':
+      return markP5(r);
     case 'P4':
       return markP4(r);
     case 'F1':

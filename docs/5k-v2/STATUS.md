@@ -2,7 +2,7 @@
 
 Kako se koristi: svaki prozor prvo čita ovaj fajl; na kraju dodaje jedan blok.
 
-Trenutno stanje: 5K v2 (`5k-v2.13.0`, P4; ranije `5k-v2.11.1`, 09) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
+Trenutno stanje: 5K v2 (`5k-v2.14.0`, P5; ranije `5k-v2.13.0`, P4) je u aplikaciji IZA PREKIDAČA (08a; prekidač vidljiv samo uz `VITE_FIVEK_V2` ili
 administratoru — 08b). Generisanje, čuvanje, prikaz i sat čitaju strukturu v2. 08b: adaptacija povezana — činjenice iz
 aplikacije na jednom mestu (`fiveK/v2/app/facts.ts`) → `adaptFiveKV2` → pregled → potvrda → revizija; vraćanje, traka,
 promena cilja, Forma iz rezultata. 08c: činjenice iz uvoza tačne — za plan v2 trčanje koje nije upareno sa danom plana
@@ -242,3 +242,16 @@ Stalni uslovi za sve v2 generatore: `AGENTS.md`.
 - Otisci regresije prema a859ca7 (`segment13.*-a859ca7.json`, `docs/generators-v2/perfection/P4/fixture13.ts`, razlog P4/CH)
   zamenjuju `segment10.*-b9c4728.json`. Van foldera: byteSame 10K/HM/MAR — ponovo snimljeni, promenjeni samo ključevi „5K v2".
 - Izveštaj: `docs/generators-v2/perfection/reports/P4-REPORT.md`.
+
+## P5 — trenerski kvalitet: kontrolni test i kvalitet u adaptaciji (5k-v2.14.0, 2026-11-10)
+
+- Commit: commit koji sadrži ovaj blok (SHA u završnoj poruci) | Polazni: 8e87fd4 | zadatak
+  `docs/generators-v2/perfection/briefs/P5-forma-ubrzanja-pocetna-doza.md` (za 5K samo F1 i F2; F3 i F4 preskočeni).
+- F1: plan sa rezultatom (ne početnik) ≥ 10 nedelja — kontrolno trčanje 3 km (isto kao po osećaju) u poslednjoj
+  ne-rasteretnoj nedelji vrhunca, dan Q1 umesto I (`periodize.testKindOf/resultTestWeekOf`, validator TEST_WEEK).
+- F2 (Odluka 10): dva uzastopna kvaliteta preteška (RPE ≥ 9) ili preskočena u 14 dana → sledeća nedelja izgradnje bez
+  rasta doze (`assess` korak `hard`, `steps.holdWeek`, izbor kvaliteta, validator DOSE_HOLD); ispod bola/pauze/umora/manjka.
+- Otisci regresije prema 8e87fd4 (`segment14.*-8e87fd4.json`, `docs/generators-v2/perfection/P5-5K/fixture14.ts`, razlog
+  P5/CH) zamenjuju `segment13.*-a859ca7.json`. Van foldera: byteSame 10K/HM/MAR (samo ključevi „5K v2") i oznaka verzije
+  u `features/onboarding/fiveKV2Flow.test.tsx`.
+- Izveštaj: `docs/generators-v2/perfection/reports/P5-5K-REPORT.md`.

@@ -213,7 +213,10 @@ describe('Odluka 5: brz trkač sa malim obimom (15 km, VDOT ~53)', () => {
   // 2.4.0 (Segment 05, Odluka 3): bez višeg nivoa I više nije zadržan — ista doza druge strukture
   // (ovde kraći oporavak); identičan I dve nedelje zaredom ne postoji.
   it('11 ned: I neopadajući; bez višeg nivoa ista doza druge strukture (ne zadržan I)', () => {
-    const peak = planOf(FAST_SMALL(11)).weeks.filter((w) => w.phase === 'peak' && !w.deload);
+    // 5k-v2.14.0 (P5 F1): bez nedelje kontrolnog trčanja.
+    const peak = planOf(FAST_SMALL(11)).weeks.filter(
+      (w) => w.phase === 'peak' && !w.deload && !w.test
+    );
     let alt = 0;
     for (let i = 1; i < peak.length; i++) {
       const a = roleDay(peak[i - 1]!, 'q1').workout;

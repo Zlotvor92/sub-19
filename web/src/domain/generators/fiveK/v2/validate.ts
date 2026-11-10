@@ -7,12 +7,12 @@
 import { lowVolumeForPace, weekLabel } from './input.ts';
 import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import {
-  controlTest,
   deloadFirstOf,
+  expectedTestWeek,
   noRegularDeload,
   periodize,
   phaseCounts,
-  testWeekOf
+  testKindOf
 } from './periodize.ts';
 import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { validateRunWalk } from './runWalkValidate.ts';
@@ -30,7 +30,15 @@ import {
   secondQualityEasy,
   sharpenerCandidates
 } from './week.ts';
-import { athleteAt, baseAthlete, doseResetDate, inRange, pacesAt, vdotAt } from './steps.ts';
+import {
+  athleteAt,
+  baseAthlete,
+  doseResetDate,
+  holdWeek,
+  inRange,
+  pacesAt,
+  vdotAt
+} from './steps.ts';
 import type {
   FiveKV2Plan,
   FiveKV2RunWalkPlan,
@@ -504,14 +512,18 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   );
   const lockedTest = (w: PlanWeek): boolean =>
     w.days.some((d) => d.workout.qualityType === 'TEST_3K' && protectedDay(d));
-  const expectTest = controlTest(a) ? testWeekOf(weeks) : null;
-  // 2.5.0: posle adaptacije test najviše jednom, samo u nedelji po osećaju, oznaka ⇔ trening.
+  // 5k-v2.14.0 (P5 F1): vrsta testa plana (periodize.testKindOf) — po osećaju nedelja 3/4, sa rezultatom poslednja
+  // ne-rasteretna nedelja vrhunca.
+  const testKind = testKindOf(a, weeks.length);
+  const expectTest = expectedTestWeek(testKind, weeks);
+  // 2.5.0: posle adaptacije test najviše jednom, samo u nedelji po osećaju, oznaka ⇔ trening. 5k-v2.14.0: plan sa
+  // rezultatom — test u nedelji sa tempom (nov rezultat ga ukida od svoje nedelje, steps.framesFor).
   if (ad) {
     const flagged = weeks.filter((w) => w.test);
     if (
       flagged.length > 1 ||
       testWeeks.length > 1 ||
-      flagged.some((w) => !aw(w).feel) ||
+      flagged.some((w) => testKind !== 'result' && !aw(w).feel) ||
       weeks.some((w) => !lockedTest(w) && w.test !== testWeeks.includes(w))
     )
       err('TEST_WEEK', 'Adaptiran plan: kontrolno trčanje najviše jednom, u nedelji po osećaju.');
@@ -522,9 +534,11 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   )
     err(
       'TEST_WEEK',
-      a.feel
+      testKind === 'feel'
         ? `Plan po osećaju: kontrolno trčanje tačno jednom, u nedelji ${expectTest === null ? '—' : weekLabel(expectTest, plan.input.weekOffset)} (3. ili 4., ne rasteretna).`
-        : 'Plan sa rezultatom nema kontrolno trčanje.'
+        : testKind === 'result'
+          ? `Plan sa rezultatom (≥ ${P.feel.resultTest.minWeeks} nedelja): kontrolno trčanje tačno jednom, u nedelji ${expectTest === null ? '—' : weekLabel(expectTest, plan.input.weekOffset)} (poslednja ne-rasteretna nedelja vrhunca).`
+          : `Plan nema kontrolno trčanje (početnik ili plan sa rezultatom kraći od ${P.feel.resultTest.minWeeks} nedelja).`
     );
 
   // --- Aritmetika komponenti.
@@ -779,7 +793,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           plan.input.startDate,
           weeks.length,
           rulesOf(a0).deloadEvery,
-          controlTest(a0),
+          testKindOf(a0, weeks.length),
           a0.beginner
         ),
         plan.input.currentWeeklyKm,
@@ -972,6 +986,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       !w.deload &&
       !w.limits?.quality &&
       !w.test &&
+      !w.hold &&
       !aw(w).feel &&
       !a.beginner
     ) {
@@ -1036,7 +1051,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           `Glavni ${b.phase === 'sharpen' ? 'RP' : 'I'} rad ${fmtDose(mainDose(b))} manji od prethodne nedelje (${fmtDose(mainDose(a))}).`,
           b.index
         );
-    if (qualityKey(a) === qualityKey(b))
+    // 5k-v2.14.0 (P5 F2, Odluka 10): nedelja zadržane doze sme da ponovi par (ponavlja poslednju dozu).
+    if (qualityKey(a) === qualityKey(b) && !b.hold)
       err(
         'QUALITY_REPEAT',
         `Isti par kvaliteta kao nedelja ${weekLabel(a.index, plan.input.weekOffset)}.`,
@@ -1071,12 +1087,54 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   for (let i = P.quality.baseSameDoseMaxWeeks; i < baseSteady.length; i++) {
     const ws = baseSteady.slice(i - P.quality.baseSameDoseMaxWeeks, i + 1);
     const run = ws.map(baseKey);
-    if (run.every((k) => k === run[0]) && ws.every((w) => seg(w) === seg(ws[0]!)))
+    if (
+      run.every((k) => k === run[0]) &&
+      ws.every((w) => seg(w) === seg(ws[0]!)) &&
+      !ws.some((w) => w.hold)
+    )
       err(
         'BASE_PLATEAU',
         `${run.length} uzastopne ne-rasteretne nedelje baze iste doze (${run[0]}).`,
         baseSteady[i]!.index
       );
+  }
+
+  // 5k-v2.14.0 (P5 F2, Odluka 10): oznaka zadržane doze ⇔ steps.holdWeek (isto pravilo kao konstruktor); u toj nedelji
+  // rad nijedne zone (I uključujući RP, T, R) nije veći od poslednje ne-rasteretne nedelje izgradnje iste faze i
+  // segmenta doze sa tom zonom, i nedelja testa (DOSE_HOLD).
+  for (const w of weeks)
+    if (checked(w) && !!w.hold !== holdWeek(w, steps))
+      err('DOSE_HOLD', 'Oznaka zadržane doze ne odgovara koraku adaptacije.', w.index);
+  for (const b of steady.filter((w) => w.hold)) {
+    const zw = (w: PlanWeek, z: 'I' | 'T' | 'R'): number =>
+      w.days
+        .filter((d) => d.countsToWeek && d.workout.kind === 'quality')
+        .reduce(
+          (x, d) =>
+            x + (z === 'I' ? d.workout.workKm.I + d.workout.workKm.RP : d.workout.workKm[z]),
+          0
+        );
+    // Referenca: i nedelja kontrolnog trčanja (drugi kvalitet u njoj nastavlja progresiju; test nije rad zone).
+    const ref = weeks.filter(
+      (w) =>
+        isBuild(w) &&
+        !w.deload &&
+        !w.stridesOnly &&
+        !w.limits?.quality &&
+        segOf(w) !== null &&
+        w.index < b.index &&
+        w.phase === b.phase &&
+        seg(w) === seg(b)
+    );
+    for (const z of ['I', 'T', 'R'] as const) {
+      const a = [...ref].reverse().find((w) => zw(w, z) > EPS);
+      if (a && zw(b, z) > zw(a, z) + EPS)
+        err(
+          'DOSE_HOLD',
+          `Nedelja zadržane doze: ${z} ${zw(b, z).toFixed(2)} km > ${zw(a, z).toFixed(2)} km (nedelja ${weekLabel(a.index, plan.input.weekOffset)}).`,
+          b.index
+        );
+    }
   }
 
   // --- Dugi, lagani, zagrevanje/hlađenje.

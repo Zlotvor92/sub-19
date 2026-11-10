@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.13.0',
+  version: '5k-v2.14.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -259,6 +259,16 @@ export const FIVE_K_V2_POLICY = {
     },
     /** Kontrolno trčanje: 3 km maksimalno ravnomerno u 3. nedelji, ili 4. ako je 3. rasteretna. */
     test: { km: 3, weeks: [3, 4] as const },
+    /** 5k-v2.14.0 (P5 F1, heuristika, odluka organizatora): plan SA REZULTATOM (ne početnik) i ukupno ≥ minWeeks
+        nedelja dobija isti test (3 km, WU/CD, pravila obima) u poslednjoj ne-rasteretnoj nedelji vrhunca (faza pre
+        oštrenja), na danu Q1 umesto I (periodize.resultTestWeekOf; konstruktor, validator TEST_WEEK). */
+    resultTest: { minWeeks: 10 },
+    resultTestNote:
+      'Kontrolno trčanje 3 km u nedelji {week} (umesto intervala): meri formu pred oštrenje. Unesi rezultat — tempo ' +
+      'od sledeće nedelje se prilagođava.',
+    resultTestWeekNote:
+      'Kontrolno trčanje 3 km umesto intervala: meri formu pred oštrenje. Unesi rezultat — tempo od sledeće nedelje ' +
+      'se prilagođava.',
     effort: {
       strides: { rpeMin: 8, rpeMax: 8, cue: 'brzo i opušteno, ne sprint' },
       hills: { rpeMin: 8, rpeMax: 8, cue: 'snažno uzbrdo, kontrolisano; nazad lagano' },
@@ -402,7 +412,15 @@ export const FIVE_K_V2_POLICY = {
     orientationMessage:
       'Cilj je orijentir: posle duge pauze ostaje manje od 6 nedelja do trke, priprema nije potpuna.',
     painMessage:
-      'Bol: nedelju dana bez kvaliteta, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled.'
+      'Bol: nedelju dana bez kvaliteta, dugi ≤ 60 min, lagani kraći. Ako bol traje ili se pojačava, potraži stručni pregled.',
+    /** 5k-v2.14.0 (P5 F2, Odluka 10; heuristika, odluka organizatora): dva uzastopna dana kvaliteta plana (Q1/Q2, ne
+        test; oba u poslednjih hardLookbackDays dana do asOf, poznata) od kojih je svaki neodrađen ili sa RPE ≥ hardRpe
+        → sledeća nedelja izgradnje ne podiže dozu nijednog slota (ponavlja poslednju dozu); obim se ne menja. */
+    hardLookbackDays: 14,
+    hardRpe: 9,
+    hardMessage:
+      'Poslednja dva zahtevna treninga ({dates}) su bila preteška ili preskočena — doza nedelje {week} ne raste; ako ' +
+      'tempo deluje pretežak, unesi nov rezultat ili uradi test.'
   },
 
   /** 2.6.0: plan trčanje/hodanje (canRun30Min = false; runWalk.ts, runWalkAssess.ts). Lestvica i pragovi
@@ -1001,5 +1019,29 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'davao je I_REP 306 s > 300 s: 10 odbijenih tokova od 104 800 trajne rane mreže 08g → 0. Sačuvan plan ' +
       '5k-v2.12.0 i stariji prilagođavaju se po 2.13.0 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/generators-v2/perfection/reports/P4-REPORT.md.'
+  },
+  {
+    version: '5k-v2.14.0',
+    decision:
+      'P5 (program „trenerski kvalitet v2", odluke organizatora; HEURISTIKE). (F1) Plan SA REZULTATOM (ne početnik) i ' +
+      'ukupno ≥ feel.resultTest.minWeeks (10) nedelja dobija tačno jedan kontrolni test — isti kao plan po osećaju ' +
+      '(3 km maksimalno ravnomerno, WU/CD pojasa nedelje, isti obračun obima, test nije rad zone) — u poslednjoj ' +
+      'ne-rasteretnoj nedelji vrhunca (faza pre oštrenja), na danu Q1 umesto I; drugi kvalitet nedelje T kao u vrhuncu. ' +
+      'Jedino mesto: periodize.testKindOf/resultTestWeekOf (konstruktor, koraci adaptacije, validator TEST_WEEK). Stanje I ' +
+      'slota ostaje iz nedelje pre testa. Rezultat testa ulazi postojećim putem (Odluka 1: tempo od sledeće nedelje; nov ' +
+      'rezultat ukida test od svoje nedelje); test koji adaptacija blokira (rasterećenje, ograničenje kvaliteta) otpada — ' +
+      'premešta se samo u planu po osećaju. Napomena nedelje i plana: čemu test služi i da se rezultat unese. Mreža ' +
+      '(4 374 ulaza): 2 761 plan dobija test (sve u vrhuncu, 4–5 nedelja do trke), sve ostale nedelje bajt-iste, 0 novih ' +
+      'odbijanja; u 207 planova nedelja testa ima planirano < cilj (lagan ≤ 0,8 × dugi, T1 — prijavljeno). (F2, Odluka 10) ' +
+      'Dva uzastopna dana kvaliteta plana (Q1/Q2, ne test) u poslednjih adapt.hardLookbackDays (14) dana do asOf, oba ' +
+      'poznata (zapis ili potpuna pokrivenost ili prijavljena pauza), svaki neodrađen ili sa RPE ≥ adapt.hardRpe (9) → ' +
+      'sledeća nedelja izgradnje (n, ne rasterećenje) ne podiže dozu nijednog slota: ponavlja poslednju dozu slota u ' +
+      'fazi (R/I/RP, T, R oštrenja; po osećaju svaka vrsta) kad staje u budžet nedelje, inače postojeći izbor; prva doza ' +
+      'vrste u fazi nije rast. Cilj obima se ne menja. Jedino mesto: assess (korak `hard`), steps.holdWeek (oznaka ' +
+      'nedelje `hold`), izbor kvaliteta (workouts/feel), validator DOSE_HOLD (rad zone ≤ poslednje nedelje izgradnje iste ' +
+      'faze sa tom zonom; nedelja zadržavanja sme da ponovi par — izuzetak QUALITY_REPEAT/BASE_PLATEAU/donji prag). Ispod ' +
+      'bola, pauze, umora i manjka izvršenja (tada HARD_QUALITY applied false); isti zapisi ne prave nov korak (kao umor, ' +
+      'pouka 36); taper i trkačka nedelja bez efekta. Sačuvan plan 5k-v2.13.0 i stariji prilagođavaju se po 2.14.0 ' +
+      '(KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/P5-5K-REPORT.md.'
   }
 ];

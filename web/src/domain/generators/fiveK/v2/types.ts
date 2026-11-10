@@ -116,10 +116,13 @@ export interface WeekFrame {
   deload: boolean;
   /** 1 ili 2 za nedelje tapera, inače null. */
   taperStep: 1 | 2 | null;
-  /** 2.4.0: kontrolno trčanje 3 km umesto glavnog kvaliteta (samo plan po osećaju). */
+  /** 2.4.0: kontrolno trčanje 3 km umesto glavnog kvaliteta (plan po osećaju; 5k-v2.14.0 i plan sa rezultatom ≥ 10
+      nedelja, periodize.testKindOf). */
   test: boolean;
   /** 2.5.0: ograničenja adaptacije za ovu nedelju (steps.ts); izostavljeno u planu generatora. */
   limits?: WeekLimits;
+  /** 5k-v2.14.0 (P5 F2, Odluka 10; steps.holdWeek): doza nijednog slota ne raste (ponavlja poslednju). */
+  hold?: true;
 }
 
 /** 2.5.0: ograničenja nedelje izvedena iz koraka adaptacije (datumski opsezi → dani nedelje). */
@@ -416,6 +419,10 @@ export interface AdaptStep {
   reduced?: boolean;
   /** 5k-v2.11.1 (Z7): prozor zapisa [from, asOf] iz kog je manjak izvršenja napravio ovaj korak (samo kad je primenjen). */
   underFrom?: IsoDate;
+  /** 5k-v2.14.0 (P5 F2, Odluka 10): okidač „dva uzastopna kvaliteta preteška ili preskočena" — `lastHard` = datum drugog
+      dana (isti zapisi ne prave nov korak, ni kad korak nije primenjen); `hold` = nedelja (datumi) u kojoj doza
+      kvaliteta ne raste, null = nije primenjeno (nadjačano ili sledeća nedelja nije izgradnja). */
+  hard?: { lastHard: IsoDate; hold: DateRange | null };
 }
 
 export interface FiveKV2Adaptation {
@@ -436,6 +443,8 @@ export type AdaptCondition =
   | 'PAUSE'
   | 'PAIN'
   | 'FATIGUE'
+  /* 5k-v2.14.0 (P5 F2, Odluka 10): dva uzastopna kvaliteta preteška ili preskočena. */
+  | 'HARD_QUALITY'
   /* 2.6.0: trčanje/hodanje — nivo posle činjenica i prelaz na kontinuirani plan. */
   | 'LEVEL'
   | 'TRANSITION';

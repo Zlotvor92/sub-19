@@ -5,7 +5,7 @@
 import { addDays, mustDay, weekdayIndex, weekdayOf } from './dates.ts';
 import { hasFreshResult } from './input.ts';
 import { feelPaces, pacesFromVdot, vdotFromResult } from './paces.ts';
-import { controlTest, noRegularDeload, periodize, rePeriodize } from './periodize.ts';
+import { noRegularDeload, periodize, rePeriodize, testKindOf } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete, type RunDaysCount } from './policy.ts';
 import type {
   AdaptStep,
@@ -70,6 +70,14 @@ function dateOf(f: WeekFrame, w: Weekday): IsoDate {
  * kvaliteta ('none' / 'one', zamena q1 ↔ q2 kad je samo q1 u zabrani); dan u oneQuality → 'one'.
  * Trkačka nedelja: samo dani (oštrenje bira dan van zabrane, week.ts). Bez ograničenja → undefined.
  */
+/** 5k-v2.14.0 (P5 F2, Odluka 10) — JEDINO mesto: nedelja izgradnje bez rasterećenja u opsegu koraka `hard.hold`; doza
+    nijednog slota ne raste (konstruktor quality.ts, validator DOSE_HOLD). */
+export const holdWeek = (
+  f: Pick<WeekFrame, 'phase' | 'deload' | 'startDate'>,
+  steps: readonly AdaptStep[]
+): boolean =>
+  isBuild(f) && !f.deload && steps.some((s) => s.hard?.hold && inRange(f.startDate, s.hard.hold));
+
 export function limitsOf(
   f: WeekFrame,
   pattern: Pattern,
@@ -166,7 +174,7 @@ export function framesFor(
 ): WeekFrame[] {
   const a = baseAthlete(input);
   const every = rulesOf(a).deloadEvery;
-  let frames = periodize(input.startDate, totalWeeks, every, controlTest(a), a.beginner);
+  let frames = periodize(input.startDate, totalWeeks, every, testKindOf(a, totalWeeks), a.beginner);
   if (steps.length === 0) return frames;
   // 2.8.0 (pouka 29, N2a): kontrolno trčanje iz prethodnog (upisanog) plana — test u zaštićenom danu je urađen
   // (ostaje u svojoj nedelji, ne premešta se); inače nedelja testa prethodnog plana (premeštanje iz ranijeg
@@ -210,6 +218,7 @@ export function framesFor(
   for (const f of frames) {
     const l = limitsOf(f, pattern, input.runDays, input.raceDate, steps);
     if (l) f.limits = l;
+    if (holdWeek(f, steps)) f.hold = true;
   }
   const last = steps[steps.length - 1]!.asOf;
   const t = frames.find((f) => f.test);

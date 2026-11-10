@@ -25,8 +25,9 @@ const errorsOf = (p: FiveKV2Plan): string[] =>
     .map((v) => v.rule);
 const roleDay = (w: PlanWeek, role: PlanDay['role']): PlanDay =>
   w.days.find((d) => d.role === role)!;
+// 5k-v2.14.0 (P5 F1): nedelja kontrolnog trčanja (plan sa rezultatom ≥ 10 ned) nije nedelja progresije doze.
 const isSteadyBuild = (w: PlanWeek): boolean =>
-  !w.deload && (w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen');
+  !w.deload && !w.test && (w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen');
 const mainWork = (w: PlanWeek): number => {
   const k = roleDay(w, 'q1').workout.workKm;
   return w.phase === 'sharpen' ? k.RP : k.I;
@@ -44,7 +45,7 @@ describe('plan nosi identitet politike (Uslov 6)', () => {
   it.each(ALL)('%s', (_, p) => {
     const plan = planOf(p);
     expect(plan.policyId).toBe('5k-v2');
-    expect(plan.policyVersion).toBe('5k-v2.13.0');
+    expect(plan.policyVersion).toBe(P.version);
   });
 });
 

@@ -107,6 +107,7 @@ const CONDITION: Readonly<Record<AdaptReason['condition'], string>> = {
   PAUSE: 'pauza',
   PAIN: 'bol',
   FATIGUE: 'umor',
+  HARD_QUALITY: 'preteški ili preskočeni treninzi kvaliteta',
   LEVEL: 'nivo trčanja/hodanja',
   TRANSITION: 'prelaz na kontinuirani plan'
 };
@@ -131,6 +132,7 @@ const BANNER: ReadonlySet<AdaptReason['condition']> = new Set([
   'PAIN',
   'PAUSE',
   'FATIGUE',
+  'HARD_QUALITY',
   'NEW_RESULT',
   'UNDER_EXECUTION',
   'OVER_EXECUTION',
