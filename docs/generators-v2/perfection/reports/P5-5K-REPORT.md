@@ -111,14 +111,34 @@ zone i pokriva i brži rezultat; B2 menja samo ovaj slučaj. Obim: 0,24 % „slo
 
 ## Promenjeni planovi i otisci regresije (K7, prema 8e87fd4; razlog P5 = `testInputs.markP5`, CH = lanac)
 
-FIXTURES
+| mreža | tokova | promenjeno | razlog | trajanje K7 |
+|---|---|---|---|---|
+| g07 (generisanje) | 700 | 160 | P5 160 (planovi sa rezultatom ≥ 10 ned) | 5 s |
+| n08d | 1 124 | 410 | P5 410 | 8 s |
+| e08e | 16 804 | 10 597 | P5 10 597 (većinom samo razlog HARD_QUALITY applied false u pauzi) | 106 s |
+| x08g | 104 800 | 32 837 | P5 24 391, CH 8 446 | 551 s |
+
+0 tokova bez razloga, 0 novih odbijanja (K5: cela rana mreža 104 800 tokova posle izmene, 0 odbijenih). Otisci
+`segment14.*-8e87fd4.json` zamenjuju `segment13.*-a859ca7.json` (obrisani).
 
 Van foldera (`BYTE_SAME_RECORD=1`, 6/6 posle snimka): 10K `byteSame.068410b` 20/140 ključeva, HM `28da6af` 14/150, MAR
 `9443676` 14/223 — svi promenjeni ključevi sadrže „5K v2", 0 drugih.
 
 ## Testovi i sabotaže
 
-TESTS
+| komanda (iz `web/`) | trajanje | ishod |
+|---|---|---|
+| `npx vitest run --project node src/domain/generators/fiveK/v2/p5.node.test.ts` (namenski, više puta) | ≈ 2 s | 9/9 |
+| `npx vitest run --project node src/domain/generators/fiveK/v2` (brz, u toku rada) | 48 s | 1.: 28 pada (oznaka verzije, stari testovi „vrhunac uvek I", „plan sa rezultatom nema test") → usklađeno; 2.: 777/777 |
+| `npx vitest run --project node src/domain/generators/{tenK,halfMarathon,marathon}/v2/app/byteSame.node.test.ts` (+ `BYTE_SAME_RECORD=1`) | 7 s | 6/6 posle snimka |
+| `npx playwright test e2e/fivek-v2.spec.ts --trace off` | 42 s | 3/3 |
+| `npm run check` (1.) | 115 s | format: 4 otiska neformatirana → prettier |
+| `npm run check` (2.) | 316 s | 3886/3887 — `features/plan/fiveKV2Import.test.tsx` (vidi pitanje 6) → usklađeno, 1/1 |
+| `npx vitest run --changed 8e87fd4` | 129 s | 1936/1936 (151 fajl) |
+| `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK/v2` | 239 s | 796/796 (42 fajla) |
+
+Van foldera `fiveK/v2` u testovima: oznaka verzije u `features/onboarding/fiveKV2Flow.test.tsx`, očekivanje u
+`features/plan/fiveKV2Import.test.tsx`, tri byteSame JSON-a. Nije pokretano: `check:full`, pun nivo drugih distanci, `v1`.
 
 Sabotaže (`node scripts/sabotage.mjs ../docs/generators-v2/perfection/P5-5K/sabotage.json`, brz nivo, `--bail=1`):
 **11/11 palo, 21,4 s**, stanje `src` isto posle (`P5-5K/sabotage-result.json`): F1 prag 12 ned, test u prvoj nedelji
@@ -139,6 +159,10 @@ adaptacija bez novih zapisa sa sledećom nedeljom izgradnje).
    10 597/16 804 tokova samo razlogom HARD_QUALITY applied false. Ako to nije željeno: beležiti samo kad nijedan drugi
    uslov ne objašnjava propuštene dane.
 5. Nalaz P4: B1 ili B2 (gore), ili ostaviti.
+6. Uvoz (Strava): trčanja na danima odmora (zapisi van plana) uz potpunu pokrivenost ostavljaju dane kvaliteta bez
+   zapisa → po F2 „preskočeni" → sledeća nedelja zadržava dozu (test `fiveKV2Import` je ranije očekivao „plan se ne
+   menja"; usklađen). Doslovno po pravilu; ako nije željeno: dan kvaliteta bez zapisa nije „preskočen" kad iste nedelje
+   postoji zapis van plana.
 
 ## Mišljenje (odvojeno od merenja)
 
