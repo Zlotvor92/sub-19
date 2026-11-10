@@ -304,3 +304,14 @@ Plan P9 (do kraja):
   (5K p01). Kod aplikacije nije menjan.
 - Nalaz za kasnije (nije greška ispisa): 5K nema `userWeekNotes` ekvivalent — napomene idu sirove iz generatora.
 - Sledeće: čeka se P9b (10K, Opus, pun nivo u toku) → organizator ponovo ispisuje 10K → poruka glavnom treneru.
+
+### 10. 11. 2026, 18:40 — P9b završen (Opus, 10k-v2.14.0), tab arhiviran; krug 2 poslat glavnom treneru
+
+- P9b `9a3b60e`: `periodize.testWeekOf` — plan po osećaju 9–11 ned dobija test u prvoj ne-rasteretnoj nedelji razvoja
+  ≥ 4. Mreža F 11 880: bez testa 4320 → 1080 (ostaje samo 8 ned — prekratak), 0 novih odbijanja; planovi sa
+  rezultatom i početnici bajt-isti. Po tabu: pun nivo usklađen, `--changed` 1014 ✔, E2E 3/3, `npm run check` 3375 ✔.
+  Nezavisna provera organizatora: brzi nivo `tenK/v2` 437/437.
+- Sitno otvoreno: napomena plana od 8 ned bez testa kaže „posle prilagođavanja" (neprecizno za nov plan).
+- Organizator ponovo ispisao `P9/plans/10K` (10k-v2.14.0).
+- Verzije za krug 2: 5k-v2.15.3, 10k-v2.14.0, hm-v2.12.0, marathon-v2.12.0.
+- Poruka glavnom treneru (`session_01GnHHiWk1PhzvzdGjhxZ5ob`): oceniti `P9/plans` → `coach/ROUND-02.md` + `.json`.
