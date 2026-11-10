@@ -530,7 +530,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(r.plan.adaptation!.steps[0]!.returnFrom).toEqual({ week: 4, share: 0.7 });
     expect(rows(r.plan.weeks)).toEqual([
       [33, 24.9, 0], // 5k-v2.15.0 (P8 G1, G1b): bilo 37,3 / 26,8
-      [30.8, 29.2, 2], // 5k-v2.15.0 (P8 G6): lagan ≤ 0,7 × dugi → planirano < cilj
+      [30.8, 29.8, 2], // 5k-v2.16.0 (K3-B): lagan ≤ 0,75 × dugi → planirano < cilj (P8 G6 0,7: 29,2)
       [33.8, 33.8, 2] // 5k-v2.16.0 (K3-A): I vrhunca iz opsega minuta → planirano = cilj
     ]);
     expect(r.reasons.find((x) => x.condition === 'PAIN')!.message).toContain(
@@ -573,7 +573,7 @@ describe('primeri A–E: 4 dana (uto/čet/sub/ned), 13 ned od 2026-10-26, 40 km,
     expect(r.plan.weeks[3]!.deload).toBe(false);
     expect(rows(r.plan.weeks)).toEqual([
       [30.8, 23.8, 0],
-      [33.8, 31.8, 2],
+      [33.8, 32.4, 2], // 5k-v2.16.0 (K3-B): lagan ≤ 0,75 × dugi (P8 G6 0,7: 31,8)
       [37.1, 37.1, 2] // 5k-v2.16.0 (K3-A): I vrhunca iz opsega minuta → planirano = cilj
     ]);
   });

@@ -31,9 +31,17 @@ export function easyMinKm(phase: Phase, p: PaceModel, deload = false): number {
 }
 
 /** 5k-v2.15.2 (P8 G6, dopuna odluke organizatora): udeo laganog prema dugom — JEDINO mesto: redovan plan sa 4+ dana
-    buildMaxShareOfLong4 (0,70); 3 dana i POČETNIK (svaki broj dana) buildMaxShareOfLong (0,80). */
-export const easyShareOf = (days: number, beginner: boolean): number =>
-  days >= 4 && !beginner ? P.easy.buildMaxShareOfLong4 : P.easy.buildMaxShareOfLong;
+    buildMaxShareOfLong4 (0,70); 3 dana i POČETNIK (svaki broj dana) buildMaxShareOfLong (0,80). 5k-v2.16.0 (K3-B):
+    redovan plan sa TAČNO 4 dana buildMaxShareOfLongExact4 (0,75), u nedelji 1 plana week1MaxShareOfLongExact4 (0,80:
+    nedelja 1 ne sme biti mnogo ispod trenutnog obima). `week` = redni broj nedelje plana (0 = nebitno). */
+export const easyShareOf = (days: number, beginner: boolean, week = 0): number =>
+  beginner || days < 4
+    ? P.easy.buildMaxShareOfLong
+    : days === 4
+      ? week === 1
+        ? P.easy.week1MaxShareOfLongExact4
+        : P.easy.buildMaxShareOfLongExact4
+      : P.easy.buildMaxShareOfLong4;
 
 /** 5k-v2.12.0 (T1): najduži lagan trening uz dugi `longKm` — JEDINO mesto: izgradnja bez rasterećenja
     ⌊easy.buildMaxShareOfLong × dugi⌋ na 0,1 km; inače dugi (lagan ≤ dugi). */
@@ -42,9 +50,10 @@ export function easyCapKm(
   phase: Phase,
   deload: boolean,
   days: number,
-  beginner = false
+  beginner = false,
+  week = 0
 ): number {
-  const share = easyShareOf(days, beginner);
+  const share = easyShareOf(days, beginner, week);
   return easyVsLongWeek(phase, deload) ? floor1(longKm * share) : longKm;
 }
 
@@ -92,7 +101,8 @@ export function weekLengths(
   p: PaceModel,
   a: Athlete,
   deload = false,
-  maxLongKm = Infinity
+  maxLongKm = Infinity,
+  week = 0
 ): { longKm: number; shares: number[]; capped: boolean; overLong: boolean; easyMin: number } {
   const easyMin = easyMinKm(phase, p, deload);
   // 2.2.0: treći član na 0,1 km (ne 0,5): sa 0,5 km mala rasteretna nedelja (13 km) dobija dugi 3 km i
@@ -102,9 +112,10 @@ export function weekLengths(
     Math.min(longCapKm(target, p, a), floor1(target - qualityKm - n * easyMin), maxLongKm);
   let n = nEasy;
   if (easyVsLongWeek(phase, deload))
-    while (n > 0 && easyCapKm(longOf(n), phase, deload, a.days, a.beginner) + 1e-9 < easyMin) n--;
+    while (n > 0 && easyCapKm(longOf(n), phase, deload, a.days, a.beginner, week) + 1e-9 < easyMin)
+      n--;
   const longKm = longOf(n);
-  const cap = easyCapKm(longKm, phase, deload, a.days, a.beginner);
+  const cap = easyCapKm(longKm, phase, deload, a.days, a.beginner, week);
   const rest = r2(target - qualityKm - longKm);
   const capped = rest > n * cap + 1e-9;
   return {

@@ -286,11 +286,12 @@ describe('Odluka 3: pauza', () => {
     expect(r.plan.weeks[4]!.days.some(hasStrides)).toBe(false);
     expect(qualityDays(r.plan.weeks[5]!)).toHaveLength(1);
     // 5k-v2.15.0 (P8 G6): obim 7 dana pre pauze iz urađenih dana (lagan na granici 0,7 × dugi) → 70 % = 23,5
+    // 5k-v2.16.0 (K3-B): 4 dana lagan ≤ 0,75 × dugi (nedelja 1: 0,80) → 70 % = 24,3
     // (bilo 34,7 km → 24,3).
     const lastRun = addDays(asOf, -21);
     const pre7 = doneFacts(plan, lastRun, addDays(lastRun, -6)).reduce((a, x) => a + x.km, 0);
     expect(r.plan.weeks[4]!.targetKm).toBe(Math.round(pre7 * 0.7 * 10) / 10);
-    expect(r.plan.weeks[4]!.targetKm).toBe(23.5);
+    expect(r.plan.weeks[4]!.targetKm).toBe(24.3);
   });
 
   it('pauza pred redovno rasterećenje: rast dalje od cilja pauze, ne od obima pre pauze', () => {
@@ -468,7 +469,7 @@ describe('Odluka 7: prioritet i kombinacije', () => {
     const r = adapt(plan, f, asOf);
     checkAdapted(plan, r, asOf);
     expect(r.reasons.filter((x) => x.applied).map((x) => x.condition)).toEqual(['PAIN', 'PAUSE']);
-    expect(r.plan.weeks[4]!.targetKm).toBe(23.5); // 5k-v2.15.0 (P8 G6): 0,7 × obim 7 dana pre pauze (bilo 24,3)
+    expect(r.plan.weeks[4]!.targetKm).toBe(24.3); // 5k-v2.16.0 (K3-B): 4 dana 0,75 × dugi (P8 G6 0,7: 23,5)
     expect(qualityDays(r.plan.weeks[5]!)).toHaveLength(0); // bol (do asOf+10) jači od „1 kvalitet"
   });
 

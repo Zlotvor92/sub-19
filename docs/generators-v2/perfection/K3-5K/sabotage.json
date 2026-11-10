@@ -4,6 +4,27 @@
   "file": "src/domain/generators/fiveK/v2/workouts.ts",
   "find": "  if (targetKm + 1e-9 < d.fromKm) return null;",
   "replace": "  if (targetKm > -1) return null;",
-  "tests": ["src/domain/generators/fiveK/v2/k3.node.test.ts"]
+  "tests": [
+   "src/domain/generators/fiveK/v2/k3.node.test.ts"
+  ]
+ },
+ {
+  "name": "K3-B 4 dana kao 5+ (0,70)",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    buildMaxShareOfLongExact4: 0.75,",
+  "replace": "    buildMaxShareOfLongExact4: 0.7,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/k3.node.test.ts"
+  ]
+ },
+ {
+  "name": "K3-B nedelja 1 bez izuzetka 0,80",
+  "file": "src/domain/generators/fiveK/v2/lengths.ts",
+  "find": "      ? week === 1\n",
+  "replace": "      ? week === -1\n",
+  "tests": [
+   "src/domain/generators/fiveK/v2/k3.node.test.ts",
+   "src/domain/generators/fiveK/v2/app/app.node.test.ts"
+  ]
  }
 ]

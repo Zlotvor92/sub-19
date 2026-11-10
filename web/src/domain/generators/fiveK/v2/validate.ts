@@ -323,7 +323,9 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           w.phase,
           pw(w),
           aw(w),
-          easyVsLongOff(w, a.beginner)
+          easyVsLongOff(w, a.beginner),
+          Infinity,
+          w.index
         );
         if (L.shares.length !== nEasy)
           err('EASY_REST', `Lagan dan manje (${easyRest}) ne odgovara dužinama nedelje.`, w.index);
@@ -370,7 +372,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
             w.phase,
             pw(w),
             aw(w),
-            w.deload
+            w.deload,
+            w.index
           ) !== null
         )
           err(
@@ -668,7 +671,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
                 w.phase,
                 easyVsLongOff(w, a.beginner),
                 nDays,
-                aw(w).beginner
+                aw(w).beginner,
+                w.index
               )
           ) < tolKm
       ) &&
@@ -679,7 +683,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       if (belowTargetShown(w.plannedKm, w.targetKm))
         warn(
           'PLANNED_BELOW_TARGET',
-          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner), nDays, aw(w).beginner)} km uz dugi ${long.workout.km} km; ${belowTargetAdvice(nDays, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}).`,
+          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner), nDays, aw(w).beginner, w.index)} km uz dugi ${long.workout.km} km; ${belowTargetAdvice(nDays, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}).`,
           w.index
         );
     } else if (limited(w) && w.plannedKm <= w.targetKm + tolKm) {
@@ -1279,11 +1283,11 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
         else if (
           d.role === 'easy' &&
           !easyVsLongOff(w, a.beginner) &&
-          d.workout.km > easyCapKm(lw.km, w.phase, false, nDays, aw(w).beginner) + EPS
+          d.workout.km > easyCapKm(lw.km, w.phase, false, nDays, aw(w).beginner, w.index) + EPS
         )
           err(
             'EASY_VS_LONG',
-            `Lagan ${d.workout.km} km > ${easyCapKm(lw.km, w.phase, false, nDays, aw(w).beginner)} km (${Math.round(easyShareOf(nDays, aw(w).beginner) * 100)} % dugog ${lw.km} km).`,
+            `Lagan ${d.workout.km} km > ${easyCapKm(lw.km, w.phase, false, nDays, aw(w).beginner, w.index)} km (${Math.round(easyShareOf(nDays, aw(w).beginner, w.index) * 100)} % dugog ${lw.km} km).`,
             w.index,
             d.date
           );

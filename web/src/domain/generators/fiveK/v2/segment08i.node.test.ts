@@ -177,8 +177,8 @@ describe('08i-b (5k-v2.10.1): zbir zaštićenih dana po činjenicama; test se ne
   it('više od plana (r-d4-10w-15km-v38-1, asOf čet ned 1): urađeni km 8,1 ulaze u zbir → ni bez kvaliteta ne staje: kvalitet ostaje + upozorenje', () => {
     const r = run('r-d4-10w-15km-v38-1', 'over120', '2026-11-05');
     const w = r.plan.weeks[0]!;
-    expect(w.protectedKm).toBe(8.1); // 5k-v2.15.0 (P8 G6): lagan 6,75 km × 120 % (bilo 6,8 km → 8,16)
-    expect(roles(w)).toBe('easy:3.2 q1:3.55 q2:3.5 long:4.7'); // 5k-v2.15.0 (P8 G6): bilo easy 3,25
+    expect(w.protectedKm).toBe(8.16); // 5k-v2.16.0 (K3-B): nedelja 1 lagan 6,8 km × 120 % (P8 G6: 6,75 → 8,1)
+    expect(roles(w)).toBe('easy:3.25 q1:3.55 q2:3.5 long:4.7'); // 5k-v2.16.0 (K3-B): nedelja 1 lagan ≤ 0,80 × dugi (P8 G6: 3,2)
     expect(
       r.plan.warnings.filter((v) => v.rule === 'MIXED_OVER_TARGET').map((v) => v.week)
     ).toEqual([1]);

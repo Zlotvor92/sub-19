@@ -383,6 +383,12 @@ export const FIVE_K_V2_POLICY = {
         (3 dana ostaje buildMaxShareOfLong 0,8). Jedino mesto: lengths.easyCapKm. 5k-v2.15.2: početnik (svaki broj
         dana) ostaje na buildMaxShareOfLong 0,8 — lengths.easyShareOf. */
     buildMaxShareOfLong4: 0.7,
+    /** 5k-v2.16.0 (K3-B, glavni trener krug 2 § 3f, heuristika): redovan plan sa TAČNO 4 dana — lagan ≤ 0,75 × dugi
+        (5+ dana buildMaxShareOfLong4 0,70; početnik 0,80). Cilj se ne spušta. Jedino mesto: lengths.easyShareOf. */
+    buildMaxShareOfLongExact4: 0.75,
+    /** 5k-v2.16.0 (K3-B): nedelja 1 redovnog plana sa tačno 4 dana — lagan ≤ 0,80 × dugi (nedelja 1 ≥ 95 % trenutnog
+        obima; 0,75 to ne daje u 327 planova mreže). Jedino mesto: lengths.easyShareOf. */
+    week1MaxShareOfLongExact4: 0.8,
     /* 5k-v2.15.1 (P8 završetak, odluka organizatora 1): varijanta B (0,75 uz spuštanje cilja kroz tabelu izvodljivih
        ciljeva) izmerena i odbačena — vrh cilja pada > 10 % u 36–79 % planova svake grupe sa 4+ dana
        (docs/generators-v2/perfection/P8-5K/g6.ts). Ostaje A: 0,70, cilj se ne spušta, planirano < cilj, upozorenje
@@ -1171,6 +1177,9 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       '30–45 km 12–16 min, 45–65 km 16–20 min, ≥ 65 km 18–24 min; VDOT < 40 najviše 18 min od 30 km; ispod 30 km ' +
       'sadašnje vrednosti. Gornja granica je plafon minuta I, u vrhuncu i budžet I; korak lestvice sme do donje granice. ' +
       'Jedino mesto: workouts.iDoseRange (minuteCapKm, iPeakBudget, iStepUp; validator I_SHARE / PEAK_MAIN_FLOOR isto). ' +
+      'K3-B: redovan plan sa tačno 4 dana lagan ≤ 0,75 × dugi (5+ dana 0,70, početnik 0,80), u nedelji 1 ≤ 0,80 ' +
+      '(nedelja 1 blizu trenutnog obima); cilj se ne spušta. Jedino mesto: lengths.easyShareOf (easyCapKm, weekLengths; ' +
+      'validator isto). ' +
       'Sačuvan plan 5k-v2.15.3 i stariji prilagođavaju se po 2.16.0 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/generators-v2/perfection/reports/K3-5K-REPORT.md.'
   }

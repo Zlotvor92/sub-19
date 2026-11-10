@@ -103,7 +103,8 @@ export function buildTrainingWeek(
   const easySecond =
     q1 !== null &&
     s.q2 !== null &&
-    secondQualityEasy(target, q1, s.q2, pattern.easy.length, f.phase, p, a, f.deload) !== null;
+    secondQualityEasy(target, q1, s.q2, pattern.easy.length, f.phase, p, a, f.deload, f.index) !==
+      null;
   const q2a = easySecond ? null : s.q2;
 
   const easyDays0: { w: Weekday; stridesOnly: boolean }[] = pattern.easy.map((w) => ({
@@ -122,7 +123,8 @@ export function buildTrainingWeek(
       p,
       a,
       t1Off,
-      f.qcap?.longKm
+      f.qcap?.longKm,
+      f.index
     );
   // 5k-v2.12.0 (T2): dan kvaliteta duži od dugog → zagrevanje/hlađenje na najnižem pojasu (qualityWarmupMin), dužine
   // jednom ponovo (oslobođeni km idu u lagane dane); i dalje duži → upozorenje LONG_SHORTER_THAN_QUALITY (validator).
@@ -210,7 +212,7 @@ export function buildTrainingWeek(
     );
   else if (easyCappedAtLong && belowTargetShown(plannedKm, target))
     notes.push(
-      `${EASY_CAP_NOTE} ${kmText(easyCapKm(longKm, f.phase, t1Off, a.days, a.beginner))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
+      `${EASY_CAP_NOTE} ${kmText(easyCapKm(longKm, f.phase, t1Off, a.days, a.beginner, f.index))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
     );
   if (rest.size > 0 || pain.size > 0)
     notes.push(
@@ -319,12 +321,13 @@ export function secondQualityEasy(
   phase: WeekFrame['phase'],
   p: PaceModel,
   a: Athlete,
-  deload = false
+  deload = false,
+  week = 0
 ): ReturnType<typeof weekLengths> | null {
-  const two = weekLengths(target, q1.km + q2.km, nEasy, phase, p, a, deload);
+  const two = weekLengths(target, q1.km + q2.km, nEasy, phase, p, a, deload, Infinity, week);
   const long = longRun(two.longKm, p).sec;
   if (q1.sec <= long && q2.sec <= long) return null;
-  const one = weekLengths(target, q1.km, nEasy + 1, phase, p, a, deload);
+  const one = weekLengths(target, q1.km, nEasy + 1, phase, p, a, deload, Infinity, week);
   return one.capped || one.shares.some((x) => x < one.easyMin) ? null : one;
 }
 
@@ -441,7 +444,7 @@ export function mixedRemainder(
   const easyMin = easyMinOf(week.phase, p, week.deload);
   const long = free.find((d) => d.role === 'long');
   const top = long
-    ? easyCapKm(long.workout.km, week.phase, week.deload, nDays, beginner)
+    ? easyCapKm(long.workout.km, week.phase, week.deload, nDays, beginner, week.index)
     : Infinity;
   // Prvi kvalitet (q1) ostaje najduže: otpada drugi, pa svi.
   const qs = free

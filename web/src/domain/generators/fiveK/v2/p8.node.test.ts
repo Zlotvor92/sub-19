@@ -316,15 +316,24 @@ describe('P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I)
     expect(steps).toBeGreaterThan(100);
   });
 
-  it('G6: redovan plan sa 4+ dana — lagan ≤ 0,7 × dugi u nedelji izgradnje (3 dana i početnik 0,8); uvodne nedelje početnika lagan ≤ dugi', () => {
+  it('G6: redovan plan sa 5+ dana — lagan ≤ 0,7 × dugi u nedelji izgradnje (K3-B: 4 dana 0,75, nedelja 1 0,80; 3 dana i početnik 0,8); uvodne nedelje početnika lagan ≤ dugi', () => {
     let weeks = 0;
     let onCap = 0;
     let begOver07 = 0;
     for (const { id, p } of SAMPLE) {
       // 5k-v2.15.2 (dopuna odluke): početnik ostaje na 0,8 za svaki broj dana.
       const beg4 = p.experience === 'beginner' && p.input.runDays.length >= 4;
-      const share = p.input.runDays.length >= 4 && !beg4 ? 7 : 8;
+      // 5k-v2.16.0 (K3-B): tačno 4 dana 0,75 (nedelja 1: 0,80); 5+ dana 0,70.
+      const nd = p.input.runDays.length;
       for (const w of p.weeks.filter((x) => isBuild(x) && !x.deload)) {
+        const share =
+          nd < 4 || beg4 || p.experience === 'beginner'
+            ? 8
+            : nd === 4
+              ? w.index === 1
+                ? 8
+                : 7.5
+              : 7;
         const long = w.days.find((d) => d.role === 'long');
         if (!long) continue;
         weeks++;
@@ -333,7 +342,7 @@ describe('P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I)
         const cap = intro ? long.workout.km : Math.floor(long.workout.km * share + 1e-9) / 10;
         for (const d of w.days.filter((x) => x.role === 'easy')) {
           expect(d.workout.km, `${id} ned ${w.index}`).toBeLessThanOrEqual(cap + EPS);
-          if (share === 7 && !intro && d.workout.km > cap - EPS) onCap++;
+          if (share < 8 && !intro && d.workout.km > cap - EPS) onCap++;
           // Početnik sa 4 dana zaista koristi prostor između 0,7 i 0,8 × dugi (inače bi pravilo bilo 0,7).
           if (beg4 && !intro && d.workout.km > Math.floor(long.workout.km * 7 + 1e-9) / 10 + EPS)
             begOver07++;

@@ -62,7 +62,7 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
 
   // 5k-v2.15.0 (P8 G6): granica nezavisno od lengths.easyCapKm — 4+ dana 0,7 × dugi, 3 dana 0,8 × dugi (naniže na
   // 0,1 km); uvodne nedelje početnika (postojeći izuzetak week.easyVsLongOff) lagan ≤ dugi.
-  it('mreža generatora (svaki 9. ulaz): lagan ≤ 0,7 (4+ dana) / 0,8 (3 dana) × dugi i ≥ max(3 km, 20 min); dugi ≤ udeo dana; 0 grešaka', () => {
+  it('mreža generatora (svaki 9. ulaz): lagan ≤ 0,7 (5+ dana) / 0,75 (4 dana) / 0,8 (3 dana) × dugi i ≥ max(3 km, 20 min); dugi ≤ udeo dana; 0 grešaka', () => {
     const bad: string[] = [];
     let weeks = 0;
     for (const b of sample) {
@@ -82,8 +82,10 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
           longCapKm(w.targetKm, p.paces, athleteOf(p)) + 1e-9
         );
         for (const d of w.days.filter((x) => x.role === 'easy')) {
-          // 5k-v2.15.2: početnik ostaje na 0,8 za svaki broj dana.
-          const share = p.input.runDays.length >= 4 && p.experience !== 'beginner' ? 7 : 8;
+          // 5k-v2.15.2: početnik ostaje na 0,8 za svaki broj dana. 5k-v2.16.0 (K3-B): tačno 4 dana 0,75 (nedelja 1 0,80).
+          const nd = p.input.runDays.length;
+          const share =
+            nd < 4 || p.experience === 'beginner' ? 8 : nd === 4 ? (w.index === 1 ? 8 : 7.5) : 7;
           const intro =
             p.experience === 'beginner' && w.phase === 'base' && w.index <= P.beginner.introWeeks;
           const cap = intro ? long.workout.km : Math.floor(long.workout.km * share + 1e-9) / 10;

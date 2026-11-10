@@ -76,7 +76,7 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
       const long = roleDay(w, 'long').workout.km;
       for (const d of w.days.filter((x) => x.role === 'easy'))
         expect(d.workout.km).toBeCloseTo(
-          easyCapKm(long, w.phase, w.deload, plan.input.runDays.length),
+          easyCapKm(long, w.phase, w.deload, plan.input.runDays.length, false, w.index),
           6
         );
       expect(w.plannedKm).toBeLessThan(w.targetKm);
@@ -99,10 +99,11 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
   it('validator: „lagan = dugi" uz oznaku → upozorenje; bez oznake → greška; lažna oznaka → greška', () => {
     const p = planOf(CAPPED);
     const w = p.weeks.find((x) => x.phase === 'base' && !x.deload)!;
-    // Kao da je cilj iznad kapaciteta: dugi 6 km, lagan na granici 0,7 × dugi (4 dana; 5k-v2.15.0, P8 G6).
+    // Kao da je cilj iznad kapaciteta: dugi 6 km, lagan na granici 0,75 × dugi (4 dana; 5k-v2.16.0, K3-B; nedelja 1:
+    // 0,80).
     w.days = w.days.map((d) =>
       d.role === 'easy'
-        ? { ...d, workout: easyRun(4.2, p.paces, false) }
+        ? { ...d, workout: easyRun(w.index === 1 ? 4.8 : 4.5, p.paces, false) }
         : d.role === 'long'
           ? { ...d, workout: longRun(6, p.paces) }
           : d

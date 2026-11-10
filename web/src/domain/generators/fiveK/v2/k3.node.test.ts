@@ -56,3 +56,34 @@ describe('K3-A: rad jednog I treninga po cilju nedelje', () => {
       ).toEqual([]);
   });
 });
+
+describe('K3-B: redovan plan sa tačno 4 dana', () => {
+  it('lagan ≤ 0,75 × dugi u nedelji izgradnje (nedelja 1: 0,80); koristi prostor iznad 0,70', () => {
+    let weeks = 0;
+    let over070 = 0;
+    let w1Over075 = 0;
+    for (const { id, p } of SAMPLE) {
+      if (p.input.runDays.length !== 4 || p.experience === 'beginner') continue;
+      for (const w of p.weeks) {
+        if (w.deload || !['base', 'peak', 'sharpen'].includes(w.phase)) continue;
+        const long = w.days.find((d) => d.role === 'long');
+        if (!long) continue;
+        weeks++;
+        const share = w.index === 1 ? 0.8 : 0.75;
+        for (const d of w.days.filter((x) => x.role === 'easy')) {
+          expect(d.workout.km, `${id} ned ${w.index}`).toBeLessThanOrEqual(
+            Math.floor(long.workout.km * share * 10 + 1e-9) / 10 + EPS
+          );
+          const over = (x: number): boolean =>
+            d.workout.km > Math.floor(long.workout.km * x * 10 + 1e-9) / 10 + EPS;
+          if (w.index > 1 && over(0.7)) over070++;
+          if (w.index === 1 && over(0.75)) w1Over075++;
+        }
+      }
+    }
+    expect(weeks).toBeGreaterThan(300);
+    // Pravilo zaista deluje: posle nedelje 1 lagan iznad 0,70 × dugi, a u nedelji 1 iznad 0,75 × dugi.
+    expect(over070).toBeGreaterThan(50);
+    expect(w1Over075).toBeGreaterThan(5);
+  });
+});

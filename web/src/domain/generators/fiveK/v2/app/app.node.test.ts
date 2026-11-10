@@ -260,7 +260,7 @@ describe('prikaz iz strukture (Plan tab, dan)', () => {
     expect(rows[2]![1]).toBe('3 min kaskanje');
     const easy = days.find((d) => d.id === 'g4d6')!;
     // bez radnog dela → naslov (5k-v2.15.0, P8 G6: lagan ≤ 0,7 × dugi za 4 dana; bilo 7,7 km)
-    expect(coreOf(easy)).toBe('Lagano 7,4 km');
+    expect(coreOf(easy)).toBe('Lagano 7,7 km'); // 5k-v2.16.0 (K3-B): 4 dana lagan ≤ 0,75 × dugi
   });
 
   it('po osećaju: napor (RPE) umesto tempa, ništa izmišljeno', () => {
