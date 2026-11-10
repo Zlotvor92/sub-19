@@ -197,14 +197,14 @@ NEDELJA 17 — faza: taper
 
 ------------------------------------------------------------
 NEDELJA 18 — faza: trka
-  01.03.–07.03. · cilj 10,2 km · planirano 10,2 km
+  01.03.–07.03. · cilj 10,0 km · planirano 10,0 km
   Utorak     02.03.  Lagano 35 min
       4,7 km · 35 min
-  Četvrtak   04.03.  WU 15 min + RP 2 × 1000 m (oporavak 1:30 džog) + CD 10 min
-      5,5 km · 39 min · radnih 13 min
-  Nedelja    07.03.  Trka 10 km (WU 15 min + CD 10 min)
+  Četvrtak   04.03.  WU 15 min + RP 2 × 900 m (oporavak 1:30 džog) + CD 10 min
+      5,3 km · 38 min · radnih 11 min
+  Nedelja    07.03.  Trka 10 km — prognoza 1:02:25 (pre trke 15 min lagano, posle 10 min)
       13,3 km · 1 h 27 min · ne ulazi u obim nedelje
-  Napomena: Trkačka nedelja: kratko oštrenje 2 × 1000 m u tempu trke; km trke nisu u zbiru nedelje.
+  Napomena: Trkačka nedelja: kratko oštrenje 2 × 900 m u tempu trke; km trke nisu u zbiru nedelje.
 
 ============================================================
 UPOZORENJA PLANA

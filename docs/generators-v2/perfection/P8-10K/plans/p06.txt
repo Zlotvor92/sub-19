@@ -17,6 +17,7 @@ OCENA CILJA
   Cilj nije zadat ili nije ocenjen.
   Prognoza na osnovu rezultata: 36:24.
   Napomena plana: Lagani treninzi su kratki (kraći od 30 min) ili odmor u 5 nedelja izgradnje (prva: nedelja 1) — obim nedelje je mali za zadat broj dana. Sa 3–4 dana treninga nedeljno obim od 30 km bi se bolje rasporedio (duži dugi, duži lagani).
+  Napomena plana: Vrh obima je 37,8 km (redovan rast bi išao do 39,0 km): sa 5 dana treninga dugi trening je najviše 30 % nedelje, a lagan trening najviše 70 % dugog.
 
 ------------------------------------------------------------
 NEDELJA 1 — faza: osnova
@@ -33,15 +34,15 @@ NEDELJA 1 — faza: osnova
 
 ------------------------------------------------------------
 NEDELJA 2 — faza: osnova
-  09.11.–15.11. · cilj 31,8 km · planirano 31,8 km
-  Ponedeljak 09.11.  Lagano 7,2 km + 4 × 20 s ubrzanja
-      7,2 km · 34 min
-  Utorak     10.11.  WU 15 min + R 4 × 300 m (oporavak 300 m džog) + CD 10 min
-      7,4 km · 33 min · radnih 4 min
+  09.11.–15.11. · cilj 32,0 km · planirano 32,0 km
+  Ponedeljak 09.11.  Lagano 6,4 km + 4 × 20 s ubrzanja
+      6,4 km · 30 min
+  Utorak     10.11.  WU 15 min + R 8 × 200 m (oporavak 200 m džog) + CD 10 min
+      8,3 km · 37 min · radnih 5 min
   Četvrtak   12.11.  WU 15 min + T 2,5 km kontinuirano + CD 10 min
       7,8 km · 34 min · radnih 9 min
-  Nedelja    15.11.  Dugi 9,5 km lagano
-      9,5 km · 45 min
+  Nedelja    15.11.  Dugi 9,6 km lagano
+      9,6 km · 46 min
   Napomena: Jedan lagan dan je odmor: posle kvaliteta i dugog ostaje premalo km za lagan trening od bar 20 min.
 
 ------------------------------------------------------------
@@ -127,7 +128,7 @@ NEDELJA 8 — faza: trka
       7,6 km · 34 min · radnih 7 min
   Subota     26.12.  Lagano 20 min + 4 × 20 s ubrzanja
       4,9 km · 23 min
-  Nedelja    27.12.  Trka 10 km (WU 15 min + CD 10 min)
+  Nedelja    27.12.  Trka 10 km — prognoza 36:24 (pre trke 15 min lagano, posle 10 min)
       15,3 km · 1 h 01 min · ne ulazi u obim nedelje
   Napomena: Trkačka nedelja: kratko oštrenje 2 × 1000 m u tempu trke; km trke nisu u zbiru nedelje.
   Napomena: Trkačka nedelja: lagani treninzi su kratki (3,0 km), da nedelja bude lakša od tapera.

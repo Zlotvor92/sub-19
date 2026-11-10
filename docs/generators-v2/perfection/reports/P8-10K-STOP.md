@@ -1,4 +1,4 @@
-# P8-10K — STOP (odluke organizatora), 10. 11. 2026
+# P8-10K — STOP (odluke organizatora), 10. 11. 2026 (dopuna posle `briefs/P8-dopuna-po-glavnom-treneru.md`)
 
 Rad nije stao: ugrađen je doslovan G1/G2/G3 (10k-v2.13.0); ovde su tačke koje traže odluku. Brojevi: mreža početnika B
 (3402 plana, `beginnerGridInputs`), komande u `P8-10K/` (iz `web/`). Izveštaj: `P8-10K-REPORT.md`.
@@ -45,3 +45,32 @@ ili minimum doze po nivou (preporuka ocene: T 2 × 8–10 min) — to je nova tr
 
 Pouka 35 (drugi dan kvaliteta lagan da ne bude duži od dugog) brz uzorak 474 → 546 nedelja (G1 sporiji rast dugog);
 postojeće tumačenje rešava. Nedelje > 30 % brzih km: v. izveštaj (prag STOP-a 5 % planova grupe nije pređen).
+
+## S5 — G5 taper „≤ 60 % najvećeg rada zone" × G2 „najniži nivo staje" (dopuna)
+
+Taper već bira ≈ 60 % POSLEDNJE doze (≤ 60 % najveće); prelazi 60 % najvećeg samo kad je najniži nivo (RP 2 × 1000 m,
+T 2,0 km; početnik T 1,5 km) veći od 60 % najvećeg. P0 + P7 (`P8-10K/minutes.ts`): **81 / 204 tapera** iznad 60 %
+najvećeg rada zone. Opcije: T1 (stanje) G2 ispred G5 u taperu; T2 G5 ispred G2 — taper bez te zone kad ni najmanji
+nivo nije ≤ 60 % (vraća „taper bez trkačkog tempa" kod malog obima, protiv G2); T3 manji najniži nivo tapera (npr. RP
+2 × 600 m) — nova lestvica. Nije menjano.
+
+## S6 — G5 rasterećenje „≤ 60 % poslednje doze, bez izuzetka" × D5 „najmanje 2,0 km" (dopuna)
+
+Rasterećenje danas: T ≈ 60 % poslednje T doze, najmanje 2,0 km (početnik 1,5 km). Iznad 60 % poslednje doze iste
+zone: **183 / 486 rasterećenja** (P0 + P7). Strogo G5 = ta rasterećenja bez kvaliteta (zamerka ocene 4: „rasterećenja
+bez kvaliteta"), ali rešava S1 (dugi 3,9 km). Opcije: R1 (stanje) min 2,0 / 1,5 km ostaje; R2 strogo G5 (bez
+kvaliteta kad nijedan nivo nije ≤ 60 %); R3 R2 samo za početnika (rešava S1, ostali kao danas). Nije menjano.
+
+## S7 — G1a satni plafon: plan bez rasta (dopuna, prijava)
+
+Kad je start ≥ satni plafon, vrh = start (doslovno po dopuni): P7 p04 (VDOT 35, 50 km, 5 dana, 18 ned) — 6 h ×
+3600 / srednji lagan tempo ≈ 50 km → 15 nedelja izgradnje na 50,0 km, dugi 14,0 km svih 12 nedelja (plato koji je
+ocena već zamerila). P0: niži vrh u 82 / 192 planova, > 10 % niži u 10. Pitanje: da li je ravan plan od 18 nedelja
+prihvatljiv ili satni plafon tada skraćuje pripremu / smanjuje broj dana — odluka trenera.
+
+## S8 — jedno novo odbijanje u adaptaciji (otvoreno)
+
+`f1Text.node.test.ts` (adaptacija baznih planova × scenariji): tok `d5-r-14w/w6wed/over120` odbijen — `DELOAD_CONTENT:
+Rasterećenje: 1 kvalitet T 2400 m (≈ 60 % od 4800 m) (D5)` (validator i konstruktor se ne slažu o T dozi
+rasterećenja posle A6 viška; verovatno G4 minuti menjaju poslednju T dozu različito u prošlosti i budućnosti). Generator
+bez odbijanja na 34 350 planova (01/02/F/B/P0/P7). Nije rešeno u ovom segmentu.

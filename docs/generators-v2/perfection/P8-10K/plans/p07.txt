@@ -77,28 +77,28 @@ NEDELJA 4 — faza: razvoj — RASTEREĆENJE
 ------------------------------------------------------------
 NEDELJA 5 — faza: specifična
   30.11.–06.12. · cilj 59,0 km · planirano 59,0 km
-  Ponedeljak 30.11.  Lagano 8,5 km
-      8,5 km · 50 min
-  Utorak     01.12.  WU 25 min + RP 5 × 1000 m (oporavak 1:00 džog) + CD 15 min
-      12,5 km · 1 h 07 min · radnih 23 min
+  Ponedeljak 30.11.  Lagano 9,6 km
+      9,6 km · 56 min
+  Utorak     01.12.  WU 25 min + RP 3 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      10,2 km · 56 min · radnih 14 min
   Četvrtak   03.12.  WU 25 min + T 5 × 1000 m (oporavak 1:00 džog) + CD 15 min
       12,5 km · 1 h 07 min · radnih 23 min
-  Subota     05.12.  Lagano 8,4 km + 6 × 20 s ubrzanja
-      8,4 km · 48 min
+  Subota     05.12.  Lagano 9,6 km + 6 × 20 s ubrzanja
+      9,6 km · 55 min
   Nedelja    06.12.  Dugi 17,1 km lagano
       17,1 km · 1 h 40 min
 
 ------------------------------------------------------------
 NEDELJA 6 — faza: specifična
   07.12.–13.12. · cilj 62,0 km · planirano 62,0 km
-  Ponedeljak 07.12.  Lagano 10,2 km
-      10,2 km · 60 min
-  Utorak     08.12.  WU 25 min + RP 3 × 2000 m (oporavak 1:30 džog) + CD 15 min
-      13,4 km · 1 h 10 min · radnih 27 min
+  Ponedeljak 07.12.  Lagano 11,2 km
+      11,2 km · 1 h 06 min
+  Utorak     08.12.  WU 25 min + RP 4 × 1000 m (oporavak 1:00 džog) + CD 15 min
+      11,3 km · 1 h 01 min · radnih 18 min
   Četvrtak   10.12.  WU 25 min + I 1200 + 1000 + 800 m (oporavak 4:00 džog / 4:00 džog) + CD 15 min
       11,2 km · 1 h 01 min · radnih 13 min
-  Subota     12.12.  Lagano 10,2 km + 6 × 20 s ubrzanja
-      10,2 km · 59 min
+  Subota     12.12.  Lagano 11,2 km + 6 × 20 s ubrzanja
+      11,2 km · 1 h 05 min
   Nedelja    13.12.  Dugi 17,1 km lagano
       17,1 km · 1 h 40 min
   Napomena: Specifična faza: drugi kvalitetni trening je interval (I) 3,0 km da se održi brzina iz razvoja; T u deonicama se vraća sledeće nedelje.
@@ -106,32 +106,32 @@ NEDELJA 6 — faza: specifična
 ------------------------------------------------------------
 NEDELJA 7 — faza: taper
   14.12.–20.12. · cilj 46,5 km · planirano 46,5 km
-  Ponedeljak 14.12.  Lagano 6,7 km
-      6,7 km · 39 min
-  Utorak     15.12.  WU 25 min + RP 3 × 1000 m (oporavak 1:00 džog) + CD 15 min
-      10,2 km · 56 min · radnih 14 min
+  Ponedeljak 14.12.  Lagano 7,1 km
+      7,1 km · 42 min
+  Utorak     15.12.  WU 25 min + RP 2 × 1200 m (oporavak 1:00 džog) + CD 15 min
+      9,4 km · 52 min · radnih 11 min
   Četvrtak   17.12.  WU 25 min + T 3 × 1000 m (oporavak 1:00 džog) + CD 15 min
       10,2 km · 56 min · radnih 14 min
-  Subota     19.12.  Lagano 6,7 km + 6 × 20 s ubrzanja
-      6,7 km · 38 min
+  Subota     19.12.  Lagano 7,0 km + 6 × 20 s ubrzanja
+      7,0 km · 40 min
   Nedelja    20.12.  Dugi 12,8 km lagano
       12,8 km · 1 h 15 min
   Napomena: Taper: manje km i kraći kvalitetni treninzi (RP i T oko 60 % poslednjih), dugi kraći — da na trku dođeš odmoran.
 
 ------------------------------------------------------------
 NEDELJA 8 — faza: trka
-  21.12.–27.12. · cilj 23,7 km · planirano 23,7 km
+  21.12.–27.12. · cilj 22,9 km · planirano 22,9 km
   Ponedeljak 21.12.  Lagano 35 min
       6,0 km · 35 min
   Utorak     22.12.  Lagano 35 min
       6,0 km · 35 min
-  Četvrtak   24.12.  WU 15 min + RP 3 × 1000 m (oporavak 1:30 džog) + CD 10 min
-      7,8 km · 42 min · radnih 14 min
+  Četvrtak   24.12.  WU 15 min + RP 2 × 1200 m (oporavak 1:30 džog) + CD 10 min
+      6,9 km · 37 min · radnih 11 min
   Subota     26.12.  Lagano 20 min + 4 × 20 s ubrzanja
       4,0 km · 23 min
-  Nedelja    27.12.  Trka 10 km (WU 15 min + CD 10 min)
+  Nedelja    27.12.  Trka 10 km — prognoza 45:13 (pre trke 15 min lagano, posle 10 min)
       14,3 km · 1 h 10 min · ne ulazi u obim nedelje
-  Napomena: Trkačka nedelja: kratko oštrenje 3 × 1000 m u tempu trke; km trke nisu u zbiru nedelje.
+  Napomena: Trkačka nedelja: kratko oštrenje 2 × 1200 m u tempu trke; km trke nisu u zbiru nedelje.
 
 ============================================================
 UPOZORENJA PLANA

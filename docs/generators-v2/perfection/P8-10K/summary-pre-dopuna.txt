@@ -1,0 +1,90 @@
+
+[P7 ALL]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 12 | 0 | 1/7 | 2 | 4/12 | 6 | 2 | 0 | 0 | 0.0 | 1 | 1 | 0 | 1 | 4 | 3 | 35 | 6
+dopuna | 12 | 0 | 1/12 | 1 | 3/12 | 3 | 2 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 4 | 0 | 24 | 6
+
+[P7 d4-6]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 7 | 0 | 1/4 | 0 | 3/12 | 3 | 0 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 18 | 4
+dopuna | 7 | 0 | 1/12 | 1 | 2/12 | 2 | 1 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 15 | 4
+
+[P7 d3]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 3 | 0 | 2/6 | 1 | 6/12 | 2 | 1 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 2 | 12 | 1
+dopuna | 3 | 0 | 3/4 | 0 | 4/12 | 1 | 0 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 8 | 1
+
+[P7 beg]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 2 | 0 | 1/7 | 1 | 4/7 | 1 | 1 | 0 | 0 | 0.0 | 1 | 1 | 0 | 1 | 4 | 1 | 5 | 1
+dopuna | 2 | 0 | 1/4 | 0 | 1/3 | 0 | 1 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 4 | 0 | 1 | 1
+
+[P0 ALL]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 192 | 0 | 1/10 | 55 | 5/12 | 108 | 59 | 10 | 0 | 0.0 | 10 | 14 | 0 | 8 | 32 | 22 | 444 | 71
+dopuna | 192 | 0 | 2/12 | 8 | 4/12 | 61 | 17 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 32 | 0 | 430 | 79
+
+[P0 d3]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 44 | 0 | 1/9 | 12 | 5/12 | 24 | 13 | 1 | 0 | 0.0 | 6 | 6 | 0 | 0 | 0 | 16 | 111 | 15
+dopuna | 44 | 0 | 2/4 | 0 | 4/12 | 12 | 1 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 100 | 15
+
+[P0 d4-6]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 132 | 0 | 1/10 | 39 | 5/12 | 73 | 37 | 9 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 274 | 46
+dopuna | 132 | 0 | 2/12 | 8 | 4/12 | 45 | 8 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 286 | 56
+
+[P0 beg]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 16 | 0 | 1/7 | 4 | 6/11 | 11 | 9 | 0 | 0 | 0.0 | 4 | 8 | 0 | 8 | 32 | 6 | 59 | 10
+dopuna | 16 | 0 | 1/4 | 0 | 3/11 | 4 | 8 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 32 | 0 | 44 | 8
+
+[01 ALL]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 3024 | 0 | 1/10 | 684 | 5/11 | 1620 | 378 | 234 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 10236 | 1650
+dopuna | 3024 | 0 | 1/5 | 42 | 3/9 | 510 | 24 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 11370 | 1974
+
+[01 d4-6]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 3024 | 0 | 1/10 | 684 | 5/11 | 1620 | 378 | 234 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 10236 | 1650
+dopuna | 3024 | 0 | 1/5 | 42 | 3/9 | 510 | 24 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 11370 | 1974
+
+[02 ALL]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 15840 | 0 | 2/10 | 3552 | 5/12 | 8880 | 2022 | 234 | 0 | 0.0 | 48 | 48 | 0 | 0 | 0 | 528 | 34236 | 5520
+dopuna | 15840 | 0 | 3/12 | 1002 | 4/12 | 5760 | 816 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 32166 | 6156
+
+[02 d3]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 2640 | 0 | 2/9 | 504 | 5/12 | 1446 | 264 | 0 | 0 | 0.0 | 48 | 48 | 0 | 0 | 0 | 528 | 6912 | 1044
+dopuna | 2640 | 0 | 3/4 | 0 | 4/12 | 870 | 0 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 6330 | 1002
+
+[02 d4-6]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 13200 | 0 | 2/10 | 3048 | 5/12 | 7434 | 1758 | 234 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 27324 | 4476
+dopuna | 13200 | 0 | 3/12 | 1002 | 4/12 | 4890 | 816 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 25836 | 5154
+
+[F ALL]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 11880 | 0 | 1/10 | 2208 | 6/12 | 7314 | 1998 | 684 | 12 | 0.1 | 36 | 36 | 0 | 0 | 0 | 288 | 35844 | 5568
+dopuna | 11880 | 0 | 2/12 | 1176 | 4/12 | 5304 | 1542 | 180 | 12 | 0.1 | 0 | 0 | 0 | 0 | 0 | 0 | 32502 | 5568
+
+[F d3]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 1980 | 0 | 1/9 | 330 | 5/12 | 1212 | 660 | 156 | 0 | 0.0 | 36 | 36 | 0 | 0 | 0 | 288 | 6990 | 1104
+dopuna | 1980 | 0 | 3/5 | 24 | 4/12 | 924 | 384 | 108 | 12 | 0.6 | 0 | 0 | 0 | 0 | 0 | 0 | 6750 | 1014
+
+[F d4-6]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 9900 | 0 | 1/10 | 1878 | 6/12 | 6102 | 1338 | 528 | 12 | 0.1 | 0 | 0 | 0 | 0 | 0 | 0 | 28854 | 4464
+dopuna | 9900 | 0 | 2/12 | 1152 | 4/12 | 4380 | 1158 | 72 | 0 | 0.0 | 0 | 0 | 0 | 0 | 0 | 0 | 25752 | 4554
+
+[B ALL]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 3402 | 0 | 2/7 | 720 | 5/12 | 1884 | 1008 | 0 | 0 | 0.0 | 378 | 1296 | 0 | 918 | 6804 | 654 | 9822 | 1644
+dopuna | 3402 | 0 | 2/5 | 60 | 3/12 | 714 | 1050 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 6804 | 0 | 8916 | 2172
+
+[B beg]
+oznaka | n | rej | ned. na vrhu obima med/max | na vrhu ≥5 pl. | ned. na najdužem dugom med/max | najduži ≥5 pl. | pk≤dev−3 | over25 ned | over30 ned | pl.over30 % | taperNoQ | taperNoRP | raceNoFast | pl.bez RP | buildNoQ | deloadNoQ | fitted ned | lošT napomena pl.
+pre | 3402 | 0 | 2/7 | 720 | 5/12 | 1884 | 1008 | 0 | 0 | 0.0 | 378 | 1296 | 0 | 918 | 6804 | 654 | 9822 | 1644
+dopuna | 3402 | 0 | 2/5 | 60 | 3/12 | 714 | 1050 | 0 | 0 | 0.0 | 0 | 0 | 0 | 0 | 6804 | 0 | 8916 | 2172

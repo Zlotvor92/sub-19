@@ -1,8 +1,9 @@
 /* P8-10K — tabela 12 profila P7 pre/posle (raw-pre.json, raw-posle.json; tekst posle iz plans/ — kako vidi trkač).
-   Iz web/: node ../docs/generators-v2/perfection/P8-10K/p7table.cjs */
+   Iz web/: node ../docs/generators-v2/perfection/P8-10K/p7table.cjs [pre] [posle] */
 const fs = require("fs");
 const dir = __dirname + "/";
-const pre = JSON.parse(fs.readFileSync(dir + "raw-pre.json")).P7, post = JSON.parse(fs.readFileSync(dir + "raw-posle.json")).P7;
+const [tA, tB] = [process.argv[2] ?? "pre", process.argv[3] ?? "posle"];
+const pre = JSON.parse(fs.readFileSync(dir + `raw-${tA}.json`)).P7, post = JSON.parse(fs.readFileSync(dir + `raw-${tB}.json`)).P7;
 const BAD = /nije izvodljiv|odstupanje|cilj po pravilu|\[pravilo\]|ne može da se sastavi|ne nose ovaj obim|plafon|najviše \d+ % nedelje u tom tempu|0,8 × dugog|≤ RP doza|10 % nedelje/i;
 const atPeak = (r) => r.targets.filter((t) => t >= r.peak - 0.05).length;
 const longAt = (r) => r.longs.filter((l) => l !== null && l >= r.longMax - 0.05).length;
