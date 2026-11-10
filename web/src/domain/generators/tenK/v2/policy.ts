@@ -416,6 +416,14 @@ const DECISIONS: readonly Decision[] = [
       'Odluka organizatora P9b (ista kao HM P8-HMc i maraton P8-G7): po G7 plan po osećaju od 8–11 nedelja nije imao test — tempo se nikad nije kalibrisao.'
   },
   {
+    id: 'K3-A',
+    rule: 'K3-A (glavni trener krug 2 § 3b/§ 4.2) — rad JEDNOG treninga zone po cilju nedelje (redovan plan): I od 30 km, VDOT ≥ 40: 30–45 km 12–16 min, 45–65 km 16–20 min, ≥ 65 km 18–24 min; VDOT < 40 najviše 18 min; RP pri cilju ≥ 50 km i VDOT ≥ 40: 22–30 min. Gornja granica je plafon zone (umesto udela D11; G4 RP 30 min ostaje), donja podiže početni nivo (D16) i korak lestvice (D12) na najmanji nivo ≥ donja granica koji staje u plafon. Ispod pojasa i za početnika važi G4.',
+    place:
+      'policy.ts doseRange; quality.ts doseRangeSec, doseLoM, capM (jedini plafon), startLevel, stepLevel (jedino mesto koraka); validate.ts (START_LEVEL, DOSE_JUMP, ZONE_CAP čitaju isto); app/plan.ts KNOWN_VERSIONS',
+    rationale:
+      'Heuristika glavnog trenera (ROUND-02 § 3b): I trening ispod ~12 min rada ne drži dovoljno vremena blizu VO2max; 10K RP pri ≥ 50 km/ned 22–30 min (p07 14–18, p05 21–23 pre). Brojevi: docs/generators-v2/perfection/reports/K3-10K-REPORT.md.'
+  },
+  {
     id: 'A1',
     rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
     place:
@@ -612,7 +620,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.14.0',
+  version: '10k-v2.15.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
@@ -909,6 +917,22 @@ export const TEN_K_V2_POLICY = {
     iSlowMin: 20,
     iSlowBelowVdot: 40,
     rpMin: 30
+  },
+
+  /** K3-A (10k-v2.15.0, glavni trener krug 2 § 3b/§ 4.2, HEURISTIKA): opseg rada JEDNOG treninga zone [min] po cilju
+      nedelje (redovan plan). I od iFromKm: VDOT ≥ minutesCap.iSlowBelowVdot po pojasu (lo = cilj, hi = plafon), VDOT
+      ispod samo plafon iSlowHi; RP od rp.fromKm i VDOT ≥ rp.fromVdot: lo–hi. Ispod pojasa važi G4 (minutesCap).
+      Gornja granica je plafon zone (umesto udela D11), donja podiže početni nivo i korak lestvice. Čita se samo kroz
+      quality.doseRangeSec (capM, startLevel, stepLevel; validator isto). */
+  doseRange: {
+    iFromKm: 30,
+    iSlowHi: 18,
+    iBands: [
+      { fromKm: 30, lo: 12, hi: 16 },
+      { fromKm: 45, lo: 16, hi: 20 },
+      { fromKm: 65, lo: 18, hi: 24 }
+    ] as readonly { fromKm: number; lo: number; hi: number }[],
+    rp: { fromKm: 50, fromVdot: 40, lo: 22, hi: 30 }
   },
 
   /** D13 (udeo dugog: D17). */

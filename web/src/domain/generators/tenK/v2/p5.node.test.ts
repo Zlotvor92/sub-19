@@ -11,6 +11,8 @@ import {
   earlyGridBases,
   grid02Inputs,
   inputOf,
+  k3CapM,
+  k3LoM,
   SCHEDULES_BY_DAYS
 } from './testInputs.ts';
 import type { PlanDay, PlanWeek, TenKV2Plan } from './types.ts';
@@ -147,7 +149,22 @@ describe('F4 (D37): početna doza T i I 80 % plafona', () => {
       expect(t.doseM, `${km}`).toBe(start(T, Math.floor(0.1 * w1.targetKm * 1000 + 1e-6)));
       const d1 = p.weeks.find((w) => w.phase === 'development' && !w.deload)!;
       const i = d1.days.find((d) => d.role === 'q1')!.workout.dose!;
-      expect(i.doseM, `${km}`).toBe(start(I, Math.floor(0.08 * d1.targetKm * 1000 + 1e-6)));
+      // K3-A (10k-v2.15.0, nezavisno: testInputs.k3CapM / k3LoM): od 30 km plafon I = gornja granica opsega (≤ plafon RP
+      // iste nedelje), početni nivo najmanje donja granica.
+      const tk = d1.targetKm;
+      const rpCap = Math.min(
+        Math.max(Math.floor((tk >= 40 ? 0.15 : 0.1) * tk * 1000 + 1e-6), 2400),
+        Math.max(2400, Math.floor(((30 * 60) / p.paces.RP) * 1000 + 1e-6))
+      );
+      const capI0 = Math.min(
+        Math.max(Math.floor(0.08 * tk * 1000 + 1e-6), 2000),
+        Math.max(2000, Math.floor(((24 * 60) / p.paces.I) * 1000 + 1e-6))
+      );
+      const capI = k3CapM('I', tk, p.paces, 2000, capI0, rpCap);
+      const s80 = start(I, capI);
+      const lo = k3LoM('I', tk, p.paces);
+      const up = I.find((m) => m >= lo && m <= capI);
+      expect(i.doseM, `${km}`).toBe(s80 >= lo || up === undefined ? s80 : up);
     }
   });
 });

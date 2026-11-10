@@ -53,7 +53,9 @@ import {
   firstLevelOverCap,
   ladderFor,
   maintainIDoseM,
-  nextLevel
+  nextLevel,
+  startLevel,
+  stepLevel
 } from './quality.ts';
 import { adjacentDays } from './schedule.ts';
 import {
@@ -1188,12 +1190,19 @@ export function validatePlan(
         // D11 ispred D12: dozvoljeno samo kad prethodna doza ne staje u plafon ove nedelje, na najviši
         // nivo lestvice koji staje, uz napomenu.
         const ladder = db.ladder as LadderId;
-        const cap = capM(db.zone, b.targetKm, rule.beginner, pw(b));
-        const best = ladderLevels(ladder, rule.beginner)
-          .map(doseOf)
-          .filter((m) => m <= cap)
-          .pop();
-        if (da.doseM <= cap || db.doseM !== best || !b.notes.some((n) => n.includes('spušten sa')))
+        // K3-A: plafon sa opsegom ili kao pre K3-A (nedelja pouke 35, quality.pickBuild) — prihvata se oba.
+        const dropOk = (k3: boolean): boolean => {
+          const cap = capM(db.zone, b.targetKm, rule.beginner, pw(b), k3);
+          const best = ladderLevels(ladder, rule.beginner)
+            .map(doseOf)
+            .filter((m) => m <= cap)
+            .pop();
+          return da.doseM > cap && db.doseM === best;
+        };
+        if (
+          !(dropOk(true) || (!rule.beginner && dropOk(false))) ||
+          !b.notes.some((n) => n.includes('spušten sa'))
+        )
           err('DOSE_DROP', `${role}: spuštanje doze bez razloga iz plafona (D11/D12).`, b.index);
         else
           warn(
@@ -1205,10 +1214,17 @@ export function validatePlan(
       }
       if (da.ladder === db.ladder) {
         const ladder = db.ladder as LadderId;
-        const nl = nextLevel(ladder, da.doseM, rule.beginner);
+        // K3-A: korak lestvice iz istog mesta kao konstruktor (quality.stepLevel — donja granica opsega); nedelja u kojoj
+        // bi K3-A stvorio nedelju pouke 35 bira kao pre K3-A (k3 = false, quality.pickBuild) — prihvata se oba koraka.
+        const nl = stepLevel(ladder, da.doseM, b.targetKm, pw(b), rule.beginner);
+        const nl0 = stepLevel(ladder, da.doseM, b.targetKm, pw(b), rule.beginner, false);
         if (db.doseM < da.doseM)
           err('DOSE_DECREASE', `${role}: doza ${db.doseM} m < ${da.doseM} m (D12).`, b.index);
-        else if (db.doseM > da.doseM && (!nl || db.doseM !== doseOf(nl)))
+        else if (
+          db.doseM > da.doseM &&
+          (!nl || db.doseM !== doseOf(nl)) &&
+          (!nl0 || db.doseM !== doseOf(nl0))
+        )
           err(
             'DOSE_JUMP',
             `${role}: više od jednog nivoa (${da.doseM} → ${db.doseM} m) (D12).`,
@@ -1218,6 +1234,8 @@ export function validatePlan(
           if (
             nl &&
             doseOf(nl) <= capM(db.zone, b.targetKm, rule.beginner, pw(b)) &&
+            nl0 &&
+            doseOf(nl0) <= capM(db.zone, b.targetKm, rule.beginner, pw(b), false) &&
             !holds.has(b.index)
           )
             err(
@@ -1329,12 +1347,12 @@ export function validatePlan(
 
   // --- D16: početni nivo (prva nedelja slota; I i RP na prvoj nedelji faze; RP i dalje ≥ poslednje I).
   // D28: početnik — početni nivo je prvi nivo lestvice.
-  const startM = (ladder: LadderId, targetKm: number, pk: Paces): number => {
-    const cap = capM(zoneOf(ladder), targetKm, rule.beginner, pk);
-    const lv = ladderLevels(ladder, rule.beginner).map(doseOf);
-    if (rule.beginner) return lv[0]!;
-    return lv.filter((m) => m <= startShare(zoneOf(ladder)) * cap + EPS).pop() ?? lv[0]!;
-  };
+  // K3-A: početni nivo iz istog mesta kao konstruktor (quality.startLevel — udeo plafona D16/D37 i donja granica opsega;
+  // `k3` false: izbor kao pre K3-A u nedelji u kojoj bi K3-A stvorio nedelju pouke 35, quality.pickBuild).
+  const startM = (ladder: LadderId, targetKm: number, pk: Paces, k3 = true): number =>
+    doseOf(
+      startLevel(ladder, targetKm, pk, rule.beginner, k3) ?? ladderLevels(ladder, rule.beginner)[0]!
+    );
   let lastWeek: Record<'q1' | 'q2', PlanWeek | null> = { q1: null, q2: null };
   let skip = { q1: false, q2: false };
   for (const c of chain) {
@@ -1365,34 +1383,42 @@ export function validatePlan(
       const carry = da !== null && carries(da.ladder as LadderId, ladder);
       // Ista lestvica ili T cruise posle T kontinuiranog (ista zona): nije početni nivo.
       if (da && (da.ladder === ladder || (carry && zoneOf(da.ladder) === zoneOf(ladder)))) continue;
-      let want = startM(ladder, b.targetKm, pw(b));
-      // Nova zona sa prenosom (RP posle I, kod 3 dana posle T): najmanji nivo ≥ max(D16, poslednja doza).
-      if (da && carry) {
-        // D38: nedelja bez rasta doze — prelaz nosi poslednju dozu (bez podizanja na početni nivo).
-        if (holds.has(b.index)) want = 0;
-        const lv = ladderLevels(ladder, rule.beginner)
-          .map(doseOf)
-          .find((m) => m >= Math.max(want, da.doseM));
-        if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm, rule.beginner, pw(b)))
-          continue;
-        want = lv;
-      }
-      // D37 (P-b): T i I smeju niži nivo, najmanje nivo po 60 % (D16) — kad bi veći stvorio nedelju pouke 35 (odluka
-      // konstruktora, quality.pickBuild; validator proverava opseg).
       const z = zoneOf(ladder);
-      const floor60 =
-        ladderLevels(ladder, rule.beginner)
-          .map(doseOf)
-          .filter(
-            (m) => m <= P.startLevel.p35FloorShare * capM(z, b.targetKm, rule.beginner, pw(b)) + EPS
-          )
-          .pop() ?? ladderLevels(ladder, rule.beginner).map(doseOf)[0]!;
-      const p35Range =
-        !rule.beginner && (z === 'T' || z === 'I') && db.doseM >= floor60 && db.doseM < want;
-      if (db.doseM !== want && !p35Range)
+      // K3-A: izbor sa opsegom (k3) ili kao pre K3-A (nedelja pouke 35, quality.pickBuild) — prihvata se oba.
+      const check = (k3: boolean): { want: number; ok: boolean } | null => {
+        let want = startM(ladder, b.targetKm, pw(b), k3);
+        // Nova zona sa prenosom (RP posle I, kod 3 dana posle T): najmanji nivo ≥ max(D16, poslednja doza).
+        if (da && carry) {
+          // D38: nedelja bez rasta doze — prelaz nosi poslednju dozu (bez podizanja na početni nivo).
+          if (holds.has(b.index)) want = 0;
+          const lv = ladderLevels(ladder, rule.beginner)
+            .map(doseOf)
+            .find((m) => m >= Math.max(want, da.doseM));
+          if (lv === undefined || lv > capM(z, b.targetKm, rule.beginner, pw(b), k3)) return null;
+          want = lv;
+        }
+        // D37 (P-b): T i I smeju niži nivo, najmanje nivo po 60 % (D16) — kad bi veći stvorio nedelju pouke 35 (odluka
+        // konstruktora, quality.pickBuild; validator proverava opseg).
+        const floor60 =
+          ladderLevels(ladder, rule.beginner)
+            .map(doseOf)
+            .filter(
+              (m) =>
+                m <=
+                P.startLevel.p35FloorShare * capM(z, b.targetKm, rule.beginner, pw(b), k3) + EPS
+            )
+            .pop() ?? ladderLevels(ladder, rule.beginner).map(doseOf)[0]!;
+        const p35Range =
+          !rule.beginner && (z === 'T' || z === 'I') && db.doseM >= floor60 && db.doseM < want;
+        return { want, ok: db.doseM === want || p35Range };
+      };
+      const withK3 = check(true);
+      if (!withK3) continue;
+      const before = rule.beginner ? null : check(false);
+      if (!withK3.ok && !before?.ok)
         err(
           'START_LEVEL',
-          `${role}: početni nivo ${ladder} ${db.doseM} m ≠ ${want} m (${rule.beginner ? 'prvi nivo, D28' : `≤ ${Math.round(startShare(zoneOf(ladder)) * 100)} % plafona, D16/D37`}).`,
+          `${role}: početni nivo ${ladder} ${db.doseM} m ≠ ${withK3.want} m (${rule.beginner ? 'prvi nivo, D28' : `≤ ${Math.round(startShare(zoneOf(ladder)) * 100)} % plafona, D16/D37, K3-A`}).`,
           b.index
         );
     }

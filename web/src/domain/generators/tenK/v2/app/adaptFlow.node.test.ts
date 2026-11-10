@@ -504,7 +504,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     expect(TEN_K_V2_GENERATOR.planPolicy(r.result).status).toBe('current');
   });
 
-  it('06i/3i/10K-07/10K-08/P3/P5/P8/P9b (10k-v2.14.0): sačuvan plan 10k-v2.4.0 … 10k-v2.5.2, 10k-v2.6.0 … 10k-v2.13.0 ostaje plan 10K v2 i prilagođava se pravilima 14.0 (rezultat nosi 10k-v2.14.0); druge verzije → UNKNOWN_POLICY', () => {
+  it('06i/3i/10K-07/10K-08/P3/P5/P8/P9b/K3 (10k-v2.15.0): sačuvan plan 10k-v2.4.0 … 10k-v2.5.2, 10k-v2.6.0 … 10k-v2.14.0 ostaje plan 10K v2 i prilagođava se pravilima 15.0 (rezultat nosi 10k-v2.15.0); druge verzije → UNKNOWN_POLICY', () => {
     expect(KNOWN_VERSIONS).toEqual([
       '10k-v2.4.0',
       '10k-v2.4.1',
@@ -522,7 +522,8 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       '10k-v2.11.0',
       '10k-v2.12.0',
       '10k-v2.13.0',
-      '10k-v2.14.0'
+      '10k-v2.14.0',
+      '10k-v2.15.0'
     ]);
     const cur = planOf(WITH_RESULT);
     const as = (p: GenPlanState, version: string): GenPlanState => ({
@@ -564,9 +565,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       const saved = stampForStorage(r.result);
       expect(saved.meta, version).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.14.0'
+        policyVersion: '10k-v2.15.0'
       });
-      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.14.0');
+      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.15.0');
       expect(isTenKV2Plan(saved), version).toBe(true);
       // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (P8: 41,4 → 29,0), ned 5 = 31,9 (4.0: 27,6); ned 5 je
       // izgradnja (A17 bez dejstva: ned 4 je rasterećenje).

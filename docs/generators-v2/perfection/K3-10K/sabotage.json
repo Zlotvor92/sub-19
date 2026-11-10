@@ -1,0 +1,11 @@
+[
+ {
+  "name": "K3-A bez donje granice opsega (početni nivo i korak kao pre)",
+  "file": "src/domain/generators/tenK/v2/quality.ts",
+  "find": "  return r && r.lo > 0 ? Math.ceil((r.lo / p[zone]) * 1000 - 1e-6) : 0;",
+  "replace": "  return r && r.lo > 99999 ? Math.ceil((r.lo / p[zone]) * 1000 - 1e-6) : 0;",
+  "tests": [
+   "src/domain/generators/tenK/v2/k3.node.test.ts"
+  ]
+ }
+]

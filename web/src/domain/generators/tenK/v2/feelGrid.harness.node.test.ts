@@ -118,10 +118,13 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         // P9b (10k-v2.14.0, D52: planovi od 9–11 nedelja dobijaju test u prvoj nedelji razvoja ≥ 4): CAPACITY_LIMITED
         // 1014 / 2160 / 1224 / 1116 → 1014 / 2166 / 1230 / 1104, ponavljanja 432 / 342 → 456 / 288 (3 / 4 dana), vrh/start
         // 1,164 / 1,098 → 1,169 / 1,097, taper samo RP 84 / 120 / 312 → 84 / 114 / 306.
+        // K3-A (10k-v2.15.0, opseg rada I/RP): CAPACITY_LIMITED 2166 / 1230 → 2004 / 1194 (4 / 5 dana), ponavljanja
+        // 288 / 132 / 240 → 546 / 288 / 426 (I 5 × 1000 m nema drugu strukturu), vrh/start 1,097 → 1,099, taper samo RP
+        // 84 / 114 / 306 → 90 / 258 / 372 (veći RP specifične faze).
         [1980, 1014, 456, 1.169, 0, 0, 0, 0],
-        [2772, 2166, 288, 1.097, 0, 84, 0, 0],
-        [3168, 1230, 132, 1.163, 0, 114, 0, 0],
-        [3960, 1104, 240, 1.102, 0, 306, 0, 0]
+        [2772, 2004, 546, 1.099, 0, 90, 0, 0],
+        [3168, 1194, 288, 1.163, 0, 258, 0, 0],
+        [3960, 1104, 426, 1.102, 0, 372, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);
@@ -146,10 +149,11 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
           // (5 d), 792 → 1056 (6 d); DOSE_DROPPED 84 / 444 / 210 / 72 → 96 / 672 / 0 / 0.
           // P9b (D52, test u prvoj nedelji razvoja planova od 9–11 nedelja): DOSE_DROPPED 96 / 672 → 84 / 588 (3 / 4 dana),
           // od toga udeo (4 dana) 444 → 378.
+          // K3-A (10k-v2.15.0): DOSE_DROPPED (4 dana) 588 → 522, od toga udeo 378 → 354; D25 (6 dana) 264 → 342.
           [462, 132, 114, 84, 0],
-          [0, 1782, 270, 588, 378],
+          [0, 1782, 270, 522, 354],
           [858, 0, 144, 0, 0],
-          [1056, 0, 264, 0, 0]
+          [1056, 0, 342, 0, 0]
         ]
       );
     });

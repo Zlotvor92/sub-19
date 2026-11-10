@@ -4,6 +4,7 @@
 
 import { daysBetween } from './dates.ts';
 import type { Phase, PlanWeek, TenKV2Plan } from './types.ts';
+import { k3CapM } from './testInputs.ts';
 
 export type Days = 3 | 4 | 5 | 6;
 export const DAYS = [3, 4, 5, 6] as const;
@@ -54,7 +55,16 @@ const capI0 = (targetKm: number): number => Math.floor(0.08 * targetKm * 1000 + 
 const capT = (targetKm: number, beginner: boolean): number =>
   Math.max(cap10(targetKm), beginner ? 3000 : 2000);
 const capRpG = (targetKm: number): number => Math.max(capRp(targetKm), 2400);
-const capI = (targetKm: number): number => Math.max(capI0(targetKm), 2000);
+/** K3-A (10k-v2.15.0, nezavisno: testInputs.k3CapM): plafon I redovnog plana po opsegu rada. */
+const capI = (targetKm: number, paces: TenKV2Plan['paces']): number => {
+  // Plafon RP iste nedelje (udeo D33, G4 30 min, K3-A) — I ga ne prelazi (prelaz I → RP nosi dozu).
+  const rp0 = Math.min(
+    capRpG(targetKm),
+    Math.max(2400, Math.floor(((30 * 60) / paces.RP) * 1000 + 1e-6))
+  );
+  const rp = k3CapM('RP', targetKm, paces, 2400, rp0);
+  return k3CapM('I', targetKm, paces, 2000, Math.max(capI0(targetKm), 2000), rp);
+};
 /** ≈ 60 % poslednje doze, nivo lestvice naniže, najmanje `min` (D5/D7/D31). */
 const reduced = (ladder: readonly number[], last: number, min: number): number =>
   ladder.filter((m) => m <= 0.6 * last + 1e-6 && m >= min).pop() ?? min;
@@ -453,7 +463,7 @@ export function checkPlan(
     // D20: dana sa trkom = min(broj dana, 5).
     if (w.phase === 'race' && w.days.length !== Math.min(n, 5)) no('RACE_DAYS', tag);
     // D34 (10k-v2.11.0): redovan plan 4–6 dana — ne-rasteretne specifične nedelje bez ograničenja se smenjuju A (Q2 T)
-    // / B (Q2 I održavanja), prva A; A umesto B samo uz napomenu; I održavanja = najveća I doza (u plafonu I 8 %; inače
+    // / B (Q2 I održavanja), prva A; A umesto B samo uz napomenu; I održavanja = najveća I doza (u plafonu I 8 %, K3-A: opseg rada; inače
     // najviši nivo I koji staje).
     const q2Dose = w.days.find((d) => d.role === 'q2')?.workout.dose;
     const isB = q2Dose?.ladder === 'I';
@@ -466,7 +476,7 @@ export function checkPlan(
       )
         no('SPEC_AB', `${tag} ${got} ≠ ${want}`);
       if (isB) {
-        const cap = capI(w.targetKm);
+        const cap = capI(w.targetKm, p.paces);
         const iWant = maxI <= cap ? maxI : (I_LADDER.filter((m) => m <= cap).pop() ?? -1);
         if (q2Dose.doseM !== iWant) no('I_MAINTAIN', `${tag} I ${q2Dose.doseM} ≠ ${iWant}`);
       }

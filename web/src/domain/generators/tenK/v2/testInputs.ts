@@ -1393,3 +1393,54 @@ export function mark07(result: unknown): string {
     .filter(Boolean)
     .join('+');
 }
+
+/** K3-A (10k-v2.15.0) NEZAVISNO od politike (brojevi glavnog trenera, ROUND-02 § 3b/§ 4.2): opseg rada jednog treninga
+    [s] po cilju nedelje, redovan plan. I od 30 km: VDOT ≥ 40 — 30–45 km 12–16 min, 45–65 km 16–20, ≥ 65 km 18–24;
+    VDOT < 40 samo plafon 18 min (lo 0). RP pri cilju ≥ 50 km i VDOT ≥ 40: 22–30 min. null = važi G4. */
+export function k3RangeSec(
+  zone: 'R' | 'I' | 'T' | 'RP',
+  targetKm: number,
+  vdot: number,
+  beginner = false
+): { lo: number; hi: number } | null {
+  if (beginner) return null;
+  if (zone === 'I' && targetKm >= 30 - 1e-9) {
+    if (vdot < 40) return { lo: 0, hi: 18 * 60 };
+    if (targetKm >= 65 - 1e-9) return { lo: 18 * 60, hi: 24 * 60 };
+    if (targetKm >= 45 - 1e-9) return { lo: 16 * 60, hi: 20 * 60 };
+    return { lo: 12 * 60, hi: 16 * 60 };
+  }
+  if (zone === 'RP' && targetKm >= 50 - 1e-9 && vdot >= 40) return { lo: 22 * 60, hi: 30 * 60 };
+  return null;
+}
+
+/** K3-A nezavisno: plafon zone [m] posle K3-A iz plafona pre K3-A (`capBefore`, udeo + G4): I sa donjom granicom →
+    max(prvi nivo, hi / tempo), najviše plafon RP iste nedelje (`rpCapM`: prelaz I → RP nosi dozu); RP i I za VDOT < 40 →
+    min(plafon pre, max(prvi nivo, hi / tempo)) (RP: hi 30 min = G4); inače plafon pre. */
+export function k3CapM(
+  zone: 'R' | 'I' | 'T' | 'RP',
+  targetKm: number,
+  paces: { vdot: number; I: number; RP: number },
+  firstM: number,
+  capBefore: number,
+  rpCapM = Infinity,
+  beginner = false
+): number {
+  const r = k3RangeSec(zone, targetKm, paces.vdot, beginner);
+  if (!r || (zone !== 'I' && zone !== 'RP')) return capBefore;
+  const hiM = Math.max(firstM, Math.floor((r.hi / paces[zone]) * 1000 + 1e-6));
+  if (r.lo <= 0 || zone === 'RP') return Math.min(capBefore, hiM);
+  return Math.min(hiM, Math.max(firstM, rpCapM));
+}
+
+/** K3-A nezavisno: donja granica opsega [m rada] (0 = nema). */
+export function k3LoM(
+  zone: 'R' | 'I' | 'T' | 'RP',
+  targetKm: number,
+  paces: { vdot: number; I: number; RP: number },
+  beginner = false
+): number {
+  const r = k3RangeSec(zone, targetKm, paces.vdot, beginner);
+  if (!r || r.lo <= 0 || (zone !== 'I' && zone !== 'RP')) return 0;
+  return Math.ceil((r.lo / paces[zone]) * 1000 - 1e-6);
+}

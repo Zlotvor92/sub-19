@@ -164,7 +164,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
     it('D30a: ponavljanje slota 1224 / 192 / 144 / 144 → 240 / 48 / 0 / 0 nedelja (organizator na 21c03f1: isto)', () => {
       // 10K-08 (T1): 240 / 48 / 0 / 0 → 456 / 42 / 0 / 0.
       // P8 (10k-v2.13.0, G1 sporiji rast → plafon zone kasnije raste; G4 minuti): 456 / 42 / 0 / 0 → 264 / 174 / 0 / 0.
-      byDays((n) => g.stats[n].repeats, [264, 174, 0, 0]);
+      // K3-A (10k-v2.15.0, opseg rada I): 264 / 174 / 0 / 0 → 264 / 390 / 198 / 216 (I 5 × 1000 m nema drugu strukturu).
+      byDays((n) => g.stats[n].repeats, [264, 390, 198, 216]);
     });
 
     it('D30b: RACE_WEEK_SHORT 6 + 90 → 0 (trkačka + trka 10 km ≥ minimum nedelje)', () => {
@@ -183,7 +184,8 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         [
           [132, 0],
           // P5: 1518 / 168 → 1254 / 186. P8 (G6): 1254 / 186 → 1782 / 174; 5 i 6 dana 0 → 66 (ned 1 ispod obima uz udeo).
-          [1782, 174],
+          // K3-A (10k-v2.15.0): DOSE_DROPPED uz udeo 174 → 120.
+          [1782, 120],
           [66, 0],
           [66, 0]
         ]
@@ -191,15 +193,18 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
       // P3 (10k-v2.11.0): lagan trkačke nedelje u km 636 / 1470 / 2004 / 2538 → 672 / 1584 / 2148 / 2718 (drugi taper).
       // P5 (D35/D37, drugi taper): 672 / 1584 / 2148 / 2718 → 672 / 1656 / 2208 / 2748.
       // P8 (G4/G5 drugi taper i oštrenje): 672 / 1656 / 2208 / 2748 → 786 / 2172 / 2280 / 3000.
-      byDays((n) => g.stats[n].raceKmEasy, [786, 2172, 2280, 3000]);
+      // K3-A (10k-v2.15.0, veći RP → drugi taper): 786 / 2172 / 2280 / 3000 → 786 / 2154 / 2364 / 3030.
+      byDays((n) => g.stats[n].raceKmEasy, [786, 2154, 2364, 3030]);
       // 06f (pouka 35): D25 0 / 132 / 132 / 330 → 0 / 0 / 0 / 132 planova (drugi dan kvaliteta lagan, dugi raste).
       // P8 (G1 sporiji rast dugog, G6): 0 / 0 / 0 / 132 → 0 / 0 / 12 / 138.
-      byDays((n) => g.stats[n].longShorter, [0, 0, 12, 138]);
+      // K3-A (10k-v2.15.0, duži dan I/RP): 0 / 0 / 12 / 138 → 0 / 6 / 24 / 186.
+      byDays((n) => g.stats[n].longShorter, [0, 6, 24, 186]);
       // 10K-08 (T1): DOSE_DROPPED 0 / 162 / 0 / 0 → 84 / 432 / 24 / 258.
       // P3 (10k-v2.11.0, D33: plafon RP 15 % od 40 km): 84 / 432 / 24 / 258 → 84 / 294 / 0 / 0.
       // P5 (D37: veći početni nivo T/I, kasnije cilj spušten kapacitetom → D11 ispred D12): 84 / 294 / 0 / 0 → 36 / 534 / 90 / 0.
       // P8 (G1/G4/G6): 36 / 534 / 90 / 0 → 36 / 372 / 0 / 0.
-      byDays((n) => g.stats[n].doseDropped, [36, 372, 0, 0]);
+      // K3-A (10k-v2.15.0, plafon I ≤ plafon RP iste nedelje): 36 / 372 / 0 / 0 → 36 / 330 / 0 / 0.
+      byDays((n) => g.stats[n].doseDropped, [36, 330, 0, 0]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja', () => {
@@ -214,10 +219,12 @@ export function describeGrid02(title: string, days: readonly Days[], extra?: () 
         // P8 (10k-v2.13.0, G1–G8): CAPACITY_LIMITED 1044 / 1968 / 1188 / 1248 → 1002 / 2382 / 1308 / 1272, ponavljanja
         // 456 / 42 → 264 / 174, vrh/start 1,235 / 1,217 / 1,264 / 1,236 → 1,209 / 1,160 / 1,210 / 1,162 (G1a), rasterećenje
         // bez kvaliteta (3 dana) 528 → 0 i taper bez kvaliteta 48 → 0 (G2), taper samo RP 0 / 132 / 318 / 570 → 0 / 216 / 396 / 642.
+        // K3-A (10k-v2.15.0, opseg rada I/RP): CAPACITY_LIMITED 2382 / 1308 / 1272 → 2160 / 1260 / 1302, ponavljanja
+        // 174 / 0 / 0 → 390 / 198 / 216, vrh/start 1,160 / 1,162 → 1,169 / 1,161, taper samo RP 216 / 396 / 642 → 456 / 528 / 708.
         [2640, 1002, 264, 1.209, 0, 0, 0, 0],
-        [3696, 2382, 174, 1.16, 0, 216, 0, 0],
-        [4224, 1308, 0, 1.21, 0, 396, 0, 0],
-        [5280, 1272, 0, 1.162, 0, 642, 0, 0]
+        [3696, 2160, 390, 1.169, 0, 456, 0, 0],
+        [4224, 1260, 198, 1.21, 0, 528, 0, 0],
+        [5280, 1302, 216, 1.161, 0, 708, 0, 0]
       ];
       // Brz nivo: prosek vrh/start (kolona 3) nije brojka uzorka — ne poredi se (planovi uzorka su bajt-isti 81bd351).
       const row = (n: Days): number[] => statsRow(g.stats[n]);

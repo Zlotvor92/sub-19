@@ -6,7 +6,7 @@ import { GRID_TIMEOUT } from './level.harness.node.test.ts';
 import { generateTenKV2 } from './generate.ts';
 import { ladderFor } from './quality.ts';
 import { P35_DROP } from './week.ts';
-import { grid02Inputs } from './testInputs.ts';
+import { grid02Inputs, k3CapM, k3LoM } from './testInputs.ts';
 import type { Dose, Phase, PlanWeek, Structure, TenKV2Plan } from './types.ts';
 import { structuresForDose } from './workouts.ts';
 
@@ -76,7 +76,7 @@ const minutesM = (zone: keyof typeof CAP, w: PlanWeek): number => {
     ? Infinity
     : Math.max(FIRST[zone], Math.floor(((min * 60) / p[zone]) * 1000 + 1e-6));
 };
-const capOf = (zone: keyof typeof CAP, w: PlanWeek): number =>
+const capOf0 = (zone: keyof typeof CAP, w: PlanWeek): number =>
   Math.min(
     Math.max(
       Math.floor(
@@ -86,6 +86,34 @@ const capOf = (zone: keyof typeof CAP, w: PlanWeek): number =>
     ),
     minutesM(zone, w)
   );
+/** K3-A (10k-v2.15.0, nezavisno: testInputs.k3CapM): I i RP po opsegu rada (plan mreže 02 je redovan). */
+const capOf = (zone: keyof typeof CAP, w: PlanWeek): number =>
+  k3CapM(
+    zone,
+    w.targetKm,
+    PACES.get(w)!,
+    FIRST[zone],
+    capOf0(zone, w),
+    zone === 'I' ? capOf('RP', w) : Infinity
+  );
+/** K3-A: nedelja u kojoj bi izbor sa opsegom stvorio nedelju pouke 35 bira kao pre K3-A — bez donje granice, plafon
+    manji od plafona pre i posle K3-A (nezavisno). */
+const capPre = (zone: keyof typeof CAP, w: PlanWeek): number =>
+  Math.min(capOf0(zone, w), capOf(zone, w));
+const startPre = (ladder: string, w: PlanWeek): number =>
+  LADDER[ladder]!.filter(
+    (m) => m <= START_SHARE[ZONE[ladder]!] * capPre(ZONE[ladder]!, w) + 1e-6
+  ).pop() ?? LADDER[ladder]![0]!;
+/** K3-A: donja granica opsega [m] — početni nivo i korak lestvice idu najmanje do nje (kad staje u plafon). */
+const loOf = (zone: keyof typeof CAP, w: PlanWeek): number =>
+  k3LoM(zone, w.targetKm, PACES.get(w)!);
+const withLo = (ladder: string, m: number | undefined, w: PlanWeek): number | undefined => {
+  const z = ZONE[ladder]!;
+  const lo = loOf(z, w);
+  if (m === undefined || m >= lo) return m;
+  const up = LADDER[ladder]!.find((x) => x >= lo);
+  return up !== undefined && up <= capOf(z, w) ? up : m;
+};
 const fits = (zone: keyof typeof CAP, m: number, w: PlanWeek): boolean => m <= capOf(zone, w);
 const ZONE: Record<string, keyof typeof CAP> = {
   R: 'R',
@@ -97,9 +125,13 @@ const ZONE: Record<string, keyof typeof CAP> = {
 /** D16 nezavisno: najviši nivo ≤ 60 % plafona zone za cilj nedelje, najmanje prvi nivo; D37 (P5 F4): T i I 80 %. */
 const START_SHARE = { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } as const;
 const startM = (ladder: string, targetKm: PlanWeek): number =>
-  LADDER[ladder]!.filter(
-    (m) => m <= START_SHARE[ZONE[ladder]!] * capOf(ZONE[ladder]!, targetKm) + 1e-6
-  ).pop() ?? LADDER[ladder]![0]!;
+  withLo(
+    ladder,
+    LADDER[ladder]!.filter(
+      (m) => m <= START_SHARE[ZONE[ladder]!] * capOf(ZONE[ladder]!, targetKm) + 1e-6
+    ).pop() ?? LADDER[ladder]![0]!,
+    targetKm
+  )!;
 const PYRAMID: Structure = { form: 'pyramid', repsM: [1200, 1000, 800] };
 
 /** Nezavisno: postoji li druga struktura iste doze po pravilu D10/D22/D30 (T ≥ 1000 m i RP ≥ 800 m,
@@ -398,16 +430,25 @@ describe('D16: početni nivo', () => {
         if (q1.step === 'drop') continue;
         // D37 (P-b): niži nivo I (najmanje po 60 %) kad bi nivo po 80 % stvorio nedelju pouke 35 — od P8 G6 (lagan ≤ 0,70 ×
         // dugi) javlja se i na prelazu u razvoj.
-        if (b.phase === 'development' && q1.doseM !== startM('I', b)) {
+        // K3-A: izbor sa opsegom ili kao pre K3-A (capPre/startPre) kad bi sa opsegom nastala nedelja pouke 35.
+        if (
+          b.phase === 'development' &&
+          q1.doseM !== startM('I', b) &&
+          q1.doseM !== startPre('I', b)
+        ) {
           const s60 =
-            LADDER.I!.filter((m) => m <= 0.6 * capOf('I', b) + 1e-6).pop() ?? LADDER.I![0]!;
+            LADDER.I!.filter((m) => m <= 0.6 * capPre('I', b) + 1e-6).pop() ?? LADDER.I![0]!;
           expect(q1.doseM, `${b.index}`).toBeGreaterThanOrEqual(s60);
           expect(q1.doseM, `${b.index}`).toBeLessThan(startM('I', b));
         }
         if (b.phase === 'specific') {
-          const lo = Math.max(startM('RP', b), slot(a, 'q1')!.doseM);
-          const want = LADDER.RP!.find((m) => m >= lo);
-          if (want !== undefined && fits('RP', want, b)) expect(q1.doseM, `${b.index}`).toBe(want);
+          const wantOf = (st: number, cap: number): number | undefined => {
+            const w = LADDER.RP!.find((m) => m >= Math.max(st, slot(a, 'q1')!.doseM));
+            return w !== undefined && w <= cap ? w : undefined;
+          };
+          const want = wantOf(startM('RP', b), capOf('RP', b));
+          const want0 = wantOf(startPre('RP', b), capPre('RP', b));
+          if (want !== undefined && q1.doseM !== want0) expect(q1.doseM, `${b.index}`).toBe(want);
           else expect(q1.doseM).toBeGreaterThanOrEqual(slot(a, 'q1')!.doseM);
         }
       }
@@ -450,9 +491,23 @@ describe('D12: progresija', () => {
             if (db.ladder === 'RP') expect(db.doseM).toBeGreaterThanOrEqual(da.doseM);
             continue;
           }
-          const next = LADDER[db.ladder]!.find((m) => m > da.doseM);
+          // K3-A: ispod donje granice opsega korak ide do najmanjeg nivoa ≥ donja granica (kad staje).
+          const next = withLo(
+            db.ladder,
+            LADDER[db.ladder]!.find((m) => m > da.doseM),
+            b
+          );
           const nextFits = next !== undefined && fits(db.zone, next, b);
-          if (nextFits) expect(db.doseM, `${b.index} ${r}`).toBe(next);
+          // K3-A: kao pre K3-A (nedelja pouke 35) — sledeći nivo bez donje granice, plafon capPre.
+          const next0 = LADDER[db.ladder]!.find((m) => m > da.doseM);
+          const next0Fits = next0 !== undefined && next0 <= capPre(db.zone, b);
+          if (
+            nextFits &&
+            !(next0Fits && db.doseM === next0) &&
+            !(!next0Fits && db.doseM === da.doseM)
+          )
+            expect(db.doseM, `${b.index} ${r}`).toBe(next);
+          else if (nextFits && db.doseM !== da.doseM) expect(db.doseM).toBe(next0);
           else {
             expect(db.doseM, `${b.index} ${r}`).toBe(da.doseM);
             if (hasOther(db.ladder, da.doseM, da.structure)) {

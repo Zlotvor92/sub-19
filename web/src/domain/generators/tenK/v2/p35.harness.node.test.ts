@@ -17,13 +17,16 @@ export const P35_PARTS = 4;
 /** Brz nivo (planovi P35_PLANS): nedelje sa drugim danom kvaliteta laganim (10K-08; ranije 1854). */
 /** P3 (10k-v2.11.0, D33): veći RP dan (plafon 15 % od 40 km) — više nedelja sa drugim danom kvaliteta laganim: 414 → 462. */
 /** P5 (10k-v2.12.0, D35/D37 P-b): 462 → 474. P8 (10k-v2.13.0, G1 sporiji rast obima i dugog, G2): 474 → 546; dopuna (G6, G7): 546 → 624. */
-export const P35_FAST = 624;
+/** K3-A (10k-v2.15.0, opseg rada I/RP; izbor kao pre K3-A kad bi K3-A stvorio nedelju pouke 35): 624 → 672. */
+export const P35_FAST = 672;
 /** Nedelje sa drugim danom kvaliteta laganim po delu punog nivoa (zbir 414; 10K-08, ranije 1854 = brz nivo). */
 // 10K-08 (T1): sa lagan ≤ 0,8 × dugi dan kvaliteta ređe traje duže od dugog — 413 / 413 / 514 / 514 → 100 / 100 / 107 / 107.
 // P3 (10k-v2.11.0, D33): veći RP dan — 100 / 100 / 107 / 107 → 108 / 108 / 123 / 123.
 // P5 (10k-v2.12.0, D35 test, D37 P-b): 108 / 108 / 123 / 123 → 112 / 112 / 125 / 125.
 // P8 (10k-v2.13.0, G1 sporiji rast obima i dugog, G6): 112 / 112 / 125 / 125 → 145 / 145 / 167 / 167.
-export const P35_DROPPED = [145, 145, 167, 167] as const;
+// K3-A (10k-v2.15.0): 145 / 145 / 167 / 167 → 228 / 228 / 219 / 219 (zbir 624 → 894; deo van planova 7ba9717 — veći I/RP
+// dan i posle vraćanja izbora kao pre K3-A; K3-10K-REPORT § Otvoreno).
+export const P35_DROPPED = [228, 228, 219, 219] as const;
 const HERE = fileURLToPath(new URL('./', import.meta.url));
 const BUILD = new Set(['base', 'development', 'specific']);
 const steady = (w: PlanWeek): boolean => BUILD.has(w.phase) && !w.deload;
@@ -69,7 +72,7 @@ export function describeP35Grid(title: string, partIndex: number): void {
         expect(bad.slice(0, 10)).toEqual([]);
         // Nedelje sa drugim danom kvaliteta laganim (na 7ba9717 2022 nedelje sa 2 kvaliteta dužim od dugog; posle
         // prve takve nedelje progresija q2 kreće kasnije, pa deo kasnijih ne treba).
-        expect(P35_DROPPED.reduce((a, b) => a + b, 0)).toBe(624);
+        expect(P35_DROPPED.reduce((a, b) => a + b, 0)).toBe(894);
         expect(dropped).toBe(FULL ? P35_DROPPED[partIndex - 1] : P35_FAST);
       },
       GRID_TIMEOUT
