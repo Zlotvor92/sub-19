@@ -75,6 +75,14 @@ Opus ne). Tabovi koji već rade ostaju na svom modelu do kraja segmenta (model s
 nedeljni limit, korisnik radi „Fable reset" — organizator tada javlja i čeka. Mehanički poslovi (ispis planova, prepis
 brojeva) i dalje idu na najslabiji model koji ih rešava samo ako to ne troši nepovratni deo limita — u sumnji Fable.
 
+## Glavni trener (nalog korisnika, 10. 11. 2026, 05:32)
+
+Stalni tab na Fable 5.2: sesija `session_01GnHHiWk1PhzvzdGjhxZ5ob`, uloga „glavni trener". Organizator mu u krugovima
+šalje ispise novih planova (poruka u tu sesiju sa putanjom foldera); on vraća `coach/ROUND-NN.md` (+ .json): ocene po
+rubrici P7b, trenerski standard po distanci, deset najvažnijih izmena, sud o tekućim pravilima. Sme da koristi i
+instalira skillove trkačkog trenera i pretragu weba; ne menja kod. Organizator na osnovu izveštaja odlučuje izmene za
+sledeći krug i upisuje ih u dnevnik. Krug 1: 48 planova „posle P5" + sud o P8 (izdato). Tab se ne arhivira između krugova.
+
 ## Redosled (privremen; zaključava se posle P0)
 
 | Segment | Sadržaj | Stanje |
@@ -145,3 +153,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 10. 11. 2026 05:02: P5-10K primljen: test 1 po planu ≥ 12 ned; T ned 1 10,3 → 13,7 min; ubrzanja 0 → 12 dana; 0 odbijanja na 34 146 planova; pouka 35 ista (P-b); sabotaže 14/14; pun nivo jednom (24 min) + ponovljeni samo popravljeni fajlovi. Prihvaćeno: DOSE_DROPPED raste (veća početna doza pa spuštanje kapacitetom), ponavljanja slota po osećaju 5–6 d, lagan dan sa ubrzanjima po osećaju ne ide na sat. Sve četiri distance imaju P5.
 - 10. 11. 2026 05:02: P7b stigao za 5K, HM, MAR (ocene u `P7/reviews/`; ključ A/B ostaje van repoa do ocene 10K). Otključano kod organizatora — prosek star → nov: 5K 60,7 → 58,9 (nov slabiji: 3 profila većeg obima, −8,5 do −13; zamerke: rasterećenje i taper ne smanjuju kvalitet, skok doze R 8 min → I 26 min, dan kvaliteta dug kao dugi); HM 55,4 → 58,0 (nov bolji u 11/12); MAR 53,3 → 59,7 (nov bolji u 10/12, 2 isto). Nijedan plan > 72. Zajedničke zamerke obe verzije: plato dugog i obima, napomene protivreče brojevima, tekst sa „nije izvodljiv"/„odstupanje", trkački dan 5K 8,5 km za sve nivoe, početnik sa većim obimom spušten, spori 3 d bez trkačkog tempa u taperu. → sadržaj P8.
 - 10. 11. 2026 05:15: P7b 10K stigao; ključ i rezultati objavljeni (`P7/KEY-AND-RESULTS.md`). Ukupno 48 parova: 54,5 → 58,2; 5K 60,7 → 58,9 (pogoršanje kod većeg obima), 10K 52,0 → 56,0, HM 55,4 → 58,0, MAR 53,3 → 59,7. Odluka: P8 po distanci — G1 obim raste do kraja razvoja, G2 najniži nivo lestvice uvek staje u plafon, G3 tekst za trkača; 5K budžet ≥ 40 km nazad na 10 %, rasterećenje ≤ 60 % i taper ≤ 70 % doze, trkački dan po nivou; HM nedelja sa blokom ≤ 25 % RP; MAR početnik MP ≤ 60 min. Merilo P8 je ponovljena slepa ocena (P9), ne orijentiri organizatora.
+- 10. 11. 2026 05:33: otvoren stalni tab „glavni trener" (Fable 5.2), krug 1 izdat. Njegov sud o P8 stiže dok P8-5K i P8-10K rade: ako ospori neko pravilo P8, organizator šalje dopunu tim tabovima pre njihovog push-a, a P8-HM i P8-MAR se izdaju sa već usklađenim zadatkom.
