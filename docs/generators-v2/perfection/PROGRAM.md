@@ -209,3 +209,17 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
   F 54 → 42, B 42 → 27,5; S4 plan po osećaju 12–13 nedelja bez testa (1260/8190); S5 tumačenja T1–T6; vrh obima niži
   > 10 % u 31 % R i 44 % F planova. Ostatak G3 (interne oznake u napomenama nedelje) nije urađen.
 - Tab P8-MAR se ne arhivira dok se S1–S6 ne odluče.
+
+### 10. 11. 2026, 16:20 — P8-HM predao (hm-v2.11.0)
+
+- Kod `3ebb088`, izveštaj `reports/P8-HM-REPORT.md`, otvorene odluke `reports/P8-HM-STOP.md` (S1–S6). Nezavisna
+  provera organizatora: brzi nivo `halfMarathon/v2` 360/360. Po tabu: pun nivo 452/452, `--changed` 1011/1011,
+  E2E 5/5, sabotaže 14/14. Ceo `npm run check` posle ispravke 2 UI testa nije ponavljan — organizator ga pokreće kad
+  10K preda.
+- Ugrađeno: G1, G2, G4, G5, G6, G7, HM (b), G3 (tekst). Nije: G8 (S2), HM (c) (S4).
+- Cena: ukupno RP medijana 42 → 34,8 km; 27 novih odbijanja u mreži skorašnjeg dugog (S3).
+- ČEKA ODLUKU (ne odlučuje se dok vlasnik ne kaže kako dalje): S1 taper ≤ 60 % × najmanja doza; S2 G8; S3 nova
+  odbijanja; S4 test u nedelji vrha 84/112; S5 plan po osećaju 10–12 nedelja bez testa (1728/6336); S6 tumačenja.
+  Izuzetak početnika za G6 (0,80) proveriti u kodu HM pri odlukama.
+- Za krug 2: ispis planova kroz `userWeekNotes`/`userText`, ne sirove napomene.
+- Tab P8-HM se ne arhivira dok se S1–S6 ne odluče. Radi još samo P8-10K završetak.
