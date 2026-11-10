@@ -687,6 +687,14 @@ const DECISIONS: readonly Decision[] = [
       'specific.ts bAllowed (jedno mesto: 3 dana otvoreno); week.ts buildWeekIn (bEasyQ1); validate.ts ROLES (roleOf q1), LONG_BLOCK, B_WEEK_MISSING (3 dana bez dana kvaliteta); gridInvariants.ts (POUKA35 / DOSE_DECREASE za 3 dana)',
     rationale:
       'Glavni trener, krug 3 (§ 3 stavka A): 3 dana su najslabiji HM planovi (jedan podražaj, dugi isti 10+ nedelja). Merenje (mreže R/F/B, 25 122 plana): 3 dana R 2640 + F 990 planova dobija 1–2 nedelje sa blokom (zbir bloka medijana 10 km), 0 novih odbijanja, vrh < −10 % 0; 4–6 dana i početnik bez promene. p03/p10 4/4 km, p08 4/6 km.'
+  },
+  {
+    id: 'K4-A2',
+    rule: 'Talas dugog (redovan plan 3 dana): plafon = najduži dugi plana bez talasa; kad dugi stoji na plafonu u više od 3 ne-rasteretne nedelje izgradnje zaredom, plafon se troši OD KRAJA unazad — nedelja po rasporedu B ostaje na plafonu, ostale se smenjuju (plafon, 0,85 ×, …), plafon najviše 3 puta; ostale nedelje plafona imaju dugi ≤ ⌊0,85 × plafon⌋ (lagane, bez bloka; napomena WAVE_NOTE). Nedelja talasa je lakša nedelja kao rasterećenje: osnov rasta obima ostaje poslednja nedelja van talasa. Plan sa talasom važi kad zadrži isti plafon i ne spušta dozu kvaliteta (korak „drop" kog plan bez talasa nema) — inače plan bez talasa. Adaptacija: započete nedelje talasa prethodnog plana su činjenica; budućnost bez talasa.',
+    place:
+      'policy.ts specific.wave; lengths.ts longWave (jedno mesto odluke), waveCap10, WAVE_NOTE; generate.ts construct (dva prolaza, priorWave), constructWith (granica dugog kao pouka 28); volume.ts leaveWeek/leaveAdaptWeek (wave); validate.ts rollAt, LONG_WAVE; gridInvariants.ts WAVE, GROWTH',
+    rationale:
+      'Glavni trener, krug 3 (§ 3 stavka A): dugi 24 km svake nedelje na 3 dana. Merenje (mreže R/F, 3 dana): plafon > 3 zaredom 2535 planova → talas u 2109 (R 1578, F 531); 426 bez talasa (sudar sa lancem doza: nedelja talasa spušta cilj, plafon zone obara dozu; ili pad plafona); obim izgradnje planova sa talasom medijana −1,8 % (p10 −4,7 %, najviše −11,4 %), vrh < −10 % 0, 0 novih odbijanja. p08 24 km u ned 12/15/18 (bilo 12, 14–16, 18), između 20,4 km; p03/p10 15,7 km 3 puta.'
   }
 ];
 
@@ -1061,7 +1069,10 @@ export const HM_V2_POLICY = {
     rpWeekTimeShare: 0.22,
     /** K3-E: brz trkač (VDOT ≥ vdotMin i cilj nedelje ≥ weekKmMin) — `steps` nivoa bloka po nedelji B (4 → 6 → 8 km
         dok granice bloka, plafon RP i 22 % vremena dozvoljavaju). */
-    fast: { vdotMin: 50, weekKmMin: 80, steps: 2 }
+    fast: { vdotMin: 50, weekKmMin: 80, steps: 2 },
+    /** K4-A2: talas dugog (redovan plan 3 dana) — dugi na plafonu > `run` ne-rasteretnih nedelja zaredom → plafon
+        najviše `maxAtCap` puta (od kraja unazad, smena), ostale nedelje plafona `share` × plafon. */
+    wave: { run: 3, maxAtCap: 3, share: 0.85 }
   },
 
   /** P5-F3 (hm-v2.10.0): ubrzanja na kraju jednog laganog dana nedelje izgradnje i tapera (ne trkačka nedelja, ne uvod

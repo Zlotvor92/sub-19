@@ -10,6 +10,8 @@ import {
   buildEasyCap10,
   buildLengths,
   buildLengthsT1,
+  WAVE_NOTE,
+  waveCap10,
   t1MinWeek,
   buildEasyMin10,
   deloadEasyShort,
@@ -439,14 +441,43 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // ostali dani šablona lagani.
   const dSlot = deloadSlot(nq);
   // HM-09 (pouka 28): L skoka nedelje i — upisani dugi uz najduži trčan koraka koji važe za nju (steps.ranLongFor).
+  // K4-A2: nedelja talasa (napomena WAVE_NOTE) — dugi ≤ 0,85 × plafon (najduži dugi plana), ista funkcija kao konstruktor.
+  const top10 = Math.max(
+    0,
+    ...weeks.map((w) => to10(w.days.find((d) => d.role === 'long')?.workout.km ?? 0))
+  );
+  const waveAt = (i: number): boolean => weeks[i - 1]?.notes.includes(WAVE_NOTE) ?? false;
   const rollAt = (i: number): number =>
-    rollingCapRan10(
-      i,
-      weeks,
-      ranLongFor(steps, i),
-      recentJ,
-      ranCapFloor10(rule.weekMinKm, input.runDays.length)
+    Math.min(
+      rollingCapRan10(
+        i,
+        weeks,
+        ranLongFor(steps, i),
+        recentJ,
+        ranCapFloor10(rule.weekMinKm, input.runDays.length)
+      ),
+      // Granica nedelje talasa = njen dugi (≤ 0,85 × plafon proverava LONG_WAVE): dužine se proveravaju istom funkcijom.
+      waveAt(i) ? waveLong10(i) : Infinity
     );
+  const waveLong10 = (i: number): number => {
+    const l = weeks[i - 1]?.days.find((d) => d.role === 'long');
+    return l ? to10(l.workout.km) : Infinity;
+  };
+  for (const w of weeks)
+    if (
+      waveAt(w.index) &&
+      (rule.beginner ||
+        rule.quality !== 1 ||
+        w.deload ||
+        !['base', 'development', 'specific'].includes(w.phase) ||
+        hasLongBlock(w.days) ||
+        (steps.length === 0 && waveLong10(w.index) > waveCap10(top10)))
+    )
+      err(
+        'LONG_WAVE',
+        'Talas dugog samo u ne-rasteretnoj nedelji izgradnje redovnog plana 3 dana, bez bloka, dugi ≤ 0,85 × najduži (K4-A2).',
+        w.index
+      );
   const recentJ = jumpRecentKm(input.recentLongRunKm, steps);
   // T1 izuzetak (lengths.t1MinWeek): nedelja na minimumu u kojoj T1 nije izvodljiv (ista funkcija kao konstruktor).
   const t1Warned = new Set<number>();
@@ -2223,7 +2254,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         w.index
       );
     if (isSteady(w) && w.fitted === 'down') capacityCut = true;
-    h = av ? leaveAdaptWeek(h, w, t10, av) : { ...h, ...leaveWeek(h, w, t10) };
+    h = av
+      ? leaveAdaptWeek(h, w, t10, av, waveAt(w.index))
+      : { ...h, ...leaveWeek(h, w, t10, waveAt(w.index)) };
     if (!checked(w) && to10(w.nominalKm) !== nominal) known = false;
   }
   if (to10(plan.peakKm) !== h.peak10) err('VOLUME_PEAK', 'Vrh plana ≠ najveći cilj izgradnje.');

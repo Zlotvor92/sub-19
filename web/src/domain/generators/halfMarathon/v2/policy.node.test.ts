@@ -344,7 +344,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'K3-A',
       'K3-B',
       'K3-E',
-      'K4-A1'
+      'K4-A1',
+      'K4-A2'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

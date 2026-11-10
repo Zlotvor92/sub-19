@@ -229,9 +229,15 @@ export function nominal10(
   return hist.lastBuild10 + step10(hist.lastBuild10, cap10, rule, left);
 }
 
-/** Posle nedelje sa ciljem `target10`: osnov rasta i vrh menja samo ne-rasteretna izgradnja. */
-export function leaveWeek(h: VolumeHistory, frame: WeekFrame, target10: number): VolumeHistory {
-  if (!isBuildPhase(frame.phase) || frame.deload) return h;
+/** Posle nedelje sa ciljem `target10`: osnov rasta i vrh menja samo ne-rasteretna izgradnja. K4-A2: nedelja talasa
+    dugog (`wave`) je lakša nedelja kao rasterećenje — osnov rasta ostaje poslednja nedelja van talasa. */
+export function leaveWeek(
+  h: VolumeHistory,
+  frame: WeekFrame,
+  target10: number,
+  wave = false
+): VolumeHistory {
+  if (!isBuildPhase(frame.phase) || frame.deload || wave) return h;
   return { lastBuild10: target10, peak10: Math.max(h.peak10, target10) };
 }
 
@@ -468,12 +474,14 @@ export function leaveAdaptWeek(
   h: AdaptHistory,
   frame: WeekFrame,
   target10: number,
-  av: AdaptVolume
+  av: AdaptVolume,
+  /** K4-A2: nedelja talasa dugog — osnov rasta ostaje (kao leaveWeek). */
+  wave = false
 ): AdaptHistory {
   const out = { ...h };
   if (!isBuildPhase(frame.phase)) return out;
   const i = frame.index;
-  if (!frame.deload || av.reset.has(i)) {
+  if ((!frame.deload && !wave) || av.reset.has(i)) {
     out.lastBuild10 = target10;
     out.peakRef10 = Math.max(out.peakRef10, target10);
   }

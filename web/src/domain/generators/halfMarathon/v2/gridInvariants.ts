@@ -76,6 +76,8 @@ export interface GridStats {
   rollingCappedWeeks: number;
   /** K3: ne-rasteretne nedelje izgradnje sa manje kvaliteta od reda H15 (3 dana 1, inače 2). */
   buildNoQuality: number;
+  /** K4-A2: nedelje talasa dugog. */
+  waveWeeks: number;
   /** K5. */
   raceOverTaper: number;
   dropOutsideCapacity: number;
@@ -125,6 +127,7 @@ export const emptyStats = (): GridStats => ({
   longJump12MaxL: 0,
   rollingCappedWeeks: 0,
   buildNoQuality: 0,
+  waveWeeks: 0,
   raceOverTaper: 0,
   dropOutsideCapacity: 0,
   hardAdjacent: 0,
@@ -675,7 +678,8 @@ export function checkPlan(
       const lw = w.days.find((d) => d.role === 'long');
       if (lw && w.days.some((d) => d.workout.kind === 'quality' && d.workout.sec > lw.workout.sec))
         longer = true;
-      lastBuild = t10;
+      // K4-A2: nedelja talasa dugog je lakša nedelja — osnov rasta ostaje poslednja nedelja van talasa.
+      if (!w.notes.some((n) => n.startsWith('Talas dugog'))) lastBuild = t10;
       peak = Math.max(peak, t10);
       if (long !== null) lastLong = long;
       if (q1 > 0) lastQ1 = q1;
@@ -717,6 +721,27 @@ export function checkPlan(
     if (long !== null) longest = Math.max(longest, long);
   }
   if (p.peakKm !== peak / 10) no('PEAK', `${p.peakKm} ≠ ${peak / 10}`);
+
+  // K4-A2 (nezavisno): talas dugog — samo redovan plan 3 dana; nedelja talasa ima dugi ≤ ⌊0,85 × najduži⌋ i nema
+  // blok; u planu sa talasom najduži dugi najviše 3 puta (osim nedelja sa blokom) i nikad > 3 ne-rasteretne zaredom.
+  const waveW = p.weeks.filter((w) => w.notes.some((n) => n.startsWith('Talas dugog')));
+  if (waveW.length > 0) {
+    if (!one || beg) no('WAVE', 'talas van plana 3 dana');
+    const l10 = (w: PlanWeek): number =>
+      Math.round((w.days.find((d) => d.role === 'long')?.workout.km ?? 0) * 10);
+    for (const w of waveW)
+      if (l10(w) > Math.floor(0.85 * longest + EPS) || blockOf(w) > 0 || w.deload)
+        no('WAVE', `ned ${w.index} dugi ${l10(w) / 10}`);
+    const nd = p.weeks.filter((w) => !w.deload && isBuild(w.phase));
+    const atTop = nd.filter((w) => l10(w) === longest);
+    if (atTop.filter((w) => blockOf(w) === 0).length > 3) no('WAVE', `plafon ${atTop.length} puta`);
+    let r = 0;
+    for (const w of nd) {
+      r = l10(w) === longest ? r + 1 : 0;
+      if (r > 3) no('WAVE', `plafon > 3 zaredom`);
+    }
+    st.waveWeeks += waveW.length;
+  }
 
   // H9: zahtevni dani nikad uzastopni (i preko nedelja).
   const hard = p.weeks.flatMap((w) => w.days.filter((d) => d.hard).map((d) => d.date));

@@ -377,3 +377,62 @@ export function remainderEasy10(rest100: number, caps10: readonly number[]): num
   );
   return easy10.every((e) => e >= EASY_MIN10) ? easy10 : null;
 }
+
+/** K4-A2: talas dugog — nedelje (1-indeks) čiji je dugi ≤ `cap10` (0,85 × plafon) i plafon [0,1 km]. */
+export interface LongWave {
+  cap10: number;
+  weeks: ReadonlySet<number>;
+}
+
+/** K4-A2: napomena nedelje talasa (validator je čita kao oznaku). */
+export const WAVE_NOTE =
+  'Talas dugog: dugi ove nedelje je kraći (≈ 85 % najdužeg) — najduži dugi je u nedeljama sa blokom u trkačkom tempu.';
+
+/** K4-A2: granica dugog nedelje talasa — ⌊0,85 × plafon⌋ [0,1 km]. JEDNA funkcija (konstruktor, validator). */
+export const waveCap10 = (ceiling10: number): number =>
+  Math.floor(P.specific.wave.share * ceiling10 + EPS);
+
+/**
+ * K4-A2 (JEDNO mesto odluke): talas dugog redovnog plana 3 dana iz dugih plana bez talasa. Plafon = najduži dugi plana;
+ * kad dugi stoji na plafonu u više od 3 ne-rasteretne nedelje izgradnje zaredom, plafon se troši OD KRAJA unazad:
+ * nedelja po rasporedu B ostaje na plafonu, ostale se smenjuju (plafon, 0,85 ×, …), plafon najviše 3 puta; ostale
+ * nedelje plafona dobijaju 0,85 × plafon. null = bez talasa.
+ */
+export function longWave(
+  weeks: readonly {
+    index: number;
+    phase: string;
+    deload: boolean;
+    long10: number | null;
+    b: boolean;
+  }[],
+  rule: { readonly quality: number; readonly beginner: boolean }
+): LongWave | null {
+  const q = P.specific.wave;
+  if (rule.beginner || rule.quality !== 1) return null;
+  const nd = weeks.filter(
+    (w) => !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific')
+  );
+  const c10 = Math.max(0, ...weeks.map((w) => w.long10 ?? 0));
+  let run = 0;
+  let maxRun = 0;
+  for (const w of nd) {
+    run = w.long10 === c10 ? run + 1 : 0;
+    maxRun = Math.max(maxRun, run);
+  }
+  if (c10 === 0 || maxRun <= q.run) return null;
+  const at = nd.filter((w) => w.long10 === c10).reverse();
+  const wave = new Set<number>();
+  let keeps = 0;
+  let lastKept = false;
+  for (const w of at) {
+    if (w.b || (!lastKept && keeps < q.maxAtCap)) {
+      keeps++;
+      lastKept = true;
+    } else {
+      wave.add(w.index);
+      lastKept = false;
+    }
+  }
+  return wave.size > 0 ? { cap10: waveCap10(c10), weeks: wave } : null;
+}

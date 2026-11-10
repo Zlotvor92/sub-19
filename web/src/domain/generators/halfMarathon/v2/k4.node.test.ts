@@ -64,3 +64,52 @@ describe('K4-A1: 3 dana — blok RP u dugom, kvalitet usred nedelje lagan', () =
     expect(bad).toEqual([]);
   });
 });
+
+describe('K4-A2: talas dugog (3 dana)', () => {
+  const l10 = (w: PlanWeek): number => Math.round((longOf(w)?.workout.km ?? 0) * 10);
+  const build = (p: HmV2Plan): PlanWeek[] =>
+    p.weeks.filter((w) => !w.deload && ['base', 'development', 'specific'].includes(w.phase));
+  /** Najduži dugi: najviše 3 puta (osim nedelja sa blokom), nikad > 3 ne-rasteretne zaredom; nedelja sa kraćim dugim
+      zbog talasa ≤ ⌊0,85 × najduži⌋; poslednja ne-rasteretna pred taper je na plafonu. */
+  const check = (p: HmV2Plan): string[] => {
+    const bad: string[] = [];
+    const top = Math.max(...p.weeks.map(l10));
+    const nd = build(p);
+    if (nd.filter((w) => l10(w) === top && blockKm(w) === 0).length > 3)
+      bad.push('plafon > 3 puta');
+    let r = 0;
+    for (const w of nd) {
+      r = l10(w) === top ? r + 1 : 0;
+      if (r > 3) bad.push(`ned ${w.index}: plafon > 3 zaredom`);
+    }
+    for (const w of nd)
+      if (
+        w.notes.some((n) => n.startsWith('Talas dugog')) &&
+        l10(w) > Math.floor(0.85 * top + 1e-9)
+      )
+        bad.push(`ned ${w.index}: talas ${l10(w) / 10}`);
+    if (l10(nd[nd.length - 1]!) !== top) bad.push('poslednja pred taper nije na plafonu');
+    return bad;
+  };
+
+  it('p08: 24 km tri puta (nedelje 12, 15, 18), između 20,4 km', () => {
+    const p = gen(P08);
+    expect(check(p)).toEqual([]);
+    expect(p.weeks.filter((w) => l10(w) === 240).map((w) => w.index)).toEqual([12, 15, 18]);
+    expect([14, 16].map((i) => l10(p.weeks[i - 1]!))).toEqual([204, 204]);
+  });
+
+  it('uzorak mreža 02 i 03, 3 dana (svaki 5.) sa talasom: 0 prekršaja', () => {
+    const bad: string[] = [];
+    let waved = 0;
+    const three = [...grid02Inputs(), ...feelInputs()].filter((c) => c.days === 3);
+    for (const c of three.filter((_, i) => i % 5 === 0)) {
+      const p = gen(c.input);
+      if (!p.weeks.some((w) => w.notes.some((n) => n.startsWith('Talas dugog')))) continue;
+      waved++;
+      for (const x of check(p)) bad.push(`${c.id}: ${x}`);
+    }
+    expect(bad).toEqual([]);
+    expect(waved).toBeGreaterThan(300);
+  });
+});

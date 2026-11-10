@@ -9,11 +9,15 @@ import { mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   longestLong10,
+  type LongWave,
+  longWave,
   longsOf10,
   recentLongCap10,
   recentLongNeeded10,
   ranCapFloor10,
   rollingCapRan10,
+  WAVE_NOTE,
+  waveCap10,
   week1LongCap10
 } from './lengths.ts';
 import { assessGoal, predictedHm } from './paces.ts';
@@ -150,6 +154,69 @@ export function construct(
   prior?: Written,
   searchThreshold = false
 ): GenerateResult {
+  // K4-A2: adaptacija — talas je činjenica plana (nedelje sa napomenom talasa u prethodnom planu, plafon iz njega).
+  if (steps.length > 0) return constructWith(raw, steps, prior, searchThreshold, priorWave(prior));
+  const g = constructWith(raw, steps, prior, searchThreshold, null);
+  if (!g.ok) return g;
+  // K4-A2: talas dugog (3 dana, lengths.longWave — jedno mesto) iz plana bez talasa; plan sa talasom važi samo kad
+  // zadrži isti plafon dugog — inače plan bez talasa (prethodno ponašanje).
+  const frames = g.plan.weeks;
+  const wave = longWave(
+    frames.map((w, i) => {
+      const l = w.days.find((d) => d.role === 'long');
+      return {
+        index: w.index,
+        phase: w.phase,
+        deload: w.deload,
+        long10: l ? Math.round(l.workout.km * 10) : null,
+        b: scheduledType(frames, i) === 'B'
+      };
+    }),
+    g.plan.input.experience === 'beginner'
+      ? { quality: 1, beginner: true }
+      : { quality: g.plan.pattern.q2 === null ? 1 : 2, beginner: false }
+  );
+  if (!wave) return g;
+  const w2 = constructWith(raw, steps, prior, searchThreshold, wave);
+  const top = (p: HmV2Plan): number =>
+    Math.max(
+      ...p.weeks.map((w) =>
+        Math.round((w.days.find((d) => d.role === 'long')?.workout.km ?? 0) * 10)
+      )
+    );
+  // Sudar sa lancem doza (K4, način rada 4): talas koji spušta dozu kvaliteta (korak 'drop' kog plan bez talasa nema)
+  // → plan bez talasa.
+  const drops = (p: HmV2Plan): number =>
+    p.weeks.reduce((a, w) => a + w.days.filter((d) => d.workout.dose?.step === 'drop').length, 0);
+  return w2.ok && top(w2.plan) === top(g.plan) && drops(w2.plan) <= drops(g.plan) ? w2 : g;
+}
+
+/** K4-A2: talas dugog prethodnog plana kao činjenica — započete nedelje sa napomenom WAVE_NOTE, plafon = najduži dugi
+    tog plana. */
+function priorWave(prior: Written | undefined): LongWave | null {
+  if (!prior) return null;
+  // Samo nedelje koje su prošle (≤ asOf) — budućnost se gradi bez talasa (povratni rast A8, novi okviri).
+  const weeks = new Set(
+    prior.weeks
+      .filter((w) => w.notes.includes(WAVE_NOTE) && mustDay(w.startDate) <= prior.asOf)
+      .map((w) => w.index)
+  );
+  if (weeks.size === 0) return null;
+  const top10 = Math.max(
+    ...prior.weeks.map((w) =>
+      Math.round((w.days.find((d) => d.role === 'long')?.workout.km ?? 0) * 10)
+    )
+  );
+  return { cap10: waveCap10(top10), weeks };
+}
+
+function constructWith(
+  raw: unknown,
+  steps: readonly HmV2AdaptStep[],
+  prior: Written | undefined,
+  searchThreshold: boolean,
+  wave: LongWave | null
+): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
   const { input, weeks, pace, pattern, rule } = chk;
@@ -253,12 +320,22 @@ export function construct(
         ? { nominal: Math.round(pastW.nominalKm * 10), downOnly: byRule.downOnly }
         : byRule;
     const longest10 = longestLong10(written);
-    const roll10 = rollingCapRan10(
-      frame.index,
-      written,
-      ranLongFor(steps, frame.index),
-      recentJ,
-      ranCapFloor10(rule.weekMinKm, input.runDays.length)
+    // K4-A2: nedelja talasa — dugi ≤ 0,85 × plafon (granica dugog kao pouka 28; vlasnik dužina lengths.ts).
+    const inWave =
+      wave !== null &&
+      wave.weeks.has(frame.index) &&
+      !frame.deload &&
+      isBuildPhase(frame.phase) &&
+      scheduledType(frames, frame.index - 1) !== 'B';
+    const roll10 = Math.min(
+      rollingCapRan10(
+        frame.index,
+        written,
+        ranLongFor(steps, frame.index),
+        recentJ,
+        ranCapFloor10(rule.weekMinKm, input.runDays.length)
+      ),
+      inWave ? wave.cap10 : Infinity
     );
     // P1-S1/S3: raspored A/B iz okvira (jedno mesto: specific.scheduledType); povratak i nov start (cilj samo
     // naniže, A8/A3) — dugi lagan.
@@ -355,6 +432,7 @@ export function construct(
     const notes = [...w.notes];
     if (frame.index === 1 && w.long10 !== null) notes.push(recentLongNote(w.long10, ctx));
     if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));
+    if (inWave) notes.push(WAVE_NOTE);
     // A9: test koji ne staje otpada sa kvalitetom (oznaka nedelje ⇔ dan testa).
     const { test: _test, ...noTest } = frame;
     out.push({
@@ -384,8 +462,8 @@ export function construct(
         );
     }
     h = av
-      ? leaveAdaptWeek(h, frame, fit.target10, av)
-      : { ...h, ...leaveWeek(h, frame, fit.target10) };
+      ? leaveAdaptWeek(h, frame, fit.target10, av, inWave)
+      : { ...h, ...leaveWeek(h, frame, fit.target10, inWave) };
   }
 
   // A1: nivo plana iz tempa poslednje nedelje (budućnost); ocena cilja za nedelje od rezultata do trke.
