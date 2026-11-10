@@ -42,6 +42,7 @@ import { specificTypeNext } from './specific.ts';
 import { validatePlan } from './validate.ts';
 import {
   adaptNominal10,
+  buildWeeksLeft,
   type AdaptVolume,
   adaptVolume,
   capacityLimits,
@@ -304,9 +305,11 @@ export function construct(
       continue;
     }
     if (av) h = enterWeek(h, frame, av, rule);
+    // G1 (P8): rast do kraja razvoja (preostale ne-rasteretne nedelje izgradnje okvira).
+    const left = buildWeeksLeft(frames, frame.index);
     const { nominal, downOnly } = av
-      ? adaptNominal10(frame, h, start10, rule, av)
-      : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
+      ? adaptNominal10(frame, h, start10, rule, av, left)
+      : { nominal: nominal10(frame, h, start10, cap10, rule, left), downOnly: false };
     const longest10 = longestLong10(written);
     // T1 (10K-08): pretraga cilja najpre sa granicama laganog (lengths.buildEasyBounds10); tek kad nijedan cilj nije
     // izvodljiv (mali obim adaptacije: dugi < 20 min / 0,8) — ista pretraga bez T1, uz napomenu (validator: upozorenje).

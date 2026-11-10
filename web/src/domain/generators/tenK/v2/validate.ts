@@ -102,7 +102,8 @@ import {
   capacityMessage,
   enterWeek,
   fewerDaysAdvice,
-  growth10,
+  growthStep10,
+  buildWeeksLeft,
   initialAdaptHistory,
   leaveWeek,
   peakCap10,
@@ -1869,8 +1870,10 @@ export function validatePlan(
     }
     const lastBuild = h.lastBuild10;
     const peak = h.peak10;
+    // G1 (P8): preostale ne-rasteretne nedelje izgradnje do kraja razvoja iz nedelja plana.
+    const left = buildWeeksLeft(weeks, w.index);
     const { nominal, downOnly } = av
-      ? adaptNominal10(w, h, start10, rule, av)
+      ? adaptNominal10(w, h, start10, rule, av, left)
       : {
           nominal:
             w.phase === 'taper'
@@ -1879,7 +1882,7 @@ export function validatePlan(
                 ? start10
                 : w.deload
                   ? Math.round(P.deload.factor * lastBuild)
-                  : Math.min(lastBuild + growth10(lastBuild, rule), cap10),
+                  : Math.min(lastBuild + growthStep10(lastBuild, cap10, rule, left), cap10),
           downOnly: false
         };
     const t10 = to10(w.targetKm);
