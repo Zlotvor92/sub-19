@@ -546,6 +546,14 @@ const DECISIONS: readonly Decision[] = [
     place: 'lengths.ts easyLongShareOf (jedino mesto; validator EASY_LONG_SHARE isto)',
     rationale:
       'Heuristika, glavni trener krug 2 (§ 4.3): 3 dana lagan 0,80 × dugi (MAR p08 19,7 + 29,3 km).'
+  },
+  {
+    id: 'K3-E',
+    rule: 'Brz trkač (VDOT plana ≥ 50, cilj nedelje ≥ 80 km): blok MP u dugom nedelje B — lestvica do 18 km, dva nivoa po nedelji B, MP deo bloka ≤ 75 min; ostale granice bloka (≤ 50 % dugog, plafon zone MP, 180 min) ostaju. Dan pred dugi ≤ 50 % dugog i premeštanje MP treninga početnika u dugi NISU ugrađeni (K3-MAR-REPORT § Otvoreno: 67 novih odbijanja i vrh niži > 10 % u 14–23 % planova 3–4 dana; 5–6 dana sudar sa M13 „lagani jednaki").',
+    place:
+      'policy.ts specific.fast; specific.ts fastBlock, blockLevels, nextBlockKm, chooseBlockKm; week.ts; validate.ts (LONG_BLOCK istim funkcijama)',
+    rationale:
+      'Heuristika, glavni trener krug 2 (§ 3a): MAR p05 MP u dugom 10/14 km za VDOT 60 na 116 km — traženo 16–18 km (≤ 75 min).'
   }
 ];
 
@@ -884,7 +892,16 @@ export const MARATHON_V2_POLICY = {
       dugog u MP (lestvica km, jedan nivo po nedelji B), blok ≤ blockMaxLongShare dužine dugog. */
   specific: {
     blockKm: [8, 10, 12, 14, 16] as readonly number[],
-    blockMaxLongShare: 0.5
+    blockMaxLongShare: 0.5,
+    /** K3-E (marathon-v2.13.0): brz trkač (VDOT ≥ vdotMin, cilj nedelje ≥ weekKmMin) — lestvica bloka do 18 km, dva
+        nivoa po nedelji B, MP deo bloka ≤ maxSec (dok minuti dozvoljavaju). */
+    fast: {
+      vdotMin: 50,
+      weekKmMin: 80,
+      blockKm: [8, 10, 12, 14, 16, 18] as readonly number[],
+      steps: 2,
+      maxSec: 4500
+    }
   },
 
   /** P5-F3 (marathon-v2.10.0): ubrzanja na jednom laganom danu nedelje izgradnje i tapera (ne trkačka nedelja, ne

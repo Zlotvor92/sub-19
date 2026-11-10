@@ -68,8 +68,13 @@ export const hasLongBlock = (
   days: readonly { role: string; workout: Pick<Workout, 'kind' | 'workKm'> }[]
 ): boolean => days.some((d) => d.role === 'long' && longBlockKm(d.workout) > 0);
 
-/** M19: lestvica bloka [km]. */
-export const blockLevels = (): readonly number[] => P.specific.blockKm;
+/** K3-E: brz trkač za blok u dugom — VDOT plana ≥ 50 i cilj nedelje ≥ 80 km. JEDNA funkcija (konstruktor, validator). */
+export const fastBlock = (p: Paces, targetKm: number): boolean =>
+  p.vdot >= P.specific.fast.vdotMin - 1e-9 && targetKm >= P.specific.fast.weekKmMin - 1e-9;
+
+/** M19: lestvica bloka [km] (K3-E: brz trkač do 18 km). */
+export const blockLevels = (fast = false): readonly number[] =>
+  fast ? P.specific.fast.blockKm : P.specific.blockKm;
 
 /** M19: granice bloka `x` [km] u dugom od `km` — x ≤ 50 % dužine dugog i trajanje (lagan deo sporim E + blok u MP) ≤
     vremenska granica dugog nedelje (M13). */
@@ -90,8 +95,8 @@ export function blockFits(
 
 /** M19: nivo bloka po pravilu — sledeći posle poslednjeg bloka `lastBlockM` [m] (jedan nivo po nedelji B; bez
     prethodnog prvi nivo; na vrhu vrh). */
-export function nextBlockKm(lastBlockM: number): number {
-  const levels = blockLevels();
+export function nextBlockKm(lastBlockM: number, fast = false): number {
+  const levels = blockLevels(fast);
   return levels.find((x) => x * 1000 > lastBlockM + 1e-6) ?? levels[levels.length - 1]!;
 }
 
@@ -114,22 +119,25 @@ export function chooseBlockKm(
   /** P5-F2: nedelja bez rasta doze — nivo po pravilu je najviši nivo ≤ max(poslednji blok, poslednja MP doza);
       nema ga (blok bi bio veći od poslednje MP doze) → null (nedelja A). */
   hold = false,
-  capMm = Infinity
+  capMm = Infinity,
+  /** K3-E (specific.fastBlock): lestvica do 18 km, dva nivoa po nedelji B, MP deo ≤ 75 min. */
+  fast = false
 ): number | null {
   const km = long10 / 10;
+  const F = P.specific.fast;
   const ok = (x: number): boolean => {
     if (x * 1000 < lastBlockM - 1e-6 || !blockFits(km, x, rule, p, capMm)) return false;
+    if (fast && x * p.MP > F.maxSec + 1e-6) return false;
     const sec = longBlockWorkout(km, x, p).sec;
     return qualitySecs.every((s) => s > easyLongSec || s <= sec);
   };
   const top = Math.max(lastBlockM, lastMpM);
-  const next = hold
-    ? blockLevels()
-        .filter((x) => x * 1000 <= top + 1e-6)
-        .pop()
-    : nextBlockKm(top);
+  const levels = blockLevels(fast);
+  let next = hold ? levels.filter((x) => x * 1000 <= top + 1e-6).pop() : nextBlockKm(top, fast);
+  if (fast && !hold && next !== undefined)
+    for (let i = 1; i < F.steps; i++) next = nextBlockKm(next * 1000, true);
   if (next === undefined) return null;
-  const lv = blockLevels().filter((x) => x <= next + 1e-9 && ok(x));
+  const lv = levels.filter((x) => x <= next + 1e-9 && ok(x));
   return lv.length > 0 ? lv[lv.length - 1]! : null;
 }
 

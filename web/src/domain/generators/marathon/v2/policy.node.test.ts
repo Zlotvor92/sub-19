@@ -59,7 +59,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'P8-G7',
       'K3-A',
       'K3-B',
-      'K3-C'
+      'K3-C',
+      'K3-E'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -334,7 +335,12 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   });
 
   it('M19 (P2-S1): smena A/B — lestvica bloka 8–16 km, blok ≤ 50 % dugog', () => {
-    expect(P.specific).toEqual({ blockKm: [8, 10, 12, 14, 16], blockMaxLongShare: 0.5 });
+    expect(P.specific).toEqual({
+      blockKm: [8, 10, 12, 14, 16],
+      blockMaxLongShare: 0.5,
+      // K3-E: brz trkač do 18 km, dva nivoa po nedelji B, MP deo ≤ 75 min.
+      fast: { vdotMin: 50, weekKmMin: 80, blockKm: [8, 10, 12, 14, 16, 18], steps: 2, maxSec: 4500 }
+    });
   });
 
   it('pouka 10 (M17): T kont. 1,5 km i T cruise staju u plafon pri najmanjem obimu početnika (i 1,5 km u rasterećenju); MP 2 × 3000 m tek od 30 km (T kont. umesto MP)', () => {

@@ -1,0 +1,40 @@
+R-d3: n 3120 odb 0→0 prom 0 vrh<-10% 0
+R-d4: n 4368 odb 0→0 prom 576 vrh<-10% 0 | peak 80→80 [80..80]; blockMpKm 14→16 [14..16]; mpMidMax 45.17→54.13 [27.1..58.33]
+R-d5: n 6240 odb 0→0 prom 1848 vrh<-10% 0 | peak 98→98 [80.2..100]; blockMpKm 14→14 [14..16]; mpMidMax 46.4→54.2 [27.1..58.33]
+R-d6: n 8112 odb 0→0 prom 3372 vrh<-10% 0 | peak 115→115 [80.2..120]; blockMpKm 14→14 [12..16]; mpMidMax 46.4→54.2 [27.1..58.33]
+F-d3: n 1170 odb 0→0 prom 0 vrh<-10% 0
+F-d4: n 1638 odb 0→0 prom 72 vrh<-10% 0 | peak 80→80 [80..80]; blockMpKm 14→16 [14..16]; mpMidMax 47.4→55.3 [31.6..55.3]
+F-d5: n 2340 odb 0→0 prom 231 vrh<-10% 0 | peak 98→98 [80.2..100]; blockMpKm 14→16 [14..16]; mpMidMax 47.4→55.3 [31.6..55.3]
+F-d6: n 3042 odb 0→0 prom 426 vrh<-10% 0 | peak 115→115 [80.2..120]; blockMpKm 14→16 [12..16]; mpMidMax 47.4→55.3 [31.6..55.3]
+B-d4: n 945 odb 0→0 prom 0 vrh<-10% 0
+B-d5: n 945 odb 0→0 prom 0 vrh<-10% 0
+nova odbijanja: 0
+C DOSE_DROPPED {"R":1578,"F":1587}
+E1 DOSE_DROPPED {"R":2388,"F":1710}
+--- K3-E(b) dan pred dugi ≤ 50 % (vraćeno):
+R-d3: n 3120 odb 0→0 prom 1036 vrh<-10% 722 | peak 52.6→40.9 [27.8..60]; longest 24.5→20.4 [12.5..30]; eve 0→0 [0..1]
+R-d4: n 4368 odb 0→0 prom 1402 vrh<-10% 604 | peak 65.9→57.6 [33.9..80]; longest 26→24.9 [12.3..32]; eve 0→0 [0..0.96]
+R-d5: n 6240 odb 0→0 prom 0 vrh<-10% 0
+R-d6: n 8112 odb 0→0 prom 0 vrh<-10% 0
+F-d3: n 1170 odb 0→40 prom 349 vrh<-10% 266 | peak 50.9→38.6 [28.1..60]; longest 24.5→19.3 [12.7..30]; eve 1→0.87 [0.73..1]
+F-d4: n 1638 odb 0→27 prom 494 vrh<-10% 318 | peak 63→54.3 [33.6..80]; longest 25.2→22 [12.3..32]; eve 0.95→0.85 [0.53..0.97]
+F-d5: n 2340 odb 0→0 prom 0 vrh<-10% 0
+F-d6: n 3042 odb 0→0 prom 0 vrh<-10% 0
+B-d4: n 945 odb 0→0 prom 0 vrh<-10% 0
+B-d5: n 945 odb 0→0 prom 0 vrh<-10% 0
+nova odbijanja: 67
+   feel-d3-14w-30km-e405-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-30km-e450-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-30km-e510-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-35km-e405-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-35km-e450-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-35km-e510-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-40km-e405-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-40km-e450-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-45km-e405-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-14w-45km-e450-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-15w-30km-e405-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-15w-30km-e450-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-15w-30km-e510-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-15w-35km-e405-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.
+   feel-d3-15w-35km-e450-B: WEEK_INFEASIBLE Nedelja 4: nijedan cilj od 15 km naviše ne može da se sastavi po pravilima.

@@ -81,6 +81,7 @@ import {
   bAllowed,
   blockFits,
   blockLevels,
+  fastBlock,
   chooseBlockKm,
   hasLongBlock,
   mainDoseM,
@@ -817,10 +818,13 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           w.index,
           long.date
         );
-      if (!blockLevels().includes(bk) || !blockFits(long.workout.km, bk, lr, pk))
+      if (
+        !blockLevels(fastBlock(pk, w.targetKm)).includes(bk) ||
+        !blockFits(long.workout.km, bk, lr, pk)
+      )
         err(
           'LONG_BLOCK',
-          `Blok ${fmtKm(bk)} km: nivo lestvice ${blockLevels().join(' / ')} km, ≤ ${P.specific.blockMaxLongShare * 100} % dugog, trajanje ≤ ${longMaxSecOf(lr) / 60} min (M19).`,
+          `Blok ${fmtKm(bk)} km: nivo lestvice ${blockLevels(fastBlock(pk, w.targetKm)).join(' / ')} km, ≤ ${P.specific.blockMaxLongShare * 100} % dugog, trajanje ≤ ${longMaxSecOf(lr) / 60} min (M19).`,
           w.index,
           long.date
         );
@@ -1885,7 +1889,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           secs,
           longWorkout(long.workout.km, pk).sec,
           holdWeeks.has(w.index),
-          capM('MP', w.targetKm, cc(w), false)
+          capM('MP', w.targetKm, cc(w), false),
+          fastBlock(pk, w.targetKm)
         );
         if (want !== bk)
           err(

@@ -394,6 +394,10 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
       if (seg[seg.length - 1]?.zone !== 'MP') no(`blok nije na kraju dugog ned ${w.index}`);
       if (w.days.some((d) => d.workout.kind === 'quality' && d.workout.workKm.MP > 0))
         no(`nedelja B sa MP treningom ned ${w.index}`);
+      // K3-E (nezavisno od specific.ts): blok do 16 km; brz trkač (VDOT ≥ 50, cilj ≥ 80 km) do 18 km i MP deo ≤ 75 min.
+      const fast = p.paces.vdot >= 50 && w.targetKm >= 80;
+      if (blk > (fast ? 18 : 16) + 1e-9) no(`blok > ${fast ? 18 : 16} km ned ${w.index}`);
+      if (fast && blk * p.paces.MP > 4500 + 1e-6) no(`blok brzog > 75 min ned ${w.index}`);
     }
     // Plafoni po treningu (M11; P8-G4 minuti rada usred nedelje; P8-G2 prvi nivo lestvice uvek staje), iz politike —
     // nezavisno od quality.capM.

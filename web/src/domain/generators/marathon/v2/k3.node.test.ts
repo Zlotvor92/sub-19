@@ -184,3 +184,14 @@ describe('K3-C: 3 dana', () => {
         expect(d.workout.km, `ned ${w.index}`).toBeLessThanOrEqual(0.7 * longKm(w) + 1e-9);
   });
 });
+
+describe('K3-E: brz trkač — MP u dugom', () => {
+  it('p05 (VDOT 60, 110 km, 6 dana): blok MP u dugom 14 → 16 km, MP deo ≤ 75 min', () => {
+    const p = prof('p05');
+    const blocks = p.weeks.map(
+      (w) => w.days.find((d) => d.role === 'long')?.workout.workKm.MP ?? 0
+    );
+    expect(Math.max(...blocks)).toBe(16);
+    expect(Math.max(...blocks) * p.paces.MP).toBeLessThanOrEqual(4500);
+  });
+});

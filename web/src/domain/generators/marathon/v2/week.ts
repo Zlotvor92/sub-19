@@ -16,7 +16,7 @@ import {
   taperTop10
 } from './lengths.ts';
 import { MARATHON_V2_POLICY as P, type PlanRule } from './policy.ts';
-import { chooseBlockKm } from './specific.ts';
+import { chooseBlockKm, fastBlock } from './specific.ts';
 import {
   type BuildLimit,
   capM,
@@ -979,7 +979,8 @@ function buildWeekIn(
         w2 ? [w2.sec] : [],
         longWorkout(len.long10 / 10, p).sec,
         ctx.hold === true,
-        capM('MP', target10 / 10, { p, beginner: rule.beginner }, false)
+        capM('MP', target10 / 10, { p, beginner: rule.beginner }, false),
+        fastBlock(p, target10 / 10)
       )
     : null;
   if (asB && (blockKm === null || !w2)) return null;

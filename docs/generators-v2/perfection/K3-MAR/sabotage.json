@@ -25,5 +25,14 @@
     "tests": [
       "src/domain/generators/marathon/v2/k3.node.test.ts"
     ]
+  },
+  {
+    "name": "K3-E brz trkač jedan nivo bloka po nedelji B",
+    "file": "src/domain/generators/marathon/v2/specific.ts",
+    "find": "  if (fast && !hold && next !== undefined)",
+    "replace": "  if (fast && !hold && next !== undefined && false)",
+    "tests": [
+      "src/domain/generators/marathon/v2/k3.node.test.ts"
+    ]
   }
 ]
