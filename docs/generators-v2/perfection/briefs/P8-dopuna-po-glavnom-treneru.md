@@ -67,3 +67,9 @@ doze 3 nedelje pred trku, srednje-dugi pri ≥ 70 km, automatsko smanjenje broja
 Ovo je veliki skup; redosled ugradnje: G4 → G5 → G1 → G2 → G7 → G6 → G8 → G3 → po distanci. Posle svake izmene mreža P0 i
 12 profila P7; sudar → STOP sa brojevima i nastavi sa sledećom izmenom. Ako vreme ne dozvoljava sve, isporuči ugrađeno
 i u izveštaju navedi šta je ostalo — ne odlaži push zbog poslednje stavke.
+
+## Izmena G6 (10. 11. 2026, 14:35 — nalaz P8-10K, mreža početnika)
+
+G6 „lagan ≤ 0,70 × dugi" važi SAMO za redovan plan sa 4 i više dana. Početnik (jedan kvalitet nedeljno) ostaje na
+0,80, kao plan sa 3 dana: sa 0,70 obim početnika sa 4 dana pada čim uđe prvi kvalitet (10K mreža B: pad ≥ 10 % u
+48,6 % planova, sa 0,80 u 2,9 % — isto kao pre P8). Važi za sve četiri distance.
