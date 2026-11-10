@@ -61,8 +61,20 @@ const PACES = new Map<PlanWeek, TenKV2Plan['paces']>();
 const minutesM = (zone: keyof typeof CAP, w: PlanWeek): number => {
   const p = PACES.get(w)!;
   const min =
-    zone === 'T' ? (w.targetKm >= 80 - 1e-9 ? 40 : 30) : zone === 'I' ? (p.vdot < 40 ? 20 : 24) : zone === 'RP' ? 30 : null;
-  return min === null ? Infinity : Math.max(FIRST[zone], Math.floor(((min * 60) / p[zone]) * 1000 + 1e-6));
+    zone === 'T'
+      ? w.targetKm >= 80 - 1e-9
+        ? 40
+        : 30
+      : zone === 'I'
+        ? p.vdot < 40
+          ? 20
+          : 24
+        : zone === 'RP'
+          ? 30
+          : null;
+  return min === null
+    ? Infinity
+    : Math.max(FIRST[zone], Math.floor(((min * 60) / p[zone]) * 1000 + 1e-6));
 };
 const capOf = (zone: keyof typeof CAP, w: PlanWeek): number =>
   Math.min(
@@ -342,10 +354,9 @@ describe('D11: jedan plafon po zoni, po treningu', () => {
       for (const w of p.weeks.filter((x) => x.phase !== 'race'))
         for (const d of w.days)
           for (const z of ['R', 'I', 'T', 'RP'] as const)
-            expect(
-              fits(z, Math.round(d.workout.workKm[z] * 1000), w),
-              `${w.index} ${z}`
-            ).toBe(true);
+            expect(fits(z, Math.round(d.workout.workKm[z] * 1000), w), `${w.index} ${z}`).toBe(
+              true
+            );
   });
 });
 
@@ -388,15 +399,15 @@ describe('D16: početni nivo', () => {
         // D37 (P-b): niži nivo I (najmanje po 60 %) kad bi nivo po 80 % stvorio nedelju pouke 35 — od P8 G6 (lagan ≤ 0,70 ×
         // dugi) javlja se i na prelazu u razvoj.
         if (b.phase === 'development' && q1.doseM !== startM('I', b)) {
-          const s60 = LADDER.I!.filter((m) => m <= 0.6 * capOf('I', b) + 1e-6).pop() ?? LADDER.I![0]!;
+          const s60 =
+            LADDER.I!.filter((m) => m <= 0.6 * capOf('I', b) + 1e-6).pop() ?? LADDER.I![0]!;
           expect(q1.doseM, `${b.index}`).toBeGreaterThanOrEqual(s60);
           expect(q1.doseM, `${b.index}`).toBeLessThan(startM('I', b));
         }
         if (b.phase === 'specific') {
           const lo = Math.max(startM('RP', b), slot(a, 'q1')!.doseM);
           const want = LADDER.RP!.find((m) => m >= lo);
-          if (want !== undefined && fits('RP', want, b))
-            expect(q1.doseM, `${b.index}`).toBe(want);
+          if (want !== undefined && fits('RP', want, b)) expect(q1.doseM, `${b.index}`).toBe(want);
           else expect(q1.doseM).toBeGreaterThanOrEqual(slot(a, 'q1')!.doseM);
         }
       }

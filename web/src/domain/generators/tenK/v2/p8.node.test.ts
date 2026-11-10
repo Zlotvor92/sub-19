@@ -56,7 +56,7 @@ const zoneKm = (w: PlanWeek, z: string) =>
     .flatMap((d) => d.workout.segments)
     .filter((s) => s.zone === z && (s.kind === 'rep' || s.kind === 'continuous'))
     .reduce((a, s) => a + s.km, 0);
-const every = <T,>(xs: T[], n: number): T[] => xs.filter((_, i) => i % n === 0);
+const every = <T>(xs: T[], n: number): T[] => xs.filter((_, i) => i % n === 0);
 const SAMPLE = [
   ...([3, 4, 5, 6] as const).flatMap((d) => every(grid02Inputs(d), 40)),
   ...([3, 4, 5, 6] as const).flatMap((d) => every(feelGridInputs(d), 40)),
@@ -70,7 +70,9 @@ describe('P8 G1 (D39): obim raste do kraja razvoja', () => {
     const first = p.weeks.find((w) => w.targetKm >= 19.5)!.index;
     expect(first).toBe(Math.max(...dev));
     // Ne-rasteretne nedelje baze i razvoja ne opadaju; rast je ≥ 3 % ili ga nema (G1b, D45 — nema „rasta" od 0,1 km).
-    const nd = p.weeks.filter((w) => (w.phase === 'base' || w.phase === 'development') && !w.deload);
+    const nd = p.weeks.filter(
+      (w) => (w.phase === 'base' || w.phase === 'development') && !w.deload
+    );
     for (let i = 1; i < nd.length; i++) {
       const g = nd[i]!.targetKm - nd[i - 1]!.targetKm;
       expect(g).toBeGreaterThanOrEqual(0);
@@ -81,7 +83,9 @@ describe('P8 G1 (D39): obim raste do kraja razvoja', () => {
     let checked = 0;
     for (const input of SAMPLE) {
       const p = gen(input);
-      const nd = p.weeks.filter((w) => (w.phase === 'base' || w.phase === 'development') && !w.deload);
+      const nd = p.weeks.filter(
+        (w) => (w.phase === 'base' || w.phase === 'development') && !w.deload
+      );
       for (let i = 1; i < nd.length; i++) {
         const left = nd.length - i;
         const last = Math.round(nd[i - 1]!.targetKm * 10);
@@ -110,14 +114,18 @@ describe('P8 G2 (D40): najniži nivo lestvice uvek staje', () => {
   });
   it('p11: RP u specifičnoj fazi, taper i trkačka nedelja sa trkačkim tempom', () => {
     const p = gen(P.p11);
-    expect(p.weeks.filter((w) => w.phase === 'specific' && zoneKm(w, 'RP') > 0).length).toBeGreaterThan(0);
+    expect(
+      p.weeks.filter((w) => w.phase === 'specific' && zoneKm(w, 'RP') > 0).length
+    ).toBeGreaterThan(0);
     for (const w of p.weeks.filter((x) => x.phase === 'taper' || x.phase === 'race'))
       expect(zoneKm(w, 'RP')).toBeGreaterThan(0);
   });
   it('mreža (redovan, 3 dana, početnik): taper i rasterećenje uvek imaju kvalitet, svaki plan ima RP', () => {
     for (const input of [...SAMPLE, P.p03, P.p10, P.p11, P.p12]) {
       const p = gen(input);
-      expect(p.weeks.filter((w) => w.phase !== 'race' && zoneKm(w, 'RP') > 0).length).toBeGreaterThan(0);
+      expect(
+        p.weeks.filter((w) => w.phase !== 'race' && zoneKm(w, 'RP') > 0).length
+      ).toBeGreaterThan(0);
       for (const w of p.weeks)
         if (w.phase === 'taper' || (w.deload && w.phase !== 'race'))
           expect(quality(w).length).toBeGreaterThan(0);
@@ -144,17 +152,24 @@ describe('P8 G3 (D41): tekst za trkača', () => {
     for (const p of plans)
       for (const w of p.weeks)
         for (const t of userWeekNotes(w.notes)) {
-          const d = /kvalitetni trening: (T|I|RP|R) ([\d,]+) km \(prošli put ([\d,]+) km\)/u.exec(t);
+          const d = /kvalitetni trening: (T|I|RP|R) ([\d,]+) km \(prošli put ([\d,]+) km\)/u.exec(
+            t
+          );
           if (d) {
             const km = Number(d[2]!.replace(',', '.'));
-            expect(w.days.some((x) => x.workout.dose && x.workout.dose.doseM === Math.round(km * 1000))).toBe(true);
+            expect(
+              w.days.some((x) => x.workout.dose && x.workout.dose.doseM === Math.round(km * 1000))
+            ).toBe(true);
             expect(Number(d[3]!.replace(',', '.'))).toBeGreaterThan(km);
             n++;
           }
           const l = /dugi ([\d,]+) km — kraći nego obično/u.exec(t);
           if (l) {
-            expect(w.days.find((x) => x.role === 'long')!.workout.km).toBe(Number(l[1]!.replace(',', '.')));
-            for (const e of w.days.filter((x) => x.role === 'easy')) expect(e.workout.km).toBeGreaterThanOrEqual(3);
+            expect(w.days.find((x) => x.role === 'long')!.workout.km).toBe(
+              Number(l[1]!.replace(',', '.'))
+            );
+            for (const e of w.days.filter((x) => x.role === 'easy'))
+              expect(e.workout.km).toBeGreaterThanOrEqual(3);
             n++;
           }
         }
@@ -163,12 +178,16 @@ describe('P8 G3 (D41): tekst za trkača', () => {
   it('napomena testa završava šta trkač radi sa rezultatom', () => {
     for (const p of plans)
       for (const w of p.weeks.filter((x) => x.days.some((d) => d.role === 'test')))
-        expect(userWeekNotes(w.notes).find((t) => /test 5 km/iu.test(t))).toMatch(/unesi rezultat[^.]*sledeće nedelje\.$/iu);
+        expect(userWeekNotes(w.notes).find((t) => /test 5 km/iu.test(t))).toMatch(
+          /unesi rezultat[^.]*sledeće nedelje\.$/iu
+        );
   });
   it('p08 (3 dana, 40 km, 18 ned): bez napomene „ne može da se sastavi" u nedeljama, jedna poruka o vrhu obima', () => {
     const p = gen(P.p08);
     expect(p.weeks.some((w) => w.notes.some((x) => x.startsWith('Nedelja ne može')))).toBe(true);
-    expect(p.weeks.flatMap((w) => userWeekNotes(w.notes)).some((x) => x.includes('ne može'))).toBe(false);
+    expect(p.weeks.flatMap((w) => userWeekNotes(w.notes)).some((x) => x.includes('ne može'))).toBe(
+      false
+    );
     expect(userPlanMessages(p).filter((x) => x.startsWith('Vrh obima')).length).toBe(1);
   });
 });
@@ -209,12 +228,16 @@ describe('P8 dopuna: G4 minuti rada, G5 oštrenje, G1a vrh, G6, G7 test, G8 dugi
   });
   it('G6 (D47): lagan ≤ 0,70 × dugi (4+ dana) i ≤ 0,80 (3 dana) u nedeljama izgradnje', () => {
     for (const p of plans)
-      for (const w of p.weeks.filter((x) => ['base', 'development', 'specific'].includes(x.phase) && !x.deload && !x.limits)) {
+      for (const w of p.weeks.filter(
+        (x) => ['base', 'development', 'specific'].includes(x.phase) && !x.deload && !x.limits
+      )) {
         const long = w.days.find((d) => d.role === 'long')!.workout.km;
         // S9 (STOP, do odluke organizatora): početnik ostaje na 0,80.
         const share = p.input.runDays.length >= 4 && p.input.experience !== 'beginner' ? 0.7 : 0.8;
         for (const e of w.days.filter((d) => d.role === 'easy'))
-          expect(e.workout.km).toBeLessThanOrEqual(Math.floor(share * long * 10 + 1e-9) / 10 + 1e-9);
+          expect(e.workout.km).toBeLessThanOrEqual(
+            Math.floor(share * long * 10 + 1e-9) / 10 + 1e-9
+          );
       }
   });
   it('G7 (D46): u nedelji testa test je jedini kvalitet; test ne pre nedelje 4', () => {
@@ -226,7 +249,9 @@ describe('P8 dopuna: G4 minuti rada, G5 oštrenje, G1a vrh, G6, G7 test, G8 dugi
   });
   it('G8 (D48): p11 dugi raste preko 8,7 km (do 50 % cilja u 3 poslednje nedelje izgradnje); ispod 10 km — rečenica u planu', () => {
     const p = gen(P.p11);
-    const longest = Math.max(...p.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km)));
+    const longest = Math.max(
+      ...p.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
+    );
     expect(longest).toBeGreaterThan(8.7);
     expect(p.notes.some((n) => n.startsWith('Najduži dugi je'))).toBe(longest < 10);
   });

@@ -83,10 +83,7 @@ export function capM(zone: WorkZone, targetKm: number, beginner: boolean, p: Pac
   // malom obimu (G4 minuti i dalje ograničavaju; najniži nivo i dalje staje).
   const shareFloor =
     beginner && zone === 'T' ? Math.max(floor, Math.round(P.beginner.tCapMinKm * 1000)) : floor;
-  const share = Math.max(
-    Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6),
-    shareFloor
-  );
+  const share = Math.max(Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6), shareFloor);
   // G4 (P8 dopuna, D43): plafon jednog treninga u minutima rada po tempu zone te nedelje (najniži nivo i dalje staje).
   const min = minutesCapSec(zone, targetKm, p.vdot);
   if (min === null) return share;
@@ -101,6 +98,22 @@ export function minutesCapSec(zone: WorkZone, targetKm: number, vdot: number): n
   if (zone === 'I') return (vdot < m.iSlowBelowVdot ? m.iSlowMin : m.iMin) * 60;
   if (zone === 'RP') return m.rpMin * 60;
   return null;
+}
+
+/** D49 (S3): početnik, prelaz u novu zonu čiji je plafon ispod poslednje doze — najviši nivo lestvice nove zone koji
+    staje u plafon (null: ni prvi ne staje, ili doza staje pa pravilo ne važi). Konstruktor i validator. */
+export function cappedCarry(
+  ladder: LadderId,
+  prevDoseM: number,
+  capNewM: number,
+  beginner: boolean
+): Structure | null {
+  if (!beginner || prevDoseM <= capNewM) return null;
+  return (
+    ladderLevels(ladder, true)
+      .filter((x) => doseOf(x) <= capNewM)
+      .pop() ?? null
+  );
 }
 
 const pick = (ladder: LadderId, s: Structure, step: Dose['step']): Dose => ({
@@ -207,6 +220,12 @@ export function pickSlot(
   const lo = Math.max(prev.doseM, newZone && start && !hold ? doseOf(start) : 0);
   const lv = levels.find((s) => doseOf(s) >= lo);
   if (lv && doseOf(lv) <= cap) return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
+  // D49 (S3): početnik — prelaz u novu zonu (T → RP) nosi dozu najviše do plafona nove zone: T doza iznad plafona RP
+  // (plafon T početnika ≥ 3,0 km, RP 2 × 1200 m) → najviši nivo RP koji staje; to je prelaz, ne spuštanje doze.
+  if (prev.doseM > cap && beginner && newZone) {
+    const top = cappedCarry(ladder, prev.doseM, cap, true);
+    if (top) return pick(ladder, top, 'transition');
+  }
   if (prev.doseM > cap) return drop();
   const s =
     otherStructure(ladder, prev.doseM, prev.structure, p) ??

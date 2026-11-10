@@ -44,6 +44,7 @@ import { capPct, planRule, startShare, TEN_K_V2_POLICY as P } from './policy.ts'
 import { hasSpecificTypes, specificTypeNext, typedWeek, typeOfWeek } from './specific.ts';
 import {
   capM,
+  cappedCarry,
   reducedDoseM,
   carries,
   deloadLadder,
@@ -688,9 +689,7 @@ export function validatePlan(
         restOf(w).size === 0 &&
         painOf(w).size === 0 &&
         (w.days.filter((d) => d.role === 'easy').length < rule.easy ||
-          w.days.some(
-            (d) => d.role === 'easy' && d.workout.sec + EPS < P.lengths.shortEasyWarnSec
-          ))
+          w.days.some((d) => d.role === 'easy' && d.workout.sec + EPS < P.lengths.shortEasyWarnSec))
     );
     if (fewer && short.length > 0)
       warn(
@@ -873,7 +872,10 @@ export function validatePlan(
     for (const d of w.days)
       for (const z of ZONES) {
         const m = Math.round(d.workout.workKm[z] * 1000);
-        if (m > capM(z, w.targetKm, rule.beginner, pw(w)) && !(keepT && d.workout.kind === 'quality'))
+        if (
+          m > capM(z, w.targetKm, rule.beginner, pw(w)) &&
+          !(keepT && d.workout.kind === 'quality')
+        )
           err(
             'ZONE_CAP',
             `${z} ${m} m > ${capPct(z, w.targetKm)} % cilja ${w.targetKm} km (D11, D33).`,
@@ -1125,6 +1127,8 @@ export function validatePlan(
     chain.push(checked(w) ? w : 'unknown');
   }
   const steady = chain.filter((x): x is PlanWeek => typeof x !== 'string');
+  /** D49 (S3): nedelje u kojima prelaz zone početnika nosi dozu do plafona nove zone (nije spuštanje doze). */
+  const cappedCarries = new Set<number>();
   let lastOf: Record<'q1' | 'q2', Dose | null> = { q1: null, q2: null };
   /** D28: početnik, nedelja izgradnje posle uvoda bez kvaliteta (ni prvi nivo ne staje u plafon). */
   const noQuality = (w: PlanWeek): boolean =>
@@ -1208,7 +1212,11 @@ export function validatePlan(
             b.index
           );
         else if (db.doseM === da.doseM) {
-          if (nl && doseOf(nl) <= capM(db.zone, b.targetKm, rule.beginner, pw(b)) && !holds.has(b.index))
+          if (
+            nl &&
+            doseOf(nl) <= capM(db.zone, b.targetKm, rule.beginner, pw(b)) &&
+            !holds.has(b.index)
+          )
             err(
               'DOSE_STALL',
               `${role}: sledeći nivo ${doseOf(nl)} m staje u plafon, a nije uzet (D12).`,
@@ -1226,7 +1234,18 @@ export function validatePlan(
         }
       } else {
         const carry = carries(da.ladder as LadderId, db.ladder as LadderId);
-        if (carry && db.doseM < da.doseM)
+        // D49 (S3): početnik — prelaz u novu zonu nosi dozu najviše do plafona nove zone (najviši nivo koji staje).
+        const top =
+          carry && da.zone !== db.zone
+            ? cappedCarry(
+                db.ladder as LadderId,
+                da.doseM,
+                capM(db.zone, b.targetKm, rule.beginner, pw(b)),
+                rule.beginner
+              )
+            : null;
+        if (top && db.doseM === doseOf(top)) cappedCarries.add(b.index);
+        else if (carry && db.doseM < da.doseM)
           err(
             'TRANSITION_DOSE',
             `${role}: ${db.ladder} ${db.doseM} m < poslednje ${da.ladder} ${da.doseM} m (D12).`,
@@ -1242,6 +1261,7 @@ export function validatePlan(
       (['q1', 'q2'] as const).some((r) => slotDose(b, r)?.step === 'drop') ||
       noQuality(b) ||
       reducedVolume ||
+      cappedCarries.has(b.index) ||
       b.notes.some(isP35Drop);
     // D27: provera „glavna doza ne opada" preskače test nedelju. D34: u specifičnoj fazi sa tipovima poređenje unutar
     // tipa (A sa poslednjom A ili nedeljom pre specifične faze, B sa poslednjom B).
@@ -1350,7 +1370,8 @@ export function validatePlan(
         const lv = ladderLevels(ladder, rule.beginner)
           .map(doseOf)
           .find((m) => m >= Math.max(want, da.doseM));
-        if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm, rule.beginner, pw(b))) continue;
+        if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm, rule.beginner, pw(b)))
+          continue;
         want = lv;
       }
       // D37 (P-b): T i I smeju niži nivo, najmanje nivo po 60 % (D16) — kad bi veći stvorio nedelju pouke 35 (odluka
@@ -1359,7 +1380,9 @@ export function validatePlan(
       const floor60 =
         ladderLevels(ladder, rule.beginner)
           .map(doseOf)
-          .filter((m) => m <= P.startLevel.p35FloorShare * capM(z, b.targetKm, rule.beginner, pw(b)) + EPS)
+          .filter(
+            (m) => m <= P.startLevel.p35FloorShare * capM(z, b.targetKm, rule.beginner, pw(b)) + EPS
+          )
           .pop() ?? ladderLevels(ladder, rule.beginner).map(doseOf)[0]!;
       const p35Range =
         !rule.beginner && (z === 'T' || z === 'I') && db.doseM >= floor60 && db.doseM < want;
@@ -1441,7 +1464,11 @@ export function validatePlan(
       // plafon, pa izuzetak uvoda više ne pokriva odstupanje D11 ispred D5.
       if (noneQ(w) || (rule.beginner && w.index <= rule.introWeeks)) {
         if (nQuality !== 0 || nTest !== 0)
-          err('DELOAD_CONTENT', 'Rasterećenje bez kvaliteta (adaptacija, A3/A4/A9; uvod početnika D28).', w.index);
+          err(
+            'DELOAD_CONTENT',
+            'Rasterećenje bez kvaliteta (adaptacija, A3/A4/A9; uvod početnika D28).',
+            w.index
+          );
       }
       // D27: u nedelji testa test zamenjuje kvalitet rasterećenja (bez plafona D11).
       else if (w.test) {
@@ -1455,7 +1482,12 @@ export function validatePlan(
       else if (w.notes.some((n) => n.startsWith(DELOAD_NO_ROOM))) {
         const tDay = weeks
           .flatMap((x) => x.days)
-          .find((d) => d.workout.kind === 'quality' && d.workout.dose?.zone === 'T' && d.workout.dose.doseM === want);
+          .find(
+            (d) =>
+              d.workout.kind === 'quality' &&
+              d.workout.dose?.zone === 'T' &&
+              d.workout.dose.doseM === want
+          );
         const others = w.days.filter((d) => d.workout.kind !== 'rest').length - 1;
         const fits =
           tDay !== undefined &&
@@ -1957,7 +1989,11 @@ export function validatePlan(
         ? nominal
         : Math.min(lastBuild + growthStep10(lastBuild, cap10, rule, 0), cap10);
     if (checked(w) && known && w.fitted === 'up' && d6 > nominal && t10 > d6)
-      err('VOLUME_RULE', `Cilj ${w.targetKm} km naviše iznad redovnog rasta ${d6 / 10} km (G1 ne ubrzava rast).`, w.index);
+      err(
+        'VOLUME_RULE',
+        `Cilj ${w.targetKm} km naviše iznad redovnog rasta ${d6 / 10} km (G1 ne ubrzava rast).`,
+        w.index
+      );
     if (checked(w) && known) {
       if (to10(w.nominalKm) !== nominal)
         err(

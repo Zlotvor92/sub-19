@@ -116,7 +116,12 @@ export function peakCap10(start10: number, rule: PlanRule, weeks: number, p: Pac
 
 /** S7 (P8 završetak, D50): satni plafon nedelje [h] kad on sam drži vrh na startu (start ≥ satni plafon, a ostale
     granice bi dopustile rast); inače null. Čita iste brojeve kao peakCap10 (jedino mesto: policy.volume.peakG1a). */
-export function flatByHours(start10: number, rule: PlanRule, weeks: number, p: Paces): number | null {
+export function flatByHours(
+  start10: number,
+  rule: PlanRule,
+  weeks: number,
+  p: Paces
+): number | null {
   const g = P.volume.peakG1a;
   const hours = g.hoursByVdot.find((r) => p.vdot < r.belowVdot)!.hours;
   const hour10 = Math.floor(((hours * 3600) / midEasy(p)) * 10 + EPS);
@@ -160,7 +165,9 @@ export function buildWeeksLeft(
 export function growthStep10(last10: number, cap10: number, rule: PlanRule, left: number): number {
   const g = growth10(last10, rule);
   const step =
-    left <= 0 || last10 >= cap10 ? g : Math.min(g, Math.max(1, Math.round((cap10 - last10) / left)));
+    left <= 0 || last10 >= cap10
+      ? g
+      : Math.min(g, Math.max(1, Math.round((cap10 - last10) / left)));
   // G1b (P8 dopuna, D45): stvarni rast (do granice) manji od 3 % tekućeg cilja se ne primenjuje — nedelja zadržava cilj,
   // rast se prenosi na sledeću ne-rasteretnu nedelju (manje preostalih nedelja → veći korak).
   const eff = Math.min(step, Math.max(0, cap10 - last10));

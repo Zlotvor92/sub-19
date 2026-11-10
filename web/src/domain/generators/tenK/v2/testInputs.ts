@@ -744,7 +744,14 @@ export function earlyAsOfs(
   const N = plan.weeks.length;
   // P5 (D35): skup tokova mreže E ostaje skup 06d — nedelja pre testa samo za test plana po osećaju (kontrolni test plana
   // sa rezultatom ne dodaje tokove; redni brojevi tokova i referentni heševi ostaju isti).
-  const tw = plan.paceBasis === 'feel' ? plan.weeks.find((w) => w.test)?.index : undefined;
+  // P8 G7 (D46): plan po osećaju čija je baza kraća od 4 nedelje nema test — skup tokova mreže E ostaje skup 06d (redni
+  // brojevi i referentni heševi isti): nedelja pre mesta testa po D27 (poslednja nedelja baze) i kad testa nema. Početnik
+  // (D32) nikad nije imao test.
+  const tw =
+    plan.paceBasis === 'feel' && plan.input.experience !== 'beginner'
+      ? (plan.weeks.find((w) => w.test)?.index ??
+        plan.weeks.filter((w) => w.phase === 'base').pop()?.index)
+      : undefined;
   const weeks = [1, ...(tw !== undefined && tw - 1 >= 2 ? [tw - 1] : [])];
   const wedOf = (i: number): string => {
     let d = plan.weeks[i - 1]!.startDate;

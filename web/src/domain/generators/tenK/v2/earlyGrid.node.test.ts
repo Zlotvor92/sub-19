@@ -196,7 +196,12 @@ describe('06e (10k-v2.5.2, pouka 34): umor sa asOf pre starta — 10k-v2.5.1 odb
     const q = w1!.days.filter((d) => d.workout.kind === 'quality');
     expect(q.map((d) => d.workout.dose)).toMatchObject([{ zone: 'T', doseM: 2000 }]);
     expect(w1!.days.find((d) => d.role === 'long')!.workout.km).toBe(6.1);
-    expect([w2!.deload, w2!.nominalKm, w2!.targetKm, w2!.fitted]).toEqual([false, 23.4, 23.4, null]);
+    expect([w2!.deload, w2!.nominalKm, w2!.targetKm, w2!.fitted]).toEqual([
+      false,
+      23.4,
+      23.4,
+      null
+    ]);
     expect(w2!.targetKm).toBe(p0.weeks[0]!.targetKm);
     // Dalje po rasporedu: ned 3 raste od ned 2 (D6), faze ostaju.
     expect(p.weeks[2]!.targetKm).toBe(p0.weeks[1]!.targetKm);

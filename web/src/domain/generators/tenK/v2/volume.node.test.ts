@@ -87,7 +87,8 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
     const inB = (t: number): boolean => ctxF.specB !== 'B' || (t <= nom && t >= nom - 30);
     // Kao generate.construct: prolaz po pravilu, pa (10K-08: i kad T1 obara sve ciljeve po pravilu) druga pretraga.
     let make = (t: number): BuiltWeek | null => (inB(t) ? buildWeek(ctxF, f, t, qq, ll, lo) : null);
-    const fitOf = () => fit10(nom, f, c10, rule, (t) => make(t) !== null, vol.lastBuild10, false, upMax);
+    const fitOf = () =>
+      fit10(nom, f, c10, rule, (t) => make(t) !== null, vol.lastBuild10, false, upMax);
     let fit0 = fitOf();
     if (!fit0) {
       make = (t: number): BuiltWeek | null =>
@@ -127,14 +128,18 @@ function checkRule(p: TenKV2Plan): void {
   let last: number | null = null;
   let peak = 0;
   // P8 G1 (D39): korak ≤ (vrh − poslednji) / preostale ne-rasteretne nedelje baze i razvoja (0,1 km, najmanje 0,1).
-  const bd = (x: PlanWeek): boolean => (x.phase === 'base' || x.phase === 'development') && !x.deload;
+  const bd = (x: PlanWeek): boolean =>
+    (x.phase === 'base' || x.phase === 'development') && !x.deload;
   const step = (l: number, w: PlanWeek): number => {
     const left = bd(w) ? p.weeks.filter((x) => x.index >= w.index && bd(x)).length : 0;
     const c = cap(start, days, p);
     const st =
       left === 0 || l >= c
         ? growth(l)
-        : Math.min(growth(l), Math.max(1, Math.round((Math.round(c * 10) - Math.round(l * 10)) / left)) / 10);
+        : Math.min(
+            growth(l),
+            Math.max(1, Math.round((Math.round(c * 10) - Math.round(l * 10)) / left)) / 10
+          );
     // P8 G1b (D45): stvarni rast (do granice) manji od 3 % tekućeg cilja se ne primenjuje.
     const eff = Math.min(st, Math.max(0, c - l));
     return eff > 1e-9 && eff < 0.03 * l - 1e-9 ? 0 : st;

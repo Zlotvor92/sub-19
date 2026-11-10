@@ -353,7 +353,11 @@ function buildWeekOf(
     const [qDay, t1] = intro ? [null, null] : [qDay0, t0];
     if (!t1 && !test && !intro && (mode === 'rule' || mode === 'one')) return null;
     const lengthsWith = (tUse: Dose | null) => {
-      const tw = test ? testWorkout(p, ctx.wc) : tUse ? qualityWorkout(tUse, p, ctx.wc, ctx.feel) : null;
+      const tw = test
+        ? testWorkout(p, ctx.wc)
+        : tUse
+          ? qualityWorkout(tUse, p, ctx.wc, ctx.feel)
+          : null;
       const dates = easyDates(
         frame,
         [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !tw || wd !== qDay)
@@ -393,18 +397,17 @@ function buildWeekOf(
       noRoom
         ? `${DELOAD_NO_ROOM} Cilj ${fmtKm(targetKm)} km.`
         : test
-        ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja, dugi ${len.long10 < long0 ? `${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km` : '0,8 × dugog poslednje nedelje pre rasterećenja'}.`
-        : ctx.adapted &&
-            len.long10 < Math.max(EASY_MIN10, Math.min(long0, longCap10(target10, rule, p)))
-          ? `Rasterećenje: cilj ${fmtKm(targetKm)} km${tw ? ', jedan kvalitet (T)' : ' bez kvaliteta'}, dugi ${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km.`
-          : intro
-            ? `Uvod: ${frame.index}. od ${rule.introWeeks} nedelje uvoda bez kvaliteta — dan kvaliteta je lagan; rasterećenje zbog umora: cilj ${fmtKm(targetKm)} km, nedelja bez kvaliteta, dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
-            : tw
-              ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
-              : mode === 'none'
-                ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
-
-                : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(rule.beginner ? P.beginner.tFirstKm : P.deload.tMinKm)} km ne staje u najviše ${capPct('T', targetKm)} % nedelje u tempu T; dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`,
+          ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja, dugi ${len.long10 < long0 ? `${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km` : '0,8 × dugog poslednje nedelje pre rasterećenja'}.`
+          : ctx.adapted &&
+              len.long10 < Math.max(EASY_MIN10, Math.min(long0, longCap10(target10, rule, p)))
+            ? `Rasterećenje: cilj ${fmtKm(targetKm)} km${tw ? ', jedan kvalitet (T)' : ' bez kvaliteta'}, dugi ${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km.`
+            : intro
+              ? `Uvod: ${frame.index}. od ${rule.introWeeks} nedelje uvoda bez kvaliteta — dan kvaliteta je lagan; rasterećenje zbog umora: cilj ${fmtKm(targetKm)} km, nedelja bez kvaliteta, dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
+              : tw
+                ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
+                : mode === 'none'
+                  ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
+                  : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(rule.beginner ? P.beginner.tFirstKm : P.deload.tMinKm)} km ne staje u najviše ${capPct('T', targetKm)} % nedelje u tempu T; dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`,
       ...(test ? [testNote(ctx.feel)] : []),
       ...(ctx.t1Deload ? [T1_DELOAD] : []),
       ...(ref
@@ -1004,7 +1007,11 @@ export function raceWeek(
           cap100
         );
   const runs = runs0.filter((d) => !rested.includes(d));
-  const spec = sharpenerSpec(taperRpM, p.RP, ctx.keepSharpener === true && !frame.limits?.pain?.length);
+  const spec = sharpenerSpec(
+    taperRpM,
+    p.RP,
+    ctx.keepSharpener === true && !frame.limits?.pain?.length
+  );
   const reps = spec?.reps ?? 0;
   const repM = spec?.repM ?? 0;
   // Segment 04: oštrenje ne pada na dan zabrane kvaliteta (A3/A4) i otpada kad trkačka nedelja sa njim ne
@@ -1024,7 +1031,8 @@ export function raceWeek(
   const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
   const easy = raceEasyWorkout(taperEasy10, p);
   for (const d of runs) {
-    if (d === sharpenDate) days.push(day(d, 'sharpener', sharpenerWorkout(reps, repM, p, ctx.feel)));
+    if (d === sharpenDate)
+      days.push(day(d, 'sharpener', sharpenerWorkout(reps, repM, p, ctx.feel)));
     else if (daysBetween(d, race) === 1) days.push(day(d, 'eve', eveWorkout(p)));
     else days.push(day(d, 'easy', easy));
   }
