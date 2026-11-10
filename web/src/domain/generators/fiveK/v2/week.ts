@@ -125,7 +125,8 @@ export function buildTrainingWeek(
       a,
       t1Off,
       f.qcap?.longKm,
-      f.index
+      f.index,
+      f.shortRest ? 1 : 0
     );
   // 5k-v2.12.0 (T2): dan kvaliteta duži od dugog → zagrevanje/hlađenje na najnižem pojasu (qualityWarmupMin), dužine
   // jednom ponovo (oslobođeni km idu u lagane dane); i dalje duži → upozorenje LONG_SHORTER_THAN_QUALITY (validator).
@@ -133,7 +134,7 @@ export function buildTrainingWeek(
   const q2 = wuMin && q2a ? withMinWarmup(q2a, p) : q2a;
   const q1m = wuMin && q1 ? withMinWarmup(q1, p) : q1;
   const qualityKm = (q1m ? q1m.km : 0) + (q2 ? q2.km : 0);
-  const { longKm, shares, capped: easyCappedAtLong, easyMin } = lengthsOf([q1m, q2]);
+  const { longKm, shares, capped: easyCappedAtLong, easyMin, shortRest } = lengthsOf([q1m, q2]);
   // 5k-v2.12.0 (T1): lagan dan manje (weekLengths) — odmor je prvo dan odmora adaptacije (ionako bez treninga), pa
   // lagan dan uz dugi (dan pre/posle), pa poslednji lagan dan šablona; dan samo sa ubrzanjima poslednji. `easyRest` =
   // broj dana koji su odmor samo zbog ovoga (validator: broj treninga).
@@ -206,15 +207,20 @@ export function buildTrainingWeek(
     notes.push(
       'Zagrevanje i hlađenje kvaliteta skraćeni na najmanje: dan kvaliteta bi trajao duže od dugog trčanja.'
     );
-  if (easyRest > 0)
+  // 5k-v2.17.0 (K4-B): prvi dan po redu odmora (restOrder) je dan „odmor ili 20 min po želji"; ostali (T1) kao do sada.
+  const shortDay = shortRest ? restOrder.find((e) => !isRest(e.w)) : undefined;
+  if (shortDay) notes.push(shortRestNote(dateOfWeekday(f, shortDay.w)));
+  if (easyRest > (shortDay ? 1 : 0))
     notes.push(
-      `Lagan dan manje (${easyRest}): lagan trening od bar ${kmText(easyMin)} km ne staje uz dugi ${kmText(longKm)} km.`
+      `Lagan dan manje (${easyRest - (shortDay ? 1 : 0)}): lagan trening od bar ${kmText(easyMin)} km ne staje uz dugi ${kmText(longKm)} km.`
     );
-  if (easyCappedAtLong && belowTargetShown(plannedKm, target) && f.deload)
+  // K4-B: planirano < cilj bez napomene i upozorenja po nedelji (rečenica u napomeni plana).
+  const capShown = !shortDay && easyCappedAtLong && belowTargetShown(plannedKm, target);
+  if (capShown && f.deload)
     notes.push(
       `Rasterećenje: dugi ${kmText(longKm)} km i lagani najviše koliko dugi, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km.`
     );
-  else if (easyCappedAtLong && belowTargetShown(plannedKm, target))
+  else if (capShown)
     notes.push(
       `${EASY_CAP_NOTE} ${kmText(easyCapKm(longKm, f.phase, t1Off, a.days, a.beginner, f.index))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
     );
@@ -222,7 +228,7 @@ export function buildTrainingWeek(
     notes.push(
       `Adaptacija: ${rest.size > 0 ? `${rest.size} dan(a) odmora, ` : ''}${pain.size > 0 ? 'period bola (dugi ≤ 60 min, lagani −30%, bez ubrzanja), ' : ''}planirano najviše ${kmText(target)} km.`
     );
-  const { qcap: _qcap, firstI: _firstI, ...frame } = f;
+  const { qcap: _qcap, firstI: _firstI, shortRest: _shortRest, ...frame } = f;
   return {
     ok: true,
     week: {
@@ -309,6 +315,38 @@ export function easyVsLongOff(
 export const EASY_CAP_NOTE = 'Lagan trk najviše';
 
 export const SECOND_EASY_NOTE = 'drugi dan kvaliteta je lagan';
+
+/** 5k-v2.17.0 (K4-B): oznaka dana odmora nedelje malog obima (napomena nedelje; validator je čita). */
+export const SHORT_REST_TAG = 'odmor ili 20 min lagano po želji';
+export const shortRestNote = (date: string): string =>
+  `Mali obim: ${date} ${SHORT_REST_TAG} — lagan trening bi bio kraći od ${P.easy.shortEasy.minSec / 60} min, njegovi kilometri prelaze u ostale lagane dane.`;
+export const shortRestWeek = (w: { notes: readonly string[] }): boolean =>
+  w.notes.some((n) => n.startsWith('Mali obim: ') && n.includes(SHORT_REST_TAG));
+/** K4-B: rečenica u napomeni plana kad plan ima nedelje shortRestNote. */
+export const SHORT_REST_PLAN_NOTE = `Mali obim: u nedeljama u kojima bi lagan trening bio kraći od ${P.easy.shortEasy.minSec / 60} minuta jedan lagan dan je ${SHORT_REST_TAG}; njegovi kilometri prelaze u ostale lagane dane, pa je planirano ponekad manje od cilja.`;
+/** 5k-v2.17.0 (K4-B) — JEDINO mesto odluke: ne-rasteretne nedelje izgradnje (baza, vrhunac, oštrenje) bez ograničenja
+    adaptacije, sa danom kvaliteta ili testa i bar dva lagana dana, čiji je najkraći lagan kraći od shortEasy.minSec;
+    vraća ih samo kad ih je više od shortEasy.weeksMax (inače prazno). Čita se nad planom sastavljenim bez K4-B
+    (generate.construct). Početnik: ne važi (sa 4 dana planirani vrh pada > 10 % u 38 / 296 planova mreže — način rada
+    K3 t. 4, prethodno ponašanje; reports/K4-5K-REPORT.md). */
+export function shortEasyWeeks(weeks: readonly PlanWeek[], beginner: boolean): number[] {
+  const S = P.easy.shortEasy;
+  if (beginner) return [];
+  const out = weeks
+    .filter(
+      (w) =>
+        !w.deload &&
+        !w.limits &&
+        (w.phase === 'base' || w.phase === 'peak' || w.phase === 'sharpen') &&
+        w.days.some((d) => (d.role === 'q1' || d.role === 'q2') && d.workout.kind === 'quality')
+    )
+    .filter((w) => {
+      const e = w.days.filter((d) => d.role === 'easy' && d.countsToWeek).map((d) => d.workout.sec);
+      return e.length >= 2 && Math.min(...e) < S.minSec - 1e-6;
+    })
+    .map((w) => w.index);
+  return out.length > S.weeksMax ? out : [];
+}
 
 /**
  * 2.8.1 (MASTER pouka 35) — JEDINO mesto odluke o broju dana kvaliteta nedelje izgradnje: nedelja sa dva dana

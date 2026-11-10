@@ -104,8 +104,16 @@ export function weekLengths(
   a: Athlete,
   deload = false,
   maxLongKm = Infinity,
-  week = 0
-): { longKm: number; shares: number[]; capped: boolean; overLong: boolean; easyMin: number } {
+  week = 0,
+  drop = 0
+): {
+  longKm: number;
+  shares: number[];
+  capped: boolean;
+  overLong: boolean;
+  easyMin: number;
+  shortRest: boolean;
+} {
   const easyMin = easyMinKm(phase, p, deload);
   // 2.2.0: treći član na 0,1 km (ne 0,5): sa 0,5 km mala rasteretna nedelja (13 km) dobija dugi 3 km i
   // lagane 3,2 km, tj. lagan > dugi. 2.4.1: i udeo dana (longCapKm) je na 0,1 km za sve brojeve dana.
@@ -116,7 +124,11 @@ export function weekLengths(
   if (easyVsLongWeek(phase, deload))
     while (n > 0 && easyCapKm(longOf(n), phase, deload, a.days, a.beginner, week) + 1e-9 < easyMin)
       n--;
+  // 5k-v2.17.0 (K4-B): nedelja week.shortEasyWeeks (`drop` = 1) — jedan lagan dan manje uz bar dva lagana; dugi ostaje
+  // kakav je bio (uz n laganih), km tog dana prelaze u ostale lagane do granice, ostatak je planirano < cilj.
   const longKm = longOf(n);
+  const shortRest = drop > 0 && n >= 2;
+  if (shortRest) n--;
   const cap = easyCapKm(longKm, phase, deload, a.days, a.beginner, week);
   const rest = r2(target - qualityKm - longKm);
   const capped = rest > n * cap + 1e-9;
@@ -126,7 +138,8 @@ export function weekLengths(
     capped,
     // Kapacitet (volume.feasibility) gleda samo lagan > dugi; granica T1 (0,8 × dugi) daje planirano < cilj.
     overLong: rest > n * longKm + 1e-9,
-    easyMin
+    easyMin,
+    shortRest
   };
 }
 

@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.16.0',
+  version: '5k-v2.17.0',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -402,6 +402,13 @@ export const FIVE_K_V2_POLICY = {
        (docs/generators-v2/perfection/P8-5K/g6.ts). Ostaje A: 0,70, cilj se ne spušta, planirano < cilj, upozorenje
        jednom po planu u prikazu (text.userWarnings). */
     minSec: 1200,
+    /** 5k-v2.17.0 (K4-B, glavni trener krug 3 § B, heuristika): plan u kom bi najkraći lagan trening ne-rasteretne
+        nedelje izgradnje (sa danom kvaliteta ili testa i bar dva lagana dana) bio kraći od minSec u više od weeksMax
+        nedelja — u tim nedeljama jedan lagan dan je „odmor ili 20 min lagano po želji" (lagan dan manje, isti oblik kao
+        T1 easyRest); njegovi km prelaze u ostale lagane dane do granice laganog, ostatak je planirano < cilj bez
+        upozorenja po nedelji. Početnik: ne važi. Jedino mesto odluke: week.shortEasyWeeks (dužine: lengths.weekLengths
+        `drop`). */
+    shortEasy: { minSec: 1800, weeksMax: 2 },
     /** 2.1.0: dan pred trku lagan ≤ 4 km (ukupno, sa ubrzanjima) + 4 × 20 s ubrzanja (heuristika). */
     raceEveMaxKm: 4.0,
     /** 2.2.0: lagan dan trkačke nedelje ≤ 50 min (sporijom granicom E) i ≤ 50% dugog iz prethodne
@@ -1194,5 +1201,18 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'ista doza; workouts.baseWeekOne). ' +
       'Sačuvan plan 5k-v2.15.3 i stariji prilagođavaju se po 2.16.0 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/generators-v2/perfection/reports/K3-5K-REPORT.md.'
+  },
+  {
+    version: '5k-v2.17.0',
+    decision:
+      'K4-B (glavni trener, krug 3 § B; HEURISTIKA): kad bi najkraći lagan trening ne-rasteretne nedelje izgradnje (sa ' +
+      'danom kvaliteta ili testa i bar dva lagana dana) bio kraći od 30 min u više od 2 nedelje plana, u tim nedeljama ' +
+      'jedan lagan dan je „odmor ili 20 min lagano po želji" — lagan dan manje (postojeći oblik T1 easyRest, ekrani ' +
+      'nedirani); njegovi km prelaze u ostale lagane dane do granice laganog, dugi ostaje kakav je bio, ostatak je ' +
+      'planirano < cilj bez upozorenja po nedelji; jedna rečenica u napomeni plana. Početnik: ne važi (sa 4 dana ' +
+      'planirani vrh pada > 10 % u 38 / 296 planova mreže). Odluka se čita iz plana sastavljenog ' +
+      'bez pravila (generate.construct, drugi sastav). Jedino mesto: week.shortEasyWeeks (easy.shortEasy); dužine ' +
+      'lengths.weekLengths (drop); validator EASY_REST / SHORT_REST isto. Sačuvan plan 5k-v2.16.0 i stariji ' +
+      'prilagođavaju se po 2.17.0 (KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/K4-5K-REPORT.md.'
   }
 ];

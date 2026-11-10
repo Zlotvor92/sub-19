@@ -35,7 +35,9 @@ import {
   raceWeekEasyCap,
   SECOND_EASY_NOTE,
   secondQualityEasy,
-  sharpenerCandidates
+  sharpenerCandidates,
+  SHORT_REST_PLAN_NOTE,
+  shortRestWeek
 } from './week.ts';
 import {
   athleteAt,
@@ -193,6 +195,9 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   const fTol = P.volume.factorTolerance;
   const q = P.quality;
   const weeks = plan.weeks;
+  // 5k-v2.17.0 (K4-B): plan sa nedeljama malog obima nosi rečenicu u napomeni plana.
+  if (weeks.some(shortRestWeek) && !plan.notes.includes(SHORT_REST_PLAN_NOTE))
+    err('SHORT_REST', 'Plan ima nedelje malog obima bez napomene plana.');
   const runDays = new Set(plan.input.runDays);
   const nDays = plan.input.runDays.length;
   if (!isRunDaysCount(nDays)) {
@@ -314,6 +319,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           `Nedelja ima ${w.days.length} treninga umesto ${nDays - restN - easyRest}.`,
           w.index
         );
+      // 5k-v2.17.0 (K4-B): nedelja malog obima (napomena week.shortRestNote) — ista funkcija sa `drop` 1.
+      const short = shortRestWeek(w);
+      if (short && (easyRest === 0 || limited(w)))
+        err('SHORT_REST', 'Oznaka „odmor ili 20 min po želji" bez laganog dana manje.', w.index);
       if (easyRest > 0 && !limited(w)) {
         const nEasy = w.days.filter((d) => d.role === 'easy').length;
         const qKm = qualities.reduce((s, d) => s + d.workout.km, 0);
@@ -326,9 +335,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           aw(w),
           easyVsLongOff(w, a.beginner),
           Infinity,
-          w.index
+          w.index,
+          short ? 1 : 0
         );
-        if (L.shares.length !== nEasy)
+        if (L.shares.length !== nEasy || L.shortRest !== short)
           err('EASY_REST', `Lagan dan manje (${easyRest}) ne odgovara dužinama nedelje.`, w.index);
       }
       const longs = roles.filter((r) => r === 'long').length;
@@ -681,7 +691,8 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     if (w.easyCappedAtLong && !cappedOk && !limited(w))
       err('EASY_CAP', 'Oznaka „lagan = dugi" ne odgovara danima nedelje.', w.index);
     if (cappedOk) {
-      if (belowTargetShown(w.plannedKm, w.targetKm))
+      // 5k-v2.17.0 (K4-B): u nedelji malog obima bez upozorenja po nedelji (rečenica u napomeni plana).
+      if (belowTargetShown(w.plannedKm, w.targetKm) && !shortRestWeek(w))
         warn(
           'PLANNED_BELOW_TARGET',
           `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner), nDays, aw(w).beginner, w.index)} km uz dugi ${long.workout.km} km; ${belowTargetAdvice(nDays, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}).`,

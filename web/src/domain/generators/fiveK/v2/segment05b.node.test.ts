@@ -4,6 +4,7 @@
    stari kod se ne pokreće). Testovi 1–2 padaju na 349fd64 na proveri (vrh 17,1 / 41,3). */
 
 import { belowTargetShown } from './text.ts';
+import { shortRestWeek } from './week.ts';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -53,7 +54,9 @@ function checkPlan(plan: FiveKV2Plan): void {
   expect(validatePlan(plan).filter((v) => v.severity === 'error')).toEqual([]);
   expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
     plan.weeks
-      .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+      .filter(
+        (w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm) && !shortRestWeek(w)
+      )
       .map((w) => w.index)
   );
   for (const w of plan.weeks) {

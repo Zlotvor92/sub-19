@@ -130,6 +130,9 @@ export interface WeekFrame {
   /** 5k-v2.15.0 (P8 c): prvi I trening posle R faze (periodize.firstPeakIWeek) — budžet I × firstIShareOfBudget.
       Postavlja ga samo konstruktor; ne ide u nedelju plana. */
   firstI?: true;
+  /** 5k-v2.17.0 (K4-B): nedelja malog obima (week.shortEasyWeeks) — jedan lagan dan je „odmor ili 20 min po želji".
+      Postavlja ga samo konstruktor; ne ide u nedelju plana (oznaka je napomena week.shortRestNote). */
+  shortRest?: true;
 }
 
 /** 5k-v2.15.0 (P8 b): granice nedelje rasterećenja/tapera (WeekFrame.qcap). */

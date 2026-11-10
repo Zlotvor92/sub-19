@@ -50,7 +50,10 @@ import {
   EASY_CAP_NOTE,
   mixedWeek,
   protectedKm,
-  secondEasyDose
+  secondEasyDose,
+  SHORT_REST_PLAN_NOTE,
+  shortEasyWeeks,
+  shortRestWeek
 } from './week.ts';
 import { raceWarmup, type WeekDose } from './workouts.ts';
 import { type Written, writtenWeek } from './written.ts';
@@ -80,11 +83,27 @@ export interface Constructed {
  * adaptacije (assess.ts), redom; bez njih je ovo tačno generator 2.4.1. Ograničenja ulaze u okvire
  * (steps.framesFor), ciljeve (volume.adaptVolume) i tempo nedelje (steps.pacesAt); nema koraka koji
  * posle konstrukcije menja nedelju.
+ * 5k-v2.17.0 (K4-B): odluka week.shortEasyWeeks se čita iz plana sastavljenog bez nje; kad pogađa nedelje, plan se
+ * sastavlja još jednom sa tim nedeljama (WeekFrame.shortRest). Drugi sastav koji ne uspe → plan bez pravila.
  */
 export function construct(
   input: FiveKV2Input,
   steps: readonly AdaptStep[] = [],
   prior: Written | null = null
+): { ok: true; c: Constructed } | { ok: false; reasons: Reason[] } {
+  const first = constructWith(input, steps, prior, new Set());
+  if (!first.ok) return first;
+  const short = shortEasyWeeks(first.c.weeks, first.c.athlete.beginner);
+  if (short.length === 0) return first;
+  const second = constructWith(input, steps, prior, new Set(short));
+  return second.ok ? second : first;
+}
+
+function constructWith(
+  input: FiveKV2Input,
+  steps: readonly AdaptStep[],
+  prior: Written | null,
+  short: ReadonlySet<number>
 ): { ok: true; c: Constructed } | { ok: false; reasons: Reason[] } {
   // 2.4.0: ko trči (jedino mesto): broj dana, početnik, plan po osećaju (bez pouzdanog rezultata).
   const a = baseAthlete(input);
@@ -249,7 +268,8 @@ export function construct(
       return;
     }
     // 5k-v2.15.0 (P8 b): granica kvaliteta i dugog rasterećenja/tapera iz upisanih nedelja (qualityCapOf).
-    const fc0 = qualityCapOf(f, written);
+    // 5k-v2.17.0 (K4-B): nedelja malog obima (construct, week.shortEasyWeeks).
+    const fc0 = qualityCapOf(short.has(f.index) ? { ...f, shortRest: true } : f, written);
     // 5k-v2.15.0 (P8 c): prvi I trening posle R faze (periodize.firstPeakIWeek).
     const fc: WeekFrame = isFirstIWeek(f, written) && !f.hold ? { ...fc0, firstI: true } : fc0;
     const build = (g: WeekFrame) =>
@@ -504,6 +524,8 @@ function generateRaw(raw: unknown): GenerateResult {
     notes.push(
       `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez intervala (I); obim raste najviše ${Math.round(rules.maxBuildGrowth * 100)} % nedeljno, dugi trk najviše ${rules.longMaxSec / 60} min, najveći nedeljni obim najviše ${Math.round((rules.peakCapFactor - 1) * 100)} % iznad početnog${deloadText(frames, input.weekOffset)}.`
     );
+
+  if (weeks.some(shortRestWeek)) notes.push(SHORT_REST_PLAN_NOTE);
 
   const plan: FiveKV2Plan = {
     policyId: P.id,

@@ -4,6 +4,7 @@
    a ne na uvozu. */
 
 import { belowTargetShown } from './text.ts';
+import { shortRestWeek } from './week.ts';
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
@@ -136,7 +137,12 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
               r.plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)
             ).toEqual(
               r.plan.weeks
-                .filter((x) => x.easyCappedAtLong && belowTargetShown(x.plannedKm, x.targetKm))
+                .filter(
+                  (x) =>
+                    x.easyCappedAtLong &&
+                    belowTargetShown(x.plannedKm, x.targetKm) &&
+                    !shortRestWeek(x)
+                )
                 .map((x) => x.index)
             );
           }
@@ -506,7 +512,9 @@ function checkStanding(plan: FiveKV2Plan, n: 3 | 4 | 5): void {
   // 5k-v2.12.0 (T1): planirano < cilj (upozorenje) samo u nedelji sa granicom laganog 0,8 × dugi.
   expect(plan.warnings.filter((v) => v.rule === 'PLANNED_BELOW_TARGET').map((v) => v.week)).toEqual(
     plan.weeks
-      .filter((w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm))
+      .filter(
+        (w) => w.easyCappedAtLong && belowTargetShown(w.plannedKm, w.targetKm) && !shortRestWeek(w)
+      )
       .map((w) => w.index)
   );
   for (const w of plan.weeks) {
