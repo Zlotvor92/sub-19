@@ -245,9 +245,8 @@ export function easyLongShareOf(rule: DayRule): number {
   const L = P.lengths;
   // marathon-v2.12.0 (odluka organizatora): plan sa oznakom početnika — 0,80 bez obzira na broj dana.
   if ((rule as { beginner?: boolean }).beginner === true) return L.easyLongShare;
-  return rule.quality + rule.easy + 1 >= L.easyLongShareManyDays
-    ? L.easyLongShareMany
-    : L.easyLongShare;
+  // K3-C (marathon-v2.13.0): redovan plan sa 3 dana — i on 0,70.
+  return L.easyLongShareMany;
 }
 
 /** MAR-11 (T1): u nedelji izgradnje svaki lagan ≤ 0,8 × dugi iste nedelje [0,1 km, naniže]. Kad je 0,8 × dugi kraći

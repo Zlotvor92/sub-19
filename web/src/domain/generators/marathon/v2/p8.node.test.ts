@@ -181,12 +181,12 @@ describe('P8-G1: vrh obima i rast do kraja razvoja', () => {
 });
 
 describe('P8-G6: lagan dan prema dugom', () => {
-  it('nedelja izgradnje: lagan ≤ 0,70 × dugi za 4, 5 i 6 dana; 3 dana ≤ 0,80', () => {
+  it('nedelja izgradnje: lagan ≤ 0,70 × dugi za 3–6 dana (K3-C: i 3 dana)', () => {
     for (const [p, share] of [
       [AVG(), 0.7],
       [SLOW(), 0.7],
       [FAST(), 0.7],
-      [plan({ weeks: 24, km: 50, vdot: 45, days: D(3) }), 0.8]
+      [plan({ weeks: 24, km: 50, vdot: 45, days: D(3) }), 0.7]
     ] as const)
       for (const w of steady(p)) {
         const L = longOf(w)!.workout.km;
@@ -201,7 +201,8 @@ describe('P8-G6: lagan dan prema dugom', () => {
     // marathon-v2.12.0: plan sa oznakom početnika 0,80 bez obzira na broj dana.
     expect(easyCap10(200, 50, planRule(4, 'beginner')!)).toBe(160);
     expect(easyCap10(200, 50, planRule(5, 'beginner')!)).toBe(160);
-    expect(easyCap10(200, 50, planRule(3)!)).toBe(160);
+    // K3-C: redovan plan sa 3 dana takođe 0,70.
+    expect(easyCap10(200, 50, planRule(3)!)).toBe(140);
   });
 });
 

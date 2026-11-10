@@ -16,5 +16,14 @@
     "tests": [
       "src/domain/generators/marathon/v2/k3.node.test.ts"
     ]
+  },
+  {
+    "name": "K3-C 3 dana lagan 0,80 × dugi",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "  return L.easyLongShareMany;",
+    "replace": "  return rule.quality + rule.easy + 1 >= L.easyLongShareManyDays ? L.easyLongShareMany : L.easyLongShare;",
+    "tests": [
+      "src/domain/generators/marathon/v2/k3.node.test.ts"
+    ]
   }
 ]

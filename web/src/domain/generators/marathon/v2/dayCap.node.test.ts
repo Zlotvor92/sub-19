@@ -27,7 +27,8 @@ const W1: Record<string, number> = {
   // zamena 12 ned.
   // P8 (G4 minuti, G6 lagan ≤ 0,70 × dugi za 4+ dana): cilj ned 1 uz dugi na plafonu skoka se menja.
   'recent-d4-16w-35km-v70-B-r6': 30.4,
-  'recent-d3-12w-50km-v70-A-r8': 26.7,
+  // K3-C (3 dana lagan ≤ 0,70 × dugi): 26,7 → 25,8.
+  'recent-d3-12w-50km-v70-A-r8': 25.8,
   'recent-d5-16w-50km-v70-C-r10': 48.7,
   'd4-21w-55km-v45-A-sat': 55,
   'feel-d4-21w-55km-e270-A': 55

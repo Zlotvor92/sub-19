@@ -539,6 +539,13 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts beginner.peakStartFactor/peakHours/peakKeepBelowKm; volume.ts peakCap10, hoursCap10, beginnerKeepsPeak; validate.ts (VOLUME_PEAK istom funkcijom)',
     rationale:
       'Glavni trener krug 2 (§ 3d): p12 50 → 75 km = 8,7 h za početnika. Izmereno: sa 1,30 × za sve početnike 159 / 1890 novih odbijanja (dno tabele: WEEK_MIN_VOLUME u taperu 102, WEEK_INFEASIBLE 57); opcija „taper N−1 naviše do izvodljivog" ugrađena i proverena — ostaje WEEK_MIN_VOLUME, zato 1,5 × samo za klasu koja se odbija (K3-MAR-REPORT § Otvoreno).'
+  },
+  {
+    id: 'K3-C',
+    rule: 'Redovan plan sa 3 dana: lagan ≤ 0,70 × dugi u nedelji izgradnje (kao 4+ dana; početnik 0,80); višak cilja spušta postojeći mehanizam izvodljivog cilja (M6, CAPACITY_LIMITED jednom po planu). Blok MP najnižeg nivoa u dugom 3 dana uz lakši kvalitet (T umesto MP) NIJE ugrađen (K3-MAR-REPORT § Otvoreno). Ista doza iste zone: postojeći M10 menja strukturu svake nedelje kad sledeći nivo ne staje (izmereno), bez izmene.',
+    place: 'lengths.ts easyLongShareOf (jedino mesto; validator EASY_LONG_SHARE isto)',
+    rationale:
+      'Heuristika, glavni trener krug 2 (§ 4.3): 3 dana lagan 0,80 × dugi (MAR p08 19,7 + 29,3 km).'
   }
 ];
 

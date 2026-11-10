@@ -345,13 +345,19 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     // (nezavisno od lengths.ts).
     // P8-G6: 4 i više dana trčanja 0,70 × dugi, 3 dana 0,80.
     // marathon-v2.12.0: početnik 0,80 bez obzira na broj dana.
-    const easyShare = !beginner && p.input.runDays.length >= 4 ? 0.7 : 0.8;
+    // K3-C: redovan plan sa 3 dana takođe 0,70.
+    const easyShare = beginner ? 0.8 : 0.7;
+    // Granice spojive samo kad je udeo × dugi ≥ najkraćeg laganog (max(5 km; 20 min srednjim laganim tempom)).
+    const floor10 = Math.max(
+      50,
+      Math.ceil((1200 / ((p.paces.E.fast + p.paces.E.slow) / 2)) * 10 - 1e-9)
+    );
     if (isSteady(w))
       for (const d of w.days)
         if (
           d.role === 'easy' &&
           ((to10(d.workout.km) > Math.floor(easyShare * to10(long.workout.km) + 1e-9) &&
-            Math.floor(easyShare * to10(long.workout.km) + 1e-9) >= 50) ||
+            Math.floor(easyShare * to10(long.workout.km) + 1e-9) >= floor10) ||
             d.workout.km + 1e-9 < 5 ||
             easySec(d) + 1 < 1200)
         )

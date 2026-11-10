@@ -3,6 +3,7 @@
    nezavisno od funkcija konstruktora; mreža: nezavisne invarijante u grid.harness.node.test.ts. */
 import { describe, expect, it } from 'vitest';
 import { generateMarathonV2 } from './generate.ts';
+import { gridInputs } from './testInputs.ts';
 import type { MarathonV2Input, MarathonV2Plan, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 
@@ -157,5 +158,29 @@ describe('K3-B: vrh obima početnika', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(Math.max(...r.plan.weeks.map((w) => w.targetKm))).toBeLessThanOrEqual(52);
+  });
+});
+
+describe('K3-C: 3 dana', () => {
+  it('redovan plan sa 3 dana: svaki lagan nedelje izgradnje ≤ 0,70 × dugi iste nedelje (p03, p08, p10)', () => {
+    for (const id of ['p03', 'p08', 'p10']) {
+      const p = prof(id);
+      for (const w of p.weeks.filter(
+        (x) => !x.deload && ['base', 'development', 'specific'].includes(x.phase)
+      )) {
+        const L = longKm(w);
+        for (const d of w.days.filter((x) => x.role === 'easy'))
+          expect(d.workout.km, `${id} ned ${w.index}`).toBeLessThanOrEqual(0.7 * L + 1e-9);
+      }
+    }
+    // Mreža 02 d3-12w-45km-v30-A-sat: pre K3-C lagan 0,80 × dugi.
+    const r = generateMarathonV2(gridInputs().find((x) => x.id === 'd3-12w-45km-v30-A-sat')!.input);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    for (const w of r.plan.weeks.filter(
+      (x) => !x.deload && ['base', 'development', 'specific'].includes(x.phase)
+    ))
+      for (const d of w.days.filter((x) => x.role === 'easy'))
+        expect(d.workout.km, `ned ${w.index}`).toBeLessThanOrEqual(0.7 * longKm(w) + 1e-9);
   });
 });
