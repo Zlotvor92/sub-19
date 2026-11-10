@@ -70,3 +70,30 @@ describe('K3-A: rad jednog I i RP treninga po cilju nedelje', () => {
       ).toEqual([]);
   });
 });
+
+describe('K3-B: redovan plan sa tačno 4 dana', () => {
+  it('lagan ≤ 0,75 × dugi u ne-rasteretnoj nedelji izgradnje; koristi prostor iznad 0,70; 5+ dana ostaje ≤ 0,70', () => {
+    let weeks4 = 0;
+    let over070 = 0;
+    for (const { id, p } of SAMPLE) {
+      const n = p.input.runDays.length;
+      if (n < 4) continue;
+      for (const w of p.weeks) {
+        if (w.deload || w.limits || !['base', 'development', 'specific'].includes(w.phase))
+          continue;
+        const long = w.days.find((d) => d.role === 'long')?.workout.km ?? 0;
+        const share = n === 4 ? 0.75 : 0.7;
+        for (const d of w.days.filter((x) => x.role === 'easy')) {
+          expect(d.workout.km, `${id} ned ${w.index}`).toBeLessThanOrEqual(
+            Math.floor(share * long * 10 + 1e-9) / 10 + 1e-9
+          );
+          if (n === 4 && d.workout.km > Math.floor(0.7 * long * 10 + 1e-9) / 10 + 1e-9) over070++;
+        }
+        if (n === 4) weeks4++;
+      }
+    }
+    expect(weeks4).toBeGreaterThan(2000);
+    // Pravilo zaista deluje: lagani iznad 0,70 × dugi postoje.
+    expect(over070).toBeGreaterThan(200);
+  });
+});

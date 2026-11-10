@@ -204,10 +204,11 @@ describe('D6: obim', () => {
     // 10K-08 (T1, lagan ≤ 0,8 × dugi): 25–45 km cilj = trenutni obim (25 km: lagani dani odmor, planirano < cilj); 50 i
     // 55 km → najbliži izvodljiv 48,2 km (lagan 12,7 = 0,8 × dugi 15,9). P5 (D37, F4: T i I od 80 % plafona): veća T doza
     // nedelje 1 nosi i 50 km; 55 km → 53,7 km. P8 G6 (D47, lagan ≤ 0,70 × dugi za 4+ dana): 25–45 km cilj = trenutni obim;
-    // 50 i 55 km → 46,7 km (lagan 10,7 = 0,7 × dugi 15,4).
+    // 50 i 55 km → 46,7 km (lagan 10,7 = 0,7 × dugi 15,4). K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): 25–45 km cilj
+    // = trenutni obim; 50 i 55 km → 48,6 km.
     for (const km of [25, 30, 35, 40, 45, 50, 55]) {
       const r = generateTenKV2(inputOf({ weeks: 12, km, vdot: 50, days: SCHEDULES.A.days }));
-      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km <= 45 ? km : 46.7);
+      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km <= 45 ? km : 48.6);
     }
   });
 
@@ -265,7 +266,7 @@ describe('D6: obim', () => {
     expect(easy).toBeGreaterThanOrEqual(Math.floor(7 * long) / 10 - 0.1 - 1e-9);
     expect(p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')).toBe(true);
     const msg =
-      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 70 % dugog; preporuka 5–6 dana.';
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 75 % dugog; preporuka 5–6 dana.';
     expect(p.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(msg);
     expect(p.notes.some((n) => n.startsWith(msg))).toBe(true);
     checkRule(p);
@@ -281,7 +282,7 @@ describe('D6: obim', () => {
     // 4 dana, 25 km, VDOT 30: spuštene nedelje seče udeo 33 % (01b: poruka je pogrešno navodila 105 min). 10K-07
     // (O-1b): 5 dana (30–65) i 6 dana (35–80) ne podržavaju 25 km (ulaz bi ih odbio) → bez preporuke.
     expect(msgOf({ weeks: 12, km: 25, vdot: 30, days: d[4].A.days, long: 'sun' })).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje, lagan ≤ 70 % dugog.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje, lagan ≤ 75 % dugog.'
     );
     // 02b (D17 udeo 3 dana 0,45): isti ulaz je u 10k-v2.2.0 sekao i udeo 40 %; sada samo 105 min.
     expect(msgOf({ weeks: 17, km: 30, vdot: 35, days: d[3].A.days, long: 'sun' })).toBe(

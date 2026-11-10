@@ -234,14 +234,17 @@ describe('P8 dopuna: G4 minuti rada, G5 oštrenje, G1a vrh, G6, G7 test, G8 dugi
       expect(p.peakCapKm).toBeGreaterThanOrEqual(p.startKm);
     }
   });
-  it('G6 (D47): lagan ≤ 0,70 × dugi (4+ dana) i ≤ 0,80 (3 dana) u nedeljama izgradnje', () => {
+  it('G6 (D47) + K3-B: lagan ≤ 0,70 × dugi (5+ dana), ≤ 0,75 (tačno 4 dana) i ≤ 0,80 (3 dana) u nedeljama izgradnje', () => {
     for (const p of plans)
       for (const w of p.weeks.filter(
         (x) => ['base', 'development', 'specific'].includes(x.phase) && !x.deload && !x.limits
       )) {
         const long = w.days.find((d) => d.role === 'long')!.workout.km;
         // S9 (odluka organizatora): početnik ostaje na 0,80.
-        const share = p.input.runDays.length >= 4 && p.input.experience !== 'beginner' ? 0.7 : 0.8;
+        // K3-B (10k-v2.15.0): tačno 4 dana 0,75.
+        const n = p.input.runDays.length;
+        const regular = p.input.experience !== 'beginner';
+        const share = regular && n >= 5 ? 0.7 : regular && n === 4 ? 0.75 : 0.8;
         for (const e of w.days.filter((d) => d.role === 'easy'))
           expect(e.workout.km).toBeLessThanOrEqual(
             Math.floor(share * long * 10 + 1e-9) / 10 + 1e-9

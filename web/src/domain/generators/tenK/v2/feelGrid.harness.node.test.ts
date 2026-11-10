@@ -95,13 +95,14 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         [
           // 10K-08 (T1): duži dugi izgradnje (za stvaran broj laganih dana) → češće skraćen dugi rasterećenja sa testom.
           // P8 (10k-v2.13.0, G1 sporiji rast dugog, G6): 144 / 72 / 36 / 36 → 144 / 114 / 18 / 36.
+          // K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): 114 → 78 (4 dana).
           [540, 144, 0],
-          [756, 114, 0],
+          [756, 78, 0],
           [864, 18, 0],
           [1080, 36, 0]
         ]
       );
-      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 114, 18, 36]);
+      byDays((n) => g.warned[`${n}:TEST_DELOAD_LONG`] ?? 0, [144, 78, 18, 36]);
     });
 
     it('brojke po broju dana (izveštaj): CAPACITY_LIMITED, ponavljanja, vrh/start, odstupanja; ned 1 ispod obima (105 min / udeo), D25, DOSE_DROPPED (od toga udeo)', () => {
@@ -122,7 +123,8 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
         // 288 / 132 / 240 → 546 / 288 / 426 (I 5 × 1000 m nema drugu strukturu), vrh/start 1,097 → 1,099, taper samo RP
         // 84 / 114 / 306 → 90 / 258 / 372 (veći RP specifične faze).
         [1980, 1014, 456, 1.169, 0, 0, 0, 0],
-        [2772, 2004, 546, 1.099, 0, 90, 0, 0],
+        // K3-B (4 dana lagan ≤ 0,75 × dugi): CAPACITY_LIMITED 2004 → 1812, ponavljanja 546 → 462, vrh/start 1,099 → 1,120.
+        [2772, 1812, 462, 1.12, 0, 90, 0, 0],
         [3168, 1194, 288, 1.163, 0, 258, 0, 0],
         [3960, 1104, 426, 1.102, 0, 372, 0, 0]
       ];
@@ -151,7 +153,8 @@ export function describeFeelGrid(title: string, days: readonly Days[], extra?: (
           // od toga udeo (4 dana) 444 → 378.
           // K3-A (10k-v2.15.0): DOSE_DROPPED (4 dana) 588 → 522, od toga udeo 378 → 354; D25 (6 dana) 264 → 342.
           [462, 132, 114, 84, 0],
-          [0, 1782, 270, 522, 354],
+          // K3-B (4 dana 0,75): ned 1 ispod obima uz udeo 1782 → 1518, D25 270 → 216, DOSE_DROPPED 522 → 192 (udeo 354 → 108).
+          [0, 1518, 216, 192, 108],
           [858, 0, 144, 0, 0],
           [1056, 0, 342, 0, 0]
         ]

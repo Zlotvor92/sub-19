@@ -7,5 +7,14 @@
   "tests": [
    "src/domain/generators/tenK/v2/k3.node.test.ts"
   ]
+ },
+ {
+  "name": "K3-B 4 dana kao 5+ (0,70)",
+  "file": "src/domain/generators/tenK/v2/policy.ts",
+  "find": "      easyMaxLongShare: 0.75,",
+  "replace": "      easyMaxLongShare: 0.7,",
+  "tests": [
+   "src/domain/generators/tenK/v2/k3.node.test.ts"
+  ]
  }
 ]

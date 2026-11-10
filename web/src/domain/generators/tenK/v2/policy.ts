@@ -424,6 +424,14 @@ const DECISIONS: readonly Decision[] = [
       'Heuristika glavnog trenera (ROUND-02 § 3b): I trening ispod ~12 min rada ne drži dovoljno vremena blizu VO2max; 10K RP pri ≥ 50 km/ned 22–30 min (p07 14–18, p05 21–23 pre). Brojevi: docs/generators-v2/perfection/reports/K3-10K-REPORT.md.'
   },
   {
+    id: 'K3-B',
+    rule: 'K3-B (glavni trener krug 2 § 3f) — redovan plan sa TAČNO 4 dana: lagan ≤ 0,75 × dugi iste nedelje izgradnje (5+ dana ostaje 0,70, početnik 0,80). Cilj obima se ne spušta (fit10 kao i do sada). Izuzetak nedelje 1 (do 0,80) nije ugrađen: nedelja 2 (0,75) tada ne nosi cilj nedelje 1 — nedelja 2 < nedelja 1 u 198 / 3 696 planova mreže 02 sa 4 dana, DOSE_DROPPED 711 → 807 (K3-10K-REPORT § Otvoreno).',
+    place:
+      'policy.ts days[4].easyMaxLongShare (jedino mesto); lengths.ts buildEasyBounds10, buildLengths; validate.ts EASY_VS_LONG; volume.ts capacityLimits/capacityMessage',
+    rationale:
+      'Heuristika glavnog trenera (ROUND-02 § 3f): sa 0,75 p01 dugi 14 → lagan 10,5 km, nedelja 1 ≈ 39,5 km umesto 37–38. Brojevi: docs/generators-v2/perfection/reports/K3-10K-REPORT.md.'
+  },
+  {
     id: 'A1',
     rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
     place:
@@ -711,7 +719,8 @@ export const TEN_K_V2_POLICY = {
       peakMaxKm: 60,
       longMaxShare: 0.33,
       /** G6 (P8 dopuna, D47): lagan ≤ ovaj udeo dugog iste nedelje (nedelja izgradnje). */
-      easyMaxLongShare: 0.7,
+      /** K3-B (10k-v2.15.0, glavni trener krug 2 § 3f): tačno 4 dana — 0,75 (5+ dana 0,70). */
+      easyMaxLongShare: 0.75,
       weekMinKm: 12
     },
     5: {

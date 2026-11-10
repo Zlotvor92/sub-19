@@ -96,10 +96,11 @@ describe('primeri 06d (nove klase, 10k-v2.5.0 odbijeno)', () => {
     const [taper, race] = [p.weeks[8]!, p.weeks[9]!];
     // 10K-08 (T1): bazni plan niži (lagan ≤ 0,8 × dugi) — taper 8,2 → 7,0 km, lagan tapera 4,1 → 3,5 km; mehanizam isti.
     // P8 (10k-v2.13.0, G6 lagan ≤ 0,70 × dugi): bazni plan niži — taper 7,0 → 6,0 km, lagan tapera 3,5 → 3,0 km.
-    expect(taper.plannedKm).toBe(6);
+    // K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): bazni plan viši — taper 6,0 → 7,0 km.
+    expect(taper.plannedKm).toBe(7);
     expect(race.days.map((d) => `${d.date}:${d.role}:${d.workout.km}`)).toEqual([
       '2027-01-05:easy:3',
-      '2027-01-07:easy:3',
+      '2027-01-07:easy:3.5',
       '2027-01-09:race:13.12'
     ]);
     expect(race.plannedKm).toBeLessThanOrEqual(taper.plannedKm);
@@ -188,18 +189,21 @@ describe('06e (10k-v2.5.2, pouka 34): umor sa asOf pre starta — 10k-v2.5.1 odb
       1,
       true,
       // P8 (G6): nedelja 1 plana bez činjenica 25,0 → 23,4 km (lagan ≤ 0,70 × dugi), dugi 8,2 → 7,7 km.
-      { buildKm: 23.4, longKm: 7.7, tDoseM: 2000 }
+      // K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): 23,4 → 24,4 km, dugi 7,7 → 8,0 km.
+      { buildKm: 24.4, longKm: 8, tDoseM: 2000 }
     ]);
-    expect(p0.weeks[0]!.days.find((d) => d.role === 'long')!.workout.km).toBe(7.7);
+    expect(p0.weeks[0]!.days.find((d) => d.role === 'long')!.workout.km).toBe(8);
     const [w1, w2] = p.weeks;
-    expect([w1!.deload, w1!.nominalKm, w1!.targetKm, w1!.fitted]).toEqual([true, 18.7, 18.7, null]);
+    // K3-B (10k-v2.15.0, 4 dana lagan ≤ 0,75 × dugi): nedelja 1 plana bez činjenica 23,4 → 24,4 km — rasterećenje
+    // 18,7 → 19,5 km, dugi rasterećenja 6,1 → 6,4 km, nedelja 2 = 24,4 km.
+    expect([w1!.deload, w1!.nominalKm, w1!.targetKm, w1!.fitted]).toEqual([true, 19.5, 19.5, null]);
     const q = w1!.days.filter((d) => d.workout.kind === 'quality');
     expect(q.map((d) => d.workout.dose)).toMatchObject([{ zone: 'T', doseM: 2000 }]);
-    expect(w1!.days.find((d) => d.role === 'long')!.workout.km).toBe(6.1);
+    expect(w1!.days.find((d) => d.role === 'long')!.workout.km).toBe(6.4);
     expect([w2!.deload, w2!.nominalKm, w2!.targetKm, w2!.fitted]).toEqual([
       false,
-      23.4,
-      23.4,
+      24.4,
+      24.4,
       null
     ]);
     expect(w2!.targetKm).toBe(p0.weeks[0]!.targetKm);

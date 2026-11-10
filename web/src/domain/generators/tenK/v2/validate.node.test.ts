@@ -247,7 +247,7 @@ describe('validator', () => {
     expect(rules).toContain('CAPACITY_LIMITED');
     expect(r.plan.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(
       // 10K-08 (T1): i lagan ≤ 80 % dugog (CapacityLimit 'easy'); P8 G6 (D47): 70 % za 4+ dana.
-      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 70 % dugog; preporuka 5–6 dana.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 75 % dugog; preporuka 5–6 dana.'
     );
     expect(r.plan.warnings.every((w) => w.severity === 'warning')).toBe(true);
   });
