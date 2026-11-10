@@ -46,9 +46,7 @@ Profil p08: lagan 0,80 → 0,70 × dugi, dugi ned 13–14 „14,5 km + 6 × 20 s
 segment05, segment08g N4 (I 3 × 500 m), segment08i (nov primer `r-d3-6w-16km-v32-1` za MIXED_OVER_TARGET / MIXED_REMAINDER —
 stari primer sa 0,70 više nema tu pojavu), segment09 M2 (filter napomene granice laganog). Tri sabotaže pale.
 
-## Testovi (10. 11. 2026)
-
-Brz nivo 5K posle svakog pravila zelen (801 → 803 → 804 → 807). Kraj:
+## Testovi (10. 11. 2026; brz nivo posle svakog pravila zelen: 801 → 803 → 804 → 807)
 
 | komanda (iz `web/`)                                                                 | rezultat                                                 |
 | ----------------------------------------------------------------------------------- | -------------------------------------------------------- |
