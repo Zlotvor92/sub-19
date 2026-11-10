@@ -48,6 +48,8 @@ describe('H17 pravilo plana početnika', () => {
       // P8 G8 (STOP S2 → O2): dugi početnika do 50 % cilja nedelje da bi dostigao 16 km.
       longReachShare: 0.5,
       longReachKm: 16,
+      // K3-A: specifična nedelja sme do 10 % iznad granice izgradnje da dugi ne padne.
+      specHoldOverPeak: 0.1,
       tFirstKm: 1.5
     });
     expect(planRule(3, 'beginner')).toBeNull();
@@ -158,16 +160,19 @@ describe('H17 plan početnika', () => {
     const t = p.weeks.find((w) => w.phase === 'taper')!;
     const q = t.days.find((d) => d.role === 'q1')!.workout.dose!;
     // P8 G2/G5: RP 2 × 2000 m staje u taper (najmanja doza), trkačka nedelja ima oštrenje ≤ 12 min rada (bilo: T 1,5 km,
-    // bez oštrenja); P8 G1: 12 nedelja → vrh 1,30 × start, taper 22,4 km.
-    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['RP', 4000, 22.4]);
+    // bez oštrenja); P8 G1: 12 nedelja → vrh 1,30 × start, taper 22,4 km;
+    // K3-A: specifična nedelja podignuta da dugi ne padne → vrh i taper 22,6 km.
+    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['RP', 4000, 22.6]);
     expect(t.notes.join(' ')).toContain('najmanja doza u trkačkom tempu');
     const sharp = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
     expect(sharp.workout.dose!.doseM).toBe(2400);
-    // Kad taper sa RP nema izvodljive dužine (najmanji obim, brz lagan tempo): ishod kao pre — bez kvaliteta, ne odbijanje.
+    // Najmanji obim, brz lagan tempo: do K3 taper bez kvaliteta (RP nije imao izvodljive dužine); K3-A podiže specifične
+    // nedelje (dugi ne pada), pa veći taper nosi T 1,5 km (HI10) — u mreži početnika nema više tapera bez kvaliteta.
     const small = plan('b-d4-12w-20km-e330-A');
-    expect(small.weeks.find((w) => w.phase === 'taper')!.days.some((d) => d.workout.dose)).toBe(
-      false
-    );
+    expect(
+      small.weeks.find((w) => w.phase === 'taper')!.days.find((d) => d.workout.dose)?.workout.dose
+        ?.doseM
+    ).toBe(1500);
     // Rasterećenje u razvoju: 1,5 km kontinuirano pod lestvicom T cruise (nema nivo 1,5 km).
     const d5 = p.weeks[4]!.days.find((d) => d.workout.kind === 'quality')!.workout;
     expect([p.weeks[4]!.deload, d5.dose!.ladder, d5.qualityType, d5.dose!.doseM]).toEqual([

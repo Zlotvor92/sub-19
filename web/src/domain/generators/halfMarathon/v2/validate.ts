@@ -27,6 +27,7 @@ import {
   taperLengths,
   taperLongCap10,
   taperLongAtMin,
+  longsOf10,
   week1LongCap10
 } from './lengths.ts';
 import {
@@ -129,6 +130,8 @@ import {
   fewerDaysAdvice,
   adaptNominal10,
   growLeft,
+  holdCap10,
+  specHold10,
   adaptVolume,
   enterWeek,
   initialAdaptHistory,
@@ -2192,7 +2195,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     // A3/A8: granica izgradnje od novog starta; povratak sme do nivoa pre smanjenja.
     const capW = av ? h.cap10 : cap10;
     const levelW = av ? av.levelAt(w.index) : null;
-    if (checked(w) && isBuildPhase(w.phase) && t10 > capW && !(levelW !== null && t10 <= levelW))
+    // K3-A: početnik u specifičnoj fazi — granica sa pragom dugog (ista funkcija kao konstruktor).
+    const capHold =
+      specHold10(w, rule, weeks, longsOf10(weeks.slice(0, w.index - 1))) !== null
+        ? holdCap10(capW)
+        : capW;
+    if (checked(w) && isBuildPhase(w.phase) && t10 > capHold && !(levelW !== null && t10 <= levelW))
       err(
         'VOLUME_PEAK',
         `Cilj ${w.targetKm} km > granica izgradnje ${capW / 10} km (H6; nov start: A3).`,

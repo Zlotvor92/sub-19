@@ -57,6 +57,8 @@ export const KNOWN_VERSIONS: readonly string[] = [
     // P8: hm-v2.10.0 (P5) ostaje poznata.
     'hm-v2.10.0',
     'hm-v2.11.0',
+    // K3: hm-v2.12.0 (P8 završetak) ostaje poznata.
+    'hm-v2.12.0',
     P.version
   ])
 ];

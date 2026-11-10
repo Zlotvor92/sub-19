@@ -1,0 +1,9 @@
+[
+  {
+    "name": "K3-A bez praga dugog početnika (specHold10 uvek null)",
+    "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+    "find": "  if (!rule.beginner || frame.deload || frame.phase !== 'specific') return null;",
+    "replace": "  if (rule.beginner || frame.deload || frame.phase !== 'specific') return null;",
+    "tests": ["src/domain/generators/halfMarathon/v2/k3.node.test.ts"]
+  }
+]

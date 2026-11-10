@@ -9,6 +9,7 @@ import { mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
 import {
   longestLong10,
+  longsOf10,
   recentLongCap10,
   recentLongNeeded10,
   ranCapFloor10,
@@ -50,12 +51,14 @@ import {
   fit10,
   fittedNote,
   growLeft,
+  holdCap10,
   initialAdaptHistory,
   leaveAdaptWeek,
   leaveWeek,
   nominal10,
   peakCap10,
   raceWeekTarget10,
+  specHold10,
   startKm10
 } from './volume.ts';
 import {
@@ -296,6 +299,23 @@ export function construct(
           [fit, mode] = [{ target10: nominal, fitted: null }, m];
           break;
         }
+    // K3-A: početnik u specifičnoj fazi — najpre cilj na kome dugi ostaje ≥ najdužeg iz baze i razvoja (naviše do
+    // holdCap10); ne staje → kao pre.
+    const hold10 = downOnly ? null : specHold10(frame, rule, frames, longsOf10(written));
+    if (hold10 !== null)
+      for (const m of modes.slice(0, 1)) {
+        fit = fit10(
+          nominal,
+          frame,
+          holdCap10(av ? h.cap10 : cap10),
+          rule,
+          (t10) => (make(t10, m)?.long10 ?? 0) >= hold10
+        );
+        if (fit) {
+          mode = m;
+          break;
+        }
+      }
     for (const m of fit ? [] : modes) {
       fit = fit10(nominal, frame, av ? h.cap10 : cap10, rule, (t10) => can(t10, m), downOnly);
       if (fit) {

@@ -653,12 +653,21 @@ const DECISIONS: readonly Decision[] = [
       'periodize.ts testWeekOf (jedina odluka nedelje testa); validate.ts TEST (ista funkcija); gridInvariants.ts (nezavisno)',
     rationale:
       'Odluka organizatora posle STOP-a. Merenje: test u nedelji najvećeg cilja obima 84 / 112 → 17 / 128 planova mreže P0; planova po osećaju bez testa 1728 → 0 od 6336.'
+  },
+  /* ---------- K3 (hm-v2.13.0): izmene po sudu glavnog trenera, krug 2 (coach/ROUND-02.md § 4). ---------- */
+  {
+    id: 'K3-A',
+    rule: 'Dugi početnika na pravom mestu: u ne-rasteretnoj nedelji specifične faze dugi početnika nije kraći od najdužeg dugog izgradnje do tada. Cilj nedelje se zato sme podići iznad granice izgradnje najviše 10 % (izvodljiv cilj naviše, H6); kad ni tako ne staje — nedelja po H6 kao pre. Najduži dugi tako pada u poslednje ne-rasteretne nedelje pred taper.',
+    place:
+      'policy.ts beginner.specHoldOverPeak; volume.ts specHold10, holdCap10 (jedno mesto); generate.ts construct (pretraga cilja sa pragom dugog); validate.ts VOLUME_PEAK (ista funkcija); gridInvariants.ts (nezavisno)',
+    rationale:
+      'Glavni trener, krug 2 (§ 3e, § 4.1): početnik p11 dostiže 13,2 km u razvoju pa u specifičnoj fazi pada na 11,4 km (RP trening sa WU/CD duži od T, lagani na 4 km). Merenje (mreža početnika 1890): pad dugog u specifičnoj 312 → 0, najduži van poslednje 3 ne-rasteretne nedelje 258 → 0, 0 odbijanja.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.12.0',
+  version: 'hm-v2.13.0',
 
   /** H1 (dani i obim: H15). */
   input: {
@@ -757,6 +766,9 @@ export const HM_V2_POLICY = {
     /** G8 (P8, odluka posle STOP S2): dugi početnika sme do longReachShare cilja nedelje da bi dostigao longReachKm. */
     longReachShare: 0.5,
     longReachKm: 16,
+    /** K3-A: specifična faza — cilj ne-rasteretne nedelje sme iznad granice izgradnje najviše ovaj udeo granice da bi
+        dugi ostao ≥ najdužeg dugog izgradnje do tada. */
+    specHoldOverPeak: 0.1,
     /** HI10: prvi nivo lestvice T kontinuirano početnika = najmanja T doza rasterećenja i tapera [km]. */
     tFirstKm: 1.5
   },

@@ -188,6 +188,30 @@ export interface VolumeHistory {
 
 export const INITIAL_VOLUME: VolumeHistory = { lastBuild10: null, peak10: 0 };
 
+/** K3-A (jedno mesto): početnik, ne-rasteretna nedelja specifične faze — dugi ne sme ispod najdužeg dugog
+    izgradnje do tada (baza, razvoj i ranije nedelje specifične faze; `longs10` = dugi prethodnih nedelja redom, `frames` njihovi okviri). Vraća taj donji prag [0,1 km] ili null
+    kad pravilo ne važi. Konstruktor ga traži kao uslov izvodljivosti (cilj naviše do holdCap10), validator čita istu
+    funkciju za granicu izgradnje; kad ni tako ne staje — nedelja po H6 kao pre (bez praga). */
+export function specHold10(
+  frame: { phase: string; deload: boolean },
+  rule: { beginner: boolean },
+  frames: readonly { phase: string }[],
+  longs10: readonly (number | null)[]
+): number | null {
+  if (!rule.beginner || frame.deload || frame.phase !== 'specific') return null;
+  let m = 0;
+  longs10.forEach((l, i) => {
+    const ph = frames[i]?.phase;
+    if (l !== null && (ph === 'base' || ph === 'development' || ph === 'specific'))
+      m = Math.max(m, l);
+  });
+  return m > 0 ? m : null;
+}
+
+/** K3-A: granica izgradnje nedelje sa pragom dugog (specHold10) [0,1 km]. */
+export const holdCap10 = (cap10: number): number =>
+  Math.floor(cap10 * (1 + P.beginner.specHoldOverPeak) + EPS);
+
 /** Cilj po pravilu (pre provere izvodljivosti) — jedna funkcija za konstruktor i validator (pouka 24).
     Trkačka nedelja: cilj = planirano (raceWeekTarget10). */
 export function nominal10(

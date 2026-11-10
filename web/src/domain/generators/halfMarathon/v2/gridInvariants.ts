@@ -604,7 +604,17 @@ export function checkPlan(
         if (t10 > lastBuild + g && w.fitted !== 'up')
           no('GROWTH', `${tag} ${lastBuild / 10} → ${w.targetKm}`);
       }
-      if (t10 > to10(p.peakCapKm)) no('PEAK_CAP', tag);
+      // K3-A (nezavisno): početnik, ne-rasteretna specifična nedelja — cilj sme do ⌊1,1 × granica⌋, dugi ne pada ispod
+      // najdužeg dugog izgradnje do tada.
+      const holdW = beg && w.phase === 'specific';
+      if (t10 > (holdW ? Math.floor(1.1 * to10(p.peakCapKm) + EPS) : to10(p.peakCapKm)))
+        no('PEAK_CAP', tag);
+      if (holdW && !p.adaptation && long !== null) {
+        const before = p.weeks
+          .filter((x) => x.index < w.index && !x.deload && isBuild(x.phase))
+          .map((x) => to10(x.days.find((d) => d.role === 'long')?.workout.km ?? 0));
+        if (before.length > 0 && long < Math.max(...before)) no('K3A_SPEC_DROP', tag);
+      }
       // H12 (pouke 3, 12): doza slota ne pada, glavna doza ne pada; pad samo uz spuštanje doze (napomena) u
       // nedelji ograničenoj kapacitetom (fitted down) — inače prekršaj.
       const q1 = doseOf(w, 'q1');

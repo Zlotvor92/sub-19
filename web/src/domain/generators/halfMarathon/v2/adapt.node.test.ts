@@ -764,7 +764,8 @@ describe('pouka 30: trkačka nedelja ≤ taper i kad taper ima dane odmora/bola'
   });
 
   it('početnik 4 dana, bol 8 u sredu tapera (taper mešovit): višak laganog trkačke nedelje je odmor — validator čita upisan taper', () => {
-    const p = plan('b-d4-20w-20km-e330-A');
+    // K3-A: u planu b-d4-20w-20km-e330-A taper je posle podizanja specifične nedelje veći, trkačka staje bez skraćenja.
+    const p = plan('b-d4-12w-20km-e330-A');
     const n = p.weeks.length;
     const at = wed(p, n - 1);
     const r = adapt(p, factsOf(p, 'pain8', at), at);

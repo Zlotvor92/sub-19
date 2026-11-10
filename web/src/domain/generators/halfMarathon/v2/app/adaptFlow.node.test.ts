@@ -628,6 +628,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
         'hm-v2.9.0',
         'hm-v2.10.0',
         'hm-v2.11.0',
+        'hm-v2.12.0',
         P.version
       ])
     ]);
