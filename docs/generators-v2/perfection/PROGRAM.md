@@ -278,3 +278,21 @@ Oba taba su čekala odluke organizatora; poslate su, tabovi ih ugrađuju i zavr�
 - ZA SLEDEĆI KRUG (čeka dogovor sa vlasnikom): krug 2 kod glavnog trenera (ispis kroz `userWeekNotes`/`userText`);
   pad ukupnog RP/MP rada (HM 42 → 34,8 km; MAR 54 → 44); vrh I na 5K 10,1 min; G6 0,70 kod redovnog plana 4 dana na
   10K; test za plan po osećaju 8–11 ned na 10K; talas dugog; cena G8; `check:full` + E2E 5K pre mergea.
+
+### 10. 11. 2026, 17:45 — nalog vlasnika: završiti sve, štedljivo; raspodela modela (P9)
+
+Pravilo modela (zamenjuje „svi tabovi Fable"):
+- Haiku: čisto pokretanje gotovih komandi i prepis ishoda (nema ga u ovom krugu — to radi organizator sam).
+- Sonnet: mehanički posao bez trenerske odluke i bez izmene generatora (skripte ispisa, merenja, dokumentacija).
+- Opus: mala, tačno određena izmena generatora sa presedanom na drugoj distanci + testovi.
+- Fable: samo trenerski sud (glavni trener, postojeći tab) i organizator. Najviše 2 taba uporedo.
+
+Plan P9 (do kraja):
+1. P9a (Sonnet, `session_01GnHHiZuxm6DwxtJVR28DwY`): `P9/render.ts` — ispis 12 profila × 4 distance kroz korisnički
+   tekst → `P9/plans/<D>/pNN.txt`.
+2. P9b (Opus, `session_01GnHHiZeniA1j1SeZ2XQfif`): 10K — plan po osećaju 8–11 ned dobija test u prvoj ne-rasteretnoj
+   nedelji ≥ 4 razvoja (10k-v2.14.0), kao HM/MAR.
+3. Organizator ponovo pokreće `P9/render.ts` za 10K posle P9b, pa poruka glavnom treneru → `coach/ROUND-02.md`.
+4. Po sudu trenera: krug 3 samo za nalaze koji to traže (kandidati: vrh I na 5K, pad RP/MP rada, G6 0,70 na 10K,
+   talas dugog, cena G8) — Opus po distanci, jedan po jedan nalaz.
+5. `check:full` jednom + E2E sve 4 distance (organizator sam). Spajanje u main tek na izričitu potvrdu vlasnika.
