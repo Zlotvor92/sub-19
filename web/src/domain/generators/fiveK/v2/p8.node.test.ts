@@ -97,7 +97,7 @@ describe('P8-5K: uzorak rane mreže', () => {
                 .filter(Number.isFinite)
             );
             expect(v, `${id} ned ${w.index} ${z}`).toBeLessThanOrEqual(
-              Math.max(share * last[z]!, first) + 0.05
+              Math.max(share * (last[z] ?? 0), first) + 0.05
             );
           }
         if (w.deload && isBuild(w) && lastLong !== null) {

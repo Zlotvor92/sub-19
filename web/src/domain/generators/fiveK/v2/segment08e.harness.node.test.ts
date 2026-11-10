@@ -162,12 +162,13 @@ export const TOTALS: Record<
   // (bilo 988 / 978).
   narrow: {
     flows: 5952,
-    dropped: 897,
+    // 5k-v2.15.0 (P8 e): početnik iznad kapaciteta → plan trkača (rasterećenje svake 4., ne 3.) → manje ukinutih (bilo 897 / 891).
+    dropped: 884,
     kept: 0
   },
   wide: {
     flows: 10852,
-    dropped: 891,
+    dropped: 878,
     kept: 0
   }
 };

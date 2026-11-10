@@ -9,7 +9,7 @@ import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import {
   deloadFirstOf,
   expectedTestWeek,
-  firstPeakIWeek,
+  isFirstIWeek,
   noRegularDeload,
   periodize,
   phaseCounts,
@@ -949,7 +949,6 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     'RP',
     'RP_sharpener'
   ]);
-  const firstIWeek = firstPeakIWeek(weeks);
   for (const w of weeks) {
     if (!checked(w)) continue;
     // 2.1.0: udeli se mere od ciljnog km (isti osnov kao budžeti); planirano < cilj samo kad je lagan = dugi.
@@ -1038,7 +1037,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       const work = mainWork(w);
       // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
       const need =
-        (w.index === firstIWeek ? firstIBudget(w.budgets.I) : w.budgets.I) *
+        (isFirstIWeek(w, weeks.slice(0, w.index - 1)) ? firstIBudget(w.budgets.I) : w.budgets.I) *
         q.mainMinShareOfBudget;
       if (work + EPS < need)
         err(

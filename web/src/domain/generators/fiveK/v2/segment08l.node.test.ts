@@ -28,11 +28,11 @@ const shift = (s: string): string => {
   const lists: string[] = [];
   const t = s.replace(WEEK_LIST, (_, w: string, l: string) => {
     lists.push(`${w} ${l.replace(/\d+/g, (n) => String(Number(n) + K))}`);
-    return `\u0000${lists.length - 1}\u0000`;
+    return `§§${lists.length - 1}§§`;
   });
   return t
     .replace(WEEK_NO, (_, w: string, n: string) => `${w} ${Number(n) + K}`)
-    .replace(/\u0000(\d+)\u0000/g, (_, k: string) => lists[Number(k)]!);
+    .replace(/§§(\d+)§§/g, (_, k: string) => lists[Number(k)]!);
 };
 const numbered = (s: string): boolean => new RegExp(WEEK_NO.source).test(s);
 

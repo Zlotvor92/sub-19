@@ -1364,6 +1364,7 @@ export type Why09 =
 
 interface MarkPlan {
   planType?: string;
+  policyVersion?: string;
   experience?: string;
   paceMode?: string;
   pattern?: { q1: string; q2: string | null; long: string };
