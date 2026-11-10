@@ -19,14 +19,17 @@ export interface PlanInput {
   longDay?: string;
   goal?: { hours?: string; min: string; sec: string };
 }
+/* V1b: plan v2 ima cele nedelje koje se završavaju danom trke i ne kreće pre „danas" (`fixToday`: sreda 14. 1. 2026).
+   Trka u utorak 7. 4. → 12 nedelja od srede 14. 1., pa je danas prvi dan plana (sreda je dan trčanja). */
 export const TEN_K: PlanInput = {
   dist: '10K',
-  raceDate: '2026-04-12',
+  raceDate: '2026-04-07',
   pbDist: '10 km',
   pbMin: '45',
   pbSec: '0',
   pbDate: '2026-01-10',
   weeklyKm: '40',
+  days: ['Sre', 'Pet', 'Sub', 'Ned'],
   goal: { min: '42', sec: '0' }
 };
 
