@@ -1491,7 +1491,7 @@ export function validatePlan(
               d.workout.dose?.zone === 'T' &&
               d.workout.dose.doseM === want
           );
-        const others = w.days.filter((d) => d.workout.kind !== 'rest').length - 1;
+        const others = w.days.length - 1;
         const fits =
           tDay !== undefined &&
           tDay.workout.km + others * P.lengths.easyMinKm <= w.targetKm + P.tolerance.plannedKm;

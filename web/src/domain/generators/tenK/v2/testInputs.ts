@@ -748,7 +748,8 @@ export function earlyAsOfs(
   // brojevi i referentni heševi isti): nedelja pre mesta testa po D27 (poslednja nedelja baze) i kad testa nema. Početnik
   // (D32) nikad nije imao test.
   const tw =
-    plan.paceBasis === 'feel' && plan.input.experience !== 'beginner'
+    plan.paceBasis === 'feel' &&
+    (plan.input as { experience?: string | null }).experience !== 'beginner'
       ? (plan.weeks.find((w) => w.test)?.index ??
         plan.weeks.filter((w) => w.phase === 'base').pop()?.index)
       : undefined;

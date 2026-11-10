@@ -381,7 +381,6 @@ function buildWeekOf(
     const noRoom = !withT && mode === 'relax' && t1 !== null && !test && ctx.t1Deload === true;
     const built = withT ?? (noRoom ? lengthsWith(null) : null);
     if (!built) return null;
-    const t = noRoom ? null : t1;
     const { tw, dates, len } = built;
     // A9/A13: u adaptiranoj nedelji test koji ne staje (dugi bi bio kraći od testa) otpada.
     if (test && ctx.adapted && len.long10 < Math.round(P.test.km * 10)) return null;

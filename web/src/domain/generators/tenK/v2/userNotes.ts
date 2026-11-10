@@ -13,7 +13,10 @@ type Rewrite = readonly [RegExp, string | null];
 const WEEK: readonly Rewrite[] = [
   // Spuštena/podignuta nedelja izgradnje: zbirno u poruci plana o kapacitetu.
   [/^Nedelja ne može da se sastavi na .*$/u, null],
-  [/^Rasterećenje: dugi 0,8 × poslednji ne ostavlja lagane ≥ 3 km — dugi skraćen \(kao posle smanjenja obima\)\.$/u, null],
+  [
+    /^Rasterećenje: dugi 0,8 × poslednji ne ostavlja lagane ≥ 3 km — dugi skraćen \(kao posle smanjenja obima\)\.$/u,
+    null
+  ],
   [
     /^Rasterećenje: cilj ([\d,]+) km, jedan kvalitet \((T)\), dugi ([\d,]+) km — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja da lagani ostanu ≥ 3,0 km\.$/u,
     'Rasterećenje: lakša nedelja ($1 km), jedan kvalitetni trening ($2), dugi $3 km — kraći nego obično, da lagani treninzi ostanu bar 3 km.'
@@ -54,10 +57,7 @@ const WEEK: readonly Rewrite[] = [
     /^Taper: samo RP ≈ 60 % poslednje doze — .*; dugi ≤ 0,75 × najduži\.$/u,
     'Taper: jedan kvalitetni trening u tempu trke (RP oko 60 % poslednjeg), dugi kraći — da na trku dođeš odmoran.'
   ],
-  [
-    /^Taper: (.*)$/u,
-    'Taper: $1'
-  ],
+  [/^Taper: (.*)$/u, 'Taper: $1'],
   [
     /^Trkačka nedelja: oštrenje (.+?) RP \(≤ RP doza tapera [\d,]+ km(?:, ≤ \d+ min rada)?\), trka 10 km se ne računa u obim\.$/u,
     'Trkačka nedelja: kratko oštrenje $1 u tempu trke; km trke nisu u zbiru nedelje.'
@@ -102,7 +102,10 @@ const WEEK: readonly Rewrite[] = [
     /^Drugi dan kvaliteta \(.*\) je lagan — sa dva dana kvaliteta dan kvaliteta bio bi duži od dugog\.$/u,
     'Drugi kvalitetni trening ove nedelje je lagan, da kvalitetni dan ne bude duži od dugog.'
   ],
-  [/^Uvod: (\d+)\. od (\d+) nedelje uvoda bez kvaliteta — dan kvaliteta je lagan\.$/u, 'Uvod ($1. od $2 nedelje): samo lagano trčanje, telo se navikava na plan.']
+  [
+    /^Uvod: (\d+)\. od (\d+) nedelje uvoda bez kvaliteta — dan kvaliteta je lagan\.$/u,
+    'Uvod ($1. od $2 nedelje): samo lagano trčanje, telo se navikava na plan.'
+  ]
 ];
 
 /** Napomene nedelje za trkača (redosled plana; bez ponavljanja). Nepoznata napomena prolazi doslovno. */
@@ -141,8 +144,13 @@ const WARN: readonly Rewrite[] = [
 ];
 /** Preporuka manje dana (D25) iz poruke validatora → rečenica za trkača. */
 const fewerDays = (s: string): string => {
-  const m = /preporuka ([\d–]+) dana \(plan sa manje dana podržava obim ([\d,.]+) km, dugi dobija veći udeo\)/u.exec(s);
-  return m ? ` Sa ${m[1]} dana treninga nedeljno obim od ${m[2]} km bi se bolje rasporedio (duži dugi, duži lagani).` : '';
+  const m =
+    /preporuka ([\d–]+) dana \(plan sa manje dana podržava obim ([\d,.]+) km, dugi dobija veći udeo\)/u.exec(
+      s
+    );
+  return m
+    ? ` Sa ${m[1]} dana treninga nedeljno obim od ${m[2]} km bi se bolje rasporedio (duži dugi, duži lagani).`
+    : '';
 };
 const warnText = (s: string): string => {
   for (const [re, to] of WARN) if (re.test(s)) return s.replace(re, to!) + fewerDays(s);
@@ -154,9 +162,10 @@ const IN_WEEK_NOTES = new Set(['DOSE_DROPPED', 'B_WEEK_NOT_FIT', 'TAPER_RP_ONLY'
 
 /** Kapacitet (D22): „N dana ne nose ovaj obim uz …; preporuka …. Vrh X km umesto do Y km." → jezik trkača. */
 function capacityText(s: string): string {
-  const m = /^(\d) dana ne nose ovaj obim uz (.+?)(; preporuka ([\d–]+) dana)?\.(?: Vrh ([\d,]+) km umesto do ([\d,]+) km\.)?$/u.exec(
-    s
-  );
+  const m =
+    /^(\d) dana ne nose ovaj obim uz (.+?)(; preporuka ([\d–]+) dana)?\.(?: Vrh ([\d,]+) km umesto do ([\d,]+) km\.)?$/u.exec(
+      s
+    );
   if (!m) return s;
   const [, days, limits, , more, peak, cap] = m;
   const head = peak

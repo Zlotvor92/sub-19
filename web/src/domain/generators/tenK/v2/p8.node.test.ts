@@ -306,7 +306,7 @@ describe('P8 završetak: S3 (D49), S7 (D50), S1/S5/S6/S8 (D51)', () => {
       expect(bw[i]!.targetKm, `ned ${bw[i]!.index}`).toBeGreaterThanOrEqual(bw[i - 1]!.targetKm);
     // Baza i razvoj: sva 4 dana trčanja ostaju (u 3 poslednje nedelje izgradnje G8 sme da zameni lagan dan dužim dugim).
     for (const w of bw.filter((x) => x.index > 2 && x.phase !== 'specific'))
-      expect(w.days.filter((d) => d.workout.kind !== 'rest').length, `ned ${w.index}`).toBe(4);
+      expect(w.days.length, `ned ${w.index}`).toBe(4);
     for (const g of [3, 4] as const)
       for (const x of every(beginnerGridInputs(g), 9)) {
         const q = gen(x.input);
@@ -321,7 +321,7 @@ describe('P8 završetak: S3 (D49), S7 (D50), S1/S5/S6/S8 (D51)', () => {
             .filter((m) => m !== null)
             .pop();
           expect(tDose(b[i]!), `${x.id} ned ${b[i]!.index}`).toBe(prev);
-          expect(b[i]!.days.filter((d) => d.workout.kind !== 'rest').length).toBe(g);
+          expect(b[i]!.days.length).toBe(g);
         }
       }
   });

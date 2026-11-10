@@ -185,8 +185,7 @@ export function goalOf(plan: TenKV2Plan): GoalAssessmentView | undefined {
 function planWarnings(plan: TenKV2Plan): string[] {
   const out: string[] = [];
   // G3 (P8): tekst za trkača — userNotes.userPlanMessages (zbirno, bez internih oznaka).
-  for (const t of userPlanMessages(plan).map(userText))
-    if (t && !out.includes(t)) out.push(t);
+  for (const t of userPlanMessages(plan).map(userText)) if (t && !out.includes(t)) out.push(t);
   return out;
 }
 
