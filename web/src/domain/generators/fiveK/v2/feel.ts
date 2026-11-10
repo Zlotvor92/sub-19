@@ -13,7 +13,6 @@ import type {
   BlockSpec,
   Effort,
   PaceModel,
-  Paces,
   Phase,
   QualityBudgets,
   QualityType,
@@ -337,7 +336,7 @@ export function feelMinuteCap(kind: FeelKind, p: PaceModel): number {
           ? m.tMin
           : null;
   if (min === null) return Infinity;
-  const pace = kind === 'RP_SHORT' && p.vdot !== null ? (p as Paces).RP : easyPaceOf(p);
+  const pace = kind === 'RP_SHORT' && p.vdot !== null ? p.RP : easyPaceOf(p);
   return Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
 }
 

@@ -178,10 +178,8 @@ describe('Odluka 3 + mreža regular sa rezultatom: vrh(2.4.1) ≥ vrh(7b4b574)',
         // 5k-v2.15.0 (P8 G1a): niži vrh je dozvoljen samo kad plan stoji na satnom plafonu nedelje (6 / 7 / 8 h po
         // VDOT-u, srednji lagan tempo) — računato ovde nezavisno od volume.peakKm: sledećih 0,1 km prelazi plafon.
         const e = (r.plan.paces.E.fast + r.plan.paces.E.slow) / 2;
-        const hours = P.volume.weeklyHoursByVdot.reduce(
-          (h, t) => (r.plan.paces.vdot + 1e-9 >= t.fromVdot ? t.hours : h),
-          P.volume.weeklyHoursByVdot[0]!.hours
-        );
+        const vd = r.plan.paces.vdot ?? 0;
+        const hours = vd < 40 ? 6 : vd < 50 ? 7 : 8;
         if ((r.plan.peakKm + 0.1) * e > hours * 3600 + 1e-6) hourCapped++;
         else if (!x.exempt) lower.push(`${JSON.stringify(x)} → ${r.plan.peakKm}`);
       }

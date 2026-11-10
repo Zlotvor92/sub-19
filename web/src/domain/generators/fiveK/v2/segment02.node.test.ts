@@ -8,7 +8,7 @@ import { generateFiveKV2 } from './generate.ts';
 import { firstPeakIWeek, periodize, phaseCounts } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { inputOf, PROFILES, START, type Profile } from './testInputs.ts';
-import type { FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
+import type { FiveKV2Plan, Paces, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { planVolume } from './volume.ts';
 import {
@@ -128,11 +128,11 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
     // 5k-v2.15.1 (P8 završetak, odluka 2): donji prag budžeta važi za prvi I vrhunca i za oštrenje; posle prvog I doza
     // raste najviše jedan korak lestvice nedeljno (nezavisna lestvica iz ponude politike, ne iz workouts.iStepUp).
     const q = P.quality;
+    const paceI = (plan.paces as Paces).I;
     const ladder = [
       ...new Set(
         q.repOptionsKm.I.filter(
-          (km) =>
-            km * plan.paces.I <= q.iRepMaxSec + 1e-9 && km * plan.paces.I >= q.iRepMinSec - 1e-9
+          (km) => km * paceI <= q.iRepMaxSec + 1e-9 && km * paceI >= q.iRepMinSec - 1e-9
         ).flatMap((km) =>
           Array.from({ length: q.maxReps.I - q.minReps.I + 1 }, (_, i) =>
             Math.round((q.minReps.I + i) * km * 100)

@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { adaptFiveKV2 } from './adapt.ts';
 import { addDays, daysBetween } from './dates.ts';
 import { generateFiveKV2 } from './generate.ts';
-import { easyCapKm, easyMinKm, longCapKm } from './lengths.ts';
+import { easyMinKm, longCapKm } from './lengths.ts';
 import { feelPaces } from './paces.ts';
 import { FIVE_K_V2_POLICY as P } from './policy.ts';
 import { choosePattern } from './schedule.ts';

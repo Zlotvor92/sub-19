@@ -11,7 +11,7 @@ import { firstPeakIWeek } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';
 import { earlyGridInputs } from './testInputs.ts';
 import { userWarnings } from './text.ts';
-import type { FiveKV2Plan, PlanWeek, QualityType } from './types.ts';
+import type { FiveKV2Plan, Paces, PlanWeek, QualityType } from './types.ts';
 import { validatePlan } from './validate.ts';
 import { devWeeksLeft, peakKm, spreadKm } from './volume.ts';
 import { firstIBudget, firstLevelBudget, iMaxShareOf, raceWarmup, why } from './workouts.ts';
@@ -329,10 +329,11 @@ describe('P8-5K dopuna: nezavisne invarijante mreže (G1a, G1b, G6, G7, korak I)
     for (const { id, p } of SAMPLE) {
       if (p.paceMode === 'feel' || p.experience === 'beginner') continue;
       // Lestvica I: dužine ponude × broj ponavljanja 2–6, ponavljanje 2–5 min na I tempu plana.
+      const paceI = (p.paces as Paces).I;
       const ladder = [
         ...new Set(
           [1.2, 1.0, 0.8, 0.7, 0.6, 0.5, 0.4]
-            .filter((km) => km * p.paces.I >= 120 - EPS && km * p.paces.I <= P.quality.iRepMaxSec)
+            .filter((km) => km * paceI >= 120 - EPS && km * paceI <= P.quality.iRepMaxSec)
             .flatMap((km) => [2, 3, 4, 5, 6].map((r) => Math.round(r * km * 100)))
         )
       ].sort((x, y) => x - y);

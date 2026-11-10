@@ -51,7 +51,7 @@ export function peakKm(
   if (!ath.beginner)
     for (const x of v.peakFactorByWeeks) if (ctx.weeks >= x.fromWeeks) factor = x.factor;
   const vd = vdotOrEstimate(ctx.p);
-  let hours: number = v.weeklyHoursByVdot[0]!.hours;
+  let hours: number = v.weeklyHoursByVdot[0].hours;
   for (const x of v.weeklyHoursByVdot) if (vd + 1e-9 >= x.fromVdot) hours = x.hours;
   const hourKm = floor1((hours * 3600) / ((ctx.p.E.fast + ctx.p.E.slow) / 2));
   return Math.min(floor1(startKm * factor), capacity, r.maxWeekKm, Math.max(hourKm, startKm));
