@@ -1,0 +1,23 @@
+{
+ "poOsecaju": {
+  "ulaza": 8190,
+  "odbijeno": 0,
+  "bezTesta": 0,
+  "bezTestaPoNedeljama": {},
+  "testKratkihPlanova": {
+   "12w:ned4:development": 630,
+   "13w:ned4:development": 630
+  },
+  "nedeljaTestaSaKvalitetom": 0
+ },
+ "pocetnik": {
+  "ulaza": 1890,
+  "odbijeno": 0,
+  "planova4plus": 1890,
+  "planiranVrhIspod90": 18,
+  "planovaSaPlaniranoIspodCilja": 225,
+  "nedeljaIspodCilja": 978,
+  "laganDugiMax": 0.8,
+  "planiranVrhMedijana": 52.55
+ }
+}

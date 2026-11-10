@@ -4,104 +4,154 @@
     "file": "src/domain/generators/marathon/v2/quality.ts",
     "find": "  const sec = midweek ? capSec(zone, targetKm, c) : null;",
     "replace": "  const sec = midweek && false ? capSec(zone, targetKm, c) : null;",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G4b početnik MP 60 min umesto 45",
     "file": "src/domain/generators/marathon/v2/quality.ts",
     "find": "  if (zone === 'MP') return c.beginner ? m.MP.beginnerSec : m.MP.sec;",
     "replace": "  if (zone === 'MP') return m.MP.sec;",
-    "tests": ["src/domain/generators/marathon/v2/quality.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/quality.node.test.ts"
+    ]
   },
   {
     "name": "P8-G4c validator ne proverava minute (ZONE_CAP samo udeo)",
     "file": "src/domain/generators/marathon/v2/validate.ts",
     "find": "        if (m > capM(z, w.targetKm, cc(w), d.role !== 'long'))",
     "replace": "        if (m > capM(z, w.targetKm, cc(w), false))",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G2 prvi nivo lestvice ne staje uvek (bez donje granice plafona)",
     "file": "src/domain/generators/marathon/v2/quality.ts",
     "find": "  return Math.max(Math.min(share, time), capFloorM(zone));",
     "replace": "  return Math.min(share, time);",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts", "src/domain/generators/marathon/v2/quality.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts",
+      "src/domain/generators/marathon/v2/quality.node.test.ts"
+    ]
   },
   {
     "name": "P8-G5a taper N−1 MP 50 % umesto 40 %",
     "file": "src/domain/generators/marathon/v2/policy.ts",
     "find": "      { factor: 0.6, mpShare: 0.4, tShare: null, longFactor: 0.45 }",
     "replace": "      { factor: 0.6, mpShare: 0.5, tShare: null, longFactor: 0.45 }",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G5b MP tapera ne ide ispod 2 × 3000 m (taperMp)",
     "file": "src/domain/generators/marathon/v2/quality.ts",
     "find": "  const km = Math.max(P.taper.mpShortMinKm, Math.floor(limit / 500) * 0.5);\n  return { form: 'continuous', km };",
     "replace": "  return P.taper.mpMin;",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G5c oštrenje bez granice 10 min",
     "file": "src/domain/generators/marathon/v2/week.ts",
     "find": "    Math.floor((P.raceWeek.sharpenerMaxSec / p.MP) * 1000 + 1e-6)",
     "replace": "    Infinity",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-MAR(a) dan kvaliteta tapera duži od dugog po km (bez provere km)",
     "file": "src/domain/generators/marathon/v2/week.ts",
     "find": "    const kmOk = !byKm || l10 === null || q.km100 <= l10 * 10;",
     "replace": "    const kmOk = true;",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G1a vrh bez faktora po dužini pripreme",
     "file": "src/domain/generators/marathon/v2/volume.ts",
     "find": "      rule.beginner ? Infinity : Math.floor(start10 * f + EPS),",
     "replace": "      Infinity,",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G1a vrh bez satnog plafona",
     "file": "src/domain/generators/marathon/v2/volume.ts",
     "find": "      hoursCap10(g.p)\n",
     "replace": "      Infinity\n",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G1 rast nije raspoređen do kraja razvoja (korak M6)",
     "file": "src/domain/generators/marathon/v2/volume.ts",
     "find": "  const paced = rem > 0 ? Math.max(1, Math.round(gap / rem)) : gap;",
     "replace": "  const paced = gap;",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G1b korak manji od 3 % se primenjuje",
     "file": "src/domain/generators/marathon/v2/volume.ts",
     "find": "  return step < P.volume.minStepShare * last10 - EPS ? 0 : step;",
     "replace": "  return step;",
-    "tests": ["src/domain/generators/marathon/v2/volume.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/volume.node.test.ts"
+    ]
   },
   {
     "name": "P8-G6 lagan 0,80 × dugi i za 4+ dana",
     "file": "src/domain/generators/marathon/v2/lengths.ts",
     "find": "    ? L.easyLongShareMany\n",
     "replace": "    ? L.easyLongShare\n",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G7a nedelja testa zadržava drugi kvalitet",
     "file": "src/domain/generators/marathon/v2/week.ts",
     "find": "    picks = test\n      ? { q1: null, q2: null }\n      : pickBuild(",
     "replace": "    picks = test && false\n      ? { q1: null, q2: null }\n      : pickBuild(",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   },
   {
     "name": "P8-G7b test i pre nedelje 4",
     "file": "src/domain/generators/marathon/v2/periodize.ts",
     "find": "  if (tw === 0 || tw >= min) return tw;",
     "replace": "  if (tw >= 0) return tw;",
-    "tests": ["src/domain/generators/marathon/v2/p8.node.test.ts", "src/domain/generators/marathon/v2/p5.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts",
+      "src/domain/generators/marathon/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-S4 plan po osećaju 12–13 nedelja bez testa (bez prelaska u razvoj)",
+    "file": "src/domain/generators/marathon/v2/periodize.ts",
+    "find": "  if (kind === 'feel')\n    for (let i = min; i <= phases.length; i++)",
+    "replace": "  if (kind === 'feel' && false)\n    for (let i = min; i <= phases.length; i++)",
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
+  },
+  {
+    "name": "P8-G6 početnik 0,70 × dugi (bez izuzetka početnika)",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "  if ((rule as { beginner?: boolean }).beginner === true) return L.easyLongShare;",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/marathon/v2/p8.node.test.ts"
+    ]
   }
 ]
