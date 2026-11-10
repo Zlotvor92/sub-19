@@ -16,5 +16,23 @@
   "tests": [
    "src/domain/generators/tenK/v2/k3.node.test.ts"
   ]
+ },
+ {
+  "name": "K3-C dugi bez završnog T (uvek 15 min umesto 10 u prvoj nedelji)",
+  "file": "src/domain/generators/tenK/v2/quality.ts",
+  "find": "  return frames.some((x) => x.index < index && on(x)) ? P.longT.min : P.longT.firstMin;",
+  "replace": "  return P.longT.min;",
+  "tests": [
+   "src/domain/generators/tenK/v2/k3.node.test.ts"
+  ]
+ },
+ {
+  "name": "K3-C dugi bez T dela",
+  "file": "src/domain/generators/tenK/v2/quality.ts",
+  "find": "  if (!f || !on(f)) return 0;",
+  "replace": "  if (!f || on(f) || !on(f)) return 0;",
+  "tests": [
+   "src/domain/generators/tenK/v2/k3.node.test.ts"
+  ]
  }
 ]

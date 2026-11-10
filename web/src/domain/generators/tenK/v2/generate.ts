@@ -13,6 +13,7 @@ import {
   advance,
   deloadLastM,
   INITIAL_QUALITY,
+  longTMinOf,
   type QualityState,
   type WeekPicks
 } from './quality.ts';
@@ -275,6 +276,9 @@ export function construct(
       ) === 'B'
     )
       ctx = { ...ctx, specB: 'B' };
+    // K3-C (10k-v2.15.0): završni T deo dugog (3 dana, specifična faza) iz okvira nedelja (isti podatak kao validator).
+    const longTMin = longTMinOf(frames, frame.index, rule);
+    if (longTMin > 0) ctx = { ...ctx, longTMin };
     if (frame.phase === 'race') {
       const prev = out[out.length - 1];
       const prevDays = written[written.length - 1]?.days ?? [];

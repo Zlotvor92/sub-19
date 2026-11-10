@@ -342,13 +342,30 @@ export function easyWorkout(km: number, p: Paces): Workout {
   );
 }
 
-export function longWorkout(km: number, p: Paces): Workout {
+export function longWorkout(km: number, p: Paces, tKm = 0): Workout {
+  if (tKm <= 0)
+    return assemble(
+      'long',
+      null,
+      `Dugi ${fmtKm(km)} km lagano`,
+      [{ kind: 'long', km }],
+      [distEasy('long', km, p)],
+      null
+    );
+  // K3-C (10k-v2.15.0): dugi sa završnim T delom (quality.longTKmOf) — dan ostaje `km`, lagan deo = km − T.
+  const easyKm = (km100(km) - km100(tKm)) / 100;
   return assemble(
     'long',
     null,
-    `Dugi ${fmtKm(km)} km lagano`,
-    [{ kind: 'long', km }],
-    [distEasy('long', km, p)],
+    `Dugi ${fmtKm(km)} km: ${fmtKm(easyKm)} km lagano + završnih ${fmtKm(tKm)} km T`,
+    [
+      { kind: 'long', km: easyKm },
+      { kind: 'continuous', zone: 'T', km: tKm }
+    ],
+    [
+      distEasy('long', easyKm, p),
+      seg('continuous', 'T', tKm, Math.round(tKm * p.T), p.T, 'exact', 'estimated')
+    ],
     null
   );
 }

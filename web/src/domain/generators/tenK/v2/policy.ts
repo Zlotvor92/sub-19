@@ -432,6 +432,14 @@ const DECISIONS: readonly Decision[] = [
       'Heuristika glavnog trenera (ROUND-02 § 3f): sa 0,75 p01 dugi 14 → lagan 10,5 km, nedelja 1 ≈ 39,5 km umesto 37–38. Brojevi: docs/generators-v2/perfection/reports/K3-10K-REPORT.md.'
   },
   {
+    id: 'K3-C',
+    rule: 'K3-C (glavni trener krug 2 § 4.3) — redovan plan sa 3 dana: u ne-rasteretnoj nedelji specifične faze bez ograničenja dugi nosi završnih 10 min (prva takva nedelja) / 15 min (ostale) u T, u plafonu T (D11), dan ostaje iste dužine. Lagan ≤ 0,70 × dugi NIJE ugrađen (sudar: dugi je na plafonu, pa 0,70 spušta izvodljiv cilj — vrh > 10 % niži u 474 / 2 676 R i 534 / 1 988 F planova sa 3 dana; lagan ostaje 0,80). Ista doza iste zone: D12 već bira sledeći nivo, pa drugu strukturu iste doze — bez izmene (ostatak bez druge strukture). Brojevi i opcije: K3-10K-REPORT § Otvoreno.',
+    place:
+      'policy.ts longT; quality.ts longTMinOf, longTKmOf (jedino mesto); workouts.ts longWorkout; generate.ts (ctx.longTMin iz okvira nedelja); week.ts buildWeekOf; validate.ts LONG_T',
+    rationale:
+      'Heuristika glavnog trenera (ROUND-02 § 3g, § 4.3): 3 dana su najslabiji planovi (47–55); drugi podražaj u dugom u specifičnoj fazi (10K: završnih 10–15 min u T) i lagan ≤ 0,70 × dugi. Brojevi: docs/generators-v2/perfection/reports/K3-10K-REPORT.md.'
+  },
+  {
     id: 'A1',
     rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
     place:
@@ -707,7 +715,8 @@ export const TEN_K_V2_POLICY = {
       kmMax: 40,
       peakMaxKm: 45,
       longMaxShare: 0.45,
-      /** G6 (P8 dopuna, D47): lagan ≤ ovaj udeo dugog iste nedelje (nedelja izgradnje). */
+      /** G6 (P8 dopuna, D47): lagan ≤ ovaj udeo dugog iste nedelje (nedelja izgradnje). K3-C (0,70) nije ugrađen: sudar
+          (K3-10K-REPORT § Otvoreno). */
       easyMaxLongShare: 0.8,
       weekMinKm: 9
     },
@@ -943,6 +952,11 @@ export const TEN_K_V2_POLICY = {
     ] as readonly { fromKm: number; lo: number; hi: number }[],
     rp: { fromKm: 50, fromVdot: 40, lo: 22, hi: 30 }
   },
+
+  /** K3-C (10k-v2.15.0, glavni trener krug 2 § 4.3, HEURISTIKA): redovan plan sa 3 dana — u ne-rasteretnoj nedelji
+      specifične faze bez ograničenja dugi nosi završni T deo: firstMin u prvoj takvoj nedelji, min u ostalim (u plafonu T
+      zone, D11; ispod minKm bez T dela). Čita se samo kroz quality.longTMinOf / longTKmOf. */
+  longT: { firstMin: 10, min: 15, minKm: 1.0 },
 
   /** D13 (udeo dugog: D17). */
   lengths: {

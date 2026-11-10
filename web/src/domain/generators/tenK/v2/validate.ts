@@ -52,6 +52,8 @@ import {
   deloadSlot,
   firstLevelOverCap,
   ladderFor,
+  longTKmOf,
+  longTMinOf,
   maintainIDoseM,
   nextLevel,
   startLevel,
@@ -741,7 +743,12 @@ export function validatePlan(
         w.index,
         long.date
       );
-    if (long.workout.segments.some((s) => s.zone !== 'E'))
+    // K3-C (10k-v2.15.0): osim završnog T dela iz quality.longTKmOf (provera LONG_T).
+    if (
+      long.workout.segments.some(
+        (s, i, a) => s.zone !== 'E' && !(s.zone === 'T' && i === a.length - 1)
+      )
+    )
       err('LONG_NOT_EASY', 'Dugo trčanje je samo lagano.', w.index, long.date);
     // D19: lagani dani jednaki (zaokruženje 0,1 km, razlika ≤ 0,1 km).
     const easyKm = w.days.filter((d) => d.role === 'easy').map((d) => to10(d.workout.km));
@@ -842,6 +849,26 @@ export function validatePlan(
         'QUALITY_OVER_LONG',
         `Dva dana kvaliteta, a dan kvaliteta traje duže od dugog — drugi dan kvaliteta je lagan (pouka 35).`,
         w.index
+      );
+  }
+
+  // --- K3-C (10k-v2.15.0): dugi nosi završni T deo tačno u nedeljama i iznosu iz quality.longTMinOf / longTKmOf (isti
+  // podatak kao konstruktor: nedelje plana); van njih dugi bez rada zone. Zaštićen (upisan) dan se ne sudi.
+  for (const w of weeks) {
+    const long = w.days.find((d) => d.role === 'long');
+    if (w.phase === 'race' || !long || !checked(w) || protectedDay(long)) continue;
+    const want = longTKmOf(longTMinOf(weeks, w.index, rule), w.targetKm, pw(w));
+    const got = long.workout.workKm;
+    if (
+      Math.abs(got.T - want) > EPS ||
+      got.I + got.R + got.RP > EPS ||
+      (want > 0 && long.workout.segments.at(-1)?.zone !== 'T')
+    )
+      err(
+        'LONG_T',
+        `Dugi: T ${num(got.T)} km ≠ ${num(want)} km (završni T deo, 3 dana, specifična faza; K3-C).`,
+        w.index,
+        long.date
       );
   }
 

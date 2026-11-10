@@ -97,3 +97,35 @@ describe('K3-B: redovan plan sa tačno 4 dana', () => {
     expect(over070).toBeGreaterThan(200);
   });
 });
+
+describe('K3-C: redovan plan sa 3 dana — završni T deo dugog u specifičnoj fazi', () => {
+  it('ne-rasteretna specifična nedelja: dugi = lagan deo + završnih 10 min (prva) / 15 min (ostale) T, u plafonu T (≤ 10 % cilja); van nje dugi samo lagan; dužina dana iz pravila dužina', () => {
+    let withT = 0;
+    for (const { id, p } of SAMPLE) {
+      const three = p.input.runDays.length === 3;
+      let seen = 0;
+      for (const w of p.weeks) {
+        const long = w.days.find((d) => d.role === 'long');
+        if (!long) continue;
+        const seg = long.workout.segments;
+        const t = seg.filter((s) => s.zone === 'T').reduce((a, s) => a + s.km, 0);
+        const on = three && w.phase === 'specific' && !w.deload && !w.limits;
+        if (!on) {
+          expect(t, `${id} ned ${w.index}`).toBe(0);
+          continue;
+        }
+        const min = seen++ === 0 ? 10 : 15;
+        const byMin = Math.floor(((min * 60) / p.paces.T) * 10 + 1e-9) / 10;
+        const cap = Math.max(2, Math.floor(0.1 * w.targetKm * 10 + 1e-9) / 10);
+        const want = Math.min(byMin, cap);
+        expect(t, `${id} ned ${w.index}`).toBeCloseTo(want >= 1 ? want : 0, 6);
+        if (t > 0) {
+          withT++;
+          expect(seg.at(-1)!.zone, `${id} ned ${w.index}`).toBe('T');
+          expect(seg.slice(0, -1).every((s) => s.zone === 'E')).toBe(true);
+        }
+      }
+    }
+    expect(withT).toBeGreaterThan(300);
+  });
+});

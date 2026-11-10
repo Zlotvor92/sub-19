@@ -5,7 +5,7 @@
    menjaju). `quality` = broj kvalitetnih dana iz pravila plana (1 ili 2). */
 
 import { capShare, type PlanRule, startShare, TEN_K_V2_POLICY as P } from './policy.ts';
-import type { Dose, LadderId, Paces, Phase, Structure, WorkZone } from './types.ts';
+import type { Dose, LadderId, Paces, Phase, Structure, WeekLimits, WorkZone } from './types.ts';
 import {
   doseOf,
   ladderLevels,
@@ -612,4 +612,32 @@ export function pickTaper(
   const tt = reduced('T_cruise', state.q2?.doseM ?? 0, t.doseShare, tFloor);
   if (doseOf(tt) > capM('T', targetKm, rule.beginner, p)) return null;
   return { q1: pick('RP', rp, 'taper'), q2: pick('T_cruise', tt, 'taper') };
+}
+
+/** K3-C (10k-v2.15.0) — JEDINO mesto: minuti završnog T dela dugog nedelje `index` (0 = nema): redovan plan sa 3 dana,
+    ne-rasteretna nedelja specifične faze bez ograničenja adaptacije; prva takva nedelja longT.firstMin, ostale longT.min.
+    `frames` = okviri nedelja plana (konstruktor) ili nedelje plana (validator) — isti podatak. */
+export function longTMinOf(
+  frames: readonly { index: number; phase: Phase; deload: boolean; limits?: WeekLimits }[],
+  index: number,
+  rule: PlanRule
+): number {
+  if (rule.beginner || rule.quality !== 1) return 0;
+  const on = (f: { phase: Phase; deload: boolean; limits?: WeekLimits }): boolean =>
+    f.phase === 'specific' && !f.deload && !f.limits;
+  const f = frames.find((x) => x.index === index);
+  if (!f || !on(f)) return 0;
+  return frames.some((x) => x.index < index && on(x)) ? P.longT.min : P.longT.firstMin;
+}
+
+/** K3-C: završni T deo dugog [km] — `min` minuta T tempom, najviše plafon T zone (capM, D11), korak 0,1 km naniže; ispod
+    longT.minKm 0 (bez T dela). Konstruktor (week.buildWeekOf) i validator (LONG_T). */
+export function longTKmOf(min: number, targetKm: number, p: Paces): number {
+  if (min <= 0) return 0;
+  const m = Math.min(
+    Math.floor(((min * 60) / p.T) * 10 + 1e-9) * 100,
+    capM('T', targetKm, false, p)
+  );
+  const km = Math.floor(m / 100 + 1e-9) / 10;
+  return km + 1e-9 >= P.longT.minKm ? km : 0;
 }

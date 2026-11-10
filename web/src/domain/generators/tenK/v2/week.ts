@@ -21,6 +21,7 @@ import {
   deloadSlot,
   maintainIDoseM,
   ladderFor,
+  longTKmOf,
   pickBuild,
   pickDeload,
   pickTaper,
@@ -96,6 +97,8 @@ export interface WeekContext {
   prevHard?: string | null;
   /** D38 (P5 F2): nedelja izgradnje bez rasta doze (korak adaptacije holdDose). */
   holdDose?: boolean;
+  /** K3-C (10k-v2.15.0): minuti završnog T dela dugog ove nedelje (quality.longTMinOf; 0 / bez polja = nema). */
+  longTMin?: number;
 }
 
 /** D38: napomena nedelje bez rasta doze (validator: izuzetak D12 „sledeći nivo"). */
@@ -634,7 +637,12 @@ function buildWeekOf(
         ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
         ...(a.w2 && pat.q2 ? [day(dateOf(frame, pat.q2), 'q2', a.w2)] : []),
         ...(one && wo ? [day(dateOf(frame, one.day), one.day === pat.q1 ? 'q1' : 'q2', wo)] : []),
-        day(dateOf(frame, pat.long), 'long', longWorkout(a.len.long10 / 10, p)),
+        // K3-C (10k-v2.15.0): 3 dana, specifična faza — završni T deo dugog (quality.longTKmOf).
+        day(
+          dateOf(frame, pat.long),
+          'long',
+          longWorkout(a.len.long10 / 10, p, longTKmOf(ctx.longTMin ?? 0, targetKm, p))
+        ),
         ...easyDays(a.dates, a.len.easy10, p)
       ],
       a.len.long10,
