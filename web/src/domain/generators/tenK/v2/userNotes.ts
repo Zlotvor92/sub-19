@@ -180,6 +180,9 @@ export function userPlanMessages(plan: TenKV2Plan): string[] {
   const push = (t: string): void => {
     if (t && !out.includes(t)) out.push(t);
   };
+  // 10K (c), P8 dopuna: upozorenje kratkih laganih dana (preporuka manje dana) je PRVO u planu.
+  const short = plan.warnings.find((v) => v.rule === 'SHORT_EASY');
+  if (short) push(warnText(short.message));
   const capacityNote = plan.notes.some((n) => /^\d dana ne nose ovaj obim/u.test(n));
   for (const n of plan.notes) push(/^\d dana ne nose ovaj obim/u.test(n) ? capacityText(n) : n);
   // Isto pravilo (i dva imena istog sadržaja: dugi rasterećenja) → jedna poruka.
@@ -191,7 +194,7 @@ export function userPlanMessages(plan: TenKV2Plan): string[] {
     byRule.set(key(v.rule), l);
   }
   for (const [rule, vs] of byRule) {
-    if (IN_WEEK_NOTES.has(rule)) continue;
+    if (IN_WEEK_NOTES.has(rule) || rule === 'SHORT_EASY') continue;
     const weeks = [
       ...new Set(
         vs

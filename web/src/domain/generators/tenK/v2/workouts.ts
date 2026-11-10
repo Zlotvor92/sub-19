@@ -455,7 +455,8 @@ export function raceWorkout(p: Paces, raceSec: number): Workout {
   return assemble(
     'race',
     null,
-    `Trka ${q.raceKm} km (WU 15 min + CD 10 min)`,
+    // G3 (P8 dopuna): trkački dan kao trka — distanca i prognozirano vreme; zagrevanje i hlađenje su preporuka.
+    `Trka ${q.raceKm} km — prognoza ${hms(raceSec)} (pre trke 15 min lagano, posle 10 min)`,
     [
       { kind: 'warmup', sec: q.raceWarmupSec },
       { kind: 'race', km: q.raceKm },
@@ -468,4 +469,13 @@ export function raceWorkout(p: Paces, raceSec: number): Workout {
     ],
     null
   );
+}
+
+/** G3 (P8 dopuna): vreme trke za tekst — m:ss ispod sata, inače h:mm:ss. */
+function hms(sec: number): string {
+  const t = Math.round(sec);
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const ss = String(t % 60).padStart(2, '0');
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`;
 }
