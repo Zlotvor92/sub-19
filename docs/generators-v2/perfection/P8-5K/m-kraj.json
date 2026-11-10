@@ -18,7 +18,7 @@
   "poslednji_R_sec_sum": 1299474,
   "prvi_I_posle_R_n": 3436,
   "prvi_I_posle_R_sec_sum": 1932675,
-  "rasterecenje_I>60%": 442,
+  "rasterecenje_I>60%": 424,
   "rasterecenje_I>=pune": 69,
   "rasterecenje_R>60%": 316,
   "rasterecenje_R>=pune": 92,
@@ -31,7 +31,7 @@
   "trka_8.5km": 1457,
   "trka_9.0km": 751,
   "trka_najduzi_dan": 227,
-  "upozorenje_ponovljeno_PLANNED_BELOW_TARGET": 1898,
+  "upozorenje_ponovljeno_PLANNED_BELOW_TARGET": 1882,
   "vrh_dostignut_ned_sum": 24542
  },
  "examples": {

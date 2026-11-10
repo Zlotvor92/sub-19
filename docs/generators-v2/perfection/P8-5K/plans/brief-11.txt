@@ -1,4 +1,4 @@
-5k-v2.15.2 exp beginner start 12 peak 14.2 cap 19.9 days 3
+5k-v2.15.3 exp beginner start 12 peak 14.2 cap 19.9 days 3
 1 base t12 p12 L5.4 max5.4 | 
 2 base t12.4 p12.4 L5.5 max5.5 | 
 3 base*D t9.9 p9.9 L3.5 max3.5 | q1:Kratki usponi: 5 × 30 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1 min)[3.4km,3m]

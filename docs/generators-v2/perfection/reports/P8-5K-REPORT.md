@@ -120,7 +120,7 @@ posle ispravke validatora VOLUME_PEAK (tempo sa koracima, kao konstruktor).
 
 Stanje testova i merenja posle dopune: odeljak „Završetak".
 
-## Završetak (5k-v2.15.1 → 5k-v2.15.2; `briefs/P8-5K-zavrsetak.md`)
+## Završetak (5k-v2.15.1 → 5k-v2.15.3; `briefs/P8-5K-zavrsetak.md`)
 
 Polazni vrh `d5c2ab9`; kod gurnut u `d079b311` (brzi nivo zelen) i `65f97994` (posle punog nivoa: tipovi, lint, format).
 
@@ -209,6 +209,20 @@ vrh cilja 30 → 0 planova, „planirano < cilj" 186 → 156 planova; ostale gru
 2.15.2): 0 odbijanja; ponovljeno „planirano < cilj" 1 922 → 1 898 planova; ostale metrike tabele gore iste. Testovi
 posle dopune: brz nivo 800/800, pun nivo 810/810 (5 min 20 s), sabotaže 18/18 (+ „početnik sa 4 dana na 0,70"),
 `fiveKV2Flow.test.tsx` 3/3. Merenja i 12 profila u `P8-5K/` su ponovo snimljeni na 2.15.2. E2E nije ponavljan.
+
+### Druga dopuna — korak I 1,25 × i napomena G6 jednom (5k-v2.15.3, `4fc4084a`)
+
+- **Korak I** (`workouts.iStepUp`, `quality.iStepMaxGrowth` 1,25): najveći nivo lestvice sa radom ≤ 1,25 × rad prethodne
+  I nedelje, a najmanje sledeći veći nivo; ispod plafona minuta i budžeta. P0 medijana vrha I (`p0-summary-kraj.json`,
+  M1_I_max): 13,1 (pre) → 10,7 (2.15.0) → 9,4 (2.15.1) → **10,1 min** (min 4, max 18,8; n = 140) — očekivanih ≥ 11 min
+  NIJE dostignuto; nije dalje dirano. Niz I po nedeljama: p07 ned 3 3 × 1000 m (13 min) → ned 4 6 × 600 m (15 min); p04
+  ned 9 4 × 700 (15) → ned 10 5 × 700 (18) → ned 11 test → ned 12 rasterećenje 2 × 800; p01 3 × 800 (10) → 3 × 1000 (13);
+  p05 4 × 1000 (14), pa rasterećenje i test. Vrhunac ima najviše 2–3 I nedelje, pa prvi I ≤ 70 % × 1,25 (× 1,25) ne
+  stiže do starog vrha.
+- **Napomena „Lagan trk najviše …"** samo u prvoj takvoj nedelji plana (`generate.push`, `week.EASY_CAP_NOTE`);
+  `plan.warnings` po nedelji nije diran (ponovljeno u 1 882 plana), zbirno upozorenje jednom u prikazu.
+- Testovi: brz nivo 801/801, pun nivo 811/811 (5 min 9 s), sabotaže 20/20, `fiveKV2Flow.test.tsx` 3/3; mreža P8
+  3 964 / 3 964, 0 odbijanja. Merenja i 12 profila u `P8-5K/` ponovo snimljeni na 2.15.3. E2E nije ponavljan.
 
 ### Otvoreno (za organizatora)
 

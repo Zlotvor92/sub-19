@@ -1,4 +1,4 @@
-5k-v2.15.2 exp regular start 45 peak 50.5 cap 51.6 days 5
+5k-v2.15.3 exp regular start 45 peak 50.5 cap 51.6 days 5
 1 base t45 p44.1 L12 max12.0 | q1:R: 4 × 400 m[7.8km,8m] ; q2:T: 2,5 km kontinuirano[7.5km,14m]
 2 base t45 p45 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 2 × 2000 m[9.1km,23m]
 3 base t45 p45 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 4 × 1000 m[9.4km,23m]
@@ -8,7 +8,7 @@
 7 base t45 p45 L12 max12.0 | q1:R: 5 × 400 m[8.6km,10m] ; q2:T: 4 × 1000 m[9.4km,23m]
 8 base*D t36 p36 L9.6 max9.6 | q1:R: 4 × 300 m[6.1km,6m]
 9 peak t46.8 p46.8 L12 max12.0 | q1:I: 4 × 700 m[9.3km,15m] ; q2:T: 2 × 2000 m[9.1km,23m]
-10 peak t48.6 p47.69 L12 max12.0 | q1:I: 5 × 600 m[9.8km,16m] ; q2:T: 2 × 2000 m[9.1km,23m]
+10 peak t48.6 p48.43 L12 max12.0 | q1:I: 5 × 700 m[10.5km,18m] ; q2:T: 2 × 2000 m[9.1km,23m]
 11 peak*T t50.5 p45.2 L12 max12.0 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno (RPE 9–10)[8.0km,21m]
 12 peak*D t40.4 p40.4 L9.6 max9.6 | q1:I: 2 × 800 m[6.2km,8m]
 13 sharpen t50.5 p47.1 L12 max12.0 | q1:RP: 5 × 600 m[8.8km,16m] ; q2:R: 8 × 300 m[9.5km,12m]

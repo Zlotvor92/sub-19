@@ -1,4 +1,4 @@
-5k-v2.15.2 exp regular start 35 peak 35 cap 35 days 3
+5k-v2.15.3 exp regular start 35 peak 35 cap 35 days 3
 1 base t35 p32.9 L14.5 max14.5 | q1:R: 4 × 400 m[6.8km,6m]
 2 base t35 p32.1 L14.5 max14.5 | q1:T: 2 km kontinuirano[6.0km,9m]
 3 base t35 p32.9 L14.5 max14.5 | q1:R: 4 × 400 m[6.8km,6m]
@@ -8,9 +8,9 @@
 7 base t35 p33.1 L14.5 max14.5 | q1:T: 3 km kontinuirano[7.0km,14m]
 8 base*D t28 p28 L11.6 max11.6 | q1:R: 4 × 200 m[4.9km,3m]
 9 peak t35 p32.79 L14.5 max14.5 | q1:I: 2 × 1000 m[6.7km,9m]
-10 peak t35 p33.18 L14.5 max14.5 | q1:I: 3 × 700 m[7.1km,9m]
+10 peak t35 p34.08 L14.5 max14.5 | q1:I: 5 × 500 m[8.0km,11m]
 11 peak*T t35 p33.1 L14.5 max14.5 | q1:Kontrolno trčanje: 3 km maksimalno ravnomerno (RPE 9–10)[7.0km,18m]
-12 peak*D t28 p28 L11.6 max11.6 | q1:I: 2 × 600 m[5.1km,5m]
+12 peak*D t28 p28 L11.6 max11.6 | q1:I: 2 × 700 m[5.4km,6m]
 13 sharpen t35 p33.84 L14.5 max14.5 | q1:RP: 3 × 1000 m[7.7km,13m]
 14 sharpen t35 p34.17 L14.5 max14.5 | q1:RP: 4 × 800 m[8.1km,14m]
 15 taper t29.8 p29.8 L13.4 max13.4 | q1:RP: 2 × 800 m[5.4km,7m]
@@ -22,6 +22,5 @@
  W PLANNED_BELOW_TARGET 6 Nedelja ima 32,9 km umesto 35 km (lagan trk najviše 11,6 km uz dugi 14,5 km; za pun obim treba više dana trčanja).
  W PLANNED_BELOW_TARGET 7 Nedelja ima 33,1 km umesto 35 km (lagan trk najviše 11,6 km uz dugi 14,5 km; za pun obim treba više dana trčanja).
  W PLANNED_BELOW_TARGET 9 Nedelja ima 32,8 km umesto 35 km (lagan trk najviše 11,6 km uz dugi 14,5 km; za pun obim treba više dana trčanja).
- W PLANNED_BELOW_TARGET 10 Nedelja ima 33,2 km umesto 35 km (lagan trk najviše 11,6 km uz dugi 14,5 km; za pun obim treba više dana trčanja).
  W PLANNED_BELOW_TARGET 11 Nedelja ima 33,1 km umesto 35 km (lagan trk najviše 11,6 km uz dugi 14,5 km; za pun obim treba više dana trčanja).
  W PLANNED_BELOW_TARGET 13 Nedelja ima 33,8 km umesto 35 km (lagan trk najviše 11,6 km uz dugi 14,5 km; za pun obim treba više dana trčanja).

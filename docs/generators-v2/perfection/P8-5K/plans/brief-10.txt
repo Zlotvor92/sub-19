@@ -1,4 +1,4 @@
-5k-v2.15.2 exp regular start 12 peak 16.8 cap 28.5 days 3
+5k-v2.15.3 exp regular start 12 peak 16.8 cap 28.5 days 3
 1 base t12 p12 L5.4 max5.4 | q1:Kratki usponi: 6 × 30 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1 min)[3.6km,3m]
 2 base t12.6 p12.6 L5.6 max5.6 | q1:Tempo po osećaju: 10 min (RPE 6–7, može da se priča u kratkim rečenicama)[3.8km,10m]
 3 base t13.2 p13.2 L5.9 max5.9 | q1:Kratki usponi: 7 × 30 s (RPE 8, snažno uzbrdo, kontrolisano; nazad lagano 1 min)[3.8km,4m]

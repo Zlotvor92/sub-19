@@ -1,12 +1,11 @@
-5k-v2.15.2 exp regular start 30 peak 39 cap 47.6 days 4
+5k-v2.15.3 exp regular start 30 peak 39 cap 47.6 days 4
 1 base t30 p28.9 L10.5 max10.5 | q1:R: 4 × 300 m[5.6km,5m] ; q2:T: 2 km kontinuirano[5.5km,9m]
 2 base t32.2 p31.3 L11.2 max11.2 | q1:R: 4 × 400 m[6.3km,6m] ; q2:T: 2,5 km kontinuirano[6.0km,11m]
 3 base t34.4 p33.2 L12 max12.0 | q1:R: 4 × 400 m[6.3km,6m] ; q2:T: 3 km kontinuirano[6.5km,13m]
 4 peak t36.7 p36.13 L12.8 max12.8 | q1:I: 3 × 700 m[7.1km,8m] ; q2:T: 2 × 1600 m[7.4km,14m]
-5 peak t39 p37.69 L13.6 max13.6 | q1:I: 2 × 1200 m[7.2km,10m] ; q2:T: 2 × 1600 m[7.4km,14m]
+5 peak t39 p38.37 L13.6 max13.6 | q1:I: 5 × 500 m[7.9km,10m] ; q2:T: 2 × 1600 m[7.4km,14m]
 6 sharpen t39 p38.5 L13.6 max13.6 | q1:RP: 4 × 800 m[8.1km,13m] ; q2:R: 6 × 300 m[7.3km,7m]
 7 taper t33.2 p33.2 L11.6 max11.6 | q1:RP: 2 × 800 m[5.4km,7m] ; q2:T: 1,5 km kontinuirano[5.0km,7m]
 8 race t14.4 p14.4 L- max9.0 | q1:Oštrenje: 2 × 900 m RP[4.6km,7m] ; race:Trka 5 km — prognoza 20:25 (pre trke 2,5 km lagano, posle 1,5 km)[9.0km,20m]
  W PLANNED_BELOW_TARGET 1 Nedelja ima 28,9 km umesto 30 km (lagan trk najviše 7,3 km uz dugi 10,5 km; za pun obim treba više dana trčanja).
  W PLANNED_BELOW_TARGET 3 Nedelja ima 33,2 km umesto 34,4 km (lagan trk najviše 8,4 km uz dugi 12 km; za pun obim treba više dana trčanja).
- W PLANNED_BELOW_TARGET 5 Nedelja ima 37,7 km umesto 39 km (lagan trk najviše 9,5 km uz dugi 13,6 km; za pun obim treba više dana trčanja).

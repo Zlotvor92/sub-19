@@ -1,4 +1,4 @@
-5k-v2.15.2 exp regular start 12 peak 15.6 cap 28 days 3
+5k-v2.15.3 exp regular start 12 peak 15.6 cap 28 days 3
 1 base t12 p12 L5.4 max5.4 | q1:R: 4 × 150 m[3.5km,3m]
 2 base t12.9 p12.9 L5.8 max5.8 | q1:T: 1 km kontinuirano[3.5km,6m]
 3 base t13.8 p13.8 L6.2 max6.2 | q1:R: 4 × 150 m[3.5km,3m]

@@ -1,8 +1,8 @@
-5k-v2.15.2 exp regular start 25 peak 31.4 cap 65 days 5
+5k-v2.15.3 exp regular start 25 peak 31.4 cap 65 days 5
 1 base t25 p23.3 L7.5 max7.5 | q1:R: 4 × 300 m[5.6km,4m] ; q2:T: 1,5 km kontinuirano[5.0km,6m]
 2 base t27 p27 L6.9 max6.9 | q1:R: 4 × 300 m[5.6km,4m] ; q2:T: 2 km kontinuirano[5.5km,8m]
 3 peak t29.1 p29.1 L7.9 max7.9 | q1:I: 3 × 600 m[6.1km,6m] ; q2:T: 2 × 1200 m[6.1km,9m]
-4 peak t31.4 p31.4 L9.4 max9.4 | q1:I: 2 × 1000 m[6.2km,7m] ; q2:T: 2 × 1200 m[6.1km,9m]
+4 peak t31.4 p31.4 L9.4 max9.4 | q1:I: 3 × 700 m[6.6km,7m] ; q2:T: 2 × 1200 m[6.1km,9m]
 5 taper t26.7 p26.7 L8 max8.0 | q1:RP: 2 × 1000 m[5.8km,7m] ; q2:T: 1 km kontinuirano[4.5km,4m]
 6 race t15.7 p15.7 L- max8.5 | q1:Oštrenje: 2 × 700 m RP[4.2km,5m] ; race:Trka 5 km — prognoza 17:33 (pre trke 2 km lagano, posle 1,5 km)[8.5km,18m]
  W PLANNED_BELOW_TARGET 1 Nedelja ima 23,3 km umesto 25 km (lagan trk najviše 5,2 km uz dugi 7,5 km; sa 5 dana trčanja to je najviše što ova nedelja nosi).
