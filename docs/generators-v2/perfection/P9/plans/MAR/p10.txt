@@ -1,4 +1,4 @@
-PLAN — maraton · marathon-v2.12.0
+PLAN — maraton · marathon-v2.13.0
 Profil: po osećaju, spor, lagan tempo 7:30/km, 3 dana, dno obima, najduža priprema
 
 Početak: 2026-11-02 (24 nedelja), trka: 2027-04-18.
@@ -270,4 +270,4 @@ NEDELJA 24 — faza: trka
 
 ============================================================
 UPOZORENJA PLANA
-  - Najduže dugo trčanje u planu je 21,0 km; za maraton se preporučuje bar 26 km. Ograničava ga udeo dugog (najviše 50 % nedelje sa 3 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duže dugo trčanje.
+  - Najduže dugo trčanje u planu je 21,0 km; za maraton se preporučuje bar 26 km. Ograničava ga udeo dugog (najviše 50 % nedelje sa 3 dana): veći nedeljni obim (više dana trčanja nose veći obim) daje duže dugo trčanje. Za maraton treba oko 52 km nedeljno u vrhu pripreme; preporuka: polumaraton ili duža priprema.

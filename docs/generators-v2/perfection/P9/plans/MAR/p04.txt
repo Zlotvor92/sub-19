@@ -1,4 +1,4 @@
-PLAN — maraton · marathon-v2.12.0
+PLAN — maraton · marathon-v2.13.0
 Profil: spor, VDOT 35, 5 dana, sredina obima, najduža priprema
 
 Početak: 2026-11-02 (24 nedelja), trka: 2027-04-18.
@@ -16,7 +16,6 @@ TEMPO ZONE (min/km)
 OCENA CILJA
   Cilj nije zadat ili nije ocenjen.
   Prognoza na osnovu rezultata: 4:16:06.
-  Napomena plana: Najduže dugo trčanje je 24,1 km: ograničava ga trajanje (≤ 180 min laganim tempom) — namerna granica opterećenja umesto preporučenih 26,0 km; ostatak obima nose ostali dani.
 
 ------------------------------------------------------------
 NEDELJA 1 — faza: osnova

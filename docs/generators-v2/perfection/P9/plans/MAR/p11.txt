@@ -1,4 +1,4 @@
-PLAN — maraton · marathon-v2.12.0
+PLAN — maraton · marathon-v2.13.0
 Profil: početnik sa rezultatom (VDOT 35), 4 dana, dno tabele početnika, najduža priprema
 
 Početak: 2026-11-02 (24 nedelja), trka: 2027-04-18.
@@ -320,5 +320,5 @@ NEDELJA 24 — faza: trka
 
 ============================================================
 UPOZORENJA PLANA
-  - Najduže dugo trčanje u planu je 17,9 km; za maraton se preporučuje bar 26 km — duža priprema ili veći nedeljni obim bi pomogli. Početnik: cilj je završiti maraton.
+  - Najduže dugo trčanje u planu je 17,9 km; za maraton se preporučuje bar 24 km. Za maraton treba oko 48 km nedeljno u vrhu pripreme; preporuka: polumaraton ili duža priprema. Početnik: cilj je završiti maraton.
   - Rasterećenje (nedelja 4, 8): dugi kraći od 0,8 × poslednjeg da lagani ostanu ≥ 5 km.
