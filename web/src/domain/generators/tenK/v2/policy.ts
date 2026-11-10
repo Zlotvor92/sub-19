@@ -304,6 +304,36 @@ const DECISIONS: readonly Decision[] = [
       'Heuristika, odluka organizatora P5 (F2): RPE i izvršenje kvaliteta nisu imali efekat u adaptaciji (P0 M9). Ne smanjuje dozu ni obim — samo zaustavlja rast, a tempo menja tek nov rezultat ili test.'
   },
   {
+    id: 'D39',
+    rule: 'P8 G1 — obim raste do kraja faze razvoja: korak rasta ne-rasteretne nedelje izgradnje = min(korak D6; (granica izgradnje D6 − poslednji ne-rasteretni cilj) / broj preostalih ne-rasteretnih nedelja baze i razvoja do kraja razvoja, uključujući tekuću), na 0,1 km, najmanje 0,1 km dok granica nije dostignuta. Specifična faza i plan bez preostalih nedelja razvoja: D6 bez promene. Samo usporava rast; granica, kapacitet (izvodljiv cilj), rasterećenja, taper i povratni rast adaptacije (A8) ostaju; dugi prati cilj po D13/D17.',
+    place:
+      'volume.ts buildWeeksLeft, growthStep10 (jedino mesto koraka; nominal10, nextBuild10, adaptNominal10); generate.ts (okviri koje gradi); validate.ts (VOLUME_RULE: isti rekurent iz nedelja plana)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz slepe ocene (P7, 10K zamerka 2): vrh obima dostignut u nedelji 5–7, pa plato od 8–10 nedelja iste nedelje. Rast raspoređen do kraja razvoja daje progresiju kroz celu pripremu bez novog vrha.'
+  },
+  {
+    id: 'D40',
+    rule: 'P8 G2 — najniži nivo lestvice uvek staje: plafon zone (D11/D33) = max(udeo × cilj nedelje; doza prvog nivoa lestvice te zone — najmanja među lestvicama zone: T 2,0 km (početnik 1,5 km, D31), I 2 × 1000 m, R 6 × 200 m, RP 2 × 1200 m). Važi svuda gde se plafon čita: izgradnja, rasterećenje, taper (pa i oštrenje trkačke nedelje), redovan plan i početnik. Ograničenja bola/povratka (A4, limits) ostaju; „dan kvaliteta ≤ dugi" (pouka 35) ostaje.',
+    place:
+      'quality.ts zoneFloorM, capM (jedini plafon zone; konstruktor i validator, parametar početnika obavezan); validate.ts (svi pozivi capM sa rule.beginner)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz slepe ocene (P7, 10K zamerke 3–4): kod malog obima (početnik, 3 dana) 10 % nedelje ne nosi ni najmanji trening u tempu — taper i trkačka nedelja bez kvaliteta, početnik bez RP 18 nedelja. Najmanji trening lestvice je trenerski minimum, ne višak doze.'
+  },
+  {
+    id: 'D41',
+    rule: 'P8 G3 — tekst za trkača: napomene nedelje i poruke plana idu trkaču kroz userNotes (userWeekNotes, userPlanMessages): bez internih oznaka i reči sastavljanja; tehnička napomena „Nedelja ne može da se sastavi …" ne ide trkaču (sadržaj nosi jedna poruka o kapacitetu); isto upozorenje najviše jednom po planu (WEEK_FITTED, dugi rasterećenja zbirno; DOSE_DROPPED, B_WEEK_NOT_FIT, TAPER_RP_ONLY samo u napomeni nedelje; CAPACITY_LIMITED samo jednom uz vrh obima); napomena testa završava šta trkač radi sa rezultatom. Plan i validator zadržavaju napomene doslovno.',
+    place: 'userNotes.ts (jedino mesto prevoda); app/plan.ts (focus nedelje, „Na šta da paziš"); userNotes.node.test.ts',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz slepe ocene (P7, 10K zamerka 10): tehnička upozorenja u 6–13 nedelja, pravilo plafona napisano trkaču, trkač ne zna šta da radi.'
+  },
+  {
+    id: 'D42',
+    rule: 'P8 (10K c) — upozorenje SHORT_EASY: kad u ne-rasteretnoj nedelji izgradnje bez ograničenja lagan dan traje kraće od lengths.shortEasyWarnSec (30 min) ili je lagan dan odmor, a tabela D17 ima manji broj dana koji podržava trenutni obim — jedno upozorenje sa preporukom manje dana (D25). Dužine se ne menjaju.',
+    place: 'policy.ts lengths.shortEasyWarnSec; validate.ts (SHORT_EASY, samo prijava); userNotes.ts (tekst)',
+    rationale:
+      'Heuristika, odluka organizatora P8, nalaz slepe ocene (P7 p06: VDOT 58, 30 km, 5 dana — lagani 3–4,4 km, 14–21 min, i lagan dan odmor u ned 1–3, bez preporuke). 30 min: donja granica laganog koju preporučuje ocena (30–35 min).'
+  },
+  {
     id: 'A1',
     rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
     place:
@@ -500,7 +530,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.12.0',
+  version: '10k-v2.13.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
