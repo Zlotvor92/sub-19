@@ -119,12 +119,55 @@ export function startKm10(currentWeeklyKm: number): number {
 
 /** H6: granica izgradnje min(start × 1,4; start + 20; max nedelje H15) [0,1 km]; početnik min(1,4×; +15;
     max), H17. Kapacitet konstrukcije je posebno. */
-export function peakCap10(start10: number, rule: PlanRule): number {
-  return Math.min(
+export function peakCap10(start10: number, rule: PlanRule, prep?: PeakPrep): number {
+  const base = Math.min(
     Math.floor(start10 * rule.peakFactor + EPS),
     start10 + to10(rule.peakAddKm),
     to10(rule.peakMaxKm)
   );
+  if (!prep) return base;
+  // G1 (P8): i ≤ start × faktor po dužini pripreme i ≤ satni plafon nedelje; start iznad plafona → vrh = start.
+  const q = P.volume;
+  const factor = q.peakFactorByWeeks.find((r) => prep.weeks <= r.maxWeeks)!.factor;
+  return Math.max(
+    start10,
+    Math.min(base, Math.floor(start10 * factor + EPS), peakHoursCap10(prep.p))
+  );
+}
+
+/** G1 (P8): dužina pripreme [ned] i tempo plana na startu (bez izmena tempa iz adaptacije) — ulaz plafona vrha. */
+export interface PeakPrep {
+  weeks: number;
+  p: Paces;
+}
+
+/** G1 (P8): satni plafon nedelje [0,1 km] — najveći cilj čije trajanje srednjim laganim tempom ne prelazi sate
+    pojasa VDOT-a (HM: < 40 7,5 h; 40–49,9 8,5 h; ≥ 50 9,5 h). */
+export function peakHoursCap10(p: Paces): number {
+  const hours = P.volume.peakHours.filter((b) => b.fromVdot <= p.vdot).pop()!.hours;
+  return Math.floor(((hours * 3600) / ((p.E.fast + p.E.slow) / 2)) * 10 + EPS);
+}
+
+/** G1 (P8): broj ne-rasteretnih nedelja izgradnje od nedelje `index` do kraja faze razvoja, uključujući nju (u
+    specifičnoj fazi 1: ostatak rasta ide redovnim korakom). Jedna funkcija za konstruktor i validator. */
+export function growLeft(
+  frames: readonly { index: number; phase: string; deload: boolean }[],
+  index: number
+): number {
+  const n = frames.filter(
+    (f) => f.index >= index && !f.deload && (f.phase === 'base' || f.phase === 'development')
+  ).length;
+  return Math.max(1, n);
+}
+
+/** G1 (P8): korak rasta ne-rasteretne nedelje izgradnje [0,1 km] — min(korak H6; (vrh − poslednji cilj) / preostale
+    ne-rasteretne nedelje do kraja razvoja); korak manji od 3 % tekućeg cilja se ne primenjuje (0: nedelja zadržava
+    cilj, rast se prenosi). Pravilo samo usporava rast. */
+export function step10(last10: number, cap10: number, rule: PlanRule, left: number): number {
+  const room = cap10 - last10;
+  if (room <= 0) return 0;
+  const step = Math.min(growth10(last10, rule), room, Math.round(room / Math.max(1, left)));
+  return step < P.volume.minStepShare * last10 - EPS ? 0 : step;
 }
 
 /** H6: +6 % poslednjeg ne-rasteretnog cilja (min 1,0, max 4,0 km; korak 0,1); početnik +5 % (1,0–2,0 km),
@@ -152,12 +195,14 @@ export function nominal10(
   hist: VolumeHistory,
   start10: number,
   cap10: number,
-  rule: PlanRule
+  rule: PlanRule,
+  /** G1 (P8): preostale ne-rasteretne nedelje do kraja razvoja (growLeft). */
+  left = 1
 ): number {
   if (frame.phase === 'taper') return Math.round(P.taper.factor * hist.peak10);
   if (hist.lastBuild10 === null) return start10;
   if (frame.deload) return Math.round(P.deload.factor * hist.lastBuild10);
-  return Math.min(hist.lastBuild10 + growth10(hist.lastBuild10, rule), cap10);
+  return hist.lastBuild10 + step10(hist.lastBuild10, cap10, rule, left);
 }
 
 /** Posle nedelje sa ciljem `target10`: osnov rasta i vrh menja samo ne-rasteretna izgradnja. */
@@ -302,9 +347,10 @@ export function nextBuild10(
   last10: number,
   cap10: number,
   rule: PlanRule,
-  level10: number | null
+  level10: number | null,
+  left = 1
 ): number {
-  const normal = Math.min(last10 + growth10(last10, rule), Math.max(cap10, last10));
+  const normal = last10 + step10(last10, cap10, rule, left);
   if (level10 === null || last10 >= level10) return normal;
   return Math.max(normal, Math.min(last10 + returnGrowth10(last10), level10));
 }
@@ -335,12 +381,13 @@ export function enterWeek(
   h: AdaptHistory,
   frame: WeekFrame,
   av: AdaptVolume,
-  rule: PlanRule
+  rule: PlanRule,
+  prep?: PeakPrep
 ): AdaptHistory {
   const i = frame.index;
   const out = { ...h };
   const r = av.restart.get(i);
-  if (r !== undefined) out.cap10 = peakCap10(r, rule);
+  if (r !== undefined) out.cap10 = peakCap10(r, rule, prep);
   const reset = av.reset.get(i);
   if (reset !== undefined) {
     if (isBuildPhase(frame.phase)) [out.peakRef10, out.tailCap10] = [0, null];
@@ -362,7 +409,8 @@ export function adaptNominal10(
   h: AdaptHistory,
   start10: number,
   rule: PlanRule,
-  av: AdaptVolume
+  av: AdaptVolume,
+  left = 1
 ): { nominal: number; downOnly: boolean } {
   const i = frame.index;
   let t: number;
@@ -380,7 +428,7 @@ export function adaptNominal10(
   else if (i === 2 && av.preStart10 !== null) [t, downOnly] = [av.preStart10, true];
   else {
     const level = av.levelAt(i);
-    t = nextBuild10(h.lastBuild10, h.cap10, rule, level);
+    t = nextBuild10(h.lastBuild10, h.cap10, rule, level, left);
     downOnly = level !== null && h.lastBuild10 < level;
   }
   const rem = av.remainder.get(i);

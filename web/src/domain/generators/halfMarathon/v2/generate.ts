@@ -49,6 +49,7 @@ import {
   enterWeek,
   fit10,
   fittedNote,
+  growLeft,
   initialAdaptHistory,
   leaveAdaptWeek,
   leaveWeek,
@@ -169,7 +170,9 @@ export function construct(
     feel
   };
   const start10 = startKm10(input.currentWeeklyKm);
-  const cap10 = peakCap10(start10, rule);
+  // G1 (P8): plafon vrha — dužina pripreme i tempo plana na startu.
+  const prep = { weeks, p: paces };
+  const cap10 = peakCap10(start10, rule, prep);
   const av = adapted ? adaptVolume(steps) : null;
   // A1 (pouka 16): tempo i osnova nedelje (rezultat iz adaptacije važi od svoje sledeće nedelje); A9: test
   // koji ne staje otpada samo posle smanjenja obima.
@@ -234,10 +237,11 @@ export function construct(
       written.push({ days: w.days });
       continue;
     }
-    if (av) h = enterWeek(h, frame, av, rule);
+    if (av) h = enterWeek(h, frame, av, rule, prep);
+    const left = growLeft(frames, frame.index);
     const { nominal, downOnly } = av
-      ? adaptNominal10(frame, h, start10, rule, av)
-      : { nominal: nominal10(frame, h, start10, cap10, rule), downOnly: false };
+      ? adaptNominal10(frame, h, start10, rule, av, left)
+      : { nominal: nominal10(frame, h, start10, cap10, rule, left), downOnly: false };
     const longest10 = longestLong10(written);
     const roll10 = rollingCapRan10(
       frame.index,

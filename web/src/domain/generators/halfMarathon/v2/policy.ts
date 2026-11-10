@@ -707,7 +707,21 @@ export const HM_V2_POLICY = {
     growthMinKm: 1.0,
     growthMaxKm: 4.0,
     peakFactor: 1.4,
-    peakAddKm: 20
+    peakAddKm: 20,
+    /** G1 (P8): faktor vrha prema startu po dužini pripreme (prvi red čiji maxWeeks ≥ broj nedelja plana). */
+    peakFactorByWeeks: [
+      { maxWeeks: 12, factor: 1.3 },
+      { maxWeeks: 15, factor: 1.35 },
+      { maxWeeks: Infinity, factor: 1.4 }
+    ] as readonly { maxWeeks: number; factor: number }[],
+    /** G1 (P8): satni plafon nedelje — cilj km × srednji lagan tempo ≤ sati, po VDOT-u plana (po osećaju: procena). */
+    peakHours: [
+      { fromVdot: 0, hours: 7.5 },
+      { fromVdot: 40, hours: 8.5 },
+      { fromVdot: 50, hours: 9.5 }
+    ] as readonly { fromVdot: number; hours: number }[],
+    /** G1 (P8): korak rasta manji od ovog udela tekućeg cilja se ne primenjuje (rast ide na sledeću nedelju). */
+    minStepShare: 0.03
   },
 
   /** H7. */

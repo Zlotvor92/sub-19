@@ -124,6 +124,7 @@ import {
   capacityMessage,
   fewerDaysAdvice,
   adaptNominal10,
+  growLeft,
   adaptVolume,
   enterWeek,
   initialAdaptHistory,
@@ -2070,7 +2071,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
 
   // --- H6 obim: cilj po pravilu (ista funkcija kao konstruktor), izvodljiv cilj samo uz oznaku i napomenu.
   const start10 = startKm10(input.currentWeeklyKm);
-  const cap10 = peakCap10(start10, rule);
+  // G1 (P8): plafon vrha — dužina pripreme i tempo plana na startu (isto kao konstruktor).
+  const prep = { weeks: N, p: pace ? basePaces(pace) : p };
+  const cap10 = peakCap10(start10, rule, prep);
   if (to10(plan.startKm) !== start10) err('VOLUME_START', 'Start ≠ trenutni obim (H6).');
   if (to10(plan.peakCapKm) !== cap10)
     err(
@@ -2091,12 +2094,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   for (const w of weeks) {
     if (w.phase === 'race') continue;
     if (av) {
-      h = enterWeek(h, w, av, rule);
+      h = enterWeek(h, w, av, rule, prep);
       if (av.reset.has(w.index) && isBuildPhase(w.phase)) known = true;
     }
     const { nominal, downOnly } = av
-      ? adaptNominal10(w, h, start10, rule, av)
-      : { nominal: nominal10(w, h, start10, cap10, rule), downOnly: false };
+      ? adaptNominal10(w, h, start10, rule, av, growLeft(weeks, w.index))
+      : { nominal: nominal10(w, h, start10, cap10, rule, growLeft(weeks, w.index)), downOnly: false };
     const t10 = to10(w.targetKm);
     if (checked(w) && known) {
       if (to10(w.nominalKm) !== nominal)
