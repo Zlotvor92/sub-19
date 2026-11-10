@@ -54,6 +54,8 @@ export const KNOWN_VERSIONS: readonly string[] = [
     // P5: hm-v2.8.0 (HM-10, verzija u main-u) i hm-v2.9.0 (P1) su bile tekuće — posle podizanja verzije ostaju poznate.
     'hm-v2.8.0',
     'hm-v2.9.0',
+    // P8: hm-v2.10.0 (P5) ostaje poznata.
+    'hm-v2.10.0',
     P.version
   ])
 ];

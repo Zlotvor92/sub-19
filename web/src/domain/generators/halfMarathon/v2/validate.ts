@@ -2133,9 +2133,15 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       h = enterWeek(h, w, av, rule, prep);
       if (av.reset.has(w.index) && isBuildPhase(w.phase)) known = true;
     }
-    const { nominal, downOnly } = av
+    const byRule = av
       ? adaptNominal10(w, h, start10, rule, av, growLeft(weeks, w.index))
       : { nominal: nominal10(w, h, start10, cap10, rule, growLeft(weeks, w.index)), downOnly: false };
+    // G1 (P8) × pouka 29: cilj po pravilu nedelje koja je cela prošla (≤ poslednji asOf) je činjenica upisanog plana
+    // — korak rasta je računat sa okvirima nedelja kakvi su tada bili (isto čita konstruktor).
+    const { nominal, downOnly } =
+      av && lastAsOf !== null && mustDay(w.endDate) <= lastAsOf
+        ? { nominal: to10(w.nominalKm), downOnly: byRule.downOnly }
+        : byRule;
     const t10 = to10(w.targetKm);
     if (checked(w) && known) {
       if (to10(w.nominalKm) !== nominal)

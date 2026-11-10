@@ -239,9 +239,16 @@ export function construct(
     }
     if (av) h = enterWeek(h, frame, av, rule, prep);
     const left = growLeft(frames, frame.index);
-    const { nominal, downOnly } = av
+    const byRule = av
       ? adaptNominal10(frame, h, start10, rule, av, left)
       : { nominal: nominal10(frame, h, start10, cap10, rule, left), downOnly: false };
+    // G1 (P8) × pouka 29: korak rasta zavisi od preostalih nedelja do kraja razvoja, a adaptacija menja okvire budućih
+    // nedelja — cilj po pravilu nedelje koja je cela prošla je činjenica iz upisanog plana, ne računa se ponovo.
+    const pastW = prior?.weeks[frame.index - 1];
+    const { nominal, downOnly } =
+      prior && pastW && mustDay(pastW.endDate) <= prior.asOf
+        ? { nominal: Math.round(pastW.nominalKm * 10), downOnly: byRule.downOnly }
+        : byRule;
     const longest10 = longestLong10(written);
     const roll10 = rollingCapRan10(
       frame.index,
