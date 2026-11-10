@@ -53,7 +53,9 @@ const USER = {
 describe('T1: lagan prema dugom u nedelji izgradnje', () => {
   const sample = earlyGridInputs().filter((_, i) => i % 9 === 0);
 
-  it('mreža generatora (svaki 9. ulaz): lagan ≤ 0,8 × dugi i ≥ max(3 km, 20 min); dugi ≤ udeo dana; 0 grešaka', () => {
+  // 5k-v2.15.0 (P8 G6): granica nezavisno od lengths.easyCapKm — 4+ dana 0,7 × dugi, 3 dana 0,8 × dugi (naniže na
+  // 0,1 km); uvodne nedelje početnika (postojeći izuzetak week.easyVsLongOff) lagan ≤ dugi.
+  it('mreža generatora (svaki 9. ulaz): lagan ≤ 0,7 (4+ dana) / 0,8 (3 dana) × dugi i ≥ max(3 km, 20 min); dugi ≤ udeo dana; 0 grešaka', () => {
     const bad: string[] = [];
     let weeks = 0;
     for (const b of sample) {
@@ -73,11 +75,14 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
           longCapKm(w.targetKm, p.paces, athleteOf(p)) + 1e-9
         );
         for (const d of w.days.filter((x) => x.role === 'easy')) {
-          if (
-            d.workout.km >
-            easyCapKm(long.workout.km, w.phase, false, p.input.runDays.length) + 1e-9
-          )
-            bad.push(`${b.id} ned ${w.index}: lagan ${d.workout.km} > 0,8 × ${long.workout.km}`);
+          const share = p.input.runDays.length >= 4 ? 7 : 8;
+          const intro =
+            p.experience === 'beginner' && w.phase === 'base' && w.index <= P.beginner.introWeeks;
+          const cap = intro ? long.workout.km : Math.floor(long.workout.km * share + 1e-9) / 10;
+          if (d.workout.km > cap + 1e-9)
+            bad.push(
+              `${b.id} ned ${w.index}: lagan ${d.workout.km} > ${cap} uz dugi ${long.workout.km}`
+            );
           if (d.workout.km + 1e-9 < easyMinKm(w.phase, p.paces) || d.workout.sec < P.easy.minSec)
             bad.push(`${b.id} ned ${w.index}: lagan ${d.workout.km} km / ${d.workout.sec} s`);
         }
@@ -133,7 +138,8 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
 
   it('validator: lagan iznad 0,8 × dugi → EASY_VS_LONG; lagan ispod 20 min → EASY_MIN', () => {
     const p = planOf(USER);
-    const wi = p.weeks.findIndex((w) => build(w) && !w.easyCappedAtLong);
+    // 5k-v2.15.0 (P8 G6): sa 0,7 × dugi sve nedelje izgradnje ovog profila su na granici laganog — bilo koja.
+    const wi = p.weeks.findIndex((w) => build(w));
     const q = clone(p);
     const w = q.weeks[wi]!;
     const long = w.days.find((d) => d.role === 'long')!.workout.km;
@@ -199,7 +205,7 @@ describe('T2 (5K): dan kvaliteta ne duži od dugog — prvo WU/CD na minimum, pa
 });
 
 describe('T4 (5K, trkač): taper 1 nedelja, rasterećenje, doza vrha', () => {
-  it('profil korisnika (8 ned): taper 1 + trkačka, bez rasterećenja, I i RP ≥ 80 % budžeta u nedeljama vrha', () => {
+  it('profil korisnika (8 ned): taper 1 + trkačka, bez rasterećenja, prvi I ≤ 70 %, I raste korak nedeljno, RP ≥ 80 % budžeta', () => {
     const p = planOf(USER);
     expect(p.weeks.map((w) => w.phase)).toEqual([
       'base',
@@ -214,14 +220,19 @@ describe('T4 (5K, trkač): taper 1 nedelja, rasterećenje, doza vrha', () => {
     expect(p.weeks.filter((w) => w.deload)).toEqual([]);
     // 5k-v2.15.0 (P8 c): prvi I posle R faze ≤ firstIShareOfBudget × budžet I (izuzet od donjeg praga vrha).
     const first = firstPeakIWeek(p.weeks);
+    let prevI = 0;
     for (const w of p.weeks.filter((x) => x.phase === 'peak' || x.phase === 'sharpen')) {
       const q1 = w.days.find((d) => d.role === 'q1')!.workout;
       const main = w.phase === 'peak' ? q1.workKm.I : q1.workKm.RP;
       if (w.index === first) {
         expect(main).toBeLessThanOrEqual(firstIBudget(w.budgets.I) + 1e-9);
+        prevI = main;
         continue;
       }
-      expect(main).toBeGreaterThanOrEqual(P.quality.peakMainMinShare * w.budgets.I - 1e-9);
+      // 5k-v2.15.1 (P8 završetak, odluka 2): I posle prvog raste jedan korak lestvice nedeljno (strogo više od
+      // prethodnog, bez praga 80 % budžeta); prag 80 % ostaje za RP u oštrenju.
+      if (w.phase === 'peak') expect(main).toBeGreaterThan(prevI);
+      else expect(main).toBeGreaterThanOrEqual(P.quality.peakMainMinShare * w.budgets.I - 1e-9);
       expect(main).toBeLessThanOrEqual(w.budgets.I + 1e-9);
     }
     expect(errors(p)).toEqual([]);
@@ -362,16 +373,21 @@ describe('T6: C3, C5, C11', () => {
     expect(taper.week.notes.some((n) => n.includes(SECOND_EASY_NOTE))).toBe(true);
     expect(taper.week.days.filter((d) => d.workout.kind === 'quality')).toHaveLength(1);
     // Nedelja sa danom odmora (bol ≥ 7): ista odluka kao bez odmora.
+    // 5k-v2.15.0 (P8 G2/G4/G6): sa 4 dana pouka 35 u vrhuncu više ne nastaje (doze u minutima, lagan ≤ 0,7 × dugi) —
+    // primer je 5 dana (pon/uto/čet/sub/ned), 12–30 km.
+    const pat5 = choosePattern(['mon', 'tue', 'thu', 'sat', 'sun'] as Weekday[], 2);
+    if (!pat5.ok) throw new Error('šablon');
+    const a5 = { days: 5 as const, beginner: false, feel: true };
     let withRest = 0;
-    for (let t = 12; t <= 20; t += 0.5) {
-      const free = buildTrainingWeek(frame({ phase: 'peak' }), t, pat.pattern, p, null, a, 1);
+    for (let t = 12; t <= 30; t += 0.5) {
+      const free = buildTrainingWeek(frame({ phase: 'peak' }), t, pat5.pattern, p, null, a5, 1);
       const rest = buildTrainingWeek(
         frame({ phase: 'peak', limits: { rest: ['2026-12-01'] } }),
         t,
-        pat.pattern,
+        pat5.pattern,
         p,
         null,
-        a,
+        a5,
         1
       );
       if (!free.ok || !rest.ok) continue;
