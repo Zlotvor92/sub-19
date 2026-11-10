@@ -384,3 +384,18 @@ Plan P9 (do kraja):
 - Neugrađeno iz liste trenera (za eventualni sledeći segment, traži veći zahvat): najteža nedelja pre tapera, talas
   dugog, dan manje kod malog obima, test ≤ 2 × doza (ekrani), I blok ≥ 3 nedelje, blok u dugom za 3 dana, dan pred
   dugi ≤ 50 %, 3 dana 0,70 na HM/10K.
+
+### 10. 11. 2026, 23:10 — krug 3 glavnog trenera; krug 4 (K4) pokrenut
+
+- `coach/ROUND-03.md` (`03edad1`): prosek 54,6 → 59,0 → 59,9 (5K 59,0; 10K 60,8; HM 61,4; MAR 58,5). Bolji 20, isti
+  28, slabiji 0. Iznad 70: HM p01 72, HM p02 71, 5K p01 71, 10K p01 70,5. Ispod 50: MAR p08 47, 10K p06 48,5,
+  5K p08 49,5.
+- Sud „ide li korisnicima": 10K da; 5K i HM da uz napomenu (3 dana / mali obim); maraton da uz napomenu za ≥ 4 dana
+  i ≥ 40 km, NE za početnika ispod ~35 km/ned (preporuka HM pre generisanja) i ne bez upozorenja za 3 dana.
+- Neugrađeno što vredi (trener): A) 3 dana — blok u dugom + talas + 0,70 (≈ +0,8); B) mali obim — kratak lagan dan
+  kao „odmor ili 20 min po želji" (≈ +0,7). Ostalo ne vredi poseban krug.
+- Odluka organizatora: K4 sa te dve stavke (`briefs/K4-krug-4.md`), Opus, 2 uporedo: prvo HM i MAR (A + B), zatim
+  5K i 10K (samo B). Posle K4: kratka provera trenera, `check:full` ponovo (jednom na završnom vrhu), pitanje vlasniku.
+- ZA VLASNIKA (proizvodna odluka, ne ugrađuje se bez njega): maraton za početnika ispod ~35 km/ned — odbiti
+  generisanje sa preporukom HM/duže pripreme, ili ostaviti plan sa rečenicom preporuke (sadašnje stanje).
+- `check:full` na `3399773` je u toku kao međuprovera; pre mergea se ponavlja na završnom vrhu.
