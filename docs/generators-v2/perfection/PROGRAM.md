@@ -354,3 +354,17 @@ Plan P9 (do kraja):
   blok u dugom za 3 dana (nov tip slota); dan manje.
 - Posledica K3-B: početnik ređe dostiže dugi 24 km (upozorenje 669 → 1020) — za sud trenera u krugu 3.
 - K3-HM (Opus) pokrenut sa suženim obimom: ugrađuje A, B, deo C, E; D, F, G samo meri. K3-10K u toku.
+
+### 10. 11. 2026, 21:15 — K3-HM završen (hm-v2.13.0), tab arhiviran
+
+- `362569a`, izveštaj `reports/K3-HM-REPORT.md`. Nezavisna provera organizatora: brzi nivo `halfMarathon/v2` 368/368.
+  Po tabu: pun nivo 460/460, `--changed` 1019 ✔, E2E 5/5, `npm run check` 3392 ✔, sabotaže 3/3; 25 122 plana, 0
+  odbijanja, vrh nigde ne pada > 10 %.
+- Ugrađeno: K3-A dugi početnika (pad dugog u specifičnoj 312 → 0; najduži van poslednje 3 nedelje 258 → 0; p11
+  specifična ≥ 13,2, najduži 13,6); K3-B taper RP ≤ 60 % (taper > 60 %: 10 617 → 0; p03 24,7 → 18,6 min, p10 26,2 →
+  19,7); K3-E brzi (blok medijana 6 → 8 km, 2943 plana).
+- Vraćeno: K3-C 3 dana lagan 0,70 (vrh −10 % u R-d3 774/2640, F-d3 429/990). Napomena: na 5K i MAR je isto pravilo
+  prošlo bez pada — razlika među distancama ostaje, sud trenera.
+- Samo izmereno: K3-D (isti sudar kao MAR), K3-F talas (dugi na plafonu > 3 ned zaredom 20 184/25 122), dan manje
+  (4297), test > 2 × doza (762/20 160), blok u dugom za 3 dana.
+- Ostaje K3-10K (u toku, K3-B gotov).
