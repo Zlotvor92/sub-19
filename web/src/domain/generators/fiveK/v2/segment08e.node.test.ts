@@ -75,11 +75,11 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
     expect(r.changes).toContainEqual({ week: 4, field: 'deload', before: 'true', after: 'false' });
   });
 
-  // 5k-v2.15.0 (P8 G1): ned 3 = 23,7 (bilo 25,5); manjak: 19,0 / 20,9 / 22,4 (bilo 20,4 / 22,0 / 23,7).
-  it('bol 5: ned 4 rasterećenje → 16,9 (od osnove povratka); manjak: ned 4 → 20,9', () => {
+  // 5k-v2.15.0 (P8 G1, G1b korak ≥ 3 %): ned 3 = 24 (bilo 25,5 pa 23,7); manjak: 19,4 / 21,3 / 22,9 (bilo 20,4 / 22,0 / 23,7).
+  it('bol 5: ned 4 rasterećenje → 16,9 (od osnove povratka); manjak: ned 4 → 21,3', () => {
     const pain = run('v45-d4-22km-14w', '2026-11-15', 'pain5');
     expect(rows(pain.plan, 3, 5)).toEqual([
-      [23.7, false],
+      [24, false],
       [16.9, false],
       [18.5, false]
     ]);
@@ -87,9 +87,9 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
     expect(pain.plan.adaptation!.steps.at(-1)!.reduced).toBeUndefined();
     const under = run('v45-d4-22km-14w', '2026-11-15', 'missed');
     expect(rows(under.plan, 3, 5)).toEqual([
-      [19, false],
-      [20.9, false],
-      [22.4, false]
+      [19.4, false],
+      [21.3, false],
+      [22.9, false]
     ]);
     expect(text(under, 'UNDER_EXECUTION')).toContain(RELIEF(4));
   });
@@ -155,12 +155,16 @@ describe('Odluka 9: primeri (v45-d4-22km-14w, asOf kraj ned 2; 5k-v2.6.1 → 5k-
     ]);
   });
 
-  it('kontrolno trčanje (po osećaju): postojeće premeštanje — feel-d4-22km-12w bol 5 kraj ned 2: test iz ned 3 (dani bola) na ned 4 (5k-v2.6.1: ned 5, ned 4 je bila rasterećenje)', () => {
+  // 5k-v2.15.0 (P8 G7): test ne ide pre nedelje 4 — u ovom planu je u ned 5 (ned 4 je rasterećenje; bilo ned 3), pa bol
+  // na kraju ned 2 više ne dira nedelju testa. Premeštanje se vidi kad dani bola padnu u ned 5 (bol kraj ned 4).
+  it('kontrolno trčanje (po osećaju): postojeće premeštanje — feel-d4-22km-12w bol 5 kraj ned 4: test iz ned 5 (dani bola) na ned 6; bol kraj ned 2 ga ne pomera', () => {
     const before = planOf('feel-d4-22km-12w');
-    expect(before.weeks.find((w) => w.test)!.index).toBe(3);
-    const r = run('feel-d4-22km-12w', '2026-11-15', 'pain5');
-    expect(r.plan.weeks[3]!.deload).toBe(false);
-    expect(r.plan.weeks.filter((w) => w.test).map((w) => w.index)).toEqual([4]);
+    expect(before.weeks.find((w) => w.test)!.index).toBe(5);
+    const early = run('feel-d4-22km-12w', '2026-11-15', 'pain5');
+    expect(early.plan.weeks[3]!.deload).toBe(false);
+    expect(early.plan.weeks.filter((w) => w.test).map((w) => w.index)).toEqual([5]);
+    const r = run('feel-d4-22km-12w', '2026-11-29', 'pain5');
+    expect(r.plan.weeks.filter((w) => w.test).map((w) => w.index)).toEqual([6]);
   });
 });
 
@@ -278,9 +282,11 @@ describe('P2 (odluka 2): konstruktor ne sastavlja ono što validator odbije', ()
     const cases: [string, string, number, number, number][] = [
       // 5k-v2.13.0 (P4 S1): kapacitet uz I 10 % — rasterećenje v38 30,6, ostatak pauze 26,8 / 26,6 (bilo 29,9 / 26,2).
       // 5k-v2.15.0 (P8 G1): sporiji rast — ostatak pauze 26,7 / 26,6 / 27,5, rasterećenje v45 32,2 (bilo 26,8 / 33 / 28,9).
-      ['v38-d4-38km-10w', '2026-12-02', 5, 30.6, 26.7], // 5k-v2.12.0 (T4): rasterećenje ned 5 (bilo 3)
-      ['v38-d4-38km-14w', '2026-11-25', 4, 30.6, 26.6],
-      ['v45-d4-38km-14w', '2026-12-23', 8, 32.2, 27.5]
+      // 5k-v2.15.0 (P8 G1a satni plafon 6 / 7 h, G1b): obim pre pauze 38 km u sva tri plana — rasterećenje 30,4, ostatak
+      // pauze 26,6 (bilo 30,6 / 30,6 / 32,2 i 26,7 / 26,6 / 27,5).
+      ['v38-d4-38km-10w', '2026-12-02', 5, 30.4, 26.6], // 5k-v2.12.0 (T4): rasterećenje ned 5 (bilo 3)
+      ['v38-d4-38km-14w', '2026-11-25', 4, 30.4, 26.6],
+      ['v45-d4-38km-14w', '2026-12-23', 8, 30.4, 26.6]
     ];
     for (const [id, asOf, week, before, after] of cases) {
       const p = basesOf('narrow').find((b) => b.id === id)!.plan as FiveKV2Plan;
