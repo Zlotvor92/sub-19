@@ -67,13 +67,11 @@ Pet Opus tabova uporedo potrošilo je petočasovnu granicu za ≈ 3,5 h; tabovi 
 commit-e posle svakog koraka; posle resetovanja organizator (satna provera) šalje svakom zaustavljenom tabu poruku
 „nastavi" — ne otvara nov tab dok stari ima lokalni rad.
 
-## Model tabova posle sledećeg limita (nalog korisnika, 10. 11. 2026, 05:20)
+## Model tabova (nalog korisnika, 10. 11. 2026; ispravljeno u 06:00)
 
-Do sledećeg dostizanja limita važi dosadašnje (najjači Opus 5.5, najviše 3 teška taba). Kad se limit sledeći put
-dostigne: svi NOVI tabovi se otvaraju na `claude-fable-5-2` (potrošnja Fable-a se resetovanjem vraća u nedeljni limit;
-Opus ne). Tabovi koji već rade ostaju na svom modelu do kraja segmenta (model se ne menja usred sesije). Kad se dostigne
-nedeljni limit, korisnik radi „Fable reset" — organizator tada javlja i čeka. Mehanički poslovi (ispis planova, prepis
-brojeva) i dalje idu na najslabiji model koji ih rešava samo ako to ne troši nepovratni deo limita — u sumnji Fable.
+Svi NOVI tabovi se otvaraju na `claude-fable-5-2` — odmah, ne tek posle sledećeg limita (potrošnja Fable-a se
+resetovanjem vraća u nedeljni limit; Opus ne). Tabovi koji već rade na Opusu završavaju svoj segment. Kad se dostigne
+nedeljni limit, korisnik radi „Fable reset" — organizator tada javlja i čeka. Najviše 4 teška taba uporedo.
 
 ## Glavni trener (nalog korisnika, 10. 11. 2026, 05:32)
 
@@ -99,7 +97,7 @@ sledeći krug i upisuje ih u dnevnik. Krug 1: 48 planova „posle P5" + sud o P8
 | P5 | Po distanci (4 taba): kontrolni test u planu sa rezultatom, kvalitet u adaptaciji, ubrzanja, početna doza T/I — `briefs/P5-forma-ubrzanja-pocetna-doza.md` | 5K gotovo (`3f96c04`, 5k-v2.14.0, `reports/P5-5K-REPORT.md`); MAR gotovo (`e033718`, marathon-v2.10.0, `reports/P5-MAR-REPORT.md`); HM gotovo (`8fca1ff`, hm-v2.10.0, `reports/P5-HM-REPORT.md`); 10K gotovo (`81b8cb1`, 10k-v2.12.0, `reports/P5-10K-REPORT.md`) |
 | P7a | Priprema slepe ocene: anonimni ispisi planova pre/posle — `briefs/P7a-priprema-slepe-ocene.md` (Sonnet 5.5) | gotovo (`a8f8dc0`; 48 ispisa, 0 odbijanja u obe verzije); 10K „posle" se ponavlja posle P5-10K |
 | P7b | Slepa trenerska ocena, 4 taba po distanci — `briefs/P7b-slepa-trenerska-ocena.md` (Opus 5.5: sud, ne mehanika) | gotovo, sve 4 (`P7/reviews/`, `P7/KEY-AND-RESULTS.md`) |
-| P8 | Ispravke po slepoj oceni, po distanci — `briefs/P8-ispravke-po-slepoj-oceni.md` | 5K, 10K, HM u toku (sa dopunom po treneru); MAR kad se oslobodi mesto |
+| P8 | Ispravke po slepoj oceni, po distanci — `briefs/P8-ispravke-po-slepoj-oceni.md` | 5K, 10K (Opus), HM, MAR (Fable) u toku, sa dopunom po treneru |
 | P9 | Ponovljena slepa ocena (pre / posle P5 / posle P8) na istim profilima | čeka P8 |
 | P10 | Merenje ishoda u aplikaciji (prognoza prema rezultatu) | čeka |
 
@@ -156,3 +154,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 10. 11. 2026 05:33: otvoren stalni tab „glavni trener" (Fable 5.2), krug 1 izdat. Njegov sud o P8 stiže dok P8-5K i P8-10K rade: ako ospori neko pravilo P8, organizator šalje dopunu tim tabovima pre njihovog push-a, a P8-HM i P8-MAR se izdaju sa već usklađenim zadatkom.
 - 10. 11. 2026 05:45: glavni trener, krug 1 (`f7e08d2`, `coach/ROUND-01.md`): prosek 48 planova 54,6 (slepa 58,2). Glavni nalaz: opterećenje se meri u km i udelima, a plaća u minutima (HM RP 3 × 5000 m = 88 min kod sporog; MAR 95 km ≈ 11 h/ned; oštrenje 27–28 min MP tri dana pred maraton). Sud o P8: G1 bez plafona vrha zadržava prevelike planove; G2 u trkačkoj nedelji šteti sporima. Odluka: `briefs/P8-dopuna-po-glavnom-treneru.md` — plafon vrha (faktor po dužini pripreme + satni plafon po VDOT-u), korak < 3 % se ne primenjuje, G4 plafon treninga u minutima, G5 taper/oštrenje/rasterećenje u minutima, G6 lagan ≤ 0,70 × dugi (4+ dana), G7 test jedini kvalitet nedelje i ne pre nedelje 4, G8 dugi početnika do distance. Nije usvojeno sada (krug 2): talas dugog, blok za 3 dana/početnika, donji prag doze, automatsko smanjenje dana. Satni plafoni za VDOT ≥ 40 su dopuna organizatora (trener dao samo VDOT < 40) — tražiti njegov sud u krugu 2.
 - 10. 11. 2026 05:56: V1b primljen i proveren (organizator: folderi `fiveK`, `tenK`, `marathon` sadrže samo `v2/`; HM v1 prisutan; `personalPlan.node.test.ts` nezavisno pokrenut — 3/3). Obrisano 270 fajlova / 33,7 hilj. redova + `docs/qa` + prekidači + E2E v1 tokova; pun nivo 431/431 (49 min 53 s), E2E 82/82. Stari plan u bazi: prikaz i unos rade, poruka + „Generiši nov plan". Prihvaćeno: stari plan ne klasifikuje merenja tempa i nema predlog bola; maraton → 10K predaja nedostupna preko 18 nedelja (sa razlogom); `vercel.json` promenljiva ostaje bez efekta. Za V1c (posle 13. 12.): testovi koji porede sa HM v1 prelaze na fiksture. CI posle push-a još nije potvrđen — proveriti pre P9. Izdat P8-HM.
+- 10. 11. 2026 06:00: korisnik — nove tabove otvarati na Fable-u odmah. P8-HM na Opusu prekinut posle 3 min (bez izmena u repou) i ponovo izdat na Fable 5.2; izdat i P8-MAR na Fable 5.2.
