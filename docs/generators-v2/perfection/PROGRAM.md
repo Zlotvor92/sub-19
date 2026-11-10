@@ -238,3 +238,17 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - Tab P8-10K arhiviran. P8-HM i P8-MAR ostaju (odluke S1–S6). Po nalogu vlasnika ništa novo se ne pokreće; čeka se
   dogovor o daljoj organizaciji (odluke po STOP-ovima, izuzetak početnika u MAR/HM, krug 2 kod trenera, `check:full`
   pre mergea).
+
+### 10. 11. 2026, 16:50 — nalog vlasnika: pustiti HM i MAR tabove da završe; odluke po STOP-ovima
+
+Oba taba su čekala odluke organizatora; poslate su, tabovi ih ugrađuju i završavaju (hm-v2.12.0, marathon-v2.12.0).
+
+- HM: S1 O1 (najmanja doza tapera ostaje); S2 O2 (G8: udeo dugog početnika max(udeo reda; min(50 %, 16 km)), jedno
+  mesto); S3 prihvaćeno; S4 O2 (test u pretposlednjoj ne-rasteretnoj nedelji razvoja, ne pre nedelje 4); S5 O2 (plan po
+  osećaju 10–12 ned: test u prvoj ne-rasteretnoj nedelji razvoja umesto I); S6 potvrđeno; izuzetak početnika G6 0,80
+  (potvrditi ili ugraditi).
+- MAR: S1 O1 ostaje; S2 privremeno rešenje ostaje; S3 prihvaćeno (sud glavnog trenera u krugu 2); S4 O2 (plan po
+  osećaju 12–13 ned: test u prvoj ne-rasteretnoj nedelji ≥ 4 razvoja); S5, S6 potvrđeno; izuzetak početnika G6 0,80.
+- Razlog za S5/S4 O2: plan po osećaju bez ijednog testa nikad ne kalibriše tempo — test je vredniji od jednog I.
+- Pravilo za tabove: ako odluka daje nova odbijanja ili sudar → ostaje prethodno ponašanje, samo brojevi.
+- Dug: isto pravilo testa za plan po osećaju 8–11 nedelja na 10K (tab arhiviran) — za sledeći krug.
