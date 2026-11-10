@@ -236,7 +236,7 @@ export function firstLevelBudget(
     case 'T_short':
       return Math.ceil((q.shortTMinKm / q.shortTShareOfBudget) * 100) / 100;
     case 'RP_sharpener':
-      return reps(q.repOptionsKm.RPsharpener, p.RP, q.raceWeekSharpener.minReps, q.iRepMaxSec);
+      return q.raceSharpener.reps * q.raceSharpener.minRepKm;
     default:
       return Infinity;
   }
@@ -616,16 +616,14 @@ export function qualitySession(
       return tSession(t, targetKm, p);
     }
     case 'RP_sharpener': {
-      const s = q.raceWeekSharpener;
-      const c = chooseReps(
-        budgetKm,
-        q.repOptionsKm.RPsharpener,
-        p.RP,
-        s.minReps,
-        s.maxReps,
-        q.iRepMaxSec
-      );
-      if (!c) return fail('Oštrenje RP');
+      // 5k-v2.15.0 (P8 dopuna G5): 2 jednake deonice, dužina deljiva sa 100 m (≥ 400 m), ukupno ≤ 12 min rada.
+      const s = q.raceSharpener;
+      // Budžet bira dužinu, ali ne ispod 400 m (najniži nivo); granica su minuti (G5).
+      const byMin = Math.min(s.maxWorkSec / s.reps, q.iRepMaxSec) / p.RP;
+      const fl = (x: number): number => Math.floor(x / s.stepKm + 1e-9) * s.stepKm;
+      const repKm = Math.min(Math.max(fl(budgetKm / s.reps), s.minRepKm), fl(byMin));
+      if (repKm + 1e-9 < s.minRepKm) return fail('Oštrenje RP');
+      const c: RepChoice = { reps: s.reps, repKm: Math.round(repKm * 10) / 10 };
       const recSec = roundRecoverySec(c.repKm * p.RP * q.recovery.rpTimeRatio);
       const blocks: BlockSpec[] = [
         wu,

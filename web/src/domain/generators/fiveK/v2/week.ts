@@ -636,7 +636,7 @@ export function buildRaceWeek(
   p: PaceModel,
   prevLongKm: number,
   cap: { km: number; fixed?: (date: string) => PlanDay | null | undefined } | null = null,
-  off = 0,
+  _off = 0,
   raceBand: { warmupKm: number; cooldownKm: number } = P.warmup.bands[0]
 ): WeekResult {
   const budgets = qualityBudgets(bound);
@@ -658,16 +658,10 @@ export function buildRaceWeek(
         message: `Trkačka nedelja: nema dana trčanja ≥ ${P.schedule.sharpenerEasyMinGapDays} dana pre trke za oštrenje.`
       }
     };
-  const sharp = sharpDay ? raceWeekSharpener(budgets.I, bound, p) : null;
-  if (sharp && !sharp.ok)
-    return {
-      ok: false,
-      reason: {
-        code: 'QUALITY_INFEASIBLE',
-        week: f.index,
-        message: `Nedelja ${weekLabel(f.index, off)}: ${sharp.message}`
-      }
-    };
+  // 5k-v2.15.0 (P8 dopuna G5): oštrenje koje ne staje (2 × 400 m u minutima i budžetu) → ubrzanja umesto oštrenja.
+  const sharp0 = sharpDay ? raceWeekSharpener(budgets.I, bound, p) : null;
+  const noSharp = sharp0 !== null && !sharp0.ok;
+  const sharp = sharp0 && sharp0.ok ? sharp0 : null;
 
   // Lagani dani: ostali dani trčanja pre trke. 2.2.0: svaki lagan dan ≤ easyCap = min(50 min sporijim E,
   // 50% dugog iz prethodne nedelje); ostatak cilja preko toga se ne raspoređuje (planirano < cilj,
@@ -720,7 +714,9 @@ export function buildRaceWeek(
     days.splice(0, days.length, ...days.filter((d) => !raceRest.includes(d.date)));
   const notes = ['Trkačka nedelja: trka se ne računa u nedeljni obim.'];
   const sharpRest = sharp && sharpDay ? raceRest.includes(dateOfWeekday(f, sharpDay)) : false;
-  if (!sharp) notes.push('Adaptacija: bez oštrenja (dan oštrenja u zabrani kvaliteta).');
+  if (noSharp)
+    notes.push('Bez oštrenja: dve deonice od 400 m u tempu trke ne staju u ovu nedelju; ubrzanja dan pred trku su dovoljna.');
+  else if (!sharp) notes.push('Adaptacija: bez oštrenja (dan oštrenja u zabrani kvaliteta).');
   else if (sharpRest)
     notes.push('Bez oštrenja: sa njim bi trkačka nedelja bila veća od nedelje pred njom.');
   else if (onEasyDay)

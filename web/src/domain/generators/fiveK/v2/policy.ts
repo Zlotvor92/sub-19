@@ -222,7 +222,8 @@ export const FIVE_K_V2_POLICY = {
         ≤ 20 min; T ≤ 30 min. Po osećaju VDOT je procena (paces.vdotOrEstimate). Plafon minuta je iznad prvog nivoa. */
     minuteCap: { iSlowVdot: 40, iSlowMin: 20, iMin: 24, rpMin: 20, tMin: 30 },
     deloadQualityShare: 0.6,
-    taperQualityShare: 0.7,
+    /** 5k-v2.15.0 (P8 dopuna G5): taper ≤ 60 % NAJVEĆEG rada iste zone u izgradnji (bilo 0,7 × poslednji). */
+    taperQualityShare: 0.6,
     deloadLongShare: 0.8,
     firstIShareOfBudget: 0.7,
     /** Oporavak: I = isto vreme lagano; R = ista distanca lagano; RP = pola vremena; T = 60 s.
@@ -244,7 +245,10 @@ export const FIVE_K_V2_POLICY = {
         udeo vremena ponavljanja − step, ne ispod minRatio (heuristika gustine). */
     denser: { step: 0.25, minRatio: { I: 0.5, RP: 0.25 } },
     /** Trkačka nedelja: kratko oštrenje RP-om (opcije u repOptionsKm.RPsharpener). */
-    raceWeekSharpener: { maxReps: 4, minReps: 2 }
+    raceWeekSharpener: { maxReps: 4, minReps: 2 },
+    /** 5k-v2.15.0 (P8 dopuna G5): oštrenje trkačke nedelje = 2 jednake deonice u trkačkom tempu, dužina deljiva sa
+        100 m, najmanje 400 m, ukupno ≤ maxWorkSec rada (i deonica ≤ iRepMaxSec); ne staje → ubrzanja umesto oštrenja. */
+    raceSharpener: { reps: 2, minRepKm: 0.4, stepKm: 0.1, maxWorkSec: 720 }
   },
 
   /** 2.4.0: plan po osećaju (bez pouzdanog rezultata). Trajanja, broj ponavljanja i RPE su

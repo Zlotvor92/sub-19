@@ -372,16 +372,23 @@ export function qualityCapOf(f: WeekFrame, written: readonly PlanWeek[]): WeekFr
   const share = deload ? P.quality.deloadQualityShare : P.quality.taperQualityShare;
   const build = written.filter((w) => !w.deload && isBuildPhase(w.phase));
   const cap: QualityCap = {};
-  for (const z of ['I', 'RP', 'T', 'R'] as const)
+  const workOf = (w: PlanWeek, z: 'I' | 'RP' | 'T' | 'R'): number =>
+    w.days.filter((d) => d.workout.kind === 'quality').reduce((x, d) => x + d.workout.workKm[z], 0);
+  for (const z of ['I', 'RP', 'T', 'R'] as const) {
+    // 5k-v2.15.0 (P8 dopuna G5): taper od NAJVEĆEG rada zone u izgradnji; rasterećenje od poslednjeg.
+    if (!deload) {
+      const top = Math.max(0, ...build.map((w) => workOf(w, z)));
+      if (top > 1e-9) cap[z] = Math.round(share * top * 100) / 100;
+      continue;
+    }
     for (let i = build.length - 1; i >= 0; i--) {
-      const work = build[i]!.days
-        .filter((d) => d.workout.kind === 'quality')
-        .reduce((x, d) => x + d.workout.workKm[z], 0);
+      const work = workOf(build[i]!, z);
       if (work > 1e-9) {
         cap[z] = Math.round(share * work * 100) / 100;
         break;
       }
     }
+  }
   const lastLong = build[build.length - 1]?.days.find((d) => d.role === 'long')?.workout.km;
   // Ne ispod najkraćeg laganog (easy.minKm): kraći dugi bi bio degenerisan (i lagan ≤ dugi ne bi stao).
   if (deload && lastLong !== undefined)

@@ -272,7 +272,8 @@ function progress(
 /** Oštrenje trkačke nedelje po osećaju: RP po osećaju, raceWeekSharpener ponavljanja, prvi izbor. */
 export function feelRaceSharpener(budgetKm: number, boundKm: number, p: PaceModel): SessionResult {
   const s = SPEC.FARTLEK_RP;
-  const o = P.quality.raceWeekSharpener;
+  // 5k-v2.15.0 (P8 dopuna G5): 2 jednake deonice (≤ 12 min rada).
+  const o = { minReps: P.quality.raceSharpener.reps, maxReps: P.quality.raceSharpener.reps };
   const d = choose(
     repCands(F.fartlekRP.boutsSec, o.minReps, o.maxReps),
     (x) => s.est(x, p),
