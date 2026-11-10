@@ -92,8 +92,8 @@
  {
   "name": "P8-G7 drugi kvalitet ostaje u nedelji testa",
   "file": "src/domain/generators/halfMarathon/v2/week.ts",
-  "find": "    picks?.q2 && !bWeek && !test ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
-  "replace": "    picks?.q2 && !bWeek ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
+  "find": "  let w2 = picks?.q2 && !bWeek && !test ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
+  "replace": "  let w2 = picks?.q2 && !bWeek ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
   "tests": [
    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
   ]

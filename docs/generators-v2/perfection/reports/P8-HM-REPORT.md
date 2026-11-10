@@ -97,10 +97,10 @@ Poslednja dva reda su cena: ukupan rad u trkačkom tempu pada (G4, HM (b)), a na
 | | komanda | trajanje | ishod |
 |---|---|---|---|
 | T1 | `npx vitest run --project node src/domain/generators/halfMarathon/v2` (brz, više puta) | ≈ 85 s | poslednji 360/360 |
-| T2 | `npm run check` | T2_TIME | T2_RES |
-| T3 | `npx vitest run --changed 0181e25` | T3_TIME | T3_RES |
-| T4 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` | T4_TIME | T4_RES |
-| T5 | `npx playwright test e2e/hm-v2.spec.ts e2e/handoff-v2.spec.ts --trace off` | T5_TIME | T5_RES |
+| T2 | `npm run check` | 5 min | typecheck, lint, format OK; 3318/3320 — 2 pala u `features/plan/hmV2Adapt.test.tsx` (plan po osećaju od 12 ned više nema test); ispravljeno (14 ned), fajl ponovljen 6/6; ceo `check` posle toga NIJE ponavljan (pokriva T3) |
+| T3 | `npx vitest run --changed 0181e25` | 2 min 8 s | 104 fajla, 1011/1011 (posle ispravke UI testa) |
+| T4 | `TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` | 13 min 27 s | 75 fajlova, 452/452 |
+| T5 | `npx playwright test e2e/hm-v2.spec.ts e2e/handoff-v2.spec.ts --trace off` | 56 s | prvo 4/5 (isti uzrok: 12 ned po osećaju bez testa), posle ispravke 5/5 |
 | S | sabotaže `P8-HM/sabotage-P8.json` (14: G1 × 4, G2, G4 × 2, G5 × 2, G6, G7 × 2, HM (b), G3) | 43 s | 14/14 palo (`sabotage-P8.result.json`) |
 
 Novi test: `segmentP8.node.test.ts` (13 provera, brojevi pravila upisani nezavisno). Usklađeni brojevi (bez slabljenja
@@ -109,6 +109,12 @@ osim navedenog): `policy`, `quality`, `volume` (+ G1 testovi), `week`, `dayCap`,
 `gridInvariants` (nezavisno: plafon u minutima, pod prvog nivoa, vrh G1, lagan 0,7, test G7, oštrenje G5).
 Oslabljeno: `adapt` „pouka 30" više ne traži da se skraćenje trkačke nedelje javi u osnovama (pokriva ga sledeći
 test); `segment07` N10.1 sada tvrdi da ponavljanja nema (bilo: ponavljanje + upozorenje).
+
+## Van foldera distance
+
+Dva testa aplikacije koja prave plan po osećaju od 12 nedelja i očekuju test 5 km (G7 ga ukida za 10–12 nedelja):
+`web/src/features/plan/hmV2Adapt.test.tsx` (ulaz FEEL: trka 14 nedelja) i `web/e2e/hm-v2.spec.ts` (`raceStep` prima datum
+trke i broj nedelja; test po osećaju 14 nedelja). Produkcioni kod van `halfMarathon/v2/` nije menjan.
 
 ## Šta je ostalo / mišljenje (odvojeno od merenja)
 

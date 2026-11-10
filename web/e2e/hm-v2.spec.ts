@@ -59,15 +59,15 @@ const SYNC = { timeout: 15_000 };
 const serverPlan = (backend: Awaited<ReturnType<typeof installBackend>>): string =>
   JSON.stringify((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null);
 
-async function raceStep(page: Page): Promise<void> {
+async function raceStep(page: Page, raceDate = '2026-04-12', weeks = 12): Promise<void> {
   const wizard = page.getByRole('dialog', { name: 'Pravljenje plana' });
   await expect(wizard).toBeVisible();
   await expect(async () => {
     await group(page, 'Ciljna distanca')
       .getByRole('button', { name: 'Polumaraton', exact: true })
       .click({ timeout: 2000 });
-    await page.getByLabel('Datum trke').fill('2026-04-12', { timeout: 2000 });
-    await expect(page.getByText(/Plan polumaratona v2: 12 nedelja/)).toBeVisible({
+    await page.getByLabel('Datum trke').fill(raceDate, { timeout: 2000 });
+    await expect(page.getByText(new RegExp(`Plan polumaratona v2: ${weeks} nedelja`))).toBeVisible({
       timeout: 2000
     });
   }).toPass({ timeout: 20_000 });
@@ -200,7 +200,8 @@ test('HM v2 po osećaju: RPE i tempo „orijentir (procena)", test 5 km u planu,
 }) => {
   const backend = await installBackend(page);
   await page.goto('/');
-  await raceStep(page);
+  // P8 G7 (hm-v2.11.0): plan po osećaju od 10–12 nedelja nema test — priprema od 14 nedelja.
+  await raceStep(page, '2026-04-26', 14);
   await page.getByRole('button', { name: 'Nemam skoriji rezultat' }).click();
   await page.getByLabel('minuti').fill('6');
   await page.getByLabel('sekunde').fill('30');
