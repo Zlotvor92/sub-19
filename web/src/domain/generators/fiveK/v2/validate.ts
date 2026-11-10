@@ -859,7 +859,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   // 2.6.0: povratak sme do nivoa pre smanjenja i kad je iznad vrha novog starta.
   for (const w of build) {
     if (!checked(w)) continue;
-    const peakCap = peakKm(startRef(w.index), capOf(w), aw(w));
+    const peakCap = peakKm(startRef(w.index), capOf(w), aw(w), {
+      weeks: weeks.length,
+      p: pacesAt(plan.input, [], 1)
+    });
     const level = levelAt(w.index);
     if (w.targetKm > peakCap + 0.05 && !(level !== null && w.targetKm <= level + 0.05))
       err(

@@ -139,6 +139,22 @@ export const FIVE_K_V2_POLICY = {
     maxBuildGrowth: 0.08,
     /** Vrh obima ≤ ovaj faktor × početni obim (heuristika). */
     peakCapFactor: 1.3,
+    /** 5k-v2.15.0 (P8 dopuna G1a, odluka organizatora po glavnom treneru): faktor vrha po dužini pripreme (trkač;
+        početnik ostaje beginner.peakCapFactor) — ≤ 12 ned 1,30; 13–15 1,35; ≥ 16 1,40 — i satni plafon nedelje
+        (cilj × srednji lagan tempo) po VDOT-u plana (po osećaju procena): < 40 → 6 h, 40–49,9 → 7 h, ≥ 50 → 8 h; start
+        iznad plafona → vrh = start. (G1b) Korak rasta < minStepShare tekućeg cilja se ne primenjuje (nedelja drži cilj,
+        rast se prenosi). Jedino mesto: volume.peakKm, volume.planVolume/nextBuildKm. */
+    peakFactorByWeeks: [
+      { fromWeeks: 0, factor: 1.3 },
+      { fromWeeks: 13, factor: 1.35 },
+      { fromWeeks: 16, factor: 1.4 }
+    ],
+    weeklyHoursByVdot: [
+      { fromVdot: 0, hours: 6 },
+      { fromVdot: 40, hours: 7 },
+      { fromVdot: 50, hours: 8 }
+    ],
+    minStepShare: 0.03,
     /** Svaka N-ta nedelja (po rednom broju plana) u izgradnji je rasteretna (heuristika). */
     deloadEvery: 4,
     /** 5k-v2.11.0 (C1, MASTER pouka 4): najranija nedelja rasterećenja (nikad u nedeljama 1–2). */
