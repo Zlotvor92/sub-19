@@ -283,7 +283,7 @@ export const FIVE_K_V2_POLICY = {
       hills: { rpeMin: 8, rpeMax: 8, cue: 'snažno uzbrdo, kontrolisano; nazad lagano' },
       fartlek: { rpeMin: 7, rpeMax: 8, cue: 'brzo ali kontrolisano' },
       fartlekBeginner: { rpeMin: 6, rpeMax: 7, cue: 'brzo ali kontrolisano, bez naprezanja' },
-      fartlekRP: { rpeMin: 8, rpeMax: 8, cue: 'osećaj trkačkog napora za 5K' },
+      fartlekRP: { rpeMin: 8, rpeMax: 8, cue: 'malo ispod trkačkog napora za 5K' },
       tempo: { rpeMin: 6, rpeMax: 7, cue: 'može da se priča u kratkim rečenicama' },
       test: { rpeMin: 9, rpeMax: 10, cue: 'maksimalno ravnomerno' },
       race: { rpeMin: 9, rpeMax: 10, cue: 'trka' }
@@ -292,8 +292,8 @@ export const FIVE_K_V2_POLICY = {
       'Plan po osećaju: nema pouzdanog rezultata, pa E dolazi iz tvog uobičajenog laganog tempa (±15 s), ' +
       'a kvalitet je zadat trajanjem i naporom (RPE), bez brojčanog tempa. Km kvaliteta su procena iz E tempa.',
     testNote:
-      'Kontrolno trčanje 3 km u nedelji {week}: plan i dalje ostaje po osećaju do kraja; tempo iz testa ' +
-      'ulazi tek kroz adaptaciju.',
+      'Kontrolno trčanje 3 km u nedelji {week}: do tada je plan po osećaju. Unesi rezultat — od sledeće nedelje ' +
+      'plan dobija tempo iz testa.',
     forecastNote: 'Prognoza 5K: nedovoljno podataka (nema pouzdanog rezultata).',
     oldResultNote:
       'Rezultat {result} ({date}) je stariji od 12 nedelja: prikazan samo kao informacija, ne koristi se za tempo ni prognozu.',
@@ -525,6 +525,9 @@ export interface Athlete {
   /** 2.10.4 (3i): pomak broja nedelje u porukama (ulaz weekOffset; input.weekLabel). */
   weekOffset?: number;
 }
+
+/** 5k-v2.15.0 (P8 G3): najveći broj dana trčanja tabele `days`. */
+export const MAX_DAYS = Math.max(...Object.keys(FIVE_K_V2_POLICY.days).map(Number));
 
 /** 2.4.0: broj dana (stari potpis, 2.3.0) → iskusan trkač sa rezultatom. */
 export const asAthlete = (a: Athlete | RunDaysCount): Athlete =>

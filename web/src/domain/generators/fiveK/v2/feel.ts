@@ -493,7 +493,7 @@ export function simpleWeekQuality(
   if (f.test) {
     q1 = testRun(targetKm, p);
     notes.push(
-      `Kontrolno trčanje ${F.test.km} km umesto glavnog kvaliteta; plan ostaje po osećaju (tempo iz testa ulazi tek kroz adaptaciju).`
+      `Kontrolno trčanje ${F.test.km} km umesto glavnog kvaliteta. Unesi rezultat — od sledeće nedelje plan dobija tempo iz testa.`
     );
   } else {
     main = pick(k.main, holdOk(k.main));
@@ -551,7 +551,7 @@ export function simpleWeekQuality(
   for (const x of [main, second])
     if (x?.how === 'alt')
       notes.push(
-        `${SPEC[x.kind].label}: ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), drugačija podela.`
+        `${SPEC[x.kind].label}: ista količina kao prošle nedelje (${feelDoseHeld(x.kind, f.phase, b[SPEC[x.kind].budget], p, x.d) === 'offer' ? 'to je najveća doza ovog treninga u planu' : 'obim nedelje ne dozvoljava više'}), drugačija podela.`
       );
     else if (x?.how === 'hold')
       notes.push(

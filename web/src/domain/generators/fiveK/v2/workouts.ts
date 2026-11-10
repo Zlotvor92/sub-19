@@ -842,8 +842,26 @@ function rDropNotes(budgetR: number, pm: RepChoice | null, r: RepChoice): string
     : [];
 }
 
-const altNote = (what: string, c: RepChoice): string =>
-  `${what}: ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), ${c.recRatio !== undefined ? 'kraći oporavak' : 'drugačija podela'}.`;
+/** 5k-v2.15.0 (P8 G3): da li ponuda ima veću dozu od `prev` (ponavljanja ≤ maxReps, trajanje u granicama) — tada
+    dozu drži obim nedelje (budžet), inače kraj ponude. Napomena tvrdi samo ono što važi. */
+function biggerInOffer(type: 'I' | 'RP', p: Paces, prev: PrevDose): boolean {
+  const q = P.quality;
+  const isI = type === 'I';
+  const pace = isI ? p.I : p.RP;
+  const w = workOf(prev);
+  return (isI ? q.repOptionsKm.I : q.repOptionsKm.RP).some(
+    (o) =>
+      o * pace <= q.iRepMaxSec + 1e-9 &&
+      o * pace + 1e-9 >= (isI ? q.iRepMinSec : 0) &&
+      o * (isI ? q.maxReps.I : q.maxReps.RP) > w + 1e-9
+  );
+}
+
+const why = (budget: boolean): string =>
+  budget ? 'obim nedelje ne dozvoljava više' : 'to je najveća doza ovog treninga u planu';
+
+const altNote = (what: string, c: RepChoice, budget = true): string =>
+  `${what}: ista količina kao prošle nedelje (${why(budget)}), ${c.recRatio !== undefined ? 'kraći oporavak' : 'drugačija podela'}.`;
 
 /**
  * 2.4.0 (Odluka 3): ista doza druge strukture za glavni I (vrhunac) / RP (oštrenje) kad ponuda nema viši
@@ -939,7 +957,7 @@ function peakWeek(
   if (up.ok) i = up;
   else if (alt) {
     i = intervalSession('I', alt, targetKm, p);
-    notes.push(altNote('Vrhunac (I)', alt));
+    notes.push(altNote('Vrhunac (I)', alt, biggerInOffer('I', p, pm!)));
   } else {
     const w = pm ? workOf(pm) : 0;
     // 5k-v2.13.0 (P4, pouka 23): zadržan I i dalje staje u iRepMaxSec na tekućem tempu.
@@ -953,7 +971,7 @@ function peakWeek(
     i = intervalSession('I', pm, targetKm, p);
     held = true;
     notes.push(
-      'Vrhunac: I ostaje isti kao prošle nedelje (obim nedelje ne dozvoljava više ni drugačiju podelu); T se menja.'
+      `Vrhunac: I ostaje isti kao prošle nedelje (${biggerInOffer('I', p, pm) ? 'obim nedelje ne dozvoljava više ni drugačiju podelu' : 'to je najveća doza ovog treninga u planu'}); T se menja.`
     );
   }
   let t = tOf();
@@ -1134,7 +1152,7 @@ function peakWeekOne(
   const pm = prev?.main;
   const alt = pm ? altMain('I', b.I, p, pm) : null;
   if (!alt) return { ok: false, message: up.message };
-  return single(intervalSession('I', alt, targetKm, p).workout, [altNote('Vrhunac (I)', alt)], {
+  return single(intervalSession('I', alt, targetKm, p).workout, [altNote('Vrhunac (I)', alt, biggerInOffer('I', p, pm!))], {
     main: alt,
     t: null,
     same: 1
@@ -1264,7 +1282,7 @@ export function vdotWeekQuality(
       const alt = altMain('RP', b.I, p, pm);
       if (alt) {
         rp = intervalSession('RP', alt, targetKm, p);
-        notes.push(altNote('Oštrenje (RP)', alt));
+        notes.push(altNote('Oštrenje (RP)', alt, biggerInOffer('RP', p, pm)));
       }
     }
     if (!rp.ok) return rp;

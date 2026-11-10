@@ -15,9 +15,9 @@ import {
   phaseCounts,
   testKindOf
 } from './periodize.ts';
-import { isRunDaysCount, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
+import { isRunDaysCount, MAX_DAYS, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { validateRunWalk } from './runWalkValidate.ts';
-import { belowTargetShown } from './text.ts';
+import { belowTargetAdvice, belowTargetShown } from './text.ts';
 import { easyCapKm, easyMinKm, weekLengths } from './lengths.ts';
 import {
   easyMinOf,
@@ -657,7 +657,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       if (belowTargetShown(w.plannedKm, w.targetKm))
         warn(
           'PLANNED_BELOW_TARGET',
-          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner))} km uz dugi ${long.workout.km} km; za pun obim treba više dana trčanja).`,
+          `Nedelja ima ${w.plannedKm} km umesto ${w.targetKm} km (lagan trk najviše ${easyCapKm(long.workout.km, w.phase, easyVsLongOff(w, a.beginner))} km uz dugi ${long.workout.km} km; ${belowTargetAdvice(nDays, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}).`,
           w.index
         );
     } else if (limited(w) && w.plannedKm <= w.targetKm + tolKm) {

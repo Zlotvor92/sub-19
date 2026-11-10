@@ -11,9 +11,9 @@ import {
   splitEasy,
   weekLengths
 } from './lengths.ts';
-import { FIVE_K_V2_POLICY as P, type Athlete } from './policy.ts';
+import { FIVE_K_V2_POLICY as P, MAX_DAYS, type Athlete } from './policy.ts';
 import { raceWeekSharpener, weekQuality } from './quality.ts';
-import { belowTargetShown, kmText } from './text.ts';
+import { belowTargetAdvice, belowTargetShown, kmText } from './text.ts';
 import type {
   DayRole,
   PaceModel,
@@ -210,7 +210,7 @@ export function buildTrainingWeek(
     );
   else if (easyCappedAtLong && belowTargetShown(plannedKm, target))
     notes.push(
-      `Lagan trk najviše ${kmText(easyCapKm(longKm, f.phase, t1Off))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; za pun obim treba više dana trčanja.`
+      `Lagan trk najviše ${kmText(easyCapKm(longKm, f.phase, t1Off))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
     );
   if (rest.size > 0 || pain.size > 0)
     notes.push(

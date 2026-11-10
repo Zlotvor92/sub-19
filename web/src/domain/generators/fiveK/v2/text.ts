@@ -57,3 +57,50 @@ export function userResult<T>(r: T): T {
   };
   return walk(r, '') as T;
 }
+
+/**
+ * 5k-v2.15.0 (P8 G3): upozorenja plana za trkača — isto upozorenje (isto pravilo) najviše jednom po planu: prvo sa
+ * nedeljom, ostale nedelje zbirno („Slično i u nedeljama …"). Upozorenja u planu (validator, testovi) se ne menjaju;
+ * JEDINO mesto ovog prikaza (app/plan.ts).
+ */
+export function userWarnings(
+  ws: readonly { rule: string; message: string; week?: number }[],
+  weekOffset = 0
+): string[] {
+  const groups = new Map<string, { message: string; week?: number }[]>();
+  for (const w of ws) (groups.get(w.rule) ?? groups.set(w.rule, []).get(w.rule)!).push(w);
+  const label = (n: number): string => String(n + weekOffset);
+  const out: string[] = [];
+  for (const g of groups.values()) {
+    const first = g[0]!;
+    if (g.length === 1) {
+      out.push(first.message);
+      continue;
+    }
+    const rest = [...new Set(g.slice(1).map((x) => x.week).filter((x): x is number => x !== undefined))];
+    const list =
+      rest.length <= 1
+        ? rest.map(label).join('')
+        : `${rest.slice(0, -1).map(label).join(', ')} i ${label(rest[rest.length - 1]!)}`;
+    const msg =
+      first.week === undefined
+        ? first.message
+        : first.message.startsWith('Nedelja ')
+          ? `Nedelja ${label(first.week)} ${first.message.slice('Nedelja '.length)}`
+          : `Nedelja ${label(first.week)}: ${first.message}`;
+    out.push(
+      rest.length > 0
+        ? `${msg} Slično i u ${rest.length === 1 ? 'nedelji' : 'nedeljama'} ${list}.`
+        : first.message
+    );
+  }
+  return out;
+}
+
+/** 5k-v2.15.0 (P8 G3): preporuka uz „planirano < cilj" (lagan ≤ 0,8 × dugi) — više dana samo kad ih trkač može dodati
+    (manje od najvećeg broja dana tabele); inače tvrdnja koju brojevi pokazuju. JEDINO mesto (week.ts, validator). */
+export function belowTargetAdvice(days: number, maxDays: number): string {
+  return days < maxDays
+    ? 'za pun obim treba više dana trčanja'
+    : `sa ${days} dana trčanja to je najviše što ova nedelja nosi`;
+}

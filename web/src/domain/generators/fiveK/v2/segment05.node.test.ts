@@ -283,7 +283,7 @@ describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)
     expect(t.blocks.map((b) => b.kind)).toEqual(['warmup', 'test', 'cooldown']);
     expect(t.segments.find((x) => x.kind === 'test')!.km).toBe(3);
     expect(t.workKm).toEqual({ E: 0, T: 0, I: 0, R: 0, RP: 0 });
-    expect(plan.notes.some((n) => n.includes('ostaje po osećaju') && n.includes('adaptacij'))).toBe(
+    expect(plan.notes.some((n) => n.includes('po osećaju') && n.includes('Unesi rezultat'))).toBe(
       true
     );
   });

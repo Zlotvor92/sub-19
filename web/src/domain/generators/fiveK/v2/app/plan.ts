@@ -10,6 +10,7 @@
 
 import { FIVE_K_V2_POLICY as P } from '../policy.ts';
 import { baseVdot } from '../steps.ts';
+import { userWarnings } from '../text.ts';
 import type {
   FiveKV2Plan,
   FiveKV2RunWalkPlan,
@@ -284,7 +285,7 @@ function planWarnings(plan: AnyV2Plan): string[] {
   const cont = isRunWalk(plan) ? plan.continuous?.plan : undefined;
   const all = [plan, ...(cont ? [cont] : [])];
   for (const p of all)
-    for (const t of [...p.notes, ...p.warnings.map((v) => v.message)])
+    for (const t of [...p.notes, ...userWarnings(p.warnings, p.input.weekOffset ?? 0)])
       if (t && !out.includes(t)) out.push(t);
   return out;
 }

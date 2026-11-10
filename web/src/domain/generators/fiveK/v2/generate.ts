@@ -345,6 +345,15 @@ export function construct(
   };
 }
 
+/** 5k-v2.15.0 (P8 G3): rasterećenja kako ih plan stvarno ima (ne „svake N. nedelje"). */
+function deloadText(frames: readonly WeekFrame[], off = 0): string {
+  const ws = frames.filter((f) => f.deload).map((f) => String(weekLabel(f.index, off)));
+  if (ws.length === 0) return '';
+  return ws.length === 1
+    ? `, rasterećenje u nedelji ${ws[0]!}`
+    : `, rasterećenje u nedeljama ${ws.slice(0, -1).join(', ')} i ${ws[ws.length - 1]!}`;
+}
+
 /** 5k-v2.15.0 (P8 d): najduži trening upisanih nedelja [km] (konstruktor i validator, workouts.raceWarmup). */
 export const longestDayKm = (weeks: readonly PlanWeek[]): number =>
   Math.max(0, ...weeks.flatMap((w) => w.days.filter((d) => d.role !== 'race').map((d) => d.workout.km)));
@@ -471,7 +480,7 @@ function generateRaw(raw: unknown): GenerateResult {
     );
   if (a.beginner)
     notes.push(
-      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez intervala (I); obim raste najviše ${Math.round(rules.maxBuildGrowth * 100)} % nedeljno, dugi trk najviše ${rules.longMaxSec / 60} min, najveći nedeljni obim najviše ${Math.round((rules.peakCapFactor - 1) * 100)} % iznad početnog, rasterećenje svake ${rules.deloadEvery}. nedelje.`
+      `Početnik: ${rules.qualityDays} kvalitet nedeljno od nedelje ${weekLabel(P.beginner.introWeeks + 1, input.weekOffset)}, bez intervala (I); obim raste najviše ${Math.round(rules.maxBuildGrowth * 100)} % nedeljno, dugi trk najviše ${rules.longMaxSec / 60} min, najveći nedeljni obim najviše ${Math.round((rules.peakCapFactor - 1) * 100)} % iznad početnog${deloadText(frames, input.weekOffset)}.`
     );
 
   const plan: FiveKV2Plan = {
