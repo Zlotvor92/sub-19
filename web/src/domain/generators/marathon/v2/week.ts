@@ -441,7 +441,11 @@ export function taperWeekLimit(
   one: boolean
 ): TaperLimit {
   const d0 = taperDoses(state, step, c.rule.quality, c.rule.beginner);
-  const withT = !one && d0.mp !== null && d0.t !== null && doseOf(d0.t) <= capM('T', target10 / 10);
+  const withT =
+    !one &&
+    d0.mp !== null &&
+    d0.t !== null &&
+    doseOf(d0.t) <= capM('T', target10 / 10, { p: c.paces, beginner: c.rule.beginner });
   return taperDayLimit(
     c,
     target10,
@@ -666,8 +670,8 @@ function buildWeekIn(
       shorten,
       ctx.adapted === true
     );
-    const t0 = test || !qDay ? null : pickDeload(quality, frame.phase, targetKm, rule.beginner);
-    const t = t0 ? pickDeload(quality, frame.phase, targetKm, rule.beginner, dLimit) : null;
+    const t0 = test || !qDay ? null : pickDeload(quality, frame.phase, targetKm, p, rule.beginner);
+    const t = t0 ? pickDeload(quality, frame.phase, targetKm, p, rule.beginner, dLimit) : null;
     if (!test && !t && !intro && mode !== 'none') return null;
     const tw = test ? testWorkout(p, ctx.wc) : t ? qualityWorkout(t, p, ctx.wc, ctx.feel) : null;
     const dates = easyDates(
@@ -754,11 +758,11 @@ function buildWeekIn(
     const t =
       mode === 'none'
         ? null
-        : pickTaper(quality, taper, targetKm, rule.quality, relaxT, rule.beginner, tLimit);
+        : pickTaper(quality, taper, targetKm, rule.quality, p, relaxT, rule.beginner, tLimit);
     const tRule =
       mode === 'none'
         ? null
-        : pickTaper(quality, taper, targetKm, rule.quality, relaxT, rule.beginner);
+        : pickTaper(quality, taper, targetKm, rule.quality, p, relaxT, rule.beginner);
     if (mode !== 'none' && !t) return null;
     const q1Dose = t && !t.mpDropped ? (t.mp ?? t.t) : null;
     const d1 = !q1Dose ? null : mode === 'one' ? oneQualityDay(frame, pat, pat.q1) : pat.q1;
@@ -848,7 +852,7 @@ function buildWeekIn(
     ];
     const mp = t?.mp ?? null;
     const overCap =
-      mp && w1 && mp.doseM > capM('MP', targetKm)
+      mp && w1 && mp.doseM > capM('MP', targetKm, { p, beginner: rule.beginner })
         ? [
             `Taper (N−${2 - taper}): MP ${fmtKm(mp.doseM / 1000)} km je ${fmtKm((100 * mp.doseM) / 1000 / targetKm)} % cilja — minimum MP tapera (M7) ispred plafona 20 % (M11), samo u taperu (M7a).`
           ]
@@ -884,12 +888,13 @@ function buildWeekIn(
     if (mode === 'one') {
       const slot = deloadSlot(rule.quality);
       const wd = oneQualityDay(frame, pat, slot === 'q1' ? pat.q1 : pat.q2!);
-      const d0 = wd ? pickDeload(quality, frame.phase, targetKm, rule.beginner) : null;
+      const d0 = wd ? pickDeload(quality, frame.phase, targetKm, p, rule.beginner) : null;
       const d = d0
         ? pickDeload(
             quality,
             frame.phase,
             targetKm,
+            p,
             rule.beginner,
             oneDayLimit(dlc, target10, (pat.q2 ? 2 : 1) + pat.easy.length - 1 - drop, jump10)
           )
@@ -1017,7 +1022,7 @@ function buildWeekIn(
   for (const [slot, d, prev] of slots)
     if (d.step === 'drop')
       notes.push(
-        (prev?.doseM ?? 0) <= capM(d.zone, targetKm)
+        (prev?.doseM ?? 0) <= capM(d.zone, targetKm, { p, beginner: rule.beginner })
           ? `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — kvalitetni dan bi trajao duže od dugog (plafon ${d.zone === 'MP' ? 'MP, pouka 14' : 'zone, pouka 32'}).`
           : `${slot}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (M11 ispred M12).`
       );

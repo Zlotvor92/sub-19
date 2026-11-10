@@ -52,6 +52,7 @@ import {
 import { keptKm100, mixedRest, pauseOwned } from './mixed.ts';
 import { BEGINNER_DAYS_COUNTS, MARATHON_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 import {
+  type CapCtx,
   capM,
   carries,
   type DayFits,
@@ -270,6 +271,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   const protectedDay = (d: { date: string }): boolean =>
     lockedIds.has(d.date) || (ad !== undefined && mustDay(d.date) <= mustDay(ad.asOf));
   const pw = (w: { index: number }): Paces => pacesAt(pace, steps, w.index, km);
+  /** P8-G4/G2: kontekst plafona zone nedelje (tempo te nedelje, iskustvo) — isti kao u konstruktoru. */
+  const cc = (w: { index: number }): CapCtx => ({ p: pw(w), beginner });
   const feelW = (w: { index: number }): boolean => basisAt(pace, steps, w.index) === 'feel';
   const testKind = testKindOf(rule, feel, N);
   // P5-F2 (A18): nedelje izgradnje bez rasta doze iz koraka adaptacije.
@@ -487,7 +490,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   const noQ1 = (w: PlanWeek): boolean =>
     isSteady(w) &&
     !w.test &&
-    (w.index <= rule.introWeeks || (beginner && tFirstM > capM('T', w.targetKm)));
+    (w.index <= rule.introWeeks || (beginner && tFirstM > capM('T', w.targetKm, cc(w))));
   const qDays: [DayRole, Weekday][] = [
     ['q1', pat.q1],
     ...(pat.q2 !== null ? [['q2', pat.q2] as [DayRole, Weekday]] : [])
@@ -912,7 +915,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         const m = Math.round(d.workout.workKm[z] * 1000);
         // M7a: u taperu je MP doza iz M7 (minimum 2 × 3000 m ispred plafona; proverava TAPER_QUALITY).
         if (w.phase === 'taper' && z === 'MP') continue;
-        if (m > capM(z, w.targetKm))
+        // P8-G4: blok u dugom nije trening usred nedelje — bez člana u minutima (granice bloka: specific.blockFits).
+        if (m > capM(z, w.targetKm, cc(w), d.role !== 'long'))
           err(
             'ZONE_CAP',
             `${z} ${m} m > ${P.caps[z] * 100} % cilja ${w.targetKm} km (M11).`,
@@ -1102,7 +1106,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     return f;
   };
   const slotOk = (b: PlanWeek, role: 'q1' | 'q2', ladder: LadderId, s: Structure): boolean =>
-    doseOf(s) <= capM(zoneOf(ladder), b.targetKm) &&
+    doseOf(s) <= capM(zoneOf(ladder), b.targetKm, cc(b)) &&
     fitsDay(ladder, s, role === 'q1' && beginner, slotFits(b, role));
   // Greška: dan kvaliteta iznad najniže doze zone duži od dugog iste nedelje (izgradnja: prvi nivo lestvice,
   // početnik M17; rasterećenje, jedan kvalitet doze rasterećenja i taper: najmanja doza — T 2,0 km / početnik
@@ -1350,8 +1354,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
 
   // --- M12: početni nivo (prva nedelja slota; I i MP na prvoj nedelji faze; MP ≥ poslednje I).
   // Početnik (M17): prvi nivo lestvice početnika (60 % plafona ne važi).
-  const startM = (ladder: LadderId, targetKm: number): number => {
-    const cap = capM(zoneOf(ladder), targetKm);
+  const startM = (ladder: LadderId, targetKm: number, wk: { index: number }): number => {
+    const cap = capM(zoneOf(ladder), targetKm, cc(wk));
     const lv = ladderLevels(ladder, beginner).map(doseOf);
     if (beginner) return lv[0]!;
     return lv.filter((m) => m <= startShareOf(ladder) * cap + EPS).pop() ?? lv[0]!;
@@ -1384,7 +1388,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       const bMin = ladder === 'MP' ? mpAfterBlockM(slotOf(da), since) : 0;
       const carry = da !== null && carries(da.ladder as LadderId, ladder);
       if (da && (da.ladder === ladder || (carry && zoneOf(da.ladder) === zoneOf(ladder)))) continue;
-      let wantM = startM(ladder, b.targetKm);
+      let wantM = startM(ladder, b.targetKm, b);
       // Pouka 32: početni nivo koji ne staje u plafon zone (trajanje dugog) → najviši nivo ispod njega koji staje.
       const startS = ladderLevels(ladder, beginner).find((s) => doseOf(s) === wantM);
       if (startS && !slotOk(b, role, ladder, startS))
@@ -1591,7 +1595,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     const stT: QualityState = { q1: null, q2: null, t: lastT };
     const nEasy1 = (pat.q2 ? 2 : 1) + pat.easy.length - 1;
     const wantWith = (fits: DayFits): number =>
-      pickDeload(stT, w.phase, w.targetKm, beginner, fits)?.doseM ?? wantT0;
+      pickDeload(stT, w.phase, w.targetKm, pw(w), beginner, fits)?.doseM ?? wantT0;
     const wantT = !w.deload
       ? wantT0
       : wantWith(
@@ -1716,7 +1720,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
             mp.zone !== 'T' ||
             mp.ladder !== want.tLadder ||
             mp.doseM !== wantT1 ||
-            doseOf(want0.t!) > capM('T', w.targetKm) ||
+            doseOf(want0.t!) > capM('T', w.targetKm, cc(w)) ||
             t
           )
             err(
@@ -1725,7 +1729,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
               w.index
             );
         }
-        const tFits = want0.t !== null && doseOf(want0.t) <= capM('T', w.targetKm);
+        const tFits = want0.t !== null && doseOf(want0.t) <= capM('T', w.targetKm, cc(w));
         // MAR-11 (T2): MP otpao (ni najkraći blok ne staje u trajanje dugog) — dan Q1 je lagan.
         const okMp = want.mpDropped ? !mp : !!mp && mp.zone === 'MP' && mp.doseM === wantMp;
         // MAR-11 (T6 C11, pouka 35 u taperu): T dan lagan samo kad bi sa njim neki dan kvaliteta bio duži od dugog
@@ -1780,12 +1784,12 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
             err('TAPER_QUALITY', 'T tapera otpao bez napomene (M11 ispred M7).', w.index);
           warn(
             'TAPER_ZONE_DROPPED',
-            `Taper N−${2 - step}: T ${doseOf(want0.t!)} m > plafon ${capM('T', w.targetKm)} m — T otpada (M11 ispred M7).`,
+            `Taper N−${2 - step}: T ${doseOf(want0.t!)} m > plafon ${capM('T', w.targetKm, cc(w))} m — T otpada (M11 ispred M7).`,
             w.index
           );
         }
       }
-      if (mp && mp.zone === 'MP' && mp.doseM === wantMp && wantMp > capM('MP', w.targetKm)) {
+      if (mp && mp.zone === 'MP' && mp.doseM === wantMp && wantMp > capM('MP', w.targetKm, cc(w))) {
         if (!w.notes.some((n) => n.includes('(M7a)')))
           err('TAPER_QUALITY', 'MP tapera iznad plafona bez napomene (M7a).', w.index);
         warn(
@@ -1824,7 +1828,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         qs.length > (noneQ(w) ? 0 : 1) ||
         (dose &&
           (dose.ladder !== deloadLadder(w.phase) ||
-            dose.doseM > capM('T', w.targetKm) ||
+            dose.doseM > capM('T', w.targetKm, cc(w)) ||
             dose.doseM !==
               wantWith(
                 oneDayLimit(dlcOf(w), to10(w.targetKm), nEasy1 - easyRestDates(w).length, jumpOf(w))

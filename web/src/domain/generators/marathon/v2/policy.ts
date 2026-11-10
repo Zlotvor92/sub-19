@@ -743,6 +743,15 @@ export const MARATHON_V2_POLICY = {
   /** M11: jedan plafon po zoni, po treningu, udeo ciljnog obima nedelje. */
   caps: { R: 0.05, I: 0.08, T: 0.1, MP: 0.2 },
 
+  /** P8-G4 (marathon-v2.11.0): drugi član ISTOG plafona zone — rad jednog treninga usred nedelje u minutima, po tempu
+      zone te nedelje: T ≤ 30 min (cilj nedelje ≥ 80 km: 40 min); I ≤ 20 min za VDOT < 40, inače 24 min; MP ≤ 60 min,
+      početnik ≤ 45 min. R nema član u minutima. Blok u dugom nije trening usred nedelje (specific.blockFits). */
+  capsMin: {
+    T: { sec: 1800, bigWeekKm: 80, bigWeekSec: 2400 },
+    I: { sec: 1440, slowVdot: 40, slowSec: 1200 },
+    MP: { sec: 3600, beginnerSec: 2700 }
+  },
+
   /** M13 (udeo dugog: M15). */
   lengths: {
     /** M13 (P2-S2, marathon-v2.9.0): plafon trajanja dugog redovnog plana [s] sporim E (pre 9000). Početnik:
