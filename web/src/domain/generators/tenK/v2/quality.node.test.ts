@@ -51,8 +51,13 @@ const LADDER: Record<string, number[]> = {
 };
 /** D11; D33: RP 10 % ispod 40 km cilja, 15 % od 40 km. */
 const CAP = { R: 0.05, I: 0.08, T: 0.1, RP: 0.1 } as const;
+/** P8 G2 (D40): prvi nivo lestvice zone — plafon nije ispod njega (R 6 × 200, I 2 × 1000, T 2,0 km, RP 2 × 1200 m). */
+const FIRST: Record<keyof typeof CAP, number> = { R: 1200, I: 2000, T: 2000, RP: 2400 };
 const capOf = (zone: keyof typeof CAP, targetKm: number): number =>
-  Math.floor((zone === 'RP' && targetKm >= 40 - 1e-9 ? 0.15 : CAP[zone]) * targetKm * 1000 + 1e-6);
+  Math.max(
+    Math.floor((zone === 'RP' && targetKm >= 40 - 1e-9 ? 0.15 : CAP[zone]) * targetKm * 1000 + 1e-6),
+    FIRST[zone]
+  );
 const fits = (zone: keyof typeof CAP, m: number, targetKm: number): boolean =>
   m <= capOf(zone, targetKm);
 const ZONE: Record<string, keyof typeof CAP> = {

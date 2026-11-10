@@ -98,7 +98,7 @@ describe('primeri: nalaz N1 i nekadašnji sudar', () => {
       [21.9, false],
       [24.1, false],
       [26.4, false],
-      [28, false]
+      [27.9, false] // P8 G1 (D39): ned 7 (poslednja razvoja) ostaje na 27,9 (ranije 28,0) — rast raspoređen do kraja razvoja.
     ]);
     expect(msg(under, 'UNDER_EXECUTION')).toMatch(/nedelja 4 je smanjena\.$/);
     // Pauza + bol na kraju nedelje (r = n): jedna rečenica A17, u poruci pauze.

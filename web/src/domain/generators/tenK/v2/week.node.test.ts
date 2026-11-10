@@ -90,7 +90,8 @@ describe('D7: taper', () => {
       );
       expect(t.days.length).toBe(n);
     }
-    expect(seen.none).toBeGreaterThan(0);
+    // P8 G2 (D40): taper bez kvaliteta zbog plafona više ne postoji (najniži nivo RP uvek staje).
+    expect(seen.none).toBe(0);
   });
 });
 

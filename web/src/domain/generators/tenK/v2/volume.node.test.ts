@@ -11,7 +11,7 @@ import { isBuildPhase, periodize, testKindOf } from './periodize.ts';
 import { planRule } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import { grid02Inputs, gridInputs, inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
-import type { TenKV2Plan } from './types.ts';
+import type { PlanWeek, TenKV2Plan } from './types.ts';
 import { fewerDaysAdvice, fit10, nominal10, peakCap10, startKm10 } from './volume.ts';
 import { specificTypeNext, type TypedWeek } from './specific.ts';
 import { buildWeek, type BuiltWeek, type WeekContext } from './week.ts';
@@ -99,6 +99,14 @@ function checkRule(p: TenKV2Plan): void {
   expect(p.peakCapKm).toBe(cap(start, days));
   let last: number | null = null;
   let peak = 0;
+  // P8 G1 (D39): korak ≤ (vrh − poslednji) / preostale ne-rasteretne nedelje baze i razvoja (0,1 km, najmanje 0,1).
+  const bd = (x: PlanWeek): boolean => (x.phase === 'base' || x.phase === 'development') && !x.deload;
+  const step = (l: number, w: PlanWeek): number => {
+    const left = bd(w) ? p.weeks.filter((x) => x.index >= w.index && bd(x)).length : 0;
+    const c = cap(start, days);
+    if (left === 0 || l >= c) return growth(l);
+    return Math.min(growth(l), Math.max(1, Math.round((Math.round(c * 10) - Math.round(l * 10)) / left)) / 10);
+  };
   for (const w of p.weeks) {
     if (w.phase === 'race') {
       expect(w.targetKm).toBe(Math.round(w.plannedKm * 10) / 10);
@@ -111,7 +119,7 @@ function checkRule(p: TenKV2Plan): void {
           ? start
           : w.deload
             ? Math.round(8 * last) / 10
-            : Math.min(Math.round((last + growth(last)) * 10) / 10, cap(start, days));
+            : Math.min(Math.round((last + step(last, w)) * 10) / 10, cap(start, days));
     expect(w.nominalKm, `ned ${w.index}`).toBe(nominal);
     // Nijedna nedelja niža nego što D6 traži, osim pogođenih (oznaka + napomena).
     if (w.targetKm !== nominal) {
