@@ -1,4 +1,4 @@
-PLAN — 10 km · 10k-v2.14.0
+PLAN — 10 km · 10k-v2.15.0
 Profil: srednji, VDOT 45, 3 dana, vrh obima za 3 dana, najduža priprema
 
 Početak: 2026-11-02 (18 nedelja), trka: 2027-03-07.
@@ -145,23 +145,23 @@ NEDELJA 12 — faza: razvoj — RASTEREĆENJE
 
 ------------------------------------------------------------
 NEDELJA 13 — faza: specifična
-  25.01.–31.01. · cilj 41,2 km · planirano 41,2 km · ukupno 3 h 55 min
+  25.01.–31.01. · cilj 41,2 km · planirano 41,2 km · ukupno 3 h 52 min
   Utorak     26.01.  Lagano 13,6 km + 6 × 20 s ubrzanja
       13,6 km · 1 h 19 min
   Četvrtak   28.01.  WU 20 min + RP 4 × 1000 m (oporavak 1:00 džog) + CD 15 min
       10,5 km · 56 min · radnih 18 min
-  Nedelja    31.01.  Dugi 17,1 km lagano
-      17,1 km · 1 h 40 min
+  Nedelja    31.01.  Dugi 17,1 km: 15,0 km lagano + završnih 2,1 km T
+      17,1 km · 1 h 37 min · radnih 10 min
 
 ------------------------------------------------------------
 NEDELJA 14 — faza: specifična
-  01.02.–07.02. · cilj 41,7 km · planirano 41,7 km · ukupno 3 h 57 min
+  01.02.–07.02. · cilj 41,7 km · planirano 41,7 km · ukupno 3 h 53 min
   Utorak     02.02.  Lagano 13,6 km + 6 × 20 s ubrzanja
       13,6 km · 1 h 19 min
   Četvrtak   04.02.  WU 20 min + RP 3 × 1500 m (oporavak 1:30 džog) + CD 15 min
       11,0 km · 58 min · radnih 20 min
-  Nedelja    07.02.  Dugi 17,1 km lagano
-      17,1 km · 1 h 40 min
+  Nedelja    07.02.  Dugi 17,1 km: 13,9 km lagano + završnih 3,2 km T
+      17,1 km · 1 h 36 min · radnih 15 min
 
 ------------------------------------------------------------
 NEDELJA 15 — faza: specifična — RASTEREĆENJE
@@ -176,13 +176,13 @@ NEDELJA 15 — faza: specifična — RASTEREĆENJE
 
 ------------------------------------------------------------
 NEDELJA 16 — faza: specifična
-  15.02.–21.02. · cilj 42,4 km · planirano 42,4 km · ukupno 4 h 00 min
+  15.02.–21.02. · cilj 42,4 km · planirano 42,4 km · ukupno 3 h 56 min
   Utorak     16.02.  Lagano 13,6 km + 6 × 20 s ubrzanja
       13,6 km · 1 h 19 min
   Četvrtak   18.02.  WU 20 min + RP 5 × 1000 m (oporavak 1:00 džog) + CD 15 min
       11,7 km · 1 h 02 min · radnih 23 min
-  Nedelja    21.02.  Dugi 17,1 km lagano
-      17,1 km · 1 h 40 min
+  Nedelja    21.02.  Dugi 17,1 km: 13,9 km lagano + završnih 3,2 km T
+      17,1 km · 1 h 36 min · radnih 15 min
 
 ------------------------------------------------------------
 NEDELJA 17 — faza: taper

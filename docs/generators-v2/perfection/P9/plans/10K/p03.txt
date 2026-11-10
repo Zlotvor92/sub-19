@@ -1,4 +1,4 @@
-PLAN — 10 km · 10k-v2.14.0
+PLAN — 10 km · 10k-v2.15.0
 Profil: spor, VDOT 33, dno obima, 3 dana, srednja priprema
 
 Početak: 2026-11-02 (12 nedelja), trka: 2027-01-24.
@@ -92,13 +92,13 @@ NEDELJA 7 — faza: razvoj — kontrolno trčanje
 
 ------------------------------------------------------------
 NEDELJA 8 — faza: specifična
-  21.12.–27.12. · cilj 26,0 km · planirano 26,0 km · ukupno 3 h 09 min
+  21.12.–27.12. · cilj 26,0 km · planirano 26,0 km · ukupno 3 h 07 min
   Utorak     22.12.  Lagano 8,4 km + 6 × 20 s ubrzanja
       8,4 km · 1 h 02 min
   Četvrtak   24.12.  WU 15 min + RP 2 × 1200 m (oporavak 1:00 džog) + CD 10 min
       5,9 km · 40 min · radnih 14 min
-  Nedelja    27.12.  Dugi 11,7 km lagano
-      11,7 km · 1 h 27 min
+  Nedelja    27.12.  Dugi 11,7 km: 10,1 km lagano + završnih 1,6 km T
+      11,7 km · 1 h 25 min · radnih 10 min
 
 ------------------------------------------------------------
 NEDELJA 9 — faza: specifična — RASTEREĆENJE
@@ -113,13 +113,13 @@ NEDELJA 9 — faza: specifična — RASTEREĆENJE
 
 ------------------------------------------------------------
 NEDELJA 10 — faza: specifična
-  04.01.–10.01. · cilj 26,0 km · planirano 26,0 km · ukupno 3 h 09 min
+  04.01.–10.01. · cilj 26,0 km · planirano 26,0 km · ukupno 3 h 06 min
   Utorak     05.01.  Lagano 8,3 km + 6 × 20 s ubrzanja
       8,3 km · 1 h 01 min
   Četvrtak   07.01.  WU 15 min + RP 3 × 800 m (oporavak 1:00 džog) + CD 10 min
       6,0 km · 41 min · radnih 14 min
-  Nedelja    10.01.  Dugi 11,7 km lagano
-      11,7 km · 1 h 27 min
+  Nedelja    10.01.  Dugi 11,7 km: 9,2 km lagano + završnih 2,5 km T
+      11,7 km · 1 h 23 min · radnih 15 min
 
 ------------------------------------------------------------
 NEDELJA 11 — faza: taper

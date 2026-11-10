@@ -256,13 +256,15 @@ describe('mreža scenarija: 30 baznih planova × 4 asOf × 17 scenarija = 2040 a
       // 06i (pouka 37): zaštićeni dani po činjenicama (× 1,2) prelaze sastavljene → preostali dani na ostatak do cilja
       // (mešovita nedelja; same 44 → 14); 1 tok: test otpada sa kvalitetom koji ne staje (TEST_MOVED).
       // 10K-07 (Z1): TEST_MOVED 1 → 0 — test mešovite nedelje ostaje uz upisani višak zaštićenih dana (≤ 10 %).
-      over120: { n: 120, OVER_EXECUTION: 80, same: 21, mixed: 60 },
+      // K3 (10k-v2.15.0, K3-A/B drugi bazni planovi): same 21 → 23.
+      over120: { n: 120, OVER_EXECUTION: 80, same: 23, mixed: 60 },
       // P5 (D35): kontrolni test plana sa rezultatom u nedelji sa ograničenjem otpada (A13) — TEST_MOVED raste u svim
       // scenarijima sa ograničenjem ili novim rezultatom (pause10 5 → 9, pause20 9 → 13, pause35 13 → 21, pain5 5 → 9,
       // pain8 9 → 13, fatigue 4 → 8, faster/slower/test5k 13 → 33, painPause 9 → 13); chain 7 → 6.
       pause10: { n: 120, PAUSE: 120, mixed: 50, TEST_MOVED: 5 },
       pause20: { n: 120, PAUSE: 120, mixed: 54, TEST_MOVED: 13 },
-      pause35: { n: 120, PAUSE: 120, mixed: 57, TEST_MOVED: 17 },
+      // K3 (10k-v2.15.0): mixed 57 → 58.
+      pause35: { n: 120, PAUSE: 120, mixed: 58, TEST_MOVED: 17 },
       // 06c (A17): TEST_MOVED 5 → 6 — d4-f-14w w2end: rasterećenje ned 4 sa testom (D27) ukinuto; u izgradnji
       // 27,0 km test i Q2 ne staju → jedan kvalitet doze rasterećenja, test otpada (A9/A13).
       // 10K-08 (T1): TEST_MOVED 6 → 5.
