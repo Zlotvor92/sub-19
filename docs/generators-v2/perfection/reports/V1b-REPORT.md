@@ -14,7 +14,7 @@ tipovi razmene). **[M]** izmereno, **[T]** tumačenje.
 3. Stari plan u bazi (bez `policyId` ili sa oznakom v1): otvara se, prikazuje, unos radi; jedna poruka („Plan je
    napravljen starim generatorom: prikazuje se, ali se više ne prilagođava.") i dugme „Generiši nov plan", na Danas,
    Plan i Prilagodi plan. Potvrda kaže šta se briše a šta ostaje. Bez pada (nov E2E + UI testovi). [M]
-4. Testovi: brz nivo 292 fajla / 3266 testova zeleno; E2E 82/82; `check:full`: § 7. [M]
+4. Testovi: brz nivo 292 fajla / 3266 testova zeleno; E2E 82/82; pun nivo 431/431 fajla (§ 7). [M]
 5. CI: projekat i posao `v1` ukinuti, „sve" u 10 delova. Merenje CI run-a posle push-a: § 8. [M]
 
 ## 1. Obrisano (samo V1b commitovi, `git show --numstat`)
@@ -113,12 +113,12 @@ Stanje sa planom v1 formata (bez `meta.policyId`, sa `ulaz`): Danas prikazuje tr
 | `npx playwright test` (ceo skup, 2 radnika) | 8 min 31 s → 5 min 54 s → 4 min 30 s | 27 → 12 → 0 padova; konačno 82/82 |
 | `personalPlan.node.test.ts` (pun) | 4,7 s | 3/3, 8196 tokova |
 | 17 oracle fajlova (pun, zamrznute fiksture) | 12,9 s | 69/69 |
-| `npm run check:full` (jednom) | CHECKFULL_TIME | CHECKFULL_RESULT |
+| `npm run check:full` (jednom): typecheck + lint + format, pa `npm test` (pun nivo) | ≈ 3 min + 49 min 53 s | 0 grešaka; 431/431 fajla zeleno (prvo pokretanje prekinula granica pozadinskog posla od 30 min posle statičkih provera, pa je `npm test` ponovljen sam) |
 
 ## 8. CI pre / posle
 
 Pre (T1-REPORT § 1): „sve" run 769 — zid 9,7 min, ≈ 88,2 runner-min, od toga posao `web-test-v1` 6,5 min; 8 delova.
-Posle: CI_AFTER
+Posle: run ovog push-a (izbor „sve", 10 delova, bez `web-test-v1`) — merenje dopisuje organizator ili sledeći push dokumentacije.
 
 ## 9. Šta nije urađeno / otvoreno
 
