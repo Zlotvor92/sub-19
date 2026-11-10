@@ -25,9 +25,10 @@ const W1: Record<string, number> = {
   'dense-d6-50km-v77.5': 50,
   // MAR-11 (T1): lagani ≤ 0,8 × dugi (dugi na plafonu skoka) — ned 1 niža; 3 dana 16 ned r 8 → RECENT_LONG_TOO_SHORT,
   // zamena 12 ned.
-  'recent-d4-16w-35km-v70-B-r6': 29,
+  // P8 (G4 minuti, G6 lagan ≤ 0,70 × dugi za 4+ dana): cilj ned 1 uz dugi na plafonu skoka se menja.
+  'recent-d4-16w-35km-v70-B-r6': 30.4,
   'recent-d3-12w-50km-v70-A-r8': 26.7,
-  'recent-d5-16w-50km-v70-C-r10': 50,
+  'recent-d5-16w-50km-v70-C-r10': 48.7,
   'd4-21w-55km-v45-A-sat': 55,
   'feel-d4-21w-55km-e270-A': 55
 };
@@ -49,7 +50,7 @@ describe('pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži 
       expect(r.ok).toBe(true);
       if (!r.ok) return;
       expect(overLong(r.plan).above).toEqual([]);
-      // Pouka 9: drugi član menja dozu, ne cilj nedelje 1 (ciljevi kao na bd07eec, artifacts/segment-04b).
+      // Pouka 9: drugi član menja dozu, ne cilj nedelje 1 (ciljevi kao na bd07eec, artifacts/segment-04b; P8: W1).
       expect(r.plan.weeks[0]!.targetKm).toBe(W1[id]);
     });
 
@@ -88,7 +89,11 @@ describe('pouka 32 za sve zone (MAR-04b): dan iznad najnižeg nivoa nikad duži 
       if (d.workout.dose!.doseM < doseOf(P.taper.mpMin))
         expect(d.workout.dose!.structure.form).toBe('continuous');
     }
-    expect(t.some((w) => w.notes.some((n) => n.includes('pouka 32')))).toBe(true);
+    // P8-G5: MP tapera je 60 / 40 % najvećeg MP rada — i po km nije duži od dugog (P8-MAR a).
+    for (const w of t) {
+      const d = w.days.find((x) => x.workout.dose?.zone === 'MP')!;
+      expect(d.workout.km).toBeLessThanOrEqual(w.days.find((x) => x.role === 'long')!.workout.km);
+    }
   });
 });
 

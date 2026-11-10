@@ -178,9 +178,9 @@ describe('N8 (pouka 29): validator čita stanje upisane mešovite nedelje', () =
   it('d4-r-16w, manjak kraj ned 6 + zaključan Q1 ned 7 (mešovita): skok doze u ned 8 → DOSE_JUMP (ranije preskočeno)', () => {
     const p = planOf(base('d4-r-16w'));
     const at = p.weeks[5]!.endDate;
-    // P5-F1: nedelja 7 je nedelja testa plana sa rezultatom (test na danu Q1, ne menja se manjkom) — zaključan je
-    // dan Q2 (T), koji manjak menja.
-    const lock = p.weeks[6]!.days.find((d) => d.role === 'q2')!.date;
+    // P5-F1: nedelja 7 je nedelja testa plana sa rezultatom (test na danu Q1, ne menja se manjkom); P8-G7: test je
+    // jedini kvalitet te nedelje — zaključan je lagan dan, koji manjak menja.
+    const lock = p.weeks[6]!.days.find((d) => d.role === 'easy')!.date;
     const r = ok(adaptMarathonV2(p, { ...factsOf(p, 'under50', at), lockedDayIds: [lock] }, at));
     expect(r.plan.adaptation!.mixedWeeks).toEqual([7]);
     expect(errors(r.plan)).toEqual([]);

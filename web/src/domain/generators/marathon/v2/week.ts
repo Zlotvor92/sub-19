@@ -1235,7 +1235,7 @@ export function raceWeek(
         )
     : [];
   const sharpenDate = noSharpener ? null : (cands.find((d) => !banned.has(d)) ?? null);
-  const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec), false)];
+  const days: PlanDay[] = [day(race, 'race', raceWorkout(p, ctx.raceSec, ctx.feel), false)];
   const easy = raceEasyWorkout(taperEasy10, p);
   for (const d of runs) {
     if (d === sharpenDate && sharpS)

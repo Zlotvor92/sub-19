@@ -65,7 +65,15 @@ describe('N1: umor pre starta (pouka 34)', () => {
         // Ned 2 = planirana ned 1 (cilj i treninzi), ned 3 = planirana ned 2 (bez rasta, dalje po rasporedu).
         expect([w2!.targetKm, w2!.deload]).toEqual([g1.targetKm, false]);
         expect(work(w2!)).toEqual(work(g1));
-        expect(w3!.targetKm).toBe(p.weeks[1]!.targetKm);
+        // P8-G1: rast je raspoređen na preostale nedelje do kraja razvoja — nedelja 3 (jedna nedelja manje do kraja
+        // razvoja) dobija cilj između planirane nedelje 2 i planirane nedelje 3.
+        expect(w3!.targetKm).toBeGreaterThanOrEqual(p.weeks[1]!.targetKm);
+        expect(w3!.targetKm).toBeLessThanOrEqual(
+          Math.max(
+            p.weeks[1]!.targetKm,
+            p.weeks[2]!.deload ? p.weeks[1]!.targetKm + 5 : p.weeks[2]!.targetKm
+          )
+        );
         expect(r.reasons.some((x) => x.condition === 'FATIGUE' && x.applied)).toBe(true);
       });
 
@@ -91,13 +99,10 @@ describe('N2: BASE_PLATEAU posle nedelje testa (pouka 23)', () => {
     if (!r.ok) throw new Error(JSON.stringify(r.reasons));
     const t = r.plan.weeks.find((w) => w.test)!;
     const tAt = (i: number) => r.plan.weeks[i - 1]!.days.find((d) => d.role === 'q2')?.workout.dose;
-    // Test zamenjuje samo Q1: T slot nedelje testa je stvarni kvalitet i progresija ide preko njega.
-    // MAR-11 (C11): kad bi uz test i Q2 neki dan bio duži od dugog, Q2 nedelje testa je lagan (pouka 35).
-    if (t.notes.some((n) => n.startsWith('Q2: dan kvaliteta je lagan')))
-      expect(tAt(t.index)).toBeUndefined();
-    else {
-      expect(tAt(t.index)).toBeDefined();
-      expect(tAt(t.index + 1)!.structure).not.toEqual(tAt(t.index)!.structure);
-    }
+    // P8-G7: u nedelji testa test je jedini kvalitet (dan Q2 je lagan, stanje T slota se ne menja) — T slot posle testa
+    // nastavlja od stanja pre testa.
+    expect(tAt(t.index)).toBeUndefined();
+    if (!t.deload && tAt(t.index - 1) && tAt(t.index + 1))
+      expect(tAt(t.index + 1)!.doseM).toBeGreaterThanOrEqual(tAt(t.index - 1)!.doseM);
   });
 });

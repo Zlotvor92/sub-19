@@ -37,12 +37,14 @@ const merge = (a: MarathonV2Facts, b: MarathonV2Facts): MarathonV2Facts => ({
 });
 
 describe('MAR-08b K1 (pouka 38): zaključan dan testa se ne premešta', () => {
-  for (const [id, s, at, lock] of [
+  for (const [id, s, at, lock0] of [
     ['feel-d4-14w-55km-e360-A', 'pause10', '2026-11-22', '2026-11-26'],
-    ['feel-d3-12w-50km-e405-B', 'pause20', '2026-11-04', '2026-11-18']
+    // P8-G7: plan po osećaju od 12 nedelja nema test (pao bi u nedelju 3) — primer sa 17 nedelja (test u nedelji 5).
+    ['feel-d3-17w-50km-e405-B', 'pause20', '2026-11-04', null]
   ] as const)
-    it(`${id} ${s} asOf ${at}, zaključan test ${lock} → jedan test, na zaključanom danu`, () => {
+    it(`${id} ${s} asOf ${at}, zaključan test ${lock0 ?? '(dan testa plana)'} → jedan test, na zaključanom danu`, () => {
       const p = planOf(id);
+      const lock = lock0 ?? tests(p)[0]!;
       expect(tests(p)).toEqual([lock]);
       const f = { ...earlyFacts(p, s, at), lockedDayIds: [lock] } as MarathonV2Facts;
       const r = ok(adaptMarathonV2(p, f, at));
@@ -51,7 +53,7 @@ describe('MAR-08b K1 (pouka 38): zaključan dan testa se ne premešta', () => {
     });
 
   it('umor: rasterećenje na nedelji zaključanog testa ne pravi drugi test (T slot)', () => {
-    const p = planOf('feel-d4-12w-55km-e360-A');
+    const p = planOf('feel-d4-17w-55km-e360-A');
     const t = tests(p)[0]!;
     const at = addDays(t, -10);
     const f = { ...factsOf(p, 'fatigue', at), lockedDayIds: [t] } as MarathonV2Facts;
@@ -60,9 +62,10 @@ describe('MAR-08b K1 (pouka 38): zaključan dan testa se ne premešta', () => {
   });
 
   it('kontrola: bez zaključavanja pauza i dalje premešta test (A13)', () => {
-    const p = planOf('feel-d3-12w-50km-e405-B');
-    const r = ok(adaptMarathonV2(p, earlyFacts(p, 'pause20', '2026-11-04'), '2026-11-04'));
-    expect(tests(r.plan)).not.toEqual(['2026-11-18']);
+    const p = planOf('feel-d3-17w-50km-e405-B');
+    const at = addDays(tests(p)[0]!, -2);
+    const r = ok(adaptMarathonV2(p, earlyFacts(p, 'pause20', at), at));
+    expect(tests(r.plan)).not.toEqual(tests(p));
   });
 });
 

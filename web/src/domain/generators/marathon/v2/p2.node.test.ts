@@ -62,14 +62,14 @@ describe('S1 (M19): smena A/B, blok MP u dugom', () => {
     expect(errors(A)).toEqual([]);
   });
 
-  it('profil (a): MP stimulus raste kroz obe vrste nedelja (O3) — MP 6 → blok 8 → MP 10 → blok 12 km', () => {
+  it('profil (a): MP stimulus kroz obe vrste nedelja (O3) — MP 6 → blok 8 → MP 10 → blok 10 km (P8-G1: vrh 56 km, dugi 22,4 km, blok ≤ 50 % dugog)', () => {
     const mp = specWeeks(A).map((w) =>
       block(w) > 0 ? block(w) : w.days.find((d) => d.role === 'q1')!.workout.dose!.doseM / 1000
     );
-    expect(mp).toEqual([6, 8, 10, 12]);
+    expect(mp).toEqual([6, 8, 10, 10]);
     const w = specWeeks(A).at(-1)!;
     expect(long(w).workout.title).toBe(
-      'Dugi 24,0 km: 12,0 km lagano + 12,0 km u maratonskom tempu'
+      'Dugi 22,4 km: 12,4 km lagano + 10,0 km u maratonskom tempu'
     );
   });
 
@@ -224,10 +224,10 @@ describe('S4: prikaz dugog sa blokom', () => {
   it('naslov, segmenti E + MP sa tempom, tekst korisniku bez internih oznaka', () => {
     const w = specWeeks(A).at(-1)!;
     const s = workoutStructure(long(w).workout, A.paces, false);
-    expect(s.title).toBe('Dugi 24,0 km: 12,0 km lagano + 12,0 km u maratonskom tempu');
+    expect(s.title).toBe('Dugi 22,4 km: 12,4 km lagano + 10,0 km u maratonskom tempu');
     expect(s.blocks.map((b) => [b.step.kind, b.step.zone, b.step.km])).toEqual([
-      ['long', 'E', 12],
-      ['work', 'MP', 12]
+      ['long', 'E', 12.4],
+      ['work', 'MP', 10]
     ]);
     expect(s.blocks[1]!.step.paceSec).toBe(A.paces.MP);
     expect(userText(bWeekNote(12))).toBe(

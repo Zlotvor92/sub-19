@@ -130,15 +130,17 @@ describe('M6 u planu (pouke 1 i 9)', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const p = r.plan;
-    expect(p.peakCapKm).toBe(80);
+    // P8-G1a: satni plafon VDOT 35 (9 h laganim tempom) = 75,7 km (pre 80 km, max nedelje 4 dana).
+    expect(p.peakCapKm).toBe(75.7);
     const steady = p.weeks.filter(
       (w) => !w.deload && ['base', 'development', 'specific'].includes(w.phase)
     );
     for (let i = 1; i < steady.length; i++) {
       const last = Math.round(steady[i - 1]!.targetKm * 10);
-      expect(Math.round(steady[i]!.nominalKm * 10)).toBe(
-        Math.min(last + growth10(last, rule), 800)
-      );
+      // P8-G1: rast najviše korak M6, raspoređen do kraja razvoja; korak < 3 % se ne primenjuje.
+      const nominal = Math.round(steady[i]!.nominalKm * 10);
+      expect(nominal).toBeLessThanOrEqual(Math.min(last + growth10(last, rule), 757));
+      expect(nominal).toBeGreaterThanOrEqual(last);
     }
     expect(steady.some((w) => w.fitted === 'down')).toBe(true);
   });

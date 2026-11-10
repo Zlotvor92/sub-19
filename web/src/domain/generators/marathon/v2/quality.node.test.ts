@@ -172,7 +172,19 @@ describe('M11 plafon i M12 progresija', () => {
     expect(capM('I', 40, FAST)).toBe(3200);
     expect(capM('T', 40, FAST)).toBe(4000);
     expect(capM('MP', 40, FAST)).toBe(8000);
-    expect(capM('MP', 29.8, FAST)).toBe(5960);
+    // P8-G2: prvi nivo lestvice zone uvek staje (MP 2 × 3000 m).
+    expect(capM('MP', 29.8, FAST)).toBe(6000);
+    expect(capM('MP', 31, FAST)).toBe(6200);
+    // P8-G4: član u minutima po tempu zone — VDOT 45: T 30 min, MP 60 min; početnik MP 45 min; T ≥ 80 km 40 min.
+    expect(capM('T', 70, { p, beginner: false })).toBe(Math.floor((1800 / p.T) * 1000 + 1e-6));
+    expect(capM('T', 100, { p, beginner: false })).toBe(Math.floor((2400 / p.T) * 1000 + 1e-6));
+    expect(capM('MP', 100, { p, beginner: false })).toBe(Math.floor((3600 / p.MP) * 1000 + 1e-6));
+    expect(capM('MP', 100, { p, beginner: true })).toBe(Math.floor((2700 / p.MP) * 1000 + 1e-6));
+    expect(capM('I', 100, { p: pacesFromVdot(35, 100), beginner: false })).toBe(
+      Math.floor((1200 / pacesFromVdot(35, 100).I) * 1000 + 1e-6)
+    );
+    // Blok u dugom nije trening usred nedelje: bez člana u minutima.
+    expect(capM('MP', 100, { p, beginner: false }, false)).toBe(20000);
   });
 
   it('početni nivo = najviši nivo ≤ 80 % plafona za T i I, 60 % za R i MP (najmanje prvi nivo; P5-F4)', () => {
@@ -182,7 +194,8 @@ describe('M11 plafon i M12 progresija', () => {
     expect(startLevel('MP', 80, FASTP)).toEqual(reps(2, 4000));
     // 35 km: T plafon 3,5 → 80 % = 2,8 → T kont. 2,0.
     expect(startLevel('T_continuous', 35, FASTP)).toEqual(cont(2));
-    expect(startLevel('MP', 29, FASTP)).toBeNull();
+    // P8-G2: prvi nivo uvek staje.
+    expect(startLevel('MP', 29, FASTP)).toEqual(reps(2, 3000));
   });
 
   it('sledeći nivo kad staje; inače ista doza druge strukture; bez nje ponavljanje', () => {
@@ -202,8 +215,10 @@ describe('M11 plafon i M12 progresija', () => {
     expect(tc.doseM).toBe(4800);
     const mp = pickSlot(slot('I', reps(5, 1200)), 'MP', 60, p)!;
     expect(mp.doseM).toBe(6000);
-    const mp2 = pickSlot(slot('I', reps(3, 1000)), 'MP', 80, p)!;
+    const mp2 = pickSlot(slot('I', reps(3, 1000)), 'MP', 80, FASTP)!;
     expect(mp2.doseM).toBe(8000);
+    // P8-G4: VDOT 45 — MP ≤ 60 min (≈ 12 km), početni nivo ≤ 60 % plafona → 2 × 3000 m.
+    expect(pickSlot(slot('I', reps(3, 1000)), 'MP', 80, p)!.doseM).toBe(6000);
     const i = pickSlot(slot('R', reps(8, 200)), 'I', 65, p)!;
     // P5-F4: I 65 km: plafon 5200 m → 80 % = 4160 → 4 × 1000 m.
     expect([i.step, i.doseM]).toEqual(['transition', 4000]);
@@ -263,7 +278,7 @@ describe('M5 rasterećenje i M7 taper', () => {
     expect([three.q1!.ladder, three.t]).toEqual(['MP', 6400]);
   });
 
-  it('taper N−2: MP i T ≈ 60 %; N−1: MP ≈ 50 %, bez T; min MP 2 × 3000 m, T 2,0 km', () => {
+  it('taper N−2: MP i T ≈ 60 %; N−1: MP ≈ 40 %, bez T (P8-G5); ispod 2 × 3000 m kontinuirani blok na 0,5 km; T min 2,0 km', () => {
     expect(taperDoses(st, 0, 2)).toMatchObject({ mp: reps(2, 3000), t: reps(3, 1000) });
     const big: QualityState = {
       q1: slot('MP', cont(16)),
@@ -271,7 +286,7 @@ describe('M5 rasterećenje i M7 taper', () => {
       t: 9600
     };
     expect(taperDoses(big, 0, 2)).toMatchObject({ mp: reps(2, 4000), t: reps(3, 1600) });
-    expect(taperDoses(big, 1, 2)).toMatchObject({ mp: reps(2, 4000), t: null });
+    expect(taperDoses(big, 1, 2)).toMatchObject({ mp: reps(2, 3000), t: null });
     // 3 dana: samo MP (jedan kvalitet).
     expect(taperDoses(big, 0, 1)).toMatchObject({ mp: reps(2, 4000), t: null });
     const small: QualityState = {
@@ -279,22 +294,22 @@ describe('M5 rasterećenje i M7 taper', () => {
       q2: slot('T_cruise', reps(2, 1200)),
       t: 2400
     };
-    expect(taperDoses(small, 1, 2)).toMatchObject({ mp: reps(2, 3000), t: null });
+    expect(taperDoses(small, 1, 2)).toMatchObject({ mp: cont(2), t: null });
+    expect(taperDoses(small, 0, 2)).toMatchObject({ mp: cont(3.5) });
     expect(doseOf(taperDoses(small, 0, 2).t!)).toBe(2000);
   });
 
-  it('M7a: MP tapera je doza M7 i kad je iznad plafona 20 %; T po pravilu mora stati u plafon, relax: T otpada', () => {
+  it('P8-G5/G2: MP tapera = udeo najvećeg MP rada (bez minimuma 2 × 3000 m); T 2,0 km uvek staje u plafon', () => {
     const small: QualityState = {
       q1: slot('MP', reps(2, 3000)),
       q2: slot('T_cruise', reps(2, 1200)),
       t: 2400
     };
-    expect(pickTaper(small, 1, 29.8, 2, FASTP)!.mp!.doseM).toBe(6000);
+    expect(pickTaper(small, 1, 29.8, 2, FASTP)!.mp!.doseM).toBe(2000);
     expect(pickTaper(small, 1, 29.8, 2, FASTP)!.t).toBeNull();
-    // T 2,0 km > plafon 10 % pri 19 km: po pravilu null, relax bez T (MP ostaje).
-    expect(pickTaper(small, 0, 19, 2, FASTP)).toBeNull();
-    const r = pickTaper(small, 0, 19, 2, FASTP, true)!;
-    expect([r.mp!.doseM, r.t]).toEqual([6000, null]);
+    // P8-G2: T 2,0 km staje i pri 19 km (plafon ≥ prvi nivo lestvice T).
+    const r = pickTaper(small, 0, 19, 2, FASTP)!;
+    expect([r.mp!.doseM, r.t!.doseM]).toEqual([3500, 2000]);
     expect(pickTaper(small, 0, 30, 2, FASTP)!.t!.doseM).toBe(2000);
     // 3 dana: po pravilu bez T i pri malom cilju.
     expect(pickTaper(small, 0, 19, 1, FASTP)!.t).toBeNull();
@@ -308,7 +323,8 @@ describe('M5 rasterećenje i M7 taper', () => {
       tLadder: 'T_continuous'
     });
     expect(doseOf(taperDoses({ ...st, t: 5000 }, 1, 1, true).t!)).toBe(3000);
-    expect(taperDoses(st, 0, 1, true).mp).toEqual(reps(2, 3000));
+    // P8-G5: 60 % od 2 × 3000 m = 3,6 km → 3,5 km kontinuirano.
+    expect(taperDoses(st, 0, 1, true).mp).toEqual(cont(3.5));
     const r = pickTaper(st, 1, 22.5, 1, FASTP, false, true)!;
     expect([r.mp, r.t!.ladder, r.t!.doseM]).toEqual([null, 'T_continuous', 1500]);
   });
@@ -347,17 +363,19 @@ describe('M11 plafon zone, drugi član (pouka 32; MAR-03 za MP, MAR-04b za sve z
   });
 
   it('pickSlot: sledeći nivo koji ne staje u trajanje dugog se ne uzima (ista doza druge strukture); bez strukture koja staje — najviši nivo koji staje (drop); ista pravila za T/I/R', () => {
+    // P8-G4: tempo MP bez člana u minutima (16 km ≤ 60 min) — test proverava samo član trajanja dana.
+    const slowCap = { ...slow, MP: 220 };
     const long10 = Math.floor((9000 / slow.E.slow) * 10);
     const prev = slot('MP', reps(2, 7000));
-    const d = pickSlot(prev, 'MP', 90, slow, false, false, false, fitsLong(long10))!;
+    const d = pickSlot(prev, 'MP', 90, slowCap, false, false, false, fitsLong(long10))!;
     expect([d.doseM, d.step]).toEqual([14000, 'alt']);
-    const d2 = pickSlot(prev, 'MP', 90, slow, false, false, false, () => false);
+    const d2 = pickSlot(prev, 'MP', 90, slowCap, false, false, false, () => false);
     expect(d2).toBeNull();
     const tight: DayFits = (_l, s) => doseOf(s) <= 10000;
-    const d3 = pickSlot(prev, 'MP', 90, slow, false, false, false, tight)!;
+    const d3 = pickSlot(prev, 'MP', 90, slowCap, false, false, false, tight)!;
     expect([d3.doseM, d3.step]).toEqual([10000, 'drop']);
     // Bez drugog člana: 16 km (isto kao marathon-v2.1.0).
-    expect(pickSlot(prev, 'MP', 90, slow)!.doseM).toBe(16000);
+    expect(pickSlot(prev, 'MP', 90, slowCap)!.doseM).toBe(16000);
     // T kontinuirano: 4,0 → sledeći nivo 5,0 km i ista doza 4,0 km duži od dugog 7,0 km → najviši nivo koji staje (pad).
     const t = pickSlot(
       slot('T_continuous', cont(4)),

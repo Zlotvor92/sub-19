@@ -50,8 +50,12 @@ const codes = (raw: unknown): string[] => {
 
 /** 4 dana, 16 ned: poslednja nedelja baze (4) je rasterećenje → test na danu T slota (Q2). */
 const D4 = plan(feelInput());
-/** 3 dana, 12 ned: poslednja nedelja baze (3) je izgradnja → test na danu Q1 (umesto jedinog kvaliteta). */
+/** 3 dana, 17 ned: poslednja nedelja baze (5) je izgradnja → test na danu Q1 (umesto jedinog kvaliteta). P8-G7: u
+    planu od 12 nedelja poslednja nedelja baze je nedelja 3 (< 4) i baza nema kasniju nedelju — plan bez testa. */
 const D3 = plan(
+  feelInput({ weeks: 17, km: 30, days: SCHEDULES_BY_DAYS[3].A.days, long: 'sun' }, 450)
+);
+const D3_12 = plan(
   feelInput({ weeks: 12, km: 30, days: SCHEDULES_BY_DAYS[3].A.days, long: 'sun' }, 450)
 );
 
@@ -139,7 +143,9 @@ describe('M16 test 5 km', () => {
     expect(D4.weeks.filter((x) => x.test)).toHaveLength(1);
   });
 
-  it('3 dana: test na danu Q1 umesto jedinog kvaliteta nedelje izgradnje', () => {
+  it('3 dana: test na danu Q1 umesto jedinog kvaliteta nedelje izgradnje; P8-G7: 12 nedelja bez testa (bio bi u nedelji 3)', () => {
+    expect(tests(D3_12)).toHaveLength(0);
+    expect(D3_12.weeks.some((w) => w.test)).toBe(false);
     const t = tests(D3);
     expect(t).toHaveLength(1);
     const wk = D3.weeks[t[0]!.week - 1]!;

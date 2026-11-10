@@ -87,8 +87,9 @@ describe('t. 2: L skoka dugog po činjenicama (pouka 37 za L)', () => {
     // Ned 11–13 nisu trčane (pokrivenost): nisu L.
     const jl = jumpLongs10(r.plan.weeks, r.plan.adaptation!.steps, 15);
     expect(jl.slice(10, 13)).toEqual([null, null, null]);
-    // P2-S2: planirani dugi ned 10 = 32,0 km (180 min, granica 32 km; pre 27,2).
-    expect(jl[9]).toBe(320);
+    // P2-S2: planirani dugi ned 10 do 32,0 km (180 min, granica 32 km; pre 27,2); P8-G1: cilj nedelje 10 je niži
+    // (rast raspoređen do kraja razvoja) — dugi 31,3 km.
+    expect(jl[9]).toBe(313);
   });
 });
 
@@ -99,7 +100,8 @@ describe('t. 4: plafon 150 min tempom nedelje (longShortOf, kapacitet)', () => {
       raceDate: '2027-02-12',
       runDays: ['thu', 'wed', 'tue', 'sun', 'sat'],
       longRunDay: 'sun',
-      currentWeeklyKm: 44,
+      // P8-G1a: uz 44 km vrh je niži i dugi je na udelu nedelje; primer plafona trajanja: 50 km.
+      currentWeeklyKm: 50,
       recentResult: null,
       goalTimeSec: 12147,
       recentLongRunKm: 16.9,
@@ -201,7 +203,8 @@ describe('t. 6 (Z2): RECENT_LONG_TOO_SHORT sa pravilom max(10 %, 1 km) i pragom'
     const m = !g.ok ? g.reasons[0]!.message : '';
     expect(m).toContain('max(10 %, 1 km)');
     // MAR-11 (T1): prag 7,5 km (bilo 8,0) — nedelja izgradnje sme da ima lagan dan odmora.
-    expect(m).toContain('Plan je izvodljiv od 7,5 km.');
+    // P8-G1a: vrh ≤ 30 × 1,30 (12 nedelja) — prag 6,5 km (bilo 7,5).
+    expect(m).toContain('Plan je izvodljiv od 6,5 km.');
     // Prag je tačan: sa njim plan postoji.
     expect(
       generateMarathonV2({
@@ -213,7 +216,7 @@ describe('t. 6 (Z2): RECENT_LONG_TOO_SHORT sa pravilom max(10 %, 1 km) i pragom'
         recentResult: null,
         goalTimeSec: null,
         easyPaceSecPerKm: 330,
-        recentLongRunKm: 7.5
+        recentLongRunKm: 6.5
       }).ok
     ).toBe(true);
   });

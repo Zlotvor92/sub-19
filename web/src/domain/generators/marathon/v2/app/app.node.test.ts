@@ -395,6 +395,7 @@ describe('V1b: izbor i rutiranje po oznaci politike (samo v2)', () => {
         'marathon-v2.7.0',
         'marathon-v2.8.0',
         'marathon-v2.9.0',
+        'marathon-v2.10.0',
         VERSION
       ])
     ]);

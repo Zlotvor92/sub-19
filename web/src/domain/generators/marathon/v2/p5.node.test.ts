@@ -63,7 +63,15 @@ describe('F1: kontrolni test u planu sa rezultatom', () => {
     expect(testKindOf(reg, false, 12)).toBe('result');
     expect(testKindOf(beg, false, 16)).toBeNull();
     expect(testKindOf(beg, true, 16)).toBeNull();
-    expect(testWeekOf(['base', 'development', 'development', 'specific'], 'result', [3])).toBe(2);
+    expect(
+      testWeekOf(['base', 'base', 'base', 'development', 'development', 'specific'], 'result', [5])
+    ).toBe(4);
+    // P8-G7: test koji bi pao pre nedelje 4 — prva ne-rasteretna nedelja ≥ 4 iste faze, inače bez testa.
+    expect(testWeekOf(['base', 'development', 'development', 'specific'], 'result', [3])).toBe(0);
+    expect(testWeekOf(['base', 'base', 'base', 'development'], 'feel', [])).toBe(0);
+    expect(testWeekOf(['base', 'base', 'base', 'base', 'base', 'development'], 'feel', [5])).toBe(
+      5
+    );
     expect(testWeekOf(['base', 'specific'], 'result', [])).toBe(0);
   });
   it('rezultat testa ulazi postojećim putem (A1): tempo od sledeće nedelje, test ne ostaje u budućnosti', () => {

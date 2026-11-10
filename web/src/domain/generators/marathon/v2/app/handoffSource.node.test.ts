@@ -25,10 +25,11 @@ import { rawFacts } from './preparation.ts';
    - T1 (obrazac Predaja-1): politika IZVORA ne menja plan cilja; T2 kontrola: politika CILJA ga menja. */
 
 const ofId = (id: string) => TM.gridInputs().find((c) => c.id === id)!.input;
-/** 13 nedelja, 3 dana, 35 km, VDOT 55: najduži dugi 26,2 km. Pauza 35 d u nedelji 2 → 18,5 km; test 5 km (25:00) →
+/** 13 nedelja, 3 dana, 40 km (P8-G1a: sa 35 km vrh je 47 km i dugi ispod 26 km već u generatoru), VDOT 55: najduži dugi 27,0 km. Pauza 35 d u nedelji 2 → 18,5 km; test 5 km (25:00) →
+ *  (P8-G1: ulaz 40 km — vrh 54 km, najduži dugi 27,0 km; posle pauze 21,2 km)
  *  21,9 km (ograničen trajanjem 150 min; P2-S2: 180 min — test 5 km 27:30 → 23,6 km). Trka subota 2027-01-30 / nedelja 2027-01-31. */
-const BASE = ofId('d3-13w-35km-v55-A-sat');
-const BASE_SUN = ofId('d3-13w-35km-v55-A-sun');
+const BASE = ofId('d3-13w-40km-v55-A-sat');
+const BASE_SUN = ofId('d3-13w-40km-v55-A-sun');
 const AS_OF = '2026-11-14' as IsoDate;
 const AS_OF_SUN = '2026-11-15' as IsoDate;
 /* V1b: cilj predaje je uvek v2 te distance (prekidači uklonjeni); argument ostaje radi čitljivosti poziva. */
@@ -80,7 +81,7 @@ describe('3e: okidač (O1) — jedna funkcija, prelaz', () => {
   it('pauza 35 d: adaptirani plan < 26 km, plan generatora ≥ 26 km → ponuda; MARATHON_LONG_SHORT iz iste funkcije', () => {
     const v2 = adapted(BASE, 'pause35', AS_OF);
     expect(longShortKmOf(v2)).toBe(26);
-    expect(longest(v2)).toBe(18.5);
+    expect(longest(v2)).toBe(21.2);
     expect(shorterOffer(v2, AS_OF)).toBe(true);
     expect(shorterOffer(v2, v2.input.raceDate)).toBe(false); // trka nije posle asOf
     expect(longShortOf(v2.weeks, 26, weekPaces(v2))?.timeCapped).toBe(false);
@@ -139,7 +140,7 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     expect(basis.execution).toBeNull();
     expect('guardBaseKm' in basis).toBe(false);
     // Ulaz čarobnjaka bez izvedenih polja (obim čarobnjaka, ne obim plana).
-    expect(basis.input).toMatchObject({ raceDistM: 42195, weeklyKm: 35, runDays: 3 });
+    expect(basis.input).toMatchObject({ raceDistM: 42195, weeklyKm: 40, runDays: 3 });
   });
 
   it('prekidač HM v2 → HM v2 cilj (3f) iz pravog izvora: prefiks, id = id izvora istog datuma, vrh iz hmV2', () => {

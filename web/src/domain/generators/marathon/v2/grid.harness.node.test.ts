@@ -47,8 +47,12 @@ export const BASELINE_01 = join(HERE, 'segment01.baseline.json');
     rezultatom (F1) i bez promene početne doze T/I (F4) — segmentP5.stable-8e87fd4.json (podskup
     segmentP2.stable-38fd091.json; docs/generators-v2/perfection/P5-MAR/classify.ts, promenjeni po klasi u
     P5-MAR/changed-8e87fd4.json). */
+/** P8 (marathon-v2.11.0, G1–G7): nijedan plan mreža 02/03 nije bajt-isti sa polaznim SHA 0181e25 (oštrenje ≤ 10 min i
+    taper 60/40 % menjaju svaki plan; docs/generators-v2/perfection/P8-MAR/classify.ts) — segmentP8.stable-0181e25.json
+    je prazan skup, pa lanac starih regresija (bazne linije pre MAR-04b) više ne veže nijedan plan. Zaključavanje od P8:
+    bazne linije `*.p8.baseline.json` (svi planovi, red rowOf bez vraćanja teksta). */
 export const STABLE = new Set(
-  JSON.parse(readFileSync(join(HERE, 'segmentP5.stable-8e87fd4.json'), 'utf8')) as string[]
+  JSON.parse(readFileSync(join(HERE, 'segmentP8.stable-0181e25.json'), 'utf8')) as string[]
 );
 
 export const ALL: readonly GridInput[] = gridInputs();
@@ -753,11 +757,21 @@ export function describeGrid(
     it(`= bazna linija ${baseline.split('/').pop()} (vrh, dugi, doza, rasterećenja, taper, upozorenja, heš plana)`, () => {
       // MAR-07: poređenje sa baznim linijama pre MAR-07 — tekst upozorenja/napomena vraćen (before07).
       const rows = Object.fromEntries([...run.plans].map(([id, p]) => [id, rowOf(before07Of(p))]));
+      // P8: bazna linija od marathon-v2.11.0 — svi planovi, red plana kakav jeste. Stare bazne linije se više ne pišu.
+      const p8File = baseline.replace('.baseline.json', '.p8.baseline.json');
+      const rows8 = Object.fromEntries([...run.plans].map(([id, p]) => [id, rowOf(p)]));
       if (WRITE) {
         expect(FULL && inputs.length === all.length).toBe(true);
-        writeFileSync(baseline, `${JSON.stringify(rows, null, 0)}\n`);
+        writeFileSync(p8File, `${JSON.stringify(rows8, null, 0)}\n`);
         return;
       }
+      const base8 = JSON.parse(readFileSync(p8File, 'utf8')) as Record<string, string>;
+      expect(Object.keys(base8)).toHaveLength(all.length);
+      expect(
+        Object.entries(rows8)
+          .filter(([id, row]) => base8[id] !== row)
+          .slice(0, 10)
+      ).toEqual([]);
       const base = JSON.parse(readFileSync(baseline, 'utf8')) as Record<string, string>;
       expect(Object.keys(base)).toHaveLength(all.length);
       // MAR-04b: menja se samo plan sa danom kvaliteta dužim od dugog na bd07eec (STABLE = ostali); vrh ne pada.

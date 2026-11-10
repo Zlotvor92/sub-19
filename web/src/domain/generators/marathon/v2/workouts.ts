@@ -506,12 +506,15 @@ export function sharpenerWorkout(
 }
 
 /** M8: trka 42,2 km + WU 5 min (van obima nedelje); trajanje = prognoza maratona (M2). */
-export function raceWorkout(p: Paces, raceSec: number): Workout {
+export function raceWorkout(p: Paces, raceSec: number, feel = false): Workout {
   const q = P.raceWeek;
+  // P8-G3: dan trke se ispisuje kao trka — distanca i prognozirano vreme (plan po osećaju: procena), zagrevanje posebno.
+  const t = Math.round(raceSec);
+  const hms = `${Math.floor(t / 3600)}:${String(Math.floor((t % 3600) / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
   return assemble(
     'race',
     null,
-    `Maraton ${fmtKm(q.raceKm)} km (WU ${q.raceWarmupSec / 60} min)`,
+    `Maraton ${fmtKm(q.raceKm)} km — ${feel ? 'procena' : 'prognoza'} ${hms} (pre starta ${q.raceWarmupSec / 60} min laganog zagrevanja)`,
     [
       { kind: 'warmup', sec: q.raceWarmupSec },
       { kind: 'race', km: q.raceKm }

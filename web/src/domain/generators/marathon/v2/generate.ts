@@ -495,16 +495,24 @@ export function construct(
       for (const d of wd)
         if (d.role === 'easy') taperEasy10 = Math.min(taperEasy10, Math.round(d.workout.km * 10));
     }
+    // P8-G1 (pouka 29 i za obim): nedelja cela ≤ asOf ostaje iz prethodnog plana (written.ts) — istorija obima (osnov
+    // rasta, vrh, osnov tapera) čita njen upisani cilj, ne ponovo sastavljeni (korak < 3 % se ne primenjuje, pa cilj
+    // sledeće nedelje zavisi od stvarno upisanog prethodnog).
+    const sPast = prior?.weeks[frame.index - 1];
+    const hist10 =
+      prior && sPast && mustDay(sPast.endDate) <= prior.asOf
+        ? Math.round(sPast.targetKm * 10)
+        : fit.target10;
     if (isBuildPhase(frame.phase) && !frame.deload) {
       if (!av) {
-        h.lastBuild10 = fit.target10;
-        h.peak10 = Math.max(h.peak10, fit.target10);
+        h.lastBuild10 = hist10;
+        h.peak10 = Math.max(h.peak10, hist10);
       }
       const long = wd.find((d) => d.role === 'long');
       if (long) lastLong10 = Math.round(long.workout.km * 10);
       if (w.picks) quality = advance(same(wd, w.days) ? w.picks : writtenPicks(wd), quality);
     }
-    if (av) h = leaveWeek(h, frame, fit.target10, av);
+    if (av) h = leaveWeek(h, frame, hist10, av);
   }
 
   // A1: nivo plana iz tempa poslednje nedelje (budućnost); ocena cilja za nedelje od rezultata do trke.
@@ -548,9 +556,11 @@ export function construct(
       `Plan po osećaju (M16): ${pace.why}. E = lagan tempo ${fmtSec(pace.easySecPerKm)}/km ± ${P.feel.eRangeSec} s; tempo T/I/R i MP je orijentir (procena) iz procene VDOT ${fmtKm(paces.vdot)} — trening vodi RPE (MP ${P.feel.rpe.MP.min}–${P.feel.rpe.MP.max} „${P.feel.rpe.MP.cue}").`,
       t && td
         ? `Test ${P.test.km} km: nedelja ${t.index}, ${td.date} (M16). Ocena cilja, prognoza maratona i MP tempo: posle testa (adaptacija, segment 04).`
-        : rule.feelTest
-          ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
-          : `Početnik bez testa ${P.test.km} km (M17): kvalitet po RPE; ocena cilja i prognoza maratona posle rezultata trke (adaptacija, segment 04).`
+        : rule.feelTest && !base.some((f) => f.test)
+          ? `Plan nema kontrolni test ${P.test.km} km: u ovako kratkoj pripremi pao bi pre četvrte nedelje. Tempo treninga ostaje procena dok ne uneseš rezultat trke ili probnog trčanja.`
+          : rule.feelTest
+            ? `Test ${P.test.km} km: nema ga u planu posle adaptacije (A13: primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+            : `Početnik bez testa ${P.test.km} km (M17): kvalitet po RPE; ocena cilja i prognoza maratona posle rezultata trke (adaptacija, segment 04).`
     );
   }
   if (rule.beginner)
