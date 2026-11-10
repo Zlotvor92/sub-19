@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RETURN_POLICY as HM_RETURN_POLICY } from '../../../halfMarathon/plan/regenerate';
 import { HM_V2_POLICY } from '../../../halfMarathon/v2/policy.ts';
-import { V1_TARGET_NEEDS_RESULT } from '../../../handoff';
 import * as select from '../../../select';
 import type { IsoDate } from '../../../../date';
 import type { GenPlanState } from '../../../../state';
@@ -15,7 +13,7 @@ import * as TM from '../testInputs.ts';
 import { pacesAt } from '../steps.ts';
 import type { MarathonV2Plan, Paces } from '../types.ts';
 import { generatedPlan, storedPlan } from './plan.ts';
-import { MARATHON_V2_SOURCE_FORMAT, rawFacts } from './preparation.ts';
+import { rawFacts } from './preparation.ts';
 
 /* FAZA 3, SEGMENT 3e — maraton v2 kao IZVOR predaje „kraća distanca" (DESIGN.md § 3 P1–P5, § 8; obrazac 3c).
    - Okidač (O1): adaptirani plan ispod praga MARATHON_LONG_SHORT (`longShortOf`, ista funkcija kao validator), plan
@@ -33,7 +31,8 @@ const BASE = ofId('d3-13w-35km-v55-A-sat');
 const BASE_SUN = ofId('d3-13w-35km-v55-A-sun');
 const AS_OF = '2026-11-14' as IsoDate;
 const AS_OF_SUN = '2026-11-15' as IsoDate;
-const HM_ON: select.GeneratorFlags = { fiveKV2: false, hmV2: true };
+/* V1b: cilj predaje je uvek v2 te distance (prekidači uklonjeni); argument ostaje radi čitljivosti poziva. */
+const HM_ON = undefined;
 const DAY = 86_400_000;
 const addDays = (d: string, n: number): string =>
   new Date(Date.parse(d + 'T00:00:00Z') + n * DAY).toISOString().slice(0, 10);
@@ -118,7 +117,7 @@ describe('3e: okidač (O1) — jedna funkcija, prelaz', () => {
 describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
   const source = stored(adapted(BASE, 'pause35', AS_OF));
   const today = AS_OF;
-  const decide = (src: GenPlanState, flags?: select.GeneratorFlags, at: IsoDate = today) => {
+  const decide = (src: GenPlanState, _flags?: unknown, at: IsoDate = today) => {
     const prep = select.preparationForPlan(src)!;
     return prep.preparationDecision(
       src,
@@ -141,50 +140,6 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     expect('guardBaseKm' in basis).toBe(false);
     // Ulaz čarobnjaka bez izvedenih polja (obim čarobnjaka, ne obim plana).
     expect(basis.input).toMatchObject({ raceDistM: 42195, weeklyKm: 35, runDays: 3 });
-  });
-
-  it('opcija polumaraton (v1 cilj), „zadrži plan v2" u uslovima; plan cilja bez formata maratona v2', () => {
-    const prep = select.preparationForPlan(source)!;
-    const basis = prep.basisFromPlan(source, today)!;
-    const d = decide(source);
-    expect(d.options.map((o) => o.id)).toEqual(['shorter-21097.5']);
-    expect(d.options[0]!.peakLongRunKm).toBeGreaterThan(0);
-    expect(d.conditions[0]).toMatch(/^Zadrži plan v2/);
-    expect(d.statement).toMatch(/18,5 km, ispod 26 km/);
-    for (const dist of [21097.5, 10000] as const) {
-      const c = prep.buildPreparationChoice(
-        source,
-        today,
-        basis,
-        { kind: 'shorter', raceDistM: dist },
-        {}
-      );
-      if ('error' in c) throw new Error(c.error);
-      expect(c.change).toEqual({
-        from: { raceDate: basis.input.raceDate, raceDistM: 42195, goalSec: null },
-        to: { raceDate: basis.input.raceDate, raceDistM: dist, goalSec: null }
-      });
-      expect('marathonV2' in c.result).toBe(false);
-      const meta = c.result.meta as Record<string, unknown>;
-      for (const k of MARATHON_V2_SOURCE_FORMAT.metaKeys) {
-        const own = JSON.stringify(meta[k]);
-        if (own !== undefined)
-          expect(own, k).not.toBe(JSON.stringify((source.meta as Record<string, unknown>)[k]));
-      }
-      const res = select.stampForStorage(c.result);
-      expect(select.generatorForPlan(res)).toBe(
-        dist === 10000 ? select.TEN_K_GENERATOR : select.HALF_MARATHON_GENERATOR
-      );
-      // Nema duplog datuma ni id-a; prošli dani izvora ostaju sa svojim id-jem.
-      const dated = datesOf(res);
-      expect(new Set(dated.map(([x]) => x)).size).toBe(dated.length);
-      expect(new Set(dated.map(([, x]) => x.id)).size).toBe(dated.length);
-      const srcByDate = new Map(datesOf(source));
-      for (const [date, x] of dated)
-        if (date <= today) expect(x.id, date).toBe(srcByDate.get(date)?.id);
-    }
-    const base = prep.buildPreparationChoice(source, today, basis, { kind: 'base' }, {});
-    expect('error' in base && base.error).toMatch(/samo kraću distancu/);
   });
 
   it('prekidač HM v2 → HM v2 cilj (3f) iz pravog izvora: prefiks, id = id izvora istog datuma, vrh iz hmV2', () => {
@@ -251,39 +206,13 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
   });
 
-  it('plan po osećaju → v1 cilj nedostupan (O5a); HM v2 cilj dobija lak tempo i radi', () => {
+  it('plan po osećaju: HM v2 cilj dobija lak tempo i radi (V1b: v1 cilj ne postoji)', () => {
     const feel = TM.feelInputs().find((c) => c.id === 'feel-d4-19w-50km-e315-B')!.input;
     const at = '2026-11-15' as IsoDate;
     const src = stored(adapted(feel, 'pause35', at));
-    expect(decide(src, undefined, at)).toMatchObject({
-      options: [],
-      unavailable: [`Polumaraton: ${V1_TARGET_NEEDS_RESULT}`, `10K: ${V1_TARGET_NEEDS_RESULT}`]
-    });
     const prep = select.preparationForPlan(src)!;
     expect(prep.basisFromPlan(src, at)!.input).toMatchObject({ easyPaceSecPerKm: 315 });
     expect(decide(src, HM_ON, at).options.map((o) => o.id)).toEqual(['shorter-21097.5']);
-  });
-
-  it('rezultat iz koraka adaptacije (P2) je činjenica: v1 cilj ga dobija kad nije posle starta ulaza', () => {
-    // Plan po osećaju, test 5 km u nedelji 2 → ponuda (dugi ograničen trajanjem). Osnova iz plana (start = start plana)
-    // nema rezultat do tog dana → v1 nedostupan; potvrđeno izvršenje (start = sutra) nosi rezultat koraka → HM v1.
-    const feel = TM.feelInputs().find((c) => c.id === 'feel-d4-14w-50km-e270-B')!.input;
-    const at = '2026-11-15' as IsoDate;
-    const v2 = adaptedSlowTest(feel, at);
-    expect(shorterOffer(v2, at)).toBe(true);
-    const step = v2.adaptation!.steps.find((x) => x.result)!.result!;
-    const src = stored(v2);
-    const prep = select.preparationForPlan(src)!;
-    const plain = prep.basisFromPlan(src, at)!;
-    expect(plain.input.pb).toBeUndefined();
-    expect(decide(src, undefined, at).options).toEqual([]);
-    const ex = select.MARATHON_V2_GENERATOR.executionBasis(src, at, null as never, {
-      weeklyKm: 40
-    });
-    if ('error' in ex) throw new Error(ex.error);
-    expect(ex.input.pb).toEqual({ distM: step.distM, sec: step.sec, date: step.date });
-    const d = prep.preparationDecision(src, at, ex, {}, 'limited', undefined);
-    expect(d.options.map((o) => o.id)).toEqual(['shorter-21097.5']);
   });
 
   it('činjenice izvora: zapisi bez dayId i bez zaključanih dana izvora', () => {
@@ -321,7 +250,7 @@ function targetFlow(
   withPause: boolean,
   input: unknown,
   today: IsoDate,
-  flags?: select.GeneratorFlags
+  _flags?: unknown
 ): { source: string; target: string } {
   const src = stored(adapted(input, 'pause35', today));
   const prep = select.preparationForPlan(src)!;
@@ -354,35 +283,19 @@ function withSourcePolicy<T>(run: () => T): T {
     a.pause.longShare = saved.longShare;
   }
 }
-function withTargetPolicy<T>(v2: boolean, run: () => T): T {
-  if (v2) {
-    const p = HM_V2_POLICY.adapt.pause as unknown as Record<string, number>;
-    const saved = { ...p };
-    try {
-      Object.assign(p, { shortShare: 0.5, midShare: 0.4, longShare: 0.3 });
-      return run();
-    } finally {
-      Object.assign(p, saved);
-    }
-  }
-  const t = HM_RETURN_POLICY as unknown as Record<string, { fraction: number; easyWeeks: number }>;
-  const saved = JSON.stringify(t);
+function withTargetPolicy<T>(run: () => T): T {
+  const p = HM_V2_POLICY.adapt.pause as unknown as Record<string, number>;
+  const saved = { ...p };
   try {
-    for (const p of Object.values(t)) {
-      p.fraction = Math.round(p.fraction * 50) / 100;
-      p.easyWeeks += 3;
-    }
+    Object.assign(p, { shortShare: 0.5, midShare: 0.4, longShare: 0.3 });
     return run();
   } finally {
-    for (const [k, v] of Object.entries(JSON.parse(saved) as typeof t)) Object.assign(t[k]!, v);
+    Object.assign(p, saved);
   }
 }
 
 describe('3e: T1/T2 — politika izvora ne menja cilj; politika cilja ga menja', () => {
-  for (const [target, flags] of [
-    ['HM v1', undefined],
-    ['HM v2', HM_ON]
-  ] as const)
+  for (const [target, flags] of [['HM v2', HM_ON]] as const)
     for (const [race, input, today] of [
       ['subota', BASE, AS_OF],
       ['nedelja', BASE_SUN, AS_OF_SUN]
@@ -394,9 +307,7 @@ describe('3e: T1/T2 — politika izvora ne menja cilj; politika cilja ga menja',
           expect(t1.source, 'kontrola: politika izvora menja plan izvora').not.toBe(base.source);
           expect(t1.target, 'T1: plan cilja isti').toBe(base.target);
           if (withPause) {
-            const t2 = withTargetPolicy(flags !== undefined, () =>
-              targetFlow(withPause, input, today, flags)
-            );
+            const t2 = withTargetPolicy(() => targetFlow(withPause, input, today, flags));
             expect(t2.target, 'T2: politika cilja menja plan cilja').not.toBe(base.target);
           }
         });

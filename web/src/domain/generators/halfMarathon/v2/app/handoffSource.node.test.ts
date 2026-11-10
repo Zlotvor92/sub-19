@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { RETURN_POLICY as TEN_K_RETURN_POLICY } from '../../../tenK/plan/regenerate';
-import { V1_TARGET_NEEDS_RESULT } from '../../../handoff';
 import * as select from '../../../select';
 import type { IsoDate } from '../../../../date';
 import type { GenPlanState } from '../../../../state';
@@ -8,12 +6,11 @@ import { adaptHmV2 } from '../adapt.ts';
 import { factsOf } from '../adaptInputs.ts';
 import { generateHmV2 } from '../generate.ts';
 import { longestLong10 } from '../lengths.ts';
-import { HM_V2_POLICY } from '../policy.ts';
 import { longWarnKmOf, shorterOffer } from '../shorter.ts';
-import { feelInputs, grid02Inputs } from '../testInputs.ts';
+import { grid02Inputs } from '../testInputs.ts';
 import type { HmV2Plan } from '../types.ts';
 import { generatedPlan, storedPlan } from './plan.ts';
-import { contractInput, HM_V2_SOURCE_FORMAT, lastResult } from './preparation.ts';
+import { contractInput } from './preparation.ts';
 
 /* FAZA 3, SEGMENT 3c — HM v2 kao IZVOR predaje „kraća distanca" (DESIGN.md § 3 P1–P5, § 8).
    - Okidač (O1): adaptirani plan ispod praga upozorenja najdužeg dugog, plan generatora za isti ulaz nije.
@@ -79,41 +76,6 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
     expect('guardBaseKm' in basis).toBe(false);
   });
 
-  it('opcija 10K (v1 cilj), „zadrži plan v2" u uslovima; plan cilja bez formata HM v2', () => {
-    const prep = select.preparationForPlan(source)!;
-    const basis = prep.basisFromPlan(source, today)!;
-    const d = prep.preparationDecision(source, today, basis, {}, 'limited', undefined);
-    expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
-    expect(d.conditions[0]).toMatch(/^Zadrži plan v2/);
-    for (const dist of [10000, 5000] as const) {
-      const c = prep.buildPreparationChoice(
-        source,
-        today,
-        basis,
-        { kind: 'shorter', raceDistM: dist },
-        {}
-      );
-      if ('error' in c) throw new Error(c.error);
-      expect(c.change.to).toEqual({
-        raceDate: basis.input.raceDate,
-        raceDistM: dist,
-        goalSec: null
-      });
-      expect('hmV2' in c.result).toBe(false);
-      const meta = c.result.meta as Record<string, unknown>;
-      for (const k of HM_V2_SOURCE_FORMAT.metaKeys) {
-        const own = JSON.stringify(meta[k]);
-        if (own !== undefined)
-          expect(own, k).not.toBe(JSON.stringify((source.meta as Record<string, unknown>)[k]));
-      }
-      expect(select.generatorForPlan(select.stampForStorage(c.result))?.id).toBe(
-        dist === 10000 ? '10k' : '5k'
-      );
-    }
-    const base = prep.buildPreparationChoice(source, today, basis, { kind: 'base' }, {});
-    expect('error' in base && base.error).toMatch(/samo kraću distancu/);
-  });
-
   it('prekidač cilja v2 uključen → 10K iz 10K v2 (3d-10K), prva koju cilj pokriva; nikad v1', () => {
     const prep = select.preparationForPlan(source)!;
     const d = prep.preparationDecision(
@@ -143,34 +105,6 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
       pk.weeklyKm
     ]);
   });
-
-  it('plan po osećaju → v1 cilj nedostupan (O5a)', () => {
-    const feel = feelInputs().find((c) => {
-      const v = (() => {
-        try {
-          return adapted(c.input, 'pause35', AS_OF);
-        } catch {
-          return null;
-        }
-      })();
-      return v !== null && shorterOffer(v, AS_OF);
-    })!;
-    const src = stored(adapted(feel.input, 'pause35', AS_OF));
-    const prep = select.preparationForPlan(src)!;
-    const d = prep.preparationDecision(
-      src,
-      today,
-      prep.basisFromPlan(src, today)!,
-      {},
-      'limited',
-      undefined
-    );
-    expect(d.options).toEqual([]);
-    expect(d.unavailable).toEqual([
-      `10K: ${V1_TARGET_NEEDS_RESULT}`,
-      `5K: ${V1_TARGET_NEEDS_RESULT}`
-    ]);
-  });
 });
 
 /** Vrh plana v2 cilja (bez prefiksa izvora): najduži dugi i `peakKm` objekta plana v2. */
@@ -187,91 +121,6 @@ function v2Peaks(result: object, key: string): { longKm: number; weeklyKm: numbe
   return { longKm: Math.max(...longs), weeklyKm: p.peakKm };
 }
 
-/* T1/T2: ceo tok izvor → predaja → cilj, bez i sa potvrđenom pauzom (`executionBasis`). Poredi se budući deo plana
-   cilja (dani posle danas) i ocena pripreme; prošli dani su istorija izvora (graft ih čuva). */
-type Plan = { weeks: { start: string; days: { dow: number; id?: string }[] }[]; meta?: unknown };
-function future(p: Plan, today: string): string {
-  const out: unknown[] = [];
-  for (const w of p.weeks)
-    for (const d of w.days) {
-      const date = new Date(Date.parse(w.start + 'T00:00:00Z') + d.dow * 86_400_000)
-        .toISOString()
-        .slice(0, 10);
-      if (date > today) out.push([date, d]);
-    }
-  return JSON.stringify([out, (p.meta as { preparation?: unknown }).preparation]);
-}
-function targetFlow(withPause: boolean, input: unknown = BASE): { source: string; target: string } {
-  const src = stored(adapted(input, 'pause35', AS_OF));
-  const today = AS_OF;
-  const prep = select.preparationForPlan(src)!;
-  const basis = withPause
-    ? select.HALF_MARATHON_V2_GENERATOR.executionBasis(src, today, null as never, {
-        breakDays: 35,
-        weeklyKm: 20
-      })
-    : prep.basisFromPlan(src, today)!;
-  if ('error' in basis) throw new Error(basis.error);
-  const c = prep.buildPreparationChoice(
-    src,
-    today,
-    basis,
-    { kind: 'shorter', raceDistM: 10000 },
-    {}
-  );
-  if ('error' in c) throw new Error(c.error);
-  return {
-    source: future(src, today),
-    target: future(c.result, today)
-  };
-}
-function withSourcePolicy<T>(run: () => T): T {
-  const a = HM_V2_POLICY.adapt as { returnGrowth: number; pause: { longShare: number } };
-  const saved = { returnGrowth: a.returnGrowth, longShare: a.pause.longShare };
-  try {
-    a.returnGrowth = 0.05;
-    a.pause.longShare = 0.3;
-    return run();
-  } finally {
-    a.returnGrowth = saved.returnGrowth;
-    a.pause.longShare = saved.longShare;
-  }
-}
-function withTargetPolicy<T>(run: () => T): T {
-  const t = TEN_K_RETURN_POLICY as unknown as Record<
-    string,
-    { fraction: number; easyWeeks: number }
-  >;
-  const saved = JSON.stringify(t);
-  try {
-    for (const p of Object.values(t)) {
-      p.fraction = Math.round(p.fraction * 50) / 100;
-      p.easyWeeks += 3;
-    }
-    return run();
-  } finally {
-    for (const [k, v] of Object.entries(JSON.parse(saved) as typeof t)) Object.assign(t[k]!, v);
-  }
-}
-
-describe('3c: T1/T2 — politika izvora ne menja cilj; politika cilja ga menja', () => {
-  // Trka u subotu (nedelje izvora od nedelje) i u nedelju (od ponedeljka) — dopuna 3b.
-  for (const [race, input] of [
-    ['subota', BASE],
-    ['nedelja', ofId('d3-10w-35km-v30-A-sun')]
-  ] as const)
-    for (const withPause of [false, true])
-      it(`HM v2 (trka ${race}) → 10K v1 (${withPause ? 'potvrđena pauza' : 'bez izvršenja'})`, () => {
-        const base = targetFlow(withPause, input);
-        const t1 = withSourcePolicy(() => targetFlow(withPause, input));
-        expect(t1.source, 'kontrola: politika izvora menja plan izvora').not.toBe(base.source);
-        expect(t1.target, 'T1: plan cilja isti').toBe(base.target);
-        if (withPause) {
-          const t2 = withTargetPolicy(() => targetFlow(withPause, input));
-          expect(t2.target, 'T2: politika cilja menja plan cilja').not.toBe(base.target);
-        }
-      });
-});
 
 /* 3d-dopuna (odluka organizatora): lak tempo iz čarobnjaka je činjenica korisnika → izvor ga šalje kad ga ulaz ima.
    v1 ciljevi ga ne čitaju (plan cilja bajt-isti sa i bez polja); 5K v2 cilj ga koristi za plan po osećaju. */
@@ -284,126 +133,5 @@ describe('3d-dopuna: lak tempo izvora (činjenica čarobnjaka)', () => {
     expect(contractInput(withEasy.plan).easyPaceSecPerKm).toBe(330);
     expect('easyPaceSecPerKm' in contractInput(without.plan)).toBe(false);
   });
-
-  it('v1 cilj (10K, 5K) bajt-isti sa i bez polja; 5K v2 cilj ga koristi (po osećaju)', () => {
-    const src = stored(adapted(EASY, 'pause35', AS_OF));
-    const prep = select.preparationForPlan(src)!;
-    const basis = prep.basisFromPlan(src, AS_OF)!;
-    expect(basis.input).toHaveProperty('easyPaceSecPerKm', 330);
-    const { easyPaceSecPerKm: _e, ...bare } = basis.input as typeof basis.input & {
-      easyPaceSecPerKm?: number;
-    };
-    for (const dist of [10000, 5000] as const) {
-      const a = prep.buildPreparationChoice(
-        src,
-        AS_OF,
-        basis,
-        { kind: 'shorter', raceDistM: dist },
-        {}
-      );
-      const b = prep.buildPreparationChoice(
-        src,
-        AS_OF,
-        { ...basis, input: bare },
-        { kind: 'shorter', raceDistM: dist },
-        {}
-      );
-      expect('error' in a, String(dist)).toBe(false);
-      expect(JSON.stringify(a)).toBe(JSON.stringify(b));
-    }
-    // 5K v2 cilj: izvor po osećaju (rezultat izostavljen) — sa lakim tempom plan postoji, bez njega MISSING_EASY_PACE.
-    const feel = feelInputs().find((c) => {
-      try {
-        return shorterOffer(adapted(c.input, 'pause35', AS_OF), AS_OF);
-      } catch {
-        return false;
-      }
-    })!;
-    const fsrc = stored(adapted(feel.input, 'pause35', AS_OF));
-    const v2prep = select.preparationForPlan(fsrc)!;
-    const fb = v2prep.basisFromPlan(fsrc, AS_OF)!;
-    const c = v2prep.buildPreparationChoice(
-      fsrc,
-      AS_OF,
-      fb,
-      { kind: 'shorter', raceDistM: 5000 },
-      {}
-    );
-    expect('error' in c ? c.error : 'ok').toBe('ok');
-  });
 });
 
-/* 3c-dopuna 2 (obrazac 3e): snimak izmena HM v2 ne prelazi u v1 cilj; poslednji rezultat (ulaz ili korak adaptacije)
-   koji nije posle starta ulaza ugovora ide kao `pb` — kroz `executionBasis` (start = sutra) i rezultat koraka. */
-describe('3c-dopuna 2: format izmena i poslednji rezultat', () => {
-  // Predaja u nedelji 2 plana (start 2026-11-02): rezultat koraka je posle starta plana.
-  const AT = '2026-11-12' as IsoDate;
-  const feel = feelInputs().find((c) => {
-    try {
-      return shorterOffer(adapted(c.input, 'pause35', AT), AT);
-    } catch {
-      return false;
-    }
-  })!;
-  /** Plan po osećaju posle adaptacije: pauza 35 d + test 5 km na dan AT (rezultat koraka). */
-  const feelWithTest = (): HmV2Plan => {
-    const g = generateHmV2(feel.input);
-    if (!g.ok) throw new Error('generator');
-    const f = factsOf(g.plan, 'pause35', AT);
-    const r = adaptHmV2(g.plan, { ...f, results: factsOf(g.plan, 'test5k', AT)['results'] }, AT);
-    if (!r.ok) throw new Error('adaptacija');
-    return r.plan;
-  };
-
-  it('v1 cilj (10K, 5K): bez `hmV2Edits` u meta (snimak izmena posle adaptacije)', () => {
-    const s = stored(adapted(BASE, 'pause35', AS_OF));
-    const src = { ...s, meta: { ...s.meta, hmV2Edits: { alts: {}, moves: {} } } } as GenPlanState;
-    expect(HM_V2_SOURCE_FORMAT.metaKeys).toContain('hmV2Edits');
-    const prep = select.preparationForPlan(src)!;
-    const basis = prep.basisFromPlan(src, AS_OF)!;
-    for (const dist of [10000, 5000] as const) {
-      const c = prep.buildPreparationChoice(
-        src,
-        AS_OF,
-        basis,
-        { kind: 'shorter', raceDistM: dist },
-        {}
-      );
-      if ('error' in c) throw new Error(c.error);
-      expect('hmV2Edits' in (c.result.meta ?? {}), String(dist)).toBe(false);
-    }
-  });
-
-  it('lastResult: rezultat koraka samo kad nije posle starta; basisFromPlan → nedostupno, executionBasis → v1 plan', () => {
-    const v2 = feelWithTest();
-    expect(v2.input.recentResult ?? null).toBeNull();
-    expect(lastResult(v2, v2.input.startDate)).toBeNull();
-    expect(lastResult(v2, AT)).toEqual({ distM: 5000, sec: 1500, date: AT });
-    expect(contractInput(v2, '2026-11-13').pb).toEqual({
-      distM: 5000,
-      sec: 1500,
-      date: AT
-    });
-    const src = stored(v2);
-    const prep = select.preparationForPlan(src)!;
-    const d = prep.preparationDecision(
-      src,
-      AT,
-      prep.basisFromPlan(src, AT)!,
-      {},
-      'limited',
-      undefined
-    );
-    expect(d.unavailable).toEqual([
-      `10K: ${V1_TARGET_NEEDS_RESULT}`,
-      `5K: ${V1_TARGET_NEEDS_RESULT}`
-    ]);
-    const ex = select.HALF_MARATHON_V2_GENERATOR.executionBasis(src, AT, null as never, {
-      weeklyKm: 30
-    });
-    if ('error' in ex) throw new Error(ex.error);
-    const c = prep.buildPreparationChoice(src, AT, ex, { kind: 'shorter', raceDistM: 10000 }, {});
-    if ('error' in c) throw new Error(c.error);
-    expect(select.generatorForPlan(select.stampForStorage(c.result))?.id).toBe('10k');
-  });
-});

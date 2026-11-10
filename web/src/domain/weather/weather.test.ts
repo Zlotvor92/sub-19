@@ -13,7 +13,7 @@ import {
   heatAdvice,
   heatFor,
   weatherCard
-} from '../generators/fiveK/weather';
+} from '../generators/halfMarathon/weather';
 
 /* parity: test/temperatura-trcanja.test.mjs. Namera: temperatura odrađenog trčanja je vrednost iz prognoze za
    SREDINU trčanja; očitavanje sa sata je rezerva koja UVEK nosi oznaku izvora. Stari kod je diferencijalno

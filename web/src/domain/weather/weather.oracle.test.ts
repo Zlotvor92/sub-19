@@ -18,7 +18,7 @@ import {
   trainingHour,
   type ForecastCache
 } from './index';
-import { bestHour, heatFor, targetPace, weatherCard } from '../generators/fiveK/weather';
+import { bestHour, heatFor, targetPace, weatherCard } from '../generators/halfMarathon/weather';
 
 /* parity: vrucinaZa, vremeCist, vremeZaSat, vremeSada, najboljiSat, satTreninga, satTrcanja, tempTrcanja, cilJTempoDana (app.js). */
 

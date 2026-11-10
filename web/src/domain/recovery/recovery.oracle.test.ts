@@ -17,13 +17,13 @@ import {
   completion,
   daysWithoutRunning,
   largestWeeklyKm
-} from '../generators/fiveK/recovery/load';
-import { painStatus, returnToRunPhase } from '../generators/fiveK/recovery/pain';
+} from '../generators/halfMarathon/recovery/load';
+import { painStatus, returnToRunPhase } from '../generators/halfMarathon/recovery/pain';
 import {
   applyInjuryProposal,
   injuryProposal,
   type RecoveryContext
-} from '../generators/fiveK/recovery/proposal';
+} from '../generators/halfMarathon/recovery/proposal';
 
 /* parity: test/povreda.test.mjs, test/povratak-obim.test.mjs, test/opterecenje-pre-plana.test.mjs.
    Poredi `domain/recovery` sa starim `kneeStatus`, `returnToRunPhase`, `hronicniObim`, `acwrSada`,

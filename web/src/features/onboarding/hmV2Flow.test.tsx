@@ -3,13 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfirmHost } from '../../components/ui/ConfirmHost';
 import {
-  HALF_MARATHON_GENERATOR,
   HALF_MARATHON_V2_GENERATOR,
   generatorForPlan
 } from '../../domain/generators/select';
 import { resolvePlan } from '../../domain/plan';
 import { seedState, type PersistedState } from '../../domain/state';
-import { ADMIN_UID } from '../../services/config';
 import { createKeyValueStore } from '../../services/storage/kv';
 import { createStateSaver, loadState } from '../../services/storage/stateStorage';
 import { collectPersisted, hydratePersisted } from '../../stores';
@@ -19,7 +17,7 @@ import PlanPage from '../plan/index';
 import { AdjustPlan } from '../plan/AdjustPlan';
 import { FormScreen } from '../race/FormScreen';
 import { sessionView } from '../session/sessionModel';
-import { GoalScreen, TrainingSettingsScreen } from '../ti/screens';
+import { GoalScreen } from '../ti/screens';
 import { Wizard } from './Wizard';
 
 /* SEGMENT HM-05 — čarobnjak polumaratona v2 iza prekidača: polja v2 (rezultat ili lagan tempo, iskustvo, trčanje/hodanje,
@@ -266,73 +264,5 @@ describe('HM v2 iza prekidača', () => {
     expect(screen.getByRole('dialog', { name: 'Pravljenje plana' })).toBeTruthy();
   });
 
-  it('isključen: čarobnjak polumaratona je stari (rezultat je obavezan, bez polja v2), plan HM v1', async () => {
-    hydratePersisted(state());
-    const user = userEvent.setup();
-    renderWizard();
-    await stepRace(user);
-    expect(screen.getByText('Šta si poslednje istrčao?')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Nemam skoriji rezultat' })).toBeNull();
-  });
-
-  it('uključen HM v2: 5K i 10K plan su bajt-isti kao sa isključenim; polumaraton uz ostale prekidače ostaje HM v1', async () => {
-    const run = async (ui: Record<string, unknown>, dist: string): Promise<string> => {
-      hydratePersisted(state(ui));
-      const user = userEvent.setup();
-      const { unmount } = renderWizard();
-      await stepRace(user, dist);
-      // Rezultat 5 km (podrazumevana distanca rezultata u starom čarobnjaku).
-      await user.type(screen.getByLabelText('minuti'), '22');
-      await user.type(screen.getByLabelText('sekunde'), '30');
-      await user.click(screen.getByRole('button', { name: 'Dalje' }));
-      await user.type(screen.getByLabelText('Nedeljna kilometraža'), '40');
-      await user.click(screen.getByRole('button', { name: 'Dalje' }));
-      await user.click(screen.getByRole('button', { name: 'Napravi plan' }));
-      await waitFor(() => expect(collectPersisted().genPlan).not.toBeNull());
-      unmount();
-      return JSON.stringify(collectPersisted().genPlan);
-    };
-    for (const dist of ['5K', '10K']) {
-      const off = await run({}, dist);
-      const on = await run(ON, dist);
-      expect(on, dist).toBe(off);
-    }
-    const v1 = await run({ generatorV2FiveK: true, generatorV2TenK: true }, 'Polumaraton');
-    expect(generatorForPlan(JSON.parse(v1) as never)).toBe(HALF_MARATHON_GENERATOR);
-  });
 });
 
-describe('Prekidač HM v2: vidljiv samo uz VITE_HM_V2 ili administratoru', () => {
-  it('običan korisnik bez env: nema prekidača; administrator ili env: ima', () => {
-    hydratePersisted(state());
-    vi.stubEnv('VITE_HM_V2', '');
-    vi.stubEnv('VITE_TENK_V2', '');
-    vi.stubEnv('VITE_FIVEK_V2', '');
-    const a = render(<TrainingSettingsScreen />);
-    expect(screen.queryByText('Generator plana')).toBeNull();
-    a.unmount();
-    useAuthStore.setState({ configured: true, hasSession: true, userId: ADMIN_UID, email: null });
-    const b = render(<TrainingSettingsScreen />);
-    expect(screen.getByLabelText(/Novi plan polumaratona pravi generator v2/)).toBeTruthy();
-    b.unmount();
-    useAuthStore.setState({ configured: true, hasSession: false, userId: null, email: null });
-    vi.stubEnv('VITE_HM_V2', '1');
-    render(<TrainingSettingsScreen />);
-    expect(screen.getByLabelText(/Novi plan polumaratona pravi generator v2/)).toBeTruthy();
-    expect(screen.queryByLabelText(/Novi 10K plan pravi generator v2/)).toBeNull();
-    expect(screen.queryByLabelText(/Novi 5K plan pravi generator v2/)).toBeNull();
-  });
-
-  it('checkbox upisuje podešavanje ui.generatorV2HalfMarathon (podrazumevano isključen)', async () => {
-    hydratePersisted(state());
-    vi.stubEnv('VITE_HM_V2', 'x');
-    const user = userEvent.setup();
-    render(<TrainingSettingsScreen />);
-    const box = screen.getByLabelText<HTMLInputElement>(
-      /Novi plan polumaratona pravi generator v2/
-    );
-    expect(box.checked).toBe(false);
-    await user.click(box);
-    expect(collectPersisted().ui['generatorV2HalfMarathon']).toBe(true);
-  });
-});

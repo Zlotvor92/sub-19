@@ -2,7 +2,7 @@ import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { FIVE_K_GENERATOR } from '../../domain/generators/select';
+import { LEGACY_PERSONAL_GENERATOR as OLD_GENERATOR } from '../../domain/generators/select';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resolvePlan, type ResolvedDay } from '../../domain/plan';
 import { seedState, type PersistedState } from '../../domain/state';
@@ -117,7 +117,7 @@ describe('Plan (jedna nedelja)', () => {
         v: sessionView(d, {
           alt: undefined,
           easyPaceSec: null,
-          rpeTarget: FIVE_K_GENERATOR.rpeTarget
+          rpeTarget: OLD_GENERATOR.rpeTarget
         })
       }))
       .filter((x) => x.v.rows && x.v.core && x.v.core !== dayLabel(x.d, false));

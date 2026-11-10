@@ -87,7 +87,7 @@ describe('10K v2 je izolovan (Uslov 7)', () => {
     const outside = walk(SRC).filter((f) => !f.startsWith(V2 + '/') && !isTest(f));
     const edges = outside.flatMap((f) => v2Edges(f, readFileSync(f, 'utf8')));
     expect(edges).toEqual([
-      'domain/generators/tenK/index.ts → domain/generators/tenK/v2/app/index.ts'
+      'domain/generators/select.ts → domain/generators/tenK/v2/app/index.ts'
     ]);
   });
 

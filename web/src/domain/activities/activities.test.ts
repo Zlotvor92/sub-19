@@ -15,7 +15,7 @@ import {
   workLapsPace,
   type ActivityStreams
 } from './index';
-import { realignPlan } from '../generators/fiveK/activities/realign';
+import { realignPlan } from '../generators/halfMarathon/activities/realign';
 
 /* parity: test/intervali-radni-deo.test.mjs, test/spojevi.test.mjs, test/doslednost.test.mjs.
    Brojčana jednakost sa starim kodom je u `activities.oracle.test.ts`; ovde su NAMERA i poznate zamke. */

@@ -3,11 +3,9 @@ import type { IsoDate } from '../../../../date';
 import { resolvePlan } from '../../../../plan';
 import type { GenPlanState, LogEntry } from '../../../../state';
 import type { TenKV2PlanInput } from '../../../contract';
-import { regeneratorForDistance } from '../../../handoff';
 import {
   generateTenKV2Plan,
   stampForStorage,
-  TEN_K_GENERATOR,
   TEN_K_V2_GENERATOR,
   TEN_K_V2_TEST_FIELD,
   tenKV2AdaptPreview,
@@ -21,7 +19,6 @@ import {
   unsupportedPlanReason,
   type TenKV2AdaptOutcome
 } from '../../../select';
-import * as tenK from '../../index';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
 import type { TenKV2Plan } from '../types.ts';
 import { buildFacts, EDITS_KEY } from './facts.ts';
@@ -589,8 +586,4 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     }
   });
 
-  it('predaja HM/maraton → kraća distanca 10K ostaje 10K v1 (10K v2 kao cilj predaje tek sa HM v2)', () => {
-    expect(regeneratorForDistance(10000)).toBe(tenK.handoffFuture);
-    expect(TEN_K_GENERATOR.policyId).toBe('10k-v1');
-  });
 });

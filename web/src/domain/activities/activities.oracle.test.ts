@@ -24,7 +24,7 @@ import {
   type IcuRound,
   type Lap
 } from './index';
-import { realignPlan } from '../generators/fiveK/activities/realign';
+import { realignPlan } from '../generators/halfMarathon/activities/realign';
 
 /* parity: test/intervali-radni-deo.test.mjs, test/icu-treninzi.test.mjs, test/doslednost (spojiDan),
    test/spojevi.test.mjs (autoRealign). Poredi `domain/activities` sa starim `detectWorkSegments`,

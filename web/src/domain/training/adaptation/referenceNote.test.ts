@@ -6,7 +6,7 @@ import type { PlanGenerationInput } from '../types';
 import {
   refreshSessionPace,
   restoreSessionPace
-} from '@/domain/generators/tenK/training/adaptation/proposal';
+} from '@/domain/generators/halfMarathon/training/adaptation/proposal';
 
 const U06: PlanGenerationInput = {
   startDate: '2026-10-12',

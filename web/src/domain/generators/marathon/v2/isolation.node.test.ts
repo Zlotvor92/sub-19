@@ -86,7 +86,7 @@ describe('maraton v2 je izolovan (Uslov 7)', () => {
       if (/generators\/marathon\/v2/.test(code)) edges.push(`${relative(SRC, f)} → alias v2`);
     }
     expect(edges).toEqual([
-      'domain/generators/marathon/index.ts → domain/generators/marathon/v2/app/index.ts'
+      'domain/generators/select.ts → domain/generators/marathon/v2/app/index.ts'
     ]);
   });
 });

@@ -83,7 +83,8 @@ describe('HM v2 je izolovan (Uslov 7)', () => {
       if (/generators\/halfMarathon\/v2/.test(code)) edges.push(`${relative(SRC, f)} → alias v2`);
     }
     expect(edges).toEqual([
-      'domain/generators/halfMarathon/index.ts → domain/generators/halfMarathon/v2/app/index.ts'
+      'domain/generators/halfMarathon/index.ts → domain/generators/halfMarathon/v2/app/index.ts',
+      'domain/generators/select.ts → domain/generators/halfMarathon/v2/app/index.ts'
     ]);
   });
 });

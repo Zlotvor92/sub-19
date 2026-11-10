@@ -1,6 +1,7 @@
 /* Kanonski zapis za poređenje sa odgovorima starog frontenda (oracle testovi). V1b: golden-master otisak v1 generatora
    (`fixtures/otisak-generatora.json`, `generatorScenarios.ts`) obrisan je zajedno sa v1 generatorima; ostaje samo
    kanonski zapis. Ne uvozi se iz produkcije. */
+import { createHash } from 'node:crypto';
 
 /**
  * Kanonski zapis: ključevi sortirani, brojevi na 3 decimale (isto kao stari `kanonski`).
@@ -23,4 +24,8 @@ export function canonical(x: unknown): unknown {
     return o;
   }
   return x;
+}
+
+export function shaOf(plan: unknown): string {
+  return createHash('sha256').update(JSON.stringify(plan)).digest('hex').slice(0, 16);
 }

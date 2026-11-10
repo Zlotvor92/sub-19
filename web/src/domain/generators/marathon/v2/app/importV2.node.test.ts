@@ -10,10 +10,8 @@ import {
 import type { IcuActivity } from '../../../../activities';
 import { resolvePlan } from '../../../../plan';
 import type { GenPlanState } from '../../../../state';
-import { initialWizard, toGenerationInput } from '../../../../onboarding';
 import type { MarathonV2PlanInput } from '../../../contract';
 import {
-  MARATHON_GENERATOR,
   generateMarathonV2Plan,
   isMarathonV2Plan,
   stampForStorage
@@ -45,23 +43,13 @@ function v2Plan(): GenPlanState {
   if (!isMarathonV2Plan(p)) throw new Error('nije plan maratona v2');
   return p;
 }
+/** V1b: plan starog (v1) generatora — bez oznake politike i bez objekta v2 (stari plan u bazi; generator nema). */
 function v1Plan(): GenPlanState {
-  const input = toGenerationInput(
-    {
-      ...initialWizard(),
-      raceDist: 42195,
-      raceDate: '2027-03-07',
-      pbDist: 10000,
-      pbMin: '45',
-      pbSec: '0',
-      weeklyKm: '45',
-      runDays: 4,
-      runDows: [2, 4, 6, 7]
-    },
-    '2026-11-02'
-  )!;
-  const gen = MARATHON_GENERATOR.generatePlan(input);
-  return stampForStorage(MARATHON_GENERATOR.adaptGeneratedPlan(gen)!);
+  const p = JSON.parse(JSON.stringify(v2Plan())) as GenPlanState & Record<string, unknown>;
+  delete p['marathonV2'];
+  delete p.meta!['policyId'];
+  delete p.meta!['policyVersion'];
+  return p;
 }
 const view = (p: GenPlanState) => resolvePlan(p.weeks, { alts: {}, moves: {} });
 

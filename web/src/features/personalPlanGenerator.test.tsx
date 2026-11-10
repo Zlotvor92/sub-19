@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as hm from '../domain/generators/halfMarathon';
-import * as fiveK from '../domain/generators/fiveK';
+import { v2Plan } from '@/test/generators';
 import { UNSUPPORTED_DISTANCE } from '../domain/generators/select';
 import { resolvePlan } from '../domain/plan';
 import { personalBaselineVdot, personalPlan } from '../domain/personal';
@@ -98,17 +98,14 @@ describe('ugrađeni lični plan ide HM generatoru', () => {
 
 describe('plan bez podržane distance', () => {
   it('„Prilagodi plan" to eksplicitno prikazuje; prilagođavanje se odbija bez starog mehanizma', () => {
-    const gen = fiveK.generatePlan({
+    const plan = v2Plan({
       startDate: '2026-10-05',
       raceDate: '2026-12-13',
       raceDistM: 5000,
       pb: { distM: 5000, sec: 1350 },
       weeklyKm: 30,
-      runDays: 4,
-      quality: 2,
-      intensity: 'std'
-    } as never);
-    const plan = fiveK.adaptGeneratedPlan(gen)!;
+      runDays: 4
+    });
     useTrainingStore.getState().patch({
       genPlan: { ...plan, meta: { ...plan.meta!, raceDistM: 7000 }, ulaz: { raceDistM: 7000 } }
     });

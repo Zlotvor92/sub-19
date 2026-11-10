@@ -1,13 +1,17 @@
 /* D5 (docs/ENGINE_CHANGES.md): oznaka „TAPER" u prikazu mora da prati ono što generator STVARNO radi — jedna taper nedelja na 5K/10K, dve na
    polumaratonu i maratonu. Pre izmene je prikaz pozicijom označavao samo pretposlednju nedelju, pa je prva taper nedelja HM/maratona
-   (sa obimom već smanjenim na 80 %) stajala kao „VRHUNAC". */
+   (sa obimom već smanjenim na 80 %) stajala kao „VRHUNAC".
+   V1b: planovi su zamrznuti planovi starog (v1) formata (`legacyPlans.ts`) — prikaz faze takvih planova (stari planovi u
+   bazi) mora da ostane isti. */
 
-import { generatePlan } from '@/test/generators';
+import { generatePlan as legacyGenerate } from '@/test/legacyPlans';
 import { describe, expect, it } from 'vitest';
 import { addDays, parseIsoDate, type IsoDate } from '../date';
-import { HEURISTIC_5K } from '@/domain/generators/fiveK/training/constants/distances';
 import { weekPhase } from './describe';
 
+type OldPlan = { weeks: Array<{ w: number; focus: string; taper?: boolean; deload?: boolean }> };
+const generatePlan = (input: unknown): OldPlan | { error: string } =>
+  legacyGenerate(input) as OldPlan | { error: string };
 const START = parseIsoDate('2026-10-05') as IsoDate;
 const CASES: ReadonlyArray<[string, number, number, number, number, number]> = [
   ['5K', 5000, 1237, 40, 24, 1],
@@ -43,10 +47,6 @@ describe('weekPhase prati taper generatora', () => {
       }
     });
   }
-
-  it('5K heuristika ne definiše taperWeeks (podrazumevano 1) — pretpostavka ovog testa', () => {
-    expect((HEURISTIC_5K as { taperWeeks?: number }).taperWeeks).toBeUndefined();
-  });
 
   it('opis „Taper …" označava taper i bez generatora; DELOAD ima prednost; ručno pisan plan i dalje ima pretposlednju nedelju', () => {
     expect(weekPhase({ w: 8, focus: 'Taper · Tempo' }, 20)).toBe('TAPER');

@@ -161,34 +161,4 @@ describe('5K v2 iza prekidača', () => {
     expect(screen.getByRole('dialog', { name: 'Pravljenje plana' })).toBeTruthy();
   });
 
-  it('isključen: 5K čarobnjak je stari (rezultat je obavezan, bez polja v2)', async () => {
-    hydratePersisted(state(false));
-    const user = userEvent.setup();
-    renderWizard();
-    await stepRace(user);
-    expect(screen.getByText('Šta si poslednje istrčao?')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Nemam skoriji rezultat' })).toBeNull();
-  });
-
-  it('uključen prekidač: 10K plan je bajt-isti kao sa isključenim', async () => {
-    const run = async (on: boolean): Promise<string> => {
-      hydratePersisted(state(on));
-      const user = userEvent.setup();
-      const { unmount } = renderWizard();
-      await stepRace(user, '10K');
-      await user.type(screen.getByLabelText('minuti'), '45');
-      await user.type(screen.getByLabelText('sekunde'), '0');
-      await user.click(screen.getByRole('button', { name: 'Dalje' }));
-      await user.type(screen.getByLabelText('Nedeljna kilometraža'), '40');
-      await user.click(screen.getByRole('button', { name: 'Dalje' }));
-      await user.click(screen.getByRole('button', { name: 'Napravi plan' }));
-      await waitFor(() => expect(collectPersisted().genPlan).not.toBeNull());
-      unmount();
-      return JSON.stringify(collectPersisted().genPlan);
-    };
-    const off = await run(false);
-    const on = await run(true);
-    expect(on).toBe(off);
-    expect((JSON.parse(on) as { meta: { policyId: string } }).meta.policyId).toBe('10k-v1');
-  });
 });

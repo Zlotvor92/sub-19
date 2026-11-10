@@ -32,16 +32,19 @@ function violations(sf: ts.SourceFile, allowGeneratorObjects: boolean): string[]
     if (!spec || !distanceOf(spec)) continue;
     const clause = ts.isImportDeclaration(st) ? st.importClause : undefined;
     const bindings = clause?.namedBindings;
-    const ok =
-      allowGeneratorObjects &&
-      ts.isImportDeclaration(st) &&
-      spec === `./${distanceOf(spec)}` &&
-      clause &&
-      !clause.isTypeOnly &&
-      !clause.name &&
+    const base =
+      allowGeneratorObjects && ts.isImportDeclaration(st) && clause && !clause.isTypeOnly && !clause.name;
+    const ok = base && spec === `./${distanceOf(spec)}` && bindings && ts.isNamespaceImport(bindings);
+    // V1b: adapter v2 se uvozi direktno (`import { fiveKV2 } from './fiveK/v2/app/index.ts'`) — samo vrednosni objekti.
+    const okV2 =
+      base &&
+      spec === `./${distanceOf(spec)}/v2/app/index.ts` &&
       bindings &&
-      ts.isNamespaceImport(bindings);
+      ts.isNamedImports(bindings) &&
+      bindings.elements.every((el) => !el.isTypeOnly);
     if (ok) namespaces.add(bindings.name.text);
+    else if (okV2 && bindings && ts.isNamedImports(bindings))
+      for (const el of bindings.elements) namespaces.add(el.name.text);
     else out.push(`uvoz iz ${spec}: ${st.getText(sf).replace(/\s+/g, ' ').slice(0, 120)}`);
   }
   const visit = (n: ts.Node): void => {

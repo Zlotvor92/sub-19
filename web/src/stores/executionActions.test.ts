@@ -19,7 +19,7 @@ import { useTrainingStore } from './trainingStore';
 import { useUIStore } from './uiStore';
 import { undoAdjustments } from './raceActions';
 // Plan u ovom testu je 10K; ručno osvežavanje tempa sesije je funkcija 10K generatora.
-import { refreshSessionPace } from '../domain/generators/tenK/training/adaptation/proposal';
+import { refreshSessionPace } from '../domain/generators/halfMarathon/training/adaptation/proposal';
 
 const TODAY = '2026-02-18';
 const INPUT: PlanGenerationInput = {

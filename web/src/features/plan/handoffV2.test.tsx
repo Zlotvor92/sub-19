@@ -2,7 +2,6 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfirmHost } from '../../components/ui/ConfirmHost';
-import { V1_TARGET_NEEDS_RESULT } from '../../domain/generators/handoff';
 import {
   generateHmV2Plan,
   generateMarathonV2Plan,
@@ -115,17 +114,16 @@ describe('3g store: plan i prekidači korisnika', () => {
     expect(d.conditions[0]).toMatch(/^Zadrži plan v2/);
   });
 
-  it('(2) prekidač 5K v2 korisnika bira cilj 5K v2; bez njega je cilj v1 (traži rezultat)', () => {
+  it('(2) V1b: cilj predaje je uvek v2 te distance — bez ikakvog podešavanja nudi se 5K v2', () => {
     adaptedSource(FEEL);
-    flags('generatorV2FiveK');
+    flags();
     const on = storedPreparationDecision(TODAY)!;
     expect(on.options.map((o) => o.title)).toEqual(['Kraća distanca: 5K istog datuma']);
-    flags();
-    const off = storedPreparationDecision(TODAY)!;
-    expect(off.options).toEqual([]);
-    expect(off.unavailable).toEqual([
-      `10K: ${V1_TARGET_NEEDS_RESULT}`,
-      `5K: ${V1_TARGET_NEEDS_RESULT}`
+    // Podešavanja starih prekidača više ništa ne menjaju.
+    flags('generatorV2FiveK');
+    expect(storedPreparationDecision(TODAY)).toEqual(on);
+    expect(on.unavailable.join(' ')).not.toMatch(/\(v1\)/);
+    expect(on.unavailable).toEqual([
     ]);
   });
 });
@@ -170,12 +168,16 @@ describe('3g UI: ponuda, odluka, zatvaranje', () => {
     adaptedSource(FEEL);
     flags();
     const a = render(<AdjustPlan />);
-    const list = within(decisionBox()!).getByRole('list', { name: 'Nedostupne opcije' });
+    // V1b: nedostupne opcije (ako ih ima) su doslovno razlozi domena — cilj v2, nikad v1.
+    const unavailable = storedPreparationDecision(TODAY)!.unavailable;
+    const list = within(decisionBox()!).queryByRole('list', { name: 'Nedostupne opcije' });
     expect(
-      within(list)
-        .getAllByRole('listitem')
-        .map((li) => li.textContent)
-    ).toEqual([`10K: ${V1_TARGET_NEEDS_RESULT}`, `5K: ${V1_TARGET_NEEDS_RESULT}`]);
+      list
+        ? within(list)
+            .getAllByRole('listitem')
+            .map((li) => li.textContent)
+        : []
+    ).toEqual(unavailable);
     a.unmount();
     // Plan sa rezultatom: ponuda posle pauze 35 d u prvoj nedelji (utorak 2026-01-20).
     adaptedSource(WITH_RESULT, {}, '2026-01-20', { from: '2025-12-17', to: '2026-01-20' });

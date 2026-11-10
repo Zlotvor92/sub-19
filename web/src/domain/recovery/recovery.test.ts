@@ -4,16 +4,16 @@ import { addDays, type IsoDate } from '../date';
 import { resolvePlan } from '../plan/resolve';
 import type { AltRecord, GenPlanState, LogEntry, PainRecord } from '../state';
 import { isLoadBearing } from './index';
-import { ACWR_MAX } from '../generators/fiveK/recovery/constants';
-import { chronicKm } from '../generators/fiveK/recovery/load';
-import { painStatus, returnToRunPhase } from '../generators/fiveK/recovery/pain';
-import { RW_BY_PAIN } from '../generators/fiveK/recovery/constants';
+import { ACWR_MAX } from '../generators/halfMarathon/recovery/constants';
+import { chronicKm } from '../generators/halfMarathon/recovery/load';
+import { painStatus, returnToRunPhase } from '../generators/halfMarathon/recovery/pain';
+import { RW_BY_PAIN } from '../generators/halfMarathon/recovery/constants';
 import {
   applyInjuryProposal,
   injuryProposal,
   runWalkForPain,
   type RecoveryContext
-} from '../generators/fiveK/recovery/proposal';
+} from '../generators/halfMarathon/recovery/proposal';
 
 /* parity: test/povreda.test.mjs, test/povratak-obim.test.mjs, test/opterecenje-pre-plana.test.mjs —
    namera i zahtevi (nikad naviše, od originala, dan trke se ne dira, bol van nosivih delova ne prepisuje

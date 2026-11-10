@@ -11,7 +11,7 @@ import {
   partLevel,
   wellnessFor
 } from './index';
-import { acwrPosition } from '../generators/fiveK/recovery/view';
+import { acwrPosition } from '../generators/halfMarathon/recovery/view';
 
 /* parity: oporavakZa, dodajMasu, obrisiMasu, obrisiMasuPre, partLevel, painClass, acwrPolozaj (app.js). */
 

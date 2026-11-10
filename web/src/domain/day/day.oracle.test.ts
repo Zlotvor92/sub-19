@@ -5,7 +5,7 @@ import { firstDiff } from '@/test/firstDiff';
 import { loadLegacyApp, type LegacyApp } from '@/test/legacyOracle';
 import { addDays, type IsoDate } from '../date';
 // Ciljni napor je smernica generatora; stari frontend je imao jednu za sve distance, ista je u svakoj kopiji.
-import { rpeTarget } from '../generators/fiveK/plan/describe';
+import { rpeTarget } from '../generators/halfMarathon/plan/describe';
 /* V1b: politika forme starog plana. Stari frontend je merenja na planu svog formata klasifikovao i uglađivao kodom koji je
    isti u sva četiri v1 generatora (`training/adaptation/*`, bajt-isti fajlovi); 5K v1 je obrisan, pa oracle koristi
    zamrznut HM v1 (`LEGACY_PERSONAL_GENERATOR`, isti kod). Aplikacija stari plan ne prilagođava (`isLegacyPlan`). */

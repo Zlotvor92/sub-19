@@ -1,4 +1,4 @@
-import type { ProposalContext } from '@/domain/generators/tenK/training/adaptation/proposal';
+import type { ProposalContext } from '@/domain/generators/halfMarathon/training/adaptation/proposal';
 import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { resolvePlan } from '../../plan';
@@ -10,10 +10,10 @@ import { t3kVdot } from '../test3k';
 import { classifyMeasurement, dayZone, matchPlanRows, sessionClassFor } from './index';
 import { enterWorkPace, recordAutoPace, type WorkPaceState } from '../../day/workPace';
 /* Plan u ovom testu je 10K: predlog tempa i dokaz forme su funkcije 10K generatora. */
-import { predRow } from '@/domain/generators/tenK/training/prediction/index';
-import { fitnessEvidence } from '@/domain/generators/tenK/training/adaptation/evidence';
-import { vdotProposal } from '@/domain/generators/tenK/training/adaptation/proposal';
-import { TEN_K_GENERATOR } from '@/domain/generators/select';
+import { predRow } from '@/domain/generators/halfMarathon/training/prediction/index';
+import { fitnessEvidence } from '@/domain/generators/halfMarathon/training/adaptation/evidence';
+import { vdotProposal } from '@/domain/generators/halfMarathon/training/adaptation/proposal';
+import { LEGACY_PERSONAL_GENERATOR as OLD_GENERATOR } from '@/domain/generators/select';
 
 const generated = adaptGeneratedPlan(
   generatePlan({
@@ -188,7 +188,7 @@ describe('explicit zones and replacing old pace measurements', () => {
     session: { ...originalDay.session!, kind: 'Fartlek', zone: 'T' as const }
   };
   const row = { ...originalRow, l: `N${day.w} · Fartlek`, zone: 'T' as const };
-  const context = { form: TEN_K_GENERATOR, rows: [row], baselineVdot: 48, hasAlt: false };
+  const context = { form: OLD_GENERATOR, rows: [row], baselineVdot: 48, hasAlt: false };
   const state: WorkPaceState = {
     pred: {},
     predLock: {},

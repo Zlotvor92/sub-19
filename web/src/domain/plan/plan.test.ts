@@ -9,7 +9,7 @@ import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import type { AltRecord, GenPlanState } from '../state';
 import { safeTag, tagName, weekPhase } from './describe';
-import { rpeTarget } from '../generators/fiveK/plan/describe';
+import { rpeTarget } from '../generators/halfMarathon/plan/describe';
 import { clearAlt, setAlt, swapDays, undoWeekMoves } from './edit';
 import { resolvePlan } from './resolve';
 

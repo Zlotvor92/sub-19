@@ -5,11 +5,9 @@ import type { IsoDate } from '../../../../date';
 import { resolvePlan } from '../../../../plan';
 import type { GenPlanState, LogEntry } from '../../../../state';
 import type { MarathonV2PlanInput } from '../../../contract';
-import { regeneratorForDistance } from '../../../handoff';
 import {
   generateMarathonV2Plan,
   stampForStorage,
-  MARATHON_GENERATOR,
   MARATHON_V2_GENERATOR,
   MARATHON_V2_TEST_FIELD,
   marathonV2AdaptPreview,
@@ -23,9 +21,6 @@ import {
   unsupportedPlanReason,
   type MarathonV2AdaptOutcome
 } from '../../../select';
-import * as tenK from '../../../tenK/index';
-import * as hm from '../../../halfMarathon/index';
-import * as mar from '../../index';
 import { MARATHON_V2_POLICY as P } from '../policy.ts';
 import type { MarathonV2Plan } from '../types.ts';
 import { validatePlan } from '../validate.ts';
@@ -678,9 +673,4 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     }
   });
 
-  it('predaja „kraća distanca" ostaje v1 (maraton → HM v1, HM → 10K v1; predaja v2 je faza 3)', () => {
-    expect(regeneratorForDistance(21097.5)).toBe(hm.handoffFuture);
-    expect(regeneratorForDistance(10000)).toBe(tenK.handoffFuture);
-    expect(MARATHON_GENERATOR.policyId).toBe(mar.POLICY_ID);
-  });
 });

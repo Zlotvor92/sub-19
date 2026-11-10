@@ -1,4 +1,4 @@
-import type { ProposalContext } from '@/domain/generators/tenK/training/adaptation/proposal';
+import type { ProposalContext } from '@/domain/generators/halfMarathon/training/adaptation/proposal';
 import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../date';
@@ -21,7 +21,7 @@ import {
   applyVdotProposal,
   undoVdotAdjustments,
   vdotProposal
-} from '@/domain/generators/tenK/training/adaptation/proposal';
+} from '@/domain/generators/halfMarathon/training/adaptation/proposal';
 
 /* parity: test/vdot-plan.test.mjs („Kada se predlog uopšte javlja", „Šta se NE sme dirati",
    „Generisan plan — i opis sesije prati novi tempo"), test/forma-vs-plan.test.mjs, test/revizija3.test.mjs
