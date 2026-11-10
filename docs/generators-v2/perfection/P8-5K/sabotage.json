@@ -151,5 +151,14 @@
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"
   ]
+ },
+ {
+  "name": "P8-G6 početnik sa 4 dana na 0,70",
+  "file": "src/domain/generators/fiveK/v2/lengths.ts",
+  "find": "  days >= 4 && !beginner ? P.easy.buildMaxShareOfLong4 : P.easy.buildMaxShareOfLong;",
+  "replace": "  days >= 4 ? P.easy.buildMaxShareOfLong4 : P.easy.buildMaxShareOfLong;",
+  "tests": [
+   "src/domain/generators/fiveK/v2/p8.node.test.ts"
+  ]
  }
 ]

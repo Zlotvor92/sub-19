@@ -154,7 +154,9 @@ export function construct(
       (s) => s.firstWeek === f.index && pauseRemainderKm(s, f, w.targetKm) !== null
     );
     const planKm = protectedKm(kept);
-    const m = owner ? null : mixedWeek(w, kept, keptKm, p, planKm, input.runDays.length);
+    const m = owner
+      ? null
+      : mixedWeek(w, kept, keptKm, p, planKm, input.runDays.length, ctx(f.index).a.beginner);
     const out = m?.week ?? w;
     const keptDates = new Set(kept.map((d) => d.date));
     const freeKm = out.days

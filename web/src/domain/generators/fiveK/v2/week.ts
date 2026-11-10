@@ -210,7 +210,7 @@ export function buildTrainingWeek(
     );
   else if (easyCappedAtLong && belowTargetShown(plannedKm, target))
     notes.push(
-      `Lagan trk najviše ${kmText(easyCapKm(longKm, f.phase, t1Off, a.days))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
+      `Lagan trk najviše ${kmText(easyCapKm(longKm, f.phase, t1Off, a.days, a.beginner))} km uz dugi ${kmText(longKm)} km, pa nedelja ima ${kmText(plannedKm)} km umesto ${kmText(target)} km; ${belowTargetAdvice(a.days, a.beginner ? P.beginner.maxRunDays : MAX_DAYS)}.`
     );
   if (rest.size > 0 || pain.size > 0)
     notes.push(
@@ -425,7 +425,8 @@ export function mixedRemainder(
   keptKm: number,
   p: PaceModel,
   keptPlanKm: number = keptKm,
-  nDays = 3
+  nDays = 3,
+  beginner = false
 ): { days: PlanDay[]; over: boolean; droppedQuality: boolean; remainderKm: number } | null {
   const keptDates = new Set(kept.map((d) => d.date));
   const free = week.days.filter((d) => !keptDates.has(d.date));
@@ -435,7 +436,9 @@ export function mixedRemainder(
   if (kept.length === 0 || free.length === 0 || km(free) <= R + 1e-9) return null;
   const easyMin = easyMinOf(week.phase, p, week.deload);
   const long = free.find((d) => d.role === 'long');
-  const top = long ? easyCapKm(long.workout.km, week.phase, week.deload, nDays) : Infinity;
+  const top = long
+    ? easyCapKm(long.workout.km, week.phase, week.deload, nDays, beginner)
+    : Infinity;
   // Prvi kvalitet (q1) ostaje najduže: otpada drugi, pa svi.
   const qs = free
     .filter((d) => d.workout.kind === 'quality' && !isTestDay(d))
@@ -482,9 +485,10 @@ export function mixedWeek(
   keptKm: number,
   p: PaceModel,
   keptPlanKm: number = keptKm,
-  nDays = 3
+  nDays = 3,
+  beginner = false
 ): { week: PlanWeek; droppedQuality: boolean } | null {
-  const m = mixedRemainder(week, kept, keptKm, p, keptPlanKm, nDays);
+  const m = mixedRemainder(week, kept, keptKm, p, keptPlanKm, nDays, beginner);
   if (!m) return null;
   const keptDates = new Set(kept.map((d) => d.date));
   const floor = mixedFloorKm(

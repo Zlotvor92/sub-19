@@ -75,7 +75,8 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
           longCapKm(w.targetKm, p.paces, athleteOf(p)) + 1e-9
         );
         for (const d of w.days.filter((x) => x.role === 'easy')) {
-          const share = p.input.runDays.length >= 4 ? 7 : 8;
+          // 5k-v2.15.2: početnik ostaje na 0,8 za svaki broj dana.
+          const share = p.input.runDays.length >= 4 && p.experience !== 'beginner' ? 7 : 8;
           const intro =
             p.experience === 'beginner' && w.phase === 'base' && w.index <= P.beginner.introWeeks;
           const cap = intro ? long.workout.km : Math.floor(long.workout.km * share + 1e-9) / 10;

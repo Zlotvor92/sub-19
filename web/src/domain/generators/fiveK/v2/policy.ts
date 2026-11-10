@@ -10,7 +10,7 @@ import type { Effort, Weekday } from './types.ts';
 export const FIVE_K_V2_POLICY = {
   /** Identitet politike (Uslov 6: plan nosi policyId/policyVersion). */
   id: '5k-v2',
-  version: '5k-v2.15.1',
+  version: '5k-v2.15.2',
 
   /** 2.3.0: JEDNA tabela po broju dana trčanja (heuristike opsega i šablona, ne dokazana pravila).
       - weeklyKm: trenutni nedeljni obim [km]; van opsega → odbijanje;
@@ -362,7 +362,8 @@ export const FIVE_K_V2_POLICY = {
         cilja koji ne staje: manje laganih dana, pa planirano < cilj (dugi se zbog toga ne produžava). */
     buildMaxShareOfLong: 0.8,
     /** 5k-v2.15.0 (P8 dopuna G6, odluka organizatora po glavnom treneru): plan sa 4 i više dana — lagan ≤ 0,70 × dugi
-        (3 dana ostaje buildMaxShareOfLong 0,8). Jedino mesto: lengths.easyCapKm. */
+        (3 dana ostaje buildMaxShareOfLong 0,8). Jedino mesto: lengths.easyCapKm. 5k-v2.15.2: početnik (svaki broj
+        dana) ostaje na buildMaxShareOfLong 0,8 — lengths.easyShareOf. */
     buildMaxShareOfLong4: 0.7,
     /* 5k-v2.15.1 (P8 završetak, odluka organizatora 1): varijanta B (0,75 uz spuštanje cilja kroz tabelu izvodljivih
        ciljeva) izmerena i odbačena — vrh cilja pada > 10 % u 36–79 % planova svake grupe sa 4+ dana
@@ -1124,5 +1125,14 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'prihvaćena: razvoj 5K = baza + vrhunac; „tabela početnika" = kapacitet plana početnika; WU/CD trke najmanje ' +
       '1,0 / 0,5 km. Sačuvan plan 5k-v2.15.0 i stariji prilagođavaju se po 2.15.1 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
+  },
+  {
+    version: '5k-v2.15.2',
+    decision:
+      'P8 G6, dopuna odluke organizatora (nalaz iz 10K, mreža početnika: 0,70 kod početnika sa 4 dana obara obim čim ' +
+      'uđe prvi kvalitet; HEURISTIKA): početnik ostaje na lagan ≤ 0,80 × dugi za svaki broj dana; 0,70 važi samo za ' +
+      'redovan plan sa 4+ dana. Jedino mesto: lengths.easyShareOf (easyCapKm; konstruktor, mešovita nedelja, validator ' +
+      'EASY_VS_LONG / PLANNED_BELOW_TARGET). Sačuvan plan 5k-v2.15.1 i stariji prilagođavaju se po 2.15.2 ' +
+      '(KNOWN_VERSIONS). Brojevi: docs/generators-v2/perfection/reports/P8-5K-REPORT.md § Završetak.'
   }
 ];
