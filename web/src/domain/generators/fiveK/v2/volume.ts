@@ -168,13 +168,13 @@ export function planVolume(
   const cap = peakKm(startKm, capacity, a);
   const targets: number[] = [];
   let lastBuild: number | null = null;
-  for (const f of frames) {
+  for (const [i, f] of frames.entries()) {
     if (f.phase === 'taper' || f.phase === 'race') break;
     let t: number;
     if (f.deload) t = round1((targets[targets.length - 1] ?? startKm) * P.volume.deloadFactor);
     else if (lastBuild === null) t = startKm;
     else if (f.phase === 'sharpen') t = lastBuild;
-    else t = Math.min(floor1(lastBuild * (1 + growth)), cap);
+    else t = Math.min(floor1(lastBuild * (1 + growth)), cap, spreadKm(lastBuild, cap, devWeeksLeft(frames, i)));
     t = fit(t);
     if (!f.deload) lastBuild = t;
     targets.push(t);
@@ -192,6 +192,27 @@ export function planVolume(
     startCapped: round1(currentKm) > capacity,
     targets
   };
+}
+
+/** 5k-v2.15.0 (P8 G1, heuristika, odluka organizatora P8, nalaz slepe ocene): faza razvoja 5K = baza + vrhunac (faze u
+    kojima obim raste; oštrenje drži). Broj ne-rasteretnih nedelja razvoja od nedelje indeksa `i` (uključujući) do kraja
+    razvoja; 0 van razvoja. JEDINO mesto (planVolume, adaptVolume). */
+export function devWeeksLeft(frames: readonly Pick<WeekFrame, 'phase' | 'deload'>[], i: number): number {
+  let n = 0;
+  for (let k = i; k < frames.length; k++) {
+    const f = frames[k]!;
+    if (f.phase !== 'base' && f.phase !== 'peak') break;
+    if (!f.deload) n++;
+  }
+  return n;
+}
+
+/** 5k-v2.15.0 (P8 G1): gornja granica cilja ne-rasteretne nedelje razvoja — poslednji cilj + (vrh − poslednji) / broj
+    preostalih ne-rasteretnih nedelja razvoja (devWeeksLeft), naniže na 0,1 km, najmanje 0,1 km dok vrh nije dostignut.
+    Samo usporava rast (konstruktor uzima min sa korakom po pravilu); van razvoja ili na vrhu bez dejstva (Infinity). */
+export function spreadKm(last: number, cap: number, left: number): number {
+  if (left <= 0 || last + 1e-9 >= cap) return Infinity;
+  return Math.round((last + Math.max(0.1, floor1((cap - last) / left))) * 10) / 10;
 }
 
 /** 2.6.0 (Odluka 2): donja granica cilja adaptirane nedelje = min(cilj nedelje u planu generatora,
@@ -255,12 +276,18 @@ export function nextBuildKm(
   phase: Phase,
   growth: number,
   cap: number,
-  level: number | null
+  level: number | null,
+  left = 0
 ): number {
+  // 5k-v2.15.0 (P8 G1): redovan rast i ovde raspoređen do kraja razvoja (spreadKm); povratni rast ostaje.
   const normal =
     phase === 'sharpen'
       ? lastBuild
-      : Math.min(floor1(lastBuild * (1 + growth)), Math.max(cap, lastBuild));
+      : Math.min(
+          floor1(lastBuild * (1 + growth)),
+          Math.max(cap, lastBuild),
+          Math.max(spreadKm(lastBuild, cap, left), lastBuild)
+        );
   if (level === null || lastBuild + 1e-9 >= level) return normal;
   return Math.max(normal, Math.min(floor1(lastBuild * (1 + P.adapt.returnGrowth)), level));
 }
@@ -397,7 +424,7 @@ export function adaptVolume(
       else if (f.deload)
         t = round1((lastBuild ?? targets[i - 1] ?? startRef) * P.volume.deloadFactor);
       else if (lastBuild === null) t = startRef;
-      else t = nextBuildKm(lastBuild, f.phase, growth, cap, level);
+      else t = nextBuildKm(lastBuild, f.phase, growth, cap, level, devWeeksLeft(frames, i));
       t = fitAt(i + 1, t);
       // Cilj koraka je osnov daljeg rasta i kad je nedelja rasteretna (obim pre pauze/smanjenja ne važi).
       if (!f.deload || (i === n - 1 && s.startKm !== null) || resets.has(i + 1)) lastBuild = t;
