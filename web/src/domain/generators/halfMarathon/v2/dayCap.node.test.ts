@@ -70,8 +70,9 @@ const CASES: [string, Record<string, unknown>][] = [
   ],
   [
     // HM-10 (T1): sa skorašnjim najdužim 5 km plan se odbija (RECENT_LONG_TOO_SHORT, prag 5,5 km) — 6 km.
-    '4 d 40 km VDOT 70, skorašnji najduži 6 km (pouka 28)',
-    inputOf({ weeks: 10, km: 40, vdot: 70, days: d[4].A.days, recentLongRunKm: 6 })
+    // P8 G6 (lagan ≤ 0,7 × dugi): prag je 6,5 km.
+    '4 d 40 km VDOT 70, skorašnji najduži 6,5 km (pouka 28)',
+    inputOf({ weeks: 10, km: 40, vdot: 70, days: d[4].A.days, recentLongRunKm: 6.5 })
   ],
   [
     '4 d 30,2 km VDOT 79 (Q2 najniže doze druge strukture skraćuje dugi: Q1 R 6 × 200)',
@@ -127,7 +128,10 @@ describe('pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone)', () => 
     const c = { paces: p.paces, wc: warmupCooldown(30.2), rule: planRule(4, 'regular')! };
     const lim = buildDayLimit(c, 320, 1, rollingLongCap10(2, longs, null), 'T_continuous', null);
     expect(w.targetKm).toBe(32);
-    expect(lim.q1('R', { form: 'reps', reps: 8, repM: 200 }, false)).toBe('over');
+    // P8 G6 (lagan ≤ 0,7 × dugi): sa dva dana kvaliteta lagan ne staje u granice, pa se dan poredi sa dugim nedelje sa
+    // jednim danom kvaliteta (11,4 km) — Q1 R 8 × 200 m staje (bilo 'over'); plan te nedelje ima lagan drugi dan.
+    expect(lim.q1('R', { form: 'reps', reps: 8, repM: 200 }, false)).toBe('fits');
+    expect(w.days.some((x) => x.role === 'q2')).toBe(false);
     const q1: Dose = {
       ladder: 'R',
       zone: 'R',
@@ -137,7 +141,7 @@ describe('pouka 32: kvalitetni dan ≤ dugi (osim najnižeg nivoa zone)', () => 
     };
     // Izuzet sopstveni dan (najniži nivo Q2) ne izuzima Q1: Q1 R 8 × 200 m je duži od dugog uz obe strukture Q2.
     // HM-10 (T1): dugi ostavlja mesta za najkraći lagan od 20 min, pa i 2,0 km kontinuirano ostaje 'over' (bilo 'fits').
-    expect(lim.q2(q1)('T_continuous', { form: 'reps', reps: 2, repM: 1000 }, true)).toBe('over');
+    expect(lim.q2(q1)('T_continuous', { form: 'reps', reps: 2, repM: 1000 }, true)).toBe('fits');
     expect(lim.q2(q1)('T_continuous', { form: 'continuous', km: 2 }, true)).toBe('over');
   });
 

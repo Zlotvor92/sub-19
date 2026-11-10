@@ -96,7 +96,19 @@ describe('HM v2 politika (MASTER § 4)', () => {
       growthMinKm: 1.0,
       growthMaxKm: 4.0,
       peakFactor: 1.4,
-      peakAddKm: 20
+      peakAddKm: 20,
+      // P8 G1: plafon vrha po dužini pripreme i satima; korak < 3 % se ne primenjuje.
+      peakFactorByWeeks: [
+        { maxWeeks: 12, factor: 1.3 },
+        { maxWeeks: 15, factor: 1.35 },
+        { maxWeeks: Infinity, factor: 1.4 }
+      ],
+      peakHours: [
+        { fromVdot: 0, hours: 7.5 },
+        { fromVdot: 40, hours: 8.5 },
+        { fromVdot: 50, hours: 9.5 }
+      ],
+      minStepShare: 0.03
     });
     expect(P.taper).toEqual({
       factor: 0.7,
@@ -110,7 +122,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
   it('H8 trkačka nedelja', () => {
     expect(P.raceWeek).toEqual({
       maxRunDays: 5,
-      sharpener: { reps: 2, repM: 2000, recoverySec: 120 },
+      // P8 G5: oštrenje ≤ 12 min rada, deonica deljiva sa 100 m, 400–2000 m.
+      sharpener: { reps: 2, repM: 2000, recoverySec: 120, maxWorkSec: 720, minRepM: 400, roundM: 100 },
       sharpenerMinGapDays: 3,
       eveEasySec: 1200,
       eveStrides: { reps: 4, sec: 20 },
@@ -156,7 +169,19 @@ describe('HM v2 politika (MASTER § 4)', () => {
       RP: [
         { fromKm: 0, share: 0.15 },
         { fromKm: 40, share: 0.2 }
-      ]
+      ],
+      // P8 G4: rad jednog treninga usred nedelje u sekundama.
+      workSec: {
+        T: [
+          { fromKm: 0, sec: 1800 },
+          { fromKm: 80, sec: 2400 }
+        ],
+        I: [
+          { fromVdot: 0, sec: 1200 },
+          { fromVdot: 40, sec: 1440 }
+        ],
+        RP: 2700
+      }
     });
     expect(P.startLevel).toEqual({
       capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 },
@@ -175,6 +200,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       easyMinKm: 4.0,
       longWarnKm: 16,
       easyLongMaxShare: 0.8,
+      // P8 G6: 4+ dana.
+      easyLongMaxShare4: 0.7,
       easyMinSec: 1200
     });
     expect(P.recentLong).toEqual({
@@ -215,7 +242,7 @@ describe('HM v2 politika (MASTER § 4)', () => {
         R: { min: 8, max: 8, cue: 'brzo, opušteno' }
       }
     });
-    expect(P.test).toEqual({ km: 5, resultMinWeeks: 12 });
+    expect(P.test).toEqual({ km: 5, resultMinWeeks: 12, minWeek: 4 });
   });
 
   it('DECISIONS: svaka odluka ima pravilo, mesto i obrazloženje; jedinstveni id', () => {
@@ -293,7 +320,15 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'P5-F1',
       'P5-F2',
       'P5-F3',
-      'P5-F4'
+      'P5-F4',
+      'P8-G1',
+      'P8-G2',
+      'P8-G4',
+      'P8-G5',
+      'P8-G6',
+      'P8-G7',
+      'P8-HMb',
+      'P8-G3'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

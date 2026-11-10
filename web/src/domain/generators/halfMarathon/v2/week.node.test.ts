@@ -6,7 +6,7 @@ import { daysBetween } from './dates.ts';
 import { generateHmV2 } from './generate.ts';
 import type { HmV2Plan, PlanWeek } from './types.ts';
 import { grid02Inputs, gridInputs, inputOf, SCHEDULES_BY_DAYS } from './testInputs.ts';
-import { warmupCooldown } from './workouts.ts';
+import { sharpenerRepM, warmupCooldown } from './workouts.ts';
 
 const GRID = [...gridInputs(), ...grid02Inputs()];
 const plan = (id: string): HmV2Plan => {
@@ -73,7 +73,8 @@ describe('H13 dugi ≤ 24 km (odluka organizatora HM-01 → 02), svi brojevi dan
       const longs = p.weeks.flatMap((w) => km(w, 'long'));
       expect(Math.max(...longs), id).toBe(24);
       // Granica 24 km ne spušta vrh (merenje: 0 nižih vrhova u mreži 02) — obim ide u lagane dane.
-      expect(p.peakKm, id).toBe(p.peakCapKm);
+      // P8 G1: poslednji korak ispod 3 % se ne primenjuje — vrh je na granici ili do 3 % ispod.
+      expect((p.peakCapKm - p.peakKm) / p.peakKm, id).toBeLessThan(0.03);
       for (const w of p.weeks)
         for (const e of km(w, 'easy')) expect(e, `${id} ${w.index}`).toBeLessThanOrEqual(24);
     }
@@ -136,10 +137,10 @@ describe('HI7 (pouka 28) skorašnji najduži trk', () => {
   it('P1: neizvodljiva nedelja uz dati r → RECENT_LONG_TOO_SHORT sa pragom i preporukom', () => {
     const r = generateHmV2(
       inputOf({
-        weeks: 12,
-        km: 35,
-        vdot: 40,
-        days: SCHEDULES_BY_DAYS[3].A.days,
+        weeks: 10,
+        km: 40,
+        vdot: 70,
+        days: SCHEDULES_BY_DAYS[4].A.days,
         recentLongRunKm: 6
       })
     );
@@ -152,10 +153,10 @@ describe('HI7 (pouka 28) skorašnji najduži trk', () => {
     const at = (x: number) =>
       generateHmV2(
         inputOf({
-          weeks: 12,
-          km: 35,
-          vdot: 40,
-          days: SCHEDULES_BY_DAYS[3].A.days,
+          weeks: 10,
+          km: 40,
+          vdot: 70,
+          days: SCHEDULES_BY_DAYS[4].A.days,
           recentLongRunKm: x
         })
       ).ok;
@@ -228,7 +229,7 @@ describe('H5 rasterećenje i H7 taper', () => {
 
   it('taper: 0,7 × vrh; RP i T ≈ 60 %; dugi ≤ 0,6 × najduži; svi dani', () => {
     const t = p.weeks.find((x) => x.phase === 'taper')!;
-    expect(t.targetKm).toBe(Math.round(0.7 * p.peakKm * 10) / 10);
+    expect(t.targetKm).toBe(Math.round(0.7 * Math.round(p.peakKm * 10)) / 10);
     expect(t.days).toHaveLength(4);
     const longest = Math.max(...p.weeks.flatMap((x) => km(x, 'long')));
     expect(km(t, 'long')[0]!).toBeLessThanOrEqual(Math.floor(0.6 * longest * 10) / 10);
@@ -268,9 +269,12 @@ describe('H8 trkačka nedelja (pouka 5)', () => {
         kind: 'reps',
         zone: 'RP',
         reps: 2,
-        rep: { m: 2000 },
+        // P8 G5: deonica po minutima rada (≤ 12 min ukupno), deljiva sa 100 m, najviše 2000 m.
+        rep: { m: sharpenerRepM(p.paces) },
         recovery: { sec: 120 }
       });
+      expect(sharpenerRepM(p.paces)).toBe(1200);
+      expect(2 * 1.2 * p.paces.RP).toBeLessThanOrEqual(720);
       const tRp = t.days.find((d) => d.role === 'q1')!.workout.dose!.doseM;
       expect(sh[0]!.workout.dose!.doseM).toBeLessThanOrEqual(tRp);
       const eve = r.days.find((d) => daysBetween(d.date, p.input.raceDate) === 1);

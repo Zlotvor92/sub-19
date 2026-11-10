@@ -440,7 +440,7 @@ export function checkPlan(
                   ? 2000
                   : z === 'RP'
                     ? 4000
-                    : d.workout.segments.some((x) => x.zone === 'T' && x.kind === 'rep')
+                    : w.phase !== 'base'
                       ? 2400
                       : beg
                         ? 1500
@@ -552,7 +552,8 @@ export function checkPlan(
           ? w.days.find((d) => d.weekday === p.pattern.q2)?.role === 'easy'
           : false;
       if (second) st.secondEasyWeeks++;
-      if (!intro(w) && nq !== row.q - (w.test ? 1 : 0) - (second ? 1 : 0)) st.buildNoQuality++;
+      // P8 G7: u nedelji testa test je jedini kvalitet (drugi dan kvaliteta lagan).
+      if (!intro(w) && nq !== (w.test ? 0 : row.q - (second ? 1 : 0))) st.buildNoQuality++;
       // Pouka 35: u nedelji sa dva dana kvaliteta (ili testa) nijedan nije duži od dugog.
       const lw2 = w.days.find((d) => d.role === 'long');
       const hard2 = w.days.filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test');
@@ -565,7 +566,12 @@ export function checkPlan(
         roll10(w.index)
       );
       if (lw2 && hard2.length === 2 && hard2.some((d) => d.workout.sec > lw2.workout.sec)) {
-        if (to10(lw2.workout.km) < cap2) no('POUKA35', tag);
+        // P8 G6: dugi ispod plafona jer su lagani na najmanjoj dužini (20 min) — nedelja sa jednim kvalitetom bi
+        // imala lagane duže od 0,7 × dugi, pa ostaju dva kvaliteta.
+        const easyAtMin = w.days
+          .filter((d) => d.role === 'easy')
+          .every((d) => d.workout.sec < 1260);
+        if (to10(lw2.workout.km) < cap2 && !easyAtMin) no('POUKA35', tag);
         else st.secondKeptAtCapWeeks++;
       }
       const t10 = to10(w.targetKm);
