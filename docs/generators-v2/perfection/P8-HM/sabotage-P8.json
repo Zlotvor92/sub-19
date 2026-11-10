@@ -1,0 +1,128 @@
+[
+ {
+  "name": "P8-G4 RP bez plafona u minutima",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "      RP: 2700\n",
+  "replace": "      RP: 27000\n",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G4 T 30 min → 60 min",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "        { fromKm: 0, sec: 1800 },",
+  "replace": "        { fromKm: 0, sec: 3600 },",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G5 oštrenje 24 min",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "maxWorkSec: 720,",
+  "replace": "maxWorkSec: 1440,",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G5 rasterećenje čita dozu slota",
+  "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+  "find": "      rule.quality === 1 ? state.t : (state.q2?.doseM ?? 0),",
+  "replace": "      rule.quality === 1 ? (state.q1?.doseM ?? 0) : (state.q2?.doseM ?? 0),",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G1 faktor vrha 1,4 za kratku pripremu",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "      { maxWeeks: 12, factor: 1.3 },",
+  "replace": "      { maxWeeks: 12, factor: 1.4 },",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G1 bez satnog plafona",
+  "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+  "find": "    Math.min(base, Math.floor(start10 * factor + EPS), peakHoursCap10(prep.p))",
+  "replace": "    Math.min(base, Math.floor(start10 * factor + EPS))",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G1 korak ispod 3 % se primenjuje",
+  "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+  "find": "  return step < P.volume.minStepShare * last10 - EPS ? 0 : step;",
+  "replace": "  return step;",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G1 rast bez raspodele do kraja razvoja",
+  "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+  "find": "  const step = Math.min(growth10(last10, rule), room, Math.round(room / Math.max(1, left)));",
+  "replace": "  const step = Math.min(growth10(last10, rule), room);",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G2 bez poda prvog nivoa",
+  "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+  "find": "  return Math.max(floorM, Math.min(share, minutes));",
+  "replace": "  return Math.min(share, minutes);",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G6 lagan 0,8 × dugi i za 4+ dana",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "    easyLongMaxShare4: 0.7,",
+  "replace": "    easyLongMaxShare4: 0.8,",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G7 drugi kvalitet ostaje u nedelji testa",
+  "file": "src/domain/generators/halfMarathon/v2/week.ts",
+  "find": "    picks?.q2 && !bWeek && !test ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
+  "replace": "    picks?.q2 && !bWeek ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G7 test u nedelji 3",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "minWeek: 4 },",
+  "replace": "minWeek: 1 },",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-HMb bez granice 22 % vremena",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "    rpWeekTimeShare: 0.22",
+  "replace": "    rpWeekTimeShare: 0.5",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G3 napomena testa bez uputstva",
+  "file": "src/domain/generators/halfMarathon/v2/week.ts",
+  "find": "jedini zahtevan trening ove nedelje pored dugog. Unesi rezultat: tempo treninga se od sledeće nedelje računa iz njega; do tada tempo ostaje procena.`;",
+  "replace": "rezultat koristi adaptacija (segment 04), do tada tempo ostaje procena.`;",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ }
+]
