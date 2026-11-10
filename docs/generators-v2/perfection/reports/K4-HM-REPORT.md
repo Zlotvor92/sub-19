@@ -48,3 +48,7 @@ lagano po želji" je u napomeni nedelje sa imenom dana (ekran prikazuje dan kao 
 ## Testovi na kraju (iz `web/`, 10. 11. 2026, Europe/Belgrade)
 
 Brz nivo `halfMarathon/v2` posle svakog pravila zelen (368 → 370 → 372 → 374 testova).
+`TEST_FULL=1 npx vitest run --project node src/domain/generators/halfMarathon/v2` 77 fajlova / 466 testova zeleno (13 min 9 s;
+prvi prolaz pre ispravke adaptacije 3 dana: 10 palih, v. gore); `npx vitest run --changed ea1fa5f` 106 / 1025 zeleno
+(2 min 10 s); `npx playwright test e2e/hm-v2.spec.ts e2e/handoff-v2.spec.ts --trace off` 5/5 (45 s); `npm run check`
+304 / 3402 zeleno (7 min 24 s); sabotaže 3/3. Ispis `P9/plans/HM/` (12) ponovo napravljen (hm-v2.14.0).
