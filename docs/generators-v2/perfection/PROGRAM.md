@@ -174,3 +174,10 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
      13,1 → 9,4 min, premalo za 5K;
   3. napomena nedelje G6 samo u prvoj takvoj nedelji.
 - `npm run check`/build i CI ostaju crveni samo zbog `tenK/v2` (P8-10K završetak u toku).
+
+### 10. 11. 2026, 15:10 — nalog vlasnika: nedeljni limit, samo završiti započeto
+
+- Vlasnik radi reset nedeljnog limita. Do nove odluke vlasnika: NE pokreću se novi tabovi i NE nastavljaju se
+  P8-HM i P8-MAR. Završavaju samo dva taba koja rade: P8-5K dopuna (5k-v2.15.2) i P8-10K završetak.
+- Ako neki od ta dva stane na limitu, posle reseta dobija „nastavi"; ništa drugo.
+- Posle njihovih izveštaja: provera, upis, arhiviranje, pa čekanje dogovora o daljoj organizaciji.
