@@ -278,6 +278,16 @@ describe('P5-F2: kvalitet u adaptaciji', () => {
   it('preskočeni (bez zapisa) i jedan RPE ≥ 9 okidaju; RPE 8 ne; isti zapisi sutra ne prave nov korak', () => {
     const skip = adapt(facts((d) => (d.date === d1.date ? null : hard(d))));
     expect(skip.reasons.find((x) => x.condition === 'QUALITY_STRAIN')!.applied).toBe(true);
+    // Odluka 10. 11. 00:41: trčanje van plana (uvoz, bez dayId) na dan kvaliteta = odrađen dan — bez okidača.
+    const offPlan = adapt(
+      facts(
+        (d) => (d.date === d1.date || d.date === d2.date ? null : 4),
+        [d1, d2].map((d) => ({ date: d.date, km: 8, durationSec: 2700, completed: true }))
+      )
+    );
+    expect(offPlan.reasons.some((x) => x.condition === 'QUALITY_STRAIN')).toBe(false);
+    const bothSkipped = adapt(facts((d) => (d.date === d1.date || d.date === d2.date ? null : 4)));
+    expect(bothSkipped.reasons.find((x) => x.condition === 'QUALITY_STRAIN')!.applied).toBe(true);
     const eight = adapt(facts((d) => (hard(d) === 9 ? 8 : 4)));
     expect(eight.reasons.some((x) => x.condition === 'QUALITY_STRAIN')).toBe(false);
     const r = adapt(facts(hard));

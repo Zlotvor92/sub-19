@@ -256,8 +256,8 @@ export function checkFacts(
 /**
  * P5-F2 — JEDNA funkcija okidača „zahtevni treninzi preteški ili preskočeni": dani plana čija je uloga kvalitet (Q1, Q2,
  * dugi sa blokom RP; ne test) sa datumom u poslednjih strainLookbackDays dana do asOf (`t`), potpuno pokriveni (A10);
- * strainCount (2) uzastopna (po datumu, među takvim danima plana) od kojih je svaki neodrađen (zapis completed false ili bez
- * zapisa) ili sa RPE ≥ strainRpe. Vraća poslednji takav par (datumi, razlog); null = nema okidača.
+ * strainCount (2) uzastopna (po datumu, među takvim danima plana) od kojih je svaki neodrađen (tog datuma nijedno trčanje —
+ * ni zapis dana ni trčanje van plana) ili sa RPE ≥ strainRpe (zapis tog dana). Vraća poslednji takav par (datumi, razlog); null = nema okidača.
  */
 export function qualityStrain(
   planDays: readonly PlanDay[],
@@ -272,14 +272,19 @@ export function qualityStrain(
     )
     .filter((d) => mustDay(d.date) >= from && mustDay(d.date) <= t)
     .sort((a, b) => a.date.localeCompare(b.date));
+  // Odluka organizatora (10. 11. 00:41): dan je neodrađen samo kad tog DATUMA nema nijednog trčanja (A10: završen zapis
+  // sa km ili trajanjem — vezan za dan plana ili van plana, npr. uvoz); RPE ≥ 9 samo iz zapisa tog dana.
   const rec = (d: PlanDay) => facts.workouts.filter((x) => (x.dayId ?? x.date) === d.date);
+  const ranOn = (d: PlanDay): boolean =>
+    facts.workouts.some(
+      (x) =>
+        (x.date === d.date || x.dayId === d.date) && x.completed && (x.km > 0 || x.durationSec > 0)
+    );
   const strained = (d: PlanDay): 'skip' | 'rpe' | null => {
-    const r = rec(d);
     const x = mustDay(d.date);
     if (!coveredDays(facts.coverage, x, x)) return null;
-    if (r.some((y) => y.completed && (y.rpe ?? 0) >= A0.strainRpe)) return 'rpe';
-    if (r.length === 0 || r.every((y) => !y.completed)) return 'skip';
-    return null;
+    if (rec(d).some((y) => y.completed && (y.rpe ?? 0) >= A0.strainRpe)) return 'rpe';
+    return ranOn(d) ? null : 'skip';
   };
   let out: { dates: IsoDate[]; last: IsoDate; why: string } | null = null;
   const n = A0.strainCount;
