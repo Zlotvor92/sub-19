@@ -195,15 +195,19 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     ]);
   });
 
-  it('O8a: HM cilj > 20 nedelja do trke → nedostupno sa PLAN_TOO_LONG doslovno; sledeća opcija 10K', () => {
+  /* V1b: 10K cilj je 10K v2 (najviše 18 nedelja), ne više 10K v1 — predug plan je nedostupan i za 10K, sa razlogom v2. */
+  it('O8a: HM cilj > 20 i 10K > 18 nedelja do trke → obe nedostupne sa PLAN_TOO_LONG doslovno', () => {
     const at = '2026-11-14' as IsoDate;
     const src = stored(adapted(ofId('d3-24w-35km-v50-A-sat'), 'pause35', at));
     const d = decide(src, HM_ON, at);
-    expect(d.unavailable).toHaveLength(1);
+    expect(d.unavailable).toHaveLength(2);
     expect(d.unavailable[0]).toMatch(
       /^Polumaraton: Plan od 2[1-4] nedelja je predug \(najviše 20\): počni plan kasnije/
     );
-    expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
+    expect(d.unavailable[1]).toMatch(
+      /^10K: Plan od 2[1-4] nedelja je predug \(najviše 18\): počni plan kasnije/
+    );
+    expect(d.options).toEqual([]);
   });
 
   it('plan po osećaju: HM v2 cilj dobija lak tempo i radi (V1b: v1 cilj ne postoji)', () => {
