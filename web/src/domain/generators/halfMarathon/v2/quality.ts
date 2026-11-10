@@ -71,6 +71,15 @@ export function capM(zone: WorkZone, targetKm: number, p?: Paces, floorM = 0): n
   return Math.max(floorM, Math.min(share, minutes));
 }
 
+/** G2 (P8): doza prvog nivoa lestvice [m] (`beginner`: lestvica početnika) — uvek staje u plafon zone. */
+export const ladderFloorM = (ladder: LadderId, beginner = false): number =>
+  doseOf(ladderLevels(ladder, beginner)[0]!);
+
+/** H11 + G4 + G2 (P8): plafon zone za trening lestvice `ladder` u izgradnji — capM sa podom prvog nivoa lestvice.
+    Jedna funkcija za konstruktor i validator. */
+export const ladderCapM = (ladder: LadderId, targetKm: number, p?: Paces, beginner = false): number =>
+  capM(zoneOf(ladder), targetKm, p, ladderFloorM(ladder, beginner));
+
 /** G4 (P8): najviše rada u jednom treningu usred nedelje [s] — T 30 min (cilj nedelje ≥ 80 km: 40 min), I 20 min za
     VDOT < 40, inače 24 min, RP 45 min; R bez plafona u minutima. Jedna funkcija za konstruktor, validator i poruke. */
 export function capSec(zone: WorkZone, targetKm: number, p: Paces): number {
@@ -149,7 +158,7 @@ export function startLevel(
   p?: Paces
 ): Structure | null {
   const levels = ladderLevels(ladder, beginner);
-  const cap = capM(zoneOf(ladder), targetKm, p);
+  const cap = ladderCapM(ladder, targetKm, p, beginner);
   if (doseOf(levels[0]!) > cap) return null;
   if (beginner) return levels[0]!;
   const limit = share * cap + 1e-6;
@@ -206,7 +215,7 @@ export function pickSlot(
   dayFits?: DayFits,
   hold = false
 ): Dose | null {
-  const cap = capM(zoneOf(ladder), targetKm, p);
+  const cap = ladderCapM(ladder, targetKm, p, beginner);
   const levels = ladderLevels(ladder, beginner);
   // Izbor po pravilu staje u drugi član osim kad je duži od dugog; spuštanje bira samo nivo koji staje.
   const dur = (s: Structure): boolean => fitsDay(ladder, s, beginner, dayFits) !== 'over';
@@ -307,7 +316,7 @@ export function firstLevelOverCap(
   beginner = false,
   p?: Paces
 ): boolean {
-  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm, p);
+  return ladderFloorM(ladder, beginner) > ladderCapM(ladder, targetKm, p, beginner);
 }
 
 /** Lestvica Q1 nedelje izgradnje: po fazi (H10, HI6); početnik (HI10) — T kontinuirano (od 1,5 km) kad prvi
@@ -535,7 +544,7 @@ export function taperDoses(
       rpFloor,
       false,
       limit?.q1,
-      Number.isFinite(targetKm) ? capM('RP', targetKm, p) : Infinity
+      Number.isFinite(targetKm) ? capM('RP', targetKm, p, doseOf(rpFloor)) : Infinity
     ),
     'taper'
   );

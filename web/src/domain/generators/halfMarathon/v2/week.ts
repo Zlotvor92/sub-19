@@ -30,6 +30,7 @@ import {
   type BuildLimit,
   capM,
   capShare,
+  ladderCapM,
   type DayFits,
   deloadDose,
   deloadSlot,
@@ -319,6 +320,35 @@ export const SECOND_EASY_NOTE = 'drugi dan kvaliteta je lagan (pouka 35)';
 export const T1_REST_NOTE = 'Manje laganih dana';
 const t1RestNote = (n: number): string =>
   `${T1_REST_NOTE}: ${n === 1 ? 'jedan lagan dan je odmor' : `${n} lagana dana su odmor`} — uz ovaj obim lagani ne bi bili kraći od 0,8 × dugi uz najmanje 20 min.`;
+
+/** G2 (P8): najmanje doze tapera [m] koje uvek staju u plafon zone — RP 2 × 2000 m (H7), T 2,0 km (početnik 1,5 km,
+    HI10). Konstruktor i validator. */
+export const TAPER_RP_MIN_M = P.taper.rpMin.reps * P.taper.rpMin.repM;
+export const taperTFloorM = (beginner: boolean): number =>
+  Math.round((beginner ? P.beginner.tFirstKm : P.taper.tMinKm) * 1000);
+
+/** G2 (P8) u taperu — JEDNA funkcija za konstruktor i validator: doza `d` zone staje u plafon tapera kad staje u
+    udeo/minute (capM) ili kad je najmanja doza zone (`floorM`) i taper sa tim danom kao jedinim kvalitetom ima
+    izvodljive dužine (inače bi pod pravio nedelju koja ne može da se sastavi — tada važi stari ishod: T početnika ili
+    taper bez kvaliteta). `otherDays` = dani trčanja osim dugog. */
+export function taperDoseFits(
+  c: DayLimitContext,
+  d: Dose,
+  floorM: number,
+  target10: number,
+  otherDays: number,
+  longest10: number,
+  roll10: number,
+  /** T tapera početnika / posle novog starta (jedini kvalitet): i doza u udelu mora imati izvodljive dužine —
+      inače taper bez kvaliteta (postojeći ishod HI2/HI10), ne odbijanje. */
+  strict = false
+): boolean {
+  const inShare = d.doseM <= capM(d.zone, target10 / 10, c.paces);
+  if (inShare && !strict) return true;
+  if (!inShare && d.doseM > floorM) return false;
+  const q100 = km100(qualityWorkout(d, c.paces, c.wc).km);
+  return taperLengths(target10, q100, otherDays - 1, longest10, c.rule, c.paces, roll10) !== null;
+}
 
 /** Pouka 35 u taperu (HM-09) — JEDNO mesto odluke: nedelja tapera po pravilu (`mode` 'rule', nije već druga
     pretraga) sa dva dana kvaliteta čiji neki dan traje duže od dugog tapera (`long10`) → drugi dan je lagan.
@@ -689,7 +719,19 @@ function buildWeekIn(
         capLong
       );
       const t = taperDoses(quality, nq, tl, targetKm, p);
-      const rpFits = mode !== 'none' && t0.q1.doseM <= capM('RP', targetKm, p);
+      const others = qDays.length + pat.easy.length;
+      const fitsT = (d: Dose, floorM: number, strict = false): boolean =>
+        taperDoseFits(
+          { paces: p, wc: ctx.wc, rule },
+          d,
+          floorM,
+          target10,
+          others,
+          longest10,
+          roll10,
+          strict
+        );
+      const rpFits = mode !== 'none' && fitsT(t0.q1, TAPER_RP_MIN_M);
       // HI10: početnik — RP ne staje u plafon → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km).
       // T3 (krug T): posle novog starta isto — T ≈ 60 % poslednje T doze posle povratka (min 2,0 km).
       const tT = (f?: DayFits): Dose | null =>
@@ -697,7 +739,7 @@ function buildWeekIn(
           ? beginnerTaperT(quality, f)
           : restartTaperT(quality, ctx.newStart === true, f);
       const bt0 = !rpFits && mode !== 'none' ? tT() : null;
-      const btFits = bt0 !== null && bt0.doseM <= capM('T', targetKm, p);
+      const btFits = bt0 !== null && fitsT(bt0, taperTFloorM(rule.beginner), true);
       // T3: T posle novog starta je jedini dan kvaliteta — drugi član za nedelju sa jednim danom.
       const tl1 = rule.beginner
         ? tl
@@ -711,7 +753,7 @@ function buildWeekIn(
             capLong
           );
       const bt = btFits ? tT(tl1.q1) : bt0;
-      const tFits = t0.q2 !== null && t0.q2.doseM <= capM('T', targetKm, p);
+      const tFits = t0.q2 !== null && fitsT(t0.q2, taperTFloorM(false));
       if ((mode === 'rule' || one) && (!(rpFits || btFits) || (t.q2 !== null && !tFits)))
         return null;
       const d1 = one ? oneQualityDay(frame, pat, pat.q1) : pat.q1;
@@ -912,7 +954,7 @@ function buildWeekIn(
   for (const [slot, d, prev] of slots)
     if (d.step === 'drop')
       notes.push(
-        prev && prev.doseM > capM(d.zone, targetKm, p)
+        prev && prev.doseM > ladderCapM(d.ladder as LadderId, targetKm, p, rule.beginner)
           ? `${slot}: ${d.zone} spušten sa ${fmtKm(prev.doseM / 1000)} na ${fmtKm(d.doseM / 1000)} km — nijedan cilj nedelje nije izvodljiv uz „doza ne pada" i plafon (H11 ispred H12).`
           : `${slot}: ${d.zone} ${fmtKm(d.doseM / 1000)} km — viša doza bi dan kvaliteta učinila dužim od dugog (pouka 32, plafon zone; pad doze kao kapacitet, pouka 12).`
       );

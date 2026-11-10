@@ -404,13 +404,47 @@ export function checkPlan(
       if (one && w.days.some((d) => d.workout.workKm.I > 0 || d.workout.workKm.R > 0))
         no('THREE_DAYS_NO_IR', tag);
       // H11: plafon po treningu.
+      // P8 (nezavisno): G4 — rad treninga usred nedelje u minutima (T 30, ≥ 80 km 40; I 20 za VDOT < 40, inače 24;
+      // RP 45; blok u dugom bez minuta); G2 — prvi nivo lestvice uvek sme (ne u rasterećenju, ne blok u dugom).
       for (const d of w.days)
-        for (const z of ['R', 'I', 'T', 'RP'] as const)
-          if (
-            d.workout.workKm[z] * 1000 >
-            Math.floor(capOf(z, w.targetKm) * w.targetKm * 1000 + 1e-6) + 1e-6
-          )
+        for (const z of ['R', 'I', 'T', 'RP'] as const) {
+          const m = d.workout.workKm[z] * 1000;
+          if (m <= 0) continue;
+          const isLong = d.role === 'long';
+          const sec = d.workout.segments
+            .filter((x) => x.zone === z && (x.kind === 'rep' || x.kind === 'continuous'))
+            .reduce((a, x) => a + x.sec, 0);
+          const maxSec = isLong
+            ? Infinity
+            : z === 'T'
+              ? w.targetKm >= 80
+                ? 2400
+                : 1800
+              : z === 'I'
+                ? p.paces.vdot < 40
+                  ? 1200
+                  : 1440
+                : z === 'RP'
+                  ? 2700
+                  : Infinity;
+          const floorM =
+            w.deload || isLong
+              ? 0
+              : z === 'R'
+                ? 1200
+                : z === 'I'
+                  ? 2000
+                  : z === 'RP'
+                    ? 4000
+                    : d.workout.segments.some((x) => x.zone === 'T' && x.kind === 'rep')
+                      ? 2400
+                      : beg
+                        ? 1500
+                        : 2000;
+          const share = Math.floor(capOf(z, w.targetKm) * w.targetKm * 1000 + 1e-6);
+          if (m > floorM + 1e-6 && (m > share + 1e-6 || sec > maxSec + 3))
             no('ZONE_CAP', `${tag} ${z}`);
+        }
     }
     // Pouka 32: dan kvaliteta iznad najnižeg nivoa zone ≤ dugi po trajanju (WU + rad + oporavci + CD; džog
     // zadat metrima sporim E); najniži nivo i test se samo broje.
@@ -697,11 +731,27 @@ export function checkPlan(
     else if (abs === LONG_MAX10) st.week1BelowAt.km++;
     else st.week1BelowAt.time++;
   }
+  const g1Peak10 = (base10: number): number => {
+    const s10 = to10(p.startKm);
+    const f = N <= 12 ? 1.3 : N <= 15 ? 1.35 : 1.4;
+    const hours = p.paces.vdot < 40 ? 7.5 : p.paces.vdot < 50 ? 8.5 : 9.5;
+    const h10 = Math.floor(((hours * 3600) / ((p.paces.E.fast + p.paces.E.slow) / 2)) * 10 + EPS);
+    return Math.max(s10, Math.min(base10, Math.floor(f * s10 + EPS), h10));
+  };
+  // P8 G1 (nezavisno): granica vrha redovnog plana min(1,4×, +20, max reda; faktor po dužini; satni plafon).
+  if (!beg) {
+    const s10 = to10(p.startKm);
+    const max10 = { 3: 550, 4: 700, 5: 850, 6: 1000 }[nDays as 3 | 4 | 5 | 6];
+    if (to10(p.peakCapKm) !== g1Peak10(Math.min(Math.floor(1.4 * s10 + EPS), s10 + 200, max10)))
+      no('PEAK_CAP_RULE', `${p.peakCapKm}`);
+  }
   // H17: granica vrha min(1,4×, +15, max); upozorenje kad je najduži dugi < 14 km.
   if (beg) {
     const s10 = to10(p.startKm);
     const peakMax10 = nDays === 4 ? 700 : 850;
-    if (to10(p.peakCapKm) !== Math.min(Math.floor(1.4 * s10 + EPS), s10 + 150, peakMax10))
+    // P8 G1 (nezavisno): i ≤ start × faktor po dužini pripreme (≤ 12 ned 1,30; 13–15 1,35; ≥ 16 1,40) i ≤ satni
+    // plafon (VDOT < 40 7,5 h; 40–49,9 8,5 h; ≥ 50 9,5 h, srednjim laganim tempom); nikad ispod starta.
+    if (to10(p.peakCapKm) !== g1Peak10(Math.min(Math.floor(1.4 * s10 + EPS), s10 + 150, peakMax10)))
       no('BEGINNER_PEAK', `${p.peakCapKm}`);
     const warned = p.warnings.some((v) => v.rule === 'LONG_RUN_SHORT');
     if (warned !== longest < 140) no('BEGINNER_LONG_WARN', `${longest / 10}`);
