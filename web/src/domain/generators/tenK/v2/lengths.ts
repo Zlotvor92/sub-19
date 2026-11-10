@@ -12,6 +12,8 @@ import type { Paces, PlanDay } from './types.ts';
 export interface LongRule {
   readonly longMaxShare: number;
   readonly longMaxSec: number;
+  /** G6 (P8 dopuna): lagan ≤ udeo dugog (D17 po broju dana). */
+  readonly easyMaxLongShare: number;
 }
 
 const EPS = 1e-9;
@@ -58,10 +60,14 @@ function withEasy(rest100: number, cap10: number, n: number): Lengths | null {
  * T1 (10K-08, organizator; jedna funkcija za konstruktor i validator): granice laganog dana NEDELJE IZGRADNJE (ne
  * rasterećenje, taper, trkačka) [0,1 km] — najkraći max(3 km, 20 min laganim tempom), najduži 0,8 × dugi iste nedelje.
  */
-export function buildEasyBounds10(long10: number, p: Paces): { min10: number; max10: number } {
+export function buildEasyBounds10(
+  long10: number,
+  p: Paces,
+  maxShare: number
+): { min10: number; max10: number } {
   return {
     min10: Math.max(EASY_MIN10, Math.ceil((P.lengths.easyMinSec / midEasy(p)) * 10 - EPS)),
-    max10: Math.floor(P.lengths.easyMaxLongShare * long10 + EPS)
+    max10: Math.floor(maxShare * long10 + EPS)
   };
 }
 
@@ -89,7 +95,7 @@ export function buildLengths(
     // Dugi po D13 za stvaran broj laganih dana (withEasy: ≤ plafon, ostavlja lagane ≥ 3 km) — nikad iznad plafona.
     const len = n === easyDays ? base : withEasy(rest100, cap10, n);
     if (!len) return null;
-    const { min10, max10 } = buildEasyBounds10(len.long10, p);
+    const { min10, max10 } = buildEasyBounds10(len.long10, p, rule.easyMaxLongShare);
     if (len.easy10[0]! > max10) {
       // Dugi na plafonu: sa manje laganih dana lagan je još duži — cilj nije izvodljiv. Inače je dugi skraćen da lagani
       // ostanu ≥ 3 km; sa manje laganih dana dugi raste (do plafona).
@@ -114,7 +120,8 @@ export function easyRestShort(
   p: Paces
 ): boolean {
   const gap100 = target10 * 10 - planned100;
-  return easyCount === 0 && gap100 > 0 && gap100 < buildEasyBounds10(long10, p).min10 * 10;
+  // Samo donja granica (min10 ne zavisi od udela).
+  return easyCount === 0 && gap100 > 0 && gap100 < buildEasyBounds10(long10, p, 1).min10 * 10;
 }
 
 /** T1: koji lagani datumi ostaju kad nedelja izgradnje ima `n` laganih dana od `dates` (rastuće): odmor je prvo dan pre

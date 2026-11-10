@@ -758,7 +758,7 @@ export function validatePlan(
     // T1 (10K-08): nedelja izgradnje bez dana bola/odmora — lagan u granicama lengths.buildEasyBounds10 (ista funkcija
     // kao konstruktor): ≥ max(3 km, 20 min E), ≤ 0,8 × dugi.
     if (isSteady(w) && restOf(w).size === 0 && painOf(w).size === 0) {
-      const b = buildEasyBounds10(l10, pk);
+      const b = buildEasyBounds10(l10, pk, rule.easyMaxLongShare);
       const small = w.notes.includes(T1_OFF);
       for (const d of w.days)
         if (
@@ -766,7 +766,7 @@ export function validatePlan(
           !protectedDay(d) &&
           (to10(d.workout.km) > b.max10 || to10(d.workout.km) < b.min10)
         ) {
-          const msg = `Lagan ${num(d.workout.km)} km van ${num(b.min10 / 10)}–${num(b.max10 / 10)} km (≥ ${P.lengths.easyMinSec / 60} min, ≤ ${P.lengths.easyMaxLongShare * 100} % dugog ${num(long.workout.km)} km).`;
+          const msg = `Lagan ${num(d.workout.km)} km van ${num(b.min10 / 10)}–${num(b.max10 / 10)} km (≥ ${P.lengths.easyMinSec / 60} min, ≤ ${Math.round(rule.easyMaxLongShare * 100)} % dugog ${num(long.workout.km)} km).`;
           if (small) warn('EASY_VS_LONG_SMALL', msg, w.index);
           else err('EASY_VS_LONG', msg, w.index, d.date);
         }

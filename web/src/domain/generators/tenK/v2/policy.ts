@@ -598,6 +598,8 @@ export const TEN_K_V2_POLICY = {
       kmMax: 40,
       peakMaxKm: 45,
       longMaxShare: 0.45,
+      /** G6 (P8 dopuna, D47): lagan ≤ ovaj udeo dugog iste nedelje (nedelja izgradnje). */
+      easyMaxLongShare: 0.8,
       weekMinKm: 9
     },
     4: {
@@ -607,6 +609,8 @@ export const TEN_K_V2_POLICY = {
       kmMax: 55,
       peakMaxKm: 60,
       longMaxShare: 0.33,
+      /** G6 (P8 dopuna, D47): lagan ≤ ovaj udeo dugog iste nedelje (nedelja izgradnje). */
+      easyMaxLongShare: 0.7,
       weekMinKm: 12
     },
     5: {
@@ -616,6 +620,8 @@ export const TEN_K_V2_POLICY = {
       kmMax: 65,
       peakMaxKm: 75,
       longMaxShare: 0.3,
+      /** G6 (P8 dopuna, D47): lagan ≤ ovaj udeo dugog iste nedelje (nedelja izgradnje). */
+      easyMaxLongShare: 0.7,
       weekMinKm: 15
     },
     6: {
@@ -625,6 +631,8 @@ export const TEN_K_V2_POLICY = {
       kmMax: 80,
       peakMaxKm: 90,
       longMaxShare: 0.27,
+      /** G6 (P8 dopuna, D47): lagan ≤ ovaj udeo dugog iste nedelje (nedelja izgradnje). */
+      easyMaxLongShare: 0.7,
       weekMinKm: 18
     }
   },
@@ -806,9 +814,9 @@ export const TEN_K_V2_POLICY = {
   lengths: {
     longMaxSec: 6300,
     easyMinKm: 3.0,
-    /** T1 (10K-08): nedelja izgradnje — lagan ≥ easyMinSec laganim tempom (i ≥ easyMinKm), ≤ easyMaxLongShare × dugi. */
+    /** T1 (10K-08): nedelja izgradnje — lagan ≥ easyMinSec laganim tempom (i ≥ easyMinKm); gornja granica lagan / dugi je
+        u tabeli D17 (easyMaxLongShare, G6). */
     easyMinSec: 1200,
-    easyMaxLongShare: 0.8,
     /** P8 (10K c): upozorenje SHORT_EASY — u ne-rasteretnoj nedelji izgradnje lagan dan kraći od ovoliko [s] ili lagan
         dan odmor, uz preporuku manje dana (samo validator; dužine se ne menjaju). */
     shortEasyWarnSec: 1800
@@ -931,6 +939,7 @@ export interface DayRule {
   readonly kmMax: number;
   readonly peakMaxKm: number;
   readonly longMaxShare: number;
+  readonly easyMaxLongShare: number;
   readonly weekMinKm: number;
 }
 

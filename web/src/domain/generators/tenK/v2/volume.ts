@@ -39,7 +39,7 @@ export function capacityMessage(
           : '';
   // T1 (10K-08): lagan ≤ 0,8 × dugi.
   const easy = limits.includes('easy')
-    ? `lagan ≤ ${Math.round(P.lengths.easyMaxLongShare * 100)} % dugog`
+    ? `lagan ≤ ${Math.round(rule.easyMaxLongShare * 100)} % dugog`
     : '';
   const what = dugi || easy ? ` uz ${[dugi, easy].filter(Boolean).join(', ')}` : '';
   const more = daysForKm(currentWeeklyKm, rule.beginner ? 'beginner' : 'regular').filter(
@@ -82,7 +82,7 @@ export function capacityLimits(
     if (l10 === longTimeCap10(p, rule.longMaxSec)) time = true;
     if (l10 === longShareCap10(to10(w.targetKm), rule.longMaxShare)) share = true;
     // T1 (10K-08): lagan na gornjoj granici 0,8 × dugi (lengths.buildEasyBounds10).
-    const max10 = buildEasyBounds10(l10, p).max10;
+    const max10 = buildEasyBounds10(l10, p, rule.easyMaxLongShare).max10;
     if (w.days.some((d) => d.role === 'easy' && to10(d.workout.km) === max10)) easy = true;
   }
   return [
