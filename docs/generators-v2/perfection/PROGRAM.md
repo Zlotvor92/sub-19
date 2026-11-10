@@ -223,3 +223,18 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
   Izuzetak početnika za G6 (0,80) proveriti u kodu HM pri odlukama.
 - Za krug 2: ispis planova kroz `userWeekNotes`/`userText`, ne sirove napomene.
 - Tab P8-HM se ne arhivira dok se S1–S6 ne odluče. Radi još samo P8-10K završetak.
+
+### 10. 11. 2026, 16:35 — P8-10K završen; sva četiri P8 predata; grana lokalno zelena
+
+- P8-10K završetak: kod `2163e61`, vrh `d3c9530`, verzija 10k-v2.13.0 (D49–D51), izveštaj `reports/P8-10K-REPORT.md`
+  § Završetak, S9 u `reports/P8-10K-STOP.md`. Po tabu: pun nivo `tenK/v2` 765/765, E2E 3/3, sabotaže 14/14, build
+  prolazi. Sudari 3 (prelaz T → RP kod početnika bez upozorenja) i 4 (G8 × period bola) prihvaćeni kako su rešeni.
+- Nezavisna provera organizatora na `d3c9530`: `npm run check` ceo web — typecheck, lint, format prolaze,
+  299 fajlova / 3372 testa, 0 padova.
+- CI: run 791 na `d3c9530` u toku (pokrenut 16:22); run 790 (`3ebb088`) pao — pre ispravke tipova 10K.
+- Verzije: 5k-v2.15.3, 10k-v2.13.0, hm-v2.11.0, marathon-v2.11.0.
+- Otvoreno 10K: G6 0,70 kod redovnog plana 4 dana (ned 1 ispod trenutnog obima 1254 → 1782 planova; opcija 0,75);
+  G8 u nedelji smanjenog obima istiskuje lagane; dugi rasterećenja < 4 km kod početnika 18/42.
+- Tab P8-10K arhiviran. P8-HM i P8-MAR ostaju (odluke S1–S6). Po nalogu vlasnika ništa novo se ne pokreće; čeka se
+  dogovor o daljoj organizaciji (odluke po STOP-ovima, izuzetak početnika u MAR/HM, krug 2 kod trenera, `check:full`
+  pre mergea).
