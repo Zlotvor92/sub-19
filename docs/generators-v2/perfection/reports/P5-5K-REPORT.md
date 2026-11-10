@@ -171,3 +171,16 @@ adaptacija bez novih zapisa sa sledećom nedeljom izgradnje).
 2. F2 je konzervativan i retko okida sam (bez drugog uslova); najčešće ga nadjačava manjak izvršenja kad su treninzi
    preskočeni — to je ispravan red, jer manjak već seče obim.
 3. Najveći preostali manjak 5K plana sa rezultatom posle P5: nedelja testa gubi km zbog T1 (pitanje 1).
+
+## Dopuna posle prijema (preciziranje organizatora, tačka 6)
+
+- F2 „neodrađen" = tog DATUMA nema nijednog trčanja (ni zapisa dana, ni trčanja van plana) uz potpunu pokrivenost ili
+  prijavljenu pauzu; bilo koje trčanje tog datuma = odrađen; RPE ≥ 9 samo iz zapisa tog dana (`dayId`; zapis bez dayId je
+  van plana, kao umor C2). Jedno mesto: `assess` (hardOf). Zapis `completed: false` bez pokrivenosti više nije „poznat".
+- Test `p5.node.test.ts` + slučaj „trčanje van plana (RPE 9) na datume kvaliteta → bez F2"; sabotaže + F2h (trčanje van
+  plana se ne računa), F2i (RPE sa zapisa van plana), F2b prilagođena: **13/13 palo, 21,0 s**.
+- `features/plan/fiveKV2Import.test.tsx`: u tom testu trčanja nedelje 2 su 9., 11. i 13. 11. (pon/sre/pet), a dani
+  kvaliteta 10. i 12. 11. (uto/čet) — tih datuma nema trčanja, pa F2 i po preciziranju važi; test zato ostaje sa
+  očekivanjem F2 (nije vraćen na „plan se ne menja"). Odluka organizatora ako treba drugačije.
+- `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK/v2`: 797/797, 224 s — regresioni testovi
+  otisaka (segment07/08d/08e/08g) prolaze sa istim `segment14.*` heševima, otisci se nisu menjali; `fiveKV2Import` 1/1.
