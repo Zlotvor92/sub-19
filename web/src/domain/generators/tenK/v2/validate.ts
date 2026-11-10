@@ -18,7 +18,8 @@ import {
   longCap10,
   longShareOf,
   longToRaceWeeks,
-  longestLong10
+  longestLong10,
+  painLong10
 } from './lengths.ts';
 import {
   assessGoal,
@@ -429,7 +430,9 @@ export function validatePlan(
           (long !== undefined &&
             L !== null &&
             L.easy10.length === easy.length &&
-            L.long10 === to10(long.workout.km) &&
+            // G8 (D48): duži dugi nedelje dugog do distance u periodu bola seče A4 (dugi ≤ 60 min) — ista funkcija.
+            (painOf(w).has(long.date) ? painLong10(L.long10, pw(w)) : L.long10) ===
+              to10(long.workout.km) &&
             missing.every((d) => !keptEasyDates(slots, easy.length, long.date).includes(d)));
         if (ok) for (const d of missing) t1Rest.add(d);
         else err('ROLES', 'Lagan dan je odmor, a lagan ≥ 20 min staje (T1).', w.index);
