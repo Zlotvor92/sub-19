@@ -276,7 +276,14 @@ describe('generisanje kroz adapter', () => {
       for (const b of d.structure!.blocks)
         if (b.step.kind === 'work') expect(b.step.paceSec).toBeGreaterThan(0);
     }
-    expect(res.dated.some((d) => d.tag === 'test')).toBe(false);
+    // P5-F1: plan sa rezultatom ≥ 12 nedelja ima jedan kontrolni test (procena tempa, kao po osećaju), bez RPE.
+    const rt = res.dated.filter((d) => d.tag === 'test');
+    expect(rt).toHaveLength(1);
+    expect(rt[0]!.structure!.rpe).toBeUndefined();
+    expect(rt[0]!.structure!.blocks.find((b) => b.step.kind === 'test')!.step).toMatchObject({
+      km: 5,
+      paceSec: null
+    });
     // Početnik (H17): bez testa i po osećaju.
     expect(view(planOf(BEGINNER)).dated.some((d) => d.tag === 'test')).toBe(false);
   });
@@ -439,6 +446,8 @@ describe('prekidač i rutiranje po oznaci politike', () => {
         'hm-v2.6.2',
         'hm-v2.7.0',
         'hm-v2.7.1',
+        'hm-v2.8.0',
+        'hm-v2.9.0',
         VERSION
       ])
     ]);

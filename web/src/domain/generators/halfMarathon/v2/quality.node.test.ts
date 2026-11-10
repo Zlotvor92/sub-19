@@ -106,11 +106,14 @@ describe('H11 plafon (pouka 10)', () => {
 });
 
 describe('H12 progresija', () => {
-  it('početni nivo = najviši ≤ 60 % plafona, najmanje prvi nivo', () => {
-    expect(fmt(startLevel('T_continuous', 40)!)).toBe('2 kont'); // 60 % od 4000 = 2400 → 2,0
-    expect(fmt(startLevel('T_continuous', 60)!)).toBe('3 kont'); // 3600 → 3,0
+  it('početni nivo = najviši ≤ 80 % plafona za T i I (P5-F4), ≤ 60 % za R i RP, najmanje prvi nivo', () => {
+    expect(fmt(startLevel('T_continuous', 40)!)).toBe('3 kont'); // 80 % od 4000 = 3200 → 3,0
+    expect(fmt(startLevel('T_continuous', 60)!)).toBe('4 kont'); // 4800 → 4,0
+    expect(fmt(startLevel('T_cruise', 50)!)).toBe('4x1000'); // 80 % od 5000 = 4000
+    expect(fmt(startLevel('I', 50)!)).toBe('3x1000'); // 80 % od 4000 = 3200 → 3000
+    expect(fmt(startLevel('R', 60)!)).toBe('6x300'); // 60 % od 3000 = 1800
     expect(fmt(startLevel('RP', 60)!)).toBe('2x3000'); // P1-S2: 60 % od 12 000 (20 %) = 7200
-    expect(fmt(startLevel('I', 30)!)).toBe('2x1000'); // 1440 < prvi nivo → prvi nivo
+    expect(fmt(startLevel('I', 30)!)).toBe('2x1000'); // 1920 < prvi nivo → prvi nivo
     expect(startLevel('RP', 20)).toBeNull();
   });
 
@@ -199,7 +202,7 @@ describe('H12 progresija', () => {
 
   it('prva nedelja izgradnje: oba slota na početnom nivou', () => {
     const w = pickBuild(INITIAL_QUALITY, 'base', 40, p45, R4)!;
-    expect([fmt(w.q1!.structure), fmt(w.q2!.structure)]).toEqual(['6x200', '2 kont']);
+    expect([fmt(w.q1!.structure), fmt(w.q2!.structure)]).toEqual(['6x200', '3 kont']);
   });
 });
 

@@ -528,12 +528,46 @@ const DECISIONS: readonly Decision[] = [
       'quality.ts taperDoses (reducedStructure maxM), week.ts (napomena), validate.ts TAPER_QUALITY (ista funkcija)',
     rationale:
       'Heuristika, odluka organizatora posle P1-STOP 2 (opcija b): taper < 40 km (plafon 15 %) posle RP izabranog pod 20 % ostajao je bez kvaliteta i bez oštrenja u 1365 / 25 122 planova mreža 02 i 03.'
+  },
+  /* ---------- Segment P5 (hm-v2.10.0): forma, kvalitet u adaptaciji, ubrzanja, početna doza — odluke organizatora
+     (briefs/P5-forma-ubrzanja-pocetna-doza.md). Heuristike, bez trenerske provere na stvarnim trkačima. ---------- */
+  {
+    id: 'P5-F1',
+    rule: 'Kontrolni test u planu sa rezultatom: plan sa rezultatom koji nije početnik i ima ≥ 12 nedelja dobija tačno jedan test — isti test kao plan po osećaju (5 km kontrolisano maksimalno, WU/CD po H14, u obimu nedelje, ne u dozi, bez plafona H11) — u poslednjoj ne-rasteretnoj nedelji faze razvoja, na danu Q1 umesto tog kvaliteta; progresija slota se posle testa nastavlja od stanja pre testa (H16), glavna doza preskače nedelju testa. Kraći planovi i početnik bez testa. Rezultat ulazi postojećim putem adaptacije (A1: nov rezultat → tempo od sledeće nedelje). Adaptacija (A13): test plana sa rezultatom se premešta istim pravilom kao po osećaju, dok nema novog rezultata (steps.framesFor: stepVdotAt). Napomena nedelje: čemu test služi i da se rezultat unese.',
+    place:
+      'periodize.ts testKindOf (jedina odluka vrste testa), testWeekOf, periodize; generate.ts, adapt.ts, adaptInvariants.ts, validate.ts (TEST); steps.ts framesFor (A13); week.ts RESULT_TEST_NOTE; gridInvariants.ts (nezavisno)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: plan sa rezultatom nema nijednu tačku merenja forme, tempo se ne menja kroz plan). Test pre specifične faze da RP i T specifične faze slede stvarnu formu. Merenje: docs/generators-v2/perfection/reports/P5-HM-REPORT.md.'
+  },
+  {
+    id: 'P5-F2',
+    rule: 'Kvalitet u adaptaciji (korak QUALITY_STRAIN): činjenice su zapisi dana čija je uloga u planu kvalitet (Q1, Q2, dugi sa blokom RP; ne test). Okidač: dva uzastopna takva dana (po datumu, oba u poslednjih 14 dana do asOf, potpuno pokrivena, A10), svaki neodrađen (completed false ili bez zapisa) ili sa RPE ≥ 9. Efekat: nedelja n (prva puna nedelja posle asOf), kad je ne-rasteretna nedelja izgradnje, ne podiže dozu nijednog slota — bez sledećeg nivoa (ista doza druge strukture, inače ponavljanje uz napomenu); prelaz u istoj zoni (T kontinuirano ↔ T cruise) uzima istu dozu druge strukture kad postoji; prelaz u novu zonu (I u razvoju, RP u specifičnoj) ide po H12 (početni nivo nije rast); blok RP u dugom ostaje na poslednjem nivou (bez prethodnog — prvi nivo). Cilj obima se ne menja; „doza ne opada" ostaje. Razlog u reasons i poruka korisniku (traka). Prioritet: ispod bola, pauze, umora i manjka izvršenja (A7 — aktivan uslov → applied false). Isti zapisi ne prave nov korak (step.qualitySeen). Taper, trkačka nedelja i rasterećenje: bez efekta.',
+    place:
+      'assess.ts qualityStrain (okidač), assess (korak: qualityHold, qualitySeen); steps.ts holdAt; generate.ts ctxAt (hold); quality.ts pickSlot/pickBuild (hold); specific.ts wantBlockKm/chooseBlockKm (hold); week.ts HOLD_NOTE; validate.ts DOSE_HOLD (i izuzeci DOSE_STALL, IDENTICAL_WEEKS, BASE_PLATEAU, SECOND_QUALITY, LONG_BLOCK uz hold); adapt.ts (traka CHANGE); app/adapt.ts (naziv uslova)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: RPE i izvršenje kvalitetnog treninga nemaju efekat u adaptaciji). Tumačenje taba: „sledeća nedelja izgradnje" = nedelja n kao kod ostalih koraka; kad je n rasterećenje, taper ili trka — bez efekta (applied false).'
+  },
+  {
+    id: 'P5-F3',
+    rule: 'Ubrzanja na laganom danu: u svakoj nedelji osim trkačke (tamo dan pred trku, H8) i uvoda početnika tačno jedan lagan dan dobija ubrzanja na kraju — baza 4 × 20 s, od razvoja (razvoj, specifična, taper, i rasterećenje te faze) 6 × 20 s; početnik uvek 4 × 20 s. Dan: lagan dan sa najvećim razmakom u danima od prethodnog zahtevnog dana (kvalitet, dugi, test — i iz prethodne nedelje), pri jednakom razmaku raniji; ne dan bola ili odmora koraka (A4: „bez kvaliteta i ubrzanja") ni zaštićen dan (adaptacija; zaštićen dan sa ubrzanjima ih zadržava, drugog nema). Dužina dana ostaje ona koju daje lengths.ts (ubrzanja i oporavak su deo laganog trčanja, nisu rad zone ni dodatni km); struktura kao dan pred trku (R tempo, oporavak isti metraž džogom). Nedelja bez laganog dana: bez ubrzanja.',
+    place:
+      'policy.ts strides; workouts.ts easyStridesWorkout, stridesOf; week.ts stridesReps, stridesDate, stridesExcluded, withStrides (jedno mesto); generate.ts (posle sastava nedelje); validate.ts STRIDES; gridInvariants.ts (nezavisno)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: HM bez ubrzanja na laganim danima). Neuromuskularni podsticaj bez opterećenja; 5K v2 ih već ima.'
+  },
+  {
+    id: 'P5-F4',
+    rule: 'Početna doza T i I: početni nivo T (kontinuirano i cruise) i I = najviši nivo lestvice ≤ 80 % plafona zone (H11) za cilj nedelje (do sada 60 %), najmanje prvi nivo. R i RP ostaju 60 %. Početnik bez promene (prvi nivo, HI10). Sva ostala pravila progresije (H12) ostaju; WU/CD se ne skraćuje (Uslov 3).',
+    place:
+      'policy.ts startLevel.capShare; quality.ts startLevel; validate.ts START_LEVEL (ista funkcija)',
+    rationale:
+      'Heuristika, odluka organizatora P5 (P0: prvi T trening ≈ 9–12 min rada uz 35 min WU/CD, 12–16 % trajanja dana). Mali udeo rada se rešava većom početnom dozom, ne kraćim WU/CD.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.9.0',
+  version: 'hm-v2.10.0',
 
   /** H1 (dani i obim: H15). */
   input: {
@@ -606,8 +640,9 @@ export const HM_V2_POLICY = {
     }
   },
 
-  /** H16: test (samo plan po osećaju koji nije početnik). */
-  test: { km: 5 },
+  /** H16: test (plan po osećaju koji nije početnik); P5-F1: i plan sa rezultatom (ne početnik) sa ≥ resultMinWeeks
+      nedelja — poslednja ne-rasteretna nedelja razvoja. */
+  test: { km: 5, resultMinWeeks: 12 },
 
   /** H17: JEDINA tabela početnika (udeo dugog, minimum i max nedelje: red H15 za isti broj dana). */
   beginner: {
@@ -827,6 +862,13 @@ export const HM_V2_POLICY = {
     painEasyFactor: 0.7,
     fatigueRpe: 7,
     fatigueCount: 2,
+    /** P5-F2: zahtevan trening (Q1, Q2, dugi sa blokom; ne test) preskočen ili sa RPE ≥ strainRpe — dva uzastopna u
+        poslednjih strainLookbackDays dana → sledeća nedelja izgradnje bez rasta doze. */
+    strainRpe: 9,
+    strainCount: 2,
+    strainLookbackDays: 14,
+    strainMessage:
+      'Poslednja dva zahtevna treninga su bila preteška ili preskočena — doza ove nedelje ne raste; ako tempo deluje pretežak, unesi nov rezultat ili uradi test.',
     overShare: 1.15,
     returnGrowth: 0.1,
     returnGrowthMinKm: 1.0,
@@ -844,8 +886,17 @@ export const HM_V2_POLICY = {
     blockMaxLongShare: 0.4
   },
 
-  /** H12: početni nivo slota ≤ udeo plafona zone (H11). */
-  startLevel: { capShare: 0.6 },
+  /** P5-F3 (hm-v2.10.0): ubrzanja na kraju jednog laganog dana nedelje izgradnje i tapera (ne trkačka nedelja, ne uvod
+      početnika, ne dan bola/odmora) — baza 4 × 20 s, od razvoja 6 × 20 s, početnik uvek 4 × 20 s; deo laganog
+      trčanja (dužina dana ostaje, nije rad zone). */
+  strides: { sec: 20, baseReps: 4, laterReps: 6, beginnerReps: 4 },
+
+  /** H12: početni nivo slota ≤ udeo plafona zone (H11); P5-F4: T (kontinuirano i cruise) i I 80 %, R i RP 60 %. */
+  startLevel: {
+    capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } as Readonly<
+      Record<'R' | 'I' | 'T' | 'RP', number>
+    >
+  },
 
   /** H14. */
   workout: {

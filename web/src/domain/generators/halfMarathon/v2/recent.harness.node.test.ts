@@ -8,7 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
-import { CHANGED_10, mayChange } from './grid.harness.node.test.ts';
+import { CHANGED_10, mayChange, p5Rows } from './grid.harness.node.test.ts';
 import { checkPlan, emptyStats, type GridStats } from './gridInvariants.ts';
 import { DAY_COUNTS, inputOf, KM_BY_DAYS, resultHash, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { HmV2Plan } from './types.ts';
@@ -88,7 +88,8 @@ export function describeRecent(
         // HM-04 A (pouka 32): plan sa kvalitetnim danom dužim od dugog na 5e09a02 sme da se promeni; HM-07 (CHANGED_07).
         const over = mayChange(`r-${g.id}`);
         // HM-10 (krug T): plan izuzetka koji menja i T1/T7 (CHANGED_10) proverava spisak promena, ne red izuzetka.
-        const t10 = CHANGED_10.has(`r-${g.id}`);
+        // P5: plan sa F1/F4 (obim, dužine, broj kvaliteta nedelje) — isto; samo F3 (ubrzanja) proverava red izuzetka.
+        const t10 = CHANGED_10.has(`r-${g.id}`) || p5Rows(`r-${g.id}`);
         // F3 (04-final): r < obim / 7 → odbijanje RECENT_LONG_UNDER_WEEKLY (menja ishod; proverava K1).
         const f3 = g.r * 7 < g.km;
         if (f3) {
@@ -135,7 +136,11 @@ export function describeRecent(
       const ids = inputs
         .map((g) => g.id)
         .filter(
-          (id) => id in EXCEPTIONS && !CHANGED_10.has(`r-${id}`) && !underWeekly.includes(id)
+          (id) =>
+            id in EXCEPTIONS &&
+            !CHANGED_10.has(`r-${id}`) &&
+            !p5Rows(`r-${id}`) &&
+            !underWeekly.includes(id)
         );
       expect(Object.keys(excepted)).toEqual(ids);
       for (const id of ids) expect(excepted[id]).toEqual(EXCEPTIONS[id]!.after);

@@ -16,7 +16,7 @@ import {
   week1LongCap10
 } from './lengths.ts';
 import { assessGoal, predictedHm } from './paces.ts';
-import { isBuildPhase, periodize } from './periodize.ts';
+import { isBuildPhase, periodize, testKindOf } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState, weekPicksOf } from './quality.ts';
 import { scheduledType } from './specific.ts';
@@ -29,6 +29,7 @@ import {
   initialState,
   jumpRecentKm,
   pacesAt,
+  holdAt,
   newStartAt,
   restartWeeks,
   stepVdotAt
@@ -62,7 +63,8 @@ import {
   type QualityMode,
   raceWeek,
   remainderWeek,
-  type WeekContext
+  type WeekContext,
+  withStrides
 } from './week.ts';
 import { weekLabel } from './weekLabel.ts';
 import { fmtKm, fmtSec, warmupCooldown } from './workouts.ts';
@@ -149,8 +151,8 @@ export function construct(
   const { input, weeks, pace, pattern, rule } = chk;
   const feel = pace.kind === 'feel';
   const paces = basePaces(pace);
-  // H16: test 5 km samo u planu po osećaju koji nije početnik.
-  const base = periodize(input.startDate, weeks, feel && rule.feelTest);
+  // H16: test 5 km u planu po osećaju koji nije početnik; P5-F1: i u planu sa rezultatom ≥ 12 nedelja.
+  const base = periodize(input.startDate, weeks, testKindOf(pace.kind, rule, weeks));
   if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima H5.');
   const adapted = steps.length > 0;
   const frames = adapted
@@ -175,7 +177,8 @@ export function construct(
     if (!av) return ctx0;
     const reduced = {
       ...(w >= av.reducedFrom ? { adapted: true } : {}),
-      ...(newStartAt(steps, w) ? { newStart: true } : {})
+      ...(newStartAt(steps, w) ? { newStart: true } : {}),
+      ...(holdAt(steps, w) ? { hold: true } : {})
     };
     if (stepVdotAt(steps, w) === null) return { ...ctx0, ...reduced };
     const p = pacesAt(pace, steps, w);
@@ -299,11 +302,25 @@ export function construct(
     // Pouka 37: mešovita nedelja — preostali dani na ostatak cilja (samo naniže; week.remainderWeek).
     const w0 = make(fit.target10, mode)!;
     const s0 = prior?.weeks[frame.index - 1];
-    const w =
+    const w1 =
       prior && s0 && mustDay(s0.endDate) > prior.asOf
         ? (remainderWeek(ctx, frame, w0, s0.days.filter(prior.keep), fit.target10, prior.factKm) ??
           w0)
         : w0;
+    // P5-F3: ubrzanja na jednom laganom danu (dužina dana ostaje; zaštićeni dani prethodnog plana se ne menjaju).
+    const prevHardB =
+      (written[written.length - 1]?.days ?? []).filter((d) => d.hard).pop()?.date ?? null;
+    const w = {
+      ...w1,
+      days: withStrides(
+        w1.days,
+        frame,
+        rule,
+        ctx.paces,
+        prevHardB,
+        s0 && prior ? s0.days.filter(prior.keep) : []
+      )
+    };
     const notes = [...w.notes];
     if (frame.index === 1 && w.long10 !== null) notes.push(recentLongNote(w.long10, ctx));
     if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));

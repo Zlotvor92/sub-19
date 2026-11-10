@@ -140,12 +140,13 @@ describe('validator', () => {
 
   it('H12 (pouka 3): plato u bazi / ista doza dok sledeći nivo staje; skok > 1 nivo; početni nivo', () => {
     const a = clone(base());
-    dayOf(week(a, 3), 'q2').workout = structuredClone(dayOf(week(a, 2), 'q2').workout);
+    // P5-F4: Q2 baze kreće od 3,0 km (T 4,0 → 5,0 km ne staje); stall na Q1 (R 1200 → 1600 m staje).
+    dayOf(week(a, 2), 'q1').workout = structuredClone(dayOf(week(a, 1), 'q1').workout);
     expect(errors(a)).toEqual(expect.arrayContaining(['DOSE_STALL']));
     const b = clone(base());
     dayOf(week(b, 2), 'q2').workout = quality(b, 'T_continuous', 'T', {
       form: 'continuous',
-      km: 4
+      km: 5 // P5-F4: nedelja 1 T 3,0 km → sledeći nivo 4,0 km
     });
     expect(errors(b)).toEqual(expect.arrayContaining(['DOSE_JUMP']));
     const c = clone(base());
@@ -295,7 +296,10 @@ describe('validator', () => {
   it('H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km)', () => {
     const a = clone(base('d6-12w-60km-v50-B-sun'));
     const w = week(a, 2);
-    const e = w.days.filter((d) => d.role === 'easy');
+    // P5-F3: dan sa ubrzanjima se ne dira (inače i STRIDES).
+    const e = w.days.filter(
+      (d) => d.role === 'easy' && !d.workout.segments.some((x) => x.kind === 'stride')
+    );
     e[0]!.workout = easyWorkout(e[0]!.workout.km + 0.5, a.paces);
     e[1]!.workout = easyWorkout(e[1]!.workout.km - 0.5, a.paces);
     expect(errors(a)).toEqual(['EASY_UNEQUAL']);

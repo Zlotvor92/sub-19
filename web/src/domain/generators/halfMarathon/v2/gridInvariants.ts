@@ -217,9 +217,14 @@ export function checkPlan(
     w.days.filter((d) => d.workout.kind === 'test').map((d) => ({ w, d }))
   );
   const lastBase = p.weeks.map((w) => w.phase).lastIndexOf('base') + 1;
-  if (feel && !beg) {
+  // P5-F1 (nezavisno): plan sa rezultatom koji nije početnik, ≥ 12 nedelja — jedan test u poslednjoj nedelji razvoja
+  // koja nije rasterećenje (isti test kao po osećaju).
+  let lastDev = 0;
+  for (const w of p.weeks) if (w.phase === 'development' && !w.deload) lastDev = w.index;
+  const wantTest = beg ? 0 : feel ? lastBase : p.weeks.length >= 12 ? lastDev : 0;
+  if (wantTest > 0) {
     const t = tests[0];
-    if (tests.length !== 1 || !t || t.w.index !== lastBase)
+    if (tests.length !== 1 || !t || t.w.index !== wantTest)
       no('TEST_ONCE', `${tests.length} testova`);
     else {
       const wantDay = t.w.deload && !one ? p.pattern.q2 : p.pattern.q1;
@@ -242,6 +247,39 @@ export function checkPlan(
       if (t.d.workout.km > lt) st.testLongerThanLong++;
     }
   } else if (tests.length > 0 || p.weeks.some((w) => w.test)) no('TEST_NONE', `${tests.length}`);
+  // P5-F3 (nezavisno): svaka nedelja osim trkačke i uvoda početnika ima tačno jedan lagan dan sa ubrzanjima (kad ima
+  // lagan dan) — baza i početnik 4 × 20 s, od razvoja 6 × 20 s — na laganom danu najudaljenijem od prethodnog zahtevnog
+  // dana (kvalitet, dugi, test; pri jednakom razmaku raniji); ubrzanja ne menjaju km dana (lagan ≥ 4 km ostaje).
+  {
+    let prevHard: string | null = null;
+    for (const w of p.weeks) {
+      const sd = w.days.filter((d) => d.workout.segments.some((x) => x.kind === 'stride'));
+      if (w.phase !== 'race') {
+        const want = intro(w) ? 0 : beg || w.phase === 'base' ? 4 : 6;
+        const hardD = w.days
+          .filter((d) => ['q1', 'q2', 'long', 'test'].includes(d.role))
+          .map((d) => d.date);
+        let best: { date: string; gap: number } | null = null;
+        for (const d of w.days) {
+          if (d.role !== 'easy') continue;
+          const before = [...(prevHard ? [prevHard] : []), ...hardD]
+            .filter((x) => x < d.date)
+            .sort()
+            .pop();
+          const gap = before ? daysBetween(before, d.date) : Infinity;
+          if (!best || gap > best.gap) best = { date: d.date, gap };
+        }
+        const expect = want > 0 && best ? best.date : null;
+        if (sd.map((d) => d.date).join() !== (expect ?? '')) no('STRIDES_DAY', `ned ${w.index}`);
+        for (const d of sd) {
+          const n = d.workout.segments.filter((x) => x.kind === 'stride');
+          if (d.role !== 'easy' || n.length !== want || n.some((x) => x.sec !== 20))
+            no('STRIDES_DOSE', `ned ${w.index} ${d.date}`);
+        }
+      }
+      prevHard = w.days.filter((d) => d.hard).pop()?.date ?? prevHard;
+    }
+  }
   // Pouka 28: dugi nedelje k ≤ max(1,1 × L, L + 1,0) (0,1 km naniže), L = najduži dugi nedelja k − 4 … k − 1,
   // u nedeljama 1–4 i skorašnji najduži r.
   const r = p.input.recentLongRunKm;
@@ -345,7 +383,13 @@ export function checkPlan(
       // T1 (krug T, nezavisno): nedelja izgradnje — lagan ≤ 0,8 × dugi (km) i ≥ 20 min.
       if (steady(w) && long !== null) {
         const ed = w.days.filter((d) => d.role === 'easy');
-        if (ed.some((d) => to10(d.workout.km) * 10 > 8 * long + EPS || d.workout.sec < 1200))
+        // P5-F3: dan sa ubrzanjima — trajanje dužine dana srednjim E (ubrzanja su deo laganog trčanja).
+        const midE = (p.paces.E.fast + p.paces.E.slow) / 2;
+        const sec = (d: (typeof ed)[number]): number =>
+          d.workout.segments.some((x) => x.kind === 'stride')
+            ? Math.round(d.workout.km * midE)
+            : d.workout.sec;
+        if (ed.some((d) => to10(d.workout.km) * 10 > 8 * long + EPS || sec(d) < 1200))
           no('EASY_BUILD', tag);
       }
       // H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km); broj dana nedelje = broj dana trčanja.

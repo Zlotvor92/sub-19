@@ -5,7 +5,8 @@
 import { adaptBases } from './adaptInputs.ts';
 import { describeAdaptGrid, grid04Flows } from './adaptGrid.harness.node.test.ts';
 
-export const GRID04 = { plans: 33, flows: 4919 };
+// P5-F1: asOf nedelje testa plana sa rezultatom (4919 → 5055).
+export const GRID04 = { plans: 33, flows: 5055 };
 
 describeAdaptGrid(
   'mreža 04: adaptacija (MASTER § 3)',

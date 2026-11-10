@@ -73,13 +73,21 @@ describe('H16 tempo po osećaju', () => {
     );
   });
 
-  it('plan sa rezultatom: bez paceBasis, RPE i testa (oblik bajt-isti kao hm-v2.1.0)', () => {
-    const p = plan('12w-40km-v45-A-sun');
+  it('plan sa rezultatom: bez paceBasis i RPE; test samo od 12 nedelja (P5-F1, oblik ulaza kao hm-v2.1.0)', () => {
+    const p = plan('11w-40km-v45-A-sun');
     expect(p.paceBasis).toBeUndefined();
     expect(p.predictedHmSec).toBeGreaterThan(0);
     expect(
       p.weeks.some((w) => w.test || w.days.some((d) => d.workout.rpe || d.role === 'test'))
     ).toBe(false);
+    // P5-F1: 12 nedelja — jedan test (bez RPE) u poslednjoj ne-rasteretnoj nedelji razvoja.
+    const p12 = plan('12w-40km-v45-A-sun');
+    const tw = p12.weeks.filter((w) => w.days.some((d) => d.role === 'test'));
+    expect(tw.map((w) => [w.phase, w.deload, w.test])).toEqual([['development', false, true]]);
+    expect(p12.weeks.some((w) => w.days.some((d) => d.workout.rpe))).toBe(false);
+    expect(
+      p12.weeks.filter((w) => w.phase === 'development' && !w.deload && w.index > tw[0]!.index)
+    ).toEqual([]);
     expect(Object.keys(p.input)).toEqual([
       'startDate',
       'raceDate',
@@ -96,13 +104,14 @@ describe('H16 test 5 km', () => {
   it('nedelja testa = poslednja nedelja baze (periodize samo uz test)', () => {
     for (let n = 10; n <= 20; n++) {
       const ph = phasesOf(n);
-      expect(ph[testWeekOf(ph) - 1]).toBe('base');
-      expect(ph[testWeekOf(ph)]).toBe('development');
+      const fr = ph.map((phase) => ({ phase, deload: false }));
+      expect(ph[testWeekOf(fr, 'feel') - 1]).toBe('base');
+      expect(ph[testWeekOf(fr, 'feel')]).toBe('development');
       expect(
-        periodize('2026-11-02', n, true)!
+        periodize('2026-11-02', n, 'feel')!
           .filter((f) => f.test)
           .map((f) => f.index)
-      ).toEqual([testWeekOf(ph)]);
+      ).toEqual([testWeekOf(fr, 'feel')]);
       expect(periodize('2026-11-02', n)!.some((f) => f.test)).toBe(false);
     }
   });

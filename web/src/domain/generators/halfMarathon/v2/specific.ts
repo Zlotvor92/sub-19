@@ -52,8 +52,11 @@ export function blockFits(km: number, x: number, rule: PlanRule, p: Paces): bool
 
 /** S1: nivo bloka po pravilu — sledeći posle poslednjeg bloka `lastBlockM` [m] (jedan nivo po nedelji B; bez
     prethodnog prvi nivo; na vrhu vrh). */
-export function wantBlockKm(lastBlockM: number): number {
+export function wantBlockKm(lastBlockM: number, hold = false): number {
   const levels = blockLevels();
+  // P5-F2: nedelja bez rasta doze — blok ostaje na poslednjem nivou (bez prethodnog bloka prvi nivo).
+  if (hold && lastBlockM > 0)
+    return levels.filter((x) => x * 1000 <= lastBlockM + 1e-6).pop() ?? levels[0]!;
   return levels.find((x) => x * 1000 > lastBlockM + 1e-6) ?? levels[levels.length - 1]!;
 }
 
@@ -69,10 +72,11 @@ export function chooseBlockKm(
   rule: PlanRule,
   p: Paces,
   qualitySecs: readonly number[],
-  targetKm: number
+  targetKm: number,
+  hold = false
 ): number | null {
   const km = long10 / 10;
-  const want = wantBlockKm(lastBlockM);
+  const want = wantBlockKm(lastBlockM, hold);
   const easySec = longWorkout(km, p).sec;
   const levels = blockLevels().filter((x) => x <= want + 1e-9);
   for (let k = levels.length - 1; k >= 0; k--) {

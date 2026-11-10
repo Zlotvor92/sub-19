@@ -9,6 +9,7 @@ import { assess, checkFacts, painReturnNote } from './assess.ts';
 import { addDays, dayNumber, mustDay, weekdayOf } from './dates.ts';
 import { construct } from './generate.ts';
 import { checkInput } from './input.ts';
+import { testKindOf } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { same } from './same.ts';
 import { baseFrames, framesFor, newLimits, targetReducedWeek } from './steps.ts';
@@ -201,7 +202,7 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
   const base = baseFrames(
     chk.input.startDate,
     chk.weeks,
-    chk.pace.kind === 'feel' && chk.rule.feelTest
+    testKindOf(chk.pace.kind, chk.rule, chk.weeks)
   );
   if (base)
     framesFor(
@@ -337,7 +338,9 @@ const LIMIT: ReadonlySet<AdaptReason['condition']> = new Set(['PAIN', 'PAUSE', '
 const CHANGE: ReadonlySet<AdaptReason['condition']> = new Set([
   'NEW_RESULT',
   'UNDER_EXECUTION',
-  'OVER_EXECUTION'
+  'OVER_EXECUTION',
+  // P5-F2: nedelja bez rasta doze (vezano za zapise, step.qualitySeen — isti zapisi ne ponavljaju traku).
+  'QUALITY_STRAIN'
 ]);
 
 /**

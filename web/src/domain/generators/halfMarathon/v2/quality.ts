@@ -122,14 +122,15 @@ export function nextLevel(ladder: LadderId, doseM: number, beginner = false): St
   return ladderLevels(ladder, beginner).find((s) => doseOf(s) > doseM) ?? null;
 }
 
-/** H12: početni nivo — najviši nivo lestvice ≤ 60 % plafona zone (H11) za cilj nedelje, najmanje prvi nivo;
+/** H12: početni nivo — najviši nivo lestvice ≤ udeo plafona zone (H11) za cilj nedelje (R, RP 60 %; P5-F4: T i I
+    80 %), najmanje prvi nivo;
     početnik (`beginner`, HI10): prvi nivo (T kontinuirano 1,5 km). null = ni prvi nivo ne staje u plafon. */
 export function startLevel(ladder: LadderId, targetKm: number, beginner = false): Structure | null {
   const levels = ladderLevels(ladder, beginner);
   const cap = capM(zoneOf(ladder), targetKm);
   if (doseOf(levels[0]!) > cap) return null;
   if (beginner) return levels[0]!;
-  const limit = P.startLevel.capShare * cap + 1e-6;
+  const limit = P.startLevel.capShare[zoneOf(ladder)] * cap + 1e-6;
   return levels.filter((s) => doseOf(s) <= limit).pop() ?? levels[0]!;
 }
 
@@ -159,7 +160,8 @@ export function pickSlot(
   allowDrop = false,
   oneSlot = false,
   beginner = false,
-  dayFits?: DayFits
+  dayFits?: DayFits,
+  hold = false
 ): Dose | null {
   const cap = capM(zoneOf(ladder), targetKm);
   const levels = ladderLevels(ladder, beginner);
@@ -182,7 +184,8 @@ export function pickSlot(
     return start ? (dur(start) ? pick(ladder, start, 'start') : durDrop(doseOf(start))) : null;
   // Ista lestvica: sledeći nivo ako staje u plafon, inače ista doza druge strukture (nema je — ponavljanje).
   const progress = (): Dose | null => {
-    const next = nextLevel(ladder, prev.doseM, beginner);
+    // P5-F2: nedelja bez rasta doze — sledeći nivo se ne uzima (ista doza druge strukture ili ponavljanje).
+    const next = hold ? null : nextLevel(ladder, prev.doseM, beginner);
     if (next && fits(next)) return pick(ladder, next, 'next');
     if (prev.doseM > cap) return drop();
     const alt = otherStructure(ladder, prev.doseM, prev.structure, p, dur);
@@ -196,7 +199,13 @@ export function pickSlot(
   const repeats = (s: Structure): boolean =>
     oneSlot && !newZone && sameStructure(s, prev.structure);
   const lo = Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
-  const lv = levels.find((s) => doseOf(s) >= lo);
+  const lv0 = levels.find((s) => doseOf(s) >= lo);
+  // P5-F2: prelaz u istoj zoni (T kontinuirano ↔ T cruise) bez rasta — ista doza druge strukture kad postoji.
+  const same0 =
+    hold && !newZone && lv0 && doseOf(lv0) > prev.doseM
+      ? structuresForDose(ladder, prev.doseM).filter((x) => doseOf(x) <= cap && dur(x))[0]
+      : undefined;
+  const lv = same0 ?? lv0;
   if (lv && doseOf(lv) <= cap) {
     if (!dur(lv)) return durDrop(doseOf(lv));
     return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
@@ -273,13 +282,24 @@ export function pickBuild(
   rule: PlanRule,
   allowDrop = false,
   skipQ1 = false,
-  limit?: BuildLimit
+  limit?: BuildLimit,
+  hold = false
 ): WeekPicks | null {
   const quality = rule.quality;
   const l1 = buildLadder(phase, targetKm, rule);
   let q1: Dose | null = null;
   if (!skipQ1 && l1) {
-    q1 = pickSlot(state.q1, l1, targetKm, p, allowDrop, quality === 1, rule.beginner, limit?.q1);
+    q1 = pickSlot(
+      state.q1,
+      l1,
+      targetKm,
+      p,
+      allowDrop,
+      quality === 1,
+      rule.beginner,
+      limit?.q1,
+      hold
+    );
     if (!q1) return null;
   }
   if (quality === 1) return { q1, q2: null };
@@ -291,7 +311,8 @@ export function pickBuild(
     allowDrop,
     false,
     false,
-    limit?.q2(q1)
+    limit?.q2(q1),
+    hold
   );
   return q2 ? { q1, q2 } : null;
 }

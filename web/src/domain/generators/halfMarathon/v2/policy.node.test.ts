@@ -6,7 +6,7 @@ import { dayRule, HM_V2_POLICY as P, RUN_DAYS_COUNTS } from './policy.ts';
 describe('HM v2 politika (MASTER § 4)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('hm-v2');
-    expect(P.version).toBe('hm-v2.9.0');
+    expect(P.version).toBe('hm-v2.10.0');
   });
 
   it('H1 opseg ulaza', () => {
@@ -158,7 +158,12 @@ describe('HM v2 politika (MASTER § 4)', () => {
         { fromKm: 40, share: 0.2 }
       ]
     });
-    expect(P.startLevel).toEqual({ capShare: 0.6 });
+    expect(P.startLevel).toEqual({ capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } });
+    // P5-F3: ubrzanja; P5-F2: okidač kvaliteta u adaptaciji.
+    expect(P.strides).toEqual({ sec: 20, baseReps: 4, laterReps: 6, beginnerReps: 4 });
+    expect([P.adapt.strainRpe, P.adapt.strainCount, P.adapt.strainLookbackDays]).toEqual([
+      9, 2, 14
+    ]);
     // H13: dugi ≤ 24 km (odluka organizatora HM-01 → 02); pouka 28 (HI7).
     // T1 (krug T): lagan izgradnje ≤ 0,8 × dugi i ≥ 20 min.
     expect(P.lengths).toEqual({
@@ -207,7 +212,7 @@ describe('HM v2 politika (MASTER § 4)', () => {
         R: { min: 8, max: 8, cue: 'brzo, opušteno' }
       }
     });
-    expect(P.test).toEqual({ km: 5 });
+    expect(P.test).toEqual({ km: 5, resultMinWeeks: 12 });
   });
 
   it('DECISIONS: svaka odluka ima pravilo, mesto i obrazloženje; jedinstveni id', () => {
@@ -281,7 +286,11 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'P1-S1',
       'P1-S2',
       'P1-S3',
-      'P1-T'
+      'P1-T',
+      'P5-F1',
+      'P5-F2',
+      'P5-F3',
+      'P5-F4'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

@@ -4,6 +4,7 @@
 
 import { daysBetween, mustDay } from './dates.ts';
 import { checkInput } from './input.ts';
+import { testKindOf } from './periodize.ts';
 import { HM_V2_POLICY as P, planRule } from './policy.ts';
 import { baseFrames, pacesAt } from './steps.ts';
 import type { PlanDay, PlanWeek, HmV2Facts, HmV2Plan } from './types.ts';
@@ -259,7 +260,7 @@ function extra(
       ? (baseFrames(
           chk.input.startDate,
           chk.weeks,
-          chk.pace.kind === 'feel' && chk.rule.feelTest
+          testKindOf(chk.pace.kind, chk.rule, chk.weeks)
         ) ?? [])
       : []
     )

@@ -110,18 +110,44 @@ export function deloadWeeks(phases: readonly Phase[]): number[] | null {
   return out;
 }
 
-/** H16: nedelja testa 5 km = poslednja nedelja baze (1-indeks). */
-export function testWeekOf(phases: readonly Phase[]): number {
-  return phases.lastIndexOf('base') + 1;
+/** H16/P5-F1: vrsta testa plana — 'feel' plan po osećaju koji nije početnik (H16); 'result' plan sa rezultatom koji
+    nije početnik i ima ≥ test.resultMinWeeks nedelja (P5-F1); null bez testa. JEDNA odluka za konstruktor, validator,
+    adaptaciju i invarijante. */
+export type TestKind = 'feel' | 'result' | null;
+export function testKindOf(
+  paceKind: 'feel' | 'result',
+  rule: { feelTest: boolean; beginner: boolean },
+  weeks: number
+): TestKind {
+  if (rule.beginner) return null;
+  if (paceKind === 'feel') return rule.feelTest ? 'feel' : null;
+  return weeks >= P.test.resultMinWeeks ? 'result' : null;
 }
 
-/** Okviri nedelja: datumi, faza, rasterećenje; `test` (plan po osećaju koji nije početnik, H16) označava
-    nedelju testa. null kad H5 nema rešenja. */
-export function periodize(startDate: IsoDate, weeks: number, test = false): WeekFrame[] | null {
+/** H16: nedelja testa po osećaju = poslednja nedelja baze; P5-F1: test plana sa rezultatom = poslednja ne-rasteretna
+    nedelja razvoja (1-indeks; 0 = nema takve nedelje). */
+export function testWeekOf(
+  frames: readonly { phase: Phase; deload: boolean }[],
+  kind: Exclude<TestKind, null>
+): number {
+  if (kind === 'feel') return frames.map((f) => f.phase).lastIndexOf('base') + 1;
+  for (let i = frames.length - 1; i >= 0; i--)
+    if (frames[i]!.phase === 'development' && !frames[i]!.deload) return i + 1;
+  return 0;
+}
+
+/** Okviri nedelja: datumi, faza, rasterećenje; `test` (vrsta testa, testKindOf) označava nedelju testa. null kad H5
+    nema rešenja. */
+export function periodize(
+  startDate: IsoDate,
+  weeks: number,
+  test: TestKind = null
+): WeekFrame[] | null {
   const phases = phasesOf(weeks);
   const deloads = deloadWeeks(phases);
   if (!deloads) return null;
-  const tw = test ? testWeekOf(phases) : 0;
+  const flags = phases.map((phase, i) => ({ phase, deload: deloads.includes(i + 1) }));
+  const tw = test ? testWeekOf(flags, test) : 0;
   return phases.map((phase, i) => ({
     index: i + 1,
     startDate: addDays(startDate, 7 * i),

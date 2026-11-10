@@ -69,8 +69,8 @@ describe('H17 pravilo plana početnika', () => {
   it('HI10: lestvica T kont. početnika [1,5; 2,0; …]; početni nivo = prvi nivo; T kont. kad prvi nivo faze ne staje', () => {
     expect(ladderLevels('T_continuous', true).map(doseOf).slice(0, 3)).toEqual([1500, 2000, 2500]);
     expect(ladderLevels('T_continuous').map(doseOf)[0]).toBe(2000);
-    // Redovan plan bi pri 40 km krenuo od 2,0 km (≤ 60 % plafona 4,0 km); početnik od 1,5 km.
-    expect(doseOf(startLevel('T_continuous', 40)!)).toBe(2000);
+    // Redovan plan bi pri 40 km krenuo od 3,0 km (P5-F4: ≤ 80 % plafona 4,0 km); početnik od 1,5 km.
+    expect(doseOf(startLevel('T_continuous', 40)!)).toBe(3000);
     expect(doseOf(startLevel('T_continuous', 40, true)!)).toBe(1500);
     // Razvoj 22 km: T cruise 2 × 1200 m > 2,2 km → T kontinuirano; specifično 26 km: RP 4,0 km > 3,9 km.
     expect(buildLadder('development', 22, B4)).toBe('T_continuous');

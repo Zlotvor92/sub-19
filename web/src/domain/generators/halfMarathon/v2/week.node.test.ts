@@ -220,7 +220,7 @@ describe('H5 rasterećenje i H7 taper', () => {
     expect(w(5).targetKm).toBe(Math.round(0.8 * w(4).targetKm * 10) / 10);
     const q = w(5).days.filter((x) => x.workout.kind === 'quality');
     expect(q.map((x) => [x.role, x.workout.dose!.zone, x.workout.dose!.doseM])).toEqual([
-      ['q2', 'T', 2000]
+      ['q2', 'T', 2400] // P5-F4: poslednja T 4000 m (start 80 %) → 60 % = 2400 m
     ]);
     expect(km(w(5), 'long')[0]).toBe(Math.floor(0.8 * km(w(4), 'long')[0]! * 10) / 10);
     expect(km(w(5), 'easy')).toHaveLength(2);

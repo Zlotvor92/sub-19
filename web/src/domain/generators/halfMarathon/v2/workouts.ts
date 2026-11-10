@@ -482,6 +482,35 @@ export function eveWorkout(p: Paces, strides = true): Workout {
   );
 }
 
+/** P5-F3: lagan dan `km` (dužina iz lengths.ts, ne menja se) sa `reps` × 20 s ubrzanja na kraju — ista struktura kao
+    dan pred trku (R tempo, oporavak isti metraž džogom, H14); lagan deo = km − ubrzanja − oporavci. */
+export function easyStridesWorkout(km: number, reps: number, p: Paces): Workout {
+  const sec = P.strides.sec;
+  const strideKm = fromSec(sec, p.R);
+  const rec = { m: Math.round(strideKm * 1000) };
+  const tail: Segment[] = [];
+  for (let i = 0; i < reps; i++) {
+    if (i > 0) tail.push(recoverySegment(rec, p));
+    tail.push(seg('stride', 'R', strideKm, sec, p.R, 'estimated', 'exact'));
+  }
+  const eKm = (km100(km) - tail.reduce((a, x) => a + km100(x.km), 0)) / 100;
+  return assemble(
+    'easy',
+    null,
+    `Lagano ${fmtKm(km)} km, na kraju ${reps} × ${sec} s ubrzanja`,
+    [
+      { kind: 'easy', km: eKm },
+      { kind: 'reps', zone: 'R', reps, rep: { sec }, recovery: rec, stride: true }
+    ],
+    [distEasy('easy', eKm, p), ...tail],
+    null
+  );
+}
+
+/** P5-F3: broj ubrzanja lagani dan (0 = bez). */
+export const stridesOf = (w: Pick<Workout, 'kind' | 'segments'>): number =>
+  w.kind === 'easy' ? w.segments.filter((s) => s.kind === 'stride').length : 0;
+
 /** H8: oštrenje trkačke nedelje — WU + 2 × 2000 m RP (2:00) + CD (WU/CD po H14). */
 export function sharpenerWorkout(p: Paces, wc: WarmupCooldown, feel = false): Workout {
   const s = P.raceWeek.sharpener;

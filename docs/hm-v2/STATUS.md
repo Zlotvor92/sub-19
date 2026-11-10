@@ -163,3 +163,14 @@ beginnerGrid>.node.test.ts`, pa prettier. hm-v2.3.0 ne menja nijedan plan genera
 - Mreža P0: ukupno RP medijana 30 → 45 km, dugih sa blokom 0 → 2, 0 odbijanja; mreže 02/03/pouka 28 (36 066): promena
   31 212 (b 27 651, s 3 561, x 0), baza i razvoj bajt-isti. Izveštaj
   `docs/generators-v2/perfection/reports/P1-REPORT.md` (STOP-ovi: `P1-STOP.md`, `P1-STOP2.md`).
+
+## Segment P5 (hm-v2.10.0): forma, kvalitet u adaptaciji, ubrzanja, početna doza (program „trenerski kvalitet v2")
+
+- F1 `periodize.testKindOf` (jedna odluka): plan sa rezultatom ≥ 12 ned (ne početnik) — test 5 km u poslednjoj
+  ne-rasteretnoj nedelji razvoja na danu Q1; A13 premeštanje dok nema novog rezultata. F2 `assess.qualityStrain`: dva
+  uzastopna zahtevna dana (Q1, Q2, dugi sa blokom) preskočena ili RPE ≥ 9 u 14 dana → nedelja n bez rasta doze
+  (`steps.holdAt`, `quality.pickSlot` hold, blok na poslednjem nivou); ispod bola, pauze, umora, manjka; isti zapisi
+  jednom. F3 `week.withStrides`: jedan lagan dan nedeljno sa 4/6 × 20 s (dužina dana ista). F4 početni nivo T i I ≤ 80 %
+  plafona (R, RP 60 %). `KNOWN_VERSIONS` + hm-v2.8.0 (main) i hm-v2.9.0.
+- Izveštaj `docs/generators-v2/perfection/reports/P5-HM-REPORT.md`.
+

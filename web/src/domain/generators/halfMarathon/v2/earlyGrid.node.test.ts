@@ -5,7 +5,8 @@
 
 import { describeAdaptGrid, earlyFlows, earlyGridBases } from './adaptGrid.harness.node.test.ts';
 
-export const EARLY = { plans: 171, flows: 27062 };
+// P5-F1: planovi sa rezultatom ≥ 12 ned imaju test — asOf nedelje testa (adaptInputs.asOfs04) dodaje tokove (27 062 → 27 300).
+export const EARLY = { plans: 171, flows: 27300 };
 
 describeAdaptGrid(
   'rana i srednja adaptacija (pouka 23)',

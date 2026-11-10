@@ -445,6 +445,10 @@ export interface HmV2AdaptStep {
   /** HM-09: nedelja koja sadrži asOf, poznata od početka do asOf, i najduži trčan u tom delu — sledeći korak
       dopunjuje ostatak nedelje (assess.ranLongOf). Samo kad postoji. */
   ranPart?: { week: number; km: number };
+  /** P5-F2: nedelja izgradnje u kojoj doza nijednog slota (ni blok RP u dugom) ne raste. Samo kad je primenjeno. */
+  qualityHold?: number;
+  /** P5-F2: datum poslednjeg zapisa okidača (primenjen ili ne) — isti zapisi ne prave nov korak. Samo kad ga ima. */
+  qualitySeen?: IsoDate;
 }
 
 /** Pouka 34: nedelja 1 generatora bez činjenica — cilj, dugi i doze slotova. */
@@ -478,7 +482,9 @@ export type AdaptCondition =
   | 'PAUSE'
   | 'PAIN'
   | 'FATIGUE'
-  | 'TEST_MOVED';
+  | 'TEST_MOVED'
+  /** P5-F2: dva uzastopna zahtevna treninga preskočena ili sa RPE ≥ 9. */
+  | 'QUALITY_STRAIN';
 
 /** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi (A7). */
 export interface AdaptReason {

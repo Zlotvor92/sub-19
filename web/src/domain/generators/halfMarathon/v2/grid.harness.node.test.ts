@@ -70,13 +70,27 @@ export const CHANGED_P1 = new Map(
     >
   )
 );
-/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07, HM-09, HM-10 ili P1. */
+/** P5 (hm-v2.10.0): planovi čiji se rezultat menja prema 8e87fd4, sa klasom — slova pravila koje plan menja: t F1
+    (kontrolni test u planu sa rezultatom), s F3 (ubrzanja), d F4 (početni nivo T/I 80 %); x (drugo) nema. Kopija sa
+    sva tri pravila isključena je bajt-ista sa 8e87fd4 u svim ulazima. Izvor: docs/generators-v2/perfection/P5-HM/changedP5.ts. */
+export const CHANGED_P5 = new Map(
+  Object.entries(
+    JSON.parse(readFileSync(join(DIR, 'segmentP5.changed-8e87fd4.json'), 'utf8')) as Record<
+      string,
+      string
+    >
+  )
+);
+/** P5: plan čiji se obim, dužine ili broj kvaliteta nedelje menjaju (F1 ili F4); samo F3 (ubrzanja) ih ne menja. */
+export const p5Rows = (id: string): boolean => /[td]/.test(CHANGED_P5.get(id) ?? '');
+/** Plan sme da se promeni prema baznim linijama: HM-04 A (pouka 32), HM-07, HM-09, HM-10, P1 ili P5. */
 export const mayChange = (id: string): boolean =>
   OVER_LONG.has(id) ||
   CHANGED_07.has(id) ||
   CHANGED_09.has(id) ||
   CHANGED_10.has(id) ||
-  CHANGED_P1.has(id);
+  CHANGED_P1.has(id) ||
+  CHANGED_P5.has(id);
 /** HM-10 (T1): vrh sme da padne — namerno manji obim kad lagani ne staju u granice T1. */
 export const mayLower = (id: string): boolean => ['l', 'm', 'x'].includes(CHANGED_10.get(id) ?? '');
 

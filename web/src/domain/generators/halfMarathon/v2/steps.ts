@@ -5,7 +5,7 @@
 import { addDays, mustDay, weekdayOf } from './dates.ts';
 import type { PaceInput } from './input.ts';
 import { feelPaces, pacesFromVdot } from './paces.ts';
-import { isBuildPhase, periodize, rePeriodize } from './periodize.ts';
+import { isBuildPhase, periodize, rePeriodize, type TestKind } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, deloadSlot, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import type {
@@ -53,6 +53,10 @@ export function pacesAt(pace: PaceInput, steps: readonly HmV2AdaptStep[], w: num
   const v = stepVdotAt(steps, w);
   return v === null ? basePaces(pace) : pacesFromVdot(v);
 }
+
+/** P5-F2: nedelja w je bez rasta doze (korak „kvalitet preteški ili preskočeni"). Konstruktor i validator. */
+export const holdAt = (steps: readonly HmV2AdaptStep[], w: number): boolean =>
+  steps.some((s) => s.qualityHold === w);
 
 /** A1: osnova tempa nedelje w (plan po osećaju prelazi na rezultat od nedelje rezultata). */
 export function basisAt(pace: PaceInput, steps: readonly HmV2AdaptStep[], w: number): PaceBasis {
@@ -238,7 +242,9 @@ export function framesFor(
         isBuildPhase(f.phase) &&
         !f.deload &&
         f.limits?.quality === undefined &&
-        basisAt(pace, steps, f.index) === 'feel'
+        // P5-F1: isto pravilo za test plana sa rezultatom — premešta se dok nema novog rezultata (po osećaju: dok je
+        // nedelja po osećaju, basisAt).
+        stepVdotAt(steps, f.index) === null
     );
     if (j >= 0) frames[j] = { ...frames[j]!, test: true };
   }
@@ -290,7 +296,7 @@ export function appliedRestarts(
 }
 
 /** Okviri generatora (periodize) — ulaz za framesFor i validator. */
-export const baseFrames = (startDate: IsoDate, weeks: number, test: boolean): WeekFrame[] | null =>
+export const baseFrames = (startDate: IsoDate, weeks: number, test: TestKind): WeekFrame[] | null =>
   periodize(startDate, weeks, test);
 
 /**

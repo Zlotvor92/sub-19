@@ -1,0 +1,123 @@
+{
+ "base|skip": {
+  "n": 184,
+  "F2 primenjen": 128,
+  "napomena": 121,
+  "nedelja n promenjena": 64,
+  "F2 nije primenjen": 56,
+  "uz UNDER_EXECUTION": 54
+ },
+ "base|rpe": {
+  "n": 184,
+  "F2 primenjen": 180,
+  "napomena": 173,
+  "nedelja n promenjena": 114,
+  "F2 nije primenjen": 4
+ },
+ "base|mix": {
+  "n": 184,
+  "F2 primenjen": 180,
+  "napomena": 173,
+  "nedelja n promenjena": 114,
+  "F2 nije primenjen": 4
+ },
+ "base|ok": {
+  "n": 184
+ },
+ "base|skip+pain": {
+  "n": 184,
+  "uz PAIN": 184,
+  "uz UNDER_EXECUTION": 11
+ },
+ "base|rpe+fat": {
+  "n": 184,
+  "F2 nije primenjen": 184,
+  "uz FATIGUE": 180
+ },
+ "base|rpe+pain": {
+  "n": 184,
+  "F2 nije primenjen": 184,
+  "uz PAIN": 184
+ },
+ "specific|skip": {
+  "n": 192,
+  "F2 nije primenjen": 160,
+  "uz UNDER_EXECUTION": 106,
+  "F2 primenjen": 10,
+  "nedelja n promenjena": 7,
+  "napomena": 10
+ },
+ "specific|rpe": {
+  "n": 192,
+  "F2 nije primenjen": 86,
+  "F2 primenjen": 84,
+  "nedelja n promenjena": 74,
+  "napomena": 84
+ },
+ "specific|mix": {
+  "n": 192,
+  "F2 nije primenjen": 86,
+  "F2 primenjen": 84,
+  "nedelja n promenjena": 74,
+  "napomena": 84
+ },
+ "specific|ok": {
+  "n": 192
+ },
+ "specific|skip+pain": {
+  "n": 192,
+  "uz PAIN": 192,
+  "uz UNDER_EXECUTION": 66
+ },
+ "specific|rpe+fat": {
+  "n": 192,
+  "F2 nije primenjen": 170,
+  "uz FATIGUE": 89
+ },
+ "specific|rpe+pain": {
+  "n": 192,
+  "F2 nije primenjen": 170,
+  "uz PAIN": 192
+ },
+ "development|skip": {
+  "n": 169,
+  "F2 nije primenjen": 133,
+  "F2 primenjen": 36,
+  "uz UNDER_EXECUTION": 68,
+  "napomena": 20,
+  "nedelja n promenjena": 4
+ },
+ "development|rpe": {
+  "n": 169,
+  "F2 nije primenjen": 104,
+  "F2 primenjen": 65,
+  "napomena": 48,
+  "nedelja n promenjena": 12
+ },
+ "development|mix": {
+  "n": 169,
+  "F2 nije primenjen": 104,
+  "F2 primenjen": 65,
+  "napomena": 48,
+  "nedelja n promenjena": 12
+ },
+ "development|ok": {
+  "n": 169
+ },
+ "development|skip+pain": {
+  "n": 169,
+  "uz PAIN": 169,
+  "uz UNDER_EXECUTION": 27
+ },
+ "development|rpe+fat": {
+  "n": 169,
+  "F2 nije primenjen": 169,
+  "uz FATIGUE": 68
+ },
+ "development|rpe+pain": {
+  "n": 169,
+  "F2 nije primenjen": 169,
+  "uz PAIN": 169
+ }
+}
+odbijeno 0

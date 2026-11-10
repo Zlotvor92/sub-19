@@ -253,6 +253,50 @@ export function checkFacts(
     : { ok: true, facts: { workouts, results, lockedDayIds, coverage, breaks } };
 }
 
+/**
+ * P5-F2 — JEDNA funkcija okidača „zahtevni treninzi preteški ili preskočeni": dani plana čija je uloga kvalitet (Q1, Q2,
+ * dugi sa blokom RP; ne test) sa datumom u poslednjih strainLookbackDays dana do asOf (`t`), potpuno pokriveni (A10);
+ * strainCount (2) uzastopna (po datumu, među takvim danima plana) od kojih je svaki neodrađen (zapis completed false ili bez
+ * zapisa) ili sa RPE ≥ strainRpe. Vraća poslednji takav par (datumi, razlog); null = nema okidača.
+ */
+export function qualityStrain(
+  planDays: readonly PlanDay[],
+  facts: CheckedFacts,
+  t: number
+): { dates: IsoDate[]; last: IsoDate; why: string } | null {
+  const A0 = P.adapt;
+  const from = t - A0.strainLookbackDays + 1;
+  const qd = planDays
+    .filter(
+      (d) => d.role === 'q1' || d.role === 'q2' || (d.role === 'long' && longBlockKm(d.workout) > 0)
+    )
+    .filter((d) => mustDay(d.date) >= from && mustDay(d.date) <= t)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const rec = (d: PlanDay) => facts.workouts.filter((x) => (x.dayId ?? x.date) === d.date);
+  const strained = (d: PlanDay): 'skip' | 'rpe' | null => {
+    const r = rec(d);
+    const x = mustDay(d.date);
+    if (!coveredDays(facts.coverage, x, x)) return null;
+    if (r.some((y) => y.completed && (y.rpe ?? 0) >= A0.strainRpe)) return 'rpe';
+    if (r.length === 0 || r.every((y) => !y.completed)) return 'skip';
+    return null;
+  };
+  let out: { dates: IsoDate[]; last: IsoDate; why: string } | null = null;
+  const n = A0.strainCount;
+  for (let i = n - 1; i < qd.length; i++) {
+    const run = qd.slice(i - n + 1, i + 1);
+    const ks = run.map(strained);
+    if (ks.some((k) => k === null)) continue;
+    const why = ks.every((k) => k === 'skip')
+      ? 'su preskočeni'
+      : ks.every((k) => k === 'rpe')
+        ? `su bili preteški (RPE ≥ ${A0.strainRpe})`
+        : `su preskočeni ili preteški (RPE ≥ ${A0.strainRpe})`;
+    out = { dates: run.map((d) => d.date), last: qd[i]!.date, why };
+  }
+  return out;
+}
+
 /** Pouka 36 (jedino mesto): nedelja prinudnog rasterećenja iz zapisa umora — prva nedelja koja počinje posle
     poslednjeg RPE zapisa umora `last` (broj dana): nedelja koja sadrži `last` + 1 ako tog dana počinje, inače
     sledeća (pre starta: nedelja 1). Isto pravilo kao n iz asOf (assess), sa zapisom umesto dana adaptacije. */
@@ -440,6 +484,8 @@ export function assess(
   }
 
   let volumeRule = false;
+  /** P5-F2: aktivan uslov obima koji ima prednost (pauza, manjak izvršenja; umor: step.deload). */
+  let volumeRuleBy: 'pause' | 'under' | null = null;
 
   // A3: pauza — uzastopni POZNATI dani bez trčanja do asOf (A10: samo u potpunoj pokrivenosti) ili
   // eksplicitna pauza (završena u poslednjih 7 dana i posle prethodne adaptacije).
@@ -484,6 +530,7 @@ export function assess(
     }
     step.orientation = step.restart && N - n + 1 < A.restartFullPrepWeeks;
     volumeRule = true;
+    volumeRuleBy = 'pause';
     reason(
       'PAUSE',
       true,
@@ -542,6 +589,7 @@ export function assess(
     const seen = steps.find((s) => s.underFrom !== undefined && day(s.asOf) >= w2[0]);
     if (p2 > 0 && a2 < A.underShare * p2 && seen) {
       volumeRule = true;
+      volumeRuleBy = 'under';
       reason(
         'UNDER_EXECUTION',
         false,
@@ -560,6 +608,7 @@ export function assess(
         step.underFrom = addDays(asOf, w2[0] - t);
         step.levelKm = Math.max(step.levelKm ?? 0, levelBefore(w2[0]));
         volumeRule = true;
+        volumeRuleBy = 'under';
       }
       reason(
         'UNDER_EXECUTION',
@@ -583,6 +632,32 @@ export function assess(
         );
       }
     }
+  }
+  // P5-F2: kvalitet u adaptaciji — dva uzastopna zahtevna dana plana (Q1, Q2, dugi sa blokom RP; ne test) u poslednjih
+  // 14 dana do asOf, oba potpuno pokrivena (A10), svaki neodrađen (completed false / bez zapisa) ili sa RPE ≥ 9 →
+  // nedelja n (izgradnja, ne rasterećenje) bez rasta doze. Ispod bola, pauze, umora i manjka izvršenja (A7); isti zapisi
+  // ne prave nov korak (step.qualitySeen).
+  const strain = qualityStrain(planDays, facts, t);
+  if (strain) {
+    const seenBy = steps.find(
+      (s) => s.qualitySeen !== undefined && day(s.qualitySeen) >= day(strain.last)
+    );
+    const blocked =
+      step.pain !== null ||
+      step.rest !== null ||
+      painSeen !== undefined ||
+      volumeRuleBy !== null ||
+      step.deload;
+    const target = wk(n);
+    const canHold = target !== null && build(n) && !target.deload;
+    if (!seenBy) step.qualitySeen = strain.last;
+    const ok = !seenBy && !blocked && canHold;
+    if (ok) step.qualityHold = n;
+    reason(
+      'QUALITY_STRAIN',
+      ok,
+      `Zahtevni treninzi ${strain.dates.join(' i ')} ${strain.why}: ${seenBy ? `za ove zapise je već u planu (prilagođavanje ${seenBy.asOf}).` : blocked ? 'nadjačano bolom, pauzom, umorom ili manjkom izvršenja (A7).' : !canHold ? 'sledeća nedelja nije nedelja izgradnje — bez efekta (F2).' : `nedelja ${wl(n)} bez rasta doze (F2). ${A.strainMessage}`}`
+    );
   }
   if (
     W.length === 0 &&
