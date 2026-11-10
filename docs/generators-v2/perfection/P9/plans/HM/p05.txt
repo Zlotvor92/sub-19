@@ -1,4 +1,4 @@
-PLAN — polumaraton · hm-v2.12.0
+PLAN — polumaraton · hm-v2.13.0
 Profil: brz, VDOT 60, vrh obima, 6 dana, srednja priprema
 
 Početak: 2026-11-02 (16 nedelja), trka: 2027-02-21.
@@ -183,7 +183,7 @@ NEDELJA 10 — faza: specifična
 
 ------------------------------------------------------------
 NEDELJA 11 — faza: specifična
-  11.01.–17.01. · cilj 100,0 km · planirano 100,1 km · ukupno 7 h 32 min
+  11.01.–17.01. · cilj 100,0 km · planirano 100,1 km · ukupno 7 h 30 min
   Ponedeljak 11.01.  Lagano 14,8 km
       14,8 km · 1 h 09 min
   Utorak     12.01.  WU 25 min + RP 2 × 4000 m (oporavak 2:00 džog) + CD 15 min
@@ -194,9 +194,9 @@ NEDELJA 11 — faza: specifična
       14,7 km · 1 h 08 min
   Subota     16.01.  Lagano 14,7 km, na kraju 6 × 20 s ubrzanja
       14,7 km · 1 h 07 min
-  Nedelja    17.01.  Dugi 24,0 km: 20,0 km lagano + 4,0 km u trkačkom tempu
-      24,0 km · 1 h 48 min · radnih 15 min
-  Napomena: Specifična nedelja sa blokom: poslednjih 4,0 km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.
+  Nedelja    17.01.  Dugi 24,0 km: 18,0 km lagano + 6,0 km u trkačkom tempu
+      24,0 km · 1 h 46 min · radnih 22 min
+  Napomena: Specifična nedelja sa blokom: poslednjih 6,0 km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.
 
 ------------------------------------------------------------
 NEDELJA 12 — faza: specifična — RASTEREĆENJE
@@ -233,7 +233,7 @@ NEDELJA 13 — faza: specifična
 
 ------------------------------------------------------------
 NEDELJA 14 — faza: specifična
-  01.02.–07.02. · cilj 100,0 km · planirano 100,1 km · ukupno 7 h 29 min
+  01.02.–07.02. · cilj 100,0 km · planirano 100,1 km · ukupno 7 h 27 min
   Ponedeljak 01.02.  Lagano 14,3 km
       14,3 km · 1 h 06 min
   Utorak     02.02.  WU 25 min + RP 2 × 5000 m (oporavak 2:00 džog) + CD 15 min
@@ -244,9 +244,9 @@ NEDELJA 14 — faza: specifična
       14,2 km · 1 h 06 min
   Subota     06.02.  Lagano 14,2 km, na kraju 6 × 20 s ubrzanja
       14,2 km · 1 h 05 min
-  Nedelja    07.02.  Dugi 24,0 km: 18,0 km lagano + 6,0 km u trkačkom tempu
-      24,0 km · 1 h 46 min · radnih 22 min
-  Napomena: Specifična nedelja sa blokom: poslednjih 6,0 km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.
+  Nedelja    07.02.  Dugi 24,0 km: 16,0 km lagano + 8,0 km u trkačkom tempu
+      24,0 km · 1 h 44 min · radnih 30 min
+  Napomena: Specifična nedelja sa blokom: poslednjih 8,0 km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.
 
 ------------------------------------------------------------
 NEDELJA 15 — faza: taper

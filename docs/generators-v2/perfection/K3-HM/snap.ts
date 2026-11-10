@@ -65,7 +65,7 @@ export function metrics(p: any, input: any) {
   let maxDose = 0, testRatio = 0;
   for (const w of W) {
     for (const d of w.days) {
-      if (d.role === "test") { const t = d.workout.sec / 60; if (maxDose > 0) testRatio = Math.max(testRatio, t / maxDose); }
+      if (d.role === "test") { const t = d.workout.segments.filter((x: Seg) => x.kind === "test").reduce((a: number, x: Seg) => a + x.sec, 0) / 60; if (maxDose > 0) testRatio = Math.max(testRatio, t / maxDose); }
       else if (d.role === "q1" || d.role === "q2") maxDose = Math.max(maxDose, workSec(d) / 60);
     }
   }
@@ -75,7 +75,8 @@ export function metrics(p: any, input: any) {
     lastRp: r2(lastRp), taperRp: r2(taperRp), taperShare: lastRp ? r2(taperRp / lastRp) : 0,
     easyLong: r2(easyLong), sameRun, blockKm: r2(blockKm), blocks: blocks.join("/"),
     atTop, topRun, hardFromRace: raceIdx - hardIdx, lastPreShare: lastPre && hardMin ? r2(wk(lastPre) / hardMin) : 0,
-    shortEasy, testRatio: r2(testRatio), vdot: p.paces?.vdot ?? null,
+    shortEasy, testRatio: r2(testRatio), testMaxDose: r2(maxDose),
+    spec3: input.runDays.length === 3 ? W.filter((w) => w.phase === "specific" && !w.deload).map((w) => `${r2(longKm(w))}:${r2(rpMin(w))}`).join(",") : "", vdot: p.paces?.vdot ?? null,
     warn: p.warnings.map((x: any) => x.rule ?? x.code),
   };
 }

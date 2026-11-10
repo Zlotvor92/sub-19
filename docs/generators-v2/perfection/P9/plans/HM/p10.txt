@@ -1,4 +1,4 @@
-PLAN — polumaraton · hm-v2.12.0
+PLAN — polumaraton · hm-v2.13.0
 Profil: po osećaju, spor, lagan tempo 7:30/km, 3 dana, dno obima, najduža priprema
 
 Početak: 2026-11-02 (20 nedelja), trka: 2027-03-21.
@@ -207,15 +207,14 @@ NEDELJA 18 — faza: specifična
 
 ------------------------------------------------------------
 NEDELJA 19 — faza: taper
-  08.03.–14.03. · cilj 24,4 km · planirano 24,4 km · ukupno 2 h 59 min
-  Utorak     09.03.  Lagano 7,5 km, na kraju 6 × 20 s ubrzanja
-      7,5 km · 56 min
-  Četvrtak   11.03.  WU 15 min + RP 2 × 2000 m (oporavak 1:30 džog) + CD 10 min
-      7,5 km · 53 min · radnih 26 min
+  08.03.–14.03. · cilj 24,4 km · planirano 24,4 km · ukupno 2 h 60 min
+  Utorak     09.03.  Lagano 8,5 km, na kraju 6 × 20 s ubrzanja
+      8,5 km · 1 h 03 min
+  Četvrtak   11.03.  WU 15 min + RP 2 × 1500 m (oporavak 1:30 džog) + CD 10 min
+      6,5 km · 46 min · radnih 20 min
   Nedelja    14.03.  Dugi 9,4 km lagano
       9,4 km · 1 h 11 min
   Napomena: Taper: RP ≈ 60 % poslednje doze (jedan kvalitetni dan), dugi najviše 60 % najdužeg.
-  Napomena: Taper: RP 4,0 km je najmanja doza u trkačkom tempu (više od 60 % poslednje doze 5,0 km).
 
 ------------------------------------------------------------
 NEDELJA 20 — faza: trka
