@@ -134,9 +134,18 @@ export function testWeekOf(
   kind: TestKind = 'feel',
   deloads: readonly number[] = []
 ): number {
-  if (kind === 'feel') return phases.lastIndexOf('base') + 1;
-  for (let i = phases.length; i >= 1; i--)
-    if (phases[i - 1] === 'development' && !deloads.includes(i)) return i;
+  const byRule = (): number => {
+    if (kind === 'feel') return phases.lastIndexOf('base') + 1;
+    for (let i = phases.length; i >= 1; i--)
+      if (phases[i - 1] === 'development' && !deloads.includes(i)) return i;
+    return 0;
+  };
+  const tw = byRule();
+  // P8-G7: ne pre nedelje minWeek — prva ne-rasteretna nedelja ≥ minWeek iste faze, inače bez testa.
+  const min = P.test.minWeek;
+  if (tw === 0 || tw >= min) return tw;
+  for (let i = min; i <= phases.length; i++)
+    if (phases[i - 1] === phases[tw - 1] && !deloads.includes(i)) return i;
   return 0;
 }
 

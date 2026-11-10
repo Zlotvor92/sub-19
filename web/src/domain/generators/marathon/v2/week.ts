@@ -704,7 +704,13 @@ function buildWeekIn(
             )
           ]
         : [];
-    const why = test ? 'M16' : rule.beginner ? 'M17' : ctx.adapted === true ? 'A9, pouka 33' : 'P8-G1';
+    const why = test
+      ? 'M16'
+      : rule.beginner
+        ? 'M17'
+        : ctx.adapted === true
+          ? 'A9, pouka 33'
+          : 'P8-G1';
     const longText = len.shortened
       ? `dugi ${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × poslednjeg ne-rasteretnog (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km (${why} ispred M5, odstupanje)`
       : len.raised
@@ -909,24 +915,27 @@ function buildWeekIn(
     // M19: nedelja B — dan Q1 (MP trening) je lagan (stanje MP slota se ne menja), Q2 = T cruise po svojoj progresiji
     // (drugi član pouke 32 uz jedan lagan dan više i bez Q1).
     if (asB && (test || intro)) return null;
-    picks = pickBuild(
-      quality,
-      frame.phase,
-      targetKm,
-      p,
-      rule,
-      mode === 'relax',
-      test || asB,
-      buildDayLimit(
-        dlc,
-        target10,
-        pat.easy.length - drop + (asB ? 1 : 0),
-        jump10,
-        rule.quality === 2 ? ladderFor(frame.phase, 'q2') : null,
-        test ? testWorkout(p, ctx.wc) : null
-      ),
-      ctx.hold === true
-    );
+    // P8-G7: u nedelji testa test je jedini kvalitet — dan Q2 je lagan, stanje slotova se ne menja.
+    picks = test
+      ? { q1: null, q2: null }
+      : pickBuild(
+          quality,
+          frame.phase,
+          targetKm,
+          p,
+          rule,
+          mode === 'relax',
+          test || asB,
+          buildDayLimit(
+            dlc,
+            target10,
+            pat.easy.length - drop + (asB ? 1 : 0),
+            jump10,
+            rule.quality === 2 ? ladderFor(frame.phase, 'q2') : null,
+            test ? testWorkout(p, ctx.wc) : null
+          ),
+          ctx.hold === true
+        );
     if (!picks) return null;
   }
   const w1 = test

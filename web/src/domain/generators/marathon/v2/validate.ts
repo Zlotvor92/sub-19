@@ -547,7 +547,8 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           : (w.phase === 'taper' && !has(r)) ||
               (r === 'q1' && noQ1(w)) ||
               (r === 'q1' && hasLongBlock(w.days)) ||
-              (r === 'q2' && secondEasyWeek(w))
+              (r === 'q2' && secondEasyWeek(w)) ||
+              (r === 'q2' && w.test === true)
             ? 'easy'
             : r;
     const exp = [
@@ -1654,7 +1655,16 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
             w.index
           );
         if (len?.shortened)
-          shortened.push({ w: w.index, why: w.test ? 'M16' : beginner ? 'M17' : w.index >= reducedFrom ? 'A9, pouka 33' : 'P8-G1' });
+          shortened.push({
+            w: w.index,
+            why: w.test
+              ? 'M16'
+              : beginner
+                ? 'M17'
+                : w.index >= reducedFrom
+                  ? 'A9, pouka 33'
+                  : 'P8-G1'
+          });
       }
       if (
         w.days.filter((d) => d.role === 'easy').length !==
@@ -1910,8 +1920,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   // --- M16: test 5 km — samo plan po osećaju koji nije početnik (M17); tačno jedan, u poslednjoj nedelji baze,
   // na danu Q1 (u rasterećenju na danu T slota); WU/CD (M14) + 5 km; računa se u obim, nije doza.
   // P5-F1: plan sa rezultatom (nije početnik, ≥ 12 nedelja) — isti test u poslednjoj ne-rasteretnoj nedelji razvoja.
-  const wantTest = testKind !== null;
   const testWeek = periodize(input.startDate, N, testKind)?.find((f) => f.test)?.index ?? 0;
+  // P8-G7: test koji bi pao pre nedelje 4 bez zamene u istoj fazi — plan bez testa.
+  const wantTest = testKind !== null && testWeek > 0;
   const testWhere =
     testKind === 'result' ? 'poslednjoj ne-rasteretnoj nedelji razvoja' : 'poslednjoj nedelji baze';
   const tests = weeks.flatMap((w) =>

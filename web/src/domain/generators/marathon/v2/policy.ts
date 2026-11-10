@@ -524,7 +524,9 @@ export const MARATHON_V2_POLICY = {
 
   /** M16: test (plan po osećaju koji nije početnik). P5-F1: plan sa rezultatom (nije početnik) sa ≥ resultMinWeeks
       nedelja ima isti test u poslednjoj ne-rasteretnoj nedelji razvoja. */
-  test: { km: 5, resultMinWeeks: 12 },
+  /** P8-G7 (marathon-v2.11.0): test ne ide pre nedelje minWeek (inače prva ne-rasteretna nedelja ≥ minWeek iste faze,
+      nema je → plan bez testa); u nedelji testa test je jedini kvalitet. */
+  test: { km: 5, resultMinWeeks: 12, minWeek: 4 },
 
   /** M17: JEDINA tabela početnika (udeo dugog, min i max nedelje: red M15 za isti broj dana). */
   beginner: {
