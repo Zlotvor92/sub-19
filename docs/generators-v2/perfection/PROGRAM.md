@@ -418,3 +418,17 @@ Plan P9 (do kraja):
   > 2 nedelje R 1840 → 402, F 362 → 39, B 77 → 0; ne pokriva 4 dana redovno (jedan lagan dan) ni 3 dana.
 - Otvoreno (izveštaj): 9 F planova sa nizom > 3; spori na plafonu trajanja −16 % obima u nedeljama 0,85.
 - K4-5K (Opus, samo K4-B) pokrenut; K4-HM u toku; K4-10K sledi.
+
+### 11. 11. 2026, 00:55 — K4-HM završen (hm-v2.14.0), tab arhiviran; K4-10K pokrenut
+
+- `86897c4`, izveštaj `reports/K4-HM-REPORT.md`. Nezavisna provera organizatora: brzi nivo `halfMarathon/v2` 374/374.
+  Po tabu: pun nivo 466/466, `--changed` 1025 ✔, E2E 5/5, `npm run check` 3402 ✔, sabotaže 3/3; 25 122 plana, 0
+  novih odbijanja, vrh nigde −10 %.
+- K4-A1 blok RP u dugom za 3 dana: svi R-d3 (2640) i F-d3 (990), 1–2 nedelje sa blokom, zbir medijana 10 km.
+- K4-A2 talas dugog: dugi na plafonu > 3 nedelje zaredom 2535 → 273 (ostatak: sudar sa dozom kvaliteta); na plafonu
+  5 → 3 puta; planirano u izgradnji medijana −1,7 %.
+- K4-A3 lagan 0,70 (3 dana) VRAĆENO i uz blok/talas (vrh −10 % u R-d3 870/2640) — ostaje 0,80.
+- K4-B kratak lagan dan → „odmor ili 20 min lagano po želji": planova sa laganim < 30 min u > 2 nedelje 4297 → 389;
+  cena R-d4 medijana −30,9 km po planu (≈ −8 %).
+- Usput ispravljena adaptacija za 3 dana (tip nedelje koja je prošla čita se iz upisanog plana).
+- K4-10K (Opus, samo K4-B) pokrenut; K4-5K u toku.
