@@ -842,7 +842,7 @@ export function validatePlan(
     for (const d of w.days)
       for (const z of ZONES) {
         const m = Math.round(d.workout.workKm[z] * 1000);
-        if (m > capM(z, w.targetKm) && !(keepT && d.workout.kind === 'quality'))
+        if (m > capM(z, w.targetKm, rule.beginner) && !(keepT && d.workout.kind === 'quality'))
           err(
             'ZONE_CAP',
             `${z} ${m} m > ${capPct(z, w.targetKm)} % cilja ${w.targetKm} km (D11, D33).`,
@@ -1148,7 +1148,7 @@ export function validatePlan(
         // D11 ispred D12: dozvoljeno samo kad prethodna doza ne staje u plafon ove nedelje, na najviši
         // nivo lestvice koji staje, uz napomenu.
         const ladder = db.ladder as LadderId;
-        const cap = capM(db.zone, b.targetKm);
+        const cap = capM(db.zone, b.targetKm, rule.beginner);
         const best = ladderLevels(ladder, rule.beginner)
           .map(doseOf)
           .filter((m) => m <= cap)
@@ -1175,7 +1175,7 @@ export function validatePlan(
             b.index
           );
         else if (db.doseM === da.doseM) {
-          if (nl && doseOf(nl) <= capM(db.zone, b.targetKm) && !holds.has(b.index))
+          if (nl && doseOf(nl) <= capM(db.zone, b.targetKm, rule.beginner) && !holds.has(b.index))
             err(
               'DOSE_STALL',
               `${role}: sledeći nivo ${doseOf(nl)} m staje u plafon, a nije uzet (D12).`,
@@ -1244,7 +1244,7 @@ export function validatePlan(
       const tb = slotDose(b, tSlot);
       if (ta && tb) {
         const nl = nextLevel(ta.ladder as LadderId, ta.doseM, rule.beginner);
-        const blocked = !nl || doseOf(nl) > capM('T', b.targetKm);
+        const blocked = !nl || doseOf(nl) > capM('T', b.targetKm, rule.beginner);
         // Odstupanje D31: početnik ponavlja T 1,5 km (druga struktura ne postoji, D10) uz napomenu.
         const onlyStructure =
           rule.beginner &&
@@ -1274,7 +1274,7 @@ export function validatePlan(
   // --- D16: početni nivo (prva nedelja slota; I i RP na prvoj nedelji faze; RP i dalje ≥ poslednje I).
   // D28: početnik — početni nivo je prvi nivo lestvice.
   const startM = (ladder: LadderId, targetKm: number): number => {
-    const cap = capM(zoneOf(ladder), targetKm);
+    const cap = capM(zoneOf(ladder), targetKm, rule.beginner);
     const lv = ladderLevels(ladder, rule.beginner).map(doseOf);
     if (rule.beginner) return lv[0]!;
     return lv.filter((m) => m <= startShare(zoneOf(ladder)) * cap + EPS).pop() ?? lv[0]!;
@@ -1317,7 +1317,7 @@ export function validatePlan(
         const lv = ladderLevels(ladder, rule.beginner)
           .map(doseOf)
           .find((m) => m >= Math.max(want, da.doseM));
-        if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm)) continue;
+        if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm, rule.beginner)) continue;
         want = lv;
       }
       // D37 (P-b): T i I smeju niži nivo, najmanje nivo po 60 % (D16) — kad bi veći stvorio nedelju pouke 35 (odluka
@@ -1326,7 +1326,7 @@ export function validatePlan(
       const floor60 =
         ladderLevels(ladder, rule.beginner)
           .map(doseOf)
-          .filter((m) => m <= P.startLevel.p35FloorShare * capM(z, b.targetKm) + EPS)
+          .filter((m) => m <= P.startLevel.p35FloorShare * capM(z, b.targetKm, rule.beginner) + EPS)
           .pop() ?? ladderLevels(ladder, rule.beginner).map(doseOf)[0]!;
       const p35Range =
         !rule.beginner && (z === 'T' || z === 'I') && db.doseM >= floor60 && db.doseM < want;
@@ -1417,11 +1417,11 @@ export function validatePlan(
       }
       // Odstupanje D5 (D11 ispred D5): kad ni T doza po pravilu ne staje u plafon, rasterećenje je bez
       // kvaliteta (uz napomenu).
-      else if (want > capM('T', w.targetKm)) {
+      else if (want > capM('T', w.targetKm, rule.beginner)) {
         if (nQuality !== 0 || !w.notes.some((n) => n.includes('bez kvaliteta')))
           err(
             'DELOAD_CONTENT',
-            `Rasterećenje: T ${want} m > plafon ${capM('T', w.targetKm)} m → bez kvaliteta, uz napomenu (D11 ispred D5).`,
+            `Rasterećenje: T ${want} m > plafon ${capM('T', w.targetKm, rule.beginner)} m → bez kvaliteta, uz napomenu (D11 ispred D5).`,
             w.index
           );
         else
@@ -1517,8 +1517,8 @@ export function validatePlan(
       // Odstupanje D7 (D11 ispred D7): kad ni RP doza po pravilu ne staje u plafon, taper je bez kvaliteta.
       // D31: početnik — tada T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km), ako staje.
       const keepT = restartKeepsTaperQuality(steps, weeks, w.index);
-      const none = wantRp > capM('RP', w.targetKm) && !keepT;
-      const keepOne = wantRp > capM('RP', w.targetKm) && keepT;
+      const none = wantRp > capM('RP', w.targetKm, rule.beginner) && !keepT;
+      const keepOne = wantRp > capM('RP', w.targetKm, rule.beginner) && keepT;
       const wantT31 = expectedReduced('T_continuous', lastTDose, t7.doseShare, tFirstM, true);
       if (noneQ(w)) {
         if (rp || t) err('TAPER_QUALITY', 'Taper bez kvaliteta (adaptacija, A3/A4/A9).', w.index);
@@ -1539,7 +1539,7 @@ export function validatePlan(
             `Taper posle novog starta: jedan kvalitet ${begT ? `T ${wantT31}` : `RP ${wantRp}`} m (≈ 60 % poslednje doze, najmanje najniži nivo) (T3).`,
             w.index
           );
-      } else if (none && rule.beginner && wantT31 <= capM('T', w.targetKm)) {
+      } else if (none && rule.beginner && wantT31 <= capM('T', w.targetKm, rule.beginner)) {
         if (
           !rp ||
           t ||
@@ -1549,14 +1549,14 @@ export function validatePlan(
         )
           err(
             'TAPER_QUALITY',
-            `Taper početnika: RP ${wantRp} m > plafon ${capM('RP', w.targetKm)} m → T kontinuirano ${wantT31} m (≈ 60 % poslednje T doze ${lastTDose} m, min ${tFirstM} m) (D31).`,
+            `Taper početnika: RP ${wantRp} m > plafon ${capM('RP', w.targetKm, rule.beginner)} m → T kontinuirano ${wantT31} m (≈ 60 % poslednje T doze ${lastTDose} m, min ${tFirstM} m) (D31).`,
             w.index
           );
       } else if (none) {
         if (rp || t || !w.notes.some((n) => n.includes('bez kvaliteta')))
           err(
             'TAPER_QUALITY',
-            `Taper: RP ${wantRp} m > plafon ${capM('RP', w.targetKm)} m → bez kvaliteta, uz napomenu (D11 ispred D7).`,
+            `Taper: RP ${wantRp} m > plafon ${capM('RP', w.targetKm, rule.beginner)} m → bez kvaliteta, uz napomenu (D11 ispred D7).`,
             w.index
           );
         else
@@ -1605,7 +1605,7 @@ export function validatePlan(
         qs.length > (noneQ(w) ? 0 : 1) ||
         (dose &&
           (dose.ladder !== deloadLadder(w.phase) ||
-            dose.doseM > capM('T', w.targetKm) ||
+            dose.doseM > capM('T', w.targetKm, rule.beginner) ||
             (slotKnown[tSlot] && dose.doseM !== want)))
       )
         err(

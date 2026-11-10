@@ -62,9 +62,26 @@ export function carries(from: LadderId, to: LadderId): boolean {
   );
 }
 
-/** D11/D33: plafon zone za trening, u metrima, za ciljni obim nedelje (policy.capShare). */
-export function capM(zone: WorkZone, targetKm: number): number {
-  return Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6);
+/** G2 (P8): lestvice zone (T: kontinuirano i cruise). */
+const ZONE_LADDERS: Readonly<Record<WorkZone, readonly LadderId[]>> = {
+  T: ['T_continuous', 'T_cruise'],
+  I: ['I'],
+  R: ['R'],
+  RP: ['RP']
+};
+
+/** G2 (P8): doza prvog nivoa lestvice zone [m] — najmanja među lestvicama zone (`beginner`: lestvice početnika, D31). */
+export function zoneFloorM(zone: WorkZone, beginner: boolean): number {
+  return Math.min(...ZONE_LADDERS[zone].map((l) => doseOf(ladderLevels(l, beginner)[0]!)));
+}
+
+/** D11/D33 + G2 (P8): plafon zone za trening, u metrima, za ciljni obim nedelje = max(udeo (policy.capShare) × cilj;
+    doza prvog nivoa lestvice zone) — najniži nivo uvek staje. JEDINI plafon zone (konstruktor i validator). */
+export function capM(zone: WorkZone, targetKm: number, beginner: boolean): number {
+  return Math.max(
+    Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6),
+    zoneFloorM(zone, beginner)
+  );
 }
 
 const pick = (ladder: LadderId, s: Structure, step: Dose['step']): Dose => ({
@@ -109,7 +126,7 @@ export function nextLevel(ladder: LadderId, doseM: number, beginner = false): St
     u plafon. */
 export function startLevel(ladder: LadderId, targetKm: number, beginner = false): Structure | null {
   const levels = ladderLevels(ladder, beginner);
-  const cap = capM(zoneOf(ladder), targetKm);
+  const cap = capM(zoneOf(ladder), targetKm, beginner);
   if (doseOf(levels[0]!) > cap) return null;
   if (beginner) return levels[0]!;
   const limit = startShare(zoneOf(ladder)) * cap + 1e-6;
@@ -140,7 +157,7 @@ export function pickSlot(
   beginner = false,
   hold = false
 ): Dose | null {
-  const cap = capM(zoneOf(ladder), targetKm);
+  const cap = capM(zoneOf(ladder), targetKm, beginner);
   const levels = ladderLevels(ladder, beginner);
   const start = startLevel(ladder, targetKm, beginner);
   const drop = (): Dose | null => {
@@ -189,7 +206,7 @@ export interface WeekPicks {
 
 /** Prvi nivo lestvice ne staje u plafon zone (D11) cilja nedelje; `beginner`: lestvica početnika (D31). */
 export function firstLevelOverCap(ladder: LadderId, targetKm: number, beginner = false): boolean {
-  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm);
+  return doseOf(ladderLevels(ladder, beginner)[0]!) > capM(zoneOf(ladder), targetKm, beginner);
 }
 
 /** Lestvica Q1 nedelje izgradnje: po fazi (D10/D18); početnik (D31) — T kontinuirano (od 1,5 km) kad
@@ -204,7 +221,7 @@ export function buildLadder(phase: Phase, targetKm: number, rule: PlanRule): Lad
     kad ne staje, najviši nivo lestvice I koji staje. Struktura: pri istoj dozi druga struktura iste doze kad postoji
     (naizmenično; inače ista), pri nižoj dozi nivo lestvice. null = nema I doze ili ni prvi nivo I ne staje u plafon. */
 export function maintainIDoseM(maxIM: number, targetKm: number): number | null {
-  const cap = capM('I', targetKm);
+  const cap = capM('I', targetKm, false);
   if (maxIM <= cap) return maxIM;
   const lv = ladderLevels('I')
     .filter((s) => doseOf(s) <= cap)
@@ -232,7 +249,7 @@ export function pickMaintainI(state: QualityState, targetKm: number, p: Paces): 
 /** D16 (60 %): početni nivo kakav je bio pre D37 — donja granica početnog nivoa T i I kad bi veći stvorio nedelju pouke 35. */
 function startLevel60(ladder: LadderId, targetKm: number): Structure {
   const levels = ladderLevels(ladder);
-  const limit = P.startLevel.p35FloorShare * capM(zoneOf(ladder), targetKm) + 1e-6;
+  const limit = P.startLevel.p35FloorShare * capM(zoneOf(ladder), targetKm, false) + 1e-6;
   return levels.filter((s) => doseOf(s) <= limit).pop() ?? levels[0]!;
 }
 
@@ -377,7 +394,7 @@ export function pickDeload(
   const floor =
     ladderLevels(ladder, b).find((s) => doseOf(s) === minM) ?? structuresForDose(ladder, minM)[0]!;
   const s = reduced(ladder, lastM, P.deload.tShare, floor, b);
-  return doseOf(s) <= capM('T', targetKm) ? pick(ladder, s, 'deload') : null;
+  return doseOf(s) <= capM('T', targetKm, b) ? pick(ladder, s, 'deload') : null;
 }
 
 /** D7: taper — RP i T, svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 1000 m RP, 2,0 km T); 3 dana
@@ -395,11 +412,11 @@ export function pickTaper(
   const quality = rule.quality;
   const rpFloor: Structure = { form: 'reps', reps: t.rpMin.reps, repM: t.rpMin.repM };
   const rp = reduced('RP', state.q1?.doseM ?? 0, t.doseShare, rpFloor);
-  if (doseOf(rp) > capM('RP', targetKm)) {
+  if (doseOf(rp) > capM('RP', targetKm, rule.beginner)) {
     if (rule.beginner) {
       const floor = ladderLevels('T_continuous', true)[0]!;
       const tt = reduced('T_continuous', state.t, t.doseShare, floor, true);
-      if (doseOf(tt) <= capM('T', targetKm) || keepOne)
+      if (doseOf(tt) <= capM('T', targetKm, true) || keepOne)
         return { q1: pick('T_continuous', tt, 'taper'), q2: null };
     }
     // T3 (10K-08): posle novog starta sa kvalitetom posle povratka taper zadržava jedan kvalitet (≈ 60 % poslednje
@@ -411,6 +428,6 @@ export function pickTaper(
   const tMinM = Math.round(t.tMinKm * 1000);
   const tFloor = ladderLevels('T_cruise').find((s) => doseOf(s) === tMinM)!;
   const tt = reduced('T_cruise', state.q2?.doseM ?? 0, t.doseShare, tFloor);
-  if (doseOf(tt) > capM('T', targetKm)) return null;
+  if (doseOf(tt) > capM('T', targetKm, rule.beginner)) return null;
   return { q1: pick('RP', rp, 'taper'), q2: pick('T_cruise', tt, 'taper') };
 }
