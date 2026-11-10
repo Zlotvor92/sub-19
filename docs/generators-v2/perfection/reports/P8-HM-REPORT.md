@@ -55,24 +55,24 @@ Oznake u `out/`: `pre`, pa redom posle svake izmene `g4`, `g5`, `g1`, `g2`, `g7`
 
 | metrika | P0 pre | P0 posle | velika pre | velika posle |
 |---|---|---|---|---|
-| odbijanja | 0 | 0 | 508 | VELIKA_ODB |
-| vrh / start (medijana) | 1,364 | 1,267 | 1,364 | VELIKA_RATIO |
-| sati nedelje na vrhu (medijana / max) | 5,3 / 12,1 | 5,3 / 10,5 | 6,1 / 12,4 | VELIKA_H |
-| nedelja prvog vrha (medijana) | 8 | 9 | 9 | VELIKA_PW |
-| planova sa vrhom pre kraja razvoja | 70 | 14 | 9565 | VELIKA_PBD |
-| nedelja zaredom sa istim dugim (medijana) | 7 | 5 | 6 | VELIKA_LP |
-| najveći RP trening [min] (medijana / max) | 42,8 / 98,3 | 35,3 / 42,8 | 50,6 / 100,5 | VELIKA_RP |
-| planova sa RP > 45 min / I > 24 min | 94 / 30 | 0 / 0 | 16 706 / 6056 | VELIKA_RP45 |
-| planova sa T > 30 min (cilj < 80 km: 0 posle) | 43 | 24 | 9236 | VELIKA_T30 |
-| planova sa nedeljom > 22 % vremena u RP | 50 | 1 | 6821 | VELIKA_RP22 |
-| nedelja > 25 % brzih km (zbir) | 83 | 25 | 11 746 | VELIKA_F25 |
-| planova: taper bez RP / trkačka bez oštrenja | 24 / 24 | 6 / 6 | 1425 / 1425 | VELIKA_TNR |
-| oštrenje [min] (medijana / max) | 18,7 / 26,2 | 11,7 / 12,0 | 19,0 / 30,0 | VELIKA_SH |
-| planova: test uz drugi kvalitet iste nedelje | 77 | 0 | 13 899 | VELIKA_TQ |
-| planova sa testom | 128 | 112 | 21 885 | VELIKA_T |
-| planova sa laganim > 70 % dugog | 71 | 35 (svi 3 dana) | 9787 | VELIKA_E70 |
-| ukupno RP [km] (medijana) | 42 | 34,8 | 47 | VELIKA_RPKM |
-| planova sa taperom > 60 % najveće doze zone | 27 | 88 | 3502 | VELIKA_T60 |
+| odbijanja | 0 | 0 | 508 | 484 (novih 0) |
+| vrh / start (medijana) | 1,364 | 1,267 | 1,364 | 1,273 |
+| sati nedelje na vrhu (medijana / max) | 5,3 / 12,1 | 5,3 / 10,5 | 6,1 / 12,4 | 6,1 / 10,6 |
+| nedelja prvog vrha (medijana) | 8 | 9 | 9 | 9 |
+| planova sa vrhom pre kraja razvoja | 70 | 14 | 9565 | 1234 |
+| nedelja zaredom sa istim dugim (medijana) | 7 | 5 | 6 | 5 |
+| najveći RP trening [min] (medijana / max) | 42,8 / 98,3 | 35,3 / 42,8 | 50,6 / 100,5 | 38,0 / 45,0 |
+| planova sa RP > 45 min / I > 24 min | 94 / 30 | 0 / 0 | 16 706 / 6056 | 0 / 0 |
+| planova sa T > 30 min (cilj < 80 km: 0 posle) | 43 | 24 | 9236 | 3524 |
+| planova sa nedeljom > 22 % vremena u RP | 50 | 1 | 6821 | 39 |
+| nedelja > 25 % brzih km (zbir) | 83 | 25 | 11 746 | 2676 |
+| planova: taper bez RP / trkačka bez oštrenja | 24 / 24 | 6 / 6 | 1425 / 1425 | 246 / 246 |
+| oštrenje [min] (medijana / max) | 18,7 / 26,2 | 11,7 / 12,0 | 19,0 / 30,0 | 11,6 / 12,0 |
+| planova: test uz drugi kvalitet iste nedelje | 77 | 0 | 13 899 | 0 |
+| planova sa testom | 128 | 112 | 21 885 | 20 175 |
+| planova sa laganim > 70 % dugog | 71 | 35 (svi 3 dana) | 9787 | 3432 |
+| ukupno RP [km] (medijana) | 42 | 34,8 | 47 | 35,4 |
+| planova sa taperom > 60 % najveće doze zone | 27 | 88 | 3502 | 11 676 |
 
 Poslednja dva reda su cena: ukupan rad u trkačkom tempu pada (G4, HM (b)), a najmanja doza tapera je češće iznad 60 %
 (STOP S1). Preostalih 6 planova P0 bez RP u taperu su početnici 20–25 km / 12 ned (taper ne nosi dan od 8,5 km).
