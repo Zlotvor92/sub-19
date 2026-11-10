@@ -509,6 +509,8 @@ function buildWeekOf(
       frame.deload ? null : keepsTwo
     );
     if (!picks) return null;
+    // G7 (P8 dopuna, D46): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan (stanje slota se ne menja).
+    if (test) picks = { q1: null, q2: null };
   }
   const w1 = test
     ? testWorkout(p, ctx.wc)

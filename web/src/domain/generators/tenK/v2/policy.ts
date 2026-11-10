@@ -566,7 +566,8 @@ export const TEN_K_V2_POLICY = {
   },
 
   /** D27: test (plan po osećaju); D35 (P5 F1): kontrolni test plana sa rezultatom od controlMinWeeks nedelja. */
-  test: { km: 5, controlMinWeeks: 12 },
+  /** G7 (P8 dopuna, D46): test ne pre nedelje minWeek; u nedelji testa test je jedini kvalitet. */
+  test: { km: 5, controlMinWeeks: 12, minWeek: 4 },
 
   /** D28: JEDINA tabela početnika (udeo dugog, min i max nedelje: red D17 za isti broj dana). */
   beginner: {

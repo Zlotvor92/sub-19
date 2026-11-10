@@ -385,6 +385,8 @@ export function validatePlan(
     const has = (r: DayRole): boolean => w.days.some((d) => d.role === r);
     const roleOf = (r: DayRole): DayRole => {
       if (w.test && r === (w.deload ? tSlot : 'q1')) return 'test';
+      // G7 (P8 dopuna, D46): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan.
+      if (w.test && w.days.some((d) => d.role === 'test')) return 'easy';
       if (w.index <= rule.introWeeks) return 'easy';
       if (w.deload) return r === tSlot && has(r) ? r : 'easy';
       // Pouka 35: drugi dan kvaliteta nedelje izgradnje lagan (napomena konstruktora, week.ts).
