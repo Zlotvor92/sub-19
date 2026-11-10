@@ -178,9 +178,15 @@ describe('P5-F4: početni nivo T i I ≤ 80 % plafona', () => {
         // Pouka 32 sme da spusti početnu dozu (dan kvaliteta ≤ dugi) — korak 'drop', napomena; ovde se ne sudi.
         if (dose.step === 'drop') continue;
         expect(dose.step).toBe('start');
-        const s = startLevel(dose.ladder as never, w1.targetKm)!;
+        // P8 G4/G2: plafon zone je min(udeo, minuti po tempu plana), najmanje prvi nivo lestvice.
+        const s = startLevel(dose.ladder as never, w1.targetKm, false, undefined, plan.paces)!;
         const share = dose.zone === 'T' || dose.zone === 'I' ? 0.8 : 0.6;
-        const cap = capM(dose.zone, w1.targetKm);
+        const cap = capM(
+          dose.zone,
+          w1.targetKm,
+          plan.paces,
+          doseOf(ladderLevels(dose.ladder as never)[0]!)
+        );
         // Najmanje prvi nivo lestvice (i kad je iznad udela).
         if (doseOf(s) > share * cap) {
           expect(dose.doseM).toBe(doseOf(s));
@@ -194,7 +200,7 @@ describe('P5-F4: početni nivo T i I ≤ 80 % plafona', () => {
           .find((m) => m > dose.doseM);
         if (dose.doseM < doseOf(s)) {
           expect(dose.doseM).toBeGreaterThanOrEqual(
-            doseOf(startLevel(dose.ladder as never, w1.targetKm, false, 0.6)!)
+            doseOf(startLevel(dose.ladder as never, w1.targetKm, false, 0.6, plan.paces)!)
           );
           lowered++;
         } else if (next !== undefined) expect(next).toBeGreaterThan(share * cap + 1e-6);

@@ -86,9 +86,21 @@ describe('P1-S1: nedelja tipa B', () => {
     const p = ok(generateHmV2(input('d4-16w-40km-v45-A-sun')));
     const spec = p.weeks.filter((w) => w.phase === 'specific');
     expect(spec.map((w) => (w.deload ? 'R' : blockOf(w) > 0 ? 'B' : 'A')).join('')).toMatch(/B$/);
-    expect(spec.filter((w) => blockOf(w) > 0).map(blockOf)).toEqual(
-      spec.filter((w) => blockOf(w) > 0).map((_, i) => P.specific.blockKm[i])
-    );
+    // P8-HM (b): rad u trkačkom tempu nedelje sa blokom ≤ 22 % vremena nedelje — drugi blok ostaje 4 km (bilo 6 km).
+    const blocks = spec.filter((w) => blockOf(w) > 0);
+    expect(blocks.map(blockOf)).toEqual([4, 4]);
+    for (const w of blocks) {
+      const sec = w.days.reduce((a, d) => a + d.workout.sec, 0);
+      const rp = w.days.reduce(
+        (a, d) =>
+          a +
+          d.workout.segments
+            .filter((x) => x.zone === 'RP' && (x.kind === 'rep' || x.kind === 'continuous'))
+            .reduce((c, x) => c + x.sec, 0),
+        0
+      );
+      expect(rp / sec).toBeLessThanOrEqual(0.22 + 0.005);
+    }
   });
 
   it('H12 O1: glavna doza (sa blokom) ne opada unutar tipa; RP trening ne opada iz nedelje u nedelju', () => {
@@ -134,8 +146,12 @@ describe('P1-S2: plafon RP po pojasu cilja i lestvica', () => {
       for (const w of p.weeks)
         if (w.phase !== 'race')
           for (const d of w.days)
+            // P8 G2: najmanja doza trkačkog tempa (2 × 2000 m; oštrenje je manje) uvek staje — osim bloka u dugom.
             expect(Math.round(d.workout.workKm.RP * 1000)).toBeLessThanOrEqual(
-              Math.floor((w.targetKm >= 40 ? 0.2 : 0.15) * w.targetKm * 1000 + 1e-6)
+              Math.max(
+                d.role === 'long' || w.deload ? 0 : 4000,
+                Math.floor((w.targetKm >= 40 ? 0.2 : 0.15) * w.targetKm * 1000 + 1e-6)
+              )
             );
     }
   });
@@ -147,7 +163,7 @@ describe('P1-T: taper', () => {
       const p = ok(generateHmV2(g.input));
       const t = p.weeks.find((w) => w.phase === 'taper')!;
       const rp = t.days.find((d) => d.workout.dose?.zone === 'RP');
-      if (rp) expect(rp.workout.dose!.doseM).toBeLessThanOrEqual(capM('RP', t.targetKm));
+      if (rp) expect(rp.workout.dose!.doseM).toBeLessThanOrEqual(capM('RP', t.targetKm, undefined, 4000)); // P8 G2: 2 × 2000 m uvek staje
       else if (g.input['experience'] !== 'beginner')
         expect(4000).toBeGreaterThan(capM('RP', t.targetKm));
     }

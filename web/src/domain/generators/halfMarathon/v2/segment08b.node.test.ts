@@ -68,7 +68,8 @@ describe('HM-08b primeri iz nalaza', () => {
   });
 
   it('K1: zaključan dan testa, pa nov rezultat (lanac, činjenice kumulativne) → zaštićen test ostaje jedini, bez odbijanja', () => {
-    const p = planOf('f-d3-12w-35km-e405-C');
+    // P8 G7: plan od 12 nedelja po osećaju nema test — plan od 14 nedelja (test u nedelji 4).
+    const p = planOf('f-d3-14w-35km-e405-C');
     const at = wed(p, 2);
     const f1 = factsOf(p, 'locked', at);
     const r1 = adaptHmV2(p, f1, at);

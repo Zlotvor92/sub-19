@@ -54,8 +54,15 @@ describe('HM-10 T1: lagan prema dugom u nedeljama izgradnje', () => {
   });
 
   it('manje laganih dana kad najkraći lagan ne staje ispod 0,8 × dugi (16 km, 3 lagana → 2, dugi se ne podiže iznad svog plafona)', () => {
-    const rule = planRule(4, 'beginner')!;
+    // T1 sa udelom 0,8 (pravilo 3 dana); P8 G6: 4+ dana 0,7 — tada ova nedelja (na minimumu 16 km) ide po izuzetku
+    // t1MinWeek sa sva 3 lagana dana.
+    const rule7 = planRule(4, 'beginner')!;
+    expect(rule7.easyLongMaxShare).toBe(0.7);
+    expect(planRule(3, 'regular')!.easyLongMaxShare).toBe(0.8);
+    const rule = { ...rule7, easyLongMaxShare: 0.8 };
     const p = pacesFromVdot(35);
+    expect(buildLengths(160, 0, 3, rule7, p)!.easy10.length).toBe(3);
+    expect(buildEasyCap10(100, rule7)).toBe(70);
     const len = buildLengths(160, 0, 3, rule, p)!;
     expect(len.easy10.length).toBe(2);
     for (const e of len.easy10) {
@@ -84,8 +91,9 @@ describe('HM-10 T3: posle novog starta taper zadržava 1 kvalitet, trkačka krat
     const taper = p.weeks.find((w) => w.phase === 'taper')!;
     const q = taper.days.filter((d) => d.workout.kind === 'quality');
     expect(q.length).toBe(1);
-    expect(q[0]!.workout.dose!.zone).toBe('T');
-    expect(q[0]!.workout.dose!.doseM).toBeGreaterThanOrEqual(2000);
+    // P8 G2: RP 2 × 2000 m (najmanja doza) staje u taper i posle novog starta — kvalitet tapera je RP (bilo: T).
+    expect(q[0]!.workout.dose!.zone).toBe('RP');
+    expect(q[0]!.workout.dose!.doseM).toBe(4000);
     const race = p.weeks.find((w) => w.phase === 'race')!;
     expect(race.days.some((d) => d.role === 'sharpener')).toBe(true);
     expect(errors(p)).toEqual([]);

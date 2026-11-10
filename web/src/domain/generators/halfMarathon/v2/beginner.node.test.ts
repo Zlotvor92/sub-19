@@ -73,11 +73,13 @@ describe('H17 pravilo plana početnika', () => {
     expect(doseOf(startLevel('T_continuous', 40)!)).toBe(3000);
     expect(doseOf(startLevel('T_continuous', 40, true)!)).toBe(1500);
     // Razvoj 22 km: T cruise 2 × 1200 m > 2,2 km → T kontinuirano; specifično 26 km: RP 4,0 km > 3,9 km.
-    expect(buildLadder('development', 22, B4)).toBe('T_continuous');
+    // P8 G2: prvi nivo lestvice faze uvek staje — početnik dobija T cruise u razvoju i RP u specifičnoj fazi i pri
+    // malom obimu (bilo: T kontinuirano umesto lestvice faze, bez kvaliteta pri 14 km).
+    expect(buildLadder('development', 22, B4)).toBe('T_cruise');
     expect(buildLadder('development', 24, B4)).toBe('T_cruise');
-    expect(buildLadder('specific', 26, B4)).toBe('T_continuous');
+    expect(buildLadder('specific', 26, B4)).toBe('RP');
     expect(buildLadder('specific', 26.7, B4)).toBe('RP');
-    expect(buildLadder('base', 14, B4)).toBeNull();
+    expect(buildLadder('base', 14, B4)).toBe('T_continuous');
     expect(buildLadder('development', 22, planRule(3, 'regular')!)).toBe('T_cruise');
     const w = pickBuild(
       {
@@ -89,7 +91,8 @@ describe('H17 pravilo plana početnika', () => {
       feelPaces(450),
       B4
     )!;
-    expect([w.q1!.ladder, w.q1!.doseM, w.q2]).toEqual(['T_continuous', 2000, null]);
+    // P8 G2: T cruise prvi nivo (2 × 1200 m) staje i pri 22 km — prelaz sa T kontinuirano 2,0 km.
+    expect([w.q1!.ladder, w.q1!.doseM, w.q2]).toEqual(['T_cruise', 2400, null]);
   });
 });
 
@@ -151,9 +154,15 @@ describe('H17 plan početnika', () => {
     const p = plan('b-d4-12w-25km-e330-A');
     const t = p.weeks.find((w) => w.phase === 'taper')!;
     const q = t.days.find((d) => d.role === 'q1')!.workout.dose!;
-    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['T_continuous', 1500, 24.5]);
-    expect(t.notes[0]).toContain('Taper (HI10)');
-    expect(p.weeks.at(-1)!.days.some((d) => d.role === 'sharpener')).toBe(false);
+    // P8 G2/G5: RP 2 × 2000 m staje u taper (najmanja doza), trkačka nedelja ima oštrenje ≤ 12 min rada (bilo: T 1,5 km,
+    // bez oštrenja); P8 G1: 12 nedelja → vrh 1,30 × start, taper 22,4 km.
+    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['RP', 4000, 22.4]);
+    expect(t.notes.join(' ')).toContain('najmanja doza u trkačkom tempu');
+    const sharp = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
+    expect(sharp.workout.dose!.doseM).toBe(2400);
+    // Kad taper sa RP nema izvodljive dužine (najmanji obim, brz lagan tempo): ishod kao pre — bez kvaliteta, ne odbijanje.
+    const small = plan('b-d4-12w-20km-e330-A');
+    expect(small.weeks.find((w) => w.phase === 'taper')!.days.some((d) => d.workout.dose)).toBe(false);
     // Rasterećenje u razvoju: 1,5 km kontinuirano pod lestvicom T cruise (nema nivo 1,5 km).
     const d5 = p.weeks[4]!.days.find((d) => d.workout.kind === 'quality')!.workout;
     expect([p.weeks[4]!.deload, d5.dose!.ladder, d5.qualityType, d5.dose!.doseM]).toEqual([
