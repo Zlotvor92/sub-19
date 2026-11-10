@@ -2,8 +2,8 @@
  {
   "name": "P8-G1 rast bez raspodele do kraja razvoja",
   "file": "src/domain/generators/fiveK/v2/volume.ts",
-  "find": "else t = Math.min(floor1(lastBuild * (1 + growth)), cap, spreadKm(lastBuild, cap, devWeeksLeft(frames, i)));",
-  "replace": "else t = Math.min(floor1(lastBuild * (1 + growth)), cap);",
+  "find": "          spreadKm(lastBuild, cap, devWeeksLeft(frames, i))\n",
+  "replace": "          Infinity\n",
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"
   ]
@@ -11,8 +11,8 @@
  {
   "name": "P8-G2 bez prvog nivoa lestvice (sa rezultatom)",
   "file": "src/domain/generators/fiveK/v2/workouts.ts",
-  "find": "  const budgetKm = Math.max(budget0, firstLevelBudget(type, p, phase, targetKm));",
-  "replace": "  const budgetKm = budget0;",
+  "find": "  const first = phase === 'race' ? 0 : firstLevelBudget(type, p, phase);",
+  "replace": "  const first = 0;",
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"
   ]
@@ -20,8 +20,8 @@
  {
   "name": "P8-G2 bez prvog nivoa lestvice (po osećaju)",
   "file": "src/domain/generators/fiveK/v2/feel.ts",
-  "find": "  const budget = Math.max(b[s.budget], feelFirstLevel(kind, phase, p));",
-  "replace": "  const budget = b[s.budget];",
+  "find": "    Math.max(b[s.budget], feelFirstLevel(kind, phase, p)),",
+  "replace": "    b[s.budget],",
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"
   ]
@@ -47,7 +47,7 @@
  {
   "name": "P8-b taper bez granice kvaliteta",
   "file": "src/domain/generators/fiveK/v2/policy.ts",
-  "find": "    taperQualityShare: 0.7,",
+  "find": "    taperQualityShare: 0.6,",
   "replace": "    taperQualityShare: 1.0,",
   "tests": [
    "src/domain/generators/fiveK/v2/p8.node.test.ts"

@@ -6,6 +6,7 @@
      su procenjeni sredinom E opsega (vreme × E tempo). */
 
 import { daysRule, FIVE_K_V2_POLICY as P, type RunDaysCount } from './policy.ts';
+import { raceTimeForVdot } from './paces.ts';
 import { userText } from './text.ts';
 import type {
   Basis,
@@ -211,14 +212,15 @@ export function capZoneOf(type: QualityType): 'I' | 'RP' | 'T' | 'R' {
 
 /** 5k-v2.15.0 (P8 G2): budžet [km] najnižeg nivoa lestvice vrste (najmanji smislen trening po pravilima: minReps ×
     najkraće dozvoljeno ponavljanje na tempu; kratak T: shortTMinKm / shortTShareOfBudget); Infinity = nema ga. */
-export function firstLevelBudget(
-  type: QualityType,
-  p: Paces,
-  phase: Phase,
-  _targetKm = 0
-): number {
+export function firstLevelBudget(type: QualityType, p: Paces, phase: Phase, _targetKm = 0): number {
   const q = P.quality;
-  const reps = (opts: readonly number[], pace: number, min: number, maxSec: number, minSec = 0): number => {
+  const reps = (
+    opts: readonly number[],
+    pace: number,
+    min: number,
+    maxSec: number,
+    minSec = 0
+  ): number => {
     const ok = opts.filter((o) => o * pace <= maxSec + 1e-9 && o * pace + 1e-9 >= minSec);
     return ok.length ? Math.round(Math.min(...ok) * min * 100) / 100 : Infinity;
   };
@@ -246,7 +248,8 @@ export function firstLevelBudget(
     vrste bez plafona (R, oštrenje trkačke nedelje — G5). */
 export function minuteCapKm(type: QualityType, p: Paces): number {
   const m = P.quality.minuteCap;
-  const km = (min: number, pace: number): number => Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
+  const km = (min: number, pace: number): number =>
+    Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
   if (type === 'I') return km(p.vdot < m.iSlowVdot ? m.iSlowMin : m.iMin, p.I);
   if (type === 'RP') return km(m.rpMin, p.RP);
   if (type === 'T_short' || type === 'T_cruise') return km(m.tMin, p.T);
@@ -1172,11 +1175,15 @@ function peakWeekOne(
   const pm = prev?.main;
   const alt = pm ? altMain('I', b.I, p, pm) : null;
   if (!alt) return { ok: false, message: up.message };
-  return single(intervalSession('I', alt, targetKm, p).workout, [altNote('Vrhunac (I)', alt, biggerInOffer('I', p, pm!))], {
-    main: alt,
-    t: null,
-    same: 1
-  });
+  return single(
+    intervalSession('I', alt, targetKm, p).workout,
+    [altNote('Vrhunac (I)', alt, biggerInOffer('I', p, pm!))],
+    {
+      main: alt,
+      t: null,
+      same: 1
+    }
+  );
 }
 
 /**
@@ -1321,7 +1328,13 @@ export function vdotWeekQuality(
     };
   }
   // 5k-v2.15.0 (P8 b): taper — RP i T pod granicom tapera (f.qcap), ne ispod prvog nivoa lestvice.
-  const rp = qualitySession('RP', cappedBudget('RP', b.I, f.qcap?.RP, p, f.phase), targetKm, p, f.phase);
+  const rp = qualitySession(
+    'RP',
+    cappedBudget('RP', b.I, f.qcap?.RP, p, f.phase),
+    targetKm,
+    p,
+    f.phase
+  );
   if (!rp.ok) return rp;
   const tp =
     taperWeeks > 1
@@ -1443,10 +1456,16 @@ export function raceWarmup(
 /** 2.4.0: bez rezultata trka je po osećaju (trajanje procenjeno E tempom — gornja granica). 5k-v2.15.0: WU/CD iz
     raceWarmup. */
 export function raceDay(p: PaceModel, band: { warmupKm: number; cooldownKm: number }): Workout {
+  // 5k-v2.15.0 (P8 dopuna G3): trkački dan se ispisuje kao trka (distanca, prognoza), zagrevanje/hlađenje kao preporuka.
+  const pred = p.vdot === null ? null : raceTimeForVdot(p.vdot, P.paces.raceDistanceM);
+  const t =
+    pred === null
+      ? ''
+      : ` — prognoza ${Math.floor(pred / 60)}:${String(Math.round(pred % 60)).padStart(2, '0')}`;
   return buildWorkout(
     'race',
     null,
-    'Trka 5K',
+    `Trka 5 km${t} (pre trke ${km(band.warmupKm)} km lagano, posle ${km(band.cooldownKm)} km)`,
     [
       { kind: 'warmup', km: band.warmupKm },
       {

@@ -198,7 +198,11 @@ export function planVolume(
     else
       t = minStep(
         lastBuild,
-        Math.min(floor1(lastBuild * (1 + growth)), cap, spreadKm(lastBuild, cap, devWeeksLeft(frames, i))),
+        Math.min(
+          floor1(lastBuild * (1 + growth)),
+          cap,
+          spreadKm(lastBuild, cap, devWeeksLeft(frames, i))
+        ),
         cap
       );
     t = fit(t);
@@ -223,7 +227,10 @@ export function planVolume(
 /** 5k-v2.15.0 (P8 G1, heuristika, odluka organizatora P8, nalaz slepe ocene): faza razvoja 5K = baza + vrhunac (faze u
     kojima obim raste; oštrenje drži). Broj ne-rasteretnih nedelja razvoja od nedelje indeksa `i` (uključujući) do kraja
     razvoja; 0 van razvoja. JEDINO mesto (planVolume, adaptVolume). */
-export function devWeeksLeft(frames: readonly Pick<WeekFrame, 'phase' | 'deload'>[], i: number): number {
+export function devWeeksLeft(
+  frames: readonly Pick<WeekFrame, 'phase' | 'deload'>[],
+  i: number
+): number {
   let n = 0;
   for (let k = i; k < frames.length; k++) {
     const f = frames[k]!;

@@ -717,7 +717,9 @@ export function buildRaceWeek(
   const notes = ['Trkačka nedelja: trka se ne računa u nedeljni obim.'];
   const sharpRest = sharp && sharpDay ? raceRest.includes(dateOfWeekday(f, sharpDay)) : false;
   if (noSharp)
-    notes.push('Bez oštrenja: dve deonice od 400 m u tempu trke ne staju u ovu nedelju; ubrzanja dan pred trku su dovoljna.');
+    notes.push(
+      'Bez oštrenja: dve deonice od 400 m u tempu trke ne staju u ovu nedelju; ubrzanja dan pred trku su dovoljna.'
+    );
   else if (!sharp) notes.push('Adaptacija: bez oštrenja (dan oštrenja u zabrani kvaliteta).');
   else if (sharpRest)
     notes.push('Bez oštrenja: sa njim bi trkačka nedelja bila veća od nedelje pred njom.');

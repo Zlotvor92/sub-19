@@ -15,7 +15,13 @@ import {
   phaseCounts,
   testKindOf
 } from './periodize.ts';
-import { isRunDaysCount, MAX_DAYS, FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
+import {
+  isRunDaysCount,
+  MAX_DAYS,
+  FIVE_K_V2_POLICY as P,
+  rulesOf,
+  type Athlete
+} from './policy.ts';
 import { validateRunWalk } from './runWalkValidate.ts';
 import { belowTargetAdvice, belowTargetShown } from './text.ts';
 import { easyCapKm, easyMinKm, weekLengths } from './lengths.ts';
@@ -867,7 +873,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     if (!checked(w)) continue;
     const peakCap = peakKm(startRef(w.index), capOf(w), aw(w), {
       weeks: weeks.length,
-      p: pacesAt(plan.input, [], 1)
+      p: pacesAt(plan.input, steps, 1)
     });
     const level = levelAt(w.index);
     if (w.targetKm > peakCap + 0.05 && !(level !== null && w.targetKm <= level + 0.05))

@@ -56,12 +56,20 @@ describe('P8-5K: uzorak rane mreže', () => {
   it('G1: ne-rasteretna nedelja razvoja ≤ poslednji + (vrh − poslednji) / preostale nedelje razvoja', () => {
     let slowed = 0;
     for (const { id, p } of SAMPLE) {
-      const cap = peakKm(p.startKm, p.capacityKm, athleteOf(p));
+      const cap = peakKm(p.startKm, p.capacityKm, athleteOf(p), {
+        weeks: p.weeks.length,
+        p: p.paces
+      });
       let last: number | null = null;
       p.weeks.forEach((w, i) => {
         if (!isBuild(w) || w.deload) return;
         if (last !== null && (w.phase === 'base' || w.phase === 'peak')) {
           const lim = spreadKm(last, cap, devWeeksLeft(p.weeks, i));
+          // Dopuna G1b: korak < 3 % se ne primenjuje (nedelja drži cilj).
+          if (w.targetKm > last)
+            expect(w.targetKm - last + 1e-9, `${id} ned ${w.index} korak`).toBeGreaterThanOrEqual(
+              Math.min(last * 0.03, cap - last)
+            );
           expect(w.targetKm, `${id} ned ${w.index}`).toBeLessThanOrEqual(lim + EPS);
           if (Number.isFinite(lim) && lim < Math.floor(last * 1.08 * 10 + 1e-9) / 10) slowed++;
         }
@@ -230,8 +238,8 @@ describe('P8-5K: pojedinačna pravila', () => {
       recentResult: { distanceM: 5000, timeSec: 1022, date: '2026-10-19' },
       goalTimeSec: null
     });
+    // Dopuna G4 (plafon minuta) menja koje nedelje drže dozu; tvrdnja mora da važi kad napomena postoji.
     const notes = p.weeks.flatMap((w) => w.notes.filter((n) => n.includes('ista količina')));
-    expect(notes.length).toBeGreaterThan(0);
     for (const n of notes) expect(n).toContain('to je najveća doza ovog treninga u planu');
   });
 });

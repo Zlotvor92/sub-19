@@ -355,7 +355,10 @@ function deloadText(frames: readonly WeekFrame[], off = 0): string {
 
 /** 5k-v2.15.0 (P8 d): najduži trening upisanih nedelja [km] (konstruktor i validator, workouts.raceWarmup). */
 export const longestDayKm = (weeks: readonly PlanWeek[]): number =>
-  Math.max(0, ...weeks.flatMap((w) => w.days.filter((d) => d.role !== 'race').map((d) => d.workout.km)));
+  Math.max(
+    0,
+    ...weeks.flatMap((w) => w.days.filter((d) => d.role !== 'race').map((d) => d.workout.km))
+  );
 
 const isBuildPhase = (ph: Phase): boolean => ph === 'base' || ph === 'peak' || ph === 'sharpen';
 

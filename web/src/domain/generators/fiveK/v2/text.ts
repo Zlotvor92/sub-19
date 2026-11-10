@@ -77,7 +77,14 @@ export function userWarnings(
       out.push(first.message);
       continue;
     }
-    const rest = [...new Set(g.slice(1).map((x) => x.week).filter((x): x is number => x !== undefined))];
+    const rest = [
+      ...new Set(
+        g
+          .slice(1)
+          .map((x) => x.week)
+          .filter((x): x is number => x !== undefined)
+      )
+    ];
     const list =
       rest.length <= 1
         ? rest.map(label).join('')

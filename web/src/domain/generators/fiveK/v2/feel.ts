@@ -254,7 +254,10 @@ function progress(
   const cands = s.cands(phase);
   const est = (d: FeelDose): number => s.est(d, p);
   // 5k-v2.15.0 (P8 G2): plafon zone = max(udeo × cilj, prvi nivo ponude vrste) — najniži nivo uvek staje.
-  const budget = Math.min(Math.max(b[s.budget], feelFirstLevel(kind, phase, p)), feelMinuteCap(kind, p));
+  const budget = Math.min(
+    Math.max(b[s.budget], feelFirstLevel(kind, phase, p)),
+    feelMinuteCap(kind, p)
+  );
   for (const mode of prev ? (['up', 'alt'] as const) : (['first'] as const)) {
     const d = choose(cands, est, budget, prev ?? null, mode);
     if (d) return { kind, d, how: mode };
@@ -324,7 +327,15 @@ export function feelMinuteCap(kind: FeelKind, p: PaceModel): number {
   const m = P.quality.minuteCap;
   const z = CAP_ZONE[kind];
   const min =
-    z === 'I' ? (vdotOrEstimate(p) < m.iSlowVdot ? m.iSlowMin : m.iMin) : z === 'RP' ? m.rpMin : z === 'T' ? m.tMin : null;
+    z === 'I'
+      ? vdotOrEstimate(p) < m.iSlowVdot
+        ? m.iSlowMin
+        : m.iMin
+      : z === 'RP'
+        ? m.rpMin
+        : z === 'T'
+          ? m.tMin
+          : null;
   if (min === null) return Infinity;
   const pace = kind === 'RP_SHORT' && p.vdot !== null ? (p as Paces).RP : easyPaceOf(p);
   return Math.floor(((min * 60) / pace) * 100 + 1e-9) / 100;
@@ -414,7 +425,8 @@ export function simpleWeekQuality(
   // 5k-v2.15.0 (P8 b): taper — budžet glavnog (RP) i drugog (T) pod granicom tapera (f.qcap).
   if (taper && f.qcap) {
     b = { ...b, [SPEC[k.main].budget]: cappedFeel(k.main, b[SPEC[k.main].budget], f, p) };
-    if (k.second) b = { ...b, [SPEC[k.second].budget]: cappedFeel(k.second, b[SPEC[k.second].budget], f, p) };
+    if (k.second)
+      b = { ...b, [SPEC[k.second].budget]: cappedFeel(k.second, b[SPEC[k.second].budget], f, p) };
   }
   const pf = taper ? {} : (prev?.feel ?? {});
   // Zadržana doza je dozvoljena samo uz drugi kvalitet ili kad prethodna nedelja nije bila ista vrsta.

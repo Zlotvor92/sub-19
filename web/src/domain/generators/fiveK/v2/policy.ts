@@ -311,7 +311,7 @@ export const FIVE_K_V2_POLICY = {
       fartlekRP: { rpeMin: 8, rpeMax: 8, cue: 'malo ispod trkačkog napora za 5K' },
       tempo: { rpeMin: 6, rpeMax: 7, cue: 'može da se priča u kratkim rečenicama' },
       test: { rpeMin: 9, rpeMax: 10, cue: 'maksimalno ravnomerno' },
-      race: { rpeMin: 9, rpeMax: 10, cue: 'trka' }
+      race: { rpeMin: 9, rpeMax: 9, cue: 'trka' }
     } satisfies Record<string, Effort>,
     note:
       'Plan po osećaju: nema pouzdanog rezultata, pa E dolazi iz tvog uobičajenog laganog tempa (±15 s), ' +
