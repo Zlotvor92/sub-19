@@ -368,3 +368,19 @@ Plan P9 (do kraja):
 - Samo izmereno: K3-D (isti sudar kao MAR), K3-F talas (dugi na plafonu > 3 ned zaredom 20 184/25 122), dan manje
   (4297), test > 2 × doza (762/20 160), blok u dugom za 3 dana.
 - Ostaje K3-10K (u toku, K3-B gotov).
+
+### 10. 11. 2026, 23:00 — K3-10K završen (10k-v2.15.0); K3 zatvoren; krug 3 trenera i check:full pokrenuti
+
+- K3-10K `3399773`, izveštaj `reports/K3-10K-REPORT.md`. Po tabu: pun nivo usklađen (adapt mreža), E2E 3/3,
+  `npm run check` 3396 ✔, sabotaže 4/4; 31 314 planova, 0 odbijanja, vrh nigde ne pada > 10 %.
+  Ugrađeno: K3-A doza (I medijana 30–45 km 9,4 → 12,8; 45–65 km 14,1 → 17,2; ≥ 65 km 18,4 → 20,3; RP pri ≥ 50 km
+  22,6 → 27,2 min) uz tri uska vraćanja; K3-B 4 dana 0,75 (izuzetak nedelje 1 vraćen); K3-C dugi sa završnih 10/15
+  min T (3 dana). Vraćeno: 3 dana lagan 0,70 (vrh −10 % u 474/2676 R, 534/1988 F); I blok ≥ 3 nedelje.
+  Samo izmereno: K3-D 12 849 planova, K3-E 494, K3-F 7078.
+- Nezavisna provera organizatora na `3399773`: `npm run check` — typecheck, lint, format ✔, 303 fajla / 3396 testova.
+- Verzije: 5k-v2.16.0, 10k-v2.15.0, hm-v2.13.0, marathon-v2.13.0. Svi K3 tabovi arhivirani.
+- Pokrenuto: glavni trener → `coach/ROUND-03.md` (provera + sud „ide li korisnicima"); `npm run check:full` jednom
+  (organizator, u pozadini).
+- Neugrađeno iz liste trenera (za eventualni sledeći segment, traži veći zahvat): najteža nedelja pre tapera, talas
+  dugog, dan manje kod malog obima, test ≤ 2 × doza (ekrani), I blok ≥ 3 nedelje, blok u dugom za 3 dana, dan pred
+  dugi ≤ 50 %, 3 dana 0,70 na HM/10K.
