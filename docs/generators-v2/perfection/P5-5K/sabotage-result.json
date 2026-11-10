@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/generators-v2/perfection/P5-5K/sabotage.json",
- "head": "8e87fd4",
+ "head": "df96d0e",
  "level": "brz",
  "bail": true,
  "parallel": 1,
  "vitestArgs": [],
- "durationS": 21.4,
- "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
- "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+ "durationS": 21,
+ "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+ "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
  "ok": true,
  "results": [
   {
@@ -27,13 +27,13 @@
     "message": "AssertionError: expected null to be 'result' // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "8c2d176acec3d8b9a10695e14f96dceefc5bd0bc6303ca95f2eea7d9f0078366",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "3f52dc7c9ec643f5d1e6ade60a618e41bdf45b14891aa8e7bf9d17435031ae56",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.9
+   "durationS": 1.6
   },
   {
    "index": 2,
@@ -52,13 +52,13 @@
     "message": "AssertionError: expected 6 to be 4 // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "f99f1202f6e5c055aa958b5b91433f288dafea0688c07b6fdef161952304ecfc",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "f510000a0d418b8bbccd76c21a6dcbb15d335851ac234d19d859cfacf0867443",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.2
+   "durationS": 1
   },
   {
    "index": 3,
@@ -77,13 +77,13 @@
     "message": "AssertionError: expected 'result' to be null"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "7298ace3e4f439a609f214906d47accd196e2b30b4e936da9aa6cc125095ec8d",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "ec342d26ff867544d63df47d72369fb7464a90c8b6427f95bb49ace3997d2da9",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.7
+   "durationS": 1.5
   },
   {
    "index": 4,
@@ -102,13 +102,13 @@
     "message": "AssertionError: expected [ 'ARITHMETIC', 'ARITHMETIC' ] to include 'TEST_WEEK'"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "337093fdcda9e5d21746cb82ec785b2ecae5f064736cf2243384f856cc570181",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "dcba49ab587ed87b1cfd6f7f5284662b2cc5afd7d49fc52f1cc1e20b58f77eff",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.7
+   "durationS": 1.5
   },
   {
    "index": 5,
@@ -127,13 +127,13 @@
     "message": "AssertionError: expected [] to deeply equal [ ObjectContaining {\"applied\": true} ]"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "8fcba70115536249cf80f16b30efc135c8c5a3421c9bffe4bfae9d48f783155b",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "e7a5016871b84937e22424f812140edf970b80809706d3b64a5e3d0501048f52",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.8
+   "durationS": 1.6
   },
   {
    "index": 6,
@@ -152,13 +152,13 @@
     "message": "AssertionError: expected [] to deeply equal [ ObjectContaining {\"applied\": true} ]"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "08708b8390d7e882c743bc76e4f8e336255b3d64c2ebb2788551e41be84aa4f8",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "322de6c0166f0726f2e3ab77f72941b238b67b91ea27ac66ff08f05408040014",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.8
+   "durationS": 1.6
   },
   {
    "index": 7,
@@ -177,13 +177,13 @@
     "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to deeply equal [ ObjectContaining {\"applied\": false} ]"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "8b85c12a28dc3c9ca7c6a4189ab5db37e31187af22c74a008a8401b909835f3f",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "c076ccd7e59919e6474c7f2d6928d57f095c06e93ec000d5aed5d61e304f3056",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.8
+   "durationS": 1.6
   },
   {
    "index": 8,
@@ -202,13 +202,13 @@
     "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to deeply equal [ ObjectContaining {\"applied\": false} ]"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "04dea9c476909102c8294b211713e5b4af12628dad9aaba2dc2ed4eb1ae60012",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "33ae437cec36c03c5386fa3656c476732d7b881e98f8b60cf31b3fd1804f7d6f",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.7
+   "durationS": 1.6
   },
   {
    "index": 9,
@@ -227,13 +227,13 @@
     "message": "Error: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"Adaptiran plan krši 1 pravila; plan se ne vraća.\"}]"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "7a476f4a55172f42ea7d390805bb99e8b0500e374f0e59cbabbc75e3d3651649",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "d4ce9777954fc95c66989efe9657984669c7db5297756332ac90a339dfb2b268",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.7
+   "durationS": 1.6
   },
   {
    "index": 10,
@@ -252,13 +252,13 @@
     "message": "AssertionError: expected [ 'R_SHARE' ] to include 'DOSE_HOLD'"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "ad441160d8a40477d650a7ead4b15c4f45aa55fa38087ab633511dd86bb12500",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "6b5c3a1dd0d8012c8a121b7d3e8786a6c0b837f5c0b1a5f0d72294657d8533a7",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1.9
+   "durationS": 1.8
   },
   {
    "index": 11,
@@ -277,13 +277,63 @@
     "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to deeply equal [ ObjectContaining {\"applied\": false} ]"
    },
    "failedCount": 1,
-   "hashBefore": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
-   "hashSabotaged": "a7884bce4b7aa5d3a837337e0f6f6f57f93f39a7d5eea400a694514afec2abfc",
-   "hashAfter": "c8ec19fef0ae6c38858592e3182cbb6a25309a81749f72b8430a68eee17a5652",
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "64f80d18724c063acbb583da0a9501930b74bc1f8fc322d065d82eebb2fd408b",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
    "restored": true,
    "error": null,
    "vitestExit": 1,
    "durationS": 1.7
+  },
+  {
+   "index": 12,
+   "name": "P5-F2h trčanje van plana na datum kvaliteta se ne računa",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > trčanje van plana na datum kvaliteta = odrađen (preciziranje organizatora); RPE samo iz zapisa tog dana",
+    "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to have a length of +0 but got 1"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "5f034f51531b93b60506215f358fe5b0407d27c9a83d1f9a22fedd808fe5ae14",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.7
+  },
+  {
+   "index": 13,
+   "name": "P5-F2i RPE sa zapisa van plana",
+   "files": [
+    "src/domain/generators/fiveK/v2/assess.ts"
+   ],
+   "tests": [
+    "src/domain/generators/fiveK/v2/p5.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/fiveK/v2/p5.node.test.ts",
+    "test": "P5 F2 (Odluka 10) — kvalitet u adaptaciji > trčanje van plana na datum kvaliteta = odrađen (preciziranje organizatora); RPE samo iz zapisa tog dana",
+    "message": "AssertionError: expected [ { condition: 'HARD_QUALITY', …(2) } ] to have a length of +0 but got 1"
+   },
+   "failedCount": 1,
+   "hashBefore": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "hashSabotaged": "b34eb90405bf44fd8bfd6892fddead9b52493e5cd9d902fc50a6660ebb267c74",
+   "hashAfter": "9c908caf11501411eb3938187ff2e9e9f024c9da2fbf8c522d6a0364c2319744",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.6
   }
  ]
 }

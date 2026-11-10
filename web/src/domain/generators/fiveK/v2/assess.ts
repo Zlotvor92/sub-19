@@ -548,9 +548,7 @@ export function assess(
     }
   }
   // Odluka 10 (5k-v2.14.0, P5 F2; heuristika, odluka organizatora): dani kvaliteta plana (Q1/Q2, ne test) u poslednjih
-  // hardLookbackDays dana do asOf; dan je poznat kad ima zapis (dayId, inače datum) ili je u potpunoj pokrivenosti ili
-  // u prijavljenoj pauzi. Težak = neodrađen (nijedan završen zapis sa km/trajanjem; poznat dan bez zapisa) ili završen
-  // sa RPE ≥ hardRpe. Dva uzastopna (po datumu) teška → sledeća nedelja izgradnje (n) ne podiže dozu nijednog slota
+  // hardLookbackDays dana do asOf. Težak = neodrađen (vidi hardOf) ili zapis tog dana sa RPE ≥ hardRpe. Dva uzastopna (po datumu) teška → sledeća nedelja izgradnje (n) ne podiže dozu nijednog slota
   // (limits.hold; konstruktor quality.ts, validator DOSE_HOLD); cilj obima se ne menja. Ispod bola, pauze, umora i
   // manjka izvršenja (tada applied false); isti zapisi ne prave nov korak (kao umor, pouka 36).
   const qDays = planDays
@@ -565,12 +563,13 @@ export function assess(
     .sort((x, y) => day(x.date) - day(y.date));
   const inBreak = (n0: number): boolean =>
     facts.breaks.some((b) => day(b.from) <= n0 && n0 <= day(b.to));
+  // Preciziranje organizatora (P5): neodrađen = tog DATUMA nema nijednog trčanja (ni zapisa dana, ni trčanja van plana)
+  // uz potpunu pokrivenost ili u prijavljenoj pauzi; bilo koje trčanje tog datuma = odrađen, a težak samo kad zapis
+  // tog dana (dayId; zapis bez dayId je van plana, kao umor — C2) ima RPE ≥ hardRpe.
   const hardOf = (d: PlanDay): boolean | null => {
-    const recs = W.filter((x) => (x.dayId ?? x.date) === d.date);
-    if (recs.length === 0)
-      return coveredDays(cov, day(d.date), day(d.date)) || inBreak(day(d.date)) ? true : null;
-    const done = recs.filter((x) => x.completed && (x.km > 0 || x.durationSec > 0));
-    return done.length === 0 || done.some((x) => (x.rpe ?? 0) >= A.hardRpe);
+    if (runs.some((x) => x.date === d.date))
+      return W.some((x) => x.dayId === d.date && x.completed && (x.rpe ?? 0) >= A.hardRpe);
+    return coveredDays(cov, day(d.date), day(d.date)) || inBreak(day(d.date)) ? true : null;
   };
   let pair: [PlanDay, PlanDay] | null = null;
   for (let i = 1; i < qDays.length; i++)

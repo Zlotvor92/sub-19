@@ -227,6 +227,21 @@ describe('P5 F2 (Odluka 10) — kvalitet u adaptaciji', () => {
     expect(again.plan.weeks.filter((w) => w.hold).map((w) => w.index)).toEqual([2]);
   });
 
+  it('trčanje van plana na datum kvaliteta = odrađen (preciziranje organizatora); RPE samo iz zapisa tog dana', () => {
+    const f = factsOf(plan, asOf, 'miss') as { workouts: Record<string, unknown>[] };
+    const missed = f.workouts
+      .filter((x) => x['completed'] === false)
+      .map((x) => x['date'] as string);
+    expect(missed).toHaveLength(2);
+    // Isti datumi, trčanje bez dayId (van plana), RPE 9 na zapisu van plana — ne čini dan teškim.
+    f.workouts.push(
+      ...missed.map((date) => ({ date, km: 6, durationSec: 2100, completed: true, rpe: 9 }))
+    );
+    const r = adapted(plan, f, asOf);
+    expect(hq(r)).toHaveLength(0);
+    expect(r.plan.weeks.some((w) => w.hold)).toBe(false);
+  });
+
   it('ispod bola: applied false, bez zadržavanja; isti zapisi ne prave nov korak', () => {
     const p = adapted(plan, factsOf(plan, asOf, 'rpe9', 'pain'), asOf);
     expect(hq(p)).toEqual([expect.objectContaining({ applied: false })]);
