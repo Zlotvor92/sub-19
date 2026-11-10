@@ -139,6 +139,8 @@ ispred bola/manjka, F2d isti zapisi ponovo, F3a uvek 4 × 20 s, F3b prvi lagan d
   164/165 (1 brojka D25/DOSE_DROPPED, zamenjene kolone) → `grid.3.full` 1 min 22 s 15/15.
 - `npm run check` — 2 min 57 s (format fixture-a) → 5 min 47 s — 2 pada (`marathon/v2/app/byteSame` snima 10K v2) →
   snimak obnovljen (`BYTE_SAME_RECORD=1`, promenjeno samo 17 ključeva „10K v2"), 2/2.
+- Posle `git pull --rebase` (P5-5K/HM/MAR, P7a/b; sukob samo u `byteSame.9443676.json` → uzeta verzija grane i ponovo
+  snimljeno, 17 ključeva „10K v2"): `npm run check` — 8 min 11 s — 348 fajlova, 3928 testova, 0 padova.
 - `npx vitest run --changed 72003c1` — 2 min 58 s — 157 fajlova, 1568 testova, 0 padova.
 - `npx playwright test e2e/tenk-v2.spec.ts --trace off` — 25 s — 3/3; `npm run build` — 8 s — uspešno.
 - Sabotaže — 24 s — 14/14.
