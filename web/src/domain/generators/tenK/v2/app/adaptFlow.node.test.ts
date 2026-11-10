@@ -566,16 +566,16 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       });
       expect(v2Of(saved).policyVersion, version).toBe('10k-v2.13.0');
       expect(isTenKV2Plan(saved), version).toBe(true);
-      // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (42,4 → 29,7), ned 5 = 32,7 (4.0: 27,6); ned 5 je
+      // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (P8: 41,4 → 29,0), ned 5 = 31,9 (4.0: 27,6); ned 5 je
       // izgradnja (A17 bez dejstva: ned 4 je rasterećenje).
       expect(
         v2Of(saved)
           .weeks.slice(3, 5)
           .map((w) => w.targetKm),
         version
-      ).toEqual([35.9, 32.7]); // 10K-08 (T1): 35,7 / 32,5; P5 (D37 veća T doza): 35,9 / 32,7
+      ).toEqual([35, 31.9]); // 10K-08 (T1): 35,7 / 32,5; P5 (D37 veća T doza): 35,9 / 32,7; P8 (G1a vrh ≤ start × 1,35): 35,0 / 31,9
       expect(r.reasons.find((x) => x.condition === 'PAIN')!.message, version).toContain(
-        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km).' // 10K-08 (T1): 29,5; P5: 29,7
+        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,0 km).' // 10K-08 (T1): 29,5; P5: 29,7; P8 (G1a): 29,0
       );
       // Isto prilagođavanje kao plan tekuće verzije (A15: buduće nedelje po tekućim pravilima).
       expect(v2Of(r.result), version).toEqual(v2Of(fresh.result));

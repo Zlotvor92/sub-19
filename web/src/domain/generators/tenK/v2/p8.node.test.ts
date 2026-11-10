@@ -101,7 +101,8 @@ describe('P8 G2 (D40): najniži nivo lestvice uvek staje', () => {
     const v45 = pacesFromVdot(45);
     expect(capM('RP', 15, true, v45)).toBe(2400);
     expect(capM('RP', 20, false, v45)).toBe(2400);
-    expect(capM('T', 15, true, v45)).toBe(1500);
+    // S3 (D49): plafon T početnika = max(udeo × cilj; 3,0 km) — iznad prvog nivoa (1,5 km).
+    expect(capM('T', 15, true, v45)).toBe(3000);
     expect(capM('T', 15, false, v45)).toBe(2000);
     // G4 (D43): RP ≤ 30 min rada — 15 % × 60 km = 9000 m, ali 30 min RP tempom VDOT 45 je manje.
     expect(capM('RP', 60, false, v45)).toBe(Math.floor((1800 / v45.RP) * 1000 + 1e-6));
@@ -210,7 +211,8 @@ describe('P8 dopuna: G4 minuti rada, G5 oštrenje, G1a vrh, G6, G7 test, G8 dugi
     for (const p of plans)
       for (const w of p.weeks.filter((x) => ['base', 'development', 'specific'].includes(x.phase) && !x.deload && !x.limits)) {
         const long = w.days.find((d) => d.role === 'long')!.workout.km;
-        const share = p.input.runDays.length >= 4 ? 0.7 : 0.8;
+        // S9 (STOP, do odluke organizatora): početnik ostaje na 0,80.
+        const share = p.input.runDays.length >= 4 && p.input.experience !== 'beginner' ? 0.7 : 0.8;
         for (const e of w.days.filter((d) => d.role === 'easy'))
           expect(e.workout.km).toBeLessThanOrEqual(Math.floor(share * long * 10 + 1e-9) / 10 + 1e-9);
       }

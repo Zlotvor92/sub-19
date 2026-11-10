@@ -184,7 +184,22 @@ export function describeRepeatGrid(title: string, partIndex: number): void {
               m37++;
               if (!downOnly(c.plan.weeks[k - 1]!, a.plan.weeks[k - 1]!, mon))
                 bad.push(`${b.id}/k${k}: pouka 37 — preostali dani nisu samo naniže`);
-              if (after(a.plan, k) !== after(c.plan, k))
+              // P8 (G1/G6: ravniji obim — najduži dugi plana može biti baš zaštićeni ponedeljak k): taper i trkačka nedelja
+              // čitaju najduži dugi upisanog plana (D7), pa se tada porede samo nedelje izgradnje posle k.
+              const monLong = c.plan.weeks[k - 1]!.days.find((d) => d.date === mon && d.role === 'long');
+              const longestA = Math.max(
+                0,
+                ...a.plan.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
+              );
+              const d7 = monLong !== undefined && monLong.workout.km > longestA;
+              const afterBuild = (x: TenKV2Plan) =>
+                JSON.stringify(
+                  x.weeks
+                    .slice(k)
+                    .filter((w) => w.phase !== 'taper' && w.phase !== 'race')
+                    .flatMap((w) => w.days)
+                );
+              if (d7 ? afterBuild(a.plan) !== afterBuild(c.plan) : after(a.plan, k) !== after(c.plan, k))
                 bad.push(`${b.id}/k${k}: drugi dani posle nedelje k`);
             } else if (after(a.plan, 0) !== after(c.plan, 0))
               bad.push(`${b.id}/k${k}: drugi dani od utorka`);
