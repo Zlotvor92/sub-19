@@ -633,7 +633,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.11.0',
+  version: 'hm-v2.12.0',
 
   /** H1 (dani i obim: H15). */
   input: {
@@ -729,6 +729,9 @@ export const HM_V2_POLICY = {
     longMaxSec: 8100,
     /** Upozorenje LONG_RUN_SHORT kad je najduži dugi < longWarnKm. */
     longWarnKm: 14,
+    /** G8 (P8, odluka posle STOP S2): dugi početnika sme do longReachShare cilja nedelje da bi dostigao longReachKm. */
+    longReachShare: 0.5,
+    longReachKm: 16,
     /** HI10: prvi nivo lestvice T kontinuirano početnika = najmanja T doza rasterećenja i tapera [km]. */
     tFirstKm: 1.5
   },
@@ -1073,8 +1076,10 @@ export interface PlanRule extends DayRule {
   readonly beginner: boolean;
   /** H13/H17: plafon dugog sporim E [s]. */
   readonly longMaxSec: number;
-  /** T1/G6: u nedelji izgradnje lagan ≤ ovaj udeo dugog (3 dana 0,8; 4+ dana 0,7). */
+  /** T1/G6: u nedelji izgradnje lagan ≤ ovaj udeo dugog (3 dana i početnik 0,8; redovan plan 4+ dana 0,7). */
   readonly easyLongMaxShare: number;
+  /** G8: početnik — dugi sme do `share` cilja nedelje da bi dostigao `km` (redovan plan nema polje). */
+  readonly longReach?: { readonly share: number; readonly km: number };
   /** H13/H17: upozorenje kad je najduži dugi plana < longWarnKm. */
   readonly longWarnKm: number;
   /** H6/H17: rast nedelje izgradnje i granica vrha. */
@@ -1126,7 +1131,9 @@ export function planRule(count: number, experience: 'beginner' | 'regular'): Pla
     kmMax: row.kmMax,
     beginner: true,
     longMaxSec: b.longMaxSec,
-    easyLongMaxShare: easyShare,
+    // G6 (odluka posle STOP): plan sa oznakom početnika — lagan ≤ 0,80 × dugi bez obzira na broj dana.
+    easyLongMaxShare: P.lengths.easyLongMaxShare,
+    longReach: { share: b.longReachShare, km: b.longReachKm },
     longWarnKm: b.longWarnKm,
     growth: b.growth,
     growthMinKm: b.growthMinKm,

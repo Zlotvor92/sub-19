@@ -19,6 +19,8 @@ export interface LongRule {
   readonly weekMinKm?: number;
   /** T1/G6: lagan ≤ ovaj udeo dugog u nedelji izgradnje (pravilo plana; bez polja 0,8). */
   readonly easyLongMaxShare?: number;
+  /** G8: početnik — dugi sme do `share` cilja nedelje da bi dostigao `km`. */
+  readonly longReach?: { readonly share: number; readonly km: number };
 }
 
 export interface Lengths {
@@ -79,8 +81,16 @@ export function week1LongCap10(
 }
 
 /** H13/H15: plafon dugog kao udeo cilja nedelje [0,1 km]. */
-export function longShareCap10(target10: number, rule: { longMaxShare: number }): number {
-  return Math.floor(rule.longMaxShare * target10 + EPS);
+export function longShareCap10(
+  target10: number,
+  rule: { longMaxShare: number; longReach?: { share: number; km: number } }
+): number {
+  const base = Math.floor(rule.longMaxShare * target10 + EPS);
+  // G8 (P8, STOP S2 → O2): početnik — max(udeo reda; min(50 % cilja, 16 km)); jedno mesto, validator čita isto.
+  const r = rule.longReach;
+  return r
+    ? Math.max(base, Math.min(Math.floor(r.share * target10 + EPS), Math.round(r.km * 10)))
+    : base;
 }
 
 /** H13: najduži dozvoljen dugi [0,1 km] za cilj nedelje (udeo H15, trajanje, 24 km; `roll10` — kotrljajuća

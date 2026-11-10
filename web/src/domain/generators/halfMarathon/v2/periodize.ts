@@ -132,11 +132,19 @@ export function testWeekOf(
 ): number {
   // G7 (P8): test ne ide pre nedelje 4 — nedelja testa je poslednja svoje faze po pravilu, pa kasnije nedelje iste
   // faze nema: plan u kome bi test pao ranije nema test.
-  const notEarly = (w: number): number => (w >= P.test.minWeek ? w : 0);
-  if (kind === 'feel') return notEarly(frames.map((f) => f.phase).lastIndexOf('base') + 1);
-  for (let i = frames.length - 1; i >= 0; i--)
-    if (frames[i]!.phase === 'development' && !frames[i]!.deload) return notEarly(i + 1);
-  return 0;
+  const min = P.test.minWeek;
+  const dev = frames
+    .map((f, i) => (f.phase === 'development' && !f.deload ? i + 1 : 0))
+    .filter((w) => w >= min);
+  if (kind === 'feel') {
+    // STOP S5 → O2: baza kraća od 4 nedelje (plan od 10–12 nedelja) — test u prvoj ne-rasteretnoj nedelji razvoja
+    // (≥ 4), umesto I treninga te nedelje.
+    const lastBase = frames.map((f) => f.phase).lastIndexOf('base') + 1;
+    return lastBase >= min ? lastBase : (dev[0] ?? 0);
+  }
+  // STOP S4 → O2: kontrolni test u PRETPOSLEDNJOJ ne-rasteretnoj nedelji razvoja (poslednja nosi vrh obima po G1);
+  // kad je pretposlednja pre nedelje 4 ili je nema — poslednja (≥ 4), inače bez testa.
+  return dev.length >= 2 ? dev[dev.length - 2]! : (dev[0] ?? 0);
 }
 
 /** Okviri nedelja: datumi, faza, rasterećenje; `test` (vrsta testa, testKindOf) označava nedelju testa. null kad H5
