@@ -783,6 +783,10 @@ export const MARATHON_V2_POLICY = {
     longShortKm: 26,
     /** MAR-11 (T1): izgradnja — lagan ≤ easyLongShare × dugi; najkraći lagan i ≥ easyMinSec laganim tempom. */
     easyLongShare: 0.8,
+    /** P8-G6 (marathon-v2.11.0): plan sa 4 i više dana trčanja — lagan ≤ easyLongShareMany × dugi (3 dana ostaje
+        easyLongShare). */
+    easyLongShareMany: 0.7,
+    easyLongShareManyDays: 4,
     easyMinSec: 1200
   },
 

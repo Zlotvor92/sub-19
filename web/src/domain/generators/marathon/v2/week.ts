@@ -502,10 +502,10 @@ export const TAPER_SECOND_EASY =
 /** MAR-11 (T1): napomena nedelje izgradnje čiji su lagani dani `dates` odmor (validator je čita: ROLES, T1). */
 export const EASY_REST_NOTE = 'odmor umesto laganog dana';
 export const easyRestNote = (dates: readonly string[]): string =>
-  `Nedelja izgradnje: ${EASY_REST_NOTE} (${dates.join(', ')}) — sa svim danima lagani ne bi stali u granice (najviše 0,8 × dugi, najmanje 5 km i 20 min).`;
+  `Nedelja izgradnje: ${EASY_REST_NOTE} (${dates.join(', ')}) — sa svim danima lagani ne bi stali u granice (najviše 70 % dugog, uz 3 dana trčanja 80 %; najmanje 5 km i 20 min).`;
 /** MAR-11 (T1): napomena nedelje čiji su lagani na 0,8 × dugi, planirano < cilj (validator je čita). */
 export const EASY_UNDER_NOTE =
-  'Nedelja izgradnje: planirano je manje od cilja — lagani su najviše 0,8 × dugi, a dugi se zbog toga ne produžava.';
+  'Nedelja izgradnje: planirano je manje od cilja — lagani su ograničeni prema dugom (najviše 70 % dugog, uz 3 dana trčanja 80 %), a dugi se zbog toga ne produžava.';
 /** MAR-11 (T1): datumi odmora iz napomene easyRestNote (prazno bez nje). */
 export const easyRestDates = (w: { notes: readonly string[] }): string[] => {
   const n = w.notes.find((x) => x.startsWith(`Nedelja izgradnje: ${EASY_REST_NOTE} (`));

@@ -30,6 +30,7 @@ import {
   taperLengths,
   taperLongFactor10,
   easyCap10,
+  easyLongShareOf,
   easyFloor10
 } from './lengths.ts';
 import {
@@ -616,10 +617,10 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         if (d.role === 'easy' && !protectedDay(d)) {
           const e10 = to10(d.workout.km);
           const f10 = easyFloor10(pw(w));
-          if (e10 > easyCap10(to10(long0.workout.km), f10) || e10 < f10)
+          if (e10 > easyCap10(to10(long0.workout.km), f10, rule) || e10 < f10)
             err(
               'EASY_LONG_SHARE',
-              `Lagan ${d.workout.km} km van granica nedelje izgradnje (≤ ${P.lengths.easyLongShare} × dugi ${long0.workout.km} km, ≥ ${P.lengths.easyMinKm} km i ${P.lengths.easyMinSec / 60} min).`,
+              `Lagan ${d.workout.km} km van granica nedelje izgradnje (≤ ${easyLongShareOf(rule)} × dugi ${long0.workout.km} km, ≥ ${P.lengths.easyMinKm} km i ${P.lengths.easyMinSec / 60} min).`,
               w.index,
               d.date
             );
@@ -713,7 +714,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       if (belowTargetShown(w.plannedKm, w.targetKm))
         warn(
           'PLANNED_BELOW_TARGET',
-          `Nedelja ${w.index}: planirano ${String(w.plannedKm).replace('.', ',')} km < cilj ${String(w.targetKm).replace('.', ',')} km — lagani treninzi su najviše 0,8 × dugi; preporuka: više dana trčanja ili manji obim.`,
+          `Nedelja ${w.index}: planirano ${String(w.plannedKm).replace('.', ',')} km < cilj ${String(w.targetKm).replace('.', ',')} km — lagani treninzi su najviše ${String(easyLongShareOf(rule)).replace('.', ',')} × dugi; preporuka: više dana trčanja ili manji obim.`,
           w.index
         );
     } else if (Math.abs(w.plannedKm - w.targetKm) > P.tolerance.plannedKm + EPS)
@@ -739,7 +740,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     else if (below && w.notes.includes(EASY_UNDER_NOTE))
       warn(
         'WEEK_MIN_LIMITS',
-        `Nedelja ${String(w.plannedKm).replace('.', ',')} km < ${rule.weekMinKm} km — lagani treninzi su najviše 0,8 × dugi.`,
+        `Nedelja ${String(w.plannedKm).replace('.', ',')} km < ${rule.weekMinKm} km — lagani treninzi su najviše ${String(easyLongShareOf(rule)).replace('.', ',')} × dugi.`,
         w.index
       );
     else if (below)
