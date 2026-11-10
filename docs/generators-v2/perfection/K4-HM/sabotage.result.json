@@ -1,0 +1,89 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/K4-HM/sabotage.json",
+ "head": "41e0dfa",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 12.5,
+ "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "K4-A1 3 dana bez nedelje B (bAllowed samo 4–6 dana)",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/specific.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/k4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/k4.node.test.ts",
+    "test": "K4-A1: 3 dana — blok RP u dugom, kvalitet usred nedelje lagan > p08: dve nedelje sa blokom, bez kvaliteta usred nedelje",
+    "message": "AssertionError: expected [ 'bez nedelje sa blokom' ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "8b79ca38eb8dc8271b4cd9eb746c938885bcdd800a0be1dc2973720df7ca4262",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1
+  },
+  {
+   "index": 2,
+   "name": "K4-A2 talas 0,95 × plafon umesto 0,85",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/k4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/k4.node.test.ts",
+    "test": "K4-A2: talas dugog (3 dana) > p08: 24 km tri puta (nedelje 12, 15, 18), između 20,4 km",
+    "message": "AssertionError: expected [ 'ned 14: talas 22.8', …(1) ] to deeply equal []"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "696ab3af32662af3ecc7405d794303a32343214d552eed914d19560377078dcb",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.6
+  },
+  {
+   "index": 3,
+   "name": "K4-B dan po želji bez prenosa km u ostale lagane",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/k4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/k4.node.test.ts",
+    "test": "K4-B: kratak lagan dan — „odmor ili 20 min lagano po želji\" > p06 (5 dana, 35 km, 10 ned): lagan < 30 min najviše 2 nedelje, 6 nedelja sa danom po želji",
+    "message": "AssertionError: expected 6 to be less than or equal to 2"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "c3eafaa51ab8d23da281c1921f5cde027d18a4afdcb878d5aa19e3a854411d5d",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 7.7
+  }
+ ]
+}
