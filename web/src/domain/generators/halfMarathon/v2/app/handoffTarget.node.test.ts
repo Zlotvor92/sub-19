@@ -293,7 +293,7 @@ describe('3f: format i izbor', () => {
     expect(select.shorterHandoffForV2Source(MAR_FORMAT)(21097.5)).toBe(hmV2HandoffFuture);
     expect(select.shorterHandoffForV2Source(MAR_FORMAT)(10000)).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.11.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.12.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
     const r = select.generateHmV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 12 - 1),
@@ -305,7 +305,7 @@ describe('3f: format i izbor', () => {
     });
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.11.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.12.0');
     expect(
       select.HALF_MARATHON_V2_GENERATOR.planPolicy({
         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.4.1' }
@@ -316,8 +316,8 @@ describe('3f: format i izbor', () => {
         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.5.0' }
       } as never).status
     ).toBe('current');
-    // P5: verzija u main-u (hm-v2.8.0) i P1 (hm-v2.9.0) ostaju poznate posle hm-v2.11.0.
-    for (const v of ['hm-v2.8.0', 'hm-v2.9.0', 'hm-v2.10.0'])
+    // P5: verzija u main-u (hm-v2.8.0) i P1 (hm-v2.9.0) ostaju poznate posle hm-v2.12.0.
+    for (const v of ['hm-v2.8.0', 'hm-v2.9.0', 'hm-v2.10.0', 'hm-v2.11.0'])
       expect(
         select.HALF_MARATHON_V2_GENERATOR.planPolicy({
           meta: { policyId: 'hm-v2', policyVersion: v }

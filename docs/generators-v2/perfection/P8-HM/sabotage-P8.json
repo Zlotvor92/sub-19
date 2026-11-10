@@ -124,5 +124,41 @@
   "tests": [
    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
   ]
+ },
+ {
+  "name": "P8-G8 dugi početnika bez udela 50 %",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "    longReachShare: 0.5,",
+  "replace": "    longReachShare: 0.3,",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-G6b početnik lagan 0,7 × dugi",
+  "file": "src/domain/generators/halfMarathon/v2/policy.ts",
+  "find": "    easyLongMaxShare: P.lengths.easyLongMaxShare,\n    longReach:",
+  "replace": "    easyLongMaxShare: P.lengths.easyLongMaxShare4,\n    longReach:",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-HMc test u poslednjoj nedelji razvoja",
+  "file": "src/domain/generators/halfMarathon/v2/periodize.ts",
+  "find": "  return dev.length >= 2 ? dev[dev.length - 2]! : (dev[0] ?? 0);",
+  "replace": "  return dev[dev.length - 1] ?? 0;",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
+ },
+ {
+  "name": "P8-HMc kratak plan po osećaju bez testa",
+  "file": "src/domain/generators/halfMarathon/v2/periodize.ts",
+  "find": "    return lastBase >= min ? lastBase : (dev[0] ?? 0);",
+  "replace": "    return lastBase >= min ? lastBase : 0;",
+  "tests": [
+   "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+  ]
  }
 ]

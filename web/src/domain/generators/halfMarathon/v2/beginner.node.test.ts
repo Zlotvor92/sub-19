@@ -45,6 +45,9 @@ describe('H17 pravilo plana početnika', () => {
       peakAddKm: 15,
       longMaxSec: 8100,
       longWarnKm: 14,
+      // P8 G8 (STOP S2 → O2): dugi početnika do 50 % cilja nedelje da bi dostigao 16 km.
+      longReachShare: 0.5,
+      longReachKm: 16,
       tFirstKm: 1.5
     });
     expect(planRule(3, 'beginner')).toBeNull();
@@ -176,7 +179,20 @@ describe('H17 plan početnika', () => {
   });
 
   it('upozorenje LONG_RUN_SHORT kad je najduži dugi < 14 km (redovan plan: 16 km)', () => {
-    const p = plan('b-d5-12w-30km-e330-A');
+    // P8 G8: 5 d 30 km sada dostiže ≥ 14 km (udeo do 50 %); upozorenje ostaje kod najmanjeg obima (4 d 20 km).
+    const longOf = (q: HmV2Plan): number =>
+      Math.max(
+        ...q.weeks.flatMap((x) => x.days.filter((d) => d.role === 'long').map((d) => d.workout.km))
+      );
+    const reach = plan('b-d5-12w-30km-e330-A');
+    expect(longOf(reach)).toBeGreaterThanOrEqual(14);
+    for (const w of reach.weeks.filter((x) => x.phase !== 'race')) {
+      const l = w.days.find((d) => d.role === 'long')!.workout.km;
+      expect(l).toBeLessThanOrEqual(
+        Math.max(0.32 * w.targetKm, Math.min(0.5 * w.targetKm, 16)) + 1e-9
+      );
+    }
+    const p = plan('b-d4-12w-20km-e330-A');
     const w = p.warnings.find((v) => v.rule === 'LONG_RUN_SHORT')!;
     expect(w.message).toContain('< 14 km (H17)');
     const longest = Math.max(

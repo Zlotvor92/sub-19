@@ -419,11 +419,7 @@ export function checkPlan(
           d.workout.segments.some((x) => x.kind === 'stride')
             ? Math.round(d.workout.km * midE)
             : d.workout.sec;
-        if (
-          ed.some(
-            (d) => to10(d.workout.km) * 10 > easyTenths() * long + EPS || sec(d) < 1200
-          )
-        )
+        if (ed.some((d) => to10(d.workout.km) * 10 > easyTenths() * long + EPS || sec(d) < 1200))
           no('EASY_BUILD', tag);
       }
       // H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km); broj dana nedelje = broj dana trčanja.
@@ -589,12 +585,7 @@ export function checkPlan(
       const hard2 = w.days.filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test');
       // Izuzetak: dugi na svom plafonu (udeo, 150 min, 24 km, pouka 28) — nedelja sa jednim kvalitetom bi imala
       // lagane duže od dugog (pouka 2), pa ostaju dva kvaliteta (upozorenje pouke 14).
-      const cap2 = Math.min(
-        shareCap10(to10(w.targetKm)),
-        time10,
-        LONG_MAX10,
-        roll10(w.index)
-      );
+      const cap2 = Math.min(shareCap10(to10(w.targetKm)), time10, LONG_MAX10, roll10(w.index));
       if (lw2 && hard2.length === 2 && hard2.some((d) => d.workout.sec > lw2.workout.sec)) {
         // P8 G6: dugi ispod plafona jer su lagani na najmanjoj dužini (20 min) — nedelja sa jednim kvalitetom bi
         // imala lagane duže od 0,7 × dugi, pa ostaju dva kvaliteta.
@@ -764,8 +755,7 @@ export function checkPlan(
     const t1 =
       l1 !== null &&
       w1.days.some(
-        (d) =>
-          d.role === 'easy' && to10(d.workout.km) === Math.floor((easyTenths() * l1) / 10)
+        (d) => d.role === 'easy' && to10(d.workout.km) === Math.floor((easyTenths() * l1) / 10)
       );
     if (l1 !== abs && !t1) {
       st.week1BelowNotTime++;

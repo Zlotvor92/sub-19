@@ -44,7 +44,9 @@ describe('P5-F1: kontrolni test u planu sa rezultatom', () => {
         continue;
       }
       n++;
-      const lastDev = plan.weeks.filter((w) => w.phase === 'development' && !w.deload).pop()!;
+      // STOP S4: pretposlednja ne-rasteretna nedelja razvoja ≥ 4 (inače poslednja) — ime `lastDev` = nedelja testa.
+      const devs = plan.weeks.filter((w) => w.phase === 'development' && !w.deload && w.index >= 4);
+      const lastDev = devs.length >= 2 ? devs[devs.length - 2]! : devs[0]!;
       expect(tests.map((w) => w.index)).toEqual([lastDev.index]);
       const t = lastDev.days.find((d) => d.role === 'test')!;
       expect(t.weekday).toBe(plan.pattern.q1);
@@ -74,9 +76,10 @@ describe('P5-F1: kontrolni test u planu sa rezultatom', () => {
       .slice(tw.index)
       .find((w) => isBuild(w) && !w.deload)!
       .days.find((d) => d.role === 'q1')!.workout.dose!;
+    // STOP S4: posle testa sledi još jedna nedelja razvoja — I se nastavlja od stanja pre testa (ne pada).
     expect(before.zone).toBe('I');
-    expect(after.zone).toBe('RP');
-    expect(after.step).toBe('transition');
+    expect(after.zone).toBe('I');
+    expect(['next', 'alt', 'repeat']).toContain(after.step);
     expect(after.doseM).toBeGreaterThanOrEqual(before.doseM);
   });
 

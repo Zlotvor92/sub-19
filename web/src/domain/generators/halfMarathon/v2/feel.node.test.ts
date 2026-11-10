@@ -52,9 +52,12 @@ describe('H16 tempo po osećaju', () => {
     expect(p.notes[0]).toContain('Plan po osećaju (H16): bez rezultata trke');
     expect(p.notes[1]).toContain('Test 5 km: nedelja 5, 2026-12-01 (H16)');
     // P8 G7: plan od 10–12 nedelja nema test (pao bi pre nedelje 4) — napomena plana to kaže.
+    // STOP S5: plan od 10–12 nedelja (baza 3 nedelje) — test u prvoj ne-rasteretnoj nedelji razvoja (nedelja 4).
     const short = plan('f-d4-12w-40km-e360-A');
-    expect(short.weeks.some((w) => w.test)).toBe(false);
-    expect(short.notes[1]).toContain('Plan je prekratak za test 5 km');
+    const st = short.weeks.filter((w) => w.test);
+    expect(st.map((w) => [w.index, w.phase, w.deload])).toEqual([[4, 'development', false]]);
+    expect(st[0]!.days.filter((d) => d.workout.kind === 'quality')).toEqual([]);
+    expect(short.notes[1]).toContain('Test 5 km: nedelja 4');
     expect(p.notes[1]).toContain('Ciljno vreme se ocenjuje posle rezultata');
     expect(p.warnings.filter((w) => w.severity === 'error')).toEqual([]);
   });
@@ -90,9 +93,10 @@ describe('H16 tempo po osećaju', () => {
     const tw = p12.weeks.filter((w) => w.days.some((d) => d.role === 'test'));
     expect(tw.map((w) => [w.phase, w.deload, w.test])).toEqual([['development', false, true]]);
     expect(p12.weeks.some((w) => w.days.some((d) => d.workout.rpe))).toBe(false);
+    // STOP S4: pretposlednja ne-rasteretna nedelja razvoja (posle testa ostaje tačno jedna).
     expect(
       p12.weeks.filter((w) => w.phase === 'development' && !w.deload && w.index > tw[0]!.index)
-    ).toEqual([]);
+    ).toHaveLength(1);
     expect(Object.keys(p.input)).toEqual([
       'startDate',
       'raceDate',
@@ -110,15 +114,17 @@ describe('H16 test 5 km', () => {
     for (let n = 10; n <= 20; n++) {
       const ph = phasesOf(n);
       const fr = ph.map((phase) => ({ phase, deload: false }));
-      // P8 G7: test ne ide pre nedelje 4 — plan od 10–12 nedelja (baza 3 nedelje) nema test.
+      // P8 G7 + STOP S5: test ne ide pre nedelje 4 — plan od 10–12 nedelja (baza 3 nedelje): prva nedelja razvoja (4).
       const lastBase = ph.lastIndexOf('base') + 1;
-      expect(testWeekOf(fr, 'feel')).toBe(lastBase >= 4 ? lastBase : 0);
+      const want = lastBase >= 4 ? lastBase : 4;
+      expect(testWeekOf(fr, 'feel')).toBe(want);
       expect(lastBase >= 4).toBe(n >= 13);
+      expect(ph[want - 1]).toBe(lastBase >= 4 ? 'base' : 'development');
       expect(
         periodize('2026-11-02', n, 'feel')!
           .filter((f) => f.test)
           .map((f) => f.index)
-      ).toEqual(lastBase >= 4 ? [lastBase] : []);
+      ).toEqual([want]);
       expect(periodize('2026-11-02', n)!.some((f) => f.test)).toBe(false);
     }
   });

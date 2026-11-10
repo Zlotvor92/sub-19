@@ -143,8 +143,8 @@ describe('pouka 7', () => {
       PAUSE: true,
       // P5-F2: preskočeni zahtevni dani (pokrivenost bez zapisa) — ispod bola i pauze, ne primenjuje se.
       QUALITY_STRAIN: false,
-      // P5-F1: test plana sa rezultatom u nedelji pauze se premešta (A13).
-      TEST_MOVED: true,
+      // STOP S4: kontrolni test je u pretposlednjoj ne-rasteretnoj nedelji razvoja — nije u nedelji ove pauze (bilo:
+      // TEST_MOVED).
       UNDER_EXECUTION: false
     });
     const r2 = adapt(
@@ -163,9 +163,8 @@ describe('pouka 7', () => {
     expect(Object.fromEntries(r2.reasons.map((x) => [x.condition, x.applied]))).toEqual({
       PAIN: true,
       FATIGUE: true,
-      // P5-F1: test plana sa rezultatom u nedelji prinudnog rasterećenja se premešta (A13). P5-F2: zahtevni dani sa 30 %
-      // obima su odrađeni, RPE < 9 — bez okidača.
-      TEST_MOVED: true,
+      // STOP S4: kontrolni test je u pretposlednjoj ne-rasteretnoj nedelji razvoja — nije u nedelji ovog prinudnog
+      // rasterećenja (bilo: TEST_MOVED). P5-F2: zahtevni dani sa 30 % obima su odrađeni, RPE < 9 — bez okidača.
       UNDER_EXECUTION: false
     });
   });

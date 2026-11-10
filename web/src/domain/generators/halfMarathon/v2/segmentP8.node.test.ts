@@ -210,7 +210,8 @@ describe('P8-G6: lagan dan prema dugom', () => {
         if (w.targetKm <= rule.weekMinKm) continue;
         const long = w.days.find((d) => d.role === 'long')!.workout.km;
         for (const d of w.days.filter((x) => x.role === 'easy')) {
-          const share = days >= 4 ? 0.7 : 0.8;
+          // Odluka posle STOP: plan sa oznakom početnika 0,80 bez obzira na broj dana.
+          const share = days >= 4 && !beginner(plan) ? 0.7 : 0.8;
           expect(d.workout.km, `${id} ned ${w.index}`).toBeLessThanOrEqual(
             Math.floor(share * long * 10 + 1e-9) / 10
           );
@@ -231,11 +232,8 @@ describe('P8-G7: nedelja testa', () => {
       const tw = plan.weeks.filter((w) => w.days.some((d) => d.role === 'test'));
       expect(tw.length, id).toBeLessThanOrEqual(1);
       if (tw.length === 0) {
-        if (plan.paceBasis === 'feel' && !beginner(plan)) {
-          none++;
-          expect(plan.weeks.length, id).toBeLessThanOrEqual(12);
-          expect(plan.notes.join(' '), id).toContain('Plan je prekratak za test');
-        }
+        // STOP S5: plan po osećaju koji nije početnik uvek ima test (10–12 nedelja: prva nedelja razvoja).
+        if (plan.paceBasis === 'feel' && !beginner(plan)) none++;
         continue;
       }
       tests++;
@@ -246,7 +244,7 @@ describe('P8-G7: nedelja testa', () => {
       ).toEqual([]);
     }
     expect(tests).toBeGreaterThan(100);
-    expect(none).toBeGreaterThan(0);
+    expect(none).toBe(0);
   });
 });
 
@@ -303,5 +301,56 @@ describe('P8-G3: tekst za trkača', () => {
       expect(t.notes.join(' '), id).toContain('najmanja doza u trkačkom tempu');
     }
     expect(floor).toBeGreaterThan(0);
+  });
+});
+
+describe('P8 završetak (hm-v2.12.0): odluke po STOP-u', () => {
+  it('G8: dugi početnika ≤ max(udeo reda; min(50 % cilja, 16 km)) i u uzorku prelazi udeo reda', () => {
+    let over = 0;
+    let reach16 = 0;
+    for (const { id, plan } of plans.filter((x) => beginner(x.plan))) {
+      const row = planRule(plan.input.runDays.length, 'beginner')!.longMaxShare;
+      let longest = 0;
+      for (const w of plan.weeks.filter((x) => x.phase !== 'race')) {
+        const l = w.days.find((d) => d.role === 'long')!.workout.km;
+        longest = Math.max(longest, l);
+        expect(l, `${id} ned ${w.index}`).toBeLessThanOrEqual(
+          Math.max(row * w.targetKm, Math.min(0.5 * w.targetKm, 16)) + 1e-9
+        );
+        if (l > row * w.targetKm + 0.05) over++;
+      }
+      if (longest >= 16) reach16++;
+    }
+    expect(over).toBeGreaterThan(0);
+    expect(reach16).toBeGreaterThan(0);
+  });
+
+  it('G6 početnik: lagan ≤ 0,80 × dugi; planirani vrh nije ispod 0,9 × granice vrha', () => {
+    for (const { id, plan } of plans.filter((x) => beginner(x.plan))) {
+      const peak = Math.max(
+        ...plan.weeks.filter((w) => isBuild(w) && !w.deload).map((w) => w.plannedKm)
+      );
+      expect(peak, id).toBeGreaterThanOrEqual(0.9 * plan.peakCapKm);
+    }
+  });
+
+  it('mesto testa: plan sa rezultatom — pretposlednja ne-rasteretna nedelja razvoja (≥ 4); po osećaju 10–12 ned — prva nedelja razvoja', () => {
+    let result = 0;
+    let shortFeel = 0;
+    for (const { id, plan } of plans.filter((x) => !beginner(x.plan))) {
+      const tw = plan.weeks.find((w) => w.days.some((d) => d.role === 'test'));
+      const dev = plan.weeks.filter((w) => w.phase === 'development' && !w.deload && w.index >= 4);
+      if (plan.paceBasis !== 'feel') {
+        if (plan.weeks.length < 12) continue;
+        result++;
+        expect(tw!.index, id).toBe(dev.length >= 2 ? dev[dev.length - 2]!.index : dev[0]!.index);
+      } else if (plan.weeks.length <= 12) {
+        shortFeel++;
+        expect(tw!.index, id).toBe(dev[0]!.index);
+        expect(tw!.phase, id).toBe('development');
+      } else expect(tw!.phase, id).toBe('base');
+    }
+    expect(result).toBeGreaterThan(50);
+    expect(shortFeel).toBeGreaterThan(0);
   });
 });

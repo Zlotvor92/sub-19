@@ -628,6 +628,31 @@ const DECISIONS: readonly Decision[] = [
     place:
       'week.ts TEST_NOTE, RESULT_TEST_NOTE, napomene bloka i tapera; userText.ts PLAIN; generate.ts (napomena plana bez testa)',
     rationale: 'Odluka organizatora P8, nalaz slepe ocene (jasnoća teksta 3–6 / 10).'
+  },
+  /* ---------- P8 završetak (hm-v2.12.0): odluke organizatora po reports/P8-HM-STOP.md (10. 11. 2026). ---------- */
+  {
+    id: 'P8-G8',
+    rule: 'Dugi početnika do distance (STOP S2 → O2): plafon udela dugog početnika = max(udeo reda H15; min(50 % cilja nedelje, 16 km)) u svim nedeljama; ostale granice dugog ostaju (135 min, 24 km, skok pouke 28, lagani ≥ 4 km i ≥ 20 min, dugi rasterećenja 0,8 ×, tapera 0,6 ×).',
+    place:
+      'policy.ts beginner.longReachShare, longReachKm, planRule.longReach; lengths.ts longShareCap10 (jedno mesto; validator LONG_SHARE i konstruktor čitaju istu funkciju); gridInvariants.ts (nezavisno)',
+    rationale:
+      'Heuristika, odluka organizatora P8 po nalazu glavnog trenera (početnik 11 km najduži dugi pred polumaraton). Merenje (mreža početnika 1890): najduži dugi ≥ 16 km 792 → 1326, ≥ 14 km 1239 → 1680, 0 odbijanja.'
+  },
+  {
+    id: 'P8-G6b',
+    rule: 'Plan sa oznakom početnika: lagan ≤ 0,80 × dugi bez obzira na broj dana (0,70 važi samo za redovan plan sa 4 i više dana).',
+    place:
+      'policy.ts planRule (easyLongMaxShare početnika); lengths.ts buildEasyCap10 čita pravilo plana',
+    rationale:
+      'Odluka organizatora posle STOP-a: početnik sa 4–5 dana uz 0,70 gubi planirani obim (planirani vrh < 0,9 × granice vrha: 51 → 0 od 1890 planova).'
+  },
+  {
+    id: 'P8-HMc',
+    rule: 'Mesto testa (STOP S4, S5 → O2): kontrolni test plana sa rezultatom je u PRETPOSLEDNJOJ ne-rasteretnoj nedelji razvoja (poslednja nosi vrh obima po G1); kad je pretposlednja pre nedelje 4 ili je nema — poslednja (≥ 4). Plan po osećaju: poslednja nedelja baze, a kad je ona pre nedelje 4 (priprema 10–12 nedelja) — prva ne-rasteretna nedelja razvoja (≥ 4), umesto I treninga. Uvek jedini kvalitet te nedelje (G7).',
+    place:
+      'periodize.ts testWeekOf (jedina odluka nedelje testa); validate.ts TEST (ista funkcija); gridInvariants.ts (nezavisno)',
+    rationale:
+      'Odluka organizatora posle STOP-a. Merenje: test u nedelji najvećeg cilja obima 84 / 112 → 17 / 128 planova mreže P0; planova po osećaju bez testa 1728 → 0 od 6336.'
   }
 ];
 

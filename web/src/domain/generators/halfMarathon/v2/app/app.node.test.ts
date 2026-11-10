@@ -387,6 +387,7 @@ describe('V1b: izbor i rutiranje po oznaci politike (samo v2)', () => {
         'hm-v2.8.0',
         'hm-v2.9.0',
         'hm-v2.10.0',
+        'hm-v2.11.0',
         VERSION
       ])
     ]);

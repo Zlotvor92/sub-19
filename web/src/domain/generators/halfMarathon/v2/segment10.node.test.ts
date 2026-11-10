@@ -56,8 +56,10 @@ describe('HM-10 T1: lagan prema dugom u nedeljama izgradnje', () => {
   it('manje laganih dana kad najkraći lagan ne staje ispod 0,8 × dugi (16 km, 3 lagana → 2, dugi se ne podiže iznad svog plafona)', () => {
     // T1 sa udelom 0,8 (pravilo 3 dana); P8 G6: 4+ dana 0,7 — tada ova nedelja (na minimumu 16 km) ide po izuzetku
     // t1MinWeek sa sva 3 lagana dana.
-    const rule7 = planRule(4, 'beginner')!;
+    // Odluka posle STOP: početnik 0,80 bez obzira na broj dana; redovan plan 4+ dana 0,70.
+    const rule7 = planRule(4, 'regular')!;
     expect(rule7.easyLongMaxShare).toBe(0.7);
+    expect(planRule(4, 'beginner')!.easyLongMaxShare).toBe(0.8);
     expect(planRule(3, 'regular')!.easyLongMaxShare).toBe(0.8);
     const rule = { ...rule7, easyLongMaxShare: 0.8 };
     const p = pacesFromVdot(35);

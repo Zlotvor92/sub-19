@@ -1,13 +1,13 @@
 {
  "input": "/home/user/sub-19/docs/generators-v2/perfection/P8-HM/sabotage-P8.json",
- "head": "e5c05b86",
+ "head": "1daf0bd3",
  "level": "brz",
  "bail": true,
  "parallel": 1,
  "vitestArgs": [],
- "durationS": 41.8,
- "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
- "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "durationS": 55.5,
+ "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+ "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
  "ok": true,
  "results": [
   {
@@ -27,9 +27,9 @@
     "message": "AssertionError: d3-14w-45km-v35-A-sun ned 12 RP: expected 2824 to be less than or equal to 2703"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "fc4642ee4609d6f020000be3b17fbfe0cd0f2611a71eb416f3f41484a447eb44",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "8e4ddd3e108cff002720f921a56230d8750f986d950d76861fd3df8418cd10fe",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
@@ -49,12 +49,12 @@
    "firstFailed": {
     "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
     "test": "P8-G4: plafon jednog treninga u minutima rada > T ≤ 30 min (cilj ≥ 80 km: 40), I ≤ 20 min za VDOT < 40 inače 24, RP usred nedelje ≤ 45 min — ili prvi nivo lestvice",
-    "message": "AssertionError: d4-20w-45km-v40-C-sun ned 11 T: expected 1836 to be less than or equal to 1803"
+    "message": "AssertionError: d4-20w-45km-v40-C-sun ned 16 T: expected 1836 to be less than or equal to 1803"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "166ce5b384ab58e4e49bf67d529bc2c34df6a376dd8b327af7323b6a700316cf",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "423278f3f77835b022e89987a2e50da664be5ec98919a401bf0e24d76aaef549",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
@@ -77,13 +77,13 @@
     "message": "AssertionError: d3-10w-25km-v30-A-sat: expected 1366 to be less than or equal to 722"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "bb51dbd667248c7f5e4e51472d72a45fa370e5e856a668109cc0521b752c0362",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "c7a49f977c750e64e7a4f5c8f5ece2af62fad2d46fcfe04f56f5563b14db4d19",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.3
+   "durationS": 3
   },
   {
    "index": 4,
@@ -102,13 +102,13 @@
     "message": "AssertionError: expected 4800 to be less than or equal to 2400.000001"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "7682f4abcebcddd603a2ac1ec619228cb1649f72e78a7684fcf6b73370f099f5",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "3864aa17aeefbdf191e5b1e8e568b0697eca64b3cb0c79201759dc71ffd94170",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.2
+   "durationS": 3.1
   },
   {
    "index": 5,
@@ -127,13 +127,13 @@
     "message": "AssertionError: d3-10w-25km-v30-A-sat: expected 35 to be less than or equal to 32.500001"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "1ab54f84f215ae6602b8c1d466295f5f1dea6c1d29770867ddf49a35ad9f0805",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "88fd76b255a1ad70bbbe9946a114017b36b940a45c93cdbb5b6f33db34ab9713",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3
+   "durationS": 3.3
   },
   {
    "index": 6,
@@ -152,13 +152,13 @@
     "message": "AssertionError: d4-10w-60km-v30-A-sat: expected 70 to be less than or equal to 60.000001"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "0e64030dba943fa05f1805982af3e9cb8945be2ea64256971c94bae9f56b4af5",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "e0cc38e4e83826f7470b44099e5c918baada0fb0a0902e5ae6cd8b6ee435e198",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.8
+   "durationS": 3.9
   },
   {
    "index": 7,
@@ -177,13 +177,13 @@
     "message": "AssertionError: d3-10w-25km-v30-A-sat ned 7: expected 0.6999999999999993 to be greater than or equal to 0.9029999999999999"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "247d521d865570538c3dd336d3c31c9fa0fe99b8c8a6e5b779b66a2c460f997c",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "987d8ab1befcab6fdab22f47658d6d1f975ed8efde4c4fb74bc8f5c1db3cd4ba",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.2
+   "durationS": 3
   },
   {
    "index": 8,
@@ -202,9 +202,9 @@
     "message": "AssertionError: d3-17w-45km-v45-A-sun: expected 5 to be greater than or equal to 9"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "08cc15ddccd93127acd0d203b8333ca6573bc53fc9c7990f64b2c3193335205c",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "b861fe3b7d6cff6ebecfb6b1db94a135722ed2100324aa74e474deb5e128278a",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
@@ -227,13 +227,13 @@
     "message": "d3-10w-25km-v30-A-sat: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ZONE_CAP: RP 4000 m > 15 % cilja 22.3 km (H11).\",\"week\":9}]"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "ac0a93b4e4df16efafb0af9ee04ad8ba03e2f9e6d314310a49d5ca66f5a2f22d",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "c863adbe3d6aa8541912457825cefdaac31e8a619c9b6a3bafd5aaf6a288ee73",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 1
+   "durationS": 0.9
   },
   {
    "index": 10,
@@ -252,13 +252,13 @@
     "message": "AssertionError: d4-10w-60km-v30-A-sat ned 1: expected 14.2 to be less than or equal to 12.4"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "fb2df8a5aeff889bf620aa01eb68cf2acbd4b9df60ae37363faffeefb2d643b9",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "e0711473a8a0dcce49c633c6e9c167a54f84029ef54b0c8d2c785bae100abb15",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 2.9
+   "durationS": 2.7
   },
   {
    "index": 11,
@@ -274,12 +274,12 @@
    "firstFailed": {
     "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
     "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
-    "message": "d4-12w-30km-v70-A-sun: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ROLES: Dani easy@sat, long@sun, q2@thu, test@tue ≠ šablon easy@sat, easy@thu, long@sun, test@tue (H9).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"SLOT_REPEAT: q2: ista doza iste strukture, a druga struktura postoji (H12).\",\"week\":8}]"
+    "message": "d4-12w-30km-v70-A-sun: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ROLES: Dani easy@sat, long@sun, q2@thu, test@tue ≠ šablon easy@sat, easy@thu, long@sun, test@tue (H9).\",\"week\":4},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"DOSE_STALL: q2: sledeći nivo 3200 m staje u plafon, a nije uzet (H12).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"SLOT_REPEAT: q2: ista doza iste strukture, a druga struktura postoji (H12).\",\"week\":6}]"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "ff663bcb5a2bf435aa12ad467b560025dc263fdfe0f427796dd967b95dbf5fd8",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "7bee1eefb2c489ed4d2cc12b9459140cb592b7261728c63cd9c859660e5d8403",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
@@ -302,13 +302,13 @@
     "message": "AssertionError: f-d3-10w-25km-e270-A: expected 3 to be greater than or equal to 4"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "bcef6be31cd6348209afc86ffe2865cf6441865213d6008e64bdd0b667b06741",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "120573250f0cf64bca160c2371437c9b88ea833994b3d02a619c99471e12e541",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.3
+   "durationS": 3.1
   },
   {
    "index": 13,
@@ -327,13 +327,13 @@
     "message": "AssertionError: d4-13w-30km-v40-A-sat ned 11: expected 0.25851456709068527 to be less than or equal to 0.222"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "c0b357ec5b5912abd33b33bbe206ba50dfea743ef9b270f17e1d8a4a2825d930",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "c56ddaa4ff2963428104d919baba5d550337bac641451917cc4bbad9dc049a60",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
-   "durationS": 3.3
+   "durationS": 3.4
   },
   {
    "index": 14,
@@ -349,16 +349,116 @@
    "firstFailed": {
     "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
     "test": "P8-G3: tekst za trkača > tekst koji korisnik vidi nema interne oznake ni reči sastavljanja",
-    "message": "AssertionError: f-d3-14w-35km-e270-B: Test 5 km: kontrolisano maksimalno posle zagrevanja — rezultat koristi adaptacija, do tada tempo ostaje procena.: expected true to be false // Object.is equality"
+    "message": "AssertionError: f-d3-10w-25km-e270-A: Test 5 km: kontrolisano maksimalno posle zagrevanja — rezultat koristi adaptacija, do tada tempo ostaje procena.: expected true to be false // Object.is equality"
    },
    "failedCount": 1,
-   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
-   "hashSabotaged": "60c14aab916a816123fe7c78b1876c71afc302e49552fe33f9552d1bf3ba7584",
-   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "dbc04636f11c77d39cc78f966802ca905ac43944705c08fbe007600c0748e73b",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.7
+  },
+  {
+   "index": 15,
+   "name": "P8-G8 dugi početnika bez udela 50 %",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8 završetak (hm-v2.12.0): odluke po STOP-u > G8: dugi početnika ≤ max(udeo reda; min(50 % cilja, 16 km)) i u uzorku prelazi udeo reda",
+    "message": "AssertionError: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "29eacc746bc70427170b6cf1d7e48e5922952e31e6c2846b299884f05d0c6980",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.4
+  },
+  {
+   "index": 16,
+   "name": "P8-G6b početnik lagan 0,7 × dugi",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8 završetak (hm-v2.12.0): odluke po STOP-u > G6 početnik: lagan ≤ 0,80 × dugi; planirani vrh nije ispod 0,9 × granice vrha",
+    "message": "AssertionError: b-d4-15w-40km-e510-C: expected 45.92 to be greater than or equal to 47.61"
+   },
+   "failedCount": 1,
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "763ebd272a53c6ddf800af3ba2eab34db30493e30f5018c8e84ff3af846b868f",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
    "restored": true,
    "error": null,
    "vitestExit": 1,
    "durationS": 3.5
+  },
+  {
+   "index": 17,
+   "name": "P8-HMc test u poslednjoj nedelji razvoja",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8 završetak (hm-v2.12.0): odluke po STOP-u > mesto testa: plan sa rezultatom — pretposlednja ne-rasteretna nedelja razvoja (≥ 4); po osećaju 10–12 ned — prva nedelja razvoja",
+    "message": "AssertionError: d3-12w-25km-v35-B-sat: expected 6 to be 4 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "59a95ab34cb64b965d684cd6dfa76728b1d82542f2c30625e5ac33def311e575",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.4
+  },
+  {
+   "index": 18,
+   "name": "P8-HMc kratak plan po osećaju bez testa",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/periodize.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G7: nedelja testa > test je jedini kvalitet nedelje i ne ide pre nedelje 4; plan u kome bi pao ranije nema test (napomena)",
+    "message": "AssertionError: expected 25 to be +0 // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "hashSabotaged": "bd2045ded669950bf5c0d76c38061b5724ee66fc22c18ccb80b3829a772d0056",
+   "hashAfter": "1953d830c7aa6bf58f640214d21def9a5dccdf11fa44df74c683707bc312c172",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.6
   }
  ]
 }
