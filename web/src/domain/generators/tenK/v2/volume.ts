@@ -116,8 +116,9 @@ export function growth10(last10: number, rule: PlanRule): number {
 }
 
 /** G1 (P8): broj ne-rasteretnih nedelja izgradnje od nedelje `index` (uključujući nju) do kraja faze razvoja
-    (baza i razvoj); 0 = nedelja posle razvoja (specifična faza, taper, trka) ili plan bez razvoja. Okviri kakve
-    konstruktor gradi (i adaptacija, posle novog starta) — validator čita iste iz nedelja plana. */
+    (baza i razvoj); 0 = nedelja posle razvoja (specifična faza, taper, trka) ili plan bez razvoja. Okviri = OSNOVNA
+    periodizacija ulaza (periodize, bez koraka adaptacije) u konstruktoru i validatoru — korak prošle nedelje ne zavisi
+    od kasnijeg novog starta ili prinudnog rasterećenja (prošlost adaptiranog plana = upisano). */
 export function buildWeeksLeft(
   frames: readonly { index: number; phase: string; deload: boolean }[],
   index: number

@@ -305,8 +305,9 @@ export function construct(
       continue;
     }
     if (av) h = enterWeek(h, frame, av, rule);
-    // G1 (P8): rast do kraja razvoja (preostale ne-rasteretne nedelje izgradnje okvira).
-    const left = buildWeeksLeft(frames, frame.index);
+    // G1 (P8): rast do kraja razvoja — preostale ne-rasteretne nedelje izgradnje OSNOVNE periodizacije ulaza (bez
+    // koraka adaptacije: nov start i prinudno rasterećenje ne menjaju korak prošlih nedelja, prošlost = upisano).
+    const left = buildWeeksLeft(base, frame.index);
     const { nominal, downOnly } = av
       ? adaptNominal10(frame, h, start10, rule, av, left)
       : { nominal: nominal10(frame, h, start10, cap10, rule, left), downOnly: false };

@@ -1428,9 +1428,11 @@ export function validatePlan(
       );
       const nQuality = w.days.filter((d) => d.workout.kind === 'quality').length;
       const nTest = w.days.filter((d) => d.workout.kind === 'test').length;
-      if (noneQ(w)) {
+      // D28: uvod početnika (prinudno rasterećenje u nedelji uvoda, A5) je bez kvaliteta — od P8 (G2, D40) T 1,5 km staje u
+      // plafon, pa izuzetak uvoda više ne pokriva odstupanje D11 ispred D5.
+      if (noneQ(w) || (rule.beginner && w.index <= rule.introWeeks)) {
         if (nQuality !== 0 || nTest !== 0)
-          err('DELOAD_CONTENT', 'Rasterećenje bez kvaliteta (adaptacija, A3/A4/A9).', w.index);
+          err('DELOAD_CONTENT', 'Rasterećenje bez kvaliteta (adaptacija, A3/A4/A9; uvod početnika D28).', w.index);
       }
       // D27: u nedelji testa test zamenjuje kvalitet rasterećenja (bez plafona D11).
       else if (w.test) {
@@ -1894,8 +1896,8 @@ export function validatePlan(
     }
     const lastBuild = h.lastBuild10;
     const peak = h.peak10;
-    // G1 (P8): preostale ne-rasteretne nedelje izgradnje do kraja razvoja iz nedelja plana.
-    const left = buildWeeksLeft(weeks, w.index);
+    // G1 (P8): preostale ne-rasteretne nedelje izgradnje do kraja razvoja — osnovna periodizacija ulaza (kao konstruktor).
+    const left = buildWeeksLeft(base0 ?? weeks, w.index);
     const { nominal, downOnly } = av
       ? adaptNominal10(w, h, start10, rule, av, left)
       : {
