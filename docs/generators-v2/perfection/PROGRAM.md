@@ -399,3 +399,9 @@ Plan P9 (do kraja):
 - ZA VLASNIKA (proizvodna odluka, ne ugrađuje se bez njega): maraton za početnika ispod ~35 km/ned — odbiti
   generisanje sa preporukom HM/duže pripreme, ili ostaviti plan sa rečenicom preporuke (sadašnje stanje).
 - `check:full` na `3399773` je u toku kao međuprovera; pre mergea se ponavlja na završnom vrhu.
+
+### 11. 11. 2026, 00:00 — check:full na stanju posle K3: zeleno
+
+- `npm run check:full` (organizator, na `3399773` + samo docs): typecheck, lint, format ✔; pun nivo 441 fajl / 3928
+  testova, 0 padova, 63 min. Ovo je međuprovera — ponavlja se na završnom vrhu posle K4.
+- Upozorenje nedeljnog limita (seven_day allowed_warning) vidljivo na oba K4 taba od 23:15.
