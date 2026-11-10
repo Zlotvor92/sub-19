@@ -777,6 +777,10 @@ export const TEN_K_V2_POLICY = {
     ] as readonly { fromKm: number; share: number }[]
   },
 
+  /** G4 (P8 dopuna, D43): plafon jednog treninga u minutima rada (tempo zone te nedelje). Čita se samo kroz
+      quality.minutesCapSec (deo jedinog plafona zone capM). */
+  minutesCap: { tMin: 30, tBigMin: 40, tBigFromKm: 80, iMin: 24, iSlowMin: 20, iSlowBelowVdot: 40, rpMin: 30 },
+
   /** D13 (udeo dugog: D17). */
   lengths: {
     longMaxSec: 6300,

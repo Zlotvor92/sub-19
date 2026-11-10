@@ -268,7 +268,7 @@ export function buildWeek(
   if (ctx.specB === 'B') return null;
   const a = one(false);
   const i = quality.i;
-  const m = i ? maintainIDoseM(i.doseM, target10 / 10) : null;
+  const m = i ? maintainIDoseM(i.doseM, target10 / 10, ctx.paces) : null;
   const why = !i
     ? 'nema I doze razvoja'
     : m === null
@@ -329,7 +329,7 @@ function buildWeekOf(
     const t0 =
       test || !qDay0
         ? null
-        : pickDeload(quality, frame.phase, targetKm, rule, ref ? ref.tDoseM : null);
+        : pickDeload(quality, frame.phase, targetKm, rule, p, ref ? ref.tDoseM : null);
     // A5 (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28) — obim rasterećenja, sadržaj uvoda
     // (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost.
     const intro = frame.index <= rule.introWeeks;
@@ -392,6 +392,7 @@ function buildWeekOf(
             quality,
             targetKm,
             rule,
+            p,
             relax || mode === 'one',
             ctx.keepTaperQuality === true
           );
@@ -462,7 +463,7 @@ function buildWeekOf(
     if (mode === 'one') {
       const slot = deloadSlot(rule.quality);
       const wd = oneQualityDay(frame, pat, slot === 'q1' ? pat.q1 : pat.q2!);
-      const d = wd ? pickDeload(quality, frame.phase, targetKm, rule) : null;
+      const d = wd ? pickDeload(quality, frame.phase, targetKm, rule, ctx.paces) : null;
       if (!d || !wd) return null;
       one = { dose: d, day: wd };
     }
