@@ -162,7 +162,8 @@ describe('D9: raspored nedelje', () => {
             w.days.find((d) => d.weekday === wd)?.role;
           // D35 (P5 F1): u nedelji kontrolnog testa test je na danu Q1.
           expect(role(pat.q1)).toBe(w.test ? 'test' : 'q1');
-          if (pat.q2) expect(role(pat.q2)).toBe('q2');
+          // P8 G7 (D46): u nedelji testa drugi dan kvaliteta je lagan.
+          if (pat.q2) expect(role(pat.q2)).toBe(w.test ? 'easy' : 'q2');
           expect(role(pat.long)).toBe('long');
           for (const e of pat.easy) expect(role(e)).toBe('easy');
           expect(w.days.length).toBe(n);

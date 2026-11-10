@@ -132,7 +132,14 @@ describe('D8 + D20 + D23: trkačka nedelja', () => {
       const taper = p.weeks[p.weeks.length - 2]!;
       const prevHard = taper.days.filter((d) => d.hard).pop()!.date;
       const taperRp = taper.days.find((d) => d.role === 'q1')?.workout.dose?.doseM ?? 0;
-      const k = taperRp >= 3000 ? 3 : taperRp >= 2000 ? 2 : 0;
+      // P8 G5 (D44) nezavisno: 2 jednake deonice RP, ukupno ≤ 12 min rada, deonica 400–1500 m (100 m), zbir ≤ RP doza
+      // tapera; RP doza tapera < 2,0 km ili deonica < 400 m → bez oštrenja.
+      const repM = Math.min(
+        1500,
+        Math.floor((720 / 2 / p.paces.RP) * 10 + 1e-9) * 100,
+        Math.floor(taperRp / 2 / 100) * 100
+      );
+      const k = taperRp >= 2000 && repM >= 400 ? 2 : 0;
       const latest = days
         .filter((d) => daysBetween(d.date, race) >= 3 && daysBetween(prevHard, d.date) >= 2)
         .map((d) => d.date)
@@ -143,7 +150,7 @@ describe('D8 + D20 + D23: trkačka nedelja', () => {
       else {
         expect(sharp.length).toBe(1);
         expect(sharp[0]!.date).toBe(latest);
-        expect(sharp[0]!.workout.dose!.structure).toEqual({ form: 'reps', reps: k, repM: 1000 });
+        expect(sharp[0]!.workout.dose!.structure).toEqual({ form: 'reps', reps: k, repM });
         expect(sharp[0]!.workout.dose!.doseM).toBeLessThanOrEqual(taperRp);
         expect(
           sharp[0]!.workout.segments.filter((s) => s.kind === 'recovery').every((s) => s.sec === 90)
@@ -184,8 +191,9 @@ describe('D8 + D20 + D23: trkačka nedelja', () => {
       // D23 invarijanta: planirano trkačke nedelje (bez trke) ≤ planirano tapera.
       expect(w.plannedKm, p.input.raceDate).toBeLessThanOrEqual(taper.plannedKm);
     }
+    // P8 G5 (D44): oštrenje je uvek 2 deonice (ranije 3 × 1000 m kad je RP doza tapera ≥ 3,0 km).
     expect(reps[2]).toBeGreaterThan(0);
-    expect(reps[3]).toBeGreaterThan(0);
+    expect(reps[3] ?? 0).toBe(0);
     expect(droppedEasy).toBeGreaterThan(0);
     expect(easyKind.km).toBeGreaterThan(0);
     expect(easyKind.time).toBeGreaterThan(0);
@@ -227,7 +235,9 @@ describe('D13 + D19: dužine', () => {
           const p35 = w.notes.some((x) => x.startsWith(P35_DROP));
           // 10K-08 (T1): lagani dani koji su odmor (napomena konstruktora).
           const t1 = w.notes.find((x) => x.includes('odmor — ostatak obima ne staje u lagane'));
-          const all = n === 3 ? 1 : n - 3 + (p35 ? 1 : 0);
+          // P8 G7 (D46): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan.
+          const g7 = n > 3 && w.days.some((d) => d.role === 'test');
+          const all = n === 3 ? 1 : n - 3 + (p35 || g7 ? 1 : 0);
           const t1Rest = !t1
             ? 0
             : t1.startsWith('Svi')

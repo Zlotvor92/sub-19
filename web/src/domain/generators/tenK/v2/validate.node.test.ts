@@ -224,7 +224,8 @@ describe('validator', () => {
   it('D11 ispred D12 (usvojeno, D12): doza se spušta samo kad nijedan cilj nije izvodljiv', () => {
     // 14 ned, 30 km, VDOT 31: T 4,0 km staje u plafon samo od 40 km, a kapacitet specifične nedelje je
     // ispod 40 km (dugi na 105 min, RP lakši od I) → bez spuštanja nijedan cilj nije izvodljiv.
-    const r = generateTenKV2(inputOf({ weeks: 14, km: 30, vdot: 31, days: SCHEDULES.A.days }));
+    // P8 (G1 sporiji rast, G4 minuti): taj ulaz više ne spušta dozu; primer sa spuštanjem: 11 ned, 30 km, VDOT 35.
+    const r = generateTenKV2(inputOf({ weeks: 11, km: 30, vdot: 35, days: SCHEDULES.A.days }));
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const dropped = r.plan.weeks.filter((w) => w.days.some((d) => d.workout.dose?.step === 'drop'));
@@ -245,8 +246,8 @@ describe('validator', () => {
     expect(rules).toContain('WEEK_FITTED');
     expect(rules).toContain('CAPACITY_LIMITED');
     expect(r.plan.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(
-      // 10K-08 (T1): i lagan ≤ 80 % dugog (CapacityLimit 'easy').
-      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 80 % dugog; preporuka 5–6 dana.'
+      // 10K-08 (T1): i lagan ≤ 80 % dugog (CapacityLimit 'easy'); P8 G6 (D47): 70 % za 4+ dana.
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 70 % dugog; preporuka 5–6 dana.'
     );
     expect(r.plan.warnings.every((w) => w.severity === 'warning')).toBe(true);
   });
@@ -377,14 +378,14 @@ describe('validator', () => {
       p4.weeks.filter((w) => w.notes.some((n) => n.startsWith(P35_DROP))).map((w) => w.index)
     ).toEqual([]);
     // 6 dana, 35 km, VDOT 70: i posle pouke 35 prvi dan kvaliteta duži od dugog → upozorenje, preporuka 3–5 dana. P5: isto (D37 P-b: veća
-    // početna doza ne stvara nedelju pouke 35).
+    // početna doza ne stvara nedelju pouke 35). P8 G1 (sporiji rast obima i dugog): 3 → 5 od 8 nedelja.
     const p6 = planOf(6, { weeks: 12, km: 35, vdot: 70 });
     expect(errors(p6)).toEqual([]);
     expect(warns(p6).map((w) => [w.severity, w.week, w.message])).toEqual([
       [
         'warning',
         1,
-        'Dan kvaliteta ili testa duži od dugog po trajanju u 3 od 8 nedelja izgradnje (nedelja 1: 42 > 39 min); preporuka 3–5 dana (plan sa manje dana podržava obim 35 km, dugi dobija veći udeo).'
+        'Dan kvaliteta ili testa duži od dugog po trajanju u 5 od 8 nedelja izgradnje (nedelja 1: 42 > 39 min); preporuka 3–5 dana (plan sa manje dana podržava obim 35 km, dugi dobija veći udeo).'
       ]
     ]);
     // 3 dana nema manji red — bez preporuke (i bez upozorenja).

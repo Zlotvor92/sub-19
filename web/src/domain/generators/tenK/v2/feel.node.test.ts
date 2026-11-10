@@ -182,8 +182,9 @@ describe('D26: plan po osećaju', () => {
 describe('D27: test 5 km', () => {
   it('tačno jedan test u poslednjoj nedelji baze, na danu Q1; WU (pojas) + 5 km + CD; u obimu, nije doza', () => {
     for (const [days, weeks, km] of [
-      [3, 10, 25],
-      [4, 10, 30],
+      // P8 G7 (D46): test ne pre nedelje 4 — plan od 10 nedelja (baza 3 nedelje) nema test; 15 nedelja: test u nedelji 5.
+      [3, 15, 25],
+      [4, 15, 30],
       [5, 16, 45],
       [6, 18, 60]
     ] as const) {
@@ -209,9 +210,18 @@ describe('D27: test 5 km', () => {
       expect(d.workout.dose).toBeNull();
       expect(d.countsToWeek && d.hard).toBe(true);
       expect(Object.values(d.workout.workKm)).toEqual([0, 0, 0, 0]);
-      // Q2 (4–6 dana) ostaje u nedelji testa.
-      expect(w.days.some((x) => x.role === 'q2')).toBe(days > 3);
+      // P8 G7 (D46): test je jedini kvalitet nedelje — drugi dan kvaliteta je lagan.
+      expect(w.days.some((x) => x.role === 'q2')).toBe(false);
+      expect(w.days.filter((x) => x.workout.kind === 'quality')).toEqual([]);
       expect(w.notes.some((n) => n.startsWith('Test 5 km: kontrolisano'))).toBe(true);
+    }
+  });
+
+  it('P8 G7 (D46): plan po osećaju od 10 nedelja (baza 3 nedelje) nema test', () => {
+    for (const days of [3, 4] as const) {
+      const p = plan(feelInput(days, { weeks: 10, km: 30, easy: 390 }));
+      expect(p.weeks.some((w) => w.test || w.days.some((d) => d.role === 'test'))).toBe(false);
+      expect(errors(p)).toEqual([]);
     }
   });
 
@@ -231,10 +241,10 @@ describe('D27: test 5 km', () => {
   it('odstupanje D27 ispred D5: dugi rasterećenja sa testom skraćen da lagan ostane ≥ 3 km (3 dana, 20 km, 7:30, 12 ned)', () => {
     const p = plan(feelInput(3, { weeks: 12, km: 20, easy: 450 }));
     const w = p.weeks[3]!;
-    expect([w.targetKm, w.fitted]).toEqual([18, null]);
+    expect([w.targetKm, w.fitted]).toEqual([17.9, null]); // P8 G1 (D39, sporiji rast): cilj 18,0 → 17,9; dugi 6,6 → 6,5.
     expect(w.days.map((d) => `${d.role}:${d.workout.km}`).sort()).toEqual([
       'easy:3.1',
-      'long:6.6',
+      'long:6.5',
       'test:8.33'
     ]);
     expect(Math.floor(0.8 * 101) / 10).toBe(8);
@@ -243,30 +253,35 @@ describe('D27: test 5 km', () => {
   });
 
   it('progresija posle testa nastavlja od stanja pre testa (D12); „glavna doza ne opada" preskače test nedelju', () => {
-    // 3 dana, 10 ned: baza 1–3, test ned 3 (umesto T kontinuirano) → ned 4 T cruise ≥ T ned 2.
-    const p3 = plan(feelInput(3, { weeks: 10, km: 30, easy: 330 }));
+    // 3 dana, 15 ned (P8 G7: test ne pre nedelje 4): test u poslednjoj nedelji baze (umesto T kontinuirano) → sledeća
+    // nedelja izgradnje T cruise ≥ T pre testa.
+    const p3 = plan(feelInput(3, { weeks: 15, km: 30, easy: 330 }));
     const s3 = p3.weeks.filter(steady);
-    const t2 = s3[1]!.days.find((d) => d.role === 'q1')!.workout.dose!;
-    expect(s3[2]!.test).toBe(true);
-    const t4 = s3[3]!.days.find((d) => d.role === 'q1')!.workout.dose!;
+    const i3 = s3.findIndex((w) => w.test);
+    expect(i3).toBeGreaterThan(0);
+    const t2 = s3[i3 - 1]!.days.find((d) => d.role === 'q1')!.workout.dose!;
+    const t4 = s3[i3 + 1]!.days.find((d) => d.role === 'q1')!.workout.dose!;
     expect([t4.ladder, t4.doseM >= t2.doseM]).toEqual(['T_cruise', true]);
     expect(errors(p3)).toEqual([]);
-    // 4 dana: Q2 napreduje i u nedelji testa; Q1 (R) posle testa prelazi na I (D16), stanje R se ne menja.
-    const p4 = plan(feelInput(4, { weeks: 10, km: 40, easy: 330 }));
+    // 4 dana: nedelja testa nema Q2 (P8 G7) — Q2 posle testa nastavlja od stanja pre testa; Q1 (R) posle testa prelazi
+    // na I (D16), stanje R se ne menja.
+    const p4 = plan(feelInput(4, { weeks: 15, km: 40, easy: 330 }));
     const s4 = p4.weeks.filter(steady);
-    const q2 = s4.slice(0, 4).map((w) => w.days.find((d) => d.role === 'q2')!.workout.dose!.doseM);
-    expect(q2[2]).toBeGreaterThanOrEqual(q2[1]!);
-    expect(s4[3]!.days.find((d) => d.role === 'q1')!.workout.dose!.ladder).toBe('I');
+    const i4 = s4.findIndex((w) => w.test);
+    const q2 = (w: PlanWeek): number => w.days.find((d) => d.role === 'q2')!.workout.dose!.doseM;
+    expect(s4[i4]!.days.some((d) => d.role === 'q2')).toBe(false);
+    expect(q2(s4[i4 + 1]!)).toBeGreaterThanOrEqual(q2(s4[i4 - 1]!));
+    expect(s4[i4 + 1]!.days.find((d) => d.role === 'q1')!.workout.dose!.ladder).toBe('I');
     expect(errors(p4)).toEqual([]);
   });
 
   it('validator hvata: test u drugoj nedelji, bez testa, test u planu sa rezultatom, pogrešna struktura testa', () => {
-    const moved = plan(feelInput(4, { weeks: 10, km: 30 }));
+    const moved = plan(feelInput(4, { weeks: 15, km: 30 }));
     const tw = moved.weeks.find((w) => w.test)!;
     delete tw.test;
     moved.weeks[0]!.test = true;
     expect(errors(moved)).toContain('TEST');
-    const none = plan(feelInput(4, { weeks: 10, km: 30 }));
+    const none = plan(feelInput(4, { weeks: 15, km: 30 }));
     const d = none.weeks.find((w) => w.test)!.days.find((x) => x.role === 'test')!;
     d.role = 'easy';
     d.hard = false;
@@ -277,7 +292,7 @@ describe('D27: test 5 km', () => {
     if (!res.ok) throw new Error('ulaz');
     res.plan.weeks[2]!.test = true;
     expect(errors(res.plan)).toContain('TEST');
-    const bad = plan(feelInput(4, { weeks: 10, km: 30 }));
+    const bad = plan(feelInput(4, { weeks: 15, km: 30 }));
     const t = bad.weeks.find((w) => w.test)!.days.find((x) => x.role === 'test')!;
     (t.workout.segments[1] as { km: number }).km = 3;
     expect(errors(bad)).toContain('TEST');
