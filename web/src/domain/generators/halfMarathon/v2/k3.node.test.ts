@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { generateHmV2 } from './generate.ts';
-import { beginnerInputs } from './testInputs.ts';
+import { beginnerInputs, feelInputs, grid02Inputs } from './testInputs.ts';
 import type { HmV2Plan, PlanWeek } from './types.ts';
 
 const gen = (input: unknown): HmV2Plan => {
@@ -59,5 +59,56 @@ describe('K3-A: dugi početnika na pravom mestu', () => {
     for (const c of beginnerInputs().filter((_, i) => i % 7 === 0))
       for (const x of check(gen(c.input))) bad.push(`${c.id}: ${x}`);
     expect(bad).toEqual([]);
+  });
+});
+
+const workSec = (w: PlanWeek, zone: string): number =>
+  Math.max(
+    0,
+    ...w.days
+      .filter((d) => d.role === 'q1' || d.role === 'q2')
+      .map((d) =>
+        d.workout.segments
+          .filter((x) => (x.kind === 'rep' || x.kind === 'continuous') && x.zone === zone)
+          .reduce((a, x) => a + x.km * 1000, 0)
+      )
+  );
+
+describe('K3-B: taper RP ≤ 60 % poslednje doze', () => {
+  const check = (p: HmV2Plan): string[] => {
+    const taper = p.weeks.find((w) => w.phase === 'taper')!;
+    const rp = workSec(taper, 'RP');
+    const last = p.weeks
+      .filter((w) => w.index < taper.index && !w.deload && isBuild(w))
+      .map((w) => workSec(w, 'RP'))
+      .filter((m) => m > 0)
+      .pop();
+    if (rp === 0 || last === undefined) return [];
+    return rp > 0.6 * last + 1 ? [`taper RP ${rp} m > 0,6 × ${last} m`] : [];
+  };
+
+  it('uzorak mreža (redovan, po osećaju, početnik): 0 tapera iznad 60 %; ima kraćih struktura', () => {
+    const bad: string[] = [];
+    let short = 0;
+    for (const c of [
+      ...grid02Inputs().filter((_, i) => i % 41 === 0),
+      ...feelInputs().filter((_, i) => i % 23 === 0),
+      ...beginnerInputs().filter((_, i) => i % 11 === 0)
+    ]) {
+      const p = gen(c.input);
+      for (const x of check(p)) bad.push(`${c.id}: ${x}`);
+      const t = p.weeks.find((w) => w.phase === 'taper')!;
+      if (t.days.some((d) => d.workout.dose?.zone === 'RP' && d.workout.dose.doseM < 4000)) short++;
+    }
+    expect(bad).toEqual([]);
+    expect(short).toBeGreaterThan(0);
+  });
+
+  it('P9 p11: taper RP 2 × 1200 m (≤ 60 % od 2 × 2000 m), trkačka nedelja zadržava oštrenje', () => {
+    const p = gen(P11);
+    const t = p.weeks.find((w) => w.phase === 'taper')!;
+    const d = t.days.find((x) => x.workout.dose?.zone === 'RP')!.workout.dose!;
+    expect(d.structure).toEqual({ form: 'reps', reps: 2, repM: 1200 });
+    expect(p.weeks.at(-1)!.days.some((x) => x.role === 'sharpener')).toBe(true);
   });
 });

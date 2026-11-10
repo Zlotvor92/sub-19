@@ -662,6 +662,14 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts beginner.specHoldOverPeak; volume.ts specHold10, holdCap10 (jedno mesto); generate.ts construct (pretraga cilja sa pragom dugog); validate.ts VOLUME_PEAK (ista funkcija); gridInvariants.ts (nezavisno)',
     rationale:
       'Glavni trener, krug 2 (§ 3e, § 4.1): početnik p11 dostiže 13,2 km u razvoju pa u specifičnoj fazi pada na 11,4 km (RP trening sa WU/CD duži od T, lagani na 4 km). Merenje (mreža početnika 1890): pad dugog u specifičnoj 312 → 0, najduži van poslednje 3 ne-rasteretne nedelje 258 → 0, 0 odbijanja.'
+  },
+  {
+    id: 'K3-B',
+    rule: 'Taper ≤ 60 %: RP tapera ≤ 60 % poslednje RP doze i kad je najniži nivo lestvice (2 × 2000 m) veći — tada kraća struktura van lestvice, 2 deonice od ⌊60 % × poslednja / 2⌋ (korak 100 m, najmanje 1000 m; npr. 2 × 1500 m posle 5 km, 2 × 1200 m posle 4 km). Kraća struktura staje samo uz izvodljive dužine tapera (inače ishod kao pre: T početnika HI10 ili taper bez kvaliteta). Oštrenje trkačke nedelje ostaje kao uz najniži nivo (≤ 2 × 2000 m). Zamenjuje odluku STOP S1 → O1.',
+    place:
+      'policy.ts taper.rpShort; quality.ts taperRpFloor (jedno mesto), taperDoses; week.ts taper (strogo za kraću strukturu), sharpenerAllowed; validate.ts TAPER_QUALITY, REP_MIN, RP_FLOOR, RACE_SHARPENER (iste funkcije); gridInvariants.ts (nezavisno TAPER_RP, SHARPENER)',
+    rationale:
+      'Glavni trener, krug 2 (§ 2 nalaz 3, § 4.4): p03/p10 taper RP 25–26 min = 80 % doze. Merenje (mreže R/F/B 25 122 plana): taper > 60 % poslednje doze 10 617 → 0, 0 novih odbijanja; p03 24,7 → 18,6 min, p10 26,2 → 19,7 min, p11 23,5 → 14,1 min.'
   }
 ];
 
@@ -836,6 +844,9 @@ export const HM_V2_POLICY = {
     factor: 0.7,
     doseShare: 0.6,
     rpMin: { reps: 2, repM: 2000 } as Rep,
+    /** K3-A/K3-B: kad je ≈ 60 % poslednje RP doze ispod rpMin — kraća struktura van lestvice: 2 deonice od
+        ⌊60 % × poslednja / 2⌋ (korak roundM), najmanje minRepM (2 × 1500 m posle 5 km, 2 × 1200 m posle 4 km). */
+    rpShort: { reps: 2, minRepM: 1000, roundM: 100 },
     tMinKm: 2.0,
     longFactor: 0.6
   },

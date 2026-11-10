@@ -106,11 +106,14 @@ describe('N6: RP nikad ispod najnižeg nivoa (2 × 2000 m)', () => {
     const p = plan('d3-11w-40km-v70-A-sun');
     const at = p.weeks[2]!.endDate;
     const r = ok(adaptHmV2(p, factsOf(p, 'pause35', at), at));
-    const rp = r.plan.weeks.flatMap((w) =>
-      w.days
-        .filter((d) => d.workout.dose?.zone === 'RP' && d.role !== 'sharpener')
-        .map((d) => d.workout.dose!.doseM)
-    );
+    // K3-B: taper sme kraću RP strukturu (≤ 60 % poslednje doze) — van provere poda.
+    const rp = r.plan.weeks
+      .filter((w) => w.phase !== 'taper')
+      .flatMap((w) =>
+        w.days
+          .filter((d) => d.workout.dose?.zone === 'RP' && d.role !== 'sharpener')
+          .map((d) => d.workout.dose!.doseM)
+      );
     expect(rp.length).toBeGreaterThan(0);
     expect(rp.filter((m) => m < 4000)).toEqual([]);
     const a = clone(r.plan);

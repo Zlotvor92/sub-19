@@ -525,6 +525,20 @@ export function restartTaperT(
   );
 }
 
+/** K3-B (jedno mesto): najmanja RP struktura tapera posle poslednje RP doze `lastM` — rpMin (2 × 2000 m) kad je
+    ≈ 60 % poslednje ≥ rpMin ili poslednje nema; inače kraća struktura van lestvice (2 deonice ≤ 60 % poslednje,
+    deonica ≥ rpShort.minRepM). Konstruktor i validator (TAPER_QUALITY, REP_MIN, RP_FLOOR). */
+export function taperRpFloor(lastM: number): Structure {
+  const t = P.taper;
+  const min = t.rpMin.reps * t.rpMin.repM;
+  const want = t.doseShare * lastM;
+  if (lastM <= 0 || want + 1e-6 >= min)
+    return { form: 'reps', reps: t.rpMin.reps, repM: t.rpMin.repM };
+  const s = t.rpShort;
+  const repM = Math.max(s.minRepM, Math.floor(want / s.reps / s.roundM + 1e-9) * s.roundM);
+  return { form: 'reps', reps: s.reps, repM };
+}
+
 /** H7: taper — RP i T (cruise), svaki ≈ 60 % poslednje doze zone (naniže; min 2 × 2000 m RP, 2,0 km T);
     3 dana i početnik samo RP (HI6, H17). Drugi član (pouka 32, `limit`): RP prvi (sa T na najmanjoj dozi),
     pa T uz izabran RP; najmanja doza je izuzeta. */
@@ -536,7 +550,8 @@ export function taperDoses(
   p?: Paces
 ): Picks {
   const t = P.taper;
-  const rpFloor: Structure = { form: 'reps', reps: t.rpMin.reps, repM: t.rpMin.repM };
+  // K3-B: ≈ 60 % ispod najnižeg nivoa → kraća struktura van lestvice (taperRpFloor).
+  const rpFloor = taperRpFloor(state.q1?.ladder === 'RP' ? state.q1.doseM : 0);
   // P1 (odluka posle STOP 2, opcija b): RP tapera = najviši nivo ≤ min(≈ 60 % poslednje RP doze, plafon RP cilja
   // tapera), najmanje 2 × 2000 m (H7). Bez toga je taper < 40 km (plafon 15 %) posle RP pod 20 % ostajao bez kvaliteta.
   const rp = pick(

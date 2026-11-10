@@ -1192,12 +1192,15 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         : dose.zone === 'T'
           ? a.tRepMinM
           : dose.zone === 'RP'
-            ? a.rpRepMinM
+            ? // K3-B: taper RP sme kraću deonicu (quality.taperRpFloor).
+              dose.step === 'taper'
+              ? P.taper.rpShort.minRepM
+              : a.rpRepMinM
             : 0;
       if (repsOf(s).some((m) => m < repMin))
         err('REP_MIN', `${dose.zone} deonica < ${repMin} m (H10).`, w.index, d.date);
       // Faza 4a N6: RP nikad ispod najnižeg nivoa (ista funkcija kao konstruktor, quality.floorM).
-      if (dose.zone === 'RP' && !sharp && dose.doseM < floorM('RP', B0))
+      if (dose.zone === 'RP' && !sharp && dose.step !== 'taper' && dose.doseM < floorM('RP', B0))
         err(
           'RP_FLOOR',
           `RP ${dose.doseM} m < najniži nivo ${floorM('RP', B0)} m (H10).`,
@@ -1759,7 +1762,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           rollAt(w.index),
           strict
         );
-      const rpFits = fitsT(want0.q1, TAPER_RP_MIN_M);
+      // K3-B: kraća RP struktura — strogo (ista odluka kao konstruktor).
+      const rpFits = fitsT(want0.q1, TAPER_RP_MIN_M, want0.q1.doseM < TAPER_RP_MIN_M);
       // HI10: početnik — RP ne staje → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km).
       // T3 (krug T): posle novog starta isto (quality.restartTaperT, ista funkcija kao konstruktor).
       const ns = newStartAt(steps, w.index);
@@ -2073,7 +2077,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         `Oštrenje: ${q.sharpener.reps} × ${sharpenerRepM(pw(rw))} m RP (2:00, ≤ 12 min rada, ≤ RP doza tapera ${taperRpM} m) na najkasnijem danu ≥ ${q.sharpenerMinGapDays} dana pre trke (H8).`,
         rw.index
       );
-    if (s0 && s0.workout.dose && s0.workout.dose.doseM > taperRpM && !nsR)
+    // K3-B: kraća RP struktura tapera (ispod 2 × 2000 m) — oštrenje kao uz najniži nivo (week.sharpenerAllowed).
+    if (s0 && s0.workout.dose && s0.workout.dose.doseM > Math.max(taperRpM, TAPER_RP_MIN_M) && !nsR)
       err('RACE_SHARPENER', 'Oštrenje > RP doza tapera (H8, pouka 5).', rw.index);
     // Ostali dani: dan pred trku 20 min E + 4 × 20 s (≤ 30 min); ostali min(35 min E, najkraći lagan tapera).
     const taperEasy = (taperW?.days ?? [])

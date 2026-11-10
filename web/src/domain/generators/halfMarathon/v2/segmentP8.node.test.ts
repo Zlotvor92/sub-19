@@ -300,7 +300,9 @@ describe('P8-G3: tekst za trkača', () => {
       floor++;
       expect(t.notes.join(' '), id).toContain('najmanja doza u trkačkom tempu');
     }
-    expect(floor).toBeGreaterThan(0);
+    // K3-B: taper RP je uvek ≤ 60 % poslednje doze (kraća struktura van lestvice) — slučaja „najmanja doza iznad
+    // 60 %" više nema (bilo > 0).
+    expect(floor).toBe(0);
   });
 });
 

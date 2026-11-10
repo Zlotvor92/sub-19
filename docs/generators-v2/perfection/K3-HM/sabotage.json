@@ -4,6 +4,17 @@
     "file": "src/domain/generators/halfMarathon/v2/volume.ts",
     "find": "  if (!rule.beginner || frame.deload || frame.phase !== 'specific') return null;",
     "replace": "  if (rule.beginner || frame.deload || frame.phase !== 'specific') return null;",
-    "tests": ["src/domain/generators/halfMarathon/v2/k3.node.test.ts"]
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/k3.node.test.ts"
+    ]
+  },
+  {
+    "name": "K3-B taper bez kraće strukture (rpMin uvek)",
+    "file": "src/domain/generators/halfMarathon/v2/quality.ts",
+    "find": "  if (lastM <= 0 || want + 1e-6 >= min)",
+    "replace": "  if (lastM >= 0 || want + 1e-6 >= min)",
+    "tests": [
+      "src/domain/generators/halfMarathon/v2/k3.node.test.ts"
+    ]
   }
 ]

@@ -694,7 +694,13 @@ export function checkPlan(
         if (4000 <= Math.floor(capOf('RP', w.targetKm) * w.targetKm * 1000 + 1e-6))
           no('TAPER_T', `${tag} RP staje`);
       } else if (rp === 0 || (!one && t === 0)) st.taperRelaxed++;
-      if (rp !== 0 && !lowered(w, rp, reduced(RP, lastQ1, 4000), 4000, 'RP tapera'))
+      // K3-B (nezavisno): ≈ 60 % poslednje RP doze ispod 2 × 2000 m → 2 deonice ⌊60 % / 2⌋ (korak 100 m, ≥ 1000 m).
+      const rpShort =
+        lastQ1 > 0 && 0.6 * lastQ1 < 4000 - 1e-6
+          ? 2 * Math.max(1000, Math.floor((0.6 * lastQ1) / 2 / 100 + 1e-9) * 100)
+          : null;
+      const rpRule = rpShort ?? reduced(RP, lastQ1, 4000);
+      if (rp !== 0 && !lowered(w, rp, rpRule, rpShort ?? 4000, 'RP tapera'))
         no('TAPER_RP', `${tag} ${rp}`);
       // 3 dana: taper samo RP (HI6).
       if (one && t !== 0) no('TAPER_T', `${tag} 3 dana T ${t}`);
@@ -745,7 +751,14 @@ export function checkPlan(
       const workSec = d.workout.segments
         .filter((x) => x.kind === 'rep')
         .reduce((a, x) => a + x.sec, 0);
-      if (gap < 3 || dose.doseM !== 2 * repM || workSec > 722 || dose.doseM > taperRp)
+      // K3-B: taper sa kraćom RP strukturom (< 4000 m) — oštrenje kao uz najniži nivo (≤ 4000 m).
+      if (
+        gap < 3 ||
+        dose.doseM !== 2 * repM ||
+        workSec > 722 ||
+        taperRp === 0 ||
+        dose.doseM > Math.max(taperRp, 4000)
+      )
         no('SHARPENER', d.date);
     } else if (d.role === 'eve') {
       if (gap !== 1 || d.workout.sec > 1800) no('EVE', d.date);

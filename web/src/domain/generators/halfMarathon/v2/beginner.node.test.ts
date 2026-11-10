@@ -161,9 +161,10 @@ describe('H17 plan početnika', () => {
     const q = t.days.find((d) => d.role === 'q1')!.workout.dose!;
     // P8 G2/G5: RP 2 × 2000 m staje u taper (najmanja doza), trkačka nedelja ima oštrenje ≤ 12 min rada (bilo: T 1,5 km,
     // bez oštrenja); P8 G1: 12 nedelja → vrh 1,30 × start, taper 22,4 km;
-    // K3-A: specifična nedelja podignuta da dugi ne padne → vrh i taper 22,6 km.
-    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['RP', 4000, 22.6]);
-    expect(t.notes.join(' ')).toContain('najmanja doza u trkačkom tempu');
+    // K3-A: specifična nedelja podignuta da dugi ne padne → vrh i taper 22,6 km; K3-B: RP ≤ 60 % poslednje doze
+    // (4000 m) → 2 × 1200 m van lestvice (bilo 2 × 2000 m uz napomenu „najmanja doza").
+    expect([q.ladder, q.doseM, t.targetKm]).toEqual(['RP', 2400, 22.6]);
+    expect(t.notes.join(' ')).not.toContain('najmanja doza u trkačkom tempu');
     const sharp = p.weeks.at(-1)!.days.find((d) => d.role === 'sharpener')!;
     expect(sharp.workout.dose!.doseM).toBe(2400);
     // Najmanji obim, brz lagan tempo: do K3 taper bez kvaliteta (RP nije imao izvodljive dužine); K3-A podiže specifične

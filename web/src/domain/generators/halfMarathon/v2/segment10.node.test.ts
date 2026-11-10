@@ -95,7 +95,8 @@ describe('HM-10 T3: posle novog starta taper zadržava 1 kvalitet, trkačka krat
     expect(q.length).toBe(1);
     // P8 G2: RP 2 × 2000 m (najmanja doza) staje u taper i posle novog starta — kvalitet tapera je RP (bilo: T).
     expect(q[0]!.workout.dose!.zone).toBe('RP');
-    expect(q[0]!.workout.dose!.doseM).toBe(4000);
+    // K3-B: ≤ 60 % poslednje RP doze (5000 m) — 2 × 1500 m van lestvice (bilo 2 × 2000 m).
+    expect(q[0]!.workout.dose!.doseM).toBe(3000);
     const race = p.weeks.find((w) => w.phase === 'race')!;
     expect(race.days.some((d) => d.role === 'sharpener')).toBe(true);
     expect(errors(p)).toEqual([]);

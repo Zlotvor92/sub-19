@@ -752,9 +752,11 @@ describe('pouka 30: trkačka nedelja ≤ taper i kad taper ima dane odmora/bola'
         expect(race.plannedKm, `${b.id} ${at}`).toBeLessThanOrEqual(taper.plannedKm);
         if (race.notes.some((x) => x.includes('(pouka 30)'))) {
           short++;
-          expect(race.days.filter((d) => d.role === 'easy').length).toBeLessThan(
-            p.weeks[n - 1]!.days.filter((d) => d.role === 'easy').length
-          );
+          // K3-B: taper početnika sada nosi RP (2 × 1200 m), pa trkačka ima oštrenje — skraćenje može ukloniti
+          // oštrenje (A9) umesto laganog dana: broj dana laganog + oštrenja pada.
+          const runs = (w: PlanWeek): number =>
+            w.days.filter((d) => d.role === 'easy' || d.role === 'sharpener').length;
+          expect(runs(race)).toBeLessThan(runs(p.weeks[n - 1]!));
         }
       }
     }

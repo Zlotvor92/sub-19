@@ -252,7 +252,14 @@ describe('H5/H7 doza rasterećenja i tapera (HI4)', () => {
       q2: { ladder: 'T_cruise', doseM: 3000, structure: { form: 'reps', reps: 3, repM: 1000 } },
       t: 3000
     });
-    expect([fmt(lo.q1.structure), fmt(lo.q2!.structure)]).toEqual(['2x2000', '2x1000']);
+    // K3-B: 0,6 × 5000 = 3000 < 2 × 2000 → kraća struktura van lestvice 2 × 1500 (bilo 2 × 2000).
+    expect([fmt(lo.q1.structure), fmt(lo.q2!.structure)]).toEqual(['2x1500', '2x1000']);
+    const four = taperDoses({
+      q1: { ladder: 'RP', doseM: 4000, structure: { form: 'reps', reps: 2, repM: 2000 } },
+      q2: null,
+      t: 0
+    });
+    expect(fmt(four.q1.structure)).toBe('2x1200');
   });
 
   it('HI6 (3 dana): rasterećenje T ≈ 60 % poslednje doze jedinog slota (Q1); taper samo RP', () => {

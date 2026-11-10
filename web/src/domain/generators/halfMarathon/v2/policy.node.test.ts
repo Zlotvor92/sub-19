@@ -114,6 +114,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       factor: 0.7,
       doseShare: 0.6,
       rpMin: { reps: 2, repM: 2000 },
+      // K3-B: kraća RP struktura tapera ispod rpMin (≤ 60 % poslednje doze).
+      rpShort: { reps: 2, minRepM: 1000, roundM: 100 },
       tMinKm: 2.0,
       longFactor: 0.6
     });
@@ -339,7 +341,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'P8-G8',
       'P8-G6b',
       'P8-HMc',
-      'K3-A'
+      'K3-A',
+      'K3-B'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

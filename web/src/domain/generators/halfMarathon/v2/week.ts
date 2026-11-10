@@ -731,7 +731,8 @@ function buildWeekIn(
           roll10,
           strict
         );
-      const rpFits = mode !== 'none' && fitsT(t0.q1, TAPER_RP_MIN_M);
+      // K3-B: kraća RP struktura (ispod 2 × 2000 m) staje samo uz izvodljive dužine tapera — inače ishod kao pre.
+      const rpFits = mode !== 'none' && fitsT(t0.q1, TAPER_RP_MIN_M, t0.q1.doseM < TAPER_RP_MIN_M);
       // HI10: početnik — RP ne staje u plafon → T kontinuirano ≈ 60 % poslednje T doze (min 1,5 km).
       // T3 (krug T): posle novog starta isto — T ≈ 60 % poslednje T doze posle povratka (min 2,0 km).
       const tT = (f?: DayFits): Dose | null =>
@@ -1238,7 +1239,10 @@ export function sharpenerAllowed(
   // G5 (P8): deonica po minutima rada (sharpenerRepM); ni 2 × 400 m ne staje → bez oštrenja.
   const repM = p ? sharpenerRepM(p) : s.repM;
   if (repM === null) return false;
-  return (newStart && !pain) || (taperRpM > 0 && s.reps * repM <= taperRpM);
+  // K3-B: taper sa kraćom RP strukturom (≤ 60 %, ispod 2 × 2000 m) zadržava oštrenje kao taper sa najnižim nivoom.
+  return (
+    (newStart && !pain) || (taperRpM > 0 && s.reps * repM <= Math.max(taperRpM, TAPER_RP_MIN_M))
+  );
 }
 
 /** H8: dani trčanja trkačke nedelje osim trke — ukupno sa trkom najviše min(broj dana, 5); otpada prvo
