@@ -129,7 +129,7 @@ export function rpTimeShareOk(
   return rpSec <= P.specific.rpWeekTimeShare * weekSec + 1e-6;
 }
 
-/** S1/S3: nedelja sme biti tip B — redovan plan 4–6 dana (3 dana i početnik nemaju nedelju B), ne-rasteretna
+/** S1/S3: nedelja sme biti tip B — redovan plan 3–6 dana (K4-A: i 3 dana; početnik nema nedelju B), ne-rasteretna
     specifična nedelja izgradnje bez ograničenja koraka (bol, odmor, zabrana kvaliteta, jedan kvalitet) i bez testa;
     `regular` — cilj po pravilu, ne povratak / nov start (adaptacija, cilj samo naniže). */
 export const bAllowed = (
@@ -138,7 +138,6 @@ export const bAllowed = (
   rule: Pick<PlanRule, 'quality' | 'beginner'>
 ): boolean =>
   regular &&
-  rule.quality === 2 &&
   !rule.beginner &&
   frame.phase === 'specific' &&
   !frame.deload &&

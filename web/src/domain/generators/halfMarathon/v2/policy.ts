@@ -678,12 +678,21 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts specific.fast; specific.ts fastBlock, wantBlockKm, chooseBlockKm (jedno mesto); validate.ts LONG_BLOCK (ista funkcija); k3.node.test.ts (nezavisno)',
     rationale:
       'Glavni trener, krug 2 (§ 3a): za VDOT ≥ 50 pri ≥ 80 km/ned blok u dugom 4 → 6 → 8 km (danas 4 → 6). Merenje (mreže R/F): brzih 2943 planova, blok medijana 6 → 8 km (nizovi 4/6 → 6/8), 0 odbijanja; p05 4/6 → 6/8 km.'
+  },
+  /* ---------- K4 (hm-v2.14.0): stavke A i B glavnog trenera, krug 3 (coach/ROUND-03.md § 3). ---------- */
+  {
+    id: 'K4-A1',
+    rule: 'Redovan plan 3 dana ima nedelju B kao 4–6 dana (isti raspored specific.scheduledType, ista lestvica bloka 4 → 6 → 8 km, iste granice bloka): u nedelji B jedini dan kvaliteta je LAGAN dan (stanje Q1 se ne menja, kao Q2 u pouci 35), dugi nosi završni blok RP najnižeg nivoa po pravilu (jedan nivo po nedelji B). Glavna doza nedelje B se poredi sa poslednjom B (O1). Kasni razvoj bez bloka (raspored je samo specifična faza).',
+    place:
+      'specific.ts bAllowed (jedno mesto: 3 dana otvoreno); week.ts buildWeekIn (bEasyQ1); validate.ts ROLES (roleOf q1), LONG_BLOCK, B_WEEK_MISSING (3 dana bez dana kvaliteta); gridInvariants.ts (POUKA35 / DOSE_DECREASE za 3 dana)',
+    rationale:
+      'Glavni trener, krug 3 (§ 3 stavka A): 3 dana su najslabiji HM planovi (jedan podražaj, dugi isti 10+ nedelja). Merenje (mreže R/F/B, 25 122 plana): 3 dana R 2640 + F 990 planova dobija 1–2 nedelje sa blokom (zbir bloka medijana 10 km), 0 novih odbijanja, vrh < −10 % 0; 4–6 dana i početnik bez promene. p03/p10 4/4 km, p08 4/6 km.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.13.0',
+  version: 'hm-v2.14.0',
 
   /** H1 (dani i obim: H15). */
   input: {

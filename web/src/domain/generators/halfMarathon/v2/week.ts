@@ -876,9 +876,11 @@ function buildWeekIn(
       ? null
       : pickBuild(quality, frame.phase, targetKm, p, rule, relax, test, limit, ctx.hold === true);
   if (!picks && !reduced) return null;
+  // K4-A: 3 dana — u nedelji B jedini dan kvaliteta je lagan (stanje Q1 se ne menja), dugi nosi blok RP.
+  const bEasyQ1 = bWeek && rule.quality === 1;
   const w1 = test
     ? testWorkout(p, ctx.wc)
-    : picks?.q1
+    : picks?.q1 && !bEasyQ1
       ? qualityWorkout(picks.q1, p, ctx.wc, ctx.feel)
       : null;
   // P1-S1: nedelja B — Q1 (RP) po lestvici kao u nedelji A, Q2 je lagan dan (mehanizam pouke 35: stanje T slota se ne
@@ -894,7 +896,7 @@ function buildWeekIn(
   const second = easy2 && w2 && picks?.q2 ? { w: w2, dose: picks.q2 } : null;
   if (easy2) w2 = null;
   const picksW0: WeekPicks | null =
-    (easy2 || bWeek || test) && picks ? { q1: picks.q1, q2: null } : picks;
+    (easy2 || bWeek || test) && picks ? { q1: bEasyQ1 ? null : picks.q1, q2: null } : picks;
   const busy = [
     ...(w1 ? [pat.q1] : []),
     ...(w2 && pat.q2 ? [pat.q2] : []),
@@ -917,7 +919,7 @@ function buildWeekIn(
         [w1, w2].filter((x): x is Workout => !!x).map((x) => x.sec),
         targetKm,
         ctx.hold === true,
-        { easy10: len.easy10, rpTrainM: picks?.q1?.zone === 'RP' ? picks.q1.doseM : 0 }
+        { easy10: len.easy10, rpTrainM: w1 && picks?.q1?.zone === 'RP' ? picks.q1.doseM : 0 }
       )
     : null;
   if (bWeek && blockKm === null) return null;
@@ -928,7 +930,9 @@ function buildWeekIn(
   const notes: string[] = [];
   if (blockKm !== null)
     notes.push(
-      `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.`
+      bEasyQ1
+        ? `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; zato je trening kvaliteta ove nedelje zamenjen laganim trčanjem.`
+        : `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.`
     );
   // T1 (krug T): manje laganih dana (lengths.buildLengths) — napomena za korisnika.
   if (len.easy10.length < dates.length)
@@ -946,6 +950,8 @@ function buildWeekIn(
   else if (test) notes.push(ctx.feel ? TEST_NOTE : RESULT_TEST_NOTE);
   else if (reduced) {
     // Napomena režima (limitNote).
+  } else if (bEasyQ1) {
+    // K4-A: napomena bloka.
   } else if (!w1)
     notes.push(
       `Bez kvaliteta: ni T ${fmtKm(P.beginner.tFirstKm)} km kontinuirano ne staje u plafon ${P.caps.T * 100} % cilja ${fmtKm(targetKm)} km (H11 ispred H17, odstupanje).`

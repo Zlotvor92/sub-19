@@ -533,6 +533,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       if (r === 'q2' && w.notes.some((n) => n.includes(SECOND_EASY_NOTE))) return 'easy';
       // P1-S1: nedelja B — drugi dan kvaliteta je lagan.
       if (r === 'q2' && hasLongBlock(w.days)) return 'easy';
+      // K4-A: 3 dana — u nedelji B jedini dan kvaliteta je lagan.
+      if (r === 'q1' && rule.quality === 1 && hasLongBlock(w.days)) return 'easy';
       // G7 (P8): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan.
       if (r === 'q2' && w.test) return 'easy';
       return r;
@@ -868,7 +870,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       if (!bAllowed(w, true, rule))
         err(
           'LONG_BLOCK',
-          'Blok u trkačkom tempu samo u ne-rasteretnoj nedelji specifične faze bez ograničenja, plan 4–6 dana (P1-S1).',
+          'Blok u trkačkom tempu samo u ne-rasteretnoj nedelji specifične faze bez ograničenja, redovan plan 3–6 dana (P1-S1, K4-A).',
           w.index,
           long.date
         );
@@ -1933,9 +1935,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         scheduledType(weeks, w.index - 1) === 'B' &&
         bAllowed(w, true, rule)
       ) {
+        // K4-A: 3 dana — u nedelji B i dan Q1 je lagan (bez kvaliteta).
+        const q3 = rule.quality === 1;
         const len = buildLengths(
           to10(w.targetKm),
-          to100(q1d.workout.km),
+          q3 ? 0 : to100(q1d.workout.km),
           pat.easy.length + 1,
           rule,
           pk,
@@ -1948,10 +1952,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
             state.blockM ?? 0,
             rule,
             pk,
-            [q1d.workout.sec],
+            q3 ? [] : [q1d.workout.sec],
             w.targetKm,
             held(w),
-            { easy10: len.easy10, rpTrainM: Math.round(q1d.workout.workKm.RP * 1000) }
+            { easy10: len.easy10, rpTrainM: q3 ? 0 : Math.round(q1d.workout.workKm.RP * 1000) }
           ) !== null;
         if (fits || !w.notes.includes(B_MISSING_NOTE))
           err(

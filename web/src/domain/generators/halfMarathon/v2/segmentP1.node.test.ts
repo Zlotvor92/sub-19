@@ -46,10 +46,12 @@ describe('P1-S1: nedelja tipa B', () => {
     expect(bad).toEqual({});
   });
 
-  it('blok samo u nedelji po rasporedu B (poslednja ne-rasteretna specifična, unazad A, B), plan 4–6 dana, ne početnik', () => {
+  it('blok samo u nedelji po rasporedu B (poslednja ne-rasteretna specifična, unazad A, B), plan 3–6 dana (K4-A), ne početnik', () => {
     let bWeeks = 0;
+    let b3 = 0;
     for (const { plan } of plans) {
-      const one = plan.pattern.q2 === null || plan.input.experience === 'beginner';
+      const one = plan.input.experience === 'beginner';
+      const three = plan.pattern.q2 === null;
       plan.weeks.forEach((w, i) => {
         const bk = blockOf(w);
         if (bk === 0) return;
@@ -63,11 +65,18 @@ describe('P1-S1: nedelja tipa B', () => {
         expect(bk).toBeLessThanOrEqual(P.specific.blockMaxLongShare * long.workout.km + 1e-9);
         expect(Math.round(bk * 1000)).toBeLessThanOrEqual(capM('RP', w.targetKm));
         // RP trening ostaje, drugi dan kvaliteta (T) je lagan; dugi ostaje najduži trening.
-        expect(w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.role)).toEqual([
-          'q1'
-        ]);
-        expect(w.days.find((d) => d.role === 'q1')!.workout.dose!.zone).toBe('RP');
-        expect(w.days.find((d) => d.weekday === plan.pattern.q2)!.role).toBe('easy');
+        // K4-A: 3 dana — jedini dan kvaliteta je lagan.
+        if (three) {
+          b3++;
+          expect(w.days.filter((d) => d.workout.kind === 'quality')).toEqual([]);
+          expect(w.days.find((d) => d.weekday === plan.pattern.q1)!.role).toBe('easy');
+        } else {
+          expect(w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.role)).toEqual([
+            'q1'
+          ]);
+          expect(w.days.find((d) => d.role === 'q1')!.workout.dose!.zone).toBe('RP');
+          expect(w.days.find((d) => d.weekday === plan.pattern.q2)!.role).toBe('easy');
+        }
         expect(long.workout.title).toMatch(
           /^Dugi \d+,\d km: \d+,\d km lagano \+ \d,\d km u trkačkom tempu$/
         );
@@ -80,6 +89,7 @@ describe('P1-S1: nedelja tipa B', () => {
         if (w.deload || w.phase === 'taper' || w.phase === 'race') expect(blockOf(w)).toBe(0);
     }
     expect(bWeeks).toBeGreaterThan(100);
+    expect(b3).toBeGreaterThan(0);
   });
 
   it('profil 4 dana, 16 ned: raspored A, B, rasterećenje, A, B i blokovi 4 → 6 km', () => {

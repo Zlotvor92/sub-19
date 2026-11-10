@@ -568,9 +568,13 @@ export function checkPlan(
       // +5 % (1,0–2,0 km), ≤ granica; nedelja 1 = trenutni (pouka 9).
       const nq = w.days.filter((d) => d.workout.kind === 'quality').length;
       // Pouka 35 (Faza 4a N5): drugi dan kvaliteta lagan (napomena) — dan Q2 šablona je lagan.
-      // P1-S1: nedelja B (dugi sa blokom RP) — Q2 lagan kao u pouci 35, samo specifična faza, 4–6 dana.
+      // P1-S1: nedelja B (dugi sa blokom RP) — Q2 lagan kao u pouci 35, samo specifična faza, ne početnik.
+      // K4-A: i 3 dana — tada je jedini dan kvaliteta (Q1 šablona) lagan.
       const bw = blockOf(w) > 0;
-      if (bw && (one || beg || w.phase !== 'specific' || w.deload)) no('POUKA35', `${tag} blok`);
+      if (bw && (beg || w.phase !== 'specific' || w.deload)) no('POUKA35', `${tag} blok`);
+      const firstEasy =
+        one && bw ? w.days.find((d) => d.weekday === p.pattern.q1)?.role === 'easy' : false;
+      if (one && bw && !firstEasy) no('POUKA35', `${tag} blok 3 dana uz kvalitet`);
       const second =
         row.q === 2 &&
         (bw || w.notes.some((n) => n.includes('(pouka 35)'))) &&
@@ -579,7 +583,8 @@ export function checkPlan(
           : false;
       if (second) st.secondEasyWeeks++;
       // P8 G7: u nedelji testa test je jedini kvalitet (drugi dan kvaliteta lagan).
-      if (!intro(w) && nq !== (w.test ? 0 : row.q - (second ? 1 : 0))) st.buildNoQuality++;
+      if (!intro(w) && nq !== (w.test ? 0 : row.q - (second ? 1 : 0) - (firstEasy ? 1 : 0)))
+        st.buildNoQuality++;
       // Pouka 35: u nedelji sa dva dana kvaliteta (ili testa) nijedan nije duži od dugog.
       const lw2 = w.days.find((d) => d.role === 'long');
       const hard2 = w.days.filter((d) => d.workout.kind === 'quality' || d.workout.kind === 'test');
@@ -634,7 +639,9 @@ export function checkPlan(
         // kroz sve faze T kont. → T cruise → RP, HI6).
         const q1Carries = one || w.phase === prevSteady.phase || w.phase === 'specific';
         // Pouka 35: nedelja bez drugog dana kvaliteta ne poredi Q2 ni glavnu dozu (stanje Q2 ostaje).
-        if ((!second && q2 < lastQ2) || (q1Carries && q1 < lastQ1)) no('DOSE_DECREASE', tag);
+        // K4-A: 3 dana, nedelja B — dan Q1 lagan, stanje Q1 ostaje (kao Q2 u pouci 35).
+        if ((!second && q2 < lastQ2) || (q1Carries && !firstEasy && q1 < lastQ1))
+          no('DOSE_DECREASE', tag);
         // H12 (O1, P1): glavna doza sa blokom; nedelja B sa poslednjom B, ostale sa poslednjom ne-B.
         const main = (x: PlanWeek): number =>
           x.days.reduce(
@@ -675,7 +682,7 @@ export function checkPlan(
       if (q2 > 0) lastQ2 = q2;
       const tz = w.days.filter((d) => d.workout.dose?.zone === 'T').pop();
       if (tz) lastT = tz.workout.dose!.doseM;
-      if (counted && !second) prevSteady = w;
+      if (counted && !second && !firstEasy) prevSteady = w;
       if (counted && bw) prevB = w;
     }
     if (w.phase === 'taper') {
