@@ -63,3 +63,24 @@ privremenim prekidačem samo u mernim skriptama. Ako odluka bude O2/O3, menja se
 3. A13 za kontrolni test: postojeće pravilo premešta test samo dok je plan po osećaju; test plana sa rezultatom u
    nedelji sa ograničenjem (bol, pauza, prinudno rasterećenje) zato otpada, ne premešta se. Prihvatljivo („ništa novo u
    adaptaciji")?
+
+## Dopuna (10. 11. 2026): F4 × „dan kvaliteta ≤ dugi" (pouka 35)
+
+Pouka 35 ne obara plan (drugi dan kvaliteta postaje lagan), ali je u listi „stani i javi". Mreža 02 (15 840), nedelje
+izgradnje sa drugim danom kvaliteta laganim — `node ../docs/generators-v2/perfection/P5-10K/p35split.ts` (iz `web/`
+starog i novog stabla) i K2:
+
+| | 72003c1 | F1–F4 (+ O1) |
+|---|---|---|
+| nedelja / planova (02) | 342 / 132 | 660 / 330 |
+| po danima | 6 d: 342 | 6 d: 594, 5 d: 66 |
+| obim / VDOT | 35 km; VDOT 70 276, 60 66 | 35 km 528, 40 i 45 km po 66; VDOT 70 528, 60 132 |
+| nedelja 1 / 2 / 3+ | 66 / 132 / 144 | 330 / 132 / 198 |
+| po osećaju (F, 11 880) | 120 / 66 | 138 / 66 |
+| „dva dana ostaju" (upozorenje) | 0 | 0 |
+
+Uzrok: veća početna T/I doza (80 %) kod brzog trkača na dnu obima reda (5–6 dana, 35–45 km, VDOT 60–70): WU/CD + rad >
+dugi, pa nedelja izgradnje (najviše nedelja 1) ima jedan kvalitet. Odbijanja 0. Opcije: **P-a** prihvatiti (pravilo
+radi kako je zamišljeno; brz trkač malog obima dobija jedan veći kvalitet umesto dva); **P-b** F4 samo kad sa većom
+dozom ne nastaje nedelja pouke 35 (inače 60 %) — nije mereno, znači drugo mesto odluke početnog nivoa (week.ts), što
+sudara stalni uslov 1 ako se ne radi u jednoj funkciji. Preporuka: P-a.
