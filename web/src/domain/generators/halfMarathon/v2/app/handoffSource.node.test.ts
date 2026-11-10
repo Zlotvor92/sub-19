@@ -115,7 +115,7 @@ describe('3c: odluka o pripremi HM v2 i tok do v1 cilja', () => {
   });
 
   it('prekidač cilja v2 uključen → 10K iz 10K v2 (3d-10K), prva koju cilj pokriva; nikad v1', () => {
-    const prep = select.preparationForPlan(source, { fiveKV2: true, tenKV2: true })!;
+    const prep = select.preparationForPlan(source)!;
     const d = prep.preparationDecision(
       source,
       today,
@@ -320,7 +320,7 @@ describe('3d-dopuna: lak tempo izvora (činjenica čarobnjaka)', () => {
       }
     })!;
     const fsrc = stored(adapted(feel.input, 'pause35', AS_OF));
-    const v2prep = select.preparationForPlan(fsrc, { fiveKV2: true })!;
+    const v2prep = select.preparationForPlan(fsrc)!;
     const fb = v2prep.basisFromPlan(fsrc, AS_OF)!;
     const c = v2prep.buildPreparationChoice(
       fsrc,

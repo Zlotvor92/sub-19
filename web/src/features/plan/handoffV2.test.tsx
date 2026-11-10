@@ -31,7 +31,7 @@ import { PlanOverview } from './PlanOverview';
 
 /* FAZA 3, SEGMENT 3g — UI predaje „kraća distanca" za izvore v2 (HM v2, maraton v2). Odluku, opcije, razloge i plan cilja
    daje domen; UI ih prikazuje (pouka 20). Stavke: (1) store prosleđuje plan (`isLimitedLongPreparation(meta, plan)`);
-   (2) store prosleđuje prekidače korisnika (`preparationForPlan(plan, flags)`); (3) pregled adaptacije v2 nosi ponudu
+   (2) store prosleđuje prekidače korisnika (`preparationForPlan(plan)`); (3) pregled adaptacije v2 nosi ponudu
    (`shorterOffer`) i vezu ka odluci, odluka traje dok traje stanje, „Zatvori" je sklanja bez promene plana; (4) odluka:
    izjava, opcija sa vrhom i pokrivenošću, nedostupne opcije sa razlogom doslovno; (5) plan cilja sa nedeljama izvora
    kao prefiksom — broj nedelje `offset + index`, dnevnik na svojim danima; (6) vraćanje verzije druge distance →

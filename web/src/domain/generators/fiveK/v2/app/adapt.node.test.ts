@@ -13,9 +13,8 @@ import {
   type PersistedState
 } from '../../../../state';
 import type { StructuredPlanInput } from '../../../contract';
-import { fiveKV2ToggleVisible } from '../../../flags';
 import {
-  FIVE_K_GENERATOR,
+  LEGACY_PERSONAL_GENERATOR,
   FIVE_K_V2_GENERATOR,
   fiveKV2AdaptPreview,
   fiveKV2FormHistory,
@@ -508,9 +507,9 @@ describe('8. ugovor (b) posle 08b: kroz činjenice i adaptFiveKV2, nijedan poziv
       38.3,
       1
     );
-    // Nijedan član nije funkcija starog 5K.
+    // Nijedan član nije funkcija starog generatora (V1b: 5K v1 obrisan; preostali v1 je zamrznut HM v1).
     const v2 = g as unknown as Record<string, unknown>;
-    const v1 = FIVE_K_GENERATOR as unknown as Record<string, unknown>;
+    const v1 = LEGACY_PERSONAL_GENERATOR as unknown as Record<string, unknown>;
     for (const k of Object.keys(v2))
       if (typeof v2[k] === 'function') expect(v2[k], k).not.toBe(v1[k]);
   });
@@ -533,16 +532,6 @@ describe('9. Napredak → Forma: VDOT iz rezultata v2 i ocena cilja, bez lanca f
     expect(fiveKV2FormHistory({ plan: planOf(RUN_WALK), today: d('2026-11-12') })!.mode).toBe(
       'runWalk'
     );
-  });
-});
-
-describe('10. prekidač: vidljiv samo uz VITE_FIVEK_V2 ili administratoru', () => {
-  it('pravilo vidljivosti', () => {
-    expect(fiveKV2ToggleVisible({ devOverride: undefined, isAdmin: false })).toBe(false);
-    expect(fiveKV2ToggleVisible({ devOverride: '', isAdmin: false })).toBe(false);
-    expect(fiveKV2ToggleVisible({ devOverride: '1', isAdmin: false })).toBe(true);
-    expect(fiveKV2ToggleVisible({ devOverride: '0', isAdmin: false })).toBe(true);
-    expect(fiveKV2ToggleVisible({ devOverride: undefined, isAdmin: true })).toBe(true);
   });
 });
 

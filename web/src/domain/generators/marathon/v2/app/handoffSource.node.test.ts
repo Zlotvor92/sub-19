@@ -119,7 +119,7 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
   const source = stored(adapted(BASE, 'pause35', AS_OF));
   const today = AS_OF;
   const decide = (src: GenPlanState, flags?: select.GeneratorFlags, at: IsoDate = today) => {
-    const prep = select.preparationForPlan(src, flags)!;
+    const prep = select.preparationForPlan(src)!;
     return prep.preparationDecision(
       src,
       at,
@@ -188,7 +188,7 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
   });
 
   it('prekidač HM v2 → HM v2 cilj (3f) iz pravog izvora: prefiks, id = id izvora istog datuma, vrh iz hmV2', () => {
-    const prep = select.preparationForPlan(source, HM_ON)!;
+    const prep = select.preparationForPlan(source)!;
     const d = decide(source, HM_ON);
     expect(d.options.map((o) => o.id)).toEqual(['shorter-21097.5']);
     expect(d.options[0]!.peakLongRunKm).toBeGreaterThanOrEqual(16);
@@ -216,7 +216,7 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     const d = decide(src, { fiveKV2: false, hmV2: true, tenKV2: true }, late);
     expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
     // Vrh opcije iz plana 10K v2 cilja (strukturno, `tenKV2`; nalaz 3g), > 0.
-    const prep = select.preparationForPlan(src, { fiveKV2: false, hmV2: true, tenKV2: true })!;
+    const prep = select.preparationForPlan(src)!;
     const c = prep.buildPreparationChoice(
       src,
       late,
@@ -259,7 +259,7 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
       options: [],
       unavailable: [`Polumaraton: ${V1_TARGET_NEEDS_RESULT}`, `10K: ${V1_TARGET_NEEDS_RESULT}`]
     });
-    const prep = select.preparationForPlan(src, HM_ON)!;
+    const prep = select.preparationForPlan(src)!;
     expect(prep.basisFromPlan(src, at)!.input).toMatchObject({ easyPaceSecPerKm: 315 });
     expect(decide(src, HM_ON, at).options.map((o) => o.id)).toEqual(['shorter-21097.5']);
   });
@@ -324,7 +324,7 @@ function targetFlow(
   flags?: select.GeneratorFlags
 ): { source: string; target: string } {
   const src = stored(adapted(input, 'pause35', today));
-  const prep = select.preparationForPlan(src, flags)!;
+  const prep = select.preparationForPlan(src)!;
   const basis = withPause
     ? select.MARATHON_V2_GENERATOR.executionBasis(src, today, null as never, {
         breakDays: 35,

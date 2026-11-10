@@ -12,6 +12,7 @@ import { targetInput } from './handoffTarget.ts';
 import { PREFIX_KEY, prefixOf } from './plan.ts';
 import { FULL } from '../../../../../test/level';
 import { handoffFuture as tenKV2HandoffFuture } from '../../../tenK/v2/app/handoffTarget.ts';
+import { handoffFuture as hmV2HandoffFuture } from './handoffTarget.ts';
 
 /* FAZA 3, SEGMENT 3f — HM v2 kao CILJ predaje „kraća distanca" (DESIGN.md § 3 P3/P5, § 8 O3a, O4a, O6b).
    Izvor: sintetički maraton v2 (plan za upis iz generatora maratona v2 + činjenice 4a scenarija), jer izvor maratona
@@ -23,7 +24,6 @@ import { handoffFuture as tenKV2HandoffFuture } from '../../../tenK/v2/app/hando
    - T1/T2: politika izvora (i `startingKm` izvršenja) ne menja cilj; politika cilja ga menja.
    - Odbijanje generatora cilja → opcija nedostupna sa razlogom v2 doslovno, nikad v1. */
 
-const ON: select.GeneratorFlags = { fiveKV2: false, hmV2: true };
 const MAR_FORMAT = {
   planKey: 'marathonV2',
   metaKeys: ['vdot', 'paceBasis', 'mpVdot', 'predictedMarathonSec', 'goalVdot', 'goalAssessment']
@@ -83,7 +83,7 @@ function handoff(
   scenario: Parameters<typeof TM.factsOf>[1],
   execution: unknown = null
 ): Out {
-  const h = select.shorterHandoffForV2Source(ON, MAR_FORMAT)(21097.5)!;
+  const h = select.shorterHandoffForV2Source(MAR_FORMAT)(21097.5)!;
   const raw = TM.factsOf((src as unknown as { marathonV2: never }).marathonV2, scenario, asOf);
   return (h as unknown as (...a: unknown[]) => Out)(
     src,
@@ -289,15 +289,9 @@ describe('HM-09 Z5b: početnik izvora iznad opsega početnika cilja', () => {
 });
 
 describe('3f: format i izbor', () => {
-  it('prekidač HM v2 isključen → v1 cilj (HM v1); uključen → HM v2; 10K v2 → cilj 10K v2 (3d-10K)', () => {
-    expect(select.shorterHandoffForV2Source({ fiveKV2: false }, MAR_FORMAT)(21097.5)).not.toBe(
-      select.shorterHandoffForV2Source(ON, MAR_FORMAT)(21097.5)
-    );
-    const ten = select.shorterHandoffForV2Source(
-      { fiveKV2: false, tenKV2: true },
-      MAR_FORMAT
-    )(10000)!;
-    expect(ten).toBe(tenKV2HandoffFuture);
+  it('V1b: cilj je uvek v2 te distance (HM → HM v2, 10K → 10K v2, 3d-10K)', () => {
+    expect(select.shorterHandoffForV2Source(MAR_FORMAT)(21097.5)).toBe(hmV2HandoffFuture);
+    expect(select.shorterHandoffForV2Source(MAR_FORMAT)(10000)).toBe(tenKV2HandoffFuture);
   });
   it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.10.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
     const r = select.generateHmV2Plan({

@@ -21,6 +21,7 @@ import { targetInput } from './handoffTarget.ts';
 import { PREFIX_KEY, prefixOf } from './plan.ts';
 import { FULL } from '../../../../../test/level';
 import { handoffFuture as tenKV2HandoffFuture } from '../../../tenK/v2/app/handoffTarget.ts';
+import { handoffFuture as fiveKV2HandoffFuture } from './handoffTarget.ts';
 
 /* FAZA 3, SEGMENT 3d — 5K v2 kao CILJ predaje „kraća distanca" (DESIGN.md § 3 P3/P5, § 8 O3a, O4a, O6b, O8a).
    Obrazac 3f (`halfMarathon/v2/app/handoffTarget.node.test.ts`). Izvor: HM v2 — plan za upis iz generatora HM v2,
@@ -33,7 +34,6 @@ import { handoffFuture as tenKV2HandoffFuture } from '../../../tenK/v2/app/hando
    - T1/T2: politika izvora (i `startingKm` izvršenja) ne menja cilj; politika cilja ga menja.
    - Odbijanje generatora cilja → opcija nedostupna sa razlogom v2 doslovno, nikad v1. */
 
-const ON: select.GeneratorFlags = { fiveKV2: true };
 const DAY = 86_400_000;
 const addDays = (d: string, n: number): IsoDate =>
   new Date(Date.parse(d + 'T00:00:00Z') + n * DAY).toISOString().slice(0, 10) as IsoDate;
@@ -56,7 +56,7 @@ function handoff(
   execution: unknown = null,
   input: unknown = contract(src)
 ): Out {
-  const h = select.shorterHandoffForV2Source(ON, HM_V2_SOURCE_FORMAT)(5000)!;
+  const h = select.shorterHandoffForV2Source(HM_V2_SOURCE_FORMAT)(5000)!;
   return (h as unknown as (...a: unknown[]) => Out)(
     src,
     input,
@@ -221,7 +221,7 @@ describe('3d: HM v2 → 5K v2 cilj (generate + adapt, O6b)', () => {
     const a = select.hmV2AdaptPreview(g.plan, asOf, {}, [{ from: addDays(asOf, -20), to: asOf }]);
     if (!a.ok) throw new Error('adaptacija');
     const src = select.stampForStorage(a.result);
-    const prep = select.preparationForPlan(src, { fiveKV2: true, tenKV2: true })!;
+    const prep = select.preparationForPlan(src)!;
     const basis = prep.basisFromPlan(src, asOf)!;
     const d = prep.preparationDecision(src, asOf, basis, {}, 'limited', undefined);
     expect(d.unavailable).toEqual([
@@ -316,18 +316,13 @@ describe('3d: T1/T2', () => {
 });
 
 describe('3d: format i izbor', () => {
-  it('prekidač 5K v2 isključen → v1 cilj (5K v1); uključen → 5K v2 (nije NOT_READY); 10K v2 → cilj 10K v2', () => {
-    const off = select.shorterHandoffForV2Source({ fiveKV2: false }, HM_V2_SOURCE_FORMAT)(5000);
-    const on = select.shorterHandoffForV2Source(ON, HM_V2_SOURCE_FORMAT)(5000)!;
-    expect(off).not.toBe(on);
+  it('V1b: cilj je uvek v2 te distance (5K → 5K v2, 10K → 10K v2); maraton nije „kraća" distanca', () => {
+    expect(select.shorterHandoffForV2Source(HM_V2_SOURCE_FORMAT)(5000)).toBe(fiveKV2HandoffFuture);
     const src = source(inputs[0]!.input)!;
     const r = handoff(src, addDays(src.weeks[src.weeks.length - 9]!.start, 3), 'none');
-    expect(r.error ?? '').not.toBe(select.V2_TARGET_NOT_READY);
-    const ten = select.shorterHandoffForV2Source(
-      { fiveKV2: true, tenKV2: true },
-      HM_V2_SOURCE_FORMAT
-    )(10000)!;
-    expect(ten).toBe(tenKV2HandoffFuture);
+    expect(r.result).toBeTruthy();
+    expect(select.shorterHandoffForV2Source(HM_V2_SOURCE_FORMAT)(10000)).toBe(tenKV2HandoffFuture);
+    expect(select.shorterHandoffForV2Source(HM_V2_SOURCE_FORMAT)(42195)).toBeNull();
   });
   it(`plan bez predaje nema ${PREFIX_KEY}; verzija 5k-v2.12.0, KNOWN_VERSIONS ∪ 5k-v2.11.1`, () => {
     const r = select.generateFiveKV2Plan({

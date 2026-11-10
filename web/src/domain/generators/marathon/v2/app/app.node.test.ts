@@ -10,7 +10,6 @@ import {
   weekPlanKm,
   weekRace
 } from '../../../../day';
-import { initialWizard, toGenerationInput } from '../../../../onboarding';
 import { personalPlan } from '../../../../personal';
 import { resolvePlan, type ResolvedDay } from '../../../../plan';
 import { userText } from './format.ts';
@@ -25,15 +24,12 @@ import {
   type PersistedState
 } from '../../../../state';
 import type { MarathonV2PlanInput } from '../../../contract';
-import { generatorFlags, marathonV2Enabled, marathonV2ToggleVisible } from '../../../flags';
-import { regeneratorForDistance } from '../../../handoff';
 import {
-  FIVE_K_GENERATOR,
-  HALF_MARATHON_GENERATOR,
+  FIVE_K_V2_GENERATOR,
   HALF_MARATHON_V2_GENERATOR,
-  MARATHON_GENERATOR,
+  LEGACY_PERSONAL_GENERATOR,
+  LEGACY_PLAN,
   MARATHON_V2_GENERATOR,
-  TEN_K_GENERATOR,
   TEN_K_V2_GENERATOR,
   UNKNOWN_POLICY,
   generateMarathonV2Plan,
@@ -50,9 +46,11 @@ import {
   unsupportedPlanReason,
   type PlanGenerator
 } from '../../../select';
-import * as hm from '../../../halfMarathon/index';
-import * as tenK from '../../../tenK/index';
-import * as mar from '../../index';
+import { marathonV2 } from './index.ts';
+/* V1b: maraton v1 je obrisan. Poređenja „ista vrednost kao stari maraton" idu na zamrznut HM v1
+   (`LEGACY_PERSONAL_GENERATOR`): kod procene stanja, vremena i sata bio je bajt-isti u sva četiri v1 generatora (osim
+   imena), a ključevi ugovora isti. */
+const OLD = LEGACY_PERSONAL_GENERATOR;
 import { midEasy, pacesFromVdot } from '../paces.ts';
 import { MARATHON_V2_POLICY } from '../policy.ts';
 import type { MarathonV2Plan } from '../types.ts';
@@ -325,64 +323,15 @@ describe('generisanje kroz adapter', () => {
   });
 });
 
-describe('prekidač i rutiranje po oznaci politike', () => {
-  it('flags: podrazumevano isključen; override 1/true i 0/false nadjačavaju podešavanje; vidljivost', () => {
-    const off = { setting: undefined, devOverride: undefined };
-    expect(marathonV2Enabled(off)).toBe(false);
-    expect(marathonV2Enabled({ setting: 'true', devOverride: undefined })).toBe(false);
-    expect(marathonV2Enabled({ setting: true, devOverride: undefined })).toBe(true);
-    expect(marathonV2Enabled({ setting: false, devOverride: '1' })).toBe(true);
-    expect(marathonV2Enabled({ setting: false, devOverride: 'TRUE' })).toBe(true);
-    expect(marathonV2Enabled({ setting: true, devOverride: '0' })).toBe(false);
-    expect(marathonV2Enabled({ setting: true, devOverride: 'false' })).toBe(false);
-    expect(marathonV2Enabled({ setting: true, devOverride: 'x' })).toBe(true);
-    // Bez izvora prekidača maratona polje izostaje (= isključen); 5K, 10K i HM prekidači se ne mešaju.
-    const on = { setting: true, devOverride: undefined };
-    expect(generatorFlags(off)).toEqual({ fiveKV2: false });
-    expect(generatorFlags(off, off, off)).toEqual({ fiveKV2: false, tenKV2: false, hmV2: false });
-    expect(generatorFlags(off, off, off, on)).toEqual({
-      fiveKV2: false,
-      tenKV2: false,
-      hmV2: false,
-      marathonV2: true
-    });
-    expect(generatorFlags(on, on, on, off)).toEqual({
-      fiveKV2: true,
-      tenKV2: true,
-      hmV2: true,
-      marathonV2: false
-    });
-    expect(marathonV2ToggleVisible({ devOverride: undefined, isAdmin: false })).toBe(false);
-    expect(marathonV2ToggleVisible({ devOverride: ' ', isAdmin: false })).toBe(false);
-    expect(marathonV2ToggleVisible({ devOverride: '0', isAdmin: false })).toBe(true);
-    expect(marathonV2ToggleVisible({ devOverride: undefined, isAdmin: true })).toBe(true);
+describe('V1b: izbor i rutiranje po oznaci politike (samo v2)', () => {
+  it('nov plan: maraton → maraton v2; ostale distance → v2 te distance', () => {
+    expect(generatorForNewPlan(42195)).toBe(MARATHON_V2_GENERATOR);
+    expect(generatorForNewPlan(5000)).toBe(FIVE_K_V2_GENERATOR);
+    expect(generatorForNewPlan(10000)).toBe(TEN_K_V2_GENERATOR);
+    expect(generatorForNewPlan(21097.5)).toBe(HALF_MARATHON_V2_GENERATOR);
   });
 
-  it('nov plan: uključen prekidač menja SAMO maraton; isključen = kao do sada; predaja ostaje v1', () => {
-    expect(generatorForNewPlan(42195, { fiveKV2: false })).toBe(MARATHON_GENERATOR);
-    expect(
-      generatorForNewPlan(42195, { fiveKV2: true, tenKV2: true, hmV2: true, marathonV2: false })
-    ).toBe(MARATHON_GENERATOR);
-    expect(generatorForNewPlan(42195, { fiveKV2: false, marathonV2: true })).toBe(
-      MARATHON_V2_GENERATOR
-    );
-    expect(generatorForNewPlan(5000, { fiveKV2: false, marathonV2: true })).toBe(FIVE_K_GENERATOR);
-    expect(generatorForNewPlan(10000, { fiveKV2: false, marathonV2: true })).toBe(TEN_K_GENERATOR);
-    expect(generatorForNewPlan(21097.5, { fiveKV2: false, marathonV2: true })).toBe(
-      HALF_MARATHON_GENERATOR
-    );
-    expect(generatorForNewPlan(10000, { fiveKV2: false, tenKV2: true, marathonV2: true })).toBe(
-      TEN_K_V2_GENERATOR
-    );
-    expect(generatorForNewPlan(21097.5, { fiveKV2: false, hmV2: true, marathonV2: true })).toBe(
-      HALF_MARATHON_V2_GENERATOR
-    );
-    // Predaja „kraća distanca" (maraton → HM, HM → 10K) ostaje v1 (predaja v2 je faza 3).
-    expect(regeneratorForDistance(21097.5)).toBe(hm.handoffFuture);
-    expect(regeneratorForDistance(10000)).toBe(tenK.handoffFuture);
-  });
-
-  it('postojeći planovi: marathon-v1 i legacy-marathon ostaju na maraton v1; marathon-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null', () => {
+  it('postojeći planovi: marathon-v1 i bez oznake → stari plan (bez generatora); marathon-v2 → v2; nepoznata/bez verzije → UNKNOWN_POLICY; tuđa distanca → null', () => {
     const v2 = stampForStorage(planOf(WITH_RESULT));
     expect(generatorForPlan(v2)).toBe(MARATHON_V2_GENERATOR);
     expect(isMarathonV2Plan(v2)).toBe(true);
@@ -397,13 +346,14 @@ describe('prekidač i rutiranje po oznaci politike', () => {
       ...v2,
       meta: { ...meta, ...m }
     });
-    expect(
-      generatorForPlan(withMeta({ policyId: 'marathon-v1', policyVersion: 'marathon-v1.0.0' }))
-    ).toBe(MARATHON_GENERATOR);
+    const v1 = withMeta({ policyId: 'marathon-v1', policyVersion: 'marathon-v1.0.0' });
+    expect(generatorForPlan(v1)).toBeNull();
+    expect(unsupportedPlanReason(v1)).toBe(LEGACY_PLAN);
     const legacy = { ...v2, meta: { ...meta } };
     delete legacy.meta['policyId'];
     delete legacy.meta['policyVersion'];
-    expect(generatorForPlan(legacy)).toBe(MARATHON_GENERATOR);
+    expect(generatorForPlan(legacy)).toBeNull();
+    expect(preparationForPlan(legacy)).toBeNull();
     for (const version of [
       'marathon-v2.0.0',
       'marathon-v2.3.0',
@@ -422,28 +372,9 @@ describe('prekidač i rutiranje po oznaci politike', () => {
     }
     for (const raceDistM of [5000, 10000, 21097.5])
       expect(generatorForPlan(withMeta({ raceDistM })), String(raceDistM)).toBeNull();
-    // Prekidač ne prebacuje postojeći v1 plan (izbor ne čita prekidač); lični plan vlasnika ostaje HM v1.
-    const input = toGenerationInput(
-      {
-        ...initialWizard(),
-        raceDist: 42195,
-        raceDate: '2027-04-04',
-        pbDist: 21097.5,
-        pbH: '1',
-        pbMin: '40',
-        pbSec: '0',
-        weeklyKm: '50',
-        runDays: 5,
-        runDows: [1, 2, 4, 6, 7]
-      },
-      '2026-11-02'
-    )!;
-    const v1 = stampForStorage(
-      MARATHON_GENERATOR.adaptGeneratedPlan(MARATHON_GENERATOR.generatePlan(input))!
-    );
-    expect(generatorForPlan(v1)).toBe(MARATHON_GENERATOR);
-    expect(generatorForPlan(personalPlan(48))).toBe(HALF_MARATHON_GENERATOR);
-    for (const p of [v1, personalPlan(48)]) {
+    // Lični plan vlasnika ostaje zamrznut HM v1; stari plan nema generator.
+    expect(generatorForPlan(personalPlan(48))).toBe(LEGACY_PERSONAL_GENERATOR);
+    for (const p of [legacy, personalPlan(48)]) {
       expect(isMarathonV2Plan(p)).toBe(false);
       expect(tracksOffPlanRuns(p)).toBe(false);
     }
@@ -451,7 +382,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
   });
 
   it('KNOWN_VERSIONS = sve verzije sačuvane posle MAR-05 (marathon-v2.3.1) i tekuća', () => {
-    expect(mar.marathonV2.KNOWN_VERSIONS).toEqual([
+    expect(marathonV2.KNOWN_VERSIONS).toEqual([
       ...new Set([
         'marathon-v2.3.1',
         'marathon-v2.4.0',
@@ -699,15 +630,10 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad maraton v1)
     expect(keys).toHaveLength(55);
     expect(B).toHaveLength(26);
     expect([...A, ...B, ...C].sort()).toEqual(keys);
-    expect(Object.keys(MARATHON_GENERATOR).sort()).toEqual(keys);
+    expect(Object.keys(OLD).sort()).toEqual(keys);
     const g = MARATHON_V2_GENERATOR as unknown as Record<string, unknown>;
-    const old = MARATHON_GENERATOR as unknown as Record<string, unknown>;
-    const v1 = new Set<unknown>(Object.values(mar).filter((x) => typeof x === 'function'));
-    for (const k of keys)
-      if (typeof g[k] === 'function') {
-        expect(g[k], k).not.toBe(old[k]);
-        expect(v1.has(g[k]), k).toBe(false);
-      }
+    const old = OLD as unknown as Record<string, unknown>;
+    for (const k of keys) if (typeof g[k] === 'function') expect(g[k], k).not.toBe(old[k]);
     for (const k of B) expect(MEMBERS[k]!.reason.length, k).toBeGreaterThan(10);
   });
 
@@ -832,7 +758,7 @@ describe('ugovor: (a) v2, (b) kroz činjenice i adaptaciju v2 (nikad maraton v1)
       }
     };
     const g = MARATHON_V2_GENERATOR;
-    const o = MARATHON_GENERATOR;
+    const o = OLD;
     for (const day of ['2026-11-23', '2026-11-26', '2026-12-10'] as IsoDate[]) {
       expect(g.painStatus(pain, day)).toEqual(o.painStatus(pain, day));
       expect(g.acwrNow(ctx, day)).toEqual(o.acwrNow(ctx, day));

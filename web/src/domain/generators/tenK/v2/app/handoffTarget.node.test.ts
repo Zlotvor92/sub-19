@@ -19,7 +19,7 @@ import { TEN_K_V2_POLICY } from '../policy.ts';
 import type { TenKV2Plan } from '../types.ts';
 import { generateTenKV2 } from '../generate.ts';
 import { alignedStart } from './generate.ts';
-import { targetInput } from './handoffTarget.ts';
+import { handoffFuture, targetInput } from './handoffTarget.ts';
 import { PREFIX_KEY, prefixOf } from './plan.ts';
 import { FULL } from '../../../../../test/level';
 
@@ -35,7 +35,6 @@ import { FULL } from '../../../../../test/level';
    - T1/T2: politika izvora (i `startingKm` izvršenja) ne menja cilj; politika cilja ga menja.
    - Odbijanje generatora cilja → opcija nedostupna sa razlogom v2 doslovno, nikad v1. */
 
-const ON: select.GeneratorFlags = { fiveKV2: false, tenKV2: true };
 const DAY = 86_400_000;
 const addDays = (d: string, n: number): IsoDate =>
   new Date(Date.parse(d + 'T00:00:00Z') + n * DAY).toISOString().slice(0, 10) as IsoDate;
@@ -91,7 +90,7 @@ function handoff(
   execution: unknown = null,
   input: unknown = contract(s, src)
 ): Out {
-  const h = select.shorterHandoffForV2Source(ON, s.format)(10000)!;
+  const h = select.shorterHandoffForV2Source(s.format)(10000)!;
   return (h as unknown as (...a: unknown[]) => Out)(
     src,
     input,
@@ -224,10 +223,10 @@ describe('3d-10K: po osećaju, pravi izvor, nedostupno', () => {
     ]);
     if (!a.ok) throw new Error('adaptacija');
     const src = select.stampForStorage(a.result);
-    const prep = select.preparationForPlan(src, ON)!;
+    const prep = select.preparationForPlan(src)!;
     const basis = prep.basisFromPlan(src, asOf)!;
     const d = prep.preparationDecision(src, asOf, basis, {}, 'limited', undefined);
-    expect(d.unavailable.join(' ')).not.toContain(select.V2_TARGET_NOT_READY);
+    expect(d.unavailable.join(' ')).not.toContain('v1');
     const ch = prep.buildPreparationChoice(
       src,
       asOf,
@@ -311,14 +310,12 @@ describe.each([
 });
 
 describe('3d-10K: format i izbor', () => {
-  it('prekidač 10K v2 isključen → v1 cilj (10K v1); uključen → 10K v2 (nije NOT_READY)', () => {
+  it('V1b: cilj 10K je uvek 10K v2 (nikad v1), za oba izvora', () => {
     for (const s of SOURCES) {
-      const off = select.shorterHandoffForV2Source({ fiveKV2: false }, s.format)(10000);
-      const on = select.shorterHandoffForV2Source(ON, s.format)(10000);
-      expect(off, s.name).not.toBe(on);
+      expect(select.shorterHandoffForV2Source(s.format)(10000), s.name).toBe(handoffFuture);
       const src = s.generate(s.inputs()[0]!.input)!;
       const r = handoff(s, src, addDays(src.weeks[src.weeks.length - 10]!.start, 3), 'none');
-      expect(r.error ?? '', s.name).not.toBe(select.V2_TARGET_NOT_READY);
+      expect(r.result, s.name).toBeTruthy();
     }
   });
   it(`plan bez predaje nema ${PREFIX_KEY}; verzija 10k-v2.8.0 (06i), KNOWN_VERSIONS ∪ 10k-v2.6.2`, () => {
@@ -396,7 +393,7 @@ describe('10K-07 Z5: cilj predaje sam određuje politiku', () => {
     const r = handoff(MAR, src, asOf, 'none');
     expect(r.error).toBeUndefined();
     expect((r.result as unknown as { tenKV2: TenKV2Plan }).tenKV2.input.experience).toBe('regular');
-    const prep = select.preparationForPlan(src, ON)!;
+    const prep = select.preparationForPlan(src)!;
     const basis = prep.basisFromPlan(src, asOf)!;
     const d = prep.preparationDecision(src, asOf, basis, {}, 'limited', undefined);
     expect(d.unavailable.join(' ')).not.toMatch(/početnik/i);

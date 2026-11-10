@@ -41,7 +41,7 @@ function handedOff(): GenPlanState {
   const a = select.hmV2AdaptPreview(g.plan, asOf, {}, [{ from: addDays(asOf, -20), to: asOf }]);
   if (!a.ok) throw new Error('adaptacija');
   const src = select.stampForStorage(a.result);
-  const prep = select.preparationForPlan(src, { fiveKV2: false, tenKV2: true, hmV2: true })!;
+  const prep = select.preparationForPlan(src)!;
   const basis = prep.basisFromPlan(src, asOf)!;
   const ch = prep.buildPreparationChoice(
     src,
