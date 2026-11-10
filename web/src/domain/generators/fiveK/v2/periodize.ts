@@ -64,7 +64,8 @@ export function testKindOf(
 export function resultTestWeekOf(frames: readonly Omit<WeekFrame, 'test'>[]): number | null {
   for (let i = frames.length - 1; i >= 0; i--) {
     const f = frames[i]!;
-    if (f.phase === 'peak' && !f.deload) return f.index;
+    // 5k-v2.15.0 (P8 dopuna G7): test ne pre nedelje feel.test.minWeek.
+    if (f.phase === 'peak' && !f.deload) return f.index >= P.feel.test.minWeek ? f.index : null;
   }
   return null;
 }

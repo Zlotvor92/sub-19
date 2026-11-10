@@ -326,7 +326,13 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
       // 2.8.1 (pouka 35): nedelja izgradnje sa drugim danom kvaliteta laganim (oznaka week.SECOND_EASY_NOTE).
       const secondEasy = w.notes.some((n) => n.includes(SECOND_EASY_NOTE));
       const oneQuality =
-        w.deload || w.taperStep === 2 || rule.qualityDays === 1 || oneQ(w) || secondEasy;
+        w.deload ||
+        w.taperStep === 2 ||
+        rule.qualityDays === 1 ||
+        oneQ(w) ||
+        secondEasy ||
+        // 5k-v2.15.0 (P8 dopuna G7): nedelja testa — test je jedini kvalitet.
+        w.test;
       const expectedQ =
         w.stridesOnly || lim?.quality === 'none' ? 0 : oneQuality ? 1 : rule.qualityDays;
       // 5k-v2.12.0 (T1): nedelja sa laganim danom manje može izgubiti i dan samo sa ubrzanjima (week.buildTrainingWeek).

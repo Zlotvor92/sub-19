@@ -291,7 +291,8 @@ export const FIVE_K_V2_POLICY = {
       recoverySec: 60
     },
     /** Kontrolno trčanje: 3 km maksimalno ravnomerno u 3. nedelji, ili 4. ako je 3. rasteretna. */
-    test: { km: 3, weeks: [3, 4] as const },
+    /** 5k-v2.15.0 (P8 dopuna G7): test ne pre nedelje 4 (bilo [3, 4]). */
+    test: { km: 3, weeks: [4, 5] as const, minWeek: 4 },
     /** 5k-v2.14.0 (P5 F1, heuristika, odluka organizatora): plan SA REZULTATOM (ne početnik) i ukupno ≥ minWeeks
         nedelja dobija isti test (3 km, WU/CD, pravila obima) u poslednjoj ne-rasteretnoj nedelji vrhunca (faza pre
         oštrenja), na danu Q1 umesto I (periodize.resultTestWeekOf; konstruktor, validator TEST_WEEK). */

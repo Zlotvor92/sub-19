@@ -528,7 +528,8 @@ export function simpleWeekQuality(
 
   // Drugi kvalitet (2 kvaliteta); tempo koji ne staje → fartlek u T budžetu.
   let second: Pick | null = null;
-  if (k.second) {
+  // 5k-v2.15.0 (P8 dopuna G7): u nedelji testa test je jedini kvalitet (drugi dan lagan, stanje slota se ne menja).
+  if (k.second && !f.test) {
     second = pick(k.second, true) ?? (k.second === 'TEMPO' ? pick('FARTLEK_T', true) : null);
     if (!second)
       return fail(`${SPEC[k.second].label}: budžet ${b[SPEC[k.second].budget]} km nije dovoljan.`);

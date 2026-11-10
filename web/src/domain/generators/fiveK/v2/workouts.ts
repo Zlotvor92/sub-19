@@ -943,14 +943,16 @@ function peakWeek(
     const t = (hold ? heldT(prev?.t ?? null, b.T, 'peak', p) : null) ?? tOf();
     if (!t)
       return { ok: false, message: `T: budžet ${km(b.T)} km nije dovoljan uz kontrolno trčanje.` };
+    // 5k-v2.15.0 (P8 dopuna G7): test je jedini kvalitet nedelje — drugi dan lagan, stanje T slota ostaje.
+    void t;
     return {
       ok: true,
       q1: testRun(targetKm, p),
-      q2: tSession(t, targetKm, p).workout,
-      easyStrides: false,
+      q2: null,
+      easyStrides: true,
       stridesOnly: false,
       notes: [P.feel.resultTestWeekNote],
-      dose: { main: prev?.main ?? null, t, same: 1 }
+      dose: prev ? { ...prev } : { main: null, t: null, same: 1 }
     };
   }
   // 5k-v2.14.0 (P5 F2): nedelja zadržane doze — I i T kao prethodne nedelje.
