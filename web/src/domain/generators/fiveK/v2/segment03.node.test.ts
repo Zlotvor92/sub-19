@@ -175,7 +175,10 @@ describe('Odluka 4: jedan T limit po fazi, jedan vrh obima', () => {
       for (const d of w.days)
         if (w.phase !== 'race')
           expect(d.workout.maxBoutSec.T).toBeLessThanOrEqual(P.quality.tContinuousMaxSec[w.phase]);
-    expect(plan.peakKm).toBeLessThanOrEqual(volume.peakKm(plan.startKm, plan.capacityKm, 4));
+    // 5k-v2.15.0 (P8 G1a): faktor vrha po dužini pripreme (1,30 / 1,35 / 1,40) i satni plafon.
+    expect(plan.peakKm).toBeLessThanOrEqual(
+      volume.peakKm(plan.startKm, plan.capacityKm, 4, { weeks: plan.weeks.length, p: plan.paces })
+    );
   });
 
   it('peakKm = min(1,3 × start, kapacitet, 50) za 4 dana', () => {

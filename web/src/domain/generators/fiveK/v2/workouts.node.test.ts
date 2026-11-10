@@ -127,7 +127,7 @@ describe('raspored i obim', () => {
     const frames = periodize(START, 14);
     const v = planVolume(frames, 35, pacesFromVdot(50), 4);
     expect(v.targets[0]).toBe(35);
-    expect(v.peakKm).toBeLessThanOrEqual(35 * 1.3);
+    expect(v.peakKm).toBeLessThanOrEqual(35 * 1.35); // 5k-v2.15.0 (P8 G1a): 13–15 nedelja → faktor 1,35
     expect(v.targets.slice(-3)).toEqual([
       Math.round(v.peakKm * 8.5) / 10,
       Math.round(v.peakKm * 7) / 10,

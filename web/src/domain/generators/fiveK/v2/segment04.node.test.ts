@@ -114,7 +114,8 @@ describe('Odluka 1: šablon po broju dana', () => {
     expect(plan.pattern.easy).toHaveLength(2);
     for (const w of plan.weeks.filter((x) => x.phase !== 'race')) {
       expect(w.days).toHaveLength(5);
-      expect(quality(w).length).toBe(w.deload || w.taperStep === 2 ? 1 : 2);
+      // 5k-v2.15.0 (P8 G7): u nedelji kontrolnog testa test je jedini kvalitet.
+      expect(quality(w).length).toBe(w.deload || w.taperStep === 2 || w.test ? 1 : 2);
       const long = roleDay(w, 'long')!.workout;
       expect(long.km).toBeLessThanOrEqual(w.targetKm * 0.3 + 1e-9);
       expect(long.km * plan.paces.E.slow).toBeLessThanOrEqual(P.long.maxSec);
@@ -171,7 +172,10 @@ describe('Odluka 2: kapacitet i vrh obima po broju dana', () => {
   it.each(S04_ALL)('%s: vrh ≤ peakKm(start, kapacitet, dani), svaki cilj ≤ kapaciteta', (_, p) => {
     const plan = planOf(p);
     const n = p.days.length as 3 | 4 | 5;
-    expect(plan.peakKm).toBeLessThanOrEqual(volume.peakKm(plan.startKm, plan.capacityKm, n));
+    // 5k-v2.15.0 (P8 G1a): faktor vrha po dužini pripreme (1,30 / 1,35 / 1,40) i satni plafon.
+    expect(plan.peakKm).toBeLessThanOrEqual(
+      volume.peakKm(plan.startKm, plan.capacityKm, n, { weeks: plan.weeks.length, p: plan.paces })
+    );
     expect(plan.peakKm).toBeLessThanOrEqual(days.days[n]!.maxWeekKm);
     for (const w of plan.weeks) expect(w.targetKm).toBeLessThanOrEqual(plan.capacityKm);
   });

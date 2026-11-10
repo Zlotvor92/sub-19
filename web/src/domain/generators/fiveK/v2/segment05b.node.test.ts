@@ -153,6 +153,7 @@ describe('Odluka 3 + mreža regular sa rezultatom: vrh(2.4.1) ≥ vrh(7b4b574)',
     expect(FIXTURE.plans).toHaveLength(840);
     const lower: string[] = [];
     let plans = 0;
+    let hourCapped = 0;
     for (const x of FIXTURE.plans) {
       const r = generateFiveKV2(
         inputOf({
@@ -174,10 +175,19 @@ describe('Odluka 3 + mreža regular sa rezultatom: vrh(2.4.1) ≥ vrh(7b4b574)',
       for (const w of r.plan.weeks.filter(build))
         expect(volume.fitTargetKm(w.targetKm, r.plan.paces, x.days)).toBe(w.targetKm);
       if (x.peak !== null && r.plan.peakKm + 1e-9 < x.peak) {
-        if (!x.exempt) lower.push(`${JSON.stringify(x)} → ${r.plan.peakKm}`);
+        // 5k-v2.15.0 (P8 G1a): niži vrh je dozvoljen samo kad plan stoji na satnom plafonu nedelje (6 / 7 / 8 h po
+        // VDOT-u, srednji lagan tempo) — računato ovde nezavisno od volume.peakKm: sledećih 0,1 km prelazi plafon.
+        const e = (r.plan.paces.E.fast + r.plan.paces.E.slow) / 2;
+        const hours = P.volume.weeklyHoursByVdot.reduce(
+          (h, t) => (r.plan.paces.vdot + 1e-9 >= t.fromVdot ? t.hours : h),
+          P.volume.weeklyHoursByVdot[0]!.hours
+        );
+        if ((r.plan.peakKm + 0.1) * e > hours * 3600 + 1e-6) hourCapped++;
+        else if (!x.exempt) lower.push(`${JSON.stringify(x)} → ${r.plan.peakKm}`);
       }
     }
     expect(lower).toEqual([]);
+    expect(hourCapped).toBe(18);
     // 5k-v2.11.0 (F2): 12 ulaza 3 dana / 12 km koje je 7b4b574 odbijao (QUALITY_INFEASIBLE) sada daju plan sa smanjenom
     // dozom kvaliteta (quality.weekQuality, reducedQuality).
     expect(plans).toBe(840);

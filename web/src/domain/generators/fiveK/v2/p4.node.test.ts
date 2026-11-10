@@ -63,12 +63,14 @@ describe('P4 S1 — budžet I/RP po cilju nedelje', () => {
         const p = planOf(inp(d, km, 12, v));
         for (const w of p.weeks) {
           if (w.phase === 'race') continue;
-          const lim = w.targetKm < 40 ? 0.1 : 0.12;
-          expect(iWork(w)).toBeLessThanOrEqual(w.targetKm * lim + 1e-6);
+          // 5k-v2.15.0 (P8 a): budžet I/RP 10 % za sve ciljeve (red ≥ 40 km → 12 % ukinut).
+          expect(iWork(w)).toBeLessThanOrEqual(w.targetKm * 0.1 + 1e-6);
           if (iWork(w) > w.targetKm * 0.08 + 1e-6) above8++;
         }
       }
-    expect(above8).toBeGreaterThan(20);
+    // 5k-v2.15.1 (P8 G4 minuti, c prvi I ≤ 70 %, odluka 2: I raste jedan korak lestvice nedeljno): manje nedelja iznad
+    // 8 % (bilo > 20), ali ih i dalje ima.
+    expect(above8).toBeGreaterThan(8);
   });
 
   it('profil (b) 5K 20:25, 30 km, 4 dana, 8 ned: vrh I ≥ 12 min rada, najveći RP trening ≥ 3 km', () => {
@@ -92,7 +94,9 @@ describe('P4 S1 — budžet I/RP po cilju nedelje', () => {
     const rpKm = Math.max(
       ...days.filter((d) => d.workout.qualityType === 'RP').map((d) => d.workout.workKm.RP)
     );
-    expect(iMin).toBeGreaterThanOrEqual(12);
+    // 5k-v2.15.1 (P8 c + odluka 2): prvi I ≤ 70 % budžeta i rast jedan korak nedeljno — u 8 nedelja (2 I nedelje posle
+    // prvog) vrh I je 9,6 min (bilo ≥ 12).
+    expect(iMin).toBeGreaterThanOrEqual(9);
     expect(rpKm).toBeGreaterThanOrEqual(3);
   });
 
@@ -146,11 +150,14 @@ describe('P4 S2 — VDOT do 70', () => {
         }
   });
 
-  it('O-d: oštrenje trkačke nedelje 300 m RP ispod 60 s je dozvoljeno (svesna odluka)', () => {
+  it('O-d → P8 G5: oštrenje trkačke nedelje su 2 jednake deonice RP ≥ 400 m, ukupno ≤ 12 min', () => {
     const p = planOf(inp(4, 18, 8, 66));
     const sh = p.weeks.at(-1)!.days.find((d) => d.workout.qualityType === 'RP_sharpener')!;
-    const rep = sh.workout.segments.find((s) => s.kind === 'rep')!;
-    expect(rep.sec).toBeLessThan(60);
+    const reps = sh.workout.segments.filter((s) => s.kind === 'rep');
+    expect(reps).toHaveLength(2);
+    expect(reps[0]!.km).toBe(reps[1]!.km);
+    expect(reps[0]!.km).toBeGreaterThanOrEqual(0.4);
+    expect(reps.reduce((a, s) => a + s.sec, 0)).toBeLessThanOrEqual(12 * 60);
     expect(validatePlan(p).filter((v) => v.severity === 'error')).toEqual([]);
   });
 });

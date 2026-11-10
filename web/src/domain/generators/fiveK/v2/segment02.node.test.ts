@@ -98,10 +98,10 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
   it('validator: „lagan = dugi" uz oznaku → upozorenje; bez oznake → greška; lažna oznaka → greška', () => {
     const p = planOf(CAPPED);
     const w = p.weeks.find((x) => x.phase === 'base' && !x.deload)!;
-    // Kao da je cilj iznad kapaciteta: dugi 6 km, lagan na granici 0,8 × dugi (5k-v2.12.0, T1).
+    // Kao da je cilj iznad kapaciteta: dugi 6 km, lagan na granici 0,7 × dugi (4 dana; 5k-v2.15.0, P8 G6).
     w.days = w.days.map((d) =>
       d.role === 'easy'
-        ? { ...d, workout: easyRun(4.8, p.paces, false) }
+        ? { ...d, workout: easyRun(4.2, p.paces, false) }
         : d.role === 'long'
           ? { ...d, workout: longRun(6, p.paces) }
           : d
@@ -125,13 +125,35 @@ describe('Odluka 2: progresija doze i bez ponavljanja para kvaliteta', () => {
     const steady = plan.weeks.filter(isSteadyBuild);
     // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget.
     const first = firstPeakIWeek(plan.weeks);
+    // 5k-v2.15.1 (P8 završetak, odluka 2): donji prag budžeta važi za prvi I vrhunca i za oštrenje; posle prvog I doza
+    // raste najviše jedan korak lestvice nedeljno (nezavisna lestvica iz ponude politike, ne iz workouts.iStepUp).
+    const q = P.quality;
+    const ladder = [
+      ...new Set(
+        q.repOptionsKm.I.filter(
+          (km) =>
+            km * plan.paces.I <= q.iRepMaxSec + 1e-9 && km * plan.paces.I >= q.iRepMinSec - 1e-9
+        ).flatMap((km) =>
+          Array.from({ length: q.maxReps.I - q.minReps.I + 1 }, (_, i) =>
+            Math.round((q.minReps.I + i) * km * 100)
+          )
+        )
+      )
+    ].sort((x, y) => x - y);
+    let prevI: number | null = null;
     for (const w of steady.filter((x) => x.phase === 'peak' || x.phase === 'sharpen')) {
-      expect(mainWork(w)).toBeGreaterThanOrEqual(
-        (w.index === first ? firstIBudget(w.budgets.I) : w.budgets.I) *
-          P.quality.mainMinShareOfBudget -
-          1e-9
-      );
+      if (w.phase === 'sharpen' || prevI === null)
+        expect(mainWork(w)).toBeGreaterThanOrEqual(
+          (w.index === first ? firstIBudget(w.budgets.I) : w.budgets.I) *
+            P.quality.mainMinShareOfBudget -
+            1e-9
+        );
+      else {
+        const next = ladder.find((x) => x > Math.round(prevI! * 100));
+        if (next !== undefined) expect(Math.round(mainWork(w) * 100)).toBeLessThanOrEqual(next);
+      }
       expect(mainWork(w)).toBeLessThanOrEqual(w.budgets.I + 1e-9);
+      if (w.phase === 'peak') prevI = mainWork(w);
     }
     for (let i = 1; i < steady.length; i++) {
       const a = steady[i - 1]!;

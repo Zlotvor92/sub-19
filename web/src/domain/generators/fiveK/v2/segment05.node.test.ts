@@ -100,7 +100,11 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
       const long = w.days.find((d) => d.role === 'long');
       if (w.easyCappedAtLong && long) {
         for (const d of w.days.filter((x) => x.role === 'easy'))
-          expect(d.workout.km).toBeCloseTo(Math.floor(long.workout.km * 8 + 1e-9) / 10, 6);
+          // 5k-v2.15.0 (P8 b): u rasterećenju je dugi na granici 0,8 × poslednji dugi, pa lagan sme do dugog.
+          expect(d.workout.km).toBeCloseTo(
+            w.deload ? long.workout.km : Math.floor(long.workout.km * 8 + 1e-9) / 10,
+            6
+          );
         expect(w.plannedKm).toBeLessThan(w.targetKm);
       } else expect(w.plannedKm).toBeCloseTo(w.targetKm, 2);
     }
@@ -267,7 +271,7 @@ describe('Odluka 4: bez rezultata — E iz korisnikovog tempa, kvalitet po oseć
   });
 });
 
-describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)', () => {
+describe('Odluka 5: kontrolno trčanje 3 km u 4. ili 5. nedelji (ne rasteretnoj; P8 G7)', () => {
   it.each([
     ['4 dana, 12 ned', EX.feel4],
     ['3 dana, 10 ned', EX.feel3]
@@ -276,10 +280,15 @@ describe('Odluka 5: kontrolno trčanje 3 km u 3. ili 4. nedelji (ne rasteretnoj)
     const tests = plan.weeks.filter((w) => w.days.some((d) => d.workout.qualityType === 'TEST_3K'));
     expect(tests).toHaveLength(1);
     const w = tests[0]!;
-    expect([3, 4]).toContain(w.index);
+    // 5k-v2.15.0 (P8 G7): test ne ide pre nedelje 4 — prva ne-rasteretna nedelja ≥ 4 iste faze.
+    expect(w.index).toBeGreaterThanOrEqual(P.feel.test.minWeek);
+    expect(w.index).toBeLessThanOrEqual(5);
     expect(w.deload).toBe(false);
     expect(w.test).toBe(true);
-    if (w.index === 4) expect(plan.weeks[2]!.deload).toBe(true);
+    for (const x of plan.weeks.slice(P.feel.test.minWeek - 1, w.index - 1))
+      expect(x.deload).toBe(true);
+    // 5k-v2.15.0 (P8 G7): test je jedini kvalitet nedelje.
+    expect(quality(w)).toHaveLength(1);
     const t = quality(w).find((d) => d.workout.qualityType === 'TEST_3K')!.workout;
     expect(t.blocks.map((b) => b.kind)).toEqual(['warmup', 'test', 'cooldown']);
     expect(t.segments.find((x) => x.kind === 'test')!.km).toBe(3);

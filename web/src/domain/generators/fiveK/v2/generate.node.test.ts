@@ -110,7 +110,10 @@ describe('raspored: 4 dana, zahtevni dani nisu uzastopni', () => {
       if (w.phase !== 'race') {
         expect(w.days).toHaveLength(4);
         expect(w.days.filter((d) => d.role === 'long')).toHaveLength(1);
-        expect(w.days.filter((d) => d.hard)).toHaveLength(w.deload || w.taperStep === 2 ? 2 : 3);
+        // 5k-v2.15.0 (P8 G7): u nedelji kontrolnog testa test je jedini kvalitet (drugi dan kvaliteta lagan).
+        expect(w.days.filter((d) => d.hard)).toHaveLength(
+          w.deload || w.taperStep === 2 || w.test ? 2 : 3
+        );
       }
     }
     const hard = plan.weeks.flatMap((w) => w.days.filter((d) => d.hard).map((d) => d.date)).sort();
