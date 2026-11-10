@@ -35,7 +35,8 @@ it('mešovite nedelje ulaze u najveću dosadašnju dozu: ograničena ned 5 (T 24
     );
   // MAR-11 (T1): plan se menja (lagani ≤ 0,8 × dugi); P2-S2 (dugi do 180 min): ned 3 T 4000; ograničena ned 5 =
   // ≈ 60 % najveće upisane (4000 → 2400 m), nije rast.
-  expect([t(2), t(3), t(5)]).toEqual([[3000], [4000], [2400]]);
+  // P5-F4: početni T ≤ 80 % plafona — ned 2 već 4000 m.
+  expect([t(2), t(3), t(5)]).toEqual([[4000], [4000], [2400]]);
   expect(r.plan.adaptation!.mixedWeeks).toEqual(expect.arrayContaining([2, 3]));
   expect(adaptInvariants(r1.plan, r.plan, at2, f2)).toEqual([]);
 });

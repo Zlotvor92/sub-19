@@ -32,8 +32,10 @@ const longOf = (w: MarathonV2Plan['weeks'][number]) => w.days.find((d) => d.role
 const errors = (p: MarathonV2Plan) => validatePlan(p).filter((v) => v.severity === 'error');
 
 describe('T1: lagan ≤ 0,8 × dugi u izgradnji; najkraći max(5 km, 20 min)', () => {
-  it('4 dana, 45 km, VDOT 40: svaka nedelja izgradnje lagan ≤ 0,8 × dugi; cilj spušten uz CAPACITY_LIMITED', () => {
-    const p = planOf(grid('d4-14w-45km-v40-A-sat'));
+  // P5-F4 (marathon-v2.10.0): veća početna doza T/I nosi više km na danima kvaliteta, pa VDOT 40 više nije spušten
+  // (nedelja 1 staje u 45 km); isti slučaj sa sporijim trkačem (VDOT 35).
+  it('4 dana, 45 km, VDOT 35: svaka nedelja izgradnje lagan ≤ 0,8 × dugi; cilj spušten uz CAPACITY_LIMITED', () => {
+    const p = planOf(grid('d4-14w-45km-v35-A-sat'));
     for (const w of p.weeks.filter((x) => x.phase !== 'taper' && x.phase !== 'race' && !x.deload)) {
       const L = longOf(w)!;
       for (const d of w.days.filter((x) => x.role === 'easy'))

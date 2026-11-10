@@ -311,7 +311,8 @@ describe('3/5/6 dana (M15) i M13a: mutacija → greška', () => {
 
   it('ispravni planovi 3/5/6 dana: 0 grešaka; 3 dana jedan kvalitet bez I/R, 5/6 dana lagani jednaki', () => {
     for (const p of [D3, D5, D6]) expect(errors(p)).toEqual([]);
-    for (const w of steady(D3))
+    // P5-F1: nedelja testa (plan sa rezultatom) nema kvalitet na danu Q1.
+    for (const w of steady(D3).filter((x) => !x.test))
       expect(w.days.filter((d) => d.workout.kind === 'quality').map((d) => d.role)).toEqual(['q1']);
     expect(
       D3.weeks.some((w) => w.days.some((d) => d.workout.workKm.I + d.workout.workKm.R > 0))

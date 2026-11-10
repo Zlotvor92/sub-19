@@ -133,7 +133,8 @@ describe('M17 plan', () => {
       1500, 2000, 3000, 4000, 5000, 6000, 8000
     ]);
     expect(doseOf(startLevel('T_continuous', 45, true)!)).toBe(1500);
-    expect(doseOf(startLevel('T_continuous', 45)!)).toBe(2000);
+    // P5-F4: redovan plan T ≤ 80 % plafona (4500 m → 3000 m); početnik bez promene.
+    expect(doseOf(startLevel('T_continuous', 45)!)).toBe(3000);
     const first = steady(B4).find((w) => w.index === 3)!;
     expect(first.days.find((d) => d.role === 'q1')!.workout.dose!.doseM).toBe(1500);
   });

@@ -434,6 +434,11 @@ export interface MarathonV2AdaptStep {
   /** MAR-10 (Z7): primenjen manjak izvršenja — prvi dan prozora zapisa (7 dana do asOf); kasniji korak čiji se prozor
       preklapa ne pravi nov manjak. Samo kad ga ima. */
   underFrom?: IsoDate;
+  /** P5-F2 (A18): nedelja izgradnje bez rasta doze nijednog slota (dva uzastopna kvalitetna dana preteška ili
+      preskočena); `holdFrom` = datum kasnijeg od ta dva dana (isti zapisi ne prave nov korak). Samo kad je
+      primenjeno. */
+  holdDose?: number;
+  holdFrom?: IsoDate;
 }
 
 /** Pouka 34: referenca umora pre starta (nedelja 1 generatora bez činjenica). */
@@ -467,6 +472,7 @@ export type AdaptCondition =
   | 'PAUSE'
   | 'PAIN'
   | 'FATIGUE'
+  | 'QUALITY_HARD'
   | 'TEST_MOVED';
 
 /** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi (A7). */

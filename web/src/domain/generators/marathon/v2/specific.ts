@@ -101,7 +101,10 @@ export function chooseBlockKm(
   rule: PlanRule,
   p: Paces,
   qualitySecs: readonly number[],
-  easyLongSec: number
+  easyLongSec: number,
+  /** P5-F2: nedelja bez rasta doze — nivo po pravilu je najviši nivo ≤ max(poslednji blok, poslednja MP doza);
+      nema ga (blok bi bio veći od poslednje MP doze) → null (nedelja A). */
+  hold = false
 ): number | null {
   const km = long10 / 10;
   const ok = (x: number): boolean => {
@@ -109,7 +112,13 @@ export function chooseBlockKm(
     const sec = longBlockWorkout(km, x, p).sec;
     return qualitySecs.every((s) => s > easyLongSec || s <= sec);
   };
-  const next = nextBlockKm(Math.max(lastBlockM, lastMpM));
+  const top = Math.max(lastBlockM, lastMpM);
+  const next = hold
+    ? blockLevels()
+        .filter((x) => x * 1000 <= top + 1e-6)
+        .pop()
+    : nextBlockKm(top);
+  if (next === undefined) return null;
   const lv = blockLevels().filter((x) => x <= next + 1e-9 && ok(x));
   return lv.length > 0 ? lv[lv.length - 1]! : null;
 }

@@ -125,7 +125,12 @@ export function nextLevel(ladder: LadderId, doseM: number, beginner = false): St
   return ladderLevels(ladder, beginner).find((s) => doseOf(s) > doseM) ?? null;
 }
 
-/** M12: početni nivo — najviši nivo lestvice ≤ 60 % plafona zone (M11) za cilj nedelje, najmanje prvi
+/** M12 / P5-F4: udeo plafona zone za početni nivo — T i I 80 %, R i MP 60 % (policy.startLevel). JEDNA funkcija za
+    konstruktor i validator. */
+export const startShareOf = (ladder: LadderId): number =>
+  P.startLevel.zoneShare[zoneOf(ladder)] ?? P.startLevel.capShare;
+
+/** M12: početni nivo — najviši nivo lestvice ≤ udeo plafona zone (startShareOf; M11) za cilj nedelje, najmanje prvi
     nivo; početnik (`beginner`, M17): prvi nivo (T kontinuirano 1,5 km). null = ni prvi nivo ne staje u
     plafon. */
 export function startLevel(ladder: LadderId, targetKm: number, beginner = false): Structure | null {
@@ -133,7 +138,7 @@ export function startLevel(ladder: LadderId, targetKm: number, beginner = false)
   const cap = capM(zoneOf(ladder), targetKm);
   if (doseOf(levels[0]!) > cap) return null;
   if (beginner) return levels[0]!;
-  const limit = P.startLevel.capShare * cap + 1e-6;
+  const limit = startShareOf(ladder) * cap + 1e-6;
   return levels.filter((s) => doseOf(s) <= limit).pop() ?? levels[0]!;
 }
 
@@ -160,7 +165,11 @@ export function pickSlot(
   oneSlot = false,
   beginner = false,
   dayFits?: DayFits,
-  minM = 0
+  minM = 0,
+  /** P5-F2: nedelja bez rasta doze — ista lestvica bez sledećeg nivoa (druga struktura iste doze, ponavljanje);
+      prelaz iste zone koji nosi dozu (T kontinuirano ↔ T cruise) samo na istu dozu; prelaz u novu zonu i nova
+      lestvica po M12. */
+  hold = false
 ): Dose | null {
   const cap = capM(zoneOf(ladder), targetKm);
   const levels = ladderLevels(ladder, beginner);
@@ -188,7 +197,7 @@ export function pickSlot(
   };
   if (!prev) return start ? pick(ladder, start, 'start') : null;
   const progress = (): Dose | null => {
-    const next = nextLevel(ladder, prev.doseM, beginner);
+    const next = hold ? null : nextLevel(ladder, prev.doseM, beginner);
     if (next && ok(next)) return pick(ladder, next, 'next');
     if (prev.doseM > cap) return drop();
     const alt = otherStructure(ladder, prev.doseM, prev.structure, p, ok);
@@ -202,9 +211,12 @@ export function pickSlot(
     oneSlot && !newZone && sameStructure(s, prev.structure);
   // M19 (O3): prelaz I → MP posle nedelje B — najmanje nivo iznad bloka (`minM`) kad staje u plafon zone, inače
   // prelaz po M12.
-  const lo0 = Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
+  // P5-F2: `hold` važi za prelaz iste zone (T kontinuirano ↔ T cruise); prelaz u novu zonu (I/T → MP) ide po M12.
+  const keep = hold && !newZone;
+  const lo0 = keep ? prev.doseM : Math.max(prev.doseM, newZone && start ? doseOf(start) : 0);
   const lvMin = minM > 0 ? levels.find((s) => doseOf(s) >= Math.max(lo0, minM)) : undefined;
-  const lv = lvMin && ok(lvMin) ? lvMin : levels.find((s) => doseOf(s) >= lo0);
+  const lv0 = lvMin && ok(lvMin) ? lvMin : levels.find((s) => doseOf(s) >= lo0);
+  const lv = keep && lv0 && doseOf(lv0) > prev.doseM ? undefined : lv0;
   if (lv && ok(lv)) return repeats(lv) ? progress() : pick(ladder, lv, 'transition');
   if (prev.doseM > cap) return drop();
   // Nivo prelaza ne staje (plafon ili trajanje): ista doza druge strukture; nijedna ne staje u trajanje dugog →
@@ -248,7 +260,9 @@ export function pickBuild(
   rule: PlanRule,
   allowDrop = false,
   skipQ1 = false,
-  limit?: BuildLimit
+  limit?: BuildLimit,
+  /** P5-F2: nedelja bez rasta doze (pickSlot `hold`). */
+  hold = false
 ): Picks | null {
   const one = rule.quality === 1;
   const l1 = buildLadder(phase, targetKm, rule);
@@ -263,7 +277,8 @@ export function pickBuild(
       one,
       rule.beginner,
       limit?.q1,
-      l1 === 'MP' ? mpAfterBlockM(state.q1, state.blockM) : 0
+      l1 === 'MP' ? mpAfterBlockM(state.q1, state.blockM) : 0,
+      hold
     );
     if (!q1) return null;
   }
@@ -276,7 +291,9 @@ export function pickBuild(
     allowDrop,
     false,
     false,
-    limit?.q2(q1)
+    limit?.q2(q1),
+    0,
+    hold
   );
   return q2 ? { q1, q2 } : null;
 }

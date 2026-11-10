@@ -13,10 +13,11 @@ describeAdaptGrid(
   () => (FULL ? casesOf(part(BASES, 1, ADAPT_PARTS)) : sample(casesOf(BASES), 12, (c) => c.s))
 );
 
-it('pun nivo: deo 2 postoji; mreža 04 ima 30 baznih planova i 6236 tokova', () => {
+it('pun nivo: deo 2 postoji; mreža 04 ima 30 baznih planova i 6468 tokova', () => {
   const here = dirname(fileURLToPath(import.meta.url));
   expect(existsSync(join(here, 'adaptGrid.2.full.node.test.ts'))).toBe(true);
   expect(existsSync(join(here, 'adaptGrid.3.full.node.test.ts'))).toBe(false);
   expect(BASES).toHaveLength(30);
-  expect(casesOf(BASES)).toHaveLength(6236);
+  // P5-F1 (marathon-v2.10.0): plan sa rezultatom ima test → asOf preTest i u planovima sa rezultatom (6236 → 6468).
+  expect(casesOf(BASES)).toHaveLength(6468);
 });

@@ -13,7 +13,7 @@ import { longTimeCap10 } from './lengths.ts';
 import { raceTimeForVdot, vdotFromResult } from './paces.ts';
 import { MARATHON_V2_POLICY as P, planRule } from './policy.ts';
 import type { PlanDay } from './types.ts';
-import { doseOf, ladderLevels } from './workouts.ts';
+import { doseOf, easyWorkout, ladderLevels } from './workouts.ts';
 import {
   gridInputs,
   type GridInput,
@@ -43,8 +43,12 @@ export const BASELINE_01 = join(HERE, 'segment01.baseline.json');
 /** P2 (marathon-v2.9.0, M19 / S2): od njih bajt-isti ostaju samo planovi koje P2 ne menja na 38fd091 —
     segmentP2.stable-38fd091.json (podskup segment11.stable-b9c4728.json; docs/generators-v2/perfection/P2/classify.ts,
     promenjeni po klasi u P2/changed-38fd091.json). */
+/** P5 (marathon-v2.10.0, F1–F4): od njih bajt-isti (posle withoutStrides) ostaju samo planovi bez testa plana sa
+    rezultatom (F1) i bez promene početne doze T/I (F4) — segmentP5.stable-8e87fd4.json (podskup
+    segmentP2.stable-38fd091.json; docs/generators-v2/perfection/P5-MAR/classify.ts, promenjeni po klasi u
+    P5-MAR/changed-8e87fd4.json). */
 export const STABLE = new Set(
-  JSON.parse(readFileSync(join(HERE, 'segmentP2.stable-38fd091.json'), 'utf8')) as string[]
+  JSON.parse(readFileSync(join(HERE, 'segmentP5.stable-8e87fd4.json'), 'utf8')) as string[]
 );
 
 export const ALL: readonly GridInput[] = gridInputs();
@@ -138,8 +142,25 @@ function beforeFinal(p: MarathonV2Plan): MarathonV2Plan {
 const before07Cache = new WeakMap<MarathonV2Plan, MarathonV2Plan>();
 function before07Of(p: MarathonV2Plan): MarathonV2Plan {
   let q = before07Cache.get(p);
-  if (!q) before07Cache.set(p, (q = before07(p)));
+  if (!q) before07Cache.set(p, (q = before07(withoutStrides(p))));
   return q;
+}
+
+/** P5-F3 (marathon-v2.10.0): plan bez ubrzanja na laganom danu — dan sa ubrzanjima postaje lagan dan iste dužine
+    (workouts.easyWorkout, tempo plana). Ubrzanja ne menjaju km, obim ni dozu, pa bazne linije pre P5 ostaju dokaz da se
+    ostatak plana nije promenio (ubrzanja proverava invariants). Isto preslikavanje: P5-MAR/classify.ts. */
+export function withoutStrides(p0: MarathonV2Plan): MarathonV2Plan {
+  return {
+    ...p0,
+    weeks: p0.weeks.map((w) => ({
+      ...w,
+      days: w.days.map((d) =>
+        d.role === 'easy' && d.workout.segments.some((x) => x.kind === 'stride')
+          ? { ...d, workout: easyWorkout(d.workout.km, p0.paces) }
+          : d
+      )
+    }))
+  };
 }
 
 /** MAR-07 (N11, pouka 14): plan u obliku pre MAR-07 — vraća SAMO tekstualne izmene upozorenja i napomena (MARATHON_LONG_SHORT
@@ -230,6 +251,15 @@ export function rowOf(p: MarathonV2Plan): string {
 
 /** Invarijante (Uslov 8 i pouke 1–5, 9, 12; M16 po osećaju i M17 početnik): spisak prekršaja; prazan = plan
     je upotrebljiv. */
+/** P5-F3: trajanje laganog dana laganim tempom (ubrzanja su deo laganog trčanja — dan sa ubrzanjima traje kraće za
+    razliku tempa ubrzanja; granica 20 min se meri km dana laganim tempom). */
+const easySec = (d: {
+  workout: { km: number; sec: number; segments: readonly { kind: string; paceSecPerKm: number }[] };
+}): number =>
+  d.workout.segments.some((x) => x.kind === 'stride')
+    ? Math.round(d.workout.km * d.workout.segments[0]!.paceSecPerKm)
+    : d.workout.sec;
+
 export function invariants(id: string, p: MarathonV2Plan): string[] {
   const bad: string[] = [];
   const no = (m: string): void => {
@@ -303,7 +333,7 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
           ((to10(d.workout.km) > Math.floor(0.8 * to10(long.workout.km) + 1e-9) &&
             Math.floor(0.8 * to10(long.workout.km) + 1e-9) >= 50) ||
             d.workout.km + 1e-9 < 5 ||
-            d.workout.sec + 1 < 1200)
+            easySec(d) + 1 < 1200)
         )
           no(`T1 lagan ned ${w.index}`);
     // F2 (nezavisno od lengths.ts): početnik u 3 nedelje izgradnje pred taperom (ne rasterećenje) — 50 % / 180 min.
@@ -543,11 +573,18 @@ export function feelBeginnerInvariants(id: string, p: MarathonV2Plan): string[] 
     const r = p.input.recentResult;
     if (!r || Math.round(vdotFromResult(r.distanceM, r.timeSec) * 10) / 10 !== p.vdot) no('VDOT');
   }
-  // M16: tačno jedan test u poslednjoj nedelji baze kod po osećaju (ne početnik); početnik i plan sa
-  // rezultatom bez testa.
-  if (feel && !beginner) {
-    if (tests.length !== 1 || tests[0]!.w !== lastBase)
-      no('test nije tačno jednom u poslednjoj nedelji baze');
+  // M16: tačno jedan test u poslednjoj nedelji baze kod po osećaju (ne početnik); P5-F1: plan sa rezultatom (ne
+  // početnik, ≥ 12 nedelja) tačno jedan test u poslednjoj ne-rasteretnoj nedelji razvoja, na danu Q1; početnik bez
+  // testa.
+  const lastDev = [...W].reverse().find((w) => w.phase === 'development' && !w.deload)?.index ?? 0;
+  if (!beginner) {
+    const want = feel ? lastBase : lastDev;
+    if (tests.length !== 1 || tests[0]!.w !== want)
+      no(
+        feel
+          ? 'test nije tačno jednom u poslednjoj nedelji baze'
+          : 'test nije tačno jednom u poslednjoj ne-rasteretnoj nedelji razvoja'
+      );
     for (const { w, d } of tests) {
       const wk = W[w - 1]!;
       const day = wk.deload && p.pattern.q2 !== null ? p.pattern.q2 : p.pattern.q1;
@@ -558,8 +595,28 @@ export function feelBeginnerInvariants(id: string, p: MarathonV2Plan): string[] 
       if (!ts || ts.km !== 5 || ts.sec !== raceTimeForVdot(p.vdot, 5000)) no('test 5 km');
       if (wk.days.some((x) => x.workout.kind === 'quality' && x.role === 'q1')) no('test + Q1');
     }
-  } else if (tests.length > 0 || W.some((w) => w.test))
-    no('test van plana po osećaju / kod početnika');
+  } else if (tests.length > 0 || W.some((w) => w.test)) no('test kod početnika');
+  // P5-F3: svaka nedelja izgradnje i tapera (ne trkačka, ne uvod početnika) sa laganim danom ima tačno jedan lagan
+  // dan sa ubrzanjima (baza 4, dalje 6, početnik 4 × 20 s); km dana = zbir segmenata (lagan deo + ubrzanja +
+  // oporavci); trkačka nedelja i uvod bez ubrzanja na laganom danu.
+  for (const w of W) {
+    const easyDays = w.days.filter((d) => d.role === 'easy');
+    const st = easyDays.filter((d) => d.workout.segments.some((x) => x.kind === 'stride'));
+    const off = w.phase === 'race' || (beginner && w.index <= 2);
+    if (off || easyDays.length === 0) {
+      if (st.length > 0) no(`ubrzanja u nedelji ${w.index} bez ubrzanja`);
+      continue;
+    }
+    const reps = beginner || w.phase === 'base' ? 4 : 6;
+    if (st.length !== 1) no(`nedelja ${w.index}: ${st.length} laganih dana sa ubrzanjima`);
+    for (const d of st) {
+      const k = d.workout.segments.filter((x) => x.kind === 'stride');
+      if (k.length !== reps || k.some((x) => x.sec !== 20 || x.zone !== 'R'))
+        no(`nedelja ${w.index}: ubrzanja ≠ ${reps} × 20 s`);
+      if (d.workout.segments.at(-1)?.kind !== 'stride')
+        no(`nedelja ${w.index}: ubrzanja nisu na kraju`);
+    }
+  }
   if (beginner) {
     // M17: 4–5 dana, ≥ 16 ned; uvod 2 ned bez kvaliteta; ≤ 1 kvalitet, bez I/R; WU/CD 15/10; rast ≤ max(5 %,
     // 1,0) i ≤ 2,5 km; vrh ≤ min(1,5×, +25); dugi ≤ 150 min.

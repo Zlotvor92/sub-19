@@ -633,6 +633,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
         'marathon-v2.6.1',
         'marathon-v2.7.0',
         'marathon-v2.8.0',
+        'marathon-v2.9.0',
         P.version
       ])
     ]);

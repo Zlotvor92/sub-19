@@ -560,6 +560,67 @@ export function assess(
       }
     }
   }
+  // A18 (P5-F2): kvalitet u adaptaciji — dva uzastopna kvalitetna dana plana (po datumu; Q1, Q2, dugi sa blokom u MP;
+  // ne test), oba u poslednjih 14 dana do asOf i potpuno pokrivena, od kojih je svaki neodrađen (nema završenog
+  // zapisa) ili ima RPE ≥ 9 → sledeća nedelja izgradnje (ne rasterećenje) bez rasta doze. Ispod bola, pauze, umora i
+  // manjka izvršenja (tada applied false); taper i trkačka bez efekta; isti zapisi ne prave nov korak.
+  const qh = A.qualityHard;
+  const qDays = planDays
+    .filter(
+      (d) =>
+        (d.role === 'q1' || d.role === 'q2' || (d.role === 'long' && longBlockKm(d.workout) > 0)) &&
+        d.workout.kind !== 'test' &&
+        day(d.date) <= t
+    )
+    .sort((a, b) => day(a.date) - day(b.date));
+  const hardDay = (d: PlanDay): boolean => {
+    if (t - day(d.date) >= qh.lookbackDays || !coveredDays(cov, day(d.date), day(d.date)))
+      return false;
+    // Preciziranje organizatora (10. 11.): neodrađen = tog datuma nema nijednog trčanja (ni po dayId ni van plana);
+    // RPE samo iz zapisa tog dana plana (dayId).
+    const ran = runs.some((x) => x.date === d.date || x.dayId === d.date);
+    return !ran || W.some((x) => x.dayId === d.date && (x.rpe ?? 0) >= qh.rpe);
+  };
+  let pair: [PlanDay, PlanDay] | null = null;
+  for (let i = 1; i < qDays.length; i++)
+    if (hardDay(qDays[i - 1]!) && hardDay(qDays[i]!)) pair = [qDays[i - 1]!, qDays[i]!];
+  if (pair) {
+    const [a, b] = pair;
+    const seenQ = steps.find((s) => s.holdFrom !== undefined && day(s.holdFrom) >= day(b.date));
+    const other =
+      step.pain !== null ||
+      step.rest !== null ||
+      step.pauseRemainder ||
+      step.deload ||
+      step.underFrom !== undefined;
+    let hw: number | null = null;
+    for (let w = n; w <= N; w++) {
+      const x = wk(w)!;
+      if (!isBuildPhase(x.phase)) break;
+      if (!x.deload) {
+        hw = w;
+        break;
+      }
+    }
+    const ok = !seenQ && !other && hw !== null;
+    if (ok) {
+      step.holdDose = hw!;
+      step.holdFrom = b.date;
+    }
+    reason(
+      'QUALITY_HARD',
+      ok,
+      `Zahtevni treninzi ${a.date} i ${b.date} preteški (RPE ≥ ${qh.rpe}) ili preskočeni: ${
+        seenQ
+          ? `za ove zapise je već u planu (prilagođavanje ${seenQ.asOf}).`
+          : other
+            ? 'nadjačano bolom, pauzom, umorom ili manjkom izvršenja (A18).'
+            : hw === null
+              ? 'sledeća nedelja nije izgradnja (taper ili trka) — bez promene (A18).'
+              : `nedelja ${hw} bez rasta doze, cilj obima ostaje (A18). ${A.qualityHardMessage}`
+      }`
+    );
+  }
   if (
     W.length === 0 &&
     facts.results.length === 0 &&

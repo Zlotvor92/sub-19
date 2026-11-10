@@ -178,7 +178,9 @@ describe('N8 (pouka 29): validator čita stanje upisane mešovite nedelje', () =
   it('d4-r-16w, manjak kraj ned 6 + zaključan Q1 ned 7 (mešovita): skok doze u ned 8 → DOSE_JUMP (ranije preskočeno)', () => {
     const p = planOf(base('d4-r-16w'));
     const at = p.weeks[5]!.endDate;
-    const lock = p.weeks[6]!.days.find((d) => d.role === 'q1')!.date;
+    // P5-F1: nedelja 7 je nedelja testa plana sa rezultatom (test na danu Q1, ne menja se manjkom) — zaključan je
+    // dan Q2 (T), koji manjak menja.
+    const lock = p.weeks[6]!.days.find((d) => d.role === 'q2')!.date;
     const r = ok(adaptMarathonV2(p, { ...factsOf(p, 'under50', at), lockedDayIds: [lock] }, at));
     expect(r.plan.adaptation!.mixedWeeks).toEqual([7]);
     expect(errors(r.plan)).toEqual([]);
@@ -270,7 +272,8 @@ describe('MAR-07b (pouka 4, stalni uslov 4): provere po danu preskaču zaštiće
     (k) => {
       const p = planOf(base('d4-r-16w'));
       const at = p.weeks[k - 1]!.endDate;
-      const q1 = p.weeks[k]!.days.find((d) => d.role === 'q1')!;
+      // P5-F1: nedelja 7 je nedelja testa (test na danu Q1).
+      const q1 = p.weeks[k]!.days.find((d) => d.role === 'q1' || d.role === 'test')!;
       const f = { ...factsOf(p, 'faster', at), lockedDayIds: [q1.date] };
       const r = ok(adaptMarathonV2(p, f, at));
       expect(r.plan.weeks[k]!.days.find((d) => d.date === q1.date)).toEqual(q1);

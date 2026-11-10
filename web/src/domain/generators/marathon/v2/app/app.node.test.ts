@@ -289,7 +289,8 @@ describe('generisanje kroz adapter', () => {
       for (const b of d.structure!.blocks)
         if (b.step.kind === 'work') expect(b.step.paceSec).toBeGreaterThan(0);
     }
-    expect(res.dated.some((d) => d.tag === 'test')).toBe(false);
+    // P5-F1: plan sa rezultatom ima kontrolni test 5 km (tempo testa je procena, kao u planu po osećaju).
+    expect(res.dated.filter((d) => d.tag === 'test')).toHaveLength(1);
     // Početnik (M17): bez testa i po osećaju.
     expect(view(planOf(BEGINNER)).dated.some((d) => d.tag === 'test')).toBe(false);
   });
@@ -462,6 +463,7 @@ describe('prekidač i rutiranje po oznaci politike', () => {
         'marathon-v2.6.1',
         'marathon-v2.7.0',
         'marathon-v2.8.0',
+        'marathon-v2.9.0',
         VERSION
       ])
     ]);

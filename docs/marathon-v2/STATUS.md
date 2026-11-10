@@ -22,7 +22,7 @@ const r = generateMarathonV2({
   recentLongRunKm: 18, // opciono, 5–42 km: skok dugog ≤ 10 % (M13a)
   // bez rezultata: easyPaceSecPerKm: 360 (po osećaju, M16); experience: 'beginner' (M17)
 });
-// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.9.0', paceBasis, faza nedelje, upozorenja)
+// r.ok → r.plan (policyId 'marathon-v2', policyVersion 'marathon-v2.10.0', paceBasis, faza nedelje, upozorenja)
 // !r.ok → r.reasons (kod + poruka sa preporukom: npr. PLAN_TOO_SHORT → polumaraton)
 const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → { ok, plan, changes, reasons } ili odbijanje
 // a.ok → a.newLimits (pouka 20: nova ograničenja poslednjeg koraka, steps.newLimits)
@@ -41,7 +41,18 @@ const a = adaptMarathonV2(r.plan, facts, "2026-12-13"); // M18: činjenice → {
   `segment01.baseline.json` + `segment02.regression-01.json`.
 - Sabotaže: `node scripts/sabotage.mjs ../docs/marathon-v2/artifacts/segment-03/sabotage.json`.
 
-## Trenutno stanje (marathon-v2.9.0)
+## Trenutno stanje (marathon-v2.10.0)
+
+- P5 (program „trenerski kvalitet v2", `docs/generators-v2/perfection/reports/P5-MAR-REPORT.md`): P5-F1 — plan sa
+  rezultatom (ne početnik, ≥ 12 nedelja) ima kontrolni test 5 km u poslednjoj ne-rasteretnoj nedelji razvoja na danu
+  Q1 (`periodize.testKindOf/testWeekOf`); A18 (P5-F2) — dva uzastopna kvalitetna dana preteška (RPE ≥ 9) ili preskočena
+  → sledeća nedelja izgradnje bez rasta doze (`assess.ts`, `step.holdDose`, validator QUALITY_HOLD); P5-F3 — jedan
+  lagan dan nedeljno sa ubrzanjima 4/6 × 20 s (`strides.ts`, validator STRIDES); P5-F4 — početni nivo T i I ≤ 80 %
+  plafona (`quality.startShareOf`). Testovi `p5.node.test.ts`; sabotaže
+  `docs/generators-v2/perfection/P5-MAR/sabotage.json`; bajt-isti planovi (posle uklanjanja ubrzanja)
+  `segmentP5.stable-8e87fd4.json`. KNOWN_VERSIONS ∪ 2.9.0.
+
+## Ranije (marathon-v2.9.0)
 
 - P2 (program „trenerski kvalitet v2", `docs/generators-v2/perfection/reports/P2-REPORT.md`): M19 — specifična faza
   redovnog plana 4–6 dana smenjuje nedelje A/B (poslednja pred taper je B); nedelja B: dan MP treninga lagan, T po

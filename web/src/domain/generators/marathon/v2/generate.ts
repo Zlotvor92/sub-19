@@ -20,11 +20,12 @@ import {
   recentLongNote
 } from './lengths.ts';
 import { assessGoal, predictedMarathon } from './paces.ts';
-import { isBuildPhase, periodize, taperStep } from './periodize.ts';
+import { isBuildPhase, periodize, taperStep, testKindOf } from './periodize.ts';
 import { keptKm100, mixedNote, mixedRest, pauseOwned } from './mixed.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
 import { same } from './same.ts';
+import { lastHardBefore, stridesDateOf, stridesSpecOf } from './strides.ts';
 import { bAllowed, specificTypesOver } from './specific.ts';
 import {
   basePaces,
@@ -64,7 +65,7 @@ import {
   startKm10
 } from './volume.ts';
 import { type BuiltWeek, buildWeek, type QualityMode, raceWeek, type WeekContext } from './week.ts';
-import { fmtKm, fmtSec, longBlockKm, warmupCooldown } from './workouts.ts';
+import { easyStridesWorkout, fmtKm, fmtSec, longBlockKm, warmupCooldown } from './workouts.ts';
 import { type Written, writtenDays, writtenWeeks } from './written.ts';
 
 const infeasible = (message: string, week?: number): GenerateResult => ({
@@ -156,8 +157,9 @@ export function construct(
   const km = input.currentWeeklyKm;
   // M16: po osećaju E = lagan tempo ± 15 s, brze zone i MP iz procene VDOT-a (orijentir).
   const paces = basePaces(pace, km);
-  // M16/M17: test 5 km samo u planu po osećaju koji nije početnik.
-  const base = periodize(input.startDate, weeks, feel && rule.feelTest);
+  // M16/M17/P5-F1: test 5 km — plan po osećaju koji nije početnik (kraj baze) i plan sa rezultatom (razvoj).
+  const testKind = testKindOf(rule, feel, weeks);
+  const base = periodize(input.startDate, weeks, testKind);
   if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima M5.');
   const adapted = steps.length > 0;
   const frames = adapted
@@ -236,7 +238,12 @@ export function construct(
   for (const frame of frames) {
     // F2: početnik u vrhu dugog — pravilo dugog nedelje (lengths.longRuleOf, isto u validatoru).
     const ctxW = ctxAt(frame.index);
-    const ctx = { ...ctxW, rule: longRuleOf(ctxW.rule, rule.beginner, frames, frame.index) };
+    const ctx = {
+      ...ctxW,
+      rule: longRuleOf(ctxW.rule, rule.beginner, frames, frame.index),
+      // P5-F2 (A18): nedelja bez rasta doze iz koraka adaptacije.
+      ...(steps.some((s) => s.holdDose === frame.index) ? { hold: true } : {})
+    };
     if (doseRestarts.has(frame.index))
       quality = [...restarts].some((r) => r <= frame.index)
         ? { ...INITIAL_QUALITY, restart: true }
@@ -438,6 +445,25 @@ export function construct(
         };
         mixNote = mixedNote(m, keptKm100(kept, prior!.factKm) / 100, fit.target10);
       }
+    }
+    // P5-F3: ubrzanja na jednom laganom danu (strides.ts, jedino mesto odluke); km dana se ne menja. Izbor na nedelji
+    // kakva se upisuje (zaštićeni dani prethodnog plana + sastavljeni), kao validator; zaštićen dan se upisuje iz
+    // prethodnog plana (written.ts), sastavljeni dan istog datuma dobija isti sadržaj.
+    const spec = stridesSpecOf(frame, rule);
+    if (spec) {
+      const prevDays = written[written.length - 1]?.days ?? [];
+      const s1 = prior?.weeks[frame.index - 1];
+      const asWritten = prior && s1 ? writtenDays(s1, w.days, prior) : w.days;
+      const sd = stridesDateOf(asWritten, frame, lastHardBefore(prevDays, frame.startDate));
+      if (sd)
+        w = {
+          ...w,
+          days: w.days.map((d) =>
+            d.date === sd && d.role === 'easy'
+              ? { ...d, workout: easyStridesWorkout(d.workout.km, ctx.paces, spec.reps, spec.sec) }
+              : d
+          )
+        };
     }
     const notes = [...w.notes, ...(mixNote ? [mixNote] : [])];
     if (fit.fitted) notes.unshift(fittedNote(nominal, fit.target10));

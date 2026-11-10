@@ -175,12 +175,14 @@ describe('M16 test 5 km', () => {
     expect(after.doseM).toBeGreaterThanOrEqual(before.doseM);
   });
 
-  it('početnik i plan sa rezultatom nemaju test', () => {
+  // P5-F1 (marathon-v2.10.0): plan sa rezultatom ima kontrolni test u poslednjoj ne-rasteretnoj nedelji razvoja.
+  it('početnik nema test; plan sa rezultatom ima tačno jedan, u razvoju', () => {
     const beg = plan({ ...feelInput({ km: 40 }), experience: 'beginner' });
     expect(tests(beg)).toHaveLength(0);
     expect(beg.weeks.some((w) => w.test)).toBe(false);
     const res = plan(inputOf({ weeks: 16, km: 45, vdot: 45, days: SCHEDULES_BY_DAYS[4].A.days }));
-    expect(tests(res)).toHaveLength(0);
+    expect(tests(res)).toHaveLength(1);
+    expect(res.weeks[tests(res)[0]!.week - 1]!.phase).toBe('development');
   });
 
   it('odstupanje (M16 ispred M5): rasterećenje sa testom pri najmanjem obimu — dugi skraćen da lagani ostanu ≥ 5 km, uz napomenu i upozorenje', () => {

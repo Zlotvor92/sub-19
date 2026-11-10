@@ -31,7 +31,8 @@ describe('izgradnja (M10, M13, M14)', () => {
       // M19: nedelja B — dan MP treninga (Q1) je lagan, dugi nosi blok MP.
       const b = role(w, 'long')[0]!.workout.workKm.MP > 0;
       expect(w.days.map((d) => `${d.weekday}:${d.role}`)).toEqual([
-        b ? 'tue:easy' : 'tue:q1',
+        // P5-F1: nedelja testa plana sa rezultatom — test na danu Q1.
+        b ? 'tue:easy' : w.test ? 'tue:test' : 'tue:q1',
         'thu:q2',
         'sat:easy',
         'sun:long'

@@ -456,6 +456,30 @@ export function eveWorkout(p: Paces, strides = true): Workout {
   );
 }
 
+/** P5-F3: lagan dan `km` (dužinu daje lengths.ts) sa ubrzanjima na kraju — `reps` × `sec` s R tempom, oporavak isti
+    metraž džogom (struktura dana pred trku, M8); lagan deo = km − ubrzanja − oporavci, km dana se ne menja. */
+export function easyStridesWorkout(km: number, p: Paces, reps: number, sec: number): Workout {
+  const strideKm = fromSec(sec, p.R);
+  const rec = { m: Math.round(strideKm * 1000) };
+  const tail: Segment[] = [];
+  for (let i = 0; i < reps; i++) {
+    if (i > 0) tail.push(recoverySegment(rec, p));
+    tail.push(seg('stride', 'R', strideKm, sec, p.R, 'estimated', 'exact'));
+  }
+  const eKm = (km100(km) - tail.reduce((a, x) => a + km100(x.km), 0)) / 100;
+  return assemble(
+    'easy',
+    null,
+    `Lagano ${fmtKm(km)} km sa ${reps} × ${sec} s ubrzanja na kraju`,
+    [
+      { kind: 'easy', km: eKm },
+      { kind: 'reps', zone: 'R', reps, rep: { sec }, recovery: rec, stride: true }
+    ],
+    [distEasy('easy', eKm, p), ...tail],
+    null
+  );
+}
+
 /** M8: oštrenje trkačke nedelje — WU + 2 × 2000 m MP (2:00) + CD (WU/CD po M14); `feel` uz RPE MP (M16). */
 export function sharpenerWorkout(
   p: Paces,

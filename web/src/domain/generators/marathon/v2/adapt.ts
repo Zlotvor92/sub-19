@@ -9,6 +9,7 @@ import { assess, checkFacts, painReturnNote } from './assess.ts';
 import { dayNumber, mustDay } from './dates.ts';
 import { construct } from './generate.ts';
 import { checkInput } from './input.ts';
+import { testKindOf } from './periodize.ts';
 import { factKmOf, pauseOwned } from './mixed.ts';
 import { dayRule, MARATHON_V2_POLICY as P } from './policy.ts';
 import { same } from './same.ts';
@@ -182,7 +183,7 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
   const base = baseFrames(
     chk.input.startDate,
     chk.weeks,
-    chk.pace.kind === 'feel' && chk.rule.feelTest
+    testKindOf(chk.rule, chk.pace.kind === 'feel', chk.weeks)
   );
   if (base)
     framesFor(
@@ -224,7 +225,9 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
       applied: true,
       message:
         ta === null
-          ? `Test ${P.test.km} km (nedelja ${tb}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja (A13).`
+          ? chk.pace.kind === 'result' && as.step.vdot === null
+            ? `Kontrolni test ${P.test.km} km (nedelja ${tb}) otpada: ta nedelja ima ograničenje treninga, a test se ne premešta — kad budeš imao rezultat trke ili testa, unesi ga (A13, P5-F1).`
+            : `Test ${P.test.km} km (nedelja ${tb}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja (A13).`
           : `Test ${P.test.km} km: nedelja ${tb ?? '—'} → ${ta} (prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja, A13).`
     });
   const applied = reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');

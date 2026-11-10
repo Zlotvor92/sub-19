@@ -83,6 +83,9 @@ export interface WeekContext {
   adapted?: boolean;
   /** MAR-11 (T3): plan ima nov start (A3) do ove nedelje — trkačka zadržava oštrenje (hasSharpener). */
   restarted?: boolean;
+  /** P5-F2 (A18): nedelja izgradnje bez rasta doze nijednog slota (assess: dva uzastopna preteška ili preskočena
+      kvaliteta). */
+  hold?: boolean;
 }
 
 /** Režim kvaliteta nedelje: 'rule' po pravilu; 'relax' druga pretraga (M11 ispred M12 u izgradnji; u
@@ -135,7 +138,10 @@ const repeatNote = (slot: string, d: Dose): string =>
   `${slot}: ${d.zone} ${fmtKm(d.doseM / 1000)} km ponovljen — sledeći nivo ne staje u plafon, a druga struktura iste doze ${structuresForDose(d.ladder as LadderId, d.doseM).length > 1 ? 'bi bila duža od dugog (pouka 32)' : 'ne postoji (M10)'}.`;
 
 /** M16: napomena nedelje testa. */
-const testNote = `Test ${P.test.km} km (M16): kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat koristi adaptacija (segment 04), do tada tempo ostaje procena.`;
+const testNoteFeel = `Test ${P.test.km} km (M16): kontrolisano maksimalno; računa se u obim nedelje, ne u dozu kvaliteta; rezultat koristi adaptacija (segment 04), do tada tempo ostaje procena.`;
+/** P5-F1: napomena kontrolnog testa plana sa rezultatom. */
+export const TEST_NOTE_RESULT = `Test ${P.test.km} km (M16): kontrolni test forme umesto prvog kvaliteta nedelje — trči kontrolisano maksimalno i unesi rezultat; od sledeće nedelje tempo treninga se prilagođava novom rezultatu. Računa se u obim nedelje, ne u dozu kvaliteta.`;
+const testNoteOf = (feel: boolean): string => (feel ? testNoteFeel : TEST_NOTE_RESULT);
 
 /** Lagani dani: datumi rastuće (raniji dan dobija višak zaokruženja). */
 const easyDates = (frame: WeekFrame, days: readonly Weekday[]): string[] =>
@@ -711,7 +717,7 @@ function buildWeekIn(
       test
         ? [
             `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja (M16), ${longText}.`,
-            testNote
+            testNoteOf(ctx.feel)
           ]
         : intro
           ? [
@@ -911,7 +917,8 @@ function buildWeekIn(
         jump10,
         rule.quality === 2 ? ladderFor(frame.phase, 'q2') : null,
         test ? testWorkout(p, ctx.wc) : null
-      )
+      ),
+      ctx.hold === true
     );
     if (!picks) return null;
   }
@@ -949,7 +956,8 @@ function buildWeekIn(
         rule,
         p,
         w2 ? [w2.sec] : [],
-        longWorkout(len.long10 / 10, p).sec
+        longWorkout(len.long10 / 10, p).sec,
+        ctx.hold === true
       )
     : null;
   if (asB && (blockKm === null || !w2)) return null;
@@ -987,7 +995,7 @@ function buildWeekIn(
     notes.push(
       `Uvod (M17): nedelja ${frame.index} od ${rule.introWeeks} bez kvaliteta — dan kvaliteta je lagan.`
     );
-  else if (test) notes.push(testNote);
+  else if (test) notes.push(testNoteOf(ctx.feel));
   else if (blockKm !== null) notes.push(bWeekNote(blockKm));
   else if (reduced) {
     // Napomena režima (limitNote).

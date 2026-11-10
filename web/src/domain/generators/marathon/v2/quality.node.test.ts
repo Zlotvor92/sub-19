@@ -172,11 +172,12 @@ describe('M11 plafon i M12 progresija', () => {
     expect(capM('MP', 29.8)).toBe(5960);
   });
 
-  it('početni nivo = najviši nivo ≤ 60 % plafona (najmanje prvi nivo)', () => {
-    // 60 km: T plafon 6,0 → 60 % = 3,6 → T kont. 3,0; MP plafon 12,0 → 7,2 → 2 × 3000.
-    expect(startLevel('T_continuous', 60)).toEqual(cont(3));
+  it('početni nivo = najviši nivo ≤ 80 % plafona za T i I, 60 % za R i MP (najmanje prvi nivo; P5-F4)', () => {
+    // 60 km: T plafon 6,0 → 80 % = 4,8 → T kont. 4,0; MP plafon 12,0 → 60 % = 7,2 → 2 × 3000.
+    expect(startLevel('T_continuous', 60)).toEqual(cont(4));
     expect(startLevel('MP', 60)).toEqual(reps(2, 3000));
     expect(startLevel('MP', 80)).toEqual(reps(2, 4000));
+    // 35 km: T plafon 3,5 → 80 % = 2,8 → T kont. 2,0.
     expect(startLevel('T_continuous', 35)).toEqual(cont(2));
     expect(startLevel('MP', 29)).toBeNull();
   });
@@ -201,7 +202,8 @@ describe('M11 plafon i M12 progresija', () => {
     const mp2 = pickSlot(slot('I', reps(3, 1000)), 'MP', 80, p)!;
     expect(mp2.doseM).toBe(8000);
     const i = pickSlot(slot('R', reps(8, 200)), 'I', 65, p)!;
-    expect([i.step, i.doseM]).toEqual(['transition', 3000]);
+    // P5-F4: I 65 km: plafon 5200 m → 80 % = 4160 → 4 × 1000 m.
+    expect([i.step, i.doseM]).toEqual(['transition', 4000]);
   });
 
   it('M11 ispred M12: doza van plafona pada samo uz allowDrop, na najviši nivo u plafonu', () => {
