@@ -100,11 +100,20 @@ export interface WeekContext {
 
 /** D38: napomena nedelje bez rasta doze (validator: izuzetak D12 „sledeći nivo"). */
 export const HOLD_NOTE = 'Doza ove nedelje ne raste';
+/** D49 (S3): početnik — duža T doza ove nedelje ne bi ostavila sve lagane dane, pa doza ostaje (validator: nedelja bez
+    rasta doze, kao D38). */
+export const T_HELD_NOTE =
+  'Trening u tempu ostaje iste dužine kao prošli put: duži ove nedelje ne bi ostavio mesta za sve lagane dane.';
 
 /** D34: napomena nedelje B (drugi kvalitet I održavanja). */
 export const B_WEEK_NOTE = 'Specifična faza, nedelja B';
 /** D34: napomena nedelje A umesto B (validator: upozorenje B_WEEK_NOT_FIT). */
 export const B_NOT_FIT = 'Nedelja B ne staje';
+
+/** D51 (P8 završetak): rasterećenje bez kvaliteta jer nedelja sa najnižom T dozom ne može da se sastavi (dugi i lagani
+    ≥ 3 km ne staju u cilj) — samo druga pretraga; validator proverava tvrdnju (DELOAD_NO_QUALITY). */
+export const DELOAD_NO_ROOM =
+  'Rasterećenje bez kvaliteta: uz trening u tempu dugi i lagani dani (svaki najmanje 3 km) ne staju u obim ove nedelje.';
 
 /** T1: napomena rasterećenja sastavljenog po pravilu A9 jer po D5 nije izvodljivo (validator: ADAPT_DELOAD_LONG). */
 export const T1_DELOAD =
@@ -341,24 +350,35 @@ function buildWeekOf(
     // A5 (10k-v2.5.1): prinudno rasterećenje u uvodu početnika (D28) — obim rasterećenja, sadržaj uvoda
     // (bez kvaliteta, dani po šablonu uvoda); uvod ima prednost.
     const intro = frame.index <= rule.introWeeks;
-    const [qDay, t] = intro ? [null, null] : [qDay0, t0];
-    if (!t && !test && !intro && (mode === 'rule' || mode === 'one')) return null;
-    const tw = test ? testWorkout(p, ctx.wc) : t ? qualityWorkout(t, p, ctx.wc, ctx.feel) : null;
-    const dates = easyDates(
-      frame,
-      [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !tw || wd !== qDay)
-    );
-    const len = deloadLengths(
-      target10,
-      tw ? km100(tw.km) : 0,
-      dates.length,
-      lastLong,
-      rule,
-      p,
-      test,
-      ctx.adapted === true
-    );
-    if (!len) return null;
+    const [qDay, t1] = intro ? [null, null] : [qDay0, t0];
+    if (!t1 && !test && !intro && (mode === 'rule' || mode === 'one')) return null;
+    const lengthsWith = (tUse: Dose | null) => {
+      const tw = test ? testWorkout(p, ctx.wc) : tUse ? qualityWorkout(tUse, p, ctx.wc, ctx.feel) : null;
+      const dates = easyDates(
+        frame,
+        [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !tw || wd !== qDay)
+      );
+      const len = deloadLengths(
+        target10,
+        tw ? km100(tw.km) : 0,
+        dates.length,
+        lastLong,
+        rule,
+        p,
+        test,
+        ctx.adapted === true
+      );
+      return len ? { tw, dates, len } : null;
+    };
+    // D51 (P8 završetak): rasterećenje ima kvalitet (najniža doza uvek staje, G2); samo u drugoj pretrazi ('relax', kad
+    // nijedan cilj nije izvodljiv po pravilu) i samo kad nedelja sa kvalitetom ne može da se sastavi (dugi ≥ lagan ≥ 3 km)
+    // — rasterećenje bez kvaliteta, uz napomenu (DELOAD_NO_ROOM).
+    const withT = lengthsWith(t1);
+    const noRoom = !withT && mode === 'relax' && t1 !== null && !test && ctx.t1Deload === true;
+    const built = withT ?? (noRoom ? lengthsWith(null) : null);
+    if (!built) return null;
+    const t = noRoom ? null : t1;
+    const { tw, dates, len } = built;
     // A9/A13: u adaptiranoj nedelji test koji ne staje (dugi bi bio kraći od testa) otpada.
     if (test && ctx.adapted && len.long10 < Math.round(P.test.km * 10)) return null;
     const days = [
@@ -370,7 +390,9 @@ function buildWeekOf(
     ];
     const long0 = Math.floor(P.deload.longFactor * lastLong + 1e-9);
     return done(days, len.long10, null, [
-      test
+      noRoom
+        ? `${DELOAD_NO_ROOM} Cilj ${fmtKm(targetKm)} km.`
+        : test
         ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja, dugi ${len.long10 < long0 ? `${fmtKm(len.long10 / 10)} km — skraćen sa 0,8 × dugog poslednje nedelje pre rasterećenja (${fmtKm(long0 / 10)} km) da lagani ostanu ≥ ${fmtKm(P.lengths.easyMinKm)} km` : '0,8 × dugog poslednje nedelje pre rasterećenja'}.`
         : ctx.adapted &&
             len.long10 < Math.max(EASY_MIN10, Math.min(long0, longCap10(target10, rule, p)))
@@ -381,6 +403,7 @@ function buildWeekOf(
               ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
               : mode === 'none'
                 ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`
+
                 : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni T ${fmtKm(rule.beginner ? P.beginner.tFirstKm : P.deload.tMinKm)} km ne staje u najviše ${capPct('T', targetKm)} % nedelje u tempu T; dugi 0,8 × dugog poslednje nedelje pre rasterećenja.`,
       ...(test ? [testNote(ctx.feel)] : []),
       ...(ctx.t1Deload ? [T1_DELOAD] : []),
@@ -504,6 +527,15 @@ function buildWeekOf(
       ];
       return !qualityOverLong(ds);
     };
+    // D49 (S3): nedelja nosi izbor — dužine izvodljive pri ovom cilju i svi lagani dani ostaju (nijedan nije odmor).
+    const carriesAll = (pk: WeekPicks): boolean => {
+      const a = pk.q1 ? qualityWorkout(pk.q1, p, ctx.wc, ctx.feel) : null;
+      const n = [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter(
+        (wd) => !(a && wd === pat.q1)
+      ).length;
+      const len = buildLengths(target10, a ? km100(a.km) : 0, n, rule, p, ctx.t1Off !== true);
+      return len !== null && len.easy10.length === n;
+    };
     picks = pickBuild(
       quality,
       frame.phase,
@@ -514,7 +546,8 @@ function buildWeekOf(
       test,
       weekB,
       ctx.holdDose === true,
-      frame.deload ? null : keepsTwo
+      frame.deload ? null : keepsTwo,
+      carriesAll
     );
     if (!picks) return null;
     // G7 (P8 dopuna, D46): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan (stanje slota se ne menja).
@@ -584,7 +617,10 @@ function buildWeekOf(
   const slots: [string, Dose, SlotState | null][] = [];
   if (picks?.q1) slots.push(['Q1', picks.q1, quality.q1]);
   if (picks?.q2) slots.push(['Q2', picks.q2, quality.q2]);
-  for (const [slot, d] of slots) if (d.step === 'repeat') notes.push(repeatNote(slot, d, targetKm));
+  if (picks?.held) notes.push(T_HELD_NOTE);
+  else
+    for (const [slot, d] of slots)
+      if (d.step === 'repeat') notes.push(repeatNote(slot, d, targetKm));
   for (const [slot, d, prev] of slots)
     if (d.step === 'drop')
       notes.push(

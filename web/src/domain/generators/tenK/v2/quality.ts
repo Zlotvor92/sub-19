@@ -226,6 +226,8 @@ export interface Picks {
 export interface WeekPicks {
   q1: Dose | null;
   q2: Dose | null;
+  /** D49 (S3): početnik — viši nivo T nedelja ne nosi, pa doza ostaje (week.T_HELD_NOTE; validator: nedelja bez rasta). */
+  held?: boolean;
 }
 
 /** Prvi nivo lestvice ne staje u plafon zone (D11) cilja nedelje; `beginner`: lestvica početnika (D31). */
@@ -345,7 +347,8 @@ export function pickBuild(
   skipQ1 = false,
   weekB = false,
   hold = false,
-  keepsTwo: ((w: WeekPicks) => boolean) | null = null
+  keepsTwo: ((w: WeekPicks) => boolean) | null = null,
+  carriesAll: ((w: WeekPicks) => boolean) | null = null
 ): WeekPicks | null {
   const quality = rule.quality;
   const l1 = buildLadder(phase, targetKm, rule, p);
@@ -353,6 +356,24 @@ export function pickBuild(
   if (!skipQ1 && l1) {
     q1 = pickSlot(state.q1, l1, targetKm, p, allowDrop, quality === 1, rule.beginner, hold);
     if (!q1) return null;
+    // D49 (S3): početnik — T doza iznad poslednje T doze samo kad je nedelja nosi (`carriesAll`: činjenica konstrukcije,
+    // kao `keepsTwo` — dužine izvodljive pri ovom cilju i nijedan lagan dan nije odmor); inače doza ne raste (isti
+    // mehanizam kao D38: lestvica faze, pa T kontinuirano početnika — ista doza druge strukture ili ponavljanje).
+    if (
+      rule.beginner &&
+      carriesAll &&
+      !hold &&
+      state.q1 &&
+      q1.zone === 'T' &&
+      zoneOf(state.q1.ladder) === 'T' &&
+      q1.doseM > state.q1.doseM &&
+      !carriesAll({ q1, q2: null })
+    )
+      for (const lad of [l1, 'T_continuous'] as const) {
+        const h = pickSlot(state.q1, lad, targetKm, p, allowDrop, true, true, true);
+        if (h && h.doseM === state.q1.doseM && carriesAll({ q1: h, q2: null }))
+          return { q1: h, q2: null, held: true };
+      }
   }
   if (quality === 1) return { q1, q2: null };
   const q2 = weekB

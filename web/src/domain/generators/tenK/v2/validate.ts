@@ -69,6 +69,8 @@ import {
   sharpenerSpec,
   B_NOT_FIT,
   stridesChoice,
+  DELOAD_NO_ROOM,
+  T_HELD_NOTE,
   T1_DELOAD,
   T1_OFF
 } from './week.ts';
@@ -219,9 +221,11 @@ export function validatePlan(
   const steps = ad?.steps ?? [];
   const mixed = new Set(ad?.mixedWeeks ?? []);
   /** D38 (P5 F2): nedelje izgradnje bez rasta doze (korak holdDose). */
-  const holds = new Set(
-    (ad?.steps ?? []).flatMap((s) => (s.holdDose !== undefined ? [s.holdDose] : []))
-  );
+  const holds = new Set([
+    ...(ad?.steps ?? []).flatMap((s) => (s.holdDose !== undefined ? [s.holdDose] : [])),
+    // D49 (S3): početnik — nedelja u kojoj T doza ostaje jer višu nedelja ne nosi (week.T_HELD_NOTE).
+    ...plan.weeks.filter((w) => w.notes.includes(T_HELD_NOTE)).map((w) => w.index)
+  ]);
   const checked = (w: PlanWeek): boolean => !mixed.has(w.index);
   /** 06f (pouka 4, stalni uslov 4; kao maraton MAR-07b): zaštićen dan — ≤ asOf adaptacije, zaključan (ručna izmena)
       ili urađen. Provere koje sude jednom danu po tempu ili strukturi ga preskaču (kao LIMITS): validator ne sudi
@@ -988,6 +992,7 @@ export function validatePlan(
             dose.ladder === 'T_continuous' &&
             (wo.qualityType === 'T_continuous' || wo.qualityType === 'T_cruise') &&
             (w.phase === 'taper' ||
+              holds.has(w.index) ||
               firstLevelOverCap(ladderFor(w.phase, 'q1', 1), w.targetKm, pw(w), true));
           if (!beginnerT)
             err(
@@ -1003,7 +1008,8 @@ export function validatePlan(
           const phaseLadder = ladderFor(w.phase, 'q1', 1);
           const over = firstLevelOverCap(phaseLadder, w.targetKm, pw(w), true);
           const want: LadderId = over ? 'T_continuous' : phaseLadder;
-          if (dose.ladder !== want)
+          // D49 (S3): nedelja bez rasta T doze sme da ostane na T kontinuirano (ista doza).
+          if (dose.ladder !== want && !(holds.has(w.index) && dose.ladder === 'T_continuous'))
             err(
               'PHASE_QUALITY',
               `Početnik: ${dose.ladder} ≠ ${want} — prvi nivo ${phaseLadder} ${over ? 'ne staje' : 'staje'} u plafon cilja ${w.targetKm} km (D31).`,
@@ -1443,6 +1449,29 @@ export function validatePlan(
           err('DELOAD_CONTENT', 'Rasterećenje sa testom: test umesto kvaliteta (D27).', w.index);
       } else if (!slotKnown[tSlot]) {
         if (nQuality > 1) err('DELOAD_CONTENT', 'Rasterećenje: najviše 1 kvalitet (D5).', w.index);
+      }
+      // D51 (P8 završetak): rasterećenje bez kvaliteta jer nedelja sa T dozom ne može da se sastavi — tvrdnja se proverava:
+      // dan te T doze (iz plana) + dugi i lagani po najmanje 3 km > cilj nedelje.
+      else if (w.notes.some((n) => n.startsWith(DELOAD_NO_ROOM))) {
+        const tDay = weeks
+          .flatMap((x) => x.days)
+          .find((d) => d.workout.kind === 'quality' && d.workout.dose?.zone === 'T' && d.workout.dose.doseM === want);
+        const others = w.days.filter((d) => d.workout.kind !== 'rest').length - 1;
+        const fits =
+          tDay !== undefined &&
+          tDay.workout.km + others * P.lengths.easyMinKm <= w.targetKm + P.tolerance.plannedKm;
+        if (nQuality !== 0 || fits)
+          err(
+            'DELOAD_CONTENT',
+            `Rasterećenje bez kvaliteta uz napomenu da T ${want} m ne staje, a staje (D5, D51).`,
+            w.index
+          );
+        else
+          warn(
+            'DELOAD_NO_QUALITY',
+            `Rasterećenje bez kvaliteta: uz T ${want} m dugi i lagani dani po najmanje ${num(P.lengths.easyMinKm)} km ne staju u ${num(w.targetKm)} km.`,
+            w.index
+          );
       }
       // Odstupanje D5 (D11 ispred D5): kad ni T doza po pravilu ne staje u plafon, rasterećenje je bez
       // kvaliteta (uz napomenu).

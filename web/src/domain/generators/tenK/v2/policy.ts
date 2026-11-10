@@ -371,9 +371,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D49',
-    rule: 'P8 završetak S3 — početnik: plafon zone T = max(udeo × cilj nedelje; beginner.tCapMinKm = 3,0 km), uz G4 (≤ 30 min rada); lestvica T početnika napreduje 1,5 → 2,0 → 2,5 → 3,0 km po D12 (≤ 1 nivo nedeljno) i pri malom obimu. Ostale zone i redovan plan bez promene.',
-    place: 'policy.ts beginner.tCapMinKm; quality.ts capM (jedini plafon zone)',
-    rationale: 'Heuristika, odluka organizatora P8 (STOP S3; nalaz slepe ocene 10K zamerka 4): pri 15–19,5 km 10 % nedelje ne nosi 2,0 km, pa je T 1,5 km stajao 9 nedelja (p11).'
+    rule: 'P8 završetak S3 — početnik: plafon zone T = max(udeo × cilj nedelje; beginner.tCapMinKm = 3,0 km), uz G4 (≤ 30 min rada); lestvica T početnika napreduje 1,5 → 2,0 → 2,5 → 3,0 km po D12 (≤ 1 nivo nedeljno) i pri malom obimu. Viši nivo T se uzima samo kad ga nedelja nosi (dužine izvodljive pri cilju nedelje i nijedan lagan dan nije odmor — činjenica konstrukcije); inače doza te nedelje ne raste (ista doza: lestvica faze, pa T kontinuirano; napomena T_HELD_NOTE; validator: nedelja bez rasta doze kao D38). Ostale zone i redovan plan bez promene.',
+    place: 'policy.ts beginner.tCapMinKm; quality.ts capM (jedini plafon zone), pickBuild (carriesAll — jedino mesto odluke); week.ts buildWeek (carriesAll, T_HELD_NOTE); validate.ts (holds, PHASE_QUALITY)',
+    rationale: 'Heuristika, odluka organizatora P8 (STOP S3; nalaz slepe ocene 10K zamerka 4): pri 15–19,5 km 10 % nedelje ne nosi 2,0 km, pa je T 1,5 km stajao 9 nedelja (p11). Mreža početnika (3402): ne-rasteretnih nedelja sa T 1,5 km 4800 → 3474; planova sa najvećom T dozom ≥ 3,0 km 612 → 2604. Sudar sa G6 (lagan ≤ 0,70 × dugi) bez uslova „nedelja nosi": 12 odbijanja (4 dana, 18 km, 17 ned: dan T 3 × 1000 m ≈ 7,9 km obara nedelju sa 21,5 na 17,9 km, sledeće rasterećenje i taper ne mogu da se sastave) i planova sa laganim danom kao odmorom 138 → 162; sa uslovom 0 odbijanja i 138.'
   },
   {
     id: 'D50',
@@ -383,7 +383,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D51',
-    rule: 'P8 završetak S1/S5/S6/S8 — donja granica ispred G5: doza rasterećenja i tapera = max(najniži nivo; najviši nivo lestvice ≤ 60 % poslednje doze zone) — rasterećenje T najmanje 2,0 km (početnik 1,5 km), taper RP najmanje 2 × 1000 m i T najmanje 2,0 km (početnik 1,5 km), i kad je to > 60 %. Taper uvek ima trkački tempo (G2), sem uz ograničenja bola/povratka. Dugi rasterećenja 0,8 × poslednji, ali ne ispod najdužeg laganog dana te nedelje (dugi ≥ lagan; dugi < 4 km je dozvoljen). Jedna funkcija smanjene doze za konstruktor i validator; nedelja testa (G7) ne određuje stanje nijednog slota ni u validatoru.',
+    rule: 'P8 završetak S1/S5/S6/S8 — donja granica ispred G5: doza rasterećenja i tapera = max(najniži nivo; najviši nivo lestvice ≤ 60 % poslednje doze zone) — rasterećenje T najmanje 2,0 km (početnik 1,5 km), taper RP najmanje 2 × 1000 m i T najmanje 2,0 km (početnik 1,5 km), i kad je to > 60 %. Taper uvek ima trkački tempo (G2), sem uz ograničenja bola/povratka. Dugi rasterećenja 0,8 × poslednji, ali ne ispod najdužeg laganog dana te nedelje (dugi ≥ lagan; dugi < 4 km je dozvoljen). Samo u drugoj pretrazi i samo kad nedelja rasterećenja sa najnižom T dozom ne može da se sastavi (dugi i lagani ≥ 3 km ne staju u cilj): rasterećenje bez kvaliteta uz napomenu (DELOAD_NO_ROOM; validator proverava tvrdnju, upozorenje DELOAD_NO_QUALITY). Jedna funkcija smanjene doze za konstruktor i validator; nedelja testa (G7) ne određuje stanje nijednog slota ni u validatoru.',
     place: 'quality.ts reducedDoseM (pickDeload, pickTaper; validate.ts DELOAD_CONTENT, TAPER_QUALITY čitaju istu funkciju); validate.ts (stanje slota u nedelji testa)',
     rationale: 'Odluka organizatora P8 (STOP S1, S5, S6, S8): rasterećenje i taper bez kvaliteta je zamerka ocene; najniža doza je trenerski minimum. S8: validator je posle nedelje testa bez Q2 (G7) računao poznato stanje T slota iz nedelje pre mešovite — 3 odbijanja u mreži adaptacije (2040 tokova) → 0.'
   },
