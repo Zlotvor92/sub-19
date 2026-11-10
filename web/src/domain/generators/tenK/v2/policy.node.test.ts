@@ -18,7 +18,7 @@ describe('policy 10k-v2.13.0', () => {
     expect(P.version).toBe('10k-v2.13.0');
   });
 
-  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i), A22 (3i), A23 (10K-07), A24 (10K-08), D33, D34 i A25 (P3), D35–D38 (P5), D39–D42 (P8), svaka sa pravilom, mestom i obrazloženjem', () => {
+  it('DECISIONS: tačno D1–D22, D22b, D23, D25–D32 (03b), A1–A15 (04), A16 (06b), A17 (06c), A18 (06f), A19 (06g), A20 (06h), A21 (06i), A22 (3i), A23 (10K-07), A24 (10K-08), D33, D34 i A25 (P3), D35–D38 (P5), D39–D51 (P8), svaka sa pravilom, mestom i obrazloženjem', () => {
     expect(P.DECISIONS.map((d) => d.id)).toEqual([
       ...Array.from({ length: 22 }, (_, i) => `D${i + 1}`),
       'D22b',
@@ -41,6 +41,15 @@ describe('policy 10k-v2.13.0', () => {
       'D40',
       'D41',
       'D42',
+      'D43',
+      'D44',
+      'D45',
+      'D46',
+      'D47',
+      'D48',
+      'D49',
+      'D50',
+      'D51',
       ...Array.from({ length: 25 }, (_, i) => `A${i + 1}`)
     ]);
     for (const d of P.DECISIONS) {
@@ -198,7 +207,7 @@ describe('policy 10k-v2.13.0', () => {
         R: { min: 8, max: 8, cue: 'brzo, opušteno' }
       }
     });
-    expect(P.test).toEqual({ km: 5, controlMinWeeks: 12 });
+    expect(P.test).toEqual({ km: 5, controlMinWeeks: 12, minWeek: 4 });
   });
 
   it('D28: jedna tabela početnika; planRule — redovan = red D17 + D6/D13, početnik = red D17 izmenjen tabelom', () => {
@@ -212,7 +221,11 @@ describe('policy 10k-v2.13.0', () => {
       peakFactor: 1.3,
       peakAddKm: 10,
       longMaxSec: 90 * 60,
-      tFirstKm: 1.5
+      longToRaceKm: 10,
+      longToRaceShare: 0.5,
+      longToRaceWeeks: 3,
+      tFirstKm: 1.5,
+      tCapMinKm: 3
     });
     expect(BEGINNER_DAYS_COUNTS).toEqual([3, 4]);
     for (const n of RUN_DAYS_COUNTS)
@@ -237,6 +250,7 @@ describe('policy 10k-v2.13.0', () => {
       kmMax: 35,
       peakMaxKm: 60,
       longMaxShare: 0.33,
+      easyMaxLongShare: 0.7,
       weekMinKm: 12,
       beginner: true,
       longMaxSec: 90 * 60,
@@ -263,6 +277,7 @@ describe('policy 10k-v2.13.0', () => {
         kmMax: 40,
         peakMaxKm: 45,
         longMaxShare: 0.45,
+        easyMaxLongShare: 0.8,
         weekMinKm: 9
       },
       4: {
@@ -272,6 +287,7 @@ describe('policy 10k-v2.13.0', () => {
         kmMax: 55,
         peakMaxKm: 60,
         longMaxShare: 0.33,
+        easyMaxLongShare: 0.7,
         weekMinKm: 12
       },
       5: {
@@ -281,6 +297,7 @@ describe('policy 10k-v2.13.0', () => {
         kmMax: 65,
         peakMaxKm: 75,
         longMaxShare: 0.3,
+        easyMaxLongShare: 0.7,
         weekMinKm: 15
       },
       6: {
@@ -290,6 +307,7 @@ describe('policy 10k-v2.13.0', () => {
         kmMax: 80,
         peakMaxKm: 90,
         longMaxShare: 0.27,
+        easyMaxLongShare: 0.7,
         weekMinKm: 18
       }
     });
@@ -301,7 +319,6 @@ describe('policy 10k-v2.13.0', () => {
       longMaxSec: 105 * 60,
       easyMinKm: 3,
       easyMinSec: 1200,
-      easyMaxLongShare: 0.8,
       shortEasyWarnSec: 1800
     });
     expect('peakMaxKm' in P.volume).toBe(false);
@@ -324,7 +341,20 @@ describe('policy 10k-v2.13.0', () => {
       growthMinKm: 1,
       growthMaxKm: 3,
       peakFactor: 1.4,
-      peakAddKm: 15
+      peakAddKm: 15,
+      peakG1a: {
+        factorByWeeks: [
+          { maxWeeks: 12, factor: 1.3 },
+          { maxWeeks: 15, factor: 1.35 },
+          { maxWeeks: Infinity, factor: 1.4 }
+        ],
+        hoursByVdot: [
+          { belowVdot: 40, hours: 6 },
+          { belowVdot: 50, hours: 7 },
+          { belowVdot: Infinity, hours: 8 }
+        ]
+      },
+      minStepShare: 0.03
     });
     expect(P.taper).toMatchObject({ factor: 0.75, doseShare: 0.6, tMinKm: 2, longFactor: 0.75 });
     expect(P.taper.rpMin).toEqual({ reps: 2, repM: 1000 });
@@ -344,6 +374,9 @@ describe('policy 10k-v2.13.0', () => {
       maxRunDays: 5,
       sharpener: { reps: 3, repM: 1000, recoverySec: 90 },
       sharpenerSmallReps: 2,
+      sharpenerMaxWorkSec: 720,
+      sharpenerRepMinM: 400,
+      sharpenerRepMaxM: 1500,
       sharpenerMinGapDays: 3,
       eveEasySec: 1200,
       eveStrides: { reps: 4, sec: 20 },

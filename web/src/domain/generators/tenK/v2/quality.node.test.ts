@@ -27,6 +27,7 @@ const one = (p: TenKV2Plan): boolean => p.input.runDays.length === 3;
 it('uzorak mreže 02 se generiše bez odbijanja', () => {
   expect(rejected).toEqual([]);
   expect(plans.length).toBe(1980);
+  for (const p of plans) for (const w of p.weeks) PACES.set(w, p.paces);
 });
 const steady = (w: PlanWeek): boolean =>
   !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific');
@@ -53,13 +54,27 @@ const LADDER: Record<string, number[]> = {
 const CAP = { R: 0.05, I: 0.08, T: 0.1, RP: 0.1 } as const;
 /** P8 G2 (D40): prvi nivo lestvice zone — plafon nije ispod njega (R 6 × 200, I 2 × 1000, T 2,0 km, RP 2 × 1200 m). */
 const FIRST: Record<keyof typeof CAP, number> = { R: 1200, I: 2000, T: 2000, RP: 2400 };
-const capOf = (zone: keyof typeof CAP, targetKm: number): number =>
-  Math.max(
-    Math.floor((zone === 'RP' && targetKm >= 40 - 1e-9 ? 0.15 : CAP[zone]) * targetKm * 1000 + 1e-6),
-    FIRST[zone]
+/** Tempo nedelje (plan mreže nema adaptaciju: tempo plana) — za P8 G4. */
+const PACES = new Map<PlanWeek, TenKV2Plan['paces']>();
+/** P8 G4 (D43) nezavisno: plafon rada jednog treninga u minutima — T 30 (cilj ≥ 80 km: 40), I 20 (VDOT < 40) / 24, RP 30;
+    R bez plafona u minutima. Nikad ispod prvog nivoa. */
+const minutesM = (zone: keyof typeof CAP, w: PlanWeek): number => {
+  const p = PACES.get(w)!;
+  const min =
+    zone === 'T' ? (w.targetKm >= 80 - 1e-9 ? 40 : 30) : zone === 'I' ? (p.vdot < 40 ? 20 : 24) : zone === 'RP' ? 30 : null;
+  return min === null ? Infinity : Math.max(FIRST[zone], Math.floor(((min * 60) / p[zone]) * 1000 + 1e-6));
+};
+const capOf = (zone: keyof typeof CAP, w: PlanWeek): number =>
+  Math.min(
+    Math.max(
+      Math.floor(
+        (zone === 'RP' && w.targetKm >= 40 - 1e-9 ? 0.15 : CAP[zone]) * w.targetKm * 1000 + 1e-6
+      ),
+      FIRST[zone]
+    ),
+    minutesM(zone, w)
   );
-const fits = (zone: keyof typeof CAP, m: number, targetKm: number): boolean =>
-  m <= capOf(zone, targetKm);
+const fits = (zone: keyof typeof CAP, m: number, w: PlanWeek): boolean => m <= capOf(zone, w);
 const ZONE: Record<string, keyof typeof CAP> = {
   R: 'R',
   T_continuous: 'T',
@@ -69,7 +84,7 @@ const ZONE: Record<string, keyof typeof CAP> = {
 };
 /** D16 nezavisno: najviši nivo ≤ 60 % plafona zone za cilj nedelje, najmanje prvi nivo; D37 (P5 F4): T i I 80 %. */
 const START_SHARE = { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } as const;
-const startM = (ladder: string, targetKm: number): number =>
+const startM = (ladder: string, targetKm: PlanWeek): number =>
   LADDER[ladder]!.filter(
     (m) => m <= START_SHARE[ZONE[ladder]!] * capOf(ZONE[ladder]!, targetKm) + 1e-6
   ).pop() ?? LADDER[ladder]![0]!;
@@ -258,8 +273,8 @@ describe('D10/D22/D30: lestvice i strukture', () => {
         // D35 (P5 F1): kontrolni test umesto Q1 (3 dana: umesto jedinog kvaliteta).
         if (hasTest(w)) {
           expect(slot(w, 'q1')).toBeUndefined();
-          if (one(p) || p35(w)) continue;
-          expect(SLOT[w.phase][1]).toContain(slot(w, 'q2')!.ladder);
+          // P8 G7 (D46): u nedelji testa test je jedini kvalitet.
+          expect(slot(w, 'q2')).toBeUndefined();
           continue;
         }
         if (one(p)) {
@@ -312,8 +327,8 @@ describe('D18: 3 dana — jedan kvalitet', () => {
         expect(db.doseM, `${b.index}`).toBeGreaterThanOrEqual(da.doseM);
         if (b.phase === 'specific') {
           rp++;
-          const want = LADDER.RP!.find((m) => m >= Math.max(startM('RP', b.targetKm), da.doseM));
-          if (want !== undefined && fits('RP', want, b.targetKm)) expect(db.doseM).toBe(want);
+          const want = LADDER.RP!.find((m) => m >= Math.max(startM('RP', b), da.doseM));
+          if (want !== undefined && fits('RP', want, b)) expect(db.doseM).toBe(want);
         }
       }
     }
@@ -328,7 +343,7 @@ describe('D11: jedan plafon po zoni, po treningu', () => {
         for (const d of w.days)
           for (const z of ['R', 'I', 'T', 'RP'] as const)
             expect(
-              fits(z, Math.round(d.workout.workKm[z] * 1000), w.targetKm),
+              fits(z, Math.round(d.workout.workKm[z] * 1000), w),
               `${w.index} ${z}`
             ).toBe(true);
   });
@@ -340,20 +355,20 @@ describe('D16: početni nivo', () => {
     for (const p of plans) {
       const w = p.weeks[0]!;
       if (one(p)) {
-        expect(slot(w, 'q1')!.doseM).toBe(startM('T_continuous', w.targetKm));
+        expect(slot(w, 'q1')!.doseM).toBe(startM('T_continuous', w));
         continue;
       }
-      expect(slot(w, 'q1')!.doseM).toBe(startM('R', w.targetKm));
+      expect(slot(w, 'q1')!.doseM).toBe(startM('R', w));
       // 06f (pouka 35): Q2 nedelje 1 lagan — početni nivo Q2 proverava prva nedelja koja ga ima (validator D16).
       if (p35(w)) continue;
       // D37 (P-b): niži nivo (najmanje po 60 %) kad bi nivo po 80 % stvorio nedelju pouke 35 (2 dana kvaliteta ostaju).
       const q2 = slot(w, 'q2')!.doseM;
       const s60 =
-        LADDER.T_continuous!.filter((m) => m <= 0.6 * capOf('T', w.targetKm) + 1e-6).pop() ??
+        LADDER.T_continuous!.filter((m) => m <= 0.6 * capOf('T', w) + 1e-6).pop() ??
         LADDER.T_continuous![0]!;
-      if (q2 !== startM('T_continuous', w.targetKm)) {
+      if (q2 !== startM('T_continuous', w)) {
         expect(q2).toBeGreaterThanOrEqual(s60);
-        expect(q2).toBeLessThan(startM('T_continuous', w.targetKm));
+        expect(q2).toBeLessThan(startM('T_continuous', w));
       }
       if (slot(w, 'q2')!.doseM > LADDER.T_continuous![0]!) aboveFirst++;
     }
@@ -370,11 +385,17 @@ describe('D16: početni nivo', () => {
         if (a.phase === b.phase) continue;
         const q1 = slot(b, 'q1')!;
         if (q1.step === 'drop') continue;
-        if (b.phase === 'development') expect(q1.doseM, `${b.index}`).toBe(startM('I', b.targetKm));
+        // D37 (P-b): niži nivo I (najmanje po 60 %) kad bi nivo po 80 % stvorio nedelju pouke 35 — od P8 G6 (lagan ≤ 0,70 ×
+        // dugi) javlja se i na prelazu u razvoj.
+        if (b.phase === 'development' && q1.doseM !== startM('I', b)) {
+          const s60 = LADDER.I!.filter((m) => m <= 0.6 * capOf('I', b) + 1e-6).pop() ?? LADDER.I![0]!;
+          expect(q1.doseM, `${b.index}`).toBeGreaterThanOrEqual(s60);
+          expect(q1.doseM, `${b.index}`).toBeLessThan(startM('I', b));
+        }
         if (b.phase === 'specific') {
-          const lo = Math.max(startM('RP', b.targetKm), slot(a, 'q1')!.doseM);
+          const lo = Math.max(startM('RP', b), slot(a, 'q1')!.doseM);
           const want = LADDER.RP!.find((m) => m >= lo);
-          if (want !== undefined && fits('RP', want, b.targetKm))
+          if (want !== undefined && fits('RP', want, b))
             expect(q1.doseM, `${b.index}`).toBe(want);
           else expect(q1.doseM).toBeGreaterThanOrEqual(slot(a, 'q1')!.doseM);
         }
@@ -419,7 +440,7 @@ describe('D12: progresija', () => {
             continue;
           }
           const next = LADDER[db.ladder]!.find((m) => m > da.doseM);
-          const nextFits = next !== undefined && fits(db.zone, next, b.targetKm);
+          const nextFits = next !== undefined && fits(db.zone, next, b);
           if (nextFits) expect(db.doseM, `${b.index} ${r}`).toBe(next);
           else {
             expect(db.doseM, `${b.index} ${r}`).toBe(da.doseM);
@@ -540,7 +561,7 @@ describe('D34: održavanje I u specifičnoj fazi (4–6 dana)', () => {
             b++;
             // Nedelja B: cilj najviše 3,0 km ispod cilja po pravilu (odluka organizatora posle STOP 9c0fa49).
             expect(w.targetKm, `${w.index}`).toBeGreaterThanOrEqual(w.nominalKm - 3 - 1e-9);
-            const cap = capOf('I', w.targetKm);
+            const cap = capOf('I', w);
             const iWant = maxI <= cap ? maxI : LADDER.I!.filter((m) => m <= cap).pop();
             expect(slot(w, 'q2')!.doseM, `${w.index}`).toBe(iWant);
           }

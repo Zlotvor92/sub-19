@@ -94,12 +94,13 @@ describe('D4: faze', () => {
 });
 
 describe('D27: gde je test 5 km', () => {
-  it('poslednja nedelja baze za N = 8–18; oznaka samo u planu po osećaju i samo na toj nedelji', () => {
+  it('poslednja nedelja baze za N = 12–18 (P8 G7: N = 8–11 bez testa, baza < 4 nedelje); oznaka samo u planu po osećaju i samo na toj nedelji', () => {
     const want: Record<number, number> = {
-      8: 2,
-      9: 2,
-      10: 3,
-      11: 3,
+      // P8 G7 (D46): test ne pre nedelje 4 — baza kraća od 4 nedelje → plan po osećaju bez testa.
+      8: 0,
+      9: 0,
+      10: 0,
+      11: 0,
       12: 4,
       13: 4,
       14: 4,
@@ -111,9 +112,14 @@ describe('D27: gde je test 5 km', () => {
     for (let N = 8; N <= 18; N++) {
       const ph = phasesOf(N);
       expect(testWeekOf(ph), `N=${N}`).toBe(want[N]);
+      const f = periodize('2026-11-02', N, 'feel')!;
+      if (want[N] === 0) {
+        expect(ph.lastIndexOf('base') + 1, `N=${N}`).toBeLessThan(4);
+        expect(f.some((w) => w.test)).toBe(false);
+        continue;
+      }
       expect(ph[want[N]! - 1]).toBe('base');
       expect(ph[want[N]!]).toBe('development');
-      const f = periodize('2026-11-02', N, 'feel')!;
       expect(f.filter((w) => w.test).map((w) => w.index)).toEqual([want[N]]);
       expect(periodize('2026-11-02', N, null)!.some((w) => 'test' in w)).toBe(false);
     }

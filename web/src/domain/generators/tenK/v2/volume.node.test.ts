@@ -12,7 +12,14 @@ import { planRule } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import { grid02Inputs, gridInputs, inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
-import { fewerDaysAdvice, fit10, nominal10, peakCap10, startKm10 } from './volume.ts';
+import {
+  buildWeeksLeft,
+  fewerDaysAdvice,
+  fit10,
+  nominal10,
+  peakCap10,
+  startKm10
+} from './volume.ts';
 import { specificTypeNext, type TypedWeek } from './specific.ts';
 import { buildWeek, type BuiltWeek, type WeekContext } from './week.ts';
 import { warmupCooldown } from './workouts.ts';
@@ -20,8 +27,25 @@ import { warmupCooldown } from './workouts.ts';
 /** Nezavisno pravilo D6: +6 % (min 1,0, max 3,0; korak 0,1) do min(1,4×, +15, max nedelje D17). */
 const growth = (last: number): number => Math.min(3, Math.max(1, Math.round(last * 0.6) / 10));
 const PEAK_MAX: Record<number, number> = { 3: 45, 4: 60, 5: 75, 6: 90 };
-const cap = (start: number, days = 4): number =>
+const capD6 = (start: number, days = 4): number =>
   Math.min(Math.floor(start * 14 + 1e-9) / 10, start + 15, PEAK_MAX[days]!);
+/** P8 G1a (D45) nezavisno: granica = max(start; min(D6; start × faktor po dužini pripreme — ≤ 12 ned 1,30, 13–15 ned 1,35,
+    ≥ 16 ned 1,40; satni plafon — VDOT < 40 6 h, < 50 7 h, inače 8 h, po srednjem laganom tempu)), naniže na 0,1 km. */
+const cap = (start: number, days = 4, p?: TenKV2Plan): number => {
+  if (!p) return capD6(start, days);
+  const n = p.weeks.length;
+  const factor = n <= 12 ? 1.3 : n <= 15 ? 1.35 : 1.4;
+  const hours = p.paces.vdot < 40 ? 6 : p.paces.vdot < 50 ? 7 : 8;
+  const mid = (p.paces.E.fast + p.paces.E.slow) / 2;
+  return Math.max(
+    start,
+    Math.min(
+      capD6(start, days),
+      Math.floor(start * factor * 10 + 1e-9) / 10,
+      Math.floor(((hours * 3600) / mid) * 10 + 1e-9) / 10
+    )
+  );
+};
 
 /** Ponovi konstrukciju plana i vrati izvodljivost svake nedelje (stvarni week.ts). */
 function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
@@ -40,7 +64,7 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
     feel: false
   };
   const s10 = startKm10(c.input.currentWeeklyKm);
-  const c10 = peakCap10(s10, rule);
+  const c10 = peakCap10(s10, rule, c.weeks, paces);
   let q: QualityState = INITIAL_QUALITY;
   const vol = { lastBuild10: null as number | null, peak10: 0 };
   let lastLong: number | null = null;
@@ -48,19 +72,22 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
   const out: ((t10: number) => boolean)[] = [];
   const done: TypedWeek[] = [];
   // D35 (P5 F1): isti okviri kao generator (kontrolni test od 12 nedelja).
-  for (const f of periodize(c.input.startDate, c.weeks, testKindOf(false, rule, c.weeks))!) {
+  const frames = periodize(c.input.startDate, c.weeks, testKindOf(false, rule, c.weeks))!;
+  for (const f of frames) {
     if (f.phase === 'race') break;
     const qq: QualityState = q;
     const ll: number | null = lastLong;
     const lo: number = longest;
-    const nom = nominal10(f, vol, s10, c10, rule);
+    // P8 G1 (D39): korak do kraja razvoja; izvodljiv cilj naviše najviše do cilja po D6 (kao generate.construct).
+    const nom = nominal10(f, vol, s10, c10, rule, buildWeeksLeft(frames, f.index));
+    const upMax = nominal10(f, vol, s10, c10, rule, 0);
     // D34: nedelja B — najpre samo B, cilj naniže najviše 3,0 km; inače B ili A uz napomenu (kao generate.construct).
     const b = f.phase === 'specific' && !f.deload && specificTypeNext(done, rule) === 'B';
     let ctxF: WeekContext = b ? { ...ctx, specB: 'B', specBMin10: nom - 30 } : ctx;
     const inB = (t: number): boolean => ctxF.specB !== 'B' || (t <= nom && t >= nom - 30);
     // Kao generate.construct: prolaz po pravilu, pa (10K-08: i kad T1 obara sve ciljeve po pravilu) druga pretraga.
     let make = (t: number): BuiltWeek | null => (inB(t) ? buildWeek(ctxF, f, t, qq, ll, lo) : null);
-    const fitOf = () => fit10(nom, f, c10, rule, (t) => make(t) !== null, vol.lastBuild10);
+    const fitOf = () => fit10(nom, f, c10, rule, (t) => make(t) !== null, vol.lastBuild10, false, upMax);
     let fit0 = fitOf();
     if (!fit0) {
       make = (t: number): BuiltWeek | null =>
@@ -96,16 +123,21 @@ function checkRule(p: TenKV2Plan): void {
   const start = p.input.currentWeeklyKm;
   const days = p.input.runDays.length;
   expect(p.startKm).toBe(start);
-  expect(p.peakCapKm).toBe(cap(start, days));
+  expect(p.peakCapKm).toBe(cap(start, days, p));
   let last: number | null = null;
   let peak = 0;
   // P8 G1 (D39): korak ≤ (vrh − poslednji) / preostale ne-rasteretne nedelje baze i razvoja (0,1 km, najmanje 0,1).
   const bd = (x: PlanWeek): boolean => (x.phase === 'base' || x.phase === 'development') && !x.deload;
   const step = (l: number, w: PlanWeek): number => {
     const left = bd(w) ? p.weeks.filter((x) => x.index >= w.index && bd(x)).length : 0;
-    const c = cap(start, days);
-    if (left === 0 || l >= c) return growth(l);
-    return Math.min(growth(l), Math.max(1, Math.round((Math.round(c * 10) - Math.round(l * 10)) / left)) / 10);
+    const c = cap(start, days, p);
+    const st =
+      left === 0 || l >= c
+        ? growth(l)
+        : Math.min(growth(l), Math.max(1, Math.round((Math.round(c * 10) - Math.round(l * 10)) / left)) / 10);
+    // P8 G1b (D45): stvarni rast (do granice) manji od 3 % tekućeg cilja se ne primenjuje.
+    const eff = Math.min(st, Math.max(0, c - l));
+    return eff > 1e-9 && eff < 0.03 * l - 1e-9 ? 0 : st;
   };
   for (const w of p.weeks) {
     if (w.phase === 'race') {
@@ -119,7 +151,7 @@ function checkRule(p: TenKV2Plan): void {
           ? start
           : w.deload
             ? Math.round(8 * last) / 10
-            : Math.min(Math.round((last + step(last, w)) * 10) / 10, cap(start, days));
+            : Math.min(Math.round((last + step(last, w)) * 10) / 10, cap(start, days, p));
     expect(w.nominalKm, `ned ${w.index}`).toBe(nominal);
     // Nijedna nedelja niža nego što D6 traži, osim pogođenih (oznaka + napomena).
     if (w.targetKm !== nominal) {
@@ -129,7 +161,7 @@ function checkRule(p: TenKV2Plan): void {
     // 10K-08 (T1): nedelja bez laganih dana (lagan od 20 min ne staje) sme planirano < cilj.
     if (!t1Short(w, p)) expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
     if (isBuildPhase(w.phase) && !w.deload) {
-      expect(w.targetKm).toBeLessThanOrEqual(cap(start, days));
+      expect(w.targetKm).toBeLessThanOrEqual(cap(start, days, p));
       last = w.targetKm;
       peak = Math.max(peak, w.targetKm);
     }
@@ -163,13 +195,14 @@ describe('D6: obim', () => {
     }
   });
 
-  it('ned 1 = trenutni obim kad ga konstrukcija nosi (01b: VDOT 50 nosi ceo opseg 25–55 km; 10K-08: 25–45 km; P5: 25–50 km)', () => {
+  it('ned 1 = trenutni obim kad ga konstrukcija nosi (01b: VDOT 50 nosi ceo opseg 25–55 km; 10K-08: 25–45 km; P5: 25–50 km; P8 G6: 25–45 km)', () => {
     // 10K-08 (T1, lagan ≤ 0,8 × dugi): 25–45 km cilj = trenutni obim (25 km: lagani dani odmor, planirano < cilj); 50 i
     // 55 km → najbliži izvodljiv 48,2 km (lagan 12,7 = 0,8 × dugi 15,9). P5 (D37, F4: T i I od 80 % plafona): veća T doza
-    // nedelje 1 nosi i 50 km; 55 km → 53,7 km.
+    // nedelje 1 nosi i 50 km; 55 km → 53,7 km. P8 G6 (D47, lagan ≤ 0,70 × dugi za 4+ dana): 25–45 km cilj = trenutni obim;
+    // 50 i 55 km → 46,7 km (lagan 10,7 = 0,7 × dugi 15,4).
     for (const km of [25, 30, 35, 40, 45, 50, 55]) {
       const r = generateTenKV2(inputOf({ weeks: 12, km, vdot: 50, days: SCHEDULES.A.days }));
-      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km <= 50 ? km : 53.7);
+      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km <= 45 ? km : 46.7);
     }
   });
 
@@ -220,14 +253,14 @@ describe('D6: obim', () => {
     expect(p.peakKm).toBeLessThan(p.peakCapKm);
     expect(feas[peakWeek.index - 1]!(t10)).toBe(true);
     expect(feas[peakWeek.index - 1]!(t10 + 1)).toBe(false);
-    // Uzrok: dugi je na 105 min sporim E i lagan bi morao biti duži od 0,8 × dugi (10K-08, T1; ranije: od dugog).
+    // Uzrok: dugi je na 105 min sporim E i lagan bi morao biti duži od 0,7 × dugi (P8 G6; 10K-08 T1: 0,8; ranije: od dugog).
     const long = peakWeek.days.find((d) => d.role === 'long')!.workout.km;
     expect(long).toBe(Math.floor((6300 / p.paces.E.slow) * 10) / 10);
     const easy = peakWeek.days.find((d) => d.role === 'easy')!.workout.km;
-    expect(easy).toBeGreaterThanOrEqual(Math.floor(8 * long) / 10 - 0.1 - 1e-9);
+    expect(easy).toBeGreaterThanOrEqual(Math.floor(7 * long) / 10 - 0.1 - 1e-9);
     expect(p.warnings.some((w) => w.rule === 'CAPACITY_LIMITED')).toBe(true);
     const msg =
-      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 80 % dugog; preporuka 5–6 dana.';
+      '4 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 33 % nedelje, lagan ≤ 70 % dugog; preporuka 5–6 dana.';
     expect(p.warnings.find((w) => w.rule === 'CAPACITY_LIMITED')!.message).toBe(msg);
     expect(p.notes.some((n) => n.startsWith(msg))).toBe(true);
     checkRule(p);
@@ -243,17 +276,17 @@ describe('D6: obim', () => {
     // 4 dana, 25 km, VDOT 30: spuštene nedelje seče udeo 33 % (01b: poruka je pogrešno navodila 105 min). 10K-07
     // (O-1b): 5 dana (30–65) i 6 dana (35–80) ne podržavaju 25 km (ulaz bi ih odbio) → bez preporuke.
     expect(msgOf({ weeks: 12, km: 25, vdot: 30, days: d[4].A.days, long: 'sun' })).toBe(
-      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje, lagan ≤ 80 % dugog.'
+      '4 dana ne nose ovaj obim uz dugi ≤ 33 % nedelje, lagan ≤ 70 % dugog.'
     );
     // 02b (D17 udeo 3 dana 0,45): isti ulaz je u 10k-v2.2.0 sekao i udeo 40 %; sada samo 105 min.
     expect(msgOf({ weeks: 17, km: 30, vdot: 35, days: d[3].A.days, long: 'sun' })).toBe(
       '3 dana ne nose ovaj obim uz dugi ≤ 105 min i ≤ 45 % nedelje, lagan ≤ 80 % dugog; preporuka 4–5 dana.'
     );
     expect(msgOf({ weeks: 12, km: 65, vdot: 30, days: d[5].A.days, long: 'sun' })).toBe(
-      '5 dana ne nose ovaj obim uz dugi ≤ 105 min, lagan ≤ 80 % dugog; preporuka 6 dana.'
+      '5 dana ne nose ovaj obim uz dugi ≤ 105 min, lagan ≤ 70 % dugog; preporuka 6 dana.'
     );
     expect(msgOf({ weeks: 12, km: 80, vdot: 30, days: d[6].A.days, long: 'sun' })).toBe(
-      '6 dana ne nose ovaj obim uz dugi ≤ 105 min, lagan ≤ 80 % dugog.'
+      '6 dana ne nose ovaj obim uz dugi ≤ 105 min, lagan ≤ 70 % dugog.'
     );
   });
 
