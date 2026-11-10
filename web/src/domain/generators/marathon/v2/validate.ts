@@ -1351,7 +1351,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
       );
     if (isB) prevMainB = b;
     else prevMain = b;
-    if (prevW && qualityKey(prevW) === qualityKey(b)) {
+    // K4-A: nedelja B plana sa 3 dana (samo blok u dugom) — nivo bloka proverava LONG_BLOCK (chooseBlockKm, ponovljen
+    // nivo kad sledeći ne staje u plafon ili u nedelji bez rasta); ponavljanje se ovde ne poredi.
+    if (prevW && hasQualityWork(b) && qualityKey(prevW) === qualityKey(b)) {
       // Pouka 32 (odluka organizatora MAR-04b): ponavljanje doze je upozorenje uz napomenu samo kad za svaki slot
       // važi: (2') nijedna druga struktura iste doze ne staje u plafon zone i (3) sledeći nivo ne staje u plafon
       // zone (oba člana, ista funkcija). Svako drugo identično ponavljanje je greška.

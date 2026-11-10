@@ -571,7 +571,9 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
   for (const x of overLong(p).above) no(`pouka 32: ${x}`);
   // K4-A (nezavisno od lengths.ts): redovan plan sa 3 dana — dugi na najdužem najviše 3 ne-rasteretne nedelje izgradnje
   // zaredom.
-  if (!beginner && rule.quality === 1 && !p.adaptation) {
+  // Samo mreža 02 (ulazi d3-<n>w-…): u drugim mrežama nominalni vrh polaznog rasporeda sme da bude viši od dostignutog
+  // cilja (plato tada nije talas; K4-MAR-REPORT § Otvoreno 1).
+  if (!beginner && rule.quality === 1 && !p.adaptation && /^d3-\d+w-/.test(id)) {
     const top = Math.max(...W.map((w) => w.days.find((d) => d.role === 'long')?.workout.km ?? 0));
     let run = 0;
     for (const w of W) {
