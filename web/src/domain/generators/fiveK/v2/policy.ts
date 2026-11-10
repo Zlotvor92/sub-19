@@ -361,6 +361,9 @@ export const FIVE_K_V2_POLICY = {
         trening ≤ buildMaxShareOfLong × dugi iste nedelje, a najkraći lagan = max(minKm, minSec laganim tempom). Ostatak
         cilja koji ne staje: manje laganih dana, pa planirano < cilj (dugi se zbog toga ne produžava). */
     buildMaxShareOfLong: 0.8,
+    /** 5k-v2.15.0 (P8 dopuna G6, odluka organizatora po glavnom treneru): plan sa 4 i više dana — lagan ≤ 0,70 × dugi
+        (3 dana ostaje buildMaxShareOfLong 0,8). Jedino mesto: lengths.easyCapKm. */
+    buildMaxShareOfLong4: 0.7,
     minSec: 1200,
     /** 2.1.0: dan pred trku lagan ≤ 4 km (ukupno, sa ubrzanjima) + 4 × 20 s ubrzanja (heuristika). */
     raceEveMaxKm: 4.0,

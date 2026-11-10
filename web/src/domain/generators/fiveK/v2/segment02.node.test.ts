@@ -68,7 +68,7 @@ describe('Odluka 1: dugi ≥ svaki lagan trk; dugi ≤ 35% i ≤ 90 min', () => 
     for (const w of plan.weeks.filter((x) => x.easyCappedAtLong)) {
       const long = roleDay(w, 'long').workout.km;
       for (const d of w.days.filter((x) => x.role === 'easy'))
-        expect(d.workout.km).toBeCloseTo(easyCapKm(long, w.phase, w.deload), 6);
+        expect(d.workout.km).toBeCloseTo(easyCapKm(long, w.phase, w.deload, plan.input.runDays.length), 6);
       expect(w.plannedKm).toBeLessThan(w.targetKm);
     }
     // Ciljevi su i dalje odluka volume.ts; 2.3.0: trkačka nedelja = planirano ≤ granica iz volume.ts.

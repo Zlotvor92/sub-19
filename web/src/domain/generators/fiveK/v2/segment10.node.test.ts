@@ -73,7 +73,7 @@ describe('T1: lagan prema dugom u nedelji izgradnje', () => {
           longCapKm(w.targetKm, p.paces, athleteOf(p)) + 1e-9
         );
         for (const d of w.days.filter((x) => x.role === 'easy')) {
-          if (d.workout.km > easyCapKm(long.workout.km, w.phase, false) + 1e-9)
+          if (d.workout.km > easyCapKm(long.workout.km, w.phase, false, p.input.runDays.length) + 1e-9)
             bad.push(`${b.id} ned ${w.index}: lagan ${d.workout.km} > 0,8 × ${long.workout.km}`);
           if (d.workout.km + 1e-9 < easyMinKm(w.phase, p.paces) || d.workout.sec < P.easy.minSec)
             bad.push(`${b.id} ned ${w.index}: lagan ${d.workout.km} km / ${d.workout.sec} s`);
