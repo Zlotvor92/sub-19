@@ -1,35 +1,24 @@
-import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { seedState, type PersistedState } from '../../domain/state';
+import { ADMIN_UID } from '../../services/config';
 import { hydratePersisted, useTrainingStore } from '../../stores';
+import { useAuthStore } from '../../stores/authStore';
 import { addTest } from '../../stores/raceActions';
 import { useUIStore } from '../../stores/uiStore';
 import { AdjustPlan } from '../plan/AdjustPlan';
 import { SheetHost } from '../sheets';
 import { FormScreen } from './FormScreen';
 
-/* parity: renderPred, t3kKarta, openT3kSheet, vdotPredlog (app.js) — ekran „Forma i predikcija“ (Napredak) i predlog tempa u Plan → Prilagodi plan. */
+/* parity: renderPred, t3kKarta, openT3kSheet, vdotPredlog (app.js) — ekran „Forma i predikcija“ (Napredak) i predlog tempa u Plan → Prilagodi plan.
+   V1b: ovaj ekran (lanac forme, test 3 km, predlog tempa) pripada planu koji obrađuje v1 generator, a posle brisanja v1 to
+   je SAMO ugrađeni lični plan vlasnika (zamrznut HM v1, `LEGACY_PERSONAL_GENERATOR`; polumaraton, cilj 1:40:00). Plan v2
+   ima svoj ekran forme (`*V2Adapt.test.tsx`). Lični plan se ne upisuje, pa se predlog tempa prikazuje ali ne primenjuje. */
 
 function freshState(): PersistedState {
   const s = JSON.parse(JSON.stringify(seedState())) as PersistedState;
-  const a = adaptGeneratedPlan(
-    generatePlan({
-      startDate: '2026-01-05',
-      raceDate: '2026-04-12',
-      raceDistM: 10000,
-      pb: { distM: 10000, sec: 2700 },
-      goalSec: 2520,
-      weeklyKm: 40,
-      runDays: 5,
-      quality: 2,
-      intensity: 'std',
-      trainedRecently: true
-    })
-  );
-  if (!a) throw new Error('plan');
-  s.genPlan = a;
+  s.genPlan = null;
   return s;
 }
 const Screen = () => (
@@ -42,8 +31,9 @@ const Screen = () => (
 );
 
 beforeEach(() => {
+  useAuthStore.setState({ configured: true, hasSession: true, userId: ADMIN_UID, email: null });
   hydratePersisted(freshState());
-  useUIStore.setState({ today: '2026-02-20', sheet: null, confirm: null, screens: [] });
+  useUIStore.setState({ today: '2026-11-20', sheet: null, confirm: null, screens: [] });
 });
 
 describe('Forma i predikcija', () => {
@@ -52,7 +42,7 @@ describe('Forma i predikcija', () => {
     expect(
       screen.getByRole('heading', { level: 1, name: 'Forma i predikcija' })
     ).toBeInTheDocument();
-    expect(container.querySelector('header.screen-head p')).toHaveTextContent(/cilj 42:00$/);
+    expect(container.querySelector('header.screen-head p')).toHaveTextContent(/cilj 1:40:00$/);
     expect(screen.getByText('Još nema merenja')).toBeInTheDocument();
     expect(screen.getByText('Procena će se pojaviti posle prvog merenja.')).toBeInTheDocument();
     expect(screen.getByText(/Trend se prikazuje kad budu bar 2/)).toBeInTheDocument();
@@ -61,21 +51,10 @@ describe('Forma i predikcija', () => {
     /* polazna tačka i cilj su na osi puta do cilja, procena danas još nije */
     const journey = container.querySelector('.journey');
     expect(journey?.getAttribute('aria-label')).toMatch(
-      /^Put do cilja: start \d+:\d\d, cilj 42:00/
+      /^Put do cilja: start [\d:]+, cilj 1:40:00/
     );
     expect(journey?.getAttribute('aria-label')).not.toMatch(/sada/);
     expect(journey?.getAttribute('aria-label')).not.toMatch(/plan vodi do/);
-  });
-
-  it('stari sačuvani plan zadržava projekciju bez novog markera', () => {
-    const state = freshState();
-    delete state.genPlan!.meta!.assessmentBasis;
-    state.genPlan!.meta!.predictedSec = 2400;
-    hydratePersisted(state);
-    const { container } = render(<Screen />);
-    expect(container.querySelector('.journey')?.getAttribute('aria-label')).toContain(
-      'plan vodi do 40:00'
-    );
   });
 
   it('tempo svakog trčanja: odeljak postoji i bez trčanja kaže šta da se uradi', () => {
@@ -96,7 +75,7 @@ describe('Forma i predikcija', () => {
       'Polumaraton',
       'Maraton'
     ]);
-    expect(within(rows[1] as HTMLElement).getByText('tvoja trka')).toBeInTheDocument();
+    expect(within(rows[2] as HTMLElement).getByText('tvoja trka')).toBeInTheDocument();
     expect(within(card as HTMLElement).getByText(/Iz polazne forme, VDOT/)).toBeInTheDocument();
     expect(within(card as HTMLElement).getByText('Procena')).toBeInTheDocument();
   });
@@ -120,7 +99,7 @@ describe('Forma i predikcija', () => {
     await user.clear(within(sheet).getByLabelText('Vreme'));
     await user.type(within(sheet).getByLabelText('Vreme'), '1142');
     expect(within(sheet).getByRole('status')).toHaveTextContent(
-      /^Tempo 3:54\/km · VDOT \d+,\d · predikcija \d+:\d\d$/
+      /^Tempo 3:54\/km · VDOT \d+,\d · predikcija [\d:]+$/
     );
     await user.click(within(sheet).getByRole('button', { name: 'Sačuvaj' }));
     const t = useTrainingStore.getState();
@@ -139,7 +118,7 @@ describe('Forma i predikcija', () => {
   it('izmena testa preračunava lanac; brisanje traži potvrdu i čisti lanac', async () => {
     const user = userEvent.setup();
     act(() => {
-      addTest('2026-02-10', 720, 'aaaaa');
+      addTest('2026-11-10', 720, 'aaaaa');
     });
     render(<Screen />);
     const before = useTrainingStore.getState().vdotLog[0]?.vdot;
@@ -166,8 +145,8 @@ describe('Forma i predikcija', () => {
   it('dva testa daju VDOT trend; raniji test se otvara iz liste', async () => {
     const user = userEvent.setup();
     act(() => {
-      addTest('2026-01-20', 760, 'aaaaa');
-      addTest('2026-02-15', 700, 'bbbbb');
+      addTest('2026-11-05', 660, 'aaaaa');
+      addTest('2026-11-15', 600, 'bbbbb');
     });
     const { container } = render(<Screen />);
     expect(container.querySelector('#vdottrend svg')).not.toBeNull();
@@ -191,43 +170,21 @@ describe('Forma i predikcija', () => {
     );
   });
 
-  it('predlog prilagođavanja tempa: kad je forma daleko ispred plana; primena menja SAMO tempo (paceAuto), poništavanje ga vraća', async () => {
-    const user = userEvent.setup();
-    const alert = vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+  it('predlog tempa nad ličnim planom: Forma ne nosi radnju nad planom; plan se ne upisuje', async () => {
     act(() => {
-      addTest('2026-01-20', 600 + 40, 'a1a1a');
-      addTest('2026-01-27', 600 + 30, 'a2a2a');
-      addTest('2026-02-03', 600 + 20, 'a3a3a');
-      addTest('2026-02-10', 600 + 10, 'a4a4a');
+      addTest('2026-11-03', 600 + 40, 'a1a1a');
+      addTest('2026-11-07', 600 + 30, 'a2a2a');
+      addTest('2026-11-12', 600 + 20, 'a3a3a');
+      addTest('2026-11-17', 600 + 10, 'a4a4a');
     });
     expect(useTrainingStore.getState().t3k).toHaveLength(4);
     render(<Screen />);
     expect(screen.queryByText('Merenja ukazuju na brži tempo')).toBeNull(); // Forma i predikcija ne nosi radnju nad planom
     cleanup();
     render(<AdjustPlan />);
-    expect(screen.getByText('Merenja ukazuju na brži tempo')).toBeInTheDocument();
-    const btn = screen.getByRole('button', { name: 'Prilagodi tempo' });
-    const planBefore = useTrainingStore.getState().genPlan!;
-    await user.click(btn);
-    act(() => useUIStore.getState().confirm?.resolve(true));
-    await waitFor(() =>
-      expect(Object.values(useTrainingStore.getState().alts).some((a) => a.paceAuto)).toBe(true)
-    );
-    for (const a of Object.values(useTrainingStore.getState().alts)) expect(a.paceAuto).toBe(true);
-    expect(await screen.findByText('Tempi su prilagođeni tvojoj formi')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Vrati planski tempo' }));
-    await waitFor(() => expect(useTrainingStore.getState().alts).toEqual({}));
-    const restored = useTrainingStore.getState().genPlan!;
-    for (const key of ['weeks', 'pred', 'qs', 'meta', 'ulaz'] as const) {
-      expect(restored[key]).toEqual(planBefore[key]); // prescription restored; revision remains inspectable
-    }
-    expect(restored.planRevisions).toHaveLength(2);
-    expect(restored.planRevisions).toMatchObject([
-      { reason: 'pace', date: '2026-02-20' },
-      { reason: 'pace', date: '2026-02-20' }
-    ]);
-    alert.mockRestore();
+    expect(useTrainingStore.getState().genPlan).toBeNull();
   });
+
 });
 
 describe('Forma · AI trend', () => {
@@ -245,7 +202,7 @@ describe('Forma · AI trend', () => {
     expect(await screen.findByText(/Trenutno: 0/)).toHaveClass('err');
     const req = trend.mock.calls[0] as [{ treninzi: unknown[] }, string];
     expect(req[0].treninzi).toEqual([]);
-    expect(req[1]).toMatch(/ciljno vreme 42:00/);
+    expect(req[1]).toMatch(/cilj 1:40:00/);
 
     trend.mockResolvedValueOnce({ ok: true, text: '**Forma** raste.' });
     await user.click(screen.getByRole('button', { name: /Objasni trend/ }));

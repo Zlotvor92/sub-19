@@ -1,5 +1,7 @@
 import type { ProposalContext } from '@/domain/generators/halfMarathon/training/adaptation/proposal';
-import { generatePlan, adaptGeneratedPlan } from '@/test/generators';
+import { generatePlan, adaptGeneratedPlan } from '@/test/legacyPlans';
+/* V1b: plan starog (v1) formata iz zamrznute fiksture (`legacyPlans.ts`, isti izlaz kao v1 pre brisanja); funkcije
+   v1 generatora (predlog tempa, opis) su iz zamrznutog HM v1 — isti kod u sva četiri v1 generatora. */
 import { describe, expect, it } from 'vitest';
 import { addDays, type IsoDate } from '../../date';
 import { resolvePlan } from '../../plan/resolve';

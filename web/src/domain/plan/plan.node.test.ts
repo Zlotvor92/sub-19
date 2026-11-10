@@ -5,7 +5,9 @@
    test/prevlacenje (zamena dana). Oracle test (`plan.oracle.test.ts`) dokazuje da je ponašanje isto kao
    u starom kodu; ovde su pravila izražena sama za sebe. */
 
-import { adaptGeneratedPlan, generatePlan } from '@/test/generators';
+import { adaptGeneratedPlan, generatePlan } from '@/test/legacyPlans';
+/* V1b: plan starog (v1) formata iz zamrznute fiksture (`legacyPlans.ts`, isti izlaz kao v1 pre brisanja); funkcije
+   v1 generatora (predlog tempa, opis) su iz zamrznutog HM v1 — isti kod u sva četiri v1 generatora. */
 import { describe, expect, it } from 'vitest';
 import type { AltRecord, GenPlanState } from '../state';
 import { safeTag, tagName, weekPhase } from './describe';
