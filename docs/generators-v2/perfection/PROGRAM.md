@@ -193,3 +193,19 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
   dostignut. Uzrok po tabu (tumačenje): vrhunac ima 2–3 I nedelje, prvi I ≤ 70 % budžeta. Kandidati: prvi I 80 % ili
   veći faktor koraka. Nazivi faza na srpskom nisu dirani.
 - Po nalogu vlasnika (15:10) ništa novo se ne pokreće; čeka se P8-10K završetak.
+
+### 10. 11. 2026, 15:35 — P8-MAR predao (marathon-v2.11.0); ispravka stanja tabova
+
+- ISPRAVKA: P8-MAR i P8-HM nisu bili pauzirani kako je organizator vodio — sami su nastavili posle reseta
+  petočasovnog limita. P8-MAR je predao; P8-HM je pri kraju (čeka pun nivo i E2E, pa push). Oba spadaju u „sesije
+  koje završavaju svoje" po nalogu vlasnika od 15:10; ništa im se ne dodaje.
+- P8-MAR: kod `377c8dc`, izveštaj `reports/P8-MAR-REPORT.md`, sudari `reports/P8-MAR-STOP.md` (S1–S6). Nezavisna
+  provera organizatora: brzi nivo `marathon/v2` 447/447. Po tabu: pun nivo 549/549, `npm run check` 3318 zeleno,
+  E2E 3/3, sabotaže 15/15, mreže 31 920 planova bez odbijanja.
+- NIJE UGRAĐENO u maraton: izuzetak početnika za G6 (0,80) — izveštaj pokazuje početnika 4+ dana na 0,70. Dug za
+  sledeći krug.
+- ČEKA ODLUKU ORGANIZATORA (ne odlučuje se dok vlasnik ne kaže kako dalje): S1 početnik zadržava faktor vrha 1,5;
+  S2 MP trening posle bloka pada (DOSE_DROPPED R 570 → 1548, F 168 → 1632); S3 ukupno MP po planu R 54 → 44 km,
+  F 54 → 42, B 42 → 27,5; S4 plan po osećaju 12–13 nedelja bez testa (1260/8190); S5 tumačenja T1–T6; vrh obima niži
+  > 10 % u 31 % R i 44 % F planova. Ostatak G3 (interne oznake u napomenama nedelje) nije urađen.
+- Tab P8-MAR se ne arhivira dok se S1–S6 ne odluče.
