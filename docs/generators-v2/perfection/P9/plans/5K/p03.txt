@@ -1,4 +1,4 @@
-PLAN — 5 km · 5k-v2.15.3
+PLAN — 5 km · 5k-v2.16.0
 Profil: spor, VDOT 33, dno obima, 3 dana, srednja priprema
 
 Početak: 2026-11-02 (10 nedelja), trka: 2027-01-10.
@@ -87,7 +87,7 @@ NEDELJA 7 — faza: sharpen
       4,2 km · 31 min
   Četvrtak   17.12.  RP: 3 × 500 m (oporavak 1:30 lagano)
       4,4 km · 30 min · radnih 9 min
-  Nedelja    20.12.  Dugi lagano 7 km
+  Nedelja    20.12.  Dugi lagano 7 km + 6 × 20 s ubrzanja
       7,0 km · 52 min
 
 ------------------------------------------------------------
@@ -97,7 +97,7 @@ NEDELJA 8 — faza: sharpen
       4,4 km · 32 min
   Četvrtak   24.12.  RP: 3 × 500 m (oporavak 0:45 lagano)
       4,2 km · 29 min · radnih 9 min
-  Nedelja    27.12.  Dugi lagano 7 km
+  Nedelja    27.12.  Dugi lagano 7 km + 6 × 20 s ubrzanja
       7,0 km · 52 min
   Napomena: Oštrenje (RP): ista količina kao prošle nedelje (obim nedelje ne dozvoljava više), kraći oporavak.
 

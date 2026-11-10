@@ -1,4 +1,4 @@
-PLAN — 5 km · 5k-v2.15.3
+PLAN — 5 km · 5k-v2.16.0
 Profil: po osećaju, spor, lagan tempo 7:30/km, 3 dana, dno obima, najduža priprema
 
 Početak: 2026-11-02 (16 nedelja), trka: 2027-02-21.
@@ -151,8 +151,8 @@ NEDELJA 13 — faza: sharpen
       5,2 km · 39 min
   Četvrtak   28.01.  RP po osećaju: 9 × 1 min malo ispod trkačkog napora za 5K (RPE 8; oporavak 0:30 lagano)
       4,2 km · 32 min · radnih 9 min
-  Nedelja    31.01.  Dugi lagano 7,5 km
-      7,5 km · 56 min
+  Nedelja    31.01.  Dugi lagano 7,5 km + 6 × 20 s ubrzanja
+      7,5 km · 57 min
 
 ------------------------------------------------------------
 NEDELJA 14 — faza: sharpen
@@ -161,8 +161,8 @@ NEDELJA 14 — faza: sharpen
       5,0 km · 37 min
   Četvrtak   04.02.  RP po osećaju: 10 × 1 min malo ispod trkačkog napora za 5K (RPE 8; oporavak 0:30 lagano)
       4,3 km · 33 min · radnih 10 min
-  Nedelja    07.02.  Dugi lagano 7,5 km
-      7,5 km · 56 min
+  Nedelja    07.02.  Dugi lagano 7,5 km + 6 × 20 s ubrzanja
+      7,5 km · 57 min
 
 ------------------------------------------------------------
 NEDELJA 15 — faza: taper

@@ -1,4 +1,4 @@
-PLAN — 5 km · 5k-v2.15.3
+PLAN — 5 km · 5k-v2.16.0
 Profil: 5 km 20:25, 4 dana
 
 Početak: 2026-11-02 (8 nedelja), trka: 2026-12-27.
@@ -19,74 +19,73 @@ OCENA CILJA
 
 ------------------------------------------------------------
 NEDELJA 1 — faza: osnova
-  02.11.–08.11. · cilj 30,0 km · planirano 28,9 km · ukupno 2 h 34 min
+  02.11.–08.11. · cilj 30,0 km · planirano 30,0 km · ukupno 2 h 40 min
   Utorak     03.11.  R: 4 × 300 m (oporavak 300 m lagano)
       5,6 km · 29 min · radnih 5 min
   Četvrtak   05.11.  T: 2 km kontinuirano
       5,5 km · 28 min · radnih 9 min
-  Subota     07.11.  Lagano 7,3 km + 4 × 20 s ubrzanja
-      7,3 km · 40 min
+  Subota     07.11.  Lagano 8,4 km + 4 × 20 s ubrzanja
+      8,4 km · 46 min
   Nedelja    08.11.  Dugi lagano 10,5 km
       10,5 km · 58 min
-  Napomena: Lagan trk najviše 7,3 km uz dugi 10,5 km, pa nedelja ima 28,9 km umesto 30 km; za pun obim treba više dana trčanja.
 
 ------------------------------------------------------------
 NEDELJA 2 — faza: osnova
-  09.11.–15.11. · cilj 32,2 km · planirano 31,3 km · ukupno 2 h 46 min
+  09.11.–15.11. · cilj 32,2 km · planirano 31,9 km · ukupno 2 h 50 min
   Utorak     10.11.  R: 4 × 400 m (oporavak 400 m lagano)
       6,3 km · 32 min · radnih 6 min
   Četvrtak   12.11.  T: 2,5 km kontinuirano
       6,0 km · 30 min · radnih 11 min
-  Subota     14.11.  Lagano 7,8 km + 4 × 20 s ubrzanja
-      7,8 km · 42 min
+  Subota     14.11.  Lagano 8,4 km + 4 × 20 s ubrzanja
+      8,4 km · 46 min
   Nedelja    15.11.  Dugi lagano 11,2 km
       11,2 km · 1 h 02 min
 
 ------------------------------------------------------------
 NEDELJA 3 — faza: osnova
-  16.11.–22.11. · cilj 34,4 km · planirano 33,2 km · ukupno 2 h 56 min
+  16.11.–22.11. · cilj 34,4 km · planirano 33,8 km · ukupno 2 h 60 min
   Utorak     17.11.  R: 4 × 400 m (oporavak 400 m lagano)
       6,3 km · 32 min · radnih 6 min
   Četvrtak   19.11.  T: 3 km kontinuirano
       6,5 km · 32 min · radnih 13 min
-  Subota     21.11.  Lagano 8,4 km + 4 × 20 s ubrzanja
-      8,4 km · 46 min
+  Subota     21.11.  Lagano 9 km + 4 × 20 s ubrzanja
+      9,0 km · 49 min
   Nedelja    22.11.  Dugi lagano 12 km
       12,0 km · 1 h 06 min
 
 ------------------------------------------------------------
 NEDELJA 4 — faza: peak
-  23.11.–29.11. · cilj 36,7 km · planirano 36,1 km · ukupno 3 h 12 min
-  Utorak     24.11.  I: 3 × 700 m (oporavak 2:45 lagano)
-      7,1 km · 36 min · radnih 8 min
+  23.11.–29.11. · cilj 36,7 km · planirano 36,7 km · ukupno 3 h 14 min
+  Utorak     24.11.  I: 3 × 1000 m (oporavak 4:00 lagano)
+      8,4 km · 42 min · radnih 12 min
   Četvrtak   26.11.  T: 2 × 1600 m (oporavak 1:00)
       7,4 km · 37 min · radnih 14 min
-  Subota     28.11.  Lagano 8,9 km
-      8,9 km · 49 min
+  Subota     28.11.  Lagano 8,2 km
+      8,2 km · 45 min
   Nedelja    29.11.  Dugi lagano 12,8 km
       12,8 km · 1 h 10 min
 
 ------------------------------------------------------------
 NEDELJA 5 — faza: peak
-  30.11.–06.12. · cilj 39,0 km · planirano 38,4 km · ukupno 3 h 24 min
-  Utorak     01.12.  I: 5 × 500 m (oporavak 2:00 lagano)
-      7,9 km · 40 min · radnih 10 min
+  30.11.–06.12. · cilj 39,0 km · planirano 39,0 km · ukupno 3 h 26 min
+  Utorak     01.12.  I: 3 × 1200 m (oporavak 4:45 lagano)
+      9,2 km · 46 min · radnih 14 min
   Četvrtak   03.12.  T: 2 × 1600 m (oporavak 1:00)
       7,4 km · 37 min · radnih 14 min
-  Subota     05.12.  Lagano 9,5 km
-      9,5 km · 52 min
+  Subota     05.12.  Lagano 8,8 km
+      8,8 km · 48 min
   Nedelja    06.12.  Dugi lagano 13,6 km
       13,6 km · 1 h 15 min
 
 ------------------------------------------------------------
 NEDELJA 6 — faza: sharpen
-  07.12.–13.12. · cilj 39,0 km · planirano 38,5 km · ukupno 3 h 25 min
+  07.12.–13.12. · cilj 39,0 km · planirano 39,0 km · ukupno 3 h 28 min
   Utorak     08.12.  RP: 4 × 800 m (oporavak 1:45 lagano)
       8,1 km · 40 min · radnih 13 min
   Četvrtak   10.12.  R: 6 × 300 m (oporavak 300 m lagano)
       7,3 km · 37 min · radnih 7 min
-  Subota     12.12.  Lagano 9,5 km
-      9,5 km · 52 min
+  Subota     12.12.  Lagano 10 km
+      10,0 km · 55 min
   Nedelja    13.12.  Dugi lagano 13,6 km
       13,6 km · 1 h 15 min
 
@@ -119,4 +118,4 @@ NEDELJA 8 — faza: trka
 
 ============================================================
 UPOZORENJA PLANA
-  - Nedelja 1 ima 28,9 km umesto 30 km (lagan trk najviše 7,3 km uz dugi 10,5 km; za pun obim treba više dana trčanja). Slično i u nedelji 3.
+  (nema)

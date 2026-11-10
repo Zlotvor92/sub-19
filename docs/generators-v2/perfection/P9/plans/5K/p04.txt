@@ -1,4 +1,4 @@
-PLAN — 5 km · 5k-v2.15.3
+PLAN — 5 km · 5k-v2.16.0
 Profil: spor, VDOT 35, 5 dana, sredina obima, najduža priprema
 
 Početak: 2026-11-02 (16 nedelja), trka: 2027-02-21.
@@ -148,11 +148,11 @@ NEDELJA 9 — faza: peak
 
 ------------------------------------------------------------
 NEDELJA 10 — faza: peak
-  04.01.–10.01. · cilj 48,6 km · planirano 48,4 km · ukupno 5 h 34 min
+  04.01.–10.01. · cilj 48,6 km · planirano 47,8 km · ukupno 5 h 30 min
   Ponedeljak 04.01.  Lagano 8,4 km
       8,4 km · 60 min
-  Utorak     05.01.  I: 5 × 700 m (oporavak 3:45 lagano)
-      10,5 km · 1 h 09 min · radnih 18 min
+  Utorak     05.01.  I: 4 × 800 m (oporavak 4:15 lagano)
+      9,9 km · 1 h 05 min · radnih 17 min
   Četvrtak   07.01.  T: 2 × 2000 m (oporavak 1:00)
       9,1 km · 59 min · radnih 23 min
   Subota     09.01.  Lagano 8,4 km

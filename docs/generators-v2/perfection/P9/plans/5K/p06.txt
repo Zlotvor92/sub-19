@@ -1,4 +1,4 @@
-PLAN — 5 km · 5k-v2.15.3
+PLAN — 5 km · 5k-v2.16.0
 Profil: brz, mali obim, VDOT 58, dno obima za 5 dana, najkraća priprema
 
 Početak: 2026-11-02 (6 nedelja), trka: 2026-12-13.
@@ -62,17 +62,18 @@ NEDELJA 3 — faza: peak
 
 ------------------------------------------------------------
 NEDELJA 4 — faza: peak
-  23.11.–29.11. · cilj 31,4 km · planirano 31,4 km · ukupno 2 h 25 min
-  Ponedeljak 23.11.  Lagano 4,6 km
-      4,6 km · 22 min
-  Utorak     24.11.  I: 3 × 700 m (oporavak 2:30 lagano)
-      6,6 km · 29 min · radnih 7 min
-  Četvrtak   26.11.  T: 2 × 1200 m (oporavak 1:00)
-      6,1 km · 27 min · radnih 9 min
-  Subota     28.11.  Lagano 4,7 km
-      4,7 km · 22 min
-  Nedelja    29.11.  Dugi lagano 9,4 km
-      9,4 km · 45 min
+  23.11.–29.11. · cilj 31,4 km · planirano 31,4 km · ukupno 2 h 26 min
+  Ponedeljak 23.11.  Lagano 4,5 km
+      4,5 km · 21 min
+  Utorak     24.11.  I: 5 × 700 m (oporavak 2:30 lagano)
+      9,0 km · 39 min · radnih 12 min
+  Četvrtak   26.11.  Lagano 4,5 km
+      4,5 km · 21 min
+  Subota     28.11.  Lagano 4,5 km
+      4,5 km · 21 min
+  Nedelja    29.11.  Dugi lagano 8,9 km
+      8,9 km · 42 min
+  Napomena: Dugi ostaje najduži trening nedelje: drugi dan kvaliteta je lagan.
 
 ------------------------------------------------------------
 NEDELJA 5 — faza: taper
