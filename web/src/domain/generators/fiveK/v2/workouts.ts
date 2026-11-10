@@ -749,6 +749,10 @@ export interface WeekDose {
   key?: string;
   /** 5k-v2.14.0 (P5 F2): R oštrenja (drugi kvalitet oštrenja) — za nedelju zadržane doze. */
   rs?: RepChoice;
+  /** 5k-v2.16.0 (K3-C), 3 dana u bazi: koliko ne-rasteretnih nedelja zaredom (među nedeljama te vrste) je `main` (R) /
+      `t` (T) ista doza. */
+  rUses?: number;
+  tUses?: number;
 }
 
 /** 2.4.0: vrste kvaliteta bez brojčanog tempa (feel.ts); RP_SHORT = početnik sa rezultatom (VDOT RP). */
@@ -773,6 +777,9 @@ export type WeekQuality =
     }
   | { ok: false; message: string };
 
+/** 5k-v2.16.0 (K3-C): ista R doza (broj, dužina, oporavak). */
+const sameReps = (a: RepChoice, b: RepChoice): boolean =>
+  a.reps === b.reps && Math.abs(a.repKm - b.repKm) < 1e-9 && a.recRatio === b.recRatio;
 const sameT = (a: TDose, b: TDose): boolean =>
   a.form === b.form && a.reps === b.reps && Math.abs(a.repKm - b.repKm) < 1e-9;
 const tWork = (t: TDose): number => workOf(t);
@@ -1154,8 +1161,18 @@ function baseWeekOne(
     // nema R (isti trening dve nedelje zaredom nije dozvoljen, QUALITY_REPEAT).
     if (c && prev?.kind === 'R' && c === pm)
       return chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, 'alt');
+    // 5k-v2.16.0 (K3-C): ista R doza najviše baseSameDoseMaxWeeks R nedelja zaredom (naizmenično sa T) — posle toga
+    // druga struktura iste ili veće doze; nema je → ista doza (bez odbijanja).
+    if (c && c === pm && (prev?.rUses ?? 1) >= q.baseSameDoseMaxWeeks)
+      return chooseProgressiveReps(...rArgs, q.mainMinShareOfBudget, pm, 'alt') ?? c;
     return c;
   };
+  const usesOf = <T>(
+    x: T | null,
+    last: T | null,
+    n: number | undefined,
+    eq: (a: T, b: T) => boolean
+  ): number => (x && last && eq(x, last) ? (n ?? 1) + 1 : 1);
   const pickT = (): TDose | null => {
     // Prvi T: tContinuousStart; ako 70% budžeta ne prima minimum, a ceo budžet prima — minimum (1 km).
     if (!pt)
@@ -1190,6 +1207,9 @@ function baseWeekOne(
       t = c ? { form: 'cruise', ...c } : tWork(pt) <= b.T + 1e-9 ? pt : null;
     }
     if (t && prev?.kind === 'T' && sameT(t, pt)) t = tOther(pt, b.T, 'base', p);
+    // 5k-v2.16.0 (K3-C): ista T doza najviše baseSameDoseMaxWeeks T nedelja zaredom → druga struktura (tOther).
+    else if (t && pt && sameT(t, pt) && (prev?.tUses ?? 1) >= q.baseSameDoseMaxWeeks)
+      t = tOther(pt, b.T, 'base', p) ?? t;
     return t;
   };
   const want: 'R' | 'T' = prev?.kind === 'R' ? 'T' : 'R';
@@ -1209,7 +1229,9 @@ function baseWeekOne(
             main: r,
             t: pt,
             same: 1,
-            kind: 'R'
+            kind: 'R',
+            rUses: usesOf(r, pm, prev?.rUses, sameReps),
+            ...(prev?.tUses ? { tUses: prev.tUses } : {})
           }
         );
     } else {
@@ -1219,7 +1241,9 @@ function baseWeekOne(
           main: pm,
           t,
           same: 1,
-          kind: 'T'
+          kind: 'T',
+          tUses: usesOf(t, pt, prev?.tUses, sameT),
+          ...(prev?.rUses ? { rUses: prev.rUses } : {})
         });
     }
   }
@@ -1509,12 +1533,46 @@ export function easyRun(
   );
 }
 
-export function longRun(totalKm: number, p: PaceModel): Workout {
+/** 5k-v2.16.0 (K3-C) — JEDINO mesto: ubrzanja na kraju dugog (long.sharpenStrides3) u ne-rasteretnoj nedelji oštrenja
+    redovnog plana sa 3 dana, bez ograničenja adaptacije; inače null. */
+export function longStridesOf(
+  f: Pick<WeekFrame, 'phase' | 'deload' | 'limits'>,
+  a: { days: number; beginner: boolean }
+): { reps: number; sec: number; recoverySec: number } | null {
+  return a.days === 3 && !a.beginner && f.phase === 'sharpen' && !f.deload && !f.limits
+    ? P.long.sharpenStrides3
+    : null;
+}
+
+export function longRun(
+  totalKm: number,
+  p: PaceModel,
+  strides: { reps: number; sec: number; recoverySec: number } | null = null
+): Workout {
+  if (!strides)
+    return buildWorkout(
+      'long',
+      null,
+      `Dugi lagano ${km(totalKm)} km`,
+      [{ kind: 'long', km: totalKm }],
+      p
+    );
+  // 5k-v2.16.0 (K3-C): ubrzanja na kraju dugog (isti oblik kao na laganom danu, easyRun).
+  const s: BlockSpec = {
+    kind: 'reps',
+    zone: 'R',
+    reps: strides.reps,
+    rep: { sec: strides.sec },
+    recovery: { sec: strides.recoverySec },
+    stride: true,
+    ...(p.vdot === null ? { effort: P.feel.effort.strides } : {})
+  };
+  const sKm = buildWorkout('long', null, '', [s], p).km;
   return buildWorkout(
     'long',
     null,
-    `Dugi lagano ${km(totalKm)} km`,
-    [{ kind: 'long', km: totalKm }],
+    `Dugi lagano ${km(totalKm)} km + ${strides.reps} × ${strides.sec} s ubrzanja`,
+    [{ kind: 'long', km: r2(totalKm - sKm) }, s],
     p
   );
 }

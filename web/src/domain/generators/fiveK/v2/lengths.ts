@@ -35,13 +35,15 @@ export function easyMinKm(phase: Phase, p: PaceModel, deload = false): number {
     redovan plan sa TAČNO 4 dana buildMaxShareOfLongExact4 (0,75), u nedelji 1 plana week1MaxShareOfLongExact4 (0,80:
     nedelja 1 ne sme biti mnogo ispod trenutnog obima). `week` = redni broj nedelje plana (0 = nebitno). */
 export const easyShareOf = (days: number, beginner: boolean, week = 0): number =>
-  beginner || days < 4
+  beginner
     ? P.easy.buildMaxShareOfLong
-    : days === 4
-      ? week === 1
-        ? P.easy.week1MaxShareOfLongExact4
-        : P.easy.buildMaxShareOfLongExact4
-      : P.easy.buildMaxShareOfLong4;
+    : days < 4
+      ? P.easy.buildMaxShareOfLong3
+      : days === 4
+        ? week === 1
+          ? P.easy.week1MaxShareOfLongExact4
+          : P.easy.buildMaxShareOfLongExact4
+        : P.easy.buildMaxShareOfLong4;
 
 /** 5k-v2.12.0 (T1): najduži lagan trening uz dugi `longKm` — JEDINO mesto: izgradnja bez rasterećenja
     ⌊easy.buildMaxShareOfLong × dugi⌋ na 0,1 km; inače dugi (lagan ≤ dugi). */

@@ -76,6 +76,7 @@ import {
   iMaxShareOf,
   firstIPeakBudget,
   iPeakBudget,
+  longStridesOf,
   minuteCapKm,
   qualityBudgets,
   raceWarmup,
@@ -1263,7 +1264,15 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
           w.index,
           long.date
         );
-      if (lw.segments.some((s) => s.zone !== 'E' || s.kind !== 'long'))
+      // 5k-v2.16.0 (K3-C): dugi sme da ima samo ubrzanja zadata istom funkcijom kao konstruktor (workouts.longStridesOf).
+      const ls = longStridesOf(w, { days: nDays, beginner: aw(w).beginner });
+      const extra = lw.segments.filter((s) => s.zone !== 'E' || s.kind !== 'long');
+      const stridesOk =
+        ls !== null &&
+        extra.every((s) => s.kind === 'stride' || s.kind === 'recovery') &&
+        extra.filter((s) => s.kind === 'stride').length === ls.reps &&
+        extra.every((s) => s.kind !== 'stride' || s.sec === ls.sec);
+      if (extra.length > 0 && !stridesOk)
         err(
           'LONG_NOT_EASY',
           'Dugo trčanje sme biti samo lagano, bez brzog završetka.',

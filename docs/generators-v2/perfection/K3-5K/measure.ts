@@ -49,10 +49,12 @@ function row(fam: string, p: Plan, est: (p: Plan) => number): Row {
     if (E.some((d) => d.workout.sec < 1800 - 1e-9)) shortEasy++;
     for (const d of E) if (L > 0) easyLong = Math.max(easyLong, d.workout.km / L); }
   // ista doza iste zone, uzastopne ne-rasteretne nedelje izgradnje
-  let sameRun = 0; const prevDose: Record<string, [number, number]> = {};
+  let sameRun = 0; const prevDose: Record<string, [string, number]> = {};
   for (const w of B) { if (w.deload) continue;
-    for (const z of ["T", "I", "R", "RP"]) { const v = w.days.reduce((a, d) => a + workSec(d, z), 0); if (!v) { delete prevDose[z]; continue; }
-      const pr = prevDose[z]; const n = pr && Math.abs(pr[0] - v) <= 5 ? pr[1] + 1 : 1; prevDose[z] = [v, n]; sameRun = Math.max(sameRun, n); } }
+    // pojavljivanja zone (i kad se zone smenjuju, 3 dana R/T), ključ = blokovi treninga sa tom zonom
+    for (const z of ["T", "I", "R", "RP"]) { const ds = w.days.filter((d) => d.role !== "race" && workSec(d, z) > 0); if (!ds.length) continue;
+      const v = JSON.stringify(ds.map((d) => (d.workout as unknown as { blocks: unknown }).blocks));
+      const pr = prevDose[z]; const n = pr && pr[0] === v ? pr[1] + 1 : 1; prevDose[z] = [v, n]; sameRun = Math.max(sameRun, n); } }
   const longStrides = W.filter((w) => w.phase === "sharpen" && w.days.some((d) => d.role === "long" && d.workout.segments.some((s) => s.kind === "stride"))).length;
   return {
     fam, days: p.input.runDays.length, exp: p.experience, mode: p.paceMode, vdot: Math.round(est(p) * 10) / 10,
@@ -70,13 +72,14 @@ if (tag === "cmp") {
   const A = JSON.parse(readFileSync(`${dir}r-${a}.json`, "utf8")) as { rej: string[]; rows: Record<string, Row> };
   const Bx = JSON.parse(readFileSync(`${dir}r-${b}.json`, "utf8")) as { rej: string[]; rows: Record<string, Row> };
   const newRej = Bx.rej.filter((x) => !A.rej.includes(x));
-  let changed = 0; const g: Record<string, { n: number; ch: number; drop10: number }> = {};
+  let changed = 0; const g: Record<string, { n: number; ch: number; drop10: number; pdrop10: number }> = {};
   for (const [id, r] of Object.entries(A.rows)) { const s = Bx.rows[id]; if (!s) continue;
-    const k = `${r.fam} ${r.days} d`; const x = (g[k] ??= { n: 0, ch: 0, drop10: 0 }); x.n++;
+    const k = `${r.fam} ${r.days} d`; const x = (g[k] ??= { n: 0, ch: 0, drop10: 0, pdrop10: 0 }); x.n++;
+    if (s.peakP < 0.9 * r.peakP - 1e-9) x.pdrop10++;
     if (s.fp !== r.fp) { changed++; x.ch++; } if (s.peakT < 0.9 * r.peakT - 1e-9) x.drop10++; }
   console.log(`odbijanja ${A.rej.length} → ${Bx.rej.length}, novih ${newRej.length}${newRej.length ? ": " + newRej.slice(0, 5).join(" | ") : ""}; promenjenih planova ${changed} / ${Object.keys(A.rows).length}`);
-  console.log("grupa | planova | promenjeno | vrh cilja pao > 10 %");
-  for (const k of Object.keys(g).sort()) console.log(`${k} | ${g[k]!.n} | ${g[k]!.ch} | ${g[k]!.drop10}`);
+  console.log("grupa | planova | promenjeno | vrh cilja pao > 10 % | planirani vrh pao > 10 %");
+  for (const k of Object.keys(g).sort()) console.log(`${k} | ${g[k]!.n} | ${g[k]!.ch} | ${g[k]!.drop10} | ${g[k]!.pdrop10}`);
 } else if (tag === "prof") {
   // 12 profila P9 (P9/inputs.json): red po profilu → r-prof-<oznaka>.json i tabela
   const { generateFiveKV2 } = (await import("../../../../web/src/domain/generators/fiveK/v2/generate.ts")) as { generateFiveKV2: (i: unknown) => { ok: boolean; plan?: Plan } };

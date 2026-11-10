@@ -29,6 +29,7 @@ import {
   buildWorkout,
   easyRun,
   longRun,
+  longStridesOf,
   qualityBudgets,
   raceDay,
   type WeekDose
@@ -173,7 +174,10 @@ export function buildTrainingWeek(
       ? painLongKm(longKm, p)
       : longKm;
   const planDays: PlanDay[] = [];
-  if (longFinal !== null) planDays.push(day(f, pattern.long, 'long', longRun(longFinal, p)));
+  // 5k-v2.16.0 (K3-C): dugi u oštrenju 3 dana sa ubrzanjima (workouts.longStridesOf; ne na danu bola).
+  const longStrides = longFinal === longKm ? longStridesOf(f, a) : null;
+  if (longFinal !== null)
+    planDays.push(day(f, pattern.long, 'long', longRun(longFinal, p, longStrides)));
   if (q1m) planDays.push(day(f, pattern.q1, 'q1', q1m));
   if (q2 && pattern.q2) planDays.push(day(f, pattern.q2, 'q2', q2));
   const so = P.quality.deloadSubstitute.stridesOnly;

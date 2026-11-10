@@ -258,7 +258,8 @@ describe('08g N4 — stanje zavisno od prošlosti iz upisanih dana (pouka 29)', 
     // 5k-v2.12.0 (T4): prvi izbor bez prethodne je najmanji rad ≥ 80 % budžeta → I 2 × 700 m; 5k-v2.13.0 (P4 S1: budžet
     // I 10 %) → I 3 × 600 m.
     // 5k-v2.15.0 (P8 c, G1): ned 7 je prvi I posle R faze (budžet I × 0,7) → I 2 × 800 m.
-    expect(q1(r.plan.weeks[6]!)).toBe('I: 2 × 800 m');
+    // 5k-v2.16.0 (K3-C): 3 dana lagan ≤ 0,70 × dugi → manji obim pre pauze i cilj posle nje → I 3 × 500 m.
+    expect(q1(r.plan.weeks[6]!)).toBe('I: 3 × 500 m');
   });
 });
 

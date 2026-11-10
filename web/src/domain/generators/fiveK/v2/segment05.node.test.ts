@@ -95,14 +95,15 @@ describe('Odluka 1: kapacitet iz stvarne konstrukcije nedelje', () => {
     const plan = planOf(
       inputOf({ weeks: 12, km: 30, distanceM: 5000, timeSec: 1230, days: ['mon', 'wed', 'sat'] })
     );
-    // 5k-v2.12.0 (T1): nedelja sa oznakom granice laganog ima lagane = 0,8 × dugi i planirano < cilj; ostale = cilj.
+    // 5k-v2.12.0 (T1): nedelja sa oznakom granice laganog ima lagane = 0,7 × dugi (K3-C) i planirano < cilj; ostale = cilj.
     for (const w of plan.weeks) {
       const long = w.days.find((d) => d.role === 'long');
       if (w.easyCappedAtLong && long) {
         for (const d of w.days.filter((x) => x.role === 'easy'))
           // 5k-v2.15.0 (P8 b): u rasterećenju je dugi na granici 0,8 × poslednji dugi, pa lagan sme do dugog.
           expect(d.workout.km).toBeCloseTo(
-            w.deload ? long.workout.km : Math.floor(long.workout.km * 8 + 1e-9) / 10,
+            // 5k-v2.16.0 (K3-C): redovan plan sa 3 dana lagan ≤ 0,70 × dugi (bilo 0,8).
+            w.deload ? long.workout.km : Math.floor(long.workout.km * 7 + 1e-9) / 10,
             6
           );
         expect(w.plannedKm).toBeLessThan(w.targetKm);

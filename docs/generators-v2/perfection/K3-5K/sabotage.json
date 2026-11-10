@@ -26,5 +26,32 @@
    "src/domain/generators/fiveK/v2/k3.node.test.ts",
    "src/domain/generators/fiveK/v2/app/app.node.test.ts"
   ]
+ },
+ {
+  "name": "K3-C 3 dana lagan 0,80",
+  "file": "src/domain/generators/fiveK/v2/policy.ts",
+  "find": "    buildMaxShareOfLong3: 0.7,",
+  "replace": "    buildMaxShareOfLong3: 0.8,",
+  "tests": [
+   "src/domain/generators/fiveK/v2/k3.node.test.ts"
+  ]
+ },
+ {
+  "name": "K3-C dugi bez ubrzanja u oštrenju",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "  return a.days === 3 && !a.beginner && f.phase === 'sharpen' && !f.deload && !f.limits",
+  "replace": "  return a.days === 3 && !a.beginner && f.phase === 'race' && !f.deload && !f.limits",
+  "tests": [
+   "src/domain/generators/fiveK/v2/k3.node.test.ts"
+  ]
+ },
+ {
+  "name": "K3-C ista R doza bez granice (3 dana)",
+  "file": "src/domain/generators/fiveK/v2/workouts.ts",
+  "find": "    if (c && c === pm && (prev?.rUses ?? 1) >= q.baseSameDoseMaxWeeks)",
+  "replace": "    if (c && c === pm && (prev?.rUses ?? 1) >= 99)",
+  "tests": [
+   "src/domain/generators/fiveK/v2/k3.node.test.ts"
+  ]
  }
 ]

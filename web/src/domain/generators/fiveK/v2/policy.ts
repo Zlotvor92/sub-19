@@ -366,7 +366,11 @@ export const FIVE_K_V2_POLICY = {
   long: {
     /** Dugi trk ≤ days[n].longMaxShare ciljnog km nedelje i ≤ 90 min (računato sporijom granicom E
         tempa), lagano (heuristika). 2.1.0: 35% za 4 dana; 2.3.0: udeo je u tabeli `days`. */
-    maxSec: 5400
+    maxSec: 5400,
+    /** 5k-v2.16.0 (K3-C, glavni trener krug 2 § 3g / § 4.3, heuristika): redovan plan sa 3 dana — u ne-rasteretnoj
+        nedelji oštrenja (specifična faza) dugi dobija ubrzanja na kraju (drugi podražaj nedelje). Ne u nedelji sa
+        ograničenjima adaptacije (bol, odmor, zabrana kvaliteta). Jedino mesto: workouts.longStridesOf. */
+    sharpenStrides3: { reps: 6, sec: 20, recoverySec: 60 }
   },
 
   easy: {
@@ -386,6 +390,10 @@ export const FIVE_K_V2_POLICY = {
     /** 5k-v2.16.0 (K3-B, glavni trener krug 2 § 3f, heuristika): redovan plan sa TAČNO 4 dana — lagan ≤ 0,75 × dugi
         (5+ dana buildMaxShareOfLong4 0,70; početnik 0,80). Cilj se ne spušta. Jedino mesto: lengths.easyShareOf. */
     buildMaxShareOfLongExact4: 0.75,
+    /** 5k-v2.16.0 (K3-C, glavni trener krug 2 § 4.3, heuristika): redovan plan sa 3 dana — lagan ≤ 0,70 × dugi (bilo
+        buildMaxShareOfLong 0,80; početnik ostaje 0,80); višak je planirano < cilj, prijavljen jednom po planu. Jedino
+        mesto: lengths.easyShareOf. */
+    buildMaxShareOfLong3: 0.7,
     /** 5k-v2.16.0 (K3-B): nedelja 1 redovnog plana sa tačno 4 dana — lagan ≤ 0,80 × dugi (nedelja 1 ≥ 95 % trenutnog
         obima; 0,75 to ne daje u 327 planova mreže). Jedino mesto: lengths.easyShareOf. */
     week1MaxShareOfLongExact4: 0.8,
@@ -1180,6 +1188,10 @@ export const DECISIONS: readonly { version: string; decision: string }[] = [
       'K3-B: redovan plan sa tačno 4 dana lagan ≤ 0,75 × dugi (5+ dana 0,70, početnik 0,80), u nedelji 1 ≤ 0,80 ' +
       '(nedelja 1 blizu trenutnog obima); cilj se ne spušta. Jedino mesto: lengths.easyShareOf (easyCapKm, weekLengths; ' +
       'validator isto). ' +
+      'K3-C: redovan plan sa 3 dana lagan ≤ 0,70 × dugi (bilo 0,80; višak planirano < cilj, napomena jednom po planu); ' +
+      'u ne-rasteretnoj nedelji oštrenja dugi + 6 × 20 s ubrzanja (workouts.longStridesOf; validator LONG_NOT_EASY ' +
+      'isto); u bazi ista R / T doza najviše 2 nedelje te vrste zaredom, pa druga struktura iste ili veće doze (nema je → ' +
+      'ista doza; workouts.baseWeekOne). ' +
       'Sačuvan plan 5k-v2.15.3 i stariji prilagođavaju se po 2.16.0 (KNOWN_VERSIONS). Brojevi: ' +
       'docs/generators-v2/perfection/reports/K3-5K-REPORT.md.'
   }

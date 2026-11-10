@@ -87,3 +87,74 @@ describe('K3-B: redovan plan sa tačno 4 dana', () => {
     expect(w1Over075).toBeGreaterThan(5);
   });
 });
+
+describe('K3-C: redovan plan sa 3 dana', () => {
+  const three = SAMPLE.filter(
+    ({ p }) => p.input.runDays.length === 3 && p.experience !== 'beginner'
+  );
+  const build = (w: FiveKV2Plan['weeks'][number]): boolean =>
+    !w.deload && ['base', 'peak', 'sharpen'].includes(w.phase);
+
+  it('lagan ≤ 0,70 × dugi u nedelji izgradnje; napomena granice laganog najviše jednom po planu', () => {
+    let capped = 0;
+    for (const { id, p } of three) {
+      for (const w of p.weeks.filter(build)) {
+        const long = w.days.find((d) => d.role === 'long');
+        if (!long) continue;
+        for (const d of w.days.filter((x) => x.role === 'easy'))
+          expect(d.workout.km, `${id} ned ${w.index}`).toBeLessThanOrEqual(
+            Math.floor(long.workout.km * 7 + 1e-9) / 10 + EPS
+          );
+        if (w.easyCappedAtLong) capped++;
+      }
+      expect(
+        p.weeks.filter((w) => w.notes.some((n) => n.startsWith('Lagan trk najviše'))).length,
+        id
+      ).toBeLessThanOrEqual(1);
+    }
+    expect(three.length).toBeGreaterThan(100);
+    expect(capped).toBeGreaterThan(50);
+  });
+
+  it('dugi u ne-rasteretnoj nedelji oštrenja ima 6 × 20 s ubrzanja; drugde dugi bez ubrzanja', () => {
+    let n = 0;
+    for (const { id, p } of SAMPLE)
+      for (const w of p.weeks) {
+        const long = w.days.find((d) => d.role === 'long');
+        if (!long) continue;
+        const st = long.workout.segments.filter((s) => s.kind === 'stride');
+        const want =
+          p.input.runDays.length === 3 &&
+          p.experience !== 'beginner' &&
+          w.phase === 'sharpen' &&
+          !w.deload;
+        expect(st.length, `${id} ned ${w.index}`).toBe(want ? 6 : 0);
+        if (want) {
+          n++;
+          expect(st.every((s) => s.sec === 20)).toBe(true);
+        }
+      }
+    expect(n).toBeGreaterThan(50);
+  });
+
+  it('ista doza iste zone najviše 2 ne-rasteretne nedelje zaredom (među nedeljama te zone), od 15 km', () => {
+    let pairs = 0;
+    for (const { id, p } of three) {
+      if (p.input.currentWeeklyKm < 15) continue;
+      const last: Record<string, [string, number]> = {};
+      for (const w of p.weeks.filter(build))
+        for (const z of ['R', 'T', 'I', 'RP'] as const) {
+          const ds = w.days.filter((d) => d.workout.kind === 'quality' && d.workout.workKm[z] > 0);
+          if (ds.length === 0) continue;
+          const key = JSON.stringify(ds.map((d) => d.workout.blocks));
+          const pr = last[z];
+          const k = pr && pr[0] === key ? pr[1] + 1 : 1;
+          if (k === 2) pairs++;
+          last[z] = [key, k];
+          expect(k, `${id} ned ${w.index} ${z}`).toBeLessThanOrEqual(2);
+        }
+    }
+    // Pravilo zaista deluje: ista doza dve nedelje zaredom postoji (treća se menja).
+    expect(pairs).toBeGreaterThan(10);
+  });
+});

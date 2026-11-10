@@ -13,7 +13,7 @@ import { kmText, mss, userText } from './text.ts';
 import type { IsoDate } from './app/exchange.ts';
 import type { AdaptResult, FiveKV2Plan, PlanDay, PlanWeek } from './types.ts';
 import { validatePlan } from './validate.ts';
-import { raceWeekEasyCap, raceWeekRest, sharpenerCandidates } from './week.ts';
+import { EASY_CAP_NOTE, raceWeekEasyCap, raceWeekRest, sharpenerCandidates } from './week.ts';
 import { restoreMerge } from './app/adapt.ts';
 import { formHistory } from './app/form.ts';
 import { targetFacts, targetInput } from './app/handoffTarget.ts';
@@ -352,7 +352,9 @@ describe('M2/M3: napomene adaptacije', () => {
         asOf
       )
     );
-    const notes = r.weeks.flatMap((w) => w.notes);
+    // 5k-v2.16.0 (K3-C): 3 dana lagan ≤ 0,70 × dugi — napomena granice laganog (EASY_CAP_NOTE, „… umesto X km") nije
+    // napomena odmora/bola.
+    const notes = r.weeks.flatMap((w) => w.notes).filter((n) => !n.startsWith(EASY_CAP_NOTE));
     expect(notes.some((n) => n.includes('planirano najviše'))).toBe(true);
     expect(notes.filter((n) => /planirano [\d,.]+ km < cilj|umesto [\d,.]+ km/.test(n))).toEqual(
       []

@@ -42,22 +42,23 @@ const scaled = (d: PlanDay, f: number): PlanDay => ({
 
 describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', () => {
   // 5k-v2.15.0 (P8 e): početnik sa 25 km je iznad kapaciteta plana početnika → plan bez oznake početnika; svojstvo isto.
-  it('primer nalaza b-d3-8w-25km-v36-1 k3 (umor, asOf pon): ni bez kvaliteta ne staje → kvalitet ostaje + MIXED_OVER_TARGET', () => {
-    const p = planOf('b-d3-8w-25km-v36-1');
+  // 5k-v2.16.0 (K3-C): sa lagan ≤ 0,70 × dugi (3 dana) b-d3-8w-25km-v36-1 više nema ovu pojavu (planirano = cilj 20,9);
+  // isto svojstvo pokazuje r-d3-6w-16km-v32-1 (umor, asOf pon ned 3).
+  it('primer r-d3-6w-16km-v32-1 k3 (umor, asOf pon): ni bez kvaliteta ne staje → kvalitet ostaje + MIXED_OVER_TARGET', () => {
+    const p = planOf('r-d3-6w-16km-v32-1');
     expect(p.experience).toBe('regular');
     const r = fatigue(p, p.weeks[2]!.startDate);
     const w = r.plan.weeks[2]!;
-    // 5k-v2.12.0 (T1): zaštićen lagan 6,4 (granica 0,8 × dugi 8 km u sastavljenoj nedelji).
-    expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 20.9, 22.45]);
-    // Zaštićen lagan 6,4 (asOf); ostatak 9,5 < minimum preostalih bez kvaliteta: 3 + dugi 7,1 (ne skraćuje se) →
-    // kvalitet ostaje (dopuna MAR-08), planirano > cilj uz upozorenje.
-    expect(roles(w)).toBe('easy:9.6 q1:3.55 long:9.3');
+    expect([w.deload, w.targetKm, w.plannedKm]).toEqual([true, 13.8, 16.01]);
+    // Zaštićen lagan 5,8 (asOf); ostatak 8 < minimum preostalih bez kvaliteta 9,1 → kvalitet ostaje (dopuna MAR-08),
+    // planirano > cilj uz upozorenje.
+    expect(roles(w)).toBe('easy:5.8 q1:4.11 long:6.1');
     expect(w.notes.some((n) => n.includes(MIXED_NOTE))).toBe(true);
     expect(
       r.plan.warnings.filter((v) => v.rule === 'MIXED_OVER_TARGET').map((v) => v.week)
     ).toEqual([3]);
     expect(r.plan.warnings.find((v) => v.rule === 'MIXED_OVER_TARGET')!.message).toContain(
-      'ostatak do cilja 11,3 km < najmanji preostali dani bez kvaliteta 12,3 km'
+      'ostatak do cilja 8 km < najmanji preostali dani bez kvaliteta 9,1 km'
     );
   });
 
@@ -115,7 +116,8 @@ describe('08i pouka 37 — mešovita nedelja: ostatak do cilja, samo naniže', (
   });
 
   it('validator: mešovita nedelja iznad cilja čiji preostali dani nisu na minimumu → MIXED_REMAINDER', () => {
-    const p = planOf('b-d3-8w-25km-v36-1');
+    // 5k-v2.16.0 (K3-C): primer r-d3-6w-16km-v32-1 (v. gore; bilo b-d3-8w-25km-v36-1).
+    const p = planOf('r-d3-6w-16km-v32-1');
     const r = fatigue(p, p.weeks[2]!.startDate);
     expect(validatePlan(r.plan).filter((v) => v.severity === 'error')).toEqual([]);
     const w = r.plan.weeks[2]!;
