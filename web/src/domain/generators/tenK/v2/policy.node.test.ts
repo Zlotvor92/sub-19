@@ -225,6 +225,7 @@ describe('policy 10k-v2.13.0', () => {
       longToRaceShare: 0.5,
       longToRaceWeeks: 3,
       tFirstKm: 1.5,
+      easyMaxLongShare: 0.8,
       tCapMinKm: 3
     });
     expect(BEGINNER_DAYS_COUNTS).toEqual([3, 4]);
@@ -250,7 +251,7 @@ describe('policy 10k-v2.13.0', () => {
       kmMax: 35,
       peakMaxKm: 60,
       longMaxShare: 0.33,
-      easyMaxLongShare: 0.7,
+      easyMaxLongShare: 0.8,
       weekMinKm: 12,
       beginner: true,
       longMaxSec: 90 * 60,

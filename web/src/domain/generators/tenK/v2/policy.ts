@@ -359,7 +359,7 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'D47',
-    rule: 'P8 dopuna G6 — nedelja izgradnje: lagan ≤ udeo dugog iste nedelje iz tabele D17 (easyMaxLongShare): 3 dana 0,80, 4–6 dana 0,70 (ranije 0,8 za sve). Višak cilja koji zato ne staje spušta postojeći mehanizam izvodljivog cilja (fit10) i saopštava se jednom (poruka o kapacitetu, G3).',
+    rule: 'P8 dopuna G6 — nedelja izgradnje: lagan ≤ udeo dugog iste nedelje iz tabele D17 (easyMaxLongShare): 3 dana 0,80, 4–6 dana 0,70 (ranije 0,8 za sve); početnik 0,80 (beginner.easyMaxLongShare — STOP S9, do odluke organizatora: sa 0,70 početnik sa 4 dana gubi ≥ 10 % obima posle uvoda u 918 / 1890 planova mreže početnika, pre G6 54; sa 0,75 486). Višak cilja koji zato ne staje spušta postojeći mehanizam izvodljivog cilja (fit10) i saopštava se jednom (poruka o kapacitetu, G3).',
     place: 'policy.ts days[n].easyMaxLongShare; lengths.ts buildEasyBounds10, buildLengths; volume.ts capacityMessage/capacityLimits; validate.ts EASY_VS_LONG',
     rationale: 'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, coach/ROUND-01.md): lagani 80 % dugog (10K p04/p08/p12) — dugi se ne razlikuje od laganog.'
   },
@@ -646,6 +646,10 @@ export const TEN_K_V2_POLICY = {
     /** D31: prvi nivo lestvice T kontinuirano početnika (ispred 2,0 km) = najmanja T doza rasterećenja i
         tapera početnika [km]. */
     tFirstKm: 1.5,
+    /** S9 (P8 završetak, STOP — čeka odluku organizatora): lagan ≤ ovaj udeo dugog za početnika (3 i 4 dana). G6 (0,70 za
+        4+ dana) kod početnika sa 4 dana prelazi prag STOP-a zadatka (pad obima ≥ 10 % posle uvoda u 918 / 1890 planova), pa
+        do odluke ostaje vrednost pre G6. */
+    easyMaxLongShare: 0.8,
     /** S3 (P8 završetak, D49): plafon T početnika = max(udeo × cilj nedelje; ovoliko km) — uz G4 (minuti). */
     tCapMinKm: 3.0
   },
@@ -1093,6 +1097,7 @@ export function planRule(count: number, experience: Experience): PlanRule | null
     kmMin: row.kmMin,
     kmMax: row.kmMax,
     beginner: true,
+    easyMaxLongShare: b.easyMaxLongShare,
     longMaxSec: b.longMaxSec,
     growth: b.growth,
     growthMinKm: b.growthMinKm,

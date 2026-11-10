@@ -279,28 +279,28 @@ describe('D31: početnik — T kontinuirano od 1,5 km pri malom obimu', () => {
       'RP:2x1000',
       'RP_sharpener:2x800'
     ]);
-    expect(p.weeks.slice(5, 8).map((w) => w.targetKm)).toEqual([22.1, 23.2, 23.4]);
+    // P8 G1b (D45): korak < 3 % tekućeg cilja se ne primenjuje (23,2 → 23,4 izostaje).
+    expect(p.weeks.slice(5, 8).map((w) => w.targetKm)).toEqual([22.1, 23.2, 23.2]);
     expect(p.weeks[8]!.notes.some((n) => n.startsWith('Taper: RP ≈ 60 %'))).toBe(true);
     expect(p.weeks[9]!.days.some((d) => d.role === 'sharpener')).toBe(true);
     expect(errors(p)).toEqual([]);
   });
 
-  it('odstupanje: T 1,5 km nema drugu strukturu — ponavljanje uz napomenu i u bazi (3 dana, 18 ned, 15 km: ned 3 / 5 / 6)', () => {
+  it('P8 S3 (D49): plafon T početnika max(udeo × cilj; 3,0 km) — lestvica u bazi napreduje 1,5 → 2,0 → 2,5 km (ranije T 1,5 km ponovljen uz napomenu; 3 dana, 18 ned, 15 km: ned 3 / 5 / 6)', () => {
     const p = plan(beg(3, { weeks: 18, km: 15, easy: 450 }));
     const base = p.weeks.filter((w) => w.phase === 'base' && steady(w) && w.index > 2);
     expect(base.map((w) => [w.index, w.targetKm, t(w)])).toEqual([
-      // P8 G1 (D39): 17 / 18 / 19 → 16,2 / 16,8 / 17,3 km.
+      // P8 G1 (D39): 17 / 18 / 19 → 16,2 / 16,8 / 17,3 km; G1b (D45): korak < 3 % se ne primenjuje (ned 6 ostaje 16,8).
       [3, 16.2, 'T_continuous:1.5'],
-      [5, 16.8, 'T_continuous:1.5'],
-      [6, 17.3, 'T_continuous:1.5']
+      [5, 16.8, 'T_continuous:2'],
+      [6, 16.8, 'T_continuous:2.5']
     ]);
-    for (const w of base.slice(1)) {
-      expect(quality(w)[0]!.workout.dose!.step).toBe('repeat');
-      expect(w.notes.some((n) => n.includes('T 1,5 km ponovljen'))).toBe(true);
-    }
+    for (const w of base.slice(1)) expect(quality(w)[0]!.workout.dose!.step).toBe('next');
+    expect(p.weeks.some((w) => w.notes.some((n) => n.includes('T 1,5 km ponovljen')))).toBe(false);
     expect(errors(p)).toEqual([]);
+    // Validator: isti T trening kao prethodne nedelje izgradnje u bazi (plato) je greška.
     const q = plan(beg(3, { weeks: 18, km: 15, easy: 450 }));
-    q.weeks[4]!.notes = q.weeks[4]!.notes.filter((n) => !n.includes('ponovljen'));
+    quality(q.weeks[4]!)[0]!.workout = structuredClone(quality(q.weeks[2]!)[0]!.workout);
     expect(errors(q)).toEqual(expect.arrayContaining(['IDENTICAL_WEEKS', 'BASE_PLATEAU']));
   });
 
