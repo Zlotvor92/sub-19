@@ -74,7 +74,7 @@ describe('S1 (M19): smena A/B, blok MP u dugom', () => {
     );
   });
 
-  it('raspored tipova: samo redovan plan 4–6 dana (3 dana i početnik bez nedelje B)', () => {
+  it('raspored tipova: redovan plan (K4-A: i 3 dana; početnik bez nedelje B)', () => {
     const frames = [9, 10, 11, 12, 13].map((index) => ({
       index,
       phase: 'specific' as const,
@@ -86,10 +86,15 @@ describe('S1 (M19): smena A/B, blok MP u dugom', () => {
       [10, 'B'],
       [9, 'A']
     ]);
-    expect(specificTypes(frames, planRule(3)!).size).toBe(0);
+    // K4-A: 3 dana — isti raspored; u nedelji B jedini kvalitet (MP) je lagan dan.
+    expect([...specificTypes(frames, planRule(3)!)]).toEqual([
+      ...specificTypes(frames, planRule(4)!)
+    ]);
     expect(specificTypes(frames, planRule(4, 'beginner')!).size).toBe(0);
     const three = gen(inputOf({ weeks: 16, km: 40, vdot: 45, days: ['tue', 'thu', 'sun'] }));
-    expect(three.weeks.some((w) => block(w) > 0)).toBe(false);
+    const bw = three.weeks.filter((w) => block(w) > 0);
+    expect(bw.length).toBeGreaterThan(0);
+    for (const w of bw) expect(w.days.some((d) => d.workout.kind === 'quality')).toBe(false);
   });
 
   it('blok: jedan nivo iznad max(poslednji blok, poslednja MP doza), ≤ 50 % dugog, ne opada', () => {

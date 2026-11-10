@@ -16,9 +16,9 @@ interface FrameLike {
   deload: boolean;
 }
 
-/** M19: smena A/B važi samo za redovan plan sa dva kvaliteta (4–6 dana); 3 dana i početnik nemaju nedelju B. */
-export const abPlan = (rule: Pick<PlanRule, 'quality' | 'beginner'>): boolean =>
-  rule.quality === 2 && !rule.beginner;
+/** M19: smena A/B važi za redovan plan (K4-A: i 3 dana — u nedelji B jedini kvalitet, MP, je lagan dan); početnik
+    nema nedelju B. */
+export const abPlan = (rule: Pick<PlanRule, 'quality' | 'beginner'>): boolean => !rule.beginner;
 
 /**
  * M19 (S1/S3) — raspored tipova (jedno mesto odluke): ne-rasteretne nedelje specifične faze iz okvira plana (posle

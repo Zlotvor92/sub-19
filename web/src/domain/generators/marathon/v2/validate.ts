@@ -27,6 +27,7 @@ import {
   longsOf,
   longTimeCap10,
   longTimeCapNote,
+  longWave10,
   recentLongNote,
   taperLengths,
   taperLongFactor10,
@@ -134,6 +135,7 @@ import {
   leaveWeek,
   nominal10,
   growthCtx,
+  nominalPeak10,
   peakCap10,
   startKm10,
   weekMin10
@@ -1310,8 +1312,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     if (tb) prevT = b;
     // M16/M17: nedelja testa i uvod (bez kvaliteta) se ne porede (test nije doza). P5-F1 (odluka organizatora):
     // nedelja kontrolnog testa sa spuštenim slotom (Q2 po plafonu nedelje ograničene kapacitetom) postaje referenca
-    // glavne doze sledeće nedelje (tipa A).
-    if (b.test || !hasQualityWork(b)) {
+    // glavne doze sledeće nedelje (tipa A). K4-A: nedelja B plana sa 3 dana (jedini kvalitet je blok MP u dugom) se
+    // poredi — u lancu tipa B i kao prethodna nedelja.
+    if (b.test || (!hasQualityWork(b) && !hasLongBlock(b.days))) {
       if (b.test && (['q1', 'q2'] as const).some((r) => slotDose(b, r)?.step === 'drop'))
         prevMain = b;
       continue;
@@ -1486,6 +1489,36 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     basePaces(pace, km)
   );
   const cap10 = peakCap10(start10, rule, g1);
+  // K4-A: talas dugog 3 dana (lengths.longWave10, ista funkcija i isti ulazi kao konstruktor: plato po plafonu dugog
+  // pri nominalnom cilju i pri nominalnom vrhu polaznog rasporeda, volume.nominalPeak10).
+  const peakNom10 = nominalPeak10(
+    periodize(input.startDate, N, testKindOf(rule, pace.kind === 'feel', N)) ?? weeks,
+    start10,
+    cap10,
+    rule,
+    g1
+  );
+  const allLongs10 = longsOf(weeks);
+  for (const w of weeks) {
+    const long = w.days.find((d) => d.role === 'long');
+    if (!long || w.limits || !checked(w) || protectedDay(long)) continue;
+    const lr = longRuleOf(rule, beginner, weeks, w.index);
+    const wave = longWave10(
+      rule,
+      weeks,
+      w.index,
+      allLongs10,
+      longCap10(to10(w.nominalKm), lr, pw(w)),
+      longCap10(peakNom10, lr, pw(w))
+    );
+    if (wave !== null && to10(long.workout.km) > wave)
+      err(
+        'LONG_WAVE',
+        `Dugi ${fmtKm(long.workout.km)} km > ${fmtKm(wave / 10)} km: 3 dana, dugi na plafonu najviše ${P.lengths.wave.maxTop} puta (od kraja), ostale nedelje platoa ≤ ${P.lengths.wave.factor} × najduži (K4-A).`,
+        w.index,
+        long.date
+      );
+  }
   // Segment 04: isti rekurent kao konstruktor (volume.adaptNominal10: cilj koraka, povratni rast, vrh od novog
   // starta, taper 0,8 / 0,6 × najveći cilj izgradnje posle poslednjeg smanjenja, donja granica); izvodljiv cilj
   // adaptacije samo naniže. Posle mešovite nedelje čiji cilj nije po pravilu provera čeka sledeći cilj koraka.
@@ -2018,12 +2051,13 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     err('PACE_BASIS', 'Plan po osećaju bez napomene (M16).');
 
   // --- M17: uvod bez kvaliteta (ned 1–2); nedelja izgradnje početnika bez kvaliteta samo kad ni T 1,5 km ne
-  // staje u plafon (ROLES proverava dane).
+  // staje u plafon (ROLES proverava dane). K4-A: nedelja B plana sa 3 dana (blok MP u dugom) nije bez kvaliteta.
   for (const w of weeks) {
     if (
       !isSteady(w) ||
       w.test ||
       hasQualityWork(w) ||
+      hasLongBlock(w.days) ||
       rule.quality !== 1 ||
       !checked(w) ||
       reducedQ(w)

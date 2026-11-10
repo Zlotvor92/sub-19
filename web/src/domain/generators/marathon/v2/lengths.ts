@@ -182,13 +182,56 @@ export function recentLongNote(long10: number): string {
     (LONG_KM) i poruku (capacityLimits 'km'). */
 export const longKmCap10 = (): number => Math.round(P.lengths.longMaxKm * 10);
 
-/** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje — min(udeo M15, trajanje, 32 km). */
+/** M13: najduži dozvoljen dugi [0,1 km] za cilj nedelje — min(udeo M15, trajanje, 32 km; K4-A talas dugog). */
 export function longCap10(target10: number, rule: DayRule, p: Paces): number {
-  return Math.min(
+  const base = Math.min(
     longShareCap10(target10, rule, p),
     longTimeCap10(p, longMaxSecOf(rule)),
     longKmCap10()
   );
+  return Math.min(base, rule.longWave10 ?? Infinity);
+}
+
+/** K4-A — talas dugog (jedino mesto odluke): redovan plan sa 3 dana (`rule.quality` 1, ne početnik). Rep plana =
+    ne-rasteretne nedelje baze, razvoja i specifične faze pre prve nedelje tapera; pozicija k od kraja (0 = poslednja
+    pred taper). Pozicije 0, 2, … (prvih `maxTop`) nose najduži dugi (u specifičnoj fazi nedelja B, blok MP); na
+    ostalim pozicijama dugi koji bi STAJAO na plafonu dugog plana (`top10` = longCap10 pri vrhu obima plana,
+    volume.peakCap10; `stand10` = longCap10 nedelje pri nominalnom cilju, bez talasa; oba i najduži dosadašnji ≥
+    top − tol) ide na ≤ `factor` × najduži — samo kad je plato počeo na poziciji ≥ `runMax` (dugi bi stajao na
+    plafonu > `runMax` nedelja zaredom). Plato = prva nedelja repa čiji je dugi ≥ najduži − tol; međuplato ispod
+    plafona plana (ravan obim baze) nije talas. `longs10[i]` = dugi
+    nedelje i + 1 (upisani dani; null bez dugog). Vraća plafon za pravilo nedelje (DayRule.longWave10) ili null. JEDNA
+    funkcija za konstruktor (generate.ts: pravilo dugog nedelje → longCap10) i validator (LONG_WAVE). */
+export function longWave10(
+  rule: { quality: number; beginner?: boolean },
+  weeks: readonly { index: number; phase: string; deload?: boolean }[],
+  week: number,
+  longs10: readonly (number | null)[],
+  stand10: number,
+  top10: number
+): number | null {
+  if (rule.beginner === true || rule.quality !== 1) return null;
+  const W = P.lengths.wave;
+  const taper = weeks.find((w) => w.phase === 'taper')?.index ?? Infinity;
+  const tail = weeks
+    .filter(
+      (w) =>
+        !w.deload &&
+        w.index < taper &&
+        (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific')
+    )
+    .map((w) => w.index);
+  const at = tail.indexOf(week);
+  if (at < 0) return null;
+  const k = tail.length - 1 - at;
+  if (k % 2 === 0 && k < 2 * W.maxTop - 1) return null;
+  const prev = longs10.slice(0, week - 1).map((x) => x ?? 0);
+  const longest = Math.max(0, ...prev);
+  const lo = top10 - W.standTol10;
+  if (longest < lo || stand10 < lo) return null;
+  const first = tail.find((i) => i < week && (prev[i - 1] ?? 0) >= longest - W.standTol10);
+  if (first === undefined || tail.length - 1 - tail.indexOf(first) < W.runMax) return null;
+  return Math.floor(W.factor * longest + EPS);
 }
 
 /** `total10` na `n` jednakih delova u koraku 0,1 km; raniji dani dobijaju višak (razlika ≤ 0,1). */

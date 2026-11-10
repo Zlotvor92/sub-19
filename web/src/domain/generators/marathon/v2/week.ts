@@ -983,7 +983,7 @@ function buildWeekIn(
         fastBlock(p, target10 / 10)
       )
     : null;
-  if (asB && (blockKm === null || !w2)) return null;
+  if (asB && (blockKm === null || (rule.quality === 2 && !w2))) return null;
   if (blockKm !== null && picks) picks = { ...picks, blockM: Math.round(blockKm * 1000) };
   const notes: string[] = oneLow
     ? [

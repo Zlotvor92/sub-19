@@ -1,0 +1,20 @@
+[
+  {
+    "name": "K4-A 3 dana bez nedelje B (abPlan samo 4–6 dana)",
+    "file": "src/domain/generators/marathon/v2/specific.ts",
+    "find": "export const abPlan = (rule: Pick<PlanRule, 'quality' | 'beginner'>): boolean => !rule.beginner;",
+    "replace": "export const abPlan = (rule: Pick<PlanRule, 'quality' | 'beginner'>): boolean => rule.quality === 2 && !rule.beginner;",
+    "tests": [
+      "src/domain/generators/marathon/v2/k4.node.test.ts"
+    ]
+  },
+  {
+    "name": "K4-A talas dugog isključen (longWave10 uvek null)",
+    "file": "src/domain/generators/marathon/v2/lengths.ts",
+    "find": "  if (rule.beginner === true || rule.quality !== 1) return null;\n  const W = P.lengths.wave;",
+    "replace": "  if (rule.beginner === true || rule.quality !== 1 || true) return null;\n  const W = P.lengths.wave;",
+    "tests": [
+      "src/domain/generators/marathon/v2/k4.node.test.ts"
+    ]
+  }
+]

@@ -15,7 +15,7 @@ import { doseOf } from './workouts.ts';
 describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
   it('oznaka politike (Uslov 6)', () => {
     expect(P.id).toBe('marathon-v2');
-    expect(P.version).toBe('marathon-v2.13.0');
+    expect(P.version).toBe('marathon-v2.14.0');
   });
 
   it('DECISIONS: M1–M18, M7a, M10a (piramida, pouka 27), M13a (skorašnji dugi, pouka 28), A1–A15 i A17 (adaptacija, M18), svaka sa pravilom, mestom i obrazloženjem', () => {
@@ -60,7 +60,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'K3-A',
       'K3-B',
       'K3-C',
-      'K3-E'
+      'K3-E',
+      'K4-A'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -237,7 +238,9 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       easyMinSec: 1200,
       // K3-A: cilj najdužeg 26 km ili 165 min; vrh dugog 3 nedelje 50 % (3 dana) / 45 % (4+ dana).
       longGoalSec: 9900,
-      peakLong: { weeks: 3, share3: 0.5, shareMany: 0.45 }
+      peakLong: { weeks: 3, share3: 0.5, shareMany: 0.45 },
+      // K4-A: talas dugog 3 dana — plafon najviše 3 puta od kraja, ostalo 0,85 × najduži.
+      wave: { runMax: 3, maxTop: 3, factor: 0.85, standTol10: 1 }
     });
     expect(P.longJump).toEqual({ factor: 1.1, addKm: 1, windowWeeks: 4 });
     expect(P.workout).toEqual({

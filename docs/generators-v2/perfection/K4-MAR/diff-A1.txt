@@ -1,0 +1,11 @@
+R-d3: n 3120 odb 0→0 prom 3120 vrh<-10% 0 | peak 52.6→53.5 [39..60]; longest 24.5→24.5 [19.5..30]; atTop 5→5 [2..16]; topRun 5→5 [2..16]; blocks 0→2 [0..3]; mpLongKm 0→18 [0..32]; easyLong 0.65→0.65 [0.46..0.7]; easyMin 64→65 [25..112]; shortEasyWeeks 0→0 [0..6]
+R-d4: n 4368 odb 0→0 prom 0 vrh<-10% 0
+R-d5: n 6240 odb 0→0 prom 0 vrh<-10% 0
+R-d6: n 8112 odb 0→0 prom 0 vrh<-10% 0
+F-d3: n 1170 odb 0→0 prom 1170 vrh<-10% 0 | peak 49→49 [39..60]; longest 23.4→23.4 [19.5..30]; atTop 5→5 [2..16]; topRun 5→5 [2..16]; blocks 0→2 [0..3]; mpLongKm 0→18 [0..32]; easyLong 0.69→0.69 [0.5..0.7]; easyMin 77→77 [30..115]; shortEasyWeeks 0→0 [0..0]
+F-d4: n 1638 odb 0→0 prom 0 vrh<-10% 0
+F-d5: n 2340 odb 0→0 prom 0 vrh<-10% 0
+F-d6: n 3042 odb 0→0 prom 0 vrh<-10% 0
+B-d4: n 945 odb 0→0 prom 0 vrh<-10% 0
+B-d5: n 945 odb 0→0 prom 0 vrh<-10% 0
+nova odbijanja: 0

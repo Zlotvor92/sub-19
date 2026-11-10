@@ -383,12 +383,12 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     if (long.workout.km * p.paces.E.slow > capSec + 1e-6)
       no(`dugi > ${capSec / 60} min ned ${w.index}`);
     if (long.workout.km > 32 + 1e-9) no(`dugi > 32 km ned ${w.index}`);
-    // M19 (nezavisno od specific.ts): blok MP u dugom samo u ne-rasteretnoj specifičnoj nedelji redovnog plana 4–6
-    // dana, ≤ 50 % dugog, na kraju dugog, uz lagan dan MP treninga (bez MP treninga te nedelje).
+    // M19 (nezavisno od specific.ts): blok MP u dugom samo u ne-rasteretnoj specifičnoj nedelji redovnog plana (K4-A:
+    // i 3 dana), ≤ 50 % dugog, na kraju dugog, uz lagan dan MP treninga (bez MP treninga te nedelje).
     const blk = long.workout.workKm.MP;
     if (blk > 0) {
       const seg = long.workout.segments;
-      if (beginner || rule.quality !== 2 || w.phase !== 'specific' || w.deload)
+      if (beginner || w.phase !== 'specific' || w.deload)
         no(`blok MP van nedelje B ned ${w.index}`);
       if (blk > 0.5 * long.workout.km + 1e-9) no(`blok > 50 % dugog ned ${w.index}`);
       if (seg[seg.length - 1]?.zone !== 'MP') no(`blok nije na kraju dugog ned ${w.index}`);
@@ -557,6 +557,18 @@ export function invariants(id: string, p: MarathonV2Plan): string[] {
     no('trka');
   // Pouka 32 (MAR-04b): dan kvaliteta iznad najniže doze zone nikad duži od dugog iste nedelje.
   for (const x of overLong(p).above) no(`pouka 32: ${x}`);
+  // K4-A (nezavisno od lengths.ts): redovan plan sa 3 dana — dugi na najdužem najviše 3 ne-rasteretne nedelje izgradnje
+  // zaredom.
+  if (!beginner && rule.quality === 1 && !p.adaptation) {
+    const top = Math.max(...W.map((w) => w.days.find((d) => d.role === 'long')?.workout.km ?? 0));
+    let run = 0;
+    for (const w of W) {
+      if (w.deload || !BUILD.includes(w.phase)) continue;
+      const l = w.days.find((d) => d.role === 'long')?.workout.km ?? 0;
+      run = l >= top - 0.05 ? run + 1 : 0;
+      if (run > 3) no(`K4-A dugi na najdužem > 3 nedelje zaredom ned ${w.index}`);
+    }
+  }
   return bad;
 }
 
@@ -758,13 +770,19 @@ export function describeGrid(
       let noQ = 0;
       let dropOutside = 0;
       for (const p of run.plans.values()) {
-        // Test (M16) zamenjuje kvalitet; uvod početnika (M17, ned 1–2) je bez kvaliteta.
+        // Test (M16) zamenjuje kvalitet; uvod početnika (M17, ned 1–2) je bez kvaliteta. K4-A: u nedelji B plana sa 3
+        // dana kvalitet je blok MP u dugom.
         const intro = p.input.experience === 'beginner' ? 2 : 0;
         for (const w of p.weeks)
           if (
             isSteady(w) &&
             w.index > intro &&
-            !w.days.some((d) => d.workout.kind === 'quality' || d.role === 'test')
+            !w.days.some(
+              (d) =>
+                d.workout.kind === 'quality' ||
+                d.role === 'test' ||
+                (d.role === 'long' && d.workout.workKm.MP > 0)
+            )
           )
             noQ++;
         for (const v of p.warnings)

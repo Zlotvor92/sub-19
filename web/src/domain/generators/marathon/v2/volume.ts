@@ -289,6 +289,26 @@ export function nominal10(
   return hist.lastBuild10 + buildStep10(hist.lastBuild10, cap10, rule, g, frame.index);
 }
 
+/** K4-A (talas dugog): najveći nominalni cilj izgradnje polaznog rasporeda `frames` [0,1 km] — niz nominal10 kad je
+    svaka nedelja na svom nominalu (ned 1 = trenutni obim, pa korak rasta M6 do vrha). Plafon plana za plato dugog;
+    JEDNA funkcija za konstruktor i validator (isti okviri: periodize polaznog plana). */
+export function nominalPeak10(
+  frames: readonly Pick<WeekFrame, 'index' | 'phase' | 'deload'>[],
+  start10: number,
+  cap10: number,
+  rule: PlanRule,
+  g: GrowthCtx
+): number {
+  let last: number | null = null;
+  let peak = start10;
+  for (const f of frames) {
+    if (f.deload || !isBuildPhase(f.phase)) continue;
+    last = last === null ? start10 : last + buildStep10(last, cap10, rule, g, f.index);
+    peak = Math.max(peak, last);
+  }
+  return peak;
+}
+
 /** M8: cilj trkačke nedelje = planirano (trka se ne računa). */
 export function raceWeekTarget10(planned100: number): number {
   return Math.round(planned100 / 10);

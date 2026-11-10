@@ -10,13 +10,16 @@ import { checkInput } from './input.ts';
 import {
   jumpBase10,
   jumpLongs10,
+  longCap10,
   longestLong10,
   longJumpCap10,
   longJumpNote,
   longRuleOf,
   longMaxSecOf,
   longShortOf,
+  longsOf,
   longTimeCapNote,
+  longWave10,
   recentLongNote
 } from './lengths.ts';
 import { assessGoal, predictedMarathon } from './paces.ts';
@@ -61,6 +64,7 @@ import {
   leaveWeek,
   nominal10,
   growthCtx,
+  nominalPeak10,
   peakCap10,
   raceWeekTarget10,
   startKm10
@@ -194,6 +198,8 @@ export function construct(
   // upisanih nedelja.
   const g1 = growthCtx(base, paces);
   const cap10 = peakCap10(start10, rule, g1);
+  // K4-A: plafon obima plana za plato dugog (talas 3 dana) — nominalni vrh polaznog rasporeda.
+  const peakNom10 = nominalPeak10(base, start10, cap10, rule, g1);
   const av = adapted ? adaptVolume(steps) : null;
   // A1: tempo nedelje (rezultat iz adaptacije važi od svoje sledeće nedelje); A9/pouka 33: odstupanja za mali
   // obim samo posle smanjenja obima.
@@ -242,7 +248,7 @@ export function construct(
   for (const frame of frames) {
     // F2: početnik u vrhu dugog — pravilo dugog nedelje (lengths.longRuleOf, isto u validatoru).
     const ctxW = ctxAt(frame.index);
-    const ctx = {
+    let ctx = {
       ...ctxW,
       rule: longRuleOf(ctxW.rule, rule.beginner, frames, frame.index),
       // P5-F2 (A18): nedelja bez rasta doze iz koraka adaptacije.
@@ -289,6 +295,19 @@ export function construct(
     const { nominal, downOnly } = av
       ? adaptNominal10(frame, h, start10, taper, rule, av, g1)
       : { nominal: nominal10(frame, h, start10, cap10, taper, rule, g1), downOnly: false };
+    // K4-A: talas dugog 3 dana (lengths.longWave10; plato po plafonu dugog pri nominalnom cilju) — plafon dugog u
+    // pravilu nedelje; nedelja sa ograničenjem koraka (A3/A4) ga nema.
+    const wave = frame.limits
+      ? null
+      : longWave10(
+          rule,
+          frames,
+          frame.index,
+          longsOf(written),
+          longCap10(nominal, ctx.rule, ctx.paces),
+          longCap10(peakNom10, ctx.rule, ctx.paces)
+        );
+    if (wave !== null) ctx = { ...ctx, rule: { ...ctx.rule, longWave10: wave } };
     const longest10 = longestLong10(written);
     const longs10 = jumpLongs10(written, steps, frame.index);
     const jump10 = longJumpCap10(longs10, frame.index, recentJ);

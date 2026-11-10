@@ -50,7 +50,9 @@ const withRest = (p: MarathonV2Plan, k: number, at: string, days: PlanDay[]): Ma
 };
 
 /** Mešovita nedelja u kojoj ostatak staje (dugi 17,8 upisan; Q1 6,36 i lagan ostaju u ostatku 16,6 km). */
-const FITS = 'd3-12w-50km-v30-B-sat';
+// K4-A (marathon-v2.14.0): d3-12w-50km-v30-B-sat ima talas dugog (ned 3 dugi na plafonu, ostatak više ne nosi
+// kvalitet) — primer iste klase u kome ostatak staje.
+const FITS = 'd3-12w-45km-v30-B-sat';
 
 describe('MAR-08: mešovita nedelja, ostatak do cilja (pouka 37)', () => {
   const p = planOf('d3-12w-30km-v30-A-sat');
