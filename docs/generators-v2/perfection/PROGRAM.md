@@ -60,6 +60,13 @@ Nivoi su u `AGENTS.md`; ovde je samo šta tab sme i kada.
   organizatora.
 - Izveštaj navodi svaku pokrenutu komandu testa i njeno trajanje.
 
+## Granica korišćenja naloga (naučeno 10. 11. 2026)
+
+Pet Opus tabova uporedo potrošilo je petočasovnu granicu za ≈ 3,5 h; tabovi tada staju sa greškom 429 (status „failed",
+`usage_limit_reached`) i NE nastavljaju sami posle resetovanja. Pravila: najviše 3 Opus taba uporedo; tab radi lokalne
+commit-e posle svakog koraka; posle resetovanja organizator (satna provera) šalje svakom zaustavljenom tabu poruku
+„nastavi" — ne otvara nov tab dok stari ima lokalni rad.
+
 ## Redosled (privremen; zaključava se posle P0)
 
 | Segment | Sadržaj | Stanje |
@@ -122,3 +129,4 @@ stvarno daju bolje rezultate vidi se tek na stvarnim korisnicima kroz mesece (P7
 - 10. 11. 2026 01:43: P5-5K stigao (`df96d0e`, 5k-v2.14.0): F1 jedan test u planu ≥ 10 ned (menja se samo nedelja testa), F2 radi (0 odbijanja na 104 800 tokova), pun nivo 796/796, sabotaže 11/11. Vraćeno na doradu jednom tačkom (važi za sve distance, javljeno ostalim P5 tabovima): F2 „neodrađen" samo ako tog datuma nema NIJEDNOG trčanja (ni van plana) — uvoz/Strava sa nevezanim trčanjima ne sme da okine F2. Prihvaćeno: manjak km u nedelji testa kao prijava, 16 nedelja > 25 % (nedelje testa, mali obim). B1/B2 (blaža grana posle sporijeg rezultata, 10/4 192 tokova) odloženo.
 - 10. 11. 2026 01:52: P5-5K primljen (`3f96c04`): F2 po datumu ugrađen (trčanje van plana tog datuma = odrađen), pun nivo 797/797, sabotaže 13/13, otisci mreža isti. Prihvaćeno: trkač koji trči drugim danima od plana (nijedno trčanje na datume kvaliteta) i dalje okida F2 — efekat je blag (doza jedne nedelje ne raste), pravilo po nedelji se ne uvodi.
 - 10. 11. 2026 02:18: P5-MAR primljen. Test 1 po planu (8–9 ned do trke); prvi T 11,8 → 17,9 min, prvi I 12,7 → 18,6 min; ubrzanja 0 → 17 dana po planu; ukupno MP i vrh obima isti; 0 novih odbijanja na 31 920 planova; pun nivo 546 testova, sabotaže 9/9. Odluke: (1) plan od 12 nedelja u kome test zamenjuje jedini I trening — prihvaćeno (test 5 km je sam VO2 stimulus); (2) F2 niži izvodljiv cilj u 9 % tokova — prihvaćeno; (3) ubrzanja se NE broje u % brzih km (bez njih 87 → 77 nedelja > 25 %); (4) tumačenja T3–T5 potvrđena.
+- 10. 11. 2026 04:12: V1b, P5-10K i P5-HM stali u 02:36–03:00 na granici korišćenja naloga (429; reset 03:40). Posle resetovanja svima poslata poruka „nastavi". Zastoj ≈ 1 h 30 min (satna provera u 03:09 je i sama čekala granicu). Od sada najviše 3 Opus taba uporedo.
