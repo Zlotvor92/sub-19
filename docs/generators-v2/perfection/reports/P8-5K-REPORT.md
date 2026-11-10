@@ -110,8 +110,9 @@ isti 12. Svi planovi su promenjeni (trkački dan); po klasi R/F/B × 3/4/5 dana:
 | `npx vitest run --project node …/p8.node.test.ts` | 6 s | 10/10 |
 | sabotaže `P8-5K/sabotage.json` (12, brz nivo, `--bail=1`) | 70 s | 12/12 palo, `src` bajt-isti |
 | `fixture15.ts` g07 / n08d / e08e / x08g | 6 s / 8 s / 112 s / 576 s | 0 odbijanja |
-| pun nivo `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK/v2` | (dopuna ispod) | |
-| `npm run check`, `--changed 9055e5b`, E2E `fivek-v2.spec.ts` | (dopuna ispod) | |
+| pun nivo `TEST_FULL=1 npx vitest run --project node src/domain/generators/fiveK/v2` (pre dopune) | 4 min 39 s | 804/807; 3 pada → ispravljeno (prvi I po upisanim nedeljama, TOTALS 08e) |
+| brz nivo posle dopune (G4–G7, G3) | 57 s | 753/795 — vidi odeljak Dopuna |
+| `npm run check`, `--changed`, E2E `fivek-v2.spec.ts` | — | nije pokrenuto (vidi odeljak Dopuna) |
 
 Ispravljeni testovi: verzija i KNOWN_VERSIONS (app), budžet 10 % (p4, workouts), prvi I (segment02, segment10, app
 3 × 600 m), G2 rasterećenje sa prvim nivoom (segment03/04, segment09 bez QUALITY_REDUCED), e (p5, segment05, 08g, 08i),
@@ -127,3 +128,27 @@ umesto `segment14.*-8e87fd4.json` (razlog P8 = `testInputs.markP8`).
   vrha se ne menja.
 - Upozorenja u `plan.warnings` ostaju po nedelji (validator ih čita); zbirno je samo u prikazu.
 - Kontrolni test početnika / test u ned 3 po osećaju — nije u brifu P8 za 5K.
+
+## Dopuna po glavnom treneru (`briefs/P8-dopuna-po-glavnom-treneru.md`)
+
+Mreža P8 posle svake stavke (`measure.ts g4/g5/g1b/g7/g6`): **0 odbijanja**; adaptacione mreže 08g/08k/08j bez odbijanja
+posle ispravke validatora VOLUME_PEAK (tempo sa koracima, kao konstruktor).
+
+| stavka | ugrađeno | mesto | izmereno |
+|---|---|---|---|
+| G4 plafon treninga u minutima (I 20/24, RP 20, T 30) | da | `workouts.minuteCapKm/zoneBudget`, `feel.feelMinuteCap` (VDOT po osećaju: `paces.vdotOrEstimate`); validator donji prag | 769 planova promenjeno |
+| G5 taper ≤ 60 % najvećeg rada zone; oštrenje 2 jednake deonice ≥ 400 m, ≤ 12 min | da | `generate.qualityCapOf`, `workouts` RP_sharpener, `week.buildRaceWeek` (ne staje → ubrzanja) | 0 odbijanja (sa budžetom kao granicom: 87 WEEK_MIN_VOLUME → 400 m je donja granica) |
+| G1a vrh: start × 1,30/1,35/1,40 i satni plafon 6/7/8 h po VDOT-u | da | `volume.peakKm(…, {weeks, p})` | vrh/start medijana 1,26, najviše 1,40 |
+| G1b korak < 3 % se ne primenjuje | da | `volume.minStep` | plato obima prosek 3,29 → 3,43 |
+| G2 u trkačkoj nedelji bez prvog nivoa | da | `workouts.zoneBudget` | — |
+| G7 test jedini kvalitet, ne pre ned 4 | da | `feel`, `workouts.peakWeek`, `policy.feel.test`, `periodize.resultTestWeekOf`; validator ROLES | 0 odbijanja |
+| G6 lagan ≤ 0,70 × dugi (4+ dana) | da, bez spuštanja cilja | `lengths.easyCapKm(…, days)` | ponovljeno „planirano < cilj" 1 354 → 1 884 planova; **STOP** za spuštanje cilja: `reports/P8-5K-STOP.md` |
+| G8 | ne odnosi se na 5K | — | — |
+| G3 trka kao trka (prognoza, WU/CD kao preporuka), RPE trke 9 | da (nazivi faza nisu dirani) | `workouts.raceDay`, `policy.feel.effort.race` | — |
+
+**Nije završeno:** 42 testa u 17 fajlova `fiveK/v2` i dalje očekuju pravila pre dopune — G7 (dva kvaliteta u nedelji
+testa: `generate`, `segment05`, `segment08h`), G1a/G1b (brojevi vrha i primera: `segment03/04/05b/06/07/08d/08e/08i`,
+`workouts`, `p4`), G6 (0,8 × dugi: `segment02`, `segment10`), `app` (naslov laganog dana). Nijedan nije odbijanje plana.
+Sabotaže 11/12 (G3 „najveća doza" nije uhvaćena: posle G4 profil 65 km nema tu napomenu — treba drugi profil). Otisci
+`segment15.*` su pre dopune; svi tokovi su „P8 promenjen", pa važe. Nisu pokrenuti: `npm run check`, `--changed 9055e5b`,
+pun nivo posle dopune, E2E 5K. P0/P7 tabele gore i `P8-5K/plans/` su PRE dopune — ponoviti merenje.
