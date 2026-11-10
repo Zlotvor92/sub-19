@@ -77,8 +77,12 @@ export const ladderFloorM = (ladder: LadderId, beginner = false): number =>
 
 /** H11 + G4 + G2 (P8): plafon zone za trening lestvice `ladder` u izgradnji — capM sa podom prvog nivoa lestvice.
     Jedna funkcija za konstruktor i validator. */
-export const ladderCapM = (ladder: LadderId, targetKm: number, p?: Paces, beginner = false): number =>
-  capM(zoneOf(ladder), targetKm, p, ladderFloorM(ladder, beginner));
+export const ladderCapM = (
+  ladder: LadderId,
+  targetKm: number,
+  p?: Paces,
+  beginner = false
+): number => capM(zoneOf(ladder), targetKm, p, ladderFloorM(ladder, beginner));
 
 /** G4 (P8): najviše rada u jednom treningu usred nedelje [s] — T 30 min (cilj nedelje ≥ 80 km: 40 min), I 20 min za
     VDOT < 40, inače 24 min, RP 45 min; R bez plafona u minutima. Jedna funkcija za konstruktor, validator i poruke. */

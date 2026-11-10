@@ -163,7 +163,8 @@ describe('P1-T: taper', () => {
       const p = ok(generateHmV2(g.input));
       const t = p.weeks.find((w) => w.phase === 'taper')!;
       const rp = t.days.find((d) => d.workout.dose?.zone === 'RP');
-      if (rp) expect(rp.workout.dose!.doseM).toBeLessThanOrEqual(capM('RP', t.targetKm, undefined, 4000)); // P8 G2: 2 × 2000 m uvek staje
+      if (rp)
+        expect(rp.workout.dose!.doseM).toBeLessThanOrEqual(capM('RP', t.targetKm, undefined, 4000)); // P8 G2: 2 × 2000 m uvek staje
       else if (g.input['experience'] !== 'beginner')
         expect(4000).toBeGreaterThan(capM('RP', t.targetKm));
     }

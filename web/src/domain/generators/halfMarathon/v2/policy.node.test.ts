@@ -123,7 +123,14 @@ describe('HM v2 politika (MASTER § 4)', () => {
     expect(P.raceWeek).toEqual({
       maxRunDays: 5,
       // P8 G5: oštrenje ≤ 12 min rada, deonica deljiva sa 100 m, 400–2000 m.
-      sharpener: { reps: 2, repM: 2000, recoverySec: 120, maxWorkSec: 720, minRepM: 400, roundM: 100 },
+      sharpener: {
+        reps: 2,
+        repM: 2000,
+        recoverySec: 120,
+        maxWorkSec: 720,
+        minRepM: 400,
+        roundM: 100
+      },
       sharpenerMinGapDays: 3,
       eveEasySec: 1200,
       eveStrides: { reps: 4, sec: 20 },

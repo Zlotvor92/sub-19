@@ -120,18 +120,18 @@ NEDELJA 7 — faza: specifična
 
 ------------------------------------------------------------
 NEDELJA 8 — faza: specifična
-  21.12.–27.12. · cilj 44,2 km · planirano 44,2 km · ukupno 3 h 18 min
-  Ponedeljak 21.12.  Lagano 5,5 km
-      5,5 km · 26 min
+  21.12.–27.12. · cilj 44,2 km · planirano 44,3 km · ukupno 3 h 18 min
+  Ponedeljak 21.12.  Lagano 4,3 km
+      4,3 km · 21 min
   Utorak     22.12.  WU 15 min + RP 2 × 4000 m (oporavak 2:00 džog) + CD 10 min
       13,7 km · 58 min · radnih 31 min
-  Četvrtak   24.12.  Lagano 5,5 km
-      5,5 km · 26 min
-  Subota     26.12.  Lagano 5,4 km, na kraju 6 × 20 s ubrzanja
-      5,4 km · 25 min
-  Nedelja    27.12.  Dugi 14,1 km: 10,1 km lagano + 4,0 km u trkačkom tempu
-      14,1 km · 1 h 03 min · radnih 15 min
-  Napomena: Specifična nedelja sa blokom: poslednjih 4,0 km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.
+  Četvrtak   24.12.  WU 15 min + T 4 × 1000 m (oporavak 1:00 džog) + CD 10 min
+      9,9 km · 43 min · radnih 15 min
+  Subota     26.12.  Lagano 4,2 km, na kraju 6 × 20 s ubrzanja
+      4,2 km · 19 min
+  Nedelja    27.12.  Dugi 12,2 km lagano
+      12,2 km · 58 min
+  Napomena: Dugi bez bloka u trkačkom tempu: uz obim i dužinu dugog ove nedelje blok ne staje, nedelja je kao ostale specifične.
 
 ------------------------------------------------------------
 NEDELJA 9 — faza: taper

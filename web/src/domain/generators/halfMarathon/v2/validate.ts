@@ -593,7 +593,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   } else if (wantTest === 0) {
     // G7 (P8): test bi pao pre nedelje 4 — plan nema test (periodize.testWeekOf, ista funkcija).
     if (tests.length > 0 || flagged.length > 0)
-      err('TEST', `Test ne ide pre nedelje ${P.test.minWeek}: plan u kome bi pao ranije nema test (G7).`);
+      err(
+        'TEST',
+        `Test ne ide pre nedelje ${P.test.minWeek}: plan u kome bi pao ranije nema test (G7).`
+      );
   } else if (
     tests.length !== 1 ||
     flagged.join() !== String(wantTest) ||
@@ -1006,7 +1009,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         // G2 (P8): prvi nivo lestvice dana uvek staje (izgradnja i taper; blok u dugom i rasterećenje bez poda).
         const lad = d.workout.dose?.ladder;
         const floor =
-          !w.deload && d.role !== 'long' && lad && lad !== 'RP_sharpener' ? ladderFloorM(lad, B0) : 0;
+          !w.deload && d.role !== 'long' && lad && lad !== 'RP_sharpener'
+            ? ladderFloorM(lad, B0)
+            : 0;
         if (m > capM(z, w.targetKm, d.role === 'long' ? undefined : pw(w), floor))
           err(
             'ZONE_CAP',
@@ -1117,7 +1122,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         else if (
           isBuildPhase(w.phase) &&
           dose.ladder !==
-            (role === 'q1' ? buildLadder(w.phase, w.targetKm, rule, pw(w)) : ladderFor(w.phase, role, nq))
+            (role === 'q1'
+              ? buildLadder(w.phase, w.targetKm, rule, pw(w))
+              : ladderFor(w.phase, role, nq))
         )
           err(
             'PHASE_QUALITY',
@@ -1177,7 +1184,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       // H10: T deonice ≥ 1000 m; RP deonice ≥ 2000 m, kontinuirano do 10 km (oštrenje: H8).
       // G5 (P8): oštrenje ima svoju deonicu (2 × ≤ 2000 m, ≤ 12 min rada) — proverava RACE_SHARPENER.
       const sharp = dose.ladder === 'RP_sharpener';
-      const repMin = sharp ? 0 : dose.zone === 'T' ? a.tRepMinM : dose.zone === 'RP' ? a.rpRepMinM : 0;
+      const repMin = sharp
+        ? 0
+        : dose.zone === 'T'
+          ? a.tRepMinM
+          : dose.zone === 'RP'
+            ? a.rpRepMinM
+            : 0;
       if (repsOf(s).some((m) => m < repMin))
         err('REP_MIN', `${dose.zone} deonica < ${repMin} m (H10).`, w.index, d.date);
       // Faza 4a N6: RP nikad ispod najnižeg nivoa (ista funkcija kao konstruktor, quality.floorM).
@@ -1390,7 +1403,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           if (
             !held(b) &&
             nl &&
-            doseOf(nl) <= ladderCapM(db.ladder as LadderId, b.targetKm, pw(b), role === 'q1' && B) &&
+            doseOf(nl) <=
+              ladderCapM(db.ladder as LadderId, b.targetKm, pw(b), role === 'q1' && B) &&
             fit(b, role, ladder, nl) !== 'over'
           )
             err(
@@ -1442,8 +1456,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           // Faza 4a N10.1 (MASTER pouka 32, kao maraton): ponavljanje doze je upozorenje kad za svaki slot ni druga
           // struktura iste doze ni sledeći nivo ne staju u plafon zone (oba člana, ista funkcija kao konstruktor).
           const inCap = (role: 'q1' | 'q2', lad: LadderId, x: Structure, zone: WorkZone): boolean =>
-            doseOf(x) <= Math.max(capM(zone, b.targetKm, pw(b)), ladderCapM(lad, b.targetKm, pw(b), role === 'q1' && B)) &&
-            fit(b, role, lad, x) !== 'over';
+            doseOf(x) <=
+              Math.max(
+                capM(zone, b.targetKm, pw(b)),
+                ladderCapM(lad, b.targetKm, pw(b), role === 'q1' && B)
+              ) && fit(b, role, lad, x) !== 'over';
           const forced = (['q1', 'q2'] as const)
             .filter((r) => slotDose(b, r))
             .every((r) => {
@@ -1473,7 +1490,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
           const tl = ta.ladder as LadderId;
           const nl = nextLevel(tl, ta.doseM, B);
           const blocked =
-            !nl || doseOf(nl) > ladderCapM(tl, b.targetKm, pw(b), B) || fit(b, dSlot, tl, nl) === 'over';
+            !nl ||
+            doseOf(nl) > ladderCapM(tl, b.targetKm, pw(b), B) ||
+            fit(b, dSlot, tl, nl) === 'over';
           // HI10: doza bez druge strukture (T 1,5 km) sme da se ponovi kad sledeći nivo ne staje; pouka 32:
           // druga struktura koja ne staje u trajanje dugog se ne računa.
           const only = !structuresForDose(tl, ta.doseM).some(
@@ -2135,7 +2154,10 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     }
     const byRule = av
       ? adaptNominal10(w, h, start10, rule, av, growLeft(weeks, w.index))
-      : { nominal: nominal10(w, h, start10, cap10, rule, growLeft(weeks, w.index)), downOnly: false };
+      : {
+          nominal: nominal10(w, h, start10, cap10, rule, growLeft(weeks, w.index)),
+          downOnly: false
+        };
     // G1 (P8) × pouka 29: cilj po pravilu nedelje koja je cela prošla (≤ poslednji asOf) je činjenica upisanog plana
     // — korak rasta je računat sa okvirima nedelja kakvi su tada bili (isto čita konstruktor).
     const { nominal, downOnly } =
@@ -2213,7 +2235,8 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     isBuildPhase(w1.phase) &&
     !w1.deload &&
     w1.days.some(
-      (d) => d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(to10(long1.workout.km), rule)
+      (d) =>
+        d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(to10(long1.workout.km), rule)
     );
   if (
     firstAdapted > 1 &&

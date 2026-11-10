@@ -66,8 +66,10 @@ describe('P8-G4: plafon jednog treninga u minutima rada', () => {
                 : dose.zone === 'RP'
                   ? 2700
                   : Infinity;
-          const first = dose.doseM <= (beginner(plan) && dose.zone === 'T' ? 2400 : FIRST_M[dose.ladder]!);
-          if (!first) expect(workSec(d), `${id} ned ${w.index} ${dose.zone}`).toBeLessThanOrEqual(max + 3);
+          const first =
+            dose.doseM <= (beginner(plan) && dose.zone === 'T' ? 2400 : FIRST_M[dose.ladder]!);
+          if (!first)
+            expect(workSec(d), `${id} ned ${w.index} ${dose.zone}`).toBeLessThanOrEqual(max + 3);
           if (dose.zone === 'RP' && workSec(d) > 2400) rpAtCap++;
         }
     // Plafon stvarno seče: uzorak ima RP treninge od 40–45 min.
@@ -140,7 +142,8 @@ describe('P8-G1: plafon vrha i rast do kraja razvoja', () => {
       const nd = plan.weeks.filter(
         (w) => !w.deload && (w.phase === 'base' || w.phase === 'development')
       );
-      if (plan.weeks.some((w) => w.fitted) || plan.peakKm <= plan.startKm || nd.length < 4) continue;
+      if (plan.weeks.some((w) => w.fitted) || plan.peakKm <= plan.startKm || nd.length < 4)
+        continue;
       const first = plan.weeks.find((w) => isBuild(w) && w.targetKm === plan.peakKm)!;
       checked++;
       expect(first.index, id).toBeGreaterThanOrEqual(nd[nd.length - 2]!.index);
@@ -178,10 +181,20 @@ describe('P8-G2: najniži nivo lestvice uvek staje', () => {
         for (const d of w.days.filter((x) => x.role === 'q1' || x.role === 'q2')) {
           const dose = d.workout.dose!;
           const share =
-            dose.zone === 'R' ? 0.05 : dose.zone === 'I' ? 0.08 : dose.zone === 'T' ? 0.1 : w.targetKm >= 40 ? 0.2 : 0.15;
+            dose.zone === 'R'
+              ? 0.05
+              : dose.zone === 'I'
+                ? 0.08
+                : dose.zone === 'T'
+                  ? 0.1
+                  : w.targetKm >= 40
+                    ? 0.2
+                    : 0.15;
           if (dose.doseM <= Math.floor(share * w.targetKm * 1000 + 1e-6)) continue;
           floors++;
-          expect(dose.doseM, `${id} ned ${w.index} ${dose.ladder}`).toBeLessThanOrEqual(FIRST_M[dose.ladder]!);
+          expect(dose.doseM, `${id} ned ${w.index} ${dose.ladder}`).toBeLessThanOrEqual(
+            FIRST_M[dose.ladder]!
+          );
         }
     expect(floors).toBeGreaterThan(0);
   });
@@ -227,7 +240,10 @@ describe('P8-G7: nedelja testa', () => {
       }
       tests++;
       expect(tw[0]!.index, id).toBeGreaterThanOrEqual(4);
-      expect(tw[0]!.days.filter((d) => d.workout.kind === 'quality'), id).toEqual([]);
+      expect(
+        tw[0]!.days.filter((d) => d.workout.kind === 'quality'),
+        id
+      ).toEqual([]);
     }
     expect(tests).toBeGreaterThan(100);
     expect(none).toBeGreaterThan(0);
@@ -257,7 +273,8 @@ describe('P8-HM (b): nedelja sa blokom', () => {
 
 describe('P8-G3: tekst za trkača', () => {
   it('tekst koji korisnik vidi nema interne oznake ni reči sastavljanja', () => {
-    const BAD = /nije izvodljiv|odstupanje|cilj po pravilu|pouk[aeiu] \d|\bHI?\d+\b|\(F\d\)|segment \d|rezultat koristi adaptacija/i;
+    const BAD =
+      /nije izvodljiv|odstupanje|cilj po pravilu|pouk[aeiu] \d|\bHI?\d+\b|\(F\d\)|segment \d|rezultat koristi adaptacija/i;
     for (const { id, plan } of plans) {
       const texts = [
         ...plan.notes.map(userText),
@@ -275,7 +292,11 @@ describe('P8-G3: tekst za trkača', () => {
       const rp = t.days.find((d) => d.workout.dose?.zone === 'RP');
       const last = plan.weeks
         .filter((w) => isBuild(w) && !w.deload)
-        .flatMap((w) => w.days.filter((d) => (d.role === 'q1' || d.role === 'q2') && d.workout.dose?.zone === 'RP'))
+        .flatMap((w) =>
+          w.days.filter(
+            (d) => (d.role === 'q1' || d.role === 'q2') && d.workout.dose?.zone === 'RP'
+          )
+        )
         .pop();
       if (!rp || !last || rp.workout.dose!.doseM <= 0.6 * last.workout.dose!.doseM + 1e-6) continue;
       floor++;

@@ -883,8 +883,7 @@ function buildWeekIn(
   // P1-S1: nedelja B — Q1 (RP) po lestvici kao u nedelji A, Q2 je lagan dan (mehanizam pouke 35: stanje T slota se ne
   // menja, oslobođen obim raspoređuje vlasnik dužina), dugi nosi blok RP.
   // G7 (P8): u nedelji testa test je jedini kvalitet — drugi dan kvaliteta je lagan (stanje slota se ne menja).
-  let w2 =
-    picks?.q2 && !bWeek && !test ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
+  let w2 = picks?.q2 && !bWeek && !test ? qualityWorkout(picks.q2, p, ctx.wc, ctx.feel) : null;
   const wo = one ? qualityWorkout(one.dose, p, ctx.wc, ctx.feel) : null;
   // Pouka 35: sa dva dana kvaliteta dugi mora ostati najduži — inače je drugi dan lagan (prvi ostaje).
   const easy2 =
@@ -931,7 +930,8 @@ function buildWeekIn(
       `Specifična nedelja sa blokom: poslednjih ${fmtKm(blockKm)} km dugog u trkačkom tempu; zato je tempo trening ove nedelje zamenjen laganim trčanjem.`
     );
   // T1 (krug T): manje laganih dana (lengths.buildLengths) — napomena za korisnika.
-  if (len.easy10.length < dates.length) notes.push(t1RestNote(dates.length - len.easy10.length, rule.easyLongMaxShare));
+  if (len.easy10.length < dates.length)
+    notes.push(t1RestNote(dates.length - len.easy10.length, rule.easyLongMaxShare));
   if (second)
     notes.push(
       easy2?.t1

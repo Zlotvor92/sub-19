@@ -625,7 +625,8 @@ const DECISIONS: readonly Decision[] = [
   {
     id: 'P8-G3',
     rule: 'Tekst za trkača: napomena testa kaže šta trkač radi sa rezultatom; napomena nedelje sa blokom kaže da je tempo trening zamenjen laganim trčanjem; napomena tapera ne tvrdi „≈ 60 %" za najmanju dozu (posebna rečenica); korisnički tekst (userText) bez internih oznaka i reči sastavljanja. Tehničke napomene koje validator čita ostaju u planu (userWeekNotes ih ne prikazuje).',
-    place: 'week.ts TEST_NOTE, RESULT_TEST_NOTE, napomene bloka i tapera; userText.ts PLAIN; generate.ts (napomena plana bez testa)',
+    place:
+      'week.ts TEST_NOTE, RESULT_TEST_NOTE, napomene bloka i tapera; userText.ts PLAIN; generate.ts (napomena plana bez testa)',
     rationale: 'Odluka organizatora P8, nalaz slepe ocene (jasnoća teksta 3–6 / 10).'
   }
 ];
@@ -805,7 +806,14 @@ export const HM_V2_POLICY = {
     maxRunDays: 5,
     /** G5 (P8): dve jednake deonice u trkačkom tempu, ukupno ≤ maxWorkSec rada (12 min) po tempu nedelje; deonica
         deljiva sa roundM, najviše repM (2000 m), najmanje minRepM (ispod toga bez oštrenja — ubrzanja dana pred trku). */
-    sharpener: { reps: 2, repM: 2000, recoverySec: 120, maxWorkSec: 720, minRepM: 400, roundM: 100 },
+    sharpener: {
+      reps: 2,
+      repM: 2000,
+      recoverySec: 120,
+      maxWorkSec: 720,
+      minRepM: 400,
+      roundM: 100
+    },
     sharpenerMinGapDays: 3,
     eveEasySec: 1200,
     eveStrides: { reps: 4, sec: 20 },

@@ -225,7 +225,8 @@ export function checkPlan(
   const wantTest0 = beg ? 0 : feel ? lastBase : p.weeks.length >= 12 ? lastDev : 0;
   const wantTest = wantTest0 >= 4 ? wantTest0 : 0;
   for (const t of tests)
-    if (t.w.days.some((d) => d.workout.kind === 'quality')) no('TEST_ONLY_QUALITY', `ned ${t.w.index}`);
+    if (t.w.days.some((d) => d.workout.kind === 'quality'))
+      no('TEST_ONLY_QUALITY', `ned ${t.w.index}`);
   if (wantTest > 0) {
     const t = tests[0];
     if (tests.length !== 1 || !t || t.w.index !== wantTest)
@@ -393,7 +394,11 @@ export function checkPlan(
           d.workout.segments.some((x) => x.kind === 'stride')
             ? Math.round(d.workout.km * midE)
             : d.workout.sec;
-        if (ed.some((d) => to10(d.workout.km) * 10 > (nDays >= 4 ? 7 : 8) * long + EPS || sec(d) < 1200))
+        if (
+          ed.some(
+            (d) => to10(d.workout.km) * 10 > (nDays >= 4 ? 7 : 8) * long + EPS || sec(d) < 1200
+          )
+        )
           no('EASY_BUILD', tag);
       }
       // H15: 5/6 dana lagani jednaki (razlika ≤ 0,1 km); broj dana nedelje = broj dana trčanja.
@@ -733,7 +738,10 @@ export function checkPlan(
     // Krug T (T1): ili je lagan nedelje 1 na 0,8 × dugi (nezavisno: 8 × dugi / 10, naniže).
     const t1 =
       l1 !== null &&
-      w1.days.some((d) => d.role === 'easy' && to10(d.workout.km) === Math.floor(((nDays >= 4 ? 7 : 8) * l1) / 10));
+      w1.days.some(
+        (d) =>
+          d.role === 'easy' && to10(d.workout.km) === Math.floor(((nDays >= 4 ? 7 : 8) * l1) / 10)
+      );
     if (l1 !== abs && !t1) {
       st.week1BelowNotTime++;
       no('WEEK1_BELOW', `${w1.targetKm} < ${p.startKm}`);

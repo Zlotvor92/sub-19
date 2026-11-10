@@ -1,0 +1,364 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/P8-HM/sabotage-P8.json",
+ "head": "646cd0d4",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 43.4,
+ "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "P8-G4 RP bez plafona u minutima",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G4: plafon jednog treninga u minutima rada > T ≤ 30 min (cilj ≥ 80 km: 40), I ≤ 20 min za VDOT < 40 inače 24, RP usred nedelje ≤ 45 min — ili prvi nivo lestvice",
+    "message": "AssertionError: d3-14w-45km-v35-A-sun ned 12 RP: expected 2824 to be less than or equal to 2703"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "ce18828e96b94c6594b2ba39eb83de37161edd6a1baaac9edf8ce80f1d2f787a",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.1
+  },
+  {
+   "index": 2,
+   "name": "P8-G4 T 30 min → 60 min",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G4: plafon jednog treninga u minutima rada > T ≤ 30 min (cilj ≥ 80 km: 40), I ≤ 20 min za VDOT < 40 inače 24, RP usred nedelje ≤ 45 min — ili prvi nivo lestvice",
+    "message": "AssertionError: d4-20w-45km-v40-C-sun ned 11 T: expected 1836 to be less than or equal to 1803"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "c17e3be310e4bc3018bad989743404f772e352ba824d2761ca30d61b6808c9f6",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.3
+  },
+  {
+   "index": 3,
+   "name": "P8-G5 oštrenje 24 min",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G5: oštrenje i rasterećenje > oštrenje: dve jednake deonice, deljive sa 100 m, 400–2000 m, ukupno ≤ 12 min rada; najduža koja staje",
+    "message": "AssertionError: d3-10w-25km-v30-A-sat: expected 1366 to be less than or equal to 722"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "4eb3433406e6757050a8211980cdab7165a48396dd4a0501b1037b8a60730e12",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.5
+  },
+  {
+   "index": 4,
+   "name": "P8-G5 rasterećenje čita dozu slota",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G5: oštrenje i rasterećenje > rasterećenje plana sa jednim kvalitetom: T ≈ 60 % poslednje T doze, ne doze slota (RP)",
+    "message": "AssertionError: expected 4800 to be less than or equal to 2400.000001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "24622467414f41599473b937a08bb91c03abef3ad30aaacb197e4c98b45cc957",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.6
+  },
+  {
+   "index": 5,
+   "name": "P8-G1 faktor vrha 1,4 za kratku pripremu",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G1: plafon vrha i rast do kraja razvoja > vrh ≤ start × faktor po dužini pripreme i ≤ satni plafon (ili = start); korak rasta ≥ 3 % ili ga nema",
+    "message": "AssertionError: d3-10w-25km-v30-A-sat: expected 35 to be less than or equal to 32.500001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "250c297f7965e923fe0a376f499839a15e490553f68235fb520b569337a453c4",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.5
+  },
+  {
+   "index": 6,
+   "name": "P8-G1 bez satnog plafona",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G1: plafon vrha i rast do kraja razvoja > vrh ≤ start × faktor po dužini pripreme i ≤ satni plafon (ili = start); korak rasta ≥ 3 % ili ga nema",
+    "message": "AssertionError: d4-10w-60km-v30-A-sat: expected 70 to be less than or equal to 60.000001"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "0e64030dba943fa05f1805982af3e9cb8945be2ea64256971c94bae9f56b4af5",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 4.3
+  },
+  {
+   "index": 7,
+   "name": "P8-G1 korak ispod 3 % se primenjuje",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G1: plafon vrha i rast do kraja razvoja > vrh ≤ start × faktor po dužini pripreme i ≤ satni plafon (ili = start); korak rasta ≥ 3 % ili ga nema",
+    "message": "AssertionError: d3-10w-25km-v30-A-sat ned 7: expected 0.6999999999999993 to be greater than or equal to 0.9029999999999999"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "247d521d865570538c3dd336d3c31c9fa0fe99b8c8a6e5b779b66a2c460f997c",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.6
+  },
+  {
+   "index": 8,
+   "name": "P8-G1 rast bez raspodele do kraja razvoja",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/volume.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G1: plafon vrha i rast do kraja razvoja > rast je raspoređen: plan bez spuštenih nedelja ne dostiže vrh pre pretposlednje ne-rasteretne nedelje baze/razvoja",
+    "message": "AssertionError: d3-17w-45km-v45-A-sun: expected 5 to be greater than or equal to 9"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "08cc15ddccd93127acd0d203b8333ca6573bc53fc9c7990f64b2c3193335205c",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.4
+  },
+  {
+   "index": 9,
+   "name": "P8-G2 bez poda prvog nivoa",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/quality.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "d3-10w-25km-v30-A-sat: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ZONE_CAP: RP 4000 m > 15 % cilja 22.3 km (H11).\",\"week\":9}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "bbc1ec5153d9d301f411fc8edf57d14865c202643204d93f19afb0c38ba1869b",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 0.9
+  },
+  {
+   "index": 10,
+   "name": "P8-G6 lagan 0,8 × dugi i za 4+ dana",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G6: lagan dan prema dugom > 4+ dana: lagan ≤ 0,70 × dugi u ne-rasteretnoj nedelji izgradnje (3 dana ≤ 0,80); izuzetak nedelja na minimumu",
+    "message": "AssertionError: d4-10w-60km-v30-A-sat ned 1: expected 14.2 to be less than or equal to 12.4"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "87e6ea726ce2e9a0f56bdd73c9d45d44908b3f32ca950a3dbf3c4f45804aedb0",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 2.8
+  },
+  {
+   "index": 11,
+   "name": "P8-G7 drugi kvalitet ostaje u nedelji testa",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "(fajl pao van pojedinačnog testa — uvoz ili hook)",
+    "message": "d4-12w-30km-v70-A-sun: [{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"ROLES: Dani easy@sat, long@sun, q2@thu, test@tue ≠ šablon easy@sat, easy@thu, long@sun, test@tue (H9).\",\"week\":6},{\"code\":\"PLAN_VIOLATES_POLICY\",\"message\":\"SLOT_REPEAT: q2: ista doza iste strukture, a druga struktura postoji (H12).\",\"week\":8}]"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "0255171df500f3265ce599dfe4ebe3c9d6afa2c49dd5bcb2fd64ec4b06212643",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 1.2
+  },
+  {
+   "index": 12,
+   "name": "P8-G7 test u nedelji 3",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G7: nedelja testa > test je jedini kvalitet nedelje i ne ide pre nedelje 4; plan u kome bi pao ranije nema test (napomena)",
+    "message": "AssertionError: f-d3-10w-25km-e270-A: expected 3 to be greater than or equal to 4"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "94f2d2a6e6b29c99d0541ae413f3404eacaf14cf3776f83c71d73abbaacbda99",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.1
+  },
+  {
+   "index": 13,
+   "name": "P8-HMb bez granice 22 % vremena",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/policy.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-HM (b): nedelja sa blokom > rad u trkačkom tempu (RP trening + blok) ≤ 22 % vremena nedelje",
+    "message": "AssertionError: d4-13w-30km-v40-A-sat ned 11: expected 0.25851456709068527 to be less than or equal to 0.222"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "1f4490d5c578a06303b7078b38f6ef755a2429925db3ab88ead199fab8ba124a",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.1
+  },
+  {
+   "index": 14,
+   "name": "P8-G3 napomena testa bez uputstva",
+   "files": [
+    "src/domain/generators/halfMarathon/v2/week.ts"
+   ],
+   "tests": [
+    "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/halfMarathon/v2/segmentP8.node.test.ts",
+    "test": "P8-G3: tekst za trkača > tekst koji korisnik vidi nema interne oznake ni reči sastavljanja",
+    "message": "AssertionError: f-d3-14w-35km-e270-B: Test 5 km: kontrolisano maksimalno posle zagrevanja — rezultat koristi adaptacija, do tada tempo ostaje procena.: expected true to be false // Object.is equality"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "21e4e45ec84bba24e1e7860041ddc1513b14a56929f69f234d95479a870aed2e",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 3.2
+  }
+ ]
+}

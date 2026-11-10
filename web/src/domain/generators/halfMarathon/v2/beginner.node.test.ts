@@ -162,7 +162,9 @@ describe('H17 plan početnika', () => {
     expect(sharp.workout.dose!.doseM).toBe(2400);
     // Kad taper sa RP nema izvodljive dužine (najmanji obim, brz lagan tempo): ishod kao pre — bez kvaliteta, ne odbijanje.
     const small = plan('b-d4-12w-20km-e330-A');
-    expect(small.weeks.find((w) => w.phase === 'taper')!.days.some((d) => d.workout.dose)).toBe(false);
+    expect(small.weeks.find((w) => w.phase === 'taper')!.days.some((d) => d.workout.dose)).toBe(
+      false
+    );
     // Rasterećenje u razvoju: 1,5 km kontinuirano pod lestvicom T cruise (nema nivo 1,5 km).
     const d5 = p.weeks[4]!.days.find((d) => d.workout.kind === 'quality')!.workout;
     expect([p.weeks[4]!.deload, d5.dose!.ladder, d5.qualityType, d5.dose!.doseM]).toEqual([
