@@ -70,7 +70,7 @@ import {
   nextLevel,
   pickSlot,
   type QualityState,
-  startLevel,
+  startFit,
   taperDoses,
   weekPicksOf
 } from './quality.ts';
@@ -1405,7 +1405,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
         `Glavna doza ${mainDoseM(b)} m < ${mainDoseM(ref)} m (H12, pouka 3; nedelja ${hasLongBlock(b.days) ? 'B' : 'A'} sa poslednjom istog tipa).`,
         b.index
       );
-    if (counted) [prevMain, mainRefs] = [b, mainDoseNext(mainRefs, b)];
+    // P5-F1 (odluka organizatora 10. 11. 01:07, sve distance): nedelja testa sa spuštenim slotom (pouka 32/35) se ne
+    // poredi, ali je referenca glavne doze za sledeću nedelju.
+    if (counted || (b.test && dropped)) [prevMain, mainRefs] = [b, mainDoseNext(mainRefs, b)];
     if (prevW) {
       const repeat = (['q1', 'q2'] as const).some((r) => slotDose(b, r)?.step === 'repeat');
       if (
@@ -1496,7 +1498,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       const da = a ? slotDose(a, role) : null;
       const carry = da !== null && carries(da.ladder as LadderId, ladder);
       if (da && (da.ladder === ladder || (carry && zoneOf(da.ladder) === zoneOf(ladder)))) continue;
-      const st = startLevel(ladder, b.targetKm, B);
+      const st = startFit(ladder, b.targetKm, B, (s) => fit(b, role, ladder, s) !== 'over');
       let want = st ? doseOf(st) : NaN;
       if (da && carry) {
         const lv = structuresOfLadder(ladder, B).find((m) => m >= Math.max(want, da.doseM));

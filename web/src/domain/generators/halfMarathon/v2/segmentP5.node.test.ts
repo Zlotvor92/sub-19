@@ -170,6 +170,7 @@ describe('P5-F3: ubrzanja na laganom danu', () => {
 describe('P5-F4: početni nivo T i I ≤ 80 % plafona', () => {
   it('prva nedelja T i prvi I: najviši nivo ≤ 80 % plafona; R i RP ostaju 60 %; početnik prvi nivo', () => {
     let tChecked = 0;
+    let lowered = 0;
     for (const { plan } of plans.filter((x) => !beginner(x.plan))) {
       const w1 = plan.weeks[0]!;
       for (const d of w1.days.filter((x) => x.workout.dose)) {
@@ -178,21 +179,30 @@ describe('P5-F4: početni nivo T i I ≤ 80 % plafona', () => {
         if (dose.step === 'drop') continue;
         expect(dose.step).toBe('start');
         const s = startLevel(dose.ladder as never, w1.targetKm)!;
-        expect(dose.doseM).toBe(doseOf(s));
         const share = dose.zone === 'T' || dose.zone === 'I' ? 0.8 : 0.6;
+        const cap = capM(dose.zone, w1.targetKm);
         // Najmanje prvi nivo lestvice (i kad je iznad udela).
-        if (dose.step === 'start' && doseOf(s) > share * capM(dose.zone, w1.targetKm)) continue;
-        expect(dose.doseM).toBeLessThanOrEqual(share * capM(dose.zone, w1.targetKm) + 1e-6);
-        // Najviši takav nivo (nezavisno od startLevel): sledeći nivo lestvice je iznad udela.
+        if (doseOf(s) > share * cap) {
+          expect(dose.doseM).toBe(doseOf(s));
+          continue;
+        }
+        expect(dose.doseM).toBeLessThanOrEqual(share * cap + 1e-6);
+        // Najviši takav nivo (nezavisno od startLevel): sledeći nivo lestvice je iznad udela — osim kad bi dan bio duži
+        // od dugog (odluka F4 × pouka 32): tada nivo između 60 % i 80 % ili nivo po 60 %.
         const next = ladderLevels(dose.ladder as never)
           .map(doseOf)
           .find((m) => m > dose.doseM);
-        if (next !== undefined)
-          expect(next).toBeGreaterThan(share * capM(dose.zone, w1.targetKm) + 1e-6);
+        if (dose.doseM < doseOf(s)) {
+          expect(dose.doseM).toBeGreaterThanOrEqual(
+            doseOf(startLevel(dose.ladder as never, w1.targetKm, false, 0.6)!)
+          );
+          lowered++;
+        } else if (next !== undefined) expect(next).toBeGreaterThan(share * cap + 1e-6);
         if (dose.zone === 'T') tChecked++;
       }
     }
     expect(tChecked).toBeGreaterThan(30);
+    expect(lowered).toBeLessThan(tChecked);
     for (const { plan } of plans.filter((x) => beginner(x.plan))) {
       const q = plan.weeks.flatMap((w) => w.days).find((d) => d.workout.dose)!;
       expect(q.workout.dose!.doseM).toBe(1500);
@@ -261,7 +271,7 @@ describe('P5-F2: kvalitet u adaptaciji', () => {
     const r0 = adapt(facts(() => 4));
     expect(r0.reasons.some((x) => x.condition === 'QUALITY_STRAIN')).toBe(false);
     expect(JSON.stringify(r0.plan.weeks[n - 1]!.days)).not.toBe(JSON.stringify(w.days));
-    expect(adaptBanner(p, r, facts(hard), asOf)).toContain(q.message);
+    expect(adaptBanner(p, r as never, facts(hard) as never, asOf)).toContain(q.message);
     expect(errors(r.plan)).toEqual([]);
   });
 

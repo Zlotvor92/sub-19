@@ -236,15 +236,16 @@ export function framesFor(
     !isBuildPhase(f.phase) || f.limits?.quality !== undefined || (f.deload && !base[k]!.deload);
   if (t && blocked(t, i) && mustDay(testDateOf(t, pattern)) > mustDay(last)) {
     frames[i] = withoutTest(t);
+    // P5-F1 (odluka organizatora 10. 11. 01:07): kontrolni test plana sa rezultatom u nedelji sa ograničenjem otpada
+    // (ne premešta se; napomena: adapt.ts TEST_MOVED).
+    if (pace.kind === 'result') return frames;
     const j = frames.findIndex(
       (f, k) =>
         k > i &&
         isBuildPhase(f.phase) &&
         !f.deload &&
         f.limits?.quality === undefined &&
-        // P5-F1: isto pravilo za test plana sa rezultatom — premešta se dok nema novog rezultata (po osećaju: dok je
-        // nedelja po osećaju, basisAt).
-        stepVdotAt(steps, f.index) === null
+        basisAt(pace, steps, f.index) === 'feel'
     );
     if (j >= 0) frames[j] = { ...frames[j]!, test: true };
   }

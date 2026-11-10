@@ -125,13 +125,38 @@ export function nextLevel(ladder: LadderId, doseM: number, beginner = false): St
 /** H12: početni nivo — najviši nivo lestvice ≤ udeo plafona zone (H11) za cilj nedelje (R, RP 60 %; P5-F4: T i I
     80 %), najmanje prvi nivo;
     početnik (`beginner`, HI10): prvi nivo (T kontinuirano 1,5 km). null = ni prvi nivo ne staje u plafon. */
-export function startLevel(ladder: LadderId, targetKm: number, beginner = false): Structure | null {
+export function startLevel(
+  ladder: LadderId,
+  targetKm: number,
+  beginner = false,
+  share: number = P.startLevel.capShare[zoneOf(ladder)]
+): Structure | null {
   const levels = ladderLevels(ladder, beginner);
   const cap = capM(zoneOf(ladder), targetKm);
   if (doseOf(levels[0]!) > cap) return null;
   if (beginner) return levels[0]!;
-  const limit = P.startLevel.capShare[zoneOf(ladder)] * cap + 1e-6;
+  const limit = share * cap + 1e-6;
   return levels.filter((s) => doseOf(s) <= limit).pop() ?? levels[0]!;
+}
+
+/** P5-F4 × pouka 32 (odluka organizatora 10. 11. 01:28) — početni nivo uz drugi član plafona zone: najviši nivo ≤ udeo
+    plafona (startLevel) čiji dan nije duži od dugog (`dur`); kad ni jedan nivo iznad nivoa po fallbackShare (60 %) ne
+    staje — nivo po 60 % (dalje kao do sada: pouka 32 ga spušta). Jedna funkcija za konstruktor (pickSlot) i validator
+    (START_LEVEL). null = ni prvi nivo ne staje u plafon. */
+export function startFit(
+  ladder: LadderId,
+  targetKm: number,
+  beginner: boolean,
+  dur: (s: Structure) => boolean
+): Structure | null {
+  const start = startLevel(ladder, targetKm, beginner);
+  if (!start || beginner || dur(start)) return start;
+  const base = startLevel(ladder, targetKm, false, P.startLevel.fallbackShare)!;
+  return (
+    ladderLevels(ladder)
+      .filter((s) => doseOf(s) < doseOf(start) && doseOf(s) > doseOf(base) && dur(s))
+      .pop() ?? base
+  );
 }
 
 /**
@@ -165,9 +190,9 @@ export function pickSlot(
 ): Dose | null {
   const cap = capM(zoneOf(ladder), targetKm);
   const levels = ladderLevels(ladder, beginner);
-  const start = startLevel(ladder, targetKm, beginner);
   // Izbor po pravilu staje u drugi član osim kad je duži od dugog; spuštanje bira samo nivo koji staje.
   const dur = (s: Structure): boolean => fitsDay(ladder, s, beginner, dayFits) !== 'over';
+  const start = startFit(ladder, targetKm, beginner, dur);
   const fits = (s: Structure): boolean => doseOf(s) <= cap && dur(s);
   const fitsDrop = (s: Structure): boolean =>
     doseOf(s) <= cap && fitsDay(ladder, s, beginner, dayFits) === 'fits';

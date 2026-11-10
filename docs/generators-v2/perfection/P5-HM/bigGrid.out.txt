@@ -1,0 +1,18 @@
+{
+ "n": 27930,
+ "rejA": 508,
+ "rejB": 508,
+ "newRej": [],
+ "lostRej": 0,
+ "fitA": 5934,
+ "fitB": 5887,
+ "w1A": 2561,
+ "w1B": 2064,
+ "testB": 21885,
+ "testBadB": 0,
+ "strideWeeks": 379718,
+ "buildTaperWeeks": 383498,
+ "noStrideWithEasy": 0,
+ "newRejN": 0,
+ "codes": {}
+}

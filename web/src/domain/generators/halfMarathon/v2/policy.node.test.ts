@@ -158,7 +158,10 @@ describe('HM v2 politika (MASTER § 4)', () => {
         { fromKm: 40, share: 0.2 }
       ]
     });
-    expect(P.startLevel).toEqual({ capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } });
+    expect(P.startLevel).toEqual({
+      capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 },
+      fallbackShare: 0.6
+    });
     // P5-F3: ubrzanja; P5-F2: okidač kvaliteta u adaptaciji.
     expect(P.strides).toEqual({ sec: 20, baseReps: 4, laterReps: 6, beginnerReps: 4 });
     expect([P.adapt.strainRpe, P.adapt.strainCount, P.adapt.strainLookbackDays]).toEqual([

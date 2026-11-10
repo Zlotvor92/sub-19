@@ -247,7 +247,9 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
       applied: true,
       message:
         ta === null
-          ? `Test ${P.test.km} km (nedelja ${tb === null ? tb : wl(tb)}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja (A13).`
+          ? chk.pace.kind === 'result'
+            ? `Kontrolni test ${P.test.km} km (nedelja ${tb === null ? tb : wl(tb)}) otpada: nedelja ima ograničenje (bol, pauza, umor) ili je primljen nov rezultat — tempo ostaje iz poslednjeg rezultata; unesi rezultat sledeće trke ili testa kad ga budeš imao (F1).`
+            : `Test ${P.test.km} km (nedelja ${tb === null ? tb : wl(tb)}) otpada: primljen rezultat ili nema nedelje izgradnje bez ograničenja (A13).`
           : `Test ${P.test.km} km: nedelja ${tb === null ? '—' : wl(tb)} → ${wl(ta)} (prva sledeća ne-rasteretna nedelja izgradnje bez ograničenja, A13).`
     });
   const applied = reasons.filter((x) => x.applied && x.condition !== 'NO_FACTS');

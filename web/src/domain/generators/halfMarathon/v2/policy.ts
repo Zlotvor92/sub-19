@@ -557,9 +557,9 @@ const DECISIONS: readonly Decision[] = [
   },
   {
     id: 'P5-F4',
-    rule: 'Početna doza T i I: početni nivo T (kontinuirano i cruise) i I = najviši nivo lestvice ≤ 80 % plafona zone (H11) za cilj nedelje (do sada 60 %), najmanje prvi nivo. R i RP ostaju 60 %. Početnik bez promene (prvi nivo, HI10). Sva ostala pravila progresije (H12) ostaju; WU/CD se ne skraćuje (Uslov 3).',
+    rule: 'Početna doza T i I: početni nivo T (kontinuirano i cruise) i I = najviši nivo lestvice ≤ 80 % plafona zone (H11) za cilj nedelje (do sada 60 %), najmanje prvi nivo. R i RP ostaju 60 %. Početnik bez promene (prvi nivo, HI10). Sva ostala pravila progresije (H12) ostaju; WU/CD se ne skraćuje (Uslov 3). Dopuna (odluka organizatora 10. 11. 01:28, sve distance): početni nivo = najviši ≤ 80 % čiji dan nije duži od dugog (drugi član plafona, pouka 32); kad nijedan nivo iznad nivoa po 60 % ne staje — nivo po 60 % (dalje kao do sada). Deo „ne izaziva pouku 35" nije ugrađen (traži novo mesto odluke — P-a): na HM F4 broj nedelja sa laganim drugim danom kvaliteta smanjuje.',
     place:
-      'policy.ts startLevel.capShare; quality.ts startLevel; validate.ts START_LEVEL (ista funkcija)',
+      'policy.ts startLevel.capShare, fallbackShare; quality.ts startLevel, startFit (pickSlot); validate.ts START_LEVEL (ista funkcija)',
     rationale:
       'Heuristika, odluka organizatora P5 (P0: prvi T trening ≈ 9–12 min rada uz 35 min WU/CD, 12–16 % trajanja dana). Mali udeo rada se rešava većom početnom dozom, ne kraćim WU/CD.'
   }
@@ -895,7 +895,9 @@ export const HM_V2_POLICY = {
   startLevel: {
     capShare: { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } as Readonly<
       Record<'R' | 'I' | 'T' | 'RP', number>
-    >
+    >,
+    /** P5-F4 × pouka 32: kad nijedan nivo iznad ovog udela ne staje u trajanje dugog — nivo po ovom udelu. */
+    fallbackShare: 0.6
   },
 
   /** H14. */

@@ -62,7 +62,7 @@ for (const c of grid("HM")) {
         const g0: any = adaptHmV2(plan, { workouts: [], coverage: { from, to: asOf, complete: false } }, asOf);
         if (g0.ok) { const w0 = g0.plan.weeks[step.qualityHold - 1]; if (JSON.stringify(w0.days.map((d: any) => d.workout.dose)) !== JSON.stringify(w.days.map((d: any) => d.workout.dose))) bump(k, "nedelja n promenjena"); }
         if (w.notes.some((n: string) => n.startsWith("Doza ove nedelje ne raste"))) bump(k, "napomena");
-        else bump(k, `bez napomene: ${w.phase}${w.deload ? "*" : ""} q:${w.days.filter((d: any) => d.workout.kind === "quality").length} test:${w.days.some((d: any) => d.role === "test")} lim:${w.limits ? 1 : 0}`);
+        else bump(k, `bez napomene (nedelja bez dana kvaliteta: test + drugi dan lagan): ${w.days.filter((d: any) => d.workout.kind === "quality").length === 0}`);
         // sutra: isti zapisi → bez novog koraka
         const r2: any = adaptHmV2(r.plan, { workouts, coverage: { from, to: addDays(asOf, 1), complete: true } }, addDays(asOf, 1));
         if (!r2.ok) bump(k, "sutra odbijeno");
