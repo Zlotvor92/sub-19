@@ -44,6 +44,7 @@ import { capPct, planRule, startShare, TEN_K_V2_POLICY as P } from './policy.ts'
 import { hasSpecificTypes, specificTypeNext, typedWeek, typeOfWeek } from './specific.ts';
 import {
   capM,
+  reducedDoseM,
   carries,
   deloadLadder,
   deloadSlot,
@@ -178,18 +179,7 @@ const qualityKey = (w: PlanWeek): string =>
 
 /** ≈ share × poslednja doza, najviši nivo lestvice naniže (`beginner`: lestvica početnika, D31); ispod
     najnižeg → floor (D5/D7). */
-function expectedReduced(
-  ladder: LadderId,
-  lastM: number,
-  share: number,
-  floorM: number,
-  beginner = false
-): number {
-  const lv = ladderLevels(ladder, beginner)
-    .map(doseOf)
-    .filter((m) => m <= share * lastM + EPS && m >= floorM);
-  return lv[lv.length - 1] ?? floorM;
-}
+const expectedReduced = reducedDoseM;
 
 export function validatePlan(
   plan: TenKV2Plan,
@@ -1672,7 +1662,8 @@ export function validatePlan(
           // 06f (pouka 35): drugi slot nedelje pouke 35 je lagan — njegovo stanje ostaje nepoznato.
           // P5: nedelja testa (D27/D35) ne određuje stanje Q1 — progresija se nastavlja od stanja pre testa, pa posle
           // mešovite nedelje stanje ostaje nepoznato (kao konstruktor: stanje iz upisanih dana mešovite nedelje).
-          if (!d && r === 'q1' && w.days.some((x) => x.role === 'test')) continue;
+          // P8 G7 (D46) + S8: u nedelji testa test je jedini kvalitet — ni Q2 ne određuje stanje (isto kao konstruktor).
+          if (!d && w.days.some((x) => x.role === 'test')) continue;
           if (d || r === 'q1' || !w.notes.some(isP35Drop)) slotKnown[r] = true;
           lastSlot[r] = d ?? lastSlot[r];
           if (d?.zone === 'T') lastTDose = d.doseM;

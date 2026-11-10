@@ -370,6 +370,24 @@ const DECISIONS: readonly Decision[] = [
     rationale: 'Heuristika, odluka organizatora P8 (dopuna po glavnom treneru, coach/ROUND-01.md): početnik nikad ne pretrči trkačku distancu (p11 najduži 8,7 km pred trku od 10 km).'
   },
   {
+    id: 'D49',
+    rule: 'P8 završetak S3 — početnik: plafon zone T = max(udeo × cilj nedelje; beginner.tCapMinKm = 3,0 km), uz G4 (≤ 30 min rada); lestvica T početnika napreduje 1,5 → 2,0 → 2,5 → 3,0 km po D12 (≤ 1 nivo nedeljno) i pri malom obimu. Ostale zone i redovan plan bez promene.',
+    place: 'policy.ts beginner.tCapMinKm; quality.ts capM (jedini plafon zone)',
+    rationale: 'Heuristika, odluka organizatora P8 (STOP S3; nalaz slepe ocene 10K zamerka 4): pri 15–19,5 km 10 % nedelje ne nosi 2,0 km, pa je T 1,5 km stajao 9 nedelja (p11).'
+  },
+  {
+    id: 'D50',
+    rule: 'P8 završetak S7 — start na satnom plafonu (D45) ili iznad njega: plan sa ravnim obimom je ispravan (vrh = start); plan nosi jednu rečenicu zašto obim ne raste i šta trkač dobija umesto toga (treninzi u tempu i dugi).',
+    place: 'volume.ts flatByHours (čita policy.volume.peakG1a kao peakCap10); generate.ts (plan.notes)',
+    rationale: 'Odluka organizatora P8 (STOP S7): ravan plan sporog trkača sa većim obimom bez objašnjenja izgleda kao greška (p04: 50 km 15 nedelja).'
+  },
+  {
+    id: 'D51',
+    rule: 'P8 završetak S1/S5/S6/S8 — donja granica ispred G5: doza rasterećenja i tapera = max(najniži nivo; najviši nivo lestvice ≤ 60 % poslednje doze zone) — rasterećenje T najmanje 2,0 km (početnik 1,5 km), taper RP najmanje 2 × 1000 m i T najmanje 2,0 km (početnik 1,5 km), i kad je to > 60 %. Taper uvek ima trkački tempo (G2), sem uz ograničenja bola/povratka. Dugi rasterećenja 0,8 × poslednji, ali ne ispod najdužeg laganog dana te nedelje (dugi ≥ lagan; dugi < 4 km je dozvoljen). Jedna funkcija smanjene doze za konstruktor i validator; nedelja testa (G7) ne određuje stanje nijednog slota ni u validatoru.',
+    place: 'quality.ts reducedDoseM (pickDeload, pickTaper; validate.ts DELOAD_CONTENT, TAPER_QUALITY čitaju istu funkciju); validate.ts (stanje slota u nedelji testa)',
+    rationale: 'Odluka organizatora P8 (STOP S1, S5, S6, S8): rasterećenje i taper bez kvaliteta je zamerka ocene; najniža doza je trenerski minimum. S8: validator je posle nedelje testa bez Q2 (G7) računao poznato stanje T slota iz nedelje pre mešovite — 3 odbijanja u mreži adaptacije (2040 tokova) → 0.'
+  },
+  {
     id: 'A1',
     rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
     place:
@@ -627,7 +645,9 @@ export const TEN_K_V2_POLICY = {
     longToRaceWeeks: 3,
     /** D31: prvi nivo lestvice T kontinuirano početnika (ispred 2,0 km) = najmanja T doza rasterećenja i
         tapera početnika [km]. */
-    tFirstKm: 1.5
+    tFirstKm: 1.5,
+    /** S3 (P8 završetak, D49): plafon T početnika = max(udeo × cilj nedelje; ovoliko km) — uz G4 (minuti). */
+    tCapMinKm: 3.0
   },
 
   /** D17: JEDINA tabela po broju dana trčanja. quality/easy = broj kvalitetnih i laganih dana izgradnje. */

@@ -52,6 +52,7 @@ import {
   initialAdaptHistory,
   leaveWeek,
   nominal10,
+  flatByHours,
   peakCap10,
   raceWeekTarget10,
   startKm10
@@ -549,6 +550,13 @@ export function construct(
         `Najduži dugi je ${fmtKm(lg / 10)} km, kraći od ${b.longToRaceKm} km: za dugi od ${b.longToRaceKm} km treba nedeljni obim od bar ${fmtKm(b.longToRaceKm / b.longToRaceShare)} km u nedeljama pred taper (ili više dana treninga).`
       );
   }
+  // S7 (P8 završetak, D50): start na satnom plafonu ili iznad njega — plan sa ravnim obimom; jedna rečenica zašto i šta
+  // trkač dobija umesto rasta obima.
+  const flatHours = flatByHours(start10, rule, weeks, paces);
+  if (flatHours !== null)
+    plan.notes.push(
+      `Nedeljni obim ostaje ${fmtKm(start10 / 10)} km: to je već oko ${flatHours} sati trčanja nedeljno, pa plan ne dodaje kilometre — napredak donose treninzi u tempu i dugi.`
+    );
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)
     plan.adaptation = {

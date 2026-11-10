@@ -79,7 +79,14 @@ export function zoneFloorM(zone: WorkZone, beginner: boolean): number {
     doza prvog nivoa lestvice zone) — najniži nivo uvek staje. JEDINI plafon zone (konstruktor i validator). */
 export function capM(zone: WorkZone, targetKm: number, beginner: boolean, p: Paces): number {
   const floor = zoneFloorM(zone, beginner);
-  const share = Math.max(Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6), floor);
+  // S3 (P8 završetak, D49): plafon T početnika = max(udeo × cilj; beginner.tCapMinKm) — lestvica napreduje do 3,0 km i pri
+  // malom obimu (G4 minuti i dalje ograničavaju; najniži nivo i dalje staje).
+  const shareFloor =
+    beginner && zone === 'T' ? Math.max(floor, Math.round(P.beginner.tCapMinKm * 1000)) : floor;
+  const share = Math.max(
+    Math.floor(capShare(zone, targetKm) * targetKm * 1000 + 1e-6),
+    shareFloor
+  );
   // G4 (P8 dopuna, D43): plafon jednog treninga u minutima rada po tempu zone te nedelje (najniži nivo i dalje staje).
   const min = minutesCapSec(zone, targetKm, p.vdot);
   if (min === null) return share;
@@ -384,8 +391,24 @@ export function advance(picks: WeekPicks, prev: QualityState): QualityState {
   };
 }
 
-/** ≈ share × poslednja doza, nivo lestvice naniže (`beginner`: lestvica početnika, D31); ispod najnižeg
-    nivoa → `floor` (min). */
+/** D5/D7 + S1/S5/S6 (P8 završetak, D51): JEDINA funkcija smanjene doze (rasterećenje, taper; konstruktor i validator) —
+    doza = max(najniži nivo `floorM`; najviši nivo lestvice ≤ share × poslednja doza) [m] (`beginner`: lestvica
+    početnika, D31). Donja granica je ispred G5 „≤ 60 %": rasterećenje i taper ne idu ispod najniže doze. */
+export function reducedDoseM(
+  ladder: LadderId,
+  lastM: number,
+  share: number,
+  floorM: number,
+  beginner = false
+): number {
+  const limit = share * lastM + 1e-6;
+  const lv = ladderLevels(ladder, beginner)
+    .map(doseOf)
+    .filter((m) => m <= limit && m >= floorM);
+  return lv[lv.length - 1] ?? floorM;
+}
+
+/** Struktura smanjene doze (reducedDoseM): nivo lestvice te doze; ispod najnižeg nivoa → `floor` (min). */
 function reduced(
   ladder: LadderId,
   lastM: number,
@@ -393,11 +416,12 @@ function reduced(
   floor: Structure,
   beginner = false
 ): Structure {
-  const limit = share * lastM + 1e-6;
-  const lv = ladderLevels(ladder, beginner).filter(
-    (s) => doseOf(s) <= limit && doseOf(s) >= doseOf(floor)
+  const m = reducedDoseM(ladder, lastM, share, doseOf(floor), beginner);
+  return (
+    ladderLevels(ladder, beginner)
+      .filter((s) => doseOf(s) === m)
+      .pop() ?? floor
   );
-  return lv[lv.length - 1] ?? floor;
 }
 
 /** D5/D31: poslednja doza koju rasterećenje smanjuje — slot rasterećenja; početnik: poslednja T doza [m]. */
