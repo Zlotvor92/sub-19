@@ -420,6 +420,9 @@ export interface TenKV2AdaptStep {
   /** A5 (10k-v2.6.0, pouka 36): nedelja prinudnog rasterećenja iz zapisa umora kad ≠ fromWeek (tekuća nedelja:
       važi za ostatak, prošli dani zaštićeni). steps.deloadWeekOf. */
   deloadWeek?: number;
+  /** D38 (P5 F2): nedelja izgradnje bez rasta doze (dva poslednja dana kvaliteta preteška ili preskočena). Polja nema
+      kad ga nema. */
+  holdDose?: number;
 }
 
 /** A5 (10k-v2.5.2): nedelja 1 generatora bez činjenica — poslednja izgradnja (cilj), poslednji dugi i doza
@@ -452,7 +455,8 @@ export type AdaptCondition =
   | 'PAUSE'
   | 'PAIN'
   | 'FATIGUE'
-  | 'TEST_MOVED';
+  | 'TEST_MOVED'
+  | 'QUALITY_HOLD';
 
 /** Aktivan uslov iz činjenica; `applied` = false kad ga nadjačava viši prioritet ili ne važi (A7). */
 export interface AdaptReason {

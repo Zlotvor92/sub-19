@@ -1,3 +1,8 @@
+**P5 (10k-v2.12.0)**: D35 kontrolni test 5 km u planu sa rezultatom od 12 nedelja (poslednja ne-rasteretna nedelja
+razvoja, dan Q1); D36 ubrzanja na jednom laganom danu nedelje izgradnje i tapera (baza 4 × 20 s, posle 6 × 20 s); D37
+početni nivo T i I 80 % plafona; D38 korak adaptacije QUALITY_HOLD (dva preteška/preskočena kvaliteta → nedelja bez rasta
+doze) — `docs/generators-v2/perfection/reports/P5-10K-REPORT.md` (STOP: `reports/P5-10K-STOP.md`).
+
 **P3 (10k-v2.11.0)**: specifičnost 10K — D33 plafon RP po cilju nedelje (< 40 km 10 %, ≥ 40 km 15 %) i lestvica RP do
 8,0 km; D34 smena A (Q2 T) / B (Q2 I održavanja = najveća I doza razvoja) u specifičnoj fazi 4–6 dana, nedelja B sme
 cilj do 3,0 km niži; A25 tip nedelje iz upisanih nedelja — `docs/generators-v2/perfection/reports/P3-REPORT.md`.

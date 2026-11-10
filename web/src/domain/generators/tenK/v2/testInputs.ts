@@ -368,6 +368,7 @@ export type AsOfKind = (typeof AS_OF_KINDS)[number];
 interface PlanLike {
   input: { startDate: string; runDays: readonly string[]; currentWeeklyKm: number };
   vdot: number;
+  paceBasis?: string;
   weeks: readonly {
     index: number;
     phase: string;
@@ -741,7 +742,9 @@ export function earlyAsOfs(
   plan: PlanLike
 ): { tag: string; asOf: string; scenarios: readonly EarlyScenario[] }[] {
   const N = plan.weeks.length;
-  const tw = plan.weeks.find((w) => w.test)?.index;
+  // P5 (D35): skup tokova mreže E ostaje skup 06d — nedelja pre testa samo za test plana po osećaju (kontrolni test plana
+  // sa rezultatom ne dodaje tokove; redni brojevi tokova i referentni heševi ostaju isti).
+  const tw = plan.paceBasis === 'feel' ? plan.weeks.find((w) => w.test)?.index : undefined;
   const weeks = [1, ...(tw !== undefined && tw - 1 >= 2 ? [tw - 1] : [])];
   const wedOf = (i: number): string => {
     let d = plan.weeks[i - 1]!.startDate;

@@ -152,8 +152,9 @@ export function checkPlan(
   const beginner = p.input.experience === 'beginner';
   // Mreže: plan po osećaju tačno kad ulaz nema rezultata (ostali rezultati u mrežama su pouzdani).
   const feel = p.input.recentResult === null;
-  // D27/D32: test samo u planu po osećaju koji nije početnik.
-  const withTest = feel && !beginner;
+  // D27/D32: test u planu po osećaju koji nije početnik; D35 (P5 F1): kontrolni test plana sa rezultatom od 12 nedelja.
+  const control = !feel && !beginner && p.weeks.length >= 12;
+  const withTest = (feel && !beginner) || control;
   const oneSlot = n === 3 || beginner;
   const longMaxSec = beginner ? 5400 : 6300;
   const time10 = Math.floor((longMaxSec / p.paces.E.slow) * 10 + EPS);
@@ -165,7 +166,10 @@ export function checkPlan(
   const [wu, cd] = band(p.input.currentWeeklyKm, beginner);
   const phases = p.weeks.map((w) => w.phase);
   const B = phases.filter(isBuild).length;
-  const lastBase = phases.lastIndexOf('base') + 1;
+  // D27: poslednja nedelja baze; D35: poslednja ne-rasteretna nedelja razvoja.
+  const lastBase = control
+    ? Math.max(...p.weeks.filter((w) => w.phase === 'development' && !w.deload).map((w) => w.index))
+    : phases.lastIndexOf('base') + 1;
   const first = (k: number): boolean => k === 1 || phases[k - 2] !== phases[k - 1];
   const tSlot = oneSlot ? 'q1' : 'q2';
   let run = 0;
@@ -252,6 +256,43 @@ export function checkPlan(
         if (!wo.rpe || wo.rpe.min !== r[0] || wo.rpe.max !== r[1] || wo.rpe.cue !== r[2])
           no('RPE', `${tag} ${zone}`);
       } else if (wo.rpe !== undefined) no('RPE', `${tag} RPE u planu sa rezultatom`);
+    }
+    // D36 (P5 F3, nezavisno): nedelja izgradnje i tapera posle uvoda — tačno jedan lagan dan sa ubrzanjima (baza i
+    // početnik 4 × 20 s, posle 6 × 20 s), na laganom danu najudaljenijem od poslednjeg zahtevnog dana (pri jednakom
+    // razmaku raniji); dužina dana ostaje lagan dan (km = zbir segmenata).
+    if (w.phase !== 'race') {
+      const easyDays = w.days.filter((d) => d.role === 'easy');
+      const withS = w.days.filter((d) => d.workout.segments.some((x) => x.kind === 'stride'));
+      const intro = beginner && w.index <= 2;
+      const want = intro || easyDays.length === 0 ? 0 : 1;
+      if (withS.length !== want) no('STRIDES_ONE', `${tag} ${withS.length}`);
+      if (want === 1 && withS.length === 1) {
+        const d = withS[0]!;
+        const st = d.workout.segments.filter((x) => x.kind === 'stride');
+        const reps = beginner || w.phase === 'base' ? 4 : 6;
+        if (d.role !== 'easy' || st.length !== reps || st.some((x) => x.sec !== 20))
+          no('STRIDES_DOSE', `${tag} ${st.length}`);
+        const all = p.weeks
+          .flatMap((x) => x.days)
+          .filter((x) => x.hard)
+          .map((x) => x.date);
+        const prevW = p.weeks[w.index - 2];
+        const hardBefore = (date: string): number => {
+          const prior = all.filter(
+            (h) => h < date && (h >= w.startDate || (prevW && h >= prevW.startDate))
+          );
+          if (prior.length > 0) return Math.min(...prior.map((h) => daysBetween(h, date)));
+          const own = w.days
+            .filter((x) => x.hard)
+            .map((x) => daysBetween(x.date, date) + 7)
+            .filter((g) => g > 0);
+          return own.length > 0 ? Math.min(...own) : Infinity;
+        };
+        const best = [...easyDays].sort(
+          (a, b) => hardBefore(b.date) - hardBefore(a.date) || a.date.localeCompare(b.date)
+        )[0]!;
+        if (best.date !== d.date) no('STRIDES_DAY', `${tag} ${d.date} ≠ ${best.date}`);
+      }
     }
     const quality = w.days.filter((d) => d.workout.kind === 'quality');
     const hasTest = w.days.some((d) => d.workout.kind === 'test');

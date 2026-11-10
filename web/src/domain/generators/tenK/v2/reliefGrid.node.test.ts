@@ -154,9 +154,11 @@ describe('A17: polje reduced, prinudno rasterećenje, nov start, stari korak', (
       false
     ]);
     expect(st.returnFrom).toEqual({ week: 6, share: A.painEasyFactor });
+    // P5 (D35): kontrolni test u nedelji bola otpada (A13, TEST_MOVED).
     expect(mid.reasons.filter((x) => x.applied).map((x) => x.condition)).toEqual([
       'PAIN',
-      'OVER_EXECUTION'
+      'OVER_EXECUTION',
+      'TEST_MOVED'
     ]);
     expect(deloads(mid.plan)).toEqual([4, 8, 11]);
     expect(a17Of(mid)).toBe(false);
@@ -261,7 +263,7 @@ describe('A17: polje reduced, prinudno rasterećenje, nov start, stari korak', (
     ];
     const dropped = new Map<number, number>();
     const f = framesFor(
-      baseFrames(chk.input.startDate, chk.weeks, false)!,
+      baseFrames(chk.input.startDate, chk.weeks, null)!,
       q.pattern,
       chk.input.runDays,
       chk.input.raceDate,

@@ -1,0 +1,17 @@
+base ok                  {"ok":176}
+base skip                {"ok":176,"F2 primenjen":105,"doza = kontrola":93,"cilj po pravilu = kontrola":105,"nijedan slot ne raste":105,"F2 applied:false":71,"doza < kontrola":82,"cilj po pravilu ≠ kontrola":71,"doza > kontrola":1}
+base rpe9                {"ok":176,"F2 primenjen":176,"doza = kontrola":141,"cilj po pravilu = kontrola":176,"nijedan slot ne raste":176,"doza < kontrola":34,"doza > kontrola":1}
+base skip+umor           {"ok":176,"F2 applied:false":175,"doza < kontrola":173,"cilj po pravilu ≠ kontrola":175,"F2 primenjen":1,"doza = kontrola":3,"cilj po pravilu = kontrola":1,"nijedan slot ne raste":1}
+base rpe9+bol            {"ok":176,"F2 applied:false":176,"doza < kontrola":176,"cilj po pravilu = kontrola":176}
+specific                 {"bez 2 kvaliteta":6}
+base                     {"bez 2 kvaliteta":16}
+development ok           {"ok":120}
+development skip         {"ok":120,"F2 primenjen":63,"doza = kontrola":49,"cilj po pravilu = kontrola":63,"nijedan slot ne raste":63,"F2 applied:false":57,"doza < kontrola":71,"cilj po pravilu ≠ kontrola":57}
+development rpe9         {"ok":120,"F2 primenjen":120,"doza = kontrola":93,"cilj po pravilu = kontrola":120,"nijedan slot ne raste":120,"doza < kontrola":27}
+development skip+umor    {"ok":120,"F2 applied:false":120,"doza > kontrola":24,"cilj po pravilu ≠ kontrola":120,"doza < kontrola":94,"doza = kontrola":2}
+development rpe9+bol     {"ok":120,"F2 applied:false":120,"doza = kontrola":24,"cilj po pravilu = kontrola":120,"doza < kontrola":96}
+specific ok              {"ok":186}
+specific skip            {"ok":186,"F2 primenjen":98,"doza = kontrola":62,"cilj po pravilu = kontrola":98,"nijedan slot ne raste":98,"doza < kontrola":120,"F2 applied:false":88,"cilj po pravilu ≠ kontrola":88,"doza > kontrola":4}
+specific rpe9            {"ok":186,"F2 primenjen":186,"doza = kontrola":59,"cilj po pravilu = kontrola":186,"nijedan slot ne raste":186,"doza < kontrola":121,"doza > kontrola":6}
+specific skip+umor       {"ok":186,"F2 applied:false":186,"doza < kontrola":182,"cilj po pravilu ≠ kontrola":186,"doza = kontrola":4}
+specific rpe9+bol        {"ok":186,"F2 applied:false":186,"doza < kontrola":186,"cilj po pravilu = kontrola":184,"cilj po pravilu ≠ kontrola":2}

@@ -89,7 +89,7 @@ describe('D4: faze', () => {
     if (!r.ok) return;
     expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(15));
     expect(r.plan.policyId).toBe('10k-v2');
-    expect(r.plan.policyVersion).toBe('10k-v2.11.0');
+    expect(r.plan.policyVersion).toBe('10k-v2.12.0');
   });
 });
 
@@ -113,9 +113,9 @@ describe('D27: gde je test 5 km', () => {
       expect(testWeekOf(ph), `N=${N}`).toBe(want[N]);
       expect(ph[want[N]! - 1]).toBe('base');
       expect(ph[want[N]!]).toBe('development');
-      const f = periodize('2026-11-02', N, true)!;
+      const f = periodize('2026-11-02', N, 'feel')!;
       expect(f.filter((w) => w.test).map((w) => w.index)).toEqual([want[N]]);
-      expect(periodize('2026-11-02', N)!.some((w) => 'test' in w)).toBe(false);
+      expect(periodize('2026-11-02', N, null)!.some((w) => 'test' in w)).toBe(false);
     }
     // Nedelja testa je rasterećenje u 12, 13 i 14 ned (D5: [4, …]) — test tada zamenjuje kvalitet
     // rasterećenja.

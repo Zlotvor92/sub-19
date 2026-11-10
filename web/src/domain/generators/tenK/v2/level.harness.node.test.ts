@@ -87,6 +87,12 @@ interface Changed {
 export const CHANGED_P3 = JSON.parse(
   readFileSync(fileURLToPath(new URL('./segmentP3.changed-38fd091.json', import.meta.url)), 'utf8')
 ) as Changed;
+/** P5 (10k-v2.12.0, D35–D38): planovi generatora i tokovi trajnih mreža adaptacije koje P5 menja prema 72003c1
+    (segmentP5.changed-72003c1.json, isti oblik). Plan/tok koji ni 10K-08 ni P3 nisu menjali ima na 72003c1 stanje
+    b9c4728 — spaja se u CHANGED_08 ispod P3 i 10K-08 (njihova stanja b9c4728 imaju prednost). */
+export const CHANGED_P5 = JSON.parse(
+  readFileSync(fileURLToPath(new URL('./segmentP5.changed-72003c1.json', import.meta.url)), 'utf8')
+) as Changed;
 const CHANGED_08_ONLY = JSON.parse(
   readFileSync(fileURLToPath(new URL('./segment08.changed-b9c4728.json', import.meta.url)), 'utf8')
 ) as Changed;
@@ -94,11 +100,18 @@ const CHANGED_08_ONLY = JSON.parse(
 export const changed08Gen = (id: string): boolean => CHANGED_08_ONLY.gen[id] !== undefined;
 export const CHANGED_08: Changed = {
   against: CHANGED_08_ONLY.against,
-  gen: { ...CHANGED_P3.gen, ...CHANGED_08_ONLY.gen },
+  gen: { ...CHANGED_P5.gen, ...CHANGED_P3.gen, ...CHANGED_08_ONLY.gen },
   flows: Object.fromEntries(
-    [...new Set([...Object.keys(CHANGED_08_ONLY.flows), ...Object.keys(CHANGED_P3.flows)])].map(
-      (n) => [n, { ...CHANGED_P3.flows[n], ...CHANGED_08_ONLY.flows[n] }]
-    )
+    [
+      ...new Set([
+        ...Object.keys(CHANGED_08_ONLY.flows),
+        ...Object.keys(CHANGED_P3.flows),
+        ...Object.keys(CHANGED_P5.flows)
+      ])
+    ].map((n) => [
+      n,
+      { ...CHANGED_P5.flows[n], ...CHANGED_P3.flows[n], ...CHANGED_08_ONLY.flows[n] }
+    ])
   )
 };
 /** 10K-08: tok mreže `net` je promenjen prema b9c4728. */

@@ -353,6 +353,33 @@ export function longWorkout(km: number, p: Paces): Workout {
   );
 }
 
+/** D36 (P5 F3): lagan dan sa ubrzanjima na kraju — dan ostaje `km` (dužina iz lengths.ts); lagan deo = km − ubrzanja
+    i oporavak; ubrzanja `reps` × strides.sec R tempom, oporavak isti metraž džogom (kao dan pred trku, D8/D14). Ubrzanja
+    nisu rad zone (workKm). */
+export function easyStridesWorkout(km: number, p: Paces, reps: number): Workout {
+  const sec = P.strides.sec;
+  const strideKm = fromSec(sec, p.R);
+  const rec = { m: Math.round(strideKm * 1000) };
+  const tail100 = reps * km100(strideKm) + (reps - 1) * km100(rec.m / 1000);
+  const easyKm = (km100(km) - tail100) / 100;
+  const segments: Segment[] = [distEasy('easy', easyKm, p)];
+  for (let i = 0; i < reps; i++) {
+    if (i > 0) segments.push(recoverySegment(rec, p));
+    segments.push(seg('stride', 'R', strideKm, sec, p.R, 'estimated', 'exact'));
+  }
+  return assemble(
+    'easy',
+    null,
+    `Lagano ${fmtKm(km)} km + ${reps} × ${sec} s ubrzanja`,
+    [
+      { kind: 'easy', km: easyKm },
+      { kind: 'reps', zone: 'R', reps, rep: { sec }, recovery: rec, stride: true }
+    ],
+    segments,
+    null
+  );
+}
+
 /** D8: lagan trening zadat vremenom (35 min E). */
 export function easyTimeWorkout(sec: number, p: Paces): Workout {
   return assemble(

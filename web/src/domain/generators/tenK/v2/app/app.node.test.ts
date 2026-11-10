@@ -131,7 +131,7 @@ describe('generisanje kroz adapter', () => {
       const v2 = v2Of(p);
       expect(p.meta).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.11.0',
+        policyVersion: '10k-v2.12.0',
         raceDistM: 10000,
         raceDate: RACE,
         start: START,
@@ -259,7 +259,19 @@ describe('generisanje kroz adapter', () => {
       for (const b of d.structure!.blocks)
         if (b.step.kind === 'work') expect(b.step.paceSec).toBeGreaterThan(0);
     }
-    expect(res.dated.some((d) => d.tag === 'test')).toBe(false);
+    // D35 (P5 F1): plan sa rezultatom od 12 nedelja ima jedan kontrolni test; napomena traži unos rezultata.
+    const ctl = res.dated.filter((d) => d.tag === 'test');
+    expect(ctl).toHaveLength(1);
+    expect(ctl[0]!.structure!.kind).toBe('Test');
+    // D36 (P5 F3): lagan dan sa ubrzanjima — struktura lagan deo + ubrzanja, propisan tempo (plan sa rezultatom).
+    const st = res.dated.filter((d) => d.structure?.blocks.some((b) => b.step.kind === 'stride'));
+    expect(st.length).toBeGreaterThan(5);
+    for (const d of st.filter((x) => x.tag === 'lako')) {
+      expect(d.structure!.blocks[0]!.step.kind).toBe('easy');
+      const b = d.structure!.blocks.find((x) => x.step.kind === 'stride')!;
+      expect([4, 6]).toContain(b.reps);
+      expect(b.step.paceSec).toBeGreaterThan(0);
+    }
   });
 
   it('degenerisan ulaz → odbijanje sa razlozima v2 doslovno, bez plana', () => {
@@ -539,9 +551,19 @@ describe('izvoz na sat iz strukture', () => {
     const quality = plan.dated.filter(
       (d) => d.date <= '2026-11-23' && (d.tag === 'tempo' || d.tag === 'int')
     );
-    expect(b.skipped).toBe(quality.length);
-    expect(b.skippedReasons).toHaveLength(quality.length);
-    for (const r of b.skippedReasons!) expect(r).toContain(SKIP_FEEL);
+    // D36 (P5 F3): lagan dan sa ubrzanjima u planu po osećaju — tempo ubrzanja je procena (kao dan pred trku), dan se ne
+    // šalje (razlog: procena), lagani dani bez ubrzanja se šalju.
+    const strides = plan.dated.filter(
+      (d) =>
+        d.date >= START &&
+        d.date <= '2026-11-23' &&
+        d.tag === 'lako' &&
+        d.structure?.blocks.some((x) => x.step.kind === 'stride')
+    );
+    expect(strides.length).toBeGreaterThan(0);
+    expect(b.skipped).toBe(quality.length + strides.length);
+    expect(b.skippedReasons).toHaveLength(quality.length + strides.length);
+    expect(b.skippedReasons!.filter((r) => r.includes(SKIP_FEEL))).toHaveLength(quality.length);
     expect(b.events.every((e) => !/RPE/.test(e.description))).toBe(true);
     expect(b.events.some((e) => plan.byId.get(e.externalId.slice(6))?.tag === 'test')).toBe(false);
   });

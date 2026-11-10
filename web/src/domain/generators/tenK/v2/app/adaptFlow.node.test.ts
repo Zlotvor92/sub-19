@@ -507,7 +507,7 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
     expect(TEN_K_V2_GENERATOR.planPolicy(r.result).status).toBe('current');
   });
 
-  it('06i/3i/10K-07/10K-08/P3 (10k-v2.11.0): sačuvan plan 10k-v2.4.0 … 10k-v2.5.2, 10k-v2.6.0 … 10k-v2.10.0 ostaje plan 10K v2 i prilagođava se pravilima 11.0 (rezultat nosi 10k-v2.11.0); druge verzije → UNKNOWN_POLICY', () => {
+  it('06i/3i/10K-07/10K-08/P3/P5 (10k-v2.12.0): sačuvan plan 10k-v2.4.0 … 10k-v2.5.2, 10k-v2.6.0 … 10k-v2.11.0 ostaje plan 10K v2 i prilagođava se pravilima 12.0 (rezultat nosi 10k-v2.12.0); druge verzije → UNKNOWN_POLICY', () => {
     expect(KNOWN_VERSIONS).toEqual([
       '10k-v2.4.0',
       '10k-v2.4.1',
@@ -522,7 +522,8 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       '10k-v2.8.1',
       '10k-v2.9.0',
       '10k-v2.10.0',
-      '10k-v2.11.0'
+      '10k-v2.11.0',
+      '10k-v2.12.0'
     ]);
     const cur = planOf(WITH_RESULT);
     const as = (p: GenPlanState, version: string): GenPlanState => ({
@@ -547,7 +548,8 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       '10k-v2.8.0',
       '10k-v2.8.1',
       '10k-v2.9.0',
-      '10k-v2.10.0'
+      '10k-v2.10.0',
+      '10k-v2.11.0'
     ]) {
       const old = as(cur, version);
       expect(isTenKV2Plan(old), version).toBe(true);
@@ -561,9 +563,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
       const saved = stampForStorage(r.result);
       expect(saved.meta, version).toMatchObject({
         policyId: '10k-v2',
-        policyVersion: '10k-v2.11.0'
+        policyVersion: '10k-v2.12.0'
       });
-      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.11.0');
+      expect(v2Of(saved).policyVersion, version).toBe('10k-v2.12.0');
       expect(isTenKV2Plan(saved), version).toBe(true);
       // Posle nedelje sidra 4 rast od 70 % nivoa pre bola (42,4 → 29,7), ned 5 = 32,7 (4.0: 27,6); ned 5 je
       // izgradnja (A17 bez dejstva: ned 4 je rasterećenje).
@@ -572,9 +574,9 @@ describe('vraćanje verzije, promena cilja, forma, članovi (b)', () => {
           .weeks.slice(3, 5)
           .map((w) => w.targetKm),
         version
-      ).toEqual([35.7, 32.5]); // 10K-08 (T1): 35,9 / 32,7
+      ).toEqual([35.9, 32.7]); // 10K-08 (T1): 35,7 / 32,5; P5 (D37 veća T doza): 35,9 / 32,7
       expect(r.reasons.find((x) => x.condition === 'PAIN')!.message, version).toContain(
-        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,5 km).' // 10K-08 (T1): 29,7
+        'Posle nedelje 4 rast kreće od 70 % nivoa pre bola (29,7 km).' // 10K-08 (T1): 29,5; P5: 29,7
       );
       // Isto prilagođavanje kao plan tekuće verzije (A15: buduće nedelje po tekućim pravilima).
       expect(v2Of(r.result), version).toEqual(v2Of(fresh.result));

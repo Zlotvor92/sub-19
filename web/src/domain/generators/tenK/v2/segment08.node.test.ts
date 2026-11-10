@@ -181,7 +181,8 @@ describe('T6', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const t9 = r.plan.weeks[8]!.days.find((d) => d.workout.dose?.zone === 'T')!.workout.dose!;
-    expect(t9.doseM).toBe(2000);
+    // P5 (D37): početni nivo T 80 % plafona → 3 × 1000 m (bilo 2 × 1000 m).
+    expect(t9.doseM).toBe(3000);
     expect(errors(r.plan)).toEqual([]);
   });
 

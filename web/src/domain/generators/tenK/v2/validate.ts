@@ -35,9 +35,10 @@ import {
   isBuildPhase,
   periodize,
   phasesOf,
+  testKindOf,
   testWeekOf
 } from './periodize.ts';
-import { capPct, planRule, TEN_K_V2_POLICY as P } from './policy.ts';
+import { capPct, planRule, startShare, TEN_K_V2_POLICY as P } from './policy.ts';
 import { hasSpecificTypes, specificTypeNext, typedWeek, typeOfWeek } from './specific.ts';
 import {
   capM,
@@ -64,6 +65,7 @@ import {
   restDaysWeek,
   sharpenerReps,
   B_NOT_FIT,
+  stridesChoice,
   T1_DELOAD,
   T1_OFF
 } from './week.ts';
@@ -222,6 +224,10 @@ export function validatePlan(
   const ad = plan.adaptation;
   const steps = ad?.steps ?? [];
   const mixed = new Set(ad?.mixedWeeks ?? []);
+  /** D38 (P5 F2): nedelje izgradnje bez rasta doze (korak holdDose). */
+  const holds = new Set(
+    (ad?.steps ?? []).flatMap((s) => (s.holdDose !== undefined ? [s.holdDose] : []))
+  );
   const checked = (w: PlanWeek): boolean => !mixed.has(w.index);
   /** 06f (pouka 4, stalni uslov 4; kao maraton MAR-07b): zaštićen dan — ≤ asOf adaptacije, zaključan (ručna izmena)
       ili urađen. Provere koje sude jednom danu po tempu ili strukturi ga preskaču (kao LIMITS): validator ne sudi
@@ -238,7 +244,9 @@ export function validatePlan(
   const pw = (w: { index: number }): Paces => (pace ? pacesAt(pace, steps, w.index) : p);
   const feelW = (w: { index: number }): boolean =>
     pace ? basisAt(pace, steps, w.index) === 'feel' : feel;
-  const base0 = pace ? periodize(input.startDate, N, pace.kind === 'feel' && rule.feelTest) : null;
+  const base0 = pace
+    ? periodize(input.startDate, N, testKindOf(pace.kind === 'feel', rule, N))
+    : null;
   /** A17: ukinuta redovna rasterećenja (isti podatak kao konstruktor, steps.framesFor). */
   const dropped = new Map<number, number>();
   const frames =
@@ -737,6 +745,51 @@ export function validatePlan(
     }
   }
 
+  // --- D36 (P5 F3): ubrzanja — u nedelji izgradnje, rasterećenja i tapera tačno jedan lagan dan sa ubrzanjima (isti
+  // izbor kao konstruktor, week.stridesChoice), struktura lagan deo + reps × 20 s R (oporavak isti metraž), dužina dana
+  // nepromenjena (korak 0,1 km); van tog dana ubrzanja samo dan pred trku. Mešovite nedelje: ne sudi se.
+  for (const [i, w] of weeks.entries()) {
+    if (w.phase === 'race' || !checked(w)) continue;
+    const prevHard =
+      (weeks[i - 1]?.days ?? [])
+        .filter((d) => d.hard)
+        .map((d) => d.date)
+        .sort()
+        .pop() ?? null;
+    const c = stridesChoice(w.days, w, rule, prevHard);
+    for (const d of w.days) {
+      const st = d.workout.segments.filter((x) => x.kind === 'stride');
+      if (st.length === 0) {
+        if (c && d.date === c.date && !protectedDay(d))
+          err(
+            'STRIDES',
+            `Lagan dan bez ubrzanja, a izbor D36 je ovaj dan (${c.reps} × ${P.strides.sec} s).`,
+            w.index,
+            d.date
+          );
+        continue;
+      }
+      if (protectedDay(d)) continue;
+      const easy = d.workout.segments.filter((x) => x.kind === 'easy');
+      if (
+        !c ||
+        d.date !== c.date ||
+        d.role !== 'easy' ||
+        st.length !== c.reps ||
+        st.some((x) => x.sec !== P.strides.sec || x.zone !== 'R') ||
+        easy.length !== 1 ||
+        d.workout.segments[0] !== easy[0] ||
+        Math.abs(d.workout.km * 10 - to10(d.workout.km)) > EPS
+      )
+        err(
+          'STRIDES',
+          `Ubrzanja: jedan lagan dan nedelje, ${c ? `${c.reps} × ${P.strides.sec} s na danu ${c.date}` : 'ova nedelja ih nema'} (D36).`,
+          w.index,
+          d.date
+        );
+    }
+  }
+
   // --- Pouka 35 (10k-v2.6.0): dva dana kvaliteta samo kad dugi ostaje najduži (isti predikat kao week.ts);
   // nedelja sa jednim kvalitetom neizvodljiva (napomena konstruktora) → upozorenje. C11 (10K-08): sve nedelje osim
   // trkačke (i taper; rasterećenje ima najviše jedan kvalitet).
@@ -1121,7 +1174,7 @@ export function validatePlan(
             b.index
           );
         else if (db.doseM === da.doseM) {
-          if (nl && doseOf(nl) <= capM(db.zone, b.targetKm))
+          if (nl && doseOf(nl) <= capM(db.zone, b.targetKm) && !holds.has(b.index))
             err(
               'DOSE_STALL',
               `${role}: sledeći nivo ${doseOf(nl)} m staje u plafon, a nije uzet (D12).`,
@@ -1170,7 +1223,7 @@ export function validatePlan(
         if (tb) prevType[tb] = b;
         else prevMain = b;
       }
-    }
+    } else if (dropped && !tb && !noQuality(b)) prevMain = b; // P5 O1: test nedelja sa spuštenim slotom je referenca.
     const prevA = a;
     a = b;
     if (!prevA) continue;
@@ -1182,7 +1235,7 @@ export function validatePlan(
       (rule.quality === 1 || b.notes.some(isP35Drop)) &&
       slotDose(b, 'q1')?.step === 'repeat' &&
       b.notes.some((n) => n.includes('ponovljen'));
-    if (hasQuality(b) && qualityKey(a0) === qualityKey(b) && !oneSlotRepeat)
+    if (hasQuality(b) && qualityKey(a0) === qualityKey(b) && !oneSlotRepeat && !holds.has(b.index))
       err('IDENTICAL_WEEKS', `Isti kvalitet kao nedelja ${wl(a0.index)} (D12).`, b.index);
     // D12/D22: baza bez platoa (tvrdo) — T slota raste ili, kad sledeći nivo ne staje, menja strukturu.
     if (a0.phase === 'base' && b.phase === 'base' && !dropped) {
@@ -1201,6 +1254,11 @@ export function validatePlan(
           );
         const ok =
           tb.doseM > ta.doseM ||
+          (holds.has(b.index) &&
+            (!sameStructure(ta.structure, tb.structure) ||
+              !structuresForDose(ta.ladder as LadderId, ta.doseM).some(
+                (x) => !sameStructure(x, ta.structure)
+              ))) ||
           (blocked && (!sameStructure(ta.structure, tb.structure) || onlyStructure));
         if (!ok)
           err(
@@ -1218,7 +1276,7 @@ export function validatePlan(
     const cap = capM(zoneOf(ladder), targetKm);
     const lv = ladderLevels(ladder, rule.beginner).map(doseOf);
     if (rule.beginner) return lv[0]!;
-    return lv.filter((m) => m <= P.startLevel.capShare * cap + EPS).pop() ?? lv[0]!;
+    return lv.filter((m) => m <= startShare(zoneOf(ladder)) * cap + EPS).pop() ?? lv[0]!;
   };
   let lastWeek: Record<'q1' | 'q2', PlanWeek | null> = { q1: null, q2: null };
   let skip = { q1: false, q2: false };
@@ -1253,16 +1311,28 @@ export function validatePlan(
       let want = startM(ladder, b.targetKm);
       // Nova zona sa prenosom (RP posle I, kod 3 dana posle T): najmanji nivo ≥ max(D16, poslednja doza).
       if (da && carry) {
+        // D38: nedelja bez rasta doze — prelaz nosi poslednju dozu (bez podizanja na početni nivo).
+        if (holds.has(b.index)) want = 0;
         const lv = ladderLevels(ladder, rule.beginner)
           .map(doseOf)
           .find((m) => m >= Math.max(want, da.doseM));
         if (lv === undefined || lv > capM(zoneOf(ladder), b.targetKm)) continue;
         want = lv;
       }
-      if (db.doseM !== want)
+      // D37 (P-b): T i I smeju niži nivo, najmanje nivo po 60 % (D16) — kad bi veći stvorio nedelju pouke 35 (odluka
+      // konstruktora, quality.pickBuild; validator proverava opseg).
+      const z = zoneOf(ladder);
+      const floor60 =
+        ladderLevels(ladder, rule.beginner)
+          .map(doseOf)
+          .filter((m) => m <= P.startLevel.p35FloorShare * capM(z, b.targetKm) + EPS)
+          .pop() ?? ladderLevels(ladder, rule.beginner).map(doseOf)[0]!;
+      const p35Range =
+        !rule.beginner && (z === 'T' || z === 'I') && db.doseM >= floor60 && db.doseM < want;
+      if (db.doseM !== want && !p35Range)
         err(
           'START_LEVEL',
-          `${role}: početni nivo ${ladder} ${db.doseM} m ≠ ${want} m (${rule.beginner ? 'prvi nivo, D28' : '≤ 60 % plafona, D16'}).`,
+          `${role}: početni nivo ${ladder} ${db.doseM} m ≠ ${want} m (${rule.beginner ? 'prvi nivo, D28' : `≤ ${Math.round(startShare(zoneOf(ladder)) * 100)} % plafona, D16/D37`}).`,
           b.index
         );
     }
@@ -1560,6 +1630,9 @@ export function validatePlan(
           if (r === 'q2' && specT(w) === 'B') continue;
           const d = slotDose(w, r);
           // 06f (pouka 35): drugi slot nedelje pouke 35 je lagan — njegovo stanje ostaje nepoznato.
+          // P5: nedelja testa (D27/D35) ne određuje stanje Q1 — progresija se nastavlja od stanja pre testa, pa posle
+          // mešovite nedelje stanje ostaje nepoznato (kao konstruktor: stanje iz upisanih dana mešovite nedelje).
+          if (!d && r === 'q1' && w.days.some((x) => x.role === 'test')) continue;
           if (d || r === 'q1' || !w.notes.some(isP35Drop)) slotKnown[r] = true;
           lastSlot[r] = d ?? lastSlot[r];
           if (d?.zone === 'T') lastTDose = d.doseM;
@@ -1948,26 +2021,39 @@ export function validatePlan(
     } else if (plan.goal) err('GOAL', 'Bez cilja nema ocene (D3).');
   }
 
-  // --- D27: plan po osećaju ima tačno jedan test, u poslednjoj nedelji baze (dan: ROLES); plan sa
-  // rezultatom nijedan; D32: početnik nijedan.
-  const withTest = feel && rule.feelTest;
-  const tw = withTest ? testWeekOf(phasesOf(N)) : 0;
+  // --- D27: plan po osećaju ima tačno jedan test, u poslednjoj nedelji baze (dan: ROLES); D35 (P5 F1): plan sa
+  // rezultatom (ne početnik) od test.controlMinWeeks nedelja tačno jedan kontrolni test, u poslednjoj ne-rasteretnoj
+  // nedelji razvoja; kraći plan sa rezultatom i početnik (D32) nijedan.
+  const testKind = testKindOf(feel, rule, N);
+  const phases0 = phasesOf(N);
+  const tw = testKind
+    ? testWeekOf(
+        phases0,
+        testKind,
+        phases0.flatMap((_, i) => (weeks[i]?.deload ? [i + 1] : []))
+      )
+    : 0;
+  const withTest = testKind !== null && tw > 0;
   const tests = weeks.flatMap((w) => w.days.filter((d) => d.role === 'test').map(() => w.index));
   if (pace) {
-    // Segment 04 (A13): najviše jedan test, samo plan po osećaju koji nije početnik, u nedelji izgradnje po
-    // osećaju; oznaka nedelje ⇔ dan testa (mešovite nedelje: samo dan).
+    // Segment 04 (A13): najviše jedan test, samo plan koji ga ima po D27/D35, u nedelji izgradnje (plan po osećaju: po
+    // osećaju); oznaka nedelje ⇔ dan testa (mešovite nedelje: samo dan).
     const tw0 = tests[0];
     // A13b (10k-v2.8.0): zaštićen dan testa (≤ asOf, zaključan, urađen) je upisan kakav jeste (A11) — ne sudi se po
     // osnovi tempa ni fazi nedelje (npr. nov rezultat posle zaključanog testa); najviše jedan test važi i dalje.
     const tDay = weeks.flatMap((w) => w.days).find((d) => d.role === 'test');
+    const kind0 = testKindOf(pace.kind === 'feel', rule, N);
     const bad =
       tests.length > 1 ||
-      (tests.length === 1 && (pace.kind !== 'feel' || !rule.feelTest)) ||
+      (tests.length === 1 && kind0 === null) ||
       (tw0 !== undefined &&
         !(tDay && protectedDay(tDay)) &&
-        (!feelW({ index: tw0 }) || !isBuildPhase(weeks[tw0 - 1]!.phase)));
+        ((kind0 === 'feel' && !feelW({ index: tw0 })) || !isBuildPhase(weeks[tw0 - 1]!.phase)));
     if (bad)
-      err('TEST', 'Adaptiran plan: najviše jedan test, u nedelji izgradnje po osećaju (A13, D32).');
+      err(
+        'TEST',
+        'Adaptiran plan: najviše jedan test, u nedelji izgradnje (po osećaju: nedelja po osećaju) (A13, D32, D35).'
+      );
     for (const w of weeks)
       if (
         checked(w) &&
@@ -1978,15 +2064,20 @@ export function validatePlan(
     err(
       'TEST',
       withTest
-        ? `Plan po osećaju: tačno jedan test, u poslednjoj nedelji baze ${wl(tw)} (sada: ${tests.map(wl).join(', ') || 'nijedan'}) (D27).`
+        ? testKind === 'feel'
+          ? `Plan po osećaju: tačno jedan test, u poslednjoj nedelji baze ${wl(tw)} (sada: ${tests.map(wl).join(', ') || 'nijedan'}) (D27).`
+          : `Plan sa rezultatom: tačno jedan kontrolni test, u poslednjoj ne-rasteretnoj nedelji razvoja ${wl(tw)} (sada: ${tests.map(wl).join(', ') || 'nijedan'}) (D35).`
         : feel
           ? 'Početnik nema test (D32).'
-          : 'Plan sa rezultatom nema test (D27).'
+          : `Plan sa rezultatom kraći od ${P.test.controlMinWeeks} nedelja i početnik nemaju test (D35).`
     );
   if (!pace)
     for (const w of weeks)
-      if ((w.test === true) !== (w.index === tw) || (w.test !== undefined && w.test !== true))
-        err('TEST', `Oznaka nedelje testa ne odgovara D27.`, w.index);
+      if (
+        (w.test === true) !== (withTest && w.index === tw) ||
+        (w.test !== undefined && w.test !== true)
+      )
+        err('TEST', `Oznaka nedelje testa ne odgovara D27/D35.`, w.index);
 
   // --- Segment 04 (A3, A4): ograničenja koraka po datumima (i u mešovitim nedeljama; zaključan dan i trka
   // izuzeti) — dan odmora bez treninga; zabrana kvaliteta / bol / odmor → bez kvaliteta, testa i oštrenja;

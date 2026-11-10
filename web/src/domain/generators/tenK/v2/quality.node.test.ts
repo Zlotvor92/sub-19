@@ -32,6 +32,8 @@ const steady = (w: PlanWeek): boolean =>
   !w.deload && (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific');
 /** 06f (pouka 35): nedelja izgradnje sa drugim danom kvaliteta laganim (napomena week.ts). */
 const p35 = (w: PlanWeek): boolean => w.notes.some((n) => n.startsWith(P35_DROP));
+/** D27/D35: nedelja testa (test na danu Q1 umesto kvaliteta). */
+const hasTest = (w: PlanWeek): boolean => w.days.some((d) => d.role === 'test');
 const slot = (w: PlanWeek, r: 'q1' | 'q2'): Dose | undefined =>
   w.days.find((d) => d.role === r)?.workout.dose ?? undefined;
 const same = (a: Structure, b: Structure): boolean => JSON.stringify(a) === JSON.stringify(b);
@@ -60,10 +62,12 @@ const ZONE: Record<string, keyof typeof CAP> = {
   I: 'I',
   RP: 'RP'
 };
-/** D16 nezavisno: najviši nivo ≤ 60 % plafona zone za cilj nedelje, najmanje prvi nivo. */
+/** D16 nezavisno: najviši nivo ≤ 60 % plafona zone za cilj nedelje, najmanje prvi nivo; D37 (P5 F4): T i I 80 %. */
+const START_SHARE = { R: 0.6, I: 0.8, T: 0.8, RP: 0.6 } as const;
 const startM = (ladder: string, targetKm: number): number =>
-  LADDER[ladder]!.filter((m) => m <= 0.6 * capOf(ZONE[ladder]!, targetKm) + 1e-6).pop() ??
-  LADDER[ladder]![0]!;
+  LADDER[ladder]!.filter(
+    (m) => m <= START_SHARE[ZONE[ladder]!] * capOf(ZONE[ladder]!, targetKm) + 1e-6
+  ).pop() ?? LADDER[ladder]![0]!;
 const PYRAMID: Structure = { form: 'pyramid', repsM: [1200, 1000, 800] };
 
 /** Nezavisno: postoji li druga struktura iste doze po pravilu D10/D22/D30 (T ≥ 1000 m i RP ≥ 800 m,
@@ -246,6 +250,13 @@ describe('D10/D22/D30: lestvice i strukture', () => {
   it('kvalitet po fazama: 4–6 dana Q1 R/I/RP + Q2 T; 3 dana (D18) jedan slot T kont. / T cruise / RP', () => {
     for (const p of plans)
       for (const w of p.weeks.filter(steady)) {
+        // D35 (P5 F1): kontrolni test umesto Q1 (3 dana: umesto jedinog kvaliteta).
+        if (hasTest(w)) {
+          expect(slot(w, 'q1')).toBeUndefined();
+          if (one(p) || p35(w)) continue;
+          expect(SLOT[w.phase][1]).toContain(slot(w, 'q2')!.ladder);
+          continue;
+        }
         if (one(p)) {
           expect(SLOT_ONE[w.phase]).toContain(slot(w, 'q1')!.ladder);
           expect(slot(w, 'q2')).toBeUndefined();
@@ -274,7 +285,7 @@ describe('D18: 3 dana — jedan kvalitet', () => {
       for (const w of p.weeks) {
         const q = w.days.filter((d) => d.workout.kind === 'quality');
         for (const d of q) expect(['I', 'R']).not.toContain(d.workout.dose!.zone);
-        if (steady(w)) expect(q.length).toBe(1);
+        if (steady(w)) expect(q.length + (hasTest(w) ? 1 : 0)).toBe(1);
         if (w.phase === 'taper' && q.length > 0) {
           expect(q.length).toBe(1);
           expect(q[0]!.workout.dose!.zone).toBe('RP');
@@ -285,7 +296,8 @@ describe('D18: 3 dana — jedan kvalitet', () => {
   it('prelazi: T cruise ≥ poslednje T kontinuirano; RP ≥ max(D16, poslednje T) kad staje u plafon', () => {
     let rp = 0;
     for (const p of plans.filter(one)) {
-      const s = p.weeks.filter(steady);
+      // D35: nedelja testa nema doze; lanac jedinog slota preskače je.
+      const s = p.weeks.filter((w) => steady(w) && !hasTest(w));
       for (let i = 1; i < s.length; i++) {
         const a = s[i - 1]!;
         const b = s[i]!;
@@ -329,7 +341,15 @@ describe('D16: početni nivo', () => {
       expect(slot(w, 'q1')!.doseM).toBe(startM('R', w.targetKm));
       // 06f (pouka 35): Q2 nedelje 1 lagan — početni nivo Q2 proverava prva nedelja koja ga ima (validator D16).
       if (p35(w)) continue;
-      expect(slot(w, 'q2')!.doseM).toBe(startM('T_continuous', w.targetKm));
+      // D37 (P-b): niži nivo (najmanje po 60 %) kad bi nivo po 80 % stvorio nedelju pouke 35 (2 dana kvaliteta ostaju).
+      const q2 = slot(w, 'q2')!.doseM;
+      const s60 =
+        LADDER.T_continuous!.filter((m) => m <= 0.6 * capOf('T', w.targetKm) + 1e-6).pop() ??
+        LADDER.T_continuous![0]!;
+      if (q2 !== startM('T_continuous', w.targetKm)) {
+        expect(q2).toBeGreaterThanOrEqual(s60);
+        expect(q2).toBeLessThan(startM('T_continuous', w.targetKm));
+      }
       if (slot(w, 'q2')!.doseM > LADDER.T_continuous![0]!) aboveFirst++;
     }
     expect(aboveFirst).toBeGreaterThan(0);
@@ -337,7 +357,8 @@ describe('D16: početni nivo', () => {
 
   it('prelaz faze (4–6 dana): I = početni nivo; RP = najmanji nivo ≥ max(početni nivo, poslednje I) kad staje', () => {
     for (const p of plans.filter((x) => !one(x))) {
-      const s = p.weeks.filter(steady);
+      // D35: nedelja testa nema Q1; prelaz Q1 se poredi sa poslednjom nedeljom koja ga ima.
+      const s = p.weeks.filter((w) => steady(w) && !hasTest(w));
       for (let i = 1; i < s.length; i++) {
         const a = s[i - 1]!;
         const b = s[i]!;
@@ -443,7 +464,18 @@ describe('D12: progresija', () => {
               ? prev.filter((x) => x.phase === 'specific' && isB(x)).pop()
               : (prev.filter((x) => x.phase === 'specific' && !isB(x)).pop() ??
                 prev.filter((x) => x.phase !== 'specific').pop());
-        if (!dropped && ref) expect(main(b), `${b.index}`).toBeGreaterThanOrEqual(main(ref));
+        // D27/D35: nedelja testa se ne poredi; kao referenca važi samo kad je u njoj spušten slot (P5, O1), inače
+        // poslednja nedelja pre nje.
+        const dropT = (x: PlanWeek): boolean => slot(x, 'q2')?.step === 'drop';
+        const refT =
+          ref && hasTest(ref) && !dropT(ref)
+            ? s
+                .slice(0, s.indexOf(ref))
+                .filter((x) => !hasTest(x))
+                .pop()
+            : ref;
+        if (!dropped && refT && !hasTest(b))
+          expect(main(b), `${b.index}`).toBeGreaterThanOrEqual(main(refT));
         if (key(b) === key(a)) {
           // Odstupanje D12: samo 3 dana (ili nedelja pouke 35), jedini slot bez druge strukture (napomena).
           expect(one(p) || p35(b)).toBe(true);

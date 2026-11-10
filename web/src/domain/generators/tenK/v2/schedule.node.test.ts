@@ -160,7 +160,8 @@ describe('D9: raspored nedelje', () => {
         for (const w of r.plan.weeks.filter((x) => x.phase !== 'race' && !x.deload)) {
           const role = (wd: Weekday): string | undefined =>
             w.days.find((d) => d.weekday === wd)?.role;
-          expect(role(pat.q1)).toBe('q1');
+          // D35 (P5 F1): u nedelji kontrolnog testa test je na danu Q1.
+          expect(role(pat.q1)).toBe(w.test ? 'test' : 'q1');
           if (pat.q2) expect(role(pat.q2)).toBe('q2');
           expect(role(pat.long)).toBe('long');
           for (const e of pat.easy) expect(role(e)).toBe('easy');

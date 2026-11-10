@@ -7,7 +7,7 @@ import { generateTenKV2 } from './generate.ts';
 import { t1Short } from './gridInvariants.ts';
 import { checkInput } from './input.ts';
 import { pacesFromVdot, predicted10k } from './paces.ts';
-import { isBuildPhase, periodize } from './periodize.ts';
+import { isBuildPhase, periodize, testKindOf } from './periodize.ts';
 import { planRule } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState } from './quality.ts';
 import { grid02Inputs, gridInputs, inputOf, SCHEDULES, SCHEDULES_BY_DAYS } from './testInputs.ts';
@@ -47,7 +47,8 @@ function replay(raw: Record<string, unknown>): ((t10: number) => boolean)[] {
   let longest = 0;
   const out: ((t10: number) => boolean)[] = [];
   const done: TypedWeek[] = [];
-  for (const f of periodize(c.input.startDate, c.weeks)!) {
+  // D35 (P5 F1): isti okviri kao generator (kontrolni test od 12 nedelja).
+  for (const f of periodize(c.input.startDate, c.weeks, testKindOf(false, rule, c.weeks))!) {
     if (f.phase === 'race') break;
     const qq: QualityState = q;
     const ll: number | null = lastLong;
@@ -154,12 +155,13 @@ describe('D6: obim', () => {
     }
   });
 
-  it('ned 1 = trenutni obim kad ga konstrukcija nosi (01b: VDOT 50 nosi ceo opseg 25–55 km; 10K-08: 25–45 km)', () => {
+  it('ned 1 = trenutni obim kad ga konstrukcija nosi (01b: VDOT 50 nosi ceo opseg 25–55 km; 10K-08: 25–45 km; P5: 25–50 km)', () => {
     // 10K-08 (T1, lagan ≤ 0,8 × dugi): 25–45 km cilj = trenutni obim (25 km: lagani dani odmor, planirano < cilj); 50 i
-    // 55 km → najbliži izvodljiv 48,2 km (lagan 12,7 = 0,8 × dugi 15,9).
+    // 55 km → najbliži izvodljiv 48,2 km (lagan 12,7 = 0,8 × dugi 15,9). P5 (D37, F4: T i I od 80 % plafona): veća T doza
+    // nedelje 1 nosi i 50 km; 55 km → 53,7 km.
     for (const km of [25, 30, 35, 40, 45, 50, 55]) {
       const r = generateTenKV2(inputOf({ weeks: 12, km, vdot: 50, days: SCHEDULES.A.days }));
-      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km <= 45 ? km : 48.2);
+      expect(r.ok && r.plan.weeks[0]!.targetKm).toBe(km <= 50 ? km : 53.7);
     }
   });
 

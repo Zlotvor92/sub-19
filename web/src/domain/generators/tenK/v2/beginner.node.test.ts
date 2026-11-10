@@ -121,7 +121,8 @@ describe('D28: početnik — plan', () => {
   });
 
   it('D16 ne važi: početni nivo = prvi nivo lestvice (D31: prva nedelja kvaliteta T 1,5 km)', () => {
-    expect(doseOf(startLevel('T_continuous', 50)!)).toBe(3000);
+    // D37 (P5 F4): T 80 % plafona (5000 m) → 4,0 km; početnik i dalje prvi nivo.
+    expect(doseOf(startLevel('T_continuous', 50)!)).toBe(4000);
     expect(doseOf(startLevel('T_continuous', 50, true)!)).toBe(1500);
     const p = plan(beg(4, { weeks: 14, km: 35, vdot: 40 }));
     expect(quality(p.weeks[2]!)[0]!.workout.dose!.doseM).toBe(1500);

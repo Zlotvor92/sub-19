@@ -376,7 +376,8 @@ describe('validator', () => {
     expect(
       p4.weeks.filter((w) => w.notes.some((n) => n.startsWith(P35_DROP))).map((w) => w.index)
     ).toEqual([]);
-    // 6 dana, 35 km, VDOT 70: i posle pouke 35 prvi dan kvaliteta duži od dugog → upozorenje, preporuka 3–5 dana.
+    // 6 dana, 35 km, VDOT 70: i posle pouke 35 prvi dan kvaliteta duži od dugog → upozorenje, preporuka 3–5 dana. P5: isto (D37 P-b: veća
+    // početna doza ne stvara nedelju pouke 35).
     const p6 = planOf(6, { weeks: 12, km: 35, vdot: 70 });
     expect(errors(p6)).toEqual([]);
     expect(warns(p6).map((w) => [w.severity, w.week, w.message])).toEqual([

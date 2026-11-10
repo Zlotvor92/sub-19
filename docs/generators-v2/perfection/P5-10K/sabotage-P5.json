@@ -1,0 +1,128 @@
+[
+  {
+    "name": "P5-F1a bez kontrolnog testa (plan sa rezultatom)",
+    "file": "src/domain/generators/tenK/v2/periodize.ts",
+    "find": "  return weeks >= P.test.controlMinWeeks ? 'control' : null;",
+    "replace": "  return null;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F1b kontrolni test u poslednjoj nedelji razvoja i kad je rasterećenje",
+    "file": "src/domain/generators/tenK/v2/periodize.ts",
+    "find": "    if (phases[i - 1] === 'development' && !deloads.includes(i)) return i;",
+    "replace": "    if (phases[i - 1] === 'development') return i;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F1c O1: test nedelja sa spuštanjem nije referenca",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "    } else if (dropped && !tb && !noQuality(b)) prevMain = b;",
+    "replace": "    }",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F2a okidač bez RPE (samo preskočeni)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    return ran.some((x) => x.dayId === d.date && (x.rpe ?? 0) >= A.qualityRpe);",
+    "replace": "    return false;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F2e neodrađen po dayId (trčanje van plana na taj datum se ne vidi)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    const ran = runs.filter((x) => x.date === d.date || x.dayId === d.date);",
+    "replace": "    const ran = runs.filter((x) => x.dayId === d.date);",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F2b zadržana nedelja ipak raste",
+    "file": "src/domain/generators/tenK/v2/quality.ts",
+    "find": "    const next = hold ? null : nextLevel(ladder, prev.doseM, beginner);",
+    "replace": "    const next = nextLevel(ladder, prev.doseM, beginner);",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F2c F2 ispred bola/manjka (prioritet)",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    const blocked = volumeRule || step.pain !== null || step.rest !== null;",
+    "replace": "    const blocked = false;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F2d isti zapisi se sude ponovo",
+    "file": "src/domain/generators/tenK/v2/assess.ts",
+    "find": "    const judged = prevAt !== null && qDays.every((d) => day(d.date) <= prevAt);",
+    "replace": "    const judged = false;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F3a ubrzanja uvek 4 × 20 s",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  return { date: best, reps: rule.beginner || frame.phase === 'base' ? S.baseReps : S.reps };",
+    "replace": "  return { date: best, reps: S.baseReps };",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F3b dan ubrzanja = prvi lagan dan",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  for (const d of easy) if (gap(d) > gap(best)) best = d;",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F3c ubrzanja i u uvodu početnika",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "  if (frame.phase === 'race' || frame.index <= rule.introWeeks) return null;",
+    "replace": "  if (frame.phase === 'race') return null;",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F4 početni nivo T i I ostaje 60 %",
+    "file": "src/domain/generators/tenK/v2/policy.ts",
+    "find": "capShare: { T: 0.8, I: 0.8, R: 0.6, RP: 0.6 }",
+    "replace": "capShare: { T: 0.6, I: 0.6, R: 0.6, RP: 0.6 }",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-F4b P-b: veća početna doza i kad stvara nedelju pouke 35",
+    "file": "src/domain/generators/tenK/v2/week.ts",
+    "find": "      frame.deload ? null : keepsTwo\n",
+    "replace": "      null\n",
+    "tests": [
+      "src/domain/generators/tenK/v2/p35.node.test.ts"
+    ]
+  },
+  {
+    "name": "P5-V test nedelja određuje stanje Q1 posle mešovite nedelje",
+    "file": "src/domain/generators/tenK/v2/validate.ts",
+    "find": "          if (!d && r === 'q1' && w.days.some((x) => x.role === 'test')) continue;\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/tenK/v2/p5.node.test.ts"
+    ]
+  }
+]

@@ -7,7 +7,7 @@
 
 import { checkInput } from './input.ts';
 import { assessGoal, predicted10k } from './paces.ts';
-import { periodize, isBuildPhase } from './periodize.ts';
+import { periodize, isBuildPhase, testKindOf } from './periodize.ts';
 import { TEN_K_V2_POLICY as P } from './policy.ts';
 import {
   advance,
@@ -177,8 +177,9 @@ export function construct(
   const paces = basePaces(pace);
   // D26: u planu po osećaju prognoza služi samo za trajanje segmenta trke (procena), plan je nema.
   const raceSec = predicted10k(paces);
-  // D27/D32: test 5 km samo u planu po osećaju koji nije početnik.
-  const base = periodize(input.startDate, weeks, feel && rule.feelTest);
+  // D27/D32: test 5 km u planu po osećaju koji nije početnik; D35 (P5 F1): kontrolni test plana sa rezultatom.
+  const testKind = testKindOf(feel, rule, weeks);
+  const base = periodize(input.startDate, weeks, testKind);
   if (!base) return infeasible('Nema rasporeda rasterećenja koji odgovara pravilima plana.');
   const adapted = steps.length > 0;
   const frames = adapted
@@ -221,6 +222,8 @@ export function construct(
     return { ...ctx0, paces: p, raceSec: predicted10k(p), feel: false, ...extra };
   };
   const restarts = restartWeeks(steps);
+  // D38 (P5 F2): nedelje izgradnje bez rasta doze.
+  const holds = new Set(steps.flatMap((s) => (s.holdDose !== undefined ? [s.holdDose] : [])));
 
   let quality: QualityState = INITIAL_QUALITY;
   let h = initialAdaptHistory(cap10);
@@ -248,6 +251,17 @@ export function construct(
           ? { ...ctx0w, keepSharpener: true }
           : ctx0w;
     if (restarts.has(frame.index)) quality = INITIAL_QUALITY;
+    // D36 (P5 F3): dan ubrzanja — razmak od poslednjeg zahtevnog dana prethodne upisane nedelje.
+    ctx = {
+      ...ctx,
+      prevHard:
+        (written[written.length - 1]?.days ?? [])
+          .filter((d) => d.hard)
+          .map((d) => d.date)
+          .sort()
+          .pop() ?? null,
+      ...(holds.has(frame.index) ? { holdDose: true } : {})
+    };
     // D34/A25 (P3): tip specifične nedelje iz nedelja kakve se upisuju (specific.ts, isto što čita validator).
     if (
       frame.phase === 'specific' &&
@@ -505,6 +519,16 @@ export function construct(
           : [])
       ].join(' ')
     );
+  // D35 (P5 F1): kontrolni test plana sa rezultatom.
+  if (testKind === 'control') {
+    const t = out.find((w) => w.test);
+    const td = t?.days.find((d) => d.workout.kind === 'test');
+    plan.notes.push(
+      t && td
+        ? `Kontrolni test ${P.test.km} km: nedelja ${weekLabel(input, t.index)}, ${td.date}. Unesi rezultat — tempo treninga se prilagođava od sledeće nedelje.`
+        : `Kontrolni test ${P.test.km} km: nema ga u planu posle prilagođavanja (primljen rezultat, ili nema nedelje izgradnje bez ograničenja).`
+    );
+  }
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
   if (adapted)
     plan.adaptation = {

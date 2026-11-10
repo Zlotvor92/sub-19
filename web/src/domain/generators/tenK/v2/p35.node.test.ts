@@ -31,6 +31,7 @@ describe('pouka 35 u generatoru', () => {
     expect(w.days.filter((d) => d.workout.kind === 'quality')).toHaveLength(1);
     expect(w.targetKm).toBe(35);
     expect(w.notes.find((n) => n.startsWith(P35_DROP))).toMatch(
+      // P5 (D37, P-b): početni nivo T po 80 % (2,5 km) bi i dalje dao nedelju pouke 35 — ostaje nivo po 60 % (2,0 km).
       /^Drugi dan kvaliteta \(WU 20 min \+ T 2,0 km kontinuirano \+ CD 15 min\) je lagan/
     );
     const q = planOf(4, { weeks: 10, km: 25, vdot: 70 });
