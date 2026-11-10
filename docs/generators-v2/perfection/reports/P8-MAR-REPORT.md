@@ -112,6 +112,10 @@ verzija (a) nije pala — u test dodati profili (brz trkač, mali obim) na kojim
 | `npx playwright test e2e/marathon-v2.spec.ts --trace off` | 38 s | 3/3 |
 | `node scripts/sabotage.mjs …/P8-MAR/sabotage.json --quiet` | 20 s | 15/15 |
 
+Posle `git pull --rebase` (stigli P8-5K i P8-10K, 0 fajlova u `marathon/v2`): brz nivo maratona 40 fajlova / 447 testova
+zeleno; `tsc -b --noEmit` prijavljuje 11 grešaka, sve u `tenK/v2` (`testInputs.ts:751`, `validate.ts:1494`, `week.ts:384`,
+`p8.node.test.ts:309, 324`) — nisu iz ovog segmenta i nisu dirane (pre rebase-a `npm run check` zelen).
+
 Pisanje baznih linija celih mreža traži veći hip (harness drži sve planove): komanda je u drugom redu tabele.
 
 Prilagođeni testovi (očekivanje koje P8 menja, sa komentarom): adapt, beginner, dayCap, feel, p2, p5, policy, preStart,
