@@ -59,7 +59,7 @@ const WEEK: readonly Rewrite[] = [
     'Taper: $1'
   ],
   [
-    /^Trkačka nedelja: oštrenje (.+?) RP \(≤ RP doza tapera [\d,]+ km\), trka 10 km se ne računa u obim\.$/u,
+    /^Trkačka nedelja: oštrenje (.+?) RP \(≤ RP doza tapera [\d,]+ km(?:, ≤ \d+ min rada)?\), trka 10 km se ne računa u obim\.$/u,
     'Trkačka nedelja: kratko oštrenje $1 u tempu trke; km trke nisu u zbiru nedelje.'
   ],
   [

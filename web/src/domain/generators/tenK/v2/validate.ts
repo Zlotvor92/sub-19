@@ -251,6 +251,12 @@ export function validatePlan(
   const base0 = pace
     ? periodize(input.startDate, N, testKindOf(pace.kind === 'feel', rule, N))
     : null;
+  /** G8 (P8 dopuna): nedelje dugog do distance (osnovna periodizacija) i pravilo dužina te nedelje. */
+  const toRaceW = longToRaceWeeks(base0 ?? plan.weeks, rule.beginner);
+  const lenRule = (w: PlanWeek): typeof rule =>
+    toRaceW.has(w.index) && isSteady(w)
+      ? { ...rule, longMaxShare: longShareOf(rule, to10(w.targetKm), true) }
+      : rule;
   /** A17: ukinuta redovna rasterećenja (isti podatak kao konstruktor, steps.framesFor). */
   const dropped = new Map<number, number>();
   const frames =
@@ -422,7 +428,7 @@ export function validatePlan(
         const L =
           long === undefined
             ? null
-            : buildLengths(to10(w.targetKm), q100, slots.length, rule, pw(w));
+            : buildLengths(to10(w.targetKm), q100, slots.length, lenRule(w), pw(w));
         const ok =
           rest0.size > 0 ||
           (long !== undefined &&
@@ -700,7 +706,6 @@ export function validatePlan(
       );
   }
 
-  const toRaceW = longToRaceWeeks(base0 ?? weeks, rule.beginner);
   // --- D13: dužine. Segment 04: mešovita nedelja — samo provere dana; A4 dugi na danu bola ≤ 60 min,
   // lagani na danima bola nisu jednaki (× 0,7); dugi na danu odmora otpada.
   for (const w of weeks) {
@@ -723,7 +728,7 @@ export function validatePlan(
     if (Math.abs(long.workout.km * 10 - l10) > EPS)
       err('LENGTH_STEP', 'Dugi nije u koraku 0,1 km (D13).', w.index, long.date);
     // G8 (P8 dopuna): udeo dugog iz lengths.longShareOf (nedelje dugog do distance iz osnovne periodizacije).
-    const lShare = longShareOf(rule, to10(w.targetKm), toRaceW.has(w.index));
+    const lShare = longShareOf(rule, to10(w.targetKm), toRaceW.has(w.index) && isSteady(w));
     if (l10 > Math.floor(lShare * to10(w.targetKm) + 1e-9))
       err(
         'LONG_SHARE',

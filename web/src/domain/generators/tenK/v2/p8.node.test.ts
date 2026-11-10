@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import { userText } from './app/format.ts';
 import { generateTenKV2 } from './generate.ts';
+import { pacesFromVdot } from './paces.ts';
 import { capM } from './quality.ts';
 import { beginnerGridInputs, feelGridInputs, grid02Inputs } from './testInputs.ts';
 import type { PlanWeek, TenKV2Plan } from './types.ts';
@@ -68,9 +69,13 @@ describe('P8 G1 (D39): obim raste do kraja razvoja', () => {
     const dev = p.weeks.filter((w) => w.phase === 'development' && !w.deload).map((w) => w.index);
     const first = p.weeks.find((w) => w.targetKm >= 19.5)!.index;
     expect(first).toBe(Math.max(...dev));
-    // Ne-rasteretne nedelje baze i razvoja rastu svaka (bez platoa pre kraja razvoja).
+    // Ne-rasteretne nedelje baze i razvoja ne opadaju; rast je ≥ 3 % ili ga nema (G1b, D45 — nema „rasta" od 0,1 km).
     const nd = p.weeks.filter((w) => (w.phase === 'base' || w.phase === 'development') && !w.deload);
-    for (let i = 1; i < nd.length; i++) expect(nd[i]!.targetKm).toBeGreaterThan(nd[i - 1]!.targetKm);
+    for (let i = 1; i < nd.length; i++) {
+      const g = nd[i]!.targetKm - nd[i - 1]!.targetKm;
+      expect(g).toBeGreaterThanOrEqual(0);
+      if (g > 0) expect(g).toBeGreaterThanOrEqual(0.03 * nd[i - 1]!.targetKm - 0.05);
+    }
   });
   it('mreža: nijedna ne-rasteretna nedelja baze/razvoja ne raste više nego što preostali rast do vrha traži', () => {
     let checked = 0;
@@ -93,11 +98,14 @@ describe('P8 G1 (D39): obim raste do kraja razvoja', () => {
 
 describe('P8 G2 (D40): najniži nivo lestvice uvek staje', () => {
   it('plafon zone nije ispod prvog nivoa lestvice (RP 2 × 1200 m, T 2,0 km / početnik 1,5 km)', () => {
-    expect(capM('RP', 15, true)).toBe(2400);
-    expect(capM('RP', 20, false)).toBe(2400);
-    expect(capM('T', 15, true)).toBe(1500);
-    expect(capM('T', 15, false)).toBe(2000);
-    expect(capM('RP', 60, false)).toBe(9000);
+    const v45 = pacesFromVdot(45);
+    expect(capM('RP', 15, true, v45)).toBe(2400);
+    expect(capM('RP', 20, false, v45)).toBe(2400);
+    expect(capM('T', 15, true, v45)).toBe(1500);
+    expect(capM('T', 15, false, v45)).toBe(2000);
+    // G4 (D43): RP ≤ 30 min rada — 15 % × 60 km = 9000 m, ali 30 min RP tempom VDOT 45 je manje.
+    expect(capM('RP', 60, false, v45)).toBe(Math.floor((1800 / v45.RP) * 1000 + 1e-6));
+    expect(capM('RP', 60, false, v45)).toBeLessThan(9000);
   });
   it('p11: RP u specifičnoj fazi, taper i trkačka nedelja sa trkačkim tempom', () => {
     const p = gen(P.p11);
@@ -164,11 +172,71 @@ describe('P8 G3 (D41): tekst za trkača', () => {
   });
 });
 
+const workMin = (d: PlanWeek['days'][number], z: string): number =>
+  d.workout.segments
+    .filter((x) => x.zone === z && (x.kind === 'rep' || x.kind === 'continuous'))
+    .reduce((a, x) => a + x.sec, 0) / 60;
+
+describe('P8 dopuna: G4 minuti rada, G5 oštrenje, G1a vrh, G6, G7 test, G8 dugi početnika', () => {
+  const plans = [...SAMPLE, ...Object.values(P)].map(gen);
+  it('G4 (D43): T ≤ 30 min (≥ 80 km: 40), I ≤ 20 / 24 min, RP ≤ 30 min po treningu; G5 (D44): oštrenje 2 jednake deonice ≤ 12 min', () => {
+    for (const p of plans)
+      for (const w of p.weeks)
+        for (const d of w.days) {
+          if (d.role === 'sharpener') {
+            const st = d.workout.dose!.structure;
+            expect(st.form === 'reps' && st.reps).toBe(2);
+            expect(workMin(d, 'RP')).toBeLessThanOrEqual(12 + 1e-6);
+            continue;
+          }
+          if (d.workout.kind !== 'quality') continue;
+          expect(workMin(d, 'T')).toBeLessThanOrEqual((w.targetKm >= 80 ? 40 : 30) + 0.05);
+          expect(workMin(d, 'I')).toBeLessThanOrEqual((p.paces.vdot < 40 ? 20 : 24) + 0.05);
+          expect(workMin(d, 'RP')).toBeLessThanOrEqual(30 + 0.05);
+        }
+  });
+  it('G1a (D45): vrh ≤ start × 1,30 / 1,35 / 1,40 po dužini pripreme i ≤ satni plafon (6 / 7 / 8 h), nikad ispod starta', () => {
+    for (const p of plans) {
+      const n = p.weeks.length;
+      const f = n <= 12 ? 1.3 : n <= 15 ? 1.35 : 1.4;
+      const h = p.paces.vdot < 40 ? 6 : p.paces.vdot < 50 ? 7 : 8;
+      const mid = (p.paces.E.fast + p.paces.E.slow) / 2;
+      expect(p.peakCapKm).toBeLessThanOrEqual(Math.max(p.startKm, p.startKm * f, 0) + 1e-6);
+      expect(p.peakCapKm).toBeLessThanOrEqual(Math.max(p.startKm, (h * 3600) / mid) + 0.05);
+      expect(p.peakCapKm).toBeGreaterThanOrEqual(p.startKm);
+    }
+  });
+  it('G6 (D47): lagan ≤ 0,70 × dugi (4+ dana) i ≤ 0,80 (3 dana) u nedeljama izgradnje', () => {
+    for (const p of plans)
+      for (const w of p.weeks.filter((x) => ['base', 'development', 'specific'].includes(x.phase) && !x.deload && !x.limits)) {
+        const long = w.days.find((d) => d.role === 'long')!.workout.km;
+        const share = p.input.runDays.length >= 4 ? 0.7 : 0.8;
+        for (const e of w.days.filter((d) => d.role === 'easy'))
+          expect(e.workout.km).toBeLessThanOrEqual(Math.floor(share * long * 10 + 1e-9) / 10 + 1e-9);
+      }
+  });
+  it('G7 (D46): u nedelji testa test je jedini kvalitet; test ne pre nedelje 4', () => {
+    for (const p of plans)
+      for (const w of p.weeks.filter((x) => x.days.some((d) => d.role === 'test'))) {
+        expect(w.index).toBeGreaterThanOrEqual(4);
+        expect(w.days.filter((d) => d.workout.kind === 'quality').length).toBe(0);
+      }
+  });
+  it('G8 (D48): p11 dugi raste preko 8,7 km (do 50 % cilja u 3 poslednje nedelje izgradnje); ispod 10 km — rečenica u planu', () => {
+    const p = gen(P.p11);
+    const longest = Math.max(...p.weeks.flatMap((w) => w.days.filter((d) => d.role === 'long').map((d) => d.workout.km)));
+    expect(longest).toBeGreaterThan(8.7);
+    expect(p.notes.some((n) => n.startsWith('Najduži dugi je'))).toBe(longest < 10);
+  });
+});
+
 describe('P8 D42: kratki lagani dani → preporuka manje dana', () => {
   it('p06 (VDOT 58, 30 km, 5 dana): upozorenje sa preporukom 3–4 dana; 3 dana bez upozorenja', () => {
     const w = gen(P.p06).warnings.filter((v) => v.rule === 'SHORT_EASY');
     expect(w.length).toBe(1);
     expect(w[0]!.message).toContain('preporuka 3–4 dana');
+    // 10K (c), P8 dopuna: prvo u planu, sa brojem preporučenih dana.
+    expect(userPlanMessages(gen(P.p06))[0]).toMatch(/^Lagani treninzi su kratki.*Sa 3–4 dana/u);
     expect(gen(P.p03).warnings.some((v) => v.rule === 'SHORT_EASY')).toBe(false);
   });
 });

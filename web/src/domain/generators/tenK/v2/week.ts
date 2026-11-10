@@ -5,6 +5,7 @@
    izvodljiva po pravilima (volume.ts traži najbliži izvodljiv cilj). */
 
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
+import { isBuildPhase } from './periodize.ts';
 import {
   buildLengths,
   deloadLengths,
@@ -301,7 +302,7 @@ function buildWeekOf(
   const pat = ctx.pattern;
   // G8 (P8 dopuna): u nedeljama dugog do distance udeo dugog po lengths.longShareOf.
   const rule =
-    ctx.longToRace?.has(frame.index) === true
+    ctx.longToRace?.has(frame.index) === true && !frame.deload && isBuildPhase(frame.phase)
       ? { ...ctx.rule, longMaxShare: longShareOf(ctx.rule, target10, true) }
       : ctx.rule;
   const targetKm = target10 / 10;
