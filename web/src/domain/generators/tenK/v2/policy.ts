@@ -753,7 +753,10 @@ export const TEN_K_V2_POLICY = {
     easyMinKm: 3.0,
     /** T1 (10K-08): nedelja izgradnje — lagan ≥ easyMinSec laganim tempom (i ≥ easyMinKm), ≤ easyMaxLongShare × dugi. */
     easyMinSec: 1200,
-    easyMaxLongShare: 0.8
+    easyMaxLongShare: 0.8,
+    /** P8 (10K c): upozorenje SHORT_EASY — u ne-rasteretnoj nedelji izgradnje lagan dan kraći od ovoliko [s] ili lagan
+        dan odmor, uz preporuku manje dana (samo validator; dužine se ne menjaju). */
+    shortEasyWarnSec: 1800
   },
 
   /** D16: početni nivo slota ≤ udeo plafona zone (D11); D37 (P5 F4): T i I 80 %, R i RP 60 %. Čita se samo kroz

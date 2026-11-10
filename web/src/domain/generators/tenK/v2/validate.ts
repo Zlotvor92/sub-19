@@ -671,6 +671,30 @@ export function validatePlan(
     );
   }
 
+  // P8 (10K c, nalaz slepe ocene p06): kratki lagani dani — u ne-rasteretnoj nedelji izgradnje (bez ograničenja i
+  // prilagođavanja) lagan dan kraći od shortEasyWarnSec ili lagan dan odmor (manje laganih od šablona) → upozorenje sa
+  // preporukom manje dana (D25); bez broja dana koji podržava obim nema upozorenja. Dužine se ne menjaju.
+  {
+    const fewer = fewerDaysAdvice(input.runDays.length, input.currentWeeklyKm, rule);
+    const short = weeks.filter(
+      (w) =>
+        checked(w) &&
+        isSteady(w) &&
+        restOf(w).size === 0 &&
+        painOf(w).size === 0 &&
+        (w.days.filter((d) => d.role === 'easy').length < rule.easy ||
+          w.days.some(
+            (d) => d.role === 'easy' && d.workout.sec + EPS < P.lengths.shortEasyWarnSec
+          ))
+    );
+    if (fewer && short.length > 0)
+      warn(
+        'SHORT_EASY',
+        `Lagani treninzi kratki ili odmor u ${short.length} nedelja izgradnje (nedelja ${wl(short[0]!.index)}: lagan kraći od ${P.lengths.shortEasyWarnSec / 60} min ili odmor)${fewer}.`,
+        short[0]!.index
+      );
+  }
+
   // --- D13: dužine. Segment 04: mešovita nedelja — samo provere dana; A4 dugi na danu bola ≤ 60 min,
   // lagani na danima bola nisu jednaki (× 0,7); dugi na danu odmora otpada.
   for (const w of weeks) {

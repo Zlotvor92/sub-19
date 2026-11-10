@@ -15,6 +15,7 @@ import { checkInput } from '../input.ts';
 import { TEN_K_V2_POLICY as P } from '../policy.ts';
 import { basisAt, pacesAt } from '../steps.ts';
 import type { GoalAssessment, Paces, Phase, PlanDay, TenKV2Plan } from '../types.ts';
+import { userPlanMessages, userWeekNotes } from '../userNotes.ts';
 import { addDays, diffDays } from './date.ts';
 import { workoutStructure } from './structure.ts';
 import type {
@@ -164,7 +165,7 @@ function weeksOf(plan: TenKV2Plan): GeneratedWeek[] {
         (_, i) => byDate.get(addDays(wk.startDate, i)) ?? rest(i + 1)
       ),
       deload: wk.deload,
-      focus: [wk.deload ? 'Rasterećenje.' : '', ...wk.notes.map(userText)]
+      focus: [wk.deload ? 'Rasterećenje.' : '', ...userWeekNotes(wk.notes).map(userText)]
         .filter(Boolean)
         .join(' '),
       ...(wk.phase === 'taper' ? { taper: true as const } : {})
@@ -182,7 +183,8 @@ export function goalOf(plan: TenKV2Plan): GoalAssessmentView | undefined {
 /** Napomene i upozorenja plana za „Na šta da paziš" (doslovno iz v2, bez ponavljanja). */
 function planWarnings(plan: TenKV2Plan): string[] {
   const out: string[] = [];
-  for (const t of [...plan.notes, ...plan.warnings.map((v) => v.message)].map(userText))
+  // G3 (P8): tekst za trkača — userNotes.userPlanMessages (zbirno, bez internih oznaka).
+  for (const t of userPlanMessages(plan).map(userText))
     if (t && !out.includes(t)) out.push(t);
   return out;
 }
