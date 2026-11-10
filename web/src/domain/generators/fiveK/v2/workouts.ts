@@ -196,6 +196,11 @@ export function warmupBand(targetKm: number): { warmupKm: number; cooldownKm: nu
   return { warmupKm: band.warmupKm, cooldownKm: band.cooldownKm };
 }
 
+/** 5k-v2.15.0 (P8 c): budžet prvog I treninga posle R faze = budžet I × firstIShareOfBudget, naniže na 10 m (konstruktor
+    sa rezultatom i po osećaju, validator PEAK_MAIN_FLOOR). */
+export const firstIBudget = (budgetI: number): number =>
+  Math.floor(budgetI * P.quality.firstIShareOfBudget * 100 + 1e-9) / 100;
+
 /** 5k-v2.15.0 (P8 b, G2): zona rada vrste kvaliteta (granica rasterećenja/tapera po zoni). */
 export function capZoneOf(type: QualityType): 'I' | 'RP' | 'T' | 'R' {
   if (type === 'R' || type === 'R_sharpen') return 'R';
@@ -1219,10 +1224,12 @@ export function vdotWeekQuality(
     const hold = f.hold === true;
     if (f.phase === 'base')
       return one ? baseWeekOne(b, targetKm, p, prev, hold) : baseWeek(b, targetKm, p, prev, hold);
+    // 5k-v2.15.0 (P8 c): prvi I posle R faze — budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
+    const bp = f.firstI ? { ...b, I: firstIBudget(b.I) } : b;
     if (f.phase === 'peak')
       return one
-        ? peakWeekOne(b, targetKm, p, prev, hold, f.test)
-        : peakWeek(b, targetKm, p, prev, hold, f.test);
+        ? peakWeekOne(bp, targetKm, p, prev, hold, f.test)
+        : peakWeek(bp, targetKm, p, prev, hold, f.test);
     // 2.3.0: RP strogo raste; ako ponuda nema viši nivo u budžetu, ista ili veća doza druge strukture
     // (isto kao I u vrhuncu, 2.2.0 Odluka 5). Ranije: QUALITY_INFEASIBLE (npr. 15 km, 10 ned).
     const pm = prev?.main ?? null;

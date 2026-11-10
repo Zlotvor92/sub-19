@@ -69,6 +69,15 @@ export function resultTestWeekOf(frames: readonly Omit<WeekFrame, 'test'>[]): nu
   return null;
 }
 
+/** 5k-v2.15.0 (P8 c, heuristika, odluka organizatora P8, nalaz slepe ocene: skok R 8 min → I 26 min): prva
+    ne-rasteretna nedelja vrhunca bez kontrolnog trčanja — prvi I trening posle R faze; JEDINO mesto (konstruktor:
+    budžet I × quality.firstIShareOfBudget; validator: izuzetak PEAK_MAIN_FLOOR). null = nema je. */
+export function firstPeakIWeek(
+  frames: readonly Pick<WeekFrame, 'index' | 'phase' | 'deload' | 'test'>[]
+): number | null {
+  return frames.find((f) => f.phase === 'peak' && !f.deload && !f.test)?.index ?? null;
+}
+
 /** 5k-v2.14.0: očekivana nedelja testa po vrsti (konstruktor i validator). */
 export function expectedTestWeek(
   kind: 'feel' | 'result' | null,

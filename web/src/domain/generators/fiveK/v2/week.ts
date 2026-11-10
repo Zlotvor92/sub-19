@@ -212,7 +212,7 @@ export function buildTrainingWeek(
     notes.push(
       `Adaptacija: ${rest.size > 0 ? `${rest.size} dan(a) odmora, ` : ''}${pain.size > 0 ? 'period bola (dugi ≤ 60 min, lagani −30%, bez ubrzanja), ' : ''}planirano najviše ${kmText(target)} km.`
     );
-  const { qcap: _qcap, ...frame } = f;
+  const { qcap: _qcap, firstI: _firstI, ...frame } = f;
   return {
     ok: true,
     week: {

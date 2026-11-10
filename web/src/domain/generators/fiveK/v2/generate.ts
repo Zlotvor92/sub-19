@@ -12,7 +12,7 @@ import {
   pacesFromVdot,
   raceTimeForVdot
 } from './paces.ts';
-import { isShortPrep, periodize, phaseCounts, testKindOf } from './periodize.ts';
+import { firstPeakIWeek, isShortPrep, periodize, phaseCounts, testKindOf } from './periodize.ts';
 import { FIVE_K_V2_POLICY as P, rulesOf, type Athlete } from './policy.ts';
 import { buildRunWalkPlan } from './runWalk.ts';
 import { choosePattern } from './schedule.ts';
@@ -164,6 +164,7 @@ export function construct(
     if (keptKm === planKm || !need) return m;
     return { week: { ...out, protectedKm: keptKm }, droppedQuality: m?.droppedQuality ?? false };
   };
+  const firstIWeek = firstPeakIWeek(frames);
   frames.forEach((f, i) => {
     const target = adapted.targets[i]!;
     const { p, a: aw } = ctx(f.index);
@@ -233,7 +234,9 @@ export function construct(
       return;
     }
     // 5k-v2.15.0 (P8 b): granica kvaliteta i dugog rasterećenja/tapera iz upisanih nedelja (qualityCapOf).
-    const fc = qualityCapOf(f, written);
+    const fc0 = qualityCapOf(f, written);
+    // 5k-v2.15.0 (P8 c): prvi I trening posle R faze (periodize.firstPeakIWeek).
+    const fc: WeekFrame = f.index === firstIWeek && !f.hold ? { ...fc0, firstI: true } : fc0;
     const build = (g: WeekFrame) =>
       buildTrainingWeek(
         g,

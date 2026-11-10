@@ -9,6 +9,7 @@ import { daysBetween, mustDay, weekdayOf } from './dates.ts';
 import {
   deloadFirstOf,
   expectedTestWeek,
+  firstPeakIWeek,
   noRegularDeload,
   periodize,
   phaseCounts,
@@ -61,7 +62,14 @@ import {
   returnBaseKm,
   returnLevelAt
 } from './volume.ts';
-import { iMaxShareOf, qualityBudgets, tFormOf, tMaxSec, warmupBand } from './workouts.ts';
+import {
+  firstIBudget,
+  iMaxShareOf,
+  qualityBudgets,
+  tFormOf,
+  tMaxSec,
+  warmupBand
+} from './workouts.ts';
 
 const PHASE_ORDER: readonly Phase[] = ['base', 'peak', 'sharpen', 'taper', 'race'];
 /** 2.4.0: + treninzi po osećaju (feel.ts) i kontrolno trčanje (samo nedelja testa, v. TEST_WEEK). */
@@ -928,6 +936,7 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
   }
 
   // --- Kvalitet: budžeti, udeli, dužine ponavljanja, donji prag u vrhuncu.
+  const firstIWeek = firstPeakIWeek(weeks);
   for (const w of weeks) {
     if (!checked(w)) continue;
     // 2.1.0: udeli se mere od ciljnog km (isti osnov kao budžeti); planirano < cilj samo kad je lagan = dugi.
@@ -992,7 +1001,10 @@ function validateContinuous(plan: FiveKV2Plan): Violation[] {
     ) {
       const zone = w.phase === 'peak' ? 'I' : 'RP';
       const work = mainWork(w);
-      const need = w.budgets.I * q.mainMinShareOfBudget;
+      // 5k-v2.15.0 (P8 c): prvi I posle R faze ima budžet I × firstIShareOfBudget (periodize.firstPeakIWeek).
+      const need =
+        (w.index === firstIWeek ? firstIBudget(w.budgets.I) : w.budgets.I) *
+        q.mainMinShareOfBudget;
       if (work + EPS < need)
         err(
           w.phase === 'peak' ? 'PEAK_MAIN_FLOOR' : 'SHARPEN_MAIN_FLOOR',

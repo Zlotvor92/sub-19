@@ -23,6 +23,7 @@ import {
   baseDoseKey,
   buildWorkout,
   easyPaceOf,
+  firstIBudget,
   intervalSession,
   qualityBudgets,
   roundRecoverySec,
@@ -344,6 +345,8 @@ export function simpleWeekQuality(
   a: Athlete
 ): WeekQuality {
   let b = qualityBudgets(targetKm);
+  // 5k-v2.15.0 (P8 c): prvi I posle R faze (fartlek I) — budžet I × firstIShareOfBudget.
+  if (f.firstI) b = { ...b, I: firstIBudget(b.I) };
   const two = rulesOf(a).qualityDays === 2;
   const so = P.quality.deloadSubstitute.stridesOnly;
   if (a.beginner && f.index <= P.beginner.introWeeks && isBuild(f.phase))

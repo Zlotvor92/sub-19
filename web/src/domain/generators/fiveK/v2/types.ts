@@ -127,6 +127,9 @@ export interface WeekFrame {
       poslednja ne-rasteretna doza te zone, i dugi rasterećenja (deloadLongShare × poslednji dugi). Postavlja je samo
       konstruktor (generate.qualityCapOf); ne ide u nedelju plana. */
   qcap?: QualityCap;
+  /** 5k-v2.15.0 (P8 c): prvi I trening posle R faze (periodize.firstPeakIWeek) — budžet I × firstIShareOfBudget.
+      Postavlja ga samo konstruktor; ne ide u nedelju plana. */
+  firstI?: true;
 }
 
 /** 5k-v2.15.0 (P8 b): granice nedelje rasterećenja/tapera (WeekFrame.qcap). */
