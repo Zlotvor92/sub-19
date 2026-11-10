@@ -48,4 +48,11 @@ je lagan — 18 B-d4 planova bi palo na ROLES).
 
 ## Testovi na kraju (iz `web/`, 11. 11. 2026, Europe/Belgrade)
 
-Brz nivo `marathon/v2` posle svakog pravila zelen (na kraju 42 fajla / 468 testova).
+Brz nivo `marathon/v2` posle svakog pravila zelen (na kraju 42 fajla / 468 testova, ≈ 45 s).
+`TEST_FULL=1 npx vitest run --project node src/domain/generators/marathon/v2` 80 fajlova / 570 testova: prvi prolaz
+20 fajlova crveno (12 min 40 s) — (a) nova odbijanja IDENTICAL_WEEKS u adaptiranim planovima sa 3 dana (earlyGrid 4, 5,
+7; mixedGrid 6–8): dve nedelje B samo sa blokom imale su isti ključ, a blok se ponavlja po pravilu (LONG_BLOCK) →
+nedelja samo sa blokom van tog poređenja (`ff72ecf`); (b) invarijanta „niz ≤ 3" van mreže 02 (dense, recent, po
+osećaju; Otvoreno 1) → samo mreža 02. Posle ispravke 20 palih fajlova pun nivo 20 / 49 zeleno (6 min 20 s).
+`npx vitest run --changed ea1fa5f` 106 / 1049 zeleno (1 min 34 s); `npx playwright test e2e/marathon-v2.spec.ts
+--trace off` 3/3 (54 s); `npm run check` 304 / 3411 zeleno (5 min 44 s); sabotaže 3/3. Ispis `P9/plans/MAR/` (12).
