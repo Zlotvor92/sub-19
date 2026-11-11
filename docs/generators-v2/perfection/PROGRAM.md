@@ -555,3 +555,13 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 - v2: sve zaustavljeno. Radna grana: HM W1 ceo, MAR W1 A–C (D izgubljen arhiviranjem taba), test prenosa usklađen
   (`42387c6`); `check:full` na tom stanju u toku (samo radi evidencije; NE spajati u main u ovom stanju).
 - Posle pilota: glavni trener ocenjuje 12 HM planova v3 naspram v2 (slepo); zatim krugovi doterivanja šablona.
+
+### 11. 11. 2026, 08:00 — stari pilot arhiviran, nov tab V3-HM od nule
+
+- Stari pilot (`session_01GnHHiWpkeqyGbLYXnGYHgC`, grana `claude/v3-pilot-hm`) radio je po prvobitnom zadatku koji je
+  dozvoljavao uvoz iz v2 i pravio kopiju v2 fajlova u `v3/fromV2/` — suprotno nalogu vlasnika. Arhiviran po nalogu
+  vlasnika; grana `claude/v3-pilot-hm` je napuštena (ne koristiti).
+- Nov tab V3-HM (`session_01GnHHiX326TNuhWuwrC3rm8`, Opus, grana `claude/v3-hm`): potpuno nov generator polumaratona,
+  nula uvoza i kopija iz v2, samo generisanje; šabloni kao podaci, minuti rada, mali čuvar, izlaz PlanDoc + ispis u
+  `P9v3/plans/HM/`, izveštaj `reports/V3-HM-REPORT.md`.
+- Pouka za organizatora: promena smera → odmah prekid taba i nova poruka (poruka u redu čeka kraj tekućeg koraka).
