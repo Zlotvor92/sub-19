@@ -1,4 +1,4 @@
-PLAN — 10 km · 10k-v2.15.0
+PLAN — 10 km · 10k-v2.16.0
 Profil: brz, mali obim, VDOT 58, dno obima za 5 dana, najkraća priprema
 
 Početak: 2026-11-02 (8 nedelja), trka: 2026-12-27.
@@ -17,6 +17,7 @@ OCENA CILJA
   Cilj nije zadat ili nije ocenjen.
   Prognoza na osnovu rezultata: 36:24.
   Napomena plana: Lagani treninzi su kratki (kraći od 30 min) ili odmor u 5 nedelja izgradnje (prva: nedelja 1) — obim nedelje je mali za zadat broj dana. Sa 3–4 dana treninga nedeljno obim od 30 km bi se bolje rasporedio (duži dugi, duži lagani).
+  Napomena plana: Mali obim: u nedeljama u kojima bi lagan trening bio kraći od 30 minuta, jedan lagan dan je „odmor ili 20 min lagano po želji" i ne računa se u obim nedelje — planirano je tada nešto manje od cilja.
   Napomena plana: Obim nedelje 2 je malo drugačiji od redovnog rasta, da treninzi ostanu u razumnim dužinama za zadate dane.
 
 ------------------------------------------------------------
@@ -75,32 +76,30 @@ NEDELJA 4 — faza: razvoj — RASTEREĆENJE
 
 ------------------------------------------------------------
 NEDELJA 5 — faza: specifična
-  30.11.–06.12. · cilj 35,9 km · planirano 35,9 km · ukupno 2 h 45 min
-  Ponedeljak 30.11.  Lagano 4,5 km
-      4,5 km · 21 min
+  30.11.–06.12. · cilj 35,9 km · planirano 34,4 km · ukupno 2 h 37 min
+  Ponedeljak 30.11.  Lagano 7,4 km + 6 × 20 s ubrzanja
+      7,4 km · 34 min
   Utorak     01.12.  WU 15 min + RP 2 × 1200 m (oporavak 1:00 džog) + CD 10 min
       7,9 km · 35 min · radnih 9 min
   Četvrtak   03.12.  WU 15 min + T 2 × 1500 m (oporavak 1:00 džog) + CD 10 min
       8,5 km · 37 min · radnih 11 min
-  Subota     05.12.  Lagano 4,4 km + 6 × 20 s ubrzanja
-      4,4 km · 20 min
   Nedelja    06.12.  Dugi 10,7 km lagano
       10,7 km · 51 min
+  Napomena: Kratak lagan dan (subota): odmor ili 20 min lagano po želji — ne računa se u obim nedelje (lagan bi bio kraći od 30 min).
 
 ------------------------------------------------------------
 NEDELJA 6 — faza: specifična
-  07.12.–13.12. · cilj 38,1 km · planirano 38,1 km · ukupno 2 h 54 min
-  Ponedeljak 07.12.  Lagano 4,8 km
-      4,8 km · 23 min
+  07.12.–13.12. · cilj 38,1 km · planirano 36,5 km · ukupno 2 h 46 min
+  Ponedeljak 07.12.  Lagano 7,9 km + 6 × 20 s ubrzanja
+      7,9 km · 37 min
   Utorak     08.12.  WU 15 min + RP 3 × 1000 m (oporavak 1:00 džog) + CD 10 min
       8,7 km · 38 min · radnih 11 min
   Četvrtak   10.12.  WU 15 min + I 2 × 1200 m (oporavak 4:00 džog) + CD 10 min
       8,5 km · 37 min · radnih 8 min
-  Subota     12.12.  Lagano 4,7 km + 6 × 20 s ubrzanja
-      4,7 km · 22 min
   Nedelja    13.12.  Dugi 11,4 km lagano
       11,4 km · 54 min
   Napomena: Specifična faza: drugi kvalitetni trening je interval (I) 2,4 km da se održi brzina iz razvoja; T u deonicama se vraća sledeće nedelje.
+  Napomena: Kratak lagan dan (subota): odmor ili 20 min lagano po želji — ne računa se u obim nedelje (lagan bi bio kraći od 30 min).
 
 ------------------------------------------------------------
 NEDELJA 7 — faza: taper
