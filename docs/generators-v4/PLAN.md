@@ -127,10 +127,17 @@ okviru SPEC-a + zapis, ne staje. Promena smera → organizator prekida tab i ša
 - Motor „procuri" u distance → test: nema imena distance u `engine/`; otisci po distanci.
 - Preuzimanje pokvari tuđi plan → otisak pre = posle na stvarnim uzorcima; lični plan se nikad ne prepravlja sam.
 
-## 8. Odluke koje čekaju vlasnika (ne blokiraju dan 1)
+## 8. Odluke vlasnika (11. 11. 2026, uveče)
 
-1. REŠENO (vlasnik, 11. 11.): sve se pravi uz upozorenje — ništa se ne odbija zbog dužine, obima, dana ili
-   iskustva; upozorenje nosi konkretan predlog šta je potrebno za adekvatnu pripremu (AGENTS.md V4 pravilo 6).
-2. Usmeravanje unosa na ekranu (F8) — da li i kako.
-3. Šta sa radnom granom v2 (HM i deo maratona imaju „bilo koja dužina plana", nedovršeno): povući ili ostaviti.
-4. Kada i kako V4 ulazi u aplikaciju (F9).
+1. Sve se pravi uz upozorenje sa konkretnim predlogom šta je potrebno za adekvatnu pripremu (AGENTS.md V4 pravilo 6).
+2. Baza: organizator SME da čita planove i Strava aktivnosti drugih korisnika (samo SELECT) radi formata i provere
+   procene forme. Pravilo organizatora: u repozitorijum kao uzorci idu samo podaci vlasnika i izmišljeni primeri;
+   tuđi podaci samo kao zbirne brojke, nikad kao fajl.
+3. Strava istorija vlasnika: SME da se koristi za razvoj i proveru procene forme (uklj. procena pred Bokeški
+   13. 12. naspram rezultata).
+4. v2 se BATALJUJE: ništa od v2 ne ide u main, radna grana v2 se ne dorađuje i ne spaja; ide se odmah na V4.
+5. Ekrani: organizator SME da napiše predlog upozorenja i prikaza (tekstovi i raspored); kod aplikacije i dalje
+   samo uz odobrenje vlasnika.
+6. Pregled vlasnika: 2–3 plana po distanci, kratko (plan + najviše 5 redova šta da pogleda).
+7. Otvoreno: kada i kako V4 ulazi u aplikaciju (F9); brisanje napuštene grane `claude/v3-pilot-hm` (bez odgovora —
+   ostaje).

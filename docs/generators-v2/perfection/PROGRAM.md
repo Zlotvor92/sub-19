@@ -691,3 +691,10 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 - „Sve se pravi uz upozorenje; ako neko hoće da sprema maraton 8 nedelja, pustiti ga, ali uz upozorenje i predlog
   koliko je potrebno za adekvatno spremanje." `AGENTS.md` V4 pravilo 6 dopunjeno; PLAN.md § 8 tačka 1 zatvorena.
   Zamenjuje i tehničku granicu od 52 nedelje iz W1 (v2) — u V4 se odbija samo neispravan unos.
+
+### 11. 11. 2026, uveče — odluke vlasnika pred V4
+
+- Čitanje tuđih planova i Strava aktivnosti iz baze: dozvoljeno (samo SELECT). Strava istorija vlasnika: dozvoljena
+  za razvoj i proveru forme. v2 se bataljuje — ništa u main, odmah V4. Predlog upozorenja/ekrana: dozvoljeno pisati.
+  Pregled vlasnika: 2–3 plana po distanci, kratko. Upisano u `docs/generators-v4/PLAN.md` § 8.
+- Ovaj dnevnik (v2) se ovde zatvara; od 12. 11. vodi se `docs/generators-v4/LOG.md`.
