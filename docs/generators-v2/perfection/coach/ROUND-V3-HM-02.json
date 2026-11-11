@@ -1,0 +1,202 @@
+{
+ "round": "V3-HM-02",
+ "date": "2026-11-11",
+ "rubric": "P7b",
+ "average": 76.8,
+ "v3_round1_average": 74.4,
+ "old_average": 62.7,
+ "plans": [
+  {
+   "profile": "p01",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 9,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 81.0,
+   "v3_round1": 79.5,
+   "old": 72.0,
+   "target": 84
+  },
+  {
+   "profile": "p02",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 9,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 81.0,
+   "v3_round1": 78.0,
+   "old": 71.0,
+   "target": null
+  },
+  {
+   "profile": "p03",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 8,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 74.5,
+   "v3_round1": 73.0,
+   "old": 60.5,
+   "target": null
+  },
+  {
+   "profile": "p04",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 79.0,
+   "v3_round1": 78.0,
+   "old": 60.5,
+   "target": 80
+  },
+  {
+   "profile": "p05",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 80.0,
+   "v3_round1": 79.5,
+   "old": 67.5,
+   "target": null
+  },
+  {
+   "profile": "p06",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 71.0,
+   "v3_round1": 63.5,
+   "old": 58.0,
+   "target": null
+  },
+  {
+   "profile": "p07",
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 75.0,
+   "v3_round1": 71.5,
+   "old": 64.5,
+   "target": null
+  },
+  {
+   "profile": "p08",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 8,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 72.5,
+   "v3_round1": 69.5,
+   "old": 58.0,
+   "target": null
+  },
+  {
+   "profile": "p09",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 80.0,
+   "v3_round1": 76.5,
+   "old": 61.5,
+   "target": null
+  },
+  {
+   "profile": "p10",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 8,
+    "recovery": 7,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 73.5,
+   "v3_round1": 68.0,
+   "old": 58.5,
+   "target": null
+  },
+  {
+   "profile": "p11",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 79.0,
+   "v3_round1": 78.0,
+   "old": 53.0,
+   "target": 80
+  },
+  {
+   "profile": "p12",
+   "scores": {
+    "fit": 8,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 8,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 75.5,
+   "v3_round1": 78.0,
+   "old": 67.0,
+   "target": 82
+  }
+ ]
+}
