@@ -544,3 +544,14 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   (preračun tempa, umor, pauza, bol, propušten dugi, snižen obim) — u pilotu implementirane dve (tempo, pauza),
   ostale potpis + opis; dokaz na ciljnom planu trenera HM p01 unetom ručno kao PlanDoc.
 - Aplikacija, baza i MCP se u pilotu ne diraju; izveštaj opisuje šta treba za uvoz iz aplikacije preko Claude-a.
+
+### 11. 11. 2026, 08:00 — nalog vlasnika: v3 skroz nov, samo generisanje, HM prvi
+
+- „Ne prenosi ništa, nova arhitektura da ide skroz; prvo samo generisanje savršenih planova, adaptacija kasnije; kreni
+  od HM da vidim kako funkcioniše za jednu distancu."
+- Pilot V3-HM preusmeren: bez uvoza iz v2 (samostalan ulaz, tempa, tekst), bez importa i adaptacije; PlanDoc ostaje
+  kao izlaz; cilj je da 12 HM profila liče na ciljne planove trenera; gde ulaz ne dozvoljava dobar plan — najbolji
+  mogući + jasna preporuka u zaglavlju.
+- v2: sve zaustavljeno. Radna grana: HM W1 ceo, MAR W1 A–C (D izgubljen arhiviranjem taba), test prenosa usklađen
+  (`42387c6`); `check:full` na tom stanju u toku (samo radi evidencije; NE spajati u main u ovom stanju).
+- Posle pilota: glavni trener ocenjuje 12 HM planova v3 naspram v2 (slepo); zatim krugovi doterivanja šablona.
