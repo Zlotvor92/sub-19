@@ -525,3 +525,13 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 - EKONOMIČNO — izmena redosleda: W1 se završava na sve četiri distance (nalog vlasnika). C1 se radi SAMO na HM (v2),
   da se uporedi HM v2 + C1 naspram HM v3; C1 za 5K/10K/MAR i koraci C2–C6 ČEKAJU ishod poređenja.
 - Poređenje: SCORE nad oba + jedan krug glavnog trenera nad 12 HM profila (v2 + C1 i v3, slepo A/B).
+
+### 11. 11. 2026, 07:35 — nalog vlasnika: ugasiti izmene v2 (štednja tokena)
+
+- Zaustavljeno: W1-MAR (prekinut u W1-D; traženo da gurne samo zelene commit-e A–C i stane), W1-HM (W1 već gurnut,
+  `2c121ac`; pun nivo nije potvrđen), W1-5K i W1-10K se ne pokreću, C1 se ne pokreće ni na jednoj distanci.
+- Rade samo: V3-HM pilot (grana `claude/v3-pilot-hm`) i SCORE (jedan dodatni prolaz, Sonnet).
+- STANJE RADNE GRANE koje treba znati pre spajanja: HM ima W1 (hm-v2.15.0, bilo koja dužina plana), MAR delimično
+  ili nikako, 5K i 10K nemaju — nalog „bilo koja dužina uz upozorenje" NIJE završen na sve četiri distance.
+  Poslednji `check:full` je na stanju pre W1; pre spajanja ga ponoviti.
+- SCORE prvi prolaz: Spearman prema treneru 0,24 (slabo) — skripta je detektor regresija, ne zamena za trenera.
