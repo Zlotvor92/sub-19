@@ -432,3 +432,13 @@ Plan P9 (do kraja):
   cena R-d4 medijana −30,9 km po planu (≈ −8 %).
 - Usput ispravljena adaptacija za 3 dana (tip nedelje koja je prošla čita se iz upisanog plana).
 - K4-10K (Opus, samo K4-B) pokrenut; K4-5K u toku.
+
+### 11. 11. 2026, 01:55 — K4-5K završen (5k-v2.17.0), tab arhiviran
+
+- `7eb040e`, izveštaj `reports/K4-5K-REPORT.md`. Nezavisna provera organizatora: brzi nivo `fiveK/v2` 809/809. Po
+  tabu: pun nivo 819/819, `--changed` 1384 ✔, E2E 3/3, `npm run check` 3413 ✔, sabotaže 3/3; 3964 plana, 0 novih
+  odbijanja, vrh −10 %: 0.
+- K4-B ugrađeno postojećim oblikom („lagan dan manje", ekrani nedirani): planova sa laganim < 30 min u > 2 nedelje
+  983 → 767; pravilo u 278 planova (5 dana). Vraćeno za početnika (vrh −10 % u 38/296). Nepokriveno: 3 i 4 dana
+  (jedan lagan dan). Od 12 profila menja se samo p06.
+- Ostaje K4-10K (u toku).
