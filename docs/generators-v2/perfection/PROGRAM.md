@@ -618,3 +618,15 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 - `AGENTS.md` V4, novo pravilo 8: adapter za svaki stari format → PlanDoc (samo čita); preuzimanje samo po sebi ne
   menja plan (otisak pre = posle); preostale nedelje starog plana postaju šablon, V4 ih menja tek na događaj ili na
   zahtev; lični plan vlasnika ima prednost — čuvar samo upozorava.
+
+### 11. 11. 2026, 09:30 — V3-HM krug 2: 76,8; krug 3 pokrenut
+
+- V3-HM krug 2 (`d358ec3` na `claude/v3-hm`): svih 10 tačaka, `npm run check` 3451 ✔ (po tabu). Test v3 premešten u
+  `web/src/domain/generators/halfMarathonV3.node.test.ts` (postojeći `ciScope` test traži da svi testovi foldera
+  `halfMarathon/` budu vezani za v2; stari test nije menjan).
+- Trener `coach/ROUND-V3-HM-02.md` (`d6f10ee`): 62,7 → 74,4 → 76,8; bolji 11, slabiji 1 (p12 −2,5). Na ≥ 80: p01 81,
+  p02 81, p05 80, p09 80. Bezbednost rešena (udeo brzog 13–23 %).
+- Ne mogu do 80 ni uz savršen generator: p06 (≈ 72), p08 (≈ 77), p03/p10 (≈ 76–77), p07 (≈ 78) — ulazi; rečenice
+  za zaglavlje u § e.
+- Sud trenera: skoro gotov; vredi još JEDAN mali krug (≈ +1, 6–7 profila na 80), posle toga < 0,5 po krugu.
+- Krug 3 poslat istom tabu (8 tačaka). Posle njega: završna ocena trenera i zatvaranje HM v3.
