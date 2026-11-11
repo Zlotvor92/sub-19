@@ -585,3 +585,14 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   447 fajlova / 3967 testova, 0 padova. Uključuje HM W1 ceo i MAR W1 A–C.
 - Ostaje nepokriveno testovima: adaptacija KRATKIH/DUGIH maratonskih planova (W1-D za maraton nije urađen) i W1 na
   5K/10K (nije ugrađen). Preporuka: radnu granu ne spajati u main dok se W1 ne dovrši ili MAR W1 ne povuče.
+
+### 11. 11. 2026, 09:30 — odluke vlasnika za dalje
+
+- Danas: završiti HM v3 (krugovi ispravki + ocena trenera dok ocena ne prestane da raste).
+- Od sutra (posle reseta limita): organizator vodi, sve ostalo radi Opus 5.5, bez štednje tokena. Diže se V4 generator
+  po principu organizatora: (1) planiranje iz stanja — generator je funkcija (stanje danas, datum trke, šablon) →
+  ostatak plana, adaptacija = ponovno planiranje od stvarnog stanja; (2) biblioteka treninga sa oznakama umesto
+  treninga upisanih u šablon; (3) jedna mera opterećenja sa modelom forme i umora. Uz to: drugi nezavisan sudija
+  (isti AI trener je pisao ciljne planove i ocenjuje — rizik naduvane ocene) i pregled vlasnika.
+- Otvoreno za vlasnika: pravilo izolacije (AGENTS.md uslov 7) naspram zajedničkog motora za sve distance.
+- v2 ostaje zaustavljen.
