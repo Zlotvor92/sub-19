@@ -89,7 +89,14 @@ export function computeScale(
   const byTime = (timeCap * 60) / p.easy;
   const byShare = share * peak;
   let longMax = Math.min(abs, byTime, byShare);
-  const T = input.beginner ? 20 : peak < 45 ? 30 : peak < 80 ? 35 : 40;
+  // početnik: T do 25 min (20 km/ned) → 28 min (45 km/ned)
+  const T = input.beginner
+    ? Math.min(28, 25 + (start - 20) * 0.12)
+    : peak < 45
+      ? 30
+      : peak < 80
+        ? 35
+        : 40;
   // WU/CD po nivou i obimu (trenerski deo treninga, ne pufer za km)
   const wu = input.beginner || start < 25 ? 10 : start < 40 ? 15 : 20;
   const cd = input.beginner || start < 25 ? 10 : start < 40 ? 10 : 15;
@@ -147,7 +154,9 @@ export function computeScale(
   // brz rad po treningu i kao udeo vrha obima u km: T ≤ 13 %, I ≤ 10 % (pretpostavka, v. izveštaj)
   const I = Math.min(v < 40 ? 20 : 24, (0.1 * peak * p.I) / 60);
   const Tc = Math.min(T, (0.13 * peak * p.T) / 60);
-  const tStartMin = input.beginner ? 10 : Math.min(Math.max(0.38 * start, 12), 0.7 * Tc);
+  const tStartMin = input.beginner
+    ? Math.min(10 + 0.15 * Math.max(0, start - 20), 0.6 * Tc)
+    : Math.min(Math.max(0.38 * start, 12), 0.7 * Tc);
 
   return {
     level,

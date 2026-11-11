@@ -12,6 +12,7 @@ export interface Ctx {
   testWeek: number | null;
   checkWeek: number | null;
   testKm: number;
+  checkKm: number;
 }
 
 const r05 = (x: number): number => Math.max(0.5, Math.round(x * 2) / 2);
@@ -44,8 +45,8 @@ export function paceLabel(c: Ctx, z: 'T' | 'I' | 'R' | 'RP', week: number): stri
     RP: 'po osećaju: tempo za ≈ 2 h trčanja, RPE 6'
   }[z];
   if (c.checkWeek !== null && week > c.checkWeek) {
-    const d = Math.round(paceOf(p, z) - raceTime(p.vdot, 10000) / 10);
-    return `tempo pripremne trke 10 km ${d >= 0 ? '+' : '−'} ${Math.abs(d)} s/km`;
+    const d = Math.round(paceOf(p, z) - raceTime(p.vdot, c.checkKm * 1000) / c.checkKm);
+    return `tempo pripremne trke ${c.checkKm} km ${d >= 0 ? '+' : '−'} ${Math.abs(d)} s/km`;
   }
   if (c.testWeek !== null && week > c.testWeek) {
     const d = Math.round(paceOf(p, z) - raceTime(p.vdot, c.testKm * 1000) / c.testKm);
@@ -249,6 +250,8 @@ export function shortEasy(c: Ctx, min: number, strides: number): Session {
 export interface LongOpts {
   blockKm?: number;
   progressiveKm?: number;
+  /** poslednja 3 km bloka u ciljnom tempu (najteža nedelja, cilj brži od prognoze) */
+  goalFinish?: boolean;
 }
 
 export function long(c: Ctx, km: number, o: LongOpts, week: number): Session {
@@ -265,6 +268,8 @@ export function long(c: Ctx, km: number, o: LongOpts, week: number): Session {
   if (block)
     text = `${head}: ${kmTxt(easyKm)} km lagano + ${kmTxt(block)} km RP (${paceLabel(c, 'RP', week)})`;
   else if (prog) text += `, poslednja ${kmTxt(prog)} km progresivno do RP`;
+  if (block >= 5 && o.goalFinish)
+    text += `, poslednja 3 km u ciljnom tempu ${fmtPace(p.racePace)}/km`;
   const notes: string[] = [];
   if (slow && min >= 90) notes.push('dozvoljen 1 min hoda na 10 min');
   if (min >= 90) notes.push('unos na 35–40 min');

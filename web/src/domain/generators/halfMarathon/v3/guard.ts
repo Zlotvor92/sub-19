@@ -68,6 +68,13 @@ export function guard(doc: PlanDoc, s: Scale): Finding[] {
       add('min-week', w.index, `${w.plannedKm} km je ispod smislenog minimuma`);
     if (w.kind !== 'race' && w.days.length < Math.min(3, input.runDays.length))
       add('min-week', w.index, `samo ${w.days.length} treninga`);
+    // 10. udeo brzog rada (T, I, R, RP, blok) u vremenu nedelje ≤ 22 %, najteža nedelja ≤ 25 %
+    if (w.totalMin > 0 && w.workMin / w.totalMin > (w.kind === 'peak' ? 0.25 : 0.22))
+      add(
+        'fast-share',
+        w.index,
+        `${Math.round((100 * w.workMin) / w.totalMin)} % vremena u brzom radu`
+      );
     // 7. taper i trkačka nedelja u minutima rada
     if (peak && w.kind === 'taper' && w.workMin > 0.6 * peak.workMin + 1)
       add('taper', w.index, `taper ${w.workMin} min rada > 60 % najteže (${peak.workMin})`);

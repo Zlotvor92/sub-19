@@ -27,7 +27,7 @@ export interface RoleSpec {
 }
 
 /* ---------- obim i dugi po ulozi ---------- */
-export const VOL = { rest: 0.8, post: 0.9, taper: 0.65, race: 0.32 } as const;
+export const VOL = { rest: 0.8, check: 0.72, post: 0.9, taper: 0.65, race: 0.32 } as const;
 export const LONG = { rest: 0.8, checkSameWeek: 0.6, wave: 0.82, post: 0.82, taper: 0.6 } as const;
 
 /* ---------- redovan (sa rezultatom i po osećaju), 4+ dana ---------- */

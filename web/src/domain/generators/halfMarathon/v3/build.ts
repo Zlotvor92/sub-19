@@ -125,7 +125,8 @@ function volumes(slots: Slot[], s: Scale, current: number, beginner: boolean): n
   for (const x of slots) {
     const w = x.index;
     if (vol[w]) last = vol[w]!;
-    else if (isRest(x.role)) vol[w] = VOL.rest * last;
+    else if (isRest(x.role))
+      vol[w] = (x.role === 'check' ? VOL.check : VOL.rest) * last; // trka puni nedelju provere
     else if (x.role === 'wave' || x.role === 'block2' || x.role === 'peak') vol[w] = top;
     if (x.role === 'peak') peakVol = vol[w]!;
     if (x.role === 'post') vol[w] = VOL.post * peakVol;
@@ -203,7 +204,13 @@ function longs(
         block ? Math.min(spec.long.len * s.longNoTimeKm, byTime) : spec.long.len * L,
         most + (beginner ? 1.5 : 2)
       );
-      out[w] = { km: Math.max(r05(floor + block), Math.floor(km * 2) / 2), block, prog: 0 };
+      const km2 = Math.max(r05(floor + block), Math.floor(km * 2) / 2);
+      // 3 dana: blok najviše 35 % dugog
+      out[w] = {
+        km: km2,
+        block: days === 3 ? Math.min(block, Math.floor(0.35 * km2 * 2) / 2) : block,
+        prog: 0
+      };
       last = out[w].km;
     }
   }
@@ -216,7 +223,7 @@ interface WeekQ {
   q2: QSpec;
 }
 
-function qualityPlan(slots: Slot[], s: Scale, beginner: boolean): WeekQ[] {
+function qualityPlan(slots: Slot[], s: Scale, beginner: boolean, noI: boolean): WeekQ[] {
   const out: WeekQ[] = Array.from({ length: slots.length + 1 }, () => ({
     q1: { t: 'easy' },
     q2: { t: 'easy' }
@@ -231,7 +238,7 @@ function qualityPlan(slots: Slot[], s: Scale, beginner: boolean): WeekQ[] {
         .slice(1)
         .concat(slots.filter((x) => x.role === 'build' && x.index >= firstSpec))
     : build;
-  const reachAt = Math.max(1, (tWeeks.length - 1) * (beginner ? 0.6 : 1));
+  const reachAt = Math.max(1, tWeeks.length - 1);
   // lestvica skoro bez rasta (mali plafon): talas 80 / 90 / 100 % plafona, da ista doza ne ide 3 nedelje
   const flat = (s.caps.T - s.tStartMin) / Math.max(1, tWeeks.length - 1) < 1.5;
   const tDose = (j: number): number =>
@@ -258,7 +265,14 @@ function qualityPlan(slots: Slot[], s: Scale, beginner: boolean): WeekQ[] {
           q1: { t: 'easy' },
           q2: tq ?? BEGINNER_INTRO[Math.min(iIntro++, BEGINNER_INTRO.length - 1)]!
         };
-      else if (x.phase === 'razvoj') out[w] = { q1: DEV_Q1[iDev++ % DEV_Q1.length]!, q2: tq! };
+      else if (x.phase === 'razvoj')
+        out[w] = {
+          // plan po osećaju i 3 dana ispod 35 km: brda umesto I intervala
+          q1: noI
+            ? { t: 'H', reps: iDev++ % 2 ? 10 : 8, sec: 45 }
+            : DEV_Q1[iDev++ % DEV_Q1.length]!,
+          q2: tq!
+        };
       else {
         const i = iBase++;
         out[w] = {
@@ -302,7 +316,8 @@ function threeDay(
   let other: QSpec;
   if (beginner) [main, other] = [q.q2, q.q1];
   else if (phase === 'osnova' || phase === 'uvod') [main, other] = [q.q2, q.q1];
-  else if (phase === 'razvoj') [main, other] = w % 2 ? [q.q1, q.q2] : [q.q2, q.q1];
+  else if (phase === 'razvoj')
+    [main, other] = w % 2 && q.q1.t !== 'H' ? [q.q1, q.q2] : [q.q2, q.q1];
   else [main, other] = isQ(q.q1) ? [q.q1, q.q2] : [q.q2, q.q1];
   if (!isQ(main) && isQ(other)) [main, other] = [other, main];
   let minor: QSpec = { t: 'easy' };
@@ -322,8 +337,35 @@ function threeDay(
             tMin: Math.round(Math.min(14, s.caps.T * (other.t === 'T' ? other.dose : 0.4)))
           };
   if (main.t === 'sharpen') minor = { t: 'easy', strides: 4 };
+  // nedelja sa blokom u dugom: prvi dan lagan, kvalitet bliže dugom sa najviše 60 % doze
+  if (hasBlock && (main.t === 'RP' || main.t === 'T' || main.t === 'I'))
+    return { q1: { t: 'easy' }, q2: main }; // doza ≤ 60 % određuje nedeljni budžet (nedelja sa blokom)
   return { q1: main, q2: minor };
 }
+
+/** procena minuta rada namere (za nedeljni budžet brzog rada) */
+function estWork(q: QSpec, s: Scale, p: { R: number }): number {
+  switch (q.t) {
+    case 'T':
+      return q.dose * s.caps.T;
+    case 'I':
+      return q.dose * s.caps.I;
+    case 'RP':
+      return q.dose * s.caps.RP;
+    case 'R':
+      return (q.reps * q.m * p.R) / 60000;
+    case 'H':
+      return (q.reps * q.sec) / 60;
+    case 'easy':
+      return q.tMin ?? 0;
+    case 'sharpen':
+      return 10;
+  }
+}
+
+/** udeo plafona zone na koji se doza spušta (T/I/RP); ostale namere se ne menjaju */
+const scaled = (q: QSpec, f: number): QSpec =>
+  q.t === 'T' || q.t === 'I' || q.t === 'RP' ? { ...q, dose: q.dose * f } : q;
 
 /* ---------- raspodela laganih km (jedan vlasnik) ---------- */
 function fill(total: number, mins: number[], maxs: number[]): number[] {
@@ -364,10 +406,19 @@ export function generate(input: V3Input): PlanDoc {
     rampWeeks,
     d.beforeLong !== null && d.beforeLong !== d.q1 && d.beforeLong !== d.q2
   );
-  const checkDay: Weekday = d.beforeLong && d.easy.includes(d.beforeLong) ? d.beforeLong : d.long;
+  let checkDay: Weekday = d.beforeLong && d.easy.includes(d.beforeLong) ? d.beforeLong : d.long;
+  const checkSlot = slots.find((x) => x.role === 'check');
+  // trka umesto dugog, a sledeća nedelja je vrh (blok mora ostati): trka ide na dan drugog kvaliteta
+  if (checkDay === d.long && checkSlot && slots[checkSlot.index]?.role === 'peak' && d.q2)
+    checkDay = d.q2;
   const vol = volumes(slots, s, input.weeklyKm, beginner);
   const lng = longs(slots, s, vol, beginner, days, checkDay === d.long, paces);
-  const qp = qualityPlan(slots, s, beginner);
+  const qp = qualityPlan(
+    slots,
+    s,
+    beginner,
+    paces.estimated || (days === 3 && input.weeklyKm < 35)
+  );
   const testWeek = slots.find((x) => x.role === 'test')?.index ?? null;
   const checkWeek = slots.find((x) => x.role === 'check')?.index ?? null;
   const ctx: S.Ctx = {
@@ -376,7 +427,8 @@ export function generate(input: V3Input): PlanDoc {
     beginner,
     testWeek: paces.estimated ? testWeek : null,
     checkWeek: paces.estimated ? checkWeek : null,
-    testKm: 3
+    testKm: 3,
+    checkKm: 10
   };
   const easyMinKm = (CAPS.minEasyMin * 60) / paces.easy;
   const weekMonday0 = mondayOf(start);
@@ -396,6 +448,109 @@ export function generate(input: V3Input): PlanDoc {
     if (days === 3 || s.singleQuality)
       q = threeDay(q, x.phase, w, !!lp?.block, beginner, s, x.role);
 
+    // posle pripremne trke: kvalitet najranije 4 dana kasnije; dugi posle trke koja je zamenila dugi je bez bloka
+    if (checkSlot && w === checkSlot.index + 1) {
+      const raceDay = mon - 7 + WEEKDAYS.indexOf(checkDay);
+      const gap = (day: Weekday | null): number =>
+        day ? mon + WEEKDAYS.indexOf(day) - raceDay : 99;
+      if (q.q1.t !== 'easy' && gap(d.q1) < 4)
+        q =
+          q.q2.t === 'easy' && gap(d.q2) >= 4
+            ? { q1: { t: 'easy' }, q2: q.q1 }
+            : { ...q, q1: { t: 'easy' } };
+      if (q.q2.t !== 'easy' && gap(d.q2) < 4) q = { ...q, q2: { t: 'easy' } };
+      if (checkDay === d.long && lp && x.role !== 'peak') lp.block = 0;
+    }
+
+    // NEDELJNI BUDŽET BRZOG RADA (jedini vlasnik doze nedelje): T + I + R + RP + blok ≤ 22 % vremena nedelje
+    // (najteža ≤ 25 %; kratka priprema: van dve ključne nedelje ≤ 20 %); u nedelji sa blokom RP usred nedelje ≤ 60 %.
+    if (x.role !== 'race' && x.role !== 'check' && x.role !== 'test') {
+      const short = N <= 11 && !beginner;
+      const key = x.role === 'peak' || x.role === 'block2' || (N < 10 && x.role === 'block1');
+      const limit = x.role === 'peak' ? 0.235 : short && !key ? 0.185 : 0.205;
+      // vreme nedelje unapred: obim koji dani stvarno nose (dugi + kvaliteti + lagani do plafona) × lagan tempo
+      const longKm0 = lp?.km ?? 0;
+      const qKm = (x2: QSpec): number =>
+        x2.t === 'easy'
+          ? 0
+          : ((s.wu + s.cd) * 60) / paces.easy + (estWork(x2, s, paces) * 60) / paces.RP;
+      const qDays = [d.q1, d.q2].filter((day, i) => day && [q.q1, q.q2][i]!.t !== 'easy');
+      const caps = input.runDays
+        .filter((day) => day !== d.long && !qDays.includes(day))
+        .map(
+          (day) =>
+            (day === d.beforeLong
+              ? CAPS.dayBeforeLong
+              : days === 3
+                ? CAPS.easyShareOfLong3
+                : CAPS.easyShareOfLong) * longKm0
+        )
+        .sort((a, b) => b - a);
+      const easyCap = caps
+        .slice(0, Math.max(1, caps.length - droppedLast))
+        .reduce((a, b) => a + b, 0); // bez dana koji su otpali
+      const weekKm = Math.min(vol[w]!, longKm0 + qKm(q.q1) + qKm(q.q2) + easyCap);
+      // posle vrha: ≤ 85 % (taper ≤ 60 %) stvarno planiranog rada najteže nedelje
+      const peakWork = weeks.find((y) => y.kind === 'peak')?.workMin ?? Infinity;
+      const after =
+        x.role === 'post' ? 0.8 * peakWork : x.role === 'taper' ? 0.56 * peakWork : Infinity;
+      // pre vrha: ≤ 85 % procenjenog budžeta najteže nedelje (vrh ostaje najteži i kad plafon izjednači doze)
+      const pv = vol[slots.find((y) => y.role === 'peak')!.index]!;
+      const peakBudget = 0.235 * ((pv * paces.easy) / 60) * (pv < 30 ? 0.8 : 0.95);
+      const peakTemplate = 0.6 * s.caps.RP + (s.blockMaxKm * paces.RP) / 60; // vrh: RP ≤ 60 % + najduži blok
+      const before =
+        x.role === 'peak' || after !== Infinity
+          ? Infinity
+          : 0.85 * Math.min(peakBudget, peakTemplate);
+      const budget = Math.min(
+        after,
+        before,
+        limit * ((weekKm * paces.easy) / 60) * (weekKm < 30 ? 0.8 : 0.95)
+      );
+      if (lp?.block) {
+        const maxBlock = Math.floor(((0.55 * budget * 60) / paces.RP) * 2 + 1e-6) / 2;
+        lp.block = Math.max(0, Math.min(lp.block, maxBlock));
+        // nedelja sa blokom: RP usred nedelje 60 % doze šablona (≤ 60 % plafona); 3 dana: i T/I
+        const cap60 = (x2: QSpec): QSpec =>
+          x2.t === 'RP' || (days === 3 && (x2.t === 'T' || x2.t === 'I'))
+            ? { ...x2, dose: 0.6 * Math.min(1, x2.dose) }
+            : x2;
+        q = { q1: cap60(q.q1), q2: cap60(q.q2) };
+      }
+      const isScal0 = (x2: QSpec): boolean => x2.t === 'T' || x2.t === 'I' || x2.t === 'RP';
+      const fix0 = [q.q1, q.q2]
+        .filter((x2) => !isScal0(x2))
+        .reduce((a, x2) => a + estWork(x2, s, paces), 0);
+      // kvalitet usred nedelje ima prednost nad delom bloka: bar 8 min ostaje za njega (blok najmanje 1,5 km)
+      const blockLeft = ((budget - fix0 - 8) * 60) / paces.RP;
+      if (
+        lp?.block &&
+        [q.q1, q.q2].some(isScal0) &&
+        budget - fix0 - (lp.block * paces.RP) / 60 < 8 &&
+        blockLeft >= 1.5
+      )
+        lp.block = Math.max(1.5, Math.floor((((budget - fix0 - 8) * 60) / paces.RP) * 2) / 2);
+      const longWork = lp ? ((lp.block + lp.prog / 2) * paces.RP) / 60 : 0;
+      const isScal = (x2: QSpec): boolean => x2.t === 'T' || x2.t === 'I' || x2.t === 'RP';
+      const scal = [q.q1, q.q2].filter(isScal).reduce((a, x2) => a + estWork(x2, s, paces), 0);
+      const fix = [q.q1, q.q2]
+        .filter((x2) => !isScal(x2))
+        .reduce((a, x2) => a + estWork(x2, s, paces), 0);
+      const room = budget - longWork - fix;
+      if (scal > 0 && scal > room) {
+        // spuštena doza malo varira po nedelji (da ista doza ne ide tri nedelje zaredom), ali ne ispod 8 min;
+        // doza kojoj ni bez variranja ne ostaje 8 min nije trening: taj dan postaje lagan sa ubrzanjima
+        const f = Math.max(0, room / scal);
+        const keep = (x2: QSpec): QSpec => {
+          if (!isScal(x2)) return x2;
+          const est = estWork(x2, s, paces);
+          if (est * f < 8) return { t: 'easy', strides: 4 };
+          return scaled(x2, Math.max(8 / est, f * [1, 0.85, 0.93][w % 3]!));
+        };
+        q = { q1: keep(q.q1), q2: keep(q.q2) };
+      }
+    }
+
     // pravilo rasta obima važi prema stvarno planiranom (ne samo prema lestvici): najviše korak iznad poslednje 3 nedelje
     if (!isRest(x.role) && x.role !== 'post' && x.role !== 'taper' && x.role !== 'race') {
       const recent = weeks.slice(-3).map((y) => y.plannedKm);
@@ -407,10 +562,24 @@ export function generate(input: V3Input): PlanDoc {
       raceWeek(ctx, d, input, race, mon, vol[w]!, sessions, notes, goalOk);
     } else {
       if (lp)
-        sessions.set(d.long, S.long(ctx, lp.km, { blockKm: lp.block, progressiveKm: lp.prog }, w));
+        sessions.set(
+          d.long,
+          S.long(
+            ctx,
+            lp.km,
+            { blockKm: lp.block, progressiveKm: lp.prog, goalFinish: x.role === 'peak' && goalOk },
+            w
+          )
+        );
       if (x.role === 'check') {
-        const km = vol[w]! >= 25 ? 10 : 5;
+        // 10 km samo kad prosečna nedelja nosi ≥ 35 km i trka traje ≤ 60 min; inače 5 km
+        const before = weeks.map((y) => y.plannedKm);
+        const avg = before.length
+          ? before.reduce((a, b) => a + b, 0) / before.length
+          : input.weeklyKm;
+        const km = avg >= 35 && raceTime(paces.vdot, 10000) <= 3600 ? 10 : 5;
         sessions.set(checkDay, S.check(ctx, km, w));
+        ctx.checkKm = km;
         notes.push(checkRule(ctx, km, input, goalOk));
       }
       const q1 = d.q1 ? S.quality(ctx, q.q1, w) : null;
@@ -422,13 +591,14 @@ export function generate(input: V3Input): PlanDoc {
         ctx.testKm = km;
         notes.push(testRule(ctx, km));
       }
-      if (q1 && d.q1) sessions.set(d.q1, q1);
-      if (q2 && d.q2) sessions.set(d.q2, q2);
+      if (q1 && d.q1 && !sessions.has(d.q1)) sessions.set(d.q1, q1);
+      if (q2 && d.q2 && !sessions.has(d.q2)) sessions.set(d.q2, q2);
       // lagani dani: q-dani bez kvaliteta postaju lagani
       const easyDays = input.runDays.filter((day) => !sessions.has(day));
       const longKm = lp?.km ?? LONG.rest * (lng[w - 1]?.km ?? s.longStartKm);
       const fixed = [...sessions.values()].reduce((a, x2) => a + x2.km, 0);
-      const share = days === 3 ? CAPS.easyShareOfLong3 : CAPS.easyShareOfLong;
+      // 3 dana: lagan dan ≤ 75 % dugog, u nedelji sa blokom ≤ 60 %
+      const share = days === 3 ? (lp?.block ? 0.6 : CAPS.easyShareOfLong3) : CAPS.easyShareOfLong;
       // lagan dan ≥ 30 min, inače manje dana: višak dana otpada (prvo onaj koji nije dan pred dugi)
       const avail = vol[w]! - fixed;
       // odluka je trajna: dan koji je otpao vraća se tek kad stane bez prekoračenja obima (bez skoka od dana do dana)
@@ -451,11 +621,21 @@ export function generate(input: V3Input): PlanDoc {
       while (canDrop() && easyDays.length * easyMinKm > avail + tol * vol[w]! + 0.5) dropOne();
       if (!isRest(x.role)) droppedLast = all - easyDays.length;
       if (all > easyDays.length) dropped++;
-      const maxs = easyDays.map((day) =>
+      let maxs = easyDays.map((day) =>
         Math.max(easyMinKm, (day === d.beforeLong ? CAPS.dayBeforeLong : share) * longKm)
       );
-      const mins = easyDays.map((_, i) => Math.min(easyMinKm, maxs[i]!));
-      const km = fill(vol[w]! - fixed, mins, maxs);
+      if (beginner) maxs = maxs.map(() => Math.min(...maxs)); // početnik: ujednačeni lagani dani
+      // 4 dana: lagan dan bar 35 % dugog (ne „kratak dan uz dug dugi")
+      const minKm = days === 4 && lp ? Math.max(easyMinKm, 0.35 * longKm) : easyMinKm;
+      const mins = easyDays.map((_, i) => Math.min(minKm, maxs[i]!));
+      let km = fill(vol[w]! - fixed, mins, maxs);
+      // nedelja 1 ≥ 95 % sadašnjeg obima: lagani nose razliku (do 80 % dugog, 3 dana 90 %)
+      if (w === 1 && fixed + km.reduce((a, b) => a + b, 0) < 0.95 * vol[w]!)
+        km = fill(
+          0.96 * vol[w]! - fixed,
+          km,
+          easyDays.map(() => (days === 3 ? 0.9 : 0.8) * longKm)
+        );
       const strideDay =
         easyDays.find((day) => day !== d.beforeLong && day !== checkDay) ??
         easyDays.find((day) => day !== checkDay) ??

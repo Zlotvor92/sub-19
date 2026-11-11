@@ -37,8 +37,11 @@ export function layout(N: number, beginner: boolean, needTest: boolean): Slot[] 
     if (beginner) role[N - 5] = 'block1';
     else {
       role[N - 5] = 'block2';
-      role[N - 6] = 'wave';
-      role[N - 7] = 'block1';
+      // kratka priprema (10–11 ned): tempo trke ne pre polovine plana, pa bez prvog bloka i talasa
+      if (N >= 12) {
+        role[N - 6] = 'wave';
+        role[N - 7] = 'block1';
+      }
     }
     const rests: number[] = [];
     for (let w = N - 8; w >= 4; w -= 4) rests.push(w);

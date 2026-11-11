@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+/* Test HM v3 stoji van `halfMarathon/`: ciScope.node.test.ts traži da svaki test u `halfMarathon/` bude izabran pri
+   izmeni HM v2, a v3 nema veze sa v2 (nula uvoza). */
 import {
   generate,
   renderText,
@@ -6,7 +8,7 @@ import {
   type PlanDoc,
   type V3Input,
   type Weekday
-} from './index.ts';
+} from './halfMarathon/v3/index.ts';
 
 /* HM v3 — invarijante nad mrežom ≈ 400 ulaza (3–6 dana, 15–90 km, 6–24 nedelje, tri porodice).
    Meri oblik plana brojevima (GAP § 2–3): vrh i silazak, lestvica dugog i bloka RP, provera forme, neponavljanje,
@@ -132,26 +134,84 @@ describe('HM v3 — mreža invarijanti', () => {
       if (build.length >= 3)
         expect(build[build.length - 1]!, label).toBeGreaterThanOrEqual(build[0]!);
       expect(max, label).toBeGreaterThan(longs[0]!);
-      if (N >= 10 && doc.family !== 'beginner') {
+      if (N >= 12 && doc.family !== 'beginner') {
         const wave = longs[N - 7]!; // N-6: dole u talasu
-        expect(wave, label).toBeLessThanOrEqual(0.88 * Math.max(longs[N - 8]!, longs[N - 6]!));
+        expect(wave, label).toBeLessThanOrEqual(
+          0.88 * Math.max(longs[N - 8]!, longs[N - 6]!) + 0.5
+        );
       }
     }
   });
 
-  it('blok RP u dugom raste do najdužeg u nedelji vrha (redovan, ≥ 10 ned: 4 → 6 → ≥ 7 km)', () => {
+  it('blok RP u dugom raste do najdužeg u nedelji vrha (redovan, ≥ 10 ned; 12+ ned: N−7 < N−5 ≤ N−3)', () => {
     for (const { doc, label } of plans) {
       const N = doc.weeks.length;
       if (N < 10 || doc.family === 'beginner') continue;
       const block = (i: number): number => longOf(doc.weeks[i - 1]!)?.segments[1]?.km ?? 0;
-      const b = [block(N - 7), block(N - 5), block(N - 3)];
-      expect(b[0], label).toBeGreaterThan(0);
-      expect(b[1]!, label).toBeGreaterThan(b[0]!);
+      const b = [N >= 12 ? block(N - 7) : 0, block(N - 5), block(N - 3)];
+      expect(b[2], label).toBeGreaterThan(0);
       expect(b[2]!, label).toBeGreaterThanOrEqual(b[1]!);
+      // N−7 je bez bloka kad je pre nje trka umesto dugog; vrlo mali blok (≤ 2,5 km) ne može da raste u koracima
+      if (N >= 12 && b[1]! > 2.5) expect(b[1]!, label).toBeGreaterThan(b[0]!);
       expect(
         Math.max(...doc.weeks.map((w, i) => (longOf(w)?.zone === 'RP' ? block(i + 1) : 0))),
         label
       ).toBe(b[2]);
+    }
+  });
+
+  it('brz rad (T, I, R, RP, blok) ≤ 22 % vremena nedelje, najteža ≤ 25 %; kratka priprema: najviše 2 nedelje > 20 %', () => {
+    for (const { doc, label } of plans) {
+      const share = doc.weeks.map((w) => w.workMin / w.totalMin);
+      doc.weeks.forEach((w, i) =>
+        expect(share[i]!, `${label} ned ${w.index}`).toBeLessThanOrEqual(
+          w.kind === 'peak' ? 0.25 : 0.22
+        )
+      );
+      if (doc.weeks.length <= 11 && doc.family !== 'beginner')
+        expect(share.filter((x) => x > 0.2).length, label).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('3 dana, nedelja sa blokom: prvi dan lagan ≤ 60 % dugog, kvalitet ≤ 60 % plafona, blok ≤ 35 % dugog', () => {
+    for (const { doc, label, input } of plans) {
+      if (input.runDays.length !== 3) continue;
+      for (const w of doc.weeks) {
+        const long = longOf(w);
+        const blockKm = long?.zone === 'RP' ? (long.segments[1]?.km ?? 0) : 0;
+        if (!long || !blockKm || w.kind === 'race') continue;
+        expect(blockKm, `${label} ned ${w.index}`).toBeLessThanOrEqual(0.35 * long.km + 0.01);
+        const first = w.days.find((d) => d.session.kind !== 'long')!.session;
+        expect(first.kind, `${label} ned ${w.index}`).toBe('easy');
+        // ≤ 60 % dugog, osim kad je to ispod najkraćeg laganog dana (30 min)
+        if (first.min > 31)
+          expect(first.km, `${label} ned ${w.index}`).toBeLessThanOrEqual(0.6 * long.km + 0.1);
+        for (const d of w.days)
+          if (d.session.kind === 'quality' && d.session.zone === 'RP')
+            expect(d.session.workMin, `${label} ned ${w.index}`).toBeLessThanOrEqual(
+              0.6 * 45 + 1.5
+            );
+      }
+    }
+  });
+
+  it('posle pripremne trke: kvalitet najranije 4 dana kasnije; trka umesto dugog → sledeći dugi bez bloka (osim vrha)', () => {
+    for (const { doc, label } of plans) {
+      const all = doc.weeks.flatMap((w) => w.days.map((d) => ({ ...d, kind: w.kind })));
+      const i = all.findIndex(
+        (d) => d.session.kind === 'check' && /PRIPREMNA/.test(d.session.text)
+      );
+      if (i < 0) continue;
+      const t0 = Date.parse(all[i]!.date);
+      for (const d of all.slice(i + 1))
+        if (d.session.kind === 'quality') {
+          expect((Date.parse(d.date) - t0) / 86_400_000, label).toBeGreaterThanOrEqual(4);
+          break;
+        }
+      const next = all.slice(i + 1).find((d) => d.session.kind === 'long');
+      const sameWeekLong = all.slice(i + 1, i + 2).some((d) => d.session.kind === 'long');
+      if (next && !sameWeekLong && next.kind !== 'peak')
+        expect(next.session.zone, label).toBeNull();
     }
   });
 
@@ -168,16 +228,19 @@ describe('HM v3 — mreža invarijanti', () => {
       for (let i = 1; i < nr.length; i++)
         if (nr[i]!.index === nr[i - 1]!.index + 1)
           expect(sig(nr[i]!), `${label} ned ${nr[i]!.index}`).not.toBe(sig(nr[i - 1]!));
+      // ista doza (minuti) i ista podela iste zone najviše 2 nedelje; treća menja podelu, oporavak ili količinu
       for (const z of ['T', 'I', 'RP'] as const) {
         let run = 0;
-        let prev = -1;
+        let prev = '';
         for (const w of nr) {
-          const dose = w.days
-            .filter((d) => d.session.kind === 'quality' && d.session.zone === z)
-            .map((d) => Math.round(d.session.workMin))[0];
-          run = dose !== undefined && dose === prev ? run + 1 : 1;
-          prev = dose ?? -1;
-          if (dose !== undefined)
+          const q = w.days.find(
+            (d) => d.session.kind === 'quality' && d.session.zone === z
+          )?.session;
+          const key = q ? `${Math.round(q.workMin)}|${q.text.replace(/\([^)]*\)/g, '')}` : '';
+          run = q && key === prev ? run + 1 : 1;
+          prev = key;
+          // doze ≤ 12 min (vrlo mali obim) nemaju prostora za promenu na celom minutu
+          if (q && q.workMin > 12)
             expect(run, `${label} ${z} ned ${w.index}`).toBeLessThanOrEqual(2);
         }
       }

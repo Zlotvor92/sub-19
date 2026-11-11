@@ -13,9 +13,9 @@ kopirano). Ispis 12 profila: `P9v3/plans/HM/p01…p12.txt` (`node ../docs/genera
 7. `sessions.ts` — trening iz namere: minuti rada → deonice trenerskih dužina → km i minuti iz tempa.
 8. `guard.ts` — 9 provera, samo prijavljuje. `text.ts` — čitljiv ispis. `index.ts` — javni API (`generate`, `renderText`).
 
-Kod: **1 851 red** (8 fajlova, posle prettier-a), bez testa. Test: `v3.node.test.ts`, 420 ulaza, 13 provera, ≈ 1 s.
+Kod: **1 851 red** u krugu 1, **2 056** u krugu 2 (8 fajlova, posle prettier-a), bez testa. Test: `generators/halfMarathonV3.node.test.ts` (krug 2: van `halfMarathon/`, v. dole), 420 ulaza, ≈ 1 s.
 
-## 12 profila (P9 ulazi)
+## 12 profila (P9 ulazi) — krug 1
 | profil | ned | vrh obima km | najduži dugi km (min) | najduži plato dugog (ned) | najveći rad (pre trke) | km RP ukupno / u dugom | čuvar |
 |---|---|---|---|---|---|---|---|
 | p01 | 16 | 56,0 | 22 (123) | 1 | 13 (3 pre) | 70,4 / 26,5 | 0 |
@@ -62,3 +62,43 @@ Kod: **1 851 red** (8 fajlova, posle prettier-a), bez testa. Test: `v3.node.test
 - Slabije tačke: mali obim sa 5–6 dana (dani otpadaju, plan je ispravan ali krut), a planirani obim ostaje ispod cilja u
   nedeljama gde ga ograničava pravilo „dan pred dugi ≤ 50 %" (p04 ned 1–3, talas-nedelje). Doze u plafonima su delimično
   pretpostavke, gore navedene.
+
+## Krug 2 (po ROUND-V3-HM-01 § e; isti dan)
+Šta je promenjeno (sve u `v3/`, po jedan vlasnik):
+1. **Nedeljni budžet brzog rada** (`build.ts`, jedino mesto doze nedelje): T + I + R + RP + blok ≤ 20,5 % procenjenog
+   vremena nedelje (vrh 23,5 %), procena iz obima koji dani stvarno nose; u nedelji sa blokom RP usred nedelje = 60 %
+   doze šablona; vrh ostaje najteži (ostale ≤ 85 % procene vrha), posle vrha ≤ 80 % / taper ≤ 56 % stvarnog rada vrha.
+   Doza ispod 8 min postaje lagan dan sa ubrzanjima. Čuvar: nova provera `fast-share` (22 %, vrh 25 %).
+2. **3 dana, nedelja sa blokom**: prvi dan lagan (≤ 60 % dugog), kvalitet bliže dugom sa ≤ 60 % doze, blok ≤ 35 % dugog.
+3. **Posle pripremne trke**: kvalitet najranije 4 dana kasnije (pomera se na drugi dan ili postaje lagan); kad trka
+   zamenjuje dugi, sledeći dugi je bez bloka (ako je sledeća nedelja vrh, trka ide na dan drugog kvaliteta).
+4. **Kratka priprema** (10–11 ned): bez prvog bloka i talasa (RP ne pre polovine), budžet 18,5 % van dve ključne
+   nedelje; nedelja pripremne trke ima cilj 72 % prethodne.
+5. **Nedelja 1 ≥ 95 %** sadašnjeg obima: lagani nose razliku do 80 % dugog (3 dana 90 %), samo u nedelji 1.
+6. **Pripremna trka 10 km** samo kad je prosečna nedelja ≥ 35 km i 10 km ≤ 60 min; inače 5 km.
+7. **Početnik**: T lestvica linearno do plafona 25 (20 km) → 28 min (45 km), bez ciklusa; početak 10–14 min.
+8. **Bez I intervala** za plan po osećaju i 3 dana < 35 km: brda 8–10 × 45 s.
+9. **Lagan dan ≥ 35 % dugog** kod 4 dana; početnik: ujednačeni lagani dani.
+10. Nalazi čuvara se ne ispisuju korisniku (samo ako postoje, kao „PROVERE PLANA"); u najtežoj nedelji, kad je cilj brži
+    od prognoze, poslednja 3 km bloka u ciljnom tempu. Labela tempa posle provere navodi stvarnu dužinu trke (5/10 km).
+
+| profil | najteža ned. brz rad | najviše u nedelji | ned > 22 %* | ned > 20 % | ned 1 / sada km | blok RP u dugom (km) | vrh km |
+|---|---|---|---|---|---|---|---|
+| p01 | 21 % (65 min) | 21 % | 0 | 1 | 40 / 40 | 5 → 6,5 → 8 → 5 | 56,0 |
+| p02 | 22 % (62 min) | 22 % | 0 | 2 | 40 / 40 | 5 → 6,5 → 8 → 5 | 54,0 |
+| p03 | 23 % (53 min) | 23 % | 1 | 1 | 24 / 25 | 4 → 5 → 3 | 33,3 |
+| p04 | 16 % (68 min) | 16 % | 0 | 0 | 52,7 / 55 | 4 → 5 → 8 → 4 | 62,9 |
+| p05 | 16 % (70 min) | 16 % | 0 | 0 | 85,9 / 90 | 6 → 8,5 → 12 → 6 | 99,9 |
+| p06 | 23 % (45 min) | 23 % | 1 | 2 | 33,8 / 35 | 5,5 → 6,5 → 4,5 | 43,2 |
+| p07 | 19 % (73 min) | 19 % | 0 | 0 | 54,9 / 55 | 7 → 10 → 5 | 67,9 |
+| p08 | 23 % (61 min) | 23 % | 1 | 2 | 43,2 / 45 | 6,5 → 7,5 → 5 | 48,8 |
+| p09 | 20 % (68 min) | 20 % | 0 | 1 | 43,2 / 45 | 5 → 6,5 → 8,5 → 5 | 59,0 |
+| p10 | 23 % (51 min) | 23 % | 1 | 1 | 24 / 25 | 4 → 5 → 3 | 33,9 |
+| p11 | 14 % (38 min) | 14 % | 0 | 0 | 20,6 / 20 | 3 → 4 → 2,5 | 38,7 |
+| p12 | 14 % (49 min) | 14 % | 0 | 0 | 43,7 / 45 | 3,5 → 5 → 3,5 | 52,8 |
+\* jedina nedelja > 22 % je uvek najteža (≤ 25 %); čuvar 0 nalaza na 12 profila i 420 ulaza. Cena: blok u najtežoj nedelji je manji nego u krugu 1 (p01 9,5 → 8 km, p02 10 → 8); kod 3 dana sa malim obimom
+(p03, p10) blok pada posle vrha (5 → 3 km). p12 vrh 52,8 km (krug 1: 55,7), jer lagani dani početnika su ujednačeni.
+Test (16 provera) dobio: plafon 22/25 % i ≤ 2 nedelje > 20 % u kratkoj pripremi, pravilo 3 dana, 4 dana posle trke.
+Postojeći test `scripts/ciScope.node.test.ts` („HM v2: svi testovi foldera…") pada kad je u `halfMarathon/` test koji
+ne zavisi od v2 (traži da svaki test tog foldera bude izabran pri izmeni v2); stari test nije menjan — v3 test je
+premešten u `generators/halfMarathonV3.node.test.ts`, kod generatora ostaje u `halfMarathon/v3/`.

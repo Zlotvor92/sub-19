@@ -76,9 +76,10 @@ export function renderText(doc: PlanDoc, title?: string): string {
     }
     for (const n of w.notes) o.push(`  Napomena: ${n}`);
   }
-  o.push('', '='.repeat(60), 'ČUVAR BEZBEDNOSTI');
-  if (!doc.guard.length) o.push('  (bez nalaza)');
-  for (const f of doc.guard)
-    o.push(`  [${f.check}] ${f.week ? `ned ${f.week}: ` : ''}${f.message}`);
+  // nalazi čuvara su interni (PlanDoc.guard); korisniku se prikazuju samo ako postoje
+  if (doc.guard.length) {
+    o.push('', '='.repeat(60), 'PROVERE PLANA');
+    for (const f of doc.guard) o.push(`  ${f.week ? `ned ${f.week}: ` : ''}${f.message}`);
+  }
   return o.join('\n') + '\n';
 }
