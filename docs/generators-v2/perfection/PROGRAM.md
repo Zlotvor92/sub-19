@@ -450,3 +450,16 @@ Plan P9 (do kraja):
   > 2 nedelje 7078 → 2607 (ostatak: 3 i 4 dana, jedini lagan dan).
 - Verzije na završnom vrhu: 5k-v2.17.0, 10k-v2.16.0, hm-v2.14.0, marathon-v2.14.0. Svi K4 tabovi arhivirani.
 - Pokrenuto: glavni trener → `coach/ROUND-04.md`; `npm run check:full` na `ad67fda` (organizator, pozadina).
+
+### 11. 11. 2026, 02:40 — krug 4 glavnog trenera (završna provera)
+
+- `coach/ROUND-04.md` (`bede7b7`): prosek 54,6 → 59,0 → 59,9 → 60,6 (5K 59,1; 10K 60,9; HM 62,7; MAR 59,8). Bolji 11,
+  isti 37, slabiji 0. Iznad 70: 4 plana. Ispod 50: samo 5K p08 49,5 (krug 1: 14 planova, najniži 31,0).
+- Završni sud: 10K da; HM da; 5K da uz napomenu (3 dana i < 20 km tanak); maraton da uz napomenu, 3 dana sada
+  prihvatljivo; maraton-početnik ispod ~35 km/ned i dalje NE kao priprema — pustiti samo ako ekran pre generisanja
+  preporuči HM/dužu pripremu i korisnik potvrdi (proizvodna odluka vlasnika; traži izmenu ekrana).
+- Sitno: poruka o malom obimu u tri oblika, jedan sa ISO datumom — ujednačiti; pravilo B ne pokriva rasterećenja/taper.
+- Trener: dalja dobit po krugu < 1 poen; sledeći veći pomak je van pravila generatora (gorivo i tempo trke, pripremna
+  trka, hod-trk za spore). Odluka organizatora: krugovi izmena se ovde zaustavljaju. Ostaje završni `check:full`.
+- Za budući krug (trener, ≈ +1,3 ukupno): najteža nedelja pre tapera; monotonija iste doze + talas u razvoju MAR
+  3 dana; pravilo B u rasterećenju/taperu, upozorenje pre generisanja za maraton < 35 km, kraći test za < 20 km.
