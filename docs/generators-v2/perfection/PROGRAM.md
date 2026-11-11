@@ -680,3 +680,8 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 - Svi korisnici (i vlasnik) mere puls optički na zglobu, bez grudne trake. `AGENTS.md` 9a dopunjen: puls samo kao
   višenedeljni trend na ravnomernim laganim trčanjima; glavni signali tempo, odrađeni kvalitet, trke; procena forme
   mora da radi i bez pulsa.
+
+### 11. 11. 2026 — plan rada za V4 napisan
+
+- `docs/generators-v4/PLAN.md`: cilj i mere, raspored foldera, faze F0–F9 sa kapijama i modelima, raspored prvog
+  dana, pravila za tabove, rizici, odluke koje čekaju vlasnika. Dnevnik V4 od 12. 11.: `docs/generators-v4/LOG.md`.
