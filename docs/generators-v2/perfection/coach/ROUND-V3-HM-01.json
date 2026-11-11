@@ -1,0 +1,202 @@
+{
+ "round": "V3-HM-01",
+ "date": "2026-11-11",
+ "version": "hm-v3-3.0.0",
+ "rubric": "P7b",
+ "average": 74.4,
+ "old_average": 62.7,
+ "plans": [
+  {
+   "profile": "p01",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 7,
+    "specificity": 9,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 79.5,
+   "round4_old": 72.0,
+   "target": 84,
+   "main_issue": "ned 13: 89 min RP = 28 % vremena nedelje; ned 9 RP u utorak 3 dana posle trke 10 km"
+  },
+  {
+   "profile": "p02",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 6,
+    "specificity": 9,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 78.0,
+   "round4_old": 71.0,
+   "target": null,
+   "main_issue": "ned 11: 88 min RP = 32 %; lagan dan 5,5-5,9 km uz dugi 20 km"
+  },
+  {
+   "profile": "p03",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 8,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 73.0,
+   "round4_old": 60.5,
+   "target": null,
+   "main_issue": "ned 13: 76 min RP = 31 % na 3 dana i 35 km; trka 10 km (59 min) pri 26 km/ned, RP 2 dana posle"
+  },
+  {
+   "profile": "p04",
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 78.0,
+   "round4_old": 60.5,
+   "target": 80,
+   "main_issue": "nedelja 1 = 49 km uz trenutnih 55"
+  },
+  {
+   "profile": "p05",
+   "scores": {
+    "fit": 8,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 7,
+    "specificity": 9,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 79.5,
+   "round4_old": 67.5,
+   "target": null,
+   "main_issue": "nedelja 1 = 85 km uz 90; T 39-40 min dve nedelje zaredom"
+  },
+  {
+   "profile": "p06",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 63.5,
+   "round4_old": 58.0,
+   "target": null,
+   "main_issue": "5 od 6 nedelja izgradnje sa > 20 % brzog; ned 7: 62 min RP = 33 %; RP od nedelje 3"
+  },
+  {
+   "profile": "p07",
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 71.5,
+   "round4_old": 64.5,
+   "target": null,
+   "main_issue": "ned 7: 91 min RP = 26 %; ned 5: 74 min"
+  },
+  {
+   "profile": "p08",
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 8,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 69.5,
+   "round4_old": 58.0,
+   "target": null,
+   "main_issue": "ned 17: uto 14,4 km + čet RP 43 min + dugi 22 sa 10 km RP = 91 min, 32 %; nedelja 1 = 41 km uz 45"
+  },
+  {
+   "profile": "p09",
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 8,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 76.5,
+   "round4_old": 61.5,
+   "target": null,
+   "main_issue": "ned 13: 86 min RP = 26 % bez rezultata trke do ned 8; nedelja 1 = 41 uz 45"
+  },
+  {
+   "profile": "p10",
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 8,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 68.0,
+   "round4_old": 58.5,
+   "target": null,
+   "main_issue": "ned 17: 78 min RP = 32 %; I intervali i trka 10 km (≈ 65 min) za 27 km/ned po osećaju"
+  },
+  {
+   "profile": "p11",
+   "scores": {
+    "fit": 8,
+    "quality": 7,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 78.0,
+   "round4_old": 53.0,
+   "target": 80,
+   "main_issue": "T ciklus 16/18/21 min ponovljen 3 puta"
+  },
+  {
+   "profile": "p12",
+   "scores": {
+    "fit": 8,
+    "quality": 7,
+    "progression": 8,
+    "recovery": 8,
+    "specificity": 8,
+    "taper": 8,
+    "clarity": 8
+   },
+   "total": 78.0,
+   "round4_old": 67.0,
+   "target": 82,
+   "main_issue": "T 9-20 min nisko za 50 km/ned; vrh 55 km (cilj 59)"
+  }
+ ]
+}
