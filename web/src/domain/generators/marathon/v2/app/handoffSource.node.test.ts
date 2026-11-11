@@ -168,11 +168,14 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
     for (const [date, x] of dated) expect(x.id, date).toBe(srcByDate.get(date)?.id);
   });
 
-  it('nedostupne opcije: HM v2 kasno (PLAN_TOO_SHORT) doslovno (O4a); 10K iz 10K v2 (3d-10K)', () => {
+  /* W1 (hm-v2.15.0): HM više ne odbija kratak plan (pravi ga uz upozorenje), pa je kasno HM opcija dostupna (O4a se
+     menja). 10K iz 10K v2 (3d-10K) se i dalje gradi neposredno kao izbor kraće distance. */
+  it('HM v2 kasno je dostupan (W1: kratak plan uz upozorenje); 10K iz 10K v2 (3d-10K)', () => {
     const late = '2026-12-05' as IsoDate;
     const src = stored(adapted(BASE, 'pause35', late));
-    const d = decide(src, { fiveKV2: false, hmV2: true, tenKV2: true }, late);
-    expect(d.options.map((o) => o.id)).toEqual(['shorter-10000']);
+    const withHm = decide(src, { fiveKV2: false, hmV2: true, tenKV2: true }, late);
+    expect(withHm.options.map((o) => o.id)).toEqual(['shorter-21097.5']);
+    expect(withHm.unavailable).toEqual([]);
     // Vrh opcije iz plana 10K v2 cilja (strukturno, `tenKV2`; nalaz 3g), > 0.
     const prep = select.preparationForPlan(src)!;
     const c = prep.buildPreparationChoice(
@@ -192,25 +195,18 @@ describe('3e: odluka o pripremi maratona v2 i tok do cilja', () => {
       ...t.weeks.flatMap((w) => w.days.filter((x) => x.role === 'long').map((x) => x.workout.km))
     );
     expect(longKm).toBeGreaterThan(0);
-    expect([d.options[0]!.peakLongRunKm, d.options[0]!.peakWeeklyKm]).toEqual([longKm, t.peakKm]);
-    expect(d.unavailable).toEqual([
-      'Polumaraton: Plan od 8 nedelja je prekratak: polumaraton traži najmanje 10 nedelja; preporuka: 10K plan.'
-    ]);
+    expect(t.peakKm).toBeGreaterThan(0);
   });
 
   /* V1b: 10K cilj je 10K v2 (najviše 18 nedelja), ne više 10K v1 — predug plan je nedostupan i za 10K, sa razlogom v2. */
-  it('O8a: HM cilj > 20 i 10K > 18 nedelja do trke → obe nedostupne sa PLAN_TOO_LONG doslovno', () => {
+  /* W1 (hm-v2.15.0): HM cilj > 20 nedelja je dostupan (dug plan uz upozorenje), pa se 10K kao kraća opcija ne nudi i
+     nema nedostupnih opcija (ranije: obe nedostupne sa PLAN_TOO_LONG). */
+  it('O8a: HM cilj > 20 nedelja do trke je dostupan (W1), bez nedostupnih opcija', () => {
     const at = '2026-11-14' as IsoDate;
     const src = stored(adapted(ofId('d3-24w-35km-v50-A-sat'), 'pause35', at));
     const d = decide(src, HM_ON, at);
-    expect(d.unavailable).toHaveLength(2);
-    expect(d.unavailable[0]).toMatch(
-      /^Polumaraton: Plan od 2[1-4] nedelja je predug \(najviše 20\): počni plan kasnije/
-    );
-    expect(d.unavailable[1]).toMatch(
-      /^10K: Plan od 2[1-4] nedelja je predug \(najviše 18\): počni plan kasnije/
-    );
-    expect(d.options).toEqual([]);
+    expect(d.options.map((o) => o.id)).toEqual(['shorter-21097.5']);
+    expect(d.unavailable).toEqual([]);
   });
 
   it('plan po osećaju: HM v2 cilj dobija lak tempo i radi (V1b: v1 cilj ne postoji)', () => {
