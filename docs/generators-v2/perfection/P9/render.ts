@@ -24,6 +24,19 @@ type Adapter = {
 };
 const idt = (s: string) => s;
 async function adapter(D: string): Promise<Adapter> {
+  if (D === "HMv3") {
+    // V3-HM pilot: isti ulazi i format kao HM; generator halfMarathon/v3 (tekst je već čitljiv, bez userText).
+    const v3 = `${G}/halfMarathon/v3`;
+    return {
+      gen: (await import(`${v3}/generate.ts`)).generateHmV3,
+      weekNotes: (w) => [...w.notes],
+      planNotes: (p) => [...p.notes],
+      warnings: (p) => p.warnings.filter((x: any) => x.rule !== "PLAN_LENGTH").map((x: any) => `${x.rule}: ${x.message}`),
+      goal: idt,
+      title: idt,
+      fns: "halfMarathon/v3/generate.generateHmV3 (napomene i upozorenja sirovi)",
+    };
+  }
   if (D === "5K") {
     const v2 = `${G}/fiveK/v2`;
     const { userWarnings } = (await import(`${v2}/text.ts`)) as any;
@@ -89,7 +102,7 @@ const WD: Record<string, string> = { mon: "Ponedeljak", tue: "Utorak", wed: "Sre
 const WDS: Record<string, string> = { mon: "pon", tue: "uto", wed: "sre", thu: "čet", fri: "pet", sat: "sub", sun: "ned" };
 const PHASE: Record<string, string> = { base: "osnova", development: "razvoj", specific: "specifična", taper: "taper", race: "trka" };
 const ddmm = (d: string) => `${d.slice(8, 10)}.${d.slice(5, 7)}.`;
-const DNAME: Record<string, string> = { "5K": "5 km", "10K": "10 km", HM: "polumaraton", MAR: "maraton" };
+const DNAME: Record<string, string> = { "5K": "5 km", "10K": "10 km", HM: "polumaraton", HMv3: "polumaraton", MAR: "maraton" };
 const RM = (m: number) => (m === 5000 ? "5 km" : m === 10000 ? "10 km" : m === 21097.5 ? "polumaraton" : m === 3000 ? "3 km" : m === 42195 ? "maraton" : `${m} m`);
 
 type Seg = { kind: string; km: number; sec: number };
@@ -156,12 +169,14 @@ function renderPlan(D: string, A: Adapter, title: string, inp: Record<string, an
 }
 
 
-for (const D of ["5K", "10K", "HM", "MAR"]) {
+/* HMv3 (V3-HM pilot) samo na izričit zahtev: `... <izlaz> HMv3` → <izlaz>/HM/pNN.txt iz HM ulaza. */
+for (const D of only === "HMv3" ? ["HMv3"] : ["5K", "10K", "HM", "MAR"]) {
   if (only && only !== D) continue;
   const A = await adapter(D);
-  mkdirSync(`${outRoot}/${D}`, { recursive: true });
-  inputs[D]!.forEach((p, i) => {
-    writeFileSync(`${outRoot}/${D}/p${String(i + 1).padStart(2, "0")}.txt`, renderPlan(D, A, p.title, p.input, A.gen(p.input)));
+  const key = D === "HMv3" ? "HM" : D;
+  mkdirSync(`${outRoot}/${key}`, { recursive: true });
+  inputs[key]!.forEach((p, i) => {
+    writeFileSync(`${outRoot}/${key}/p${String(i + 1).padStart(2, "0")}.txt`, renderPlan(D, A, p.title, p.input, A.gen(p.input)));
   });
-  console.log(D, "ispisano", inputs[D]!.length, "|", A.fns);
+  console.log(D, "ispisano", inputs[key]!.length, "|", A.fns);
 }
