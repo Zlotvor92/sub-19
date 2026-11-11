@@ -1,6 +1,7 @@
 /* D7 taper, D8 + D20 + D23 trkačka nedelja, D13 dužine, D19 lagani dani, D14 WU/CD i oporavci, D15 Uslov 8 —
    nezavisne provere na uzorku mreže 02 (3/4/5/6 dana; brojevi iz odluka, ne iz koda generatora). */
 
+import { OPT_NOTE } from './lengths.ts';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { GRID_TIMEOUT } from './level.harness.node.test.ts';
 import { addDays, daysBetween, weekdayOf } from './dates.ts';
@@ -245,7 +246,9 @@ describe('D13 + D19: dužine', () => {
               : t1.startsWith('Jedan')
                 ? 1
                 : Number(/^(\d+) lagana/.exec(t1)![1]);
-          expect(easy.length).toBe(all - t1Rest);
+          // K4-B: dan „po želji" (jedan lagan bez treninga).
+          const opt = w.notes.some((x) => x.startsWith(OPT_NOTE)) ? 1 : 0;
+          expect(easy.length + opt).toBe(all - t1Rest);
         }
       }
     }

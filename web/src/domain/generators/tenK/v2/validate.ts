@@ -15,6 +15,7 @@ import {
   buildLengths,
   easyRestShort,
   keptEasyDates,
+  OPT_NOTE,
   longCap10,
   longShareOf,
   longToRaceWeeks,
@@ -419,6 +420,16 @@ export function validatePlan(
         .sort();
       const easy = w.days.filter((d) => d.role === 'easy');
       const missing = slots.filter((d) => !rest0.has(d) && !easy.some((x) => x.date === d));
+      // K4-B: dan „po želji" (napomena OPT_NOTE) — tačno jedan dan šablona bez treninga više od T1 (lengths.optEasy),
+      // samo nedelja izgradnje bez ograničenja koraka.
+      const opt = w.notes.some((n) => n.startsWith(OPT_NOTE));
+      if (opt && (rest0.size > 0 || painOf(w).size > 0 || reducedQ(w) || missing.length === 0))
+        err(
+          'OPT_EASY',
+          'Dan „po želji": jedan lagan dan nedelje izgradnje bez ograničenja (K4-B).',
+          w.index
+        );
+      const nEasy = easy.length + (opt ? 1 : 0);
       if (missing.length > 0) {
         // Nedelja sa danima odmora koraka (bol, A4): konstruktor bira lagane dane pre limitDays — ne sudi se po danu.
         // Ista funkcija kao konstruktor (lengths.buildLengths): broj laganih dana i dugi za cilj nedelje.
@@ -433,15 +444,22 @@ export function validatePlan(
           rest0.size > 0 ||
           (long !== undefined &&
             L !== null &&
-            L.easy10.length === easy.length &&
+            L.easy10.length === nEasy &&
             // G8 (D48): duži dugi nedelje dugog do distance u periodu bola seče A4 (dugi ≤ 60 min) — ista funkcija.
             (painOf(w).has(long.date) ? painLong10(L.long10, pw(w)) : L.long10) ===
               to10(long.workout.km) &&
-            missing.every((d) => !keptEasyDates(slots, easy.length, long.date).includes(d)));
+            missing.filter((d) => keptEasyDates(slots, nEasy, long.date).includes(d)).length ===
+              (opt ? 1 : 0));
         if (ok) for (const d of missing) t1Rest.add(d);
         else err('ROLES', 'Lagan dan je odmor, a lagan ≥ 20 min staje (T1).', w.index);
       }
     }
+    // K4-B: dan „po želji" (i T1 odmor) sme biti samo dan čija je uloga po šablonu lagan (roleOf: pouka 35, G7 …).
+    if (
+      w.notes.some((n) => n.startsWith(OPT_NOTE)) &&
+      want.some(([r, wd]) => r !== 'easy' && t1Rest.has(dateIn(w, wd)))
+    )
+      err('ROLES', 'Dan „po želji" je dan kvaliteta šablona (K4-B).', w.index);
     const rest = new Set([...rest0, ...t1Rest]);
     if (w.index >= firstAdapted && (reducedQ(w) || rest0.size > 0)) {
       // A4/A9: dani odmora bez treninga; dan kvaliteta šablona sme biti lagan ili nositi jedini kvalitet
@@ -622,6 +640,11 @@ export function validatePlan(
           `Planirano ${num(w.plannedKm)} km < cilj obima ${num(w.targetKm)} km (odmor/bol).`,
           w.index
         );
+    } else if (
+      w.notes.some((n) => n.startsWith(OPT_NOTE)) &&
+      w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS
+    ) {
+      // K4-B: dan „po želji" ne ulazi u obim — planirano ≤ cilj, bez upozorenja po nedelji (napomena plana).
     } else if (
       isSteady(w) &&
       easyRestShort(

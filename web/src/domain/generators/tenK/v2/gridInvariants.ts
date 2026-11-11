@@ -233,7 +233,20 @@ export function checkPlan(
   for (const w of p.weeks) {
     const tag = `ned ${w.index}`;
     // planirano = cilj (tehnička tolerancija 0,1 km); trkačka: cilj = planirano.
-    if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS && !t1Short(w, p))
+    // K4-B (nezavisno): nedelja sa danom „po želji" — ne-rasteretna izgradnja, planirano ≤ cilj, manjak ≤ 30 min laganog
+    // (tempom dugog, sporiji kraj E).
+    const optW = w.notes.some((x) => x.startsWith('Kratak lagan dan'));
+    const lw = w.days.find((d) => d.role === 'long');
+    if (optW) {
+      if (
+        w.plannedKm > w.targetKm + 0.1 + EPS ||
+        !lw ||
+        (w.targetKm - w.plannedKm) * (lw.workout.sec / lw.workout.km) > 1800 + 60 ||
+        w.deload ||
+        !['base', 'development', 'specific'].includes(w.phase)
+      )
+        no('OPT_EASY', `${tag} ${w.plannedKm} / ${w.targetKm}`);
+    } else if (Math.abs(w.plannedKm - w.targetKm) > 0.1 + EPS && !t1Short(w, p))
       no('PLANNED_EQ_TARGET', `${tag} ${w.plannedKm} ≠ ${w.targetKm}`);
     // Uslov 8 (D15/D17): nedelja ≥ minimum po broju dana; trkačka: planirano + trka 10 km (D30).
     if (w.phase !== 'race' && w.plannedKm + EPS < WEEK_MIN[n]) no('WEEK_MIN', tag);

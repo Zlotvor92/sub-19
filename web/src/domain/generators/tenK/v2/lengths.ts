@@ -219,3 +219,55 @@ export function longShareOf(rule: LongRule, target10: number, toRace: boolean): 
   const b = P.beginner;
   return Math.max(rule.longMaxShare, Math.min(b.longToRaceShare, (b.longToRaceKm * 10) / target10));
 }
+
+/** K4-B (10k-v2.16.0): napomena nedelje sa danom „po želji" (validator je čita kao oznaku). */
+export const OPT_NOTE = 'Kratak lagan dan';
+
+/**
+ * K4-B (JEDNO mesto odluke, oblik HM/MAR): nedelja izgradnje plana sa kratkim laganim danima — najkraći lagan (kraći od
+ * lengths.shortEasyWarnSec, `easySec`) je „odmor ili 20 min lagano po želji": dan šablona bez treninga (oblik T1),
+ * izlazi iz obaveznog obima; njegovi km prelaze u ostale lagane do granice T1 (≤ udeo × dugi, buildEasyBounds10),
+ * ostatak je planirano < cilj; jedini lagan dan nedelje ostaje. `opt` = indeks tog dana u `len.easy10` (među jednakima kasniji); null = nijedan lagan
+ * nije kraći od 30 min ili bi nedelja pala ispod minimuma (`maxShort10` = cilj − minimum nedelje D17).
+ */
+export function optEasy(
+  len: Lengths,
+  max10: number,
+  easySec: (easy10: number) => number,
+  maxShort10: number
+): { len: Lengths; opt: number } | null {
+  const e = len.easy10;
+  if (e.length === 0) return null;
+  const secs = e.map(easySec);
+  const min = Math.min(...secs);
+  if (min + 1e-9 >= P.lengths.shortEasyWarnSec) return null;
+  const opt = secs.lastIndexOf(min);
+  const rest = e.filter((_, i) => i !== opt);
+  // Jedini lagan dan ostaje (oblik MAR): 3/4 dana bi postali 2 trčanja / Q + Q + dugi — km nema gde da pređu.
+  if (rest.length === 0) return null;
+  const all = e.reduce((a, x) => a + x, 0);
+  const total = Math.min(all, rest.length * max10);
+  if (all - total > maxShort10) return null;
+  return { len: { long10: len.long10, easy10: splitEasy(total, rest.length) }, opt };
+}
+
+/** K4-B: plan ima kratke lagane dane — najkraći lagan < 30 min u više od lengths.optWeeks ne-rasteretnih nedelja
+    izgradnje (plan bez pravila; isti uslov kao merenje K3-F). */
+export function shortEasyPlan(
+  weeks: readonly {
+    phase: string;
+    deload: boolean;
+    days: readonly { role: string; workout: { km: number; sec: number } }[];
+  }[]
+): boolean {
+  const n = weeks.filter(
+    (w) =>
+      !w.deload &&
+      (w.phase === 'base' || w.phase === 'development' || w.phase === 'specific') &&
+      w.days.some(
+        (d) =>
+          d.role === 'easy' && d.workout.km > 0 && d.workout.sec + 1e-9 < P.lengths.shortEasyWarnSec
+      )
+  ).length;
+  return n > P.lengths.optWeeks;
+}

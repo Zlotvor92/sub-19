@@ -18,7 +18,7 @@ import {
   type WeekPicks
 } from './quality.ts';
 import { mustDay } from './dates.ts';
-import { longestLong10, longToRaceWeeks } from './lengths.ts';
+import { longestLong10, longToRaceWeeks, OPT_NOTE, shortEasyPlan } from './lengths.ts';
 import {
   basePaces,
   basisAt,
@@ -173,6 +173,31 @@ export function construct(
   steps: readonly TenKV2AdaptStep[],
   prior?: Written
 ): GenerateResult {
+  // K4-B: adaptacija — plan sa kratkim laganim danima ostaje takav (napomena u prethodnom planu je činjenica).
+  if (steps.length > 0)
+    return constructWith(
+      raw,
+      steps,
+      prior,
+      !!prior?.weeks.some((w) => w.notes.some((n) => n.startsWith(OPT_NOTE)))
+    );
+  const g = constructWith(raw, steps, prior, false);
+  // K4-B: uslov plana (lengths.shortEasyPlan) iz plana bez pravila; plan sa pravilom koji ne prođe → plan bez pravila.
+  if (!g.ok || !shortEasyPlan(g.plan.weeks)) return g;
+  const o = constructWith(raw, steps, prior, true);
+  return o.ok ? o : g;
+}
+
+/** K4-B: napomena plana sa danima „po želji". */
+export const OPT_PLAN_NOTE =
+  'Mali obim: u nedeljama u kojima bi lagan trening bio kraći od 30 minuta, jedan lagan dan je „odmor ili 20 min lagano po želji" i ne računa se u obim nedelje — planirano je tada nešto manje od cilja.';
+
+function constructWith(
+  raw: unknown,
+  steps: readonly TenKV2AdaptStep[],
+  prior: Written | undefined,
+  optEasy: boolean
+): GenerateResult {
   const chk = checkInput(raw);
   if (!chk.ok) return chk;
   const { input, weeks, pace, pattern, rule } = chk;
@@ -205,7 +230,8 @@ export function construct(
     raceSec,
     wc: warmupCooldown(input.currentWeeklyKm, rule.beginner),
     rule,
-    feel
+    feel,
+    ...(optEasy ? { optEasy: true } : {})
   };
   const start10 = startKm10(input.currentWeeklyKm);
   const cap10 = peakCap10(start10, rule, weeks, paces);
@@ -356,7 +382,8 @@ export function construct(
         b !== null &&
         (!testDeload || t10 <= nominal || b.days.some((d) => d.role === 'test')) &&
         // T1 (10K-08): cilj se ne podiže iznad pravila da bi nedelja bila planirano < cilj (lagani dani odmor).
-        (t10 <= nominal || b.planned100 + P.tolerance.plannedKm * 100 >= t10 * 10)
+        // K4-B: km dana „po želji" se računaju (cilj ostaje po pravilu; manjak je planirano < cilj).
+        (t10 <= nominal || b.planned100 + (b.opt100 ?? 0) + P.tolerance.plannedKm * 100 >= t10 * 10)
       );
     };
     let fit: ReturnType<typeof fit10> = null;
@@ -567,6 +594,8 @@ export function construct(
       `Nedeljni obim ostaje ${fmtKm(start10 / 10)} km: to je već oko ${flatHours} sati trčanja nedeljno, pa plan ne dodaje kilometre — napredak donose treninzi u tempu i dugi.`
     );
   if (orientation) plan.notes.push(P.adapt.orientationMessage);
+  // K4-B: jedna rečenica u napomeni plana.
+  if (out.some((w) => w.notes.some((n) => n.startsWith(OPT_NOTE)))) plan.notes.push(OPT_PLAN_NOTE);
   if (adapted)
     plan.adaptation = {
       asOf: steps[steps.length - 1]!.asOf,

@@ -2,6 +2,7 @@
    konstrukcije, izvodljiv cilj samo za pogođenu nedelju (sa napomenom), planirano = cilj; D22 poruka
    CAPACITY_LIMITED. */
 
+import { OPT_NOTE } from './lengths.ts';
 import { describe, expect, it } from 'vitest';
 import { generateTenKV2 } from './generate.ts';
 import { t1Short } from './gridInvariants.ts';
@@ -164,7 +165,11 @@ function checkRule(p: TenKV2Plan): void {
       expect(w.notes.some((n) => n.startsWith('Nedelja ne može da se sastavi na'))).toBe(true);
     } else expect(w.fitted).toBeNull();
     // 10K-08 (T1): nedelja bez laganih dana (lagan od 20 min ne staje) sme planirano < cilj.
-    if (!t1Short(w, p)) expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
+    // K4-B: nedelja sa danom „po želji" — planirano ≤ cilj.
+    if (w.notes.some((x) => x.startsWith(OPT_NOTE)))
+      expect(w.plannedKm).toBeLessThanOrEqual(w.targetKm + 0.1 + 1e-9);
+    else if (!t1Short(w, p))
+      expect(Math.abs(w.plannedKm - w.targetKm)).toBeLessThanOrEqual(0.1 + 1e-9);
     if (isBuildPhase(w.phase) && !w.deload) {
       expect(w.targetKm).toBeLessThanOrEqual(cap(start, days, p));
       last = w.targetKm;

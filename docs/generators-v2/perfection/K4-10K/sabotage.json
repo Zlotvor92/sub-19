@@ -1,0 +1,20 @@
+[
+ {
+  "name": "K4-B jedini lagan dan postaje „po želji“ (3/4 dana)",
+  "file": "src/domain/generators/tenK/v2/lengths.ts",
+  "find": "  if (rest.length === 0) return null;",
+  "replace": "  if (rest.length === -1) return null;",
+  "tests": [
+   "src/domain/generators/tenK/v2/k4.node.test.ts"
+  ]
+ },
+ {
+  "name": "K4-B nedelja sme ispod minimuma",
+  "file": "src/domain/generators/tenK/v2/lengths.ts",
+  "find": "  if (all - total > maxShort10) return null;",
+  "replace": "  if (all - total > maxShort10 + 9999) return null;",
+  "tests": [
+   "src/domain/generators/tenK/v2/k4.node.test.ts"
+  ]
+ }
+]

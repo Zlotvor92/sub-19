@@ -1,6 +1,7 @@
 /* D9 — raspored: teški dani međusobno nesusedni (ciklično), dan dugog, odbijanje sa predlogom; D18 (3 dana:
    jedan kvalitet), D19 (5–6 dana: ostali dani lagani). */
 
+import { OPT_NOTE } from './lengths.ts';
 import { describe, expect, it } from 'vitest';
 import { WEEKDAYS } from './dates.ts';
 import { generateTenKV2 } from './generate.ts';
@@ -165,8 +166,11 @@ describe('D9: raspored nedelje', () => {
           // P8 G7 (D46): u nedelji testa drugi dan kvaliteta je lagan.
           if (pat.q2) expect(role(pat.q2)).toBe(w.test ? 'easy' : 'q2');
           expect(role(pat.long)).toBe('long');
-          for (const e of pat.easy) expect(role(e)).toBe('easy');
-          expect(w.days.length).toBe(n);
+          // K4-B: dan „po želji" je dan šablona bez treninga (jedan lagan).
+          const opt = w.notes.some((x) => x.startsWith(OPT_NOTE)) ? 1 : 0;
+          expect(pat.easy.filter((e) => role(e) !== 'easy').length).toBe(opt);
+          for (const e of pat.easy) if (role(e) !== undefined) expect(role(e)).toBe('easy');
+          expect(w.days.length).toBe(n - opt);
         }
       }
   });

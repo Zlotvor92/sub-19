@@ -2,6 +2,7 @@
    (D40), G3 tekst za trkača (D41), upozorenje kratkih laganih dana (D42). Nezavisne provere (brojevi iz odluke
    organizatora i profila P7, ne iz policy.ts); svaki test pada na 10k-v2.12.0. */
 
+import { OPT_NOTE } from './lengths.ts';
 import { describe, expect, it } from 'vitest';
 import { userText } from './app/format.ts';
 import { generateTenKV2 } from './generate.ts';
@@ -309,7 +310,10 @@ describe('P8 završetak: S3 (D49), S7 (D50), S1/S5/S6/S8 (D51)', () => {
       expect(bw[i]!.targetKm, `ned ${bw[i]!.index}`).toBeGreaterThanOrEqual(bw[i - 1]!.targetKm);
     // Baza i razvoj: sva 4 dana trčanja ostaju (u 3 poslednje nedelje izgradnje G8 sme da zameni lagan dan dužim dugim).
     for (const w of bw.filter((x) => x.index > 2 && x.phase !== 'specific'))
-      expect(w.days.length, `ned ${w.index}`).toBe(4);
+      // K4-B: dan „po želji" je dan šablona bez treninga.
+      expect(w.days.length, `ned ${w.index}`).toBe(
+        4 - (w.notes.some((x) => x.startsWith(OPT_NOTE)) ? 1 : 0)
+      );
     for (const g of [3, 4] as const)
       for (const x of every(beginnerGridInputs(g), 9)) {
         const q = gen(x.input);
@@ -324,7 +328,9 @@ describe('P8 završetak: S3 (D49), S7 (D50), S1/S5/S6/S8 (D51)', () => {
             .filter((m) => m !== null)
             .pop();
           expect(tDose(b[i]!), `${x.id} ned ${b[i]!.index}`).toBe(prev);
-          expect(b[i]!.days.length).toBe(g);
+          expect(
+            b[i]!.days.length + (b[i]!.notes.some((n) => n.startsWith(OPT_NOTE)) ? 1 : 0)
+          ).toBe(g);
         }
       }
   });

@@ -440,6 +440,14 @@ const DECISIONS: readonly Decision[] = [
       'Heuristika glavnog trenera (ROUND-02 § 3g, § 4.3): 3 dana su najslabiji planovi (47–55); drugi podražaj u dugom u specifičnoj fazi (10K: završnih 10–15 min u T) i lagan ≤ 0,70 × dugi. Brojevi: docs/generators-v2/perfection/reports/K3-10K-REPORT.md.'
   },
   {
+    id: 'K4-B',
+    rule: 'K4-B (glavni trener krug 3 § 3 stavka B, oblik HM/MAR) — mali obim: u planu u kom bi najkraći lagan dan bio < 30 min (lengths.shortEasyWarnSec) u više od 2 ne-rasteretne nedelje izgradnje (plan bez ovog pravila), u svakoj ne-rasteretnoj nedelji izgradnje bez ograničenja koraka (i van uvoda početnika) čiji je najkraći lagan < 30 min taj dan (jedan po nedelji, među jednakima kasniji; samo kad nedelja ima još bar jedan lagan — jedini lagan dan 3/4 dana ostaje, oblik MAR) je „odmor ili 20 min lagano po želji": dan šablona bez treninga (oblik T1 — lagan dan odmor), napomena nedelje OPT_NOTE sa imenom dana; njegovi km prelaze u ostale lagane do granice T1 (≤ udeo × dugi), ostatak je planirano < cilj bez upozorenja po nedelji; nedelja ne pada ispod minimuma (D17) — tada dan ostaje. Dugi i kvalitet se ne menjaju. Jedna rečenica u napomeni plana. Broj dana i raspored (ekrani) se ne menjaju. Adaptacija: plan sa takvim nedeljama ostaje takav (činjenica prethodnog plana).',
+    place:
+      'policy.ts lengths.shortEasyWarnSec/optWeeks; lengths.ts optEasy (jedno mesto odluke), shortEasyPlan, OPT_NOTE; week.ts buildWeekOf (assemble); generate.ts construct (uslov iz plana bez pravila), OPT_PLAN_NOTE; validate.ts ROLES (T1 + dan „po želji"), OPT_EASY, PLANNED_VS_TARGET; gridInvariants.ts; adaptInvariants.ts',
+    rationale:
+      'Heuristika glavnog trenera (ROUND-03 § 3 B): dan od 3–4 km ne vredi izlaska. Brojevi: docs/generators-v2/perfection/reports/K4-10K-REPORT.md.'
+  },
+  {
     id: 'A1',
     rule: 'Rezultat (test ili trka 3/5/10 km, polumaraton) ≤ 84 dana i noviji od rezultata u upotrebi → VDOT od sledeće nedelje (prva puna nedelja posle asOf); plan po osećaju prelazi na paceBasis result od te nedelje (RPE samo u nedeljama po osećaju); pravilo cilja obima (D6) se ne menja zbog tempa; doza se nastavlja (metraža); ocena cilja (D3, nedelje od sledeće do trke) i prognoza iz novog VDOT-a. VDOT van 30–80 → RESULT_IGNORED (razlog); nema sledeće nedelje → ne primenjuje se (razlog).',
     place:
@@ -636,7 +644,7 @@ const DECISIONS: readonly Decision[] = [
 
 export const TEN_K_V2_POLICY = {
   id: '10k-v2',
-  version: '10k-v2.15.0',
+  version: '10k-v2.16.0',
 
   /** D1 (dani i obim: D17; početnik: D28). */
   input: {
@@ -966,8 +974,11 @@ export const TEN_K_V2_POLICY = {
         u tabeli D17 (easyMaxLongShare, G6). */
     easyMinSec: 1200,
     /** P8 (10K c): upozorenje SHORT_EASY — u ne-rasteretnoj nedelji izgradnje lagan dan kraći od ovoliko [s] ili lagan
-        dan odmor, uz preporuku manje dana (samo validator; dužine se ne menjaju). */
-    shortEasyWarnSec: 1800
+        dan odmor, uz preporuku manje dana (validator). K4-B: ista granica za dan „po želji" (lengths.optEasy). */
+    shortEasyWarnSec: 1800,
+    /** K4-B (10k-v2.16.0): plan u kom bi najkraći lagan bio < shortEasyWarnSec u više od optWeeks ne-rasteretnih
+        nedelja izgradnje — taj dan je „odmor ili 20 min lagano po želji" (ne računa se u obim nedelje). */
+    optWeeks: 2
   },
 
   /** D16: početni nivo slota ≤ udeo plafona zone (D11); D37 (P5 F4): T i I 80 %, R i RP 60 %. Čita se samo kroz

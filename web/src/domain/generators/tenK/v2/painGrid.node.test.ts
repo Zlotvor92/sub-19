@@ -154,7 +154,7 @@ describe('mreža bola P: 6 planova × 2 nedelje × 7 dana × bol 4/5/7/8 = 336 t
         r.reasons.some((x) => x.condition === 'PAIN' && x.applied),
         f.key
       ).toBe(true);
-      expect(r.plan.policyVersion).toBe('10k-v2.15.0');
+      expect(r.plan.policyVersion).toBe('10k-v2.16.0');
     }
   });
 

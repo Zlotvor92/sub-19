@@ -13,6 +13,9 @@ import {
   limitedEasy10,
   longCap10,
   longShareOf,
+  OPT_NOTE,
+  optEasy,
+  buildEasyBounds10,
   painLong10,
   taperLengths
 } from './lengths.ts';
@@ -99,7 +102,20 @@ export interface WeekContext {
   holdDose?: boolean;
   /** K3-C (10k-v2.15.0): minuti završnog T dela dugog ove nedelje (quality.longTMinOf; 0 / bez polja = nema). */
   longTMin?: number;
+  /** K4-B (10k-v2.16.0): plan sa kratkim laganim danima (lengths.shortEasyPlan; uslov poznat unapred, generate.construct). */
+  optEasy?: boolean;
 }
+
+/** K4-B: ime dana u napomeni. */
+const WEEKDAY_SR: Record<Weekday, string> = {
+  mon: 'ponedeljak',
+  tue: 'utorak',
+  wed: 'sreda',
+  thu: 'četvrtak',
+  fri: 'petak',
+  sat: 'subota',
+  sun: 'nedelja'
+};
 
 /** D38: napomena nedelje bez rasta doze (validator: izuzetak D12 „sledeći nivo"). */
 export const HOLD_NOTE = 'Doza ove nedelje ne raste';
@@ -134,6 +150,8 @@ export type QualityMode = 'rule' | 'relax' | 'one' | 'none';
 export interface BuiltWeek {
   days: PlanDay[];
   planned100: number;
+  /** K4-B: km dana „po želji" izvan obaveznog obima [0,01 km] (lengths.optEasy); bez polja = 0. */
+  opt100?: number;
   /** Dugi nedelje [0,1 km]; null u trkačkoj nedelji. */
   long10: number | null;
   /** Izbor doza nedelje izgradnje (stanje za sledeću nedelju); null van izgradnje. */
@@ -577,16 +595,32 @@ function buildWeekOf(
       frame,
       [pat.q1, ...(pat.q2 ? [pat.q2] : []), ...pat.easy].filter((wd) => !busy.includes(wd))
     );
-    const len = buildLengths(target10, q100, dates.length, rule, p, ctx.t1Off !== true);
+    const len0 = buildLengths(target10, q100, dates.length, rule, p, ctx.t1Off !== true);
+    if (!len0) return null;
     // T1: ostatak premali za sve lagane dane (≥ 20 min) — višak laganih dana je odmor.
-    return len
-      ? {
-          w2,
-          dates: keptEasyDates(dates, len.easy10.length, dateOf(frame, pat.long)),
-          len,
-          rest: dates.length - len.easy10.length
-        }
-      : null;
+    const kept = keptEasyDates(dates, len0.easy10.length, dateOf(frame, pat.long));
+    // K4-B: najkraći lagan < 30 min → „odmor ili 20 min lagano po želji" (dan šablona bez treninga, kao T1), km u ostale
+    // lagane do granice T1, ostatak planirano < cilj, nedelja ne ispod minimuma (lengths.optEasy — jedno mesto).
+    const o =
+      ctx.optEasy === true && !reduced && !intro && !frame.limits && ctx.t1Off !== true
+        ? optEasy(
+            len0,
+            buildEasyBounds10(len0.long10, p, rule.easyMaxLongShare).max10,
+            (e10) => easyWorkout(e10 / 10, p).sec,
+            target10 - Math.round(rule.weekMinKm * 10)
+          )
+        : null;
+    return {
+      w2,
+      dates: o ? kept.filter((_, i) => i !== o.opt) : kept,
+      len: o ? o.len : len0,
+      rest: dates.length - len0.easy10.length,
+      optDate: o ? kept[o.opt]! : null,
+      // K4-B: km koji su izašli iz obaveznog obima [0,01 km] (pretraga cilja ih računa kao planirane).
+      opt100: o
+        ? (len0.easy10.reduce((x, y) => x + y, 0) - o.len.easy10.reduce((x, y) => x + y, 0)) * 10
+        : 0
+    };
   };
   const full = assemble(false);
   if (!full) return null;
@@ -631,8 +665,9 @@ function buildWeekOf(
       notes.push(
         `${slotName(slot)}: ${d.zone} spušten sa ${fmtKm((prev?.doseM ?? 0) / 1000)} na ${fmtKm(d.doseM / 1000)} km — bez toga nijedan obim nedelje ne može da se sastavi uz najviše ${capPct(d.zone, targetKm)} % nedelje u tom tempu.`
       );
-  const make = (a: NonNullable<ReturnType<typeof assemble>>, extra: string[]): BuiltWeek =>
-    done(
+  const make = (a: NonNullable<ReturnType<typeof assemble>>, extra: string[]): BuiltWeek => ({
+    ...(a.opt100 > 0 ? { opt100: a.opt100 } : {}),
+    ...done(
       [
         ...(w1 ? [day(dateOf(frame, pat.q1), test ? 'test' : 'q1', w1)] : []),
         ...(a.w2 && pat.q2 ? [day(dateOf(frame, pat.q2), 'q2', a.w2)] : []),
@@ -652,11 +687,17 @@ function buildWeekOf(
         ...extra,
         ...(a.rest > 0
           ? [
-              `${a.len.easy10.length === 0 ? 'Svi lagani dani su odmor' : a.rest === 1 ? 'Jedan lagan dan je odmor' : `${a.rest} lagana dana su odmor`} — ostatak obima ne staje u lagane od bar ${Math.round(P.lengths.easyMinSec / 60)} min${a.len.easy10.length === 0 ? '; planirano je manje od cilja nedelje' : ''}.`
+              `${a.len.easy10.length === 0 && !a.optDate ? 'Svi lagani dani su odmor' : a.rest === 1 ? 'Jedan lagan dan je odmor' : `${a.rest} lagana dana su odmor`} — ostatak obima ne staje u lagane od bar ${Math.round(P.lengths.easyMinSec / 60)} min${a.len.easy10.length === 0 && !a.optDate ? '; planirano je manje od cilja nedelje' : ''}.`
+            ]
+          : []),
+        ...(a.optDate
+          ? [
+              `${OPT_NOTE} (${WEEKDAY_SR[weekdayOf(a.optDate)]}): odmor ili 20 min lagano po želji — ne računa se u obim nedelje (lagan bi bio kraći od ${Math.round(P.lengths.shortEasyWarnSec / 60)} min).`
             ]
           : [])
       ]
-    );
+    )
+  });
   const two = make(full, ctx.t1Off ? [T1_OFF] : []);
   // Pouka 35 (10k-v2.6.0, jedino mesto odluke o broju dana kvaliteta nedelje izgradnje): kad bi u nedelji sa
   // dva dana kvaliteta neki trajao duže od dugog, drugi dan kvaliteta je lagan (prvi ostaje); oslobođeni obim
