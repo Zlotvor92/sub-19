@@ -327,9 +327,15 @@ export const SHORT_REST_PLAN_NOTE = `Mali obim: u nedeljama u kojima bi lagan tr
 /** 5k-v2.17.0 (K4-B) — JEDINO mesto odluke: ne-rasteretne nedelje izgradnje (baza, vrhunac, oštrenje) bez ograničenja
     adaptacije, sa danom kvaliteta ili testa i bar dva lagana dana, čiji je najkraći lagan kraći od shortEasy.minSec;
     vraća ih samo kad ih je više od shortEasy.weeksMax (inače prazno). Čita se nad planom sastavljenim bez K4-B
-    (generate.construct). Početnik: ne važi (sa 4 dana planirani vrh pada > 10 % u 38 / 296 planova mreže — način rada
+    (generate.construct). `known` = nedelje već odlučene u prethodnom sastavu: odluka je unija (nepokretna tačka —
+    sastav sa pravilom može otkriti novu kratku nedelju). Odlučuje samo generator; adaptacija prenosi odluku prethodnog
+    plana (generate.construct). Početnik: ne važi (sa 4 dana planirani vrh pada > 10 % u 38 / 296 planova mreže — način rada
     K3 t. 4, prethodno ponašanje; reports/K4-5K-REPORT.md). */
-export function shortEasyWeeks(weeks: readonly PlanWeek[], beginner: boolean): number[] {
+export function shortEasyWeeks(
+  weeks: readonly PlanWeek[],
+  beginner: boolean,
+  known: readonly number[] = []
+): number[] {
   const S = P.easy.shortEasy;
   if (beginner) return [];
   const out = weeks
@@ -345,7 +351,8 @@ export function shortEasyWeeks(weeks: readonly PlanWeek[], beginner: boolean): n
       return e.length >= 2 && Math.min(...e) < S.minSec - 1e-6;
     })
     .map((w) => w.index);
-  return out.length > S.weeksMax ? out : [];
+  const all = [...new Set([...known, ...out])].sort((x, y) => x - y);
+  return all.length > S.weeksMax ? all : [];
 }
 
 /**

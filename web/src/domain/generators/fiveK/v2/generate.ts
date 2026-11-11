@@ -84,19 +84,35 @@ export interface Constructed {
  * (steps.framesFor), ciljeve (volume.adaptVolume) i tempo nedelje (steps.pacesAt); nema koraka koji
  * posle konstrukcije menja nedelju.
  * 5k-v2.17.0 (K4-B): odluka week.shortEasyWeeks se čita iz plana sastavljenog bez nje; kad pogađa nedelje, plan se
- * sastavlja još jednom sa tim nedeljama (WeekFrame.shortRest). Drugi sastav koji ne uspe → plan bez pravila.
+ * sastavlja još jednom sa tim nedeljama (WeekFrame.shortRest), dok se skup ne ustali (unija). Sastav koji ne uspe →
+ * plan bez pravila. Adaptacija prenosi odluku prethodnog plana.
  */
 export function construct(
   input: FiveKV2Input,
   steps: readonly AdaptStep[] = [],
   prior: Written | null = null
 ): { ok: true; c: Constructed } | { ok: false; reasons: Reason[] } {
+  // Adaptacija: odluka prethodnog plana (nedelje sa napomenom week.shortRestNote) je poznata unapred i samo se prenosi
+  // (AGENTS uslov 4; nova odluka bi zavisila od upisane istorije — „bez promene" ≠ generator, ponovljena adaptacija ≠
+  // ista). Nedelja sa ograničenjima adaptacije ostaje bez pravila (constructWith).
+  if (prior) {
+    const seed = prior.weeks.filter(shortRestWeek).map((w) => w.index);
+    const s = seed.length > 0 ? constructWith(input, steps, prior, new Set(seed)) : null;
+    return s?.ok ? s : constructWith(input, steps, prior, new Set());
+  }
   const first = constructWith(input, steps, prior, new Set());
   if (!first.ok) return first;
-  const short = shortEasyWeeks(first.c.weeks, first.c.athlete.beginner);
-  if (short.length === 0) return first;
-  const second = constructWith(input, steps, prior, new Set(short));
-  return second.ok ? second : first;
+  // Generator: nepokretna tačka (week.shortEasyWeeks, unija) — najviše onoliko sastava koliko plan ima nedelja.
+  let res = first;
+  let known: number[] = [];
+  for (;;) {
+    const short = shortEasyWeeks(res.c.weeks, first.c.athlete.beginner, known);
+    if (short.length === known.length) return res;
+    known = short;
+    const next = constructWith(input, steps, prior, new Set(known));
+    if (!next.ok) return first;
+    res = next;
+  }
 }
 
 function constructWith(
@@ -268,8 +284,11 @@ function constructWith(
       return;
     }
     // 5k-v2.15.0 (P8 b): granica kvaliteta i dugog rasterećenja/tapera iz upisanih nedelja (qualityCapOf).
-    // 5k-v2.17.0 (K4-B): nedelja malog obima (construct, week.shortEasyWeeks).
-    const fc0 = qualityCapOf(short.has(f.index) ? { ...f, shortRest: true } : f, written);
+    // 5k-v2.17.0 (K4-B): nedelja malog obima (construct, week.shortEasyWeeks); ne u nedelji sa ograničenjima adaptacije.
+    const fc0 = qualityCapOf(
+      short.has(f.index) && !f.limits ? { ...f, shortRest: true } : f,
+      written
+    );
     // 5k-v2.15.0 (P8 c): prvi I trening posle R faze (periodize.firstPeakIWeek).
     const fc: WeekFrame = isFirstIWeek(f, written) && !f.hold ? { ...fc0, firstI: true } : fc0;
     const build = (g: WeekFrame) =>
