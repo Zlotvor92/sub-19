@@ -40,6 +40,18 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
 8. Upotrebljivost, ne samo aritmetika: test obara degenerisan plan
    (nedelja ispod minimalnog smislenog obima, prazan trening, dugi < lagan).
 
+## V4 generator — zajednički motor (odluka vlasnika, 11. 11. 2026)
+
+Uslov 7 (nula uvoza van foldera distance) važi za v2. Za V4 vlasnik dozvoljava zajednički motor VAN foldera distance,
+pod uslovom da se generatori distanci ne ukrštaju i ne sukobljavaju:
+
+- Motor ne zna za distance: nema grananja po distanci u kodu motora; sve što je specifično za distancu je PODATAK
+  (šabloni, biblioteka treninga, brojevi bezbednosti) u folderu te distance.
+- Distanca uvozi samo motor; distance se međusobno ne uvoze i ne dele podatke.
+- Izmena motora mora da ostavi planove SVIH distanci nepromenjenim, osim kad je promena namerna i navedena — proverava
+  test (otisci planova po distanci).
+- Proverava test, bez izuzetaka.
+
 ## Testovi i sabotaže
 
 - Segment: `npm run check` (brz nivo, iz `web/`) + NAMENSKI testovi onoga što je menjano: `npx vitest run --changed

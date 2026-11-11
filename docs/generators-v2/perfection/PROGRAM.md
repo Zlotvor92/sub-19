@@ -596,3 +596,10 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   (isti AI trener je pisao ciljne planove i ocenjuje — rizik naduvane ocene) i pregled vlasnika.
 - Otvoreno za vlasnika: pravilo izolacije (AGENTS.md uslov 7) naspram zajedničkog motora za sve distance.
 - v2 ostaje zaustavljen.
+
+### 11. 11. 2026 — odluka vlasnika: zajednički motor za V4 je dozvoljen
+
+- „Ako sve može da radi bez ukrštanja samih generatora i da se ne sukobe jedni sa drugim — onda motor sme da postoji
+  van foldera distance." Upisano u `AGENTS.md` (odeljak „V4 generator — zajednički motor"): motor ne zna za distance,
+  distanca je podatak, distance se međusobno ne uvoze, izmena motora ne sme da promeni planove drugih distanci osim
+  namerno — sve proverava test.
