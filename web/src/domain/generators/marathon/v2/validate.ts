@@ -50,6 +50,7 @@ import {
   isBuildPhase,
   introPos,
   periodize,
+  prepWeeksOf,
   shortPlan,
   phasesOf,
   taperStep,
@@ -320,7 +321,10 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   const forced = (w: PlanWeek): boolean =>
     steps.some((x) => x.deload && deloadWeekOf(x) === w.index);
   /** A12: početak segmenta izgradnje (nov start sa rePeriodize) za nedelju i. */
-  const segStart = (i: number): number => Math.max(1, ...[...restarts].filter((r) => r <= i));
+  // W1-B: standardni deo dugog plana (posle osnovne pripreme) je svoj segment izgradnje (M5 od njegove nedelje 1).
+  const prepK = prepWeeksOf(N);
+  const segs = prepK > 0 ? new Set([...restarts, prepK + 1]) : restarts;
+  const segStart = (i: number): number => Math.max(1, ...[...segs].filter((r) => r <= i));
   /** A4/A9: nedelja sa manje kvaliteta — ograničenje koraka ili napomena A9 konstruktora. */
   const reducedQ = (w: PlanWeek): boolean =>
     w.limits?.quality !== undefined || w.notes.some((n) => n.includes('(A9)'));
@@ -330,7 +334,9 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
   const painOf = (w: PlanWeek): Set<string> => new Set(w.limits?.pain ?? []);
   const limitedDays = (w: PlanWeek): boolean => restOf(w).size > 0 || painOf(w).size > 0;
   /** A5/pouka 31: prinudno rasterećenje u uvodu početnika — sadržaj uvoda (bez kvaliteta). */
-  const introDeload = (w: PlanWeek): boolean => w.deload && introPos(w.index, N, rule) > 0;
+  // W1-B: i rasterećenje osnovne pripreme je bez kvaliteta.
+  const introDeload = (w: PlanWeek): boolean =>
+    w.deload && (introPos(w.index, N, rule) > 0 || w.prep === true);
 
   // --- Uslov 6: oznaka politike.
   if (plan.policyId !== P.id || plan.policyVersion !== P.version)
@@ -464,7 +470,14 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     const s0 = segStart(w.index);
     const rel = phases.slice(s0 - 1);
     const k = w.index - s0 + 1;
-    if (restarts.has(w.index)) [run, afterForced, afterDropped] = [0, false, false];
+    if (segs.has(w.index)) [run, afterForced, afterDropped] = [0, false, false];
+    // W1-B: rasterećenje osnovne pripreme = svaka prep.deloadEvery-ta nedelja (plan generatora).
+    if (w.prep && steps.length === 0 && w.deload !== (w.index % P.prep.deloadEvery === 0))
+      err(
+        'PREP_DELOAD',
+        `Osnovna priprema: rasterećenje svake ${P.prep.deloadEvery}. nedelje (W1-B).`,
+        w.index
+      );
     if (w.deload && checked(w) && !forced(w) && !deloadAllowed(rel, k)) {
       const why = !isBuildPhase(w.phase)
         ? `u fazi ${w.phase}`
@@ -552,19 +565,22 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
     // početnika bez kvaliteta — dan Q1 lagan (BUILD_NO_QUALITY proverava plafon).
     const testSlot = w.deload ? tSlot : 'q1';
     const roleOf = (r: 'q1' | 'q2'): DayRole =>
-      w.test && r === testSlot
-        ? 'test'
-        : w.deload
-          ? r === tSlot
-            ? r
-            : 'easy'
-          : (w.phase === 'taper' && !has(r)) ||
-              (r === 'q1' && noQ1(w)) ||
-              (r === 'q1' && hasLongBlock(w.days)) ||
-              (r === 'q2' && secondEasyWeek(w)) ||
-              (r === 'q2' && w.test === true)
-            ? 'easy'
-            : r;
+      // W1-B: osnovna priprema — dani kvaliteta su lagani.
+      w.prep
+        ? 'easy'
+        : w.test && r === testSlot
+          ? 'test'
+          : w.deload
+            ? r === tSlot
+              ? r
+              : 'easy'
+            : (w.phase === 'taper' && !has(r)) ||
+                (r === 'q1' && noQ1(w)) ||
+                (r === 'q1' && hasLongBlock(w.days)) ||
+                (r === 'q2' && secondEasyWeek(w)) ||
+                (r === 'q2' && w.test === true)
+              ? 'easy'
+              : r;
     const exp = [
       `${roleOf('q1')}@${pat.q1}`,
       ...(pat.q2 !== null ? [`${roleOf('q2')}@${pat.q2}`] : []),
@@ -1627,7 +1643,7 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
         );
     }
     if (av) h = leaveWeek(h, w, t10, av);
-    else if (isSteady(w)) {
+    else if (isSteady(w) && !w.prep) {
       h.lastBuild10 = t10;
       h.peak10 = Math.max(h.peak10, t10);
     }

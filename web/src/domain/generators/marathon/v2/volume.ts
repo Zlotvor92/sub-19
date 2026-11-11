@@ -284,6 +284,11 @@ export function nominal10(
   g: GrowthCtx
 ): number {
   if (taper !== null) return Math.round(P.taper.weeks[taper]!.factor * hist.peak10);
+  // W1-B: osnovna priprema — cilj = trenutni obim (bez rasta), rasterećenje deload.factor × trenutni obim.
+  if (frame.prep)
+    return frame.deload
+      ? Math.max(Math.round(P.deload.factor * start10), weekMin10(rule))
+      : start10;
   if (hist.lastBuild10 === null) return start10;
   if (frame.deload) return Math.round(P.deload.factor * hist.lastBuild10);
   return hist.lastBuild10 + buildStep10(hist.lastBuild10, cap10, rule, g, frame.index);
@@ -293,7 +298,7 @@ export function nominal10(
     svaka nedelja na svom nominalu (ned 1 = trenutni obim, pa korak rasta M6 do vrha). Plafon plana za plato dugog;
     JEDNA funkcija za konstruktor i validator (isti okviri: periodize polaznog plana). */
 export function nominalPeak10(
-  frames: readonly Pick<WeekFrame, 'index' | 'phase' | 'deload'>[],
+  frames: readonly Pick<WeekFrame, 'index' | 'phase' | 'deload' | 'prep'>[],
   start10: number,
   cap10: number,
   rule: PlanRule,
@@ -302,7 +307,7 @@ export function nominalPeak10(
   let last: number | null = null;
   let peak = start10;
   for (const f of frames) {
-    if (f.deload || !isBuildPhase(f.phase)) continue;
+    if (f.deload || !isBuildPhase(f.phase) || f.prep) continue;
     last = last === null ? start10 : last + buildStep10(last, cap10, rule, g, f.index);
     peak = Math.max(peak, last);
   }
@@ -349,7 +354,7 @@ export function fit10(
   const hi =
     frame.phase === 'taper' && taperUp10 !== null && !downOnly
       ? Math.max(nominal, taperUp10)
-      : downOnly || frame.index === 1 || frame.deload || frame.phase === 'taper'
+      : downOnly || frame.index === 1 || frame.deload || frame.phase === 'taper' || frame.prep
         ? nominal
         : cap10;
   for (let d = 1; nominal - d >= lo || nominal + d <= hi; d++) {
@@ -562,13 +567,19 @@ export function adaptNominal10(
     t = Math.round(P.taper.weeks[taper]!.factor * h.peakRef10);
     if (h.tailCap10 !== null && h.tailCap10 < t) [t, downOnly] = [h.tailCap10, true];
   } else if (reset !== undefined) [t, downOnly] = [reset, true];
-  else if (h.lastBuild10 === null) t = start10;
+  else if (h.lastBuild10 === null)
+    t =
+      frame.prep && frame.deload
+        ? Math.max(Math.round(P.deload.factor * start10), weekMin10(rule))
+        : start10;
   else if (frame.deload) t = Math.round(P.deload.factor * h.lastBuild10);
   else {
     const level = av.levelAt(i);
     t = nextBuild10(h.lastBuild10, h.cap10, rule, level, g, i);
     downOnly = level !== null && h.lastBuild10 < level;
   }
+  // W1-B: osnovna priprema ne raste iznad trenutnog obima (ni povratak posle smanjenja u njoj).
+  if (frame.prep && t > start10) [t, downOnly] = [start10, true];
   const rem = av.remainder.get(i);
   if (rem !== undefined && rem < t) [t, downOnly] = [rem, true];
   const floor = weekMin10(rule);
@@ -591,6 +602,8 @@ export function leaveWeek(
     out.tailCap10 = out.tailCap10 === null ? target10 : Math.min(out.tailCap10, target10);
   if (!isBuildPhase(frame.phase)) return out;
   const i = frame.index;
+  // W1-B: nedelja osnovne pripreme bez koraka nije osnov rasta (standardni deo kreće od trenutnog obima, kao generator).
+  if (frame.prep && !av.reset.has(i) && !av.anchors.has(i) && out.lastBuild10 === null) return out;
   if (!frame.deload || av.reset.has(i)) {
     out.lastBuild10 = target10;
     out.peakRef10 = Math.max(out.peakRef10, target10);

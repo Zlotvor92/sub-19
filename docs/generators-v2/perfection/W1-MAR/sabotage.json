@@ -4,6 +4,17 @@
     "file": "src/domain/generators/marathon/v2/periodize.ts",
     "find": "standardPhases(minWeeks).slice(minWeeks - weeks)",
     "replace": "standardPhases(minWeeks).slice(0, weeks)",
-    "tests": ["src/domain/generators/marathon/v2/w1.node.test.ts"]
+    "tests": [
+      "src/domain/generators/marathon/v2/w1.node.test.ts"
+    ]
+  },
+  {
+    "name": "W1-B osnovna priprema raste po M6 (cilj nije trenutni obim)",
+    "file": "src/domain/generators/marathon/v2/volume.ts",
+    "find": "  if (frame.prep)\n    return frame.deload",
+    "replace": "  if (frame.prep && frame.index < 0)\n    return frame.deload",
+    "tests": [
+      "src/domain/generators/marathon/v2/w1.node.test.ts"
+    ]
   }
 ]

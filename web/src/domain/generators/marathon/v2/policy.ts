@@ -14,7 +14,7 @@ export interface Decision {
 const DECISIONS: readonly Decision[] = [
   {
     id: 'M1',
-    rule: '3, 4, 5 ili 6 dana trčanja (M15: obim po redu; početnik M17); 12–24 cele nedelje do trke; rezultat 10 km, polumaraton ili maraton (5 km dozvoljen uz upozorenje RESULT_5K) ne stariji od 84 dana, VDOT 30–80 — bez takvog rezultata plan po osećaju (M16); cilj opcion; skorašnji najduži trk opcion (M13a).',
+    rule: '3, 4, 5 ili 6 dana trčanja (M15: obim po redu; početnik M17); 12–24 cele nedelje do trke (W1, marathon-v2.15.0: 1–52 uz upozorenje — kratak plan W1-A, dug W1-B); rezultat 10 km, polumaraton ili maraton (5 km dozvoljen uz upozorenje RESULT_5K) ne stariji od 84 dana, VDOT 30–80 — bez takvog rezultata plan po osećaju (M16); cilj opcion; skorašnji najduži trk opcion (M13a).',
     place: 'input.ts',
     rationale:
       'Opseg MASTER § 5 M1. Trajno odbijanje: < 12 ned (preporuka polumaraton), obim van reda M15 (preporuka broj dana čiji red podržava obim; ispod 30 km polumaraton ili izgradnja osnove), 1/2/7 dana, VDOT > 80, trčanje/hodanje (M17). „Počni kasnije": > 24 ned. Bez rezultata, rezultat stariji od 84 dana ili VDOT < 30: plan po osećaju (M16, marathon-v2.2.0; do tada privremeno odbijanje). 5 km rezultat: Daniels–Gilbert sa 5 km precenjuje maratonsku izdržljivost više od dužih distanci (heuristika; v. M2), zato upozorenje.'
@@ -578,6 +578,14 @@ const DECISIONS: readonly Decision[] = [
       'periodize.ts phasesOf, layoutOffset, introOf/introPos, shortPlan, taperStep (jedino mesto rasporeda); input.ts (bez PLAN_TOO_SHORT/BEGINNER_SHORT); volume.ts initialHistoryOf, shortTaperUp10, fit10; lengths.ts seedLongest10; week.ts, strides.ts (uvod); validate.ts (TAPER_WEEKS, VOLUME_START, VOLUME_FIT, TAPER_LONG istim funkcijama)',
     rationale:
       'Nalog vlasnika 11. 11. 2026 (briefs/W1-bilo-koja-duzina-plana.md): plan za bilo koji broj nedelja uz upozorenje (W1-C). Tumačenje izvođača: „rasterećenja po položaju u zadržanom rasporedu" = pravilo M5 na zadržanom rasporedu (ne prepisane pozicije), jer bi prepisana pozicija mogla pasti u nedelju 1–2 (M5). Taper naviše i dugi tapera ≥ 5 km: postojeća pravila M6 (najbliži izvodljiv cilj) i A9 (odstupanje), primenjena jer 0,8 / 0,6 × trenutni obim ne nosi doze tapera i minimum nedelje M15.'
+  },
+  {
+    id: 'W1-B',
+    rule: 'Dug plan (24 < N ≤ 52; N > 52 → PLAN_TOO_LONG „najviše 52 nedelje"): K = N − 24 nedelja osnovne pripreme (faza baze, oznaka prep) + standardni plan od 24 nedelje. Osnovna priprema: bez dana kvaliteta (dani kvaliteta su lagani), ubrzanja na jednom laganom danu (P5-F3), dugi po pravilu udela; cilj = trenutni obim (bez rasta); svaka 4. nedelja rasterećenje 0,8 × trenutni obim (ne ispod minimuma nedelje M15). Standardni deo kreće od istog trenutnog obima (osnovna priprema nije osnov rasta) i ima faze, rasterećenja, test i ciljeve plana od 24 nedelje; uvod početnika je u nedeljama K+1..K+2. M5 (niz izgradnje) počinje iznova u nedelji K+1. Nov start u adaptaciji (A3/A12) deli preostalo istim pravilom.',
+    place:
+      'policy.ts input.weeksLimit, prep.deloadEvery; periodize.ts phasesOf, prepWeeksOf, planDeloads, layoutOffset, periodize (prep), rePeriodize; input.ts; volume.ts nominal10, fit10, nominalPeak10, adaptNominal10, leaveWeek; week.ts (bez kvaliteta, prepNote); generate.ts; types.ts WeekFrame.prep; validate.ts (ROLES, DELOAD_CONTENT, DELOAD_RUN segment od K+1, PREP_DELOAD, VOLUME_RULE istim funkcijama)',
+    rationale:
+      'Nalog vlasnika 11. 11. 2026 (briefs/W1-bilo-koja-duzina-plana.md § W1-B). Rasterećenje osnovne pripreme ne ispod minimuma nedelje: Uslov 8 (M15), isto kao donja granica A9; bez nje 4 dana 25 km / 5 dana 30 km početnika bi bili odbijeni u nedelji 4.'
   }
 ];
 
@@ -594,6 +602,8 @@ export const MARATHON_V2_POLICY = {
   input: {
     weeksMin: 12,
     weeksMax: 24,
+    /** W1-B: tehnička granica dužine plana (duži plan: osnovna priprema + standardni plan od weeksMax). */
+    weeksLimit: 52,
     resultMaxAgeDays: 84,
     resultDistancesM: [5000, 10000, 21097.5, 42195] as readonly number[],
     /** M1: rezultat 5 km dozvoljen uz upozorenje RESULT_5K. */
@@ -736,6 +746,9 @@ export const MARATHON_V2_POLICY = {
   },
 
   /** M5. */
+  /** W1-B: osnovna priprema dugog plana (N > weeksMax) — svaka `deloadEvery`-ta nedelja rasterećenje (deload.factor). */
+  prep: { deloadEvery: 4 },
+
   deload: {
     maxBuildRun: 3,
     exceptionRun: 4,

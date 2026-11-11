@@ -123,6 +123,8 @@ export interface WeekFrame {
   deload: boolean;
   /** M16: nedelja testa 5 km (samo plan po osećaju koji nije početnik). */
   test?: true;
+  /** W1-B: nedelja osnovne pripreme dugog plana (N > 24): baza bez kvaliteta, obim = trenutni (bez rasta). */
+  prep?: true;
   /** Segment 04: ograničenja adaptacije za ovu nedelju (steps.ts); u planu generatora polja nema. */
   limits?: WeekLimits;
 }

@@ -84,3 +84,43 @@ describe('W1-A kratak plan (1 ≤ N < MIN)', () => {
     expect(intro(planOf(beg, 16))).toEqual([1, 2]);
   });
 });
+
+describe('W1-B dug plan (MAX < N ≤ 52)', () => {
+  const MAX = P.input.weeksMax;
+  const Ns = FULL
+    ? [MAX + 1, MAX + 2, MAX + 3, MAX + 4, MAX + 5, MAX + 8, MAX + 15, 52]
+    : [MAX + 1, 52];
+
+  it('prvih N − MAX nedelja osnovna priprema (baza, bez kvaliteta, trenutni obim, svaka 4. rasterećenje); ostatak = plan od MAX nedelja', () => {
+    for (const p of PROFILES) {
+      const std = planOf(p, MAX).weeks;
+      const rule = planRule(p.days.length, p.experience ?? 'regular')!;
+      for (const N of Ns) {
+        const plan = planOf(p, N);
+        const k = N - MAX;
+        expect(plan.weeks.length).toBe(N);
+        expect(usable(p, plan), `${p.id} N=${N}`).toEqual([]);
+        for (const w of plan.weeks.slice(0, k)) {
+          const at = `${p.id} N=${N} ned ${w.index}`;
+          expect(w.phase, at).toBe('base');
+          expect(w.deload, at).toBe(w.index % 4 === 0);
+          expect(
+            w.days.filter((d) => d.workout.kind === 'quality' || d.role === 'test'),
+            at
+          ).toEqual([]);
+          expect(w.targetKm, at).toBe(
+            w.deload ? Math.max(Math.round(8 * p.km) / 10, rule.weekMinKm) : p.km
+          );
+          expect(w.days.filter((d) => d.workout.title.includes('ubrzanja')).length, at).toBe(1);
+        }
+        // Standardni deo kreće od istog trenutnog obima: faze, rasterećenja, test i ciljevi kao plan od MAX nedelja.
+        const tail = plan.weeks
+          .slice(k)
+          .map((w) => [w.phase, w.deload, w.test ?? false, w.targetKm]);
+        expect(tail, `${p.id} N=${N}`).toEqual(
+          std.map((w) => [w.phase, w.deload, w.test ?? false, w.targetKm])
+        );
+      }
+    }
+  });
+});

@@ -30,11 +30,13 @@ describe('M1 ulaz', () => {
     }
   });
 
-  it('nedelje: W1-A kratak plan (1–11) prolazi, > 24 „počni kasnije", 12 i 24 prolaze', () => {
+  it('nedelje: W1 — 1–52 prolaze (kratak i dug plan uz upozorenje), > 52 „počni kasnije"', () => {
     const w = (weeks: number) => base({ raceDate: addDays(START, weeks * 7 - 1) });
-    for (const n of [1, 2, 3, 11]) expect(codes(w(n))).toEqual([]);
-    expect(codes(w(25))).toEqual(['PLAN_TOO_LONG']);
-    expect(message(w(25), 'PLAN_TOO_LONG')).toMatch(/počni plan kasnije, najranije/);
+    for (const n of [1, 2, 3, 11, 25, 32, 52]) expect(codes(w(n))).toEqual([]);
+    expect(codes(w(53))).toEqual(['PLAN_TOO_LONG']);
+    expect(message(w(53), 'PLAN_TOO_LONG')).toMatch(
+      /najviše 52 nedelje; počni plan kasnije, najranije/
+    );
     expect(codes(w(12))).toEqual([]);
     expect(codes(w(24))).toEqual([]);
     expect(codes(base({ raceDate: addDays(START, 16 * 7) }))).toEqual(['PLAN_NOT_WHOLE_WEEKS']);

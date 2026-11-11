@@ -591,7 +591,8 @@ function constructWith(
         ? Math.round(sPast.targetKm * 10)
         : fit.target10;
     if (isBuildPhase(frame.phase) && !frame.deload) {
-      if (!av) {
+      // W1-B: osnovna priprema nije osnov rasta (standardni deo kreće od trenutnog obima).
+      if (!av && !frame.prep) {
         h.lastBuild10 = hist10;
         h.peak10 = Math.max(h.peak10, hist10);
       }

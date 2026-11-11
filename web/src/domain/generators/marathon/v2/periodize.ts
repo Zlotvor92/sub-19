@@ -53,7 +53,12 @@ function standardPhases(weeks: number): Phase[] {
     najkraćeg dozvoljenog plana `minWeeks` bez prvih minWeeks − N nedelja, offset < 0). JEDNO mesto za konstruktor,
     adaptaciju i validator (uvod početnika, ubrzanja). */
 export function layoutOffset(weeks: number, minWeeks: number = P.input.weeksMin): number {
-  return weeks < minWeeks ? weeks - minWeeks : 0;
+  return weeks < minWeeks ? weeks - minWeeks : prepWeeksOf(weeks);
+}
+
+/** W1-B: broj nedelja osnovne pripreme dugog plana (N > weeksMax): N − weeksMax; 0 inače. */
+export function prepWeeksOf(weeks: number): number {
+  return Math.max(0, weeks - P.input.weeksMax);
 }
 
 type IntroRule = { readonly introWeeks: number; readonly weeksMin: number };
@@ -85,7 +90,24 @@ export const planWeeks = (input: { startDate: IsoDate; raceDate: IsoDate }): num
     zatim razvoj, specifična, taper; trkačka nedelja uvek). */
 export function phasesOf(weeks: number, minWeeks: number = P.input.weeksMin): Phase[] {
   if (weeks < minWeeks) return standardPhases(minWeeks).slice(minWeeks - weeks);
+  // W1-B: dug plan — K = N − weeksMax nedelja osnovne pripreme (baza) + standardni plan od weeksMax nedelja.
+  const k = prepWeeksOf(weeks);
+  if (k > 0) return [...Array<Phase>(k).fill('base'), ...standardPhases(P.input.weeksMax)];
   return standardPhases(weeks);
+}
+
+/** M5 / W1: rasteretne nedelje plana. Dug plan (W1-B): u osnovnoj pripremi svaka prep.deloadEvery-ta nedelja,
+    standardni deo po M5 na svom rasporedu (pomeren za K). Kratak plan (W1-A): M5 na zadržanom rasporedu. */
+export function planDeloads(weeks: number, minWeeks: number = P.input.weeksMin): number[] | null {
+  const k = prepWeeksOf(weeks);
+  if (k === 0) return deloadWeeks(phasesOf(weeks, minWeeks));
+  const std = deloadWeeks(standardPhases(P.input.weeksMax));
+  if (!std) return null;
+  const e = P.prep.deloadEvery;
+  return [
+    ...Array.from({ length: Math.floor(k / e) }, (_, i) => (i + 1) * e),
+    ...std.map((w) => w + k)
+  ];
 }
 
 export const isBuildPhase = (p: Phase): boolean =>
@@ -204,12 +226,20 @@ export function rePeriodize(frames: readonly WeekFrame[], from: number): WeekFra
   const tail = frames.findIndex((f) => !isBuildPhase(f.phase));
   const m = tail - (from - 1);
   if (m <= 0) return [...frames];
-  const seq = buildSequence(buildCounts(m));
-  const deloads = deloadWeeks(seq);
-  if (!deloads) return null;
+  // W1-B: preostalo do trke duže od weeksMax — prvih (preostalo − weeksMax) nedelja je osnovna priprema (prep,
+  // rasterećenje svake prep.deloadEvery-te), ostatak izgradnje po M4/M5 kao standardni plan.
+  const prep = Math.min(m, prepWeeksOf(frames.length - from + 1));
+  const seq = buildSequence(buildCounts(m - prep));
+  const std = deloadWeeks(seq);
+  if (!std) return null;
+  const e = P.prep.deloadEvery;
   return frames.map((f, i) => {
     const k = i - (from - 1);
-    return k < 0 || i >= tail ? f : { ...f, phase: seq[k]!, deload: deloads.includes(k + 1) };
+    if (k < 0 || i >= tail) return f;
+    const { prep: _p, ...g } = f;
+    return k < prep
+      ? { ...g, phase: 'base' as const, deload: (k + 1) % e === 0, prep: true as const }
+      : { ...g, phase: seq[k - prep]!, deload: std.includes(k - prep + 1) };
   });
 }
 
@@ -222,18 +252,21 @@ export function periodize(
   /** W1-A: najkraći dozvoljen plan tipa trkača (PlanRule.weeksMin). */
   minWeeks: number = P.input.weeksMin
 ): WeekFrame[] | null {
-  // W1-A: rasterećenja kratkog plana po pravilu M5 na zadržanom rasporedu (isto pravilo za validator).
+  // W1-A: rasterećenja kratkog plana po pravilu M5 na zadržanom rasporedu; W1-B: osnovna priprema (prep) + standardni
+  // deo (isto pravilo za validator).
   const phases = phasesOf(weeks, minWeeks);
-  const deloads = deloadWeeks(phases);
+  const deloads = planDeloads(weeks, minWeeks);
   if (!deloads) return null;
   const kind: TestKind | null = test === true ? 'feel' : test === false ? null : test;
   const tw = kind ? testWeekOf(phases, kind, deloads) : 0;
+  const k = prepWeeksOf(weeks);
   return phases.map((phase, i) => ({
     index: i + 1,
     startDate: addDays(startDate, 7 * i),
     endDate: addDays(startDate, 7 * i + 6),
     phase,
     deload: deloads.includes(i + 1),
-    ...(i + 1 === tw ? { test: true as const } : {})
+    ...(i + 1 === tw ? { test: true as const } : {}),
+    ...(i < k ? { prep: true as const } : {})
   }));
 }

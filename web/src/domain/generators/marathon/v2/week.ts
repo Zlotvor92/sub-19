@@ -15,7 +15,7 @@ import {
   taperLengths,
   taperTop10
 } from './lengths.ts';
-import { introOf, introPos, planWeeks, shortPlan } from './periodize.ts';
+import { introOf, introPos, planWeeks, prepWeeksOf, shortPlan } from './periodize.ts';
 import { MARATHON_V2_POLICY as P, type PlanRule } from './policy.ts';
 import { chooseBlockKm, fastBlock } from './specific.ts';
 import {
@@ -67,6 +67,10 @@ import {
   type WarmupCooldown,
   zoneOf
 } from './workouts.ts';
+
+/** W1-B: napomena nedelje osnovne pripreme dugog plana. */
+const prepNote = (index: number, weeks: number): string =>
+  `Osnovna priprema (W1-B): nedelja ${index} od ${prepWeeksOf(weeks)} na sadašnjem obimu — bez kvaliteta, ubrzanja na jednom laganom danu, dugo trčanje po pravilu`;
 
 /** M17: napomena nedelje uvoda početnika (W1-A: redni broj i broj nedelja uvoda u ovom planu). */
 const introNote = (index: number, weeks: number, rule: PlanRule): string =>
@@ -708,7 +712,10 @@ function buildWeekIn(
     const slot = deloadSlot(rule.quality);
     const pref = slot === 'q1' ? pat.q1 : pat.q2!;
     const intro = introPos(frame.index, planWeeks(ctx.input), rule) > 0;
-    const qDay = intro || mode === 'none' ? null : test ? pref : oneQualityDay(frame, pat, pref);
+    // W1-B: rasterećenje osnovne pripreme je bez kvaliteta.
+    const prep = frame.prep === true;
+    const qDay =
+      intro || prep || mode === 'none' ? null : test ? pref : oneQualityDay(frame, pat, pref);
     // Pouka 32: drugi član plafona zone — T rasterećenja ≤ dugi rasterećenja (najmanja doza izuzeta).
     // P8-G1: i u redovnom planu — kad lagani ne bi ostali ≥ 5 km (sporiji rast po G1: rasterećenje blizu polaznog
     // obima), dugi rasterećenja se skraćuje umesto da nedelja bude neizvodljiva.
@@ -724,7 +731,7 @@ function buildWeekIn(
     );
     const t0 = test || !qDay ? null : pickDeload(quality, frame.phase, targetKm, p, rule.beginner);
     const t = t0 ? pickDeload(quality, frame.phase, targetKm, p, rule.beginner, dLimit) : null;
-    if (!test && !t && !intro && mode !== 'none') return null;
+    if (!test && !t && !intro && !prep && mode !== 'none') return null;
     const tw = test ? testWorkout(p, ctx.wc) : t ? qualityWorkout(t, p, ctx.wc, ctx.feel) : null;
     const dates = easyDates(
       frame,
@@ -781,16 +788,22 @@ function buildWeekIn(
             `Rasterećenje: cilj ${fmtKm(targetKm)} km, test ${P.test.km} km umesto kvaliteta rasterećenja (M16), ${longText}.`,
             testNoteOf(ctx.feel)
           ]
-        : intro
+        : prep
           ? [
-              `${introNote(frame.index, planWeeks(ctx.input), rule)}; prinudno rasterećenje (A5): cilj ${fmtKm(targetKm)} km, nedelja bez kvaliteta, ${longText}.`
+              `${prepNote(frame.index, planWeeks(ctx.input))}; rasterećenje: cilj ${fmtKm(targetKm)} km, ${longText}.`
             ]
-          : tw
+          : intro
             ? [
-                `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), ${longText}.`,
-                ...lowered
+                `${introNote(frame.index, planWeeks(ctx.input), rule)}; prinudno rasterećenje (A5): cilj ${fmtKm(targetKm)} km, nedelja bez kvaliteta, ${longText}.`
               ]
-            : [`Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija), ${longText}.`],
+            : tw
+              ? [
+                  `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T), ${longText}.`,
+                  ...lowered
+                ]
+              : [
+                  `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija), ${longText}.`
+                ],
       len.jumpBound
     );
   }
@@ -934,13 +947,15 @@ function buildWeekIn(
   // bez testa) je lagan. Segment 04: 'one' — jedan kvalitet doze rasterećenja na danu T slota (u zabrani: drugi
   // dan kvaliteta), bez testa; 'none' — bez kvaliteta i bez testa; stanje doze se tada ne menja (picks null).
   const intro = introPos(frame.index, planWeeks(ctx.input), rule) > 0;
+  // W1-B: osnovna priprema — bez kvaliteta (dani kvaliteta su lagani), ubrzanja na jednom laganom danu (strides.ts).
+  const prep = frame.prep === true;
   const test = frame.test === true && (mode === 'rule' || mode === 'relax');
   let picks: Picks | null;
   let one: { dose: Dose; day: Weekday } | null = null;
   // Pouka 32: drugi član plafona zone (trajanje dana ≤ dugi iste nedelje; najniži nivo izuzet).
   const dlc = dayLimitContext(p, ctx.wc, rule, frame.limits, () => dateOf(frame, pat.long));
   let oneLow: [Dose, Dose] | null = null;
-  if (intro) picks = { q1: null, q2: null };
+  if (intro || prep) picks = { q1: null, q2: null };
   else if (reduced) {
     picks = null;
     if (mode === 'one') {
@@ -964,7 +979,7 @@ function buildWeekIn(
   } else {
     // M19: nedelja B — dan Q1 (MP trening) je lagan (stanje MP slota se ne menja), Q2 = T cruise po svojoj progresiji
     // (drugi član pouke 32 uz jedan lagan dan više i bez Q1).
-    if (asB && (test || intro)) return null;
+    if (asB && (test || intro || prep)) return null;
     // P8-G7: u nedelji testa test je jedini kvalitet — dan Q2 je lagan, stanje slotova se ne menja.
     picks = test
       ? { q1: null, q2: null }
@@ -1059,7 +1074,8 @@ function buildWeekIn(
   }
   if (rested.length > 0) notes.push(ctx.shortRest ? shortRestNote(rested) : easyRestNote(rested));
   if (len.under && !ctx.shortRest) notes.push(EASY_UNDER_NOTE);
-  if (intro) notes.push(`${introNote(frame.index, planWeeks(ctx.input), rule)}.`);
+  if (prep) notes.push(`${prepNote(frame.index, planWeeks(ctx.input))}.`);
+  else if (intro) notes.push(`${introNote(frame.index, planWeeks(ctx.input), rule)}.`);
   else if (test) notes.push(testNoteOf(ctx.feel));
   else if (blockKm !== null) notes.push(bWeekNote(blockKm));
   else if (reduced) {

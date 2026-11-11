@@ -63,7 +63,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'K3-E',
       'K4-A',
       'K4-B',
-      'W1-A'
+      'W1-A',
+      'W1-B'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {
@@ -77,6 +78,7 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
     expect(P.input).toEqual({
       weeksMin: 12,
       weeksMax: 24,
+      weeksLimit: 52,
       resultMaxAgeDays: 84,
       resultDistancesM: [5000, 10000, 21097.5, 42195],
       shortResultM: 5000,
