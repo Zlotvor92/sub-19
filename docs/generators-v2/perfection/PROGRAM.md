@@ -484,3 +484,13 @@ Plan P9 (do kraja):
   najkraćeg dozvoljenog plana, doze i obim se grade unapred od trenutnog stanja (bez skoka); dug plan = osnovna
   priprema na sadašnjem obimu + standardni plan najveće dužine; tehnička granica 52 nedelje; jedno upozorenje plana.
 - Tabovi Opus, 2 uporedo: HM i MAR, zatim 5K i 10K. Posle: `check:full` ponovo, pa pitanje o spajanju.
+
+### 11. 11. 2026 — nalog vlasnika: „Cilj 80", raditi redom
+
+Predlog organizatora (prihvaćen): pravilima je ostalo ≈ +1–2 poena; do 80 vode (1) ciljni planovi kao merilo,
+(2) usmeravanje unosa pre generisanja (ekran), (3) periodizacija sa vrhom pre tapera (doza sme da pada posle vrha),
+(4) nov sadržaj (pripremna trka, strategija tempa, ishrana u dugom, hod-trk, brda, progresivni dugi), (5)
+prilagođavanje po odrađenim treninzima + rubrika koja to meri.
+- Korak 1 pokrenut: glavni trener piše 16 ciljnih planova (4 po distanci) u `target/<D>/pNN-target.md` i
+  `target/GAP.md` (razlike sa poenima i vrstom zahvata, redosled rada, profili koji ne mogu do 80).
+- Uporedo teče W1 (HM, MAR; zatim 5K, 10K). Koraci 2–5 se pokreću po nalazu GAP-a.
