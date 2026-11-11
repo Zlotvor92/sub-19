@@ -475,3 +475,12 @@ Plan P9 (do kraja):
   osim glavnog trenera; satni zadatak isključen.
 - Nije urađeno: spajanje u main, deploy, izmene baze (čeka izričitu potvrdu vlasnika). V1c (brisanje HM v1) posle
   13. 12. 2026.
+
+### 11. 11. 2026, 04:40 — nalog vlasnika: plan za bilo koji broj nedelja uz upozorenje (W1)
+
+- Danas se odbija van opsega: 5K 6–16; 10K 8–18 (početnik ≥ 10); HM 10–20 (≥ 12); maraton 12–24 (≥ 16). Zajednički
+  ekrani nemaju svoju granicu (odbijanje dolazi iz generatora).
+- Odluke organizatora (`briefs/W1-bilo-koja-duzina-plana.md`): kratak plan = poslednjih N nedelja rasporeda
+  najkraćeg dozvoljenog plana, doze i obim se grade unapred od trenutnog stanja (bez skoka); dug plan = osnovna
+  priprema na sadašnjem obimu + standardni plan najveće dužine; tehnička granica 52 nedelje; jedno upozorenje plana.
+- Tabovi Opus, 2 uporedo: HM i MAR, zatim 5K i 10K. Posle: `check:full` ponovo, pa pitanje o spajanju.
