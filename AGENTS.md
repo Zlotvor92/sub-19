@@ -74,6 +74,9 @@ važi isključivo ovaj odeljak.
    zadati tempo držan i uz koji napor), testovi i trke. Plan prikazuje polaznu formu, trenutnu procenu i očekivani
    raspon na dan trke; tempa u planu prate procenu naviše i naniže. Procena je oprezna (ne skače na jedan dobar
    trening), objašnjiva („zašto se promenilo") i nikad ne menja urađeno.
+   Puls dolazi sa zglobnog sata (vlasnik i korisnici ne nose grudnu traku): koristi se samo kao trend kroz više
+   nedelja na ravnomernim laganim trčanjima; na intervalima, kratkim deonicama i pojedinačnom treningu se ne koristi.
+   Glavni signali su tempo, odrađeni kvalitet i trke; procena mora da radi i potpuno bez pulsa.
 
 **Kvalitet**
 9. Merilo je ocena trenera istom rubrikom + drugi, nezavisan sudija koji ne vidi ciljne planove + pregled vlasnika.

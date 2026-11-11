@@ -674,3 +674,9 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   procenu; oprezno, objašnjivo, ne dira urađeno.
 - Za V4 i: plafon napretka zavisi od trkača (obim, staž, raniji napredak), ne jedno pravilo za sve; prva nedelja
   posle trke je oporavak (stanje zna šta je bilo juče).
+
+### 11. 11. 2026 — podatak vlasnika: puls samo sa zglobnog sata
+
+- Svi korisnici (i vlasnik) mere puls optički na zglobu, bez grudne trake. `AGENTS.md` 9a dopunjen: puls samo kao
+  višenedeljni trend na ravnomernim laganim trčanjima; glavni signali tempo, odrađeni kvalitet, trke; procena forme
+  mora da radi i bez pulsa.
