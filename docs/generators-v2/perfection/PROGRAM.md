@@ -612,3 +612,9 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   trener + drugi sudija + vlasnik, brzi testovi; rad: grana `claude/v4`, Opus). Stara pravila važe samo za zamrznut v2.
 - Zadržano bez izuzetka: main/deploy/baza/PR samo uz izričitu potvrdu vlasnika; beogradsko vreme; lični plan i v2
   rade dok ih V4 ne zameni.
+
+### 11. 11. 2026 — zahtev vlasnika: V4 radi i nad postojećim planovima i nad ličnim planom
+
+- `AGENTS.md` V4, novo pravilo 8: adapter za svaki stari format → PlanDoc (samo čita); preuzimanje samo po sebi ne
+  menja plan (otisak pre = posle); preostale nedelje starog plana postaju šablon, V4 ih menja tek na događaj ili na
+  zahtev; lični plan vlasnika ima prednost — čuvar samo upozorava.

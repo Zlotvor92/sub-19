@@ -59,17 +59,25 @@ važi isključivo ovaj odeljak.
 5. Jedna mera opterećenja (minuti rada ponderisani intenzitetom) i jedan model forme/umora; kilometri se izvode.
 6. Čuvar bezbednosti je mali i samo prijavljuje; odbija se samo neispravan unos. Loš unos (premalo dana, obima,
    vremena) dobija najbolji mogući plan i jasnu preporuku šta da promeni.
-7. Ništa se ne prenosi iz v2 (ni kod, ni tipovi, ni testovi).
+7. Ništa se ne prenosi iz v2 (ni kod, ni tipovi, ni testovi). Jedini izuzetak je tačka 8: čitanje starih PLANOVA
+   kao podataka.
+8. Preuzimanje postojećih planova (zahtev vlasnika): V4 mora da radi nad planovima koji već postoje u aplikaciji
+   (v2 planovi u bazi, planovi starog formata) i nad ličnim planom vlasnika. Za svaki stari format postoji adapter
+   → `PlanDoc` (jedino mesto koje zna stari format; samo čita, ništa ne piše u stari plan). Pravila preuzimanja:
+   (a) preuzimanje samo po sebi NE menja plan — isti datumi, treninzi, urađeno, zaključano i ručne izmene (test:
+   otisak pre = otisak posle); (b) preostale nedelje starog plana postaju šablon (namera autora se čuva), V4 ih menja
+   tek na događaj (rezultat, umor, pauza, bol, propušten trening) ili na izričit zahtev korisnika; (c) lični plan
+   vlasnika ima prednost nad svakim pravilom šablona — čuvar ga samo upozorava, nikad ne prepravlja sam.
 
 **Kvalitet**
-8. Merilo je ocena trenera istom rubrikom + drugi, nezavisan sudija koji ne vidi ciljne planove + pregled vlasnika.
+9. Merilo je ocena trenera istom rubrikom + drugi, nezavisan sudija koji ne vidi ciljne planove + pregled vlasnika.
    Izmena koja spusti ocenu ili bezbednost se ne prihvata.
-9. Testovi su brzi (ceo skup V4 u minutima): svojstva nad mrežom ulaza, čuvar bez nalaza, otisci planova po distanci
+10. Testovi su brzi (ceo skup V4 u minutima): svojstva nad mrežom ulaza, čuvar bez nalaza, otisci planova po distanci
    (izmena motora ne sme nenamerno da promeni plan druge distance). Bez višesatnih matrica.
 
 **Rad**
-10. V4 se razvija na grani `claude/v4` dok ne zameni v2 u aplikaciji. Organizator vodi; tabovi rade na Opus 5.5.
-11. Ostaje bez izuzetka: ništa u `main`, bez deploya, bez izmene baze i bez PR-a bez izričite potvrde vlasnika;
+11. V4 se razvija na grani `claude/v4` dok ne zameni v2 u aplikaciji. Organizator vodi; tabovi rade na Opus 5.5.
+12. Ostaje bez izuzetka: ništa u `main`, bez deploya, bez izmene baze i bez PR-a bez izričite potvrde vlasnika;
     vremena po beogradskom vremenu; lični plan vlasnika (zamrznut HM v1) i v2 rade dok ih V4 ne zameni.
 
 ## Testovi i sabotaže
