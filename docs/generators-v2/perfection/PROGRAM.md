@@ -578,3 +578,10 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 - Sud trenera: šabloni su bolji put (jedan krug +11,7 naspram +7,4 za tri kruga dorade starog). Procena posle
   ispravki 1–6: ≈ 77–78, sedam profila na ≥ 80.
 - Krug 2 poslat istom tabu (10 ispravki, prvo bezbednost). Zatim ponovna ocena trenera.
+
+### 11. 11. 2026, 09:00 — check:full na zaustavljenom stanju radne grane: zeleno
+
+- `npm run check:full` (organizator) na `42387c6` (kod; kasnije samo docs): typecheck, lint, format ✔; pun nivo
+  447 fajlova / 3967 testova, 0 padova. Uključuje HM W1 ceo i MAR W1 A–C.
+- Ostaje nepokriveno testovima: adaptacija KRATKIH/DUGIH maratonskih planova (W1-D za maraton nije urađen) i W1 na
+  5K/10K (nije ugrađen). Preporuka: radnu granu ne spajati u main dok se W1 ne dovrši ili MAR W1 ne povuče.
