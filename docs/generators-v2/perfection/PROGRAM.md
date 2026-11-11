@@ -635,3 +635,22 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 
 - Od sutra: podrazumevano Opus 5.5; Fable 5.2 po proceni organizatora za najsloženije delove (jezgro motora V4, model
   stanja i opterećenja, trenerski sud). Upisano u `AGENTS.md` V4 pravilo 11.
+
+### 11. 11. 2026, 09:45 — HM v3 ZAVRŠEN: 62,7 → 77,6; odgovor trenera na „90+"
+
+- V3-HM krug 3 (`82941da` na `claude/v3-hm`); trener `coach/ROUND-V3-HM-03.md` (`8a35b63`): stari 62,7 → k1 74,4 →
+  k2 76,8 → k3 77,6. Na ≥ 80: 7 od 12 (p01 81, p02 81, p04 80, p05 81, p09 80, p11 80, p12 80). Ostalih 5 (p03,
+  p06, p07, p08, p10) 71–75 — na plafonu koji im daju ulazi. Pogoršanja nema. „HM generisanje završeno: DA."
+- Tab V3-HM arhiviran; kod ostaje na grani `claude/v3-hm` (`halfMarathon/v3/`, ≈ 1,9 hiljada redova) kao polazna
+  referenca za V4. Satni zadatak isključen.
+- „90+" (trener): NE kao plan napravljen jednom iz šest podataka (plafon ocene „Plan" 80–84); DA kao plan koji zna
+  trkača i menja se sa njim. Od ~80 do ~92: generator +2–3; podaci o trkaču +4–5; adaptacija +4–5; sadržaj oko
+  trčanja +1–2; usmeravanje unosa +5–10 za profile koji sada ne mogu do 80.
+  Podaci po vrednosti: 8–12 nedelja stvarnog treninga (Strava); stvarni tempo/puls i trke u 6 meseci; povrede;
+  vreme po danu i godine; odgovor tokom plana (napor, propušteno, san/puls/HRV); staza i teren.
+  Nova rubrika: Plan 50 % (sadašnja) + Prilagođavanje 30 % (plan posle 6 događaja) + Personalizacija 20 % (isti
+  ulazi, različita istorija → različiti planovi). 90+ ima smisla samo na zbirnoj oceni.
+- ZA SUTRA (V4, grana `claude/v4`): 0) čitanje baze — koji formati planova postoje (bez izmena); 1) jezgro:
+  PlanDoc + stanje + planiranje iz stanja + stabilnost (Fable); 2) HM šabloni i biblioteka iz v3 kao podaci (Opus);
+  3) adapteri za postojeće planove i lični plan, test „otisak pre = posle" (Opus); 4) ulaz iz Strave kao stanje
+  (Opus); 5) nova rubrika u tri dela + drugi nezavisan sudija (Fable); 6) ostale distance kao podaci.
