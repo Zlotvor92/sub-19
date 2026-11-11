@@ -5,95 +5,20 @@
    MAX + 8, 52} × osnovni profili (redovan sa rezultatom, po osećaju, početnik; 3–6 dana; mali i veliki obim). */
 
 import { describe, expect, it } from 'vitest';
+import { FULL } from '@/test/level';
+import type { IsoDate } from '../../../date';
+import type { GenPlanState } from '../../../state';
+import * as select from '../../select';
+import { adaptHmV2 } from './adapt.ts';
+import { factsOf } from './adaptInputs.ts';
+import { adaptInvariants } from './adaptInvariants.ts';
+import { generatedPlan, storedPlan } from './app/plan.ts';
+import { addDays } from './dates.ts';
 import { generateHmV2 } from './generate.ts';
-import { phasesOf } from './periodize.ts';
-import { inputOf, KM_BY_DAYS, type Profile, SCHEDULES_BY_DAYS } from './testInputs.ts';
+import { layoutOf, phasesOf } from './periodize.ts';
+import { inputOf } from './testInputs.ts';
 import type { HmV2Plan } from './types.ts';
-
-/** H15 (nezavisno): minimum nedelje po broju dana. */
-const WEEK_MIN: Record<number, number> = { 3: 12, 4: 16, 5: 20, 6: 24 };
-/** H17 (nezavisno): obim početnika. */
-const BEG_KM: Record<number, [number, number]> = { 4: [20, 40], 5: [25, 45] };
-const EPS = 1e-9;
-
-export interface W1Case {
-  id: string;
-  profile: Profile;
-}
-
-/** Osnovni profili W1-D za dužinu N. */
-export function w1Cases(ns: readonly number[]): W1Case[] {
-  const out: W1Case[] = [];
-  for (const weeks of ns)
-    for (const days of [3, 4, 5, 6] as const)
-      for (const kind of ['res', 'feel', 'beg'] as const) {
-        if (kind === 'beg' && days !== 4 && days !== 5) continue;
-        const [lo, hi] =
-          kind === 'beg' ? BEG_KM[days]! : [KM_BY_DAYS[days].min, KM_BY_DAYS[days].max];
-        for (const km of [lo, hi])
-          for (const sc of ['A', 'C'] as const) {
-            const s = SCHEDULES_BY_DAYS[days][sc];
-            const profile: Profile = { weeks, km, days: s.days, long: s.long };
-            if (kind === 'res') profile.vdot = km === lo ? 38 : 52;
-            else if (kind === 'feel') profile.easyPaceSecPerKm = km === lo ? 420 : 330;
-            else
-              Object.assign(profile, { beginner: true, easyPaceSecPerKm: km === lo ? 450 : 390 });
-            out.push({ id: `${weeks}w-d${days}-${km}km-${kind}-${sc}`, profile });
-          }
-      }
-  return out;
-}
-
-/** W1-C (nezavisno): tačno jedno upozorenje dužine, ista rečenica u napomeni plana; kratak — „Skraćena priprema" sa
-    MIN, dug — „duži od preporučenih 20 nedelja" sa nedeljom K + 1. */
-export function warningViolations(p: HmV2Plan, weeks: number): string[] {
-  const bad: string[] = [];
-  const ws = p.warnings.filter((w) => w.rule === 'PLAN_LENGTH');
-  const min = p.input.experience === 'beginner' ? 12 : 10;
-  if (weeks >= min && weeks <= 20) {
-    if (ws.length > 0) bad.push('upozorenje dužine u planu [MIN, MAX]');
-    return bad;
-  }
-  if (ws.length !== 1) return [`upozorenja dužine: ${ws.length}`];
-  const t = ws[0]!.message;
-  if (!p.notes.includes(t)) bad.push('napomena plana bez upozorenja');
-  if (/W1|layout|MIN|MAX/.test(t)) bad.push(`interna oznaka: ${t}`);
-  if (weeks < min) {
-    if (!t.startsWith('Skraćena priprema: plan ima ') || !t.includes(`najmanje ${min}.`))
-      bad.push(`tekst: ${t}`);
-  } else if (
-    !t.startsWith('Plan je duži od preporučenih 20 nedelja: ') ||
-    !t.endsWith(`počinje u nedelji ${weeks - 19}.`)
-  )
-    bad.push(`tekst: ${t}`);
-  return bad;
-}
-
-/** Nezavisne invarijante plana W1 (prekršaji kao tekst). */
-export function w1Violations(p: HmV2Plan, weeks: number): string[] {
-  const bad: string[] = [...warningViolations(p, weeks)];
-  const min = WEEK_MIN[p.input.runDays.length]!;
-  if (p.weeks.length !== weeks) bad.push(`broj nedelja ${p.weeks.length}`);
-  const last = p.weeks[p.weeks.length - 1]!;
-  if (last.phase !== 'race' || !last.days.some((d) => d.role === 'race'))
-    bad.push('poslednja nedelja nije trkačka');
-  for (const w of p.weeks) {
-    if (w.phase === 'race' && w !== last) bad.push(`ned ${w.index}: trkačka nije poslednja`);
-    // Trkačka nedelja: planirano + trka ≥ minimum (kao mreža 02).
-    const km = w.plannedKm + (w.phase === 'race' ? 21.1 : 0);
-    if (km + EPS < min) bad.push(`ned ${w.index}: ${w.plannedKm} km < minimum ${min}`);
-    for (const d of w.days)
-      if (d.role !== 'race' && (!(d.workout.km > 0) || !(d.workout.sec > 0)))
-        bad.push(`ned ${w.index}: prazan trening ${d.date}`);
-    const long = w.days.find((d) => d.role === 'long');
-    if (w.phase !== 'race' && !long) bad.push(`ned ${w.index}: bez dugog`);
-    if (long)
-      for (const d of w.days)
-        if (d.role === 'easy' && d.workout.km > long.workout.km + EPS)
-          bad.push(`ned ${w.index}: lagan ${d.workout.km} > dugi ${long.workout.km}`);
-  }
-  return bad;
-}
+import { EPS, w1Cases, w1Violations, warningViolations } from './w1Invariants.ts';
 
 /** W1-A (nezavisno): faze kratkog plana = poslednjih N nedelja plana od MIN nedelja (10, početnik 12). */
 const shortPhases = (n: number, beginner: boolean): string[] =>
@@ -257,5 +182,113 @@ describe('W1-C: upozorenje', () => {
     // Postojeća napomena početnika ostaje uz upozorenje dužine.
     expect(plan(11, true).notes.some((n) => n.startsWith('Početnik (H17)'))).toBe(true);
     for (const n of [1, 9, 21, 52]) expect(warningViolations(plan(n), n)).toEqual([]);
+  });
+});
+
+/* W1-D: adaptacija i prenos plana nastalog po W1-A/B — raspored se čita iz upisanog plana (pouka 29). */
+const SCEN = [
+  'none',
+  'done100',
+  'under50',
+  'pause20',
+  'pause35',
+  'pain8',
+  'fatigue',
+  'test5k',
+  'faster'
+] as const;
+const D_NS = [1, 2, 3, 9, 11, 21, 28, 52];
+const dCases = w1Cases(D_NS).filter((c) => !(c.profile.weeks === 11 && !c.profile.beginner));
+
+describe('W1-D: adaptacija i prenos', () => {
+  const cases = FULL ? dCases : dCases.filter((_, i) => i % 9 === 0);
+  it(`mreža adaptacije: ${cases.length} planova × asOf × ${SCEN.length} scenarija — 0 odbijanja, invarijante adaptacije`, () => {
+    const rejected: string[] = [];
+    const bad: string[] = [];
+    let n = 0;
+    for (const c of cases) {
+      const g = generateHmV2(inputOf(c.profile));
+      if (!g.ok) {
+        rejected.push(`${c.id}: generator`);
+        continue;
+      }
+      const p = g.plan;
+      const W = p.weeks;
+      const wed = (i: number) => addDays(W[i - 1]!.startDate, 2);
+      const ats = [
+        ...new Set([
+          wed(1),
+          ...(W.length > 1 ? [W[0]!.endDate] : []),
+          wed(Math.ceil(W.length / 2)),
+          ...(W.length > 2 ? [W[W.length - 3]!.endDate] : [])
+        ])
+      ].filter((a) => a < p.input.raceDate);
+      for (const at of ats)
+        for (const s of FULL ? SCEN : SCEN.filter((_, i) => i % 2 === 0)) {
+          n++;
+          const facts = factsOf(p, s, at);
+          const r = adaptHmV2(p, facts, at);
+          if (!r.ok) {
+            rejected.push(`${c.id} ${at} ${s}: ${r.reasons.map((x) => x.code).join(',')}`);
+            continue;
+          }
+          for (const v of adaptInvariants(p, r.plan, at, facts))
+            bad.push(`${c.id} ${at} ${s}: ${v}`);
+          // Pouka 29: činjenica rasporeda ostaje činjenica upisanog plana.
+          if (JSON.stringify(r.plan.layout ?? null) !== JSON.stringify(p.layout ?? null))
+            bad.push(`${c.id} ${at} ${s}: raspored`);
+          if (r.plan.weeks.length !== W.length || r.plan.weeks.at(-1)!.phase !== 'race')
+            bad.push(`${c.id} ${at} ${s}: trkačka nedelja`);
+        }
+    }
+    expect(n).toBeGreaterThan(0);
+    expect(rejected).toEqual([]);
+    expect(bad).toEqual([]);
+  });
+
+  it('raspored adaptacije je činjenica upisanog plana, ne računa se ponovo iz dužine', () => {
+    // Činjenica drugačija od tekuće odluke dužine određuje raspored.
+    expect(layoutOf(5, false, { kind: 'short', fullWeeks: 12 })!.phases).toEqual(
+      phasesOf(12).slice(7)
+    );
+    expect(layoutOf(5, false)!.phases).toEqual(phasesOf(10).slice(5));
+    expect(layoutOf(24, false, { kind: 'long', prepWeeks: 2 })!.phases).toEqual([
+      'base',
+      'base',
+      ...phasesOf(22)
+    ]);
+    // Plan dužine [MIN, MAX] (činjenica null) — kao pre.
+    expect(layoutOf(14, false, null)!.phases).toEqual(phasesOf(14));
+    // Adaptacija plana sa upisanom činjenicom (npr. iz ranije politike sa MIN 12) gradi budućnost po njoj.
+    const g = generateHmV2(
+      inputOf({ weeks: 7, km: 40, vdot: 45, days: ['tue', 'thu', 'sat', 'sun'] })
+    );
+    if (!g.ok) throw new Error('plan');
+    const old = { ...g.plan, layout: { kind: 'short' as const, fullWeeks: 12 } };
+    const at = addDays(g.plan.weeks[0]!.startDate, 2);
+    const r = adaptHmV2(old, factsOf(old, 'none', at), at);
+    if (!r.ok) throw new Error(r.reasons.map((x) => x.message).join(' | '));
+    expect(r.plan.layout).toEqual({ kind: 'short', fullWeeks: 12 });
+    expect(r.plan.weeks.map((w) => w.phase)).toEqual(phasesOf(12).slice(5));
+    expect(phasesOf(12).slice(5)).not.toEqual(g.plan.weeks.map((w) => w.phase));
+  });
+
+  it('prenos: plan W1 kao izvor ne šalje svoju politiku (osnova bez politike)', () => {
+    for (const weeks of [3, 28]) {
+      const g = generateHmV2(
+        inputOf({ weeks, km: 35, vdot: 42, days: ['tue', 'thu', 'sun'], long: 'sun' })
+      );
+      if (!g.ok) throw new Error('plan');
+      const at = addDays(g.plan.weeks[0]!.startDate, 9);
+      const r = adaptHmV2(g.plan, factsOf(g.plan, 'pause35', at), at);
+      if (!r.ok) throw new Error('adaptacija');
+      const st = select.stampForStorage(
+        storedPlan(generatedPlan(r.plan)) as unknown as GenPlanState
+      );
+      const prep = select.preparationForPlan(st);
+      expect(prep).not.toBeNull();
+      const basis = prep!.basisFromPlan(st, at as IsoDate);
+      if (basis) expect(basis.policy).toBeNull();
+    }
   });
 });

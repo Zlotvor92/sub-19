@@ -68,7 +68,8 @@ export function adaptInvariants(
   hard.sort();
   for (let i = 1; i < hard.length; i++)
     if (daysBetween(hard[i - 1]!, hard[i]!) < 2) bad.push(`teški susedni ${hard[i]}`);
-  const taper = after.weeks.find((w) => w.phase === 'taper')!;
+  // W1-A: plan od 1 nedelje nema taper.
+  const taper = after.weeks.find((w) => w.phase === 'taper');
   const race = after.weeks[n - 1]!;
   let lastBuild: PlanWeek | null = null;
   let maxDose: Record<string, number> = {};
@@ -159,8 +160,8 @@ export function adaptInvariants(
     if (isBuild(w) && !w.deload) lastBuild = w;
   }
   // Trkačka ≤ taper; D30b.
-  if (!mixed.has(taper.index) && !mixed.has(race.index)) {
-    if (race.plannedKm > taper.plannedKm + EPS) bad.push('trkačka > taper');
+  if ((!taper || !mixed.has(taper.index)) && !mixed.has(race.index)) {
+    if (taper && race.plannedKm > taper.plannedKm + EPS) bad.push('trkačka > taper');
     // Izuzetak (pouka 30, uzak): trkačka nedelja skraćena (dani pretvoreni u odmor — manje dana trčanja od H8
     // bez dana odmora koraka — uz napomenu) i plan nosi upozorenje RACE_WEEK_SHORT.
     const runs = race.days.filter((d) => d.role !== 'race').length;
@@ -184,6 +185,7 @@ export function adaptInvariants(
   if (
     steps.some((s) => s.startKm !== null || s.returnFrom) &&
     lastBuild &&
+    taper &&
     !mixed.has(taper.index) &&
     taper.targetKm > lastBuild.targetKm + EPS
   )

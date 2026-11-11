@@ -283,3 +283,31 @@ test('HM v2: trčanje/hodanje → odbijanje v2 doslovno sa preporukom 5K, plan s
   await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toBeVisible();
   expect((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null).toBeNull();
 });
+
+test('HM v2 W1: kratak plan (6 nedelja) → plan se pravi, upozorenje skraćene pripreme je vidljivo', async ({
+  page
+}) => {
+  const backend = await installBackend(page);
+  await page.goto('/');
+  await raceStep(page, '2026-03-01', 6);
+  await page.getByRole('button', { name: 'Imam rezultat' }).click();
+  await page.getByLabel('minuti').fill('45');
+  await page.getByLabel('sekunde').fill('0');
+  await page.getByLabel('Datum rezultata').fill('2026-01-10');
+  await page.getByRole('button', { name: 'Dalje' }).click();
+  await page.getByRole('button', { name: 'Da', exact: true }).click();
+  await page.getByLabel('Nedeljna kilometraža').fill('40');
+  await page.getByRole('button', { name: 'Trčim redovno' }).click();
+  await page.getByRole('button', { name: 'Dalje' }).click();
+  await pickDays(page, ['Uto', 'Čet', 'Sub', 'Ned']);
+  await page.getByRole('button', { name: 'Napravi plan' }).click();
+  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toBeHidden();
+  await expect.poll(() => serverPlan(backend), SYNC).toContain('"policyId":"hm-v2"');
+  expect(serverPlan(backend)).toContain('"layout":{"kind":"short","fullWeeks":10}');
+  await tab(page, 'Plan').click();
+  const plan = page.locator('.page.active');
+  await plan.getByText('Na šta da paziš u ovom planu').click();
+  await expect(
+    plan.getByText(/Skraćena priprema: plan ima 6 nedelja, a za pun ciklus za polumaraton/)
+  ).toBeVisible();
+});

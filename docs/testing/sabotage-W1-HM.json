@@ -19,5 +19,21 @@
     "find": "  if (lw) plan.notes.push(lw);\n",
     "replace": "",
     "tests": ["src/domain/generators/halfMarathon/v2/w1.node.test.ts"]
+  },
+  {
+    "name": "W1-D adaptacija ne čita raspored iz upisanog plana",
+    "edits": [
+      {
+        "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+        "find": "    rule.beginner,\n    prior ? (prior.layout ?? null) : undefined\n  );",
+        "replace": "    rule.beginner,\n    undefined\n  );"
+      },
+      {
+        "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+        "find": "  const layout = layoutOf(weeks, rule.beginner, prior ? (prior.layout ?? null) : undefined);",
+        "replace": "  const layout = layoutOf(weeks, rule.beginner, undefined);"
+      }
+    ],
+    "tests": ["src/domain/generators/halfMarathon/v2/w1.node.test.ts"]
   }
 ]

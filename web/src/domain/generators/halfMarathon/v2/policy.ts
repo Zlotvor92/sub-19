@@ -726,6 +726,13 @@ const DECISIONS: readonly Decision[] = [
     place:
       'periodize.ts lengthWarning (jedno mesto teksta); generate.ts (napomena plana); validate.ts PLAN_LENGTH (upozorenje; greška kad napomena nema rečenicu), LONG_RUN_SHORT; w1.node.test.ts',
     rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-C).'
+  },
+  {
+    id: 'W1-D',
+    rule: 'Adaptacija i prenos plana po W1-A/B kao svakog drugog: raspored faza (kratak: plan od fullWeeks; dug: prepWeeks) je činjenica upisanog plana (HmV2Plan.layout → Written.layout → layoutOf), ne računa se ponovo iz dužine (pouka 29); validator adaptiranog plana čita istu činjenicu. Nov start (A12) ukida osnovnu pripremu preostalih nedelja. Kao izvor predaje plan ne šalje svoju politiku; kao cilj (kasna predaja < 10 nedelja, rana > 20) gradi plan po W1-A/B.',
+    place:
+      'generate.ts construct (prior.layout); adapt.ts (Written.layout); written.ts; validate.ts (lay iz plan.layout kad je adaptacija); periodize.ts rePeriodize; adaptInvariants.ts (plan bez tapera); w1Invariants.ts, w1.node.test.ts (mreža W1-D)',
+    rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-D). Merenje: reports/W1-HM-REPORT.md.'
   }
 ];
 
