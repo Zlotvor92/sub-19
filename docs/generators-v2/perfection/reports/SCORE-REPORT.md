@@ -11,37 +11,38 @@ f najduži niz iste doze iste zone (±3 %, cilj ≤ 2) + parovi istih nedelja ·
 h vrh/start, najveći skok, najveći sati · i lagan/dugi (medijana, max) · j nedelje sa laganim < 30 min · k test: postoji/nedelja/jedini kvalitet ·
 l najveća doza po treningu po zoni (R, I, T, RP/MP).
 
-## Formula
-ocena = Σ w·s, s ∈ [0,1] linearno između „cilj" (1) i „loše" (0) praga; težine u tabeli `W` na vrhu fajla (zbir 100):
-vrh-položaj 9, rast 9, monotonija 8, iste-nedelje 8, trkački tempo 8, sadržaj u dugom 8, plato 6, pred-taper 6, taper 6, lagan/dugi 6, test 6, doza 6,
-trkačka nedelja 5, kratak lagan 5, dugi-start 4. Pragovi su iz ROUND-01 § 3 / GAP § 2; dva su MOJA pretpostavka (nema ih u standardu):
-udeo km u trkačkom tempu (min 4 % ukupnih km, MAR 3 %) i „sadržaj u dugom u ≥ 25 % nedelja izgradnje".
-Težine nisu podešavane prema trenerovim ocenama (jedan prolaz, bez ponavljanja).
+## Formula (prolaz 2 — jedini dodatni, po zahtevu organizatora)
+ocena = Σ w·s, s ∈ [0,1] linearno između „cilj" (1) i „loše" (0) praga; težine u tabeli `W` (zbir 100); prvi prolaz čuva `W_V1` samo za poređenje.
+Dodato (fit): m najduži dugi (min/km prema zahtevu distance i nivoa) 7 · n dugi kao udeo obima u nedelji vrha (>45 % kazna, >50 % jaka) 6 ·
+o vrh obima prema zahtevu (MAR 50, HM 35, 10K 25 km; srazmerno) 4 · p lagan < 30 min u > 2 nedelje + ≥ 2 kvaliteta pri 3 dana 4 ·
+q rast: vrh/start > 1,4 (početnik 2,1), skok, sati po nivou (zamenjuje prethodni „rast"; težina 10).
+Izbačeno iz formule: „iste nedelje" (0 na svih 48; ostaje u tabeli kao `istePar`). Smanjeno: vrh-položaj 7, monotonija 6, trkački tempo 6, sadržaj u dugom 6,
+plato 4, dugi-start 2, kratak lagan 3; ostalo isto (pred-taper 6, taper 6, lagan/dugi 6, test 6, doza 6, trkačka nedelja 5).
+Pragovi iz ROUND-01 § 3 / GAP § 2 i uputa organizatora; MOJE pretpostavke: udeo km u trkačkom tempu (min 4 %, MAR 3 %), „sadržaj u dugom ≥ 25 % nedelja",
+10K ne-početnik dugi ≥ 75 min, MAR dugi ≥ 165 min (organizator: 2 h 45). Težine nisu podešavane prema trenerovim ocenama.
 
-## Prosek (ROUND-04 verzije) i Spearman prema treneru
-| | naš | trener | ρ |
+## Prosek i Spearman prema treneru (ROUND-04), pre → posle
+| | naš V1 → V2 | trener | ρ V1 → V2 |
 |---|---|---|---|
-| 5K | 67,9 | 59,1 | 0,11 |
-| 10K | 69,8 | 60,9 | 0,37 |
-| HM | 76,2 | 62,7 | 0,26 |
-| MAR | 78,0 | 59,8 | 0,21 |
-| ukupno (48) | 73,0 | 60,6 | **0,24** |
+| 5K | 67,9 → 73,3 | 59,1 | 0,11 → 0,41 |
+| 10K | 69,8 → 74,4 | 60,9 | 0,37 → 0,52 |
+| HM | 76,2 → 79,7 | 62,7 | 0,26 → 0,36 |
+| MAR | 78,0 → 79,6 | 59,8 | 0,21 → 0,44 |
+| ukupno (48) | 73,0 → 76,8 | 60,6 | **0,24 → 0,40** |
 
-Zaključak [visoka]: merilo je SLABO usklađeno sa trenerom (ρ ≈ 0,24, a n = 12 po distanci je premalo za pouzdan ρ). Ne koristiti ga kao zamenu
-za trenera na apsolutnoj skali (precenjuje 10–18 poena, najviše MAR/HM); upotrebljivo je kao detektor REGRESIJA istog plana (pokazatelj pre/posle).
-Posle-hoc dijagnostika (ρ ocene prema trenerovim kategorijama, 48 planova) [srednja]: progression 0,62, specificity 0,48, taper 0,45 — dakle
-slaže se oko oblika plana; fit 0,06, quality 0,08, clarity −0,14, recovery −0,23 — tu merimo drugo ili ništa.
+Po trenerovim kategorijama (ρ naše ocene, 48 planova, V1 → V2): fit 0,06 → 0,22 · quality 0,08 → 0,26 · progression 0,62 → 0,56 · recovery −0,23 → −0,15 ·
+specificity 0,48 → 0,59 · taper 0,45 → 0,55 · clarity −0,14 → 0,01.
+Zaključak [visoka]: bolje (0,40), ali i dalje umereno; apsolutna skala precenjuje 14–20 poena. Upotrebljivo kao detektor regresija i grubi filter, ne zamena za
+trenera. Napomena [srednja]: fit pokazatelji su birani NAKON što je prvi prolaz pokazao fit kao slabu tačku (po uputu organizatora), pa poboljšanje delom
+prati trenerov kriterijum; n = 12 po distanci je premalo za pouzdan ρ.
 
-## Pet najvećih neslaganja (detalji u SUMMARY.md)
-- MAR p06 (mi 90, trener 57,5), MAR p03 (83 / 57), MAR p10 (80 / 55): mi ocenjujemo oblik (vrh, taper, doze) a trener „fit" i „quality": plan koji ne
-  odgovara trkaču (spor, 3 dana, početnik, kratka priprema) kod nas gubi samo ~6–8 poena. Skripta ne vidi profil trkača osim satnog plafona.
-- 5K p01 (mi 62,9, trener 71), 10K p05 (61,8 / 66,5): mi kažnjavamo plato dugog i sadržaj u dugom (−14 poena), trener to nema kao kaznu za ove profile
-  (jak, dobro uklopljen plan; progression 5 je njegov najniži).
-- Pokazatelj „iste nedelje" (f2) je 0 na svih 48 planova — ne razlikuje ništa u ovoj generaciji (zadržan kao sigurnosna mreža za v3).
+## Najveća neslaganja (V2, detalji u SUMMARY.md)
+- 5K p08 (mi 77,7, trener 49,5 = najlošiji): trenerov progression 2 / fit 4 — plan loše uklopljen u trkača koji skripta ne prepoznaje; MAR p06 (85,9 / 57,5): isto.
+- 5K p01 (72,6 / 71 — trener rang 46), 10K p05, HM p12: mi kažnjavamo vrh-položaj, plato i sadržaj u dugom; trener te profile ocenjuje blago.
 
 ## Ograničenja (šta skripta NE može)
-- Tekst, jasnoća, tačnost napomena, trkački dan (tempo po delovima, ishrana) — nema pokazatelja (trener: clarity).
-- Smislenost za konkretnog trkača (fit): prag po nivou je samo satni plafon; ne proverava tempo zona, lagan tempo, rezultat vs cilj, 3 dana.
-- Kvalitet izbora vežbe (R/I/T oblik, oporavak, brda, fartlek) — meri se samo količina minuta rada, ne zašto.
-- Pragovi su opšti (VDOT-nezavisni osim sati); I ≤ 20 min za VDOT < 40 i T ≤ 40 min za ≥ 80 km/ned nisu implementirani.
-- n = 12 po distanci; težine su ručno zadate, ne kalibrisane.
+- Tekst, jasnoća, napomene, trkački dan (tempo po delovima, ishrana) — nema pokazatelja (clarity ρ ≈ 0).
+- Smislenost za konkretnog trkača: fit je samo dugi/vrh/dani/sati; ne proverava tempo zona, lagan tempo, rezultat vs cilj, preporuku „premalo obima za distancu".
+- Izbor vežbe (oblik R/I/T, oporavak, brda, fartlek) — meri se količina rada, ne zašto; recovery ρ ostaje negativan.
+- Pragovi VDOT-nezavisni osim sati; I ≤ 20 min (VDOT < 40) i T ≤ 40 min (≥ 80 km/ned) nisu implementirani.
+- Težine ručno zadate, ne kalibrisane; n = 12 po distanci.

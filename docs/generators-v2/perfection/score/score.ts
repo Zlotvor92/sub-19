@@ -8,22 +8,30 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
+const W_V1: Record<string, number> = { // prva formula (prolaz 1) — čuva se samo radi poređenja pre/posle
+  plato: 6, dugiStart: 4, vrhPolozaj: 9, predTaper: 6, taper: 6, trkNedelja: 5, monotonija: 8, istePar: 8, trkTempo: 8, sadrzajDugi: 8,
+  rast: 9, lagDugi: 6, kratakLagan: 5, test: 6, doza: 6,
+};
+// Prolaz 2 (jedini drugi): + fit (m–q), „iste nedelje" (f2) van formule — ostaje u tabeli (ind.istePar), rast po pravilu organizatora (q).
 const W: Record<string, number> = {
-  plato: 6, //      a) plato dugog
-  dugiStart: 4, //  b) dugi u ned. 1 / najduži
-  vrhPolozaj: 9, // c) položaj najteže nedelje
+  plato: 4, //      a) plato dugog
+  dugiStart: 2, //  b) dugi u nedelji 1 / najduži
+  vrhPolozaj: 7, // c) položaj najteže nedelje
   predTaper: 6, //  d) nedelja pred taper / najteža
   taper: 6, //      e1) taper nedelje / najteža
   trkNedelja: 5, // e2) minuti rada u trkačkoj nedelji
-  monotonija: 8, // f1) ista doza iste zone zaredom
-  istePar: 8, //    f2) uzastopne iste nedelje
-  trkTempo: 8, //   g1) km u trkačkom tempu (udeo)
-  sadrzajDugi: 8, //g2) nedelje sa sadržajem u dugom
-  rast: 9, //       h) vrh/start, skok, sati
+  monotonija: 6, // f1) ista doza iste zone zaredom
+  trkTempo: 6, //   g1) km u trkačkom tempu (udeo)
+  sadrzajDugi: 6, //g2) nedelje sa sadržajem u dugom
+  rastQ: 10, //     h/q) vrh/start (> 1,4 redovni), skok, sati po nivou
   lagDugi: 6, //    i) lagan / dugi
-  kratakLagan: 5, //j) lagan dan < 30 min
+  kratakLagan: 3, //j) lagan dan < 30 min
   test: 6, //       k) kontrolni test / trka
   doza: 6, //       l) doza po treningu
+  dugiFit: 7, //    m) najduži dugi (min / km) prema zahtevu distance i nivoa
+  dugiUdeo: 6, //   n) dugi kao udeo obima u nedelji vrha
+  vrhObim: 4, //    o) vrh obima prema zahtevu distance
+  daniObim: 4, //   p) kratki laganci > 2 nedelje + dani kvaliteta pri 3 dana
 };
 
 const D_ALL = ["5K", "10K", "HM", "MAR"] as const;
@@ -60,7 +68,7 @@ function weekInfo(plan: any): Wk[] {
   });
 }
 
-type Res = { ind: Record<string, number>; s: Record<string, number>; score: number };
+type Res = { ind: Record<string, number>; s: Record<string, number>; score: number; v1: number };
 function scorePlan(D: string, plan: any, input: any): Res {
   const wi = weekInfo(plan); const N = wi.length; const RP = RPZ[D]!;
   const nd = wi.filter((x) => !x.w.deload && x.w.phase !== "race"); // ne-rasteretne
@@ -132,6 +140,9 @@ function scorePlan(D: string, plan: any, input: any): Res {
   const lvl = plan.experience === "beginner" || input.experience === "beginner" ? 0 : (plan.vdot ?? 99) < 40 ? 1 : (plan.vdot ?? 99) <= 52 ? 2 : 3;
   const hcap = lvl === 3 ? Infinity : HRS[D]![lvl]!;
   s.rast = (clamp(1 - (ind.vrhStart - cap) / 0.4) + ramp(jump, 0.1, 0.25) + clamp(1 - (ind.satiMax - hcap) / 1.5)) / 3;
+  //    q) (prolaz 2) vrh/start > 1,4 kažnjava redovnog (početnik: plafon 2,1 po GAP § 2); skok i sati kao gore (sati po tabeli HRS: početnik / VDOT < 40 / 40–52).
+  const capQ = lvl === 0 ? 2.1 : 1.4;
+  s.rastQ = (clamp(1 - (ind.vrhStart - capQ) / 0.4) + ramp(jump, 0.1, 0.25) + clamp(1 - (ind.satiMax - hcap) / 1.5)) / 3;
   // i) lagan / dugi iste nedelje (najveći lagan dan po km ÷ dugi): medijana i maksimum po nedeljama izgradnje; medijana ≤ 0,65 → 1, ≥ 0,85 → 0;
   //    maksimum ≤ 0,75 → 1, ≥ 1,00 → 0 (lagan ≥ dugi je degenerisan).
   const rat = main.filter((x) => x.long > 0).map((x) => Math.max(0, ...x.w.days.filter((d: any) => d.workout.kind === "easy").map((d: any) => d.workout.km)) / x.long);
@@ -159,9 +170,34 @@ function scorePlan(D: string, plan: any, input: any): Res {
   for (const z of Object.keys(cz)) { ind[`doza${z}`] = r2(mx[z] ?? 0); if ((mx[z] ?? 0) > 0) parts.push(clamp(1 - ((mx[z] ?? 0) - cz[z]!) / (0.5 * cz[z]!))); }
   s.doza = parts.length ? parts.reduce((a, b) => a + b) / parts.length : 0;
 
+  // m) najduži dugi: minuti i km; zahtev (dovoljno jedno od km ili min): 5K ≥ 60 min; 10K početnik ≥ 85 min (ostali ≥ 75 min — MOJA pretpostavka);
+  //    HM ≥ 16 km ili 125 min; MAR ≥ 26 km ili 165 min (početnik 24 km ili 180 min). s = 1 pri ≥ 100 % zahteva, 0 pri ≤ 70 %.
+  const longW = wi.flatMap((x) => x.w.days.filter((d: any) => d.workout.kind === "long").map((d: any) => d.workout));
+  const lMin = Math.max(0, ...longW.map((q: any) => q.sec / 60)), lKm = Math.max(0, ...longW.map((q: any) => q.km));
+  const RACE_KM: Record<string, number> = { "5K": 5, "10K": 10, HM: 21.0975, MAR: 42.195 };
+  const beg = lvl === 0;
+  const need: [number | null, number | null] = D === "5K" ? [null, 60] : D === "10K" ? [null, beg ? 85 : 75] : D === "HM" ? [16, 125] : beg ? [24, 180] : [26, 165];
+  const fitR = Math.max(need[0] ? lKm / need[0] : 0, need[1] ? lMin / need[1] : 0);
+  ind.dugiMin = r2(lMin); ind.dugiKm = r2(lKm); ind.dugiUdeoTrke = r2(lKm / RACE_KM[D]!);
+  s.dugiFit = ramp(fitR, 1, 0.7);
+  // n) dugi kao udeo plannedKm u nedelji vrha obima (najveći plannedKm, bez trkačke): ≤ 45 % → 1; 50 % → 0,5; ≥ 60 % → 0 (kazna > 45 %, jaka > 50 %).
+  const pkw = [...pre].sort((a, b) => b.w.plannedKm - a.w.plannedKm)[0];
+  ind.dugiUdeo = pkw && pkw.long > 0 ? r2(pkw.long / pkw.w.plannedKm) : NaN;
+  s.dugiUdeo = !Number.isFinite(ind.dugiUdeo) ? 0 : ind.dugiUdeo <= 0.45 ? 1 : ind.dugiUdeo <= 0.5 ? 1 - (ind.dugiUdeo - 0.45) * 10 : ramp(ind.dugiUdeo, 0.6, 0.5) * 0.5;
+  // o) vrh obima prema zahtevu distance: MAR ≥ 50, HM ≥ 35, 10K ≥ 25 km (5K bez zahteva → 1); s = min(1, vrh / zahtev), srazmerno.
+  const REQ: Record<string, number> = { "5K": 0, "10K": 25, HM: 35, MAR: 50 };
+  ind.vrhKm = r2(Math.max(...km));
+  s.vrhObim = REQ[D] ? Math.min(1, ind.vrhKm / REQ[D]!) : 1;
+  // p) dani × obim: (1) lagan dan < 30 min u > 2 nedelje izgradnje (≤ 2 → 1; ≥ 6 → 0); (2) pri 3 dana trčanja udeo nedelja izgradnje sa ≥ 2 dana
+  //    kvaliteta (0 % → 1; ≥ 50 % → 0); pri više dana računa se samo (1).
+  const rd = (input.runDays ?? []).length;
+  ind.nedeljeDvaKvaliteta = main.filter((x) => x.w.days.filter((d: any) => d.workout.kind === "quality").length >= 2).length;
+  const p1 = ramp(Math.max(0, ind.kratakLagan! - 2), 0, 4);
+  s.daniObim = rd === 3 ? (p1 + ramp(ind.nedeljeDvaKvaliteta / Math.max(1, main.length), 0, 0.5)) / 2 : p1;
   ind.vrhPolozaj = r2(ind.vrhPolozaj!); ind.dugiStart = r2(ind.dugiStart!); ind.predTaper = r2(ind.predTaper!); ind.taper = r2(ind.taper!); ind.trkNedelja = r2(ind.trkNedelja!); ind.vrhStart = r2(ind.vrhStart!);
   const score = Object.keys(W).reduce((a, k) => a + W[k]! * (s[k] ?? 0), 0);
-  return { ind, s, score: r2(score) };
+  const scoreV1 = Object.keys(W_V1).reduce((a, k) => a + W_V1[k]! * (s[k] ?? 0), 0);
+  return { ind, s, score: r2(score), v1: r2(scoreV1) };
 }
 
 // ---- statistika
@@ -201,12 +237,12 @@ for (const D of D_ALL) {
   });
 }
 
-const IK = ["plato", "dugiStart", "vrhPolozaj", "predTaper", "taper", "trkNedelja", "monotonija", "istePar", "rpKm", "rpDugiKm", "sadrzajDugi", "vrhStart", "skokPct", "satiMax", "lagDugiMed", "lagDugiMax", "kratakLagan", "testPostoji", "testNedelja", "testJedini", "dozaR", "dozaI", "dozaT", "dozaRP", "dozaMP"];
-const SK = Object.keys(W);
+const IK = ["plato", "dugiStart", "vrhPolozaj", "predTaper", "taper", "trkNedelja", "monotonija", "istePar", "rpKm", "rpDugiKm", "sadrzajDugi", "vrhStart", "skokPct", "satiMax", "lagDugiMed", "lagDugiMax", "kratakLagan", "dugiMin", "dugiKm", "dugiUdeoTrke", "dugiUdeo", "vrhKm", "nedeljeDvaKvaliteta", "istePar", "testPostoji", "testNedelja", "testJedini", "dozaR", "dozaI", "dozaT", "dozaRP", "dozaMP"];
+const SK = [...new Set([...Object.keys(W), ...Object.keys(W_V1)])];
 for (const D of D_ALL) {
   const rs = rows.filter((r) => r.D === D); if (!rs.length) continue;
-  const head = ["profil", "ocena", "trener", ...IK, ...SK.map((k) => "s_" + k)].join("\t");
-  const body = rs.map((r) => [r.p, r.res?.score ?? "", r.coach?.total ?? "", ...IK.map((k) => r.res?.ind[k] ?? ""), ...SK.map((k) => (r.res ? r2(r.res.s[k]!) : ""))].join("\t"));
+  const head = ["profil", "ocena", "ocena_V1", "trener", ...IK, ...SK.map((k) => "s_" + k)].join("\t");
+  const body = rs.map((r) => [r.p, r.res?.score ?? "", r.res?.v1 ?? "", r.coach?.total ?? "", ...IK.map((k) => r.res?.ind[k] ?? ""), ...SK.map((k) => (r.res ? r2(r.res.s[k]!) : ""))].join("\t"));
   writeFileSync(`${dir}out/${D}${sfx}.tsv`, [head, ...body].join("\n") + "\n");
 }
 
@@ -216,6 +252,14 @@ for (const D of D_ALL) { const rs = ok.filter((r) => r.D === D); if (rs.length) 
 L.push(`| sve | ${avg(ok.map((r) => r.res!.score))} | ${avg(ok.filter((r) => r.coach).map((r) => r.coach!.total))} | ${ok.length} |`);
 const pair = ok.filter((r) => r.coach);
 if (pair.length > 4) {
+  const rho = (f: (r: Row) => number, g: (r: Row) => number, q = pair) => r2(spearman(q.map(f), q.map(g)));
+  L.push("", "## Spearman pre / posle (V1 = prvi prolaz, V2 = sa fit pokazateljima, bez \"iste nedelje\")", "", "| skup | V1 | V2 | n |", "|---|---|---|---|");
+  L.push(`| ukupno | ${rho((r) => r.res!.v1, (r) => r.coach!.total)} | ${rho((r) => r.res!.score, (r) => r.coach!.total)} | ${pair.length} |`);
+  for (const D of D_ALL) { const q = pair.filter((r) => r.D === D); if (q.length > 4) L.push(`| ${D} | ${rho((r) => r.res!.v1, (r) => r.coach!.total, q)} | ${rho((r) => r.res!.score, (r) => r.coach!.total, q)} | ${q.length} |`); }
+  L.push("", "### ρ prema trenerovim kategorijama (ukupno, 48 planova)", "", "| kategorija | V1 | V2 |", "|---|---|---|");
+  for (const c of Object.keys(pair[0]!.coach!.scores)) L.push(`| ${c} | ${rho((r) => r.res!.v1, (r) => r.coach!.scores[c]!)} | ${rho((r) => r.res!.score, (r) => r.coach!.scores[c]!)} |`);
+  L.push("", "### Prosek V1 → V2 po distanci", "", "| distanca | V1 | V2 |", "|---|---|---|");
+  for (const D of D_ALL) { const q = ok.filter((r) => r.D === D); if (q.length) L.push(`| ${D} | ${avg(q.map((r) => r.res!.v1))} | ${avg(q.map((r) => r.res!.score))} |`); }
   L.push("", "## Spearman (naša ocena ↔ ocena trenera, ROUND-04)", "", "| skup | ρ | n |", "|---|---|---|");
   L.push(`| ukupno | ${r2(spearman(pair.map((r) => r.res!.score), pair.map((r) => r.coach!.total)))} | ${pair.length} |`);
   for (const D of D_ALL) { const q = pair.filter((r) => r.D === D); if (q.length > 4) L.push(`| ${D} | ${r2(spearman(q.map((r) => r.res!.score), q.map((r) => r.coach!.total)))} | ${q.length} |`); }
@@ -223,7 +267,7 @@ if (pair.length > 4) {
   const dif = pair.map((r, i) => ({ r, o: ro[i]!, c: rc[i]!, d: ro[i]! - rc[i]! })).sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 5);
   L.push("", "## Pet najvećih neslaganja (rang među svim planovima; 1 = najlošiji)", "", "| plan | naša (rang) | trener (rang) | naši najslabiji pokazatelji (gubitak poena) | trenerove najniže kategorije |", "|---|---|---|---|---|");
   for (const x of dif) {
-    const loss = SK.map((k) => [k, W[k]! * (1 - x.r.res!.s[k]!)] as const).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} −${r2(v)}`).join(", ");
+    const loss = SK.map((k) => [k, (W[k] ?? 0) * (1 - x.r.res!.s[k]!)] as const).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${k} −${r2(v)}`).join(", ");
     const low = Object.entries(x.r.coach!.scores).sort((a, b) => a[1] - b[1]).slice(0, 2).map(([k, v]) => `${k} ${v}`).join(", ");
     L.push(`| ${x.r.D} ${x.r.p} | ${x.r.res!.score} (${x.o}) | ${x.r.coach!.total} (${x.c}) | ${loss} | ${low} |`);
   }
