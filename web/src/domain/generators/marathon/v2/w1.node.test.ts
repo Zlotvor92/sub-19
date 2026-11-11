@@ -124,3 +124,61 @@ describe('W1-B dug plan (MAX < N ≤ 52)', () => {
     }
   });
 });
+
+describe('W1-C upozorenje', () => {
+  const warns = (plan: MarathonV2Plan): string[] =>
+    plan.warnings.filter((w) => w.rule === 'PLAN_LENGTH').map((w) => w.message);
+
+  it('van opsega: tačno jedno upozorenje PLAN_LENGTH i ista rečenica u napomeni plana; u opsegu nema ga', () => {
+    for (const p of PROFILES)
+      for (const N of [1, 3, minOf(p) - 1, minOf(p), P.input.weeksMax, P.input.weeksMax + 1, 52]) {
+        const plan = planOf(p, N);
+        const w = warns(plan);
+        if (N >= minOf(p) && N <= P.input.weeksMax) expect(w, `${p.id} N=${N}`).toEqual([]);
+        else {
+          expect(w, `${p.id} N=${N}`).toHaveLength(1);
+          expect(plan.notes.filter((n) => n === w[0])).toHaveLength(1);
+        }
+        // Postojeće upozorenje za početnika ostaje uz ovo.
+        if (p.experience === 'beginner')
+          expect(plan.notes.some((n) => n.startsWith('Početnik (M17)'))).toBe(true);
+      }
+  });
+
+  it('tekst: broj nedelja i padeži; najduži dugi ispod praga — preporuka polumaratona ostaje uz skraćenu pripremu', () => {
+    const p = PROFILES.find((x) => x.id === 'res-d4-65km-A')!;
+    const at = (n: number): string => warns(planOf(p, n))[0]!;
+    expect(at(1)).toBe(
+      'Skraćena priprema: plan ima 1 nedelju, a za pun ciklus za maraton preporučuje se najmanje 12 nedelja. Plan je napravljen za izabrani datum, ali nema vremena za sve faze pripreme i ne garantuje spremnost ni ciljno vreme. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta.'
+    );
+    expect(at(3)).toMatch(/^Skraćena priprema: plan ima 3 nedelje, a za pun ciklus/);
+    expect(at(11)).toMatch(/^Skraćena priprema: plan ima 11 nedelja, a za pun ciklus/);
+    expect(at(25)).toBe(
+      'Plan je duži od preporučenih 24 nedelje: prva nedelja je osnovna priprema na sadašnjem obimu, a puna priprema za maraton počinje u nedelji 2.'
+    );
+    expect(at(27)).toMatch(/: prve 3 nedelje su osnovna priprema .* u nedelji 4\.$/);
+    expect(at(32)).toMatch(/: prvih 8 nedelja je osnovna priprema .* u nedelji 9\.$/);
+    expect(at(52)).toMatch(/: prvih 28 nedelja je osnovna priprema .* u nedelji 29\.$/);
+    const beg = PROFILES.find((x) => x.experience === 'beginner')!;
+    expect(warns(planOf(beg, 15))[0]).toMatch(/plan ima 15 nedelja, .* najmanje 16 nedelja\./);
+    // Maraton: kratak plan sa najdužim dugim ispod praga (26 km; početnik 24 km) zadržava preporuku polumaratona ili
+    // duže pripreme (MARATHON_LONG_SHORT) uz upozorenje o skraćenoj pripremi.
+    for (const q of PROFILES)
+      for (const N of [3, minOf(q) - 1]) {
+        const plan = planOf(q, N);
+        const longest = Math.max(
+          0,
+          ...plan.weeks.flatMap((w) =>
+            w.days.filter((d) => d.role === 'long').map((d) => d.workout.km)
+          )
+        );
+        const ls = plan.warnings.find((w) => w.rule === 'MARATHON_LONG_SHORT');
+        if (
+          longest < (q.experience === 'beginner' ? 24 : 26) &&
+          !plan.notes.some((n) => n.includes('ograničen trajanjem'))
+        )
+          expect(ls?.message, `${q.id} N=${N}`).toMatch(/preporuka: polumaraton ili duža priprema/);
+        expect(warns(plan), `${q.id} N=${N}`).toHaveLength(1);
+      }
+  });
+});

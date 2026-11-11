@@ -270,3 +270,32 @@ export function periodize(
     ...(i < k ? { prep: true as const } : {})
   }));
 }
+
+/** Padež imenice „nedelja" uz broj (1 nedelja / 2–4 nedelje / 5+ nedelja; 21, 22–24 …). `acc` = akuzativ jednine
+    („plan ima 1 nedelju"). */
+function weeksWord(n: number, acc = false): string {
+  const d = n % 10;
+  const dd = n % 100;
+  if (d === 1 && dd !== 11) return acc ? 'nedelju' : 'nedelja';
+  if (d >= 2 && d <= 4 && (dd < 12 || dd > 14)) return 'nedelje';
+  return 'nedelja';
+}
+
+/** W1-C: jedno upozorenje plana van preporučene dužine (kratak W1-A / dug W1-B); null u opsegu. JEDAN tekst za
+    napomenu plana (konstruktor) i upozorenje PLAN_LENGTH (validator). */
+export function lengthWarningOf(weeks: number, rule: { readonly weeksMin: number }): string | null {
+  if (weeks < rule.weeksMin)
+    return `Skraćena priprema: plan ima ${weeks} ${weeksWord(weeks, true)}, a za pun ciklus za maraton preporučuje se najmanje ${rule.weeksMin} ${weeksWord(rule.weeksMin)}. Plan je napravljen za izabrani datum, ali nema vremena za sve faze pripreme i ne garantuje spremnost ni ciljno vreme. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta.`;
+  const k = prepWeeksOf(weeks);
+  if (k === 0) return null;
+  const max = P.input.weeksMax;
+  const d = k % 10;
+  const dd = k % 100;
+  const first =
+    d === 1 && dd !== 11
+      ? `${k === 1 ? 'prva nedelja' : `prva ${k} nedelja`} je`
+      : d >= 2 && d <= 4 && (dd < 12 || dd > 14)
+        ? `prve ${k} nedelje su`
+        : `prvih ${k} nedelja je`;
+  return `Plan je duži od preporučenih ${max} ${weeksWord(max)}: ${first} osnovna priprema na sadašnjem obimu, a puna priprema za maraton počinje u nedelji ${k + 1}.`;
+}

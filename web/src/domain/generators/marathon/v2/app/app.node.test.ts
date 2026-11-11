@@ -303,9 +303,14 @@ describe('generisanje kroz adapter', () => {
     });
     expect(seven.ok).toBe(false);
     if (!seven.ok) expect(seven.reasons.map((r) => r.code)).toContain('RUN_DAYS_COUNT');
-    // W1-A: kratak plan se pravi (upozorenje: W1-C).
+    // W1-A: kratak plan se pravi; W1-C: upozorenje o skraćenoj pripremi jednom u „Na šta da paziš" (napomena plana
+    // i upozorenje validatora nose isti tekst).
     const short = generateMarathonV2Plan({ ...WITH_RESULT, startDate: '2026-12-21' });
     expect(short.ok).toBe(true);
+    if (short.ok) {
+      const dw = (short.plan.meta as Record<string, unknown>)['dayWarnings'] as string[];
+      expect(dw.filter((t) => t.startsWith('Skraćena priprema: plan ima'))).toHaveLength(1);
+    }
     const low = generateMarathonV2Plan({ ...WITH_RESULT, currentWeeklyKm: 5 });
     expect(low.ok).toBe(false);
     if (!low.ok) expect(low.reasons[0]!.code).toBe('WEEKLY_KM_TOO_LOW');

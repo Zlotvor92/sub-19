@@ -586,6 +586,14 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts input.weeksLimit, prep.deloadEvery; periodize.ts phasesOf, prepWeeksOf, planDeloads, layoutOffset, periodize (prep), rePeriodize; input.ts; volume.ts nominal10, fit10, nominalPeak10, adaptNominal10, leaveWeek; week.ts (bez kvaliteta, prepNote); generate.ts; types.ts WeekFrame.prep; validate.ts (ROLES, DELOAD_CONTENT, DELOAD_RUN segment od K+1, PREP_DELOAD, VOLUME_RULE istim funkcijama)',
     rationale:
       'Nalog vlasnika 11. 11. 2026 (briefs/W1-bilo-koja-duzina-plana.md § W1-B). Rasterećenje osnovne pripreme ne ispod minimuma nedelje: Uslov 8 (M15), isto kao donja granica A9; bez nje 4 dana 25 km / 5 dana 30 km početnika bi bili odbijeni u nedelji 4.'
+  },
+  {
+    id: 'W1-C',
+    rule: 'Plan van preporučene dužine nosi jedno upozorenje PLAN_LENGTH i istu rečenicu u napomeni plana (prikaz „Na šta da paziš" bez ponavljanja). Kratak: „Skraćena priprema: plan ima N nedelja, a za pun ciklus za maraton preporučuje se najmanje MIN nedelja. Plan je napravljen za izabrani datum, ali nema vremena za sve faze pripreme i ne garantuje spremnost ni ciljno vreme. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta." Dug: „Plan je duži od preporučenih 24 nedelje: prvih K nedelja je osnovna priprema na sadašnjem obimu, a puna priprema za maraton počinje u nedelji K+1." (padeži po broju). Postojeće napomene početnika ostaju. Kratak plan sa najdužim dugim ispod praga (26 / početnik 24 km): MARATHON_LONG_SHORT zadržava „preporuka: polumaraton ili duža priprema" u svakoj grani (i kad dugi ograničava postepen rast).',
+    place:
+      'periodize.ts lengthWarningOf (jedini tekst), weeksWord; generate.ts (napomena plana); validate.ts (PLAN_LENGTH, PLAN_LENGTH_NOTE, MARATHON_LONG_SHORT)',
+    rationale:
+      'Nalog vlasnika 11. 11. 2026 (briefs/W1-bilo-koja-duzina-plana.md § W1-C) i zadatak organizatora za maraton (preporuka polumaratona ostaje uz skraćenu pripremu).'
   }
 ];
 

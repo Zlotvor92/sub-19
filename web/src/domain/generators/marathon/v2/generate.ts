@@ -24,7 +24,14 @@ import {
   seedLongest10
 } from './lengths.ts';
 import { assessGoal, predictedMarathon } from './paces.ts';
-import { introOf, isBuildPhase, periodize, taperStep, testKindOf } from './periodize.ts';
+import {
+  introOf,
+  isBuildPhase,
+  lengthWarningOf,
+  periodize,
+  taperStep,
+  testKindOf
+} from './periodize.ts';
 import { keptKm100, mixedNote, mixedRest, pauseOwned } from './mixed.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type Picks, type QualityState } from './quality.ts';
@@ -651,6 +658,9 @@ function constructWith(
             : `Početnik bez testa ${P.test.km} km (M17): kvalitet po RPE; ocena cilja i prognoza maratona posle rezultata trke (adaptacija, segment 04).`
     );
   }
+  // W1-C: plan van preporučene dužine — jedna rečenica u napomeni plana (validator: isto upozorenje PLAN_LENGTH).
+  const lw = lengthWarningOf(weeks, rule);
+  if (lw) plan.notes.push(lw);
   if (rule.beginner)
     plan.notes.push(
       `Početnik (M17): ${introText(introOf(weeks, rule).count)}jedan kvalitet nedeljno (T kontinuirano → T cruise → MP), bez I i R; WU/CD ${ctx0.wc.warmupSec / 60}/${ctx0.wc.cooldownSec / 60} min.`

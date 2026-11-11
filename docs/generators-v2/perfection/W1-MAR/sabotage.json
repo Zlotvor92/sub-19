@@ -16,5 +16,14 @@
     "tests": [
       "src/domain/generators/marathon/v2/w1.node.test.ts"
     ]
+  },
+  {
+    "name": "W1-C upozorenje PLAN_LENGTH se ne izdaje",
+    "file": "src/domain/generators/marathon/v2/validate.ts",
+    "find": "    warn('PLAN_LENGTH', lw);\n",
+    "replace": "",
+    "tests": [
+      "src/domain/generators/marathon/v2/w1.node.test.ts"
+    ]
   }
 ]

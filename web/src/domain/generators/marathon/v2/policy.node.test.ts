@@ -64,7 +64,8 @@ describe('politika maraton v2 (M1–M17, M7a, M10a, M13a)', () => {
       'K4-A',
       'K4-B',
       'W1-A',
-      'W1-B'
+      'W1-B',
+      'W1-C'
     );
     expect(P.DECISIONS.map((d) => d.id)).toEqual(ids);
     for (const d of P.DECISIONS) {

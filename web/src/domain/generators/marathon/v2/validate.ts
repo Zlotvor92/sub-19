@@ -49,6 +49,7 @@ import {
   firstOfPhase,
   isBuildPhase,
   introPos,
+  lengthWarningOf,
   periodize,
   prepWeeksOf,
   shortPlan,
@@ -930,9 +931,16 @@ export function validatePlan(plan: MarathonV2Plan): Violation[] {
           : share
             ? `. Ograničava ga udeo dugog (najviše ${Math.round(peakShareOf(rule) * 100)} % nedelje sa ${input.runDays.length} dana): veći nedeljni obim${moreDays ? ' (više dana trčanja nose veći obim)' : ''} daje duže dugo trčanje. ${need}`
             : jumped
-              ? '. Ograničava ga postepen rast dugog trčanja (najviše 10 % ili 1 km nedeljno od najdužeg u prethodne 4 nedelje): duža priprema daje duže dugo trčanje.'
+              ? `. Ograničava ga postepen rast dugog trčanja (najviše 10 % ili 1 km nedeljno od najdužeg u prethodne 4 nedelje): duža priprema daje duže dugo trčanje.${shortPlan(N, rule) ? ` ${need}` : ''}`
               : `. Ograničava ga nedeljni obim: veći nedeljni obim${moreDays ? ' (više dana trčanja nose veći obim)' : ''} daje duže dugo trčanje. ${need}`)
     );
+  }
+  // W1-C: plan van preporučene dužine — jedno upozorenje, isti tekst kao napomena plana (prikaz bez ponavljanja).
+  const lw = lengthWarningOf(N, rule);
+  if (lw) {
+    warn('PLAN_LENGTH', lw);
+    if (!plan.notes.includes(lw))
+      err('PLAN_LENGTH_NOTE', 'Plan van preporučene dužine bez napomene (W1-C).');
   }
   // Pouka 14/32: kvalitetni dan duži od dugog po trajanju u nedelji izgradnje ili rasterećenja (upozorenje; posle
   // pouke 32 samo najniži nivo zone — iznad njega greška QUALITY_OVER_LONG).
