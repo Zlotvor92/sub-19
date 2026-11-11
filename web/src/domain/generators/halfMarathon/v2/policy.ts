@@ -712,6 +712,13 @@ const DECISIONS: readonly Decision[] = [
       'periodize.ts layoutOf (jedino mesto odluke), minWeeksOf, withIntro, periodize; input.ts (bez PLAN_TOO_SHORT/BEGINNER_SHORT); volume.ts nominal10 (taper); generate.ts (plan.layout); validate.ts (PHASES, DELOAD_SCHEDULE, H5, WEEK1_BELOW_START, LAYOUT); steps.ts baseFrames; adapt.ts / written.ts (layout iz upisanog plana); w1.node.test.ts',
     rationale:
       'Nalog vlasnika 11. 11. 2026 („dozvoli svima da generišu plan za koliko god hoće nedelja uz upozorenje"), brief W1-bilo-koja-duzina-plana.md. Merenje: reports/W1-HM-REPORT.md.'
+  },
+  {
+    id: 'W1-B',
+    rule: 'Dug plan (MAX < N ≤ 52; MAX 20): K = N − MAX nedelja osnovne pripreme + standardni plan od MAX nedelja (njegove faze i rasterećenja H4/H5, pomereni za K). Osnovna priprema: faza baze, oznaka nedelje `prep`, bez dana kvaliteta (dan kvaliteta lagan, kao uvod), ubrzanja na jednom laganom danu (F3), dugi po pravilu; cilj = trenutni obim (bez rasta), svaka četvrta nedelja (4, 8, …) rasterećenje 0,8 × (H5). Osnovna priprema ne menja osnov rasta ni vrh (standardni deo kreće od istog trenutnog obima). H5 se proverava za standardni deo kao zaseban segment (od nedelje K + 1). Adaptacija: nov start ukida pripremu preostalih nedelja (A12); povratak posle smanjenja u pripremi rastom H6 do trenutnog obima. N > 52: odbijanje PLAN_TOO_LONG („najviše 52 nedelje").',
+    place:
+      'policy.ts input.weeksHardMax, prep.deloadEvery; periodize.ts layoutOf, periodize (prep), rePeriodize; volume.ts nominal10, leaveWeek, adaptNominal10, leaveAdaptWeek; week.ts (intro || prep, PREP_NOTE); validate.ts (LAYOUT, intro, H5 segment); input.ts; w1.node.test.ts',
+    rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-B). Merenje: reports/W1-HM-REPORT.md.'
   }
 ];
 
@@ -719,12 +726,17 @@ export const HM_V2_POLICY = {
   id: 'hm-v2',
   version: 'hm-v2.15.0',
 
+  /** W1-B: osnovna priprema dugog plana — svaka deloadEvery-ta nedelja rasterećenje (faktor H5). */
+  prep: { deloadEvery: 4 },
+
   /** H1 (dani i obim: H15). */
   input: {
     /** Najkraći plan punog ciklusa; W1-A: kraći plan se pravi uz upozorenje (periodize.layoutOf). */
     weeksMin: 10,
-    /** > 20 nedelja: počni kasnije. */
+    /** Najduži standardni plan; W1-B: duži plan = osnovna priprema + standardni plan od weeksMax nedelja. */
     weeksMax: 20,
+    /** W1-B: tehnička granica — duži plan se odbija. */
+    weeksHardMax: 52,
     resultMaxAgeDays: 84,
     resultDistancesM: [5000, 10000, 21097.5, 42195] as readonly number[],
     vdotMin: 30,

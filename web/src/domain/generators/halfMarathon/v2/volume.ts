@@ -230,6 +230,8 @@ export function nominal10(
       weekMin10(rule),
       Math.round(P.taper.factor * (hist.peak10 > 0 ? hist.peak10 : start10))
     );
+  // W1-B: osnovna priprema — cilj = trenutni obim (bez rasta), rasterećenje faktorom H5.
+  if (frame.prep) return frame.deload ? Math.round(P.deload.factor * start10) : start10;
   if (hist.lastBuild10 === null) return start10;
   if (frame.deload) return Math.round(P.deload.factor * hist.lastBuild10);
   return hist.lastBuild10 + step10(hist.lastBuild10, cap10, rule, left);
@@ -237,7 +239,8 @@ export function nominal10(
 
 /** Posle nedelje sa ciljem `target10`: osnov rasta i vrh menja samo ne-rasteretna izgradnja. */
 export function leaveWeek(h: VolumeHistory, frame: WeekFrame, target10: number): VolumeHistory {
-  if (!isBuildPhase(frame.phase) || frame.deload) return h;
+  // W1-B: osnovna priprema ne menja osnov rasta ni vrh — standardni deo kreće od trenutnog obima.
+  if (!isBuildPhase(frame.phase) || frame.deload || frame.prep) return h;
   return { lastBuild10: target10, peak10: Math.max(h.peak10, target10) };
 }
 
@@ -450,9 +453,17 @@ export function adaptNominal10(
     // HM-09 (C7): posle smanjenja nijedna ne-rasteretna nedelja izgradnje (npr. sidro bola, pa prinudno
     // rasterećenje pred taper) → osnova tapera je osnova kojom se računalo i rasterećenje (lastBuild10), ne 0
     // (inače taper pada na minimum nedelje: svi dani 4 km).
-    t = Math.round(P.taper.factor * (h.peakRef10 > 0 ? h.peakRef10 : (h.lastBuild10 ?? 0)));
+    // W1-A: kratak plan bez izgradnje pre tapera — osnova je trenutni obim (kao nominal10).
+    t = Math.round(P.taper.factor * (h.peakRef10 > 0 ? h.peakRef10 : (h.lastBuild10 ?? start10)));
     if (h.tailCap10 !== null && h.tailCap10 < t) [t, downOnly] = [h.tailCap10, true];
   } else if (reset !== undefined) [t, downOnly] = [reset, true];
+  else if (frame.prep)
+    // W1-B: osnovna priprema — trenutni obim (posle smanjenja povratak rastom H6 do njega), rasterećenje faktorom H5.
+    t = frame.deload
+      ? Math.round(P.deload.factor * (h.lastBuild10 ?? start10))
+      : h.lastBuild10 === null || h.lastBuild10 >= start10
+        ? start10
+        : Math.min(start10, nextBuild10(h.lastBuild10, h.cap10, rule, av.levelAt(i), left));
   else if (h.lastBuild10 === null) t = start10;
   else if (frame.deload) t = Math.round(P.deload.factor * h.lastBuild10);
   else if (i === 2 && av.preStart10 !== null) [t, downOnly] = [av.preStart10, true];
@@ -479,6 +490,11 @@ export function leaveAdaptWeek(
   const out = { ...h };
   if (!isBuildPhase(frame.phase)) return out;
   const i = frame.index;
+  // W1-B: osnovna priprema menja osnov rasta samo kad je nedelja cilj koraka ili sidro (inače kao leaveWeek).
+  if (frame.prep && !av.reset.has(i) && !av.anchors.has(i)) {
+    if (out.lastBuild10 !== null && !frame.deload) out.lastBuild10 = target10;
+    return out;
+  }
   if (!frame.deload || av.reset.has(i)) {
     out.lastBuild10 = target10;
     out.peakRef10 = Math.max(out.peakRef10, target10);

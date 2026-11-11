@@ -601,7 +601,8 @@ function buildWeekIn(
 
   const qDays = [pat.q1, ...(pat.q2 ? [pat.q2] : [])];
   // H17: nedelje uvoda bez kvaliteta; HI13 (pouka 31): i kad je nedelja uvoda rasteretna.
-  const intro = frame.index <= rule.introWeeks;
+  // W1-B: osnovna priprema dugog plana — bez dana kvaliteta (dan kvaliteta je lagan), kao uvod.
+  const intro = frame.index <= rule.introWeeks || frame.prep === true;
   // H16: nedelja testa 5 km (plan po osećaju koji nije početnik); A9: samo u prolazima po pravilu.
   const test = frame.test === true && !reduced;
   if (frame.deload) {
@@ -698,15 +699,17 @@ function buildWeekIn(
             ctx.feel ? TEST_NOTE : RESULT_TEST_NOTE
           ]
         : [
-            intro
-              ? `Rasterećenje u uvodu (HI13, pouka 31): cilj ${fmtKm(targetKm)} km bez kvaliteta — sadržaj uvoda; ${longText}.`
-              : tw
-                ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T ${fmtKm(d.doseM / 1000)} km), ${longText} (H5).`
-                : mode === 'none'
-                  ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); ${longText}.`
-                  : qualityDropped
-                    ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni uz skraćen dugi T ${fmtKm(d.doseM / 1000)} km ne ostavlja lagane ≥ ${fmtKm(P.lengths.easyMinKm)} km (HI14, odstupanje); ${longText}.`
-                    : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — T ${fmtKm(d.doseM / 1000)} km ne staje u plafon ${P.caps.T * 100} % (H11 ispred H5, odstupanje); ${longText}.`,
+            frame.prep
+              ? `Rasterećenje osnovne pripreme (W1-B): cilj ${fmtKm(targetKm)} km bez kvaliteta; ${longText}.`
+              : intro
+                ? `Rasterećenje u uvodu (HI13, pouka 31): cilj ${fmtKm(targetKm)} km bez kvaliteta — sadržaj uvoda; ${longText}.`
+                : tw
+                  ? `Rasterećenje: cilj ${fmtKm(targetKm)} km, jedan kvalitet (T ${fmtKm(d.doseM / 1000)} km), ${longText} (H5).`
+                  : mode === 'none'
+                    ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta (adaptacija); ${longText}.`
+                    : qualityDropped
+                      ? `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — ni uz skraćen dugi T ${fmtKm(d.doseM / 1000)} km ne ostavlja lagane ≥ ${fmtKm(P.lengths.easyMinKm)} km (HI14, odstupanje); ${longText}.`
+                      : `Rasterećenje: cilj ${fmtKm(targetKm)} km bez kvaliteta — T ${fmtKm(d.doseM / 1000)} km ne staje u plafon ${P.caps.T * 100} % (H11 ispred H5, odstupanje); ${longText}.`,
             ...doseNote,
             ...shortNote
           ]
@@ -983,7 +986,8 @@ function buildWeekIn(
         ? `Q2: ${SECOND_EASY_NOTE} — sa dva dana kvaliteta lagani ne staju u granice (≤ ${String(rule.easyLongMaxShare).replace('.', ',')} × dugi, ≥ 20 min) bez dana odmora; oslobođen obim ide u dugi (${fmtKm(len.long10 / 10)} km) i lagane.`
         : `Q2: ${SECOND_EASY_NOTE} — sa ${second.dose.zone} ${fmtKm(second.dose.doseM / 1000)} km (${Math.round(second.w.sec / 60)} min) dugi ne bi bio najduži trening nedelje; oslobođen obim ide u dugi (${fmtKm(len.long10 / 10)} km) i lagane.`
     );
-  if (intro)
+  if (frame.prep) notes.push(PREP_NOTE);
+  else if (intro)
     notes.push(
       `Uvod: ${ORDINAL[frame.index - 1] ?? frame.index} od ${rule.introWeeks} uvodne nedelje, bez kvaliteta — dan kvaliteta je lagan.`
     );
@@ -1036,6 +1040,10 @@ function buildWeekIn(
     notes
   );
 }
+
+/** W1-B: napomena nedelje osnovne pripreme. */
+export const PREP_NOTE =
+  'Osnovna priprema (W1-B): obim na sadašnjem nivou, bez dana kvaliteta — lagani dani, ubrzanja na jednom laganom danu i dugi.';
 
 /* ---------- P5-F3: ubrzanja na laganom danu ---------- */
 

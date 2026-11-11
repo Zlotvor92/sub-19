@@ -140,3 +140,58 @@ describe('W1-A: kratak plan (1 ≤ N < MIN)', () => {
     expect(q(r10.plan, 0)).toBe(true);
   });
 });
+
+describe('W1-B: dug plan (N > MAX, najviše 52)', () => {
+  const cases = w1Cases([21, 28, 52]);
+  it(`mreža: ${cases.length} planova — 0 odbijanja zbog dužine, 0 padova validatora, invarijante uslova 8`, () => {
+    const rejected: string[] = [];
+    const bad: string[] = [];
+    for (const c of cases) {
+      const r = generateHmV2(inputOf(c.profile));
+      if (!r.ok) {
+        rejected.push(`${c.id}: ${r.reasons.map((x) => `${x.code} ${x.message}`).join(' | ')}`);
+        continue;
+      }
+      const p = r.plan;
+      const K = c.profile.weeks - 20;
+      for (const v of w1Violations(p, c.profile.weeks)) bad.push(`${c.id}: ${v}`);
+      // Nezavisno: K nedelja baze + faze standardnog plana od 20 nedelja; osnovna priprema bez kvaliteta i testa,
+      // cilj = trenutni obim (rasterećenje svaka četvrta, 0,8 ×), ubrzanja na jednom laganom danu.
+      const want = [...Array<string>(K).fill('base'), ...phasesOf(20)];
+      if (p.weeks.map((w) => w.phase).join() !== want.join()) bad.push(`${c.id}: faze`);
+      for (const w of p.weeks.slice(0, K)) {
+        if (!w.prep) bad.push(`${c.id}: ned ${w.index} bez oznake pripreme`);
+        if (w.days.some((d) => d.workout.kind === 'quality' || d.workout.kind === 'test'))
+          bad.push(`${c.id}: ned ${w.index} ima kvalitet`);
+        if (w.deload !== (w.index % 4 === 0)) bad.push(`${c.id}: ned ${w.index} rasterećenje`);
+        const t = w.deload ? Math.round(0.8 * c.profile.km * 10) / 10 : c.profile.km;
+        if (Math.abs(w.targetKm - t) > 0.1 + EPS)
+          bad.push(`${c.id}: ned ${w.index} cilj ${w.targetKm}`);
+        const strides = w.days.filter((d) => /ubrzanja/.test(d.workout.title)).length;
+        if (!(w.index <= 2 && c.profile.beginner) && strides !== 1)
+          bad.push(`${c.id}: ned ${w.index} ubrzanja ${strides}`);
+      }
+      if (p.weeks.slice(K).some((w) => w.prep)) bad.push(`${c.id}: priprema u standardnom delu`);
+      if (p.layout?.kind !== 'long' || p.layout.prepWeeks !== K)
+        bad.push(`${c.id}: činjenica rasporeda`);
+    }
+    expect(rejected).toEqual([]);
+    expect(bad).toEqual([]);
+  });
+
+  it('standardni deo kreće od trenutnog obima: nedelje K+1.. = plan od 20 nedelja (isti ciljevi i dani)', () => {
+    const base = {
+      km: 45,
+      vdot: 48,
+      days: ['tue', 'thu', 'sat', 'sun'] as const,
+      long: 'sun' as const
+    };
+    const r20 = generateHmV2(inputOf({ ...base, days: [...base.days], weeks: 20 }));
+    const r24 = generateHmV2(inputOf({ ...base, days: [...base.days], weeks: 24 }));
+    if (!r20.ok || !r24.ok) throw new Error('plan');
+    expect(r24.plan.weeks[4]!.targetKm).toBe(45);
+    expect(r24.plan.weeks.slice(4).map((w) => w.targetKm)).toEqual(
+      r20.plan.weeks.map((w) => w.targetKm)
+    );
+  });
+});

@@ -5,5 +5,12 @@
     "find": "        .filter((x) => x >= P.deload.firstAllowedWeek),",
     "replace": "        .filter((x) => x >= 1),",
     "tests": ["src/domain/generators/halfMarathon/v2/w1.node.test.ts"]
+  },
+  {
+    "name": "W1-B osnovna priprema raste kao izgradnja",
+    "file": "src/domain/generators/halfMarathon/v2/volume.ts",
+    "find": "  if (frame.prep) return frame.deload ? Math.round(P.deload.factor * start10) : start10;\n",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/w1.node.test.ts"]
   }
 ]

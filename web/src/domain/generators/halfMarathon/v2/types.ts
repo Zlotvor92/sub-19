@@ -127,6 +127,8 @@ export interface WeekFrame {
   test?: true;
   /** Segment 04: ograničenja adaptacije za ovu nedelju (steps.ts); u planu generatora polja nema. */
   limits?: WeekLimits;
+  /** W1-B: nedelja osnovne pripreme dugog plana (faza baze, bez kvaliteta, obim = trenutni); inače polja nema. */
+  prep?: true;
 }
 
 /** Segment 04: ograničenja nedelje iz koraka adaptacije (datumski opsezi → dani nedelje, steps.ts). */

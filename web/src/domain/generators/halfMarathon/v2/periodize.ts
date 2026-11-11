@@ -200,6 +200,30 @@ export function layoutOf(
       prepWeeks: 0
     };
   }
+  // W1-B: N > MAX — (N − MAX) nedelja osnovne pripreme (faza baze, svaka četvrta rasterećenje) + standardni plan od
+  // MAX nedelja (njegov raspored H4/H5, pomeren za K).
+  const g: PlanLayoutFact | null =
+    fact !== undefined
+      ? fact
+      : weeks > P.input.weeksMax
+        ? { kind: 'long', prepWeeks: weeks - P.input.weeksMax }
+        : null;
+  if (g?.kind === 'long') {
+    const K = g.prepWeeks;
+    const std = phasesOf(weeks - K);
+    const d = deloadWeeks(std);
+    if (!d) return null;
+    const every = P.prep.deloadEvery;
+    const prepDeloads = Array.from({ length: Math.floor(K / every) }, (_, i) => every * (i + 1));
+    return {
+      phases: [...Array<Phase>(K).fill('base'), ...std],
+      deloads: [...prepDeloads, ...d.map((x) => x + K)],
+      fact: g,
+      full: std,
+      offset: 0,
+      prepWeeks: K
+    };
+  }
   const phases = phasesOf(weeks);
   const deloads = deloadWeeks(phases);
   if (!deloads) return null;
@@ -217,7 +241,7 @@ export function periodize(
 ): WeekFrame[] | null {
   const lay = layoutOf(weeks, beginner, fact);
   if (!lay) return null;
-  const { phases, deloads } = lay;
+  const { phases, deloads, prepWeeks } = lay;
   const flags = phases.map((phase, i) => ({ phase, deload: deloads.includes(i + 1) }));
   const tw = test ? testWeekOf(flags, test) : 0;
   return phases.map((phase, i) => ({
@@ -226,7 +250,8 @@ export function periodize(
     endDate: addDays(startDate, 7 * i + 6),
     phase,
     deload: deloads.includes(i + 1),
-    ...(i + 1 === tw ? { test: true as const } : {})
+    ...(i + 1 === tw ? { test: true as const } : {}),
+    ...(i < prepWeeks ? { prep: true as const } : {})
   }));
 }
 
@@ -246,6 +271,9 @@ export function rePeriodize(frames: readonly WeekFrame[], from: number): WeekFra
   if (!deloads) return null;
   return frames.map((f, i) => {
     const k = i - (from - 1);
-    return k < 0 || i >= tail ? f : { ...f, phase: seq[k]!, deload: deloads.includes(k + 1) };
+    if (k < 0 || i >= tail) return f;
+    // W1-B: nov start ukida osnovnu pripremu preostalih nedelja (nova raspodela H4).
+    const { prep: _prep, ...rest } = f;
+    return { ...rest, phase: seq[k]!, deload: deloads.includes(k + 1) };
   });
 }

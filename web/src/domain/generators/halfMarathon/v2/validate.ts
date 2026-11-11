@@ -275,7 +275,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const nq = rule.quality;
   const B0 = rule.beginner;
   const slotTypes = rule.beginner ? SLOT_TYPES_BEGINNER : nq === 1 ? SLOT_TYPES_ONE : SLOT_TYPES;
-  const intro = (w: { index: number }): boolean => w.index <= rule.introWeeks;
+  // W1-B: nedelja osnovne pripreme je bez kvaliteta kao uvod (week.ts, isti uslov).
+  const intro = (w: { index: number; prep?: true }): boolean =>
+    w.index <= rule.introWeeks || w.prep === true;
   // H16: osnova tempa iz ulaza (nezavisno od plana) — pouzdan rezultat ≤ 84 dana i VDOT ≥ 30, inače osećaj.
   const res = input.recentResult;
   const resDay = res ? mustDay(res.date) : 0;
@@ -381,6 +383,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // okvir nedelje (rasterećenje, ograničenja) = steps.framesFor.
   if (!ad && JSON.stringify(plan.layout ?? null) !== JSON.stringify(lay?.fact ?? null))
     err('LAYOUT', `Raspored plana ≠ odluka dužine plana (W1).`);
+  // W1-B: nedelje osnovne pripreme = prvih K nedelja rasporeda (u adaptiranom planu nov start ih ukida, A12).
+  for (const w of weeks)
+    if (w.prep && (w.index > (lay?.prepWeeks ?? 0) || !isBuildPhase(w.phase)))
+      err('LAYOUT', `Nedelja ${wl(w.index)} osnovne pripreme van rasporeda (W1-B).`, w.index);
+    else if (!ad && !w.prep && w.index <= (lay?.prepWeeks ?? 0))
+      err('LAYOUT', `Nedelja ${wl(w.index)} mora biti osnovna priprema (W1-B).`, w.index);
   const expected = frames ? frames.map((f) => f.phase) : (lay?.phases ?? phasesOf(N));
   for (const w of weeks) {
     if (!PHASES.includes(w.phase)) err('NO_PHASE', 'Nedelja bez faze.', w.index);
@@ -410,8 +418,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // W1-A: kratak plan — rasterećenja su položaj u rasporedu od MIN nedelja (periodize.layoutOf; proverava ih
   // DELOAD_SCHEDULE i FRAMES); pretraga H5 (mesto, niz izgradnje) važi za deo posle novog starta (A12).
   const short = (lay?.offset ?? 0) > 0;
+  // W1-B: standardni deo dugog plana je svoj segment (kao nov start): H5 relativno od nedelje K + 1.
+  const K = lay?.prepWeeks ?? 0;
   for (const w of weeks) {
-    const s0 = segStart(w.index);
+    // Nov start (A12) ukida pripremu i preraspodeljuje sve posle sebe — tada važi njegov segment.
+    const kSeg = K > 0 && w.index > K && ![...restarts].some((r) => r <= w.index);
+    const s0 = kSeg ? K + 1 : segStart(w.index);
+    if (kSeg && w.index === K + 1) [run, afterForced, afterDropped] = [0, false, false];
     const rel = phases.slice(s0 - 1);
     const k = w.index - s0 + 1;
     if (short && s0 === 1) continue;

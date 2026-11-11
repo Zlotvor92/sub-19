@@ -13,11 +13,13 @@ describe('HM v2 politika (MASTER § 4)', () => {
     expect(P.input).toEqual({
       weeksMin: 10,
       weeksMax: 20,
+      weeksHardMax: 52,
       resultMaxAgeDays: 84,
       resultDistancesM: [5000, 10000, 21097.5, 42195],
       vdotMin: 30,
       vdotMax: 80
     });
+    expect(P.prep).toEqual({ deloadEvery: 4 });
   });
 
   it('H15 tabela 3/4/5/6 dana (4 dana: udeo 40 %, odluka organizatora); 1/2/7 dana nema', () => {
@@ -350,7 +352,8 @@ describe('HM v2 politika (MASTER § 4)', () => {
       'K4-A1',
       'K4-A2',
       'K4-B',
-      'W1-A'
+      'W1-A',
+      'W1-B'
     ]);
     for (const d of P.DECISIONS) {
       expect(d.rule.length, d.id).toBeGreaterThan(20);

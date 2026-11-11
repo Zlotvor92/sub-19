@@ -139,10 +139,11 @@ export function checkInput(raw: unknown): InputCheck {
       `Od starta do trke mora biti ceo broj nedelja (sada ${span} dana); start ${addDays(raceDate, -7 * Math.max(1, Math.round(weeks)) + 1)} daje ${Math.max(1, Math.round(weeks))} nedelja.`
     );
   // W1-A: kratak plan (N < MIN, i početnik < beginner.weeksMin) se pravi uz upozorenje (periodize.layoutOf).
-  else if (weeks > q.weeksMax)
+  // W1-B: dug plan (N > MAX) se pravi uz upozorenje; tehnička granica najviše weeksHardMax nedelja.
+  else if (weeks > q.weeksHardMax)
     no(
       'PLAN_TOO_LONG',
-      `Plan od ${weeks} nedelja je predug (najviše ${q.weeksMax}): počni plan kasnije, najranije ${addDays(raceDate, -7 * q.weeksMax + 1)}.`
+      `Plan od ${weeks} nedelja je predug (najviše ${q.weeksHardMax} nedelje): počni plan kasnije, najranije ${addDays(raceDate, -7 * q.weeksHardMax + 1)}.`
     );
 
   // Dani trčanja i dan dugog (H15).
