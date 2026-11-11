@@ -535,3 +535,12 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   ili nikako, 5K i 10K nemaju — nalog „bilo koja dužina uz upozorenje" NIJE završen na sve četiri distance.
   Poslednji `check:full` je na stanju pre W1; pre spajanja ga ponoviti.
 - SCORE prvi prolaz: Spearman prema treneru 0,24 (slabo) — skripta je detektor regresija, ne zamena za trenera.
+
+### 11. 11. 2026, 07:45 — nalog vlasnika: v3 mora da primi sopstveni plan (preko Claude-a) sa svim adaptacijama
+
+- Dopuna poslata V3-HM pilotu: plan je podatak (`PlanDoc`, verzionisan JSON koji LLM može da napiše); namere nedelje
+  se izvode iz treninga (`deriveIntents`), pa generisani i uvezeni plan imaju isti oblik; `importPlan` + čuvar koji
+  uvezeni plan ne odbija zbog oblika, samo prijavljuje bezbednost; adaptacija kao čiste operacije nad PlanDoc-om
+  (preračun tempa, umor, pauza, bol, propušten dugi, snižen obim) — u pilotu implementirane dve (tempo, pauza),
+  ostale potpis + opis; dokaz na ciljnom planu trenera HM p01 unetom ručno kao PlanDoc.
+- Aplikacija, baza i MCP se u pilotu ne diraju; izveštaj opisuje šta treba za uvoz iz aplikacije preko Claude-a.
