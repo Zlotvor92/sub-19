@@ -9,10 +9,10 @@
   ]
  },
  {
-  "name": "K4-B nedelja sme ispod minimuma",
-  "file": "src/domain/generators/tenK/v2/lengths.ts",
-  "find": "  if (all - total > maxShort10) return null;",
-  "replace": "  if (all - total > maxShort10 + 9999) return null;",
+  "name": "K4-B validator: nedelja „po želji“ ne sme planirano < cilj (grana PLANNED_VS_TARGET)",
+  "file": "src/domain/generators/tenK/v2/validate.ts",
+  "find": "      w.notes.some((n) => n.startsWith(OPT_NOTE)) &&\n      w.plannedKm <= w.targetKm + P.tolerance.plannedKm + EPS\n    ) {",
+  "replace": "      w.notes.some((n) => n.startsWith(OPT_NOTE)) &&\n      w.plannedKm <= w.targetKm - 9999\n    ) {",
   "tests": [
    "src/domain/generators/tenK/v2/k4.node.test.ts"
   ]

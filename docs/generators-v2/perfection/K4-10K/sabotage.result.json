@@ -1,0 +1,64 @@
+{
+ "input": "/home/user/sub-19/docs/generators-v2/perfection/K4-10K/sabotage.json",
+ "head": "336e717",
+ "level": "brz",
+ "bail": true,
+ "parallel": 1,
+ "vitestArgs": [],
+ "durationS": 37.2,
+ "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+ "ok": true,
+ "results": [
+  {
+   "index": 1,
+   "name": "K4-B jedini lagan dan postaje „po želji“ (3/4 dana)",
+   "files": [
+    "src/domain/generators/tenK/v2/lengths.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/k4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/k4.node.test.ts",
+    "test": "K4-B: kratak lagan dan „po želji\" > uzorak mreže 02: dan „po želji\" samo u izgradnji, uz bar jedan preostali lagan (3 dana nikad), manjak ≤ 30 min laganog, nedelja ≥ minimum; bez pravila nema dana „po želji\" u planu sa ≤ 2 kratke nedelje",
+    "message": "AssertionError: d3-8w-20km-v55-A-sun ned 2: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "a81611022428442ddbddbd5544986b242ea0cc51104f570c441edf28f8462012",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 18.5
+  },
+  {
+   "index": 2,
+   "name": "K4-B validator: nedelja „po želji“ ne sme planirano < cilj (grana PLANNED_VS_TARGET)",
+   "files": [
+    "src/domain/generators/tenK/v2/validate.ts"
+   ],
+   "tests": [
+    "src/domain/generators/tenK/v2/k4.node.test.ts"
+   ],
+   "status": "pao",
+   "pao": true,
+   "firstFailed": {
+    "file": "src/domain/generators/tenK/v2/k4.node.test.ts",
+    "test": "K4-B: kratak lagan dan „po želji\" > p06 (P9): nedelje sa danom „po želji\" — rečenica plana, dan šablona bez treninga, planirano ≤ cilj, validator bez grešaka",
+    "message": "AssertionError: expected 0 to be greater than 0"
+   },
+   "failedCount": 1,
+   "hashBefore": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "hashSabotaged": "ed22427127e6869b2d12dc224c1cb09ae3958bc0680208d79b6f60fb63a8b4dc",
+   "hashAfter": "fbcc3d004629df3958e945edf620071ea9ff0c969cc9d4bbc4e67ed16d348696",
+   "restored": true,
+   "error": null,
+   "vitestExit": 1,
+   "durationS": 18.5
+  }
+ ]
+}
