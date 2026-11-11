@@ -40,17 +40,37 @@ Svaki v2 segment bilo koje distance mora ih ispuniti i izvestiti o njima.
 8. Upotrebljivost, ne samo aritmetika: test obara degenerisan plan
    (nedelja ispod minimalnog smislenog obima, prazan trening, dugi < lagan).
 
-## V4 generator — zajednički motor (odluka vlasnika, 11. 11. 2026)
+## V4 generator — pravila (odluka vlasnika, 11. 11. 2026: organizator određuje kako generator najbolje radi)
 
-Uslov 7 (nula uvoza van foldera distance) važi za v2. Za V4 vlasnik dozvoljava zajednički motor VAN foldera distance,
-pod uslovom da se generatori distanci ne ukrštaju i ne sukobljavaju:
+Vlasnik je ukinuo stara pravila za NOVI generator i prepustio organizatoru da ih odredi. Sve iznad („Stalni uslovi za
+v2", radna grana) i ispod („Testovi i sabotaže") važi samo za stari v2 kod, koji je zamrznut i ne dorađuje se. Za V4
+važi isključivo ovaj odeljak.
 
-- Motor ne zna za distance: nema grananja po distanci u kodu motora; sve što je specifično za distancu je PODATAK
-  (šabloni, biblioteka treninga, brojevi bezbednosti) u folderu te distance.
-- Distanca uvozi samo motor; distance se međusobno ne uvoze i ne dele podatke.
-- Izmena motora mora da ostavi planove SVIH distanci nepromenjenim, osim kad je promena namerna i navedena — proverava
-  test (otisci planova po distanci).
-- Proverava test, bez izuzetaka.
+**Arhitektura**
+1. Plan je podatak (`PlanDoc`, verzionisan): plan → nedelje → dani → trening. Generisani i ručno uneti plan imaju isti
+   oblik; posle nastanka se ne zna ko je autor.
+2. Planiranje iz stanja: generator je čista funkcija (stanje trkača danas, cilj i datum trke, šablon) → ostatak plana.
+   Adaptacija nije poseban sistem nego ponovno planiranje od stvarnog stanja; urađeno, zaključano i ručno izmenjeno
+   se ne dira. Isto stanje daje isti plan (determinizam); bez događaja plan se ne menja (stabilnost).
+3. Zajednički motor + distanca kao podatak: motor ne zna za distance (nema grananja po distanci); šabloni, biblioteka
+   treninga i brojevi bezbednosti su podaci u folderu distance; distance se međusobno ne uvoze.
+4. Šablon nosi nameru (faza, opterećenje kao % vrha, uloga dugog, vrsta podražaja); konkretan trening se bira iz
+   biblioteke treninga po oznakama. Nov sadržaj = nov unos u biblioteku, ne nov kod.
+5. Jedna mera opterećenja (minuti rada ponderisani intenzitetom) i jedan model forme/umora; kilometri se izvode.
+6. Čuvar bezbednosti je mali i samo prijavljuje; odbija se samo neispravan unos. Loš unos (premalo dana, obima,
+   vremena) dobija najbolji mogući plan i jasnu preporuku šta da promeni.
+7. Ništa se ne prenosi iz v2 (ni kod, ni tipovi, ni testovi).
+
+**Kvalitet**
+8. Merilo je ocena trenera istom rubrikom + drugi, nezavisan sudija koji ne vidi ciljne planove + pregled vlasnika.
+   Izmena koja spusti ocenu ili bezbednost se ne prihvata.
+9. Testovi su brzi (ceo skup V4 u minutima): svojstva nad mrežom ulaza, čuvar bez nalaza, otisci planova po distanci
+   (izmena motora ne sme nenamerno da promeni plan druge distance). Bez višesatnih matrica.
+
+**Rad**
+10. V4 se razvija na grani `claude/v4` dok ne zameni v2 u aplikaciji. Organizator vodi; tabovi rade na Opus 5.5.
+11. Ostaje bez izuzetka: ništa u `main`, bez deploya, bez izmene baze i bez PR-a bez izričite potvrde vlasnika;
+    vremena po beogradskom vremenu; lični plan vlasnika (zamrznut HM v1) i v2 rade dok ih V4 ne zameni.
 
 ## Testovi i sabotaže
 

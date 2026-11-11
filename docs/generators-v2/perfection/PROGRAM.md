@@ -603,3 +603,12 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   van foldera distance." Upisano u `AGENTS.md` (odeljak „V4 generator — zajednički motor"): motor ne zna za distance,
   distanca je podatak, distance se međusobno ne uvoze, izmena motora ne sme da promeni planove drugih distanci osim
   namerno — sve proverava test.
+
+### 11. 11. 2026 — odluka vlasnika: ukinuti sva pravila za novi generator, organizator određuje
+
+- „Ukini sva pravila i odredi onako kako ti misliš da će generator najbolje i najoptimizovanije raditi."
+- `AGENTS.md`: odeljak V4 prepisan u 11 pravila organizatora (plan kao podatak, planiranje iz stanja, zajednički
+  motor + distanca kao podatak, biblioteka treninga, jedna mera opterećenja, mali čuvar, ništa iz v2; kvalitet:
+  trener + drugi sudija + vlasnik, brzi testovi; rad: grana `claude/v4`, Opus). Stara pravila važe samo za zamrznut v2.
+- Zadržano bez izuzetka: main/deploy/baza/PR samo uz izričitu potvrdu vlasnika; beogradsko vreme; lični plan i v2
+  rade dok ih V4 ne zameni.
