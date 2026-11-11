@@ -30,10 +30,9 @@ describe('M1 ulaz', () => {
     }
   });
 
-  it('nedelje: < 12 trajno sa preporukom polumaratona, > 24 „počni kasnije", 12 i 24 prolaze', () => {
+  it('nedelje: W1-A kratak plan (1–11) prolazi, > 24 „počni kasnije", 12 i 24 prolaze', () => {
     const w = (weeks: number) => base({ raceDate: addDays(START, weeks * 7 - 1) });
-    expect(codes(w(11))).toEqual(['PLAN_TOO_SHORT']);
-    expect(message(w(11), 'PLAN_TOO_SHORT')).toMatch(/polumaraton/);
+    for (const n of [1, 2, 3, 11]) expect(codes(w(n))).toEqual([]);
     expect(codes(w(25))).toEqual(['PLAN_TOO_LONG']);
     expect(message(w(25), 'PLAN_TOO_LONG')).toMatch(/počni plan kasnije, najranije/);
     expect(codes(w(12))).toEqual([]);

@@ -303,9 +303,9 @@ describe('generisanje kroz adapter', () => {
     });
     expect(seven.ok).toBe(false);
     if (!seven.ok) expect(seven.reasons.map((r) => r.code)).toContain('RUN_DAYS_COUNT');
+    // W1-A: kratak plan se pravi (upozorenje: W1-C).
     const short = generateMarathonV2Plan({ ...WITH_RESULT, startDate: '2026-12-21' });
-    expect(short.ok).toBe(false);
-    if (!short.ok) expect(short.reasons.map((r) => r.code)).toEqual(['PLAN_TOO_SHORT']);
+    expect(short.ok).toBe(true);
     const low = generateMarathonV2Plan({ ...WITH_RESULT, currentWeeklyKm: 5 });
     expect(low.ok).toBe(false);
     if (!low.ok) expect(low.reasons[0]!.code).toBe('WEEKLY_KM_TOO_LOW');
@@ -399,6 +399,7 @@ describe('V1b: izbor i rutiranje po oznaci politike (samo v2)', () => {
         'marathon-v2.11.0',
         'marathon-v2.12.0',
         'marathon-v2.13.0',
+        'marathon-v2.14.0',
         VERSION
       ])
     ]);

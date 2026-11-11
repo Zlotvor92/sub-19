@@ -183,7 +183,8 @@ export function adaptMarathonV2(rawPlan: unknown, rawFacts: unknown, asOf: unkno
   const base = baseFrames(
     chk.input.startDate,
     chk.weeks,
-    testKindOf(chk.rule, chk.pace.kind === 'feel', chk.weeks)
+    testKindOf(chk.rule, chk.pace.kind === 'feel', chk.weeks),
+    chk.rule.weeksMin
   );
   if (base)
     framesFor(

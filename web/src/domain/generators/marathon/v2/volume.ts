@@ -309,6 +309,19 @@ export function nominalPeak10(
   return peak;
 }
 
+/** W1-A: kratak plan (N < rule.weeksMin; vrh blizu trenutnog obima) — cilj tapera sme naviše do najbližeg izvodljivog
+    (M6), najviše do cilja prethodne nedelje (nedelja 1: trenutni obim), jer 0,8 / 0,6 × vrh ne nosi doze tapera i
+    minimum nedelje M15. null = taper samo naniže (standardan plan). JEDNA funkcija za konstruktor (fit10) i
+    validator (VOLUME_FIT). */
+export function shortTaperUp10(
+  g: GrowthCtx,
+  rule: PlanRule,
+  prevTarget10: number | null,
+  start10: number
+): number | null {
+  return g.weeks < rule.weeksMin ? (prevTarget10 ?? start10) : null;
+}
+
 /** M8: cilj trkačke nedelje = planirano (trka se ne računa). */
 export function raceWeekTarget10(planned100: number): number {
   return Math.round(planned100 / 10);
@@ -325,14 +338,20 @@ export function fit10(
   cap10: number,
   rule: DayRule,
   feasible: (target10: number) => boolean,
-  downOnly = false
+  downOnly = false,
+  /** W1-A: gornja granica tapera kratkog plana (shortTaperUp10); null = taper samo naniže. */
+  taperUp10: number | null = null
 ): { target10: number; fitted: 'down' | 'up' | null } | null {
   if (feasible(nominal)) return { target10: nominal, fitted: null };
   const lo = weekMin10(rule);
   // Ned 1 = trenutni obim (samo naniže, pouka 9); rasterećenje i taper samo naniže; A8 (`downOnly`): cilj
-  // adaptacije i povratni rast samo naniže.
+  // adaptacije i povratni rast samo naniže. W1-A: taper kratkog plana do taperUp10.
   const hi =
-    downOnly || frame.index === 1 || frame.deload || frame.phase === 'taper' ? nominal : cap10;
+    frame.phase === 'taper' && taperUp10 !== null && !downOnly
+      ? Math.max(nominal, taperUp10)
+      : downOnly || frame.index === 1 || frame.deload || frame.phase === 'taper'
+        ? nominal
+        : cap10;
   for (let d = 1; nominal - d >= lo || nominal + d <= hi; d++) {
     if (nominal - d >= lo && feasible(nominal - d))
       return { target10: nominal - d, fitted: 'down' };
@@ -481,6 +500,20 @@ export const initialAdaptHistory = (cap10: number): AdaptHistory => ({
   peakRef10: 0,
   tailCap10: null
 });
+
+/** W1-A: polazna istorija obima — plan koji počinje van izgradnje (taper/trkačka) ima vrh = trenutni obim (osnov
+    tapera M7); inače initialAdaptHistory. JEDNA funkcija za konstruktor i validator. */
+export function initialHistoryOf(
+  frames: readonly { phase: string }[],
+  cap10: number,
+  start10: number
+): AdaptHistory {
+  const h = initialAdaptHistory(cap10);
+  const f = frames[0];
+  return f && !isBuildPhase(f.phase as WeekFrame['phase'])
+    ? { ...h, peak10: start10, peakRef10: start10 }
+    : h;
+}
 
 /** Pre nedelje `frame`: nov start (granica izgradnje), početak nove osnove vrha (smanjenje u izgradnji). */
 export function enterWeek(

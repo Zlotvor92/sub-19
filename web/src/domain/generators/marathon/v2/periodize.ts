@@ -1,7 +1,7 @@
 /* M4 — faze; M5 — GDE su rasteretne nedelje (sadržaj: week.ts); M16 — nedelja testa 5 km. Jedino mesto ovih
    odluka. */
 
-import { addDays } from './dates.ts';
+import { addDays, mustDay } from './dates.ts';
 import { MARATHON_V2_POLICY as P } from './policy.ts';
 import type { IsoDate, Phase, WeekFrame } from './types.ts';
 
@@ -39,14 +39,53 @@ const buildSequence = (c: Omit<PhaseCounts, 'taper' | 'race'>): Phase[] => [
   ...Array<Phase>(c.specific).fill('specific')
 ];
 
-/** Faza svake nedelje (1-indeks u nizu na mestu i − 1). */
-export function phasesOf(weeks: number): Phase[] {
+/** Faze standardnog plana od `weeks` nedelja (M4). */
+function standardPhases(weeks: number): Phase[] {
   const c = phaseCounts(weeks);
   return [
     ...buildSequence(c),
     ...Array<Phase>(c.taper).fill('taper'),
     ...Array<Phase>(c.race).fill('race')
   ];
+}
+
+/** W1-A: pomak rasporeda — nedelja `i` plana je nedelja `i − offset` standardnog rasporeda (kratak plan: raspored
+    najkraćeg dozvoljenog plana `minWeeks` bez prvih minWeeks − N nedelja, offset < 0). JEDNO mesto za konstruktor,
+    adaptaciju i validator (uvod početnika, ubrzanja). */
+export function layoutOffset(weeks: number, minWeeks: number = P.input.weeksMin): number {
+  return weeks < minWeeks ? weeks - minWeeks : 0;
+}
+
+type IntroRule = { readonly introWeeks: number; readonly weeksMin: number };
+
+/** M17 / W1-A: uvod početnika = nedelje 1..introWeeks standardnog rasporeda (kratak plan gubi uvod prvi). Vraća
+    `{ first, count }` u nedeljama plana (count 0 = plan bez uvoda). */
+export function introOf(weeks: number, rule: IntroRule): { first: number; count: number } {
+  const off = layoutOffset(weeks, rule.weeksMin);
+  const first = Math.max(1, off + 1);
+  return { first, count: Math.max(0, off + rule.introWeeks - first + 1) };
+}
+
+/** M17 / W1-A: redni broj nedelje `index` u uvodu početnika (1..count); 0 = nedelja nije u uvodu. */
+export function introPos(index: number, weeks: number, rule: IntroRule): number {
+  const { first, count } = introOf(weeks, rule);
+  return index >= first && index < first + count ? index - first + 1 : 0;
+}
+
+/** W1-A: kratak plan (N < najkraći dozvoljen plan tipa trkača). */
+export const shortPlan = (weeks: number, rule: { readonly weeksMin: number }): boolean =>
+  weeks < rule.weeksMin;
+
+/** Broj nedelja plana iz datuma (start = prvi dan nedelje 1, trka = poslednji dan poslednje nedelje). */
+export const planWeeks = (input: { startDate: IsoDate; raceDate: IsoDate }): number =>
+  (mustDay(input.raceDate) - mustDay(input.startDate) + 1) / 7;
+
+/** Faza svake nedelje (1-indeks u nizu na mestu i − 1). W1-A: kratak plan (N < minWeeks; minWeeks = najkraći
+    dozvoljen plan tog tipa trkača) — poslednjih N nedelja rasporeda od minWeeks nedelja (baza i uvod otpadaju prvi,
+    zatim razvoj, specifična, taper; trkačka nedelja uvek). */
+export function phasesOf(weeks: number, minWeeks: number = P.input.weeksMin): Phase[] {
+  if (weeks < minWeeks) return standardPhases(minWeeks).slice(minWeeks - weeks);
+  return standardPhases(weeks);
 }
 
 export const isBuildPhase = (p: Phase): boolean =>
@@ -57,10 +96,11 @@ export function firstOfPhase(phases: readonly Phase[], week: number): boolean {
   return week === 1 || phases[week - 2] !== phases[week - 1];
 }
 
-/** M7: redni broj nedelje tapera (0 = N−2, 1 = N−1); null van tapera. */
+/** M7: redni broj nedelje tapera (0 = N−2, 1 = N−1); null van tapera. W1-A: brojanje od kraja tapera (kratak plan
+    sa jednom nedeljom tapera ima samo N−1). */
 export function taperStep(phases: readonly Phase[], week: number): number | null {
   if (phases[week - 1] !== 'taper') return null;
-  return week - 1 - phases.indexOf('taper');
+  return P.phases.taperWeeks - 1 - (phases.lastIndexOf('taper') - (week - 1));
 }
 
 /** M5: rasterećenje je dozvoljeno samo u izgradnji, od nedelje 3, ne na prvoj nedelji faze, ne na
@@ -178,9 +218,12 @@ export function rePeriodize(frames: readonly WeekFrame[], from: number): WeekFra
 export function periodize(
   startDate: IsoDate,
   weeks: number,
-  test: boolean | TestKind | null = false
+  test: boolean | TestKind | null = false,
+  /** W1-A: najkraći dozvoljen plan tipa trkača (PlanRule.weeksMin). */
+  minWeeks: number = P.input.weeksMin
 ): WeekFrame[] | null {
-  const phases = phasesOf(weeks);
+  // W1-A: rasterećenja kratkog plana po pravilu M5 na zadržanom rasporedu (isto pravilo za validator).
+  const phases = phasesOf(weeks, minWeeks);
   const deloads = deloadWeeks(phases);
   if (!deloads) return null;
   const kind: TestKind | null = test === true ? 'feel' : test === false ? null : test;

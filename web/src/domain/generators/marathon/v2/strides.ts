@@ -2,6 +2,7 @@
    generate.ts (konstruktor) i validate.ts (STRIDES); sastav treninga: workouts.easyStridesWorkout. */
 
 import { daysBetween, mustDay } from './dates.ts';
+import { introPos } from './periodize.ts';
 import { MARATHON_V2_POLICY as P, type PlanRule } from './policy.ts';
 import type { IsoDate, PlanDay, WeekFrame } from './types.ts';
 
@@ -14,12 +15,14 @@ export interface StridesSpec {
     ubrzanja. */
 export function stridesSpecOf(
   frame: Pick<WeekFrame, 'index' | 'phase'>,
-  rule: PlanRule
+  rule: PlanRule,
+  /** W1-A: broj nedelja plana (uvod početnika, periodize.introPos). */
+  weeks: number
 ): StridesSpec | null {
   const s = P.strides;
   if (frame.phase === 'race') return null;
   if (rule.beginner)
-    return frame.index <= rule.introWeeks ? null : { reps: s.beginnerReps, sec: s.sec };
+    return introPos(frame.index, weeks, rule) > 0 ? null : { reps: s.beginnerReps, sec: s.sec };
   return { reps: frame.phase === 'base' ? s.baseReps : s.laterReps, sec: s.sec };
 }
 

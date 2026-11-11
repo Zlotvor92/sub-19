@@ -1,0 +1,9 @@
+[
+  {
+    "name": "W1-A kratak plan zadržava PRVIH N nedelja rasporeda",
+    "file": "src/domain/generators/marathon/v2/periodize.ts",
+    "find": "standardPhases(minWeeks).slice(minWeeks - weeks)",
+    "replace": "standardPhases(minWeeks).slice(0, weeks)",
+    "tests": ["src/domain/generators/marathon/v2/w1.node.test.ts"]
+  }
+]

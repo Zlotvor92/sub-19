@@ -570,6 +570,14 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts lengths.shortEasy; week.ts shortEasyWeeks (jedino mesto odluke), shortRestNote, shortRestWeek, SHORT_REST_PLAN_NOTE; generate.ts construct (drugi sastav, longKeep10); lengths.ts longCap10 (DayRule.longKeep10); validate.ts (PLANNED_VS_TARGET grana K4-B, WEEK_MIN_LIMITS, SHORT_REST)',
     rationale:
       'Heuristika, glavni trener krug 3 (coach/ROUND-03.md § 3, stavka B): dan od 3–5 km ne vredi izlaska (MAR p06). Ekrani se ne diraju: dan odmora u danu trčanja već postoji (MAR-11, T1). 4 dana redovno (jedan lagan dan) i 3 dana nemaju drugi lagan dan — pravilo ih ne menja.'
+  },
+  {
+    id: 'W1-A',
+    rule: 'Kratak plan (marathon-v2.15.0; 1 ≤ N < 12, početnik N < 16 — PlanRule.weeksMin): plan se pravi. Faze = poslednjih N nedelja rasporeda najkraćeg dozvoljenog plana istog tipa trkača (trkačka uvek, zatim taper, specifična, razvoj; baza i uvod početnika otpadaju prvi); rasterećenja po M5 na zadržanom rasporedu; test po G7 na zadržanom rasporedu (plan sa rezultatom < 12 nedelja bez testa, P5-F1). Obim i doze unapred od nedelje 1 postojećim pravilima (ned 1 = trenutni obim, rast M6, početni nivo doze F4, dugi po udelu). Kad plan počinje taperom (N ≤ 3): vrh = trenutni obim, najduži dugi = dugi po udelu pri trenutnom obimu (osnov M7). Primena na ono što postoji: taper ima koliko nedelja raspored ima (N−1 = poslednja); ned 1 ≥ trenutni obim samo kad je izgradnja; taper kratkog plana sme naviše do najbližeg izvodljivog cilja (M6), najviše do cilja prethodne nedelje (ned 1: trenutni obim); dugi tapera ne ispod 5 km (odstupanje A9).',
+    place:
+      'periodize.ts phasesOf, layoutOffset, introOf/introPos, shortPlan, taperStep (jedino mesto rasporeda); input.ts (bez PLAN_TOO_SHORT/BEGINNER_SHORT); volume.ts initialHistoryOf, shortTaperUp10, fit10; lengths.ts seedLongest10; week.ts, strides.ts (uvod); validate.ts (TAPER_WEEKS, VOLUME_START, VOLUME_FIT, TAPER_LONG istim funkcijama)',
+    rationale:
+      'Nalog vlasnika 11. 11. 2026 (briefs/W1-bilo-koja-duzina-plana.md): plan za bilo koji broj nedelja uz upozorenje (W1-C). Tumačenje izvođača: „rasterećenja po položaju u zadržanom rasporedu" = pravilo M5 na zadržanom rasporedu (ne prepisane pozicije), jer bi prepisana pozicija mogla pasti u nedelju 1–2 (M5). Taper naviše i dugi tapera ≥ 5 km: postojeća pravila M6 (najbliži izvodljiv cilj) i A9 (odstupanje), primenjena jer 0,8 / 0,6 × trenutni obim ne nosi doze tapera i minimum nedelje M15.'
   }
 ];
 
@@ -580,7 +588,7 @@ const cont = (km: number): Level => ({ form: 'continuous', km });
 
 export const MARATHON_V2_POLICY = {
   id: 'marathon-v2',
-  version: 'marathon-v2.14.0',
+  version: 'marathon-v2.15.0',
 
   /** M1 (dani i obim: M15). */
   input: {

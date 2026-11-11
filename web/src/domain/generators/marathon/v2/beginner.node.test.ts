@@ -68,13 +68,14 @@ const B5F = plan(
 );
 
 describe('M17 ulaz', () => {
-  it('4–5 dana (3 i 6 → BEGINNER_DAYS sa preporukom), 16–24 ned (BEGINNER_SHORT), obim 25–45 / 30–50 km', () => {
+  it('4–5 dana (3 i 6 → BEGINNER_DAYS sa preporukom), < 16 ned kratak plan (W1-A), obim 25–45 / 30–50 km', () => {
     expect(codes(begInput())).toEqual([]);
     expect(codes(begInput({ days: SCHEDULES_BY_DAYS[3].A.days }))).toEqual(['BEGINNER_DAYS']);
     expect(message(begInput({ days: SCHEDULES_BY_DAYS[6].A.days }), 'BEGINNER_DAYS')).toMatch(
       /preporuka 4–5 dana/
     );
-    expect(codes(begInput({ weeks: 15 }))).toEqual(['BEGINNER_SHORT']);
+    expect(codes(begInput({ weeks: 15 }))).toEqual([]);
+    expect(codes(begInput({ weeks: 1 }))).toEqual([]);
     expect(codes(begInput({ weeks: 16 }))).toEqual([]);
     expect(codes(begInput({ km: 24.9 }))).toEqual(['WEEKLY_KM_TOO_LOW']);
     expect(message(begInput({ km: 24.9 }), 'WEEKLY_KM_TOO_LOW')).toMatch(/kraća distanca/);

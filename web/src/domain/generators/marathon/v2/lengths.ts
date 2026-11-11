@@ -4,7 +4,7 @@
    lagan je tvrdo pravilo (pouka 2): kad ne može da se ispuni, nedelja nije izvodljiva (M6). */
 
 import { type DayRule, MARATHON_V2_POLICY as P } from './policy.ts';
-import type { Paces, PlanDay } from './types.ts';
+import type { Paces, Phase, PlanDay } from './types.ts';
 import { fmtKm } from './workouts.ts';
 import { midEasy } from './paces.ts';
 
@@ -337,11 +337,30 @@ export function buildLengths(
 
 /** M7: najduži dugi plana [0,1 km] — JEDNA definicija (pouke 24 i 29) za konstruktor i validator: dani uloge 'long'
     nedelja `weeks` kakve se upisuju (adaptacija: zaštićeni dani iz prethodnog plana, written.ts); 0 bez dugog. */
-export function longestLong10(weeks: readonly { days: readonly PlanDay[] }[]): number {
-  let m = 0;
+export function longestLong10(
+  weeks: readonly { days: readonly PlanDay[] }[],
+  /** W1-A: polazni najduži plana koji počinje taperom (seedLongest10). */
+  seed10 = 0
+): number {
+  let m = seed10;
   for (const w of weeks)
     for (const d of w.days) if (d.role === 'long') m = Math.max(m, Math.round(d.workout.km * 10));
   return m;
+}
+
+/** W1-A: plan koji počinje van izgradnje (kratak plan od 1–3 nedelje: taper/trkačka) — „prethodni" najduži dugi je
+    dugi po pravilu udela pri trenutnom obimu (longCap10 pri `start10`); inače 0. JEDNA definicija za konstruktor i
+    validator (osnov dugog tapera M7). */
+export function seedLongest10(
+  frames: readonly { phase: Phase }[],
+  start10: number,
+  rule: DayRule,
+  p: Paces
+): number {
+  const f = frames[0];
+  return f && f.phase !== 'base' && f.phase !== 'development' && f.phase !== 'specific'
+    ? longCap10(start10, rule, p)
+    : 0;
 }
 
 /** M13a (pouka 29): dugi svake nedelje [0,1 km] iz upisanih dana (null bez dugog — trkačka nedelja ili dugi na

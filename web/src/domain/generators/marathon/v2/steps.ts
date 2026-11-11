@@ -319,8 +319,9 @@ export function appliedRestarts(
 export const baseFrames = (
   startDate: IsoDate,
   weeks: number,
-  test: boolean | TestKind | null
-): WeekFrame[] | null => periodize(startDate, weeks, test);
+  test: boolean | TestKind | null,
+  minWeeks: number
+): WeekFrame[] | null => periodize(startDate, weeks, test, minWeeks);
 
 /**
  * Pouka 20: traka „Plan treba prilagoditi" samo za NOVO ograničenje — datumi poslednjeg koraka sa ograničenjem
