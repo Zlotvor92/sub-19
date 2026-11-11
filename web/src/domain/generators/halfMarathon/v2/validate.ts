@@ -48,6 +48,7 @@ import {
   deloadWeeks,
   firstOfPhase,
   layoutOf,
+  lengthWarning,
   isBuildPhase,
   periodize,
   phasesOf,
@@ -383,6 +384,13 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // okvir nedelje (rasterećenje, ograničenja) = steps.framesFor.
   if (!ad && JSON.stringify(plan.layout ?? null) !== JSON.stringify(lay?.fact ?? null))
     err('LAYOUT', `Raspored plana ≠ odluka dužine plana (W1).`);
+  // W1-C: jedno upozorenje plana van opsega dužine (ista rečenica je u napomeni plana).
+  const lw = lengthWarning(lay, input, N);
+  if (lw) {
+    warn('PLAN_LENGTH', lw);
+    if (!plan.notes.includes(lw))
+      err('PLAN_LENGTH', 'Napomena plana nema upozorenje dužine (W1-C).');
+  }
   // W1-B: nedelje osnovne pripreme = prvih K nedelja rasporeda (u adaptiranom planu nov start ih ukida, A12).
   for (const w of weeks)
     if (w.prep && (w.index > (lay?.prepWeeks ?? 0) || !isBuildPhase(w.phase)))
@@ -1040,7 +1048,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   // konstruktor; bilo samo preko proverenih nedelja (5/2928 lažnih upozorenja posle adaptacije).
   // Faza 3 (O1): isti uslov čita okidač „kraća distanca" (lengths.longRunShort, shorter.ts).
   const longestAll10 = longestLong10(weeks);
-  if (longRunShort(weeks, rule.longWarnKm))
+  // W1-C: kratak plan — upozorenje dužine (PLAN_LENGTH) već kaže da priprema nije potpuna; najduži dugi kratkog plana
+  // nije mera spremnosti (N = 1–2: bez dugog izgradnje).
+  if (!short && longRunShort(weeks, rule.longWarnKm))
     warn(
       'LONG_RUN_SHORT',
       `Najduži dugi ${longestAll10 / 10} km < ${rule.longWarnKm} km (${rule.beginner ? 'H17' : 'H13'}): preporuka više dana ili obima.`

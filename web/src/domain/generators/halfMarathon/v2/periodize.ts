@@ -2,8 +2,9 @@
    odluka. */
 
 import { addDays } from './dates.ts';
+import { weekLabel } from './weekLabel.ts';
 import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
-import type { IsoDate, Phase, PlanLayoutFact, WeekFrame } from './types.ts';
+import type { HmV2Input, IsoDate, Phase, PlanLayoutFact, WeekFrame } from './types.ts';
 
 export interface PhaseCounts {
   base: number;
@@ -276,4 +277,36 @@ export function rePeriodize(frames: readonly WeekFrame[], from: number): WeekFra
     const { prep: _prep, ...rest } = f;
     return { ...rest, phase: seq[k]!, deload: deloads.includes(k + 1) };
   });
+}
+
+/** W1-C: „1 nedelju / 2 nedelje / 5 nedelja" (akuzativ posle broja). */
+const weeksAcc = (n: number): string => {
+  const d = n % 10;
+  const t = n % 100;
+  return `${n} ${d === 1 && t !== 11 ? 'nedelju' : d >= 2 && d <= 4 && (t < 12 || t > 14) ? 'nedelje' : 'nedelja'}`;
+};
+
+/** W1-C: „prva nedelja je / prve 3 nedelje su / prvih 7 nedelja je". */
+const firstWeeks = (n: number): string => {
+  const d = n % 10;
+  const t = n % 100;
+  if (n === 1) return 'prva nedelja je';
+  if (d === 1 && t !== 11) return `prva ${n} nedelja je`;
+  if (d >= 2 && d <= 4 && (t < 12 || t > 14)) return `prve ${n} nedelje su`;
+  return `prvih ${n} nedelja je`;
+};
+
+/** W1-C: JEDNA rečenica upozorenja plana van opsega dužine (validator: upozorenje PLAN_LENGTH; generate: napomena
+    plana) — null za plan dužine [MIN, MAX]. */
+export function lengthWarning(
+  lay: PlanLayout | null,
+  input: HmV2Input,
+  weeks: number
+): string | null {
+  const f = lay?.fact;
+  if (!f) return null;
+  if (f.kind === 'short')
+    return `Skraćena priprema: plan ima ${weeksAcc(weeks)}, a za pun ciklus za polumaraton preporučuje se najmanje ${f.fullWeeks}. Plan je napravljen za izabrani datum, ali nema vremena za sve faze pripreme i ne garantuje spremnost ni ciljno vreme. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta.`;
+  const K = f.prepWeeks;
+  return `Plan je duži od preporučenih ${weeks - K} nedelja: ${firstWeeks(K)} osnovna priprema na sadašnjem obimu, a puna priprema za polumaraton počinje u nedelji ${weekLabel(input, K + 1)}.`;
 }

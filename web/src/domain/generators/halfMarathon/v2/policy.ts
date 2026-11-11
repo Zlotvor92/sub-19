@@ -719,6 +719,13 @@ const DECISIONS: readonly Decision[] = [
     place:
       'policy.ts input.weeksHardMax, prep.deloadEvery; periodize.ts layoutOf, periodize (prep), rePeriodize; volume.ts nominal10, leaveWeek, adaptNominal10, leaveAdaptWeek; week.ts (intro || prep, PREP_NOTE); validate.ts (LAYOUT, intro, H5 segment); input.ts; w1.node.test.ts',
     rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-B). Merenje: reports/W1-HM-REPORT.md.'
+  },
+  {
+    id: 'W1-C',
+    rule: 'Upozorenje plana van opsega dužine: tačno jedno upozorenje PLAN_LENGTH (validator, kanal plan.warnings) i ista rečenica u napomeni plana (aplikacija ih prikazuje jednom, bez ponavljanja). Kratak: „Skraćena priprema: plan ima N nedelja, a za pun ciklus za polumaraton preporučuje se najmanje MIN. Plan je napravljen za izabrani datum, ali nema vremena za sve faze pripreme i ne garantuje spremnost ni ciljno vreme. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta." Dug: „Plan je duži od preporučenih MAX nedelja: prvih K nedelja je osnovna priprema na sadašnjem obimu, a puna priprema za polumaraton počinje u nedelji K+1." Padeži broja nedelja po broju; broj nedelje po weekLabel. Napomena početnika ostaje. Kratak plan nema upozorenje LONG_RUN_SHORT (upozorenje dužine ga pokriva).',
+    place:
+      'periodize.ts lengthWarning (jedno mesto teksta); generate.ts (napomena plana); validate.ts PLAN_LENGTH (upozorenje; greška kad napomena nema rečenicu), LONG_RUN_SHORT; w1.node.test.ts',
+    rationale: 'Nalog vlasnika 11. 11. 2026, brief W1 (W1-C).'
   }
 ];
 

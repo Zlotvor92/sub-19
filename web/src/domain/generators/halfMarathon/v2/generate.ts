@@ -23,7 +23,7 @@ import {
   week1LongCap10
 } from './lengths.ts';
 import { assessGoal, predictedHm } from './paces.ts';
-import { isBuildPhase, layoutOf, periodize, testKindOf } from './periodize.ts';
+import { isBuildPhase, layoutOf, lengthWarning, periodize, testKindOf } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState, weekPicksOf } from './quality.ts';
 import { hasLongBlock, scheduledType } from './specific.ts';
@@ -536,6 +536,9 @@ function constructWith(
     warnings: [],
     ...(layout?.fact ? { layout: layout.fact } : {})
   };
+  // W1-C: rečenica upozorenja plana van opsega dužine (ista kao upozorenje PLAN_LENGTH validatora).
+  const lw = lengthWarning(layout, input, weeks);
+  if (lw) plan.notes.push(lw);
   if (pace.kind === 'feel') {
     const t = out.find((w) => w.test);
     const td = t?.days.find((d) => d.workout.kind === 'test');

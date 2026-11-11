@@ -12,5 +12,12 @@
     "find": "  if (frame.prep) return frame.deload ? Math.round(P.deload.factor * start10) : start10;\n",
     "replace": "",
     "tests": ["src/domain/generators/halfMarathon/v2/w1.node.test.ts"]
+  },
+  {
+    "name": "W1-C napomena plana bez upozorenja dužine",
+    "file": "src/domain/generators/halfMarathon/v2/generate.ts",
+    "find": "  if (lw) plan.notes.push(lw);\n",
+    "replace": "",
+    "tests": ["src/domain/generators/halfMarathon/v2/w1.node.test.ts"]
   }
 ]

@@ -44,9 +44,34 @@ export function w1Cases(ns: readonly number[]): W1Case[] {
   return out;
 }
 
+/** W1-C (nezavisno): tačno jedno upozorenje dužine, ista rečenica u napomeni plana; kratak — „Skraćena priprema" sa
+    MIN, dug — „duži od preporučenih 20 nedelja" sa nedeljom K + 1. */
+export function warningViolations(p: HmV2Plan, weeks: number): string[] {
+  const bad: string[] = [];
+  const ws = p.warnings.filter((w) => w.rule === 'PLAN_LENGTH');
+  const min = p.input.experience === 'beginner' ? 12 : 10;
+  if (weeks >= min && weeks <= 20) {
+    if (ws.length > 0) bad.push('upozorenje dužine u planu [MIN, MAX]');
+    return bad;
+  }
+  if (ws.length !== 1) return [`upozorenja dužine: ${ws.length}`];
+  const t = ws[0]!.message;
+  if (!p.notes.includes(t)) bad.push('napomena plana bez upozorenja');
+  if (/W1|layout|MIN|MAX/.test(t)) bad.push(`interna oznaka: ${t}`);
+  if (weeks < min) {
+    if (!t.startsWith('Skraćena priprema: plan ima ') || !t.includes(`najmanje ${min}.`))
+      bad.push(`tekst: ${t}`);
+  } else if (
+    !t.startsWith('Plan je duži od preporučenih 20 nedelja: ') ||
+    !t.endsWith(`počinje u nedelji ${weeks - 19}.`)
+  )
+    bad.push(`tekst: ${t}`);
+  return bad;
+}
+
 /** Nezavisne invarijante plana W1 (prekršaji kao tekst). */
 export function w1Violations(p: HmV2Plan, weeks: number): string[] {
-  const bad: string[] = [];
+  const bad: string[] = [...warningViolations(p, weeks)];
   const min = WEEK_MIN[p.input.runDays.length]!;
   if (p.weeks.length !== weeks) bad.push(`broj nedelja ${p.weeks.length}`);
   const last = p.weeks[p.weeks.length - 1]!;
@@ -193,5 +218,44 @@ describe('W1-B: dug plan (N > MAX, najviše 52)', () => {
     expect(r24.plan.weeks.slice(4).map((w) => w.targetKm)).toEqual(
       r20.plan.weeks.map((w) => w.targetKm)
     );
+  });
+});
+
+describe('W1-C: upozorenje', () => {
+  const plan = (weeks: number, beginner = false) => {
+    const r = generateHmV2(
+      inputOf({
+        weeks,
+        km: 30,
+        days: ['tue', 'thu', 'sat', 'sun'],
+        ...(beginner ? { beginner: true, easyPaceSecPerKm: 420 } : { vdot: 45 })
+      })
+    );
+    if (!r.ok) throw new Error(`plan ${weeks}`);
+    return r.plan;
+  };
+  it('tekst za korisnika: padeži broja nedelja, početnik uz svoje upozorenje', () => {
+    const msg = (weeks: number, b = false) =>
+      plan(weeks, b).warnings.find((w) => w.rule === 'PLAN_LENGTH')?.message;
+    expect(msg(1)).toBe(
+      'Skraćena priprema: plan ima 1 nedelju, a za pun ciklus za polumaraton preporučuje se najmanje 10. Plan je napravljen za izabrani datum, ali nema vremena za sve faze pripreme i ne garantuje spremnost ni ciljno vreme. Ne nadoknađuj kraći rok naglim povećanjem obima ili intenziteta.'
+    );
+    expect(msg(3)).toContain('plan ima 3 nedelje,');
+    expect(msg(9)).toContain('plan ima 9 nedelja,');
+    expect(msg(11, true)).toContain(
+      'plan ima 11 nedelja, a za pun ciklus za polumaraton preporučuje se najmanje 12.'
+    );
+    expect(msg(21)).toBe(
+      'Plan je duži od preporučenih 20 nedelja: prva nedelja je osnovna priprema na sadašnjem obimu, a puna priprema za polumaraton počinje u nedelji 2.'
+    );
+    expect(msg(23)).toContain('prve 3 nedelje su osnovna priprema');
+    expect(msg(28)).toContain('prvih 8 nedelja je osnovna priprema');
+    expect(msg(41)).toContain('prva 21 nedelja je osnovna priprema');
+    expect(msg(10)).toBeUndefined();
+    expect(msg(20)).toBeUndefined();
+    expect(msg(12, true)).toBeUndefined();
+    // Postojeća napomena početnika ostaje uz upozorenje dužine.
+    expect(plan(11, true).notes.some((n) => n.startsWith('Početnik (H17)'))).toBe(true);
+    for (const n of [1, 9, 21, 52]) expect(warningViolations(plan(n), n)).toEqual([]);
   });
 });

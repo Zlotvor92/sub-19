@@ -700,7 +700,7 @@ function buildWeekIn(
           ]
         : [
             frame.prep
-              ? `Rasterećenje osnovne pripreme (W1-B): cilj ${fmtKm(targetKm)} km bez kvaliteta; ${longText}.`
+              ? `Rasterećenje osnovne pripreme: cilj ${fmtKm(targetKm)} km bez kvaliteta; ${longText}.`
               : intro
                 ? `Rasterećenje u uvodu (HI13, pouka 31): cilj ${fmtKm(targetKm)} km bez kvaliteta — sadržaj uvoda; ${longText}.`
                 : tw
@@ -1043,7 +1043,7 @@ function buildWeekIn(
 
 /** W1-B: napomena nedelje osnovne pripreme. */
 export const PREP_NOTE =
-  'Osnovna priprema (W1-B): obim na sadašnjem nivou, bez dana kvaliteta — lagani dani, ubrzanja na jednom laganom danu i dugi.';
+  'Osnovna priprema: obim na sadašnjem nivou, bez dana kvaliteta — lagani dani, ubrzanja na jednom laganom danu i dugi.';
 
 /* ---------- P5-F3: ubrzanja na laganom danu ---------- */
 
