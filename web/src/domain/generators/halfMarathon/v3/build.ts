@@ -417,7 +417,8 @@ export function generate(input: V3Input): PlanDoc {
     slots,
     s,
     beginner,
-    paces.estimated || (days === 3 && input.weeklyKm < 35)
+    // bez I: 3 dana ispod 35 km; plan po osećaju sa 3 dana ili ispod 40 km (4+ dana i ≥ 40 km: I posle testa ostaje)
+    (days === 3 && input.weeklyKm < 35) || (paces.estimated && (days === 3 || input.weeklyKm < 40))
   );
   const testWeek = slots.find((x) => x.role === 'test')?.index ?? null;
   const checkWeek = slots.find((x) => x.role === 'check')?.index ?? null;
@@ -447,6 +448,10 @@ export function generate(input: V3Input): PlanDoc {
     let q = qp[w]!;
     if (days === 3 || s.singleQuality)
       q = threeDay(q, x.phase, w, !!lp?.block, beginner, s, x.role);
+    // kratki usponi (≤ 20 s) nisu poseban trening: idu usred laganog dana pune dužine
+    const hillsEasy = (x2: QSpec): QSpec =>
+      x2.t === 'H' && x2.sec <= 20 ? { t: 'easy', hills: x2.reps } : x2;
+    q = { q1: hillsEasy(q.q1), q2: hillsEasy(q.q2) };
 
     // posle pripremne trke: kvalitet najranije 4 dana kasnije; dugi posle trke koja je zamenila dugi je bez bloka
     if (checkSlot && w === checkSlot.index + 1) {
@@ -496,23 +501,23 @@ export function generate(input: V3Input): PlanDoc {
         x.role === 'post' ? 0.8 * peakWork : x.role === 'taper' ? 0.56 * peakWork : Infinity;
       // pre vrha: ≤ 85 % procenjenog budžeta najteže nedelje (vrh ostaje najteži i kad plafon izjednači doze)
       const pv = vol[slots.find((y) => y.role === 'peak')!.index]!;
-      const peakBudget = 0.235 * ((pv * paces.easy) / 60) * (pv < 30 ? 0.8 : 0.95);
-      const peakTemplate = 0.6 * s.caps.RP + (s.blockMaxKm * paces.RP) / 60; // vrh: RP ≤ 60 % + najduži blok
+      const peakBudget =
+        (days >= 4 ? 0.2 : 0.235 * (pv < 30 ? 0.8 : 0.95)) * ((pv * paces.easy) / 60);
+      const peakTemplate = (days === 3 ? 0.6 : 1) * s.caps.RP + (s.blockMaxKm * paces.RP) / 60; // vrh: RP + najduži blok
       const before =
         x.role === 'peak' || after !== Infinity
           ? Infinity
           : 0.85 * Math.min(peakBudget, peakTemplate);
-      const budget = Math.min(
-        after,
-        before,
-        limit * ((weekKm * paces.easy) / 60) * (weekKm < 30 ? 0.8 : 0.95)
-      );
+      const weekMin = (weekKm * paces.easy) / 60;
+      // nedelja sa blokom (4+ dana): RP usred nedelje se puni do 19 % vremena nedelje (najteža 20 %), ne fiksno 60 %
+      const fillTo = lp?.block && days >= 4 ? (x.role === 'peak' ? 0.2 : 0.19) * weekMin : Infinity;
+      const budget = Math.min(after, before, fillTo, limit * weekMin * (weekKm < 30 ? 0.8 : 0.95));
       if (lp?.block) {
         const maxBlock = Math.floor(((0.55 * budget * 60) / paces.RP) * 2 + 1e-6) / 2;
         lp.block = Math.max(0, Math.min(lp.block, maxBlock));
-        // nedelja sa blokom: RP usred nedelje 60 % doze šablona (≤ 60 % plafona); 3 dana: i T/I
+        // 3 dana, nedelja sa blokom: kvalitet usred nedelje 60 % doze šablona (4+ dana: puni ga budžet od 19–20 %)
         const cap60 = (x2: QSpec): QSpec =>
-          x2.t === 'RP' || (days === 3 && (x2.t === 'T' || x2.t === 'I'))
+          days === 3 && (x2.t === 'RP' || x2.t === 'T' || x2.t === 'I')
             ? { ...x2, dose: 0.6 * Math.min(1, x2.dose) }
             : x2;
         q = { q1: cap60(q.q1), q2: cap60(q.q2) };
@@ -530,6 +535,7 @@ export function generate(input: V3Input): PlanDoc {
         blockLeft >= 1.5
       )
         lp.block = Math.max(1.5, Math.floor((((budget - fix0 - 8) * 60) / paces.RP) * 2) / 2);
+      if (lp) lp.block = Math.round(lp.block * 2) / 2;
       const longWork = lp ? ((lp.block + lp.prog / 2) * paces.RP) / 60 : 0;
       const isScal = (x2: QSpec): boolean => x2.t === 'T' || x2.t === 'I' || x2.t === 'RP';
       const scal = [q.q1, q.q2].filter(isScal).reduce((a, x2) => a + estWork(x2, s, paces), 0);
@@ -624,17 +630,21 @@ export function generate(input: V3Input): PlanDoc {
       let maxs = easyDays.map((day) =>
         Math.max(easyMinKm, (day === d.beforeLong ? CAPS.dayBeforeLong : share) * longKm)
       );
+      const normal = maxs;
       if (beginner) maxs = maxs.map(() => Math.min(...maxs)); // početnik: ujednačeni lagani dani
       // 4 dana: lagan dan bar 35 % dugog (ne „kratak dan uz dug dugi")
       const minKm = days === 4 && lp ? Math.max(easyMinKm, 0.35 * longKm) : easyMinKm;
       const mins = easyDays.map((_, i) => Math.min(minKm, maxs[i]!));
       let km = fill(vol[w]! - fixed, mins, maxs);
+      // ujednačavanje ne sme da obori obim: kad nedostaje > 3 %, važe obični plafoni dana
+      if (beginner && fixed + km.reduce((a, b) => a + b, 0) < 0.97 * vol[w]!)
+        km = fill(vol[w]! - fixed, mins, normal);
       // nedelja 1 ≥ 95 % sadašnjeg obima: lagani nose razliku (do 80 % dugog, 3 dana 90 %)
       if (w === 1 && fixed + km.reduce((a, b) => a + b, 0) < 0.95 * vol[w]!)
         km = fill(
           0.96 * vol[w]! - fixed,
           km,
-          easyDays.map(() => (days === 3 ? 0.9 : 0.8) * longKm)
+          easyDays.map(() => (days === 3 ? 0.75 : 0.8) * longKm)
         );
       const strideDay =
         easyDays.find((day) => day !== d.beforeLong && day !== checkDay) ??
@@ -720,11 +730,33 @@ export function generate(input: V3Input): PlanDoc {
         x.days.filter((dd) => dd.session.kind === 'long').map((dd) => dd.session.km)
       )
     ),
-    recommendations: recommendations(input, paces, s, N, slots, goalOk, dropped),
+    recommendations: recommendations(
+      input,
+      paces,
+      s,
+      N,
+      slots,
+      goalOk,
+      dropped,
+      Math.max(
+        0,
+        ...weeks.flatMap((x) =>
+          x.days.filter((dd) => dd.session.kind === 'long').map((dd) => dd.session.km)
+        )
+      )
+    ),
     notes: s.reasons,
     weeks,
     guard: []
   };
+  // najveći obim i najteži treninzi nisu uvek ista nedelja (npr. 3 dana): plan to kaže jednom rečenicom
+  const maxVol = weeks.reduce((a, y) => (y.plannedKm > a.plannedKm + 0.5 ? y : a), weeks[0]!);
+  const hardest = weeks.find((y) => y.kind === 'peak');
+  if (hardest && maxVol.index !== hardest.index)
+    doc.notes = [
+      ...doc.notes,
+      `Najveći obim je u nedelji ${maxVol.index} (${maxVol.plannedKm.toString().replace('.', ',')} km), najteži treninzi u nedelji ${hardest.index}.`
+    ];
   doc.guard = guard(doc, s);
   return doc;
 }
@@ -817,25 +849,35 @@ function recommendations(
   N: number,
   slots: Slot[],
   goalOk: boolean,
-  dropped: number
+  dropped: number,
+  longest: number
 ): string[] {
   const out: string[] = [];
   const days = i.runDays.length;
-  if (days === 3)
+  // rečenice za ulaze koji ni sa najboljim planom ne daju pun plan (ROUND-V3-HM-02 § e), uslovljene ulazom
+  const fastLow = !p.estimated && p.vdot >= 50 && i.weeklyKm < 40;
+  const slow3 = days === 3 && p.easy >= 420;
+  if (fastLow)
     out.push(
-      'Sa 3 dana sva tri treninga nose opterećenje. Četvrti dan od 30–40 min laganog bi plan znatno poboljšao.'
+      `Tvoj rezultat traži više trčanja nego što sada radiš: sa ${i.weeklyKm} km nedeljno i ${N} nedelja plan čuva formu, ali je ne podiže mnogo. Za bolji plan: 14+ nedelja ili obim od 45 km pre početka. Ako se vraćaš posle pauze, ovo je dobar povratni plan.`
     );
-  if (N < 10)
+  if (slow3) {
+    const longMin = Math.round((longest * p.easy) / 60);
+    const fourth = Math.floor(((s.longTimeCapMin * 60) / p.easy) * 2) / 2;
     out.push(
-      `Priprema od ${N} nedelja je kratka za polumaraton (preporuka 12–20): plan čuva obim i ne juri vrh.`
+      `Plan te dovodi do dugog od ${longest.toString().replace('.', ',')} km (oko ${Math.floor(longMin / 60)} h ${String(longMin % 60).padStart(2, '0')}); trka će trajati oko ${fmtTime(p.predictionSec).slice(0, -3)}, pa poslednjih 5 km računaj na hod-trk. Sa četvrtim danom dugi bi stigao do ${fourth.toString().replace('.', ',')} km.`
+    );
+  } else if (days === 3)
+    out.push(
+      'Sa 3 dana svaki trening je ili dug ili težak, pa nema pravog oporavka između. Četvrti dan od 30–40 min laganog trčanja napravio bi veću razliku od bilo koje izmene treninga.'
+    );
+  if (N <= 11 && !fastLow)
+    out.push(
+      `Priprema od ${N} nedelja je kratka za polumaraton: obim raste brže nego što bismo želeli. Ako možeš da pomeriš trku za 4–6 nedelja, plan postaje znatno bolji.`
     );
   if (!i.beginner && i.weeklyKm < 25)
     out.push(
       `Obim ${i.weeklyKm} km nedeljno je mali za polumaraton: plan raste do ${Math.round(s.peakKm)} km; više nedelja pripreme daje veći vrh.`
-    );
-  if (!p.estimated && p.vdot >= 50 && i.weeklyKm < 40)
-    out.push(
-      'Brz rezultat uz mali obim: ako je ovo povratak posle pauze, plan ne juri stari nivo; puna priprema traži ≥ 45 km nedeljno ili 12+ nedelja.'
     );
   if (dropped)
     out.push(

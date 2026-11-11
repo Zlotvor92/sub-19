@@ -134,17 +134,20 @@ export function computeScale(
 
   // početak dugog: ≈ skorašnji najduži + 1 km, ili udeo sadašnjeg obima; u rasponu 0,6–0,82 najdužeg
   const base = input.recentLongRunKm
-    ? input.recentLongRunKm + 1
-    : (input.beginner
+    ? // 3 dana: dugi nosi razliku obima (do 45 % nedelje), najviše +2 km iznad skorašnjeg najdužeg
+      input.recentLongRunKm +
+      (days === 3 ? Math.min(2, Math.max(1, 0.45 * start - input.recentLongRunKm)) : 1)
+    : (input.beginner && days > 3
         ? 0.33
-        : (({ 3: 0.42, 4: 0.34, 5: 0.3 } as Record<number, number>)[days] ?? 0.27)) * start;
+        : (({ 3: 0.45, 4: 0.34, 5: 0.3 } as Record<number, number>)[days] ?? 0.27)) * start;
+  // 3 dana: dugi nosi veći deo nedelje od starta (do 45 %), pa sme da krene do 0,85 najdužeg
   const longStart = Math.min(
     Math.max(base, (input.beginner ? 0.45 : 0.6) * longMax),
-    0.82 * longMax
+    (days === 3 ? 0.85 : 0.82) * longMax
   );
 
   const blockMax = input.beginner
-    ? lerp(start, 20, 45, 4, 5)
+    ? lerp(start, 20, 45, 4, 6)
     : Math.min(v >= 55 ? 12 : lerp(v, 38, 45, 8, 10), 48 / (p.RP / 60), 0.2 * peak);
   // RP usred nedelje: plafon po nivou, ali ne više od 20 % vrha obima u km (pretpostavka, v. izveštaj)
   const RP = Math.min(

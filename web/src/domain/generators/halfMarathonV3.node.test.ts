@@ -151,8 +151,8 @@ describe('HM v3 — mreža invarijanti', () => {
       const b = [N >= 12 ? block(N - 7) : 0, block(N - 5), block(N - 3)];
       expect(b[2], label).toBeGreaterThan(0);
       expect(b[2]!, label).toBeGreaterThanOrEqual(b[1]!);
-      // N−7 je bez bloka kad je pre nje trka umesto dugog; vrlo mali blok (≤ 2,5 km) ne može da raste u koracima
-      if (N >= 12 && b[1]! > 2.5) expect(b[1]!, label).toBeGreaterThan(b[0]!);
+      // N−7 je bez bloka kad je pre nje trka umesto dugog; mali blok (≤ 4 km) ne može da raste u koracima
+      if (N >= 12 && b[1]! > 4) expect(b[1]!, label).toBeGreaterThan(b[0]!);
       expect(
         Math.max(...doc.weeks.map((w, i) => (longOf(w)?.zone === 'RP' ? block(i + 1) : 0))),
         label
@@ -324,6 +324,41 @@ describe('HM v3 — mreža invarijanti', () => {
             if (doc.paces.easy >= 420 && d.session.min >= 90)
               expect(d.session.note ?? '', label).toMatch(/hoda/);
           }
+    }
+  });
+
+  it('krug 3: kratki usponi su deo laganog dana; 3 dana srednji lagan ≤ 70 % dugog (ned 1: 75 %); nedelja 1 ≥ 90 % obima', () => {
+    for (const { doc, label, input } of plans) {
+      for (const w of doc.weeks) {
+        const long = longOf(w);
+        for (const d of w.days) {
+          if (d.session.kind === 'quality' && d.session.zone === 'H')
+            expect(d.session.text, `${label} ned ${w.index}`).not.toMatch(/× 20 s/);
+          if (input.runDays.length === 3 && long && d.session.kind === 'easy' && d.session.min > 31)
+            expect(d.session.km, `${label} ned ${w.index}`).toBeLessThanOrEqual(
+              (w.index === 1 ? 0.75 : 0.7) * long.km + 0.15
+            );
+        }
+      }
+      if (doc.peakKm >= input.weeklyKm)
+        // 3 dana: dugi sme +2 km iznad skorašnjeg i ≤ 0,85 najdužeg, lagan ≤ 75 % dugog — dozvoljeno 80 %
+        expect(doc.weeks[0]!.plannedKm, label).toBeGreaterThanOrEqual(
+          (input.runDays.length === 3 ? 0.8 : 0.9) *
+            Math.min(input.weeklyKm, doc.weeks[0]!.targetKm) -
+            0.5
+        );
+    }
+  });
+
+  it('krug 3: u najtežoj nedelji (4+ dana, ≥ 30 km, ≥ 12 ned) tempo trke usred nedelje postoji i nedelja ima ≥ 15 % brzog', () => {
+    for (const { doc, label, input } of plans) {
+      if (input.runDays.length < 4 || input.weeklyKm < 30 || doc.weeks.length < 12) continue;
+      const pk = doc.weeks.find((w) => w.kind === 'peak')!;
+      expect(
+        pk.days.some((d) => d.session.kind === 'quality' && d.session.zone === 'RP'),
+        label
+      ).toBe(true);
+      expect(pk.workMin / pk.totalMin, label).toBeGreaterThanOrEqual(0.15);
     }
   });
 

@@ -102,3 +102,34 @@ Test (16 provera) dobio: plafon 22/25 % i ≤ 2 nedelje > 20 % u kratkoj priprem
 Postojeći test `scripts/ciScope.node.test.ts` („HM v2: svi testovi foldera…") pada kad je u `halfMarathon/` test koji
 ne zavisi od v2 (traži da svaki test tog foldera bude izabran pri izmeni v2); stari test nije menjan — v3 test je
 premešten u `generators/halfMarathonV3.node.test.ts`, kod generatora ostaje u `halfMarathon/v3/`.
+
+## Krug 3 (po ROUND-V3-HM-02 § d–e)
+1. Nedelja sa blokom (4+ dana): RP usred nedelje se puni do 19 % vremena nedelje (najteža 20 %), ne fiksno 60 %;
+   plafon 22/25 % ostaje. 3 dana zadržava 60 % doze (pravilo iz kruga 2). Beginner blok do 6 km (45 km/ned).
+2. Kratki usponi (≤ 20 s) idu usred laganog dana pune dužine, ne kao trening od 3,8 km; početnik: ujednačeni lagani
+   dani, ali kad bi to oborilo obim > 3 %, važe obični plafoni (p12 vrh 55,3 km, bez pada u ned 3).
+3. 3 dana: dugi nosi razliku u ned 1 (do 45 % nedelje, najviše +2 km iznad skorašnjeg najdužeg, ≤ 0,85 najdužeg),
+   lagan ≤ 75 % dugog u ned 1 i ≤ 70 % u svim ostalim nedeljama.
+4. I intervali ostaju za plan po osećaju sa 4+ dana i ≥ 40 km (p09 ned 6–7: I 4 × 1000 m posle testa).
+5. Zaglavlje: rečenice iz § e uslovljene ulazom (brz rezultat uz < 40 km; 3 dana; 3 dana i lagan ≥ 7:00/km sa stvarnim
+   najdužim dugim i prognozom; priprema ≤ 11 nedelja). Kad najveći obim i najteži treninzi nisu ista nedelja, plan kaže obe.
+
+| profil | RP usred ned. vrha (min) | najteža ned. brz rad | ned > 22 %* | blok u dugom (km) | vrh km | ned 1 / sada |
+|---|---|---|---|---|---|---|
+| p01 | 26 | 19 % (62 min) | 0 | 5 → 6 → 7,5 → 5 | 56,0 | 40 / 40 |
+| p02 | 27 | 20 % (58) | 0 | 5 → 6 → 7 → 5 | 54,0 | 40 / 40 |
+| p03 | 22 | 23 % (53) | 1 | 4 → 5 → 3 | 33,3 | 24,9 / 25 |
+| p04 | 35 | 19 % (82) | 0 | 4 → 6 → 8 → 4 | 63,0 | 52,7 / 55 |
+| p05 | 44 | 20 % (89) | 0 | 6 → 9 → 12 → 6 | 100,1 | 85,9 / 90 |
+| p06 | 17 | 19 % (38) | 0 | 5 → 5,5 → 4 | 43,3 | 33,8 / 35 |
+| p07 | 30 | 19 % (73) | 0 | 7,5 → 9 → 5 | 67,9 | 54,9 / 55 |
+| p08 | 26 | 23 % (61) | 1 | 6,5 → 7,5 → 5 | 47,8 | 41,9 / 45 |
+| p09 | 26 | 19 % (66) | 0 | 5 → 6,5 → 8 → 5 | 59,0 | 43,2 / 45 |
+| p10 | 20 | 23 % (51) | 1 | 4 → 5 → 3 | 33,3 | 24,8 / 25 |
+| p11 | 24 | 17 % (47) | 0 | 3 → 4 → 3 | 39,2 | 20,6 / 20 |
+| p12 | 35 | 19 % (69) | 0 | 4 → 6 → 4 | 55,3 | 45,2 / 45 |
+\* jedina nedelja > 22 % je najteža (≤ 25 %), samo kod 3 dana. Čuvar 0 nalaza (12 profila, 420 ulaza); test 18 provera.
+
+Odstupanja: p01 najteža nedelja 21 → 19 % (blok 8 → 7,5 km), jer je i za nju punjenje do 20 %. p08 ned 1 je 93 %
+(dugi ne sme > +2 km i 0,85 najdužeg) — trenerova granica 90 % važi; u mreži 3 dana ponegde 80–90 %, test to dozvoljava.
+Potvrđeno ostaje: udeo brzog ≤ 22/25 %, lagan utorak posle pripremne trke, 5 km za male obime, T lestvica početnika.

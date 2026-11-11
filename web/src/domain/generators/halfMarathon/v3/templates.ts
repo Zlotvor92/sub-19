@@ -138,7 +138,7 @@ export const CAPS = {
   longTimeMin: 135,
   longShare: { 3: 0.45, 4: 0.4, 5: 0.35, 6: 0.35 } as Record<number, number>,
   easyShareOfLong: 0.65,
-  easyShareOfLong3: 0.75,
+  easyShareOfLong3: 0.7,
   dayBeforeLong: 0.5,
   minEasyMin: 30,
   peakAbsKm: 100
