@@ -511,3 +511,17 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   invarijante „doza ne opada" → važi do nedelje vrha) → provera trenera (ROUND-05) → C2 = stavke 3+6 → C3 = 4+5 →
   C4 = 7+8+9 → C5 = 10 → C6 = 11 [E] (ekrani; uz saglasnost vlasnika) → [A] rubrika adaptacije.
   Briefovi C2–C6 se pišu po nalazu prethodnog koraka.
+
+### 11. 11. 2026, 07:30 — nalog vlasnika: pilot nove arhitekture na drugoj grani, poređenje, ekonomično
+
+- Odluka vlasnika: „radi na drugoj grani pa ćemo upoređivati; ekonomično". Pravilo „ne pravi novu granu" ne važi za
+  pilot (izričita dozvola); radna grana ostaje `claude/generator-isolation-5k-10k-hm-marathon`.
+- V3-HM pilot (Opus, `session_01GnHHiWpkeqyGbLYXnGYHgC`, grana `claude/v3-pilot-hm`): generator polumaratona na
+  trenerskim šablonima — šabloni kao podaci, opterećenje u minutima rada, mali čuvar bezbednosti; sav kod u
+  `halfMarathon/v3/` (bez zajedničkog motora van foldera — pravilo izolacije ostaje netaknuto u pilotu); bez
+  adaptacije, bez povezivanja u aplikaciju; izlaz `P9v3/plans/HM/`, izveštaj `reports/V3-HM-PILOT-REPORT.md`.
+- SCORE (Sonnet, `session_01GnHHiWEpiNLoJ8hfGB3AAC`, radna grana): `score/score.ts` — pokazatelji plana + providna
+  ocena 0–100, provera prema ocenama trenera (Spearman na 48 planova).
+- EKONOMIČNO — izmena redosleda: W1 se završava na sve četiri distance (nalog vlasnika). C1 se radi SAMO na HM (v2),
+  da se uporedi HM v2 + C1 naspram HM v3; C1 za 5K/10K/MAR i koraci C2–C6 ČEKAJU ishod poređenja.
+- Poređenje: SCORE nad oba + jedan krug glavnog trenera nad 12 HM profila (v2 + C1 i v3, slepo A/B).
