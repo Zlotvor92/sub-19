@@ -76,7 +76,9 @@ važi isključivo ovaj odeljak.
    (izmena motora ne sme nenamerno da promeni plan druge distance). Bez višesatnih matrica.
 
 **Rad**
-11. V4 se razvija na grani `claude/v4` dok ne zameni v2 u aplikaciji. Organizator vodi; tabovi rade na Opus 5.5.
+11. V4 se razvija na grani `claude/v4` dok ne zameni v2 u aplikaciji. Organizator vodi; tabovi rade na Opus 5.5,
+    a za baš složene stvari (jezgro motora, model stanja i opterećenja, trenerski sud) organizator sme da odredi
+    Fable 5.2.
 12. Ostaje bez izuzetka: ništa u `main`, bez deploya, bez izmene baze i bez PR-a bez izričite potvrde vlasnika;
     vremena po beogradskom vremenu; lični plan vlasnika (zamrznut HM v1) i v2 rade dok ih V4 ne zameni.
 

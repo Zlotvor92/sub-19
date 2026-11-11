@@ -630,3 +630,8 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   za zaglavlje u § e.
 - Sud trenera: skoro gotov; vredi još JEDAN mali krug (≈ +1, 6–7 profila na 80), posle toga < 0,5 po krugu.
 - Krug 3 poslat istom tabu (8 tačaka). Posle njega: završna ocena trenera i zatvaranje HM v3.
+
+### 11. 11. 2026 — odluka vlasnika: Fable 5.2 za baš složene stvari, po proceni organizatora
+
+- Od sutra: podrazumevano Opus 5.5; Fable 5.2 po proceni organizatora za najsloženije delove (jezgro motora V4, model
+  stanja i opterećenja, trenerski sud). Upisano u `AGENTS.md` V4 pravilo 11.
