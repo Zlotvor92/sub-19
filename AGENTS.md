@@ -57,8 +57,12 @@ važi isključivo ovaj odeljak.
 4. Šablon nosi nameru (faza, opterećenje kao % vrha, uloga dugog, vrsta podražaja); konkretan trening se bira iz
    biblioteke treninga po oznakama. Nov sadržaj = nov unos u biblioteku, ne nov kod.
 5. Jedna mera opterećenja (minuti rada ponderisani intenzitetom) i jedan model forme/umora; kilometri se izvode.
-6. Čuvar bezbednosti je mali i samo prijavljuje; odbija se samo neispravan unos. Loš unos (premalo dana, obima,
-   vremena) dobija najbolji mogući plan i jasnu preporuku šta da promeni.
+6. Čuvar bezbednosti je mali i samo prijavljuje; odbija se samo neispravan unos (nemoguć datum, prazni dani i
+   slično). Odluka vlasnika (11. 11. 2026): SVE SE PRAVI UZ UPOZORENJE — nijedan izbor trkača se ne odbija zbog
+   dužine pripreme, obima, broja dana ili iskustva (npr. maraton za 8 nedelja, maraton početnika sa malim obimom).
+   Takav unos dobija najbolji mogući plan i upozorenje koje sadrži: šta je problem, šta to znači za trku, i
+   KONKRETAN predlog šta je potrebno za adekvatnu pripremu (koliko nedelja, koliki obim, koliko dana, ili koja
+   kraća distanca). Upozorenje se prikazuje pre generisanja i ostaje u zaglavlju plana.
 7. Ništa se ne prenosi iz v2 (ni kod, ni tipovi, ni testovi). Jedini izuzetak je tačka 8: čitanje starih PLANOVA
    kao podataka.
 8. Preuzimanje postojećih planova (zahtev vlasnika): V4 mora da radi nad planovima koji već postoje u aplikaciji

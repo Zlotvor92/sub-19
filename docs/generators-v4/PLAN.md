@@ -129,7 +129,8 @@ okviru SPEC-a + zapis, ne staje. Promena smera → organizator prekida tab i ša
 
 ## 8. Odluke koje čekaju vlasnika (ne blokiraju dan 1)
 
-1. Maraton za početnika ispod ≈ 35 km/ned: odbiti uz preporuku ili praviti uz upozorenje.
+1. REŠENO (vlasnik, 11. 11.): sve se pravi uz upozorenje — ništa se ne odbija zbog dužine, obima, dana ili
+   iskustva; upozorenje nosi konkretan predlog šta je potrebno za adekvatnu pripremu (AGENTS.md V4 pravilo 6).
 2. Usmeravanje unosa na ekranu (F8) — da li i kako.
 3. Šta sa radnom granom v2 (HM i deo maratona imaju „bilo koja dužina plana", nedovršeno): povući ili ostaviti.
 4. Kada i kako V4 ulazi u aplikaciju (F9).

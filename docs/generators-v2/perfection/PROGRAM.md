@@ -685,3 +685,9 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 
 - `docs/generators-v4/PLAN.md`: cilj i mere, raspored foldera, faze F0–F9 sa kapijama i modelima, raspored prvog
   dana, pravila za tabove, rizici, odluke koje čekaju vlasnika. Dnevnik V4 od 12. 11.: `docs/generators-v4/LOG.md`.
+
+### 11. 11. 2026 — odluka vlasnika: sve se pravi uz upozorenje
+
+- „Sve se pravi uz upozorenje; ako neko hoće da sprema maraton 8 nedelja, pustiti ga, ali uz upozorenje i predlog
+  koliko je potrebno za adekvatno spremanje." `AGENTS.md` V4 pravilo 6 dopunjeno; PLAN.md § 8 tačka 1 zatvorena.
+  Zamenjuje i tehničku granicu od 52 nedelje iz W1 (v2) — u V4 se odbija samo neispravan unos.
