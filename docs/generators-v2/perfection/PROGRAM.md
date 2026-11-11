@@ -565,3 +565,16 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   nula uvoza i kopija iz v2, samo generisanje; šabloni kao podaci, minuti rada, mali čuvar, izlaz PlanDoc + ispis u
   `P9v3/plans/HM/`, izveštaj `reports/V3-HM-REPORT.md`.
 - Pouka za organizatora: promena smera → odmah prekid taba i nova poruka (poruka u redu čeka kraj tekućeg koraka).
+
+### 11. 11. 2026, 08:50 — V3-HM krug 1: 62,7 → 74,4
+
+- V3-HM predao: grana `claude/v3-hm`, `e955a9f`; `halfMarathon/v3/` 8 fajlova, 1851 red bez testa, nula uvoza van
+  foldera; `npm run check` 3448 ✔ (po tabu); ispis `P9v3/plans/HM/`, izveštaj `reports/V3-HM-REPORT.md` (na toj grani).
+- Glavni trener `coach/ROUND-V3-HM-01.md` (`4d0b085`, radna grana): stari 62,7 → v3 74,4 (+11,7), bolji na svih 12;
+  na 4 profila sa ciljnim planom 78,4 (ciljni 81,5). Nijedan na 80; šest na 78–79,5. Trener proverio zbir km po
+  danima i minute rada.
+- v3 LOŠIJI od starog u bezbednosti: 26–33 % vremena u trkačkom tempu u najtežoj nedelji (standard ≤ 22 %); 3 dana
+  sa tri teška treninga u nedelji bloka; kvalitet 2–3 dana posle pripremne trke; p06 previše brzog.
+- Sud trenera: šabloni su bolji put (jedan krug +11,7 naspram +7,4 za tri kruga dorade starog). Procena posle
+  ispravki 1–6: ≈ 77–78, sedam profila na ≥ 80.
+- Krug 2 poslat istom tabu (10 ispravki, prvo bezbednost). Zatim ponovna ocena trenera.
