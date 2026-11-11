@@ -442,3 +442,11 @@ Plan P9 (do kraja):
   983 → 767; pravilo u 278 planova (5 dana). Vraćeno za početnika (vrh −10 % u 38/296). Nepokriveno: 3 i 4 dana
   (jedan lagan dan). Od 12 profila menja se samo p06.
 - Ostaje K4-10K (u toku).
+
+### 11. 11. 2026, 02:35 — K4-10K završen (10k-v2.16.0); K4 zatvoren; krug 4 trenera i završni check:full pokrenuti
+
+- K4-10K `ad67fda`, izveštaj `reports/K4-10K-REPORT.md`. Po tabu: pun nivo 771/771, `--changed` 1020 ✔, E2E 5/5,
+  `npm run check` 3419 ✔, sabotaže 2/2; 31 314 planova, 0 novih odbijanja, vrh −10 %: 0. K4-B: lagan < 30 min u
+  > 2 nedelje 7078 → 2607 (ostatak: 3 i 4 dana, jedini lagan dan).
+- Verzije na završnom vrhu: 5k-v2.17.0, 10k-v2.16.0, hm-v2.14.0, marathon-v2.14.0. Svi K4 tabovi arhivirani.
+- Pokrenuto: glavni trener → `coach/ROUND-04.md`; `npm run check:full` na `ad67fda` (organizator, pozadina).
