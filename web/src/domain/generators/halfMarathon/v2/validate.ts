@@ -47,11 +47,13 @@ import {
   deloadAllowed,
   deloadWeeks,
   firstOfPhase,
+  layoutOf,
   isBuildPhase,
   periodize,
   phasesOf,
   testKindOf,
-  testWeekOf
+  testWeekOf,
+  withIntro
 } from './periodize.ts';
 import { HM_V2_POLICY as P, planRule } from './policy.ts';
 import {
@@ -259,10 +261,12 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const wl = (w: number): number => weekLabel(input, w);
   const p = plan.paces;
   const N = weeks.length;
-  const rule = planRule(
+  // W1-A: uvod početnika kratkog plana — samo nedelje uvoda koje postoje (periodize.withIntro, isto kao checkInput).
+  const rule0 = planRule(
     input.runDays.length,
     input.experience === 'beginner' ? 'beginner' : 'regular'
   );
+  const rule = rule0 ? withIntro(rule0, N) : null;
   if (!rule) {
     err('RUN_DAYS', `Broj dana ${input.runDays.length} nije u tabeli H15 / H17.`);
     return out;
@@ -305,7 +309,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   const pw = (w: { index: number }): Paces => (pace ? pacesAt(pace, steps, w.index) : p);
   const feelW = (w: { index: number }): boolean =>
     pace ? basisAt(pace, steps, w.index) === 'feel' : feel;
-  const base0 = pace ? periodize(input.startDate, N, testKindOf(pace.kind, rule, N)) : null;
+  // W1: raspored plana (jedna odluka, periodize.layoutOf); adaptiran plan — činjenica upisanog plana (pouka 29).
+  const lay = layoutOf(N, B0, ad ? (plan.layout ?? null) : undefined);
+  const base0 = pace
+    ? periodize(input.startDate, N, testKindOf(pace.kind, rule, N), B0, plan.layout ?? null)
+    : null;
   /** A17 (pouka 22): ukinuta redovna rasterećenja (isti podatak kao konstruktor, steps.framesFor). */
   const droppedD = new Map<number, number>();
   const frames =
@@ -371,7 +379,9 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
 
   // --- H4 / Uslov 6: faza svake nedelje iz odluke generatora. Segment 04: iz koraka (nov start: A3/A12);
   // okvir nedelje (rasterećenje, ograničenja) = steps.framesFor.
-  const expected = frames ? frames.map((f) => f.phase) : phasesOf(N);
+  if (!ad && JSON.stringify(plan.layout ?? null) !== JSON.stringify(lay?.fact ?? null))
+    err('LAYOUT', `Raspored plana ≠ odluka dužine plana (W1).`);
+  const expected = frames ? frames.map((f) => f.phase) : (lay?.phases ?? phasesOf(N));
   for (const w of weeks) {
     if (!PHASES.includes(w.phase)) err('NO_PHASE', 'Nedelja bez faze.', w.index);
     else if (checked(w) && w.phase !== expected[w.index - 1])
@@ -397,10 +407,14 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
   let run = 0;
   let afterForced = false;
   let afterDropped = false;
+  // W1-A: kratak plan — rasterećenja su položaj u rasporedu od MIN nedelja (periodize.layoutOf; proverava ih
+  // DELOAD_SCHEDULE i FRAMES); pretraga H5 (mesto, niz izgradnje) važi za deo posle novog starta (A12).
+  const short = (lay?.offset ?? 0) > 0;
   for (const w of weeks) {
     const s0 = segStart(w.index);
     const rel = phases.slice(s0 - 1);
     const k = w.index - s0 + 1;
+    if (short && s0 === 1) continue;
     if (restarts.has(w.index)) [run, afterForced, afterDropped] = [0, false, false];
     if (w.deload && checked(w) && !forced(w) && !deloadAllowed(rel, k)) {
       const why = !isBuildPhase(w.phase)
@@ -427,7 +441,7 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
     }
   }
   if (!ad) {
-    const wantDeloads = deloadWeeks(expected) ?? [];
+    const wantDeloads = lay?.deloads ?? deloadWeeks(expected) ?? [];
     const gotDeloads = weeks.filter((w) => w.deload).map((w) => w.index);
     if (JSON.stringify(gotDeloads) !== JSON.stringify(wantDeloads))
       err(
@@ -2321,8 +2335,11 @@ export function validatePlan(plan: HmV2Plan): Violation[] {
       (d) =>
         d.role === 'easy' && to10(d.workout.km) === buildEasyCap10(to10(long1.workout.km), rule)
     );
+  // W1-A: kratak plan — samo kad je nedelja 1 ne-rasteretna izgradnja (u planu ≥ MIN uvek jeste).
   if (
     firstAdapted > 1 &&
+    isBuildPhase(w1.phase) &&
+    !w1.deload &&
     to10(w1.targetKm) < start10 &&
     (!long1 || to10(long1.workout.km) !== abs1) &&
     !easyCapped1

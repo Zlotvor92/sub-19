@@ -310,6 +310,12 @@ export interface Violation {
   message: string;
 }
 
+/** W1: činjenica rasporeda plana van opsega dužine (upisuje se u plan, adaptacija je čita iz upisanog plana — pouka
+    29). 'short': plan je poslednjih N nedelja rasporeda od `fullWeeks` nedelja; 'long': prvih `prepWeeks` nedelja je
+    osnovna priprema ispred standardnog plana. U planu dužine [MIN, MAX] polja nema. */
+export type PlanLayoutFact =
+  { kind: 'short'; fullWeeks: number } | { kind: 'long'; prepWeeks: number };
+
 export interface HmV2Plan {
   policyId: string;
   policyVersion: string;
@@ -334,6 +340,8 @@ export interface HmV2Plan {
   warnings: Violation[];
   /** Segment 04: istorija adaptacije (adapt.ts); u planu generatora polja nema. */
   adaptation?: HmV2Adaptation;
+  /** W1: raspored plana van opsega dužine (periodize.layoutOf); u planu dužine [MIN, MAX] polja nema. */
+  layout?: PlanLayoutFact;
 }
 
 export type GenerateResult = { ok: true; plan: HmV2Plan } | { ok: false; reasons: Reason[] };

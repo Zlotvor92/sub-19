@@ -179,8 +179,8 @@ describe('3f: maraton v2 → HM v2 cilj (generate + adapt, O6b)', () => {
         }
     }
     expect(adaptRejected).toEqual([]);
-    // Kasna predaja: < 10 nedelja do trke → odbijanje generatora HM v2 doslovno (PLAN_TOO_SHORT, preporuka 10K).
-    expect([...reasons].some((r) => r.startsWith('Plan od # nedelja je prekratak'))).toBe(true);
+    // W1-A: kasna predaja (< 10 nedelja do trke) više nije odbijanje zbog dužine — plan cilja se pravi uz upozorenje.
+    expect([...reasons].some((r) => r.startsWith('Plan od # nedelja je prekratak'))).toBe(false);
   });
 
   it('plan v2 po osećaju bez laganog tempa u ulazu cilja → EASY_PACE_REQUIRED doslovno; sa njim radi', () => {
@@ -293,7 +293,7 @@ describe('3f: format i izbor', () => {
     expect(select.shorterHandoffForV2Source(MAR_FORMAT)(21097.5)).toBe(hmV2HandoffFuture);
     expect(select.shorterHandoffForV2Source(MAR_FORMAT)(10000)).toBe(tenKV2HandoffFuture);
   });
-  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.14.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
+  it(`plan bez predaje nema ${PREFIX_KEY}; verzija hm-v2.15.0, KNOWN_VERSIONS ∪ hm-v2.4.1`, () => {
     const r = select.generateHmV2Plan({
       startDate: '2026-11-02',
       raceDate: addDays('2026-11-02', 7 * 12 - 1),
@@ -305,7 +305,7 @@ describe('3f: format i izbor', () => {
     });
     if (!r.ok) throw new Error('generator');
     expect(PREFIX_KEY in r.plan).toBe(false);
-    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.14.0');
+    expect(r.plan.meta?.['policyVersion']).toBe('hm-v2.15.0');
     expect(
       select.HALF_MARATHON_V2_GENERATOR.planPolicy({
         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.4.1' }
@@ -316,14 +316,15 @@ describe('3f: format i izbor', () => {
         meta: { policyId: 'hm-v2', policyVersion: 'hm-v2.5.0' }
       } as never).status
     ).toBe('current');
-    // P5: verzija u main-u (hm-v2.8.0) i P1 (hm-v2.9.0) ostaju poznate posle hm-v2.14.0.
+    // P5: verzija u main-u (hm-v2.8.0) i P1 (hm-v2.9.0) ostaju poznate posle hm-v2.15.0.
     for (const v of [
       'hm-v2.8.0',
       'hm-v2.9.0',
       'hm-v2.10.0',
       'hm-v2.11.0',
       'hm-v2.12.0',
-      'hm-v2.13.0'
+      'hm-v2.13.0',
+      'hm-v2.14.0'
     ])
       expect(
         select.HALF_MARATHON_V2_GENERATOR.planPolicy({

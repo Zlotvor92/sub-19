@@ -1,0 +1,9 @@
+[
+  {
+    "name": "W1-A rasterećenje kratkog plana i u nedeljama 1–2",
+    "file": "src/domain/generators/halfMarathon/v2/periodize.ts",
+    "find": "        .filter((x) => x >= P.deload.firstAllowedWeek),",
+    "replace": "        .filter((x) => x >= 1),",
+    "tests": ["src/domain/generators/halfMarathon/v2/w1.node.test.ts"]
+  }
+]

@@ -223,7 +223,13 @@ export function nominal10(
   /** G1 (P8): preostale ne-rasteretne nedelje do kraja razvoja (growLeft). */
   left = 1
 ): number {
-  if (frame.phase === 'taper') return Math.round(P.taper.factor * hist.peak10);
+  // W1-A: kratak plan bez nedelje izgradnje pre tapera — osnova je trenutni obim; taper ne pada ispod minimuma
+  // nedelje (H15) — oba slučaja su ranije bila odbijanje (cilj 0 / ispod minimuma), pa plan ≥ MIN ostaje isti.
+  if (frame.phase === 'taper')
+    return Math.max(
+      weekMin10(rule),
+      Math.round(P.taper.factor * (hist.peak10 > 0 ? hist.peak10 : start10))
+    );
   if (hist.lastBuild10 === null) return start10;
   if (frame.deload) return Math.round(P.deload.factor * hist.lastBuild10);
   return hist.lastBuild10 + step10(hist.lastBuild10, cap10, rule, left);

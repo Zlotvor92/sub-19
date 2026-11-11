@@ -263,7 +263,9 @@ function extra(
       ? (baseFrames(
           chk.input.startDate,
           chk.weeks,
-          testKindOf(chk.pace.kind, chk.rule, chk.weeks)
+          testKindOf(chk.pace.kind, chk.rule, chk.weeks),
+          chk.rule.beginner,
+          p.layout ?? null
         ) ?? [])
       : []
     )

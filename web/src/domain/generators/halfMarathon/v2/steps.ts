@@ -15,6 +15,7 @@ import type {
   Paces,
   Pattern,
   HmV2AdaptStep,
+  PlanLayoutFact,
   WeekFrame,
   WeekLimits,
   Weekday
@@ -297,8 +298,13 @@ export function appliedRestarts(
 }
 
 /** Okviri generatora (periodize) — ulaz za framesFor i validator. */
-export const baseFrames = (startDate: IsoDate, weeks: number, test: TestKind): WeekFrame[] | null =>
-  periodize(startDate, weeks, test);
+export const baseFrames = (
+  startDate: IsoDate,
+  weeks: number,
+  test: TestKind,
+  beginner = false,
+  fact?: PlanLayoutFact | null
+): WeekFrame[] | null => periodize(startDate, weeks, test, beginner, fact);
 
 /**
  * Pouka 20: traka „Plan treba prilagoditi" samo za NOVO ograničenje — datumi poslednjeg koraka sa

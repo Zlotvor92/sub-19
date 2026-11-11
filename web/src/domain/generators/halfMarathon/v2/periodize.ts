@@ -2,8 +2,8 @@
    odluka. */
 
 import { addDays } from './dates.ts';
-import { HM_V2_POLICY as P } from './policy.ts';
-import type { IsoDate, Phase, WeekFrame } from './types.ts';
+import { HM_V2_POLICY as P, type PlanRule } from './policy.ts';
+import type { IsoDate, Phase, PlanLayoutFact, WeekFrame } from './types.ts';
 
 export interface PhaseCounts {
   base: number;
@@ -147,16 +147,77 @@ export function testWeekOf(
   return dev.length >= 2 ? dev[dev.length - 2]! : (dev[0] ?? 0);
 }
 
-/** Okviri nedelja: datumi, faza, rasterećenje; `test` (vrsta testa, testKindOf) označava nedelju testa. null kad H5
-    nema rešenja. */
-export function periodize(
-  startDate: IsoDate,
+/** W1: raspored faza i rasterećenja plana — JEDNO mesto odluke (konstruktor, validator, adaptacija). `offset` = broj
+    odsečenih nedelja virtuelnog plana od `fullWeeks` (kratak plan; `full` njegove faze), `prepWeeks` = nedelje osnovne
+    pripreme (dug plan). */
+export interface PlanLayout {
+  phases: Phase[];
+  deloads: number[];
+  fact: PlanLayoutFact | null;
+  full: Phase[];
+  offset: number;
+  prepWeeks: number;
+}
+
+/** W1: najkraći dozvoljeni plan istog tipa trkača (početnik: beginner.weeksMin). */
+export const minWeeksOf = (beginner: boolean): number =>
+  beginner ? P.beginner.weeksMin : P.input.weeksMin;
+
+/** W1-A: uvod početnika kratkog plana — nedelje uvoda virtuelnog plana od MIN nedelja koje postoje (uvod otpada
+    prvi): introWeeks − (MIN − N), najmanje 0. U planu ≥ MIN pravilo je isto kao pre. */
+export function withIntro(rule: PlanRule, weeks: number): PlanRule {
+  const off = Math.max(0, minWeeksOf(rule.beginner) - weeks);
+  return off === 0 ? rule : { ...rule, introWeeks: Math.max(0, rule.introWeeks - off) };
+}
+
+/** W1-A: N < MIN — poslednjih N nedelja rasporeda od MIN nedelja (faze i rasterećenja po položaju). W1-B: N > MAX —
+    (N − MAX) nedelja osnovne pripreme + standardni plan od MAX nedelja. Inače H4/H5 kao pre. `fact` (adaptacija) =
+    činjenica upisanog plana; bez nje se određuje iz dužine. null kad H5 nema rešenja. */
+export function layoutOf(
   weeks: number,
-  test: TestKind = null
-): WeekFrame[] | null {
+  beginner: boolean,
+  fact?: PlanLayoutFact | null
+): PlanLayout | null {
+  const f: PlanLayoutFact | null =
+    fact !== undefined
+      ? fact
+      : weeks < minWeeksOf(beginner)
+        ? { kind: 'short', fullWeeks: minWeeksOf(beginner) }
+        : null;
+  if (f?.kind === 'short') {
+    const full = phasesOf(f.fullWeeks);
+    const d = deloadWeeks(full);
+    if (!d) return null;
+    // Rasterećenja po položaju u zadržanom rasporedu; H5 „od nedelje 3" važi za plan koji postoji (rasterećenje traži
+    // prethodnu nedelju izgradnje).
+    const offset = f.fullWeeks - weeks;
+    return {
+      phases: full.slice(offset),
+      deloads: d.map((x) => x - offset).filter((x) => x >= P.deload.firstAllowedWeek),
+      fact: f,
+      full,
+      offset,
+      prepWeeks: 0
+    };
+  }
   const phases = phasesOf(weeks);
   const deloads = deloadWeeks(phases);
   if (!deloads) return null;
+  return { phases, deloads, fact: null, full: phases, offset: 0, prepWeeks: 0 };
+}
+
+/** Okviri nedelja: datumi, faza, rasterećenje; `test` (vrsta testa, testKindOf) označava nedelju testa. null kad H5
+    nema rešenja. W1: raspored iz layoutOf (početnik: najkraći plan početnika; `fact` iz upisanog plana). */
+export function periodize(
+  startDate: IsoDate,
+  weeks: number,
+  test: TestKind = null,
+  beginner = false,
+  fact?: PlanLayoutFact | null
+): WeekFrame[] | null {
+  const lay = layoutOf(weeks, beginner, fact);
+  if (!lay) return null;
+  const { phases, deloads } = lay;
   const flags = phases.map((phase, i) => ({ phase, deload: deloads.includes(i + 1) }));
   const tw = test ? testWeekOf(flags, test) : 0;
   return phases.map((phase, i) => ({

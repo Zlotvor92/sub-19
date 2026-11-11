@@ -23,7 +23,7 @@ import {
   week1LongCap10
 } from './lengths.ts';
 import { assessGoal, predictedHm } from './paces.ts';
-import { isBuildPhase, periodize, testKindOf } from './periodize.ts';
+import { isBuildPhase, layoutOf, periodize, testKindOf } from './periodize.ts';
 import { HM_V2_POLICY as P } from './policy.ts';
 import { advance, INITIAL_QUALITY, type QualityState, weekPicksOf } from './quality.ts';
 import { hasLongBlock, scheduledType } from './specific.ts';
@@ -243,7 +243,15 @@ function constructWith(
   const feel = pace.kind === 'feel';
   const paces = basePaces(pace);
   // H16: test 5 km u planu po osećaju koji nije početnik; P5-F1: i u planu sa rezultatom ≥ 12 nedelja.
-  const base = periodize(input.startDate, weeks, testKindOf(pace.kind, rule, weeks));
+  // W1 (pouka 29): raspored plana van opsega dužine — adaptacija čita činjenicu iz upisanog plana.
+  const base = periodize(
+    input.startDate,
+    weeks,
+    testKindOf(pace.kind, rule, weeks),
+    rule.beginner,
+    prior ? (prior.layout ?? null) : undefined
+  );
+  const layout = layoutOf(weeks, rule.beginner, prior ? (prior.layout ?? null) : undefined);
   if (!base) return infeasible('Nema rasporeda rasterećenja po pravilima H5.');
   const adapted = steps.length > 0;
   const frames = adapted
@@ -525,7 +533,8 @@ function constructWith(
     peakKm: h.peak10 / 10,
     notes: [],
     weeks: out,
-    warnings: []
+    warnings: [],
+    ...(layout?.fact ? { layout: layout.fact } : {})
   };
   if (pace.kind === 'feel') {
     const t = out.find((w) => w.test);
@@ -544,7 +553,7 @@ function constructWith(
   }
   if (rule.beginner)
     plan.notes.push(
-      `Početnik (H17): nedelje ${weekLabel(input, 1)}–${weekLabel(input, rule.introWeeks)} uvod bez kvaliteta, zatim jedan kvalitet nedeljno (T → T cruise → RP, bez I i R), rast ${Math.round(rule.growth * 100)} % (${fmtKm(rule.growthMinKm)}–${fmtKm(rule.growthMaxKm)} km), dugi ≤ ${Math.round(rule.longMaxSec / 60)} min, bez testa.`
+      `Početnik (H17): ${rule.introWeeks === 0 ? 'bez uvoda (skraćena priprema),' : rule.introWeeks === 1 ? `nedelja ${weekLabel(input, 1)} uvod bez kvaliteta,` : `nedelje ${weekLabel(input, 1)}–${weekLabel(input, rule.introWeeks)} uvod bez kvaliteta,`} zatim jedan kvalitet nedeljno (T → T cruise → RP, bez I i R), rast ${Math.round(rule.growth * 100)} % (${fmtKm(rule.growthMinKm)}–${fmtKm(rule.growthMaxKm)} km), dugi ≤ ${Math.round(rule.longMaxSec / 60)} min, bez testa.`
     );
   // Faza 4a N11: kapacitet (H6/HI8) ide korisniku jednom — upozorenje CAPACITY_LIMITED (validator, sa vrhom).
   if (orientation) plan.notes.push(P.adapt.orientationMessage);

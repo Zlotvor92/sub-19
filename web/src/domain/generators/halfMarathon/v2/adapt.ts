@@ -169,7 +169,8 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
     at,
     lockedDayIds: facts.lockedDayIds,
     doneDayIds: doneAfter,
-    factKm
+    factKm,
+    ...(plan.layout ? { layout: plan.layout } : {})
   };
 
   // (2) Isti konstruktor kao generate.
@@ -202,7 +203,9 @@ export function adaptHmV2(rawPlan: unknown, rawFacts: unknown, asOf: unknown): A
   const base = baseFrames(
     chk.input.startDate,
     chk.weeks,
-    testKindOf(chk.pace.kind, chk.rule, chk.weeks)
+    testKindOf(chk.pace.kind, chk.rule, chk.weeks),
+    chk.rule.beginner,
+    plan.layout ?? null
   );
   if (base)
     framesFor(

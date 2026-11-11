@@ -26,10 +26,9 @@ describe('H1 opseg ulaza', () => {
     if (r.ok) expect([r.weeks, r.rule.weekMinKm, r.pattern.long]).toEqual([12, 16, 'sun']);
   });
 
-  it('nedelje: < 10 trajno (preporuka 10K), > 20 „počni kasnije" sa datumom, 10 i 20 prolaze', () => {
+  it('nedelje: W1-A 1–9 prolaze (kratak plan), > 20 „počni kasnije" sa datumom, 10 i 20 prolaze', () => {
     const w = (weeks: number) => base({ raceDate: addDays(START, weeks * 7 - 1) });
-    expect(codes(w(9))).toEqual(['PLAN_TOO_SHORT']);
-    expect(message(w(9))).toContain('10K');
+    for (const n of [1, 2, 3, 9]) expect(codes(w(n))).toEqual([]);
     expect(codes(w(21))).toEqual(['PLAN_TOO_LONG']);
     expect(message(w(21))).toContain(`najranije ${addDays(START, 7)}`);
     expect(codes(w(10))).toEqual([]);
@@ -194,9 +193,10 @@ describe('H1 opseg ulaza', () => {
       expect(codes(b({ runDays: days }))).toEqual(['BEGINNER_DAYS']);
       expect(message(b({ runDays: days }))).toContain('preporuka 4–5 dana');
     }
-    expect(codes(b({ raceDate: addDays(START, 7 * 11 - 1) }))).toEqual(['BEGINNER_SHORT']);
+    // W1-A: početnik < 12 nedelja — kratak plan (bez odbijanja).
+    expect(codes(b({ raceDate: addDays(START, 7 * 11 - 1) }))).toEqual([]);
     expect(codes(b({ raceDate: addDays(START, 7 * 12 - 1) }))).toEqual([]);
-    expect(codes(b({ raceDate: addDays(START, 7 * 9 - 1) }))).toEqual(['PLAN_TOO_SHORT']);
+    expect(codes(b({ raceDate: addDays(START, 7 * 9 - 1) }))).toEqual([]);
     expect(codes(b({ raceDate: addDays(START, 7 * 21 - 1) }))).toEqual(['PLAN_TOO_LONG']);
     // Početnik po osećaju: lagan tempo obavezan kao i za redovan plan.
     expect(codes(b({ recentResult: null }))).toEqual(['EASY_PACE_REQUIRED']);

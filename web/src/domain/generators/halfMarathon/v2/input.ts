@@ -1,4 +1,4 @@
-/* H1 — opseg ulaza (3–6 dana, 10–20 nedelja, obim po redu H15, rezultat ≤ 84 dana, VDOT 30–80); H15 —
+/* H1 — opseg ulaza (3–6 dana, W1: 1–20 nedelja, obim po redu H15, rezultat ≤ 84 dana, VDOT 30–80); H15 —
    red tabele dana; H16 — plan po osećaju (lagan tempo 270–510 s/km); H17 — početnik (4–5 dana, 12–20
    nedelja, obim 20–40 / 25–45 km) i trčanje/hodanje; HI7 — skorašnji najduži trk (5–42 km, opcion). Van
    opsega: strukturisano odbijanje (kod + poruka sa preporukom). Jedino mesto provere ulaza i izbora puta
@@ -13,6 +13,7 @@ import {
   planRule,
   RUN_DAYS_COUNTS
 } from './policy.ts';
+import { withIntro } from './periodize.ts';
 import { patternOf, suggestSchedule } from './schedule.ts';
 import type { Experience, HmV2Input, HmV2Result, Pattern, Reason, Weekday } from './types.ts';
 
@@ -137,20 +138,11 @@ export function checkInput(raw: unknown): InputCheck {
       'PLAN_NOT_WHOLE_WEEKS',
       `Od starta do trke mora biti ceo broj nedelja (sada ${span} dana); start ${addDays(raceDate, -7 * Math.max(1, Math.round(weeks)) + 1)} daje ${Math.max(1, Math.round(weeks))} nedelja.`
     );
-  else if (weeks < q.weeksMin)
-    no(
-      'PLAN_TOO_SHORT',
-      `Plan od ${weeks} nedelja je prekratak: polumaraton traži najmanje ${q.weeksMin} nedelja; preporuka: 10K plan.`
-    );
+  // W1-A: kratak plan (N < MIN, i početnik < beginner.weeksMin) se pravi uz upozorenje (periodize.layoutOf).
   else if (weeks > q.weeksMax)
     no(
       'PLAN_TOO_LONG',
       `Plan od ${weeks} nedelja je predug (najviše ${q.weeksMax}): počni plan kasnije, najranije ${addDays(raceDate, -7 * q.weeksMax + 1)}.`
-    );
-  else if (beginner && weeks < P.beginner.weeksMin)
-    no(
-      'BEGINNER_SHORT',
-      `Početnik: plan polumaratona traži najmanje ${P.beginner.weeksMin} nedelja (izabrano ${weeks}); počni plan najkasnije ${addDays(raceDate, -7 * P.beginner.weeksMin + 1)} ili izaberi 10K plan.`
     );
 
   // Dani trčanja i dan dugog (H15).
@@ -336,5 +328,6 @@ export function checkInput(raw: unknown): InputCheck {
     feelWhy === null
       ? { kind: 'result', vdotRaw }
       : { kind: 'feel', easySecPerKm: easy!, why: feelWhy };
-  return { ok: true, input, weeks, pace, pattern, rule };
+  // W1-A: uvod početnika kratkog plana (periodize.withIntro — isto čita validator).
+  return { ok: true, input, weeks, pace, pattern, rule: withIntro(rule, weeks) };
 }

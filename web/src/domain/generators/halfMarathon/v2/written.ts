@@ -7,7 +7,7 @@
 
 import { mustDay } from './dates.ts';
 import { same } from './same.ts';
-import type { PlanDay, PlanWeek } from './types.ts';
+import type { PlanDay, PlanLayoutFact, PlanWeek } from './types.ts';
 
 /** Prethodni plan i zaštita dana (A11) — konstruktor ih zna unapred (Uslov 4). */
 export interface Written {
@@ -22,6 +22,8 @@ export interface Written {
   doneDayIds: readonly string[];
   /** Pouka 37: km zaštićenih dana po činjenicama gde se razlikuju od plana (adapt.factKmOf; week.keptSum100). */
   factKm: Readonly<Record<string, number>>;
+  /** W1 (pouka 29): raspored prethodnog plana van opsega dužine (HmV2Plan.layout). */
+  layout?: PlanLayoutFact;
 }
 
 /** Dani nedelje kakvi se upisuju: `prev` = ista nedelja prethodnog plana, `built` = sastavljeni dani. */

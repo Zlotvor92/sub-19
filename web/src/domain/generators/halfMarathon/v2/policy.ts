@@ -703,16 +703,25 @@ const DECISIONS: readonly Decision[] = [
       'policy.ts lengths.optEasySec/optWeeks; lengths.ts optEasy (jedno mesto odluke), shortEasyPlan, OPT_NOTE; week.ts buildWeekIn (opt); generate.ts construct (uslov iz plana bez pravila), OPT_PLAN_NOTE; validate.ts ROLES (optRest), OPT_EASY, PLANNED_VS_TARGET; gridInvariants.ts OPT_EASY, DAYS_COUNT; adaptInvariants.ts',
     rationale:
       'Glavni trener, krug 3 (§ 3 stavka B): dan od 3–5 km ne vredi izlaska. Merenje (mreže R/F/B, 25 122 plana): lagan < 30 min u > 2 nedelje izgradnje 4297 → 389 planova (ostaju: nedelja bi pala ispod minimuma ili lagan i posle prenosa < 30 min); pogođeno 4240 planova, 28 500 nedelja; 0 novih odbijanja, vrh obima bez promene. Manjak obima ide u planirano < cilj: medijana po planu R-d4 30,9 km, R-d5 3,0 km, R-d6 ≈ 0; p06 −4,1 km (6 nedelja), p11 −2,0 km (14 nedelja).'
+  },
+  /* ---------- W1 (hm-v2.15.0): plan za bilo koji broj nedelja, uz upozorenje (nalog vlasnika, 11. 11. 2026). ---------- */
+  {
+    id: 'W1-A',
+    rule: 'Kratak plan (1 ≤ N < MIN; MIN 10, početnik 12): plan se pravi. Faze i rasterećenja = poslednjih N nedelja rasporeda najkraćeg plana istog tipa trkača (MIN nedelja; trkačka nedelja, taper, specifična, razvoj, baza otpada prva), rasterećenje po položaju u zadržanom rasporedu osim u nedeljama 1–2 (traži prethodnu izgradnju, H5). Uvod početnika: samo nedelje uvoda virtuelnog plana koje postoje (introWeeks − (MIN − N), ≥ 0). Obim i doze unapred od nedelje 1 po postojećim pravilima (start = trenutni obim, korak H6/G1, doza od početnog nivoa F4, dugi po udelu); test samo kad po G7 staje. Taper bez prethodne izgradnje: osnova = trenutni obim; taper ne pada ispod minimuma nedelje (H15). Provere koje pretpostavljaju pun plan važe za ono što postoji: WEEK1_BELOW_START samo za ne-rasteretnu izgradnju u nedelji 1; pretraga H5 (mesto, niz) ne važi za odsečen raspored (proverava ga DELOAD_SCHEDULE). Plan nosi činjenicu `layout` (adaptacija je čita iz upisanog plana, pouka 29). Planovi N ∈ [MIN, MAX] bajt-isti.',
+    place:
+      'periodize.ts layoutOf (jedino mesto odluke), minWeeksOf, withIntro, periodize; input.ts (bez PLAN_TOO_SHORT/BEGINNER_SHORT); volume.ts nominal10 (taper); generate.ts (plan.layout); validate.ts (PHASES, DELOAD_SCHEDULE, H5, WEEK1_BELOW_START, LAYOUT); steps.ts baseFrames; adapt.ts / written.ts (layout iz upisanog plana); w1.node.test.ts',
+    rationale:
+      'Nalog vlasnika 11. 11. 2026 („dozvoli svima da generišu plan za koliko god hoće nedelja uz upozorenje"), brief W1-bilo-koja-duzina-plana.md. Merenje: reports/W1-HM-REPORT.md.'
   }
 ];
 
 export const HM_V2_POLICY = {
   id: 'hm-v2',
-  version: 'hm-v2.14.0',
+  version: 'hm-v2.15.0',
 
   /** H1 (dani i obim: H15). */
   input: {
-    /** < 10 nedelja: trajno odbijanje (preporuka 10K). */
+    /** Najkraći plan punog ciklusa; W1-A: kraći plan se pravi uz upozorenje (periodize.layoutOf). */
     weeksMin: 10,
     /** > 20 nedelja: počni kasnije. */
     weeksMax: 20,
