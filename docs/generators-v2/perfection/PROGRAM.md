@@ -663,3 +663,14 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   priprema, kraća distanca). HM v3 polazno stanje: prosek 77,6; 7/12 na ≥ 80; 5 na plafonu ulaza (71–75).
 - Redosled distanci u V4 posle jezgra: HM (prenos iz v3), 10K, 5K, maraton; za svaku: ciljni planovi trenera za 4
   profila → šabloni i biblioteka → krugovi ocene dok dobit ne padne ispod pola poena.
+
+### 11. 11. 2026 — zahtev vlasnika: generator prepoznaje napredak iz samog trčanja
+
+- Povod: HM v3 za 18 nedelja prikazuje prognozu 1:41:00 → 1:41:00 (prognoza = trenutna forma; pravilo napretka
+  0,1 VDOT/ned, najviše 2, koristi se samo za proveru unetog cilja i dalo bi 1:37:37). Vlasnik: napredak treba da se
+  prepozna kroz sinhronizovana trčanja i da se prikaže.
+- `AGENTS.md` V4, pravilo 9a: forma je procena koja se obnavlja iz Strava treninga (tempo/puls laganih, odrađeni
+  kvalitet, testovi, trke); plan prikazuje polaznu formu, trenutnu procenu i očekivani raspon na dan trke; tempa prate
+  procenu; oprezno, objašnjivo, ne dira urađeno.
+- Za V4 i: plafon napretka zavisi od trkača (obim, staž, raniji napredak), ne jedno pravilo za sve; prva nedelja
+  posle trke je oporavak (stanje zna šta je bilo juče).

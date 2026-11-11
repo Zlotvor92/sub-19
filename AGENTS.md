@@ -69,6 +69,12 @@ važi isključivo ovaj odeljak.
    tek na događaj (rezultat, umor, pauza, bol, propušten trening) ili na izričit zahtev korisnika; (c) lični plan
    vlasnika ima prednost nad svakim pravilom šablona — čuvar ga samo upozorava, nikad ne prepravlja sam.
 
+9a. Napredak se čita iz trčanja (zahtev vlasnika): forma trkača nije jedan uneti rezultat nego procena koja se
+   obnavlja iz sinhronizovanih treninga (Strava): tempo i puls na laganim trčanjima, odrađeni kvalitet (da li je
+   zadati tempo držan i uz koji napor), testovi i trke. Plan prikazuje polaznu formu, trenutnu procenu i očekivani
+   raspon na dan trke; tempa u planu prate procenu naviše i naniže. Procena je oprezna (ne skače na jedan dobar
+   trening), objašnjiva („zašto se promenilo") i nikad ne menja urađeno.
+
 **Kvalitet**
 9. Merilo je ocena trenera istom rubrikom + drugi, nezavisan sudija koji ne vidi ciljne planove + pregled vlasnika.
    Izmena koja spusti ocenu ili bezbednost se ne prihvata.
