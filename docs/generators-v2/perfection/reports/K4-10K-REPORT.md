@@ -39,4 +39,8 @@ policy (verzija, DECISIONS K4-B, lengths), app/adaptFlow/handoff, periodize, pai
 
 ## Testovi na kraju (iz `web/`, 11. 11. 2026, Europe/Belgrade)
 
-Brz nivo `tenK/v2` posle pravila zelen (42 fajla / 443 testa).
+Brz nivo `tenK/v2` posle pravila zelen (42 fajla / 443 testa); prva tri prolaza pre ispravki crvena (planirano = cilj i broj
+dana u testovima, pretraga cilja naviše, ROLES uz pouku 35, 3 dana bez laganog) — ništa nije gurnuto crveno.
+`TEST_FULL=1 npx vitest run --project node src/domain/generators/tenK/v2` 98 / 771 zeleno (31 min 35 s); `npx vitest run
+--changed caf7098` 104 / 1020 zeleno (3 min 39 s); `npx playwright test e2e/tenk-v2.spec.ts e2e/handoff-v2.spec.ts
+--trace off` 5/5 (posle verzije u `tenk-v2.spec.ts`); `npm run check` 306 / 3419 zeleno (8 min); sabotaže 2/2.

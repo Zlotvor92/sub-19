@@ -24,12 +24,17 @@ for (const n of [3, 4, 5, 6] as const)
 
 describe('K4-B: kratak lagan dan „po želji"', () => {
   it('p06 (P9): nedelje sa danom „po želji" — rečenica plana, dan šablona bez treninga, planirano ≤ cilj, validator bez grešaka', () => {
-    const inputs = JSON.parse(
-      readFileSync(
-        new URL('../../../../../../docs/generators-v2/perfection/P9/inputs.json', import.meta.url),
-        'utf8'
-      )
-    )['10K'] as { input: unknown }[];
+    const inputs = (
+      JSON.parse(
+        readFileSync(
+          new URL(
+            '../../../../../../docs/generators-v2/perfection/P9/inputs.json',
+            import.meta.url
+          ),
+          'utf8'
+        )
+      ) as Record<string, { input: unknown }[]>
+    )['10K']!;
     const r = generateTenKV2(inputs[5]!.input);
     if (!r.ok) throw new Error('p06');
     const ws = r.plan.weeks.filter(optW);
