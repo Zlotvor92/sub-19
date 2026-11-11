@@ -654,3 +654,12 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   PlanDoc + stanje + planiranje iz stanja + stabilnost (Fable); 2) HM šabloni i biblioteka iz v3 kao podaci (Opus);
   3) adapteri za postojeće planove i lični plan, test „otisak pre = posle" (Opus); 4) ulaz iz Strave kao stanje
   (Opus); 5) nova rubrika u tri dela + drugi nezavisan sudija (Fable); 6) ostale distance kao podaci.
+
+### 11. 11. 2026 — cilj vlasnika za V4: 80 na svakoj distanci
+
+- Cilj: ocena „Plan" ≥ 80 na 5K, 10K, HM i maratonu (ista rubrika, isti 12 profila po distanci).
+- Mera uspeha (dva broja po distanci): (1) prosek 12 profila za iste ulaze; (2) broj profila na ≥ 80 — svi kojima
+  ulaz to dozvoljava moraju biti na ≥ 80; za ostale se meri plan posle prihvaćenog predloga unosa (4. dan, duža
+  priprema, kraća distanca). HM v3 polazno stanje: prosek 77,6; 7/12 na ≥ 80; 5 na plafonu ulaza (71–75).
+- Redosled distanci u V4 posle jezgra: HM (prenos iz v3), 10K, 5K, maraton; za svaku: ciljni planovi trenera za 4
+  profila → šabloni i biblioteka → krugovi ocene dok dobit ne padne ispod pola poena.
