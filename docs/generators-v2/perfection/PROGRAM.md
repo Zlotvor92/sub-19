@@ -494,3 +494,20 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
 - Korak 1 pokrenut: glavni trener piše 16 ciljnih planova (4 po distanci) u `target/<D>/pNN-target.md` i
   `target/GAP.md` (razlike sa poenima i vrstom zahvata, redosled rada, profili koji ne mogu do 80).
 - Uporedo teče W1 (HM, MAR; zatim 5K, 10K). Koraci 2–5 se pokreću po nalazu GAP-a.
+
+### 11. 11. 2026, 07:30 — „Cilj 80" korak 1 gotov: ciljni planovi i GAP; redosled rada
+
+- `target/<D>/pNN-target.md` (16 planova) i `target/GAP.md` (`5d0292b`). Prosek 16 profila: sada 59,8 → cilj 79,3;
+  11 može na ≥ 80 sa istim ulazima, 5 ne može. Poeni su procene trenera (AI ocenjivač), delimično se preklapaju.
+- Stavke (na prosek 48, sada 60,6): 1 dugi kao lestvica sa sadržajem +3,0 [S]; 2 vrh pa spuštanje +2,0 [S];
+  3 početnik lestvica obima i dugi po vremenu +2,0 [S]; 4 provera forme kao događaj +2,0 [N+S]; 5 bez iste nedelje
+  dvaput +1,5 [S]; 6 tri dana +1,2 [P]; 7 trka i ishrana +1,0 [N]; 8 brda i progresivni dugi +0,8 [N]; 9 hod-trk
+  +0,6 [N]; 10 sitnice +0,5 [P]; 11 usmeravanje unosa [E] uslovno +1,5–2,5; 12 adaptacija [A] van proseka.
+  Zbir 1–10 ≈ +14,6 → ≈ 75 za iste ulaze (74–77).
+- Ne mogu do 80 sa istim ulazima: 17 od 48 (p06 × 4, p08 × 4, p03/p10 na sve četiri, MAR p11). Dva broja za
+  praćenje: prosek za iste ulaze (cilj ≈ 75) i udeo planova ≥ 80 posle prihvaćenog predloga unosa (cilj ≥ 90 %).
+- REDOSLED (svi Opus, najviše 2 uporedo, po distanci jedan tab u jednom trenutku):
+  W1 (u toku: HM, MAR; zatim 5K, 10K) → C1 = stavke 1+2 (`briefs/C1-cilj80-dugi-i-vrh.md`; odobrena promena
+  invarijante „doza ne opada" → važi do nedelje vrha) → provera trenera (ROUND-05) → C2 = stavke 3+6 → C3 = 4+5 →
+  C4 = 7+8+9 → C5 = 10 → C6 = 11 [E] (ekrani; uz saglasnost vlasnika) → [A] rubrika adaptacije.
+  Briefovi C2–C6 se pišu po nalazu prethodnog koraka.
