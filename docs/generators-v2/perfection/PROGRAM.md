@@ -463,3 +463,15 @@ Plan P9 (do kraja):
   trka, hod-trk za spore). Odluka organizatora: krugovi izmena se ovde zaustavljaju. Ostaje završni `check:full`.
 - Za budući krug (trener, ≈ +1,3 ukupno): najteža nedelja pre tapera; monotonija iste doze + talas u razvoju MAR
   3 dana; pravilo B u rasterećenju/taperu, upozorenje pre generisanja za maraton < 35 km, kraći test za < 20 km.
+
+### 11. 11. 2026, 04:15 — završni check:full zelen; program zaustavljen, čeka se odluka vlasnika o spajanju
+
+- `npm run check:full` (organizator) na završnom vrhu koda (`a57bc42`; kasniji commit-i su samo docs): typecheck,
+  lint, format ✔; pun nivo 445 fajlova / 3953 testa, 0 padova, 53 min. Prvi pokušaj izgubljen zbog restarta
+  kontejnera, ponovljen.
+- CI: run 813 na `a57bc42` uspešan; run 812 (`7eb040e`) pao — između dva push-a (10K K4 pravilo već na grani, E2E
+  verzija i lint usklađeni tek u `a57bc42`).
+- Stanje: 5k-v2.17.0, 10k-v2.16.0, hm-v2.14.0, marathon-v2.14.0; ocena trenera 54,6 → 60,6; svi tabovi arhivirani
+  osim glavnog trenera; satni zadatak isključen.
+- Nije urađeno: spajanje u main, deploy, izmene baze (čeka izričitu potvrdu vlasnika). V1c (brisanje HM v1) posle
+  13. 12. 2026.
