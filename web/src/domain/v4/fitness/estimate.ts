@@ -18,6 +18,7 @@ import {
   racePace,
   raceTimeSec,
   vdotFromEasyPace,
+  effortResult,
   vdotFromResult,
   vo2AtSpeed
 } from '../engine/vdot';
@@ -31,6 +32,7 @@ import {
   explainPlanWeek,
   explainQuality,
   explainResult,
+  explainUnusable,
   explainStart
 } from './explain';
 import { rollChronic, runLoad } from './load';
@@ -454,7 +456,29 @@ export function estimateForm(
     for (const run of runsByDay.get(d) ?? []) {
       const kind = resultKind(run);
       if (kind !== null) {
-        const ev = resultEvidence(run);
+        /* K1 (krug 3): rezultat je deonica punog napora, ne cela aktivnost sa zagrevanjem i hlađenjem. */
+        const result = effortResult(run);
+        if (result === null) {
+          record(
+            {
+              date: run.date,
+              signal: kind,
+              runId: run.id,
+              ignored: true,
+              reason: explainUnusable(kind, run.date, run.distanceM, run.plannedEffortM ?? 0)
+            },
+            vdot,
+            vdot,
+            true
+          );
+          continue;
+        }
+        const whole = result.distanceM === run.distanceM && result.durationSec === run.durationSec;
+        const { splits: _splits, ...bare } = run;
+        const scored: FitnessRun = whole
+          ? run
+          : { ...bare, distanceM: result.distanceM, durationSec: result.durationSec };
+        const ev = resultEvidence(scored);
         const firstInApp = results.length === 0;
         /* Prvi rezultat zamenjuje procenu bez osnova (iz laganog tempa, trčanja ili opštu): k = 1 (R14). */
         const first = firstInApp && init.source !== 'rezultat';
@@ -479,8 +503,8 @@ export function estimateForm(
             reason: explainResult(
               kind,
               run.date,
-              run.distanceM,
-              run.durationSec,
+              scored.distanceM,
+              scored.durationSec,
               ev,
               { k, first: firstInApp },
               before,

@@ -354,6 +354,13 @@ export interface Run {
   tempC?: number;
   /** U trci ili testu je bilo hodanja: rezultat je slabiji dokaz forme (krug 2, R14). */
   walked?: boolean;
+  /** Izričit rezultat punog napora koji je uneo trkač (vreme i, po želji, dužina deonice): ima prednost nad
+      svim što se izvodi iz aktivnosti (krug 3, K1). Bez dužine važi planirana deonica dana, inače cela aktivnost. */
+  resultSec?: Seconds;
+  resultDistanceM?: Meters;
+  /** Dužina deonice punog napora koju je dan plana zadao (provera forme, pripremna trka); popunjava `buildState`
+      iz plana po `dayId` (krug 3, K1). */
+  plannedEffortM?: Meters;
 }
 
 /** Ono što trkač izjavi kad nema istorije; sve opciono. */
@@ -425,6 +432,9 @@ export interface FormChange {
   /** Rečenica za trkača („zašto se promenilo"). */
   reason: string;
   runId?: RunId;
+  /** Rezultat nije mogao da se uzme kao dokaz forme (npr. test upisan kao jedna aktivnost sa zagrevanjem): procena
+      se ne menja, a rečenica kaže šta trkač treba da unese (krug 3, K1). */
+  ignored?: boolean;
 }
 
 /** Izlaz `fitness/` (§ 7). */

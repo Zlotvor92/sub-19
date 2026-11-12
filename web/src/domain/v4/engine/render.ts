@@ -257,24 +257,31 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   return lines;
 }
 
-/** Promena prognoze u odnosu na prethodni ispis (R10): zaglavlje nosi prognozu pri poslednjoj izmeni plana; kad se
-    živa prognoza razlikuje za više od 20 s, ispis kaže zašto (rečenice iz istorije procene forme). */
+/** Najviše ovoliko rečenica iz istorije procene forme u odeljku FORMA (krug 3). */
+const HISTORY_LINES = 5;
+
+/** Zašto se prognoza menjala (R10, krug 3): kad se živa prognoza razlikuje od one u zaglavlju za više od 20 s,
+    ispis to kaže; ispod idu rečenice iz istorije procene forme — poslednjih do 5, najnovija prva. */
 function forecastChange(h: PlanHeader, state: RunnerState | undefined): string[] {
   if (state === undefined) return [];
   const before = h.form.raceDay.expectedSec;
   const after = state.form.raceDay.expectedSec;
-  if (Math.abs(after - before) <= FORECAST_CHANGE_MIN_SEC) return [];
-  const since = h.form.current.asOf;
-  const reasons = [
-    ...new Set(state.form.history.filter((x) => x.date > since).map((x) => x.reason.trim()))
-  ].filter((x) => x !== '');
-  const head = `Prognoza je ${after < before ? 'bolja' : 'slabija'} nego u prethodnom ispisu (${fmtClock(before)} → ${fmtClock(after)}). Zašto:`;
-  if (reasons.length === 0) {
-    return [
-      `${head} procena forme je ponovo izračunata iz trčanja posle ${fmtDate(since)}; nijedan pojedinačan trening je nije pomerio.`
-    ];
+  const moved = Math.abs(after - before) > FORECAST_CHANGE_MIN_SEC;
+  const reasons = [...new Set([...state.form.history].reverse().map((x) => x.reason.trim()))]
+    .filter((x) => x !== '')
+    .slice(0, HISTORY_LINES);
+  const lines: string[] = [];
+  if (moved) {
+    const silent = !state.form.history.some((x) => x.date > h.form.current.asOf);
+    lines.push(
+      `Prognoza je ${after < before ? 'bolja' : 'slabija'} nego u prethodnom ispisu (${fmtClock(before)} → ${fmtClock(after)}).${silent ? ` Procena forme je ponovo izračunata iz trčanja posle ${fmtDate(h.form.current.asOf)}; nijedan pojedinačan trening je nije pomerio.` : ''}`
+    );
   }
-  return [head, ...reasons.map((r) => `- ${r}`)];
+  if (reasons.length > 0) {
+    lines.push('Zašto je prognoza ovakva (najnovije prvo):');
+    for (const reason of reasons) lines.push(`- ${reason}`);
+  }
+  return lines;
 }
 
 function changeLines(changes: readonly Change[], doc: PlanDoc): string[] {

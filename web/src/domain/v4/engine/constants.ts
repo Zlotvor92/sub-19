@@ -27,6 +27,10 @@ export const BISECTION_STEPS = 60;
 /** Kad nema ni rezultata ni laganog tempa (§ 2.4). */
 export const DEFAULT_VDOT = 30;
 
+/** Rezultat punog napora iz aktivnosti (krug 3, K1): aktivnost duža od planirane deonice za više od 15 % nosi i
+    zagrevanje/hlađenje, pa cela nije dokaz forme. */
+export const EFFORT_WHOLE_MAX_OVER_PLANNED = 1.15;
+
 /* ------------------------------------------------------------------ opterećenje (§ 5.1) */
 
 /** Sidra težine po odnosu brzine i brzine praga `s = v / v_T`; linearno između, ravno van. */
@@ -69,6 +73,14 @@ export const HARD_EFFORT_DAYS = 42;
 export const PAUSE_WINDOW_DAYS = 42;
 export const PAIN_RESOLVED_DAYS = 14;
 
+/** Istorija trčanja je merodavna za bazu kad u poslednjih 42 dana pokriva bar 21 dan i ima bar 6 trčanja; inače
+    je baza izjava trkača (krug 3, O2). Baza iz istorije ispod polovine izjave dobija upozorenje. */
+export const HISTORY_MIN_SPAN_DAYS = 21;
+export const HISTORY_MIN_RUNS = 6;
+export const BASE_UNDER_DECLARED_SHARE = 0.5;
+/** Zamena za neispravan „danas" da izvedena polja mogu da se izračunaju; unos i dalje odbija `validate` (O5). */
+export const FALLBACK_TODAY = '1970-01-05';
+
 /* ------------------------------------------------------------------ kilometri i zaokruživanje (§ 4.3, § 5.5) */
 
 export const DAY_KM_STEP = 0.1;
@@ -82,8 +94,11 @@ export const WORK_DISTANCE_STEP_M = 500;
 export const LADDER_TOLERANCE_SEC = 90;
 /** Blok u dugom nije duži od polovine dugog (geometrija treninga; nije plafon doze). */
 export const LONG_BLOCK_MAX_SHARE = 0.5;
-/** Dan pre trke: odmor ili lagano do 20 min (§ 6.2 k. 10). */
+/** Dan pre trke: odmor ili lagano do 20 min (§ 6.2 k. 10). Važi po DATUMU, preko granice nedelje (krug 3, O3):
+    poslednja 2 dana pre trke bez kvaliteta i sa plafonom sužavanja; dugog nema u poslednjih 6 dana pre trke. */
 export const RACE_EVE_MAX_SEC = 1200;
+export const RACE_CALM_DAYS = 2;
+export const RACE_NO_LONG_DAYS = 6;
 
 /** Lagan dan ne nestaje zbog malog ostatka budžeta kad trkač ima ≥ 3 dana: ostaje na `minEasySec` dok nedelja
     ne pređe cilj za više od 10 % (odluka organizatora, drugi krug). */
@@ -184,6 +199,10 @@ export const GUARD_FAST_SHARE_TOLERANCE = 0.02;
 export const GUARD_JUMP_TOLERANCE = 0.1;
 export const GUARD_LONG_STEP_TOLERANCE_SEC = 60;
 export const GUARD_MIN_WORKOUT_SEC = 900;
+/** Opseg događaja (krug 3, S6): bol 1–10; forma u VDOT 20–90. Van opsega se događaj ne primenjuje. */
+export const PAIN_LEVEL_MAX = 10;
+export const VDOT_MIN = 20;
+export const VDOT_MAX = 90;
 /** Krug 2 (R2c): neplaniran višak se ne prijavljuje do −15 %. */
 export const GUARD_UNDER_TARGET = 0.85;
 export const GUARD_MIN_WEEK_SHARE = 0.5;

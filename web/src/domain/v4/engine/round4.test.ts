@@ -286,7 +286,9 @@ describe('E: plan koji počinje u rampi posle trke', () => {
   const after = make(facts({ runs: [race] }), goal, EXAMPLE);
 
   it('baza je obim PRE trke (trka je ne podiže); trka ulazi u „najduže skorašnje" sa 60 % trajanja', () => {
-    expect(after.state.load.chronic).toBeGreaterThan(fresh.state.load.chronic);
+    /* Krug 3 (O2): jedna trka nije merodavna istorija — baza ostaje izjava. */
+    expect(after.state.load.seeded).toBe(true);
+    expect(after.state.load.chronic).toBe(fresh.state.load.chronic);
     const base = after.doc.header.decisions.baseLoad;
     expect(Math.abs(base - fresh.doc.header.decisions.baseLoad)).toBeLessThan(6);
     expect(after.state.longestRecentSec).toBe(Math.round(0.6 * race.durationSec));
@@ -314,7 +316,7 @@ describe('E: plan koji počinje u rampi posle trke', () => {
     const third = after.doc.weeks[2];
     const thirdMin = third === undefined ? 0 : weekCost(third, goal.raceDate, ctx).durationSec / 60;
     expect(thirdMin).toBeLessThanOrEqual(base * (1 + maxWeeklyRampPct) + 3);
-    expect(third?.targetLoad ?? 0).toBeLessThan(fresh.doc.weeks[2]?.targetLoad ?? 0);
+    expect(third?.targetLoad ?? 0).toBeLessThanOrEqual(fresh.doc.weeks[2]?.targetLoad ?? 0);
   });
   it('dugi u rampi: ≤ 75 % reference samo dok je f < 0,8; posle toga rampa i lanac, bez skoka', () => {
     const ctx = paceCtxOf(after.doc.header);
@@ -393,8 +395,8 @@ describe('9–11: zahtevi adaptera', () => {
     const recent = planned.filter((r) => r.date >= '2026-11-29');
     const profile = { recentResult: { distanceM: 21097.5, timeSec: 6060 } };
     const state = advance(b, today, { profile, runs: [...old, ...recent] });
-    expect(state.load.seeded).toBe(false);
-    expect(state.load.acute / state.load.chronic).toBeGreaterThanOrEqual(1.5);
+    /* Krug 3 (O2): četiri dana posle rupe nisu merodavna istorija — baza je izjava, izvedenog umora nema. */
+    expect(state.load.seeded).toBe(true);
     const adopted: PlanDoc = { ...b.doc, header: { ...b.doc.header, eventsFrom: today } };
     expect(deriveEvents(adopted, state).map((e) => e.kind)).not.toContain('fatigue');
   });

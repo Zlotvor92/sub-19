@@ -2,6 +2,9 @@
 import {
   CHRONIC_DAYS,
   EFFORT_AS_LONG_SHARE,
+  FALLBACK_TODAY,
+  HISTORY_MIN_RUNS,
+  HISTORY_MIN_SPAN_DAYS,
   HARD_EFFORT_DAYS,
   LONGEST_RECENT_DAYS,
   PAIN_RESOLVED_DAYS,
@@ -70,18 +73,23 @@ function declaredWeekLoad(
   return (runDays * data.safety.minEasySec) / 60;
 }
 
-/** Baza i umor (§ 5.3): seme iz izjave (ili proseka istorije kad izjave nema), pa se odvrti istorija do danas. */
+/** Baza i umor (§ 5.3, krug 3: O2). Istorija je merodavna samo kad u poslednjih 42 dana pokriva bar 21 dan sa
+    bar 6 trčanja; inače je baza izjava trkača (jedno staro trčanje ne obara izjavljenih 40 km na nulu). Merodavna
+    istorija: seme iz izjave (ili proseka istorije kad izjave nema), pa se odvrti do danas. */
 function loadState(
   facts: RunnerFacts,
   loads: Map<number, LoadPoints>,
+  runDays: readonly number[],
   declared: LoadPoints
 ): LoadState {
   const today = dayNumber(facts.today);
-  const days = [...loads.keys()];
-  if (days.length === 0) {
+  const recent = runDays.filter((day) => today - day < CHRONIC_DAYS);
+  const span = recent.length === 0 ? 0 : today - Math.min(...recent) + 1;
+  const covered = runDays.some((day) => today - day >= CHRONIC_DAYS) ? CHRONIC_DAYS : span;
+  if (covered < HISTORY_MIN_SPAN_DAYS || recent.length < HISTORY_MIN_RUNS) {
     return { chronic: declared / 7, acute: declared / 7, asOf: facts.today, seeded: true };
   }
-  const first = Math.min(...days);
+  const first = Math.min(...loads.keys());
   let seed = declared / 7;
   if (facts.profile.weeklyKm === undefined) {
     let total = 0;
@@ -185,6 +193,19 @@ function workZone(steps: readonly Step[]): ZoneId | null {
   return null;
 }
 
+/** Dužina deonice punog napora u koracima treninga; `null` kad je nema. */
+function allOutM(steps: readonly Step[]): number | null {
+  for (const step of steps) {
+    if ('repeat' in step) {
+      const inner = allOutM(step.steps);
+      if (inner !== null) return inner;
+    } else if (step.target.type === 'allOut' && 'distanceM' in step.extent) {
+      return step.extent.distanceM;
+    }
+  }
+  return null;
+}
+
 /** `Run.planned` iz plana po `dayId` (§ 7.3); trčanje koje ga već nosi ostaje kako jeste. */
 function withPlanned(runs: readonly Run[], doc: PlanDoc | undefined): Run[] {
   if (doc === undefined) return [...runs];
@@ -192,7 +213,13 @@ function withPlanned(runs: readonly Run[], doc: PlanDoc | undefined): Run[] {
   const days = new Map(doc.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   return runs.map((run) => {
     const workout = run.dayId === undefined ? undefined : days.get(run.dayId)?.workout;
-    if (run.planned !== undefined || workout == null || workout.workSec <= 0) return run;
+    if (workout == null) return run;
+    /* Dan punog napora (provera forme, pripremna trka): dužina zadate deonice — merilo rezultata (K1). */
+    const effortM = allOutM(workout.steps);
+    if (effortM !== null && run.plannedEffortM === undefined) {
+      return { ...run, plannedEffortM: effortM };
+    }
+    if (run.planned !== undefined || workout.workSec <= 0) return run;
     const zone = workZone(workout.steps);
     if (zone === null) return run;
     const cost = summarize(workout, ctx);
@@ -273,9 +300,37 @@ export function lastLongAfterEffort(
   return Math.max(lastLongBefore(state, date), Math.round(EFFORT_AS_LONG_SHARE * durationSec));
 }
 
-export const buildState: BuildStateFn = (facts, goal, data, estimate = declaredForm, doc) => {
+/** Pauze i bol sa ispravnim datumima i nivoom, u stalnom redosledu (isti ulaz drugim redom → isti plan; S1). */
+function cleanFacts(facts: RunnerFacts): RunnerFacts {
+  const order = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
+  return {
+    ...facts,
+    pauses: facts.pauses
+      .filter((p) => isValidDate(p.from) && isValidDate(p.to) && p.from <= p.to)
+      .sort((a, b) => order(a.from, b.from) || order(a.to, b.to)),
+    pain: facts.pain
+      .filter(
+        (p) =>
+          isValidDate(p.date) &&
+          Number.isFinite(p.level) &&
+          (p.resolvedOn === undefined || isValidDate(p.resolvedOn))
+      )
+      .sort((a, b) => order(a.date, b.date) || a.level - b.level)
+  };
+}
+
+export const buildState: BuildStateFn = (input, goal, data, estimate = declaredForm, doc) => {
+  /* O5: neispravan „danas" ne ruši — izvedena polja se računaju nad zamenom, a unos odbija `validate`. */
+  if (!isValidDate(input.today)) {
+    const safe = buildState({ ...input, today: FALLBACK_TODAY, runs: [] }, goal, data, estimate);
+    return { ...safe, today: input.today };
+  }
+  const facts = cleanFacts(input);
   const availability = normalizeAvailability(facts.availability);
-  const formGoal = { distanceM: data.distanceM, raceDate: goal.raceDate };
+  const formGoal = {
+    distanceM: data.distanceM,
+    raceDate: isValidDate(goal.raceDate) ? goal.raceDate : facts.today
+  };
   const runs = withPlanned(
     facts.runs
       .filter((run) => usable(run, facts.today))
@@ -292,7 +347,12 @@ export const buildState: BuildStateFn = (facts, goal, data, estimate = declaredF
   const easyPace = paceAtShare(first.current.vdot, ZONE_SHARE.E);
   const loadOf = (run: Run): LoadPoints => runLoad(run, thresholdPace);
   const declared = declaredWeekLoad(facts, easyPace, data, availability.runDays.length);
-  const load = loadState(facts, dailyLoads(runs, thresholdPace), declared);
+  const load = loadState(
+    facts,
+    dailyLoads(runs, thresholdPace),
+    runs.map((run) => dayNumber(run.date)),
+    declared
+  );
   /* Postojeći plan: baza i vrh iz odluka plana (ne preračunato iz današnje baze) + ciljevi nedelja. */
   const planned: FormPlanned | null =
     doc === undefined

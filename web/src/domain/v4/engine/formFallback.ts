@@ -5,7 +5,7 @@
 import { DEFAULT_VDOT } from './constants';
 import { diffDays } from './dates';
 import type { Confidence, EstimateFormFn, FormChange, FormPoint, RunnerFacts, Vdot } from './types';
-import { raceTimeSec, vdotFromEasyPace, vdotFromResult } from './vdot';
+import { effortResult, raceTimeSec, vdotFromEasyPace, vdotFromResult } from './vdot';
 
 const RECENT_DAYS = 42;
 const KNOWN_DAYS = 180;
@@ -29,9 +29,11 @@ function evidenceOf(facts: RunnerFacts): Evidence {
     if (run === undefined || run.effort === undefined) continue;
     const age = diffDays(facts.today, run.date);
     const minM = run.effort === 'race' ? MIN_RACE_M : MIN_TEST_M;
-    if (age < 0 || age > KNOWN_DAYS || run.distanceM < minM || run.durationSec <= 0) continue;
+    const result = effortResult(run);
+    if (age < 0 || age > KNOWN_DAYS || run.distanceM < minM || result === null) continue;
+    if (result.durationSec <= 0 || result.distanceM <= 0) continue;
     return {
-      vdot: vdotFromResult(run.distanceM, run.durationSec),
+      vdot: vdotFromResult(result.distanceM, result.durationSec),
       confidence: age <= RECENT_DAYS ? 'visoka' : 'srednja',
       signal: run.effort === 'race' ? 'trka' : 'test',
       reason:

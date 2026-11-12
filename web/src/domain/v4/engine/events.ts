@@ -51,8 +51,16 @@ export const deriveEvents: DeriveEventsFn = (doc, state) => {
   const runDates = new Set(state.runs.map((r) => r.date));
   const since = header.eventsFrom;
 
+  /* O6: granica je uključiva — trka ili test na dan nastanka plana, upisani posle, daju događaj. Napor koji je
+     plan već uzeo u obzir pri nastanku (uzrok sa izvorom `plan` tog dana) se ne ponavlja. */
+  const known = new Set(
+    (header.adjustments ?? []).flatMap((a) =>
+      a.kind === 'effort' && a.source === 'plan' ? [a.date] : []
+    )
+  );
   for (const run of state.runs) {
-    if (run.effort !== undefined && run.date > since && run.date <= today) {
+    const fresh = run.date > since || (run.date === since && !known.has(run.date));
+    if (run.effort !== undefined && fresh && run.date <= today) {
       events.push({
         id: `result:${run.date}:${run.id}`,
         date: run.date,

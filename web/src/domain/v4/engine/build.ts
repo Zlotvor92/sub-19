@@ -4,7 +4,9 @@
 import {
   EASY_FLOOR_MIN_RUN_DAYS,
   EASY_FLOOR_OVER_TARGET,
+  RACE_CALM_DAYS,
   RACE_EVE_MAX_SEC,
+  RACE_NO_LONG_DAYS,
   RETURN_WEEK_MAX_OVER_LAST,
   TAPER_ADDON_MIN_EASY_SEC
 } from './constants';
@@ -178,7 +180,8 @@ export function longPlan(
       cap = Math.min(cap, ctx.template.recovery.longFactor * before);
     }
   }
-  return Math.round(Math.min(wanted, grown, cap) / 60) * 60;
+  /* Dugi nije kraći od najkraćeg smislenog trčanja (krug 3, S13). */
+  return Math.max(ctx.data.safety.minEasySec, Math.round(Math.min(wanted, grown, cap) / 60) * 60);
 }
 
 /** BUDŽET BRZOG RADA (§ 6.2 k. 6): redom dugi pa podražaji; `take` vraća dozu koja staje, `book` je knjiži. */
@@ -222,7 +225,9 @@ type SlotItem =
     žele. Čista funkcija namere — iz nje se računa dodatno opterećenje kvaliteta (R5) i raspored. */
 export interface WeekSlots {
   race: boolean;
-  eve: IsoDate | null;
+  /** Dan pred trku (najviše 20 min, bez dodatka) i prvi od poslednjih dana pre trke (plafon sužavanja). */
+  eve: IsoDate;
+  calmFrom: IsoDate;
   /** Dani trčanja koje nedelja ima u planu (od početka plana, pre dana trke). */
   runDays: Weekday[];
   /** Dan dugog ako ga namera ima i dan postoji. */
@@ -244,17 +249,20 @@ export function weekSlots(
   const { intent } = week;
   const dateOf = (wd: number): IsoDate => addDays(week.start, wd);
   const race = inRaceWeek(week.start, span);
-  const eve = race ? addDays(span.raceDate, -1) : null;
+  /* O3: dan pred trku i poslednji dani pre trke važe po DATUMU, i kad padnu u nedelju pre nedelje trke. */
+  const eve = addDays(span.raceDate, -1);
+  const calmFrom = addDays(span.raceDate, -RACE_CALM_DAYS);
+  const noLongFrom = addDays(span.raceDate, -RACE_NO_LONG_DAYS);
   const runDays = usableRunDays(week.start, span, ctx);
   const longWd =
-    intent.long !== null && runDays.includes(d.longDay) && dateOf(d.longDay) !== eve
+    intent.long !== null && runDays.includes(d.longDay) && dateOf(d.longDay) < noLongFrom
       ? d.longDay
       : null;
   const raceOrder = (): Weekday[] => {
     const raceWd = weekdayOf(span.raceDate);
     const all = [...new Set<Weekday>([...d.runDays, raceWd])].sort((a, b) => a - b);
     return assignDays(all, raceWd).filter(
-      (wd) => runDays.includes(wd) && wd !== longWd && dateOf(wd) !== eve
+      (wd) => runDays.includes(wd) && wd !== longWd && dateOf(wd) < calmFrom
     );
   };
   const qualityDays = race ? raceOrder() : d.qualityDays;
@@ -285,7 +293,8 @@ export function weekSlots(
   const items: SlotItem[] = [];
   intent.stimuli.forEach((st, k) => {
     const wd = qualityDays[k];
-    if (wd === undefined || !runDays.includes(wd) || wd === longWd || dateOf(wd) === eve) return;
+    if (wd === undefined || !runDays.includes(wd) || wd === longWd || dateOf(wd) >= calmFrom)
+      return;
     if (st.onlyByFeel === true && !ctx.pace.paces.byFeel) return;
     const slot: SlotRef = {
       place: 'quality',
@@ -318,7 +327,7 @@ export function weekSlots(
     const wd = qualityDays[0];
     const date = at >= 0 ? items[at]?.date : wd === undefined ? undefined : dateOf(wd);
     const usable =
-      date !== undefined && date !== eve && (longWd === null || date !== dateOf(longWd));
+      date !== undefined && date < calmFrom && (longWd === null || date !== dateOf(longWd));
     if (date !== undefined && usable && runDays.some((x) => dateOf(x) === date)) {
       const item: SlotItem = { kind: 'test', date, def: forcedTest.def, slot: forcedTest.slot };
       if (at >= 0) items[at] = item;
@@ -329,7 +338,7 @@ export function weekSlots(
       }
     }
   }
-  return { race, eve, runDays, longWd, long, items };
+  return { race, eve, calmFrom, runDays, longWd, long, items };
 }
 
 /** Opterećenje punog napora iznad laganog trčanja istog trajanja, i njegovo trajanje (za budžet i R5). */
@@ -540,11 +549,12 @@ export function layoutWeek(
       ? 0
       : Math.min(longCost.durationSec, (longCost.distanceM * ctx.pace.paces.easy) / 1000);
   const dayBeforeLong = longDate === null ? eve : addDays(longDate, -1);
-  const calm = intent.kind === 'taper' || intent.kind === 'race';
+  const calmWeek = intent.kind === 'taper' || intent.kind === 'race';
   const pool: EasyDay[] = runDays
     .map((wd) => ({ wd, date: dateOf(wd) }))
     .filter(({ date }) => !fixed.has(date))
     .map(({ wd, date }) => {
+      const calm = calmWeek || date >= slots.calmFrom;
       let cap = Number.POSITIVE_INFINITY;
       /* R2a: lagan dan najviše udeo dugog te nedelje (dan pred dugi manji udeo). */
       if (longRef > 0) {

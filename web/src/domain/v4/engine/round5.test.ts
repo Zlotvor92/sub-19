@@ -867,9 +867,29 @@ describe('R10: ispis', () => {
     };
     const out = renderPlan(doc, moved, EXAMPLE);
     expect(out).toContain('Prognoza je bolja nego u prethodnom ispisu');
-    expect(out).toContain('- Prag od 1. 12. si držao lakše nego što forma predviđa.');
+    /* Krug 3: rečenice iz istorije procene forme, najnovija prva, najviše 5. */
+    const lines = out.split('\n');
+    const at = lines.findIndex((l) => l.startsWith('Zašto je prognoza ovakva'));
+    expect(lines[at + 1]).toBe('- Prag od 1. 12. si držao lakše nego što forma predviđa.');
     const silent: RunnerState = { ...moved, form: { ...moved.form, history: state.form.history } };
-    expect(renderPlan(doc, silent, EXAMPLE)).toContain('Zašto: procena forme je ponovo izračunata');
+    expect(renderPlan(doc, silent, EXAMPLE)).toContain('Procena forme je ponovo izračunata');
+    const many: RunnerState = {
+      ...moved,
+      form: {
+        ...moved.form,
+        history: Array.from({ length: 8 }, (_, i) => ({
+          date: `2026-12-0${String(i + 1)}`,
+          signal: 'kvalitet' as const,
+          before: 44,
+          after: 44.1,
+          reason: `Rečenica ${String(i + 1)}.`
+        }))
+      }
+    };
+    const reasons = renderPlan(doc, many, EXAMPLE)
+      .split('\n')
+      .filter((l) => l.startsWith('- Rečenica'));
+    expect(reasons).toEqual([8, 7, 6, 5, 4].map((i) => `- Rečenica ${String(i)}.`));
     const small: RunnerState = {
       ...state,
       form: {

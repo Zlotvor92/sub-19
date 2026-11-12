@@ -3,6 +3,7 @@
 import {
   BISECTION_STEPS,
   EASY_FAST_SHARE,
+  EFFORT_WHOLE_MAX_OVER_PLANNED,
   EASY_SLOW_SHARE,
   PACE_ROUND_SEC,
   RACE_SPEED_MAX_MPS,
@@ -19,7 +20,7 @@ import {
   WEIGHT_ANCHORS,
   ZONE_SHARE
 } from './constants';
-import type { Meters, Paces, SecPerKm, Seconds, Vdot } from './types';
+import type { Meters, Paces, Run, SecPerKm, Seconds, Vdot } from './types';
 
 /** VO2 pri brzini `v` (m/min). */
 export function vo2AtSpeed(metersPerMin: number): number {
@@ -117,4 +118,40 @@ export function weightAtPace(pace: SecPerKm, thresholdPace: SecPerKm): number {
 export function racePaceWeight(vdot: Vdot, distanceM: Meters): number {
   const s = paceAtShare(vdot, ZONE_SHARE.T) / racePace(vdot, distanceM);
   return Math.round(weightAtSpeedRatio(s) / RP_WEIGHT_STEP) * RP_WEIGHT_STEP;
+}
+
+/** REZULTAT PUNOG NAPORA iz trčanja (krug 3, K1) — jedini vlasnik pravila „šta je rezultat trke ili testa":
+    (0) izričit rezultat trkača (`resultSec`, uz `resultDistanceM` ili planiranu deonicu);
+    (1) krugovi rada — zbir dužine i vremena;
+    (2) aktivnost duža od planirane deonice za > 15 %: najbrži uzastopni niz kilometara dužine deonice (`splits`);
+    (3) takva aktivnost bez kilometara: `null` — nije dokaz forme (nosi zagrevanje i hlađenje);
+    (4) inače cela aktivnost (dužina ≈ planirana, ili trka van plana — snima se sama). */
+export function effortResult(run: Run): { distanceM: Meters; durationSec: Seconds } | null {
+  const planned = run.plannedEffortM;
+  if (run.resultSec !== undefined && run.resultSec > 0) {
+    const distanceM = run.resultDistanceM ?? planned ?? run.distanceM;
+    if (distanceM > 0) return { distanceM, durationSec: run.resultSec };
+  }
+  const work = (run.laps ?? []).filter(
+    (lap) => lap.role === 'work' && lap.distanceM > 0 && lap.durationSec > 0
+  );
+  if (work.length > 0) {
+    return {
+      distanceM: work.reduce((sum, lap) => sum + lap.distanceM, 0),
+      durationSec: work.reduce((sum, lap) => sum + lap.durationSec, 0)
+    };
+  }
+  const whole = { distanceM: run.distanceM, durationSec: run.durationSec };
+  if (planned === undefined || planned <= 0) return whole;
+  if (run.distanceM <= EFFORT_WHOLE_MAX_OVER_PLANNED * planned) return whole;
+  const n = Math.round(planned / 1000);
+  const paces = (run.splits ?? []).map((x) => x.paceSec);
+  if (n < 1 || paces.length < n || paces.some((x) => !(x > 0))) return null;
+  let best = Number.POSITIVE_INFINITY;
+  for (let i = 0; i + n <= paces.length; i += 1) {
+    let sum = 0;
+    for (let k = i; k < i + n; k += 1) sum += paces[k] ?? 0;
+    best = Math.min(best, sum);
+  }
+  return { distanceM: n * 1000, durationSec: best };
 }

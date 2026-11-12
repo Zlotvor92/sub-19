@@ -246,6 +246,14 @@ describe('stanje uz postojeći plan (dopuna organizatora, § 2.3, § 7.3)', () =
       distanceM: 5000,
       durationSec: 1700
     }));
+    /* Merodavna istorija (krug 3, O2): bar 6 trčanja u bar 21 danu — ovde kratka, pa tri duža dana zaredom. */
+    const history: Run[] = [8, 12, 16, 20, 24, 28].map((i) => ({
+      id: `h${String(i)}`,
+      date: addDays(today, -i),
+      distanceM: 2000,
+      durationSec: 700
+    }));
+    light.push(...history);
     const spike = buildState(
       { ...facts({ profile: { weeklyKm: 8 } }), today, runs: light },
       goalAt('2027-01-24'),
@@ -258,7 +266,7 @@ describe('stanje uz postojeći plan (dopuna organizatora, § 2.3, § 7.3)', () =
     );
     expect(fresh.doc.header.adjustments?.some((a) => a.kind === 'fatigue')).toBe(true);
     const calm = build(
-      { ...facts({ profile: { weeklyKm: 8 } }), today, runs: light.slice(0, 1) },
+      { ...facts({ profile: { weeklyKm: 8 } }), today, runs: [...light.slice(0, 1), ...history] },
       goalAt('2027-01-24')
     );
     expect(calm.doc.header.adjustments?.some((a) => a.kind === 'fatigue')).toBe(false);

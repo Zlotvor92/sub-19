@@ -74,6 +74,17 @@ export interface ResultContext {
   first: boolean;
 }
 
+/** Test ili trka upisani kao jedna aktivnost sa zagrevanjem: nije dokaz forme dok trkač ne unese vreme (K1). */
+export function explainUnusable(
+  kind: 'trka' | 'test',
+  date: IsoDate,
+  activityM: Meters,
+  plannedM: Meters
+): string {
+  const what = kind === 'trka' ? 'Trka' : 'Test';
+  return `${what} ${shortDate(date)} je upisan${kind === 'trka' ? 'a' : ''} kao jedna aktivnost od ${km(activityM)} zajedno sa zagrevanjem i hlađenjem, pa iz nje ne mogu da izdvojim vreme na ${km(plannedM)}. Upiši vreme na ${km(plannedM)} da bih prilagodio tempa i prognozu; do tada procena ostaje ista.`;
+}
+
 export function explainResult(
   kind: 'trka' | 'test',
   date: IsoDate,

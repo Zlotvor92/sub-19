@@ -1,11 +1,16 @@
 /* V4 — ČUVAR (SPEC § 8): odbija samo neispravan unos; sve ostalo prijavljuje (nalazi) ili upozorava (tri rečenice
    sa predlogom u brojevima). Ništa ne menja — ni generisan ni lični plan. */
 import {
+  BASE_UNDER_DECLARED_SHARE,
   EASY_DISTANCE_STEP_M,
   EASY_DURATION_STEP_SEC,
   EASY_FLOOR_MIN_RUN_DAYS,
   LEVEL_VOLUME_LOST_MIN_WEEKS,
   LEVEL_VOLUME_LOST_SHARE,
+  PAIN_LEVEL_MAX,
+  RACE_EVE_MAX_SEC,
+  RACE_NO_LONG_DAYS,
+  RAMP_MIN_DURATION_SEC,
   GUARD_DOSE_TOLERANCE_SEC,
   GUARD_FAST_SHARE_TOLERANCE,
   GUARD_JUMP_TOLERANCE,
@@ -18,7 +23,17 @@ import {
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate } from './dates';
-import { count, DAYS, fmtClock, fmtDate, fmtDistance, fmtNumber, WEEKS, WORKOUTS } from './format';
+import {
+  count,
+  DAYS,
+  fmtClock,
+  fmtDate,
+  fmtDistance,
+  fmtNumber,
+  pluralForm,
+  WEEKS,
+  WORKOUTS
+} from './format';
 import { type PaceCtx, paceCtxOf, summarize, type WorkoutSummary } from './load';
 import {
   adjustmentWindow,
@@ -106,6 +121,21 @@ export function validate(
   }
   if (p.recentResult?.date !== undefined) dateOk(p.recentResult.date, 'profile.recentResult.date');
   number(goal.targetTimeSec, 'goal.targetTimeSec');
+  /* O5: pauze i bol — datumi i nivo (neispravan zapis se odbija, ne ruši). */
+  input.pauses.forEach((pause, i) => {
+    const fromOk = dateOk(pause.from, `pauses[${String(i)}].from`);
+    const toOk = dateOk(pause.to, `pauses[${String(i)}].to`);
+    if (fromOk && toOk && pause.from > pause.to) {
+      fail('datum-neispravan', `pauses[${String(i)}].to`, 'Kraj pauze je pre njenog početka.');
+    }
+  });
+  input.pain.forEach((pain, i) => {
+    dateOk(pain.date, `pain[${String(i)}].date`);
+    if (pain.resolvedOn !== undefined) dateOk(pain.resolvedOn, `pain[${String(i)}].resolvedOn`);
+    if (!(Number.isFinite(pain.level) && pain.level >= 1 && pain.level <= PAIN_LEVEL_MAX)) {
+      fail('broj-neispravan', `pain[${String(i)}].level`, 'Nivo bola je broj od 1 do 10.');
+    }
+  });
   input.runs.forEach((run, i) => {
     dateOk(run.date, `runs[${String(i)}].date`);
     number(run.durationSec, `runs[${String(i)}].durationSec`);
@@ -197,6 +227,14 @@ export const guard: GuardFn = (doc, _state, data) => {
     EASY_DURATION_STEP_SEC,
     (EASY_DISTANCE_STEP_M * ctx.paces.easy) / 1000
   );
+  /* O2: nijedan trening nije kraći od najkraćeg smislenog trčanja (lagano, dan pred trku, dan u rampi), uz jedno
+     zaokruživanje; nikad ispod 15 min. */
+  const shortest = Math.max(
+    GUARD_MIN_WORKOUT_SEC,
+    Math.min(s.minEasySec, RACE_EVE_MAX_SEC, RAMP_MIN_DURATION_SEC) - roundingSlack
+  );
+  const eve = addDays(header.goal.raceDate, -1);
+  const noLongFrom = addDays(header.goal.raceDate, -RACE_NO_LONG_DAYS);
   const adjustments = header.adjustments ?? [];
   /* Pun napor iz plana (provera forme, pripremna trka) skraćuje dane posle sebe isto kao u gradnji — čuvar ga
      vidi kao i ostale uzroke, da ne prijavi lažno `ispod-cilja`. */
@@ -262,23 +300,54 @@ export const guard: GuardFn = (doc, _state, data) => {
       if (w.kind === 'race') races.push(day);
       const cap = w.stimulus === null ? undefined : d.doseCapSec[w.stimulus];
       if (cap !== undefined && w.workSec > cap + GUARD_DOSE_TOLERANCE_SEC) {
-        report('doza-plafon', week, day, `Rad treninga je iznad plafona podražaja (${day.date}).`);
+        report(
+          'doza-plafon',
+          week,
+          day,
+          `Rad treninga je iznad plafona podražaja (${fmtDate(day.date)}).`
+        );
       }
       if (
         w.kind !== 'race' &&
-        (w.steps.length === 0 || w.text.trim() === '' || cost.durationSec < GUARD_MIN_WORKOUT_SEC)
+        (w.steps.length === 0 || w.text.trim() === '' || cost.durationSec < shortest)
       ) {
         report(
           'prazan',
           week,
           day,
-          `Trening je prazan, bez teksta ili kraći od 15 min (${day.date}).`
+          `Trening je prazan, bez teksta ili kraći od najkraćeg smislenog trčanja (${fmtDate(day.date)}).`
+        );
+      }
+      /* O3: dan pred trku je odmor ili lagano do 20 min; dugog nema u poslednjih 6 dana pre trke. */
+      if (
+        day.date === eve &&
+        w.kind !== 'race' &&
+        (w.kind !== 'easy' || cost.durationSec > RACE_EVE_MAX_SEC + roundingSlack)
+      ) {
+        report(
+          'dan-pred-trku',
+          week,
+          day,
+          `Dan pred trku treba da bude odmor ili lagano do 20 min (${fmtDate(day.date)}).`
+        );
+      }
+      if (w.kind === 'long' && day.date >= noLongFrom && day.date < header.goal.raceDate) {
+        report(
+          'dugi-pred-trku',
+          week,
+          day,
+          `Dugi trening je u poslednjih 6 dana pre trke (${fmtDate(day.date)}).`
         );
       }
       /* Poredi se dužina: dugi sa blokom je brži, pa kraće traje za iste kilometre. */
       /* U nedelji rampe dugi je namerno ograničen (≤ 75 % poslednjeg), pa se ne poredi sa laganim danom. */
       if (!ramp && w.kind === 'easy' && c.longKm > 0 && cost.km > c.longKm) {
-        report('lagan-dugi', week, day, `Lagan dan je duži od dugog iste nedelje (${day.date}).`);
+        report(
+          'lagan-dugi',
+          week,
+          day,
+          `Lagan dan je duži od dugog iste nedelje (${fmtDate(day.date)}).`
+        );
       }
       const hard = (x: PlanDay | null): boolean =>
         x?.workout != null &&
@@ -295,7 +364,7 @@ export const guard: GuardFn = (doc, _state, data) => {
           'teski-uzastopno',
           week,
           day,
-          `Dva teška treninga u uzastopnim danima (${day.date}).`
+          `Dva teška treninga u uzastopnim danima (${fmtDate(day.date)}).`
         );
       }
       previous = day;
@@ -320,7 +389,10 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (c.longSec > longBefore + s.longStepSec + GUARD_LONG_STEP_TOLERANCE_SEC + roundingSlack) {
       report('dugi-korak', week, null, 'Dugi raste za više od jednog koraka.');
     }
-    if (!ramp && !partial && !raceWeek && c.load < GUARD_UNDER_TARGET * week.targetLoad) {
+    /* Sužavanje je namerno manje od cilja (R1: višak se ne preliva), kao i nedelja u kojoj dugi ustupa mesto
+       poslednjim danima pre trke (O3). */
+    const calm = week.intent.kind === 'taper' || addDays(week.start, 6) >= noLongFrom;
+    if (!ramp && !partial && !raceWeek && !calm && c.load < GUARD_UNDER_TARGET * week.targetLoad) {
       report('ispod-cilja', week, null, 'Planirano opterećenje je ispod 85 % cilja nedelje.');
     }
     if (!ramp && !partial && !raceWeek) {
@@ -415,7 +487,7 @@ export function warnings(input: WarningInput): Warning[] {
     out.push({
       code: 'kratka-priprema',
       severity: weeks < a.minWeeks / 2 ? 'ozbiljno' : 'upozorenje',
-      problem: `Do trke je ${count(weeks, WEEKS)}, a adekvatna priprema za ovu distancu traje bar ${count(a.minWeeks, WEEKS)}.`,
+      problem: `Do trke ${pluralForm(weeks, ['je', 'su', 'je'])} ${count(weeks, WEEKS)}, a adekvatna priprema za ovu distancu traje bar ${count(a.minWeeks, WEEKS)}.`,
       meaning:
         'Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi.',
       proposal: `Izaberi trku za koju imaš ${count(a.minWeeks, WEEKS, 'acc')} pripreme — tada plan stiže do dugog od ${km(a.minLongKm)}${shorter}.`,
@@ -511,14 +583,29 @@ export function warnings(input: WarningInput): Warning[] {
   }
   const level = levelVolumeWarning(input, costs, peakKm, out);
   if (level !== null) out.push(level);
+  /* O2: baza iz trčanja ispod polovine izjavljenog obima — plan to imenuje. */
+  const declaredKm = state.profile.weeklyKm;
+  const baseKm = (d.baseLoad * 60) / ctx.paces.easy;
+  if (
+    declaredKm !== undefined &&
+    !state.load.seeded &&
+    baseKm < BASE_UNDER_DECLARED_SHARE * declaredKm
+  ) {
+    out.push({
+      code: 'baza-ispod-izjave',
+      severity: 'upozorenje',
+      problem: `Naveo si ${km(declaredKm)} nedeljno, a trčanja iz poslednjih 6 nedelja daju oko ${km(baseKm)} nedeljno.`,
+      meaning:
+        'Plan polazi od onoga što si stvarno trčao, pa su prve nedelje manje nego što očekuješ — nagli povratak na stari obim je čest put do povrede.',
+      proposal: `Ako je razlog pauza ili putovanje, upiši je; ako trčanja nisu stigla sa sata, poveži sat ili ih unesi — plan tada polazi od ${km(declaredKm)}.`
+    });
+  }
   const dropped = droppedDayWarning(doc, costs, s.minEasySec);
   if (dropped !== null) out.push(dropped);
   const back = returnWarning(doc, state);
   if (back !== null) out.push(back);
-  if (
-    state.form.current.confidence === 'niska' ||
-    (state.load.seeded && state.profile.weeklyKm === undefined)
-  ) {
+  /* O4: tempa po osećaju (dok ne stigne prvi usvojen rezultat) ili obim bez ikakvog podatka. */
+  if (doc.header.paces.byFeel || (state.load.seeded && state.profile.weeklyKm === undefined)) {
     out.push({
       code: 'nema-podataka',
       severity: 'info',
@@ -638,7 +725,7 @@ function droppedDayWarning(
     severity: 'info',
     problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno, a plan u nekim nedeljama ima ${count(least, WORKOUTS)} (${span}).`,
     meaning: `Uz sadašnji obim od oko ${km(baseKm)} nedeljno, svi traženi dani bi i sa najkraćim trčanjem od ${String(Math.round(minEasySec / 60))} min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede.`,
-    proposal: `Te nedelje trči kako piše — ${then}. Ako želiš da izlaziš svih ${count(asked, DAYS)} odmah, dodatni dan neka bude šetnja ili 15–20 min vrlo laganog trčanja.`
+    proposal: `Te nedelje trči kako piše — ${then}. Ako želiš da izlaziš ${pluralForm(asked, ['svaki', 'sva', 'svih'])} ${count(asked, DAYS)} odmah, dodatni dan neka bude šetnja ili 15–20 min vrlo laganog trčanja.`
   };
 }
 

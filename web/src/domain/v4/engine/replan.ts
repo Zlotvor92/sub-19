@@ -5,6 +5,7 @@ import {
   PAIN_CONTINUE_MAX,
   PAIN_DOCTOR_AFTER_DAYS,
   PAIN_HIGH_REST_DAYS,
+  PAIN_LEVEL_MAX,
   PAIN_LOW_DAYS,
   PAIN_LOW_MAX,
   PAIN_LOW_REST_DAYS,
@@ -13,6 +14,8 @@ import {
   PAIN_MID_MAX,
   PAIN_MID_REST_DAYS,
   PAIN_STOP_FROM,
+  VDOT_MAX,
+  VDOT_MIN,
   PAUSE_FULL_REPLAN_DAYS,
   PAUSE_MIN_DAYS,
   FATIGUE_DAYS,
@@ -60,7 +63,7 @@ import type {
   RunnerState,
   Warning
 } from './types';
-import { raceTimeSec, zonePaces } from './vdot';
+import { effortResult, raceTimeSec, zonePaces } from './vdot';
 
 type EventOf<K extends PlanEvent['kind']> = Extract<PlanEvent, { kind: K }>;
 
@@ -109,22 +112,40 @@ function onResult(
   if (run === undefined) return null;
   /* Rezultat provere forme ili pripremne trke IZ PLANA: samo § 14.1 (3 dana bez brzog), bez rampe i × 0,8. */
   const planned = allDays(doc).some((d) => d.id === run.dayId && d.workout?.kind === 'test');
+  /* K1: rezultat je deonica punog napora; aktivnost iz koje se ona ne može izdvojiti nije dokaz forme. */
+  const result = effortResult(run);
+  const durationSec = result?.durationSec ?? run.durationSec;
   const adj: Adjustment = {
     kind: 'effort',
     source: ev.id,
     date: run.date,
-    durationSec: run.durationSec,
-    lastLongSec: lastLongAfterEffort(state, run.date, run.durationSec),
+    durationSec,
+    lastLongSec: lastLongAfterEffort(state, run.date, durationSec),
     ...(planned ? { planned: true } : {})
   };
   let header = withAdjustment(doc.header, adj);
-  const vdot = state.form.current.vdot;
-  if (Math.abs(vdot - header.form.paceVdot) >= PACE_UPDATE_AFTER_RESULT_VDOT) {
-    header = {
-      ...header,
-      form: { ...header.form, paceVdot: vdot, pacesUpdatedOn: state.today },
-      paces: zonePaces(vdot, data.distanceM, false)
-    };
+  if (result !== null) {
+    const vdot = state.form.current.vdot;
+    const moved = Math.abs(vdot - header.form.paceVdot) >= PACE_UPDATE_AFTER_RESULT_VDOT;
+    /* O4: posle prvog usvojenog rezultata tempa više nisu „po osećaju" (bez obzira na razliku) i upozorenje
+       `nema-podataka` nestaje. */
+    if (moved || header.paces.byFeel) {
+      const paceVdot = moved ? vdot : header.form.paceVdot;
+      header = {
+        ...header,
+        form: {
+          ...header.form,
+          paceVdot,
+          pacesUpdatedOn: moved ? state.today : header.form.pacesUpdatedOn
+        },
+        paces: zonePaces(paceVdot, data.distanceM, false),
+        warnings: header.warnings.filter(
+          (w) =>
+            w.code !== 'nema-podataka' ||
+            (state.load.seeded && state.profile.weeklyKm === undefined)
+        )
+      };
+    }
   }
   const window = adjustmentWindow(adj);
   if (window === null) return null;
@@ -296,6 +317,16 @@ function onMissed(
       'u naredne dve nedelje nema istog treninga na kom bi se nadoknadio, pa plan ostaje isti'
     );
   }
+  /* S7: kad je sledeći isti trening već kraći (rasterećenje) ili manje doze, nema šta da „ostane" — plan je isti. */
+  const already = isLong
+    ? summarize(target.workout, ctx).durationSec <= summarize(missed, ctx).durationSec
+    : (target.workout?.workSec ?? 0) <= missed.workSec;
+  if (already) {
+    return notice(
+      meaning,
+      `sledeći isti trening (${fmtDate(target.date)}) je po planu ionako ${isLong ? 'kraći' : 'manji'}, pa plan ostaje isti`
+    );
+  }
   const adj: Adjustment = isLong
     ? {
         kind: 'repeat',
@@ -392,7 +423,7 @@ function onPain(
   ev: EventOf<'pain'>,
   data: DistanceData
 ): Candidate | null {
-  if (!Number.isFinite(ev.level) || ev.level < 1) return null;
+  if (!Number.isFinite(ev.level) || ev.level < 1 || ev.level > PAIN_LEVEL_MAX) return null;
   const adj: Adjustment = {
     kind: 'pain',
     source: ev.id,
@@ -442,8 +473,8 @@ function onFormUpdate(
   ev: EventOf<'form-update'>,
   data: DistanceData
 ): Candidate | null {
-  if (!Number.isFinite(ev.vdot) || ev.vdot <= 0) return null;
-  const byFeel = state.form.current.confidence === 'niska';
+  if (!Number.isFinite(ev.vdot) || ev.vdot < VDOT_MIN || ev.vdot > VDOT_MAX) return null;
+  const byFeel = doc.header.paces.byFeel && state.form.current.confidence === 'niska';
   const header: PlanHeader = {
     ...doc.header,
     form: { ...doc.header.form, paceVdot: ev.vdot, pacesUpdatedOn: ev.date },
@@ -670,14 +701,15 @@ function explain(
     }
     case 'result': {
       const run = state.runs.find((r) => r.id === ev.runId);
+      const result = run === undefined ? null : effortResult(run);
       const what =
-        run === undefined
-          ? 'Stigao je rezultat trke ili testa'
-          : `Rezultat ${fmtDistance(run.distanceM)} za ${fmtClock(run.durationSec)} (${fmtDate(run.date)})`;
+        run === undefined || result === null
+          ? `Stigao je rezultat trke ili testa${run === undefined ? '' : ` (${fmtDate(run.date)})`}`
+          : `Rezultat ${fmtDistance(result.distanceM)} za ${fmtClock(result.durationSec)} (${fmtDate(run.date)})`;
       const planned = (c.doc.header.adjustments ?? []).some(
         (x) => x.kind === 'effort' && x.planned === true && x.date === run?.date
       );
-      const ramp = run === undefined ? 0 : effortRampDays(run.durationSec);
+      const ramp = run === undefined ? 0 : effortRampDays(result?.durationSec ?? run.durationSec);
       const zero = run?.date ?? ev.date;
       const recovery = `oporavak traje do ${fmtDate(addDays(zero, ramp))} — treninzi su kraći i lagani, a ${fastFrom(zero)}`;
       const day = planned
@@ -729,6 +761,10 @@ function explain(
         g.raceDate === before.header.goal.raceDate &&
         g.distanceId === before.header.goal.distanceId
       ) {
+        /* S3: rečenica govori o polju koje se stvarno promenilo. */
+        if (g.targetTimeSec === before.header.goal.targetTimeSec) {
+          return same('Podaci o trci su izmenjeni (naziv); datum, cilj i treninzi ostaju isti.');
+        }
         const time =
           g.targetTimeSec === undefined
             ? 'uklonjeno'
