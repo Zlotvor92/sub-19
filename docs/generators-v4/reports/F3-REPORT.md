@@ -1,7 +1,7 @@
 # F3 — polumaraton kao podatak: izveštaj (12. 11. 2026)
 
 Kod: `web/src/domain/v4/distances/hm/` — `index.ts` (jedan izvoz `hm: DistanceData`), `templates.ts`, `library.ts`
-(31 unos), `safety.ts` (nivoi, brojevi bezbednosti, adekvatna priprema), `texts.ts` (tekstovi + napomene), `testdata/`
+(29 unosa), `safety.ts` (nivoi, brojevi bezbednosti, adekvatna priprema), `texts.ts` (tekstovi + napomene), `testdata/`
 (12 profila P9 i dva plana vlasnika). Motor i `fitness/` nisu menjani; uvozi samo tipove i javni izvoz motora.
 Ispisi: `docs/generators-v4/plans/HM/p01–p12.txt`, `vlasnik-v1.txt`, `vlasnik-v2.txt` — `node docs/generators-v4/plans/render.ts`
 (iz korena; `--load` dodaje bodove, `--stats` nalaze čuvara). Scenariji: `plans/HM/scenarios/s01–s24.txt` + `pregled.txt`
