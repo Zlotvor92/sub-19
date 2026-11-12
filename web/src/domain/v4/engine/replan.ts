@@ -647,6 +647,7 @@ function describe(
     });
   }
 
+  const weekChanges: Change[] = [];
   for (const week of after.weeks) {
     const old = before.weeks.find((w) => w.start === week.start);
     if (
@@ -657,7 +658,7 @@ function describe(
       const km0 = weekCost(old, h0.goal.raceDate, beforeCtx).km;
       const km1 = weekCost(week, h1.goal.raceDate, afterCtx).km;
       if (km0 !== km1) {
-        changes.push({
+        weekChanges.push({
           ...base,
           scope: 'nedelja',
           weekIndex: week.index,
@@ -686,6 +687,7 @@ function describe(
       });
     }
   }
+  changes.push(...weekChanges);
   return changes;
 }
 
