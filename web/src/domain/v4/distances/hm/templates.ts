@@ -69,6 +69,8 @@ interface Shape {
   single: boolean;
   /** Brz nivo (VDOT ≥ 52): veće doze tempa trke usred nedelje (R16: 12–15 km). */
   strong?: boolean;
+  /** Mali obim: mali vrh, pa prva doza po lestvici može pasti ispod 8 min rada. */
+  small?: boolean;
 }
 
 /** Mesto subote u nizu dana kvaliteta: motor ređa dane po razmaku od dugog (nedelja), pa je subota poslednja.
@@ -115,7 +117,8 @@ function regularBody(first: number, sh: Shape, testAt: number): Template['body']
   const dev = (i: number): StimulusSlot[] =>
     sh.single
       ? i % 2 === 0
-        ? [S('intervali'), STRIDES]
+        ? /* prvi intervali malog obima: lestvica bi dala < 8 min rada, pa bi nedelja ostala bez kvaliteta */
+          [S('intervali', i === 0 && sh.small === true ? 0.5 : undefined), STRIDES]
         : [S('prag'), STRIDES]
       : [S('prag'), S('intervali')];
   return [
@@ -413,7 +416,14 @@ export const TEMPLATES: Template[] = WEEKS.flatMap((n) =>
     );
     out.push(makeTemplate('redovan', 'redovan', { days, single: few }, n, REGULAR, regularMult(n)));
     out.push(
-      makeTemplate('mali-obim', 'redovan', { days, single: true }, n, SMALL, regularMult(n))
+      makeTemplate(
+        'mali-obim',
+        'redovan',
+        { days, single: true, small: true },
+        n,
+        SMALL,
+        regularMult(n)
+      )
     );
     out.push(
       makeTemplate('pocetnik', 'pocetnik', { days, single: true }, n, BEGINNER, beginnerMult(n))

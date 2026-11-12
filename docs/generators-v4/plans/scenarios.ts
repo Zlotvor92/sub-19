@@ -268,15 +268,22 @@ const summary: string[] = ['# Scenariji prilagođavanja — polumaraton (pregled
 for (const s of SCENARIOS) {
   const r = s.run();
   const name = `s${String(s.no).padStart(2, '0')}`;
+  const st = r.afterState;
+  const f = st.form;
   const text = [
     `${name.toUpperCase()} — ${s.id}, ${s.title}`,
-    r.note,
     '',
-    '==================== POSLE (sa spiskom promena) ====================',
-    E.renderPlan(r.after, r.afterState, hm, { changes: r.changes }),
+    `STANJE: danas ${st.today}; sadašnji obim ${String(profile(s.id).profile.weeklyKm)} km nedeljno, ` +
+      `${String(st.availability.runDays.length)} dana; forma ${clock(f.current.raceTimeSec)} (pouzdanost ` +
+      `${f.current.confidence}), očekivano na dan trke ${clock(f.raceDay.expectedSec)}.`,
+    `DOGAĐAJ: ${r.note}`,
+    `PROMENA: ${String(r.changes.length)}.`,
     '',
     '==================== PRE ====================',
-    E.renderPlan(r.before, r.beforeState, hm)
+    E.renderPlan(r.before, r.beforeState, hm),
+    '',
+    '==================== POSLE (sa spiskom promena) ====================',
+    E.renderPlan(r.after, r.afterState, hm, { changes: r.changes })
   ].join('\n');
   writeFileSync(join(out, `${name}.txt`), `${text}\n`);
   const findings = E.guard(r.after, r.afterState, hm).map((f: Any) => `${f.check}@${String(f.weekIndex)}`);
