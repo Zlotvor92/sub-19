@@ -5,7 +5,11 @@ ulaz). Ništa u kodu nije menjano. Svaki nalaz osim onih označenih „sumnja" p
 (`npx vite-node`, skripte van repozitorijuma); „dobijeno" su brojevi iz tih pokretanja. Ulaz „osnovni" znači:
 `today 2026-11-15`, dani uto/čet/sub/ned, dugi nedelja, 30–40 km nedeljno, rezultat 10 km 46:00 ili HM 1:41:00.
 
-Zbir: **kritično 1 · ozbiljno 6 · sitno 13 · sumnja 3.** Nije nađeno: nedeterminizam istog ulaza (6 468 planova, dva
+**Ponovna provera na `661cc4e`** (tokom recenzije su stigli `65b968e` i `4fec1f0`: ugovor motor → forma; taj kod
+nije recenziran red po red): O1 je ZATVOREN (+2 s umesto +68 s); K1, O2, O3, O5, O6 se i dalje ponavljaju isto.
+Brojevi redova važe za `6846fd8` (`state.ts` i `estimate.ts` su posle toga pomereni za 1–4 reda).
+
+Zbir: **kritično 1 · ozbiljno 6 (od toga 1 zatvoren) · sitno 13 · sumnja 3.** Nije nađeno: nedeterminizam istog ulaza (6 468 planova, dva
 puta svaki, bajt-isti), pad ili `NaN`/ISO datum u ispisu plana, rupa u datumima (prestupna 2028, prelaz godine,
 1–60 nedelja, 1–7 dana, VDOT 22–75, 5–150 km), nestabilnost (`replan([])` uvek isti objekat; 111 dana po planu bez
 lažnih promena), ime distance ili uvoz van `v4/` u motoru, `Date` sa lokalnom zonom, petlja „skrati pa dopuni".
@@ -26,7 +30,7 @@ motora to ne vide jer `runsAsPlanned` nikad ne postavlja `effort`. Ako F9 garant
 
 | # | pravilo | gde | najmanji ulaz | dobijeno → očekivano | ispravka |
 |---|---|---|---|---|---|
-| O1 | R12, kapija kruga 2 („ništa" → prognoza se ne pogoršava) | `engine/state.ts:151–172`, `engine/types.ts:764` | HM, 16 ned, 4 dana, `estimateForm`; svaki trening odrađen tačno po planu, dan za danom | očekivano na dan trke 1:39:02 → **1:40:10 (+68 s)**, klizi oko 5 s nedeljno bez ijedne rečenice (svaki korak < 20 s) → stabilno | Motor da preda `planned.weeks` (ciljevi nedelja) i `baseLoad`/`peakLoad` iz `doc.header.decisions`, kako F4-REPORT traži; test „po planu" sa pravim `estimateForm`. |
+| O1 — zatvoren na `661cc4e` (ponovo izmereno: 1:39:02 → 1:39:04) | R12, kapija kruga 2 („ništa" → prognoza se ne pogoršava) | `engine/state.ts:151–172`, `engine/types.ts:764` | HM, 16 ned, 4 dana, `estimateForm`; svaki trening odrađen tačno po planu, dan za danom | očekivano na dan trke 1:39:02 → **1:40:10 (+68 s)**, klizi oko 5 s nedeljno bez ijedne rečenice (svaki korak < 20 s) → stabilno | Motor da preda `planned.weeks` (ciljevi nedelja) i `baseLoad`/`peakLoad` iz `doc.header.decisions`, kako F4-REPORT traži; test „po planu" sa pravim `estimateForm`. |
 | O2 | § 5.3, § 2.4 (nov korisnik dobija smislen plan) | `engine/state.ts:73–93` | osnovni + `weeklyKm: 40` + JEDNO trčanje staro 200 dana | baza 1,9 BO; 1. nedelja = „dugi 0,5 km, 3 min"; sa trčanjem starim 50 dana baza 71 umesto 235 → izjava važi kad istorija ne pokriva poslednjih 42 dana | Seme iz izjave primeniti na deo prozora od 42 dana koji istorija ne pokriva (ili: retka istorija → izjava + upozorenje), ne vrteti nule od prvog trčanja. |
 | O3 | § 6.2 k. 10 (dan pre trke: odmor ili ≤ 20 min) | `engine/build.ts:247` | osnovni, trka u PONEDELJAK 25. 1. 2027. | nedelja 24. 1. (dan pre trke): **dugi 10 km / 59 min**, subota lagano; čuvar ćuti → odmor ili ≤ 20 min | `eve` računati za nedelju koja sadrži dan pre trke, ne samo za nedelju trke; čuvaru dodati proveru dana pred trku. |
 | O4 | § 7.6 (`byFeel: false` kad stigne prvi rezultat), R10 (tekst = plan) | `engine/replan.ts:102–135` | plan po osećaju (samo lagani tempo 6:12); test 5 km 21:00 | tempa prelaze na brojeve, ali upozorenje `nema-podataka` ostaje: „Brzi treninzi su zadati po osećaju… istrči test od 3 km"; a kad je \|Δ\| < 0,3 VDOT (test 23:12) i `byFeel` ostaje `true` (sa `declaredForm` trajno) | U `onResult`: `byFeel = false` uvek kad rezultat postoji i `refreshWarnings` kao kod ostalih događaja. |
@@ -110,8 +114,8 @@ pad forme u pauzi.
 
 ## 4. Predlog redosleda ispravki
 
-1. K1 i O1 zajedno (ugovor motor ↔ forma: šta je „rezultat testa" i šta je „planirano") + test motor + `estimateForm`
-   dan za danom sa odrađenim testom.
+1. K1 (ugovor motor ↔ forma: šta je „rezultat testa"; „planirano" je rešeno u `65b968e`) + test motor +
+   `estimateForm` dan za danom sa odrađenim testom, da O1 ostane zatvoren.
 2. O2, O3, O6 (pogrešan plan za moguć ulaz), pa O4 i O5.
 3. Šest pravila bez testa iz § 2, mreža sa startom usred nedelje i trkom radnim danom.
 4. Tekstovi S2, S3, S7–S11.
