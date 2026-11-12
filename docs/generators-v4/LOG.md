@@ -222,3 +222,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   zahtev „V4 ≥ v3 po vrhu i dugom". Motor se odmrzava za R1–R11. Novi tabovi sa svežim kontekstom (stari F2/F3 imaju
   510–560 hilj. tokena konteksta — skupo po koraku): M (motor, Fable), F (forma, postojeći F4 tab, Opus), zatim D
   (podaci HM, Opus) kad M završi.
+- Tabovi 15:40: M motor krug 2 — `session_01GnHHiWRtiyqqMB7Bn2wiFM` (Fable, nov), radi R1–R11. F forma krug 2 —
+  `session_01GnHHiYchQtH6mmwpQBMi1S` (Opus, postojeći F4), radi R12–R14. D podaci HM — otvara se kad M završi.
+  Stari tabovi F2 `…VddBC`, F3 `…DLNNH`, F5 `…Q7Kb`, F1 `…qCB1`, drugi sudija `…Mppfu`: završeni, ne guraju se.
+  Grana: testovi `distances/hm` smeju da budu crveni dok D ne završi (motor se menja ispod zaključanih otisaka).
