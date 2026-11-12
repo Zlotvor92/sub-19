@@ -13,6 +13,8 @@ FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (1. 11.): 2:04:13, pouzdanost srednja
 Očekivano na dan trke: 1:57:11 (raspon 1:52:29–2:05:44) — 7:02 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
 TEMPA
 - lagano 6:47–7:28/km
@@ -244,6 +246,12 @@ FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (8. 2.): 1:59:41, pouzdanost srednja
 Očekivano na dan trke: 1:57:37 (raspon 1:55:14–2:01:05) — 2:04 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Nedelja 1. 2. – 7. 2. odrađena je oko 37 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 26 sekundi sporije.
+- Nedelja 25. 1. – 31. 1. odrađena je po planu (oko 96 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:00:11 → 1:59:45; očekivano vreme na dan trke ostaje isto.
+- Nedelja 18. 1. – 24. 1. odrađena je oko 84 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 1 sekundu sporije. Deo napretka je ipak pripisan formi (procena za 21,1 km: 2:00:36 → 2:00:11).
+- Nedelja 11. 1. – 17. 1. odrađena je po planu (oko 97 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:01:02 → 2:00:36; očekivano vreme na dan trke ostaje isto.
+- Nedelja 4. 1. – 10. 1. odrađena je po planu (oko 94 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:01:29 → 2:01:02; očekivano vreme na dan trke ostaje isto.
 
 TEMPA
 - lagano 6:34–7:13/km
@@ -259,8 +267,8 @@ UPOZORENJA
 - Najduži trening u planu je 10,1 km, a za ovu distancu treba bar 16 km. Poslednji deo trke biće duži od svega što si trčao u pripremi, pa tu treba očekivati najveći pad. Uz isti datum trke dugi ostaje 10,1 km, pa trku počni sporije i čuvaj snagu za poslednjih 11 km. Za sledeću trku podigni nedeljni obim do 40 km — dugi tada može da naraste do 16 km.
 
 PROMENE
-Propušten je ključni trening „tempo trke 18 min u komadu" (4. 2.). To je bio glavni brzi trening te nedelje; sledeći isti trening (11. 2.) ostaje na toj dozi umesto da raste.
-Propušten je ključni trening „dugi 70 min lagano" (7. 2.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (14. 2.) ostaje na toj dužini umesto da raste.
+Propušten je ključni trening „tempo trke 18 min u komadu" (4. 2.). To je bio glavni brzi trening te nedelje; sledeći isti trening (11. 2.) je po planu ionako manji, pa plan ostaje isti.
+Propušten je ključni trening „dugi 70 min lagano" (7. 2.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (14. 2.) je po planu ionako kraći, pa plan ostaje isti.
 Procena forme se promenila (2:04:13 → 1:59:42 na distanci trke): tempa su ubrzana za oko 12 s po kilometru; treninzi ostaju isti.
 - plan: prag 5:40/km, tempo trke 5:53/km → prag 5:28/km, tempo trke 5:40/km
 

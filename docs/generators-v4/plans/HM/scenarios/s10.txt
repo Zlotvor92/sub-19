@@ -13,6 +13,8 @@ FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (1. 11.): 2:04:13, pouzdanost srednja
 Očekivano na dan trke: 2:00:36 (raspon 1:57:23–2:05:44) — 3:37 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
 TEMPA
 - lagano 6:47–7:28/km
@@ -259,6 +261,12 @@ FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (11. 1.): 2:02:48, pouzdanost srednja
 Očekivano na dan trke: 2:00:49 (raspon 1:58:24–2:04:17) — 1:59 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Nedelja 4. 1. – 10. 1. odrađena je oko 50 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 14 sekundi sporije.
+- Nedelja 28. 12. – 3. 1. odrađena je po planu (oko 96 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:03:04 → 2:02:50; očekivano vreme na dan trke ostaje isto.
+- Nedelja 21. 12. – 27. 12. odrađena je po planu (oko 94 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:03:17 → 2:03:04; očekivano vreme na dan trke ostaje isto.
+- Nedelja 14. 12. – 20. 12. odrađena je po planu (oko 95 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:03:31 → 2:03:17; očekivano vreme na dan trke ostaje isto.
+- Nedelja 7. 12. – 13. 12. odrađena je po planu (oko 98 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:03:45 → 2:03:31; očekivano vreme na dan trke ostaje isto.
 
 TEMPA
 - lagano 6:47–7:28/km
@@ -270,7 +278,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:00:49) traži 5:44/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Propušten je ključni trening „dugi 2 h 5 min lagano" (10. 1.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (17. 1.) ostaje na toj dužini umesto da raste.
+Propušten je ključni trening „dugi 2 h 5 min lagano" (10. 1.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (17. 1.) je po planu ionako kraći, pa plan ostaje isti.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja
   pon 2. 11.  lagano 75 min — urađeno 10,6 km, 75 min (7:06/km)

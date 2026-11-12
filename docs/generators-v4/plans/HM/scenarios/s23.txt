@@ -13,6 +13,8 @@ FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (1. 11.): 2:04:13, pouzdanost srednja
 Očekivano na dan trke: 1:57:11 (raspon 1:52:29–2:05:44) — 7:02 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
 TEMPA
 - lagano 6:47–7:28/km
@@ -244,6 +246,11 @@ FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (13. 12.): 2:02:50, pouzdanost srednja
 Očekivano na dan trke: 1:57:11 (raspon 1:53:06–2:04:19) — 5:39 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Nedelja 7. 12. – 13. 12. odrađena je po planu (oko 96 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:03:17 → 2:02:50; očekivano vreme na dan trke ostaje isto.
+- Nedelja 30. 11. – 6. 12. odrađena je po planu (oko 95 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:03:45 → 2:03:17; očekivano vreme na dan trke ostaje isto.
+- Nedelja 23. 11. – 29. 11. odrađena je po planu (oko 102 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 2:04:13 → 2:03:45; očekivano vreme na dan trke ostaje isto.
+- Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
 TEMPA
 - lagano 6:47–7:28/km

@@ -14,6 +14,9 @@ FORMA
 Polazna forma (1. 11.): 1:41:58
 Današnja prognoza (1. 11.): 1:41:58, pouzdanost srednja
 Očekivano na dan trke: 1:39:42 (raspon 1:37:36–1:42:58) — 2:16 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Nedelja 1. 11. – 1. 11. odrađena je oko 0 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 1 sekundu sporije.
+- Polazna procena je iz rezultata koji si uneo: oko 1:41:58 za 21,1 km.
 
 TEMPA
 - lagano 5:39–6:14/km
@@ -216,6 +219,12 @@ FORMA
 Polazna forma (1. 11.): 1:41:58
 Današnja prognoza (26. 12.): 1:39:32, pouzdanost srednja
 Očekivano na dan trke: 1:38:29 (raspon 1:37:02–1:40:29) — 1:03 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Trka 26. 12.: 10 km za 44:40. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 21,1 km: 1:40:48 → 1:39:32.
+- Nedelja 14. 12. – 20. 12. odrađena je po planu (oko 100 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 1:41:04 → 1:40:55; očekivano vreme na dan trke ostaje isto.
+- Nedelja 7. 12. – 13. 12. odrađena je po planu (oko 100 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 1:41:13 → 1:41:04; očekivano vreme na dan trke ostaje isto.
+- Nedelja 30. 11. – 6. 12. odrađena je po planu (oko 94 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 1:41:22 → 1:41:13; očekivano vreme na dan trke ostaje isto.
+- Nedelja 23. 11. – 29. 11. odrađena je po planu (oko 99 % planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — procena za 21,1 km: 1:41:32 → 1:41:22; očekivano vreme na dan trke ostaje isto.
 
 TEMPA
 - lagano 5:32–6:05/km

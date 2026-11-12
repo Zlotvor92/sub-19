@@ -97,16 +97,16 @@ Ukupno 39 stavki: ✔ 27, ◐ 11, ✘ 1. Delimično i nerešeno je pretežno van
 4. Mreža, brz udeo zbog obima: do 27 % / 35 % → 25 % / 30 % (POOŠTRENO); nedelja sa proverom forme je opravdana bez
    obzira na udeo (sa 4+ dana test zamenjuje dugi; K6 test je ionako ne meri).
 5. Mreža: „ispod cilja" opravdano kad plan nosi `obim-za-nivo` (brz trkač malog obima: brzi trening zamenjen laganim).
-6. Najteža → sledeća nedelja: ≤ 86 % → ≤ max(86 % najteže, 1,12 × baza) — R5 (pod nedelje gradnje = sadašnji obim +
+6. (K7 + 60 s ostaje; + 30 s obara p02/p03 zbog celih minuta 3 × 3 min.) Najteža → sledeća nedelja: ≤ 86 % → ≤ max(86 % najteže, 1,12 × baza) — R5 (pod nedelje gradnje = sadašnji obim +
    kvalitet) kod p05 i p08 (vrh blizu sadašnjeg obima).
-7. K7 + 60 s ostaje (+ 30 s: p02/p03 padaju zbog celih minuta, 3 × 3 min).
 Novo: `gate.test.ts` (kapija, 28 slučajeva), R16 (RP ≥ prethodni prag − 90 s; intervali i brda u 12+ ned; < 5 istih
 nedelja zaredom), R17 (test ≥ 2. nedelja, subotom kad je subota dan trčanja, rani test 3 km = upozorenje; 10 km kod
 7 profila), R19 (gel isto, trka po osećaju bez s/km, lestvica ≥ 15 min).
 
 ## Zahtevi prema motoru i formi
 1. **Forma (R12):** živa procena posle 6 nedelja po planu 1–2 s sporija (p01, p02, p03, p09, vlasnik-v1); zaglavlje
-   posle `replan` je isto. Test: `gate.test.ts` → `FORM_DRIFT`.
+   posle `replan` je isto. Test: `gate.test.ts` → `FORM_DRIFT`. Posle 0a270c1 sveži plan u zaglavlju piše „Nedelja
+   1. 11. – 1. 11. odrađena je oko 0 % planiranog opterećenja … 1 sekundu sporije" (dan pre početka plana se broji).
 2. **Motor, upozorenje `nema-podataka`:** distanca testa je zakucana („test od 3 km") — neka je čita iz podataka
    (R17 traži 5 km za ≥ 25 km nedeljno); zato je rani test sada 3 km za sve.
 3. **Motor, rasterećenje = kopija prethodne nedelje** (`toRecovery`): kopira i rani test po osećaju; podaci to sada

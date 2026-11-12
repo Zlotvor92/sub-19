@@ -9,6 +9,9 @@ FORMA
 Polazna forma (1. 11.): 1:41:58
 Današnja prognoza (1. 11.): 1:41:58, pouzdanost srednja
 Očekivano na dan trke: 1:39:42 (raspon 1:37:36–1:42:58) — 2:16 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Nedelja 1. 11. – 1. 11. odrađena je oko 0 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 1 sekundu sporije.
+- Polazna procena je iz rezultata koji si uneo: oko 1:41:58 za 21,1 km.
 
 TEMPA
 - lagano 5:39–6:14/km
