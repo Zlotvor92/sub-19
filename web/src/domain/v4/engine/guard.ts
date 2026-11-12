@@ -16,7 +16,13 @@ import { addDays, diffDays, isValidDate } from './dates';
 import { decideLongMax } from './decide';
 import { count, DAYS, FIRST, countWith, fmtClock, fmtDate, fmtNumber, WEEKS } from './format';
 import { type PaceCtx, paceCtxOf, summarize, type WorkoutSummary } from './load';
-import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
+import {
+  adjustmentWindow,
+  effortRampDays,
+  pauseLength,
+  pauseRampDays,
+  underRamp
+} from './readiness';
 import { candidates } from './select';
 import { countWeeks } from './template';
 import type {
@@ -209,7 +215,10 @@ export const guard: GuardFn = (doc, _state, data) => {
     const ramp = inAnyWindow(week, adjustments);
     const partial = week.start < header.startDate;
     const raceWeek = week.intent.kind === 'race';
-    const before = costs.slice(Math.max(0, i - 3), i);
+    const before = costs
+      .slice(0, i)
+      .filter((x) => !underRamp(x.week.start, adjustments))
+      .slice(-3);
     const m = Math.max(...before.map((x) => x.load), ...(before.length < 3 ? [d.baseLoad] : []));
     const longBefore = Math.max(d.longStartSec, ...before.map((x) => x.longSec));
 
@@ -236,7 +245,8 @@ export const guard: GuardFn = (doc, _state, data) => {
           `Trening je prazan, bez teksta ili kraći od 15 min (${day.date}).`
         );
       }
-      if (w.kind === 'easy' && c.longSec > 0 && cost.durationSec > c.longSec) {
+      /* Poredi se dužina: dugi sa blokom je brži, pa kraće traje za iste kilometre. */
+      if (w.kind === 'easy' && c.longKm > 0 && cost.km > c.longKm) {
         report('lagan-dugi', week, day, `Lagan dan je duži od dugog iste nedelje (${day.date}).`);
       }
       const hard = (x: PlanDay | null): boolean =>
@@ -262,7 +272,8 @@ export const guard: GuardFn = (doc, _state, data) => {
 
     const share = c.durationSec > 0 ? c.workSec / c.durationSec : 0;
     const maxShare = week.intent.kind === 'peak' ? s.maxFastSharePeak : s.maxFastShare;
-    if (share > maxShare + GUARD_FAST_SHARE_TOLERANCE) {
+    /* Nedelja trke se ne meri: mala je, a sama trka ne ulazi u zbir. */
+    if (!raceWeek && share > maxShare + GUARD_FAST_SHARE_TOLERANCE) {
       report('brz-udeo', week, null, 'Udeo brzog rada u nedelji je iznad dozvoljenog.');
     }
     const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + s.minRampLoad);

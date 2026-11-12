@@ -121,6 +121,16 @@ export function adjustmentWindow(
   return null;
 }
 
+/** Da li nedelja (od ponedeljka `weekStart`) seče pauzu ili rampu nekog uzroka. */
+export function underRamp(weekStart: IsoDate, adjustments: readonly Adjustment[]): boolean {
+  const end = addDays(weekStart, 6);
+  return adjustments.some((adj) => {
+    if (rampOf(adj) === null) return false;
+    const w = adjustmentWindow(adj);
+    return w !== null && w.from <= end && w.rampEnd >= weekStart;
+  });
+}
+
 /** Modifikator jednog dana: najmanji faktor svih uzroka; kvalitet samo ako ga svi dozvoljavaju. */
 export interface Mods {
   rest: boolean;

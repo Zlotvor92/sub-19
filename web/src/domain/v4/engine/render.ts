@@ -17,6 +17,7 @@ import {
 } from './format';
 import { weekCost } from './guard';
 import { paceCtxOf } from './load';
+import { fmtExtent } from './select';
 import { countWeeks } from './template';
 import type {
   Change,
@@ -24,6 +25,7 @@ import type {
   Paces,
   PlanDoc,
   RunnerState,
+  SingleStep,
   Step,
   WeekKind,
   Workout,
@@ -64,35 +66,41 @@ const ZONE_FEEL: Readonly<Record<ZoneId, string>> = {
   RP: 'napor koji planiraš za trku'
 };
 
-function zonesOf(steps: readonly Step[], into: ZoneId[] = []): ZoneId[] {
-  for (const step of steps) {
-    if ('repeat' in step) zonesOf(step.steps, into);
-    else if (
-      step.target.type === 'zone' &&
-      step.role === 'work' &&
-      !into.includes(step.target.zone)
-    ) {
-      into.push(step.target.zone);
-    }
-  }
-  return into;
-}
-
 function zoneHint(zone: ZoneId, paces: Paces, data: DistanceData): string {
   if (paces.byFeel) return `${ZONE_NAME[zone]}: ${data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone]}`;
   if (zone === 'E') return `lagano ${fmtPaceBare(paces.easyFast)}–${fmtPace(paces.easySlow)}`;
   return `${ZONE_NAME[zone]} ${fmtPace(paces[zone])}`;
 }
 
-/** Tempo ili napor samo za zone rada koje nisu lagano; legenda svih zona je u zaglavlju. */
-function paceHints(workout: Workout, paces: Paces, data: DistanceData): string {
-  if (workout.kind === 'race') return '';
-  const order = ['M', 'T', 'RP', 'I', 'R'] as const;
-  const used = zonesOf(workout.steps);
-  return order
-    .filter((z) => used.includes(z))
-    .map((z) => (paces.byFeel ? (data.texts[`napor.${z}`] ?? ZONE_FEEL[z]) : fmtPace(paces[z])))
-    .join(', ');
+/** Prva deonica rada u zoni koja nije lagano. */
+function firstWork(steps: readonly Step[]): SingleStep | null {
+  for (const step of steps) {
+    if ('repeat' in step) {
+      const inner = firstWork(step.steps);
+      if (inner !== null) return inner;
+    } else if (step.role === 'work' && step.target.type === 'zone' && step.target.zone !== 'E') {
+      return step;
+    }
+  }
+  return null;
+}
+
+const escapeRe = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Tekst treninga sa tempom (ili naporom) uz deonicu rada; lagani i dugi bez bloka ostaju bez tempa —
+    legenda je u zaglavlju. Ako se deonica ne nađe u tekstu, tempo ide na kraj. */
+function withPace(workout: Workout, paces: Paces, data: DistanceData): string {
+  if (workout.kind === 'race' || workout.kind === 'easy') return workout.text;
+  const step = firstWork(workout.steps);
+  if (step === null || step.target.type !== 'zone' || step.target.zone === 'E') return workout.text;
+  const zone = step.target.zone;
+  const hint = paces.byFeel
+    ? (data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone])
+    : fmtPace(paces[zone]);
+  const piece = new RegExp(`(?<![\\d,:])${escapeRe(fmtExtent(step.extent))}`);
+  return piece.test(workout.text)
+    ? workout.text.replace(piece, (found) => `${found} (${hint})`)
+    : `${workout.text} (${hint})`;
 }
 
 const percent = (share: number): string => `${fmtNumber(share * 100, 0)} %`;
@@ -200,8 +208,7 @@ export function renderPlan(
         lines.push(`  ${when}  TRKA: ${data.label}`);
         continue;
       }
-      const hints = paceHints(w, h.paces, data);
-      const text = hints === '' ? w.text : `${w.text} (${hints})`;
+      const text = withPace(w, h.paces, data);
       lines.push(`  ${when}  ${text} — ${fmtNumber(c.km)} km, ${fmtMinutes(c.durationSec)}`);
       for (const note of w.notes ?? []) lines.push(`      napomena: ${note}`);
       for (const extra of day.extras ?? []) lines.push(`      uz to: ${extra}`);

@@ -73,7 +73,7 @@ export const SYNTHETIC: DistanceData = {
           dosePct: 0.8
         }),
         week('zavrsna', 'taper', 0.72, 0.65, [{ stimulus: 'tempo-trke', dosePct: 0.5 }, STRIDES]),
-        week('zavrsna', 'race', 0.4, null, [{ stimulus: 'tempo-trke', dosePct: 0.3 }, STRIDES])
+        week('zavrsna', 'race', 0.4, null, [{ stimulus: 'tempo-trke', dosePct: 0.36 }, STRIDES])
       ],
       body: [
         {

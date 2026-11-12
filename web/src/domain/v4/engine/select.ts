@@ -218,7 +218,8 @@ const RECOVERY_WORD: Readonly<Record<RecoverySpec['mode'], string>> = {
   stajanje: 'pauze'
 };
 
-const fmtExtent = (extent: Extent): string =>
+/** Dužina ili trajanje deonice onako kako stoji u tekstu treninga. */
+export const fmtExtent = (extent: Extent): string =>
   'distanceM' in extent ? fmtDistance(extent.distanceM) : fmtDuration(extent.durationSec);
 
 /** Oporavak: „1:30 džog", „2 min hod", „200 m džog" (bez „min" uz minute i sekunde). */

@@ -78,3 +78,13 @@ neka imaju `requires.minDoseSec`; tekstovi `{n} {rep} {dose} {rec} {len}`, opcio
 se dan u prozoru gradi iz izvedene namere: `intent.stimuli[].stimulus` moraju biti oznake iz biblioteke distance,
 inače dan postaje lagan. `templateId` van podataka je dozvoljen. `protected` → `replan` vraća isti objekat. Čuvar
 nalaze nad preuzetim danima daje kao `rucno`. Otisak: `fingerprint(doc, facts)`, red po danu.
+## Drugi krug (12. 11. 2026, po pregledu organizatora)
+1. § 14.6 i § 14.1 su ugrađeni (v. odstupanje 9); test iz plana i pripremna trka: 3 dana bez ičeg brzog.
+2. Pravilo rasta (`m`) i lanac dugog ne gledaju nedelje koje seku pauzu ili rampu (`underRamp`); čuvar `skok` i
+   `dugi-korak` isto. Primer 03: 18 → 25,7 → 31 km (bilo 20 / 26 / 22), lagani dani ne postaju odmor.
+3. Lagan dan sa ≥ 3 dana trčanja ostaje na `minEasySec` dok nedelja ne pređe cilj za > 10 % (tada otpada najraniji,
+   dan posle kvaliteta poslednji); `GUARD_JUMP_TOLERANCE` 0,10. Sa 1–2 dana ostaje staro pravilo.
+4. Ispis: tempo samo uz deonicu rada („prag 2 × 7 min (4:40/km), oporavak 1:30 džog"), lagani i dugi bez tempa;
+   PROMENE imaju jedno objašnjenje po događaju. Čuvar `lagan-dugi` poredi km (dugi sa blokom kraće traje).
+Otisci se menjaju: dugi (zaokruživanje naniže), lagani dani u nedeljama gde je ostatak bio < `minEasySec`, tekst
+oporavka („1:30 džog"), nedelje posle pauze/rampe. Čuvar `brz-udeo` ne meri nedelju trke (mala je, trka ne ulazi u zbir).

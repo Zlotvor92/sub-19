@@ -1,12 +1,12 @@
 /* V4 — JEDAN PROLAZ KROZ NEDELJE (SPEC § 6.2 k. 5–8, § 6.4). `plan` i `replan` zovu isti prolaz:
    cilj nedelje → dugi → budžet brzog rada → lagani dani → spremnost. Svaka veličina ima jednu funkciju-vlasnika;
    nema petlje „skrati pa dopuni". Dan se uvek gradi iz namere nedelje + `header.decisions` (§ 1.3). */
-import { RACE_EVE_MAX_SEC } from './constants';
+import { EASY_FLOOR_MIN_RUN_DAYS, EASY_FLOOR_OVER_TARGET, RACE_EVE_MAX_SEC } from './constants';
 import { addDays, weekdayOf } from './dates';
 import { assignDays } from './decide';
 import { doneIds } from './done';
 import { paceCtxOf, stepsCost, summarize } from './load';
-import { applyReadiness, modsFor, PLAIN_LONG, recipeKey, type Seen } from './readiness';
+import { applyReadiness, modsFor, PLAIN_LONG, recipeKey, type Seen, underRamp } from './readiness';
 import {
   addonSteps,
   allOutSec,
@@ -148,24 +148,52 @@ interface EasyDay {
   cap: Seconds;
 }
 
-/** LAGANI DANI (§ 6.2 k. 7): ostatak cilja jednako na lagane dane, uz plafon po danu; višak se ne preraspodeljuje. */
+/** LAGANI DANI (§ 6.2 k. 7 + drugi krug): ostatak cilja jednako na lagane dane, uz plafon po danu; višak se ne
+    preraspodeljuje. Kad je deo po danu ispod `minEasySec`: sa ≥ 3 dana trčanja dan ostaje lagan na `minEasySec`
+    dok nedelja ne pređe cilj za više od 10 % (tada otpada najraniji lagan dan, poslednji dan posle kvaliteta);
+    sa 1–2 dana ostaje `floor(ostatak / minEasySec)` dana (prvo otpada dan pred dugi). */
 function easyFill(
   pool: EasyDay[],
-  leftMin: LoadPoints,
+  week: { targetLoad: LoadPoints; fixedLoad: LoadPoints; runDays: number },
   dayBeforeLong: IsoDate | null,
+  afterQuality: ReadonlySet<IsoDate>,
   ctx: BuildCtx
 ): Map<IsoDate, Recipe> {
   const out = new Map<IsoDate, Recipe>();
   const minEasy = ctx.data.safety.minEasySec;
+  const leftMin = week.targetLoad - week.fixedLoad;
   const addonCost = (day: EasyDay): { load: number; durationSec: number } =>
     day.addon !== null && day.addon.type === 'addon'
       ? stepsCost(addonSteps(day.addon.def), ctx.pace)
       : { load: 0, durationSec: 0 };
-  const addonLoad = (day: EasyDay): number => addonCost(day).load;
+  const addons = (list: EasyDay[]): number =>
+    list.reduce((sum, day) => sum + addonCost(day).load, 0);
+  const budget = (list: EasyDay[]): number => (leftMin - addons(list)) * 60;
+  const put = (day: EasyDay, sec: Seconds): void => {
+    out.set(
+      day.date,
+      day.addon !== null && day.addon.type === 'addon'
+        ? { ...day.addon, sec }
+        : { type: 'easy', sec }
+    );
+  };
   let days = [...pool].sort((a, b) => (a.date < b.date ? -1 : 1));
-  const budget = (list: EasyDay[]): number =>
-    (leftMin - list.reduce((sum, day) => sum + addonLoad(day), 0)) * 60;
   if (days.length > 0 && budget(days) / days.length < minEasy) {
+    if (week.runDays >= EASY_FLOOR_MIN_RUN_DAYS) {
+      const over = (list: EasyDay[]): boolean =>
+        week.fixedLoad + addons(list) + (list.length * minEasy) / 60 >
+        week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET);
+      const dropOrder = [
+        ...days.filter((d) => !afterQuality.has(d.date)),
+        ...days.filter((d) => afterQuality.has(d.date))
+      ];
+      while (days.length > 0 && over(days)) {
+        const drop = dropOrder.shift();
+        days = days.filter((d) => d.date !== drop?.date);
+      }
+      for (const day of days) put(day, minEasy);
+      return out;
+    }
     const keep = Math.max(0, Math.min(days.length, Math.floor(budget(days) / minEasy)));
     const dropOrder = [
       ...days.filter((d) => d.date === dayBeforeLong),
@@ -178,16 +206,8 @@ function easyFill(
   for (const day of days) {
     /* Plafon važi za ceo dan: lagani deo + dodatak. */
     const sec = Math.min(per, day.cap - addonCost(day).durationSec);
-    if (sec < minEasy) {
-      out.set(day.date, { type: 'easy', sec: Math.min(per, day.cap) });
-      continue;
-    }
-    out.set(
-      day.date,
-      day.addon !== null && day.addon.type === 'addon'
-        ? { ...day.addon, sec }
-        : { type: 'easy', sec }
-    );
+    if (sec < minEasy) out.set(day.date, { type: 'easy', sec: Math.min(per, day.cap) });
+    else put(day, sec);
   }
   return out;
 }
@@ -326,9 +346,18 @@ export function layoutWeek(
       if (date === eve) cap = Math.min(cap, RACE_EVE_MAX_SEC);
       return { date, addon: date === eve ? null : (addons.get(date) ?? null), cap };
     });
-  for (const [date, recipe] of easyFill(pool, week.targetLoad - fixedLoad, dayBeforeLong, ctx)) {
-    out.set(date, recipe);
+  const afterQuality = new Set<IsoDate>();
+  for (const [date, recipe] of fixed) {
+    if (recipe.type === 'quality' || recipe.type === 'test') afterQuality.add(addDays(date, 1));
   }
+  const filled = easyFill(
+    pool,
+    { targetLoad: week.targetLoad, fixedLoad, runDays: d.runDays.length },
+    dayBeforeLong,
+    afterQuality,
+    ctx
+  );
+  for (const [date, recipe] of filled) out.set(date, recipe);
   return out;
 }
 
@@ -494,9 +523,12 @@ export function runPass(
       longSec: shell.longSec,
       days
     };
-    const totals = weekTotals(built, header, state, ctx);
-    loads.push(totals.load);
-    longs.push(totals.longSec);
+    /* Nedelje koje seku pauzu ili rampu ne ulaze u pravilo rasta (drugi krug): povratak određuje samo rampa. */
+    if (!underRamp(week.start, adjustments)) {
+      const totals = weekTotals(built, header, state, ctx);
+      loads.push(totals.load);
+      longs.push(totals.longSec);
+    }
     return built;
   });
   return { ...doc, weeks };

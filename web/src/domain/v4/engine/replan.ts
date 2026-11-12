@@ -486,7 +486,7 @@ function explain(
       const what = `Pauza${PAUSE_REASON[ev.reason]} trajala je ${count(length, DAYS)} (${fmtDateRange(ev.from, ev.to)})`;
       const ramp = countWith(pauseRampDays(length, ev.reason), FIRST, DAYS);
       const day = `${what}, pa je povratak postepen: ${ramp} posle nje treninzi su kraći i lagani, bez brzih deonica; ${resume}.`;
-      const late = `${what}; posle povratka obim raste postepeno od onoga što je stvarno odrađeno, a prvi brzi trening svake vrste je kraći — ${lighter}.`;
+      const late = `${what}, pa je povratak postepen: ${ramp} posle nje treninzi su kraći i lagani, bez brzih deonica; i posle toga je prvi brzi trening svake vrste kraći — ${lighter}.`;
       const header = `${what}, pa je ostatak plana preračunat od sadašnje baze; ${lighter}.`;
       return { day, late, week: late, header };
     }
@@ -502,7 +502,7 @@ function explain(
       const faster = c.doc.header.form.paceVdot > before.header.form.paceVdot;
       const { raceDay } = state.form;
       const header = `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a očekivano vreme trke je sada oko ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)}).`;
-      const late = `${what}: posle oporavka je prvi brzi trening svake vrste nešto kraći — ${lighter}; ostatak plana je isti.`;
+      const late = `${what}: oporavak traje ${count(ramp, DAYS)} — treninzi su kraći i lagani, bez brzih deonica; i posle toga je prvi brzi trening svake vrste nešto kraći — ${lighter}.`;
       return { day, late, week: late, header };
     }
     case 'missed': {
@@ -524,7 +524,7 @@ function explain(
       }
       const pain = `Prijavljen je jak bol (nivo ${String(ev.level)}): odmor traje ${count(PAIN_HIGH_REST_DAYS, DAYS)} — javi se lekaru ili fizioterapeutu`;
       const day = `${pain}; posle toga je povratak postepen, a ${resume}.`;
-      const late = `${pain}; posle povratka je prvi brzi trening svake vrste kraći — ${lighter}.`;
+      const late = `${pain}; posle toga je povratak postepen, a prvi brzi trening svake vrste kraći — ${lighter}.`;
       return { day, late, week: late, header: day };
     }
     case 'fatigue': {
@@ -609,6 +609,8 @@ function describe(
     c.until
   );
   const text = explain(ev, before, c, state, data, last);
+  /* Jedno objašnjenje po događaju: ako promene idu i posle prozora, sve stavke nose zajedničku rečenicu. */
+  const reason = last > c.until ? text.late : text.day;
   const changes: Change[] = [];
   const base = { eventId: ev.id, until: c.until };
   const beforeCtx = paceCtxOf(before.header);
@@ -679,7 +681,7 @@ function describe(
           what: 'obim',
           before: `${fmtNumber(km0)} km`,
           after: `${fmtNumber(km1)} km`,
-          reason: text.week,
+          reason,
           until: last
         });
       }
@@ -696,7 +698,7 @@ function describe(
         what: dayWhat(ev, previous, day, c),
         before: textOf(previous),
         after: textOf(day),
-        reason: inWindow ? text.day : text.late,
+        reason,
         until: inWindow ? c.until : last
       });
     }

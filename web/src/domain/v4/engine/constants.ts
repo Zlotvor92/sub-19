@@ -81,6 +81,11 @@ export const LONG_BLOCK_MAX_SHARE = 0.5;
 /** Dan pre trke: odmor ili lagano do 20 min (§ 6.2 k. 10). */
 export const RACE_EVE_MAX_SEC = 1200;
 
+/** Lagan dan ne nestaje zbog malog ostatka budžeta kad trkač ima ≥ 3 dana: ostaje na `minEasySec` dok nedelja
+    ne pređe cilj za više od 10 % (odluka organizatora, drugi krug). */
+export const EASY_FLOOR_MIN_RUN_DAYS = 3;
+export const EASY_FLOOR_OVER_TARGET = 0.1;
+
 /* ------------------------------------------------------------------ spremnost (§ 6.5, § 14.1) */
 
 /** `f(n) = RAMP_START + RAMP_SPAN × n / R`. */
@@ -140,7 +145,8 @@ export const PACE_UPDATE_AFTER_RESULT_VDOT = 0.3;
 
 export const GUARD_DOSE_TOLERANCE_SEC = 90;
 export const GUARD_FAST_SHARE_TOLERANCE = 0.02;
-export const GUARD_JUMP_TOLERANCE = 0.05;
+/** § 8.2 daje 5 %; drugi krug: čuvar ne prijavljuje do + 10 % (lagan dan na najkraćem trajanju). */
+export const GUARD_JUMP_TOLERANCE = 0.1;
 export const GUARD_LONG_STEP_TOLERANCE_SEC = 60;
 export const GUARD_MIN_WORKOUT_SEC = 900;
 export const GUARD_UNDER_TARGET = 0.9;
