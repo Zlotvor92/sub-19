@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { buildCtx, plannedEffort, weekTarget } from './build';
 import { decideLongMax, decideLongStart } from './decide';
-import { buildState, deriveEvents, guard, plan, renderPlan, replan } from './index';
+import {
+  buildState,
+  deriveEvents,
+  guard,
+  paceCtxOf,
+  plan,
+  renderPlan,
+  replan,
+  summarize
+} from './index';
 import { modsFor } from './readiness';
 import { build, facts, goalAt, runsAsPlanned } from './testdata/helpers';
 import { SYNTHETIC } from './testdata/synthetic';
@@ -178,7 +187,7 @@ describe('5–6: cilj prve nedelje i rasterećenja', () => {
     );
   });
 
-  it('…osim kad plan počinje u rampi (spremnost ima prednost)', () => {
+  it('plan koji počinje u rampi: cilj ostaje na bazi, dane skraćuje spremnost (krug 2, R5)', () => {
     const race = {
       id: 'trka',
       date: '2026-11-15',
@@ -188,11 +197,13 @@ describe('5–6: cilj prve nedelje i rasterećenja', () => {
     };
     const fresh = make(facts(), lowStart);
     const ramp = make(facts({ runs: [race] }), lowStart);
-    const base = Math.round(ramp.doc.header.decisions.baseLoad);
+    const ctx = paceCtxOf(ramp.doc.header);
+    const load = (doc: PlanDoc): number =>
+      (doc.weeks[0]?.days ?? []).reduce((sum, day) => sum + summarize(day.workout, ctx).load, 0);
     expect(fresh.doc.weeks[0]?.targetLoad).toBeGreaterThanOrEqual(
       Math.round(fresh.doc.header.decisions.baseLoad)
     );
-    expect(ramp.doc.weeks[0]?.targetLoad).toBeLessThan(base);
+    expect(load(ramp.doc)).toBeLessThan(0.8 * load(fresh.doc));
   });
 
   it('rasterećenje nije veće od `recovery.loadFactor` × cilj prethodne nedelje', () => {

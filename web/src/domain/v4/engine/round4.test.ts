@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addDays } from './dates';
 import { count, DAYS, KM, MINUTES, WEEKS, WORKOUTS } from './format';
+import { weekCost } from './guard';
 import { buildState, canonical, deriveEvents, paceCtxOf, plan, replan, summarize } from './index';
 import { EXAMPLE } from './testdata/example';
 import { advance, build, facts, goalAt, grid, runsAsPlanned } from './testdata/helpers';
@@ -226,12 +227,21 @@ describe('B: upozorenja o obimu i dugom — šta može sada, šta za sledeći ci
 describe('C–D: rast dugog i zaokruživanje deonica', () => {
   it('dugi raste od nezaokružene odluke: korak između uzastopnih nedelja gradnje je ceo `longStepSec`', () => {
     const goal: Goal = { distanceId: EXAMPLE.id, raceDate: '2027-03-07' };
-    const slow: DistanceData = { ...EXAMPLE, safety: { ...EXAMPLE.safety, longStepSec: 290 } };
+    /* Udeo dugog u nedelji isključen (1): test meri samo lanac koraka, ne plafon udela (krug 2, R4). */
+    const slow: DistanceData = {
+      ...EXAMPLE,
+      safety: {
+        ...EXAMPLE.safety,
+        longStepSec: 290,
+        longShareByRunDays: { '1': 1 }
+      }
+    };
     const { doc } = make(facts(), goal, slow);
     const d = doc.header.decisions;
     let chained = 0;
     doc.weeks.forEach((w, i) => {
-      if (w.intent.long === null) return;
+      /* Rasterećenje ima svoj plafon (≤ `longFactor` × dugi prethodne nedelje), nije deo lanca koraka. */
+      if (w.intent.long === null || w.intent.kind === 'recovery') return;
       const wanted = Math.round((w.intent.long.lenPct * d.longMaxSec) / 60) * 60;
       const before = Math.max(
         d.longStartSec,
@@ -284,23 +294,27 @@ describe('E: plan koji počinje u rampi posle trke', () => {
     const effort = after.doc.header.adjustments?.find((x) => x.kind === 'effort');
     expect(effort).toMatchObject({ lastLongSec: 3636 });
   });
-  it('posle rampe pravilo rasta gradi od baze pre trke: nema skoka, nedelje rampe ne ulaze u `m`', () => {
+  it('posle rampe pravilo rasta gradi od baze pre trke: nema skoka obima, nedelje rampe ne ulaze u `m`', () => {
     const base = after.doc.header.decisions.baseLoad;
     const { maxWeeklyRampPct, minRampLoad } = EXAMPLE.safety;
+    const ctx = paceCtxOf(after.doc.header);
     const seen: number[] = [];
     after.doc.weeks.forEach((w, i) => {
       if (i < 3) return;
+      /* Pravilo rasta meri minute trčanja (krug 2, R3). */
+      const minutes = weekCost(w, goal.raceDate, ctx).durationSec / 60;
       const m = Math.max(base, ...seen.slice(-3));
       if (w.intent.kind === 'build' || w.intent.kind === 'peak') {
         const rule = Math.max(m * (1 + maxWeeklyRampPct), m + minRampLoad);
-        expect(w.targetLoad, String(w.index)).toBeLessThanOrEqual(rule + 1);
+        expect(minutes, String(w.index)).toBeLessThanOrEqual(rule + 3);
       }
-      seen.push(w.targetLoad);
+      seen.push(minutes);
     });
     /* 3. nedelja (rampa se završava njenim prvim danom): cilj je uz bazu, ne uz vrh šablona. */
-    const third = after.doc.weeks[2]?.targetLoad ?? 0;
-    expect(third).toBeLessThanOrEqual(Math.round(base * (1 + maxWeeklyRampPct)) + 1);
-    expect(third).toBeLessThan(fresh.doc.weeks[2]?.targetLoad ?? 0);
+    const third = after.doc.weeks[2];
+    const thirdMin = third === undefined ? 0 : weekCost(third, goal.raceDate, ctx).durationSec / 60;
+    expect(thirdMin).toBeLessThanOrEqual(base * (1 + maxWeeklyRampPct) + 3);
+    expect(third?.targetLoad ?? 0).toBeLessThan(fresh.doc.weeks[2]?.targetLoad ?? 0);
   });
   it('dugi u rampi: ≤ 75 % reference samo dok je f < 0,8; posle toga rampa i lanac, bez skoka', () => {
     const ctx = paceCtxOf(after.doc.header);

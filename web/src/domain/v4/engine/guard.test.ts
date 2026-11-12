@@ -8,6 +8,7 @@ import type { Goal, InputErrorCode, RunnerFacts, Warning } from './types';
    - 1–2 dana trčanja: nedelja ne može da stigne do cilja ni do 3 treninga; udeo brzog rada i skok su posledica;
    - 3 dana: kvalitet + dugi pojedu cilj pa lagan dan otpada (ispod cilja, manje od 3 treninga);
    - obim po danu trčanja van razumnog (> 70 ili < 25 bodova po danu): plafoni laganih dana, lagan dan uz kratak dugi;
+     ispod 25 i skok — svaki traženi dan ostaje na najkraćem trčanju (krug 2, R4), pa nedelja pređe pravilo rasta;
    - plan koji počinje u rampi posle trke: prve nedelje posle rampe su ispod cilja (dugi kreće od trajanja trke). */
 function allowed(
   check: string,
@@ -22,7 +23,7 @@ function allowed(
     );
   if (runDays === 3 && ['ispod-cilja', 'min-nedelja'].includes(check)) return true;
   if (perDay > 70) return check === 'ispod-cilja';
-  if (perDay < 25) return ['ispod-cilja', 'lagan-dugi'].includes(check);
+  if (perDay < 25) return ['ispod-cilja', 'lagan-dugi', 'skok'].includes(check);
   return afterRace && check === 'ispod-cilja' && (weekIndex ?? 99) <= 4;
 }
 

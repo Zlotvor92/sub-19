@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, diffDays } from './dates';
+import { fmtDate } from './format';
 import { buildState, deriveEvents, guard, paceCtxOf, plan, replan, summarize } from './index';
 import { EXAMPLE } from './testdata/example';
-import { facts, runsAsPlanned } from './testdata/helpers';
+import { facts, HALF_M, runsAsPlanned } from './testdata/helpers';
 import { SYNTHETIC } from './testdata/synthetic';
 import type { DistanceData, Goal, PlanDay, PlanDoc, Run, RunnerFacts, RunnerState } from './types';
 
@@ -54,9 +55,10 @@ describe('SPEC § 12 (a): nov plan, 30 km nedeljno, 4 dana, 10 nedelja, forma 1:
     expect(Math.abs(r.highSec - 6119)).toBeLessThanOrEqual(2);
   });
 
-  it('nedelja 1: cilj 181 BO, prag 2 × 8 min u četvrtak, dugi 11,5 km, oko 28 km', () => {
+  it('nedelja 1: cilj = baza + dodatno opterećenje kvaliteta (krug 2, R5), prag 2 × 8 min, dugi 11,5 km, oko 30 km', () => {
     const week = doc.weeks[0];
-    expect(week?.targetLoad).toBe(181);
+    /* 176 BO baze (30 km × 5:52) + ≈ 19 BO koje nose prag i ubrzanja iznad laganog trčanja istog trajanja. */
+    expect(week?.targetLoad).toBe(195);
     expect(onDate(doc, '2026-11-19')?.workout?.text).toContain('2 × 8 min');
     expect(onDate(doc, '2026-11-22')?.workout?.text).toBe('dugi 11,5 km');
     expect(onDate(doc, '2026-11-17')?.workout?.text).toContain('ubrzanja');
@@ -64,20 +66,22 @@ describe('SPEC § 12 (a): nov plan, 30 km nedeljno, 4 dana, 10 nedelja, forma 1:
     const sums = (week?.days ?? []).map((x) => summarize(x.workout, ctx));
     const km = sums.reduce((a, s) => a + s.km, 0);
     const load = sums.reduce((a, s) => a + s.load, 0);
-    expect(km).toBeGreaterThan(27.5);
-    expect(km).toBeLessThan(29.5);
-    expect(Math.abs(load - 181)).toBeLessThan(4);
+    /* Nedelja 1 nije ispod sadašnjeg obima (30 km). */
+    expect(km).toBeGreaterThanOrEqual(30);
+    expect(km).toBeLessThan(31.5);
+    expect(Math.abs(load - 195)).toBeLessThan(4);
     expect(Math.round(sums[3]?.load ?? 0)).toBe(59);
   });
 
-  it('ciljevi nedelja prate šablon (pravilo rasta ne veže), vrh je u 7. nedelji, čuvar bez nalaza', () => {
-    /* 4. nedelja (rasterećenje): treći krug — najviše 0,8 × cilj prethodne (210 → 168), umesto 171 iz primera. */
-    const spec = [181, 196, 210, 168, 220, 235, 245, 208, 159, 86];
+  it('ciljevi nedelja: osnova na bazi + kvalitet, zatim šablon; vrh je u 7. nedelji, čuvar bez nalaza', () => {
+    /* 1–2. nedelja: baza + dodatno opterećenje (R5); 4. (rasterećenje): najviše 0,8 × cilj prethodne. */
+    const spec = [195, 199, 210, 168, 212, 235, 245, 208, 159, 86];
     doc.weeks.forEach((w, i) =>
       expect(Math.abs(w.targetLoad - (spec[i] ?? 0)), String(i + 1)).toBeLessThanOrEqual(1)
     );
     expect(doc.weeks[6]?.intent.kind).toBe('peak');
-    expect(onDate(doc, '2027-01-03')?.workout?.text).toContain('17,5 km');
+    /* Dugi je udeo PLANIRANIH minuta te nedelje (R4), ne vrha: 14,5 km od 37 km. */
+    expect(onDate(doc, '2027-01-03')?.workout?.text).toContain('14,5 km');
     expect(guard(doc, state, EXAMPLE)).toEqual([]);
   });
 });
@@ -114,9 +118,10 @@ describe('SPEC § 12 (d): plan koji počinje dan posle trke od 1:41:00', () => {
     expect(onDate(doc, '2026-11-24')?.workout?.text).not.toContain('ubrzanja');
   });
 
-  it('upozorenje `povratak` navodi 15 dana i datum prvog brzog treninga', () => {
+  it('upozorenje `povratak` navodi do kada traje oporavak (15 dana) i datum prvog brzog treninga', () => {
     const w = doc.header.warnings.find((x) => x.code === 'povratak');
-    expect(w?.meaning).toContain('15 dana');
+    expect(w?.problem).toContain('dan posle trke');
+    expect(w?.meaning).toContain('Do 30. 11.');
     expect(w?.proposal).toContain('26. 11.');
     expect(doc.header.form.start.confidence).toBe('visoka');
   });
@@ -213,7 +218,7 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
       );
       const r = replan(start.doc, st, deriveEvents(start.doc, st), EXAMPLE);
       const text = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
-      expect(text, reason).toContain(`${String(rampDays)} dana posle nje`);
+      expect(text, reason).toContain(`do ${fmtDate(addDays(today, rampDays))} su treninzi kraći`);
       for (const day of days(r.doc)) {
         const n = diffDays(day.date, today);
         if (n >= 1 && n < (0.4 * rampDays) / 0.6)
@@ -243,8 +248,13 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
   it('objašnjenje kaže šta se desilo, šta je promenjeno i do kada', () => {
     const reason = result.changes.find((c) => c.scope === 'dan')?.reason ?? '';
     expect(reason).toContain('7 dana (14–20. 12.)');
-    expect(reason).toContain('prvih 14 dana');
-    expect(reason).toContain('od 4. 1.');
+    /* Tekst prati plan (krug 2, R9): do kada su treninzi kraći i kog dana je prvi brzi trening. */
+    expect(reason).toContain('do 3. 1. su treninzi kraći i lagani');
+    const first = days(result.doc).find(
+      (d) => d.date > today && d.workout !== null && fastSec(result.doc, d) > 0
+    );
+    expect(first).toBeDefined();
+    expect(reason).toContain(`prvi brzi trening je ${fmtDate(first?.date ?? '')}`);
   });
 });
 
@@ -293,8 +303,13 @@ describe('SPEC § 14.1: ništa brzo 3 dana posle trke ili testa', () => {
       durationSec: 780,
       effort: 'test'
     };
+    /* 60 km nedeljno: sa 30 km na 7 dana kvalitet bi ustupio mesto laganim danima (krug 2, R4). */
     const { doc } = make(
-      facts({ runs: [test], availability: { runDays: [...everyDay.runDays], longDay: 6 } })
+      facts({
+        runs: [test],
+        availability: { runDays: [...everyDay.runDays], longDay: 6 },
+        profile: { weeklyKm: 60, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
+      })
     );
     for (const day of days(doc)) {
       if (diffDays(day.date, test.date) <= 3) expect(fastSec(doc, day), day.date).toBe(0);

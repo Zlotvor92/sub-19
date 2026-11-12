@@ -1,5 +1,10 @@
 /* V4 — ODLUKE DONETE JEDNOM (SPEC § 6.2 k. 3–4, § 4.6). Svaka veličina ima jednu funkciju-vlasnika;
    `replan` ih čita iz `header.decisions` i poziva ponovo samo gde § 6.3 to dozvoljava. */
+import {
+  DEFAULT_EASY_MAX_OVER_PREVIOUS,
+  DEFAULT_MAX_PEAK_OVER_BASE,
+  DEFAULT_TAPER_EASY_MAX_SEC
+} from './constants';
 import type {
   Decisions,
   DistanceData,
@@ -12,7 +17,7 @@ import type {
   Weekday
 } from './types';
 
-/** Vrh nedeljnog opterećenja: `P = max(B, min(B / startPct, plafon nivoa))`. */
+/** Vrh nedeljnog opterećenja: `P = max(B, min(B / startPct, plafon nivoa, B × maxPeakOverBase))` (R3). */
 export function decidePeak(
   baseLoad: LoadPoints,
   template: Template,
@@ -21,7 +26,8 @@ export function decidePeak(
 ): LoadPoints {
   const cap = safety.peakLoadCap[level] ?? Number.POSITIVE_INFINITY;
   const wanted = template.startPct > 0 ? baseLoad / template.startPct : baseLoad;
-  return Math.max(baseLoad, Math.min(wanted, cap));
+  const overBase = baseLoad * (safety.maxPeakOverBase ?? DEFAULT_MAX_PEAK_OVER_BASE);
+  return Math.max(baseLoad, Math.min(wanted, cap, overBase));
 }
 
 /** Plafon doze po podražaju: `min(maxWorkSec, udeo × P × 60)`, zaokružen na sekundu. */
@@ -69,8 +75,25 @@ function byRunDays(map: Readonly<Record<string, number>>, runDays: number): numb
 const isDayMap = (value: unknown): value is Readonly<Record<string, number>> =>
   typeof value === 'object' && value !== null;
 
+/** Lagan dan kao najveći udeo dugog te nedelje (R2a); broj ili mapa po broju dana trčanja. */
+export function easyShareOfLong(safety: SafetyNumbers, runDays: number): number {
+  const raw = safety.easyMaxShareOfLong;
+  return typeof raw === 'number' ? raw : (byRunDays(raw, runDays) ?? 1);
+}
+
+/** Lagan dan kao najveći umnožak najdužeg laganog dana prethodne nedelje (R2b). */
+export function easyOverPrevious(safety: SafetyNumbers): number {
+  return safety.easyMaxOverPrevious ?? DEFAULT_EASY_MAX_OVER_PREVIOUS;
+}
+
+/** Najduži lagan dan u nedelji sužavanja i nedelji trke (R1). */
+export function taperEasyMax(safety: SafetyNumbers, runDays: number): Seconds {
+  const raw = safety.taperEasyMaxSec ?? DEFAULT_TAPER_EASY_MAX_SEC;
+  return typeof raw === 'number' ? raw : (byRunDays(raw, runDays) ?? Number.POSITIVE_INFINITY);
+}
+
 /** Udeo dugog za broj dana; mapa može biti i po nivou (treći krug). */
-function longShare(safety: SafetyNumbers, level: LevelId, runDays: number): number {
+export function longShare(safety: SafetyNumbers, level: LevelId, runDays: number): number {
   const map = safety.longShareByRunDays;
   const leveled = Object.values(map).some(isDayMap);
   if (!leveled) {

@@ -90,6 +90,23 @@ export const RACE_EVE_MAX_SEC = 1200;
 export const EASY_FLOOR_MIN_RUN_DAYS = 3;
 export const EASY_FLOOR_OVER_TARGET = 0.1;
 
+/* ------------------------------------------------------------------ krug 2 (R1–R5): podrazumevane vrednosti */
+
+/** Vrh ≤ baza × 1,40 kad podaci ne zadaju `safety.maxPeakOverBase` (R3). */
+export const DEFAULT_MAX_PEAK_OVER_BASE = 1.4;
+/** Lagan dan ≤ 1,25 × najduži lagan dan prethodne nedelje koja nije rasterećenje (R2b). */
+export const DEFAULT_EASY_MAX_OVER_PREVIOUS = 1.25;
+/** Lagan dan u nedelji sužavanja i nedelji trke: najviše 50 min, do 3 dana trčanja 40 min (R1). */
+export const DEFAULT_TAPER_EASY_MAX_SEC: Readonly<Record<string, number>> = {
+  '1': 2400,
+  '4': 3000
+};
+/** U nedelji sužavanja i nedelji trke dodatak (ubrzanja) ostaje i kad plafon dana skrati lagani deo, dok je
+    lagani deo bar 10 min; ispod toga dan je samo lagan (R1). */
+export const TAPER_ADDON_MIN_EASY_SEC = 600;
+/** Prva nedelja posle rampe povratka: obim ≤ poslednja puna nedelja pre pauze × 1,10 (R9). */
+export const RETURN_WEEK_MAX_OVER_LAST = 1.1;
+
 /* ------------------------------------------------------------------ spremnost (§ 6.5, § 14.1) */
 
 /** `f(n) = RAMP_START + RAMP_SPAN × n / R`. */
@@ -121,13 +138,25 @@ export const RAMP_DOSE_FACTOR = 0.8;
 export const POST_RAMP_FIRST_DAYS = 14;
 /** § 14.1: ništa brzo u prva 3 dana posle trke ili testa (kvalitet najranije 4. dana). */
 export const NO_FAST_DAYS_AFTER_EFFORT = 3;
-/** Bol (§ 6.5): do nivoa 3 → 3 dana bez visokog udara; do 6 → 7 dana bez kvaliteta × 0,7; iznad → 7 dana odmor. */
+/** Bol (krug 2, R7). Nivo 1–3: 1 dan odmora, prvo trčanje lagano, 5 dana bez visokog udara.
+    Nivo 4–6: 2 dana odmora; 10 dana bez kvaliteta i bloka (prvih 7 i kraće, × 0,7); 14 dana dugi ≤ 75 % poslednjeg
+    dugog i bez visokog udara; prvi kvalitet svake vrste posle toga ≤ 60 % doze. Nivo ≥ 7: 7 dana odmor, pa kao
+    pauza zbog povrede. */
 export const PAIN_LOW_MAX = 3;
 export const PAIN_MID_MAX = 6;
-export const PAIN_LOW_DAYS = 3;
-export const PAIN_MID_DAYS = 7;
+export const PAIN_LOW_REST_DAYS = 1;
+export const PAIN_LOW_DAYS = 5;
+export const PAIN_MID_REST_DAYS = 2;
+export const PAIN_MID_SHORT_DAYS = 7;
 export const PAIN_MID_FACTOR = 0.7;
+export const PAIN_MID_DAYS = 10;
+export const PAIN_MID_LONG_DAYS = 14;
+export const PAIN_MID_DOSE_FACTOR = 0.6;
 export const PAIN_HIGH_REST_DAYS = 7;
+/** Uslov za nastavak i prag za prekid u tekstu promene (R7). */
+export const PAIN_CONTINUE_MAX = 2;
+export const PAIN_STOP_FROM = 4;
+export const PAIN_DOCTOR_AFTER_DAYS = 7;
 /** Umor (§ 6.5): 4 dana bez kvaliteta, trajanje × 0,8; izveden kad je umor / baza ≥ 1,5 (§ 3). */
 export const FATIGUE_DAYS = 4;
 export const FATIGUE_FACTOR = 0.8;
@@ -155,7 +184,8 @@ export const GUARD_FAST_SHARE_TOLERANCE = 0.02;
 export const GUARD_JUMP_TOLERANCE = 0.1;
 export const GUARD_LONG_STEP_TOLERANCE_SEC = 60;
 export const GUARD_MIN_WORKOUT_SEC = 900;
-export const GUARD_UNDER_TARGET = 0.9;
+/** Krug 2 (R2c): neplaniran višak se ne prijavljuje do −15 %. */
+export const GUARD_UNDER_TARGET = 0.85;
 export const GUARD_MIN_WEEK_SHARE = 0.5;
 export const GUARD_MIN_WEEK_WORKOUTS = 3;
 export const GUARD_TAPER_WORK_SHARE = 0.6;

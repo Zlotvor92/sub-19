@@ -53,8 +53,9 @@ export interface SlotRef {
 
 export type Recipe =
   | { type: 'rest' }
-  | { type: 'easy'; sec: Seconds }
-  | { type: 'addon'; sec: Seconds; def: WorkoutDef }
+  /** `maxSec`: plafon celog dana (lagani deo + dodatak) — zaokruživanje ga ne prelazi (krug 2, R1–R2). */
+  | { type: 'easy'; sec: Seconds; maxSec?: Seconds }
+  | { type: 'addon'; sec: Seconds; def: WorkoutDef; maxSec?: Seconds }
   | { type: 'long'; sec: Seconds; def: WorkoutDef | null; dose: Seconds; slot: SlotRef | null }
   | { type: 'quality'; def: WorkoutDef; dose: Seconds; slot: SlotRef }
   | { type: 'test'; def: WorkoutDef; slot: SlotRef };
@@ -340,15 +341,23 @@ function mainSteps(
 }
 
 /** Lagani deo zadat trajanjem `sec`: dužina na 0,5 km ili trajanje na 5 min (§ 5.5).
-    `down`: zaokruživanje naniže (dugi — da zaokruživanje ne pređe plafon ni korak rasta). */
-function easyExtent(sec: Seconds, ctx: BuildCtx, down = false): Extent {
-  const snap = (value: number, step: number): number =>
-    down ? Math.floor(value / step + 1e-6) * step : roundTo(value, step);
-  if (byDistance(ctx)) {
-    const meters = (sec / ctx.pace.paces.easy) * 1000;
-    return { distanceM: Math.max(EASY_DISTANCE_STEP_M, snap(meters, EASY_DISTANCE_STEP_M)) };
-  }
-  return { durationSec: Math.max(EASY_DURATION_STEP_SEC, snap(sec, EASY_DURATION_STEP_SEC)) };
+    `down`: zaokruživanje naniže (dugi — da zaokruživanje ne pređe plafon ni korak rasta).
+    `maxSec`: plafon dana — ako bi ga obično zaokruživanje prešlo, zaokružuje se naniže. */
+function easyExtent(sec: Seconds, ctx: BuildCtx, down = false, maxSec?: Seconds): Extent {
+  const build = (floor: boolean): { extent: Extent; durationSec: Seconds } => {
+    const snap = (value: number, step: number): number =>
+      floor ? Math.floor(value / step + 1e-6) * step : roundTo(value, step);
+    if (byDistance(ctx)) {
+      const meters = (sec / ctx.pace.paces.easy) * 1000;
+      const distanceM = Math.max(EASY_DISTANCE_STEP_M, snap(meters, EASY_DISTANCE_STEP_M));
+      return { extent: { distanceM }, durationSec: (distanceM * ctx.pace.paces.easy) / 1000 };
+    }
+    const durationSec = Math.max(EASY_DURATION_STEP_SEC, snap(sec, EASY_DURATION_STEP_SEC));
+    return { extent: { durationSec }, durationSec };
+  };
+  const first = build(down);
+  if (down || maxSec === undefined || first.durationSec <= maxSec + 0.5) return first.extent;
+  return build(true).extent;
 }
 
 const fmtLen = (extent: Extent): string =>
@@ -400,9 +409,9 @@ function withNotes(workout: Workout, def: WorkoutDef | null, ctx: BuildCtx): Wor
   return notes.length === 0 ? workout : { ...workout, notes };
 }
 
-function easyWorkout(sec: Seconds, ctx: BuildCtx): Workout {
+function easyWorkout(sec: Seconds, ctx: BuildCtx, maxSec?: Seconds): Workout {
   const def = easyDef(ctx);
-  const extent = easyExtent(sec, ctx);
+  const extent = easyExtent(sec, ctx, false, maxSec);
   const workout: Workout = {
     kind: 'easy',
     stimulus: null,
@@ -414,10 +423,15 @@ function easyWorkout(sec: Seconds, ctx: BuildCtx): Workout {
   return withNotes(workout, def, ctx);
 }
 
-function addonWorkout(sec: Seconds, def: WorkoutDef, ctx: BuildCtx): Workout {
-  if (def.main.kind !== 'add-on') return easyWorkout(sec, ctx);
-  const extent = easyExtent(sec, ctx);
+function addonWorkout(sec: Seconds, def: WorkoutDef, ctx: BuildCtx, maxSec?: Seconds): Workout {
+  if (def.main.kind !== 'add-on') return easyWorkout(sec, ctx, maxSec);
   const extra = addonSteps(def);
+  const extent = easyExtent(
+    sec,
+    ctx,
+    false,
+    maxSec === undefined ? undefined : maxSec - stepsCost(extra, ctx.pace).durationSec
+  );
   const steady = zoneStep('steady', 'E', extent);
   const workout: Workout = {
     kind: 'easy',
@@ -546,9 +560,9 @@ export function realize(recipe: Recipe, ctx: BuildCtx): Workout | null {
     case 'rest':
       return null;
     case 'easy':
-      return easyWorkout(recipe.sec, ctx);
+      return easyWorkout(recipe.sec, ctx, recipe.maxSec);
     case 'addon':
-      return addonWorkout(recipe.sec, recipe.def, ctx);
+      return addonWorkout(recipe.sec, recipe.def, ctx, recipe.maxSec);
     case 'long':
       return longWorkout(recipe, ctx);
     case 'quality':

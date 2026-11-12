@@ -8,9 +8,14 @@ import {
   PAIN_HIGH_REST_DAYS,
   PAIN_LOW_DAYS,
   PAIN_LOW_MAX,
+  PAIN_LOW_REST_DAYS,
   PAIN_MID_DAYS,
+  PAIN_MID_DOSE_FACTOR,
   PAIN_MID_FACTOR,
+  PAIN_MID_LONG_DAYS,
   PAIN_MID_MAX,
+  PAIN_MID_REST_DAYS,
+  PAIN_MID_SHORT_DAYS,
   PAUSE_MIN_DAYS,
   PAUSE_RAMP_FACTORS,
   BLOCK_GATE_MAX_DAYS,
@@ -114,11 +119,15 @@ export function adjustmentWindow(
     return { from, to, rampEnd };
   }
   if (adj.kind === 'pain') {
-    const days = adj.level <= PAIN_LOW_MAX ? PAIN_LOW_DAYS : PAIN_MID_DAYS;
+    if (adj.level <= PAIN_LOW_MAX) {
+      const end = addDays(adj.date, PAIN_LOW_DAYS);
+      return { from: addDays(adj.date, 1), to: end, rampEnd: end };
+    }
+    /* Nivo 4–6: zaštita traje 14 dana (dugi), a „prvi kvalitet manje doze" još 14 dana posle zabrane kvaliteta. */
     return {
       from: addDays(adj.date, 1),
-      to: addDays(adj.date, days),
-      rampEnd: addDays(adj.date, days)
+      to: addDays(adj.date, PAIN_MID_DAYS + POST_RAMP_FIRST_DAYS),
+      rampEnd: addDays(adj.date, PAIN_MID_LONG_DAYS)
     };
   }
   if (adj.kind === 'fatigue') {
@@ -135,6 +144,15 @@ export function underRamp(weekStart: IsoDate, adjustments: readonly Adjustment[]
     if (rampOf(adj) === null || (adj.kind === 'effort' && adj.planned === true)) return false;
     const w = adjustmentWindow(adj);
     return w !== null && w.from <= end && w.rampEnd >= weekStart;
+  });
+}
+
+/** Da li je dan u pauzi ili rampi povratka posle pauze (ne posle napora): tu se provera forme pomera (R9). */
+export function inReturn(date: IsoDate, adjustments: readonly Adjustment[]): boolean {
+  return adjustments.some((adj) => {
+    if (adj.kind === 'effort' || rampOf(adj) === null) return false;
+    const w = adjustmentWindow(adj);
+    return w !== null && date >= w.from && date <= w.rampEnd;
   });
 }
 
@@ -206,7 +224,7 @@ export function modsFor(
         m.f = Math.min(m.f, f);
         if (f < REST_BELOW_F) m.rest = true;
         if (f < QUALITY_FROM_F) noFast();
-        m.doseFactor = RAMP_DOSE_FACTOR;
+        m.doseFactor = Math.min(m.doseFactor, RAMP_DOSE_FACTOR);
         if (ramp.lastLongSec > 0 && f < QUALITY_FROM_F) {
           m.longCapSec = Math.min(m.longCapSec, RAMP_LONG_SHARE * ramp.lastLongSec);
         }
@@ -224,18 +242,29 @@ export function modsFor(
       const end = Math.max(ramp.days, ramp.noFast);
       if (ramp.firstReduced && n > end && n <= end + POST_RAMP_FIRST_DAYS && key !== null) {
         const done = seen.some((s) => s.key === key && s.date > ramp.zero && s.date < date);
-        if (!done) m.doseFactor = RAMP_DOSE_FACTOR;
+        if (!done) m.doseFactor = Math.min(m.doseFactor, RAMP_DOSE_FACTOR);
       }
     }
     if (adj.kind === 'pause' && date >= adj.from && date <= adj.to) m.rest = true;
     if (adj.kind === 'pain') {
       const n = diffDays(date, adj.date);
       if (adj.level <= PAIN_LOW_MAX) {
+        if (n >= 1 && n <= PAIN_LOW_REST_DAYS) m.rest = true;
+        /* Prvo trčanje posle odmora je lagano. */
+        if (n === PAIN_LOW_REST_DAYS + 1) noFast();
         if (n >= 1 && n <= PAIN_LOW_DAYS) m.highImpact = false;
       } else if (adj.level <= PAIN_MID_MAX) {
-        if (n >= 1 && n <= PAIN_MID_DAYS) {
-          noFast();
-          m.f = Math.min(m.f, PAIN_MID_FACTOR);
+        if (n >= 1 && n <= PAIN_MID_REST_DAYS) m.rest = true;
+        if (n >= 1 && n <= PAIN_MID_DAYS) noFast();
+        if (n >= 1 && n <= PAIN_MID_SHORT_DAYS) m.f = Math.min(m.f, PAIN_MID_FACTOR);
+        if (n >= 1 && n <= PAIN_MID_LONG_DAYS) {
+          m.highImpact = false;
+          const last = adj.lastLongSec ?? 0;
+          if (last > 0) m.longCapSec = Math.min(m.longCapSec, RAMP_LONG_SHARE * last);
+        }
+        if (n > PAIN_MID_DAYS && n <= PAIN_MID_DAYS + POST_RAMP_FIRST_DAYS && key !== null) {
+          const done = seen.some((s) => s.key === key && s.date > adj.date && s.date < date);
+          if (!done) m.doseFactor = Math.min(m.doseFactor, PAIN_MID_DOSE_FACTOR);
         }
       } else if (n >= 1 && n <= PAIN_HIGH_REST_DAYS) {
         m.rest = true;
@@ -289,11 +318,16 @@ export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recip
   if (mods.rest) return { type: 'rest' };
   switch (recipe.type) {
     case 'easy':
-      return { type: 'easy', sec: scaled(recipe.sec, mods.f) };
+      return { ...recipe, sec: scaled(recipe.sec, mods.f) };
     case 'addon': {
       const allowed = mods.addon && (mods.highImpact || recipe.def.impact !== 'visok');
       const sec = scaled(recipe.sec, mods.f);
-      return allowed ? { ...recipe, sec } : { type: 'easy', sec };
+      if (allowed) return { ...recipe, sec };
+      return {
+        type: 'easy',
+        sec,
+        ...(recipe.maxSec === undefined ? {} : { maxSec: recipe.maxSec })
+      };
     }
     case 'long': {
       const sec = Math.min(scaled(recipe.sec, mods.f), mods.longCapSec);

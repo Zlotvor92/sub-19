@@ -1,0 +1,688 @@
+import { describe, expect, it } from 'vitest';
+import { buildCtx, weekTarget } from './build';
+import { addDays, diffDays } from './dates';
+import { decidePeak } from './decide';
+import { weekCost } from './guard';
+import {
+  buildState,
+  deriveEvents,
+  guard,
+  paceCtxOf,
+  plan,
+  renderPlan,
+  replan,
+  summarize
+} from './index';
+import { EXAMPLE } from './testdata/example';
+import { build, facts, goalAt, grid, HALF_M, runsAsPlanned } from './testdata/helpers';
+import { SYNTHETIC } from './testdata/synthetic';
+import type {
+  DistanceData,
+  Goal,
+  PlanDay,
+  PlanDoc,
+  PlanEvent,
+  RunnerFacts,
+  RunnerState,
+  WeekIntent
+} from './types';
+
+/* KRUG 2 (R1–R11): ispravke posle prve ocene dva sudije — `docs/generators-v4/briefs/R2-ROUND2.md`. */
+
+const GOAL: Goal = goalAt('2027-01-24');
+const EX_GOAL: Goal = { distanceId: EXAMPLE.id, raceDate: '2027-03-07' };
+/** Zaokruživanje laganog dana: 0,5 km (≈ 3 min) ili 5 min. */
+const ROUND = 200;
+
+function make(
+  f: RunnerFacts,
+  data: DistanceData,
+  goal: Goal = GOAL
+): { doc: PlanDoc; state: RunnerState } {
+  const state = buildState(f, goal, data);
+  const result = plan(state, goal, data);
+  if (!result.ok) throw new Error('plan odbijen');
+  return { doc: result.doc, state };
+}
+
+const days = (doc: PlanDoc): PlanDay[] => doc.weeks.flatMap((w) => w.days);
+const secOf = (doc: PlanDoc, day: PlanDay | undefined): number =>
+  summarize(day?.workout ?? null, paceCtxOf(doc.header)).durationSec;
+const isEasy = (day: PlanDay): boolean => day.workout?.kind === 'easy';
+const isFast = (day: PlanDay | undefined): boolean =>
+  day?.workout != null &&
+  day.workout.kind !== 'race' &&
+  (day.workout.kind === 'quality' || day.workout.kind === 'test' || day.workout.workSec > 0);
+const weekMin = (doc: PlanDoc, i: number): number => {
+  const week = doc.weeks[i];
+  return week === undefined
+    ? 0
+    : weekCost(week, doc.header.goal.raceDate, paceCtxOf(doc.header)).durationSec / 60;
+};
+const withSafety = (data: DistanceData, over: Partial<DistanceData['safety']>): DistanceData => ({
+  ...data,
+  safety: { ...data.safety, ...over }
+});
+const synTemplate = SYNTHETIC.templates[1];
+if (synTemplate === undefined) throw new Error('nema šablona');
+
+/** Mreža bez planova koji počinju u rampi i bez obima van razumnog (tamo važe pod i plafon dana). */
+const calmGrid = grid().filter((c) => c.facts.runs.length === 0);
+
+describe('R1: nedelja trke i sužavanje — lagan dan nije duži od plafona ni od istog dana prethodne nedelje', () => {
+  it('podrazumevano 50 min (do 3 dana 40 min); neutrošen budžet se ne preliva', () => {
+    let checked = 0;
+    for (const c of calmGrid) {
+      const { doc } = build(c.facts, c.goal);
+      const runDays = doc.header.decisions.runDays.length;
+      const cap = Math.max(SYNTHETIC.safety.minEasySec, runDays <= 3 ? 2400 : 3000);
+      doc.weeks.forEach((week, i) => {
+        if (week.intent.kind !== 'taper' && week.intent.kind !== 'race') return;
+        const before = doc.weeks[i - 1];
+        for (const day of week.days.filter(isEasy)) {
+          const sec = secOf(doc, day);
+          expect(sec, `${c.name} ${day.date}`).toBeLessThanOrEqual(cap + ROUND);
+          const same = before?.days.find((d) => diffDays(day.date, d.date) === 7);
+          if (same !== undefined && isEasy(same) && before?.intent.kind !== 'recovery') {
+            expect(sec, `${c.name} ${day.date} isti dan`).toBeLessThanOrEqual(
+              Math.max(secOf(doc, same), SYNTHETIC.safety.minEasySec) + ROUND
+            );
+          }
+          checked += 1;
+        }
+      });
+    }
+    expect(checked).toBeGreaterThan(100);
+  });
+
+  it('`safety.taperEasyMaxSec` iz podataka veže (30 min), i po broju dana', () => {
+    const flat = withSafety(SYNTHETIC, { taperEasyMaxSec: 1800 });
+    const byDays = withSafety(SYNTHETIC, { taperEasyMaxSec: { '1': 1500, '5': 2100 } });
+    const big = facts({
+      profile: { weeklyKm: 70, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
+    });
+    for (const [data, cap] of [
+      [flat, 1800],
+      [byDays, 1500]
+    ] as const) {
+      const { doc } = make(big, data);
+      const calm = doc.weeks.filter((w) => w.intent.kind === 'taper' || w.intent.kind === 'race');
+      const easy = calm.flatMap((w) => w.days.filter(isEasy));
+      expect(easy.length).toBeGreaterThan(2);
+      for (const day of easy) expect(secOf(doc, day), day.date).toBeLessThanOrEqual(cap + ROUND);
+      /* Bez plafona isti trkač ima duže lagane dane u tim nedeljama — budžet se nije prelio drugde. */
+      const free = make(big, withSafety(SYNTHETIC, { taperEasyMaxSec: 99999 })).doc;
+      const sum = (d: PlanDoc): number =>
+        d.weeks
+          .filter((w) => w.intent.kind === 'race')
+          .reduce((a, w) => a + weekCost(w, GOAL.raceDate, paceCtxOf(d.header)).durationSec, 0);
+      expect(sum(doc)).toBeLessThanOrEqual(sum(free));
+    }
+  });
+});
+
+describe('R2: lagani dani nisu pufer', () => {
+  const data = withSafety(SYNTHETIC, { easyMaxShareOfLong: 0.65 });
+
+  it('(a) lagan dan ≤ 65 % dugog te nedelje (ne ispod najkraćeg trčanja); udeo može i po broju dana', () => {
+    for (const c of calmGrid) {
+      const { doc } = build(c.facts, c.goal, data);
+      for (const week of doc.weeks) {
+        const long = week.days.find((d) => d.workout?.kind === 'long');
+        if (long === undefined) continue;
+        const cap = Math.max(data.safety.minEasySec, 0.65 * secOf(doc, long));
+        for (const day of week.days.filter(isEasy)) {
+          /* Na najkraćem trčanju (20 min) dodatak od 4 × (20 s + 60 s) ide preko laganog dela. */
+          const addon = day.workout?.stimulus === null ? 0 : 320;
+          const sec = secOf(doc, day);
+          if (sec > cap + 1) {
+            expect(sec, `${c.name} ${day.date}`).toBeLessThanOrEqual(
+              data.safety.minEasySec + addon + ROUND
+            );
+          }
+        }
+      }
+    }
+    const byDays = withSafety(SYNTHETIC, { easyMaxShareOfLong: { '1': 0.7, '4': 0.5 } });
+    const { doc } = make(facts(), byDays);
+    for (const week of doc.weeks.filter((w) => w.longSec > 0)) {
+      for (const day of week.days.filter(isEasy)) {
+        expect(secOf(doc, day), day.date).toBeLessThanOrEqual(
+          Math.max(byDays.safety.minEasySec + 320, 0.5 * week.longSec) + 1
+        );
+      }
+    }
+  });
+
+  it('(b) lagan dan ≤ 1,25 × najduži lagan dan prethodne nedelje koja nije rasterećenje', () => {
+    let checked = 0;
+    for (const c of calmGrid) {
+      const { doc } = build(c.facts, c.goal, data);
+      let reference: number | null = null;
+      for (const week of doc.weeks) {
+        const easy = week.days.filter(isEasy).map((d) => secOf(doc, d));
+        if (reference !== null) {
+          for (const sec of easy) {
+            expect(sec, `${c.name} ned ${String(week.index)}`).toBeLessThanOrEqual(
+              Math.max(data.safety.minEasySec, 1.25 * reference) + 2 * ROUND
+            );
+            checked += 1;
+          }
+        }
+        if (week.intent.kind !== 'recovery' && easy.length > 0) reference = Math.max(...easy);
+      }
+    }
+    expect(checked).toBeGreaterThan(300);
+  });
+
+  it('(c) kad kvaliteta u nedelji nema, njegov budžet ne ide u lagane dane: nedelja je manja od cilja', () => {
+    const quiet = (w: WeekIntent, i: number): WeekIntent =>
+      i % 2 === 1 ? { ...w, stimuli: [] } : w;
+    const gaps: DistanceData = {
+      ...data,
+      templates: [
+        {
+          ...synTemplate,
+          recoveryEvery: 0,
+          body: synTemplate.body.map((p) => ({ ...p, cycle: p.cycle.map(quiet) }))
+        }
+      ]
+    };
+    const f = facts({
+      profile: { weeklyKm: 50, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
+    });
+    const { doc, state } = make(f, gaps, goalAt('2027-02-21'));
+    const ctx = paceCtxOf(doc.header);
+    let under = 0;
+    doc.weeks.forEach((week, i) => {
+      const before = doc.weeks[i - 1];
+      if (before === undefined || week.intent.stimuli.length > 0 || week.intent.kind !== 'build')
+        return;
+      const previous = Math.max(...before.days.filter(isEasy).map((d) => secOf(doc, d)));
+      for (const day of week.days.filter(isEasy)) {
+        expect(secOf(doc, day), day.date).toBeLessThanOrEqual(1.25 * previous + 2 * ROUND);
+      }
+      const cost = weekCost(week, doc.header.goal.raceDate, ctx);
+      if (cost.load < week.targetLoad - 2) under += 1;
+    });
+    expect(under).toBeGreaterThan(0);
+    /* Čuvar neplaniran višak ne prijavljuje do −15 %. */
+    for (const f2 of guard(doc, state, gaps).filter((x) => x.check === 'ispod-cilja')) {
+      const week = doc.weeks.find((w) => w.index === f2.weekIndex);
+      const cost = week === undefined ? null : weekCost(week, doc.header.goal.raceDate, ctx);
+      expect(cost?.load ?? 0).toBeLessThan(0.85 * (week?.targetLoad ?? 0));
+    }
+  });
+});
+
+describe('R3: rast i vrh', () => {
+  it('vrh ≤ baza × `maxPeakOverBase` (podrazumevano 1,40), bez obzira na `startPct`', () => {
+    const steep = { ...synTemplate, startPct: 0.5 };
+    expect(decidePeak(200, steep, SYNTHETIC.safety, 'osnovni')).toBe(280);
+    expect(decidePeak(200, steep, { ...SYNTHETIC.safety, maxPeakOverBase: 1.25 }, 'osnovni')).toBe(
+      250
+    );
+    const data: DistanceData = { ...SYNTHETIC, templates: [steep] };
+    const { doc } = make(facts(), data);
+    expect(doc.header.decisions.peakLoad).toBeLessThanOrEqual(
+      doc.header.decisions.baseLoad * 1.4 + 0.1
+    );
+  });
+
+  it('obim nedelje ≤ najveći od prethodne 3 × (1 + rast); pravilo meri minute, kvalitet ide preko', () => {
+    const { doc } = make(facts(), SYNTHETIC);
+    const ctx = buildCtx(doc.header, SYNTHETIC);
+    const intent = doc.weeks[1]?.intent;
+    if (intent === undefined) throw new Error('nema nedelje');
+    const input = { m: 150, fraction: 1, previousTarget: null };
+    const plain = weekTarget({ ...intent, loadPct: 1 }, { ...input, extra: 0 }, ctx);
+    const loaded = weekTarget({ ...intent, loadPct: 1 }, { ...input, extra: 30 }, ctx);
+    /* 150 min × 1,10 = 165 min obima; dodatno opterećenje kvaliteta (30) ide preko, ne umesto. */
+    expect(plain.full).toBeCloseTo(165, 5);
+    expect(loaded.full).toBeCloseTo(195, 5);
+  });
+
+  it('nema izuzetka posle nedelje sa proverom forme: skok obima ostaje u pravilu rasta', () => {
+    const tested: DistanceData = {
+      ...SYNTHETIC,
+      templates: [
+        {
+          ...synTemplate,
+          recoveryEvery: 0,
+          body: synTemplate.body.map((p) => ({
+            ...p,
+            cycle: p.cycle.map((w, i) =>
+              i === 1 ? { ...w, stimuli: [{ stimulus: 'test' }, { stimulus: 'ubrzanja' }] } : w
+            )
+          }))
+        }
+      ]
+    };
+    const f = facts({
+      profile: { weeklyKm: 45, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
+    });
+    const { doc, state } = make(f, tested, goalAt('2027-03-07'));
+    expect(days(doc).some((d) => d.workout?.kind === 'test')).toBe(true);
+    const { maxWeeklyRampPct, minRampLoad } = tested.safety;
+    const seen: number[] = [];
+    doc.weeks.forEach((week, i) => {
+      const minutes = weekMin(doc, i);
+      const m = Math.max(
+        ...seen.slice(-3),
+        ...(seen.length < 3 ? [doc.header.decisions.baseLoad] : [])
+      );
+      if (week.intent.kind === 'build' || week.intent.kind === 'peak') {
+        const rule = Math.max(m * (1 + maxWeeklyRampPct), m + minRampLoad);
+        expect(minutes, String(week.index)).toBeLessThanOrEqual(rule + 4);
+      }
+      seen.push(minutes);
+    });
+    expect(guard(doc, state, tested).filter((x) => x.check === 'skok')).toEqual([]);
+  });
+});
+
+describe('R4: dugi i traženi dani', () => {
+  it('dugi ≤ udeo po danima × planirani minuti TE nedelje (ne × vrh)', () => {
+    const { doc } = make(facts(), EXAMPLE, EX_GOAL);
+    const share = 0.42;
+    let bound = 0;
+    doc.weeks.forEach((week, i) => {
+      const long = week.days.find((d) => d.workout?.kind === 'long');
+      if (long === undefined || week.intent.kind === 'race') return;
+      const minutes = weekMin(doc, i);
+      expect(secOf(doc, long) / 60, String(week.index)).toBeLessThanOrEqual(share * minutes + 4);
+      if (
+        week.longSec < Math.round((week.intent.long?.lenPct ?? 0) * doc.header.decisions.longMaxSec)
+      )
+        bound += 1;
+    });
+    expect(bound).toBeGreaterThan(0);
+  });
+
+  it('rasterećenje nema duži dugi od prethodne nedelje', () => {
+    for (const c of calmGrid) {
+      const { doc } = build(c.facts, c.goal);
+      doc.weeks.forEach((week, i) => {
+        const before = doc.weeks[i - 1];
+        if (week.intent.kind !== 'recovery' || before === undefined) return;
+        expect(week.longSec, `${c.name} ned ${String(week.index)}`).toBeLessThanOrEqual(
+          before.longSec
+        );
+      });
+    }
+  });
+
+  it('sa ≥ 3 dana svaki traženi dan ostaje u planu; ako dan otpadne, plan to kaže upozorenjem', () => {
+    let full = 0;
+    let warned = 0;
+    for (const c of calmGrid) {
+      const { doc } = build(c.facts, c.goal);
+      const asked = doc.header.decisions.runDays.length;
+      if (asked < 3) continue;
+      const short = doc.weeks.filter(
+        (w) =>
+          w.intent.kind !== 'race' &&
+          w.start >= doc.header.startDate &&
+          w.days.filter((d) => d.workout !== null).length < asked
+      );
+      const warning = doc.header.warnings.find((w) => w.code === 'dan-izostavljen');
+      if (short.length === 0) {
+        expect(warning, c.name).toBeUndefined();
+        full += 1;
+      } else {
+        expect(warning, c.name).toBeDefined();
+        expect(warning?.meaning).toContain('10 %');
+        expect(warning?.proposal).toMatch(/nedelje plan koristi|novi plan koristi/);
+        warned += 1;
+      }
+    }
+    expect(full).toBeGreaterThan(40);
+    expect(warned).toBeGreaterThan(0);
+  });
+
+  it('kad budžet ne da najkraće lagano trčanje: prvo kvalitet postaje lagan dan, dan ne otpada', () => {
+    /* 24 km nedeljno na 7 dana: dugi je na svom udelu, a kvalitet ustupa mesto laganim danima. */
+    const f = facts({
+      availability: { runDays: [0, 1, 2, 3, 4, 5, 6], longDay: 6 },
+      profile: { weeklyKm: 24, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
+    });
+    const { doc } = make(f, EXAMPLE, EX_GOAL);
+    const first = doc.weeks[0];
+    expect(first?.days.filter((d) => d.workout !== null).length).toBe(7);
+    expect(first?.days.some((d) => d.workout?.kind === 'quality')).toBe(false);
+    expect(first?.days.some((d) => d.workout?.kind === 'long')).toBe(true);
+    /* Kad obim poraste, kvalitet se vraća. */
+    expect(days(doc).some((d) => d.workout?.kind === 'quality')).toBe(true);
+  });
+});
+
+describe('R5: osnova nije ispod sadašnjeg obima — kvalitet ide preko minuta, ne umesto njih', () => {
+  it('veliki obim (90 km, 6 dana): nijedna nedelja gradnje nema manje minuta od sadašnjih', () => {
+    const f = facts({
+      availability: { runDays: [0, 1, 2, 3, 5, 6], longDay: 6 },
+      profile: { weeklyKm: 90, recentResult: { distanceM: HALF_M, timeSec: 4680 } }
+    });
+    for (const data of [SYNTHETIC, EXAMPLE]) {
+      const goal = { distanceId: data.id, raceDate: '2027-03-07' };
+      const { doc } = make(f, data, goal);
+      const base = doc.header.decisions.baseLoad;
+      const ctx = paceCtxOf(doc.header);
+      doc.weeks.forEach((week, i) => {
+        if (week.intent.kind !== 'build' && week.intent.kind !== 'peak') return;
+        expect(weekMin(doc, i), `${data.id} ned ${String(week.index)}`).toBeGreaterThanOrEqual(
+          0.97 * base
+        );
+      });
+      /* Nedelja 1 u kilometrima: bar 95 % sadašnjeg obima. */
+      const first = doc.weeks[0];
+      const km = first === undefined ? 0 : weekCost(first, goal.raceDate, ctx).km;
+      expect(km).toBeGreaterThanOrEqual(0.95 * 90);
+    }
+  });
+
+  it('cilj nedelje gradnje = max(loadPct × P, B + dodatno opterećenje kvaliteta)', () => {
+    const { doc } = make(facts(), SYNTHETIC);
+    const ctx = buildCtx(doc.header, SYNTHETIC);
+    const { baseLoad, peakLoad } = doc.header.decisions;
+    const intent = doc.weeks[0]?.intent;
+    if (intent === undefined) throw new Error('nema nedelje');
+    const input = { m: baseLoad, fraction: 1, previousTarget: null, extra: 20 };
+    const low = weekTarget({ ...intent, loadPct: 0.5 }, input, ctx).full;
+    expect(low).toBeCloseTo(baseLoad + 20, 5);
+    const high = weekTarget({ ...intent, loadPct: 0.8 }, input, ctx).full;
+    expect(high).toBeCloseTo(Math.max(0.8 * peakLoad, baseLoad + 20), 5);
+  });
+});
+
+/* ------------------------------------------------------------------ R7–R9: događaji */
+
+/** Plan od 16 nedelja (primer § 12), odrađen po planu do `through`. */
+function midPlan(
+  through: string,
+  skip: (date: string) => boolean = () => false,
+  data: DistanceData = EXAMPLE,
+  over: Partial<RunnerFacts> = {}
+): { start: PlanDoc; state: RunnerState; today: string } {
+  const goal = { distanceId: data.id, raceDate: '2027-03-07' };
+  const f = facts(over);
+  const start = make(f, data, goal).doc;
+  const state = buildState(
+    { ...f, today: through, runs: runsAsPlanned(start, through, skip) },
+    goal,
+    data,
+    undefined,
+    start
+  );
+  return { start, state, today: through };
+}
+
+describe('R7: bol', () => {
+  const { start, state, today } = midPlan('2026-12-27');
+  const pain = (level: number): PlanEvent => ({
+    id: `pain:${today}:${String(level)}`,
+    date: today,
+    kind: 'pain',
+    level
+  });
+  const after = (doc: PlanDoc, n: number): PlanDay | undefined =>
+    days(doc).find((d) => d.date === addDays(today, n));
+
+  it('nivo 1–3: 1 dan odmora, prvo trčanje lagano, 5 dana bez jakog udara; tekst nosi uslov i lekara', () => {
+    const everyDay = midPlan('2026-12-27', () => false, EXAMPLE, {
+      availability: { runDays: [0, 1, 2, 3, 4, 5, 6], longDay: 6 },
+      profile: { weeklyKm: 70, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
+    });
+    const r = replan(everyDay.start, everyDay.state, [pain(2)], EXAMPLE);
+    expect(after(r.doc, 1)?.workout).toBeNull();
+    expect(isFast(after(r.doc, 2))).toBe(false);
+    expect(after(r.doc, 2)?.workout).not.toBeNull();
+    const reason = r.changes[0]?.reason ?? '';
+    expect(reason).toContain('najviše 2 od 10 i ne raste');
+    expect(reason).toContain('lekaru ili fizioterapeutu');
+    expect(reason).toContain('4 ili više');
+    expect(reason).not.toContain('plan se nastavlja kako je bio');
+  });
+
+  it('nivo 4–6: 2 dana odmora, 10 dana bez kvaliteta i bloka, dugi ≤ 75 % poslednjeg 14 dana, prvi kvalitet ≤ 60 % doze', () => {
+    const r = replan(start, state, [pain(5)], EXAMPLE);
+    const ctx = paceCtxOf(r.doc.header);
+    expect(after(r.doc, 1)?.workout).toBeNull();
+    expect(after(r.doc, 2)?.workout).toBeNull();
+    const lastLong = Math.max(
+      ...state.runs.filter((x) => diffDays(today, x.date) < 28).map((x) => x.durationSec)
+    );
+    let fastBefore = 0;
+    for (const day of days(r.doc)) {
+      const n = diffDays(day.date, today);
+      if (n < 1) continue;
+      if (n <= 10) expect(isFast(day), day.date).toBe(false);
+      if (n <= 14 && day.workout?.kind === 'long') {
+        expect(summarize(day.workout, ctx).durationSec, day.date).toBeLessThanOrEqual(
+          0.75 * lastLong + ROUND
+        );
+      }
+      if (n <= 10 && isFast(days(start).find((d) => d.date === day.date))) fastBefore += 1;
+    }
+    expect(fastBefore).toBeGreaterThan(0);
+    const firstFast = days(r.doc).find((d) => d.date > today && d.workout?.kind === 'quality');
+    const original = days(start).find((d) => d.date === firstFast?.date);
+    expect(firstFast).toBeDefined();
+    expect(diffDays(firstFast?.date ?? today, today)).toBeGreaterThan(10);
+    expect(firstFast?.workout?.workSec ?? 0).toBeLessThanOrEqual(
+      Math.max(0.6 * (original?.workout?.workSec ?? 0) + 150, EXAMPLE.safety.minDoseSec + 150)
+    );
+    expect(firstFast?.workout?.workSec ?? 0).toBeLessThan(original?.workout?.workSec ?? 0);
+    const reason = r.changes[0]?.reason ?? '';
+    expect(reason).toContain('naredna 2 dana su odmor');
+    expect(reason).toContain('najviše 2 od 10 i ne raste');
+    expect(reason).toContain('prekini trčanje i javi se lekaru ili fizioterapeutu');
+    expect(reason).not.toContain('plan se nastavlja kako je bio');
+  });
+
+  it('nivo ≥ 7: 7 dana odmora i upozorenje kao do sada', () => {
+    const r = replan(start, state, [pain(8)], EXAMPLE);
+    for (let n = 1; n <= 7; n += 1) expect(after(r.doc, n)?.workout ?? null).toBeNull();
+    expect(r.doc.header.warnings.some((w) => w.code === 'bol')).toBe(true);
+    expect(r.changes[0]?.reason).toContain('lekaru ili fizioterapeutu');
+  });
+});
+
+describe('R8: propušten ključni trening', () => {
+  const missedEvent = (doc: PlanDoc, date: string): PlanEvent => {
+    const day = days(doc).find((d) => d.date === date);
+    return { id: `missed:${date}:${day?.id ?? ''}`, date, kind: 'missed', dayId: day?.id ?? '' };
+  };
+  const longs = (doc: PlanDoc): PlanDay[] => days(doc).filter((d) => d.workout?.kind === 'long');
+  const blocks = (doc: PlanDoc): PlanDay[] =>
+    longs(doc).filter((d) => (d.workout?.workSec ?? 0) > 0);
+
+  it('(a) uvek rečenica u promenama — i kad se treninzi ne menjaju; događaj se primenjuje jednom', () => {
+    const probe = midPlan('2026-11-15').start;
+    const lastBlock = blocks(probe).at(-1);
+    if (lastBlock === undefined) throw new Error('nema bloka');
+    /* Poslednji dugi sa blokom je propušten; posle njega ostaju samo sužavanje i nedelja trke. */
+    const today = addDays(lastBlock.date, 1);
+    const { start, state } = midPlan(today, (d) => d === lastBlock.date);
+    const later = longs(start).filter((d) => d.date > lastBlock.date);
+    const weekKind = (d: PlanDay): string =>
+      start.weeks.find((w) => w.days.includes(d))?.intent.kind ?? '';
+    const event = missedEvent(start, lastBlock.date);
+    const r = replan(start, state, [event], EXAMPLE);
+    if (later.every((d) => weekKind(d) !== 'build' && weekKind(d) !== 'peak')) {
+      expect(days(r.doc).map((d) => JSON.stringify(d.workout))).toEqual(
+        days(start).map((d) => JSON.stringify(d.workout))
+      );
+      expect(r.changes).toHaveLength(1);
+      expect(r.changes[0]?.what).toBe('obavestenje');
+      expect(r.changes[0]?.reason).toContain('poslednje dve nedelje su za odmor');
+    }
+    expect(r.changes.length).toBeGreaterThan(0);
+    expect(r.changes[0]?.reason).toContain('Propušten je ključni trening');
+    expect(r.changes[0]?.reason).toContain(lastBlock.workout?.text ?? 'x');
+    expect(r.doc.header.appliedEvents).toContain(event.id);
+    const again = replan(r.doc, state, [event], EXAMPLE);
+    expect(again.changes).toEqual([]);
+    expect(again.doc).toBe(r.doc);
+    expect(renderPlan(r.doc, state, EXAMPLE, { changes: r.changes })).toContain(
+      'Propušten je ključni trening'
+    );
+  });
+
+  it('(b) propušten dugi sa blokom: sledeći dugi u nedelji gradnje nosi blok na prethodnom koraku, ne većem', () => {
+    const probe = midPlan('2026-11-15').start;
+    const all = blocks(probe);
+    const missed = all.at(-2);
+    const previous = all.at(-3);
+    if (missed === undefined) throw new Error('nema dva bloka');
+    const today = addDays(missed.date, 1);
+    const { start, state } = midPlan(today, (d) => d === missed.date);
+    const r = replan(start, state, [missedEvent(start, missed.date)], EXAMPLE);
+    const next = longs(r.doc).find((d) => d.date > missed.date);
+    const planned = longs(start).find((d) => d.date === next?.date);
+    expect(next?.workout?.workSec ?? 0).toBeGreaterThan(0);
+    expect(next?.workout?.workSec ?? 0).toBeLessThanOrEqual((missed.workout?.workSec ?? 0) + 60);
+    /* Ne manje od planiranog ni od koraka pre propuštenog (kad je plan za taj dan imao manje). */
+    expect(next?.workout?.workSec ?? 0).toBeGreaterThanOrEqual(
+      Math.min(
+        missed.workout?.workSec ?? 0,
+        Math.max(planned?.workout?.workSec ?? 0, previous?.workout?.workSec ?? 0)
+      ) - 150
+    );
+    expect(r.changes[0]?.reason).toContain('na prethodnom koraku, ne na većem');
+  });
+
+  it('(c) dva propuštena duga zaredom: sledeći dugi ≤ poslednji odrađen + korak, bez bloka; lanac ide od odrađenog', () => {
+    /* Bez plafona udela u nedelji i sa malim korakom: dugi raste svake nedelje, pa propušteni lanac veže. */
+    const data = withSafety(EXAMPLE, { longStepSec: 290, longShareByRunDays: { '1': 1 } });
+    const probe = midPlan('2026-11-15', () => false, data).start;
+    const all = longs(probe);
+    const first = all[5];
+    const second = all[6];
+    if (first === undefined || second === undefined) throw new Error('nema dugih');
+    const today = addDays(second.date, 1);
+    const { start, state } = midPlan(today, (d) => d === first.date || d === second.date, data);
+    const events = deriveEvents(start, state);
+    const r = replan(start, state, events, data);
+    const ctx = paceCtxOf(r.doc.header);
+    const lastDone = Math.max(
+      ...state.runs.filter((x) => diffDays(today, x.date) < 28).map((x) => x.durationSec)
+    );
+    const step = data.safety.longStepSec;
+    const after = longs(r.doc).filter((d) => d.date > today);
+    const next = after[0];
+    expect(next?.workout?.workSec).toBe(0);
+    expect(secOf(r.doc, next)).toBeLessThanOrEqual(lastDone + step + ROUND);
+    expect(secOf(r.doc, next)).toBeLessThan(
+      summarize(longs(start).find((d) => d.date === next?.date)?.workout ?? null, ctx).durationSec
+    );
+    let previous = secOf(r.doc, next);
+    for (const day of after.slice(1, 4)) {
+      const sec = secOf(r.doc, day);
+      expect(sec, day.date).toBeLessThanOrEqual(previous + step + ROUND);
+      previous = Math.max(previous, sec);
+    }
+    expect(r.changes.some((c) => c.reason.includes('2 puta zaredom'))).toBe(true);
+  });
+});
+
+describe('R9: pauza, provera forme i povratak', () => {
+  /** Primer sa proverom forme u 6. nedelji (subota je lagan dan — provera ide na prvi dan kvaliteta). */
+  const exTemplate = EXAMPLE.templates[0];
+  if (exTemplate === undefined) throw new Error('nema šablona');
+  const withTest = (weekIndex: number): DistanceData => {
+    let n = 0;
+    return {
+      ...EXAMPLE,
+      templates: [
+        {
+          ...exTemplate,
+          recoveryEvery: 0,
+          body: exTemplate.body.map((p) => ({
+            ...p,
+            loopFrom: p.cycle.length - 1,
+            cycle: Array.from({ length: 12 }, (_, i) => {
+              const base = p.cycle[Math.min(i, p.cycle.length - 1)];
+              if (base === undefined) throw new Error('prazan ciklus');
+              n += 1;
+              return n === weekIndex
+                ? { ...base, stimuli: [{ stimulus: 'test' }, ...base.stimuli.slice(1)] }
+                : base;
+            })
+          }))
+        }
+      ]
+    };
+  };
+
+  it('provera forme koja padne u pauzu se pomera u prvu nedelju posle rampe i zamenjuje njen kvalitet', () => {
+    const data = withTest(6);
+    const probe = midPlan('2026-11-15', () => false, data).start;
+    const test = days(probe).find((d) => d.workout?.kind === 'test');
+    if (test === undefined) throw new Error('plan nema proveru forme');
+    const from = addDays(test.date, -3);
+    const to = addDays(test.date, 3);
+    const goal = { distanceId: data.id, raceDate: '2027-03-07' };
+    const f = facts();
+    const state = buildState(
+      {
+        ...f,
+        today: to,
+        runs: runsAsPlanned(probe, addDays(from, -1)),
+        pauses: [{ from, to, reason: 'bolest' }]
+      },
+      goal,
+      data,
+      undefined,
+      probe
+    );
+    const r = replan(probe, state, deriveEvents(probe, state), data);
+    const moved = days(r.doc).filter((d) => d.date > to && d.workout?.kind === 'test');
+    expect(moved).toHaveLength(1);
+    const rampEnd = addDays(to, 14);
+    expect(diffDays(moved[0]?.date ?? to, rampEnd)).toBeGreaterThan(0);
+    expect(diffDays(moved[0]?.date ?? to, rampEnd)).toBeLessThanOrEqual(7);
+    /* Zamenjuje kvalitet te nedelje, ne dodaje se uz njega. */
+    const week = r.doc.weeks.find((w) => w.days.some((d) => d.id === moved[0]?.id));
+    expect(week?.days.filter((d) => d.workout?.kind === 'quality')).toHaveLength(0);
+    expect(r.changes[0]?.reason).toContain('Provera forme je pomerena na');
+    /* Ponovljeno planiranje daje isti plan. */
+    const again = replan(r.doc, state, deriveEvents(r.doc, state), data);
+    expect(again.changes).toEqual([]);
+  });
+
+  it('tekst o brzim treninzima odgovara stvarnom prvom danu kvaliteta u planu', () => {
+    const { start } = midPlan('2026-12-13');
+    const today = '2026-12-20';
+    const state = buildState(
+      {
+        ...facts(),
+        today,
+        runs: runsAsPlanned(start, '2026-12-13'),
+        pauses: [{ from: '2026-12-14', to: today, reason: 'bolest' }]
+      },
+      EX_GOAL,
+      EXAMPLE,
+      undefined,
+      start
+    );
+    const r = replan(start, state, deriveEvents(start, state), EXAMPLE);
+    const first = days(r.doc).find((d) => d.date > today && isFast(d));
+    const reason = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
+    expect(first).toBeDefined();
+    const d = first?.date ?? today;
+    expect(reason).toContain(
+      `prvi brzi trening je ${String(Number(d.slice(8, 10)))}. ${String(Number(d.slice(5, 7)))}.`
+    );
+    expect(reason).not.toMatch(/prvih \d+ dana/);
+    /* Povratak: prva nedelja posle rampe ≤ poslednja puna nedelja pre pauze × 1,10, pa pravilo rasta. */
+    const index = r.doc.weeks.findIndex((w) => w.start > addDays(today, 14));
+    const before = weekMin(
+      start,
+      start.weeks.findIndex((w) => w.start === '2026-12-07')
+    );
+    expect(weekMin(r.doc, index)).toBeLessThanOrEqual(1.1 * before + 4);
+    expect(weekMin(r.doc, index + 1)).toBeLessThanOrEqual(
+      Math.max(weekMin(r.doc, index), before) * (1 + EXAMPLE.safety.maxWeeklyRampPct) + 14
+    );
+  });
+});

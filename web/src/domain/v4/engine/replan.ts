@@ -2,11 +2,17 @@
    Dan u prozoru se gradi iznova iz namere + odluka (isti prolaz kao `plan`); svaka razlika dobija objašnjenje. */
 import {
   PACE_UPDATE_AFTER_RESULT_VDOT,
+  PAIN_CONTINUE_MAX,
+  PAIN_DOCTOR_AFTER_DAYS,
   PAIN_HIGH_REST_DAYS,
   PAIN_LOW_DAYS,
   PAIN_LOW_MAX,
+  PAIN_LOW_REST_DAYS,
   PAIN_MID_DAYS,
+  PAIN_MID_LONG_DAYS,
   PAIN_MID_MAX,
+  PAIN_MID_REST_DAYS,
+  PAIN_STOP_FROM,
   PAUSE_FULL_REPLAN_DAYS,
   PAUSE_MIN_DAYS,
   FATIGUE_DAYS,
@@ -29,8 +35,7 @@ import {
   fmtDistance,
   fmtNumber,
   fmtPace,
-  NEXT,
-  FIRST
+  NEXT
 } from './format';
 import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
@@ -64,6 +69,9 @@ interface Candidate {
   doc: PlanDoc;
   until: IsoDate;
   repeatDayId?: string;
+  /** Propušten ključni trening: šta je propušteno i šta plan radi (R8) — rečenica ide trkaču i kad se treninzi
+      ne menjaju. */
+  missed?: { day: PlanDay; weekIndex: number; meaning: string; action: string };
 }
 
 const sameAdjustment = (a: Adjustment, b: Adjustment): boolean => {
@@ -126,6 +134,22 @@ function onResult(
   };
 }
 
+/** Dugi sa završnim delom u tempu (blok ili progresija). */
+const hasBlock = (day: PlanDay | undefined): boolean =>
+  day?.workout != null && day.workout.kind === 'long' && day.workout.workSec > 0;
+
+const MISSED_MEANING = {
+  block:
+    'To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano',
+  long: 'Dugi trening nosi izdržljivost za drugu polovinu trke',
+  quality: 'To je bio glavni brzi trening te nedelje'
+} as const;
+
+/** PROPUŠTEN KLJUČNI TRENING (§ 6.4, krug 2: R8). Ključan je dugi ili prvi podražaj nedelje gradnje/vrha.
+    (a) trkač uvek dobija rečenicu; (b) propušten dugi sa blokom ili vršni kvalitet: sledeći dugi u nedelji
+    gradnje/vrha dobija blok na prethodnom koraku lestvice (ne većem), a ako takve nedelje nema — nije
+    nadoknadivo; (c) više propuštenih dugih zaredom: sledeći dugi ≤ poslednji odrađen + korak, bez bloka, a lanac
+    dugog dalje ide od stvarno odrađenog. Inače: sledeći isti trening ostaje na propuštenoj dozi ili dužini. */
 function onMissed(
   doc: PlanDoc,
   state: RunnerState,
@@ -143,35 +167,151 @@ function onMissed(
     week.intent.stimuli[0]?.stimulus === missed.stimulus;
   if (!isLong && !isFirstStimulus) return null;
   const done = doneDayIds(state);
+  const days = allDays(doc);
+  const ctx = paceCtxOf(doc.header);
+  const future = (d: PlanDay): boolean =>
+    d.date > state.today && d.date > day.date && isMutable(d, doc.header, state.today, done);
+  const weekOf = (d: PlanDay): PlanWeek | undefined =>
+    doc.weeks.find((w) => w.days.some((x) => x.id === d.id));
+  const nextLong = days.find((d) => future(d) && d.workout?.kind === 'long');
+  const nextBuildLong = days.find((d) => {
+    const kind = weekOf(d)?.intent.kind;
+    return future(d) && d.workout?.kind === 'long' && (kind === 'build' || kind === 'peak');
+  });
+  const base = (meaning: string, action: string): NonNullable<Candidate['missed']> => ({
+    day,
+    weekIndex: week.index,
+    meaning,
+    action
+  });
+  const notice = (meaning: string, action: string): Candidate => ({
+    doc,
+    until: ev.date,
+    missed: base(meaning, action)
+  });
+  const build = (
+    adj: Adjustment,
+    target: PlanDay,
+    info: NonNullable<Candidate['missed']>,
+    rechainLongFrom: number | null = null
+  ): Candidate => ({
+    doc: runPass({ ...doc, header: withAdjustment(doc.header, adj) }, state, data, {
+      window: rechainLongFrom === null ? { from: target.date, to: target.date } : null,
+      rechainFrom: null,
+      rechainLongFrom
+    }),
+    until: target.date,
+    repeatDayId: target.id,
+    missed: info
+  });
+
+  /* (c) Dugi propušten više puta zaredom: lanac ide od poslednjeg stvarno odrađenog dugog. */
+  if (isLong) {
+    const longDays = days.filter((d) => d.workout?.kind === 'long' && d.date <= day.date);
+    let streak = 0;
+    for (let i = longDays.length - 1; i >= 0; i -= 1) {
+      const d = longDays[i];
+      if (d === undefined || done.has(d.id)) break;
+      streak += 1;
+    }
+    if (streak >= 2 && nextLong !== undefined) {
+      const lastDone = lastLongBefore(state, addDays(state.today, 1));
+      const from = lastDone > 0 ? lastDone : doc.header.decisions.longStartSec;
+      const lengthSec = from + data.safety.longStepSec;
+      const targetWeek = weekOf(nextLong);
+      return build(
+        { kind: 'repeat', source: ev.id, dayId: nextLong.id, lengthSec, noBlock: true },
+        nextLong,
+        base(
+          `Dugi trening je propušten ${String(streak)} puta zaredom, pa se dužina više ne nastavlja tamo gde je plan stao`,
+          `sledeći dugi (${fmtDate(nextLong.date)}) kreće od poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak`
+        ),
+        (targetWeek?.index ?? week.index) + 1
+      );
+    }
+  }
+
+  /* (b) Propušten dugi sa blokom ili vršni kvalitet. */
+  const block = hasBlock(day);
+  const peakQuality = !isLong && week.intent.kind === 'peak';
+  if (block || peakQuality) {
+    if (nextBuildLong === undefined) {
+      return notice(
+        MISSED_MEANING.block,
+        'do trke više nema nedelje u kojoj bi mogao da se nadoknadi — poslednje dve nedelje su za odmor, pa plan ostaje isti'
+      );
+    }
+    const earlier = [...days].reverse().find((d) => d.date < day.date && hasBlock(d));
+    const planned = nextBuildLong.workout?.workSec ?? 0;
+    const sample = block ? day : (earlier ?? (planned > 0 ? nextBuildLong : undefined));
+    const stimulus = sample?.workout?.stimulus ?? null;
+    const ladder = stimulus === null ? undefined : data.safety.progression[stimulus];
+    const cap = stimulus === null ? undefined : doc.header.decisions.doseCapSec[stimulus];
+    const start = ladder === undefined || cap === undefined ? 0 : ladder.startPct * cap;
+    const previousStep = earlier?.workout?.workSec ?? start;
+    const wanted = block
+      ? Math.min(missed.workSec, Math.max(planned, previousStep))
+      : planned > 0
+        ? planned
+        : previousStep;
+    const defId = sample?.workout?.libraryId;
+    if (wanted <= 0 || defId === undefined || (wanted === planned && !block)) {
+      return notice(
+        MISSED_MEANING.block,
+        'sledeći dugi već nosi završni deo u tempu trke, pa plan ostaje isti'
+      );
+    }
+    const lengthSec = block ? Math.round(summarize(missed, ctx).durationSec) : undefined;
+    return build(
+      {
+        kind: 'repeat',
+        source: ev.id,
+        dayId: nextBuildLong.id,
+        blockSec: Math.round(wanted),
+        blockDefId: defId,
+        ...(lengthSec === undefined ? {} : { lengthSec })
+      },
+      nextBuildLong,
+      base(
+        MISSED_MEANING.block,
+        `sledeći dugi (${fmtDate(nextBuildLong.date)}) nosi završni deo u tempu trke na prethodnom koraku, ne na većem`
+      )
+    );
+  }
+
+  /* Ostalo: sledeći isti trening u 14 dana ostaje na propuštenoj dozi ili dužini. */
   const last = addDays(day.date, MISSED_LOOKAHEAD_DAYS);
-  const target = allDays(doc).find(
+  const target = days.find(
     (d) =>
-      d.date > state.today &&
-      d.date > day.date &&
+      future(d) &&
       d.date <= last &&
-      isMutable(d, doc.header, state.today, done) &&
       d.workout !== null &&
       d.workout.kind === missed.kind &&
       (isLong || d.workout.stimulus === missed.stimulus)
   );
-  if (target === undefined) return null;
+  const meaning = isLong ? MISSED_MEANING.long : MISSED_MEANING.quality;
+  if (target === undefined) {
+    return notice(
+      meaning,
+      'u naredne dve nedelje nema istog treninga na kom bi se nadoknadio, pa plan ostaje isti'
+    );
+  }
   const adj: Adjustment = isLong
     ? {
         kind: 'repeat',
         source: ev.id,
         dayId: target.id,
-        lengthSec: Math.round(summarize(missed, paceCtxOf(doc.header)).durationSec)
+        lengthSec: Math.round(summarize(missed, ctx).durationSec)
       }
     : { kind: 'repeat', source: ev.id, dayId: target.id, workSec: missed.workSec };
-  const header = withAdjustment(doc.header, adj);
-  return {
-    doc: runPass({ ...doc, header }, state, data, {
-      window: { from: target.date, to: target.date },
-      rechainFrom: null
-    }),
-    until: target.date,
-    repeatDayId: target.id
-  };
+  return build(
+    adj,
+    target,
+    base(
+      meaning,
+      `sledeći isti trening (${fmtDate(target.date)}) ostaje na ${isLong ? 'toj dužini' : 'toj dozi'} umesto da raste`
+    )
+  );
 }
 
 /** Pauza ≥ 14 dana: vrh iz nove baze (ne iznad starog), plafoni i najduži dugi iz njega (§ 6.3). */
@@ -466,6 +606,26 @@ function paceShift(before: PlanDoc, after: PlanDoc): string {
   return `tempa su ${delta < 0 ? 'ubrzana' : 'usporena'} za oko ${String(Math.max(1, Math.abs(delta)))} s po kilometru`;
 }
 
+/** Prvi dan sa brzim radom posle `after` (kvalitet, provera forme ili dugi sa blokom); `null` = nema ga do trke. */
+function firstFastAfter(doc: PlanDoc, after: IsoDate): IsoDate | null {
+  const day = allDays(doc).find(
+    (d) => d.date > after && d.workout !== null && d.workout.kind !== 'race' && isFast(d)
+  );
+  return day?.date ?? null;
+}
+
+/** Provera forme koju je `replan` pomerio: dan koji je sada provera, a pre nije bio. */
+function movedTest(before: PlanDoc, after: PlanDoc, today: IsoDate): IsoDate | null {
+  const was = new Set(allDays(before).flatMap((d) => (d.workout?.kind === 'test' ? [d.date] : [])));
+  const now = allDays(after).find(
+    (d) => d.date > today && d.workout?.kind === 'test' && !was.has(d.date)
+  );
+  return now?.date ?? null;
+}
+
+/** Uslov za nastavak, prag za prekid i lekar — uz svaki prijavljen bol (R7). */
+const PAIN_RULE = `Trči samo ako je bol najviše ${String(PAIN_CONTINUE_MAX)} od 10 i ne raste tokom trčanja; ako poraste na ${String(PAIN_STOP_FROM)} ili više, ili ne prolazi za ${count(PAIN_DOCTOR_AFTER_DAYS, DAYS)}, prekini trčanje i javi se lekaru ili fizioterapeutu.`;
+
 /** Rečenice po događaju: šta se desilo → šta je promenjeno → do kada. */
 function explain(
   ev: PlanEvent,
@@ -484,14 +644,22 @@ function explain(
     week: text,
     header: text
   });
+  /* Tekst o brzim treninzima prati plan: datum prvog brzog treninga se čita iz izgrađenog plana (R9). */
+  const fastFrom = (after: IsoDate): string => {
+    const date = firstFastAfter(c.doc, after);
+    return date === null ? 'brzih treninga do trke nema' : `prvi brzi trening je ${fmtDate(date)}`;
+  };
   switch (ev.kind) {
     case 'pause': {
       const length = pauseLength(ev.from, ev.to);
       const what = `Pauza${PAUSE_REASON[ev.reason]} trajala je ${count(length, DAYS)} (${fmtDateRange(ev.from, ev.to)})`;
-      const ramp = countWith(pauseRampDays(length, ev.reason), FIRST, DAYS);
-      const day = `${what}, pa je povratak postepen: ${ramp} posle nje treninzi su kraći i lagani, bez brzih deonica; ${resume}.`;
-      const late = `${what}, pa je povratak postepen: ${ramp} posle nje treninzi su kraći i lagani, bez brzih deonica; i posle toga je prvi brzi trening svake vrste kraći — ${lighter}.`;
-      const header = `${what}, pa je ostatak plana preračunat od sadašnje baze; ${lighter}.`;
+      const rampEnd = fmtDate(addDays(ev.to, pauseRampDays(length, ev.reason)));
+      const test = movedTest(before, c.doc, state.today);
+      const moved = test === null ? '' : ` Provera forme je pomerena na ${fmtDate(test)}.`;
+      const back = `${what}, pa je povratak postepen: do ${rampEnd} su treninzi kraći i lagani, a ${fastFrom(ev.to)}`;
+      const day = `${back}; ${resume}.${moved}`;
+      const late = `${back}; i posle toga se obim vraća postepeno — ${lighter}.${moved}`;
+      const header = `${what}, pa je ostatak plana preračunat od sadašnje baze; ${lighter}.${moved}`;
       return { day, late, week: late, header };
     }
     case 'result': {
@@ -504,36 +672,40 @@ function explain(
         (x) => x.kind === 'effort' && x.planned === true && x.date === run?.date
       );
       const ramp = run === undefined ? 0 : effortRampDays(run.durationSec);
+      const zero = run?.date ?? ev.date;
+      const recovery = `oporavak traje do ${fmtDate(addDays(zero, ramp))} — treninzi su kraći i lagani, a ${fastFrom(zero)}`;
       const day = planned
         ? `${what}: provera forme je bila deo plana, pa su ${countWith(NO_FAST_DAYS_AFTER_EFFORT, NEXT, DAYS)} bez brzih deonica; ${resume}.`
-        : `${what}: oporavak traje ${count(ramp, DAYS)} — treninzi su kraći i lagani, bez brzih deonica; ${resume}.`;
+        : `${what}: ${recovery}; ${resume}.`;
       const old = fmtClock(raceTimeSec(before.header.form.paceVdot, data.distanceM));
       const faster = c.doc.header.form.paceVdot > before.header.form.paceVdot;
       const { raceDay } = state.form;
       const header = `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a očekivano vreme trke je sada oko ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)}).`;
-      const late = `${what}: oporavak traje ${count(ramp, DAYS)} — treninzi su kraći i lagani, bez brzih deonica; i posle toga je prvi brzi trening svake vrste nešto kraći — ${lighter}.`;
+      const late = `${what}: ${recovery}; i posle toga je prvi brzi trening svake vrste nešto kraći — ${lighter}.`;
       return { day, late, week: late, header };
     }
     case 'missed': {
-      const missed = before.weeks.flatMap((w) => w.days).find((d) => d.id === ev.dayId);
+      const m = c.missed;
+      const text = m?.day.workout?.text ?? '';
       return same(
-        `Propušten je trening „${missed?.workout?.text ?? ''}" (${fmtDate(ev.date)}), zato sledeći isti trening ${fmtDate(c.until)} ostaje na toj dozi umesto da raste; ostatak plana je isti.`
+        `Propušten je ključni trening „${text}" (${fmtDate(ev.date)}). ${m?.meaning ?? ''}; ${m?.action ?? 'plan ostaje isti'}.`
       );
     }
     case 'pain': {
       if (ev.level <= PAIN_LOW_MAX) {
         return same(
-          `Prijavljen je blag bol (nivo ${String(ev.level)}), pa ${countWith(PAIN_LOW_DAYS, NEXT, DAYS)} nema treninga sa jakim udarom (uzbrdice, kratke brze deonice); ${resume}.`
+          `Prijavljen je blag bol (nivo ${String(ev.level)}): ${countWith(PAIN_LOW_REST_DAYS, NEXT, DAYS)} je odmor, prvo trčanje posle toga je lagano, a do ${fmtDate(addDays(ev.date, PAIN_LOW_DAYS))} nema treninga sa jakim udarom (uzbrdice, kratke brze deonice). ${PAIN_RULE} Ako bol ne smeta, od ${next} plan ide dalje po rasporedu.`
         );
       }
       if (ev.level <= PAIN_MID_MAX) {
         return same(
-          `Prijavljen je bol (nivo ${String(ev.level)}), pa su treninzi ${countWith(PAIN_MID_DAYS, NEXT, DAYS)} kraći i bez brzih deonica; ${resume}.`
+          `Prijavljen je bol (nivo ${String(ev.level)}): ${countWith(PAIN_MID_REST_DAYS, NEXT, DAYS)} su odmor, zatim se do ${fmtDate(addDays(ev.date, PAIN_MID_DAYS))} trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do ${fmtDate(addDays(ev.date, PAIN_MID_LONG_DAYS))} najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (${fastFrom(ev.date)}). ${PAIN_RULE}`
         );
       }
-      const pain = `Prijavljen je jak bol (nivo ${String(ev.level)}): odmor traje ${count(PAIN_HIGH_REST_DAYS, DAYS)} — javi se lekaru ili fizioterapeutu`;
-      const day = `${pain}; posle toga je povratak postepen, a ${resume}.`;
-      const late = `${pain}; posle toga je povratak postepen, a prvi brzi trening svake vrste kraći — ${lighter}.`;
+      const pain = `Prijavljen je jak bol (nivo ${String(ev.level)}): odmor traje ${count(PAIN_HIGH_REST_DAYS, DAYS)} — javi se lekaru ili fizioterapeutu pre prvog sledećeg trčanja`;
+      const back = `posle toga je povratak postepen (${fastFrom(ev.date)}) i nastavlja se samo ako je bol najviše ${String(PAIN_CONTINUE_MAX)} od 10 i ne raste`;
+      const day = `${pain}; ${back}.`;
+      const late = `${pain}; ${back}, a prvi brzi trening svake vrste je kraći — ${lighter}.`;
       return { day, late, week: late, header: day };
     }
     case 'fatigue': {
@@ -713,6 +885,18 @@ function describe(
     }
   }
   changes.push(...weekChanges);
+  /* Propušten ključni trening: rečenica ide trkaču i kad se nijedan trening ne menja (R8a). */
+  if (c.missed !== undefined && changes.length === 0) {
+    changes.push({
+      ...base,
+      scope: 'zaglavlje',
+      weekIndex: c.missed.weekIndex,
+      what: 'obavestenje',
+      before: textOf(c.missed.day),
+      after: 'propušteno, plan ostaje isti',
+      reason: text.day
+    });
+  }
   return changes;
 }
 

@@ -3,6 +3,7 @@
 import {
   EASY_DISTANCE_STEP_M,
   EASY_DURATION_STEP_SEC,
+  EASY_FLOOR_MIN_RUN_DAYS,
   GUARD_DOSE_TOLERANCE_SEC,
   GUARD_FAST_SHARE_TOLERANCE,
   GUARD_JUMP_TOLERANCE,
@@ -16,7 +17,7 @@ import {
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate } from './dates';
 import { decideLongMax } from './decide';
-import { count, DAYS, FIRST, countWith, fmtClock, fmtDate, fmtNumber, WEEKS } from './format';
+import { count, DAYS, fmtClock, fmtDate, fmtDistance, fmtNumber, WEEKS, WORKOUTS } from './format';
 import { type PaceCtx, paceCtxOf, summarize, type WorkoutSummary } from './load';
 import {
   adjustmentWindow,
@@ -239,7 +240,11 @@ export const guard: GuardFn = (doc, _state, data) => {
       .slice(0, i)
       .filter((x) => !underRamp(x.week.start, adjustments))
       .slice(-3);
-    const m = Math.max(...before.map((x) => x.load), ...(before.length < 3 ? [d.baseLoad] : []));
+    /* Pravilo rasta meri obim u minutima (krug 2, R3): kvalitet ide preko minuta, ne umesto njih. */
+    const m = Math.max(
+      ...before.map((x) => x.durationSec / 60),
+      ...(before.length < 3 ? [d.baseLoad] : [])
+    );
     /* Prethodni dugi se meri odlučenom dužinom kad nedelja ima dugi (dugi sa blokom kraće traje za iste km). */
     const longBefore = Math.max(
       d.longStartSec,
@@ -304,9 +309,9 @@ export const guard: GuardFn = (doc, _state, data) => {
     const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + s.minRampLoad);
     if (
       (week.intent.kind === 'build' || week.intent.kind === 'peak') &&
-      c.load > rule * (1 + GUARD_JUMP_TOLERANCE)
+      c.durationSec / 60 > rule * (1 + GUARD_JUMP_TOLERANCE)
     ) {
-      report('skok', week, null, 'Opterećenje nedelje raste brže od pravila rasta.');
+      report('skok', week, null, 'Obim nedelje raste brže od pravila rasta.');
     }
     if (c.longSec > d.longMaxSec + GUARD_LONG_STEP_TOLERANCE_SEC) {
       report('dugi-plafon', week, null, 'Dugi je duži od najdužeg dozvoljenog u planu.');
@@ -315,7 +320,7 @@ export const guard: GuardFn = (doc, _state, data) => {
       report('dugi-korak', week, null, 'Dugi raste za više od jednog koraka.');
     }
     if (!ramp && !partial && !raceWeek && c.load < GUARD_UNDER_TARGET * week.targetLoad) {
-      report('ispod-cilja', week, null, 'Planirano opterećenje je ispod 90 % cilja nedelje.');
+      report('ispod-cilja', week, null, 'Planirano opterećenje je ispod 85 % cilja nedelje.');
     }
     if (!ramp && !partial && !raceWeek) {
       const few = c.workouts < Math.min(GUARD_MIN_WEEK_WORKOUTS, d.runDays.length);
@@ -496,6 +501,8 @@ export function warnings(input: WarningInput): Warning[] {
       proposal: `Kreni na ${fmtClock(raceDay.expectedSec)}, a cilj vrati ako test ili pripremna trka pokažu da si brži za oko ${String(gap)} s po kilometru.`
     });
   }
+  const dropped = droppedDayWarning(doc, costs, s.minEasySec);
+  if (dropped !== null) out.push(dropped);
   const back = returnWarning(doc, state);
   if (back !== null) out.push(back);
   if (
@@ -515,29 +522,75 @@ export function warnings(input: WarningInput): Warning[] {
   return out;
 }
 
-/** `povratak`: plan počinje u rampi posle napora ili pauze (§ 6.5). */
+/** `dan-izostavljen` (krug 2, R4): traženi dan otpada tek kad bi nedelja i bez kvaliteta, sa najkraćim trčanjem
+    svakog dana, prešla cilj za više od 10 % — i tada plan to kaže, sa razlogom. */
+function droppedDayWarning(
+  doc: PlanDoc,
+  costs: readonly WeekCost[],
+  minEasySec: number
+): Warning | null {
+  const { header } = doc;
+  const asked = header.decisions.runDays.length;
+  if (asked < EASY_FLOOR_MIN_RUN_DAYS) return null;
+  const full = costs.filter(
+    (c) =>
+      c.week.intent.kind !== 'race' &&
+      c.week.start >= header.startDate &&
+      !inAnyWindow(c.week, header.adjustments ?? [])
+  );
+  const short = full.filter((c) => c.workouts < asked);
+  if (short.length === 0) return null;
+  const least = Math.min(...short.map((c) => c.workouts));
+  const lastShort = short[short.length - 1]?.week.index ?? 0;
+  const firstShort = short[0]?.week.index ?? 0;
+  const span =
+    short.length === 1
+      ? `${String(firstShort)}. nedelja`
+      : lastShort - firstShort + 1 === short.length
+        ? `${String(firstShort)}–${String(lastShort)}. nedelja`
+        : `nedelje ${short.map((c) => String(c.week.index)).join(', ')}`;
+  const later = full.find((c) => c.week.index > lastShort);
+  const baseKm = (header.decisions.baseLoad * 60) / header.paces.easy;
+  const then =
+    later === undefined
+      ? 'kad obim poraste, novi plan koristi sve tražene dane'
+      : `od ${String(later.week.index)}. nedelje plan koristi sve tražene dane`;
+  return {
+    code: 'dan-izostavljen',
+    severity: 'info',
+    problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno, a plan u nekim nedeljama ima ${count(least, WORKOUTS)} (${span}).`,
+    meaning: `Uz sadašnji obim od oko ${km(baseKm)} nedeljno, svi traženi dani bi i sa najkraćim trčanjem od ${String(Math.round(minEasySec / 60))} min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede.`,
+    proposal: `Te nedelje trči kako piše — ${then}. Ako želiš da izlaziš svih ${count(asked, DAYS)} odmah, dodatni dan neka bude šetnja ili 15–20 min vrlo laganog trčanja.`
+  };
+}
+
+/** `povratak`: plan počinje u rampi posle napora ili pauze (§ 6.5). Tekst prati plan: do kada su treninzi kraći
+    i kog datuma je prvi brzi trening (krug 2, R9, R10). */
 function returnWarning(doc: PlanDoc, state: RunnerState): Warning | null {
   const start = doc.header.startDate;
-  let best: { days: number; end: IsoDate; problem: string } | null = null;
+  let best: { end: IsoDate; problem: string } | null = null;
   for (const adj of doc.header.adjustments ?? []) {
     if (adj.kind === 'effort') {
-      const days = effortRampDays(adj.durationSec);
-      const end = addDays(adj.date, days);
+      const end = addDays(adj.date, effortRampDays(adj.durationSec));
       if (end >= start && (best === null || end > best.end)) {
         const after = diffDays(start, adj.date);
+        const run = state.runs.find((r) => r.date === adj.date && r.effort !== undefined);
+        const what = run?.effort === 'test' ? 'testa' : 'trke';
+        const result =
+          run === undefined
+            ? ''
+            : ` (${fmtDistance(run.distanceM)} za ${fmtClock(run.durationSec)})`;
         best = {
-          days,
           end,
-          problem: `Plan počinje ${after === 1 ? 'dan' : count(after, DAYS)} posle trke ili testa od ${String(Math.round(adj.durationSec / 60))} min.`
+          problem: `Plan počinje ${after === 1 ? 'dan' : count(after, DAYS)} posle ${what}${result}.`
         };
       }
     }
     if (adj.kind === 'pause') {
       const length = pauseLength(adj.from, adj.to);
-      const days = pauseRampDays(length, adj.reason);
-      const end = addDays(adj.to, days);
+      const end = addDays(adj.to, pauseRampDays(length, adj.reason));
       if (length >= 3 && end >= start && (best === null || end > best.end)) {
-        best = { days, end, problem: `Plan počinje posle pauze od ${count(length, DAYS)}.` };
+        best = { end, problem: `Plan počinje posle pauze od ${count(length, DAYS)}.` };
       }
     }
   }
@@ -555,13 +608,15 @@ function returnWarning(doc: PlanDoc, state: RunnerState): Warning | null {
     firstFast === undefined
       ? 'U ovom planu nema brzih treninga pre trke'
       : `Prvi brzi trening je ${fmtDate(firstFast.date)}`;
+  const tired =
+    firstFast === undefined
+      ? 'ako si i posle oporavka umoran, skrati lagana trčanja na 30 min'
+      : 'ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min';
   return {
     code: 'povratak',
     severity: 'info',
     problem: best.problem,
-    meaning: `${capitalize(countWith(best.days, FIRST, DAYS))} je oporavak: treninzi su kraći i lagani, bez brzih deonica, da se telo vrati pre nego što opterećenje krene da raste.`,
-    proposal: `${when}; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.`
+    meaning: `Do ${fmtDate(best.end)} traje oporavak: treninzi su kraći i lagani, da se telo vrati pre nego što opterećenje krene da raste.`,
+    proposal: `${when}; ${tired}.`
   };
 }
-
-const capitalize = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);

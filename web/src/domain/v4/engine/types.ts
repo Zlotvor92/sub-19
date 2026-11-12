@@ -290,7 +290,18 @@ export type Adjustment =
   | { kind: 'pain'; source: string; date: IsoDate; level: number; lastLongSec?: Seconds }
   | { kind: 'fatigue'; source: string; date: IsoDate }
   /** Propušten ključan trening: dan `dayId` ponavlja propuštenu dozu ili dužinu (§ 6.4). */
-  | { kind: 'repeat'; source: string; dayId: DayId; workSec?: Seconds; lengthSec?: Seconds };
+  | {
+      kind: 'repeat';
+      source: string;
+      dayId: DayId;
+      workSec?: Seconds;
+      lengthSec?: Seconds;
+      /** Dugi `dayId` dobija blok ove doze (prethodni korak lestvice; krug 2, R8b) iz unosa `blockDefId`. */
+      blockSec?: Seconds;
+      blockDefId?: string;
+      /** Dugi `dayId` ostaje bez bloka (više propuštenih dugih zaredom; krug 2, R8c). */
+      noBlock?: boolean;
+    };
 
 export interface PlanDoc {
   schema: 'plan-doc';
@@ -482,7 +493,9 @@ export interface Change {
     | 'raspored'
     | 'cilj'
     | 'obim'
-    | 'upozorenje';
+    | 'upozorenje'
+    /** Događaj ne menja treninge, ali trkač dobija rečenicu (propušten ključni trening, krug 2, R8). */
+    | 'obavestenje';
   before: string;
   after: string;
   /** Rečenica za trkača: šta se desilo → šta je promenjeno → do kada važi. */
@@ -640,6 +653,8 @@ export interface SafetyNumbers {
   minRampLoad: LoadPoints;
   /** Plafon vrha po nivou (BO nedeljno); `null` = bez plafona. */
   peakLoadCap: Readonly<Record<LevelId, LoadPoints | null>>;
+  /** Vrh najviše ovoliko puta bazna nedelja (krug 2, R3). Podrazumevano `DEFAULT_MAX_PEAK_OVER_BASE` (1,40). */
+  maxPeakOverBase?: number;
   longMaxSec: Readonly<Record<LevelId, Seconds>>;
   /** Najveći udeo dugog u vrhu, po broju dana trčanja (ključ „1"…„7"). */
   /** Može i po nivou: `{ nivo: { "1".."7": udeo } }`; nivo bez svoje mape nema plafon po danima (udeo 1). */
@@ -658,8 +673,15 @@ export interface SafetyNumbers {
   maxFastShare: number;
   maxFastSharePeak: number;
   minEasySec: Seconds;
-  easyMaxShareOfLong: number;
+  /** Lagan dan najviše ovoliki udeo dugog te nedelje; broj, ili mapa po broju dana trčanja („1"…„7"). */
+  easyMaxShareOfLong: number | Readonly<Record<string, number>>;
   dayBeforeLongMaxShare: number;
+  /** Lagan dan najviše ovoliko puta najduži lagan dan prethodne nedelje koja nije rasterećenje (krug 2, R2).
+      Podrazumevano `DEFAULT_EASY_MAX_OVER_PREVIOUS` (1,25). */
+  easyMaxOverPrevious?: number;
+  /** Najduži lagan dan u nedelji sužavanja i nedelji trke (krug 2, R1); broj, ili mapa po broju dana trčanja.
+      Podrazumevano `DEFAULT_TAPER_EASY_MAX_SEC` (50 min; do 3 dana 40 min). */
+  taperEasyMaxSec?: Seconds | Readonly<Record<string, Seconds>>;
   /** Zagrevanje i hlađenje po baznom opterećenju: prvi red čiji `uptoBaseLoad` ≥ baza (poslednji red `null`). */
   warmupCooldown: { uptoBaseLoad: LoadPoints | null; warmupSec: Seconds; cooldownSec: Seconds }[];
 }
@@ -670,6 +692,9 @@ export interface AdequatePrep {
   minPeakWeeklyKm: number;
   minRunDays: number;
   minLongKm: number;
+  /** Vrh nedeljnog obima (km) koji nivo traži da bi kvalitet tog nivoa stao u plan (upozorenje `obim-za-nivo`,
+      krug 2, R11); nivo bez broja: obim pri kom plafoni doza prestaju da zavise od obima. */
+  minPeakWeeklyKmByLevel?: Readonly<Record<LevelId, number>>;
   /** Kraća distanca koja se predlaže kad priprema nije dovoljna. */
   shorter?: { distanceId: string; label: string };
 }
@@ -678,6 +703,8 @@ export interface NoteRule {
   kinds: WorkoutKind[];
   minDurationSec: Seconds;
   text: TextKey;
+  /** Tekst iste napomene za trkača čija su tempa „po osećaju" (bez s/km); bez njega važi `text`. */
+  byFeelText?: TextKey;
 }
 
 /** Sve što folder distance isporučuje motoru (§ 11). */
