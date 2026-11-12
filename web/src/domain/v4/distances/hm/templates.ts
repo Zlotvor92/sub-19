@@ -240,7 +240,7 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
         /* N−6: talas — kraći lagan dugi, tempo trke 2 × 3 km + prag (p04 ned 14) */
         week(SPEC, 'build', 0.93, { len: 0.81 }, pair(S('prag', 0.8), S('tempo-trke', 0.8))),
         /* N−5: drugi blok 6 km + tempo trke 3 × 2 km (p04 ned 15) */
-        blockWeek(0.7, 0.6, 1)
+        blockWeek(0.7, 0.7, 1)
       ];
   return [
     ...head,
@@ -258,7 +258,7 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
     week(
       SPEC,
       'build',
-      0.84,
+      0.87,
       { len: 0.82, stimulus: 'dugi-rp', dose: 0.45 },
       /* kratka priprema (vrh ≤ 1,4 × sadašnji obim): bez praga, inače bi pod nedelje (obim + rad, R5) bio > 85 % */
       pair(short ? STRIDES : S('prag', 0.42), S('tempo-trke', 0.6))

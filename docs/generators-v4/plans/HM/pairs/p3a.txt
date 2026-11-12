@@ -1,7 +1,7 @@
 P3A — P3 A — sve u istom prebrzom tempu, bez kvaliteta, dugi 14–15 km (ulazi kao p04)
 MORA DA SE RAZLIKUJE: A: sporiji lagani dani sa objašnjenjem, prvi T 15–20 min i 2 nedelje kasnije, dugi od 14–15 km; B: T 28 min u ned 1–2, dugi 17–18 km, blok ranije; vrh isti
 ISTORIJA: 60 trčanja; nedelje (km): 55,0 / 56,0 / 55,0 / 56,0 / 55,0 / 56,0 / 55,0 / 56,0 / 55,0 / 56,0 / 55,0 / 56,0; pauze 0, bol 0
-BROJEVI: nivo spor; nedelja 1 62,3 km; vrh 70,1 km; prvi dugi 21,1 km, najduži 22,2 km; prvi kvalitet u 1. nedelji; provera forme u 8. nedelji; forma 2:04:13 (srednja), dan trke 2:00:20 (1:57:01–2:05:44)
+BROJEVI: nivo spor; nedelja 1 62,3 km; vrh 70,5 km; prvi dugi 21,1 km, najduži 22,2 km; prvi kvalitet u 1. nedelji; provera forme u 8. nedelji; forma 2:04:13 (srednja), dan trke 2:00:20 (1:57:01–2:05:44)
 
 PLAN: polumaraton, trka 21. 3. 2027.
 Početak 2. 11. 2026. · 20 nedelja · 5 dana trčanja nedeljno
@@ -181,7 +181,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
 
 15. NEDELJA (od 8. 2.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 8. 2.  lagano 90 min — 12,7 km, 90 min
-  uto 9. 2.  tempo trke 3 × 9 min (5:53/km), oporavak 1:30 džog — 9,9 km, 65 min
+  uto 9. 2.  tempo trke 2 × 15 min (5:53/km), oporavak 2 min džog — 10,3 km, 67 min
   sre 10. 2.  odmor
   čet 11. 2.  lagano 85 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 12,8 km, 90 min
   pet 12. 2.  odmor
@@ -189,7 +189,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
   ned 14. 2.  dugi 2 h 29 min, završni deo 34 min u tempu trke (5:53/km) — 22 km, 2 h 29 min
       napomena: Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 70,1 km, 8 h 4 min, 5 treninga, brz rad 13 % vremena trčanja
+  Zbir: 70,5 km, 8 h 6 min, 5 treninga, brz rad 13 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 15. 2.  lagano 65 min — 9,2 km, 65 min

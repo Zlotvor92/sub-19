@@ -183,7 +183,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
 
 15. NEDELJA (od 8. 2.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 8. 2.  lagano 80 min — 11,3 km, 80 min
-  uto 9. 2.  tempo trke 3 × 9 min (5:53/km), oporavak 1:30 džog — 9,9 km, 65 min
+  uto 9. 2.  tempo trke 2 × 15 min (5:53/km), oporavak 2 min džog — 10,3 km, 67 min
   sre 10. 2.  odmor
   čet 11. 2.  lagano 75 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11,4 km, 80 min
   pet 12. 2.  odmor
@@ -191,7 +191,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
   ned 14. 2.  dugi 2 h 14 min, završni deo 34 min u tempu trke (5:53/km) — 19,9 km, 2 h 14 min
       napomena: Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 63,8 km, 7 h 19 min, 5 treninga, brz rad 14 % vremena trčanja
+  Zbir: 64,2 km, 7 h 21 min, 5 treninga, brz rad 15 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 15. 2.  lagano 65 min — 9,2 km, 65 min
@@ -281,7 +281,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:49/km). Očekivano vreme na 
 PROMENE
 Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treninzi su kraći do 21. 2., a prvi brzi trening je 18. 2.; i posle toga se obim vraća postepeno — zato su treninzi do 28. 2. lakši nego što su bili.
 - pon 8. 2.: lagano 80 min → odmor
-- uto 9. 2.: tempo trke 3 × 9 min, oporavak 1:30 džog → odmor
+- uto 9. 2.: tempo trke 2 × 15 min, oporavak 2 min džog → odmor
 - čet 11. 2.: lagano 75 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 45 min
 - sub 13. 2.: lagano 80 min → lagano 55 min
 - ned 14. 2.: dugi 2 h 14 min, završni deo 34 min u tempu trke → dugi 95 min lagano

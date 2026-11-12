@@ -1,4 +1,4 @@
-# D — podaci polumaratona, krug 2 (R15–R20): izveštaj (12. 11. 2026)
+# D — podaci polumaratona, krug 2 (R15–R20) i krug 3 (ciljni planovi trenera): izveštaj (12. 11. 2026)
 
 Kod: `web/src/domain/v4/distances/hm/` (motor, forma, adapteri nedirnuti). Kapija: `gate.test.ts` + `testdata/gate.ts`
 (iste mere: `node docs/generators-v4/plans/gate.ts`). Ispisi `plans/HM/`: p01–p12, vlasnik-v1/v2, `scenarios/` (PRE pa
@@ -118,3 +118,49 @@ nedelja zaredom), R17 (test ≥ 2. nedelja, subotom kad je subota dan trčanja, 
    (p05, p08); podaci su skinuli blok/prag u N−2 da bi stalo.
 7. Forma: test sa dana plana zabeležen kao jedno trčanje SA zagrevanjem čita se kao trka na celu dužinu (moja skripta
    scenarija: s09 ubrzanje 1:51; ispravljeno u skripti). Predlog: za `effort` sa dana plana uzimati deo rada/`laps`.
+
+---
+## Krug 3 (ciljni planovi trenera su META; poruka organizatora 12. 11.)
+Šabloni su sada CEO niz nedelja (rep dužine N, bez tela) po ciljnim planovima `docs/generators-v2/perfection/target/HM/`:
+redovan = p01/p04 (utorak R/brda → I → tempo trke, četvrtak prag; nedelja sa blokom: četvrtak lagan; pripremna trka
+subotom u rasterećenju najbližem 8. nedelji, najkasnije N−8; rep N−7…N kao p01 ili p04), početnik = p11/p12 (jedan
+kvalitet u četvrtak, uvod bez praga, pripremna trka N−8, tempo trke i blok 3 → 5 km). Dva kvaliteta od 4 dana na gore i
+kod 25–40 km (povučena odluka „jedan kvalitet + ubrzanja"); vrh u km × 1,35 kod 14+ nedelja (kraće srazmerno), nijedan
+> 1,40. Novo: nivo `povratnik` (`maxWeeksSincePause: 8`), rani test 5 km (3 km za početnika i < 25 km — motor čita
+distancu iz plana). Brojevi: dugi 4 dana 0,385 minuta nedelje (mali obim 0,37), spor dugi do 2 h 30, brz 2 h 10;
+prag 10 % vrha do 35 min, intervali 7 % do 22 min, tempo trke 13,5 % do 44 min, blok 12 % do 48 min; rad (motor broji
+i tempo trke) ≤ 24 %, najteža 30 %. Kapija ista — prolazi 12/12 + v1 + v2 (`plans/gate.ts`).
+
+**Poređenje sa ciljem po nedelji: `docs/generators-v4/plans/HM/target-compare.md`** (`node docs/generators-v4/plans/target.ts
+--md`; km ± 8 %, dugi ± 1,5 km, blok ± 1,5 km, ista vrsta kvaliteta, doza ± 20 %). U svim tolerancijama: **p01 10/16,
+p12 12/16, p04 8/20, p11 3/20** (ukupno 33/72). Najteža nedelja i sužavanje su na istom mestu kod sva 4; pripremna
+trka na istom mestu kod p01, p04, p11, p12; rani test p12 u 4. nedelji kao u cilju.
+
+**Šta ne može podatkom (tačno šta fali):**
+1. **p11 cilj traži × 2,0 (20 → 40 km) i dugi 17,5 km = 44 % nedelje** — kapija dozvoljava × 1,40 i ≤ 40 %; V4 vrh 26,9 km,
+   dugi 9,9 km. Sva odstupanja p11 (17 nedelja) su odatle. Odluka je organizatorova (kapija ili cilj).
+2. **Plafon doze ograničava OSNOVICU lestvice, ne dozu** (`cap = min(maxWorkSec, udeo × vrh)`): p04 (vrh 540 BO) i p01
+   (≈ 380 BO) dobijaju isti plafon praga 35 min, pa p04 prag kreće sa 16 umesto 23 min (ned 1–7 „doza T"). Treba
+   `doza = min(maxWorkSec, pct × udeo × vrh)` ili plafon po nivou.
+3. **Utorak posle subotnje pripremne trke je 3. dan** (§ 14.1): cilj p04 ned 9 ima I 3 × 1000 m — motor ga s pravom daje
+   lagano; cilj krši K2 (vrsta „I" u ned 9).
+4. **Nedelja posle provere i posle rasterećenja ne stiže cilj**: lagani dani su na plafonu R2b (≤ 1,25 × najduži lagan
+   dan poslednje nedelje koja nije rasterećenje), pa p01 ned 8–9 ima 35/48 km umesto 42/55. Isti uzrok: udeo rada i
+   udeo dugog motor računa prema CILJU nedelje, a čuvar prema urađenom (vlasnik-v2 ned 11: dugi 41 % → zato mali obim
+   0,37). Predlog: plafon R2b meriti od nedelje pre rasterećenja; budžet rada i dugi od planiranog, ne od cilja.
+5. **Motor broji tempo trke i blok kao brz rad**; rubrika K6 meri samo T i brže. Cilj p01 ned 13 (tempo trke 44 min +
+   blok 48 min ≈ 29 %) zato traži `maxFastSharePeak` 0,30 — predlog: brojati samo T, I, R (onda 0,22 ostaje).
+6. **Dva kvaliteta + lagan dan kod 4 dana, kvalitet utorkom posle dugog u nedelju i blok 10 km su izrazivi** — nije
+   bilo potrebe za motorom (redosled podražaja [čet, uto]).
+7. **Personalizacija:** `weeksSincePause` radi (P1 B: ned 1 35 km, vrh 45,5 km prema A 57,2 km, dugi od 13,5 km, prvi
+   kvalitet u 3. nedelji, provera u 4.). **`recentQualityWeeks` ne razlikuje P3 A i B**: A trči sve 6:15–6:25 (brže od
+   lagane zone) pa je „brže od laganog" 8 od 8 nedelja, kao B sa pragom. Treba uslov iz krugova/varijacije tempa
+   (deonice), ne iz prosečnog tempa. P2 A/B se razlikuju samo obimom (B vrh 22,9 vs 26,9 km); 2:1 i hod-trk ne postoje.
+8. Vlasnik-v1: prag do 21 min (cilj 25–28; plafon 10 % vrha = 24 min), tempo trke 2 × 2,5 / 6 km, blok 3 → 4,5 → 6 km,
+   dugi 38 %; nedelja trke bez oštrenja (doza oštrenja 12 min ne stane u budžet nedelje trke od 78 BO — proveriti motor).
+
+**Pomerene granice testova u krugu 3** (sve zbog cilja kao mete): K6 meri samo T, I, R i test (rubrika); K7 intervali
+≤ 80 % vrha (cilj p01 17/22, p04 16/20); najteža → sledeća ≤ 90 % (cilj 89 %) ili pod R5 te nedelje; R16 meri tempo
+trke nedelje zajedno sa blokom (cilj p01 ned 10: 29 + 29 min posle praga 33) i ne meri sužavanje; raznovrsnost (intervali)
+ne važi za početnika (cilj p11/p12 nema intervale); mreža: „ispod cilja" opravdan kad su lagani dani na plafonu R2a/R2b,
+„brz udeo" kad je rad ≤ dozvoljeno × CILJ nedelje (tačke 4–5). Kapija nije dirana. „Ništa" čeka formu: 6 planova (1–2 s).
