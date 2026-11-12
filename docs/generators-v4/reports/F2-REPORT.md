@@ -42,16 +42,15 @@ finish-block / progressive: opciono `by: 'trajanje' | 'duzina'` + tip `WorkUnit`
 6. **Nepotpune nedelje:** cilj × (dostupni dani trčanja / svi). U nedelji trke sidro rasporeda je dan trke; dan pre
    trke je lagano ≤ 20 min ili odmor, bez dodatka (§ 6.2 k. 10 to ostavlja šablonu, a šablon ne zna dan trke).
 7. **Pravilo rasta** koristi planirano POSLE spremnosti (stvarno za prošle nedelje); pre plana `B` — kao u (b).
-8. **Zaokruživanje:** dugi naniže (0,5 km / 5 min); blok ≤ polovine dugog; broj deonica tako da rad ≤ plafon + 90 s.
-9. **`warnings` prima objekat** `{ state, goal, data, decisions, doc }`: vrh u km i najduži dugi se čitaju iz
+8. **`warnings` prima objekat** `{ state, goal, data, decisions, doc }`: vrh u km i najduži dugi se čitaju iz
    izgrađenog plana. Suvi poziv pre generisanja = `plan()` (čist i brz). Dodato upozorenje `bol` (nivo ≥ 7).
-10. **§ 14.6 (ugrađeno posle prve isporuke):** rampa po razlogu (2,0 / 1,0 / 1,5 × dani, do 28), dugi u rampi
+9. **§ 14.6 (ugrađeno posle prve isporuke):** rampa po razlogu (2,0 / 1,0 / 1,5 × dani, do 28), dugi u rampi
     ≤ 75 %, blok tek posle dugog bez bloka ≥ 90 % pa od najnižeg koraka lestvice, izveden umor traži i 7 dana
     ≥ 1,2 × B. Moja tumačenja: „poslednji odrađeni dugi" = najduže trčanje (bez trke/testa) u 28 dana pre uzroka
     (dugi rasterećenja ne spušta plafon); pravilo bloka se gasi 42 dana posle pauze; buduće duge računam kao
     odrađene, prošle samo ako imaju trčanje. Primer (b) je sada rampa 14 dana.
-11. **Sitno:** opterećenje odrađenog trčanja koristi prag TEKUĆE forme; seme baze bez `weeklyKm` je prosek istorije;
-    šablon bez pogotka → najbliži istog nivoa (izuzetak samo kad `templates` nema nijedan šablon).
+10. **Sitno:** opterećenje odrađenog trčanja koristi prag TEKUĆE forme; seme baze bez `weeklyKm` je prosek istorije;
+    šablon bez pogotka → najbliži istog nivoa (izuzetak samo kad `templates` nema nijedan šablon). Zaokruživanje: dugi naniže (0,5 km / 5 min); blok ≤ polovine dugog; broj deonica tako da rad ≤ plafon + 90 s.
 ## Zapažanja (nisu odstupanja, traže pažnju)
 - Jedna trka u retkoj istoriji (bez ostalih trčanja) podiže bazu ≈ 16 % (§ 5.3 doslovno) → F4/F9.
 - Trčanje bez krugova se boduje po prosečnom tempu: dan kvaliteta vredi ≈ 8 % manje od planiranog, pa pravilo rasta
