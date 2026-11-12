@@ -182,3 +182,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   adekvatnog i nudi samo „produži". → ČETVRTI (poslednji) krug motora: množina sa padežom, upozorenje sa „šta može
   sada / šta za sledeći ciklus", dugi od nezaokruženog prethodnog, deonice ne ispod minimalne doze, rast posle
   rampe od baze pre napora.
+
+### 15:17 — HM V4 KANDIDAT ZA OCENU (`590c0f8`, motor `ec151b6` ZAMRZNUT); moj pregled: 467 testova V4 + izolacija zeleno (10 s), typecheck čist [visoka]
+- Motor: krugovi 3, 4 i ispravka dugog posle trke ugrađeni (padež, upozorenje u dva dela, dugi od nezaokruženog
+  prethodnog, napomene dana trke, trka kao 60 % „dugog", zahtevi adaptera).
+- HM (po izveštaju F3, [srednja]): V4 ≥ v3 po vrhu km i najdužem dugom za svih 12 profila; čuvar 0 nalaza na 14
+  planova. Vlasnik v1 (10 ned): vrh 38,6 km, dugi 17 km. Vlasnik v2 (18 ned posle HM): 15 → 26 → 30 → 23 (rast.) →
+  26,5 … vrh 44,3 km, dugi 18–20 km × 6; prognoza 1:40:20 → 1:38:00 (1:36:20–1:40:49).
+- Pregledao spisak 9 pomerenih granica u testovima HM (F3-REPORT): prihvatljivo; najlabavija je „brz udeo do 27 %
+  kad je uzrok mali obim / 35 % ispod 30 min po danu" — važi samo za rubne ulaze, pratim kod sudija.
+- Moja zamerka za sledeći krug: vlasnik-v2 se posle rampe vraća na sadašnji obim tek u 7. nedelji (26,5 → 28,5 →
+  31 km) — možda presporo; čekam sud trenera.
+- OCENA pokrenuta: trener (deo Plan na 12 profila + 24 scenarija; personalizacija bez ispisa → zbirna 0,625/0,375)
+  i DRUGI SUDIJA `session_01GnHHiXPTR6Wn73KadMppfu` (Fable; 12 planova + 2 plana vlasnika + 8 scenarija; piše u
+  `docs/generators-v4/judge2/`). F2 i F3 tabovi miruju (ne arhivirani — trebaće za ispravke posle ocene).
