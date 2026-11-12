@@ -14,6 +14,11 @@ type Family = 'redovan' | 'pocetnik';
 type DayBand = 'malo' | 'vise';
 
 const REGULAR: LevelId[] = ['spor', 'srednji', 'brz'];
+/** Obim blizu plafona nivoa: isti šablon, množilac vrha najviše × 1,2 (početnik × 1,25). */
+const REGULAR_FULL: LevelId[] = ['spor-obiman', 'srednji-obiman'];
+const BEGINNER_FULL: LevelId[] = ['pocetnik-obiman'];
+/** Mali obim: isti šablon kao 1–3 dana (jedan kvalitet + ubrzanja), za bilo koji broj dana. */
+const SMALL: LevelId[] = ['mali'];
 const BEGINNER: LevelId[] = ['pocetnik'];
 
 const S = (stimulus: string, dosePct?: number, workoutId?: string): StimulusSlot => ({
@@ -73,7 +78,7 @@ const FINISH = 'zavrsna';
 function regularBody(first: number, band: DayBand): Template['body'] {
   const loads = ramp(first, 0.86, 6);
   /* 1–3 dana: dugi nosi veći deo nedelje od početka (v3: do 0,85 najdužeg) */
-  const longs = band === 'malo' ? ramp(0.8, 0.88, 6) : ramp(0.72, 0.86, 6);
+  const longs = band === 'malo' ? ramp(0.8, 0.88, 6) : ramp(0.76, 0.87, 6);
   const devLoads = ramp(0.88, 0.95, 5);
   const devLongs = ramp(0.88, 0.96, 5);
   return [
@@ -110,7 +115,7 @@ function regularBody(first: number, band: DayBand): Template['body'] {
 
 function beginnerBody(first: number): Template['body'] {
   const loads = ramp(first, 0.85, 6);
-  const longs = ramp(0.7, 0.85, 6);
+  const longs = ramp(0.76, 0.86, 6);
   const devLoads = ramp(0.87, 0.94, 5);
   const devLongs = ramp(0.87, 0.95, 5);
   /* početnik: ubrzanja i kratki usponi pre prvog praga (v3 i ciljni plan p11) */
@@ -165,7 +170,7 @@ function shortBody(first: number, family: Family, band: DayBand): Template['body
           pct,
           i === 0 ? { len: 0.88 } : { len: 0.9, stimulus: 'dugi-rp', dose: 0.4 + 0.15 * i },
           [
-            S('tempo-trke', 0.5 + 0.1 * i),
+            S('tempo-trke', 0.45 + 0.1 * i),
             family === 'pocetnik' ? STRIDES : q2(band, S(quality, 0.5))
           ]
         )
@@ -184,12 +189,16 @@ const shortPeak = (family: Family, band: DayBand): WeekIntent =>
 
 /* ------------------------------------------------------------------ rep (kraj plana) */
 
+/* Prvi trening tempa trke ≤ 70 % najvećeg (K7): prvi blok 0,5, najteža nedelja 0,75; bez provere forme
+   (≤ 11 nedelja) drugi blok je prvi i kreće od 0,5. */
+
 /** Sužavanje i nedelja trke: zajedničko svim šablonima. */
 function finish(family: Family, band: DayBand): WeekIntent[] {
-  const tune = family === 'pocetnik' || band === 'malo' ? STRIDES : S('prag', 0.25);
+  const single = family === 'pocetnik' || band === 'malo';
+  /* rad sužavanja ≤ 60 % najteže nedelje: sa jednim kvalitetom najteža nedelja ima manje rada */
   return [
-    week(FINISH, 'taper', 0.66, { len: 0.68 }, [S('tempo-trke', 0.5), tune]),
-    week(FINISH, 'race', 0.38, null, [S('ostrenje', 0.9), STRIDES])
+    week(FINISH, 'taper', 0.66, { len: 0.68 }, [S('tempo-trke', single ? 0.4 : 0.5), STRIDES]),
+    week(FINISH, 'race', 0.45, null, [S('ostrenje', 0.8), STRIDES])
   ];
 }
 
@@ -211,11 +220,13 @@ function extension(family: Family, band: DayBand, count: number): WeekIntent[] {
 function regularTail(band: DayBand, withCheck: boolean): WeekIntent[] {
   /* 1–3 dana: u nedelji sa blokom RP usred nedelje je manji (jedan kvalitet + blok) */
   const rp = (pct: number): number => (band === 'malo' ? pct * 0.75 : pct);
+  /* 1–3 dana: i blok u dugom je manji — u tri treninga brz rad brže prelazi 22 % nedelje */
+  const blk = (pct: number): number => (band === 'malo' ? pct * 0.85 : pct);
   const check = withCheck
     ? [
         week(SPEC, 'recovery', 0.8, { len: 0.7 }, [STRIDES, KONTROLA]),
-        week(SPEC, 'build', 0.95, { len: 0.9, stimulus: 'dugi-rp', dose: 0.5 }, [
-          S('tempo-trke', rp(0.6)),
+        week(SPEC, 'build', 0.95, { len: 0.9, stimulus: 'dugi-rp', dose: blk(0.5) }, [
+          S('tempo-trke', rp(0.5)),
           STRIDES
         ]),
         week(SPEC, 'build', 0.95, { len: 0.92 }, [S('tempo-trke', 0.65), q2(band, S('prag', 0.6))])
@@ -223,16 +234,16 @@ function regularTail(band: DayBand, withCheck: boolean): WeekIntent[] {
     : [];
   return [
     ...check,
-    week(SPEC, 'build', 1, { len: 0.95, stimulus: 'dugi-rp', dose: 0.75 }, [
-      S('tempo-trke', rp(0.7)),
+    week(SPEC, 'build', withCheck ? 1 : 0.96, { len: 0.95, stimulus: 'dugi-rp', dose: blk(0.75) }, [
+      S('tempo-trke', rp(withCheck ? 0.7 : 0.5)),
       STRIDES
     ]),
-    week(SPEC, 'recovery', 0.8, { len: 0.76 }, [S('prag', 0.5), STRIDES]),
-    week(SPEC, 'peak', 1, { len: 0.98, stimulus: 'dugi-rp', dose: 1 }, [
+    week(SPEC, 'recovery', 0.8, { len: 0.8 }, [S('prag', 0.5), STRIDES]),
+    week(SPEC, 'peak', 1, { len: 0.98, stimulus: 'dugi-rp', dose: blk(1) }, [
       S('tempo-trke', rp(0.75)),
       STRIDES
     ]),
-    week(SPEC, 'build', 0.84, { len: 0.8, stimulus: 'dugi-rp', dose: 0.5 }, [
+    week(SPEC, 'build', 0.82, { len: 0.85, stimulus: 'dugi-rp', dose: blk(0.5) }, [
       S('tempo-trke', rp(0.55)),
       q2(band, S('prag', 0.35))
     ]),
@@ -241,29 +252,31 @@ function regularTail(band: DayBand, withCheck: boolean): WeekIntent[] {
 }
 
 function beginnerTail(band: DayBand, withCheck: boolean): WeekIntent[] {
+  const rp = (pct: number): number => (band === 'malo' ? pct * 0.8 : pct);
+  const blk = (pct: number): number => (band === 'malo' ? pct * 0.85 : pct);
   const check = withCheck
     ? [
         week(SPEC, 'recovery', 0.8, { len: 0.7 }, [STRIDES, KONTROLA]),
-        week(SPEC, 'build', 0.94, { len: 0.88, stimulus: 'dugi-rp', dose: 0.45 }, [
-          S('tempo-trke', 0.55),
+        week(SPEC, 'build', 0.94, { len: 0.88, stimulus: 'dugi-rp', dose: blk(0.45) }, [
+          S('tempo-trke', rp(0.45)),
           STRIDES
         ]),
-        week(SPEC, 'build', 0.95, { len: 0.9 }, [S('tempo-trke', 0.75), STRIDES])
+        week(SPEC, 'build', 0.95, { len: 0.9 }, [S('tempo-trke', 0.6), STRIDES])
       ]
     : [];
   return [
     ...check,
-    week(SPEC, 'build', 1, { len: 0.94, stimulus: 'dugi-rp', dose: 0.7 }, [
-      S('tempo-trke', 0.6),
+    week(SPEC, 'build', withCheck ? 1 : 0.96, { len: 0.94, stimulus: 'dugi-rp', dose: blk(0.7) }, [
+      S('tempo-trke', rp(withCheck ? 0.6 : 0.45)),
       STRIDES
     ]),
-    week(SPEC, 'recovery', 0.8, { len: 0.76 }, [S('prag-p', 0.6), STRIDES]),
-    week(SPEC, 'peak', 1, { len: 0.98, stimulus: 'dugi-rp', dose: 1 }, [
-      S('tempo-trke', 0.65),
+    week(SPEC, 'recovery', 0.8, { len: 0.8 }, [S('prag-p', 0.6), STRIDES]),
+    week(SPEC, 'peak', 1, { len: 0.98, stimulus: 'dugi-rp', dose: blk(1) }, [
+      S('tempo-trke', rp(0.65)),
       STRIDES
     ]),
-    week(SPEC, 'build', 0.84, { len: 0.8, stimulus: 'dugi-rp', dose: 0.5 }, [
-      S('tempo-trke', 0.55),
+    week(SPEC, 'build', 0.82, { len: 0.85, stimulus: 'dugi-rp', dose: blk(0.5) }, [
+      S('tempo-trke', rp(0.55)),
       STRIDES
     ]),
     ...finish('pocetnik', band)
@@ -283,10 +296,12 @@ const beginnerMult = (n: number): number => Math.min(2, Math.max(1, 1 + (n - 4) 
 /** 1–3 dana za srednji i brz nivo: tri dana ne nose vrh × 1,4 (dugi ≤ 2 h 10, lagan ≤ 75 % dugog), pa najviše
     × 1,18 (v3: p08 45 → 48 km). Spor trkač sa 1–3 dana ima mali apsolutni obim i tu granicu ne dostiže. */
 const capacityMult = (n: number): number => Math.min(1.18, regularMult(n));
+const fullMult = (n: number): number => Math.min(1.2, regularMult(n));
+const beginnerFullMult = (n: number): number => Math.min(1.25, beginnerMult(n));
 
-/** Nedelja 1 ≈ sadašnji obim: udeo prve nedelje = startPct × 1,08 (rad kvaliteta nosi više bodova po km; isto je
+/** Nedelja 1 ≈ sadašnji obim: udeo prve nedelje = startPct × 1,07 (rad kvaliteta nosi više bodova po km; isto je
     granica pravila rasta, pa nedelja 1 ne ide iznad nje). */
-const FIRST_WEEK_BONUS = 1.08;
+const FIRST_WEEK_BONUS = 1.07;
 
 /** Dužina repa; za 12+ nedelja produžena tako da telo nema 4k ni 4k + 1 nedelja (§ 4.2 k. 5). */
 function tailFor(family: Family, band: DayBand, weeks: number): WeekIntent[] {
@@ -330,16 +345,38 @@ function makeTemplate(
     body,
     /* rep već nosi svoja rasterećenja; kraće pripreme (≤ 11 nedelja) imaju telo ≤ 5 nedelja, bez rasterećenja */
     recoveryEvery: weeks >= 12 ? 4 : 0,
-    recovery: { loadFactor: 0.8, longFactor: 0.8, doseFactor: 0.65 }
+    recovery: { loadFactor: 0.76, longFactor: 0.8, doseFactor: 0.65 }
   };
 }
 
 const WEEKS = Array.from({ length: 52 }, (_, i) => i + 1);
 
 export const TEMPLATES: Template[] = WEEKS.flatMap((n) => [
-  makeTemplate('redovan', 'malo', 1, 3, n, ['srednji', 'brz'], capacityMult(n), '-nosivost'),
+  makeTemplate(
+    'redovan',
+    'malo',
+    1,
+    3,
+    n,
+    ['srednji', 'brz', ...REGULAR_FULL],
+    capacityMult(n),
+    '-nosivost'
+  ),
+  makeTemplate('redovan', 'vise', 4, 7, n, REGULAR_FULL, fullMult(n), '-obiman'),
+  makeTemplate(
+    'pocetnik',
+    'malo',
+    1,
+    3,
+    n,
+    BEGINNER_FULL,
+    Math.min(1.18, beginnerFullMult(n)),
+    '-obiman'
+  ),
+  makeTemplate('pocetnik', 'vise', 4, 7, n, BEGINNER_FULL, beginnerFullMult(n), '-obiman'),
   makeTemplate('redovan', 'malo', 1, 3, n, REGULAR, regularMult(n)),
   makeTemplate('redovan', 'vise', 4, 7, n, REGULAR, regularMult(n)),
+  makeTemplate('redovan', 'malo', 1, 7, n, SMALL, regularMult(n), '-mali-obim'),
   makeTemplate('pocetnik', 'malo', 1, 3, n, BEGINNER, beginnerMult(n)),
   makeTemplate('pocetnik', 'vise', 4, 7, n, BEGINNER, beginnerMult(n))
 ]);

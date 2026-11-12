@@ -172,7 +172,9 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'r-400'
   },
 
-  /* ---------------------------------------------------------------- prag */
+  /* ---------------------------------------------------------------- prag
+     Deonice praga se zadaju trajanjem: zaokruživanje komada na 60 s drži rad u plafonu + 90 s i za 3 komada
+     (na 500 m bi 3 komada mogla da pređu plafon za 3 min). U komadu se zadaje dužinom kao lagani dani. */
   {
     id: 'prag-komad',
     kind: 'quality',
@@ -189,8 +191,8 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'prag',
     tags: [],
     impact: 'obican',
-    requires: { minDoseSec: 720 },
-    main: { kind: 'split', zone: 'T', pieces: 2, recovery: jog(90) },
+    requires: { minDoseSec: 600 },
+    main: { kind: 'split', zone: 'T', pieces: 2, recovery: jog(90), by: 'trajanje' },
     text: 'prag-deonice'
   },
   {
@@ -199,8 +201,8 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'prag',
     tags: [],
     impact: 'obican',
-    requires: { minDoseSec: 1080 },
-    main: { kind: 'split', zone: 'T', pieces: 3, recovery: jog(90) },
+    requires: { minDoseSec: 900 },
+    main: { kind: 'split', zone: 'T', pieces: 3, recovery: jog(90), by: 'trajanje' },
     text: 'prag-deonice'
   },
   {
@@ -213,17 +215,6 @@ export const LIBRARY: WorkoutDef[] = [
     main: { kind: 'continuous', zone: 'T' },
     text: 'prag-komad'
   },
-  {
-    id: 'prag-4x',
-    kind: 'quality',
-    stimulus: 'prag',
-    tags: [],
-    impact: 'obican',
-    requires: { minDoseSec: 1440 },
-    main: { kind: 'split', zone: 'T', pieces: 4, recovery: jog(75) },
-    text: 'prag-deonice'
-  },
-
   /* prag početnika: kraći komadi, duži oporavak */
   {
     id: 'prag-p-2x',
@@ -256,24 +247,8 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'prag-deonice'
   },
 
-  /* ---------------------------------------------------------------- intervali (razvoj) */
-  {
-    id: 'i-1000',
-    kind: 'quality',
-    stimulus: 'intervali',
-    tags: [],
-    impact: 'obican',
-    requires: { needsKnownPaces: true, minVdot: 38 },
-    main: {
-      kind: 'reps',
-      zone: 'I',
-      rep: { distanceM: 1000 },
-      recovery: jog(150),
-      minReps: 3,
-      maxReps: 5
-    },
-    text: 'intervali'
-  },
+  /* ---------------------------------------------------------------- intervali (razvoj)
+     Lestvica prva: prva doza je mala (55 % plafona), a lestvica uzima onoliko komada koliko staje. */
   {
     id: 'i-lestvica',
     kind: 'quality',
@@ -295,6 +270,23 @@ export const LIBRARY: WorkoutDef[] = [
       recovery: jog(150)
     },
     text: 'intervali-lestvica'
+  },
+  {
+    id: 'i-1000',
+    kind: 'quality',
+    stimulus: 'intervali',
+    tags: [],
+    impact: 'obican',
+    requires: { needsKnownPaces: true, minVdot: 38 },
+    main: {
+      kind: 'reps',
+      zone: 'I',
+      rep: { distanceM: 1000 },
+      recovery: jog(150),
+      minReps: 3,
+      maxReps: 5
+    },
+    text: 'intervali'
   },
   {
     id: 'i-800',
@@ -331,7 +323,18 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'intervali'
   },
 
-  /* ---------------------------------------------------------------- tempo trke usred nedelje */
+  /* ---------------------------------------------------------------- tempo trke usred nedelje
+     U komadu prvi: prva (mala) doza ostaje ≥ 8 min i posle zaokruživanja na 500 m. */
+  {
+    id: 'rp-komad',
+    kind: 'quality',
+    stimulus: 'tempo-trke',
+    tags: [],
+    impact: 'obican',
+    requires: { maxDoseSec: 1800 },
+    main: { kind: 'continuous', zone: 'RP' },
+    text: 'rp-komad'
+  },
   {
     id: 'rp-2x',
     kind: 'quality',
@@ -351,16 +354,6 @@ export const LIBRARY: WorkoutDef[] = [
     requires: { minDoseSec: 1260 },
     main: { kind: 'split', zone: 'RP', pieces: 3, recovery: jog(90) },
     text: 'rp-deonice'
-  },
-  {
-    id: 'rp-komad',
-    kind: 'quality',
-    stimulus: 'tempo-trke',
-    tags: [],
-    impact: 'obican',
-    requires: { maxDoseSec: 1800 },
-    main: { kind: 'continuous', zone: 'RP' },
-    text: 'rp-komad'
   },
   /* oštrenje u nedelji trke: kratke deonice u tempu trke */
   {
