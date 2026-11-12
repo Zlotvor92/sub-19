@@ -195,6 +195,8 @@ export interface FormHeader {
 export interface Paces {
   easySlow: SecPerKm;
   easyFast: SecPerKm;
+  /** Tempo E za račun kilometara (66 %, § 5.4 i § 5.5). */
+  easy: SecPerKm;
   M: SecPerKm;
   T: SecPerKm;
   I: SecPerKm;
