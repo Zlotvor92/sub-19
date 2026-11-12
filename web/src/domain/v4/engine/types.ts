@@ -146,6 +146,8 @@ export interface PlanWeek {
   intent: WeekIntent;
   /** Cilj opterećenja nedelje posle svih odluka (bez dana trke). */
   targetLoad: LoadPoints;
+  /** Odlučeno trajanje dugog te nedelje pre stanja spremnosti (0 = nedelja bez dugog); preuzet plan: najduži dan. */
+  longSec: Seconds;
   /** Dani hronološki; nedelja na početku plana može biti nepotpuna. */
   days: PlanDay[];
 }
@@ -255,7 +257,19 @@ export interface PlanHeader {
   appliedEvents: EventId[];
   /** Dan do kog je istorija već uzeta u obzir (nastanak ili preuzimanje plana). */
   eventsFrom: IsoDate;
+  /** Uzroci spremnosti i ponovljene doze koji važe za plan (§ 6.5); dan u prozoru izmene se gradi iz namere + ovoga.
+      Upisuje ih `plan` (iz stanja) i `replan` (iz primenjenih događaja); bez njih je lista prazna. */
+  adjustments?: Adjustment[];
 }
+
+/** Trajna posledica događaja po kojoj se dani grade iznova (§ 6.4, § 6.5). `source` je `id` događaja ili `'plan'`. */
+export type Adjustment =
+  | { kind: 'effort'; source: string; date: IsoDate; durationSec: Seconds }
+  | { kind: 'pause'; source: string; from: IsoDate; to: IsoDate }
+  | { kind: 'pain'; source: string; date: IsoDate; level: number }
+  | { kind: 'fatigue'; source: string; date: IsoDate }
+  /** Propušten ključan trening: dan `dayId` ponavlja propuštenu dozu ili dužinu (§ 6.4). */
+  | { kind: 'repeat'; source: string; dayId: DayId; workSec?: Seconds; lengthSec?: Seconds };
 
 export interface PlanDoc {
   schema: 'plan-doc';
@@ -477,16 +491,19 @@ export type PlanResult = { ok: true; doc: PlanDoc } | { ok: false; errors: Input
 
 /* ------------------------------------------------------------------ biblioteka i šablon (§ 4) */
 
+/** Jedinica u kojoj se zadaje komad rada. */
+export type WorkUnit = 'trajanje' | 'duzina';
+
 export type RecoverySpec = { extent: Extent; mode: 'dzog' | 'hod' | 'stajanje' };
 
 /** Oblik glavnog dela; doza (sekunde rada) ga skalira (§ 4.3). */
 export type MainSet =
   /** Ceo trening u jednoj zoni; trajanje = budžet dana (lagano, lagan dugi). */
   | { kind: 'steady'; zone: ZoneId }
-  /** Jedan komad rada = doza. */
-  | { kind: 'continuous'; zone: ZoneId }
+  /** Jedan komad rada = doza. `by`: jedinica komada; bez nje kao lagani dani (`presentation`). */
+  | { kind: 'continuous'; zone: ZoneId; by?: WorkUnit }
   /** Doza podeljena na `pieces` jednakih komada. */
-  | { kind: 'split'; zone: ZoneId; pieces: number; recovery: RecoverySpec }
+  | { kind: 'split'; zone: ZoneId; pieces: number; recovery: RecoverySpec; by?: WorkUnit }
   /** Deonice stalne dužine; broj = doza / trajanje deonice, u granicama. */
   | {
       kind: 'reps';
@@ -499,9 +516,9 @@ export type MainSet =
   /** Stalna lestvica; uzima se najduži početak koji staje u dozu. */
   | { kind: 'ladder'; zone: ZoneId; reps: Extent[]; recovery: RecoverySpec }
   /** Dugi: lagano, pa blok doze na kraju. */
-  | { kind: 'finish-block'; zone: ZoneId }
+  | { kind: 'finish-block'; zone: ZoneId; by?: WorkUnit }
   /** Dugi: poslednji deo (doza) progresivno od lagano do zone. */
-  | { kind: 'progressive'; zone: ZoneId }
+  | { kind: 'progressive'; zone: ZoneId; by?: WorkUnit }
   /** Mali podražaj uz lagan dan (ubrzanja, kratki usponi); doza je stalna. */
   | {
       kind: 'add-on';
@@ -664,7 +681,13 @@ export interface RunnerFacts {
   pauses: Pause[];
   pain: PainFlag[];
 }
-export type BuildStateFn = (facts: RunnerFacts, goal: Goal, data: DistanceData) => RunnerState;
+/** `estimate`: procena forme (`fitness/`); bez nje motor koristi najprostiju procenu iz izjave (§ 2.4). */
+export type BuildStateFn = (
+  facts: RunnerFacts,
+  goal: Goal,
+  data: DistanceData,
+  estimate?: EstimateFormFn
+) => RunnerState;
 export type EstimateFormFn = (
   facts: RunnerFacts,
   goal: { distanceM: Meters; raceDate: IsoDate },
