@@ -35,7 +35,7 @@ import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { skeleton } from './plan';
 import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
-import { normalizeAvailability } from './state';
+import { lastLongBefore, normalizeAvailability } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import type {
   Adjustment,
@@ -102,7 +102,8 @@ function onResult(
     kind: 'effort',
     source: ev.id,
     date: run.date,
-    durationSec: run.durationSec
+    durationSec: run.durationSec,
+    lastLongSec: lastLongBefore(state, run.date)
   };
   let header = withAdjustment(doc.header, adj);
   const vdot = state.form.current.vdot;
@@ -212,7 +213,14 @@ function onPause(
   if (!isValidDate(ev.from) || !isValidDate(ev.to)) return null;
   const length = pauseLength(ev.from, ev.to);
   if (length < PAUSE_MIN_DAYS) return null;
-  const adj: Adjustment = { kind: 'pause', source: ev.id, from: ev.from, to: ev.to };
+  const adj: Adjustment = {
+    kind: 'pause',
+    source: ev.id,
+    from: ev.from,
+    to: ev.to,
+    reason: ev.reason,
+    lastLongSec: lastLongBefore(state, ev.from)
+  };
   let header = withAdjustment(doc.header, adj);
   const full = length >= PAUSE_FULL_REPLAN_DAYS;
   if (full) header = { ...header, decisions: redecide(header.decisions, state, data) };
@@ -222,7 +230,7 @@ function onPause(
   });
   return {
     doc: full ? refreshWarnings(built, state, data) : built,
-    until: addDays(ev.to, pauseRampDays(length))
+    until: addDays(ev.to, pauseRampDays(length, ev.reason))
   };
 }
 
@@ -241,7 +249,13 @@ function onPain(
   data: DistanceData
 ): Candidate | null {
   if (!Number.isFinite(ev.level) || ev.level < 1) return null;
-  const adj: Adjustment = { kind: 'pain', source: ev.id, date: ev.date, level: ev.level };
+  const adj: Adjustment = {
+    kind: 'pain',
+    source: ev.id,
+    date: ev.date,
+    level: ev.level,
+    lastLongSec: lastLongBefore(state, ev.date)
+  };
   const window = adjustmentWindow(adj);
   if (window === null) return null;
   let header = withAdjustment(doc.header, adj);
@@ -470,7 +484,7 @@ function explain(
     case 'pause': {
       const length = pauseLength(ev.from, ev.to);
       const what = `Pauza${PAUSE_REASON[ev.reason]} trajala je ${count(length, DAYS)} (${fmtDateRange(ev.from, ev.to)})`;
-      const ramp = countWith(pauseRampDays(length), FIRST, DAYS);
+      const ramp = countWith(pauseRampDays(length, ev.reason), FIRST, DAYS);
       const day = `${what}, pa je povratak postepen: ${ramp} posle nje treninzi su kraći i lagani, bez brzih deonica; ${resume}.`;
       const late = `${what}; posle povratka obim raste postepeno od onoga što je stvarno odrađeno, a prvi brzi trening svake vrste je kraći — ${lighter}.`;
       const header = `${what}, pa je ostatak plana preračunat od sadašnje baze; ${lighter}.`;

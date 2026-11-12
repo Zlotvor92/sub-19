@@ -221,8 +221,9 @@ const RECOVERY_WORD: Readonly<Record<RecoverySpec['mode'], string>> = {
 const fmtExtent = (extent: Extent): string =>
   'distanceM' in extent ? fmtDistance(extent.distanceM) : fmtDuration(extent.durationSec);
 
+/** Oporavak: „1:30 džog", „2 min hod", „200 m džog" (bez „min" uz minute i sekunde). */
 const fmtRecovery = (spec: RecoverySpec): string =>
-  `${fmtExtent(spec.extent)} ${RECOVERY_WORD[spec.mode]}`;
+  `${fmtExtent(spec.extent).replace(/^(\d+:\d\d) min$/, '$1')} ${RECOVERY_WORD[spec.mode]}`;
 
 function unitOf(by: WorkUnit | undefined, ctx: BuildCtx): WorkUnit {
   return by ?? (byDistance(ctx) ? 'duzina' : 'trajanje');

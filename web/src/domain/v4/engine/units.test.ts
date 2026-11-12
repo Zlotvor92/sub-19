@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { addDays, diffDays, isValidDate, mondayOf, weekdayOf } from './dates';
 import { assignDays } from './decide';
-import { buildState, canonical, fingerprint, paceCtxOf, summarize } from './index';
+import { estimateForm } from '../fitness';
+import {
+  buildState,
+  canonical,
+  declaredForm,
+  fingerprint,
+  paceCtxOf,
+  plan,
+  summarize
+} from './index';
 import { rollDay, runLoad } from './load';
 import { expandTemplate } from './template';
 import { build, facts, goalAt, runsAsPlanned } from './testdata/helpers';
@@ -165,6 +174,83 @@ describe('stanje (SPEC § 2)', () => {
   });
 });
 
+describe('stanje uz postojeći plan (dopuna organizatora, § 2.3, § 7.3)', () => {
+  const b = build(facts(), goalAt('2027-01-24'));
+
+  it('`Run.planned` se popunjava iz plana po `dayId`; procena forme dobija ista trčanja i izvedene pauze', () => {
+    const today = '2026-12-06';
+    const runs = runsAsPlanned(b.doc, '2026-11-26');
+    let seenRuns = 0;
+    let seenPauses = 0;
+    const spy: typeof declaredForm = (f, g, planned) => {
+      seenRuns = f.runs.filter((r) => r.planned !== undefined).length;
+      seenPauses = f.pauses.length;
+      return declaredForm(f, g, planned);
+    };
+    const state = buildState({ ...b.facts, today, runs }, b.goal, SYNTHETIC, spy, b.doc);
+    const quality = state.runs.find((r) => r.date === '2026-11-19');
+    expect(quality?.planned).toEqual({ zone: 'T', workSec: 840 });
+    expect(state.runs.find((r) => r.date === '2026-11-17')?.planned).toBeUndefined();
+    expect(seenRuns).toBe(2);
+    expect(state.pauses).toEqual([{ from: '2026-11-27', to: '2026-12-05', reason: 'nepoznato' }]);
+    expect(seenPauses).toBe(1);
+    expect(buildState({ ...b.facts, today, runs }, b.goal, SYNTHETIC).pauses).toEqual([]);
+  });
+
+  it('izveden umor traži i tešku nedelju: opterećenje 7 dana ≥ 1,2 × bazna nedelja (§ 14.6)', () => {
+    const today = '2026-12-01';
+    const light: Run[] = [1, 2, 3].map((i) => ({
+      id: `l${String(i)}`,
+      date: addDays(today, -i),
+      distanceM: 5000,
+      durationSec: 1700
+    }));
+    const spike = buildState(
+      { ...facts({ profile: { weeklyKm: 8 } }), today, runs: light },
+      goalAt('2027-01-24'),
+      SYNTHETIC
+    );
+    expect(spike.load.acute / spike.load.chronic).toBeGreaterThan(1.5);
+    const fresh = build(
+      { ...facts({ profile: { weeklyKm: 8 } }), today, runs: light },
+      goalAt('2027-01-24')
+    );
+    expect(fresh.doc.header.adjustments?.some((a) => a.kind === 'fatigue')).toBe(true);
+    const calm = build(
+      { ...facts({ profile: { weeklyKm: 8 } }), today, runs: light.slice(0, 1) },
+      goalAt('2027-01-24')
+    );
+    expect(calm.doc.header.adjustments?.some((a) => a.kind === 'fatigue')).toBe(false);
+  });
+});
+
+describe('ubrizgana procena forme (`fitness/`), motor je ne uvozi', () => {
+  it('`buildState` sa `estimateForm` daje stanje i plan; isti ulaz → isti plan', () => {
+    const goal = goalAt('2027-01-24');
+    const f = facts({
+      profile: {
+        weeklyKm: 30,
+        recentResult: { distanceM: 10000, timeSec: 2760, date: '2026-10-20' },
+        yearsRunning: 2
+      }
+    });
+    const state = buildState(f, goal, SYNTHETIC, estimateForm);
+    const one = plan(state, goal, SYNTHETIC);
+    const two = plan(
+      buildState(structuredClone(f), goal, SYNTHETIC, estimateForm),
+      goal,
+      SYNTHETIC
+    );
+    expect(one.ok && two.ok).toBe(true);
+    if (!one.ok || !two.ok) return;
+    expect(canonical(two.doc)).toBe(canonical(one.doc));
+    expect(one.doc.header.form.raceDay.expectedSec).toBeLessThan(
+      one.doc.header.form.current.raceTimeSec
+    );
+    expect(one.doc.weeks).toHaveLength(10);
+  });
+});
+
 describe('otisak i kanonska serijalizacija (SPEC § 9.2)', () => {
   const b = build(facts(), goalAt('2027-01-24'));
 
@@ -174,7 +260,7 @@ describe('otisak i kanonska serijalizacija (SPEC § 9.2)', () => {
     expect(lines).toHaveLength(b.doc.weeks.flatMap((w) => w.days).length);
     expect(lines[0]).toBe('2026-11-16 | odmor | - | 0.0 |  | - | - | -');
     expect(lines[3]).toMatch(
-      /^2026-11-19 \| trening \| quality \| \d+\.\d \| prag 2 × 7 min, oporavak 1:30 min džog \| urađeno \| - \| -$/
+      /^2026-11-19 \| trening \| quality \| \d+\.\d \| prag 2 × 7 min, oporavak 1:30 džog \| urađeno \| - \| -$/
     );
     expect(fingerprint(b.doc, b.facts)).not.toBe(fingerprint(b.doc, f));
   });

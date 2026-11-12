@@ -3,15 +3,17 @@
 import {
   FATIGUE_RATIO,
   FATIGUE_REPEAT_DAYS,
+  FATIGUE_WEEK_SHARE,
   PACE_UPDATE_DAYS,
   PACE_UPDATE_VDOT,
-  PAUSE_MIN_DAYS,
-  PAUSE_MIN_PLANNED
+  PAUSE_MIN_DAYS
 } from './constants';
 import { addDays, diffDays, maxDate } from './dates';
 import { doneIds } from './done';
+import { derivedPauses, isPlanned } from './pauses';
 import { pauseLength } from './readiness';
-import type { DeriveEventsFn, IsoDate, Pause, PlanDay, PlanEvent, PlanEventKind } from './types';
+import { recentLoad } from './state';
+import type { DeriveEventsFn, PlanEvent, PlanEventKind } from './types';
 
 /** Redosled vrsta iz tabele § 3 (drugi ključ sortiranja posle datuma). */
 const KIND_ORDER: readonly PlanEventKind[] = [
@@ -37,37 +39,6 @@ export function sortEvents(events: readonly PlanEvent[]): PlanEvent[] {
       KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) ||
       (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
   );
-}
-
-const isPlanned = (day: PlanDay): boolean => day.workout !== null && day.workout.kind !== 'race';
-
-/** Izvedene pauze (§ 2.3): ≥ 3 uzastopna dana bez trčanja sa ≥ 2 planirana treninga; današnji dan se ne sudi. */
-function derivedPauses(
-  days: readonly PlanDay[],
-  runDates: ReadonlySet<IsoDate>,
-  from: IsoDate,
-  today: IsoDate,
-  declared: readonly Pause[]
-): Pause[] {
-  const out: Pause[] = [];
-  const planned = new Set(days.filter(isPlanned).map((d) => d.date));
-  let start: IsoDate | null = null;
-  const close = (end: IsoDate): void => {
-    if (start === null) return;
-    let count = 0;
-    for (let d = start; d <= end; d = addDays(d, 1)) if (planned.has(d)) count += 1;
-    const overlaps = declared.some((p) => p.from <= end && p.to >= (start ?? end));
-    if (pauseLength(start, end) >= PAUSE_MIN_DAYS && count >= PAUSE_MIN_PLANNED && !overlaps) {
-      out.push({ from: start, to: end, reason: 'nepoznato' });
-    }
-    start = null;
-  };
-  for (let d = from; d < today; d = addDays(d, 1)) {
-    if (runDates.has(d)) close(addDays(d, -1));
-    else start ??= d;
-  }
-  close(addDays(today, -1));
-  return out;
 }
 
 export const deriveEvents: DeriveEventsFn = (doc, state) => {
@@ -123,12 +94,9 @@ export const deriveEvents: DeriveEventsFn = (doc, state) => {
   const recentFatigue = (header.adjustments ?? []).some(
     (a) => a.kind === 'fatigue' && diffDays(today, a.date) < FATIGUE_REPEAT_DAYS
   );
-  if (
-    !load.seeded &&
-    load.chronic > 0 &&
-    load.acute / load.chronic >= FATIGUE_RATIO &&
-    !recentFatigue
-  ) {
+  const heavyWeek = recentLoad(state, 7) >= FATIGUE_WEEK_SHARE * header.decisions.baseLoad;
+  const strained = !load.seeded && load.chronic > 0 && load.acute / load.chronic >= FATIGUE_RATIO;
+  if (strained && heavyWeek && !recentFatigue) {
     events.push({ id: `fatigue:${today}`, date: today, kind: 'fatigue', source: 'opterecenje' });
   }
 

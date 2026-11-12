@@ -264,9 +264,17 @@ export interface PlanHeader {
 
 /** Trajna posledica događaja po kojoj se dani grade iznova (§ 6.4, § 6.5). `source` je `id` događaja ili `'plan'`. */
 export type Adjustment =
-  | { kind: 'effort'; source: string; date: IsoDate; durationSec: Seconds }
-  | { kind: 'pause'; source: string; from: IsoDate; to: IsoDate }
-  | { kind: 'pain'; source: string; date: IsoDate; level: number }
+  /** `lastLongSec`: poslednji odrađeni dugi pre uzroka (plafon dugog u rampi, § 14.6); 0 ili bez njega = nepoznat. */
+  | { kind: 'effort'; source: string; date: IsoDate; durationSec: Seconds; lastLongSec?: Seconds }
+  | {
+      kind: 'pause';
+      source: string;
+      from: IsoDate;
+      to: IsoDate;
+      reason?: Pause['reason'];
+      lastLongSec?: Seconds;
+    }
+  | { kind: 'pain'; source: string; date: IsoDate; level: number; lastLongSec?: Seconds }
   | { kind: 'fatigue'; source: string; date: IsoDate }
   /** Propušten ključan trening: dan `dayId` ponavlja propuštenu dozu ili dužinu (§ 6.4). */
   | { kind: 'repeat'; source: string; dayId: DayId; workSec?: Seconds; lengthSec?: Seconds };
@@ -309,6 +317,10 @@ export interface Run {
   /** Osećaj napora 1–10 koji je uneo trkač. */
   rpe?: number;
   source?: string;
+  /** Šta je dan plana zadao (zona rada i zadat rad); `buildState` ga popunjava iz plana po `dayId` (§ 7.3). */
+  planned?: { zone: ZoneId; workSec: Seconds };
+  /** Temperatura vazduha tokom trčanja (°C). */
+  tempC?: number;
 }
 
 /** Ono što trkač izjavi kad nema istorije; sve opciono. */
@@ -319,6 +331,8 @@ export interface RunnerProfile {
   recentResult?: { distanceM: Meters; timeSec: Seconds; date?: IsoDate };
   beginner?: boolean;
   yearsRunning?: number;
+  /** Godina rođenja (§ 14.6); motor je u prvoj verziji ne koristi. */
+  birthYear?: number;
 }
 
 export interface Availability {
@@ -680,13 +694,17 @@ export interface RunnerFacts {
   runs: Run[];
   pauses: Pause[];
   pain: PainFlag[];
+  /** Bol u poslednjih 12 meseci (§ 14.6); koristi ga `fitness/`, motor ga u prvoj verziji ne čita. */
+  painHistory?: PainFlag[];
 }
 /** `estimate`: procena forme (`fitness/`); bez nje motor koristi najprostiju procenu iz izjave (§ 2.4). */
 export type BuildStateFn = (
   facts: RunnerFacts,
   goal: Goal,
   data: DistanceData,
-  estimate?: EstimateFormFn
+  estimate?: EstimateFormFn,
+  /** Postojeći plan: iz njega se popunjava `Run.planned` i izvode pauze (§ 2.3). */
+  doc?: PlanDoc
 ) => RunnerState;
 export type EstimateFormFn = (
   facts: RunnerFacts,

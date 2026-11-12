@@ -6,7 +6,7 @@ import { addDays, weekdayOf } from './dates';
 import { assignDays } from './decide';
 import { doneIds } from './done';
 import { paceCtxOf, stepsCost, summarize } from './load';
-import { applyReadiness, modsFor, recipeKey, type Seen } from './readiness';
+import { applyReadiness, modsFor, PLAIN_LONG, recipeKey, type Seen } from './readiness';
 import {
   addonSteps,
   allOutSec,
@@ -464,6 +464,18 @@ export function runPass(
       }
       const key = seenKey(final.workout);
       if (key !== null) seen.push({ date: final.date, key });
+      /* Dugi bez bloka: za prošle dane se računa samo ako je odrađen (§ 14.6). */
+      if (
+        final.workout?.kind === 'long' &&
+        final.workout.workSec === 0 &&
+        (final.date > state.today || done.has(final.id))
+      ) {
+        seen.push({
+          date: final.date,
+          key: PLAIN_LONG,
+          sec: summarize(final.workout, ctx.pace).durationSec
+        });
+      }
       if (final.workout?.kind === 'test' && !explicitEfforts.has(final.date)) {
         causes.push({
           kind: 'effort',

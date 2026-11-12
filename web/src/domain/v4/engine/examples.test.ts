@@ -159,19 +159,68 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     expect(new Set(result.changes.map((c) => c.eventId)).size).toBe(1);
   });
 
-  it('rampa traje 11 dana: bez brzog rada dok je f < 0,8, utorak 22. 12. je najkraće lagano', () => {
+  it('§ 14.6: rampa posle bolesti traje 14 dana; bez brzog rada dok je f < 0,8; utorak 22. 12. je odmor', () => {
     for (const day of days(result.doc)) {
       const n = diffDays(day.date, today);
-      if (n >= 1 && n <= 7) expect(fastSec(result.doc, day), day.date).toBe(0);
+      if (n >= 1 && n <= 9) expect(fastSec(result.doc, day), day.date).toBe(0);
     }
+    expect(onDate(result.doc, '2026-12-22')?.workout).toBeNull();
+    expect(onDate(result.doc, '2026-12-24')?.workout?.kind).toBe('easy');
+    const pause = result.doc.header.adjustments?.find((a) => a.kind === 'pause');
+    expect(pause).toMatchObject({ reason: 'bolest', from: '2026-12-14', to: today });
+  });
+
+  it('§ 14.6: dugi u rampi ≤ 75 % poslednjeg odrađenog i bez bloka; blok tek posle dugog bez bloka', () => {
     const ctx = paceCtxOf(result.doc.header);
-    const tuesday = summarize(onDate(result.doc, '2026-12-22')?.workout ?? null, ctx);
-    expect(Math.abs(tuesday.durationSec - 1200)).toBeLessThan(120);
-    const thursday = onDate(result.doc, '2026-12-24');
-    expect(thursday?.workout?.kind).toBe('easy');
-    const long = onDate(result.doc, '2026-12-27')?.workout;
-    expect(long?.kind).toBe('long');
-    expect(long?.workSec).toBe(0);
+    /* „Poslednji odrađeni dugi" = najduže trčanje u 28 dana pre pauze (dugi rasterećenja ne spušta plafon). */
+    const lastDone = Math.max(
+      ...['2026-11-22', '2026-11-29', '2026-12-06', '2026-12-13'].map(
+        (date) => summarize(onDate(start.doc, date)?.workout ?? null, ctx).durationSec
+      )
+    );
+    for (const date of ['2026-12-27', '2027-01-03']) {
+      const long = onDate(result.doc, date)?.workout;
+      expect(long?.kind, date).toBe('long');
+      expect(long?.workSec, date).toBe(0);
+      expect(summarize(long ?? null, ctx).durationSec, date).toBeLessThanOrEqual(
+        0.75 * lastDone + 1
+      );
+    }
+    const longs = days(result.doc).filter((x) => x.date > today && x.workout?.kind === 'long');
+    const firstBlock = longs.findIndex((x) => (x.workout?.workSec ?? 0) > 0);
+    if (firstBlock >= 0) {
+      const plainBefore = longs
+        .slice(0, firstBlock)
+        .some((x) => summarize(x.workout, ctx).durationSec >= 0.9 * lastDone);
+      expect(plainBefore).toBe(true);
+    }
+  });
+
+  it('§ 14.6: rampa zavisi od razloga pauze (put 7, nepoznato 11, bolest i povreda 14 dana)', () => {
+    for (const [reason, rampDays] of [
+      ['put', 7],
+      ['nepoznato', 11],
+      ['povreda', 14]
+    ] as const) {
+      const st = buildState(
+        {
+          ...facts(),
+          today,
+          runs: runsAsPlanned(start.doc, '2026-12-13'),
+          pauses: [{ from: '2026-12-14', to: today, reason }]
+        },
+        GOAL,
+        EXAMPLE
+      );
+      const r = replan(start.doc, st, deriveEvents(start.doc, st), EXAMPLE);
+      const text = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
+      expect(text, reason).toContain(`${String(rampDays)} dana posle nje`);
+      for (const day of days(r.doc)) {
+        const n = diffDays(day.date, today);
+        if (n >= 1 && n < (0.4 * rampDays) / 0.6)
+          expect(fastSec(r.doc, day), `${reason} ${day.date}`).toBe(0);
+      }
+    }
   });
 
   it('urađene nedelje 1–4 i propuštena nedelja 5 su netaknute', () => {
@@ -195,8 +244,8 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
   it('objašnjenje kaže šta se desilo, šta je promenjeno i do kada', () => {
     const reason = result.changes.find((c) => c.scope === 'dan')?.reason ?? '';
     expect(reason).toContain('7 dana (14–20. 12.)');
-    expect(reason).toContain('prvih 11 dana');
-    expect(reason).toContain('od 1. 1.');
+    expect(reason).toContain('prvih 14 dana');
+    expect(reason).toContain('od 4. 1.');
   });
 });
 

@@ -69,7 +69,7 @@ function zonesOf(steps: readonly Step[], into: ZoneId[] = []): ZoneId[] {
     if ('repeat' in step) zonesOf(step.steps, into);
     else if (
       step.target.type === 'zone' &&
-      step.role !== 'recovery' &&
+      step.role === 'work' &&
       !into.includes(step.target.zone)
     ) {
       into.push(step.target.zone);
@@ -84,14 +84,15 @@ function zoneHint(zone: ZoneId, paces: Paces, data: DistanceData): string {
   return `${ZONE_NAME[zone]} ${fmtPace(paces[zone])}`;
 }
 
+/** Tempo ili napor samo za zone rada koje nisu lagano; legenda svih zona je u zaglavlju. */
 function paceHints(workout: Workout, paces: Paces, data: DistanceData): string {
   if (workout.kind === 'race') return '';
-  const order: ZoneId[] = ['E', 'M', 'T', 'RP', 'I', 'R'];
+  const order = ['M', 'T', 'RP', 'I', 'R'] as const;
   const used = zonesOf(workout.steps);
   return order
     .filter((z) => used.includes(z))
-    .map((z) => zoneHint(z, paces, data))
-    .join(' · ');
+    .map((z) => (paces.byFeel ? (data.texts[`napor.${z}`] ?? ZONE_FEEL[z]) : fmtPace(paces[z])))
+    .join(', ');
 }
 
 const percent = (share: number): string => `${fmtNumber(share * 100, 0)} %`;
@@ -200,9 +201,8 @@ export function renderPlan(
         continue;
       }
       const hints = paceHints(w, h.paces, data);
-      lines.push(
-        `  ${when}  ${w.text} — ${fmtNumber(c.km)} km, ${fmtMinutes(c.durationSec)}${hints === '' ? '' : ` · ${hints}`}`
-      );
+      const text = hints === '' ? w.text : `${w.text} (${hints})`;
+      lines.push(`  ${when}  ${text} — ${fmtNumber(c.km)} km, ${fmtMinutes(c.durationSec)}`);
       for (const note of w.notes ?? []) lines.push(`      napomena: ${note}`);
       for (const extra of day.extras ?? []) lines.push(`      uz to: ${extra}`);
     }

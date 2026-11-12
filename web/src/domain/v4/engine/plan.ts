@@ -1,11 +1,12 @@
 /* V4 — `plan` (SPEC § 6.1–6.2): čista funkcija (stanje, cilj, podaci distance) → plan. Redosled odluka:
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
-import { FATIGUE_RATIO } from './constants';
+import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE } from './constants';
 import { runPass } from './build';
 import { addDays, mondayOf } from './dates';
 import { decide } from './decide';
 import { validate, warnings } from './guard';
 import { raceWorkout } from './select';
+import { lastLongBefore, recentLoad } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import {
   type Adjustment,
@@ -39,19 +40,34 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
       kind: 'effort',
       source: 'plan',
       date: effort.date,
-      durationSec: effort.durationSec
+      durationSec: effort.durationSec,
+      lastLongSec: lastLongBefore(state, effort.date)
     });
   }
   for (const pause of state.pauses) {
-    out.push({ kind: 'pause', source: 'plan', from: pause.from, to: pause.to });
+    out.push({
+      kind: 'pause',
+      source: 'plan',
+      from: pause.from,
+      to: pause.to,
+      reason: pause.reason,
+      lastLongSec: lastLongBefore(state, pause.from)
+    });
   }
   for (const pain of state.pain) {
     if (pain.resolvedOn === undefined) {
-      out.push({ kind: 'pain', source: 'plan', date: pain.date, level: pain.level });
+      out.push({
+        kind: 'pain',
+        source: 'plan',
+        date: pain.date,
+        level: pain.level,
+        lastLongSec: lastLongBefore(state, pain.date)
+      });
     }
   }
   const { load } = state;
-  if (!load.seeded && load.chronic > 0 && load.acute / load.chronic >= FATIGUE_RATIO) {
+  const strained = !load.seeded && load.chronic > 0 && load.acute / load.chronic >= FATIGUE_RATIO;
+  if (strained && recentLoad(state, 7) >= FATIGUE_WEEK_SHARE * 7 * load.chronic) {
     out.push({ kind: 'fatigue', source: 'plan', date: state.today });
   }
   return out;

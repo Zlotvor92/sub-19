@@ -12,7 +12,11 @@ import {
   PAIN_MID_FACTOR,
   PAIN_MID_MAX,
   PAUSE_MIN_DAYS,
-  PAUSE_RAMP_FACTOR,
+  PAUSE_RAMP_FACTORS,
+  BLOCK_GATE_MAX_DAYS,
+  BLOCK_GATE_PAUSE_DAYS,
+  BLOCK_GATE_SHARE,
+  RAMP_LONG_SHARE,
   PAUSE_RAMP_MAX_DAYS,
   POST_RAMP_FIRST_DAYS,
   QUALITY_FROM_F,
@@ -25,21 +29,25 @@ import {
 import { addDays, diffDays } from './dates';
 import { summarize } from './load';
 import { type BuildCtx, minDoseOf, pickDef, realize, type Recipe, steadyLongDef } from './select';
-import type { Adjustment, IsoDate, Seconds } from './types';
+import type { Adjustment, IsoDate, Pause, Seconds } from './types';
 
 /** Rampa povratka: `zero` je dan napora ili poslednji dan pauze; traje `days`; `noFast` dana bez ičeg brzog. */
 export interface Ramp {
   zero: IsoDate;
   days: number;
   noFast: number;
+  /** Poslednji odrađeni dugi pre uzroka (0 = nepoznat): plafon dugog u rampi. */
+  lastLongSec: Seconds;
+  /** Pauza ≥ 7 dana: blok u dugom tek posle dugog bez bloka (§ 14.6). */
+  gate: boolean;
 }
 
 export function effortRampDays(durationSec: Seconds): number {
   return Math.max(1, Math.ceil(durationSec / 60 / EFFORT_MIN_PER_RAMP_DAY));
 }
 
-export function pauseRampDays(pauseDays: number): number {
-  return Math.ceil(PAUSE_RAMP_FACTOR * Math.min(pauseDays, PAUSE_RAMP_MAX_DAYS));
+export function pauseRampDays(pauseDays: number, reason: Pause['reason'] = 'nepoznato'): number {
+  return Math.ceil(PAUSE_RAMP_FACTORS[reason] * Math.min(pauseDays, PAUSE_RAMP_MAX_DAYS));
 }
 
 export const pauseLength = (from: IsoDate, to: IsoDate): number => diffDays(to, from) + 1;
@@ -51,22 +59,30 @@ export function rampOf(adj: Adjustment): Ramp | null {
       return {
         zero: adj.date,
         days: effortRampDays(adj.durationSec),
-        noFast: NO_FAST_DAYS_AFTER_EFFORT
+        noFast: NO_FAST_DAYS_AFTER_EFFORT,
+        lastLongSec: adj.lastLongSec ?? 0,
+        gate: false
       };
     case 'pause': {
       const length = pauseLength(adj.from, adj.to);
-      return length >= PAUSE_MIN_DAYS
-        ? { zero: adj.to, days: pauseRampDays(length), noFast: 0 }
-        : null;
+      if (length < PAUSE_MIN_DAYS) return null;
+      return {
+        zero: adj.to,
+        days: pauseRampDays(length, adj.reason),
+        noFast: 0,
+        lastLongSec: adj.lastLongSec ?? 0,
+        gate: length >= BLOCK_GATE_PAUSE_DAYS
+      };
     }
     case 'pain':
-      return adj.level > PAIN_MID_MAX
-        ? {
-            zero: addDays(adj.date, PAIN_HIGH_REST_DAYS),
-            days: pauseRampDays(PAIN_HIGH_REST_DAYS),
-            noFast: 0
-          }
-        : null;
+      if (adj.level <= PAIN_MID_MAX) return null;
+      return {
+        zero: addDays(adj.date, PAIN_HIGH_REST_DAYS),
+        days: pauseRampDays(PAIN_HIGH_REST_DAYS, 'povreda'),
+        noFast: 0,
+        lastLongSec: adj.lastLongSec ?? 0,
+        gate: PAIN_HIGH_REST_DAYS >= BLOCK_GATE_PAUSE_DAYS
+      };
     default:
       return null;
   }
@@ -115,12 +131,22 @@ export interface Mods {
   highImpact: boolean;
   /** Faktor doze kvaliteta i bloka (kvalitet u rampi i prvi posle nje). */
   doseFactor: number;
+  /** Najduži dozvoljeni dugi dok rampa traje. */
+  longCapSec: Seconds;
+  /** Blok ili progresija u dugom dozvoljeni (pauza ≥ 7 dana: tek posle dugog bez bloka). */
+  block: boolean;
+  /** Posle pauze ≥ 7 dana lestvica bloka kreće ispočetka: redni broj bloka od povratka; `null` = bez izmene. */
+  blockStep: number | null;
 }
 
+/** Trening koji je prolaz već video: ključ podražaja, ili `long-plain` (dugi bez bloka) sa trajanjem. */
 export interface Seen {
   date: IsoDate;
   key: string;
+  sec?: Seconds;
 }
+
+export const PLAIN_LONG = 'long-plain';
 
 export const NO_MODS: Mods = {
   rest: false,
@@ -128,7 +154,10 @@ export const NO_MODS: Mods = {
   quality: true,
   addon: true,
   highImpact: true,
-  doseFactor: 1
+  doseFactor: 1,
+  longCapSec: Number.POSITIVE_INFINITY,
+  block: true,
+  blockStep: null
 };
 
 export function modsFor(
@@ -152,6 +181,18 @@ export function modsFor(
         if (f < REST_BELOW_F) m.rest = true;
         if (f < QUALITY_FROM_F) noFast();
         m.doseFactor = RAMP_DOSE_FACTOR;
+        if (ramp.lastLongSec > 0) {
+          m.longCapSec = Math.min(m.longCapSec, RAMP_LONG_SHARE * ramp.lastLongSec);
+        }
+      }
+      if (ramp.gate && n >= 1 && n <= BLOCK_GATE_MAX_DAYS) {
+        const since = seen.filter((x) => x.date > ramp.zero && x.date < date);
+        const requalified = since.some(
+          (x) => x.key === PLAIN_LONG && (x.sec ?? 0) >= BLOCK_GATE_SHARE * ramp.lastLongSec
+        );
+        if (!requalified) m.block = false;
+        const blocks = since.filter((x) => x.key.startsWith('long:')).length;
+        m.blockStep = m.blockStep === null ? blocks : Math.min(m.blockStep, blocks);
       }
       if (n >= 1 && n <= ramp.noFast) noFast();
       const end = Math.max(ramp.days, ramp.noFast);
@@ -207,6 +248,15 @@ export function recipeKey(recipe: Recipe): string | null {
   return null;
 }
 
+/** Doza bloka u dugom: posle pauze ≥ 7 dana od najnižeg koraka lestvice pa redom (§ 14.6), inače × faktor rampe. */
+function blockDose(dose: Seconds, stimulus: string, mods: Mods, ctx: BuildCtx): Seconds {
+  const ladder = ctx.data.safety.progression[stimulus];
+  const cap = ctx.decisions.doseCapSec[stimulus];
+  if (mods.blockStep === null || ladder === undefined || cap === undefined)
+    return dose * mods.doseFactor;
+  return Math.min(dose, Math.min(1, ladder.startPct + ladder.stepPct * mods.blockStep) * cap);
+}
+
 /** Primena stanja na recept dana (§ 6.5). Ne zna za događaje: prima samo modifikator. */
 export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recipe {
   if (recipe.type === 'rest') return recipe;
@@ -220,10 +270,11 @@ export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recip
       return allowed ? { ...recipe, sec } : { type: 'easy', sec };
     }
     case 'long': {
-      const sec = scaled(recipe.sec, mods.f);
+      const sec = Math.min(scaled(recipe.sec, mods.f), mods.longCapSec);
       if (recipe.def === null || recipe.dose <= 0) return { ...recipe, sec };
-      const dose = recipe.dose * mods.doseFactor;
-      const blocked = !mods.quality || (!mods.highImpact && recipe.def.impact === 'visok');
+      const dose = blockDose(recipe.dose, recipe.def.stimulus, mods, ctx);
+      const blocked =
+        !mods.quality || !mods.block || (!mods.highImpact && recipe.def.impact === 'visok');
       if (blocked || dose < minDoseOf(recipe.def, ctx)) {
         return { type: 'long', sec, def: steadyLongDef(ctx, null), dose: 0, slot: recipe.slot };
       }

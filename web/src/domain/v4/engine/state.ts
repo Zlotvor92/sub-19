@@ -9,6 +9,7 @@ import {
 } from './constants';
 import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday } from './dates';
 import { decidePeak } from './decide';
+import { derivedPauses } from './pauses';
 import { declaredForm } from './formFallback';
 import { rollDay, runLoad } from './load';
 import { countWeeks, pickLevel, pickTemplate } from './template';
@@ -21,6 +22,10 @@ import type {
   HardEffort,
   LoadPoints,
   LoadState,
+  Pause,
+  PlanDoc,
+  Step,
+  ZoneId,
   Run,
   RunnerFacts,
   RunnerState,
@@ -160,17 +165,89 @@ function plannedLoads(
   return { baseLoad, peakLoad: decidePeak(baseLoad, picked.template, data.safety, level) };
 }
 
-export const buildState: BuildStateFn = (facts, goal, data, estimate = declaredForm) => {
+/** Zona rada dana plana: prvi korak uloge `work` sa zonom (za `Run.planned`). */
+function workZone(steps: readonly Step[]): ZoneId | null {
+  for (const step of steps) {
+    if ('repeat' in step) {
+      const inner = workZone(step.steps);
+      if (inner !== null) return inner;
+    } else if (step.role === 'work' && step.target.type === 'zone') {
+      return step.target.zone;
+    }
+  }
+  return null;
+}
+
+/** `Run.planned` iz plana po `dayId` (§ 7.3); trčanje koje ga već nosi ostaje kako jeste. */
+function withPlanned(runs: readonly Run[], doc: PlanDoc | undefined): Run[] {
+  if (doc === undefined) return [...runs];
+  const days = new Map(doc.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
+  return runs.map((run) => {
+    const workout = run.dayId === undefined ? undefined : days.get(run.dayId)?.workout;
+    if (run.planned !== undefined || workout == null || workout.workSec <= 0) return run;
+    const zone = workZone(workout.steps);
+    return zone === null ? run : { ...run, planned: { zone, workSec: workout.workSec } };
+  });
+}
+
+/** Prijavljene pauze + izvedene iz plana (§ 2.3), u poslednjih 42 dana. */
+function allPauses(facts: RunnerFacts, runs: readonly Run[], doc: PlanDoc | undefined): Pause[] {
+  const declared = facts.pauses.filter(
+    (p) =>
+      isValidDate(p.from) && isValidDate(p.to) && diffDays(facts.today, p.to) <= PAUSE_WINDOW_DAYS
+  );
+  if (doc === undefined || !isValidDate(facts.today)) return declared;
+  const windowStart = addDays(facts.today, -PAUSE_WINDOW_DAYS);
+  const from = doc.header.startDate > windowStart ? doc.header.startDate : windowStart;
+  const derived = derivedPauses(
+    doc.weeks.flatMap((w) => w.days),
+    new Set(runs.map((r) => r.date)),
+    from,
+    facts.today,
+    declared
+  );
+  return [...declared, ...derived].sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0));
+}
+
+/** Opterećenje poslednjih `days` dana (uključujući danas), po pragu tekuće forme. */
+export function recentLoad(state: RunnerState, days: number): LoadPoints {
+  const threshold = paceAtShare(state.form.current.vdot, ZONE_SHARE.T);
+  let load = 0;
+  for (const run of state.runs) {
+    if (diffDays(state.today, run.date) < days) load += runLoad(run, threshold);
+  }
+  return load;
+}
+
+/** Poslednji odrađeni dugi pre `date`: najduže trčanje (bez trke i testa) u 28 dana pre tog dana; 0 = nepoznat. */
+export function lastLongBefore(state: RunnerState, date: string): Seconds {
+  let longest = 0;
+  for (const run of state.runs) {
+    const age = diffDays(date, run.date);
+    if (run.effort === undefined && age >= 1 && age <= LONGEST_RECENT_DAYS) {
+      longest = Math.max(longest, run.durationSec);
+    }
+  }
+  return longest;
+}
+
+export const buildState: BuildStateFn = (facts, goal, data, estimate = declaredForm, doc) => {
   const availability = normalizeAvailability(facts.availability);
   const formGoal = { distanceM: data.distanceM, raceDate: goal.raceDate };
-  const first = estimate(facts, formGoal, null);
+  const runs = withPlanned(
+    facts.runs
+      .filter((run) => usable(run, facts.today))
+      .sort((a, b) =>
+        a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0
+      ),
+    doc
+  );
+  const pauses = allPauses(facts, runs, doc);
+  /* Procena forme vidi isto što i motor: trčanja sa `planned` i pauze izvedene iz plana. */
+  const seen: RunnerFacts = { ...facts, runs, pauses };
+  const first = estimate(seen, formGoal, null);
   const thresholdPace = paceAtShare(first.current.vdot, ZONE_SHARE.T);
   const easyPace = paceAtShare(first.current.vdot, ZONE_SHARE.E);
-  const runs = facts.runs
-    .filter((run) => usable(run, facts.today))
-    .sort((a, b) =>
-      a.date < b.date ? -1 : a.date > b.date ? 1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0
-    );
   const loadOf = (run: Run): LoadPoints => runLoad(run, thresholdPace);
   const declared = declaredWeekLoad(facts, easyPace, data, availability.runDays.length);
   const load = loadState(facts, dailyLoads(runs, thresholdPace), declared);
@@ -190,12 +267,9 @@ export const buildState: BuildStateFn = (facts, goal, data, estimate = declaredF
     weeks: weekSummaries(facts, runs, loadOf),
     load,
     longestRecentSec: Math.round(longestRecent(facts, runs, easyPace)),
-    form: planned === null ? first : estimate(facts, formGoal, planned),
+    form: planned === null ? first : estimate(seen, formGoal, planned),
     lastHardEffort: lastHardEffort(facts, runs),
-    pauses: facts.pauses.filter(
-      (p) =>
-        isValidDate(p.from) && isValidDate(p.to) && diffDays(facts.today, p.to) <= PAUSE_WINDOW_DAYS
-    ),
+    pauses,
     pain: facts.pain.filter(
       (p) => p.resolvedOn === undefined || diffDays(facts.today, p.resolvedOn) <= PAIN_RESOLVED_DAYS
     )

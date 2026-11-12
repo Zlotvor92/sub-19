@@ -88,9 +88,16 @@ export const RAMP_START = 0.4;
 export const RAMP_SPAN = 0.6;
 /** Posle napora: `R = ceil(minuti / 7)`. */
 export const EFFORT_MIN_PER_RAMP_DAY = 7;
-/** Posle pauze: `R = ceil(1,5 × min(dani, 21))`, pauza je ≥ 3 dana. */
-export const PAUSE_RAMP_FACTOR = 1.5;
-export const PAUSE_RAMP_MAX_DAYS = 21;
+/** Posle pauze (§ 14.6): `R = ceil(faktor razloga × min(dani, 28))`, pauza je ≥ 3 dana. */
+export const PAUSE_RAMP_FACTORS = { bolest: 2.0, povreda: 2.0, put: 1.0, nepoznato: 1.5 } as const;
+export const PAUSE_RAMP_MAX_DAYS = 28;
+/** Dok rampa traje, dugi ≤ 75 % poslednjeg odrađenog dugog (§ 14.6). */
+export const RAMP_LONG_SHARE = 0.75;
+/** Posle pauze ≥ 7 dana: blok u dugom tek posle jednog dugog bez bloka od ≥ 90 % poslednjeg pre pauze (§ 14.6);
+    pravilo se gasi 42 dana posle pauze (odluka F2: bez roka bi plan sa kratkim dugim ostao bez bloka do trke). */
+export const BLOCK_GATE_PAUSE_DAYS = 7;
+export const BLOCK_GATE_SHARE = 0.9;
+export const BLOCK_GATE_MAX_DAYS = 42;
 export const PAUSE_MIN_DAYS = 3;
 /** Izvedena pauza traži bar 2 planirana treninga u prekidu (§ 2.3). */
 export const PAUSE_MIN_PLANNED = 2;
@@ -114,6 +121,8 @@ export const PAIN_HIGH_REST_DAYS = 7;
 export const FATIGUE_DAYS = 4;
 export const FATIGUE_FACTOR = 0.8;
 export const FATIGUE_RATIO = 1.5;
+/** Izveden umor traži i opterećenje poslednjih 7 dana ≥ 1,2 × bazna nedelja (§ 14.6). */
+export const FATIGUE_WEEK_SHARE = 1.2;
 export const FATIGUE_REPEAT_DAYS = 7;
 
 /* ------------------------------------------------------------------ ponovno planiranje (§ 6.3, § 6.4, § 7.6) */

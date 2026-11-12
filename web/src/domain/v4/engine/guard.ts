@@ -484,7 +484,7 @@ function returnWarning(doc: PlanDoc, state: RunnerState): Warning | null {
     }
     if (adj.kind === 'pause') {
       const length = pauseLength(adj.from, adj.to);
-      const days = pauseRampDays(length);
+      const days = pauseRampDays(length, adj.reason);
       const end = addDays(adj.to, days);
       if (length >= 3 && end >= start && (best === null || end > best.end)) {
         best = { days, end, problem: `Plan počinje posle pauze od ${count(length, DAYS)}.` };
