@@ -276,3 +276,19 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   36/42 obara test. NIJE nađeno: nedeterminizam (6468 planova), nestabilnost, diranje zaštićenih dana, ime distance.
 - Odluke za K1/O2–O6 i testove koji fale poslate tabu M (krug 3 motora; sme da dira i `fitness/`).
 - Tabovi: D radi; M radi krug 3; F4, F8, QA1 završeni.
+
+### 20:30 — tab D krug 2 primljen (`437adbc`); moj pregled: 545 zeleno + 5 očekivanih padova (čekaju formu), typecheck čist, kapija 0 prekršaja (sam pokrenuo `plans/gate.ts`) [visoka]
+- Kapija kruga 2 prolazi za 12 profila + oba plana vlasnika: vrh 1,09–1,35 ×, skok ≤ 9 %, lagan/dugi ≤ 68 %, dugi
+  ≤ 39 % (3 dana ≤ 50 %), broj treninga = traženi dani, nedelja trke 25–50 min. D-REPORT: 39 zamerki sudija →
+  27 rešeno, 11 delimično, 1 nije.
+- MOJ NALAZ: planovi su bezbedni ali PRETANKI u sadržaju. Poređenje sa trenerovim ciljnim planom p01 (koji sam
+  ocenjuje 84; isti ulaz 40 km / 4 dana / 16 ned): cilj 40 → 56 km, dugi 15 → 22 km, DVA kvaliteta nedeljno, prag
+  do 28–33 min, tempo trke 3 × 3 km, blok 6 → 10 km; V4: vrh 50,2 km, dugi 19 km, jedan kvalitet, prag ≤ 18 min.
+  Vlasnik-v1: vrh 36 km, najduži dugi 13,5 km (v3 14,5; vlasnik se žalio).
+- POUKA (moja greška u dva smera): u krugu 1 tražio sam „više km" bez strukture → lagani dani kao pufer; u krugu 2
+  kapija meri samo bezbednost → tanak plan. Meta mora biti ono što trener ocenjuje sa 84: njegovi ciljni planovi.
+- ODLUKA: krug 3 podataka — ciljni planovi trenera (p01, p04, p11, p12) su META (km ± 8 %, dugi ± 1,5 km, isti broj
+  i vrsta kvaliteta, doza ± 20 %); ostali profili istim pravilima; kapija ostaje. Povučeno: „jedan kvalitet +
+  ubrzanja kod 30–40 km", „+30–35 %".
+- Motor krug 3 (tab M): QA1 nalazi + 5 zahteva D + uslovi nivoa po istoriji (`recentQualityWeeks`,
+  `weeksSincePause`) za personalizaciju.
