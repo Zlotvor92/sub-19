@@ -315,3 +315,18 @@ samo kad je baza iz izjave), deo S13 (provera forme veća od cilja male nedelje)
    upozorenje `baza-ispod-izjave`; `nema-podataka` zavisi od `byFeel`.
 6. Scenariji u kojima se provera forme beleži sa `effort: 'test'` kao cela aktivnost više ne menjaju formu (treba krug
    rada, km ili `resultSec`).
+### Dodatak krugu 3 (zahtevi taba podataka) — testovi u `round6.test.ts` („dodatak krugu 3") i `fitness/withEngine.test.ts`
+(a) `nema-podataka`: distanca testa se čita iz plana („proveru forme na 5 km koja je u planu 17. 11."), inače
+najkraći unos vrste `test` iz biblioteke; biblioteka bez testa → test se ne pominje. (b) `expandTemplate(šablon,
+nedelje, biblioteka)`: rasterećenje ne kopira podražaj čiji su unosi vrste `test` ni mesto `onlyByFeel`. (c) Provera
+forme u pauzi ili rampi povratka se pomera UVEK (i pri kraju rampe, kad je kvalitet već dozvoljen); rečenica je sada
+„treninzi su kraći do D, a prvi brzi trening je D2" (bez „lagani" kad brzi trening pada pre kraja rampe). Test nad
+PRAVIM podacima polumaratona (svih 12 profila, bolest 7 dana pred svaku proveru forme): u prozoru nema provere, a
+datumi iz rečenice postoje u planu. (d) `fitness/`: nedelja pre početka plana ili bez planiranog opterećenja ne
+dobija rečenicu; raspon u rečenici je uvek pon–ned. (e) PERSONALIZACIJA: stanje nosi `recentQualityWeeks` (broj
+nedelja od poslednjih 8 sa trčanjem bržim od laganog: krugovi rada, zadat kvalitet, pun napor ili prosečan tempo
+brži od brže granice laganog; `null` = u tom periodu nema trčanja) i `weeksSincePause` (`null` = bez pauze).
+`levels[].when` i `requires` unosa biblioteke mogu da nose `min/maxRecentQualityWeeks` i `min/maxWeeksSincePause`
+(tip `HistoryConditions`); nepoznata činjenica NE zadovoljava uslov, pa plan bez istorije ostaje bajt-isti. Činjenice
+se pamte u `decisions` (opciono), da ponovno građenje bira iste unose. Podaci distance sada mogu da daju niži početak
+onome ko nije radio kvalitet i povratniku — bez grananja u motoru.

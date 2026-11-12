@@ -821,7 +821,13 @@ export function runPass(
       const mutable = isMutable(day, header, state.today, done);
       let kept = planned.type === 'test';
       if (inWindow && mutable) {
-        const recipe = applyRepeat(planned, day.id, adjustments, ctx);
+        /* Provera forme se ne radi u pauzi ni u rampi povratka — ni pri njenom kraju: čeka prvu nedelju posle
+           rampe (R9), a dan ostaje lagan. */
+        const source: Recipe =
+          planned.type === 'test' && inReturn(day.date, adjustments)
+            ? { type: 'easy', sec: summarize(realize(planned, ctx), ctx.pace).durationSec }
+            : planned;
+        const recipe = applyRepeat(source, day.id, adjustments, ctx);
         const mods = modsFor(day.date, causes, seen, recipeKey(recipe));
         const ready = applyReadiness(recipe, mods, ctx);
         kept = ready.type === 'test';

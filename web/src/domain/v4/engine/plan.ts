@@ -12,6 +12,7 @@ import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template'
 import {
   type Adjustment,
   type Availability,
+  type Decisions,
   type DistanceData,
   ENGINE_VERSION,
   type Goal,
@@ -120,19 +121,30 @@ export function createPlan(
   const level = pickLevel(data, {
     beginner: state.profile.beginner === true,
     vdot: form.vdot,
-    baseLoad
+    baseLoad,
+    recentQualityWeeks: state.recentQualityWeeks,
+    weeksSincePause: state.weeksSincePause
   });
   const picked = pickTemplate(data, level, weeks, availability.runDays.length);
   if (picked === null) throw new Error('DistanceData bez šablona');
-  const decisions = decide({
-    data,
-    template: picked.template,
-    level,
-    baseLoad,
-    longestRecentSec: state.longestRecentSec,
-    runDays: availability.runDays,
-    longDay: availability.longDay
-  });
+  const decisions: Decisions = {
+    ...decide({
+      data,
+      template: picked.template,
+      level,
+      baseLoad,
+      longestRecentSec: state.longestRecentSec,
+      runDays: availability.runDays,
+      longDay: availability.longDay
+    }),
+    /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
+    ...(state.recentQualityWeeks === null || state.recentQualityWeeks === undefined
+      ? {}
+      : { recentQualityWeeks: state.recentQualityWeeks }),
+    ...(state.weeksSincePause === null || state.weeksSincePause === undefined
+      ? {}
+      : { weeksSincePause: state.weeksSincePause })
+  };
   const draft: PlanDoc = {
     schema: 'plan-doc',
     version: PLAN_DOC_VERSION,
@@ -166,7 +178,7 @@ export function createPlan(
     weeks: skeleton(
       startDate,
       goal.raceDate,
-      expandTemplate(picked.template, weeks),
+      expandTemplate(picked.template, weeks, data.library),
       data,
       1,
       form.vdot

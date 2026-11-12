@@ -12,6 +12,8 @@ import {
   replan,
   summarize
 } from '../engine/index';
+import { hm } from '../distances/hm/index';
+import { factsOf, PROFILES } from '../distances/hm/testdata/profiles';
 import { SYNTHETIC } from '../engine/testdata/synthetic';
 import type {
   DistanceData,
@@ -188,5 +190,77 @@ describe('motor + procena forme, dan za danom kroz ceo plan', () => {
     expect(sim.doc.header.paces.T).toBeLessThan(sim.first.header.paces.T);
     expect(sim.end.form.current.vdot).toBeGreaterThan(sim.start.form.current.vdot + 0.5);
     expect(clean(sim, WITH_TEST)).toEqual([]);
+  });
+});
+
+describe('R9 nad PRAVIM podacima polumaratona: bolest 7 dana, provera forme u prozoru povratka', () => {
+  const show = (iso: string): string =>
+    `${String(Number(iso.slice(8, 10)))}. ${String(Number(iso.slice(5, 7)))}.`;
+  const isFast = (d: PlanDay): boolean =>
+    d.workout !== null &&
+    d.workout.kind !== 'race' &&
+    (d.workout.kind === 'quality' || d.workout.kind === 'test' || d.workout.workSec > 0);
+
+  it('test u pauzi ili rampi se pomera; tekst promene navodi datume koji stoje u planu (svi profili)', () => {
+    let moved = 0;
+    let checked = 0;
+    for (const p of PROFILES) {
+      const goal = p.goal;
+      const base = factsOf(p);
+      const state0 = buildState(base, goal, hm, estimateForm);
+      const made = plan(state0, goal, hm);
+      if (!made.ok) throw new Error(`plan odbijen: ${p.id}`);
+      const start = made.doc;
+      for (const test of days(start).filter((d) => d.workout?.kind === 'test')) {
+        /* Bolest 7 dana koja se završava 10 dana pre provere forme: provera pada u rampu (14 dana). */
+        const to = addDays(test.date, -10);
+        const from = addDays(to, -6);
+        if (from <= start.header.startDate) continue;
+        const ctx = paceCtxOf(start.header);
+        const runs: Run[] = days(start)
+          .filter((d) => d.workout !== null && d.date < from)
+          .map((d) => {
+            const cost = summarize(d.workout, ctx);
+            return {
+              id: `run-${d.id}`,
+              date: d.date,
+              distanceM: Math.round(cost.distanceM),
+              durationSec: Math.round(cost.durationSec),
+              dayId: d.id
+            };
+          });
+        const state = buildState(
+          { ...base, today: to, runs, pauses: [{ from, to, reason: 'bolest' }] },
+          goal,
+          hm,
+          estimateForm,
+          start
+        );
+        const r = replan(start, state, deriveEvents(start, state), hm);
+        const rampEnd = addDays(to, 14);
+        const name = `${p.id} test ${test.date}`;
+        for (const d of days(r.doc)) {
+          if (d.date > to && d.date <= rampEnd) {
+            expect(d.workout?.kind === 'test', `${name}: ${d.date}`).toBe(false);
+          }
+        }
+        const reason = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
+        const firstFast = days(r.doc).find((d) => d.date > to && isFast(d));
+        if (firstFast !== undefined) {
+          expect(reason, name).toContain(`prvi brzi trening je ${show(firstFast.date)}`);
+        }
+        const at = /Provera forme je pomerena na (\d+\. \d+\.)/.exec(reason);
+        if (at !== null) {
+          const target = days(r.doc).find(
+            (d) => d.date > rampEnd && d.workout?.kind === 'test' && show(d.date) === at[1]
+          );
+          expect(target, name).toBeDefined();
+          moved += 1;
+        }
+        checked += 1;
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+    expect(moved).toBeGreaterThan(0);
   });
 });

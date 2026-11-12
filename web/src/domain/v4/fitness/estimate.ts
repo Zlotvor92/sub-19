@@ -647,20 +647,15 @@ export function estimateForm(
         raceTimeSec(vdot, goalM) - raceTimeSec(vdot + C.EXPECTED_SHARE * giveBack, goalM);
       /* Bez ijednog trčanja u istoriji (nov korisnik na dan nastanka plana) nema šta da se „ne odradi":
          rečenica o neodrađenoj nedelji bi bila šum u zaglavlju plana (krug 3). */
-      if (af < 1 && giveBack > 0 && runs.length > 0) {
+      /* Nedelja pre početka plana ili bez ijednog planiranog boda ne dobija rečenicu; raspon je uvek pon–ned. */
+      const judged = week.ref > 0 && !(targets.length > 0 && d < planStart);
+      const monday = isoOf(d - 6);
+      if (af < 1 && giveBack > 0 && runs.length > 0 && judged) {
         record(
           {
             date: isoOf(d),
             signal: 'plan',
-            reason: explainPlanShortfall(
-              isoOf(week.from),
-              isoOf(d),
-              share,
-              lost,
-              before,
-              vdot,
-              goalM
-            )
+            reason: explainPlanShortfall(monday, isoOf(d), share, lost, before, vdot, goalM)
           },
           before,
           vdot,
@@ -671,7 +666,7 @@ export function estimateForm(
           {
             date: isoOf(d),
             signal: 'plan',
-            reason: explainPlanWeek(isoOf(week.from), isoOf(d), share, before, vdot, goalM)
+            reason: explainPlanWeek(monday, isoOf(d), share, before, vdot, goalM)
           },
           before,
           vdot

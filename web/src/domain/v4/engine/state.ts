@@ -1,6 +1,7 @@
 /* V4 — STANJE TRKAČA (SPEC § 2): izvedena polja računa `buildState` jednom; motor ih ne preračunava. */
 import {
   CHRONIC_DAYS,
+  EASY_FAST_SHARE,
   EFFORT_AS_LONG_SHARE,
   FALLBACK_TODAY,
   HISTORY_MIN_RUNS,
@@ -9,6 +10,7 @@ import {
   LONGEST_RECENT_DAYS,
   PAIN_RESOLVED_DAYS,
   PAUSE_WINDOW_DAYS,
+  RECENT_QUALITY_WEEKS,
   STATE_WEEKS,
   ZONE_SHARE
 } from './constants';
@@ -157,6 +159,37 @@ function lastHardEffort(facts: RunnerFacts, runs: readonly Run[]): HardEffort | 
   return null;
 }
 
+/** Činjenice iz istorije za personalizaciju (krug 3). */
+interface HistoryFacts {
+  recentQualityWeeks: number | null;
+  weeksSincePause: number | null;
+}
+
+/** Broj nedelja (od poslednjih 8 kalendarskih) sa bar jednim trčanjem bržim od laganog: krugovi rada, zadat
+    kvalitet, pun napor ili prosečan tempo brži od brže granice laganog. `null` = u tom periodu nema trčanja.
+    Cele nedelje od kraja poslednje pauze; `null` = pauze nije bilo. */
+function historyFacts(
+  today: string,
+  runs: readonly Run[],
+  pauses: readonly Pause[],
+  easyFastPace: SecPerKm
+): HistoryFacts {
+  const from = addDays(mondayOf(today), -7 * (RECENT_QUALITY_WEEKS - 1));
+  const recent = runs.filter((run) => run.date >= from);
+  const fast = (run: Run): boolean =>
+    run.effort !== undefined ||
+    (run.laps ?? []).some((lap) => lap.role === 'work') ||
+    (run.planned !== undefined && run.planned.zone !== 'E') ||
+    (run.distanceM > 0 && (run.durationSec / run.distanceM) * 1000 < easyFastPace);
+  const weeks = new Set(recent.filter(fast).map((run) => mondayOf(run.date)));
+  const ended = pauses.map((p) => p.to).filter((to) => to <= today);
+  const last = ended.length === 0 ? null : ended.reduce((a, b) => (a > b ? a : b));
+  return {
+    recentQualityWeeks: recent.length === 0 ? null : weeks.size,
+    weeksSincePause: last === null ? null : Math.floor(diffDays(today, last) / 7)
+  };
+}
+
 /** Vrh koji bi plan odlučio — samo da procena forme zna rast obima (§ 7.5); odluku i dalje donosi `plan`. */
 function plannedLoads(
   facts: RunnerFacts,
@@ -164,7 +197,8 @@ function plannedLoads(
   data: DistanceData,
   form: FormEstimate,
   baseLoad: LoadPoints,
-  runDays: number
+  runDays: number,
+  history: HistoryFacts
 ): { baseLoad: LoadPoints; peakLoad: LoadPoints } | null {
   if (!isValidDate(goal.raceDate) || !isValidDate(facts.today)) return null;
   const start =
@@ -174,7 +208,8 @@ function plannedLoads(
   const level = pickLevel(data, {
     beginner: facts.profile.beginner === true,
     vdot: form.current.vdot,
-    baseLoad
+    baseLoad,
+    ...history
   });
   const picked = pickTemplate(data, level, countWeeks(start, goal.raceDate), runDays);
   if (picked === null) return null;
@@ -355,10 +390,24 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
     runs.map((run) => dayNumber(run.date)),
     declared
   );
+  const history = historyFacts(
+    facts.today,
+    runs,
+    pauses,
+    paceAtShare(first.current.vdot, EASY_FAST_SHARE)
+  );
   /* Postojeći plan: baza i vrh iz odluka plana (ne preračunato iz današnje baze) + ciljevi nedelja. */
   const planned: FormPlanned | null =
     doc === undefined
-      ? plannedLoads(facts, goal, data, first, 7 * load.chronic, availability.runDays.length)
+      ? plannedLoads(
+          facts,
+          goal,
+          data,
+          first,
+          7 * load.chronic,
+          availability.runDays.length,
+          history
+        )
       : {
           baseLoad: doc.header.decisions.baseLoad,
           peakLoad: doc.header.decisions.peakLoad,
@@ -378,6 +427,7 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
     pain: facts.pain.filter(
       (p) => p.resolvedOn === undefined || diffDays(facts.today, p.resolvedOn) <= PAIN_RESOLVED_DAYS
     ),
+    ...history,
     ...(inputErrors.length === 0 ? {} : { inputErrors })
   };
   return state;

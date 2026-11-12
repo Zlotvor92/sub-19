@@ -30,6 +30,7 @@ import type {
   WorkUnit,
   ZoneId
 } from './types';
+import { historyOk } from './template';
 import { raceTimeSec } from './vdot';
 
 export interface BuildCtx {
@@ -123,6 +124,7 @@ function passes(
   if (r.minRunDays !== undefined && ctx.decisions.runDays.length < r.minRunDays) return false;
   if (r.needsKnownPaces === true && ctx.pace.paces.byFeel) return false;
   if (r.onlyByFeel === true && !ctx.pace.paces.byFeel) return false;
+  if (!historyOk(r, ctx.decisions)) return false;
   if (flags.noHighImpact && def.impact === 'visok') return false;
   if (dose !== null && isDosed(def.main)) {
     if (dose < minDoseOf(def, ctx)) return false;

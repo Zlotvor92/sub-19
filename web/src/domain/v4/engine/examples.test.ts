@@ -218,7 +218,7 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
       );
       const r = replan(start.doc, st, deriveEvents(start.doc, st), EXAMPLE);
       const text = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
-      expect(text, reason).toContain(`do ${fmtDate(addDays(today, rampDays))} su treninzi kraći`);
+      expect(text, reason).toContain(`treninzi su kraći do ${fmtDate(addDays(today, rampDays))}`);
       for (const day of days(r.doc)) {
         const n = diffDays(day.date, today);
         if (n >= 1 && n < (0.4 * rampDays) / 0.6)
@@ -249,7 +249,7 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     const reason = result.changes.find((c) => c.scope === 'dan')?.reason ?? '';
     expect(reason).toContain('7 dana (14–20. 12.)');
     /* Tekst prati plan (krug 2, R9): do kada su treninzi kraći i kog dana je prvi brzi trening. */
-    expect(reason).toContain('do 3. 1. su treninzi kraći i lagani');
+    expect(reason).toContain('treninzi su kraći do 3. 1.');
     const first = days(result.doc).find(
       (d) => d.date > today && d.workout !== null && fastSec(result.doc, d) > 0
     );

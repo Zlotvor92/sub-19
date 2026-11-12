@@ -78,6 +78,8 @@ export const PAIN_RESOLVED_DAYS = 14;
 export const HISTORY_MIN_SPAN_DAYS = 21;
 export const HISTORY_MIN_RUNS = 6;
 export const BASE_UNDER_DECLARED_SHARE = 0.5;
+/** Personalizacija iz istorije (krug 3): „skorašnji kvalitet" se broji u poslednjih 8 kalendarskih nedelja. */
+export const RECENT_QUALITY_WEEKS = 8;
 /** Zamena za neispravan „danas" da izvedena polja mogu da se izračunaju; unos i dalje odbija `validate` (O5). */
 export const FALLBACK_TODAY = '1970-01-05';
 

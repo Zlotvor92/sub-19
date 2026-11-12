@@ -229,6 +229,9 @@ export interface Decisions {
   longDay: Weekday;
   /** Dani kvaliteta po pravilu rasporeda (§ 4.6), po prioritetu (Q1, Q2, …). */
   qualityDays: Weekday[];
+  /** Činjenice iz istorije na dan nastanka plana (personalizacija); nema ih kad istorija nije poznata. */
+  recentQualityWeeks?: number;
+  weeksSincePause?: number;
 }
 
 export interface Goal {
@@ -465,6 +468,11 @@ export interface RunnerState {
   /** Prekidi od 3+ dana u poslednjih 42 dana. */
   pauses: Pause[];
   pain: PainFlag[];
+  /** Broj nedelja (od poslednjih 8) sa bar jednim trčanjem bržim od laganog; `null` = nema trčanja u tom periodu
+      (nepoznato). Personalizacija: pravila nivoa i zahtevi unosa mogu da ga koriste (krug 3). */
+  recentQualityWeeks?: number | null;
+  /** Cele nedelje od kraja poslednje pauze; `null` = pauze nije bilo. */
+  weeksSincePause?: number | null;
   /** Neispravan unos koji je `buildState` morao da preskoči da bi izračunao stanje (datum, nivo bola…); `plan` ga
       vraća kao `errors` (krug 3, O5). Nema ga kad je unos ispravan. */
   inputErrors?: readonly InputError[];
@@ -594,7 +602,7 @@ export type MainSet =
   /** Test ili pripremna trka na zadatu dužinu. */
   | { kind: 'all-out'; distanceM: Meters };
 
-export interface Requirements {
+export interface Requirements extends HistoryConditions {
   minVdot?: Vdot;
   maxVdot?: Vdot;
   /** Najmanje bazno nedeljno opterećenje trkača. */
@@ -655,10 +663,26 @@ export interface Template {
   recovery: { loadFactor: number; longFactor: number; doseFactor: number };
 }
 
+/** Uslovi iz istorije trčanja (personalizacija, krug 3). Kad je činjenica nepoznata (nema istorije), uslov NE
+    važi — pravilo ili unos sa takvim uslovom se preskače, pa ponašanje bez istorije ostaje isto. */
+export interface HistoryConditions {
+  /** Broj nedelja (od poslednjih 8) sa bar jednim trčanjem bržim od laganog. */
+  minRecentQualityWeeks?: number;
+  maxRecentQualityWeeks?: number;
+  /** Cele nedelje od kraja poslednje pauze. */
+  minWeeksSincePause?: number;
+  maxWeeksSincePause?: number;
+}
+
 export interface LevelRule {
   id: LevelId;
   /** Svi navedeni uslovi moraju važiti; prvo pravilo koje prođe određuje nivo. */
-  when: { beginner?: boolean; minVdot?: Vdot; maxVdot?: Vdot; maxBaseLoad?: LoadPoints };
+  when: {
+    beginner?: boolean;
+    minVdot?: Vdot;
+    maxVdot?: Vdot;
+    maxBaseLoad?: LoadPoints;
+  } & HistoryConditions;
 }
 
 /** Brojevi bezbednosti distance (§ 11.2). Jedan plafon po veličini. */

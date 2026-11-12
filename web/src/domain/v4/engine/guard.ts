@@ -59,6 +59,7 @@ import type {
   PlanWeek,
   RunnerFacts,
   RunnerState,
+  Step,
   Warning
 } from './types';
 
@@ -616,11 +617,36 @@ export function warnings(input: WarningInput): Warning[] {
       problem: 'Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.',
       meaning:
         'Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon.',
-      proposal:
-        'Unesi rezultat trke iz poslednja 3 meseca ili istrči test od 3 km — tempa i prognoza se tada računaju iz stvarnog rezultata.'
+      proposal: `Unesi rezultat trke iz poslednja 3 meseca${testHint(doc, data)} — tempa i prognoza se tada računaju iz stvarnog rezultata.`
     });
   }
   return out;
+}
+
+/** Deo predloga `nema-podataka` o testu: distanca se čita iz plana (prva provera forme koju plan sadrži), inače iz
+    biblioteke distance (najkraći unos vrste `test`); bez toga se test ne pominje. */
+function testHint(doc: PlanDoc, data: DistanceData): string {
+  const effort = (steps: readonly Step[]): number | null => {
+    for (const step of steps) {
+      if ('repeat' in step) {
+        const inner = effort(step.steps);
+        if (inner !== null) return inner;
+      } else if (step.target.type === 'allOut' && 'distanceM' in step.extent) {
+        return step.extent.distanceM;
+      }
+    }
+    return null;
+  };
+  for (const day of doc.weeks.flatMap((w) => w.days)) {
+    const m = day.workout?.kind === 'test' ? effort(day.workout.steps) : null;
+    if (m !== null) {
+      return `, ili odradi proveru forme na ${fmtDistance(m)} koja je u planu ${fmtDate(day.date)}`;
+    }
+  }
+  const lengths = data.library.flatMap((d) =>
+    d.kind === 'test' && d.main.kind === 'all-out' ? [d.main.distanceM] : []
+  );
+  return lengths.length === 0 ? '' : ` ili istrči test na ${fmtDistance(Math.min(...lengths))}`;
 }
 
 /** `obim-za-nivo` (krug 2, R11): trkač sa poznatom formom kome obim ograničava kvalitet — plan ne može da smesti

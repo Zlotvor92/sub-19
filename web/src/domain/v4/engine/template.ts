@@ -2,13 +2,16 @@
 import { diffDays, mondayOf } from './dates';
 import type {
   DistanceData,
+  HistoryConditions,
   IsoDate,
   LevelId,
   LoadPoints,
   StimulusSlot,
+  StimulusTag,
   Template,
   Vdot,
-  WeekIntent
+  WeekIntent,
+  WorkoutDef
 } from './types';
 
 /** N = broj kalendarskih nedelja od nedelje `startDate` do nedelje trke, uključujući obe. */
@@ -17,9 +20,34 @@ export function countWeeks(startDate: IsoDate, raceDate: IsoDate): number {
 }
 
 /** Nivo: prvo pravilo čiji svi uslovi važe; bez pogotka poslednje pravilo. */
+/** Uslovi iz istorije: nepoznata činjenica (`null`/`undefined`) ne zadovoljava nijedan uslov. */
+export function historyOk(
+  when: HistoryConditions,
+  facts: {
+    recentQualityWeeks?: number | null | undefined;
+    weeksSincePause?: number | null | undefined;
+  }
+): boolean {
+  const check = (value: number | null | undefined, min?: number, max?: number): boolean => {
+    if (min === undefined && max === undefined) return true;
+    if (value === null || value === undefined) return false;
+    return (min === undefined || value >= min) && (max === undefined || value <= max);
+  };
+  return (
+    check(facts.recentQualityWeeks, when.minRecentQualityWeeks, when.maxRecentQualityWeeks) &&
+    check(facts.weeksSincePause, when.minWeeksSincePause, when.maxWeeksSincePause)
+  );
+}
+
 export function pickLevel(
   data: DistanceData,
-  runner: { beginner: boolean; vdot: Vdot; baseLoad: LoadPoints }
+  runner: {
+    beginner: boolean;
+    vdot: Vdot;
+    baseLoad: LoadPoints;
+    recentQualityWeeks?: number | null | undefined;
+    weeksSincePause?: number | null | undefined;
+  }
 ): LevelId {
   for (const rule of data.levels) {
     const w = rule.when;
@@ -27,6 +55,7 @@ export function pickLevel(
     if (w.minVdot !== undefined && runner.vdot < w.minVdot) continue;
     if (w.maxVdot !== undefined && runner.vdot > w.maxVdot) continue;
     if (w.maxBaseLoad !== undefined && runner.baseLoad > w.maxBaseLoad) continue;
+    if (!historyOk(w, runner)) continue;
     return rule.id;
   }
   return data.levels[data.levels.length - 1]?.id ?? '';
@@ -69,8 +98,14 @@ function phaseCounts(template: Template, bodyWeeks: number): number[] {
 const scaleDose = (slot: StimulusSlot, factor: number): StimulusSlot =>
   slot.dosePct === undefined ? slot : { ...slot, dosePct: slot.dosePct * factor };
 
-/** Rasterećenje: namera prethodne nedelje × faktori šablona; ne troši mesto u `cycle`. */
-function toRecovery(base: WeekIntent, template: Template, phase: string): WeekIntent {
+/** Rasterećenje: namera prethodne nedelje × faktori šablona; ne troši mesto u `cycle`. Ne kopira proveru forme
+    (podražaj čiji su unosi biblioteke vrste `test`) ni mesto koje važi samo dok su tempa po osećaju. */
+function toRecovery(
+  base: WeekIntent,
+  template: Template,
+  phase: string,
+  tests: ReadonlySet<StimulusTag>
+): WeekIntent {
   const r = template.recovery;
   return {
     phase,
@@ -86,13 +121,21 @@ function toRecovery(base: WeekIntent, template: Template, phase: string): WeekIn
               ? {}
               : { dosePct: base.long.dosePct * r.doseFactor })
           },
-    stimuli: base.stimuli.map((s) => scaleDose(s, r.doseFactor)),
+    stimuli: base.stimuli
+      .filter((s) => s.onlyByFeel !== true && !tests.has(s.stimulus))
+      .map((s) => scaleDose(s, r.doseFactor)),
     source: 'template'
   };
 }
 
 /** Razvijanje šablona u `weeks` namera (§ 4.2 k. 3–5): telo po fazama, pa rep; rasterećenja brojano unazad. */
-export function expandTemplate(template: Template, weeks: number): WeekIntent[] {
+export function expandTemplate(
+  template: Template,
+  weeks: number,
+  /** Biblioteka distance: iz nje se zna koji podražaj je provera forme (ne kopira se u rasterećenje). */
+  library: readonly WorkoutDef[] = []
+): WeekIntent[] {
+  const tests = new Set(library.filter((d) => d.kind === 'test').map((d) => d.stimulus));
   const tailLen = Math.min(weeks, template.tail.length);
   const tail = template.tail.slice(template.tail.length - tailLen);
   const bodyWeeks = weeks - tailLen;
@@ -114,7 +157,7 @@ export function expandTemplate(template: Template, weeks: number): WeekIntent[] 
       if (next === undefined) continue;
       const isRecovery = template.recoveryEvery > 0 && fromTail % template.recoveryEvery === 0;
       if (isRecovery) {
-        body.push(toRecovery(body[body.length - 1] ?? next, template, phase.phase));
+        body.push(toRecovery(body[body.length - 1] ?? next, template, phase.phase, tests));
       } else {
         body.push({ ...next, phase: phase.phase, source: 'template' });
         used += 1;

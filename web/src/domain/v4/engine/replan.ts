@@ -543,8 +543,8 @@ function reskeleton(
     ? { ...old.decisions, templateId: picked.template.id }
     : fresh;
   const intents = sameDistance
-    ? expandTemplate(picked.template, kept.length + weeks).slice(kept.length)
-    : expandTemplate(picked.template, weeks);
+    ? expandTemplate(picked.template, kept.length + weeks, data.library).slice(kept.length)
+    : expandTemplate(picked.template, weeks, data.library);
   const firstIndex = (kept[kept.length - 1]?.index ?? 0) + 1;
   const shells = skeleton(tomorrow, goal.raceDate, intents, data, firstIndex, old.form.paceVdot);
   const done = doneDayIds(state);
@@ -702,7 +702,7 @@ function explain(
       const rampEnd = fmtDate(rampLast < raceDate ? rampLast : addDays(raceDate, -1));
       const test = movedTest(before, c.doc, state.today);
       const moved = test === null ? '' : ` Provera forme je pomerena na ${fmtDate(test)}`;
-      const back = `${what}, pa je povratak postepen: do ${rampEnd} su treninzi kraći i lagani, a ${fastFrom(ev.to)}`;
+      const back = `${what}, pa je povratak postepen: treninzi su kraći do ${rampEnd}, a ${fastFrom(ev.to)}`;
       const tail = addDays(c.until, 1) < raceDate ? `; ${resume}` : '';
       const day = `${back}${tail}.${moved}`;
       const late = `${back}; i posle toga se obim vraća postepeno — ${lighter}.${moved}`;

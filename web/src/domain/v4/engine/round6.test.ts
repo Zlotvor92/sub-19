@@ -682,3 +682,182 @@ describe('šira mreža: svaki dan kao „danas", start usred nedelje, trka svako
     expect(plans).toBe(147);
   });
 });
+
+describe('dodatak krugu 3 (zahtevi taba podataka)', () => {
+  it('(a) `nema-podataka` čita distancu testa iz plana, pa iz biblioteke — nikad zakucano', () => {
+    const feel = facts({ profile: { weeklyKm: 30, easyPaceSecPerKm: 372 } });
+    const proposal = (data: DistanceData): string =>
+      make(feel, data).doc.header.warnings.find((w) => w.code === 'nema-podataka')?.proposal ?? '';
+    const withFive: DistanceData = {
+      ...WITH_TEST,
+      library: WITH_TEST.library.map((d) =>
+        d.id === 'test-3k' ? { ...d, main: { kind: 'all-out' as const, distanceM: 5000 } } : d
+      )
+    };
+    expect(proposal(withFive)).toMatch(/proveru forme na 5 km koja je u planu \d+\. \d+\./);
+    expect(proposal(WITH_TEST)).toContain('proveru forme na 3 km koja je u planu');
+    /* Plan bez provere forme: najkraći test iz biblioteke; biblioteka bez testa: test se ne pominje. */
+    expect(proposal(SYNTHETIC)).toContain('ili istrči test na 3 km');
+    const noTest: DistanceData = {
+      ...SYNTHETIC,
+      library: SYNTHETIC.library.filter((d) => d.kind !== 'test')
+    };
+    expect(proposal(noTest)).not.toContain('test');
+    expect(proposal(noTest)).toContain('Unesi rezultat trke');
+  });
+
+  it('(b) rasterećenje ne kopira proveru forme ni mesto „samo po osećaju" iz prethodne nedelje', () => {
+    const data: DistanceData = {
+      ...SYNTHETIC,
+      templates: [
+        {
+          ...synTemplate,
+          recoveryEvery: 2,
+          body: synTemplate.body.map((p) => ({
+            ...p,
+            cycle: p.cycle.map((w) => ({
+              ...w,
+              stimuli: [
+                { stimulus: 'test' },
+                { stimulus: 'prag', onlyByFeel: true },
+                { stimulus: 'ubrzanja' }
+              ]
+            }))
+          }))
+        }
+      ]
+    };
+    const { doc } = make(facts({ profile: { weeklyKm: 30, easyPaceSecPerKm: 372 } }), data);
+    const recovery = doc.weeks.filter((w) => w.intent.kind === 'recovery');
+    expect(recovery.length).toBeGreaterThan(1);
+    for (const week of recovery) {
+      expect(week.intent.stimuli.map((s) => s.stimulus)).toEqual(['ubrzanja']);
+      expect(week.days.some((d) => d.workout?.kind === 'test')).toBe(false);
+    }
+    expect(doc.weeks.some((w) => w.days.some((d) => d.workout?.kind === 'test'))).toBe(true);
+  });
+
+  it('(c) provera forme u prozoru povratka se pomera i kad je pri kraju rampe; tekst odgovara planu', () => {
+    /* Provera forme u drugoj fazi tela (sredina plana), ne u drugoj nedelji. */
+    const late: DistanceData = {
+      ...SYNTHETIC,
+      templates: [
+        {
+          ...synTemplate,
+          recoveryEvery: 0,
+          body: synTemplate.body.map((p, pi) => ({
+            ...p,
+            cycle: p.cycle.map((w, i) =>
+              pi === 1 && i === 1
+                ? { ...w, stimuli: [{ stimulus: 'test' }, { stimulus: 'ubrzanja' }] }
+                : w
+            )
+          }))
+        }
+      ]
+    };
+    const start = make(facts(), late, goalAt('2027-02-21')).doc;
+    const test = days(start)
+      .filter((d) => d.workout?.kind === 'test')
+      .at(-1);
+    if (test === undefined) throw new Error('nema provere forme');
+    expect(test.date > '2026-12-10').toBe(true);
+    /* Pauza 7 dana (bolest → rampa 14 dana) završava se 12 dana pre testa: test je u rampi, pri njenom kraju. */
+    const to = addDays(test.date, -12);
+    const from = addDays(to, -6);
+    const state = buildState(
+      {
+        ...facts(),
+        today: to,
+        runs: runsAsPlanned(start, addDays(from, -1)),
+        pauses: [{ from, to, reason: 'bolest' }]
+      },
+      goalAt('2027-02-21'),
+      late,
+      undefined,
+      start
+    );
+    const r = replan(start, state, deriveEvents(start, state), late);
+    const rampEnd = addDays(to, 14);
+    const tests = days(r.doc).filter((d) => d.date > to && d.workout?.kind === 'test');
+    expect(tests.length).toBeGreaterThan(0);
+    for (const d of tests) expect(d.date > rampEnd, d.date).toBe(true);
+    expect(days(r.doc).find((d) => d.date === test.date)?.workout?.kind).toBe('easy');
+    const reason = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
+    const show = (iso: string): string =>
+      `${String(Number(iso.slice(8, 10)))}. ${String(Number(iso.slice(5, 7)))}.`;
+    expect(reason).toContain(`Provera forme je pomerena na ${show(tests[0]?.date ?? '')}`);
+    const firstFast = days(r.doc).find((d) => d.date > to && isFast(d));
+    expect(reason).toContain(`prvi brzi trening je ${show(firstFast?.date ?? '')}`);
+  });
+
+  it('(e) personalizacija: ista izjava, različita istorija → različit nivo i prva doza; bez istorije kao do sada', () => {
+    const [first, second] = SYNTHETIC.templates;
+    if (first === undefined || second === undefined) throw new Error('nema šablona');
+    const base = SYNTHETIC.library.find((d) => d.id === 'prag-2x');
+    if (base === undefined) throw new Error('nema unosa');
+    const data: DistanceData = {
+      ...SYNTHETIC,
+      /* Ko u poslednjih 8 nedelja nije radio ništa brže dobija početni nivo; povratnik (pauza u poslednje 3
+         nedelje) takođe; ostali kao do sada. */
+      levels: [
+        { id: 'pocetni', when: { maxRecentQualityWeeks: 0 } },
+        { id: 'pocetni', when: { maxWeeksSincePause: 3 } },
+        ...SYNTHETIC.levels
+      ],
+      /* Unos sa kraćim deonicama samo za onog ko je radio kvalitet u bar 3 od 8 nedelja. */
+      library: [
+        {
+          ...base,
+          id: 'prag-iskusni',
+          requires: { minRecentQualityWeeks: 3 },
+          main: { ...base.main, kind: 'split', pieces: 3 } as typeof base.main
+        },
+        ...SYNTHETIC.library
+      ]
+    };
+    const profile = { weeklyKm: 40, recentResult: { distanceM: HALF_M, timeSec: 6060 } };
+    const history = (quality: boolean): Run[] =>
+      Array.from({ length: 16 }, (_, i): Run => {
+        const fast = quality && i % 4 === 1;
+        return {
+          id: `h${String(i)}`,
+          date: addDays('2026-11-15', -(2 + 3 * i)),
+          distanceM: 8000,
+          durationSec: fast ? 8 * 290 : 8 * 352
+        };
+      });
+    const plain = make(facts({ profile }), data);
+    const easyOnly = make(facts({ profile, runs: history(false) }), data);
+    const trained = make(facts({ profile, runs: history(true) }), data);
+    const back = make(
+      facts({
+        profile,
+        runs: history(true),
+        pauses: [{ from: '2026-11-01', to: '2026-11-08', reason: 'put' }]
+      }),
+      data
+    );
+    expect(plain.state.recentQualityWeeks).toBeNull();
+    expect(easyOnly.state.recentQualityWeeks).toBe(0);
+    expect(trained.state.recentQualityWeeks ?? 0).toBeGreaterThanOrEqual(3);
+    expect(back.state.weeksSincePause).toBe(1);
+    /* Bez istorije: isto kao sa izvornim podacima (uslovi iz istorije ne važe za nepoznato). */
+    const original = make(facts({ profile }), SYNTHETIC);
+    expect(canonical(plain.doc.weeks)).toBe(canonical(original.doc.weeks));
+    expect(plain.doc.header.decisions.level).toBe('osnovni');
+    expect(easyOnly.doc.header.decisions.level).toBe('pocetni');
+    expect(back.doc.header.decisions.level).toBe('pocetni');
+    expect(trained.doc.header.decisions.level).toBe('osnovni');
+    const firstQuality = (doc: PlanDoc): string =>
+      days(doc).find((d) => d.workout?.kind === 'quality')?.workout?.libraryId ?? '';
+    expect(firstQuality(trained.doc)).toBe('prag-iskusni');
+    expect(firstQuality(plain.doc)).not.toBe('prag-iskusni');
+    expect(canonical(trained.doc.weeks)).not.toBe(canonical(easyOnly.doc.weeks));
+    /* Činjenice se pamte u planu: ponovno građenje bira iste unose. */
+    expect(trained.doc.header.decisions.recentQualityWeeks).toBe(trained.state.recentQualityWeeks);
+    expect(
+      replan(trained.doc, trained.state, deriveEvents(trained.doc, trained.state), data).doc
+    ).toBe(trained.doc);
+  });
+});
