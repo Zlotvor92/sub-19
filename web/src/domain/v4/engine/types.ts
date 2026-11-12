@@ -465,6 +465,9 @@ export interface RunnerState {
   /** Prekidi od 3+ dana u poslednjih 42 dana. */
   pauses: Pause[];
   pain: PainFlag[];
+  /** Neispravan unos koji je `buildState` morao da preskoči da bi izračunao stanje (datum, nivo bola…); `plan` ga
+      vraća kao `errors` (krug 3, O5). Nema ga kad je unos ispravan. */
+  inputErrors?: readonly InputError[];
 }
 
 /* ------------------------------------------------------------------ Event (§ 3) */

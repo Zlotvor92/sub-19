@@ -243,7 +243,10 @@ export function weekSlots(
   ctx: BuildCtx,
   slotIndex: (place: Place, stimulus: StimulusTag) => number,
   /** Provera forme pomerena iz pauze ili rampe: zamenjuje prvi kvalitet nedelje (R9). */
-  forcedTest: Extract<Recipe, { type: 'test' }> | null = null
+  forcedTest: Extract<Recipe, { type: 'test' }> | null = null,
+  /** Poslednji težak dan prethodne nedelje: kvalitet ne ide dan posle njega (u nedelji trke dani kvaliteta se
+      biraju prema danu trke, pa bi ponedeljak mogao da stane uz nedeljni kvalitet). */
+  hardBefore: IsoDate | null = null
 ): WeekSlots {
   const { decisions: d } = ctx;
   const { intent } = week;
@@ -295,6 +298,7 @@ export function weekSlots(
     const wd = qualityDays[k];
     if (wd === undefined || !runDays.includes(wd) || wd === longWd || dateOf(wd) >= calmFrom)
       return;
+    if (hardBefore !== null && dateOf(wd) === addDays(hardBefore, 1)) return;
     if (st.onlyByFeel === true && !ctx.pace.paces.byFeel) return;
     const slot: SlotRef = {
       place: 'quality',
@@ -733,6 +737,7 @@ export function runPass(
   let previousLong: Seconds = 0;
   let lastFullVolume: number = header.decisions.baseLoad;
   let previousRamped = false;
+  let previousHard: IsoDate | null = null;
   /* Provera forme koja je pala u pauzu ili rampu: čeka prvu nedelju posle rampe (R9). */
   let pendingTest: Extract<Recipe, { type: 'test' }> | null = null;
   const lastThree = <T>(list: readonly T[]): T[] => list.slice(Math.max(0, list.length - 3));
@@ -740,7 +745,14 @@ export function runPass(
   const weeks = doc.weeks.map((week): PlanWeek => {
     const ramped = underRamp(week.start, adjustments);
     const forced = ramped ? null : pendingTest;
-    const slots = weekSlots(week, span, ctx, slotCounter(doc.weeks, week.index), forced);
+    const slots = weekSlots(
+      week,
+      span,
+      ctx,
+      slotCounter(doc.weeks, week.index),
+      forced,
+      previousHard
+    );
     if (forced !== null && slots.items.some((x) => x.kind === 'test' && x.def === forced.def)) {
       pendingTest = null;
     }
@@ -791,6 +803,14 @@ export function runPass(
     const recipes = layoutWeek(shell, ctx, slots, previousEasy);
     if (week.intent.kind !== 'recovery' && week.intent.source === 'template') {
       previousEasy = easyRefOf(recipes, ctx) ?? previousEasy;
+    }
+    previousHard = null;
+    for (const [date, recipe] of recipes) {
+      const hard =
+        recipe.type === 'quality' ||
+        recipe.type === 'test' ||
+        (recipe.type === 'long' && recipe.dose > 0);
+      if (hard && (previousHard === null || date > previousHard)) previousHard = date;
     }
     let longAsDecided = false;
     const days = week.days.map((day): PlanDay => {

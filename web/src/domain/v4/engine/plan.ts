@@ -217,7 +217,14 @@ function extraRunDay(runDays: readonly Weekday[]): Weekday | null {
 }
 
 export const plan: PlanFn = (state, goal, data) => {
-  const errors = validate(state, goal, data);
+  /* O5: i ono što je `buildState` morao da preskoči (neispravan datum pauze, bola, trčanja) je neispravan unos. */
+  const seen = new Set<string>();
+  const errors = [...(state.inputErrors ?? []), ...validate(state, goal, data)].filter((e) => {
+    const key = `${e.code}:${e.field}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, doc: createPlan(state, goal, data, startDateOf(state, goal)) };
 };

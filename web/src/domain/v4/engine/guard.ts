@@ -42,7 +42,7 @@ import {
   pauseRampDays,
   underRamp
 } from './readiness';
-import { candidates } from './select';
+import { byDistance, candidates } from './select';
 import { countWeeks } from './template';
 import type {
   Adjustment,
@@ -229,9 +229,13 @@ export const guard: GuardFn = (doc, _state, data) => {
   );
   /* O2: nijedan trening nije kraći od najkraćeg smislenog trčanja (lagano, dan pred trku, dan u rampi), uz jedno
      zaokruživanje; nikad ispod 15 min. */
+  const unitSlack = byDistance(build)
+    ? (EASY_DISTANCE_STEP_M * ctx.paces.easy) / 1000
+    : EASY_DURATION_STEP_SEC;
   const shortest = Math.max(
     GUARD_MIN_WORKOUT_SEC,
-    Math.min(s.minEasySec, RACE_EVE_MAX_SEC, RAMP_MIN_DURATION_SEC) - roundingSlack
+    /* Dan zadat dužinom traje kraće kad se tempa ubrzaju posle rezultata: dozvoljeno još 10 %. */
+    0.9 * (Math.min(s.minEasySec, RACE_EVE_MAX_SEC, RAMP_MIN_DURATION_SEC) - unitSlack)
   );
   const eve = addDays(header.goal.raceDate, -1);
   const noLongFrom = addDays(header.goal.raceDate, -RACE_NO_LONG_DAYS);

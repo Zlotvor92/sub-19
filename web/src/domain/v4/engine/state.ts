@@ -14,6 +14,7 @@ import {
 } from './constants';
 import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday } from './dates';
 import { decidePeak } from './decide';
+import { validate } from './guard';
 import { derivedPauses } from './pauses';
 import { declaredForm } from './formFallback';
 import { paceCtxOf, rollDay, runLoad, summarize } from './load';
@@ -321,9 +322,10 @@ function cleanFacts(facts: RunnerFacts): RunnerFacts {
 
 export const buildState: BuildStateFn = (input, goal, data, estimate = declaredForm, doc) => {
   /* O5: neispravan „danas" ne ruši — izvedena polja se računaju nad zamenom, a unos odbija `validate`. */
+  const inputErrors = validate(input, goal, data);
   if (!isValidDate(input.today)) {
     const safe = buildState({ ...input, today: FALLBACK_TODAY, runs: [] }, goal, data, estimate);
-    return { ...safe, today: input.today };
+    return { ...safe, today: input.today, inputErrors };
   }
   const facts = cleanFacts(input);
   const availability = normalizeAvailability(facts.availability);
@@ -375,7 +377,8 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
     pauses,
     pain: facts.pain.filter(
       (p) => p.resolvedOn === undefined || diffDays(facts.today, p.resolvedOn) <= PAIN_RESOLVED_DAYS
-    )
+    ),
+    ...(inputErrors.length === 0 ? {} : { inputErrors })
   };
   return state;
 };

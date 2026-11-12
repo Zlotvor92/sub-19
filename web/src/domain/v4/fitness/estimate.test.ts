@@ -189,6 +189,24 @@ describe('puls sa zgloba: samo trend (§ 7.4)', () => {
   const today = add(T0, 7 * 8 - 1);
   const noResult = { profile: { easyPaceSecPerKm: Math.round(paceAtShare(45, ZONE_SHARE.E)) } };
 
+  it('puls se ne koristi na treningu sa deonicama: lagan prosečan tempo, ali krugovi rada (AGENTS 9a)', () => {
+    /* Ista serija, ali svako trčanje nosi krug rada — prosečan tempo je i dalje lagan, pa bi bez provere
+       krugova ušlo u trend. */
+    const withLaps = series(true).map((r) => ({
+      ...r,
+      laps: [
+        { role: 'work' as const, distanceM: 1000, durationSec: 270 },
+        {
+          role: 'recovery' as const,
+          distanceM: r.distanceM - 1000,
+          durationSec: r.durationSec - 270
+        }
+      ]
+    }));
+    const e = estimateForm(facts(withLaps, today, noResult), goal(FAR), null);
+    expect(signals(e)).not.toContain('trend-pulsa');
+  });
+
   it('trend pulsa podiže procenu; bez pulsa signal je preskočen i pouzdanost je niža', () => {
     const withHr = estimateForm(facts(series(true), today, noResult), goal(FAR), null);
     const noHr = estimateForm(facts(series(false), today, noResult), goal(FAR), null);
@@ -461,5 +479,70 @@ describe('korekcija rezultata', () => {
     const raw = vdotFromResult(HALF, dur);
     expect(e.current.vdot).toBeGreaterThan(raw + 0.1);
     expect(e.current.vdot).toBeLessThanOrEqual(raw + 1.0);
+  });
+});
+
+describe('K1 (krug 3): rezultat testa je deonica punog napora, ne cela aktivnost', () => {
+  const today = add(T0, 10);
+  const testDay = add(T0, 9);
+  const three = raceTimeSec(45, 3000);
+  const easy = paceAtShare(45, ZONE_SHARE.E);
+  /** Zagrevanje 3 km + test 3 km + hlađenje 2 km, upisano kao JEDNA aktivnost vezana za dan testa. */
+  const whole: FitnessRun = {
+    id: 'test',
+    date: testDay,
+    distanceM: 8000,
+    durationSec: Math.round(5 * easy + three),
+    effort: 'test',
+    dayId: 'w2d1',
+    plannedEffortM: 3000
+  };
+  const run = (over: Partial<FitnessRun>): FormEstimate =>
+    estimateForm(facts([{ ...whole, ...over }], today), goal(FAR), null);
+
+  it('cela aktivnost sa zagrevanjem nije dokaz forme: procena ostaje, rečenica kaže šta uneti', () => {
+    const e = run({});
+    expect(Math.abs(e.current.vdot - 45)).toBeLessThan(0.05);
+    const note = e.history.find((h) => h.runId === 'test');
+    expect(note?.ignored).toBe(true);
+    expect(note?.before).toBe(note?.after);
+    expect(note?.reason).toContain('Upiši vreme na 3 km');
+  });
+
+  it('krugovi rada, najbrži niz kilometara ili izričit rezultat daju VDOT deonice', () => {
+    const better = raceTimeSec(47, 3000);
+    const laps = run({
+      laps: [
+        { role: 'other', distanceM: 3000, durationSec: Math.round(3 * easy) },
+        { role: 'work', distanceM: 3000, durationSec: better },
+        { role: 'other', distanceM: 2000, durationSec: Math.round(2 * easy) }
+      ]
+    });
+    const splits = run({
+      splits: [easy, easy, easy, better / 3, better / 3, better / 3, easy, easy].map((paceSec) => ({
+        paceSec
+      }))
+    });
+    const explicit = run({ resultSec: better });
+    for (const e of [laps, splits, explicit]) {
+      expect(e.current.vdot).toBeGreaterThan(45.5);
+      expect(e.current.vdot).toBeLessThanOrEqual(47.01);
+      expect(e.history.some((h) => h.runId === 'test' && h.ignored !== true)).toBe(true);
+    }
+  });
+
+  it('aktivnost približno planirane dužine (± 15 %) i trka van plana koriste se cele', () => {
+    const exact = run({ distanceM: 3200, durationSec: Math.round(raceTimeSec(47, 3200)) });
+    expect(exact.current.vdot).toBeGreaterThan(45.5);
+    const { plannedEffortM: _planned, dayId: _day, ...free } = whole;
+    const race = estimateForm(
+      facts(
+        [{ ...free, effort: 'race', distanceM: TEN, durationSec: raceTimeSec(47, TEN) }],
+        today
+      ),
+      goal(FAR),
+      null
+    );
+    expect(race.current.vdot).toBeGreaterThan(45.5);
   });
 });
