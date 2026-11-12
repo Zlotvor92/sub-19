@@ -105,3 +105,16 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   pulsom (27. 9 – 6. 11); posle polumaratona 3. 10. svega 5 trčanja (4–8 km). [visoka]
 - Tabovi 10:16: F4 forma — `session_01GnHHiYchQtH6mmwpQBMi1S` (Opus), radi. Brief F3 (`briefs/F3-HM.md`) spreman;
   tab se otvara kad motor javi da `plan` + `renderPlan` rade.
+
+### 10:28 — F4 forma gotova (`fc0d892`); provereno: 34 testa V4 zelena za 0,6 s (pokrenuo sam) [visoka]
+- Plafon napretka: trenerovi brojevi, udeo očekivanog 0,65. Izvor za % napretka rekreativaca nije nađen → brojevi
+  ostaju [niska–srednja], ne izmišljaju se.
+- Vlasnik: Niš 1:42:01 = VDOT 44,09; korekcija samo za negativan split (+0,67) → 44,76 (≈ 1:40:42); toplota se ne
+  preračunava (nema proverenog koeficijenta). Raspon HM 13. 12: 1:39:39 – 1:40:20 – 1:41:11; HM 17. 4. 2027:
+  1:36:41 – 1:38:21 – 1:41:11 uz obim +30 %. [niska — 8 trčanja]
+- PRAZNINA koju sam uočio (nije u SPEC-u): procena ne spušta formu kad obim padne bez prekida ≥ 14 dana. Vlasnik
+  je po bazi od 3. 10. trčao 5 puta (4–8 km) — model i dalje kaže 1:40:42 „danas". Treba signal „pad baze"
+  (npr. hronično opterećenje ispod X % onog pre 6 nedelja → forma opada). Ide u drugi krug F4 posle F2, uz Strava
+  istoriju ako konektor proradi (da se ne kalibriše na nepotpunim podacima).
+- Zahtevi F4 prema tipovima (`Run.planned`, `Run.tempC`, izvedene pauze, ubrizgan `EstimateFormFn`) poslati motoru.
+- F4 tab `session_01GnHHiYchQtH6mmwpQBMi1S`: ZAVRŠEN.
