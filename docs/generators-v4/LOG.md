@@ -254,3 +254,13 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Tab D je stao odmah po otvaranju (16:17), pre ijednog koraka; i organizator je bio pod limitom do 19:40. U 19:45
   tab D gurnut porukom „kreni". Ništa nije izgubljeno: motor krug 2 (`965f8a6`) i forma krug 2 su na grani.
 - Stanje grane: `distances/hm` crveno (14 testova) dok D ne preradi podatke; ostalo 480 zeleno.
+
+### 19:50 — ODLUKA VLASNIKA: nedeljni limit treba potrošiti pre reseta → više rada uporedo, ali samo na polumaratonu i zajedničkom
+- Reči vlasnika: „Poenta je da potrošimo nedeljni limit pre reseta." Uz raniju odluku (prvo polumaraton do kraja).
+- Otvoreno uporedo sa tabom D (rad koji ne zavisi od distance i ne dira kod):
+  - QA1 `session_01GnHHiWnrJoF8XAFGLkRjaD` (Fable): nezavisan pregled koda `engine/` + `fitness/` — ispravnost prema
+    SPEC/R-pravilima sa dokazom, zakon V4, rubni ulazi, probne sabotaže testova; samo izveštaj
+    `docs/generators-v4/qa/QA1-ENGINE-REVIEW.md`.
+  - F8 `session_01GnHHiZrbs6mEte57yWK675` (Opus): predlog ekrana, upozorenja, prikaza forme i promena, šta
+    aplikacija mora da čuva (aktivnosti!) — `docs/generators-v4/F8-PREDLOG.md`, bez koda aplikacije.
+- Ograničenje koje ostaje: petočasovni limit određuje brzinu trošenja; kad udari, sve staje do reseta.
