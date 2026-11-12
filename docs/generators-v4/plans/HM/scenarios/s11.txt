@@ -1,6 +1,6 @@
 S11 — p11, E3: ned 14: propušteni kvalitet i dugi
 
-STANJE: danas 2027-02-08; sadašnji obim 20 km nedeljno, 4 dana; forma 1:59:40 (pouzdanost srednja), očekivano na dan trke 1:57:36.
+STANJE: danas 2027-02-08; sadašnji obim 20 km nedeljno, 4 dana; forma 1:59:41 (pouzdanost srednja), očekivano na dan trke 1:57:37.
 DOGAĐAJ: Propušteno: w14d3, w14d6; sve ostalo urađeno; danas 2027-02-08. Događaji: missed:2027-02-04:w14d3, missed:2027-02-07:w14d6, form-update:2027-02-08.
 PROMENA: 3.
 
@@ -242,8 +242,8 @@ Polazim od tvojih ≈ 20 km nedeljno (2 h 22 min trčanja).
 
 FORMA
 Polazna forma (1. 11.): 2:04:13
-Današnja prognoza (8. 2.): 1:59:40, pouzdanost srednja
-Očekivano na dan trke: 1:57:36 (raspon 1:55:13–2:01:04) — 2:04 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Današnja prognoza (8. 2.): 1:59:41, pouzdanost srednja
+Očekivano na dan trke: 1:57:37 (raspon 1:55:14–2:01:05) — 2:04 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 
 TEMPA
 - lagano 6:34–7:13/km
@@ -252,7 +252,7 @@ TEMPA
 - tempo trke 5:40/km
 - intervali 5:02/km
 - brze deonice 4:45/km
-Tempo trke u treninzima je tvoja današnja forma (5:40/km). Očekivano vreme na dan trke (1:57:36) traži 5:34/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:40/km). Očekivano vreme na dan trke (1:57:37) traži 5:34/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Najveća nedelja u planu ima 27 km, a adekvatna priprema za ovu distancu traži bar 40 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke dodaj 5. dan laganog trčanja od 30–40 min — vrh tada ide do 27,6 km nedeljno. Za sledeću trku planiraj 28 nedelja pripreme — obim tada bezbedno stiže do 40 km nedeljno.
@@ -261,7 +261,7 @@ UPOZORENJA
 PROMENE
 Propušten je ključni trening „tempo trke 18 min u komadu" (4. 2.). To je bio glavni brzi trening te nedelje; sledeći isti trening (11. 2.) ostaje na toj dozi umesto da raste.
 Propušten je ključni trening „dugi 70 min lagano" (7. 2.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (14. 2.) ostaje na toj dužini umesto da raste.
-Procena forme se promenila (2:04:13 → 1:59:40 na distanci trke): tempa su ubrzana za oko 12 s po kilometru; treninzi ostaju isti.
+Procena forme se promenila (2:04:13 → 1:59:42 na distanci trke): tempa su ubrzana za oko 12 s po kilometru; treninzi ostaju isti.
 - plan: prag 5:40/km, tempo trke 5:53/km → prag 5:28/km, tempo trke 5:40/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja
@@ -380,9 +380,9 @@ Procena forme se promenila (2:04:13 → 1:59:40 na distanci trke): tempa su ubrz
   sre 20. 1.  odmor
   čet 21. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 4,3 km, 30 min (7:01/km)
   pet 22. 1.  odmor
-  sub 23. 1.  provera forme: test na 3 km punim naporom — urađeno 5,8 km, 36 min (6:09/km)
+  sub 23. 1.  provera forme: test na 3 km punim naporom — urađeno 3 km, 16 min (5:15/km)
   ned 24. 1.  lagano 25 min — urađeno 3,5 km, 25 min (7:06/km)
-  Urađeno: 17,9 km, 2 h 1 min, 4 treninga
+  Urađeno: 15,1 km, 1 h 41 min, 4 treninga
 
 13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 25. 1.  odmor
@@ -464,7 +464,7 @@ Procena forme se promenila (2:04:13 → 1:59:40 na distanci trke): tempa su ubrz
   pet 19. 3.  odmor
   sub 20. 3.  lagano 20 min — 2,9 km, 20 min
   ned 21. 3.  TRKA: polumaraton
-      napomena: Tempo za trku: 5:34/km (očekivano vreme 1:57:36).
+      napomena: Tempo za trku: 5:34/km (očekivano vreme 1:57:37).
       napomena: Prvih 5 km trči 5:39–5:44/km, od 5. do 16. km 5:34/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
       napomena: Posle trke: 17 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

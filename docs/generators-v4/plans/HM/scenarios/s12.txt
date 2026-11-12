@@ -1,6 +1,6 @@
 S12 — p12, E3: ned 9–10: propušten po jedan dugi u obe nedelje
 
-STANJE: danas 2027-01-11; sadašnji obim 45 km nedeljno, 5 dana; forma 1:58:21 (pouzdanost niska), očekivano na dan trke 1:56:20.
+STANJE: danas 2027-01-11; sadašnji obim 45 km nedeljno, 5 dana; forma 1:58:27 (pouzdanost niska), očekivano na dan trke 1:56:26.
 DOGAĐAJ: Propušteno: w9d6, w10d6; sve ostalo urađeno; danas 2027-01-11. Događaji: missed:2027-01-03:w9d6, missed:2027-01-10:w10d6.
 PROMENA: 2.
 
@@ -217,8 +217,8 @@ Polazim od tvojih ≈ 45 km nedeljno (5 h 15 min trčanja).
 
 FORMA
 Polazna forma (1. 11.): 2:02:10
-Današnja prognoza (11. 1.): 1:58:21, pouzdanost niska
-Očekivano na dan trke: 1:56:20 (raspon 1:52:46–2:01:08) — 2:01 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Današnja prognoza (11. 1.): 1:58:27, pouzdanost niska
+Očekivano na dan trke: 1:56:26 (raspon 1:52:51–2:01:14) — 2:01 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 
 NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
@@ -254,9 +254,9 @@ Propušten je ključni trening „dugi 2 h 5 min lagano" (10. 1.). Dugi trening 
   sre 11. 11.  odmor
   čet 12. 11.  lagano 50 min, usred trčanja 6 × 15 s jako uzbrdo, nazad 1:15 hod — urađeno 8,3 km, 59 min (7:07/km)
   pet 13. 11.  odmor
-  sub 14. 11.  provera forme: test na 3 km punim naporom, ravnomerno — urađeno 8 km, 50 min (6:19/km)
+  sub 14. 11.  provera forme: test na 3 km punim naporom, ravnomerno — urađeno 3 km, 15 min (5:09/km)
   ned 15. 11.  dugi 1 h 40 min lagano — urađeno 14,3 km, 1 h 40 min (7:00/km)
-  Urađeno: 46,6 km, 5 h 20 min, 5 treninga
+  Urađeno: 41,6 km, 4 h 45 min, 5 treninga
 
 3. NEDELJA (od 16. 11.) — osnova, gradnja; do trke 13 nedelja
   pon 16. 11.  lagano 60 min — urađeno 8,6 km, 60 min (7:00/km)
@@ -314,9 +314,9 @@ Propušten je ključni trening „dugi 2 h 5 min lagano" (10. 1.). Dugi trening 
   sre 23. 12.  odmor
   čet 24. 12.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 5,1 km, 35 min (6:55/km)
   pet 25. 12.  odmor
-  sub 26. 12.  provera forme: pripremna trka ili test na 10 km punim naporom — urađeno 15 km, 90 min (6:00/km)
+  sub 26. 12.  provera forme: pripremna trka ili test na 10 km punim naporom — urađeno 10 km, 55 min (5:31/km)
   ned 27. 12.  lagano 30 min — urađeno 4,3 km, 30 min (7:00/km)
-  Urađeno: 34,6 km, 3 h 46 min, 5 treninga
+  Urađeno: 29,6 km, 3 h 11 min, 5 treninga
 
 9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 28. 12.  lagano 65 min — urađeno 9,3 km, 65 min (7:00/km)

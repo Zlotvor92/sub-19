@@ -50,7 +50,7 @@ function addDays(iso: string, days: number): string {
   return new Date(Date.UTC(y ?? 2026, (m ?? 1) - 1, (d ?? 1) + days)).toISOString().slice(0, 10);
 }
 
-/** Trčanja tačno po planu do `through` (uključivo); test iz plana kao obično trčanje (nije doneo novu formu). */
+/** Trčanja tačno po planu do `through` (uključivo); test iz plana trčan tačno u tempu današnje forme. */
 function runsAsPlanned(doc: PlanDoc, through: string): Run[] {
   const ctx = paceCtxOf(doc.header);
   const runs: Run[] = [];
@@ -58,11 +58,18 @@ function runsAsPlanned(doc: PlanDoc, through: string): Run[] {
     const w = day.workout;
     if (w === null || w.kind === 'race' || day.date > through) continue;
     const c = summarize(w, ctx);
+    /* test iz plana: samo deo punim naporom u tempu današnje forme (zagrevanje i hlađenje bi forma čitala kao trku) */
+    const step =
+      w.kind === 'test' ? w.steps.find((x) => 'role' in x && x.role === 'work') : undefined;
+    const testM =
+      step !== undefined && 'extent' in step && 'distanceM' in step.extent
+        ? step.extent.distanceM
+        : null;
     runs.push({
       id: `run-${day.id}`,
       date: day.date,
-      distanceM: Math.round(c.distanceM),
-      durationSec: Math.round(c.durationSec),
+      distanceM: Math.round(testM ?? c.distanceM),
+      durationSec: Math.round(testM === null ? c.durationSec : c.workSec),
       dayId: day.id
     });
   }

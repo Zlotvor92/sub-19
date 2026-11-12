@@ -51,8 +51,8 @@ function startPlan(id: string, extraRuns: Any[] = []): { facts: Any; state: Any;
   return { facts, state, doc: r.doc, goal: p.goal };
 }
 
-/** Trčanja tačno po planu do `through` (uključivo), osim dana koje `skip` izbaci. Test iz plana se beleži
-    kao obično trčanje (bez oznake punog napora): ništa se nije desilo znači i da test nije doneo novu formu. */
+/** Trčanja tačno po planu do `through` (uključivo), osim dana koje `skip` izbaci. Test iz plana se beleži samo
+    deo punim naporom u tempu današnje forme: ništa se nije desilo znači i da test nije doneo novu formu. */
 function runsAsPlanned(doc: Any, through: string, skip: (d: Any) => boolean = () => false): Any[] {
   const ctx = E.paceCtxOf(doc.header);
   const runs: Any[] = [];
@@ -60,15 +60,24 @@ function runsAsPlanned(doc: Any, through: string, skip: (d: Any) => boolean = ()
     if (day.workout === null || day.date > through || skip(day)) continue;
     if (day.workout.kind === 'race') continue;
     const c = E.summarize(day.workout, ctx);
+    /* test iz plana: beleži se samo deo punim naporom, u tempu današnje forme (bez zagrevanja i hlađenja — inače
+       ga forma čita kao trku na celu dužinu treninga) */
+    const work = day.workout.kind === 'test' ? testPart(day.workout, c) : null;
     runs.push({
       id: `run-${day.id}`,
       date: day.date,
-      distanceM: Math.round(c.distanceM),
-      durationSec: Math.round(c.durationSec),
+      distanceM: Math.round(work?.distanceM ?? c.distanceM),
+      durationSec: Math.round(work?.durationSec ?? c.durationSec),
       dayId: day.id,
     });
   }
   return runs;
+}
+
+/** Deo testa punim naporom: dužina iz koraka, trajanje = rad treninga. */
+function testPart(w: Any, c: Any): { distanceM: number; durationSec: number } | null {
+  const step = w.steps.find((x: Any) => x.role === 'work' && x.extent?.distanceM !== undefined);
+  return step === undefined ? null : { distanceM: step.extent.distanceM, durationSec: c.workSec };
 }
 
 /** Dan kvaliteta nedelje (prvi trening vrste quality/test), dugi nedelje. */
