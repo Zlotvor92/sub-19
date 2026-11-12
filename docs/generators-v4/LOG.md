@@ -170,3 +170,15 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Zahtevi prema motoru dodati u treći krug: dan bez koraka nije „planirano"; `PlanHeader.legacy`; izveden umor
   posle preuzimanja. Tabele oznaka za 5K/10K/maraton su privremene dok te distance ne dobiju biblioteke (F7).
 - F5 tab `session_01GnHHiYQ5e5u9uGHQ6jd7Kb`: ZAVRŠEN.
+
+### 15:00 — F3 treća verzija (`4ba6588`) + motor treći krug (`8a22e4d`); moj pregled [visoka]
+- Planovi vlasnika sada ispunjavaju uslov: v1 (10 ned) vrh 38,6 km, dugi 16 km, uvek 4 treninga, jedan kvalitet +
+  ubrzanja, blok tek u specifičnoj fazi; v2 (18 ned) vrh 49,3 km, dugi 19–21 km. Po izveštaju F3: V4 ≥ v3 po vrhu
+  za 11/12 profila; ispod v3: p11 (dugi 16,7 naspram 18 — čeka udeo dugog po nivou), p04/p07 dugi −0,5 km. 24
+  scenarija pre/posle postoje; „ništa se nije desilo" × 4 → 0 promena.
+- GRANA CRVENA na vrhu (13 testova): treći krug motora ušao između commit-a F3 → otisci HM i K7 padaju. F3 dobio
+  nalog da odmah osveži; pouka: posle rebase-a ceo skup V4 pre push-a.
+- Moj nalaz na ispisu: „Produži pripremu za 1 nedelja" (padež) + upozorenje se prikazuje i kad fali < 5 % do
+  adekvatnog i nudi samo „produži". → ČETVRTI (poslednji) krug motora: množina sa padežom, upozorenje sa „šta može
+  sada / šta za sledeći ciklus", dugi od nezaokruženog prethodnog, deonice ne ispod minimalne doze, rast posle
+  rampe od baze pre napora.
