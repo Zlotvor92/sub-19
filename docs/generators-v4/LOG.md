@@ -103,3 +103,5 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 ### 10:15 — motor gurnuo `vdot.ts`/`constants.ts` (`5c7e09e`) → pokrenut F4 (forma, Opus)
 - Uzorak vlasnika `web/src/domain/v4/fitness/fixtures/owner-2026-autumn.json`: u bazi je samo 8 trčanja sa tempom i
   pulsom (27. 9 – 6. 11); posle polumaratona 3. 10. svega 5 trčanja (4–8 km). [visoka]
+- Tabovi 10:16: F4 forma — `session_01GnHHiYchQtH6mmwpQBMi1S` (Opus), radi. Brief F3 (`briefs/F3-HM.md`) spreman;
+  tab se otvara kad motor javi da `plan` + `renderPlan` rade.
