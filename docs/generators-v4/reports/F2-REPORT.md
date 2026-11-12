@@ -132,3 +132,117 @@ Ispravka tačke E (organizator): trka ili test u 28 dana ulazi u „najduže sko
 i referenca plafona); plafon „dugi ≤ 75 % reference" važi samo dok je `f < 0,8`, posle toga dugi određuju rampa i
 lanac. Primer 02: dugi 6,5 → 10,5 → 12 km (bilo 6,5 / 6,5 / 10,5). Pauza i bol: referenca kao do sada.
 
+
+## Krug 2 (R1–R11), 12. 11. 2026 — po `briefs/R2-ROUND2.md`; testovi `engine/round5.test.ts` (35) + izmenjeni stari
+Motor: 179 testova (12 fajlova, ≈ 6 s); motor + adapteri + forma + izolacija domena: 480, zeleno. `typecheck`, ESLint,
+Prettier čisti. Javni potpisi isti (`index.ts` dobija još `raceNotes`); nova polja su opciona. `distances/hm` pada
+(14 od 30: otisci i brojevi) — to je posao taba podataka. SYN ispisi regenerisani.
+### Šta je urađeno (vlasnik odluke u zagradi)
+- **R1** (`layoutWeek`, plafon dana): u nedelji `taper` i `race` lagan dan ≤ `taperEasyMaxSec` i ≤ trening na istom
+  danu prethodne nedelje (bilo koje vrste; ako tog dana nije bilo treninga — najduži lagan dan te nedelje). Višak se ne
+  preliva. Ubrzanja ostaju i kad plafon skrati lagani deo, dok je lagani deo ≥ 10 min.
+- **R2** (isto): (a) lagan dan ≤ `easyMaxShareOfLong` × STVARNI dugi te nedelje (posle zaokruživanja; strože od
+  trajanja i dužine, jer je dugi sa blokom brži); (b) ≤ `easyMaxOverPrevious` × najduži lagan dan poslednje nedelje koja
+  nije rasterećenje (iz rasporeda pre spremnosti, pa rampa ne „zaključa" kratke dane); (c) sledi iz (a)/(b): višak
+  ostaje neplaniran, čuvar `ispod-cilja` tek ispod 85 %. Plafon dana važi za ceo dan (lagano + dodatak) i zaokruživanje
+  ga ne prelazi (`Recipe.maxSec`). Plafon ne spušta dan ispod `minEasySec`.
+- **R3** (`decidePeak`, `weekTarget`): `P ≤ B × maxPeakOverBase`; rast ≤ najveća od prethodne 3 × (1 + rast), bez
+  izuzetka — v. odstupanje 1 (pravilo meri minute).
+- **R4** (`longPlan`, `layoutWeek`, `easyFill`): dugi ≤ udeo po danima × planirani minuti TE nedelje (cilj − dodatno
+  opterećenje kvaliteta); udeo se čita za broj dana koje nedelja stvarno ima (nepotpuna prva nedelja). Sa ≥ 3 dana:
+  kvalitet se prihvata samo ako posle njega svi preostali dani mogu da dobiju `minEasySec` a da nedelja ne pređe cilj
+  za > 10 %; inače taj dan postaje lagan (važniji podražaj ostaje, provera forme se ne odbija). Dan otpada tek kad bi
+  nedelja i bez kvaliteta prešla cilj za > 10 % — tada upozorenje `dan-izostavljen` (koje nedelje, zašto, šta raditi).
+- **R5** (`weekTarget`, `wantedExtra`): cilj gradnje/vrha = `max(loadPct × P, B + dodatno)`; „dodatno" = bodovi
+  kvaliteta iznad laganog trčanja istog trajanja, iz ŽELJENIH doza (pre budžeta) — čista funkcija namere, bez petlje.
+- **R6** (`render.raceTruth`, `raceNotes`, `format.goalStatus`/`raceBasis`): rečenica ispod tempa; cilj ≥ očekivano →
+  dostižan, između najbržeg u rasponu i očekivanog → na ivici, brži → van raspona. Dan trke: prva napomena je tempo
+  (iz cilja ako nije van raspona, inače iz očekivanog), po osećaju opis napora bez s/km.
+- **R7** (`modsFor`, `adjustmentWindow`, tekst u `replan.explain`): 1–3: 1 dan odmora, prvo trčanje lagano, 5 dana bez
+  `impact: 'visok'`; 4–6: 2 dana odmora, 10 dana bez kvaliteta i bloka (prvih 7 i × 0,7), 14 dana dugi ≤ 75 %
+  poslednjeg dugog i bez visokog udara, prvi kvalitet svake vrste u sledećih 14 dana ≤ 60 % doze; ≥ 7 kao pre. Tekst:
+  uslov (≤ 2/10 i ne raste), prag za prekid (≥ 4 ili > 7 dana), lekar; bez „plan se nastavlja kako je bio".
+- **R8** (`replan.onMissed`): (a) ključan propušten trening uvek daje rečenicu — i bez izmene treninga (`Change.what:
+  'obavestenje'`, događaj se upisuje u `appliedEvents`, pa se ne ponavlja); (b) propušten dugi sa blokom: sledeći dugi u
+  nedelji `build`/`peak` dobija blok `min(propušten, max(planiran, korak pre propuštenog))`; propušten vršni kvalitet:
+  dugi bez bloka dobija korak pre; nema takve nedelje → „nije nadoknadivo — poslednje dve nedelje su za odmor";
+  (c) ≥ 2 propuštena duga zaredom: sledeći dugi ≤ poslednji odrađen (28 dana) + korak, bez bloka, i lanac dugog se
+  odlučuje ponovo od stvarno odrađenog (`rechainLongFrom`; cilj nedelje ostaje).
+- **R9** (`runPass`, `weekSlots`): provera forme koju pauza ili rampa pojedu čeka prvu nedelju posle rampe i zamenjuje
+  njen prvi kvalitet (ne ide u `taper`/`race`); tekst kaže datum. Tekst pauze, rezultata i `povratak` više ne kaže
+  „prvih N dana bez brzih" nego do kog datuma su treninzi kraći i KOG DATUMA je prvi brzi trening (čita se iz plana).
+  Prva nedelja posle rampe: obim ≤ poslednja puna nedelja pre × 1,10, dalje pravilo rasta.
+- **R10** (`render`): tempo samo na mestu `{pace}` u tekstu unosa (usponi i koraci po naporu bez tempa; po osećaju red
+  bez dodatka — napor po zonama je u zaglavlju); jedno „nedelja trke"; `build` u poslednje 2 nedelje se zove „sužavanje
+  pred trku"; „dan posle trke (21,1 km za 1:42:30)" / „posle testa"; „3 treninga + trka"; „brz rad 23 % vremena
+  trčanja"; „Polazim od tvojih ≈ 40 km nedeljno (…)"; prošli dani: „— urađeno 8,5 km, 50 min (5:56/km)" ili „— nije
+  urađeno", prošla nedelja „Urađeno: …"; „Posle trke: N dana bez brzih treninga…"; kad se očekivano vreme razlikuje
+  > 20 s od onog u zaglavlju: „Prognoza je bolja/slabija nego u prethodnom ispisu (…). Zašto:" + rečenice iz
+  `form.history` posle `header.form.current.asOf`.
+- **R11** (`guard.warnings`): predlog pominje vrh/dugi iz probnog plana samo ako su veći od planiranog; `malo-dana`
+  više ne računa dugi iz udela (davao manji broj). `obim-za-nivo`: tempa poznata i (brzi trening zamenjen laganim u
+  ≥ 2 i ≥ 25 % nedelja gradnje, ILI vrh < 95 % `adequate.minPeakWeeklyKmByLevel[nivo]`); ne izdaje se uz `mali-obim`.
+### Odstupanja i odluke (sa razlogom)
+1. **Pravilo rasta meri minute, ne BO; cilj = obim + dodatno.** R5 (kvalitet PREKO minuta) i R3 (rast bez izuzetka)
+   se u BO sudaraju: p05 ima dodatno ≈ 15–19 % baze, pa bi rast od 7 % u BO opet dao 81–84 km uz 90. Zato lanac `m`
+   i čuvar `skok` mere minute nedelje, a dodatno opterećenje ide preko. Time skok km više ne zavisi od toga da li
+   nedelja ima kvalitet (uzrok 49,8 → 59,7 km). Mera opterećenja je i dalje jedna (BO); `targetLoad` je u BO.
+2. **Dugi u gradnji nije ispod polaznog dugog** (`min(longStartSec, longMaxSec)`), i kad `lenPct` traži manje. Bez
+   toga R2a i R5 ne mogu zajedno: 90 km na 6 dana traži dugi ≥ 21 km od prve nedelje da bi lagani dani (≤ 65 %
+   dugog) nosili ostatak.
+3. **Rasterećenje: dugi ≤ `recovery.longFactor` × dugi prethodne nedelje** (p11: rasterećenje sa dužim dugim).
+4. **R4 „dugi do svog udela"**: dugi je uvek na udelu (jedna odluka), pa „skraćivanje" nije poseban korak. Redosled
+   je: dugi na udelu → najkraće lagano uz kvalitet ako nedelja ostaje ≤ cilj + 10 % → kvalitet postaje lagan →
+   dan otpada + upozorenje. Sa 1–2 dana trčanja važi staro pravilo.
+5. **R1 „isti dan"**: poredi se sa treningom bilo koje vrste na tom danu prethodne nedelje (u nedelji trke dani
+   kvaliteta se pomeraju, pa lagan utorak često stoji posle utorka sa kvalitetom).
+6. **R7 4–6**: zadržano × 0,7 trajanja prvih 7 dana; dodato „bez visokog udara 14 dana" (trener: sadržaj koji je
+   izazvao bol izlazi). Bol ≥ 4: obim se vraća kao posle pauze (R9), jer bi povratak na sačuvane ciljeve bio skok.
+7. **R8a**: obaveštenje je `Change` sa `scope: 'zaglavlje'` (dan je u prošlosti; test zaštite traži da promene dana
+   budu buduće). § 6.3 se time menja: ključan `missed` se upisuje u `appliedEvents` i kad treninzi ostaju isti.
+8. **R9 rampa posle spoljne trke** ne pomera planiranu proveru forme (trkač je upravo dobio rezultat) — ona otpada.
+9. **R10 „urađeno"**: prošli dani se ispisuju samo kad `renderPlan` dobije `state`; trčanja van plana ne ulaze u zbir
+   prošle nedelje. Tempo u redu je prosek celog trčanja.
+10. **Vrh u km je manji od 1,40 ×.** `P ≤ 1,40 × B` je u BO; vršna nedelja nosi dodatno ≈ 15–20 % P, pa je vrh u km
+    ≈ 1,20–1,30 × (v. tabelu). Ako organizator hoće + 30–35 % km kod 4 dana, `maxPeakOverBase` treba ≈ 1,50–1,55.
+### Nova polja podataka (sva opciona) i podrazumevane vrednosti (`constants.ts`)
+| polje | značenje | podrazumevano |
+|---|---|---|
+| `safety.maxPeakOverBase` | vrh ≤ baza × | 1,40 |
+| `safety.taperEasyMaxSec` (broj ili mapa po danima) | najduži lagan dan u `taper`/`race` | 50 min; ≤ 3 dana 40 min |
+| `safety.easyMaxOverPrevious` | lagan dan ≤ × najduži lagan dan prethodne nedelje | 1,25 |
+| `safety.easyMaxShareOfLong` — sada i mapa po danima | lagan dan ≤ udeo dugog | (obavezno polje, kao do sada) |
+| `adequate.minPeakWeeklyKmByLevel` | vrh km koji nivo traži (`obim-za-nivo`) | bez → obim pri kom plafoni doza ne zavise od obima |
+| `NoteRule.byFeelText` | tekst napomene za trkača po osećaju | bez → `text` |
+| `texts['zaglavlje.*']`, `texts['trka.tempo']`, `['trka.po-osecaju']`, `['trka.oporavak']` | zamena rečenica zaglavlja i dana trke | `DEFAULT_TEXTS` |
+Napomene trke mogu da nose `{pace}`, `{paceFrom}`, `{paceTo}` (5 i 10 s sporije), `{time}` — popunjava ih ispis
+(`raceNotes`), iz cilja ako je u rasponu, inače iz očekivanog vremena. Tipovi: `Change.what` + `'obavestenje'`;
+`Adjustment` `repeat` + `blockSec`, `blockDefId`, `noBlock`.
+### Šta tab podataka polumaratona mora da podesi da kapija kruga 2 prođe
+Stanje sa DANAŠNJIM podacima `distances/hm` (motor nov, podaci stari; km): vrh 1,07–1,30 × polazno; skok nedelje ≤ 9 %;
+treninga = traženih dana u svakoj nedelji gradnje (12/12, v1); nedelja 1 = 94–104 % sadašnjeg obima; lagan/dugi do
+79 %; dugi/nedelja 29–48 %. Sa probnim vrednostima `easyMaxShareOfLong { '1': 0.7, '4': 0.63 }` i udelom dugog 4 dana
+0,38 / 5 dana 0,34 / 6 dana 0,31 / 3 dana 0,50: lagan/dugi ≤ 63 % (3 dana ≤ 70 %), dugi/nedelja ≤ 39 % kod 4+ dana osim
+p09 42 % i p11 41 %; nedelja 1 pada na 89–92 % kod p04 i p08. Zato:
+1. `easyMaxShareOfLong`: 4+ dana ≈ 0,63 (motor zaokružuje naniže, 0,65 radi, 0,63 daje rezervu za blok); 3 dana 0,70.
+2. `longShareByRunDays`: 4 dana 0,38, 5 → 0,34, 6 → 0,31 (kapija meri km; dugi sa blokom je brži, pa 0,40 u minutima
+   daje 41–42 % u km); 3 dana 0,50; početnik po R15. Udeo je sada × planirani minuti nedelje, ne × vrh.
+3. `longStartShare` po danima tako da nedelja 1 stane uz plafon laganih dana: treba `udeo ≥ (1 − q) / (1 + n × a)`,
+   `n` = broj laganih dana, `a` = `easyMaxShareOfLong`, `q` = udeo kvaliteta u minutima nedelje (≈ 0,15–0,20).
+   5 dana: ≥ 0,29–0,30 (sada 0,28 → p04 92 %); 3 dana: ≥ 0,45–0,48 (sada 0,38 → p08 89 %); 6 dana ≥ 0,24.
+4. `maxWeeklyRampPct` 0,07–0,08 i `minRampLoad` ≤ 12 daju skok ≤ 10 % km (pravilo sada meri minute). `startPct`:
+   `P = min(B / startPct, 1,40 × B)`; `loadPct` prvih nedelja više ne određuje nedelju 1 (pod je B + dodatno).
+5. Rep šablona: nedelja trke i `taper` — `taperEasyMaxSec` je podrazumevano 50 / 40 min; R15 „uto 40–50 min" ne
+   traži ništa osim da `loadPct` nedelje trke ne bude manji od onoga što ti dani nose (inače dani stoje na
+   `minEasySec`).
+6. Tekst unosa bez `{pace}` više ne dobija tempo (usponi su već takvi); unos koji treba tempo mora da ima oznaku.
+   `napomena.trka` kaže „5–10 s sporije od tempa trke": zameniti sa `{paceFrom}–{paceTo}` i `{pace}` i dodati
+   `byFeelText` bez s/km (P09, P12). Napomena o gelu: isto pravilo na dugom i na trci (R19) je tekst podataka.
+7. `adequate.minPeakWeeklyKmByLevel` za `brz` (i po želji `srednji`): p06 (VDOT 58, 35 km) sada dobija `kratak-dugi`,
+   a `obim-za-nivo` tek kad se broj zada (kvalitet mu staje u plan, pa okidač „zamenjen laganim" ne radi).
+8. Provera forme u nedelji rasterećenja malog obima (vlasnik-v2, 10. nedelja): test + dugi + 2 × 25 min prelazi
+   cilj + 10 %, pa dan otpada uz `dan-izostavljen`. Rešenje u podacima: veći `loadPct` te nedelje ili test u nedelji
+   gradnje (R17 ionako pomera test).
+9. Kapija nad planovima vlasnika: vlasnik-v2 počinje dan posle trke — nedelje rampe (do 28. 12.) imaju 3 treninga,
+   dugi 50 % nedelje i skok posle rampe; test kapije treba da izuzme nedelje koje seku rampu (`header.adjustments`).
+10. Scenario s06 (bolest u 14. nedelji p04) daje nalaz čuvara `taper@19` — proveriti da li ga test scenarija dozvoljava.
