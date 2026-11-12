@@ -262,6 +262,8 @@ export interface PlanHeader {
   /** Uzroci spremnosti i ponovljene doze koji važe za plan (§ 6.5); dan u prozoru izmene se gradi iz namere + ovoga.
       Upisuje ih `plan` (iz stanja) i `replan` (iz primenjenih događaja); bez njih je lista prazna. */
   adjustments?: Adjustment[];
+  /** Polja starog plana koja adapter prenosi doslovno; motor ih ne čita, ulaze u kanonsku serijalizaciju. */
+  legacy?: Readonly<Record<string, unknown>>;
 }
 
 /** Trajna posledica događaja po kojoj se dani grade iznova (§ 6.4, § 6.5). `source` je `id` događaja ili `'plan'`. */

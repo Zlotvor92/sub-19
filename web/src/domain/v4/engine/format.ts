@@ -9,19 +9,29 @@ export const DAYS: Forms = ['dan', 'dana', 'dana'];
 export const WORKOUTS: Forms = ['trening', 'treninga', 'treninga'];
 export const KM: Forms = ['kilometar', 'kilometra', 'kilometara'];
 
-/** Oblik imenice uz broj: 1 nedelja, 2 nedelje, 5 nedelja, 11 nedelja, 21 nedelja, 22 nedelje. */
-export function pluralForm(n: number, forms: Forms): string {
+export const MINUTES: Forms = ['minut', 'minuta', 'minuta'];
+
+/** Padež imenice uz broj: nominativ („do trke je 1 nedelja") ili akuzativ („produži za 1 nedelju"). */
+export type Case = 'nom' | 'acc';
+
+/** Akuzativ se razlikuje od nominativa samo gde je ovde naveden (ženski rod u jednini). */
+const ACCUSATIVE = new Map<Forms, Forms>([[WEEKS, ['nedelju', 'nedelje', 'nedelja']]]);
+
+/** Oblik imenice uz broj: 1 nedelja, 2 nedelje, 5 nedelja, 11 nedelja, 21 nedelja, 22 nedelje;
+    u akuzativu 1 nedelju, 21 nedelju. */
+export function pluralForm(n: number, forms: Forms, kase: Case = 'nom'): string {
+  const used = kase === 'acc' ? (ACCUSATIVE.get(forms) ?? forms) : forms;
   const abs = Math.abs(Math.round(n));
   const last = abs % 10;
   const lastTwo = abs % 100;
-  if (last === 1 && lastTwo !== 11) return forms[0];
-  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return forms[1];
-  return forms[2];
+  if (last === 1 && lastTwo !== 11) return used[0];
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return used[1];
+  return used[2];
 }
 
-/** Broj sa imenicom u pravom obliku. */
-export function count(n: number, forms: Forms): string {
-  return `${fmtNumber(n)} ${pluralForm(n, forms)}`;
+/** Broj sa imenicom u pravom obliku i padežu. */
+export function count(n: number, forms: Forms, kase: Case = 'nom'): string {
+  return `${fmtNumber(n)} ${pluralForm(n, forms, kase)}`;
 }
 
 /** Pridev + broj + imenica: „prvi dan", „prva 3 dana", „prvih 11 dana". */

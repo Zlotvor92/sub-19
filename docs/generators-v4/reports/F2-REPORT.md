@@ -110,3 +110,22 @@ Potpisi javnog izvoza su isti; nova polja su opciona, postojeći podaci rade nep
 Otisci: sintetička — samo primer 02 (rasterećenje 194 → 178 BO, tačka 6). Polumaraton — 11 od 12 profila (tačke
 2, 3, 5, 6) i K7 za p09 (prvi „tempo trke" posle provere forme više nije × 0,8): to menja tab podataka distance.
 
+## Četvrti krug i dodatak trećem (12. 11. 2026) — testovi `round4.test.ts`
+Dodatak trećem (zahtevi adaptera): (9) dan bez ijednog koraka nije planirano trčanje — ne postaje `missed` i ne
+ulazi u izvedenu pauzu; (10) `PlanHeader.legacy?` (motor ga ne čita, ulazi u kanonski zapis); (11) izveden umor
+posle rupe u istoriji se ne okida (test).
+A. Padež uz broj: `count(n, imenica, 'nom' | 'acc')` — „imaš / planiraj 1 nedelju, 2 nedelje, 5 nedelja, 21 nedelju";
+   dan, kilometar, minut i trening imaju isti oblik u oba padeža. Test nad upozorenjima i promenama.
+B. `mali-obim` i `kratak-dugi`: predlog = šta može SADA uz isti datum (probni plan sa još jednim danom: vrh i dugi)
+   + šta za sledeću trku (nedelje/obim iz `adequate`). Ako dodatni dan ne diže vrh (ili ih je već 7), prvi deo kaže
+   da obim ne može bezbedno više i kako trčati trku. Razlika do adekvatnog < 5 % se ne prikazuje.
+C. Lanac dugog uzima odlučenu (nezaokruženu) dužinu prethodne nedelje; čuvar `dugi-korak` dozvoljava jedno
+   zaokruživanje i meri prethodni dugi odlučenom dužinom.
+D. Zaokruživanje deonice (500 m / 60 s) ne spušta rad ispod najmanje doze — tada se zaokružuje naviše.
+E. Plan u rampi posle trke: baza je obim PRE trke (doprinos trke se oduzima iz baze), trka nije „dugi" ni za polazni
+   dugi ni za plafon 75 %; bez istorije dugih plafon je 75 % polaznog dugog plana. Nedelje rampe ne ulaze u `m`.
+Uz to: smanjenje × 0,8 ne obara trening ispod njegovog najmanjeg oblika (ostaje najmanja doza); čuvar ne poredi
+lagan dan i dugi u nedelji rampe, a vršna nedelja pod rampom nije merilo za `taper`.
+Otisci: sintetička — samo primer 02 (start posle trke). Polumaraton — planovi posle trke/pauze (E), svi gde je
+dugi rastao korakom (C), deonice na granici najmanje doze (D); tekst upozorenja `mali-obim`/`kratak-dugi` (B, A).
+

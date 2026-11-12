@@ -308,7 +308,11 @@ export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recip
     }
     case 'quality': {
       if (!mods.quality) return asEasy(recipe, mods, ctx);
-      const dose = recipe.dose * mods.doseFactor;
+      /* Smanjenje (× 0,8) ne obara trening ispod njegovog najmanjeg oblika: tada ostaje najmanja doza. */
+      const dose = Math.max(
+        recipe.dose * mods.doseFactor,
+        Math.min(recipe.dose, minDoseOf(recipe.def, ctx))
+      );
       let def = recipe.def;
       if (!mods.highImpact && def.impact === 'visok') {
         const other = pickDef(recipe.slot, dose, ctx, { noHighImpact: true });

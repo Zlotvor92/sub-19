@@ -4,8 +4,9 @@ import { PAUSE_MIN_DAYS, PAUSE_MIN_PLANNED } from './constants';
 import { addDays, diffDays } from './dates';
 import type { IsoDate, Pause, PlanDay } from './types';
 
+/** Planirano trčanje: trening sa bar jednim korakom koji nije trka (preuzet dan snage bez koraka to nije). */
 export const isPlanned = (day: PlanDay): boolean =>
-  day.workout !== null && day.workout.kind !== 'race';
+  day.workout !== null && day.workout.kind !== 'race' && day.workout.steps.length > 0;
 
 export function derivedPauses(
   days: readonly PlanDay[],

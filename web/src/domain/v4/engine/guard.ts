@@ -1,6 +1,8 @@
 /* V4 — ČUVAR (SPEC § 8): odbija samo neispravan unos; sve ostalo prijavljuje (nalazi) ili upozorava (tri rečenice
    sa predlogom u brojevima). Ništa ne menja — ni generisan ni lični plan. */
 import {
+  EASY_DISTANCE_STEP_M,
+  EASY_DURATION_STEP_SEC,
   GUARD_DOSE_TOLERANCE_SEC,
   GUARD_FAST_SHARE_TOLERANCE,
   GUARD_JUMP_TOLERANCE,
@@ -188,6 +190,11 @@ export const guard: GuardFn = (doc, _state, data) => {
   const d = header.decisions;
   const findings: Finding[] = [];
   const costs = doc.weeks.map((w) => weekCost(w, header.goal.raceDate, ctx));
+  /* Dugi raste od nezaokružene vrednosti, pa ostvareni korak sme da bude veći za jedno zaokruživanje (0,5 km / 5 min). */
+  const roundingSlack = Math.max(
+    EASY_DURATION_STEP_SEC,
+    (EASY_DISTANCE_STEP_M * ctx.paces.easy) / 1000
+  );
   const adjustments = header.adjustments ?? [];
   /* Pun napor iz plana (provera forme, pripremna trka) skraćuje dane posle sebe isto kao u gradnji — čuvar ga
      vidi kao i ostale uzroke, da ne prijavi lažno `ispod-cilja`. */
@@ -215,9 +222,12 @@ export const guard: GuardFn = (doc, _state, data) => {
   const races: PlanDay[] = [];
   let lastWorkout: PlanDay | null = null;
   let previous: PlanDay | null = null;
+  /* Vršna nedelja pod rampom (skraćen brz rad) nije merilo za sužavanje. */
   const peakWork = Math.max(
     0,
-    ...costs.filter((c) => c.week.intent.kind === 'peak').map((c) => c.workSec)
+    ...costs
+      .filter((c) => c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes))
+      .map((c) => c.workSec)
   );
 
   costs.forEach((c, i) => {
@@ -230,7 +240,11 @@ export const guard: GuardFn = (doc, _state, data) => {
       .filter((x) => !underRamp(x.week.start, adjustments))
       .slice(-3);
     const m = Math.max(...before.map((x) => x.load), ...(before.length < 3 ? [d.baseLoad] : []));
-    const longBefore = Math.max(d.longStartSec, ...before.map((x) => x.longSec));
+    /* Prethodni dugi se meri odlučenom dužinom kad nedelja ima dugi (dugi sa blokom kraće traje za iste km). */
+    const longBefore = Math.max(
+      d.longStartSec,
+      ...before.map((x) => (x.longSec > 0 ? Math.max(x.longSec, x.week.longSec) : 0))
+    );
 
     for (const { day, cost } of c.days) {
       const w = day.workout;
@@ -256,7 +270,8 @@ export const guard: GuardFn = (doc, _state, data) => {
         );
       }
       /* Poredi se dužina: dugi sa blokom je brži, pa kraće traje za iste kilometre. */
-      if (w.kind === 'easy' && c.longKm > 0 && cost.km > c.longKm) {
+      /* U nedelji rampe dugi je namerno ograničen (≤ 75 % poslednjeg), pa se ne poredi sa laganim danom. */
+      if (!ramp && w.kind === 'easy' && c.longKm > 0 && cost.km > c.longKm) {
         report('lagan-dugi', week, day, `Lagan dan je duži od dugog iste nedelje (${day.date}).`);
       }
       const hard = (x: PlanDay | null): boolean =>
@@ -296,7 +311,7 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (c.longSec > d.longMaxSec + GUARD_LONG_STEP_TOLERANCE_SEC) {
       report('dugi-plafon', week, null, 'Dugi je duži od najdužeg dozvoljenog u planu.');
     }
-    if (c.longSec > longBefore + s.longStepSec + GUARD_LONG_STEP_TOLERANCE_SEC) {
+    if (c.longSec > longBefore + s.longStepSec + GUARD_LONG_STEP_TOLERANCE_SEC + roundingSlack) {
       report('dugi-korak', week, null, 'Dugi raste za više od jednog koraka.');
     }
     if (!ramp && !partial && !raceWeek && c.load < GUARD_UNDER_TARGET * week.targetLoad) {
@@ -367,7 +382,12 @@ export interface WarningInput {
   data: DistanceData;
   decisions: Decisions;
   doc: PlanDoc;
+  /** Probni plan sa još jednim danom trčanja (isti datum trke): vrh i najduži dugi; `null` kad nema 8. dana. */
+  withExtraDay?: () => { peakKm: number; longKm: number } | null;
 }
+
+/** Razlika do adekvatnog ispod 5 % se ne prijavljuje (38,6 naspram 40 km nije upozorenje). */
+const NEAR_ENOUGH = 0.95;
 
 const km = (value: number): string => `${fmtNumber(value)} km`;
 
@@ -392,14 +412,17 @@ export function warnings(input: WarningInput): Warning[] {
       problem: `Do trke je ${count(weeks, WEEKS)}, a adekvatna priprema za ovu distancu traje bar ${count(a.minWeeks, WEEKS)}.`,
       meaning:
         'Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi.',
-      proposal: `Izaberi trku za koju imaš ${count(a.minWeeks, WEEKS)} pripreme — tada plan stiže do dugog od ${km(a.minLongKm)}${shorter}.`,
+      proposal: `Izaberi trku za koju imaš ${count(a.minWeeks, WEEKS, 'acc')} pripreme — tada plan stiže do dugog od ${km(a.minLongKm)}${shorter}.`,
       suggest: {
         weeks: a.minWeeks,
         ...(a.shorter === undefined ? {} : { distanceId: a.shorter.distanceId })
       }
     });
   }
-  if (peakKm < a.minPeakWeeklyKm) {
+  const runDays = d.runDays.length;
+  const trial = input.withExtraDay?.() ?? null;
+  const extraDay = `Uz isti datum trke dodaj ${String(runDays + 1)}. dan laganog trčanja od 30–40 min`;
+  if (peakKm < NEAR_ENOUGH * a.minPeakWeeklyKm) {
     const extra =
       peakKm > 0
         ? Math.max(
@@ -409,17 +432,20 @@ export function warnings(input: WarningInput): Warning[] {
             )
           )
         : a.minWeeks;
+    const now =
+      trial !== null && trial.peakKm >= peakKm + 0.5
+        ? `${extraDay} — vrh tada ide do ${km(trial.peakKm)} nedeljno, a dugi do ${km(trial.longKm)}.`
+        : `Uz isti datum trke obim ne može bezbedno iznad ${km(peakKm)} nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi.`;
     out.push({
       code: 'mali-obim',
       severity: 'upozorenje',
       problem: `Najveća nedelja u planu ima ${km(peakKm)}, a adekvatna priprema za ovu distancu traži bar ${km(a.minPeakWeeklyKm)} nedeljno.`,
       meaning:
         'Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje.',
-      proposal: `Produži pripremu za ${count(extra, WEEKS)} — obim tada može bezbedno da naraste do ${km(a.minPeakWeeklyKm)} nedeljno.`,
+      proposal: `${now} Za sledeću trku planiraj ${count(weeks + extra, WEEKS, 'acc')} pripreme — obim tada bezbedno stiže do ${km(a.minPeakWeeklyKm)} nedeljno.`,
       suggest: { peakWeeklyKm: a.minPeakWeeklyKm, weeks: weeks + extra }
     });
   }
-  const runDays = d.runDays.length;
   const longWithDays =
     Math.round((decideLongMax(d.peakLoad, s, d.level, a.minRunDays) / ctx.paces.easy) * 2) / 2;
   if (runDays < a.minRunDays) {
@@ -429,27 +455,30 @@ export function warnings(input: WarningInput): Warning[] {
       problem: `Trčiš ${count(runDays, DAYS)} nedeljno, a za ovu distancu treba bar ${count(a.minRunDays, DAYS)}.`,
       meaning:
         'Sa toliko dana ceo obim staje u malo treninga, pa je dugi trening kraći nego što trka traži, a svaki propušten dan je veliki deo nedelje.',
-      proposal: `Dodaj ${String(runDays + 1)}. dan laganog trčanja od 30–40 min — sa ${count(a.minRunDays, DAYS)} nedeljno dugi može da naraste do ${km(longWithDays)}.`,
+      proposal: `Dodaj ${String(runDays + 1)}. dan laganog trčanja od 30–40 min — uz ${count(a.minRunDays, DAYS)} trčanja nedeljno dugi može da naraste do ${km(longWithDays)}.`,
       suggest: { runDays: a.minRunDays }
     });
   }
-  if (longKm < a.minLongKm) {
+  if (longKm < NEAR_ENOUGH * a.minLongKm) {
     const capKm = d.longMaxSec / ctx.paces.easy;
     const stepKm = Math.max(0.5, Math.round((s.longStepSec / ctx.paces.easy) * 2) / 2);
     const moreWeeks = Math.max(1, Math.ceil((a.minLongKm - longKm) / stepKm));
     const byTime = capKm >= a.minLongKm;
-    const proposal = byTime
-      ? `Produži pripremu za ${count(moreWeeks, WEEKS)} — dugi raste za oko ${km(stepKm)} nedeljno i tada stiže do ${km(a.minLongKm)}.`
-      : runDays < a.minRunDays
-        ? `Dodaj dan trčanja (${count(a.minRunDays, DAYS)} nedeljno) — dugi tada može da naraste do ${km(longWithDays)}.`
-        : `Podigni nedeljni obim do ${km(a.minPeakWeeklyKm)} — dugi tada može da naraste do ${km(a.minLongKm)}.`;
+    const left = Math.max(1, Math.round(data.distanceM / 1000 - longKm));
+    const now =
+      trial !== null && trial.longKm >= longKm + 0.5
+        ? `${extraDay} — dugi tada stiže do ${km(trial.longKm)}.`
+        : `Uz isti datum trke dugi ostaje ${km(longKm)}, pa trku počni sporije i čuvaj snagu za poslednjih ${km(left)}.`;
+    const next = byTime
+      ? `Za sledeću trku planiraj ${count(weeks + moreWeeks, WEEKS, 'acc')} pripreme — dugi tada stiže do ${km(a.minLongKm)}.`
+      : `Za sledeću trku podigni nedeljni obim do ${km(a.minPeakWeeklyKm)} — dugi tada može da naraste do ${km(a.minLongKm)}.`;
     out.push({
       code: 'kratak-dugi',
       severity: 'upozorenje',
       problem: `Najduži trening u planu je ${km(longKm)}, a za ovu distancu treba bar ${km(a.minLongKm)}.`,
       meaning:
         'Poslednji deo trke biće duži od svega što si trčao u pripremi, pa tu treba očekivati najveći pad.',
-      proposal,
+      proposal: `${now} ${next}`,
       suggest: { longKm: a.minLongKm, ...(byTime ? { weeks: weeks + moreWeeks } : {}) }
     });
   }

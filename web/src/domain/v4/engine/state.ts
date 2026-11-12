@@ -1,5 +1,6 @@
 /* V4 — STANJE TRKAČA (SPEC § 2): izvedena polja računa `buildState` jednom; motor ih ne preračunava. */
 import {
+  CHRONIC_DAYS,
   HARD_EFFORT_DAYS,
   LONGEST_RECENT_DAYS,
   PAIN_RESOLVED_DAYS,
@@ -123,8 +124,10 @@ function weekSummaries(
 function longestRecent(facts: RunnerFacts, runs: readonly Run[], easyPace: SecPerKm): Seconds {
   let longest = 0;
   for (const run of runs) {
-    if (diffDays(facts.today, run.date) < LONGEST_RECENT_DAYS)
+    /* Trka i test nisu „dugi" (četvrti krug). */
+    if (run.effort === undefined && diffDays(facts.today, run.date) < LONGEST_RECENT_DAYS) {
       longest = Math.max(longest, run.durationSec);
+    }
   }
   if (longest > 0) return longest;
   const km = facts.profile.longestRecentKm;
@@ -228,6 +231,23 @@ export function recentLoad(state: RunnerState, days: number): LoadPoints {
     if (diffDays(state.today, run.date) < days) load += runLoad(run, threshold);
   }
   return load;
+}
+
+/** Bazno nedeljno opterećenje PRE poslednjeg punog napora: iz baze se oduzima doprinos same trke ili testa,
+    da plan koji počinje u rampi gradi od obima pre trke (četvrti krug). */
+export function baseLoadOf(state: RunnerState): LoadPoints {
+  let chronic = state.load.chronic;
+  const effort = state.lastHardEffort;
+  const run =
+    effort === null
+      ? undefined
+      : state.runs.find((r) => r.date === effort.date && r.effort !== undefined);
+  if (run !== undefined && !state.load.seeded) {
+    const threshold = paceAtShare(state.form.current.vdot, ZONE_SHARE.T);
+    const days = diffDays(state.today, run.date);
+    chronic -= (runLoad(run, threshold) / CHRONIC_DAYS) * (1 - 1 / CHRONIC_DAYS) ** days;
+  }
+  return Math.round(70 * Math.max(0, chronic)) / 10;
 }
 
 /** Poslednji odrađeni dugi pre `date`: najduže trčanje (bez trke i testa) u 28 dana pre tog dana; 0 = nepoznat. */

@@ -4,9 +4,10 @@ import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE } from './constants';
 import { runPass } from './build';
 import { addDays, mondayOf } from './dates';
 import { decide } from './decide';
-import { validate, warnings } from './guard';
+import { validate, warnings, weekCost } from './guard';
+import { paceCtxOf } from './load';
 import { raceWorkout } from './select';
-import { lastLongBefore, recentLoad } from './state';
+import { baseLoadOf, lastLongBefore, recentLoad } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import {
   type Adjustment,
@@ -21,6 +22,7 @@ import {
   type PlanFn,
   type PlanWeek,
   type RunnerState,
+  type Weekday,
   type WeekIntent
 } from './types';
 import { zonePaces } from './vdot';
@@ -108,10 +110,12 @@ export function createPlan(
   goal: Goal,
   data: DistanceData,
   startDate: IsoDate,
-  availability: Availability = state.availability
+  availability: Availability = state.availability,
+  /** Probni plan za upozorenja: bez sopstvenih upozorenja (da se probni poziv ne ponavlja). */
+  trial = false
 ): PlanDoc {
   const weeks = countWeeks(startDate, goal.raceDate);
-  const baseLoad = Math.round(70 * state.load.chronic) / 10;
+  const baseLoad = baseLoadOf(state);
   const form = state.form.current;
   const level = pickLevel(data, {
     beginner: state.profile.beginner === true,
@@ -151,7 +155,13 @@ export function createPlan(
       protected: false,
       appliedEvents: [],
       eventsFrom: state.today,
-      adjustments: initialAdjustments(state)
+      /* Kad nema istorije dugih, „poslednji dugi" za plafon u rampi je polazni dugi plana. */
+      adjustments: initialAdjustments(state).map((a) =>
+        (a.kind === 'effort' || a.kind === 'pause' || a.kind === 'pain') &&
+        (a.lastLongSec === undefined || a.lastLongSec === 0)
+          ? { ...a, lastLongSec: decisions.longStartSec }
+          : a
+      )
     },
     weeks: skeleton(
       startDate,
@@ -163,10 +173,47 @@ export function createPlan(
     )
   };
   const built = runPass(draft, state, data, { window: null, rechainFrom: 1, fresh: true });
+  if (trial) return built;
+  /* Šta bi dao još jedan dan trčanja uz isti datum trke — brojevi za predlog u upozorenju. */
+  const withExtraDay = (): { peakKm: number; longKm: number } | null => {
+    const extra = extraRunDay(availability.runDays);
+    if (extra === null) return null;
+    const more: Availability = {
+      runDays: [...availability.runDays, extra].sort((x, y) => x - y),
+      longDay: availability.longDay
+    };
+    const probe = createPlan(state, goal, data, startDate, more, true);
+    const ctx = paceCtxOf(probe.header);
+    const costs = probe.weeks.map((w) => weekCost(w, goal.raceDate, ctx));
+    return {
+      peakKm: Math.max(0, ...costs.map((c) => c.km)),
+      longKm: Math.max(0, ...costs.map((c) => c.longKm))
+    };
+  };
   return {
     ...built,
-    header: { ...built.header, warnings: warnings({ state, goal, data, decisions, doc: built }) }
+    header: {
+      ...built.header,
+      warnings: warnings({ state, goal, data, decisions, doc: built, withExtraDay })
+    }
   };
+}
+
+/** Slobodan dan koji je najdalje od postojećih dana trčanja (izjednačeno: raniji); `null` kad su svi zauzeti. */
+function extraRunDay(runDays: readonly Weekday[]): Weekday | null {
+  const all: Weekday[] = [0, 1, 2, 3, 4, 5, 6];
+  const free = all.filter((d) => !runDays.includes(d));
+  const gap = (a: number, b: number): number => Math.min(Math.abs(a - b), 7 - Math.abs(a - b));
+  let best: Weekday | null = null;
+  let bestScore = -1;
+  for (const day of free) {
+    const score = Math.min(7, ...runDays.map((r) => gap(day, r)));
+    if (score > bestScore) {
+      best = day;
+      bestScore = score;
+    }
+  }
+  return best;
 }
 
 export const plan: PlanFn = (state, goal, data) => {

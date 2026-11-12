@@ -522,6 +522,7 @@ export function runPass(
     }
     previousTarget = fullTarget;
     const recipes = layoutWeek(shell, span, ctx, slotCounter(doc.weeks, week.index));
+    let longAsDecided = false;
     const days = week.days.map((day): PlanDay => {
       let final = day;
       const inWindow =
@@ -529,7 +530,10 @@ export function runPass(
       if (inWindow && isMutable(day, header, state.today, done)) {
         const recipe = applyRepeat(recipes.get(day.date) ?? REST, day.id, adjustments);
         const mods = modsFor(day.date, causes, seen, recipeKey(recipe));
-        const workout = realize(applyReadiness(recipe, mods, ctx), ctx);
+        const ready = applyReadiness(recipe, mods, ctx);
+        /* Dugi izgrađen bez skraćivanja: lanac rasta uzima odlučenu (nezaokruženu) dužinu. */
+        if (ready.type === 'long' && ready.sec === shell.longSec) longAsDecided = true;
+        const workout = realize(ready, ctx);
         if (!sameWorkout(workout, day.workout)) {
           final = {
             id: day.id,
@@ -573,7 +577,7 @@ export function runPass(
     if (!underRamp(week.start, adjustments)) {
       const totals = weekTotals(built, header, state, ctx);
       loads.push(totals.load);
-      longs.push(totals.longSec);
+      longs.push(longAsDecided ? Math.max(shell.longSec, totals.longSec) : totals.longSec);
     }
     return built;
   });

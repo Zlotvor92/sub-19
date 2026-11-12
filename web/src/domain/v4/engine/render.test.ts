@@ -6,22 +6,21 @@ import { advance, build, facts, goalAt, grid, runsAsPlanned } from './testdata/h
 import { SYNTHETIC } from './testdata/synthetic';
 import type { PlanDoc } from './types';
 
-const FORMS: Readonly<Record<string, readonly [string, string, string]>> = {
-  nedelj: ['nedelja', 'nedelje', 'nedelja'],
-  dan: ['dan', 'dana', 'dana'],
-  trening: ['trening', 'treninga', 'treninga']
-};
+const FORMS = { nedelj: WEEKS, dan: DAYS, trening: WORKOUTS } as const;
 
-/** Svaki „<broj> <imenica>" u tekstu mora imati oblik koji daje pravilo množine. */
+/** Svaki „<broj> <imenica>" u tekstu mora imati oblik koji daje pravilo množine: nominativ, ili akuzativ
+    posle „za", „planiraj", „imaš" („za 1 nedelju", „planiraj 21 nedelju"). */
 function pluralErrors(text: string): string[] {
   const errors: string[] = [];
-  const re = /(?<![\d,.:])(\d+) (nedelj[a-z]+|dan[a-z]*|trening[a-z]*)(?![a-zčćšđž])/g;
+  const re =
+    /(?:(za|planiraj|imaš) )?(?<![\d,.:])(\d+) (nedelj[a-z]+|dan[a-z]*|trening[a-z]*)(?![a-zčćšđž])/g;
   for (const m of text.matchAll(re)) {
-    const n = Number(m[1]);
-    const word = m[2] ?? '';
+    const n = Number(m[2]);
+    const word = m[3] ?? '';
     const forms = Object.entries(FORMS).find(([stem]) => word.startsWith(stem))?.[1];
     if (forms === undefined) continue;
-    if (word !== pluralForm(n, forms)) errors.push(m[0]);
+    const want = pluralForm(n, forms, m[1] === undefined ? 'nom' : 'acc');
+    if (word !== want) errors.push(`${String(n)} ${word}`);
   }
   return errors;
 }
@@ -80,13 +79,20 @@ describe('množina i oblikovanje (K4)', () => {
     expect(fmtDate('2026-11-07')).toBe('7. 11.');
   });
 
-  it('provera množine hvata pogrešan oblik', () => {
-    expect(pluralErrors('za 21 nedelje i 5 trening, pa 1 dana')).toEqual([
+  it('provera množine hvata pogrešan oblik (nominativ i akuzativ)', () => {
+    expect(pluralErrors('traje 21 nedelje i 5 trening, pa 1 dana')).toEqual([
       '21 nedelje',
       '5 trening',
       '1 dana'
     ]);
-    expect(pluralErrors('za 21 nedelja, 2 nedelje, 5 treninga, 17. 11. dan')).toEqual([]);
+    expect(pluralErrors('traje 21 nedelja, 2 nedelje, 5 treninga, 17. 11. dan')).toEqual([]);
+    expect(pluralErrors('produži za 1 nedelja, planiraj 21 nedelja')).toEqual([
+      '1 nedelja',
+      '21 nedelja'
+    ]);
+    expect(
+      pluralErrors('produži za 1 nedelju, planiraj 21 nedelju, imaš 2 nedelje, za 5 nedelja')
+    ).toEqual([]);
   });
 });
 
