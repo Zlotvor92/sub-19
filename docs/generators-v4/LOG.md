@@ -160,3 +160,13 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Od F5 ništa nije stiglo na granu pre prekida (rad je u kontejneru taba) — tražio da gura često.
 - Pouka: 4 taba uporedo + organizator potroše petočasovni limit za ≈ 2 h. Od sada najviše 2 radna taba uporedo
   (plus trener kad ocenjuje), Fable samo gde odlučuje; kratki krugovi.
+
+### 14:50 — F5 adapteri isporučeni (`e001022`); KAPIJA F5 PROŠLA: moj pregled — 439 testova V4 + izolacija zeleno (6 s), typecheck čist [visoka]
+- 32 uzorka (12 starog formata u obe podvrste i 4 distance, 8 v2, lični plan; 11 izmišljenih stanja), 3467 dana,
+  158 trčanja: otisak pre = posle 32/32; nezavisno proročište (`resolvePlan` aplikacije, samo u testu) se slaže dan
+  po dan; posle preuzimanja `replan` → bez promena; lični plan zaštićen. [srednja za brojeve uzoraka — iz izveštaja]
+- Ne prenosi se verno (sačuvano u `legacy`/`carried`): koraci stare sesije su tumačenje (tekst doslovan), dan snage
+  bez koraka, polja plana/nedelje van `PlanDoc`, trajanje trčanja van plana je procena.
+- Zahtevi prema motoru dodati u treći krug: dan bez koraka nije „planirano"; `PlanHeader.legacy`; izveden umor
+  posle preuzimanja. Tabele oznaka za 5K/10K/maraton su privremene dok te distance ne dobiju biblioteke (F7).
+- F5 tab `session_01GnHHiYQ5e5u9uGHQ6jd7Kb`: ZAVRŠEN.
