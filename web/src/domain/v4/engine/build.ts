@@ -13,6 +13,7 @@ import {
   type BuildCtx,
   extraWeight,
   mainZone,
+  minDoseOf,
   pickDef,
   type Place,
   realize,
@@ -156,10 +157,11 @@ function easyFill(
 ): Map<IsoDate, Recipe> {
   const out = new Map<IsoDate, Recipe>();
   const minEasy = ctx.data.safety.minEasySec;
-  const addonLoad = (day: EasyDay): number =>
+  const addonCost = (day: EasyDay): { load: number; durationSec: number } =>
     day.addon !== null && day.addon.type === 'addon'
-      ? stepsCost(addonSteps(day.addon.def), ctx.pace).load
-      : 0;
+      ? stepsCost(addonSteps(day.addon.def), ctx.pace)
+      : { load: 0, durationSec: 0 };
+  const addonLoad = (day: EasyDay): number => addonCost(day).load;
   let days = [...pool].sort((a, b) => (a.date < b.date ? -1 : 1));
   const budget = (list: EasyDay[]): number =>
     (leftMin - list.reduce((sum, day) => sum + addonLoad(day), 0)) * 60;
@@ -174,9 +176,10 @@ function easyFill(
   }
   const per = days.length > 0 ? budget(days) / days.length : 0;
   for (const day of days) {
-    const sec = Math.min(per, day.cap);
-    if (sec < minEasy && sec < per) {
-      out.set(day.date, { type: 'easy', sec });
+    /* Plafon važi za ceo dan: lagani deo + dodatak. */
+    const sec = Math.min(per, day.cap - addonCost(day).durationSec);
+    if (sec < minEasy) {
+      out.set(day.date, { type: 'easy', sec: Math.min(per, day.cap) });
       continue;
     }
     out.set(
@@ -256,7 +259,7 @@ export function layoutWeek(
     ) {
       const extra = extraWeight(zone, ctx);
       dose = budget.take(wanted, extra);
-      if (dose < Math.max(s.minDoseSec, def.requires.minDoseSec ?? 0)) {
+      if (dose < minDoseOf(def, ctx)) {
         def = steadyLongDef(ctx, null);
         dose = 0;
       } else {
@@ -299,7 +302,7 @@ export function layoutWeek(
     if (zone === null) return;
     const extra = extraWeight(zone, ctx);
     const dose = budget.take(wanted, extra);
-    if (dose < Math.max(s.minDoseSec, def.requires.minDoseSec ?? 0)) return;
+    if (dose < minDoseOf(def, ctx)) return;
     budget.book(dose, extra);
     fixed.set(date, { type: 'quality', def, dose, slot });
   });

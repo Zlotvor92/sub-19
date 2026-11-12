@@ -123,10 +123,21 @@ function passes(
   if (r.needsKnownPaces === true && ctx.pace.paces.byFeel) return false;
   if (flags.noHighImpact && def.impact === 'visok') return false;
   if (dose !== null && isDosed(def.main)) {
-    if (r.minDoseSec !== undefined && dose < r.minDoseSec) return false;
+    if (dose < minDoseOf(def, ctx)) return false;
     if (r.maxDoseSec !== undefined && dose > r.maxDoseSec) return false;
   }
   return true;
+}
+
+/** Najmanja doza za koju unos ima smisla: plafon distance, zahtev unosa i najmanji oblik (deonice, lestvica). */
+export function minDoseOf(def: WorkoutDef, ctx: BuildCtx): Seconds {
+  const { main } = def;
+  let shape = 0;
+  if (main.kind === 'reps') shape = (main.minReps - 0.5) * extentSec(main.rep, main.zone, ctx);
+  if (main.kind === 'ladder' && main.reps[0] !== undefined) {
+    shape = extentSec(main.reps[0], main.zone, ctx) - LADDER_TOLERANCE_SEC;
+  }
+  return Math.max(ctx.data.safety.minDoseSec, def.requires.minDoseSec ?? 0, shape);
 }
 
 function fitsPlace(def: WorkoutDef, place: Place): boolean {
@@ -266,7 +277,7 @@ function ladderMain(
 }
 
 /** Glavni deo treninga iz doze (§ 4.3); vraća i vrednosti za tekst. */
-function mainSteps(main: MainSet, dose: Seconds, ctx: BuildCtx): Main {
+function mainSteps(main: MainSet, dose: Seconds, cap: Seconds, ctx: BuildCtx): Main {
   switch (main.kind) {
     case 'continuous': {
       const extent = workExtent(dose, main.zone, unitOf(main.by, ctx), ctx);
@@ -286,7 +297,8 @@ function mainSteps(main: MainSet, dose: Seconds, ctx: BuildCtx): Main {
     case 'reps': {
       const repSec = extentSec(main.rep, main.zone, ctx);
       const wanted = repSec > 0 ? Math.round(dose / repSec) : main.minReps;
-      const n = Math.max(1, Math.min(main.maxReps, Math.max(main.minReps, wanted)));
+      const fits = repSec > 0 ? Math.floor((cap + LADDER_TOLERANCE_SEC) / repSec) : main.maxReps;
+      const n = Math.max(1, main.minReps, Math.min(main.maxReps, wanted, fits));
       return {
         steps: repeated(n, zoneStep('work', main.zone, main.rep), recoveryStep(main.recovery)),
         values: { n: String(n), rep: fmtExtent(main.rep), rec: fmtRecovery(main.recovery) }
@@ -306,13 +318,16 @@ function mainSteps(main: MainSet, dose: Seconds, ctx: BuildCtx): Main {
   }
 }
 
-/** Lagani deo zadat trajanjem `sec`: dužina na 0,5 km ili trajanje na 5 min (§ 5.5). */
-function easyExtent(sec: Seconds, ctx: BuildCtx): Extent {
+/** Lagani deo zadat trajanjem `sec`: dužina na 0,5 km ili trajanje na 5 min (§ 5.5).
+    `down`: zaokruživanje naniže (dugi — da zaokruživanje ne pređe plafon ni korak rasta). */
+function easyExtent(sec: Seconds, ctx: BuildCtx, down = false): Extent {
+  const snap = (value: number, step: number): number =>
+    down ? Math.floor(value / step + 1e-6) * step : roundTo(value, step);
   if (byDistance(ctx)) {
     const meters = (sec / ctx.pace.paces.easy) * 1000;
-    return { distanceM: Math.max(EASY_DISTANCE_STEP_M, roundTo(meters, EASY_DISTANCE_STEP_M)) };
+    return { distanceM: Math.max(EASY_DISTANCE_STEP_M, snap(meters, EASY_DISTANCE_STEP_M)) };
   }
-  return { durationSec: Math.max(EASY_DURATION_STEP_SEC, roundTo(sec, EASY_DURATION_STEP_SEC)) };
+  return { durationSec: Math.max(EASY_DURATION_STEP_SEC, snap(sec, EASY_DURATION_STEP_SEC)) };
 }
 
 const fmtLen = (extent: Extent): string =>
@@ -408,7 +423,7 @@ function addonWorkout(sec: Seconds, def: WorkoutDef, ctx: BuildCtx): Workout {
 function longWorkout(recipe: Extract<Recipe, { type: 'long' }>, ctx: BuildCtx): Workout {
   const { def } = recipe;
   const main = def?.main;
-  const total = easyExtent(recipe.sec, ctx);
+  const total = easyExtent(recipe.sec, ctx, true);
   if (
     def === null ||
     main === undefined ||
@@ -444,7 +459,7 @@ function longWorkout(recipe: Extract<Recipe, { type: 'long' }>, ctx: BuildCtx): 
   } else {
     const most = recipe.sec * LONG_BLOCK_MAX_SHARE;
     block = workExtent(Math.min(recipe.dose, most), main.zone, unit, ctx);
-    steady = easyExtent(Math.max(0, recipe.sec - extentSec(block, main.zone, ctx)), ctx);
+    steady = easyExtent(Math.max(0, recipe.sec - extentSec(block, main.zone, ctx)), ctx, true);
   }
   const steps: Step[] = [zoneStep('steady', 'E', steady), zoneStep('work', main.zone, block)];
   const workout: Workout = {
@@ -472,7 +487,8 @@ function longWorkout(recipe: Extract<Recipe, { type: 'long' }>, ctx: BuildCtx): 
 }
 
 function qualityWorkout(def: WorkoutDef, dose: Seconds, ctx: BuildCtx): Workout {
-  const main = mainSteps(def.main, dose, ctx);
+  const cap = ctx.decisions.doseCapSec[def.stimulus] ?? Number.POSITIVE_INFINITY;
+  const main = mainSteps(def.main, dose, cap, ctx);
   const steps: Step[] = [
     zoneStep('warmup', 'E', { durationSec: ctx.decisions.warmupSec }),
     ...main.steps,

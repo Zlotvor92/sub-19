@@ -10,6 +10,7 @@ import {
   RP_WEIGHT_STEP,
   WALK_PACE_SEC_PER_KM,
   WALK_WEIGHT,
+  ZONE_SHARE,
   ZONE_WEIGHT
 } from './constants';
 import type {
@@ -26,7 +27,7 @@ import type {
   Workout,
   ZoneId
 } from './types';
-import { racePace, weightAtPace } from './vdot';
+import { paceAtShare, racePace, weightAtPace } from './vdot';
 
 /** Sve što treba da se korak pretvori u vreme, dužinu i opterećenje: tempa i forma po kojoj su računata. */
 export interface PaceCtx {
@@ -43,10 +44,11 @@ export function zonePace(zone: ZoneId, paces: Paces): SecPerKm {
   return zone === 'E' ? paces.easy : paces[zone];
 }
 
-/** Težina zone (§ 5.1). RP nema stalnu: iz odnosa prema pragu, na 0,05. */
-export function zoneWeight(zone: ZoneId, paces: Paces): number {
+/** Težina zone (§ 5.1). RP nema stalnu: iz odnosa tempa trke i (nezaokruženog) praga forme, na 0,05. */
+export function zoneWeight(zone: ZoneId, ctx: PaceCtx): number {
   if (zone !== 'RP') return ZONE_WEIGHT[zone];
-  return Math.round(weightAtPace(paces.RP, paces.T) / RP_WEIGHT_STEP) * RP_WEIGHT_STEP;
+  const threshold = paceAtShare(ctx.vdot, ZONE_SHARE.T);
+  return Math.round(weightAtPace(ctx.paces.RP, threshold) / RP_WEIGHT_STEP) * RP_WEIGHT_STEP;
 }
 
 function rpeWeight(rpe: number): number {
@@ -67,7 +69,7 @@ function pacingOf(step: SingleStep, ctx: PaceCtx): Pacing {
       if (step.role === 'recovery' && target.zone === 'E') {
         return { pace: ctx.paces.easySlow, weight: JOG_WEIGHT };
       }
-      return { pace: zonePace(target.zone, ctx.paces), weight: zoneWeight(target.zone, ctx.paces) };
+      return { pace: zonePace(target.zone, ctx.paces), weight: zoneWeight(target.zone, ctx) };
     case 'effort':
       if (step.role === 'recovery' && target.rpe <= RPE_STAND) {
         return { pace: Number.POSITIVE_INFINITY, weight: WALK_WEIGHT };

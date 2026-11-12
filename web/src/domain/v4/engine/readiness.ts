@@ -24,7 +24,7 @@ import {
 } from './constants';
 import { addDays, diffDays } from './dates';
 import { summarize } from './load';
-import { type BuildCtx, pickDef, realize, type Recipe, steadyLongDef } from './select';
+import { type BuildCtx, minDoseOf, pickDef, realize, type Recipe, steadyLongDef } from './select';
 import type { Adjustment, IsoDate, Seconds } from './types';
 
 /** Rampa povratka: `zero` je dan napora ili poslednji dan pauze; traje `days`; `noFast` dana bez ičeg brzog. */
@@ -211,7 +211,6 @@ export function recipeKey(recipe: Recipe): string | null {
 export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recipe {
   if (recipe.type === 'rest') return recipe;
   if (mods.rest) return { type: 'rest' };
-  const minDose = ctx.data.safety.minDoseSec;
   switch (recipe.type) {
     case 'easy':
       return { type: 'easy', sec: scaled(recipe.sec, mods.f) };
@@ -225,7 +224,7 @@ export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recip
       if (recipe.def === null || recipe.dose <= 0) return { ...recipe, sec };
       const dose = recipe.dose * mods.doseFactor;
       const blocked = !mods.quality || (!mods.highImpact && recipe.def.impact === 'visok');
-      if (blocked || dose < Math.max(minDose, recipe.def.requires.minDoseSec ?? 0)) {
+      if (blocked || dose < minDoseOf(recipe.def, ctx)) {
         return { type: 'long', sec, def: steadyLongDef(ctx, null), dose: 0, slot: recipe.slot };
       }
       return { ...recipe, sec, dose };
@@ -239,7 +238,7 @@ export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recip
         if (other === null || other.kind !== 'quality') return asEasy(recipe, mods, ctx);
         def = other;
       }
-      if (dose < (def.requires.minDoseSec ?? 0)) return asEasy(recipe, mods, ctx);
+      if (dose < minDoseOf(def, ctx)) return asEasy(recipe, mods, ctx);
       return { ...recipe, def, dose };
     }
     case 'test':

@@ -40,7 +40,7 @@ export const SYNTHETIC: DistanceData = {
       maxRunDays: 7,
       startPct: 0.8,
       tail: [
-        week('zavrsna', 'taper', 0.75, 0.6, [{ stimulus: 'prag', dosePct: 0.5 }]),
+        week('zavrsna', 'taper', 0.75, 0.6, [{ stimulus: 'prag', dosePct: 0.4 }]),
         week('zavrsna', 'race', 0.45, null, [STRIDES])
       ],
       body: [
@@ -243,7 +243,7 @@ export const SYNTHETIC: DistanceData = {
     maxWeeklyRampPct: 0.1,
     minRampLoad: 10,
     peakLoadCap: { pocetni: 240, osnovni: null },
-    longMaxSec: { pocetni: 4800, osnovni: 6000 },
+    longMaxSec: { pocetni: 4800, osnovni: 7800 },
     longShareByRunDays: { '1': 1, '2': 0.6, '3': 0.45, '4': 0.38, '5': 0.34, '6': 0.3, '7': 0.28 },
     longStepSec: 600,
     longStartShare: 0.3,
@@ -263,8 +263,8 @@ export const SYNTHETIC: DistanceData = {
     maxFastShare: 0.2,
     maxFastSharePeak: 0.24,
     minEasySec: 1200,
-    easyMaxShareOfLong: 0.75,
-    dayBeforeLongMaxShare: 0.6,
+    easyMaxShareOfLong: 0.9,
+    dayBeforeLongMaxShare: 0.7,
     warmupCooldown: [
       { uptoBaseLoad: 120, warmupSec: 600, cooldownSec: 300 },
       { uptoBaseLoad: null, warmupSec: 900, cooldownSec: 600 }
