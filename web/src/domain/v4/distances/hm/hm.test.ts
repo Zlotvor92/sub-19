@@ -198,13 +198,6 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
     return '3 dana: lagan dan ≤ 75 % dugog ne nosi cilj nedelje';
   if ((volume || fastByVolume) && perDay > 65 && f.check !== 'prazan')
     return 'obim po danu iznad onoga što dugi ≤ 2 h 15 i lagan ≤ 75 % dugog nose';
-  if (
-    f.check === 'ispod-cilja' &&
-    f.weekIndex === 1 &&
-    days <= 4 &&
-    b.facts.profile.longestRecentKm === undefined
-  )
-    return 'nedelja 1: polazni dugi = 30 % nedelje (bez podatka o najdužem trku) — zahtev motoru';
   const peakAt = b.doc.weeks.findIndex((w) => w.intent.kind === 'peak');
   const light =
     ['taper', 'race', 'recovery'].includes(st?.week.intent.kind ?? '') ||
@@ -212,11 +205,7 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
   if (volume && light && perDay < 45)
     return 'lakša nedelja malog obima (rasterećenje, posle vrha, sužavanje): lagan dan ostaje na 25 min';
   if (f.check === 'ispod-cilja' && st?.hasTest === true)
-    return 'rampa posle provere forme (čuvar je ne vidi — zahtev motoru)';
-  const before =
-    f.weekIndex === null ? [] : stats.slice(Math.max(0, f.weekIndex - 3), f.weekIndex - 1);
-  if (f.check === 'ispod-cilja' && before.some((x) => x.hasTest))
-    return 'prvi kvalitet i blok posle provere forme × 0,8 (motor, § 6.5) — zahtev motoru';
+    return 'nedelja sa proverom forme: 3 dana bez brzog posle testa (§ 14.1) — lagan dan ne nosi cilj';
   if (fastByVolume && st !== undefined) {
     const usable = st.week.days.filter((x) =>
       d.runDays.includes(Number(x.id.split('d').pop()) as Weekday)

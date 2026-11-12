@@ -224,11 +224,11 @@ function regularTail(band: DayBand, withCheck: boolean): WeekIntent[] {
   const check = withCheck
     ? [
         week(SPEC, 'recovery', 0.8, { len: 0.7 }, [STRIDES, KONTROLA]),
-        week(SPEC, 'build', 0.95, { len: 0.9, stimulus: 'dugi-rp', dose: blk(0.5) }, [
+        week(SPEC, 'build', 0.95, { len: 0.95, stimulus: 'dugi-rp', dose: blk(0.5) }, [
           S('tempo-trke', rp(0.45)),
           STRIDES
         ]),
-        week(SPEC, 'build', 0.95, { len: 0.92 }, [S('tempo-trke', 0.65), q2(band, S('prag', 0.6))])
+        week(SPEC, 'build', 0.95, { len: 0.96 }, [S('tempo-trke', 0.65), q2(band, S('prag', 0.6))])
       ]
     : [];
   return [
@@ -256,11 +256,11 @@ function beginnerTail(band: DayBand, withCheck: boolean): WeekIntent[] {
   const check = withCheck
     ? [
         week(SPEC, 'recovery', 0.8, { len: 0.7 }, [STRIDES, KONTROLA]),
-        week(SPEC, 'build', 0.94, { len: 0.88, stimulus: 'dugi-rp', dose: blk(0.45) }, [
+        week(SPEC, 'build', 0.94, { len: 0.95, stimulus: 'dugi-rp', dose: blk(0.45) }, [
           S('tempo-trke', rp(0.45)),
           STRIDES
         ]),
-        week(SPEC, 'build', 0.95, { len: 0.9 }, [S('tempo-trke', 0.6), STRIDES])
+        week(SPEC, 'build', 0.95, { len: 0.96 }, [S('tempo-trke', 0.6), STRIDES])
       ]
     : [];
   return [
