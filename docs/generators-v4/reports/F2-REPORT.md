@@ -133,7 +133,7 @@ i referenca plafona); plafon „dugi ≤ 75 % reference" važi samo dok je `f < 
 lanac. Primer 02: dugi 6,5 → 10,5 → 12 km (bilo 6,5 / 6,5 / 10,5). Pauza i bol: referenca kao do sada.
 
 
-## Krug 2 (R1–R11), 12. 11. 2026 — po `briefs/R2-ROUND2.md`; testovi `engine/round5.test.ts` (35) + izmenjeni stari
+## Krug 2 (R1–R11), 12. 11. 2026 — po `briefs/R2-ROUND2.md`; testovi `engine/round5.test.ts` (34) + izmenjeni stari
 Motor: 179 testova (12 fajlova, ≈ 6 s); motor + adapteri + forma + izolacija domena: 480, zeleno. `typecheck`, ESLint,
 Prettier čisti. Javni potpisi isti (`index.ts` dobija još `raceNotes`); nova polja su opciona. `distances/hm` pada
 (14 od 30: otisci i brojevi) — to je posao taba podataka. SYN ispisi regenerisani.
