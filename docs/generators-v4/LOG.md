@@ -75,3 +75,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - `coach/target/5K/` i `coach/target/MAR/` (po 4 plana + README sa brojevima za šablone) preuzeto na `claude/v4`.
   Ciljni planovi sada postoje za sve četiri distance (HM od ranije u `docs/generators-v2/perfection/target/HM`).
 - Trener čeka ispise HM V4. Napomena: planovi su prerađeni planovi „Cilj 80" od 11. 11, obim po danima je procena.
+
+### 10:05 — KAPIJA F1 PROŠLA (SPEC `54b0e17`, 570 redova; pročitao ceo) [visoka da pokriva zahteve; brojevi niska–srednja]
+- Pokriva: PlanDoc isti oblik za generisan/ručni/preuzet; planiranje iz stanja; jedna mera (min × težina 1/1,5/2/3),
+  baza/umor 42/7; povratak kao jedna rampa iz činjenica (posle HM 1:41 → 15 dana, prvi kvalitet 11. dan); stabilnost
+  po konstrukciji; forma iz trčanja sa histerezom tempa; čuvar samo prijavljuje; adapteri sa otiskom; distanca kao
+  podatak; 4 prošetana primera sa brojevima.
+- Dopune organizatora (SPEC § 14): (1) ništa brzo u prva 3 dana posle trke/testa bez obzira na trajanje (SPEC je za
+  5 km i test 3 km dozvoljavao kvalitet 2–3. dana — sudar sa K2); (2) ispis za čoveka `renderPlan` u motoru, sa
+  množinom i datumima, nad njim mašinske provere K1–K5; (3) plafon napretka je previše oprezan (1:41:00 → 1:40:00
+  za 10 nedelja) — F4 kalibriše naviše; (4) `vdot.ts`/`constants.ts` prvi commit motora da F4 ne čeka.
+- Rizik koji pratim: merenje u bodovima daje manje km nego što trkač navodi (nedelja 1: 28,4 od 30 km) — rešava se
+  podacima šablona u F3, proveravam na ispisu.
+- Sledeće: F2 motor (Fable), brief `briefs/F2-ENGINE.md`. F4 forma kreće čim motor gurne `vdot.ts`; F3 kad `plan` +
+  `renderPlan` rade nad sintetičkom distancom; F5 posle F2.

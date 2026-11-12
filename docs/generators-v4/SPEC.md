@@ -568,3 +568,30 @@ staze; snaga i mobilnost kao planiran sadržaj (prenose se samo kao `extras`); d
 (pripremna trka je unos biblioteke, ne drugi cilj); plafon trajanja po danu (`maxMinutesByDay`); automatsko
 prepoznavanje trke bez oznake `effort`; pomeranje treninga unutar nedelje kao odgovor motora (motor skraćuje i
 menja vrstu, ne premešta dane); godine trkača.
+
+## 14. Dopune organizatora na kapiji F1 (12. 11. 2026) — imaju prednost nad tekstom iznad
+
+14.1. **Ništa brzo u prva 3 dana posle trke ili testa** (provera K2 rubrike; `coach/RUBRIC-V4.md`). U § 6.5, uz uslov
+`f ≥ 0,8`, važi i `n ≥ 4` (dana od napora): pre toga nema kvaliteta, bloka u dugom ni dodatka `add-on` (ubrzanja,
+usponi), bez obzira na trajanje napora (test 3 km i trka 5 km inače daju `R` 2–4 dana i kvalitet već 2–3. dana).
+Isto važi za dan posle koga sledi test/pripremna trka iz plana: prvi kvalitet najranije 4. dana posle nje.
+
+14.2. **Ispis za čoveka je deo motora** (`engine/render.ts`): `renderPlan(doc, state?, data) → string` daje ceo plan
+kao tekst sa tempima iz `header.paces` (zona + tempo, ili opis napora kad je `byFeel`), km i trajanjem po danu,
+zbirom nedelje (km, BO, udeo brzog rada), zaglavljem (cilj, polazna forma, današnja prognoza, očekivano vreme i
+raspon na dan trke, upozorenja u tri rečenice) i, posle `replan`, spiskom promena sa objašnjenjem. Datumi u tekstu su
+`17. 11.` (ne ISO); brojevi sa imenicom idu kroz jednu funkciju množine (`1 nedelja / 2 nedelje / 5 nedelja`);
+decimalni zarez; bez internih izraza (BO, `stimulus`, ID-jevi) u tekstu koji vidi trkač — BO samo u zbirnom redu za
+sudiju, pod zastavicom. Ovaj ispis čitaju sudije i vlasnik; provere K1–K5 rubrike se nad njim testiraju mašinski.
+
+14.3. **Plafon napretka (§ 7.5) je previše oprezan kao polazna vrednost.** Vlasnik je za 18 nedelja očekivao više od
+2 VDOT; primer (a) daje očekivanih 1:41:00 → 1:40:00 za 10 nedelja uz rast obima 30 %. Oblik formule ostaje; F4
+kalibriše `r`, `G_max` i udeo `0,6` naviše na istoriji vlasnika i poznatim rasponima napretka rekreativaca, i
+izveštava brojeve sa pouzdanošću. Motor te brojeve ne sadrži (žive u `fitness/`), pa F2 ne čeka.
+
+14.4. **Vlasništvo fajlova.** `engine/vdot.ts` (VDOT iz rezultata, vreme za VDOT, tempo zone; § 5.4) i
+`engine/constants.ts` piše tab motora i gura ih PRVE, kao zaseban commit — `fitness/` i `distances/` ih uvoze.
+`fitness/` ne uvozi ništa drugo iz motora osim tipova i ta dva fajla.
+
+14.5. **Otvoreno pitanje iz § 13 (blok u dugom posle bolesti)**: ostaje × 0,8 dok trener ne presudi; izmena je jedan
+broj u `constants.ts`.
