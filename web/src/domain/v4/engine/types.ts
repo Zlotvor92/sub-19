@@ -352,6 +352,8 @@ export interface Run {
   };
   /** Temperatura vazduha tokom trčanja (°C). */
   tempC?: number;
+  /** U trci ili testu je bilo hodanja: rezultat je slabiji dokaz forme (krug 2, R14). */
+  walked?: boolean;
 }
 
 /** Ono što trkač izjavi kad nema istorije; sve opciono. */
@@ -416,7 +418,8 @@ export interface PainFlag {
 
 export interface FormChange {
   date: IsoDate;
-  signal: 'trka' | 'test' | 'kvalitet' | 'trend-pulsa' | 'pauza' | 'izjava';
+  /** `plan`: odrađen plan kao dokaz; `baza`: pad baze bez prekida (krug 2, R12–R13). */
+  signal: 'trka' | 'test' | 'kvalitet' | 'trend-pulsa' | 'pauza' | 'izjava' | 'plan' | 'baza';
   before: Vdot;
   after: Vdot;
   /** Rečenica za trkača („zašto se promenilo"). */
@@ -758,10 +761,18 @@ export type BuildStateFn = (
   /** Postojeći plan: iz njega se popunjava `Run.planned` i izvode pauze (§ 2.3). */
   doc?: PlanDoc
 ) => RunnerState;
+/** Šta plan nosi za procenu forme (§ 7.1): baza i vrh, i — za postojeći plan — ciljevi nedelja, da sužavanje pred
+    trku ne izgleda kao manjak odrađenog (krug 2). */
+export interface FormPlanned {
+  baseLoad: LoadPoints;
+  peakLoad: LoadPoints;
+  /** `PlanWeek.start` i `targetLoad` (bez dana trke). */
+  weeks?: readonly { start: IsoDate; targetLoad: LoadPoints }[];
+}
 export type EstimateFormFn = (
   facts: RunnerFacts,
   goal: { distanceM: Meters; raceDate: IsoDate },
-  planned: { baseLoad: LoadPoints; peakLoad: LoadPoints } | null
+  planned: FormPlanned | null
 ) => FormEstimate;
 
 /** Adapter starog formata (§ 9): jedino mesto koje zna stari oblik; `TLegacy` je njegov ulaz. */

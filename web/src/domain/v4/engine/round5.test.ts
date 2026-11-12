@@ -5,6 +5,7 @@ import { decidePeak } from './decide';
 import { weekCost } from './guard';
 import {
   buildState,
+  declaredForm,
   deriveEvents,
   guard,
   paceCtxOf,
@@ -18,6 +19,7 @@ import { build, facts, goalAt, grid, HALF_M, runsAsPlanned } from './testdata/he
 import { SYNTHETIC } from './testdata/synthetic';
 import type {
   DistanceData,
+  EstimateFormFn,
   Goal,
   PlanDay,
   PlanDoc,
@@ -957,5 +959,29 @@ describe('R11: upozorenja', () => {
     const ctx = paceCtxOf(doc.header);
     const peakKm = Math.max(...doc.weeks.map((x) => weekCost(x, EX_GOAL.raceDate, ctx).km));
     expect(w?.suggest?.peakWeeklyKm ?? 0).toBeGreaterThan(peakKm);
+  });
+});
+
+describe('ugovor motor → forma (dodatak kruga 2)', () => {
+  it('za postojeći plan procena forme dobija bazu i vrh IZ PLANA i ciljeve nedelja', () => {
+    const { doc } = make(facts(), EXAMPLE, EX_GOAL);
+    const seen: (Parameters<EstimateFormFn>[2] | undefined)[] = [];
+    const spy: EstimateFormFn = (f, goal, planned) => {
+      seen.push(planned);
+      return declaredForm(f, goal, planned);
+    };
+    const f = { ...facts(), today: '2026-12-13', runs: runsAsPlanned(doc, '2026-12-13') };
+    buildState(f, EX_GOAL, EXAMPLE, spy, doc);
+    const last = seen.at(-1);
+    expect(last?.baseLoad).toBe(doc.header.decisions.baseLoad);
+    expect(last?.peakLoad).toBe(doc.header.decisions.peakLoad);
+    expect(last?.weeks).toEqual(
+      doc.weeks.map((w) => ({ start: w.start, targetLoad: w.targetLoad }))
+    );
+    /* Bez plana (nov plan): baza i vrh iz današnjeg stanja, bez nedelja. */
+    seen.length = 0;
+    buildState(facts(), EX_GOAL, EXAMPLE, spy);
+    expect(seen.at(-1)?.weeks).toBeUndefined();
+    expect(seen.at(-1)?.peakLoad).toBeGreaterThan(0);
   });
 });

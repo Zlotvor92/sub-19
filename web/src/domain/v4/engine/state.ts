@@ -20,6 +20,7 @@ import type {
   BuildStateFn,
   DistanceData,
   FormEstimate,
+  FormPlanned,
   Goal,
   HardEffort,
   LoadPoints,
@@ -292,14 +293,15 @@ export const buildState: BuildStateFn = (facts, goal, data, estimate = declaredF
   const loadOf = (run: Run): LoadPoints => runLoad(run, thresholdPace);
   const declared = declaredWeekLoad(facts, easyPace, data, availability.runDays.length);
   const load = loadState(facts, dailyLoads(runs, thresholdPace), declared);
-  const planned = plannedLoads(
-    facts,
-    goal,
-    data,
-    first,
-    7 * load.chronic,
-    availability.runDays.length
-  );
+  /* Postojeći plan: baza i vrh iz odluka plana (ne preračunato iz današnje baze) + ciljevi nedelja. */
+  const planned: FormPlanned | null =
+    doc === undefined
+      ? plannedLoads(facts, goal, data, first, 7 * load.chronic, availability.runDays.length)
+      : {
+          baseLoad: doc.header.decisions.baseLoad,
+          peakLoad: doc.header.decisions.peakLoad,
+          weeks: doc.weeks.map((w) => ({ start: w.start, targetLoad: w.targetLoad }))
+        };
   const state: RunnerState = {
     today: facts.today,
     availability,

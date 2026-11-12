@@ -246,3 +246,13 @@ p09 42 % i p11 41 %; nedelja 1 pada na 89–92 % kod p04 i p08. Zato:
 9. Kapija nad planovima vlasnika: vlasnik-v2 počinje dan posle trke — nedelje rampe (do 28. 12.) imaju 3 treninga,
    dugi 50 % nedelje i skok posle rampe; test kapije treba da izuzme nedelje koje seku rampu (`header.adjustments`).
 10. Scenario s06 (bolest u 14. nedelji p04) daje nalaz čuvara `taper@19` — proveriti da li ga test scenarija dozvoljava.
+### Dodatak: ugovor motor → forma (zahtev taba forme, prihvatio organizator)
+(a) `buildState` za POSTOJEĆI plan (peti argument `doc`) predaje proceni `planned` iz dokumenta: `baseLoad` i
+`peakLoad` iz `doc.header.decisions` (ne preračunato iz današnje baze) i `weeks: [{ start, targetLoad }]` iz
+`doc.weeks`; bez plana ostaje staro (baza iz stanja, vrh koji bi plan odlučio, bez nedelja). Tip je `FormPlanned` u
+`engine/types.ts`; `fitness/types.ts` ga samo preimenuje (`FitnessPlanned = FormPlanned`) — jedina izmena u `fitness/`.
+(b) `FormChange.signal` dobija `'plan'` i `'baza'` (tip; `fitness/` ih još ne upisuje — to je izmena taba forme).
+(c) `Run.walked?: boolean` (tip; `fitness/` hodanje i dalje izvodi iz km-podataka). (d) NIJE urađeno: predaja dnevnih
+opterećenja proceni traži novo polje u `RunnerFacts` i izmenu redosleda u `buildState` (opterećenje zavisi od praga
+forme, a forma se računa pre njega) — `fitness/load.ts` zato i dalje drži kopiju formule. Test: `round5.test.ts`
+(„ugovor motor → forma"); motor 180, ukupno sa adapterima, formom i izolacijom 481.

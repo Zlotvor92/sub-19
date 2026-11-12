@@ -1,19 +1,14 @@
 /* V4 — FORMA IZ TRČANJA: lokalni tipovi (SPEC § 7). `Run.planned` i `Run.tempC` su od kruga 2 u tipovima motora;
    ovde ostaje samo ono što motor još ne nosi (F4-REPORT, „šta treba preneti"). */
-import type { IsoDate, LoadPoints, Run, RunnerFacts, Vdot } from '../engine/types';
+import type { FormPlanned, IsoDate, Run, RunnerFacts, Vdot } from '../engine/types';
 
 /** Šta je dan plana zadao (§ 7.3). */
 export type PlannedWork = NonNullable<Run['planned']>;
 
 export type FitnessRun = Run;
 
-/** Treći argument `estimateForm` (§ 7.1) + opciono nedeljni ciljevi plana (R12, krug 2; predlog za motor). */
-export interface FitnessPlanned {
-  baseLoad: LoadPoints;
-  peakLoad: LoadPoints;
-  /** `PlanWeek.start` i `targetLoad` (bez dana trke); bez njih je „planirano" 7 × baza od pre 7 dana. */
-  weeks?: readonly { start: IsoDate; targetLoad: LoadPoints }[];
-}
+/** Treći argument `estimateForm` (§ 7.1): od kruga 2 tip živi u motoru (`FormPlanned`). */
+export type FitnessPlanned = FormPlanned;
 
 export type FitnessFacts = Omit<RunnerFacts, 'runs'> & { runs: readonly FitnessRun[] };
 
