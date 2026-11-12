@@ -210,3 +210,15 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   „V4 ≥ v3 po vrhu i dugom", vrh +50 % za 16+ nedelja, udeo dugog 40–42 %). Merio sam vrh km i najduži dugi, a ne
   raspodelu po danima i rast; trener kaže vrh ≤ × 1,40 i lagan dan ≤ 65 % dugog. Ispravljam u krugu 2.
 - Čekam drugog sudiju pre naloga za krug 2 (da se ne popravlja po jednom mišljenju).
+
+### 15:35 — DRUGI SUDIJA, HM V4 krug 1 (`judge2/ROUND-V4-HM-01.md`, `a06727a`) [srednja]
+- Prosek 12 planova 60,9 (vlasnik v1 64, v2 53); nijedan ≥ 70. Scenariji 68,5. Razlika prema treneru −7,5, ali
+  ISTE sistemske greške i isti redosled: nedelja trke, lagani dani kao pufer + prevelik vrh, udeo dugog i
+  izbačeni traženi dani, tempo trke ≠ cilj, prognoza pada uz odrađen plan, propušteno/bol/test posle bolesti,
+  netačni brojevi u upozorenjima. Dva sudije se slažu → popravljam sve.
+- Vredi više od ocene: spisak „šta mi je kao trkaču bilo čudno" (tempo na uzbrdici, duplo „nedelja trke", utorak
+  nestao 7 nedelja, plan se završava trkom) — ušlo u R10.
+- ODLUKA: krug 2 po `briefs/R2-ROUND2.md` (R1–R20 + mašinska kapija koju sam proveravam pre sudija). Povlačim svoj
+  zahtev „V4 ≥ v3 po vrhu i dugom". Motor se odmrzava za R1–R11. Novi tabovi sa svežim kontekstom (stari F2/F3 imaju
+  510–560 hilj. tokena konteksta — skupo po koraku): M (motor, Fable), F (forma, postojeći F4 tab, Opus), zatim D
+  (podaci HM, Opus) kad M završi.
