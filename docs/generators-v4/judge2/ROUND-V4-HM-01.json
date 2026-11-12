@@ -1,0 +1,54 @@
+{
+  "round": "V4-HM-01",
+  "judge": "judge2",
+  "date": "2026-11-12",
+  "distance": "HM",
+  "weights": [20, 20, 20, 10, 10, 10, 10],
+  "disclosure": "Pri izlistavanju zaglavlja scenarija video sam redove FORMA dela POSLE pre nego što sam zapisao svoj odgovor; spisak promena i nedelje POSLE nisam. Ništa zabranjeno nije čitano.",
+  "plans": [
+    {"id": "p01", "q": [6, 5, 7, 7, 6, 5, 7], "total": 61, "give": "da uz izmenu"},
+    {"id": "p02", "q": [6, 6, 7, 7, 6, 6, 7], "total": 64, "give": "da uz izmenu"},
+    {"id": "p03", "q": [6, 5, 6, 7, 3, 5, 6], "total": 55, "give": "ne"},
+    {"id": "p04", "q": [6, 5, 7, 7, 7, 6, 7], "total": 63, "give": "da uz izmenu"},
+    {"id": "p05", "q": [5, 7, 6, 6, 7, 6, 7], "total": 62, "give": "da uz izmenu"},
+    {"id": "p06", "q": [4, 8, 5, 5, 7, 5, 6], "total": 57, "give": "ne"},
+    {"id": "p07", "q": [7, 7, 7, 7, 7, 6, 7], "total": 69, "give": "da uz izmenu"},
+    {"id": "p08", "q": [6, 6, 6, 5, 5, 5, 6], "total": 57, "give": "da uz izmenu"},
+    {"id": "p09", "q": [5, 4, 7, 7, 6, 7, 6], "total": 58, "give": "ne"},
+    {"id": "p10", "q": [6, 5, 6, 6, 3, 6, 6], "total": 55, "give": "ne"},
+    {"id": "p11", "q": [6, 5, 7, 7, 6, 6, 7], "total": 62, "give": "da uz izmenu"},
+    {"id": "p12", "q": [7, 6, 7, 7, 7, 7, 7], "total": 68, "give": "da uz izmenu"}
+  ],
+  "owner": [
+    {"id": "vlasnik-v1", "q": [6, 8, 5, 6, 7, 6, 7], "total": 64, "give": "da uz izmenu"},
+    {"id": "vlasnik-v2", "q": [4, 6, 5, 4, 7, 6, 6], "total": 53, "give": "ne"}
+  ],
+  "owner_pair_difference_0_10": 5,
+  "scenarios": [
+    {"id": "s01", "abcde": [9, 9, 9, 6, 8], "total": 82},
+    {"id": "s05", "abcde": [7, 7, 7, 6, 8], "total": 70},
+    {"id": "s07", "abcde": [7, 6, 6, 6, 8], "total": 66},
+    {"id": "s09", "abcde": [10, 4, 5, 6, 2], "total": 54},
+    {"id": "s13", "abcde": [4, 7, 6, 7, 6], "total": 60},
+    {"id": "s17", "abcde": [8, 8, 8, 8, 7], "total": 78},
+    {"id": "s19", "abcde": [5, 6, 7, 5, 7], "total": 60},
+    {"id": "s21", "abcde": [10, 10, 5, 9, 5], "total": 78}
+  ],
+  "summary": {
+    "plans_mean": 60.9,
+    "plans_and_owner_mean": 60.6,
+    "plans_at_or_above_80": 0,
+    "plans_at_or_above_70": 0,
+    "scenarios_mean": 68.5
+  },
+  "top_generator_changes": [
+    "Nedelja trke: utorak veći nego u prethodnoj nedelji (P03 i P10: 95 min pet dana pre trke; P08: 14 km)",
+    "Lagani dani kao pufer opterećenja: skok 7 → 15,5 km kad kvalitet nestane; vrh na 4 dana +55–70 % od polaznog obima (P01, P09)",
+    "Dugi preko 50 % nedelje i izbacivanje traženog dana (vlasnik v2: 7 nedelja po 3 trčanja; S19; P11; P06)",
+    "Tempo trke = današnja forma, a cilj i očekivano vreme se nigde ne treniraju niti objašnjavaju (P01: cilj 4:44, plan 4:50)",
+    "Očekivano vreme se pogoršava kad trkač sve uradi (S21: 1:39:42 → 1:40:35; S09: posle 13 nedelja = polazna forma)",
+    "Male doze u tempu trke sredinom nedelje (3–4 km posle 30 min praga); nisu skalirane po nivou (P05, P06)",
+    "Bol (S13) bez dana odmora, uslova i praga za lekara; propušten vršni dugi (S09) bez ikakve reakcije i poruke; test posle bolesti obrisan",
+    "Netačni tekstovi upozorenja: dugi 'do 17 km' kad plan ima 17,8; '15 dana bez brzih' a prag 11. dana; test 3 km naspram 5 km"
+  ]
+}
