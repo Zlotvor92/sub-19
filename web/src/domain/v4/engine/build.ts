@@ -6,7 +6,15 @@ import { addDays, weekdayOf } from './dates';
 import { assignDays } from './decide';
 import { doneIds } from './done';
 import { paceCtxOf, stepsCost, summarize } from './load';
-import { applyReadiness, modsFor, PLAIN_LONG, recipeKey, type Seen, underRamp } from './readiness';
+import {
+  anyCauseIn,
+  applyReadiness,
+  modsFor,
+  PLAIN_LONG,
+  recipeKey,
+  type Seen,
+  underRamp
+} from './readiness';
 import {
   addonSteps,
   allOutSec,
@@ -96,19 +104,36 @@ function weekFraction(weekStart: IsoDate, span: Span, ctx: BuildCtx): number {
   return Math.min(1, usableRunDays(weekStart, span, ctx).length / expected);
 }
 
-/** CILJ NEDELJE (§ 6.2 k. 5): `loadPct × P`; `build`/`peak` najviše pravilo rasta nad `m` (najveća od prethodne 3). */
+export interface TargetInput {
+  /** Najveće opterećenje u poslednje 3 nedelje van pauze/rampe (pre plana `B`). */
+  m: LoadPoints;
+  /** Udeo nedelje koji plan pokriva. */
+  fraction: number;
+  /** Prva nedelja plana bez ikakve spremnosti (rampa, bol, umor): cilj nije ispod sadašnjeg obima. */
+  firstFresh: boolean;
+  /** Stvarni (neumanjeni) cilj prethodne nedelje plana; `null` za prvu. */
+  previousTarget: LoadPoints | null;
+}
+
+/** CILJ NEDELJE (§ 6.2 k. 5 + treći krug): `loadPct × P`; `build`/`peak` najviše pravilo rasta nad `m`;
+    prva nedelja gradnje nije ispod `B`; rasterećenje nije veće od `recovery.loadFactor × cilj prethodne nedelje`.
+    Vraća pun cilj (za lanac) i cilj umanjen za nepotpunu nedelju. */
 export function weekTarget(
   intent: WeekIntent,
-  m: LoadPoints,
-  fraction: number,
+  input: TargetInput,
   ctx: BuildCtx
-): LoadPoints {
+): { full: LoadPoints; target: LoadPoints } {
   const s = ctx.data.safety;
-  let target = intent.loadPct * ctx.decisions.peakLoad;
+  const { m } = input;
+  let full = intent.loadPct * ctx.decisions.peakLoad;
   if (intent.kind === 'build' || intent.kind === 'peak') {
-    target = Math.min(target, Math.max(m * (1 + s.maxWeeklyRampPct), m + s.minRampLoad));
+    full = Math.min(full, Math.max(m * (1 + s.maxWeeklyRampPct), m + s.minRampLoad));
+    if (input.firstFresh) full = Math.max(full, ctx.decisions.baseLoad);
   }
-  return Math.round(target * fraction);
+  if (intent.kind === 'recovery' && input.previousTarget !== null && ctx.template !== null) {
+    full = Math.min(full, ctx.template.recovery.loadFactor * input.previousTarget);
+  }
+  return { full, target: Math.round(full * input.fraction) };
 }
 
 /** DUGI (§ 6.2 k. 6): `min(lenPct × najduži, najduži od prethodne 3 (ili polazni) + korak)`, na ceo minut. */
@@ -292,6 +317,7 @@ export function layoutWeek(
   intent.stimuli.forEach((st, k) => {
     const wd = qualityDays[k];
     if (wd === undefined || !runDays.includes(wd) || wd === longWd || dateOf(wd) === eve) return;
+    if (st.onlyByFeel === true && !ctx.pace.paces.byFeel) return;
     const slot: SlotRef = {
       place: 'quality',
       stimulus: st.stimulus,
@@ -359,6 +385,17 @@ export function layoutWeek(
   );
   for (const [date, recipe] of filled) out.set(date, recipe);
   return out;
+}
+
+/** Uzrok za pun napor iz plana (provera forme, pripremna trka): važi samo § 14.1. */
+export function plannedEffort(day: PlanDay): Adjustment {
+  return {
+    kind: 'effort',
+    source: 'plan',
+    date: day.date,
+    durationSec: day.workout?.workSec ?? 0,
+    planned: true
+  };
 }
 
 /* ------------------------------------------------------------------ prolaz */
@@ -457,19 +494,33 @@ export function runPass(
   const seen: Seen[] = [];
   const loads: LoadPoints[] = [];
   const longs: Seconds[] = [];
+  let previousTarget: LoadPoints | null = null;
   const lastThree = <T>(list: readonly T[]): T[] => list.slice(Math.max(0, list.length - 3));
 
   const weeks = doc.weeks.map((week): PlanWeek => {
     let shell: WeekShell = week;
+    let fullTarget: LoadPoints = week.targetLoad;
     if (opts.rechainFrom !== null && week.index >= opts.rechainFrom) {
       const recent = lastThree(loads);
       const m = Math.max(...recent, ...(recent.length < 3 ? [header.decisions.baseLoad] : []));
+      const decided = weekTarget(
+        week.intent,
+        {
+          m,
+          fraction: weekFraction(week.start, span, ctx),
+          firstFresh: week === doc.weeks[0] && !anyCauseIn(week.start, adjustments),
+          previousTarget
+        },
+        ctx
+      );
+      fullTarget = decided.full;
       shell = {
         ...week,
-        targetLoad: weekTarget(week.intent, m, weekFraction(week.start, span, ctx), ctx),
+        targetLoad: decided.target,
         longSec: longPlan(week.intent, Math.max(0, ...lastThree(longs)), ctx)
       };
     }
+    previousTarget = fullTarget;
     const recipes = layoutWeek(shell, span, ctx, slotCounter(doc.weeks, week.index));
     const days = week.days.map((day): PlanDay => {
       let final = day;
@@ -506,12 +557,7 @@ export function runPass(
         });
       }
       if (final.workout?.kind === 'test' && !explicitEfforts.has(final.date)) {
-        causes.push({
-          kind: 'effort',
-          source: 'plan',
-          date: final.date,
-          durationSec: final.workout.workSec
-        });
+        causes.push(plannedEffort(final));
       }
       return final;
     });

@@ -94,3 +94,19 @@ nalaze nad preuzetim danima daje kao `rucno`. Otisak: `fingerprint(doc, facts)`,
    trajanja (`Run.planned.durationSec/load`, popunjava `buildState` kad dobije plan); inače po prosečnom tempu.
 Otisci se menjaju: dugi (zaokruživanje naniže), lagani dani u nedeljama gde je ostatak bio < `minEasySec`, tekst
 oporavka („1:30 džog"), nedelje posle pauze/rampe. Čuvar `brz-udeo` ne meri nedelju trke (mala je, trka ne ulazi u zbir).
+
+## Treći krug (12. 11. 2026, zahtevi taba polumaratona koje je organizator prihvatio)
+Potpisi javnog izvoza su isti; nova polja su opciona, postojeći podaci rade nepromenjeno. Test: `round3.test.ts`.
+1. Čuvar vidi pun napor IZ PLANA (dan `kind: 'test'`) kao uzrok, pa nedelja posle provere forme nije `ispod-cilja`.
+2. Posle napora iz plana važi samo § 14.1 (3 dana bez ičeg brzog): bez rampe i bez „prvi kvalitet × 0,8". Rezultat
+   trčanja vezanog za dan testa ostaje „iz plana" (`Adjustment.effort.planned`). Spoljni uzroci su nepromenjeni.
+3. `safety.longStartShare`: broj ili mapa po danima; `L_0 = max(najduže skorašnje, udeo × B × 60)`.
+4. `safety.longShareByRunDays`: može i po nivou (`{ nivo: { dani: udeo } }`); ravna mapa važi kao do sada.
+5. Prva nedelja gradnje: `T_1 ≥ B` kad u njoj nema spremnosti (rampa, bol, umor) — i kad `peakLoadCap` veže.
+6. Rasterećenje: cilj = min(namera, `recovery.loadFactor` × pun cilj prethodne nedelje).
+7. Dan trke: tekst `texts['race']`, napomene iz `noteRules` sa `kinds: ['race']` (ključ teksta je `rule.text`;
+   `minDurationSec` se poredi sa očekivanim vremenom trke); `renderPlan` ih ispisuje ispod reda „TRKA".
+8. `onlyByFeel?: boolean` na `Requirements` (unos) i `StimulusSlot` (mesto): važi samo dok su tempa po osećaju.
+Otisci: sintetička — samo primer 02 (rasterećenje 194 → 178 BO, tačka 6). Polumaraton — 11 od 12 profila (tačke
+2, 3, 5, 6) i K7 za p09 (prvi „tempo trke" posle provere forme više nije × 0,8): to menja tab podataka distance.
+

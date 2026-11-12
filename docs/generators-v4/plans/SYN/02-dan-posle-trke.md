@@ -56,13 +56,13 @@ UPOZORENJA
 
 4. NEDELJA (od 7. 12.) — osnovna faza, rasterećenje; do trke 6 nedelja
   pon 7. 12.  odmor
-  uto 8. 12.  lagano 5 km + 4 × 20 s ubrzanja — 6 km, 35 min
+  uto 8. 12.  lagano 4 km + 4 × 20 s ubrzanja — 5 km, 29 min
   sre 9. 12.  odmor
   čet 10. 12.  uzbrdo 5 × 1:30 min, oporavak 2 min hod (4:18/km) — 6,9 km, 41 min
   pet 11. 12.  odmor
-  sub 12. 12.  lagano 5 km — 5 km, 29 min
+  sub 12. 12.  lagano 4 km — 4 km, 23 min
   ned 13. 12.  dugi 11,5 km — 11,5 km, 67 min
-  Zbir: 29,4 km, 2 h 52 min, 4 treninga, brz rad 4 %, opterećenje 186 BO (cilj 194)
+  Zbir: 27,4 km, 2 h 40 min, 4 treninga, brz rad 5 %, opterećenje 174 BO (cilj 178)
 
 5. NEDELJA (od 14. 12.) — posebna faza, gradnja; do trke 5 nedelja
   pon 14. 12.  odmor

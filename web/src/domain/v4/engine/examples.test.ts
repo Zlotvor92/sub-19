@@ -71,7 +71,8 @@ describe('SPEC § 12 (a): nov plan, 30 km nedeljno, 4 dana, 10 nedelja, forma 1:
   });
 
   it('ciljevi nedelja prate šablon (pravilo rasta ne veže), vrh je u 7. nedelji, čuvar bez nalaza', () => {
-    const spec = [181, 196, 210, 171, 220, 235, 245, 208, 159, 86];
+    /* 4. nedelja (rasterećenje): treći krug — najviše 0,8 × cilj prethodne (210 → 168), umesto 171 iz primera. */
+    const spec = [181, 196, 210, 168, 220, 235, 245, 208, 159, 86];
     doc.weeks.forEach((w, i) =>
       expect(Math.abs(w.targetLoad - (spec[i] ?? 0)), String(i + 1)).toBeLessThanOrEqual(1)
     );

@@ -40,6 +40,8 @@ export interface Ramp {
   lastLongSec: Seconds;
   /** Pauza ≥ 7 dana: blok u dugom tek posle dugog bez bloka (§ 14.6). */
   gate: boolean;
+  /** Prvi kvalitet svakog podražaja posle rampe × 0,8 — samo za spoljne uzroke, ne za napor iz plana. */
+  firstReduced: boolean;
 }
 
 export function effortRampDays(durationSec: Seconds): number {
@@ -56,12 +58,14 @@ export const pauseLength = (from: IsoDate, to: IsoDate): number => diffDays(to, 
 export function rampOf(adj: Adjustment): Ramp | null {
   switch (adj.kind) {
     case 'effort':
+      /* Pun napor iz plana: samo 3 dana bez ičeg brzog (§ 14.1), bez rampe. */
       return {
         zero: adj.date,
-        days: effortRampDays(adj.durationSec),
+        days: adj.planned === true ? 0 : effortRampDays(adj.durationSec),
         noFast: NO_FAST_DAYS_AFTER_EFFORT,
-        lastLongSec: adj.lastLongSec ?? 0,
-        gate: false
+        lastLongSec: adj.planned === true ? 0 : (adj.lastLongSec ?? 0),
+        gate: false,
+        firstReduced: adj.planned !== true
       };
     case 'pause': {
       const length = pauseLength(adj.from, adj.to);
@@ -71,7 +75,8 @@ export function rampOf(adj: Adjustment): Ramp | null {
         days: pauseRampDays(length, adj.reason),
         noFast: 0,
         lastLongSec: adj.lastLongSec ?? 0,
-        gate: length >= BLOCK_GATE_PAUSE_DAYS
+        gate: length >= BLOCK_GATE_PAUSE_DAYS,
+        firstReduced: true
       };
     }
     case 'pain':
@@ -81,7 +86,8 @@ export function rampOf(adj: Adjustment): Ramp | null {
         days: pauseRampDays(PAIN_HIGH_REST_DAYS, 'povreda'),
         noFast: 0,
         lastLongSec: adj.lastLongSec ?? 0,
-        gate: PAIN_HIGH_REST_DAYS >= BLOCK_GATE_PAUSE_DAYS
+        gate: PAIN_HIGH_REST_DAYS >= BLOCK_GATE_PAUSE_DAYS,
+        firstReduced: true
       };
     default:
       return null;
@@ -104,7 +110,8 @@ export function adjustmentWindow(
         : adj.kind === 'pain'
           ? addDays(adj.date, 1)
           : addDays(ramp.zero, 1);
-    return { from, to: addDays(rampEnd, POST_RAMP_FIRST_DAYS), rampEnd };
+    const to = ramp.firstReduced ? addDays(rampEnd, POST_RAMP_FIRST_DAYS) : rampEnd;
+    return { from, to, rampEnd };
   }
   if (adj.kind === 'pain') {
     const days = adj.level <= PAIN_LOW_MAX ? PAIN_LOW_DAYS : PAIN_MID_DAYS;
@@ -125,7 +132,16 @@ export function adjustmentWindow(
 export function underRamp(weekStart: IsoDate, adjustments: readonly Adjustment[]): boolean {
   const end = addDays(weekStart, 6);
   return adjustments.some((adj) => {
-    if (rampOf(adj) === null) return false;
+    if (rampOf(adj) === null || (adj.kind === 'effort' && adj.planned === true)) return false;
+    const w = adjustmentWindow(adj);
+    return w !== null && w.from <= end && w.rampEnd >= weekStart;
+  });
+}
+
+/** Da li ijedan uzrok spremnosti (rampa, bol, umor) pada u nedelju od ponedeljka `weekStart`. */
+export function anyCauseIn(weekStart: IsoDate, adjustments: readonly Adjustment[]): boolean {
+  const end = addDays(weekStart, 6);
+  return adjustments.some((adj) => {
     const w = adjustmentWindow(adj);
     return w !== null && w.from <= end && w.rampEnd >= weekStart;
   });
@@ -206,7 +222,7 @@ export function modsFor(
       }
       if (n >= 1 && n <= ramp.noFast) noFast();
       const end = Math.max(ramp.days, ramp.noFast);
-      if (n > end && n <= end + POST_RAMP_FIRST_DAYS && key !== null) {
+      if (ramp.firstReduced && n > end && n <= end + POST_RAMP_FIRST_DAYS && key !== null) {
         const done = seen.some((s) => s.key === key && s.date > ramp.zero && s.date < date);
         if (!done) m.doseFactor = RAMP_DOSE_FACTOR;
       }

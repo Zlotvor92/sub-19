@@ -223,6 +223,7 @@ export function renderPlan(
       }
       if (w.kind === 'race' && day.date === h.goal.raceDate) {
         lines.push(`  ${when}  TRKA: ${data.label}`);
+        for (const note of w.notes ?? []) lines.push(`      napomena: ${note}`);
         continue;
       }
       const text = withPace(w, h.paces, data);

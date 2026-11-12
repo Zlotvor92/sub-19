@@ -121,6 +121,7 @@ function passes(
   if (r.levels !== undefined && !r.levels.includes(ctx.decisions.level)) return false;
   if (r.minRunDays !== undefined && ctx.decisions.runDays.length < r.minRunDays) return false;
   if (r.needsKnownPaces === true && ctx.pace.paces.byFeel) return false;
+  if (r.onlyByFeel === true && !ctx.pace.paces.byFeel) return false;
   if (flags.noHighImpact && def.impact === 'visok') return false;
   if (dose !== null && isDosed(def.main)) {
     if (dose < minDoseOf(def, ctx)) return false;
@@ -531,14 +532,24 @@ export function allOutSec(distanceM: number, ctx: BuildCtx): Seconds {
   return raceTimeSec(ctx.pace.vdot, distanceM);
 }
 
-/** Dan trke: jedan korak punog napora na dužinu cilja (§ 6.2 k. 10). */
-export function raceWorkout(data: DistanceData): Workout {
+/** Dan trke: jedan korak punog napora na dužinu cilja (§ 6.2 k. 10); tekst `texts['race']`, napomene iz
+    `noteRules` sa `kinds: ['race']` (trajanje se poredi sa očekivanim vremenom trke za `vdot`). */
+export function raceWorkout(data: DistanceData, vdot: number): Workout {
+  const expected = raceTimeSec(vdot, data.distanceM);
+  const notes: string[] = [];
+  for (const rule of data.noteRules) {
+    const text = data.texts[rule.text];
+    if (rule.kinds.includes('race') && expected >= rule.minDurationSec && text !== undefined) {
+      if (!notes.includes(text)) notes.push(text);
+    }
+  }
   return {
     kind: 'race',
     stimulus: null,
     workSec: 0,
     steps: [{ role: 'work', target: { type: 'allOut' }, extent: { distanceM: data.distanceM } }],
-    text: data.texts['race'] ?? 'trka'
+    text: data.texts['race'] ?? 'trka',
+    ...(notes.length === 0 ? {} : { notes })
   };
 }
 

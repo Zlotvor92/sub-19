@@ -123,6 +123,8 @@ export interface StimulusSlot {
   dosePct?: number;
   /** Izričit unos biblioteke (preskače izbor po oznakama). */
   workoutId?: string;
+  /** true: mesto postoji samo dok su tempa „po osećaju" (rani test forme); inače je dan lagan. */
+  onlyByFeel?: boolean;
 }
 
 /** NAMERA nedelje — ono što šablon nosi (AGENTS t. 4). */
@@ -265,7 +267,16 @@ export interface PlanHeader {
 /** Trajna posledica događaja po kojoj se dani grade iznova (§ 6.4, § 6.5). `source` je `id` događaja ili `'plan'`. */
 export type Adjustment =
   /** `lastLongSec`: poslednji odrađeni dugi pre uzroka (plafon dugog u rampi, § 14.6); 0 ili bez njega = nepoznat. */
-  | { kind: 'effort'; source: string; date: IsoDate; durationSec: Seconds; lastLongSec?: Seconds }
+  | {
+      kind: 'effort';
+      source: string;
+      date: IsoDate;
+      durationSec: Seconds;
+      lastLongSec?: Seconds;
+      /** Pun napor IZ PLANA (provera forme, pripremna trka): važi samo § 14.1 — 3 dana bez ičeg brzog, bez rampe
+          i bez „prvi kvalitet × 0,8" (treći krug). */
+      planned?: boolean;
+    }
   | {
       kind: 'pause';
       source: string;
@@ -565,6 +576,8 @@ export interface Requirements {
   maxDoseSec?: Seconds;
   /** true: unos se ne bira dok su tempa „po osećaju" (`Paces.byFeel`). Podrazumevano false. */
   needsKnownPaces?: boolean;
+  /** true: unos se bira SAMO dok su tempa „po osećaju" (rani test forme). Podrazumevano false. */
+  onlyByFeel?: boolean;
 }
 
 /** Unos biblioteke treninga. Nov sadržaj = nov unos, ne nov kod. */
@@ -627,10 +640,13 @@ export interface SafetyNumbers {
   peakLoadCap: Readonly<Record<LevelId, LoadPoints | null>>;
   longMaxSec: Readonly<Record<LevelId, Seconds>>;
   /** Najveći udeo dugog u vrhu, po broju dana trčanja (ključ „1"…„7"). */
-  longShareByRunDays: Readonly<Record<string, number>>;
+  /** Može i po nivou: `{ nivo: { "1".."7": udeo } }`; nivo bez svoje mape nema plafon po danima (udeo 1). */
+  longShareByRunDays:
+    Readonly<Record<string, number>> | Readonly<Record<LevelId, Readonly<Record<string, number>>>>;
   longStepSec: Seconds;
   /** Polazni dugi kao udeo bazne nedelje kad nema podatka o najdužem trčanju. */
-  longStartShare: number;
+  /** Broj, ili mapa po broju dana trčanja („1"…„7"). Polazni dugi = veće od ovoga i najdužeg skorašnjeg trčanja. */
+  longStartShare: number | Readonly<Record<string, number>>;
   doseCaps: Readonly<Record<StimulusTag, { maxWorkSec: Seconds; shareOfPeakLoad: number }>>;
   /** Napredovanje doze kad šablon ne zada `dosePct`. */
   progression: Readonly<Record<StimulusTag, { startPct: number; stepPct: number }>>;

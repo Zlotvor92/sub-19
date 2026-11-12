@@ -53,17 +53,34 @@ export function decideWarmup(
   return { warmupSec: last?.warmupSec ?? 0, cooldownSec: last?.cooldownSec ?? 0 };
 }
 
-/** Udeo dugog za broj dana; ako podaci nemaju taj ključ, najbliži manji pa najbliži veći. */
-function longShare(safety: SafetyNumbers, runDays: number): number {
+/** Vrednost za broj dana iz mape „1"…„7"; ako ključa nema, najbliži manji pa najbliži veći. */
+function byRunDays(map: Readonly<Record<string, number>>, runDays: number): number | undefined {
   for (let d = runDays; d >= 1; d -= 1) {
-    const share = safety.longShareByRunDays[String(d)];
-    if (share !== undefined) return share;
+    const value = map[String(d)];
+    if (value !== undefined) return value;
   }
   for (let d = runDays + 1; d <= 7; d += 1) {
-    const share = safety.longShareByRunDays[String(d)];
-    if (share !== undefined) return share;
+    const value = map[String(d)];
+    if (value !== undefined) return value;
   }
-  return 1;
+  return undefined;
+}
+
+const isDayMap = (value: unknown): value is Readonly<Record<string, number>> =>
+  typeof value === 'object' && value !== null;
+
+/** Udeo dugog za broj dana; mapa može biti i po nivou (treći krug). */
+function longShare(safety: SafetyNumbers, level: LevelId, runDays: number): number {
+  const map = safety.longShareByRunDays;
+  const leveled = Object.values(map).some(isDayMap);
+  if (!leveled) {
+    const flat: Record<string, number> = {};
+    for (const [key, value] of Object.entries(map))
+      if (typeof value === 'number') flat[key] = value;
+    return byRunDays(flat, runDays) ?? 1;
+  }
+  const own: unknown = map[level];
+  return isDayMap(own) ? (byRunDays(own, runDays) ?? 1) : 1;
 }
 
 /** Najduži dugi plana: `min(plafon nivoa, udeo po danima × P × 60)`, na ceo minut. */
@@ -74,17 +91,19 @@ export function decideLongMax(
   runDays: number
 ): Seconds {
   const cap = safety.longMaxSec[level] ?? Number.POSITIVE_INFINITY;
-  return Math.round(Math.min(cap, longShare(safety, runDays) * peakLoad * 60) / 60) * 60;
+  return Math.round(Math.min(cap, longShare(safety, level, runDays) * peakLoad * 60) / 60) * 60;
 }
 
-/** Polazni dugi: najduže skorašnje trčanje, inače udeo bazne nedelje (§ 2.4). */
+/** Polazni dugi: veće od najdužeg skorašnjeg trčanja i udela bazne nedelje (udeo može biti po broju dana). */
 export function decideLongStart(
   longestRecentSec: Seconds,
   baseLoad: LoadPoints,
-  safety: SafetyNumbers
+  safety: SafetyNumbers,
+  runDays: number
 ): Seconds {
-  const start = longestRecentSec > 0 ? longestRecentSec : safety.longStartShare * baseLoad * 60;
-  return Math.round(start / 60) * 60;
+  const raw = safety.longStartShare;
+  const share = typeof raw === 'number' ? raw : (byRunDays(raw, runDays) ?? 0);
+  return Math.round(Math.max(longestRecentSec, share * baseLoad * 60) / 60) * 60;
 }
 
 const gap = (a: number, b: number): number => Math.min(Math.abs(a - b), 7 - Math.abs(a - b));
@@ -137,7 +156,7 @@ export function decide(input: DecideInput): Decisions {
     baseLoad,
     peakLoad,
     longMaxSec: decideLongMax(peakLoad, data.safety, level, runDays.length),
-    longStartSec: decideLongStart(input.longestRecentSec, baseLoad, data.safety),
+    longStartSec: decideLongStart(input.longestRecentSec, baseLoad, data.safety, runDays.length),
     doseCapSec: decideCaps(peakLoad, data.safety),
     ...decideWarmup(baseLoad, data.safety),
     runDays,

@@ -10,7 +10,8 @@ import {
   PAUSE_FULL_REPLAN_DAYS,
   PAUSE_MIN_DAYS,
   FATIGUE_DAYS,
-  MISSED_LOOKAHEAD_DAYS
+  MISSED_LOOKAHEAD_DAYS,
+  NO_FAST_DAYS_AFTER_EFFORT
 } from './constants';
 import { doneDayIds, isMutable, runPass } from './build';
 import { addDays, isValidDate, mondayOf } from './dates';
@@ -98,12 +99,15 @@ function onResult(
 ): Candidate | null {
   const run = state.runs.find((r) => r.id === ev.runId);
   if (run === undefined) return null;
+  /* Rezultat provere forme ili pripremne trke IZ PLANA: samo § 14.1 (3 dana bez brzog), bez rampe i × 0,8. */
+  const planned = allDays(doc).some((d) => d.id === run.dayId && d.workout?.kind === 'test');
   const adj: Adjustment = {
     kind: 'effort',
     source: ev.id,
     date: run.date,
     durationSec: run.durationSec,
-    lastLongSec: lastLongBefore(state, run.date)
+    lastLongSec: lastLongBefore(state, run.date),
+    ...(planned ? { planned: true } : {})
   };
   let header = withAdjustment(doc.header, adj);
   const vdot = state.form.current.vdot;
@@ -365,7 +369,7 @@ function reskeleton(
     ? expandTemplate(picked.template, kept.length + weeks).slice(kept.length)
     : expandTemplate(picked.template, weeks);
   const firstIndex = (kept[kept.length - 1]?.index ?? 0) + 1;
-  const shells = skeleton(tomorrow, goal.raceDate, intents, data, firstIndex);
+  const shells = skeleton(tomorrow, goal.raceDate, intents, data, firstIndex, old.form.paceVdot);
   const done = doneDayIds(state);
   const frozen = new Map<IsoDate, PlanDay>();
   for (const day of allDays(doc)) {
@@ -496,8 +500,13 @@ function explain(
         run === undefined
           ? 'Stigao je rezultat trke ili testa'
           : `Rezultat ${fmtDistance(run.distanceM)} za ${fmtClock(run.durationSec)} (${fmtDate(run.date)})`;
+      const planned = (c.doc.header.adjustments ?? []).some(
+        (x) => x.kind === 'effort' && x.planned === true && x.date === run?.date
+      );
       const ramp = run === undefined ? 0 : effortRampDays(run.durationSec);
-      const day = `${what}: oporavak traje ${count(ramp, DAYS)} — treninzi su kraći i lagani, bez brzih deonica; ${resume}.`;
+      const day = planned
+        ? `${what}: provera forme je bila deo plana, pa su ${countWith(NO_FAST_DAYS_AFTER_EFFORT, NEXT, DAYS)} bez brzih deonica; ${resume}.`
+        : `${what}: oporavak traje ${count(ramp, DAYS)} — treninzi su kraći i lagani, bez brzih deonica; ${resume}.`;
       const old = fmtClock(raceTimeSec(before.header.form.paceVdot, data.distanceM));
       const faster = c.doc.header.form.paceVdot > before.header.form.paceVdot;
       const { raceDay } = state.form;

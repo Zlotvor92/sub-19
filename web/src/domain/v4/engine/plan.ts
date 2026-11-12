@@ -79,7 +79,8 @@ export function skeleton(
   raceDate: IsoDate,
   intents: readonly WeekIntent[],
   data: DistanceData,
-  firstIndex: number
+  firstIndex: number,
+  vdot: number
 ): PlanWeek[] {
   const first = mondayOf(startDate);
   return intents.map((intent, i): PlanWeek => {
@@ -94,7 +95,7 @@ export function skeleton(
         date,
         origin: 'template',
         locked: false,
-        workout: date === raceDate ? raceWorkout(data) : null
+        workout: date === raceDate ? raceWorkout(data, vdot) : null
       });
     }
     return { index, start, intent, targetLoad: 0, longSec: 0, days };
@@ -152,7 +153,14 @@ export function createPlan(
       eventsFrom: state.today,
       adjustments: initialAdjustments(state)
     },
-    weeks: skeleton(startDate, goal.raceDate, expandTemplate(picked.template, weeks), data, 1)
+    weeks: skeleton(
+      startDate,
+      goal.raceDate,
+      expandTemplate(picked.template, weeks),
+      data,
+      1,
+      form.vdot
+    )
   };
   const built = runPass(draft, state, data, { window: null, rechainFrom: 1, fresh: true });
   return {

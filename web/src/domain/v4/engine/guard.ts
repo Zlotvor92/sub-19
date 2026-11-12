@@ -11,7 +11,7 @@ import {
   GUARD_TAPER_WORK_SHARE,
   GUARD_UNDER_TARGET
 } from './constants';
-import { buildCtx } from './build';
+import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate } from './dates';
 import { decideLongMax } from './decide';
 import { count, DAYS, FIRST, countWith, fmtClock, fmtDate, fmtNumber, WEEKS } from './format';
@@ -189,6 +189,16 @@ export const guard: GuardFn = (doc, _state, data) => {
   const findings: Finding[] = [];
   const costs = doc.weeks.map((w) => weekCost(w, header.goal.raceDate, ctx));
   const adjustments = header.adjustments ?? [];
+  /* Pun napor iz plana (provera forme, pripremna trka) skraćuje dane posle sebe isto kao u gradnji — čuvar ga
+     vidi kao i ostale uzroke, da ne prijavi lažno `ispod-cilja`. */
+  const explicit = new Set(adjustments.flatMap((x) => (x.kind === 'effort' ? [x.date] : [])));
+  const causes: Adjustment[] = [
+    ...adjustments,
+    ...doc.weeks
+      .flatMap((w) => w.days)
+      .filter((day) => day.workout?.kind === 'test' && !explicit.has(day.date))
+      .map(plannedEffort)
+  ];
   const report = (check: string, week: PlanWeek, day: PlanDay | null, message: string): void => {
     const foreign =
       day !== null
@@ -212,7 +222,7 @@ export const guard: GuardFn = (doc, _state, data) => {
 
   costs.forEach((c, i) => {
     const { week } = c;
-    const ramp = inAnyWindow(week, adjustments);
+    const ramp = inAnyWindow(week, causes);
     const partial = week.start < header.startDate;
     const raceWeek = week.intent.kind === 'race';
     const before = costs
