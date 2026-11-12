@@ -8,16 +8,17 @@ Ispisi: `docs/generators-v4/plans/HM/p01–p12.txt`, `vlasnik-v1.txt`, `vlasnik-
 — `node docs/generators-v4/plans/scenarios.ts`.
 
 ## Kako su podaci složeni
-- **Šabloni**: jedan po broju nedelja (1–52) × porodica (redovan, početnik, „obiman", „nosivost" za 1–3 dana) × dani
-  (1–3, 4–7) = 364. Razlikuju se samo po množiocu vrha (`startPct`) i dužini repa. Rep 12+ nedelja: N−8 rasterećenje +
+- **Šabloni**: jedan po broju nedelja (1–52) × porodica (redovan, mali obim, početnik, „nosivost" za 1–3 dana) × dani
+  (1–3, 4–7) = 312. Razlikuju se samo po množiocu vrha (`startPct`) i dužini repa. Rep 12+ nedelja: N−8 rasterećenje +
   provera forme (10 km / 5 km / 3 km po obimu i formi), N−7 prvi blok RP u dugom, N−6 talas (RP + prag), N−5 drugi blok,
   N−4 rasterećenje, N−3 najteža nedelja, N−2 ≤ 85 %, N−1 sužavanje, N trka. Telo: osnova (prag + brzina/brda), razvoj
   (prag + intervali, progresivni dugi). Rep se produžava za 1–2 nedelje razvoja da rasterećenje (brojano od repa)
   nikad ne padne u 1. ili 2. nedelju. 8–11 nedelja: bez provere i prvog bloka; 1–7: održavanje + najteža + sužavanje.
 - **Nivoi**: početnik, mali obim (< 3 h 30 min nedeljno → jedan kvalitet + ubrzanja, kao v3 ispod 25 km), spor/srednji/
-  brz po VDOT-u, i „obiman" (sadašnja nedelja blizu plafona vrha nivoa → množilac ≤ 1,3; zaobilaznica za zahtev 5).
-- **Brojevi**: vrh × 1,15 (6 ned) → × 1,55 (12+), početnik do × 2,0; rast +7 % (bodovi); dugi 40 % vrha kod 4 dana,
-  36 % kod 5, 33 % kod 6, 45 % kod 3; najduži dugi 2 h 15 (početnik 2 h 10, brz 2 h 05); korak dugog 9 min; brz rad
+  brz po VDOT-u. Posle trećeg kruga motora nivoi „obiman" (zaobilaznica) su uklonjeni. Rani test (5 km) u 1. nedelji
+  samo kad su tempa po osećaju (`onlyByFeel`); dan trke nosi plan trke (raspored tempa, doručak, unos).
+- **Brojevi**: vrh × 1,15 (6 ned) → × 1,55 (12+), početnik do × 2,15; rast +7 % (bodovi); dugi 40 % vrha kod 4 dana,
+  36 % kod 5, 33 % kod 6, 45 % kod 3 (početnik 44 % kod 4 dana); polazni dugi po danima (31 % kod 4); najduži dugi 2 h 15 (početnik 2 h 10, brz 2 h 05); korak 9 min; brz rad
   ≤ 20 % (vršna 22 %); lagan ≤ 80 % dugog, dan pred dugi ≤ 70 %; prvi trening praga/intervala/RP ≤ 70 % vrha (K7).
 
 ## Testovi (`hm.test.ts`, projekat `domain`, ≈ 5 s; ceo V4 421 test zelen)
@@ -35,18 +36,18 @@ K7 „prvi trening ≤ 70 % vrha" ne važi za brzinu/brda: K8 traži ≥ 8 min r
 | profil | vrh km | najduži dugi km | broj kvaliteta | udeo brzog rada (ceo plan) |
 |---|---|---|---|---|
 | p01 | 56,0 → 56,0 | 22,0 → 22,0 | 26 → 22 | 14 → 14 % |
-| p02 | 54,0 → 55,1 | 21,5 → 24,0 | 22 → 19 | 14 → 14 % |
-| p03 | 33,3 → 35,4 | 15,5 → 16,8 | 16 → 16 | 13 → 12 % |
-| p04 | 63,0 → 65,6 | 20,0 → 19,5 | 33 → 30 | 11 → 10 % |
+| p02 | 54,0 → 56,1 | 21,5 → 24,0 | 22 → 19 | 14 → 15 % |
+| p03 | 33,3 → 35,6 | 15,5 → 18,2 | 16 → 16 | 13 → 12 % |
+| p04 | 63,0 → 69,3 | 20,0 → 19,5 | 33 → 30 | 11 → 10 % |
 | p05 | 100,1 → 102,7 | 26,0 → 26,5 | 26 → 23 | 12 → 10 % |
 | p06 | 43,3 → 44,3 | 16,5 → 17,5 | 15 → 10 | 14 → 12 % |
 | p07 | 67,9 → 69,5 | 22,0 → 21,5 | 17 → 14 | 13 → 12 % |
 | p08 | 47,8 → 49,0 | 22,0 → 22,5 | 20 → 20 | 12 → 12 % |
 | p09 | 59,0 → 63,3 | 22,0 → 22,0 | 25 → 23 | 13 → 13 % |
-| p10 | 33,3 → 35,5 | 15,5 → 18,0 | 19 → 20 | 12 → 12 % |
-| p11 | 39,2 → 36,9 | 18,0 → 16,7 | 15 → 17 | 8 → 10 % |
-| p12 | 55,3 → 58,6 | 18,5 → 19,1 | 11 → 13 | 6 → 7 % |
-Ispod v3: **p11** (dugi 16,7 / vrh 36,9 — udeo dugog je po danima, a početniku treba ≈ 45 %: zahtev 4); p04 i p07 dugi
+| p10 | 33,3 → 35,5 | 15,5 → 18,0 | 19 → 20 | 12 → 13 % |
+| p11 | 39,2 → 39,3 | 18,0 → 19,2 | 15 → 17 | 8 → 10 % |
+| p12 | 55,3 → 58,6 | 18,5 → 19,1 | 11 → 14 | 6 → 8 % |
+Ispod v3 samo p04 i p07 dugi
 za 0,5 km (2 h 15 na 7:07/km = 19 km; motor zaokružuje naniže). p06 ima manje kvaliteta jer je mali obim (35 km za
 2 h 45 min nedeljno) — jedan kvalitet. Vlasnik v1: vrh 38,6 km, najduži dugi 16 km (+ 15,5 u 5. ned), prvi dugi
 10,5 km, uvek 4 treninga, gradnja ne pada. Vlasnik v2: dugi 19–21 km 6 puta, vrh 49,3 km.
@@ -56,7 +57,7 @@ Svi daju plan; E6 (4 profila): 0 promena i isti otisak. Nalazi čuvara posle dog
 p04 skida vrh, pa sužavanje ima više rada od nove „najteže"), s09/s11/s13 `dugi-korak` (motor meri korak od skraćenog
 dugog), s18/s19 `ispod-cilja` (početak posle trke). E5 je nov plan iz stanja sa jučerašnjom trkom (nema `replan`).
 
-## Zahtevi prema motoru (ne mogu se izraziti podatkom; poslati organizatoru, prihvaćeni za treći krug)
+## Zahtevi prema motoru (1–8 rešeni u trećem krugu 8a22e4d i iskorišćeni; 9–12 čekaju četvrti krug)
 1. Čuvar ne vidi rampu posle testa iz plana → lažno `ispod-cilja` u nedelji provere.
 2. „Prvi kvalitet posle rampe × 0,8" (14 dana) važi i posle PLANIRANE provere forme — smanjuje blok/RP i ruši nedelju.
 3. `longStartShare` po broju dana; L₀ je i pod pravila koraka, pa veći L₀ dozvoljava skok dugog na prelazu faza.

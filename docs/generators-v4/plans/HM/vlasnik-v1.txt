@@ -21,13 +21,13 @@ UPOZORENJA
 
 1. NEDELJA (od 16. 11.) — osnova, gradnja; do trke 9 nedelja
   pon 16. 11.  odmor
-  uto 17. 11.  lagano 6 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7 km, 41 min
+  uto 17. 11.  lagano 6,5 km — 6,5 km, 38 min
   sre 18. 11.  odmor
   čet 19. 11.  prag 12 min u komadu (4:40/km) — 6,8 km, 37 min
   pet 20. 11.  odmor
-  sub 21. 11.  lagano 6 km — 6 km, 35 min
+  sub 21. 11.  lagano 6,5 km — 6,5 km, 38 min
   ned 22. 11.  dugi 10,5 km lagano — 10,5 km, 62 min
-  Zbir: 30,3 km, 2 h 54 min, 4 treninga, brz rad 7 %
+  Zbir: 30,3 km, 2 h 55 min, 4 treninga, brz rad 7 %
 
 2. NEDELJA (od 23. 11.) — osnova, gradnja; do trke 8 nedelja
   pon 23. 11.  odmor
@@ -75,14 +75,14 @@ UPOZORENJA
 
 6. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 21. 12.  odmor
-  uto 22. 12.  lagano 5,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,5 km, 38 min
+  uto 22. 12.  lagano 4,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,5 km, 32 min
   sre 23. 12.  odmor
   čet 24. 12.  prag 2 × 6 min (4:40/km), oporavak 1:30 džog — 7,1 km, 39 min
   pet 25. 12.  odmor
-  sub 26. 12.  lagano 5,5 km — 5,5 km, 32 min
+  sub 26. 12.  lagano 4,5 km — 4,5 km, 26 min
   ned 27. 12.  dugi 13,5 km lagano — 13,5 km, 79 min
       napomena: Ponesi vodu; posle 60 min unesi gel ili sportski napitak na svakih 30–40 min, isto kao na trci.
-  Zbir: 32,6 km, 3 h 8 min, 4 treninga, brz rad 6 %
+  Zbir: 30,6 km, 2 h 56 min, 4 treninga, brz rad 7 %
 
 7. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 28. 12.  odmor
@@ -126,4 +126,6 @@ UPOZORENJA
   pet 22. 1.  odmor
   sub 23. 1.  lagano 3,5 km — 3,5 km, 21 min
   ned 24. 1.  TRKA: polumaraton
+      napomena: Prvih 5 km trči 5–10 s po kilometru sporije od tempa trke, od 5. do 16. km u tempu trke, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
+      napomena: Gel ili sportski napitak na 40–45. min i na 75. min, kao na dugim treninzima.
   Zbir: 16,3 km, 93 min, 3 treninga, brz rad 10 %

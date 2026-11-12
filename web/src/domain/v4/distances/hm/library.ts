@@ -390,6 +390,18 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'kontrola-5k',
     notes: ['napomena.kontrola']
   },
+  /* rani test (1. nedelja) kad su tempa po osećaju: posebna oznaka da ne pomera redosled provere forme */
+  {
+    id: 'kontrola-rana-5k',
+    kind: 'test',
+    stimulus: 'kontrola-rana',
+    tags: ['test'],
+    impact: 'obican',
+    requires: {},
+    main: { kind: 'all-out', distanceM: 5000 },
+    text: 'kontrola-rana',
+    notes: ['napomena.kontrola']
+  },
   /* mali obim (ispod ≈ 25 km nedeljno): test od 3 km ne preuzima celu nedelju */
   {
     id: 'kontrola-3k',

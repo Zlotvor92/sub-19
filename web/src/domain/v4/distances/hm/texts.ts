@@ -26,6 +26,7 @@ export const TEXTS: Record<string, string> = {
   ostrenje: 'oštrenje: tempo trke {n} × {rep}{pace}, oporavak {rec}',
   'kontrola-10k': 'provera forme: trka ili test na 10 km punim naporom',
   'kontrola-5k': 'provera forme: trka ili test na 5 km punim naporom',
+  'kontrola-rana': 'provera forme: test na 5 km punim naporom, ravnomerno',
   'kontrola-3k': 'provera forme: test na 3 km punim naporom',
 
   /* napomene */
@@ -35,6 +36,11 @@ export const TEXTS: Record<string, string> = {
     'Ponesi vodu; posle 60 min unesi gel ili sportski napitak na svakih 30–40 min, isto kao na trci.',
   'napomena.dugi-blok':
     'Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.',
+
+  'napomena.trka':
+    'Prvih 5 km trči 5–10 s po kilometru sporije od tempa trke, od 5. do 16. km u tempu trke, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.',
+  'napomena.trka-unos':
+    'Gel ili sportski napitak na 40–45. min i na 75. min, kao na dugim treninzima.',
 
   /* trka i faze */
   race: 'trka — polumaraton',
@@ -54,5 +60,7 @@ export const TEXTS: Record<string, string> = {
 
 /** Napomene po vrsti i trajanju treninga. */
 export const NOTE_RULES: NoteRule[] = [
+  { kinds: ['race'], minDurationSec: 0, text: 'napomena.trka' },
+  { kinds: ['race'], minDurationSec: 5400, text: 'napomena.trka-unos' },
   { kinds: ['long'], minDurationSec: 4500, text: 'napomena.dugi' }
 ];

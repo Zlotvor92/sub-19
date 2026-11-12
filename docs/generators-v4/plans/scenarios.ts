@@ -51,7 +51,8 @@ function startPlan(id: string, extraRuns: Any[] = []): { facts: Any; state: Any;
   return { facts, state, doc: r.doc, goal: p.goal };
 }
 
-/** Trčanja tačno po planu do `through` (uključivo), osim dana koje `skip` izbaci. */
+/** Trčanja tačno po planu do `through` (uključivo), osim dana koje `skip` izbaci. Test iz plana se beleži
+    kao obično trčanje (bez oznake punog napora): ništa se nije desilo znači i da test nije doneo novu formu. */
 function runsAsPlanned(doc: Any, through: string, skip: (d: Any) => boolean = () => false): Any[] {
   const ctx = E.paceCtxOf(doc.header);
   const runs: Any[] = [];
@@ -65,7 +66,6 @@ function runsAsPlanned(doc: Any, through: string, skip: (d: Any) => boolean = ()
       distanceM: Math.round(c.distanceM),
       durationSec: Math.round(c.durationSec),
       dayId: day.id,
-      ...(day.workout.kind === 'test' ? { effort: 'test' } : {})
     });
   }
   return runs;
