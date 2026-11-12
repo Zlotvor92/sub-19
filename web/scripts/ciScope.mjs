@@ -47,6 +47,8 @@ export const ALL_RULES = [
   ]
 ];
 const V2_FOLDER = new RegExp(`^web/src/domain/generators/(${DISTANCES.join('|')})/v2/`);
+/** V4 generator: zaseban folder koji aplikacija još ne uvozi; o njegovim testovima odlučuje graf uvoza. */
+const V4_FOLDER = /^web\/src\/domain\/v4\//;
 /** Fajlovi u web/ van domena o kojima odlučuje graf; sve ostalo u web/ → `all`. */
 const WEB_GRAPH =
   /^web\/(src|public|sw|e2e|deploy)\/|^web\/(index\.html|playwright\.config\.ts|eslint\.config\.js|eslint\.domain-rules\.(js|d\.ts)|\.prettierrc\.json|\.prettierignore|\.gitignore|scripts\/test-durations\.json)$/;
@@ -56,7 +58,7 @@ const APP_ENTRY = 'web/src/main.tsx';
 /** null = odlučuje graf; inače razlog za `all`. */
 export function allReason(path) {
   for (const [re, why] of ALL_RULES) if (re.test(path)) return `${path}: ${why}`;
-  if (path.startsWith('web/src/domain/') && !V2_FOLDER.test(path))
+  if (path.startsWith('web/src/domain/') && !V2_FOLDER.test(path) && !V4_FOLDER.test(path))
     return `${path}: domen van generators/<D>/v2 (zajednički domen, v1, nepoznato)`;
   if (path.startsWith('web/') && !WEB_GRAPH.test(path)) return `${path}: nepoznat fajl u web/`;
   return null;

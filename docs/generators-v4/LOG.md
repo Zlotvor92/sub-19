@@ -12,7 +12,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - NE radi: Strava konektor (`needs_reconnect`). Posledica ispod (F0, tačka 4). Traži se od vlasnika.
 - Grana `claude/v4` napravljena od `de5946f` (vrh radne grane).
 
-### 09:55 — F0: šta je u bazi (samo SELECT, zbirno) [visoka]
+### 09:42 — F0: šta je u bazi (samo SELECT, zbirno) [visoka]
 1. Sve stanje korisnika je jedan JSON: `user_state.data` (31 korisnik). Ključevi: `genPlan` (plan), `log` (urađeno,
    po ID-ju dana `n<nedelja>d<dan>`), `alts` (ručne izmene dana), `moves` (pomereni dani → datum), `vanPlana`
    (datum → km), `wellness` (datum → HRV, puls u miru, san, CTL/ATL), `knee`, `kg`, `strava`/`icu` (veza), `ui`.
@@ -33,7 +33,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
    Vlasnik: 15 unosa od 27. 9. 2026. (9 sa tempom i pulsom po km), 3 van plana, 152 dana jutarnjih merenja
    (11. 6 – 9. 11), polumaraton u Nišu 3. 10. 2026: 1:42:01 (krugovi po km sa pulsom).
 
-### 10:00 — zaključci F0 i odluke organizatora
+### 09:43 — zaključci F0 i odluke organizatora
 - O1. „12 nedelja aktivnosti 3–4 korisnika" iz PLAN § F0 NE POSTOJI u bazi. Procena forme (F4) se razvija i
   proverava na: (a) podacima vlasnika, (b) izmišljenim nizovima sa poznatim odgovorom. Punu Strava istoriju
   vlasnika mogu da čitam tek kad vlasnik ponovo poveže Strava konektor — do tada F4 radi sa (b) i sa 15 unosa.
@@ -46,3 +46,14 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   mora da pokrije (uklj. `alts`, `moves`, `log`, `vanPlana`).
 - O4. Stanje korisnika za preuzimanje = plan + `log` + `alts` + `moves` + `vanPlana`; adapter čita sve to, ne samo
   `genPlan`.
+
+### 09:45 — pokrenuto
+- Tabovi (satna provera ih čita odavde):
+  - F1 SPEC — `session_01GnHHiZsCpXuJKp2fG6qCB1` (Fable), brief `briefs/F1-SPEC.md`. Stanje: radi.
+  - F6 merilo — trener `session_01GnHHiWk1PhzvzdGjhxZ5ob` (Fable): RUBRIC-V4, SCENARIOS-V4, JUDGE2-BRIEF, pa ciljni
+    planovi 10K; piše u `docs/generators-v4/coach/`. Stanje: radi.
+- Satna provera: `trig_01YSecBGzp1ugHwXhLb7ugBu` (svakog sata u :43), gura tabove zastale na petočasovnom limitu;
+  nedeljni limit → stajem i javljam vlasniku.
+- CI: `web/scripts/ciScope.mjs` — folder `web/src/domain/v4/` odlučuje graf uvoza (ne „sve"); test dodat
+  (`ciScope.node.test.ts`, 30/30 zeleno). Razlog: bez toga svaki push V4 koda pokreće pun CI u 10 delova. Ovaj push
+  sam dira `web/scripts/` → jedan pun CI run, očekivano.

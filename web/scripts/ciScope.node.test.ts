@@ -67,6 +67,11 @@ const B = 'src/features/B.test.tsx';
 const PWA = 'src/pwa/static.node.test.ts';
 
 describe('izbor po dometu izmene (veštačko stablo)', () => {
+  it('V4 folder: odlučuje graf, ne „sve“ (aplikacija ga još ne uvozi)', () => {
+    const d = pick(['web/src/domain/v4/engine/plan.ts']);
+    expect(d.mode).toBe('select');
+    expect(d.e2e).toBe(false);
+  });
   it.each([
     ['jedna distanca (kod v2)', [`${HM}/core.ts`], [A, HM_GRID, PWA].sort(), true],
     ['dve distance', [`${HM}/core.ts`, `${MAR}/core.ts`], [A, HM_GRID, MAR_GRID, PWA].sort(), true],
