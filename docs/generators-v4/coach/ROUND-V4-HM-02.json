@@ -1,0 +1,92 @@
+{
+  "round": "V4-HM-02",
+  "date": "2026-11-12",
+  "source": "origin/claude/v4 @ a221b269",
+  "weights": { "plan": 0.5, "adaptation": 0.3, "personalization": 0.2 },
+  "summary": {
+    "plan": 74.3,
+    "planWithChecks": 73.3,
+    "adaptation": 79.2,
+    "adaptationWithoutK6Rule": 82.0,
+    "personalization": 59.3,
+    "combined": 72.8,
+    "combinedTwoPartFormula": 76.1,
+    "previous": { "v3k3Plan": 77.6, "v4k1Plan": 68.4, "v4k1Adaptation": 76.5, "v4k1Combined": 71.4 },
+    "profilesAtOrAbove80": ["p05", "p07", "p12"]
+  },
+  "criteriaOrder": ["fit", "quality", "progression", "recovery", "specificity", "taper", "clarity"],
+  "plans": {
+    "p01": { "v3k3": 81.0, "v4k1": 71.0, "scores": [8, 8, 8, 6.5, 8.5, 8, 7.5], "total": 77.5, "withChecks": 75.5, "findings": ["K6"], "peakFastShare": "ned 13: 28 %" },
+    "p02": { "v3k3": 81.0, "v4k1": 69.0, "total": 76.5, "withChecks": 74.5, "findings": ["K6"], "peakFastShare": "ned 11: 28 %" },
+    "p03": { "v3k3": 74.5, "v4k1": 64.0, "scores": [7.5, 7, 7.5, 7, 7.5, 7.5, 7.5], "total": 73.0, "withChecks": 70.0, "findings": ["K6"], "peakFastShare": "ned 13: 26 %" },
+    "p04": { "v3k3": 80.0, "v4k1": 70.5, "scores": [8, 7, 6.5, 7.5, 8.5, 8, 7.5], "total": 75.0, "withChecks": 75.0, "findings": [], "peakFastShare": "ned 17: 18 %" },
+    "p05": { "v3k3": 81.0, "v4k1": 71.5, "scores": [8.5, 8, 7.5, 8, 8.5, 8, 8], "total": 80.5, "withChecks": 80.5, "findings": [], "peakFastShare": "ned 13: 18 %" },
+    "p06": { "v3k3": 71.0, "v4k1": 69.5, "scores": [7, 7, 7, 6, 7, 5.5, 7.5], "total": 67.5, "withChecks": 66.0, "findings": ["K6"], "peakFastShare": "ned 7: 28 %" },
+    "p07": { "v3k3": 75.0, "v4k1": 74.0, "scores": [8.5, 8, 7.5, 8, 8.5, 7.5, 8], "total": 80.0, "withChecks": 80.0, "findings": [], "peakFastShare": "ned 7: 22 %" },
+    "p08": { "v3k3": 74.5, "v4k1": 63.5, "scores": [7, 7.5, 5.5, 5.5, 8, 7.5, 7.5], "total": 68.5, "withChecks": 67.5, "findings": ["K6"], "peakFastShare": "ned 17: 31 %" },
+    "p09": { "v3k3": 80.0, "v4k1": 62.0, "scores": [8, 8, 8, 6.5, 8.5, 8, 7.5], "total": 77.5, "withChecks": 75.5, "findings": ["K6"], "peakFastShare": "ned 13: 26 %" },
+    "p10": { "v3k3": 73.5, "v4k1": 59.5, "scores": [7.5, 7, 7.5, 7, 7.5, 7.5, 7.5], "total": 73.0, "withChecks": 73.0, "findings": [], "peakFastShare": "ned 17: 25 %" },
+    "p11": { "v3k3": 80.0, "v4k1": 75.5, "scores": [5.5, 6.5, 5.5, 8.5, 4.5, 6, 6.5], "total": 62.0, "withChecks": 62.0, "findings": [], "note": "vrh 26,9 km, najduži dugi 70 min (9,9 km)" },
+    "p12": { "v3k3": 80.0, "v4k1": 71.0, "scores": [8.5, 8, 8, 8, 8, 8, 7.5], "total": 80.5, "withChecks": 80.5, "findings": [], "peakFastShare": "ned 13: 17 %" }
+  },
+  "adaptationCriteriaOrder": ["B1", "B2", "B3", "B4", "B5"],
+  "scenarios": {
+    "s01": { "event": "E1", "scores": [4, 8.5, 9, 8.5, 8.5], "total": 75, "k6Rule": true },
+    "s02": { "event": "E1", "scores": [7, 8, 9, 6, 8], "total": 75.5 },
+    "s03": { "event": "E1", "scores": [8, 8, 3, 8, 6], "total": 67, "note": "trka 5 km na dan testa 3 km nije prihvaćena" },
+    "s04": { "event": "E1", "scores": [8, 8, 8.5, 8.5, 6.5], "total": 80 },
+    "s05": { "event": "E2", "scores": [4, 8.5, 8, 6.5, 8.5], "total": 69, "k6Rule": true },
+    "s06": { "event": "E2", "scores": [8.5, 7.5, 7, 7, 8], "total": 76 },
+    "s07": { "event": "E2", "scores": [8.5, 8, 6, 7, 8], "total": 75 },
+    "s08": { "event": "E2", "scores": [9, 8.5, 8, 8.5, 8.5], "total": 85 },
+    "s09": { "event": "E3", "scores": [4, 8.5, 6.5, 8.5, 9], "total": 70.5, "k6Rule": true },
+    "s10": { "event": "E3", "scores": [8.5, 8, 8, 9, 8.5], "total": 84 },
+    "s11": { "event": "E3", "scores": [8.5, 8, 7.5, 9, 8.5], "total": 83 },
+    "s12": { "event": "E3", "scores": [8.5, 8.5, 8, 8.5, 9], "total": 85 },
+    "s13": { "event": "E4", "scores": [4, 8, 7, 6.5, 9], "total": 66.5, "k6Rule": true },
+    "s14": { "event": "E4", "scores": [8.5, 8, 8, 7, 9], "total": 81 },
+    "s15": { "event": "E4", "scores": [8.5, 8, 6, 7.5, 9], "total": 78 },
+    "s16": { "event": "E4", "scores": [8, 8, 8, 5.5, 8.5], "total": 76 },
+    "s17": { "event": "E5", "scores": [4, 8, 8.5, 8.5, 8.5], "total": 73, "k6Rule": true },
+    "s18": { "event": "E5", "scores": [9, 8, 8, 8.5, 8.5], "total": 84 },
+    "s19": { "event": "E5", "scores": [9, 6, 8, 8.5, 8.5], "total": 81 },
+    "s20": { "event": "E5", "scores": [9, 8, 8.5, 8.5, 8.5], "total": 85 },
+    "s21": { "event": "E6", "scores": [4, 9, 9, 9.5, 9], "total": 78.5, "k6Rule": true },
+    "s22": { "event": "E6", "scores": [9, 9, 9, 9.5, 9], "total": 91 },
+    "s23": { "event": "E6", "scores": [9, 9, 9, 9.5, 9], "total": 91 },
+    "s24": { "event": "E6", "scores": [9, 9, 9, 9.5, 9], "total": 91 }
+  },
+  "eventAverages": { "E1": 74.4, "E2": 76.3, "E3": 80.6, "E4": 75.4, "E5": 80.8, "E6": 87.9 },
+  "eventAveragesK1": { "E1": 85.4, "E2": 72.1, "E3": 71.2, "E4": 67.9, "E5": 80.4, "E6": 82.0 },
+  "personalizationCriteriaOrder": ["C1", "C2", "C3", "C4", "C5"],
+  "pairs": {
+    "P1": { "scores": [8.5, 7, 8.5, 8.5, 9], "total": 82 },
+    "P2": { "scores": [7, 5.5, 5, 6, 6], "total": 60 },
+    "P3": { "scores": [4, 4, 3, 2.5, 4], "total": 36 }
+  },
+  "round1Complaints": {
+    "1": "rešeno", "2": "rešeno", "3": "rešeno", "4": "rešeno u ispisu", "5": "rešeno",
+    "6": "rešeno", "7": "delimično", "8": "rešeno"
+  },
+  "newRegressions": [
+    "brz rad 26–31 % u najtežoj nedelji (p01, p02, p03, p06, p08, p09, vlasnik-v1/v2, P1B)",
+    "p11 / P2 / s19: najduži dugi 8,5–10 km za polumaraton",
+    "platoi dugog (p04, p05, p08, P3A)",
+    "taper bez brzog (p06) i nedelja trke bez oštrenja (p11, vlasnik-v1/v2)",
+    "nalazi čuvara odštampani trkaču; čuvar ne prijavljuje p08 i p09",
+    "s03 rezultat se odbacuje; s04 nerazumljiv red izmene",
+    "pogrešan razlog u upozorenju o 3 treninga u nedelji pripremne trke",
+    "ubrzanje tempa bez testa uz bol/bolest (s07, s15)"
+  ],
+  "verdictDReportRound3": {
+    "1": "za početnika sa ≤ 25 km i ≥ 18 nedelja važi lestvica do × 2,0; udeo dugog ≤ 40 % tek od 45 km nedeljno, ispod toga vreme ≤ 2 h 15 i ≤ 45 % u najviše 3 nedelje",
+    "2": "slažem se: doza = udeo × vrh uz granicu po nivou",
+    "3": "motor je u pravu; ciljni p04 ned 9 krši K2",
+    "4": "slažem se: plafon laganog od poslednje nedelje gradnje; budžet od planiranog",
+    "5": "tempo trke i blok se računaju kao brz rad (minuti); nedelja ≤ 22 %, najteža ≤ 25 %; 0,30 se ne prihvata; ciljni p01 ned 13 je moja greška",
+    "6": "bez primedbe",
+    "7": "P3: signal iz krugova, do tada bez kvaliteta i dugi od najdužeg stvarnog; P2: hod-trk i ritam 2:1 u biblioteku",
+    "8": "oštrenje 6–12 min izuzeti iz budžeta nedelje trke"
+  },
+  "ownerReview": ["p12", "p11", "p01"]
+}
