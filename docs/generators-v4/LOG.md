@@ -264,3 +264,15 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   - F8 `session_01GnHHiZrbs6mEte57yWK675` (Opus): predlog ekrana, upozorenja, prikaza forme i promena, šta
     aplikacija mora da čuva (aktivnosti!) — `docs/generators-v4/F8-PREDLOG.md`, bez koda aplikacije.
 - Ograničenje koje ostaje: petočasovni limit određuje brzinu trošenja; kad udari, sve staje do reseta.
+
+### 20:10 — pristigli: F8 predlog (`e1d6953`), forma krug 3 (`4fec1f0`), ugovor motor → forma (`65b968e`), QA1 pregled koda (`a31c21d`) [srednja — nisam sam pokretao]
+- F8 `docs/generators-v4/F8-PREDLOG.md` (278 redova): senka moguća bez izmene aplikacije; aplikacija ne čuva
+  dovoljno aktivnosti za formu; predlog zasebnih tabela; 6 pitanja vlasniku (preneta u razgovoru, čekaju odgovor;
+  ne blokiraju HM). Nisam ga još pročitao ceo.
+- Forma krug 3: pridržavanje po nedeljnim ciljevima plana; S21 +1 s, S09 +10 s sa rečenicom; signali 'plan'/'baza'.
+- QA1 (nezavisan pregled `engine/` + `fitness/`, dokazi pokretanjem): 1 kritično, 6 ozbiljno, 13 sitno, 3 sumnje.
+  K1: planirana provera forme upisana kao jedna aktivnost (sa zagrevanjem) ruši formu 1:41:59 → 1:54:07. O2:
+  izjavljenih 40 km + jedno staro trčanje → „dugi 0,5 km". O3: trka u ponedeljak → dugi dan pre trke. Sabotaže:
+  36/42 obara test. NIJE nađeno: nedeterminizam (6468 planova), nestabilnost, diranje zaštićenih dana, ime distance.
+- Odluke za K1/O2–O6 i testove koji fale poslate tabu M (krug 3 motora; sme da dira i `fitness/`).
+- Tabovi: D radi; M radi krug 3; F4, F8, QA1 završeni.
