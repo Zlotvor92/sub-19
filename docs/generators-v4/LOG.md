@@ -144,3 +144,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   ispravljeno). Izmene motora od sada samo na zahtev organizatora; svaka mora da ostavi otiske distanci.
 - F3 vraćen na doradu (11:00): prva verzija HM lošija od v3 za vlasnikov profil (najduži dugi 12,5 km, vrh 32,8 km,
   nedelje 3–5 padaju na 26 km / 3 treninga). Zahtev: vrh 38–40 km, dugi 16 km, uvek 4 treninga, V4 ≥ v3 po profilu.
+
+### 11:10 — F3 druga verzija (`8f3ff40`): 174 testa (po tabu), 14 ispisa; MOJ PREGLED: i dalje ispod v3 za vlasnika [visoka]
+- vlasnik-v1 (30 km, 4 dana, 10 ned): vrh 33,6 km, najduži dugi 12 km (v3: 14,5). vlasnik-v2 (18 ned): vrh 44,3, dugi
+  16 km. p01: vrh 49,7, dugi 18,5. p11 početnik: dugi 13,9 km (v3: 18).
+- F3 je prijavio 8 zahteva prema motoru — svi prihvaćeni → TREĆI KRUG motora (motor privremeno odmrznut): čuvar i
+  × 0,8 posle planiranog testa, polazni dugi i udeo dugog po danima/nivou, nedelja 1 ≥ sadašnji obim, rasterećenje
+  prema stvarnom cilju, napomene dana trke, uslov „samo po osećaju".
+- Sudijama se šalje tek verzija posle trećeg kruga koja ispuni: vlasnik-v1 vrh 38–40 km i dugi 16 km; V4 ≥ v3 po
+  profilu (vrh km, najduži dugi).
