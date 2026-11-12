@@ -20,6 +20,7 @@ import type { LevelId, StimulusSlot, Template, WeekIntent, WeekKind } from '../.
 type Family = 'redovan' | 'pocetnik';
 
 const REGULAR: LevelId[] = ['spor', 'srednji', 'brz'];
+const RETURNING: LevelId[] = ['povratnik'];
 const SMALL: LevelId[] = ['mali'];
 const BEGINNER: LevelId[] = ['pocetnik'];
 
@@ -74,6 +75,8 @@ const KONTROLA = S('kontrola', undefined, 'kontrola-10k');
 interface Shape {
   days: number;
   single: boolean;
+  /** Povratnik posle pauze: prve 2 nedelje samo ubrzanja i kratki usponi, prag kreće niže (par P1 B). */
+  gentle?: boolean;
 }
 
 /** Mesto subote u nizu dana kvaliteta: sa 4+ dana poslednje (subota je najbliža nedelji); sa 1–3 dana subota nije
@@ -121,7 +124,7 @@ function layout(n: number, family: Family): Layout {
 /* ------------------------------------------------------------------ redovan */
 
 /** Doza praga po položaju u pripremi (0 = početak, 1 = kraj tela): ciljni p01 14 → 33 min, p04 23 → 34 min. */
-const tDose = (t: number): number => lerp(0.45, 0.95, t);
+const tDose = (t: number, gentle = false): number => lerp(gentle ? 0.35 : 0.45, 0.95, t);
 
 function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const L = layout(n, 'redovan');
@@ -175,6 +178,10 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     const long = lerp(0.68, 0.95, t);
     const longSpec =
       w === lastBeforeCheck ? { len: long, stimulus: 'dugi-progresivno' } : { len: long };
+    if (sh.gentle === true && w <= 2) {
+      out.push(week(OSNOVA, 'build', load, { len: long }, [HILLS_SHORT, STRIDES]));
+      continue;
+    }
     if (w >= devFrom) {
       /* intervali: 17 → 22 → 16 min (ciljni p01, p04; plafon 22 min); nedelja posle pripremne trke nema intervale
          (utorak je 3. dan posle trke, motor ga ionako daje lagano) */
@@ -194,7 +201,9 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       );
     } else {
       osn += 1;
-      out.push(week(OSNOVA, 'build', load, longSpec, one(S('prag', tDose(t)), S('brzina'), osn)));
+      out.push(
+        week(OSNOVA, 'build', load, longSpec, one(S('prag', tDose(t, sh.gentle)), S('brzina'), osn))
+      );
     }
   }
   return [...out, ...regularTail(sh, L.check === n - 8, n < 12)].slice(-n);
@@ -379,6 +388,15 @@ export const TEMPLATES: Template[] = WEEKS.flatMap((n) =>
         n,
         BEGINNER,
         beginnerMult(n, days)
+      ),
+      /* povratnik: vrh ≈ 1,25 × u km (par P1 B: 48–50 km umesto 56) */
+      makeTemplate(
+        'povratnik',
+        'redovan',
+        { days, single: few, gentle: true },
+        n,
+        RETURNING,
+        1 + (regularMult(n, days) - 1) * 0.8
       )
     ];
   })

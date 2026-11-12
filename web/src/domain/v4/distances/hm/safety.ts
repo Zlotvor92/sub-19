@@ -8,6 +8,8 @@ import { MAX_PEAK_OVER_BASE } from './templates';
     nedeljno (v3: ispod 25 km jedan kvalitet); ostali po formi (VDOT). */
 export const LEVELS: LevelRule[] = [
   { id: 'pocetnik', when: { beginner: true } },
+  /* povratnik: ≤ 8 nedelja od kraja pauze (uslov iz istorije, motor krug 3) — blaži početak i niži vrh (par P1 B) */
+  { id: 'povratnik', when: { maxWeeksSincePause: 8 } },
   /* mali obim samo ispod VDOT 52: brz trkač malog obima ostaje „brz" (dva kvaliteta) i dobija upozorenje
      `obim-za-nivo` (krug 2, R11; p06) */
   { id: 'mali', when: { maxBaseLoad: 210, maxVdot: 51.9 } },
@@ -33,6 +35,7 @@ export const SAFETY: SafetyNumbers = {
      nedeljno (v3 apsolutni plafon) */
   peakLoadCap: {
     pocetnik: 440,
+    povratnik: 500,
     mali: 420,
     spor: 540,
     srednji: 600,
@@ -44,6 +47,7 @@ export const SAFETY: SafetyNumbers = {
      brzih ograničavao dužinom (do 26 km), pa brz trkač ne trči 29 km u pripremi za polumaraton */
   longMaxSec: {
     pocetnik: 7800,
+    povratnik: 8100,
     mali: 7800,
     spor: 9000,
     srednji: 8100,
@@ -53,6 +57,7 @@ export const SAFETY: SafetyNumbers = {
      cilja (vlasnik-v2 ned. 11 bi imala 41 %) */
   longShareByRunDays: {
     pocetnik: LONG_SHARE,
+    povratnik: LONG_SHARE,
     mali: { ...LONG_SHARE, '4': 0.37, '5': 0.34 },
     spor: LONG_SHARE,
     srednji: LONG_SHARE,
