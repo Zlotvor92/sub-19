@@ -35,21 +35,20 @@ K7 „prvi trening ≤ 70 % vrha" ne važi za brzinu/brda: K8 traži ≥ 8 min r
 ## Poređenje sa v3 (P9v3/plans/HM; v3 → V4)
 | profil | vrh km | najduži dugi km | broj kvaliteta | udeo brzog rada (ceo plan) |
 |---|---|---|---|---|
-| p01 | 56,0 → 56,0 | 22,0 → 22,0 | 26 → 22 | 14 → 14 % |
-| p02 | 54,0 → 56,1 | 21,5 → 24,0 | 22 → 19 | 14 → 15 % |
+| p01 | 56,0 → 56,0 | 22,0 → 22,5 | 26 → 22 | 14 → 14 % |
+| p02 | 54,0 → 56,1 | 21,5 → 24,5 | 22 → 19 | 14 → 15 % |
 | p03 | 33,3 → 35,6 | 15,5 → 18,2 | 16 → 16 | 13 → 12 % |
-| p04 | 63,0 → 69,3 | 20,0 → 19,5 | 33 → 30 | 11 → 10 % |
+| p04 | 63,0 → 70,0 | 20,0 → 20,2 | 33 → 30 | 11 → 10 % |
 | p05 | 100,1 → 102,7 | 26,0 → 26,5 | 26 → 23 | 12 → 10 % |
 | p06 | 43,3 → 44,3 | 16,5 → 17,5 | 15 → 10 | 14 → 12 % |
-| p07 | 67,9 → 69,5 | 22,0 → 21,5 | 17 → 14 | 13 → 12 % |
-| p08 | 47,8 → 49,0 | 22,0 → 22,5 | 20 → 20 | 12 → 12 % |
-| p09 | 59,0 → 63,3 | 22,0 → 22,0 | 25 → 23 | 13 → 13 % |
+| p07 | 67,9 → 69,5 | 22,0 → 23,0 | 17 → 14 | 13 → 12 % |
+| p08 | 47,8 → 49,0 | 22,0 → 23,0 | 20 → 20 | 12 → 12 % |
+| p09 | 59,0 → 63,2 | 22,0 → 22,5 | 25 → 23 | 13 → 13 % |
 | p10 | 33,3 → 35,5 | 15,5 → 18,0 | 19 → 20 | 12 → 13 % |
 | p11 | 39,2 → 39,3 | 18,0 → 19,2 | 15 → 17 | 8 → 10 % |
-| p12 | 55,3 → 58,6 | 18,5 → 19,1 | 11 → 14 | 6 → 8 % |
-Ispod v3 samo p04 i p07 dugi
-za 0,5 km (2 h 15 na 7:07/km = 19 km; motor zaokružuje naniže). p06 ima manje kvaliteta jer je mali obim (35 km za
-2 h 45 min nedeljno) — jedan kvalitet. Vlasnik v1: vrh 38,6 km, najduži dugi 16 km (+ 15,5 u 5. ned), prvi dugi
+| p12 | 55,3 → 58,6 | 18,5 → 19,8 | 11 → 14 | 6 → 8 % |
+Posle četvrtog kruga motora nijedan profil nije ispod v3 ni po vrhu ni po najdužem dugom. p06 ima manje kvaliteta jer
+je mali obim (35 km za 2 h 45 min nedeljno) — jedan kvalitet. Vlasnik v1: vrh 38,6 km, najduži dugi 16 km (+ 15,5 u 5. ned), prvi dugi
 10,5 km, uvek 4 treninga, gradnja ne pada. Vlasnik v2: dugi 19–21 km 6 puta, vrh 49,3 km.
 
 ## Scenariji (24, `plans/HM/scenarios/`)
@@ -57,7 +56,7 @@ Svi daju plan; E6 (4 profila): 0 promena i isti otisak. Nalazi čuvara posle dog
 p04 skida vrh, pa sužavanje ima više rada od nove „najteže"), s09/s11/s13 `dugi-korak` (motor meri korak od skraćenog
 dugog), s18/s19 `ispod-cilja` (početak posle trke). E5 je nov plan iz stanja sa jučerašnjom trkom (nema `replan`).
 
-## Zahtevi prema motoru (1–8 rešeni u trećem krugu 8a22e4d i iskorišćeni; 9–12 čekaju četvrti krug)
+## Zahtevi prema motoru (1–8 rešeni u trećem krugu 8a22e4d, 9–12 u četvrtom 3be0d68; svi iskorišćeni)
 1. Čuvar ne vidi rampu posle testa iz plana → lažno `ispod-cilja` u nedelji provere.
 2. „Prvi kvalitet posle rampe × 0,8" (14 dana) važi i posle PLANIRANE provere forme — smanjuje blok/RP i ruši nedelju.
 3. `longStartShare` po broju dana; L₀ je i pod pravila koraka, pa veći L₀ dozvoljava skok dugog na prelazu faza.
@@ -73,6 +72,6 @@ dugog), s18/s19 `ispod-cilja` (početak posle trke). E5 je nov plan iz stanja sa
 12. Novo: upozorenje `mali-obim` predlaže samo „produži pripremu" i kad je datum zadat — treba i šta može sada (5. dan).
 
 ## Šta NIJE urađeno / otvoreno
-- Otisci su zaključani na ovom stanju motora; posle trećeg kruga se osvežavaju, a zaobilaznice (nivoi „obiman") uklanjaju.
+- Otisci su zaključani na četvrtom (završnom) krugu motora 3be0d68.
 - Upozorenja (tekst predloga) piše motor — tačka 12 nije rešiva podacima.
 - Ocena trenera nije računata (radi sudija); trenerski ciljevi su provereni testovima, ne ocenom.

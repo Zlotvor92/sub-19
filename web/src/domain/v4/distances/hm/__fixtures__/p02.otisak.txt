@@ -25,14 +25,14 @@
 2026-11-26 | trening | quality | 10.6 | prag 3 × 8 min, oporavak 1:30 džog | - | - | -
 2026-11-27 | odmor | - | 0.0 |  | - | - | -
 2026-11-28 | trening | easy | 4.5 | lagano 4,5 km | - | - | -
-2026-11-29 | trening | long | 20.0 | dugi 20 km lagano | - | - | -
+2026-11-29 | trening | long | 20.5 | dugi 20,5 km lagano | - | - | -
 2026-11-30 | odmor | - | 0.0 |  | - | - | -
 2026-12-01 | trening | quality | 8.8 | intervali 4 × 800 m, oporavak 2 min džog | - | - | -
 2026-12-02 | odmor | - | 0.0 |  | - | - | -
 2026-12-03 | trening | quality | 11.3 | prag 2 × 14 min, oporavak 1:30 džog | - | - | -
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
 2026-12-05 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
-2026-12-06 | trening | long | 21.5 | dugi 21,5 km, završni deo 2 km progresivno do tempa trke | - | - | -
+2026-12-06 | trening | long | 22.0 | dugi 22 km, završni deo 2 km progresivno do tempa trke | - | - | -
 2026-12-07 | odmor | - | 0.0 |  | - | - | -
 2026-12-08 | trening | test | 9.6 | provera forme: trka ili test na 5 km punim naporom | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
@@ -69,12 +69,12 @@
 2027-01-09 | trening | easy | 7.5 | lagano 7,5 km | - | - | -
 2027-01-10 | trening | long | 19.5 | dugi 19,5 km lagano | - | - | -
 2027-01-11 | odmor | - | 0.0 |  | - | - | -
-2027-01-12 | trening | easy | 10.5 | lagano 9,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-01-12 | trening | easy | 10.0 | lagano 9 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-13 | odmor | - | 0.0 |  | - | - | -
 2027-01-14 | trening | quality | 11.1 | tempo trke 3 × 2 km, oporavak 1:30 džog | - | - | -
 2027-01-15 | odmor | - | 0.0 |  | - | - | -
-2027-01-16 | trening | easy | 9.5 | lagano 9,5 km | - | - | -
-2027-01-17 | trening | long | 24.0 | dugi 24 km, završni deo 7,5 km u tempu trke | - | - | -
+2027-01-16 | trening | easy | 9.0 | lagano 9 km | - | - | -
+2027-01-17 | trening | long | 24.5 | dugi 24,5 km, završni deo 7,5 km u tempu trke | - | - | -
 2027-01-18 | odmor | - | 0.0 |  | - | - | -
 2027-01-19 | trening | easy | 7.5 | lagano 7,5 km | - | - | -
 2027-01-20 | odmor | - | 0.0 |  | - | - | -

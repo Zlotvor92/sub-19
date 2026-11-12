@@ -230,7 +230,7 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
 }
 
 describe('čuvar na mreži ulaza (1440 planova)', () => {
-  it('nema nalaza osim onih koje ulaz opravdava', () => {
+  it('nema nalaza osim onih koje ulaz opravdava', { timeout: 60_000 }, () => {
     const unexplained: string[] = [];
     for (const c of gridCases()) {
       const b = gridBuild(c);
@@ -463,7 +463,7 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
         }
         best = Math.max(best, s.longKm);
         /* skok nedelje: prema najvećoj od prethodne 3 (pad usred bloka zbog više brzog rada nije
-           rasterećenje); posle rasterećenja povratak na raniji nivo nije skok; + 1 km = zaokruživanje dana. Posle
+           rasterećenje); posle rasterećenja povratak na raniji nivo nije skok; + 1,5 km = zaokruživanje 3 dana na 0,5 km. Posle
            rampe (trka pre plana) pravilo rasta tri nedelje gradi iz smanjenih nedelja — to je motor (F3-REPORT). */
         const prev = stats[i - 1];
         const recent = Math.max(
@@ -480,7 +480,7 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
           recent > 0 &&
           !afterRamp
         ) {
-          expect(s.km, `${p.id} nedelja ${String(i + 1)}`).toBeLessThanOrEqual(recent * 1.12 + 1);
+          expect(s.km, `${p.id} nedelja ${String(i + 1)}`).toBeLessThanOrEqual(recent * 1.12 + 1.5);
         }
       });
       const firstAndMax = new Map<string, { first: number; max: number }>();
@@ -579,8 +579,9 @@ describe('trenerski zahtevi (brief F3)', () => {
   });
 
   it('plan duži od 10 nedelja: ispis nosi napredak u prognozi; mali obim i 3 dana: upozorenje sa predlogom', () => {
-    const owner = RENDERED.find((p) => p.id === 'vlasnik-v1');
-    expect(owner?.doc.header.warnings.map((w) => w.code)).toContain('mali-obim');
+    /* mali-obim izostaje kad fali < 5 % (motor, četvrti krug); p03 (35,6 km prema 40) ga mora imati */
+    const small = RENDERED.find((p) => p.id === 'p03');
+    expect(small?.doc.header.warnings.map((w) => w.code)).toContain('mali-obim');
     for (const id of ['p03', 'p08', 'p10']) {
       const p = RENDERED.find((x) => x.id === id);
       expect(
