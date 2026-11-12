@@ -118,3 +118,5 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   istoriju ako konektor proradi (da se ne kalibriše na nepotpunim podacima).
 - Zahtevi F4 prema tipovima (`Run.planned`, `Run.tempC`, izvedene pauze, ubrizgan `EstimateFormFn`) poslati motoru.
 - F4 tab `session_01GnHHiYchQtH6mmwpQBMi1S`: ZAVRŠEN.
+
+### 10:30 — motor: `plan` + `renderPlan` rade (`c2ee685`) → pokrenut F3 (HM podaci, Opus) `session_01GnHHiamNMpKXMSuJ6DLNNH`
