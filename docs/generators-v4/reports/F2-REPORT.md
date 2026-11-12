@@ -272,8 +272,9 @@ Motor + forma + adapteri + izolacija: 520 testova, zeleno; `typecheck`, ESLint, 
   od `minEasySec`; čuvar `prazan` meri prema najkraćem smislenom trčanju (najkraće lagano / dan pred trku / dan u
   rampi, uz jedno zaokruživanje i 10 % za promenu tempa), ne prema stalnih 15 min.
 - **O3** — poslednji dani pre trke važe po DATUMU: dan pred trku ≤ 20 min bez dodatka, poslednja 2 dana bez kvaliteta
-  i sa plafonom sužavanja, dugog nema u poslednjih 6 dana — i kad ti dani padnu u nedelju pre nedelje trke. Čuvar:
-  `dan-pred-trku`, `dugi-pred-trku`; `ispod-cilja` se ne prijavljuje za `taper` ni za nedelju koja dodiruje tih 6 dana.
+  i sa plafonom sužavanja, dugog nema u poslednjih 5 dana (odluka organizatora: skraćen dugi sužavanja 6 dana pre
+  trke ostaje) — i kad ti dani padnu u nedelju pre nedelje trke. Čuvar: `dan-pred-trku`, `dugi-pred-trku`;
+  `ispod-cilja` se ne prijavljuje za `taper` ni za nedelju koja dodiruje tih 5 dana.
 - **O4** — posle usvojenog rezultata `byFeel = false` bez obzira na razliku, `nema-podataka` nestaje (uslov
   upozorenja je sada „tempa po osećaju", ne pouzdanost procene); `form-update` ne vraća `byFeel` na `true`.
 - **O5** — `buildState` ne baca na neispravan `today`, pauzu, bol ni datum trke; ono što je morao da preskoči nosi u
@@ -305,8 +306,8 @@ trčanja. `explain.ts`: `explainUnusable`. Testovi: K1, puls na deonicama, `with
 S4, S5 (zaštićeni dani pri promeni cilja i rasporeda), S8 (bol sa starim datumom), S12 („Polazim od ≈ X km" je tačno
 samo kad je baza iz izjave), deo S13 (provera forme veća od cilja male nedelje), U1–U3.
 ### Šta menja planove (za tab podataka — osvežiti otiske)
-1. Trka subotom (ili bilo kad je dugi u poslednjih 6 dana pre trke): nedelja sužavanja gubi dugi — taj dan je lagan
-   do `taperEasyMaxSec`. Trka nedeljom je ista kao pre.
+1. Dugi u poslednjih 5 dana pre trke ne postoji (taj dan je lagan do `taperEasyMaxSec`); trka subotom i nedeljom
+   zadržavaju nedeljni dugi sužavanja (6, odnosno 7 dana pre trke).
 2. Poslednja 2 dana pre trke: bez kvaliteta i sa plafonom sužavanja i kad su u nedelji pre nedelje trke (trka pon/uto).
 3. Plan koji počinje posle trke ili sa retkom istorijom (jedna trka, par trčanja): baza je izjavljeni obim, ne obim
    izveden iz tog jednog trčanja → vlasnik-v2 i scenariji E5 (s17–s20) imaju drugu bazu, vrh i dugi.

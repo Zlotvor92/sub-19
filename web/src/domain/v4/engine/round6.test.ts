@@ -269,7 +269,7 @@ describe('O2: izjavljen obim i retka istorija', () => {
 describe('O3: poslednji dani pre trke važe po datumu, preko granice nedelje', () => {
   const big = { weeklyKm: 55, recentResult: { distanceM: HALF_M, timeSec: 6060 } };
 
-  it('trka svakog dana u nedelji: dan pred trku je odmor ili lagano ≤ 20 min, bez dugog u 6 dana, bez kvaliteta u 2 dana', () => {
+  it('trka svakog dana u nedelji: dan pred trku je odmor ili lagano ≤ 20 min, bez dugog u 5 dana, bez kvaliteta u 2 dana', () => {
     let eves = 0;
     for (let offset = 0; offset < 7; offset += 1) {
       const raceDate = addDays('2027-01-25', offset);
@@ -291,7 +291,7 @@ describe('O3: poslednji dani pre trke važe po datumu, preko granice nedelje', (
             eves += 1;
           }
           if (left <= 2) expect(isFast(day), `${name} ${day.date}`).toBe(false);
-          if (left <= 6) expect(day.workout.kind, `${name} ${day.date}`).not.toBe('long');
+          if (left <= 5) expect(day.workout.kind, `${name} ${day.date}`).not.toBe('long');
         }
         const found = guard(doc, state, SYNTHETIC).map((x) => x.check);
         expect(found, name).not.toContain('dan-pred-trku');
@@ -308,7 +308,28 @@ describe('O3: poslednji dani pre trke važe po datumu, preko granice nedelje', (
     expect(secOf(doc, sunday)).toBeLessThanOrEqual(1200 + ROUND);
   });
 
-  it('čuvar prijavljuje dug dan pred trku i dugi u poslednjih 6 dana', () => {
+  it('trka subotom: skraćen dugi sužavanja 6 dana pre trke (nedelja) ostaje; 5 dana pre trke dugog nema', () => {
+    const saturday = '2027-01-23';
+    expect(weekdayOf(saturday)).toBe(5);
+    const { doc, state } = make(facts({ profile: big }), SYNTHETIC, goalAt(saturday));
+    const sunday = days(doc).find((d) => d.date === addDays(saturday, -6));
+    expect(sunday?.workout?.kind).toBe('long');
+    /* Kraći je od najdužeg dugog plana (sužavanje). */
+    const longest = Math.max(...doc.weeks.map((w) => w.longSec));
+    expect(secOf(doc, sunday)).toBeLessThan(longest);
+    expect(guard(doc, state, SYNTHETIC).map((x) => x.check)).not.toContain('dugi-pred-trku');
+    /* Dugi u ponedeljak, trka u subotu: ponedeljak je 5 dana pre trke — dugog nema. */
+    const monday = make(
+      facts({ profile: big, availability: { runDays: [0, 2, 4, 5], longDay: 0 } }),
+      SYNTHETIC,
+      goalAt(saturday)
+    ).doc;
+    expect(days(monday).find((d) => d.date === addDays(saturday, -5))?.workout?.kind).not.toBe(
+      'long'
+    );
+  });
+
+  it('čuvar prijavljuje dug dan pred trku i dugi u poslednjih 5 dana', () => {
     const { doc, state } = make(facts({ profile: big }));
     const long = days(doc).find((d) => d.workout?.kind === 'long');
     const eve = addDays(GOAL.raceDate, -1);

@@ -97,10 +97,10 @@ export const LADDER_TOLERANCE_SEC = 90;
 /** Blok u dugom nije duži od polovine dugog (geometrija treninga; nije plafon doze). */
 export const LONG_BLOCK_MAX_SHARE = 0.5;
 /** Dan pre trke: odmor ili lagano do 20 min (§ 6.2 k. 10). Važi po DATUMU, preko granice nedelje (krug 3, O3):
-    poslednja 2 dana pre trke bez kvaliteta i sa plafonom sužavanja; dugog nema u poslednjih 6 dana pre trke. */
+    poslednja 2 dana pre trke bez kvaliteta i sa plafonom sužavanja; dugog nema u poslednjih 5 dana pre trke (skraćen dugi sužavanja 6 dana pre trke ostaje). */
 export const RACE_EVE_MAX_SEC = 1200;
 export const RACE_CALM_DAYS = 2;
-export const RACE_NO_LONG_DAYS = 6;
+export const RACE_NO_LONG_DAYS = 5;
 
 /** Lagan dan ne nestaje zbog malog ostatka budžeta kad trkač ima ≥ 3 dana: ostaje na `minEasySec` dok nedelja
     ne pređe cilj za više od 10 % (odluka organizatora, drugi krug). */

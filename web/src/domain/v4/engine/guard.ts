@@ -323,7 +323,7 @@ export const guard: GuardFn = (doc, _state, data) => {
           `Trening je prazan, bez teksta ili kraći od najkraćeg smislenog trčanja (${fmtDate(day.date)}).`
         );
       }
-      /* O3: dan pred trku je odmor ili lagano do 20 min; dugog nema u poslednjih 6 dana pre trke. */
+      /* O3: dan pred trku je odmor ili lagano do 20 min; dugog nema u poslednjih 5 dana pre trke. */
       if (
         day.date === eve &&
         w.kind !== 'race' &&
@@ -341,7 +341,7 @@ export const guard: GuardFn = (doc, _state, data) => {
           'dugi-pred-trku',
           week,
           day,
-          `Dugi trening je u poslednjih 6 dana pre trke (${fmtDate(day.date)}).`
+          `Dugi trening je u poslednjih 5 dana pre trke (${fmtDate(day.date)}).`
         );
       }
       /* Poredi se dužina: dugi sa blokom je brži, pa kraće traje za iste kilometre. */
