@@ -67,21 +67,40 @@ export function explainStart(
   }
 }
 
+export interface ResultContext {
+  /** Deo razlike koji je usvojen (0–1). */
+  k: number;
+  /** Prvi rezultat (pre njega nije bilo ni trke ni testa u aplikaciji). */
+  first: boolean;
+}
+
 export function explainResult(
   kind: 'trka' | 'test',
   date: IsoDate,
   distanceM: Meters,
   timeSec: Seconds,
   ev: ResultEvidence,
+  ctx: ResultContext,
   before: Vdot,
   after: Vdot,
   goalM: Meters
 ): string {
   const what = kind === 'trka' ? 'Trka' : 'Test';
   const parts = [`${what} ${shortDate(date)}: ${km(distanceM)} za ${clock(timeSec)}.`];
-  if (ev.splitBonus > 0) {
+  if (ev.walking) {
     parts.push(
-      'Druga polovina je bila izrazito brža od prve, pa rezultat malo potcenjuje formu i računa se nešto bolje.'
+      'U trci je bilo hodanja, pa se rezultat uzima kakav je, bez ikakve korekcije, a procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka.'
+    );
+  } else if (ctx.first) {
+    parts.push(
+      'Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka.'
+    );
+  }
+  if (ev.splitBonus > 0) {
+    const asRun = clock(raceTimeSec(ev.rawVdot, distanceM));
+    const corrected = clock(raceTimeSec(ev.vdot, distanceM));
+    parts.push(
+      `Druga polovina je bila izrazito brža od prve: deo snage je ostao neiskorišćen, pa se ${asRun} računa kao ${corrected}.`
     );
   }
   if (ev.hot && after < before) {
@@ -89,8 +108,56 @@ export function explainResult(
   } else if (ev.hot) {
     parts.push('Bilo je toplo, pa se rezultat uzima kao donja granica forme.');
   }
+  if (ctx.k < 1 && Math.abs(after - ev.vdot) >= 0.01) {
+    parts.push(
+      `Usvaja se ${String(Math.round(ctx.k * 100))} % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima.`
+    );
+  }
   parts.push(`${capital(move(before, after, goalM))}.`);
   return parts.join(' ');
+}
+
+/** R12: odrađena nedelja plana. `share` = pridržavanje (0–1+). */
+export function explainPlanWeek(
+  from: IsoDate,
+  to: IsoDate,
+  share: number,
+  before: Vdot,
+  after: Vdot,
+  goalM: Meters
+): string {
+  return `Nedelja ${shortDate(from)} – ${shortDate(to)} odrađena je po planu (oko ${pctWhole(share)} planiranog opterećenja): deo napretka koji plan očekuje do trke pripisuje se formi — ${move(before, after, goalM)}; očekivano vreme na dan trke ostaje isto.`;
+}
+
+/** R12: nedelja odrađena delimično ili nikako — očekivani napredak do trke je manji. */
+export function explainPlanShortfall(
+  from: IsoDate,
+  to: IsoDate,
+  share: number,
+  lostSec: Seconds,
+  before: Vdot,
+  after: Vdot,
+  goalM: Meters
+): string {
+  const credited =
+    Math.abs(after - before) >= 0.01
+      ? ` Deo napretka je ipak pripisan formi (${move(before, after, goalM)}).`
+      : '';
+  return `Nedelja ${shortDate(from)} – ${shortDate(to)} odrađena je oko ${pctWhole(share)} planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko ${seconds(lostSec)} sporije.${credited}`;
+}
+
+/** R13: pad baze. */
+export function explainBaseDrop(ratio: number, before: Vdot, after: Vdot, goalM: Meters): string {
+  return `Poslednjih šest nedelja trčiš znatno manje nego pre (oko ${pctWhole(ratio)} ranijeg obima); forma polako opada kad obim dugo stoji nisko — ${move(before, after, goalM)}. Kad se obim vrati, prvi test ili trka pokazuju pravo stanje.`;
+}
+
+function pctWhole(x: number): string {
+  return `${String(Math.round(x * 100))} %`;
+}
+
+function seconds(sec: Seconds): string {
+  const s = Math.max(1, Math.round(sec));
+  return s >= 60 ? clock(s) : `${String(s)} ${plural(s, 'sekundu', 'sekunde', 'sekundi')}`;
 }
 
 export function explainQuality(

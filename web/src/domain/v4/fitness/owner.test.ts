@@ -75,15 +75,18 @@ describe('uzorak vlasnika', () => {
 
     const race = today.history.find((h) => h.signal === 'trka');
     expect(race).toBeDefined();
-    /* Trka 1:42:01 (VDOT ≈ 44,1) + polovina razlike do druge polovine → ≈ 44,6 (oko 1:41:05). */
+    /* Trka 1:42:01 (VDOT ≈ 44,1) + polovina razlike do druge polovine → ≈ 44,76 (oko 1:40:42). */
     expect(afterRace.current.vdot).toBeGreaterThan(44.3);
     expect(afterRace.current.vdot).toBeLessThan(45.1);
-    expect(afterRace.current.confidence).toBe('visoka');
-    /* Posle trke nema novog dokaza: prekidi od 10 dana su kraći od 14 i nisu prijavljeni → procena stoji. */
-    expect(today.current.vdot).toBe(afterRace.current.vdot);
-    expect(today.history.filter((h) => h.signal !== 'izjava').map((h) => h.signal)).toEqual([
-      'trka'
-    ]);
+    /* R14: prvi rezultat u aplikaciji — pouzdanost najviše srednja; rečenica objašnjava korekciju. */
+    expect(afterRace.current.confidence).toBe('srednja');
+    expect(race?.reason).toContain('1:42:01');
+    expect(race?.reason).toContain('računa kao');
+    /* R13: 5 kratkih trčanja od 3. 10 — baza je pala ispod 70 % → forma blago niža, sa rečenicom. */
+    const drop = today.history.find((h) => h.reason.includes('šest nedelja'));
+    expect(drop).toBeDefined();
+    expect(today.current.vdot).toBeLessThan(afterRace.current.vdot);
+    expect(today.current.vdot).toBeGreaterThanOrEqual(afterRace.current.vdot * (1 - 0.03) - 0.01);
     expect(spring.raceDay.expectedSec).toBeLessThan(today.current.raceTimeSec);
     expect(springPlan.ceilingGain).toBeGreaterThan(spring.ceilingGain);
   });

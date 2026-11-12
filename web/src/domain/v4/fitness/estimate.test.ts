@@ -8,6 +8,8 @@ import type { FitnessFacts, FitnessRun } from './types';
 const HALF = 21097.5;
 const TEN = 10000;
 const T0 = '2026-09-07'; // ponedeljak
+/** Trka dalje od 17 nedelja: bez pripisivanja odrađenog plana (R12), da se vide sami signali § 7.2. */
+const FAR = '2027-09-05';
 
 const add = (iso: string, n: number): string => isoOf(dayNum(iso) + n);
 
@@ -84,12 +86,8 @@ const signals = (e: FormEstimate): string[] => e.history.map((h) => h.signal);
 describe('forma iz trčanja — ne skače (§ 7.3)', () => {
   it('jedan odličan trening pomera procenu ≤ 0,1 VDOT', () => {
     const today = add(T0, 3);
-    const base = estimateForm(facts([], today), goal('2027-01-10'), null);
-    const one = estimateForm(
-      facts([tempoRun('q1', add(T0, 2), 45, 0.9)], today),
-      goal('2027-01-10'),
-      null
-    );
+    const base = estimateForm(facts([], today), goal(FAR), null);
+    const one = estimateForm(facts([tempoRun('q1', add(T0, 2), 45, 0.9)], today), goal(FAR), null);
     const d = one.current.vdot - base.current.vdot;
     expect(d).toBeGreaterThan(0);
     expect(d).toBeLessThanOrEqual(0.1 + 1e-9);
@@ -97,7 +95,7 @@ describe('forma iz trčanja — ne skače (§ 7.3)', () => {
 
   it('zbir kvaliteta ≤ 0,3 VDOT u 7 dana', () => {
     const runs = [0, 1, 2, 3, 4, 5].map((i) => tempoRun(`q${i}`, add(T0, i), 45, 0.85));
-    const e = estimateForm(facts(runs, add(T0, 6)), goal('2027-01-10'), null);
+    const e = estimateForm(facts(runs, add(T0, 6)), goal(FAR), null);
     expect(e.current.vdot - 45).toBeLessThanOrEqual(0.3 + 0.011);
     expect(e.current.vdot - 45).toBeGreaterThan(0.25);
   });
@@ -105,7 +103,7 @@ describe('forma iz trčanja — ne skače (§ 7.3)', () => {
   it('RPE ≥ 9: držao je, ali na granici — bez pomeranja', () => {
     const e = estimateForm(
       facts([tempoRun('q', add(T0, 1), 45, 0.95, 9)], add(T0, 2)),
-      goal('2027-01-10'),
+      goal(FAR),
       null
     );
     expect(e.current.vdot).toBeCloseTo(45, 2);
@@ -114,7 +112,7 @@ describe('forma iz trčanja — ne skače (§ 7.3)', () => {
   it('neodrađen (sporo) spušta najviše 0,1', () => {
     const e = estimateForm(
       facts([tempoRun('q', add(T0, 1), 45, 1.08)], add(T0, 2)),
-      goal('2027-01-10'),
+      goal(FAR),
       null
     );
     expect(e.current.vdot).toBeLessThan(45);
@@ -132,11 +130,7 @@ describe('trka i test (§ 7.2)', () => {
   });
 
   it('trka pomera odmah, k = 0,7 (srednja pouzdanost)', () => {
-    const e = estimateForm(
-      facts([race(47, add(T0, 5), 'race', TEN)], add(T0, 6)),
-      goal('2027-01-10'),
-      null
-    );
+    const e = estimateForm(facts([race(47, add(T0, 5), 'race', TEN)], add(T0, 6)), goal(FAR), null);
     expect(e.current.vdot).toBeCloseTo(45 + 0.7 * 2, 1);
     expect(signals(e)).toContain('trka');
   });
@@ -144,7 +138,7 @@ describe('trka i test (§ 7.2)', () => {
   it('test, k = 0,5', () => {
     const e = estimateForm(
       facts([race(47, add(T0, 5), 'test', 3000)], add(T0, 6)),
-      goal('2027-01-10'),
+      goal(FAR),
       null
     );
     expect(e.current.vdot).toBeCloseTo(46, 1);
@@ -154,16 +148,17 @@ describe('trka i test (§ 7.2)', () => {
     const low = facts([race(47, add(T0, 5), 'race', TEN)], add(T0, 6), {
       profile: { easyPaceSecPerKm: 360 }
     });
-    const e = estimateForm(low, goal('2027-01-10'), null);
+    const e = estimateForm(low, goal(FAR), null);
     expect(e.start.confidence).toBe('niska');
     expect(e.current.vdot).toBeCloseTo(47, 1);
-    expect(e.current.confidence).toBe('visoka');
+    /* R14: prvi rezultat — pouzdanost najviše srednja */
+    expect(e.current.confidence).toBe('srednja');
   });
 
   it('kraće od 3000 m (trka) se ne računa', () => {
     const e = estimateForm(
       facts([race(50, add(T0, 5), 'race', 2000)], add(T0, 6)),
-      goal('2027-01-10'),
+      goal(FAR),
       null
     );
     expect(e.current.vdot).toBeCloseTo(45, 2);
@@ -171,7 +166,7 @@ describe('trka i test (§ 7.2)', () => {
 
   it('toplo: slabiji rezultat ne spušta procenu', () => {
     const r = { ...race(43, add(T0, 5), 'race', TEN), tempC: 27 };
-    const e = estimateForm(facts([r], add(T0, 6)), goal('2027-01-10'), null);
+    const e = estimateForm(facts([r], add(T0, 6)), goal(FAR), null);
     expect(e.current.vdot).toBeCloseTo(45, 2);
   });
 });
@@ -195,8 +190,8 @@ describe('puls sa zgloba: samo trend (§ 7.4)', () => {
   const noResult = { profile: { easyPaceSecPerKm: Math.round(paceAtShare(45, ZONE_SHARE.E)) } };
 
   it('trend pulsa podiže procenu; bez pulsa signal je preskočen i pouzdanost je niža', () => {
-    const withHr = estimateForm(facts(series(true), today, noResult), goal('2027-01-10'), null);
-    const noHr = estimateForm(facts(series(false), today, noResult), goal('2027-01-10'), null);
+    const withHr = estimateForm(facts(series(true), today, noResult), goal(FAR), null);
+    const noHr = estimateForm(facts(series(false), today, noResult), goal(FAR), null);
     expect(signals(withHr)).toContain('trend-pulsa');
     expect(signals(noHr)).not.toContain('trend-pulsa');
     expect(withHr.current.vdot).toBeGreaterThan(noHr.current.vdot);
@@ -212,7 +207,7 @@ describe('puls sa zgloba: samo trend (§ 7.4)', () => {
     for (let w = 0; w < 8; w += 1) {
       for (const d of [1, 3, 5]) runs.push(easyRun(`e${w}-${d}`, add(T0, w * 7 + d), 45, 45, 148));
     }
-    const base = estimateForm(facts(runs, today), goal('2027-01-10'), null);
+    const base = estimateForm(facts(runs, today), goal(FAR), null);
     const lowOne = runs.map((r) => (r.id === 'e7-5' ? { ...r, avgHr: 120 } : r));
     const short = Array.from({ length: 6 }, (_, i) =>
       easyRun(`s${i}`, add(T0, 42 + i), 45, 20, 120)
@@ -222,7 +217,7 @@ describe('puls sa zgloba: samo trend (§ 7.4)', () => {
       avgHr: 120
     }));
     for (const variant of [lowOne, [...runs, ...short], [...runs, ...intervals]]) {
-      const e = estimateForm(facts(variant, today), goal('2027-01-10'), null);
+      const e = estimateForm(facts(variant, today), goal(FAR), null);
       expect(signals(e)).not.toContain('trend-pulsa');
     }
     expect(signals(base)).not.toContain('trend-pulsa');
@@ -238,22 +233,14 @@ describe('pauza (§ 7.2)', () => {
 
   it('−0,3 %/dan posle petog', () => {
     const runs = [easyRun('a', T0, 45, 40), easyRun('b', add(T0, 11), 45, 40)];
-    const e = estimateForm(
-      facts(runs, add(T0, 12), { pauses: [pause(10)] }),
-      goal('2027-01-10'),
-      null
-    );
+    const e = estimateForm(facts(runs, add(T0, 12), { pauses: [pause(10)] }), goal(FAR), null);
     expect(e.current.vdot).toBeCloseTo(45 * (1 - 0.003 * 5), 2);
     expect(signals(e)).toContain('pauza');
   });
 
   it('najviše −8 %', () => {
     const runs = [easyRun('a', T0, 45, 40), easyRun('b', add(T0, 61), 45, 40)];
-    const e = estimateForm(
-      facts(runs, add(T0, 62), { pauses: [pause(60)] }),
-      goal('2027-01-10'),
-      null
-    );
+    const e = estimateForm(facts(runs, add(T0, 62), { pauses: [pause(60)] }), goal(FAR), null);
     expect(e.current.vdot).toBeCloseTo(45 * 0.92, 2);
   });
 
@@ -261,7 +248,7 @@ describe('pauza (§ 7.2)', () => {
     const gap = (n: number): FormEstimate =>
       estimateForm(
         facts([easyRun('a', T0, 45, 40), easyRun('b', add(T0, n + 1), 45, 40)], add(T0, n + 1)),
-        goal('2027-01-10'),
+        goal(FAR),
         null
       );
     expect(signals(gap(13))).not.toContain('pauza');
@@ -286,12 +273,12 @@ describe('determinizam i urađeno se ne menja', () => {
       return o;
     };
     deepFreeze(f);
-    const a = estimateForm(f, goal('2027-01-10'), { baseLoad: 300, peakLoad: 380 });
-    const b = estimateForm(f, goal('2027-01-10'), { baseLoad: 300, peakLoad: 380 });
+    const a = estimateForm(f, goal(FAR), { baseLoad: 300, peakLoad: 380 });
+    const b = estimateForm(f, goal(FAR), { baseLoad: 300, peakLoad: 380 });
     expect(a).toEqual(b);
     expect(JSON.stringify(f)).toBe(snap);
     /* redosled trčanja na ulazu ne menja rezultat */
-    const c = estimateForm({ ...f, runs: [...f.runs].reverse() }, goal('2027-01-10'), {
+    const c = estimateForm({ ...f, runs: [...f.runs].reverse() }, goal(FAR), {
       baseLoad: 300,
       peakLoad: 380
     });
@@ -300,7 +287,7 @@ describe('determinizam i urađeno se ne menja', () => {
 
   it('trčanje posle „danas" se ne uzima', () => {
     const f = facts([tempoRun('q', add(T0, 30), 45, 0.8)], add(T0, 5));
-    expect(estimateForm(f, goal('2027-01-10'), null).current.vdot).toBeCloseTo(45, 2);
+    expect(estimateForm(f, goal(FAR), null).current.vdot).toBeCloseTo(45, 2);
   });
 });
 
@@ -318,6 +305,7 @@ describe('raspon na dan trke (§ 7.5)', () => {
   });
 
   it('raspon se sužava kad pouzdanost raste', () => {
+    const width = (e: FormEstimate): number => e.raceDay.highSec - e.raceDay.lowSec;
     const low = estimateForm(
       facts([], today, { profile: { easyPaceSecPerKm: 330 } }),
       goal(add(today, 84)),
@@ -330,11 +318,15 @@ describe('raspon na dan trke (§ 7.5)', () => {
       durationSec: Math.round(raceTimeSec(45, TEN)),
       effort: 'race'
     };
-    const high = estimateForm(facts([raceRun], today), goal(add(today, 84)), null);
+    /* R14: visoka tek uz drugi rezultat u aplikaciji */
+    const earlier: FitnessRun = { ...raceRun, id: 'r0', date: add(today, -28) };
+    const mid = estimateForm(facts([raceRun], today), goal(add(today, 84)), null);
+    const high = estimateForm(facts([earlier, raceRun], today), goal(add(today, 84)), null);
     expect(low.current.confidence).toBe('niska');
+    expect(mid.current.confidence).toBe('srednja');
     expect(high.current.confidence).toBe('visoka');
-    const width = (e: FormEstimate): number => e.raceDay.highSec - e.raceDay.lowSec;
-    expect(width(high)).toBeLessThan(width(low));
+    expect(width(mid)).toBeLessThan(width(low));
+    expect(width(high)).toBeLessThan(width(mid));
   });
 
   it('početnik ima veći plafon od trkača sa > 3 god.', () => {
@@ -396,7 +388,7 @@ function paceUpdates(runs: FitnessRun[], days: number): { count: number; daily: 
         runs.filter((r) => r.date <= today),
         today
       ),
-      goal('2027-03-01'),
+      goal(FAR),
       null
     );
     daily.push(e.current.vdot);
@@ -465,7 +457,7 @@ describe('korekcija rezultata', () => {
       effort: 'race',
       splits: paces.map((p) => ({ paceSec: p }))
     };
-    const e = estimateForm(facts([r], T0, { profile: {} }), goal('2027-01-10'), null);
+    const e = estimateForm(facts([r], T0, { profile: {} }), goal(FAR), null);
     const raw = vdotFromResult(HALF, dur);
     expect(e.current.vdot).toBeGreaterThan(raw + 0.1);
     expect(e.current.vdot).toBeLessThanOrEqual(raw + 1.0);

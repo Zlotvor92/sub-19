@@ -1,20 +1,19 @@
-/* V4 — FORMA IZ TRČANJA: lokalni tipovi (SPEC § 7). Polja koja `engine/types.ts` nema, a procena ih koristi;
-   sva su opciona, pa je svaki `RunnerFacts` ujedno i `FitnessFacts`. Predlog za tipove motora: F4-REPORT. */
-import type { IsoDate, Run, RunnerFacts, Seconds, Vdot, ZoneId } from '../engine/types';
+/* V4 — FORMA IZ TRČANJA: lokalni tipovi (SPEC § 7). `Run.planned` i `Run.tempC` su od kruga 2 u tipovima motora;
+   ovde ostaje samo ono što motor još ne nosi (F4-REPORT, „šta treba preneti"). */
+import type { IsoDate, LoadPoints, Run, RunnerFacts, Vdot } from '../engine/types';
 
-/** Šta je dan plana zadao (§ 7.3: „trčanje vezano za dan sa zonom T/I/RP"). `Run` danas nosi samo `dayId`. */
-export interface PlannedWork {
-  zone: ZoneId;
-  /** Zadato vreme rada (sekunde) — „odrađeno" = rad ≥ 90 % ovoga. */
-  workSec: Seconds;
+/** Šta je dan plana zadao (§ 7.3). */
+export type PlannedWork = NonNullable<Run['planned']>;
+
+export type FitnessRun = Run;
+
+/** Treći argument `estimateForm` (§ 7.1) + opciono nedeljni ciljevi plana (R12, krug 2; predlog za motor). */
+export interface FitnessPlanned {
+  baseLoad: LoadPoints;
+  peakLoad: LoadPoints;
+  /** `PlanWeek.start` i `targetLoad` (bez dana trke); bez njih je „planirano" 7 × baza od pre 7 dana. */
+  weeks?: readonly { start: IsoDate; targetLoad: LoadPoints }[];
 }
-
-/** `Run` + opciona polja koja forma čita. */
-export type FitnessRun = Run & {
-  planned?: PlannedWork;
-  /** Temperatura vazduha tokom trčanja (°C), sa sata/Strave. */
-  tempC?: number;
-};
 
 export type FitnessFacts = Omit<RunnerFacts, 'runs'> & { runs: readonly FitnessRun[] };
 
@@ -30,6 +29,8 @@ export interface ResultEvidence {
   splitBonus: Vdot;
   /** Toplo (≥ prag): rezultat je donja granica forme — sam ne spušta procenu. */
   hot: boolean;
+  /** U trci je bilo hodanja (R14): bez korekcije, pouzdanost ≤ srednja. */
+  walking: boolean;
 }
 
 export interface PauseSpan {

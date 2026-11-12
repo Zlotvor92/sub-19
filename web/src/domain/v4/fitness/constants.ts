@@ -114,3 +114,30 @@ export const TENURE_SENIOR_YEARS = 3;
 export const VDOT_ROUND = 100;
 /** Promena manja od ovoga se ne upisuje u istoriju. */
 export const CHANGE_MIN = 0.01;
+
+/* ------------------------------------------------------------------ krug 2 (R12, R13, R14) */
+
+/** R12 — odrađen plan je dokaz: deo očekivanog napretka koji „istekne" sa odrađenim danom pripisuje se tekućoj
+    proceni srazmerno pridržavanju (opterećenje poslednjih 7 dana / planirano): ≥ 0,85 pun iznos, < 0,6 ništa,
+    linearno između. Važi samo u 16 nedelja pred trku (§ 7.5 `W`) i od poslednje trke/testa. [srednja za oblik,
+    niska za brojeve] */
+export const PLAN_ADHERENCE_FULL = 0.85;
+export const PLAN_ADHERENCE_NONE = 0.6;
+/** Bez nedeljnih ciljeva plana „planirano" = 7 × baza od pre 7 dana. */
+export const PLAN_REFERENCE_LAG_DAYS = 7;
+/** Rečenica o manjku pridržavanja kad očekivano vreme na dan trke zbog toga sporije za ≥ 5 s. */
+export const PLAN_SHORTFALL_REPORT_SEC = 5;
+/** Seme baze bez izjave: prosek prvih 28 dana istorije. */
+export const LOAD_SEED_DAYS = 28;
+
+/** R13 — pad baze: baza danas ≤ 70 % baze od pre 6 nedelja → forma −1 % na pragu, još −5 % po svakoj jedinici
+    odnosa ispod 0,7, najviše −3 %. Smanjen obim uz zadržan intenzitet dugo čuva formu, pa je pad blag.
+    Potrebno ≥ 42 dana istorije; ne sabira se sa pauzom u istom prozoru. [niska] */
+export const BASE_DROP_DAYS = 42;
+export const BASE_DROP_RATIO = 0.7;
+export const BASE_DROP_LOSS_MIN = 0.01;
+export const BASE_DROP_LOSS_SLOPE = 0.05;
+export const BASE_DROP_LOSS_MAX = 0.03;
+
+/** R14 — hodanje u trci: neki km sporiji od 1,25 × medijane km. Takva trka i prvi rezultat: pouzdanost ≤ srednja. */
+export const WALK_SPLIT_RATIO = 1.25;

@@ -8,7 +8,6 @@ import type {
   FormEstimate,
   FormPoint,
   IsoDate,
-  LoadPoints,
   Meters,
   SecPerKm,
   Vdot,
@@ -24,13 +23,24 @@ import {
 } from '../engine/vdot';
 import * as C from './constants';
 import {
+  explainBaseDrop,
   explainHeartRate,
   explainPause,
+  explainPlanShortfall,
+  explainPlanWeek,
   explainQuality,
   explainResult,
   explainStart
 } from './explain';
-import type { FitnessFacts, FitnessRun, PauseSpan, ResultEvidence, Tenure } from './types';
+import { rollChronic, runLoad } from './load';
+import type {
+  FitnessFacts,
+  FitnessPlanned,
+  FitnessRun,
+  PauseSpan,
+  ResultEvidence,
+  Tenure
+} from './types';
 
 /* ------------------------------------------------------------------ datumi */
 
@@ -77,6 +87,11 @@ export function resultEvidence(r: FitnessRun): ResultEvidence {
   const rawVdot = vdotFromResult(r.distanceM, r.durationSec);
   let splitBonus = 0;
   const splits = r.splits ?? [];
+  const hot = r.tempC !== undefined && r.tempC >= C.HOT_FROM_C;
+  const paces = splits.map((x) => x.paceSec).filter((x) => x > 0);
+  const walking = paces.length >= 3 && Math.max(...paces) > C.WALK_SPLIT_RATIO * median(paces);
+  /* R14: trka sa hodanjem se ne koriguje. */
+  if (walking) return { vdot: rawVdot, rawVdot, splitBonus: 0, hot, walking };
   const halfKm = r.distanceM / 2000;
   if (splits.length >= Math.ceil(halfKm) + 1 && splits.length * 1000 <= r.distanceM + 1000) {
     const whole = Math.floor(halfKm);
@@ -89,8 +104,7 @@ export function resultEvidence(r: FitnessRun): ResultEvidence {
       splitBonus = clamp(C.NEG_SPLIT_SHARE * (asSecond - rawVdot), 0, C.NEG_SPLIT_MAX_BONUS);
     }
   }
-  const hot = r.tempC !== undefined && r.tempC >= C.HOT_FROM_C;
-  return { vdot: rawVdot + splitBonus, rawVdot, splitBonus, hot };
+  return { vdot: rawVdot + splitBonus, rawVdot, splitBonus, hot, walking };
 }
 
 /** VDOT za koji zona daje tempo `pace` (RP: tempo trke na distanci cilja). */
@@ -207,11 +221,6 @@ export function tenureOf(facts: FitnessFacts): Tenure {
 
 /* ------------------------------------------------------------------ glavna funkcija */
 
-interface Planned {
-  baseLoad: LoadPoints;
-  peakLoad: LoadPoints;
-}
-
 type StartSource = 'rezultat' | 'lagani-tempo' | 'trcanja' | 'nista';
 
 function startingPoint(
@@ -260,7 +269,7 @@ function validRun(r: FitnessRun, today: number): boolean {
 export function estimateForm(
   facts: FitnessFacts,
   goal: { distanceM: Meters; raceDate: IsoDate },
-  planned: Planned | null
+  planned: FitnessPlanned | null
 ): FormEstimate {
   const today = dayNum(facts.today);
   const goalM = goal.distanceM;
@@ -278,7 +287,8 @@ export function estimateForm(
   );
   const startDay = Math.min(firstDay, today);
 
-  const resultDays: number[] = [];
+  /** Trke i testovi; `strong` = nije prvi rezultat i nije trka sa hodanjem (R14: samo takav daje „visoku"). */
+  const results: { day: number; strong: boolean }[] = [];
   const qualityDays: number[] = [];
   /** Dani primenjenog trenda pulsa: za pouzdanost vrede kao dokaz kvaliteta (§ 2.4 „bez pulsa niža pouzdanost"). */
   const hrDays: number[] = [];
@@ -289,8 +299,8 @@ export function estimateForm(
     facts.profile.recentResult?.date !== undefined ? dayNum(facts.profile.recentResult.date) : null;
 
   const confidenceAt = (d: number): Confidence => {
-    if (resultDays.some((x) => d - x <= C.CONF_HIGH_DAYS)) return 'visoka';
-    if (resultDays.some((x) => d - x <= C.CONF_MID_DAYS)) return 'srednja';
+    if (results.some((x) => x.strong && d - x.day <= C.CONF_HIGH_DAYS)) return 'visoka';
+    if (results.some((x) => d - x.day <= C.CONF_MID_DAYS)) return 'srednja';
     const evidence = [...qualityDays, ...hrDays].filter(
       (x) => d - x < C.CONF_MID_QUALITY_DAYS
     ).length;
@@ -315,8 +325,13 @@ export function estimateForm(
       reason: explainStart(init.source, init.vdot, goalM)
     }
   ];
-  const record = (c: Omit<FormChange, 'before' | 'after'>, before: Vdot, after: Vdot): void => {
-    if (Math.abs(after - before) >= C.CHANGE_MIN)
+  const record = (
+    c: Omit<FormChange, 'before' | 'after'>,
+    before: Vdot,
+    after: Vdot,
+    force = false
+  ): void => {
+    if (force || Math.abs(after - before) >= C.CHANGE_MIN)
       history.push({ ...c, before: r2(before), after: r2(after) });
   };
 
@@ -330,6 +345,75 @@ export function estimateForm(
     runsByDay.set(d, list);
   }
 
+  /* plafon napretka: stopa i najviše (§ 7.5, § 14.6) — potrebni već u petlji (R12) */
+  const tenure = tenureOf(facts);
+  let { rate, max } = C.CEILING[tenure];
+  const window = C.NO_QUALITY_WEEKS * 7;
+  const coversHistory = runs[0] !== undefined && today - dayNum(runs[0].date) >= window;
+  const anyQuality = runs.some(
+    (r) =>
+      today - dayNum(r.date) < window &&
+      ((r.laps ?? []).some((l) => l.role === 'work') ||
+        (r.planned !== undefined && isQualityZone(r.planned.zone)))
+  );
+  if (coversHistory && !anyQuality) {
+    rate *= C.NO_QUALITY_RATE;
+    max += C.NO_QUALITY_MAX_ADD;
+  }
+  let fv = 1;
+  if (planned !== null && planned.baseLoad > 0) {
+    const ratio = clamp(planned.peakLoad / planned.baseLoad, 1, C.VOLUME_RATIO_MAX);
+    fv = C.VOLUME_F_MIN + (C.VOLUME_F_SPAN * (ratio - 1)) / (C.VOLUME_RATIO_MAX - 1);
+  }
+  /** Mogući napredak po nedelji (bez `f_p`, da pripisano ne hrani samo sebe). */
+  const weeklyGain = rate * fv;
+  const raceDay = dayNum(goal.raceDate);
+
+  /* baza (R12, R13): dnevna opterećenja po pragu tekuće forme; seme iz izjave ili proseka prvih 28 dana */
+  const dayLoad = (d: number, v: Vdot): number => {
+    const threshold = paceAtShare(v, ZONE_SHARE.T);
+    return (runsByDay.get(d) ?? []).reduce((a, r) => a + runLoad(r, threshold), 0);
+  };
+  const firstRunDay = runs[0] !== undefined ? dayNum(runs[0].date) : today;
+  let seed = 0;
+  if (facts.profile.weeklyKm !== undefined && facts.profile.weeklyKm > 0) {
+    seed = (facts.profile.weeklyKm * paceAtShare(init.vdot, ZONE_SHARE.E)) / 60 / 7;
+  } else if (runs.length > 0) {
+    const last = Math.min(today, firstRunDay + C.LOAD_SEED_DAYS - 1);
+    let total = 0;
+    for (let d = firstRunDay; d <= last; d += 1) total += dayLoad(d, init.vdot);
+    seed = total / (last - firstRunDay + 1);
+  }
+  let chronic = seed;
+  const chronicByDay = new Map<number, number>();
+  const loadByDay = new Map<number, number>();
+  const chronicAt = (d: number): number => chronicByDay.get(d) ?? seed;
+  const targets = (planned?.weeks ?? [])
+    .map((w) => ({ start: dayNum(w.start), daily: w.targetLoad / 7 }))
+    .filter((w) => Number.isFinite(w.start) && w.daily >= 0);
+  const plannedOn = (d: number): number | null => {
+    for (const w of targets) if (d >= w.start && d < w.start + 7) return w.daily;
+    return null;
+  };
+
+  /* R12: pripisano od poslednje trke/testa (u jedinicama plafona `G`) i zbir nedelje za objašnjenje */
+  let credited = 0;
+  let week = { from: startDay, credit: 0, missed: 0, share: 0, days: 0 };
+  let lastResultDay = Number.NEGATIVE_INFINITY;
+  /** „Planirano" za dan bez ciljeva plana: 7 × najveća baza u 6 nedelja pre (bez samoreferentnog pada). */
+  const referenceOn = (x: number): number => {
+    const target = plannedOn(x);
+    if (target !== null) return target;
+    let best = 0;
+    for (let y = x - C.BASE_DROP_DAYS; y <= x - C.PLAN_REFERENCE_LAG_DAYS; y += 1) {
+      best = Math.max(best, chronicAt(y));
+    }
+    return best;
+  };
+  /* R13: već primenjen pad zbog niske baze (udeo) */
+  let baseDropApplied = 0;
+  let lastPauseDay = Number.NEGATIVE_INFINITY;
+
   for (let d = startDay; d <= today; d += 1) {
     /* 1. pauza koja se završila juče (ili traje do danas) */
     const pause = pauseEnds.get(d);
@@ -340,6 +424,7 @@ export function estimateForm(
       );
       const before = vdot;
       vdot = vdot * (1 - loss);
+      lastPauseDay = d;
       record(
         {
           date: isoOf(d),
@@ -355,14 +440,21 @@ export function estimateForm(
       const kind = resultKind(run);
       if (kind !== null) {
         const ev = resultEvidence(run);
+        const firstInApp = results.length === 0;
+        /* Prvi rezultat zamenjuje procenu bez osnova (iz laganog tempa, trčanja ili opštu): k = 1 (R14). */
+        const first = firstInApp && init.source !== 'rezultat';
         const low = confidenceAt(d) === 'niska';
-        const k = low ? C.K_LOW_CONFIDENCE : kind === 'trka' ? C.K_RACE : C.K_TEST;
+        const k = low || first ? C.K_LOW_CONFIDENCE : kind === 'trka' ? C.K_RACE : C.K_TEST;
         const before = vdot;
         let next = vdot + k * (ev.vdot - vdot);
         /* Toplo: donja granica — ne spušta procenu koja već ima osnov (srednja/visoka pouzdanost). */
-        if (ev.hot && !low && next < vdot) next = vdot;
+        if (ev.hot && !low && !first && next < vdot) next = vdot;
         vdot = next;
-        resultDays.push(d);
+        /* R14: prvi rezultat U APLIKACIJI (unet rezultat ne računa) i trka sa hodanjem — najviše srednja. */
+        results.push({ day: d, strong: !firstInApp && !ev.walking });
+        lastResultDay = d;
+        credited = 0;
+        baseDropApplied = 0;
         record(
           {
             date: run.date,
@@ -374,6 +466,7 @@ export function estimateForm(
               run.distanceM,
               run.durationSec,
               ev,
+              { k, first: firstInApp },
               before,
               vdot,
               goalM
@@ -410,7 +503,71 @@ export function estimateForm(
         vdot
       );
     }
-    /* 3. trend pulsa: nedeljom i danas, najviše jednom u 14 dana */
+    /* 3. baza tog dana */
+    const load = dayLoad(d, vdot);
+    loadByDay.set(d, load);
+    chronic = rollChronic(chronic, load);
+    chronicByDay.set(d, chronic);
+
+    /* 4. R12 — odrađen plan: dan u 16 nedelja pred trku, pridržavanje u poslednjih 7 dana */
+    const toRace = raceDay - d;
+    if (toRace >= 7 && toRace < 7 * (C.WEEKS_MAX + 1) && d > lastResultDay) {
+      let done = 0;
+      let ref = 0;
+      for (let x = Math.max(d - 6, lastResultDay + 1); x <= d; x += 1) {
+        done += loadByDay.get(x) ?? 0;
+        ref += referenceOn(x);
+      }
+      const share = ref > 0 ? done / ref : 0;
+      const af = clamp(
+        (share - C.PLAN_ADHERENCE_NONE) / (C.PLAN_ADHERENCE_FULL - C.PLAN_ADHERENCE_NONE),
+        0,
+        1
+      );
+      const potential = weeklyGain / 7;
+      const take = Math.min(potential * af, Math.max(0, max - credited));
+      credited += take;
+      vdot += C.EXPECTED_SHARE * take;
+      week.credit += C.EXPECTED_SHARE * take;
+      week.missed += C.EXPECTED_SHARE * Math.min(potential * (1 - af), Math.max(0, max - credited));
+      week.share += share;
+      week.days += 1;
+    }
+
+    /* 5. R13 — pad baze: nedeljom i danas, uz ≥ 42 dana istorije i bez pauze u prozoru */
+    if (
+      (weekday(d) === 6 || d === today) &&
+      d - firstRunDay >= C.BASE_DROP_DAYS &&
+      d - lastPauseDay > C.BASE_DROP_DAYS &&
+      !pauses.some((p) => dayNum(p.to) > d - C.BASE_DROP_DAYS && dayNum(p.from) <= d)
+    ) {
+      const past = chronicAt(d - C.BASE_DROP_DAYS);
+      const ratio = past > 0 ? chronic / past : 1;
+      if (ratio <= C.BASE_DROP_RATIO) {
+        const loss = Math.min(
+          C.BASE_DROP_LOSS_MAX,
+          C.BASE_DROP_LOSS_MIN + C.BASE_DROP_LOSS_SLOPE * (C.BASE_DROP_RATIO - ratio)
+        );
+        if (loss > baseDropApplied + 1e-6) {
+          const before = vdot;
+          vdot = (vdot * (1 - loss)) / (1 - baseDropApplied);
+          baseDropApplied = loss;
+          record(
+            {
+              date: isoOf(d),
+              signal: 'pauza',
+              reason: explainBaseDrop(ratio, before, vdot, goalM)
+            },
+            before,
+            vdot
+          );
+        }
+      } else {
+        baseDropApplied = 0;
+      }
+    }
+
+    /* 6. trend pulsa: nedeljom i danas, najviše jednom u 14 dana */
     if ((weekday(d) === 6 || d === today) && d - lastHrDay >= C.HR_EVERY_DAYS) {
       const hr = hrTrend(runs, d, vdot);
       if (hr !== null) {
@@ -434,6 +591,29 @@ export function estimateForm(
         );
       }
     }
+
+    /* 7. kraj nedelje (ili danas): jedna rečenica o odrađenom planu (R12) */
+    if (weekday(d) === 6 || d === today) {
+      const share = week.days > 0 ? week.share / week.days : 0;
+      const lost = raceTimeSec(vdot, goalM) - raceTimeSec(vdot + week.missed, goalM);
+      const credit = week.credit >= C.CHANGE_MIN;
+      const short = lost >= C.PLAN_SHORTFALL_REPORT_SEC;
+      if (credit || short) {
+        const reason = short
+          ? explainPlanShortfall(
+              isoOf(week.from),
+              isoOf(d),
+              share,
+              lost,
+              vdot - week.credit,
+              vdot,
+              goalM
+            )
+          : explainPlanWeek(isoOf(week.from), isoOf(d), share, vdot - week.credit, vdot, goalM);
+        record({ date: isoOf(d), signal: 'kvalitet', reason }, vdot - week.credit, vdot, true);
+      }
+      week = { from: d + 1, credit: 0, missed: 0, share: 0, days: 0 };
+    }
     snapshots.push({ day: d, vdot });
   }
 
@@ -445,40 +625,18 @@ export function estimateForm(
     confidence: conf
   });
 
-  /* plafon napretka */
-  const tenure = tenureOf(facts);
-  let { rate, max } = C.CEILING[tenure];
-  const window = C.NO_QUALITY_WEEKS * 7;
-  const coversHistory = runs[0] !== undefined && today - dayNum(runs[0].date) >= window;
-  const anyQuality =
-    qualityDays.some((x) => today - x < window) ||
-    runs.some(
-      (r) =>
-        today - dayNum(r.date) < window &&
-        ((r.laps ?? []).some((l) => l.role === 'work') ||
-          (r.planned !== undefined && isQualityZone(r.planned.zone)))
-    );
-  if (coversHistory && !anyQuality) {
-    rate *= C.NO_QUALITY_RATE;
-    max += C.NO_QUALITY_MAX_ADD;
-  }
-  let fv = 1;
-  if (planned !== null && planned.baseLoad > 0) {
-    const ratio = clamp(planned.peakLoad / planned.baseLoad, 1, C.VOLUME_RATIO_MAX);
-    fv = C.VOLUME_F_MIN + (C.VOLUME_F_SPAN * (ratio - 1)) / (C.VOLUME_RATIO_MAX - 1);
-  }
   let fp = 1;
   const from = today - C.PROGRESS_WEEKS * 7;
-  const resultsIn = resultDays.filter((x) => x > from).length;
+  const resultsIn = results.filter((x) => x.day > from).length;
   const qualityIn = qualityDays.filter((x) => x > from).length;
   if (resultsIn >= C.PROGRESS_MIN_RESULTS || qualityIn >= C.PROGRESS_MIN_QUALITY) {
     const past = [...snapshots].reverse().find((s) => s.day <= from)?.vdot ?? init.vdot;
     const slope = (vdot - past) / C.PROGRESS_WEEKS;
     fp = clamp(0.5 + (0.5 * slope) / rate, C.PROGRESS_F_MIN, C.PROGRESS_F_MAX);
   }
-  const weeksToRace = Math.floor((dayNum(goal.raceDate) - today) / 7);
-  const w = clamp(weeksToRace - 1, 0, C.WEEKS_MAX);
-  const gain = Math.min(rate * fv * fp * w, max);
+  /* `W` neprekidno (dani / 7), da se smanjuje dan po dan, kao i pripisano (R12). */
+  const w = clamp((raceDay - today) / 7 - 1, 0, C.WEEKS_MAX);
+  const gain = Math.min(weeklyGain * fp * w, Math.max(0, max - credited));
   const sigma = C.SIGMA[confidence];
 
   return {
