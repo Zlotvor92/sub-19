@@ -17,7 +17,7 @@ Ispisi: `docs/generators-v4/plans/HM/p01–p12.txt`, `vlasnik-v1.txt`, `vlasnik-
 - **Nivoi**: početnik, mali obim (< 3 h 30 min nedeljno → jedan kvalitet + ubrzanja, kao v3 ispod 25 km), spor/srednji/
   brz po VDOT-u. Posle trećeg kruga motora nivoi „obiman" (zaobilaznica) su uklonjeni. Rani test (5 km) u 1. nedelji
   samo kad su tempa po osećaju (`onlyByFeel`); dan trke nosi plan trke (raspored tempa, doručak, unos).
-- **Brojevi**: vrh × 1,15 (6 ned) → × 1,55 (12+), početnik do × 2,15; rast +7 % (bodovi); dugi 40 % vrha kod 4 dana,
+- **Brojevi**: vrh × 1,15 (6 ned) → × 1,55 (12–15) → × 1,72 (16+; ≈ +50 % km), početnik do × 2,15; rast +7 % (bodovi); dugi 40 % vrha kod 4 dana,
   36 % kod 5, 33 % kod 6, 45 % kod 3 (početnik 44 % kod 4 dana); polazni dugi po danima (31 % kod 4); najduži dugi 2 h 15 (početnik 2 h 10, brz 2 h 05); korak 9 min; brz rad
   ≤ 20 % (vršna 22 %); lagan ≤ 80 % dugog, dan pred dugi ≤ 70 %; prvi trening praga/intervala/RP ≤ 70 % vrha (K7).
 
@@ -28,23 +28,23 @@ nedelje 6–24 × 15–80 km × forma 1:25–2:30 × početnik) — svaki nalaz 
 (`__fixtures__/pNN.otisak.txt`); K1–K8 nad `renderPlan`; trenerski zahtevi iz briefa (nedelja 1 ≥ 97 % sadašnjeg obima,
 najteža 2–3 pred trku i sledeća ≤ 85 %, taper 2 nedelje, blok RP raste, upozorenja za mali obim i 3 dana).
 **Opravdani nalazi čuvara** (ulaz ih traži): < 30 min po danu; 3 dana (`ispod-cilja`, `min-nedelja`, `brz-udeo` ≤ 27 %);
-> 70 min po danu (dani ne nose cilj); lakša nedelja malog obima; nedelja 1 bez podatka o najdužem trku (3–4 dana);
+> 65 min po danu (dani ne nose cilj); lakša nedelja malog obima; nedelja 1 bez podatka o najdužem trku (3–4 dana);
 nedelja sa proverom forme i 2 nedelje posle nje (zahtevi 1 i 2). Na 12 profila ostaje samo to (p03, p05, p08, p10).
 K7 „prvi trening ≤ 70 % vrha" ne važi za brzinu/brda: K8 traži ≥ 8 min rada, a vrh brzine je 10–12 min.
 
 ## Poređenje sa v3 (P9v3/plans/HM; v3 → V4)
 | profil | vrh km | najduži dugi km | broj kvaliteta | udeo brzog rada (ceo plan) |
 |---|---|---|---|---|
-| p01 | 56,0 → 56,0 | 22,0 → 22,5 | 26 → 22 | 14 → 14 % |
+| p01 | 56,0 → 62,0 | 22,0 → 22,5 | 26 → 23 | 14 → 14 % |
 | p02 | 54,0 → 56,1 | 21,5 → 24,5 | 22 → 19 | 14 → 15 % |
-| p03 | 33,3 → 35,6 | 15,5 → 18,2 | 16 → 16 | 13 → 12 % |
+| p03 | 33,3 → 39,0 | 15,5 → 17,8 | 16 → 16 | 13 → 13 % |
 | p04 | 63,0 → 70,0 | 20,0 → 20,2 | 33 → 30 | 11 → 10 % |
-| p05 | 100,1 → 102,7 | 26,0 → 26,5 | 26 → 23 | 12 → 10 % |
+| p05 | 100,1 → 102,7 | 26,0 → 26,5 | 26 → 23 | 12 → 11 % |
 | p06 | 43,3 → 44,3 | 16,5 → 17,5 | 15 → 10 | 14 → 12 % |
 | p07 | 67,9 → 69,5 | 22,0 → 23,0 | 17 → 14 | 13 → 12 % |
 | p08 | 47,8 → 49,0 | 22,0 → 23,0 | 20 → 20 | 12 → 12 % |
-| p09 | 59,0 → 63,2 | 22,0 → 22,5 | 25 → 23 | 13 → 13 % |
-| p10 | 33,3 → 35,5 | 15,5 → 18,0 | 19 → 20 | 12 → 13 % |
+| p09 | 59,0 → 66,8 | 22,0 → 22,5 | 25 → 23 | 13 → 13 % |
+| p10 | 33,3 → 39,3 | 15,5 → 17,7 | 19 → 20 | 12 → 13 % |
 | p11 | 39,2 → 39,3 | 18,0 → 19,2 | 15 → 17 | 8 → 10 % |
 | p12 | 55,3 → 58,6 | 18,5 → 19,8 | 11 → 14 | 6 → 8 % |
 Posle četvrtog kruga motora nijedan profil nije ispod v3 ni po vrhu ni po najdužem dugom. p06 ima manje kvaliteta jer

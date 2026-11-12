@@ -196,7 +196,7 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
     return 'manje od 30 min po danu trčanja';
   if ((volume || fastByVolume) && days <= 3 && f.check !== 'prazan' && f.check !== 'skok')
     return '3 dana: lagan dan ≤ 75 % dugog ne nosi cilj nedelje';
-  if ((volume || fastByVolume) && perDay > 70 && f.check !== 'prazan')
+  if ((volume || fastByVolume) && perDay > 65 && f.check !== 'prazan')
     return 'obim po danu iznad onoga što dugi ≤ 2 h 15 i lagan ≤ 75 % dugog nose';
   if (
     f.check === 'ispod-cilja' &&
@@ -260,7 +260,7 @@ describe('čuvar na mreži ulaza (1440 planova)', () => {
 
 /* ------------------------------------------------------------------ 3. upotrebljivost */
 
-describe('upotrebljivost (12 profila + mreža sa 30–70 min po danu)', () => {
+describe('upotrebljivost (12 profila + mreža sa 30–65 min po danu)', () => {
   const plans = [
     ...PROFILE_PLANS.map((p) => ({ label: p.id, b: p })),
     ...gridCases()
@@ -269,7 +269,7 @@ describe('upotrebljivost (12 profila + mreža sa 30–70 min po danu)', () => {
       .filter((x) => {
         const d = x.b.doc.header.decisions;
         const perDay = d.baseLoad / d.runDays.length;
-        return perDay >= 32 && perDay <= 70;
+        return perDay >= 32 && perDay <= 65;
       })
   ];
 
@@ -579,9 +579,11 @@ describe('trenerski zahtevi (brief F3)', () => {
   });
 
   it('plan duži od 10 nedelja: ispis nosi napredak u prognozi; mali obim i 3 dana: upozorenje sa predlogom', () => {
-    /* mali-obim izostaje kad fali < 5 % (motor, četvrti krug); p03 (35,6 km prema 40) ga mora imati */
-    const small = RENDERED.find((p) => p.id === 'p03');
-    expect(small?.doc.header.warnings.map((w) => w.code)).toContain('mali-obim');
+    /* mali-obim izostaje kad fali < 5 % (motor, četvrti krug): 20 km nedeljno, 4 dana, 10 nedelja ga mora imati,
+       sa predlogom u brojevima */
+    const small = gridBuild({ days: 4, weeks: 10, km: 20, formSec: 6300, beginner: false });
+    const w = small.doc.header.warnings.find((x) => x.code === 'mali-obim');
+    expect(w?.proposal).toMatch(/\d/);
     for (const id of ['p03', 'p08', 'p10']) {
       const p = RENDERED.find((x) => x.id === id);
       expect(

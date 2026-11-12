@@ -287,10 +287,11 @@ function beginnerTail(band: DayBand, withCheck: boolean): WeekIntent[] {
 const lerp = (x: number, x0: number, x1: number, y0: number, y1: number): number =>
   y0 + ((y1 - y0) * Math.min(x1 - x0, Math.max(0, x - x0))) / (x1 - x0);
 
-/** Redovan: vrh u km kao v3 (1,1 → 1,3 → 1,4), uvećan jer bodovi vrha nose i rad kvaliteta (km rastu sporije od
-    bodova): 1,15 (6 ned) → 1,55 (12+); kraće od 6 nedelja samo održavanje. */
+/** Redovan (bodovi; km rastu sporije jer vrh nosi i rad kvaliteta): ≤ 11 nedelja 1,15 → 1,5; 12–15 nedelja 1,55
+    (≈ +35–40 % km); 16+ nedelja 1,72 (≈ +50 % km — duga priprema koristi vreme, organizator 12. 11.). Visoki
+    obimi ostaju ispod `peakLoadCap` nivoa. */
 const regularMult = (n: number): number =>
-  n <= 6 ? lerp(n, 1, 6, 1, 1.15) : n <= 12 ? lerp(n, 6, 12, 1.15, 1.55) : 1.55;
+  n <= 6 ? lerp(n, 1, 6, 1, 1.15) : n <= 11 ? lerp(n, 6, 12, 1.15, 1.55) : n <= 15 ? 1.55 : 1.72;
 /** Početnik: 1 + (N − 4) / 14, najviše × 2,15 (v3: × 2,0 u km; bodovi nose i rad kvaliteta). */
 const beginnerMult = (n: number): number => Math.min(2.15, Math.max(1, 1 + (n - 4) / 14));
 /** 1–3 dana za srednji i brz nivo: tri dana ne nose vrh × 1,4 (dugi ≤ 2 h 10, lagan ≤ 75 % dugog), pa najviše
