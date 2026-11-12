@@ -40,19 +40,19 @@ UPOZORENJA
   sre 25. 11.  odmor
   čet 26. 11.  prag 13 min u komadu (4:40/km) — 7 km, 38 min
   pet 27. 11.  odmor
-  sub 28. 11.  lagano 5 km — 5 km, 29 min
-  ned 29. 11.  dugi 6,5 km — 6,5 km, 38 min
-  Zbir: 22,5 km, 2 h 9 min, 4 treninga, brz rad 10 %, opterećenje 142 BO (cilj 189)
+  sub 28. 11.  lagano 4,5 km — 4,5 km, 26 min
+  ned 29. 11.  dugi 10,5 km — 10,5 km, 62 min
+  Zbir: 26 km, 2 h 29 min, 4 treninga, brz rad 9 %, opterećenje 162 BO (cilj 189)
 
 3. NEDELJA (od 30. 11.) — osnovna faza, gradnja; do trke 7 nedelja
   pon 30. 11.  odmor
-  uto 1. 12.  lagano 4,5 km + 4 × 20 s ubrzanja — 5,5 km, 32 min
+  uto 1. 12.  lagano 3,5 km + 4 × 20 s ubrzanja — 4,5 km, 26 min
   sre 2. 12.  odmor
   čet 3. 12.  intervali 3 × 1 km (4:18/km), oporavak 2:30 džog — 8,1 km, 43 min
   pet 4. 12.  odmor
-  sub 5. 12.  lagano 4,5 km — 4,5 km, 26 min
-  ned 6. 12.  dugi 10,5 km — 10,5 km, 62 min
-  Zbir: 28,6 km, 2 h 43 min, 4 treninga, brz rad 8 %, opterećenje 191 BO (cilj 189)
+  sub 5. 12.  lagano 3,5 km — 3,5 km, 21 min
+  ned 6. 12.  dugi 12 km — 12 km, 70 min
+  Zbir: 28,1 km, 2 h 40 min, 4 treninga, brz rad 8 %, opterećenje 188 BO (cilj 189)
 
 4. NEDELJA (od 7. 12.) — osnovna faza, rasterećenje; do trke 6 nedelja
   pon 7. 12.  odmor
@@ -71,8 +71,8 @@ UPOZORENJA
   čet 17. 12.  tempo trke 3 × 1 km (4:30/km), oporavak 1:30 džog — 7,7 km, 42 min
   pet 18. 12.  odmor
   sub 19. 12.  lagano 4,5 km — 4,5 km, 26 min
-  ned 20. 12.  dugi 11,5 km — 11,5 km, 67 min
-  Zbir: 29,2 km, 2 h 47 min, 4 treninga, brz rad 8 %, opterećenje 189 BO (cilj 189)
+  ned 20. 12.  dugi 12 km — 12 km, 70 min
+  Zbir: 29,7 km, 2 h 50 min, 4 treninga, brz rad 8 %, opterećenje 192 BO (cilj 189)
 
 6. NEDELJA (od 21. 12.) — posebna faza, gradnja; do trke 4 nedelje
   pon 21. 12.  odmor
@@ -81,8 +81,8 @@ UPOZORENJA
   čet 24. 12.  uzbrdo 9 × 1:30 min, oporavak 2 min hod (4:18/km) — 9,2 km, 55 min
   pet 25. 12.  odmor
   sub 26. 12.  lagano 3,5 km — 3,5 km, 21 min
-  ned 27. 12.  dugi 13 km, poslednjih 3 km (4:30/km) u tempu trke — 13 km, 72 min
-  Zbir: 30,2 km, 2 h 53 min, 4 treninga, brz rad 16 %, opterećenje 214 BO (cilj 208)
+  ned 27. 12.  dugi 13,5 km, poslednjih 3 km (4:30/km) u tempu trke — 13,5 km, 75 min
+  Zbir: 30,7 km, 2 h 56 min, 4 treninga, brz rad 15 %, opterećenje 217 BO (cilj 211)
 
 7. NEDELJA (od 28. 12.) — posebna faza, gradnja; do trke 3 nedelje
   pon 28. 12.  odmor

@@ -36,7 +36,7 @@ import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { skeleton } from './plan';
 import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
-import { lastLongBefore, normalizeAvailability } from './state';
+import { lastLongAfterEffort, lastLongBefore, normalizeAvailability } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import type {
   Adjustment,
@@ -106,7 +106,7 @@ function onResult(
     source: ev.id,
     date: run.date,
     durationSec: run.durationSec,
-    lastLongSec: lastLongBefore(state, run.date),
+    lastLongSec: lastLongAfterEffort(state, run.date, run.durationSec),
     ...(planned ? { planned: true } : {})
   };
   let header = withAdjustment(doc.header, adj);

@@ -29,12 +29,12 @@ Pauza zbog bolesti trajala je 7 dana (14–20. 12.), pa je povratak postepen: pr
 - ned 27. 12.: dugi 14 km, poslednjih 3 km u tempu trke → dugi 9 km
 - uto 29. 12.: lagano 6 km + 4 × 20 s ubrzanja → lagano 4 km
 - sub 2. 1.: lagano 6 km → lagano 5 km
-- ned 3. 1.: dugi 15 km → dugi 9 km
+- ned 3. 1.: dugi 15 km → dugi 14 km
 - uto 5. 1.: lagano 4 km + 4 × 20 s ubrzanja → lagano 3,5 km + 4 × 20 s ubrzanja
 - sub 9. 1.: lagano 4 km → lagano 3,5 km
-- ned 10. 1.: dugi 15 km, poslednjih 4 km u tempu trke → dugi 14 km
+- ned 10. 1.: dugi 15 km, poslednjih 4 km u tempu trke → dugi 14 km, poslednjih 3 km u tempu trke
 - 6. nedelja: 32,2 km → 18 km
-- 7. nedelja: 35,7 km → 25,7 km
+- 7. nedelja: 35,7 km → 30,7 km
 - 8. nedelja: 33 km → 31 km
 
 1. NEDELJA (od 16. 11.) — osnovna faza, gradnja; do trke 9 nedelja
@@ -104,8 +104,8 @@ Pauza zbog bolesti trajala je 7 dana (14–20. 12.), pa je povratak postepen: pr
   čet 31. 12.  tempo trke 3 × 1 km (4:30/km), oporavak 1:30 džog — 7,7 km, 42 min
   pet 1. 1.  odmor
   sub 2. 1.  lagano 5 km — 5 km, 29 min
-  ned 3. 1.  dugi 9 km — 9 km, 53 min
-  Zbir: 25,7 km, 2 h 27 min, 4 treninga, brz rad 9 %, opterećenje 166 BO (cilj 213)
+  ned 3. 1.  dugi 14 km — 14 km, 82 min
+  Zbir: 30,7 km, 2 h 56 min, 4 treninga, brz rad 8 %, opterećenje 195 BO (cilj 213)
 
 8. NEDELJA (od 4. 1.) — završna faza, vršna nedelja; do trke 2 nedelje
   pon 4. 1.  odmor
@@ -114,8 +114,8 @@ Pauza zbog bolesti trajala je 7 dana (14–20. 12.), pa je povratak postepen: pr
   čet 7. 1.  tempo trke 4 × 1 km (4:30/km), oporavak 1:30 džog — 9 km, 48 min
   pet 8. 1.  odmor
   sub 9. 1.  lagano 3,5 km — 3,5 km, 21 min
-  ned 10. 1.  dugi 14 km — 14 km, 82 min
-  Zbir: 31 km, 2 h 56 min, 4 treninga, brz rad 10 %, opterećenje 204 BO (cilj 213)
+  ned 10. 1.  dugi 14 km, poslednjih 3 km (4:30/km) u tempu trke — 14 km, 78 min
+  Zbir: 31 km, 2 h 52 min, 4 treninga, brz rad 18 %, opterećenje 219 BO (cilj 213)
 
 9. NEDELJA (od 11. 1.) — završna faza, sužavanje pred trku; do trke 1 nedelja
   pon 11. 1.  odmor

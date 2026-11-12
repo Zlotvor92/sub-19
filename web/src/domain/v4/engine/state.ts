@@ -1,6 +1,7 @@
 /* V4 — STANJE TRKAČA (SPEC § 2): izvedena polja računa `buildState` jednom; motor ih ne preračunava. */
 import {
   CHRONIC_DAYS,
+  EFFORT_AS_LONG_SHARE,
   HARD_EFFORT_DAYS,
   LONGEST_RECENT_DAYS,
   PAIN_RESOLVED_DAYS,
@@ -121,13 +122,15 @@ function weekSummaries(
   return weeks;
 }
 
+/** Trajanje trčanja kao „dugog": trka i test ulaze sa 60 % trajanja (nisu dugi, ali nisu ni ništa). */
+const asLong = (run: Run): Seconds =>
+  run.effort === undefined ? run.durationSec : EFFORT_AS_LONG_SHARE * run.durationSec;
+
 function longestRecent(facts: RunnerFacts, runs: readonly Run[], easyPace: SecPerKm): Seconds {
   let longest = 0;
   for (const run of runs) {
-    /* Trka i test nisu „dugi" (četvrti krug). */
-    if (run.effort === undefined && diffDays(facts.today, run.date) < LONGEST_RECENT_DAYS) {
-      longest = Math.max(longest, run.durationSec);
-    }
+    if (diffDays(facts.today, run.date) < LONGEST_RECENT_DAYS)
+      longest = Math.max(longest, asLong(run));
   }
   if (longest > 0) return longest;
   const km = facts.profile.longestRecentKm;
@@ -250,16 +253,23 @@ export function baseLoadOf(state: RunnerState): LoadPoints {
   return Math.round(70 * Math.max(0, chronic)) / 10;
 }
 
-/** Poslednji odrađeni dugi pre `date`: najduže trčanje (bez trke i testa) u 28 dana pre tog dana; 0 = nepoznat. */
+/** Poslednji odrađeni dugi pre `date`: najduže trčanje u 28 dana pre tog dana (trka i test sa 60 %); 0 = nepoznat. */
 export function lastLongBefore(state: RunnerState, date: string): Seconds {
   let longest = 0;
   for (const run of state.runs) {
     const age = diffDays(date, run.date);
-    if (run.effort === undefined && age >= 1 && age <= LONGEST_RECENT_DAYS) {
-      longest = Math.max(longest, run.durationSec);
-    }
+    if (age >= 1 && age <= LONGEST_RECENT_DAYS) longest = Math.max(longest, asLong(run));
   }
-  return longest;
+  return Math.round(longest);
+}
+
+/** Referenca dugog posle punog napora: najduže pre njega ili 60 % samog napora, šta je veće. */
+export function lastLongAfterEffort(
+  state: RunnerState,
+  date: string,
+  durationSec: Seconds
+): Seconds {
+  return Math.max(lastLongBefore(state, date), Math.round(EFFORT_AS_LONG_SHARE * durationSec));
 }
 
 export const buildState: BuildStateFn = (facts, goal, data, estimate = declaredForm, doc) => {

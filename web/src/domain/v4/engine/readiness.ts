@@ -207,7 +207,7 @@ export function modsFor(
         if (f < REST_BELOW_F) m.rest = true;
         if (f < QUALITY_FROM_F) noFast();
         m.doseFactor = RAMP_DOSE_FACTOR;
-        if (ramp.lastLongSec > 0) {
+        if (ramp.lastLongSec > 0 && f < QUALITY_FROM_F) {
           m.longCapSec = Math.min(m.longCapSec, RAMP_LONG_SHARE * ramp.lastLongSec);
         }
       }

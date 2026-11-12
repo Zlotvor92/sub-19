@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, diffDays } from './dates';
+import { addDays } from './dates';
 import { count, DAYS, KM, MINUTES, WEEKS, WORKOUTS } from './format';
 import { buildState, canonical, deriveEvents, paceCtxOf, plan, replan, summarize } from './index';
 import { EXAMPLE } from './testdata/example';
@@ -275,13 +275,14 @@ describe('E: plan koji počinje u rampi posle trke', () => {
   const fresh = make(facts(), goal, EXAMPLE);
   const after = make(facts({ runs: [race] }), goal, EXAMPLE);
 
-  it('baza je obim PRE trke (trka je ne podiže), polazni dugi nije trajanje trke', () => {
+  it('baza je obim PRE trke (trka je ne podiže); trka ulazi u „najduže skorašnje" sa 60 % trajanja', () => {
     expect(after.state.load.chronic).toBeGreaterThan(fresh.state.load.chronic);
     const base = after.doc.header.decisions.baseLoad;
     expect(Math.abs(base - fresh.doc.header.decisions.baseLoad)).toBeLessThan(6);
-    expect(after.state.longestRecentSec).toBe(0);
-    const start = after.doc.header.decisions.longStartSec;
-    expect(Math.abs(start - fresh.doc.header.decisions.longStartSec)).toBeLessThanOrEqual(120);
+    expect(after.state.longestRecentSec).toBe(Math.round(0.6 * race.durationSec));
+    expect(after.doc.header.decisions.longStartSec).toBe(3660);
+    const effort = after.doc.header.adjustments?.find((x) => x.kind === 'effort');
+    expect(effort).toMatchObject({ lastLongSec: 3636 });
   });
   it('posle rampe pravilo rasta gradi od baze pre trke: nema skoka, nedelje rampe ne ulaze u `m`', () => {
     const base = after.doc.header.decisions.baseLoad;
@@ -301,15 +302,21 @@ describe('E: plan koji počinje u rampi posle trke', () => {
     expect(third).toBeLessThanOrEqual(Math.round(base * (1 + maxWeeklyRampPct)) + 1);
     expect(third).toBeLessThan(fresh.doc.weeks[2]?.targetLoad ?? 0);
   });
-  it('dugi dok rampa traje (15 dana) ≤ 75 % najdužeg pre trke, ne računajući trku', () => {
+  it('dugi u rampi: ≤ 75 % reference samo dok je f < 0,8; posle toga rampa i lanac, bez skoka', () => {
     const ctx = paceCtxOf(after.doc.header);
-    const cap = 0.75 * after.doc.header.decisions.longStartSec;
-    const longs = days(after.doc).filter(
-      (d) => d.workout?.kind === 'long' && diffDays(d.date, race.date) <= 15
-    );
-    expect(longs.map((d) => d.date)).toEqual(['2026-11-22', '2026-11-29']);
-    for (const d of longs)
-      expect(summarize(d.workout, ctx).durationSec, d.date).toBeLessThanOrEqual(cap + 1);
+    const km = (date: string): number =>
+      summarize(days(after.doc).find((d) => d.date === date)?.workout ?? null, ctx).km;
+    const sec = (date: string): number =>
+      summarize(days(after.doc).find((d) => d.date === date)?.workout ?? null, ctx).durationSec;
+    /* 22. 11.: n = 7, f = 0,68 → plafon 75 % od 61 min; 29. 11.: n = 14, f = 0,96 → bez plafona. */
+    expect(sec('2026-11-22')).toBeLessThanOrEqual(0.75 * 3636 + 1);
+    expect(km('2026-11-22')).toBeGreaterThanOrEqual(6.5);
+    expect(km('2026-11-22')).toBeLessThanOrEqual(8);
+    expect(sec('2026-11-29')).toBeGreaterThan(0.75 * 3636);
+    expect(km('2026-11-29')).toBeGreaterThanOrEqual(9.5);
+    expect(km('2026-11-29')).toBeLessThanOrEqual(11.5);
+    expect(km('2026-12-06')).toBeGreaterThanOrEqual(km('2026-11-29'));
+    expect(km('2026-12-06') - km('2026-11-29')).toBeLessThanOrEqual(2.5);
     const history: Run[] = [
       { id: 'dugi', date: '2026-11-01', distanceM: 18000, durationSec: 6400 },
       race

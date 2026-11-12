@@ -7,7 +7,7 @@ import { decide } from './decide';
 import { validate, warnings, weekCost } from './guard';
 import { paceCtxOf } from './load';
 import { raceWorkout } from './select';
-import { baseLoadOf, lastLongBefore, recentLoad } from './state';
+import { baseLoadOf, lastLongAfterEffort, lastLongBefore, recentLoad } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import {
   type Adjustment,
@@ -43,7 +43,7 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
       source: 'plan',
       date: effort.date,
       durationSec: effort.durationSec,
-      lastLongSec: lastLongBefore(state, effort.date)
+      lastLongSec: lastLongAfterEffort(state, effort.date, effort.durationSec)
     });
   }
   for (const pause of state.pauses) {

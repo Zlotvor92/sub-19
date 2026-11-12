@@ -128,4 +128,7 @@ Uz to: smanjenje × 0,8 ne obara trening ispod njegovog najmanjeg oblika (ostaje
 lagan dan i dugi u nedelji rampe, a vršna nedelja pod rampom nije merilo za `taper`.
 Otisci: sintetička — samo primer 02 (start posle trke). Polumaraton — planovi posle trke/pauze (E), svi gde je
 dugi rastao korakom (C), deonice na granici najmanje doze (D); tekst upozorenja `mali-obim`/`kratak-dugi` (B, A).
+Ispravka tačke E (organizator): trka ili test u 28 dana ulazi u „najduže skorašnje" sa 60 % trajanja (polazni dugi
+i referenca plafona); plafon „dugi ≤ 75 % reference" važi samo dok je `f < 0,8`, posle toga dugi određuju rampa i
+lanac. Primer 02: dugi 6,5 → 10,5 → 12 km (bilo 6,5 / 6,5 / 10,5). Pauza i bol: referenca kao do sada.
 

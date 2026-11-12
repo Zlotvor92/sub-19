@@ -100,7 +100,9 @@ export const EFFORT_MIN_PER_RAMP_DAY = 7;
 /** Posle pauze (§ 14.6): `R = ceil(faktor razloga × min(dani, 28))`, pauza je ≥ 3 dana. */
 export const PAUSE_RAMP_FACTORS = { bolest: 2.0, povreda: 2.0, put: 1.0, nepoznato: 1.5 } as const;
 export const PAUSE_RAMP_MAX_DAYS = 28;
-/** Dok rampa traje, dugi ≤ 75 % poslednjeg odrađenog dugog (§ 14.6). */
+/** Trka ili test se kao „dugi" računa sa 60 % svog trajanja (polazni dugi i referenca plafona; ispravka tačke E). */
+export const EFFORT_AS_LONG_SHARE = 0.6;
+/** Dok je `f < 0,8`, dugi ≤ 75 % poslednjeg odrađenog dugog (§ 14.6; od `f ≥ 0,8` određuju ga rampa i lanac). */
 export const RAMP_LONG_SHARE = 0.75;
 /** Posle pauze ≥ 7 dana: blok u dugom tek posle jednog dugog bez bloka od ≥ 90 % poslednjeg pre pauze (§ 14.6);
     pravilo se gasi 42 dana posle pauze (odluka F2: bez roka bi plan sa kratkim dugim ostao bez bloka do trke). */

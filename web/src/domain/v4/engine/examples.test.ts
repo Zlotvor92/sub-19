@@ -179,14 +179,12 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
         (date) => summarize(onDate(start.doc, date)?.workout ?? null, ctx).durationSec
       )
     );
-    for (const date of ['2026-12-27', '2027-01-03']) {
-      const long = onDate(result.doc, date)?.workout;
-      expect(long?.kind, date).toBe('long');
-      expect(long?.workSec, date).toBe(0);
-      expect(summarize(long ?? null, ctx).durationSec, date).toBeLessThanOrEqual(
-        0.75 * lastDone + 1
-      );
-    }
+    /* Plafon 75 % važi dok je f < 0,8 (27. 12.: n = 7, f = 0,70); 3. 1. (f = 1,0) određuju rampa i lanac. */
+    const capped = onDate(result.doc, '2026-12-27')?.workout;
+    expect(capped?.kind).toBe('long');
+    expect(capped?.workSec).toBe(0);
+    expect(summarize(capped ?? null, ctx).durationSec).toBeLessThanOrEqual(0.75 * lastDone + 1);
+    expect(onDate(result.doc, '2027-01-03')?.workout?.workSec).toBe(0);
     const longs = days(result.doc).filter((x) => x.date > today && x.workout?.kind === 'long');
     const firstBlock = longs.findIndex((x) => (x.workout?.workSec ?? 0) > 0);
     if (firstBlock >= 0) {
