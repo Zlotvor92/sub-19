@@ -146,6 +146,12 @@ export function explainPlanShortfall(
   return `Nedelja ${shortDate(from)} – ${shortDate(to)} odrađena je oko ${pctWhole(share)} planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko ${seconds(lostSec)} sporije.${credited}`;
 }
 
+/** § 14.6: 12 nedelja bez bržih treninga — veća rezerva napretka. */
+export function explainNoQuality(fromDay: number, toDay: number): string {
+  const iso = (n: number): IsoDate => new Date(n * 86_400_000).toISOString().slice(0, 10);
+  return `Od ${shortDate(iso(fromDay))} do ${shortDate(iso(toDay))} nema nijednog bržeg treninga, pa je rezerva napretka veća: očekivano vreme na dan trke je zato nešto brže.`;
+}
+
 /** R13: pad baze. */
 export function explainBaseDrop(ratio: number, before: Vdot, after: Vdot, goalM: Meters): string {
   return `Poslednjih šest nedelja trčiš znatno manje nego pre (oko ${pctWhole(ratio)} ranijeg obima); forma polako opada kad obim dugo stoji nisko — ${move(before, after, goalM)}. Kad se obim vrati, prvi test ili trka pokazuju pravo stanje.`;

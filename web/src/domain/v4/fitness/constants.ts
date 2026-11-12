@@ -117,16 +117,14 @@ export const CHANGE_MIN = 0.01;
 
 /* ------------------------------------------------------------------ krug 2 (R12, R13, R14) */
 
-/** R12 — odrađen plan je dokaz: deo očekivanog napretka koji „istekne" sa odrađenim danom pripisuje se tekućoj
-    proceni srazmerno pridržavanju (opterećenje poslednjih 7 dana / planirano): ≥ 0,85 pun iznos, < 0,6 ništa,
-    linearno između. Važi samo u 16 nedelja pred trku (§ 7.5 `W`) i od poslednje trke/testa. [srednja za oblik,
+/** R12 — odrađen plan je dokaz: deo očekivanog napretka koji „istekne" sa danom plana pripisuje se tekućoj
+    proceni unapred, a na kraju kalendarske nedelje ispravlja po pridržavanju te nedelje (opterećenje / planirano,
+    planirano = `planned.weeks`): ≥ 0,85 pun iznos, < 0,6 ništa, linearno između. Važi samo u 16 nedelja pred trku (§ 7.5 `W`) i od poslednje trke/testa. [srednja za oblik,
     niska za brojeve] */
 export const PLAN_ADHERENCE_FULL = 0.85;
 export const PLAN_ADHERENCE_NONE = 0.6;
-/** Bez nedeljnih ciljeva plana „planirano" = 7 × baza od pre 7 dana. */
+/** Bez nedeljnih ciljeva plana „planirano" = najveća baza u 6 nedelja do pre 7 dana. */
 export const PLAN_REFERENCE_LAG_DAYS = 7;
-/** Rečenica o manjku pridržavanja kad očekivano vreme na dan trke zbog toga sporije za ≥ 5 s. */
-export const PLAN_SHORTFALL_REPORT_SEC = 5;
 /** Seme baze bez izjave: prosek prvih 28 dana istorije. */
 export const LOAD_SEED_DAYS = 28;
 

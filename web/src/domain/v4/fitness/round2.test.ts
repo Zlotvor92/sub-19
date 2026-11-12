@@ -134,6 +134,59 @@ describe('R12 — odrađen plan je dokaz', () => {
   });
 });
 
+describe('R12 sa ciljevima nedelja plana (krug 3): kao S09 i S21', () => {
+  /* 12 nedelja gradnje (+3 %/ned), pa dve nedelje sužavanja (70 %, 55 %); trka u nedelju 14. nedelje */
+  const factor = (w: number): number => (w < 12 ? 1 + 0.03 * w : w === 12 ? 0.7 : 0.55);
+  const planned: FitnessPlanned = {
+    ...PLAN,
+    weeks: Array.from({ length: 14 }, (_, w) => ({
+      start: add(T0, w * 7),
+      targetLoad: 200 * factor(w)
+    }))
+  };
+  const expectedOn = (runs: FitnessRun[], day: number): FormEstimate => at(runs, day, planned);
+
+  /** Svaka promena očekivanog vremena > 20 s između dva dana ima rečenicu tog dana. */
+  function explainedDaily(runs: FitnessRun[], last: number): void {
+    let prev = expectedOn(runs, -1);
+    for (let d = 0; d <= last; d += 1) {
+      const e = expectedOn(runs, d);
+      if (Math.abs(e.raceDay.expectedSec - prev.raceDay.expectedSec) > 20) {
+        expect(e.history.some((h) => h.date === add(T0, d))).toBe(true);
+      }
+      prev = e;
+    }
+  }
+
+  it('sve po planu (S21) i sužavanje: očekivano ≤ +10 s do dana pred trku; signal „plan"', () => {
+    const runs = history(14, factor);
+    const start = expectedOn(runs, -1);
+    for (const day of [41, 83, 90, 96]) {
+      const e = expectedOn(runs, day);
+      expect(e.raceDay.expectedSec - start.raceDay.expectedSec).toBeLessThanOrEqual(10);
+    }
+    const end = expectedOn(runs, 90);
+    expect(end.history.some((h) => h.signal === 'plan')).toBe(true);
+    expect(end.history.some((h) => h.reason.includes('smanjuje'))).toBe(false);
+    explainedDaily(runs, 96);
+  });
+
+  it('propušten vršni dugi (S09): pad očekivanog samo uz rečenicu', () => {
+    const runs = history(14, factor).filter((r) => r.id !== 'w11d6');
+    const start = expectedOn(runs, -1);
+    const end = expectedOn(runs, 90);
+    const short = end.history.filter((h) => h.signal === 'plan' && h.reason.includes('smanjuje'));
+    expect(short.length).toBe(1);
+    /* pridržavanje je 7-dnevni prozor: manjak se vidi u nedelji propuštenog dugog ili prvoj sledećoj */
+    const missed = dayNum(add(T0, 7 * 11 + 6));
+    const said = dayNum(short[0]?.date ?? '1970-01-01');
+    expect(said - missed).toBeGreaterThanOrEqual(0);
+    expect(said - missed).toBeLessThanOrEqual(7);
+    expect(end.raceDay.expectedSec - start.raceDay.expectedSec).toBeLessThanOrEqual(60);
+    explainedDaily(runs, 96);
+  });
+});
+
 describe('R13 — pad baze', () => {
   it('baza ≤ 70 % one od pre 6 nedelja: forma blago opada, sa rečenicom; najviše −3 %', () => {
     const runs = history(8, (w) => (w >= 2 ? 0.35 : 1));
@@ -141,6 +194,7 @@ describe('R13 — pad baze', () => {
     const e = estimateForm(facts(runs, add(T0, 7 * 8 - 1)), far, null);
     const drop = e.history.filter((h) => h.reason.includes('šest nedelja'));
     expect(drop.length).toBeGreaterThan(0);
+    expect(drop.every((h) => h.signal === 'baza')).toBe(true);
     const base = vdotFromResult(TEN, raceTimeSec(45, TEN));
     expect(e.current.vdot).toBeLessThan(base);
     expect(e.current.vdot).toBeGreaterThanOrEqual(base * 0.97 - 0.01);
@@ -191,6 +245,27 @@ describe('R14 — prvi rezultat i trka sa hodanjem', () => {
     expect(Math.abs(e.current.raceTimeSec - dur)).toBeLessThanOrEqual(2);
     expect(e.current.confidence).toBe('srednja');
     expect(e.history.find((h) => h.signal === 'trka')?.reason).toContain('hodanja');
+  });
+
+  it('Run.walked: hodanje i bez km — bez korekcije, i drugi rezultat ostaje srednja', () => {
+    const r1: FitnessRun = {
+      id: 'a',
+      date: T0,
+      distanceM: TEN,
+      durationSec: Math.round(raceTimeSec(44, TEN)),
+      effort: 'race'
+    };
+    const r2: FitnessRun = {
+      id: 'b',
+      date: add(T0, 21),
+      distanceM: HALF,
+      durationSec: 7920,
+      effort: 'race',
+      walked: true
+    };
+    const e = estimateForm(facts([r1, r2], add(T0, 22), noResult), far, null);
+    expect(e.current.confidence).toBe('srednja');
+    expect(e.history.find((h) => h.runId === 'b')?.reason).toContain('hodanja');
   });
 
   it('prvi rezultat: srednja; drugi rezultat: visoka; delimično usvajanje ima rečenicu', () => {

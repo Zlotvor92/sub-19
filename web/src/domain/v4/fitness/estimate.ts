@@ -27,6 +27,7 @@ import {
   explainHeartRate,
   explainPause,
   explainPlanShortfall,
+  explainNoQuality,
   explainPlanWeek,
   explainQuality,
   explainResult,
@@ -89,7 +90,10 @@ export function resultEvidence(r: FitnessRun): ResultEvidence {
   const splits = r.splits ?? [];
   const hot = r.tempC !== undefined && r.tempC >= C.HOT_FROM_C;
   const paces = splits.map((x) => x.paceSec).filter((x) => x > 0);
-  const walking = paces.length >= 3 && Math.max(...paces) > C.WALK_SPLIT_RATIO * median(paces);
+  /* R14: hodanje — izričito (`Run.walked`) ili izvedeno iz km (neki km > 1,25 × medijane). */
+  const walking =
+    r.walked === true ||
+    (paces.length >= 3 && Math.max(...paces) > C.WALK_SPLIT_RATIO * median(paces));
   /* R14: trka sa hodanjem se ne koriguje. */
   if (walking) return { vdot: rawVdot, rawVdot, splitBonus: 0, hot, walking };
   const halfKm = r.distanceM / 2000;
@@ -347,26 +351,34 @@ export function estimateForm(
 
   /* plafon napretka: stopa i najviše (§ 7.5, § 14.6) — potrebni već u petlji (R12) */
   const tenure = tenureOf(facts);
-  let { rate, max } = C.CEILING[tenure];
+  const baseCeiling = C.CEILING[tenure];
   const window = C.NO_QUALITY_WEEKS * 7;
-  const coversHistory = runs[0] !== undefined && today - dayNum(runs[0].date) >= window;
-  const anyQuality = runs.some(
-    (r) =>
-      today - dayNum(r.date) < window &&
-      ((r.laps ?? []).some((l) => l.role === 'work') ||
-        (r.planned !== undefined && isQualityZone(r.planned.zone)))
-  );
-  if (coversHistory && !anyQuality) {
-    rate *= C.NO_QUALITY_RATE;
-    max += C.NO_QUALITY_MAX_ADD;
-  }
+  const qualityRunDays = runs
+    .filter(
+      (r) =>
+        (r.laps ?? []).some((l) => l.role === 'work') ||
+        (r.planned !== undefined && isQualityZone(r.planned.zone))
+    )
+    .map((r) => dayNum(r.date));
+  /** § 14.6: 12 nedelja istorije bez ijednog bržeg treninga → `r × 1,25`, `G_max + 0,5`. Računa se za svaki dan
+      posebno, da uključenje ne menja prošlost (i dobija rečenicu tog dana). */
+  const noQualityOn = (d: number): boolean =>
+    runs[0] !== undefined &&
+    d - dayNum(runs[0].date) >= window &&
+    !qualityRunDays.some((x) => x > d - window && x <= d);
+  const ceilingOn = (d: number): { rate: number; max: number } =>
+    noQualityOn(d)
+      ? {
+          rate: baseCeiling.rate * C.NO_QUALITY_RATE,
+          max: baseCeiling.max + C.NO_QUALITY_MAX_ADD
+        }
+      : baseCeiling;
+  const { rate, max } = ceilingOn(today);
   let fv = 1;
   if (planned !== null && planned.baseLoad > 0) {
     const ratio = clamp(planned.peakLoad / planned.baseLoad, 1, C.VOLUME_RATIO_MAX);
     fv = C.VOLUME_F_MIN + (C.VOLUME_F_SPAN * (ratio - 1)) / (C.VOLUME_RATIO_MAX - 1);
   }
-  /** Mogući napredak po nedelji (bez `f_p`, da pripisano ne hrani samo sebe). */
-  const weeklyGain = rate * fv;
   const raceDay = dayNum(goal.raceDate);
 
   /* baza (R12, R13): dnevna opterećenja po pragu tekuće forme; seme iz izjave ili proseka prvih 28 dana */
@@ -391,6 +403,9 @@ export function estimateForm(
   const targets = (planned?.weeks ?? [])
     .map((w) => ({ start: dayNum(w.start), daily: w.targetLoad / 7 }))
     .filter((w) => Number.isFinite(w.start) && w.daily >= 0);
+  /** Sa ciljevima nedelja: pripisuje se tek od prvog dana plana (dani pre plana nisu „planirani"). */
+  const planStart =
+    targets.length > 0 ? Math.min(...targets.map((w) => w.start)) : Number.NEGATIVE_INFINITY;
   const plannedOn = (d: number): number | null => {
     for (const w of targets) if (d >= w.start && d < w.start + 7) return w.daily;
     return null;
@@ -398,7 +413,7 @@ export function estimateForm(
 
   /* R12: pripisano od poslednje trke/testa (u jedinicama plafona `G`) i zbir nedelje za objašnjenje */
   let credited = 0;
-  let week = { from: startDay, credit: 0, missed: 0, share: 0, days: 0 };
+  let week = { from: startDay, provisional: 0, done: 0, ref: 0, days: 0 };
   let lastResultDay = Number.NEGATIVE_INFINITY;
   /** „Planirano" za dan bez ciljeva plana: 7 × najveća baza u 6 nedelja pre (bez samoreferentnog pada). */
   const referenceOn = (x: number): number => {
@@ -454,6 +469,7 @@ export function estimateForm(
         results.push({ day: d, strong: !firstInApp && !ev.walking });
         lastResultDay = d;
         credited = 0;
+        week = { from: d + 1, provisional: 0, done: 0, ref: 0, days: 0 };
         baseDropApplied = 0;
         record(
           {
@@ -509,31 +525,29 @@ export function estimateForm(
     chronic = rollChronic(chronic, load);
     chronicByDay.set(d, chronic);
 
-    /* 4. R12 — odrađen plan: dan u 16 nedelja pred trku, pridržavanje u poslednjih 7 dana */
-    const toRace = raceDay - d;
-    if (toRace >= 7 && toRace < 7 * (C.WEEKS_MAX + 1) && d > lastResultDay) {
-      let done = 0;
-      let ref = 0;
-      for (let x = Math.max(d - 6, lastResultDay + 1); x <= d; x += 1) {
-        done += loadByDay.get(x) ?? 0;
-        ref += referenceOn(x);
-      }
-      const share = ref > 0 ? done / ref : 0;
-      const af = clamp(
-        (share - C.PLAN_ADHERENCE_NONE) / (C.PLAN_ADHERENCE_FULL - C.PLAN_ADHERENCE_NONE),
-        0,
-        1
+    if (noQualityOn(d) && !noQualityOn(d - 1)) {
+      record(
+        { date: isoOf(d), signal: 'plan', reason: explainNoQuality(d - window + 1, d) },
+        vdot,
+        vdot,
+        true
       );
-      const potential = weeklyGain / 7;
-      const take = Math.min(potential * af, Math.max(0, max - credited));
+    }
+    /* 4. R12 — odrađen plan: dan u 16 nedelja pred trku se pripisuje unapred (kao da je odrađen); na kraju
+       kalendarske nedelje se ispravlja po stvarnom pridržavanju te nedelje (opterećenje / planirano). Tako se
+       očekivano vreme ne pomera usred nedelje, a manjak dobija rečenicu na dan kad se utvrdi. */
+    const toRace = raceDay - d;
+    if (toRace >= 7 && toRace < 7 * (C.WEEKS_MAX + 1) && d > lastResultDay && d >= planStart) {
+      const ceil = ceilingOn(d);
+      /* Mogući napredak po nedelji (bez `f_p`, da pripisano ne hrani samo sebe). */
+      const take = Math.min((ceil.rate * fv) / 7, Math.max(0, ceil.max - credited));
       credited += take;
       vdot += C.EXPECTED_SHARE * take;
-      week.credit += C.EXPECTED_SHARE * take;
-      week.missed += C.EXPECTED_SHARE * Math.min(potential * (1 - af), Math.max(0, max - credited));
-      week.share += share;
+      week.provisional += take;
+      week.done += loadByDay.get(d) ?? 0;
+      week.ref += referenceOn(d);
       week.days += 1;
     }
-
     /* 5. R13 — pad baze: nedeljom i danas, uz ≥ 42 dana istorije i bez pauze u prozoru */
     if (
       (weekday(d) === 6 || d === today) &&
@@ -555,7 +569,7 @@ export function estimateForm(
           record(
             {
               date: isoOf(d),
-              signal: 'pauza',
+              signal: 'baza',
               reason: explainBaseDrop(ratio, before, vdot, goalM)
             },
             before,
@@ -592,28 +606,53 @@ export function estimateForm(
       }
     }
 
-    /* 7. kraj nedelje (ili danas): jedna rečenica o odrađenom planu (R12) */
-    if (weekday(d) === 6 || d === today) {
-      const share = week.days > 0 ? week.share / week.days : 0;
-      const lost = raceTimeSec(vdot, goalM) - raceTimeSec(vdot + week.missed, goalM);
-      const credit = week.credit >= C.CHANGE_MIN;
-      const short = lost >= C.PLAN_SHORTFALL_REPORT_SEC;
-      if (credit || short) {
-        const reason = short
-          ? explainPlanShortfall(
+    /* 7. kraj nedelje: ispravka pripisanog po pridržavanju i jedna rečenica (R12). Tekuća nedelja ostaje
+       pripisana unapred dok se ne završi. */
+    if (weekday(d) === 6 && week.days > 0) {
+      const share = week.ref > 0 ? week.done / week.ref : 1;
+      const af = clamp(
+        (share - C.PLAN_ADHERENCE_NONE) / (C.PLAN_ADHERENCE_FULL - C.PLAN_ADHERENCE_NONE),
+        0,
+        1
+      );
+      const giveBack = week.provisional * (1 - af);
+      const before = vdot - C.EXPECTED_SHARE * week.provisional;
+      credited -= giveBack;
+      vdot -= C.EXPECTED_SHARE * giveBack;
+      const lost =
+        raceTimeSec(vdot, goalM) - raceTimeSec(vdot + C.EXPECTED_SHARE * giveBack, goalM);
+      if (af < 1 && giveBack > 0) {
+        record(
+          {
+            date: isoOf(d),
+            signal: 'plan',
+            reason: explainPlanShortfall(
               isoOf(week.from),
               isoOf(d),
               share,
               lost,
-              vdot - week.credit,
+              before,
               vdot,
               goalM
             )
-          : explainPlanWeek(isoOf(week.from), isoOf(d), share, vdot - week.credit, vdot, goalM);
-        record({ date: isoOf(d), signal: 'kvalitet', reason }, vdot - week.credit, vdot, true);
+          },
+          before,
+          vdot,
+          true
+        );
+      } else if (vdot - before >= C.CHANGE_MIN) {
+        record(
+          {
+            date: isoOf(d),
+            signal: 'plan',
+            reason: explainPlanWeek(isoOf(week.from), isoOf(d), share, before, vdot, goalM)
+          },
+          before,
+          vdot
+        );
       }
-      week = { from: d + 1, credit: 0, missed: 0, share: 0, days: 0 };
     }
+    if (weekday(d) === 6) week = { from: d + 1, provisional: 0, done: 0, ref: 0, days: 0 };
     snapshots.push({ day: d, vdot });
   }
 
@@ -636,7 +675,7 @@ export function estimateForm(
   }
   /* `W` neprekidno (dani / 7), da se smanjuje dan po dan, kao i pripisano (R12). */
   const w = clamp((raceDay - today) / 7 - 1, 0, C.WEEKS_MAX);
-  const gain = Math.min(weeklyGain * fp * w, Math.max(0, max - credited));
+  const gain = Math.min(rate * fv * fp * w, Math.max(0, max - credited));
   const sigma = C.SIGMA[confidence];
 
   return {

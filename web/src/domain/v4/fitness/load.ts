@@ -39,6 +39,7 @@ export function runLoad(run: FitnessRun, thresholdPace: SecPerKm): LoadPoints {
     }
     return seconds > 0 ? minutes * (weighted / seconds) : minutes;
   }
+  if (run.distanceM <= 0) return minutes;
   return minutes * weightAtPace((run.durationSec / run.distanceM) * 1000, thresholdPace);
 }
 
