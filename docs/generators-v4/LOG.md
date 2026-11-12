@@ -99,3 +99,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   viši plafon napretka kao polazna vrednost za F4; opciona polja istorije (datum rezultata, godište, ranije tegobe).
 - Odbijeno za sada: nelinearna težina dugog (druga skala u jedinoj meri) — ponovo kod maratona.
 - Motoru poslata dopuna (poruka u toku rada).
+
+### 10:15 — motor gurnuo `vdot.ts`/`constants.ts` (`5c7e09e`) → pokrenut F4 (forma, Opus)
+- Uzorak vlasnika `web/src/domain/v4/fitness/fixtures/owner-2026-autumn.json`: u bazi je samo 8 trčanja sa tempom i
+  pulsom (27. 9 – 6. 11); posle polumaratona 3. 10. svega 5 trčanja (4–8 km). [visoka]
