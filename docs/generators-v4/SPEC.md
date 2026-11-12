@@ -595,3 +595,20 @@ izveštava brojeve sa pouzdanošću. Motor te brojeve ne sadrži (žive u `fitne
 
 14.5. **Otvoreno pitanje iz § 13 (blok u dugom posle bolesti)**: ostaje × 0,8 dok trener ne presudi; izmena je jedan
 broj u `constants.ts`.
+
+14.6. **Presuda trenera (`coach/SPEC-REVIEW.md`, 12. 11.) — prihvaćeno, menja § 6.5 i § 3:**
+- Rampa posle pauze zavisi od razloga: bolest ili povreda `R = ceil(2,0 × dani)`; put/posao/odmor `1,0 × dani`;
+  nepoznato `1,5 × dani`; dani se računaju najviše do 28 (umesto 21). Rampa posle napora ostaje `ceil(D / 7)`.
+- Dok rampa traje, dugi ≤ 75 % poslednjeg odrađenog dugog (pre pauze/napora).
+- Posle pauze ≥ 7 dana nema bloka/progresije u dugom dok nije odrađen jedan dugi BEZ bloka od ≥ 90 % dužine
+  poslednjeg dugog pre pauze; prvi blok posle toga je najniži korak lestvice (`startPct`), pa redom. Za pauzu 3–6
+  dana ostaje doza × 0,8. (Zamenjuje § 14.5.)
+- Izveden `fatigue`: uz `acute / chronic ≥ 1,5` mora i opterećenje poslednjih 7 dana ≥ 1,2 × `B`.
+- Tipovi (opciono, bez uticaja na motor u prvoj verziji osim gde piše): `profile.recentResult.date` (starost
+  rezultata → pouzdanost forme u `fitness/`), `profile.birthYear`, `painHistory[]` (12 meseci; koristi ih `fitness/`
+  i kasnije opreznost rasta).
+- Plafon napretka (polazne vrednosti za F4, [niska–srednja]): `r` / `G_max` — < 1 god. 0,20 / 4,0; 1–3 god.
+  0,13 / 2,5; > 3 god. 0,07 / 1,5; nepoznato 0,10 / 2,0; staž = godine strukturisanog treninga: bez dokaza kvaliteta
+  u 12 nedelja istorije `r × 1,25` i `G_max + 0,5`.
+- NIJE prihvaćeno za prvu verziju: nelinearna težina minuta u dugom (posle 90./150. min). Razlog: druga skala u
+  jedinoj meri; dugi već ima sopstveni plafon. Vraća se na sto kod maratona (F7) ako ispisi pokažu potcenjen dugi.

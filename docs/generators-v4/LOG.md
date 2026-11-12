@@ -92,3 +92,10 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Tabovi 10:05: F1 `session_01GnHHiZsCpXuJKp2fG6qCB1` — ZAVRŠEN (sve gurnuto, ne gurati dalje). F2 motor —
   `session_01GnHHiZ6y2YtRdf4VfVddBC` (Fable), radi. Trener — piše `coach/SPEC-REVIEW.md` (rampa povratka, blok posle
   bolesti, plafon napretka, težine) i parove personalizacije u obliku SPEC § 2.
+
+### 10:10 — presuda trenera o SPEC-u (`233d5090`, `coach/SPEC-REVIEW.md`) → SPEC § 14.6
+- Prihvaćeno: rampa po razlogu pauze (bolest 2,0 × dani, put 1,0, nepoznato 1,5; do 28 dana); dugi u rampi ≤ 75 %
+  poslednjeg; posle pauze ≥ 7 dana blok u dugom tek posle jednog dugog bez bloka; stroži uslov za izveden umor;
+  viši plafon napretka kao polazna vrednost za F4; opciona polja istorije (datum rezultata, godište, ranije tegobe).
+- Odbijeno za sada: nelinearna težina dugog (druga skala u jedinoj meri) — ponovo kod maratona.
+- Motoru poslata dopuna (poruka u toku rada).
