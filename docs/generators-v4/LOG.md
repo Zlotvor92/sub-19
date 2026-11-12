@@ -331,3 +331,10 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - ODLUKA: krug 3 po `briefs/R3-ROUND3.md` (S1–S12 motor, T1–T8 podaci). Kapija se menja po presudi trenera (vrh po
   tabeli obima i dužine pripreme; udeo dugog ≤ 40 % tek od 45 km; brz rad ≤ 22/25 % sa tempom trke i blokom; novi
   uslov: HM ≥ 16 nedelja ima dugi ≥ 15 km).
+
+### 13. 11. 2026, 00:50 — krug 3 pokrenut, štednja Fable-a (nalog vlasnika)
+- Vlasnik: Fable na ≈ 70 % nedeljnog limita → smanjiti korišćenje do reseta (četvrtak 9:00).
+- Krug 3 (`briefs/R3-ROUND3.md`, motor S1–S12 pa podaci HM T1–T8) radi JEDAN nov Opus tab
+  `session_01GnHHiWa47Guy3uDTKR2kE5`; tab M (Fable) i tab D se više ne koriste za ovaj krug.
+- Arhivirani završeni tabovi: QA1, F8, drugi sudija kruga 2 (sve gurnuto).
+- Fable ostaje samo za: kratke odluke organizatora i ocenjivanje kruga 3 (trener + nov drugi sudija).
