@@ -89,3 +89,6 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   podacima šablona u F3, proveravam na ispisu.
 - Sledeće: F2 motor (Fable), brief `briefs/F2-ENGINE.md`. F4 forma kreće čim motor gurne `vdot.ts`; F3 kad `plan` +
   `renderPlan` rade nad sintetičkom distancom; F5 posle F2.
+- Tabovi 10:05: F1 `session_01GnHHiZsCpXuJKp2fG6qCB1` — ZAVRŠEN (sve gurnuto, ne gurati dalje). F2 motor —
+  `session_01GnHHiZ6y2YtRdf4VfVddBC` (Fable), radi. Trener — piše `coach/SPEC-REVIEW.md` (rampa povratka, blok posle
+  bolesti, plafon napretka, težine) i parove personalizacije u obliku SPEC § 2.
