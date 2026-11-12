@@ -57,3 +57,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - CI: `web/scripts/ciScope.mjs` — folder `web/src/domain/v4/` odlučuje graf uvoza (ne „sve"); test dodat
   (`ciScope.node.test.ts`, 30/30 zeleno). Razlog: bez toga svaki push V4 koda pokreće pun CI u 10 delova. Ovaj push
   sam dira `web/scripts/` → jedan pun CI run, očekivano.
+
+### 09:50 — F6 stavke 1–3 stigle (trener, `c90eff1b`) [srednja — nisam još ocenio sadržaj]
+- `coach/RUBRIC-V4.md`, `SCENARIOS-V4.md`, `JUDGE2-BRIEF.md` preuzeti na `claude/v4`. Trenerov tab sme da gura samo
+  na staru radnu granu (podešavanje sesije); odluka: ne tražim izuzetak, ja prenosim `docs/generators-v4/coach/`
+  na `claude/v4` posle svake njegove isporuke.
+- Obavezne provere K1–K8 (prognoza bez napretka, brzo u 3 dana posle trke, predlog bez „šta/koliko/šta se dobija",
+  gramatika brojeva, aritmetika, > 25 % brzog rada, skok, prazan trening): K1–K5 idu u mašinske testove V4.
+- Zahtevi trenera prema V4: ispis plana pre/posle događaja za 24 scenarija sa objašnjenjem; oblik istorije trkača;
+  ispis nosi današnju prognozu i prognozu na dan trke sa rasponom. → ulazi u brief F2/F3.
