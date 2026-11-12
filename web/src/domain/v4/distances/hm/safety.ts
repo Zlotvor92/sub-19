@@ -2,35 +2,33 @@
    Opterećenje je u bodovima (BO = minut laganog trčanja); km se izvode. Izvor brojeva: trenerske granice iz v3 znanja
    (ROUND-01 § 3, V3-HM-REPORT) prevedene u minute; gde broj nije trenerov, piše „izbor". */
 import type { AdequatePrep, LevelRule, SafetyNumbers } from '../../engine/types';
+import { MAX_PEAK_OVER_BASE } from './templates';
 
 /** Nivo: prvo pravilo koje važi. Početnik po izjavi; mali obim (ispod 3 h 30 min nedeljno) nosi jedan kvalitet
     nedeljno (v3: ispod 25 km jedan kvalitet); ostali po formi (VDOT). */
 export const LEVELS: LevelRule[] = [
   { id: 'pocetnik', when: { beginner: true } },
-  { id: 'mali', when: { maxBaseLoad: 210 } },
+  /* mali obim samo ispod VDOT 52: brz trkač malog obima ostaje „brz" (dva kvaliteta) i dobija upozorenje
+     `obim-za-nivo` (krug 2, R11; p06) */
+  { id: 'mali', when: { maxBaseLoad: 210, maxVdot: 51.9 } },
   { id: 'spor', when: { maxVdot: 39.9 } },
   { id: 'srednji', when: { maxVdot: 51.9 } },
   { id: 'brz', when: {} }
 ];
 
-/** Udeo dugog u vrhu po broju dana (bodovi): 4 dana 40 % (organizator: 40–42 % kod 4 dana), 5 → 36 %, 6 → 33 %,
-    3 → 45 % (v3), 2 → 55 %. Početnik: dugi kao v3 (≈ 45 % nedelje kod 4 dana, p11 do 18 km). */
-const REGULAR_SHARE = { '1': 1, '2': 0.55, '3': 0.45, '4': 0.4, '5': 0.36, '6': 0.33, '7': 0.3 };
-const REGULAR_SHARE_BEGINNER = {
-  '1': 1,
-  '2': 0.6,
-  '3': 0.5,
-  '4': 0.46,
-  '5': 0.42,
-  '6': 0.38,
-  '7': 0.35
-};
+/** Udeo dugog u PLANIRANIM minutima nedelje po broju dana (krug 2, R4/R15). Kapija meri km, a dugi sa blokom je
+    brži od nedelje, pa je udeo u minutima nešto ispod granice u km: 4 dana 0,38 (≤ 40 % km), 5 → 0,34, 6 → 0,31,
+    3 → 0,48 (≤ 50 %). Početnik isto (organizator: ≤ 45 %; kapija ≤ 40 % kod 4+ dana) — lagani dani rastu sa dugim. */
+const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.48, '4': 0.38, '5': 0.34, '6': 0.31, '7': 0.29 };
 
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: +7 % u bodovima (km rastu i do ≈ 12 % kad nedelja ima manje brzog rada), najmanje
      12 BO (≈ 2 km) — trener: 5–10 % */
   maxWeeklyRampPct: 0.07,
   minRampLoad: 12,
+  /* vrh ≤ 1,5 × baza u bodovima: vršna nedelja nosi i rad kvaliteta, pa je vrh u km ≈ 1,30–1,38 × polazni obim
+     (organizator: 4 dana ≈ +30–35 %, nikad > 1,40 × u km; kapija to meri) */
+  maxPeakOverBase: MAX_PEAK_OVER_BASE,
   /* plafon vrha po nivou ≈ satni plafon iz v3 (6,5 / 7,5 / 9 h nedeljno) uvećan za rad kvaliteta; brz ≈ 100 km
      nedeljno (v3 apsolutni plafon) */
   peakLoadCap: {
@@ -38,7 +36,9 @@ export const SAFETY: SafetyNumbers = {
     mali: 420,
     spor: 540,
     srednji: 600,
-    brz: 520
+    /* brz: ≈ 105–110 km — sa manjim plafonom vrh je samo × 1,25 baze, pa nedelja dve pred trku (pod = sadašnji
+       obim + rad kvaliteta, R5) ne može da bude ≤ 85 % najteže */
+    brz: 560
   },
   /* najduži dugi: početnik 2 h 10, spor i srednji 2 h 15 (ROUND-01, v3 do 22 km); brz 2 h 05 — v3 je dugi
      brzih ograničavao dužinom (do 26 km), pa brz trkač ne trči 29 km u pripremi za polumaraton */
@@ -49,49 +49,56 @@ export const SAFETY: SafetyNumbers = {
     srednji: 8100,
     brz: 7500
   },
-  longShareByRunDays: {
-    pocetnik: REGULAR_SHARE_BEGINNER,
-    mali: REGULAR_SHARE,
-    spor: REGULAR_SHARE,
-    srednji: REGULAR_SHARE,
-    brz: REGULAR_SHARE
-  },
+  longShareByRunDays: LONG_SHARE,
   /* korak dugog 9 min (≈ 1,5 km; K7: ≤ 2 km; motor zaokružuje naniže, pa je stvarni korak ≈ 1–1,5 km); polazni dugi bez podatka: 30 % bazne nedelje. Mora biti ≤ dugom
      prve nedelje: motor ga koristi kao pod pravila koraka (max(prethodni, polazni) + korak), pa bi veći polazni
      dozvolio skok dugog na prelazu faza (K7). Cena: 3–4 dana bez podatka o najdužem trku kreću sa kraćim dugim. */
   longStepSec: 540,
-  longStartShare: { '1': 0.6, '2': 0.45, '3': 0.38, '4': 0.31, '5': 0.28, '6': 0.25, '7': 0.23 },
+  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.46, '4': 0.33, '5': 0.32, '6': 0.27, '7': 0.24 },
   /* plafon doze po treningu: sekunde rada i udeo vrha (min rada / BO vrha) */
   doseCaps: {
     brzina: { maxWorkSec: 720, shareOfPeakLoad: 0.05 },
-    prag: { maxWorkSec: 2100, shareOfPeakLoad: 0.1 },
+    /* prag do 30 min (VDOT 44–46 sa 30–40 km: 25–28 min, R16); više od toga uz intervale i blok prelazi 20 % nedelje */
+    prag: { maxWorkSec: 1800, shareOfPeakLoad: 0.1 },
     'prag-p': { maxWorkSec: 1560, shareOfPeakLoad: 0.085 },
-    intervali: { maxWorkSec: 1260, shareOfPeakLoad: 0.062 },
-    'tempo-trke': { maxWorkSec: 2640, shareOfPeakLoad: 0.12 },
+    /* intervali do 25 min rada (brz nivo 6–7 × 1 km) */
+    intervali: { maxWorkSec: 1500, shareOfPeakLoad: 0.065 },
+    /* tempo trke usred nedelje ≈ 1,4 × plafon praga: prva doza tempa trke nije manja od poslednjeg praga (R16);
+       brz nivo do 55 min (12–15 km) */
+    'tempo-trke': { maxWorkSec: 3300, shareOfPeakLoad: 0.135 },
     ostrenje: { maxWorkSec: 720, shareOfPeakLoad: 0.06 },
-    'dugi-rp': { maxWorkSec: 2400, shareOfPeakLoad: 0.1 },
-    'dugi-progresivno': { maxWorkSec: 900, shareOfPeakLoad: 0.045 }
+    /* blok u dugom: VDOT 45 sa 30 km 4 → 6 km, 40 km do ≈ 8 km, 3 dana do 7+ km (R16, R18) */
+    'dugi-rp': { maxWorkSec: 2400, shareOfPeakLoad: 0.105 },
+    'dugi-progresivno': { maxWorkSec: 660, shareOfPeakLoad: 0.05 }
   },
   /* lestvice: prvi trening zone ≤ 70 % plafona (K7), korak po pojavljivanju */
   progression: {
     brzina: { startPct: 0.68, stepPct: 0.12 },
-    prag: { startPct: 0.5, stepPct: 0.08 },
+    prag: { startPct: 0.5, stepPct: 0.1 },
     'prag-p': { startPct: 0.4, stepPct: 0.07 },
-    intervali: { startPct: 0.55, stepPct: 0.2 },
+    intervali: { startPct: 0.45, stepPct: 0.15 },
     'tempo-trke': { startPct: 0.55, stepPct: 0.1 },
     ostrenje: { startPct: 0.9, stepPct: 0 },
     'dugi-rp': { startPct: 0.45, stepPct: 0.2 },
-    'dugi-progresivno': { startPct: 0.6, stepPct: 0.2 }
+    'dugi-progresivno': { startPct: 0.75, stepPct: 0.1 }
   },
   /* doza ispod 8 min nije kvalitet (K8) */
   minDoseSec: 480,
   /* brz rad ≤ 20 % vremena nedelje, vršna 22 % (rubrika: ≤ 22 %, najviše jedna do 25 %) */
   maxFastShare: 0.2,
   maxFastSharePeak: 0.22,
-  /* lagan dan najmanje 25 min; lagan ≤ 80 % dugog, dan pred dugi ≤ 70 % (v3: 65–75 %;
-     više od toga ne, da dugi ostane najduži i najvažniji trening nedelje) */
+  /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
+     posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */
   minEasySec: 1500,
-  easyMaxShareOfLong: 0.8,
+  easyMaxShareOfLong: {
+    '1': 0.68,
+    '2': 0.68,
+    '3': 0.68,
+    '4': 0.63,
+    '5': 0.63,
+    '6': 0.63,
+    '7': 0.63
+  },
   dayBeforeLongMaxShare: 0.7,
   /* WU/CD po baznoj nedelji: do ≈ 25 km 10/10, do ≈ 40 km 15/10, više 20/15 (v3) */
   warmupCooldown: [
@@ -107,5 +114,7 @@ export const ADEQUATE: AdequatePrep = {
   minPeakWeeklyKm: 40,
   minRunDays: 4,
   minLongKm: 16,
+  /* vrh koji nivo traži da bi kvalitet nivoa stao u plan (upozorenje `obim-za-nivo`): brz ≈ 60 km (v3) */
+  minPeakWeeklyKmByLevel: { brz: 60 },
   shorter: { distanceId: '10k', label: '10 km' }
 };

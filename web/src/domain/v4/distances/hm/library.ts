@@ -255,7 +255,8 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'intervali',
     tags: [],
     impact: 'obican',
-    requires: { needsKnownPaces: true },
+    /* lestvica samo sa ≥ 15 min rada (R19) */
+    requires: { needsKnownPaces: true, minDoseSec: 900 },
     main: {
       kind: 'ladder',
       zone: 'I',
@@ -284,7 +285,7 @@ export const LIBRARY: WorkoutDef[] = [
       rep: { distanceM: 1000 },
       recovery: jog(150),
       minReps: 3,
-      maxReps: 5
+      maxReps: 7
     },
     text: 'intervali'
   },
@@ -301,7 +302,7 @@ export const LIBRARY: WorkoutDef[] = [
       rep: { distanceM: 800 },
       recovery: jog(120),
       minReps: 4,
-      maxReps: 6
+      maxReps: 8
     },
     text: 'intervali'
   },
@@ -374,7 +375,8 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'kontrola',
     tags: ['trka'],
     impact: 'obican',
-    requires: { minBaseLoad: 300, minVdot: 44 },
+    /* pripremna trka 10 km vikendom kad obim dozvoljava (≈ 35+ km nedeljno; v3, R17) */
+    requires: { minBaseLoad: 200 },
     main: { kind: 'all-out', distanceM: 10000 },
     text: 'kontrola-10k',
     notes: ['napomena.kontrola']
@@ -385,20 +387,22 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'kontrola',
     tags: ['trka'],
     impact: 'obican',
-    requires: { minBaseLoad: 170 },
+    /* ispod ≈ 25 km nedeljno test 3 km (R17) */
+    requires: { minBaseLoad: 150 },
     main: { kind: 'all-out', distanceM: 5000 },
     text: 'kontrola-5k',
     notes: ['napomena.kontrola']
   },
-  /* rani test (1. nedelja) kad su tempa po osećaju: posebna oznaka da ne pomera redosled provere forme */
+  /* rani test (2. nedelja, subota) kad su tempa po osećaju: posebna oznaka da ne pomera redosled provere forme.
+     3 km za sve: isti test koji navodi upozorenje „nema podataka" (R17: ista distanca u upozorenju i planu) */
   {
-    id: 'kontrola-rana-5k',
+    id: 'kontrola-rana-3k',
     kind: 'test',
     stimulus: 'kontrola-rana',
     tags: ['test'],
     impact: 'obican',
     requires: {},
-    main: { kind: 'all-out', distanceM: 5000 },
+    main: { kind: 'all-out', distanceM: 3000 },
     text: 'kontrola-rana',
     notes: ['napomena.kontrola']
   },

@@ -24,23 +24,25 @@ export const TEXTS: Record<string, string> = {
   'rp-deonice': 'tempo trke {n} × {rep}{pace}, oporavak {rec}',
   'rp-komad': 'tempo trke {rep} u komadu{pace}',
   ostrenje: 'oštrenje: tempo trke {n} × {rep}{pace}, oporavak {rec}',
-  'kontrola-10k': 'provera forme: trka ili test na 10 km punim naporom',
+  'kontrola-10k': 'provera forme: pripremna trka ili test na 10 km punim naporom',
   'kontrola-5k': 'provera forme: trka ili test na 5 km punim naporom',
-  'kontrola-rana': 'provera forme: test na 5 km punim naporom, ravnomerno',
+  'kontrola-rana': 'provera forme: test na 3 km punim naporom, ravnomerno',
   'kontrola-3k': 'provera forme: test na 3 km punim naporom',
 
   /* napomene */
   'napomena.kontrola':
     'Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.',
   'napomena.dugi':
-    'Ponesi vodu; posle 60 min unesi gel ili sportski napitak na svakih 30–40 min, isto kao na trci.',
+    'Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.',
   'napomena.dugi-blok':
     'Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.',
 
   'napomena.trka':
-    'Prvih 5 km trči 5–10 s po kilometru sporije od tempa trke, od 5. do 16. km u tempu trke, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.',
+    'Prvih 5 km trči {paceFrom}–{paceTo}, od 5. do 16. km {pace}, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.',
+  'napomena.trka.po-osecaju':
+    'Prvih 5 km trči malo lakše nego što ti se čini da možeš (pričaš u kratkim rečenicama), od 5. do 16. km ravnomerno, napor koji možeš da držiš do kraja, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.',
   'napomena.trka-unos':
-    'Gel ili sportski napitak na 40–45. min i na 75. min, kao na dugim treninzima.',
+    'Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.',
 
   /* trka i faze */
   race: 'trka — polumaraton',
@@ -50,17 +52,22 @@ export const TEXTS: Record<string, string> = {
   'faza.zavrsna': 'završnica',
 
   /* napor po zoni kad tempa još nisu pouzdana */
-  'napor.E': 'možeš da pričaš u celim rečenicama (napor 3–4 od 10)',
-  'napor.M': 'ravnomerno, kratke rečenice (napor 5 od 10)',
-  'napor.T': 'ugodno teško, samo par reči (napor 7 od 10)',
-  'napor.I': 'teško, ali isto do poslednje deonice (napor 8 od 10)',
-  'napor.R': 'brzo i opušteno, uz pun oporavak (napor 8–9 od 10)',
-  'napor.RP': 'napor koji možeš da držiš sat i po do dva (napor 6 od 10)'
+  'napor.E': 'možeš da pričaš u celim rečenicama, napor 3–4 od 10',
+  'napor.M': 'ravnomerno, kratke rečenice, napor 5 od 10',
+  'napor.T': 'ugodno teško, samo par reči, napor 7 od 10',
+  'napor.I': 'teško, ali isto do poslednje deonice, napor 8 od 10',
+  'napor.R': 'brzo i opušteno, uz pun oporavak, napor 8–9 od 10',
+  'napor.RP': 'napor koji možeš da držiš sat i po do dva, napor 6 od 10'
 };
 
 /** Napomene po vrsti i trajanju treninga. */
 export const NOTE_RULES: NoteRule[] = [
-  { kinds: ['race'], minDurationSec: 0, text: 'napomena.trka' },
+  {
+    kinds: ['race'],
+    minDurationSec: 0,
+    text: 'napomena.trka',
+    byFeelText: 'napomena.trka.po-osecaju'
+  },
   { kinds: ['race'], minDurationSec: 5400, text: 'napomena.trka-unos' },
   { kinds: ['long'], minDurationSec: 4500, text: 'napomena.dugi' }
 ];

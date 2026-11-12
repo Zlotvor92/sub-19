@@ -191,8 +191,11 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
   if (perDay < 20 && (volume || f.check === 'brz-udeo'))
     return 'ispod 20 min po danu: plan je samo okvir (upozorenje „mali obim")';
   /* brz udeo raste kad lagani dani ne mogu da ponesu cilj — isti uzrok kao „ispod cilja", do 27 % */
-  const fastByVolume = f.check === 'brz-udeo' && share <= 0.27;
-  if ((volume || (f.check === 'brz-udeo' && share <= 0.35)) && perDay < 32)
+  const fastByVolume = f.check === 'brz-udeo' && share <= 0.25;
+  /* nedelja provere forme: test punim naporom (sa 4+ dana umesto dugog) — K6 je ne meri */
+  if (f.check === 'brz-udeo' && st?.hasTest === true)
+    return 'nedelja sa proverom forme punim naporom';
+  if ((volume || (f.check === 'brz-udeo' && share <= 0.3)) && perDay < 32)
     return 'manje od 30 min po danu trčanja';
   if ((volume || fastByVolume) && days <= 3 && f.check !== 'prazan' && f.check !== 'skok')
     return '3 dana: lagan dan ≤ 75 % dugog ne nosi cilj nedelje';
@@ -215,6 +218,10 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
       return 'lagan dan otpao (ostatak < 25 min) — motor ne vraća ostatak';
   }
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
+  /* brz trkač malog obima: brzi trening zamenjen laganim jer bi brz rad prešao 20 % nedelje — plan to kaže
+     upozorenjem `obim-za-nivo` sa predlogom obima (krug 2, R11) */
+  if (f.check === 'ispod-cilja' && b.doc.header.warnings.some((w) => w.code === 'obim-za-nivo'))
+    return 'nivo traži više brzog rada nego što obim nosi (upozorenje obim-za-nivo)';
   return null;
 }
 
@@ -316,6 +323,16 @@ const ALL_PLANS = [
   ...OWNER_PLANS.map((o) => ({ id: o.id, ...build(o.facts, o.goal) }))
 ];
 const RENDERED = ALL_PLANS.map((p) => ({ ...p, text: renderPlan(p.doc, p.state, hm) }));
+
+/** Zona podražaja za K7 (prvi trening zone ≤ 70 % vrha zone). */
+const ZONE_OF: Record<string, string> = {
+  prag: 'T',
+  'prag-p': 'T',
+  intervali: 'I',
+  'tempo-trke': 'RP',
+  'dugi-rp': 'RP',
+  'dugi-progresivno': 'RP'
+};
 
 /** Pravilna množina za broj ispred imenice (1 nedelja, 2 nedelje, 5 nedelja; 21 nedelja, 11 nedelja). */
 function pluralOk(n: number, word: string, forms: [string, string, string]): boolean {
@@ -469,24 +486,32 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
           recent > 0 &&
           !afterRamp
         ) {
-          expect(s.km, `${p.id} nedelja ${String(i + 1)}`).toBeLessThanOrEqual(recent * 1.12 + 1.5);
+          expect(s.km, `${p.id} nedelja ${String(i + 1)}`).toBeLessThanOrEqual(
+            recent * 1.1 + 0.25 * s.workouts
+          );
         }
       });
-      const firstAndMax = new Map<string, { first: number; max: number }>();
+      /* K7 „prvi trening ZONE ≤ 70 % njenog vrha" (RUBRIC-V4): zona praga (prag, prag početnika), intervala i tempa
+         trke — tempo trke je i blok u dugom (prvi susret sa tempom trke je prvi blok, R16 traži da tempo trke usred
+         nedelje ne bude manji od prethodnog praga). Brze deonice i brda su izuzete: K8 traži ≥ 8 min rada, a vrh
+         brzine je 10–12 min, pa je prvi trening brzine uvek 65–80 % vrha. */
+      const firstAndMax = new Map<string, { first: number; max: number; count: number }>();
       for (const w of p.doc.weeks)
         for (const d of w.days) {
           const x = d.workout;
-          if (x === null || x.kind !== 'quality' || x.stimulus === null) continue;
-          const e = firstAndMax.get(x.stimulus) ?? { first: x.workSec, max: 0 };
+          if (x === null || x.stimulus === null || x.workSec <= 0) continue;
+          const zone = ZONE_OF[x.stimulus];
+          if (zone === undefined) continue;
+          const e = firstAndMax.get(zone) ?? { first: x.workSec, max: 0, count: 0 };
           e.max = Math.max(e.max, x.workSec);
-          firstAndMax.set(x.stimulus, e);
+          e.count += 1;
+          firstAndMax.set(zone, e);
         }
-      /* K7 „prvi trening zone ≤ 70 % vrha" za prag, intervale i tempo trke. Brze deonice i brda su izuzete:
-         K8 traži ≥ 8 min rada, a vrh brzine je 10–12 min, pa je prvi trening brzine uvek 65–80 % vrha. */
-      for (const [s, e] of firstAndMax) {
-        if (!['prag', 'prag-p', 'intervali', 'tempo-trke'].includes(s)) continue;
-        expect(e.first, `${p.id} ${s}`).toBeLessThanOrEqual(0.7 * e.max + 60);
-      }
+      for (const [z, e] of firstAndMax)
+        /* vrh zone ispod 8 min / 0,7: prvi trening ne može biti ≤ 70 % vrha i ≥ 8 min rada (K8) — kao brzina;
+           zona sa jednim treningom nema lestvicu (p12: jedni intervali, 4 × 3 min) */
+        if (e.max >= 480 / 0.7 && e.count > 1)
+          expect(e.first, `${p.id} ${z}`).toBeLessThanOrEqual(0.7 * e.max + 60);
     }
   });
 
@@ -535,8 +560,12 @@ describe('trenerski zahtevi (brief F3)', () => {
       const stats = weekStats(p.doc);
       const pk = stats[peak];
       const next = stats[peak + 1];
+      /* ≤ 85 % najteže; kad je vrh blizu sadašnjeg obima (3 dana na granici nosivosti, brz nivo sa plafonom vrha)
+         motor drži pod nedelje gradnje = sadašnji obim + rad kvaliteta (krug 2, R5), pa je granica 1,12 × baza */
       if (pk !== undefined && next !== undefined)
-        expect(next.load, p.id).toBeLessThanOrEqual(0.86 * pk.load);
+        expect(next.load, p.id).toBeLessThanOrEqual(
+          Math.max(0.86 * pk.load, 1.12 * p.doc.header.decisions.baseLoad)
+        );
       expect(kinds.slice(-2), p.id).toEqual(['taper', 'race']);
     }
   });
@@ -552,7 +581,7 @@ describe('trenerski zahtevi (brief F3)', () => {
         const low = d.runDays.length >= 6 ? 0.2 : d.runDays.length === 5 ? 0.25 : 0.28;
         expect(peak.longSec / peak.durationSec, p.id).toBeGreaterThanOrEqual(low);
         /* početnik: dugi kao v3 (≈ 45 % nedelje, organizator) */
-        const high = d.level.startsWith('pocetnik') ? 0.52 : 0.45;
+        const high = 0.42;
         expect(peak.longSec / peak.durationSec, p.id).toBeLessThanOrEqual(high);
       }
       const blocks = p.doc.weeks
@@ -582,5 +611,99 @@ describe('trenerski zahtevi (brief F3)', () => {
     }
     const p11 = RENDERED.find((x) => x.id === 'p11');
     expect(p11?.text).toMatch(/Očekivano na dan trke: .* brže od današnje prognoze/);
+  });
+});
+
+/* ------------------------------------------------------------------ 7. krug 2 (R16, R17, R19) */
+
+describe('krug 2: doze, raznovrsnost, provera forme, napomene (R16, R17, R19)', () => {
+  it('R16: tempo trke usred nedelje nije manji od poslednjeg praga pre njega (− 90 s zaokruživanja na 0,5 km)', () => {
+    for (const p of ALL_PLANS) {
+      let lastThreshold = 0;
+      for (const d of p.doc.weeks.flatMap((w) => w.days)) {
+        const x = d.workout;
+        if (x === null || x.kind !== 'quality') continue;
+        if (x.stimulus === 'prag' || x.stimulus === 'prag-p') lastThreshold = x.workSec;
+        if (x.stimulus === 'tempo-trke')
+          expect(x.workSec, `${p.id} ${d.date}`).toBeGreaterThanOrEqual(lastThreshold - 90);
+      }
+    }
+  });
+
+  it('R16: plan od 12+ nedelja ima intervale i brzinu/brda, i nema 5 nedelja zaredom sa istim kvalitetom', () => {
+    for (const p of ALL_PLANS) {
+      if (p.doc.weeks.length < 12) continue;
+      const stimuli = p.doc.weeks.map((w) =>
+        w.days
+          .map((d) => d.workout)
+          .filter((x) => x !== null && (x.kind === 'quality' || x.kind === 'test'))
+          .map((x) => x?.stimulus ?? '')
+          .sort()
+          .join('+')
+      );
+      const all = stimuli.join(' ');
+      expect(all, p.id).toMatch(/intervali/);
+      const hills = p.doc.weeks
+        .flatMap((w) => w.days)
+        .some((d) => ['brzina', 'usponi-kratki'].includes(d.workout?.stimulus ?? ''));
+      expect(hills, p.id).toBe(true);
+      let run = 1;
+      for (let i = 1; i < stimuli.length; i += 1) {
+        const same = stimuli[i] !== '' && stimuli[i] === stimuli[i - 1];
+        run = same ? run + 1 : 1;
+        expect(run, `${p.id} nedelja ${String(i + 1)}: ${stimuli[i] ?? ''}`).toBeLessThan(5);
+      }
+    }
+  });
+
+  it('R17: provera forme nije u 1. nedelji; subotom kad je subota dan trčanja; rani test po osećaju je 3 km kao u upozorenju', () => {
+    for (const p of ALL_PLANS) {
+      const sat = p.doc.header.decisions.runDays.includes(5);
+      for (const w of p.doc.weeks)
+        for (const d of w.days) {
+          if (d.workout?.kind !== 'test') continue;
+          expect(w.index, `${p.id} ${d.date}`).toBeGreaterThanOrEqual(2);
+          const weekday = (new Date(`${d.date}T12:00:00Z`).getUTCDay() + 6) % 7;
+          if (sat) expect(weekday, `${p.id} ${d.date}`).toBe(5);
+          if (d.workout.stimulus === 'kontrola-rana') expect(d.workout.text).toMatch(/3 km/);
+        }
+      const missing = p.doc.header.warnings.find((x) => x.code === 'nema-podataka');
+      if (missing !== undefined) expect(missing.proposal).toMatch(/test od 3 km/);
+    }
+  });
+
+  it('R17: pripremna trka 10 km vikendom kad obim to dozvoljava (≈ 35+ km)', () => {
+    for (const id of ['p01', 'p02', 'p04', 'p05', 'p08', 'p09', 'p12']) {
+      const p = ALL_PLANS.find((x) => x.id === id);
+      const tests = (p?.doc.weeks ?? [])
+        .flatMap((w) => w.days)
+        .filter((d) => d.workout?.kind === 'test');
+      expect(
+        tests.some((d) => d.workout?.libraryId === 'kontrola-10k'),
+        id
+      ).toBe(true);
+    }
+  });
+
+  it('R19: gel na dugom i na trci isto pravilo; dan trke po osećaju bez s/km', () => {
+    const rule = /na svakih 30–40 min/;
+    expect(hm.texts['napomena.dugi']).toMatch(rule);
+    expect(hm.texts['napomena.trka-unos']).toMatch(rule);
+    for (const p of RENDERED) {
+      if (!p.doc.header.paces.byFeel) continue;
+      const race = p.text.split('\n').findIndex((l) => l.includes('trka — polumaraton'));
+      const notes = p.text
+        .split('\n')
+        .slice(race, race + 6)
+        .join('\n');
+      expect(notes, p.id).not.toMatch(/\d:\d\d\/km/);
+    }
+  });
+
+  it('R19: lestvica intervala samo sa ≥ 15 min rada', () => {
+    for (const p of ALL_PLANS)
+      for (const d of p.doc.weeks.flatMap((w) => w.days))
+        if (d.workout?.libraryId === 'i-lestvica')
+          expect(d.workout.workSec, `${p.id} ${d.date}`).toBeGreaterThanOrEqual(900);
   });
 });
