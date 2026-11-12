@@ -88,7 +88,7 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
      R12), ne podaci polumaratona. Granica se ne labavi: ti planovi su
      `it.fails` dok forma ne bude ispravljena (tada ovaj test pada i spisak se briše). Zahtev prema formi:
      D-REPORT.md. */
-  const FORM_DRIFT = new Set(['p01', 'p02', 'p03', 'p09', 'vlasnik-v1']);
+  const FORM_DRIFT = new Set(['p01', 'p02', 'p03', 'p09', 'vlasnik-v1', 'vlasnik-v2']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);

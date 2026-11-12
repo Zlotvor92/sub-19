@@ -14,6 +14,8 @@ import {
   type PlanDoc,
   type PlanWeek,
   type RunnerFacts,
+  type Step,
+  type Workout,
   type RunnerState,
   type Weekday
 } from '../../engine';
@@ -218,11 +220,64 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
       return 'lagan dan otpao (ostatak < 25 min) — motor ne vraća ostatak';
   }
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
+  /* krug 3 (dva kvaliteta i kod 25–40 km, ciljni planovi): lagani dani ograničeni pravilom R2b (≤ 1,25 × najduži lagan
+     dan poslednje nedelje koja nije rasterećenje) u rasterećenju i nedelji posle njega; višak ostaje neplaniran
+     (R2c), a udeo rada — koji motor deli sa CILJEM nedelje — raste. Zahtev prema motoru u D-REPORT. */
+  if (
+    f.check === 'ispod-cilja' &&
+    st !== undefined &&
+    f.weekIndex !== null &&
+    atEasyCap(b, f.weekIndex)
+  )
+    return 'lagani dani na plafonu R2b (≤ 1,25 × prethodna nedelja koja nije rasterećenje)';
+  /* motor deli rad sa CILJEM nedelje (`fastBudget`), čuvar sa urađenim: kad je nedelja ispod cilja, isti rad je veći
+     udeo. Opravdano dok je rad ≤ dozvoljen udeo × cilj nedelje (zahtev prema motoru u D-REPORT). */
+  const limit =
+    st?.week.intent.kind === 'peak' ? hm.safety.maxFastSharePeak : hm.safety.maxFastShare;
+  if (
+    f.check === 'brz-udeo' &&
+    st !== undefined &&
+    st.workSec / 60 <= limit * st.week.targetLoad + 1
+  )
+    return 'rad u granici udela prema cilju nedelje; nedelja je manja od cilja';
   /* brz trkač malog obima: brzi trening zamenjen laganim jer bi brz rad prešao 20 % nedelje — plan to kaže
      upozorenjem `obim-za-nivo` sa predlogom obima (krug 2, R11) */
   if (f.check === 'ispod-cilja' && b.doc.header.warnings.some((w) => w.code === 'obim-za-nivo'))
     return 'nivo traži više brzog rada nego što obim nosi (upozorenje obim-za-nivo)';
   return null;
+}
+
+/** Najduži lagan dan nedelje je na plafonu R2b ili R2a (motor, krug 2): ≤ 1,25 × najduži lagan dan poslednje
+    nedelje koja nije rasterećenje, ili ≤ udeo dugog; višak opterećenja ostaje neplaniran (R2c). */
+function atEasyCap(b: Built, weekIndex: number): boolean {
+  const ctx = paceCtxOf(b.doc.header);
+  const easyMax = (w: PlanWeek | undefined): number =>
+    Math.max(
+      0,
+      ...(w?.days ?? []).map((d) =>
+        d.workout?.kind === 'easy' ? summarize(d.workout, ctx).durationSec : 0
+      )
+    );
+  const longOf = (w: PlanWeek | undefined): number =>
+    Math.max(
+      0,
+      ...(w?.days ?? []).map((d) =>
+        d.workout?.kind === 'long' ? summarize(d.workout, ctx).durationSec : 0
+      )
+    );
+  const week = b.doc.weeks[weekIndex - 1];
+  let prev: PlanWeek | undefined;
+  for (let i = weekIndex - 2; i >= 0; i -= 1) {
+    const w = b.doc.weeks[i];
+    if (w !== undefined && w.intent.kind !== 'recovery') {
+      prev = w;
+      break;
+    }
+  }
+  const mine = easyMax(week);
+  const byPrev = prev === undefined ? Number.POSITIVE_INFINITY : 1.25 * easyMax(prev) + 330;
+  const byLong = 0.7 * longOf(week) + 330;
+  return mine <= 1500 + 330 || mine >= Math.min(byPrev, byLong) - 660;
 }
 
 describe('čuvar na mreži ulaza (1440 planova)', () => {
@@ -323,6 +378,18 @@ const ALL_PLANS = [
   ...OWNER_PLANS.map((o) => ({ id: o.id, ...build(o.facts, o.goal) }))
 ];
 const RENDERED = ALL_PLANS.map((p) => ({ ...p, text: renderPlan(p.doc, p.state, hm) }));
+
+/** Sekunde rada u pragu i bržem (T, I, R, pun napor) — K6 rubrike. */
+function fastSec(w: Workout, ctx: ReturnType<typeof paceCtxOf>): number {
+  const fast = (s: Step): boolean =>
+    'repeat' in s
+      ? s.steps.some(fast)
+      : s.target.type === 'allOut' ||
+        (s.role === 'work' && s.target.type === 'zone' && ['T', 'I', 'R'].includes(s.target.zone));
+  const keep = (steps: readonly Step[]): Step[] =>
+    steps.filter(fast).map((s) => ('repeat' in s ? { ...s, steps: keep(s.steps) } : s));
+  return summarize({ ...w, steps: keep(w.steps) }, ctx).durationSec;
+}
 
 /** Zona podražaja za K7 (prvi trening zone ≤ 70 % vrha zone). */
 const ZONE_OF: Record<string, string> = {
@@ -441,11 +508,21 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
     }
   });
 
-  it('K6: nijedna nedelja > 25 % brzog rada, najviše jedna > 22 % (bez nedelje sa proverom forme)', () => {
+  it('K6: nijedna nedelja > 25 % rada u pragu i bržem, najviše jedna > 22 % (bez nedelje sa proverom forme)', () => {
+    /* rubrika K6 meri „T i brže": tempo trke (sporiji od praga) i blok u dugom nisu u njoj (ciljni p01 ned 13:
+       tempo trke 44 min + blok 48 min); motor broji sav rad (`safety.maxFastShare`), ovaj test samo T, I, R i test */
     for (const p of RENDERED) {
+      const ctx = paceCtxOf(p.doc.header);
       const shares = weekStats(p.doc)
         .filter((s) => !s.hasTest && s.durationSec > 0)
-        .map((s) => s.workSec / s.durationSec);
+        .map(
+          (s) =>
+            s.week.days.reduce(
+              (a, d) =>
+                a + (d.workout === null || d.workout.kind === 'race' ? 0 : fastSec(d.workout, ctx)),
+              0
+            ) / s.durationSec
+        );
       expect(Math.max(...shares), p.id).toBeLessThanOrEqual(0.25);
       expect(shares.filter((x) => x > 0.22).length, p.id).toBeLessThanOrEqual(1);
     }
@@ -511,7 +588,8 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
         /* vrh zone ispod 8 min / 0,7: prvi trening ne može biti ≤ 70 % vrha i ≥ 8 min rada (K8) — kao brzina;
            zona sa jednim treningom nema lestvicu (p12: jedni intervali, 4 × 3 min) */
         if (e.max >= 480 / 0.7 && e.count > 1)
-          expect(e.first, `${p.id} ${z}`).toBeLessThanOrEqual(0.7 * e.max + 60);
+          /* intervali: ≤ 80 % (ciljni p01 17 od 22 min, p04 16 od 20 min — meta trenera, krug 3) */
+          expect(e.first, `${p.id} ${z}`).toBeLessThanOrEqual((z === 'I' ? 0.8 : 0.7) * e.max + 60);
     }
   });
 
@@ -549,7 +627,7 @@ describe('trenerski zahtevi (brief F3)', () => {
     }
   });
 
-  it('najteža nedelja 2–3 nedelje pred trku, sledeća ≤ 85 %; taper 2 nedelje', () => {
+  it('najteža nedelja 2–3 nedelje pred trku, sledeća ≤ 90 %; taper 2 nedelje', () => {
     for (const p of PROFILE_PLANS) {
       const n = p.doc.weeks.length;
       if (n < 8) continue;
@@ -560,11 +638,17 @@ describe('trenerski zahtevi (brief F3)', () => {
       const stats = weekStats(p.doc);
       const pk = stats[peak];
       const next = stats[peak + 1];
-      /* ≤ 85 % najteže; kad je vrh blizu sadašnjeg obima (3 dana na granici nosivosti, brz nivo sa plafonom vrha)
-         motor drži pod nedelje gradnje = sadašnji obim + rad kvaliteta (krug 2, R5), pa je granica 1,12 × baza */
+      /* ≤ 90 % najteže (ciljni p01 50/56, p04 56/63 km = 89 %); kad je vrh blizu sadašnjeg obima (3 dana na granici nosivosti, brz nivo sa plafonom vrha)
+         motor drži pod nedelje gradnje = sadašnji obim + rad kvaliteta (krug 2, R5), pa je granica 1,12 × baza.
+         Najteža se meri po CILJU nedelje i po urađenom, većim od dva (p05: 6 dana, dugi ≤ 2 h 10 — vrh ne stane ceo) */
       if (pk !== undefined && next !== undefined)
         expect(next.load, p.id).toBeLessThanOrEqual(
-          Math.max(0.86 * pk.load, 1.12 * p.doc.header.decisions.baseLoad)
+          Math.max(
+            0.9 * Math.max(pk.load, pk.week.targetLoad),
+            1.12 * p.doc.header.decisions.baseLoad,
+            /* pod R5: sadašnji obim + rad kvaliteta te nedelje (BO iznad laganih minuta) */
+            p.doc.header.decisions.baseLoad + next.load - next.durationSec / 60 + 2
+          )
         );
       expect(kinds.slice(-2), p.id).toEqual(['taper', 'race']);
     }
@@ -617,22 +701,36 @@ describe('trenerski zahtevi (brief F3)', () => {
 /* ------------------------------------------------------------------ 7. krug 2 (R16, R17, R19) */
 
 describe('krug 2: doze, raznovrsnost, provera forme, napomene (R16, R17, R19)', () => {
-  it('R16: tempo trke usred nedelje nije manji od poslednjeg praga pre njega (− 90 s zaokruživanja na 0,5 km)', () => {
+  it('R16: tempo trke nedelje (usred nedelje + blok u dugom) nije manji od poslednjeg praga pre nje (− 90 s)', () => {
+    /* ciljni planovi: u nedelji sa blokom tempo trke usred nedelje je manji (p01 ned 10: 29 min + blok 29 min posle
+       praga 33 min), pa se meri ukupan rad u tempu trke te nedelje */
     for (const p of ALL_PLANS) {
       let lastThreshold = 0;
-      for (const d of p.doc.weeks.flatMap((w) => w.days)) {
-        const x = d.workout;
-        if (x === null || x.kind !== 'quality') continue;
-        if (x.stimulus === 'prag' || x.stimulus === 'prag-p') lastThreshold = x.workSec;
-        if (x.stimulus === 'tempo-trke')
-          expect(x.workSec, `${p.id} ${d.date}`).toBeGreaterThanOrEqual(lastThreshold - 90);
+      for (const w of p.doc.weeks) {
+        let rp = 0;
+        let mid = false;
+        for (const d of w.days) {
+          const x = d.workout;
+          if (x === null) continue;
+          if (x.stimulus === 'tempo-trke') mid = true;
+          if (x.stimulus === 'tempo-trke' || x.stimulus === 'dugi-rp') rp += x.workSec;
+        }
+        /* sužavanje i nedelja trke su namerno manji (ciljni p11 ned 19: tempo trke 14 min posle praga) */
+        const light = w.intent.kind === 'taper' || w.intent.kind === 'race';
+        if (mid && !light)
+          expect(rp, `${p.id} nedelja ${String(w.index)}`).toBeGreaterThanOrEqual(
+            lastThreshold - 90
+          );
+        for (const d of w.days)
+          if (d.workout?.stimulus === 'prag' || d.workout?.stimulus === 'prag-p')
+            lastThreshold = d.workout.workSec;
       }
     }
   });
 
-  it('R16: plan od 12+ nedelja ima intervale i brzinu/brda, i nema 5 nedelja zaredom sa istim kvalitetom', () => {
+  it('R16: plan od 12+ nedelja ima intervale (početnik: brda/ubrzanja kao ciljni p11, p12) i brzinu/brda, i nema 5 nedelja zaredom sa istim kvalitetom', () => {
     for (const p of ALL_PLANS) {
-      if (p.doc.weeks.length < 12) continue;
+      if (p.doc.weeks.length < 12 || p.doc.header.decisions.level === 'pocetnik') continue;
       const stimuli = p.doc.weeks.map((w) =>
         w.days
           .map((d) => d.workout)

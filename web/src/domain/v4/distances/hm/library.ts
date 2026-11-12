@@ -248,30 +248,7 @@ export const LIBRARY: WorkoutDef[] = [
   },
 
   /* ---------------------------------------------------------------- intervali (razvoj)
-     Lestvica prva: prva doza je mala (55 % plafona), a lestvica uzima onoliko komada koliko staje. */
-  {
-    id: 'i-lestvica',
-    kind: 'quality',
-    stimulus: 'intervali',
-    tags: [],
-    impact: 'obican',
-    /* lestvica samo sa ≥ 15 min rada (R19) */
-    requires: { needsKnownPaces: true, minDoseSec: 900 },
-    main: {
-      kind: 'ladder',
-      zone: 'I',
-      reps: [
-        { distanceM: 600 },
-        { distanceM: 800 },
-        { distanceM: 1000 },
-        { distanceM: 1200 },
-        { distanceM: 1000 },
-        { distanceM: 800 }
-      ],
-      recovery: jog(150)
-    },
-    text: 'intervali-lestvica'
-  },
+     Deonice od 1 km i 800 m prve (ciljni planovi: 4–5 × 1000 m); lestvica poslednja i tek od 16 min rada. */
   {
     id: 'i-1000',
     kind: 'quality',
@@ -324,6 +301,29 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'intervali'
   },
 
+  {
+    id: 'i-lestvica',
+    kind: 'quality',
+    stimulus: 'intervali',
+    tags: [],
+    impact: 'obican',
+    /* lestvica samo sa ≥ 15 min rada (R19) */
+    requires: { needsKnownPaces: true, minDoseSec: 900 },
+    main: {
+      kind: 'ladder',
+      zone: 'I',
+      reps: [
+        { distanceM: 600 },
+        { distanceM: 800 },
+        { distanceM: 1000 },
+        { distanceM: 1200 },
+        { distanceM: 1000 },
+        { distanceM: 800 }
+      ],
+      recovery: jog(150)
+    },
+    text: 'intervali-lestvica'
+  },
   /* ---------------------------------------------------------------- tempo trke usred nedelje
      U komadu prvi: prva (mala) doza ostaje ≥ 8 min i posle zaokruživanja na 500 m. */
   {

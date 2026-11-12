@@ -19,7 +19,7 @@ export const LEVELS: LevelRule[] = [
 /** Udeo dugog u PLANIRANIM minutima nedelje po broju dana (krug 2, R4/R15). Kapija meri km, a dugi sa blokom je
     brži od nedelje, pa je udeo u minutima nešto ispod granice u km: 4 dana 0,38 (≤ 40 % km), 5 → 0,34, 6 → 0,31,
     3 → 0,48 (≤ 50 %). Početnik isto (organizator: ≤ 45 %; kapija ≤ 40 % kod 4+ dana) — lagani dani rastu sa dugim. */
-const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.48, '4': 0.38, '5': 0.34, '6': 0.31, '7': 0.29 };
+const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.48, '4': 0.385, '5': 0.36, '6': 0.33, '7': 0.3 };
 
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: +7 % u bodovima (km rastu i do ≈ 12 % kad nedelja ima manje brzog rada), najmanje
@@ -38,37 +38,45 @@ export const SAFETY: SafetyNumbers = {
     srednji: 600,
     /* brz: ≈ 105–110 km — sa manjim plafonom vrh je samo × 1,25 baze, pa nedelja dve pred trku (pod = sadašnji
        obim + rad kvaliteta, R5) ne može da bude ≤ 85 % najteže */
-    brz: 560
+    brz: 600
   },
   /* najduži dugi: početnik 2 h 10, spor i srednji 2 h 15 (ROUND-01, v3 do 22 km); brz 2 h 05 — v3 je dugi
      brzih ograničavao dužinom (do 26 km), pa brz trkač ne trči 29 km u pripremi za polumaraton */
   longMaxSec: {
     pocetnik: 7800,
     mali: 7800,
-    spor: 8100,
+    spor: 9000,
     srednji: 8100,
-    brz: 7500
+    brz: 7800
   },
-  longShareByRunDays: LONG_SHARE,
+  /* mali obim: dugi na granici kapije — motor ga računa od cilja nedelje, a nedelja posle pripremne trke je manja od
+     cilja (vlasnik-v2 ned. 11 bi imala 41 %) */
+  longShareByRunDays: {
+    pocetnik: LONG_SHARE,
+    mali: { ...LONG_SHARE, '4': 0.37, '5': 0.34 },
+    spor: LONG_SHARE,
+    srednji: LONG_SHARE,
+    brz: LONG_SHARE
+  },
   /* korak dugog 9 min (≈ 1,5 km; K7: ≤ 2 km; motor zaokružuje naniže, pa je stvarni korak ≈ 1–1,5 km); polazni dugi bez podatka: 30 % bazne nedelje. Mora biti ≤ dugom
      prve nedelje: motor ga koristi kao pod pravila koraka (max(prethodni, polazni) + korak), pa bi veći polazni
      dozvolio skok dugog na prelazu faza (K7). Cena: 3–4 dana bez podatka o najdužem trku kreću sa kraćim dugim. */
   longStepSec: 540,
-  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.46, '4': 0.33, '5': 0.32, '6': 0.27, '7': 0.24 },
+  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.46, '4': 0.35, '5': 0.32, '6': 0.27, '7': 0.24 },
   /* plafon doze po treningu: sekunde rada i udeo vrha (min rada / BO vrha) */
   doseCaps: {
     brzina: { maxWorkSec: 720, shareOfPeakLoad: 0.05 },
     /* prag do 30 min (VDOT 44–46 sa 30–40 km: 25–28 min, R16); više od toga uz intervale i blok prelazi 20 % nedelje */
-    prag: { maxWorkSec: 1800, shareOfPeakLoad: 0.1 },
+    prag: { maxWorkSec: 2100, shareOfPeakLoad: 0.1 },
     'prag-p': { maxWorkSec: 1560, shareOfPeakLoad: 0.085 },
     /* intervali do 25 min rada (brz nivo 6–7 × 1 km) */
-    intervali: { maxWorkSec: 1500, shareOfPeakLoad: 0.065 },
+    intervali: { maxWorkSec: 1320, shareOfPeakLoad: 0.07 },
     /* tempo trke usred nedelje ≈ 1,4 × plafon praga: prva doza tempa trke nije manja od poslednjeg praga (R16);
        brz nivo do 55 min (12–15 km) */
-    'tempo-trke': { maxWorkSec: 3300, shareOfPeakLoad: 0.135 },
+    'tempo-trke': { maxWorkSec: 2640, shareOfPeakLoad: 0.135 },
     ostrenje: { maxWorkSec: 720, shareOfPeakLoad: 0.06 },
     /* blok u dugom: VDOT 45 sa 30 km 4 → 6 km, 40 km do ≈ 8 km, 3 dana do 7+ km (R16, R18) */
-    'dugi-rp': { maxWorkSec: 2400, shareOfPeakLoad: 0.105 },
+    'dugi-rp': { maxWorkSec: 2880, shareOfPeakLoad: 0.12 },
     'dugi-progresivno': { maxWorkSec: 660, shareOfPeakLoad: 0.05 }
   },
   /* lestvice: prvi trening zone ≤ 70 % plafona (K7), korak po pojavljivanju */
@@ -84,9 +92,11 @@ export const SAFETY: SafetyNumbers = {
   },
   /* doza ispod 8 min nije kvalitet (K8) */
   minDoseSec: 480,
-  /* brz rad ≤ 20 % vremena nedelje, vršna 22 % (rubrika: ≤ 22 %, najviše jedna do 25 %) */
-  maxFastShare: 0.2,
-  maxFastSharePeak: 0.22,
+  /* rad (sve deonice, i tempo trke i blok u dugom) ≤ 24 % vremena nedelje, najteža 30 % — ciljni p01 ned 13: tempo
+     trke 44 min + blok 48 min ≈ 29 %. Rubrika K6 meri samo prag i brže (tempo trke nije u njoj); motor broji sav
+     rad, pa je ovaj broj veći od K6 (zahtev prema motoru: brojati samo T, I, R) */
+  maxFastShare: 0.24,
+  maxFastSharePeak: 0.3,
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */
   minEasySec: 1500,
