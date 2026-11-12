@@ -137,3 +137,10 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   bez krugova se boduje planiranom težinom × stvarno trajanje (poslednja stavka, u toku). Posle toga motor zamrznut.
 - Tabovi: F3 HM `session_01GnHHiamNMpKXMSuJ6DLNNH` radi (prva verzija `84f7541`); F5 adapteri
   `session_01GnHHiYQ5e5u9uGHQ6jd7Kb` radi; F2 pri kraju; trener čeka ispise.
+
+### 11:05 — MOTOR ZAMRZNUT (`cb17b8f`) — kapija F2 prošla; moj pregled: testovi V4 + izolacija zeleni, typecheck čist [visoka]
+- Dodato: `{pace}` u tekstu treninga; urađen dan plana bez krugova = planirana težina × stvarno trajanje (≥ 90 %).
+- Blok u dugom posle bolesti se vraća (test na 16 nedelja). Tab je prijavio jedan push sa crvenim testom (≈ 1 min,
+  ispravljeno). Izmene motora od sada samo na zahtev organizatora; svaka mora da ostavi otiske distanci.
+- F3 vraćen na doradu (11:00): prva verzija HM lošija od v3 za vlasnikov profil (najduži dugi 12,5 km, vrh 32,8 km,
+  nedelje 3–5 padaju na 26 km / 3 treninga). Zahtev: vrh 38–40 km, dugi 16 km, uvek 4 treninga, V4 ≥ v3 po profilu.
