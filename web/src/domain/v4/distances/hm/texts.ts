@@ -5,28 +5,28 @@ import type { NoteRule } from '../../engine/types';
 
 export const TEXTS: Record<string, string> = {
   /* lagano i dugi */
-  lagano: 'Lagano {len}',
-  dugi: 'Dugi {len} lagano',
-  'dugi-rp': 'Dugi {len}, završni deo {dose} u tempu trke{pace}',
-  'dugi-progresivno': 'Dugi {len}, završni deo {dose} progresivno do tempa trke{pace}',
-  ubrzanja: 'Lagano {len}, na kraju {n} × {rep} ubrzanja, oporavak {rec}',
-  'usponi-kratki': 'Lagano {len}, usred trčanja {n} × {rep} jako uzbrdo, nazad {rec}',
+  lagano: 'lagano {len}',
+  dugi: 'dugi {len} lagano',
+  'dugi-rp': 'dugi {len}, završni deo {dose} u tempu trke{pace}',
+  'dugi-progresivno': 'dugi {len}, završni deo {dose} progresivno do tempa trke{pace}',
+  ubrzanja: 'lagano {len}, na kraju {n} × {rep} ubrzanja, oporavak {rec}',
+  'usponi-kratki': 'lagano {len}, usred trčanja {n} × {rep} jako uzbrdo, nazad {rec}',
 
   /* kvalitet */
-  'r-200': 'Brze deonice {n} × {rep}{pace}, oporavak {rec}',
-  'r-300': 'Brze deonice {n} × {rep}{pace}, oporavak {rec}',
-  'r-400': 'Brze deonice {n} × {rep}{pace}, oporavak {rec}',
-  'brda-60': 'Usponi {n} × {rep} snažno uzbrdo, nazad {rec}',
-  'prag-komad': 'Prag {rep} u komadu{pace}',
-  'prag-deonice': 'Prag {n} × {rep}{pace}, oporavak {rec}',
-  intervali: 'Intervali {n} × {rep}{pace}, oporavak {rec}',
-  'intervali-lestvica': 'Intervali lestvica {rep}{pace}, oporavak {rec}',
-  'rp-deonice': 'Tempo trke {n} × {rep}{pace}, oporavak {rec}',
-  'rp-komad': 'Tempo trke {rep} u komadu{pace}',
-  ostrenje: 'Oštrenje: tempo trke {n} × {rep}{pace}, oporavak {rec}',
-  'kontrola-10k': 'Provera forme: trka ili test na 10 km punim naporom',
-  'kontrola-5k': 'Provera forme: trka ili test na 5 km punim naporom',
-  'kontrola-3k': 'Provera forme: test na 3 km punim naporom',
+  'r-200': 'brze deonice {n} × {rep}{pace}, oporavak {rec}',
+  'r-300': 'brze deonice {n} × {rep}{pace}, oporavak {rec}',
+  'r-400': 'brze deonice {n} × {rep}{pace}, oporavak {rec}',
+  'brda-60': 'usponi {n} × {rep} snažno uzbrdo, nazad {rec}',
+  'prag-komad': 'prag {rep} u komadu{pace}',
+  'prag-deonice': 'prag {n} × {rep}{pace}, oporavak {rec}',
+  intervali: 'intervali {n} × {rep}{pace}, oporavak {rec}',
+  'intervali-lestvica': 'intervali lestvica {rep}{pace}, oporavak {rec}',
+  'rp-deonice': 'tempo trke {n} × {rep}{pace}, oporavak {rec}',
+  'rp-komad': 'tempo trke {rep} u komadu{pace}',
+  ostrenje: 'oštrenje: tempo trke {n} × {rep}{pace}, oporavak {rec}',
+  'kontrola-10k': 'provera forme: trka ili test na 10 km punim naporom',
+  'kontrola-5k': 'provera forme: trka ili test na 5 km punim naporom',
+  'kontrola-3k': 'provera forme: test na 3 km punim naporom',
 
   /* napomene */
   'napomena.kontrola':
@@ -37,7 +37,7 @@ export const TEXTS: Record<string, string> = {
     'Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.',
 
   /* trka i faze */
-  race: 'Trka — polumaraton',
+  race: 'trka — polumaraton',
   'faza.osnova': 'osnova',
   'faza.razvoj': 'razvoj',
   'faza.posebna': 'specifična priprema',

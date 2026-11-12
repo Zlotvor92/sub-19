@@ -182,7 +182,7 @@ export const LIBRARY: WorkoutDef[] = [
     tags: [],
     impact: 'obican',
     requires: { maxDoseSec: 1500 },
-    main: { kind: 'continuous', zone: 'T' },
+    main: { kind: 'continuous', zone: 'T', by: 'trajanje' },
     text: 'prag-komad'
   },
   {
@@ -212,7 +212,7 @@ export const LIBRARY: WorkoutDef[] = [
     tags: [],
     impact: 'obican',
     requires: { maxDoseSec: 1500 },
-    main: { kind: 'continuous', zone: 'T' },
+    main: { kind: 'continuous', zone: 'T', by: 'trajanje' },
     text: 'prag-komad'
   },
   /* prag početnika: kraći komadi, duži oporavak */
