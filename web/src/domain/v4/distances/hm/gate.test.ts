@@ -75,26 +75,13 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
     expect(s.violations).toEqual([]);
   });
 
-  /* „Ništa" → očekivano vreme se ne pogoršava. Danas pada kod 13 od 14 planova za 1–24 s, i sa podacima pre
-     ovog kruga (isti iznosi): uzrok je model forme (`fitness/`, R12 — kredit „odrađen plan" važi samo u 16 nedelja
-     pred trku i umanjuje se u rasterećenju), ne podaci polumaratona. Granica se ne labavi: ti planovi su
+  /* „Ništa" → očekivano vreme se ne pogoršava. Sa formom krug 3 (4fec1f0) živa procena je i dalje 1–2 s sporija kod 5
+     od 14 planova (zaglavlje posle ponovnog planiranja je isto; pre kruga 3: 1–24 s kod 13 od 14, i sa podacima
+     pre ovog kruga u istim iznosima): uzrok je model forme (`fitness/`,
+     R12), ne podaci polumaratona. Granica se ne labavi: ti planovi su
      `it.fails` dok forma ne bude ispravljena (tada ovaj test pada i spisak se briše). Zahtev prema formi:
      D-REPORT.md. */
-  const FORM_DRIFT = new Set([
-    'p01',
-    'p02',
-    'p03',
-    'p04',
-    'p05',
-    'p06',
-    'p07',
-    'p08',
-    'p09',
-    'p10',
-    'p12',
-    'vlasnik-v1',
-    'vlasnik-v2'
-  ]);
+  const FORM_DRIFT = new Set(['p01', 'p02', 'p03', 'p09', 'vlasnik-v1']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);
