@@ -11,7 +11,7 @@ import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday } from '
 import { decidePeak } from './decide';
 import { derivedPauses } from './pauses';
 import { declaredForm } from './formFallback';
-import { rollDay, runLoad } from './load';
+import { paceCtxOf, rollDay, runLoad, summarize } from './load';
 import { countWeeks, pickLevel, pickTemplate } from './template';
 import type {
   Availability,
@@ -181,12 +181,23 @@ function workZone(steps: readonly Step[]): ZoneId | null {
 /** `Run.planned` iz plana po `dayId` (§ 7.3); trčanje koje ga već nosi ostaje kako jeste. */
 function withPlanned(runs: readonly Run[], doc: PlanDoc | undefined): Run[] {
   if (doc === undefined) return [...runs];
+  const ctx = paceCtxOf(doc.header);
   const days = new Map(doc.weeks.flatMap((w) => w.days.map((d) => [d.id, d] as const)));
   return runs.map((run) => {
     const workout = run.dayId === undefined ? undefined : days.get(run.dayId)?.workout;
     if (run.planned !== undefined || workout == null || workout.workSec <= 0) return run;
     const zone = workZone(workout.steps);
-    return zone === null ? run : { ...run, planned: { zone, workSec: workout.workSec } };
+    if (zone === null) return run;
+    const cost = summarize(workout, ctx);
+    return {
+      ...run,
+      planned: {
+        zone,
+        workSec: workout.workSec,
+        durationSec: Math.round(cost.durationSec),
+        load: cost.load
+      }
+    };
   });
 }
 

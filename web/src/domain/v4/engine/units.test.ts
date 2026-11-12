@@ -189,12 +189,53 @@ describe('stanje uz postojeći plan (dopuna organizatora, § 2.3, § 7.3)', () =
     };
     const state = buildState({ ...b.facts, today, runs }, b.goal, SYNTHETIC, spy, b.doc);
     const quality = state.runs.find((r) => r.date === '2026-11-19');
-    expect(quality?.planned).toEqual({ zone: 'T', workSec: 840 });
+    expect(quality?.planned).toMatchObject({ zone: 'T', workSec: 840 });
     expect(state.runs.find((r) => r.date === '2026-11-17')?.planned).toBeUndefined();
     expect(seenRuns).toBe(2);
     expect(state.pauses).toEqual([{ from: '2026-11-27', to: '2026-12-05', reason: 'nepoznato' }]);
     expect(seenPauses).toBe(1);
     expect(buildState({ ...b.facts, today, runs }, b.goal, SYNTHETIC).pauses).toEqual([]);
+  });
+
+  it('urađen dan plana bez krugova se boduje planiranom težinom (≥ 90 % trajanja), inače po prosečnom tempu', () => {
+    const today = '2026-11-22';
+    const runs = runsAsPlanned(b.doc, today);
+    const ctx = paceCtxOf(b.doc.header);
+    const planned =
+      b.doc.weeks[0]?.days.reduce((sum, d) => sum + summarize(d.workout, ctx).load, 0) ?? 0;
+    const bare = buildState({ ...b.facts, today, runs }, b.goal, SYNTHETIC).weeks.at(-1)?.load ?? 0;
+    const linked =
+      buildState({ ...b.facts, today, runs }, b.goal, SYNTHETIC, undefined, b.doc).weeks.at(-1)
+        ?.load ?? 0;
+    /* Razlika je samo lagan dan sa ubrzanjima (bez zadatog rada se boduje po prosečnom tempu). */
+    expect(Math.abs(linked - planned)).toBeLessThan(4);
+    expect(bare).toBeLessThan(planned - 5);
+    const cut = runs.map((r) =>
+      r.date === '2026-11-19'
+        ? {
+            ...r,
+            durationSec: Math.round(r.durationSec * 0.6),
+            distanceM: Math.round(r.distanceM * 0.6)
+          }
+        : r
+    );
+    const short =
+      buildState({ ...b.facts, today, runs: cut }, b.goal, SYNTHETIC, undefined, b.doc).weeks.at(-1)
+        ?.load ?? 0;
+    expect(short).toBeLessThan(linked - 15);
+    const lapped = runs.map((r) =>
+      r.date === '2026-11-19'
+        ? {
+            ...r,
+            laps: [{ role: 'other' as const, distanceM: r.distanceM, durationSec: r.durationSec }]
+          }
+        : r
+    );
+    const withLaps =
+      buildState({ ...b.facts, today, runs: lapped }, b.goal, SYNTHETIC, undefined, b.doc).weeks.at(
+        -1
+      )?.load ?? 0;
+    expect(withLaps).toBeLessThan(linked - 5);
   });
 
   it('izveden umor traži i tešku nedelju: opterećenje 7 dana ≥ 1,2 × bazna nedelja (§ 14.6)', () => {

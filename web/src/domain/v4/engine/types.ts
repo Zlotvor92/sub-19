@@ -318,7 +318,14 @@ export interface Run {
   rpe?: number;
   source?: string;
   /** Šta je dan plana zadao (zona rada i zadat rad); `buildState` ga popunjava iz plana po `dayId` (§ 7.3). */
-  planned?: { zone: ZoneId; workSec: Seconds };
+  planned?: {
+    zone: ZoneId;
+    workSec: Seconds;
+    /** Planirano trajanje i opterećenje celog treninga: trčanje bez krugova se boduje planiranom prosečnom težinom
+        kad je odrađeno ≥ 90 % planiranog trajanja (odluka organizatora, drugi krug). */
+    durationSec?: Seconds;
+    load?: LoadPoints;
+  };
   /** Temperatura vazduha tokom trčanja (°C). */
   tempC?: number;
 }

@@ -4,6 +4,7 @@ import {
   CHRONIC_DAYS,
   DAY_KM_STEP,
   JOG_WEIGHT,
+  PLANNED_LOAD_MIN_SHARE,
   RPE_STAND,
   RPE_WALK,
   RPE_WEIGHTS,
@@ -151,7 +152,8 @@ export function summarize(workout: Workout | null, ctx: PaceCtx): WorkoutSummary
   return { ...cost, km: Math.round(round(cost.distanceM / 1000, DAY_KM_STEP) * 10) / 10 };
 }
 
-/** Opterećenje odrađenog trčanja (§ 5.1): po krugovima, inače po km, inače prosečan tempo. */
+/** Opterećenje odrađenog trčanja (§ 5.1): po krugovima; inače planirana težina dana plana (ako je odrađen);
+    inače po km; inače prosečan tempo. */
 export function runLoad(run: Run, thresholdPace: SecPerKm): LoadPoints {
   const minutes = run.durationSec / 60;
   if (run.laps !== undefined && run.laps.length > 0) {
@@ -165,6 +167,15 @@ export function runLoad(run: Run, thresholdPace: SecPerKm): LoadPoints {
       load += (lap.durationSec / 60) * weight;
     }
     return load;
+  }
+  const p = run.planned;
+  if (
+    p?.load !== undefined &&
+    p.durationSec !== undefined &&
+    p.durationSec > 0 &&
+    run.durationSec >= PLANNED_LOAD_MIN_SHARE * p.durationSec
+  ) {
+    return minutes * (p.load / (p.durationSec / 60));
   }
   if (run.splits !== undefined && run.splits.length > 0) {
     let weighted = 0;

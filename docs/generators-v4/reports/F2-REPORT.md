@@ -90,5 +90,7 @@ nalaze nad preuzetim danima daje kao `rucno`. Otisak: `fingerprint(doc, facts)`,
    objašnjenje po događaju. Čuvar `lagan-dugi` poredi km (dugi sa blokom kraće traje).
 5. Blok posle pauze: prvi dugi posle rampe ispunjava uslov ≥ 90 % (lanac dugog ne gleda nedelje rampe), pa se blok
    vraća čim ga šablon traži — test nad planom od 16 nedelja.
+6. Urađen dan plana bez krugova: planirana prosečna težina × stvarno trajanje kad je odrađeno ≥ 90 % planiranog
+   trajanja (`Run.planned.durationSec/load`, popunjava `buildState` kad dobije plan); inače po prosečnom tempu.
 Otisci se menjaju: dugi (zaokruživanje naniže), lagani dani u nedeljama gde je ostatak bio < `minEasySec`, tekst
 oporavka („1:30 džog"), nedelje posle pauze/rampe. Čuvar `brz-udeo` ne meri nedelju trke (mala je, trka ne ulazi u zbir).

@@ -54,6 +54,10 @@ export const RPE_STAND = 1;
 /** Hod se u kilometre računa po 9:00/km, stajanje ne daje kilometre (§ 5.5). */
 export const WALK_PACE_SEC_PER_KM = 540;
 
+/** Urađen dan plana bez krugova: planirana prosečna težina × stvarno trajanje, ako je odrađeno ≥ 90 % planiranog
+    trajanja (odluka organizatora, drugi krug) — da pravilo rasta ne kažnjava sat koji ne šalje krugove. */
+export const PLANNED_LOAD_MIN_SHARE = 0.9;
+
 /* ------------------------------------------------------------------ baza i umor (§ 5.3) */
 
 export const CHRONIC_DAYS = 42;
