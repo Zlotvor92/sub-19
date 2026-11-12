@@ -309,3 +309,25 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - OCENA KRUGA 2 pokrenuta: trener (12 planova, 24 scenarija, PRVI PUT personalizacija — parovi P1–P3, presuda o
   spornim pravilima) i novi drugi sudija `session_01GnHHiXAt7ZkoBnH7FAAcGU` (Fable, bez uvida u krug 1; 12 planova,
   2 plana vlasnika, 10 scenarija, parovi).
+
+### 21:05 — OCENA KRUGA 2 (trener `coach/ROUND-V4-HM-02.md`; drugi sudija `judge2/ROUND-V4-HM-02.md`, `f7eda65`) [srednja]
+| | krug 1 | krug 2 | v3 |
+|---|---|---|---|
+| trener — Plan | 68,4 | 74,3 | 77,6 |
+| trener — na ≥ 80 | 0/12 | 3/12 | 7/12 |
+| trener — Prilagođavanje | 76,5 | 79,2 | — |
+| trener — Personalizacija | — | 59,3 | — |
+| drugi sudija — planovi | 60,9 | 71,2 | — |
+| drugi sudija — scenariji | 68,5 | 78,7 | — |
+| drugi sudija — vlasnik v1 / v2 | 64 / 53 | 58,5 / 57 | — |
+- KAPIJA F3 I DALJE NIJE PROŠLA (cilj ≥ 80; najmanje > 77,6). Napredak +5,9 i +10,3, ali ispod v3.
+- Od 8 trenerovih zamerki kruga 1: 6 rešeno, 1 rešeno u ispisu, 1 delimično.
+- Novo loše (oba sudije): brz rad 26–33 % u najtežoj nedelji (moja meta „ciljni plan" je nosila trenerovu sopstvenu
+  grešku — priznao je); početnik i mali obim: dugi 8,5–13,5 km za polumaraton i kad priprema traje 18–20 nedelja
+  (moja kapija × 1,40 / 40 % je za njih pogrešna — trener: lestvica do × 2,0); platoi dugog; tempa se ubrzavaju bez
+  testa; par P3 obrnut (trkač bez kvaliteta dobija više); poslednji dan bolesti kao urađen dugi; nalazi čuvara
+  odštampani trkaču; taktika trke iz nepotvrđene prognoze.
+- Planovi vlasnika kod drugog sudije 58,5 i 57: „ne bih dao bez izmene dugog i obima" (dugi 12,5–13,5 km).
+- ODLUKA: krug 3 po `briefs/R3-ROUND3.md` (S1–S12 motor, T1–T8 podaci). Kapija se menja po presudi trenera (vrh po
+  tabeli obima i dužine pripreme; udeo dugog ≤ 40 % tek od 45 km; brz rad ≤ 22/25 % sa tempom trke i blokom; novi
+  uslov: HM ≥ 16 nedelja ima dugi ≥ 15 km).
