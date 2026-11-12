@@ -686,3 +686,268 @@ describe('R9: pauza, provera forme i povratak', () => {
     );
   });
 });
+
+/* ------------------------------------------------------------------ R6, R10, R11: zaglavlje, ispis, upozorenja */
+
+describe('R6: istina o tempu trke', () => {
+  const withGoal = (targetTimeSec: number | undefined): { text: string; doc: PlanDoc } => {
+    const goal: Goal = { ...EX_GOAL, ...(targetTimeSec === undefined ? {} : { targetTimeSec }) };
+    const { doc, state } = make(facts(), EXAMPLE, goal);
+    return { text: renderPlan(doc, state, EXAMPLE), doc };
+  };
+  const paceOf = (sec: number): string => {
+    const s = Math.round((sec / HALF_M) * 1000);
+    return `${String(Math.floor(s / 60))}:${String(s % 60).padStart(2, '0')}/km`;
+  };
+
+  it('zaglavlje kaže po čemu se trenira, šta cilj traži i da li je u rasponu', () => {
+    const base = withGoal(undefined);
+    const { lowSec, expectedSec } = base.doc.header.form.raceDay;
+    const rp = paceOf((base.doc.header.paces.RP * HALF_M) / 1000);
+    expect(base.text).toContain(`Tempo trke u treninzima je tvoja današnja forma (${rp}).`);
+    expect(base.text).toContain(`Očekivano vreme na dan trke`);
+    expect(base.text).toContain('Tempa se ubrzavaju kad trka ili test to potvrde.');
+    const easy = withGoal(expectedSec + 120);
+    expect(easy.text).toContain(`traži ${paceOf(expectedSec + 120)} — dostižan je (raspon`);
+    const edge = withGoal(Math.round((lowSec + expectedSec) / 2));
+    expect(edge.text).toContain('— na ivici je (raspon');
+    const far = withGoal(lowSec - 300);
+    expect(far.text).toContain(`traži ${paceOf(lowSec - 300)} — van raspona je (raspon`);
+  });
+
+  it('taktika dana trke: iz cilja ako je u rasponu, inače iz očekivanog vremena', () => {
+    const base = withGoal(undefined);
+    const { lowSec, expectedSec } = base.doc.header.form.raceDay;
+    const inRange = Math.round((lowSec + expectedSec) / 2);
+    expect(withGoal(inRange).text).toContain(`Tempo za trku: ${paceOf(inRange)} (tvoj cilj`);
+    expect(withGoal(lowSec - 300).text).toContain(
+      `Tempo za trku: ${paceOf(expectedSec)} (očekivano vreme`
+    );
+    expect(base.text).toContain(`Tempo za trku: ${paceOf(expectedSec)} (očekivano vreme`);
+  });
+
+  it('napomene trke iz podataka: zamene tempa, a za trkača po osećaju tekst bez s/km', () => {
+    const data: DistanceData = {
+      ...EXAMPLE,
+      noteRules: [
+        ...EXAMPLE.noteRules,
+        { kinds: ['race'], minDurationSec: 0, text: 'trka-plan', byFeelText: 'trka-plan-osecaj' }
+      ],
+      texts: {
+        ...EXAMPLE.texts,
+        'trka-plan': 'prvih 5 km {paceFrom}–{paceTo}, zatim {pace}',
+        'trka-plan-osecaj': 'prvih 5 km zadržano, zatim ravnomerno po osećaju'
+      }
+    };
+    const paced = make(facts(), data, EX_GOAL);
+    const out = renderPlan(paced.doc, paced.state, data);
+    expect(out).toMatch(/napomena: prvih 5 km \d:\d\d–\d:\d\d\/km, zatim \d:\d\d\/km/);
+    const feel = make(facts({ profile: { weeklyKm: 25, easyPaceSecPerKm: 400 } }), data, EX_GOAL);
+    expect(feel.doc.header.paces.byFeel).toBe(true);
+    const notes = renderPlan(feel.doc, feel.state, data)
+      .split('\n')
+      .filter((l) => l.includes('napomena:'));
+    expect(notes.join('\n')).toContain('prvih 5 km zadržano, zatim ravnomerno po osećaju');
+    expect(notes.join('\n')).toContain('Trku trči po osećaju');
+    expect(notes.join('\n')).not.toMatch(/\/km|\{/);
+    expect(renderPlan(feel.doc, feel.state, data)).toContain('Tempa još nisu pouzdana');
+  });
+});
+
+describe('R10: ispis', () => {
+  const { doc, state } = make(facts(), EXAMPLE, EX_GOAL);
+  const text = renderPlan(doc, state, EXAMPLE);
+  const lines = text.split('\n');
+
+  it('zaglavlje kaže koji sadašnji obim plan pretpostavlja', () => {
+    expect(text).toContain('Polazim od tvojih ≈ 30 km nedeljno (');
+  });
+
+  it('naslovi nedelja: bez duplog „nedelja trke"; nedelje pred trku se ne zovu „gradnja"', () => {
+    const heads = lines.filter((l) => /^\d+\. NEDELJA/.test(l));
+    const last = heads.at(-1) ?? '';
+    expect(last.match(/nedelja trke/g)).toHaveLength(1);
+    for (const head of heads) {
+      const left = /do trke (\d+) nedelj/.exec(head);
+      if (left !== null && Number(left[1]) <= 2) expect(head).not.toContain('gradnja');
+    }
+    expect(heads.some((h) => h.includes('gradnja'))).toBe(true);
+  });
+
+  it('zbir nedelje trke broji trku; udeo brzog rada kaže čega je procenat; posle trke rečenica o oporavku', () => {
+    const sums = lines.filter((l) => l.startsWith('  Zbir:'));
+    expect(sums.at(-1)).toMatch(/\d+ trening\w* \+ trka, brz rad \d+ % vremena trčanja/);
+    for (const sum of sums.slice(0, -1)) {
+      expect(sum).toMatch(/brz rad \d+ % vremena trčanja/);
+      expect(sum).not.toContain('+ trka');
+    }
+    const race = lines.findIndex((l) => l.includes('TRKA:'));
+    const after = lines.slice(race + 1).filter((l) => l.includes('napomena:'));
+    expect(after.at(-1)).toMatch(/Posle trke: \d+ dana? bez brzih treninga/);
+  });
+
+  it('`povratak`: „dan posle trke" ili „posle testa", bez „trke ili testa od N min"', () => {
+    const run = (effort: 'race' | 'test'): string => {
+      const f = facts({
+        runs: [{ id: 'x', date: '2026-11-15', distanceM: 10000, durationSec: 2760, effort }]
+      });
+      const w = make(f, EXAMPLE, EX_GOAL).doc.header.warnings.find((x) => x.code === 'povratak');
+      return w?.problem ?? '';
+    };
+    expect(run('race')).toBe('Plan počinje dan posle trke (10 km za 46:00).');
+    expect(run('test')).toBe('Plan počinje dan posle testa (10 km za 46:00).');
+  });
+
+  it('urađene nedelje se ispisuju kao urađene: tempo kakav je bio, ne novi tempo plana', () => {
+    const today = '2026-12-06';
+    const race = {
+      id: 'r10',
+      date: today,
+      distanceM: 10000,
+      durationSec: 2580,
+      effort: 'race' as const
+    };
+    const skipped = '2026-11-28';
+    const st = buildState(
+      {
+        ...facts(),
+        today,
+        runs: [...runsAsPlanned(doc, '2026-12-05', (d) => d === skipped), race]
+      },
+      EX_GOAL,
+      EXAMPLE,
+      undefined,
+      doc
+    );
+    const r = replan(doc, st, deriveEvents(doc, st), EXAMPLE);
+    expect(r.doc.header.paces.T).toBeLessThan(doc.header.paces.T);
+    const out = renderPlan(r.doc, st, EXAMPLE, { changes: r.changes }).split('\n');
+    const first = out.findIndex((l) => l.startsWith('1. NEDELJA'));
+    const second = out.findIndex((l) => l.startsWith('2. NEDELJA'));
+    const week1 = out.slice(first, second);
+    const quality = week1.find((l) => l.includes('prag'));
+    expect(quality).toContain('— urađeno ');
+    /* Tempo u redu je stvarni prosek trčanja (sporiji od praga), ne novi tempo praga iz zaglavlja. */
+    expect(quality).not.toContain(`(${String(Math.floor(r.doc.header.paces.T / 60))}:`);
+    expect(week1.some((l) => l.startsWith('  Urađeno:'))).toBe(true);
+    expect(week1.some((l) => l.includes('brz rad'))).toBe(false);
+    expect(out.some((l) => l.includes(' — nije urađeno'))).toBe(true);
+    /* Budući dani i dalje nose tempo plana. */
+    expect(out.some((l) => l.includes(`/km)`) && !l.includes('urađeno'))).toBe(true);
+  });
+
+  it('promena prognoze u odnosu na prethodni ispis nosi „zašto"', () => {
+    expect(text).not.toContain('nego u prethodnom ispisu');
+    const moved: RunnerState = {
+      ...state,
+      form: {
+        ...state.form,
+        raceDay: { ...state.form.raceDay, expectedSec: state.form.raceDay.expectedSec - 45 },
+        history: [
+          ...state.form.history,
+          {
+            date: '2026-12-01',
+            signal: 'kvalitet',
+            before: 44.6,
+            after: 44.9,
+            reason: 'Prag od 1. 12. si držao lakše nego što forma predviđa.'
+          }
+        ]
+      }
+    };
+    const out = renderPlan(doc, moved, EXAMPLE);
+    expect(out).toContain('Prognoza je bolja nego u prethodnom ispisu');
+    expect(out).toContain('- Prag od 1. 12. si držao lakše nego što forma predviđa.');
+    const silent: RunnerState = { ...moved, form: { ...moved.form, history: state.form.history } };
+    expect(renderPlan(doc, silent, EXAMPLE)).toContain('Zašto: procena forme je ponovo izračunata');
+    const small: RunnerState = {
+      ...state,
+      form: {
+        ...state.form,
+        raceDay: { ...state.form.raceDay, expectedSec: state.form.raceDay.expectedSec + 15 }
+      }
+    };
+    expect(renderPlan(doc, small, EXAMPLE)).not.toContain('nego u prethodnom ispisu');
+  });
+});
+
+describe('R11: upozorenja', () => {
+  const num = (value: string): number => Number(value.replace(',', '.'));
+
+  it('predlog nikad ne nudi vrh ni dugi manji od onoga što plan već ima', () => {
+    let proposals = 0;
+    for (const c of grid()) {
+      const { doc } = build(c.facts, c.goal);
+      const ctx = paceCtxOf(doc.header);
+      const costs = doc.weeks.map((w) => weekCost(w, c.goal.raceDate, ctx));
+      const peakKm = Math.max(0, ...costs.map((x) => x.km));
+      const longKm = Math.max(0, ...costs.map((x) => x.longKm));
+      for (const w of doc.header.warnings) {
+        if (!['mali-obim', 'malo-dana', 'kratak-dugi'].includes(w.code)) continue;
+        const now = w.proposal.split('Za sledeću trku')[0] ?? '';
+        const long = /dugi (?:tada )?(?:može da naraste |stiže )?do ([\d,]+) km/.exec(now);
+        const peak = /(?:vrh tada ide|nedelja tada stiže) do ([\d,]+) km/.exec(now);
+        if (long !== null) {
+          expect(num(long[1] ?? '0'), `${c.name}: ${w.proposal}`).toBeGreaterThan(longKm);
+          proposals += 1;
+        }
+        if (peak !== null) {
+          expect(num(peak[1] ?? '0'), `${c.name}: ${w.proposal}`).toBeGreaterThan(peakKm);
+          proposals += 1;
+        }
+      }
+    }
+    expect(proposals).toBeGreaterThan(10);
+  });
+
+  it('`obim-za-nivo`: obim ispod onoga što nivo traži → upozorenje sa predlogom iz `adequate`', () => {
+    const data: DistanceData = {
+      ...EXAMPLE,
+      adequate: {
+        ...EXAMPLE.adequate,
+        minPeakWeeklyKm: 30,
+        minPeakWeeklyKmByLevel: { osnovni: 70 }
+      }
+    };
+    const fast = facts({
+      availability: { runDays: [0, 1, 3, 5, 6], longDay: 6 },
+      profile: { weeklyKm: 35, recentResult: { distanceM: HALF_M, timeSec: 4800 } }
+    });
+    const { doc } = make(fast, data, EX_GOAL);
+    const w = doc.header.warnings.find((x) => x.code === 'obim-za-nivo');
+    expect(w).toBeDefined();
+    expect(w?.proposal).toContain('do oko 70 km');
+    expect(w?.suggest?.peakWeeklyKm).toBe(70);
+    expect(w?.meaning).toContain('% vremena trčanja');
+    /* Dovoljan obim: nema upozorenja. Tempa po osećaju: nema upozorenja (forma nije poznata). */
+    const enough = facts({
+      availability: { runDays: [0, 1, 3, 5, 6], longDay: 6 },
+      profile: { weeklyKm: 75, recentResult: { distanceM: HALF_M, timeSec: 4800 } }
+    });
+    expect(
+      make(enough, data, EX_GOAL).doc.header.warnings.some((x) => x.code === 'obim-za-nivo')
+    ).toBe(false);
+    const feel = facts({ profile: { weeklyKm: 35, easyPaceSecPerKm: 330 } });
+    expect(
+      make(feel, data, EX_GOAL).doc.header.warnings.some((x) => x.code === 'obim-za-nivo')
+    ).toBe(false);
+  });
+
+  it('`obim-za-nivo` i bez broja za nivo: kad plan ne može da smesti brze treninge šablona', () => {
+    /* 26 km nedeljno na 6 dana uz formu 1:20: brzi trening u većini nedelja ustupa mesto laganom danu. */
+    const data: DistanceData = {
+      ...EXAMPLE,
+      adequate: { ...EXAMPLE.adequate, minPeakWeeklyKm: 20 }
+    };
+    const f = facts({
+      availability: { runDays: [0, 1, 2, 3, 5, 6], longDay: 6 },
+      profile: { weeklyKm: 26, recentResult: { distanceM: HALF_M, timeSec: 4800 } }
+    });
+    const { doc } = make(f, data, EX_GOAL);
+    const w = doc.header.warnings.find((x) => x.code === 'obim-za-nivo');
+    expect(w?.problem).toMatch(/u \d+ od \d+ nedelja gradnje brzi trening je zamenjen laganim/);
+    const ctx = paceCtxOf(doc.header);
+    const peakKm = Math.max(...doc.weeks.map((x) => weekCost(x, EX_GOAL.raceDate, ctx).km));
+    expect(w?.suggest?.peakWeeklyKm ?? 0).toBeGreaterThan(peakKm);
+  });
+});

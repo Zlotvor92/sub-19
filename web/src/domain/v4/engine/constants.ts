@@ -189,3 +189,32 @@ export const GUARD_UNDER_TARGET = 0.85;
 export const GUARD_MIN_WEEK_SHARE = 0.5;
 export const GUARD_MIN_WEEK_WORKOUTS = 3;
 export const GUARD_TAPER_WORK_SHARE = 0.6;
+
+/* ------------------------------------------------------------------ tekstovi ispisa (krug 2: R6, R10) */
+
+/** Podrazumevani tekstovi zaglavlja i dana trke; podaci distance ih mogu zameniti istim ključem u `texts`.
+    Zamene: `{km}` `{time}` `{pace}` `{goal}` `{goalPace}` `{low}` `{high}` `{expected}` `{expectedPace}`
+    `{basis}` `{feel}` `{days}`. */
+export const DEFAULT_TEXTS: Readonly<Record<string, string>> = {
+  'zaglavlje.obim': 'Polazim od tvojih ≈ {km} km nedeljno ({time} trčanja).',
+  'zaglavlje.tempo-trke': 'Tempo trke u treninzima je tvoja današnja forma ({pace}).',
+  'zaglavlje.cilj.dostizan':
+    'Tvoj cilj {goal} traži {goalPace} — dostižan je (raspon na dan trke {low}–{high}).',
+  'zaglavlje.cilj.na-ivici':
+    'Tvoj cilj {goal} traži {goalPace} — na ivici je (raspon na dan trke {low}–{high}).',
+  'zaglavlje.cilj.van-raspona':
+    'Tvoj cilj {goal} traži {goalPace} — van raspona je (raspon na dan trke {low}–{high}).',
+  'zaglavlje.bez-cilja': 'Očekivano vreme na dan trke ({expected}) traži {expectedPace}.',
+  'zaglavlje.tempa-prate': 'Tempa se ubrzavaju kad trka ili test to potvrde.',
+  'zaglavlje.po-osecaju':
+    'Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.',
+  'trka.tempo': 'Tempo za trku: {pace} ({basis} {time}).',
+  'trka.po-osecaju': 'Trku trči po osećaju, bez gledanja u tempo: {feel}.',
+  'trka.oporavak':
+    'Posle trke: {days} bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.'
+};
+/** Promena očekivanog vremena veća od ovoga u odnosu na prethodni ispis dobija rečenicu „zašto" (R10). */
+export const FORECAST_CHANGE_MIN_SEC = 20;
+/** Upozorenje `obim-za-nivo` (R11): kvalitet nije stao u bar ovoliki udeo nedelja gradnje (i bar 2 nedelje). */
+export const LEVEL_VOLUME_LOST_SHARE = 0.25;
+export const LEVEL_VOLUME_LOST_MIN_WEEKS = 2;

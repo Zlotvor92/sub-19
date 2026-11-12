@@ -4,6 +4,8 @@ import {
   EASY_DISTANCE_STEP_M,
   EASY_DURATION_STEP_SEC,
   EASY_FLOOR_MIN_RUN_DAYS,
+  LEVEL_VOLUME_LOST_MIN_WEEKS,
+  LEVEL_VOLUME_LOST_SHARE,
   GUARD_DOSE_TOLERANCE_SEC,
   GUARD_FAST_SHARE_TOLERANCE,
   GUARD_JUMP_TOLERANCE,
@@ -16,7 +18,6 @@ import {
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate } from './dates';
-import { decideLongMax } from './decide';
 import { count, DAYS, fmtClock, fmtDate, fmtDistance, fmtNumber, WEEKS, WORKOUTS } from './format';
 import { type PaceCtx, paceCtxOf, summarize, type WorkoutSummary } from './load';
 import {
@@ -437,9 +438,11 @@ export function warnings(input: WarningInput): Warning[] {
             )
           )
         : a.minWeeks;
+    /* Predlog nudi samo brojeve VEĆE od onoga što plan već ima (R11). */
+    const longer = trial !== null && trial.longKm >= longKm + 0.5;
     const now =
       trial !== null && trial.peakKm >= peakKm + 0.5
-        ? `${extraDay} — vrh tada ide do ${km(trial.peakKm)} nedeljno, a dugi do ${km(trial.longKm)}.`
+        ? `${extraDay} — vrh tada ide do ${km(trial.peakKm)} nedeljno${longer ? `, a dugi do ${km(trial.longKm)}` : ''}.`
         : `Uz isti datum trke obim ne može bezbedno iznad ${km(peakKm)} nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi.`;
     out.push({
       code: 'mali-obim',
@@ -451,16 +454,21 @@ export function warnings(input: WarningInput): Warning[] {
       suggest: { peakWeeklyKm: a.minPeakWeeklyKm, weeks: weeks + extra }
     });
   }
-  const longWithDays =
-    Math.round((decideLongMax(d.peakLoad, s, d.level, a.minRunDays) / ctx.paces.easy) * 2) / 2;
   if (runDays < a.minRunDays) {
+    /* Šta još jedan dan stvarno donosi — iz probnog plana, nikad broj manji od planiranog (R11). */
+    const gain =
+      trial !== null && trial.longKm >= longKm + 0.5
+        ? `dugi tada može da naraste do ${km(trial.longKm)}`
+        : trial !== null && trial.peakKm >= peakKm + 0.5
+          ? `nedelja tada stiže do ${km(trial.peakKm)}, a dugi ostaje ${km(longKm)} i nosi manji deo nedelje`
+          : 'isti obim se tada deli na više kraćih trčanja, pa je svako lakše za oporavak';
     out.push({
       code: 'malo-dana',
       severity: 'upozorenje',
       problem: `Trčiš ${count(runDays, DAYS)} nedeljno, a za ovu distancu treba bar ${count(a.minRunDays, DAYS)}.`,
       meaning:
-        'Sa toliko dana ceo obim staje u malo treninga, pa je dugi trening kraći nego što trka traži, a svaki propušten dan je veliki deo nedelje.',
-      proposal: `Dodaj ${String(runDays + 1)}. dan laganog trčanja od 30–40 min — uz ${count(a.minRunDays, DAYS)} trčanja nedeljno dugi može da naraste do ${km(longWithDays)}.`,
+        'Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa.',
+      proposal: `Dodaj ${String(runDays + 1)}. dan laganog trčanja od 30–40 min — ${gain}.`,
       suggest: { runDays: a.minRunDays }
     });
   }
@@ -501,6 +509,8 @@ export function warnings(input: WarningInput): Warning[] {
       proposal: `Kreni na ${fmtClock(raceDay.expectedSec)}, a cilj vrati ako test ili pripremna trka pokažu da si brži za oko ${String(gap)} s po kilometru.`
     });
   }
+  const level = levelVolumeWarning(input, costs, peakKm, out);
+  if (level !== null) out.push(level);
   const dropped = droppedDayWarning(doc, costs, s.minEasySec);
   if (dropped !== null) out.push(dropped);
   const back = returnWarning(doc, state);
@@ -520,6 +530,74 @@ export function warnings(input: WarningInput): Warning[] {
     });
   }
   return out;
+}
+
+/** `obim-za-nivo` (krug 2, R11): trkač sa poznatom formom kome obim ograničava kvalitet — plan ne može da smesti
+    brze treninge koje šablon njegovog nivoa traži, ili je vrh ispod obima koji podaci traže za nivo. */
+function levelVolumeWarning(
+  input: WarningInput,
+  costs: readonly WeekCost[],
+  peakKm: number,
+  issued: readonly Warning[]
+): Warning | null {
+  const { data, decisions: d, doc } = input;
+  const { header } = doc;
+  if (header.paces.byFeel || issued.some((w) => w.code === 'mali-obim')) return null;
+  const s = data.safety;
+  const build = buildCtx(header, data);
+  const dayCount = Math.max(0, d.runDays.length - 1);
+  /* Nedelje gradnje van rampe: koliko brzih treninga namera traži, a koliko ih je plan smestio. */
+  const eligible = costs.filter(
+    (c) =>
+      (c.week.intent.kind === 'build' || c.week.intent.kind === 'peak') &&
+      c.week.intent.source === 'template' &&
+      c.week.start >= header.startDate &&
+      !inAnyWindow(c.week, header.adjustments ?? [])
+  );
+  const lost = eligible.filter((c) => {
+    const wanted = c.week.intent.stimuli.slice(0, dayCount).filter((slot) => {
+      const ref = {
+        place: 'quality' as const,
+        stimulus: slot.stimulus,
+        index: 0,
+        phase: c.week.intent.phase
+      };
+      const first = candidates(ref, null, build, { noHighImpact: false })[0];
+      return first !== undefined && first.kind !== 'easy' && slot.onlyByFeel !== true;
+    }).length;
+    const placed = c.week.days.filter(
+      (day) => day.workout?.kind === 'quality' || day.workout?.kind === 'test'
+    ).length;
+    return placed < wanted;
+  });
+  const byLevel = data.adequate.minPeakWeeklyKmByLevel?.[d.level];
+  const squeezed =
+    lost.length >= LEVEL_VOLUME_LOST_MIN_WEEKS &&
+    lost.length >= LEVEL_VOLUME_LOST_SHARE * eligible.length;
+  const belowLevel = byLevel !== undefined && peakKm < NEAR_ENOUGH * byLevel;
+  if (!squeezed && !belowLevel) return null;
+  /* Bez broja za nivo: obim pri kom plafoni doza prestaju da zavise od obima (najveći `maxWorkSec / udeo`). */
+  const used = new Set(doc.weeks.flatMap((w) => w.intent.stimuli.map((x) => x.stimulus)));
+  let neededLoad = 0;
+  for (const [tag, cap] of Object.entries(s.doseCaps)) {
+    if (used.has(tag) && cap.shareOfPeakLoad > 0) {
+      neededLoad = Math.max(neededLoad, cap.maxWorkSec / 60 / cap.shareOfPeakLoad);
+    }
+  }
+  const neededKm = Math.ceil((neededLoad * 60) / header.paces.easy / 5) * 5;
+  const target = Math.max(byLevel ?? neededKm, Math.ceil((peakKm * 1.15) / 5) * 5);
+  const share = fmtNumber(s.maxFastShare * 100, 0);
+  const problem = squeezed
+    ? `Tvoja forma traži više brzog rada nego što obim od ${km(peakKm)} nedeljno može da nosi: u ${String(lost.length)} od ${String(eligible.length)} nedelja gradnje brzi trening je zamenjen laganim.`
+    : `Najveća nedelja u planu ima ${km(peakKm)}, a za tvoj nivo forme treba bar ${km(target)} nedeljno da bi brzi treninzi imali punu dozu.`;
+  return {
+    code: 'obim-za-nivo',
+    severity: 'upozorenje',
+    problem,
+    meaning: `Brz rad sme da bude najviše ${share} % vremena trčanja, pa uz mali obim doze ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što rezultat na kraćoj trci nagoveštava.`,
+    proposal: `Podigni nedeljni obim laganim trčanjem do oko ${km(target)} (dodaj dan ili produži lagane dane za 10–15 min) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.`,
+    suggest: { peakWeeklyKm: target }
+  };
 }
 
 /** `dan-izostavljen` (krug 2, R4): traženi dan otpada tek kad bi nedelja i bez kvaliteta, sa najkraćim trčanjem

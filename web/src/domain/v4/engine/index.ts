@@ -5,7 +5,7 @@ export { plan } from './plan';
 export { replan } from './replan';
 export { deriveEvents, sortEvents } from './events';
 export { guard, validate, warnings } from './guard';
-export { renderPlan, type RenderOptions } from './render';
+export { raceNotes, renderPlan, type RenderOptions } from './render';
 export { canonical, fingerprint, serializePlan } from './fingerprint';
 export { summarize, type PaceCtx, type WorkoutSummary, paceCtxOf } from './load';
 export { isMutable } from './build';

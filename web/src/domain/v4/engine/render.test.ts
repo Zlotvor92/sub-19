@@ -209,9 +209,11 @@ describe('tempo u redu dana (oznaka `{pace}` u šablonu teksta)', () => {
   const b = build(facts(), goalAt('2027-01-24'));
   const text = renderPlan(b.doc, b.state, SYNTHETIC);
 
-  it('tempo stoji uz deonicu rada; bez oznake u zagradi na kraju; lagani i dugi bez tempa', () => {
+  it('tempo stoji uz deonicu rada samo gde šablon ima oznaku; bez oznake nema tempa (usponi); lagani i dugi bez tempa', () => {
     expect(text).toContain('prag 2 × 7 min (4:40/km), oporavak 1:30 džog — ');
-    expect(text).toContain('prag 16 min u komadu (4:40/km) — ');
+    const hills = text.split('\n').filter((l) => l.includes('uzbrdo'));
+    expect(hills.length).toBeGreaterThan(0);
+    for (const line of hills) expect(line).not.toMatch(/\/km/);
     expect(text).toMatch(/dugi [\d,]+ km, poslednjih [\d,]+ km \(4:30\/km\) u tempu trke — /);
     for (const line of text
       .split('\n')
@@ -226,7 +228,7 @@ describe('tempo u redu dana (oznaka `{pace}` u šablonu teksta)', () => {
     }
   });
 
-  it('po osećaju: oznaka ne daje ništa, bez oznake opis napora na kraju', () => {
+  it('po osećaju: red dana nema ni tempo ni opis u zagradi — napor po zonama je u zaglavlju', () => {
     const feel = build(
       facts({ profile: { weeklyKm: 25, easyPaceSecPerKm: 400 } }),
       goalAt('2027-01-24')
@@ -234,7 +236,18 @@ describe('tempo u redu dana (oznaka `{pace}` u šablonu teksta)', () => {
     const out = renderPlan(feel.doc, feel.state, SYNTHETIC);
     expect(feel.doc.header.paces.byFeel).toBe(true);
     expect(out).toMatch(/prag 2 × \d+ min, oporavak 1:30 džog — /);
-    expect(out).toMatch(/prag \d+ min u komadu \(ugodno teško, par reči\) — /);
+    expect(out).toContain('NAPOR PO ZONAMA');
+    expect(out).toContain('- prag: ugodno teško, par reči');
+    for (const line of out.split('\n').filter((l) => / — [\d,]+ km, /.test(l))) {
+      expect(line).not.toMatch(/\/km|\(/);
+    }
+    expect(out).toContain('Trku trči po osećaju');
+    expect(
+      out
+        .split('\n')
+        .filter((l) => l.includes('napomena:'))
+        .join(' ')
+    ).not.toMatch(/\/km/);
   });
 });
 

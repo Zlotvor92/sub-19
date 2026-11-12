@@ -256,9 +256,12 @@ describe('7: dan trke u ispisu', () => {
     ]);
     const lines = renderPlan(doc, state, data).split('\n');
     const at = lines.findIndex((l) => l.includes('TRKA: probna trka 8 km'));
-    expect(lines[at + 1]).toBe(
+    /* Krug 2 (R6, R10): prvo tempo za trku, pa napomene iz podataka, na kraju rečenica o oporavku. */
+    expect(lines[at + 1]).toMatch(/^ {6}napomena: Tempo za trku: \d:\d\d\/km \(očekivano vreme /);
+    expect(lines[at + 2]).toBe(
       '      napomena: prva 2 km mirno, zatim ravnomerno, poslednji km sve što imaš'
     );
+    expect(lines[at + 3]).toMatch(/^ {6}napomena: Posle trke: \d+ dana? bez brzih treninga/);
     expect(
       days(make(facts(), SYNTHETIC).doc).find((d) => d.workout?.kind === 'race')?.workout?.notes
     ).toBeUndefined();

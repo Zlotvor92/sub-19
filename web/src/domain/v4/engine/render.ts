@@ -1,9 +1,11 @@
 /* V4 — ISPIS ZA ČOVEKA (SPEC § 14.2). Čitaju ga sudije i vlasnik; provere K1–K5 rubrike se testiraju nad njim.
    Bez ISO datuma i internih izraza; brojevi sa imenicom idu kroz `count`; decimalni zarez. */
-import { diffDays, mondayOf } from './dates';
+import { DEFAULT_TEXTS, FORECAST_CHANGE_MIN_SEC, ZONE_SHARE } from './constants';
+import { addDays, diffDays, mondayOf } from './dates';
 import {
   count,
   DAYS,
+  fillText,
   fmtClock,
   fmtDate,
   fmtDateYear,
@@ -12,17 +14,23 @@ import {
   fmtPace,
   fmtPaceBare,
   fmtWeekday,
+  goalStatus,
+  raceBasis,
   WEEKS,
   WORKOUTS
 } from './format';
 import { weekCost } from './guard';
 import { paceCtxOf } from './load';
+import { effortRampDays } from './readiness';
 import { countWeeks } from './template';
 import type {
   Change,
   DistanceData,
   Paces,
+  PlanDay,
   PlanDoc,
+  PlanHeader,
+  Run,
   RunnerState,
   SingleStep,
   Step,
@@ -30,6 +38,7 @@ import type {
   Workout,
   ZoneId
 } from './types';
+import { paceAtShare } from './vdot';
 
 export interface RenderOptions {
   /** Spisak promena posle `replan` (sa objašnjenjem). */
@@ -45,6 +54,8 @@ const KIND_LABEL: Readonly<Record<WeekKind, string>> = {
   taper: 'sužavanje pred trku',
   race: 'nedelja trke'
 };
+/** Nedelja gradnje u poslednje dve nedelje pred nedelju trke više nije „gradnja" (R10). */
+const LATE_BUILD_WEEKS = 2;
 
 const ZONE_NAME: Readonly<Record<ZoneId, string>> = {
   E: 'lagano',
@@ -65,8 +76,16 @@ const ZONE_FEEL: Readonly<Record<ZoneId, string>> = {
   RP: 'napor koji planiraš za trku'
 };
 
+const feelOf = (zone: ZoneId, data: DistanceData): string =>
+  data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone];
+
+/** Tekst zaglavlja ili dana trke: iz podataka distance, inače podrazumevani (`DEFAULT_TEXTS`). */
+function line(data: DistanceData, key: string, values: Readonly<Record<string, string>>): string {
+  return fillText(data.texts[key] ?? DEFAULT_TEXTS[key] ?? '', values);
+}
+
 function zoneHint(zone: ZoneId, paces: Paces, data: DistanceData): string {
-  if (paces.byFeel) return `${ZONE_NAME[zone]}: ${data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone]}`;
+  if (paces.byFeel) return `${ZONE_NAME[zone]}: ${feelOf(zone, data)}`;
   if (zone === 'E') return `lagano ${fmtPaceBare(paces.easyFast)}–${fmtPace(paces.easySlow)}`;
   return `${ZONE_NAME[zone]} ${fmtPace(paces[zone])}`;
 }
@@ -99,28 +118,92 @@ function paceIndex(template: string, text: string): number | null {
   return match === null ? null : (match[1] ?? '').trimEnd().length;
 }
 
-/** Tekst treninga sa tempom zone rada: na mestu oznake `{pace}` iz šablona teksta, a bez oznake u zagradi na
-    kraju. Lagani i dugi bez bloka ostaju bez tempa (legenda je u zaglavlju). Kad su tempa „po osećaju", oznaka
-    ne daje ništa, a bez oznake na kraj ide opis napora. `Workout.text` i otisak nikad ne nose tempo. */
+/** Tekst treninga sa tempom zone rada — samo na mestu oznake `{pace}` iz šablona teksta (R10): unos bez oznake
+    (usponi, koraci po naporu) ostaje bez tempa. Trening bez unosa biblioteke (preuzet ili ručni) dobija tempo u
+    zagradi na kraju. Kad su tempa „po osećaju", red ostaje bez dodatka — opis napora po zonama je u zaglavlju.
+    Lagani i dugi bez bloka su bez tempa. `Workout.text` i otisak nikad ne nose tempo. */
 function withPace(workout: Workout, paces: Paces, data: DistanceData): string {
-  if (workout.kind === 'race' || workout.kind === 'easy') return workout.text;
+  if (workout.kind === 'race' || workout.kind === 'easy' || paces.byFeel) return workout.text;
   const step = firstWork(workout.steps);
   if (step === null || step.target.type !== 'zone' || step.target.zone === 'E') return workout.text;
   const zone = step.target.zone;
   const def = data.library.find((d) => d.id === workout.libraryId);
-  const template = def === undefined ? undefined : data.texts[def.text];
+  if (def === undefined) return `${workout.text} (${fmtPace(paces[zone])})`;
+  const template = data.texts[def.text];
   const at = template === undefined ? null : paceIndex(template, workout.text);
-  if (at !== null) {
-    if (paces.byFeel) return workout.text;
-    return `${workout.text.slice(0, at)} (${fmtPace(paces[zone])})${workout.text.slice(at)}`;
-  }
-  const hint = paces.byFeel
-    ? (data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone])
-    : fmtPace(paces[zone]);
-  return `${workout.text} (${hint})`;
+  if (at === null) return workout.text;
+  return `${workout.text.slice(0, at)} (${fmtPace(paces[zone])})${workout.text.slice(at)}`;
 }
 
 const percent = (share: number): string => `${fmtNumber(share * 100, 0)} %`;
+
+const pacePerKm = (timeSec: number, distanceM: number): string =>
+  fmtPace((timeSec / distanceM) * 1000);
+
+/** Istina o tempu trke (R6): po čemu se trenira, šta cilj traži i da li je u rasponu. */
+function raceTruth(
+  h: PlanHeader,
+  raceDay: { lowSec: number; expectedSec: number; highSec: number },
+  data: DistanceData
+): string {
+  if (h.paces.byFeel) return line(data, 'zaglavlje.po-osecaju', {});
+  const values = {
+    pace: fmtPace(h.paces.RP),
+    low: fmtClock(raceDay.lowSec),
+    high: fmtClock(raceDay.highSec),
+    expected: fmtClock(raceDay.expectedSec),
+    expectedPace: pacePerKm(raceDay.expectedSec, data.distanceM)
+  };
+  const target = h.goal.targetTimeSec;
+  const second =
+    target === undefined
+      ? line(data, 'zaglavlje.bez-cilja', values)
+      : line(data, `zaglavlje.cilj.${goalStatus(target, raceDay)}`, {
+          ...values,
+          goal: fmtClock(target),
+          goalPace: pacePerKm(target, data.distanceM)
+        });
+  return [
+    line(data, 'zaglavlje.tempo-trke', values),
+    second,
+    line(data, 'zaglavlje.tempa-prate', values)
+  ].join(' ');
+}
+
+/** Napomene dana trke za ispis (R6): tempo iz cilja ako je u rasponu, inače iz očekivanog vremena; trkač po
+    osećaju dobija opis napora bez s/km. Napomene iz podataka mogu da nose `{pace}`, `{paceFrom}`, `{paceTo}`
+    (5 i 10 s sporije) i `{time}`; uz pravilo sa `byFeelText` trkač po osećaju dobija taj tekst. */
+export function raceNotes(
+  doc: PlanDoc,
+  state: RunnerState | undefined,
+  data: DistanceData
+): string[] {
+  const h = doc.header;
+  const raceDay = state?.form.raceDay ?? h.form.raceDay;
+  const race = doc.weeks
+    .flatMap((w) => w.days)
+    .find((d) => d.workout?.kind === 'race' && d.date === h.goal.raceDate);
+  const basis = raceBasis(h.goal.targetTimeSec, raceDay);
+  const pace = (basis.timeSec / data.distanceM) * 1000;
+  const values = {
+    pace: fmtPace(pace),
+    paceFrom: fmtPaceBare(pace + 5),
+    paceTo: fmtPace(pace + 10),
+    time: fmtClock(basis.timeSec),
+    basis: basis.fromGoal ? 'tvoj cilj' : 'očekivano vreme',
+    feel: feelOf('RP', data)
+  };
+  const out: string[] = [
+    h.paces.byFeel ? line(data, 'trka.po-osecaju', values) : line(data, 'trka.tempo', values)
+  ];
+  for (const note of race?.workout?.notes ?? []) {
+    const rule = data.noteRules.find((r) => data.texts[r.text] === note);
+    const feel = rule?.byFeelText === undefined ? undefined : data.texts[rule.byFeelText];
+    out.push(fillText(h.paces.byFeel && feel !== undefined ? feel : note, values));
+  }
+  out.push(line(data, 'trka.oporavak', { days: count(effortRampDays(raceDay.expectedSec), DAYS) }));
+  return out;
+}
 
 function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: DistanceData): string[] {
   const h = doc.header;
@@ -133,6 +216,15 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   );
   if (h.goal.targetTimeSec !== undefined)
     lines.push(`Ciljno vreme: ${fmtClock(h.goal.targetTimeSec)}`);
+  /* Sadašnji obim koji plan pretpostavlja (R10): bazna nedelja u minutima, km po laganom tempu polazne forme. */
+  const baseMin = h.decisions.baseLoad;
+  const startEasy = paceAtShare(h.form.start.vdot, ZONE_SHARE.E);
+  lines.push(
+    line(data, 'zaglavlje.obim', {
+      km: fmtNumber((baseMin * 60) / startEasy, 0),
+      time: fmtMinutes(baseMin * 60)
+    })
+  );
   lines.push('');
   lines.push('FORMA');
   lines.push(
@@ -151,16 +243,38 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   lines.push(
     `Očekivano na dan trke: ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)})${why}`
   );
+  lines.push(...forecastChange(h, state));
   lines.push('');
   lines.push(h.paces.byFeel ? 'NAPOR PO ZONAMA (tempa još nisu pouzdana)' : 'TEMPA');
   const zones: ZoneId[] = ['E', 'M', 'T', 'RP', 'I', 'R'];
   for (const zone of zones) lines.push(`- ${zoneHint(zone, h.paces, data)}`);
+  lines.push(raceTruth(h, raceDay, data));
   if (h.warnings.length > 0) {
     lines.push('');
     lines.push('UPOZORENJA');
     for (const w of h.warnings) lines.push(`- ${w.problem} ${w.meaning} ${w.proposal}`);
   }
   return lines;
+}
+
+/** Promena prognoze u odnosu na prethodni ispis (R10): zaglavlje nosi prognozu pri poslednjoj izmeni plana; kad se
+    živa prognoza razlikuje za više od 20 s, ispis kaže zašto (rečenice iz istorije procene forme). */
+function forecastChange(h: PlanHeader, state: RunnerState | undefined): string[] {
+  if (state === undefined) return [];
+  const before = h.form.raceDay.expectedSec;
+  const after = state.form.raceDay.expectedSec;
+  if (Math.abs(after - before) <= FORECAST_CHANGE_MIN_SEC) return [];
+  const since = h.form.current.asOf;
+  const reasons = [
+    ...new Set(state.form.history.filter((x) => x.date > since).map((x) => x.reason.trim()))
+  ].filter((x) => x !== '');
+  const head = `Prognoza je ${after < before ? 'bolja' : 'slabija'} nego u prethodnom ispisu (${fmtClock(before)} → ${fmtClock(after)}). Zašto:`;
+  if (reasons.length === 0) {
+    return [
+      `${head} procena forme je ponovo izračunata iz trčanja posle ${fmtDate(since)}; nijedan pojedinačan trening je nije pomerio.`
+    ];
+  }
+  return [head, ...reasons.map((r) => `- ${r}`)];
 }
 
 function changeLines(changes: readonly Change[], doc: PlanDoc): string[] {
@@ -178,6 +292,8 @@ function changeLines(changes: readonly Change[], doc: PlanDoc): string[] {
     for (const reason of reasons) {
       lines.push(reason);
       for (const c of list.filter((x) => x.reason === reason)) {
+        /* Obaveštenje nema šta da uporedi: rečenica iznad je cela poruka. */
+        if (c.what === 'obavestenje') continue;
         const date = c.dayId === undefined ? undefined : dayDate.get(c.dayId);
         const where =
           date !== undefined
@@ -192,6 +308,13 @@ function changeLines(changes: readonly Change[], doc: PlanDoc): string[] {
   return lines;
 }
 
+/** Urađeno trčanje vezano za dan plana: prošli dani se ispisuju kao urađeni, tempom kakav je bio (R10). */
+function doneLine(run: Run): string {
+  const km = Math.round(run.distanceM / 100) / 10;
+  const pace = run.distanceM > 0 ? ` (${fmtPace((run.durationSec / run.distanceM) * 1000)})` : '';
+  return `urađeno ${fmtNumber(km)} km, ${fmtMinutes(run.durationSec)}${pace}`;
+}
+
 /** Ceo plan kao tekst: zaglavlje, nedelje sa danima i zbirom, upozorenja, promene (§ 14.2). */
 export function renderPlan(
   doc: PlanDoc,
@@ -203,44 +326,71 @@ export function renderPlan(
   const ctx = paceCtxOf(h);
   const lines = headerLines(doc, state, data);
   lines.push(...changeLines(options.changes ?? [], doc));
+  const today = state?.today;
+  const runs = new Map<string, Run>();
+  for (const run of state?.runs ?? []) if (run.dayId !== undefined) runs.set(run.dayId, run);
+  const past = (day: PlanDay): boolean => today !== undefined && day.date <= today;
   for (const week of doc.weeks) {
     const cost = weekCost(week, h.goal.raceDate, ctx);
     const toRace = Math.max(0, Math.round(diffDays(mondayOf(h.goal.raceDate), week.start) / 7));
     const phase = data.texts[`faza.${week.intent.phase}`];
-    const label =
-      phase === undefined
-        ? KIND_LABEL[week.intent.kind]
-        : `${phase}, ${KIND_LABEL[week.intent.kind]}`;
-    const until = toRace === 0 ? 'nedelja trke' : `do trke ${count(toRace, WEEKS)}`;
+    const kind: WeekKind =
+      week.intent.kind === 'build' && toRace >= 1 && toRace <= LATE_BUILD_WEEKS
+        ? 'taper'
+        : week.intent.kind;
+    const label = phase === undefined ? KIND_LABEL[kind] : `${phase}, ${KIND_LABEL[kind]}`;
+    const until = toRace === 0 ? '' : `; do trke ${count(toRace, WEEKS)}`;
     lines.push('');
-    lines.push(`${String(week.index)}. NEDELJA (od ${fmtDate(week.start)}) — ${label}; ${until}`);
+    lines.push(`${String(week.index)}. NEDELJA (od ${fmtDate(week.start)}) — ${label}${until}`);
+    let km = 0;
+    let durationSec = 0;
+    let trainings = 0;
+    let hasRace = false;
     for (const { day, cost: c } of cost.days) {
       const when = `${fmtWeekday(day.date)} ${fmtDate(day.date)}`;
       const w = day.workout;
+      const run = runs.get(day.id);
       if (w === null) {
         lines.push(`  ${when}  odmor`);
         continue;
       }
       if (w.kind === 'race' && day.date === h.goal.raceDate) {
+        hasRace = true;
         lines.push(`  ${when}  TRKA: ${data.label}`);
-        for (const note of w.notes ?? []) lines.push(`      napomena: ${note}`);
+        for (const note of raceNotes(doc, state, data)) lines.push(`      napomena: ${note}`);
+        continue;
+      }
+      if (past(day) && (run !== undefined || day.date !== today)) {
+        /* Prošao dan: šta je urađeno (ili da nije), bez prepisivanja novim tempom. */
+        if (run === undefined) {
+          lines.push(`  ${when}  ${w.text} — nije urađeno`);
+        } else {
+          lines.push(`  ${when}  ${w.text} — ${doneLine(run)}`);
+          km += Math.round(run.distanceM / 100) / 10;
+          durationSec += run.durationSec;
+          trainings += 1;
+        }
         continue;
       }
       const text = withPace(w, h.paces, data);
       lines.push(`  ${when}  ${text} — ${fmtNumber(c.km)} km, ${fmtMinutes(c.durationSec)}`);
       for (const note of w.notes ?? []) lines.push(`      napomena: ${note}`);
       for (const extra of day.extras ?? []) lines.push(`      uz to: ${extra}`);
+      km += c.km;
+      durationSec += c.durationSec;
+      trainings += 1;
     }
-    const trainings = cost.days.filter(
-      (x) => x.day.workout !== null && x.day.workout.kind !== 'race'
-    ).length;
+    const allPast = today !== undefined && addDays(week.start, 6) <= today;
+    const anyPast = week.days.some(past);
+    const count2 = `${count(trainings, WORKOUTS)}${hasRace ? ' + trka' : ''}`;
     const fast = cost.durationSec > 0 ? cost.workSec / cost.durationSec : 0;
+    const share = anyPast ? '' : `, brz rad ${percent(fast)} vremena trčanja`;
     const load =
-      options.showLoad === true
+      options.showLoad === true && !anyPast
         ? `, opterećenje ${fmtNumber(cost.load, 0)} BO (cilj ${fmtNumber(week.targetLoad, 0)})`
         : '';
     lines.push(
-      `  Zbir: ${fmtNumber(cost.km)} km, ${fmtMinutes(cost.durationSec)}, ${count(trainings, WORKOUTS)}, brz rad ${percent(fast)}${load}`
+      `  ${allPast ? 'Urađeno' : 'Zbir'}: ${fmtNumber(km)} km, ${fmtMinutes(durationSec)}, ${count2}${share}${load}`
     );
   }
   return lines.join('\n');

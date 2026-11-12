@@ -131,3 +131,26 @@ export function fillText(template: string, values: Readonly<Record<string, strin
     .replace(/\s{2,}/g, ' ')
     .trim();
 }
+
+/** Odnos ciljnog vremena i raspona na dan trke (krug 2, R6): sporiji ili jednak očekivanom → dostižan;
+    između najbržeg u rasponu i očekivanog → na ivici; brži od najbržeg → van raspona. */
+export type GoalStatus = 'dostizan' | 'na-ivici' | 'van-raspona';
+
+export function goalStatus(
+  targetSec: Seconds,
+  raceDay: { lowSec: Seconds; expectedSec: Seconds }
+): GoalStatus {
+  if (targetSec >= raceDay.expectedSec) return 'dostizan';
+  return targetSec >= raceDay.lowSec ? 'na-ivici' : 'van-raspona';
+}
+
+/** Vreme po kom se trči na dan trke (R6): cilj ako je u rasponu, inače očekivano vreme. */
+export function raceBasis(
+  targetSec: Seconds | undefined,
+  raceDay: { lowSec: Seconds; expectedSec: Seconds }
+): { timeSec: Seconds; fromGoal: boolean } {
+  if (targetSec !== undefined && goalStatus(targetSec, raceDay) !== 'van-raspona') {
+    return { timeSec: targetSec, fromGoal: true };
+  }
+  return { timeSec: raceDay.expectedSec, fromGoal: false };
+}
