@@ -153,3 +153,10 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   prema stvarnom cilju, napomene dana trke, uslov „samo po osećaju".
 - Sudijama se šalje tek verzija posle trećeg kruga koja ispuni: vlasnik-v1 vrh 38–40 km i dugi 16 km; V4 ≥ v3 po
   profilu (vrh km, najduži dugi).
+
+### 14:45 — prekid 11:08–14:30: petočasovni limit (svi tabovi i organizator) [visoka]
+- F2 (treći krug), F3 i F5 stali u 11:08–11:15 na petočasovnom limitu (reset 14:30). Satna provera nije mogla da ih
+  gurne jer je i sesija organizatora bila pod istim limitom. U 14:45 svi gurnuti porukom „nastavi".
+- Od F5 ništa nije stiglo na granu pre prekida (rad je u kontejneru taba) — tražio da gura često.
+- Pouka: 4 taba uporedo + organizator potroše petočasovni limit za ≈ 2 h. Od sada najviše 2 radna taba uporedo
+  (plus trener kad ocenjuje), Fable samo gde odlučuje; kratki krugovi.
