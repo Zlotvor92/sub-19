@@ -226,3 +226,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   `session_01GnHHiYchQtH6mmwpQBMi1S` (Opus, postojeći F4), radi R12–R14. D podaci HM — otvara se kad M završi.
   Stari tabovi F2 `…VddBC`, F3 `…DLNNH`, F5 `…Q7Kb`, F1 `…qCB1`, drugi sudija `…Mppfu`: završeni, ne guraju se.
   Grana: testovi `distances/hm` smeju da budu crveni dok D ne završi (motor se menja ispod zaključanih otisaka).
+
+### 16:15 — ODLUKA VLASNIKA: prvo se završava polumaraton, pa ostale distance
+- Reči vlasnika: „prvo završi jednu distancu da ne pravimo duple greške, uči na polumaratonu; kad se on završi
+  prelazimo na druge distance pametniji". I: „samo budi temeljan".
+- Posledica: 10K, 5K i maraton se NE otvaraju dok polumaraton ne prođe mašinsku kapiju I ocenu oba sudije
+  (cilj ≥ 80; najmanje ≥ v3 77,6). Menja PLAN § F7 („uporedo") i moju nameru od 16:10 da 10K krene uz HM.
+- Limiti (vlasnik, 16:10): petočasovni nije problem; nedeljni 27 %, Fable 45 %, postoji pun reset. Paralelizam se
+  koristi UNUTAR polumaratona (motor, forma, podaci, sudije), ne preko distanci.
+- Arhivirano po nalogu vlasnika (16:05): F1, stari F2, stari F3, F5, drugi sudija krug 1 — sve prethodno gurnuto.
