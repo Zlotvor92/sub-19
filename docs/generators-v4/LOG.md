@@ -70,3 +70,8 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 ### 09:52 — F6 stavka 4: ciljni planovi 10K (trener, `049ef13f`) [srednja]
 - `coach/target/10K/` (p01, p03, p06, p11 + README sa pravilima za šablone 10K) preuzeto na `claude/v4`.
 - Trener je slobodan → sledeći zadatak: ciljni planovi 5K i maraton (po 4 profila), da F7 ne čeka.
+
+### 09:55 — ciljni planovi 5K i maraton (trener, `87ec9492`) [srednja]
+- `coach/target/5K/` i `coach/target/MAR/` (po 4 plana + README sa brojevima za šablone) preuzeto na `claude/v4`.
+  Ciljni planovi sada postoje za sve četiri distance (HM od ranije u `docs/generators-v2/perfection/target/HM`).
+- Trener čeka ispise HM V4. Napomena: planovi su prerađeni planovi „Cilj 80" od 11. 11, obim po danima je procena.
