@@ -698,3 +698,10 @@ prilagođavanje po odrađenim treninzima + rubrika koja to meri.
   za razvoj i proveru forme. v2 se bataljuje — ništa u main, odmah V4. Predlog upozorenja/ekrana: dozvoljeno pisati.
   Pregled vlasnika: 2–3 plana po distanci, kratko. Upisano u `docs/generators-v4/PLAN.md` § 8.
 - Ovaj dnevnik (v2) se ovde zatvara; od 12. 11. vodi se `docs/generators-v4/LOG.md`.
+
+### 12. 11. 2026, 09:40 — primopredaja uloge organizatora
+
+- Nalog vlasnika: cela uloga organizatora prelazi na nov Fable 5.2 tab sa punim ovlašćenjima da otvara tabove i
+  završi V4. Dokument: `docs/generators-v4/HANDOFF.md`. Novi organizator: `session_01GnHHiaZ5S4B3XFjScT1iPv`
+  („ORGANIZATOR V4", grana `claude/v4`). Glavni trener obavešten da odgovara novom organizatoru.
+- Stara sesija organizatora (`session_01GnHHiXE3NeQzLDcD3vaM5E`) više ne vodi posao.
