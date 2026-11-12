@@ -51,7 +51,7 @@ Pauza zbog bolesti trajala je 7 dana (14–20. 12.), pa je povratak postepen: pr
   pon 23. 11.  odmor
   uto 24. 11.  lagano 6 km + 4 × 20 s ubrzanja — 7 km, 41 min
   sre 25. 11.  odmor
-  čet 26. 11.  prag 16 min (4:40/km) u komadu — 7,7 km, 41 min
+  čet 26. 11.  prag 16 min u komadu (4:40/km) — 7,7 km, 41 min
   pet 27. 11.  odmor
   sub 28. 11.  lagano 6 km — 6 km, 35 min
   ned 29. 11.  dugi 11 km — 11 km, 65 min
@@ -71,7 +71,7 @@ Pauza zbog bolesti trajala je 7 dana (14–20. 12.), pa je povratak postepen: pr
   pon 7. 12.  odmor
   uto 8. 12.  lagano 4,5 km + 4 × 20 s ubrzanja — 5,5 km, 32 min
   sre 9. 12.  odmor
-  čet 10. 12.  uzbrdo 5 × 1:30 min (4:18/km), oporavak 2 min hod — 6,9 km, 41 min
+  čet 10. 12.  uzbrdo 5 × 1:30 min, oporavak 2 min hod (4:18/km) — 6,9 km, 41 min
   pet 11. 12.  odmor
   sub 12. 12.  lagano 4,5 km — 4,5 km, 26 min
   ned 13. 12.  dugi 10 km — 10 km, 59 min

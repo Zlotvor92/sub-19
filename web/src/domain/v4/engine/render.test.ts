@@ -199,6 +199,39 @@ describe('mašinske provere K1–K5 nad ispisom (SPEC § 14.2)', () => {
   });
 });
 
+describe('tempo u redu dana (oznaka `{pace}` u šablonu teksta)', () => {
+  const b = build(facts(), goalAt('2027-01-24'));
+  const text = renderPlan(b.doc, b.state, SYNTHETIC);
+
+  it('tempo stoji uz deonicu rada; bez oznake u zagradi na kraju; lagani i dugi bez tempa', () => {
+    expect(text).toContain('prag 2 × 7 min (4:40/km), oporavak 1:30 džog — ');
+    expect(text).toContain('prag 16 min u komadu (4:40/km) — ');
+    expect(text).toMatch(/dugi [\d,]+ km, poslednjih [\d,]+ km \(4:30\/km\) u tempu trke — /);
+    for (const line of text
+      .split('\n')
+      .filter((l) => /^ {2}\S+ \d+\. \d+\. {2}(lagano|dugi [\d,]+ km —)/.test(l))) {
+      expect(line).not.toMatch(/\/km/);
+    }
+  });
+
+  it('`Workout.text` i otisak ne nose tempo ni oznaku', () => {
+    for (const day of b.doc.weeks.flatMap((w) => w.days)) {
+      expect(day.workout?.text ?? '').not.toMatch(/\/km|\{|\}/);
+    }
+  });
+
+  it('po osećaju: oznaka ne daje ništa, bez oznake opis napora na kraju', () => {
+    const feel = build(
+      facts({ profile: { weeklyKm: 25, easyPaceSecPerKm: 400 } }),
+      goalAt('2027-01-24')
+    );
+    const out = renderPlan(feel.doc, feel.state, SYNTHETIC);
+    expect(feel.doc.header.paces.byFeel).toBe(true);
+    expect(out).toMatch(/prag 2 × \d+ min, oporavak 1:30 džog — /);
+    expect(out).toMatch(/prag \d+ min u komadu \(ugodno teško, par reči\) — /);
+  });
+});
+
 describe('ispis posle ponovnog planiranja', () => {
   const b = build(facts(), goalAt('2027-01-24'));
   const today = '2026-12-20';

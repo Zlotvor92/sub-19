@@ -249,6 +249,40 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
   });
 });
 
+describe('blok u dugom se vraća posle rampe (presuda organizatora uz § 14.6)', () => {
+  it('prvi dugi posle rampe ispunjava uslov ≥ 90 %, pa se blok vraća čim ga šablon traži', () => {
+    const goal: Goal = { distanceId: EXAMPLE.id, raceDate: '2027-03-07' };
+    const first = make(facts(), goal);
+    const today = '2026-12-20';
+    const state = buildState(
+      {
+        ...facts(),
+        today,
+        runs: runsAsPlanned(first.doc, '2026-12-13'),
+        pauses: [{ from: '2026-12-14', to: today, reason: 'bolest' }]
+      },
+      goal,
+      EXAMPLE
+    );
+    const result = replan(first.doc, state, deriveEvents(first.doc, state), EXAMPLE);
+    const ctx = paceCtxOf(result.doc.header);
+    const rampEnd = '2027-01-03';
+    const lastLong = summarize(onDate(first.doc, '2026-12-06')?.workout ?? null, ctx).durationSec;
+    const after = days(result.doc).filter((x) => x.date > rampEnd && x.workout?.kind === 'long');
+    expect(summarize(after[0]?.workout ?? null, ctx).durationSec).toBeGreaterThanOrEqual(
+      0.9 * lastLong
+    );
+    const planned = (date: string): number => onDate(first.doc, date)?.workout?.workSec ?? 0;
+    for (const day of after.slice(1)) {
+      expect((day.workout?.workSec ?? 0) > 0, day.date).toBe(planned(day.date) > 0);
+    }
+    expect(after.some((x) => (x.workout?.workSec ?? 0) > 0)).toBe(true);
+    for (const day of days(result.doc).filter((x) => x.date > today && x.date <= rampEnd)) {
+      if (day.workout?.kind === 'long') expect(day.workout.workSec, day.date).toBe(0);
+    }
+  });
+});
+
 describe('SPEC § 14.1: ništa brzo 3 dana posle trke ili testa', () => {
   const everyDay = { runDays: [0, 1, 2, 3, 4, 5, 6] as const, longDay: 6 as const };
 

@@ -17,7 +17,6 @@ import {
 } from './format';
 import { weekCost } from './guard';
 import { paceCtxOf } from './load';
-import { fmtExtent } from './select';
 import { countWeeks } from './template';
 import type {
   Change,
@@ -87,20 +86,38 @@ function firstWork(steps: readonly Step[]): SingleStep | null {
 
 const escapeRe = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-/** Tekst treninga sa tempom (ili naporom) uz deonicu rada; lagani i dugi bez bloka ostaju bez tempa —
-    legenda je u zaglavlju. Ako se deonica ne nađe u tekstu, tempo ide na kraj. */
+/** Mesto oznake `{pace}` u već popunjenom tekstu: šablon se pretvara u obrazac (`{x}` → bilo šta) i poklapa. */
+function paceIndex(template: string, text: string): number | null {
+  if (!template.includes('{pace}')) return null;
+  const [before = '', after = ''] = template.split('{pace}');
+  const pattern = (part: string): string =>
+    part
+      .split(/\{\w+\}/)
+      .map((literal) => escapeRe(literal).replace(/\s+/g, '\\s*'))
+      .join('.*?');
+  const match = new RegExp(`^\\s*(${pattern(before)})${pattern(after)}\\s*$`).exec(text);
+  return match === null ? null : (match[1] ?? '').trimEnd().length;
+}
+
+/** Tekst treninga sa tempom zone rada: na mestu oznake `{pace}` iz šablona teksta, a bez oznake u zagradi na
+    kraju. Lagani i dugi bez bloka ostaju bez tempa (legenda je u zaglavlju). Kad su tempa „po osećaju", oznaka
+    ne daje ništa, a bez oznake na kraj ide opis napora. `Workout.text` i otisak nikad ne nose tempo. */
 function withPace(workout: Workout, paces: Paces, data: DistanceData): string {
   if (workout.kind === 'race' || workout.kind === 'easy') return workout.text;
   const step = firstWork(workout.steps);
   if (step === null || step.target.type !== 'zone' || step.target.zone === 'E') return workout.text;
   const zone = step.target.zone;
+  const def = data.library.find((d) => d.id === workout.libraryId);
+  const template = def === undefined ? undefined : data.texts[def.text];
+  const at = template === undefined ? null : paceIndex(template, workout.text);
+  if (at !== null) {
+    if (paces.byFeel) return workout.text;
+    return `${workout.text.slice(0, at)} (${fmtPace(paces[zone])})${workout.text.slice(at)}`;
+  }
   const hint = paces.byFeel
     ? (data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone])
     : fmtPace(paces[zone]);
-  const piece = new RegExp(`(?<![\\d,:])${escapeRe(fmtExtent(step.extent))}`);
-  return piece.test(workout.text)
-    ? workout.text.replace(piece, (found) => `${found} (${hint})`)
-    : `${workout.text} (${hint})`;
+  return `${workout.text} (${hint})`;
 }
 
 const percent = (share: number): string => `${fmtNumber(share * 100, 0)} %`;

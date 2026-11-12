@@ -84,7 +84,11 @@ nalaze nad preuzetim danima daje kao `rucno`. Otisak: `fingerprint(doc, facts)`,
    `dugi-korak` isto. Primer 03: 18 → 25,7 → 31 km (bilo 20 / 26 / 22), lagani dani ne postaju odmor.
 3. Lagan dan sa ≥ 3 dana trčanja ostaje na `minEasySec` dok nedelja ne pređe cilj za > 10 % (tada otpada najraniji,
    dan posle kvaliteta poslednji); `GUARD_JUMP_TOLERANCE` 0,10. Sa 1–2 dana ostaje staro pravilo.
-4. Ispis: tempo samo uz deonicu rada („prag 2 × 7 min (4:40/km), oporavak 1:30 džog"), lagani i dugi bez tempa;
-   PROMENE imaju jedno objašnjenje po događaju. Čuvar `lagan-dugi` poredi km (dugi sa blokom kraće traje).
+4. Ispis: tempo samo uz deonicu rada, na mestu opcione oznake `{pace}` u šablonu teksta („prag {n} × {rep}{pace},
+   oporavak {rec}" → „prag 2 × 7 min (4:40/km), oporavak 1:30 džog"); bez oznake zagrada na kraju; po osećaju oznaka
+   ne daje ništa. `Workout.text` i otisak nikad ne nose tempo. Lagani i dugi bez tempa; PROMENE imaju jedno
+   objašnjenje po događaju. Čuvar `lagan-dugi` poredi km (dugi sa blokom kraće traje).
+5. Blok posle pauze: prvi dugi posle rampe ispunjava uslov ≥ 90 % (lanac dugog ne gleda nedelje rampe), pa se blok
+   vraća čim ga šablon traži — test nad planom od 16 nedelja.
 Otisci se menjaju: dugi (zaokruživanje naniže), lagani dani u nedeljama gde je ostatak bio < `minEasySec`, tekst
 oporavka („1:30 džog"), nedelje posle pauze/rampe. Čuvar `brz-udeo` ne meri nedelju trke (mala je, trka ne ulazi u zbir).

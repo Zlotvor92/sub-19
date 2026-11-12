@@ -38,7 +38,7 @@ UPOZORENJA
   pon 23. 11.  odmor
   uto 24. 11.  lagano 5 km — 5 km, 29 min
   sre 25. 11.  odmor
-  čet 26. 11.  prag 15 min (4:40/km) u komadu — 7,5 km, 40 min
+  čet 26. 11.  prag 15 min u komadu (4:40/km) — 7,5 km, 40 min
   pet 27. 11.  odmor
   sub 28. 11.  lagano 6 km — 6 km, 35 min
   ned 29. 11.  dugi 12,5 km — 12,5 km, 73 min
@@ -58,7 +58,7 @@ UPOZORENJA
   pon 7. 12.  odmor
   uto 8. 12.  lagano 5 km + 4 × 20 s ubrzanja — 6 km, 35 min
   sre 9. 12.  odmor
-  čet 10. 12.  uzbrdo 5 × 1:30 min (4:18/km), oporavak 2 min hod — 6,9 km, 41 min
+  čet 10. 12.  uzbrdo 5 × 1:30 min, oporavak 2 min hod (4:18/km) — 6,9 km, 41 min
   pet 11. 12.  odmor
   sub 12. 12.  lagano 5 km — 5 km, 29 min
   ned 13. 12.  dugi 11,5 km — 11,5 km, 67 min
@@ -78,7 +78,7 @@ UPOZORENJA
   pon 21. 12.  odmor
   uto 22. 12.  lagano 3,5 km + 4 × 20 s ubrzanja — 4,5 km, 26 min
   sre 23. 12.  odmor
-  čet 24. 12.  uzbrdo 10 × 1:30 min (4:18/km), oporavak 2 min hod — 9,7 km, 58 min
+  čet 24. 12.  uzbrdo 10 × 1:30 min, oporavak 2 min hod (4:18/km) — 9,7 km, 58 min
   pet 25. 12.  odmor
   sub 26. 12.  lagano 3,5 km — 3,5 km, 21 min
   ned 27. 12.  dugi 16,5 km, poslednjih 3,5 km (4:30/km) u tempu trke — 16,5 km, 92 min
