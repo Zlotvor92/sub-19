@@ -1,0 +1,238 @@
+/* Jednokratno: izmišljena stanja korisnika uz uzorke planova (F5). Pokretanje: node states.cjs <folder fixtures>. */
+const fs = require('fs');
+const path = require('path');
+const dir = process.argv[2];
+const plan = (f) => JSON.parse(fs.readFileSync(path.join(dir, f + '.json'), 'utf8')).plan;
+const days = (p) =>
+  p.weeks.flatMap((w) => w.days.map((d) => ({ ...d, date: addDays(w.start, d.dow) })));
+function addDays(iso, n) {
+  const d = new Date(iso + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+const pace = (km, s) => Math.round(s / km);
+/* urađeno: km iz plana ± malo, trajanje iz tempa, puls, po km */
+function done(d, i, opts = {}) {
+  const km = d.km == null ? null : Math.round((d.km + ((i % 3) - 1) * 0.2) * 10) / 10;
+  const e = { status: 'done', ts: d.date + 'T18:30:00.000Z' };
+  if (km != null) e.km = km;
+  if (!opts.noSec && km != null) e.sec = Math.round(km * (330 + (i % 5) * 7));
+  if (opts.hr !== false && km != null) e.hr = 140 + (i % 7) * 2;
+  if (opts.perKm && km != null)
+    e.perKm = Array.from({ length: Math.floor(km) }, (_, k) => ({
+      v: 3,
+      paceSec: 330 + ((k + i) % 4) * 5,
+      hr: 138 + k,
+      cadence: 170
+    }));
+  if (opts.laps)
+    e.laps = [
+      { distM: 1000, paceSec: 270, avgHr: 165, cadence: 180, watts: null },
+      { distM: 1000, paceSec: 268, avgHr: 168, cadence: 181, watts: null }
+    ];
+  if (opts.runDate) e.runDate = opts.runDate;
+  if (opts.lock) e.lock = true;
+  if (opts.src) e.src = opts.src;
+  return e;
+}
+const alt = (tag, km, desc, extra = {}) => ({
+  tag,
+  km,
+  desc,
+  pace: null,
+  rw: null,
+  paceAuto: false,
+  ...extra
+});
+const out = [];
+const add = (name, file, today, s) =>
+  out.push({ name, file, today, state: { log: {}, alts: {}, moves: {}, vanPlana: {}, ...s } });
+const before = (p, today) => days(p).filter((d) => d.date < today && !d.rest);
+/* ---- stari format ---- */
+{
+  // SPEC § 12 (c): 10 km, 12 nedelja, danas četvrtak 3. nedelje, dve ručne izmene, jedan preskočen
+  const f = 'legacy-11a38446',
+    p = plan(f),
+    today = '2026-01-22';
+  const log = {};
+  ['g1d1', 'g1d2', 'g1d3', 'g1d5', 'g1d7', 'g2d1', 'g2d2', 'g2d5'].forEach((id, i) => {
+    log[id] = done(
+      days(p).find((d) => d.id === id),
+      i,
+      { perKm: i % 2 === 0 }
+    );
+  });
+  log.g2d3 = { status: 'skip', ts: '2026-01-14T20:00:00.000Z' };
+  add('legacy-spec-c', f, today, {
+    log,
+    alts: {
+      g3d5: alt('lako', 6, '6 km lako (Z2) — umesto tempa, umor posle posla'),
+      g4d2: alt('lako', 7, '7 km lako (Z2)')
+    }
+  });
+}
+{
+  // 5K hod-trk: urađeno bez trajanja (procena), zaključan unos, pomeranje (zamena dva dana), odmor umesto treninga, van plana
+  const f = 'legacy-93f00602',
+    p = plan(f),
+    today = '2026-02-04';
+  const log = {};
+  before(p, today)
+    .filter((d) => d.tag !== 'snaga')
+    .forEach((d, i) => {
+      log[d.id] = done(d, i, {
+        noSec: i % 3 === 0,
+        lock: i === 1,
+        src: i === 1 ? 'strava' : undefined
+      });
+    });
+  const w6 = p.weeks[5].days.filter((d) => !d.rest && d.tag !== 'snaga');
+  const rest6 = p.weeks[5].days.find((d) => d.rest);
+  const moves = {
+    [w6[0].id]: addDays(p.weeks[5].start, rest6.dow),
+    [rest6.id]: addDays(p.weeks[5].start, w6[0].dow)
+  };
+  add('legacy-rw-moves', f, today, {
+    log,
+    moves,
+    alts: { [w6[1].id]: alt('odmor', null, '') },
+    vanPlana: { '2026-01-25': 3.2, '2026-02-01': 4 }
+  });
+}
+{
+  // maraton legacy-a (mlr): izmena samo tempa (struktura ostaje), izmena opisa, „pending" unos, pomeren prošli dan, bol
+  const f = 'legacy-02f8331b',
+    p = plan(f),
+    today = '2026-02-05';
+  const log = {};
+  before(p, today).forEach((d, i) => {
+    if (i % 4 !== 3) log[d.id] = done(d, i, { perKm: true });
+  });
+  const fut = days(p).filter((d) => d.date > today && !d.rest);
+  const q = fut.find((d) => d.session);
+  const e = fut.find((d) => d.tag === 'lako');
+  const pending = fut.find((d) => d.tag === 'lr');
+  log[pending.id] = { status: 'pending', ts: today + 'T07:00:00.000Z' };
+  const past = before(p, today).find((d) => d.tag === 'lako' && !log[d.id]);
+  add('legacy-mar-pace', f, today, {
+    log,
+    alts: {
+      [q.id]: alt(q.tag, q.km, q.desc, { pace: 250 }),
+      [e.id]: alt('lako', e.km, 'Lako trčanje po osećaju, bez sata')
+    },
+    moves: past ? { [past.id]: addDays(past.date, 1) } : {},
+    knee: [{ date: '2026-02-01', pain: 3, part: 'koleno', id: 'k100' }]
+  });
+}
+{
+  // polumaraton legacy-a: pre početka plana (ništa urađeno)
+  add('legacy-hm-fresh', 'legacy-072ed214', '2026-01-04', {});
+}
+/* ---- v2 ---- */
+{
+  // HM v2: krugovi i po km, izmena km strukturiranog dana, izmena samo tempa, pomeranje
+  const f = 'v2-hm-a',
+    p = plan(f),
+    today = '2026-12-10';
+  const log = {};
+  before(p, today).forEach((d, i) => {
+    log[d.id] = done(d, i, { perKm: true, laps: d.tag === 'int' || d.tag === 'tempo', src: 'icu' });
+  });
+  const fut = days(p).filter((d) => d.date > today && !d.rest);
+  const s1 = fut.find((d) => d.structure && d.tag === 'tempo');
+  const s2 = fut.find((d) => d.structure && d.tag === 'int');
+  const e = fut.find((d) => d.tag === 'lako');
+  const restDay = days(p).find((d) => d.date > e.date && d.rest && d.date <= addDays(e.date, 3));
+  add('v2-hm-edits', f, today, {
+    log,
+    alts: {
+      [s1.id]: alt(s1.tag, Math.round((s1.km - 1) * 10) / 10, s1.desc),
+      [s2.id]: alt(s2.tag, s2.km, s2.desc, { pace: 240 })
+    },
+    moves: restDay ? { [e.id]: restDay.date } : {}
+  });
+}
+{
+  // 10K v2: test odrađen (napor), van plana v2, zaključan dan, preskočen trening
+  const f = 'v2-10k-b',
+    p = plan(f),
+    today = '2027-01-14';
+  const log = {};
+  before(p, today).forEach((d, i) => {
+    log[d.id] =
+      i % 9 === 4 ? { status: 'skip' } : done(d, i, { perKm: i % 2 === 1, lock: i === 3 });
+  });
+  const t = days(p).find((d) => d.tag === 'test');
+  if (t.date < today)
+    log[t.id] = {
+      status: 'done',
+      km: t.km,
+      sec: Math.round(t.km * 1000 * 0.25),
+      hr: 172,
+      ts: t.date + 'T09:00:00.000Z'
+    };
+  add('v2-10k-test', f, today, {
+    log,
+    vanPlanaV2: {
+      'strava:111': { date: '2027-01-03', km: 6.2, sec: 2100, src: 'strava', id: '111' },
+      'strava:112': { date: '2027-01-10', km: 0, sec: null, src: 'strava', id: '112' }
+    }
+  });
+}
+{
+  // maraton v2: odmor umesto treninga, sudar pomeranja (dan pomeren na zauzet datum ostaje na mestu)
+  const f = 'v2-mar-a',
+    p = plan(f),
+    today = '2026-12-02';
+  const log = {};
+  before(p, today).forEach((d, i) => {
+    log[d.id] = done(d, i, {});
+  });
+  const fut = days(p).filter((d) => d.date > today && !d.rest);
+  add('v2-mar-collision', f, today, {
+    log,
+    alts: { [fut[2].id]: alt('odmor', null, '') },
+    moves: { [fut[0].id]: fut[1].date, [fut[3].id]: 'nije-datum' }
+  });
+}
+{
+  // 5K v2: dan posle trke, sve urađeno
+  const f = 'v2-5k-a',
+    p = plan(f);
+  const all = days(p).filter((d) => !d.rest);
+  const race = all.find((d) => d.tag === 'trka');
+  const today = addDays(race.date, 1);
+  const log = {};
+  all.forEach((d, i) => {
+    log[d.id] = done(d, i, { runDate: d.date });
+  });
+  log[race.id] = { status: 'done', km: 5, sec: 1490, hr: 178, ts: race.date + 'T10:00:00.000Z' };
+  add('v2-5k-after-race', f, today, { log });
+}
+/* ---- lični plan ---- */
+{
+  const f = 'personal',
+    p = plan(f),
+    today = '2026-11-12';
+  const log = {};
+  before(p, today).forEach((d, i) => {
+    if (d.tag !== 'snaga')
+      log[d.id] = i === 2 ? { status: 'skip' } : done(d, i, { perKm: true, src: 'strava' });
+  });
+  log.n2d6 = { status: 'done', km: 21.1, sec: 6121, hr: 168, ts: '2026-10-03T09:00:00.000Z' };
+  add('personal-today', f, today, { log, vanPlana: { '2026-11-08': 5 } });
+  const fut = days(p).filter((d) => d.date > today && !d.rest);
+  add('personal-edits', f, today, {
+    log,
+    alts: { [fut[1].id]: alt('lako', 6, 'Lako 6 km umesto tempa') },
+    moves: { [fut[3].id]: addDays(fut[3].date, 1) }
+  });
+  add('personal-fresh', f, '2026-11-01', {});
+}
+fs.mkdirSync(path.join(dir, 'states'), { recursive: true });
+for (const s of out)
+  fs.writeFileSync(
+    path.join(dir, 'states', s.name + '.json'),
+    JSON.stringify({ plan: s.file, today: s.today, state: s.state }, null, 1) + '\n'
+  );
+console.log(out.map((s) => s.name).join(' '));

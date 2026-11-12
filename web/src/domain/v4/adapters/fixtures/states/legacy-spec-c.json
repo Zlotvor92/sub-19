@@ -1,0 +1,294 @@
+{
+  "plan": "legacy-11a38446",
+  "today": "2026-01-22",
+  "state": {
+    "log": {
+      "g1d1": {
+        "status": "done",
+        "ts": "2026-01-05T18:30:00.000Z",
+        "km": 8.6,
+        "sec": 2838,
+        "hr": 140,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 145,
+            "cadence": 170
+          }
+        ]
+      },
+      "g1d2": {
+        "status": "done",
+        "ts": "2026-01-06T18:30:00.000Z",
+        "km": 8.1,
+        "sec": 2730,
+        "hr": 142
+      },
+      "g1d3": {
+        "status": "done",
+        "ts": "2026-01-07T18:30:00.000Z",
+        "km": 7.8,
+        "sec": 2683,
+        "hr": 144,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 144,
+            "cadence": 170
+          }
+        ]
+      },
+      "g1d5": {
+        "status": "done",
+        "ts": "2026-01-09T18:30:00.000Z",
+        "km": 6.7,
+        "sec": 2352,
+        "hr": 146
+      },
+      "g1d7": {
+        "status": "done",
+        "ts": "2026-01-11T18:30:00.000Z",
+        "km": 11,
+        "sec": 3938,
+        "hr": 148,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 147,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 148,
+            "cadence": 170
+          }
+        ]
+      },
+      "g2d1": {
+        "status": "done",
+        "ts": "2026-01-12T18:30:00.000Z",
+        "km": 9,
+        "sec": 2970,
+        "hr": 150
+      },
+      "g2d2": {
+        "status": "done",
+        "ts": "2026-01-13T18:30:00.000Z",
+        "km": 7.6,
+        "sec": 2561,
+        "hr": 152,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 144,
+            "cadence": 170
+          }
+        ]
+      },
+      "g2d5": {
+        "status": "done",
+        "ts": "2026-01-16T18:30:00.000Z",
+        "km": 7.3,
+        "sec": 2511,
+        "hr": 140
+      },
+      "g2d3": {
+        "status": "skip",
+        "ts": "2026-01-14T20:00:00.000Z"
+      }
+    },
+    "alts": {
+      "g3d5": {
+        "tag": "lako",
+        "km": 6,
+        "desc": "6 km lako (Z2) — umesto tempa, umor posle posla",
+        "pace": null,
+        "rw": null,
+        "paceAuto": false
+      },
+      "g4d2": {
+        "tag": "lako",
+        "km": 7,
+        "desc": "7 km lako (Z2)",
+        "pace": null,
+        "rw": null,
+        "paceAuto": false
+      }
+    },
+    "moves": {},
+    "vanPlana": {}
+  }
+}

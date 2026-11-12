@@ -1,0 +1,335 @@
+{
+  "plan": "personal",
+  "today": "2026-11-12",
+  "state": {
+    "log": {
+      "n1d2b": {
+        "status": "done",
+        "ts": "2026-11-03T18:30:00.000Z",
+        "km": 6,
+        "sec": 2022,
+        "hr": 142,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          }
+        ],
+        "src": "strava"
+      },
+      "n1d4b": {
+        "status": "done",
+        "ts": "2026-11-05T18:30:00.000Z",
+        "km": 6.8,
+        "sec": 2387,
+        "hr": 146,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          }
+        ],
+        "src": "strava"
+      },
+      "n1d6b": {
+        "status": "done",
+        "ts": "2026-11-07T18:30:00.000Z",
+        "km": 5,
+        "sec": 1790,
+        "hr": 148,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 142,
+            "cadence": 170
+          }
+        ],
+        "src": "strava"
+      },
+      "n1d7b": {
+        "status": "done",
+        "ts": "2026-11-08T18:30:00.000Z",
+        "km": 10.2,
+        "sec": 3366,
+        "hr": 150,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 146,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 147,
+            "cadence": 170
+          }
+        ],
+        "src": "strava"
+      },
+      "n2d2b": {
+        "status": "done",
+        "ts": "2026-11-10T18:30:00.000Z",
+        "km": 9.1,
+        "sec": 3130,
+        "hr": 140,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 142,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 143,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 144,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 145,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 146,
+            "cadence": 170
+          }
+        ],
+        "src": "strava"
+      },
+      "n2d3b": {
+        "status": "done",
+        "ts": "2026-11-11T18:30:00.000Z",
+        "km": 5.2,
+        "sec": 1825,
+        "hr": 142,
+        "perKm": [
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 138,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 335,
+            "hr": 139,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 340,
+            "hr": 140,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 345,
+            "hr": 141,
+            "cadence": 170
+          },
+          {
+            "v": 3,
+            "paceSec": 330,
+            "hr": 142,
+            "cadence": 170
+          }
+        ],
+        "src": "strava"
+      },
+      "n2d6": {
+        "status": "done",
+        "km": 21.1,
+        "sec": 6121,
+        "hr": 168,
+        "ts": "2026-10-03T09:00:00.000Z"
+      }
+    },
+    "alts": {
+      "n2d6b": {
+        "tag": "lako",
+        "km": 6,
+        "desc": "Lako 6 km umesto tempa",
+        "pace": null,
+        "rw": null,
+        "paceAuto": false
+      }
+    },
+    "moves": {
+      "n3d1b": "2026-11-17"
+    },
+    "vanPlana": {}
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "plan": "legacy-93f00602",
+  "today": "2026-02-04",
+  "state": {
+    "log": {},
+    "alts": {
+      "g6d3": {
+        "tag": "odmor",
+        "km": null,
+        "desc": "",
+        "pace": null,
+        "rw": null,
+        "paceAuto": false
+      }
+    },
+    "moves": {
+      "g6d1": "2026-11-19",
+      "g6d4": "2026-11-16"
+    },
+    "vanPlana": {
+      "2026-01-25": 3.2,
+      "2026-02-01": 4
+    }
+  }
+}
