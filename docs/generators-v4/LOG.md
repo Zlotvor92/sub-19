@@ -66,3 +66,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   gramatika brojeva, aritmetika, > 25 % brzog rada, skok, prazan trening): K1–K5 idu u mašinske testove V4.
 - Zahtevi trenera prema V4: ispis plana pre/posle događaja za 24 scenarija sa objašnjenjem; oblik istorije trkača;
   ispis nosi današnju prognozu i prognozu na dan trke sa rasponom. → ulazi u brief F2/F3.
+
+### 09:52 — F6 stavka 4: ciljni planovi 10K (trener, `049ef13f`) [srednja]
+- `coach/target/10K/` (p01, p03, p06, p11 + README sa pravilima za šablone 10K) preuzeto na `claude/v4`.
+- Trener je slobodan → sledeći zadatak: ciljni planovi 5K i maraton (po 4 profila), da F7 ne čeka.
