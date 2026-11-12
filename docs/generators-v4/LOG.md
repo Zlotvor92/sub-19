@@ -249,3 +249,8 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Tab D (podaci HM krug 2, Opus, nov): `session_01GnHHiZx2nJ3RDnPnDFQcFZ` — R15–R20, mašinska kapija kao test,
   ispisi + parovi personalizacije, tabela „zamerka → rešeno / nije rešeno". Tab M `…RtiyqqMB7Bn2wiFM`: završen, držim
   ga za eventualne zahteve D prema motoru.
+
+### 19:45 — drugi prekid na petočasovnom limitu (16:20–19:40) [visoka]
+- Tab D je stao odmah po otvaranju (16:17), pre ijednog koraka; i organizator je bio pod limitom do 19:40. U 19:45
+  tab D gurnut porukom „kreni". Ništa nije izgubljeno: motor krug 2 (`965f8a6`) i forma krug 2 su na grani.
+- Stanje grane: `distances/hm` crveno (14 testova) dok D ne preradi podatke; ostalo 480 zeleno.
