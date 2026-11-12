@@ -9,7 +9,6 @@ Polazna forma (1. 11.): 1:18:09
 Današnja prognoza (1. 11.): 1:18:09, pouzdanost srednja
 Očekivano na dan trke: 1:16:51 (raspon 1:15:39–1:18:43) — 1:18 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Nedelja 1. 11. – 1. 11. odrađena je oko 0 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 1 sekundu sporije.
 - Polazna procena je iz rezultata koji si uneo: oko 1:18:09 za 21,1 km.
 
 TEMPA
@@ -99,7 +98,7 @@ Tempo trke u treninzima je tvoja današnja forma (3:42/km). Očekivano vreme na 
   Zbir: 101,5 km, 7 h 34 min, 6 treninga, brz rad 13 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — razvoj, rasterećenje; do trke 8 nedelja
-  pon 21. 12.  lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,7 km, 45 min
+  pon 21. 12.  lagano 9,5 km — 9,5 km, 44 min
   uto 22. 12.  lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,7 km, 45 min
   sre 23. 12.  lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,7 km, 45 min
   čet 24. 12.  brze deonice 14 × 200 m (3:11/km), oporavak 200 m džog — 13 km, 57 min
@@ -107,7 +106,7 @@ Tempo trke u treninzima je tvoja današnja forma (3:42/km). Očekivano vreme na 
   sub 26. 12.  provera forme: pripremna trka ili test na 10 km punim naporom — 17,6 km, 70 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 27. 12.  dugi 15,5 km lagano — 15,5 km, 72 min
-  Zbir: 75,2 km, 5 h 33 min, 6 treninga, brz rad 13 % vremena trčanja
+  Zbir: 75 km, 5 h 32 min, 6 treninga, brz rad 13 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 28. 12.  lagano 15 km — 15 km, 70 min

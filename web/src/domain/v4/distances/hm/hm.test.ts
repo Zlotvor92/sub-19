@@ -14,6 +14,7 @@ import {
   type PlanDoc,
   type PlanWeek,
   type RunnerFacts,
+  type SingleStep,
   type Step,
   type Workout,
   type RunnerState,
@@ -381,14 +382,17 @@ const RENDERED = ALL_PLANS.map((p) => ({ ...p, text: renderPlan(p.doc, p.state, 
 
 /** Sekunde rada u pragu i bržem (T, I, R, pun napor) — K6 rubrike. */
 function fastSec(w: Workout, ctx: ReturnType<typeof paceCtxOf>): number {
-  const fast = (s: Step): boolean =>
-    'repeat' in s
-      ? s.steps.some(fast)
-      : s.target.type === 'allOut' ||
-        (s.role === 'work' && s.target.type === 'zone' && ['T', 'I', 'R'].includes(s.target.zone));
-  const keep = (steps: readonly Step[]): Step[] =>
-    steps.filter(fast).map((s) => ('repeat' in s ? { ...s, steps: keep(s.steps) } : s));
-  return summarize({ ...w, steps: keep(w.steps) }, ctx).durationSec;
+  const fast = (s: SingleStep): boolean =>
+    s.target.type === 'allOut' ||
+    (s.role === 'work' && s.target.type === 'zone' && ['T', 'I', 'R'].includes(s.target.zone));
+  const keep: Step[] = [];
+  for (const s of w.steps) {
+    if ('repeat' in s) {
+      const inner = s.steps.filter(fast);
+      if (inner.length > 0) keep.push({ repeat: s.repeat, steps: inner });
+    } else if (fast(s)) keep.push(s);
+  }
+  return summarize({ ...w, steps: keep }, ctx).durationSec;
 }
 
 /** Zona podražaja za K7 (prvi trening zone ≤ 70 % vrha zone). */
@@ -754,7 +758,7 @@ describe('krug 2: doze, raznovrsnost, provera forme, napomene (R16, R17, R19)', 
     }
   });
 
-  it('R17: provera forme nije u 1. nedelji; subotom kad je subota dan trčanja; rani test po osećaju je 3 km kao u upozorenju', () => {
+  it('R17: provera forme nije u 1. nedelji; subotom kad je subota dan trčanja; rani test 3 km za početnika i < 25 km, inače 5 km; upozorenje navodi istu distancu', () => {
     for (const p of ALL_PLANS) {
       const sat = p.doc.header.decisions.runDays.includes(5);
       for (const w of p.doc.weeks)
@@ -763,10 +767,15 @@ describe('krug 2: doze, raznovrsnost, provera forme, napomene (R16, R17, R19)', 
           expect(w.index, `${p.id} ${d.date}`).toBeGreaterThanOrEqual(2);
           const weekday = (new Date(`${d.date}T12:00:00Z`).getUTCDay() + 6) % 7;
           if (sat) expect(weekday, `${p.id} ${d.date}`).toBe(5);
-          if (d.workout.stimulus === 'kontrola-rana') expect(d.workout.text).toMatch(/3 km/);
+          if (d.workout.stimulus === 'kontrola-rana') {
+            const small =
+              p.doc.header.decisions.level === 'pocetnik' || p.doc.header.decisions.baseLoad < 150;
+            const km = small ? '3 km' : '5 km';
+            expect(d.workout.text, p.id).toMatch(new RegExp(km));
+            const missing = p.doc.header.warnings.find((x) => x.code === 'nema-podataka');
+            expect(missing?.proposal, p.id).toMatch(new RegExp(`na ${km}`));
+          }
         }
-      const missing = p.doc.header.warnings.find((x) => x.code === 'nema-podataka');
-      if (missing !== undefined) expect(missing.proposal).toMatch(/test od 3 km/);
     }
   });
 

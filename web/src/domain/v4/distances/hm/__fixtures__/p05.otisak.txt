@@ -47,7 +47,7 @@
 2026-12-18 | odmor | - | 0.0 |  | - | - | -
 2026-12-19 | trening | easy | 15.0 | lagano 15 km | - | - | -
 2026-12-20 | trening | long | 24.5 | dugi 24,5 km, završni deo 2,5 km progresivno do tempa trke | - | - | -
-2026-12-21 | trening | easy | 9.7 | lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-21 | trening | easy | 9.5 | lagano 9,5 km | - | - | -
 2026-12-22 | trening | easy | 9.7 | lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-23 | trening | easy | 9.7 | lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-24 | trening | quality | 13.0 | brze deonice 14 × 200 m, oporavak 200 m džog | - | - | -

@@ -9,7 +9,6 @@ Polazna forma (1. 11.): 2:02:10
 Današnja prognoza (1. 11.): 2:02:10, pouzdanost niska
 Očekivano na dan trke: 1:55:46 (raspon 1:50:12–2:05:08) — 6:24 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Nedelja 1. 11. – 1. 11. odrađena je oko 0 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 4 sekunde sporije.
 - Polazna procena je iz laganog tempa koji si uneo: oko 2:02:10 za 21,1 km. Prvi test ili trka je preciziraju.
 
 NAPOR PO ZONAMA (tempa još nisu pouzdana)
@@ -22,7 +21,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
-- Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca ili istrči test od 3 km — tempa i prognoza se tada računaju iz stvarnog rezultata.
+- Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 3 km koja je u planu 28. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  lagano 50 min — 7,1 km, 50 min

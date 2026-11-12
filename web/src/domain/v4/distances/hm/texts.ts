@@ -27,6 +27,7 @@ export const TEXTS: Record<string, string> = {
   'kontrola-10k': 'provera forme: pripremna trka ili test na 10 km punim naporom',
   'kontrola-5k': 'provera forme: trka ili test na 5 km punim naporom',
   'kontrola-rana': 'provera forme: test na 3 km punim naporom, ravnomerno',
+  'kontrola-rana-5k': 'provera forme: test na 5 km punim naporom, ravnomerno',
   'kontrola-3k': 'provera forme: test na 3 km punim naporom',
 
   /* napomene */

@@ -393,8 +393,19 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'kontrola-5k',
     notes: ['napomena.kontrola']
   },
-  /* rani test (2. nedelja, subota) kad su tempa po osećaju: posebna oznaka da ne pomera redosled provere forme.
-     3 km za sve: isti test koji navodi upozorenje „nema podataka" (R17: ista distanca u upozorenju i planu) */
+  /* rani test (prvo rasterećenje, subota) kad su tempa po osećaju: posebna oznaka da ne pomera redosled provere
+     forme. 5 km, a 3 km za početnika i obim ispod ≈ 25 km (R17); upozorenje „nema podataka" čita distancu iz plana */
+  {
+    id: 'kontrola-rana-5k',
+    kind: 'test',
+    stimulus: 'kontrola-rana',
+    tags: ['test'],
+    impact: 'obican',
+    requires: { minBaseLoad: 150, levels: ['mali', 'spor', 'srednji', 'brz'] },
+    main: { kind: 'all-out', distanceM: 5000 },
+    text: 'kontrola-rana-5k',
+    notes: ['napomena.kontrola']
+  },
   {
     id: 'kontrola-rana-3k',
     kind: 'test',

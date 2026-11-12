@@ -9,7 +9,6 @@ Polazna forma (1. 11.): 1:43:21
 Današnja prognoza (1. 11.): 1:43:21, pouzdanost niska
 Očekivano na dan trke: 1:41:00 (raspon 1:37:56–1:45:26) — 2:21 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Nedelja 1. 11. – 1. 11. odrađena je oko 0 % planiranog opterećenja, pa se očekivani napredak do trke smanjuje: očekivano vreme na dan trke je oko 1 sekundu sporije.
 - Polazna procena je iz laganog tempa koji si uneo: oko 1:43:21 za 21,1 km. Prvi test ili trka je preciziraju.
 
 NAPOR PO ZONAMA (tempa još nisu pouzdana)
@@ -22,7 +21,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
-- Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca ili istrči test od 3 km — tempa i prognoza se tada računaju iz stvarnog rezultata.
+- Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 5 km koja je u planu 28. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  odmor
@@ -59,15 +58,15 @@ UPOZORENJA
 
 4. NEDELJA (od 23. 11.) — osnova, rasterećenje; do trke 12 nedelja
   pon 23. 11.  odmor
-  uto 24. 11.  lagano 7,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,5 km, 50 min
+  uto 24. 11.  lagano 5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6 km, 35 min
   sre 25. 11.  odmor
   čet 26. 11.  prag 9 min u komadu — 7,7 km, 44 min
   pet 27. 11.  odmor
-  sub 28. 11.  provera forme: test na 3 km punim naporom, ravnomerno — 8,8 km, 48 min
+  sub 28. 11.  provera forme: test na 5 km punim naporom, ravnomerno — 10,8 km, 57 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 29. 11.  dugi 13,5 km lagano — 13,5 km, 81 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 38,5 km, 3 h 43 min, 4 treninga, brz rad 10 % vremena trčanja
+  Zbir: 38 km, 3 h 38 min, 4 treninga, brz rad 14 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 30. 11.  odmor
