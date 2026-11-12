@@ -367,7 +367,9 @@ interface EasyDay {
 
 /** Lagani dani prethodne nedelje koja nije rasterećenje: trajanje po danu u nedelji i najduži (R1, R2b). */
 export interface EasyRef {
+  /** Trajanje treninga po danu u nedelji — bilo koje vrste (isti dan prethodne nedelje, R1). */
   byWeekday: ReadonlyMap<number, Seconds>;
+  /** Najduži lagan dan (R2b). */
   max: Seconds;
 }
 
@@ -581,10 +583,10 @@ function easyRefOf(recipes: ReadonlyMap<IsoDate, Recipe>, ctx: BuildCtx): EasyRe
   const byWeekday = new Map<number, Seconds>();
   let max = 0;
   for (const [date, recipe] of recipes) {
-    if (recipe.type !== 'easy' && recipe.type !== 'addon') continue;
+    if (recipe.type === 'rest') continue;
     const sec = summarize(realize(recipe, ctx), ctx.pace).durationSec;
     byWeekday.set(weekdayOf(date), sec);
-    max = Math.max(max, sec);
+    if (recipe.type === 'easy' || recipe.type === 'addon') max = Math.max(max, sec);
   }
   return max > 0 ? { byWeekday, max } : null;
 }

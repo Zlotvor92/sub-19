@@ -472,6 +472,14 @@ describe('R7: bol', () => {
       Math.max(0.6 * (original?.workout?.workSec ?? 0) + 150, EXAMPLE.safety.minDoseSec + 150)
     );
     expect(firstFast?.workout?.workSec ?? 0).toBeLessThan(original?.workout?.workSec ?? 0);
+    /* Obim se vraća kao posle pauze: prva nedelja posle zaštite ≤ poslednja puna nedelja pre bola × 1,10. */
+    const before = weekMin(
+      start,
+      start.weeks.findIndex((w) => w.start === '2026-12-21')
+    );
+    const back = r.doc.weeks.findIndex((w) => w.start > addDays(today, 14));
+    expect(weekMin(r.doc, back)).toBeLessThanOrEqual(1.1 * before + 4);
+    expect(guard(r.doc, state, EXAMPLE).filter((x) => x.check === 'skok')).toEqual([]);
     const reason = r.changes[0]?.reason ?? '';
     expect(reason).toContain('naredna 2 dana su odmor');
     expect(reason).toContain('najviše 2 od 10 i ne raste');

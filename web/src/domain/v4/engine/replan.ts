@@ -258,7 +258,7 @@ function onMissed(
     if (wanted <= 0 || defId === undefined || (wanted === planned && !block)) {
       return notice(
         MISSED_MEANING.block,
-        'sledeći dugi već nosi završni deo u tempu trke, pa plan ostaje isti'
+        `sledeći dugi (${fmtDate(nextBuildLong.date)}) već nosi završni deo u tempu trke, pa se zbog ovog treninga ništa ne menja`
       );
     }
     const lengthSec = block ? Math.round(summarize(missed, ctx).durationSec) : undefined;
@@ -406,8 +406,14 @@ function onPain(
   if (ev.level > PAIN_MID_MAX && !header.warnings.some((w) => w.code === 'bol')) {
     header = { ...header, warnings: [...header.warnings, PAIN_WARNING] };
   }
+  /* Nivo 4 i više: obim se posle zaštite vraća kao posle pauze — od poslednje pune nedelje pre bola, pa pravilom
+     rasta (R7, R9); blag bol menja samo dane u svom prozoru. */
+  const returning = ev.level > PAIN_LOW_MAX;
   return {
-    doc: runPass({ ...doc, header }, state, data, { window, rechainFrom: null }),
+    doc: runPass({ ...doc, header }, state, data, {
+      window: returning ? null : window,
+      rechainFrom: returning ? currentWeekIndex(doc, state.today) + 1 : null
+    }),
     until: window.rampEnd
   };
 }
@@ -655,7 +661,7 @@ function explain(
       const what = `Pauza${PAUSE_REASON[ev.reason]} trajala je ${count(length, DAYS)} (${fmtDateRange(ev.from, ev.to)})`;
       const rampEnd = fmtDate(addDays(ev.to, pauseRampDays(length, ev.reason)));
       const test = movedTest(before, c.doc, state.today);
-      const moved = test === null ? '' : ` Provera forme je pomerena na ${fmtDate(test)}.`;
+      const moved = test === null ? '' : ` Provera forme je pomerena na ${fmtDate(test)}`;
       const back = `${what}, pa je povratak postepen: do ${rampEnd} su treninzi kraći i lagani, a ${fastFrom(ev.to)}`;
       const day = `${back}; ${resume}.${moved}`;
       const late = `${back}; i posle toga se obim vraća postepeno — ${lighter}.${moved}`;

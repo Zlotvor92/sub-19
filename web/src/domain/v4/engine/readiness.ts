@@ -137,20 +137,26 @@ export function adjustmentWindow(
   return null;
 }
 
-/** Da li nedelja (od ponedeljka `weekStart`) seče pauzu ili rampu nekog uzroka. */
+/** Da li nedelja (od ponedeljka `weekStart`) seče pauzu, rampu ili zaštitu posle bola nivoa 4 i više. */
 export function underRamp(weekStart: IsoDate, adjustments: readonly Adjustment[]): boolean {
   const end = addDays(weekStart, 6);
   return adjustments.some((adj) => {
-    if (rampOf(adj) === null || (adj.kind === 'effort' && adj.planned === true)) return false;
+    if (!returns(adj)) return false;
     const w = adjustmentWindow(adj);
     return w !== null && w.from <= end && w.rampEnd >= weekStart;
   });
 }
 
+/** Uzrok posle kog se obim vraća postepeno: pauza, spoljni pun napor, bol nivoa 4 i više (ne napor iz plana). */
+function returns(adj: Adjustment): boolean {
+  if (adj.kind === 'pain') return adj.level > PAIN_LOW_MAX;
+  return rampOf(adj) !== null && !(adj.kind === 'effort' && adj.planned === true);
+}
+
 /** Da li je dan u pauzi ili rampi povratka posle pauze (ne posle napora): tu se provera forme pomera (R9). */
 export function inReturn(date: IsoDate, adjustments: readonly Adjustment[]): boolean {
   return adjustments.some((adj) => {
-    if (adj.kind === 'effort' || rampOf(adj) === null) return false;
+    if (adj.kind === 'effort' || !returns(adj)) return false;
     const w = adjustmentWindow(adj);
     return w !== null && date >= w.from && date <= w.rampEnd;
   });
