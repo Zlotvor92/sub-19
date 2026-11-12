@@ -292,3 +292,20 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   ubrzanja kod 30–40 km", „+30–35 %".
 - Motor krug 3 (tab M): QA1 nalazi + 5 zahteva D + uslovi nivoa po istoriji (`recentQualityWeeks`,
   `weeksSincePause`) za personalizaciju.
+
+### 20:55 — HM V4 KANDIDAT KRUGA 2 (`977a4df`, motor `c003597` zamrznut); moj pregled: 584 zeleno + 6 očekivanih padova (forma, 1–2 s u scenariju „ništa"), kapija 0 prekršaja [visoka]
+- Motor krug 3 (`a27a817` + `c096012` + `c003597`): svi kritični/ozbiljni QA1 nalazi ispravljeni sa testom (provera
+  forme više ne ruši formu; baza iz izjave dok istorija nije dovoljna; dani pred trku po datumu; InputError umesto
+  izuzetka), mreža sa svakim danom kao „danas", integracioni test motor + forma dan za danom, personalizacija po
+  istoriji (`recentQualityWeeks`, `weeksSincePause`), test se pomera posle rampe, rečenice „zašto je prognoza ovakva".
+- Podaci krug 3: šabloni po trenerovim ciljnim planovima (dva kvaliteta kod 4 dana, pripremna trka, rep kao cilj).
+  `plans/HM/target-compare.md`: u svim tolerancijama p01 10/16 nedelja, p12 12/16, p04 8/20, p11 3/20; najteža
+  nedelja, taper i pripremna trka na istom mestu kod sva 4. p01: 40 → 54 km, dugi 15 → 20 km, prag do 34 min, tempo
+  trke do 39 min, blok 5,5 → 9,5 km (cilj 56 / 22 / 33 / 44 / 10).
+- D kaže da podatkom NE MOŽE (7 stavki): početnik p11 (cilj × 2,0, dugi 44 % — kapija 1,40/40 %), plafon doze praga
+  kod p04, lagani dani na plafonu posle rasterećenja (p01 ned 8–9 niže od cilja), šta se broji kao brz rad, P3
+  parovi, v1 nedelja trke bez oštrenja. → pitanja (1) i (5) data treneru na presudu; ostalo ide u mali krug motora
+  posle ocene, zajedno sa zamerkama sudija.
+- OCENA KRUGA 2 pokrenuta: trener (12 planova, 24 scenarija, PRVI PUT personalizacija — parovi P1–P3, presuda o
+  spornim pravilima) i novi drugi sudija `session_01GnHHiXAt7ZkoBnH7FAAcGU` (Fable, bez uvida u krug 1; 12 planova,
+  2 plana vlasnika, 10 scenarija, parovi).
