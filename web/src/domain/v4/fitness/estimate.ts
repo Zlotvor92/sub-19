@@ -645,7 +645,9 @@ export function estimateForm(
       vdot -= C.EXPECTED_SHARE * giveBack;
       const lost =
         raceTimeSec(vdot, goalM) - raceTimeSec(vdot + C.EXPECTED_SHARE * giveBack, goalM);
-      if (af < 1 && giveBack > 0) {
+      /* Bez ijednog trčanja u istoriji (nov korisnik na dan nastanka plana) nema šta da se „ne odradi":
+         rečenica o neodrađenoj nedelji bi bila šum u zaglavlju plana (krug 3). */
+      if (af < 1 && giveBack > 0 && runs.length > 0) {
         record(
           {
             date: isoOf(d),

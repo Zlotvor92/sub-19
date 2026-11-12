@@ -689,12 +689,22 @@ function explain(
   switch (ev.kind) {
     case 'pause': {
       const length = pauseLength(ev.from, ev.to);
-      const what = `Pauza${PAUSE_REASON[ev.reason]} trajala je ${count(length, DAYS)} (${fmtDateRange(ev.from, ev.to)})`;
-      const rampEnd = fmtDate(addDays(ev.to, pauseRampDays(length, ev.reason)));
+      /* S2: buduća pauza se opisuje u sadašnjem vremenu, datumi ne idu posle trke, a pauza preko dana trke
+         se imenuje. */
+      const raceDate = c.doc.header.goal.raceDate;
+      const ongoing = ev.to > state.today;
+      const what = `Pauza${PAUSE_REASON[ev.reason]} ${ongoing ? 'traje' : 'trajala je'} ${count(length, DAYS)} (${fmtDateRange(ev.from, ev.to)})`;
+      if (ev.to >= raceDate) {
+        const text = `${what} i pokriva dan trke (${fmtDate(raceDate)}): treninzi do trke su izostavljeni. Ako trku trčiš, upiši kraću pauzu; ako je pomeraš, promeni datum trke.`;
+        return { day: text, late: text, week: text, header: text };
+      }
+      const rampLast = addDays(ev.to, pauseRampDays(length, ev.reason));
+      const rampEnd = fmtDate(rampLast < raceDate ? rampLast : addDays(raceDate, -1));
       const test = movedTest(before, c.doc, state.today);
       const moved = test === null ? '' : ` Provera forme je pomerena na ${fmtDate(test)}`;
       const back = `${what}, pa je povratak postepen: do ${rampEnd} su treninzi kraći i lagani, a ${fastFrom(ev.to)}`;
-      const day = `${back}; ${resume}.${moved}`;
+      const tail = addDays(c.until, 1) < raceDate ? `; ${resume}` : '';
+      const day = `${back}${tail}.${moved}`;
       const late = `${back}; i posle toga se obim vraća postepeno — ${lighter}.${moved}`;
       const header = `${what}, pa je ostatak plana preračunat od sadašnje baze; ${lighter}.${moved}`;
       return { day, late, week: late, header };

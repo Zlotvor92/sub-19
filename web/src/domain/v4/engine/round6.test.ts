@@ -430,6 +430,28 @@ describe('sitno (S1, S3, S6, S7, S9, S10, S11)', () => {
     expect(canonical(b.doc)).toBe(canonical(a.doc));
   });
 
+  it('S2: buduća pauza u sadašnjem vremenu; pauza preko dana trke se imenuje, bez datuma posle trke', () => {
+    const { doc, state } = make(facts(), EXAMPLE, EX_GOAL);
+    const pause = (from: string, to: string): string => {
+      const event: PlanEvent = {
+        id: `pause:${from}:${to}`,
+        date: to,
+        kind: 'pause',
+        from,
+        to,
+        reason: 'put'
+      };
+      return replan(doc, state, [event], EXAMPLE).changes[0]?.reason ?? '';
+    };
+    const over = pause('2027-03-01', '2027-03-10');
+    expect(over).toContain('Pauza zbog puta traje 10 dana');
+    expect(over).toContain('pokriva dan trke (7. 3.)');
+    expect(over).not.toMatch(/2[01]\. 3\./);
+    const ahead = pause('2027-01-04', '2027-01-10');
+    expect(ahead).toContain('traje 7 dana');
+    expect(ahead).not.toContain('trajala je');
+  });
+
   it('S3: promena samo naziva trke ne kaže da je ciljno vreme promenjeno', () => {
     const { doc, state } = make(facts(), SYNTHETIC, { ...GOAL, targetTimeSec: 2130 });
     const event: PlanEvent = {

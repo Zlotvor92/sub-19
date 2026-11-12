@@ -119,6 +119,14 @@ const clean = (sim: Sim, data: DistanceData): string[] =>
     .filter((f) => NEVER.includes(f.check))
     .map((f) => f.check);
 
+describe('nov plan bez istorije trčanja', () => {
+  it('istorija procene nema rečenicu o „neodrađenoj nedelji" pre prvog trčanja', () => {
+    const state = buildState(FACTS, GOAL, SYNTHETIC, estimateForm);
+    expect(state.form.history.map((h) => h.signal)).toEqual(['izjava']);
+    for (const h of state.form.history) expect(h.reason).not.toContain('odrađena je oko 0 %');
+  });
+});
+
 describe('motor + procena forme, dan za danom kroz ceo plan', () => {
   it('trkač radi tačno po planu: plan se ne menja, prognoza se ne pogoršava (R12)', () => {
     const sim = simulate(SYNTHETIC, (day, doc) => asPlanned(day, doc));

@@ -13,6 +13,8 @@ FORMA
 Polazna forma (15. 11.): 36:00
 Današnja prognoza (20. 12.): 36:00, pouzdanost srednja
 Očekivano na dan trke: 35:51 (raspon 35:25–36:21) — 0:09 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Forma je izračunata iz rezultata koji si uneo.
 
 TEMPA
 - lagano 5:36–6:10/km

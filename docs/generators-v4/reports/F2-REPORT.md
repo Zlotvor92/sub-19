@@ -256,3 +256,62 @@ p09 42 % i p11 41 %; nedelja 1 pada na 89–92 % kod p04 i p08. Zato:
 opterećenja proceni traži novo polje u `RunnerFacts` i izmenu redosleda u `buildState` (opterećenje zavisi od praga
 forme, a forma se računa pre njega) — `fitness/load.ts` zato i dalje drži kopiju formule. Test: `round5.test.ts`
 („ugovor motor → forma"); motor 180, ukupno sa adapterima, formom i izolacijom 481.
+
+## Krug 3 (QA1), 12. 11. 2026 — nalazi `qa/QA1-ENGINE-REVIEW.md`; testovi `engine/round6.test.ts`, `fitness/withEngine.test.ts`
+Motor + forma + adapteri + izolacija: 520 testova, zeleno; `typecheck`, ESLint, Prettier čisti. Javni potpisi isti.
+### Ispravljeno (svaki nalaz ima test koji bi pao pre ispravke)
+- **K1** — jedan vlasnik pravila „šta je rezultat punog napora": `vdot.effortResult(run)` (koriste ga `fitness/` i
+  motor): (0) izričit unos trkača `Run.resultSec` (+ `resultDistanceM`, inače planirana deonica); (1) krugovi rada;
+  (2) aktivnost duža od planirane deonice za > 15 %: najbrži uzastopni niz km dužine deonice; (3) takva aktivnost bez
+  km → NIJE dokaz forme: procena ostaje, a `fitness/` upisuje `FormChange { ignored: true }` sa rečenicom „…upiši vreme
+  na 3 km da bih prilagodio tempa" (ide u ispis, odeljak FORMA); (4) inače cela aktivnost. `buildState` popunjava
+  `Run.plannedEffortM` iz dana plana. Motor: tempa se ne menjaju na neupotrebljiv rezultat; rampa i tekst koriste
+  trajanje deonice.
+- **O2** — baza je izjava (`weeklyKm`) dok istorija nije merodavna: u poslednjih 42 dana pokriva < 21 dan ili ima
+  < 6 trčanja (`seeded: true`). Merodavna istorija ispod 50 % izjave → upozorenje `baza-ispod-izjave`. Dugi nije kraći
+  od `minEasySec`; čuvar `prazan` meri prema najkraćem smislenom trčanju (najkraće lagano / dan pred trku / dan u
+  rampi, uz jedno zaokruživanje i 10 % za promenu tempa), ne prema stalnih 15 min.
+- **O3** — poslednji dani pre trke važe po DATUMU: dan pred trku ≤ 20 min bez dodatka, poslednja 2 dana bez kvaliteta
+  i sa plafonom sužavanja, dugog nema u poslednjih 6 dana — i kad ti dani padnu u nedelju pre nedelje trke. Čuvar:
+  `dan-pred-trku`, `dugi-pred-trku`; `ispod-cilja` se ne prijavljuje za `taper` ni za nedelju koja dodiruje tih 6 dana.
+- **O4** — posle usvojenog rezultata `byFeel = false` bez obzira na razliku, `nema-podataka` nestaje (uslov
+  upozorenja je sada „tempa po osećaju", ne pouzdanost procene); `form-update` ne vraća `byFeel` na `true`.
+- **O5** — `buildState` ne baca na neispravan `today`, pauzu, bol ni datum trke; ono što je morao da preskoči nosi u
+  `RunnerState.inputErrors`, a `plan` to vraća kao `errors`. `validate` proverava pauze (datumi, kraj ≥ početak) i bol
+  (datum, nivo 1–10).
+- **O6** — trka ili test na dan nastanka plana, upisani posle, daju `result` (granica uključiva); napor koji je plan
+  već uzeo u obzir pri nastanku se ne ponavlja.
+- **Sitno**: S1 (pauze i bol se sortiraju → isti bajtovi), S2 (buduća pauza u sadašnjem vremenu, bez datuma posle
+  trke; pauza preko dana trke se imenuje), S3, S6 (bol 1–10, VDOT 20–90), S7 (kad je sledeći isti trening već kraći:
+  „ionako kraći, pa plan ostaje isti"), S9 („su 2 nedelje"), S10 („sva 3 dana"), S11 (nalazi bez ISO datuma), S13
+  (dugi ≥ najkraće trčanje).
+- **Nađeno novom mrežom**: u nedelji trke kvalitet više ne staje dan posle teškog dana prethodne nedelje.
+- **Ispis**: odeljak FORMA štampa rečenice iz `state.form.history` — do 5, najnovija prva („Zašto je prognoza
+  ovakva"). `fitness/`: nov korisnik bez ijednog trčanja više ne dobija rečenicu „nedelja odrađena 0 %".
+### Testovi koji su falili (sabotaže iz QA1 sada padaju)
+R2b (`layoutWeek` sa i bez merila prethodne nedelje), dan pred trku (skraćen pravilom, ne budžetom), R8a (obaveštenje
+bez izmene treninga), histereza tempa 14 dana, nepotpuna prva nedelja, puls na treningu sa krugovima rada
+(`fitness/estimate.test.ts`). Mreža: 7 dana kao „danas" × trka svakog dana u nedelji × 3 rasporeda (dugi i sredom i
+subotom) = 147 planova: determinizam, jedna trka, bez nalaza o dozi, dugom, praznom treningu i danu pred trku,
+`replan` bez događaja vraća isti objekat. Integracija (`fitness/withEngine.test.ts`): motor + `estimateForm` dan za
+danom kroz 12 nedelja — po planu (plan se ne menja, prognoza ≤ + 20 s), preskače svaki peti trening, provera forme kao
+jedna aktivnost (forma i tempa ostaju, rečenica šta uneti) i sa krugom rada (tempa se ubrzavaju).
+### Izmene u `fitness/` (dozvoljeno u ovom krugu)
+`estimate.ts`: rezultat kroz `effortResult`, zapis `ignored`; bez rečenice o neodrađenoj nedelji dok nema nijednog
+trčanja. `explain.ts`: `explainUnusable`. Testovi: K1, puls na deonicama, `withEngine.test.ts`.
+### Novi tipovi (opciono)
+`Run.resultSec`, `Run.resultDistanceM`, `Run.plannedEffortM`; `FormChange.ignored`; `RunnerState.inputErrors`.
+### NIJE urađeno (nije jeftino ili je odluka)
+S4, S5 (zaštićeni dani pri promeni cilja i rasporeda), S8 (bol sa starim datumom), S12 („Polazim od ≈ X km" je tačno
+samo kad je baza iz izjave), deo S13 (provera forme veća od cilja male nedelje), U1–U3.
+### Šta menja planove (za tab podataka — osvežiti otiske)
+1. Trka subotom (ili bilo kad je dugi u poslednjih 6 dana pre trke): nedelja sužavanja gubi dugi — taj dan je lagan
+   do `taperEasyMaxSec`. Trka nedeljom je ista kao pre.
+2. Poslednja 2 dana pre trke: bez kvaliteta i sa plafonom sužavanja i kad su u nedelji pre nedelje trke (trka pon/uto).
+3. Plan koji počinje posle trke ili sa retkom istorijom (jedna trka, par trčanja): baza je izjavljeni obim, ne obim
+   izveden iz tog jednog trčanja → vlasnik-v2 i scenariji E5 (s17–s20) imaju drugu bazu, vrh i dugi.
+4. Dugi nikad kraći od `minEasySec` (mali obimi); nedelja trke: kvalitet ne ide u ponedeljak posle nedeljnog bloka.
+5. Tekst: zaglavlje FORMA ima do 5 rečenica „zašto"; upozorenja „Do trke su 2–4 nedelje", „sva 3/4 dana"; novo
+   upozorenje `baza-ispod-izjave`; `nema-podataka` zavisi od `byFeel`.
+6. Scenariji u kojima se provera forme beleži sa `effort: 'test'` kao cela aktivnost više ne menjaju formu (treba krug
+   rada, km ili `resultSec`).
