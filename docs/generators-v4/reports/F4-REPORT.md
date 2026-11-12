@@ -104,3 +104,24 @@ trajanje (ako ih adapter preda sa `source: 'procena'`, ulaze u bazu, pad bi bio 
 3. Hodanje u trci: `Run.splits` za trku ili polje `Run.walked?: boolean` (scenario S19 nema ni jedno).
 4. Dnevna opterećenja: `fitness/load.ts` je prepisana formula `engine/load.ts` (`runLoad`, `rollDay`); bolje da motor
    preda dnevna opterećenja u `facts` ili da `runLoad` pređe u fajl koji `fitness/` sme da uvozi.
+
+## Krug 3 (12. 11. 2026) — `4fec1f0`
+Testovi: 41 u `fitness/` (+ `load.parity.test.ts`, + 3 u `round2.test.ts`); `fitness + engine + adapters` 468/468,
+≈ 6 s. `distances/hm` nisam pokretao kao uslov (prerađuje ga drugi tab).
+- **Pridržavanje po ciljevima plana** (`planned.weeks` iz motora). Dan plana se pripisuje UNAPRED; na kraju
+  kalendarske nedelje ispravlja se po pridržavanju te nedelje (opterećenje / `targetLoad`; ≥ 0,85 pun iznos, < 0,6
+  ništa). Zato se očekivano ne pomera usred nedelje, a manjak dobija rečenicu (signal `plan`) baš u nedelji u kojoj se
+  desio. Pripisuje se tek od prvog dana plana. Sužavanje pred trku više nije manjak.
+- Uslov „12 nedelja bez bržih treninga" (§ 14.6) se računa po danu i dobija rečenicu kad se uključi (ranije je pri
+  navršenih 84 dana istorije menjao prošlost i očekivano za ~35 s bez rečenice — našao ga je test „svaka promena
+  > 20 s ima rečenicu").
+- Signali: `plan` (odrađen plan / manjak), `baza` (R13). `Run.walked` se koristi uz izvođenje iz km.
+- Paritet: `fitness/load.ts` = `engine/load.ts` na 50 determinističkih trčanja × 3 praga (krugovi, planirano, po km,
+  bez dužine) i dnevni korak baze, tačnost 1e-9.
+- Dokaz testom (sintetički, ciljevi nedelja sa sužavanjem 70 % / 55 %): sve po planu → očekivano ≤ +10 s do dana pred
+  trku, nijedna rečenica o manjku; propušten vršni dugi → tačno jedna rečenica o manjku, u nedelji propuštenog dugog;
+  u oba niza svaka dnevna promena očekivanog > 20 s ima rečenicu tog dana.
+- Scenariji (lokalno, ispisi u `docs` nisu menjani): S21 1:39:42 → **1:39:43**; **S09 → 1:39:52 (+10 s) sa jednom
+  rečenicom** (nedelja 25.–31. 1, ≈ 73 % plana); S22, S23, S24 ±0 s. Ispis plana (`render`) istoriju forme još ne
+  štampa — rečenice postoje u `state.form.history`.
+- Vlasnik danas (13. 12): 44,34 (1:41:31), raspon 1:39:53 – 1:41:05 – 1:42:31 (tekuća nedelja pripisana unapred).
