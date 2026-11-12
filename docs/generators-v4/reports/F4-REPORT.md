@@ -70,3 +70,37 @@ prekidu. Za 17. 4. ako je cilj maraton: isti model, druga `distanceM`; nije rač
 - Napredak 0,1 VDOT/ned., jedan prag nedeljno: procena raste (> 45,4 posle 12 ned. uz stvarnih 46,2), nikad iznad
   stvarne + 0,15; kašnjenje ≈ 1 VDOT je posledica `k = 0,1` (ravnoteža = stopa / k po treningu). [visoka, račun]
 - Stagnacija: procena ± 0,15, 0 promena tempa. Šum ± 3 %: ≤ 2 promene tempa po histerezi § 7.6 u 12 ned.
+
+## Krug 2 (R12–R14, 12. 11. 2026) — `2d5c95c`
+Testovi: 36 u `fitness/` (+9 u `round2.test.ts`); `fitness + engine + adapters + distances` 458/458 zeleno, ≈ 9 s.
+- **R12 odrađen plan je dokaz.** Svakog dana u 16 nedelja pred trku `G/7` (bez `f_p`) × pridržavanje se pripisuje
+  tekućoj proceni sa udelom 0,65; isti iznos se oduzima od preostalog plafona (`G = min(r·f_v·f_p·W, G_max − pripisano)`,
+  `W` neprekidno). Pridržavanje = opterećenje poslednjih 7 dana / planirano; ≥ 0,85 pun iznos, < 0,6 ništa. Posle
+  trke/testa pripisivanje kreće iznova. Jedna rečenica nedeljno („odrađena po planu…" ili „odrađena oko X %…
+  očekivano vreme oko N s sporije"), pa svaka promena očekivanog vremena ima objašnjenje. [srednja oblik, niska brojevi]
+  Scenariji (lokalno, ispisi nisu menjani): S21 1:39:42 → **1:39:49** (+7 s; ranije 1:40:35), S22 +1 s, S23 +1 s,
+  S24 −30 s; raspon uži. **S09 i dalje +43 s** (1:39:42 → 1:40:25): bez nedeljnih ciljeva plana „planirano" je
+  7 × najveća baza u 6 nedelja, pa se sužavanje broji kao manjak → treba `planned.weeks` (ispod).
+- **R13 pad baze.** Baza ≤ 70 % baze od pre 42 dana → −1 % +5 % po jedinici odnosa ispod 0,7, najviše −3 %; nedeljom i
+  danas; samo uz ≥ 42 dana istorije i bez pauze u prozoru; ne sabira se, vraća se na nulu kad baza poraste ili stigne
+  rezultat. [niska — smanjen obim uz zadržan intenzitet dugo čuva formu, pa je pad namerno blag]
+- **R14.** Prvi rezultat U APLIKACIJI i trka sa hodanjem (neki km > 1,25 × medijane km) → pouzdanost najviše srednja.
+  Trka sa hodanjem se ne koriguje (split). Rezultat bez ranijeg osnova (samo lagani tempo/trčanja) usvaja se ceo (k 1).
+  Svaka korekcija ima rečenicu: split („1:42:01 se računa kao 1:40:42"), delimično usvajanje („Usvaja se 70 %
+  razlike, jer…"), toplota. S19 sada: 2:09:34 sa rečenicom o 70 %, pouzdanost srednja; hodanje se u S19 NE vidi —
+  trčanje nema km (v. ispod).
+
+**Vlasnik (krug 2):** posle trke 44,76 (1:40:42), **srednja** (prvi rezultat u aplikaciji). Danas **44,29 (1:41:37)**:
+R13 — poslednjih 6 nedelja ≈ 68 % ranije baze → −1,1 %. Nedelje posle trke su odrađene 0–48 % → nema pripisivanja.
+HM 13. 12: **1:39:59 – 1:41:11 – 1:42:37**; HM 17. 4. 2027: 1:37:41 – 1:39:39 – 1:42:39 (obim +30 %: 1:37:06 –
+1:39:15). Nedovoljno podataka: „ranija baza" je samo nedelja 27. 9 – 3. 10. sa trkom; 3 trčanja van plana nemaju
+trajanje (ako ih adapter preda sa `source: 'procena'`, ulaze u bazu, pad bi bio manji).
+
+**Šta treba od motora (ne menjam `engine/`):**
+1. `planned` iz postojećeg plana: `baseLoad`/`peakLoad` iz `doc.header.decisions` (ne preračunato iz današnje baze —
+   inače `f_v` pada kako baza raste i očekivano se pomera bez događaja) i `weeks: [{ start, targetLoad }]` iz
+   `doc.weeks` (tip `FitnessPlanned` u `fitness/types.ts`; bez toga sužavanje izgleda kao manjak, S09).
+2. `FormChange.signal`: dodati `'plan'` (odrađen plan) i `'baza'` (pad baze); sada nose `'kvalitet'` i `'pauza'`.
+3. Hodanje u trci: `Run.splits` za trku ili polje `Run.walked?: boolean` (scenario S19 nema ni jedno).
+4. Dnevna opterećenja: `fitness/load.ts` je prepisana formula `engine/load.ts` (`runLoad`, `rollDay`); bolje da motor
+   preda dnevna opterećenja u `facts` ili da `runLoad` pređe u fajl koji `fitness/` sme da uvozi.
