@@ -1,5 +1,4 @@
 # F2 — izveštaj: motor V4 (12. 11. 2026)
-
 ## Šta je urađeno
 `web/src/domain/v4/engine/` (≈ 4 300 redova koda + 2 700 testova i test-podataka), bez ijednog uvoza van foldera:
 `constants.ts`, `vdot.ts` (prvi commit 5c7e09e) · `dates.ts`, `format.ts` (množina, datumi, decimalni zarez) ·
@@ -24,7 +23,6 @@ K1–K5 nad `renderPlan` · izolacija (čita izvor). Primer (a) se poklapa sa SP
 **Nalazi čuvara dozvoljeni na mreži** (ulaz ih traži): 1–2 dana (`ispod-cilja`, `min-nedelja`, `brz-udeo`, `skok`,
 `taper`, `lagan-dugi`); 3 dana (`ispod-cilja`, `min-nedelja`); obim po danu > 70 ili < 25 BO (`ispod-cilja`,
 `lagan-dugi`); start u rampi (`ispod-cilja` do 4. nedelje). Nikad: doza, dugi, prazan, uzastopni teški, trka.
-
 ## Izmene tipova (`types.ts`)
 `Paces.easy` (E 66 % za račun km) · `PlanWeek.longSec` (odlučen dugi pre spremnosti; adapter: najduži dan) ·
 `PlanHeader.adjustments?` + tip `Adjustment` (uzroci spremnosti i ponovljena doza) · `MainSet` continuous / split /
@@ -50,17 +48,14 @@ finish-block / progressive: opciono `by: 'trajanje' | 'duzina'` + tip `WorkUnit`
    se ograničava tako da rad ≤ plafon + 90 s; najmanja doza za deonice = (minReps − 0,5) × deonica.
 9. **`warnings` prima objekat** `{ state, goal, data, decisions, doc }`: vrh u km i najduži dugi se čitaju iz
    izgrađenog plana. Suvi poziv pre generisanja = `plan()` (čist i brz). Dodato upozorenje `bol` (nivo ≥ 7).
-10. **Opterećenje odrađenog trčanja** koristi prag TEKUĆE forme (ne forme na dan trčanja).
-11. **Seme baze** kad ima trčanja a nema `weeklyKm`: prosek istorije.
-12. **Šablon bez pogotka:** najbliži (isti nivo) umesto greške; čuvar `nema-treninga` kad biblioteka nema unos.
-
+10. **Sitno:** opterećenje odrađenog trčanja koristi prag TEKUĆE forme; seme baze bez `weeklyKm` je prosek istorije;
+    šablon bez pogotka → najbliži istog nivoa (izuzetak samo kad `templates` nema nijedan šablon).
 ## Zapažanja (nisu odstupanja, traže pažnju)
 - Jedna trka u retkoj istoriji (bez ostalih trčanja) podiže bazu ≈ 16 % (§ 5.3 doslovno) → F4/F9.
 - Trčanje bez krugova se boduje po prosečnom tempu: dan kvaliteta vredi ≈ 8 % manje od planiranog, pa pravilo rasta
   posle pauze veže jače (u (b) 155 umesto 169 BO za 4. nedelju).
 - Ostatak laganog budžeta ispod `minEasySec` propada (§ 6.2 k. 7): sa 3 dana, dugi sa blokom + jak kvalitet izbace
   lagan dan. U smanjenoj nedelji blok u dugom prvi troši budžet, pa kvalitet usred nedelje može da otpadne.
-- `createPlan` baca izuzetak samo ako `DistanceData.templates` nema nijedan šablon (greška podataka).
 
 ## Šta F3 (podaci distance) mora da zna
 **Polja koja određuju obim po nedeljama:** `template.startPct` (`P = B / startPct`), `WeekIntent.loadPct`
@@ -75,7 +70,6 @@ daje 28,4 km (primer: 0,72 / 0,74), `× 1,04` daje 29,5 km (sintetička: 0,75 / 
 Ostalo: svaki podražaj kvaliteta i bloka mora imati red u `doseCaps` (inače doza 0 → lagan dan); blok je unos
 `kind: 'long'` sa svojim podražajem; `stimuli[k]` ide na `qualityDays[k]`; za ≤ 3 dana treba lakši šablon; deonice
 neka imaju `requires.minDoseSec`; tekstovi `{n} {rep} {dose} {rec} {len}`, opciono `race`, `faza.<id>`, `napor.<zona>`.
-
 ## Šta F4 i F5 moraju da znaju
 **F4:** `buildState(facts, goal, data, estimateForm)`; poziva se dva puta (`planned: null`, pa `{ baseLoad,
 peakLoad }`). Zaglavlje nosi snimak; `form-update` izvodi `deriveEvents` (0,5 VDOT, pouzdanost ≥ srednja, 14 dana);
