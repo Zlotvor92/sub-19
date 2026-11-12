@@ -130,3 +130,10 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   deonice rada, jedno objašnjenje po događaju.
 - Kapija F2: uslovno prošla (F3 i F5 smeju da rade nad javnim izvozom; potpisi se ne menjaju).
 - F5 adapteri: brief `briefs/F5-ADAPTERS.md`, tab se otvara sada.
+
+### 11:00 — F2 drugi krug primljen (`478acf9`); moj pregled: 139 testova zeleno, primer posle 7 dana bolesti razuman [visoka]
+- Rampa 14 dana; nedelje posle bolesti 18 → 25,7 → 31 km (bilo 20/26/22); lagani dani ostaju; tempo uz deonicu.
+- Presude: „poslednji dugi" = najduži u 28 dana pre uzroka; pravilo bloka se gasi posle 42 dana; urađen dan plana
+  bez krugova se boduje planiranom težinom × stvarno trajanje (poslednja stavka, u toku). Posle toga motor zamrznut.
+- Tabovi: F3 HM `session_01GnHHiamNMpKXMSuJ6DLNNH` radi (prva verzija `84f7541`); F5 adapteri
+  `session_01GnHHiYQ5e5u9uGHQ6jd7Kb` radi; F2 pri kraju; trener čeka ispise.
