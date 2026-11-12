@@ -120,3 +120,13 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - F4 tab `session_01GnHHiYchQtH6mmwpQBMi1S`: ZAVRŠEN.
 
 ### 10:30 — motor: `plan` + `renderPlan` rade (`c2ee685`) → pokrenut F3 (HM podaci, Opus) `session_01GnHHiamNMpKXMSuJ6DLNNH`
+
+### 10:50 — F2 motor isporučen (`0596332`); moj pregled: 134 testa zelena (2,2 s), typecheck čist [visoka]
+- Dobro: plan iz stanja, dan posle trke bez brzog, replan sa objašnjenjima, mreža determinizma 224 ulaza, čuvar.
+- VRAĆENO NA DORADU (drugi krug, poruka tabu): (1) SPEC § 14.6 nije ugrađen (rampa po razlogu pauze i dalje 1,5 ×,
+  do 21 dan); (2) povratak posle 7 dana bolesti prestrog — nedelje posle rampe 20/26/22 km umesto 32–36 jer pravilo
+  rasta uzima nedelje pauze/rampe kao osnovu → odluka: te nedelje ne ulaze u osnovu pravila rasta (pauza 3–13
+  dana); (3) lagan dan ne nestaje zbog ostatka budžeta ispod minimuma kad ima ≥ 3 dana; (4) ispis: tempo samo uz
+  deonice rada, jedno objašnjenje po događaju.
+- Kapija F2: uslovno prošla (F3 i F5 smeju da rade nad javnim izvozom; potpisi se ne menjaju).
+- F5 adapteri: brief `briefs/F5-ADAPTERS.md`, tab se otvara sada.
