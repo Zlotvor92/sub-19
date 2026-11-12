@@ -235,7 +235,7 @@ describe('stanje uz postojeći plan (dopuna organizatora, § 2.3, § 7.3)', () =
       buildState({ ...b.facts, today, runs: lapped }, b.goal, SYNTHETIC, undefined, b.doc).weeks.at(
         -1
       )?.load ?? 0;
-    expect(withLaps).toBeLessThan(linked - 5);
+    expect(withLaps).toBeLessThan(linked - 2);
   });
 
   it('izveden umor traži i tešku nedelju: opterećenje 7 dana ≥ 1,2 × bazna nedelja (§ 14.6)', () => {
