@@ -196,3 +196,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - OCENA pokrenuta: trener (deo Plan na 12 profila + 24 scenarija; personalizacija bez ispisa → zbirna 0,625/0,375)
   i DRUGI SUDIJA `session_01GnHHiXPTR6Wn73KadMppfu` (Fable; 12 planova + 2 plana vlasnika + 8 scenarija; piše u
   `docs/generators-v4/judge2/`). F2 i F3 tabovi miruju (ne arhivirani — trebaće za ispravke posle ocene).
+
+### 15:25 — OCENA TRENERA, HM V4 krug 1 (`coach/ROUND-V4-HM-01.md`, trener `87c792bc`) [srednja — sud jednog sudije]
+- PLAN: V4 68,4 naspram v3 77,6 (−9,2); na ≥ 80: v3 7/12, V4 0/12. Prilagođavanje 76,5 (E1 85 · bolest 72 ·
+  propušteno 71 · bol 68 · dan posle HM 80 · ništa 82). Zbirna (bez personalizacije) 71,4.
+- KAPIJA F3 NIJE PROŠLA (uslov: ≥ 77,6).
+- Glavni uzroci (trener): (1) višak obima u specifičnoj fazi završava u dva lagana dana od 14–17 km, skok 14–20 %
+  posle provere, vrh × 1,5 od polaznog; (2) nedelja trke predugačka (lagano 90 min pet dana pred trku); (3) osnova
+  ispod sadašnjeg obima kod većih obima (kvalitet „pojede" budžet km); (4) prognoza se pogoršava i kad trkač radi
+  sve po planu; (5) propušten ključni trening → ni reči; (6) bol 4/10 → posle 7 dana pun plan; (7) bolest briše
+  proveru forme, tekst kaže 14 dana bez brzog a 11. dana je tempo trke; (8) test 5 km prvog utorka, sitnice ispisa.
+- MOJA GREŠKA: stavke (1) i delom (2) su posledica mojih zahteva F3-u od 11:00–15:10 (vrh 38–40 km za vlasnika,
+  „V4 ≥ v3 po vrhu i dugom", vrh +50 % za 16+ nedelja, udeo dugog 40–42 %). Merio sam vrh km i najduži dugi, a ne
+  raspodelu po danima i rast; trener kaže vrh ≤ × 1,40 i lagan dan ≤ 65 % dugog. Ispravljam u krugu 2.
+- Čekam drugog sudiju pre naloga za krug 2 (da se ne popravlja po jednom mišljenju).

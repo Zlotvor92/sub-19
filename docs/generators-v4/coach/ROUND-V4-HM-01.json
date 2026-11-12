@@ -1,0 +1,257 @@
+{
+ "round": "V4-HM-01",
+ "date": "2026-11-12",
+ "source": "origin/claude/v4 @ 5c26d991",
+ "plan_average": 68.4,
+ "v3_average": 77.6,
+ "plans_ge80": 0,
+ "adaptation_average": 76.5,
+ "personalization": null,
+ "combined": 71.4,
+ "combined_formula": "0.625*Plan+0.375*Prilagodjavanje (personalizacija nije merena)",
+ "plans": [
+  {
+   "profile": "p01",
+   "v3": 81.0,
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 9,
+    "taper": 6,
+    "clarity": 8
+   },
+   "v4_old_scale": 71.0,
+   "v4_with_checks": 71.0,
+   "delta_vs_v3": -10.0,
+   "k_findings": [
+    "K7"
+   ]
+  },
+  {
+   "profile": "p02",
+   "v3": 81.0,
+   "scores": {
+    "fit": 6,
+    "quality": 8,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 9,
+    "taper": 6,
+    "clarity": 8
+   },
+   "v4_old_scale": 69.0,
+   "v4_with_checks": 69.0,
+   "delta_vs_v3": -12.0,
+   "k_findings": [
+    "K7",
+    "K8"
+   ]
+  },
+  {
+   "profile": "p03",
+   "v3": 74.5,
+   "scores": {
+    "fit": 6,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 6,
+    "specificity": 8,
+    "taper": 4,
+    "clarity": 8
+   },
+   "v4_old_scale": 64.0,
+   "v4_with_checks": 64.0,
+   "delta_vs_v3": -10.5,
+   "k_findings": [
+    "K7"
+   ]
+  },
+  {
+   "profile": "p04",
+   "v3": 80.0,
+   "scores": {
+    "fit": 6,
+    "quality": 8,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 8
+   },
+   "v4_old_scale": 70.5,
+   "v4_with_checks": 70.5,
+   "delta_vs_v3": -9.5,
+   "k_findings": []
+  },
+  {
+   "profile": "p05",
+   "v3": 81.0,
+   "scores": {
+    "fit": 6,
+    "quality": 8,
+    "progression": 6,
+    "recovery": 7,
+    "specificity": 9,
+    "taper": 7,
+    "clarity": 8
+   },
+   "v4_old_scale": 71.5,
+   "v4_with_checks": 71.5,
+   "delta_vs_v3": -9.5,
+   "k_findings": [
+    "K7"
+   ]
+  },
+  {
+   "profile": "p06",
+   "v3": 71.0,
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 7,
+    "recovery": 8,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 8
+   },
+   "v4_old_scale": 69.5,
+   "v4_with_checks": 69.5,
+   "delta_vs_v3": -1.5,
+   "k_findings": []
+  },
+  {
+   "profile": "p07",
+   "v3": 75.0,
+   "scores": {
+    "fit": 7,
+    "quality": 8,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 8
+   },
+   "v4_old_scale": 74.0,
+   "v4_with_checks": 74.0,
+   "delta_vs_v3": -1.0,
+   "k_findings": []
+  },
+  {
+   "profile": "p08",
+   "v3": 74.5,
+   "scores": {
+    "fit": 6,
+    "quality": 6,
+    "progression": 7,
+    "recovery": 6,
+    "specificity": 7,
+    "taper": 5,
+    "clarity": 8
+   },
+   "v4_old_scale": 63.5,
+   "v4_with_checks": 63.5,
+   "delta_vs_v3": -11.0,
+   "k_findings": []
+  },
+  {
+   "profile": "p09",
+   "v3": 80.0,
+   "scores": {
+    "fit": 5,
+    "quality": 8,
+    "progression": 5,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 6,
+    "clarity": 7
+   },
+   "v4_old_scale": 62.0,
+   "v4_with_checks": 62.0,
+   "delta_vs_v3": -18.0,
+   "k_findings": [
+    "K7"
+   ]
+  },
+  {
+   "profile": "p10",
+   "v3": 73.5,
+   "scores": {
+    "fit": 5,
+    "quality": 7,
+    "progression": 6,
+    "recovery": 5,
+    "specificity": 8,
+    "taper": 4,
+    "clarity": 7
+   },
+   "v4_old_scale": 59.5,
+   "v4_with_checks": 59.5,
+   "delta_vs_v3": -14.0,
+   "k_findings": [
+    "K7"
+   ]
+  },
+  {
+   "profile": "p11",
+   "v3": 80.0,
+   "scores": {
+    "fit": 8,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 8,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 8
+   },
+   "v4_old_scale": 75.5,
+   "v4_with_checks": 75.5,
+   "delta_vs_v3": -4.5,
+   "k_findings": []
+  },
+  {
+   "profile": "p12",
+   "v3": 80.0,
+   "scores": {
+    "fit": 7,
+    "quality": 7,
+    "progression": 7,
+    "recovery": 7,
+    "specificity": 8,
+    "taper": 7,
+    "clarity": 7
+   },
+   "v4_old_scale": 71.0,
+   "v4_with_checks": 71.0,
+   "delta_vs_v3": -9.0,
+   "k_findings": []
+  }
+ ],
+ "scenarios": {
+  "s01": 86.5,
+  "s02": 85,
+  "s03": 85,
+  "s04": 85,
+  "s05": 71,
+  "s06": 76.5,
+  "s07": 68.5,
+  "s08": 72.5,
+  "s09": 69,
+  "s10": 84.5,
+  "s11": 70.5,
+  "s12": 61,
+  "s13": 70,
+  "s14": 68,
+  "s15": 63.5,
+  "s16": 70,
+  "s17": 83,
+  "s18": 80,
+  "s19": 78.5,
+  "s20": 80,
+  "s21": 82,
+  "s22": 82,
+  "s23": 82,
+  "s24": 82
+ }
+}
