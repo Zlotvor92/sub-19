@@ -235,3 +235,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Limiti (vlasnik, 16:10): petočasovni nije problem; nedeljni 27 %, Fable 45 %, postoji pun reset. Paralelizam se
   koristi UNUTAR polumaratona (motor, forma, podaci, sudije), ne preko distanci.
 - Arhivirano po nalogu vlasnika (16:05): F1, stari F2, stari F3, F5, drugi sudija krug 1 — sve prethodno gurnuto.
+
+### 16:18 — MOTOR KRUG 2 primljen (`965f8a6`, izveštaj `5ae5289`); moj pregled: motor + forma + adapteri + izolacija 480 zeleno (7 s), typecheck čist [visoka]
+- R1–R11 ugrađeni, svako sa testom (34 nova). Bitna odstupanja koja prihvatam: pravilo rasta meri MINUTE (ne
+  bodove) — skok km više ne zavisi od kvaliteta; cilj nedelje = obim + dodatno opterećenje kvaliteta; propušten
+  ključni trening se beleži i kad se treninzi ne menjaju (rečenica); dan otpada tek kao poslednje, uz upozorenje.
+- Vrh u km sada izlazi 1,07–1,30 × polazno; odluka: kod 4 dana cilj +30–35 % km, nikad > 1,40 × — podešava tab D
+  kroz `maxPeakOverBase`.
+- Ispis: zaglavlje kaže polazni obim i istinu o tempu trke („današnja forma … očekivano vreme traži …").
+- Forma F4 krug 2 (`4818049`): prognoza stabilna uz odrađen plan (S21: +7 s umesto +53 s), pad baze, pouzdanost
+  prvog rezultata. Motor sada predaje formi ciljeve nedelja iz plana (S09).
+- `distances/hm`: 14 testova crveno (očekivano) dok tab D ne preradi podatke.
+- Tab D (podaci HM krug 2, Opus, nov): `session_01GnHHiZx2nJ3RDnPnDFQcFZ` — R15–R20, mašinska kapija kao test,
+  ispisi + parovi personalizacije, tabela „zamerka → rešeno / nije rešeno". Tab M `…RtiyqqMB7Bn2wiFM`: završen, držim
+  ga za eventualne zahteve D prema motoru.
