@@ -205,8 +205,9 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
     b.facts.profile.longestRecentKm === undefined
   )
     return 'nedelja 1: polazni dugi = 30 % nedelje (bez podatka o najdužem trku) — zahtev motoru';
-  const light = st?.week.intent.kind === 'taper' || st?.week.intent.kind === 'race';
-  if (volume && light && perDay < 45) return 'sužavanje malog obima: lagan dan < 25 min otpada';
+  const light = ['taper', 'race', 'recovery'].includes(st?.week.intent.kind ?? '');
+  if (volume && light && perDay < 45)
+    return 'sužavanje ili rasterećenje malog obima: lagan dan ostaje na najkraćih 25 min';
   if (f.check === 'ispod-cilja' && st?.hasTest === true)
     return 'rampa posle provere forme (čuvar je ne vidi — zahtev motoru)';
   const before =
