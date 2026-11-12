@@ -52,3 +52,39 @@ Brojevi u „dobar trener" su opsezi, ne jedina tačna vrednost; sudija ocenjuje
 | **P3** | p04: HM 2:04:13, 55 km, 5 dana, 20 ned | svi trkovi na 6:15–6:25/km (brže od lagane zone 6:47–7:28), nikad kvalitet, dugi 14–15 km | lagani na 7:05–7:15, T trening jednom nedeljno već 3 meseca, dugi 18 km svake druge nedelje | A (ne B) dobija: izričito sporije lagane dane sa objašnjenjem, prvi T mali (15–20 min) i 2 nedelje kasnije, dugi od 14–15 km; B: T od 28 min u ned 1–2, dugi od 17–18 km, blok u dugom nedelju-dve ranije. Vrh obima isti (satni plafon). |
 
 Za sve parove: ako istorije nema, plan se ponaša kao „A bez dokaza" — bira srednju vrednost i kaže šta ne zna (C5).
+
+## 4. Parovi P1–P3 u obliku SPEC § 2 (`profile`, `runs[]`, `pauses[]`, `pain[]`)
+
+`today` = 2026-11-01 (plan počinje 2. 11.). `runs[]` je zadat pravilom po nedeljama (najstarija prva); svako trčanje
+ima `date`, `distanceM`, `durationSec` iz navedenog tempa; `splits`/`laps` samo gde piše. Cilj i `availability` kao u
+profilu. `profile` je u paru ISTI osim polja koja su navedena.
+
+**P1 — p01** · `profile { weeklyKm: 40, recentResult: 10 km 46:00, beginner: false, yearsRunning: 4 }`, 4 dana (uto, čet, sub, ned).
+- **A (stabilan):** `recentResult.date` 2026-10-11; `longestRecentKm: 18`. `runs`: 12 nedelja, svaka 4 trčanja:
+  uto 8 km, čet 9 km, sub 7–8 km, ned 15–16 km (18 km u nedeljama 4, 8, 12); lagani na 5:50–6:00/km; svake druge
+  nedelje četvrtak ima `laps` 3 × 1600 m na 4:42 (oporavak 1:00 džog); nedelja 9: trka 10 km 46:00 (`effort: race`)
+  umesto dugog. Zbir 38–42 km. `pauses: []`, `pain: []`.
+- **B (povratnik):** `recentResult.date` 2026-03-01; `longestRecentKm: 12`. `runs`: samo poslednjih 5 nedelja, zbir
+  12 / 22 / 30 / 36 / 40 km, broj trčanja 3 / 3 / 4 / 4 / 4, najduže 6 / 8 / 10 / 11 / 12 km, sve lagano na
+  6:05–6:20/km, bez krugova. `pauses: [{ from: 2026-06-29, to: 2026-09-27, reason: 'pauza' }]`, `pain: []`.
+
+**P2 — p11** · `profile { weeklyKm: 20, recentResult: 10 km 56:02, beginner: true }`, 4 dana (uto, čet, sub, ned).
+- **A (8 meseci bez prekida):** `yearsRunning: 0,7`; `recentResult.date` 2026-10-04; `longestRecentKm: 10`. `runs`:
+  12 nedelja, 3–4 trčanja, zbir 17–21 km, najduže 8–10 km, lagani 7:00–7:15/km. `pauses: []`, `pain: []`.
+- **B (6 nedelja, tegoba u istoriji):** `yearsRunning: 0,1`; `recentResult.date` 2026-10-25 (test 10 km, `effort:
+  test`); `longestRecentKm: 10` (taj test). `runs`: 6 nedelja, zbir 8 / 11 / 14 / 17 / 19 / 20 km, broj trčanja
+  3 / 3 / 3 / 4 / 4 / 4, najduže pre testa 4 / 5 / 6 / 7 / 8 km, lagani 7:15–7:40/km. `pauses: []`.
+  `pain: [{ date: 2025-11-10, area: 'potkolenica', level: 5, resolvedOn: 2025-12-15 }]`.
+
+**P3 — p04** · `profile { weeklyKm: 55, recentResult: polumaraton 2:04:13 (2026-10-18), beginner: false, yearsRunning: 3 }`, 5 dana.
+- **A (sve u istom, prebrzom tempu):** `longestRecentKm: 15`. `runs`: 12 nedelja × 5 trčanja, 10–12 km i dugi 14–15 km,
+  SVA na 6:15–6:25/km (lagana zona iz rezultata je 6:47–7:28), `avgHr` 158–162, bez krugova, bez ijednog bržeg dela.
+- **B (spori lagani + redovan prag):** `longestRecentKm: 18`. `runs`: 12 nedelja × 5 trčanja: tri lagana 9–11 km na
+  7:05–7:15/km (`avgHr` 138–142), četvrtak sa `laps` 4–5 km na 5:38–5:42, dugi 15 km / 18 km naizmenično.
+
+**Šta sadašnji oblik stanja ne može da prenese (zahtev za SPEC):**
+1. **Godine** — nema polja; par P2 ih zato ne koristi. Predlog: `profile.birthYear` (opciono); posle 45 češće rasterećenje.
+2. **Stara tegoba** — `buildState` čuva `pain` samo ako je nerazrešen ili razrešen u poslednjih 14 dana (§ 2.3), pa
+   B iz P2 izgleda isto kao trkač bez tegoba. Predlog: zadržati razrešene tegobe 12 meseci kao `painHistory`
+   (područje, trajanje) — menja samo opreznost rasta i izbor sadržaja, ne rampu.
+3. **Starost rezultata** — potrebna je `recentResult.date` (pouzdanost forme po § 7.5 već zavisi od nje).
