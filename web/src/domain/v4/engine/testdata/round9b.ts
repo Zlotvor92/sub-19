@@ -1,7 +1,7 @@
 /* KRUG 9b — provere nad planom bez imena distance (koriste ih testovi foldera distanci). */
-import { addDays, mondayOf } from '../dates';
+import { addDays, diffDays, mondayOf } from '../dates';
 import { weekCost } from '../guard';
-import { paceCtxOf } from '../load';
+import { paceCtxOf, summarize } from '../load';
 import { adjustmentWindow } from '../readiness';
 import type { PlanDoc, RunnerFacts, Weekday } from '../types';
 
@@ -42,12 +42,17 @@ export function taperShape(id: string, doc: PlanDoc, runDays: readonly Weekday[]
   const want = Math.min(runDays.length, Math.max(0, ...built.map(runsOf)));
   for (const w of [m2, m1])
     if (runsOf(w) < want)
-      bad.push(`${id} n${String(w.index)} ${String(runsOf(w))} trčanja uz ${String(want)} u gradnji`);
+      bad.push(
+        `${id} n${String(w.index)} ${String(runsOf(w))} trčanja uz ${String(want)} u gradnji`
+      );
   return bad;
 }
 
 /** Mala mreža ulaza (dani × nedelje × obim × forma) za proveru svojstava. */
-export function smallGrid(distanceM: number, formSecs: readonly number[]): {
+export function smallGrid(
+  distanceM: number,
+  formSecs: readonly number[]
+): {
   label: string;
   runDays: Weekday[];
   facts: RunnerFacts;
@@ -85,3 +90,45 @@ export function smallGrid(distanceM: number, formSecs: readonly number[]): {
   return out;
 }
 
+/** A10 (b): posle pauze povratak traje najviše 2 × trajanje + 7 dana (≤ 3 nedelje); od prve nedelje posle toga plan je
+    ili prvobitan, ili srazmerno niži uz rečenicu u tekstu izmene — ne rampa do trke. */
+export function returnWindow(
+  id: string,
+  before: PlanDoc,
+  after: PlanDoc,
+  changes: readonly { reason?: string }[]
+): string[] {
+  const bad: string[] = [];
+  const pauses = (after.header.adjustments ?? []).flatMap((a) => (a.kind === 'pause' ? [a] : []));
+  const p = pauses[pauses.length - 1];
+  if (p === undefined) return bad;
+  const length = diffDays(p.to, p.from) + 1;
+  const limit = addDays(p.to, Math.min(2 * length + 7, 21));
+  const race = after.header.goal.raceDate;
+  const ctxA = paceCtxOf(after.header);
+  const ctxB = paceCtxOf(before.header);
+  const longOf = (w: PlanDoc['weeks'][number], ctx: typeof ctxA): number =>
+    Math.max(
+      0,
+      ...w.days.map((d) => (d.workout?.kind === 'long' ? summarize(d.workout, ctx).durationSec : 0))
+    );
+  const lowered = changes.some((c) => (c.reason ?? '').includes('ostatak plana je srazmerno niži'));
+  for (const w of after.weeks) {
+    if (w.start <= limit || w.intent.kind === 'race') continue;
+    const old = before.weeks.find((x) => x.start === w.start);
+    if (old === undefined) continue;
+    /* pomerena provera forme menja svoju nedelju — to nije rampa */
+    if ([...w.days, ...old.days].some((d) => d.workout?.kind === 'test')) continue;
+    const km = weekCost(w, race, ctxA).km;
+    const kmOld = weekCost(old, race, ctxB).km;
+    const same = Math.abs(km - kmOld) <= 0.5 && Math.abs(longOf(w, ctxA) - longOf(old, ctxB)) <= 60;
+    if (same) continue;
+    if (!lowered)
+      bad.push(
+        `${id} n${String(w.index)} ${km.toFixed(1)} ≠ ${kmOld.toFixed(1)} km posle ${limit}`
+      );
+    else if (km > kmOld + 0.5)
+      bad.push(`${id} n${String(w.index)} spušten ostatak veći od prvobitnog`);
+  }
+  return bad;
+}

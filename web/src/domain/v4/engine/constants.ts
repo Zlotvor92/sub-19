@@ -290,6 +290,13 @@ export const MOVED_TEST_MIN_DAYS_BEFORE_RACE = 21;
 export const RETURN_LONG_JUMP_SHARE = 1.25;
 export const RETURN_LONG_JUMP_SEC = 1200;
 export const RETURN_WEEK_JUMP_SHARE = 1.2;
+/** Krug 9b (A10 b): prozor povratka posle prekida — najviše 2 × trajanje prekida + 7 dana, i ne duže od 3 nedelje;
+    posle njega prvobitan plan koji ne staje u granicu skoka se spušta srazmerno (niži vrh). */
+export const RETURN_WINDOW_PER_BREAK_DAY = 2;
+export const RETURN_WINDOW_EXTRA_DAYS = 7;
+export const RETURN_WINDOW_MAX_DAYS = 21;
+/** Ostatak plana je „spušten" kad je najveća nedelja posle prozora bar 5 % niža od prvobitne. */
+export const LOWERED_REST_MIN_SHARE = 0.05;
 /** R2 (krug 6): prvi dugi posle prekida (pauza, bol) najmanje 62 % poslednjeg dugog pre njega (trener: 60–65 %). */
 export const RETURN_FIRST_LONG_SHARE = 0.62;
 /** Z3 (krug 7): „prvi rad zone posle bola ≤ 60 %" važi do 6 nedelja posle bola. */

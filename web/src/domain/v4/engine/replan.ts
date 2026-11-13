@@ -27,6 +27,10 @@ import {
   RETURN_LONG_JUMP_SHARE,
   TAIL_MAX_DAYS,
   RETURN_WEEK_JUMP_SHARE,
+  LOWERED_REST_MIN_SHARE,
+  RETURN_WINDOW_EXTRA_DAYS,
+  RETURN_WINDOW_MAX_DAYS,
+  RETURN_WINDOW_PER_BREAK_DAY,
   PAIN_FIRST_ZONE_MAX_DAYS,
   PAIN_MID_DOSE_FACTOR
 } from './constants';
@@ -54,6 +58,7 @@ import {
   fmtDateRange,
   fmtDateYear,
   fmtDistance,
+  fmtMinutes,
   fmtNumber,
   fmtPace,
   NEXT
@@ -81,6 +86,7 @@ import type {
   Paces,
   ReplanFn,
   RunnerState,
+  Seconds,
   Transfer,
   Warning
 } from './types';
@@ -554,8 +560,16 @@ function onPause(
   const until = full
     ? rampEnd
     : minDate(addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc));
-  /* R2 (krug 6): izlazak iz prozora bez skoka */
-  const smooth = smoothExit(built, doc, rampEnd, state, data);
+  /* R2 (krug 6): izlazak iz prozora bez skoka; krug 9b (A10 b): povratak traje najviše 2 × prekid + 7 dana (≤ 3
+     nedelje) — posle toga se ostatak plana spušta srazmerno */
+  const limit = addDays(
+    ev.to,
+    Math.min(
+      RETURN_WINDOW_PER_BREAK_DAY * length + RETURN_WINDOW_EXTRA_DAYS,
+      RETURN_WINDOW_MAX_DAYS
+    )
+  );
+  const smooth = smoothExit(built, doc, rampEnd, state, data, limit > rampEnd ? limit : rampEnd);
   return {
     doc: full ? refreshWarnings(smooth.doc, state, data) : smooth.doc,
     until: smooth.until > until ? smooth.until : until
@@ -575,7 +589,10 @@ function smoothExit(
   _original: PlanDoc,
   end: IsoDate,
   state: RunnerState,
-  data: DistanceData
+  data: DistanceData,
+  /** Krug 9b (A10 b): poslednji dan prozora povratka; posle njega se ostatak plana spušta srazmerno umesto da se
+      povratak produžava. `null`: bez granice. */
+  limit: IsoDate | null = null
 ): { doc: PlanDoc; until: IsoDate } {
   const ctxB = buildCtx(after.header, data);
   const pace = paceCtxOf(after.header);
@@ -597,16 +614,22 @@ function smoothExit(
   let until = end;
   if (base < 0 || first < 0) return { doc: after, until };
   const n = weeks.length;
-  for (let i = Math.max(first, base + 1); i < n - 2; i += 1) {
+  /* A10 b: udeo prvobitnog plana posle prozora povratka (niži vrh) */
+  let scale: number | null = null;
+  let firstScaled = -1;
+  let scaleChecked = false;
+  for (let i = Math.max(first, base + 1); i < n - 1; i += 1) {
     const w = weeks[i];
     if (w === undefined) break;
+    /* sužavanje (nedelja −1) se dira samo kad se ostatak plana spušta */
+    if (i === n - 2 && scale === null) break;
     const lo = Math.max(base, i - 3);
     const prev = weeks.slice(lo, i);
     const pKm = Math.max(...prev.map(km));
     const curKm = km(w);
     const curLong = longSec(w);
     /* Z1 (krug 7): posle prekida bez izuzetka prvobitnog plana (ni za nedelju) */
-    const kmCap = RETURN_WEEK_JUMP_SHARE * pKm;
+    let kmCap = RETURN_WEEK_JUMP_SHARE * pKm;
     /* Z1 (krug 7): dugi se meri od POSLEDNJEG dugog (ne najvećeg od tri) i važi i preko rasterećenja/provere —
        posle prekida nema izuzetka „prvobitan plan ima isti skok" */
     const lastLong =
@@ -614,9 +637,50 @@ function smoothExit(
         .reverse()
         .map((x) => longSec(x))
         .find((x) => x > 0) ?? 0;
-    const longCap = Math.max(RETURN_LONG_JUMP_SHARE * lastLong, lastLong + RETURN_LONG_JUMP_SEC);
-    const longOver = lastLong > 0 && curLong > longCap + 60;
-    const kmOver = pKm > 0 && curKm > kmCap + 0.5;
+    let longCap = Math.max(RETURN_LONG_JUMP_SHARE * lastLong, lastLong + RETURN_LONG_JUMP_SEC);
+    let longOver = lastLong > 0 && curLong > longCap + 60;
+    let kmOver = pKm > 0 && curKm > kmCap + 0.5;
+    /* A10 b: posle prozora povratka prvobitan plan koji ni tada ne staje u granicu skoka se spušta srazmerno —
+       svaka sledeća nedelja (i sužavanje) je isti udeo prvobitne, pa vrh je niži, a prelazi ostaju prvobitni */
+    /* mali manjak (≥ 95 % prvobitnog) zatvara obična rampa — ostatak se ne spušta zbog nekoliko procenata */
+    if (!scaleChecked && limit !== null && w.start > limit && (longOver || kmOver)) {
+      scaleChecked = true;
+      const f = Math.min(
+        kmOver && curKm > 0 ? kmCap / curKm : 1,
+        longOver && curLong > 0 ? longCap / curLong : 1
+      );
+      if (f < 1 - LOWERED_REST_MIN_SHARE) {
+        firstScaled = i;
+        scale = f;
+      }
+    }
+    if (scale !== null) {
+      /* i u spuštenom ostatku prelazi ostaju u granici skoka (R2) */
+      kmCap = Math.min(scale * curKm, kmCap);
+      /* dugi gradnje ne pada ispod dugog za distancu (`adequate`) kad granica skoka to dozvoljava */
+      const a = data.adequate;
+      const need =
+        w.intent.kind === 'build' || w.intent.kind === 'peak'
+          ? Math.min(
+              curLong,
+              a.minLongSec ?? Number.POSITIVE_INFINITY,
+              (a.longCheckKm ?? a.minLongKm) * pace.paces.easy
+            )
+          : 0;
+      /* oblik dugog prati stvarni prethodni dugi: odnos prema prvobitnom planu na istom mestu (rasterećenje posle
+         dugog koji je ostao blizu prvobitnog ne pada na udeo cele izmene) */
+      const lastIdx = (() => {
+        for (let j = i - 1; j >= lo; j -= 1) if (longSec(weeks[j]) > 0) return j;
+        return -1;
+      })();
+      const origLast = lastIdx < 0 ? 0 : longSec(after.weeks[lastIdx]);
+      const shapeScale = origLast > 0 ? Math.min(1, Math.max(scale, lastLong / origLast)) : scale;
+      const scaledLong = Math.max(shapeScale * curLong, need);
+      longCap = lastLong > 0 ? Math.min(scaledLong, longCap) : scaledLong;
+      longOver = curLong > longCap + 60;
+      kmOver = curKm > kmCap + 0.5;
+      if (!longOver && !kmOver) continue;
+    }
     /* povratak je gotov kod prve nedelje koja staje u granicu — dalje važi prvobitan plan */
     /* Z1 (krug 7): nedelja rasterećenja ili provere ne završava povratak — završava ga nedelja gradnje koja staje */
     if (!longOver && !kmOver) {
@@ -663,7 +727,9 @@ function smoothExit(
     /* lagani dani na najmanjem: ostatak viška skida dugi, ne ispod poslednjeg dugog */
     let shrunk: PlanWeek = { ...w, days: finalDays };
     const rest = km(shrunk) - kmCap;
-    if (rest > 0.5) {
+    /* A10 b: u spuštenom ostatku dugi ostaje srazmeran (višak obima od najkraćih laganih dana ne skida dugi), osim
+       u prvoj spuštenoj nedelji, gde važi granica skoka */
+    if (rest > 0.5 && (scale === null || firstScaled === i)) {
       shrunk = {
         ...shrunk,
         days: shrunk.days.map((d): PlanDay => {
@@ -690,7 +756,9 @@ function smoothExit(
     /* E2: u skraćenoj nedelji dugi ≤ `shortenedLongMaxShare` nedelje (D' = udeo × ostatak / (1 − udeo)) */
     const lshare = data.safety.shortenedLongMaxShare;
     const longDay = shrunk.days.find((d) => d.workout?.kind === 'long');
+    /* A10 b: spušten ostatak čuva oblik nedelje (isti udeo i za dugi) */
     if (
+      scale === null &&
       lshare !== undefined &&
       longDay?.workout != null &&
       isMutable(longDay, after.header, state.today, done)
@@ -719,6 +787,45 @@ function smoothExit(
             )
           };
       }
+    }
+    /* A10 b: u spuštenom ostatku i brz rad (kvalitet, blok u dugom) srazmerno, ne ispod najmanjeg oblika */
+    if (scale !== null) {
+      const f = scale;
+      shrunk = {
+        ...shrunk,
+        days: shrunk.days.map((d): PlanDay => {
+          const x = d.workout;
+          if (x === null || x.workSec <= 0 || !isMutable(d, after.header, state.today, done))
+            return d;
+          const def = data.library.find((y) => y.id === x.libraryId);
+          if (def === undefined) return d;
+          if (x.kind === 'quality') {
+            const dose = Math.max(minDoseOf(def, ctxB), Math.floor((x.workSec * f) / 60) * 60);
+            if (dose >= x.workSec) return d;
+            const workout = realize(
+              {
+                type: 'quality',
+                def,
+                dose,
+                slot: { place: 'quality', stimulus: def.stimulus, index: 1, phase: w.intent.phase }
+              },
+              ctxB
+            );
+            return workout === null ? d : { ...d, origin: 'template', workout };
+          }
+          if (x.kind === 'long') {
+            const sec = summarize(x, pace).durationSec;
+            const dose = Math.floor((x.workSec * f) / 60) * 60;
+            if (dose >= x.workSec) return d;
+            const workout = realize(
+              { type: 'long', sec: Math.round(sec / 60) * 60, def, dose, slot: null },
+              ctxB
+            );
+            return workout === null ? d : { ...d, origin: 'template', workout };
+          }
+          return d;
+        })
+      };
     }
     /* A6 (krug 9): skraćena nedelja ne prelazi udeo brzog rada — kraći lagani dani ne smeju da podignu udeo, pa se
        doze kvaliteta srazmerno smanjuju (ne ispod najmanjeg oblika unosa) */
@@ -762,7 +869,8 @@ function smoothExit(
       targetLoad: Math.round(w.targetLoad * share),
       ...(w.volumeMin === undefined ? {} : { volumeMin: Math.round(w.volumeMin * share * 10) / 10 })
     };
-    until = addDays(w.start, 6);
+    /* spušten ostatak nije produžen povratak: prozor izmene ostaje prozor povratka */
+    if (scale === null) until = addDays(w.start, 6);
   }
   return { doc: { ...after, weeks }, until };
 }
@@ -1201,6 +1309,34 @@ function movedTest(before: PlanDoc, after: PlanDoc, today: IsoDate): IsoDate | n
   return now?.date ?? null;
 }
 
+/** A10 b: ostatak plana posle prozora povratka je spušten — najveća nedelja i najduži dugi posle `until` (bez
+    nedelje trke) pre i posle izmene; `null` kad nije niži. */
+function loweredRest(
+  before: PlanDoc,
+  after: PlanDoc,
+  until: IsoDate,
+  today: IsoDate
+): { peakKm: number; oldPeakKm: number; longSec: Seconds; oldLongSec: Seconds } | null {
+  const race = after.header.goal.raceDate;
+  const measure = (doc: PlanDoc): { km: number; long: Seconds } => {
+    const ctx = paceCtxOf(doc.header);
+    let km = 0;
+    let long = 0;
+    for (const w of doc.weeks) {
+      if (w.start <= until || w.start <= today || w.intent.kind === 'race') continue;
+      km = Math.max(km, weekCost(w, race, ctx).km);
+      for (const d of w.days)
+        if (d.workout?.kind === 'long')
+          long = Math.max(long, summarize(d.workout, ctx).durationSec);
+    }
+    return { km, long };
+  };
+  const a = measure(after);
+  const b = measure(before);
+  if (b.km <= 0 || a.km > b.km * (1 - LOWERED_REST_MIN_SHARE)) return null;
+  return { peakKm: a.km, oldPeakKm: b.km, longSec: a.long, oldLongSec: b.long };
+}
+
 /** Rečenica o promeni upozorenja: šta je novo i šta više ne važi (prva rečenica problema). */
 function warningDelta(before: readonly Warning[], after: readonly Warning[]): string {
   const first = (w: Warning): string => w.problem.split(/(?<=\.)\s/)[0] ?? w.problem;
@@ -1284,9 +1420,19 @@ function explain(
             ? ' Provera forme otpada: posle povratka nema nedelje rasterećenja bar 3 nedelje pred trku, a pun napor odmah posle bolesti nije dobar test forme'
             : '';
       const back = `${what}, pa je povratak postepen: treninzi su kraći do ${rampEnd}, a ${fastFrom(ev.to)}`;
-      const tail = addDays(c.until, 1) < raceDate ? `; ${resume}` : '';
+      /* A10 b: ostatak plana spušten (niži vrh) — rečenica sa brojevima umesto „plan se nastavlja kako je bio" */
+      const low = loweredRest(before, c.doc, c.until, state.today);
+      const lowered =
+        low === null
+          ? null
+          : `od ${next} ostatak plana je srazmerno niži — najveća nedelja oko ${fmtNumber(low.peakKm, 0)} km umesto ${fmtNumber(low.oldPeakKm, 0)} km, najduži dugi ${fmtMinutes(low.longSec)} umesto ${fmtMinutes(low.oldLongSec)} — jer bi povratak na prvobitan obim posle pauze bio prevelik skok`;
+      const tail =
+        lowered !== null ? `; ${lowered}` : addDays(c.until, 1) < raceDate ? `; ${resume}` : '';
       const day = `${back}${tail}.${moved}`;
-      const late = `${back}; i posle toga se obim vraća postepeno — ${lighter}.${moved}`;
+      const late =
+        lowered !== null
+          ? `${back}; ${lowered}.${moved}`
+          : `${back}; i posle toga se obim vraća postepeno — ${lighter}.${moved}`;
       const header = `${what}, pa je ostatak plana preračunat od sadašnje baze; ${lighter}.${moved}`;
       return { day, late, week: late, header };
     }
