@@ -77,3 +77,15 @@ describe('krug 9b — A2: trka u prozoru povratka', () => {
     expect(raceInWindow('s26', r.after, r.afterState, hm, renderPlan)).toEqual([]);
   });
 });
+
+describe('krug 9b — A11: tekst pominje izbačenu proveru forme', () => {
+  it('s26 (trka): bar jedna rečenica izmene pominje izostavljenu proveru forme', () => {
+    const s = SCENARIOS.find((x) => x.no === 26);
+    expect(s).toBeDefined();
+    const r: any = s!.run();
+    const has = (r.changes as any[]).some((c) =>
+      String(c.reason).includes('Provera forme planirana za')
+    );
+    expect(has).toBe(true);
+  });
+});

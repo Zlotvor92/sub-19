@@ -27,6 +27,7 @@ import {
   RETURN_LONG_JUMP_SHARE,
   TAIL_MAX_DAYS,
   RETURN_WEEK_JUMP_SHARE,
+  NO_TEST_AFTER_RACE_DAYS,
   LOST_VOLUME_MIN_SHARE,
   LOWERED_REST_MIN_SHARE,
   RETURN_WINDOW_EXTRA_DAYS,
@@ -36,7 +37,7 @@ import {
   PAIN_MID_DOSE_FACTOR
 } from './constants';
 import { buildCtx, doneDayIds, isMutable, runPass } from './build';
-import { addDays, isValidDate, mondayOf } from './dates';
+import { addDays, diffDays, isValidDate, mondayOf } from './dates';
 import {
   assignDays,
   decideCaps,
@@ -1302,6 +1303,31 @@ function firstFastAfter(doc: PlanDoc, after: IsoDate): IsoDate | null {
   return day?.date ?? null;
 }
 
+/** A11 (krug 9b): provera forme koju je trka izbacila — bila je zakazana u `NO_TEST_AFTER_RACE_DAYS` dana posle
+    trke, a u novom planu tog dana više nije provera (postala lagan dan). Vraća njen datum ili `null`. */
+function droppedTestAfter(
+  before: PlanDoc,
+  after: PlanDoc,
+  raceDate: IsoDate,
+  today: IsoDate
+): IsoDate | null {
+  const afterTests = new Set(
+    allDays(after)
+      .filter((d) => d.workout?.kind === 'test')
+      .map((d) => d.date)
+  );
+  for (const d of allDays(before)) {
+    if (d.workout?.kind !== 'test' || d.date <= today) continue;
+    if (
+      d.date >= raceDate &&
+      diffDays(d.date, raceDate) <= NO_TEST_AFTER_RACE_DAYS &&
+      !afterTests.has(d.date)
+    )
+      return d.date;
+  }
+  return null;
+}
+
 /** Provera forme koju je `replan` pomerio: dan koji je sada provera, a pre nije bio. */
 function movedTest(before: PlanDoc, after: PlanDoc, today: IsoDate): IsoDate | null {
   const was = new Set(allDays(before).flatMap((d) => (d.workout?.kind === 'test' ? [d.date] : [])));
@@ -1478,9 +1504,18 @@ function explain(
       const ramp = run === undefined ? 0 : effortRampDays(result?.durationSec ?? run.durationSec);
       const zero = run?.date ?? ev.date;
       const recovery = `oporavak traje do ${fmtDate(addDays(zero, ramp))} — treninzi su kraći i lagani, a ${fastFrom(zero)}`;
+      /* A11 (krug 9b): provera forme koju je trka izbacila (14 dana posle) ili pomerila se pominje u tekstu */
+      const dropped = droppedTestAfter(before, c.doc, zero, state.today);
+      const movedAfter = movedTest(before, c.doc, state.today);
+      const testNote =
+        movedAfter !== null
+          ? ` Provera forme je pomerena na ${fmtDate(movedAfter)}.`
+          : dropped !== null
+            ? ` Provera forme planirana za ${fmtDate(dropped)} se izostavlja: pun napor nije dobar test forme ${count(NO_TEST_AFTER_RACE_DAYS, DAYS)} posle trke.`
+            : '';
       const day = planned
-        ? `${what}: provera forme je bila deo plana, pa su ${countWith(NO_FAST_DAYS_AFTER_EFFORT, NEXT, DAYS)} bez brzih deonica; ${resume}.`
-        : `${what}: ${recovery}; ${resume}.`;
+        ? `${what}: provera forme je bila deo plana, pa su ${countWith(NO_FAST_DAYS_AFTER_EFFORT, NEXT, DAYS)} bez brzih deonica; ${resume}.${testNote}`
+        : `${what}: ${recovery}; ${resume}.${testNote}`;
       const old = fmtClock(raceTimeSec(before.header.form.paceVdot, data.distanceM));
       const faster = c.doc.header.form.paceVdot > before.header.form.paceVdot;
       const raceDay = adjustRaceDay(
@@ -1492,7 +1527,7 @@ function explain(
       /* Z5 (krug 7): plan „po osećaju" dobija tempa iz rezultata */
       const header = before.header.paces.byFeel
         ? `${what}: tempa su sada izračunata iz ovog rezultata, umesto po osećaju; ${range}.`
-        : `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a ${range}.`;
+        : `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a ${range}.${testNote}`;
       const late = `${what}: ${recovery}; i posle toga je prvi brzi trening svake vrste nešto kraći — ${lighter}.`;
       return { day, late, week: late, header };
     }
