@@ -28,7 +28,7 @@ export const LEVELS: LevelRule[] = [
    minute nedelje u laganom tempu i od njega oduzima višak km bloka u tempu maratona, pa je stvarni udeo u km oko
    5–8 poena niži od zadatog (p07: zadato 42 %, stvarno ≈ 36 % sa blokom od 13 km). */
 /* R17 (sudija 2): kod 3–4 dana dugi ≤ ≈ 45 % nedelje osim dve najduže nedelje (p01, p03, p08) */
-const LONG_SHARE = { '1': 1, '2': 0.62, '3': 0.48, '4': 0.42, '5': 0.42, '6': 0.38, '7': 0.35 };
+const LONG_SHARE = { '1': 1, '2': 0.62, '3': 0.5, '4': 0.42, '5': 0.42, '6': 0.38, '7': 0.35 };
 
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: + 7 % u bodovima, najmanje 12 BO (≈ 2 km) — README: obim + 6 % nedeljno (ciljni p07) */
@@ -114,7 +114,8 @@ export const SAFETY: SafetyNumbers = {
     belowKm: 66,
     minRunDays: 3,
     share: 0.44,
-    peakShare: 0.52,
+    /* ispravka R18: 0,564 u minutima (= 55 % u km uz zaokruživanje): p03 23,8 km; 0,568 bi p03 N−5 diglo na 56,5 % */
+    peakShare: 0.564,
     peakWeeks: 2,
     midKm: 85,
     midShare: 0.44

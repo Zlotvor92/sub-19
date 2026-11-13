@@ -23,6 +23,7 @@ import {
 } from '../../engine';
 import { estimateForm } from '../../fitness';
 import { marathon } from './index';
+import { gateStats } from './testdata/gate';
 import { PROFILES, factsOf } from './testdata/profiles';
 
 /* ------------------------------------------------------------------ pomoćno */
@@ -1002,5 +1003,63 @@ describe('krug 12 — maraton (R1–R6)', () => {
         w.days.filter((d) => (d.workout?.workSec ?? 0) > 0 && d.workout?.kind !== 'race').length,
         `p16 n${String(w.index)}`
       ).toBeLessThanOrEqual(2);
+  });
+});
+
+/* ------------------------------------------------------------------ 8. R18 (organizator): bez regresije najdužeg dugog */
+
+describe('R18 — najduži dugi nije kraći nego u b38a0ec4 (osim navedenih izuzetaka)', () => {
+  /* najduži dugi po profilu u `plans/MAR/pregled.md` na b38a0ec4 (km) */
+  const BASE: Record<string, number> = {
+    p01: 24.5,
+    p02: 26.5,
+    p03: 23.8,
+    p04: 27.6,
+    p05: 35,
+    p06: 24.5,
+    p07: 30,
+    p08: 28,
+    p09: 28,
+    p10: 22.5,
+    p11: 24.8,
+    p12: 27.8,
+    p13: 19.9,
+    p14: 33.5,
+    p15: 27.1,
+    p16: 27.5,
+    p17: 32.5,
+    p18: 24,
+    p19: 22
+  };
+  /* izuzeci (ispravka R18): dugi na plafonu po vremenu nivoa se proverava ispod (sada nijedan); ova tri ne mogu do
+     ranijeg dugog uz pravila udela (R17 c, R18: 4 dana ≤ 45 %, dve najduže nedelje 50 %; 3 dana ≤ 50 %, tri najduže
+     55 %; + 0,5 km zaokruživanja) i korak dugog 1,7 km (K7 ≤ 2 km) — lestvica N−7 → N−5 → N−3 */
+  const EXCEPT: Record<string, string> = {
+    p10: '3 dana: N−3 155 min od 286 min nedelje (udeo 56,4 % minus višak bloka MP) = 21,8 km; 22,5 km traži udeo 0,568, a on p03 N−5 diže na 22,6 od 40 km (56,5 % > 55 % + 0,5 km)',
+    p11: 'početnik 4 dana: N−7 ≤ 45 % od 41 km ≈ 19 km, pa N−5 ≤ 20,7 i N−3 ≤ 22,4 km (b38: 24,8 uz 57 % u N−7)',
+    p13: 'hod-trk 3 dana, 10 nedelja: vrh 35 km × 55 % + 0,5 = 19,75 km < 19,9 (b38: 57 %)',
+    p18: 'hod-trk 4 dana: N−7 ≤ 45 % od 44 km ≈ 20 km, pa N−3 ≤ 22 km uz korak 1,7 km (b38: 24 uz udeo 50 % u svim nedeljama)'
+  };
+  it('svih 19 profila (tolerancija 0,5 km: dan se zaokružuje na 0,5 km)', () => {
+    const bad: string[] = [];
+    for (const p of PROFILE_PLANS) {
+      const g = gateStats(p.doc, p.facts);
+      const longest = Math.max(...g.weeks.map((w) => w.longKm));
+      const longestMin = Math.max(...g.weeks.map((w) => w.longMin));
+      const atTimeCap = longestMin >= p.doc.header.decisions.longMaxSec / 60 - 5;
+      const base = BASE[p.id] ?? 0;
+      if (longest < base - 0.5 && !atTimeCap && EXCEPT[p.id] === undefined)
+        bad.push(`${p.id} ${longest.toFixed(1)} < ${String(base)} km`);
+    }
+    expect(bad).toEqual([]);
+  });
+  it('izuzeci su stvarno ispod (lista se ne zadržava kad prestane da važi)', () => {
+    const still = Object.keys(EXCEPT).filter((id) => {
+      const p = PROFILE_PLANS.find((x) => x.id === id);
+      if (p === undefined) return false;
+      const g = gateStats(p.doc, p.facts);
+      return Math.max(...g.weeks.map((w) => w.longKm)) < (BASE[id] ?? 0) - 0.5;
+    });
+    expect(still).toEqual(Object.keys(EXCEPT));
   });
 });

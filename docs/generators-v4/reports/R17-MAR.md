@@ -40,3 +40,20 @@ zbog koraka (zahtev 1). p11 21,2 km / 2 h 28 (početnik, vrh 50 km).
 Prag za vrh 45–52 km spušten je sa 2 h 30 na 2 h 25 (p11).
 K7 dozvoljava + 2,5 km kad dugi nosi blok MP. Zahtev motoru: korak dugog meriti u km sa blokom, ne u vremenu laganog
 tempa. Početnik ima jedan blok ≥ 30 min (ciljni p11), u vršnoj nedelji brz rad ≥ 7 %.
+
+### Ispravka R18 (organizator: p03/p10 regresija)
+Najduži dugi pre → posle ispravke (b38a0ec4 → sada, km): p03 23,8 → 23,8; p10 22,5 → 21,8; p11 24,8 → 22,6; p13 19,9 →
+19,2; p18 24 → 22; p19 22 → 21,5. Ostali su isti ili duži (p01 26,5, p02 28, p08/p09 28,5, p15 27,8, p16 28,2).
+- 3 dana: udeo 50 % (kao u b38), 56,4 % u nedeljama najdužeg dugog; kapija kod 3 dana dozvoljava 55 % u TRI najduže
+  nedelje (ponuda organizatora), 4 dana ostaje dve. 4 dana se ovim ne menjaju.
+- N−5 kod 1–3 dana ponovo nosi blok MP (test „≥ 2 duga sa blokom"). Polumaraton u N−9 ima namerni dugi 50 %, da
+  nedelje najdužeg dugog budu N−5 i N−3 (p02, p16 duži).
+- Test `R18 — najduži dugi nije kraći nego u b38a0ec4` (tolerancija 0,5 km = zaokruživanje dana; plafon po vremenu
+  je izuzetak, sada nijedan profil nije na njemu). Navedeni izuzeci, sa računom u testu:
+  - p10: N−3 155 od 286 min = 21,8 km; 22,5 km traži udeo 0,568, a on p03 N−5 diže na 22,6 od 40 km (56,5 % > 55 %).
+    p03 i p10 dele isti broj, a 0,5 km zaokruživanja ih razdvaja.
+  - p11 (početnik 4 dana): N−7 ≤ 45 % od 41 km ≈ 19 km, pa uz korak 1,7 km N−3 ≤ 22,4 km. b38 je imao 57 % u N−7.
+  - p13 (hod-trk 3 dana, 10 nedelja): 55 % × 35 km + 0,5 = 19,75 km < 19,9 (b38: 57 %).
+  - p18 (hod-trk 4 dana): N−7 ≤ 45 % od 44 km, pa N−3 22 km (b38: 50 % u svim nedeljama).
+- Za odluku: povratak b38 vrednosti traži ili udeo ≥ 57 % kod početnika (pravilo R17 c), ili korak dugog > 2 km (K7),
+  ili udeo meren u minutima bez viška bloka MP (zahtev motoru).

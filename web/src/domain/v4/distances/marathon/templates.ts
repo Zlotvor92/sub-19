@@ -254,7 +254,8 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
           {
             /* R17 (sudija 2): nedelja trke nije odmor od 5–6 dana — obim ≈ 85 % uz lagane dane, bez kvaliteta */
             ...week(RAZVOJ, 'build', 0.85, null, sh.single ? [STRIDES] : [STRIDES, STRIDES]),
-            long: { lenPct: 1, stimulus: 'dugi', race: KONTROLA_HM }
+            /* R18: lenPct trke ispod najdužih, da „nedelje najdužeg dugog" (peakWeeks) budu N−5 i N−3, ne nedelja trke */
+            long: { lenPct: 0.5, stimulus: 'dugi', race: KONTROLA_HM }
           },
           /* 1–3 dana: dugi posle trke kraći (≤ ≈ 45 % nedelje, R17) */
           week(RAZVOJ, 'build', 0.85, { len: sh.single ? 0.6 : 0.78 }, [STRIDES, STRIDES])
@@ -382,7 +383,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           /* M10 (krug 15): polumaraton na dan dugog */
           {
             ...week(RAZVOJ, 'build', 0.85, null, [STRIDES, STRIDES]),
-            long: { lenPct: 1, stimulus: 'dugi', race: KONTROLA_HM }
+            long: { lenPct: 0.5, stimulus: 'dugi', race: KONTROLA_HM }
           },
           week(RAZVOJ, 'build', 0.85, { len: 0.78, stimulus: longStim }, [STRIDES, STRIDES])
         ]

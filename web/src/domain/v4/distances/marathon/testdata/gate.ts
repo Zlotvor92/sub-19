@@ -188,12 +188,12 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   const afterHalf = new Set(halfAt === undefined ? [] : [halfAt + 1, halfAt + 2]);
   let maxShare = 0;
   /* R18 (odluka organizatora): dužina najdužeg dugog ima prednost nad udelom — u dve nedelje sa najdužim dugim udeo
-     sme 5 poena više (4 dana 50 %, 3 dana 55 %) */
+     sme 5 poena više (4 dana 50 %, 3 dana 55 %); ispravka R18: kod 3 dana u TRI nedelje najdužeg dugog */
   const top2 = new Set(
     [...weeks]
       .filter((g) => g.longKm > 0)
       .sort((a, b) => b.longKm - a.longKm || b.index - a.index)
-      .slice(0, 2)
+      .slice(0, runDays === 3 ? 3 : 2)
       .map((g) => g.index)
   );
   for (const g of weeks) {

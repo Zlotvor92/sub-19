@@ -21,9 +21,9 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (4:05/km). Očekivano vreme na dan trke (2:50:20) traži 4:02/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 18 nedelja pripreme — tada plan stiže do dugog od 25,5 km, ili na isti datum trči kraću distancu: polumaraton.
-- Najveća nedelja u planu ima 56,2 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 56,2 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Za sledeću trku planiraj 18 nedelja pripreme — obim tada bezbedno stiže do 60,8 km nedeljno.
-- Najduži trening u planu je 24,5 km, jer nedelja od najviše 56,2 km ne nosi duži dugi; za ovu distancu treba bar 26 km. Poslednji deo trke biće duži od svega što si trčao u pripremi, pa tu treba očekivati najveći pad. Uz isti datum trke dugi ostaje 24,5 km, pa trku počni sporije i čuvaj snagu za poslednjih 18 km. Za sledeću trku planiraj 18 nedelja pripreme — nedelja tada stiže do 60,8 km, a dugi do 25,5 km.
+- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 18 nedelja pripreme — tada plan stiže do dugog od 28 km, ili na isti datum trči kraću distancu: polumaraton.
+- Najveća nedelja u planu ima 56,2 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 56,2 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Za sledeću trku planiraj 18 nedelja pripreme — obim tada bezbedno stiže do 60,3 km nedeljno.
+- Najduži trening u planu je 24,5 km, jer nedelja od najviše 56,2 km ne nosi duži dugi; za ovu distancu treba bar 26 km. Poslednji deo trke biće duži od svega što si trčao u pripremi, pa tu treba očekivati najveći pad. Uz isti datum trke dugi ostaje 24,5 km, pa trku počni sporije i čuvaj snagu za poslednjih 18 km. Za sledeću trku planiraj 18 nedelja pripreme — nedelja tada stiže do 60,3 km, a dugi do 28 km.
 - Tražio si 5 dana trčanja nedeljno, a plan u 1., 2. nedelji ima 4 treninga. Uz sadašnji obim lagani dani su već na najkraćem, pa jedan lagan dan te nedelje ustupa mesto drugom brzom treningu — za tvoju formu brzi trening vredi više od još jednog kratkog laganog trčanja. Te nedelje trči kako piše; ako ipak želiš da izađeš i tog dana, neka to bude šetnja ili 20 min vrlo laganog trčanja.
 - Tražio si 5 dana trčanja nedeljno; uz sadašnji obim od oko 40 km lagani dani su u 2–6. nedelji oko 30 min umesto 35. U ostalim nedeljama traženi dani ostaju u planu; zato je 2. nedelja oko 43,2 km, nešto više od sadašnjeg obima (40 km). Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.
 
@@ -143,8 +143,8 @@ UPOZORENJA
   čet 14. 1.  lagano 5,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,7 km, 32 min
   pet 15. 1.  odmor
   sub 16. 1.  lagano 6 km — 6 km, 29 min
-  ned 17. 1.  dugi 13 km lagano — 13 km, 63 min
-  Zbir: 37,7 km, 3 h 2 min, 5 treninga, brz rad 0 % vremena trčanja
+  ned 17. 1.  dugi 14 km lagano — 14 km, 68 min
+  Zbir: 38,7 km, 3 h 7 min, 5 treninga, brz rad 0 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — završnica, nedelja trke
   pon 18. 1.  odmor
