@@ -346,3 +346,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Ocena: trener (isti tab, ista rubrika) → `coach/ROUND-V4-HM-03.md`; drugi sudija NOV tab na Opusu (štednja Fable-a;
   napomena: krugovi 1–2 su bili Fable sudija, poređenje sa 71,2 je zato [srednja]) `session_01GnHHiXKn9aKh43UqK2wpAM`
   → `judge2/ROUND-V4-HM-03.md`.
+
+### 13. 11. 2026, 01:55 — OCENA TRENERA, krug 3 (`coach/ROUND-V4-HM-03.md`, ocenjen `5072cf8`) [srednja]
+| | krug 2 | krug 3 | v3 |
+|---|---|---|---|
+| Plan | 74,3 | 78,7 | 77,6 |
+| profila ≥ 80 | 3/12 | 7/12 | 7/12 |
+| Prilagođavanje | 79,2 | 81,9 | — |
+| Personalizacija | 59,3 | 82,5 | — |
+| zbirna | 72,8 | 80,4 | — |
+- Ispod 80: p03 76,5, p04 79, p06 73,5, p08 74, p10 75. Nijedan profil lošiji nego u krugu 2.
+- Pogoršano: rep izmena posle bolesti/bola (s05 27 izmena, s16 49), lančanje 1,10 × preko rasterećenja, P1 B polazi sa 23,6 km.
+- Presude: talas dugog samo na plafonu; `pocetnik-nov` prihvaćen; hod-trk dugi do 1 h 45; udeo dugog meriti u km (v2 → 18 km);
+  3 dana udeo do 50 %, dugi ≤ vreme trke + 5 min, blok ≤ 35 min. Deset ispravki po važnosti u ROUND fajlu → krug 4.
+- Čeka se drugi sudija (Opus) pre briefa za krug 4.
