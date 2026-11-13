@@ -224,10 +224,8 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
       return 'lagan dan otpao (ostatak < 25 min) — motor ne vraća ostatak';
   }
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
-  /* 10 km: plan od 6 nedelja, spor trkač (VDOT < 30) sa više od 55 min po danu — intervali po trajanju (3 min) u
-     sužavanju dobijaju dozu veću od zadate (zahtev prema motoru u F7-10K-REPORT) */
-  if (f.check === 'taper' && perDay > 55 && b.doc.weeks.length <= 6)
-    return 'kratak plan, spor trkač velikog obima: doza intervala po trajanju u sužavanju (zahtev motoru)';
+  /* krug 8 (R8 t. 2, 12): izuzetak „kratak plan, spor trkač velikog obima" uklonjen — % doze se u sužavanju
+     primenjuje na manji od osnovice i plafona */
   /* krug 5 (D7): tempo trke na nedeljnom plafonu nivoa — skraćen rad ostavlja nedelju ispod cilja */
   const zc = tenk.safety.weeklyZoneMaxSec;
   if (f.check === 'ispod-cilja' && zc !== undefined && st !== undefined) {

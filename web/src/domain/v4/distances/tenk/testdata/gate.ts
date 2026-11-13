@@ -163,17 +163,8 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
       ? Math.max(g.longKm, prevLong, recentLongKm, Math.min(maxKm, g.longKm / wave))
       : g.longKm;
     maxEasy = Math.max(maxEasy, g.easyKm / ref);
-    /* lakša nedelja (rasterećenje, provera, sužavanje): lagan dan na najkraćem trajanju nivoa (+ ubrzanja) je vlasnik
-       te odluke — meri se samo K8 (lagan ≤ dugi) */
-    const minEasy =
-      (doc.header.decisions.level === 'pocetnik' || doc.header.decisions.level === 'pocetnik-nov'
-        ? 25
-        : 30) + 7;
-    if (!building && g.easyMin <= minEasy) {
-      if (g.easyKm > g.longKm + 0.25)
-        v.push(`n${String(g.index)} lagan ${String(g.easyKm)} > dugi ${String(g.longKm)}`);
-      continue;
-    }
+    /* krug 8 (R8 t. 12): izuzetak „lakša nedelja sa laganim danom na najkraćem trajanju meri samo K8" uklonjen —
+       pravila motora (t. 2–4) ga više ne traže */
     if (g.easyKm > easyCap * ref + 0.25)
       v.push(
         `n${String(g.index)} lagan ${String(g.easyKm)} > ${String(easyCap)} × dugi ${String(Math.round(ref * 10) / 10)}`
