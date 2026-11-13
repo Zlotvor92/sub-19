@@ -149,9 +149,13 @@ export function zonePaces(
   transfer?: Transfer
 ): Paces {
   const at = (m: Meters): Vdot => vdotAt(vdot, m, transfer);
-  const vR = zoneVdot(vdot, 'R', transfer);
-  const vI = zoneVdot(vdot, 'I', transfer);
-  const vT = zoneVdot(vdot, 'T', transfer);
+  /* A14 (krug 9): VDOT zone nikad iznad najvećeg sirovog VDOT-a stvarnog rezultata */
+  const lim = transfer?.limits;
+  const top = (v: Vdot): Vdot =>
+    lim?.maxVdot === undefined ? v : Math.min(v, Math.max(vdot, lim.maxVdot));
+  const vR = top(zoneVdot(vdot, 'R', transfer));
+  const vI = top(zoneVdot(vdot, 'I', transfer));
+  const vT = top(zoneVdot(vdot, 'T', transfer));
   const vE = zoneVdot(vdot, 'E', transfer);
   const slow =
     intervalFloor !== undefined && raceTimeSec(vdot, distanceM) >= intervalFloor.fromRaceSec;
@@ -161,13 +165,16 @@ export function zonePaces(
         racePace(at(intervalFloor.distanceM), intervalFloor.distanceM)
       )
     : paceAtShare(vI, ZONE_SHARE.I);
+  /* A14 (c): prag ne brži od trke od 40–70 min, intervali ne brži od trke/testa do 15 min */
+  const T = Math.max(paceAtShare(vT, ZONE_SHARE.T), lim?.tFloor ?? 0);
+  const Ilim = Math.max(I, lim?.iFloor ?? 0);
   return {
     easySlow: roundPace(paceAtShare(vE, EASY_SLOW_SHARE)),
     easyFast: roundPace(paceAtShare(vE, EASY_FAST_SHARE)),
     easy: roundPace(paceAtShare(vE, ZONE_SHARE.E)),
     M: roundPace(paceAtShare(vdot, ZONE_SHARE.M)),
-    T: roundPace(paceAtShare(vT, ZONE_SHARE.T)),
-    I: roundPace(I),
+    T: roundPace(T),
+    I: roundPace(Ilim),
     R: roundPace(paceAtShare(vR, ZONE_SHARE.R)),
     RP: roundPace(racePace(vdot, distanceM)),
     byFeel

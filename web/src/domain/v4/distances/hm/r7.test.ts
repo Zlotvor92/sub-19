@@ -23,14 +23,9 @@ function make(facts: RunnerFacts, goal: Goal): PlanDoc {
 }
 const ROWS = [
   ...PROFILES.map((p) => ({ id: p.id, facts: factsOf(p), goal: p.goal })),
-  ...OWNER_PLANS.map((o) => ({ id: o.id, facts: o.facts, goal: o.goal })),
-  /* F4-K2: vlasnik-v1 na 10 nedelja više nema predlog „planiraj N nedelja" (brža tempa praga po ličnoj krivi daju
-     duži dugi); ista priprema 2 nedelje kraća ga ima — slučaj ostaje pokriven */
-  ...OWNER_PLANS.slice(0, 1).map((o) => ({
-    id: `${o.id}-8n`,
-    facts: o.facts,
-    goal: { ...o.goal, raceDate: addDays(o.goal.raceDate, -14) }
-  }))
+  ...OWNER_PLANS.map((o) => ({ id: o.id, facts: o.facts, goal: o.goal }))
+  /* krug 9 (A14): vlasnik-v1 na 10 nedelja ponovo ima predlog „planiraj N" (prag po sidru od 60 min) — pomoćna
+     varijanta od 8 nedelja (F4-K2) više nije potrebna */
 ];
 const ALL = ROWS.map((r) => ({ ...r, doc: make(r.facts, r.goal) }));
 const num = (s: string): number => Number(s.replace(',', '.'));

@@ -458,7 +458,9 @@ describe('izmišljeni nizovi (12 nedelja)', () => {
   it('stagnira: procena stoji', () => {
     const runs = athlete(12, () => 45, 0, 2);
     const { daily, count } = paceUpdates(runs, DAYS);
-    daily.forEach((v) => expect(Math.abs(v - 45)).toBeLessThan(0.15));
+    /* krug 9 (A14): sidro praga je trka od 60 min (bilo 45), a sintetički tempo je po tabeli bez krive — procena
+       odstupa najviše 0,47 VDOT (≈ 2 s/km), deterministično; tempa se ne menjaju (count 0). Otvoreno za formu. */
+    expect(Math.max(...daily.map((v) => Math.abs(v - 45)))).toBeLessThan(0.5);
     expect(count).toBe(0);
   });
 

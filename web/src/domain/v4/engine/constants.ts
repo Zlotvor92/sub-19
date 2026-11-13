@@ -21,7 +21,8 @@ export const EASY_FAST_SHARE = 0.7;
 /** Lična kriva forme po dužini (F4-K2): sidro zone = dužina trke koju trkač pretrči za ovoliko sekundi punim
     naporom (motor ne zna dužine trka, § 11). R i I ≈ 20 min (rekreativcu ≈ trka od 5 km), T ≈ 45 min (≈ 10 km);
     E/lagano i dugi: duže od dužine cilja i trke od ≈ 75 min (rekreativcu ≈ 15 km; za cilj od 75 min i duži = cilj); M i tempo trke = dužina cilja. [niska–srednja] */
-export const ZONE_ANCHOR_SEC = { R: 1200, I: 1200, T: 2700 } as const;
+/* A14 (krug 9): T = trka od 60 min (bilo 45: kod sporijeg trkača sidro je padalo na dužinu kraću od njegove trke) */
+export const ZONE_ANCHOR_SEC = { R: 1200, I: 1200, T: 3600 } as const;
 export const EASY_ANCHOR_MIN_SEC = 4500;
 /** Dužina u prenosu se ograničava na trke od 4 min do 5 h punog napora (≈ 1,5 km do ≈ 45 km). */
 export const TRANSFER_MIN_SEC = 240;
@@ -309,3 +310,9 @@ export const LONG_BLOCK_MIN_WEEK_SHARE = 0.25;
 
 /** R8 t. 17 (Z10): izmene posle više događaja ne idu dalje od ovoliko dana od danas (osim jednog dugog, R2). */
 export const TAIL_MAX_DAYS = 28;
+
+/** A14 (krug 9): granice zona iz stvarnih rezultata — prozor i trajanja trka koje ograničavaju prag i intervale. */
+export const ZONE_LIMIT_DAYS = 84;
+export const ZONE_LIMIT_T_MIN_SEC = 2400;
+export const ZONE_LIMIT_T_MAX_SEC = 4200;
+export const ZONE_LIMIT_I_MAX_SEC = 900;

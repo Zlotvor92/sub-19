@@ -63,9 +63,7 @@ export function zoneWeight(zone: ZoneId, ctx: PaceCtx): number {
 /* R8 t. 20 (brzina): isti račun po ličnoj krivi se ponavlja za svaki korak — čista funkcija, pamti se po ulazu */
 const memo = new Map<string, number>();
 const transferKey = (t: Transfer | undefined): string =>
-  t === undefined
-    ? '-'
-    : `${String(t.beta)},${String(t.personal)},${String(t.refM)},${String(t.anchorM)},${String(t.capDown)}`;
+  t === undefined ? '-' : JSON.stringify(t);
 function remember(key: string, compute: () => number): number {
   const hit = memo.get(key);
   if (hit !== undefined) return hit;

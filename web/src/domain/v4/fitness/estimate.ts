@@ -1,7 +1,14 @@
 /* V4 — FORMA IZ TRČANJA (SPEC § 7, § 14.3, § 14.6; AGENTS V4 t. 9a).
    Čista funkcija: ista trčanja → ista procena; ulaz se ne menja. Trčanja se obrađuju hronološki, dan po dan;
    svaka promena je zapis `FormChange` sa rečenicom „zašto". */
-import { DEFAULT_VDOT, ZONE_SHARE } from '../engine/constants';
+import {
+  DEFAULT_VDOT,
+  ZONE_LIMIT_DAYS,
+  ZONE_LIMIT_I_MAX_SEC,
+  ZONE_LIMIT_T_MAX_SEC,
+  ZONE_LIMIT_T_MIN_SEC,
+  ZONE_SHARE
+} from '../engine/constants';
 import type {
   Confidence,
   FormChange,
@@ -918,8 +925,39 @@ export function estimateForm(
     ),
     ceilingGain: r2(gain),
     history,
-    /* F4-K2: lična kriva forme po dužini za tempa i pun napor u planu */
-    transfer: curveAt(today).curve
+    /* F4-K2: lična kriva forme po dužini za tempa i pun napor u planu; A14: granice iz stvarnih rezultata */
+    transfer: withLimits(curveAt(today).curve, rawResults, today)
+  };
+}
+
+/** A14 (krug 9): granice zona iz stvarnih rezultata poslednjih `ZONE_LIMIT_DAYS` dana (sirovi VDOT, bez prevoda). */
+function withLimits(
+  curve: Transfer,
+  raw: readonly { day: number; distanceM: Meters; vdot: Vdot }[],
+  today: number
+): Transfer {
+  /* samo rezultati KRAĆI od dužine cilja: duža trka nije granica za brže zone (bez kraćeg rezultata važi A7) */
+  const recent = raw.filter(
+    (x) => x.day <= today && today - x.day <= ZONE_LIMIT_DAYS && x.distanceM < curve.refM - 1
+  );
+  if (recent.length === 0) return curve;
+  let maxVdot = 0;
+  let tFloor = 0;
+  let iFloor = 0;
+  for (const x of recent) {
+    maxVdot = Math.max(maxVdot, x.vdot);
+    const sec = raceTimeSec(x.vdot, x.distanceM);
+    const pace = (sec / x.distanceM) * 1000;
+    if (sec >= ZONE_LIMIT_T_MIN_SEC && sec <= ZONE_LIMIT_T_MAX_SEC) tFloor = Math.max(tFloor, pace);
+    if (sec <= ZONE_LIMIT_I_MAX_SEC) iFloor = Math.max(iFloor, pace);
+  }
+  return {
+    ...curve,
+    limits: {
+      maxVdot,
+      ...(tFloor > 0 ? { tFloor } : {}),
+      ...(iFloor > 0 ? { iFloor } : {})
+    }
   };
 }
 

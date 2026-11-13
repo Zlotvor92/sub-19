@@ -216,6 +216,10 @@ export interface Transfer {
   anchorM?: Meters;
   /** Prelom je na unetom rezultatu bez istorije: naniže najviše `TRANSFER_DOWN_MAX_SEC` (odluka F4-K2). */
   capDown?: boolean;
+  /** A14 (krug 9): granice iz stvarnih rezultata trkača (poslednjih 12 nedelja) — niko ne dobija zone brže od onoga
+      što je sam istrčao. `maxVdot`: najveći sirovi VDOT rezultata (VDOT zone ga ne prelazi); `tFloor`: prag nije
+      brži od tempa trke od 40–70 min; `iFloor`: intervali nisu brži od tempa trke/testa do 15 min (s/km). */
+  limits?: { maxVdot?: Vdot; tFloor?: SecPerKm; iFloor?: SecPerKm };
 }
 
 /** Tempa zona izvedena iz `FormHeader.paceVdot` (§ 5.4). E je raspon, ostalo tačka. */
