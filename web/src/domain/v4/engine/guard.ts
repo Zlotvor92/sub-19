@@ -983,7 +983,7 @@ function streakWarning(doc: PlanDoc, s: DistanceData['safety']): Warning | null 
   const max = rule.days;
   const bad = d.qualityDays
     .slice(0, 2)
-    .map((wd) => ({ wd, st: runStreak(d.runDays, wd, d.longDay) }))
+    .map((wd) => ({ wd, st: runStreak(d.qualityDays.slice(0, 2), wd, d.longDay) }))
     .filter((x) => x.st.hasLong && x.st.len > max && x.wd !== d.longDay);
   const first = bad[0];
   if (first === undefined) return null;
@@ -1005,7 +1005,11 @@ function streakWarning(doc: PlanDoc, s: DistanceData['safety']): Warning | null 
       const days = [...d.runDays.filter((x) => x !== off), on as Weekday].sort((a, b) => a - b);
       const ok = d.qualityDays.slice(0, 2).every((q) => {
         if (!days.includes(q)) return false;
-        const st = runStreak(days, q, d.longDay);
+        const st = runStreak(
+          d.qualityDays.slice(0, 2).filter((x) => days.includes(x)),
+          q,
+          d.longDay
+        );
         return !st.hasLong || st.len <= max;
       });
       if (ok) {
@@ -1019,7 +1023,7 @@ function streakWarning(doc: PlanDoc, s: DistanceData['safety']): Warning | null 
   return {
     code: 'raspored-dana',
     severity: 'info',
-    problem: `Tvoji dani trčanja (${list}) prave ${String(first.st.len)} dana zaredom (${span}) u kojima bi bili i dugi i brzi trening u ${WEEKDAY_ACC[first.wd] ?? ''}.`,
+    problem: `Tvoji dani trčanja (${list}) stavljaju brz trening u ${WEEKDAY_ACC[first.wd] ?? ''} odmah uz dugi (${span}), bez laganog dana između.`,
     meaning:
       'Posle dugog telo treba dan-dva bez brzog rada; brz trening na kraju takvog niza nosi umor dugog i podiže rizik od povrede, pa plan taj dan ostavlja laganim.',
     proposal:

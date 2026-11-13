@@ -381,7 +381,8 @@ export function createPlan(
      M7 (krug 14): isto kad upozorenje kaže da obim ili dugi ne nose trku („mali-obim", „kratak-dugi") — tada ni
      prognoza ni tempo trke nisu brži od današnje forme. */
   const flags = {
-    ...(found.some((w) => w.code === 'dugi-za-distancu') || farBelowAdequate(built, goal, data, found)
+    ...(found.some((w) => w.code === 'dugi-za-distancu') ||
+    farBelowAdequate(built, goal, data, found)
       ? { raceDayNoProgress: true }
       : {}),
     ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) }),
@@ -409,7 +410,12 @@ const BASE_AFTER_PAUSE_DAYS = 7;
 
 /** M7 (krug 14): upozorenje „mali-obim" ili „kratak-dugi" i vrh ili dugi plana ispod `NO_PROGRESS_SHARE` adekvatnog —
     obim ne nosi trku, pa prognoza ne računa napredak od obima (blizu praga, npr. dugi 15 od 16 km, napredak ostaje). */
-function farBelowAdequate(doc: PlanDoc, goal: Goal, data: DistanceData, found: readonly Warning[]): boolean {
+function farBelowAdequate(
+  doc: PlanDoc,
+  goal: Goal,
+  data: DistanceData,
+  found: readonly Warning[]
+): boolean {
   if (!found.some((w) => w.code === 'mali-obim' || w.code === 'kratak-dugi')) return false;
   const ctx = paceCtxOf(doc.header);
   const costs = doc.weeks.map((w) => weekCost(w, goal.raceDate, ctx));

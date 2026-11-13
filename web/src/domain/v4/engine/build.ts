@@ -510,7 +510,7 @@ export function weekSlots(
       longWd !== null &&
       !race &&
       d.runDays.length <= 5
-        ? runStreak(d.runDays, wd, longWd)
+        ? runStreak(d.qualityDays.slice(0, 2), wd, longWd)
         : null;
     const tooLong =
       longStreak !== null && longStreak.hasLong && longStreak.len > (maxRun?.days ?? 7);

@@ -177,9 +177,9 @@ export const SAFETY: SafetyNumbers = {
   raceStartPaceOffsetShare: { from: 0.01, to: 0.02 },
   /* krug 4 dopuna (E2): skraćena nedelja — dugi i blok srazmerno, dugi ≤ 45 % nedelje u km */
   shortenedLongMaxShare: 0.45,
-  /* R12 M4 (krug 15): najviše 3 dana trčanja zaredom kad niz nosi brz trening i dugi */
+  /* R12 M4 (krug 15): brz trening ne ide dan uz dugi (niz teških dana najviše 1; lagan dan prekida niz) */
   maxConsecutiveWithHard: {
-    days: 3,
+    days: 1,
     levels: ['spor', 'pocetnik', 'pocetnik-nov', 'povratnik', 'mali']
   },
   /* krug 4 dopuna (D8): prag i tempo trke bliži od 5 s/km — jedan podražaj nedeljno (p05, p06) */

@@ -109,7 +109,9 @@ describe('mašinske provere K1–K5 nad ispisom (SPEC § 14.2)', () => {
         expect(renderPlan(b.doc, b.state, SYNTHETIC), c.name).toMatch(/bez računanja napretka: /);
         /* ni prognoza ni tempo trke nisu brži od današnje forme */
         const h = b.doc.header;
-        expect(h.form.raceDay.expectedSec, c.name).toBeGreaterThanOrEqual(h.form.current.raceTimeSec);
+        expect(h.form.raceDay.expectedSec, c.name).toBeGreaterThanOrEqual(
+          h.form.current.raceTimeSec
+        );
         continue;
       }
       checked += 1;

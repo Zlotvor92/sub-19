@@ -851,7 +851,8 @@ function smoothExit(
           );
         let sec = Math.round(rung / 60) * 60;
         let workout = make(sec);
-        const dur = (x: Workout | null): Seconds => (x === null ? 0 : summarize(x, pace).durationSec);
+        const dur = (x: Workout | null): Seconds =>
+          x === null ? 0 : summarize(x, pace).durationSec;
         if (dur(workout) > cap + 60) {
           sec = Math.max(0, sec - Math.ceil((dur(workout) - cap) / 60) * 60);
           workout = make(sec);
@@ -949,7 +950,11 @@ function smoothExit(
     let shrunk: PlanWeek = { ...w, days: finalDays };
     /* krug 14 (M2): zaokruživanje laganih dana (5 min) ne sme da gurne kvalitet na najmanju dozu — ostatak preko
        granice prvo skida najduži lagan dan po 5 min, dok ne stane ili dok lagani dani nisu na najmanjem */
-    for (let guard = 0; i >= first && f < 1 && guard < 20 && km(shrunk) > kmLimit + 0.5; guard += 1) {
+    for (
+      let guard = 0;
+      i >= first && f < 1 && guard < 20 && km(shrunk) > kmLimit + 0.5;
+      guard += 1
+    ) {
       let pick: PlanDay | null = null;
       let pickSec = 0;
       for (const d of shrunk.days) {
@@ -2183,8 +2188,7 @@ function capTail(built: PlanDoc, before: PlanDoc, today: IsoDate): PlanDoc {
     first = false;
     const prev = longOf(built.weeks[i - 1]);
     const back = longOf(old);
-    const jump =
-      prev > 0 && back > prev + RETURN_LONG_JUMP_SEC;
+    const jump = prev > 0 && back > prev + RETURN_LONG_JUMP_SEC;
     const longDay = w.days.find((d) => d.workout?.kind === 'long');
     return {
       ...old,

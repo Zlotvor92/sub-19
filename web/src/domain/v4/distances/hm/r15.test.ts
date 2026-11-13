@@ -73,23 +73,22 @@ describe('krug 15 — lagan dan uz dugi ≥ 90 min (M2, M21)', () => {
     }
   });
 
-  it('M4: p04 (spor, pon-uto-čet-sub-ned) — utorak bez brzog treninga uz dugi nedeljom, plan kaže zašto', () => {
+  it('M4 (krug 16, regresija R16): p04 — utorak zadržava brz trening; lagan ponedeljak prekida niz sa dugim', () => {
     const p = PROFILES.find((x) => x.id === 'p04');
     if (p === undefined) throw new Error('p04');
     const state = buildState(factsOf(p), p.goal, hm, estimateForm);
     const res = plan(state, p.goal, hm);
     if (!res.ok) throw new Error('p04');
-    expect(res.doc.header.warnings.some((w) => w.code === 'raspored-dana')).toBe(true);
-    for (const w of res.doc.weeks) {
-      if (w.intent.kind !== 'build' && w.intent.kind !== 'peak') continue;
-      const tue = w.days.find((d) => new Date(`${d.date}T00:00:00Z`).getUTCDay() === 2);
-      const sunLong = w.days.some(
-        (d) => new Date(`${d.date}T00:00:00Z`).getUTCDay() === 0 && d.workout?.kind === 'long'
-      );
-      /* jedini brz trening nedelje ostaje (pravilo važi kad nedelja nosi i drugi) */
-      const others = w.days.filter((d) => d.workout?.kind === 'quality' && d !== tue).length;
-      if (sunLong && others > 0) expect(tue?.workout?.kind, w.start).not.toBe('quality');
-    }
+    expect(res.doc.header.warnings.some((w) => w.code === 'raspored-dana')).toBe(false);
+    const tuesdayRp = res.doc.weeks.some((w) =>
+      w.days.some(
+        (d) =>
+          new Date(`${d.date}T00:00:00Z`).getUTCDay() === 2 &&
+          d.workout?.kind === 'quality' &&
+          d.workout.stimulus === 'tempo-trke'
+      )
+    );
+    expect(tuesdayRp).toBe(true);
   });
 
   it('M26: lagan dan nikad duži od dugog (profili i krajnji ulazi)', () => {

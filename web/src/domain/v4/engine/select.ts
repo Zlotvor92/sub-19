@@ -546,8 +546,7 @@ function withNotes(workout: Workout, def: WorkoutDef | null, ctx: BuildCtx): Wor
 function easyWorkout(sec: Seconds, ctx: BuildCtx, maxSec?: Seconds, minSec?: Seconds): Workout {
   const def = easyDef(ctx);
   const own = ctx.data.safety.easyNotBelowMin === true ? ctx.data.safety.minEasySec : undefined;
-  const floor =
-    minSec === undefined ? own : own === undefined ? minSec : Math.max(own, minSec);
+  const floor = minSec === undefined ? own : own === undefined ? minSec : Math.max(own, minSec);
   const extent = easyExtent(sec, ctx, false, maxSec, floor);
   const workout: Workout = {
     kind: 'easy',

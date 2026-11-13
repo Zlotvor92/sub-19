@@ -159,14 +159,14 @@ export function minEasyOf(safety: SafetyNumbers, level: LevelId, runDays: number
   return min === undefined ? safety.minEasySec : Math.max(safety.minEasySec, min * 60);
 }
 
-/** Krug 15 (M4): niz dana trčanja zaredom (ciklično preko granice nedelje) koji sadrži dan `wd`: dužina, da li sadrži
-    dan dugog, i prvi/poslednji dan niza. */
+/** Krug 15–16 (M4): niz TEŠKIH dana zaredom (dugi i dani kvaliteta, ciklično preko granice nedelje) koji sadrži dan
+    `wd`: dužina, da li sadrži dan dugog, i prvi/poslednji dan niza. Lagan dan ili odmor prekida niz. */
 export function runStreak(
-  runDays: readonly Weekday[],
+  hardDays: readonly Weekday[],
   wd: Weekday,
   longDay: Weekday
 ): { len: number; hasLong: boolean; from: Weekday; to: Weekday } {
-  const set = new Set<number>(runDays);
+  const set = new Set<number>([...hardDays, longDay]);
   let len = 1;
   let hasLong = wd === longDay;
   let from = wd as number;
