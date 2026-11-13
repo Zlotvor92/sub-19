@@ -246,7 +246,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     doc.header.decisions.level === 'pocetnik-nov' ||
     doc.header.decisions.painCaution === true ||
     shortEasy;
-  const peakMin = easyStart ? 0.1 : 0.14;
+  /* R17 (p05): 6+ dana i ≥ 80 km — dva kvaliteta + lagan dugi (ne tri teška); udeo se razvodnjava obimom, minuti brzog
+     rada (≈ 57) su i dalje najveći među profilima */
+  const peakMin = easyStart ? 0.1 : runDays >= 6 ? 0.12 : 0.14;
   /* krug 9 (A1): vršna nedelja i uz lagan-kratak ima donju granicu brzog rada (kvalitet se skraćuje, ne briše) */
   if (weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
     v.push(

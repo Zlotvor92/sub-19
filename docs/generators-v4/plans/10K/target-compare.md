@@ -42,14 +42,14 @@
 
 | ned | km cilj/V4 | dugi | blok | kvalitet cilj | kvalitet V4 | odstupa |
 |---|---|---|---|---|---|---|
-| 1 | 30 / 31 | 10 / 9 | 0 / 0 | R, T 11 | T 11 | vrsta |
-| 2 | 32 / 33,9 | 11 / 10 | 0 / 0 | I 8, T 15 | R 9 | vrsta |
-| 3 | 35 / 36,6 | 12 / 11 | 0 / 0 | I 14, T 19 | RP 9, I 11 | vrsta |
-| 4 | 37 / 32,6 | 13 / 8,5 | 2,7 / 0 | RP 17, T 23 | X 17 | km, dugi, blok, vrsta |
-| 5 | 30 / 34,1 | 10 / 9,5 | 0 / 3 | R, X | I 14 | km, blok, vrsta |
-| 6 | 39 / 31,3 | 13 / 6,5 | 2,7 / 0 | RP 22 | RP 17 | km, dugi, blok, doza RP |
-| 7 | 31 / 28,3 | 10 / 6,5 | 0 / 0 | RP 11, T 10 | RP 9 | km, dugi, vrsta |
-| 8 | 14 / 22,1 | 0 / 0 | 0 / 0 | O 9 | O 9 | km |
+| 1 | 30 / 31,1 | 10 / 9 | 0 / 0 | R, T 11 | R 8, T 11 | ✔ |
+| 2 | 32 / 32,5 | 11 / 10 | 0 / 0 | I 8, T 15 | R 9, T 16 | vrsta |
+| 3 | 35 / 34,3 | 12 / 10,5 | 0 / 0 | I 14, T 19 | RP 15, I 11 | vrsta |
+| 4 | 37 / 38,1 | 13 / 11 | 2,7 / 0 | RP 17, T 23 | X 17 | dugi, blok, vrsta |
+| 5 | 30 / 37,6 | 10 / 9 | 0 / 0 | R, X | I 14, RP 15 | km, vrsta |
+| 6 | 39 / 31,3 | 13 / 8 | 2,7 / 0 | RP 22 | RP 13 | km, dugi, blok, doza RP |
+| 7 | 31 / 29,8 | 10 / 8 | 0 / 0 | RP 11, T 10 | RP 9 | dugi, vrsta |
+| 8 | 14 / 17,1 | 0 / 0 | 0 / 0 | O 9 | O 9 | km |
 
 ### p11
 
@@ -74,4 +74,4 @@
 | 17 | 19 / 17,5 | 8 / 7,6 | 0 / 0 | RP 11 | RP 11 | ✔ |
 | 18 | 8 / 9,2 | 0 / 0 | 0 / 0 | O 3 | O 9 | km, doza O |
 
-Nedelja u svim tolerancijama: 15 od 54.
+Nedelja u svim tolerancijama: 16 od 54.

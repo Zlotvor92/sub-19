@@ -197,6 +197,8 @@ export const ADEQUATE: AdequatePrep = {
   minTenureWeeks: 8,
   /* brz trkač: obim ≥ 45 km da kvalitet nivoa stane (ciljni p06) */
   /* krug 3: jedan izvor predloga obima za upozorenje `obim-za-nivo` (p02 srednji 40 km, p06 brz 45 km) */
-  minPeakWeeklyKmByLevel: { brz: 45, srednji: 40, spor: 35, mali: 30, povratnik: 35 },
+  /* R17: spor (VDOT < 40, 10 km ≥ 53 min) 30 km — doze nivoa su manje, 35 km je bio prag srednjeg trkača (p03 VDOT 33);
+     mali obim 25 km */
+  minPeakWeeklyKmByLevel: { brz: 45, srednji: 40, spor: 30, mali: 25, povratnik: 35 },
   shorter: { distanceId: 'fivek', label: '5 km' }
 };

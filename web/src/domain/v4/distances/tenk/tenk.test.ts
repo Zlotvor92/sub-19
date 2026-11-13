@@ -1050,3 +1050,31 @@ describe('krug 3 (ROUND-V4-10K-02)', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('R17 (ROUND-V4-10K-04)', () => {
+  it('plan od 8 nedelja (p02, p06): ≥ 4 nedelje gradnje pre najteže, silazak ≤ 2 nedelje + trka', () => {
+    for (const id of ['p02', 'p06']) {
+      const p = RENDERED.find((x) => x.id === id);
+      const kinds = p?.doc.weeks.map((w) => w.intent.kind) ?? [];
+      const peak = kinds.indexOf('peak');
+      expect(kinds.slice(0, peak).filter((k) => k === 'build').length, id).toBeGreaterThanOrEqual(4);
+      expect(kinds.length - peak - 1, id).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('najteža nedelja sa 4 ili 6+ dana nema tri teška treninga (kvalitet + dugi sa blokom)', () => {
+    const bad: string[] = [];
+    for (const p of RENDERED) {
+      const days = p.doc.header.decisions.runDays.length;
+      if (days !== 4 && days < 6) continue;
+      for (const w of p.doc.weeks.filter((x) => x.intent.kind === 'peak')) {
+        const hard = w.days.filter((d) => {
+          const x = d.workout;
+          return x !== null && (x.kind === 'quality' || (x.kind === 'long' && x.workSec > 0));
+        }).length;
+        if (hard > 2) bad.push(`${p.id} n${String(w.index)}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});

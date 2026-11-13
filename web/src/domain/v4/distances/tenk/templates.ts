@@ -191,7 +191,13 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           sh.single
             ? [S('tempo-trke', 0.45, 'rp-1200'), STRIDES]
             : /* R12 T2 (p02): VO2 doza veća od 3 × 800 m */
-              [S('intervali', 0.6), S('tempo-trke', 0.45, 'rp-1200')]
+              /* R17 (p02): tempo trke ≥ 4 km od 3. nedelje */
+              [
+                S('intervali', 0.6),
+                /* 6+ dana (p05, 80 km): veći obim nosi veću osnovu doze — 1,2 km deonice, da prvi tempo trke ostane ≤ 70 %
+                   najvećeg (K7) */
+                sh.days >= 6 ? S('tempo-trke', 0.45, 'rp-1200') : S('tempo-trke', 0.6, 'rp-1000')
+              ]
         )
       );
       continue;
@@ -220,11 +226,11 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       );
     }
   }
-  return [...out, ...regularTail(sh, long, n >= 8)].slice(-n);
+  return [...out, ...regularTail(sh, long, n >= 8, n <= 9)].slice(-n);
 }
 
 /** Rep: dug (N ≥ 14) od N−7, kratak od N−4. Plan kraći od 8 nedelja nema proveru forme (N−4 je gradnja). */
-function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
+function regularTail(sh: Shape, long: boolean, check: boolean, eight = false): WeekIntent[] {
   /* jedan kvalitet (1–3 dana): tempo trke ima prednost, inače utorak; ubrzanja nisu kvalitet */
   const pick = (thu: StimulusSlot, tue: StimulusSlot): StimulusSlot =>
     thu.stimulus === 'tempo-trke' || tue.stimulus === STRIDES.stimulus ? thu : tue;
@@ -276,7 +282,11 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
         /* N−4: rasterećenje sa proverom 5 km u ČETVRTAK (ciljni p03 ned 8: „čet, sub ako može"): vršna nedelja posle
            nje počinje 5. dan posle provere i zadržava oba kvaliteta (K2: 3 dana bez brzog posle provere) */
         check
-          ? week(SPEC, 'recovery', 1, { len: 0.88 }, [KONTROLA])
+          ? eight
+            ? /* R17 (p02, p06): plan od 8–9 nedelja nema rasterećenje — provera je u nedelji gradnje (četvrtak, jedini
+                 brz trening), da gradnja traje 4 nedelje + najteža, a silazak 2 nedelje */
+              week(SPEC, 'build', 0.95, { len: 0.92 }, [KONTROLA])
+            : week(SPEC, 'recovery', 1, { len: 0.88 }, [KONTROLA])
           : week(
               RAZVOJ,
               'build',
@@ -292,9 +302,10 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
       SPEC,
       'peak',
       1,
-      /* R12 T4 (p01 ned 13): dug plan — dugi lagan, da najteža nema tri teška treninga u 4 dana (intervali čet + prag
-         u dugom ned + tempo trke uto = 3 od 4 dana trčanja); 1–3 dana i 5+ dana zadržavaju završnicu u dugom */
-      long && !sh.single && sh.days <= 4
+      /* R12 T4 / R17: dva kvaliteta + lagan dugi — najteža nema tri teška treninga (p01 ned 13, p09 ned 9: 3 od 4 dana
+         trčanja; p05 ned 9, 6 dana, 106 km: intervali + tempo trke 10 × 1 km + dugi sa tempom trke). 1–3 dana (jedan
+         kvalitet) i 5 dana (p06, p07: mali obim, budžet brzog rada) zadržavaju završnicu u dugom */
+      !sh.single && (sh.days <= 4 || sh.days >= 6)
         ? { len: 1 }
         : { len: 1, stimulus: long ? 'dugi-prag' : 'dugi-rp', dose: 1 },
       /* kratak plan (mali obim, budžet brzog rada): tempo trke u prvom mestu (četvrtak) dobija budžet prvi */
