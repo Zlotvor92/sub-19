@@ -431,3 +431,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   drugi sudija ih je čitao i našao stvarne greške u `replan` i u tekstu. To su pravila MOTORA — prenela bi se na sve
   distance. ODLUKA: generisanje novog plana je zatvoreno (ne dira se), ali HM se ne zatvara dok ponovno planiranje i
   istinitost teksta ne prođu: krug 6 po `briefs/R6-ROUND6.md`, isti Opus tab. 10K se ne otvara pre toga.
+
+### 13. 11. 2026, 05:22 — krug 6 primljen (`96f124c`), poslat na ocenu
+- Moj pregled: 605 zeleno + 8 očekivanih padova, typecheck čist, kapija 0 prekršaja (sam pokrenuo) [visoka].
+- Novi opšti testovi nad 24 scenarija (R1, R2, R5) prvo pali na 9 scenarija, sada prolaze. s09 dugi ostaje, s12 10 → 2
+  izmene, s05 prvi dugi 8,5 → 11 km. Otisci p01–p05, p07–p10 promenjeni (zamenski prag menja oblik; p08 vrh 45,0).
+- Otvoreno: p06 ned 1–2; skok dugog posle rasterećenja u PRVOBITNOM planu do +86 % (p04 70 → 131 min) — pitanje
+  postavljeno treneru (da li je dugi u rasterećenju prekratak).
+- Ocena: trener (traženo da B i C čita dan po dan, ne iz pregleda) → `coach/ROUND-V4-HM-06.md`; drugi sudija nov Opus
+  tab `session_01GnHHiWupkdx7vHFKGMsgSE` → `judge2/ROUND-V4-HM-06.md`. Sudija kruga 5 arhiviran.
