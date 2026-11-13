@@ -682,3 +682,8 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - R12: 10K tab gotov (`6b64125`), maraton tab gotov (`5cc0be9`); zahtevi prosleđeni motoru kao M12–M16.
   5K: motor M17 (model tempa), M18 (determinizam — S17 22:01 vs 21:49, prvo proveriti), M19; folder fivek prelazi
   na 5K tab (F1–F6).
+
+### 13. 11. 2026, 19:20 — odluke vlasnika o F8 (`F8-PREDLOG.md` § 9)
+- Korisnik odobrava svaku promenu; puno odobrenje za izmene baze za V4 (izvršenje u F9); Strava što više istorije
+  (≥ 26 ned sažetak, 8 ned po km); lični plan po predlogu; zaključavanje = ručna izmena budućeg dana ga zaključava
+  (bez dugmeta); uvođenje sve odjednom, zatim brisanje v2.
