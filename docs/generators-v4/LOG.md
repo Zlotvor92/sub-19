@@ -545,3 +545,14 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Sidra zona po trajanju napora (R/I 20 min, T 45 min, E max(cilj, 75 min)); „dugi < lagan" uklonjen iz cele mreže
   (postojao i pre; test ga je preskakao filterom). 4 `it.fails` u `tenk/` (R8-13/14/15) čekaju tab motora.
 - Ispisi u `plans/` nisu osveženi — radi tab motora na kraju kruga 8.
+
+### 13. 11. 2026, 09:30 — krug 8 + dopuna primljeni (`2776b5d`), ocena HM i 10K pokrenuta
+- Moj pregled: 717 zeleno + 15 očekivanih padova, typecheck čist, kapija HM 0 i 10K 0 (obe sam pokrenuo) [visoka].
+  Ceo skup traje 77 s (cilj < 40 s nije dostignut — otvoreno).
+- Urađeno: R8 1–5, 8, 9, 13 (rast u km u `weekTarget`), 14 (prvi trening ≤ 70 % planiranog vrha), 15 (blok ne spušta
+  dugi ispod `longBlockMinWeekShare`). Otvoreno: t. 7 (skraćenje umesto brisanja kvaliteta — i dalje obara udeo dugog
+  10K p06 23,9 %), t. 10 (s26), t. 11 (P1 A), izuzetak `lagan-kratak` u 10K.
+- Ocena (svi Fable, nalog vlasnika): trener → `coach/ROUND-V4-10K-01.md` (prva ocena 10K) i `coach/ROUND-V4-HM-07.md`
+  (kratka provera posle promene tempa); drugi sudija HM `session_01GnHHiZJNd2dzD1evab3sSr` → `judge2/ROUND-V4-HM-08.md`;
+  drugi sudija 10K `session_01GnHHiXDoz8PeJi5XdBJQdz` → `judge2/ROUND-V4-10K-01.md`.
+- Napomena: drugi sudija HM je opet Fable → uporediv sa krugom 2 (71,2), ne sa krugovima 3–6 (Opus).
