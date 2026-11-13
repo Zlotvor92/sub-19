@@ -1,0 +1,56 @@
+{
+  "round": "V4-10K-02",
+  "date": "2026-11-13",
+  "judge": "glavni trener (Opus); kalibracija u ROUND-V4-HM-09 (merilo ~1 poen strozije)",
+  "source": "origin/claude/v4 @ 12651ae (ispisi 5989be4)",
+  "readDayByDay": {
+    "plans": ["p01-p12"],
+    "scenarios": ["s01", "s02", "s03", "s04", "s06", "s07", "s08", "s09", "s13", "s14", "s15", "s17", "s24", "s25", "s26", "s27"],
+    "changeListOnly": ["s11", "s12", "s16"],
+    "fromOverview": ["s05", "s10", "s18", "s19", "s20", "s21", "s22", "s23"],
+    "pairs": "P1B, P2B, P3A, P3B prve 3 nedelje; ostalo iz brojeva"
+  },
+  "plan": {
+    "p01": { "prev": 76, "now": 81.5 },
+    "p02": { "prev": 70, "now": 70.5 },
+    "p03": { "prev": 77.5, "now": 78 },
+    "p04": { "prev": 75, "now": 79 },
+    "p05": { "prev": 81.5, "now": 81 },
+    "p06": { "prev": 57, "now": 66 },
+    "p07": { "prev": 80, "now": 80 },
+    "p08": { "prev": 74.5, "now": 74 },
+    "p09": { "prev": 79.5, "now": 81 },
+    "p10": { "prev": 75, "now": 76.5 },
+    "p11": { "prev": 79.5, "now": 79, "withChecks": 76, "findings": ["K7 ned 7 +12,8 %"] },
+    "p12": { "prev": 71.5, "now": 76 },
+    "average": 76.9,
+    "averageWithChecks": 76.6,
+    "atLeast80": 4
+  },
+  "adaptation": {
+    "E1": { "score": 82.8, "s01": 85, "s02": 79, "s03": 85, "s04": 82 },
+    "E2": { "score": 71.9, "s05": 83, "s06": 69.5, "s07": 64, "s08": 71 },
+    "E3": { "score": 81.8, "s09": 80, "s10": 84, "s11": 82, "s12": 81 },
+    "E4": { "score": 75.9, "s13": 76.5, "s14": 80, "s15": 70, "s16": 77 },
+    "E5": { "score": 82.5, "s17": 80, "s18": 84, "s19": 84, "s20": 82 },
+    "E6": { "score": 89.8, "s21": 90, "s22": 90, "s23": 90, "s24": 89 },
+    "E7": { "score": 69.0, "s25": 82, "s26": 59, "s27": 66 },
+    "partB": 79.1,
+    "previousPartB": 80.7
+  },
+  "personalization": { "P1": 84, "P2": 83, "P3": 82, "partC": 83.0 },
+  "composite": 78.8,
+  "previousComposite": 78.0,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "posle bolesti ostatak plana se ne snizava srazmerno (s07)" },
+    { "n": 2, "kind": "motor", "text": "granica dugog +25 % / +20 min od poslednjeg stvarnog dugog posle trke, puta, bolesti (s27, s26, s06)" },
+    { "n": 3, "kind": "motor", "text": "posle bolesti nijedna buduca nedelja veca od prvobitne (s06 nedelja -2)" },
+    { "n": 4, "kind": "motor", "text": "u prozoru bola lagan <= 65 % dugog; prvi RP <= 70 % doze koja je izazvala bol (s13, s15)" },
+    { "n": 5, "kind": "motor", "text": "tekst izmene: pravi rezultat, bez starog testa, put/bolest, ime propustenog treninga (s02, p12, s27, s09)" },
+    { "n": 6, "kind": "podatak", "text": "p06 dugi >= 45 min i >= 1,6 x lagan; upozorenje u skladu sa planom" },
+    { "n": 7, "kind": "podatak", "text": "p08 nedelja 1 = sadasnji obim, rast do x1,2; p04 ned 5-11 raste" },
+    { "n": 8, "kind": "podatak", "text": "p02 tempo trke >= 4 km od ned 3; realan predlog obima" }
+  ],
+  "verdict": "nije zatvoreno: deo B 79,1 < 80 (motor 1-4); posle ispravki ocekivano B 82-83, Plan 78-79",
+  "ownerReview": ["s27", "s06", "p06"]
+}
