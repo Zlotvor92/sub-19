@@ -445,10 +445,17 @@ function restoreAfter(built: PlanDoc, original: PlanDoc, rampEnd: IsoDate | null
   if (rampEnd === null) return built;
   const back = addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS);
   const peakFrom = addDays(rampEnd, RESTORE_PEAK_AFTER_DAYS);
+  /* Najteža nedelja izgrađena iznova (u prozoru) → i sužavanje se gradi iznova, da silazak intenziteta
+     (`safety.taper`) važi prema novoj najtežoj nedelji (dopuna 2 kruga 4, s06) */
+  const peakRebuilt = original.weeks.some(
+    (w) => w.intent.kind === 'peak' && w.start < peakFrom && w.start <= back
+  );
+  const taperFrom = addDays(original.header.goal.raceDate, -14);
   const weeks = built.weeks.map((week) => {
     const old = original.weeks.find((w) => w.start === week.start);
     if (old === undefined) return week;
     const keepPeak = old.intent.kind === 'peak' && old.start >= peakFrom;
+    if (peakRebuilt && addDays(old.start, 6) >= taperFrom) return week;
     if (old.start > back || keepPeak) return old;
     if (addDays(old.start, 6) <= back) return week;
     /* nedelja preseca granicu: dani posle nje su prvobitni */

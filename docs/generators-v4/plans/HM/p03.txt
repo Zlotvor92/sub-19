@@ -21,7 +21,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (2:06:45) traži 6:00/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od 30–40 min — nedelja tada stiže do 39,4 km, a dugi ostaje 17,8 km i nosi manji deo nedelje.
+- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od 30–40 min — nedelja tada stiže do 39,8 km, a dugi ostaje 17,8 km i nosi manji deo nedelje.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  odmor
@@ -109,7 +109,7 @@ UPOZORENJA
   pet 25. 12.  odmor
   sub 26. 12.  odmor
   ned 27. 12.  dugi 70 min lagano — 9,4 km, 70 min
-  Zbir: 24 km, 2 h 49 min, 3 treninga, brz rad 0 % vremena trčanja
+  Zbir: 24 km, 2 h 48 min, 3 treninga, brz rad 0 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 28. 12.  odmor
@@ -170,15 +170,15 @@ UPOZORENJA
 
 14. NEDELJA (od 1. 2.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
   pon 1. 2.  odmor
-  uto 2. 2.  lagano 75 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 10,9 km, 80 min
+  uto 2. 2.  lagano 65 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,5 km, 70 min
   sre 3. 2.  odmor
   čet 4. 2.  tempo trke 22 min u komadu (6:11/km) — 6,9 km, 47 min
   pet 5. 2.  odmor
   sub 6. 2.  odmor
-  ned 7. 2.  dugi 2 h 3 min, završni deo 18 min u tempu trke (6:11/km) — 17 km, 2 h 3 min
+  ned 7. 2.  dugi 1 h 48 min, završni deo 18 min u tempu trke (6:11/km) — 15 km, 1 h 48 min
       napomena: Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 34,8 km, 4 h 10 min, 3 treninga, brz rad 16 % vremena trčanja
+  Zbir: 31,4 km, 3 h 45 min, 3 treninga, brz rad 18 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 8. 2.  odmor

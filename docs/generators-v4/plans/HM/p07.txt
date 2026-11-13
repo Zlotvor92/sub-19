@@ -29,7 +29,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:45/km). Očekivano vreme na 
   sub 7. 11.  lagano 10,5 km — 10,5 km, 61 min
   ned 8. 11.  dugi 15,5 km lagano — 15,5 km, 90 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 56,6 km, 5 h 22 min, 5 treninga, brz rad 9 % vremena trčanja
+  Zbir: 56,6 km, 5 h 21 min, 5 treninga, brz rad 9 % vremena trčanja
 
 2. NEDELJA (od 9. 11.) — razvoj, gradnja; do trke 8 nedelja
   pon 9. 11.  lagano 11 km — 11 km, 64 min
@@ -63,7 +63,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:45/km). Očekivano vreme na 
   sub 28. 11.  lagano 11,5 km — 11,5 km, 67 min
   ned 29. 11.  dugi 18,5 km lagano — 18,5 km, 1 h 48 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 71 km, 6 h 35 min, 5 treninga, brz rad 20 % vremena trčanja
+  Zbir: 71 km, 6 h 36 min, 5 treninga, brz rad 20 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 30. 11.  lagano 11,5 km — 11,5 km, 67 min
@@ -86,7 +86,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:45/km). Očekivano vreme na 
   sub 12. 12.  lagano 10 km — 10 km, 58 min
   ned 13. 12.  dugi 16,5 km lagano — 16,5 km, 96 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 57 km, 5 h 27 min, 5 treninga, brz rad 6 % vremena trčanja
+  Zbir: 57 km, 5 h 26 min, 5 treninga, brz rad 6 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 14. 12.  lagano 12 km — 12 km, 70 min
@@ -98,19 +98,19 @@ Tempo trke u treninzima je tvoja današnja forma (4:45/km). Očekivano vreme na 
   ned 20. 12.  dugi 21,5 km, završni deo 10 km u tempu trke (4:45/km) — 21,5 km, 1 h 55 min
       napomena: Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 71,5 km, 6 h 37 min, 5 treninga, brz rad 21 % vremena trčanja
+  Zbir: 71,5 km, 6 h 38 min, 5 treninga, brz rad 21 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
-  pon 21. 12.  lagano 10,5 km — 10,5 km, 61 min
+  pon 21. 12.  lagano 11 km — 11 km, 64 min
   uto 22. 12.  tempo trke 2 × 3,5 km (4:45/km), oporavak 2 min džog — 13,3 km, 70 min
   sre 23. 12.  odmor
-  čet 24. 12.  lagano 10,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11,5 km, 67 min
+  čet 24. 12.  lagano 10 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11 km, 64 min
   pet 25. 12.  odmor
-  sub 26. 12.  lagano 10,5 km — 10,5 km, 61 min
-  ned 27. 12.  dugi 21 km, završni deo 5 km u tempu trke (4:45/km) — 21 km, 1 h 57 min
+  sub 26. 12.  lagano 11 km — 11 km, 64 min
+  ned 27. 12.  dugi 19 km, završni deo 5 km u tempu trke (4:45/km) — 19 km, 1 h 45 min
       napomena: Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 66,8 km, 6 h 16 min, 5 treninga, brz rad 15 % vremena trčanja
+  Zbir: 65,3 km, 6 h 7 min, 5 treninga, brz rad 16 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 28. 12.  lagano 8,5 km — 8,5 km, 50 min
@@ -121,7 +121,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:45/km). Očekivano vreme na 
   sub 2. 1.  lagano 8,5 km — 8,5 km, 50 min
   ned 3. 1.  dugi 13,5 km lagano — 13,5 km, 79 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 47,5 km, 4 h 32 min, 5 treninga, brz rad 8 % vremena trčanja
+  Zbir: 47,5 km, 4 h 33 min, 5 treninga, brz rad 8 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — završnica, nedelja trke
   pon 4. 1.  lagano 6 km — 6 km, 35 min

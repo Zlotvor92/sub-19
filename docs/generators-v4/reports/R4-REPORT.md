@@ -36,18 +36,18 @@ Kapija (`plans/gate.ts`, `gate.test.ts`): **0 prekršaja, 14/14**. `target-compa
 | p02 | 54,4 (1,36) | 20,5 | 24 % (24 %) | 42 % | 33 / 9 |
 | p03 | 38,1 (1,52) | 17,8 | 24 % (24 %) | 49 % | 32 / 9 |
 | p04 | 68,4 (1,24) | 22,4 | 21 % (18 %) | 35 % | 49 / 9 |
-| p05 | 118,2 (1,31) | 28,0 | 16 % (16 %) | 29 % | 44 / 9 |
+| p05 | 110,2 (1,22) | 28,0 | 16 % (16 %) | 26 % | 44 / 9 |
 | p06 | 44,6 (1,27) | 17,0 | 24 % (24 %) | 40 % | 25 / 9 |
 | p07 | 71,5 (1,30) | 21,5 | 21 % (21 %) | 31 % | 45 / 9 |
-| p08 | 52,5 (1,17) | 23,0 | 25 % (25 %) | 49 % | 38 / 9 |
-| p09 | 61,8 (1,37) | 22,0 | 20 % (19 %) | 40 % | 32 / 9 |
-| p10 | 38,7 (1,55) | 18,9 | 22 % (21 %) | 50 % | 32 / 9 |
-| p11 | 39,7 (1,99) | 16,9 | 18 % (18 %) | 44 % | 16 / 9 |
-| p12 | 60,8 (1,35) | 19,8 | 18 % (18 %) | 36 % | 24 / 9 |
-| vlasnik-v1 | 37,3 (1,24) | 16,0 | 24 % (24 %) | 43 % | 29 / 9 |
-| vlasnik-v2 | 47,3 (1,58) | 18,5 | 24 % (24 %) | 43 % | 31 / 9 |
+| p08 | 47,4 (1,05) | 21,5 | 25 % (25 %) | 48 % | 36 / 9 |
+| p09 | 61,8 (1,37) | 22,0 | 20 % (19 %) | 39 % | 32 / 9 |
+| p10 | 36,0 (1,44) | 17,6 | 23 % (23 %) | 50 % | 32 / 9 |
+| p11 | 39,1 (1,96) | 16,2 | 18 % (18 %) | 42 % | 16 / 9 |
+| p12 | 60,8 (1,35) | 19,8 | 18 % (18 %) | 35 % | 24 / 9 |
+| vlasnik-v1 | 37,2 (1,24) | 15,0 | 25 % (25 %) | 42 % | 29 / 9 |
+| vlasnik-v2 | 47,3 (1,58) | 18,5 | 24 % (24 %) | 42 % | 31 / 9 |
 
-Broj izmena: s05 13 · s06 11 · s13 8 · s14 11 · s16 9 (krug 3: 27 · 15 · 12 · 23 · 49).
+Broj izmena: s05 13 · s06 12 · s13 8 · s14 11 · s16 9 (krug 3: 27 · 15 · 12 · 23 · 49); čuvar posle svih 24 scenarija: 0.
 
 ## Dopuna kruga 4 (poruka organizatora, 13. 11.)
 1. D7: odsečen tempo trke postaje prag (`weeklyZoneMaxSec.fallbackStimulus`); vršna nedelja sada 16–25 % kod svih
@@ -64,6 +64,14 @@ Broj izmena: s05 13 · s06 11 · s13 8 · s14 11 · s16 9 (krug 3: 27 · 15 · 1
    nedelje od 30 km uz udeo 50 %.
 8. E1: s05 13 i s14 11 ostaju — preostale izmene su u rampi i 14 dana posle nje (stvarna skraćenja dana);
    manje bi tražilo novo pravilo (npr. bez izmena laganih dana u prozoru), pa nije rađeno.
+
+## Dopuna 2
+- p08 najduži 21,5 km (≥ 20,5 km u 4 nedelje, ned 1 = 85 %): sa 3 dana pod dugog ne raste do polaznog
+  (`longFloorGrowMinRunDays` 4); rast posle polaznog samo `spor` sa 4+ dana (`longGrowPastStart`, p04).
+- Najduži dugi prema krugu 3: nijedan duži osim v2 (18,5), p04 (22,4), P2 B i p02 (20,0 → 20,5: jedan korak
+  zaokruženja 0,5 km zbog udela u km, E7); udeo malog obima 0,41 / 0,43.
+- s06 bez nalaza: kad se najteža nedelja gradi iznova, gradi se i sužavanje, a merilo silaska je ostvaren brz rad
+  vršne nedelje (isto što meri čuvar). K5: zbir nedelje = zbir prikazanih minuta dana. target-compare 30/72.
 
 ## Nije uspelo / otvoreno
 - E1: s05 13 (cilj ≤ 12) i s14 11 (≤ 10) — preostale izmene su u rampi i 14 dana posle nje (stvarno skraćenje).

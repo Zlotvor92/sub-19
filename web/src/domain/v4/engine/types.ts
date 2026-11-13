@@ -742,6 +742,10 @@ export interface SafetyNumbers {
   /** Pod dugog u prvoj nedelji gradnje kao udeo polaznog dugog; raste za korak po nedelji gradnje (krug 5, D1/D6).
       Bez njega dugi gradnje nije ispod polaznog od prve nedelje. */
   longStartFloorShare?: number;
+  /** Pod dugog raste do polaznog samo uz bar ovoliko dana; manje dana — pod ostaje `longStartFloorShare` (D6). */
+  longFloorGrowMinRunDays?: number;
+  /** Pod dugog raste i posle polaznog (pola koraka nedeljno) samo za ove nivoe i bar ovoliko dana (D1). */
+  longGrowPastStart?: { minRunDays: number; levels: readonly LevelId[] };
   /** Korak dugog i u km (u trajanju laganog tempa); važi veće od ta dva (krug 4, S2). */
   longStepKm?: number;
   /** Udeo dugog kod malog obima (krug 4, S3): nedelja ispod `belowKm` (planirani km) uz bar `minRunDays` dana ima

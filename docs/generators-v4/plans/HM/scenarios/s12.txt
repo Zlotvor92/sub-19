@@ -71,7 +71,7 @@ UPOZORENJA
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 29. 11.  dugi 80 min lagano — 11,4 km, 80 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 34,7 km, 3 h 56 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 34,7 km, 3 h 55 min, 5 treninga, brz rad 0 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — razvoj, gradnja; do trke 11 nedelja
   pon 30. 11.  lagano 60 min — 8,6 km, 60 min
@@ -116,7 +116,7 @@ UPOZORENJA
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 27. 12.  dugi 75 min lagano — 10,7 km, 75 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 38,9 km, 4 h 16 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 38,9 km, 4 h 15 min, 5 treninga, brz rad 0 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — razvoj, gradnja; do trke 7 nedelja
   pon 28. 12.  lagano 70 min — 10 km, 70 min
@@ -141,27 +141,27 @@ UPOZORENJA
   Zbir: 60,8 km, 7 h, 5 treninga, brz rad 6 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
-  pon 11. 1.  lagano 70 min — 10 km, 70 min
+  pon 11. 1.  lagano 75 min — 10,7 km, 75 min
   uto 12. 1.  lagano 70 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 10,8 km, 75 min
   sre 13. 1.  odmor
   čet 14. 1.  tempo trke 25 min u komadu — 9,3 km, 60 min
   pet 15. 1.  odmor
-  sub 16. 1.  lagano 70 min — 10 km, 70 min
-  ned 17. 1.  dugi 2 h 10 min, završni deo 20 min u tempu trke — 19,2 km, 2 h 10 min
+  sub 16. 1.  lagano 75 min — 10,7 km, 75 min
+  ned 17. 1.  dugi 2 h, završni deo 20 min u tempu trke — 17,7 km, 2 h
       napomena: Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 59,3 km, 6 h 45 min, 5 treninga, brz rad 11 % vremena trčanja
+  Zbir: 59,2 km, 6 h 45 min, 5 treninga, brz rad 11 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 18. 1.  lagano 60 min — 8,6 km, 60 min
-  uto 19. 1.  lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,7 km, 60 min
+  pon 18. 1.  lagano 55 min — 7,9 km, 55 min
+  uto 19. 1.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8 km, 55 min
   sre 20. 1.  odmor
   čet 21. 1.  prag 2 × 7 min, oporavak 2 min džog — 7,8 km, 51 min
   pet 22. 1.  odmor
-  sub 23. 1.  lagano 60 min — 8,6 km, 60 min
-  ned 24. 1.  dugi 1 h 40 min lagano — 14,3 km, 1 h 40 min
+  sub 23. 1.  lagano 55 min — 7,9 km, 55 min
+  ned 24. 1.  dugi 95 min lagano — 13,6 km, 95 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 48 km, 5 h 31 min, 5 treninga, brz rad 4 % vremena trčanja
+  Zbir: 45,2 km, 5 h 11 min, 5 treninga, brz rad 4 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 25. 1.  lagano 55 min — 7,9 km, 55 min
@@ -176,13 +176,13 @@ UPOZORENJA
   Zbir: 56 km, 6 h 15 min, 5 treninga, brz rad 18 % vremena trčanja
 
 14. NEDELJA (od 1. 2.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
-  pon 1. 2.  lagano 45 min — 6,4 km, 45 min
-  uto 2. 2.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,2 km, 50 min
+  pon 1. 2.  lagano 50 min — 7,1 km, 50 min
+  uto 2. 2.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8 km, 55 min
   sre 3. 2.  odmor
   čet 4. 2.  tempo trke 2 × 21 min, oporavak 2 min džog — 12,5 km, 79 min
   pet 5. 2.  odmor
-  sub 6. 2.  lagano 45 min — 6,4 km, 45 min
-  ned 7. 2.  dugi 2 h 5 min lagano — 17,9 km, 2 h 5 min
+  sub 6. 2.  lagano 50 min — 7,1 km, 50 min
+  ned 7. 2.  dugi 1 h 50 min lagano — 15,7 km, 1 h 50 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 50,4 km, 5 h 44 min, 5 treninga, brz rad 12 % vremena trčanja
 
@@ -240,10 +240,9 @@ UPOZORENJA
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 3 km koja je u planu 28. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 PROMENE
-Propušten je ključni trening „dugi 2 h 5 min lagano" (3. 1.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (17. 1.) ostaje na toj dužini umesto da raste.
-- ned 17. 1.: dugi 2 h 10 min, završni deo 20 min u tempu trke → dugi 2 h 5 min, završni deo 20 min u tempu trke
+Propušten je ključni trening „dugi 2 h 5 min lagano" (3. 1.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (17. 1.) je po planu ionako kraći, pa plan ostaje isti.
 Propušten je ključni trening „dugi 2 h 15 min lagano" (10. 1.). Dugi trening je propušten 2 puta zaredom, pa se dužina više ne nastavlja tamo gde je plan stao; sledeći dugi (17. 1.) kreće od poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak.
-- ned 17. 1.: dugi 2 h 5 min, završni deo 20 min u tempu trke → dugi 2 h 5 min lagano
+- ned 17. 1.: dugi 2 h, završni deo 20 min u tempu trke → dugi 2 h lagano
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  lagano 50 min — urađeno 7,1 km, 50 min (7:00/km)
@@ -346,26 +345,26 @@ Propušten je ključni trening „dugi 2 h 15 min lagano" (10. 1.). Dugi trening
   Urađeno: 41,5 km, 4 h 45 min, 4 treninga
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
-  pon 11. 1.  lagano 70 min — 10 km, 70 min
+  pon 11. 1.  lagano 75 min — 10,7 km, 75 min
   uto 12. 1.  lagano 70 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 10,8 km, 75 min
   sre 13. 1.  odmor
   čet 14. 1.  tempo trke 25 min u komadu — 9,3 km, 60 min
   pet 15. 1.  odmor
-  sub 16. 1.  lagano 70 min — 10 km, 70 min
-  ned 17. 1.  dugi 2 h 5 min lagano — 17,9 km, 2 h 5 min
+  sub 16. 1.  lagano 75 min — 10,7 km, 75 min
+  ned 17. 1.  dugi 2 h lagano — 17,1 km, 2 h
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 58 km, 6 h 40 min, 5 treninga, brz rad 6 % vremena trčanja
+  Zbir: 58,6 km, 6 h 45 min, 5 treninga, brz rad 6 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 18. 1.  lagano 60 min — 8,6 km, 60 min
-  uto 19. 1.  lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,7 km, 60 min
+  pon 18. 1.  lagano 55 min — 7,9 km, 55 min
+  uto 19. 1.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8 km, 55 min
   sre 20. 1.  odmor
   čet 21. 1.  prag 2 × 7 min, oporavak 2 min džog — 7,8 km, 51 min
   pet 22. 1.  odmor
-  sub 23. 1.  lagano 60 min — 8,6 km, 60 min
-  ned 24. 1.  dugi 1 h 40 min lagano — 14,3 km, 1 h 40 min
+  sub 23. 1.  lagano 55 min — 7,9 km, 55 min
+  ned 24. 1.  dugi 95 min lagano — 13,6 km, 95 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 48 km, 5 h 31 min, 5 treninga, brz rad 4 % vremena trčanja
+  Zbir: 45,2 km, 5 h 11 min, 5 treninga, brz rad 4 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 25. 1.  lagano 55 min — 7,9 km, 55 min
@@ -380,13 +379,13 @@ Propušten je ključni trening „dugi 2 h 15 min lagano" (10. 1.). Dugi trening
   Zbir: 56 km, 6 h 15 min, 5 treninga, brz rad 18 % vremena trčanja
 
 14. NEDELJA (od 1. 2.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
-  pon 1. 2.  lagano 45 min — 6,4 km, 45 min
-  uto 2. 2.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,2 km, 50 min
+  pon 1. 2.  lagano 50 min — 7,1 km, 50 min
+  uto 2. 2.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8 km, 55 min
   sre 3. 2.  odmor
   čet 4. 2.  tempo trke 2 × 21 min, oporavak 2 min džog — 12,5 km, 79 min
   pet 5. 2.  odmor
-  sub 6. 2.  lagano 45 min — 6,4 km, 45 min
-  ned 7. 2.  dugi 2 h 5 min lagano — 17,9 km, 2 h 5 min
+  sub 6. 2.  lagano 50 min — 7,1 km, 50 min
+  ned 7. 2.  dugi 1 h 50 min lagano — 15,7 km, 1 h 50 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 50,4 km, 5 h 44 min, 5 treninga, brz rad 12 % vremena trčanja
 

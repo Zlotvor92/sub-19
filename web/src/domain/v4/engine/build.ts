@@ -206,13 +206,18 @@ export function longPlan(
     const startFloor = ctx.data.safety.longStartFloorShare;
     const full = Math.min(d.longStartSec, d.longMaxSec);
     /* posle polaznog pod raste dalje pola koraka po nedelji gradnje (D1 dopuna: p04 1 h 50 → 2 h 10) */
-    const n = week.builds ?? 0;
+    /* D6: sa malo dana pod ne raste do polaznog — dugi prati nameru šablona (p08: 20,5+ km samo u završnici) */
+    const few = ctx.decisions.runDays.length < (ctx.data.safety.longFloorGrowMinRunDays ?? 0);
+    const n = few ? 0 : (week.builds ?? 0);
     const start = startFloor === undefined ? full : startFloor * full;
     const reach = step > 0 ? Math.max(0, Math.ceil((full - start) / step)) : 0;
     const floor =
       startFloor === undefined
         ? full
-        : Math.min(d.longMaxSec, n <= reach ? Math.min(full, start + n * step) : full + ((n - reach) * step) / 2);
+        : Math.min(
+            d.longMaxSec,
+            n <= reach || !growPast(ctx) ? Math.min(full, start + n * step) : full + ((n - reach) * step) / 2
+          );
     wanted = Math.max(wanted, floor);
   }
   let cap = Number.POSITIVE_INFINITY;
@@ -633,22 +638,25 @@ function taperIntensity(
   /* dugi bez bloka zadržava dužinu (km), ne trajanje — lagani dani ostaju u odnosu prema dugom */
   const plainLong = (recipe: Extract<Recipe, { type: 'long' }>): Recipe => {
     const km = summarize(realize(recipe, ctx), ctx.pace).km;
-    return { ...recipe, def: steadyLongDef(ctx, null), dose: 0, sec: Math.round(km * ctx.pace.paces.easy) };
+    return { ...recipe, def: steadyLongDef(ctx, null), dose: 0, sec: Math.round((km * ctx.pace.paces.easy) / 60) * 60 };
   };
   /* kvalitet postaje lagan dan: kraći za zagrevanje/hlađenje, ne duži od plafona sužavanja ni 60 % dugog te nedelje */
   const longOfWeek = [...out.values()].find((x) => x.type === 'long');
   const longCap = longOfWeek?.type === 'long' ? 0.6 * longOfWeek.sec : Number.POSITIVE_INFINITY;
   const asEasy = (recipe: Recipe): Recipe => ({
     type: 'easy',
-    sec: Math.max(
+    sec: roundMin(Math.max(
       ctx.data.safety.minEasySec,
       Math.min(
         summarize(realize(recipe, ctx), ctx.pace).durationSec - 600,
         taperEasyMax(ctx.data.safety, ctx.decisions.runDays.length),
         longCap
       )
-    )
+    ))
   });
+  function roundMin(x: number): number {
+    return Math.round(x / 300) * 300;
+  }
   let { count, fast } = acc;
   const budget = t.weekBeforeMaxOfPeak * peakFastSec;
   for (const date of [...out.keys()].sort()) {
@@ -1098,12 +1106,22 @@ function shortenLong(
   const ratio = (share * (total - longKm)) / (1 - share) / longKm;
   const w = day.workout;
   const def = ctx.data.library.find((x) => x.id === w.libraryId) ?? steadyLongDef(ctx, null);
-  const sec = Math.max(ctx.data.safety.minEasySec, summarize(w, ctx.pace).durationSec * ratio);
+  const sec = Math.round(Math.max(ctx.data.safety.minEasySec, summarize(w, ctx.pace).durationSec * ratio) / 60) * 60;
   const recipe: Recipe = { type: 'long', sec, def, dose: Math.round(w.workSec * ratio), slot: null };
   const workout = realize(recipe, ctx);
   const out = [...days];
   out[at] = { ...day, origin: 'template', locked: false, workout };
   return out;
+}
+
+/** Da li pod dugog raste i posle polaznog (D1): nivo i broj dana iz `safety.longGrowPastStart`. */
+function growPast(ctx: BuildCtx): boolean {
+  const g = ctx.data.safety.longGrowPastStart;
+  return (
+    g !== undefined &&
+    ctx.decisions.runDays.length >= g.minRunDays &&
+    g.levels.includes(ctx.decisions.level)
+  );
 }
 
 /** Broj nedelja gradnje/vrha pre nedelje `index`. */
@@ -1245,7 +1263,7 @@ export function runPass(
       ctx,
       taperAcc
     );
-    if (week.intent.kind === 'peak') peakFast = Math.max(peakFast, recipeSums(recipes, ctx).fastSec);
+
     if (week.intent.kind !== 'recovery' && week.intent.source === 'template') {
       previousEasy = easyRefOf(recipes, ctx) ?? previousEasy;
     }
@@ -1333,6 +1351,15 @@ export function runPass(
       return final;
     });
     const days = shortenLong(rawDays, week, header, state.today, done, ctx, opts);
+    /* E9: merilo silaska je OSTVAREN brz rad vršne nedelje (posle spremnosti), isto što meri čuvar */
+    if (week.intent.kind === 'peak') {
+      const real = days.reduce(
+        (sum, x) =>
+          sum + (x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long') ? x.workout.workSec : 0),
+        0
+      );
+      peakFast = Math.max(peakFast, real);
+    }
     const built: PlanWeek = {
       index: week.index,
       start: week.start,

@@ -429,7 +429,8 @@ export function renderPlan(
       for (const note of w.notes ?? []) lines.push(`      napomena: ${note}`);
       for (const extra of day.extras ?? []) lines.push(`      uz to: ${extra}`);
       km += c.km;
-      durationSec += c.durationSec;
+      /* zbir nedelje = zbir prikazanih minuta dana (K5) */
+      durationSec += Math.round(c.durationSec / 60) * 60;
       trainings += 1;
     }
     const allPast = today !== undefined && addDays(week.start, 6) <= today;
