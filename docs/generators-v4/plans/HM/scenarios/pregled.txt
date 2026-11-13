@@ -1,23 +1,23 @@
 # Scenariji prilagođavanja — polumaraton (pregled)
 
-s01 p01 E1: ned 8, trka 10 km 2,9 % brže od očekivanog — promena: 2; nalazi čuvara posle: ispod-cilja@4
+s01 p01 E1: ned 8, trka 10 km 2,9 % brže od očekivanog — promena: 2; nalazi čuvara posle: ispod-cilja@4 ispod-cilja@13
 s02 p04 E1: ned 12, trka 10 km 3,0 % brže od očekivanog — promena: 1; nalazi čuvara posle: ispod-cilja@16
 s03 p11 E1: ned 12, trka 5 km 3,3 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
 s04 p12 E1: ned 8, prva trka u životu, 10 km 58:00 — promena: 2; nalazi čuvara posle: 0
 s05 p01 E2: bolest 7 dana u ned 6 — promena: 21; nalazi čuvara posle: ispod-cilja@4 brz-udeo@11
 s06 p04 E2: bolest 7 dana u ned 14 — promena: 15; nalazi čuvara posle: 0
-s07 p11 E2: bolest 7 dana u ned 10 — promena: 22; nalazi čuvara posle: 0
+s07 p11 E2: bolest 7 dana u ned 10 — promena: 26; nalazi čuvara posle: 0
 s08 p12 E2: bolest 7 dana u ned 13 (najteža) — promena: 12; nalazi čuvara posle: 0
 s09 p01 E3: ned 13 (najteža): propušteni RP usred nedelje i dugi sa blokom — promena: 1; nalazi čuvara posle: ispod-cilja@4
 s10 p04 E3: ned 10: propušteni kvalitet i dugi — promena: 1; nalazi čuvara posle: ispod-cilja@16
 s11 p11 E3: ned 14: propušteni kvalitet i dugi — promena: 2; nalazi čuvara posle: 0
 s12 p12 E3: ned 9–10: propušten po jedan dugi u obe nedelje — promena: 4; nalazi čuvara posle: 0
-s13 p01 E4: ned 10, bol u kolenu 4/10 posle kvaliteta — promena: 8; nalazi čuvara posle: ispod-cilja@4
+s13 p01 E4: ned 10, bol u kolenu 4/10 posle kvaliteta — promena: 12; nalazi čuvara posle: ispod-cilja@4
 s14 p04 E4: ned 7, bol 4/10 posle kvaliteta (brzina/usponi) — promena: 16; nalazi čuvara posle: ispod-cilja@16
-s15 p11 E4: ned 11, bol 4/10 posle dugog — promena: 10; nalazi čuvara posle: 0
+s15 p11 E4: ned 11, bol 4/10 posle dugog — promena: 11; nalazi čuvara posle: 0
 s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 20; nalazi čuvara posle: 0
 s17 p01 E5: juče polumaraton 1:42:30 — promena: 0; nalazi čuvara posle: 0
-s18 p04 E5: juče polumaraton 2:04:13 — promena: 0; nalazi čuvara posle: ispod-cilja@16
+s18 p04 E5: juče polumaraton 2:04:13 — promena: 0; nalazi čuvara posle: 0
 s19 p11 E5: juče polumaraton 2:12 uz hodanje (prvi) — promena: 0; nalazi čuvara posle: ispod-cilja@4
 s20 p12 E5: juče polumaraton 2:20 (prvi rezultat) — promena: 0; nalazi čuvara posle: 0
 s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: ispod-cilja@4
@@ -25,5 +25,5 @@ s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara 
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; nalazi čuvara posle: 0
 s25 p01 E7: bolest 5 dana u ned 6, pa propušten dugi 10 dana kasnije — promena: 14; nalazi čuvara posle: ispod-cilja@4
-s26 p11 E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije — promena: 25; nalazi čuvara posle: 0
+s26 p11 E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije — promena: 26; nalazi čuvara posle: 0
 s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 9; nalazi čuvara posle: 0

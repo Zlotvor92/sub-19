@@ -96,14 +96,14 @@ UPOZORENJA
 
 7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 5 nedelja
   pon 14. 12.  odmor
-  uto 15. 12.  lagano 60 min — 8,4 km, 60 min
+  uto 15. 12.  lagano 55 min — 7,7 km, 55 min
   sre 16. 12.  odmor
   čet 17. 12.  prag 3 × 7 min, oporavak 2 min džog — 9,2 km, 60 min
   pet 18. 12.  odmor
-  sub 19. 12.  lagano 60 min — 8,4 km, 60 min
+  sub 19. 12.  lagano 55 min — 7,7 km, 55 min
   ned 20. 12.  dugi 85 min lagano — 11,9 km, 85 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 37,9 km, 4 h 25 min, 4 treninga, brz rad 8 % vremena trčanja
+  Zbir: 36,5 km, 4 h 15 min, 4 treninga, brz rad 8 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — specifična priprema, vršna nedelja; do trke 4 nedelje
   pon 21. 12.  odmor
@@ -169,7 +169,7 @@ Polazim od tvojih ≈ 36 km nedeljno (4 h 9 min trčanja).
 FORMA
 Polazna forma (1. 11.): 55:06
 Današnja prognoza (28. 12.): 55:08, pouzdanost srednja
-Očekivano na dan trke: 54:33 (raspon 52:39–56:50) — 0:35 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 54:33 (raspon 52:40–56:50) — 0:35 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 12. 12.: 3 km za 15:13. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Rezultat sa 3 km prenosim na 10 km uz umanjenje, jer uz oko 33 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 10 km: 55:06 → 55:08.
 - Polazna procena je iz laganog tempa koji si uneo: oko 55:06 za 10 km. Prvi test ili trka je preciziraju.
@@ -184,7 +184,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:31/km). Očekivano vreme na dan trke (54:33) traži 5:27/km. Tempa se ubrzavaju kad trka ili test to potvrde. Kod tebe je tempo trke ≈ prag (5:31/km), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.
 
 PROMENE
-Rezultat 3 km za 15:13 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 54:33 (raspon 52:39–56:50).
+Rezultat 3 km za 15:13 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 54:33 (raspon 52:40–56:50).
 - plan: po osećaju → prag 5:31/km, tempo trke 5:31/km
 - upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Propušten je ključni trening „dugi 85 min lagano" (20. 12.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (3. 1.) je po planu kraći, pa se zbog ovoga ne produžava.
@@ -253,13 +253,13 @@ Propušten je ključni trening „dugi 90 min lagano" (27. 12.). Dugi trening je
 
 7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 5 nedelja
   pon 14. 12.  odmor
-  uto 15. 12.  lagano 60 min — urađeno 8,4 km, 60 min (7:07/km)
+  uto 15. 12.  lagano 55 min — urađeno 7,7 km, 55 min (7:07/km)
   sre 16. 12.  odmor
   čet 17. 12.  prag 3 × 7 min, oporavak 2 min džog — urađeno 9,2 km, 60 min (6:30/km)
   pet 18. 12.  odmor
-  sub 19. 12.  lagano 60 min — urađeno 8,4 km, 60 min (7:07/km)
+  sub 19. 12.  lagano 55 min — urađeno 7,7 km, 55 min (7:07/km)
   ned 20. 12.  dugi 85 min lagano — nije urađeno
-  Urađeno: 26 km, 3 h, 3 treninga
+  Urađeno: 24,6 km, 2 h 50 min, 3 treninga
 
 8. NEDELJA (od 21. 12.) — specifična priprema, vršna nedelja; do trke 4 nedelje
   pon 21. 12.  odmor

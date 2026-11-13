@@ -1,7 +1,7 @@
 P1B — P1 B — povratnik posle 3 meseca pauze, rezultat star 8 meseci (ulazi kao p01)
 MORA DA SE RAZLIKUJE: B: nedelja 1 ≈ 34–36 km, niži vrh od A (A ≈ 53), dugi kreće niže (≈ 11–12 km), prve 2 nedelje bez T/R, rana provera forme, širi raspon prognoze
 ISTORIJA: 18 trčanja; nedelje (km): 0,0 / 0,0 / 0,0 / 0,0 / 0,0 / 0,0 / 0,0 / 12,0 / 22,0 / 30,0 / 36,0 / 40,0; pauze 1, bol 0
-BROJEVI: nivo povratnik; nedelja 1 34,1 km; vrh 47,0 km; prvi dugi 11,0 km, najduži 14,0 km; prvi kvalitet u 3. nedelji; provera forme u 4. nedelji; forma 49:24 (niska), dan trke 48:54 (46:53–50:44)
+BROJEVI: nivo povratnik; nedelja 1 34,1 km; vrh 44,0 km; prvi dugi 11,0 km, najduži 14,0 km; prvi kvalitet u 3. nedelji; provera forme u 4. nedelji; forma 49:24 (niska), dan trke 48:54 (46:53–50:44)
 
 PLAN: 10 km, trka 21. 2. 2027.
 Početak 2. 11. 2026. · 16 nedelja · 4 dana trčanja nedeljno
@@ -77,21 +77,21 @@ UPOZORENJA
   sre 2. 12.  odmor
   čet 3. 12.  prag 2 × 14 min, oporavak 1:30 džog — 11,2 km, 65 min
   pet 4. 12.  odmor
-  sub 5. 12.  lagano 8,5 km — 8,5 km, 55 min
+  sub 5. 12.  lagano 6,5 km — 6,5 km, 42 min
   ned 6. 12.  dugi 12 km lagano — 12 km, 77 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 41,2 km, 4 h 18 min, 4 treninga, brz rad 11 % vremena trčanja
+  Zbir: 39,2 km, 4 h 5 min, 4 treninga, brz rad 11 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — razvoj, gradnja; do trke 10 nedelja
   pon 7. 12.  odmor
-  uto 8. 12.  intervali 5 × 3 min, oporavak 2:30 džog — 10,2 km, 60 min
+  uto 8. 12.  intervali 4 × 3 min, oporavak 2:30 džog — 9,2 km, 55 min
   sre 9. 12.  odmor
   čet 10. 12.  prag 3 × 9 min, oporavak 1 min džog — 11,1 km, 64 min
   pet 11. 12.  odmor
-  sub 12. 12.  lagano 10,5 km — 10,5 km, 68 min
+  sub 12. 12.  lagano 8 km — 8 km, 52 min
   ned 13. 12.  dugi 12,5 km, poslednjih 3 km progresivno od laganog do praga — 12,5 km, 76 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 44,3 km, 4 h 28 min, 4 treninga, brz rad 21 % vremena trčanja
+  Zbir: 40,8 km, 4 h 7 min, 4 treninga, brz rad 22 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 9 nedelja
   pon 14. 12.  odmor
@@ -99,10 +99,10 @@ UPOZORENJA
   sre 16. 12.  odmor
   čet 17. 12.  prag 28 min u komadu — 11 km, 63 min
   pet 18. 12.  odmor
-  sub 19. 12.  lagano 9,5 km — 9,5 km, 61 min
+  sub 19. 12.  lagano 7,5 km — 7,5 km, 48 min
   ned 20. 12.  dugi 13 km lagano — 13 km, 84 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 45,8 km, 4 h 39 min, 4 treninga, brz rad 18 % vremena trčanja
+  Zbir: 43,8 km, 4 h 26 min, 4 treninga, brz rad 18 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — razvoj, rasterećenje; do trke 8 nedelja
   pon 21. 12.  odmor
@@ -120,10 +120,10 @@ UPOZORENJA
   sre 30. 12.  odmor
   čet 31. 12.  prag 28 min u komadu — 11 km, 63 min
   pet 1. 1.  odmor
-  sub 2. 1.  lagano 9,5 km — 9,5 km, 61 min
+  sub 2. 1.  lagano 9 km — 9 km, 58 min
   ned 3. 1.  dugi 13,5 km, poslednjih 3 km progresivno od laganog do praga — 13,5 km, 83 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 44,2 km, 4 h 27 min, 4 treninga, brz rad 22 % vremena trčanja
+  Zbir: 43,7 km, 4 h 24 min, 4 treninga, brz rad 22 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — specifična priprema, rasterećenje; do trke 6 nedelja
   pon 4. 1.  odmor
@@ -164,21 +164,21 @@ UPOZORENJA
   sre 27. 1.  odmor
   čet 28. 1.  intervali 7 × 3 min, oporavak 2:30 džog — 12,3 km, 71 min
   pet 29. 1.  odmor
-  sub 30. 1.  lagano 10 km — 10 km, 65 min
+  sub 30. 1.  lagano 7 km — 7 km, 45 min
   ned 31. 1.  dugi 14 km, završnih 3 km u pragu — 14 km, 86 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 47 km, 4 h 44 min, 4 treninga, brz rad 21 % vremena trčanja
+  Zbir: 44 km, 4 h 24 min, 4 treninga, brz rad 23 % vremena trčanja
 
 14. NEDELJA (od 1. 2.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
   pon 1. 2.  odmor
   uto 2. 2.  tempo trke 3 × 2 km, oporavak 2 min džog — 12 km, 69 min
   sre 3. 2.  odmor
-  čet 4. 2.  intervali 5 × 3 min, oporavak 2:30 džog — 10,2 km, 60 min
+  čet 4. 2.  lagano 6 km — 6 km, 39 min
   pet 5. 2.  odmor
-  sub 6. 2.  lagano 5 km — 5 km, 32 min
-  ned 7. 2.  dugi 11,5 km lagano — 11,5 km, 74 min
-  Zbir: 38,7 km, 3 h 55 min, 4 treninga, brz rad 19 % vremena trčanja
+  sub 6. 2.  lagano 6 km — 6 km, 39 min
+  ned 7. 2.  dugi 10,5 km lagano — 10,5 km, 68 min
+  Zbir: 34,5 km, 3 h 35 min, 4 treninga, brz rad 14 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 8. 2.  odmor
@@ -186,9 +186,9 @@ UPOZORENJA
   sre 10. 2.  odmor
   čet 11. 2.  intervali 3 × 3 min, oporavak 2:30 džog — 8,1 km, 49 min
   pet 12. 2.  odmor
-  sub 13. 2.  lagano 5 km — 5 km, 32 min
+  sub 13. 2.  lagano 6 km — 6 km, 39 min
   ned 14. 2.  dugi 10,5 km lagano — 10,5 km, 68 min
-  Zbir: 31,6 km, 3 h 17 min, 4 treninga, brz rad 11 % vremena trčanja
+  Zbir: 32,6 km, 3 h 24 min, 4 treninga, brz rad 10 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — završnica, nedelja trke
   pon 15. 2.  odmor

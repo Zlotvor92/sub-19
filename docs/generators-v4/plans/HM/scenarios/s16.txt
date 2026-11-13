@@ -1,7 +1,7 @@
 S16 — p12, E4: ned 5, bol 4/10 posle laganog dana
 
 STANJE: danas 2026-11-30; sadašnji obim 45 km nedeljno, 5 dana; forma 2:02:15 (pouzdanost srednja), očekivano na dan trke 2:00:57.
-DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-11-30 („lagano 60 min"). Događaji: result:2026-11-28:run-w4d5, pain:2026-11-30.
+DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-11-30 („lagano 55 min"). Događaji: result:2026-11-28:run-w4d5, pain:2026-11-30.
 PROMENA: 20.
 
 ==================== PRE ====================
@@ -74,15 +74,15 @@ UPOZORENJA
   Zbir: 31,9 km, 3 h 35 min, 5 treninga, brz rad 0 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — razvoj, gradnja; do trke 11 nedelja
-  pon 30. 11.  lagano 60 min — 8,6 km, 60 min
+  pon 30. 11.  lagano 55 min — 7,9 km, 55 min
   uto 1. 12.  lagano 55 min — 7,9 km, 55 min
   sre 2. 12.  odmor
   čet 3. 12.  prag 3 × 8 min, oporavak 2 min džog — 9,9 km, 63 min
   pet 4. 12.  odmor
-  sub 5. 12.  lagano 60 min — 8,6 km, 60 min
+  sub 5. 12.  lagano 55 min — 7,9 km, 55 min
   ned 6. 12.  dugi 1 h 45 min lagano — 15 km, 1 h 45 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 50 km, 5 h 43 min, 5 treninga, brz rad 7 % vremena trčanja
+  Zbir: 48,6 km, 5 h 33 min, 5 treninga, brz rad 7 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — razvoj, gradnja; do trke 10 nedelja
   pon 7. 12.  lagano 60 min — 8,6 km, 60 min
@@ -240,7 +240,7 @@ Rezultat 3 km za 15:13 (28. 11.): tempa su sada izračunata iz ovog rezultata, u
 Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 10. 12. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 14. 12. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 17. 12.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu.
 - uto 1. 12.: lagano 55 min → odmor
 - čet 3. 12.: prag 3 × 8 min, oporavak 2 min džog → lagano 45 min
-- sub 5. 12.: lagano 60 min → lagano 40 min
+- sub 5. 12.: lagano 55 min → lagano 40 min
 - ned 6. 12.: dugi 1 h 45 min lagano → dugi 70 min lagano
 - pon 7. 12.: lagano 60 min → lagano 45 min
 - uto 8. 12.: lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 60 min
@@ -298,14 +298,14 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 10. 12. trči s
   Urađeno: 26,9 km, 3 h 1 min, 5 treninga
 
 5. NEDELJA (od 30. 11.) — razvoj, gradnja; do trke 11 nedelja
-  pon 30. 11.  lagano 60 min — urađeno 8,6 km, 60 min (7:00/km)
+  pon 30. 11.  lagano 55 min — urađeno 7,9 km, 55 min (7:00/km)
   uto 1. 12.  odmor
   sre 2. 12.  odmor
   čet 3. 12.  lagano 45 min — 6,4 km, 45 min
   pet 4. 12.  odmor
   sub 5. 12.  lagano 40 min — 5,7 km, 40 min
   ned 6. 12.  dugi 70 min lagano — 10 km, 70 min
-  Zbir: 30,7 km, 3 h 35 min, 4 treninga, brz rad 0 % vremena trčanja
+  Zbir: 30 km, 3 h 30 min, 4 treninga, brz rad 0 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — razvoj, gradnja; do trke 10 nedelja
   pon 7. 12.  lagano 45 min — 6,4 km, 45 min
