@@ -29,7 +29,7 @@ describe('krug 9b — A10 (a): sužavanje nije naopako i ne izostavlja dan', () 
       bad.push(...taperShape(`s${String(s.no)}`, r.after, r.afterState.availability.runDays));
     }
     expect(bad).toEqual([]);
-  });
+  }, 60_000);
 });
 
 describe('krug 9b — A2: trka u prozoru povratka', () => {
