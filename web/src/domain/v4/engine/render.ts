@@ -27,6 +27,7 @@ import { countWeeks } from './template';
 import type {
   Change,
   DistanceData,
+  IsoDate,
   Paces,
   PlanDay,
   PlanDoc,
