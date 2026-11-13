@@ -89,7 +89,9 @@ važi isključivo ovaj odeljak.
    (izmena motora ne sme nenamerno da promeni plan druge distance). Bez višesatnih matrica.
 
 **Rad**
-11. V4 se razvija na grani `claude/v4` dok ne zameni v2 u aplikaciji. Organizator vodi; tabovi rade na Opus 5.5,
+11. V4 se razvija na grani `claude/v4` dok ne zameni v2 u aplikaciji. **Modeli (vlasnik, 13. 11. 2026): organizator `claude-fable-5-2`; glavni trener i drugi sudija su uvek NOVI
+    tabovi na `claude-fable-5-2`; sve ostalo `claude-opus-5-5`, mehanika `claude-sonnet-5-5`. Organizator na ~700 000
+    tokena konteksta piše `docs/generators-v4/HANDOFF-<N>.md` i predaje titulu novom Fable tabu.** Organizator vodi; tabovi rade na Opus 5.5,
     a za baš složene stvari (jezgro motora, model stanja i opterećenja, trenerski sud) organizator sme da odredi
     Fable 5.2.
 12. Ostaje bez izuzetka: ništa u `main`, bez deploya, bez izmene baze i bez PR-a bez izričite potvrde vlasnika;
