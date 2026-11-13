@@ -926,7 +926,24 @@ export function estimateForm(
     ceilingGain: r2(gain),
     history,
     /* F4-K2: lična kriva forme po dužini za tempa i pun napor u planu; A14: granice iz stvarnih rezultata */
-    transfer: withLimits(curveAt(today).curve, rawResults, today)
+    transfer: withUp(
+      withLimits(curveAt(today).curve, rawResults, today),
+      rawResults.some((x) => x.day <= today && x.distanceM <= C.UP_EVIDENCE_MAX_M) ||
+        qualityDays.some((x) => x <= today),
+      tenureOf(facts) === 'pocetnik' ||
+        ((weeklyKmAt(today) ?? Number.POSITIVE_INFINITY) < C.UP_LOW_VOLUME_KM &&
+          vdot >= C.UP_HIGH_FORM_VDOT)
+    )
+  };
+}
+
+/** A7 (krug 9): bez ličnog β i bez dokaza na kraćoj dužini prenos naviše je mali i ograničen (početnik/mali obim uz
+    visoku formu: 0). */
+function withUp(curve: Transfer, evidence: boolean, none: boolean): Transfer {
+  if (curve.personal || evidence) return curve;
+  return {
+    ...curve,
+    up: { beta: none ? 0 : C.UP_BETA_NO_EVIDENCE, maxSec: none ? 0 : C.UP_MAX_SEC_NO_EVIDENCE }
   };
 }
 

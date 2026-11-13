@@ -110,12 +110,14 @@ export function vdotAt(vdot: Vdot, distanceM: Meters, transfer?: Transfer): Vdot
   /* granice pomaka (u VDOT, oko `vdot`): VDOT ~ brzina, pa Δv ≈ v · Δp / (p − Δp) */
   const pI = paceAtShare(vdot, ZONE_SHARE.I);
   const pM = paceAtShare(vdot, ZONE_SHARE.M);
-  const upMax = (vdot * TRANSFER_UP_MAX_SEC) / (pI - TRANSFER_UP_MAX_SEC);
+  const upSec = t.up?.maxSec ?? TRANSFER_UP_MAX_SEC;
+  const upMax = upSec <= 0 ? 0 : (vdot * upSec) / (pI - upSec);
   const downMax = (vdot * TRANSFER_DOWN_MAX_SEC) / (pM + TRANSFER_DOWN_MAX_SEC);
   /* pomak krive od preloma: ka kraćoj dužini (naviše) pola β bez ličnog, ka dužoj pun β */
   const offset = (m: Meters): number => {
     const l = Math.log(anchor / clampM(m));
-    const raw = (l > 0 && !t.personal ? TRANSFER_UP_SHARE * t.beta : t.beta) * l;
+    const upBeta = t.up?.beta ?? TRANSFER_UP_SHARE * t.beta;
+    const raw = (l > 0 && !t.personal ? upBeta : t.beta) * l;
     return Math.min(upMax, t.capDown === true ? Math.max(-downMax, raw) : raw);
   };
   return vdot - offset(t.refM) + offset(distanceM);

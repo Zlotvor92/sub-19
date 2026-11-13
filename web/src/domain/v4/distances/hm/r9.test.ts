@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildState, plan, type DistanceData, type PlanDoc, type RunnerState } from '../../engine';
 import { diffDays } from '../../engine/dates';
-import { effortResult, paceAtShare, vdotFromResult } from '../../engine/vdot';
+import { effortResult, paceAtShare, vdotFromResult, zonePaces } from '../../engine/vdot';
 import { ZONE_SHARE } from '../../engine/constants';
 import { estimateForm } from '../../fitness';
 import { hm } from './index';
@@ -77,5 +77,31 @@ describe('krug 9 — A14: zone nikad brže od same trke', () => {
       bad.push(...zoneViolations(`s${String(s.no)}`, r.after, r.afterState, hm));
     }
     expect(bad).toEqual([]);
+  });
+});
+
+describe('krug 9 — A7: prenos naviše bez dokaza', () => {
+  it('bez ličnog β i bez kraćeg dokaza: I/R/T najviše 3 s/km brži od tabele na dužini cilja; početnik 0', () => {
+    for (const p of PROFILES) {
+      const state = buildState(factsOf(p), p.goal, hm, estimateForm);
+      const t = state.form.transfer;
+      if (t?.up === undefined) continue;
+      const r = plan(state, p.goal, hm);
+      if (!r.ok || r.doc.header.paces.byFeel) continue;
+      const h = r.doc.header;
+      const flat = zonePaces(h.form.paceVdot, hm.distanceM, false, hm.safety.intervalPaceFloor);
+      for (const z of ['T', 'I', 'R'] as const)
+        expect(flat[z] - h.paces[z], `${p.id} ${z}`).toBeLessThanOrEqual(t.up.maxSec + 1);
+    }
+  });
+  it('manji obim ne dobija brži prag (p08 prema p07)', () => {
+    const pace = (id: string): number => {
+      const p = PROFILES.find((x) => x.id === id);
+      if (p === undefined) throw new Error(id);
+      const r = plan(buildState(factsOf(p), p.goal, hm, estimateForm), p.goal, hm);
+      if (!r.ok) throw new Error(id);
+      return r.doc.header.paces.T;
+    };
+    expect(pace('p08')).toBeGreaterThanOrEqual(pace('p07'));
   });
 });

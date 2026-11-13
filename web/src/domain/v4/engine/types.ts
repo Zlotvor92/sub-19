@@ -220,6 +220,8 @@ export interface Transfer {
       što je sam istrčao. `maxVdot`: najveći sirovi VDOT rezultata (VDOT zone ga ne prelazi); `tFloor`: prag nije
       brži od tempa trke od 40–70 min; `iFloor`: intervali nisu brži od tempa trke/testa do 15 min (s/km). */
   limits?: { maxVdot?: Vdot; tFloor?: SecPerKm; iFloor?: SecPerKm };
+  /** A7 (krug 9): prenos naviše bez dokaza — jedan mali β (umesto pola β iz obima) i najviše ovoliko s/km. */
+  up?: { beta: number; maxSec: number };
 }
 
 /** Tempa zona izvedena iz `FormHeader.paceVdot` (§ 5.4). E je raspon, ostalo tačka. */

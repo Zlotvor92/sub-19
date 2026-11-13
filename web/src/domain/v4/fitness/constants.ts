@@ -175,3 +175,11 @@ export const FIRST_RESULT_MIN_RANGE = 0.02;
 export const SIGMA_OTHER_DISTANCE = 1.0;
 /** Polazna tačka iz laganih trčanja: medijana tempa kao 72 % VO2max (F4-K2; bilo 70 %). [niska] */
 export const EASY_START_SHARE = 0.72;
+
+/** A7 (krug 9): prenos naviše bez ličnog β i bez dokaza na kraćoj dužini (rezultat ≤ `UP_EVIDENCE_MAX_M` ili odrađen
+    kvalitet): jedan β nezavisan od obima i najviše 3 s/km; početnik i mali obim uz visoku formu: 0. [niska] */
+export const UP_BETA_NO_EVIDENCE = 1;
+export const UP_MAX_SEC_NO_EVIDENCE = 3;
+export const UP_EVIDENCE_MAX_M = 10000;
+export const UP_LOW_VOLUME_KM = 35;
+export const UP_HIGH_FORM_VDOT = 50;
