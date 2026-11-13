@@ -1,0 +1,300 @@
+{
+ "sudija": "drugi (nezavisni)",
+ "distanca": "10K",
+ "krug": "ROUND-V4-10K-03",
+ "stanje": "02e06e1",
+ "datum": "2026-11-13",
+ "planovi": [
+  {
+   "plan": "p01",
+   "ocene": {
+    "P1": 7,
+    "P2": 7,
+    "P3": 8,
+    "P4": 8,
+    "P5": 8,
+    "P6": 7,
+    "P7": 7
+   },
+   "ukupno": 74.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 13: tri teška treninga u 4 dana, brz rad 24 %",
+    "intervali 4:15/km (~21 s/km brže od TT 4:36)",
+    "zagrevanje/hlađenje nisu zapisani (10×200 m = 9,6 km)"
+   ]
+  },
+  {
+   "plan": "p02",
+   "ocene": {
+    "P1": 6,
+    "P2": 8,
+    "P3": 5,
+    "P4": 5,
+    "P5": 7,
+    "P6": 5,
+    "P7": 7
+   },
+   "ukupno": 62.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "samo 3 nedelje gradnje od 8 (ned 4 test, ned 6–8 sužavanje)",
+    "VO2 rad ukupno ≈ 2,4 km + 9 min",
+    "„uneo si 43:21 za 10 km\" a uneto je 5 km 20:25"
+   ]
+  },
+  {
+   "plan": "p03",
+   "ocene": {
+    "P1": 7,
+    "P2": 7,
+    "P3": 6,
+    "P4": 7,
+    "P5": 6,
+    "P6": 6,
+    "P7": 7
+   },
+   "ukupno": 66.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dugi 91 min = 43 % nedelje (12,5/29,1 km)",
+    "„treba bar 35 km\" za trkača od 59 min",
+    "ned 5 dva dana uzbrdica, bez praga"
+   ]
+  },
+  {
+   "plan": "p04",
+   "ocene": {
+    "P1": 7,
+    "P2": 7,
+    "P3": 8,
+    "P4": 8,
+    "P5": 8,
+    "P6": 7,
+    "P7": 8
+   },
+   "ukupno": 75.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 14–16: 3 nedelje po 2 kvaliteta + dugi (61,1/61,1/49,8 km)",
+    "lagani 80–85 min + dugi 110 min = 7 h nedeljno",
+    "test u ned 4 u nedelji rasterećenja"
+   ]
+  },
+  {
+   "plan": "p05",
+   "ocene": {
+    "P1": 7,
+    "P2": 7,
+    "P3": 8,
+    "P4": 8,
+    "P5": 7,
+    "P6": 7,
+    "P7": 8
+   },
+   "ukupno": 74.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 9: 106,2 km, 3 kvaliteta (10×1 km TT)",
+    "zagrevanje 15 min kratko za <36 min",
+    "pregled kaže vrh 95,9, plan 106,2"
+   ]
+  },
+  {
+   "plan": "p06",
+   "ocene": {
+    "P1": 4,
+    "P2": 8,
+    "P3": 3,
+    "P4": 4,
+    "P5": 6,
+    "P6": 5,
+    "P7": 6
+   },
+   "ukupno": 51.0,
+   "dao_bih": "ne",
+   "zamerke": [
+    "kvalitet izbačen brzom trkaču (brz rad 7–16 %)",
+    "vršna nedelja = 3. od 8",
+    "5 × lagano 24 min umesto 4 duža dana"
+   ]
+  },
+  {
+   "plan": "p07",
+   "ocene": {
+    "P1": 8,
+    "P2": 7,
+    "P3": 8,
+    "P4": 8,
+    "P5": 8,
+    "P6": 7,
+    "P7": 8
+   },
+   "ukupno": 77.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 5: 5×1 km I + 8×1 km TT + dugi sa TT, 20 %",
+    "intervali 4:13 prebrzi za 45:13"
+   ]
+  },
+  {
+   "plan": "p08",
+   "ocene": {
+    "P1": 7,
+    "P2": 7,
+    "P3": 7,
+    "P4": 7,
+    "P5": 8,
+    "P6": 8,
+    "P7": 8
+   },
+   "ukupno": 73.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dugi 18,7 km = 39 %, lagani dan 14,5 km",
+    "ned 2/5/7 bez pravog kvaliteta",
+    "ned 16: 8 km u TT 2 ned pred trku"
+   ]
+  },
+  {
+   "plan": "p09",
+   "ocene": {
+    "P1": 7,
+    "P2": 7,
+    "P3": 7,
+    "P4": 8,
+    "P5": 7,
+    "P6": 8,
+    "P7": 8
+   },
+   "ukupno": 73.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 3 i 6: 21 % brzog po osećaju pre testa",
+    "tempa po osećaju do ned 8"
+   ]
+  },
+  {
+   "plan": "p10",
+   "ocene": {
+    "P1": 6,
+    "P2": 6,
+    "P3": 6,
+    "P4": 7,
+    "P5": 7,
+    "P6": 7,
+    "P7": 7
+   },
+   "ukupno": 64.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "dugi 110 min i lagani 80 min uz 33,6 km",
+    "vrh ×1,68 (20→33,6 km)",
+    "vršna nedelja 7 % brzog"
+   ]
+  },
+  {
+   "plan": "p11",
+   "ocene": {
+    "P1": 7,
+    "P2": 9,
+    "P3": 5,
+    "P4": 6,
+    "P5": 7,
+    "P6": 6,
+    "P7": 7
+   },
+   "ukupno": 68.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "TT tek od ned 14, prognoza −1:41 optimistična",
+    "nejasno upozorenje o 27,2 km",
+    "vršna nedelja 6 % brzog"
+   ]
+  },
+  {
+   "plan": "p12",
+   "ocene": {
+    "P1": 7,
+    "P2": 8,
+    "P3": 6,
+    "P4": 7,
+    "P5": 7,
+    "P6": 5,
+    "P7": 7
+   },
+   "ukupno": 68.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "raspon 50:28–56:48 uži na sporijoj strani",
+    "TT 4×1,6 km po osećaju bez pripreme",
+    "ned 3 „razvoj\" bez brzog"
+   ]
+  }
+ ],
+ "prosek_planova": 68.8,
+ "scenariji": {
+  "s01": 9,
+  "s02": 7,
+  "s03": 8.5,
+  "s04": 9,
+  "s05": 6,
+  "s06": 6,
+  "s07": 6.5,
+  "s08": 8,
+  "s09": 8,
+  "s10": 8.5,
+  "s11": 7,
+  "s12": 8,
+  "s13": 8.5,
+  "s14": 8,
+  "s15": 7,
+  "s16": 6,
+  "s17": 8.5,
+  "s18": 8.5,
+  "s19": 8,
+  "s20": 8.5,
+  "s21": 10,
+  "s22": 9,
+  "s23": 10,
+  "s24": 9,
+  "s25": 7,
+  "s26": 5.5,
+  "s27": 7
+ },
+ "prosek_scenarija_0_10": 7.85,
+ "prosek_scenarija_0_100": 78.5,
+ "parovi": {
+  "P1": 8,
+  "P2": 7,
+  "P3": 5.5
+ },
+ "prosek_parova_0_100": 68.3,
+ "ispravke": [
+  "mali obim ne gasi kvalitet brzom trkaču; vrh ne u 3. od 8 ned (p06, p02)",
+  "8 ned: najviše 2 ned sužavanja, bez test-rasterećenja u ned 4",
+  "povratak posle bolesti ~65/85/100 %, bez „lagano 4 km\" (s05, s06, s25)",
+  "provera forme ne istiskuje ključni TT 3–4 ned pred trku ni posle istrčane trke (s07, s15, s16, s26)",
+  "doslednost teksta posle događaja (s26 stara prognoza, s16 stari datum testa, s27 „bolest\" za put, s02 bez PROMENE)",
+  "poreklo forme: navesti stvarni unos i preračun (p02)",
+  "najviše 2 teška dana kod 4 dana; dugi sa pragom = kvalitet (p01 ned 13, p07 ned 5)",
+  "dugi kod sporih ~90–95 min i ≤ 40 %; lagani ne 80+ min (p10, p04, p03)",
+  "zagrevanje/hlađenje u brzim treninzima; intervali 10K tempo −10–15 s/km",
+  "pregled/kapija i upozorenja = brojevi plana (p05/p08/p10 vrh, P3A „60,3 km\")"
+ ],
+ "za_vlasnika": [
+  "p06",
+  "p01",
+  "s26"
+ ],
+ "procitano_van_planova": [
+  "plans/10K/pregled.md (tabela kapije)",
+  "zaglavlja parova „MORA DA SE RAZLIKUJE\" pre zapisa očekivanja"
+ ],
+ "nije_otvarano": [
+  "target-compare.md",
+  "nalazi-cuvara.txt",
+  "scenarios/pregled.txt",
+  "pairs/pregled.txt"
+ ]
+}
