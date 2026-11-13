@@ -570,6 +570,13 @@ describe('R8: propušten ključni trening', () => {
     const r = replan(start, state, [missedEvent(start, missed.date)], EXAMPLE);
     const next = longs(r.doc).find((d) => d.date > missed.date);
     const planned = longs(start).find((d) => d.date === next?.date);
+    /* krug 6 (R1): nadoknada samo u naredne 2 nedelje i van sužavanja — inače plan ostaje isti, uz rečenicu */
+    const late = next === undefined || diffDays(next.date, today) > 14 || r.doc.weeks.findIndex((w) => w.days.some((d) => d.id === next.id)) >= r.doc.weeks.length - 2;
+    if (late) {
+      expect(next?.workout?.workSec).toBe(planned?.workout?.workSec);
+      expect(r.changes[0]?.reason).toContain('ostaje kako je planiran');
+      return;
+    }
     expect(next?.workout?.workSec ?? 0).toBeGreaterThan(0);
     expect(next?.workout?.workSec ?? 0).toBeLessThanOrEqual((missed.workout?.workSec ?? 0) + 60);
     /* Ne manje od planiranog ni od koraka pre propuštenog (kad je plan za taj dan imao manje). */
@@ -582,7 +589,7 @@ describe('R8: propušten ključni trening', () => {
     expect(r.changes[0]?.reason).toContain('na prethodnom koraku, ne na većem');
   });
 
-  it('(c) dva propuštena duga zaredom: sledeći dugi ≤ poslednji odrađen + korak, bez bloka; lanac ide od odrađenog', () => {
+  it('(c) dva propuštena duga zaredom: sledeći dugi bez bloka, ne kraći od prvobitnog (krug 6, R1)', () => {
     /* Bez plafona udela u nedelji i sa malim korakom: dugi raste svake nedelje, pa propušteni lanac veže. */
     const data = withSafety(EXAMPLE, { longStepSec: 290, longShareByRunDays: { '1': 1 } });
     const probe = midPlan('2026-11-15', () => false, data).start;
@@ -602,10 +609,10 @@ describe('R8: propušten ključni trening', () => {
     const after = longs(r.doc).filter((d) => d.date > today);
     const next = after[0];
     expect(next?.workout?.workSec).toBe(0);
-    expect(secOf(r.doc, next)).toBeLessThanOrEqual(lastDone + step + ROUND);
-    expect(secOf(r.doc, next)).toBeLessThan(
-      summarize(longs(start).find((d) => d.date === next?.date)?.workout ?? null, ctx).durationSec
-    );
+    /* krug 6 (R1): sledeći dugi nije kraći od prvobitnog (ne „poslednji odrađen + korak"), ali bez bloka */
+    const plannedSec = summarize(longs(start).find((d) => d.date === next?.date)?.workout ?? null, ctx).durationSec;
+    expect(secOf(r.doc, next)).toBeGreaterThanOrEqual(plannedSec - ROUND);
+    void lastDone;
     let previous = secOf(r.doc, next);
     for (const day of after.slice(1, 4)) {
       const sec = secOf(r.doc, day);

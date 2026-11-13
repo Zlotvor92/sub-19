@@ -22,9 +22,12 @@ import {
   MISSED_LOOKAHEAD_DAYS,
   NO_FAST_DAYS_AFTER_EFFORT,
   RESTORE_AFTER_RAMP_DAYS,
-  RESTORE_PEAK_AFTER_DAYS
+  RESTORE_PEAK_AFTER_DAYS,
+  RETURN_LONG_JUMP_SEC,
+  RETURN_LONG_JUMP_SHARE,
+  RETURN_WEEK_JUMP_SHARE
 } from './constants';
-import { doneDayIds, isMutable, runPass } from './build';
+import { buildCtx, doneDayIds, isMutable, runPass } from './build';
 import { addDays, isValidDate, mondayOf } from './dates';
 import {
   assignDays,
@@ -34,6 +37,7 @@ import {
   decidePeak,
   decideWarmup,
   longStepOf,
+  minEasyOf,
   decide
 } from './decide';
 import { sortEvents } from './events';
@@ -55,6 +59,7 @@ import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { adjustRaceDay, skeleton } from './plan';
 import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
+import { realize } from './select';
 import { lastLongAfterEffort, lastLongBefore, normalizeAvailability } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import type {
@@ -187,6 +192,89 @@ const MISSED_MEANING = {
     gradnje/vrha dobija blok na prethodnom koraku lestvice (ne većem), a ako takve nedelje nema — nije
     nadoknadivo; (c) više propuštenih dugih zaredom: sledeći dugi ≤ poslednji odrađen + korak, bez bloka, a lanac
     dugog dalje ide od stvarno odrađenog. Inače: sledeći isti trening ostaje na propuštenoj dozi ili dužini. */
+/** R1 + R6 (krug 6): propušten trening ne kvari ostatak plana. Iz ishoda ostaju samo izmene u naredne
+    `MISSED_LOOKAHEAD_DAYS` dana, van poslednje dve nedelje pred trku (sužavanje) i nedelje trke, i ne na laganim danima
+    (rep od ± 5 min); dugi ne postaje kraći od prvobitnog (nadoknada nikad na račun sledećeg dugog). */
+function guardMissed(
+  c: Candidate | null,
+  original: PlanDoc,
+  state: RunnerState,
+  data: DistanceData
+): Candidate | null {
+  if (c === null) return null;
+  const pace = paceCtxOf(original.header);
+  const ctxB = buildCtx(c.doc.header, data);
+  let lengthKept = false;
+  const n = original.weeks.length;
+  const last = addDays(state.today, MISSED_LOOKAHEAD_DAYS);
+  /* zašto je ciljni dan vraćen (za rečenicu trkaču) */
+  let why: string | null = null;
+  const weeks = c.doc.weeks.map((w, i): PlanWeek => {
+    const old = original.weeks[i];
+    if (old === undefined || old.start !== w.start) return w;
+    const taper = w.index >= n - 2;
+    return {
+      ...w,
+      days: w.days.map((d): PlanDay => {
+        const o = old.days.find((x) => x.id === d.id);
+        if (o === undefined || canonical(o.workout) === canonical(d.workout)) return d;
+        const target = d.id === c.repeatDayId;
+        if (taper) {
+          if (target) why = 'poslednje dve nedelje pred trku su za odmor';
+          return o;
+        }
+        if (d.date > last) {
+          if (target) why = 'nadoknada važi samo u naredne dve nedelje';
+          return o;
+        }
+        if (o.workout?.kind === 'easy' && d.workout?.kind === 'easy') return o;
+        if (o.workout?.kind === 'long' && d.workout?.kind === 'long') {
+          const was = summarize(o.workout, pace).durationSec;
+          if (summarize(d.workout, pace).durationSec < was - 60) {
+            /* sadržaj izmene ostaje (bez bloka / manji blok), dužina je prvobitna */
+            const sameContent = d.workout.workSec === o.workout.workSec && d.workout.libraryId === o.workout.libraryId;
+            if (sameContent) {
+              if (target) why = 'propušten trening se ne nadoknađuje skraćivanjem sledećeg dugog';
+              return o;
+            }
+            const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
+            /* zaokruživanje dana (0,5 km) ne sme da ga spusti ispod prvobitnog */
+            const dose = d.workout.workSec;
+            const at = (extraKm: number): ReturnType<typeof realize> =>
+              realize(
+                { type: 'long', sec: Math.ceil((was + extraKm * ctxB.pace.paces.easy) / 60) * 60, def, dose, slot: null },
+                ctxB
+              );
+            const first = at(0.25);
+            const workout =
+              first !== null && summarize(first, pace).durationSec >= was - 60 ? first : at(0.75);
+            if (workout === null) return d;
+            if (target) lengthKept = true;
+            return { ...d, workout };
+          }
+        }
+        return d;
+      })
+    };
+  });
+  let action: string | null =
+    why === null || c.missed === undefined
+      ? null
+      : `sledeći ${c.missed.day.workout?.kind === 'long' ? 'dugi' : 'isti trening'} ostaje kako je planiran — ${String(why)}`;
+  if (lengthKept && why === null) {
+    const now = weeks.flatMap((w) => w.days).find((d) => d.id === c.repeatDayId);
+    const was = original.weeks.flatMap((w) => w.days).find((d) => d.id === c.repeatDayId);
+    const less = (now?.workout?.workSec ?? 0) < (was?.workout?.workSec ?? 0);
+    const kept = c.missed?.action ?? '';
+    if (now !== undefined)
+      action = kept.includes('prethodnom koraku')
+        ? `${kept}; dužina ostaje prvobitna`
+        : `sledeći dugi (${fmtDate(now.date)}) ostaje prvobitne dužine${(now.workout?.workSec ?? 0) === 0 ? ', bez brzog završnog dela' : less ? ', sa kraćim završnim delom u tempu trke' : ''} — propušten trening se ne nadoknađuje skraćivanjem sledećeg dugog`;
+  }
+  const missed = action !== null && c.missed !== undefined ? { ...c.missed, action } : c.missed;
+  return { ...c, doc: { ...c.doc, weeks }, ...(missed === undefined ? {} : { missed }) };
+}
+
 function onMissed(
   doc: PlanDoc,
   state: RunnerState,
@@ -429,13 +517,98 @@ function onPause(
     doc,
     full ? null : rampEnd
   );
+  const until = full ? rampEnd : minDate(addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc));
+  /* R2 (krug 6): izlazak iz prozora bez skoka */
+  const smooth = smoothExit(built, doc, rampEnd, state, data);
   return {
-    doc: full ? refreshWarnings(built, state, data) : built,
-    until: full ? rampEnd : minDate(addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc))
+    doc: full ? refreshWarnings(smooth.doc, state, data) : smooth.doc,
+    until: smooth.until > until ? smooth.until : until
   };
 }
 
 const minDate = (a: IsoDate, b: IsoDate): IsoDate => (a < b ? a : b);
+
+/** R2 (krug 6): izlazak iz prozora izmene bez skoka. Posle `end` nedelja po nedelja: dugi najviše
+    `RETURN_LONG_JUMP_SHARE` / `RETURN_LONG_JUMP_SEC` iznad najvećeg od prethodnih (od prve cele nedelje posle
+    događaja), nedelja najviše `RETURN_WEEK_JUMP_SHARE` — ili koliko i prvobitan plan na tom mestu (rasterećenje →
+    gradnja). Nedelja koja traži više se skraćuje (dugi do granice uz zadržan blok, lagani dani srazmerno) i prozor
+    se produžava; prva nedelja koja staje vraća prvobitan plan. Sužavanje i nedelja trke se ne diraju.
+    Vraća plan i poslednji izmenjen dan (novi kraj prozora). */
+function smoothExit(
+  after: PlanDoc,
+  original: PlanDoc,
+  end: IsoDate,
+  state: RunnerState,
+  data: DistanceData
+): { doc: PlanDoc; until: IsoDate } {
+  const ctxB = buildCtx(after.header, data);
+  const pace = paceCtxOf(after.header);
+  const race = after.header.goal.raceDate;
+  const km = (w: PlanWeek): number => weekCost(w, race, pace).km;
+  const longOf = (w: PlanWeek): PlanDay | undefined => w.days.find((d) => d.workout?.kind === 'long');
+  const longSec = (w: PlanWeek | undefined): number => {
+    const day = w === undefined ? undefined : longOf(w);
+    return day?.workout === undefined || day.workout === null ? 0 : summarize(day.workout, pace).durationSec;
+  };
+  const done = doneDayIds(state);
+  const weeks = [...after.weeks];
+  const base = weeks.findIndex((w) => w.start > state.today);
+  /* od prve nedelje koja se završava posle kraja rampe */
+  const first = weeks.findIndex((w) => addDays(w.start, 6) > end);
+  let until = end;
+  if (base < 0 || first < 0) return { doc: after, until };
+  const n = weeks.length;
+  for (let i = Math.max(first, base + 1); i < n - 2; i += 1) {
+    const w = weeks[i];
+    const old = original.weeks.find((x) => x.start === w?.start);
+    if (w === undefined) break;
+    const lo = Math.max(base, i - 3);
+    const prev = weeks.slice(lo, i);
+    const prevOld = prev.map((x) => original.weeks.find((y) => y.start === x.start) ?? x);
+    const pKm = Math.max(...prev.map(km));
+    const pLong = Math.max(...prev.map((x) => longSec(x)));
+    const oKm = Math.max(...prevOld.map(km));
+    const oLong = Math.max(...prevOld.map((x) => longSec(x)));
+    const curKm = km(w);
+    const curLong = longSec(w);
+    const kmCap = Math.max(RETURN_WEEK_JUMP_SHARE * pKm, oKm > 0 && old !== undefined ? (pKm * km(old)) / oKm : 0);
+    const longCap = Math.max(
+      RETURN_LONG_JUMP_SHARE * pLong,
+      pLong + RETURN_LONG_JUMP_SEC,
+      oLong > 0 && old !== undefined ? (pLong * longSec(old)) / oLong : 0
+    );
+    const longOver = pLong > 0 && curLong > longCap + 60;
+    const kmOver = pKm > 0 && curKm > kmCap + 0.5;
+    if (!longOver && !kmOver) continue;
+    /* dugi do granice (blok ostaje, ne duži od dugog) */
+    const days = w.days.map((d): PlanDay => {
+      if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done)) return d;
+      const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
+      const sec = Math.round(longCap / 60) * 60;
+      const workout = realize(
+        { type: 'long', sec, def, dose: Math.min(d.workout.workSec, sec / 2), slot: null },
+        ctxB
+      );
+      return workout === null ? d : { ...d, origin: 'template', workout };
+    });
+    /* lagani dani srazmerno do obima nedelje */
+    const trimmed: PlanWeek = { ...w, days };
+    const over = km(trimmed) - kmCap;
+    const easy = days.filter((d) => d.workout?.kind === 'easy' && isMutable(d, after.header, state.today, done));
+    const easyKm = easy.reduce((sum, d) => sum + (d.workout === null ? 0 : summarize(d.workout, pace).km), 0);
+    const f = over > 0 && easyKm > 0 ? Math.max(0, 1 - over / easyKm) : 1;
+    const minEasy = minEasyOf(data.safety, after.header.decisions.level, after.header.decisions.runDays.length);
+    const finalDays = days.map((d): PlanDay => {
+      if (f >= 1 || !easy.includes(d) || d.workout === null) return d;
+      const sec = Math.max(minEasy, Math.round((summarize(d.workout, pace).durationSec * f) / 60) * 60);
+      const workout = realize({ type: 'easy', sec }, ctxB);
+      return workout === null ? d : { ...d, origin: 'template', workout };
+    });
+    weeks[i] = { ...w, days: finalDays };
+    until = addDays(w.start, 6);
+  }
+  return { doc: { ...after, weeks }, until };
+}
 const lastPlanDay = (doc: PlanDoc): IsoDate => addDays(doc.header.goal.raceDate, -1);
 
 /** E1 (krug 5): posle rampe + 14 dana vraća se PRVOBITAN plan bajt-isto; najteža nedelja ≥ 3 nedelje posle povratka
@@ -513,12 +686,12 @@ function onPain(
     window: returning ? null : window,
     rechainFrom: returning ? currentWeekIndex(doc, state.today) + 1 : null
   });
-  return {
-    doc: returning ? restoreAfter(built, doc, window.rampEnd) : built,
-    until: returning
-      ? minDate(addDays(window.rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc))
-      : window.rampEnd
-  };
+  const until = returning
+    ? minDate(addDays(window.rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc))
+    : window.rampEnd;
+  /* R2 (krug 6): izlazak iz prozora bez skoka */
+  const smooth = smoothExit(returning ? restoreAfter(built, doc, window.rampEnd) : built, doc, window.rampEnd, state, data);
+  return { doc: smooth.doc, until: smooth.until > until ? smooth.until : until };
 }
 
 function onFatigue(
@@ -684,7 +857,7 @@ function candidateFor(
     case 'result':
       return onResult(doc, state, ev, data);
     case 'missed':
-      return onMissed(doc, state, ev, data);
+      return guardMissed(onMissed(doc, state, ev, data), doc, state, data);
     case 'pause':
       return onPause(doc, state, ev, data);
     case 'pain':

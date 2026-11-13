@@ -179,7 +179,9 @@ describe('zaštita (SPEC § 1.2, § 6.4)', () => {
     }
   });
 
-  it('ključan propušten trening: sledeći dugi ponavlja propuštenu dužinu, ostalo isto', () => {
+  /* krug 6 (R1): sledeći dugi ne postaje kraći od prvobitnog — propušten dugi se ne nadoknađuje skraćivanjem; trkač
+     dobija rečenicu, plan ostaje isti */
+  it('ključan propušten trening: sledeći dugi ostaje kako je planiran (ne kraći), trkač dobija rečenicu', () => {
     const b = build(facts(), goalAt('2027-01-24'));
     const missedDate = '2026-11-29';
     const today = '2026-12-01';
@@ -193,10 +195,11 @@ describe('zaštita (SPEC § 1.2, § 6.4)', () => {
     };
     const result = replan(b.doc, st, [event], SYNTHETIC);
     expect(result.changes).toHaveLength(1);
-    expect(result.changes[0]?.what).toBe('doza-ponovljena');
+    expect(result.changes[0]?.what).toBe('obavestenje');
     const next = days(result.doc).find((d) => d.date === addDays(missedDate, 7));
-    expect(next?.workout?.text).toBe(missed?.workout?.text);
-    expect(result.doc.header.adjustments?.some((a) => a.kind === 'repeat')).toBe(true);
+    const before = days(b.doc).find((d) => d.date === addDays(missedDate, 7));
+    expect(next?.workout?.text).toBe(before?.workout?.text);
+    expect(result.changes[0]?.reason).toContain('ne nadoknađuje skraćivanjem');
   });
 
   it('rezultat testa menja tempa odmah kad je razlika ≥ 0,3 VDOT', () => {

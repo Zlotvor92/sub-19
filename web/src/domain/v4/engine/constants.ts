@@ -267,3 +267,8 @@ export const LEVEL_VOLUME_LOST_MIN_WEEKS = 2;
 
 /** M4 (krug 5): pomerena provera forme najkasnije 3 nedelje pred trku (u nedelji rasterećenja). */
 export const MOVED_TEST_MIN_DAYS_BEFORE_RACE = 21;
+
+/** R2 (krug 6): izlazak iz prozora izmene — dugi najviše + 25 % ili + 20 min, nedelja najviše + 20 %. */
+export const RETURN_LONG_JUMP_SHARE = 1.25;
+export const RETURN_LONG_JUMP_SEC = 1200;
+export const RETURN_WEEK_JUMP_SHARE = 1.2;
