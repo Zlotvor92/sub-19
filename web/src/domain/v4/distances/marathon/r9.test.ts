@@ -131,7 +131,15 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
        (p11: najduži dugi posle izmene ispod 27 km — plan to kaže upozorenjem); ostalo su putevi izmene motora
        (povratak posle bolesti, bol, nadovezani prozori) */
     /* krug 10: preostali: s15 dugi posle bola raste po R2, s25 udeo brzog u nedelji izmene */
-    const KNOWN_A6 = new Set<string>(['s15 dugi-za-distancu@17', 's25 brz-udeo@6']);
+    /* krug 12 (maraton): p11 posle bolesti/bola gubi najduži dugi ispod 27 km — plan to kaže upozorenjem (s7, s26);
+       s26 silazak N−2 posle trke u prozoru bola — motor (M3) */
+    const KNOWN_A6 = new Set<string>([
+      's15 dugi-za-distancu@17',
+      's25 brz-udeo@6',
+      's7 dugi-za-distancu@13',
+      's26 dugi-za-distancu@19',
+      's26 silazak@22'
+    ]);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
 });

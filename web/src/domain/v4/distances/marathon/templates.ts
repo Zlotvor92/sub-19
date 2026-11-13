@@ -19,7 +19,8 @@ import type { LevelId, StimulusSlot, Template, WeekIntent, WeekKind } from '../.
 
 type Family = 'redovan' | 'pocetnik';
 
-const REGULAR: LevelId[] = ['spor', 'srednji', 'brz'];
+const REGULAR: LevelId[] = ['srednji', 'brz'];
+const SLOW: LevelId[] = ['spor'];
 const RETURNING: LevelId[] = ['povratnik'];
 const SMALL: LevelId[] = ['mali'];
 const BEGINNER: LevelId[] = ['pocetnik'];
@@ -45,7 +46,7 @@ interface LongSpec {
 const WAVE = [1, 0.88, 1, 0.82];
 /* 1–3 dana: bez talasa u telu — nedelja je ≈ 2,4 × dugi (lagani dani ≤ 70 % dugog), pa kraći dugi ruši nedelju ispod
    cilja; talas daju rasterećenja i N−6 */
-const WAVE_FEW = [1, 1, 1, 1];
+const WAVE_FEW = [1, 0.95, 1, 1];
 
 const r3 = (x: number): number => Math.round(x * 1000) / 1000;
 
@@ -78,12 +79,17 @@ const HILLS_SHORT = S('usponi-kratki');
 const EARLY_TEST: StimulusSlot = { ...S('kontrola-rana'), onlyByFeel: true };
 /* provera forme: 10 km kad obim to dozvoljava, inače 5 ili 3 km (biblioteka bira po obimu) */
 const KONTROLA = S('kontrola', undefined, 'kontrola-10k');
+/* R5 (krug 12): pripremni polumaraton 6–9 nedelja pred maraton (README; ciljni p08 ned 15 = N−9) */
+const KONTROLA_HM = S('kontrola', undefined, 'kontrola-hm');
 
 interface Shape {
   days: number;
   single: boolean;
   gentle?: boolean;
   fresh?: boolean;
+  /** R6 (krug 12): spor i mali obim (VDOT < 40 ili ispod 40 km) — bez intervala (README: I samo za VDOT ≥ 40); u
+      razvoju umesto intervala ubrzanja, pa nedelja nosi prag + tempo maratona ili samo prag uz dugi */
+  noIntervals?: boolean;
 }
 
 const satIndex = (sh: Shape): number => (sh.days >= 4 ? sh.days - 2 : 0);
@@ -131,7 +137,8 @@ const tDose = (t: number, gentle = false): number => lerp(gentle ? 0.5 : 0.56, 0
 
 function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const L = layout(n);
-  const tailStart = Math.max(1, n - 8);
+  /* plan ≥ 18 nedelja: rep počinje pripremnim polumaratonom u N−9 */
+  const tailStart = Math.max(1, n >= 18 ? n - 9 : n - 8);
   const out: WeekIntent[] = [];
   const builds: number[] = [];
   for (let w = 1; w < tailStart; w += 1) if (!L.recoveries.has(w)) builds.push(w);
@@ -181,7 +188,7 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     const load = lerp(startLoad, 0.95, t ** 0.7) * (1 - (sh.single ? 0.6 : 0.3) * (1 - wave));
     /* 1–3 dana: dugi kreće bliže polaznom, da raste od prve nedelje (inače stoji na polaznom, a nedelja ne može da
        raste — lagani dani su vezani za dugi) */
-    const long = (sh.single ? lerp(0.76, 0.95, t) : lerp(0.66, 0.92, t)) * wave;
+    const long = (sh.single ? lerp(0.8, 0.95, t) : lerp(0.8, 0.95, t)) * wave;
     if (sh.gentle === true && w <= 2) {
       out.push(week(OSNOVA, 'build', load, { len: long }, [HILLS_SHORT, STRIDES]));
       continue;
@@ -191,9 +198,16 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       /* razvoj: prag + smena intervala (17–21 min) i tempa trke 2 × 3 km; dugi progresivan svake druge nedelje */
       const second =
         dev % 2 === 1
-          ? S('intervali', dev === 1 ? 0.65 : 1)
+          ? sh.noIntervals === true
+            ? STRIDES
+            : S('intervali', dev === 1 ? 0.65 : 1)
           : S('tempo-trke', dev <= 2 ? 0.45 : 0.6);
-      const longSpec = dev % 2 === 0 ? { len: long } : { len: long, stimulus: 'dugi-progresivno' };
+      /* R4: talas i na plafonu (dugi koji je stigao do najdužeg dozvoljenog ne stoji) */
+      const capWave = { wave: 1 - (1 - wave) * 1.5 };
+      const longSpec =
+        dev % 2 === 0
+          ? { len: long, ...capWave }
+          : { len: long, stimulus: 'dugi-progresivno', ...capWave };
       /* u nedelji sa intervalima prag je kraći: budžet brzog rada (≤ 18 %) ostavlja intervalima 17–21 min (K7) */
       const pragDose = second.stimulus === 'intervali' ? tDose(t) * 0.65 : tDose(t) * 0.85;
       out.push(week(RAZVOJ, 'build', load, longSpec, one(S('prag', pragDose), second, dev)));
@@ -202,7 +216,13 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       /* brzina: smena uspona i kratkih brzih deonica (redosled u biblioteci) */
       const second = S('brzina');
       out.push(
-        week(OSNOVA, 'build', load, { len: long }, one(S('prag', tDose(t, sh.gentle)), second, osn))
+        week(
+          OSNOVA,
+          'build',
+          load,
+          { len: long, wave: 1 - (1 - wave) * 1.5 },
+          one(S('prag', tDose(t, sh.gentle)), second, osn)
+        )
       );
     }
   }
@@ -224,20 +244,37 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
       sh.single ? [STRIDES, STRIDES] : [S('prag', 0.6), STRIDES]
     );
   const short = n < 12;
+  /* R5 (krug 12): plan ≥ 18 nedelja — N−9 pripremni polumaraton subotom (bez dugog te nedelje; dok motor nema
+     trku na dan dugog, M10), N−8 cela nedelja bez kvaliteta (README: „zatim cela nedelja bez kvaliteta") */
+  const halfRace: WeekIntent[] =
+    n >= 18
+      ? [
+          week(
+            RAZVOJ,
+            'recovery',
+            1,
+            null,
+            withSaturday(sh, sh.single ? [STRIDES] : [STRIDES, STRIDES], KONTROLA_HM)
+          ),
+          week(RAZVOJ, 'build', 0.85, { len: 0.78 }, [STRIDES, STRIDES])
+        ]
+      : [
+          /* N−8: rasterećenje + provera 10 km subotom, dugi kratak lagan; plan kraći od 12 nedelja nema proveru u
+             prve 3 nedelje — tada je N−8 nedelja gradnje */
+          short
+            ? week(RAZVOJ, 'build', 0.9, { len: 0.8 }, pair(S('prag', 0.7), S('tempo-trke', 0.6)))
+            : week(
+                RAZVOJ,
+                'recovery',
+                1,
+                { len: 0.5 },
+                withSaturday(sh, sh.single ? [STRIDES] : [STRIDES, STRIDES], KONTROLA)
+              )
+        ];
   return [
-    /* N−8: rasterećenje + provera 10 km subotom, dugi kratak lagan; plan kraći od 12 nedelja nema proveru u prve
-       3 nedelje — tada je N−8 nedelja gradnje */
-    short
-      ? week(RAZVOJ, 'build', 0.9, { len: 0.8 }, pair(S('prag', 0.7), S('tempo-trke', 0.6)))
-      : week(
-          RAZVOJ,
-          'recovery',
-          1,
-          { len: 0.5 },
-          withSaturday(sh, sh.single ? [STRIDES] : [STRIDES, STRIDES], KONTROLA)
-        ),
-    /* N−7: blok 1 (≈ 8 km MP, 40 min) */
-    block(0.57, 0.88, short ? 0.95 : 0.93),
+    ...halfRace,
+    /* N−7: blok 1 (≈ 8 km MP, 40 min; R3: ≤ 45 % dugog) */
+    block(0.5, 0.86, short ? 0.95 : 0.93),
     /* N−6: talas — kraći lagan dugi, MP usred nedelje 2 × 4–5 km + prag */
     week(
       SPEC,
@@ -247,16 +284,16 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
       /* MP 0,85 plafona: deonice se zaokružuju na 0,5 km, pa 3 × 4,5 km ne prelazi 50 min */
       pair(S('prag', 0.6), S('tempo-trke', 0.85))
     ),
-    /* N−5: blok 2 (≈ 12 km MP, 60 min) */
-    block(0.86, 0.94, 1),
+    /* N−5: prvi najduži dugi (R1: dva puta u poslednjih 7 nedelja, N−5 i N−3), blok ≈ 10–11 km MP */
+    block(0.7, 0.98, 1),
     /* N−4: rasterećenje sa kratkim pragom */
     week(SPEC, 'recovery', 1, { len: 1 }, [S('prag', 0.5), STRIDES]),
-    /* N−3: najteža — najduži dugi sa najvećim blokom (≈ 14 km MP, 70 min) */
+    /* N−3: najteža — najduži dugi sa najvećim blokom (≈ 12–13 km MP, R3: ≤ 45 % dugog) */
     week(
       SPEC,
       'peak',
       1,
-      { len: 1, stimulus: 'dugi-rp', dose: 1 },
+      { len: 1, stimulus: 'dugi-rp', dose: 0.85 },
       sh.single ? [STRIDES, STRIDES] : [S('prag', 0.45), STRIDES]
     ),
     /* N−2: ≈ 80 % — dugi 20–22 km sa poslednja 3 km u MP, MP 2 × 3 km usred nedelje */
@@ -282,8 +319,12 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const fresh = sh.fresh === true;
   const L = layout(n, fresh ? 3 : 4);
   const longStim = fresh ? 'dugi-hod' : 'dugi';
+  /* R2/R4 (krug 12): nov ili spor početnik (p13, p18, P2 B) — dugi je vreme na nogama uz hod-trk, bez MP bloka */
+  const blockStim = fresh ? longStim : 'dugi-rp';
+  const blockOf = (dose: number): { stimulus: string; dose?: number } =>
+    fresh ? { stimulus: longStim } : { stimulus: blockStim, dose };
   const intro = n >= 20 ? 3 : 2;
-  const tailStart = Math.max(1, n - 8);
+  const tailStart = Math.max(1, n >= 18 ? n - 9 : n - 8);
   const firstRecovery = Math.min(...L.recoveries);
   const out: WeekIntent[] = [];
   let k = 0;
@@ -323,35 +364,51 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       )
     );
   }
+  /* R5 (krug 12): plan ≥ 18 nedelja — pripremni polumaraton u N−9 (ciljni p11 ned 16, p12 ned 11), pa nedelja bez
+     kvaliteta; kraći plan: N−8 rasterećenje + 10 km subotom (ciljni p12 ned 8, p11 ned 12), < 12 nedelja gradnja */
+  const head: WeekIntent[] =
+    n >= 18
+      ? [
+          week(RAZVOJ, 'recovery', 1, null, withSaturday(sh, [STRIDES, STRIDES], KONTROLA_HM)),
+          week(RAZVOJ, 'build', 0.85, { len: 0.78, stimulus: longStim }, [STRIDES, STRIDES])
+        ]
+      : [
+          n < 12
+            ? week(RAZVOJ, 'build', 0.9, { len: 0.8, stimulus: longStim }, [
+                S('prag-p', 0.8),
+                STRIDES
+              ])
+            : week(
+                RAZVOJ,
+                'recovery',
+                1,
+                { len: 0.5, stimulus: longStim },
+                withSaturday(sh, [STRIDES, STRIDES], KONTROLA)
+              )
+        ];
   const tail = [
-    /* N−8: rasterećenje + provera 10 km subotom (ciljni p12 ned 8 = N−10, p11 ned 12); plan kraći od 12 nedelja:
-       nedelja gradnje (provera ne ide u prve 3 nedelje) */
-    n < 12
-      ? week(RAZVOJ, 'build', 0.9, { len: 0.8, stimulus: longStim }, [S('prag-p', 0.8), STRIDES])
-      : week(
-          RAZVOJ,
-          'recovery',
-          1,
-          { len: 0.5, stimulus: longStim },
-          withSaturday(sh, [STRIDES, STRIDES], KONTROLA)
-        ),
+    ...head,
     /* N−7: prag po osećaju, dugi raste */
     week(RAZVOJ, 'build', 0.95, { len: 0.88, stimulus: longStim }, [S('prag-p', 1), STRIDES]),
     /* N−6: talas — MP 2 × 3 km usred nedelje */
     week(SPEC, 'build', 0.97, { len: 0.68, stimulus: longStim, wave: 0.85 }, [
-      S('tempo-trke', 0.75),
+      S('tempo-trke', fresh ? 0.4 : 0.75),
       STRIDES
     ]),
     /* N−5: blok 6 km MP (≈ 40 min), usred nedelje lagano */
-    week(SPEC, 'build', 1, { len: 0.93, stimulus: 'dugi-rp', dose: 0.7 }, [STRIDES, STRIDES]),
-    week(SPEC, 'recovery', 1, { len: 1, stimulus: longStim }, [S('prag-p', 0.45), STRIDES]),
-    /* N−3: najteža — najduži dugi (≈ 3 h – 3 h 15) sa blokom 8 km MP (≤ 55 min) */
-    week(SPEC, 'peak', 1, { len: 1, stimulus: 'dugi-rp', dose: 1 }, [STRIDES, STRIDES]),
-    /* N−2: ≈ 80 %, MP 4 km, dugi 18 km sa poslednja 3 km MP */
-    week(FINISH, 'taper', 0.8, { len: 0.66, stimulus: 'dugi-rp', dose: 0.27 }, [
-      S('tempo-trke', 0.3),
+    /* nov/spor početnik: bez bloka, MP usred nedelje raste 0,4 → 0,6 → 0,7 (K7: prvi ≤ 70 % vrha) */
+    week(SPEC, 'build', 1, { len: 0.97, ...blockOf(0.6) }, [
+      fresh ? S('tempo-trke', 0.6) : STRIDES,
       STRIDES
     ]),
+    week(SPEC, 'recovery', 1, { len: 1, stimulus: longStim }, [S('prag-p', 0.45), STRIDES]),
+    /* N−3: najteža — najduži dugi (≈ 3 h – 3 h 15) sa blokom 8 km MP (≤ 55 min) */
+    week(SPEC, 'peak', 1, { len: 1, ...blockOf(0.85) }, [
+      fresh ? S('tempo-trke', 0.7) : STRIDES,
+      STRIDES
+    ]),
+    /* N−2: ≈ 80 %, MP 4 km, dugi 18 km sa poslednja 3 km MP */
+    week(FINISH, 'taper', 0.8, { len: 0.66, ...blockOf(0.27) }, [S('tempo-trke', 0.3), STRIDES]),
     week(FINISH, 'taper', 0.6, { len: 0.42, stimulus: longStim }, [S('tempo-trke', 0.4), STRIDES]),
     week(FINISH, 'race', 0.3, null, [S('ostrenje', 0.8), STRIDES])
   ];
@@ -401,12 +458,13 @@ export const TEMPLATES: Template[] = WEEKS.flatMap((n) =>
   DAYS.flatMap((days) => {
     const few = days <= 3;
     return [
+      makeTemplate('redovan', 'redovan', { days, single: few }, n, REGULAR, regularMult(n)),
       makeTemplate(
+        'spor',
         'redovan',
-        'redovan',
-        { days, single: few },
+        { days, single: few, noIntervals: true },
         n,
-        [...REGULAR, ...SMALL],
+        [...SLOW, ...SMALL],
         regularMult(n)
       ),
       makeTemplate('pocetnik', 'pocetnik', { days, single: true }, n, BEGINNER, beginnerMult(n)),

@@ -52,13 +52,13 @@ export interface GateStats {
 
 /** Tabela vrha za maraton u km (README trenera: × 1,30 za 12 ned, × 1,40 za 16+; početnik do × 2,1 za 24 ned;
     ciljni p11 25 → 52 km za 24 ned): polazno ≤ 25 km → × 2,1 (≥ 24 ned), × 1,8 (18–23), × 1,55 (12–17), × 1,35
-    kraće; 25–40 km → × 1,6 (≥ 18), × 1,45 (12–17), × 1,25 kraće; 40–60 km → × 1,4 (≥ 16), × 1,3 (12–15), × 1,15
+    kraće; 25–40 km → × 1,65 (≥ 18), × 1,45 (12–17), × 1,28 kraće; 40–60 km → × 1,4 (≥ 16), × 1,3 (12–15), × 1,15
     kraće; > 60 km → × 1,3 (≥ 16), × 1,25 (12–15), × 1,12 kraće; staž < 8 nedelja ili tegoba u 12 meseci →
     najviše × 1,4. */
 export function ladderKm(baseKm: number, weeks: number, limited: boolean): number {
   let x = weeks >= 16 ? 1.3 : weeks >= 12 ? 1.25 : 1.12;
   if (baseKm <= 25.5) x = weeks >= 24 ? 2.1 : weeks >= 18 ? 1.8 : weeks >= 12 ? 1.55 : 1.35;
-  else if (baseKm <= 40.5) x = weeks >= 18 ? 1.6 : weeks >= 12 ? 1.45 : 1.25;
+  else if (baseKm <= 40.5) x = weeks >= 18 ? 1.65 : weeks >= 12 ? 1.45 : 1.28;
   else if (baseKm <= 60.5) x = weeks >= 16 ? 1.4 : weeks >= 12 ? 1.3 : 1.15;
   return limited ? Math.min(x, 1.4) : x;
 }
@@ -180,7 +180,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
         `n${String(g.index)} lagan ${String(g.easyKm)} > ${String(easyCap)} × dugi ${String(Math.round(ref * 10) / 10)}`
       );
   }
-  /* 4. udeo dugog (README, ciljni p11/p12): 3 dana ≤ 52 %, 4 dana ≤ 45 %, 5+ dana ≤ 44 %; u najviše 3 nedelje
+  /* 4. udeo dugog (README, ciljni p11/p12): 3 dana ≤ 56 %, 4 dana ≤ 47 %, 5+ dana ≤ 45 % (R1/R2, krug 12); u najviše 3 nedelje
      + 5 poena (nedelje najdužeg dugog: README tabela 45–60 km → 26–30 km); nedelje rampe izuzete */
   let maxShare = 0;
   let high = 0;
@@ -189,7 +189,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     maxShare = Math.max(maxShare, g.longKm / g.km);
     /* početnik +4 poena (ciljni p11: 52 %) */
     const beg = doc.header.decisions.level.startsWith('pocetnik') ? 0.04 : 0;
-    const cap = (runDays === 3 ? 0.52 : runDays === 4 ? 0.45 : 0.44) + beg;
+    const cap = (runDays === 3 ? 0.56 : runDays === 4 ? 0.47 : 0.45) + beg;
     if (runDays >= 4 && g.longKm > cap * g.km + 0.25 && g.longKm <= (cap + 0.05) * g.km + 0.25) {
       high += 1;
       if (high <= 3) continue;
@@ -261,7 +261,8 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     doc.header.decisions.level === 'pocetnik-nov' ||
     doc.header.decisions.painCaution === true ||
     shortEasy;
-  const peakMin = easyStart ? 0.07 : 0.1;
+  /* R2 (krug 12): nov/spor početnik nema MP blok (vreme na nogama uz hod-trk) — vršna bez donje granice */
+  const peakMin = doc.header.decisions.level === 'pocetnik-nov' ? 0 : easyStart ? 0.07 : 0.1;
   /* krug 9 (A1): vršna nedelja i uz lagan-kratak ima donju granicu brzog rada (kvalitet se skraćuje, ne briše) */
   if (weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
     v.push(
@@ -272,7 +273,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   const longestMin = Math.max(...weeks.map((g) => g.longMin));
   const longestKm = Math.max(...weeks.map((g) => g.longKm));
   const topKm = Math.max(...weeks.map((g) => g.km));
-  const [needKm, needMin] = topKm >= 60 ? [27.5, 170] : topKm >= 45 ? [23, 150] : [0, 0];
+  /* R1 (krug 12): vrh ≥ 62 km → 27 km; ≥ 52 km → 26 km (− 0,5 zaokruživanje dana; ili 2 h 50); 45–52 km → 23 km (ili 2 h 30) */
+  const [needKm, needMin] =
+    topKm >= 62 ? [27, 170] : topKm >= 52 ? [25.5, 170] : topKm >= 45 ? [23, 150] : [0, 0];
   if (doc.weeks.length >= 16 && longestKm < needKm && longestMin < needMin)
     v.push(
       `najduži dugi ${String(longestKm)} km / ${String(Math.round(longestMin))} min < ${String(needKm)} km uz vrh ${String(topKm)} km`
@@ -296,6 +299,16 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
       v.push(`najduži dugi dve nedelje zaredom (n${String(prev.index)}, n${String(g.index)})`);
   }
   if (longest.length > 4) v.push(`najduži dugi (≥ 95 %) ${String(longest.length)} puta`);
+  /* 9d. R3 (krug 12): MP blok ≤ 45 % dugog (km) */
+  for (const w of doc.weeks)
+    for (const d of w.days) {
+      const x = d.workout;
+      if (x === null || x.stimulus !== 'dugi-rp') continue;
+      const blockKm = x.workSec / ctx.paces.RP;
+      const longKm = summarize(x, ctx).km;
+      if (blockKm > 0.45 * longKm + 0.5)
+        v.push(`n${String(w.index)} blok ${blockKm.toFixed(1)} od ${longKm.toFixed(1)} km dugog`);
+    }
   /* 9c. u nedelji sa blokom u dugom (≥ 30 min MP) nema MP usred nedelje (README) */
   for (const w of doc.weeks) {
     const block = w.days.find((x) => x.workout?.stimulus === 'dugi-rp');
@@ -359,7 +372,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     v.push(`nedelja trke ${String(rw.km)} km > 45 % vrha`);
   /* 15. plan ≥ 12 nedelja ima MP rad: blok u dugom ≥ 8 km (srednji, brz) ili ≥ 5 km (ostali) */
   const long28 = weeks.filter((g) => g.longKm >= 28).length;
-  if (doc.weeks.length >= 12) {
+  if (doc.weeks.length >= 12 && lvl !== 'pocetnik-nov') {
     const blocks = all.filter((x) => x.workout?.stimulus === 'dugi-rp');
     const blockKm = Math.max(0, ...blocks.map((x) => (x.workout?.workSec ?? 0) / ctx.paces.RP));
     const needKm = lvl === 'srednji' || lvl === 'brz' ? 8 : 5;

@@ -417,24 +417,25 @@ export function clock(sec: number): string {
 }
 
 export const SCENARIOS: Scenario[] = [
-  /* E1 — rezultat provere forme (p07 ned 4 = N−8, p08 i p11 ned 16 = N−8, p12 rani test ned 4) */
+  /* E1 — rezultat provere forme (p07 ned 4 = N−8, p08 i p11 pripremni polumaraton ned 15 = N−9, p12 rani test ned 4) */
   {
     no: 1,
     id: 'p07',
     title: 'E1: ned 4, trka 10 km 3,0 % brže od očekivanog',
     run: e1('p07', 4, TEN, { share: 0.97 })
   },
+  /* krug 12 (R5): p08 i p11 imaju pripremni polumaraton u ned 15 (N−9) */
   {
     no: 2,
     id: 'p08',
-    title: 'E1: ned 16, trka 10 km 3,1 % brže od očekivanog',
-    run: e1('p08', 16, TEN, { share: 0.969 })
+    title: 'E1: ned 15, pripremni polumaraton 3,1 % brže od očekivanog',
+    run: e1('p08', 15, HALF, { share: 0.969 })
   },
   {
     no: 3,
     id: 'p11',
-    title: 'E1: ned 16, trka 5 km 3,4 % brže od očekivanog',
-    run: e1('p11', 16, 5000, { share: 0.966 })
+    title: 'E1: ned 15, pripremni polumaraton 3,4 % brže od očekivanog',
+    run: e1('p11', 15, HALF, { share: 0.966 })
   },
   {
     no: 4,

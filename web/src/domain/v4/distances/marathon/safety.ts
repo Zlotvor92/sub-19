@@ -13,6 +13,8 @@ import { MAX_PEAK_OVER_BASE } from './templates';
     kvalitet nedeljno uz dugi (README: dugi je glavni trening). */
 export const LEVELS: LevelRule[] = [
   { id: 'pocetnik-nov', when: { beginner: true, maxTenureWeeks: 8 } },
+  /* R2 (krug 12): spor početnik (VDOT < 34: trka ≈ 4 h 30+, p13, p18) — dugi hod-trk po vremenu, bez MP bloka */
+  { id: 'pocetnik-nov', when: { beginner: true, maxVdot: 33.9 } },
   { id: 'pocetnik', when: { beginner: true } },
   { id: 'povratnik', when: { maxWeeksSincePause: 8 } },
   { id: 'povratnik', when: { maxRecentQualityWeeks: 0 } },
@@ -25,7 +27,7 @@ export const LEVELS: LevelRule[] = [
 /* Udeo dugog po broju dana (README: 5–6 dana 33–38 %, 4 dana do 40 %, 3 dana 45–50 %). Motor ga primenjuje na
    minute nedelje u laganom tempu i od njega oduzima višak km bloka u tempu maratona, pa je stvarni udeo u km oko
    5–8 poena niži od zadatog (p07: zadato 42 %, stvarno ≈ 36 % sa blokom od 13 km). */
-const LONG_SHARE = { '1': 1, '2': 0.62, '3': 0.5, '4': 0.42, '5': 0.42, '6': 0.38, '7': 0.35 };
+const LONG_SHARE = { '1': 1, '2': 0.62, '3': 0.55, '4': 0.44, '5': 0.42, '6': 0.38, '7': 0.35 };
 
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: + 7 % u bodovima, najmanje 12 BO (≈ 2 km) — README: obim + 6 % nedeljno (ciljni p07) */
@@ -92,22 +94,28 @@ export const SAFETY: SafetyNumbers = {
   },
   /* korak dugog: + 1,5 km ili + 8 min po nedelji gradnje (README: + 1–2 km po koraku; K7 ≤ 2 km i ≤ 12 %, dan se zaokružuje na 0,5 km) */
   longStepSec: 480,
-  longStepKm: 1.5,
+  longStepKm: 1.3,
   longStartFloorShare: 0.85,
   longStartFloorFromCapShare: 0.88,
   longFloorGrowMinRunDays: 4,
-  /* pod dugog raste posle polaznog samo povratniku (HM Y3); ostalima rast nosi namera šablona (talas) */
+  /* R4 (krug 12): dugi ne stoji na polaznom (p04 2 h 30 × 8, p17 27,5 × 5) — rast nosi namera šablona (od 80 %
+     najdužeg, korak 1,5 km nedeljno, talas); pod koji raste sam (bez talasa) samo povratniku (HM Y3) */
   longGrowPastStart: { minRunDays: 4, levels: ['povratnik'] },
   /* 4 dana: do 40 %, u najviše 3 nedelje vrha do 45 % (README); ispod ≈ 55 km nedeljno */
   /* ciljni p12 (5 dana, vrh 65 km): najduži 27 km = 41 %, p11 (4 dana, 52 km): 27 km — README-ovih 33–38 % važi za
      veći obim. README tabela najdužeg dugog (45–60 km vrha → 26–30 km, 60–80 km → 28–32 km) traži više od
      40–45 %: ispod 75 km nedeljno 43 %, u 3 nedelje najdužeg dugog 47 % (blok u dugom to spušta za ≈ 1,5 km) */
+  /* R1/R2 (krug 12, presuda trenera ROUND-V4-MAR-01 § E): kod malog obima dugi je vreme na nogama, ne udeo nedelje —
+     ispod 66 km nedeljno 47 %, u 3 nedelje najdužeg dugog 53 % (najduži = min(28 km, 3 h, 0,50 × vrh) kod 4 dana,
+     ≥ 26 km kad je vrh ≥ 52 km); 66–85 km 44 % (p07: 30–32 km) */
   longShareLowVolume: {
-    belowKm: 75,
-    minRunDays: 4,
-    share: 0.43,
-    peakShare: 0.47,
-    peakWeeks: 3
+    belowKm: 66,
+    minRunDays: 3,
+    share: 0.47,
+    peakShare: 0.53,
+    peakWeeks: 3,
+    midKm: 85,
+    midShare: 0.44
   },
   longStartShare: { '1': 0.6, '2': 0.5, '3': 0.44, '4': 0.4, '5': 0.32, '6': 0.29, '7': 0.26 },
   /* plafon doze po treningu (README trenera) */
@@ -130,8 +138,9 @@ export const SAFETY: SafetyNumbers = {
        brzi na ≥ 80 km do 16–18 km (≤ 75 min). Blok ≤ 45 % dužine dugog drži udeo bodova (izbor). */
     'dugi-rp': {
       maxWorkSec: {
-        brz: 4500,
-        srednji: 4200,
+        /* R3 (krug 12): blok ≤ 45 % dugog u km — brz 55 min (≈ 14 km uz dugi 31–35 km), srednji 63 min */
+        brz: 3300,
+        srednji: 3780,
         spor: 3300,
         mali: 3300,
         povratnik: 3600,

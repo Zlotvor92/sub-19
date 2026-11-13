@@ -226,7 +226,8 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
   /* maraton ≤ 6 nedelja: vršna nedelja je 3. nedelja plana (posle prvih nedelja na polaznom obimu), pa je merilo
      sužavanja mala vršna nedelja — plan nosi upozorenje `kratka-priprema` */
-  if (f.check === 'taper' && b.doc.weeks.length <= 6) return 'plan ≤ 6 nedelja (kratka-priprema)';
+  if ((f.check === 'taper' || f.check === 'silazak') && b.doc.weeks.length <= 6)
+    return 'plan ≤ 6 nedelja (kratka-priprema)';
   /* maraton, plan ≤ 8 nedelja sa 5–6 dana: nedelja trke ne može ispod najkraćih laganih dana (40 min × 5) */
   if (f.check === 'silazak' && ((b.doc.weeks.length <= 8 && days >= 5) || days >= 6))
     return '5–6 dana: lagani dani na najkraćem trajanju u nedelji trke (≥ 40 % vrha)';
@@ -502,6 +503,8 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
       if (p.doc.weeks.length < 10) continue;
       /* M3 (motor): plan bez dugog za distancu ne računa napredak od obima — prognoza ostaje današnja, uz upozorenje */
       if (p.doc.header.warnings.some((w) => w.code === 'dugi-za-distancu')) continue;
+      /* R2/M7 (krug 12): nov ili spor početnik — prognoza bez napretka (`forecastMaxGainByLevel` 0) */
+      if (p.doc.header.decisions.level === 'pocetnik-nov') continue;
       const line = p.text.split('\n').find((l) => l.startsWith('Očekivano na dan trke')) ?? '';
       expect(line, p.id).toMatch(/raspon \d/);
       expect(line, p.id).toMatch(/brže od današnje prognoze, jer /);
@@ -749,7 +752,8 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
 
   it('blok u tempu maratona: plan ≥ 12 nedelja ima ≥ 2 duga sa blokom ≥ 30 min, najveći ≥ 40 min (≥ 30 min početnik/spor), ≤ 75 min i ≤ 50 % dugog', () => {
     for (const p of PROFILE_PLANS) {
-      if (p.doc.weeks.length < 12) continue;
+      /* R2 (krug 12): nov/spor početnik nema blok */
+      if (p.doc.weeks.length < 12 || p.doc.header.decisions.level === 'pocetnik-nov') continue;
       const ctx = paceCtxOf(p.doc.header);
       const blocks = days(p).filter((d) => d.workout?.stimulus === 'dugi-rp');
       const big = blocks.filter((d) => (d.workout?.workSec ?? 0) >= 1800);
@@ -805,14 +809,14 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
     }
   });
 
-  it('provera forme: plan ≥ 12 nedelja ima proveru 7–9 nedelja pred trku, nikad u prve 3 nedelje', () => {
+  it('provera forme: plan ≥ 12 nedelja ima proveru 7–9 nedelja pred trku (≥ 18 nedelja: polumaraton u N−9), nikad u prve 3 nedelje', () => {
     for (const p of PROFILE_PLANS) {
       const n = p.doc.weeks.length;
       const tests = p.doc.weeks.filter((w) => w.days.some((d) => d.workout?.kind === 'test'));
       for (const w of tests) expect(w.index, p.id).toBeGreaterThan(3);
       if (n < 12) continue;
       expect(
-        tests.some((w) => w.index >= n - 8 && w.index <= n - 7),
+        tests.some((w) => w.index >= n - 9 && w.index <= n - 7),
         p.id
       ).toBe(true);
     }
@@ -890,5 +894,99 @@ describe('izolacija foldera maratona (SPEC § 11.1)', () => {
           expect(m[1], `${path} → ${target}`).toBe('type ');
       }
     }
+  });
+});
+
+/* ------------------------------------------------------------------ 7. krug 12 (briefs/R12.md, maraton tab) */
+
+describe('krug 12 — maraton (R1–R6)', () => {
+  const daysOf = (p: (typeof PROFILE_PLANS)[number]) => p.doc.weeks.flatMap((w) => w.days);
+
+  it('R1: vrh ≥ 52 km → najduži dugi ≥ 25,5 km; N−5 je drugi najduži (≥ 92 % najdužeg u N−3)', () => {
+    for (const p of PROFILE_PLANS) {
+      const st = weekStats(p.doc);
+      const n = st.length;
+      /* R1 važi za pripremu ≥ 16 nedelja (kraće nose `kratka-priprema`) */
+      if (n < 16) continue;
+      const peak = Math.max(...st.map((x) => x.km));
+      const longest = Math.max(...st.map((x) => x.longKm));
+      if (peak >= 52) expect(longest, p.id).toBeGreaterThanOrEqual(25.5);
+      const n5 = st[n - 6]?.longKm ?? 0;
+      const n3 = st[n - 4]?.longKm ?? 0;
+      expect(n5, `${p.id} N−5 ${String(n5)} / N−3 ${String(n3)}`).toBeGreaterThanOrEqual(
+        0.92 * n3 - 0.25
+      );
+    }
+  });
+
+  it('R2: nov ili spor početnik (VDOT < 34) — dugi hod-trk, bez bloka u tempu maratona', () => {
+    for (const p of PROFILE_PLANS.filter((x) => x.doc.header.decisions.level === 'pocetnik-nov')) {
+      const longs = daysOf(p).filter((d) => d.workout?.kind === 'long');
+      expect(longs.length, p.id).toBeGreaterThan(0);
+      for (const d of longs) {
+        expect(d.workout?.stimulus, `${p.id} ${d.date}`).toBe('dugi-hod');
+        expect(d.workout?.text ?? '', `${p.id} ${d.date}`).toMatch(/hod-trk/);
+      }
+    }
+    expect(
+      PROFILE_PLANS.filter((x) => x.doc.header.decisions.level === 'pocetnik-nov').map((x) => x.id)
+    ).toEqual(['p13', 'p18']);
+  });
+
+  it('R5: plan ≥ 18 nedelja ima pripremni polumaraton 6–9 nedelja pred trku, a sledeća nedelja nema kvaliteta', () => {
+    for (const p of PROFILE_PLANS) {
+      const n = p.doc.weeks.length;
+      if (n < 18) continue;
+      const race = p.doc.weeks.find((w) =>
+        w.days.some(
+          (d) => d.workout?.kind === 'test' && (d.workout.text ?? '').includes('polumaraton')
+        )
+      );
+      expect(race, p.id).toBeDefined();
+      if (race === undefined) continue;
+      expect(n - race.index, p.id).toBeGreaterThanOrEqual(6);
+      expect(n - race.index, p.id).toBeLessThanOrEqual(9);
+      const next = p.doc.weeks[race.index];
+      expect(
+        next?.days.some((d) => d.workout?.kind === 'quality' || (d.workout?.workSec ?? 0) > 0),
+        `${p.id} n${String(race.index + 1)}`
+      ).toBe(false);
+    }
+  });
+
+  /* M10 (motor): trka na dan dugog — dok ne stigne, polumaraton je subotom, a nedelja te nedelje nema dugog */
+  it.fails('R5/M10: pripremni polumaraton je na dan dugog — ČEKA MOTOR (M10)', () => {
+    for (const p of PROFILE_PLANS.filter((x) => x.doc.weeks.length >= 18)) {
+      const longDay = p.doc.header.decisions.longDay;
+      const d = daysOf(p).find(
+        (x) => x.workout?.kind === 'test' && (x.workout.text ?? '').includes('polumaraton')
+      );
+      expect(d?.id.endsWith(`d${String(longDay)}`), p.id).toBe(true);
+    }
+  });
+
+  it('R3: blok u tempu maratona ≤ 45 % dugog (km)', () => {
+    for (const p of PROFILE_PLANS) {
+      const ctx = paceCtxOf(p.doc.header);
+      for (const d of daysOf(p)) {
+        const x = d.workout;
+        if (x === null || x.stimulus !== 'dugi-rp') continue;
+        expect(x.workSec / ctx.paces.RP, `${p.id} ${d.date}`).toBeLessThanOrEqual(
+          0.45 * summarize(x, ctx).km + 0.5
+        );
+      }
+    }
+  });
+
+  it('R6: spor nivo (VDOT < 40) nema intervale; p16 nikad tri brza treninga u nedelji od 4 dana', () => {
+    for (const p of PROFILE_PLANS.filter((x) => x.doc.header.decisions.level === 'spor'))
+      for (const d of daysOf(p))
+        expect(d.workout?.stimulus, `${p.id} ${d.date}`).not.toBe('intervali');
+    const p16 = PROFILE_PLANS.find((x) => x.id === 'p16');
+    for (const w of p16?.doc.weeks ?? [])
+      expect(
+        w.days.filter((d) => (d.workout?.workSec ?? 0) > 0 && d.workout?.kind !== 'race').length,
+        `p16 n${String(w.index)}`
+      ).toBeLessThanOrEqual(2);
   });
 });

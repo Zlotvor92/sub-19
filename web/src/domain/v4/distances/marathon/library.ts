@@ -445,6 +445,18 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'kontrola-rana',
     notes: ['napomena.kontrola']
   },
+  /* R5 (krug 12): pripremni polumaraton 6–9 nedelja pred maraton (README, ciljni p08/p11/p12) */
+  {
+    id: 'kontrola-hm',
+    kind: 'test',
+    stimulus: 'kontrola',
+    tags: ['trka'],
+    impact: 'obican',
+    requires: { minBaseLoad: 150 },
+    main: { kind: 'all-out', distanceM: 21097.5 },
+    text: 'kontrola-hm',
+    notes: ['napomena.kontrola-hm']
+  },
   /* mali obim (ispod ≈ 25 km nedeljno): test od 3 km ne preuzima celu nedelju */
   {
     id: 'kontrola-3k',

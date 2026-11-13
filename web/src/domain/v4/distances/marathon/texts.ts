@@ -28,6 +28,8 @@ export const TEXTS: Record<string, string> = {
   'rp-komad': 'tempo maratona {rep} u komadu{pace}',
   ostrenje: 'oštrenje: tempo maratona {n} × {rep}{pace}, oporavak {rec}',
   'kontrola-10k': 'provera forme: pripremna trka ili test na 10 km punim naporom',
+  'kontrola-hm':
+    'pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju',
   'kontrola-5k': 'provera forme: trka ili test na 5 km punim naporom',
   'kontrola-rana': 'provera forme: test na 3 km punim naporom, ravnomerno',
   'kontrola-rana-5k': 'provera forme: test na 5 km punim naporom, ravnomerno',
@@ -41,6 +43,8 @@ export const TEXTS: Record<string, string> = {
     'Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.',
   'napomena.dugi-obuca':
     'Najduže dugo trči u patikama i odeći za trku: tada se vidi da li žulja ili trlja. Patike za trku neka imaju 50–150 km pre starta, ne nove.',
+  'napomena.kontrola-hm':
+    'Proba trke: doručak, oprema i gelovi tačno kao na maratonu. Rezultat postaje nova forma; sledeća nedelja je bez brzih treninga.',
   'napomena.dugi-blok':
     'Blok trči ravnomerno u tempu maratona, ne brže; unos gela vežbaj i tokom bloka, kao na trci. Ako tempo ne možeš da držiš bez naprezanja, skrati blok — ne ubrzavaj.',
   'napomena.trka':
@@ -78,6 +82,6 @@ export const NOTE_RULES: NoteRule[] = [
   { kinds: ['race'], minDurationSec: 0, text: 'napomena.trka-unos' },
   /* svaki dugi ≥ 90 min nosi unos (README) */
   { kinds: ['long'], minDurationSec: 5400, text: 'napomena.dugi' },
-  /* najduži dugi (≥ 2 h 30): oprema za trku */
-  { kinds: ['long'], minDurationSec: 9000, text: 'napomena.dugi-obuca' }
+  /* najduži dugi (≥ 2 h 50; sudija 2: ne na svakom dugom od 2 h 30): oprema za trku */
+  { kinds: ['long'], minDurationSec: 10200, text: 'napomena.dugi-obuca' }
 ];
