@@ -784,12 +784,13 @@ describe('R6: istina o tempu trke', () => {
     expect(far.text).toContain(`traži ${paceOf(lowSec - 300)} — van raspona je (raspon`);
   });
 
-  it('taktika dana trke (krug 4, S7): iz današnje potvrđene forme; cilj samo kad je sporiji od nje', () => {
+  /* R18 (stavka 1): ni sporiji cilj ne usporava tempo dana trke ispod potvrđene forme */
+  it('taktika dana trke (krug 4, S7; R18): iz današnje potvrđene forme, i kad je cilj sporiji', () => {
     const base = withGoal(undefined);
     const confirmed = raceTimeSec(base.doc.header.form.paceVdot, HALF_M);
     expect(base.text).toContain(`Tempo za trku: ${paceOf(confirmed)} (današnja forma`);
     expect(withGoal(confirmed + 120).text).toContain(
-      `Tempo za trku: ${paceOf(confirmed + 120)} (tvoj cilj`
+      `Tempo za trku: ${paceOf(confirmed)} (današnja forma`
     );
     expect(withGoal(confirmed - 300).text).toContain(
       `Tempo za trku: ${paceOf(confirmed)} (današnja forma`

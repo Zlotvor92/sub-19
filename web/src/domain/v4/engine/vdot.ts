@@ -153,12 +153,16 @@ export function zonePaces(
   const at = (m: Meters): Vdot => vdotAt(vdot, m, transfer);
   /* A14 (krug 9): VDOT zone nikad iznad najvećeg sirovog VDOT-a stvarnog rezultata */
   const lim = transfer?.limits;
+  /* R18 (stavka 1): prelom na rezultatu iz istorije bez lične krive — zone naniže ograničene isto kao uz unet rezultat
+     (prag i lagano ne skaču sporije kad prelom pređe sa unetog rezultata na stvarnu trku iste forme) */
+  const zt: Transfer | undefined =
+    transfer?.zoneCapDown === true ? { ...transfer, capDown: true } : transfer;
   const top = (v: Vdot): Vdot =>
     lim?.maxVdot === undefined ? v : Math.min(v, Math.max(vdot, lim.maxVdot));
-  const vR = top(zoneVdot(vdot, 'R', transfer));
-  const vI = top(zoneVdot(vdot, 'I', transfer));
-  const vT = top(zoneVdot(vdot, 'T', transfer));
-  const vE = zoneVdot(vdot, 'E', transfer);
+  const vR = top(zoneVdot(vdot, 'R', zt));
+  const vI = top(zoneVdot(vdot, 'I', zt));
+  const vT = top(zoneVdot(vdot, 'T', zt));
+  const vE = zoneVdot(vdot, 'E', zt);
   const slow =
     intervalFloor !== undefined && raceTimeSec(vdot, distanceM) >= intervalFloor.fromRaceSec;
   const I = slow

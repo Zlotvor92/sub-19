@@ -248,12 +248,12 @@ TEMPA
 - umereno 5:59/km
 - prag 5:34/km
 - tempo trke 5:29/km
-- intervali 5:09/km
-- brze deonice 4:43/km
+- intervali 5:13/km
+- brze deonice 4:44/km
 Tempo trke u treninzima je tvoja današnja forma (5:29/km). Očekivano vreme na dan trke (54:16) traži 5:26/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 5 km za 25:49 (23. 1.) pokazuje bolju formu od one po kojoj je plan pisan (56:02 na distanci trke): prag brži za 7 s/km, tempo trke brži za 7 s/km, intervali brži za 11 s/km, a očekivano vreme trke je sada oko 54:16 (raspon 53:04–55:46).
+Rezultat 5 km za 25:49 (23. 1.) pokazuje bolju formu od one po kojoj je plan pisan (56:02 na distanci trke): tempa su ubrzana za oko 7 s po kilometru, a očekivano vreme trke je sada oko 54:16 (raspon 53:04–55:46).
 - plan: prag 5:41/km, tempo trke 5:36/km → prag 5:34/km, tempo trke 5:29/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 17 nedelja
@@ -392,18 +392,18 @@ Rezultat 5 km za 25:49 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
   pon 1. 2.  lagano 80 min — 11,4 km, 80 min
   uto 2. 2.  tempo trke 4 × 1,6 km (5:29/km), oporavak 1:30 džog — 12 km, 75 min
   sre 3. 2.  odmor
-  čet 4. 2.  intervali 7 × 3 min (5:09/km), oporavak 2:30 džog — 11,1 km, 71 min
+  čet 4. 2.  intervali 7 × 3 min (5:13/km), oporavak 2:30 džog — 11 km, 71 min
   pet 5. 2.  odmor
   sub 6. 2.  lagano 75 min — 10,7 km, 75 min
   ned 7. 2.  dugi 1 h 40 min lagano — 14,2 km, 1 h 40 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 59,4 km, 6 h 41 min, 5 treninga, brz rad 14 % vremena trčanja
+  Zbir: 59,3 km, 6 h 41 min, 5 treninga, brz rad 14 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 8. 2.  lagano 80 min — 11,4 km, 80 min
   uto 9. 2.  tempo trke 6 × 1 km (5:29/km), oporavak 1:30 džog — 12 km, 75 min
   sre 10. 2.  odmor
-  čet 11. 2.  intervali 5 × 800 m (5:09/km), oporavak 2:30 džog — 10,3 km, 66 min
+  čet 11. 2.  intervali 5 × 800 m (5:13/km), oporavak 2:30 džog — 10,3 km, 66 min
   pet 12. 2.  odmor
   sub 13. 2.  lagano 75 min — 10,7 km, 75 min
   ned 14. 2.  dugi 1 h 40 min, završnih 15 min u pragu (5:34/km) — 14,8 km, 1 h 40 min
@@ -415,7 +415,7 @@ Rezultat 5 km za 25:49 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
   pon 15. 2.  lagano 50 min — 7,1 km, 50 min
   uto 16. 2.  tempo trke 4 × 1,6 km (5:29/km), oporavak 1:30 džog — 12 km, 75 min
   sre 17. 2.  odmor
-  čet 18. 2.  intervali 4 × 1 km (5:09/km), oporavak 2:30 džog — 10 km, 63 min
+  čet 18. 2.  intervali 4 × 1 km (5:13/km), oporavak 2:30 džog — 10 km, 63 min
   pet 19. 2.  odmor
   sub 20. 2.  lagano 50 min — 7,1 km, 50 min
   ned 21. 2.  dugi 85 min lagano — 12,1 km, 85 min
@@ -426,7 +426,7 @@ Rezultat 5 km za 25:49 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
   pon 22. 2.  lagano 50 min — 7,1 km, 50 min
   uto 23. 2.  tempo trke 2 × 1,2 km (5:29/km), oporavak 1:30 džog — 7,6 km, 50 min
   sre 24. 2.  odmor
-  čet 25. 2.  intervali 3 × 3 min (5:09/km), oporavak 2:30 džog — 7,4 km, 49 min
+  čet 25. 2.  intervali 3 × 3 min (5:13/km), oporavak 2:30 džog — 7,4 km, 49 min
   pet 26. 2.  odmor
   sub 27. 2.  lagano 50 min — 7,1 km, 50 min
   ned 28. 2.  dugi 70 min lagano — 10 km, 70 min

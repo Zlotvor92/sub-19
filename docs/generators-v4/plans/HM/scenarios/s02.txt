@@ -273,12 +273,12 @@ TEMPA
 - umereno 6:00/km
 - prag 5:34/km
 - tempo trke 5:46/km
-- intervali 5:05/km
-- brze deonice 4:44/km
+- intervali 5:14/km
+- brze deonice 4:47/km
 Tempo trke u treninzima je tvoja današnja forma (5:46/km). Očekivano vreme na dan trke (2:00:03) traži 5:41/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 10 km za 53:54 (23. 1.) pokazuje bolju formu od one po kojoj je plan pisan (2:04:13 na distanci trke): prag brži za 3 s/km, tempo trke brži za 7 s/km, intervali brži za 16 s/km, a očekivano vreme trke je sada oko 2:00:03 (raspon 1:55:53–2:05:19).
+Rezultat 10 km za 53:54 (23. 1.) pokazuje bolju formu od one po kojoj je plan pisan (2:04:13 na distanci trke): prag brži za 3 s/km, tempo trke brži za 7 s/km, intervali brži za 7 s/km, a očekivano vreme trke je sada oko 2:00:03 (raspon 1:55:53–2:05:19).
 - plan: prag 5:37/km, tempo trke 5:53/km → prag 5:34/km, tempo trke 5:46/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja

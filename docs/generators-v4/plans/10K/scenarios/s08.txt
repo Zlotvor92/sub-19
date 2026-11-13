@@ -177,17 +177,17 @@ Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 55:06 za 10 km. Prvi test ili trka je preciziraju.
 
 TEMPA
-- lagano 6:48–7:28/km
+- lagano 6:41–7:21/km
 - umereno 6:01/km
-- prag 5:36/km
+- prag 5:35/km
 - tempo trke 5:31/km
 - intervali 5:08/km
 - brze deonice 4:50/km
-Tempo trke u treninzima je tvoja današnja forma (5:31/km). Očekivano vreme na dan trke (54:33) traži 5:27/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:31/km). Očekivano vreme na dan trke (54:33) traži 5:27/km. Tempa se ubrzavaju kad trka ili test to potvrde. Kod tebe je tempo trke ≈ prag (5:31/km), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.
 
 PROMENE
 Rezultat 3 km za 15:28 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 54:33 (raspon 52:46–57:04).
-- plan: po osećaju → prag 5:36/km, tempo trke 5:31/km
+- plan: po osećaju → prag 5:35/km, tempo trke 5:31/km
 - upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepen: treninzi su kraći do 10. 1., a prvi brzi trening je 14. 1.
 - uto 5. 1.: lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 25 min
@@ -289,33 +289,33 @@ Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepe
 
 10. NEDELJA (od 4. 1.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
   pon 4. 1.  odmor
-  uto 5. 1.  lagano 25 min — 3,5 km, 25 min
+  uto 5. 1.  lagano 25 min — 3,6 km, 25 min
   sre 6. 1.  odmor
-  čet 7. 1.  lagano 50 min — 7 km, 50 min
+  čet 7. 1.  lagano 50 min — 7,1 km, 50 min
   pet 8. 1.  odmor
-  sub 9. 1.  lagano 40 min — 5,6 km, 40 min
-  ned 10. 1.  dugi 70 min lagano — 9,8 km, 70 min
-  Zbir: 25,9 km, 3 h 5 min, 4 treninga, brz rad 0 % vremena trčanja
+  sub 9. 1.  lagano 40 min — 5,7 km, 40 min
+  ned 10. 1.  dugi 70 min lagano — 10 km, 70 min
+  Zbir: 26,4 km, 3 h 5 min, 4 treninga, brz rad 0 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 11. 1.  odmor
-  uto 12. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,3 km, 30 min
+  uto 12. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,4 km, 30 min
   sre 13. 1.  odmor
-  čet 14. 1.  tempo trke 2 × 1 km (5:31/km), oporavak 1:30 džog — 7,1 km, 48 min
+  čet 14. 1.  tempo trke 2 × 1 km (5:31/km), oporavak 1:30 džog — 7,2 km, 48 min
   pet 15. 1.  odmor
-  sub 16. 1.  lagano 30 min — 4,2 km, 30 min
-  ned 17. 1.  dugi 60 min lagano — 8,4 km, 60 min
-  Zbir: 24 km, 2 h 48 min, 4 treninga, brz rad 7 % vremena trčanja
+  sub 16. 1.  lagano 30 min — 4,3 km, 30 min
+  ned 17. 1.  dugi 60 min lagano — 8,6 km, 60 min
+  Zbir: 24,5 km, 2 h 48 min, 4 treninga, brz rad 7 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — završnica, nedelja trke
   pon 18. 1.  odmor
-  uto 19. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,3 km, 30 min
+  uto 19. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,4 km, 30 min
   sre 20. 1.  odmor
-  čet 21. 1.  oštrenje: tempo trke 3 × 3 min (5:31/km), oporavak 2 min džog — 7,1 km, 48 min
+  čet 21. 1.  oštrenje: tempo trke 3 × 3 min (5:31/km), oporavak 2 min džog — 7,2 km, 48 min
   pet 22. 1.  odmor
-  sub 23. 1.  lagano 20 min — 2,8 km, 20 min
+  sub 23. 1.  lagano 20 min — 2,9 km, 20 min
   ned 24. 1.  TRKA: 10 km
       napomena: Tempo za trku: 5:31/km (današnja forma 55:21).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:34–5:37/km (ne brže od 5:31/km), od 3. do 8. km ravnomerno 5:31/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
       napomena: Posle trke: 5 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
-  Zbir: 14,2 km, 98 min, 3 treninga + trka, brz rad 9 % vremena trčanja
+  Zbir: 14,5 km, 98 min, 3 treninga + trka, brz rad 9 % vremena trčanja

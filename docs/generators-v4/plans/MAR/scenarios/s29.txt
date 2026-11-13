@@ -1,6 +1,6 @@
 S29 — p08, MAR: bolest 7 dana u poslednje 4 nedelje (ned 21, najteža)
 
-STANJE: danas 2027-03-28; sadašnji obim 50 km nedeljno, 3 dana; forma 3:33:26 (pouzdanost srednja), očekivano na dan trke 3:31:14.
+STANJE: danas 2027-03-28; sadašnji obim 50 km nedeljno, 3 dana; forma 3:33:26 (pouzdanost srednja), očekivano na dan trke 3:31:16.
 DOGAĐAJ: Bolest 2027-03-22 – 2027-03-28 (21. nedelja), bez treninga. Događaji: result:2026-12-24:run-w8d3, result:2027-02-14:run-w15d6, pause:2027-03-22:2027-03-28.
 PROMENA: 4.
 
@@ -307,7 +307,7 @@ Polazim od tvojih ≈ 50 km nedeljno (4 h 57 min trčanja).
 FORMA
 Polazna forma (1. 11.): 3:32:21
 Današnja prognoza (28. 3.): 3:33:26, pouzdanost srednja
-Očekivano na dan trke: 3:31:14 (raspon 3:27:58–3:36:32) — 2:12 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 3:31:16 (raspon 3:28:00–3:36:32) — 2:10 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 7 dana (22. 3. – 28. 3.); posle petog dana forma polako opada — procena za 42,2 km: 3:32:23 → 3:33:26.
 - Test 14. 2.: 21,1 km za 1:40:14. Rezultat sa 21,1 km prenosim na 42,2 km uz umanjenje, jer uz oko 50 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 42,2 km: 3:32:24 → 3:32:23.
@@ -321,7 +321,7 @@ TEMPA
 - tempo trke 5:02/km
 - intervali 4:16/km
 - brze deonice 4:01/km
-Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:31:14) traži 5:00/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:31:16) traži 5:00/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 75 min — dugi tada može da naraste do 29 km.

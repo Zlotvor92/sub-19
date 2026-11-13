@@ -222,7 +222,8 @@ export function raceNotes(
   /* A18 (krug 9): jedan izvor — današnja prognoza iz zaglavlja (ne posebno računanje iz VDOT-a tempa) */
   const confirmedSec = h.form.current.raceTimeSec;
   const target = h.goal.targetTimeSec;
-  const fromGoal = target !== undefined && target >= confirmedSec;
+  /* R18 (stavka 1): tempo dana trke nikad sporiji od potvrđene forme — cilj samo dok su tempa po osećaju */
+  const fromGoal = h.paces.byFeel && target !== undefined && target >= confirmedSec;
   const timeSec = fromGoal ? target : confirmedSec;
   /* krug 10 (stavka 9): jedan izvor tempa trke — isti broj kao tempo trke u treninzima (zaokruživanje bez razlike) */
   const pace = fromGoal || h.paces.byFeel ? (timeSec / data.distanceM) * 1000 : h.paces.RP;

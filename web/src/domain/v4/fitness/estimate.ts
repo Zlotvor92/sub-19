@@ -351,6 +351,8 @@ export function estimateForm(
   /** Prelom lične krive: dužina poslednjeg rezultata (unet rezultat, trka, test); bez njih dužina cilja. */
   let anchorM: Meters = goal.distanceM;
   let anchorFromProfile = false;
+  /** R18: prelom je na rezultatu iz istorije (trka/test). */
+  let anchorFromResult = false;
   /** Lična kriva na dan `d` (F4-K2): β po obimu ili lični, prelom na poslednjem rezultatu. */
   const curveAt = (d: number): { curve: Transfer; weeklyKm: number | null } => {
     const weeklyKm = weeklyKmAt(d);
@@ -362,13 +364,15 @@ export function estimateForm(
         : C.PERSONAL_BETA_SHARE * personal + (1 - C.PERSONAL_BETA_SHARE) * def;
     /* prelom na unetom rezultatu bez ijednog rezultata iz istorije: granica naniže (F4-K2) */
     const capDown = anchorFromProfile;
+    const zoneCapDown = anchorFromResult && !anchorFromProfile && personal === null;
     return {
       curve: {
         beta,
         personal: personal !== null,
         refM: goal.distanceM,
         anchorM,
-        ...(capDown ? { capDown } : {})
+        ...(capDown ? { capDown } : {}),
+        ...(zoneCapDown ? { zoneCapDown } : {})
       },
       weeklyKm
     };
@@ -383,8 +387,11 @@ export function estimateForm(
   ): { loss: number; beta: number; weeklyKm: number | null; personal: boolean } => {
     const own = curveAt(d);
     const curve = planned?.transfer ?? own.curve;
+    /* R18 (stavka 2): dokaz sa DUŽE trke (više od 2× cilja) na kraći cilj — jednak VDOT (Daniels/Riegel), bez
+       dodatka krive za kraću dužinu: polumaraton 1:42:30 nije 10 km za 45:30 nego ≈ 46:15 */
+    const longer = fromM > goal.distanceM * C.SAME_DISTANCE_MAX;
     return {
-      loss: vdotAt(at, fromM, curve) - at,
+      loss: longer ? 0 : vdotAt(at, fromM, curve) - at,
       beta: curve.beta,
       weeklyKm: own.weeklyKm,
       personal: curve.personal
@@ -578,6 +585,8 @@ export function estimateForm(
   let credited = 0;
   /* E8 (krug 5): pripisani napredak odrađenog plana — ide samo u OČEKIVANO vreme na dan trke, ne u trenutnu procenu */
   let planVdot = 0;
+  /** R18 (stavka 2): deo `planVdot` zadržan rezultatom (M17) — nivo koji je rezultat pokazao, ne dodatak budućem. */
+  let retained = 0;
   let week = { from: startDay, provisional: 0, done: 0, ref: 0, days: 0 };
   let lastResultDay = Number.NEGATIVE_INFINITY;
   /** „Planirano" za dan bez ciljeva plana: 7 × najveća baza u 6 nedelja pre (bez samoreferentnog pada). */
@@ -683,6 +692,7 @@ export function estimateForm(
         lastResultDay = d;
         anchorM = scored.distanceM;
         anchorFromProfile = false;
+        anchorFromResult = true;
         credited = 0;
         /* Z4 (krug 7): rezultat bar onoliko dobar koliko se verovalo (forma + pripisani napredak) ne spušta verovanu
            formu — ostatak pripisanog napretka ostaje; slabiji rezultat ga briše */
@@ -690,6 +700,7 @@ export function estimateForm(
            nivoa koji je rezultat pokazao — bolji rezultat ne usporava prognozu dana trke */
         const believed = before + planVdot;
         planVdot = target > before ? Math.max(0, Math.min(believed, target) - vdot) : 0;
+        retained = planVdot;
         week = { from: d + 1, provisional: 0, done: 0, ref: 0, days: 0 };
         baseDropApplied = 0;
         record(
@@ -932,9 +943,11 @@ export function estimateForm(
     current: point(vdot, today, confidence),
     /* Z4 (krug 7): prvi rezultat koji je zamenio procenu bez osnova još ne otvara pun očekivani napredak (potvrda
        forme ne pomera prognozu > 1 %; s24) — kao niska pouzdanost, dok ga ne potvrdi drugi rezultat */
+    /* R18 (stavka 2): nivo koji je rezultat pokazao (M17) i budući napredak se preklapaju — prognoza nije ispod
+       rezultata, a očekivani napredak ne raste kako trka prilazi (10 km s03: 1:36 za 6 nedelja posle 1:41 za 18) */
     raceDay: raceDayRange(
       vdot,
-      planVdot,
+      planVdot - Math.min(retained, C.EXPECTED_SHARE * gain),
       gain,
       sigma,
       firstOnly ? 'niska' : confidence,

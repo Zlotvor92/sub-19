@@ -7,7 +7,7 @@ s04 p12 E1: ned 6 (provera), prva trka u životu, 5 km 33:00 — promena: 2; nal
 s05 p01 E2: bolest 7 dana u ned 5 (razvoj, I blok) — promena: 14; nalazi čuvara posle: 0
 s06 p04 E2: bolest 7 dana u ned 13 (najteža) — promena: 6; nalazi čuvara posle: 0
 s07 p11 E2: bolest 7 dana u ned 9 — promena: 9; nalazi čuvara posle: 0
-s08 p12 E2: bolest 7 dana u ned 7 (najteža) — promena: 4; nalazi čuvara posle: 0
+s08 p12 E2: bolest 7 dana u ned 7 (najteža) — promena: 7; nalazi čuvara posle: 0
 s09 p01 E3: ned 9 (najteža): propušteni tempo trke i dugi sa završnicom — promena: 2; nalazi čuvara posle: 0
 s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 2; nalazi čuvara posle: 0
 s11 p11 E3: ned 13 (najteža): propušteni tempo trke i dugi — promena: 2; nalazi čuvara posle: 0

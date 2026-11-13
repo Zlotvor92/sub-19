@@ -316,8 +316,8 @@ TEMPA
 - umereno 6:21/km
 - prag 5:48/km
 - tempo trke 6:19/km
-- intervali 5:24/km
-- brze deonice 4:55/km
+- intervali 5:32/km
+- brze deonice 5:02/km
 Tempo trke u treninzima je tvoja današnja forma (6:19/km). Očekivano vreme na dan trke (4:26:35) traži 6:19/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
@@ -343,7 +343,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 7. 2. trči sam
 - 17. nedelja: 43,3 km → 36,7 km
 - 19. nedelja: 47,4 km → 44,6 km
 - 21. nedelja: 49,2 km → 45,1 km
-Rezultat 10 km za 58:00 (11. 2.) pokazuje slabiju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag sporiji za 8 s/km, tempo trke sporiji za 8 s/km, a očekivano vreme trke je sada oko 4:26:35 (raspon 4:16:57–4:39:04). Provera forme planirana za 14. 2. se izostavlja: pun napor nije dobar test forme 14 dana posle trke.
+Rezultat 10 km za 58:00 (11. 2.) pokazuje slabiju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): tempa su usporena za oko 8 s po kilometru, a očekivano vreme trke je sada oko 4:26:35 (raspon 4:16:57–4:39:04). Provera forme planirana za 14. 2. se izostavlja: pun napor nije dobar test forme 14 dana posle trke.
 - plan: prag 5:40/km, tempo trke 6:11/km → prag 5:48/km, tempo trke 6:19/km
 Rezultat 10 km za 58:00 (11. 2.): trka je kratka, pa je oporavak kao posle provere forme, pa su naredna 3 dana bez brzih deonica; od 15. 2. plan se nastavlja kako je bio. Provera forme planirana za 14. 2. se izostavlja: pun napor nije dobar test forme 14 dana posle trke.
 - ned 14. 2.: pripremna trka: polumaraton punim naporom, ravnomerno → lagano 2 h 30 min

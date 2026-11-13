@@ -316,7 +316,7 @@ Zašto je prognoza ovakva (najnovije prvo):
 TEMPA
 - lagano 5:33–6:07/km
 - umereno 4:59/km
-- prag 4:33/km
+- prag 4:30/km
 - tempo trke 4:55/km
 - intervali 4:08/km
 - brze deonice 3:54/km
@@ -326,8 +326,8 @@ UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 75 min — dugi tada može da naraste do 29 km.
 
 PROMENE
-Rezultat 21,1 km za 1:37:08 (14. 2.) pokazuje bolju formu od one po kojoj je plan pisan (3:32:21 na distanci trke): prag brži za 5 s/km, tempo trke brži za 7 s/km, intervali brži za 8 s/km, a očekivano vreme trke je sada oko 3:24:52 (raspon 3:20:38–3:30:42).
-- plan: prag 4:38/km, tempo trke 5:02/km → prag 4:33/km, tempo trke 4:55/km
+Rezultat 21,1 km za 1:37:08 (14. 2.) pokazuje bolju formu od one po kojoj je plan pisan (3:32:21 na distanci trke): tempa su ubrzana za oko 8 s po kilometru, a očekivano vreme trke je sada oko 3:24:52 (raspon 3:20:38–3:30:42).
+- plan: prag 4:38/km, tempo trke 5:02/km → prag 4:30/km, tempo trke 4:55/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor
@@ -529,12 +529,12 @@ Rezultat 21,1 km za 1:37:08 (14. 2.) pokazuje bolju formu od one po kojoj je pla
   pon 15. 3.  odmor
   uto 16. 3.  lagano 12 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 13 km, 75 min
   sre 17. 3.  odmor
-  čet 18. 3.  prag 3 × 6 min (4:33/km), oporavak 1:30 džog — 8,7 km, 46 min
+  čet 18. 3.  prag 3 × 6 min (4:30/km), oporavak 1:30 džog — 8,8 km, 46 min
   pet 19. 3.  odmor
   sub 20. 3.  odmor
   ned 21. 3.  dugi 19 km lagano — 19 km, 1 h 51 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 40,7 km, 3 h 52 min, 3 treninga, brz rad 8 % vremena trčanja
+  Zbir: 40,8 km, 3 h 52 min, 3 treninga, brz rad 8 % vremena trčanja
 
 21. NEDELJA (od 22. 3.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 22. 3.  odmor

@@ -1340,7 +1340,14 @@ function noFasterInWindow(next: Paces, header: PlanHeader, today: IsoDate): Pace
 }
 
 function transferOf(state: RunnerState, header: PlanHeader): Transfer | undefined {
-  return state.form.transfer ?? header.form.transfer;
+  const own = state.form.transfer;
+  const planned = header.form.transfer;
+  /* R18 (stavka 1): posle prvog pouzdanog tempa oblik krive ostaje iz plana, menja se samo forma — sve zone se
+     pomeraju srazmerno tempu trke i u istom smeru (nov prelom ne sme da pomeri prag 1 s a tempo trke 8 s, ni da
+     uspori lagano uz bolji rezultat); granice iz stvarnih rezultata (A14) su tekuće */
+  if (own === undefined || planned === undefined || header.paces.byFeel) return own ?? planned;
+  const { limits: _old, ...shape } = planned;
+  return own.limits === undefined ? shape : { ...shape, limits: own.limits };
 }
 
 function onFormUpdate(
