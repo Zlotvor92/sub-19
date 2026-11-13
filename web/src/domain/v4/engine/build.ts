@@ -719,7 +719,20 @@ function taperIntensity(
     }
     const dose = Math.min(work, room);
     if (dose < work) {
-      if (r.type === 'quality') out.set(date, { ...r, dose });
+      if (r.type === 'quality') {
+        /* krug 5 (p04): skraćena doza ispod najmanje za unos — manji unos istog podražaja, inače lagan dan po
+           pravilu sužavanja (ne lagan dan punog trajanja kvaliteta) */
+        let def = r.def;
+        if (dose < minDoseOf(def, ctx)) {
+          const smaller = pickDef(r.slot, dose, ctx, { noHighImpact: false });
+          if (smaller !== null && smaller.stimulus === def.stimulus && dose >= minDoseOf(smaller, ctx)) def = smaller;
+        }
+        if (dose < minDoseOf(def, ctx)) {
+          out.set(date, asEasy(r));
+          continue;
+        }
+        out.set(date, { ...r, def, dose });
+      }
       if (r.type === 'long') out.set(date, { ...r, dose });
     }
     count += 1;
@@ -729,7 +742,7 @@ function taperIntensity(
     if (real !== null && real.workSec > room && (cur.type === 'quality' || cur.type === 'long')) {
       const less = Math.max(0, cur.dose - (real.workSec - room) - 60);
       const next: Recipe =
-        less < ctx.data.safety.minDoseSec
+        less < ctx.data.safety.minDoseSec || (cur.type === 'quality' && less < minDoseOf(cur.def, ctx))
           ? cur.type === 'long'
             ? plainLong(cur)
             : asEasy(cur)
@@ -790,6 +803,7 @@ function layoutOnce(
     zoneCap === undefined ? Number.POSITIVE_INFINITY : (zoneCap.byLevel[d.level] ?? Number.POSITIVE_INFINITY);
   const inZone = (def: WorkoutDef | null): boolean =>
     zoneCap !== undefined && def !== null && mainZone(def.main) === zoneCap.zone;
+  let longZoneSec = 0;
   const fixed = new Map<IsoDate, Recipe>();
   const addons = new Map<IsoDate, Recipe>();
   let fixedLoad = 0;
@@ -812,7 +826,10 @@ function layoutOnce(
         dose = 0;
       } else {
         budget.book(dose, slots.long.extra);
-        if (inZone(def)) zoneLeft -= dose;
+        if (inZone(def)) {
+          zoneLeft -= dose;
+          longZoneSec = dose;
+        }
       }
     }
     fix(dateOf(longWd), { type: 'long', sec: week.longSec, def, dose, slot: slots.long.slot });
@@ -892,19 +909,36 @@ function layoutOnce(
        (`weeklyZoneMaxSec.fallbackStimulus`), ne lagano trčanje */
     /* M1 (krug 5): ostatak ispod `minLeftSec` (15 min) — cela doza ide u zamenski podražaj pune doze */
     const minLeft = Math.max(minDoseOf(item.def, ctx), zoneCap?.minLeftSec ?? 0);
-    if (inZone(item.def) && zoneLeft < minLeft && zoneCap?.fallbackStimulus !== undefined) {
+    /* krug 5 (P1 → p04): dugi već nosi blok iste zone, a plafon seče i ovaj trening — nedelja bi imala dva ista
+       podražaja, pa i tada ide zamenski podražaj pune doze */
+    const clippedTwice = longZoneSec > 0 && zoneLeft < item.wanted;
+    if (inZone(item.def) && (zoneLeft < minLeft || clippedTwice) && zoneCap?.fallbackStimulus !== undefined) {
       /* pun dozni korak (M1: „prag pune doze") */
       const slot: SlotRef = { place: 'quality', stimulus: zoneCap.fallbackStimulus, index: 99, phase: item.slot.phase };
       const wanted = slotDose(slot, undefined, intent.kind, ctx);
       const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: false });
       const zone = def === null ? null : mainZone(def.main);
-      if (def !== null && zone !== null && def.main.kind !== 'add-on' && def.main.kind !== 'all-out')
+      /* zamena dva puta isečene zone samo kad nosi više rada od ostatka zone */
+      const gains = zoneLeft < minLeft || wanted > zoneLeft;
+      if (gains && def !== null && zone !== null && def.main.kind !== 'add-on' && def.main.kind !== 'all-out')
         item = { ...item, def, slot, wanted, extra: extraWeight(zone, ctx) };
     }
-    const dose = Math.min(
+    let dose = Math.min(
       budget.take(item.wanted, item.extra),
       inZone(item.def) ? zoneLeft : Number.POSITIVE_INFINITY
     );
+    /* krug 5 (p08): kad budžet nedelje skrati dozu ispod najmanje za izabrani unos, bira se unos istog podražaja
+       koji tu dozu nosi (2 × 7 umesto 3 × …) — kvalitet ne otpada zbog izbora unosa */
+    if (dose < minDoseOf(item.def, ctx) && dose > 0) {
+      const smaller = pickDef(item.slot, dose, ctx, { noHighImpact: false });
+      if (smaller !== null && smaller.stimulus === item.def.stimulus && dose >= minDoseOf(smaller, ctx)) {
+        const zone = mainZone(smaller.main);
+        if (zone !== null) {
+          item = { ...item, def: smaller, extra: extraWeight(zone, ctx) };
+          dose = Math.min(dose, inZone(smaller) ? zoneLeft : Number.POSITIVE_INFINITY);
+        }
+      }
+    }
     if (dose < minDoseOf(item.def, ctx)) continue;
     const recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
     const cost = summarize(realize(recipe, ctx), ctx.pace);

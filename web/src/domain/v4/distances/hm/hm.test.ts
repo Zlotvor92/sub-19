@@ -753,7 +753,9 @@ describe('krug 2: doze, raznovrsnost, provera forme, napomene (R16, R17, R19)', 
           if (x.stimulus === 'tempo-trke' || x.stimulus === 'dugi-rp') rp += x.workSec;
         }
         /* sužavanje i nedelja trke su namerno manji (ciljni p11 ned 19: tempo trke 14 min posle praga) */
-        const light = w.intent.kind === 'taper' || w.intent.kind === 'race';
+        /* M7 (krug 5): i kalendarska nedelja −2 (silazak obima ≤ 80 % vrha) */
+        const minus2 = p.doc.weeks.length - w.index === 2;
+        const light = w.intent.kind === 'taper' || w.intent.kind === 'race' || minus2;
         if (mid && !light)
           expect(rp, `${p.id} nedelja ${String(w.index)}`).toBeGreaterThanOrEqual(
             lastThreshold - 90

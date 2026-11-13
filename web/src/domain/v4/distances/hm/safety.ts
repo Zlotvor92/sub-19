@@ -190,8 +190,9 @@ export const SAFETY: SafetyNumbers = {
       brz: 4500
     }
   },
-  /* krug 5 (D3; trener § D6): trkač sporiji od 2:05 (očekivano na dan trke; p03, p10) — dugi ≤ vreme trke + 5 min, blok u dugom ≤ 35 min */
-  longVsRace: { fromRaceSec: 7500, overSec: 300, blockMaxSec: 2100 },
+  /* krug 5 (D3) → P1 (R5): trkač sporiji od 1:55 (očekivano na dan trke; p03, p04, p10) — dugi ≤ vreme trke +
+     10 min, blok tempa trke u dugom ≤ 35 min */
+  longVsRace: { fromRaceSec: 6900, overSec: 600, blockMaxSec: 2100 },
   /* M7 (krug 5): silazak obima — dve nedelje pred nedeljom trke ≤ 80 % vršne (km) i ≤ 2 brza treninga, nedelja
      trke ≤ 60 % */
   taper: {
