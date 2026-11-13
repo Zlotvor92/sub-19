@@ -597,6 +597,8 @@ export interface Change {
     | 'cilj'
     | 'obim'
     | 'upozorenje'
+    /** R18 (stavka 4): napomena za dan trke (tempo, očekivano vreme) se promenila — brojač je vidi. */
+    | 'napomena-trke'
     /** Događaj ne menja treninge, ali trkač dobija rečenicu (propušten ključni trening, krug 2, R8). */
     | 'obavestenje';
   before: string;

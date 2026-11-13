@@ -421,7 +421,9 @@ function changeLines(changes: readonly Change[], doc: PlanDoc): string[] {
         }
         const date = c.dayId === undefined ? undefined : dayDate.get(c.dayId);
         const where =
-          date !== undefined
+          c.what === 'napomena-trke'
+            ? 'napomena za trku'
+            : date !== undefined
             ? `${fmtWeekday(date)} ${fmtDate(date)}`
             : c.weekIndex !== undefined
               ? `${String(c.weekIndex)}. nedelja`

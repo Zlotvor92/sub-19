@@ -2,7 +2,8 @@
    posle boljeg rezultata nijedna zona nije sporija, prag se pomera srazmerno tempu trke, a tempo dana trke nije
    sporiji od forme. */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
-   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument,
+   @typescript-eslint/no-unsafe-return
    -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { renderPlan, type DistanceData } from '../engine';
@@ -106,6 +107,36 @@ describe('krug 18 — pomerena provera forme (sve distance)', () => {
         if (race) bad.push(`s${String(s.no)} ${String(x.date)} provera posle prave trke`);
         if (old?.kind === 'quality' && String(old.text).startsWith('tempo trke'))
           bad.push(`s${String(s.no)} ${String(x.date)} provera umesto tempa trke`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
+/* KRUG 18 (t. 4): tekst izmene odgovara stvarnoj izmeni (sve distance). */
+describe('krug 18 — tekst izmene = stvarna izmena', () => {
+  const MONTHS = (d: string): string => {
+    const [, m, day] = d.split('-');
+    return `${String(Number(day))}. ${String(Number(m))}.`;
+  };
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', (_id, d) => {
+    const bad: string[] = [];
+    for (const s of d.scenarios) {
+      const r = s.run();
+      const days: any[] = r.after.weeks.flatMap((w: any) => w.days);
+      const was: any[] = r.before.weeks.flatMap((w: any) => w.days);
+      const at = (list: any[], label: string): any => list.find((x) => MONTHS(x.date) === label);
+      for (const c of r.changes as any[]) {
+        const t = String(c.reason);
+        const carries = /sledeći dugi \((\d+\. \d+\.)\) već nosi završni deo/.exec(t);
+        if (carries?.[1] !== undefined && !((at(days, carries[1])?.workout?.workSec ?? 0) > 0))
+          bad.push(`s${String(s.no)} „već nosi završni deo" a ${carries[1]} je lagan`);
+        const from = /sledeći dugi \((\d+\. \d+\.)\) kreće od poslednjeg odrađenog/.exec(t);
+        if (
+          from?.[1] !== undefined &&
+          JSON.stringify(at(days, from[1])?.workout) === JSON.stringify(at(was, from[1])?.workout)
+        )
+          bad.push(`s${String(s.no)} „kreće od poslednjeg odrađenog" a ${from[1]} je isti`);
       }
     }
     expect(bad).toEqual([]);

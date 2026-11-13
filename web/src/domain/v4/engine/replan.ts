@@ -1,5 +1,6 @@
 /* V4 — `replan` (SPEC § 6.3–6.4, § 10): najmanja dovoljna promena po događaju. Bez događaja vraća ulazni dokument.
    Dan u prozoru se gradi iznova iz namere + odluka (isti prolaz kao `plan`); svaka razlika dobija objašnjenje. */
+import { raceNotes } from './render';
 import {
   PACE_UPDATE_AFTER_RESULT_VDOT,
   PAIN_CONTINUE_MAX,
@@ -457,6 +458,13 @@ function onMissed(
       const from = lastDone > 0 ? lastDone : doc.header.decisions.longStartSec;
       const lengthSec = from + longStepOf(data.safety, doc.header.paces.easy);
       const targetWeek = weekOf(nextLong);
+      /* R18 (stavka 4): sledeći dugi nije duži od poslednjeg odrađenog uz jedan korak — ništa se ne menja, i tekst
+         to kaže (ne najavljuje skraćenje kog nema) */
+      if (summarize(nextLong.workout, ctx).durationSec <= lengthSec + 60 && !hasBlock(nextLong))
+        return notice(
+          `Dugi trening je propušten ${String(streak)} puta zaredom`,
+          `sledeći dugi (${fmtDate(nextLong.date)}) nije duži od poslednjeg odrađenog uz jedan korak, pa ostaje kakav je`
+        );
       return build(
         { kind: 'repeat', source: ev.id, dayId: nextLong.id, lengthSec, noBlock: true },
         nextLong,
@@ -503,9 +511,12 @@ function onMissed(
         : previousStep;
     const defId = sample?.workout?.libraryId;
     if (wanted <= 0 || defId === undefined || (wanted === planned && !block)) {
+      /* R18 (stavka 4): rečenica prema stvarnom planu — „već nosi završni deo" samo kad ga sledeći dugi nosi */
       return notice(
         meaning,
-        `sledeći dugi (${fmtDate(nextBuildLong.date)}) već nosi završni deo u tempu trke, pa se zbog ovog treninga ništa ne menja`
+        planned > 0
+          ? `sledeći dugi (${fmtDate(nextBuildLong.date)}) već nosi završni deo u tempu trke, pa se zbog ovog treninga ništa ne menja`
+          : `propušten trening se ne nadoknađuje: sledeći dugi (${fmtDate(nextBuildLong.date)}) ostaje lagan, a tempo trke se nastavlja na sledećem treningu po planu`
       );
     }
     const lengthSec = block ? Math.round(summarize(missed, ctx).durationSec) : undefined;
@@ -1772,7 +1783,7 @@ function explain(
         movedAfter !== null
           ? ` Provera forme je pomerena na ${fmtDate(movedAfter)}.`
           : dropped !== null
-            ? ` Provera forme planirana za ${fmtDate(dropped)} se izostavlja: pun napor nije dobar test forme ${count(NO_TEST_AFTER_RACE_DAYS, DAYS)} posle trke.`
+            ? ` Provera forme planirana za ${fmtDate(dropped)} se izostavlja: to je samo ${count(diffDays(dropped, zero), DAYS)} posle trke, a pun napor pre ${count(NO_TEST_AFTER_RACE_DAYS, DAYS)} posle trke nije dobar test forme; trka je već dala novu formu.`
             : '';
       const isTest = allDays(before).some((d) => d.id === run?.dayId && d.workout?.kind === 'test');
       /* krug 12 (M3/M5): kratka trka van plana nije „provera iz plana" — oporavlja se kao provera */
@@ -1990,6 +2001,21 @@ function describe(
       after: warningDelta(h0.warnings, h1.warnings),
       reason: text.header
     });
+  }
+
+  /* R18 (stavka 4): brojač vidi i napomenu za dan trke kad se menja bez promene tempa */
+  if (!changes.some((x) => x.what === 'tempa')) {
+    const n0 = raceNotes(before, state, data)[0] ?? '';
+    const n1 = raceNotes(after, state, data)[0] ?? '';
+    if (n0 !== n1)
+      changes.push({
+        ...base,
+        scope: 'zaglavlje',
+        what: 'napomena-trke',
+        before: n0,
+        after: n1,
+        reason: text.header
+      });
   }
 
   const weekChanges: Change[] = [];
