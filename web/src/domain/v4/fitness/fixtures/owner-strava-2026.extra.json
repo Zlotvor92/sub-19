@@ -1,0 +1,2714 @@
+{
+ "2026-04-01#1": {
+  "stravaId": "17940933102",
+  "sportType": "Run",
+  "startLocal": "2026-04-01T19:21:35",
+  "movingSec": 1822,
+  "elapsedSec": 1822,
+  "distanceM": 5186.4,
+  "elevGainM": 2,
+  "indoor": false,
+  "avgCadence": 85.6462,
+  "relativeEffort": 21,
+  "kcal": 432,
+  "maxSpeedMps": 5.1
+ },
+ "2026-04-03#1": {
+  "stravaId": "17966480497",
+  "sportType": "Run",
+  "startLocal": "2026-04-03T21:08:44",
+  "movingSec": 1732,
+  "elapsedSec": 1732,
+  "distanceM": 5620.6,
+  "elevGainM": 2,
+  "indoor": false,
+  "avgCadence": 87.6171,
+  "relativeEffort": 46,
+  "kcal": 448,
+  "maxSpeedMps": 4.46
+ },
+ "2026-04-04#1": {
+  "stravaId": "17978359093",
+  "sportType": "Run",
+  "startLocal": "2026-04-04T19:02:47",
+  "movingSec": 1499,
+  "elapsedSec": 1568,
+  "distanceM": 4588.7,
+  "elevGainM": 0,
+  "indoor": false,
+  "avgCadence": 84.0428,
+  "relativeEffort": 28,
+  "kcal": 371,
+  "maxSpeedMps": 4.86
+ },
+ "2026-04-05#1": {
+  "stravaId": "17986136605",
+  "sportType": "Run",
+  "startLocal": "2026-04-05T12:06:21",
+  "movingSec": 3451,
+  "elapsedSec": 3555,
+  "distanceM": 10004.9,
+  "elevGainM": 11,
+  "indoor": false,
+  "avgCadence": 85.5135,
+  "relativeEffort": 74,
+  "kcal": 856,
+  "maxSpeedMps": 3.62
+ },
+ "2026-04-08#1": {
+  "stravaId": "18031555757",
+  "sportType": "Run",
+  "startLocal": "2026-04-08T19:54:24",
+  "movingSec": 2958,
+  "elapsedSec": 3028,
+  "distanceM": 8685.9,
+  "elevGainM": 4,
+  "indoor": false,
+  "avgCadence": 80.7982,
+  "relativeEffort": 63,
+  "kcal": 706,
+  "maxSpeedMps": 4.68
+ },
+ "2026-04-10#1": {
+  "stravaId": "18050375690",
+  "sportType": "Run",
+  "startLocal": "2026-04-10T08:52:08",
+  "movingSec": 2621,
+  "elapsedSec": 2663,
+  "distanceM": 8006.4,
+  "elevGainM": 5,
+  "indoor": false,
+  "avgCadence": 85.5507,
+  "relativeEffort": 61,
+  "kcal": 656,
+  "maxSpeedMps": 4.14
+ },
+ "2026-04-11#1": {
+  "stravaId": "18070552694",
+  "sportType": "Run",
+  "startLocal": "2026-04-11T20:16:06",
+  "movingSec": 2226,
+  "elapsedSec": 2239,
+  "distanceM": 6240.1,
+  "elevGainM": 3,
+  "indoor": false,
+  "avgCadence": 85.4401,
+  "relativeEffort": 17,
+  "kcal": 516,
+  "maxSpeedMps": 5
+ },
+ "2026-04-12#1": {
+  "stravaId": "18077631139",
+  "sportType": "Run",
+  "startLocal": "2026-04-12T11:43:24",
+  "movingSec": 3889,
+  "elapsedSec": 3917,
+  "distanceM": 12004.7,
+  "elevGainM": 11,
+  "indoor": false,
+  "avgCadence": 88.483,
+  "relativeEffort": 68,
+  "kcal": 962,
+  "maxSpeedMps": 4.42
+ },
+ "2026-04-14#1": {
+  "stravaId": "18106557429",
+  "sportType": "Run",
+  "startLocal": "2026-04-14T17:26:51",
+  "movingSec": 2754,
+  "elapsedSec": 2828,
+  "distanceM": 7778.6,
+  "elevGainM": 17,
+  "indoor": false,
+  "avgCadence": 82.2814,
+  "relativeEffort": 65,
+  "kcal": 676,
+  "maxSpeedMps": 5.06
+ },
+ "2026-04-15#1": {
+  "stravaId": "18121160276",
+  "sportType": "Run",
+  "startLocal": "2026-04-15T18:26:08",
+  "movingSec": 2417,
+  "elapsedSec": 2425,
+  "distanceM": 7248.3,
+  "elevGainM": 3,
+  "indoor": false,
+  "avgCadence": 86.8956,
+  "relativeEffort": 40,
+  "kcal": 598,
+  "maxSpeedMps": 3.66
+ },
+ "2026-04-17#1": {
+  "stravaId": "18147613135",
+  "sportType": "Run",
+  "startLocal": "2026-04-17T18:19:24",
+  "movingSec": 2560,
+  "elapsedSec": 2563,
+  "distanceM": 8396.8,
+  "elevGainM": 3,
+  "indoor": false,
+  "avgCadence": 86.0808,
+  "relativeEffort": 73,
+  "kcal": 664,
+  "maxSpeedMps": 4.62
+ },
+ "2026-04-19#1": {
+  "stravaId": "18166737588",
+  "sportType": "Run",
+  "startLocal": "2026-04-19T07:25:57",
+  "movingSec": 4482,
+  "elapsedSec": 4521,
+  "distanceM": 14009.6,
+  "elevGainM": 8,
+  "indoor": false,
+  "avgCadence": 90.5497,
+  "relativeEffort": 111,
+  "kcal": 1134,
+  "maxSpeedMps": 3.96
+ },
+ "2026-04-22#1": {
+  "stravaId": "18215046067",
+  "sportType": "Run",
+  "startLocal": "2026-04-22T18:57:50",
+  "movingSec": 1956,
+  "elapsedSec": 1971,
+  "distanceM": 6010.9,
+  "elevGainM": 3,
+  "indoor": false,
+  "avgCadence": 85.3848,
+  "relativeEffort": 43,
+  "kcal": 487,
+  "maxSpeedMps": 5.46
+ },
+ "2026-04-24#1": {
+  "stravaId": "18241558218",
+  "sportType": "Run",
+  "startLocal": "2026-04-24T18:31:22",
+  "movingSec": 2613,
+  "elapsedSec": 2616,
+  "distanceM": 7573.8,
+  "elevGainM": 2,
+  "indoor": false,
+  "avgCadence": 85.5502,
+  "relativeEffort": 43,
+  "kcal": 621,
+  "maxSpeedMps": 5.1
+ },
+ "2026-04-25#1": {
+  "stravaId": "18249772597",
+  "sportType": "Run",
+  "startLocal": "2026-04-25T11:33:13",
+  "movingSec": 3329,
+  "elapsedSec": 3364,
+  "distanceM": 10001.7,
+  "elevGainM": 14,
+  "indoor": false,
+  "avgCadence": 88.0057,
+  "relativeEffort": 50,
+  "kcal": 781,
+  "maxSpeedMps": 3.84
+ },
+ "2026-04-28#1": {
+  "stravaId": "18294242720",
+  "sportType": "Run",
+  "startLocal": "2026-04-28T17:28:41",
+  "movingSec": 3041,
+  "elapsedSec": 3061,
+  "distanceM": 9731.5,
+  "elevGainM": 6,
+  "indoor": false,
+  "avgCadence": 86.2465,
+  "relativeEffort": 110,
+  "kcal": 805,
+  "maxSpeedMps": 5.06
+ },
+ "2026-04-29#1": {
+  "stravaId": "18308341848",
+  "sportType": "Run",
+  "startLocal": "2026-04-29T17:57:36",
+  "movingSec": 2682,
+  "elapsedSec": 2714,
+  "distanceM": 7521.3,
+  "elevGainM": 8,
+  "indoor": false,
+  "avgCadence": 86.2427,
+  "relativeEffort": 20,
+  "kcal": 595,
+  "maxSpeedMps": 5.58
+ },
+ "2026-05-01#1": {
+  "stravaId": "18330292259",
+  "sportType": "Run",
+  "startLocal": "2026-05-01T11:44:39",
+  "movingSec": 2760,
+  "elapsedSec": 2769,
+  "distanceM": 9080.6,
+  "elevGainM": 3,
+  "indoor": false,
+  "avgCadence": 85.9299,
+  "relativeEffort": 91,
+  "kcal": 719,
+  "maxSpeedMps": 4.38
+ },
+ "2026-05-03#1": {
+  "stravaId": "18355604094",
+  "sportType": "Run",
+  "startLocal": "2026-05-03T09:19:53",
+  "movingSec": 5078,
+  "elapsedSec": 5083,
+  "distanceM": 14003.7,
+  "elevGainM": 10,
+  "indoor": false,
+  "avgCadence": 86.4743,
+  "relativeEffort": 85,
+  "kcal": 1133,
+  "maxSpeedMps": 3.36
+ },
+ "2026-05-05#1": {
+  "stravaId": "18390493684",
+  "sportType": "Run",
+  "startLocal": "2026-05-05T21:13:24",
+  "movingSec": 2627,
+  "elapsedSec": 2760,
+  "distanceM": 7865.6,
+  "elevGainM": 1,
+  "indoor": false,
+  "avgCadence": 83.9137,
+  "relativeEffort": 36,
+  "kcal": 613,
+  "maxSpeedMps": 5.18
+ },
+ "2026-05-06#1": {
+  "stravaId": "18404411047",
+  "sportType": "Run",
+  "startLocal": "2026-05-06T22:05:11",
+  "movingSec": 2678,
+  "elapsedSec": 2711,
+  "distanceM": 8017.2,
+  "elevGainM": 22,
+  "indoor": false,
+  "avgCadence": 86.2082,
+  "relativeEffort": 29,
+  "kcal": 628,
+  "maxSpeedMps": 3.66
+ },
+ "2026-05-10#1": {
+  "stravaId": "18447782564",
+  "sportType": "Run",
+  "startLocal": "2026-05-10T09:16:43",
+  "movingSec": 2273,
+  "elapsedSec": 2273,
+  "distanceM": 8049.2,
+  "elevGainM": 7,
+  "indoor": false,
+  "avgCadence": 90.131,
+  "relativeEffort": 105,
+  "kcal": 626,
+  "maxSpeedMps": 4.14
+ },
+ "2026-05-13#1": {
+  "stravaId": "18493699347",
+  "sportType": "Run",
+  "startLocal": "2026-05-13T18:40:25",
+  "movingSec": 2943,
+  "elapsedSec": 2950,
+  "distanceM": 9603.8,
+  "elevGainM": 8,
+  "indoor": false,
+  "avgCadence": 87.826,
+  "relativeEffort": 84,
+  "kcal": 732,
+  "maxSpeedMps": 4.7,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 348,
+    "hr": 137
+   },
+   {
+    "distM": 500,
+    "sec": 175,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 240,
+    "hr": 163
+   },
+   {
+    "distM": 500,
+    "sec": 123,
+    "hr": 169
+   },
+   {
+    "distM": 403,
+    "sec": 180,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 247,
+    "hr": 165
+   },
+   {
+    "distM": 500,
+    "sec": 120,
+    "hr": 173
+   },
+   {
+    "distM": 359,
+    "sec": 180,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 244,
+    "hr": 167
+   },
+   {
+    "distM": 500,
+    "sec": 121,
+    "hr": 176
+   },
+   {
+    "distM": 341,
+    "sec": 180,
+    "hr": 147
+   },
+   {
+    "distM": 1000,
+    "sec": 243,
+    "hr": 170
+   },
+   {
+    "distM": 500,
+    "sec": 116,
+    "hr": 178
+   },
+   {
+    "distM": 1000,
+    "sec": 426,
+    "hr": 147
+   }
+  ],
+  "hrSource": "activity performance",
+  "splitsOmitted": "laps are not contiguous 1 km"
+ },
+ "2026-05-14#1": {
+  "stravaId": "18507545278",
+  "sportType": "Run",
+  "startLocal": "2026-05-14T19:17:14",
+  "movingSec": 2647,
+  "elapsedSec": 2647,
+  "distanceM": 8009.5,
+  "elevGainM": 4,
+  "indoor": false,
+  "avgCadence": 87.9118,
+  "relativeEffort": 45,
+  "kcal": 642,
+  "maxSpeedMps": 3.58
+ },
+ "2026-05-17#1": {
+  "stravaId": "18539127807",
+  "sportType": "Run",
+  "startLocal": "2026-05-17T10:01:47",
+  "movingSec": 4112,
+  "elapsedSec": 4117,
+  "distanceM": 14136.6,
+  "elevGainM": 21,
+  "indoor": false,
+  "avgCadence": 88.1104,
+  "relativeEffort": 179,
+  "kcal": 1122,
+  "maxSpeedMps": 4.78,
+  "raceBasis": "name: Somborski polumaraton 14km (no Strava tags returned)",
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 330,
+    "hr": 144
+   },
+   {
+    "distM": 1000,
+    "sec": 316,
+    "hr": 152
+   },
+   {
+    "distM": 1000,
+    "sec": 319,
+    "hr": 154
+   },
+   {
+    "distM": 1000,
+    "sec": 309,
+    "hr": 157
+   },
+   {
+    "distM": 1000,
+    "sec": 290,
+    "hr": 164
+   },
+   {
+    "distM": 1000,
+    "sec": 287,
+    "hr": 165
+   },
+   {
+    "distM": 1000,
+    "sec": 289,
+    "hr": 168
+   },
+   {
+    "distM": 1000,
+    "sec": 284,
+    "hr": 170
+   },
+   {
+    "distM": 1000,
+    "sec": 268,
+    "hr": 174
+   },
+   {
+    "distM": 1000,
+    "sec": 266,
+    "hr": 175
+   },
+   {
+    "distM": 1000,
+    "sec": 266,
+    "hr": 178
+   },
+   {
+    "distM": 1000,
+    "sec": 261,
+    "hr": 180
+   },
+   {
+    "distM": 1000,
+    "sec": 298,
+    "hr": 174
+   },
+   {
+    "distM": 1000,
+    "sec": 278,
+    "hr": 179
+   },
+   {
+    "distM": 138,
+    "sec": 49,
+    "hr": 180
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-05-19#1": {
+  "stravaId": "18572305401",
+  "sportType": "Run",
+  "startLocal": "2026-05-19T20:01:31",
+  "movingSec": 2254,
+  "elapsedSec": 2265,
+  "distanceM": 6653.5,
+  "elevGainM": 3,
+  "indoor": false,
+  "avgCadence": 83.3609,
+  "relativeEffort": 35,
+  "kcal": 527,
+  "maxSpeedMps": 4.94
+ },
+ "2026-05-22#1": {
+  "stravaId": "18612221384",
+  "sportType": "Run",
+  "startLocal": "2026-05-22T20:58:35",
+  "movingSec": 896,
+  "elapsedSec": 1015,
+  "distanceM": 2635.8,
+  "elevGainM": 6,
+  "indoor": false,
+  "avgCadence": 87.4884,
+  "relativeEffort": 4,
+  "kcal": 198,
+  "maxSpeedMps": 4.72
+ },
+ "2026-05-23#1": {
+  "stravaId": "18620093335",
+  "sportType": "Run",
+  "startLocal": "2026-05-23T13:16:56",
+  "movingSec": 546,
+  "elapsedSec": 554,
+  "distanceM": 1454,
+  "elevGainM": 0,
+  "indoor": false,
+  "avgCadence": 82.5879,
+  "relativeEffort": 3,
+  "kcal": 118,
+  "maxSpeedMps": 4.74
+ },
+ "2026-05-23#2": {
+  "stravaId": "18620630582",
+  "sportType": "Run",
+  "startLocal": "2026-05-23T13:40:12",
+  "movingSec": 1247,
+  "elapsedSec": 1247,
+  "distanceM": 5040.9,
+  "elevGainM": 3,
+  "indoor": false,
+  "avgCadence": 91.1348,
+  "relativeEffort": 71,
+  "kcal": 371,
+  "maxSpeedMps": 5.32,
+  "raceBasis": "name: One Run 5km (no Strava tags returned)",
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 241,
+    "hr": 159
+   },
+   {
+    "distM": 1000,
+    "sec": 246,
+    "hr": 173
+   },
+   {
+    "distM": 1000,
+    "sec": 244,
+    "hr": 178
+   },
+   {
+    "distM": 1000,
+    "sec": 255,
+    "hr": 180
+   },
+   {
+    "distM": 1000,
+    "sec": 250,
+    "hr": 183
+   },
+   {
+    "distM": 41,
+    "sec": 8,
+    "hr": 181
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-05-31#1": {
+  "stravaId": "18724595073",
+  "sportType": "Run",
+  "startLocal": "2026-05-31T09:14:32",
+  "movingSec": 3093,
+  "elapsedSec": 3093,
+  "distanceM": 8001.7,
+  "elevGainM": 12,
+  "indoor": false,
+  "avgCadence": 84.5041,
+  "relativeEffort": 15,
+  "kcal": 636,
+  "maxSpeedMps": 3.06
+ },
+ "2026-06-03#1": {
+  "stravaId": "18774131024",
+  "sportType": "Run",
+  "startLocal": "2026-06-03T19:45:35",
+  "movingSec": 3266,
+  "elapsedSec": 3307,
+  "distanceM": 9785.4,
+  "elevGainM": 28,
+  "indoor": false,
+  "avgCadence": 84.0965,
+  "relativeEffort": 25,
+  "kcal": 711,
+  "maxSpeedMps": 7.36
+ },
+ "2026-06-06#1": {
+  "stravaId": "18810831671",
+  "sportType": "Run",
+  "startLocal": "2026-06-06T15:17:03",
+  "movingSec": 3134,
+  "elapsedSec": 3153,
+  "distanceM": 7900.7,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 22.5,
+  "feelsLikeC": 22.7,
+  "humidityPct": 64,
+  "windMps": 2,
+  "weather": "Cloudy",
+  "avgCadence": 82.5764,
+  "relativeEffort": 35,
+  "kcal": 651,
+  "maxSpeedMps": 5.38
+ },
+ "2026-06-07#1": {
+  "stravaId": "18819029353",
+  "sportType": "Run",
+  "startLocal": "2026-06-07T08:17:40",
+  "movingSec": 3965,
+  "elapsedSec": 4007,
+  "distanceM": 12007.4,
+  "elevGainM": 14,
+  "indoor": false,
+  "tempC": 20.2,
+  "feelsLikeC": 22,
+  "humidityPct": 81,
+  "windMps": 1.9,
+  "weather": "Clear",
+  "avgCadence": 86.461,
+  "relativeEffort": 84,
+  "kcal": 946,
+  "maxSpeedMps": 4.3
+ },
+ "2026-06-11#1": {
+  "stravaId": "18874911550",
+  "sportType": "Run",
+  "startLocal": "2026-06-11T09:24:34",
+  "movingSec": 2955,
+  "elapsedSec": 2955,
+  "distanceM": 8886.4,
+  "elevGainM": 13,
+  "indoor": false,
+  "tempC": 18.9,
+  "feelsLikeC": 16.7,
+  "humidityPct": 76,
+  "windMps": 3.8,
+  "weather": "Cloudy",
+  "avgCadence": 85.9209,
+  "relativeEffort": 74,
+  "kcal": 728,
+  "maxSpeedMps": 4.96
+ },
+ "2026-06-12#1": {
+  "stravaId": "18892547464",
+  "sportType": "Run",
+  "startLocal": "2026-06-12T17:22:29",
+  "movingSec": 2962,
+  "elapsedSec": 3027,
+  "distanceM": 8684.7,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 22,
+  "feelsLikeC": 21,
+  "humidityPct": 45,
+  "windMps": 4.1,
+  "weather": "PartlyCloudy",
+  "avgCadence": 84.7462,
+  "relativeEffort": 40,
+  "kcal": 682,
+  "maxSpeedMps": 5.18
+ },
+ "2026-06-13#1": {
+  "stravaId": "18898587491",
+  "sportType": "Run",
+  "startLocal": "2026-06-13T07:58:28",
+  "movingSec": 1274,
+  "elapsedSec": 1287,
+  "distanceM": 3716.6,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 15.1,
+  "feelsLikeC": 14,
+  "humidityPct": 76,
+  "windMps": 2.6,
+  "weather": "Cloudy",
+  "avgCadence": 84.9479,
+  "relativeEffort": 16,
+  "kcal": 297,
+  "maxSpeedMps": 7.74
+ },
+ "2026-06-16#1": {
+  "stravaId": "18947321550",
+  "sportType": "Run",
+  "startLocal": "2026-06-16T19:04:57",
+  "movingSec": 3473,
+  "elapsedSec": 3916,
+  "distanceM": 9002.3,
+  "elevGainM": 10,
+  "indoor": false,
+  "tempC": 24.7,
+  "feelsLikeC": 26.3,
+  "humidityPct": 43,
+  "windMps": 0.9,
+  "weather": "Clear",
+  "avgCadence": 82.799,
+  "relativeEffort": 22,
+  "kcal": 695,
+  "maxSpeedMps": 4.72
+ },
+ "2026-06-19#1": {
+  "stravaId": "18987849073",
+  "sportType": "Run",
+  "startLocal": "2026-06-19T20:31:59",
+  "movingSec": 1666,
+  "elapsedSec": 1666,
+  "distanceM": 5005,
+  "elevGainM": 47,
+  "indoor": false,
+  "tempC": 27.8,
+  "feelsLikeC": 27.7,
+  "humidityPct": 49,
+  "windMps": 1.9,
+  "weather": "Clear",
+  "avgCadence": 84.9928,
+  "relativeEffort": 19,
+  "kcal": 391,
+  "maxSpeedMps": 3.84,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 339,
+    "hr": 133
+   },
+   {
+    "distM": 1000,
+    "sec": 335,
+    "hr": 139
+   },
+   {
+    "distM": 1000,
+    "sec": 330,
+    "hr": 142
+   },
+   {
+    "distM": 1000,
+    "sec": 339,
+    "hr": 142
+   },
+   {
+    "distM": 1000,
+    "sec": 319,
+    "hr": 148
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-06-20#1": {
+  "stravaId": "18995734270",
+  "sportType": "Run",
+  "startLocal": "2026-06-20T12:44:45",
+  "movingSec": 1812,
+  "elapsedSec": 2218,
+  "distanceM": 5635.1,
+  "elevGainM": 5,
+  "indoor": false,
+  "tempC": 29.9,
+  "feelsLikeC": 31.4,
+  "humidityPct": 47,
+  "windMps": 2,
+  "weather": "Clear",
+  "avgCadence": 86.0631,
+  "relativeEffort": 38,
+  "kcal": 435,
+  "maxSpeedMps": 6.7
+ },
+ "2026-06-22#1": {
+  "stravaId": "19025556493",
+  "sportType": "Run",
+  "startLocal": "2026-06-22T19:41:46",
+  "movingSec": 2347,
+  "elapsedSec": 2442,
+  "distanceM": 7003.3,
+  "elevGainM": 3,
+  "indoor": false,
+  "tempC": 31.2,
+  "feelsLikeC": 32.3,
+  "humidityPct": 51,
+  "windMps": 2.1,
+  "weather": "PartlyCloudy",
+  "avgCadence": 88.9407,
+  "relativeEffort": 47,
+  "kcal": 564,
+  "maxSpeedMps": 3.48
+ },
+ "2026-06-24#1": {
+  "stravaId": "19053010143",
+  "sportType": "Run",
+  "startLocal": "2026-06-24T20:03:19",
+  "movingSec": 2501,
+  "elapsedSec": 2858,
+  "distanceM": 8010.1,
+  "elevGainM": 5,
+  "indoor": false,
+  "tempC": 28.1,
+  "feelsLikeC": 28.5,
+  "humidityPct": 56,
+  "windMps": 1.7,
+  "weather": "PartlyCloudy",
+  "avgCadence": 88.385,
+  "relativeEffort": 80,
+  "kcal": 625,
+  "maxSpeedMps": 4.3
+ },
+ "2026-06-26#1": {
+  "stravaId": "19077000479",
+  "sportType": "Run",
+  "startLocal": "2026-06-26T20:28:27",
+  "movingSec": 2619,
+  "elapsedSec": 2625,
+  "distanceM": 7494.5,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 31.4,
+  "feelsLikeC": 31.6,
+  "humidityPct": 41,
+  "windMps": 0.7,
+  "weather": "Clear",
+  "avgCadence": 86.4803,
+  "relativeEffort": 42,
+  "kcal": 610,
+  "maxSpeedMps": 4.76
+ },
+ "2026-06-29#1": {
+  "stravaId": "19114654142",
+  "sportType": "Run",
+  "startLocal": "2026-06-29T20:33:10",
+  "movingSec": 2785,
+  "elapsedSec": 2812,
+  "distanceM": 8006.4,
+  "elevGainM": 3,
+  "indoor": false,
+  "tempC": 33.6,
+  "feelsLikeC": 33.7,
+  "humidityPct": 32,
+  "windMps": 1.3,
+  "weather": "Clear",
+  "avgCadence": 87.6745,
+  "relativeEffort": 33,
+  "kcal": 639,
+  "maxSpeedMps": 3.54
+ },
+ "2026-07-01#1": {
+  "stravaId": "19140031014",
+  "sportType": "Run",
+  "startLocal": "2026-07-01T18:17:22",
+  "movingSec": 2801,
+  "elapsedSec": 2837,
+  "distanceM": 8307.7,
+  "elevGainM": 5,
+  "indoor": false,
+  "tempC": 28.4,
+  "feelsLikeC": 29.2,
+  "humidityPct": 55,
+  "windMps": 1.7,
+  "weather": "Cloudy",
+  "avgCadence": 83.1487,
+  "relativeEffort": 54,
+  "kcal": 682,
+  "maxSpeedMps": 4.82
+ },
+ "2026-07-03#1": {
+  "stravaId": "19166330889",
+  "sportType": "Run",
+  "startLocal": "2026-07-03T19:01:46",
+  "movingSec": 2385,
+  "elapsedSec": 2424,
+  "distanceM": 7502.6,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 27.7,
+  "feelsLikeC": 28.2,
+  "humidityPct": 49,
+  "windMps": 2.9,
+  "weather": "Clear",
+  "avgCadence": 86.1523,
+  "relativeEffort": 43,
+  "kcal": 593,
+  "maxSpeedMps": 4.4
+ },
+ "2026-07-05#1": {
+  "stravaId": "19184719021",
+  "sportType": "Run",
+  "startLocal": "2026-07-05T08:18:15",
+  "movingSec": 2752,
+  "elapsedSec": 2752,
+  "distanceM": 9000.4,
+  "elevGainM": 7,
+  "indoor": false,
+  "avgCadence": 87.0928,
+  "relativeEffort": 63,
+  "kcal": 713,
+  "maxSpeedMps": 4.58
+ },
+ "2026-07-06#1": {
+  "stravaId": "19205093367",
+  "sportType": "Run",
+  "startLocal": "2026-07-06T20:09:55",
+  "movingSec": 2731,
+  "elapsedSec": 2798,
+  "distanceM": 8002.3,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 23.9,
+  "feelsLikeC": 23.8,
+  "humidityPct": 62,
+  "windMps": 2,
+  "weather": "Clear",
+  "avgCadence": 86.4514,
+  "relativeEffort": 14,
+  "kcal": 628,
+  "maxSpeedMps": 3.72
+ },
+ "2026-07-08#1": {
+  "stravaId": "19231881487",
+  "sportType": "Run",
+  "startLocal": "2026-07-08T18:37:40",
+  "movingSec": 3428,
+  "elapsedSec": 3465,
+  "distanceM": 10178,
+  "elevGainM": 8,
+  "indoor": false,
+  "tempC": 22.6,
+  "feelsLikeC": 21,
+  "humidityPct": 62,
+  "windMps": 3.5,
+  "weather": "Cloudy",
+  "avgCadence": 83.2619,
+  "relativeEffort": 55,
+  "kcal": 818,
+  "maxSpeedMps": 4.9
+ },
+ "2026-07-10#1": {
+  "stravaId": "19258778092",
+  "sportType": "Run",
+  "startLocal": "2026-07-10T18:41:42",
+  "movingSec": 2887,
+  "elapsedSec": 2887,
+  "distanceM": 9221.6,
+  "elevGainM": 8,
+  "indoor": false,
+  "tempC": 27.9,
+  "feelsLikeC": 28.8,
+  "humidityPct": 33,
+  "windMps": 2.3,
+  "weather": "Clear",
+  "avgCadence": 87.772,
+  "relativeEffort": 46,
+  "kcal": 716,
+  "maxSpeedMps": 4.72
+ },
+ "2026-07-12#1": {
+  "stravaId": "19277462356",
+  "sportType": "Run",
+  "startLocal": "2026-07-12T08:07:49",
+  "movingSec": 3021,
+  "elapsedSec": 3047,
+  "distanceM": 8565.1,
+  "elevGainM": 10,
+  "indoor": false,
+  "tempC": 22.5,
+  "feelsLikeC": 22.4,
+  "humidityPct": 69,
+  "windMps": 3,
+  "weather": "Cloudy",
+  "avgCadence": 88.2267,
+  "relativeEffort": 15,
+  "kcal": 684,
+  "maxSpeedMps": 3.7
+ },
+ "2026-07-15#1": {
+  "stravaId": "19319521563",
+  "sportType": "Run",
+  "startLocal": "2026-07-15T08:41:50",
+  "movingSec": 3196,
+  "elapsedSec": 3210,
+  "distanceM": 9003.4,
+  "elevGainM": 10,
+  "indoor": false,
+  "tempC": 24.4,
+  "feelsLikeC": 25.9,
+  "humidityPct": 69,
+  "windMps": 1.8,
+  "weather": "PartlyCloudy",
+  "avgCadence": 87.9931,
+  "relativeEffort": 23,
+  "kcal": 737,
+  "maxSpeedMps": 3.36
+ },
+ "2026-07-16#1": {
+  "stravaId": "19332713142",
+  "sportType": "Run",
+  "startLocal": "2026-07-16T08:06:34",
+  "movingSec": 2711,
+  "elapsedSec": 2849,
+  "distanceM": 8002.7,
+  "elevGainM": 4,
+  "indoor": false,
+  "tempC": 25.6,
+  "feelsLikeC": 26.8,
+  "humidityPct": 67,
+  "windMps": 1.2,
+  "weather": "Cloudy",
+  "avgCadence": 84.5624,
+  "relativeEffort": 40,
+  "kcal": 646,
+  "maxSpeedMps": 4.94
+ },
+ "2026-07-18#1": {
+  "stravaId": "19358315658",
+  "sportType": "Run",
+  "startLocal": "2026-07-18T07:33:00",
+  "movingSec": 3332,
+  "elapsedSec": 3371,
+  "distanceM": 10011.3,
+  "elevGainM": 8,
+  "indoor": false,
+  "tempC": 24.2,
+  "feelsLikeC": 26,
+  "humidityPct": 68,
+  "windMps": 1.9,
+  "weather": "Clear",
+  "avgCadence": 86.6383,
+  "relativeEffort": 58,
+  "kcal": 799,
+  "maxSpeedMps": 4.4
+ },
+ "2026-07-19#1": {
+  "stravaId": "19370980379",
+  "sportType": "Run",
+  "startLocal": "2026-07-19T05:32:51",
+  "movingSec": 3963,
+  "elapsedSec": 4034,
+  "distanceM": 12003.8,
+  "elevGainM": 10,
+  "indoor": false,
+  "tempC": 21.9,
+  "feelsLikeC": 21.6,
+  "humidityPct": 77,
+  "windMps": 2.5,
+  "weather": "PartlyCloudy",
+  "avgCadence": 89.6851,
+  "relativeEffort": 24,
+  "kcal": 925,
+  "maxSpeedMps": 3.68
+ },
+ "2026-07-21#1": {
+  "stravaId": "19406109866",
+  "sportType": "Run",
+  "startLocal": "2026-07-21T17:58:47",
+  "movingSec": 3552,
+  "elapsedSec": 3737,
+  "distanceM": 10367,
+  "elevGainM": 10,
+  "indoor": false,
+  "tempC": 28.2,
+  "feelsLikeC": 28.2,
+  "humidityPct": 41,
+  "windMps": 2,
+  "weather": "Cloudy",
+  "avgCadence": 88.8181,
+  "relativeEffort": 16,
+  "kcal": 817,
+  "maxSpeedMps": 3.48
+ },
+ "2026-07-22#1": {
+  "stravaId": "19412449979",
+  "sportType": "Run",
+  "startLocal": "2026-07-22T05:16:26",
+  "movingSec": 3270,
+  "elapsedSec": 3275,
+  "distanceM": 10624.6,
+  "elevGainM": 15,
+  "indoor": false,
+  "tempC": 18.9,
+  "feelsLikeC": 17.5,
+  "humidityPct": 65,
+  "windMps": 3.4,
+  "weather": "Cloudy",
+  "avgCadence": 90.9644,
+  "relativeEffort": 61,
+  "kcal": 825,
+  "maxSpeedMps": 4.66
+ },
+ "2026-07-24#1": {
+  "stravaId": "19440721229",
+  "sportType": "Run",
+  "startLocal": "2026-07-24T05:32:29",
+  "movingSec": 3342,
+  "elapsedSec": 3362,
+  "distanceM": 11005.3,
+  "elevGainM": 7,
+  "indoor": false,
+  "tempC": 16.4,
+  "feelsLikeC": 15,
+  "humidityPct": 76,
+  "windMps": 3.2,
+  "weather": "Cloudy",
+  "avgCadence": 89.852,
+  "relativeEffort": 46,
+  "kcal": 825,
+  "maxSpeedMps": 4.48
+ },
+ "2026-07-27#1": {
+  "stravaId": "19490514804",
+  "sportType": "Run",
+  "startLocal": "2026-07-27T20:44:40",
+  "movingSec": 4395,
+  "elapsedSec": 4415,
+  "distanceM": 12004.2,
+  "elevGainM": 216,
+  "indoor": false,
+  "tempC": 27.3,
+  "feelsLikeC": 26.8,
+  "humidityPct": 50,
+  "windMps": 2.3,
+  "weather": "Clear",
+  "avgCadence": 85.832,
+  "relativeEffort": 33,
+  "kcal": 966,
+  "maxSpeedMps": 3.84
+ },
+ "2026-07-29#1": {
+  "stravaId": "19509602883",
+  "sportType": "Run",
+  "startLocal": "2026-07-29T05:16:43",
+  "movingSec": 3738,
+  "elapsedSec": 3757,
+  "distanceM": 11004.9,
+  "elevGainM": 3,
+  "indoor": false,
+  "tempC": 17.1,
+  "feelsLikeC": 15.8,
+  "humidityPct": 74,
+  "windMps": 2,
+  "weather": "Clear",
+  "avgCadence": 83.1991,
+  "relativeEffort": 44,
+  "kcal": 841,
+  "maxSpeedMps": 5.02,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 354,
+    "hr": 133
+   },
+   {
+    "distM": 1000,
+    "sec": 347,
+    "hr": 139
+   },
+   {
+    "distM": 500,
+    "sec": 192,
+    "hr": 138
+   },
+   {
+    "distM": 1000,
+    "sec": 231,
+    "hr": 157
+   },
+   {
+    "distM": 255,
+    "sec": 170,
+    "hr": 129
+   },
+   {
+    "distM": 1000,
+    "sec": 234,
+    "hr": 158
+   },
+   {
+    "distM": 234,
+    "sec": 170,
+    "hr": 130
+   },
+   {
+    "distM": 1000,
+    "sec": 232,
+    "hr": 164
+   },
+   {
+    "distM": 244,
+    "sec": 170,
+    "hr": 137
+   },
+   {
+    "distM": 1000,
+    "sec": 230,
+    "hr": 171
+   },
+   {
+    "distM": 207,
+    "sec": 170,
+    "hr": 139
+   },
+   {
+    "distM": 1000,
+    "sec": 225,
+    "hr": 171
+   },
+   {
+    "distM": 1000,
+    "sec": 469,
+    "hr": 136
+   },
+   {
+    "distM": 1000,
+    "sec": 364,
+    "hr": 142
+   },
+   {
+    "distM": 500,
+    "sec": 170,
+    "hr": 147
+   },
+   {
+    "distM": 65,
+    "sec": 21,
+    "hr": 150
+   }
+  ],
+  "hrSource": "activity performance",
+  "splitsOmitted": "laps are not contiguous 1 km"
+ },
+ "2026-07-31#1": {
+  "stravaId": "19537615381",
+  "sportType": "Run",
+  "startLocal": "2026-07-31T05:18:21",
+  "movingSec": 3008,
+  "elapsedSec": 3017,
+  "distanceM": 10004.1,
+  "elevGainM": 3,
+  "indoor": false,
+  "tempC": 21.4,
+  "feelsLikeC": 20.4,
+  "humidityPct": 66,
+  "windMps": 2.2,
+  "weather": "Clear",
+  "avgCadence": 89.4325,
+  "relativeEffort": 50,
+  "kcal": 755,
+  "maxSpeedMps": 4.32,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 350,
+    "hr": 130
+   },
+   {
+    "distM": 500,
+    "sec": 168,
+    "hr": 141
+   },
+   {
+    "distM": 82,
+    "sec": 60,
+    "hr": 130
+   },
+   {
+    "distM": 1000,
+    "sec": 264,
+    "hr": 152
+   },
+   {
+    "distM": 1000,
+    "sec": 260,
+    "hr": 163
+   },
+   {
+    "distM": 1000,
+    "sec": 261,
+    "hr": 164
+   },
+   {
+    "distM": 1000,
+    "sec": 259,
+    "hr": 166
+   },
+   {
+    "distM": 177,
+    "sec": 75,
+    "hr": 154
+   },
+   {
+    "distM": 1000,
+    "sec": 260,
+    "hr": 164
+   },
+   {
+    "distM": 1000,
+    "sec": 259,
+    "hr": 169
+   },
+   {
+    "distM": 1000,
+    "sec": 354,
+    "hr": 150
+   },
+   {
+    "distM": 500,
+    "sec": 181,
+    "hr": 144
+   },
+   {
+    "distM": 744,
+    "sec": 253,
+    "hr": 144
+   }
+  ],
+  "hrSource": "activity performance",
+  "splitsOmitted": "laps are not contiguous 1 km"
+ },
+ "2026-08-02#1": {
+  "stravaId": "19564717284",
+  "sportType": "Run",
+  "startLocal": "2026-08-02T07:15:51",
+  "movingSec": 4517,
+  "elapsedSec": 4770,
+  "distanceM": 15344.9,
+  "elevGainM": 20,
+  "indoor": false,
+  "tempC": 23.5,
+  "feelsLikeC": 24.6,
+  "humidityPct": 53,
+  "windMps": 2.5,
+  "weather": "Clear",
+  "avgCadence": 88.0951,
+  "relativeEffort": 87,
+  "kcal": 1171,
+  "maxSpeedMps": 4.42
+ },
+ "2026-08-04#1": {
+  "stravaId": "19601426377",
+  "sportType": "Run",
+  "startLocal": "2026-08-04T19:31:07",
+  "movingSec": 2679,
+  "elapsedSec": 2691,
+  "distanceM": 8008.3,
+  "elevGainM": 71,
+  "indoor": false,
+  "tempC": 34.2,
+  "feelsLikeC": 35.1,
+  "humidityPct": 25,
+  "windMps": 0.8,
+  "weather": "Clear",
+  "avgCadence": 85.7508,
+  "relativeEffort": 19,
+  "kcal": 626,
+  "maxSpeedMps": 3.84
+ },
+ "2026-08-05#1": {
+  "stravaId": "19616869383",
+  "sportType": "Run",
+  "startLocal": "2026-08-05T19:57:08",
+  "movingSec": 2719,
+  "elapsedSec": 2728,
+  "distanceM": 8010.8,
+  "elevGainM": 1,
+  "indoor": false,
+  "tempC": 34.1,
+  "feelsLikeC": 34.4,
+  "humidityPct": 22,
+  "windMps": 3.1,
+  "weather": "Clear",
+  "avgCadence": 85.3531,
+  "relativeEffort": 13,
+  "kcal": 617,
+  "maxSpeedMps": 5.86
+ },
+ "2026-08-09#1": {
+  "stravaId": "19663886279",
+  "sportType": "Run",
+  "startLocal": "2026-08-09T09:35:21",
+  "movingSec": 691,
+  "elapsedSec": 691,
+  "distanceM": 2004.4,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 23.8,
+  "feelsLikeC": 26.6,
+  "humidityPct": 54,
+  "windMps": 1,
+  "weather": "Clear",
+  "avgCadence": 87.0498,
+  "relativeEffort": 3,
+  "kcal": 161,
+  "maxSpeedMps": 3.3
+ },
+ "2026-08-09#2": {
+  "stravaId": "19664261801",
+  "sportType": "Run",
+  "startLocal": "2026-08-09T09:56:59",
+  "movingSec": 1097,
+  "elapsedSec": 1427,
+  "distanceM": 4010.6,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 23.8,
+  "feelsLikeC": 26.6,
+  "humidityPct": 54,
+  "windMps": 1,
+  "weather": "Clear",
+  "avgCadence": 89.4903,
+  "relativeEffort": 24,
+  "kcal": 287,
+  "maxSpeedMps": 5.02,
+  "note": "name: 3k TEST (3x1 km at full effort, not a race)",
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 233,
+    "hr": 165
+   },
+   {
+    "distM": 1000,
+    "sec": 232,
+    "hr": 175
+   },
+   {
+    "distM": 1000,
+    "sec": 231,
+    "hr": 171
+   },
+   {
+    "distM": 1000,
+    "sec": 396,
+    "hr": 143
+   },
+   {
+    "distM": 11,
+    "sec": 3,
+    "hr": 144
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-08-10#1": {
+  "stravaId": "19676227814",
+  "sportType": "Run",
+  "startLocal": "2026-08-10T05:28:43",
+  "movingSec": 3634,
+  "elapsedSec": 3714,
+  "distanceM": 11065.2,
+  "elevGainM": 5,
+  "indoor": false,
+  "tempC": 19.1,
+  "feelsLikeC": 18.8,
+  "humidityPct": 64,
+  "windMps": 0.6,
+  "weather": "Clear",
+  "avgCadence": 90.7218,
+  "relativeEffort": 17,
+  "kcal": 853,
+  "maxSpeedMps": 3.58
+ },
+ "2026-08-12#1": {
+  "stravaId": "19705615916",
+  "sportType": "Run",
+  "startLocal": "2026-08-12T05:28:29",
+  "movingSec": 3449,
+  "elapsedSec": 3558,
+  "distanceM": 11002.2,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 23.7,
+  "feelsLikeC": 22.5,
+  "humidityPct": 54,
+  "windMps": 3,
+  "weather": "Clear",
+  "avgCadence": 84.9293,
+  "relativeEffort": 73,
+  "kcal": 895,
+  "maxSpeedMps": 4.88,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 334,
+    "hr": 140
+   },
+   {
+    "distM": 500,
+    "sec": 195,
+    "hr": 140
+   },
+   {
+    "distM": 1000,
+    "sec": 233,
+    "hr": 164
+   },
+   {
+    "distM": 182,
+    "sec": 120,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 233,
+    "hr": 166
+   },
+   {
+    "distM": 133,
+    "sec": 120,
+    "hr": 155
+   },
+   {
+    "distM": 1000,
+    "sec": 231,
+    "hr": 170
+   },
+   {
+    "distM": 164,
+    "sec": 120,
+    "hr": 148
+   },
+   {
+    "distM": 1000,
+    "sec": 235,
+    "hr": 170
+   },
+   {
+    "distM": 164,
+    "sec": 120,
+    "hr": 153
+   },
+   {
+    "distM": 1000,
+    "sec": 232,
+    "hr": 172
+   },
+   {
+    "distM": 160,
+    "sec": 120,
+    "hr": 153
+   },
+   {
+    "distM": 1000,
+    "sec": 226,
+    "hr": 175
+   },
+   {
+    "distM": 77,
+    "sec": 120,
+    "hr": 157
+   },
+   {
+    "distM": 1000,
+    "sec": 355,
+    "hr": 150
+   },
+   {
+    "distM": 1000,
+    "sec": 348,
+    "hr": 156
+   },
+   {
+    "distM": 500,
+    "sec": 166,
+    "hr": 155
+   },
+   {
+    "distM": 123,
+    "sec": 43,
+    "hr": 160
+   }
+  ],
+  "hrSource": "activity performance",
+  "splitsOmitted": "laps are not contiguous 1 km"
+ },
+ "2026-08-14#1": {
+  "stravaId": "19743503891",
+  "sportType": "Run",
+  "startLocal": "2026-08-14T21:54:55",
+  "movingSec": 2331,
+  "elapsedSec": 2336,
+  "distanceM": 7100.7,
+  "elevGainM": 3,
+  "indoor": false,
+  "tempC": 25.6,
+  "feelsLikeC": 24.1,
+  "humidityPct": 44,
+  "windMps": 3,
+  "weather": "Clear",
+  "avgCadence": 83.2243,
+  "relativeEffort": 12,
+  "kcal": 537,
+  "maxSpeedMps": 5.56
+ },
+ "2026-08-15#1": {
+  "stravaId": "19750467695",
+  "sportType": "Run",
+  "startLocal": "2026-08-15T12:10:16",
+  "movingSec": 1818,
+  "elapsedSec": 1883,
+  "distanceM": 6013.3,
+  "elevGainM": 11,
+  "indoor": false,
+  "tempC": 30.2,
+  "feelsLikeC": 31,
+  "humidityPct": 32,
+  "windMps": 3.9,
+  "weather": "Clear",
+  "avgCadence": 87.788,
+  "relativeEffort": 35,
+  "kcal": 468,
+  "maxSpeedMps": 4.42
+ },
+ "2026-08-16#1": {
+  "stravaId": "19761154847",
+  "sportType": "Run",
+  "startLocal": "2026-08-16T06:43:52",
+  "movingSec": 4707,
+  "elapsedSec": 4873,
+  "distanceM": 14301.1,
+  "elevGainM": 20,
+  "indoor": false,
+  "tempC": 19.7,
+  "feelsLikeC": 17.4,
+  "humidityPct": 52,
+  "windMps": 3.2,
+  "weather": "Clear",
+  "avgCadence": 88.8485,
+  "relativeEffort": 24,
+  "kcal": 1101,
+  "maxSpeedMps": 3.68
+ },
+ "2026-08-18#1": {
+  "stravaId": "19788448054",
+  "sportType": "Run",
+  "startLocal": "2026-08-18T05:33:45",
+  "movingSec": 3521,
+  "elapsedSec": 3584,
+  "distanceM": 11008.3,
+  "elevGainM": 7,
+  "indoor": false,
+  "tempC": 20.1,
+  "feelsLikeC": 19.4,
+  "humidityPct": 76,
+  "windMps": 3,
+  "weather": "Cloudy",
+  "avgCadence": 89.1075,
+  "relativeEffort": 25,
+  "kcal": 856,
+  "maxSpeedMps": 3.78
+ },
+ "2026-08-19#1": {
+  "stravaId": "19813990293",
+  "sportType": "Run",
+  "startLocal": "2026-08-19T20:26:15",
+  "movingSec": 3845,
+  "elapsedSec": 3920,
+  "distanceM": 12003.8,
+  "elevGainM": 9,
+  "indoor": false,
+  "tempC": 29.4,
+  "feelsLikeC": 29.2,
+  "humidityPct": 40,
+  "windMps": 1,
+  "weather": "Clear",
+  "avgCadence": 84.5981,
+  "relativeEffort": 76,
+  "kcal": 968,
+  "maxSpeedMps": 5
+ },
+ "2026-08-21#1": {
+  "stravaId": "19840400740",
+  "sportType": "Run",
+  "startLocal": "2026-08-21T19:45:31",
+  "movingSec": 1090,
+  "elapsedSec": 1112,
+  "distanceM": 3105.3,
+  "elevGainM": 14,
+  "indoor": false,
+  "tempC": 31.5,
+  "feelsLikeC": 31.3,
+  "humidityPct": 43,
+  "windMps": 2.5,
+  "weather": "Clear",
+  "avgCadence": 85.9313,
+  "relativeEffort": 5,
+  "kcal": 256,
+  "maxSpeedMps": 3.62
+ },
+ "2026-08-23#1": {
+  "stravaId": "19858845465",
+  "sportType": "Run",
+  "startLocal": "2026-08-23T05:50:07",
+  "movingSec": 3382,
+  "elapsedSec": 3468,
+  "distanceM": 10002,
+  "elevGainM": 0,
+  "indoor": false,
+  "tempC": 25.5,
+  "feelsLikeC": 25.9,
+  "humidityPct": 71,
+  "windMps": 1.1,
+  "weather": "Clear",
+  "avgCadence": 87.1771,
+  "relativeEffort": 14,
+  "kcal": 764,
+  "maxSpeedMps": 3.56
+ },
+ "2026-08-26#1": {
+  "stravaId": "19903189591",
+  "sportType": "Run",
+  "startLocal": "2026-08-26T07:34:46",
+  "movingSec": 1429,
+  "elapsedSec": 1468,
+  "distanceM": 4291.2,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 23.7,
+  "feelsLikeC": 24.2,
+  "humidityPct": 74,
+  "windMps": 0.6,
+  "weather": "Clear",
+  "avgCadence": 84.6873,
+  "relativeEffort": 19,
+  "kcal": 343,
+  "maxSpeedMps": 4.98
+ },
+ "2026-08-28#1": {
+  "stravaId": "19932087920",
+  "sportType": "Run",
+  "startLocal": "2026-08-28T06:50:22",
+  "movingSec": 2394,
+  "elapsedSec": 2460,
+  "distanceM": 8129.3,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 25,
+  "feelsLikeC": 25.7,
+  "humidityPct": 75,
+  "windMps": 0.8,
+  "weather": "Clear",
+  "avgCadence": 87.7654,
+  "relativeEffort": 58,
+  "kcal": 635,
+  "maxSpeedMps": 4.18,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 332,
+    "hr": 135
+   },
+   {
+    "distM": 1000,
+    "sec": 330,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 273,
+    "hr": 162
+   },
+   {
+    "distM": 1000,
+    "sec": 271,
+    "hr": 167
+   },
+   {
+    "distM": 1000,
+    "sec": 270,
+    "hr": 172
+   },
+   {
+    "distM": 1000,
+    "sec": 269,
+    "hr": 173
+   },
+   {
+    "distM": 1000,
+    "sec": 268,
+    "hr": 176
+   },
+   {
+    "distM": 1000,
+    "sec": 269,
+    "hr": 180
+   },
+   {
+    "distM": 130,
+    "sec": 108,
+    "hr": 137
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-09-01#1": {
+  "stravaId": "19995823888",
+  "sportType": "Run",
+  "startLocal": "2026-09-01T20:48:32",
+  "movingSec": 3128,
+  "elapsedSec": 3202,
+  "distanceM": 9010.2,
+  "elevGainM": 4,
+  "indoor": false,
+  "tempC": 26.5,
+  "feelsLikeC": 25.8,
+  "humidityPct": 45,
+  "windMps": 2,
+  "weather": "Clear",
+  "avgCadence": 85.2722,
+  "relativeEffort": 19,
+  "kcal": 704,
+  "maxSpeedMps": 5.96
+ },
+ "2026-09-02#1": {
+  "stravaId": "20010249088",
+  "sportType": "Run",
+  "startLocal": "2026-09-02T20:02:38",
+  "movingSec": 2914,
+  "elapsedSec": 3278,
+  "distanceM": 8004,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 26.4,
+  "feelsLikeC": 25.5,
+  "humidityPct": 40,
+  "windMps": 2.5,
+  "weather": "Clear",
+  "avgCadence": 87.1232,
+  "relativeEffort": 12,
+  "kcal": 615,
+  "maxSpeedMps": 3.7
+ },
+ "2026-09-03#1": {
+  "stravaId": "20023432381",
+  "sportType": "Run",
+  "startLocal": "2026-09-03T18:58:39",
+  "movingSec": 3127,
+  "elapsedSec": 3170,
+  "distanceM": 8432.6,
+  "elevGainM": 4,
+  "indoor": false,
+  "tempC": 30.1,
+  "feelsLikeC": 29.5,
+  "humidityPct": 32,
+  "windMps": 3,
+  "weather": "Cloudy",
+  "avgCadence": 87.3028,
+  "relativeEffort": 16,
+  "kcal": 683,
+  "maxSpeedMps": 3.56
+ },
+ "2026-09-04#1": {
+  "stravaId": "20029167218",
+  "sportType": "Run",
+  "startLocal": "2026-09-04T07:07:48",
+  "movingSec": 2113,
+  "elapsedSec": 2121,
+  "distanceM": 6012.5,
+  "elevGainM": 3,
+  "indoor": false,
+  "tempC": 19.9,
+  "feelsLikeC": 19.4,
+  "humidityPct": 62,
+  "windMps": 2.4,
+  "weather": "Cloudy",
+  "avgCadence": 85.9182,
+  "relativeEffort": 15,
+  "kcal": 479,
+  "maxSpeedMps": 5.32
+ },
+ "2026-09-05#1": {
+  "stravaId": "20041861553",
+  "sportType": "Run",
+  "startLocal": "2026-09-05T07:25:56",
+  "movingSec": 4515,
+  "elapsedSec": 4565,
+  "distanceM": 13191.8,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 20.4,
+  "feelsLikeC": 20.4,
+  "humidityPct": 59,
+  "windMps": 2.7,
+  "weather": "Clear",
+  "avgCadence": 85.8298,
+  "relativeEffort": 70,
+  "kcal": 1048,
+  "maxSpeedMps": 5.18
+ },
+ "2026-09-06#1": {
+  "stravaId": "20056166817",
+  "sportType": "Run",
+  "startLocal": "2026-09-06T08:21:16",
+  "movingSec": 3999,
+  "elapsedSec": 4701,
+  "distanceM": 12072.9,
+  "elevGainM": 14,
+  "indoor": false,
+  "tempC": 20.9,
+  "feelsLikeC": 21.1,
+  "humidityPct": 61,
+  "windMps": 2.9,
+  "weather": "Clear",
+  "avgCadence": 88.6913,
+  "relativeEffort": 41,
+  "kcal": 941,
+  "maxSpeedMps": 5.28
+ },
+ "2026-09-08#1": {
+  "stravaId": "20083310932",
+  "sportType": "Run",
+  "startLocal": "2026-09-08T06:41:15",
+  "movingSec": 2770,
+  "elapsedSec": 2793,
+  "distanceM": 7703.6,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 14.3,
+  "feelsLikeC": 12.9,
+  "humidityPct": 63,
+  "windMps": 1.7,
+  "weather": "Clear",
+  "avgCadence": 81.9585,
+  "relativeEffort": 15,
+  "kcal": 598,
+  "maxSpeedMps": 5.46,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 339,
+    "hr": 132
+   },
+   {
+    "distM": 1000,
+    "sec": 335,
+    "hr": 140
+   },
+   {
+    "distM": 1000,
+    "sec": 338,
+    "hr": 141
+   },
+   {
+    "distM": 1000,
+    "sec": 356,
+    "hr": 139
+   },
+   {
+    "distM": 1000,
+    "sec": 342,
+    "hr": 142
+   },
+   {
+    "distM": 200,
+    "sec": 41,
+    "hr": 154
+   },
+   {
+    "distM": 200,
+    "sec": 117,
+    "hr": 137
+   },
+   {
+    "distM": 200,
+    "sec": 46,
+    "hr": 144
+   },
+   {
+    "distM": 200,
+    "sec": 120,
+    "hr": 130
+   },
+   {
+    "distM": 200,
+    "sec": 45,
+    "hr": 140
+   },
+   {
+    "distM": 200,
+    "sec": 134,
+    "hr": 130
+   },
+   {
+    "distM": 200,
+    "sec": 46,
+    "hr": 137
+   },
+   {
+    "distM": 200,
+    "sec": 124,
+    "hr": 128
+   },
+   {
+    "distM": 200,
+    "sec": 46,
+    "hr": 140
+   },
+   {
+    "distM": 200,
+    "sec": 127,
+    "hr": 127
+   },
+   {
+    "distM": 200,
+    "sec": 45,
+    "hr": 134
+   },
+   {
+    "distM": 500,
+    "sec": 182,
+    "hr": 146
+   }
+  ],
+  "hrSource": "activity performance",
+  "splitsOmitted": "laps are not contiguous 1 km"
+ },
+ "2026-09-09#1": {
+  "stravaId": "20108416278",
+  "sportType": "Run",
+  "startLocal": "2026-09-09T20:55:17",
+  "movingSec": 1680,
+  "elapsedSec": 1734,
+  "distanceM": 4007.6,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 27.3,
+  "feelsLikeC": 25.1,
+  "humidityPct": 36,
+  "windMps": 4.6,
+  "weather": "Clear",
+  "avgCadence": 82.5809,
+  "relativeEffort": 5,
+  "kcal": 309,
+  "maxSpeedMps": 4.9
+ },
+ "2026-09-10#1": {
+  "stravaId": "20118825263",
+  "sportType": "Run",
+  "startLocal": "2026-09-10T17:24:30",
+  "movingSec": 783,
+  "elapsedSec": 783,
+  "distanceM": 2141.2,
+  "elevGainM": 0,
+  "indoor": false,
+  "tempC": 33.9,
+  "feelsLikeC": 35.9,
+  "humidityPct": 26,
+  "windMps": 1.1,
+  "weather": "Clear",
+  "avgCadence": 86.1031,
+  "relativeEffort": 5,
+  "kcal": 175,
+  "maxSpeedMps": 5.14
+ },
+ "2026-09-10#2": {
+  "stravaId": "20118825294",
+  "sportType": "Run",
+  "startLocal": "2026-09-10T18:00:01",
+  "movingSec": 1252,
+  "elapsedSec": 1266,
+  "distanceM": 4841.7,
+  "elevGainM": 9,
+  "indoor": false,
+  "tempC": 32.8,
+  "feelsLikeC": 33.8,
+  "humidityPct": 32,
+  "windMps": 1.2,
+  "weather": "Clear",
+  "avgCadence": 89.0826,
+  "relativeEffort": 55,
+  "kcal": 369,
+  "maxSpeedMps": 5.4,
+  "raceBasis": "name: Business Run (Nis) (no Strava tags returned)",
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 248,
+    "hr": 159
+   },
+   {
+    "distM": 1000,
+    "sec": 247,
+    "hr": 176
+   },
+   {
+    "distM": 1000,
+    "sec": 247,
+    "hr": 180
+   },
+   {
+    "distM": 1000,
+    "sec": 259,
+    "hr": 181
+   },
+   {
+    "distM": 842,
+    "sec": 265,
+    "hr": 176
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-09-12#1": {
+  "stravaId": "20138590908",
+  "sportType": "Run",
+  "startLocal": "2026-09-12T07:42:16",
+  "movingSec": 2157,
+  "elapsedSec": 2174,
+  "distanceM": 5503.6,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 14,
+  "feelsLikeC": 12.5,
+  "humidityPct": 87,
+  "windMps": 3.1,
+  "weather": "PartlyCloudy",
+  "avgCadence": 87.1513,
+  "relativeEffort": 8,
+  "kcal": 429,
+  "maxSpeedMps": 3.12
+ },
+ "2026-09-13#1": {
+  "stravaId": "20153609663",
+  "sportType": "Run",
+  "startLocal": "2026-09-13T09:29:03",
+  "movingSec": 1975,
+  "elapsedSec": 1988,
+  "distanceM": 6004.2,
+  "elevGainM": 4,
+  "indoor": false,
+  "tempC": 15.7,
+  "feelsLikeC": 17.8,
+  "humidityPct": 73,
+  "windMps": 1.4,
+  "weather": "Clear",
+  "avgCadence": 91.218,
+  "relativeEffort": 17,
+  "kcal": 480,
+  "maxSpeedMps": 3.56
+ },
+ "2026-09-16#1": {
+  "stravaId": "20204289321",
+  "sportType": "Run",
+  "startLocal": "2026-09-16T20:10:22",
+  "movingSec": 1846,
+  "elapsedSec": 1846,
+  "distanceM": 5480.9,
+  "elevGainM": 1,
+  "indoor": false,
+  "tempC": 22.4,
+  "feelsLikeC": 21,
+  "humidityPct": 56,
+  "windMps": 2.7,
+  "weather": "Clear",
+  "avgCadence": 82.6299,
+  "relativeEffort": 17,
+  "kcal": 410,
+  "maxSpeedMps": 4.64
+ },
+ "2026-09-19#1": {
+  "stravaId": "20235246333",
+  "sportType": "Run",
+  "startLocal": "2026-09-19T07:11:00",
+  "movingSec": 1933,
+  "elapsedSec": 1933,
+  "distanceM": 6002.2,
+  "elevGainM": 1,
+  "indoor": false,
+  "tempC": 16.2,
+  "feelsLikeC": 16.6,
+  "humidityPct": 86,
+  "windMps": 1.7,
+  "weather": "PartlyCloudy",
+  "avgCadence": 87.5348,
+  "relativeEffort": 29,
+  "kcal": 474,
+  "maxSpeedMps": 4.94
+ },
+ "2026-09-22#1": {
+  "stravaId": "20284888799",
+  "sportType": "Run",
+  "startLocal": "2026-09-22T18:51:01",
+  "movingSec": 1593,
+  "elapsedSec": 1604,
+  "distanceM": 5009.2,
+  "elevGainM": 1,
+  "indoor": false,
+  "tempC": 15.8,
+  "feelsLikeC": 13.7,
+  "humidityPct": 58,
+  "windMps": 3.3,
+  "weather": "PartlyCloudy",
+  "avgCadence": 83.8708,
+  "relativeEffort": 15,
+  "kcal": 387,
+  "maxSpeedMps": 5.64,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 330,
+    "hr": 135
+   },
+   {
+    "distM": 500,
+    "sec": 161,
+    "hr": 144
+   },
+   {
+    "distM": 200,
+    "sec": 45,
+    "hr": 156
+   },
+   {
+    "distM": 328,
+    "sec": 120,
+    "hr": 149
+   },
+   {
+    "distM": 200,
+    "sec": 43,
+    "hr": 153
+   },
+   {
+    "distM": 348,
+    "sec": 120,
+    "hr": 151
+   },
+   {
+    "distM": 200,
+    "sec": 47,
+    "hr": 152
+   },
+   {
+    "distM": 322,
+    "sec": 120,
+    "hr": 148
+   },
+   {
+    "distM": 200,
+    "sec": 47,
+    "hr": 152
+   },
+   {
+    "distM": 1000,
+    "sec": 345,
+    "hr": 149
+   },
+   {
+    "distM": 710,
+    "sec": 227,
+    "hr": 147
+   }
+  ],
+  "hrSource": "activity performance",
+  "splitsOmitted": "laps are not contiguous 1 km"
+ },
+ "2026-09-23#1": {
+  "stravaId": "20298573446",
+  "sportType": "Run",
+  "startLocal": "2026-09-23T17:17:23",
+  "movingSec": 894,
+  "elapsedSec": 899,
+  "distanceM": 2725.8,
+  "elevGainM": 2,
+  "indoor": false,
+  "tempC": 18.3,
+  "feelsLikeC": 17.3,
+  "humidityPct": 51,
+  "windMps": 3.6,
+  "weather": "Clear",
+  "avgCadence": 86.4406,
+  "relativeEffort": 3,
+  "kcal": 207,
+  "maxSpeedMps": 5.54
+ },
+ "2026-09-24#1": {
+  "stravaId": "20314406297",
+  "sportType": "Run",
+  "startLocal": "2026-09-24T18:44:33",
+  "movingSec": 616,
+  "elapsedSec": 645,
+  "distanceM": 1716.3,
+  "elevGainM": 0,
+  "indoor": false,
+  "tempC": 19.8,
+  "feelsLikeC": 20,
+  "humidityPct": 48,
+  "windMps": 0.9,
+  "weather": "Cloudy",
+  "avgCadence": 88.3947,
+  "relativeEffort": 4,
+  "kcal": 142,
+  "maxSpeedMps": 5.02
+ },
+ "2026-09-24#2": {
+  "stravaId": "20314406356",
+  "sportType": "Run",
+  "startLocal": "2026-09-24T19:29:44",
+  "movingSec": 1253,
+  "elapsedSec": 1253,
+  "distanceM": 5116.6,
+  "elevGainM": 3,
+  "indoor": false,
+  "tempC": 19.2,
+  "feelsLikeC": 19.6,
+  "humidityPct": 47,
+  "windMps": 0.8,
+  "weather": "Cloudy",
+  "avgCadence": 91.926,
+  "relativeEffort": 63,
+  "kcal": 383,
+  "maxSpeedMps": 4.92,
+  "raceBasis": "name: BiznisRun (no Strava tags returned)",
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 242,
+    "hr": 161
+   },
+   {
+    "distM": 1000,
+    "sec": 241,
+    "hr": 178
+   },
+   {
+    "distM": 1000,
+    "sec": 242,
+    "hr": 182
+   },
+   {
+    "distM": 1000,
+    "sec": 252,
+    "hr": 181
+   },
+   {
+    "distM": 1000,
+    "sec": 249,
+    "hr": 185
+   },
+   {
+    "distM": 117,
+    "sec": 27,
+    "hr": 185
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-09-27#1": {
+  "stravaId": "20346091359",
+  "sportType": "Run",
+  "startLocal": "2026-09-27T08:09:16",
+  "movingSec": 3807,
+  "elapsedSec": 3867,
+  "distanceM": 12004.8,
+  "elevGainM": 6,
+  "indoor": false,
+  "tempC": 12.4,
+  "feelsLikeC": 14.7,
+  "humidityPct": 87,
+  "windMps": 1.2,
+  "weather": "Clear",
+  "avgCadence": 88.7731,
+  "relativeEffort": 38,
+  "kcal": 928,
+  "maxSpeedMps": 4.02,
+  "hrSource": "reused from owner-2026-autumn.json (not re-fetched)"
+ },
+ "2026-09-28#1": {
+  "stravaId": "20368533639",
+  "sportType": "Run",
+  "startLocal": "2026-09-28T20:29:14",
+  "movingSec": 2090,
+  "elapsedSec": 2101,
+  "distanceM": 5392,
+  "elevGainM": 7,
+  "indoor": false,
+  "tempC": 18.8,
+  "feelsLikeC": 18.2,
+  "humidityPct": 54,
+  "windMps": 0.9,
+  "weather": "Clear",
+  "avgCadence": 78.3429,
+  "relativeEffort": 8,
+  "kcal": 400,
+  "maxSpeedMps": 3.88,
+  "hrSource": "reused from owner-2026-autumn.json (not re-fetched)"
+ },
+ "2026-10-03#1": {
+  "stravaId": "20434334001",
+  "sportType": "Run",
+  "startLocal": "2026-10-03T16:20:26",
+  "movingSec": 135,
+  "elapsedSec": 135,
+  "distanceM": 377.2,
+  "elevGainM": 0,
+  "indoor": false,
+  "tempC": 22.2,
+  "feelsLikeC": 22.6,
+  "humidityPct": 28,
+  "windMps": 3.2,
+  "weather": "Clear",
+  "avgCadence": 87.4231,
+  "relativeEffort": 0,
+  "kcal": 27,
+  "maxSpeedMps": 3.32
+ },
+ "2026-10-03#2": {
+  "stravaId": "20436111410",
+  "sportType": "Run",
+  "startLocal": "2026-10-03T16:32:17",
+  "movingSec": 6116,
+  "elapsedSec": 6129,
+  "distanceM": 21149.7,
+  "elevGainM": 71,
+  "indoor": false,
+  "tempC": 22.2,
+  "feelsLikeC": 22.6,
+  "humidityPct": 28,
+  "windMps": 3.2,
+  "weather": "Clear",
+  "avgCadence": 89.1752,
+  "relativeEffort": 199,
+  "kcal": 1671,
+  "maxSpeedMps": 5.84,
+  "raceBasis": "name: Niski polumaraton (no Strava tags returned)",
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 309,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 306,
+    "hr": 157
+   },
+   {
+    "distM": 1000,
+    "sec": 304,
+    "hr": 158
+   },
+   {
+    "distM": 1000,
+    "sec": 298,
+    "hr": 159
+   },
+   {
+    "distM": 1000,
+    "sec": 297,
+    "hr": 162
+   },
+   {
+    "distM": 1000,
+    "sec": 298,
+    "hr": 164
+   },
+   {
+    "distM": 1000,
+    "sec": 294,
+    "hr": 166
+   },
+   {
+    "distM": 1000,
+    "sec": 289,
+    "hr": 166
+   },
+   {
+    "distM": 1000,
+    "sec": 287,
+    "hr": 167
+   },
+   {
+    "distM": 1000,
+    "sec": 291,
+    "hr": 167
+   },
+   {
+    "distM": 1000,
+    "sec": 301,
+    "hr": 165
+   },
+   {
+    "distM": 1000,
+    "sec": 302,
+    "hr": 169
+   },
+   {
+    "distM": 1000,
+    "sec": 299,
+    "hr": 173
+   },
+   {
+    "distM": 1000,
+    "sec": 289,
+    "hr": 171
+   },
+   {
+    "distM": 1000,
+    "sec": 284,
+    "hr": 169
+   },
+   {
+    "distM": 1000,
+    "sec": 278,
+    "hr": 171
+   },
+   {
+    "distM": 1000,
+    "sec": 289,
+    "hr": 173
+   },
+   {
+    "distM": 1000,
+    "sec": 281,
+    "hr": 171
+   },
+   {
+    "distM": 1000,
+    "sec": 268,
+    "hr": 176
+   },
+   {
+    "distM": 1000,
+    "sec": 264,
+    "hr": 178
+   },
+   {
+    "distM": 1000,
+    "sec": 257,
+    "hr": 180
+   },
+   {
+    "distM": 150,
+    "sec": 43,
+    "hr": 185
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-10-14#1": {
+  "stravaId": "20586263246",
+  "sportType": "Run",
+  "startLocal": "2026-10-14T20:19:51",
+  "movingSec": 1419,
+  "elapsedSec": 1419,
+  "distanceM": 4015.4,
+  "elevGainM": 1,
+  "indoor": false,
+  "tempC": 11,
+  "feelsLikeC": 9.5,
+  "humidityPct": 65,
+  "windMps": 1.7,
+  "weather": "Clear",
+  "avgCadence": 87.2719,
+  "relativeEffort": 6,
+  "kcal": 322,
+  "maxSpeedMps": 3.9,
+  "hrSource": "reused from owner-2026-autumn.json (not re-fetched)"
+ },
+ "2026-10-20#1": {
+  "stravaId": "20663724361",
+  "sportType": "Run",
+  "startLocal": "2026-10-20T18:31:43",
+  "movingSec": 2073,
+  "elapsedSec": 2080,
+  "distanceM": 6001.7,
+  "elevGainM": 4,
+  "indoor": false,
+  "tempC": 18.8,
+  "feelsLikeC": 16.4,
+  "humidityPct": 54,
+  "windMps": 3,
+  "weather": "Clear",
+  "avgCadence": 86.1625,
+  "relativeEffort": 37,
+  "kcal": 494,
+  "maxSpeedMps": 4.04,
+  "hrSource": "reused from owner-2026-autumn.json (not re-fetched)"
+ },
+ "2026-10-23#1": {
+  "stravaId": "20703340834",
+  "sportType": "Run",
+  "startLocal": "2026-10-23T19:06:03",
+  "movingSec": 2510,
+  "elapsedSec": 2524,
+  "distanceM": 8011,
+  "elevGainM": 5,
+  "indoor": false,
+  "tempC": 12.3,
+  "feelsLikeC": 11.3,
+  "humidityPct": 62,
+  "windMps": 1.8,
+  "weather": "Cloudy",
+  "avgCadence": 86.6573,
+  "relativeEffort": 37,
+  "kcal": 621,
+  "lapsKm": [
+   {
+    "distM": 1000,
+    "sec": 331,
+    "hr": 137
+   },
+   {
+    "distM": 1000,
+    "sec": 327,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 329,
+    "hr": 145
+   },
+   {
+    "distM": 1000,
+    "sec": 325,
+    "hr": 148
+   },
+   {
+    "distM": 1000,
+    "sec": 309,
+    "hr": 152
+   },
+   {
+    "distM": 1000,
+    "sec": 274,
+    "hr": 162
+   },
+   {
+    "distM": 1000,
+    "sec": 263,
+    "hr": 169
+   },
+   {
+    "distM": 1000,
+    "sec": 346,
+    "hr": 157
+   },
+   {
+    "distM": 11,
+    "sec": 6,
+    "hr": 153
+   }
+  ],
+  "hrSource": "activity performance"
+ },
+ "2026-11-03#1": {
+  "stravaId": "20847218010",
+  "sportType": "Run",
+  "startLocal": "2026-11-03T19:52:25",
+  "movingSec": 2118,
+  "elapsedSec": 2124,
+  "distanceM": 6004.8,
+  "elevGainM": 4,
+  "indoor": false,
+  "tempC": 9.9,
+  "feelsLikeC": 9.6,
+  "humidityPct": 92,
+  "windMps": 1.9,
+  "weather": "Rain",
+  "avgCadence": 85.0543,
+  "relativeEffort": 37,
+  "kcal": 492,
+  "hrSource": "reused from owner-2026-autumn.json (not re-fetched)"
+ },
+ "2026-11-06#1": {
+  "stravaId": "20885766689",
+  "sportType": "Run",
+  "startLocal": "2026-11-06T18:49:56",
+  "movingSec": 2786,
+  "elapsedSec": 2850,
+  "distanceM": 8004.4,
+  "elevGainM": 5,
+  "indoor": false,
+  "tempC": 7.7,
+  "feelsLikeC": 7.8,
+  "humidityPct": 72,
+  "windMps": 1.0,
+  "weather": "Cloudy",
+  "avgCadence": 86.1575,
+  "relativeEffort": 44,
+  "kcal": 651,
+  "hrSource": "reused from owner-2026-autumn.json (not re-fetched)"
+ }
+}

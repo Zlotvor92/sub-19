@@ -1,0 +1,1520 @@
+{
+  "napomena": "Trčanja vlasnika sa Strave (Run), 1. 4 – 6. 11. 2026, hronološki. Isti oblik kao owner-2026-autumn.json; sec = pokretno vreme (za trke proteklo), datum lokalni (Europe/Belgrade), puls sa zgloba. hr/maxHr/splits samo za trčanja kojima je povučen performance (ili preuzeta iz owner-2026-autumn.json); inače bez hr, splits = []. dayId = s<redni broj trčanja tog dana> (nije dan plana). race = trka po nazivu aktivnosti (Strava nije vratila tagove). Dodatna polja u owner-strava-2026.extra.json.",
+  "runs": [
+    {
+      "date": "2026-04-01",
+      "dayId": "s1",
+      "km": 5.19,
+      "sec": 1822,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-03",
+      "dayId": "s1",
+      "km": 5.62,
+      "sec": 1732,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-04",
+      "dayId": "s1",
+      "km": 4.59,
+      "sec": 1499,
+      "elev": 0,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-05",
+      "dayId": "s1",
+      "km": 10.0,
+      "sec": 3451,
+      "elev": 11,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-08",
+      "dayId": "s1",
+      "km": 8.69,
+      "sec": 2958,
+      "elev": 4,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-10",
+      "dayId": "s1",
+      "km": 8.01,
+      "sec": 2621,
+      "elev": 5,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-11",
+      "dayId": "s1",
+      "km": 6.24,
+      "sec": 2226,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-12",
+      "dayId": "s1",
+      "km": 12.0,
+      "sec": 3889,
+      "elev": 11,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-14",
+      "dayId": "s1",
+      "km": 7.78,
+      "sec": 2754,
+      "elev": 17,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-15",
+      "dayId": "s1",
+      "km": 7.25,
+      "sec": 2417,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-17",
+      "dayId": "s1",
+      "km": 8.4,
+      "sec": 2560,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-19",
+      "dayId": "s1",
+      "km": 14.01,
+      "sec": 4482,
+      "elev": 8,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-22",
+      "dayId": "s1",
+      "km": 6.01,
+      "sec": 1956,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-24",
+      "dayId": "s1",
+      "km": 7.57,
+      "sec": 2613,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-25",
+      "dayId": "s1",
+      "km": 10.0,
+      "sec": 3329,
+      "elev": 14,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-28",
+      "dayId": "s1",
+      "km": 9.73,
+      "sec": 3041,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-04-29",
+      "dayId": "s1",
+      "km": 7.52,
+      "sec": 2682,
+      "elev": 8,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-01",
+      "dayId": "s1",
+      "km": 9.08,
+      "sec": 2760,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-03",
+      "dayId": "s1",
+      "km": 14.0,
+      "sec": 5078,
+      "elev": 10,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-05",
+      "dayId": "s1",
+      "km": 7.87,
+      "sec": 2627,
+      "elev": 1,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-06",
+      "dayId": "s1",
+      "km": 8.02,
+      "sec": 2678,
+      "elev": 22,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-10",
+      "dayId": "s1",
+      "km": 8.05,
+      "sec": 2273,
+      "elev": 7,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-13",
+      "dayId": "s1",
+      "km": 9.6,
+      "sec": 2943,
+      "hr": 156,
+      "maxHr": 181,
+      "elev": 8,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-14",
+      "dayId": "s1",
+      "km": 8.01,
+      "sec": 2647,
+      "elev": 4,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-17",
+      "dayId": "s1",
+      "km": 14.14,
+      "sec": 4117,
+      "hr": 166,
+      "maxHr": 183,
+      "elev": 21,
+      "race": true,
+      "splits": [
+        [
+          330,
+          144
+        ],
+        [
+          316,
+          152
+        ],
+        [
+          319,
+          154
+        ],
+        [
+          309,
+          157
+        ],
+        [
+          290,
+          164
+        ],
+        [
+          287,
+          165
+        ],
+        [
+          289,
+          168
+        ],
+        [
+          284,
+          170
+        ],
+        [
+          268,
+          174
+        ],
+        [
+          266,
+          175
+        ],
+        [
+          266,
+          178
+        ],
+        [
+          261,
+          180
+        ],
+        [
+          298,
+          174
+        ],
+        [
+          278,
+          179
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-19",
+      "dayId": "s1",
+      "km": 6.65,
+      "sec": 2254,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-22",
+      "dayId": "s1",
+      "km": 2.64,
+      "sec": 896,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-23",
+      "dayId": "s1",
+      "km": 1.45,
+      "sec": 546,
+      "elev": 0,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-05-23",
+      "dayId": "s2",
+      "km": 5.04,
+      "sec": 1247,
+      "hr": 175,
+      "maxHr": 187,
+      "elev": 3,
+      "race": true,
+      "splits": [
+        [
+          241,
+          159
+        ],
+        [
+          246,
+          173
+        ],
+        [
+          244,
+          178
+        ],
+        [
+          255,
+          180
+        ],
+        [
+          250,
+          183
+        ]
+      ]
+    },
+    {
+      "date": "2026-05-31",
+      "dayId": "s1",
+      "km": 8.0,
+      "sec": 3093,
+      "elev": 12,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-03",
+      "dayId": "s1",
+      "km": 9.79,
+      "sec": 3266,
+      "elev": 28,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-06",
+      "dayId": "s1",
+      "km": 7.9,
+      "sec": 3134,
+      "temp": 22,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-07",
+      "dayId": "s1",
+      "km": 12.01,
+      "sec": 3965,
+      "temp": 20,
+      "elev": 14,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-11",
+      "dayId": "s1",
+      "km": 8.89,
+      "sec": 2955,
+      "temp": 19,
+      "elev": 13,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-12",
+      "dayId": "s1",
+      "km": 8.68,
+      "sec": 2962,
+      "temp": 22,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-13",
+      "dayId": "s1",
+      "km": 3.72,
+      "sec": 1274,
+      "temp": 15,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-16",
+      "dayId": "s1",
+      "km": 9.0,
+      "sec": 3473,
+      "temp": 25,
+      "elev": 10,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-19",
+      "dayId": "s1",
+      "km": 5.0,
+      "sec": 1666,
+      "hr": 141,
+      "maxHr": 160,
+      "temp": 28,
+      "elev": 47,
+      "race": false,
+      "splits": [
+        [
+          339,
+          133
+        ],
+        [
+          335,
+          139
+        ],
+        [
+          330,
+          142
+        ],
+        [
+          339,
+          142
+        ],
+        [
+          319,
+          148
+        ]
+      ]
+    },
+    {
+      "date": "2026-06-20",
+      "dayId": "s1",
+      "km": 5.64,
+      "sec": 1812,
+      "temp": 30,
+      "elev": 5,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-22",
+      "dayId": "s1",
+      "km": 7.0,
+      "sec": 2347,
+      "temp": 31,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-24",
+      "dayId": "s1",
+      "km": 8.01,
+      "sec": 2501,
+      "temp": 28,
+      "elev": 5,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-26",
+      "dayId": "s1",
+      "km": 7.49,
+      "sec": 2619,
+      "temp": 31,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-06-29",
+      "dayId": "s1",
+      "km": 8.01,
+      "sec": 2785,
+      "temp": 34,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-01",
+      "dayId": "s1",
+      "km": 8.31,
+      "sec": 2801,
+      "temp": 28,
+      "elev": 5,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-03",
+      "dayId": "s1",
+      "km": 7.5,
+      "sec": 2385,
+      "temp": 28,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-05",
+      "dayId": "s1",
+      "km": 9.0,
+      "sec": 2752,
+      "elev": 7,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-06",
+      "dayId": "s1",
+      "km": 8.0,
+      "sec": 2731,
+      "temp": 24,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-08",
+      "dayId": "s1",
+      "km": 10.18,
+      "sec": 3428,
+      "temp": 23,
+      "elev": 8,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-10",
+      "dayId": "s1",
+      "km": 9.22,
+      "sec": 2887,
+      "temp": 28,
+      "elev": 8,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-12",
+      "dayId": "s1",
+      "km": 8.57,
+      "sec": 3021,
+      "temp": 22,
+      "elev": 10,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-15",
+      "dayId": "s1",
+      "km": 9.0,
+      "sec": 3196,
+      "temp": 24,
+      "elev": 10,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-16",
+      "dayId": "s1",
+      "km": 8.0,
+      "sec": 2711,
+      "temp": 26,
+      "elev": 4,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-18",
+      "dayId": "s1",
+      "km": 10.01,
+      "sec": 3332,
+      "temp": 24,
+      "elev": 8,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-19",
+      "dayId": "s1",
+      "km": 12.0,
+      "sec": 3963,
+      "temp": 22,
+      "elev": 10,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-21",
+      "dayId": "s1",
+      "km": 10.37,
+      "sec": 3552,
+      "temp": 28,
+      "elev": 10,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-22",
+      "dayId": "s1",
+      "km": 10.62,
+      "sec": 3270,
+      "temp": 19,
+      "elev": 15,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-24",
+      "dayId": "s1",
+      "km": 11.01,
+      "sec": 3342,
+      "temp": 16,
+      "elev": 7,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-27",
+      "dayId": "s1",
+      "km": 12.0,
+      "sec": 4395,
+      "temp": 27,
+      "elev": 216,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-29",
+      "dayId": "s1",
+      "km": 11.0,
+      "sec": 3738,
+      "hr": 146,
+      "maxHr": 185,
+      "temp": 17,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-07-31",
+      "dayId": "s1",
+      "km": 10.0,
+      "sec": 3008,
+      "hr": 153,
+      "maxHr": 171,
+      "temp": 21,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-02",
+      "dayId": "s1",
+      "km": 15.34,
+      "sec": 4517,
+      "temp": 24,
+      "elev": 20,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-04",
+      "dayId": "s1",
+      "km": 8.01,
+      "sec": 2679,
+      "temp": 34,
+      "elev": 71,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-05",
+      "dayId": "s1",
+      "km": 8.01,
+      "sec": 2719,
+      "temp": 34,
+      "elev": 1,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-09",
+      "dayId": "s1",
+      "km": 2.0,
+      "sec": 691,
+      "temp": 24,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-09",
+      "dayId": "s2",
+      "km": 4.01,
+      "sec": 1097,
+      "hr": 161,
+      "maxHr": 183,
+      "temp": 24,
+      "elev": 2,
+      "race": false,
+      "splits": [
+        [
+          233,
+          165
+        ],
+        [
+          232,
+          175
+        ],
+        [
+          231,
+          171
+        ],
+        [
+          396,
+          143
+        ]
+      ]
+    },
+    {
+      "date": "2026-08-10",
+      "dayId": "s1",
+      "km": 11.07,
+      "sec": 3634,
+      "temp": 19,
+      "elev": 5,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-12",
+      "dayId": "s1",
+      "km": 11.0,
+      "sec": 3449,
+      "hr": 157,
+      "maxHr": 182,
+      "temp": 24,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-14",
+      "dayId": "s1",
+      "km": 7.1,
+      "sec": 2331,
+      "temp": 26,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-15",
+      "dayId": "s1",
+      "km": 6.01,
+      "sec": 1818,
+      "temp": 30,
+      "elev": 11,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-16",
+      "dayId": "s1",
+      "km": 14.3,
+      "sec": 4707,
+      "temp": 20,
+      "elev": 20,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-18",
+      "dayId": "s1",
+      "km": 11.01,
+      "sec": 3521,
+      "temp": 20,
+      "elev": 7,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-19",
+      "dayId": "s1",
+      "km": 12.0,
+      "sec": 3845,
+      "temp": 29,
+      "elev": 9,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-21",
+      "dayId": "s1",
+      "km": 3.11,
+      "sec": 1090,
+      "temp": 32,
+      "elev": 14,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-23",
+      "dayId": "s1",
+      "km": 10.0,
+      "sec": 3382,
+      "temp": 26,
+      "elev": 0,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-26",
+      "dayId": "s1",
+      "km": 4.29,
+      "sec": 1429,
+      "temp": 24,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-08-28",
+      "dayId": "s1",
+      "km": 8.13,
+      "sec": 2394,
+      "hr": 161,
+      "maxHr": 182,
+      "temp": 25,
+      "elev": 2,
+      "race": false,
+      "splits": [
+        [
+          332,
+          135
+        ],
+        [
+          330,
+          145
+        ],
+        [
+          273,
+          162
+        ],
+        [
+          271,
+          167
+        ],
+        [
+          270,
+          172
+        ],
+        [
+          269,
+          173
+        ],
+        [
+          268,
+          176
+        ],
+        [
+          269,
+          180
+        ]
+      ]
+    },
+    {
+      "date": "2026-09-01",
+      "dayId": "s1",
+      "km": 9.01,
+      "sec": 3128,
+      "temp": 26,
+      "elev": 4,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-02",
+      "dayId": "s1",
+      "km": 8.0,
+      "sec": 2914,
+      "temp": 26,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-03",
+      "dayId": "s1",
+      "km": 8.43,
+      "sec": 3127,
+      "temp": 30,
+      "elev": 4,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-04",
+      "dayId": "s1",
+      "km": 6.01,
+      "sec": 2113,
+      "temp": 20,
+      "elev": 3,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-05",
+      "dayId": "s1",
+      "km": 13.19,
+      "sec": 4515,
+      "temp": 20,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-06",
+      "dayId": "s1",
+      "km": 12.07,
+      "sec": 3999,
+      "temp": 21,
+      "elev": 14,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-08",
+      "dayId": "s1",
+      "km": 7.7,
+      "sec": 2770,
+      "hr": 138,
+      "maxHr": 165,
+      "temp": 14,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-09",
+      "dayId": "s1",
+      "km": 4.01,
+      "sec": 1680,
+      "temp": 27,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-10",
+      "dayId": "s1",
+      "km": 2.14,
+      "sec": 783,
+      "temp": 34,
+      "elev": 0,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-10",
+      "dayId": "s2",
+      "km": 4.84,
+      "sec": 1266,
+      "hr": 174,
+      "maxHr": 188,
+      "temp": 33,
+      "elev": 9,
+      "race": true,
+      "splits": [
+        [
+          248,
+          159
+        ],
+        [
+          247,
+          176
+        ],
+        [
+          247,
+          180
+        ],
+        [
+          259,
+          181
+        ]
+      ]
+    },
+    {
+      "date": "2026-09-12",
+      "dayId": "s1",
+      "km": 5.5,
+      "sec": 2157,
+      "temp": 14,
+      "elev": 6,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-13",
+      "dayId": "s1",
+      "km": 6.0,
+      "sec": 1975,
+      "temp": 16,
+      "elev": 4,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-16",
+      "dayId": "s1",
+      "km": 5.48,
+      "sec": 1846,
+      "temp": 22,
+      "elev": 1,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-19",
+      "dayId": "s1",
+      "km": 6.0,
+      "sec": 1933,
+      "temp": 16,
+      "elev": 1,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-22",
+      "dayId": "s1",
+      "km": 5.01,
+      "sec": 1593,
+      "hr": 146,
+      "maxHr": 164,
+      "temp": 16,
+      "elev": 1,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-23",
+      "dayId": "s1",
+      "km": 2.73,
+      "sec": 894,
+      "temp": 18,
+      "elev": 2,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-24",
+      "dayId": "s1",
+      "km": 1.72,
+      "sec": 616,
+      "temp": 20,
+      "elev": 0,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-09-24",
+      "dayId": "s2",
+      "km": 5.12,
+      "sec": 1253,
+      "hr": 178,
+      "maxHr": 187,
+      "temp": 19,
+      "elev": 3,
+      "race": true,
+      "splits": [
+        [
+          242,
+          161
+        ],
+        [
+          241,
+          178
+        ],
+        [
+          242,
+          182
+        ],
+        [
+          252,
+          181
+        ],
+        [
+          249,
+          185
+        ]
+      ]
+    },
+    {
+      "date": "2026-09-27",
+      "dayId": "s1",
+      "km": 12.0,
+      "sec": 3807,
+      "hr": 147,
+      "maxHr": 166,
+      "temp": 12,
+      "elev": 6,
+      "race": false,
+      "splits": [
+        [
+          328,
+          135
+        ],
+        [
+          324,
+          144
+        ],
+        [
+          329,
+          139
+        ],
+        [
+          325,
+          143
+        ],
+        [
+          325,
+          144
+        ],
+        [
+          326,
+          146
+        ],
+        [
+          324,
+          146
+        ],
+        [
+          325,
+          146
+        ],
+        [
+          305,
+          153
+        ],
+        [
+          274,
+          159
+        ],
+        [
+          272,
+          164
+        ],
+        [
+          347,
+          148
+        ]
+      ]
+    },
+    {
+      "date": "2026-09-28",
+      "dayId": "s1",
+      "km": 5.39,
+      "sec": 2090,
+      "hr": 126,
+      "maxHr": 149,
+      "temp": 19,
+      "elev": 7,
+      "race": false,
+      "splits": [
+        [
+          340,
+          128
+        ],
+        [
+          318,
+          141
+        ],
+        [
+          303,
+          145
+        ],
+        [
+          448,
+          121
+        ],
+        [
+          490,
+          108
+        ]
+      ]
+    },
+    {
+      "date": "2026-10-03",
+      "dayId": "s1",
+      "km": 0.38,
+      "sec": 135,
+      "temp": 22,
+      "elev": 0,
+      "race": false,
+      "splits": []
+    },
+    {
+      "date": "2026-10-03",
+      "dayId": "s2",
+      "km": 21.15,
+      "sec": 6129,
+      "hr": 167,
+      "maxHr": 188,
+      "temp": 22,
+      "elev": 71,
+      "race": true,
+      "splits": [
+        [
+          309,
+          145
+        ],
+        [
+          306,
+          157
+        ],
+        [
+          304,
+          158
+        ],
+        [
+          298,
+          159
+        ],
+        [
+          297,
+          162
+        ],
+        [
+          298,
+          164
+        ],
+        [
+          294,
+          166
+        ],
+        [
+          289,
+          166
+        ],
+        [
+          287,
+          167
+        ],
+        [
+          291,
+          167
+        ],
+        [
+          301,
+          165
+        ],
+        [
+          302,
+          169
+        ],
+        [
+          299,
+          173
+        ],
+        [
+          289,
+          171
+        ],
+        [
+          284,
+          169
+        ],
+        [
+          278,
+          171
+        ],
+        [
+          289,
+          173
+        ],
+        [
+          281,
+          171
+        ],
+        [
+          268,
+          176
+        ],
+        [
+          264,
+          178
+        ],
+        [
+          257,
+          180
+        ]
+      ]
+    },
+    {
+      "date": "2026-10-14",
+      "dayId": "s1",
+      "km": 4.02,
+      "sec": 1419,
+      "hr": 140,
+      "maxHr": 151,
+      "temp": 11,
+      "elev": 1,
+      "race": false,
+      "splits": [
+        [
+          362,
+          132
+        ],
+        [
+          352,
+          142
+        ],
+        [
+          355,
+          142
+        ],
+        [
+          345,
+          143
+        ]
+      ]
+    },
+    {
+      "date": "2026-10-20",
+      "dayId": "s1",
+      "km": 6.0,
+      "sec": 2073,
+      "hr": 151,
+      "maxHr": 164,
+      "temp": 19,
+      "elev": 4,
+      "race": false,
+      "splits": [
+        [
+          349,
+          129
+        ],
+        [
+          353,
+          149
+        ],
+        [
+          341,
+          154
+        ],
+        [
+          341,
+          156
+        ],
+        [
+          322,
+          159
+        ],
+        [
+          326,
+          160
+        ]
+      ]
+    },
+    {
+      "date": "2026-10-23",
+      "dayId": "s1",
+      "km": 8.01,
+      "sec": 2510,
+      "hr": 151,
+      "maxHr": 174,
+      "temp": 12,
+      "elev": 5,
+      "race": false,
+      "splits": [
+        [
+          331,
+          137
+        ],
+        [
+          327,
+          145
+        ],
+        [
+          329,
+          145
+        ],
+        [
+          325,
+          148
+        ],
+        [
+          309,
+          152
+        ],
+        [
+          274,
+          162
+        ],
+        [
+          263,
+          169
+        ],
+        [
+          346,
+          157
+        ]
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "dayId": "s1",
+      "km": 6.0,
+      "sec": 2118,
+      "hr": 147,
+      "maxHr": 166,
+      "temp": 10,
+      "elev": 4,
+      "race": false,
+      "splits": [
+        [
+          370,
+          117
+        ],
+        [
+          349,
+          140
+        ],
+        [
+          362,
+          154
+        ],
+        [
+          358,
+          155
+        ],
+        [
+          346,
+          158
+        ],
+        [
+          338,
+          162
+        ]
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "dayId": "s1",
+      "km": 8.0,
+      "sec": 2786,
+      "hr": 150,
+      "maxHr": 164,
+      "temp": 8,
+      "elev": 5,
+      "race": false,
+      "splits": [
+        [
+          365,
+          134
+        ],
+        [
+          353,
+          148
+        ],
+        [
+          353,
+          151
+        ],
+        [
+          356,
+          152
+        ],
+        [
+          358,
+          154
+        ],
+        [
+          355,
+          153
+        ],
+        [
+          375,
+          153
+        ],
+        [
+          333,
+          158
+        ]
+      ]
+    }
+  ]
+}
