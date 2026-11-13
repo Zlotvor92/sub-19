@@ -555,15 +555,20 @@ export function weekSlots(
   const tq = ctx.data.safety.taper?.calendarMinus2MaxQuality;
   const raceMonday = mondayOf(span.raceDate);
   if (tq !== undefined && week.start === addDays(raceMonday, -14)) {
-    let room = tq - (long !== null && long.wanted > 0 ? 1 : 0);
+    const room = tq - (long !== null && long.wanted > 0 ? 1 : 0);
+    /* T6 (krug 6): prednost ima tempo trke (nedelja −2 nosi tempo trke, ne intervale; p05 N14) */
+    const rp = (x: SlotItem): number => (x.kind === 'quality' && mainZone(x.def.main) === 'RP' ? 1 : 0);
+    const keep = new Set(
+      items
+        .filter((x) => x.kind === 'quality')
+        .sort((a, b) => rp(b) - rp(a))
+        .slice(0, Math.max(0, room))
+    );
     for (let i = 0; i < items.length; i += 1) {
       const x = items[i];
-      if (x === undefined || x.kind !== 'quality') continue;
-      if (room > 0) room -= 1;
-      else {
-        items.splice(i, 1);
-        i -= 1;
-      }
+      if (x === undefined || x.kind !== 'quality' || keep.has(x)) continue;
+      items.splice(i, 1);
+      i -= 1;
     }
   }
   /* M6 (krug 5): nema kvaliteta 2 dana pre provere forme / trke-testa — taj kvalitet otpada (dan je lagan) */
@@ -1045,13 +1050,16 @@ function layoutOnce(
       zoneCap?.fallbackStimulus !== undefined
     ) {
       /* pun dozni korak (M1: „prag pune doze") */
-      const slot: SlotRef = {
+      const full: SlotRef = {
         place: 'quality',
         stimulus: zoneCap.fallbackStimulus,
         index: 99,
         phase: item.slot.phase
       };
-      const wanted = slotDose(slot, undefined, intent.kind, ctx);
+      const wanted = slotDose(full, undefined, intent.kind, ctx);
+      /* T6 (krug 6): oblik zamenskog treninga se menja iz nedelje u nedelju (3 × 12 → 2 × 18 → komad), doza ostaje
+         puna — indeks unosa prati mesto u šablonu */
+      const slot: SlotRef = { ...full, index: item.slot.index };
       const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: false });
       const zone = def === null ? null : mainZone(def.main);
       /* zamena dva puta isečene zone samo kad nosi više rada od ostatka zone */
@@ -1157,6 +1165,30 @@ function layoutOnce(
     ctx
   );
   for (const [date, recipe] of filled) out.set(date, recipe);
+  /* T6 (krug 6): vršna nedelja nije ispod polaznog obima (p08: 3 dana, dugi na plafonu) — lagani dani rastu preko
+     udela dugog tačno koliko treba */
+  const baseVolume = d.baseVolumeMin ?? d.baseLoad;
+  if (s.peakNotBelowBase === true && intent.kind === 'peak' && baseVolume !== undefined && filled.size > 0) {
+    let km = 0;
+    for (const r of out.values()) {
+      const w = realize(r, ctx);
+      if (w !== null) km += summarize(w, ctx.pace).km;
+    }
+    const baseKm = (baseVolume * 60) / ctx.pace.paces.easy;
+    const missing = baseKm - km;
+    /* samo mali manjak (≤ 10 % polaznog), lagan dan najviše 15 % preko svog plafona */
+    if (missing > 0 && missing <= 0.1 * baseKm) {
+      const per = (missing * ctx.pace.paces.easy + 0.5 * ctx.pace.paces.easy) / filled.size;
+      /* lagan dan ne prelazi udeo dugog za ovaj broj dana (+ 2 %) */
+      const most = realLong > 0 ? (easyShareOfLong(s, d.runDays.length) + 0.02) * realLong : Number.POSITIVE_INFINITY;
+      for (const [date, recipe] of filled) {
+        if (recipe.type !== 'easy' && recipe.type !== 'addon') continue;
+        const sec = Math.round(Math.max(recipe.sec, Math.min(recipe.sec + per, most)) / 60) * 60;
+        if (recipe.type === 'easy') out.set(date, { type: 'easy', sec });
+        else out.set(date, { ...recipe, sec, maxSec: undefined });
+      }
+    }
+  }
   return out;
 }
 

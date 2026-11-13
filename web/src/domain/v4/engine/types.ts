@@ -834,6 +834,8 @@ export interface SafetyNumbers {
   intervalPaceFloor?: { distanceM: Meters; fromRaceSec: Seconds };
   /** P3 (krug 5): kvalitet sa oznakom `tag` najviše `max` od `window` nedelja zaredom; inače `replacement`. */
   tagMaxRun?: ReadonlyArray<{ tag: string; max: number; window: number; replacement: StimulusTag }>;
+  /** T6 (krug 6): vršna nedelja nije ispod polaznog obima (mali manjak nadoknađuju lagani dani). */
+  peakNotBelowBase?: boolean;
   /** Od koliko dana trčanja nedeljno važi `minEasyMin`. */
   minEasyFromRunDays?: number;
   /** Lagan dan najviše ovoliki udeo dugog te nedelje; broj, ili mapa po broju dana trčanja („1"…„7"). */
