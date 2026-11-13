@@ -25,5 +25,5 @@ s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara 
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; nalazi čuvara posle: 0
 s25 p01 E7: bolest 5 dana u ned 5, pa propušten dugi 10 dana kasnije — promena: 17; nalazi čuvara posle: 0
-s26 p11 E7: bol 4/10 u ned 9, pa trka 5 km dve nedelje kasnije — promena: 15; nalazi čuvara posle: 0
+s26 p11 E7: bol 4/10 u ned 9, pa trka 5 km dve nedelje kasnije — promena: 16; nalazi čuvara posle: 0
 s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 14; nalazi čuvara posle: 0
