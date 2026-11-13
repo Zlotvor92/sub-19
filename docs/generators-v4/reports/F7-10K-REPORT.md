@@ -126,7 +126,7 @@ Ostaje p06 B9: nedelja −2 26,3 km < nedelja −1 33,3 km (u ned −2 jedan lag
 
 ## Krug 3 (ocena trenera `coach/ROUND-V4-10K-02.md`), 13. 11. 2026
 
-Kapija 10K: 0 prekršaja. V4 skup: 751 prolazi, 14 očekivano pada; typecheck i eslint čisti. Ispisi osveženi
+Kapija 10K: 0 prekršaja. V4 skup (posle rebase na 1f3b39b): 753 prolazi, 14 očekivano pada; typecheck i eslint čisti. Ispisi osveženi
 (12 profila, 24 scenarija, 6 parova, poređenje sa ciljnim).
 
 | t. | stanje | šta |
