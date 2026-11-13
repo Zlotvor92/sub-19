@@ -25,7 +25,7 @@ import {
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate, mondayOf } from './dates';
-import { longReaches, longStepOf, maxWorkOf, minEasyOf, minRampOf } from './decide';
+import { levelMinEasy, longReaches, longStepOf, maxWorkOf, minEasyOf, minRampOf } from './decide';
 import {
   count,
   DAYS,
@@ -795,6 +795,8 @@ export function warnings(input: WarningInput): Warning[] {
     minEasyOf(s, doc.header.decisions.level, doc.header.decisions.runDays.length)
   );
   if (dropped !== null) out.push(dropped);
+  const shortEasy = shortEasyWarning(doc, costs, s);
+  if (shortEasy !== null) out.push(shortEasy);
   const back = returnWarning(doc, state);
   if (back !== null) out.push(back);
   /* O4: tempa po osećaju (dok ne stigne prvi usvojen rezultat) ili obim bez ikakvog podatka. */
@@ -925,6 +927,34 @@ function levelVolumeWarning(
        tražene dane ne koristi sve */
     proposal: `${target > peakKm + 0.5 ? 'Za sledeću pripremu podigni' : 'Podigni'} nedeljni obim laganim trčanjem do oko ${km(target)} (${daysShort ? 'produži lagane dane za 10–15 min' : 'dodaj dan ili produži lagane dane za 10–15 min'}) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.`,
     suggest: { peakWeeklyKm: target }
+  };
+}
+
+/** Z8 (krug 7): traženi dani se poštuju — kad lagan dan padne ispod `minEasyMin` (do `minEasyFallbackMin`), plan to
+    kaže brojevima iz plana: u kojim nedeljama i koliko je prva nedelja. */
+function shortEasyWarning(doc: PlanDoc, costs: readonly WeekCost[], s: DistanceData["safety"]): Warning | null {
+  const { header } = doc;
+  const d = header.decisions;
+  if (!levelMinEasy(s, d.level, d.runDays.length) || s.minEasyFallbackMin === undefined) return null;
+  const want = minEasyOf(s, d.level, d.runDays.length);
+  const ctx = paceCtxOf(header);
+  const short = costs.filter(
+    (c) =>
+      (c.week.intent.kind === 'build' || c.week.intent.kind === 'peak') &&
+      c.week.days.some((x) => x.workout?.kind === 'easy' && summarize(x.workout, ctx).durationSec < want - 90)
+  );
+  if (short.length === 0) return null;
+  const first = short[0]?.week.index ?? 0;
+  const last = short[short.length - 1]?.week.index ?? 0;
+  const span = first === last ? `${String(first)}. nedelji` : `${String(first)}–${String(last)}. nedelji`;
+  const baseKm = (d.baseLoad * 60) / header.paces.easy;
+  const week1 = costs[0]?.km ?? 0;
+  return {
+    code: 'lagan-kratak',
+    severity: 'info',
+    problem: `Tražio si ${count(d.runDays.length, DAYS)} trčanja nedeljno; uz sadašnji obim od oko ${km(baseKm)} lagani dani su u ${span} oko ${String(s.minEasyFallbackMin)} min umesto ${String(Math.round(want / 60))}.`,
+    meaning: `Svi traženi dani ostaju u planu; zato je prva nedelja oko ${km(week1)}, nešto više od sadašnjeg obima.`,
+    proposal: 'Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.'
   };
 }
 

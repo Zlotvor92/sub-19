@@ -191,6 +191,14 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
   const st = f.weekIndex === null ? undefined : stats[f.weekIndex - 1];
   const share = st === undefined || st.durationSec === 0 ? 0 : st.workSec / st.durationSec;
   /* M7 (krug 5): silazak obima je provera obima (najkraći lagani dani ne silaze ispod svog minimuma) */
+  /* Z8 (krug 7): traženi dani uz najkraće lagano (upozorenje lagan-kratak) — nedelja raste preko pravila rasta */
+  const levelMin = hm.safety.minEasyMin?.[b.doc.header.decisions.level];
+  if (
+    f.check === 'skok' &&
+    (b.doc.header.warnings.some((w) => w.code === 'lagan-kratak') ||
+      (levelMin !== undefined && b.doc.header.decisions.runDays.length >= (hm.safety.minEasyFromRunDays ?? 0) && b.doc.header.decisions.baseLoad / b.doc.header.decisions.runDays.length < levelMin + 10))
+  )
+    return 'traženi dani uz najkraće lagano po nivou (Z8)';
   const volume = ['ispod-cilja', 'min-nedelja', 'lagan-dugi', 'prazan', 'skok', 'silazak'].includes(
     f.check
   );

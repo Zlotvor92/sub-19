@@ -216,6 +216,8 @@ export const SAFETY: SafetyNumbers = {
      početnici ostaju na 25 */
   minEasyMin: { brz: 35, srednji: 35, spor: 35, mali: 30, povratnik: 30 },
   minEasyFromRunDays: 5,
+  /* Z8 (krug 7; AGENTS t. 6): traženi dani se poštuju — lagan dan sme do 30 min uz rečenicu (p06) */
+  minEasyFallbackMin: 30,
   /* T6 (krug 6; p08): vršna nedelja nije ispod polaznog obima */
   peakNotBelowBase: true,
   /* P3 (krug 5; trener § 8, p04): usponi najviše 2 od 3 nedelje — treća dobija intervale */

@@ -188,6 +188,8 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   );
   /* M5 (krug 5): najkraće lagano po nivou — jedan dan manje uz upozorenje „dan-izostavljen" */
   const dropOk = doc.header.warnings.some((w) => w.code === 'dan-izostavljen');
+  /* Z8 (krug 7): traženi dani uz najkraće lagano — plan ograničen obimom (M2 se ne meri) */
+  const shortEasy = doc.header.warnings.some((w) => w.code === 'lagan-kratak');
   for (const g of build)
     if (g.workouts !== runDays && !(dropOk && g.workouts === runDays - 1))
       v.push(`n${String(g.index)} ${String(g.workouts)} treninga uz ${String(runDays)} dana`);
@@ -262,7 +264,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   /* 11. M2: nedelja gradnje nivoa sa dva kvaliteta (srednji, brz) ima dva kvaliteta kad šablon traži dva — osim
      nedelje sa proverom forme */
   /* plan sa „dan-izostavljen" (obim ne nosi sve dane, M5; p06) je ograničen obimom, ne zamenom zone */
-  if ((lvl === 'srednji' || lvl === 'brz') && !dropOk)
+  if ((lvl === 'srednji' || lvl === 'brz') && !dropOk && !shortEasy)
     for (const w of doc.weeks) {
       if (w.intent.kind !== 'build' || w.intent.source !== 'template' || w.days.length < 7)
         continue;

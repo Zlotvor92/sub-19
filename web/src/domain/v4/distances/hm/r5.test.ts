@@ -51,20 +51,19 @@ describe('krug 5', () => {
         );
   });
 
-  it('M5: p06 (brz, 5 dana, 35 km) — lagano ≥ 35 min, jedan dan manje uz upozorenje dan-izostavljen', () => {
+  it('Z8 (krug 7, zamenjuje M5): p06 (brz, 5 dana, 35 km) — traženih 5 dana, lagano ≥ 30 min, upozorenje lagan-kratak', () => {
     const b = ALL.find((x) => x.id === 'p06');
     if (b === undefined) throw new Error('p06');
     const ctx = paceCtxOf(b.doc.header);
-    expect(b.doc.header.warnings.map((w) => w.code)).toContain('dan-izostavljen');
+    expect(b.doc.header.warnings.map((w) => w.code)).toContain('lagan-kratak');
+    expect(b.doc.header.warnings.map((w) => w.code)).not.toContain('dan-izostavljen');
     for (const w of b.doc.weeks) {
       if (w.intent.kind !== 'build' && w.intent.kind !== 'peak') continue;
       const runs = w.days.filter((d) => d.workout !== null).length;
-      expect(runs, `n${String(w.index)}`).toBeGreaterThanOrEqual(4);
+      expect(runs, `n${String(w.index)}`).toBe(5);
       for (const d of w.days)
         if (d.workout?.kind === 'easy')
-          expect(summarize(d.workout, ctx).durationSec, d.date).toBeGreaterThanOrEqual(
-            35 * 60 - 0.5 * b.doc.header.paces.easy
-          ); /* dan se zaokružuje na 0,5 km */
+          expect(summarize(d.workout, ctx).durationSec, d.date).toBeGreaterThanOrEqual(30 * 60 - 0.5 * b.doc.header.paces.easy);
     }
   });
 

@@ -92,7 +92,9 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
       expect(km / base, b.id).toBeGreaterThanOrEqual(
         b.doc.header.decisions.runDays.length <= 3 ? 0.9 : 0.95
       );
-      expect(km / base, b.id).toBeLessThanOrEqual(1.05);
+      /* Z8 (krug 7): traženi dani uz najkraće lagano (upozorenje lagan-kratak) — prva nedelja sme preko 105 % */
+      const shortEasy = b.doc.header.warnings.some((w) => w.code === 'lagan-kratak');
+      expect(km / base, b.id).toBeLessThanOrEqual(shortEasy ? 1.2 : 1.05);
     }
   });
 

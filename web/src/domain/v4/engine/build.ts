@@ -660,7 +660,15 @@ function easyFill(
      trčanja, dan je samo lagan; u nedelji sužavanja i trke dodatak ostaje dok je lagani deo bar 10 min. */
   const put = (day: EasyDay, wanted: Seconds): void => {
     const extra = addonCost(day).durationSec;
-    const sec = Math.min(wanted, day.cap - extra);
+    /* sužavanje: dan sa dodatkom ne prelazi isti dan nedelje pre ni posle zaokruživanja lagani dela na 0,5 km */
+    const margin =
+      day.tight &&
+      day.addon !== null &&
+      Number.isFinite(day.cap) &&
+      levelMinEasy(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length)
+        ? 0.5 * ctx.pace.paces.easy
+        : 0;
+    const sec = Math.min(wanted, day.cap - extra - margin);
     const least = day.tight ? Math.min(minEasy, TAPER_ADDON_MIN_EASY_SEC) : minEasy;
     if (day.addon !== null && day.addon.type === 'addon' && sec >= least) {
       out.set(day.date, { ...day.addon, sec, ...capOf(day) });
@@ -688,18 +696,28 @@ function easyFill(
         ...days.filter((d) => !afterQuality.has(d.date)),
         ...days.filter((d) => afterQuality.has(d.date))
       ];
-      /* M5: nivo sa najkraćim laganim po nivou gubi najviše jedan dan nedeljno */
-      const least = byVolume ? days.length - 1 : 0;
+      /* Z8 (krug 7): nivo sa najkraćim laganim po nivou ne gubi dan (traženi dani se poštuju) — lagan dan sme do
+         `minEasyFallbackMin` (plan to kaže rečenicom); ostali nivoi kao do sada */
+      const fallback = Math.max(ctx.data.safety.minEasySec, (ctx.data.safety.minEasyFallbackMin ?? 0) * 60);
+      const least = byVolume ? days.length : 0;
       while (days.length > least && days.length > 0 && over(days)) {
         const drop = dropOrder.shift();
         days = days.filter((d) => d.date !== drop?.date);
       }
+      /* sužavanje i nedelja trke: lagan dan ostaje na najkraćem (ne duži od nedelje pre) */
+      const calm = byVolume && days.every((d) => d.tight);
+      const per =
+        byVolume && days.length > 0
+          ? calm
+            ? minEasy
+            : Math.round(Math.min(minEasy, Math.max(fallback, budget(days) / days.length)) / 60) * 60
+          : minEasy;
       for (const day of days) {
         /* Na najkraćem trčanju dodatak ide preko laganog dela; strog plafon važi samo u sužavanju i nedelji trke. */
-        const free = !day.tight && day.cap >= minEasy;
-        if (free && day.addon !== null && day.addon.type === 'addon') {
-          out.set(day.date, { ...day.addon, sec: minEasy });
-        } else put(day, minEasy);
+        const free = !day.tight && day.cap >= per;
+        if (free && !calm && day.addon !== null && day.addon.type === 'addon') {
+          out.set(day.date, { ...day.addon, sec: per });
+        } else put(day, per);
       }
       return out;
     }
@@ -978,10 +996,11 @@ function layoutOnce(
     const minEasy = minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length);
     /* M5 (krug 5): nivo sa najkraćim laganim po nivou — kvalitet ostaje, a otpada jedan lagan dan (dan manje uz
        rečenicu „dan-izostavljen"), dok ostaju bar dva lagana dana */
-    const spare =
-      levelMinEasy(s, ctx.decisions.level, ctx.decisions.runDays.length) && rest.length >= 3
-        ? minEasy / 60
-        : 0;
+    /* Z8 (krug 7): nivo sa najkraćim laganim po nivou meri pod laganih dana na `minEasyFallbackMin` (dan se ne ispušta) */
+    const fallback = Math.max(s.minEasySec, (s.minEasyFallbackMin ?? 0) * 60);
+    const spare = levelMinEasy(s, ctx.decisions.level, ctx.decisions.runDays.length)
+      ? (rest.length * Math.max(0, minEasy - fallback)) / 60
+      : 0;
     const floor = rest.reduce((sum, x) => sum + minEasy / 60 + addonLoad(x), 0) - spare;
     /* i obim (minuti): kvalitet sa zagrevanjem i hlađenjem ne sme da digne nedelju preko pravila rasta (S2) */
     const volume = week.volumeMin ?? Number.POSITIVE_INFINITY;
