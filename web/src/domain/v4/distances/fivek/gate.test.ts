@@ -73,21 +73,12 @@ function runsAsPlanned(doc: PlanDoc, through: string): Run[] {
 }
 
 describe('kapija 5 km (16 profila)', () => {
-  /* p06 (brz, 25 km, 5 dana, 6 nedelja; lagan-kratak): najkraći lagani dani drže nedelju −2 iznad 85 % vrha — motor
-     (isto kao 10 km p06 B9, zahtev u F7-5K-REPORT); kad motor ispravi, `it.fails` pada i p06 se briše iz spiska */
-  const ENGINE = new Set<string>(['p06']);
-  const numbers = (c: Case): void => {
+  /* krug 11: p06 (brz, 25 km, 5 dana, 6 nedelja) bez izuzetka — silazak po `taper.trimOrder` (lagani, brz trening do
+     najmanje doze, dugi) */
+  it.each(CASES.map((c) => [c.id, c] as const))('%s: brojevi plana', (_id, c) => {
     const s = gateStats(build(c), c.facts);
     expect(s.violations).toEqual([]);
-  };
-  it.each(CASES.filter((c) => !ENGINE.has(c.id)).map((c) => [c.id, c] as const))(
-    '%s: brojevi plana',
-    (_id, c) => numbers(c)
-  );
-  it.fails.each(CASES.filter((c) => ENGINE.has(c.id)).map((c) => [c.id, c] as const))(
-    '%s: brojevi plana — ČEKA MOTOR (nedelja −2 uz lagan-kratak)',
-    (_id, c) => numbers(c)
-  );
+  });
 
   /* „Ništa" → očekivano vreme se ne pogoršava. Planovi kod kojih se to ne drži su `it.fails` sa razlogom (model
      forme, kao kod 10 km — zahtev u F7-5K-REPORT); kad forma bude ispravljena, test pada i spisak se briše. */

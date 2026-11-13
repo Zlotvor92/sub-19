@@ -1989,32 +1989,50 @@ export function runPass(
           : 0;
       };
       let lost = false;
+      const order = data.safety.taper?.trimOrder ?? (['scale', 'easy', 'long'] as const);
+      /* krug 11: brzi treninzi nedelje na najmanjoj dozi (oštrenje nedelje trke ima svoju dozu) */
+      const minDoseSlots = (sl: WeekSlots): WeekSlots =>
+        sl.race
+          ? sl
+          : {
+              ...sl,
+              items: sl.items.map((x) =>
+                x.kind === 'quality'
+                  ? { ...x, wanted: Math.min(x.wanted, minDoseOf(x.def, ctx)) }
+                  : x
+              )
+            };
+      let trimSlots = slots;
       if (!byMinusOne) {
-        for (const step of ['scale', 'easy', 'long'] as const) {
+        for (const step of order) {
           const m = measure();
           if (m.over <= 0) break;
           Object.assign(taperAcc, accBefore);
           const from = Math.min(shell.targetLoad, m.load);
           const f = capVolume / m.volume;
           const longFloor = longFloorOf();
+          /* krug 11: brz trening do najmanje doze (podražaj i dan ostaju), cilj nedelje srazmerno */
+          if (step === 'quality') trimSlots = minDoseSlots(trimSlots);
           shell =
-            step === 'scale'
-              ? {
-                  ...shell,
-                  targetLoad: Math.max(0, Math.round(from * f)),
-                  longSec: Math.max(longFloor, Math.round((shell.longSec * f) / 60) * 60)
-                }
-              : step === 'easy'
-                ? { ...shell, targetLoad: Math.max(0, Math.round(from - m.over)) }
-                : {
+            step === 'quality'
+              ? { ...shell, targetLoad: Math.max(0, Math.round(from * f)) }
+              : step === 'scale'
+                ? {
                     ...shell,
-                    targetLoad: Math.max(0, Math.round(from - m.over)),
-                    longSec: Math.max(
-                      longFloor,
-                      Math.round((shell.longSec - m.over * 60) / 60) * 60
-                    )
-                  };
-          recipes = lay(shell);
+                    targetLoad: Math.max(0, Math.round(from * f)),
+                    longSec: Math.max(longFloor, Math.round((shell.longSec * f) / 60) * 60)
+                  }
+                : step === 'easy'
+                  ? { ...shell, targetLoad: Math.max(0, Math.round(from - m.over)) }
+                  : {
+                      ...shell,
+                      targetLoad: Math.max(0, Math.round(from - m.over)),
+                      longSec: Math.max(
+                        longFloor,
+                        Math.round((shell.longSec - m.over * 60) / 60) * 60
+                      )
+                    };
+          recipes = lay(shell, trimSlots);
           const now = shape(recipes);
           if (now.runs < startShape.runs || now.hard < startShape.hard) {
             lost = true;
@@ -2091,6 +2109,11 @@ export function runPass(
           );
           if (next >= longest || !attempt({ ...shell, easyMaxSec: next })) break;
         }
+        /* krug 11: distanca sa korakom `quality` u redosledu — brz trening do najmanje doze pre skidanja treninga i
+           skraćenja dugog */
+        const qualityFirst =
+          order.includes('quality') && order.indexOf('quality') < order.indexOf('long');
+        if (qualityFirst && measure().over > 0) attempt(shell, minDoseSlots(sl));
         /* dugi: rez koliko treba, a kad bi bio kraći od laganog dana, upola manji (najviše četiri puta) */
         while (measure().over > 0 && shape(recipes).hard > hardWant) {
           const dates = [...recipes.entries()]
@@ -2111,6 +2134,29 @@ export function runPass(
           if (longSec >= shell.longSec) break;
           if (attempt({ ...shell, longSec })) cut = measure().over * 60;
           else cut /= 2;
+        }
+        if (order.includes('quality') && !qualityFirst && measure().over > 0)
+          attempt(shell, minDoseSlots(sl));
+        if (order.includes('quality') && measure().over > 0) {
+          /* krug 11 (`quality` u redosledu): na kraju i najkraće zagrevanje i hlađenje iz podataka (isto kao kad
+             trening ne staje uz tražene dane) */
+          const wc = ctx.data.safety.warmupCooldown;
+          const shortest = wc.reduce(
+            (m, x) => (x.warmupSec + x.cooldownSec < m.warmupSec + m.cooldownSec ? x : m),
+            wc[0] ?? { warmupSec: ctx.decisions.warmupSec, cooldownSec: ctx.decisions.cooldownSec }
+          );
+          const short = new Map(
+            [...recipes].map(([date, r]): [IsoDate, Recipe] => [
+              date,
+              r.type === 'quality' && !sl.race
+                ? {
+                    ...r,
+                    wuCd: { warmupSec: shortest.warmupSec, cooldownSec: shortest.cooldownSec }
+                  }
+                : r
+            ])
+          );
+          if (measure().over > 0 && valid(short)) recipes = short;
         }
       }
     }

@@ -866,6 +866,9 @@ export interface SafetyNumbers {
     lastLongMinBlockSec?: Seconds;
     calendarMinus2MaxQuality?: number;
     raceWeekMaxOfPeak?: number;
+    /** Krug 11: redosled koraka silaska obima (M7) — `scale` cela nedelja srazmerno, `easy` lagani dani, `quality`
+        brzi treninzi do najmanje doze, `long` dugi; bez unosa `['scale', 'easy', 'long']`. */
+    trimOrder?: readonly ('scale' | 'easy' | 'quality' | 'long')[];
   };
   /** Oštrenje nedelje trke (krug 4, S1): podražaj van budžeta brzog rada, doza uvek u [minSec, maxSec]. */
   sharpening?: { stimulus: StimulusTag; minSec: Seconds; maxSec: Seconds };

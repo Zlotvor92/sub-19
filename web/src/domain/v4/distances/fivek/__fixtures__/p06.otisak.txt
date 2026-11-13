@@ -20,7 +20,7 @@
 2026-11-21 | trening | easy | 4.0 | lagano 4 km | - | - | -
 2026-11-22 | trening | long | 8.0 | dugi 8 km lagano | - | - | -
 2026-11-23 | trening | easy | 4.0 | lagano 4 km | - | - | -
-2026-11-24 | trening | quality | 9.7 | tempo trke 5 × 800 m, oporavak 2 min džog | - | - | -
+2026-11-24 | trening | quality | 7.3 | tempo trke 3 × 800 m, oporavak 2 min džog | - | - | -
 2026-11-25 | odmor | - | 0.0 |  | - | - | -
 2026-11-26 | trening | easy | 4.0 | lagano 4 km | - | - | -
 2026-11-27 | odmor | - | 0.0 |  | - | - | -

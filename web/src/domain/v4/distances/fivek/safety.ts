@@ -149,7 +149,10 @@ export const SAFETY: SafetyNumbers = {
     weekBeforeMaxOfPeak: 0.6,
     weekMinus2MaxOfPeak: 0.85,
     calendarMinus2MaxQuality: 2,
-    raceWeekMaxOfPeak: 0.5
+    raceWeekMaxOfPeak: 0.5,
+    /* krug 11: kad su lagani dani i dugi već na najkraćem, silazak skraćuje brz trening do najmanje doze (i
+       najkraćeg zagrevanja i hlađenja); nedelja ne gubi ni dan ni kvalitet (p06: brz, 25 km, 5 dana) */
+    trimOrder: ['scale', 'easy', 'long', 'quality']
   },
   /* lagan dan najmanje 20 min (K8: najkraći trening ≥ 20 min; ciljni p11 3 km ≈ 21 min) */
   minEasySec: 1200,
