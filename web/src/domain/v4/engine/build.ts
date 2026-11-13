@@ -210,8 +210,11 @@ export function longPlan(
   if (week !== undefined && (intent.kind === 'build' || intent.kind === 'peak')) {
     /* D1/D6 (krug 5): dugi ne kreće na plafonu — pod je `longStartFloorShare` × polazni, pa raste za korak po
        nedelji gradnje do polaznog (bez podatka: odmah polazni) */
-    const startFloor = ctx.data.safety.longStartFloorShare;
     const full = Math.min(d.longStartSec, d.longMaxSec);
+    /* P2 (krug 5): 85 % samo kad je polazni dugi na plafonu (≥ `longStartFloorFromCapShare` × najduži dozvoljeni);
+       inače stabilan trkač kreće od onoga što već trči */
+    const atCap = d.longStartSec >= (ctx.data.safety.longStartFloorFromCapShare ?? 0) * d.longMaxSec;
+    const startFloor = atCap ? ctx.data.safety.longStartFloorShare : undefined;
     /* posle polaznog pod raste dalje pola koraka po nedelji gradnje (D1 dopuna: p04 1 h 50 → 2 h 10) */
     /* D6: sa malo dana pod ne raste do polaznog — dugi prati nameru šablona (p08: 20,5+ km samo u završnici) */
     const few = ctx.decisions.runDays.length < (ctx.data.safety.longFloorGrowMinRunDays ?? 0);

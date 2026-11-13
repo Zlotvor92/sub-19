@@ -4,7 +4,7 @@
 2026-11-05 | trening | quality | 9.4 | prag 17 min u komadu | - | - | -
 2026-11-06 | odmor | - | 0.0 |  | - | - | -
 2026-11-07 | trening | easy | 9.5 | lagano 9,5 km | - | - | -
-2026-11-08 | trening | long | 15.0 | dugi 15 km lagano | - | - | -
+2026-11-08 | trening | long | 15.5 | dugi 15,5 km lagano | - | - | -
 2026-11-09 | odmor | - | 0.0 |  | - | - | -
 2026-11-10 | trening | quality | 10.1 | usponi 10 × 1 min snažno uzbrdo, nazad 2 min hod | - | - | -
 2026-11-11 | odmor | - | 0.0 |  | - | - | -

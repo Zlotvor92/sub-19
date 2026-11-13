@@ -742,6 +742,8 @@ export interface SafetyNumbers {
   /** Pod dugog u prvoj nedelji gradnje kao udeo polaznog dugog; raste za korak po nedelji gradnje (krug 5, D1/D6).
       Bez njega dugi gradnje nije ispod polaznog od prve nedelje. */
   longStartFloorShare?: number;
+  /** P2 (krug 5): `longStartFloorShare` važi samo kad je polazni dugi ≥ ovoliki deo najdužeg dozvoljenog. */
+  longStartFloorFromCapShare?: number;
   /** Pod dugog raste do polaznog samo uz bar ovoliko dana; manje dana — pod ostaje `longStartFloorShare` (D6). */
   longFloorGrowMinRunDays?: number;
   /** Pod dugog raste i posle polaznog (pola koraka nedeljno) samo za ove nivoe i bar ovoliko dana (D1). */

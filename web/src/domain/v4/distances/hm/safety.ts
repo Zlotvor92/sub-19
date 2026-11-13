@@ -104,6 +104,9 @@ export const SAFETY: SafetyNumbers = {
   longStepKm: 1.5,
   /* krug 5 (D1, D6; trener § D1): dugi ne kreće na plafonu — 1. nedelja ≈ 85 % najdužeg skorašnjeg, pa raste */
   longStartFloorShare: 0.85,
+  /* P2 (krug 5): 85 % samo kad je polazni dugi na plafonu (≥ 88 % najdužeg dozvoljenog; p08 0,90, p04 0,95) — p01, p12 kreću od
+     najdužeg skorašnjeg */
+  longStartFloorFromCapShare: 0.88,
   /* D6 (p08, 3 dana): pod ne raste do polaznog — 20,5+ km samo u završnici */
   longFloorGrowMinRunDays: 4,
   /* D1 (trener § D1, p04): spor trkač sa 4+ dana — dugi raste i posle polaznog; ostali ne dobijaju duži najduži dugi */
