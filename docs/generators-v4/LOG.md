@@ -651,3 +651,9 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   pripremna trka na dan dugog, uloga „srednje-dugi", spajanje upozorenja, čuvar sužavanja iz podatka.
 - STANJE: HM (krug 9, Opus trener Plan 78,5), 10K (krug 3, Plan 76,9 pre kruga 3), 5K i maraton (bez ocene).
   Krug 10 motora ima 27 stavki. Sledeće: provera kruga 10, pa ocena sve četiri distance (Opus).
+
+### 13. 11. 2026, 17:18 — primopredaja organizatora (Opus `session_01GnHHiWPXbg8CKcY2ux7NvC`)
+- Motor je stao u 15:52 na 5-satnom limitu posle dela 5 kruga 10 (`a358490`); u 17:18 poslato „nastavi i završi
+  krug 10", tab radi. Ostali tabovi obavešteni da završne poruke šalju novom organizatoru.
+- Nalog vlasnika: svi novi tabovi na Opusu. Ocena sve četiri distance čeka kraj kruga 10 (krug menja planove svih
+  distanci; ocena pre toga bi bila bačena). Brief: `briefs/R11-JUDGES.md`.
