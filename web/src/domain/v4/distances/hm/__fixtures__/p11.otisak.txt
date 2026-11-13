@@ -106,9 +106,9 @@
 2027-02-15 | odmor | - | 0.0 |  | - | - | -
 2027-02-16 | trening | easy | 7.1 | lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-17 | odmor | - | 0.0 |  | - | - | -
-2027-02-18 | trening | quality | 4.5 | prag 2 × 4 min, oporavak 2 min džog | - | - | -
+2027-02-18 | trening | quality | 4.4 | prag 9 min u komadu | - | - | -
 2027-02-19 | odmor | - | 0.0 |  | - | - | -
-2027-02-20 | trening | easy | 6.3 | lagano 45 min | - | - | -
+2027-02-20 | trening | easy | 7.0 | lagano 50 min | - | - | -
 2027-02-21 | trening | long | 11.3 | dugi 80 min lagano | - | - | -
 2027-02-22 | odmor | - | 0.0 |  | - | - | -
 2027-02-23 | trening | easy | 7.1 | lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -

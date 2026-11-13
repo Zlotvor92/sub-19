@@ -233,7 +233,8 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'prag-p',
     tags: [],
     impact: 'obican',
-    requires: {},
+    /* krug 12 (podatak HM, trener p11/p12): ne „prag 2 × 4 / 2 × 5 min" — najmanje 2 × 6 min */
+    requires: { minDoseSec: 720 },
     main: { kind: 'split', zone: 'T', pieces: 2, recovery: jog(120), by: 'trajanje' },
     text: 'prag-deonice'
   },

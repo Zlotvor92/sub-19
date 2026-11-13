@@ -697,7 +697,18 @@ function qualityWorkout(
     libraryId: def.id,
     workSec,
     steps,
-    text: textOf(def, FALLBACK_TEXT.quality, { ...main.values, dose: fmtDuration(workSec) }, ctx)
+    /* krug 12 (M14): zagrevanje i hlađenje u tekstu treninga ({wu}, {cd}) — tekst distance odlučuje da li ih navodi */
+    text: textOf(
+      def,
+      FALLBACK_TEXT.quality,
+      {
+        ...main.values,
+        dose: fmtDuration(workSec),
+        wu: fmtMinutes(wuCd?.warmupSec ?? ctx.decisions.warmupSec),
+        cd: fmtMinutes(wuCd?.cooldownSec ?? ctx.decisions.cooldownSec)
+      },
+      ctx
+    )
   };
   return withNotes(workout, def, ctx);
 }
