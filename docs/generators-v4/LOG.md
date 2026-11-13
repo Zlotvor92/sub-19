@@ -400,3 +400,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   obim u nedelji −2 na 89–96 % vrha, kvalitet 2 dana pre provere.
 - ODLUKA: krug 5 po `briefs/R5-ROUND5.md` (M1–M9, P1–P5), isti Opus tab. Posle njega ocena; ako trener Plan ≥ 80 →
   HM zatvoren i otvaraju se 10K/5K/maraton (trener: obrazac je spreman, uslov ispravke 1, 3, 4 = M1–M3).
+
+### 13. 11. 2026, 04:12 — krug 5 primljen (`d89b059`), poslat na ocenu
+- Moj pregled: 602 zeleno + 8 očekivanih padova, typecheck čist, kapija 0 prekršaja, 14/14 (sam pokrenuo) [visoka].
+- Urađeno M1–M8, P1–P5; nije: prvi dugi posle bolesti 60–65 % (s05 ostaje 8,5 km). Pad po briefu: p04 dugi 22,4 → 19,3 km,
+  vrh 68,4 → 65; p12 dugi 19,8 → 19,1 (očekivano 2:00 ulazi u pravilo „sporiji od 1:55").
+- Ocena: trener → `coach/ROUND-V4-HM-05.md` (tražena presuda: da li je HM zatvoren; plafon ulaza za p03/p06/p08/p10);
+  drugi sudija nov Opus tab `session_01GnHHia2YPjrJ6yugYJwfSs` → `judge2/ROUND-V4-HM-05.md`.
+- Arhivirani sudije krugova 3 i 4 (gurnuto).
