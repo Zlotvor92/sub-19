@@ -1015,3 +1015,35 @@ describe('krug 2: specifična faza, rast obima, kratka priprema (B1–B4)', () =
     expect([...missing].sort()).toEqual([...WAIT_A1].sort());
   });
 });
+
+describe('krug 3 (ROUND-V4-10K-02)', () => {
+  const ORDER = ['osnova', 'razvoj', 'posebna', 'zavrsna'];
+  it('faze nikad ne idu unazad: osnova → razvoj → specifična → završnica (svi šabloni)', () => {
+    const bad: string[] = [];
+    for (const t of tenk.templates) {
+      const phases = t.tail.map((w) => ORDER.indexOf(w.phase));
+      for (let i = 1; i < phases.length; i += 1)
+        if ((phases[i] ?? 0) < (phases[i - 1] ?? 0)) {
+          bad.push(`${t.id} n${String(i + 1)}`);
+          break;
+        }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('isti trening tempa trke nije dve nedelje zaredom (12 profila)', () => {
+    const bad: string[] = [];
+    for (const p of RENDERED) {
+      let prev: string[] = [];
+      for (const w of p.doc.weeks) {
+        const rp = w.days
+          .map((d) => d.workout)
+          .filter((x): x is Workout => x?.stimulus === 'tempo-trke')
+          .map((x) => `${x.libraryId ?? ''}:${String(x.workSec)}`);
+        for (const r of rp) if (prev.includes(r)) bad.push(`${p.id} n${String(w.index)} ${r}`);
+        prev = rp;
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});

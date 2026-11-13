@@ -123,3 +123,17 @@ Najmanje odluke: N−5 tempo trke ostaje 5 × 1 km (veća doza lomi R2 u s25: ne
 Posle A1 (854f65d): p02 nedelja −2 ima tempo trke 3 × 1,2 km; p06 svaka nedelja gradnje ima kvalitet (WAIT_A1 prazan).
 Ostaje p06 B9: nedelja −2 26,3 km < nedelja −1 33,3 km (u ned −2 jedan lagan dan izostavljen uz A1, u ned −1 pet laganih po
 30 min) — motor, imenovan u `gate.test` (kapija 1 nalaz, očekivan).
+
+## Krug 3 (ocena trenera `coach/ROUND-V4-10K-02.md`), 13. 11. 2026
+
+Kapija 10K: 0 prekršaja. V4 skup: 751 prolazi, 14 očekivano pada; typecheck i eslint čisti. Ispisi osveženi
+(12 profila, 24 scenarija, 6 parova, poređenje sa ciljnim).
+
+| t. | stanje | šta |
+|---|---|---|
+| 3 faze | urađeno | početnik: N−5 (prag-p, vrh obima) je sada specifična priprema, a rasterećenje u poslednje 3 nedelje tela nosi fazu razvoja — faza više ne ide unazad (p11, p12, P2 A/B: 8 osnova → 3 razvoj → 5 specifična → 2 završnica). Test nad svim šablonima: faze rastu osnova → razvoj → specifična → završnica. |
+| 5 predlog obima | urađeno | jedan izvor: `ADEQUATE.minPeakWeeklyKmByLevel` za sve nivoe (brz 45, srednji 40, spor 35, mali 30, povratnik 35). p02 sada „do oko 40 km", p06 „do oko 45 km" (ranije p02 65 km iz drugog računa). |
+| 6 p10 RP | urađeno | jedan kvalitet (1–3 dana): N−5 je 3 × 1,2 km, ne ponovljen 3 × 1 km iz N−7. p10: 3 × 1 → 3 × 1,2 → 2 × 2 → 3 × 1,6 km → sužavanje. Test: isti trening tempa trke (unos + doza) nije dve nedelje zaredom (12 profila). |
+| 4 P3 A | bez izmene | nedelja 1 je 5 h 24 min ≥ sadašnjih 5 h 19 min; km (45,3 prema ≈ 51) je niži samo zato što se lagani tempo usporava (trkač trči lagano prebrzo — upozorenje to objašnjava); dugi 90 min ≥ trajanja dosadašnjeg. Opterećenje je u minutima (pravilo 5), pa je ovo namerno. |
+| 2 p08 | MOTOR | 3 dana, 18 ned: 38,9 → 45 km (× 1,10), nedelja 1 3 h 47 min prema 3 h 58 min. Šablon traži vrh × 1,45 (bodovi), ali dugi staje na plafonu nivoa 100 min (16–17 km), a lagan dan na 0,8 dugog (≈ 13,5 km / 78 min) — više obima sa 3 dana nema gde da stane. Probao `longMaxSec.srednji` 6600: p08 48 km (× 1,20), dugi 1 h 47, ali p01 (4 dana) dobija dugi 103 min i vrh 55 > 54 km; udeo dugog za 4 dana 0,32–0,325 to vraća, ali p02 tada u N−2 pada sa 9 na 6,5 km (prag u D1/M7). Traži se `longMaxSec` po broju dana (kao `easyMaxShareOfLong`): srednji `{ 3: 6600 }`, ostalo 6000 — vrednost je spremna. |
+| 1 p06 | MOTOR | 8 ned, 5 dana, 30 km: `peakLoad` 226,8 BO (× 1,55), ali ostvaren vrh N−3 je 34,1 km / 2 h 36 min, jer A1 u 4 od 5 nedelja gradnje menja brz trening laganim (5 km / 24 min, pod lakog dana) i ne vraća bodove u dugi. Najveća nedelja ostaje 3. (36,3 km). Dugi u N−2/N−1 32 min (len 0,8/0,62 od plafona 70 min, pa M7 ≤ 85 % vrha skraćuje dugi jer su lagani dani na podu). Probao: brži rast tela do 0,9 (najveća postaje 2. nedelja, skok 31 → 37 km), × 1,3 za 8 ned (M7 prekršaj), len 0,92/0,82 (bez dejstva). Za dugi ≥ 55 min / ≥ 30 % motor treba: bodovi zamenjenog kvaliteta → dugi (do udela), i M7 da skraćuje lagane dane pre dugog. Upozorenje „u 4 od 5 nedelja … zamenjen laganim" je tekst motora i tačno opisuje ispis. |

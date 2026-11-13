@@ -256,7 +256,8 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
           'build',
           0.97,
           { len: 0.95, stimulus: 'dugi-prag', dose: 1 },
-          pair(S('tempo-trke', 0.6, 'rp-1000'), STRIDES)
+          /* jedan kvalitet: drugi oblik (1,2 km), da N−7 i N−5 nisu isti trening (krug 3, p10) */
+          pair(S('tempo-trke', 0.6, sh.single ? 'rp-1200' : 'rp-1000'), STRIDES)
         ),
         /* N−4: gradnja, ne rasterećenje (B1) — tempo trke 4 × 1,6 km + intervali, dugi lagan najduži */
         week(
@@ -338,7 +339,8 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     if (recoveries.has(w)) {
       out.push(
         week(
-          OSNOVA,
+          /* krug 3: faza ne ide unazad — rasterećenje nosi fazu svog mesta */
+          w >= tailStart - 3 ? RAZVOJ : OSNOVA,
           'recovery',
           1,
           { len: lerp(0.7, 0.75, t), stimulus: longStim },
@@ -378,7 +380,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       withSaturday(sh, [STRIDES, STRIDES], KONTROLA)
     ),
     /* N−5: vrh obima, prag 18 min (ciljni p11 ned 13) */
-    week(RAZVOJ, 'build', 0.98, { len: 0.95, stimulus: longStim }, [S('prag-p', 0.95), STRIDES]),
+    week(SPEC, 'build', 0.98, { len: 0.95, stimulus: longStim }, [S('prag-p', 0.95), STRIDES]),
     /* N−4: tempo trke 3 × 1000 m (ciljni p11 ned 14) */
     week(SPEC, 'build', 1, { len: 1 }, [S('tempo-trke', 0.45), STRIDES]),
     /* N−3: najteža — tempo trke 4 × 1000 m, završnih 10 min dugog u tempu trke (ciljni p11 ned 15) */
