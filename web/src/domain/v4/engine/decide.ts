@@ -270,10 +270,37 @@ export interface DecideInput {
   ladder?: PeakLadderInput | null;
   /** Lagani tempo (S3: udeo dugog po obimu). */
   easyPaceSecPerKm?: number;
+  /** Očekivano vreme na dan trke (D3: dugi prema vremenu trke). */
+  raceSec?: Seconds;
+}
+
+/** D3 (krug 5): spor trkač — dugi ≤ vreme trke + `overSec`, blok/progresija u dugom ≤ `blockMaxSec`. */
+function applyLongVsRace(d: Decisions, data: DistanceData, raceSec: Seconds | undefined): Decisions {
+  const r = data.safety.longVsRace;
+  if (r === undefined || raceSec === undefined || raceSec < r.fromRaceSec) return d;
+  const blockTags = new Set(
+    data.library
+      .filter((x) => x.kind === 'long' && (x.main.kind === 'finish-block' || x.main.kind === 'progressive'))
+      .map((x) => x.stimulus)
+  );
+  const doseCapSec: Record<StimulusTag, Seconds> = { ...d.doseCapSec };
+  for (const tag of blockTags) {
+    const cap = doseCapSec[tag];
+    if (cap !== undefined) doseCapSec[tag] = Math.min(cap, r.blockMaxSec);
+  }
+  return {
+    ...d,
+    longMaxSec: Math.min(d.longMaxSec, Math.round((raceSec + r.overSec) / 60) * 60),
+    doseCapSec
+  };
 }
 
 /** Sve odluke plana na jednom mestu, svaka iz svog vlasnika. */
 export function decide(input: DecideInput): Decisions {
+  return applyLongVsRace(decideBase(input), input.data, input.raceSec);
+}
+
+function decideBase(input: DecideInput): Decisions {
   const { data, template, level, baseLoad } = input;
   const peakOverBase = ladderOverBase(data.safety, input.ladder ?? null);
   const peakLoad =

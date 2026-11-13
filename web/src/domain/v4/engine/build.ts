@@ -607,7 +607,9 @@ function taperIntensity(
       if (r.type === 'long') out.set(date, { ...r, dose });
     }
     count += 1;
-    fast += dose;
+    /* ostvaren rad (zaokruženje na komad) — da granica važi za ono što trkač trči */
+    const real = realize(out.get(date) ?? r, ctx);
+    fast += real === null ? dose : real.workSec;
   }
   return out;
 }

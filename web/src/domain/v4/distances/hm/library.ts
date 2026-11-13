@@ -399,7 +399,8 @@ export const LIBRARY: WorkoutDef[] = [
     tags: ['trka'],
     impact: 'obican',
     /* ispod ≈ 25 km nedeljno test 3 km (R17) */
-    requires: { minBaseLoad: 150 },
+    /* krug 5 (D3): trkač po osećaju već ima rani test — drugi test iste dužine se ne zadaje */
+    requires: { minBaseLoad: 150, needsKnownPaces: true },
     main: { kind: 'all-out', distanceM: 5000 },
     text: 'kontrola-5k',
     notes: ['napomena.kontrola']

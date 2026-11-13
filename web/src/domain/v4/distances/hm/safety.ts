@@ -147,6 +147,8 @@ export const SAFETY: SafetyNumbers = {
   /* krug 5 (E4; trener § E4): bol 4/10 — 2 dana odmora i 7–10 dana lagano, kasnije nedelje netaknute; od 5/10
      obim se vraća kao posle pauze */
   painReturnFromLevel: 5,
+  /* krug 5 (D3; trener § D6): trkač sporiji od 2:05 (očekivano na dan trke; p03, p10) — dugi ≤ vreme trke + 5 min, blok u dugom ≤ 35 min */
+  longVsRace: { fromRaceSec: 7500, overSec: 300, blockMaxSec: 2100 },
   taper: { lastDays: 7, weekBeforeFromDays: 14, weekBeforeMaxQuality: 2, weekBeforeMaxOfPeak: 0.6 },
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */

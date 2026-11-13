@@ -760,6 +760,9 @@ export interface SafetyNumbers {
       { maxWorkSec: Seconds | Readonly<Record<LevelId, Seconds>>; shareOfPeakLoad: number }
     >
   >;
+  /** Dugi prema vremenu trke (krug 5, D3): za očekivano vreme ≥ `fromRaceSec` dugi ≤ vreme trke + `overSec`, a blok
+      ili progresija u dugom ≤ `blockMaxSec`. */
+  longVsRace?: { fromRaceSec: Seconds; overSec: Seconds; blockMaxSec: Seconds };
   /** Bol od ovog nivoa vraća obim kao posle pauze; niži menja samo dane u prozoru zaštite (krug 5, E4).
       Podrazumevano 4. */
   painReturnFromLevel?: number;

@@ -179,6 +179,7 @@ export function createPlan(
       runDays: availability.runDays,
       longDay: availability.longDay,
       easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
+      raceSec: state.form.raceDay.expectedSec,
       ladder: ladderInputOf({
         baseLoad,
         easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
