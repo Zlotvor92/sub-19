@@ -556,3 +556,19 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   (kratka provera posle promene tempa); drugi sudija HM `session_01GnHHiZJNd2dzD1evab3sSr` → `judge2/ROUND-V4-HM-08.md`;
   drugi sudija 10K `session_01GnHHiXDoz8PeJi5XdBJQdz` → `judge2/ROUND-V4-10K-01.md`.
 - Napomena: drugi sudija HM je opet Fable → uporediv sa krugom 2 (71,2), ne sa krugovima 3–6 (Opus).
+
+### 13. 11. 2026, 09:40 — OCENA TRENERA: 10K krug 1 i HM provera (`coach/ROUND-V4-10K-01.md`, `ROUND-V4-HM-07.md`) [srednja]
+| | HM (krug 8) | 10K (krug 1) |
+|---|---|---|
+| Plan | 79,3 (8/12 ≥ 80) | 74,8 (2/12 ≥ 80; p06 57) |
+| Prilagođavanje | 83,7 (sa E7 77,7) | 80,7 |
+| Personalizacija | 84,0 | 82,0 |
+| zbirna | 81,6 | 78,0 |
+- 10K: šuplja specifična faza u 16–18 nedelja, p06 neupotrebljiv (kvalitet obrisan u 4/5 nedelja), ravan obim (p04,
+  p08, p12), sužavanje 3 nedelje u planu od 8, prognoza početnika −5,7 %.
+- HM posle lične krive: tempa vlasnika i p01/p02 ispravna; ALI profili sa jedinim rezultatom na polumaratonu dobili
+  I/R 4–6 s/km brže bez dokaza — pogrešan smer za nepoznato (moja odluka od 07:32 je bila preširoka) → A7.
+- Trener: pre 5K obavezno motor A1, A3, A4 i obrazac specifične faze; pre maratona s26, pauza kod 3 dana, rast
+  obima i množilac opterećenja za dugi > 2 h 30.
+- ODLUKA: krug 9 po `briefs/R9-ROUND9.md` — A (motor, Opus tab motora) i B (10K krug 2, Opus tab 10K) uporedo.
+  5K i maraton i dalje čekaju. Zamerke drugog sudije (Fable, HM i 10K) stižu kao dopuna.
