@@ -115,6 +115,8 @@ interface Layout {
   recoveries: Set<number>;
   /** Nedelja pripremne trke/provere (rasterećenje), 0 = bez nje. */
   check: number;
+  /** Y1 (krug 7): ranija provera (N−16) u planu od 16+ nedelja, 0 = bez nje. */
+  early: number;
 }
 
 /** Rasterećenja: N−4, N−8, … unazad, nikad pre 4. nedelje. Provera forme: rasterećenje najbliže 8. nedelji, a
@@ -125,9 +127,13 @@ function layout(n: number, family: Family, every = 4): Layout {
   const candidates = [...recoveries].filter((w) => w <= n - 8);
   let check = 0;
   if (family === 'pocetnik') check = candidates.includes(n - 8) ? n - 8 : 0;
+  else if (n >= 16 && candidates.includes(n - 8)) check = n - 8;
   else if (candidates.length > 0)
     check = candidates.reduce((best, w) => (Math.abs(w - 8) < Math.abs(best - 8) ? w : best));
-  return { recoveries, check };
+  /* Y1 (krug 7): plan od 16+ nedelja ima proveru na svakih ≤ 8 nedelja — ranija je 8 nedelja pre glavne */
+  const early =
+    family !== 'pocetnik' && n >= 16 && check > 0 && recoveries.has(check - 8) ? check - 8 : 0;
+  return { recoveries, check, early };
 }
 
 /* ------------------------------------------------------------------ redovan */
@@ -156,7 +162,7 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   for (let w = 1; w < tailStart; w += 1) {
     const t = (w - 1) / Math.max(1, tailStart - 1);
     if (L.recoveries.has(w)) {
-      if (w === L.check) {
+      if (w === L.check || w === L.early) {
         /* pripremna trka subotom (sa 1–3 dana četvrtak), dugi u nedelju lagan i kratak (p01 ned 8: 12 km) */
         out.push(
           week(
@@ -173,7 +179,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
             dev > 0 ? RAZVOJ : OSNOVA,
             'recovery',
             1,
-            { len: lerp(0.64, 0.73, t) },
+            /* Y2 (krug 7): dužinu određuje `recovery.longFactor` (75 % prethodnog dugog) */
+            { len: 1 },
             /* prvo rasterećenje: rani test 3 km po osećaju subotom (ciljni p12 ned 4) */
             w === firstRecovery
               ? withSaturday(sh, [S('prag', 0.27), STRIDES], EARLY_TEST)
@@ -199,7 +206,7 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     if (w >= devFrom) {
       /* intervali: 17 → 22 → 16 min (ciljni p01, p04; plafon 22 min); nedelja posle pripremne trke nema intervale
          (utorak je 3. dan posle trke, motor ga ionako daje lagano) */
-      const afterRace = w === L.check + 1;
+      const afterRace = w === L.check + 1 || (L.early > 0 && w === L.early + 1);
       if (!afterRace) dev += 1;
       /* krug 4: prva doza 0,5 osnovice — osnovica više nije plafon (S4), a budžet brzog rada (S1) skraćuje vrh */
       const iDose = [0.5, 0.9, 0.72][(Math.max(1, dev) - 1) % 3];
@@ -245,7 +252,8 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
   const head: WeekIntent[] = afterCheck
     ? [
         /* N−7: vrh obima, oporavak od trke (utorak lagan), prag u četvrtak (p01 ned 9) */
-        week(SPEC, 'build', 0.98, { len: 0.87 }, [S('prag', 0.95), STRIDES]),
+        /* Y2 (krug 7): talas kad je dugi na plafonu (p04 ned 13–17 nisu kopije) */
+        week(SPEC, 'build', 0.98, { len: 0.87, wave: 0.85 }, [S('prag', 0.95), STRIDES]),
         /* N−6: prvi blok 6 km + tempo trke 3 × 2 km (p01 ned 10) */
         blockWeek(0.6, 0.66, 0.98),
         /* N−5: najduži lagan dugi, tempo trke 2 × 4 km + prag (p01 ned 11) */
@@ -255,14 +263,21 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
         /* N−7: vrh obima, prvi blok 4 km + tempo trke 2 × 2 km (p04 ned 13) */
         blockWeek(0.45, 0.5, 0.94),
         /* N−6: talas — kraći lagan dugi, tempo trke 2 × 3 km + prag (p04 ned 14) */
-        week(SPEC, 'build', 0.93, { len: 0.81 }, pair(S('prag', 0.8), S('tempo-trke', 0.8))),
+        /* Y2 (krug 7): talas i kad je dugi na plafonu (p04 ned 13–17 nisu kopije) */
+        week(
+          SPEC,
+          'build',
+          0.93,
+          { len: 0.81, wave: 0.85 },
+          pair(S('prag', 0.8), S('tempo-trke', 0.8))
+        ),
         /* N−5: drugi blok 6 km + tempo trke 3 × 2 km (p04 ned 15) */
         blockWeek(0.7, 0.7, 1)
       ];
   return [
     ...head,
     /* N−4: rasterećenje sa malim pragom */
-    week(SPEC, 'recovery', 1, { len: 0.73 }, [S('prag', 0.42), STRIDES]),
+    week(SPEC, 'recovery', 1, { len: 1 }, [S('prag', 0.42), STRIDES]),
     /* N−3: najteža — najveći blok (8–10 km) + tempo trke 6–9 km usred nedelje, četvrtak lagan */
     week(
       SPEC,
@@ -308,7 +323,8 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           OSNOVA,
           'recovery',
           1,
-          { len: lerp(0.55, 0.65, t) },
+          /* Y2 (krug 7): dužinu određuje `recovery.longFactor` (75 % prethodnog dugog) */
+          { len: 1 },
           w === firstRecovery
             ? withSaturday(sh, [STRIDES, STRIDES], EARLY_TEST)
             : [HILLS_SHORT, STRIDES]
@@ -345,7 +361,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       S('tempo-trke', 0.42),
       STRIDES
     ]),
-    week(SPEC, 'recovery', 1, { len: 0.74 }, [S('prag-p', 0.35), STRIDES]),
+    week(SPEC, 'recovery', 1, { len: 1 }, [S('prag-p', 0.35), STRIDES]),
     /* N−3: najteža — najduži dugi sa blokom 5 km, tempo trke 4–6 km */
     week(SPEC, 'peak', 1, { len: 1, stimulus: 'dugi-rp', dose: 0.6 }, [
       S('tempo-trke', 0.84),
@@ -391,7 +407,8 @@ function makeTemplate(
     tail,
     body: [],
     recoveryEvery: 0,
-    recovery: { loadFactor: 0.8, longFactor: 0.8, doseFactor: 0.65 }
+    /* Y2 (krug 7): obično rasterećenje — dugi 75 % prethodnog (trener: 70–75 %), nedelja 76 % cilja */
+    recovery: { loadFactor: 0.76, longFactor: 0.75, doseFactor: 0.65 }
   };
 }
 

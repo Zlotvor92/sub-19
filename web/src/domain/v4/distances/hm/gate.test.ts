@@ -94,7 +94,8 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
     'p02',
     'p03',
     /* p07 skinut u krugu 5 (R5): posle M7/P1 očekivano vreme se ne pogoršava */
-    /* p06 skinut u krugu 7 (Z8: 5 dana) — očekivano vreme se ne pogoršava */
+    /* krug 7: p06 skinut posle Z8 (5 dana), vraćen posle Y2 (rasterećenje: dugi 75 % prethodnog) — 1 s */
+    'p06',
     /* krug 5 (P3): p04 1 s (intervali u 3. nedelji umesto uspona menjaju pripisani napredak) */
     'p04',
     'p08',

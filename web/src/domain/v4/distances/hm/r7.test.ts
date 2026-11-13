@@ -67,11 +67,18 @@ describe('krug 7 — Z7: upozorenje ne krivi ono što plan sam ograničava', () 
     expect(proposals).toBeGreaterThan(0);
   });
 
-  it('kad duža priprema ne pomaže, imenuje se uzrok (p10: broj dana), bez „planiraj"', () => {
-    const p10 = ALL.find((b) => b.id === 'p10');
-    const w = p10?.doc.header.warnings.find((x) => x.code === 'mali-obim');
-    expect(w?.proposal).toMatch(/Duža priprema ovde ne pomaže: obim ograničava broj dana/);
-    expect(w?.proposal).not.toMatch(/planiraj/);
+  it('kad duža priprema ne pomaže, imenuje se uzrok, bez „planiraj"; probni plan +16 nedelja i dalje ima nalaz', () => {
+    for (const b of ALL)
+      for (const w of b.doc.header.warnings) {
+        if (!w.proposal.includes('Duža priprema ovde ne pomaže')) continue;
+        expect(w.proposal, b.id).toMatch(/ograničava broj dana|sadašnjeg obima|nedeljni obim/);
+        expect(w.proposal, b.id).not.toMatch(/planiraj \d+ nedelj/);
+        const later = { ...b.goal, raceDate: addDays(b.goal.raceDate, 7 * 16) };
+        expect(
+          make(b.facts, later).header.warnings.map((x) => x.code),
+          b.id
+        ).toContain(w.code);
+      }
   });
 
   it('prag nalaza ima toleranciju zaokruživanja (5 %): ni jedan nalaz o obimu/dugom kad je plan ≥ 95 % praga', () => {
@@ -103,6 +110,61 @@ describe('krug 7 — Z7: upozorenje ne krivi ono što plan sam ograničava', () 
       const all = b.doc.header.warnings.map((w) => w.proposal).join(' ');
       const ns = new Set([...all.matchAll(/planiraj (\d+) nedelj/g)].map((m) => m[1]));
       expect(ns.size, b.id).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe('krug 7 — Y1/Y2: podaci polumaratona', () => {
+  it('Y1: plan od 16+ nedelja ima proveru na svakih ≤ 8 nedelja, poslednju najkasnije 3 nedelje pred trku', () => {
+    for (const b of ALL) {
+      const n = b.doc.weeks.length;
+      if (n < 16) continue;
+      const checks = b.doc.weeks
+        .filter((w) => w.days.some((d) => d.workout?.kind === 'test'))
+        .map((w) => w.index);
+      expect(checks.length, b.id).toBeGreaterThan(0);
+      for (let i = 1; i < checks.length; i += 1)
+        expect(
+          (checks[i] ?? 0) - (checks[i - 1] ?? 0),
+          `${b.id} ${checks.join(',')}`
+        ).toBeLessThanOrEqual(8);
+      const last = checks[checks.length - 1] ?? 0;
+      expect(last, b.id).toBeLessThanOrEqual(n - 3);
+      expect(n - last, `${b.id} ${checks.join(',')}`).toBeLessThanOrEqual(8);
+    }
+  });
+
+  it('Y2: rasterećenje ≤ 85 % prethodne nedelje; obično rasterećenje: dugi 70–75 % prethodnog (±0,5 km)', () => {
+    for (const b of ALL) {
+      const ctx = paceCtxOf(b.doc.header);
+      const costs = b.doc.weeks.map((w) => weekCost(w, b.goal.raceDate, ctx));
+      for (let i = 1; i < costs.length; i += 1) {
+        const w = b.doc.weeks[i];
+        const prev = costs[i - 1];
+        const cur = costs[i];
+        if (w?.intent.kind !== 'recovery' || prev === undefined || cur === undefined) continue;
+        if (w.start < b.doc.header.startDate || i < 3) continue;
+        expect(cur.km, `${b.id} n${String(w.index)}`).toBeLessThanOrEqual(0.85 * prev.km + 0.5);
+        if (w.days.some((d) => d.workout?.kind === 'test')) continue;
+        expect(cur.longKm, `${b.id} n${String(w.index)}`).toBeLessThanOrEqual(
+          0.75 * prev.longKm + 0.5
+        );
+        expect(cur.longKm, `${b.id} n${String(w.index)}`).toBeGreaterThanOrEqual(
+          0.7 * prev.longKm - 0.5
+        );
+      }
+    }
+  });
+
+  it('Y2: p04 ned 13–17 nisu kopije (dugi nije isti u svim nedeljama gradnje); p08 talas vidljiv', () => {
+    for (const id of ['p04', 'p08']) {
+      const b = ALL.find((x) => x.id === id);
+      if (b === undefined) throw new Error(id);
+      const ctx = paceCtxOf(b.doc.header);
+      const longs = b.doc.weeks
+        .filter((w) => w.index >= 13 && w.index <= 17 && w.intent.kind !== 'recovery')
+        .map((w) => Math.round(weekCost(w, b.goal.raceDate, ctx).longSec / 300));
+      expect(new Set(longs).size, `${id} ${longs.join(',')}`).toBeGreaterThan(1);
     }
   });
 });

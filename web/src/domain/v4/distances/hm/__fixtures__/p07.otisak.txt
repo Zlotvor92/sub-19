@@ -19,12 +19,12 @@
 2026-11-20 | odmor | - | 0.0 |  | - | - | -
 2026-11-21 | trening | easy | 11.5 | lagano 11,5 km | - | - | -
 2026-11-22 | trening | long | 20.5 | dugi 20,5 km, završni deo 6 km u tempu trke | - | - | -
-2026-11-23 | trening | easy | 11.5 | lagano 11,5 km | - | - | -
+2026-11-23 | trening | easy | 12.0 | lagano 12 km | - | - | -
 2026-11-24 | trening | quality | 15.5 | tempo trke 3 × 3 km, oporavak 1:30 džog | - | - | -
 2026-11-25 | odmor | - | 0.0 |  | - | - | -
 2026-11-26 | trening | quality | 14.0 | prag 2 × 18 min, oporavak 1:30 džog | - | - | -
 2026-11-27 | odmor | - | 0.0 |  | - | - | -
-2026-11-28 | trening | easy | 11.5 | lagano 11,5 km | - | - | -
+2026-11-28 | trening | easy | 12.0 | lagano 12 km | - | - | -
 2026-11-29 | trening | long | 18.5 | dugi 18,5 km lagano | - | - | -
 2026-11-30 | trening | easy | 12.0 | lagano 12 km | - | - | -
 2026-12-01 | trening | quality | 14.0 | prag 2 × 18 min, oporavak 1:30 džog | - | - | -
@@ -33,13 +33,13 @@
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
 2026-12-05 | trening | easy | 12.0 | lagano 12 km | - | - | -
 2026-12-06 | trening | long | 21.0 | dugi 21 km, završni deo 9 km u tempu trke | - | - | -
-2026-12-07 | trening | easy | 10.0 | lagano 10 km | - | - | -
-2026-12-08 | trening | easy | 10.0 | lagano 9 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-07 | trening | easy | 9.5 | lagano 9,5 km | - | - | -
+2026-12-08 | trening | easy | 9.5 | lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
 2026-12-10 | trening | quality | 10.5 | prag 21 min u komadu | - | - | -
 2026-12-11 | odmor | - | 0.0 |  | - | - | -
-2026-12-12 | trening | easy | 10.0 | lagano 10 km | - | - | -
-2026-12-13 | trening | long | 16.5 | dugi 16,5 km lagano | - | - | -
+2026-12-12 | trening | easy | 9.5 | lagano 9,5 km | - | - | -
+2026-12-13 | trening | long | 15.5 | dugi 15,5 km lagano | - | - | -
 2026-12-14 | trening | easy | 12.0 | lagano 12 km | - | - | -
 2026-12-15 | trening | quality | 14.3 | prag 3 × 12 min, oporavak 1:30 džog | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -
