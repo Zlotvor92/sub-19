@@ -109,16 +109,16 @@ Tempo trke u treninzima je tvoja današnja forma (4:11/km). Tvoj cilj 2:59:00 tr
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
   Zbir: 100,6 km, 8 h 7 min, 6 treninga, brz rad 13 % vremena trčanja
 
-9. NEDELJA (od 28. 12.) — razvoj, rasterećenje; do trke 9 nedelja
-  pon 28. 12.  lagano 7,5 km — 7,5 km, 37 min
-  uto 29. 12.  lagano 7,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,7 km, 43 min
-  sre 30. 12.  lagano 7,5 km — 7,5 km, 37 min
-  čet 31. 12.  lagano 7,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,7 km, 43 min
+9. NEDELJA (od 28. 12.) — razvoj, gradnja; do trke 9 nedelja
+  pon 28. 12.  lagano 13 km — 13 km, 65 min
+  uto 29. 12.  lagano 13 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 14,2 km, 70 min
+  sre 30. 12.  lagano 13 km — 13 km, 65 min
+  čet 31. 12.  lagano 13 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 14,2 km, 70 min
   pet 1. 1.  odmor
-  sub 2. 1.  lagano 7,5 km — 7,5 km, 37 min
-  ned 3. 1.  pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju — 28,1 km, 1 h 59 min
-      napomena: Proba trke: doručak, oprema i gelovi tačno kao na maratonu. Rezultat postaje nova forma; sledeća nedelja je bez brzih treninga.
-  Zbir: 68 km, 5 h 16 min, 6 treninga, brz rad 27 % vremena trčanja
+  sub 2. 1.  lagano 13 km — 13 km, 65 min
+  ned 3. 1.  pripremna trka: polumaraton punim naporom, ravnomerno — 28,1 km, 1 h 59 min
+      napomena: Trči ga kao trku: prva 3 km mirno, zatim ravnomerno najjače što možeš do kraja. To je i proba maratona — doručak, oprema i gelovi tačno kao na maratonu. Rezultat postaje nova forma (tempo maratona i prognoza); sledeća nedelja je bez brzih treninga.
+  Zbir: 95,5 km, 7 h 34 min, 6 treninga, brz rad 19 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — razvoj, gradnja; do trke 8 nedelja
   pon 4. 1.  lagano 14,5 km — 14,5 km, 72 min
@@ -221,6 +221,6 @@ Tempo trke u treninzima je tvoja današnja forma (4:11/km). Tvoj cilj 2:59:00 tr
   ned 7. 3.  TRKA: maraton
       napomena: Tempo za trku: 4:15/km (tvoj cilj 2:59:00).
       napomena: Prvih 5–10 km trči 4:20–4:25/km, mirno, iako ti se čini lako; od 10. do 32. km 4:15/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
-      napomena: Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
+      napomena: Ishrana na trci: gel svakih 35–40 min od 35. minuta, kao na dugim, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
       napomena: Posle trke: 16 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 35,5 km, 2 h 55 min, 5 treninga + trka, brz rad 5 % vremena trčanja
