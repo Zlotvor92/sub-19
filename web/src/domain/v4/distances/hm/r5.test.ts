@@ -6,12 +6,14 @@ import {
   guard,
   paceCtxOf,
   plan,
+  renderPlan,
   summarize,
   type Goal,
   type PlanDoc,
   type RunnerFacts
 } from '../../engine';
 import { racePace } from '../../engine/vdot';
+import { weekCost } from '../../engine/guard';
 import { estimateForm } from '../../fitness';
 import { hm } from './index';
 import { OWNER_PLANS } from './testdata/owner';
@@ -110,5 +112,16 @@ describe('krug 5', () => {
         guard(b.doc, b.state, hm).filter((f) => f.check === 'silazak'),
         b.id
       ).toEqual([]);
+  });
+
+  it('Z9 (krug 7): „vršna nedelja" u ispisu je nedelja sa najvećim obimom plana', () => {
+    for (const b of ALL) {
+      const text = renderPlan(b.doc, b.state, hm);
+      const ctx = paceCtxOf(b.doc.header);
+      const kms = b.doc.weeks.map((w) => (w.intent.kind === 'race' ? 0 : weekCost(w, b.doc.header.goal.raceDate, ctx).km));
+      const peak = kms.indexOf(Math.max(...kms)) + 1;
+      const labeled = [...text.matchAll(/^(\d+)\. NEDELJA[^\n]*vršna nedelja/gm)].map((m) => Number(m[1]));
+      expect(labeled, b.id).toEqual([peak]);
+    }
   });
 });

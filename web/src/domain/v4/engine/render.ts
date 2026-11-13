@@ -415,14 +415,21 @@ export function renderPlan(
     (h.adjustments ?? []).some((a) => a.kind === 'pause' && a.from <= date && date <= a.to);
   const past = (day: PlanDay): boolean =>
     today !== undefined && (day.date < today || (day.date === today && paused(day.date)));
-  for (const week of doc.weeks) {
+  /* Z9 (krug 7): „vršna nedelja" je nedelja sa najvećim obimom plana (ne oznaka šablona) */
+  const kms = doc.weeks.map((w) => (w.intent.kind === 'race' ? 0 : weekCost(w, h.goal.raceDate, ctx).km));
+  const peakAt = kms.indexOf(Math.max(...kms));
+  for (const [wi, week] of doc.weeks.entries()) {
     const cost = weekCost(week, h.goal.raceDate, ctx);
     const toRace = Math.max(0, Math.round(diffDays(mondayOf(h.goal.raceDate), week.start) / 7));
     const phase = data.texts[`faza.${week.intent.phase}`];
+    const raw: WeekKind =
+      week.intent.kind === 'peak' && wi !== peakAt
+        ? 'build'
+        : wi === peakAt && week.intent.kind === 'build'
+          ? 'peak'
+          : week.intent.kind;
     const kind: WeekKind =
-      week.intent.kind === 'build' && toRace >= 1 && toRace <= LATE_BUILD_WEEKS
-        ? 'taper'
-        : week.intent.kind;
+      raw === 'build' && toRace >= 1 && toRace <= LATE_BUILD_WEEKS ? 'taper' : raw;
     const label = phase === undefined ? KIND_LABEL[kind] : `${phase}, ${KIND_LABEL[kind]}`;
     const until = toRace === 0 ? '' : `; do trke ${count(toRace, WEEKS)}`;
     lines.push('');
