@@ -272,3 +272,5 @@ export const MOVED_TEST_MIN_DAYS_BEFORE_RACE = 21;
 export const RETURN_LONG_JUMP_SHARE = 1.25;
 export const RETURN_LONG_JUMP_SEC = 1200;
 export const RETURN_WEEK_JUMP_SHARE = 1.2;
+/** R2 (krug 6): prvi dugi posle prekida (pauza, bol) najmanje 62 % poslednjeg dugog pre njega (trener: 60–65 %). */
+export const RETURN_FIRST_LONG_SHARE = 0.62;

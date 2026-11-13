@@ -11,6 +11,7 @@ import {
   RETURN_TEST_AFTER_RAMP_DAYS,
   MOVED_TEST_MIN_DAYS_BEFORE_RACE,
   RESTORE_PEAK_AFTER_DAYS,
+  RETURN_FIRST_LONG_SHARE,
   RP_TEST_GAP_DAYS,
   TAPER_BLOCK_SHARE,
   RETURN_WEEK_MAX_OVER_LAST,
@@ -1334,9 +1335,21 @@ function shortenLong(
         summarize(w, ctx.pace).durationSec * ratio
       ) / 60
     ) * 60;
+  /* R2 (krug 6): prvi dugi posle prekida najmanje `RETURN_FIRST_LONG_SHARE` poslednjeg dugog pre njega (s05: 60–65 %,
+     ne 46 %) — ne duži od onoga što spremnost dozvoljava */
+  const was = summarize(w, ctx.pace).durationSec;
+  const before = Math.max(
+    0,
+    ...(header.adjustments ?? []).map((a) => {
+      const win = adjustmentWindow(a);
+      const last = 'lastLongSec' in a ? (a.lastLongSec ?? 0) : 0;
+      return win !== null && win.from <= day.date && day.date <= win.rampEnd ? last : 0;
+    })
+  );
+  const floor = Math.min(was, Math.round((RETURN_FIRST_LONG_SHARE * before) / 60) * 60);
   const recipe: Recipe = {
     type: 'long',
-    sec,
+    sec: Math.max(sec, floor),
     def,
     dose: Math.round(w.workSec * ratio),
     slot: null

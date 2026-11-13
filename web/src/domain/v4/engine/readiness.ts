@@ -240,9 +240,11 @@ export function modsFor(
         const requalified = since.some(
           (x) => x.key === PLAIN_LONG && (x.sec ?? 0) >= BLOCK_GATE_SHARE * ramp.lastLongSec
         );
-        if (!requalified) m.block = false;
         const blocks = since.filter((x) => x.key.startsWith('long:')).length;
-        m.blockStep = m.blockStep === null ? blocks : Math.min(m.blockStep, blocks);
+        /* R3 (krug 6): u rampi blok otpada; posle rampe se ne briše nego kreće od najmanjeg koraka */
+        if (!requalified && n <= Math.max(ramp.days, ramp.noFast)) m.block = false;
+        const step = requalified ? blocks : 0;
+        m.blockStep = m.blockStep === null ? step : Math.min(m.blockStep, step);
       }
       if (n >= 1 && n <= ramp.noFast) noFast();
       const end = Math.max(ramp.days, ramp.noFast);
