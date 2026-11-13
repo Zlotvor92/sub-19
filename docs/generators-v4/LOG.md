@@ -665,3 +665,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Ocena nad `02e06e1` (worktree, motor menja samo 5K): trener `…XrqBkKYzMY76jQDiz` HM-10, 10K-03, MAR-01; drugi
   sudije (novi, Opus): HM `session_01GnHHiaTUbSvmATwkEduLam`, 10K `session_01GnHHiXRUD5L3q5JLaUCijS`, maraton
   `session_01GnHHiaFsqKbWHxksWAN7pH`. 5K se ocenjuje posle kruga 11.
+
+### 13. 11. 2026, 18:15 — OCENE R11 (stanje `02e06e1`) i nalog R12
+- Trener: HM Plan 78,7 / B 82,1 / C 83,7 → 80,7 (zatvara uz uslov M1); 10K 77,1 / 80,7 / 83,0 → 79,4; MAR 76,2 /
+  77,8 / 80,3 → 77,5. Drugi sudija (planovi): HM 70,0 (p06 63), 10K 68,8 (p06 51, p02 62, p10 64), MAR 63,6 (p13 40,
+  p19 50, p03/p10 55). Oba druga sudije (10K, MAR) priznala da su videla zaglavlja parova pre očekivanja → parovi
+  manje pouzdani.
+- Zajedničko oba sudije: povratak posle 5–7 dana predug i preplitak (k10 preoštro: HM s06 ned 17 64,8 → 40,2 km);
+  izmena tempa bez rečenice; maraton bez pravog dugog kod malog obima.
+- Nalog R12 (`briefs/R12.md`): motor M1–M11 + HM podatak (posle kruga 11); 10K tab T1–T5; maraton tab R1–R6.
