@@ -87,7 +87,7 @@ export function rampOf(adj: Adjustment): Ramp | null {
       if (length < PAUSE_MIN_DAYS) return null;
       return {
         zero: adj.to,
-        days: pauseRampDays(length, adj.reason),
+        days: adj.rampDays ?? pauseRampDays(length, adj.reason),
         noFast: 0,
         lastLongSec: adj.lastLongSec ?? 0,
         gate: length >= BLOCK_GATE_PAUSE_DAYS,

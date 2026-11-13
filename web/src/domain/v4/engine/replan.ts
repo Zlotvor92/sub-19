@@ -27,6 +27,7 @@ import {
   RETURN_LONG_JUMP_SHARE,
   TAIL_MAX_DAYS,
   RETURN_WEEK_JUMP_SHARE,
+  LATE_PAUSE_MIN_RAMP_DAYS,
   NO_TEST_AFTER_RACE_DAYS,
   OLD_RESULT_SILENT_DAYS,
   LOST_WEEKS_MIN,
@@ -538,19 +539,33 @@ function onPause(
   if (!isValidDate(ev.from) || !isValidDate(ev.to)) return null;
   const length = pauseLength(ev.from, ev.to);
   if (length < PAUSE_MIN_DAYS) return null;
+  /* krug 10 (stavka 5): kasna bolest — rampa se završava pre nedelje pred trkom (ta nedelja je sužavanje sa oštrenjem
+     u tempu trke, ne pet kratkih laganih trčanja) */
+  const minusOneStart = addDays(mondayOf(doc.header.goal.raceDate), -7);
+  const normalRamp = pauseRampDays(pauseLength(ev.from, ev.to), ev.reason);
+  const shortRamp =
+    addDays(ev.to, normalRamp) >= minusOneStart
+      ? Math.max(LATE_PAUSE_MIN_RAMP_DAYS, diffDays(addDays(minusOneStart, -1), ev.to))
+      : null;
   const adj: Adjustment = {
     kind: 'pause',
     source: ev.id,
     from: ev.from,
     to: ev.to,
     reason: ev.reason,
-    lastLongSec: lastLongBefore(state, ev.from)
+    lastLongSec: lastLongBefore(state, ev.from),
+    ...(shortRamp !== null && shortRamp < normalRamp ? { rampDays: shortRamp } : {})
   };
   let header = withAdjustment(doc.header, adj);
   const full = length >= PAUSE_FULL_REPLAN_DAYS;
   if (full)
     header = { ...header, decisions: redecide(header.decisions, state, data, header.paces.easy) };
-  const rampEnd = addDays(ev.to, pauseRampDays(length, ev.reason));
+  const rampEnd = addDays(
+    ev.to,
+    adj.kind === 'pause' && adj.rampDays !== undefined
+      ? adj.rampDays
+      : pauseRampDays(length, ev.reason)
+  );
   /* Krug 10: kratka pauza menja samo prozor (pauza + rampa); van njega ostaje prvobitan plan, a izlazak iz prozora
      je geometrijski (`smoothExit`: nedelja ≤ 1,2 × prethodne, dugi ≤ + 25 % / + 20 min) dok nedelja ne stane — od te
      nedelje plan je bajt-isti prvobitnom. Duga pauza (≥ `PAUSE_FULL_REPLAN_DAYS`) preračunava ostatak od nove baze. */
@@ -1421,7 +1436,15 @@ function explain(
         const text = `${what} i pokriva dan trke (${fmtDate(raceDate)}): treninzi do trke su izostavljeni. Ako trku trčiš, upiši kraću pauzu; ako je pomeraš, promeni datum trke.`;
         return { day: text, late: text, week: text, header: text };
       }
-      const rampLast = addDays(ev.to, pauseRampDays(length, ev.reason));
+      const own = (c.doc.header.adjustments ?? []).find(
+        (a) => a.kind === 'pause' && a.source === ev.id
+      );
+      const rampLast = addDays(
+        ev.to,
+        own?.kind === 'pause' && own.rampDays !== undefined
+          ? own.rampDays
+          : pauseRampDays(length, ev.reason)
+      );
       const rampEnd = fmtDate(rampLast < raceDate ? rampLast : addDays(raceDate, -1));
       const test = movedTest(before, c.doc, state.today);
       /* provera koja je pala u pauzu takođe „je bila" (M4) */

@@ -328,13 +328,16 @@ describe('E: plan koji počinje u rampi posle trke', () => {
       summarize(days(after.doc).find((d) => d.date === date)?.workout ?? null, ctx).durationSec;
     /* 22. 11.: n = 7, f = 0,68 → plafon 75 % od 61 min; 29. 11.: n = 14, f = 0,96 → bez plafona. */
     expect(sec('2026-11-22')).toBeLessThanOrEqual(0.75 * 3636 + 1);
-    expect(km('2026-11-22')).toBeGreaterThanOrEqual(6.5);
+    /* krug 10 (stavka 5): druga nedelja posle trke na ciljnoj dužini — dugi ≤ 70 % planiranog */
+    expect(km('2026-11-22')).toBeGreaterThanOrEqual(5);
     expect(km('2026-11-22')).toBeLessThanOrEqual(8);
     expect(sec('2026-11-29')).toBeGreaterThan(0.75 * 3636);
-    expect(km('2026-11-29')).toBeGreaterThanOrEqual(9.5);
+    /* krug 10: raste po R2 od skraćenog dugog druge nedelje posle trke */
+    expect(km('2026-11-29')).toBeGreaterThanOrEqual(7.5);
     expect(km('2026-11-29')).toBeLessThanOrEqual(11.5);
     expect(km('2026-12-06')).toBeGreaterThanOrEqual(km('2026-11-29'));
-    expect(km('2026-12-06') - km('2026-11-29')).toBeLessThanOrEqual(2.5);
+    /* R2: + 20 min laganog trčanja je oko 3 km */
+    expect(km('2026-12-06') - km('2026-11-29')).toBeLessThanOrEqual(3.5);
     const history: Run[] = [
       { id: 'dugi', date: '2026-11-01', distanceM: 18000, durationSec: 6400 },
       race

@@ -12,6 +12,9 @@ import {
   RACE_EVE_MAX_SEC,
   RACE_NO_LONG_DAYS,
   RETURN_TEST_AFTER_RAMP_DAYS,
+  AFTER_GOAL_RACE_LONG_SHARE,
+  GOAL_RACE_EFFORT_SHARE,
+  LATE_PAUSE_SHARPEN_MAX_SEC,
   MOVED_TEST_MIN_DAYS_BEFORE_RACE,
   RESTORE_PEAK_AFTER_DAYS,
   RETURN_FIRST_LONG_SHARE,
@@ -2035,7 +2038,13 @@ export function runPass(
         /* nedelja −1 ne nosi više brzih treninga od nedelje pre sebe (višak ide pre skraćenja dugog) */
         const hardWant =
           byMinusOne && lastBuiltHard !== null
-            ? Math.min(startShape.hard, lastBuiltHard)
+            ? Math.min(
+                startShape.hard,
+                /* krug 10: posle kasne bolesti nedelja −1 zadržava oštrenje i kad −2 nema kvalitet */
+                adjustments.some((a) => a.kind === 'pause' && a.rampDays !== undefined)
+                  ? Math.max(1, lastBuiltHard)
+                  : lastBuiltHard
+              )
             : startShape.hard;
         let sl = slots;
         const valid = (rs: ReadonlyMap<IsoDate, Recipe>): boolean => {
@@ -2104,6 +2113,51 @@ export function runPass(
           else cut /= 2;
         }
       }
+    }
+    /* krug 10 (stavka 5): posle trke na ciljnoj dužini (pun napor ≥ 80 % današnjeg vremena trke) dugi u drugoj
+       nedelji ≤ `AFTER_GOAL_RACE_LONG_SHARE` planiranog, a nikad kraći od najdužeg laganog dana + 5 min */
+    {
+      const goalRace = adjustments.find(
+        (a) =>
+          a.kind === 'effort' &&
+          a.planned !== true &&
+          a.durationSec >= GOAL_RACE_EFFORT_SHARE * header.form.current.raceTimeSec &&
+          week.start > addDays(a.date, 7) &&
+          week.start <= addDays(a.date, 14)
+      );
+      if (goalRace !== undefined) {
+        let easiest = 0;
+        let longDate: IsoDate | null = null;
+        for (const [date, r] of recipes) {
+          if (r.type === 'easy' || r.type === 'addon')
+            easiest = Math.max(easiest, summarize(realize(r, ctx), ctx.pace).durationSec);
+          if (r.type === 'long') longDate = date;
+        }
+        const lr = longDate === null ? undefined : recipes.get(longDate);
+        if (longDate !== null && lr !== undefined && lr.type === 'long') {
+          const cap = Math.max(
+            Math.round((AFTER_GOAL_RACE_LONG_SHARE * lr.sec) / 60) * 60,
+            Math.ceil((easiest + 300) / 60) * 60
+          );
+          if (cap < lr.sec) {
+            const next = new Map(recipes);
+            next.set(longDate, { ...lr, sec: cap, dose: Math.min(lr.dose, cap / 2) });
+            recipes = next;
+          }
+        }
+      }
+    }
+    /* krug 10 (stavka 5): posle kasne bolesti (skraćena rampa) nedelja pred trkom zadržava samo oštrenje u tempu trke
+       — doza ≤ `LATE_PAUSE_SHARPEN_MAX_SEC` */
+    if (
+      week.start === addDays(mondayOf(span.raceDate), -7) &&
+      adjustments.some((a) => a.kind === 'pause' && a.rampDays !== undefined)
+    ) {
+      const next = new Map(recipes);
+      for (const [date, r] of recipes)
+        if (r.type === 'quality' && r.dose > LATE_PAUSE_SHARPEN_MAX_SEC)
+          next.set(date, { ...r, dose: LATE_PAUSE_SHARPEN_MAX_SEC });
+      recipes = next;
     }
     /* Odluka organizatora (krug 9b, umesto A15): dan posle provere forme je lagano trčanje ≤
        `AFTER_TEST_EASY_MAX_OF_LONG` prethodnog dugog — ne „dugi" */

@@ -343,6 +343,9 @@ export type Adjustment =
       to: IsoDate;
       reason?: Pause['reason'];
       lastLongSec?: Seconds;
+      /** Krug 10 (stavka 5): kraća rampa kad pauza završi blizu trke — rampa se završava pre nedelje pred trkom, da
+          ta nedelja zadrži sužavanje sa oštrenjem u tempu trke. Bez polja: `pauseRampDays`. */
+      rampDays?: number;
     }
   | { kind: 'pain'; source: string; date: IsoDate; level: number; lastLongSec?: Seconds }
   | { kind: 'fatigue'; source: string; date: IsoDate }

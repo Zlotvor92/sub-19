@@ -294,6 +294,14 @@ export const RETURN_WEEK_JUMP_SHARE = 1.2;
 export const LOST_WEEKS_MIN = 0.5;
 /** Krug 10: rezultat stariji od ovoliko dana, uz drugi događaj u istom prolazu, primenjuje se bez nove izmene. */
 export const OLD_RESULT_SILENT_DAYS = 14;
+/** Krug 10 (stavka 5): najkraća rampa posle kasne bolesti (pauza blizu trke). */
+export const LATE_PAUSE_MIN_RAMP_DAYS = 3;
+/** Krug 10 (stavka 5): oštrenje u nedelji pred trkom posle kasne bolesti — najviše 12 min rada. */
+export const LATE_PAUSE_SHARPEN_MAX_SEC = 720;
+/** Krug 10 (stavka 5): pun napor bar ovoliki deo današnjeg vremena trke je trka na ciljnoj dužini. */
+export const GOAL_RACE_EFFORT_SHARE = 0.8;
+/** Krug 10 (stavka 5): posle trke na ciljnoj dužini dugi u prve dve nedelje najviše ovoliki deo uobičajenog. */
+export const AFTER_GOAL_RACE_LONG_SHARE = 0.7;
 /** A2 (krug 9b): posle neplanirane trke nema provere forme toliko dana (pun napor nije dobar test odmah posle). */
 export const NO_TEST_AFTER_RACE_DAYS = 14;
 /** Odluka organizatora (krug 9b): dan posle provere forme je lagano trčanje, najviše 60 % prethodnog dugog. */
