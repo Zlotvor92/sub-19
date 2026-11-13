@@ -480,6 +480,8 @@ export interface HardEffort {
   date: IsoDate;
   durationSec: Seconds;
   distanceM: Meters;
+  /** R18: trka (ne test). */
+  race?: boolean;
 }
 export interface Pause {
   /** Prvi i poslednji dan bez trčanja. */

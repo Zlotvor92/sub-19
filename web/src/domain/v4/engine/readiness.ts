@@ -162,10 +162,15 @@ export function adjustmentWindow(
 }
 
 /** Da li nedelja (od ponedeljka `weekStart`) seče pauzu, rampu ili zaštitu posle bola nivoa 4 i više. */
-export function underRamp(weekStart: IsoDate, adjustments: readonly Adjustment[]): boolean {
+export function underRamp(
+  weekStart: IsoDate,
+  adjustments: readonly Adjustment[],
+  /** R18 (stavka 5): `false` — oporavak posle trke se ne računa (nije povratak kao posle pauze). */
+  withEffort = true
+): boolean {
   const end = addDays(weekStart, 6);
   return adjustments.some((adj) => {
-    if (!returns(adj)) return false;
+    if (!returns(adj) || (!withEffort && adj.kind === 'effort')) return false;
     const w = adjustmentWindow(adj);
     return w !== null && w.from <= end && w.rampEnd > weekStart;
   });

@@ -336,8 +336,9 @@ describe('E: plan koji počinje u rampi posle trke', () => {
     expect(km('2026-11-29')).toBeGreaterThanOrEqual(7.5);
     expect(km('2026-11-29')).toBeLessThanOrEqual(11.5);
     expect(km('2026-12-06')).toBeGreaterThanOrEqual(km('2026-11-29'));
-    /* R2: + 20 min laganog trčanja je oko 3 km */
-    expect(km('2026-12-06') - km('2026-11-29')).toBeLessThanOrEqual(3.5);
+    /* R18 (stavka 5): oporavak posle TRKE nije povratak posle pauze — posle oporavka dugi se vraća lancu plana (bez
+       R2 izlaska od skraćenog dugog), ali nije duži od same trke */
+    expect(km('2026-12-06')).toBeLessThanOrEqual(race.distanceM / 1000);
     const history: Run[] = [
       { id: 'dugi', date: '2026-11-01', distanceM: 18000, durationSec: 6400 },
       race

@@ -162,7 +162,12 @@ function lastHardEffort(facts: RunnerFacts, runs: readonly Run[]): HardEffort | 
     const run = runs[i];
     if (run?.effort === undefined) continue;
     if (diffDays(facts.today, run.date) > HARD_EFFORT_DAYS) return null;
-    return { date: run.date, durationSec: run.durationSec, distanceM: run.distanceM };
+    return {
+      date: run.date,
+      durationSec: run.durationSec,
+      distanceM: run.distanceM,
+      ...(run.effort === 'race' ? { race: true } : {})
+    };
   }
   return null;
 }

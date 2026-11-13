@@ -142,3 +142,18 @@ describe('krug 18 — tekst izmene = stvarna izmena', () => {
     expect(bad).toEqual([]);
   });
 });
+
+/* KRUG 18 (t. 5): oporavak posle trke ne pokreće rampu kao posle pauze — vrh plana iz stanja posle trke nije znatno
+   niži od vrha istog plana bez trke (sve distance, scenariji E5). */
+describe('krug 18 — posle trke vrh ostaje', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', (_id, d) => {
+    const bad: string[] = [];
+    for (const s of d.scenarios.filter((x) => String(x.title).includes('E5'))) {
+      const r = s.run();
+      const peak = (doc: any): number => Math.max(...doc.weeks.map((w: any) => w.targetLoad));
+      if (peak(r.after) < 0.9 * peak(r.before))
+        bad.push(`s${String(s.no)} vrh ${String(peak(r.before))} → ${String(peak(r.after))}`);
+    }
+    expect(bad).toEqual([]);
+  });
+});

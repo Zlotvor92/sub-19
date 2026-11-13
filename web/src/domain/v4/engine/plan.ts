@@ -136,7 +136,8 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
       source: 'plan',
       date: effort.date,
       durationSec: effort.durationSec,
-      lastLongSec: lastLongAfterEffort(state, effort.date, effort.durationSec)
+      lastLongSec: lastLongAfterEffort(state, effort.date, effort.durationSec),
+      ...(effort.race === true ? { race: true } : {})
     });
   }
   for (const pause of state.pauses) {

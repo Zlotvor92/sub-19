@@ -2208,7 +2208,9 @@ export function runPass(
        ≤ + `RETURN_LONG_JUMP_SHARE` ili + `RETURN_LONG_JUMP_SEC` od istrčanog dugog prethodne nedelje */
     let exitCapped = false;
     /* nedelja čiji kraj (dan dugog) prozor prilagođavanja (rampa ili oporavak posle testa/trke) još pokriva */
+    /* R18 (stavka 5): oporavak posle TRKE nije povratak posle pauze — izlazak dugog po R2 posle pauze, bola i testa */
     const touched = adjustments.some((adj) => {
+      if (adj.kind === 'effort' && adj.race === true) return false;
       const w = adjustmentWindow(adj);
       return w !== null && w.from <= addDays(week.start, 6) && w.rampEnd > addDays(week.start, 6);
     });
@@ -2719,7 +2721,15 @@ export function runPass(
         const source: Recipe =
           planned.type === 'test' &&
           (inReturn(day.date, adjustments) || afterRace(day.date, adjustments))
-            ? { type: 'easy', sec: summarize(realize(planned, ctx), ctx.pace).durationSec }
+            ? {
+                type: 'easy',
+                /* R18 (stavka 5): izbačena provera (i pripremna trka) postaje lagan dan, ne duži od poslednjeg
+                   izgrađenog dugog — ne „lagano 2 h 30" tri dana posle trke */
+                sec: Math.min(
+                  summarize(realize(planned, ctx), ctx.pace).durationSec,
+                  lastBuiltLong > 0 ? Math.floor(lastBuiltLong / 300) * 300 : Number.POSITIVE_INFINITY
+                )
+              }
             : planned;
         const recipe = applyRepeat(source, day.id, adjustments, ctx);
         const mods = modsFor(day.date, causes, seen, recipeKey(recipe));
@@ -2892,7 +2902,16 @@ export function runPass(
       /* Krug 4 (S2): obim u lancu rasta = km u minutima laganog tempa (minuti kvaliteta nose više km; pravilo
          „+ 8 % ili + 3 km" je pravilo kilometara). */
       const volume = (totals.km * ctx.pace.paces.easy) / 60;
-      volumes.push(volume);
+      /* R18 (stavka 5): nedelja oporavka posle trke (do 14 dana) ne spušta lanac rasta — oporavak posle trke nije
+         povratak posle pauze; lanac nastavlja od nameravane nedelje (MAR s17: vrh 80,4 → 65,6 km) */
+      const raceRecovery = adjustments.some(
+        (a) =>
+          a.kind === 'effort' &&
+          a.planned !== true &&
+          a.date <= addDays(week.start, 6) &&
+          a.date >= addDays(week.start, -14)
+      );
+      volumes.push(raceRecovery ? Math.max(volume, plannedMin(shell.targetLoad)) : volume);
       /* R8 t. 10: vršna nedelja skraćena zbog događaja (u prozoru izmene + 28 dana) nije merilo silaska — merilo je
          najveća puna nedelja gradnje van prozora, pa sužavanje posle više događaja ne produžava rep izmena */
       const shortened = adjustments.some((adj) => {
@@ -2907,7 +2926,9 @@ export function runPass(
         peakVolume = Math.max(peakVolume, shortened ? Math.max(volume, fullBuildVolume) : volume);
       /* E1 (krug 5): merilo povratka je poslednja PUNA nedelja gradnje — ne lanča se preko rasterećenja */
       if (fraction >= 1 && week.intent.kind !== 'recovery') lastFullVolume = volume;
-      longs.push(longAsDecided ? Math.max(shell.longSec, totals.longSec) : totals.longSec);
+      longs.push(
+        longAsDecided || raceRecovery ? Math.max(shell.longSec, totals.longSec) : totals.longSec
+      );
     }
     if (opts.fresh === true && (touched || exitCapped)) {
       const real = weekTotals(built, header, state, ctx).longSec;
@@ -2921,8 +2942,10 @@ export function runPass(
         (x) => x.workout?.kind === 'quality' || x.workout?.kind === 'test'
       ).length;
     }
-    previousRamped = ramped;
-    if (ramped) rampSeen = true;
+    /* R18 (stavka 5): oporavak posle trke ne pokreće lanac rasta „od odrađenih nedelja posle rampe" (MAR s17) */
+    const returnRamped = underRamp(week.start, adjustments, false);
+    previousRamped = returnRamped;
+    if (returnRamped) rampSeen = true;
     previousLong = shell.longSec;
     return built;
   });
