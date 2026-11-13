@@ -313,7 +313,8 @@ const HISTORY_LINES = 5;
 function forecastChange(h: PlanHeader, state: RunnerState | undefined): string[] {
   if (state === undefined) return [];
   const before = h.form.raceDay.expectedSec;
-  const after = state.form.raceDay.expectedSec;
+  /* T1 (krug 6): obe strane po istim pravilima plana (adjustRaceDay) — inače se poredi prilagođeno sa sirovim */
+  const after = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions).expectedSec;
   const moved = Math.abs(after - before) > FORECAST_CHANGE_MIN_SEC;
   /* M8c (krug 5): koraci bez signala (pripisani napredak plana) ne menjaju prikazanu prognozu — ne prikazuju se,
      da „zašto" uvek vodi do broja u zaglavlju */

@@ -348,7 +348,7 @@ describe('R4: dugi i traženi dani', () => {
       } else {
         expect(warning, c.name).toBeDefined();
         expect(warning?.meaning).toContain('10 %');
-        expect(warning?.proposal).toMatch(/nedelje plan koristi|novi plan koristi/);
+        expect(warning?.proposal).toMatch(/nedelje plan koristi|ovaj plan ostaje na/);
         warned += 1;
       }
     }

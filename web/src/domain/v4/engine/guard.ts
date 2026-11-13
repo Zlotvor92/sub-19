@@ -305,7 +305,10 @@ export const guard: GuardFn = (doc, _state, data) => {
     0,
     /* vrh skraćen povratkom (21 dan posle rampe) nije merilo silaska — isto kao za brz rad (M9) */
     ...costs
-      .filter((c) => c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes, RESTORE_PEAK_AFTER_DAYS))
+      .filter(
+        (c) =>
+          c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes, RESTORE_PEAK_AFTER_DAYS)
+      )
       .map((c) => c.km)
   );
   const raceMonday = mondayOf(header.goal.raceDate);
@@ -578,6 +581,14 @@ export function warnings(input: WarningInput): Warning[] {
   const weeks = countWeeks(doc.header.startDate, goal.raceDate);
   const peakKm = Math.max(0, ...costs.map((c) => c.km));
   const longKm = Math.max(0, ...costs.map((c) => c.longKm));
+  /* T2 (krug 6): predlog dužine pripreme je JEDAN broj u celom planu (najveći od predloga) i nikad kraći od stvarne
+     pripreme — svako upozorenje upisuje oznaku, broj se upisuje na kraju */
+  const PREP = '\u0000PRIP\u0000';
+  const prepWanted: number[] = [];
+  const prep = (n: number): string => {
+    prepWanted.push(n);
+    return PREP;
+  };
   const out: Warning[] = [];
   const shorter =
     a.shorter === undefined ? '' : `, ili na isti datum trči kraću distancu: ${a.shorter.label}`;
@@ -631,7 +642,7 @@ export function warnings(input: WarningInput): Warning[] {
       problem: `Najveća nedelja u planu ima ${km(peakKm)}, a adekvatna priprema za ovu distancu traži bar ${km(a.minPeakWeeklyKm)} nedeljno.`,
       meaning:
         'Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje.',
-      proposal: `${now} Za sledeću trku planiraj ${count(weeks + extra, WEEKS, 'acc')} pripreme — obim tada bezbedno stiže do ${km(a.minPeakWeeklyKm)} nedeljno.`,
+      proposal: `${now} Za sledeću trku planiraj ${prep(weeks + extra)} pripreme — obim tada bezbedno stiže do ${km(a.minPeakWeeklyKm)} nedeljno.`,
       suggest: { peakWeeklyKm: a.minPeakWeeklyKm, weeks: weeks + extra }
     });
   }
@@ -691,7 +702,7 @@ export function warnings(input: WarningInput): Warning[] {
         ? `${extraDay} — dugi tada stiže do ${km(trial.longKm)}.`
         : `Uz isti datum trke dugi ostaje ${km(longKm)}, pa trku počni sporije i čuvaj snagu za poslednjih ${km(left)}.`;
     const next = byTime
-      ? `Za sledeću trku planiraj ${count(weeks + moreWeeks, WEEKS, 'acc')} pripreme — dugi tada stiže do ${km(a.minLongKm)}.`
+      ? `Za sledeću trku planiraj ${prep(weeks + moreWeeks)} pripreme — dugi tada stiže do ${km(a.minLongKm)}.`
       : `Za sledeću trku podigni nedeljni obim do ${km(a.minPeakWeeklyKm)} — dugi tada može da naraste do ${km(a.minLongKm)}.`;
     out.push({
       code: 'kratak-dugi',
@@ -769,7 +780,7 @@ export function warnings(input: WarningInput): Warning[] {
       problem: `Trčiš tek oko ${count(Math.max(1, Math.round(tenureWeeks)), WEEKS, 'acc')}.`,
       meaning:
         'Telo se na trčanje navikava sporije nego što forma raste: tetive i kosti traže više vremena od srca i pluća. Prognoza je zato manje pouzdana, a raspon širi.',
-      proposal: `Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana. Ako želiš rezultat, izaberi trku za bar ${count(a.minWeeks + 6, WEEKS, 'acc')}${a.shorter === undefined ? '' : ` ili kraću distancu (${a.shorter.label})`}.`
+      proposal: `Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana. Ako želiš rezultat, izaberi trku za bar ${prep(a.minWeeks + 6)}${a.shorter === undefined ? '' : ` ili kraću distancu (${a.shorter.label})`}.`
     });
   }
   const dropped = droppedDayWarning(
@@ -795,7 +806,14 @@ export function warnings(input: WarningInput): Warning[] {
       proposal: `Unesi rezultat trke iz poslednja 3 meseca${testHint(doc, data, state.today)} — tempa i prognoza se tada računaju iz stvarnog rezultata.`
     });
   }
-  return out;
+  const prepWeeks = Math.max(weeks + 1, ...prepWanted);
+  const fill = (t: string): string => t.split(PREP).join(count(prepWeeks, WEEKS, 'acc'));
+  return out.map((w) => ({
+    ...w,
+    problem: fill(w.problem),
+    meaning: fill(w.meaning),
+    proposal: fill(w.proposal)
+  }));
 }
 
 /** Deo predloga `nema-podataka` o testu: distanca se čita iz plana (prva provera forme koju plan sadrži), inače iz
@@ -881,6 +899,7 @@ function levelVolumeWarning(
   const neededKm = Math.ceil((neededLoad * 60) / header.paces.easy / 5) * 5;
   const target = Math.max(byLevel ?? neededKm, Math.ceil((peakKm * 1.15) / 5) * 5);
   const share = fmtNumber(s.maxFastShare * 100, 0);
+  const daysShort = eligible.some((c) => c.workouts < d.runDays.length);
   const binding = eligible.some((c) => {
     const most = c.week.intent.kind === 'peak' ? s.maxFastSharePeak : s.maxFastShare;
     return c.durationSec > 0 && c.fastSec / c.durationSec >= most - 0.01;
@@ -896,7 +915,9 @@ function levelVolumeWarning(
     meaning: binding
       ? `Brz rad sme da bude najviše ${share} % vremena trčanja (u vršnoj nedelji ${fmtNumber(s.maxFastSharePeak * 100, 0)} %), pa uz mali obim doze ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što rezultat na kraćoj trci nagoveštava.`
       : 'Uz mali obim doze brzih treninga ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što rezultat na kraćoj trci nagoveštava.',
-    proposal: `Podigni nedeljni obim laganim trčanjem do oko ${km(target)} (dodaj dan ili produži lagane dane za 10–15 min) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.`,
+    /* T4 (krug 6): obim koji ova priprema ne može da dostigne je predlog za sledeću; dan se ne nudi kad plan ni
+       tražene dane ne koristi sve */
+    proposal: `${target > peakKm + 0.5 ? 'Za sledeću pripremu podigni' : 'Podigni'} nedeljni obim laganim trčanjem do oko ${km(target)} (${daysShort ? 'produži lagane dane za 10–15 min' : 'dodaj dan ili produži lagane dane za 10–15 min'}) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.`,
     suggest: { peakWeeklyKm: target }
   };
 }
@@ -943,16 +964,17 @@ function droppedDayWarning(
         : `nedelje ${short.map((c) => String(c.week.index)).join(', ')}`;
   const later = full.find((c) => c.week.index > lastShort);
   const baseKm = (header.decisions.baseLoad * 60) / header.paces.easy;
+  /* T4 (krug 6): bez kasnije pune nedelje plan ne obećava da će dodati dan */
   const then =
     later === undefined
-      ? 'kad obim poraste, novi plan koristi sve tražene dane'
+      ? `ovaj plan ostaje na ${count(least, DAYS)} nedeljno`
       : `od ${String(later.week.index)}. nedelje plan koristi sve tražene dane`;
   return {
     code: 'dan-izostavljen',
     severity: 'info',
-    problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno, a plan u nekim nedeljama ima ${count(least, WORKOUTS)} (${span}).`,
+    problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno, a plan ${later === undefined && short.length >= full.length - 1 ? 'nedeljno' : `u nekim nedeljama (${span})`} ima ${count(least, WORKOUTS)}.`,
     meaning: `Uz sadašnji obim od oko ${km(baseKm)} nedeljno, svi traženi dani bi i sa najkraćim trčanjem od ${String(Math.round(minEasySec / 60))} min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede.`,
-    proposal: `Te nedelje trči kako piše — ${then}. Ako želiš da izlaziš ${pluralForm(asked, ['svaki', 'sva', 'svih'])} ${count(asked, DAYS)} odmah, dodatni dan neka bude šetnja ili 15–20 min vrlo laganog trčanja.`
+    proposal: `${later === undefined ? 'Trči' : 'Te nedelje trči'} kako piše — ${then}. Ako želiš da izlaziš ${pluralForm(asked, ['svaki', 'sva', 'svih'])} ${count(asked, DAYS)} odmah, dodatni dan neka bude šetnja ili 30 min vrlo laganog trčanja.`
   };
 }
 
