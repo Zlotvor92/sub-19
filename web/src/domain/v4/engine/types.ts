@@ -780,9 +780,13 @@ export interface SafetyNumbers {
     byLevel: Readonly<Record<LevelId, Seconds>>;
     /** Podražaj koji dobija mesto kad plafon zone ne ostavi dozu (krug 4 dopuna). */
     fallbackStimulus?: StimulusTag;
+    /** Ostatak plafona ispod ovoga (s) ide celim u zamenski podražaj (M1). */
+    minLeftSec?: Seconds;
   };
   /** D8 (krug 4 dopuna): prag i tempo trke bliži od ovoga (s/km) se ne zadaju u istoj nedelji. */
   minZoneGapSecPerKm?: number;
+  /** Podražaj koji zamenjuje prag u nedelji sa tempom trke kad su bliski (P4). */
+  zoneGapReplacement?: StimulusTag;
   /** E2 (krug 4 dopuna): skraćena nedelja — dugi ≤ ovoliki deo nedelje u km (4+ dana). */
   shortenedLongMaxShare?: number;
   /** Trka/test do ovoliko sekundi (i van plana) dobija oporavak kao planirana provera forme (krug 5, E5). */

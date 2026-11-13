@@ -407,12 +407,21 @@ export function weekSlots(
      podražaja u istoj nedelji — prag otpada, tempo trke ostaje */
   const gap = ctx.data.safety.minZoneGapSecPerKm;
   if (gap !== undefined && Math.abs(ctx.pace.paces.T - ctx.pace.paces.RP) < gap) {
-    const hasRp = items.some((x) => x.kind === 'quality' && mainZone(x.def.main) === 'RP') ||
-      (long !== null && long.wanted > 0 && long.def !== null && mainZone(long.def.main) === 'RP');
+    /* M2 (krug 5): samo u nedelji sa tempom trke USRED nedelje; P4: prag se ne briše nego postaje drugi podražaj
+       (`safety.zoneGapReplacement`, npr. intervali), da nedelja zadrži dva kvaliteta */
+    const hasRp = items.some((x) => x.kind === 'quality' && mainZone(x.def.main) === 'RP');
     if (hasRp) {
+      const repl = ctx.data.safety.zoneGapReplacement;
       for (let i = items.length - 1; i >= 0; i -= 1) {
         const x = items[i];
-        if (x !== undefined && x.kind === 'quality' && mainZone(x.def.main) === 'T') items.splice(i, 1);
+        if (x === undefined || x.kind !== 'quality' || mainZone(x.def.main) !== 'T') continue;
+        const slot: SlotRef = repl === undefined ? x.slot : { ...x.slot, stimulus: repl, workoutId: undefined };
+        const wanted = repl === undefined ? 0 : slotDose(slot, undefined, intent.kind, ctx);
+        const def = repl === undefined ? null : pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: cautious });
+        const zone = def === null ? null : mainZone(def.main);
+        if (def !== null && zone !== null && def.main.kind !== 'add-on' && def.main.kind !== 'all-out')
+          items[i] = { kind: 'quality', date: x.date, def, slot, wanted, extra: extraWeight(zone, ctx) };
+        else items.splice(i, 1);
       }
     }
   }
@@ -852,10 +861,12 @@ function layoutOnce(
     }
     /* D7 dopuna: kad plafon zone ne ostavlja ni najmanju dozu, mesto dobija zamenski podražaj iz biblioteke
        (`weeklyZoneMaxSec.fallbackStimulus`), ne lagano trčanje */
-    if (inZone(item.def) && zoneLeft < minDoseOf(item.def, ctx) && zoneCap?.fallbackStimulus !== undefined) {
-      const slot: SlotRef = { place: 'quality', stimulus: zoneCap.fallbackStimulus, index: 0, phase: item.slot.phase };
-      const capSec = d.doseCapSec[slot.stimulus] ?? 0;
-      const wanted = Math.min(capSec, item.wanted);
+    /* M1 (krug 5): ostatak ispod `minLeftSec` (15 min) — cela doza ide u zamenski podražaj pune doze */
+    const minLeft = Math.max(minDoseOf(item.def, ctx), zoneCap?.minLeftSec ?? 0);
+    if (inZone(item.def) && zoneLeft < minLeft && zoneCap?.fallbackStimulus !== undefined) {
+      /* pun dozni korak (M1: „prag pune doze") */
+      const slot: SlotRef = { place: 'quality', stimulus: zoneCap.fallbackStimulus, index: 99, phase: item.slot.phase };
+      const wanted = slotDose(slot, undefined, intent.kind, ctx);
       const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: false });
       const zone = def === null ? null : mainZone(def.main);
       if (def !== null && zone !== null && def.main.kind !== 'add-on' && def.main.kind !== 'all-out')

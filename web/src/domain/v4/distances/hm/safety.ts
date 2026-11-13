@@ -169,11 +169,15 @@ export const SAFETY: SafetyNumbers = {
   shortenedLongMaxShare: 0.45,
   /* krug 4 dopuna (D8): prag i tempo trke bliži od 5 s/km — jedan podražaj nedeljno (p05, p06) */
   minZoneGapSecPerKm: 5,
+  /* P4 (krug 5): u nedelji sa tempom trke prag postaje intervali (dva različita kvaliteta) */
+  zoneGapReplacement: 'intervali',
   /* krug 5 (D7): tempo trke (uklj. blok u dugom) nedeljno — početnik ≤ 45, srednji ≤ 60, napredni ≤ 75 min */
   weeklyZoneMaxSec: {
     zone: 'RP',
     /* odsečen tempo trke postaje prag (dopuna kruga 4), ne lagan dan */
     fallbackStimulus: 'prag',
+    /* M1 (krug 5): ostatak < 15 min → ceo trening je prag pune doze */
+    minLeftSec: 900,
     byLevel: {
       pocetnik: 2700,
       'pocetnik-nov': 2700,
