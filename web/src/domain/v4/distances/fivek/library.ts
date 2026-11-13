@@ -232,10 +232,21 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'prag',
     tags: [],
     impact: 'obican',
-    /* 4 deonice (ciljni p04 ned 7: T 5 × 1000 m); 4, ne 5 — deonica se zaokružuje na minut, pa bi 5 komada kod
-       plafona 26 min prešlo plafon */
+    /* 4 deonice do 25 min praga (ciljni p04 ned 7: T 5 × 1000 m) */
     requires: { minDoseSec: 1200 },
     main: { kind: 'split', zone: 'T', pieces: 4, recovery: jog(60), by: 'trajanje' },
+    text: 'prag-deonice'
+  },
+  {
+    id: 'prag-5x',
+    kind: 'quality',
+    stimulus: 'prag',
+    tags: [],
+    impact: 'obican',
+    /* krug 11 (stavka 17): 5 deonica kad doza nosi 5 × 5 min — zaokružen komad više ne prelazi plafon
+       (`doseRoundUnderCap`) */
+    requires: { minDoseSec: 1500 },
+    main: { kind: 'split', zone: 'T', pieces: 5, recovery: jog(60), by: 'trajanje' },
     text: 'prag-deonice'
   },
   /* prag početnika: fartlek i tempo po osećaju (ciljni p11 ned 5, 7, 9–11) */

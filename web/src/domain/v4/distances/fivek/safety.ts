@@ -156,6 +156,10 @@ export const SAFETY: SafetyNumbers = {
   },
   /* lagan dan najmanje 20 min (K8: najkraći trening ≥ 20 min; ciljni p11 3 km ≈ 21 min) */
   minEasySec: 1200,
+  /* krug 11 (stavka 16): lagan dan i dan sa ubrzanjima ne padaju ispod 20 min zbog zaokruživanja na 0,5 km */
+  easyNotBelowMin: true,
+  /* krug 11 (stavka 17): zaokruživanje doze ne prelazi plafon zone */
+  doseRoundUnderCap: true,
   /* najkraće lagano trčanje po nivou: 30 min iskusnima (lagani dani 5 km su kraći nego kod 10 km), 25 min malom
      obimu i povratniku */
   minEasyMin: { brz: 30, srednji: 30, spor: 30, mali: 25, povratnik: 25 },

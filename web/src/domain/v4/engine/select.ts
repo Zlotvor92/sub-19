@@ -4,6 +4,7 @@ import {
   EASY_DISTANCE_STEP_M,
   EASY_DURATION_STEP_SEC,
   FIRST_DOSE_MAX_OF_CAP,
+  DOSE_CAP_ROUND_SLACK_SEC,
   LADDER_TOLERANCE_SEC,
   LONG_BLOCK_MAX_SHARE,
   REP_SHORTEN_MIN_SHARE,
@@ -178,7 +179,9 @@ function passes(
 export function minDoseOf(def: WorkoutDef, ctx: BuildCtx): Seconds {
   const { main } = def;
   let shape = 0;
-  if (main.kind === 'reps') shape = (main.minReps - 0.5) * extentSec(main.rep, main.zone, ctx);
+  if (main.kind === 'reps') {
+    shape = (main.minReps - 0.5) * extentSec(main.rep, main.zone, ctx);
+  }
   if (main.kind === 'ladder' && main.reps[0] !== undefined) {
     shape = extentSec(main.reps[0], main.zone, ctx) - LADDER_TOLERANCE_SEC;
   }
@@ -346,6 +349,27 @@ function shortenedRep(rep: Extent, share: number): Extent {
   };
 }
 
+/** Krug 11 (stavka 17): zaokružen komad rada × broj komada ne prelazi plafon zone — tada korak naniže. */
+function underCap(
+  extent: Extent,
+  pieces: number,
+  zone: ZoneId,
+  cap: Seconds,
+  ctx: BuildCtx
+): Extent {
+  if (ctx.data.safety.doseRoundUnderCap !== true) return extent;
+  if (pieces * extentSec(extent, zone, ctx) <= cap + DOSE_CAP_ROUND_SLACK_SEC) return extent;
+  if ('durationSec' in extent) {
+    const step = WORK_DURATION_STEP_SEC;
+    const d = Math.floor(cap / pieces / step + 1e-9) * step;
+    return d >= step ? { durationSec: d } : extent;
+  }
+  const step = WORK_DISTANCE_STEP_M;
+  const m =
+    Math.floor(((cap / pieces / zonePace(zone, ctx.pace.paces)) * 1000) / step + 1e-9) * step;
+  return m >= step ? { distanceM: m } : extent;
+}
+
 /** Glavni deo treninga iz doze (§ 4.3); vraća i vrednosti za tekst. */
 function mainSteps(
   main: MainSet,
@@ -356,7 +380,13 @@ function mainSteps(
 ): Main {
   switch (main.kind) {
     case 'continuous': {
-      const extent = workExtent(dose, main.zone, unitOf(main.by, ctx), ctx, minSec);
+      const extent = underCap(
+        workExtent(dose, main.zone, unitOf(main.by, ctx), ctx, minSec),
+        1,
+        main.zone,
+        cap,
+        ctx
+      );
       return {
         steps: [zoneStep('work', main.zone, extent)],
         values: { n: '1', rep: fmtExtent(extent) }
@@ -364,12 +394,12 @@ function mainSteps(
     }
     case 'split': {
       const pieces = Math.max(1, Math.round(main.pieces));
-      const extent = workExtent(
-        dose / pieces,
+      const extent = underCap(
+        workExtent(dose / pieces, main.zone, unitOf(main.by, ctx), ctx, minSec / pieces),
+        pieces,
         main.zone,
-        unitOf(main.by, ctx),
-        ctx,
-        minSec / pieces
+        cap,
+        ctx
       );
       return {
         steps: repeated(pieces, zoneStep('work', main.zone, extent), recoveryStep(main.recovery)),
@@ -380,13 +410,31 @@ function mainSteps(
       const repSec = extentSec(main.rep, main.zone, ctx);
       const wanted = repSec > 0 ? Math.round(dose / repSec) : main.minReps;
       const fits = repSec > 0 ? Math.floor((cap + LADDER_TOLERANCE_SEC) / repSec) : main.maxReps;
-      const n = Math.max(1, main.minReps, Math.min(main.maxReps, wanted, fits));
+      let n = Math.max(1, main.minReps, Math.min(main.maxReps, wanted, fits));
       /* R8 t. 4: doza ispod `minReps` ponavljanja (posle bola, u sužavanju) — broj ostaje najmanji, a deonica se
          skraćuje (distanca na 100 m, trajanje na 15 s, najviše do `REP_SHORTEN_MIN_SHARE` dužine) */
-      const rep =
+      let rep =
         repSec > 0 && dose < (main.minReps - 0.5) * repSec
           ? shortenedRep(main.rep, Math.max(REP_SHORTEN_MIN_SHARE, dose / (main.minReps * repSec)))
           : main.rep;
+      /* krug 11 (stavka 17, `doseRoundUnderCap`): zaokružen rad ne prelazi plafon zone — od dve mogućnosti naniže
+         (deonica manje dok je broj ≥ najmanjeg; ista deonica skraćena na korak) bira onu sa više rada */
+      const sec = (x: Extent): Seconds => extentSec(x, main.zone, ctx);
+      if (
+        ctx.data.safety.doseRoundUnderCap === true &&
+        n * sec(rep) > cap + DOSE_CAP_ROUND_SLACK_SEC
+      ) {
+        const fewer = Math.floor((cap + DOSE_CAP_ROUND_SLACK_SEC) / sec(rep));
+        let shorter = shortenedRep(rep, cap / (n * sec(rep)));
+        const stepDown = (x: Extent): Extent =>
+          'distanceM' in x
+            ? { distanceM: Math.max(100, x.distanceM - 100) }
+            : { durationSec: Math.max(15, x.durationSec - 15) };
+        for (let i = 0; i < 4 && n * sec(shorter) > cap + DOSE_CAP_ROUND_SLACK_SEC; i += 1)
+          shorter = stepDown(shorter);
+        if (fewer >= Math.max(1, main.minReps) && fewer * sec(rep) >= n * sec(shorter)) n = fewer;
+        else rep = shorter;
+      }
       return {
         steps: repeated(n, zoneStep('work', main.zone, rep), recoveryStep(main.recovery)),
         values: { n: String(n), rep: fmtExtent(rep), rec: fmtRecovery(main.recovery) }
@@ -408,8 +456,15 @@ function mainSteps(
 
 /** Lagani deo zadat trajanjem `sec`: dužina na 0,5 km ili trajanje na 5 min (§ 5.5).
     `down`: zaokruživanje naniže (dugi — da zaokruživanje ne pređe plafon ni korak rasta).
-    `maxSec`: plafon dana — ako bi ga obično zaokruživanje prešlo, zaokružuje se naniže. */
-function easyExtent(sec: Seconds, ctx: BuildCtx, down = false, maxSec?: Seconds): Extent {
+    `maxSec`: plafon dana — ako bi ga obično zaokruživanje prešlo, zaokružuje se naniže.
+    `minSec` (krug 11): pod dana — dan zadat bar na podu ne zaokružuje se ispod njega (ni zbog plafona). */
+function easyExtent(
+  sec: Seconds,
+  ctx: BuildCtx,
+  down = false,
+  maxSec?: Seconds,
+  minSec?: Seconds
+): Extent {
   const build = (floor: boolean): { extent: Extent; durationSec: Seconds } => {
     const snap = (value: number, step: number): number =>
       floor ? Math.floor(value / step + 1e-6) * step : roundTo(value, step);
@@ -422,8 +477,20 @@ function easyExtent(sec: Seconds, ctx: BuildCtx, down = false, maxSec?: Seconds)
     return { extent: { durationSec }, durationSec };
   };
   const first = build(down);
-  if (down || maxSec === undefined || first.durationSec <= maxSec + 0.5) return first.extent;
-  return build(true).extent;
+  const picked =
+    down || maxSec === undefined || first.durationSec <= maxSec + 0.5 ? first : build(true);
+  if (down || minSec === undefined || sec < minSec - 0.5 || picked.durationSec >= minSec - 0.5)
+    return picked.extent;
+  /* krug 11: najbliži korak naviše od poda */
+  if (byDistance(ctx)) {
+    const step = EASY_DISTANCE_STEP_M;
+    return {
+      distanceM: Math.ceil(((minSec / ctx.pace.paces.easy) * 1000) / step - 1e-6) * step
+    };
+  }
+  return {
+    durationSec: Math.ceil(minSec / EASY_DURATION_STEP_SEC - 1e-6) * EASY_DURATION_STEP_SEC
+  };
 }
 
 const fmtLen = (extent: Extent): string =>
@@ -477,7 +544,13 @@ function withNotes(workout: Workout, def: WorkoutDef | null, ctx: BuildCtx): Wor
 
 function easyWorkout(sec: Seconds, ctx: BuildCtx, maxSec?: Seconds): Workout {
   const def = easyDef(ctx);
-  const extent = easyExtent(sec, ctx, false, maxSec);
+  const extent = easyExtent(
+    sec,
+    ctx,
+    false,
+    maxSec,
+    ctx.data.safety.easyNotBelowMin === true ? ctx.data.safety.minEasySec : undefined
+  );
   const workout: Workout = {
     kind: 'easy',
     stimulus: null,
@@ -496,7 +569,11 @@ function addonWorkout(sec: Seconds, def: WorkoutDef, ctx: BuildCtx, maxSec?: Sec
     sec,
     ctx,
     false,
-    maxSec === undefined ? undefined : maxSec - stepsCost(extra, ctx.pace).durationSec
+    maxSec === undefined ? undefined : maxSec - stepsCost(extra, ctx.pace).durationSec,
+    /* krug 11 (stavka 16): ceo dan sa dodatkom bar `minEasySec` */
+    ctx.data.safety.easyNotBelowMin === true
+      ? ctx.data.safety.minEasySec - stepsCost(extra, ctx.pace).durationSec
+      : undefined
   );
   const steady = zoneStep('steady', 'E', extent);
   const workout: Workout = {

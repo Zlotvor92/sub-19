@@ -110,6 +110,8 @@ export const WORK_DURATION_STEP_SEC = 60;
 export const WORK_DISTANCE_STEP_M = 500;
 /** Lestvica sme da pređe dozu za najviše 90 s (§ 4.3). */
 export const LADDER_TOLERANCE_SEC = 90;
+/** Krug 11 (stavka 17, `doseRoundUnderCap`): zaokružen rad sme preći plafon zone najviše za najmanji korak deonice. */
+export const DOSE_CAP_ROUND_SLACK_SEC = 15;
 /** Prvi trening podražaja najviše 70 % plafona doze (K7 traži ≤ 70 % OSTVARENOG vrha, a vrh zone često skraćuje
     budžet brzog rada; krug 4, S4: osnovica lestvice nije plafon). */
 export const FIRST_DOSE_MAX_OF_CAP = 0.7;

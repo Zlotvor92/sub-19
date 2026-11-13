@@ -765,7 +765,12 @@ function easyFill(
       levelMinEasy(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length)
         ? 0.5 * ctx.pace.paces.easy
         : 0;
-    const sec = Math.min(wanted, day.cap - extra - margin);
+    /* krug 11 (stavka 16, `easyNotBelowMin`): dan sa dodatkom ceo traje bar `minEasySec` kad plafon dana to dozvoljava */
+    const whole =
+      ctx.data.safety.easyNotBelowMin === true && day.addon !== null
+        ? Math.min(ctx.data.safety.minEasySec - extra, day.cap - extra)
+        : 0;
+    const sec = Math.max(Math.min(wanted, day.cap - extra - margin), whole);
     const least = day.tight ? Math.min(minEasy, TAPER_ADDON_MIN_EASY_SEC) : minEasy;
     if (day.addon !== null && day.addon.type === 'addon' && sec >= least) {
       out.set(day.date, { ...day.addon, sec, ...capOf(day) });

@@ -880,6 +880,12 @@ export interface SafetyNumbers {
   maxFastShare: number;
   maxFastSharePeak: number;
   minEasySec: Seconds;
+  /** Krug 11: lagan dan zadat bar na `minEasySec` se ne zaokružuje (na 0,5 km / 5 min) ispod njega, ni zbog plafona
+      dana; dan sa dodatkom (ubrzanja) ceo traje bar `minEasySec`. Bez unosa: kao do sada. */
+  easyNotBelowMin?: boolean;
+  /** Krug 11 (stavka 17): zaokružen rad (komad × broj) ne prelazi plafon zone — zaokružuje se naniže; deonice sa
+      pola deonice manje (`minReps − 0,5`) samo dok ceo najmanji broj staje pod plafon. Bez unosa: kao do sada. */
+  doseRoundUnderCap?: boolean;
   /** M5 (krug 5): najkraće lagano trčanje po nivou, u minutima; nivo bez unosa koristi `minEasySec`. */
   minEasyMin?: Readonly<Record<LevelId, number>>;
   /** P3 (krug 5): sporiji od `fromRaceSec` na distanci — tempo intervala ne brži od tempa trke na `distanceM`. */

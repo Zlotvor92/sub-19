@@ -66,5 +66,5 @@
 2027-01-06 | odmor | - | 0.0 |  | - | - | -
 2027-01-07 | trening | quality | 9.1 | oštrenje: tempo trke 5 × 400 m, oporavak 1 min džog | - | - | -
 2027-01-08 | odmor | - | 0.0 |  | - | - | -
-2027-01-09 | trening | easy | 4.0 | lagano 4 km | - | - | -
+2027-01-09 | trening | easy | 4.5 | lagano 4,5 km | - | - | -
 2027-01-10 | trening | race | 5.0 | trka — 5 km | - | - | -
