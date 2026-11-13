@@ -696,3 +696,10 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - K13 (`22ebb2e`): M18 — determinizam ispravan, uzrok razlike je weeklyKmAt (1 trčanje → 70 km/ned); polazna forma
   59 profila nepromenjena, procena vlasnika 0 s; M17 deo. Tab motora potrošio kontekst.
 - Nov tab motora (Opus) po `briefs/R14-MOTOR.md`.
+
+### 13. 11. 2026, 20:30 — odluka vlasnika: pregled planova tamo gde se sudije ne slažu (na kraju)
+- Pregled vlasnika ide TEK na kraju (posle poslednjeg kruga ocena, pre ulaska u aplikaciju). Organizator tada
+  filtrira planove po neslaganju trenera i drugog sudije: (1) razlika trener − drugi sudija za plan veća od
+  medijane te razlike na distanci + 5 poena; (2) presuda drugog sudije „ne" uz trenerovu ocenu ≥ 75; (3) obrnuto —
+  drugi sudija ≥ 75, trener < 72. Uz svaki plan: obe ocene, 2–3 glavne zamerke svakog sudije, jedno pitanje za
+  vlasnika. Do tada se pregledi vlasnika ne traže.
