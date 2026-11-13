@@ -613,3 +613,20 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   `session_01GnHHiYcmso5iSFq9UNhUHy`, 10K `session_01GnHHiXECoDvVCKEQYubD2s`.
 - Nove distance (Opus, `briefs/F7-COMMON.md` + `F7-5K.md` / `F7-MAR.md`): 5K `session_01GnHHiYgBWy4zCKtBd6YPxy`,
   maraton `session_01GnHHiWbwULZGywbJmwtnzH`. Servis za otvaranje tabova bio nedostupan ≈ 14:15–14:30.
+
+### 13. 11. 2026, 14:50 — OCENE NA OPUSU: HM krug 9, 10K krug 2 (trener `bba8c10`; drugi sudija HM `fdce9e6`, 10K `cbfbbf0`)
+| | HM trener | HM drugi sudija | 10K trener | 10K drugi sudija |
+|---|---|---|---|---|
+| Plan | 78,5 (6/12 ≥ 80) | 73,2 (68–78) | 76,9 (4/12 ≥ 80) | 68,6 (p06 57) |
+| Prilagođavanje / scenariji | 80,8 (bilo 83,7) | 84,4 | 79,1 (bilo 80,7) | 78,7 |
+| Personalizacija / parovi | 83,7 | 75 | 83,0 | 78,3 |
+| zbirna | 80,2 | — | 78,8 | — |
+| vlasnik v1 / v2 | — | 72 / 76 | — | — |
+- Kalibracija trenera na `2776b5d`: Opus ≈ 1 poen strože od Fable trenera; p06 67 prema 75 (stara ocena nasleđena).
+- MOJA GREŠKA (9b, A10b): „ostatak plana srazmerno niži" posle prekida → s05 82 → 60, −27/−31 % do kraja, skok u
+  ponašanju između 5 i 7 dana bolesti. POVUČENO. Krug 10: geometrijski povratak na prvobitan plan (nedelja ≤ × 1,20,
+  dugi ≤ + 25 % / + 20 min), granica dugog posle svakog događaja, bez nadoknade nabijanjem, tekst navodi rezultat
+  samog događaja, kasna bolest zadržava oštrenje, napomena trke iz poslednje provere + dopuna 7–13 (oznake faza, dan
+  posle provere nije „dugi", jedan izvor tempa trke, start trke kao udeo, oporavak posle trke jedan broj).
+- 10K krug 3 (podaci): p06, p08, faze unazad, P3 A, predlozi obima, p10.
+- Radi: motor (krug 10), 10K (krug 3), 5K, maraton. Sudije završile (arhivirati posle provere push-a).
