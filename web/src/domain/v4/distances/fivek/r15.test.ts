@@ -32,4 +32,29 @@ describe('krug 15 — kvalitet pre laganog dana na podu (M20)', () => {
     const short = doc.header.warnings.find((w) => w.code === 'lagan-kratak');
     expect(short?.meaning ?? '').not.toContain('Svi traženi dani');
   });
+
+  it('p14: kratka priprema obećava dugi iz probnog plana, ne manji od onoga što plan već ima', () => {
+    const doc = build('p14');
+    const w = doc.header.warnings.find((x) => x.code === 'kratka-priprema');
+    const promised = Number(
+      /dugog od ([\d,]+) km/.exec(w?.proposal ?? '')?.[1]?.replace(',', '.') ?? 0
+    );
+    expect(promised).toBeGreaterThan(5);
+  });
+
+  it('p16 (66 god.): manje brzih treninga je zbog godina — bez saveta „podigni obim"', () => {
+    const doc = build('p16');
+    const w = doc.header.warnings.find((x) => x.code === 'obim-za-nivo');
+    expect(w?.problem).toContain('godina');
+    expect(w?.proposal ?? '').not.toMatch(/podigni nedeljni obim/i);
+  });
+
+  it('svih 16 profila: jedan broj nedelja pripreme u svim upozorenjima (M6)', () => {
+    for (const p of PROFILES) {
+      const doc = build(p.id);
+      const text = doc.header.warnings.map((w) => w.proposal).join(' ');
+      const nums = new Set([...text.matchAll(/(\d+) nedelj\w* pripreme/g)].map((m) => m[1]));
+      expect(nums.size, p.id).toBeLessThanOrEqual(1);
+    }
+  });
 });

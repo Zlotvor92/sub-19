@@ -179,7 +179,7 @@ describe('B: upozorenja o obimu i dugom — šta može sada, šta za sledeći ci
   it('`mali-obim`: još jedan dan uz isti datum (brojevi iz probnog plana) + sledeći ciklus', () => {
     const w = find('mali-obim');
     expect(w?.proposal).toMatch(
-      /^Uz isti datum trke dodaj 4\. dan laganog trčanja od oko \d+ min — vrh tada ide do [\d,]+ km nedeljno(, a dugi do [\d,]+ km)?\. (Za sledeću trku planiraj \d+ nedelj\w+ pripreme — obim tada bezbedno stiže do [\d,]+ km nedeljno|Duža priprema ovde ne pomaže: .+ km)\.$/
+      /^Uz isti datum trke dodaj 4\. dan laganog trčanja od oko \d+ min — vrh tada ide do [\d,]+ km nedeljno(, a dugi do [\d,]+ km)?( — i dalje ispod [\d,]+ km, pa trku počni sporije nego što forma na kraćim deonicama nudi)?\. (Za sledeću trku planiraj \d+ nedelj\w+ pripreme — obim tada bezbedno stiže do [\d,]+ km nedeljno|Duža priprema ovde ne pomaže: .+ km)\.$/
     );
     expect(w?.proposal).not.toMatch(/Produži pripremu/);
     const offered = Number(

@@ -26,7 +26,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:28:58) traži 4:57/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 28 km, ili na isti datum trči kraću distancu: polumaraton.
+- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 28,5 km, ili na isti datum trči kraću distancu: polumaraton.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  lagano 12 km — 12 km, 71 min
@@ -191,7 +191,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:31:43) traži 5:01/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 28 km, ili na isti datum trči kraću distancu: polumaraton.
+- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 28,5 km, ili na isti datum trči kraću distancu: polumaraton.
 
 PROMENE
 Pauza zbog bolesti trajala je 7 dana (7–13. 12.), pa je povratak postepen: treninzi su kraći do 27. 12., a prvi brzi trening je 24. 12.; od 11. 1. plan se nastavlja kako je bio.
