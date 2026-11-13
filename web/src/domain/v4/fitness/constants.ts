@@ -69,6 +69,8 @@ export const NEG_SPLIT_MAX_BONUS = 1.0;
     ne preračunava po stepenu — nema proverenog koeficijenta. [srednja da toplota usporava, niska za prag] */
 export const HOT_FROM_C = 25;
 export const HOT_LOWER_K_SHARE = 0.5;
+/** R18 (M19): slabiji rezultat ovoliko dana posle bola (≥ 4) ili kraja pauze spušta formu upola (kao vrućina). */
+export const AFTER_BREAK_DAYS = 28;
 
 /* ------------------------------------------------------------------ prenos na dužinu cilja (F4-K2) */
 

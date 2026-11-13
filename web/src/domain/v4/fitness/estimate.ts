@@ -680,6 +680,16 @@ export function estimateForm(
         /* Toplo (≥ 25 °C): dužina 0,5–2 × cilja se nikad ne odbacuje — spušta upola; druga dužina je donja granica. */
         const hotHeld = ev.hot && !low && !first && next < vdot;
         if (hotHeld) next = inRange ? vdot + k * C.HOT_LOWER_K_SHARE * (target - vdot) : vdot;
+        /* R18 (stavka 7, M19): slabiji rezultat u 4 nedelje posle bola (nivo ≥ 4) ili kraja pauze nije pun pad forme —
+           spušta upola (trka posle bola meri i oporavak, ne samo formu); samo rezultat sa druge dužine */
+        const afterBreak =
+          facts.pain.some(
+            (p) => p.level >= 4 && d >= dayNum(p.date) && d - dayNum(p.date) <= C.AFTER_BREAK_DAYS
+          ) ||
+          pauses.some((p) => d > dayNum(p.to) && d - dayNum(p.to) <= C.AFTER_BREAK_DAYS);
+        /* trka na dužini cilja ostaje mera (A14: zone ne brže od nje) */
+        if (!hotHeld && afterBreak && !inRange && !low && !first && next < vdot)
+          next = vdot + C.HOT_LOWER_K_SHARE * (next - vdot);
         vdot = next;
         /* R14: prvi rezultat U APLIKACIJI (unet rezultat ne računa) i trka sa hodanjem — najviše srednja. */
         results.push({

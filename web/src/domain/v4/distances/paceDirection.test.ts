@@ -157,3 +157,12 @@ describe('krug 18 — posle trke vrh ostaje', () => {
     expect(bad).toEqual([]);
   });
 });
+
+/* KRUG 18 (t. 7, M19): slabija trka sa druge dužine u 4 nedelje posle bola spušta formu upola. */
+describe('krug 18 — trka posle bola', () => {
+  it('polumaraton s26 (bol, pa 10 km 58:00): forma pada najviše upola od pada po samom rezultatu', () => {
+    const hm = DIST.find((d) => d.data.id === 'hm');
+    const r = hm?.scenarios.find((s) => s.no === 26)?.run();
+    expect(r.afterState.form.current.raceTimeSec).toBeLessThanOrEqual(2 * 3600 + 6 * 60 + 30);
+  });
+});

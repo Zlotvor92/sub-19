@@ -1253,6 +1253,9 @@ function onPain(
 
 /** Z3 (krug 7): posle bola prvi rad SVAKE zone (kvalitet ili blok u dugom) koji se posle bola još nije pojavio ima
     `PAIN_MID_DOSE_FACTOR` (60 %) planirane doze — i kad je posle prozora zaštite (s13: blok 9 km → 5–6 km). */
+/** R18 (stavka 7): prvi trening zone posle bola ≤ ovaj udeo treninga iste zone posle kog je bol prijavljen. */
+const PAIN_AFTER_SAME_SHARE = 0.8;
+
 function firstZoneAfterPain(
   doc: PlanDoc,
   painDate: IsoDate,
@@ -1277,7 +1280,23 @@ function firstZoneAfterPain(
       if (def === undefined || zone === null || seenZones.has(zone)) return d;
       seenZones.add(zone);
       if (d.date <= windowEnd || !isMutable(d, doc.header, state.today, done)) return d;
-      const dose = Math.round((PAIN_MID_DOSE_FACTOR * x.workSec) / 60) * 60;
+      /* R18 (stavka 7): prvi trening zone posle bola je i manji od treninga iste zone posle kog je bol prijavljen */
+      const painDay = doc.weeks.flatMap((y) => y.days).find((y) => y.date === painDate);
+      const painDef =
+        painDay?.workout?.libraryId === undefined
+          ? undefined
+          : data.library.find((y) => y.id === painDay.workout?.libraryId);
+      const painWork =
+        painDef !== undefined && mainZone(painDef.main) === zone
+          ? (painDay?.workout?.workSec ?? 0)
+          : 0;
+      const dose =
+        Math.round(
+          Math.min(
+            PAIN_MID_DOSE_FACTOR * x.workSec,
+            painWork > 0 ? PAIN_AFTER_SAME_SHARE * painWork : Number.POSITIVE_INFINITY
+          ) / 60
+        ) * 60;
       const workout =
         x.kind === 'long'
           ? realize(
