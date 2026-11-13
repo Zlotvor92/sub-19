@@ -101,7 +101,12 @@ export function slotDose(
     slot.index === 0
       ? Math.min(cap, Math.max(ctx.data.safety.minDoseSec, FIRST_DOSE_MAX_OF_CAP * cap))
       : cap;
-  if (dosePct !== undefined) return Math.min(most, dosePct * base);
+  /* R8 t. 2: u sužavanju i rasterećenju % se primenjuje na manji od osnovice i plafona — kod velikog obima osnovica
+     prelazi plafon, pa bi mali % inače dao skoro pun plafon (druga distanca, p05 N−2) */
+  if (dosePct !== undefined) {
+    const easing = weekKind === 'taper' || weekKind === 'recovery' || weekKind === 'race';
+    return Math.min(most, dosePct * (easing ? Math.min(base, cap) : base));
+  }
   const ladder = ctx.data.safety.progression[slot.stimulus];
   const step = weekKind === 'recovery' ? Math.max(0, slot.index - 1) : slot.index;
   const pct = ladder === undefined ? 1 : Math.min(1, ladder.startPct + ladder.stepPct * step);

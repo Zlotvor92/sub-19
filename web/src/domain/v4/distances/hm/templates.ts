@@ -407,8 +407,8 @@ function makeTemplate(
     tail,
     body: [],
     recoveryEvery: 0,
-    /* Y2 (krug 7): obično rasterećenje — dugi 75 % prethodnog (trener: 70–75 %), nedelja 76 % cilja */
-    recovery: { loadFactor: 0.76, longFactor: 0.75, doseFactor: 0.65 }
+    /* Y2 (krug 7): obično rasterećenje — dugi 75 % prethodnog (trener: 70–75 %), nedelja 74 % cilja (R8: lagan ≤ 65 % dugog ne nosi više uz manju dozu) */
+    recovery: { loadFactor: 0.74, longFactor: 0.75, doseFactor: 0.65 }
   };
 }
 

@@ -323,6 +323,8 @@ type SlotItem =
       slot: SlotRef;
       wanted: Seconds;
       extra: number;
+      /** R8 t. 3: `dosePct` mesta iz šablona — nosi ga i zamenski podražaj. */
+      dosePct?: number;
     };
 
 /** Mesta nedelje iz namere + odluka, PRE budžeta i cilja: ko je dugi, koji dani nose koji podražaj i koju dozu
@@ -465,7 +467,15 @@ export function weekSlots(
     }
     const zone = mainZone(def.main);
     if (zone === null) return;
-    items.push({ kind: 'quality', date, def, slot, wanted, extra: extraWeight(zone, ctx) });
+    items.push({
+      kind: 'quality',
+      date,
+      def,
+      slot,
+      wanted,
+      extra: extraWeight(zone, ctx),
+      ...(st.dosePct === undefined ? {} : { dosePct: st.dosePct })
+    });
   });
 
   /* D8 (dopuna kruga 4): kad su prag i tempo trke skoro isti tempo (< `minZoneGapSecPerKm`), ne zadaju se kao dva
@@ -482,7 +492,8 @@ export function weekSlots(
         if (x === undefined || x.kind !== 'quality' || mainZone(x.def.main) !== 'T') continue;
         const slot: SlotRef =
           repl === undefined ? x.slot : { ...x.slot, stimulus: repl, workoutId: undefined };
-        const wanted = repl === undefined ? 0 : slotDose(slot, undefined, intent.kind, ctx);
+        /* R8 t. 3: zamena nosi `dosePct` originala (mala doza praga u N−2/N−1 ostaje mala) */
+        const wanted = repl === undefined ? 0 : slotDose(slot, x.dosePct, intent.kind, ctx);
         const def =
           repl === undefined
             ? null
@@ -500,7 +511,8 @@ export function weekSlots(
             def,
             slot,
             wanted,
-            extra: extraWeight(zone, ctx)
+            extra: extraWeight(zone, ctx),
+            ...(x.dosePct === undefined ? {} : { dosePct: x.dosePct })
           };
         else items.splice(i, 1);
       }
@@ -1557,6 +1569,8 @@ export function runPass(
   const taperAcc = { count: 0, fast: 0 };
   /* M7: obim vršne nedelje (km u minutima laganog tempa) */
   let peakVolume = 0;
+  /* R8 t. 10: najveća puna nedelja gradnje van prozora izmene */
+  let fullBuildVolume = 0;
   /* P3: oznake kvaliteta po nedelji (za `tagMaxRun`) */
   const weekTags: Set<string>[] = [];
   let previousHard: IsoDate | null = null;
@@ -1858,7 +1872,18 @@ export function runPass(
          „+ 8 % ili + 3 km" je pravilo kilometara). */
       const volume = (totals.km * ctx.pace.paces.easy) / 60;
       volumes.push(volume);
-      if (week.intent.kind === 'peak') peakVolume = Math.max(peakVolume, volume);
+      /* R8 t. 10: vršna nedelja skraćena zbog događaja (u prozoru izmene + 28 dana) nije merilo silaska — merilo je
+         najveća puna nedelja gradnje van prozora, pa sužavanje posle više događaja ne produžava rep izmena */
+      const shortened = adjustments.some((adj) => {
+        const w = adjustmentWindow(adj);
+        return (
+          w !== null && w.from <= addDays(week.start, 6) && addDays(w.rampEnd, 28) > week.start
+        );
+      });
+      if (!shortened && (week.intent.kind === 'build' || week.intent.kind === 'peak'))
+        fullBuildVolume = Math.max(fullBuildVolume, volume);
+      if (week.intent.kind === 'peak')
+        peakVolume = Math.max(peakVolume, shortened ? Math.max(volume, fullBuildVolume) : volume);
       /* E1 (krug 5): merilo povratka je poslednja PUNA nedelja gradnje — ne lanča se preko rasterećenja */
       if (fraction >= 1 && week.intent.kind !== 'recovery') lastFullVolume = volume;
       longs.push(longAsDecided ? Math.max(shell.longSec, totals.longSec) : totals.longSec);

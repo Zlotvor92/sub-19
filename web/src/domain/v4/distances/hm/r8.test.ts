@@ -12,6 +12,8 @@ import {
 } from '../../engine';
 import { addDays } from '../../engine/dates';
 import { derivedPauses, scheduleMaxGap } from '../../engine/pauses';
+import { fastWorkSec } from '../../engine/guard';
+import { slotDose, type BuildCtx } from '../../engine/select';
 import type { PlanDay } from '../../engine/types';
 import { estimateForm } from '../../fitness';
 import { hm } from './index';
@@ -95,5 +97,48 @@ describe('krug 8 — t. 5: pauza iz praznine prema rasporedu trkača', () => {
     expect(derivedPauses(days, six, '2026-11-02', '2026-11-16', [], [1, 3, 6])).toHaveLength(1);
     /* bez rasporeda: staro pravilo (3 dana) */
     expect(derivedPauses(days, five, '2026-11-02', '2026-11-16', [])).toHaveLength(1);
+  });
+});
+
+describe('krug 8 — t. 2, 3, 10: doza i sužavanje', () => {
+  const ctxWith = (cap: number, base: number): BuildCtx =>
+    ({
+      decisions: { doseCapSec: { prag: cap }, doseBaseSec: { prag: base } },
+      data: { safety: { minDoseSec: 300, progression: {} } },
+      template: null
+    }) as unknown as BuildCtx;
+  const slot = { place: 'quality' as const, stimulus: 'prag', index: 3, phase: 'posebna' };
+  it('t. 2: u sužavanju/rasterećenju % ide na manji od osnovice i plafona; u gradnji na osnovicu (do plafona)', () => {
+    /* veliki obim: osnovica 3000 s > plafon 1500 s; 20 % ne sme dati 600 s (40 % plafona) nego 300 s */
+    expect(slotDose(slot, 0.2, 'taper', ctxWith(1500, 3000))).toBe(300);
+    expect(slotDose(slot, 0.2, 'recovery', ctxWith(1500, 3000))).toBe(300);
+    expect(slotDose(slot, 0.2, 'build', ctxWith(1500, 3000))).toBe(600);
+    expect(slotDose(slot, 0.9, 'build', ctxWith(1500, 3000))).toBe(1500);
+    /* osnovica ispod plafona: isto kao ranije */
+    expect(slotDose(slot, 0.5, 'taper', ctxWith(1500, 1000))).toBe(500);
+  });
+
+  it('t. 3: zamenski podražaj (prag → intervali) nosi `dosePct` mesta', () => {
+    const { facts, goal } = P('p01');
+    const forced: DistanceData = { ...hm, safety: { ...hm.safety, minZoneGapSecPerKm: 999 } };
+    const { doc } = make(facts, goal, forced);
+    const base = doc.header.decisions.doseBaseSec?.intervali ?? 0;
+    const cap = doc.header.decisions.doseCapSec.intervali ?? 0;
+    let replaced = 0;
+    for (const w of doc.weeks) {
+      const prag = w.intent.stimuli.find((x) => x.stimulus === 'prag');
+      if (prag?.dosePct === undefined || w.intent.stimuli.some((x) => x.stimulus === 'intervali'))
+        continue;
+      for (const d of w.days) {
+        if (hm.library.find((x) => x.id === d.workout?.libraryId)?.stimulus !== 'intervali')
+          continue;
+        replaced += 1;
+        /* doza zamene ≤ % mesta × osnovica (i ≤ plafon); rep deonica zaokružuje do jednog ponavljanja */
+        expect(fastWorkSec(d.workout), `n${String(w.index)}`).toBeLessThanOrEqual(
+          Math.min(cap, prag.dosePct * base) + 240
+        );
+      }
+    }
+    expect(replaced).toBeGreaterThan(0);
   });
 });
