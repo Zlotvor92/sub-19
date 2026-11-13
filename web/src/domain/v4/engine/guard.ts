@@ -836,11 +836,12 @@ export function warnings(input: WarningInput): Warning[] {
       }`
     });
   }
-  const dropped = droppedDayWarning(
-    doc,
-    costs,
-    minEasyOf(s, doc.header.decisions.level, doc.header.decisions.runDays.length)
-  );
+  /* krug 9: isti najkraći lagan dan kao u `lagan-kratak` (rezervni, kad ga nivo ima) — upozorenja se ne protivreče */
+  const lvl = doc.header.decisions;
+  const dropMin = levelMinEasy(s, lvl.level, lvl.runDays.length)
+    ? Math.max(s.minEasySec, (s.minEasyFallbackMin ?? 0) * 60)
+    : minEasyOf(s, lvl.level, lvl.runDays.length);
+  const dropped = droppedDayWarning(doc, costs, dropMin);
   if (dropped !== null) out.push(dropped);
   const shortEasy = shortEasyWarning(doc, costs, s);
   if (shortEasy !== null) out.push(shortEasy);
