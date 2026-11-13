@@ -298,6 +298,15 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
       })
     );
   }
+  /* krug 11 (stavka 19): godine i oporavak — rečenica iz teksta distance, samo kad odluka plana to nosi */
+  const ageText = data.texts['zaglavlje.godine'];
+  if (h.decisions.ageYears !== undefined && ageText !== undefined)
+    lines.push(
+      line(data, 'zaglavlje.godine', {
+        age: String(h.decisions.ageYears),
+        days: count(h.decisions.qualityMinGapDays ?? 0, DAYS)
+      })
+    );
   lines.push('');
   lines.push('FORMA');
   lines.push(

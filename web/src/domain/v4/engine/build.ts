@@ -484,6 +484,18 @@ export function weekSlots(
       return;
     if (hardBefore !== null && dateOf(wd) === addDays(hardBefore, 1)) return;
     if (st.onlyByFeel === true && !ctx.pace.paces.byFeel) return;
+    /* krug 11 (stavka 19): stariji trkač — brzi treninzi nedelje bar `qualityMinGapDays` dana razmaka */
+    const gapDays = d.qualityMinGapDays;
+    if (
+      gapDays !== undefined &&
+      !race &&
+      items.some(
+        (x) =>
+          (x.kind === 'quality' || x.kind === 'test') &&
+          Math.abs(diffDays(x.date, dateOf(wd))) < gapDays
+      )
+    )
+      return;
     const slot: SlotRef = {
       place: 'quality',
       stimulus: st.stimulus,

@@ -31,6 +31,10 @@ export const TEXTS: Record<string, string> = {
   'kontrola-rana-3k': 'provera forme: test na 3 km punim naporom, ravnomerno',
   'kontrola-rana-1500': 'provera forme: 1,5 km jako i ravnomerno',
 
+  /* krug 11 (stavka 19): godine i oporavak (samo kad `birthYear` postoji i `safety.ageRecovery` važi) */
+  'zaglavlje.godine':
+    'Godine ({age}): oporavak posle brzog treninga traje duže, pa su dva brza treninga u nedelji razmaknuta bar {days}. Kad dani trčanja to ne dozvoljavaju, nedelja ima jedan brz trening, a dugi i lagani dani nose obim.',
+
   /* napomene */
   'napomena.kontrola':
     'Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.',

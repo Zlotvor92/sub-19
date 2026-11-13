@@ -275,6 +275,10 @@ export interface Decisions {
   baseKm?: number;
   /** Tegoba u poslednjih 12 meseci (S8e): bez unosa visokog udara prve 4 nedelje. */
   painCaution?: boolean;
+  /** Krug 11 (stavka 19): godine trkača (iz `birthYear`) kad podatak distance (`ageRecovery`) za njih traži duži
+      oporavak; tada brzi treninzi u nedelji imaju bar `qualityMinGapDays` dana razmaka (datum − datum). */
+  ageYears?: number;
+  qualityMinGapDays?: number;
   warmupSec: Seconds;
   cooldownSec: Seconds;
   runDays: Weekday[];
@@ -886,6 +890,10 @@ export interface SafetyNumbers {
   /** Krug 11 (stavka 17): zaokružen rad (komad × broj) ne prelazi plafon zone — zaokružuje se naniže; deonice sa
       pola deonice manje (`minReps − 0,5`) samo dok ceo najmanji broj staje pod plafon. Bez unosa: kao do sada. */
   doseRoundUnderCap?: boolean;
+  /** Krug 11 (stavka 19): trkač od `fromAge` godina (iz `birthYear`) — između dva brza treninga nedelje
+      `extraGapDays` dana oporavka više (brz trening koji ne staje otpada; dugi i lagani nose obim). Bez unosa ili bez
+      `birthYear`: ništa. */
+  ageRecovery?: { fromAge: number; extraGapDays: number };
   /** M5 (krug 5): najkraće lagano trčanje po nivou, u minutima; nivo bez unosa koristi `minEasySec`. */
   minEasyMin?: Readonly<Record<LevelId, number>>;
   /** P3 (krug 5): sporiji od `fromRaceSec` na distanci — tempo intervala ne brži od tempa trke na `distanceM`. */

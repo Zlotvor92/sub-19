@@ -46,6 +46,21 @@ function historyBase(
   return { baseVolumeMin: min, baseKm: km, ...(min > baseLoad ? { baseLoad: min } : {}) };
 }
 
+/** Krug 11 (stavka 19): godine iz `birthYear` (u godini početka plana) i razmak brzih treninga iz podatka distance. */
+const BASE_QUALITY_GAP_DAYS = 2;
+function ageDecision(
+  state: RunnerState,
+  data: DistanceData,
+  startDate: IsoDate
+): { ageYears?: number; qualityMinGapDays?: number } {
+  const born = state.profile.birthYear;
+  const rule = data.safety.ageRecovery;
+  if (born === undefined || rule === undefined) return {};
+  const age = Number(startDate.slice(0, 4)) - born;
+  if (!(age >= rule.fromAge)) return {};
+  return { ageYears: age, qualityMinGapDays: BASE_QUALITY_GAP_DAYS + rule.extraGapDays };
+}
+
 /** S8e (krug 4): staž kraći od `adequate.minTenureWeeks` širi raspon prognoze (× 1,5 oko očekivanog). */
 const TENURE_RANGE_FACTOR = 1.5;
 function widenOf(state: RunnerState, data: DistanceData): number | undefined {
@@ -251,6 +266,7 @@ export function createPlan(
       ? {}
       : { baseVolumeMin: hist.baseVolumeMin, baseKm: hist.baseKm ?? 0 }),
     ...((state.painHistory ?? []).length > 0 ? { painCaution: true } : {}),
+    ...ageDecision(state, data, startDate),
     /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
     ...(state.recentQualityWeeks === null || state.recentQualityWeeks === undefined
       ? {}

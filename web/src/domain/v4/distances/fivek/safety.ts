@@ -160,6 +160,8 @@ export const SAFETY: SafetyNumbers = {
   easyNotBelowMin: true,
   /* krug 11 (stavka 17): zaokruživanje doze ne prelazi plafon zone */
   doseRoundUnderCap: true,
+  /* krug 11 (stavka 19): od 55 godina dan oporavka više između dva brza treninga nedelje */
+  ageRecovery: { fromAge: 55, extraGapDays: 1 },
   /* najkraće lagano trčanje po nivou: 30 min iskusnima (lagani dani 5 km su kraći nego kod 10 km), 25 min malom
      obimu i povratniku */
   minEasyMin: { brz: 30, srednji: 30, spor: 30, mali: 25, povratnik: 25 },
