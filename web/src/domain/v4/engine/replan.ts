@@ -334,13 +334,16 @@ function onMissed(
     );
   }
   /* S7: kad je sledeći isti trening već kraći (rasterećenje) ili manje doze, nema šta da „ostane" — plan je isti. */
-  const already = isLong
-    ? summarize(target.workout, ctx).durationSec <= summarize(missed, ctx).durationSec
-    : (target.workout?.workSec ?? 0) <= missed.workSec;
+  const next = isLong ? summarize(target.workout, ctx).durationSec : (target.workout?.workSec ?? 0);
+  const was = isLong ? summarize(missed, ctx).durationSec : missed.workSec;
+  const already = next <= was;
   if (already) {
+    /* M8d (krug 5): obrazloženje prema planu — „iste dužine" kad nije kraći (s10) */
+    const equal = Math.abs(next - was) < 60;
+    const how = isLong ? (equal ? 'iste dužine' : 'kraći') : equal ? 'iste doze' : 'manji';
     return notice(
       meaning,
-      `sledeći isti trening (${fmtDate(target.date)}) je po planu ionako ${isLong ? 'kraći' : 'manji'}, pa plan ostaje isti`
+      `sledeći isti trening (${fmtDate(target.date)}) je po planu ${how}, pa ne raste i plan ostaje isti`
     );
   }
   const adj: Adjustment = isLong

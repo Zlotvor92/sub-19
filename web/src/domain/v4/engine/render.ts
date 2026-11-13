@@ -312,7 +312,16 @@ function forecastChange(h: PlanHeader, state: RunnerState | undefined): string[]
   const before = h.form.raceDay.expectedSec;
   const after = state.form.raceDay.expectedSec;
   const moved = Math.abs(after - before) > FORECAST_CHANGE_MIN_SEC;
-  const reasons = [...new Set([...state.form.history].reverse().map((x) => x.reason.trim()))]
+  /* M8c (krug 5): koraci bez signala (pripisani napredak plana) ne menjaju prikazanu prognozu — ne prikazuju se,
+     da „zašto" uvek vodi do broja u zaglavlju */
+  const reasons = [
+    ...new Set(
+      [...state.form.history]
+        .filter((x) => x.signal !== 'plan')
+        .reverse()
+        .map((x) => x.reason.trim())
+    )
+  ]
     .filter((x) => x !== '')
     .slice(0, HISTORY_LINES);
   const lines: string[] = [];
