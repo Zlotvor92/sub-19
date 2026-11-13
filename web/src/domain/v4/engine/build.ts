@@ -12,6 +12,8 @@ import {
   MOVED_TEST_MIN_DAYS_BEFORE_RACE,
   RESTORE_PEAK_AFTER_DAYS,
   RETURN_FIRST_LONG_SHARE,
+  RETURN_LONG_JUMP_SEC,
+  RETURN_LONG_JUMP_SHARE,
   RP_TEST_GAP_DAYS,
   TAPER_BLOCK_SHARE,
   RETURN_WEEK_MAX_OVER_LAST,
@@ -1565,6 +1567,8 @@ export function runPass(
   let previousLong: Seconds = 0;
   let lastFullVolume: number = header.decisions.baseVolumeMin ?? header.decisions.baseLoad;
   let previousRamped = false;
+  /* R8 t. 11: istrčani dugi poslednje nedelje rampe (ili skraćene nedelje izlaska) — merilo izlaska */
+  let exitLong: Seconds | null = null;
   let rampSeen = false;
   /* E9: brz rad vršne nedelje (merilo silaska intenziteta) */
   let peakFast = 0;
@@ -1650,6 +1654,21 @@ export function runPass(
           ...blockOf(slots)
         })
       };
+    }
+    /* R8 t. 11: izlazak iz POČETNE rampe (plan počinje dan posle testa/trke) po pravilu R2 — dugi nedelju za nedeljom
+       ≤ + `RETURN_LONG_JUMP_SHARE` ili + `RETURN_LONG_JUMP_SEC` od istrčanog dugog prethodne nedelje */
+    let exitCapped = false;
+    /* nedelja čiji kraj (dan dugog) prozor prilagođavanja (rampa ili oporavak posle testa/trke) još pokriva */
+    const touched = adjustments.some((adj) => {
+      const w = adjustmentWindow(adj);
+      return w !== null && w.from <= addDays(week.start, 6) && w.rampEnd > addDays(week.start, 6);
+    });
+    if (!touched && exitLong !== null && exitLong > 0 && shell.longSec > 0) {
+      const cap = Math.max(RETURN_LONG_JUMP_SHARE * exitLong, exitLong + RETURN_LONG_JUMP_SEC);
+      if (shell.longSec > cap) {
+        shell = { ...shell, longSec: Math.round(cap / 60) * 60 };
+        exitCapped = true;
+      }
     }
     previousTarget = fullTarget;
     const accBefore = { ...taperAcc };
@@ -1895,6 +1914,10 @@ export function runPass(
       if (fraction >= 1 && week.intent.kind !== 'recovery') lastFullVolume = volume;
       longs.push(longAsDecided ? Math.max(shell.longSec, totals.longSec) : totals.longSec);
     }
+    if (opts.fresh === true && (touched || exitCapped)) {
+      const real = weekTotals(built, header, state, ctx).longSec;
+      exitLong = real > 0 ? real : exitLong;
+    } else exitLong = null;
     previousRamped = ramped;
     if (ramped) rampSeen = true;
     previousLong = shell.longSec;

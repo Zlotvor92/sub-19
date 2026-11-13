@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
   buildState,
   guard,
+  paceCtxOf,
   plan,
   renderPlan,
+  summarize,
   type DistanceData,
   type Goal,
   type PlanDoc,
@@ -140,5 +142,59 @@ describe('krug 8 — t. 2, 3, 10: doza i sužavanje', () => {
       }
     }
     expect(replaced).toBeGreaterThan(0);
+  });
+});
+
+describe('krug 8 — t. 11: izlazak iz početne rampe (plan počinje dan posle testa/trke)', () => {
+  it('dugi nedelju za nedeljom ≤ + 25 % ili + 20 min od istrčanog dugog prethodne nedelje', () => {
+    const { facts, goal } = P('p11');
+    /* par P2 B: početnik od 6 nedelja (3–4 dana, 8 → 20 km), test 10 km juče */
+    const plan6 = [
+      { n: 3, total: 8, long: 4 },
+      { n: 3, total: 11, long: 5 },
+      { n: 3, total: 14, long: 6 },
+      { n: 4, total: 17, long: 7 },
+      { n: 4, total: 19, long: 8 },
+      { n: 4, total: 20, long: 10 }
+    ];
+    const runs: RunnerFacts['runs'] = [];
+    plan6.forEach((w, i) => {
+      const monday = addDays('2026-10-26', -7 * (5 - i));
+      const days = w.n === 3 ? [1, 3, 6] : [1, 3, 5, 6];
+      days.forEach((d, j) => {
+        const last = j === days.length - 1;
+        const km = last ? w.long : (w.total - w.long) / (w.n - 1);
+        runs.push({
+          id: `b${String(i)}-${String(j)}`,
+          date: addDays(monday, d),
+          distanceM: Math.round((last && i === 5 ? 10 : km) * 1000),
+          durationSec: Math.round(
+            (last && i === 5 ? 10 : km) * (last && i === 5 ? 336.2 : 440 + 8 * j)
+          ),
+          ...(last && i === 5 ? { effort: 'test' as const } : {})
+        });
+      });
+    });
+    const { doc } = make(
+      { ...facts, runs, profile: { ...facts.profile, yearsRunning: 0.1, longestRecentKm: 10 } },
+      goal
+    );
+    const ctx = paceCtxOf(doc.header);
+    const longs = doc.weeks
+      .slice(0, 6)
+      .map((w) => w.days.find((d) => d.workout?.kind === 'long')?.workout ?? null)
+      .map((w) => (w === null ? 0 : summarize(w, ctx).durationSec));
+    expect(longs[0] ?? 0, longs.join(',')).toBeGreaterThan(0);
+    for (let i = 1; i < longs.length; i += 1) {
+      /* posle rasterećenja merilo je dugi pre njega (trener, krug 6 § D) */
+      const prev = Math.max(
+        longs[i - 1] ?? 0,
+        doc.weeks[i - 1]?.intent.kind === 'recovery' ? (longs[i - 2] ?? 0) : 0
+      );
+      const cur = longs[i] ?? 0;
+      expect(cur, `${String(i + 1)}: ${longs.join(',')}`).toBeLessThanOrEqual(
+        Math.max(1.25 * prev, prev + 1200) + 60
+      );
+    }
   });
 });
