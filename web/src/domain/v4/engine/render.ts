@@ -215,10 +215,16 @@ export function raceNotes(
   const timeSec = fromGoal ? target : confirmedSec;
   /* krug 10 (stavka 9): jedan izvor tempa trke — isti broj kao tempo trke u treninzima (zaokruživanje bez razlike) */
   const pace = fromGoal || h.paces.byFeel ? (timeSec / data.distanceM) * 1000 : h.paces.RP;
+  /* krug 10 (stavka 10): pomak starta kao udeo tempa kad ga distanca daje, inače sekunde */
+  const startOffset = (k: 'from' | 'to'): number => {
+    const share = data.safety.raceStartPaceOffsetShare?.[k];
+    if (share !== undefined) return pace * share;
+    return data.safety.raceStartPaceOffsetSec?.[k] ?? (k === 'from' ? 5 : 10);
+  };
   const values = {
     pace: fmtPace(pace),
-    paceFrom: fmtPaceBare(pace + (data.safety.raceStartPaceOffsetSec?.from ?? 5)),
-    paceTo: fmtPace(pace + (data.safety.raceStartPaceOffsetSec?.to ?? 10)),
+    paceFrom: fmtPaceBare(pace + startOffset('from')),
+    paceTo: fmtPace(pace + startOffset('to')),
     time: fmtClock(timeSec),
     basis: fromGoal ? 'tvoj cilj' : 'današnja forma',
     feel: feelOf('RP', data, raceDay.expectedSec)

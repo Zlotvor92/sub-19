@@ -845,6 +845,9 @@ export interface SafetyNumbers {
   longBlockMinWeekShare?: number;
   /** R8 t. 8: start trke — `{paceFrom}`–`{paceTo}` u napomeni trke je tempo trke + ovoliko s/km (bez: 5 i 10). */
   raceStartPaceOffsetSec?: { from: number; to: number };
+  /** Krug 10 (stavka 10): start trke kao udeo ciljnog tempa (npr. 0,01–0,02 = 1–2 % sporije) — ima prednost nad
+      sekundama, da brz trkač ne gubi 25–50 s u prvoj trećini. */
+  raceStartPaceOffsetShare?: { from: number; to: number };
   /** Bol od ovog nivoa vraća obim kao posle pauze; niži menja samo dane u prozoru zaštite (krug 5, E4).
       Podrazumevano 4. */
   painReturnFromLevel?: number;

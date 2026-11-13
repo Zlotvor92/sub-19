@@ -173,6 +173,8 @@ export const SAFETY: SafetyNumbers = {
   forecastMaxGainByLevel: { pocetnik: 0.03, 'pocetnik-nov': 0 },
   /* R8 t. 8: start polumaratona 5–10 s/km sporije od tempa trke (napomena trke) */
   raceStartPaceOffsetSec: { from: 5, to: 10 },
+  /* krug 10 (stavka 10): prva trećina 1–2 % sporije od ciljnog tempa (brz trkač ne gubi 25–50 s) */
+  raceStartPaceOffsetShare: { from: 0.01, to: 0.02 },
   /* krug 4 dopuna (E2): skraćena nedelja — dugi i blok srazmerno, dugi ≤ 45 % nedelje u km */
   shortenedLongMaxShare: 0.45,
   /* krug 4 dopuna (D8): prag i tempo trke bliži od 5 s/km — jedan podražaj nedeljno (p05, p06) */
