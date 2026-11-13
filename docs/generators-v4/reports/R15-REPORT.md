@@ -28,7 +28,6 @@ padaju. Lint i typecheck su čisti, a ispisi sve četiri distance odgovaraju kod
   - M26: lagan dan nikad duži od dugog. Mreža 4 × 800 planova: 300 → 0 nedelja.
 - `tenk/`/`marathon/`: samo traženi redovi podatka, pomenuti it.fails i snimci otisaka. Namerno promenjeni otisci:
   HM p01, p04; 5K p06; 10K p06; MAR p02–p06, p08–p12, p15–p18.
-
 ## Nije urađeno
 - 7 (podatak HM) — probano pa vraćeno.
   - −1 ≤ 70 % i nedelja trke ≤ 45 % (`weekMinus1MaxOfPeak`, `raceWeekMaxOfPeak` 0,45), uz M22 („vršna" = najveća
