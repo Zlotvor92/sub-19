@@ -110,3 +110,13 @@ Pročitao dan po dan p01, p04, p08, p12: specifična faza puna (p01 gore; p04 ne
 nedelja (test). Ostaje: p01 najteža je 6 × 1 km, ne 3 × 2 km (plafon 29 min spušta 3 × 2 km na 2 × 2 kod sporijih,
 pa je unos prepušten rotaciji); „vršna nedelja" u ispisu je nedelja najvećeg obima (Z9), jednu pre najteže;
 scenariji s07, s15, s26 i dalje imaju nalaz čuvara (A6, motor); p04 nedelja 5 bez utorka (brzina ispala).
+
+### Krug 2 — dopuna (drugi sudija, B7–B10)
+| # | stanje | test |
+|---|---|---|
+| B7 | urađeno: plafon tempa trke 35 min (brz 40); prvi tempo trke 4–5 × 1 km (≥ 60 % poslednjeg praga, ≤ 70 % najvećeg — K7); najveći ≥ 6 km za srednji/brz, ≥ 4 km ostali (p04 6 × 1 km, p01 7 × 1 km, p03 4 × 1 km, p11 4 × 1 km) | kapija t. 15 |
+| B8 | urađeno B1-om: p08, p10 između provere (ned 12) i najteže nema rasterećenja | B1 |
+| B9 | p06 i dalje naopako (ned −2 26,5 km, ned −1 33,3 km): u ned −2 motor briše kvalitet, ned −1 drži 5 laganih po 30 min — motor (A1), ne podaci | kapija t. 16, p06 imenovan u `gate.test` |
+| B10 | p08 sada ned 1 38,9 km (97 %), vrh 45 km (× 1,13) — „plan podiže obim" sledi iz brojeva | — |
+Najmanje odluke: N−5 tempo trke ostaje 5 × 1 km (veća doza lomi R2 u s25: nedelja 41,8 → 52,5 km); plan kraći od
+8 nedelja ima manju dozu u najtežoj (inače skok nedelje + 21 %); s13 Z3 72 % (zaokruživanje deonica, u `KNOWN`).
