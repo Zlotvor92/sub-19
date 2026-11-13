@@ -122,7 +122,12 @@ function onResult(
   const run = state.runs.find((r) => r.id === ev.runId);
   if (run === undefined) return null;
   /* Rezultat provere forme ili pripremne trke IZ PLANA: samo § 14.1 (3 dana bez brzog), bez rampe i × 0,8. */
-  const planned = allDays(doc).some((d) => d.id === run.dayId && d.workout?.kind === 'test');
+  /* E5 (krug 5): kratka trka van plana (do `safety.shortEffortSec`) se oporavlja kao planirana provera — samo
+     § 14.1, bez rampe */
+  const short = data.safety.shortEffortSec;
+  const planned =
+    allDays(doc).some((d) => d.id === run.dayId && d.workout?.kind === 'test') ||
+    (short !== undefined && run.durationSec <= short);
   /* K1: rezultat je deonica punog napora; aktivnost iz koje se ona ne može izdvojiti nije dokaz forme. */
   const result = effortResult(run);
   const durationSec = result?.durationSec ?? run.durationSec;

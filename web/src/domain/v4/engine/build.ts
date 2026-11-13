@@ -9,10 +9,11 @@ import {
   RACE_EVE_MAX_SEC,
   RACE_NO_LONG_DAYS,
   RETURN_TEST_AFTER_RAMP_DAYS,
+  RP_TEST_GAP_DAYS,
   RETURN_WEEK_MAX_OVER_LAST,
   TAPER_ADDON_MIN_EASY_SEC
 } from './constants';
-import { addDays, weekdayOf } from './dates';
+import { addDays, diffDays, weekdayOf } from './dates';
 import {
   assignDays,
   easyOverPrevious,
@@ -396,10 +397,26 @@ export function weekSlots(
     const at = items.findIndex((x) => x.kind === 'quality');
     const wd = qualityDays[0];
     const date = at >= 0 ? items[at]?.date : wd === undefined ? undefined : dateOf(wd);
+    /* E3 (krug 5): pomerena provera ne ide u ± 2 dana od treninga u tempu trke (ni bloka u dugom) i ne zamenjuje
+       jedini tempo trke nedelje */
+    const rpDates = [
+      ...items.filter((x) => x.kind === 'quality' && mainZone(x.def.main) === 'RP').map((x) => x.date),
+      ...(long !== null && long.wanted > 0 && long.def !== null && mainZone(long.def.main) === 'RP' && longWd !== null
+        ? [dateOf(longWd)]
+        : [])
+    ];
+    const replaced = at >= 0 ? items[at] : undefined;
+    const replacesOnlyRp =
+      replaced?.kind === 'quality' && mainZone(replaced.def.main) === 'RP' && rpDates.length === 1;
+    const nearRp =
+      date !== undefined &&
+      rpDates.some((x) => x !== replaced?.date && Math.abs(diffDays(x, date)) <= RP_TEST_GAP_DAYS);
     const usable =
       date !== undefined &&
       date < calmFrom &&
       (forcedFrom === null || date >= forcedFrom) &&
+      !replacesOnlyRp &&
+      !nearRp &&
       (longWd === null || date !== dateOf(longWd));
     if (date !== undefined && usable && runDays.some((x) => dateOf(x) === date)) {
       const item: SlotItem = { kind: 'test', date, def: forcedTest.def, slot: forcedTest.slot };
@@ -583,7 +600,9 @@ function taperIntensity(
   recipes: Map<IsoDate, Recipe>,
   span: Span,
   peakFastSec: Seconds,
-  ctx: BuildCtx
+  ctx: BuildCtx,
+  /** Brojač preko granice nedelje (prozor 8–14 dana seče dve nedelje plana). */
+  acc: { count: number; fast: number } = { count: 0, fast: 0 }
 ): Map<IsoDate, Recipe> {
   const t = ctx.data.safety.taper;
   if (t === undefined) return recipes;
@@ -591,12 +610,26 @@ function taperIntensity(
   const lastFrom = addDays(span.raceDate, -t.lastDays);
   const beforeFrom = addDays(span.raceDate, -t.weekBeforeFromDays);
   const out = new Map(recipes);
+  /* dugi bez bloka zadržava dužinu (km), ne trajanje — lagani dani ostaju u odnosu prema dugom */
+  const plainLong = (recipe: Extract<Recipe, { type: 'long' }>): Recipe => {
+    const km = summarize(realize(recipe, ctx), ctx.pace).km;
+    return { ...recipe, def: steadyLongDef(ctx, null), dose: 0, sec: Math.round(km * ctx.pace.paces.easy) };
+  };
+  /* kvalitet postaje lagan dan: kraći za zagrevanje/hlađenje, ne duži od plafona sužavanja ni 60 % dugog te nedelje */
+  const longOfWeek = [...out.values()].find((x) => x.type === 'long');
+  const longCap = longOfWeek?.type === 'long' ? 0.6 * longOfWeek.sec : Number.POSITIVE_INFINITY;
   const asEasy = (recipe: Recipe): Recipe => ({
     type: 'easy',
-    sec: Math.max(ctx.data.safety.minEasySec, summarize(realize(recipe, ctx), ctx.pace).durationSec - 600)
+    sec: Math.max(
+      ctx.data.safety.minEasySec,
+      Math.min(
+        summarize(realize(recipe, ctx), ctx.pace).durationSec - 600,
+        taperEasyMax(ctx.data.safety, ctx.decisions.runDays.length),
+        longCap
+      )
+    )
   });
-  let count = 0;
-  let fast = 0;
+  let { count, fast } = acc;
   const budget = t.weekBeforeMaxOfPeak * peakFastSec;
   for (const date of [...out.keys()].sort()) {
     const r = out.get(date);
@@ -605,13 +638,13 @@ function taperIntensity(
     const isBlock = r.type === 'long' && r.dose > 0;
     if (!isQuality && !isBlock) continue;
     if (date >= lastFrom) {
-      out.set(date, isBlock && r.type === 'long' ? { ...r, def: steadyLongDef(ctx, null), dose: 0 } : asEasy(r));
+      out.set(date, isBlock && r.type === 'long' ? plainLong(r) : asEasy(r));
       continue;
     }
     const work = isQuality && r.type === 'quality' ? r.dose : r.type === 'long' ? r.dose : 0;
     const room = peakFastSec > 0 ? budget - fast : Number.POSITIVE_INFINITY;
     if (count >= t.weekBeforeMaxQuality || room < ctx.data.safety.minDoseSec) {
-      out.set(date, r.type === 'long' ? { ...r, def: steadyLongDef(ctx, null), dose: 0 } : asEasy(r));
+      out.set(date, r.type === 'long' ? plainLong(r) : asEasy(r));
       continue;
     }
     const dose = Math.min(work, room);
@@ -620,10 +653,24 @@ function taperIntensity(
       if (r.type === 'long') out.set(date, { ...r, dose });
     }
     count += 1;
-    /* ostvaren rad (zaokruženje na komad) — da granica važi za ono što trkač trči */
-    const real = realize(out.get(date) ?? r, ctx);
+    /* ostvaren rad (zaokruženje na komad) — da granica važi za ono što trkač trči; višak zaokruženja se skida */
+    let real = realize(out.get(date) ?? r, ctx);
+    const cur = out.get(date) ?? r;
+    if (real !== null && real.workSec > room && (cur.type === 'quality' || cur.type === 'long')) {
+      const less = Math.max(0, cur.dose - (real.workSec - room) - 60);
+      const next: Recipe =
+        less < ctx.data.safety.minDoseSec
+          ? cur.type === 'long'
+            ? plainLong(cur)
+            : asEasy(cur)
+          : { ...cur, dose: less };
+      out.set(date, next);
+      real = realize(next, ctx);
+    }
     fast += real === null ? dose : real.workSec;
   }
+  acc.count = count;
+  acc.fast = fast;
   return out;
 }
 
@@ -1040,6 +1087,7 @@ export function runPass(
   let rampSeen = false;
   /* E9: brz rad vršne nedelje (merilo silaska intenziteta) */
   let peakFast = 0;
+  const taperAcc = { count: 0, fast: 0 };
   let previousHard: IsoDate | null = null;
   /* Provera forme koja je pala u pauzu ili rampu: čeka prvu nedelju posle rampe (R9). */
   let pendingTest: Extract<Recipe, { type: 'test' }> | null = null;
@@ -1120,7 +1168,8 @@ export function runPass(
       layoutWeek({ ...shell, volumeMin }, ctx, slots, previousEasy),
       span,
       peakFast,
-      ctx
+      ctx,
+      taperAcc
     );
     if (week.intent.kind === 'peak') peakFast = Math.max(peakFast, recipeSums(recipes, ctx).fastSec);
     if (week.intent.kind !== 'recovery' && week.intent.source === 'template') {

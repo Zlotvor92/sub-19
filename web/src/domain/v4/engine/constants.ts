@@ -134,6 +134,8 @@ export const RESTORE_AFTER_RAMP_DAYS = 14;
 export const RESTORE_PEAK_AFTER_DAYS = 21;
 /** Pomerena provera forme najranije 10 dana posle kraja rampe povratka (krug 4, S9). */
 export const RETURN_TEST_AFTER_RAMP_DAYS = 10;
+/** E3 (krug 5): pomerena provera ne ide u ± 2 dana od treninga u tempu trke. */
+export const RP_TEST_GAP_DAYS = 2;
 
 /* ------------------------------------------------------------------ spremnost (§ 6.5, § 14.1) */
 
