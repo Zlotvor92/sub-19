@@ -217,7 +217,7 @@ Polazim od tvojih ≈ 40 km nedeljno (4 h 2 min trčanja).
 FORMA
 Polazna forma (1. 11.): 1:44:16
 Današnja prognoza (13. 12.): 1:44:16, pouzdanost srednja
-Očekivano na dan trke: 1:41:54 (raspon 1:38:47–1:46:56) — 2:22 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 1:41:53 (raspon 1:38:17–1:46:56) — 2:23 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 1:44:16 za 21,1 km.
 
@@ -228,7 +228,7 @@ TEMPA
 - tempo trke 4:56/km
 - intervali 4:20/km
 - brze deonice 4:05/km
-Tempo trke u treninzima je tvoja današnja forma (4:56/km). Tvoj cilj 1:39:56 traži 4:44/km — na ivici je (raspon na dan trke 1:38:47–1:46:56). Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (4:56/km). Tvoj cilj 1:39:56 traži 4:44/km — na ivici je (raspon na dan trke 1:38:17–1:46:56). Tempa se ubrzavaju kad trka ili test to potvrde.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  odmor

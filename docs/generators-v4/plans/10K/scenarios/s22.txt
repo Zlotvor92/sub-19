@@ -236,7 +236,7 @@ Polazim od tvojih ≈ 50 km nedeljno (5 h 59 min trčanja).
 FORMA
 Polazna forma (1. 11.): 56:02
 Današnja prognoza (13. 12.): 56:02, pouzdanost srednja
-Očekivano na dan trke: 54:41 (raspon 53:10–57:05) — 1:21 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 54:23 (raspon 52:38–57:04) — 1:39 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 28. 11.: 5 km za 26:39. Rezultat sa 5 km prenosim na 10 km uz umanjenje, jer uz oko 49 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 10 km ostaje 56:02.
 - Polazna procena je iz rezultata koji si uneo: oko 56:02 za 10 km.
@@ -248,7 +248,7 @@ TEMPA
 - tempo trke 5:36/km
 - intervali 5:20/km
 - brze deonice 4:51/km
-Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na dan trke (54:41) traži 5:28/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na dan trke (54:23) traži 5:26/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 17 nedelja
   pon 2. 11.  lagano 75 min — urađeno 10,5 km, 75 min (7:10/km)
@@ -442,7 +442,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
   sub 6. 3.  lagano 20 min — 2,8 km, 20 min
   ned 7. 3.  TRKA: 10 km
       napomena: Tempo za trku: 5:36/km (današnja forma 56:02).
-      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:28/km (54:41).
+      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:26/km (54:23).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:39–5:42/km (ne brže od 5:36/km), od 3. do 8. km ravnomerno 5:36/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
       napomena: Posle trke: 5 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 21,8 km, 2 h 33 min, 4 treninga + trka, brz rad 6 % vremena trčanja

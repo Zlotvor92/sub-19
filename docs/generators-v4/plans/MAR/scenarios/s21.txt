@@ -175,7 +175,7 @@ Polazim od tvojih ≈ 65 km nedeljno (6 h 26 min trčanja).
 FORMA
 Polazna forma (1. 11.): 3:32:21
 Današnja prognoza (13. 12.): 3:32:24, pouzdanost srednja
-Očekivano na dan trke: 3:30:11 (raspon 3:24:36–3:37:34) — 2:13 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 3:28:58 (raspon 3:24:21–3:35:25) — 3:26 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Prognoza je slabija nego u prethodnom ispisu (3:28:58 → 3:30:11).
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 28. 11.: 10 km za 44:47. Rezultat sa 10 km prenosim na 42,2 km uz umanjenje, jer uz oko 63 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 50 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 3:32:21 → 3:32:24.
@@ -188,7 +188,7 @@ TEMPA
 - tempo trke 5:02/km
 - intervali 4:16/km
 - brze deonice 4:01/km
-Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:30:11) traži 4:59/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:28:58) traži 4:57/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 28,5 km, ili na isti datum trči kraću distancu: polumaraton.

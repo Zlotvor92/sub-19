@@ -262,7 +262,7 @@ Dugi trening u 7 nedelja staje na 2 h 11 min: duže trčanje za ovu distancu don
 FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (13. 12.): 2:04:14, pouzdanost srednja
-Očekivano na dan trke: 2:00:48 (raspon 1:55:56–2:08:06) — 3:26 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:00:36 (raspon 1:56:43–2:06:30) — 3:38 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 28. 11.: 10 km za 55:35. Rezultat sa 10 km prenosim na 21,1 km uz umanjenje, jer uz oko 52 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 21,1 km: 2:04:13 → 2:04:14.
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
@@ -274,7 +274,7 @@ TEMPA
 - tempo trke 5:53/km
 - intervali 5:21/km
 - brze deonice 4:53/km
-Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:00:48) traži 5:44/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:00:36) traži 5:43/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja
   pon 2. 11.  lagano 75 min — urađeno 10,6 km, 75 min (7:06/km)
@@ -491,7 +491,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
   sub 20. 3.  lagano 20 min — 2,8 km, 20 min
   ned 21. 3.  TRKA: polumaraton
       napomena: Tempo za trku: 5:53/km (današnja forma 2:04:13).
-      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:44/km (2:00:48).
+      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:43/km (2:00:36).
       napomena: Prvih 5 km trči 5:57–6:00/km, od 5. do 16. km 5:53/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
       napomena: Posle trke: 12 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

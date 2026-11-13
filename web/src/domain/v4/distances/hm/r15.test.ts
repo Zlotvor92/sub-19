@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildState, paceCtxOf, plan, summarize, type PlanDoc } from '../../engine';
 import { longEasyFloor } from '../../engine/decide';
+import { renderPlan } from '../../engine';
 import { estimateForm } from '../../fitness';
 import { hm } from './index';
 import { PROFILES, factsOf } from './testdata/profiles';
@@ -154,5 +155,18 @@ describe('krug 15 — lagan dan uz dugi ≥ 90 min (M2, M21)', () => {
     );
     expect(km(n - 2)).toBeLessThanOrEqual(0.7 * peak + 0.5);
     expect(km(n - 1)).toBeLessThanOrEqual(0.45 * peak + 0.5);
+  });
+
+  it('stabilnost (R16): „ništa se nije desilo" — očekivano vreme i raspon u ispisu isti pre i posle', () => {
+    const line = (t: string): string => /Očekivano na dan trke: [^—]*/.exec(t)?.[0] ?? '';
+    for (const sc of SCENARIOS.filter((x) => x.title.includes('ništa'))) {
+       
+      const r: any = sc.run();
+      /* scenarij „ništa" sa proverom forme iz plana (promena ≠ 0) ima pravu izmenu — meri se samo promena 0 */
+      if ((r.changes as unknown[]).length > 0) continue;
+      expect(line(renderPlan(r.after, r.afterState, hm)), String(sc.no)).toBe(
+        line(renderPlan(r.before, r.beforeState, hm))
+      );
+    }
   });
 });

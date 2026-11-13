@@ -187,6 +187,9 @@ function raceTruth(
 /** Napomene dana trke za ispis (R6): tempo iz cilja ako je u rasponu, inače iz očekivanog vremena; trkač po
     osećaju dobija opis napora bez s/km. Napomene iz podataka mogu da nose `{pace}`, `{paceFrom}`, `{paceTo}`
     (5 i 10 s sporije) i `{time}`; uz pravilo sa `byFeelText` trkač po osećaju dobija taj tekst. */
+/** Krug 16: razlika današnje forme ispod ovog udela vremena trke nije nova procena (prikaz ostaje iz plana). */
+const STABLE_FORM_SHARE = 0.003;
+
 /** M3 (krug 5): prognoza dana trke za ispis — novija procena iz stanja, po istim pravilima plana. */
 function raceDayShown(
   doc: PlanDoc,
@@ -194,6 +197,13 @@ function raceDayShown(
 ): PlanDoc['header']['form']['raceDay'] {
   const h = doc.header;
   if (state === undefined) return h.form.raceDay;
+  /* krug 16 (stabilnost, AGENTS t. 2): bez promene forme (razlika ispod `STABLE_FORM_SHARE`) prikaz ostaje onaj
+     iz plana — protok vremena i sitna razlika procene sami ne menjaju očekivano vreme */
+  if (
+    Math.abs(state.form.current.raceTimeSec - h.form.current.raceTimeSec) <
+    STABLE_FORM_SHARE * h.form.current.raceTimeSec
+  )
+    return h.form.raceDay;
   return adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
 }
 

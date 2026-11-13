@@ -154,7 +154,7 @@ Dugi trening u 5 nedelja staje na 1 h 40 min: duže trčanje za ovu distancu don
 FORMA
 Polazna forma (1. 11.): 26:32
 Današnja prognoza (13. 12.): 26:31, pouzdanost srednja
-Očekivano na dan trke: 26:19 (raspon 25:29–27:20) — 0:12 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 26:16 (raspon 25:29–27:20) — 0:15 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 12. 12.: 1,5 km za 7:17. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 5 km: 26:32 → 26:31.
 - Polazna procena je iz laganog tempa koji si uneo: oko 26:32 za 5 km. Prvi test ili trka je preciziraju.
@@ -166,7 +166,7 @@ TEMPA
 - tempo trke 5:18/km
 - intervali 5:08/km
 - brze deonice 4:50/km
-Tempo trke u treninzima je tvoja današnja forma (5:18/km). Očekivano vreme na dan trke (26:19) traži 5:16/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:18/km). Očekivano vreme na dan trke (26:16) traži 5:15/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
 Rezultat 1,5 km za 7:17 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 26:19 (raspon 25:29–27:20).

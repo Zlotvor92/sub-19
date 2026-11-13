@@ -253,7 +253,7 @@ Polazim od tvojih ≈ 20 km nedeljno (2 h 22 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (13. 12.): 2:04:13, pouzdanost srednja
-Očekivano na dan trke: 2:00:29 (raspon 1:55:47–2:09:48) — 3:44 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:00:29 (raspon 1:55:11–2:09:48) — 3:44 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 

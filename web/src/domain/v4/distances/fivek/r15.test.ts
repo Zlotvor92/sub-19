@@ -1,10 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 /* KRUG 15 (briefs/R15-MOTOR.md, R12-5K F3) — motor nad podacima 5 km: kvalitet ima prednost nad laganim danom na podu
    (M20). */
 import { describe, expect, it } from 'vitest';
 import { buildState, plan, type PlanDoc } from '../../engine';
+import { renderPlan } from '../../engine';
 import { estimateForm } from '../../fitness';
 import { fivek } from './index';
 import { PROFILES, factsOf } from './testdata/profiles';
+import { SCENARIOS } from './testdata/scenarios';
 
 function build(id: string): PlanDoc {
   const p = PROFILES.find((x) => x.id === id);
@@ -64,5 +67,18 @@ describe('krug 15 — kvalitet pre laganog dana na podu (M20)', () => {
     const before = w9?.days[5];
     expect(before?.workout?.kind).toBe('easy');
     expect(before?.workout?.stimulus).not.toBeNull();
+  });
+
+  it('stabilnost (R16): „ništa se nije desilo" — očekivano vreme i raspon u ispisu isti pre i posle', () => {
+    const line = (t: string): string => /Očekivano na dan trke: [^—]*/.exec(t)?.[0] ?? '';
+    for (const sc of SCENARIOS.filter((x) => x.title.includes('ništa'))) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const r: any = sc.run();
+      /* scenarij „ništa" sa proverom forme iz plana (promena ≠ 0) ima pravu izmenu — meri se samo promena 0 */
+      if ((r.changes as unknown[]).length > 0) continue;
+      expect(line(renderPlan(r.after, r.afterState, fivek)), String(sc.no)).toBe(
+        line(renderPlan(r.before, r.beforeState, fivek))
+      );
+    }
   });
 });
