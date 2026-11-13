@@ -720,3 +720,14 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - 10K tab dobio nalog R18-10K u poruci (zamerke drugog sudije runde 04 za P03, P10, P08, P11, P02 — samo podatak).
 - Sledeće: provera organizatora kad motor R18 i maraton jave; zatim ocena R19 (nov Fable trener + 4 nova Fable
   druga sudije).
+
+### 13. 11. 2026, 23:20 — R18 podatak: 10K (`e9313f0`) i maraton (`a2090eab`) primljeni (po izveštajima, neprovereno kod organizatora)
+- Odluka organizatora (maraton): dužina najdužeg dugog ima prednost nad udelom. Udeo ≤ 45 % (4 dana) / 50 % (3 dana);
+  u nedeljama najdužeg dugog (N−5, N−3; kod 3 dana tri nedelje) 50 / 55 %. Kapija „najduži ≥ 26 km kod vrha ≥ 52 km"
+  vraćena. Najduži dugi: p01 26,5, p02 28, p03 23,8 (isto); kraći nego u b38: p10 21,8 (−0,7), p11 22,6 (−2,2),
+  p13 19,2 (−0,7), p18 22 (−2) — izuzeci u testu; ostavljeno treneru R19. target-compare 18/78 (bilo 20).
+- 10K: dvostruki usponi uklonjeni, više intervala kod 3 dana, p11 vršna = najteža, plafon dugog mali 1 h 30 / spor
+  1 h 40.
+- Za sledeći nalog motora (R19-MOTOR): plafon dugog po broju dana (10K); p02 najkraći lagan dan 25 min (spajanje/
+  izostavljanje); udeo dugog bez viška km bloka MP i korak dugog u km sa blokom (MAR p11/p18); zaokruživanje koraka
+  dugog (p06 ne stiže do 26 km).
