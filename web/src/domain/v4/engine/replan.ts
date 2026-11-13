@@ -26,6 +26,8 @@ import {
   RETURN_LONG_JUMP_SEC,
   RETURN_LONG_JUMP_SHARE,
   TAIL_MAX_DAYS,
+  RETURN_PEAK_KEEP_SHARE,
+  RETURN_PEAK_LONG_KEEP_SHARE,
   RETURN_WEEK_JUMP_SHARE,
   LATE_PAUSE_MIN_RAMP_DAYS,
   NO_TEST_AFTER_RACE_DAYS,
@@ -732,6 +734,20 @@ function smoothExit(
       }
     }
   }
+  /* krug 12 (M2): najteža nedelja do trke (pre sužavanja) se posle prekida spušta, ne briše — najviše za
+     `1 − RETURN_PEAK_KEEP_SHARE` obima i `1 − RETURN_PEAK_LONG_KEEP_SHARE` dugog */
+  /* izbor po PRVOBITNOM planu (najteža nedelja kakvu je trkač imao), ne po već skraćenom */
+  const origKm = (i: number): number => {
+    const o = original.weeks.find((x) => x.start === weeks[i]?.start);
+    return o === undefined ? 0 : km(o);
+  };
+  let peakIdx = -1;
+  /* posle rampe (nedelja u rampi ne može biti vrh) */
+  for (let i = Math.max(base, first); i < n - 2; i += 1) {
+    const w = weeks[i];
+    if (w === undefined || w.intent.kind === 'taper' || w.intent.kind === 'race') continue;
+    if (peakIdx < 0 || origKm(i) > origKm(peakIdx)) peakIdx = i;
+  }
   let trimmedPrev = false;
   for (let i = base; i < n - 1; i += 1) {
     const w = weeks[i];
@@ -761,8 +777,16 @@ function smoothExit(
           lastLong
         )
       : Math.max(RETURN_LONG_JUMP_SHARE * lastLong, lastLong + RETURN_LONG_JUMP_SEC);
-    const longOver = lastLong > 0 && curLong > longCap + 60;
-    const kmOver = pKm > 0 && curKm > kmCap + 0.5;
+    const peak = i === peakIdx && i >= first;
+    const kmLimit = peak
+      ? Math.max(kmCap, Math.min(curKm, RETURN_PEAK_KEEP_SHARE * origKm(i)))
+      : kmCap;
+    const origLong = longSec(original.weeks.find((x) => x.start === w.start));
+    const longLimit = peak
+      ? Math.max(longCap, Math.min(curLong, RETURN_PEAK_LONG_KEEP_SHARE * origLong))
+      : longCap;
+    const longOver = lastLong > 0 && curLong > longLimit + 60;
+    const kmOver = pKm > 0 && curKm > kmLimit + 0.5;
     /* povratak je gotov kod prve nedelje koja staje u granicu — dalje važi prvobitan plan */
     /* Z1 (krug 7): nedelja rasterećenja ili provere ne završava povratak — završava ga nedelja gradnje koja staje */
     trimmedPrev = longOver || kmOver;
@@ -787,7 +811,7 @@ function smoothExit(
       if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
         return d;
       const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
-      const sec = Math.round(longCap / 60) * 60;
+      const sec = Math.round(longLimit / 60) * 60;
       const workout = realizeLong(
         { type: 'long', sec, def, dose: Math.min(d.workout.workSec, sec / 2), slot: null },
         ctxB
@@ -796,7 +820,7 @@ function smoothExit(
     });
     /* lagani dani srazmerno do obima nedelje */
     const trimmed: PlanWeek = { ...w, days };
-    const over = km(trimmed) - kmCap;
+    const over = km(trimmed) - kmLimit;
     const easy = days.filter(
       (d) => d.workout?.kind === 'easy' && isMutable(d, after.header, state.today, done)
     );
@@ -823,7 +847,7 @@ function smoothExit(
     let shrunk: PlanWeek = { ...w, days: finalDays };
     /* krug 10: kad su lagani dani na najmanjem, a nedelja je još iznad granice skoka, kvalitet ide na
        najmanju dozu (bez nadoknade nabijanjem) */
-    if (i >= first && km(shrunk) > kmCap + 0.5) {
+    if (i >= first && km(shrunk) > kmLimit + 0.5) {
       shrunk = {
         ...shrunk,
         days: shrunk.days.map((d): PlanDay => {
@@ -846,7 +870,7 @@ function smoothExit(
         })
       };
     }
-    const rest = km(shrunk) - kmCap;
+    const rest = km(shrunk) - kmLimit;
     /* A10 b: u spuštenom ostatku dugi ostaje srazmeran (višak obima od najkraćih laganih dana ne skida dugi), osim
        u prvoj spuštenoj nedelji, gde važi granica skoka */
     if (rest > 0.5) {

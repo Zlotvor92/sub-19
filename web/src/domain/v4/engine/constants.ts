@@ -292,6 +292,9 @@ export const MOVED_TEST_MIN_DAYS_BEFORE_RACE = 21;
 export const RETURN_LONG_JUMP_SHARE = 1.25;
 export const RETURN_LONG_JUMP_SEC = 1200;
 export const RETURN_WEEK_JUMP_SHARE = 1.2;
+/** Krug 12 (M2): najteža nedelja pred trku posle prekida — spuštena najviše na ovaj deo (obim, dugi), ne obrisana. */
+export const RETURN_PEAK_KEEP_SHARE = 0.83;
+export const RETURN_PEAK_LONG_KEEP_SHARE = 0.85;
 /** Krug 10: prognoza se pomera tek kad je plan posle događaja ukupno bar pola nedelje ispod prvobitnog. */
 export const LOST_WEEKS_MIN = 0.5;
 /** Krug 10: rezultat stariji od ovoliko dana, uz drugi događaj u istom prolazu, primenjuje se bez nove izmene. */

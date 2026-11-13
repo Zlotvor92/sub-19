@@ -70,7 +70,14 @@ export function longCapAfterEvent(
       back = true;
       continue;
     }
-    if (last > 0 && l > Math.max(1.25 * last, last + 1200) + 60)
+    /* krug 12 (M2): najteža nedelja pred trku posle prekida zadržava ≥ 85 % dugog — namerno, nije skok */
+    const peak =
+      old !== undefined &&
+      w.intent.kind !== 'taper' &&
+      longOf(old, before) > 0 &&
+      l <= longOf(old, before) + 60 &&
+      l >= 0.8 * longOf(old, before);
+    if (!peak && last > 0 && l > Math.max(1.25 * last, last + 1200) + 60)
       bad.push(
         `${id} n${String(w.index)} dugi ${String(Math.round(last / 60))} → ${String(Math.round(l / 60))} min`
       );

@@ -13,6 +13,7 @@ import { adjustRaceDay } from '../../engine/plan';
 import { easyShareOfLong } from '../../engine/decide';
 import { marathon } from './index';
 import { SCENARIOS } from './testdata/scenarios';
+import { keptPeak } from '../../engine/testdata/round12';
 
 /* POZNATE GREŠKE MOTORA na 10 km (13. 11. 2026) — nalaz se ne briše iz provere nego se ovde imenuje, sa uzrokom;
    svaki je zahtev prema motoru u `docs/generators-v4/reports/F7-10K-REPORT.md`. Kad motor bude ispravljen, test
@@ -132,6 +133,17 @@ describe('maraton: ponovno planiranje nad 29 scenarija', () => {
           Math.abs(longSec(ob, r.before, r.after) - longSec(w, r.after)) <= 60;
         if (same && i > from) break;
         /* merilo: najveće od nedelje događaja (ne pre nje) — najviše 3 prethodne */
+        /* krug 12 (M2): najteža nedelja pred trku posle prekida se spušta, ne briše — nije skok povratka */
+        if (
+          keptPeak(
+            before.map((x) => weekKm(x, r.before)),
+            before.map((x) => x.intent.kind),
+            i,
+            base,
+            weekKm(w, r.after)
+          )
+        )
+          continue;
         const lo = Math.max(base, i - 3);
         /* Z1 (krug 7): dugi od POSLEDNJEG dugog, i preko rasterećenja/provere, bez izuzetka prvobitnog plana */
         const prevLong =

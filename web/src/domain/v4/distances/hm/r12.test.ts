@@ -37,4 +37,18 @@ describe('krug 12 — polumaraton', () => {
     expect(day?.workout?.kind).toBe('long');
     expect(summarize(day.workout, ctx).durationSec).toBeLessThanOrEqual(60 * 60 + 60);
   });
+
+  it('M2: s06 (bolest 4–6 nedelja pred trku) — najteža nedelja spuštena, ne obrisana (≥ 50 km, dugi ≥ 1 h 40 sa blokom)', () => {
+    const r = ALL.find(({ s }) => s.no === 6)?.r;
+    const ctx = paceCtxOf(r.after.header);
+    const w = (r.after.weeks as any[]).find((x) => x.index === 17);
+    const km = (w.days as any[]).reduce(
+      (t, d) => t + (d.workout === null ? 0 : summarize(d.workout, ctx).km),
+      0
+    );
+    expect(km).toBeGreaterThanOrEqual(50);
+    const long = (w.days as any[]).find((d) => d.workout?.kind === 'long')?.workout;
+    expect(summarize(long, ctx).durationSec).toBeGreaterThanOrEqual(100 * 60);
+    expect(long.workSec).toBeGreaterThan(0);
+  });
 });

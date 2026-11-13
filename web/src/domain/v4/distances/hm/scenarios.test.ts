@@ -13,6 +13,7 @@ import { adjustmentWindow } from '../../engine/readiness';
 import { adjustRaceDay } from '../../engine/plan';
 import { hm } from './index';
 import { SCENARIOS } from './testdata/scenarios';
+import { keptPeak } from '../../engine/testdata/round12';
 
 const RUNS = SCENARIOS.map((s) => ({ s, r: s.run() }));
 /* E5 (s17–s20) je nov plan iz novog stanja, ne ponovno planiranje */
@@ -120,6 +121,17 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
           Math.abs(longSec(ob, r.before, r.after) - longSec(w, r.after)) <= 60;
         if (same && i > from) break;
         /* merilo: najveće od nedelje događaja (ne pre nje) — najviše 3 prethodne */
+        /* krug 12 (M2): najteža nedelja pred trku posle prekida se spušta, ne briše — nije skok povratka */
+        if (
+          keptPeak(
+            before.map((x) => weekKm(x, r.before)),
+            before.map((x) => x.intent.kind),
+            i,
+            base,
+            weekKm(w, r.after)
+          )
+        )
+          continue;
         const lo = Math.max(base, i - 3);
         /* Z1 (krug 7): dugi od POSLEDNJEG dugog, i preko rasterećenja/provere, bez izuzetka prvobitnog plana */
         const prevLong =
