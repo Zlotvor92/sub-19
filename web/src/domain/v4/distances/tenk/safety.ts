@@ -19,7 +19,7 @@ export const LEVELS: LevelRule[] = [
 
 /* Udeo dugog u KILOMETRIMA nedelje po broju dana (README trenera: dugi 30–33 % nedelje; 3 dana ciljni p03 i p11
    43–45 %). Motor ga primenjuje na minute u laganom tempu, pa je stvarni udeo u km ≤ zadatog. */
-const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.44, '4': 0.34, '5': 0.31, '6': 0.28, '7': 0.26 };
+const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.44, '4': 0.33, '5': 0.31, '6': 0.28, '7': 0.26 };
 
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: + 7 % u bodovima, najmanje 12 BO (≈ 2 km) — trener: 5–10 %, ciljni p01 + 2 km nedeljno */
@@ -33,7 +33,7 @@ export const SAFETY: SafetyNumbers = {
      u km (izbor, izmereno na 12 profila; kapija meri km po tabeli `testdata/gate.ts`). */
   peakLadder: {
     rows: [
-      { maxBaseKm: 25.5, minWeeks: 18, overBase: 2.1 },
+      { maxBaseKm: 25.5, minWeeks: 18, overBase: 1.95 },
       { maxBaseKm: 25.5, minWeeks: 12, overBase: 1.8 },
       { maxBaseKm: 25.5, minWeeks: 0, overBase: 1.6 },
       { maxBaseKm: 35.5, minWeeks: 12, overBase: 1.75 },
@@ -44,16 +44,16 @@ export const SAFETY: SafetyNumbers = {
     limitedOverBase: 1.65,
     limitedTenureWeeks: 8
   },
-  /* plafon vrha po nivou (BO ≈ minuti nedelje sa težinom rada): 10 km ne traži maratonski obim — brz ≈ 9 h,
-     srednji i spor ≈ 8 h (izbor) */
+  /* plafon vrha po nivou (BO ≈ minuti nedelje sa težinom rada): 10 km ne traži maratonski obim — brz ≈ 10 h,
+     srednji i spor ≈ 9 h; krug 2 (B2): plafon više ne drži obim ravnim (p04 50 → 56 km za 18 nedelja) (izbor) */
   peakLoadCap: {
-    pocetnik: 300,
-    'pocetnik-nov': 240,
-    povratnik: 420,
-    mali: 300,
-    spor: 480,
-    srednji: 480,
-    brz: 540
+    pocetnik: 360,
+    'pocetnik-nov': 280,
+    povratnik: 480,
+    mali: 340,
+    spor: 560,
+    srednji: 560,
+    brz: 600
   },
   /* najduži dugi: 60–100 min (ciljni p03 ≈ 93 min, p11 ≈ 85 min); dugi za 10 km nije duži od 1 h 40 */
   longMaxSec: {
@@ -77,9 +77,10 @@ export const SAFETY: SafetyNumbers = {
   /* korak dugog: + 5 min ili + 1 km nedeljno (ciljni p01 + 0,5–1 km, p11 + 0,5 km) */
   longStepSec: 300,
   longStepKm: 1,
-  longStartFloorShare: 0.85,
+  /* krug 2 (B2): 3 dana — nedelja 1 = sadašnji obim (p08 kretao sa 36 uz 41 km), pa dugi kreće sa 96 % plafona */
+  longStartFloorShare: 0.96,
   longStartFloorFromCapShare: 0.88,
-  longFloorGrowMinRunDays: 4,
+  longFloorGrowMinRunDays: 3,
   longStartShare: { '1': 0.6, '2': 0.5, '3': 0.42, '4': 0.31, '5': 0.28, '6': 0.25, '7': 0.22 },
   /* plafon doze po treningu (README: T do 28 min, I 14 → 22 min, RP 23 → 29 min; završnica u dugom 10–15 min) */
   doseCaps: {
@@ -154,15 +155,16 @@ export const SAFETY: SafetyNumbers = {
   /* sporiji od 52:30 (≈ VDOT 39) — intervali ne brži od tempa na 5 km iz forme */
   intervalPaceFloor: { distanceM: 5000, fromRaceSec: 3150 },
   /* lagan dan ≤ udeo dugog: dugi je kod 10 km trećina nedelje, pa lagani dani 4 dana idu do 80 % dugog (ciljni p01:
-     lagano 9–12 km uz dugi 13–17 km), 3 i 5+ dana 75 % */
+     lagano 9–12 km uz dugi 13–17 km); krug 2 (B2): 3 i 5+ dana 80 % (85 % je probano: lagan dan sa ubrzanjima bio je duži od
+     progresivnog dugog) */
   easyMaxShareOfLong: {
     '1': 0.8,
     '2': 0.8,
-    '3': 0.72,
+    '3': 0.8,
     '4': 0.8,
-    '5': 0.75,
-    '6': 0.75,
-    '7': 0.75
+    '5': 0.8,
+    '6': 0.8,
+    '7': 0.8
   },
   dayBeforeLongMaxShare: 0.75,
   /* WU/CD po baznoj nedelji: do ≈ 25 km 10/10, do ≈ 35 km 15/10, više 20/15 — rad 10 km je brži od rada dužih

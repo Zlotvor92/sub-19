@@ -147,9 +147,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (g.km > Math.max(ref * 1.1, ref + 3) + 0.25 * g.workouts)
       v.push(`n${String(g.index)} skok ${String(ref)} → ${String(g.km)} km`);
   });
-  /* 3. lagan dan ≤ 80 % dugog kod 4 dana, 75 % kod 3 i 5+ dana (10 km: dugi je trećina nedelje). Krug 5 (D1, D6): dugi koji trkač već trči je merilo — najveći od
+  /* 3. lagan dan ≤ 80 % dugog (10 km: dugi je ≤ 100 min i trećina nedelje). Krug 5 (D1, D6): dugi koji trkač već trči je merilo — najveći od
      dugog te nedelje, prethodne 3 nedelje i najdužeg skorašnjeg iz profila (dugi kreće niže / ide u talasu) */
-  const easyCap = runDays === 4 ? 0.8 : 0.75;
+  const easyCap = 0.8;
   let maxEasy = 0;
   const d0 = doc.header.decisions;
   const recentLongKm = Math.min(d0.longStartSec, d0.longMaxSec) / ctx.paces.easy;

@@ -25,8 +25,11 @@ const KNOWN = new Map<string, string>([
   /* bol pa trka: rep 4 nedelje + 6 dana nastaje već u PRVOM ponovnom planiranju (samo bol, izlaz po R2); R8 t. 17
      (`capTail`) seče rep kad su oba događaja u istom ponovnom planiranju, a ovde je trka posebno ponovno planiranje
      nad već izmenjenim planom (prvobitan plan mu nije dostupan) */
-  ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)']
+  ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)'],
   /* Z3 i deonice fiksne dužine (s13, s15, s16) skinuto u krugu 8 (R8 t. 4: manji unos ili kraće deonice) */
+  /* krug 2 10 km: s13 prvi tempo trke posle bola 18 od 28 min (64 %) — zaokruživanje na ceo komad deonice; granica
+     je 60 % + 90 s */
+  ['s13 2027-01-26 prvi rad zone RP: 18 od 28 min', 'Z3: zaokruživanje deonice (64 %)']
 ]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>

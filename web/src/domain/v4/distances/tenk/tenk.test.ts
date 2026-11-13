@@ -896,3 +896,121 @@ describe('krug 8 — t. 19: start trke 10 km', () => {
     expect(sec(m?.[3], m?.[4]) - race).toBe(6);
   });
 });
+
+/* ------------------------------------------------------------------ 9. krug 2 (briefs/R9-ROUND9.md § B) */
+
+const rpSec = (w: PlanWeek): number =>
+  w.days.reduce(
+    (a, d) =>
+      a +
+      (d.workout?.stimulus === 'tempo-trke' || d.workout?.stimulus === 'dugi-rp'
+        ? d.workout.workSec
+        : 0),
+    0
+  );
+/* „brz trening" (trener D9): kvalitet ili lagan dan sa dodatkom (ubrzanja, kratki usponi) */
+const fastCount = (w: PlanWeek): number =>
+  w.days.filter(
+    (d) =>
+      d.workout?.kind === 'quality' || (d.workout?.kind === 'easy' && d.workout.steps.length > 1)
+  ).length;
+
+/* p02 (5 km 20:25, 30 km, 8 ned) i p06 (VDOT 58, 30 km, 5 dana): motor briše tempo trke u nedelji −2 jer obim ne nosi
+   kvalitet (A1 — ne zaobilazi se u podacima, brief R9 § B4) */
+const WAIT_A1_RP = new Set(['p02', 'p06']);
+
+describe('krug 2: specifična faza, rast obima, kratka priprema (B1–B4)', () => {
+  it('B1: između poslednje provere i najteže nedelje nema rasterećenja; tempo trke raste do najteže (≥ 12 nedelja)', () => {
+    for (const p of PROFILE_PLANS) {
+      const n = p.doc.weeks.length;
+      if (n < 12) continue;
+      const kinds = p.doc.weeks.map((w) => w.intent.kind);
+      const peak = kinds.lastIndexOf('peak');
+      const check = p.doc.weeks.reduce(
+        (last, w, i) => (i < peak && w.days.some((d) => d.workout?.kind === 'test') ? i : last),
+        -1
+      );
+      expect(check, p.id).toBeGreaterThanOrEqual(peak - 6);
+      for (let i = check + 1; i < peak; i += 1)
+        expect(kinds[i], `${p.id} n${String(i + 1)}`).not.toBe('recovery');
+      /* od prve nedelje posle provere do najteže svaka nedelja ima tempo trke, a najteža ga ima najviše */
+      const weeks = p.doc.weeks.slice(check + 1, peak + 1);
+      /* jedan kvalitet nedeljno (3 dana, početnik): tempo trke bar u najtežoj — 5 nedelja zaredom istog se ne zadaje;
+         početnik ima prag u N−5 (ciljni p11) */
+      const single =
+        p.doc.header.decisions.runDays.length <= 3 ||
+        p.doc.header.decisions.level.startsWith('pocetnik');
+      for (const w of weeks)
+        if (!single || w.index === peak + 1)
+          expect(rpSec(w), `${p.id} n${String(w.index)}`).toBeGreaterThan(0);
+      /* najteža nosi (skoro) najviše tempa trke: ≥ 85 % najvećeg u specifičnoj fazi (deonice se zaokružuju na ceo komad) */
+      const top = rpSec(p.doc.weeks[peak] as PlanWeek);
+      expect(top, p.id).toBeGreaterThanOrEqual(0.85 * Math.max(...weeks.map(rpSec)));
+      /* tempo trke ulazi pre provere (razvoj): bar jedna nedelja pre provere ga ima (početnik: od N−4, ciljni p11) */
+      if (n >= 14 && !p.doc.header.decisions.level.startsWith('pocetnik'))
+        expect(
+          p.doc.weeks.slice(0, check).some((w) => rpSec(w) > 0),
+          p.id
+        ).toBe(true);
+    }
+  });
+
+  it('B2: ≥ 35 km i ≥ 12 nedelja (4+ dana, ne početnik/povratnik) vrh ≥ × 1,15 u km (trener 1,25–1,30; p04 spor sa dugim ≤ 100 min ostaje ≈ × 1,17); 3 dana: nedelja 1 ≥ 95 %; bez dve iste uzastopne nedelje gradnje', () => {
+    for (const p of PROFILE_PLANS) {
+      const d = p.doc.header.decisions;
+      const base = p.facts.profile.weeklyKm ?? 0;
+      const stats = weekStats(p.doc);
+      const top = Math.max(...stats.map((s) => s.km));
+      if (
+        base >= 35 &&
+        p.doc.weeks.length >= 12 &&
+        d.runDays.length >= 4 &&
+        !['pocetnik', 'pocetnik-nov', 'povratnik'].includes(d.level)
+      )
+        expect(top / base, p.id).toBeGreaterThanOrEqual(1.15);
+      if (d.runDays.length === 3)
+        expect(stats[0]?.km ?? 0, p.id).toBeGreaterThanOrEqual(0.95 * base);
+      const ctx = paceCtxOf(p.doc.header);
+      const sig = (s: WeekStat): string =>
+        `${(Math.round(s.km * 2) / 2).toFixed(1)}|${s.longKm.toFixed(1)}|${s.week.days
+          .map((x) =>
+            x.workout === null
+              ? '-'
+              : `${x.workout.text}:${summarize(x.workout, ctx).km.toFixed(1)}`
+          )
+          .join(',')}`;
+      for (let i = 1; i < stats.length; i += 1) {
+        const a = stats[i - 1] as WeekStat;
+        const b = stats[i] as WeekStat;
+        if (b.week.intent.kind !== 'build' || a.week.intent.kind !== 'build') continue;
+        expect(sig(b), `${p.id} n${String(b.week.index)} ista kao prethodna`).not.toBe(sig(a));
+      }
+    }
+  });
+
+  it('B3: plan od 8 nedelja — sužavanje je jedna nedelja + nedelja trke; nedelja −2 ima tempo trke (osim obim-za-nivo, B4)', () => {
+    for (const p of PROFILE_PLANS) {
+      const n = p.doc.weeks.length;
+      if (n > 9) continue;
+      const kinds = p.doc.weeks.map((w) => w.intent.kind);
+      expect(kinds.filter((k) => k === 'taper').length, p.id).toBe(1);
+      expect(kinds.slice(-2), p.id).toEqual(['taper', 'race']);
+      if (WAIT_A1_RP.has(p.id)) continue;
+      expect(rpSec(p.doc.weeks[n - 3] as PlanWeek), p.id).toBeGreaterThan(0);
+    }
+  });
+
+  /* B4: svaka nedelja gradnje i vrha ima kvalitet (motor A1, krug 9). Dok A1 ne stigne, p02 i p06 (mali obim uz visok
+     nivo) ga nemaju — podaci to NE zaobilaze (brief R9 § B4). Kad A1 stigne, ovaj test pada: briše se `WAIT_A1`. */
+  const WAIT_A1 = new Set(['p06']);
+  it('B4: svaka nedelja gradnje/vrha (van provere) ima bar jedan brz trening (kvalitet ili dodatak)', () => {
+    const missing = new Set<string>();
+    for (const p of PROFILE_PLANS)
+      for (const w of p.doc.weeks) {
+        if (w.intent.kind !== 'build' && w.intent.kind !== 'peak') continue;
+        if (w.days.some((d) => d.workout?.kind === 'test')) continue;
+        if (fastCount(w) === 0) missing.add(p.id);
+      }
+    expect([...missing].sort()).toEqual([...WAIT_A1].sort());
+  });
+});
