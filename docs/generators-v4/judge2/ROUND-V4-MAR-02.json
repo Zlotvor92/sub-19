@@ -1,0 +1,291 @@
+{
+ "runda": "ROUND-V4-MAR-02",
+ "sudija": "judge2",
+ "distanca": "MAR",
+ "stanje": "fb2c1a3",
+ "planovi": {
+  "p01": {
+   "q": [
+    7,
+    7,
+    7,
+    8,
+    8,
+    7,
+    7
+   ],
+   "ukupno": 72.0
+  },
+  "p02": {
+   "q": [
+    7,
+    7,
+    7,
+    7,
+    8,
+    6,
+    6
+   ],
+   "ukupno": 69.0
+  },
+  "p03": {
+   "q": [
+    6,
+    5,
+    5,
+    7,
+    7,
+    7,
+    6
+   ],
+   "ukupno": 59.0
+  },
+  "p04": {
+   "q": [
+    5,
+    5,
+    7,
+    7,
+    7,
+    3,
+    5
+   ],
+   "ukupno": 56.0
+  },
+  "p05": {
+   "q": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    8,
+    7
+   ],
+   "ukupno": 75.0
+  },
+  "p06": {
+   "q": [
+    7,
+    7,
+    6,
+    7,
+    8,
+    7,
+    6
+   ],
+   "ukupno": 68.0
+  },
+  "p07": {
+   "q": [
+    7,
+    7,
+    7,
+    8,
+    8,
+    6,
+    7
+   ],
+   "ukupno": 71.0
+  },
+  "p08": {
+   "q": [
+    6,
+    5,
+    7,
+    7,
+    8,
+    7,
+    7
+   ],
+   "ukupno": 65.0
+  },
+  "p09": {
+   "q": [
+    7,
+    7,
+    7,
+    7,
+    8,
+    7,
+    7
+   ],
+   "ukupno": 71.0
+  },
+  "p10": {
+   "q": [
+    5,
+    6,
+    5,
+    6,
+    7,
+    6,
+    5
+   ],
+   "ukupno": 56.0
+  },
+  "p11": {
+   "q": [
+    7,
+    7,
+    6,
+    7,
+    7,
+    5,
+    5
+   ],
+   "ukupno": 64.0
+  },
+  "p12": {
+   "q": [
+    6,
+    6,
+    7,
+    7,
+    7,
+    6,
+    6
+   ],
+   "ukupno": 64.0
+  },
+  "p13": {
+   "q": [
+    5,
+    6,
+    3,
+    6,
+    4,
+    5,
+    6
+   ],
+   "ukupno": 49.0
+  },
+  "p14": {
+   "q": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    7,
+    7
+   ],
+   "ukupno": 74.0
+  },
+  "p15": {
+   "q": [
+    7,
+    7,
+    7,
+    7,
+    7,
+    4,
+    5
+   ],
+   "ukupno": 65.0
+  },
+  "p16": {
+   "q": [
+    6,
+    5,
+    7,
+    7,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 63.0
+  },
+  "p17": {
+   "q": [
+    8,
+    7,
+    8,
+    8,
+    8,
+    8,
+    7
+   ],
+   "ukupno": 77.0
+  },
+  "p18": {
+   "q": [
+    5,
+    6,
+    5,
+    5,
+    4,
+    5,
+    6
+   ],
+   "ukupno": 52.0
+  },
+  "p19": {
+   "q": [
+    6,
+    7,
+    4,
+    6,
+    7,
+    5,
+    6
+   ],
+   "ukupno": 58.0
+  }
+ },
+ "prosek_p01_p12": 65.8,
+ "prosek_svih": 64.6,
+ "scenariji": {
+  "s01": 8,
+  "s02": 8,
+  "s03": 7,
+  "s04": 8,
+  "s05": 7,
+  "s06": 6,
+  "s07": 3,
+  "s08": 7,
+  "s09": 8,
+  "s10": 7,
+  "s11": 8,
+  "s12": 6,
+  "s13": 7,
+  "s14": 7,
+  "s15": 5,
+  "s16": 4,
+  "s17": 2,
+  "s18": 7,
+  "s19": 6,
+  "s20": 6,
+  "s21": 10,
+  "s22": 10,
+  "s23": 10,
+  "s24": 7,
+  "s25": 4,
+  "s26": 3,
+  "s27": 7,
+  "s28": 8,
+  "s29": 8
+ },
+ "prosek_scenarija": 6.69,
+ "parovi": {
+  "P1": 8,
+  "P2": 5,
+  "P3": 5
+ },
+ "prosek_parova": 6.0,
+ "najvaznije_ispravke": [
+  "trka kao ulaz ne resetuje obim (s17)",
+  "povratak posle bolesti/bola 1-2 nedelje, ne 3-6",
+  "pripremni PM: trka ili TM trening, ne oboje; bez 6 dana odmora; ne duži od najdužeg dugog +15%",
+  "upozorenja sa tačnim uzrokom i brojem (p04, p15, p11, p19, P3A)",
+  "prag dugog i obima po vremenu za spore trkače",
+  "hod-trk na trci kad su dugi hod-trk; cilj 'samo da završim' bez TM",
+  "dugi ≤ ~40% nedelje kod 3-4 dana; obim u nizu od 4 dana",
+  "stari rezultat se ne prijavljuje ponovo"
+ ],
+ "za_vlasnika": [
+  "s17",
+  "p04",
+  "pairs/p2b + p18"
+ ]
+}
