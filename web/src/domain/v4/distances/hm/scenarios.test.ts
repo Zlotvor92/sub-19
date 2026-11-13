@@ -200,9 +200,9 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       );
       if (s.title.startsWith('E3') && !result && now < was - 1)
         bad.push(`${name(s.no)} propušten trening ubrzao prognozu ${String(was)} → ${String(now)}`);
-      /* bolji rezultat od očekivanog ne usporava prognozu (0,1 %: zaokruživanje preostalog napretka) */
+      /* A4 (krug 9): bolji rezultat od očekivanog ne usporava prognozu — nova ≤ stara (bez tolerancije) */
       /* F4-K2: „brže od očekivanog" = brže od očekivanog po ličnoj krivi plana (isti `effortTimeSec`) */
-      if (s.title.startsWith('E1') && s.title.includes('brže od očekivanog') && now > was * 1.001)
+      if (s.title.startsWith('E1') && s.title.includes('brže od očekivanog') && now > was)
         bad.push(`${name(s.no)} bolji rezultat usporio prognozu ${String(was)} → ${String(now)}`);
       /* ništa se nije desilo (test potvrdio formu): najviše 1 % */
       if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was)

@@ -60,9 +60,19 @@ function widenOf(state: RunnerState, data: DistanceData): number | undefined {
 export function adjustRaceDay(
   raw: RunnerState['form']['raceDay'],
   todaySec: Seconds,
-  d: Pick<Decisions, 'raceDayNoProgress' | 'raceDayWiden'>
+  d: Pick<Decisions, 'raceDayNoProgress' | 'raceDayWiden' | 'raceDayMaxGain'>
 ): RunnerState['form']['raceDay'] {
   let r = raw;
+  /* A8 (krug 9): napredak u tački ograničen po nivou (početnik ≤ 3 %, potpuno nov 0) */
+  const floor = d.raceDayMaxGain === undefined ? null : todaySec * (1 - d.raceDayMaxGain);
+  if (floor !== null && r.expectedSec < floor) {
+    const shift = floor - r.expectedSec;
+    r = {
+      lowSec: Math.round(r.lowSec + shift),
+      expectedSec: Math.round(floor),
+      highSec: Math.round(r.highSec + shift)
+    };
+  }
   if (d.raceDayNoProgress === true && r.expectedSec < todaySec) {
     r = {
       lowSec: Math.round(todaySec - (r.expectedSec - r.lowSec)),
@@ -255,7 +265,8 @@ export function createPlan(
         pacesUpdatedOn: state.today,
         ...(transfer !== undefined ? { transfer } : {}),
         raceDay: adjustRaceDay(state.form.raceDay, form.raceTimeSec, {
-          raceDayWiden: widenOf(state, data)
+          raceDayWiden: widenOf(state, data),
+          raceDayMaxGain: data.safety.forecastMaxGainByLevel?.[level]
         })
       },
       paces: zonePaces(
@@ -335,7 +346,10 @@ export function createPlan(
   /* M3: nalaz „dugi-za-distancu" kaže da prognoza ne računa napredak od obima — i broj to prati */
   const flags = {
     ...(found.some((w) => w.code === 'dugi-za-distancu') ? { raceDayNoProgress: true } : {}),
-    ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) })
+    ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) }),
+    ...(data.safety.forecastMaxGainByLevel?.[level] === undefined
+      ? {}
+      : { raceDayMaxGain: data.safety.forecastMaxGainByLevel[level] })
   };
   const finalDecisions = { ...built.header.decisions, ...flags };
   return {

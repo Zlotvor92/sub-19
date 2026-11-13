@@ -169,6 +169,8 @@ export const SAFETY: SafetyNumbers = {
   painReturnFromLevel: 5,
   /* krug 5 (E5): trka do 65 min (10 km i kraće) van plana — oporavak kao planirana provera (s02 kao s01) */
   shortEffortSec: 3900,
+  /* A8 (krug 9): prognoza početnika najviše 3 % brža od današnje forme, potpuno nov bez napretka u tački */
+  forecastMaxGainByLevel: { pocetnik: 0.03, 'pocetnik-nov': 0 },
   /* R8 t. 8: start polumaratona 5–10 s/km sporije od tempa trke (napomena trke) */
   raceStartPaceOffsetSec: { from: 5, to: 10 },
   /* krug 4 dopuna (E2): skraćena nedelja — dugi i blok srazmerno, dugi ≤ 45 % nedelje u km */

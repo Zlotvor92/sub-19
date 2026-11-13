@@ -19,9 +19,7 @@ import { SCENARIOS } from './testdata/scenarios';
    `poznate greške su još tu` pada i stavka se briše. */
 const KNOWN = new Map<string, string>([
   /* s11 (pauza izvedena iz praznine kod 3 dana) skinut u krugu 8 (R8 t. 5: praznina > najveći razmak + 2 dana) */
-  /* trka 5 km na dan testa 3 km (početnik): rezultat bolji od današnje forme, a prognoza dana trke sporija za 47 s —
-     preostali pripisani napredak se posle rezultata računa od kraćeg ostatka pripreme (forma/motor, Z4) */
-  ['s03 bolji rezultat usporio prognozu 3171 → 3218', 'pripisani napredak posle rezultata (Z4)'],
+  /* s03 (bolji rezultat usporio prognozu) skinut u krugu 9 (A4/A8: napredak početnika ograničen po nivou) */
   /* bol pa trka: rep 4 nedelje + 6 dana nastaje već u PRVOM ponovnom planiranju (samo bol, izlaz po R2); R8 t. 17
      (`capTail`) seče rep kad su oba događaja u istom ponovnom planiranju, a ovde je trka posebno ponovno planiranje
      nad već izmenjenim planom (prvobitan plan mu nije dostupan) */
@@ -225,9 +223,9 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
       );
       if (s.title.startsWith('E3') && !result && now < was - 1)
         bad.push(`${name(s.no)} propušten trening ubrzao prognozu ${String(was)} → ${String(now)}`);
-      /* bolji rezultat od očekivanog ne usporava prognozu (0,1 %: zaokruživanje preostalog napretka) */
+      /* A4 (krug 9): bolji rezultat od očekivanog ne usporava prognozu — nova ≤ stara (bez tolerancije) */
       /* F4-K2: „brže od očekivanog" = brže od očekivanog po ličnoj krivi plana (isti `effortTimeSec`) */
-      if (s.title.startsWith('E1') && s.title.includes('brže od očekivanog') && now > was * 1.001)
+      if (s.title.startsWith('E1') && s.title.includes('brže od očekivanog') && now > was)
         bad.push(`${name(s.no)} bolji rezultat usporio prognozu ${String(was)} → ${String(now)}`);
       /* ništa se nije desilo (test potvrdio formu): najviše 1 % */
       if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was)

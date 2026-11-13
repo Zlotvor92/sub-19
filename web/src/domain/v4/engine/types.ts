@@ -249,6 +249,8 @@ export interface Decisions {
   /** T7 (krug 6): polazni dugi je iz stvarnih trčanja (poslednje 4 nedelje) — dugi kreće od njega. */
   longStartFromRuns?: boolean;
   raceDayWiden?: number;
+  /** A8 (krug 9): očekivano vreme najviše ovoliko (udeo) brže od današnje forme — podatak distance po nivou. */
+  raceDayMaxGain?: number;
   /** Bazno nedeljno opterećenje trkača na dan nastanka plana. */
   baseLoad: LoadPoints;
   /** Vrh nedeljnog opterećenja plana. */
@@ -826,6 +828,8 @@ export interface SafetyNumbers {
   shortenedLongMaxShare?: number;
   /** Trka/test do ovoliko sekundi (i van plana) dobija oporavak kao planirana provera forme (krug 5, E5). */
   shortEffortSec?: Seconds;
+  /** A8 (krug 9): najveći očekivani napredak do trke po nivou (udeo vremena; npr. početnik 0,03, potpuno nov 0). */
+  forecastMaxGainByLevel?: Partial<Record<LevelId, number>>;
   /** R8 t. 15: blok u dugom ne skraćuje dugi ispod ovog udela vremena nedelje (bez: 0,25). */
   longBlockMinWeekShare?: number;
   /** R8 t. 8: start trke — `{paceFrom}`–`{paceTo}` u napomeni trke je tempo trke + ovoliko s/km (bez: 5 i 10). */

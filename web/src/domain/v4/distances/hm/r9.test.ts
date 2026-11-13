@@ -105,3 +105,21 @@ describe('krug 9 — A7: prenos naviše bez dokaza', () => {
     expect(pace('p08')).toBeGreaterThanOrEqual(pace('p07'));
   });
 });
+
+describe('krug 9 — A8: prognoza početnika', () => {
+  it('nivo početnika: očekivano najviše 3 % brže od današnje forme; potpuno nov bez napretka u tački', () => {
+    let seen = 0;
+    for (const p of PROFILES) {
+      const r = plan(buildState(factsOf(p), p.goal, hm, estimateForm), p.goal, hm);
+      if (!r.ok) continue;
+      const h = r.doc.header;
+      const max = hm.safety.forecastMaxGainByLevel?.[h.decisions.level];
+      if (max === undefined) continue;
+      seen += 1;
+      expect(h.form.raceDay.expectedSec, p.id).toBeGreaterThanOrEqual(
+        Math.round(h.form.current.raceTimeSec * (1 - max)) - 1
+      );
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+});

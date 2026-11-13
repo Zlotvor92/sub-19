@@ -121,6 +121,8 @@ export const SAFETY: SafetyNumbers = {
   painReturnFromLevel: 5,
   /* trka do 65 min (10 km i kraće) — oporavak kao planirana provera */
   shortEffortSec: 3900,
+  /* A8 (krug 9, tab motora): prognoza početnika najviše 3 % brža od današnje forme, potpuno nov bez napretka */
+  forecastMaxGainByLevel: { pocetnik: 0.03, 'pocetnik-nov': 0 },
   /* R8 t. 19: start 10 km 3–6 s/km sporije od tempa trke (napomena trke; motor bez podatka daje 5–10) */
   raceStartPaceOffsetSec: { from: 3, to: 6 },
   /* skraćena nedelja: dugi ≤ 40 % nedelje u km (10 km: dugi je trećina nedelje, izbor) */
