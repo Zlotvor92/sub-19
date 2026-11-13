@@ -326,3 +326,48 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('krug 7 — Y4: tekst promena', () => {
+  const texts = (r: any): string[] =>
+    (r.changes as any[]).flatMap((c) => [String(c.reason ?? ''), String(c.after ?? '')]);
+  it('nijedna rečenica nema „2.." (datum na kraju nosi svoju tačku), ni ispis plana', () => {
+    for (const { s, r } of RUNS) {
+      for (const t of texts(r)) expect(t, name(s.no)).not.toMatch(/\d\.\.(\s|$)/);
+      expect(renderPlan(r.after, r.state, hm), name(s.no)).not.toMatch(/\d\.\.(\s|$)/m);
+    }
+  });
+  it('s10: nadoknada nije „skraćivanje"; nigde „plan ostaje isti" uz izmenu istog dana', () => {
+    for (const { s, r } of RUNS) {
+      for (const t of texts(r)) expect(t, name(s.no)).not.toMatch(/nadoknađuje skraćivanjem/);
+      const changed = new Set(
+        (r.changes).flatMap((c) => {
+          const d = (r.after.weeks as PlanWeek[])
+            .flatMap((w) => w.days)
+            .find((x) => x.id === c.dayId);
+          return d === undefined ? [] : [d.date];
+        })
+      );
+      for (const t of new Set(texts(r)))
+        for (const m of t.matchAll(/\((\d+)\. (\d+)\.\)[^.;]*plan ostaje isti/g)) {
+          const hit = [...changed].some(
+            (d) => Number(d.slice(8)) === Number(m[1]) && Number(d.slice(5, 7)) === Number(m[2])
+          );
+          expect(hit, `${name(s.no)}: ${t}`).toBe(false);
+        }
+    }
+  });
+  it('s04: odrađena provera iz plana ne menja nedelje van svog prozora (nova tempa sama nisu izmena)', () => {
+    for (const { s, r } of REPLANS) {
+      const end = windowEnd(r);
+      if (end === null) continue;
+      for (const c of r.changes)
+        if (c.scope === 'nedelja') {
+          const w = (r.after.weeks as PlanWeek[]).find((x) => x.index === c.weekIndex);
+          expect(
+            w !== undefined && w.start > addDays(end, 7 * 4),
+            `${name(s.no)} n${String(c.weekIndex)}`
+          ).toBe(false);
+        }
+    }
+  });
+});

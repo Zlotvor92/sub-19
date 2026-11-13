@@ -245,7 +245,7 @@ function guardMissed(
               d.workout.workSec === o.workout.workSec &&
               d.workout.libraryId === o.workout.libraryId;
             if (sameContent) {
-              if (target) why = 'propušten trening se ne nadoknađuje skraćivanjem sledećeg dugog';
+              if (target) why = 'propušten trening se ne nadoknađuje produžavanjem sledećeg dugog';
               return o;
             }
             const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
@@ -286,7 +286,7 @@ function guardMissed(
     if (now !== undefined)
       action = kept.includes('prethodnom koraku')
         ? `${kept}; dužina ostaje prvobitna`
-        : `sledeći dugi (${fmtDate(now.date)}) ostaje prvobitne dužine${(now.workout?.workSec ?? 0) === 0 ? ', bez brzog završnog dela' : less ? ', sa kraćim završnim delom u tempu trke' : ''} — propušten trening se ne nadoknađuje skraćivanjem sledećeg dugog`;
+        : `sledeći dugi (${fmtDate(now.date)}) ostaje prvobitne dužine${(now.workout?.workSec ?? 0) === 0 ? ', bez brzog završnog dela' : less ? ', sa kraćim završnim delom u tempu trke' : ''} — propušten trening se ne nadoknađuje produžavanjem sledećeg dugog`;
   }
   const missed = action !== null && c.missed !== undefined ? { ...c.missed, action } : c.missed;
   return { ...c, doc: { ...c.doc, weeks }, ...(missed === undefined ? {} : { missed }) };
@@ -448,7 +448,8 @@ function onMissed(
     const how = isLong ? (equal ? 'iste dužine' : 'kraći') : equal ? 'iste doze' : 'manji';
     return notice(
       meaning,
-      `sledeći isti trening (${fmtDate(target.date)}) je po planu ${how}, pa ne raste i plan ostaje isti`
+      /* Y4 (krug 7): bez „plan ostaje isti" — drugi događaj može da promeni isti dan (s11, s12) */
+      `sledeći isti trening (${fmtDate(target.date)}) je po planu ${how}, pa se zbog ovoga ne produžava`
     );
   }
   const adj: Adjustment = isLong
@@ -1326,12 +1327,19 @@ function describe(
     (max, day) => (differs(day) && !movedTestDay(day) && day.date > max ? day.date : max),
     c.until
   );
-  const text = explain(ev, before, c, state, data, last);
+  /* Y4 (krug 7): datum na kraju rečenice nosi svoju tačku — bez „11. 2.." */
+  const raw = explain(ev, before, c, state, data, last);
+  const dot = (t: string): string => t.replace(/(\d\.)\.(?=\s|$)/g, '$1');
+  const text: Explain = {
+    day: dot(raw.day),
+    late: dot(raw.late),
+    week: dot(raw.week),
+    header: dot(raw.header)
+  };
   /* Jedno objašnjenje po događaju: ako promene idu i posle prozora, sve stavke nose zajedničku rečenicu. */
   const reason = last > c.until ? text.late : text.day;
   const changes: Change[] = [];
   const base = { eventId: ev.id, until: c.until };
-  const beforeCtx = paceCtxOf(before.header);
   const afterCtx = paceCtxOf(after.header);
 
   const h0 = before.header;
@@ -1393,7 +1401,8 @@ function describe(
       old.targetLoad !== week.targetLoad &&
       addDays(week.start, 6) > state.today
     ) {
-      const km0 = weekCost(old, h0.goal.raceDate, beforeCtx).km;
+      /* Y4 (krug 7): obe strane istim tempima — nova tempa sama ne menjaju nedelju (s04: 14. nedelja posle testa) */
+      const km0 = weekCost(old, h0.goal.raceDate, afterCtx).km;
       const km1 = weekCost(week, h1.goal.raceDate, afterCtx).km;
       if (km0 !== km1) {
         weekChanges.push({

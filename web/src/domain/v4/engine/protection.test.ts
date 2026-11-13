@@ -199,7 +199,7 @@ describe('zaštita (SPEC § 1.2, § 6.4)', () => {
     const next = days(result.doc).find((d) => d.date === addDays(missedDate, 7));
     const before = days(b.doc).find((d) => d.date === addDays(missedDate, 7));
     expect(next?.workout?.text).toBe(before?.workout?.text);
-    expect(result.changes[0]?.reason).toContain('ne nadoknađuje skraćivanjem');
+    expect(result.changes[0]?.reason).toContain('ne nadoknađuje produžavanjem');
   });
 
   it('rezultat testa menja tempa odmah kad je razlika ≥ 0,3 VDOT', () => {

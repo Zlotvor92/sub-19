@@ -521,7 +521,7 @@ describe('sitno (S1, S3, S6, S7, S9, S10, S11)', () => {
     expect(r.changes).toHaveLength(1);
     expect(r.changes[0]?.what).toBe('obavestenje');
     expect(r.changes[0]?.reason).toContain('Propušten je ključni trening');
-    expect(r.changes[0]?.reason).toContain('po planu kraći, pa ne raste i plan ostaje isti');
+    expect(r.changes[0]?.reason).toContain('po planu kraći, pa se zbog ovoga ne produžava');
     expect(r.changes[0]?.reason).not.toContain('umesto da raste');
     expect(renderPlan(r.doc, state, EXAMPLE, { changes: r.changes })).toContain(
       'Propušten je ključni trening'
