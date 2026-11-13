@@ -369,3 +369,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   p08 dugi na plafonu od ned 1, doze tempa trke za početnike.
 - ODLUKA: krug 4 po `briefs/R4-ROUND4.md` (E1–E9 motor, D1–D9 podaci), isti Opus tab `session_01GnHHiWa47Guy3uDTKR2kE5`.
   Posle kruga 4: trener + drugi sudija (Opus, isto uputstvo) pa pregled vlasnika (p11, vlasnik-v2, s05).
+
+### 13. 11. 2026, 02:47 — krug 4 primljen (`8197da5`), poslat na ocenu
+- Tok: krug 4 (`ddd4740`) → dopuna (`dd3cf7e`: plafon tempa trke je spustio vršni brz rad na 8–10 %, višak sada ide u prag) →
+  dopuna 2 (`8197da5`: p08 dugi ≤ 21,5 km, s06 bez nalaza). Nisam slao sudijama pre dopuna (štednja Fable-a).
+- Moj pregled: 598 zeleno + 7 očekivanih padova, typecheck čist, kapija 0 prekršaja (sam pokrenuo `plans/gate.ts`) [visoka].
+- Otvoreno, prihvaćeno: p06 lagani < 35 min (D5), s05 13 izmena, s14 11, P2 B hod-trk dugi do 1 h 35, p02 dugi 20,5 km.
+- Ocena: trener → `coach/ROUND-V4-HM-04.md`; drugi sudija nov Opus tab `session_01GnHHiYrHj5qD7zJK7L4MU4` →
+  `judge2/ROUND-V4-HM-04.md` (uporediv sa krugom 3: isti model, isto uputstvo).
