@@ -230,7 +230,10 @@ export function decideLongMax(
   runDays: number,
   easyPaceSecPerKm?: number
 ): Seconds {
-  const cap = safety.longMaxSec[level] ?? Number.POSITIVE_INFINITY;
+  const cap =
+    safety.longMaxSecByRunDays?.[level]?.[String(runDays)] ??
+    safety.longMaxSec[level] ??
+    Number.POSITIVE_INFINITY;
   const share =
     easyPaceSecPerKm === undefined
       ? longShare(safety, level, runDays)

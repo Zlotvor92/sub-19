@@ -775,6 +775,9 @@ export interface SafetyNumbers {
   /** Rast nedelje je dozvoljen bar za ovoliko km (u minutima laganog tempa; krug 4, S2); uz `minRampLoad`. */
   minRampKm?: number;
   longMaxSec: Readonly<Record<LevelId, Seconds>>;
+  /** Krug 10 (stavka 14): plafon dugog po broju dana trčanja (nivo → broj dana → s); bez unosa važi `longMaxSec`.
+      Trkač sa malo dana sme duži dugi da bi obim mogao da raste. */
+  longMaxSecByRunDays?: Readonly<Partial<Record<LevelId, Readonly<Record<string, Seconds>>>>>;
   /** Najveći udeo dugog u vrhu, po broju dana trčanja (ključ „1"…„7"). */
   /** Može i po nivou: `{ nivo: { "1".."7": udeo } }`; nivo bez svoje mape nema plafon po danima (udeo 1). */
   longShareByRunDays:

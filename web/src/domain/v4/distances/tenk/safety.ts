@@ -66,6 +66,8 @@ export const SAFETY: SafetyNumbers = {
     srednji: 6000,
     brz: 6000
   },
+  /* krug 10 (F7-10K § Krug 3, t. 2): srednji sa 3 dana sme dugi do 1 h 50 da bi obim rastao (p08 × 1,10 → × 1,20) */
+  longMaxSecByRunDays: { srednji: { '3': 6600 } },
   longShareByRunDays: {
     pocetnik: LONG_SHARE,
     'pocetnik-nov': { ...LONG_SHARE, '3': 0.45, '4': 0.38, '5': 0.34 },

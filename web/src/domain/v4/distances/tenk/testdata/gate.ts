@@ -4,6 +4,7 @@
    Razlike prema polumaratonu: lestvica vrha u km je niža; dugi ≤ 36 % nedelje (3 dana ≤ 47 %); lagan dan ≤ 80 %
    dugog kod 4 dana (3 i 5+ dana 75 %); plan ≥ 12 nedelja stiže do dugog ≥ 10 km ili 1 h; nedelja −2 ≤ 85 % vrha, nedelja trke
    ≤ 60 %; nema pravila „dugi prema vremenu trke". */
+import { tenk } from '../index';
 import { diffDays } from '../../../engine/dates';
 import { paceCtxOf, summarize, type PlanDoc, type RunnerFacts } from '../../../engine/index';
 
@@ -259,7 +260,13 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
       `najduži dugi ${String(longestKm)} km / ${String(Math.round(longestMin))} min < 10 km ili 1 h`
     );
   /* spor nivo (krug 2, B2): do 1 h 50 */
-  const longCapMin = doc.header.decisions.level === 'spor' ? 111 : 101;
+  /* krug 10 (stavka 14): plafon po broju dana iz podatka (srednji sa 3 dana do 1 h 50) */
+  const byDays =
+    tenk.safety.longMaxSecByRunDays?.[doc.header.decisions.level]?.[
+      String(doc.header.decisions.runDays.length)
+    ];
+  const longCapMin =
+    byDays !== undefined ? byDays / 60 + 1 : doc.header.decisions.level === 'spor' ? 111 : 101;
   if (longestMin > longCapMin)
     v.push(`najduži dugi ${String(Math.round(longestMin))} min > ${String(longCapMin - 1)} min`);
 
