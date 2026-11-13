@@ -1,0 +1,414 @@
+{
+ "runda": "V4-10K-01",
+ "datum": "2026-11-13",
+ "sudija": "drugi (nezavisan)",
+ "prijava": [
+  "zaglavlja parova sadrže red 'MORA DA SE RAZLIKUJE' — viđen pri otvaranju, posle zapisivanja sopstvenih očekivanja",
+  "red STANJE u scenarijima sadrži novu prognozu (i broj promena u S21–S24) — viđen pre čitanja dela POSLE",
+  "pregled.md, scenarios/pregled.txt, pairs/pregled.txt, target-compare.md i nalazi-cuvara.txt nisu otvarani"
+ ],
+ "planovi": [
+  {
+   "plan": "P01",
+   "ocene": {
+    "q1_dao_bih": 7,
+    "q2_zdrav": 7.5,
+    "q3_spreman": 6.5,
+    "q4_ide_nekud": 6,
+    "q5_trka": 7.5,
+    "q6_istina": 7,
+    "q7_uredan": 7
+   },
+   "ukupno": 69.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 10–12: tempo trke ukupno 6 km (2 × 3 × 1 km ≈ 28 min) u tri nedelje; brz rad 0/8/6 %",
+    "ned 13: skok na ≈ 64 min brzog rada (6,4 km TT + 21 min I + 3 km prag) sa ≈ 23 min u ned 11",
+    "ned 4 i 10: 'brz rad 0 %' uz test 5 km (≈ 22 min = 11 % od 196 min); napomena za trku pominje test 28. 11., ne 9. 1."
+   ]
+  },
+  {
+   "plan": "P02",
+   "ocene": {
+    "q1_dao_bih": 5.5,
+    "q2_zdrav": 8,
+    "q3_spreman": 4.5,
+    "q4_ide_nekud": 4,
+    "q5_trka": 7,
+    "q6_istina": 5,
+    "q7_uredan": 6.5
+   },
+   "ukupno": 58.5,
+   "dao_bih": "ne",
+   "zamerke": [
+    "ceo plan (8 ned.): 9,7 km u tempu trke i 12 min praga; jedina puna nedelja je 5.",
+    "ned 6 i 7 iste (3 × 3 min I = 9 min brzog); sužavanje 3 od 8 nedelja + rasterećenje ned 4",
+    "ned 2: brz rad 5 % (9 od 180 min), a upozorenje tvrdi da je trening izbačen zbog plafona 22 %; forma 43:21 nazvana unetim rezultatom (unet 5 km 20:25, Riegel ≈ 42:34)"
+   ]
+  },
+  {
+   "plan": "P03",
+   "ocene": {
+    "q1_dao_bih": 7.5,
+    "q2_zdrav": 7.5,
+    "q3_spreman": 6.5,
+    "q4_ide_nekud": 6.5,
+    "q5_trka": 7.5,
+    "q6_istina": 7.5,
+    "q7_uredan": 7
+   },
+   "ukupno": 71.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 7: tempo trke 2 × 1,2 km = 14 min na 5:53, manje od 18 min praga na istom tempu u ned 3",
+    "ned 2: 11 × 45 s snažno uzbrdo (≈ 8 min) za trkača 59 min sa 20 km nedeljno",
+    "ned 6 i 9: dugi 86 i 91 min; ned 8 test vođen kao 0 % brzog"
+   ]
+  },
+  {
+   "plan": "P04",
+   "ocene": {
+    "q1_dao_bih": 6.5,
+    "q2_zdrav": 6.5,
+    "q3_spreman": 5.5,
+    "q4_ide_nekud": 5.5,
+    "q5_trka": 7.5,
+    "q6_istina": 7,
+    "q7_uredan": 7
+   },
+   "ukupno": 64.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 12–14: rasterećenje / 3 × 1 km / rasterećenje; 3 × 1 km = 17 min na 5:36 posle 28 min praga na 5:39 (ned 11)",
+    "svake nedelje sub 75 + ned 100 + pon 75 min (250 min) pa kvalitet u utorak — 4 dana zaredom",
+    "ned 15: najveći trening u tempu trke u 18 nedelja je 4,8 km (27 min) < prag 28 min urađen 4 puta"
+   ]
+  },
+  {
+   "plan": "P05",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav": 7.5,
+    "q3_spreman": 8,
+    "q4_ide_nekud": 7.5,
+    "q5_trka": 7.5,
+    "q6_istina": 7,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 76.5,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 9: uto 6 km I + čet 9,6 km TT (34 min) + ned 21 km sa 3 km TT ≈ 65 min brzog, 48 h između dva najteža",
+    "ned 10: lagani dani 7,5 km, a dugi 19 km (25 % od 75 km) 14 dana pred trku",
+    "ned 1–11: ubrzanja samo u rasterećenju; prag najviše 33 min uz 80–95 km"
+   ]
+  },
+  {
+   "plan": "P06",
+   "ocene": {
+    "q1_dao_bih": 4,
+    "q2_zdrav": 8,
+    "q3_spreman": 3,
+    "q4_ide_nekud": 3,
+    "q5_trka": 6,
+    "q6_istina": 6,
+    "q7_uredan": 6
+   },
+   "ukupno": 51.0,
+   "dao_bih": "ne",
+   "zamerke": [
+    "ceo plan: prag 27 min, tempo trke 7,8 km, intervali 2,4 km; ned 6 brz rad 0 % i 'dugi 6 km'",
+    "ned 6 → 7: 26 km → 33,3 km (+28 %) nedelju pred trku — sužavanje naopako",
+    "ned 3 (35,8 km) označena kao vršna, 5 nedelja pred trku; u 4 od 5 nedelja gradnje brzi trening izbačen umesto smanjen"
+   ]
+  },
+  {
+   "plan": "P07",
+   "ocene": {
+    "q1_dao_bih": 7.5,
+    "q2_zdrav": 7.5,
+    "q3_spreman": 7,
+    "q4_ide_nekud": 7,
+    "q5_trka": 7.5,
+    "q6_istina": 7,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 73.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 5: sub 10 + ned 15,5 + pon 10 + uto 12,5 = 48 od 61 km u 4 dana, kvalitet četvrti dan",
+    "ned 5: ≈ 61 min brzog (5 km I + 6,4 km TT + 2,5 km TT) posle ≈ 33 min u ned 3",
+    "prag samo u ned 1–2 (ukupno 48 min)"
+   ]
+  },
+  {
+   "plan": "P08",
+   "ocene": {
+    "q1_dao_bih": 6,
+    "q2_zdrav": 8,
+    "q3_spreman": 5.5,
+    "q4_ide_nekud": 4.5,
+    "q5_trka": 7.5,
+    "q6_istina": 5.5,
+    "q7_uredan": 7
+   },
+   "ukupno": 63.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 1: 36,2 km uz 'polazim od 41'; vrh 40,5 km (ned 15) — obim nikad ne pređe sadašnji, a prognoza se objašnjava rastom obima",
+    "ned 10, 12 i 14 su rasterećenja (3 od 5 nedelja)",
+    "dugi 14 km sedam puta u prvih osam nedelja; intervali 2 puta u 18 nedelja (4 km i 5 km); TT najviše 6,4 km"
+   ]
+  },
+  {
+   "plan": "P09",
+   "ocene": {
+    "q1_dao_bih": 7,
+    "q2_zdrav": 7,
+    "q3_spreman": 7,
+    "q4_ide_nekud": 7,
+    "q5_trka": 7.5,
+    "q6_istina": 8,
+    "q7_uredan": 7.5
+   },
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 1: usponi 11 × 45 s + prag 20 min u komadu za trkača bez rezultata; ned 3 brz rad 21 %",
+    "forma 46:37 iz jednog broja (lagani 6:00/km), a doze kao za poznatog trkača 46 min",
+    "ned 8: test 4 nedelje pred trku; do tada svi brzi treninzi bez tempa (prihvatljivo, ali kasno za dve provere)"
+   ]
+  },
+  {
+   "plan": "P10",
+   "ocene": {
+    "q1_dao_bih": 7,
+    "q2_zdrav": 7.5,
+    "q3_spreman": 6,
+    "q4_ide_nekud": 5.5,
+    "q5_trka": 7.5,
+    "q6_istina": 7.5,
+    "q7_uredan": 7
+   },
+   "ukupno": 68.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 10/12/14 rasterećenja; ned 13 tempo trke 2 × 1 km ≈ 12 min posle 26 min praga u ned 7",
+    "ned 11 označena kao vršna, 7 nedelja pred trku (29,2 km); specifična faza najviše 28,1 km",
+    "ned 1: prag 16 min u komadu po osećaju (P03 sa rezultatom dobija 12 min)"
+   ]
+  },
+  {
+   "plan": "P11",
+   "ocene": {
+    "q1_dao_bih": 8,
+    "q2_zdrav": 8,
+    "q3_spreman": 6.5,
+    "q4_ide_nekud": 7,
+    "q5_trka": 7.5,
+    "q6_istina": 7.5,
+    "q7_uredan": 7
+   },
+   "ukupno": 74.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 15: najveći trening u tempu trke 4 km (22 min); nijedan neprekidan napor > 18 min pred trku od ≈ 55 min",
+    "ned 12–14: faze specifična → razvoj → specifična",
+    "ned 14: dugi 90 min = 12,4 od 26,2 km (47 % nedelje)"
+   ]
+  },
+  {
+   "plan": "P12",
+   "ocene": {
+    "q1_dao_bih": 7,
+    "q2_zdrav": 8,
+    "q3_spreman": 6,
+    "q4_ide_nekud": 5.5,
+    "q5_trka": 7.5,
+    "q6_istina": 7.5,
+    "q7_uredan": 7
+   },
+   "ukupno": 69.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 1–5: ≈ 35 km i dugi 75 min pet puta zaredom",
+    "ned 8 'vršna': brz rad 5 % (2 × 1,2 km ≈ 13 min)",
+    "ceo plan: tempo trke ≈ 14,8 km; ned 6–7 faze specifična → razvoj"
+   ]
+  }
+ ],
+ "prosek_planova": 67.6,
+ "broj_ge_80": 0,
+ "broj_ge_70": 5,
+ "broj_lt_65": 4,
+ "scenariji": [
+  {
+   "scenario": "S01",
+   "ocena": 8.2,
+   "napomena": "tempa −5 s, raspored isti; PROMENE navodi stari test 21:49 umesto trke 21:10"
+  },
+  {
+   "scenario": "S02",
+   "ocena": 8.0,
+   "napomena": "isto; pogrešan rezultat u tekstu (26:39 umesto 25:49)"
+  },
+  {
+   "scenario": "S03",
+   "ocena": 8.6,
+   "napomena": "trka umesto testa prihvaćena, 70 % razlike, obim isti"
+  },
+  {
+   "scenario": "S04",
+   "ocena": 8.6,
+   "napomena": "prvi rezultat sporiji: tempa iz rezultata, prognoza 59:04 rečena pošteno"
+  },
+  {
+   "scenario": "S05",
+   "ocena": 8.2,
+   "napomena": "postepen povratak; prva nedelja 19 km preoprezna"
+  },
+  {
+   "scenario": "S06",
+   "ocena": 7.2,
+   "napomena": "izbačen ključni 3 × 1,6 km TT, zadržani intervali; ned 16 raste na 51 km, dugi 1 h 40 dve nedelje pred trku"
+  },
+  {
+   "scenario": "S07",
+   "ocena": 5.5,
+   "napomena": "7 dana bolesti → 5 nedelja na ≈ 16 km, dugi 50 min; sužavanje veće od gradnje; 27 % brzog u ned 15; prognoza skoro ista"
+  },
+  {
+   "scenario": "S08",
+   "ocena": 8.1,
+   "napomena": "razumno; napomena za trku 55:06 a prognoza 55:25"
+  },
+  {
+   "scenario": "S09",
+   "ocena": 8.2,
+   "napomena": "bez promene (tačno); ne pominje propušteni 4 × 1,6 km"
+  },
+  {
+   "scenario": "S10",
+   "ocena": 9.0,
+   "napomena": "bez promene, ne nadoknađuje"
+  },
+  {
+   "scenario": "S11",
+   "ocena": 7.1,
+   "napomena": "4 × 1 km → 2 × 1 km; 'ista doza' netačno; ode jedini pravi trening"
+  },
+  {
+   "scenario": "S12",
+   "ocena": 8.6,
+   "napomena": "dugi 81 min sa završnicom → 80 lagano, objašnjeno"
+  },
+  {
+   "scenario": "S13",
+   "ocena": 8.5,
+   "napomena": "odmor 2 dana, 10 dana lagano, manje doze, pravilo 2/10 i lekar"
+  },
+  {
+   "scenario": "S14",
+   "ocena": 7.9,
+   "napomena": "isto; smanjuje i TT 6 nedelja kasnije; dugi 70 min treći dan"
+  },
+  {
+   "scenario": "S15",
+   "ocena": 6.4,
+   "napomena": "test izbačen bez reči; TT → lagano mimo objašnjenja; dugi 60 → 81 sa završnicom; prognoza netaknuta"
+  },
+  {
+   "scenario": "S16",
+   "ocena": 7.1,
+   "napomena": "oprezno; 'tempo trke 2 × 600 m'; test nestao, nov nije zakazan"
+  },
+  {
+   "scenario": "S17",
+   "ocena": 7.4,
+   "napomena": "oporavak dobar; polumaraton juče menja ceo plan (vrh 50 → 47,7, sporiji I, novo upozorenje)"
+  },
+  {
+   "scenario": "S18",
+   "ocena": 8.5,
+   "napomena": "nedelja oporavka 27 km, prvi brzi 9. dan, ostalo isto"
+  },
+  {
+   "scenario": "S19",
+   "ocena": 7.9,
+   "napomena": "forma 57:44, prva nedelja 20/20/40 min; dugi kraći kroz ceo plan"
+  },
+  {
+   "scenario": "S20",
+   "ocena": 7.8,
+   "napomena": "tempa iz rezultata; sporiji trkač dobija više minuta (4 h 24 umesto 4 h 9)"
+  },
+  {
+   "scenario": "S21",
+   "ocena": 8.7,
+   "napomena": "raspored isti; prognoza 44:59 → 45:14 bez objašnjenja"
+  },
+  {
+   "scenario": "S22",
+   "ocena": 8.7,
+   "napomena": "raspored isti; 'prognoza je slabija' bez razloga"
+  },
+  {
+   "scenario": "S23",
+   "ocena": 9.8,
+   "napomena": "nula promena"
+  },
+  {
+   "scenario": "S24",
+   "ocena": 8.8,
+   "napomena": "samo 'po osećaju → tempo' zbog testa iz plana; otisak nije isti"
+  },
+  {
+   "scenario": "S25",
+   "ocena": 8.4,
+   "napomena": "5 dana bolesti blaže od 7; propušten dugi u rasterećenju ne dira ništa"
+  },
+  {
+   "scenario": "S26",
+   "ocena": 5.1,
+   "napomena": "posle trke 10 km dugi vraćen 50 → 80 min u ograničenju zbog bola; netačno 'provera deo plana'; 2 × 700 m"
+  },
+  {
+   "scenario": "S27",
+   "ocena": 7.6,
+   "napomena": "bezbedno; propušteni kvaliteti se ne pominju; 'bolest' umesto puta"
+  }
+ ],
+ "prosek_scenarija_x10": 79.2,
+ "parovi": [
+  {
+   "par": "P1 stabilan / povratnik",
+   "ocena": 8.5
+  },
+  {
+   "par": "P2 početnik 8 meseci / 6 nedelja + tegoba",
+   "ocena": 7.5
+  },
+  {
+   "par": "P3 sve prebrzo / spori + prag",
+   "ocena": 7.5
+  }
+ ],
+ "prosek_parova": 7.8,
+ "ispravke": [
+  "Dugi planovi: bez niza rasterećenje–gradnja–rasterećenje; nedelja testa je rasterećenje; najviše jedno na 3–4 nedelje",
+  "Tempo trke raste preko urađenog praga: prvi trening ≥ 4–5 km, vrh 6–8 km (spori: 30–35 min)",
+  "Mali obim + kratka priprema: smanji dozu umesto izbacivanja; bez rasterećenja u 8 nedelja; sužavanje ≤ 10–12 dana, bez rasta obima pred trku",
+  "Povratak posle bolesti/bola kod malog obima: nazad na raniji nivo za ≈ 2 × pauze; sužavanje ne veće od gradnje",
+  "Dva događaja zaredom: važi strože ograničenje; trka ne ukida ograničenje zbog bola niti produžava dugi",
+  "Tekst PROMENE govori o pravom događaju i navodi sve što je nestalo (test, ključni trening)",
+  "Prognoza/zaglavlje istiniti: 'podiže obim' samo kad podiže; prognoza pada kad ode 35–40 % treninga; objasniti pomak posle testa; reći da je 5 km preračunat",
+  "Najmanja smislena doza po vrsti treninga (bez 2 × 600 m, 2 × 700 m)",
+  "Raspored za 5 dana: ne četiri dana zaredom sa kvalitetom četvrtog",
+  "Knjigovodstvo i oznake: test u 'brz rad'; poslednji test u napomeni za trku; 'vršna' na pravom mestu; faze ne unazad; okrugli minuti; sporijem trkaču ne više minuta"
+ ],
+ "za_vlasnika": [
+  "P05",
+  "P06",
+  "P04"
+ ]
+}
