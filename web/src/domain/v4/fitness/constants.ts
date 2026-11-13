@@ -142,3 +142,7 @@ export const WALK_SPLIT_RATIO = 1.25;
 
 /** E8 (krug 5): uz pouzdanost „niska" očekivano vreme nije više od 1 % brže od trenutne procene. */
 export const LOW_CONFIDENCE_MAX_GAIN = 0.01;
+/** Z6 (krug 7): dva rezultata su saglasna kad im se VDOT razlikuje najviše 2 %. */
+export const CONF_AGREE_SHARE = 0.02;
+/** Z6 (krug 7): prva trka u životu — raspon prognoze bar ± 2 %. */
+export const FIRST_RESULT_MIN_RANGE = 0.02;

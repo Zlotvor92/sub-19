@@ -298,7 +298,7 @@ export function estimateForm(
   const startDay = Math.min(firstDay, today);
 
   /** Trke i testovi; `strong` = nije prvi rezultat i nije trka sa hodanjem (R14: samo takav daje „visoku"). */
-  const results: { day: number; strong: boolean }[] = [];
+  const results: { day: number; strong: boolean; vdot: Vdot; weak?: boolean; race?: boolean }[] = [];
   const qualityDays: number[] = [];
   /** Dani primenjenog trenda pulsa: za pouzdanost vrede kao dokaz kvaliteta (§ 2.4 „bez pulsa niža pouzdanost"). */
   const hrDays: number[] = [];
@@ -309,7 +309,20 @@ export function estimateForm(
     facts.profile.recentResult?.date !== undefined ? dayNum(facts.profile.recentResult.date) : null;
 
   const confidenceAt = (d: number): Confidence => {
-    if (results.some((x) => x.strong && d - x.day <= C.CONF_HIGH_DAYS)) return 'visoka';
+    /* Z6 (krug 7): „visoka" tek posle dva SAGLASNA rezultata (unet rezultat se računa) u prozoru visoke pouzdanosti */
+    const recent = results.filter((x) => x.day <= d && d - x.day <= C.CONF_HIGH_DAYS && !x.weak);
+    const pool = [
+      ...recent.map((x) => x.vdot),
+      ...(init.source === 'rezultat' && profileResultDay !== null && d - profileResultDay <= C.CONF_HIGH_DAYS ? [init.vdot] : [])
+    ];
+    const last = recent.at(-1);
+    if (
+      last !== undefined &&
+      last.strong &&
+      pool.length >= 2 &&
+      pool.filter((v) => Math.abs(v - last.vdot) <= C.CONF_AGREE_SHARE * last.vdot).length >= 2
+    )
+      return 'visoka';
     if (results.some((x) => d - x.day <= C.CONF_MID_DAYS)) return 'srednja';
     const evidence = [...qualityDays, ...hrDays].filter(
       (x) => d - x < C.CONF_MID_QUALITY_DAYS
@@ -497,7 +510,7 @@ export function estimateForm(
         if (ev.hot && !low && !first && next < vdot) next = vdot;
         vdot = next;
         /* R14: prvi rezultat U APLIKACIJI (unet rezultat ne računa) i trka sa hodanjem — najviše srednja. */
-        results.push({ day: d, strong: !firstInApp && !ev.walking });
+        results.push({ day: d, strong: !firstInApp && !ev.walking, vdot: ev.vdot, race: kind === 'trka' });
         lastResultDay = d;
         credited = 0;
         /* Z4 (krug 7): rezultat bar onoliko dobar koliko se verovalo (forma + pripisani napredak) ne spušta verovanu
@@ -726,7 +739,11 @@ export function estimateForm(
       sigma,
       firstOnly ? 'niska' : confidence,
       goalM,
-      firstOnly ? Math.max(vdot, preFirstVdot) : vdot
+      firstOnly ? Math.max(vdot, preFirstVdot) : vdot,
+      /* prva trka u životu: bez unetog rezultata, jedina trka i najviše jedan raniji rezultat */
+      init.source !== 'rezultat' && results.filter((x) => x.race === true).length === 1 && results.length <= 2
+        ? C.FIRST_RESULT_MIN_RANGE
+        : 0
     ),
     ceilingGain: r2(gain),
     history
@@ -743,16 +760,24 @@ function raceDayRange(
   confidence: Confidence,
   goalM: number,
   /** Merilo ograničenja napretka pri niskoj pouzdanosti (Z4: posle prve potvrde bolje od dva stanja). */
-  capVdot: Vdot = vdot
+  capVdot: Vdot = vdot,
+  /** Najmanji raspon kao deo očekivanog (Z6: prva trka u životu). */
+  minRange = 0
 ): { lowSec: number; expectedSec: number; highSec: number } {
   let expected = raceTimeSec(vdot + planVdot + C.EXPECTED_SHARE * gain, goalM);
   if (confidence === 'niska')
     expected = Math.max(expected, raceTimeSec(capVdot, goalM) * (1 - C.LOW_CONFIDENCE_MAX_GAIN));
-  const low = Math.min(expected, raceTimeSec(vdot + planVdot + gain + sigma / 2, goalM));
+  let low = Math.min(expected, raceTimeSec(vdot + planVdot + gain + sigma / 2, goalM));
+  let high = Math.max(expected, raceTimeSec(vdot - sigma / 2, goalM));
+  /* Z6 (krug 7): prva trka u životu (prvi rezultat bez unetog) — raspon bar ± 2 % */
+  if (minRange > 0) {
+    low = Math.min(low, expected * (1 - minRange));
+    high = Math.max(high, expected * (1 + minRange));
+  }
   return {
     lowSec: Math.round(low),
     expectedSec: Math.round(expected),
-    highSec: Math.round(Math.max(expected, raceTimeSec(vdot - sigma / 2, goalM)))
+    highSec: Math.round(high)
   };
 }
 

@@ -270,4 +270,20 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
     }
     expect(bad).toEqual([]);
   });
+
+  it('Z6: „visoka" tek posle dva saglasna rezultata; prva trka u životu raspon bar ± 2 %', () => {
+    const bad: string[] = [];
+    for (const { s, r } of RUNS) {
+      const results = (r.afterState.form.history as any[]).filter((h) => h.signal === 'trka' || h.signal === 'test').length;
+      const entered = r.afterState.profile.recentResult !== undefined;
+      if (r.afterState.form.current.confidence === 'visoka' && results + (entered ? 1 : 0) < 2)
+        bad.push(`${name(s.no)} visoka uz ${String(results)} rezultat`);
+      if (s.title.includes('prva trka u životu')) {
+        const d = r.after.header.form.raceDay;
+        if (d.lowSec > 0.98 * d.expectedSec + 1 || d.highSec < 1.02 * d.expectedSec - 1)
+          bad.push(`${name(s.no)} prvi rezultat: raspon ${String(d.lowSec)}–${String(d.highSec)} oko ${String(d.expectedSec)}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
 });

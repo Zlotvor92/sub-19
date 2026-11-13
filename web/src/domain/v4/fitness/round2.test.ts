@@ -287,9 +287,13 @@ describe('R14 — prvi rezultat i trka sa hodanjem', () => {
     const one = estimateForm(facts([r1], add(T0, 1), noResult), far, null);
     expect(one.current.confidence).toBe('srednja');
     expect(one.current.vdot).toBeCloseTo(44, 1);
+    /* Z6 (krug 7): „visoka" tek posle dva SAGLASNA rezultata (VDOT ≤ 2 %); 44 i 46 nisu saglasni */
     const two = estimateForm(facts([r1, r2], add(T0, 22), noResult), far, null);
-    expect(two.current.confidence).toBe('visoka');
+    expect(two.current.confidence).toBe('srednja');
     const second = two.history.filter((h) => h.signal === 'trka')[1];
     expect(second?.reason).toContain('Usvaja se 70 %');
+    const r3: FitnessRun = { ...r2, id: 'c', durationSec: Math.round(raceTimeSec(44.6, TEN)) };
+    const agree = estimateForm(facts([r1, r3], add(T0, 22), noResult), far, null);
+    expect(agree.current.confidence).toBe('visoka');
   });
 });
