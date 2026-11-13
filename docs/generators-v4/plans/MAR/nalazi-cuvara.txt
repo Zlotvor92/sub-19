@@ -7,7 +7,7 @@ p05: bez nalaza
 p06: silazak@12 (Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.)
 p07: bez nalaza
 p08: ispod-cilja@20 (Planirano opterećenje je ispod 85 % cilja nedelje.)
-p09: dugi-za-distancu@15 (Najduži dugi plana ne stiže do dugog za distancu.)
+p09: bez nalaza
 p10: bez nalaza
 p11: dugi-za-distancu@19 (Najduži dugi plana ne stiže do dugog za distancu.)
 p12: bez nalaza

@@ -27,6 +27,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
+- Najveća nedelja plana je 39,9 km, a sada trčiš oko 45 km nedeljno. Dugi i lagani dani su ograničeni svojim udelom u nedelji, pa uz ovaj broj dana plan ne stiže do obima koji već trčiš — priprema je lakša nego tvoja sadašnja nedelja. Zadrži sadašnji obim: dodaj oko 5,1 km nedeljno laganim trčanjem (po 10–15 min uz lagane dane) ili dodaj dan laganog trčanja.
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 1,5 km koja je u planu 12. 12. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 9 nedelja
@@ -140,8 +141,9 @@ UPOZORENJA
   sub 9. 1.  lagano 20 min — 2,7 km, 20 min
   ned 10. 1.  TRKA: 5 km
       napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 25 min, napor 8 od 10.
+      napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (12. 12.) — do tada trči po osećaju.
       napomena: Zagrevanje 10–15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km malo lakše nego što ti se čini da možeš, 2.–4. km ravnomerno, napor koji možeš da držiš do kraja, poslednji km sve što imaš.
-      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 13,7 km, 98 min, 3 treninga + trka, brz rad 6 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -165,6 +167,9 @@ TEMPA
 - intervali 5:08/km
 - brze deonice 4:50/km
 Tempo trke u treninzima je tvoja današnja forma (5:18/km). Očekivano vreme na dan trke (26:16) traži 5:15/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+
+UPOZORENJA
+- Najveća nedelja plana je 39,9 km, a sada trčiš oko 45 km nedeljno. Dugi i lagani dani su ograničeni svojim udelom u nedelji, pa uz ovaj broj dana plan ne stiže do obima koji već trčiš — priprema je lakša nego tvoja sadašnja nedelja. Zadrži sadašnji obim: dodaj oko 5,1 km nedeljno laganim trčanjem (po 10–15 min uz lagane dane) ili dodaj dan laganog trčanja.
 
 PROMENE
 Rezultat 1,5 km za 7:17 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 26:16 (raspon 25:11–27:20).
@@ -276,5 +281,5 @@ Rezultat 1,5 km za 7:17 (12. 12.): tempa su sada izračunata iz ovog rezultata, 
   ned 10. 1.  TRKA: 5 km
       napomena: Tempo za trku: 5:18/km (današnja forma 26:32).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 5:19–5:21/km (ne brže od 5:18/km), 2.–4. km ravnomerno 5:18/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
-      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 13,7 km, 98 min, 3 treninga + trka, brz rad 6 % vremena trčanja

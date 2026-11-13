@@ -2,7 +2,7 @@ S09 — p01, E3: ned 13 (najteža): propušteni tempo trke i dugi sa završnicom
 
 STANJE: danas 2027-02-01; sadašnji obim 40 km nedeljno, 4 dana; forma 46:00 (pouzdanost srednja), očekivano na dan trke 45:43.
 DOGAĐAJ: Propušteno: w13d1, w13d6; sve ostalo urađeno; danas 2027-02-01. Događaji: result:2027-01-09:run-w10d5, missed:2027-01-26:w13d1, missed:2027-01-31:w13d6.
-PROMENA: 1.
+PROMENA: 2.
 
 ==================== PRE ====================
 PLAN: 10 km, trka 21. 2. 2027.
@@ -203,7 +203,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
       napomena: Tempo za trku: 4:36/km (današnja forma 46:00).
       napomena: Ako provera forme 9. 1. potvrdi očekivani napredak, ciljaj 4:31/km (45:05).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 4:39–4:42/km (ne brže od 4:36/km), od 3. do 8. km ravnomerno 4:36/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
-      napomena: Posle trke: 7 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 17,4 km, 1 h 42 min, 3 treninga + trka, brz rad 9 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -230,6 +230,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 traži 4:31/km — na ivici je (raspon na dan trke 45:00–46:41). Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
+Propušten je ključni trening „tempo trke 7 × 1 km, oporavak 1:30 džog" (26. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; sledeći isti trening ostaje kako je planiran — poslednje dve nedelje pred trku su za odmor.
 Propušten je ključni trening „dugi 91 min, završnih 15 min u pragu" (31. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; sledeći dugi ostaje kako je planiran — poslednje dve nedelje pred trku su za odmor.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
@@ -393,5 +394,5 @@ Propušten je ključni trening „dugi 91 min, završnih 15 min u pragu" (31. 1.
   ned 21. 2.  TRKA: 10 km
       napomena: Tempo za trku: 4:36/km (današnja forma 46:00).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 4:39–4:42/km (ne brže od 4:36/km), od 3. do 8. km ravnomerno 4:36/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
-      napomena: Posle trke: 7 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 17,4 km, 1 h 42 min, 3 treninga + trka, brz rad 9 % vremena trčanja

@@ -10,7 +10,7 @@ Polazim od tvojih ≈ 23 km nedeljno (2 h 44 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:20:38
 Današnja prognoza (1. 11.): 4:20:38, pouzdanost srednja
-Očekivano na dan trke: 4:20:38 (raspon 4:03:13–4:47:16)
+Očekivano na dan trke: 4:20:38 (raspon 4:03:13–4:47:16) — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 1. 11.: 10 km za 56:02. Rezultat sa 10 km prenosim na 42,2 km uz umanjenje, jer uz oko 19 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 42,2 km ostaje 4:20:38.
 - Polazna procena je iz rezultata koji si uneo: oko 4:20:38 za 42,2 km.
@@ -163,7 +163,7 @@ UPOZORENJA
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
   Zbir: 27,3 km, 3 h 15 min, 4 treninga, brz rad 7 % vremena trčanja
 
-14. NEDELJA (od 1. 2.) — osnova, rasterećenje; do trke 10 nedelja
+14. NEDELJA (od 1. 2.) — razvoj, rasterećenje; do trke 10 nedelja
   pon 1. 2.  odmor
   uto 2. 2.  odmor
   sre 3. 2.  odmor
@@ -282,5 +282,5 @@ UPOZORENJA
       napomena: Tempo za trku: 6:11/km (današnja forma 4:20:38).
       napomena: Prvih 5–10 km trči 6:16–6:21/km, mirno, iako ti se čini lako; od 10. do 32. km 6:11/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
-      napomena: Posle trke: 38 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 25 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 6,9 km, 50 min, 2 treninga + trka, brz rad 0 % vremena trčanja

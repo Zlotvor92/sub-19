@@ -764,6 +764,31 @@ function smoothExit(
     });
     /* lagani dani na najmanjem: ostatak viška skida dugi, ne ispod poslednjeg dugog */
     let shrunk: PlanWeek = { ...w, days: finalDays };
+    /* krug 10: kad su lagani dani na najmanjem, a nedelja je još iznad granice skoka, kvalitet ide na
+       najmanju dozu (bez nadoknade nabijanjem) */
+    if (i >= first && km(shrunk) > kmCap + 0.5) {
+      shrunk = {
+        ...shrunk,
+        days: shrunk.days.map((d): PlanDay => {
+          if (d.workout?.kind !== 'quality' || !isMutable(d, after.header, state.today, done))
+            return d;
+          const def = data.library.find((x) => x.id === d.workout?.libraryId);
+          if (def === undefined) return d;
+          const dose = minDoseOf(def, ctxB);
+          if (dose >= d.workout.workSec) return d;
+          const workout = realize(
+            {
+              type: 'quality',
+              def,
+              dose,
+              slot: { place: 'quality', stimulus: def.stimulus, index: 1, phase: w.intent.phase }
+            },
+            ctxB
+          );
+          return workout === null ? d : { ...d, origin: 'template', workout };
+        })
+      };
+    }
     const rest = km(shrunk) - kmCap;
     /* A10 b: u spuštenom ostatku dugi ostaje srazmeran (višak obima od najkraćih laganih dana ne skida dugi), osim
        u prvoj spuštenoj nedelji, gde važi granica skoka */
@@ -784,31 +809,6 @@ function smoothExit(
               def,
               dose: Math.min(d.workout.workSec, next / 2),
               slot: null
-            },
-            ctxB
-          );
-          return workout === null ? d : { ...d, origin: 'template', workout };
-        })
-      };
-    }
-    /* krug 10: kad su lagani dani i dugi na najmanjem, a nedelja je još iznad granice skoka, kvalitet ide na
-       najmanju dozu (bez nadoknade nabijanjem) */
-    if (i >= first && km(shrunk) > kmCap + 0.5) {
-      shrunk = {
-        ...shrunk,
-        days: shrunk.days.map((d): PlanDay => {
-          if (d.workout?.kind !== 'quality' || !isMutable(d, after.header, state.today, done))
-            return d;
-          const def = data.library.find((x) => x.id === d.workout?.libraryId);
-          if (def === undefined) return d;
-          const dose = minDoseOf(def, ctxB);
-          if (dose >= d.workout.workSec) return d;
-          const workout = realize(
-            {
-              type: 'quality',
-              def,
-              dose,
-              slot: { place: 'quality', stimulus: def.stimulus, index: 1, phase: w.intent.phase }
             },
             ctxB
           );

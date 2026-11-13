@@ -215,7 +215,7 @@ UPOZORENJA
       napomena: Tempo za trku: 5:36/km (današnja forma 56:02).
       napomena: Ako provera forme 21. 1. potvrdi očekivani napredak, ciljaj 5:26/km (54:21).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:39–5:42/km (ne brže od 5:36/km), od 3. do 8. km ravnomerno 5:36/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
-      napomena: Posle trke: 8 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 5 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 9,2 km, 63 min, 2 treninga + trka, brz rad 14 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -261,8 +261,8 @@ UPOZORENJA
   čet 12. 11.  lagano 25 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 4,6 km, 33 min
   pet 13. 11.  odmor
   sub 14. 11.  odmor
-  ned 15. 11.  dugi 50 min lagano — 6,8 km, 50 min
-  Zbir: 16,3 km, 1 h 58 min, 3 treninga, brz rad 0 % vremena trčanja
+  ned 15. 11.  dugi 40 min lagano — 5,5 km, 40 min
+  Zbir: 15 km, 1 h 48 min, 3 treninga, brz rad 0 % vremena trčanja
 
 3. NEDELJA (od 16. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 16. 11.  odmor
@@ -431,5 +431,5 @@ UPOZORENJA
       napomena: Tempo za trku: 5:46/km (današnja forma 57:44).
       napomena: Ako provera forme 21. 1. potvrdi očekivani napredak, ciljaj 5:36/km (56:00).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:49–5:52/km (ne brže od 5:46/km), od 3. do 8. km ravnomerno 5:46/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
-      napomena: Posle trke: 8 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 5 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 9 km, 63 min, 2 treninga + trka, brz rad 14 % vremena trčanja

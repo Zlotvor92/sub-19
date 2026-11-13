@@ -218,7 +218,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na 
       napomena: Tempo za trku: 5:24/km (današnja forma 26:59).
       napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:15/km (26:15).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 5:25–5:27/km (ne brže od 5:24/km), 2.–4. km ravnomerno 5:24/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
-      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 17,4 km, 2 h 3 min, 4 treninga + trka, brz rad 5 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -415,5 +415,5 @@ Rezultat 3 km za 15:01 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
   ned 21. 2.  TRKA: 5 km
       napomena: Tempo za trku: 5:17/km (današnja forma 26:23).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 5:18–5:20/km (ne brže od 5:17/km), 2.–4. km ravnomerno 5:17/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
-      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 17,2 km, 2 h 3 min, 4 treninga + trka, brz rad 5 % vremena trčanja

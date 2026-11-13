@@ -2,7 +2,7 @@ S14 — p04, E4: ned 6, bol 4/10 posle kvaliteta (osnova)
 
 STANJE: danas 2026-12-08; sadašnji obim 45 km nedeljno, 5 dana; forma 26:59 (pouzdanost srednja), očekivano na dan trke 26:15.
 DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-08 („brze deonice 12 × 200 m, oporavak 200 m džog"). Događaji: pain:2026-12-08.
-PROMENA: 11.
+PROMENA: 12.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 21. 2. 2027.
@@ -218,7 +218,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na 
       napomena: Tempo za trku: 5:24/km (današnja forma 26:59).
       napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:15/km (26:15).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 5:25–5:27/km (ne brže od 5:24/km), 2.–4. km ravnomerno 5:24/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
-      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 17,4 km, 2 h 3 min, 4 treninga + trka, brz rad 5 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -230,7 +230,7 @@ Dugi trening u 7 nedelja staje na 90 min: duže trčanje za ovu distancu donosi 
 FORMA
 Polazna forma (1. 11.): 26:59
 Današnja prognoza (8. 12.): 26:59, pouzdanost srednja
-Očekivano na dan trke: 26:15 (raspon 25:34–27:29) — 0:44 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 26:18 (raspon 25:37–27:32) — 0:41 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 26:59 za 5 km.
 
@@ -241,7 +241,7 @@ TEMPA
 - tempo trke 5:24/km
 - intervali 5:11/km
 - brze deonice 4:53/km
-Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na dan trke (26:15) traži 5:15/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na dan trke (26:18) traži 5:16/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
 Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 18. 12. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 22. 12. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 29. 12.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu.
@@ -256,6 +256,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 18. 12. trči s
 - uto 29. 12.: intervali 3 × 800 m, oporavak 2:30 džog → intervali 3 × 400 m, oporavak 2 min džog
 - čet 31. 12.: prag 3 × 8 min, oporavak 1 min džog → prag 2 × 5 min, oporavak 1 min džog
 - čet 14. 1.: tempo trke 7 × 400 m, oporavak 1:30 hod → tempo trke 4 × 400 m, oporavak 1:30 hod
+Očekivano vreme trke je sada oko 26:18 umesto 26:15: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  lagano 70 min — urađeno 9,7 km, 70 min (7:14/km)
@@ -432,7 +433,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 18. 12. trči s
   sub 20. 2.  lagano 20 min — 2,8 km, 20 min
   ned 21. 2.  TRKA: 5 km
       napomena: Tempo za trku: 5:24/km (današnja forma 26:59).
-      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:15/km (26:15).
+      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:16/km (26:18).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 5:25–5:27/km (ne brže od 5:24/km), 2.–4. km ravnomerno 5:24/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
-      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 17,4 km, 2 h 3 min, 4 treninga + trka, brz rad 5 % vremena trčanja

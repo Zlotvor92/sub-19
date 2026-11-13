@@ -116,7 +116,7 @@ UPOZORENJA
   ned 27. 12.  lagano 65 min — 9,3 km, 65 min
   Zbir: 38,2 km, 4 h 10 min, 5 treninga, brz rad 22 % vremena trčanja
 
-9. NEDELJA (od 28. 12.) — razvoj, gradnja; do trke 7 nedelja
+9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 28. 12.  lagano 70 min — 10 km, 70 min
   uto 29. 12.  lagano 70 min — 10 km, 70 min
   sre 30. 12.  odmor
@@ -127,7 +127,7 @@ UPOZORENJA
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 57 km, 6 h 33 min, 5 treninga, brz rad 7 % vremena trčanja
 
-10. NEDELJA (od 4. 1.) — razvoj, vršna nedelja; do trke 6 nedelja
+10. NEDELJA (od 4. 1.) — specifična priprema, vršna nedelja; do trke 6 nedelja
   pon 4. 1.  lagano 70 min — 10 km, 70 min
   uto 5. 1.  lagano 70 min, usred trčanja 6 × 15 s jako uzbrdo, nazad 1:15 hod — 11,1 km, 79 min
   sre 6. 1.  odmor
@@ -204,9 +204,10 @@ UPOZORENJA
   sub 20. 2.  lagano 20 min — 2,9 km, 20 min
   ned 21. 2.  TRKA: polumaraton
       napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 2 h, napor 6 od 10.
+      napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (26. 12.) — do tada trči po osećaju.
       napomena: Prvih 5 km trči malo lakše nego što ti se čini da možeš (pričaš u kratkim rečenicama), od 5. do 16. km ravnomerno, napor koji možeš da držiš do kraja, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
-      napomena: Posle trke: 18 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 12 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 18 km, 2 h 3 min, 4 treninga + trka, brz rad 7 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -318,7 +319,7 @@ Rezultat 3 km za 15:28 (28. 11.): tempa su sada izračunata iz ovog rezultata, u
   ned 27. 12.  lagano 65 min — 9,3 km, 65 min
   Zbir: 38,2 km, 4 h 8 min, 5 treninga, brz rad 22 % vremena trčanja
 
-9. NEDELJA (od 28. 12.) — razvoj, gradnja; do trke 7 nedelja
+9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 28. 12.  lagano 70 min — 10 km, 70 min
   uto 29. 12.  lagano 70 min — 10 km, 70 min
   sre 30. 12.  odmor
@@ -329,7 +330,7 @@ Rezultat 3 km za 15:28 (28. 11.): tempa su sada izračunata iz ovog rezultata, u
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 57 km, 6 h 33 min, 5 treninga, brz rad 7 % vremena trčanja
 
-10. NEDELJA (od 4. 1.) — razvoj, vršna nedelja; do trke 6 nedelja
+10. NEDELJA (od 4. 1.) — specifična priprema, vršna nedelja; do trke 6 nedelja
   pon 4. 1.  lagano 70 min — 10 km, 70 min
   uto 5. 1.  lagano 70 min, usred trčanja 6 × 15 s jako uzbrdo, nazad 1:15 hod — 11,1 km, 79 min
   sre 6. 1.  odmor
@@ -407,7 +408,7 @@ Rezultat 3 km za 15:28 (28. 11.): tempa su sada izračunata iz ovog rezultata, u
   ned 21. 2.  TRKA: polumaraton
       napomena: Tempo za trku: 5:47/km (današnja forma 2:02:06).
       napomena: Ako provera forme 26. 12. potvrdi očekivani napredak, ciljaj 5:44/km (2:00:53).
-      napomena: Prvih 5 km trči 5:52–5:57/km, od 5. do 16. km 5:47/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
+      napomena: Prvih 5 km trči 5:50–5:54/km, od 5. do 16. km 5:47/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
-      napomena: Posle trke: 18 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 12 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 18 km, 2 h 3 min, 4 treninga + trka, brz rad 7 % vremena trčanja

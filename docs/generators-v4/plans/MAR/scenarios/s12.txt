@@ -2,7 +2,7 @@ S12 — p12, E3: ned 11 i 13: propušten po jedan dugi
 
 STANJE: danas 2027-02-01; sadašnji obim 50 km nedeljno, 5 dana; forma 4:11:59 (pouzdanost srednja), očekivano na dan trke 4:09:05.
 DOGAĐAJ: Propušteno: w11d6, w13d6; sve ostalo urađeno; danas 2027-02-01. Događaji: result:2026-12-12:run-w6d5, result:2027-01-09:run-w10d5, missed:2027-01-17:w11d6, missed:2027-01-31:w13d6.
-PROMENA: 4.
+PROMENA: 2.
 
 ==================== PRE ====================
 PLAN: maraton, trka 7. 3. 2027.
@@ -232,9 +232,10 @@ UPOZORENJA
   sub 6. 3.  lagano 20 min — 2,9 km, 20 min
   ned 7. 3.  TRKA: maraton
       napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 4 h 10 min, napor 6 od 10.
+      napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (9. 1.) — do tada trči po osećaju.
       napomena: Prvih 10 km trči lakše nego što ti se čini da možeš (pričaš u celim rečenicama), do 32. km ravnomerno, napor koji možeš da držiš do kraja; poslednjih 10 km po osećaju. Hod 1 min na okrepama je dozvoljen. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu. Doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
-      napomena: Posle trke: 36 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 24 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 18,9 km, 2 h 10 min, 4 treninga + trka, brz rad 6 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -263,9 +264,6 @@ UPOZORENJA
 - Tražio si 5 dana trčanja nedeljno, a u nedelji provere forme (10. nedelja) plan ima 4 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.
 
 PROMENE
-Rezultat 3 km za 15:28 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 4:09:05 (raspon 4:01:25–4:19:22).
-- plan: po osećaju → prag 5:35/km, tempo trke 5:58/km
-- upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Propušten je ključni trening „dugi 2 h 45 min lagano" (17. 1.). Dugi trening nosi izdržljivost za drugu polovinu trke; u naredne dve nedelje nema istog treninga na kom bi se nadoknadio, pa plan ostaje isti.
 Propušten je ključni trening „dugi 2 h 54 min, poslednjih 39 min u tempu maratona" (31. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; sledeći dugi (14. 2.) nosi završni deo u tempu trke na prethodnom koraku, ne na većem; dužina ostaje prvobitna.
 - ned 14. 2.: dugi 3 h 5 min, poslednjih 55 min u tempu maratona → dugi 3 h 4 min, poslednjih 39 min u tempu maratona
@@ -457,5 +455,5 @@ Propušten je ključni trening „dugi 2 h 54 min, poslednjih 39 min u tempu mar
       napomena: Tempo za trku: 5:58/km (današnja forma 4:11:59).
       napomena: Prvih 5–10 km trči 6:03–6:08/km, mirno, iako ti se čini lako; od 10. do 32. km 5:58/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
-      napomena: Posle trke: 36 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 24 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 18,9 km, 2 h 10 min, 4 treninga + trka, brz rad 6 % vremena trčanja

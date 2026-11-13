@@ -10,7 +10,7 @@ Polazim od tvojih ≈ 15 km nedeljno (1 h 46 min trčanja).
 FORMA
 Polazna forma (1. 11.): 56:02
 Današnja prognoza (1. 11.): 56:02, pouzdanost srednja
-Očekivano na dan trke: 56:02 (raspon 52:26–1:02:22)
+Očekivano na dan trke: 56:02 (raspon 52:26–1:02:22) — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 56:02 za 10 km.
 
@@ -47,8 +47,8 @@ UPOZORENJA
   čet 12. 11.  lagano 25 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 4,6 km, 33 min
   pet 13. 11.  odmor
   sub 14. 11.  odmor
-  ned 15. 11.  dugi 45 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 6,2 km, 45 min
-  Zbir: 15 km, 1 h 48 min, 3 treninga, brz rad 0 % vremena trčanja
+  ned 15. 11.  dugi 35 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 4,8 km, 35 min
+  Zbir: 13,6 km, 98 min, 3 treninga, brz rad 0 % vremena trčanja
 
 3. NEDELJA (od 16. 11.) — osnova, rasterećenje; do trke 15 nedelja
   pon 16. 11.  odmor
@@ -213,5 +213,5 @@ UPOZORENJA
   ned 7. 3.  TRKA: 10 km
       napomena: Tempo za trku: 5:36/km (današnja forma 56:02).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:39–5:42/km (ne brže od 5:36/km), od 3. do 8. km ravnomerno 5:36/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
-      napomena: Posle trke: 9 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 6 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 9,1 km, 63 min, 2 treninga + trka, brz rad 14 % vremena trčanja

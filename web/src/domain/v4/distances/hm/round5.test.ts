@@ -140,6 +140,8 @@ describe('krug 5: polumaraton', () => {
           0
         );
       if (old === undefined || km(w) >= km(old) - 0.5) continue; /* samo skraćene nedelje */
+      /* krug 10 (stavka 1): posle rampe dugi prati samo svoju granicu (+ 25 % / + 20 min), ne udeo nedelje */
+      if (w.start > addDays(to, 14)) continue;
       const long = Math.max(
         0,
         ...w.days.map((d) => (d.workout?.kind === 'long' ? summarize(d.workout, ctx).km : 0))
