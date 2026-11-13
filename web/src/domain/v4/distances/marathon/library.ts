@@ -452,7 +452,11 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'kontrola',
     tags: ['trka'],
     impact: 'obican',
-    requires: { minBaseLoad: 150 },
+    /* R17 (sudija 2): nov/spor početnik („samo da završim", P2 B sa dugim 12 km) nema polumaraton — provera 10 km */
+    requires: {
+      minBaseLoad: 150,
+      levels: ['pocetnik', 'povratnik', 'mali', 'spor', 'srednji', 'brz']
+    },
     main: { kind: 'all-out', distanceM: 21097.5 },
     text: 'kontrola-hm',
     notes: ['napomena.kontrola-hm']

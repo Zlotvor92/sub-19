@@ -28,8 +28,7 @@ export const TEXTS: Record<string, string> = {
   'rp-komad': 'tempo maratona {rep} u komadu{pace}',
   ostrenje: 'oštrenje: tempo maratona {n} × {rep}{pace}, oporavak {rec}',
   'kontrola-10k': 'provera forme: pripremna trka ili test na 10 km punim naporom',
-  'kontrola-hm':
-    'pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju',
+  'kontrola-hm': 'pripremna trka: polumaraton punim naporom, ravnomerno',
   'kontrola-5k': 'provera forme: trka ili test na 5 km punim naporom',
   'kontrola-rana': 'provera forme: test na 3 km punim naporom, ravnomerno',
   'kontrola-rana-5k': 'provera forme: test na 5 km punim naporom, ravnomerno',
@@ -39,12 +38,15 @@ export const TEXTS: Record<string, string> = {
   'napomena.kontrola':
     'Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.',
   /* ishrana i tečnost su sadržaj plana (README): unos na 35–40 min, voda uz svaki unos, proba na dugim */
+  /* R17 (sudija 2): trka duža od 4 h 30 — ista hod-trk strategija kao na dugim */
+  'napomena.trka-hod':
+    'Hod-trk od starta, kao na dugim: 9 min trčanja + 1 min brzog hoda, i na svakoj okrepi hod dok piješ. Tako stižeš do cilja bez zida — ne preskači hod ni kad se osećaš sveže.',
   'napomena.dugi':
     'Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.',
   'napomena.dugi-obuca':
     'Najduže dugo trči u patikama i odeći za trku: tada se vidi da li žulja ili trlja. Patike za trku neka imaju 50–150 km pre starta, ne nove.',
   'napomena.kontrola-hm':
-    'Proba trke: doručak, oprema i gelovi tačno kao na maratonu. Rezultat postaje nova forma; sledeća nedelja je bez brzih treninga.',
+    'Trči ga kao trku: prva 3 km mirno, zatim ravnomerno najjače što možeš do kraja. To je i proba maratona — doručak, oprema i gelovi tačno kao na maratonu. Rezultat postaje nova forma (tempo maratona i prognoza); sledeća nedelja je bez brzih treninga.',
   'napomena.dugi-blok':
     'Blok trči ravnomerno u tempu maratona, ne brže; unos gela vežbaj i tokom bloka, kao na trci. Ako tempo ne možeš da držiš bez naprezanja, skrati blok — ne ubrzavaj.',
   'napomena.trka':
@@ -52,7 +54,7 @@ export const TEXTS: Record<string, string> = {
   'napomena.trka.po-osecaju':
     'Prvih 10 km trči lakše nego što ti se čini da možeš (pričaš u celim rečenicama), do 32. km ravnomerno, napor koji možeš da držiš do kraja; poslednjih 10 km po osećaju. Hod 1 min na okrepama je dozvoljen. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu. Doručak 3 h pre starta, isti kao pred najduži dugi.',
   'napomena.trka-unos':
-    'Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.',
+    'Ishrana na trci: gel svakih 35–40 min od 35. minuta, kao na dugim, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.',
 
   /* trka i faze */
   race: 'trka — maraton',
@@ -80,6 +82,7 @@ export const NOTE_RULES: NoteRule[] = [
     byFeelText: 'napomena.trka.po-osecaju'
   },
   { kinds: ['race'], minDurationSec: 0, text: 'napomena.trka-unos' },
+  { kinds: ['race'], minDurationSec: 16200, text: 'napomena.trka-hod' },
   /* svaki dugi ≥ 90 min nosi unos (README) */
   { kinds: ['long'], minDurationSec: 5400, text: 'napomena.dugi' },
   /* najduži dugi (≥ 2 h 50; sudija 2: ne na svakom dugom od 2 h 30): oprema za trku */

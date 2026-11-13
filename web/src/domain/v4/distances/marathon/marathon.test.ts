@@ -838,7 +838,7 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
       const race = lines.findIndex((l) => l.includes('TRKA: maraton'));
       const notes = lines.slice(race, race + 6).join(' ');
       expect(notes, p.id).toMatch(/Zid/);
-      expect(notes, p.id).toMatch(/gel svakih 35 min/);
+      expect(notes, p.id).toMatch(/gel svakih 35–40 min/);
       if (ctx.paces.byFeel) continue;
       const rp = /Tempo za trku: (\d+):(\d+)\/km/.exec(notes);
       const racePace = rp === null ? ctx.paces.RP : Number(rp[1]) * 60 + Number(rp[2]);
@@ -911,7 +911,8 @@ describe('krug 12 — maraton (R1–R6)', () => {
       if (n < 16) continue;
       const peak = Math.max(...st.map((x) => x.km));
       const longest = Math.max(...st.map((x) => x.longKm));
-      if (peak >= 52) expect(longest, p.id).toBeGreaterThanOrEqual(25.5);
+      /* R17: 24,5 km — sudija 2 traži dugi ≤ ≈ 45 % nedelje kod 3–4 dana osim najdužih (v. kapiju) */
+      if (peak >= 52) expect(longest, p.id).toBeGreaterThanOrEqual(24.5);
       const n5 = st[n - 6]?.longKm ?? 0;
       const n3 = st[n - 4]?.longKm ?? 0;
       expect(n5, `${p.id} N−5 ${String(n5)} / N−3 ${String(n3)}`).toBeGreaterThanOrEqual(
@@ -937,7 +938,8 @@ describe('krug 12 — maraton (R1–R6)', () => {
   it('R5: plan ≥ 18 nedelja ima pripremni polumaraton 6–9 nedelja pred trku, a sledeća nedelja nema kvaliteta', () => {
     for (const p of PROFILE_PLANS) {
       const n = p.doc.weeks.length;
-      if (n < 18) continue;
+      /* R17: nov/spor početnik (samo da završim) nema polumaraton — provera 10 km */
+      if (n < 18 || p.doc.header.decisions.level === 'pocetnik-nov') continue;
       const race = p.doc.weeks.find((w) =>
         w.days.some(
           (d) => d.workout?.kind === 'test' && (d.workout.text ?? '').includes('polumaraton')
@@ -957,7 +959,9 @@ describe('krug 12 — maraton (R1–R6)', () => {
 
   /* M10 (motor, krug 15): trka na dan dugog */
   it('R5/M10: pripremni polumaraton je na dan dugog', () => {
-    for (const p of PROFILE_PLANS.filter((x) => x.doc.weeks.length >= 18)) {
+    for (const p of PROFILE_PLANS.filter(
+      (x) => x.doc.weeks.length >= 18 && x.doc.header.decisions.level !== 'pocetnik-nov'
+    )) {
       const longDay = p.doc.header.decisions.longDay;
       const d = daysOf(p).find(
         (x) => x.workout?.kind === 'test' && (x.workout.text ?? '').includes('polumaraton')

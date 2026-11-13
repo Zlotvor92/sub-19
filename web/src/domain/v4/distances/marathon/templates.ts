@@ -252,10 +252,12 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
       ? [
           /* M10 (krug 15): polumaraton na dan dugog (nedelja), bez dugog te nedelje */
           {
-            ...week(RAZVOJ, 'recovery', 1, null, sh.single ? [STRIDES] : [STRIDES, STRIDES]),
+            /* R17 (sudija 2): nedelja trke nije odmor od 5–6 dana — obim ≈ 85 % uz lagane dane, bez kvaliteta */
+            ...week(RAZVOJ, 'build', 0.85, null, sh.single ? [STRIDES] : [STRIDES, STRIDES]),
             long: { lenPct: 1, stimulus: 'dugi', race: KONTROLA_HM }
           },
-          week(RAZVOJ, 'build', 0.85, { len: 0.78 }, [STRIDES, STRIDES])
+          /* 1–3 dana: dugi posle trke kraći (≤ ≈ 45 % nedelje, R17) */
+          week(RAZVOJ, 'build', 0.85, { len: sh.single ? 0.6 : 0.78 }, [STRIDES, STRIDES])
         ]
       : [
           /* N−8: rasterećenje + provera 10 km subotom, dugi kratak lagan; plan kraći od 12 nedelja nema proveru u
@@ -273,7 +275,7 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
   return [
     ...halfRace,
     /* N−7: blok 1 (≈ 8 km MP, 40 min; R3: ≤ 45 % dugog) */
-    block(0.5, 0.92, short ? 0.95 : 0.93),
+    block(0.5, sh.single ? 0.84 : 0.92, short ? 0.95 : 0.93),
     /* N−6: talas — kraći lagan dugi, MP usred nedelje 2 × 4–5 km + prag */
     week(
       SPEC,
@@ -370,7 +372,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       ? [
           /* M10 (krug 15): polumaraton na dan dugog */
           {
-            ...week(RAZVOJ, 'recovery', 1, null, [STRIDES, STRIDES]),
+            ...week(RAZVOJ, 'build', 0.85, null, [STRIDES, STRIDES]),
             long: { lenPct: 1, stimulus: 'dugi', race: KONTROLA_HM }
           },
           week(RAZVOJ, 'build', 0.85, { len: 0.78, stimulus: longStim }, [STRIDES, STRIDES])

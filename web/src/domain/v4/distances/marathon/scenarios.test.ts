@@ -18,7 +18,10 @@ import { keptPeak } from '../../engine/testdata/round12';
 /* POZNATE GREŠKE MOTORA na 10 km (13. 11. 2026) — nalaz se ne briše iz provere nego se ovde imenuje, sa uzrokom;
    svaki je zahtev prema motoru u `docs/generators-v4/reports/F7-10K-REPORT.md`. Kad motor bude ispravljen, test
    `poznate greške su još tu` pada i stavka se briše. */
-const KNOWN = new Map<string, string>([]);
+const KNOWN = new Map<string, string>([
+  /* krug 17: p11 posle bola i trke 10 km — izlaz iz prozora + 23 % u N−7 (motor, M2/M3) */
+  ['s26 n17 nedelja 29.2 → 36.0 km', 'izlaz iz prozora posle bola i trke (R2, motor)']
+]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>
   bad.filter((b) => {

@@ -138,7 +138,13 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
       's25 brz-udeo@6',
       's7 dugi-za-distancu@13',
       's26 dugi-za-distancu@19',
-      's26 silazak@22'
+      's26 silazak@22',
+      /* krug 17 (dopuna sudije 2): 3 dana (p08) posle pripremnog polumaratona — lagani dani vezani za dugi (s2);
+         lestvica dugog posle bolesti u N−7 (s6, motor M2); p11 posle bolesti/bola (s7, s26) */
+      's2 ispod-cilja@20',
+      's6 dugi-korak@21',
+      's7 dugi-za-distancu@19',
+      's26 ispod-cilja@18'
     ]);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });

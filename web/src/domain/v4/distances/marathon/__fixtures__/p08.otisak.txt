@@ -97,26 +97,26 @@
 2027-02-06 | odmor | - | 0.0 |  | - | - | -
 2027-02-07 | trening | long | 27.0 | dugi 27 km lagano | - | - | -
 2027-02-08 | odmor | - | 0.0 |  | - | - | -
-2027-02-09 | trening | easy | 5.0 | lagano 5 km | - | - | -
+2027-02-09 | trening | easy | 14.0 | lagano 14 km | - | - | -
 2027-02-10 | odmor | - | 0.0 |  | - | - | -
-2027-02-11 | trening | easy | 6.0 | lagano 5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-02-11 | trening | easy | 15.0 | lagano 14 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-12 | odmor | - | 0.0 |  | - | - | -
 2027-02-13 | odmor | - | 0.0 |  | - | - | -
-2027-02-14 | trening | test | 25.3 | pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju | - | - | -
+2027-02-14 | trening | test | 25.3 | pripremna trka: polumaraton punim naporom, ravnomerno | - | - | -
 2027-02-15 | odmor | - | 0.0 |  | - | - | -
-2027-02-16 | trening | easy | 15.5 | lagano 15,5 km | - | - | -
+2027-02-16 | trening | easy | 14.5 | lagano 14,5 km | - | - | -
 2027-02-17 | odmor | - | 0.0 |  | - | - | -
-2027-02-18 | trening | easy | 16.5 | lagano 15,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-02-18 | trening | easy | 15.5 | lagano 14,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-19 | odmor | - | 0.0 |  | - | - | -
 2027-02-20 | odmor | - | 0.0 |  | - | - | -
-2027-02-21 | trening | long | 23.5 | dugi 23,5 km lagano | - | - | -
+2027-02-21 | trening | long | 22.0 | dugi 22 km lagano | - | - | -
 2027-02-22 | odmor | - | 0.0 |  | - | - | -
-2027-02-23 | trening | easy | 17.0 | lagano 16 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-02-23 | trening | easy | 16.5 | lagano 15,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-24 | odmor | - | 0.0 |  | - | - | -
-2027-02-25 | trening | easy | 17.0 | lagano 16 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-02-25 | trening | easy | 16.5 | lagano 15,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-26 | odmor | - | 0.0 |  | - | - | -
 2027-02-27 | odmor | - | 0.0 |  | - | - | -
-2027-02-28 | trening | long | 27.5 | dugi 27,5 km, poslednjih 7 km u tempu maratona | - | - | -
+2027-02-28 | trening | long | 25.0 | dugi 25 km, poslednjih 7 km u tempu maratona | - | - | -
 2027-03-01 | odmor | - | 0.0 |  | - | - | -
 2027-03-02 | trening | easy | 18.0 | lagano 17 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-03-03 | odmor | - | 0.0 |  | - | - | -
@@ -125,26 +125,26 @@
 2027-03-06 | odmor | - | 0.0 |  | - | - | -
 2027-03-07 | trening | long | 22.0 | dugi 22 km lagano | - | - | -
 2027-03-08 | odmor | - | 0.0 |  | - | - | -
-2027-03-09 | trening | easy | 18.5 | lagano 17,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-03-09 | trening | easy | 17.5 | lagano 16,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-03-10 | odmor | - | 0.0 |  | - | - | -
-2027-03-11 | trening | easy | 18.5 | lagano 17,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-03-11 | trening | easy | 17.5 | lagano 16,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-03-12 | odmor | - | 0.0 |  | - | - | -
 2027-03-13 | odmor | - | 0.0 |  | - | - | -
-2027-03-14 | trening | long | 29.0 | dugi 29 km, poslednjih 9,5 km u tempu maratona | - | - | -
+2027-03-14 | trening | long | 26.5 | dugi 26,5 km, poslednjih 9,5 km u tempu maratona | - | - | -
 2027-03-15 | odmor | - | 0.0 |  | - | - | -
-2027-03-16 | trening | easy | 14.5 | lagano 13,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-03-16 | trening | easy | 13.0 | lagano 12 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-03-17 | odmor | - | 0.0 |  | - | - | -
 2027-03-18 | trening | quality | 8.6 | prag 3 × 6 min, oporavak 1:30 džog | - | - | -
 2027-03-19 | odmor | - | 0.0 |  | - | - | -
 2027-03-20 | odmor | - | 0.0 |  | - | - | -
-2027-03-21 | trening | long | 21.0 | dugi 21 km lagano | - | - | -
+2027-03-21 | trening | long | 19.0 | dugi 19 km lagano | - | - | -
 2027-03-22 | odmor | - | 0.0 |  | - | - | -
-2027-03-23 | trening | easy | 19.5 | lagano 18,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-03-23 | trening | easy | 18.0 | lagano 17 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-03-24 | odmor | - | 0.0 |  | - | - | -
-2027-03-25 | trening | easy | 19.5 | lagano 18,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-03-25 | trening | easy | 18.0 | lagano 17 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-03-26 | odmor | - | 0.0 |  | - | - | -
 2027-03-27 | odmor | - | 0.0 |  | - | - | -
-2027-03-28 | trening | long | 30.0 | dugi 30 km, poslednjih 11,5 km u tempu maratona | - | - | -
+2027-03-28 | trening | long | 28.0 | dugi 28 km, poslednjih 11,5 km u tempu maratona | - | - | -
 2027-03-29 | odmor | - | 0.0 |  | - | - | -
 2027-03-30 | trening | easy | 12.5 | lagano 11,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-03-31 | odmor | - | 0.0 |  | - | - | -

@@ -96,13 +96,13 @@
 2027-02-05 | odmor | - | 0.0 |  | - | - | -
 2027-02-06 | trening | easy | 14.5 | lagano 1 h 45 min | - | - | -
 2027-02-07 | trening | long | 22.1 | dugi 2 h 40 min lagano | - | - | -
-2027-02-08 | trening | easy | 5.5 | lagano 40 min | - | - | -
-2027-02-09 | trening | easy | 6.3 | lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-02-08 | trening | easy | 10.4 | lagano 75 min | - | - | -
+2027-02-09 | trening | easy | 11.2 | lagano 75 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-10 | odmor | - | 0.0 |  | - | - | -
-2027-02-11 | trening | easy | 6.3 | lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-02-11 | trening | easy | 11.2 | lagano 75 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-12 | odmor | - | 0.0 |  | - | - | -
-2027-02-13 | trening | easy | 5.5 | lagano 40 min | - | - | -
-2027-02-14 | trening | test | 25.9 | pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju | - | - | -
+2027-02-13 | trening | easy | 10.4 | lagano 75 min | - | - | -
+2027-02-14 | trening | test | 25.9 | pripremna trka: polumaraton punim naporom, ravnomerno | - | - | -
 2027-02-15 | trening | easy | 12.4 | lagano 90 min | - | - | -
 2027-02-16 | trening | easy | 12.4 | lagano 90 min | - | - | -
 2027-02-17 | odmor | - | 0.0 |  | - | - | -

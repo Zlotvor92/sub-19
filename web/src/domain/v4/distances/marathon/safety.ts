@@ -27,7 +27,8 @@ export const LEVELS: LevelRule[] = [
 /* Udeo dugog po broju dana (README: 5–6 dana 33–38 %, 4 dana do 40 %, 3 dana 45–50 %). Motor ga primenjuje na
    minute nedelje u laganom tempu i od njega oduzima višak km bloka u tempu maratona, pa je stvarni udeo u km oko
    5–8 poena niži od zadatog (p07: zadato 42 %, stvarno ≈ 36 % sa blokom od 13 km). */
-const LONG_SHARE = { '1': 1, '2': 0.62, '3': 0.55, '4': 0.44, '5': 0.42, '6': 0.38, '7': 0.35 };
+/* R17 (sudija 2): kod 3–4 dana dugi ≤ ≈ 45 % nedelje osim dve najduže nedelje (p01, p03, p08) */
+const LONG_SHARE = { '1': 1, '2': 0.62, '3': 0.5, '4': 0.45, '5': 0.42, '6': 0.38, '7': 0.35 };
 
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: + 7 % u bodovima, najmanje 12 BO (≈ 2 km) — README: obim + 6 % nedeljno (ciljni p07) */
@@ -84,8 +85,9 @@ export const SAFETY: SafetyNumbers = {
   longShareByRunDays: {
     /* početnik: ciljni p11 (4 dana) najduži 27 km = 52 % vrha od 52 km, p12 (5 dana) 41 % — dugi je jedini put do
        27 km kad je obim mali; hod-trk spušta udar */
-    pocetnik: { ...LONG_SHARE, '3': 0.52, '4': 0.47, '5': 0.43, '6': 0.4 },
-    'pocetnik-nov': { ...LONG_SHARE, '3': 0.52, '4': 0.47, '5': 0.43, '6': 0.4 },
+    pocetnik: { ...LONG_SHARE, '3': 0.5, '4': 0.46, '5': 0.43, '6': 0.4 },
+    /* hod-trk: vreme na nogama (p13 3 dana, 10 nedelja) — dugi nosi više nedelje */
+    'pocetnik-nov': { ...LONG_SHARE, '3': 0.58, '4': 0.5, '5': 0.45, '6': 0.4 },
     povratnik: LONG_SHARE,
     mali: LONG_SHARE,
     spor: LONG_SHARE,
@@ -106,13 +108,13 @@ export const SAFETY: SafetyNumbers = {
      veći obim. README tabela najdužeg dugog (45–60 km vrha → 26–30 km, 60–80 km → 28–32 km) traži više od
      40–45 %: ispod 75 km nedeljno 43 %, u 3 nedelje najdužeg dugog 47 % (blok u dugom to spušta za ≈ 1,5 km) */
   /* R1/R2 (krug 12, presuda trenera ROUND-V4-MAR-01 § E): kod malog obima dugi je vreme na nogama, ne udeo nedelje —
-     ispod 66 km nedeljno 47 %, u 3 nedelje najdužeg dugog 53 % (najduži = min(28 km, 3 h, 0,50 × vrh) kod 4 dana,
+     ispod 66 km nedeljno 45 %, u 3 nedelje najdužeg dugog (N−7, N−5, N−3) 57 % (R17) (najduži = min(28 km, 3 h, 0,50 × vrh) kod 4 dana,
      ≥ 26 km kad je vrh ≥ 52 km); 66–85 km 44 % (p07: 30–32 km) */
   longShareLowVolume: {
     belowKm: 66,
     minRunDays: 3,
-    share: 0.47,
-    peakShare: 0.53,
+    share: 0.45,
+    peakShare: 0.57,
     peakWeeks: 3,
     midKm: 85,
     midShare: 0.44
@@ -259,7 +261,8 @@ export const ADEQUATE: AdequatePrep = {
   minPeakWeeklyKm: 60,
   minRunDays: 4,
   /* najduži dugi ≥ 28 km ili ≥ 3 h (README: ispod 24 km plan to kaže i daje predlog) */
-  minLongKm: 28,
+  /* R17 (d): isti broj kao provera dugog (26 km, presuda MAR-01), da dva upozorenja ne traže 26 i 28 km */
+  minLongKm: 26,
   /* provera `dugi-za-distancu` meri dugi u km laganog tempa (bez viška km bloka u tempu maratona, ≈ 1–1,5 km), pa je
      prag 27 km ili 2 h 50 — dugi od 28 km sa blokom tada ne dobija upozorenje (zahtev motoru u izveštaju) */
   minLongSec: 10200,
