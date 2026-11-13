@@ -782,10 +782,14 @@ export function warnings(input: WarningInput): Warning[] {
     out.push({
       code: 'nema-podataka',
       severity: 'info',
-      problem: 'Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.',
+      /* T3 (krug 6): „ni trčanja sa sata" samo kad ih stvarno nema */
+      problem:
+        state.runs.length > 0
+          ? `Nemam tvoj skorašnji rezultat; forma je procenjena iz ${String(state.runs.length)} trčanja sa sata, pa je manje pouzdana.`
+          : 'Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.',
       meaning:
         'Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon.',
-      proposal: `Unesi rezultat trke iz poslednja 3 meseca${testHint(doc, data)} — tempa i prognoza se tada računaju iz stvarnog rezultata.`
+      proposal: `Unesi rezultat trke iz poslednja 3 meseca${testHint(doc, data, state.today)} — tempa i prognoza se tada računaju iz stvarnog rezultata.`
     });
   }
   return out;
@@ -793,7 +797,8 @@ export function warnings(input: WarningInput): Warning[] {
 
 /** Deo predloga `nema-podataka` o testu: distanca se čita iz plana (prva provera forme koju plan sadrži), inače iz
     biblioteke distance (najkraći unos vrste `test`); bez toga se test ne pominje. */
-function testHint(doc: PlanDoc, data: DistanceData): string {
+/** R5 (krug 6): samo provera koja je još pred trkačem. */
+function testHint(doc: PlanDoc, data: DistanceData, today: IsoDate): string {
   const effort = (steps: readonly Step[]): number | null => {
     for (const step of steps) {
       if ('repeat' in step) {
@@ -806,7 +811,7 @@ function testHint(doc: PlanDoc, data: DistanceData): string {
     return null;
   };
   for (const day of doc.weeks.flatMap((w) => w.days)) {
-    const m = day.workout?.kind === 'test' ? effort(day.workout.steps) : null;
+    const m = day.workout?.kind === 'test' && day.date > today ? effort(day.workout.steps) : null;
     if (m !== null) {
       return `, ili odradi proveru forme na ${fmtDistance(m)} koja je u planu ${fmtDate(day.date)}`;
     }
@@ -1000,7 +1005,12 @@ function returnWarning(doc: PlanDoc, state: RunnerState): Warning | null {
     code: 'povratak',
     severity: 'info',
     problem: best.problem,
-    meaning: `Do ${fmtDate(best.end)} traje oporavak: treninzi su kraći i lagani, da se telo vrati pre nego što opterećenje krene da raste.`,
+    /* R5 (krug 6): „oporavak do X" ⇒ prvi brzi trening posle X — kad brzi dolazi ranije, lagani deo oporavka traje
+       do dana pred njega, a kraći treninzi do kraja rampe */
+    meaning:
+      firstFast !== undefined && firstFast.date <= best.end
+        ? `Do ${fmtDate(addDays(firstFast.date, -1))} traje oporavak: treninzi su lagani, da se telo vrati pre nego što opterećenje krene da raste; do ${fmtDate(best.end)} su i kraći nego inače.`
+        : `Do ${fmtDate(best.end)} traje oporavak: treninzi su kraći i lagani, da se telo vrati pre nego što opterećenje krene da raste.`,
     proposal: `${when}; ${tired}.`
   };
 }

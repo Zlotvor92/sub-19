@@ -1291,5 +1291,37 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     };
     changes.push(...diff);
   }
-  return changes.length === 0 ? { doc, changes: [] } : { doc: current, changes };
+  const result = changes.length === 0 ? doc : current;
+  /* R5 (krug 6): upozorenje koje pominje prošli datum („odradi proveru 28. 11.") se računa iznova — i kad se
+     treninzi ne menjaju */
+  return { doc: freshDatedWarnings(result, state, data), changes };
 };
+
+/** Datum „d. m." iz teksta → ISO u godini plana (od početka do trke). */
+function textDates(text: string, doc: PlanDoc): IsoDate[] {
+  const y0 = Number(doc.header.startDate.slice(0, 4));
+  const out: IsoDate[] = [];
+  for (const m of text.matchAll(/(\d{1,2})\. (\d{1,2})\./g)) {
+    const dd = (m[1] ?? '').padStart(2, '0');
+    const mm = (m[2] ?? '').padStart(2, '0');
+    const a = `${String(y0)}-${mm}-${dd}`;
+    const b = `${String(y0 + 1)}-${mm}-${dd}`;
+    out.push(addDays(doc.header.startDate, -366) <= a && a <= doc.header.goal.raceDate && a >= addDays(doc.header.startDate, -60) ? a : b);
+  }
+  return out;
+}
+
+function freshDatedWarnings(doc: PlanDoc, state: RunnerState, data: DistanceData): PlanDoc {
+  const stale = doc.header.warnings.filter((w) =>
+    textDates(`${w.problem} ${w.meaning} ${w.proposal}`, doc).some((d) => d <= state.today)
+  );
+  if (stale.length === 0) return doc;
+  const codes = new Set(stale.map((w) => w.code));
+  const fresh = warnings({ state, goal: doc.header.goal, data, decisions: doc.header.decisions, doc });
+  const next = doc.header.warnings.flatMap((w) => {
+    if (!codes.has(w.code)) return [w];
+    const f = fresh.find((x) => x.code === w.code);
+    return f === undefined ? [] : [f];
+  });
+  return { ...doc, header: { ...doc.header, warnings: next } };
+}

@@ -123,7 +123,8 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       }
       const text = renderPlan(r.after, r.afterState, hm);
       const days = (r.after.weeks as PlanWeek[]).flatMap((w) => w.days);
-      for (const m of text.matchAll(/[Oo]porav\w* (?:traje )?do (\d{1,2})\. (\d{1,2})\./g)) {
+      for (const m of text.matchAll(/(?:[Oo]porav\w* (?:traje )?do|Do) (\d{1,2})\. (\d{1,2})\.(?: traje oporavak)?/g)) {
+        if (!m[0].includes('porav')) continue;
         const until = isoOf(m[1] ?? '', m[2] ?? '');
         const early = days.find(
           (d) => d.date > today && d.date <= until && (d.workout?.kind === 'quality' || (d.workout?.kind === 'long' && d.workout.workSec > 0))

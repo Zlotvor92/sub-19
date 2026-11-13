@@ -123,7 +123,7 @@ describe('SPEC § 12 (d): plan koji počinje dan posle trke od 1:41:00', () => {
   it('upozorenje `povratak` navodi do kada traje oporavak (15 dana) i datum prvog brzog treninga', () => {
     const w = doc.header.warnings.find((x) => x.code === 'povratak');
     expect(w?.problem).toContain('dan posle trke');
-    expect(w?.meaning).toContain('Do 30. 11.');
+    expect(w?.meaning).toContain('do 30. 11. su i kraći');
     expect(w?.proposal).toContain('26. 11.');
     expect(doc.header.form.start.confidence).toBe('visoka');
   });
