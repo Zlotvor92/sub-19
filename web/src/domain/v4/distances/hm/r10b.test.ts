@@ -17,3 +17,26 @@ describe('krug 10 — napomena za dan trke (hm)', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('krug 10 — stavka 7: oznake faza u ispisu (hm)', () => {
+  it('faza se ne vraća unazad (red prvog pojavljivanja)', () => {
+    const bad: string[] = [];
+    for (const p of PROFILES) {
+      const state = buildState(factsOf(p), p.goal, hm, estimateForm);
+      const r = plan(state, p.goal, hm);
+      if (!r.ok) continue;
+      const phases = renderPlan(r.doc, state, hm)
+        .split('\n')
+        .filter((l) => /^\d+\. NEDELJA/.test(l))
+        .map((l) => (l.split(' — ')[1] ?? '').split(',')[0] ?? '');
+      const order = [...new Set(phases)];
+      let at = 0;
+      for (const ph of phases) {
+        const i = order.indexOf(ph);
+        if (i < at) bad.push(`${p.id} ${ph} posle ${order[at] ?? ''}`);
+        at = Math.max(at, i);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});

@@ -17,3 +17,26 @@ describe('krug 10 — napomena za dan trke (fivek)', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('krug 10 — stavka 7: oznake faza u ispisu (fivek)', () => {
+  it('faza se ne vraća unazad (red prvog pojavljivanja)', () => {
+    const bad: string[] = [];
+    for (const p of PROFILES) {
+      const state = buildState(factsOf(p), p.goal, fivek, estimateForm);
+      const r = plan(state, p.goal, fivek);
+      if (!r.ok) continue;
+      const phases = renderPlan(r.doc, state, fivek)
+        .split('\n')
+        .filter((l) => /^\d+\. NEDELJA/.test(l))
+        .map((l) => (l.split(' — ')[1] ?? '').split(',')[0] ?? '');
+      const order = [...new Set(phases)];
+      let at = 0;
+      for (const ph of phases) {
+        const i = order.indexOf(ph);
+        if (i < at) bad.push(`${p.id} ${ph} posle ${order[at] ?? ''}`);
+        at = Math.max(at, i);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});

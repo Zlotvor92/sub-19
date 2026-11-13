@@ -21,7 +21,7 @@ import {
 } from './format';
 import { weekCost } from './guard';
 import { paceCtxOf } from './load';
-import { effortNoFastDays } from './readiness';
+import { adjustmentWindow, effortNoFastDays } from './readiness';
 import { adjustRaceDay } from './plan';
 import { countWeeks } from './template';
 import type {
@@ -32,6 +32,7 @@ import type {
   PlanDay,
   PlanDoc,
   PlanHeader,
+  PlanWeek,
   Run,
   RunnerState,
   SingleStep,
@@ -438,14 +439,25 @@ export function renderPlan(
   const past = (day: PlanDay): boolean =>
     today !== undefined && (day.date < today || (day.date === today && paused(day.date)));
   /* Z9 (krug 7): „vršna nedelja" je nedelja sa najvećim obimom plana (ne oznaka šablona) */
+  /* krug 10 (stavka 7): nedelja koju seče prozor događaja (pauza, bol, rampa) nije „vršna" */
+  const touched = (w: PlanWeek): boolean =>
+    (h.adjustments ?? []).some((a) => {
+      if (a.kind === 'effort' && a.planned === true) return false;
+      const win = adjustmentWindow(a);
+      return win !== null && win.from <= addDays(w.start, 6) && win.rampEnd >= w.start;
+    });
   const kms = doc.weeks.map((w) =>
-    w.intent.kind === 'race' ? 0 : weekCost(w, h.goal.raceDate, ctx).km
+    w.intent.kind === 'race' || touched(w) ? 0 : weekCost(w, h.goal.raceDate, ctx).km
   );
   const peakAt = kms.indexOf(Math.max(...kms));
+  /* krug 10 (stavka 7): faza se u ispisu ne vraća unazad (red faza = red prvog pojavljivanja u planu) */
+  const order = [...new Set(doc.weeks.map((w) => w.intent.phase))];
+  let phaseAt = 0;
   for (const [wi, week] of doc.weeks.entries()) {
     const cost = weekCost(week, h.goal.raceDate, ctx);
     const toRace = Math.max(0, Math.round(diffDays(mondayOf(h.goal.raceDate), week.start) / 7));
-    const phase = data.texts[`faza.${week.intent.phase}`];
+    phaseAt = Math.max(phaseAt, order.indexOf(week.intent.phase));
+    const phase = data.texts[`faza.${order[phaseAt] ?? week.intent.phase}`];
     const raw: WeekKind =
       week.intent.kind === 'peak' && wi !== peakAt
         ? 'build'
