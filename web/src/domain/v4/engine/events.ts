@@ -60,7 +60,9 @@ export const deriveEvents: DeriveEventsFn = (doc, state) => {
   );
   for (const run of state.runs) {
     const fresh = run.date > since || (run.date === since && !known.has(run.date));
-    if (run.effort !== undefined && fresh && run.date <= today) {
+    /* Z5 (krug 7): i odrađena provera iz plana (trčanje vezano za dan punog napora) je rezultat */
+    const plannedEffort = run.effort === undefined && (run.plannedEffortM ?? 0) > 0;
+    if ((run.effort !== undefined || plannedEffort) && fresh && run.date <= today) {
       events.push({
         id: `result:${run.date}:${run.id}`,
         date: run.date,

@@ -172,8 +172,16 @@ function onResult(
   }
   const window = adjustmentWindow(adj);
   if (window === null) return null;
-  /* Z1 (krug 7): i posle oporavka od trke izlazak bez skoka */
-  const smooth = smoothExit(runPass({ ...doc, header }, state, data, { window, rechainFrom: null }), doc, window.rampEnd, state, data);
+  /* Z1 (krug 7): i posle oporavka od NEPLANIRANE trke izlazak bez skoka (planirana provera nije prekid) */
+  const built = runPass({ ...doc, header }, state, data, { window, rechainFrom: null });
+  /* povratak posle prekida (pauza, bol) još traje — i tada izlazak bez skoka (s26) */
+  const returning = (header.adjustments ?? []).some((a) => {
+    if (a.kind !== 'pause' && a.kind !== 'pain') return false;
+    const w = adjustmentWindow(a);
+    return w !== null && addDays(w.rampEnd, 28) >= state.today;
+  });
+  if (planned && !returning) return { doc: built, until: window.rampEnd };
+  const smooth = smoothExit(built, doc, window.rampEnd, state, data);
   return { doc: smooth.doc, until: smooth.until > window.rampEnd ? smooth.until : window.rampEnd };
 }
 
@@ -1159,7 +1167,11 @@ function explain(
         state.form.current.raceTimeSec,
         c.doc.header.decisions
       );
-      const header = `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a očekivano vreme trke je sada oko ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)}).`;
+      const range = `očekivano vreme trke je sada oko ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)})`;
+      /* Z5 (krug 7): plan „po osećaju" dobija tempa iz rezultata */
+      const header = before.header.paces.byFeel
+        ? `${what}: tempa su sada izračunata iz ovog rezultata, umesto po osećaju; ${range}.`
+        : `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a ${range}.`;
       const late = `${what}: ${recovery}; i posle toga je prvi brzi trening svake vrste nešto kraći — ${lighter}.`;
       return { day, late, week: late, header };
     }
@@ -1309,7 +1321,8 @@ function describe(
       ...base,
       scope: 'zaglavlje',
       what: 'tempa',
-      before: `prag ${fmtPace(h0.paces.T)}, tempo trke ${fmtPace(h0.paces.RP)}`,
+      /* Z5 (krug 7): iz „po osećaju" u tempa iz rezultata — pre je „po osećaju", ne isti brojevi */
+      before: h0.paces.byFeel ? 'po osećaju' : `prag ${fmtPace(h0.paces.T)}, tempo trke ${fmtPace(h0.paces.RP)}`,
       after: `prag ${fmtPace(h1.paces.T)}, tempo trke ${fmtPace(h1.paces.RP)}`,
       reason: text.header
     });

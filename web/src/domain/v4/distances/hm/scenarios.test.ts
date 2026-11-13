@@ -257,4 +257,17 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
     }
     expect(bad).toEqual([]);
   });
+
+  it('Z5: plan „po osećaju" posle rezultata dobija tempa iz njega i gubi „nemam tvoj rezultat"', () => {
+    const bad: string[] = [];
+    for (const { s, r } of REPLANS) {
+      if (r.before.header.paces.byFeel !== true) continue;
+      const asOf: string = r.before.header.form.current.asOf;
+      const result = (r.afterState.form.history as any[]).some((h) => h.date > asOf && (h.signal === 'trka' || h.signal === 'test'));
+      if (!result) continue;
+      if (r.after.header.paces.byFeel === true) bad.push(`${name(s.no)} i dalje po osećaju`);
+      if ((r.after.header.warnings as any[]).some((w) => w.code === 'nema-podataka')) bad.push(`${name(s.no)} „nemam tvoj rezultat"`);
+    }
+    expect(bad).toEqual([]);
+  });
 });

@@ -458,8 +458,10 @@ export const guard: GuardFn = (doc, _state, data) => {
     const share = c.durationSec > 0 ? c.fastSec / c.durationSec : 0;
     const maxShare = week.intent.kind === 'peak' ? s.maxFastSharePeak : s.maxFastShare;
     /* Nedelja trke se ne meri: mala je, a sama trka ne ulazi u zbir. */
-    /* Z10 (krug 7): nedelja u rampi (prekid, malo km) se ne meri udelom */
-    if (!raceWeek && !ramp && share > maxShare + GUARD_FAST_SHARE_TOLERANCE) {
+    /* Z10 (krug 7): nedelja u rampi (prekid, malo km) se ne meri udelom; skraćena nedelja izlaska (4 nedelje posle
+       rampe) najviše do granice vršne nedelje */
+    const exitShare = inAnyWindow(week, causes, 28) ? Math.max(maxShare, s.maxFastSharePeak) : maxShare;
+    if (!raceWeek && !ramp && share > exitShare + GUARD_FAST_SHARE_TOLERANCE) {
       report('brz-udeo', week, null, 'Udeo brzog rada u nedelji je iznad dozvoljenog.');
     }
     const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + minRampOf(s, ctx.paces.easy));
