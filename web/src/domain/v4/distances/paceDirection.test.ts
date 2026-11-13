@@ -189,3 +189,18 @@ describe('krug 18 — ništa = isti plan (sve distance)', () => {
     expect(seen).toBeGreaterThan(0);
   });
 });
+
+/* KRUG 18 (t. 9): broj u napomeni „ako provera potvrdi očekivani napredak" je očekivano vreme iz zaglavlja. */
+describe('krug 18 — napomena za trku prati prognozu (sve distance)', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', (_id, d) => {
+    const bad: string[] = [];
+    for (const s of d.scenarios) {
+      const r = s.run();
+      const text = renderPlan(r.before, r.beforeState, d.data);
+      const exp = /Očekivano na dan trke: (\d[\d:]*)/.exec(text)?.[1];
+      const aim = /potvrdi očekivani napredak, ciljaj [^(]*\((\d[\d:]*)\)/.exec(text)?.[1];
+      if (aim !== undefined && aim !== exp) bad.push(`s${String(s.no)} ciljaj ${aim}, očekivano ${String(exp)}`);
+    }
+    expect(bad).toEqual([]);
+  });
+});

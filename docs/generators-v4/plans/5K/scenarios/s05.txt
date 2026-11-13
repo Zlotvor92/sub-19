@@ -180,7 +180,7 @@ Polazim od tvojih ≈ 42 km nedeljno (4 h 2 min trčanja).
 FORMA
 Polazna forma (1. 11.): 21:49
 Današnja prognoza (6. 12.): 21:56, pouzdanost srednja
-Očekivano na dan trke: 21:39 (raspon 21:15–22:17) — 0:17 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 21:39 (raspon 21:15–22:17) — 0:17 brže od današnje prognoze, jer plan do trke dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 7 dana (30. 11. – 6. 12.); posle petog dana forma polako opada — procena za 5 km: 21:49 → 21:56.
 - Polazna procena je iz rezultata koji si uneo: oko 21:49 za 5 km.

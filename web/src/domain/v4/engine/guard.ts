@@ -822,7 +822,9 @@ export function warnings(input: WarningInput): Warning[] {
   if (level !== null) out.push(level);
   /* O2: baza iz trčanja ispod polovine izjavljenog obima — plan to imenuje. */
   const declaredKm = state.profile.weeklyKm;
-  const baseKm = (d.baseLoad * 60) / ctx.paces.easy;
+  /* R18 (stavka 9): sadašnji obim u km iz istorije (isti broj kao „Polazim od tvojih ≈ … km" u zaglavlju), ne
+     opterećenje preračunato laganim tempom */
+  const baseKm = d.baseKm ?? (d.baseLoad * 60) / ctx.paces.easy;
   if (
     declaredKm !== undefined &&
     !state.load.seeded &&

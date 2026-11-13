@@ -15,7 +15,6 @@ import {
   fmtPaceBare,
   fmtWeekday,
   goalStatus,
-  raceBasis,
   WEEKS,
   WORKOUTS
 } from './format';
@@ -244,7 +243,8 @@ export function raceNotes(
   const out: string[] = [
     h.paces.byFeel ? line(data, 'trka.po-osecaju', values) : line(data, 'trka.tempo', values)
   ];
-  const hoped = raceBasis(target, raceDay);
+  /* R18 (stavka 9): „ako provera potvrdi očekivani napredak" — broj je očekivano vreme (prognoza), ne cilj */
+  const hoped = { timeSec: raceDay.expectedSec };
   const slower = h.warnings.some((w) => w.proposal.includes('počni sporije'));
   const today = state?.today ?? h.eventsFrom;
   /* krug 10 (stavka 6): poslednja provera forme pred trkom (ne prva) */
@@ -329,9 +329,17 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
     `Današnja prognoza (${fmtDate(now.asOf)}): ${fmtClock(now.raceTimeSec)}, pouzdanost ${now.confidence}`
   );
   const gain = now.raceTimeSec - raceDay.expectedSec;
+  /* R18 (stavka 9): „podiže obim" samo kad je vrh plana iznad polaznog obima */
+  const startKm =
+    h.decisions.baseKm ??
+    (h.decisions.baseLoad * 60) / paceAtShare(h.form.start.vdot, ZONE_SHARE.E);
+  const pc = paceCtxOf(h);
+  const raises = doc.weeks.some(
+      (w) => w.intent.kind !== 'race' && weekCost(w, h.goal.raceDate, pc).km > startKm * 1.05
+    );
   const why =
     gain > 0
-      ? ` — ${fmtClock(gain)} brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke`
+      ? ` — ${fmtClock(gain)} brže od današnje prognoze, jer plan do trke ${raises ? 'podiže obim i dodaje' : 'dodaje'} rad u tempu trke`
       : /* krug 10 (stavka 12): nula napretka samo uz izričit razlog u zaglavlju */
         h.decisions.raceDayMaxGain === 0
         ? ' — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke'
