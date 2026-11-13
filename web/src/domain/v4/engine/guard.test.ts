@@ -22,6 +22,11 @@ function allowed(
       check
     );
   if (runDays === 3 && ['ispod-cilja', 'min-nedelja'].includes(check)) return true;
+  /* 3 dana: jedan kvalitet u najtežoj nedelji, a budžet brzog rada je od planiranog zbira (krug 4, S1) — kao u
+     mreži polumaratona */
+  if (runDays === 3 && check === 'taper') return true;
+  /* kratak plan posle trke: vršna nedelja je u rampi (skraćen rad), pa sužavanje izgleda veće od nje */
+  if (afterRace && check === 'taper') return true;
   if (perDay > 70) return check === 'ispod-cilja';
   if (perDay < 25) return ['ispod-cilja', 'lagan-dugi', 'skok'].includes(check);
   return afterRace && check === 'ispod-cilja' && (weekIndex ?? 99) <= 4;

@@ -23,6 +23,7 @@ import {
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate } from './dates';
+import { longStepOf, maxWorkOf, minRampOf } from './decide';
 import {
   count,
   DAYS,
@@ -59,8 +60,10 @@ import type {
   PlanWeek,
   RunnerFacts,
   RunnerState,
+  Seconds,
   Step,
-  Warning
+  Warning,
+  Workout
 } from './types';
 
 /* ------------------------------------------------------------------ § 8.1 neispravan unos */
@@ -168,10 +171,18 @@ export interface WeekCost {
   load: number;
   durationSec: number;
   workSec: number;
+  /** Brz rad (S1): rad kvaliteta i bloka u dugom — test i trka se ne broje. */
+  fastSec: number;
   km: number;
   longSec: number;
   longKm: number;
   workouts: number;
+}
+
+/** Brz rad treninga (S1): prag, intervali, brze deonice, tempo trke i blok u dugom; trka i test ne ulaze. */
+export function fastWorkSec(workout: Workout | null): Seconds {
+  if (workout === null) return 0;
+  return workout.kind === 'quality' || workout.kind === 'long' ? workout.workSec : 0;
 }
 
 export function weekCost(week: PlanWeek, raceDate: IsoDate, ctx: PaceCtx): WeekCost {
@@ -181,6 +192,7 @@ export function weekCost(week: PlanWeek, raceDate: IsoDate, ctx: PaceCtx): WeekC
     load: 0,
     durationSec: 0,
     workSec: 0,
+    fastSec: 0,
     km: 0,
     longSec: 0,
     longKm: 0,
@@ -195,6 +207,7 @@ export function weekCost(week: PlanWeek, raceDate: IsoDate, ctx: PaceCtx): WeekC
     out.load += cost.load;
     out.durationSec += cost.durationSec;
     out.workSec += day.workout.workSec;
+    out.fastSec += fastWorkSec(day.workout);
     out.km += cost.km;
     if (day.workout.kind === 'long') {
       out.longSec = Math.max(out.longSec, cost.durationSec);
@@ -375,13 +388,13 @@ export const guard: GuardFn = (doc, _state, data) => {
       previous = day;
     }
 
-    const share = c.durationSec > 0 ? c.workSec / c.durationSec : 0;
+    const share = c.durationSec > 0 ? c.fastSec / c.durationSec : 0;
     const maxShare = week.intent.kind === 'peak' ? s.maxFastSharePeak : s.maxFastShare;
     /* Nedelja trke se ne meri: mala je, a sama trka ne ulazi u zbir. */
     if (!raceWeek && share > maxShare + GUARD_FAST_SHARE_TOLERANCE) {
       report('brz-udeo', week, null, 'Udeo brzog rada u nedelji je iznad dozvoljenog.');
     }
-    const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + s.minRampLoad);
+    const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + minRampOf(s, ctx.paces.easy));
     if (
       (week.intent.kind === 'build' || week.intent.kind === 'peak') &&
       c.durationSec / 60 > rule * (1 + GUARD_JUMP_TOLERANCE)
@@ -391,13 +404,19 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (c.longSec > d.longMaxSec + GUARD_LONG_STEP_TOLERANCE_SEC) {
       report('dugi-plafon', week, null, 'Dugi je duži od najdužeg dozvoljenog u planu.');
     }
-    if (c.longSec > longBefore + s.longStepSec + GUARD_LONG_STEP_TOLERANCE_SEC + roundingSlack) {
+    if (c.longSec > longBefore + longStepOf(s, ctx.paces.easy) + GUARD_LONG_STEP_TOLERANCE_SEC + roundingSlack) {
       report('dugi-korak', week, null, 'Dugi raste za više od jednog koraka.');
     }
     /* Sužavanje je namerno manje od cilja (R1: višak se ne preliva), kao i nedelja u kojoj dugi ustupa mesto
        poslednjim danima pre trke (O3). */
     const calm = week.intent.kind === 'taper' || addDays(week.start, 6) >= noLongFrom;
-    if (!ramp && !partial && !raceWeek && !calm && c.load < GUARD_UNDER_TARGET * week.targetLoad) {
+    /* krug 4: manjak se meri prema obimu (minuti) kad ga nedelja nosi — skraćen brz rad (S1) nije manjak */
+    const under =
+      week.volumeMin === undefined
+        ? c.load < GUARD_UNDER_TARGET * week.targetLoad
+        : c.durationSec / 60 < GUARD_UNDER_TARGET * week.volumeMin &&
+          c.load < GUARD_UNDER_TARGET * week.targetLoad;
+    if (!ramp && !partial && !raceWeek && !calm && under) {
       report('ispod-cilja', week, null, 'Planirano opterećenje je ispod 85 % cilja nedelje.');
     }
     if (!ramp && !partial && !raceWeek) {
@@ -551,7 +570,7 @@ export function warnings(input: WarningInput): Warning[] {
   }
   if (longKm < NEAR_ENOUGH * a.minLongKm) {
     const capKm = d.longMaxSec / ctx.paces.easy;
-    const stepKm = Math.max(0.5, Math.round((s.longStepSec / ctx.paces.easy) * 2) / 2);
+    const stepKm = Math.max(0.5, Math.round((longStepOf(s, ctx.paces.easy) / ctx.paces.easy) * 2) / 2);
     const moreWeeks = Math.max(1, Math.ceil((a.minLongKm - longKm) / stepKm));
     const byTime = capKm >= a.minLongKm;
     const left = Math.max(1, Math.round(data.distanceM / 1000 - longKm));
@@ -698,7 +717,8 @@ function levelVolumeWarning(
   let neededLoad = 0;
   for (const [tag, cap] of Object.entries(s.doseCaps)) {
     if (used.has(tag) && cap.shareOfPeakLoad > 0) {
-      neededLoad = Math.max(neededLoad, cap.maxWorkSec / 60 / cap.shareOfPeakLoad);
+      const most = maxWorkOf(cap.maxWorkSec, d.level);
+      if (Number.isFinite(most)) neededLoad = Math.max(neededLoad, most / 60 / cap.shareOfPeakLoad);
     }
   }
   const neededKm = Math.ceil((neededLoad * 60) / header.paces.easy / 5) * 5;

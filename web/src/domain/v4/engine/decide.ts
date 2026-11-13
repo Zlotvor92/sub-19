@@ -17,29 +17,98 @@ import type {
   Weekday
 } from './types';
 
-/** Vrh nedeljnog opterećenja: `P = max(B, min(B / startPct, plafon nivoa, B × maxPeakOverBase))` (R3). */
+/** Ulaz lestvice vrha (S2): polazni obim u km, broj nedelja pripreme i ograničen trkač (kratak staž ili tegoba). */
+export interface PeakLadderInput {
+  baseKm: number;
+  weeks: number;
+  limited: boolean;
+}
+
+/** Množilac vrha (S2): red lestvice za polazni obim i dužinu pripreme; ograničen trkač najviše `limitedOverBase`.
+    Bez lestvice: `maxPeakOverBase` ili podrazumevano 1,40. */
+export function ladderOverBase(safety: SafetyNumbers, input: PeakLadderInput | null): number {
+  const fallback = safety.maxPeakOverBase ?? DEFAULT_MAX_PEAK_OVER_BASE;
+  const ladder = safety.peakLadder;
+  if (ladder === undefined || input === null) return fallback;
+  const row = ladder.rows.find(
+    (r) => (r.maxBaseKm === null || input.baseKm <= r.maxBaseKm) && input.weeks >= r.minWeeks
+  );
+  const over = row?.overBase ?? fallback;
+  return input.limited && ladder.limitedOverBase !== undefined
+    ? Math.min(over, ladder.limitedOverBase)
+    : over;
+}
+
+/** Ulaz lestvice iz činjenica: km = bodovi baze u minutima laganog tempa; ograničen = staž ispod praga ili tegoba
+    u poslednjih 12 meseci. Kratak staž: `yearsRunning` ispod praga (u nedeljama). */
+export function ladderInputOf(input: {
+  baseLoad: LoadPoints;
+  easyPaceSecPerKm: number;
+  weeks: number;
+  yearsRunning: number | undefined;
+  painInYear: boolean;
+  safety: SafetyNumbers;
+}): PeakLadderInput {
+  const tenure = input.safety.peakLadder?.limitedTenureWeeks ?? 0;
+  const shortTenure = input.yearsRunning !== undefined && input.yearsRunning * 52 < tenure;
+  return {
+    baseKm: input.easyPaceSecPerKm > 0 ? (input.baseLoad * 60) / input.easyPaceSecPerKm : 0,
+    weeks: input.weeks,
+    limited: shortTenure || input.painInYear
+  };
+}
+
+/** Vrh nedeljnog opterećenja: `P = max(B, min(B / startPct, plafon nivoa, B × množilac))` (R3, S2). */
 export function decidePeak(
   baseLoad: LoadPoints,
   template: Template,
   safety: SafetyNumbers,
-  level: LevelId
+  level: LevelId,
+  overBase: number = safety.maxPeakOverBase ?? DEFAULT_MAX_PEAK_OVER_BASE
 ): LoadPoints {
   const cap = safety.peakLoadCap[level] ?? Number.POSITIVE_INFINITY;
-  const wanted = template.startPct > 0 ? baseLoad / template.startPct : baseLoad;
-  const overBase = baseLoad * (safety.maxPeakOverBase ?? DEFAULT_MAX_PEAK_OVER_BASE);
-  return Math.max(baseLoad, Math.min(wanted, cap, overBase));
+  /* S2: sa lestvicom je ona jedini vlasnik vrha; `startPct` šablona tada samo oblikuje prve nedelje. */
+  const wanted =
+    safety.peakLadder !== undefined
+      ? Number.POSITIVE_INFINITY
+      : template.startPct > 0
+        ? baseLoad / template.startPct
+        : baseLoad;
+  return Math.max(baseLoad, Math.min(wanted, cap, baseLoad * overBase));
 }
 
-/** Plafon doze po podražaju: `min(maxWorkSec, udeo × P × 60)`, zaokružen na sekundu. */
-export function decideCaps(
+/** Plafon rada po treningu za nivo (S4): broj, ili mapa po nivou (`*` za ostale; bez njega bez plafona). */
+export function maxWorkOf(raw: Seconds | Readonly<Record<LevelId, Seconds>>, level: LevelId): Seconds {
+  if (typeof raw === 'number') return raw;
+  return raw[level] ?? raw['*'] ?? Number.POSITIVE_INFINITY;
+}
+
+/** Osnovica lestvice doze (S4): `udeo × P × 60`, bez plafona nivoa. */
+export function decideDoseBase(
   peakLoad: LoadPoints,
   safety: SafetyNumbers
+): Record<StimulusTag, Seconds> {
+  const out: Record<StimulusTag, Seconds> = {};
+  for (const tag of Object.keys(safety.doseCaps).sort()) {
+    const cap = safety.doseCaps[tag];
+    if (cap !== undefined) out[tag] = Math.round(cap.shareOfPeakLoad * peakLoad * 60);
+  }
+  return out;
+}
+
+/** Plafon doze po podražaju: `min(maxWorkSec nivoa, udeo × P × 60)`, zaokružen na sekundu. */
+export function decideCaps(
+  peakLoad: LoadPoints,
+  safety: SafetyNumbers,
+  level: LevelId = ''
 ): Record<StimulusTag, Seconds> {
   const caps: Record<StimulusTag, Seconds> = {};
   for (const tag of Object.keys(safety.doseCaps).sort()) {
     const cap = safety.doseCaps[tag];
     if (cap !== undefined) {
-      caps[tag] = Math.round(Math.min(cap.maxWorkSec, cap.shareOfPeakLoad * peakLoad * 60));
+      caps[tag] = Math.round(
+        Math.min(maxWorkOf(cap.maxWorkSec, level), cap.shareOfPeakLoad * peakLoad * 60)
+      );
     }
   }
   return caps;
@@ -57,6 +126,16 @@ export function decideWarmup(
   }
   const last = safety.warmupCooldown[safety.warmupCooldown.length - 1];
   return { warmupSec: last?.warmupSec ?? 0, cooldownSec: last?.cooldownSec ?? 0 };
+}
+
+/** Najmanji dozvoljen rast nedelje u minutima (S2): veće od `minRampLoad` i `minRampKm` u laganom tempu. */
+export function minRampOf(safety: SafetyNumbers, easyPaceSecPerKm: number): number {
+  return Math.max(safety.minRampLoad, ((safety.minRampKm ?? 0) * easyPaceSecPerKm) / 60);
+}
+
+/** Korak dugog (S2): veće od `longStepSec` i `longStepKm` u laganom tempu. */
+export function longStepOf(safety: SafetyNumbers, easyPaceSecPerKm: number): Seconds {
+  return Math.max(safety.longStepSec, (safety.longStepKm ?? 0) * easyPaceSecPerKm);
 }
 
 /** Vrednost za broj dana iz mape „1"…„7"; ako ključa nema, najbliži manji pa najbliži veći. */
@@ -106,15 +185,36 @@ export function longShare(safety: SafetyNumbers, level: LevelId, runDays: number
   return isDayMap(own) ? (byRunDays(own, runDays) ?? 1) : 1;
 }
 
-/** Najduži dugi plana: `min(plafon nivoa, udeo po danima × P × 60)`, na ceo minut. */
+/** Udeo dugog za nedelju od `weekKm` planiranih km (S3): ispod `longShareLowVolume.belowKm` važi veći udeo,
+    a u nedeljama najdužeg dugog (`high`) najveći. */
+export function longShareFor(
+  safety: SafetyNumbers,
+  level: LevelId,
+  runDays: number,
+  weekKm: number,
+  high: boolean
+): number {
+  const base = longShare(safety, level, runDays);
+  const low = safety.longShareLowVolume;
+  if (low === undefined || runDays < low.minRunDays || weekKm >= low.belowKm) return base;
+  return Math.max(base, high ? low.peakShare : low.share);
+}
+
+/** Najduži dugi plana: `min(plafon nivoa, udeo po danima × P × 60)`, na ceo minut. Sa laganim tempom udeo prati
+    obim vrha (S3: mali obim nosi veći udeo u najviše nekoliko nedelja). */
 export function decideLongMax(
   peakLoad: LoadPoints,
   safety: SafetyNumbers,
   level: LevelId,
-  runDays: number
+  runDays: number,
+  easyPaceSecPerKm?: number
 ): Seconds {
   const cap = safety.longMaxSec[level] ?? Number.POSITIVE_INFINITY;
-  return Math.round(Math.min(cap, longShare(safety, level, runDays) * peakLoad * 60) / 60) * 60;
+  const share =
+    easyPaceSecPerKm === undefined
+      ? longShare(safety, level, runDays)
+      : longShareFor(safety, level, runDays, (peakLoad * 60) / easyPaceSecPerKm, true);
+  return Math.round(Math.min(cap, share * peakLoad * 60) / 60) * 60;
 }
 
 /** Polazni dugi: veće od najdužeg skorašnjeg trčanja i udela bazne nedelje (udeo može biti po broju dana). */
@@ -166,21 +266,35 @@ export interface DecideInput {
   longestRecentSec: Seconds;
   runDays: readonly Weekday[];
   longDay: Weekday;
+  /** Lestvica vrha (S2); bez nje važi `maxPeakOverBase`. */
+  ladder?: PeakLadderInput | null;
+  /** Lagani tempo (S3: udeo dugog po obimu). */
+  easyPaceSecPerKm?: number;
 }
 
 /** Sve odluke plana na jednom mestu, svaka iz svog vlasnika. */
 export function decide(input: DecideInput): Decisions {
   const { data, template, level, baseLoad } = input;
-  const peakLoad = Math.round(decidePeak(baseLoad, template, data.safety, level) * 10) / 10;
+  const peakOverBase = ladderOverBase(data.safety, input.ladder ?? null);
+  const peakLoad =
+    Math.round(decidePeak(baseLoad, template, data.safety, level, peakOverBase) * 10) / 10;
   const runDays = [...input.runDays].sort((a, b) => a - b);
   return {
     templateId: template.id,
     level,
     baseLoad,
     peakLoad,
-    longMaxSec: decideLongMax(peakLoad, data.safety, level, runDays.length),
+    longMaxSec: decideLongMax(
+      peakLoad,
+      data.safety,
+      level,
+      runDays.length,
+      input.easyPaceSecPerKm
+    ),
     longStartSec: decideLongStart(input.longestRecentSec, baseLoad, data.safety, runDays.length),
-    doseCapSec: decideCaps(peakLoad, data.safety),
+    doseCapSec: decideCaps(peakLoad, data.safety, level),
+    doseBaseSec: decideDoseBase(peakLoad, data.safety),
+    ...(data.safety.peakLadder === undefined ? {} : { peakOverBase }),
     ...decideWarmup(baseLoad, data.safety),
     runDays,
     longDay: input.longDay,

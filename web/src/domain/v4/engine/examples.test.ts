@@ -75,7 +75,8 @@ describe('SPEC § 12 (a): nov plan, 30 km nedeljno, 4 dana, 10 nedelja, forma 1:
 
   it('ciljevi nedelja: osnova na bazi + kvalitet, zatim šablon; vrh je u 7. nedelji, čuvar bez nalaza', () => {
     /* 1–2. nedelja: baza + dodatno opterećenje (R5); 4. (rasterećenje): najviše 0,8 × cilj prethodne. */
-    const spec = [195, 199, 210, 168, 212, 235, 245, 208, 159, 86];
+    /* krug 4 (S2): rast + 8 % ili + 2 km posle rasterećenja (5. nedelja 212 → 215) */
+    const spec = [195, 199, 210, 168, 215, 235, 245, 208, 159, 86];
     doc.weeks.forEach((w, i) =>
       expect(Math.abs(w.targetLoad - (spec[i] ?? 0)), String(i + 1)).toBeLessThanOrEqual(1)
     );
@@ -259,7 +260,7 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
 });
 
 describe('blok u dugom se vraća posle rampe (presuda organizatora uz § 14.6)', () => {
-  it('prvi dugi posle rampe ispunjava uslov ≥ 90 %, pa se blok vraća čim ga šablon traži', () => {
+  it('posle prvog dugog od ≥ 90 % (bez bloka) blok se vraća čim ga šablon traži', () => {
     const goal: Goal = { distanceId: EXAMPLE.id, raceDate: '2027-03-07' };
     const first = make(facts(), goal);
     const today = '2026-12-20';
@@ -277,10 +278,15 @@ describe('blok u dugom se vraća posle rampe (presuda organizatora uz § 14.6)',
     const ctx = paceCtxOf(result.doc.header);
     const rampEnd = '2027-01-03';
     const lastLong = summarize(onDate(first.doc, '2026-12-06')?.workout ?? null, ctx).durationSec;
-    const after = days(result.doc).filter((x) => x.date > rampEnd && x.workout?.kind === 'long');
-    expect(summarize(after[0]?.workout ?? null, ctx).durationSec).toBeGreaterThanOrEqual(
-      0.9 * lastLong
+    const all = days(result.doc).filter((x) => x.date > rampEnd && x.workout?.kind === 'long');
+    /* krug 4 (S9): nedelje posle rampe nisu veće nego pre pauze, pa prvi dugi ne mora odmah da stigne 90 %; blok
+       se vraća posle PRVOG dugog bez bloka od ≥ 90 % poslednjeg pre pauze */
+    const gateAt = all.findIndex(
+      (x) => summarize(x.workout, ctx).durationSec >= 0.9 * lastLong && (x.workout?.workSec ?? 0) === 0
     );
+    expect(gateAt).toBeGreaterThanOrEqual(0);
+    for (const day of all.slice(0, gateAt)) expect(day.workout?.workSec ?? 0, day.date).toBe(0);
+    const after = all.slice(gateAt);
     const planned = (date: string): number => onDate(first.doc, date)?.workout?.workSec ?? 0;
     for (const day of after.slice(1)) {
       expect((day.workout?.workSec ?? 0) > 0, day.date).toBe(planned(day.date) > 0);

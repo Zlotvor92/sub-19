@@ -30,8 +30,8 @@ const rows = [
   ...PROFILES.map((p: any) => ({ id: p.id, facts: factsOf(p), goal: p.goal })),
   ...OWNER_PLANS.map((o: any) => ({ id: o.id, facts: o.facts, goal: o.goal }))
 ];
-console.log('| profil | polazno km | vrh km (×) | najveći skok | lagan/dugi | dugi/nedelja | treninga (dana) | najduži dugi | ned. trke lagan | ned. 1 | kapija |');
-console.log('|---|---|---|---|---|---|---|---|---|---|---|');
+console.log('| profil | polazno km | vrh km (×) | najveći skok | lagan/dugi | dugi/nedelja | treninga (dana) | najduži dugi | ned. trke lagan | ned. 1 | brz rad (vrh) | kapija |');
+console.log('|---|---|---|---|---|---|---|---|---|---|---|---|');
 let bad = 0;
 for (const r of rows) {
   const state = E.buildState(r.facts, r.goal, hm, estimateForm);
@@ -39,7 +39,7 @@ for (const r of rows) {
   if (!res.ok) { console.log(r.id, 'GREŠKA', res.errors); continue; }
   const s = gateStats(res.doc, r.facts);
   bad += s.violations.length;
-  console.log(`| ${r.id} | ${f(s.baseKm)} | ${f(s.peakKm, 1)} (${f(s.peakRatio, 2)}) | ${f(s.maxJumpPct)} % | ${f(s.maxEasyOfLong * 100)} % | ${f(s.maxLongShare * 100)} % | ${s.minWorkouts}–${s.maxWorkouts} (${s.runDays}) | ${f(s.longestLongKm, 1)} | ${f(s.raceWeekEasyMin)} min | ${f(s.firstWeekPct * 100)} % | ${s.violations.length === 0 ? 'prolazi' : s.violations.length} |`);
+  console.log(`| ${r.id} | ${f(s.baseKm)} | ${f(s.peakKm, 1)} (${f(s.peakRatio, 2)}) | ${f(s.maxJumpPct)} % | ${f(s.maxEasyOfLong * 100)} % | ${f(s.maxLongShare * 100)} % | ${s.minWorkouts}–${s.maxWorkouts} (${s.runDays}) | ${f(s.longestLongKm, 1)} | ${f(s.raceWeekEasyMin)} min | ${f(s.firstWeekPct * 100)} % | ${f(s.maxFastShare * 100)} % (${f(s.peakFastShare * 100)} %) | ${s.violations.length === 0 ? 'prolazi' : s.violations.length} |`);
   if (weeks) console.log('   ', s.weeks.map((g: any) => `${g.index}${g.kind[0]}:${f(g.km, 1)}/${f(g.longKm, 1)}/${f(g.easyKm, 1)}/${g.workouts}`).join(' '));
   for (const v of s.violations) console.log('    -', v);
 }

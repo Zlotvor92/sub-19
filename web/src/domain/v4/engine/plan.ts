@@ -3,7 +3,7 @@
 import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE } from './constants';
 import { runPass } from './build';
 import { addDays, mondayOf } from './dates';
-import { decide } from './decide';
+import { decide, ladderInputOf } from './decide';
 import { validate, warnings, weekCost } from './guard';
 import { paceCtxOf } from './load';
 import { raceWorkout } from './select';
@@ -135,7 +135,16 @@ export function createPlan(
       baseLoad,
       longestRecentSec: state.longestRecentSec,
       runDays: availability.runDays,
-      longDay: availability.longDay
+      longDay: availability.longDay,
+      easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
+      ladder: ladderInputOf({
+        baseLoad,
+        easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
+        weeks,
+        yearsRunning: state.profile.yearsRunning,
+        painInYear: (state.painHistory ?? []).length > 0,
+        safety: data.safety
+      })
     }),
     /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
     ...(state.recentQualityWeeks === null || state.recentQualityWeeks === undefined

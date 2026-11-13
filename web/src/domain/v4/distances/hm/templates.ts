@@ -187,7 +187,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
          (utorak je 3. dan posle trke, motor ga ionako daje lagano) */
       const afterRace = w === L.check + 1;
       if (!afterRace) dev += 1;
-      const iDose = [0.65, 0.9, 0.72][(Math.max(1, dev) - 1) % 3];
+      /* krug 4: prva doza 0,5 osnovice — osnovica više nije plafon (S4), a budžet brzog rada (S1) skraćuje vrh */
+      const iDose = [0.5, 0.9, 0.72][(Math.max(1, dev) - 1) % 3];
       out.push(
         week(
           RAZVOJ,
@@ -196,7 +197,9 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           longSpec,
           afterRace
             ? [S('prag', tDose(t)), STRIDES]
-            : one(S('prag', tDose(t)), S('intervali', iDose), dev)
+            : /* krug 4 (S1): u nedelji sa intervalima prag je kraći, da budžet brzog rada (≤ 22 %) ostavi intervalima
+                 rast (K7: prvi ≤ 80 % vrha zone) */
+              one(S('prag', tDose(t) * 0.8), S('intervali', iDose), dev)
         )
       );
     } else {
@@ -236,7 +239,7 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
       ]
     : [
         /* N−7: vrh obima, prvi blok 4 km + tempo trke 2 × 2 km (p04 ned 13) */
-        blockWeek(0.5, 0.55, 0.94),
+        blockWeek(0.45, 0.5, 0.94),
         /* N−6: talas — kraći lagan dugi, tempo trke 2 × 3 km + prag (p04 ned 14) */
         week(SPEC, 'build', 0.93, { len: 0.81 }, pair(S('prag', 0.8), S('tempo-trke', 0.8))),
         /* N−5: drugi blok 6 km + tempo trke 3 × 2 km (p04 ned 15) */
@@ -258,13 +261,14 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
     week(
       SPEC,
       'build',
-      0.87,
+      0.85,
       { len: 0.82, stimulus: 'dugi-rp', dose: 0.45 },
       /* kratka priprema (vrh ≤ 1,4 × sadašnji obim): bez praga, inače bi pod nedelje (obim + rad, R5) bio > 85 % */
       pair(short ? STRIDES : S('prag', 0.42), S('tempo-trke', 0.6))
     ),
     /* N−1: sužavanje — tempo trke 2 × 2,5 km + prag 2 × 1 km */
-    week(FINISH, 'taper', 0.68, { len: 0.59 }, pair(S('prag', 0.27), S('tempo-trke', 0.5))),
+    /* krug 4 (S4, T4): osnovica doze više nije plafon, pa su doze sužavanja niže (rad ≤ 60 % vršne nedelje) */
+    week(FINISH, 'taper', 0.68, { len: 0.59 }, pair(S('prag', 0.2), S('tempo-trke', 0.38))),
     /* N: nedelja trke — oštrenje 2 × 1200 m u četvrtak, utorak lagano uz ubrzanja */
     week(FINISH, 'race', 0.33, null, [S('ostrenje', 1), STRIDES])
   ];
@@ -324,7 +328,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       STRIDES
     ]),
     week(SPEC, 'build', 0.9, { len: 0.84 }, [S('tempo-trke', 0.7), STRIDES]),
-    week(FINISH, 'taper', 0.69, { len: 0.58 }, [S('tempo-trke', 0.5), STRIDES]),
+    week(FINISH, 'taper', 0.69, { len: 0.58 }, [S('tempo-trke', 0.4), STRIDES]),
     week(FINISH, 'race', 0.32, null, [S('ostrenje', 0.7), STRIDES])
   ];
   return [...out, ...tail].slice(-n);

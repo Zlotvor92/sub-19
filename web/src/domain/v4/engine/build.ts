@@ -4,6 +4,7 @@
 import {
   EASY_FLOOR_MIN_RUN_DAYS,
   EASY_FLOOR_OVER_TARGET,
+  VOLUME_ROOM_OVER,
   RACE_CALM_DAYS,
   RACE_EVE_MAX_SEC,
   RACE_NO_LONG_DAYS,
@@ -11,7 +12,15 @@ import {
   TAPER_ADDON_MIN_EASY_SEC
 } from './constants';
 import { addDays, weekdayOf } from './dates';
-import { assignDays, easyOverPrevious, easyShareOfLong, longShare, taperEasyMax } from './decide';
+import {
+  assignDays,
+  easyOverPrevious,
+  easyShareOfLong,
+  longShareFor,
+  longStepOf,
+  minRampOf,
+  taperEasyMax
+} from './decide';
 import { doneIds } from './done';
 import { paceCtxOf, stepsCost, summarize } from './load';
 import {
@@ -143,14 +152,19 @@ export function weekTarget(
   let full = intent.loadPct * ctx.decisions.peakLoad;
   if (intent.kind === 'build' || intent.kind === 'peak') {
     const wanted = Math.max(full - extra, ctx.decisions.baseLoad);
-    const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + s.minRampLoad);
+    /* Prva nedelja plana je sadašnji obim (S2: ograničenje je korak od onoga što trkač sada trči). */
+    const rule =
+      input.previousTarget === null
+        ? m
+        : Math.max(m * (1 + s.maxWeeklyRampPct), m + minRampOf(s, ctx.pace.paces.easy));
     full = Math.min(wanted, rule) + extra;
   }
   if (intent.kind === 'recovery' && input.previousTarget !== null && ctx.template !== null) {
     full = Math.min(full, ctx.template.recovery.loadFactor * input.previousTarget);
   }
   if (input.returnCap !== undefined && input.returnCap !== null) {
-    full = Math.min(full, input.returnCap + extra);
+    /* S9: cela nedelja (i rad kvaliteta) ≤ poslednja puna pre pauze × 1,10 — povratak nikad nije veći nego pre */
+    full = Math.min(full, input.returnCap);
   }
   return { full, target: Math.round(full * input.fraction) };
 }
@@ -163,18 +177,21 @@ export function longPlan(
   intent: WeekIntent,
   previousLongest: Seconds,
   ctx: BuildCtx,
-  week?: { plannedMin: number; runDays: number; previousLong?: Seconds }
+  week?: { plannedMin: number; runDays: number; previousLong?: Seconds; highShare?: boolean }
 ): Seconds {
   if (intent.long === null) return 0;
   const d = ctx.decisions;
-  const grown = Math.max(previousLongest, d.longStartSec) + ctx.data.safety.longStepSec;
+  const grown =
+    Math.max(previousLongest, d.longStartSec) + longStepOf(ctx.data.safety, ctx.pace.paces.easy);
   let wanted = intent.long.lenPct * d.longMaxSec;
   if (week !== undefined && (intent.kind === 'build' || intent.kind === 'peak')) {
     wanted = Math.max(wanted, Math.min(d.longStartSec, d.longMaxSec));
   }
   let cap = Number.POSITIVE_INFINITY;
   if (week !== undefined) {
-    cap = longShare(ctx.data.safety, d.level, week.runDays) * week.plannedMin * 60;
+    const weekKm = (week.plannedMin * 60) / ctx.pace.paces.easy;
+    const share = longShareFor(ctx.data.safety, d.level, week.runDays, weekKm, week.highShare === true);
+    cap = share * week.plannedMin * 60;
     const before = week.previousLong ?? 0;
     if (intent.kind === 'recovery' && before > 0 && ctx.template !== null) {
       cap = Math.min(cap, ctx.template.recovery.longFactor * before);
@@ -187,7 +204,9 @@ export function longPlan(
 /** BUDŽET BRZOG RADA (§ 6.2 k. 6): redom dugi pa podražaji; `take` vraća dozu koja staje, `book` je knjiži. */
 function fastBudget(
   targetLoad: LoadPoints,
-  share: number
+  share: number,
+  /** Najveći brz rad nedelje u minutima (S1, ispravljen raspored); `null` = procena iz cilja. */
+  maxWorkMin: number | null = null
 ): {
   take: (wanted: Seconds, extra: number) => Seconds;
   book: (sec: Seconds, extra: number) => void;
@@ -201,7 +220,10 @@ function fastBudget(
   return {
     book,
     take: (wanted, extra) => {
-      const room = (share * (targetLoad - extraLoad) - workMin) / (1 + share * extra);
+      const room =
+        maxWorkMin === null
+          ? (share * (targetLoad - extraLoad) - workMin) / (1 + share * extra)
+          : maxWorkMin - workMin;
       return Math.max(0, Math.min(wanted, room * 60));
     }
   };
@@ -392,7 +414,13 @@ export interface EasyRef {
     10 % (plan to kaže upozorenjem); sa 1–2 dana ostaje `floor(ostatak / minEasySec)` dana. */
 function easyFill(
   pool: EasyDay[],
-  week: { targetLoad: LoadPoints; fixedLoad: LoadPoints; runDays: number },
+  week: {
+    targetLoad: LoadPoints;
+    fixedLoad: LoadPoints;
+    runDays: number;
+    /** Preostali obim (minuti) za lagane dane; `Infinity` = bez uslova. */
+    leftVolumeMin: number;
+  },
   dayBeforeLong: IsoDate | null,
   afterQuality: ReadonlySet<IsoDate>,
   ctx: BuildCtx
@@ -406,7 +434,10 @@ function easyFill(
       : { load: 0, durationSec: 0 };
   const addons = (list: EasyDay[]): number =>
     list.reduce((sum, day) => sum + addonCost(day).load, 0);
-  const budget = (list: EasyDay[]): number => (leftMin - addons(list)) * 60;
+  const addonSec = (list: EasyDay[]): number =>
+    list.reduce((sum, day) => sum + addonCost(day).durationSec, 0);
+  const budget = (list: EasyDay[]): number =>
+    Math.min((leftMin - addons(list)) * 60, week.leftVolumeMin * 60 - addonSec(list));
   const capOf = (day: EasyDay): { maxSec?: Seconds } =>
     Number.isFinite(day.cap) ? { maxSec: day.cap } : {};
   /* Ceo dan (lagani deo + dodatak) staje pod plafon dana. Kad lagani deo uz dodatak padne ispod najkraćeg
@@ -463,6 +494,9 @@ export interface WeekShell {
   intent: WeekIntent;
   targetLoad: LoadPoints;
   longSec: Seconds;
+  /** Obim nedelje u minutima (cilj bez dodatka kvaliteta, R5): lagani dani ga ne prelaze (S1/S2: kad budžet skrati
+      rad, oslobođeni bodovi ne postaju dodatni minuti). */
+  volumeMin?: number;
 }
 
 /** RASPORED NEDELJE: recept za svaki dan iz mesta nedelje + sačuvanih veličina (cilj, dugi). Čista funkcija —
@@ -472,6 +506,52 @@ export function layoutWeek(
   ctx: BuildCtx,
   slots: WeekSlots,
   previous: EasyRef | null = null
+): Map<IsoDate, Recipe> {
+  /* S1: budžet brzog rada i čuvar mere isto — od PLANIRANOG zbira nedelje. Prvi raspored procenjuje zbir iz cilja;
+     kad lagani dani udare u plafon i nedelja ispadne manja, drugi raspored deli budžet od stvarnog zbira (rad samo
+     opada, lagani deo samo raste, pa treći nije potreban). */
+  const share = week.intent.kind === 'peak' ? ctx.data.safety.maxFastSharePeak : ctx.data.safety.maxFastShare;
+  let out = layoutOnce(week, ctx, slots, previous, null);
+  /* Budžet od planiranog: rad W sme da bude `udeo × zbir`; kad lagani dani ne mogu da porastu (plafon dana), zbir
+     pada zajedno sa radom, pa je granica `W ≤ udeo / (1 − udeo) × ostatak`. Najviše dva ispravljena rasporeda. */
+  /* Doza se zaokružuje na komad (500 m, 60 s), pa ostvareni rad može da pređe dodeljen: svaki sledeći raspored
+     skida i taj višak. Najviše četiri ispravljena rasporeda (rad samo opada). */
+  let maxWork: number | null = null;
+  for (let pass = 0; pass < 4; pass += 1) {
+    const sums = recipeSums(out, ctx);
+    const allowed = (share / (1 - share)) * ((sums.durationSec - sums.fastSec) / 60);
+    const work = sums.fastSec / 60;
+    if (work <= allowed + 1 / 60) return out;
+    maxWork = Math.min(maxWork ?? work, allowed) - (maxWork === null ? 0 : work - maxWork);
+    out = layoutOnce(week, ctx, slots, previous, Math.max(0, maxWork));
+  }
+  return out;
+}
+
+/** Zbir trajanja i brzog rada rasporeda (S1: test i trka nisu brz rad). */
+function recipeSums(
+  recipes: ReadonlyMap<IsoDate, Recipe>,
+  ctx: BuildCtx
+): { durationSec: Seconds; fastSec: Seconds } {
+  let durationSec = 0;
+  let fastSec = 0;
+  for (const recipe of recipes.values()) {
+    if (recipe.type === 'rest') continue;
+    const workout = realize(recipe, ctx);
+    durationSec += summarize(workout, ctx.pace).durationSec;
+    if (workout !== null && (workout.kind === 'quality' || workout.kind === 'long')) {
+      fastSec += workout.workSec;
+    }
+  }
+  return { durationSec, fastSec };
+}
+
+function layoutOnce(
+  week: WeekShell,
+  ctx: BuildCtx,
+  slots: WeekSlots,
+  previous: EasyRef | null,
+  maxWorkMin: number | null
 ): Map<IsoDate, Recipe> {
   const { decisions: d, data } = ctx;
   const s = data.safety;
@@ -484,14 +564,19 @@ export function layoutWeek(
   const longWd = week.longSec > 0 ? slots.longWd : null;
   const budget = fastBudget(
     week.targetLoad,
-    intent.kind === 'peak' ? s.maxFastSharePeak : s.maxFastShare
+    intent.kind === 'peak' ? s.maxFastSharePeak : s.maxFastShare,
+    maxWorkMin
   );
+  const sharp = s.sharpening;
   const fixed = new Map<IsoDate, Recipe>();
   const addons = new Map<IsoDate, Recipe>();
   let fixedLoad = 0;
+  let fixedSec = 0;
   const fix = (date: IsoDate, recipe: Recipe): void => {
     fixed.set(date, recipe);
-    fixedLoad += summarize(realize(recipe, ctx), ctx.pace).load;
+    const cost = summarize(realize(recipe, ctx), ctx.pace);
+    fixedLoad += cost.load;
+    fixedSec += cost.durationSec;
   };
 
   if (longWd !== null && slots.long !== null) {
@@ -517,27 +602,69 @@ export function layoutWeek(
     const item = slots.items.find((x) => x.kind === 'addon' && x.date === date);
     return item === undefined ? 0 : stepsCost(addonSteps(item.def), ctx.pace).load;
   };
-  const roomFor = (date: IsoDate, load: LoadPoints): boolean => {
+  const addonSec = (date: IsoDate): Seconds => {
+    const item = slots.items.find((x) => x.kind === 'addon' && x.date === date);
+    return item === undefined ? 0 : stepsCost(addonSteps(item.def), ctx.pace).durationSec;
+  };
+  const roomFor = (date: IsoDate, load: LoadPoints, sec: Seconds): boolean => {
     const rest = runDays.map((wd) => dateOf(wd)).filter((x) => x !== date && !fixed.has(x));
     const floor = rest.reduce((sum, x) => sum + s.minEasySec / 60 + addonLoad(x), 0);
-    return fixedLoad + load + floor <= week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET);
+    /* i obim (minuti): kvalitet sa zagrevanjem i hlađenjem ne sme da digne nedelju preko pravila rasta (S2) */
+    const volume = week.volumeMin ?? Number.POSITIVE_INFINITY;
+    const floorMin = rest.reduce((sum, x) => sum + (s.minEasySec + addonSec(x)) / 60, 0);
+    /* Kad ni najkraći lagani dani ne staju u obim (mnogo dana, mali obim), važi samo provera bodova. */
+    const fits = fixedSec / 60 + floorMin + s.minEasySec / 60 <= volume * (1 + VOLUME_ROOM_OVER);
+    return (
+      fixedLoad + load + floor <= week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET) &&
+      (!fits || (fixedSec + sec) / 60 + floorMin <= volume * (1 + VOLUME_ROOM_OVER))
+    );
   };
-  for (const item of slots.items) {
+  /* Kad u obim staje samo jedan od dva kvaliteta, parne nedelje prednost daju drugom — da nedelje ne nose isti
+     trening iz nedelje u nedelju (smena podražaja; krug 4). */
+  const order = [...slots.items];
+  const qi = order.flatMap((x, i) => (x.kind === 'quality' ? [i] : []));
+  const [a, b] = qi;
+  if (a !== undefined && b !== undefined && keepDays && week.index % 2 === 0) {
+    const secOf = (x: SlotItem): Seconds =>
+      x.kind === 'quality'
+        ? summarize(realize({ type: 'quality', def: x.def, dose: x.wanted, slot: x.slot }, ctx), ctx.pace)
+            .durationSec
+        : 0;
+    const others = runDays.filter((wd) => !fixed.has(dateOf(wd))).length - 2;
+    const both =
+      (fixedSec + secOf(order[a] as SlotItem) + secOf(order[b] as SlotItem)) / 60 +
+      (Math.max(0, others) * s.minEasySec) / 60;
+    if (both > (week.volumeMin ?? Number.POSITIVE_INFINITY) * (1 + VOLUME_ROOM_OVER)) {
+      const first = order[a] as SlotItem;
+      order[a] = order[b] as SlotItem;
+      order[b] = first;
+    }
+  }
+  for (const item of order) {
     if (item.date === (longWd === null ? null : dateOf(longWd))) continue;
     if (item.kind === 'addon') {
       addons.set(item.date, { type: 'addon', sec: 0, def: item.def });
       continue;
     }
     if (item.kind === 'test') {
-      const cost = testCost(item, ctx);
-      budget.book(cost.sec, cost.sec > 0 ? cost.extraLoad / (cost.sec / 60) : 0);
-      fix(item.date, cost.recipe);
+      /* S1: trka i test nisu brz rad — ne troše budžet. */
+      fix(item.date, testCost(item, ctx).recipe);
+      continue;
+    }
+    /* S1: oštrenje nedelje trke je van budžeta i uvek postoji (doza u [min, max]). */
+    if (slots.race && sharp !== undefined && item.def.stimulus === sharp.stimulus) {
+      const sec = Math.min(sharp.maxSec, Math.max(sharp.minSec, item.wanted));
+      /* bodovi van cilja (ne istiskuje lagane dane nedelje trke), trajanje u obimu nedelje */
+      const recipe: Recipe = { type: 'quality', def: item.def, dose: sec, slot: item.slot };
+      fixed.set(item.date, recipe);
+      fixedSec += summarize(realize(recipe, ctx), ctx.pace).durationSec;
       continue;
     }
     const dose = budget.take(item.wanted, item.extra);
     if (dose < minDoseOf(item.def, ctx)) continue;
     const recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
-    if (keepDays && !roomFor(item.date, summarize(realize(recipe, ctx), ctx.pace).load)) continue;
+    const cost = summarize(realize(recipe, ctx), ctx.pace);
+    if (keepDays && !roomFor(item.date, cost.load, cost.durationSec)) continue;
     budget.book(dose, item.extra);
     fix(item.date, recipe);
   }
@@ -583,7 +710,13 @@ export function layoutWeek(
   }
   const filled = easyFill(
     pool,
-    { targetLoad: week.targetLoad, fixedLoad, runDays: d.runDays.length },
+    {
+      targetLoad: week.targetLoad,
+      fixedLoad,
+      runDays: d.runDays.length,
+      leftVolumeMin:
+        week.volumeMin === undefined ? Number.POSITIVE_INFINITY : week.volumeMin - fixedSec / 60
+    },
     dayBeforeLong,
     afterQuality,
     ctx
@@ -711,6 +844,18 @@ function weekTotals(
   return { durationSec, longSec };
 }
 
+/** Nedelje sa najvećim udelom dugog kod malog obima (S3): najduži dugi namere u gradnji/vrhu, kasnije prvo. */
+function highShareWeeks(weeks: readonly PlanWeek[], data: DistanceData): Set<number> {
+  const n = data.safety.longShareLowVolume?.peakWeeks ?? 0;
+  const list = weeks
+    .filter((w) => (w.intent.kind === 'build' || w.intent.kind === 'peak') && w.intent.long !== null)
+    .sort(
+      (a, b) =>
+        (b.intent.long?.lenPct ?? 0) - (a.intent.long?.lenPct ?? 0) || b.index - a.index
+    );
+  return new Set(list.slice(0, n).map((w) => w.index));
+}
+
 /** Prolaz kroz sve nedelje dokumenta. Menja samo dane koje `isMutable` dozvoljava i koji su u prozoru. */
 export function runPass(
   doc: PlanDoc,
@@ -737,10 +882,12 @@ export function runPass(
   let previousLong: Seconds = 0;
   let lastFullVolume: number = header.decisions.baseLoad;
   let previousRamped = false;
+  let rampSeen = false;
   let previousHard: IsoDate | null = null;
   /* Provera forme koja je pala u pauzu ili rampu: čeka prvu nedelju posle rampe (R9). */
   let pendingTest: Extract<Recipe, { type: 'test' }> | null = null;
   const lastThree = <T>(list: readonly T[]): T[] => list.slice(Math.max(0, list.length - 3));
+  const high = highShareWeeks(doc.weeks, data);
 
   const weeks = doc.weeks.map((week): PlanWeek => {
     const ramped = underRamp(week.start, adjustments);
@@ -763,7 +910,9 @@ export function runPass(
     let fullTarget: LoadPoints = week.targetLoad;
     if (opts.rechainFrom !== null && week.index >= opts.rechainFrom) {
       const recent = lastThree(volumes);
-      const m = Math.max(...recent, ...(recent.length < 3 ? [header.decisions.baseLoad] : []));
+      /* Posle rampe povratka lanac rasta kreće od odrađenih nedelja posle nje, ne od baze pre pauze (S9). */
+      const fallback = recent.length < 3 && !(rampSeen && recent.length > 0);
+      const m = Math.max(...recent, ...(fallback ? [header.decisions.baseLoad] : []));
       const decided = weekTarget(
         week.intent,
         {
@@ -782,7 +931,8 @@ export function runPass(
         longSec: longPlan(week.intent, Math.max(0, ...lastThree(longs)), ctx, {
           plannedMin: plannedMin(decided.target),
           runDays: slots.runDays.length,
-          previousLong
+          previousLong,
+          highShare: high.has(week.index)
         })
       };
     } else if (
@@ -795,12 +945,19 @@ export function runPass(
         longSec: longPlan(week.intent, Math.max(0, ...lastThree(longs)), ctx, {
           plannedMin: plannedMin(week.targetLoad),
           runDays: slots.runDays.length,
-          previousLong
+          previousLong,
+          highShare: high.has(week.index)
         })
       };
     }
     previousTarget = fullTarget;
-    const recipes = layoutWeek(shell, ctx, slots, previousEasy);
+    const volumeMin = Math.round(plannedMin(shell.targetLoad) * 10) / 10;
+    const recipes = layoutWeek(
+      { ...shell, volumeMin },
+      ctx,
+      slots,
+      previousEasy
+    );
     if (week.intent.kind !== 'recovery' && week.intent.source === 'template') {
       previousEasy = easyRefOf(recipes, ctx) ?? previousEasy;
     }
@@ -877,6 +1034,7 @@ export function runPass(
       intent: week.intent,
       targetLoad: shell.targetLoad,
       longSec: shell.longSec,
+      volumeMin,
       days
     };
     /* Nedelje koje seku pauzu ili rampu ne ulaze u pravilo rasta (drugi krug): povratak određuje samo rampa. */
@@ -887,6 +1045,7 @@ export function runPass(
       longs.push(longAsDecided ? Math.max(shell.longSec, totals.longSec) : totals.longSec);
     }
     previousRamped = ramped;
+    if (ramped) rampSeen = true;
     previousLong = shell.longSec;
     return built;
   });

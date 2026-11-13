@@ -236,12 +236,15 @@ describe('R3: rast i vrh', () => {
     const ctx = buildCtx(doc.header, SYNTHETIC);
     const intent = doc.weeks[1]?.intent;
     if (intent === undefined) throw new Error('nema nedelje');
-    const input = { m: 150, fraction: 1, previousTarget: null };
+    const input = { m: 150, fraction: 1, previousTarget: 150 };
     const plain = weekTarget({ ...intent, loadPct: 1 }, { ...input, extra: 0 }, ctx);
     const loaded = weekTarget({ ...intent, loadPct: 1 }, { ...input, extra: 30 }, ctx);
     /* 150 min × 1,10 = 165 min obima; dodatno opterećenje kvaliteta (30) ide preko, ne umesto. */
     expect(plain.full).toBeCloseTo(165, 5);
     expect(loaded.full).toBeCloseTo(195, 5);
+    /* krug 4 (S2): prva nedelja plana je sadašnji obim — bez rasta */
+    const first = weekTarget({ ...intent, loadPct: 1 }, { ...input, previousTarget: null, extra: 0 }, ctx);
+    expect(first.full).toBeCloseTo(150, 5);
   });
 
   it('nema izuzetka posle nedelje sa proverom forme: skok obima ostaje u pravilu rasta', () => {
@@ -353,8 +356,13 @@ describe('R4: dugi i traženi dani', () => {
     expect(first?.days.filter((d) => d.workout !== null).length).toBe(7);
     expect(first?.days.some((d) => d.workout?.kind === 'quality')).toBe(false);
     expect(first?.days.some((d) => d.workout?.kind === 'long')).toBe(true);
-    /* Kad obim poraste, kvalitet se vraća. */
-    expect(days(doc).some((d) => d.workout?.kind === 'quality')).toBe(true);
+    /* Kad obim nosi i najkraće lagane dane, kvalitet se vraća (krug 4: prva nedelja je sadašnji obim, pa 24 km na
+       7 dana ostaje bez kvaliteta do kraja — 30 km ga ima). */
+    const more = facts({
+      availability: { runDays: [0, 1, 2, 3, 4, 5, 6], longDay: 6 },
+      profile: { weeklyKm: 30, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
+    });
+    expect(days(make(more, EXAMPLE, EX_GOAL).doc).some((d) => d.workout?.kind === 'quality')).toBe(true);
   });
 });
 

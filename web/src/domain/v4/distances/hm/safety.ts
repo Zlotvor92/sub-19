@@ -26,11 +26,32 @@ const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.48, '4': 0.385, '5': 0.36, '6': 0.
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: +7 % u bodovima (km rastu i do ≈ 12 % kad nedelja ima manje brzog rada), najmanje
      12 BO (≈ 2 km) — trener: 5–10 % */
-  maxWeeklyRampPct: 0.07,
+  maxWeeklyRampPct: 0.08,
   minRampLoad: 12,
+  /* krug 4 (S2): korak nedelje ≤ + 8 % ili + 3 km (veće od ta dva). Motor meri minute laganog tempa, a minuti
+     kvaliteta nose više km — 2 km u minutima daje ≤ 3 km stvarnog rasta (izbor) */
+  minRampKm: 2,
   /* vrh ≤ 1,5 × baza u bodovima: vršna nedelja nosi i rad kvaliteta, pa je vrh u km ≈ 1,30–1,38 × polazni obim
      (organizator: 4 dana ≈ +30–35 %, nikad > 1,40 × u km; kapija to meri) */
   maxPeakOverBase: MAX_PEAK_OVER_BASE,
+  /* LESTVICA VRHA (krug 4, S2; presuda trenera ROUND-V4-HM-02 § F1). Trener daje množilac u KM: polazno ≤ 25 km →
+     × 2,0 za ≥ 18 nedelja, × 1,6 za 12–17, × 1,4 kraće; 25–35 km → × 1,6; ≥ 35 km → × 1,4; staž < 8 nedelja ili
+     tegoba u 12 meseci → × 1,5. Motor računa u bodovima, a vršna nedelja nosi i rad kvaliteta (≈ 12–15 % bodova
+     iznad minuta), pa su množioci bodova veći od km (izbor; kapija meri km po tabeli trenera). */
+  peakLadder: {
+    rows: [
+      { maxBaseKm: 25.5, minWeeks: 18, overBase: 2.1 },
+      { maxBaseKm: 25.5, minWeeks: 12, overBase: 1.8 },
+      { maxBaseKm: 25.5, minWeeks: 0, overBase: 1.58 },
+      /* 25–35 km: × 1,6 (trener „do × 1,6"); priprema kraća od 12 nedelja ide niže (≈ × 1,3 u km, izbor: vlasnik-v1
+         sa 10 nedelja — trener i drugi sudija traže dugi do ≈ 16 km, ne vrh od 48 km) */
+      { maxBaseKm: 35.5, minWeeks: 12, overBase: 1.8 },
+      { maxBaseKm: 35.5, minWeeks: 0, overBase: 1.47 },
+      { maxBaseKm: null, minWeeks: 0, overBase: 1.58 }
+    ],
+    limitedOverBase: 1.7,
+    limitedTenureWeeks: 8
+  },
   /* plafon vrha po nivou ≈ satni plafon iz v3 (6,5 / 7,5 / 9 h nedeljno) uvećan za rad kvaliteta; brz ≈ 100 km
      nedeljno (v3 apsolutni plafon) */
   peakLoadCap: {
@@ -46,9 +67,10 @@ export const SAFETY: SafetyNumbers = {
   /* najduži dugi: početnik 2 h 10, spor i srednji 2 h 15 (ROUND-01, v3 do 22 km); brz 2 h 05 — v3 je dugi
      brzih ograničavao dužinom (do 26 km), pa brz trkač ne trči 29 km u pripremi za polumaraton */
   longMaxSec: {
-    pocetnik: 7800,
+    /* krug 4 (S3): ispod 45 km nedeljno granica dugog je vreme — do 2 h 15 */
+    pocetnik: 8100,
     povratnik: 8100,
-    mali: 7800,
+    mali: 8100,
     spor: 9000,
     srednji: 8100,
     brz: 7800
@@ -66,7 +88,12 @@ export const SAFETY: SafetyNumbers = {
   /* korak dugog 9 min (≈ 1,5 km; K7: ≤ 2 km; motor zaokružuje naniže, pa je stvarni korak ≈ 1–1,5 km); polazni dugi bez podatka: 30 % bazne nedelje. Mora biti ≤ dugom
      prve nedelje: motor ga koristi kao pod pravila koraka (max(prethodni, polazni) + korak), pa bi veći polazni
      dozvolio skok dugog na prelazu faza (K7). Cena: 3–4 dana bez podatka o najdužem trku kreću sa kraćim dugim. */
-  longStepSec: 540,
+  longStepSec: 600,
+  /* krug 4 (S2): dugi ≤ + 1,5 km ili + 10 min po nedelji gradnje (veće od ta dva) */
+  longStepKm: 1.5,
+  /* krug 4 (S3): ispod 45 km nedeljno (motor procenjuje km iz minuta, pa prag 42 km u minutima ≈ 45 km stvarno) udeo dugog ≤ 42 % (u najviše 3 nedelje ≤ 45 %) — u minutima nešto niže, jer
+     je dugi sa blokom brži od nedelje (kapija meri km) */
+  longShareLowVolume: { belowKm: 42, minRunDays: 4, share: 0.405, peakShare: 0.435, peakWeeks: 3 },
   longStartShare: { '1': 0.6, '2': 0.5, '3': 0.46, '4': 0.35, '5': 0.32, '6': 0.27, '7': 0.24 },
   /* plafon doze po treningu: sekunde rada i udeo vrha (min rada / BO vrha) */
   doseCaps: {
@@ -100,8 +127,10 @@ export const SAFETY: SafetyNumbers = {
   /* rad (sve deonice, i tempo trke i blok u dugom) ≤ 24 % vremena nedelje, najteža 30 % — ciljni p01 ned 13: tempo
      trke 44 min + blok 48 min ≈ 29 %. Rubrika K6 meri samo prag i brže (tempo trke nije u njoj); motor broji sav
      rad, pa je ovaj broj veći od K6 (zahtev prema motoru: brojati samo T, I, R) */
-  maxFastShare: 0.24,
-  maxFastSharePeak: 0.3,
+  maxFastShare: 0.22,
+  maxFastSharePeak: 0.25,
+  /* oštrenje nedelje trke: van budžeta, 8–12 min rada (krug 4, S1; trener § F8: 6–12 min) */
+  sharpening: { stimulus: 'ostrenje', minSec: 480, maxSec: 720 },
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */
   minEasySec: 1500,

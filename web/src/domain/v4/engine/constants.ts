@@ -94,6 +94,9 @@ export const WORK_DURATION_STEP_SEC = 60;
 export const WORK_DISTANCE_STEP_M = 500;
 /** Lestvica sme da pređe dozu za najviše 90 s (§ 4.3). */
 export const LADDER_TOLERANCE_SEC = 90;
+/** Prvi trening podražaja najviše 70 % plafona doze (K7 traži ≤ 70 % OSTVARENOG vrha, a vrh zone često skraćuje
+    budžet brzog rada; krug 4, S4: osnovica lestvice nije plafon). */
+export const FIRST_DOSE_MAX_OF_CAP = 0.7;
 /** Blok u dugom nije duži od polovine dugog (geometrija treninga; nije plafon doze). */
 export const LONG_BLOCK_MAX_SHARE = 0.5;
 /** Dan pre trke: odmor ili lagano do 20 min (§ 6.2 k. 10). Važi po DATUMU, preko granice nedelje (krug 3, O3):
@@ -106,6 +109,8 @@ export const RACE_NO_LONG_DAYS = 5;
     ne pređe cilj za više od 10 % (odluka organizatora, drugi krug). */
 export const EASY_FLOOR_MIN_RUN_DAYS = 3;
 export const EASY_FLOOR_OVER_TARGET = 0.1;
+/** Kvalitet se prihvata dok nedelja sa najkraćim laganim danima ne pređe obim (minuti) za više od 5 % (krug 4, S2). */
+export const VOLUME_ROOM_OVER = 0.05;
 
 /* ------------------------------------------------------------------ krug 2 (R1–R5): podrazumevane vrednosti */
 
@@ -196,7 +201,8 @@ export const PACE_UPDATE_AFTER_RESULT_VDOT = 0.3;
 /* ------------------------------------------------------------------ čuvar (§ 8.2) */
 
 export const GUARD_DOSE_TOLERANCE_SEC = 90;
-export const GUARD_FAST_SHARE_TOLERANCE = 0.02;
+/** Krug 4 (S1): čuvar prijavljuje svaku nedelju preko granice (samo zaokruživanje). */
+export const GUARD_FAST_SHARE_TOLERANCE = 0.005;
 /** § 8.2 daje 5 %; drugi krug: čuvar ne prijavljuje do + 10 % (lagan dan na najkraćem trajanju). */
 export const GUARD_JUMP_TOLERANCE = 0.1;
 export const GUARD_LONG_STEP_TOLERANCE_SEC = 60;

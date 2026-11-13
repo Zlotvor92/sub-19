@@ -3,6 +3,7 @@
 import {
   EASY_DISTANCE_STEP_M,
   EASY_DURATION_STEP_SEC,
+  FIRST_DOSE_MAX_OF_CAP,
   LADDER_TOLERANCE_SEC,
   LONG_BLOCK_MAX_SHARE,
   RPE_STAND,
@@ -93,12 +94,19 @@ export function slotDose(
 ): Seconds {
   const cap = ctx.decisions.doseCapSec[slot.stimulus];
   if (cap === undefined) return 0;
-  if (dosePct !== undefined) return dosePct * cap;
+  /* S4: lestvica se računa od osnovice (udeo × vrh), plafon nivoa ograničava samo dozu. */
+  const base = ctx.decisions.doseBaseSec?.[slot.stimulus] ?? cap;
+  /* Prvi trening podražaja ≤ 70 % plafona (K7): kad osnovica premašuje plafon, lestvica bi inače počela pri vrhu. */
+  const most =
+    slot.index === 0
+      ? Math.min(cap, Math.max(ctx.data.safety.minDoseSec, FIRST_DOSE_MAX_OF_CAP * cap))
+      : cap;
+  if (dosePct !== undefined) return Math.min(most, dosePct * base);
   const ladder = ctx.data.safety.progression[slot.stimulus];
   const step = weekKind === 'recovery' ? Math.max(0, slot.index - 1) : slot.index;
   const pct = ladder === undefined ? 1 : Math.min(1, ladder.startPct + ladder.stepPct * step);
   const factor = weekKind === 'recovery' ? (ctx.template?.recovery.doseFactor ?? 1) : 1;
-  return pct * cap * factor;
+  return Math.min(most, pct * base) * factor;
 }
 
 /* ------------------------------------------------------------------ izbor (§ 4.5) */

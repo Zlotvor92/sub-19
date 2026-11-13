@@ -390,7 +390,7 @@ export function renderPlan(
     const allPast = today !== undefined && addDays(week.start, 6) <= today;
     const anyPast = week.days.some(past);
     const count2 = `${count(trainings, WORKOUTS)}${hasRace ? ' + trka' : ''}`;
-    const fast = cost.durationSec > 0 ? cost.workSec / cost.durationSec : 0;
+    const fast = cost.durationSec > 0 ? cost.fastSec / cost.durationSec : 0;
     const share = anyPast ? '' : `, brz rad ${percent(fast)} vremena trčanja`;
     const load =
       options.showLoad === true && !anyPast

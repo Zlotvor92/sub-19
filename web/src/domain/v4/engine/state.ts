@@ -15,7 +15,7 @@ import {
   ZONE_SHARE
 } from './constants';
 import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday } from './dates';
-import { decidePeak } from './decide';
+import { decidePeak, ladderInputOf, ladderOverBase } from './decide';
 import { validate } from './guard';
 import { derivedPauses } from './pauses';
 import { declaredForm } from './formFallback';
@@ -32,6 +32,7 @@ import type {
   LoadPoints,
   LoadState,
   Pause,
+  PainFlag,
   PlanDoc,
   Step,
   ZoneId,
@@ -190,6 +191,17 @@ function historyFacts(
   };
 }
 
+/** Bol u poslednjih 12 meseci (§ 14.6): iz `painHistory` i sadašnjih prijava. */
+export const PAIN_HISTORY_DAYS = 365;
+function painHistoryOf(facts: RunnerFacts): PainFlag[] {
+  return [...(facts.painHistory ?? []), ...facts.pain].filter(
+    (p) => isValidDate(p.date) && p.date <= facts.today && diffDays(facts.today, p.date) <= PAIN_HISTORY_DAYS
+  );
+}
+function painInYear(facts: RunnerFacts): boolean {
+  return painHistoryOf(facts).length > 0;
+}
+
 /** Vrh koji bi plan odlučio — samo da procena forme zna rast obima (§ 7.5); odluku i dalje donosi `plan`. */
 function plannedLoads(
   facts: RunnerFacts,
@@ -211,9 +223,19 @@ function plannedLoads(
     baseLoad,
     ...history
   });
-  const picked = pickTemplate(data, level, countWeeks(start, goal.raceDate), runDays);
+  const weeks = countWeeks(start, goal.raceDate);
+  const picked = pickTemplate(data, level, weeks, runDays);
   if (picked === null) return null;
-  return { baseLoad, peakLoad: decidePeak(baseLoad, picked.template, data.safety, level) };
+  const ladder = ladderInputOf({
+    baseLoad,
+    easyPaceSecPerKm: paceAtShare(form.current.vdot, ZONE_SHARE.E),
+    weeks,
+    yearsRunning: facts.profile.yearsRunning,
+    painInYear: painInYear(facts),
+    safety: data.safety
+  });
+  const over = ladderOverBase(data.safety, ladder);
+  return { baseLoad, peakLoad: decidePeak(baseLoad, picked.template, data.safety, level, over) };
 }
 
 /** Zona rada dana plana: prvi korak uloge `work` sa zonom (za `Run.planned`). */
@@ -428,6 +450,7 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
       (p) => p.resolvedOn === undefined || diffDays(facts.today, p.resolvedOn) <= PAIN_RESOLVED_DAYS
     ),
     ...history,
+    ...(painHistoryOf(facts).length === 0 ? {} : { painHistory: painHistoryOf(facts) }),
     ...(inputErrors.length === 0 ? {} : { inputErrors })
   };
   return state;

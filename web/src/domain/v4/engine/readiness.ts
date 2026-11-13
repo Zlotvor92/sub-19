@@ -143,7 +143,7 @@ export function underRamp(weekStart: IsoDate, adjustments: readonly Adjustment[]
   return adjustments.some((adj) => {
     if (!returns(adj)) return false;
     const w = adjustmentWindow(adj);
-    return w !== null && w.from <= end && w.rampEnd >= weekStart;
+    return w !== null && w.from <= end && w.rampEnd > weekStart;
   });
 }
 

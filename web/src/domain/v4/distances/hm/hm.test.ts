@@ -221,6 +221,14 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
       return 'lagan dan otpao (ostatak < 25 min) — motor ne vraća ostatak';
   }
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
+  /* krug 4 (S1): budžet brzog rada vršne nedelje je od planiranog zbira (≤ 25 %), pa kod početnika u kratkom planu
+     (≤ 8 nedelja) sužavanje sa jednim kvalitetom prelazi 60 % vršnog rada */
+  if (f.check === 'taper' && d.level === 'pocetnik' && b.doc.weeks.length <= 8)
+    return 'početnik, kratak plan: jedan kvalitet u vršnoj nedelji i u sužavanju';
+  /* krug 4: rasterećenje početnika malog obima — dugi ≤ 80 % prethodnog, a lagan dan ≤ udeo dugog; manjak je
+     namera rasterećenja, ne propust */
+  if (f.check === 'ispod-cilja' && st?.week.intent.kind === 'recovery' && d.level === 'pocetnik')
+    return 'rasterećenje početnika: plafon dugog i laganih dana';
   /* krug 3 (dva kvaliteta i kod 25–40 km, ciljni planovi): lagani dani ograničeni pravilom R2b (≤ 1,25 × najduži lagan
      dan poslednje nedelje koja nije rasterećenje) u rasterećenju i nedelji posle njega; višak ostaje neplaniran
      (R2c), a udeo rada — koji motor deli sa CILJEM nedelje — raste. Zahtev prema motoru u D-REPORT. */

@@ -24,7 +24,16 @@ import {
 } from './constants';
 import { doneDayIds, isMutable, runPass } from './build';
 import { addDays, isValidDate, mondayOf } from './dates';
-import { assignDays, decideCaps, decideLongMax, decidePeak, decideWarmup, decide } from './decide';
+import {
+  assignDays,
+  decideCaps,
+  decideDoseBase,
+  decideLongMax,
+  decidePeak,
+  decideWarmup,
+  longStepOf,
+  decide
+} from './decide';
 import { sortEvents } from './events';
 import { canonical } from './fingerprint';
 import {
@@ -238,7 +247,7 @@ function onMissed(
     if (streak >= 2 && nextLong !== undefined) {
       const lastDone = lastLongBefore(state, addDays(state.today, 1));
       const from = lastDone > 0 ? lastDone : doc.header.decisions.longStartSec;
-      const lengthSec = from + data.safety.longStepSec;
+      const lengthSec = from + longStepOf(data.safety, doc.header.paces.easy);
       const targetWeek = weekOf(nextLong);
       return build(
         { kind: 'repeat', source: ev.id, dayId: nextLong.id, lengthSec, noBlock: true },
@@ -346,22 +355,28 @@ function onMissed(
 }
 
 /** Pauza ≥ 14 dana: vrh iz nove baze (ne iznad starog), plafoni i najduži dugi iz njega (§ 6.3). */
-function redecide(d: Decisions, state: RunnerState, data: DistanceData): Decisions {
+function redecide(
+  d: Decisions,
+  state: RunnerState,
+  data: DistanceData,
+  easy: number
+): Decisions {
   const template = data.templates.find((t) => t.id === d.templateId);
   if (template === undefined) return d;
   const baseLoad = Math.round(70 * state.load.chronic) / 10;
   const peakLoad = Math.min(
     d.peakLoad,
-    Math.round(decidePeak(baseLoad, template, data.safety, d.level) * 10) / 10
+    Math.round(decidePeak(baseLoad, template, data.safety, d.level, d.peakOverBase) * 10) / 10
   );
   return {
     ...d,
     baseLoad,
     peakLoad,
-    doseCapSec: decideCaps(peakLoad, data.safety),
+    doseCapSec: decideCaps(peakLoad, data.safety, d.level),
+    ...(d.doseBaseSec === undefined ? {} : { doseBaseSec: decideDoseBase(peakLoad, data.safety) }),
     longMaxSec: Math.min(
       d.longMaxSec,
-      decideLongMax(peakLoad, data.safety, d.level, d.runDays.length)
+      decideLongMax(peakLoad, data.safety, d.level, d.runDays.length, easy)
     ),
     ...decideWarmup(baseLoad, data.safety)
   };
@@ -398,7 +413,7 @@ function onPause(
   };
   let header = withAdjustment(doc.header, adj);
   const full = length >= PAUSE_FULL_REPLAN_DAYS;
-  if (full) header = { ...header, decisions: redecide(header.decisions, state, data) };
+  if (full) header = { ...header, decisions: redecide(header.decisions, state, data, header.paces.easy) };
   const built = runPass({ ...doc, header }, state, data, {
     window: null,
     rechainFrom: currentWeekIndex(doc, state.today) + 1
@@ -497,7 +512,13 @@ function onAvailability(
     runDays: a.runDays,
     longDay: a.longDay,
     qualityDays: assignDays(a.runDays, a.longDay),
-    longMaxSec: decideLongMax(d.peakLoad, data.safety, d.level, a.runDays.length)
+    longMaxSec: decideLongMax(
+      d.peakLoad,
+      data.safety,
+      d.level,
+      a.runDays.length,
+      doc.header.paces.easy
+    )
   };
   const built = runPass({ ...doc, header: { ...doc.header, decisions } }, state, data, {
     window: null,

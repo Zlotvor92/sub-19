@@ -150,6 +150,9 @@ export interface PlanWeek {
   targetLoad: LoadPoints;
   /** Odlučeno trajanje dugog te nedelje pre stanja spremnosti (0 = nedelja bez dugog); preuzet plan: najduži dan. */
   longSec: Seconds;
+  /** Obim nedelje u minutima (cilj bez dodatka kvaliteta; krug 4, S1/S2): kad budžet brzog rada skrati rad,
+      oslobođeni bodovi ne postaju minuti, pa čuvar meri manjak prema obimu. Stari planovi ga nemaju. */
+  volumeMin?: number;
   /** Dani hronološki; nedelja na početku plana može biti nepotpuna. */
   days: PlanDay[];
 }
@@ -223,6 +226,11 @@ export interface Decisions {
   longStartSec: Seconds;
   /** Plafon doze po podražaju, sekunde rada po treningu. */
   doseCapSec: Readonly<Record<StimulusTag, Seconds>>;
+  /** Osnovica lestvice doze (krug 4, S4): `shareOfPeakLoad × P`, bez plafona nivoa; doza mesta =
+      `min(doseCapSec, dosePct × doseBaseSec)`. Stari planovi je nemaju — tada je osnovica plafon. */
+  doseBaseSec?: Readonly<Record<StimulusTag, Seconds>>;
+  /** Množilac vrha iz lestvice (S2), zapamćen da preračun posle pauze koristi isti. */
+  peakOverBase?: number;
   warmupSec: Seconds;
   cooldownSec: Seconds;
   runDays: Weekday[];
@@ -473,6 +481,12 @@ export interface RunnerState {
   recentQualityWeeks?: number | null;
   /** Cele nedelje od kraja poslednje pauze; `null` = pauze nije bilo. */
   weeksSincePause?: number | null;
+  /** Bol u poslednjih 12 meseci (krug 4, S2/S8e: opreznost rasta i izbora). */
+  painHistory?: PainFlag[];
+  /** Prosek km poslednjih nedelja kad je istorija merodavna (krug 4, S8a); `null` = nije. */
+  historyWeeklyKm?: number | null;
+  /** Prosečan lagani tempo istorije brži od brže granice laganog (krug 4, S8d). */
+  easyTooFast?: boolean;
   /** Neispravan unos koji je `buildState` morao da preskoči da bi izračunao stanje (datum, nivo bola…); `plan` ga
       vraća kao `errors` (krug 3, O5). Nema ga kad je unos ispravan. */
   inputErrors?: readonly InputError[];
@@ -695,16 +709,46 @@ export interface SafetyNumbers {
   peakLoadCap: Readonly<Record<LevelId, LoadPoints | null>>;
   /** Vrh najviše ovoliko puta bazna nedelja (krug 2, R3). Podrazumevano `DEFAULT_MAX_PEAK_OVER_BASE` (1,40). */
   maxPeakOverBase?: number;
+  /** LESTVICA VRHA (krug 4, S2): množilac vrha (bodovi) po polaznom obimu (km) i dužini pripreme; prvi red čiji je
+      `maxBaseKm` ≥ polazni obim (ili `null`) i `minWeeks` ≤ broj nedelja. `limitedOverBase` važi za trkača sa
+      stažom ispod `limitedTenureWeeks` ili tegobom u poslednjih 12 meseci (manje od dva). Ima prednost nad
+      `maxPeakOverBase`. */
+  peakLadder?: {
+    rows: readonly { maxBaseKm: number | null; minWeeks: number; overBase: number }[];
+    limitedOverBase?: number;
+    limitedTenureWeeks?: number;
+  };
+  /** Rast nedelje je dozvoljen bar za ovoliko km (u minutima laganog tempa; krug 4, S2); uz `minRampLoad`. */
+  minRampKm?: number;
   longMaxSec: Readonly<Record<LevelId, Seconds>>;
   /** Najveći udeo dugog u vrhu, po broju dana trčanja (ključ „1"…„7"). */
   /** Može i po nivou: `{ nivo: { "1".."7": udeo } }`; nivo bez svoje mape nema plafon po danima (udeo 1). */
   longShareByRunDays:
     Readonly<Record<string, number>> | Readonly<Record<LevelId, Readonly<Record<string, number>>>>;
   longStepSec: Seconds;
+  /** Korak dugog i u km (u trajanju laganog tempa); važi veće od ta dva (krug 4, S2). */
+  longStepKm?: number;
+  /** Udeo dugog kod malog obima (krug 4, S3): nedelja ispod `belowKm` (planirani km) uz bar `minRunDays` dana ima
+      udeo `share` (u minutima), a u najviše `peakWeeks` nedelja (najduži dugi namere, kasnije prvo) `peakShare`. */
+  longShareLowVolume?: {
+    belowKm: number;
+    minRunDays: number;
+    share: number;
+    peakShare: number;
+    peakWeeks: number;
+  };
   /** Polazni dugi kao udeo bazne nedelje kad nema podatka o najdužem trčanju. */
   /** Broj, ili mapa po broju dana trčanja („1"…„7"). Polazni dugi = veće od ovoga i najdužeg skorašnjeg trčanja. */
   longStartShare: number | Readonly<Record<string, number>>;
-  doseCaps: Readonly<Record<StimulusTag, { maxWorkSec: Seconds; shareOfPeakLoad: number }>>;
+  /** `maxWorkSec` je broj ili mapa po nivou (krug 4, S4: plafon doze po nivou; nivo bez broja: `*` ili bez plafona). */
+  doseCaps: Readonly<
+    Record<
+      StimulusTag,
+      { maxWorkSec: Seconds | Readonly<Record<LevelId, Seconds>>; shareOfPeakLoad: number }
+    >
+  >;
+  /** Oštrenje nedelje trke (krug 4, S1): podražaj van budžeta brzog rada, doza uvek u [minSec, maxSec]. */
+  sharpening?: { stimulus: StimulusTag; minSec: Seconds; maxSec: Seconds };
   /** Napredovanje doze kad šablon ne zada `dosePct`. */
   progression: Readonly<Record<StimulusTag, { startPct: number; stepPct: number }>>;
   /** Doza ispod ove se ne trči kao kvalitet (postaje lagan dan sa malim podražajem). */
@@ -732,6 +776,12 @@ export interface AdequatePrep {
   minPeakWeeklyKm: number;
   minRunDays: number;
   minLongKm: number;
+  /** Dugi je dovoljan i kad traje bar ovoliko (krug 4, S3: „15 km ili 1 h 50"). */
+  minLongSec?: Seconds;
+  /** Provera `dugi-za-distancu` važi za plan od bar ovoliko nedelja (S3). */
+  longCheckMinWeeks?: number;
+  /** Staž (nedelje) ispod koga trkač nosi upozorenje i širi raspon (S8e). */
+  minTenureWeeks?: number;
   /** Vrh nedeljnog obima (km) koji nivo traži da bi kvalitet tog nivoa stao u plan (upozorenje `obim-za-nivo`,
       krug 2, R11); nivo bez broja: obim pri kom plafoni doza prestaju da zavise od obima. */
   minPeakWeeklyKmByLevel?: Readonly<Record<LevelId, number>>;
