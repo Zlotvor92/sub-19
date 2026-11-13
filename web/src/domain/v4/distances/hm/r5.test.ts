@@ -65,7 +65,9 @@ describe('krug 5', () => {
       expect(runs, `n${String(w.index)}`).toBe(5);
       for (const d of w.days)
         if (d.workout?.kind === 'easy')
-          expect(summarize(d.workout, ctx).durationSec, d.date).toBeGreaterThanOrEqual(30 * 60 - 0.5 * b.doc.header.paces.easy);
+          expect(summarize(d.workout, ctx).durationSec, d.date).toBeGreaterThanOrEqual(
+            30 * 60 - 0.5 * b.doc.header.paces.easy
+          );
     }
   });
 
@@ -118,9 +120,13 @@ describe('krug 5', () => {
     for (const b of ALL) {
       const text = renderPlan(b.doc, b.state, hm);
       const ctx = paceCtxOf(b.doc.header);
-      const kms = b.doc.weeks.map((w) => (w.intent.kind === 'race' ? 0 : weekCost(w, b.doc.header.goal.raceDate, ctx).km));
+      const kms = b.doc.weeks.map((w) =>
+        w.intent.kind === 'race' ? 0 : weekCost(w, b.doc.header.goal.raceDate, ctx).km
+      );
       const peak = kms.indexOf(Math.max(...kms)) + 1;
-      const labeled = [...text.matchAll(/^(\d+)\. NEDELJA[^\n]*vršna nedelja/gm)].map((m) => Number(m[1]));
+      const labeled = [...text.matchAll(/^(\d+)\. NEDELJA[^\n]*vršna nedelja/gm)].map((m) =>
+        Number(m[1])
+      );
       expect(labeled, b.id).toEqual([peak]);
     }
   });

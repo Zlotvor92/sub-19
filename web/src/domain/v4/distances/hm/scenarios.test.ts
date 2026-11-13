@@ -97,7 +97,10 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       if (base < 0) continue;
       /* Z1 (krug 7): pravilo važi posle prekida (pauza, bol); u prvobitnom planu bez prekida ne važi */
       const rampEnd = ((r.after.header.adjustments ?? []) as any[])
-        .filter((a) => a.kind === 'pause' || a.kind === 'pain' || (a.kind === 'effort' && a.planned !== true))
+        .filter(
+          (a) =>
+            a.kind === 'pause' || a.kind === 'pain' || (a.kind === 'effort' && a.planned !== true)
+        )
         .map((a) => adjustmentWindow(a)?.rampEnd ?? '')
         .reduce((a: string, b: string) => (a > b ? a : b), '');
       if (rampEnd === '') continue;
@@ -110,7 +113,7 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
         const w = after[i];
         if (w === undefined || w.intent.kind === 'race') continue;
         /* povratak je gotov kod prve nedelje jednake prvobitnoj — dalje je prvobitan plan (i njegovi prelazi) */
-        const ob = before[i] as PlanWeek | undefined;
+        const ob = before[i];
         const same =
           ob !== undefined &&
           Math.abs(weekKm(ob, r.before, r.after) - weekKm(w, r.after)) <= 0.5 &&
@@ -185,23 +188,40 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
     for (const { s, r } of RUNS) {
       if (s.title.startsWith('E5')) continue;
       const was: number = r.before.header.form.raceDay.expectedSec;
-      const now = adjustRaceDay(r.afterState.form.raceDay, r.afterState.form.current.raceTimeSec, r.after.header.decisions).expectedSec;
+      const now = adjustRaceDay(
+        r.afterState.form.raceDay,
+        r.afterState.form.current.raceTimeSec,
+        r.after.header.decisions
+      ).expectedSec;
       /* propušten trening nikad ne ubrzava prognozu */
       const asOf0: string = r.before.header.form.current.asOf;
-      const result = (r.afterState.form.history as any[]).some((h) => h.date > asOf0 && (h.signal === 'trka' || h.signal === 'test'));
-      if (s.title.startsWith('E3') && !result && now < was - 1) bad.push(`${name(s.no)} propušten trening ubrzao prognozu ${String(was)} → ${String(now)}`);
+      const result = (r.afterState.form.history as any[]).some(
+        (h) => h.date > asOf0 && (h.signal === 'trka' || h.signal === 'test')
+      );
+      if (s.title.startsWith('E3') && !result && now < was - 1)
+        bad.push(`${name(s.no)} propušten trening ubrzao prognozu ${String(was)} → ${String(now)}`);
       /* bolji rezultat od očekivanog ne usporava prognozu (0,1 %: zaokruživanje preostalog napretka) */
       const m = /očekivano (\d+):(\d+)/.exec(s.title);
       const t = /km (\d+):(\d+)/.exec(s.title);
-      if (s.title.startsWith('E1') && m !== null && t !== null && Number(t[1]) * 60 + Number(t[2]) < Number(m[1]) * 60 + Number(m[2]) && now > was * 1.001)
+      if (
+        s.title.startsWith('E1') &&
+        m !== null &&
+        t !== null &&
+        Number(t[1]) * 60 + Number(t[2]) < Number(m[1]) * 60 + Number(m[2]) &&
+        now > was * 1.001
+      )
         bad.push(`${name(s.no)} bolji rezultat usporio prognozu ${String(was)} → ${String(now)}`);
       /* ništa se nije desilo (test potvrdio formu): najviše 1 % */
-      if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was) bad.push(`${name(s.no)} prognoza ${String(was)} → ${String(now)} bez događaja`);
+      if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was)
+        bad.push(`${name(s.no)} prognoza ${String(was)} → ${String(now)} bez događaja`);
       /* svaka promena ima rečenicu „zašto" (korak sa signalom posle polazne procene) */
       if (Math.abs(now - was) > 20) {
         const asOf: string = r.before.header.form.current.asOf;
-        const why = (r.afterState.form.history as any[]).some((h) => h.date > asOf && h.signal !== 'plan');
-        if (!why) bad.push(`${name(s.no)} prognoza ${String(was)} → ${String(now)} bez rečenice zašto`);
+        const why = (r.afterState.form.history as any[]).some(
+          (h) => h.date > asOf && h.signal !== 'plan'
+        );
+        if (!why)
+          bad.push(`${name(s.no)} prognoza ${String(was)} → ${String(now)} bez rečenice zašto`);
       }
     }
     expect(bad).toEqual([]);
@@ -211,7 +231,8 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
     const bad: string[] = [];
     for (const { s, r } of RUNS.filter(({ s }) => s.title.startsWith('E7'))) {
       const end = windowEnd(r);
-      if (end !== null && end > addDays(r.afterState.today as string, 28)) bad.push(`${name(s.no)} rep do ${end}`);
+      if (end !== null && end > addDays(r.afterState.today as string, 28))
+        bad.push(`${name(s.no)} rep do ${end}`);
     }
     expect(bad).toEqual([]);
   });
@@ -227,9 +248,15 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
         for (const d of w.days) {
           const o = old.days.find((x) => x.id === d.id);
           if (o?.workout == null || d.workout === null || d.date <= r.afterState.today) continue;
-          if ((o.workout.kind === 'test' || o.workout.kind === 'quality') && d.workout.kind === 'easy') {
+          if (
+            (o.workout.kind === 'test' || o.workout.kind === 'quality') &&
+            d.workout.kind === 'easy'
+          ) {
             const sec = summarize(d.workout, ctx).durationSec;
-            if (sec > 0.65 * long + 300) bad.push(`${name(s.no)} ${d.date} lagano ${String(Math.round(sec / 60))} uz dugi ${String(Math.round(long / 60))} min`);
+            if (sec > 0.65 * long + 300)
+              bad.push(
+                `${name(s.no)} ${d.date} lagano ${String(Math.round(sec / 60))} uz dugi ${String(Math.round(long / 60))} min`
+              );
           }
         }
       }
@@ -245,14 +272,19 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       for (const d of (r.after.weeks as PlanWeek[]).flatMap((w) => w.days)) {
         const x = d.workout;
         /* pravilo važi do 6 nedelja posle bola */
-        if (x === null || d.date <= painDate || d.date > addDays(painDate, 42) || x.workSec <= 0) continue;
+        if (x === null || d.date <= painDate || d.date > addDays(painDate, 42) || x.workSec <= 0)
+          continue;
         const zone = hm.library.find((y) => y.id === x.libraryId)?.main;
         const z = zone === undefined || zone.kind === 'all-out' ? null : zone.zone;
         if (z === null || seen.has(z)) continue;
         seen.add(z);
-        const old = (r.before.weeks as PlanWeek[]).flatMap((w) => w.days).find((y) => y.id === d.id)?.workout;
+        const old = (r.before.weeks as PlanWeek[])
+          .flatMap((w) => w.days)
+          .find((y) => y.id === d.id)?.workout;
         if (old != null && old.workSec > 0 && x.workSec > 0.6 * old.workSec + 90)
-          bad.push(`${name(s.no)} ${d.date} prvi rad zone ${z}: ${String(Math.round(x.workSec / 60))} od ${String(Math.round(old.workSec / 60))} min`);
+          bad.push(
+            `${name(s.no)} ${d.date} prvi rad zone ${z}: ${String(Math.round(x.workSec / 60))} od ${String(Math.round(old.workSec / 60))} min`
+          );
       }
     }
     expect(bad).toEqual([]);
@@ -263,10 +295,13 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
     for (const { s, r } of REPLANS) {
       if (r.before.header.paces.byFeel !== true) continue;
       const asOf: string = r.before.header.form.current.asOf;
-      const result = (r.afterState.form.history as any[]).some((h) => h.date > asOf && (h.signal === 'trka' || h.signal === 'test'));
+      const result = (r.afterState.form.history as any[]).some(
+        (h) => h.date > asOf && (h.signal === 'trka' || h.signal === 'test')
+      );
       if (!result) continue;
       if (r.after.header.paces.byFeel === true) bad.push(`${name(s.no)} i dalje po osećaju`);
-      if ((r.after.header.warnings as any[]).some((w) => w.code === 'nema-podataka')) bad.push(`${name(s.no)} „nemam tvoj rezultat"`);
+      if ((r.after.header.warnings as any[]).some((w) => w.code === 'nema-podataka'))
+        bad.push(`${name(s.no)} „nemam tvoj rezultat"`);
     }
     expect(bad).toEqual([]);
   });
@@ -274,14 +309,18 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
   it('Z6: „visoka" tek posle dva saglasna rezultata; prva trka u životu raspon bar ± 2 %', () => {
     const bad: string[] = [];
     for (const { s, r } of RUNS) {
-      const results = (r.afterState.form.history as any[]).filter((h) => h.signal === 'trka' || h.signal === 'test').length;
+      const results = (r.afterState.form.history as any[]).filter(
+        (h) => h.signal === 'trka' || h.signal === 'test'
+      ).length;
       const entered = r.afterState.profile.recentResult !== undefined;
       if (r.afterState.form.current.confidence === 'visoka' && results + (entered ? 1 : 0) < 2)
         bad.push(`${name(s.no)} visoka uz ${String(results)} rezultat`);
       if (s.title.includes('prva trka u životu')) {
         const d = r.after.header.form.raceDay;
         if (d.lowSec > 0.98 * d.expectedSec + 1 || d.highSec < 1.02 * d.expectedSec - 1)
-          bad.push(`${name(s.no)} prvi rezultat: raspon ${String(d.lowSec)}–${String(d.highSec)} oko ${String(d.expectedSec)}`);
+          bad.push(
+            `${name(s.no)} prvi rezultat: raspon ${String(d.lowSec)}–${String(d.highSec)} oko ${String(d.expectedSec)}`
+          );
       }
     }
     expect(bad).toEqual([]);

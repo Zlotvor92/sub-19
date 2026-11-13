@@ -592,7 +592,11 @@ function smoothExit(
     const kmCap = RETURN_WEEK_JUMP_SHARE * pKm;
     /* Z1 (krug 7): dugi se meri od POSLEDNJEG dugog (ne najvećeg od tri) i važi i preko rasterećenja/provere —
        posle prekida nema izuzetka „prvobitan plan ima isti skok" */
-    const lastLong = [...prev].reverse().map((x) => longSec(x)).find((x) => x > 0) ?? 0;
+    const lastLong =
+      [...prev]
+        .reverse()
+        .map((x) => longSec(x))
+        .find((x) => x > 0) ?? 0;
     const longCap = Math.max(RETURN_LONG_JUMP_SHARE * lastLong, lastLong + RETURN_LONG_JUMP_SEC);
     const longOver = lastLong > 0 && curLong > longCap + 60;
     const kmOver = pKm > 0 && curKm > kmCap + 0.5;
@@ -646,13 +650,20 @@ function smoothExit(
       shrunk = {
         ...shrunk,
         days: shrunk.days.map((d): PlanDay => {
-          if (d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done)) return d;
+          if (d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
+            return d;
           const sec = summarize(d.workout, pace).durationSec;
           const next = Math.max(lastLong, sec - rest * pace.paces.easy);
           if (next >= sec - 60) return d;
           const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
           const workout = realize(
-            { type: 'long', sec: Math.round(next / 60) * 60, def, dose: Math.min(d.workout.workSec, next / 2), slot: null },
+            {
+              type: 'long',
+              sec: Math.round(next / 60) * 60,
+              def,
+              dose: Math.min(d.workout.workSec, next / 2),
+              slot: null
+            },
             ctxB
           );
           return workout === null ? d : { ...d, origin: 'template', workout };
@@ -662,19 +673,34 @@ function smoothExit(
     /* E2: u skraćenoj nedelji dugi ≤ `shortenedLongMaxShare` nedelje (D' = udeo × ostatak / (1 − udeo)) */
     const lshare = data.safety.shortenedLongMaxShare;
     const longDay = shrunk.days.find((d) => d.workout?.kind === 'long');
-    if (lshare !== undefined && longDay?.workout != null && isMutable(longDay, after.header, state.today, done)) {
+    if (
+      lshare !== undefined &&
+      longDay?.workout != null &&
+      isMutable(longDay, after.header, state.today, done)
+    ) {
       const lkm = summarize(longDay.workout, pace).km;
       const others = km(shrunk) - lkm;
       const maxKm = (lshare * others) / (1 - lshare);
       if (lkm > maxKm + 0.25) {
-        const sec = Math.max(lastLong, (maxKm * pace.paces.easy) - 30);
+        const sec = Math.max(lastLong, maxKm * pace.paces.easy - 30);
         const def = data.library.find((x) => x.id === longDay.workout?.libraryId) ?? null;
         const workout = realize(
-          { type: 'long', sec: Math.round(sec / 60) * 60, def, dose: Math.min(longDay.workout.workSec, sec / 2), slot: null },
+          {
+            type: 'long',
+            sec: Math.round(sec / 60) * 60,
+            def,
+            dose: Math.min(longDay.workout.workSec, sec / 2),
+            slot: null
+          },
           ctxB
         );
         if (workout !== null)
-          shrunk = { ...shrunk, days: shrunk.days.map((d) => (d.id === longDay.id ? { ...d, origin: 'template', workout } : d)) };
+          shrunk = {
+            ...shrunk,
+            days: shrunk.days.map((d) =>
+              d.id === longDay.id ? { ...d, origin: 'template', workout } : d
+            )
+          };
       }
     }
     /* cilj nedelje prati skraćenje (nedelja je namerno manja, ne „ispod cilja") */
@@ -796,40 +822,44 @@ function firstZoneAfterPain(
   const last = addDays(painDate, PAIN_FIRST_ZONE_MAX_DAYS);
   const seenZones = new Set<string>();
   let until = windowEnd;
-  const weeks = doc.weeks.map(
-    (w): PlanWeek => ({
-      ...w,
-      days: w.days.map((d): PlanDay => {
-        const x = d.workout;
-        if (x === null || d.date <= painDate || d.date > last || x.workSec <= 0) return d;
-        if (x.kind !== 'quality' && x.kind !== 'long') return d;
-        const def = data.library.find((y) => y.id === x.libraryId);
-        const zone = def === undefined ? null : mainZone(def.main);
-        if (def === undefined || zone === null || seenZones.has(zone)) return d;
-        seenZones.add(zone);
-        if (d.date <= windowEnd || !isMutable(d, doc.header, state.today, done)) return d;
-        const dose = Math.round((PAIN_MID_DOSE_FACTOR * x.workSec) / 60) * 60;
-        const workout =
-          x.kind === 'long'
-            ? realize(
-                { type: 'long', sec: Math.round(summarize(x, pace).durationSec / 60) * 60, def, dose, slot: null },
-                ctxB
-              )
-            : realize(
-                {
-                  type: 'quality',
-                  def,
-                  dose,
-                  slot: { place: 'quality', stimulus: def.stimulus, index: 0, phase: w.intent.phase }
-                },
-                ctxB
-              );
-        if (workout === null) return d;
-        if (d.date > until) until = d.date;
-        return { ...d, origin: 'template', workout };
-      })
+  const weeks = doc.weeks.map((w): PlanWeek => ({
+    ...w,
+    days: w.days.map((d): PlanDay => {
+      const x = d.workout;
+      if (x === null || d.date <= painDate || d.date > last || x.workSec <= 0) return d;
+      if (x.kind !== 'quality' && x.kind !== 'long') return d;
+      const def = data.library.find((y) => y.id === x.libraryId);
+      const zone = def === undefined ? null : mainZone(def.main);
+      if (def === undefined || zone === null || seenZones.has(zone)) return d;
+      seenZones.add(zone);
+      if (d.date <= windowEnd || !isMutable(d, doc.header, state.today, done)) return d;
+      const dose = Math.round((PAIN_MID_DOSE_FACTOR * x.workSec) / 60) * 60;
+      const workout =
+        x.kind === 'long'
+          ? realize(
+              {
+                type: 'long',
+                sec: Math.round(summarize(x, pace).durationSec / 60) * 60,
+                def,
+                dose,
+                slot: null
+              },
+              ctxB
+            )
+          : realize(
+              {
+                type: 'quality',
+                def,
+                dose,
+                slot: { place: 'quality', stimulus: def.stimulus, index: 0, phase: w.intent.phase }
+              },
+              ctxB
+            );
+      if (workout === null) return d;
+      if (d.date > until) until = d.date;
+      return { ...d, origin: 'template', workout };
     })
-  );
+  }));
   return { doc: { ...doc, weeks }, until };
 }
 
@@ -1322,7 +1352,9 @@ function describe(
       scope: 'zaglavlje',
       what: 'tempa',
       /* Z5 (krug 7): iz „po osećaju" u tempa iz rezultata — pre je „po osećaju", ne isti brojevi */
-      before: h0.paces.byFeel ? 'po osećaju' : `prag ${fmtPace(h0.paces.T)}, tempo trke ${fmtPace(h0.paces.RP)}`,
+      before: h0.paces.byFeel
+        ? 'po osećaju'
+        : `prag ${fmtPace(h0.paces.T)}, tempo trke ${fmtPace(h0.paces.RP)}`,
       after: `prag ${fmtPace(h1.paces.T)}, tempo trke ${fmtPace(h1.paces.RP)}`,
       reason: text.header
     });

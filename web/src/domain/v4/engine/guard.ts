@@ -460,7 +460,9 @@ export const guard: GuardFn = (doc, _state, data) => {
     /* Nedelja trke se ne meri: mala je, a sama trka ne ulazi u zbir. */
     /* Z10 (krug 7): nedelja u rampi (prekid, malo km) se ne meri udelom; skraćena nedelja izlaska (4 nedelje posle
        rampe) najviše do granice vršne nedelje */
-    const exitShare = inAnyWindow(week, causes, 28) ? Math.max(maxShare, s.maxFastSharePeak) : maxShare;
+    const exitShare = inAnyWindow(week, causes, 28)
+      ? Math.max(maxShare, s.maxFastSharePeak)
+      : maxShare;
     if (!raceWeek && !ramp && share > exitShare + GUARD_FAST_SHARE_TOLERANCE) {
       report('brz-udeo', week, null, 'Udeo brzog rada u nedelji je iznad dozvoljenog.');
     }
@@ -932,21 +934,29 @@ function levelVolumeWarning(
 
 /** Z8 (krug 7): traženi dani se poštuju — kad lagan dan padne ispod `minEasyMin` (do `minEasyFallbackMin`), plan to
     kaže brojevima iz plana: u kojim nedeljama i koliko je prva nedelja. */
-function shortEasyWarning(doc: PlanDoc, costs: readonly WeekCost[], s: DistanceData["safety"]): Warning | null {
+function shortEasyWarning(
+  doc: PlanDoc,
+  costs: readonly WeekCost[],
+  s: DistanceData['safety']
+): Warning | null {
   const { header } = doc;
   const d = header.decisions;
-  if (!levelMinEasy(s, d.level, d.runDays.length) || s.minEasyFallbackMin === undefined) return null;
+  if (!levelMinEasy(s, d.level, d.runDays.length) || s.minEasyFallbackMin === undefined)
+    return null;
   const want = minEasyOf(s, d.level, d.runDays.length);
   const ctx = paceCtxOf(header);
   const short = costs.filter(
     (c) =>
       (c.week.intent.kind === 'build' || c.week.intent.kind === 'peak') &&
-      c.week.days.some((x) => x.workout?.kind === 'easy' && summarize(x.workout, ctx).durationSec < want - 90)
+      c.week.days.some(
+        (x) => x.workout?.kind === 'easy' && summarize(x.workout, ctx).durationSec < want - 90
+      )
   );
   if (short.length === 0) return null;
   const first = short[0]?.week.index ?? 0;
   const last = short[short.length - 1]?.week.index ?? 0;
-  const span = first === last ? `${String(first)}. nedelji` : `${String(first)}–${String(last)}. nedelji`;
+  const span =
+    first === last ? `${String(first)}. nedelji` : `${String(first)}–${String(last)}. nedelji`;
   const baseKm = (d.baseLoad * 60) / header.paces.easy;
   const week1 = costs[0]?.km ?? 0;
   return {
@@ -954,7 +964,8 @@ function shortEasyWarning(doc: PlanDoc, costs: readonly WeekCost[], s: DistanceD
     severity: 'info',
     problem: `Tražio si ${count(d.runDays.length, DAYS)} trčanja nedeljno; uz sadašnji obim od oko ${km(baseKm)} lagani dani su u ${span} oko ${String(s.minEasyFallbackMin)} min umesto ${String(Math.round(want / 60))}.`,
     meaning: `Svi traženi dani ostaju u planu; zato je prva nedelja oko ${km(week1)}, nešto više od sadašnjeg obima.`,
-    proposal: 'Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.'
+    proposal:
+      'Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.'
   };
 }
 

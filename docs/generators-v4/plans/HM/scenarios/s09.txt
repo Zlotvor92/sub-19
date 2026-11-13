@@ -1,7 +1,7 @@
 S09 — p01, E3: ned 13 (najteža): propušteni RP usred nedelje i dugi sa blokom
 
 STANJE: danas 2027-02-01; sadašnji obim 40 km nedeljno, 4 dana; forma 1:41:58 (pouzdanost srednja), očekivano na dan trke 1:41:01.
-DOGAĐAJ: Propušteno: w13d1, w13d6; sve ostalo urađeno; danas 2027-02-01. Događaji: missed:2027-01-26:w13d1, missed:2027-01-31:w13d6.
+DOGAĐAJ: Propušteno: w13d1, w13d6; sve ostalo urađeno; danas 2027-02-01. Događaji: result:2026-12-26:run-w8d5, missed:2027-01-26:w13d1, missed:2027-01-31:w13d6.
 PROMENA: 1.
 
 ==================== PRE ====================
@@ -137,7 +137,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:50/km). Tvoj cilj 1:39:56 tr
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 54 km, 5 h 8 min, 4 treninga, brz rad 18 % vremena trčanja
 
-11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
+11. NEDELJA (od 11. 1.) — specifična priprema, vršna nedelja; do trke 5 nedelja
   pon 11. 1.  odmor
   uto 12. 1.  tempo trke 3 × 3 km (4:50/km), oporavak 1:30 džog — 13,7 km, 72 min
   sre 13. 1.  odmor
@@ -159,7 +159,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:50/km). Tvoj cilj 1:39:56 tr
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 44,1 km, 4 h 17 min, 4 treninga, brz rad 6 % vremena trčanja
 
-13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
+13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 25. 1.  odmor
   uto 26. 1.  prag 2 × 12 min (4:42/km), oporavak 1:30 džog — 9,6 km, 51 min
   sre 27. 1.  odmor
@@ -334,7 +334,7 @@ Propušten je ključni trening „dugi 18,5 km, završni deo 9 km u tempu trke" 
   ned 10. 1.  dugi 20 km, završni deo 5,5 km u tempu trke — urađeno 20 km, 1 h 53 min (5:38/km)
   Urađeno: 54 km, 5 h 7 min, 4 treninga
 
-11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
+11. NEDELJA (od 11. 1.) — specifična priprema, vršna nedelja; do trke 5 nedelja
   pon 11. 1.  odmor
   uto 12. 1.  tempo trke 3 × 3 km, oporavak 1:30 džog — urađeno 13,7 km, 72 min (5:13/km)
   sre 13. 1.  odmor
@@ -354,7 +354,7 @@ Propušten je ključni trening „dugi 18,5 km, završni deo 9 km u tempu trke" 
   ned 24. 1.  dugi 16,5 km lagano — urađeno 16,5 km, 98 min (5:56/km)
   Urađeno: 44,1 km, 4 h 17 min, 4 treninga
 
-13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
+13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 25. 1.  odmor
   uto 26. 1.  prag 2 × 12 min, oporavak 1:30 džog — nije urađeno
   sre 27. 1.  odmor

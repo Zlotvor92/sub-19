@@ -34,7 +34,15 @@ import {
 } from './constants';
 import { addDays, diffDays } from './dates';
 import { summarize } from './load';
-import { type BuildCtx, mainZone, minDoseOf, pickDef, realize, type Recipe, steadyLongDef } from './select';
+import {
+  type BuildCtx,
+  mainZone,
+  minDoseOf,
+  pickDef,
+  realize,
+  type Recipe,
+  steadyLongDef
+} from './select';
 import type { Adjustment, IsoDate, Pause, Seconds } from './types';
 
 /** Rampa povratka: `zero` je dan napora ili poslednji dan pauze; traje `days`; `noFast` dana bez ičeg brzog. */
@@ -274,7 +282,9 @@ export function modsFor(
         /* Z3 (krug 7): prvi rad svake ZONE posle bola (i blok u dugom) ≤ 60 % planirane doze, do 6 nedelja posle bola */
         if (n > PAIN_MID_DAYS && n <= PAIN_FIRST_ZONE_MAX_DAYS && key !== null) {
           const zone = key.slice(key.indexOf('@'));
-          const done = seen.some((s) => (s.key === key || s.key.endsWith(zone)) && s.date > adj.date && s.date < date);
+          const done = seen.some(
+            (s) => (s.key === key || s.key.endsWith(zone)) && s.date > adj.date && s.date < date
+          );
           if (!done) m.doseFactor = Math.min(m.doseFactor, PAIN_MID_DOSE_FACTOR);
         }
       } else if (n >= 1 && n <= PAIN_HIGH_REST_DAYS) {

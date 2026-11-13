@@ -277,6 +277,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:00:36) traži 5:43/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
+- Tražio si 5 dana trčanja nedeljno; uz sadašnji obim od oko 55,1 km lagani dani su u 1. nedelji oko 30 min umesto 35. Svi traženi dani ostaju u planu; zato je prva nedelja oko 18,2 km, nešto više od sadašnjeg obima. Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.
 - Plan počinje dan posle trke (21,1 km za 2:04:13). Do 16. 11. traje oporavak: treninzi su lagani, da se telo vrati pre nego što opterećenje krene da raste; do 19. 11. su i kraći nego inače. Prvi brzi trening je 17. 11.; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja

@@ -1,7 +1,7 @@
 S02 — p04, E1: ned 12, trka 10 km 54:20 (očekivano 56:02)
 
-STANJE: danas 2027-01-21; sadašnji obim 55 km nedeljno, 5 dana; forma 2:01:34 (pouzdanost visoka), očekivano na dan trke 1:59:50.
-DOGAĐAJ: Trka 10 km za 54:20 na 2027-01-21 (dan provere forme u 12. nedelji). Događaji: result:2027-01-21:trka-2027-01-21.
+STANJE: danas 2027-01-21; sadašnji obim 55 km nedeljno, 5 dana; forma 2:01:34 (pouzdanost srednja), očekivano na dan trke 1:59:50.
+DOGAĐAJ: Trka 10 km za 54:20 na 2027-01-21 (dan provere forme u 12. nedelji). Događaji: result:2026-12-26:run-w8d5, result:2027-01-21:trka-2027-01-21.
 PROMENA: 1.
 
 ==================== PRE ====================
@@ -262,8 +262,8 @@ Dugi trening u 8 nedelja staje na 2 h 11 min: duže trčanje za ovu distancu don
 
 FORMA
 Polazna forma (1. 11.): 2:04:13
-Današnja prognoza (21. 1.): 2:01:34, pouzdanost visoka
-Očekivano na dan trke: 1:59:50 (raspon 1:58:14–2:02:17) — 1:44 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Današnja prognoza (21. 1.): 2:01:34, pouzdanost srednja
+Očekivano na dan trke: 1:59:50 (raspon 1:57:34–2:03:01) — 1:44 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Trka 21. 1.: 10 km za 54:20. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 21,1 km: 2:04:13 → 2:01:34.
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
@@ -278,7 +278,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:46/km). Očekivano vreme na dan trke (1:59:50) traži 5:41/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 10 km za 54:20 (21. 1.) pokazuje bolju formu od one po kojoj je plan pisan (2:04:13 na distanci trke): tempa su ubrzana za oko 7 s po kilometru, a očekivano vreme trke je sada oko 1:59:50 (raspon 1:58:14–2:02:17).
+Rezultat 10 km za 56:02 (26. 12.) pokazuje bolju formu od one po kojoj je plan pisan (2:04:13 na distanci trke): tempa su ubrzana za oko 7 s po kilometru, a očekivano vreme trke je sada oko 1:59:50 (raspon 1:57:34–2:03:01).
 - plan: prag 5:40/km, tempo trke 5:53/km → prag 5:33/km, tempo trke 5:46/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja

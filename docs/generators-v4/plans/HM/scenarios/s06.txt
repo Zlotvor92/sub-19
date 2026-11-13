@@ -1,7 +1,7 @@
 S06 — p04, E2: bolest 7 dana u ned 14
 
 STANJE: danas 2027-02-07; sadašnji obim 55 km nedeljno, 5 dana; forma 2:04:51 (pouzdanost srednja), očekivano na dan trke 2:02:30.
-DOGAĐAJ: Bolest 2027-02-01 – 2027-02-07 (14. nedelja), bez treninga. Događaji: pause:2027-02-01:2027-02-07.
+DOGAĐAJ: Bolest 2027-02-01 – 2027-02-07 (14. nedelja), bez treninga. Događaji: result:2026-12-26:run-w8d5, pause:2027-02-01:2027-02-07.
 PROMENA: 15.
 
 ==================== PRE ====================
@@ -425,7 +425,7 @@ Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treni
   ned 31. 1.  dugi 2 h 10 min, završni deo 25 min u tempu trke — urađeno 19 km, 2 h 10 min (6:50/km)
   Urađeno: 63,3 km, 7 h 17 min, 5 treninga
 
-14. NEDELJA (od 1. 2.) — specifična priprema, gradnja; do trke 6 nedelja
+14. NEDELJA (od 1. 2.) — specifična priprema, vršna nedelja; do trke 6 nedelja
   pon 1. 2.  lagano 75 min — pauza, bez treninga
   uto 2. 2.  tempo trke 3 × 15 min, oporavak 1:30 džog — pauza, bez treninga
   sre 3. 2.  odmor
@@ -457,7 +457,7 @@ Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treni
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 42,2 km, 4 h 56 min, 5 treninga, brz rad 6 % vremena trčanja
 
-17. NEDELJA (od 22. 2.) — specifična priprema, vršna nedelja; do trke 3 nedelje
+17. NEDELJA (od 22. 2.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 22. 2.  lagano 50 min — 7 km, 50 min
   uto 23. 2.  prag 3 × 12 min (5:40/km), oporavak 1:30 džog — 11,7 km, 74 min
   sre 24. 2.  odmor

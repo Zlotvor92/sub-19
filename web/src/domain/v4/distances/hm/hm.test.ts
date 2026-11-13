@@ -196,7 +196,9 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
   if (
     f.check === 'skok' &&
     (b.doc.header.warnings.some((w) => w.code === 'lagan-kratak') ||
-      (levelMin !== undefined && b.doc.header.decisions.runDays.length >= (hm.safety.minEasyFromRunDays ?? 0) && b.doc.header.decisions.baseLoad / b.doc.header.decisions.runDays.length < levelMin + 10))
+      (levelMin !== undefined &&
+        b.doc.header.decisions.runDays.length >= (hm.safety.minEasyFromRunDays ?? 0) &&
+        b.doc.header.decisions.baseLoad / b.doc.header.decisions.runDays.length < levelMin + 10))
   )
     return 'traženi dani uz najkraće lagano po nivou (Z8)';
   const volume = ['ispod-cilja', 'min-nedelja', 'lagan-dugi', 'prazan', 'skok', 'silazak'].includes(

@@ -698,7 +698,10 @@ function easyFill(
       ];
       /* Z8 (krug 7): nivo sa najkraćim laganim po nivou ne gubi dan (traženi dani se poštuju) — lagan dan sme do
          `minEasyFallbackMin` (plan to kaže rečenicom); ostali nivoi kao do sada */
-      const fallback = Math.max(ctx.data.safety.minEasySec, (ctx.data.safety.minEasyFallbackMin ?? 0) * 60);
+      const fallback = Math.max(
+        ctx.data.safety.minEasySec,
+        (ctx.data.safety.minEasyFallbackMin ?? 0) * 60
+      );
       const least = byVolume ? days.length : 0;
       while (days.length > least && days.length > 0 && over(days)) {
         const drop = dropOrder.shift();
@@ -710,7 +713,8 @@ function easyFill(
         byVolume && days.length > 0
           ? calm
             ? minEasy
-            : Math.round(Math.min(minEasy, Math.max(fallback, budget(days) / days.length)) / 60) * 60
+            : Math.round(Math.min(minEasy, Math.max(fallback, budget(days) / days.length)) / 60) *
+              60
           : minEasy;
       for (const day of days) {
         /* Na najkraćem trčanju dodatak ide preko laganog dela; strog plafon važi samo u sužavanju i nedelji trke. */
@@ -1325,7 +1329,8 @@ function seenKey(workout: Workout | null, ctx: BuildCtx): string | null {
   if (workout === null || workout.stimulus === null) return null;
   const def = ctx.data.library.find((x) => x.id === workout.libraryId);
   const zone = def === undefined ? '' : (mainZone(def.main) ?? '');
-  if (workout.kind === 'quality' || workout.kind === 'test') return `quality:${workout.stimulus}@${zone}`;
+  if (workout.kind === 'quality' || workout.kind === 'test')
+    return `quality:${workout.stimulus}@${zone}`;
   if (workout.kind === 'long' && workout.workSec > 0) return `long:${workout.stimulus}@${zone}`;
   return null;
 }
@@ -1378,12 +1383,19 @@ function capDroppedDays(
   const s = ctx.data.safety;
   const most = Math.max(
     minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length),
-    Math.round((easyShareOfLong(s, ctx.decisions.runDays.length) * summarize(long, ctx.pace).durationSec) / 300) * 300
+    Math.round(
+      (easyShareOfLong(s, ctx.decisions.runDays.length) * summarize(long, ctx.pace).durationSec) /
+        300
+    ) * 300
   );
   return days.map((d) => {
     const was = recipes.get(d.date)?.type;
     void week;
-    if ((was !== 'test' && was !== 'quality') || d.workout?.kind !== 'easy' || !isMutable(d, header, today, done))
+    if (
+      (was !== 'test' && was !== 'quality') ||
+      d.workout?.kind !== 'easy' ||
+      !isMutable(d, header, today, done)
+    )
       return d;
     if (summarize(d.workout, ctx.pace).durationSec <= most + 60) return d;
     const workout = realize({ type: 'easy', sec: most }, ctx);
@@ -1776,7 +1788,15 @@ export function runPass(
       }
       return final;
     });
-    const days = capDroppedDays(shortenLong(rawDays, week, header, state.today, done, ctx, opts), recipes, week, header, state.today, done, ctx);
+    const days = capDroppedDays(
+      shortenLong(rawDays, week, header, state.today, done, ctx, opts),
+      recipes,
+      week,
+      header,
+      state.today,
+      done,
+      ctx
+    );
     weekTags.push(
       new Set(
         days.flatMap((x) =>

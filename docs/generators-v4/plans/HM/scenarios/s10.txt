@@ -1,7 +1,7 @@
 S10 — p04, E3: ned 10: propušteni kvalitet i dugi
 
 STANJE: danas 2027-01-11; sadašnji obim 55 km nedeljno, 5 dana; forma 2:04:13 (pouzdanost srednja), očekivano na dan trke 2:01:54.
-DOGAĐAJ: Propušteno: w10d1, w10d6; sve ostalo urađeno; danas 2027-01-11. Događaji: missed:2027-01-05:w10d1, missed:2027-01-10:w10d6.
+DOGAĐAJ: Propušteno: w10d1, w10d6; sve ostalo urađeno; danas 2027-01-11. Događaji: result:2026-12-26:run-w8d5, missed:2027-01-05:w10d1, missed:2027-01-10:w10d6.
 PROMENA: 1.
 
 ==================== PRE ====================

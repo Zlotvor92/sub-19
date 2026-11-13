@@ -298,7 +298,8 @@ export function estimateForm(
   const startDay = Math.min(firstDay, today);
 
   /** Trke i testovi; `strong` = nije prvi rezultat i nije trka sa hodanjem (R14: samo takav daje „visoku"). */
-  const results: { day: number; strong: boolean; vdot: Vdot; weak?: boolean; race?: boolean }[] = [];
+  const results: { day: number; strong: boolean; vdot: Vdot; weak?: boolean; race?: boolean }[] =
+    [];
   const qualityDays: number[] = [];
   /** Dani primenjenog trenda pulsa: za pouzdanost vrede kao dokaz kvaliteta (§ 2.4 „bez pulsa niža pouzdanost"). */
   const hrDays: number[] = [];
@@ -313,7 +314,11 @@ export function estimateForm(
     const recent = results.filter((x) => x.day <= d && d - x.day <= C.CONF_HIGH_DAYS && !x.weak);
     const pool = [
       ...recent.map((x) => x.vdot),
-      ...(init.source === 'rezultat' && profileResultDay !== null && d - profileResultDay <= C.CONF_HIGH_DAYS ? [init.vdot] : [])
+      ...(init.source === 'rezultat' &&
+      profileResultDay !== null &&
+      d - profileResultDay <= C.CONF_HIGH_DAYS
+        ? [init.vdot]
+        : [])
     ];
     const last = recent.at(-1);
     if (
@@ -510,7 +515,12 @@ export function estimateForm(
         if (ev.hot && !low && !first && next < vdot) next = vdot;
         vdot = next;
         /* R14: prvi rezultat U APLIKACIJI (unet rezultat ne računa) i trka sa hodanjem — najviše srednja. */
-        results.push({ day: d, strong: !firstInApp && !ev.walking, vdot: ev.vdot, race: kind === 'trka' });
+        results.push({
+          day: d,
+          strong: !firstInApp && !ev.walking,
+          vdot: ev.vdot,
+          race: kind === 'trka'
+        });
         lastResultDay = d;
         credited = 0;
         /* Z4 (krug 7): rezultat bar onoliko dobar koliko se verovalo (forma + pripisani napredak) ne spušta verovanu
@@ -725,7 +735,8 @@ export function estimateForm(
   const sigma = C.SIGMA[confidence];
   /* Z4 (krug 7): prvi rezultat koji je zamenio procenu niske pouzdanosti još ne otvara pun očekivani napredak (potvrda
      forme ne pomera prognozu > 1 %; s24) — dok ga ne potvrdi drugi rezultat */
-  const firstOnly = results.length === 1 && init.source !== 'rezultat' && startConfidence === 'niska';
+  const firstOnly =
+    results.length === 1 && init.source !== 'rezultat' && startConfidence === 'niska';
 
   return {
     start: point(init.vdot, startDay, startConfidence),
@@ -741,7 +752,9 @@ export function estimateForm(
       goalM,
       firstOnly ? Math.max(vdot, preFirstVdot) : vdot,
       /* prva trka u životu: bez unetog rezultata, jedina trka i najviše jedan raniji rezultat */
-      init.source !== 'rezultat' && results.filter((x) => x.race === true).length === 1 && results.length <= 2
+      init.source !== 'rezultat' &&
+        results.filter((x) => x.race === true).length === 1 &&
+        results.length <= 2
         ? C.FIRST_RESULT_MIN_RANGE
         : 0
     ),

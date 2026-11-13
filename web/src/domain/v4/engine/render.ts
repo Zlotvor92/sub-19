@@ -416,7 +416,9 @@ export function renderPlan(
   const past = (day: PlanDay): boolean =>
     today !== undefined && (day.date < today || (day.date === today && paused(day.date)));
   /* Z9 (krug 7): „vršna nedelja" je nedelja sa najvećim obimom plana (ne oznaka šablona) */
-  const kms = doc.weeks.map((w) => (w.intent.kind === 'race' ? 0 : weekCost(w, h.goal.raceDate, ctx).km));
+  const kms = doc.weeks.map((w) =>
+    w.intent.kind === 'race' ? 0 : weekCost(w, h.goal.raceDate, ctx).km
+  );
   const peakAt = kms.indexOf(Math.max(...kms));
   for (const [wi, week] of doc.weeks.entries()) {
     const cost = weekCost(week, h.goal.raceDate, ctx);
