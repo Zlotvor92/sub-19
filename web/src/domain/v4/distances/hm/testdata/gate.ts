@@ -171,7 +171,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (g.ramp || g.longKm <= 0 || g.kind === 'race' || runDays < 3) continue;
     maxShare = Math.max(maxShare, g.longKm / g.km);
     const low = runDays >= 4 && g.km < 45;
-    const cap = runDays < 4 ? 0.5 : low ? 0.45 : 0.4;
+    /* dopuna kruga 4 (D4, trener § D4): 45–50 km nedeljno udeo do 42 % */
+    const mid = runDays >= 4 && g.km >= 45 && g.km < 50;
+    const cap = runDays < 4 ? 0.5 : low ? 0.45 : mid ? 0.42 : 0.4;
     if (low && g.longKm > 0.42 * g.km + 0.25) over42 += 1;
     if (g.longKm > cap * g.km + 0.25)
       v.push(`n${String(g.index)} dugi ${String(g.longKm)} od ${String(g.km)} km`);

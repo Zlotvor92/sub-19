@@ -106,7 +106,16 @@ export const SAFETY: SafetyNumbers = {
   longStartFloorShare: 0.85,
   /* krug 4 (S3): ispod 45 km nedeljno (motor procenjuje km iz minuta, pa prag 42 km u minutima ≈ 45 km stvarno) udeo dugog ≤ 42 % (u najviše 3 nedelje ≤ 45 %) — u minutima nešto niže, jer
      je dugi sa blokom brži od nedelje (kapija meri km) */
-  longShareLowVolume: { belowKm: 42, minRunDays: 4, share: 0.42, peakShare: 0.45, peakWeeks: 3 },
+  /* dopuna kruga 4 (D4; trener § D4 „ili 42 % do 50 km"): od 45 do 50 km (procena 42–48) udeo do 42 % */
+  longShareLowVolume: {
+    belowKm: 42,
+    minRunDays: 4,
+    share: 0.42,
+    peakShare: 0.45,
+    peakWeeks: 3,
+    midKm: 48,
+    midShare: 0.42
+  },
   longStartShare: { '1': 0.6, '2': 0.5, '3': 0.46, '4': 0.35, '5': 0.32, '6': 0.27, '7': 0.24 },
   /* plafon doze po treningu: sekunde rada i udeo vrha (min rada / BO vrha) */
   doseCaps: {
@@ -153,6 +162,8 @@ export const SAFETY: SafetyNumbers = {
   shortEffortSec: 3900,
   /* krug 4 dopuna (E2): skraćena nedelja — dugi i blok srazmerno, dugi ≤ 45 % nedelje u km */
   shortenedLongMaxShare: 0.45,
+  /* krug 4 dopuna (D8): prag i tempo trke bliži od 5 s/km — jedan podražaj nedeljno (p05, p06) */
+  minZoneGapSecPerKm: 5,
   /* krug 5 (D7): tempo trke (uklj. blok u dugom) nedeljno — početnik ≤ 45, srednji ≤ 60, napredni ≤ 75 min */
   weeklyZoneMaxSec: {
     zone: 'RP',

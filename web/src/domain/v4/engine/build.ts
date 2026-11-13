@@ -205,8 +205,14 @@ export function longPlan(
        nedelji gradnje do polaznog (bez podatka: odmah polazni) */
     const startFloor = ctx.data.safety.longStartFloorShare;
     const full = Math.min(d.longStartSec, d.longMaxSec);
+    /* posle polaznog pod raste dalje pola koraka po nedelji gradnje (D1 dopuna: p04 1 h 50 → 2 h 10) */
+    const n = week.builds ?? 0;
+    const start = startFloor === undefined ? full : startFloor * full;
+    const reach = step > 0 ? Math.max(0, Math.ceil((full - start) / step)) : 0;
     const floor =
-      startFloor === undefined ? full : Math.min(full, startFloor * full + (week.builds ?? 0) * step);
+      startFloor === undefined
+        ? full
+        : Math.min(d.longMaxSec, n <= reach ? Math.min(full, start + n * step) : full + ((n - reach) * step) / 2);
     wanted = Math.max(wanted, floor);
   }
   let cap = Number.POSITIVE_INFINITY;
@@ -392,6 +398,19 @@ export function weekSlots(
     items.push({ kind: 'quality', date, def, slot, wanted, extra: extraWeight(zone, ctx) });
   });
 
+  /* D8 (dopuna kruga 4): kad su prag i tempo trke skoro isti tempo (< `minZoneGapSecPerKm`), ne zadaju se kao dva
+     podražaja u istoj nedelji — prag otpada, tempo trke ostaje */
+  const gap = ctx.data.safety.minZoneGapSecPerKm;
+  if (gap !== undefined && Math.abs(ctx.pace.paces.T - ctx.pace.paces.RP) < gap) {
+    const hasRp = items.some((x) => x.kind === 'quality' && mainZone(x.def.main) === 'RP') ||
+      (long !== null && long.wanted > 0 && long.def !== null && mainZone(long.def.main) === 'RP');
+    if (hasRp) {
+      for (let i = items.length - 1; i >= 0; i -= 1) {
+        const x = items[i];
+        if (x !== undefined && x.kind === 'quality' && mainZone(x.def.main) === 'T') items.splice(i, 1);
+      }
+    }
+  }
   /* Pomerena provera forme: na mesto prvog kvaliteta; nedelja koja već ima proveru ostaje kakva je. */
   const movable = week.intent.kind !== 'taper' && week.intent.kind !== 'race';
   if (forcedTest !== null && movable && !items.some((x) => x.kind === 'test')) {

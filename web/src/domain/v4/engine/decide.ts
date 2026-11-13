@@ -196,7 +196,12 @@ export function longShareFor(
 ): number {
   const base = longShare(safety, level, runDays);
   const low = safety.longShareLowVolume;
-  if (low === undefined || runDays < low.minRunDays || weekKm >= low.belowKm) return base;
+  if (low === undefined || runDays < low.minRunDays) return base;
+  /* dopuna kruga 4 (D4; trener § D4): između `belowKm` i `midKm` udeo do `midShare` */
+  if (weekKm >= low.belowKm)
+    return low.midKm !== undefined && low.midShare !== undefined && weekKm < low.midKm
+      ? Math.max(base, low.midShare)
+      : base;
   return Math.max(base, high ? low.peakShare : low.share);
 }
 

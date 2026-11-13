@@ -245,6 +245,8 @@ export const DEFAULT_TEXTS: Readonly<Record<string, string>> = {
     'Tvoj cilj {goal} traži {goalPace} — van raspona je (raspon na dan trke {low}–{high}).',
   'zaglavlje.bez-cilja': 'Očekivano vreme na dan trke ({expected}) traži {expectedPace}.',
   'zaglavlje.tempa-prate': 'Tempa se ubrzavaju kad trka ili test to potvrde.',
+  'zaglavlje.prag-tempo-trke':
+    'Kod tebe je tempo trke ≈ prag ({pace}), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.',
   'zaglavlje.dugi-plafon':
     'Dugi trening u {weeks} staje na {time}: duže trčanje za ovu distancu donosi više umora nego koristi, pa se od nedelje do nedelje menja njegov sadržaj (lagan, progresivan, sa delom u tempu trke).',
   'zaglavlje.po-osecaju':

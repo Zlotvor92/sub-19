@@ -351,7 +351,8 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       S('tempo-trke', 0.84),
       STRIDES
     ]),
-    week(SPEC, 'build', 0.9, { len: 0.84 }, [S('tempo-trke', 0.7), STRIDES]),
+    /* dopuna kruga 4: ≤ 90 % najteže i kad plafon tempa trke spusti vršnu nedelju */
+    week(SPEC, 'build', 0.86, { len: 0.84 }, [S('tempo-trke', 0.7), STRIDES]),
     week(FINISH, 'taper', 0.69, { len: 0.58 }, [S('tempo-trke', 0.4), STRIDES]),
     week(FINISH, 'race', 0.32, null, [S('ostrenje', 0.7), STRIDES])
   ];

@@ -1,6 +1,6 @@
 # Krug 4 V4 HM — izveštaj (motor E1–E9, podaci D1–D9), 13. 11. 2026
 
-Grana `claude/v4`. Testovi V4 + izolacija: **597 prolaze, 7 očekivano pada (`it.fails`), 0 pada**; typecheck čist.
+Grana `claude/v4`. Testovi V4 + izolacija (posle dopune): **598 prolaze, 7 očekivano pada (`it.fails`), 0 pada**; typecheck čist.
 Kapija (`plans/gate.ts`, `gate.test.ts`): **0 prekršaja, 14/14**. `target-compare`: 25 od 72 nedelje (krug 3: 23).
 
 ## Motor
@@ -29,25 +29,41 @@ Kapija (`plans/gate.ts`, `gate.test.ts`): **0 prekršaja, 14/14**. `target-compa
 | D8 | nije | razmak prag–tempo trke < 5 s/km nije obrađen |
 | D9 | urađeno | kapija (lagan/dugi prema dugom koji trkač trči, nedelja rampe kao motor, nedelja 1 za 3 dana), `round5.test.ts` (E9, D3, D7), izmene testova motora; ispisi osveženi |
 
-## Po profilu
+## Po profilu (posle dopune)
 | profil | vrh km (×) | najduži dugi | brz rad najviše (vršna) | udeo dugog | brz rad ned −2 / ned −1 (min) |
 |---|---|---|---|---|---|
-| p01 | 54,5 (1,36) | 20,5 | 22 % (22 %) | 40 % | 34 / 9 |
+| p01 | 54,5 (1,36) | 20,5 | 22 % (22 %) | 41 % | 34 / 9 |
 | p02 | 54,4 (1,36) | 20,5 | 24 % (24 %) | 42 % | 33 / 9 |
 | p03 | 38,1 (1,52) | 17,8 | 24 % (24 %) | 49 % | 32 / 9 |
-| p04 | 67,5 (1,23) | 21,5 | 21 % (10 %) | 32 % | 28 / 9 |
-| p05 | 112,7 (1,25) | 28,0 | 21 % (16 %) | 26 % | 44 / 9 |
-| p06 | 44,3 (1,27) | 17,0 | 24 % (24 %) | 40 % | 25 / 9 |
-| p07 | 71,0 (1,29) | 21,5 | 20 % (12 %) | 31 % | 29 / 9 |
-| p08 | 49,5 (1,10) | 21,5 | 22 % (17 %) | 50 % | 21 / 9 |
-| p09 | 61,8 (1,37) | 22,0 | 22 % (19 %) | 39 % | 32 / 9 |
-| p10 | 36,0 (1,44) | 17,6 | 23 % (23 %) | 50 % | 35 / 9 |
-| p11 | 39,0 (1,95) | 16,2 | 18 % (18 %) | 42 % | 16 / 9 |
-| p12 | 60,8 (1,35) | 19,8 | 12 % (8 %) | 36 % | 19 / 9 |
+| p04 | 68,4 (1,24) | 22,4 | 21 % (18 %) | 35 % | 49 / 9 |
+| p05 | 118,2 (1,31) | 28,0 | 16 % (16 %) | 29 % | 44 / 9 |
+| p06 | 44,6 (1,27) | 17,0 | 24 % (24 %) | 40 % | 25 / 9 |
+| p07 | 71,5 (1,30) | 21,5 | 21 % (21 %) | 31 % | 45 / 9 |
+| p08 | 52,5 (1,17) | 23,0 | 25 % (25 %) | 49 % | 38 / 9 |
+| p09 | 61,8 (1,37) | 22,0 | 20 % (19 %) | 40 % | 32 / 9 |
+| p10 | 38,7 (1,55) | 18,9 | 22 % (21 %) | 50 % | 32 / 9 |
+| p11 | 39,7 (1,99) | 16,9 | 18 % (18 %) | 44 % | 16 / 9 |
+| p12 | 60,8 (1,35) | 19,8 | 18 % (18 %) | 36 % | 24 / 9 |
 | vlasnik-v1 | 37,3 (1,24) | 16,0 | 24 % (24 %) | 43 % | 29 / 9 |
-| vlasnik-v2 | 46,8 (1,56) | 17,5 | 24 % (24 %) | 43 % | 31 / 9 |
+| vlasnik-v2 | 47,3 (1,58) | 18,5 | 24 % (24 %) | 43 % | 31 / 9 |
 
-Broj izmena: s05 13 · s06 11 · s13 8 · s14 11 · s16 9 (krug 3: 27 · 15 · 12 · 23 · 49). Čuvar posle svih 24 scenarija: 0 nalaza.
+Broj izmena: s05 13 · s06 11 · s13 8 · s14 11 · s16 9 (krug 3: 27 · 15 · 12 · 23 · 49).
+
+## Dopuna kruga 4 (poruka organizatora, 13. 11.)
+1. D7: odsečen tempo trke postaje prag (`weeklyZoneMaxSec.fallbackStimulus`); vršna nedelja sada 16–25 % kod svih
+   (p12 8 → 18 %, p04 10 → 18 %); kapija proverava 16–25 % (pocetnik-nov i tegoba ≥ 10 %).
+2. p07 i opšte: u nedelji −2 blok u dugom najviše pola budžeta — p07 ima tempo trke 3 × 1,5 km usred nedelje.
+3. E2: `safety.shortenedLongMaxShare` 0,45 — skraćena nedelja (ponovno planiranje, rampa) skraćuje dugi i blok
+   srazmerno; test u `round5.test.ts`.
+4. D4: v2 dugi 18 / 18,5 km u ned 12–13 (udeo do 42 % od 45 do 50 km, trener § D4; i u kapiji); ned 15 16 km.
+   D1: p04 dugi 1 h 45 → raste i posle polaznog (pola koraka nedeljno), ned 7 20,2 km.
+5. D5: nije urađeno — najkraće lagano 35 min po nivou traži novi parametar po nivou na više mesta motora; p07 rast
+   prve tri nedelje + 10 % / + 3 % (km), pravilo motora je 7 % u km, višak je brži rad kvaliteta.
+6. D8: `minZoneGapSecPerKm` 5 — p05, p06: prag otpada u nedelji sa tempom trke, zaglavlje „tempo trke ≈ prag".
+7. D2: P2 B ned 2 20,5 km (rampa samo prve nedelje); hod-trk dugi do 95 min (14,8 km) — 1 h 40 traži veći obim
+   nedelje od 30 km uz udeo 50 %.
+8. E1: s05 13 i s14 11 ostaju — preostale izmene su u rampi i 14 dana posle nje (stvarna skraćenja dana);
+   manje bi tražilo novo pravilo (npr. bez izmena laganih dana u prozoru), pa nije rađeno.
 
 ## Nije uspelo / otvoreno
 - E1: s05 13 (cilj ≤ 12) i s14 11 (≤ 10) — preostale izmene su u rampi i 14 dana posle nje (stvarno skraćenje).

@@ -166,7 +166,11 @@ function raceTruth(
   return [
     line(data, 'zaglavlje.tempo-trke', values),
     second,
-    line(data, 'zaglavlje.tempa-prate', values)
+    line(data, 'zaglavlje.tempa-prate', values),
+    ...(data.safety.minZoneGapSecPerKm !== undefined &&
+    Math.abs(h.paces.T - h.paces.RP) < data.safety.minZoneGapSecPerKm
+      ? [line(data, 'zaglavlje.prag-tempo-trke', values)]
+      : [])
   ].join(' ');
 }
 

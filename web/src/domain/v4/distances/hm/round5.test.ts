@@ -1,6 +1,15 @@
 /* KRUG 5 (briefs/R4-ROUND4.md) — testovi novih pravila nad podacima polumaratona (E7, E9, D3, D7). */
 import { describe, expect, it } from 'vitest';
-import { buildState, paceCtxOf, plan, summarize, type PlanDoc } from '../../engine';
+import {
+  buildState,
+  deriveEvents,
+  paceCtxOf,
+  plan,
+  replan,
+  summarize,
+  type PlanDoc,
+  type Run
+} from '../../engine';
 import { addDays } from '../../engine/dates';
 import { fastWorkSec } from '../../engine/guard';
 import { estimateForm } from '../../fitness';
@@ -20,7 +29,9 @@ const ALL: { id: string; doc: PlanDoc }[] = [
 const zoneOf = (doc: PlanDoc, date: string): string | null => {
   const w = doc.weeks.flatMap((x) => x.days).find((d) => d.date === date)?.workout;
   const step = w?.steps.find((s) => 'role' in s && s.role === 'work');
-  return step !== undefined && 'target' in step && step.target.type === 'zone' ? step.target.zone : null;
+  return step !== undefined && 'target' in step && step.target.type === 'zone'
+    ? step.target.zone
+    : null;
 };
 
 describe('krug 5: polumaraton', () => {
@@ -78,6 +89,62 @@ describe('krug 5: polumaraton', () => {
           .reduce((s, d) => s + (d.workout?.workSec ?? 0), 0);
         expect(rp, `${id} n${String(w.index)}`).toBeLessThanOrEqual(cap + 180);
       }
+    }
+  });
+
+  it('E2: posle bolesti skraćena nedelja ima dugi ≤ 45 % nedelje u km', () => {
+    const p = PROFILES.find((x) => x.id === 'p01');
+    if (p === undefined) throw new Error('p01');
+    const facts = factsOf(p);
+    const doc = ALL.find((x) => x.id === 'p01')?.doc;
+    if (doc === undefined) throw new Error('plan');
+    const ctx0 = paceCtxOf(doc.header);
+    const from = doc.weeks[5]?.start ?? '';
+    const to = addDays(from, 6);
+    const runs: Run[] = doc.weeks
+      .flatMap((w) => w.days)
+      .filter((d) => d.workout !== null && d.workout.kind !== 'race' && d.date < from)
+      .map((d) => {
+        const c = summarize(d.workout, ctx0);
+        return {
+          id: `r-${d.id}`,
+          date: d.date,
+          distanceM: Math.round(c.distanceM),
+          durationSec: Math.round(c.durationSec),
+          dayId: d.id
+        };
+      });
+    const state = buildState(
+      {
+        ...facts,
+        today: to,
+        runs: [...facts.runs, ...runs],
+        pauses: [{ from, to, reason: 'bolest' }]
+      },
+      p.goal,
+      hm,
+      estimateForm,
+      doc
+    );
+    const after = replan(doc, state, deriveEvents(doc, state), hm).doc;
+    const ctx = paceCtxOf(after.header);
+    const share = hm.safety.shortenedLongMaxShare ?? 1;
+    for (const w of after.weeks) {
+      if (w.start <= to || w.intent.kind === 'race') continue;
+      const old = doc.weeks.find((x) => x.start === w.start);
+      const km = (x: typeof w): number =>
+        x.days.reduce(
+          (t, d) =>
+            t +
+            (d.workout === null || d.workout.kind === 'race' ? 0 : summarize(d.workout, ctx).km),
+          0
+        );
+      if (old === undefined || km(w) >= km(old) - 0.5) continue; /* samo skraćene nedelje */
+      const long = Math.max(
+        0,
+        ...w.days.map((d) => (d.workout?.kind === 'long' ? summarize(d.workout, ctx).km : 0))
+      );
+      expect(long, `n${String(w.index)}`).toBeLessThanOrEqual(share * km(w) + 0.5);
     }
   });
 });
