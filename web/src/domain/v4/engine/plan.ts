@@ -2,10 +2,10 @@
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
 import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE, RETURNED_AFTER_DAYS } from './constants';
 import { runPass } from './build';
-import { addDays, diffDays, mondayOf } from './dates';
+import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
 import { decide, ladderInputOf, longStepOf } from './decide';
 import { validate, warnings, weekCost } from './guard';
-import { paceCtxOf } from './load';
+import { paceCtxOf, summarize } from './load';
 import { raceWorkout } from './select';
 import { baseLoadOf, lastLongAfterEffort, lastLongBefore, recentLoad } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
@@ -286,7 +286,7 @@ export function createPlan(
   const built = runPass(draft, state, data, { window: null, rechainFrom: 1, fresh: true });
   if (trial) return built;
   /* Šta bi dao još jedan dan trčanja uz isti datum trke — brojevi za predlog u upozorenju. */
-  const withExtraDay = (): { peakKm: number; longKm: number } | null => {
+  const withExtraDay = (): { peakKm: number; longKm: number; dayMin: number } | null => {
     const extra = extraRunDay(availability.runDays);
     if (extra === null) return null;
     const more: Availability = {
@@ -296,12 +296,38 @@ export function createPlan(
     const probe = createPlan(state, goal, data, startDate, more, true);
     const ctx = paceCtxOf(probe.header);
     const costs = probe.weeks.map((w) => weekCost(w, goal.raceDate, ctx));
+    /* Z7 (krug 7): trajanje dodatnog dana je ono što probni plan stvarno daje tom danu (prosek nedelja gradnje) */
+    const onExtra = probe.weeks
+      .filter((w) => w.intent.kind === 'build' || w.intent.kind === 'peak')
+      .flatMap((w) => w.days)
+      .filter((d) => weekdayOf(d.date) === extra && d.workout?.kind === 'easy')
+      .map((d) => (d.workout === null ? 0 : summarize(d.workout, ctx).durationSec));
+    const dayMin =
+      onExtra.length === 0 ? 30 : onExtra.reduce((x, y) => x + y, 0) / onExtra.length / 60;
     return {
+      peakKm: Math.max(0, ...costs.map((c) => c.km)),
+      longKm: Math.max(0, ...costs.map((c) => c.longKm)),
+      dayMin
+    };
+  };
+  /* Z7 (krug 7): šta bi dala duža priprema (isti start, trka kasnije) — predlog „planiraj N nedelja" samo kad probni
+     plan stvarno menja nalaz */
+  const probes = new Map<number, { peakKm: number; longKm: number }>();
+  const withWeeks = (total: number): { peakKm: number; longKm: number } => {
+    const hit = probes.get(total);
+    if (hit !== undefined) return hit;
+    const later: Goal = { ...goal, raceDate: addDays(goal.raceDate, 7 * (total - weeks)) };
+    const probe = createPlan(state, later, data, startDate, availability, true);
+    const ctx = paceCtxOf(probe.header);
+    const costs = probe.weeks.map((w) => weekCost(w, later.raceDate, ctx));
+    const out = {
       peakKm: Math.max(0, ...costs.map((c) => c.km)),
       longKm: Math.max(0, ...costs.map((c) => c.longKm))
     };
+    probes.set(total, out);
+    return out;
   };
-  const found = warnings({ state, goal, data, decisions, doc: built, withExtraDay });
+  const found = warnings({ state, goal, data, decisions, doc: built, withExtraDay, withWeeks });
   /* M3: nalaz „dugi-za-distancu" kaže da prognoza ne računa napredak od obima — i broj to prati */
   const flags = {
     ...(found.some((w) => w.code === 'dugi-za-distancu') ? { raceDayNoProgress: true } : {}),

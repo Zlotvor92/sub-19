@@ -121,7 +121,8 @@ describe('A: padež uz broj', () => {
         const all = doc.header.warnings.map(texts).join(' ');
         expect(caseErrors(all), `${String(n)}/${String(weeks)}: ${all}`).toEqual([]);
         expect(all).toContain(`imaš ${count(n + weeks, WEEKS, 'acc')} pripreme`);
-        expect(all).toMatch(/Za sledeću trku planiraj \d+ nedelj/);
+        /* Z7 (krug 7): „planiraj N" samo kad probni plan to potvrđuje; inače se imenuje uzrok */
+        expect(all).toMatch(/Za sledeću trku planiraj \d+ nedelj|Duža priprema ovde ne pomaže/);
         checked += 1;
       }
     }
@@ -178,7 +179,7 @@ describe('B: upozorenja o obimu i dugom — šta može sada, šta za sledeći ci
   it('`mali-obim`: još jedan dan uz isti datum (brojevi iz probnog plana) + sledeći ciklus', () => {
     const w = find('mali-obim');
     expect(w?.proposal).toMatch(
-      /^Uz isti datum trke dodaj 4\. dan laganog trčanja od oko \d+ min — vrh tada ide do [\d,]+ km nedeljno(, a dugi do [\d,]+ km)?\. Za sledeću trku planiraj \d+ nedelj\w+ pripreme — obim tada bezbedno stiže do 70 km nedeljno\.$/
+      /^Uz isti datum trke dodaj 4\. dan laganog trčanja od oko \d+ min — vrh tada ide do [\d,]+ km nedeljno(, a dugi do [\d,]+ km)?\. (Za sledeću trku planiraj \d+ nedelj\w+ pripreme — obim tada bezbedno stiže do [\d,]+ km nedeljno|Duža priprema ovde ne pomaže: .+ km)\.$/
     );
     expect(w?.proposal).not.toMatch(/Produži pripremu/);
     const offered = Number(
@@ -189,7 +190,7 @@ describe('B: upozorenja o obimu i dugom — šta može sada, šta za sledeći ci
   it('`kratak-dugi`: isto — nikad samo „produži pripremu"', () => {
     const w = find('kratak-dugi');
     expect(w?.proposal).toMatch(/^Uz isti datum trke /);
-    expect(w?.proposal).toMatch(/Za sledeću trku /);
+    expect(w?.proposal).toMatch(/Za sledeću trku |Duža priprema ovde ne pomaže/);
     expect(/\d/.test(w?.proposal ?? '')).toBe(true);
   });
 
@@ -203,7 +204,7 @@ describe('B: upozorenja o obimu i dugom — šta može sada, šta za sledeći ci
     expect(w?.proposal).toMatch(
       /^Uz isti datum trke obim ne može bezbedno iznad [\d,]+ km nedeljno/
     );
-    expect(w?.proposal).toMatch(/Za sledeću trku planiraj/);
+    expect(w?.proposal).toMatch(/Za sledeću trku planiraj|Duža priprema ovde ne pomaže/);
   });
 
   it('razlika do adekvatnog ispod 5 % se ne prikazuje', () => {

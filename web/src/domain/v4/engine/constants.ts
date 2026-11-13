@@ -276,3 +276,9 @@ export const RETURN_WEEK_JUMP_SHARE = 1.2;
 export const RETURN_FIRST_LONG_SHARE = 0.62;
 /** Z3 (krug 7): „prvi rad zone posle bola ≤ 60 %" važi do 6 nedelja posle bola. */
 export const PAIN_FIRST_ZONE_MAX_DAYS = 42;
+
+/** Z7 (krug 7): razlika do adekvatnog ispod 5 % se ne prijavljuje (38,6 naspram 40 km, 14,8 naspram 15 km) — tolerancija
+    zaokruživanja za sve nalaze o obimu i dugom. */
+export const NEAR_ENOUGH = 0.95;
+/** Z7: najviše ovoliko nedelja duža priprema se proba pre nego što se kaže da dužina pripreme nije uzrok. */
+export const PREP_PROBE_MAX_EXTRA_WEEKS = 16;

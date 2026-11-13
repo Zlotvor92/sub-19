@@ -3,7 +3,8 @@
 import {
   DEFAULT_EASY_MAX_OVER_PREVIOUS,
   DEFAULT_MAX_PEAK_OVER_BASE,
-  DEFAULT_TAPER_EASY_MAX_SEC
+  DEFAULT_TAPER_EASY_MAX_SEC,
+  NEAR_ENOUGH
 } from './constants';
 import type {
   Decisions,
@@ -361,5 +362,8 @@ export function longReaches(
   const a = data.adequate;
   if (a.longCheckMinWeeks === undefined || weeks < a.longCheckMinWeeks) return true;
   const km = a.longCheckKm ?? a.minLongKm;
-  return longSec >= (a.minLongSec ?? Number.POSITIVE_INFINITY) || longSec / easyPaceSecPerKm >= km;
+  return (
+    longSec >= NEAR_ENOUGH * (a.minLongSec ?? Number.POSITIVE_INFINITY) ||
+    longSec / easyPaceSecPerKm >= NEAR_ENOUGH * km
+  );
 }
