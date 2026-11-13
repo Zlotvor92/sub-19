@@ -507,3 +507,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   parovi, kapija, ispisi `plans/10K/`, izveštaj `reports/F7-10K-REPORT.md`. Čita R3–R7 kao spisak zamki.
 - 5K i maraton se otvaraju kad 10K pokaže koliko obrazac stvarno nosi (prva ocena trenera).
 - Aktivni tabovi: krug 7 (Opus), 10K (Opus), forma (Opus, čeka krug 7 za izmenu modela), trener (Fable).
+
+### 13. 11. 2026, 07:20 — krug 7 primljen (`83c489c`); ispravka modela forme pokrenuta
+- Moj pregled: 632 zeleno + 12 očekivanih padova, typecheck čist, kapija 0 prekršaja (sam pokrenuo) [visoka].
+- Z1–Z10 urađeni sa testom po stavci; Y1, Y2, Y4 urađeni; s25–s27 (više događaja zaredom) postoje. Čuvar u 27 scenarija:
+  1 nalaz (bilo 13). Otvoreno (Y3): P2 B dugi 35 → 65 min posle početne rampe, P1 A lagani < 7 km, p06 dva kvaliteta.
+- Vlasnik: test 3 km 9. 8. trčan u komadu → pun rezultat.
+- Tab forme (Opus) primenjuje F4-K2: prenos na dužinu cilja (β po obimu, lični β), trka na ciljnoj dužini se ne odbacuje,
+  toplota prag 25 °C, σ 1,0/1,5/2,5, „visoka" samo uz dokaz dužine 0,5–2 × cilja. Cilj back-testa: greška ≤ 3 %.
+- Posle F4-K2: drugi sudija (Fable) na HM + pregled vlasnika. Tab kruga 7 čeka.
