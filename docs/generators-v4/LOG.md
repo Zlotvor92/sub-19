@@ -601,3 +601,15 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   A1, A4, A5, A7, A8, A13, A16. Nije: A2, A10, A11, A12, A17; A15 vraćeno.
 - Krug 9b poslat tabu motora (8 stavki: sužavanje nikad naopako + prozor povratka ≤ 3 ned, A17, A2 sa `baseline`
   u PlanDoc, tekstovi, A15 samo pri gradnji novog plana). Ocena sudija čeka nalog vlasnika.
+
+### 13. 11. 2026, 14:35 — krug 9b primljen (`5989be4`); otvoreni sudije (Opus), 5K i maraton
+- Moj pregled: 749 zeleno + 14 očekivanih padova, kapija HM 0 i 10K 0 bez izuzetaka [visoka]; ALI typecheck PADA
+  (`engine/render.ts:413` `IsoDate`) — tab je javio „čisto". Vraćen da popravi; pravilo: typecheck neposredno pre push-a.
+- Urađeno: sužavanje nikad naopako (HM i 10K p06), povratak ≤ 3 ned pa ostatak srazmerno niži, prognoza reaguje na
+  izgubljen obim, trka u prozoru povratka (s26), tekst o izbačenoj proveri. Odluke: A15 odbačen (R17 ostaje; dan posle
+  provere lagano ≤ 60 % dugog), A6 prihvaćen kao KNOWN, A12 i t. 18 otvoreni.
+- Sudije na Opusu po `briefs/JUDGES-OPUS.md` (nalog vlasnika: Fable samo organizator): trener
+  `session_01GnHHiXrqBkKYzMY76jQDiz` (kalibracija na `2776b5d` + HM krug 9 + 10K krug 2); drugi sudija HM
+  `session_01GnHHiYcmso5iSFq9UNhUHy`, 10K `session_01GnHHiXECoDvVCKEQYubD2s`.
+- Nove distance (Opus, `briefs/F7-COMMON.md` + `F7-5K.md` / `F7-MAR.md`): 5K `session_01GnHHiYgBWy4zCKtBd6YPxy`,
+  maraton `session_01GnHHiWbwULZGywbJmwtnzH`. Servis za otvaranje tabova bio nedostupan ≈ 14:15–14:30.
