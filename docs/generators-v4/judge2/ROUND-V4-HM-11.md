@@ -141,7 +141,6 @@ upozorenje dan posle polumaratona).
 - p04: „Dugi trening u 7 nedelja staje na 2 h 11 min" — u 7 nedelja? posle 7 nedelja?
 - p06: lagani dani „30 umesto 35 min" ali nedelja veća od mog obima — šta je skraćeno?
 - p09/p10/p12: „tempo trke napor 6/10", „umereno 5/10" — ne znam da razlikujem.
-- Svaki dugi od 73 min ima napomenu za gel od 40. min — za 73 min to deluje suvišno (može kao vežba, ali reci).
 - Posle 10K testa (s01) i dalje piše „Tempa se ubrzavaju kad trka ili test to potvrde"; „dugi 40 min" (s27) nije dugi.
 - vlasnik-v1: „poslednjih 6 km" u upozorenju, „poslednjih 5 km" u planu trke.
 - p2b: upozorenje „bez sprinteva uzbrdo prve 4 nedelje", pa ih ima od 5. — za potkolenicu mi to nije jasno zašto baš oni.
