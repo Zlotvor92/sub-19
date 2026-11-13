@@ -674,3 +674,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Zajedničko oba sudije: povratak posle 5–7 dana predug i preplitak (k10 preoštro: HM s06 ned 17 64,8 → 40,2 km);
   izmena tempa bez rečenice; maraton bez pravog dugog kod malog obima.
 - Nalog R12 (`briefs/R12.md`): motor M1–M11 + HM podatak (posle kruga 11); 10K tab T1–T5; maraton tab R1–R6.
+
+### 13. 11. 2026, 18:50 — 5K prva ocena (stanje `41b5c79`), R12 prošireno
+- Krug 11 proveren kod mene: 54 fajla 971 + 25 očekivano; typecheck čist; kapije sve četiri 0 [visoka].
+- Trener 5K: Plan 75,1 / B 81,0 / C 79,7 → 77,8. Drugi sudija 5K: planovi 61,9 (p12 47, p06 52, p13 53), scenariji
+  77,8, parovi 7,0. Oboje: p06 bez brzog rada pred trku, obim ne raste, p12 ispod sadašnjeg obima, test ignorisan (s03).
+- R12: 10K tab gotov (`6b64125`), maraton tab gotov (`5cc0be9`); zahtevi prosleđeni motoru kao M12–M16.
+  5K: motor M17 (model tempa), M18 (determinizam — S17 22:01 vs 21:49, prvo proveriti), M19; folder fivek prelazi
+  na 5K tab (F1–F6).
