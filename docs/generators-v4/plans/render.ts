@@ -31,6 +31,8 @@ const stats = process.argv.includes('--stats');
 const out = join(here, 'HM');
 mkdirSync(out, { recursive: true });
 
+const guardLines: string[] = [];
+
 function one(id: string, title: string, facts: unknown, goal: unknown): void {
   const state = engine.buildState(facts, goal, hm, estimateForm);
   const result = engine.plan(state, goal, hm);
@@ -41,14 +43,15 @@ function one(id: string, title: string, facts: unknown, goal: unknown): void {
   const findings = engine.guard(result.doc, state, hm);
   const text = engine.renderPlan(result.doc, state, hm, { showLoad });
   const head = `${id.toUpperCase()} — ${title}\n\n`;
-  const tail =
-    findings.length === 0
-      ? ''
-      : `\n\nNALAZI ČUVARA\n${findings.map((f: { check: string; message: string }) => `- ${f.check}: ${f.message}`).join('\n')}`;
-  writeFileSync(join(out, `${id}.txt`), `${head}${text}${tail}\n`);
+  /* S11 (krug 4): nalazi čuvara se NE štampaju u planu koji vidi trkač — idu u poseban izveštaj (nalazi-cuvara.txt) */
+  guardLines.push(
+    `${id}: ${findings.length === 0 ? 'bez nalaza' : findings.map((f: { check: string; weekIndex: number | null; message: string }) => `${f.check}@${String(f.weekIndex)} (${f.message})`).join('; ')}`
+  );
+  writeFileSync(join(out, `${id}.txt`), `${head}${text}\n`);
   if (stats) console.log(id, 'nalazi:', findings.map((f: { check: string; weekIndex: number | null }) => `${f.check}@${String(f.weekIndex)}`).join(' ') || '0');
 }
 
 for (const p of PROFILES) one(p.id, p.title, factsOf(p), p.goal);
 for (const o of OWNER_PLANS) one(o.id, o.title, o.facts, o.goal);
+writeFileSync(join(out, 'nalazi-cuvara.txt'), `NALAZI ČUVARA (izveštaj za sudije, ne ide trkaču)\n${guardLines.join('\n')}\n`);
 console.log(`ispisano u ${out}`);

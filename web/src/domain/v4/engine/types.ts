@@ -115,6 +115,9 @@ export interface LongSlot {
   stimulus: StimulusTag;
   /** Doza bloka/progresije kao udeo plafona tog podražaja; nema je lagan dugi. */
   dosePct?: number;
+  /** Talas (krug 4, T3): kad dugi ne može da raste (plafon, polazni dugi), odlučen dugi × `wave` (0,8–1) — da dugi
+      ne stoji isti nedeljama. */
+  wave?: number;
 }
 
 export interface StimulusSlot {

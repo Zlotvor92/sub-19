@@ -246,6 +246,18 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
       time: fmtMinutes((h.decisions.baseVolumeMin ?? baseMin) * 60)
     })
   );
+  /* S11 (krug 4): dugi na plafonu ≥ 4 nedelje — zaglavlje kaže zašto ne raste dalje */
+  const atCap = doc.weeks.filter(
+    (w) => w.longSec > 0 && w.longSec >= h.decisions.longMaxSec - 60
+  ).length;
+  if (atCap >= 4) {
+    lines.push(
+      line(data, 'zaglavlje.dugi-plafon', {
+        time: fmtMinutes(h.decisions.longMaxSec),
+        weeks: count(atCap, WEEKS, 'acc')
+      })
+    );
+  }
   lines.push('');
   lines.push('FORMA');
   lines.push(
@@ -322,6 +334,10 @@ function changeLines(changes: readonly Change[], doc: PlanDoc): string[] {
       for (const c of list.filter((x) => x.reason === reason)) {
         /* Obaveštenje nema šta da uporedi: rečenica iznad je cela poruka. */
         if (c.what === 'obavestenje') continue;
+        if (c.what === 'upozorenje') {
+          lines.push(`- ${c.after}`);
+          continue;
+        }
         const date = c.dayId === undefined ? undefined : dayDate.get(c.dayId);
         const where =
           date !== undefined

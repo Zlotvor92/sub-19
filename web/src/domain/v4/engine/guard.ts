@@ -300,8 +300,10 @@ export const guard: GuardFn = (doc, _state, data) => {
       .filter((x) => !underRamp(x.week.start, adjustments))
       .slice(-3);
     /* Pravilo rasta meri obim u minutima (krug 2, R3): kvalitet ide preko minuta, ne umesto njih. */
+    /* krug 4 (S2): obim = km u minutima laganog tempa, isto kao lanac rasta motora */
+    const volOf = (x: WeekCost): number => (x.km * ctx.paces.easy) / 60;
     const m = Math.max(
-      ...before.map((x) => x.durationSec / 60),
+      ...before.map(volOf),
       ...(before.length < 3 ? [d.baseVolumeMin ?? d.baseLoad] : [])
     );
     /* Prethodni dugi se meri odlučenom dužinom kad nedelja ima dugi (dugi sa blokom kraće traje za iste km). */
@@ -399,7 +401,7 @@ export const guard: GuardFn = (doc, _state, data) => {
     const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + minRampOf(s, ctx.paces.easy));
     if (
       (week.intent.kind === 'build' || week.intent.kind === 'peak') &&
-      c.durationSec / 60 > rule * (1 + GUARD_JUMP_TOLERANCE)
+      volOf(c) > rule * (1 + GUARD_JUMP_TOLERANCE)
     ) {
       report('skok', week, null, 'Obim nedelje raste brže od pravila rasta.');
     }
@@ -824,6 +826,19 @@ function droppedDayWarning(
   );
   const short = full.filter((c) => c.workouts < asked);
   if (short.length === 0) return null;
+  /* S11 (krug 4): nedelja sa proverom forme / pripremnom trkom ima manje treninga zbog trke — to je pravi razlog */
+  const withTest = (c: WeekCost): boolean => c.days.some((x) => x.day.workout?.kind === 'test');
+  if (short.every(withTest)) {
+    const list = short.map((c) => `${String(c.week.index)}.`).join(', ');
+    return {
+      code: 'dan-izostavljen',
+      severity: 'info',
+      problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno, a u nedelji provere forme (${list} nedelja) plan ima ${count(Math.min(...short.map((c) => c.workouts)), WORKOUTS)}.`,
+      meaning:
+        'Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak.',
+      proposal: 'Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.'
+    };
+  }
   const least = Math.min(...short.map((c) => c.workouts));
   const lastShort = short[short.length - 1]?.week.index ?? 0;
   const firstShort = short[0]?.week.index ?? 0;

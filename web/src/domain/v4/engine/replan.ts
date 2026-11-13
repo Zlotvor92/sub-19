@@ -681,6 +681,18 @@ function movedTest(before: PlanDoc, after: PlanDoc, today: IsoDate): IsoDate | n
   return now?.date ?? null;
 }
 
+/** Rečenica o promeni upozorenja: šta je novo i šta više ne važi (prva rečenica problema). */
+function warningDelta(before: readonly Warning[], after: readonly Warning[]): string {
+  const first = (w: Warning): string => w.problem.split(/(?<=\.)\s/)[0] ?? w.problem;
+  const was = new Set(before.map((w) => w.code));
+  const now = new Set(after.map((w) => w.code));
+  const added = after.filter((w) => !was.has(w.code)).map((w) => `novo upozorenje: ${first(w)}`);
+  const gone = before
+    .filter((w) => !now.has(w.code))
+    .map((w) => `upozorenje više ne važi: ${first(w)}`);
+  return [...added, ...gone].join(' ') || 'upozorenja su ažurirana prema novom planu.';
+}
+
 /** Uslov za nastavak, prag za prekid i lekar — uz svaki prijavljen bol (R7). */
 const PAIN_RULE = `Trči samo ako je bol najviše ${String(PAIN_CONTINUE_MAX)} od 10 i ne raste tokom trčanja; ako poraste na ${String(PAIN_STOP_FROM)} ili više, ili ne prolazi za ${count(PAIN_DOCTOR_AFTER_DAYS, DAYS)}, prekini trčanje i javi se lekaru ili fizioterapeutu.`;
 
@@ -933,8 +945,9 @@ function describe(
       ...base,
       scope: 'zaglavlje',
       what: 'upozorenje',
-      before: `${String(h0.warnings.length)} u zaglavlju`,
-      after: `${String(h1.warnings.length)} u zaglavlju`,
+      /* S10 (krug 4): svaka stavka promene je rečenica — koje upozorenje je dodato ili uklonjeno */
+      before: codes(h0.warnings),
+      after: warningDelta(h0.warnings, h1.warnings),
       reason: text.header
     });
   }

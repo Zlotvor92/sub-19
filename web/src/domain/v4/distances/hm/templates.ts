@@ -37,7 +37,12 @@ interface LongSpec {
   len: number;
   stimulus?: string;
   dose?: number;
+  /** T3: talas kad dugi ne raste (motor množi samo dugi na plafonu ili polaznom). */
+  wave?: number;
 }
+
+/* T3 (krug 4): talas dugog 100 / 85 / 100 / 90 % kad dugi stoji (p04, p05, p08, P3 A) */
+const WAVE = [1, 0.85, 1, 0.9];
 
 const r3 = (x: number): number => Math.round(x * 1000) / 1000;
 
@@ -57,7 +62,8 @@ const week = (
       : {
           lenPct: r3(long.len),
           stimulus: long.stimulus ?? 'dugi',
-          ...(long.dose === undefined ? {} : { dosePct: r3(long.dose) })
+          ...(long.dose === undefined ? {} : { dosePct: r3(long.dose) }),
+          ...(long.wave === undefined || long.wave === 1 ? {} : { wave: long.wave })
         },
   stimuli,
   source: 'template'
@@ -176,8 +182,12 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     /* obim raste brže na početku (ciljni p01: 0,71 → 0,93 vrha do 7. nedelje) */
     const load = lerp(startLoad, 0.97, t ** 0.6);
     const long = lerp(0.68, 0.95, t);
+    /* T3: talas i smena sadržaja — svaka treća nedelja gradnje progresivan dugi (lagan / progresivan) */
+    const wave = WAVE[(w - 1) % WAVE.length] ?? 1;
     const longSpec =
-      w === lastBeforeCheck ? { len: long, stimulus: 'dugi-progresivno' } : { len: long };
+      w === lastBeforeCheck || (w % 3 === 0 && w < tailStart - 1)
+        ? { len: long, stimulus: 'dugi-progresivno', wave }
+        : { len: long, wave };
     if (sh.gentle === true && w <= 2) {
       out.push(week(OSNOVA, 'build', load, { len: long }, [HILLS_SHORT, STRIDES]));
       continue;

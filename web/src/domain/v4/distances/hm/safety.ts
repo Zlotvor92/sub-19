@@ -29,9 +29,9 @@ const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.48, '4': 0.385, '5': 0.36, '6': 0.
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: +7 % u bodovima (km rastu i do ≈ 12 % kad nedelja ima manje brzog rada), najmanje
      12 BO (≈ 2 km) — trener: 5–10 % */
-  maxWeeklyRampPct: 0.08,
+  maxWeeklyRampPct: 0.07,
   minRampLoad: 12,
-  /* krug 4 (S2): korak nedelje ≤ + 8 % ili + 3 km (veće od ta dva). Motor meri minute laganog tempa, a minuti
+  /* krug 4 (S2): korak nedelje ≤ + 8 % ili + 3 km (veće od ta dva); motor meri km nedelje, a cilj zadaje u minutima — 7 % daje ≤ 8–10 % stvarnih km (brži rad kvaliteta). Motor meri minute laganog tempa, a minuti
      kvaliteta nose više km — 2 km u minutima daje ≤ 3 km stvarnog rasta (izbor) */
   minRampKm: 2,
   /* vrh ≤ 1,5 × baza u bodovima: vršna nedelja nosi i rad kvaliteta, pa je vrh u km ≈ 1,30–1,38 × polazni obim

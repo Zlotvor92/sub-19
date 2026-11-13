@@ -199,8 +199,13 @@ export function longPlan(
       cap = Math.min(cap, ctx.template.recovery.longFactor * before);
     }
   }
+  let sec = Math.min(wanted, grown, cap);
+  /* T3 (krug 4): dugi koji ne raste (na plafonu ili polaznom) ide u talasu po nameri šablona */
+  const wave = intent.long.wave;
+  if (wave !== undefined && week !== undefined && previousLongest > 0 && sec <= previousLongest + 60)
+    sec *= wave;
   /* Dugi nije kraći od najkraćeg smislenog trčanja (krug 3, S13). */
-  return Math.max(ctx.data.safety.minEasySec, Math.round(Math.min(wanted, grown, cap) / 60) * 60);
+  return Math.max(ctx.data.safety.minEasySec, Math.round(sec / 60) * 60);
 }
 
 /** BUDŽET BRZOG RADA (§ 6.2 k. 6): redom dugi pa podražaji; `take` vraća dozu koja staje, `book` je knjiži. */
@@ -845,11 +850,12 @@ function weekTotals(
   header: PlanHeader,
   state: RunnerState,
   ctx: BuildCtx
-): { durationSec: Seconds; longSec: Seconds } {
+): { durationSec: Seconds; longSec: Seconds; km: number } {
   const end = addDays(week.start, 6);
   const actual = state.weeks.find((w) => w.start === week.start);
   let durationSec = 0;
   let longSec = 0;
+  let km = 0;
   for (const day of week.days) {
     const past = day.date <= state.today;
     if (past && (actual !== undefined || end > state.today)) continue;
@@ -857,13 +863,15 @@ function weekTotals(
       continue;
     const cost = summarize(day.workout, ctx.pace);
     durationSec += cost.durationSec;
+    km += cost.km;
     if (day.workout.kind === 'long') longSec = Math.max(longSec, cost.durationSec);
   }
   if (week.start <= state.today && actual !== undefined) {
     durationSec += actual.durationSec;
+    km += actual.distanceM / 1000;
     longSec = Math.max(longSec, actual.longestSec);
   }
-  return { durationSec, longSec };
+  return { durationSec, longSec, km };
 }
 
 /** Nedelje sa najvećim udelom dugog kod malog obima (S3): najduži dugi namere u gradnji/vrhu, kasnije prvo. */
@@ -1081,8 +1089,11 @@ export function runPass(
     /* Nedelje koje seku pauzu ili rampu ne ulaze u pravilo rasta (drugi krug): povratak određuje samo rampa. */
     if (!ramped) {
       const totals = weekTotals(built, header, state, ctx);
-      volumes.push(totals.durationSec / 60);
-      if (fraction >= 1) lastFullVolume = totals.durationSec / 60;
+      /* Krug 4 (S2): obim u lancu rasta = km u minutima laganog tempa (minuti kvaliteta nose više km; pravilo
+         „+ 8 % ili + 3 km" je pravilo kilometara). */
+      const volume = (totals.km * ctx.pace.paces.easy) / 60;
+      volumes.push(volume);
+      if (fraction >= 1) lastFullVolume = volume;
       longs.push(longAsDecided ? Math.max(shell.longSec, totals.longSec) : totals.longSec);
     }
     previousRamped = ramped;

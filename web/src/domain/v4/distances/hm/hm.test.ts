@@ -221,6 +221,12 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
       return 'lagan dan otpao (ostatak < 25 min) — motor ne vraća ostatak';
   }
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
+  /* krug 4 (S2, presuda trenera): korak nedelje je + 8 % ILI + 3 km — kod malog obima + 3 km je više od 10 % */
+  if (f.check === 'skok' && st !== undefined && f.weekIndex !== null) {
+    const prev = stats.slice(Math.max(0, f.weekIndex - 4), f.weekIndex - 1).map((x) => x.km);
+    /* + 0,5 km po treningu: svaki dan se zaokružuje na 0,5 km */
+    if (st.km <= Math.max(0, ...prev) + 3 + 0.5 * st.workouts) return 'korak ≤ + 3 km (S2)';
+  }
   /* krug 4 (S3): plan 16+ nedelja bez dugog za distancu — mali obim ili malo dana; plan to kaže upozorenjem sa
      razlogom i predlogom, a prognoza ne računa napredak od obima */
   if (

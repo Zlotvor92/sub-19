@@ -142,6 +142,8 @@ export function effortResult(run: Run): { distanceM: Meters; durationSec: Second
     };
   }
   const whole = { distanceM: run.distanceM, durationSec: run.durationSec };
+  /* S10 (krug 4): trka se uvek usvaja cela (trka 5 km na dan planiranog testa 3 km); pravilo deonice važi za test */
+  if (run.effort === 'race') return whole;
   if (planned === undefined || planned <= 0) return whole;
   if (run.distanceM <= EFFORT_WHOLE_MAX_OVER_PLANNED * planned) return whole;
   const n = Math.round(planned / 1000);
