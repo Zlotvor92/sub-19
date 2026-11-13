@@ -6,8 +6,8 @@ p04: bez nalaza
 p05: bez nalaza
 p06: bez nalaza
 p07: bez nalaza
-p08: ispod-cilja@13 (Planirano opterećenje je ispod 85 % cilja nedelje.)
+p08: ispod-cilja@13 (Planirano opterećenje je ispod 85 % cilja nedelje.); ispod-cilja@14 (Planirano opterećenje je ispod 85 % cilja nedelje.)
 p09: bez nalaza
-p10: ispod-cilja@13 (Planirano opterećenje je ispod 85 % cilja nedelje.)
+p10: ispod-cilja@13 (Planirano opterećenje je ispod 85 % cilja nedelje.); ispod-cilja@14 (Planirano opterećenje je ispod 85 % cilja nedelje.)
 p11: bez nalaza
 p12: bez nalaza

@@ -54,15 +54,15 @@ Tempo trke u treninzima je tvoja današnja forma (3:32/km). Očekivano vreme na 
   Zbir: 83,4 km, 6 h 11 min, 6 treninga, brz rad 14 % vremena trčanja
 
 4. NEDELJA (od 23. 11.) — osnova, rasterećenje; do trke 8 nedelja
-  pon 23. 11.  lagano 10 km — 10 km, 46 min
-  uto 24. 11.  lagano 10 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11,2 km, 52 min
-  sre 25. 11.  lagano 10 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11,2 km, 52 min
-  čet 26. 11.  prag 19 min u komadu (3:40/km) — 12,7 km, 54 min
+  pon 23. 11.  lagano 10,5 km — 10,5 km, 49 min
+  uto 24. 11.  lagano 10,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11,7 km, 54 min
+  sre 25. 11.  lagano 10,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11,7 km, 54 min
+  čet 26. 11.  prag 11 min u komadu (3:40/km) — 10,6 km, 46 min
   pet 27. 11.  odmor
-  sub 28. 11.  lagano 10 km — 10 km, 46 min
+  sub 28. 11.  lagano 10,5 km — 10,5 km, 49 min
   ned 29. 11.  dugi 17 km lagano — 17 km, 79 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 72,1 km, 5 h 29 min, 6 treninga, brz rad 6 % vremena trčanja
+  Zbir: 72 km, 5 h 31 min, 6 treninga, brz rad 3 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — osnova, gradnja; do trke 7 nedelja
   pon 30. 11.  lagano 14 km — 14 km, 65 min
@@ -134,13 +134,13 @@ Tempo trke u treninzima je tvoja današnja forma (3:32/km). Očekivano vreme na 
 
 11. NEDELJA (od 11. 1.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 11. 1.  lagano 7,5 km — 7,5 km, 35 min
-  uto 12. 1.  tempo trke 5 × 1,2 km (3:32/km), oporavak 1:30 džog — 14,8 km, 62 min
+  uto 12. 1.  tempo trke 4 × 1,2 km (3:32/km), oporavak 1:30 džog — 13,3 km, 56 min
   sre 13. 1.  lagano 7,5 km — 7,5 km, 35 min
-  čet 14. 1.  intervali 6 × 800 m (3:23/km), oporavak 2:30 džog — 14,9 km, 64 min
+  čet 14. 1.  intervali 3 × 1 km (3:23/km), oporavak 2:30 džog — 11,6 km, 50 min
   pet 15. 1.  odmor
   sub 16. 1.  lagano 7,5 km — 7,5 km, 35 min
   ned 17. 1.  dugi 13 km lagano — 13 km, 60 min
-  Zbir: 65,2 km, 4 h 51 min, 6 treninga, brz rad 13 % vremena trčanja
+  Zbir: 60,4 km, 4 h 31 min, 6 treninga, brz rad 10 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — završnica, nedelja trke
   pon 18. 1.  lagano 6,5 km — 6,5 km, 30 min

@@ -2,7 +2,7 @@ NALAZI ČUVARA (izveštaj za sudije, ne ide trkaču)
 p01: bez nalaza
 p02: bez nalaza
 p03: bez nalaza
-p04: bez nalaza
+p04: ispod-cilja@16 (Planirano opterećenje je ispod 85 % cilja nedelje.)
 p05: bez nalaza
 p06: bez nalaza
 p07: bez nalaza
