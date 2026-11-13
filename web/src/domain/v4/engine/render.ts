@@ -488,7 +488,12 @@ export function renderPlan(
     const allPast = today !== undefined && addDays(week.start, 6) <= today;
     const anyPast = week.days.some(past);
     const count2 = `${count(trainings, WORKOUTS)}${hasRace ? ' + trka' : ''}`;
-    const fast = cost.durationSec > 0 ? cost.fastSec / cost.durationSec : 0;
+    /* A13 (krug 9): provera forme punim naporom je u prikazu brz rad (budžet je i dalje ne broji) */
+    const testSec = week.days.reduce(
+      (sum, d) => sum + (d.workout?.kind === 'test' ? d.workout.workSec : 0),
+      0
+    );
+    const fast = cost.durationSec > 0 ? (cost.fastSec + testSec) / cost.durationSec : 0;
     const share = anyPast ? '' : `, brz rad ${percent(fast)} vremena trčanja`;
     const load =
       options.showLoad === true && !anyPast

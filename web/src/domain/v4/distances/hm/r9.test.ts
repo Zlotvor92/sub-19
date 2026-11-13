@@ -6,6 +6,7 @@ import {
   buildState,
   guard,
   plan,
+  renderPlan,
   type DistanceData,
   type PlanDoc,
   type RunnerState
@@ -180,5 +181,19 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
        putevi izmene (rasterećenje, bol, nadovezani prozori) */
     const KNOWN_A6 = new Set<string>(['s7 dugi-za-distancu@15']);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
+  });
+});
+
+describe('krug 9 — A13: provera forme je u prikazu brz rad', () => {
+  it('nedelja sa proverom forme nikad ne piše „brz rad 0 %"', () => {
+    for (const p of PROFILES) {
+      const state = buildState(factsOf(p), p.goal, hm, estimateForm);
+      const r = plan(state, p.goal, hm);
+      if (!r.ok) continue;
+      const text = renderPlan(r.doc, state, hm);
+      for (const block of text.split(/\n(?=\d+\. NEDELJA)/))
+        if (block.includes('provera forme:'))
+          expect(block, `${p.id} ${block.slice(0, 12)}`).not.toMatch(/brz rad 0 %/);
+    }
   });
 });
