@@ -477,3 +477,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   Opus posle toga radi samo Y1–Y4. Drugi sudija kruga 7: Fable.
 - Posledica za brojeve: ocene drugog sudije krugova 3–6 (62,9 → 73,3) su od Opus sudije; sa Fable sudijom je uporediv
   samo krug 2 (71,2).
+
+### 13. 11. 2026, 07:05 — vlasnik: doradu motora sme Opus (Fable na 80 % nedeljnog, svi modeli 50 %)
+- Vlasnik: „Ako motor može da pegla Opus, nek ga pegla." Raspodela od sada: Fable = organizator (kratko), trener, drugi
+  sudija; NOVA arhitektura ili jezgro od nule = Fable. Dorada/ispravke postojećeg motora, podaci, ispisi = Opus;
+  mehanika = Sonnet.
+- Opus tab `session_01GnHHiWa47Guy3uDTKR2kE5` nastavlja krug 7 u celosti (Z1–Z10 + Y1–Y4); zabrana od 06:45 povučena.
+  Fable tab M se NE pokreće. Drugi sudija kruga 7 ostaje Fable (nalog vlasnika od 06:45).
+- Strava konektor povezan: istorija vlasnika od 1. 4. 2026. se povlači u fiksturu (pomoćni agent, Sonnet).
