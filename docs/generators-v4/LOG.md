@@ -408,3 +408,18 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Ocena: trener → `coach/ROUND-V4-HM-05.md` (tražena presuda: da li je HM zatvoren; plafon ulaza za p03/p06/p08/p10);
   drugi sudija nov Opus tab `session_01GnHHia2YPjrJ6yugYJwfSs` → `judge2/ROUND-V4-HM-05.md`.
 - Arhivirani sudije krugova 3 i 4 (gurnuto).
+
+### 13. 11. 2026, 04:16 — OCENA TRENERA, krug 5 (`coach/ROUND-V4-HM-05.md`) [srednja]
+| | krug 4 | krug 5 | v3 |
+|---|---|---|---|
+| Plan | 78,8 | 79,3 | 77,6 |
+| profila ≥ 80 | 6/12 | 8/12 | 7/12 |
+| Prilagođavanje | 84,5 | 84,7 | — |
+| Personalizacija | 81,8 | 84,3 | — |
+| zbirna | 81,1 | 81,9 | — |
+- Presuda trenera: HM ZATVOREN za generisanje (prag rubrike ≥ 80 na 7/12 ispunjen sa 8). Ispod 80 su samo profili na
+  plafonu ulaza: p03 77, p06 75, p08 75,5, p10 76 (posle prihvaćenog predloga procena 79–80 / 75–76 / 80–81 / 78–79 —
+  nije mereno, treba generisati ta 4 plana sa prihvaćenim predlogom).
+- Ostalo 6 ispravki (s12 rep u nedelje sužavanja, zamenski prag istog oblika, nedelja −2 tempo trke, prvi dugi posle
+  bolesti, predlog dana ≥ 30 min, P3 B polazni dugi) — idu uz rad na sledećoj distanci.
+- Čeka se drugi sudija.

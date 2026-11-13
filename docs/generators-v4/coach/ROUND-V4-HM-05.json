@@ -1,0 +1,58 @@
+{
+  "round": "V4-HM-05",
+  "date": "2026-11-13",
+  "source": "origin/claude/v4 @ 4b1ebe95 (kandidat d89b059)",
+  "weights": { "plan": 0.5, "adaptation": 0.3, "personalization": 0.2 },
+  "summary": {
+    "plan": 79.3,
+    "adaptation": 84.7,
+    "personalization": 84.3,
+    "combined": 81.9,
+    "previous": { "k4Plan": 78.8, "k4Adaptation": 84.5, "k4Personalization": 81.8, "k4Combined": 81.1 },
+    "profilesAtOrAbove80": ["p01", "p02", "p04", "p05", "p07", "p09", "p11", "p12"]
+  },
+  "plans": {
+    "p01": { "k4": 82.0, "total": 82.5 },
+    "p02": { "k4": 81.0, "total": 81.0 },
+    "p03": { "k4": 77.0, "total": 77.0 },
+    "p04": { "k4": 78.5, "total": 80.0 },
+    "p05": { "k4": 79.5, "total": 81.5 },
+    "p06": { "k4": 74.5, "total": 75.0 },
+    "p07": { "k4": 80.5, "total": 80.0 },
+    "p08": { "k4": 75.5, "total": 75.5 },
+    "p09": { "k4": 80.5, "total": 81.0 },
+    "p10": { "k4": 76.0, "total": 76.0 },
+    "p11": { "k4": 80.0, "total": 80.5 },
+    "p12": { "k4": 81.0, "total": 81.0 }
+  },
+  "scenarios": {
+    "s01": 87, "s02": 87, "s03": 84.5, "s04": 81.5,
+    "s05": 81, "s06": 80, "s07": 81, "s08": 84,
+    "s09": 86, "s10": 84, "s11": 84, "s12": 80,
+    "s13": 82, "s14": 82, "s15": 83, "s16": 82,
+    "s17": 85, "s18": 84, "s19": 85, "s20": 85,
+    "s21": 91, "s22": 91, "s23": 91, "s24": 91
+  },
+  "eventAverages": { "E1": 85.0, "E2": 81.5, "E3": 83.5, "E4": 82.3, "E5": 84.8, "E6": 91.0 },
+  "pairs": { "P1": 85, "P2": 84, "P3": 84 },
+  "verdictClosed": {
+    "closed": true,
+    "reason": "Plan ≥ 80 na 8 od 12 profila (prag rubrike 7), B 84,7 i C 84,3 iznad pragova; prosek dela Plan 79,3 spuštaju četiri profila ograničena ulazima",
+    "notCovered": ["pregled vlasnika", "drugi sudija", "stvarni podaci sa sata"]
+  },
+  "inputLimited": {
+    "p03": { "now": 77, "atCeiling": true, "afterSuggestion": "79–80", "note": "4. dan 30–40 min, ne 20" },
+    "p08": { "now": 75.5, "atCeiling": true, "afterSuggestion": "80–81" },
+    "p10": { "now": 76, "atCeiling": true, "afterSuggestion": "78–79" },
+    "p06": { "now": 75, "atCeiling": true, "afterSuggestion": "75–76 za ovu trku; oko 80 uz 16 nedelja" }
+  },
+  "fixes": [
+    "motor: rep posle propuštenog treninga ne menja nedelje sužavanja (s12)",
+    "podatak: zamenski prag menja oblik, ne ponavlja se tri puta (p07, p04)",
+    "podatak: nedelja −2 nosi tempo trke, ne intervale (p05)",
+    "motor: prvi dugi posle bolesti 60–65 % poslednjeg (s05)",
+    "podatak: predlog dodatnog dana ≥ 30 min (p03); p06 predlog obima za sledeću pripremu",
+    "podatak: P3 B polazni dugi iz poslednje 4 nedelje; p06 ned 1–2 kvalitet pune doze"
+  ],
+  "ownerReview": ["p04", "p09", "scenarios/s12"]
+}
