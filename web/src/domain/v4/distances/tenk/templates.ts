@@ -249,7 +249,7 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
           { len: 0.75 },
           withSaturday(sh, sh.single ? [STRIDES] : [S('brzina', 0.8), STRIDES], KONTROLA)
         ),
-        /* N−5: tempo trke 5 × 1 km + dugi sa završnicom u pragu (ciljni p01 ned 11; utorak je 3. dan posle provere,
+        /* N−5: tempo trke 5 × 1 km (veća doza lomi izlazak iz prozora R2 u s25) + dugi sa završnicom u pragu (ciljni p01 ned 11; utorak je 3. dan posle provere,
            pa lagan) */
         week(
           SPEC,
