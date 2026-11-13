@@ -760,6 +760,9 @@ export interface SafetyNumbers {
       { maxWorkSec: Seconds | Readonly<Record<LevelId, Seconds>>; shareOfPeakLoad: number }
     >
   >;
+  /** Bol od ovog nivoa vraća obim kao posle pauze; niži menja samo dane u prozoru zaštite (krug 5, E4).
+      Podrazumevano 4. */
+  painReturnFromLevel?: number;
   /** Silazak intenziteta pred trku (krug 5, E9): u danima [trka − `weekBeforeFromDays`, trka − `lastDays` − 1]
       najviše `weekBeforeMaxQuality` brzih treninga (blok u dugom se broji) i brz rad ≤ `weekBeforeMaxOfPeak` ×
       brz rad vršne nedelje; u poslednjih `lastDays` dana samo oštrenje. */

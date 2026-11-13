@@ -139,3 +139,6 @@ export const BASE_DROP_LOSS_MAX = 0.03;
 
 /** R14 — hodanje u trci: neki km sporiji od 1,25 × medijane km. Takva trka i prvi rezultat: pouzdanost ≤ srednja. */
 export const WALK_SPLIT_RATIO = 1.25;
+
+/** E8 (krug 5): uz pouzdanost „niska" očekivano vreme nije više od 1 % brže od trenutne procene. */
+export const LOW_CONFIDENCE_MAX_GAIN = 0.01;

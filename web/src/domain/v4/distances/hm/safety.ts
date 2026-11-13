@@ -144,6 +144,9 @@ export const SAFETY: SafetyNumbers = {
   sharpening: { stimulus: 'ostrenje', minSec: 480, maxSec: 720 },
   /* krug 5 (E9; drugi sudija: Bosquet i sar. 2007, trener): 8–14 dana pred trku najviše 2 brza treninga i ≤ 60 %
      brzog rada vršne nedelje; poslednjih 7 dana samo oštrenje */
+  /* krug 5 (E4; trener § E4): bol 4/10 — 2 dana odmora i 7–10 dana lagano, kasnije nedelje netaknute; od 5/10
+     obim se vraća kao posle pauze */
+  painReturnFromLevel: 5,
   taper: { lastDays: 7, weekBeforeFromDays: 14, weekBeforeMaxQuality: 2, weekBeforeMaxOfPeak: 0.6 },
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */

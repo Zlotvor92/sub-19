@@ -165,8 +165,8 @@ export function weekTarget(
     full = Math.min(full, ctx.template.recovery.loadFactor * input.previousTarget);
   }
   if (input.returnCap !== undefined && input.returnCap !== null) {
-    /* S9: cela nedelja (i rad kvaliteta) ≤ poslednja puna pre pauze × 1,10 — povratak nikad nije veći nego pre */
-    full = Math.min(full, input.returnCap);
+    /* S9/E1: obim (km nedelje) ≤ poslednja puna nedelja gradnje pre pauze × 1,10; kvalitet ide preko (R5) */
+    full = Math.min(full, input.returnCap + extra);
   }
   return { full, target: Math.round(full * input.fraction) };
 }

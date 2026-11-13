@@ -92,7 +92,8 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
       longKm: 0,
       easyKm: 0,
       easyMin: 0,
-      ramp: ramp !== '' && w.start <= ramp,
+      /* nedelja koja počinje na poslednji dan rampe nije u rampi (isto kao motor, krug 5) */
+      ramp: ramp !== '' && w.start < ramp,
       durMin: 0,
       fastMin: 0,
       longMin: 0

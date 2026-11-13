@@ -72,7 +72,8 @@ describe('R12 — odrađen plan je dokaz', () => {
     const after6 = at(runs, 7 * 6 - 1);
     expect(after6.raceDay.expectedSec - start.raceDay.expectedSec).toBeLessThanOrEqual(10);
     expect(width(after6)).toBeLessThan(width(start));
-    expect(after6.current.vdot).toBeGreaterThan(start.current.vdot);
+    /* E8 (krug 5): odrađen plan bez signala ne pomera trenutnu procenu — samo očekivanje na dan trke */
+    expect(after6.current.vdot).toBe(start.current.vdot);
     expect(after6.history.some((h) => h.reason.includes('odrađena je po planu'))).toBe(true);
   });
 

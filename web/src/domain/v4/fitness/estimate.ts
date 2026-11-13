@@ -415,6 +415,8 @@ export function estimateForm(
 
   /* R12: pripisano od poslednje trke/testa (u jedinicama plafona `G`) i zbir nedelje za objašnjenje */
   let credited = 0;
+  /* E8 (krug 5): pripisani napredak odrađenog plana — ide samo u OČEKIVANO vreme na dan trke, ne u trenutnu procenu */
+  let planVdot = 0;
   let week = { from: startDay, provisional: 0, done: 0, ref: 0, days: 0 };
   let lastResultDay = Number.NEGATIVE_INFINITY;
   /** „Planirano" za dan bez ciljeva plana: 7 × najveća baza u 6 nedelja pre (bez samoreferentnog pada). */
@@ -493,6 +495,7 @@ export function estimateForm(
         results.push({ day: d, strong: !firstInApp && !ev.walking });
         lastResultDay = d;
         credited = 0;
+        planVdot = 0;
         week = { from: d + 1, provisional: 0, done: 0, ref: 0, days: 0 };
         baseDropApplied = 0;
         record(
@@ -566,7 +569,7 @@ export function estimateForm(
       /* Mogući napredak po nedelji (bez `f_p`, da pripisano ne hrani samo sebe). */
       const take = Math.min((ceil.rate * fv) / 7, Math.max(0, ceil.max - credited));
       credited += take;
-      vdot += C.EXPECTED_SHARE * take;
+      planVdot += C.EXPECTED_SHARE * take;
       week.provisional += take;
       week.done += loadByDay.get(d) ?? 0;
       week.ref += referenceOn(d);
@@ -640,11 +643,12 @@ export function estimateForm(
         1
       );
       const giveBack = week.provisional * (1 - af);
-      const before = vdot - C.EXPECTED_SHARE * week.provisional;
+      const before = vdot + planVdot - C.EXPECTED_SHARE * week.provisional;
       credited -= giveBack;
-      vdot -= C.EXPECTED_SHARE * giveBack;
+      planVdot -= C.EXPECTED_SHARE * giveBack;
+      const expected = vdot + planVdot;
       const lost =
-        raceTimeSec(vdot, goalM) - raceTimeSec(vdot + C.EXPECTED_SHARE * giveBack, goalM);
+        raceTimeSec(expected, goalM) - raceTimeSec(expected + C.EXPECTED_SHARE * giveBack, goalM);
       /* Bez ijednog trčanja u istoriji (nov korisnik na dan nastanka plana) nema šta da se „ne odradi":
          rečenica o neodrađenoj nedelji bi bila šum u zaglavlju plana (krug 3). */
       /* Nedelja pre početka plana ili bez ijednog planiranog boda ne dobija rečenicu; raspon je uvek pon–ned. */
@@ -655,21 +659,21 @@ export function estimateForm(
           {
             date: isoOf(d),
             signal: 'plan',
-            reason: explainPlanShortfall(monday, isoOf(d), share, lost, before, vdot, goalM)
+            reason: explainPlanShortfall(monday, isoOf(d), share, lost, before, expected, goalM)
           },
           before,
-          vdot,
+          expected,
           true
         );
-      } else if (vdot - before >= C.CHANGE_MIN) {
+      } else if (expected - before >= C.CHANGE_MIN) {
         record(
           {
             date: isoOf(d),
             signal: 'plan',
-            reason: explainPlanWeek(monday, isoOf(d), share, before, vdot, goalM)
+            reason: explainPlanWeek(monday, isoOf(d), share, before, expected, goalM)
           },
           before,
-          vdot
+          expected
         );
       }
     }
@@ -702,13 +706,30 @@ export function estimateForm(
   return {
     start: point(init.vdot, startDay, startConfidence),
     current: point(vdot, today, confidence),
-    raceDay: {
-      lowSec: Math.round(raceTimeSec(vdot + gain + sigma / 2, goalM)),
-      expectedSec: Math.round(raceTimeSec(vdot + C.EXPECTED_SHARE * gain, goalM)),
-      highSec: Math.round(raceTimeSec(vdot - sigma / 2, goalM))
-    },
+    raceDay: raceDayRange(vdot, planVdot, gain, sigma, confidence, goalM),
     ceilingGain: r2(gain),
     history
+  };
+}
+
+/** Raspon na dan trke (E8, krug 5): očekivanje uključuje pripisani i planirani napredak; uz pouzdanost „niska"
+    sredina raspona nije više od 1 % brža od trenutne procene. */
+function raceDayRange(
+  vdot: Vdot,
+  planVdot: number,
+  gain: number,
+  sigma: number,
+  confidence: Confidence,
+  goalM: number
+): { lowSec: number; expectedSec: number; highSec: number } {
+  const now = raceTimeSec(vdot, goalM);
+  let expected = raceTimeSec(vdot + planVdot + C.EXPECTED_SHARE * gain, goalM);
+  if (confidence === 'niska') expected = Math.max(expected, now * (1 - C.LOW_CONFIDENCE_MAX_GAIN));
+  const low = Math.min(expected, raceTimeSec(vdot + planVdot + gain + sigma / 2, goalM));
+  return {
+    lowSec: Math.round(low),
+    expectedSec: Math.round(expected),
+    highSec: Math.round(Math.max(expected, raceTimeSec(vdot - sigma / 2, goalM)))
   };
 }
 

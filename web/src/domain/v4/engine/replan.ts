@@ -485,7 +485,9 @@ function onPain(
   }
   /* Nivo 4 i više: obim se posle zaštite vraća kao posle pauze — od poslednje pune nedelje pre bola, pa pravilom
      rasta (R7, R9); blag bol menja samo dane u svom prozoru. */
-  const returning = ev.level > PAIN_LOW_MAX;
+  /* E4 (krug 5): bol do `safety.painReturnFromLevel − 1` menja samo dane u svom prozoru (odmor, lagano, manja prva
+     doza); kasnije nedelje ostaju netaknute. Od tog nivoa obim se vraća kao posle pauze. */
+  const returning = ev.level >= (data.safety.painReturnFromLevel ?? PAIN_LOW_MAX + 1);
   const built = runPass({ ...doc, header }, state, data, {
     window: returning ? null : window,
     rechainFrom: returning ? currentWeekIndex(doc, state.today) + 1 : null

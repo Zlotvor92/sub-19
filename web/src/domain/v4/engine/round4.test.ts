@@ -302,9 +302,10 @@ describe('E: plan koji počinje u rampi posle trke', () => {
     const ctx = paceCtxOf(after.doc.header);
     const seen: number[] = [];
     after.doc.weeks.forEach((w, i) => {
-      if (i < 3) return;
-      /* Pravilo rasta meri minute trčanja (krug 2, R3). */
-      const minutes = weekCost(w, goal.raceDate, ctx).durationSec / 60;
+      /* krug 5: nedelja koja počinje poslednjim danom rampe nije u rampi (3. nedelja ulazi u `m`) */
+      if (i < 2) return;
+      /* Pravilo rasta meri obim — od kruga 4 km nedelje u minutima laganog tempa (S2). */
+      const minutes = (weekCost(w, goal.raceDate, ctx).km * ctx.paces.easy) / 60;
       const m = Math.max(base, ...seen.slice(-3));
       if (w.intent.kind === 'build' || w.intent.kind === 'peak') {
         const rule = Math.max(m * (1 + maxWeeklyRampPct), m + minRampLoad);
