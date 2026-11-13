@@ -1,20 +1,20 @@
 NALAZI ČUVARA (izveštaj za sudije, ne ide trkaču)
 p01: dugi-za-distancu@13 (Najduži dugi plana ne stiže do dugog za distancu.)
-p02: dugi-za-distancu@15 (Najduži dugi plana ne stiže do dugog za distancu.)
+p02: bez nalaza
 p03: bez nalaza
 p04: bez nalaza
 p05: bez nalaza
-p06: silazak@12 (Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.)
+p06: bez nalaza
 p07: bez nalaza
 p08: ispod-cilja@20 (Planirano opterećenje je ispod 85 % cilja nedelje.)
 p09: bez nalaza
 p10: bez nalaza
-p11: dugi-za-distancu@19 (Najduži dugi plana ne stiže do dugog za distancu.)
+p11: bez nalaza
 p12: bez nalaza
 p13: bez nalaza
 p14: bez nalaza
 p15: bez nalaza
 p16: bez nalaza
 p17: bez nalaza
-p18: dugi-za-distancu@15 (Najduži dugi plana ne stiže do dugog za distancu.)
+p18: bez nalaza
 p19: bez nalaza
