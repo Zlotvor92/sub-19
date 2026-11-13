@@ -662,15 +662,27 @@ describe('R9: pauza, provera forme i povratak', () => {
     );
     const r = replan(probe, state, deriveEvents(probe, state), data);
     const moved = days(r.doc).filter((d) => d.date > to && d.workout?.kind === 'test');
-    expect(moved).toHaveLength(1);
     const rampEnd = addDays(to, 14);
-    /* krug 4 (S9): najranije 10 dana posle kraja rampe, u prvoj nedelji koja to dozvoljava */
-    expect(diffDays(moved[0]?.date ?? to, rampEnd)).toBeGreaterThanOrEqual(10);
-    expect(diffDays(moved[0]?.date ?? to, rampEnd)).toBeLessThanOrEqual(17);
-    /* Zamenjuje kvalitet te nedelje, ne dodaje se uz njega. */
-    const week = r.doc.weeks.find((w) => w.days.some((d) => d.id === moved[0]?.id));
-    expect(week?.days.filter((d) => d.workout?.kind === 'quality')).toHaveLength(0);
-    expect(r.changes[0]?.reason).toContain('Provera forme je pomerena na');
+    /* M4 (krug 5): u prvo RASTEREĆENJE najranije 10 dana posle kraja rampe i najkasnije 3 nedelje pred trku;
+       bez takve nedelje provera otpada uz rečenicu */
+    const rest = r.doc.weeks.find(
+      (w) =>
+        w.intent.kind === 'recovery' &&
+        diffDays(addDays(w.start, 6), rampEnd) >= 10 &&
+        w.start <= addDays(goal.raceDate, -21)
+    );
+    if (rest === undefined) {
+      expect(moved).toHaveLength(0);
+      expect(r.changes[0]?.reason).toContain('Provera forme otpada');
+    } else {
+      expect(moved).toHaveLength(1);
+      expect(diffDays(moved[0]?.date ?? to, rampEnd)).toBeGreaterThanOrEqual(10);
+      const week = r.doc.weeks.find((w) => w.days.some((d) => d.id === moved[0]?.id));
+      expect(week?.intent.kind).toBe('recovery');
+      /* Zamenjuje kvalitet te nedelje, ne dodaje se uz njega. */
+      expect(week?.days.filter((d) => d.workout?.kind === 'quality')).toHaveLength(0);
+      expect(r.changes[0]?.reason).toContain('Provera forme je pomerena na');
+    }
     /* Ponovljeno planiranje daje isti plan. */
     const again = replan(r.doc, state, deriveEvents(r.doc, state), data);
     expect(again.changes).toEqual([]);

@@ -456,7 +456,15 @@ function restoreAfter(built: PlanDoc, original: PlanDoc, rampEnd: IsoDate | null
     if (old === undefined) return week;
     const keepPeak = old.intent.kind === 'peak' && old.start >= peakFrom;
     if (peakRebuilt && addDays(old.start, 6) >= taperFrom) return week;
-    if (old.start > back || keepPeak) return old;
+    /* M4 (krug 5): pomerena provera forme ostaje i u nedelji koja se vraća na prvobitnu */
+    const movedTest = (w: PlanWeek): PlanWeek => ({
+      ...w,
+      days: w.days.map((d) => {
+        const nb = week.days.find((x) => x.id === d.id);
+        return nb !== undefined && nb.workout?.kind === 'test' && d.workout?.kind !== 'test' ? nb : d;
+      })
+    });
+    if (old.start > back || keepPeak) return movedTest(old);
     if (addDays(old.start, 6) <= back) return week;
     /* nedelja preseca granicu: dani posle nje su prvobitni */
     return {
@@ -793,8 +801,9 @@ function explain(
       const rampLast = addDays(ev.to, pauseRampDays(length, ev.reason));
       const rampEnd = fmtDate(rampLast < raceDate ? rampLast : addDays(raceDate, -1));
       const test = movedTest(before, c.doc, state.today);
+      /* provera koja je pala u pauzu takođe „je bila" (M4) */
       const hadTest = allDays(before).some(
-        (d) => d.date > state.today && d.date < raceDate && d.workout?.kind === 'test'
+        (d) => d.date >= minDate(ev.from, addDays(state.today, 1)) && d.date < raceDate && d.workout?.kind === 'test'
       );
       const hasTest = allDays(c.doc).some(
         (d) => d.date > state.today && d.date < raceDate && d.workout?.kind === 'test'
@@ -803,7 +812,7 @@ function explain(
         test !== null
           ? ` Provera forme je pomerena na ${fmtDate(test)}`
           : hadTest && !hasTest
-            ? ' Provera forme otpada: do sužavanja pred trku nema 10 dana posle povratka, a pun napor odmah posle bolesti nije dobar test forme'
+            ? ' Provera forme otpada: posle povratka nema nedelje rasterećenja bar 3 nedelje pred trku, a pun napor odmah posle bolesti nije dobar test forme'
             : '';
       const back = `${what}, pa je povratak postepen: treninzi su kraći do ${rampEnd}, a ${fastFrom(ev.to)}`;
       const tail = addDays(c.until, 1) < raceDate ? `; ${resume}` : '';
@@ -843,6 +852,10 @@ function explain(
       );
     }
     case 'pain': {
+      /* M4 (krug 5): pomerena provera forme se kaže i kod bola (s14, s15), isto kao kod bolesti */
+      const testAt = movedTest(before, c.doc, state.today);
+      const note = testAt === null ? '' : ` Provera forme je pomerena na ${fmtDate(testAt)}.`;
+      const same = (text: string): Explain => ({ day: text + note, late: text + note, week: text + note, header: text + note });
       if (ev.level <= PAIN_LOW_MAX) {
         return same(
           `Prijavljen je blag bol (nivo ${String(ev.level)}): ${countWith(PAIN_LOW_REST_DAYS, NEXT, DAYS)} je odmor, prvo trčanje posle toga je lagano, a do ${fmtDate(addDays(ev.date, PAIN_LOW_DAYS))} nema treninga sa jakim udarom (uzbrdice, kratke brze deonice). ${PAIN_RULE} Ako bol ne smeta, od ${next} plan ide dalje po rasporedu.`
@@ -855,8 +868,8 @@ function explain(
       }
       const pain = `Prijavljen je jak bol (nivo ${String(ev.level)}): odmor traje ${count(PAIN_HIGH_REST_DAYS, DAYS)} — javi se lekaru ili fizioterapeutu pre prvog sledećeg trčanja`;
       const back = `posle toga je povratak postepen (${fastFrom(ev.date)}) i nastavlja se samo ako je bol najviše ${String(PAIN_CONTINUE_MAX)} od 10 i ne raste`;
-      const day = `${pain}; ${back}.`;
-      const late = `${pain}; ${back}, a prvi brzi trening svake vrste je kraći — ${lighter}.`;
+      const day = `${pain}; ${back}.${note}`;
+      const late = `${pain}; ${back}, a prvi brzi trening svake vrste je kraći — ${lighter}.${note}`;
       return { day, late, week: late, header: day };
     }
     case 'fatigue': {
@@ -940,8 +953,11 @@ function describe(
     if (previous === undefined) return day.workout !== null;
     return canonical(previous.workout) !== canonical(day.workout);
   };
+  /* M4: pomerena provera forme (prvo rasterećenje posle prozora) ne produžava prozor izmene u objašnjenju */
+  const movedTestDay = (day: PlanDay): boolean =>
+    day.workout?.kind === 'test' && oldByDate.get(day.date)?.workout?.kind !== 'test';
   const last = allDays(after).reduce(
-    (max, day) => (differs(day) && day.date > max ? day.date : max),
+    (max, day) => (differs(day) && !movedTestDay(day) && day.date > max ? day.date : max),
     c.until
   );
   const text = explain(ev, before, c, state, data, last);

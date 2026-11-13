@@ -9,6 +9,7 @@ import {
   RACE_EVE_MAX_SEC,
   RACE_NO_LONG_DAYS,
   RETURN_TEST_AFTER_RAMP_DAYS,
+  MOVED_TEST_MIN_DAYS_BEFORE_RACE,
   RP_TEST_GAP_DAYS,
   TAPER_BLOCK_SHARE,
   RETURN_WEEK_MAX_OVER_LAST,
@@ -476,8 +477,13 @@ export function weekSlots(
     const nearRp =
       date !== undefined &&
       rpDates.some((x) => x !== replaced?.date && Math.abs(diffDays(x, date)) <= RP_TEST_GAP_DAYS);
+    /* M4 (krug 5): pomerena provera ide u prvo RASTEREĆENJE posle prozora izmene, najkasnije 3 nedelje pred trku;
+       bez takve nedelje otpada (plan to kaže) */
+    const restWeek =
+      week.intent.kind === 'recovery' && date !== undefined && date <= addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
     const usable =
       date !== undefined &&
+      restWeek &&
       date < calmFrom &&
       (forcedFrom === null || date >= forcedFrom) &&
       !replacesOnlyRp &&
@@ -1460,8 +1466,10 @@ export function runPass(
     const rawDays = week.days.map((day): PlanDay => {
       let final = day;
       const planned = recipes.get(day.date) ?? REST;
+      /* M4: pomerena provera forme sme van prozora izmene (prvo rasterećenje posle njega) */
+      const movedTest = forced !== null && planned.type === 'test' && planned.def === forced.def;
       const inWindow =
-        opts.window === null || (day.date >= opts.window.from && day.date <= opts.window.to);
+        opts.window === null || movedTest || (day.date >= opts.window.from && day.date <= opts.window.to);
       const mutable = isMutable(day, header, state.today, done);
       let kept = planned.type === 'test';
       if (inWindow && mutable) {

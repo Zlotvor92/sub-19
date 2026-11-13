@@ -264,3 +264,6 @@ export const FORECAST_CHANGE_MIN_SEC = 20;
 /** Upozorenje `obim-za-nivo` (R11): kvalitet nije stao u bar ovoliki udeo nedelja gradnje (i bar 2 nedelje). */
 export const LEVEL_VOLUME_LOST_SHARE = 0.25;
 export const LEVEL_VOLUME_LOST_MIN_WEEKS = 2;
+
+/** M4 (krug 5): pomerena provera forme najkasnije 3 nedelje pred trku (u nedelji rasterećenja). */
+export const MOVED_TEST_MIN_DAYS_BEFORE_RACE = 21;
