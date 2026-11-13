@@ -166,3 +166,26 @@ describe('krug 18 — trka posle bola', () => {
     expect(r.afterState.form.current.raceTimeSec).toBeLessThanOrEqual(2 * 3600 + 6 * 60 + 30);
   });
 });
+
+/* KRUG 18 (t. 12): „ništa se nije desilo" sa PROMENA 0 — isti red očekivanog vremena, ista napomena za trku i bajt-isti
+   plan, za SVE distance (ranije samo polumaraton i 5 km). */
+describe('krug 18 — ništa = isti plan (sve distance)', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', (_id, d) => {
+    const line = (t: string): string =>
+      [
+        /Očekivano na dan trke: [^—]*/.exec(t)?.[0] ?? '',
+        ...t.split('\n').filter((x) => x.includes('napomena: Tempo za trku'))
+      ].join('|');
+    let seen = 0;
+    for (const sc of d.scenarios.filter((x) => String(x.title).includes('ništa'))) {
+      const r = sc.run();
+      if ((r.changes as unknown[]).length > 0) continue;
+      seen += 1;
+      expect(JSON.stringify(r.after.weeks), String(sc.no)).toBe(JSON.stringify(r.before.weeks));
+      expect(line(renderPlan(r.after, r.afterState, d.data)), String(sc.no)).toBe(
+        line(renderPlan(r.before, r.beforeState, d.data))
+      );
+    }
+    expect(seen).toBeGreaterThan(0);
+  });
+});
