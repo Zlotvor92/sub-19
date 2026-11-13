@@ -34,3 +34,12 @@ krive forme). `target-compare` HM 28/72 (bilo 24), 10K 18/54 (bilo 14). Stavku 6
 rasporedu trkača. 6. Start trke = podatak. 7. Sužavanje se ne meri skraćenim vrhom. 8. Izlazak iz početne rampe po R2.
 Nova polja distance: `safety.raceStartPaceOffsetSec`, `safety.longBlockMinWeekShare`; 9. Rast u km na laganim danima.
 10. Prvi trening ≤ 70 % planiranog vrha. 11. Blok ne skraćuje dugi ispod udela nedelje. konstante `PAUSE_SCHEDULE_SLACK_DAYS`, `REP_SHORTEN_MIN_SHARE`.
+
+## Dopuna 2 (t. 16–20, 13. 11.)
+| # | stanje |
+|---|---|
+| 16 | **ne prolazi** ni posle t. 14/15 (`reports/R8-t7-wip.diff` primenjen na 662a4d7): 10K p06 udeo dugog vršne nedelje 23,86 % < 25 % (više kvaliteta = duža nedelja, a donji udeo dugog se računa pre rasporeda); 10K mreža `taper@5 d6 n6 25 km 2900 s`; HM mreža 6 × `silazak` (d6, 55 km, 5100 s, n12–n24: nedelja −2 iznad granice silaska jer skraćen kvalitet ostaje). Vraćeno; izuzetak `lagan-kratak` ostaje. Sledeći korak: donji udeo dugog iz STVARNOG rasporeda (posle kvaliteta) i skraćivanje i u silasku |
+| 17 | delimično: `capTail` — kad isto ponovno planiranje ima ≥ 2 događaja koji nisu propušten trening, nedelje posle danas + 28 dana se vraćaju na plan pre događaja; dugi prve takve nedelje ostaje nov samo kad bi vraćeni bio skok > R2; Z3 smanjenja (42 dana posle bola) ostaju. Test `hm/r8` t. 17 (svojstvo; HM scenariji nemaju rep > 28 dana). **10K s26 ostaje u `KNOWN`:** rep 4 ned + 6 dana nastaje u PRVOM, zasebnom ponovnom planiranju (samo bol, izlaz R2); drugo (trka) nema prvobitan plan |
+| 18 | **nije urađeno**: P1 A lagani ≥ 7 km — pod iz istorije bi digao nedelju preko pravila rasta ili skratio dugi 16,5 km; nisam stigao da to uvežem sa t. 13 (`kmCutMin`) |
+| 19 | urađeno: 10K `raceStartPaceOffsetSec` 3/6; tekst trke 10K koristi `{paceFrom}–{paceTo}` (ranije „do 5 s/km sporije") | `tenk.test` t. 19 |
+| 20 | urađeno: V4 skup 91 s → **30 s** (mreže HM/10K po ~40 s): proba „+1 dan" u upozorenjima se gradi samo kad je upozorenje izdato (bila za svaki plan, ~25 % vremena plana), keš datuma (`dayNumber`/`fromDayNumber`) i praga/punog napora po ličnoj krivi u `load.ts`; otisci isti, pokrivenost ista |

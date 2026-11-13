@@ -15,7 +15,7 @@ s12 p12 E3: ned 9–10: propušten po jedan dugi u obe nedelje — promena: 4; n
 s13 p01 E4: ned 10, bol u kolenu 4/10 posle kvaliteta — promena: 12; nalazi čuvara posle: ispod-cilja@4
 s14 p04 E4: ned 7, bol 4/10 posle kvaliteta (brzina/usponi) — promena: 16; nalazi čuvara posle: ispod-cilja@16
 s15 p11 E4: ned 11, bol 4/10 posle dugog — promena: 11; nalazi čuvara posle: 0
-s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 20; nalazi čuvara posle: 0
+s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 19; nalazi čuvara posle: 0
 s17 p01 E5: juče polumaraton 1:42:30 — promena: 0; nalazi čuvara posle: 0
 s18 p04 E5: juče polumaraton 2:04:13 — promena: 0; nalazi čuvara posle: 0
 s19 p11 E5: juče polumaraton 2:12 uz hodanje (prvi) — promena: 0; nalazi čuvara posle: ispod-cilja@4
