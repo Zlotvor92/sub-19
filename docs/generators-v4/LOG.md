@@ -516,3 +516,13 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Tab forme (Opus) primenjuje F4-K2: prenos na dužinu cilja (β po obimu, lični β), trka na ciljnoj dužini se ne odbacuje,
   toplota prag 25 °C, σ 1,0/1,5/2,5, „visoka" samo uz dokaz dužine 0,5–2 × cilja. Cilj back-testa: greška ≤ 3 %.
 - Posle F4-K2: drugi sudija (Fable) na HM + pregled vlasnika. Tab kruga 7 čeka.
+
+### 13. 11. 2026, 07:32 — ODLUKA O MODELU: jedna lična kriva forme po dužini (F4-K2, opcija A proširena)
+- Tab forme je ugradio jednosmerni prenos; back-test 6,1 % → 4,6 % (HM −8,1 % → −1,5 %), ali 6 testova HM crveno:
+  plan zadaje test 3 km po tempu iz VDOT-a ciljne dužine, pa „odrađeno kako je planirano" izgleda kao pad forme.
+- Odluka (arhitektura, organizator): simetričan prenos vdotAt(d) = vdotRef + β·ln(D_ref/d), d ∈ [1,5 km, 42,2 km];
+  nelični β naviše samo 0,5 ×. `FormEstimate` izvozi `transferBeta`, `betaPersonal`. Motor ima JEDNO mesto (`vdotAt`):
+  pun napor na dužini d, tempo trke na ciljnoj dužini, zone po sidru (R, I 5 km; T 10 km; lagano/dugi max(cilj, HM)).
+  Simulacije koriste isto. Zaštita: I/R ne brže za > 6 s/km, tempo trke ne sporiji za > 8 s/km po profilu.
+- Radi tab forme (Opus) u `fitness/` i potrebnom delu `engine/`; tab motora miruje. Otisci HM se menjaju jednom, namerno.
+- Rizik [srednja]: β po obimu je izveden iz jednog trkača (vlasnik); 10K/5K/maraton zavise od istog pravila.
