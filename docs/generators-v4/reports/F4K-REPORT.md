@@ -80,3 +80,41 @@ uporedni prediktor, nije potvrđen van uzorka. Lični β je bolji od stalnog či
 - Nema dana plana → signal kvaliteta (§ 7.3) i R12 se ne mogu proveriti na stvarnim podacima.
 - Interval 9. 8. je u podacima „3×1 km punim naporom" — uzet kao uzastopan test (krugovi nemaju pauzu); ako je bilo
   stajanja, 3 km je precenjen za ~1 VDOT.
+
+## Posle ispravke (F4-K2, 13. 11. 2026) — `cfba8b7`
+Jedna lična kriva forme po dužini, ista za procenu, plan i simulacije (`engine/vdot.ts`: `vdotAt`, `zoneVdot`,
+`effortTimeSec`). VDOT_d = VDOT_cilj + β·ln(D/d), prelom na dužini poslednjeg rezultata: ka kraćem pola β (bez ličnog β),
+ka dužem pun β; dužine ograničene na trke od 4 min do 5 h. β po obimu 8 nedelja (≥ 70 km 0,5; 50–70 1,5; 30–50 2,5;
+< 30 3,5) ili 50/50 sa ličnim (2 dužine, odnos ≥ 2×, 12 ned., 0–5). Sidra zona po TRAJANJU napora (motor ne zna
+dužine trka): R/I 20 min, T 45 min, E max(cilj, trka od 75 min); M i tempo trke = cilj. Granice: naviše ≤ ≈ 6 s/km
+(I), naniže ≤ ≈ 8 s/km tempa trke samo kad je prelom na unetom rezultatu bez istorije (`capDown`). Toplota od 25 °C
+(dužina 0,5–2× cilja: upola, inače donja granica; uvek rečenica); σ 1,0 / 1,5 / 2,5 (+ 1,0 kad je dokaz druge
+dužine); „visoka" samo za dokaz 0,5–2× cilja i dva saglasna rezultata; lagano iz trčanja 72 %; bez plana nema R12.
+
+| datum | rezultat | stvarno | pre (F4-K) | posle | u rasponu |
+|---|---|---|---|---|---|
+| 17. 5. | 14,14 km | 1:08:37 | −5,1 % | −2,7 % | ne |
+| 23. 5. | 5,04 km | 20:47 | +10,3 % | +3,7 % | ne |
+| 9. 8. | test 3 km | 11:36 | +6,3 % | +4,3 % | ne |
+| 10. 9. | 4,84 km, 32,8 °C | 21:06 | −5,5 % | −6,0 % | ne |
+| 24. 9. | 5,12 km | 20:53 | +1,3 % | +3,1 % | ne |
+| 3. 10. | polumaraton | 1:42:09 | −8,1 % | **−2,2 %** | **da** |
+Srednja aps. greška 6,1 % → **3,7 %**; u rasponu 1/6 (cilj ≤ 3 % i ≥ 4/6 nije dostignut — ostaje `it.fails` sa
+brojevima). Greške u VDOT: 1,2 / 1,4 / 1,7 / 2,0 / 2,3 / 3,4 → da bi 4/6 upalo u raspon (± σ/2), σ bi pri srednjoj
+pouzdanosti morao biti ≈ 4 VDOT (sada 1,5; ranije u poruci rečeno ≈ 3 — ispravka). Nije primenjeno.
+
+**Vlasnik danas:** 44,02 (1:42:09), srednja. **Bokeški 13. 12.: 1:40:22 – 1:41:56 – 1:43:40.** **Beogradski
+17. 4. 2027: 1:39:09 – 1:41:07 – 1:43:40.** (Iz 8 trčanja bilo 1:39:53 – 1:41:05 – 1:42:31.)
+
+**Promene tempa u planovima (s/km, + = sporije) i očekivanog vremena:** HM p01 E +7, I/R −4, RP +6, očekivano +131 s;
+p02 E +7, T +6, RP +6, +133 s; p03–p12 T 0…−6, I/R −1…−6, E i RP 0 (p06 E +2); vlasnik-v1 T/I/R −5; vlasnik-v2
+−1…−2. 10 km: E +1…+8 svi, I/R −1…−6, RP 0 (p02 +6, +60 s). Granice (I/R ≤ 6 brže, RP ≤ 8 sporije) svuda važe.
+
+**Motor (obe distance):** (1) `easyFill`: dodatak (ubrzanja) ide preko najkraćeg laganog samo kad ceo dan staje pod
+plafon dana; (2) korekcija silaska obima (M7) ne spušta dugi ispod najkraćeg laganog nivoa. „Dugi < lagan" je
+postojao i pre (početnik, 4 dana, 8 ned., 25 km; filter testa ≥ 32 BO/dan ga je preskakao) — nov test u
+`tenk.test.ts` proverava celu mrežu bez filtera. **HM:** otisci osveženi; E1 scenariji = udeo očekivanog po krivi
+(0,971 / 0,97 / 0,967); p06 skinut sa FORM_DRIFT; r7 dobio vlasnik-v1 sa 8 nedelja (predlog „planiraj N" se i dalje
+proverava). **10 km:** otisci osveženi; E1 kao HM (0,97 / 0,969 / 0,966); kao `it.fails` (krug 8 motora): R8-13 rast
+u km (gate p01 n13, p08 n15), R8-14 prvi trening zone prema 70 % plafona umesto planiranog vrha (p03 prag 840 > 816),
+R8-15 dugi vršne nedelje (p06 23,9 % < 25 %). Ispisi u `docs/generators-v4/plans/` nisu osveženi u ovom koraku.
