@@ -57,14 +57,14 @@
 2026-12-28 | odmor | - | 0.0 |  | - | - | -
 2026-12-29 | trening | quality | 4.7 | intervali 3 × 3 min, oporavak 2:30 džog | - | - | -
 2026-12-30 | odmor | - | 0.0 |  | - | - | -
-2026-12-31 | trening | easy | 5.4 | lagano 35 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-31 | trening | easy | 4.8 | lagano 30 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-01 | odmor | - | 0.0 |  | - | - | -
 2027-01-02 | odmor | - | 0.0 |  | - | - | -
-2027-01-03 | trening | long | 7.4 | dugi 60 min lagano | - | - | -
+2027-01-03 | trening | long | 6.8 | dugi 55 min lagano | - | - | -
 2027-01-04 | odmor | - | 0.0 |  | - | - | -
 2027-01-05 | trening | quality | 5.5 | intervali 4 × 3 min, oporavak 2:30 džog | - | - | -
 2027-01-06 | odmor | - | 0.0 |  | - | - | -
-2027-01-07 | trening | easy | 5.7 | lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-01-07 | trening | easy | 5.0 | lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-08 | odmor | - | 0.0 |  | - | - | -
 2027-01-09 | odmor | - | 0.0 |  | - | - | -
 2027-01-10 | trening | long | 6.8 | dugi 55 min lagano | - | - | -

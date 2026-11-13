@@ -7,7 +7,7 @@ p05: bez nalaza
 p06: silazak@6 (Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.)
 p07: bez nalaza
 p08: bez nalaza
-p09: bez nalaza
+p09: ispod-cilja@8 (Planirano opterećenje je ispod 85 % cilja nedelje.)
 p10: bez nalaza
 p11: bez nalaza
 p12: bez nalaza

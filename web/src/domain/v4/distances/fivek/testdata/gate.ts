@@ -49,10 +49,10 @@ export interface GateStats {
 
 /** Tabela vrha za 5 km u km (ciljni planovi trenera: p11 × 1,6 za 16 ned, p01 × 1,2 za 12, p04 × 1,1 za 16, p08
     × 1,03 za 16): polazno ≤ 20 km → × 1,7 (≥ 14 ned), × 1,5 (8–13), × 1,35 kraće; 20–35 km → × 1,35 (≥ 12 ned),
-    × 1,25 kraće; > 35 km → × 1,25 (≥ 12 ned), × 1,15 kraće; staž < 8 nedelja ili tegoba u 12 meseci → najviše
+    × 1,25 kraće; > 35 km → × 1,3 (≥ 12 ned), × 1,22 (8–11), × 1,15 kraće (R12, F1); staž < 8 nedelja ili tegoba u 12 meseci → najviše
     × 1,5. */
 export function ladderKm(baseKm: number, weeks: number, limited: boolean): number {
-  let x = weeks >= 12 ? 1.25 : 1.15;
+  let x = weeks >= 12 ? 1.3 : weeks >= 8 ? 1.22 : 1.15;
   if (baseKm <= 20.5) x = weeks >= 14 ? 1.7 : weeks >= 8 ? 1.5 : 1.35;
   else if (baseKm <= 35.5) x = weeks >= 12 ? 1.35 : 1.25;
   return limited ? Math.min(x, 1.5) : x;
@@ -181,7 +181,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   for (const g of weeks) {
     if (g.ramp || g.longKm <= 0 || g.kind === 'race' || runDays < 3) continue;
     maxShare = Math.max(maxShare, g.longKm / g.km);
-    const cap = runDays === 3 ? 0.46 : runDays === 4 ? 0.35 : 0.32;
+    /* najteža nedelja i sužavanje: dugi sme do + 3 % (kvalitet i lagani se smanjuju pre dugog; `shortenedLongMaxShare`) */
+    const lighter = g.kind === 'peak' || g.kind === 'taper' ? 0.03 : 0;
+    const cap = (runDays === 3 ? 0.46 : runDays === 4 ? 0.35 : 0.32) + lighter;
     if (g.longKm > cap * g.km + 0.25)
       v.push(`n${String(g.index)} dugi ${String(g.longKm)} od ${String(g.km)} km`);
   }
@@ -252,8 +254,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     doc.header.decisions.level === 'pocetnik-nov' ||
     doc.header.decisions.painCaution === true ||
     shortEasy;
-  /* početnik ≥ 8 % (ciljni p11 12 %; jedan kvalitet nedeljno, po osećaju bez I — p12 sa 45 km nosi 8 %) */
-  const peakMin = easyStart ? 0.06 : doc.header.decisions.level === 'pocetnik' ? 0.08 : 0.12;
+  /* početnik ≥ 6 % (ciljni p11 12 %; jedan kvalitet nedeljno, po osećaju bez I — p12 sa 45 km nosi 6 %: obim
+     početnika raste, kvalitet ne; R12) */
+  const peakMin = easyStart ? 0.06 : doc.header.decisions.level === 'pocetnik' ? 0.06 : 0.12;
   /* krug 9 (A1): vršna nedelja i uz lagan-kratak ima donju granicu brzog rada (kvalitet se skraćuje, ne briše) */
   if (doc.weeks.length >= 6 && maxFast < peakMin - 0.005)
     v.push(
@@ -269,7 +272,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     v.push(
       `najduži dugi ${String(longestKm)} km / ${String(Math.round(longestMin))} min < ${String(needLongKm)} km ili ${String(needLongMin)} min`
     );
-  const longCapMin = 91;
+  const longCapMin = ['spor', 'pocetnik', 'povratnik'].includes(doc.header.decisions.level)
+    ? 101
+    : 91;
   if (longestMin > longCapMin)
     v.push(`najduži dugi ${String(Math.round(longestMin))} min > ${String(longCapMin - 1)} min`);
 

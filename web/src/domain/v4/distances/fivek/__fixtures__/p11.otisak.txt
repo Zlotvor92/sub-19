@@ -102,7 +102,7 @@
 2027-02-11 | trening | quality | 5.0 | tempo trke 3 × 600 m, oporavak 1:30 džog | - | - | -
 2027-02-12 | odmor | - | 0.0 |  | - | - | -
 2027-02-13 | odmor | - | 0.0 |  | - | - | -
-2027-02-14 | trening | long | 6.2 | dugi 45 min lagano | - | - | -
+2027-02-14 | trening | long | 5.5 | dugi 40 min lagano | - | - | -
 2027-02-15 | odmor | - | 0.0 |  | - | - | -
 2027-02-16 | trening | easy | 3.6 | lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-17 | odmor | - | 0.0 |  | - | - | -

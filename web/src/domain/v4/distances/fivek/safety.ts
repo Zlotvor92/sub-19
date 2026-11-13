@@ -38,33 +38,43 @@ export const SAFETY: SafetyNumbers = {
       { maxBaseKm: 20.5, minWeeks: 14, overBase: 1.9 },
       { maxBaseKm: 20.5, minWeeks: 8, overBase: 1.65 },
       { maxBaseKm: 20.5, minWeeks: 0, overBase: 1.45 },
-      { maxBaseKm: 35.5, minWeeks: 12, overBase: 1.5 },
+      { maxBaseKm: 35.5, minWeeks: 8, overBase: 1.55 },
       { maxBaseKm: 35.5, minWeeks: 0, overBase: 1.35 },
-      { maxBaseKm: null, minWeeks: 12, overBase: 1.4 },
-      { maxBaseKm: null, minWeeks: 0, overBase: 1.28 }
+      /* R12 (F1): 20–35 km × 1,55 od 8 nedelja (sa 1,7 stariji trkač p16 ide preko × 1,4 u km), > 35 km × 1,7 / 1,55
+         / 1,3 u bodovima (bilo 1,5 / 1,4 / 1,28): kvalitet
+         nosi više bodova po minutu, pa obim u km raste ≈ × 1,1–1,25 */
+      { maxBaseKm: null, minWeeks: 12, overBase: 1.7 },
+      { maxBaseKm: null, minWeeks: 8, overBase: 1.55 },
+      { maxBaseKm: null, minWeeks: 0, overBase: 1.3 }
     ],
     limitedOverBase: 1.45,
     limitedTenureWeeks: 8
   },
   /* plafon vrha po nivou (BO ≈ minuti nedelje sa težinom rada): 5 km — brz ≈ 8 h 30, srednji i spor ≈ 7 h 30
      (ciljni p04 vrh 50 km ≈ 5,8 h; brz trkač 65 km ≈ 6 h) (izbor) */
+  /* R12 (F1): plafoni podignuti (spor/srednji 600, brz 660) — sa 460/520 plafon je, a ne lestvica, držao obim ravnim
+     (p04: P 455 uz plafon 460) */
   peakLoadCap: {
     pocetnik: 300,
     'pocetnik-nov': 220,
     povratnik: 420,
     mali: 280,
-    spor: 460,
-    srednji: 460,
-    brz: 520
+    spor: 600,
+    srednji: 600,
+    brz: 660
   },
   /* najduži dugi: 50–90 min (brief 5K; README: rekreativac 60–90 min, početnik do 60 min, ciljni p11 9 km ≈ 62 min; početnik 90 min jer početnik sa
      velikim obimom (p12: 45 km, 4 dana) inače ne nosi ni sadašnji obim — lagan dan je ≤ 80 % dugog) */
   longMaxSec: {
-    pocetnik: 5400,
+    /* R12 (F2): početnik i povratnik do 100 min — plan ne kreće ispod obima i dugog koje trkač već trči (p12 početnik
+       sa 45 km na 4 dana: sa 90 min dugog i lagan ≤ 80 % dugog nedelja staje na 40 km; P3 A dugi 14–15 km) */
+    pocetnik: 6000,
     'pocetnik-nov': 3300,
-    povratnik: 4800,
+    povratnik: 6000,
     mali: 4800,
-    spor: 5400,
+    /* R12 (F1): spor do 100 min — ciljni p04 dugi 14 km uz lagano 6:47–7:28 ≈ 100 min; sa 90 min obim sporog sa 5
+       dana ne raste (lagan ≤ 80 % dugog) */
+    spor: 6000,
     srednji: 5400,
     brz: 5400
   },
@@ -199,10 +209,11 @@ export const ADEQUATE: AdequatePrep = {
   minWeeks: 6,
   minPeakWeeklyKm: 15,
   minRunDays: 3,
-  /* dugi bar ≈ 1,5 × trke ili 45 min (README: početnik ≥ 6 km, dugi duži od trke za 80 %) */
-  minLongKm: 7,
-  longCheckKm: 7,
-  minLongSec: 2700,
+  /* R12 (F6): dugi bar dužine trke ili 35 min — „dugi ≥ 7 km" nema osnova za 5 km, a tekst upozorenja („poslednji deo
+     trke biće duži od svega") je netačan kad je dugi duži od trke (p03 6,6 km, p13 5,2 km) */
+  minLongKm: 5,
+  longCheckKm: 5,
+  minLongSec: 2100,
   longCheckMinWeeks: 10,
   minTenureWeeks: 6,
   /* brz trkač: obim ≥ 35 km da kvalitet nivoa stane (I 20+ min, RP 22 min uz WU/CD) */
