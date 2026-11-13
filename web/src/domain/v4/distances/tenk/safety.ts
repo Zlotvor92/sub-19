@@ -158,7 +158,9 @@ export const SAFETY: SafetyNumbers = {
   peakNotBelowBase: true,
   /* usponi najviše 2 od 3 nedelje — treća dobija intervale */
   tagMaxRun: [{ tag: 'brdo', max: 2, window: 3, replacement: 'intervali' }],
-  /* sporiji od 52:30 (≈ VDOT 39) — intervali ne brži od tempa na 5 km iz forme */
+  /* sporiji od 52:30 (≈ VDOT 39) — intervali ne brži od tempa na 5 km iz forme. R12 T4 (p01 46:00: intervali 4:15 uz
+     prag 4:46) traži pod i za 44–52:30, ali motor pod primenjuje posle izbora doze, pa deonice po dužini probiju
+     plafon (doza-plafon na mreži, forma 48:20) — zahtev motoru */
   intervalPaceFloor: { distanceM: 5000, fromRaceSec: 3150 },
   /* lagan dan ≤ udeo dugog: dugi je kod 10 km trećina nedelje, pa lagani dani 4 dana idu do 80 % dugog (ciljni p01:
      lagano 9–12 km uz dugi 13–17 km); krug 2 (B2): 3 i 5+ dana 80 % (85 % je probano: lagan dan sa ubrzanjima bio je duži od

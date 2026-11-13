@@ -1,7 +1,7 @@
 P2B — P2 B — početnik, 6 nedelja trčanja, tegoba u potkolenici pre godinu dana (ulazi kao p11)
 MORA DA SE RAZLIKUJE: B: niži vrh (× 1,4–1,5 umesto × 1,8), rasterećenje 2:1, dugi hod-trk po vremenu, brda/ubrzanja kasnije, širi raspon i predlog duže pripreme
 ISTORIJA: 21 trčanja; nedelje (km): 0,0 / 0,0 / 0,0 / 0,0 / 0,0 / 0,0 / 6,0 / 8,3 / 10,5 / 12,8 / 14,3 / 17,5; pauze 0, bol 1
-BROJEVI: nivo pocetnik-nov; nedelja 1 11,1 km; vrh 23,5 km; prvi dugi 5,5 km, najduži 10,3 km; prvi kvalitet u 5. nedelji; provera forme u 12. nedelji; forma 56:02 (srednja), dan trke 56:02 (52:26–1:02:22)
+BROJEVI: nivo pocetnik-nov; nedelja 1 11,1 km; vrh 23,5 km; prvi dugi 5,5 km, najduži 10,3 km; prvi kvalitet u 4. nedelji; provera forme u 12. nedelji; forma 56:02 (srednja), dan trke 56:02 (52:26–1:02:22)
 
 PLAN: 10 km, trka 7. 3. 2027.
 Početak 2. 11. 2026. · 18 nedelja · 3 dana trčanja nedeljno
@@ -28,7 +28,7 @@ UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 30 min — nedelja tada stiže do 24,1 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 10,3 km i nosi manji deo nedelje.
 - U poslednjih 12 meseci si imao tegobu (bol pri trčanju). Prve 4 nedelje plan nema sprinteve uzbrdo ni druge treninge visokog udara, a obim raste sporije, da se isto mesto ne vrati. Ako se ista tegoba javi (bol 3/10 ili više, ili raste tokom trčanja), prekini trening, upiši bol u aplikaciju i javi se lekaru ili fizioterapeutu ako ne prođe za 7 dana.
 - Trčiš tek oko 5 nedelja. Telo se na trčanje navikava sporije nego što forma raste: tetive i kosti traže više vremena od srca i pluća. Prognoza je zato manje pouzdana, a raspon širi. Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana.
-- Plan počinje dan posle testa (10 km za 56:02). Do 10. 11. traje oporavak: treninzi su kraći i lagani, da se telo vrati pre nego što opterećenje krene da raste. Prvi brzi trening je 3. 12.; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.
+- Plan počinje dan posle testa (10 km za 56:02). Do 10. 11. traje oporavak: treninzi su kraći i lagani, da se telo vrati pre nego što opterećenje krene da raste. Prvi brzi trening je 26. 11.; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 17 nedelja
   pon 2. 11.  odmor
@@ -62,23 +62,23 @@ UPOZORENJA
 
 4. NEDELJA (od 23. 11.) — osnova, gradnja; do trke 14 nedelja
   pon 23. 11.  odmor
-  uto 24. 11.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,9 km, 35 min
+  uto 24. 11.  lagano 30 min — 4,1 km, 30 min
   sre 25. 11.  odmor
-  čet 26. 11.  lagano 30 min — 4,1 km, 30 min
+  čet 26. 11.  prag 2 × 5 min (5:42/km), oporavak 2 min džog — 4,8 km, 32 min
   pet 27. 11.  odmor
   sub 28. 11.  odmor
   ned 29. 11.  dugi 45 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 6,2 km, 45 min
-  Zbir: 15,2 km, 1 h 50 min, 3 treninga, brz rad 0 % vremena trčanja
+  Zbir: 15,1 km, 1 h 47 min, 3 treninga, brz rad 9 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — osnova, gradnja; do trke 13 nedelja
   pon 30. 11.  odmor
-  uto 1. 12.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,9 km, 35 min
+  uto 1. 12.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,2 km, 30 min
   sre 2. 12.  odmor
-  čet 3. 12.  prag 2 × 5 min (5:42/km), oporavak 2 min džog — 4,8 km, 32 min
+  čet 3. 12.  fartlek 10 × 1 min živo, između 2 min džog lagano — 6,9 km, 48 min
   pet 4. 12.  odmor
   sub 5. 12.  odmor
   ned 6. 12.  dugi 55 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 7,6 km, 55 min
-  Zbir: 17,3 km, 2 h 2 min, 3 treninga, brz rad 8 % vremena trčanja
+  Zbir: 18,7 km, 2 h 13 min, 3 treninga, brz rad 8 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — osnova, rasterećenje; do trke 12 nedelja
   pon 7. 12.  odmor
@@ -92,23 +92,23 @@ UPOZORENJA
 
 7. NEDELJA (od 14. 12.) — osnova, gradnja; do trke 11 nedelja
   pon 14. 12.  odmor
-  uto 15. 12.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,2 km, 30 min
+  uto 15. 12.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,9 km, 35 min
   sre 16. 12.  odmor
-  čet 17. 12.  fartlek 11 × 1 min živo, između 2 min džog lagano — 7,3 km, 51 min
+  čet 17. 12.  prag 11 min u komadu (5:42/km) — 4,7 km, 31 min
   pet 18. 12.  odmor
   sub 19. 12.  odmor
   ned 20. 12.  dugi 55 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 7,6 km, 55 min
-  Zbir: 19,1 km, 2 h 16 min, 3 treninga, brz rad 8 % vremena trčanja
+  Zbir: 17,2 km, 2 h 1 min, 3 treninga, brz rad 9 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — osnova, gradnja; do trke 10 nedelja
   pon 21. 12.  odmor
-  uto 22. 12.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,9 km, 35 min
+  uto 22. 12.  lagano 35 min, usred trčanja 6 × 15 s jako uzbrdo, nazad 1:15 hod — 6 km, 44 min
   sre 23. 12.  odmor
-  čet 24. 12.  lagano 25 min, usred trčanja 6 × 15 s jako uzbrdo, nazad 1:15 hod — 4,6 km, 34 min
+  čet 24. 12.  prag 2 × 6 min (5:42/km), oporavak 2 min džog — 5,1 km, 34 min
   pet 25. 12.  odmor
   sub 26. 12.  odmor
-  ned 27. 12.  dugi 65 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 8,9 km, 65 min
-  Zbir: 18,4 km, 2 h 14 min, 3 treninga, brz rad 0 % vremena trčanja
+  ned 27. 12.  dugi 60 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 8,3 km, 60 min
+  Zbir: 19,4 km, 2 h 18 min, 3 treninga, brz rad 9 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — razvoj, rasterećenje; do trke 9 nedelja
   pon 28. 12.  odmor
@@ -122,13 +122,13 @@ UPOZORENJA
 
 10. NEDELJA (od 4. 1.) — razvoj, gradnja; do trke 8 nedelja
   pon 4. 1.  odmor
-  uto 5. 1.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,6 km, 40 min
+  uto 5. 1.  lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,3 km, 45 min
   sre 6. 1.  odmor
   čet 7. 1.  prag 2 × 6 min (5:42/km), oporavak 2 min džog — 5,1 km, 34 min
   pet 8. 1.  odmor
   sub 9. 1.  odmor
   ned 10. 1.  dugi 60 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 8,3 km, 60 min
-  Zbir: 19 km, 2 h 14 min, 3 treninga, brz rad 9 % vremena trčanja
+  Zbir: 19,7 km, 2 h 19 min, 3 treninga, brz rad 9 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — razvoj, gradnja; do trke 7 nedelja
   pon 11. 1.  odmor

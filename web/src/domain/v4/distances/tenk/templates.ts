@@ -190,7 +190,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           longSpec,
           sh.single
             ? [S('tempo-trke', 0.45, 'rp-1200'), STRIDES]
-            : [S('intervali', 0.5), S('tempo-trke', 0.45, 'rp-1200')]
+            : /* R12 T2 (p02): VO2 doza veća od 3 × 800 m */
+              [S('intervali', 0.6), S('tempo-trke', 0.45, 'rp-1200')]
         )
       );
       continue;
@@ -291,10 +292,14 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
       SPEC,
       'peak',
       1,
-      { len: 1, stimulus: long ? 'dugi-prag' : 'dugi-rp', dose: 1 },
+      /* R12 T4 (p01 ned 13): dug plan — dugi lagan, da najteža nema tri teška treninga u 4 dana (intervali čet + prag
+         u dugom ned + tempo trke uto = 3 od 4 dana trčanja); 1–3 dana i 5+ dana zadržavaju završnicu u dugom */
+      long && !sh.single && sh.days <= 4
+        ? { len: 1 }
+        : { len: 1, stimulus: long ? 'dugi-prag' : 'dugi-rp', dose: 1 },
       /* kratak plan (mali obim, budžet brzog rada): tempo trke u prvom mestu (četvrtak) dobija budžet prvi */
       long
-        ? pair(S('intervali', 0.8), S('tempo-trke', 1))
+        ? pair(S('intervali', !sh.single && sh.days <= 4 ? 1 : 0.8), S('tempo-trke', 1))
         : /* plan kraći od 8 nedelja: manja doza, da najteža ne skoči preko pravila rasta (8 × 1 km posle 42 km) */
           pair(S('tempo-trke', check ? 1 : 0.7, 'rp-1000'), S('intervali', 0.9))
     ),
@@ -358,7 +363,9 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       w <= intro
         ? [w === 1 ? STRIDES : STRIDES6, STRIDES]
         : k % 3 === 0
-          ? [HILLS_SHORT, STRIDES]
+          ? /* R12 T3 (p11 ned 7): usponi uz utorak, četvrtak ostaje prag — lagan četvrtak od 49 min umesto praga od
+               32 min dizao je nedelju + 12,8 % */
+            [S('prag-p', lerp(0.5, 0.9, t)), HILLS_SHORT]
           : [S('prag-p', lerp(0.5, 0.9, t)), STRIDES];
     out.push(
       week(

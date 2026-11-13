@@ -6,13 +6,13 @@ s03 p11 E1: ned 12, trka 5 km umesto testa 3 km, 3,4 % brže od očekivanog — 
 s04 p12 E1: ned 6, prva trka u životu, 5 km 28:30 — promena: 2; nalazi čuvara posle: 0
 s05 p01 E2: bolest 7 dana u ned 6 (razvoj) — promena: 23; nalazi čuvara posle: 0
 s06 p04 E2: bolest 7 dana u ned 13 (specifična priprema) — promena: 22; nalazi čuvara posle: 0
-s07 p11 E2: bolest 7 dana u ned 10 — promena: 14; nalazi čuvara posle: 0
-s08 p12 E2: bolest 7 dana u ned 9 (najteža) — promena: 9; nalazi čuvara posle: 0
+s07 p11 E2: bolest 7 dana u ned 10 — promena: 15; nalazi čuvara posle: 0
+s08 p12 E2: bolest 7 dana u ned 9 (najteža) — promena: 6; nalazi čuvara posle: 0
 s09 p01 E3: ned 13 (najteža): propušteni tempo trke i dugi sa završnicom — promena: 2; nalazi čuvara posle: 0
 s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 2; nalazi čuvara posle: 0
 s11 p11 E3: ned 14: propušteni tempo trke i dugi — promena: 2; nalazi čuvara posle: 0
 s12 p12 E3: ned 7–8: propušten po jedan dugi u obe nedelje — promena: 2; nalazi čuvara posle: 0
-s13 p01 E4: ned 11, bol u kolenu 4/10 posle tempa trke — promena: 9; nalazi čuvara posle: 0
+s13 p01 E4: ned 11, bol u kolenu 4/10 posle tempa trke — promena: 10; nalazi čuvara posle: 0
 s14 p04 E4: ned 7, bol 4/10 posle kvaliteta (osnova) — promena: 15; nalazi čuvara posle: ispod-cilja@11
 s15 p11 E4: ned 11, bol 4/10 posle dugog — promena: 17; nalazi čuvara posle: 0
 s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 19; nalazi čuvara posle: 0
@@ -25,5 +25,5 @@ s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara 
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; nalazi čuvara posle: 0
 s25 p01 E7: bolest 5 dana u ned 6, pa propušten dugi 10 dana kasnije — promena: 18; nalazi čuvara posle: 0
-s26 p11 E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije — promena: 24; nalazi čuvara posle: 0
+s26 p11 E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije — promena: 23; nalazi čuvara posle: 0
 s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 17; nalazi čuvara posle: 0
