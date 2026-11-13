@@ -88,6 +88,7 @@ import type {
   Paces,
   ReplanFn,
   RunnerState,
+  Seconds,
   Transfer,
   Warning,
   Workout
@@ -770,9 +771,34 @@ function smoothExit(
     if (w === undefined || w.intent.kind === 'taper' || w.intent.kind === 'race') continue;
     if (peakIdx < 0 || origKm(i) > origKm(peakIdx)) peakIdx = i;
   }
+  /* krug 15 (M2, podatak `returnKeepLong`): kad je do trke bar `minWeeksToRace` nedelja, ostaje jedan dugi od `km` — u nedelji sa
+     najdužim prvobitnim dugim (ako ga ima); nedelje pre nje dobijaju lestvicu unazad (− 20 min po nedelji). Lestvica
+     samo diže (do granice rasta) i čuva dugi od drugih skraćenja, pa rasterećenje u povratku ne obara dugi */
+  const ladder = new Map<number, Seconds>();
+  const keep = data.safety.returnKeepLong;
+  if (keep !== undefined && diffDays(race, state.today) >= 7 * keep.minWeeksToRace) {
+    const keepSec = keep.km * pace.paces.easy;
+    const longKm = (w: PlanWeek | undefined): number => {
+      const day = w === undefined ? undefined : longOf(w);
+      return day?.workout == null ? 0 : summarize(day.workout, pace).km;
+    };
+    let t = -1;
+    let top = 0;
+    for (let i = base; i < n - 2; i += 1) {
+      const w = weeks[i];
+      if (w === undefined || w.intent.kind === 'taper' || w.intent.kind === 'race') continue;
+      const ol = longKm(original.weeks.find((x) => x.start === w.start));
+      if (ol >= top) {
+        t = i;
+        top = ol;
+      }
+    }
+    if (t >= 0 && top >= keep.km - 0.25)
+      for (let i = t; i >= base; i -= 1) ladder.set(i, keepSec - (t - i) * RETURN_LONG_JUMP_SEC);
+  }
   let trimmedPrev = false;
   for (let i = base; i < n - 1; i += 1) {
-    const w = weeks[i];
+    let w = weeks[i];
     if (w === undefined) break;
     /* nedelja −1 (sužavanje) se dira samo kad je nedelja pre nje skraćena: tada ne sme biti veća od nje (A10 a) */
     const minusOne = i === n - 2;
@@ -780,8 +806,6 @@ function smoothExit(
     const lo = i === base ? Math.max(0, base - 1) : Math.max(base, i - 3);
     const prev = weeks.slice(lo, i);
     const pKm = Math.max(...prev.map(km));
-    const curKm = km(w);
-    const curLong = longSec(w);
     /* Z1 (krug 7): posle prekida bez izuzetka prvobitnog plana (ni za nedelju) */
     const kmCap = minusOne
       ? Math.min(RETURN_WEEK_JUMP_SHARE * pKm, km(weeks[i - 1] as PlanWeek))
@@ -797,14 +821,66 @@ function smoothExit(
       ? lastLong
       : /* krug 14 (M2): rast dugog posle prekida najviše + 20 min (i kad je + 25 % više) */
         lastLong + RETURN_LONG_JUMP_SEC;
+    /* krug 15: lestvica dugog — dugi raste do nje, u granici rasta */
+    const rung = ladder.get(i);
+    /* lestvica je u km (nominalno, lagan tempo); granica rasta (+ 20 min) se meri stvarnim trajanjem — blok u tempu
+       trke skraćuje trajanje za isti km */
+    let keepLong = 0;
+    let keepWorkout: Workout | null = null;
+    {
+      const day = longOf(w);
+      if (
+        rung !== undefined &&
+        !minusOne &&
+        day?.workout != null &&
+        isMutable(day, after.header, state.today, done)
+      ) {
+        const own = data.library.find((x) => x.id === day.workout?.libraryId) ?? null;
+        const def = i < first ? null : own;
+        const cap = lastLong > 0 ? longCap : Number.POSITIVE_INFINITY;
+        const make = (sec: Seconds): Workout | null =>
+          realizeLong(
+            {
+              type: 'long',
+              sec,
+              def,
+              dose: def === null ? 0 : Math.min(day.workout?.workSec ?? 0, sec / 2),
+              slot: null
+            },
+            ctxB
+          );
+        let sec = Math.round(rung / 60) * 60;
+        let workout = make(sec);
+        const dur = (x: Workout | null): Seconds => (x === null ? 0 : summarize(x, pace).durationSec);
+        if (dur(workout) > cap + 60) {
+          sec = Math.max(0, sec - Math.ceil((dur(workout) - cap) / 60) * 60);
+          workout = make(sec);
+        }
+        const now = summarize(day.workout, pace).durationSec;
+        if (workout !== null && dur(workout) > now + 60) {
+          const raised: PlanWeek = {
+            ...w,
+            days: w.days.map((d) => (d.id === day.id ? { ...d, origin: 'template', workout } : d))
+          };
+          weeks[i] = raised;
+          w = raised;
+          until = addDays(w.start, 6) > until ? addDays(w.start, 6) : until;
+        }
+        keepLong = dur(workout);
+        keepWorkout = workout;
+      }
+    }
+    const curKm = km(w);
+    const curLong = longSec(w);
     const peak = i === peakIdx && i >= first;
     const kmLimit = peak
       ? Math.max(kmCap, Math.min(curKm, RETURN_PEAK_KEEP_SHARE * origKm(i)))
       : kmCap;
     const origLong = longSec(original.weeks.find((x) => x.start === w.start));
-    const longLimit = peak
-      ? Math.max(longCap, Math.min(curLong, RETURN_PEAK_LONG_KEEP_SHARE * origLong))
-      : longCap;
+    const longLimit = Math.max(
+      peak ? Math.max(longCap, Math.min(curLong, RETURN_PEAK_LONG_KEEP_SHARE * origLong)) : longCap,
+      keepLong
+    );
     const longOver = lastLong > 0 && curLong > longLimit + 60;
     const kmOver = pKm > 0 && curKm > kmLimit + 0.5;
     /* povratak je gotov kod prve nedelje koja staje u granicu — dalje važi prvobitan plan */
@@ -832,10 +908,17 @@ function smoothExit(
         return d;
       const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
       const sec = Math.round(longLimit / 60) * 60;
-      const workout = realizeLong(
+      const cut = realizeLong(
         { type: 'long', sec, def, dose: Math.min(d.workout.workSec, sec / 2), slot: null },
         ctxB
       );
+      /* lestvica: dugi zadat u km ne pada ispod nje zbog razlike nominalnog i stvarnog trajanja */
+      const workout =
+        keepWorkout !== null &&
+        (cut === null || summarize(keepWorkout, pace).km > summarize(cut, pace).km) &&
+        summarize(keepWorkout, pace).durationSec <= longLimit + 60
+          ? keepWorkout
+          : cut;
       return workout === null ? d : { ...d, origin: 'template', workout };
     });
     /* lagani dani srazmerno do obima nedelje */
@@ -921,7 +1004,7 @@ function smoothExit(
           if (d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
             return d;
           const sec = summarize(d.workout, pace).durationSec;
-          const next = Math.max(lastLong, sec - rest * pace.paces.easy);
+          const next = Math.max(lastLong, keepLong, sec - rest * pace.paces.easy);
           if (next >= sec - 60) return d;
           const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
           const workout = realizeLong(
@@ -953,7 +1036,7 @@ function smoothExit(
       const others = km(shrunk) - lkm;
       const maxKm = (lshare * others) / (1 - lshare);
       if (lkm > maxKm + 0.25) {
-        const sec = Math.max(lastLong, maxKm * pace.paces.easy - 30);
+        const sec = Math.max(lastLong, keepLong, maxKm * pace.paces.easy - 30);
         const def = data.library.find((x) => x.id === longDay.workout?.libraryId) ?? null;
         const workout = realizeLong(
           {

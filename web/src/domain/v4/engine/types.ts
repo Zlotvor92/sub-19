@@ -844,6 +844,9 @@ export interface SafetyNumbers {
   zoneGapReplacement?: StimulusTag;
   /** E2 (krug 4 dopuna): skraćena nedelja — dugi ≤ ovoliki deo nedelje u km (4+ dana). */
   shortenedLongMaxShare?: number;
+  /** Krug 15 (M2): posle prekida, kad je do trke bar `minWeeksToRace` nedelja, ostaje jedan dugi od bar `km` (najduži
+      prvobitni dugi pre sužavanja); dugi do njega raste najviše `RETURN_LONG_JUMP_SEC` nedeljno (lestvica unazad). */
+  returnKeepLong?: { km: number; minWeeksToRace: number };
   /** Trka/test do ovoliko sekundi (i van plana) dobija oporavak kao planirana provera forme (krug 5, E5). */
   shortEffortSec?: Seconds;
   /** A8 (krug 9): najveći očekivani napredak do trke po nivou (udeo vremena; npr. početnik 0,03, potpuno nov 0). */

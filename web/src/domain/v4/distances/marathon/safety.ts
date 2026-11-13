@@ -178,6 +178,8 @@ export const SAFETY: SafetyNumbers = {
   /* start maratona: prvih 5–10 km 5–10 s/km sporije od tempa trke (README) */
   raceStartPaceOffsetSec: { from: 5, to: 10 },
   shortenedLongMaxShare: 0.45,
+  /* R12 M2 (krug 15): posle prekida ≥ 4 nedelje pred trku ostaje jedan dugi ≥ 26 km */
+  returnKeepLong: { km: 26, minWeeksToRace: 4 },
   minZoneGapSecPerKm: 5,
   noQualityBeforeTestDays: 2,
   zoneGapReplacement: 'intervali',
