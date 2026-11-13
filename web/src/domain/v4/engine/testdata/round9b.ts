@@ -132,3 +132,31 @@ export function returnWindow(
   }
   return bad;
 }
+
+/** A17 (krug 9b): kad je ostatak plana spušten ili je obim do trke bar 15 % manji, očekivano vreme reaguje (nije
+    brže) i ima rečenicu zašto. Vraća opise prekršaja. */
+export function forecastReacts(
+  id: string,
+  before: PlanDoc,
+  after: PlanDoc,
+  changes: readonly { reason?: string; what?: string }[]
+): string[] {
+  const bad: string[] = [];
+  const race = after.header.goal.raceDate;
+  const ctx = paceCtxOf(after.header);
+  const kmTo = (doc: PlanDoc): number =>
+    doc.weeks.reduce(
+      (sum, w) => (w.intent.kind === 'race' ? sum : sum + weekCost(w, race, ctx).km),
+      0
+    );
+  const b = kmTo(before);
+  const a = kmTo(after);
+  if (b <= 0 || a / b > 0.85) return bad;
+  /* obim je bar 15 % manji → očekivano ne sme biti brže i mora postojati rečenica */
+  const expBefore = before.header.form.raceDay.expectedSec;
+  const expAfter = after.header.form.raceDay.expectedSec;
+  if (expAfter < expBefore - 1) bad.push(`${id} očekivano brže (${expAfter} < ${expBefore})`);
+  const hasReason = changes.some((c) => (c.reason ?? '').includes('očekivani napredak manji'));
+  if (!hasReason) bad.push(`${id} nema rečenicu o izgubljenom obimu`);
+  return bad;
+}

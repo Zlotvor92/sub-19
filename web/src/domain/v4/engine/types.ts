@@ -251,6 +251,9 @@ export interface Decisions {
   raceDayWiden?: number;
   /** A8 (krug 9): očekivano vreme najviše ovoliko (udeo) brže od današnje forme — podatak distance po nivou. */
   raceDayMaxGain?: number;
+  /** Krug 9b (A17): udeo planiranog obima do trke koji je ostao posle izmena (spušten ostatak, obim ≥ 15 % niži);
+      očekivani napredak na dan trke se smanjuje u istom odnosu. Bez polja: 1. */
+  raceDayVolumeShare?: number;
   /** Bazno nedeljno opterećenje trkača na dan nastanka plana. */
   baseLoad: LoadPoints;
   /** Vrh nedeljnog opterećenja plana. */

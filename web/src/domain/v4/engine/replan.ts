@@ -27,6 +27,7 @@ import {
   RETURN_LONG_JUMP_SHARE,
   TAIL_MAX_DAYS,
   RETURN_WEEK_JUMP_SHARE,
+  LOST_VOLUME_MIN_SHARE,
   LOWERED_REST_MIN_SHARE,
   RETURN_WINDOW_EXTRA_DAYS,
   RETURN_WINDOW_MAX_DAYS,
@@ -1337,6 +1338,33 @@ function loweredRest(
   return { peakKm: a.km, oldPeakKm: b.km, longSec: a.long, oldLongSec: b.long };
 }
 
+/** A17 (krug 9b): km od sutra do trke (bez nedelje trke) pre i posle izmene; vraća udeo kad je ostatak plana spušten
+    ili je obim bar `LOST_VOLUME_MIN_SHARE` manji, inače `null`. */
+function lostVolume(
+  before: PlanDoc,
+  after: PlanDoc,
+  until: IsoDate,
+  today: IsoDate
+): { share: number; kmBefore: number; kmAfter: number } | null {
+  const race = after.header.goal.raceDate;
+  const ctx = paceCtxOf(after.header);
+  const total = (doc: PlanDoc): number =>
+    doc.weeks.reduce(
+      (sum, w) =>
+        w.intent.kind === 'race' || addDays(w.start, 6) <= today
+          ? sum
+          : sum + weekCost(w, race, ctx).km,
+      0
+    );
+  const kmBefore = total(before);
+  const kmAfter = total(after);
+  if (kmBefore <= 0 || kmAfter >= kmBefore) return null;
+  const share = kmAfter / kmBefore;
+  const lowered = loweredRest(before, after, until, today) !== null;
+  if (!lowered && share > 1 - LOST_VOLUME_MIN_SHARE) return null;
+  return { share, kmBefore, kmAfter };
+}
+
 /** Rečenica o promeni upozorenja: šta je novo i šta više ne važi (prva rečenica problema). */
 function warningDelta(before: readonly Warning[], after: readonly Warning[]): string {
   const first = (w: Warning): string => w.problem.split(/(?<=\.)\s/)[0] ?? w.problem;
@@ -1732,19 +1760,40 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     const diff = describe(current, candidate, ev, state, data);
     if (diff.length === 0) continue;
     const h = candidate.doc.header;
+    /* A17 (krug 9b): izgubljen obim do trke (spušten ostatak ili ≥ 15 % manje km) smanjuje očekivani napredak */
+    const lost = lostVolume(current, candidate.doc, candidate.until, state.today);
+    const decisions: Decisions =
+      lost === null
+        ? h.decisions
+        : {
+            ...h.decisions,
+            raceDayVolumeShare:
+              Math.round((h.decisions.raceDayVolumeShare ?? 1) * lost.share * 1000) / 1000
+          };
+    const raceDay = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, decisions);
     current = {
       ...candidate.doc,
       header: {
         ...h,
-        form: {
-          ...h.form,
-          current: state.form.current,
-          raceDay: adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions)
-        },
+        decisions,
+        form: { ...h.form, current: state.form.current, raceDay },
         appliedEvents: [...h.appliedEvents, ev.id]
       }
     };
     changes.push(...diff);
+    const was = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
+    if (lost !== null && raceDay.expectedSec > was.expectedSec) {
+      const pct = Math.round((1 - lost.share) * 100);
+      changes.push({
+        eventId: ev.id,
+        until: candidate.until,
+        scope: 'zaglavlje',
+        what: 'obavestenje',
+        before: fmtClock(was.expectedSec),
+        after: fmtClock(raceDay.expectedSec),
+        reason: `Očekivano vreme trke je sada oko ${fmtClock(raceDay.expectedSec)} umesto ${fmtClock(was.expectedSec)}: do trke je planirano oko ${String(pct)} % manje kilometara nego pre (${fmtNumber(lost.kmAfter, 0)} umesto ${fmtNumber(lost.kmBefore, 0)} km), pa je i očekivani napredak manji.`
+      });
+    }
   }
   const result = changes.length === 0 ? doc : current;
   /* R5 (krug 6): upozorenje koje pominje prošli datum („odradi proveru 28. 11.") se računa iznova — i kad se

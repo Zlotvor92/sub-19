@@ -60,7 +60,7 @@ function widenOf(state: RunnerState, data: DistanceData): number | undefined {
 export function adjustRaceDay(
   raw: RunnerState['form']['raceDay'],
   todaySec: Seconds,
-  d: Pick<Decisions, 'raceDayNoProgress' | 'raceDayWiden' | 'raceDayMaxGain'>
+  d: Pick<Decisions, 'raceDayNoProgress' | 'raceDayWiden' | 'raceDayMaxGain' | 'raceDayVolumeShare'>
 ): RunnerState['form']['raceDay'] {
   let r = raw;
   /* A8 (krug 9): napredak u tački ograničen po nivou (početnik ≤ 3 %, potpuno nov 0) */
@@ -70,6 +70,16 @@ export function adjustRaceDay(
     r = {
       lowSec: Math.round(r.lowSec + shift),
       expectedSec: Math.round(floor),
+      highSec: Math.round(r.highSec + shift)
+    };
+  }
+  /* A17 (krug 9b): izgubljen obim (spušten ostatak plana) smanjuje očekivani napredak u istom odnosu */
+  const share = d.raceDayVolumeShare;
+  if (share !== undefined && share < 1 && r.expectedSec < todaySec) {
+    const shift = (todaySec - r.expectedSec) * (1 - Math.max(0, share));
+    r = {
+      lowSec: Math.round(r.lowSec + shift),
+      expectedSec: Math.round(r.expectedSec + shift),
       highSec: Math.round(r.highSec + shift)
     };
   }
