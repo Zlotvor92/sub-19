@@ -657,3 +657,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   krug 10", tab radi. Ostali tabovi obavešteni da završne poruke šalju novom organizatoru.
 - Nalog vlasnika: svi novi tabovi na Opusu. Ocena sve četiri distance čeka kraj kruga 10 (krug menja planove svih
   distanci; ocena pre toga bi bila bačena). Brief: `briefs/R11-JUDGES.md`.
+
+### 13. 11. 2026, 18:00 — krug 10 primljen (`02e06e1`), provera organizatora; ocena pokrenuta
+- Sam pokrenuo: V4 + isolation 53 fajla, 962 + 25 očekivano pada; typecheck čist; kapije HM 0, 10K 0, maraton 0,
+  5K 1 (p06, stavka 15/20) [visoka]. Urađeno 1–12, 14, 18, 22, 26, 27; 13, 21, 23–25 predlozi; 16, 17, 19 nisu stigle.
+- Krug 11 motora (samo 5K): `trimOrder` kao podatak samo za fivek (ostale distance bajt-iste), stavke 16, 17, 19.
+- Ocena nad `02e06e1` (worktree, motor menja samo 5K): trener `…XrqBkKYzMY76jQDiz` HM-10, 10K-03, MAR-01; drugi
+  sudije (novi, Opus): HM `session_01GnHHiaTUbSvmATwkEduLam`, 10K `session_01GnHHiXRUD5L3q5JLaUCijS`, maraton
+  `session_01GnHHiaFsqKbWHxksWAN7pH`. 5K se ocenjuje posle kruga 11.
