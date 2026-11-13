@@ -133,7 +133,13 @@ describe('R2: lagani dani nisu pufer', () => {
       for (const week of doc.weeks) {
         const long = week.days.find((d) => d.workout?.kind === 'long');
         if (long === undefined) continue;
-        const cap = Math.max(data.safety.minEasySec, 0.65 * secOf(doc, long));
+        /* krug 5 (D1/D6): merilo je dugi koji trkač već trči (polazni) kad je dugi gradnje kraći */
+        const building = week.intent.kind === 'build' || week.intent.kind === 'peak';
+        const d0 = doc.header.decisions;
+        const ref = building
+          ? Math.max(secOf(doc, long), Math.min(d0.longStartSec, d0.longMaxSec))
+          : secOf(doc, long);
+        const cap = Math.max(data.safety.minEasySec, 0.65 * ref);
         for (const day of week.days.filter(isEasy)) {
           /* Na najkraćem trčanju (20 min) dodatak od 4 × (20 s + 60 s) ide preko laganog dela. */
           const addon = day.workout?.stimulus === null ? 0 : 320;

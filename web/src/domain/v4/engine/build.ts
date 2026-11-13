@@ -186,15 +186,26 @@ export function longPlan(
     highShare?: boolean;
     /** Blok u dugom: sekunde i tempo (E7: blok nosi više km od laganog dela). */
     block?: { sec: Seconds; pace: number };
+    /** Broj ranijih nedelja gradnje/vrha u planu (D1/D6: pod dugog raste od `longStartShare` polaznog). */
+    builds?: number;
   }
 ): Seconds {
   if (intent.long === null) return 0;
   const d = ctx.decisions;
+  /* D1/D6 (krug 5): dugi raste od prethodnog (ne skače na polazni kad je krenuo niže) */
   const grown =
-    Math.max(previousLongest, d.longStartSec) + longStepOf(ctx.data.safety, ctx.pace.paces.easy);
+    (previousLongest > 0 ? previousLongest : d.longStartSec) +
+    longStepOf(ctx.data.safety, ctx.pace.paces.easy);
   let wanted = intent.long.lenPct * d.longMaxSec;
+  const step = longStepOf(ctx.data.safety, ctx.pace.paces.easy);
   if (week !== undefined && (intent.kind === 'build' || intent.kind === 'peak')) {
-    wanted = Math.max(wanted, Math.min(d.longStartSec, d.longMaxSec));
+    /* D1/D6 (krug 5): dugi ne kreće na plafonu — pod je `longStartFloorShare` × polazni, pa raste za korak po
+       nedelji gradnje do polaznog (bez podatka: odmah polazni) */
+    const startFloor = ctx.data.safety.longStartFloorShare;
+    const full = Math.min(d.longStartSec, d.longMaxSec);
+    const floor =
+      startFloor === undefined ? full : Math.min(full, startFloor * full + (week.builds ?? 0) * step);
+    wanted = Math.max(wanted, floor);
   }
   let cap = Number.POSITIVE_INFINITY;
   if (week !== undefined) {
@@ -214,7 +225,9 @@ export function longPlan(
   let sec = Math.min(wanted, grown, cap);
   /* T3 (krug 4): dugi koji ne raste (na plafonu ili polaznom) ide u talasu po nameri šablona */
   const wave = intent.long.wave;
-  if (wave !== undefined && week !== undefined && previousLongest > 0 && sec <= previousLongest + 60)
+  /* D1 (krug 5): talas samo kad je dugi na plafonu (najduži dozvoljen ili udeo nedelje) */
+  const atCap = sec >= d.longMaxSec - 60 || sec >= cap - 60;
+  if (wave !== undefined && week !== undefined && atCap && previousLongest > 0 && sec <= previousLongest + 60)
     sec *= wave;
   /* Dugi nije kraći od najkraćeg smislenog trčanja (krug 3, S13). */
   return Math.max(ctx.data.safety.minEasySec, Math.round(sec / 60) * 60);
@@ -766,10 +779,19 @@ function layoutOnce(
      i po dužini — strože od ta dva. */
   const longRecipe = longDate === null ? undefined : fixed.get(longDate);
   const longCost = longRecipe === undefined ? null : summarize(realize(longRecipe, ctx), ctx.pace);
-  const longRef =
+  const realLong =
     longCost === null
       ? 0
       : Math.min(longCost.durationSec, (longCost.distanceM * ctx.pace.paces.easy) / 1000);
+  /* D1/D6 (krug 5): lagani dani se mere prema dugom koji trkač već trči (polazni) i dugom pre talasa — kad dugi
+     kreće niže ili ide u talasu, razlika ide u lagane dane i obim nedelje se ne ljulja */
+  const building = intent.kind === 'build' || intent.kind === 'peak';
+  const unwaved =
+    intent.long?.wave === undefined ? 0 : Math.min(d.longMaxSec, week.longSec / intent.long.wave);
+  const longRef =
+    realLong > 0 && building
+      ? Math.max(realLong, unwaved, Math.min(d.longStartSec, d.longMaxSec))
+      : realLong;
   const dayBeforeLong = longDate === null ? eve : addDays(longDate, -1);
   const calmWeek = intent.kind === 'taper' || intent.kind === 'race';
   const pool: EasyDay[] = runDays
@@ -951,6 +973,13 @@ function weekTotals(
   return { durationSec, longSec, km };
 }
 
+/** Broj nedelja gradnje/vrha pre nedelje `index`. */
+function buildsBefore(weeks: readonly PlanWeek[], index: number): number {
+  return weeks.filter(
+    (w) => w.index < index && (w.intent.kind === 'build' || w.intent.kind === 'peak')
+  ).length;
+}
+
 /** Blok u dugom iz mesta nedelje (E7): željena doza i tempo zone. */
 function blockOf(slots: WeekSlots): { block?: { sec: Seconds; pace: number } } {
   const l = slots.long;
@@ -1052,6 +1081,7 @@ export function runPass(
           runDays: slots.runDays.length,
           previousLong,
           highShare: high.has(week.index),
+          builds: buildsBefore(doc.weeks, week.index),
           ...blockOf(slots)
         })
       };
@@ -1067,6 +1097,7 @@ export function runPass(
           runDays: slots.runDays.length,
           previousLong,
           highShare: high.has(week.index),
+          builds: buildsBefore(doc.weeks, week.index),
           ...blockOf(slots)
         })
       };

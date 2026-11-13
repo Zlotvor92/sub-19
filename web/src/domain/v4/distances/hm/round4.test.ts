@@ -86,7 +86,8 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
       if (first === undefined || first.days.length < 7) continue;
       const km = weekCost(first, b.goal.raceDate, ctx).km;
       const base = b.facts.profile.weeklyKm ?? km;
-      expect(km / base, b.id).toBeGreaterThanOrEqual(0.95);
+      /* krug 5 (D6): sa 3 dana dugi kreće sa 85 % najdužeg — nedelja 1 ≥ 90 % */
+      expect(km / base, b.id).toBeGreaterThanOrEqual(b.doc.header.decisions.runDays.length <= 3 ? 0.9 : 0.95);
       expect(km / base, b.id).toBeLessThanOrEqual(1.05);
     }
   });

@@ -739,6 +739,9 @@ export interface SafetyNumbers {
   longShareByRunDays:
     Readonly<Record<string, number>> | Readonly<Record<LevelId, Readonly<Record<string, number>>>>;
   longStepSec: Seconds;
+  /** Pod dugog u prvoj nedelji gradnje kao udeo polaznog dugog; raste za korak po nedelji gradnje (krug 5, D1/D6).
+      Bez njega dugi gradnje nije ispod polaznog od prve nedelje. */
+  longStartFloorShare?: number;
   /** Korak dugog i u km (u trajanju laganog tempa); važi veće od ta dva (krug 4, S2). */
   longStepKm?: number;
   /** Udeo dugog kod malog obima (krug 4, S3): nedelja ispod `belowKm` (planirani km) uz bar `minRunDays` dana ima

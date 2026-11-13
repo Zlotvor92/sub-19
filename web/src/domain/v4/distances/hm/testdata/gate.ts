@@ -142,15 +142,25 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (g.km > Math.max(ref * 1.1, ref + 3) + 0.25 * g.workouts)
       v.push(`n${String(g.index)} skok ${String(ref)} → ${String(g.km)} km`);
   });
-  /* 3. lagan dan ≤ 65 % dugog (3 dana ≤ 70 %) */
+  /* 3. lagan dan ≤ 65 % dugog (3 dana ≤ 70 %). Krug 5 (D1, D6): dugi koji trkač već trči je merilo — najveći od
+     dugog te nedelje, prethodne 3 nedelje i najdužeg skorašnjeg iz profila (dugi kreće niže / ide u talasu) */
   const easyCap = runDays <= 3 ? 0.7 : 0.65;
   let maxEasy = 0;
-  for (const g of weeks) {
+  const d0 = doc.header.decisions;
+  const recentLongKm = Math.min(d0.longStartSec, d0.longMaxSec) / ctx.paces.easy;
+  for (const [i, g] of weeks.entries()) {
     if (g.longKm <= 0 || g.easyKm <= 0) continue;
-    maxEasy = Math.max(maxEasy, g.easyKm / g.longKm);
-    if (g.easyKm > easyCap * g.longKm + 0.25)
+    const building = g.kind === 'build' || g.kind === 'peak';
+    const prevLong = Math.max(0, ...weeks.slice(Math.max(0, i - 3), i).map((x) => x.longKm));
+    const wave = doc.weeks[i]?.intent.long?.wave ?? 1;
+    const maxKm = d0.longMaxSec / ctx.paces.easy;
+    const ref = building
+      ? Math.max(g.longKm, prevLong, recentLongKm, Math.min(maxKm, g.longKm / wave))
+      : g.longKm;
+    maxEasy = Math.max(maxEasy, g.easyKm / ref);
+    if (g.easyKm > easyCap * ref + 0.25)
       v.push(
-        `n${String(g.index)} lagan ${String(g.easyKm)} > ${String(easyCap)} × dugi ${String(g.longKm)}`
+        `n${String(g.index)} lagan ${String(g.easyKm)} > ${String(easyCap)} × dugi ${String(Math.round(ref * 10) / 10)}`
       );
   }
   /* 4. udeo dugog (S3): 3 dana ≤ 50 %; 4+ dana ≤ 40 % od 45 km nedeljno, ispod toga ≤ 42 % i ≤ 45 % u najviše
@@ -200,7 +210,10 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   /* 7. nedelja 1 ≥ 95 % sadašnjeg obima (prva puna nedelja van rampe) */
   const first = weeks.find((g) => full(g) && !g.ramp);
   const firstPct = first === undefined || baseKm <= 0 ? 1 : first.km / baseKm;
-  if (first !== undefined && first.index === 1 && firstPct < 0.95)
+  /* krug 5 (D6, odluka organizatora): sa 3 dana dugi kreće sa 85 % najdužeg, a lagan dan ne sme preko 70 % dugog —
+     nedelja 1 tada ≥ 90 % */
+  const firstMin = runDays <= 3 ? 0.9 : 0.95;
+  if (first !== undefined && first.index === 1 && firstPct < firstMin)
     v.push(`nedelja 1 ${String(first.km)} km < 95 % od ${String(baseKm)}`);
 
   /* 8. brz rad (S1): nedelja ≤ 22 %, vršna ≤ 25 % vremena trčanja; trka i test se ne broje; nedelja trke se ne meri

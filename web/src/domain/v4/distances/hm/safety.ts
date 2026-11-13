@@ -102,6 +102,8 @@ export const SAFETY: SafetyNumbers = {
   longStepSec: 600,
   /* krug 4 (S2): dugi ≤ + 1,5 km ili + 10 min po nedelji gradnje (veće od ta dva) */
   longStepKm: 1.5,
+  /* krug 5 (D1, D6; trener § D1): dugi ne kreće na plafonu — 1. nedelja ≈ 85 % najdužeg skorašnjeg, pa raste */
+  longStartFloorShare: 0.85,
   /* krug 4 (S3): ispod 45 km nedeljno (motor procenjuje km iz minuta, pa prag 42 km u minutima ≈ 45 km stvarno) udeo dugog ≤ 42 % (u najviše 3 nedelje ≤ 45 %) — u minutima nešto niže, jer
      je dugi sa blokom brži od nedelje (kapija meri km) */
   longShareLowVolume: { belowKm: 42, minRunDays: 4, share: 0.42, peakShare: 0.45, peakWeeks: 3 },
