@@ -1,0 +1,74 @@
+diff --git a/web/src/domain/v4/engine/build.ts b/web/src/domain/v4/engine/build.ts
+index 1b0660a..c0afb8e 100644
+--- a/web/src/domain/v4/engine/build.ts
++++ b/web/src/domain/v4/engine/build.ts
+@@ -4,6 +4,8 @@
+ import {
+   EASY_FLOOR_MIN_RUN_DAYS,
+   EASY_FLOOR_OVER_TARGET,
++  QUALITY_SHORTEN_MIN_SHARE,
++  QUALITY_SHORTEN_STEP_SEC,
+   VOLUME_ROOM_OVER,
+   RACE_CALM_DAYS,
+   RACE_EVE_MAX_SEC,
+@@ -1136,9 +1138,43 @@ function layoutOnce(
+       }
+     }
+     if (dose < minDoseOf(item.def, ctx)) continue;
+-    const recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
+-    const cost = summarize(realize(recipe, ctx), ctx.pace);
+-    if (keepDays && !roomFor(item.date, cost.load, cost.durationSec)) continue;
++    let recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
++    let cost = summarize(realize(recipe, ctx), ctx.pace);
++    /* R8 t. 7: kad trening ne staje uz tražene dane, SKRAĆUJE se (korak po korak, do najmanje smislene doze, i manjim
++       unosom istog podražaja) — briše se tek kad ni najmanja doza ne staje */
++    /* prvo mesto podražaja se ne skraćuje: skraćeni kasniji treninzi bi spustili vrh zone ispod prvog (K7) */
++    if (keepDays && !roomFor(item.date, cost.load, cost.durationSec) && item.slot.index === 0) continue;
++    if (keepDays && !roomFor(item.date, cost.load, cost.durationSec)) {
++      let fitted: { recipe: Recipe; cost: typeof cost } | null = null;
++      for (
++        let d = dose - QUALITY_SHORTEN_STEP_SEC;
++        d >= Math.max(ctx.data.safety.minDoseSec, QUALITY_SHORTEN_MIN_SHARE * item.wanted);
++        d -= QUALITY_SHORTEN_STEP_SEC
++      ) {
++        let def = item.def;
++        if (d < minDoseOf(def, ctx)) {
++          const smaller = pickDef(item.slot, d, ctx, { noHighImpact: false });
++          if (smaller === null || smaller.stimulus !== def.stimulus || d < minDoseOf(smaller, ctx))
++            break;
++          def = smaller;
++        }
++        const r: Recipe = { type: 'quality', def, dose: d, slot: item.slot };
++        const c = summarize(realize(r, ctx), ctx.pace);
++        if (roomFor(item.date, c.load, c.durationSec)) {
++          fitted = { recipe: r, cost: c };
++          break;
++        }
++      }
++      if (fitted === null) continue;
++      recipe = fitted.recipe;
++      cost = fitted.cost;
++      dose = fitted.recipe.type === 'quality' ? fitted.recipe.dose : dose;
++      if (fitted.recipe.type === 'quality' && fitted.recipe.def !== item.def) {
++        const zone = mainZone(fitted.recipe.def.main);
++        if (zone !== null)
++          item = { ...item, def: fitted.recipe.def, extra: extraWeight(zone, ctx) };
++      }
++    }
+     budget.book(dose, item.extra);
+     if (inZone(item.def)) zoneLeft -= dose;
+     fix(item.date, recipe);
+diff --git a/web/src/domain/v4/engine/constants.ts b/web/src/domain/v4/engine/constants.ts
+index e299862..c165dc3 100644
+--- a/web/src/domain/v4/engine/constants.ts
++++ b/web/src/domain/v4/engine/constants.ts
+@@ -287,3 +287,9 @@ export const PREP_PROBE_MAX_EXTRA_WEEKS = 16;
+ 
+ /** R8 t. 4: deonica fiksne dužine se skraćuje najviše do ovolikog dela (ispod toga ostaje najmanji oblik). */
+ export const REP_SHORTEN_MIN_SHARE = 0.5;
++
++/** R8 t. 7: korak skraćenja kvaliteta koji ne staje uz tražene dane (pre nego što se obriše). */
++export const QUALITY_SHORTEN_STEP_SEC = 60;
++/** R8 t. 7: najmanja smislena doza skraćenog kvaliteta je ovaj deo tražene (ispod toga se briše) — da skraćeni
++    treninzi ne spuste vrh zone ispod prvog (K7). */
++export const QUALITY_SHORTEN_MIN_SHARE = 0.7;
