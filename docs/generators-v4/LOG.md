@@ -714,3 +714,9 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   („ništa") menjaju cilj bez PROMENE; smer tempa posle boljeg rezultata i dalje pogrešan u 5K (S02/S03/S18).
 - R17: motor (regresija → stabilnost → smer tempa → prenos HM→10K → provera ne istiskuje RP → tekstovi → MAR s17 i
   povratak → HM podatak → M27); 10K, 5K, maraton tabovi podatak (R17-10K/5K/MAR).
+
+### 13. 11. 2026, 22:45 — primopredaja organizatora 3 izvršena (Fable `session_01GnHHiXbHoY1xUw1QNCS3LN`)
+- Motor R18, maraton, 10K i 5K tab obavešteni o novom organizatoru; Opus trener `…XrqBkKYzMY76jQDiz` arhiviran.
+- 10K tab dobio nalog R18-10K u poruci (zamerke drugog sudije runde 04 za P03, P10, P08, P11, P02 — samo podatak).
+- Sledeće: provera organizatora kad motor R18 i maraton jave; zatim ocena R19 (nov Fable trener + 4 nova Fable
+  druga sudije).
