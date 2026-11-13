@@ -640,3 +640,14 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - MOJ PROPUST: `briefs/F7-COMMON.md` nije bio gurnut (pull je pao, upis preskočen) — tabovi 5K i maraton su počeli
   bez njega. Fajl dodat; maraton tab obavešten; 5K je radio po `F7-5K.md` i obrascu 10K.
 - Krug 10 motora sada ima 20 stavki (1–6 povratak/tekst, 7–13 drugi sudija HM, 14–15 zahtevi 10K, 16–20 zahtevi 5K).
+
+### 13. 11. 2026, 15:32 — maraton isporučen (`438f9cc`); sve četiri distance postoje
+- Maraton (tab `session_01GnHHiWbwULZGywbJmwtnzH`, ≈ 55 min): `distances/marathon/`, 19 planova, 29 scenarija, 6 parova;
+  po izveštaju ceo V4 917 zeleno + 27 očekivanih padova, kapija 19/19, HM i 10K ispisi bajt-isti [srednja — nisam sam
+  pokretao]. Dugi po vremenu 2 h 45 – 3 h 15 i ≤ 35 km, sužavanje 3 nedelje, brz rad 18/20 %.
+- Otvoreno: najduži dugi 23–25 km kod 4–5 dana i vrha 45–60 km (README traži 26–30), p07 28 km (trener 32);
+  provera u N−8 prema briefu 4–6 nedelja (trener da presudi).
+- Zahtevi za motor → krug 10 stavke 21–27: `longFatigue` (množilac za dugi > 2 h 30), `longReaches` sa blokom,
+  pripremna trka na dan dugog, uloga „srednje-dugi", spajanje upozorenja, čuvar sužavanja iz podatka.
+- STANJE: HM (krug 9, Opus trener Plan 78,5), 10K (krug 3, Plan 76,9 pre kruga 3), 5K i maraton (bez ocene).
+  Krug 10 motora ima 27 stavki. Sledeće: provera kruga 10, pa ocena sve četiri distance (Opus).
