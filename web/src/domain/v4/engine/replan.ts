@@ -176,16 +176,20 @@ function onResult(
             ? { transfer: transferOf(state, header) }
             : {})
         },
-        paces: noFasterInWindow(
-          zonePaces(
-            paceVdot,
-            data.distanceM,
-            false,
-            data.safety.intervalPaceFloor,
-            transferOf(state, header)
+        paces: sameDirection(
+          noFasterInWindow(
+            zonePaces(
+              paceVdot,
+              data.distanceM,
+              false,
+              data.safety.intervalPaceFloor,
+              transferOf(state, header)
+            ),
+            header,
+            state.today
           ),
-          header,
-          state.today
+          header.paces,
+          paceVdot - doc.header.form.paceVdot
         ),
         warnings: header.warnings.filter(
           (w) =>
@@ -254,6 +258,21 @@ function capLongAfter(
     })
   }));
   return { ...doc, weeks };
+}
+
+/** Krug 13 (M17): posle boljeg rezultata nijedno tempo nije sporije, posle lošijeg nijedno brže (prenos na drugu
+    dužinu menja krivu, ali ne sme da okrene smer pojedine zone). Plan „po osećaju" nema ranija tempa. */
+function sameDirection(next: Paces, prev: Paces, delta: number): Paces {
+  if (prev.byFeel || delta === 0) return next;
+  const pick = (a: number, b: number): number => (delta > 0 ? Math.min(a, b) : Math.max(a, b));
+  return {
+    ...next,
+    M: pick(next.M, prev.M),
+    T: pick(next.T, prev.T),
+    I: pick(next.I, prev.I),
+    R: pick(next.R, prev.R),
+    RP: pick(next.RP, prev.RP)
+  };
 }
 
 /** Dugi sa završnim delom u tempu (blok ili progresija). */
@@ -1436,11 +1455,16 @@ function paceShift(before: PlanDoc, after: PlanDoc): string {
   const moved = deltas.filter((x) => x.d !== 0);
   const faster = moved.some((x) => x.d < 0);
   const slower = moved.some((x) => x.d > 0);
-  if (faster && slower)
+  /* krug 13 (M17): i kad se zone pomere nejednako ili neka ostane ista, rečenica po zoni — broj odgovara promeni */
+  const spread =
+    moved.length === 0
+      ? 0
+      : Math.max(...moved.map((x) => Math.abs(x.d))) - Math.min(...moved.map((x) => Math.abs(x.d)));
+  if ((faster && slower) || moved.length < deltas.length || spread > 2)
     return moved
       .map((x) => `${x.name} ${x.d < 0 ? 'brži' : 'sporiji'} za ${String(Math.abs(x.d))} s/km`)
       .join(', ');
-  const delta = after.header.paces.T - before.header.paces.T;
+  const delta = Math.round(moved.reduce((t, x) => t + x.d, 0) / moved.length);
   return `tempa su ${delta < 0 ? 'ubrzana' : 'usporena'} za oko ${String(Math.max(1, Math.abs(delta)))} s po kilometru`;
 }
 
@@ -1969,7 +1993,19 @@ export const replan: ReplanFn = (doc, state, events, data) => {
             raceDayVolumeShare:
               Math.round((h.decisions.raceDayVolumeShare ?? 1) * lost.share * 1000) / 1000
           };
-    const raceDay = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, decisions);
+    const rawDay = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, decisions);
+    /* krug 13 (M17): rezultat bolji od forme po kojoj je plan pisan ne usporava očekivano vreme dana trke (ni lošiji
+       ne ubrzava) */
+    const prevDay = current.header.form.raceDay;
+    const better = state.form.current.raceTimeSec <= current.header.form.current.raceTimeSec;
+    const raceDay =
+      ev.kind !== 'result' || lost !== null
+        ? rawDay
+        : better && rawDay.expectedSec > prevDay.expectedSec
+          ? { ...rawDay, expectedSec: prevDay.expectedSec }
+          : !better && rawDay.expectedSec < prevDay.expectedSec
+            ? { ...rawDay, expectedSec: prevDay.expectedSec }
+            : rawDay;
     current = {
       ...candidate.doc,
       header: {

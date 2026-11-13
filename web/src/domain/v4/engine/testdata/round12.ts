@@ -33,3 +33,18 @@ export function keptPeak(
   if (span.length === 0 || orig < 0.95 * Math.max(...span)) return false;
   return km >= 0.8 * orig - 0.5 && km <= orig + 0.5;
 }
+
+/** Krug 13 (M17): posle boljeg rezultata nijedno tempo nije sporije, posle lošijeg nijedno brže. */
+export function paceDirection(label: string, r: any): string[] {
+  const p0 = r.before.header.paces;
+  const p1 = r.after.header.paces;
+  if (p0.byFeel || p1.byFeel) return [];
+  const better = r.after.header.form.paceVdot > r.before.header.form.paceVdot;
+  const worse = r.after.header.form.paceVdot < r.before.header.form.paceVdot;
+  const bad: string[] = [];
+  for (const z of ['T', 'RP', 'I'] as const) {
+    if (better && p1[z] > p0[z]) bad.push(`${label}: ${z} sporiji posle boljeg rezultata`);
+    if (worse && p1[z] < p0[z]) bad.push(`${label}: ${z} brži posle lošijeg rezultata`);
+  }
+  return bad;
+}

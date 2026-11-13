@@ -345,7 +345,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 7. 2. trči sam
 - 19. nedelja: 50,3 km → 48,9 km
 - 21. nedelja: 49,2 km → 45,8 km
 Očekivano vreme trke je sada oko 4:13:35 umesto 4:12:55: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
-Rezultat 10 km za 58:00 (13. 2.) pokazuje slabiju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): tempa su usporena za oko 8 s po kilometru, a očekivano vreme trke je sada oko 4:22:54 (raspon 4:13:20–4:35:15).
+Rezultat 10 km za 58:00 (13. 2.) pokazuje slabiju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag sporiji za 8 s/km, tempo trke sporiji za 8 s/km, a očekivano vreme trke je sada oko 4:22:54 (raspon 4:13:20–4:35:15).
 - plan: prag 5:40/km, tempo trke 6:11/km → prag 5:48/km, tempo trke 6:19/km
 Rezultat 10 km za 58:00 (13. 2.): trka je kratka, pa je oporavak kao posle provere forme, pa su naredna 3 dana bez brzih deonica; od 1. 3. plan se nastavlja kako je bio.
 - ned 14. 2.: lagano 30 min → odmor

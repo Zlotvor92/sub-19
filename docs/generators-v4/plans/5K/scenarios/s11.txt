@@ -1,6 +1,6 @@
 S11 — p11, E3: ned 13 (najteža): propušteni tempo trke i dugi
 
-STANJE: danas 2027-02-01; sadašnji obim 12 km nedeljno, 3 dana; forma 26:59 (pouzdanost srednja), očekivano na dan trke 25:40.
+STANJE: danas 2027-02-01; sadašnji obim 12 km nedeljno, 3 dana; forma 26:59 (pouzdanost srednja), očekivano na dan trke 26:44.
 DOGAĐAJ: Propušteno: w13d3, w13d6; sve ostalo urađeno; danas 2027-02-01. Događaji: result:2027-01-21:run-w12d3, missed:2027-01-28:w13d3, missed:2027-01-31:w13d6.
 PROMENA: 2.
 
@@ -202,8 +202,9 @@ Polazim od tvojih ≈ 12 km nedeljno (87 min trčanja).
 FORMA
 Polazna forma (1. 11.): 26:59
 Današnja prognoza (1. 2.): 26:59, pouzdanost srednja
-Očekivano na dan trke: 26:10 (raspon 25:39–27:59) — 0:49 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 26:44 (raspon 25:52–27:49) — 0:15 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
+- Test 21. 1.: 1,5 km za 7:17. Rezultat sa 1,5 km prenosim na 5 km uz umanjenje, jer uz oko 15 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 5 km ostaje 26:59.
 - Polazna procena je iz rezultata koji si uneo: oko 26:59 za 5 km.
 
 TEMPA
@@ -213,7 +214,7 @@ TEMPA
 - tempo trke 5:24/km
 - intervali 5:10/km
 - brze deonice 4:52/km
-Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na dan trke (26:10) traži 5:14/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na dan trke (26:44) traži 5:21/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
 Propušten je ključni trening „tempo trke 3 × 800 m, oporavak 2 min džog" (28. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; sledeći dugi (7. 2.) već nosi završni deo u tempu trke, pa se zbog ovog treninga ništa ne menja.

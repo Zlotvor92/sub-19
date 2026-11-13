@@ -229,7 +229,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 10. 1. trči sa
 - 11. nedelja: 18,2 km → 13,9 km
 - 13. nedelja: 19,6 km → 17,9 km
 Očekivano vreme trke je sada oko 26:16 umesto 26:10: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
-Rezultat 5 km za 28:00 (14. 1.) pokazuje slabiju formu od one po kojoj je plan pisan (26:59 na distanci trke): tempa su usporena za oko 25 s po kilometru, a očekivano vreme trke je sada oko 27:16 (raspon 26:33–28:16). Provera forme planirana za 21. 1. se izostavlja: pun napor nije dobar test forme 14 dana posle trke.
+Rezultat 5 km za 28:00 (14. 1.) pokazuje slabiju formu od one po kojoj je plan pisan (26:59 na distanci trke): prag sporiji za 25 s/km, tempo trke sporiji za 8 s/km, intervali sporiji za 7 s/km, a očekivano vreme trke je sada oko 27:16 (raspon 26:33–28:16). Provera forme planirana za 21. 1. se izostavlja: pun napor nije dobar test forme 14 dana posle trke.
 - plan: prag 5:46/km, tempo trke 5:24/km → prag 6:11/km, tempo trke 5:32/km
 Rezultat 5 km za 28:00 (14. 1.): trka je kratka, pa je oporavak kao posle provere forme, pa su naredna 3 dana bez brzih deonica; od 1. 2. plan se nastavlja kako je bio. Provera forme planirana za 21. 1. se izostavlja: pun napor nije dobar test forme 14 dana posle trke.
 - ned 17. 1.: dugi 55 min lagano → dugi 40 min lagano

@@ -90,6 +90,9 @@ const usableForForm = (r: FitnessRun): boolean => r.source !== 'procena';
 
 function resultKind(r: FitnessRun): 'trka' | 'test' | null {
   if (!usableForForm(r)) return null;
+  /* krug 13 (M17): pun napor na dan provere iz plana je test i kad je upisan kao trka (5K S03: 1,5 km) */
+  if ((r.plannedEffortM ?? 0) > 0 && r.effort !== undefined && r.distanceM >= C.TEST_MIN_M)
+    return r.effort === 'race' && r.distanceM >= C.RACE_MIN_M ? 'trka' : 'test';
   if (r.effort === 'race' && r.distanceM >= C.RACE_MIN_M) return 'trka';
   if (r.effort === 'test' && r.distanceM >= C.TEST_MIN_M) return 'test';
   /* R4 (krug 6): odrađena provera forme iz plana (trčanje vezano za dan punog napora) je rezultat */

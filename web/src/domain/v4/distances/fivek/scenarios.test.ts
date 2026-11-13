@@ -18,7 +18,14 @@ import { keptPeak } from '../../engine/testdata/round12';
 /* POZNATE GREŠKE MOTORA na 5 km (13. 11. 2026) — nalaz se ne briše iz provere nego se ovde imenuje, sa uzrokom;
    svaki je zahtev prema motoru u `docs/generators-v4/reports/F7-5K-REPORT.md`. Kad motor bude ispravljen, test
    `poznate greške su još tu` pada i stavka se briše. */
-const KNOWN = new Map<string, string>([]);
+const KNOWN = new Map<string, string>([
+  /* krug 13 (M17): provera 1,5 km se sada čita (bila je ispod najmanje dužine testa), tempa idu u pravom smeru, ali
+     projekcija dana trke u modelu forme (`fitness`) posle prvog kratkog testa gubi 4 s napretka — sledeći korak M17 */
+  [
+    's03 bolji rezultat usporio prognozu 1570 → 1574',
+    'projekcija dana trke posle kratkog testa (fitness), M17 nastavak'
+  ]
+]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>
   bad.filter((b) => {

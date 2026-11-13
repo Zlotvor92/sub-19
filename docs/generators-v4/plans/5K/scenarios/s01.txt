@@ -195,7 +195,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (4:14/km). Tvoj cilj 21:44 traži 4:21/km — dostižan je (raspon na dan trke 20:44–21:28). Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 5 km za 21:10 (26. 12.) pokazuje bolju formu od one po kojoj je plan pisan (21:49 na distanci trke): tempa su ubrzana za oko 1 s po kilometru, a očekivano vreme trke je sada oko 21:04 (raspon 20:44–21:28).
+Rezultat 5 km za 21:10 (26. 12.) pokazuje bolju formu od one po kojoj je plan pisan (21:49 na distanci trke): prag brži za 1 s/km, tempo trke brži za 8 s/km, intervali brži za 7 s/km, a očekivano vreme trke je sada oko 21:04 (raspon 20:44–21:28).
 - plan: prag 4:46/km, tempo trke 4:22/km → prag 4:45/km, tempo trke 4:14/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja

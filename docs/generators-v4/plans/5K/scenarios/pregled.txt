@@ -2,7 +2,7 @@
 
 s01 p01 E1: ned 8 (provera), parkrun 5 km 3,0 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
 s02 p04 E1: ned 12 (provera), test 3 km 3,1 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
-s03 p11 E1: ned 12 (provera), test 1,5 km 3,4 % brže od očekivanog — promena: 0; nalazi čuvara posle: 0
+s03 p11 E1: ned 12 (provera), test 1,5 km 3,4 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
 s04 p12 E1: ned 6 (provera), prva trka u životu, 5 km 33:00 — promena: 2; nalazi čuvara posle: 0
 s05 p01 E2: bolest 7 dana u ned 5 (razvoj, I blok) — promena: 18; nalazi čuvara posle: 0
 s06 p04 E2: bolest 7 dana u ned 13 (najteža) — promena: 10; nalazi čuvara posle: 0

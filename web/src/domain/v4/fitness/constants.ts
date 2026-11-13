@@ -8,7 +8,8 @@ import type { Tenure } from './types';
 
 /** Trka se računa od 3000 m, test od 2000 m. [srednja] */
 export const RACE_MIN_M = 3000;
-export const TEST_MIN_M = 2000;
+/* krug 13 (M17): provera forme 5 km je 1,5 km — kraći prag bi plan sopstvene provere zauvek ignorisao */
+export const TEST_MIN_M = 1500;
 /** Deo razlike koji se usvaja: trka 0,7, test 0,5; pri niskoj pouzdanosti 1,0. [srednja] */
 export const K_RACE = 0.7;
 export const K_TEST = 0.5;

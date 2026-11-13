@@ -1,6 +1,6 @@
 S08 — p12, E2: bolest 7 dana u ned 7 (najteža)
 
-STANJE: danas 2026-12-20; sadašnji obim 45 km nedeljno, 4 dana; forma 26:40 (pouzdanost niska), očekivano na dan trke 26:24.
+STANJE: danas 2026-12-20; sadašnji obim 45 km nedeljno, 4 dana; forma 26:39 (pouzdanost srednja), očekivano na dan trke 26:31.
 DOGAĐAJ: Bolest 2026-12-14 – 2026-12-20 (7. nedelja), bez treninga. Događaji: result:2026-12-12:run-w6d5, pause:2026-12-14:2026-12-20.
 PROMENA: 5.
 
@@ -153,10 +153,11 @@ Dugi trening u 5 nedelja staje na 1 h 40 min: duže trčanje za ovu distancu don
 
 FORMA
 Polazna forma (1. 11.): 26:32
-Današnja prognoza (20. 12.): 26:40, pouzdanost niska
-Očekivano na dan trke: 26:24 (raspon 25:24–27:29) — 0:16 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Današnja prognoza (20. 12.): 26:39, pouzdanost srednja
+Očekivano na dan trke: 26:31 (raspon 25:42–27:28) — 0:08 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Bez trčanja 7 dana (14. 12. – 20. 12.); posle petog dana forma polako opada — procena za 5 km: 26:32 → 26:40.
+- Bez trčanja 7 dana (14. 12. – 20. 12.); posle petog dana forma polako opada — procena za 5 km: 26:31 → 26:39.
+- Test 12. 12.: 1,5 km za 7:17. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 5 km: 26:32 → 26:31.
 - Polazna procena je iz laganog tempa koji si uneo: oko 26:32 za 5 km. Prvi test ili trka je preciziraju.
 
 TEMPA
@@ -166,10 +167,10 @@ TEMPA
 - tempo trke 5:18/km
 - intervali 5:08/km
 - brze deonice 4:50/km
-Tempo trke u treninzima je tvoja današnja forma (5:18/km). Očekivano vreme na dan trke (26:24) traži 5:17/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:18/km). Očekivano vreme na dan trke (26:31) traži 5:18/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 1,5 km za 7:17 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 26:24 (raspon 25:24–27:29).
+Rezultat 1,5 km za 7:17 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 26:31 (raspon 25:42–27:28).
 - plan: po osećaju → prag 5:50/km, tempo trke 5:18/km
 - upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Pauza zbog bolesti trajala je 7 dana (14–20. 12.), pa je povratak postepen: treninzi su kraći do 27. 12., a prvi brzi trening je 31. 12.
@@ -277,7 +278,7 @@ Pauza zbog bolesti trajala je 7 dana (14–20. 12.), pa je povratak postepen: tr
   pet 8. 1.  odmor
   sub 9. 1.  lagano 20 min — 2,7 km, 20 min
   ned 10. 1.  TRKA: 5 km
-      napomena: Tempo za trku: 5:18/km (današnja forma 26:40).
+      napomena: Tempo za trku: 5:18/km (današnja forma 26:39).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 5:19–5:21/km (ne brže od 5:18/km), 2.–4. km ravnomerno 5:18/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
       napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 13,7 km, 98 min, 3 treninga + trka, brz rad 6 % vremena trčanja
