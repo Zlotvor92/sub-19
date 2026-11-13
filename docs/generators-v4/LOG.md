@@ -360,3 +360,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Presude: talas dugog samo na plafonu; `pocetnik-nov` prihvaćen; hod-trk dugi do 1 h 45; udeo dugog meriti u km (v2 → 18 km);
   3 dana udeo do 50 %, dugi ≤ vreme trke + 5 min, blok ≤ 35 min. Deset ispravki po važnosti u ROUND fajlu → krug 4.
 - Čeka se drugi sudija (Opus) pre briefa za krug 4.
+
+### 13. 11. 2026, 02:05 — drugi sudija kruga 3 (Opus, `8a26c18`) i odluka za krug 4
+- Drugi sudija: planovi 62,9 (0 ≥ 80; 1 ≥ 70), v1 61, v2 68, scenariji 78, parovi 6,7 (P1 6, P2 6,5, P3 7,5).
+  Sudija je drugi model nego u krugovima 1–2 (Fable 71,2) → broj nije uporediv sa prethodnim; razlika prema treneru
+  15,8 poena. Zamerke su konkretne i proverljive, pa ih uzimam bez obzira na broj: silazak intenziteta (3 kvalitetna
+  2 nedelje pred trku), forma raste od poslušnosti (s04, s24), start ispod stvarnog obima (P1 B, P2 B — isto kaže trener),
+  p08 dugi na plafonu od ned 1, doze tempa trke za početnike.
+- ODLUKA: krug 4 po `briefs/R4-ROUND4.md` (E1–E9 motor, D1–D9 podaci), isti Opus tab `session_01GnHHiWa47Guy3uDTKR2kE5`.
+  Posle kruga 4: trener + drugi sudija (Opus, isto uputstvo) pa pregled vlasnika (p11, vlasnik-v2, s05).
