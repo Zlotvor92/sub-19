@@ -5,14 +5,31 @@ const DAY_MS = 86_400_000;
 const ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 /** Redni broj dana od 1. 1. 1970; `NaN` za neispravan zapis. */
+/* R8 t. 20 (brzina): konverzije se ponavljaju milionima puta nad malim skupom dana — pamte se (čiste funkcije) */
+const toNumber = new Map<string, number>();
+const toIso = new Map<number, IsoDate>();
+const MEMO_MAX = 100_000;
+
 export function dayNumber(iso: IsoDate): number {
+  const hit = toNumber.get(iso);
+  if (hit !== undefined) return hit;
   const m = ISO_RE.exec(iso);
-  if (m === null) return Number.NaN;
-  return Math.round(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) / DAY_MS);
+  const n =
+    m === null
+      ? Number.NaN
+      : Math.round(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) / DAY_MS);
+  if (toNumber.size > MEMO_MAX) toNumber.clear();
+  toNumber.set(iso, n);
+  return n;
 }
 
 export function fromDayNumber(n: number): IsoDate {
-  return new Date(n * DAY_MS).toISOString().slice(0, 10);
+  const hit = toIso.get(n);
+  if (hit !== undefined) return hit;
+  const iso = new Date(n * DAY_MS).toISOString().slice(0, 10);
+  if (toIso.size > MEMO_MAX) toIso.clear();
+  toIso.set(n, iso);
+  return iso;
 }
 
 /** Postoji li taj dan u kalendaru (2026-02-30 ne postoji). */

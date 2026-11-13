@@ -41,7 +41,7 @@ export const TEXTS: Record<string, string> = {
     'Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.',
 
   'napomena.trka':
-    'Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km ne brže od {pace} (do 5 s/km sporije je u redu), od 3. do 8. km ravnomerno {pace}, poslednja 2 km po osećaju — ubrzaj ako možeš.',
+    'Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km {paceFrom}–{paceTo} (ne brže od {pace}), od 3. do 8. km ravnomerno {pace}, poslednja 2 km po osećaju — ubrzaj ako možeš.',
   'napomena.trka.po-osecaju':
     'Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km malo lakše nego što ti se čini da možeš, od 3. do 8. km ravnomerno, napor koji možeš da držiš do kraja, poslednja 2 km po osećaju.',
 

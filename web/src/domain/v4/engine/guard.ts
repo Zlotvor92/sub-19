@@ -646,7 +646,19 @@ export function warnings(input: WarningInput): Warning[] {
     });
   }
   const runDays = d.runDays.length;
-  const trial = input.withExtraDay?.() ?? null;
+  /* R8 t. 20 (brzina): proba „+1 dan" se gradi samo kad je neko upozorenje koje je koristi stvarno izdato */
+  const reachesEarly = longReaches(
+    data,
+    weeks,
+    Math.max(0, ...costs.map((c) => c.longSec)),
+    ctx.paces.easy
+  );
+  const needTrial =
+    peakKm < NEAR_ENOUGH * a.minPeakWeeklyKm ||
+    runDays < a.minRunDays ||
+    !reachesEarly ||
+    longKm < NEAR_ENOUGH * a.minLongKm;
+  const trial = needTrial ? (input.withExtraDay?.() ?? null) : null;
   /* M8a (krug 5), Z7 (krug 7): trajanje dodatnog dana je ono što mu probni plan sa još jednim danom stvarno daje */
   const dayMin = trial === null ? null : Math.max(30, Math.round(trial.dayMin / 5) * 5);
   /* deo obima novog dana dolazi sa ostalih dana kad vrh poraste manje od samog dana */

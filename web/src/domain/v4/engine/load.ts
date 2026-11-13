@@ -56,8 +56,33 @@ export function zonePace(zone: ZoneId, paces: Paces): SecPerKm {
 /** Težina zone (§ 5.1). RP nema stalnu: iz odnosa tempa trke i (nezaokruženog) praga forme, na 0,05. */
 export function zoneWeight(zone: ZoneId, ctx: PaceCtx): number {
   if (zone !== 'RP') return ZONE_WEIGHT[zone];
-  const threshold = paceAtShare(zoneVdot(ctx.vdot, 'T', ctx.transfer), ZONE_SHARE.T);
+  const threshold = thresholdOf(ctx);
   return Math.round(weightAtPace(ctx.paces.RP, threshold) / RP_WEIGHT_STEP) * RP_WEIGHT_STEP;
+}
+
+/* R8 t. 20 (brzina): isti račun po ličnoj krivi se ponavlja za svaki korak — čista funkcija, pamti se po ulazu */
+const memo = new Map<string, number>();
+const transferKey = (t: Transfer | undefined): string =>
+  t === undefined
+    ? '-'
+    : `${String(t.beta)},${String(t.personal)},${String(t.refM)},${String(t.anchorM)},${String(t.capDown)}`;
+function remember(key: string, compute: () => number): number {
+  const hit = memo.get(key);
+  if (hit !== undefined) return hit;
+  const value = compute();
+  if (memo.size > 50000) memo.clear();
+  memo.set(key, value);
+  return value;
+}
+function thresholdOf(ctx: PaceCtx): SecPerKm {
+  return remember(`T|${String(ctx.vdot)}|${transferKey(ctx.transfer)}`, () =>
+    paceAtShare(zoneVdot(ctx.vdot, 'T', ctx.transfer), ZONE_SHARE.T)
+  );
+}
+function allOutPace(ctx: PaceCtx, distanceM: number): SecPerKm {
+  return remember(`A|${String(ctx.vdot)}|${String(distanceM)}|${transferKey(ctx.transfer)}`, () =>
+    racePace(vdotAt(ctx.vdot, distanceM, ctx.transfer), distanceM)
+  );
 }
 
 function rpeWeight(rpe: number): number {
@@ -91,9 +116,7 @@ function pacingOf(step: SingleStep, ctx: PaceCtx): Pacing {
       return { pace: target.secPerKm, weight: weightAtPace(target.secPerKm, ctx.paces.T) };
     case 'allOut': {
       const pace =
-        'distanceM' in step.extent
-          ? racePace(vdotAt(ctx.vdot, step.extent.distanceM, ctx.transfer), step.extent.distanceM)
-          : ctx.paces.T;
+        'distanceM' in step.extent ? allOutPace(ctx, step.extent.distanceM) : ctx.paces.T;
       return { pace, weight: weightAtPace(pace, ctx.paces.T) };
     }
   }

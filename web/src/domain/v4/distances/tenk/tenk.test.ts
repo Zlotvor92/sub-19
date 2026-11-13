@@ -879,3 +879,20 @@ describe('izolacija foldera 10 km (SPEC § 11.1)', () => {
     }
   });
 });
+
+describe('krug 8 — t. 19: start trke 10 km', () => {
+  it('napomena trke: prva 2 km tempo trke + 3 do + 6 s/km (podatak `raceStartPaceOffsetSec`)', () => {
+    const p = PROFILE_PLANS.find((x) => x.id === 'p01');
+    if (p === undefined) throw new Error('p01');
+    const text = renderPlan(p.doc, p.state, tenk);
+    const m = /Prva 2 km (\d+):(\d+)–(\d+):(\d+)\/km \(ne brže od (\d+):(\d+)\/km\)/.exec(text);
+    expect(
+      m,
+      text.split('\n').find((l) => l.includes('Prva 2 km'))
+    ).not.toBeNull();
+    const sec = (a?: string, b?: string): number => Number(a) * 60 + Number(b);
+    const race = sec(m?.[5], m?.[6]);
+    expect(sec(m?.[1], m?.[2]) - race).toBe(3);
+    expect(sec(m?.[3], m?.[4]) - race).toBe(6);
+  });
+});
