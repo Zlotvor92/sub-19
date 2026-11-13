@@ -17,7 +17,7 @@ Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 46:00 za 10 km.
 
 TEMPA
-- lagano 5:47–6:22/km
+- lagano 5:46–6:21/km
 - umereno 5:05/km
 - prag 4:46/km
 - tempo trke 4:36/km
@@ -151,12 +151,12 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
   pon 18. 1.  odmor
   uto 19. 1.  tempo trke 4 × 1,6 km (4:36/km), oporavak 1:30 džog — 12,9 km, 69 min
   sre 20. 1.  odmor
-  čet 21. 1.  intervali 6 × 800 m (4:15/km), oporavak 2:30 džog — 12,5 km, 68 min
+  čet 21. 1.  intervali 6 × 800 m (4:15/km), oporavak 2:30 džog — 12,6 km, 68 min
   pet 22. 1.  odmor
   sub 23. 1.  lagano 12 km — 12 km, 73 min
   ned 24. 1.  dugi 16,5 km lagano — 16,5 km, 1 h 40 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 53,9 km, 5 h 10 min, 4 treninga, brz rad 16 % vremena trčanja
+  Zbir: 54 km, 5 h 10 min, 4 treninga, brz rad 16 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 25. 1.  odmor
