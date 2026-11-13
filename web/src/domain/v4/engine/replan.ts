@@ -53,7 +53,7 @@ import {
 } from './format';
 import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
-import { skeleton } from './plan';
+import { adjustRaceDay, skeleton } from './plan';
 import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
 import { lastLongAfterEffort, lastLongBefore, normalizeAvailability } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
@@ -830,7 +830,7 @@ function explain(
         : `${what}: ${recovery}; ${resume}.`;
       const old = fmtClock(raceTimeSec(before.header.form.paceVdot, data.distanceM));
       const faster = c.doc.header.form.paceVdot > before.header.form.paceVdot;
-      const { raceDay } = state.form;
+      const raceDay = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, c.doc.header.decisions);
       const header = `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a očekivano vreme trke je sada oko ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)}).`;
       const late = `${what}: ${recovery}; i posle toga je prvi brzi trening svake vrste nešto kraći — ${lighter}.`;
       return { day, late, week: late, header };
@@ -1072,7 +1072,11 @@ export const replan: ReplanFn = (doc, state, events, data) => {
       ...candidate.doc,
       header: {
         ...h,
-        form: { ...h.form, current: state.form.current, raceDay: state.form.raceDay },
+        form: {
+          ...h.form,
+          current: state.form.current,
+          raceDay: adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions)
+        },
         appliedEvents: [...h.appliedEvents, ev.id]
       }
     };

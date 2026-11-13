@@ -219,7 +219,7 @@ for (const pair of PAIRS) {
     `${pair.id.toUpperCase()} — ${pair.label} (ulazi kao ${pair.base})`,
     `MORA DA SE RAZLIKUJE: ${pair.must}`,
     `ISTORIJA: ${String(pair.facts.runs.length)} trčanja; nedelje (km): ${state.weeks.map((w: Any) => f1(w.distanceM / 1000)).join(' / ')}; pauze ${String(state.pauses.length)}, bol ${String((pair.facts.painHistory ?? []).length)}`,
-    `BROJEVI: nivo ${String(doc.header.decisions.level)}; nedelja 1 ${f1(g.weeks[0]?.km ?? 0)} km; vrh ${f1(g.peakKm)} km; prvi dugi ${f1(firstLong)} km, najduži ${f1(g.longestLongKm)} km; prvi kvalitet u ${String(firstQ?.index ?? '-')}. nedelji; provera forme u ${String(test?.index ?? '-')}. nedelji; forma ${clock(state.form.current.raceTimeSec)} (${String(state.form.current.confidence)}), dan trke ${clock(state.form.raceDay.expectedSec)} (${clock(state.form.raceDay.lowSec)}–${clock(state.form.raceDay.highSec)})`,
+    `BROJEVI: nivo ${String(doc.header.decisions.level)}; nedelja 1 ${f1(g.weeks[0]?.km ?? 0)} km; vrh ${f1(g.peakKm)} km; prvi dugi ${f1(firstLong)} km, najduži ${f1(g.longestLongKm)} km; prvi kvalitet u ${String(firstQ?.index ?? '-')}. nedelji; provera forme u ${String(test?.index ?? '-')}. nedelji; forma ${clock(state.form.current.raceTimeSec)} (${String(state.form.current.confidence)}), dan trke ${clock(doc.header.form.raceDay.expectedSec)} (${clock(doc.header.form.raceDay.lowSec)}–${clock(doc.header.form.raceDay.highSec)})`,
     ''
   ];
   writeFileSync(join(out, `${pair.id}.txt`), `${lines.join('\n')}\n${E.renderPlan(doc, state, hm)}\n`);

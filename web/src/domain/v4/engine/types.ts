@@ -220,6 +220,10 @@ export interface Paces {
 export interface Decisions {
   templateId: string;
   level: LevelId;
+  /** M3 (krug 5): prognoza dana trke bez napretka od obima (nalaz `dugi-za-distancu`) i faktor širenja raspona
+      (kratak staž); ispis i plan ih primenjuju istom funkcijom (`adjustRaceDay`). */
+  raceDayNoProgress?: boolean;
+  raceDayWiden?: number;
   /** Bazno nedeljno opterećenje trkača na dan nastanka plana. */
   baseLoad: LoadPoints;
   /** Vrh nedeljnog opterećenja plana. */

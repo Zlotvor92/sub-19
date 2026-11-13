@@ -13,6 +13,7 @@ import {
   type Adjustment,
   type Availability,
   type Decisions,
+  type Seconds,
   type DistanceData,
   ENGINE_VERSION,
   type Goal,
@@ -47,15 +48,34 @@ function historyBase(
 
 /** S8e (krug 4): staž kraći od `adequate.minTenureWeeks` širi raspon prognoze (× 1,5 oko očekivanog). */
 const TENURE_RANGE_FACTOR = 1.5;
-function widened(state: RunnerState, data: DistanceData): RunnerState['form']['raceDay'] {
-  const r = state.form.raceDay;
+function widenOf(state: RunnerState, data: DistanceData): number | undefined {
   const years = state.profile.yearsRunning;
   const min = data.adequate.minTenureWeeks;
-  if (years === undefined || min === undefined || years * 52 >= min) return r;
+  if (years === undefined || min === undefined || years * 52 >= min) return undefined;
+  return TENURE_RANGE_FACTOR;
+}
+
+/** M3 (krug 5): prognoza dana trke prema odlukama plana — bez napretka od obima očekivano je današnja prognoza
+    (raspon zadržava svoju širinu), kratak staž širi raspon. Jedno mesto za plan i ispis. */
+export function adjustRaceDay(
+  raw: RunnerState['form']['raceDay'],
+  todaySec: Seconds,
+  d: Pick<Decisions, 'raceDayNoProgress' | 'raceDayWiden'>
+): RunnerState['form']['raceDay'] {
+  let r = raw;
+  if (d.raceDayNoProgress === true && r.expectedSec < todaySec) {
+    r = {
+      lowSec: Math.round(todaySec - (r.expectedSec - r.lowSec)),
+      expectedSec: todaySec,
+      highSec: Math.round(todaySec + (r.highSec - r.expectedSec))
+    };
+  }
+  const f = d.raceDayWiden;
+  if (f === undefined) return r;
   return {
-    lowSec: Math.round(r.expectedSec - (r.expectedSec - r.lowSec) * TENURE_RANGE_FACTOR),
+    lowSec: Math.round(r.expectedSec - (r.expectedSec - r.lowSec) * f),
     expectedSec: r.expectedSec,
-    highSec: Math.round(r.expectedSec + (r.highSec - r.expectedSec) * TENURE_RANGE_FACTOR)
+    highSec: Math.round(r.expectedSec + (r.highSec - r.expectedSec) * f)
   };
 }
 
@@ -229,7 +249,7 @@ export function createPlan(
         current: form,
         paceVdot: form.vdot,
         pacesUpdatedOn: state.today,
-        raceDay: widened(state, data)
+        raceDay: adjustRaceDay(state.form.raceDay, form.raceTimeSec, { raceDayWiden: widenOf(state, data) })
       },
       paces: zonePaces(form.vdot, data.distanceM, form.confidence === 'niska', data.safety.intervalPaceFloor),
       decisions,
@@ -272,11 +292,23 @@ export function createPlan(
       longKm: Math.max(0, ...costs.map((c) => c.longKm))
     };
   };
+  const found = warnings({ state, goal, data, decisions, doc: built, withExtraDay });
+  /* M3: nalaz „dugi-za-distancu" kaže da prognoza ne računa napredak od obima — i broj to prati */
+  const flags = {
+    ...(found.some((w) => w.code === 'dugi-za-distancu') ? { raceDayNoProgress: true } : {}),
+    ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) })
+  };
+  const finalDecisions = { ...built.header.decisions, ...flags };
   return {
     ...built,
     header: {
       ...built.header,
-      warnings: warnings({ state, goal, data, decisions, doc: built, withExtraDay })
+      decisions: finalDecisions,
+      form: {
+        ...built.header.form,
+        raceDay: adjustRaceDay(state.form.raceDay, form.raceTimeSec, finalDecisions)
+      },
+      warnings: found
     }
   };
 }

@@ -22,6 +22,7 @@ import {
 import { weekCost } from './guard';
 import { paceCtxOf } from './load';
 import { effortRampDays } from './readiness';
+import { adjustRaceDay } from './plan';
 import { countWeeks } from './template';
 import type {
   Change,
@@ -177,13 +178,20 @@ function raceTruth(
 /** Napomene dana trke za ispis (R6): tempo iz cilja ako je u rasponu, inače iz očekivanog vremena; trkač po
     osećaju dobija opis napora bez s/km. Napomene iz podataka mogu da nose `{pace}`, `{paceFrom}`, `{paceTo}`
     (5 i 10 s sporije) i `{time}`; uz pravilo sa `byFeelText` trkač po osećaju dobija taj tekst. */
+/** M3 (krug 5): prognoza dana trke za ispis — novija procena iz stanja, po istim pravilima plana. */
+function raceDayShown(doc: PlanDoc, state: RunnerState | undefined): PlanDoc['header']['form']['raceDay'] {
+  const h = doc.header;
+  if (state === undefined) return h.form.raceDay;
+  return adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
+}
+
 export function raceNotes(
   doc: PlanDoc,
   state: RunnerState | undefined,
   data: DistanceData
 ): string[] {
   const h = doc.header;
-  const raceDay = state?.form.raceDay ?? h.form.raceDay;
+  const raceDay = raceDayShown(doc, state);
   const race = doc.weeks
     .flatMap((w) => w.days)
     .find((d) => d.workout?.kind === 'race' && d.date === h.goal.raceDate);
@@ -268,7 +276,7 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
     `Polazna forma (${fmtDate(h.form.start.asOf)}): ${fmtClock(h.form.start.raceTimeSec)}`
   );
   const now = state?.form.current ?? h.form.current;
-  const raceDay = state?.form.raceDay ?? h.form.raceDay;
+  const raceDay = raceDayShown(doc, state);
   lines.push(
     `Današnja prognoza (${fmtDate(now.asOf)}): ${fmtClock(now.raceTimeSec)}, pouzdanost ${now.confidence}`
   );
