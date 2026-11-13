@@ -391,3 +391,12 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Trener: HM JE spreman kao obrazac za 10K/5K/maraton uz uslov da se ispravke 1, 3, 4 reše pre prenosa; dao je spisak
   zajedničkih pravila motora i šta ostaje podatak distance (u ROUND fajlu).
 - Čeka se drugi sudija pre odluke.
+
+### 13. 11. 2026, 03:02 — drugi sudija kruga 4 (`8caf905`) i odluka za krug 5
+- Drugi sudija (Opus, isto uputstvo kao krug 3 → uporedivo): planovi 62,9 → 70,2 (0 ≥ 80; 6 ≥ 70; p05 61),
+  v1 61 → 68, v2 68 → 76, scenariji 78 → 79, parovi 67 → 72.
+- Zajedničko oba sudije: p05 premalo kvaliteta (moja greška u R4: plafon tempa trke bez pravila zamene), p04 dugi 2 h 30,
+  simboličan tempo trke. Samo drugi sudija: upozorenja ne slede iz brojeva, zaglavlje ≠ koraci procene (s21–s24),
+  obim u nedelji −2 na 89–96 % vrha, kvalitet 2 dana pre provere.
+- ODLUKA: krug 5 po `briefs/R5-ROUND5.md` (M1–M9, P1–P5), isti Opus tab. Posle njega ocena; ako trener Plan ≥ 80 →
+  HM zatvoren i otvaraju se 10K/5K/maraton (trener: obrazac je spreman, uslov ispravke 1, 3, 4 = M1–M3).
