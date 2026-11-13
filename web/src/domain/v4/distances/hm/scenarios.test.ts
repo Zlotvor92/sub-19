@@ -10,6 +10,7 @@ import { paceCtxOf, renderPlan, summarize, type PlanDoc, type PlanWeek } from '.
 import { addDays } from '../../engine/dates';
 import { weekCost } from '../../engine/guard';
 import { adjustmentWindow } from '../../engine/readiness';
+import { adjustRaceDay } from '../../engine/plan';
 import { hm } from './index';
 import { SCENARIOS } from './testdata/scenarios';
 
@@ -167,6 +168,40 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
         if (early !== undefined)
           bad.push(`${name(s.no)} oporavak do ${until}, a brzi ${early.date}`);
       }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('Z4: prognoza se menja samo sa razlogom i u pravom smeru', () => {
+    const bad: string[] = [];
+    for (const { s, r } of RUNS) {
+      if (s.title.startsWith('E5')) continue;
+      const was: number = r.before.header.form.raceDay.expectedSec;
+      const now = adjustRaceDay(r.afterState.form.raceDay, r.afterState.form.current.raceTimeSec, r.after.header.decisions).expectedSec;
+      /* propušten trening nikad ne ubrzava prognozu */
+      if (s.title.startsWith('E3') && now < was - 1) bad.push(`${name(s.no)} propušten trening ubrzao prognozu ${String(was)} → ${String(now)}`);
+      /* bolji rezultat od očekivanog ne usporava prognozu */
+      const m = /očekivano (\d+):(\d+)/.exec(s.title);
+      const t = /km (\d+):(\d+)/.exec(s.title);
+      if (s.title.startsWith('E1') && m !== null && t !== null && Number(t[1]) * 60 + Number(t[2]) < Number(m[1]) * 60 + Number(m[2]) && now > was + 1)
+        bad.push(`${name(s.no)} bolji rezultat usporio prognozu ${String(was)} → ${String(now)}`);
+      /* ništa se nije desilo (test potvrdio formu): najviše 1 % */
+      if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was) bad.push(`${name(s.no)} prognoza ${String(was)} → ${String(now)} bez događaja`);
+      /* svaka promena ima rečenicu „zašto" (korak sa signalom posle polazne procene) */
+      if (Math.abs(now - was) > 20) {
+        const asOf: string = r.before.header.form.current.asOf;
+        const why = (r.afterState.form.history as any[]).some((h) => h.date > asOf && h.signal !== 'plan');
+        if (!why) bad.push(`${name(s.no)} prognoza ${String(was)} → ${String(now)} bez rečenice zašto`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('Z10: više događaja zaredom — rep izmena ne duži od 4 nedelje posle poslednjeg događaja', () => {
+    const bad: string[] = [];
+    for (const { s, r } of RUNS.filter(({ s }) => s.title.startsWith('E7'))) {
+      const end = windowEnd(r);
+      if (end !== null && end > addDays(r.afterState.today as string, 28)) bad.push(`${name(s.no)} rep do ${end}`);
     }
     expect(bad).toEqual([]);
   });

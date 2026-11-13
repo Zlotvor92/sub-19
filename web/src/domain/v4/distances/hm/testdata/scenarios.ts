@@ -252,6 +252,80 @@ function e6(id: string): Scenario['run'] {
   };
 }
 
+/* E7 (krug 7, Z10) — više događaja zaredom. Prvi događaj → plan A; trkač radi po planu A do drugog događaja →
+   plan B. PRE je početni plan, POSLE plan B; izmene su obe liste. */
+function chain(start: Any, first: (s: Any) => { facts: Any; extra?: Any[] }, second: (doc: Any, facts: Any) => { facts: Any; extra?: Any[] }): Any {
+  const a = first(start);
+  const one = replanWith(start, a.facts, a.extra ?? []);
+  const b = second(one.result.doc, a.facts);
+  const state = E.buildState(b.facts, start.goal, hm, estimateForm, one.result.doc);
+  const events = E.sortEvents([...E.deriveEvents(one.result.doc, state), ...(b.extra ?? [])]);
+  const two = E.replan(one.result.doc, state, events, hm);
+  return { state, events: [...one.events, ...events], changes: [...one.result.changes, ...two.changes], doc: two.doc };
+}
+
+/* s25: bolest 5 dana (pon–pet zadate nedelje), pa 10 dana posle povratka propušten dugi */
+function e7illnessThenMissed(id: string, week: number): Scenario['run'] {
+  return () => {
+    const start = startPlan(id);
+    const from = weekOf(start.doc, week).start;
+    const to = addDays(from, 4);
+    const r = chain(
+      start,
+      () => ({ facts: { ...start.facts, today: to, runs: runsAsPlanned(start.doc, addDays(from, -1)), pauses: [{ from, to, reason: 'bolest' }] } }),
+      (doc, facts) => {
+        const long = allDays(doc).find((d: Any) => d.workout?.kind === 'long' && d.date >= addDays(to, 10));
+        const today = addDays(long.date, 1);
+        const runs = runsAsPlanned(doc, today, (d) => d.id === long.id || (d.date >= from && d.date <= to));
+        return { facts: { ...facts, today, runs } };
+      }
+    );
+    return { before: start.doc, beforeState: start.state, after: r.doc, afterState: r.state, changes: r.changes, note: `Bolest ${from} – ${to}, pa propušten dugi 10+ dana posle povratka. Događaji: ${r.events.map((e: Any) => e.id).join(', ')}.` };
+  };
+}
+
+/* s26: bol 4/10 posle kvaliteta, pa dve nedelje kasnije neplanirana trka 10 km */
+function e7painThenRace(id: string, week: number, timeSec: number): Scenario['run'] {
+  return () => {
+    const start = startPlan(id);
+    const q = qualityDay(start.doc, week);
+    const pain = { id: `pain:${q.date}`, date: q.date, kind: 'pain', level: 4, part: 'koleno' };
+    const r = chain(
+      start,
+      () => ({ facts: { ...start.facts, today: q.date, runs: runsAsPlanned(start.doc, q.date), pain: [{ date: q.date, level: 4, part: 'koleno' }] }, extra: [pain] }),
+      (doc, facts) => {
+        const day = allDays(doc).find((d: Any) => d.date >= addDays(q.date, 14) && d.workout !== null && d.workout.kind !== 'long');
+        const runs = runsAsPlanned(doc, addDays(day.date, -1));
+        runs.push({ id: `trka-${day.date}`, date: day.date, distanceM: 10000, durationSec: timeSec, effort: 'race' });
+        return { facts: { ...facts, today: day.date, runs } };
+      }
+    );
+    return { before: start.doc, beforeState: start.state, after: r.doc, afterState: r.state, changes: r.changes, note: `Bol 4/10 ${q.date}, pa trka 10 km ${clock(timeSec)} dve nedelje kasnije. Događaji: ${r.events.map((e: Any) => e.id).join(', ')}.` };
+  };
+}
+
+/* s27: propuštena dva kvaliteta (dve nedelje zaredom), pa pauza zbog puta 6 dana */
+function e7missedThenTrip(id: string, week: number): Scenario['run'] {
+  return () => {
+    const start = startPlan(id);
+    const q1 = qualityDay(start.doc, week);
+    const q2 = qualityDay(start.doc, week + 1);
+    const skip = new Set([q1?.id, q2?.id]);
+    const after = addDays(sundayOf(start.doc, week + 1), 1);
+    const r = chain(
+      start,
+      () => ({ facts: { ...start.facts, today: after, runs: runsAsPlanned(start.doc, after, (d) => skip.has(d.id)) } }),
+      (doc, facts) => {
+        const from = addDays(after, 7);
+        const to = addDays(from, 5);
+        const runs = runsAsPlanned(doc, addDays(from, -1), (d) => skip.has(d.id));
+        return { facts: { ...facts, today: to, runs, pauses: [{ from, to, reason: 'put' }] } };
+      }
+    );
+    return { before: start.doc, beforeState: start.state, after: r.doc, afterState: r.state, changes: r.changes, note: `Propuštena dva kvaliteta (${String(q1?.date)}, ${String(q2?.date)}), pa put 6 dana. Događaji: ${r.events.map((e: Any) => e.id).join(', ')}.` };
+  };
+}
+
 export function clock(sec: number): string {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
@@ -354,5 +428,8 @@ export const SCENARIOS: Scenario[] = [
   { no: 21, id: 'p01', title: 'E6: ništa se nije desilo do kraja ned 6', run: e6('p01') },
   { no: 22, id: 'p04', title: 'E6: ništa se nije desilo do kraja ned 6', run: e6('p04') },
   { no: 23, id: 'p11', title: 'E6: ništa se nije desilo do kraja ned 6', run: e6('p11') },
-  { no: 24, id: 'p12', title: 'E6: ništa se nije desilo do kraja ned 6', run: e6('p12') }
+  { no: 24, id: 'p12', title: 'E6: ništa se nije desilo do kraja ned 6', run: e6('p12') },
+  { no: 25, id: 'p01', title: 'E7: bolest 5 dana u ned 6, pa propušten dugi 10 dana kasnije', run: e7illnessThenMissed('p01', 6) },
+  { no: 26, id: 'p11', title: 'E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije', run: e7painThenRace('p11', 9, 3480) },
+  { no: 27, id: 'p04', title: 'E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana', run: e7missedThenTrip('p04', 9) }
 ];
