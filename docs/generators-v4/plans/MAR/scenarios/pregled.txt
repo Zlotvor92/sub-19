@@ -1,7 +1,7 @@
 # Scenariji prilagođavanja — maraton (pregled)
 
 s01 p07 E1: ned 4, trka 10 km 3,0 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
-s02 p08 E1: ned 15, pripremni polumaraton 3,1 % brže od očekivanog — promena: 2; nalazi čuvara posle: ispod-cilja@20
+s02 p08 E1: ned 15, pripremni polumaraton 3,1 % brže od očekivanog — promena: 1; nalazi čuvara posle: ispod-cilja@20
 s03 p11 E1: ned 15, pripremni polumaraton 3,4 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
 s04 p12 E1: ned 4, prva trka u životu, 5 km 30:30 — promena: 3; nalazi čuvara posle: 0
 s05 p07 E2: bolest 7 dana u ned 6 (specifična, talas) — promena: 16; nalazi čuvara posle: 0
@@ -25,7 +25,7 @@ s22 p08 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara 
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 4; nalazi čuvara posle: 0
 s25 p07 E7: bolest 5 dana u ned 3, pa propušten dugi 10 dana kasnije — promena: 34; nalazi čuvara posle: brz-udeo@6
-s26 p11 E7: bol 4/10 u ned 13, pa trka 10 km dve nedelje kasnije — promena: 27; nalazi čuvara posle: silazak@22 dugi-za-distancu@19
+s26 p11 E7: bol 4/10 u ned 13, pa trka 10 km dve nedelje kasnije — promena: 30; nalazi čuvara posle: silazak@22 dugi-za-distancu@19
 s27 p08 E7: propuštena dva kvaliteta (ned 13–14), pa put 6 dana — promena: 18; nalazi čuvara posle: 0
 s28 p07 MAR: propušten najduži dugi (ned 9, 3 nedelje pred trku) — promena: 1; nalazi čuvara posle: 0
 s29 p08 MAR: bolest 7 dana u poslednje 4 nedelje (ned 21, najteža) — promena: 4; nalazi čuvara posle: ispod-cilja@20

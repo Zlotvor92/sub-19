@@ -188,9 +188,9 @@ UPOZORENJA
   sre 10. 2.  odmor
   čet 11. 2.  odmor
   pet 12. 2.  odmor
-  sub 13. 2.  pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju — 24,6 km, 2 h 29 min
+  sub 13. 2.  lagano 30 min — 4,1 km, 30 min
+  ned 14. 2.  pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju — 24,6 km, 2 h 29 min
       napomena: Proba trke: doručak, oprema i gelovi tačno kao na maratonu. Rezultat postaje nova forma; sledeća nedelja je bez brzih treninga.
-  ned 14. 2.  lagano 30 min — 4,1 km, 30 min
   Zbir: 28,7 km, 2 h 59 min, 2 treninga, brz rad 69 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — razvoj, gradnja; do trke 8 nedelja
@@ -328,8 +328,8 @@ UPOZORENJA
 
 PROMENE
 Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treninzi su kraći do 21. 2., a prvi brzi trening je 25. 2.; od 5. 4. plan se nastavlja kako je bio. Provera forme je pomerena na 18. 3.
-- sub 13. 2.: pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju → lagano 1 h 45 min
-- ned 14. 2.: lagano 30 min → lagano 25 min
+- sub 13. 2.: lagano 30 min → lagano 20 min
+- ned 14. 2.: pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju → lagano 1 h 50 min
 - uto 16. 2.: lagano 55 min → lagano 30 min
 - čet 18. 2.: lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - sub 20. 2.: lagano 55 min → lagano 30 min
@@ -506,8 +506,8 @@ Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treni
   sre 10. 2.  odmor
   čet 11. 2.  odmor
   pet 12. 2.  odmor
-  sub 13. 2.  lagano 1 h 45 min — 14,5 km, 1 h 45 min
-  ned 14. 2.  lagano 25 min — 3,5 km, 25 min
+  sub 13. 2.  lagano 20 min — 2,8 km, 20 min
+  ned 14. 2.  lagano 1 h 50 min — 15,2 km, 1 h 50 min
   Zbir: 18 km, 2 h 10 min, 2 treninga, brz rad 0 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — razvoj, gradnja; do trke 8 nedelja

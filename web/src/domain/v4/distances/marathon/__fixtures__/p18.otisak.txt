@@ -73,8 +73,8 @@
 2027-01-13 | odmor | - | 0.0 |  | - | - | -
 2027-01-14 | odmor | - | 0.0 |  | - | - | -
 2027-01-15 | odmor | - | 0.0 |  | - | - | -
-2027-01-16 | trening | test | 24.4 | pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju | - | - | -
-2027-01-17 | odmor | - | 0.0 |  | - | - | -
+2027-01-16 | odmor | - | 0.0 |  | - | - | -
+2027-01-17 | trening | test | 24.4 | pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju | - | - | -
 2027-01-18 | odmor | - | 0.0 |  | - | - | -
 2027-01-19 | trening | easy | 6.7 | lagano 50 min | - | - | -
 2027-01-20 | odmor | - | 0.0 |  | - | - | -

@@ -222,7 +222,8 @@ export function longPlan(
     builds?: number;
   }
 ): Seconds {
-  if (intent.long === null) return 0;
+  /* krug 15 (M10): trka na dan dugog — te nedelje nema dugog */
+  if (intent.long === null || intent.long.race !== undefined) return 0;
   const d = ctx.decisions;
   /* D1/D6 (krug 5): dugi raste od prethodnog (ne skače na polazni kad je krenuo niže) */
   const grown =
@@ -460,7 +461,7 @@ export function weekSlots(
   const qualityDays = race ? raceOrder() : d.qualityDays;
 
   let long: WeekSlots['long'] = null;
-  if (longWd !== null && intent.long !== null) {
+  if (longWd !== null && intent.long !== null && intent.long.race === undefined) {
     const slot: SlotRef = {
       place: 'long',
       stimulus: intent.long.stimulus,
@@ -560,6 +561,20 @@ export function weekSlots(
     });
   });
 
+  /* krug 15 (M10): trka ili provera na dan dugog (pripremna trka) — prvo mesto nedelje */
+  const raceOnLong = intent.long?.race;
+  if (raceOnLong !== undefined && longWd !== null) {
+    const slot: SlotRef = {
+      place: 'quality',
+      stimulus: raceOnLong.stimulus,
+      index: slotIndex('quality', raceOnLong.stimulus),
+      phase: intent.phase,
+      ...(raceOnLong.workoutId === undefined ? {} : { workoutId: raceOnLong.workoutId })
+    };
+    const def = pickDef(slot, null, ctx, { noHighImpact: false });
+    if (def !== null && def.main.kind === 'all-out')
+      items.unshift({ kind: 'test', date: dateOf(longWd), def, slot });
+  }
   /* D8 (dopuna kruga 4): kad su prag i tempo trke skoro isti tempo (< `minZoneGapSecPerKm`), ne zadaju se kao dva
      podražaja u istoj nedelji — prag otpada, tempo trke ostaje */
   const gap = ctx.data.safety.minZoneGapSecPerKm;

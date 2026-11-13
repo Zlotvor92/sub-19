@@ -511,7 +511,9 @@ export const guard: GuardFn = (doc, _state, data) => {
       report('ispod-cilja', week, null, 'Planirano opterećenje je ispod 85 % cilja nedelje.');
     }
     if (!ramp && !partial && !raceWeek) {
-      const few = c.workouts < Math.min(GUARD_MIN_WEEK_WORKOUTS, d.runDays.length);
+      /* krug 15 (M10): nedelja pripremne trke ili provere ima manje treninga zbog same trke (`dan-izostavljen`) */
+      const tested = c.days.some((x) => x.day.workout?.kind === 'test');
+      const few = !tested && c.workouts < Math.min(GUARD_MIN_WEEK_WORKOUTS, d.runDays.length);
       if (c.load < GUARD_MIN_WEEK_SHARE * d.baseLoad || few) {
         report(
           'min-nedelja',

@@ -1,7 +1,7 @@
 S03 — p11, E1: ned 15, pripremni polumaraton 3,4 % brže od očekivanog
 
-STANJE: danas 2027-02-13; sadašnji obim 25 km nedeljno, 4 dana; forma 4:14:52 (pouzdanost srednja), očekivano na dan trke 4:08:31.
-DOGAĐAJ: Trka 21.0975 km za 2:00:05 na 2027-02-13 (dan provere forme u 15. nedelji). Događaji: result:2026-12-26:run-w8d5, result:2027-02-13:trka-2027-02-13.
+STANJE: danas 2027-02-14; sadašnji obim 25 km nedeljno, 4 dana; forma 4:14:52 (pouzdanost srednja), očekivano na dan trke 4:08:30.
+DOGAĐAJ: Trka 21.0975 km za 2:00:05 na 2027-02-14 (dan provere forme u 15. nedelji). Događaji: result:2026-12-26:run-w8d5, result:2027-02-14:trka-2027-02-14.
 PROMENA: 1.
 
 ==================== PRE ====================
@@ -188,9 +188,9 @@ UPOZORENJA
   sre 10. 2.  odmor
   čet 11. 2.  odmor
   pet 12. 2.  odmor
-  sub 13. 2.  pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju — 24,6 km, 2 h 29 min
+  sub 13. 2.  lagano 30 min — 4,1 km, 30 min
+  ned 14. 2.  pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju — 24,6 km, 2 h 29 min
       napomena: Proba trke: doručak, oprema i gelovi tačno kao na maratonu. Rezultat postaje nova forma; sledeća nedelja je bez brzih treninga.
-  ned 14. 2.  lagano 30 min — 4,1 km, 30 min
   Zbir: 28,7 km, 2 h 59 min, 2 treninga, brz rad 69 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — razvoj, gradnja; do trke 8 nedelja
@@ -305,10 +305,10 @@ Polazim od tvojih ≈ 25 km nedeljno (3 h 1 min trčanja).
 
 FORMA
 Polazna forma (1. 11.): 4:20:37
-Današnja prognoza (13. 2.): 4:14:52, pouzdanost srednja
-Očekivano na dan trke: 4:14:52 (raspon 4:07:51–4:25:42) — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
+Današnja prognoza (14. 2.): 4:14:52, pouzdanost srednja
+Očekivano na dan trke: 4:14:52 (raspon 4:07:54–4:25:43) — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
-- Trka 13. 2.: 21,1 km za 2:00:05. Rezultat sa 21,1 km prenosim na 42,2 km uz umanjenje, jer uz oko 37 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:44 → 4:14:52.
+- Trka 14. 2.: 21,1 km za 2:00:05. Rezultat sa 21,1 km prenosim na 42,2 km uz umanjenje, jer uz oko 35 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:44 → 4:14:52.
 - Test 26. 12.: 5 km za 27:00. Rezultat sa 5 km prenosim na 42,2 km uz umanjenje, jer uz oko 27 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 50 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:37 → 4:20:44.
 - Polazna procena je iz rezultata koji si uneo: oko 4:20:37 za 42,2 km.
 
@@ -327,7 +327,7 @@ UPOZORENJA
 - Tražio si 4 dana trčanja nedeljno, a plan u nekim nedeljama (nedelje 4, 8, 15) ima 2 treninga. Uz sadašnji obim od oko 25 km nedeljno, svi traženi dani bi i sa najkraćim trčanjem od 30 min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede. Te nedelje trči kako piše — od 16. nedelje plan koristi sve tražene dane. Ako želiš da izlaziš sva 4 dana odmah, dodatni dan neka bude šetnja ili 30 min vrlo laganog trčanja.
 
 PROMENE
-Rezultat 21,1 km za 2:00:05 (13. 2.) pokazuje bolju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag brži za 11 s/km, tempo trke brži za 9 s/km, intervali brži za 21 s/km, a očekivano vreme trke je sada oko 4:14:52 (raspon 4:07:51–4:25:42).
+Rezultat 21,1 km za 2:00:05 (14. 2.) pokazuje bolju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag brži za 11 s/km, tempo trke brži za 9 s/km, intervali brži za 21 s/km, a očekivano vreme trke je sada oko 4:14:52 (raspon 4:07:54–4:25:43).
 - plan: prag 5:40/km, tempo trke 6:11/km → prag 5:29/km, tempo trke 6:02/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
@@ -476,9 +476,9 @@ Rezultat 21,1 km za 2:00:05 (13. 2.) pokazuje bolju formu od one po kojoj je pla
   sre 10. 2.  odmor
   čet 11. 2.  odmor
   pet 12. 2.  odmor
-  sub 13. 2.  trka umesto „pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju" — urađeno 21,1 km, 2 h (5:42/km)
-  ned 14. 2.  lagano 30 min — 4,2 km, 30 min
-  Zbir: 25,3 km, 2 h 30 min, 2 treninga
+  sub 13. 2.  lagano 30 min — urađeno 4,1 km, 30 min (7:14/km)
+  ned 14. 2.  trka umesto „pripremna trka: polumaraton — prvih 5 km lagano, zatim tempo maratona, poslednjih 5–8 km po osećaju" — urađeno 21,1 km, 2 h (5:42/km)
+  Urađeno: 25,2 km, 2 h 30 min, 2 treninga
 
 16. NEDELJA (od 15. 2.) — razvoj, gradnja; do trke 8 nedelja
   pon 15. 2.  odmor

@@ -244,18 +244,16 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
       sh.single ? [STRIDES, STRIDES] : [S('prag', 0.6), STRIDES]
     );
   const short = n < 12;
-  /* R5 (krug 12): plan ≥ 18 nedelja — N−9 pripremni polumaraton subotom (bez dugog te nedelje; dok motor nema
-     trku na dan dugog, M10), N−8 cela nedelja bez kvaliteta (README: „zatim cela nedelja bez kvaliteta") */
+  /* R5 (krug 12): plan ≥ 18 nedelja — N−9 pripremni polumaraton na dan dugog (M10, krug 15), N−8 cela nedelja bez
+     kvaliteta (README: „zatim cela nedelja bez kvaliteta") */
   const halfRace: WeekIntent[] =
     n >= 18
       ? [
-          week(
-            RAZVOJ,
-            'recovery',
-            1,
-            null,
-            withSaturday(sh, sh.single ? [STRIDES] : [STRIDES, STRIDES], KONTROLA_HM)
-          ),
+          /* M10 (krug 15): polumaraton na dan dugog (nedelja), bez dugog te nedelje */
+          {
+            ...week(RAZVOJ, 'recovery', 1, null, sh.single ? [STRIDES] : [STRIDES, STRIDES]),
+            long: { lenPct: 1, stimulus: 'dugi', race: KONTROLA_HM }
+          },
           week(RAZVOJ, 'build', 0.85, { len: 0.78 }, [STRIDES, STRIDES])
         ]
       : [
@@ -369,7 +367,11 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const head: WeekIntent[] =
     n >= 18
       ? [
-          week(RAZVOJ, 'recovery', 1, null, withSaturday(sh, [STRIDES, STRIDES], KONTROLA_HM)),
+          /* M10 (krug 15): polumaraton na dan dugog */
+          {
+            ...week(RAZVOJ, 'recovery', 1, null, [STRIDES, STRIDES]),
+            long: { lenPct: 1, stimulus: 'dugi', race: KONTROLA_HM }
+          },
           week(RAZVOJ, 'build', 0.85, { len: 0.78, stimulus: longStim }, [STRIDES, STRIDES])
         ]
       : [

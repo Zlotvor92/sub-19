@@ -955,8 +955,8 @@ describe('krug 12 — maraton (R1–R6)', () => {
     }
   });
 
-  /* M10 (motor): trka na dan dugog — dok ne stigne, polumaraton je subotom, a nedelja te nedelje nema dugog */
-  it.fails('R5/M10: pripremni polumaraton je na dan dugog — ČEKA MOTOR (M10)', () => {
+  /* M10 (motor, krug 15): trka na dan dugog */
+  it('R5/M10: pripremni polumaraton je na dan dugog', () => {
     for (const p of PROFILE_PLANS.filter((x) => x.doc.weeks.length >= 18)) {
       const longDay = p.doc.header.decisions.longDay;
       const d = daysOf(p).find(

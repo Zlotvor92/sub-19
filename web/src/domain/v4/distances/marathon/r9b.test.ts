@@ -54,18 +54,16 @@ describe('krug 9b — A2: trka u prozoru povratka', () => {
 describe('krug 9b — A11: tekst pominje izbačenu proveru forme', () => {
   /* maraton s26 (p11: bol u ned 13, trka 10 km 11. 2.): provera 20. 2. postaje lagan dan u izmeni rampe posle trke,
      a rečenica ide uz rezultat trke, ne uz izbačenu proveru — motor (A11), zahtev u F7-MAR-REPORT */
-  it.fails(
-    's26 (trka): bar jedna rečenica izmene pominje izostavljenu proveru forme — ČEKA MOTOR (A11)',
-    () => {
-      const s = SCENARIOS.find((x) => x.no === 26);
-      expect(s).toBeDefined();
-      const r: any = s!.run();
-      const has = (r.changes as any[]).some((c) =>
-        /Provera forme planirana za|Provera forme je pomerena/.test(String(c.reason))
-      );
-      expect(has).toBe(true);
-    }
-  );
+  /* krug 15: prolazi posle M10 (pripremni polumaraton na dan dugog) */
+  it('s26 (trka): bar jedna rečenica izmene pominje izostavljenu proveru forme', () => {
+    const s = SCENARIOS.find((x) => x.no === 26);
+    expect(s).toBeDefined();
+    const r: any = s!.run();
+    const has = (r.changes as any[]).some((c) =>
+      /Provera forme planirana za|Provera forme je pomerena/.test(String(c.reason))
+    );
+    expect(has).toBe(true);
+  });
 });
 
 describe('krug 9b — dan posle provere forme (odluka organizatora umesto A15)', () => {

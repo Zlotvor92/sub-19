@@ -118,6 +118,9 @@ export interface LongSlot {
   /** Talas (krug 4, T3): kad dugi ne može da raste (plafon, polazni dugi), odlučen dugi × `wave` (0,8–1) — da dugi
       ne stoji isti nedeljama. */
   wave?: number;
+  /** Krug 15 (M10): trka ili provera forme NA DAN DUGOG (npr. pripremna trka na kraćoj distanci) — unos biblioteke
+      vrste `test`; te nedelje nema dugog. */
+  race?: StimulusSlot;
 }
 
 export interface StimulusSlot {
