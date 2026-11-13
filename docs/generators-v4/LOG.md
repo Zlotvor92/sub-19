@@ -485,3 +485,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Opus tab `session_01GnHHiWa47Guy3uDTKR2kE5` nastavlja krug 7 u celosti (Z1–Z10 + Y1–Y4); zabrana od 06:45 povučena.
   Fable tab M se NE pokreće. Drugi sudija kruga 7 ostaje Fable (nalog vlasnika od 06:45).
 - Strava konektor povezan: istorija vlasnika od 1. 4. 2026. se povlači u fiksturu (pomoćni agent, Sonnet).
+
+### 13. 11. 2026, 06:50 — F4-K: kalibracija forme na Strava istoriji vlasnika (`c247b9c`, `reports/F4K-REPORT.md`) [srednja]
+- Vlasnik potvrdio: Sombor 17. 5. je trka na 14 km. Back-test (procena dan pre rezultata): srednja aps. greška 6,1 %,
+  0 od 6 rezultata u rasponu. HM 3. 10.: model 1:33:53, stvarno 1:42:09.
+- Uzroci: (1) HM 3. 10. tiho odbačen zbog toplote (22,2 °C ≥ prag 20 °C) — trka na ciljnoj distanci se NIKAD ne odbacuje;
+  (2) prenos 5 km → HM bez popusta (VDOT 48,8 na 5 km, 44,0 na HM 9 dana kasnije); (3) σ „visoke" pouzdanosti preuska;
+  (4) rečenice o „0 % planiranog" bez plana; (5) puls (21 trčanje) ne daje trend.
+- Plafon napretka: stvarno +0,67 VDOT za 18 nedelja bez rasta obima; model 0,88–1,1 → otprilike pravi.
+- ODLUKA (primenjuje se posle kruga 7, tab forme): prenos na dužinu cilja VDOT − β·ln(D/d); podrazumevani β po obimu
+  (≥ 70 km/ned 0,5; 50–70 1,5; 30–50 2,5; < 30 3,5) [niska — jedan trkač], lični β iz ≥ 2 dužine u 12 nedelja, ograničen
+  0–5 i mešan 50/50 sa podrazumevanim; toplota samo koriguje (prag 25 °C, uvek rečenica), ne odbacuje; σ 1,0/1,5/2,5
+  (+1,0 za dokaz druge dužine); „visoka" samo za dokaz dužine 0,5–2 × cilja; bez plana nema rečenica o planiranom.
+- Procena vlasnika po predlogu: danas 1:43:46; Bokeški 13. 12. 1:42:05 – 1:43:20 – 1:44:49; Beogradski 17. 4. 2027.
+  1:39:37 – 1:41:40 – 1:44:49. Ranija procena iz 8 trčanja (1:41:05) bila je preoptimistična.
