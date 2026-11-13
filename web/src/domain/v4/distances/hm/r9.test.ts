@@ -1,5 +1,5 @@
 /* KRUG 9 (briefs/R9-ROUND9.md § A) — opšta pravila motora, provera nad podacima polumaratona. */
-/* eslint-disable @typescript-eslint/no-explicit-any,
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { buildState, plan, type DistanceData, type PlanDoc, type RunnerState } from '../../engine';
@@ -121,5 +121,22 @@ describe('krug 9 — A8: prognoza početnika', () => {
       );
     }
     expect(seen).toBeGreaterThan(0);
+  });
+});
+
+describe('krug 9 — A16: trka na ciljnoj dužini se usvaja cela', () => {
+  it('E5 (juče polumaraton): današnja forma nije sporija od te trke', () => {
+    for (const s of SCENARIOS.filter((x) => x.title.startsWith('E5'))) {
+      const r: any = s.run();
+      const race = (r.afterState.runs as any[]).find(
+        (x) => x.effort === 'race' && Math.abs(x.distanceM - hm.distanceM) < 100
+      );
+      if (race === undefined || race.walking === true) continue;
+      const e = effortResult(race);
+      if (e === null) continue;
+      expect(r.after.header.form.current.raceTimeSec, `s${String(s.no)}`).toBeLessThanOrEqual(
+        e.durationSec + 1
+      );
+    }
   });
 });

@@ -643,9 +643,20 @@ export function estimateForm(
         /* Prvi rezultat zamenjuje procenu bez osnova (iz laganog tempa, trčanja ili opštu): k = 1 (R14). */
         const first = firstInApp && init.source !== 'rezultat';
         const low = confidenceAt(d) === 'niska';
-        const k = low || first ? C.K_LOW_CONFIDENCE : kind === 'trka' ? C.K_RACE : C.K_TEST;
+        let k = low || first ? C.K_LOW_CONFIDENCE : kind === 'trka' ? C.K_RACE : C.K_TEST;
         const before = vdot;
         let next = vdot + k * (target - vdot);
+        /* A16 (krug 9): trka na dužini cilja se usvaja 100 % — današnja forma nije sporija od te trke */
+        if (
+          kind === 'trka' &&
+          !ev.walking &&
+          !ev.hot &&
+          Math.abs(scored.distanceM - goalM) <= C.GOAL_RACE_SAME_SHARE * goalM &&
+          target > next
+        ) {
+          next = target;
+          k = 1;
+        }
         /* Toplo (≥ 25 °C): dužina 0,5–2 × cilja se nikad ne odbacuje — spušta upola; druga dužina je donja granica. */
         const hotHeld = ev.hot && !low && !first && next < vdot;
         if (hotHeld) next = inRange ? vdot + k * C.HOT_LOWER_K_SHARE * (target - vdot) : vdot;

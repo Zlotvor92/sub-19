@@ -130,9 +130,9 @@ describe('trka i test (§ 7.2)', () => {
     effort
   });
 
-  it('trka pomera odmah, k = 0,7 (srednja pouzdanost)', () => {
+  it('trka na dužini cilja pomera odmah i cela (A16, krug 9: 100 %, ne k = 0,7)', () => {
     const e = estimateForm(facts([race(47, add(T0, 5), 'race', TEN)], add(T0, 6)), goal(FAR), null);
-    expect(e.current.vdot).toBeCloseTo(45 + 0.7 * 2, 1);
+    expect(e.current.vdot).toBeCloseTo(47, 1);
     expect(signals(e)).toContain('trka');
   });
 

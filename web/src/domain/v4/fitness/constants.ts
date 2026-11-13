@@ -183,3 +183,6 @@ export const UP_MAX_SEC_NO_EVIDENCE = 3;
 export const UP_EVIDENCE_MAX_M = 10000;
 export const UP_LOW_VOLUME_KM = 35;
 export const UP_HIGH_FORM_VDOT = 50;
+
+/** A16 (krug 9): trka u ovom udelu dužine cilja je „na ciljnoj dužini" — usvaja se 100 %. */
+export const GOAL_RACE_SAME_SHARE = 0.02;

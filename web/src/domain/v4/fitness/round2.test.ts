@@ -291,7 +291,16 @@ describe('R14 — prvi rezultat i trka sa hodanjem', () => {
     /* Z6 (krug 7): „visoka" tek posle dva SAGLASNA rezultata (VDOT ≤ 2 %); 44 i 46 nisu saglasni */
     const two = estimateForm(facts([r1, r2], add(T0, 22), noResult), far, null);
     expect(two.current.confidence).toBe('srednja');
-    const second = two.history.filter((h) => h.signal === 'trka')[1];
+    /* A16 (krug 9): brža trka na dužini cilja se usvaja cela; delimično usvajanje (uz rečenicu) ostaje za drugu dužinu */
+    expect(two.current.vdot).toBeCloseTo(46, 1);
+    const other: FitnessRun = {
+      ...r2,
+      id: 's',
+      distanceM: 5000,
+      durationSec: Math.round(raceTimeSec(46, 5000))
+    };
+    const partial = estimateForm(facts([r1, other], add(T0, 22), noResult), far, null);
+    const second = partial.history.filter((h) => h.signal === 'trka')[1];
     expect(second?.reason).toContain('Usvaja se 70 %');
     const r3: FitnessRun = { ...r2, id: 'c', durationSec: Math.round(raceTimeSec(44.6, TEN)) };
     const agree = estimateForm(facts([r1, r3], add(T0, 22), noResult), far, null);
