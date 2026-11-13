@@ -1,7 +1,6 @@
 /* KRUG 14 (briefs/R14-MOTOR.md) — motor nad podacima polumaratona: povratak posle pauze (M2). */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
-   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument,
-   @typescript-eslint/no-unsafe-return -- scenariji su netipizovani */
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { paceCtxOf } from '../../engine';
 import { weekCost } from '../../engine/guard';
