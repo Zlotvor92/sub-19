@@ -213,7 +213,8 @@ export function raceNotes(
   const target = h.goal.targetTimeSec;
   const fromGoal = target !== undefined && target >= confirmedSec;
   const timeSec = fromGoal ? target : confirmedSec;
-  const pace = (timeSec / data.distanceM) * 1000;
+  /* krug 10 (stavka 9): jedan izvor tempa trke — isti broj kao tempo trke u treninzima (zaokruživanje bez razlike) */
+  const pace = fromGoal || h.paces.byFeel ? (timeSec / data.distanceM) * 1000 : h.paces.RP;
   const values = {
     pace: fmtPace(pace),
     paceFrom: fmtPaceBare(pace + (data.safety.raceStartPaceOffsetSec?.from ?? 5)),
@@ -228,9 +229,11 @@ export function raceNotes(
   const hoped = raceBasis(target, raceDay);
   const slower = h.warnings.some((w) => w.proposal.includes('počni sporije'));
   const today = state?.today ?? h.eventsFrom;
+  /* krug 10 (stavka 6): poslednja provera forme pred trkom (ne prva) */
   const check = doc.weeks
     .flatMap((w) => w.days)
-    .find((d) => d.workout?.kind === 'test' && d.date > today && d.date < h.goal.raceDate);
+    .filter((d) => d.workout?.kind === 'test' && d.date > today && d.date < h.goal.raceDate)
+    .pop();
   if (!h.paces.byFeel && !slower && check !== undefined && hoped.timeSec < timeSec - 30) {
     const hopedPace = (hoped.timeSec / data.distanceM) * 1000;
     out.push(
@@ -241,6 +244,10 @@ export function raceNotes(
       })
     );
   }
+  if (h.paces.byFeel && check !== undefined)
+    out.push(
+      `Tempo i taktiku za trku plan postavlja iz poslednje provere forme (${fmtDate(check.date)}) — do tada trči po osećaju.`
+    );
   for (const note of race?.workout?.notes ?? []) {
     const rule = data.noteRules.find((r) => data.texts[r.text] === note);
     const feel = rule?.byFeelText === undefined ? undefined : data.texts[rule.byFeelText];

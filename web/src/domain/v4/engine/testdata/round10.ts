@@ -100,3 +100,38 @@ export function returnsToOriginal(
     ? []
     : [`${id} n${String(lastW.index)} (−2) nije vraćena na prvobitnu`];
 }
+
+/** Stavke 6 i 9: napomene za dan trke — tempo trke isti kao u treninzima (bez cilja), a pominje se POSLEDNJA provera
+    forme pred trkom. Vraća opise prekršaja. */
+export function raceNoteSource(id: string, doc: PlanDoc, text: string): string[] {
+  const bad: string[] = [];
+  const lines = text.split('\n');
+  const at = lines.findIndex((l) => l.includes('TRKA:'));
+  const notes: string[] = [];
+  for (let j = at + 1; j < lines.length && (lines[j] ?? '').includes('napomena'); j += 1)
+    notes.push(lines[j] ?? '');
+  const joined = notes.join(' ');
+  const h = doc.header;
+  if (!h.paces.byFeel && h.goal.targetTimeSec === undefined) {
+    const p = Math.round(h.paces.RP);
+    const pace = `${String(Math.floor(p / 60))}:${String(p % 60).padStart(2, '0')}/km`;
+    if (!joined.includes(pace)) bad.push(`${id} napomena bez tempa trke ${pace}`);
+  }
+  const tests = doc.weeks
+    .flatMap((w) => w.days)
+    .filter((d) => d.workout?.kind === 'test' && d.date < h.goal.raceDate)
+    .map((d) => d.date);
+  const last = tests[tests.length - 1];
+  /* ranije provere se ne pominju (samo poslednja) */
+  for (const d of tests.slice(0, -1)) {
+    const [, m, dd] = d.split('-');
+    const shown = `${String(Number(dd))}. ${String(Number(m))}.`;
+    if (
+      last !== undefined &&
+      last !== d &&
+      (joined.includes(`forme ${shown}`) || joined.includes(`(${shown})`))
+    )
+      bad.push(`${id} napomena pominje raniju proveru ${shown}`);
+  }
+  return bad;
+}
