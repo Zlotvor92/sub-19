@@ -22,7 +22,9 @@ const KNOWN = new Map<string, string>([
   /* trka 5 km na dan testa 3 km (početnik): rezultat bolji od današnje forme, a prognoza dana trke sporija za 47 s —
      preostali pripisani napredak se posle rezultata računa od kraćeg ostatka pripreme (forma/motor, Z4) */
   ['s03 bolji rezultat usporio prognozu 3171 → 3218', 'pripisani napredak posle rezultata (Z4)'],
-  /* bol pa trka: drugi prozor se nadovezuje na prvi; rep izmena 4 nedelje + 6 dana (Z10) */
+  /* bol pa trka: rep 4 nedelje + 6 dana nastaje već u PRVOM ponovnom planiranju (samo bol, izlaz po R2); R8 t. 17
+     (`capTail`) seče rep kad su oba događaja u istom ponovnom planiranju, a ovde je trka posebno ponovno planiranje
+     nad već izmenjenim planom (prvobitan plan mu nije dostupan) */
   ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)']
   /* Z3 i deonice fiksne dužine (s13, s15, s16) skinuto u krugu 8 (R8 t. 4: manji unos ili kraće deonice) */
 ]);

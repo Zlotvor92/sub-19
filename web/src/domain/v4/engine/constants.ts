@@ -306,3 +306,6 @@ export const REP_SHORTEN_MIN_SHARE = 0.5;
 /** R8 t. 15: blok u dugom ne skraćuje dugi ispod ovog udela vremena nedelje (podatak distance:
     `safety.longBlockMinWeekShare`). */
 export const LONG_BLOCK_MIN_WEEK_SHARE = 0.25;
+
+/** R8 t. 17 (Z10): izmene posle više događaja ne idu dalje od ovoliko dana od danas (osim jednog dugog, R2). */
+export const TAIL_MAX_DAYS = 28;

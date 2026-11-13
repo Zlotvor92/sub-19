@@ -20,6 +20,7 @@ import type { PlanDay } from '../../engine/types';
 import { estimateForm } from '../../fitness';
 import { hm } from './index';
 import { PROFILES, factsOf } from './testdata/profiles';
+import { qualityDay, replanWith, runsAsPlanned, startPlan } from './testdata/scenarios';
 
 function make(
   facts: RunnerFacts,
@@ -196,5 +197,58 @@ describe('krug 8 — t. 11: izlazak iz početne rampe (plan počinje dan posle t
         Math.max(1.25 * prev, prev + 1200) + 60
       );
     }
+  });
+});
+
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access,
+   @typescript-eslint/no-unsafe-argument -- pomoćne funkcije scenarija su netipizovane (testdata) */
+describe('krug 8 — t. 17: rep posle više događaja u istom ponovnom planiranju', () => {
+  it('bol pa trka 10 km (oba u jednom ponovnom planiranju): van 28 dana nema izmena osim jednog dugog', () => {
+    const start = startPlan('p11');
+    const q = qualityDay(start.doc, 9);
+    const raceDay = addDays(q.date as string, 14);
+    const today = addDays(raceDay, 1);
+    const ctx = paceCtxOf(start.doc.header);
+    const race = {
+      id: 'trka-10k',
+      date: raceDay,
+      distanceM: 10000,
+      durationSec: 3480,
+      effort: 'race' as const
+    };
+    const facts = {
+      ...start.facts,
+      today,
+      runs: [...runsAsPlanned(start.doc, addDays(raceDay, -1)), race],
+      pain: [{ date: q.date as string, level: 4, part: 'koleno' }]
+    };
+    const pain = {
+      id: `pain:${String(q.date)}`,
+      date: q.date,
+      kind: 'pain',
+      level: 4,
+      part: 'koleno'
+    };
+    const r = replanWith(start, facts, [pain]);
+    const kinds = new Set((r.events as { kind: string }[]).map((e) => e.kind));
+    expect(kinds.has('pain') && kinds.has('result'), [...kinds].join(',')).toBe(true);
+    const limit = addDays(today, 28);
+    const before = start.doc as PlanDoc;
+    const after = r.result.doc as PlanDoc;
+    let longs = 0;
+    for (const w of after.weeks) {
+      if (w.start <= limit) continue;
+      const old = before.weeks.find((x) => x.start === w.start);
+      for (const d of w.days) {
+        const o = old?.days.find((x) => x.date === d.date);
+        const same =
+          JSON.stringify(o?.workout === null ? null : summarize(o?.workout ?? null, ctx)) ===
+          JSON.stringify(d.workout === null ? null : summarize(d.workout, ctx));
+        if (same) continue;
+        expect(d.workout?.kind, `${d.date}`).toBe('long');
+        longs += 1;
+      }
+    }
+    expect(longs).toBeLessThanOrEqual(1);
   });
 });

@@ -25,6 +25,7 @@ import {
   RESTORE_PEAK_AFTER_DAYS,
   RETURN_LONG_JUMP_SEC,
   RETURN_LONG_JUMP_SHARE,
+  TAIL_MAX_DAYS,
   RETURN_WEEK_JUMP_SHARE,
   PAIN_FIRST_ZONE_MAX_DAYS,
   PAIN_MID_DOSE_FACTOR
@@ -1485,9 +1486,18 @@ export const replan: ReplanFn = (doc, state, events, data) => {
   const todo = sortEvents(events).filter((e) => e.kind !== 'none' && !applied.has(e.id));
   let current = doc;
   const changes: Change[] = [];
+  /* R8 t. 17: više događaja = bar dva događaja koji nisu propušten trening (bol pa trka, bolest pa put …) */
+  const kindOf = (id: string): string => id.slice(0, id.indexOf(':'));
+  const major = [...doc.header.appliedEvents.map(kindOf), ...todo.map((e) => e.kind)].filter(
+    (k) => k !== 'missed' && k !== 'none'
+  );
+  const multi = major.length >= 2;
   for (const ev of todo) {
-    const candidate = candidateFor(current, state, ev, data);
-    if (candidate === null) continue;
+    const raw = candidateFor(current, state, ev, data);
+    if (raw === null) continue;
+    /* R8 t. 17 (Z10): posle više događaja izmene ne idu dalje od 28 dana; kad bi vraćanje dugog bilo skok veći od
+       R2, rep se produžava samo za taj dugi (jedna nedelja) */
+    const candidate = multi ? { ...raw, doc: capTail(raw.doc, doc, state.today) } : raw;
     const diff = describe(current, candidate, ev, state, data);
     if (diff.length === 0) continue;
     const h = candidate.doc.header;
@@ -1510,6 +1520,50 @@ export const replan: ReplanFn = (doc, state, events, data) => {
      treninzi ne menjaju */
   return { doc: freshDatedWarnings(result, state, data), changes };
 };
+
+/** R8 t. 17: nedelje posle `today + TAIL_MAX_DAYS` se vraćaju na plan pre događaja; dugi prve takve nedelje ostaje
+    iz novog plana samo kad bi vraćeni bio skok veći od R2 prema dugom nedelje pre nje. */
+function capTail(built: PlanDoc, before: PlanDoc, today: IsoDate): PlanDoc {
+  const limit = addDays(today, TAIL_MAX_DAYS);
+  const pains = (built.header.adjustments ?? []).flatMap((a) =>
+    a.kind === 'pain' ? [a.date] : []
+  );
+  const ctx = paceCtxOf(built.header);
+  const longOf = (w: PlanWeek | undefined): number => {
+    const day = w?.days.find((d) => d.workout?.kind === 'long');
+    return day?.workout == null ? 0 : summarize(day.workout, ctx).durationSec;
+  };
+  let first = true;
+  const weeks = built.weeks.map((w, i) => {
+    if (w.start <= limit) return w;
+    const old = before.weeks.find((x) => x.start === w.start);
+    if (old === undefined) return w;
+    /* Z3: smanjen prvi rad zone posle bola (do `PAIN_FIRST_ZONE_MAX_DAYS`) ostaje i van 28 dana */
+    const keepZ3 = (d: PlanDay): PlanDay => {
+      const now = w.days.find((x) => x.date === d.date);
+      const z3 =
+        now?.workout?.kind === 'quality' &&
+        d.workout?.kind === 'quality' &&
+        now.workout.workSec < d.workout.workSec &&
+        pains.some((p) => d.date > p && d.date <= addDays(p, PAIN_FIRST_ZONE_MAX_DAYS));
+      return z3 && now !== undefined ? now : d;
+    };
+    if (!first) return { ...old, days: old.days.map(keepZ3) };
+    first = false;
+    const prev = longOf(built.weeks[i - 1]);
+    const back = longOf(old);
+    const jump =
+      prev > 0 && back > Math.max(RETURN_LONG_JUMP_SHARE * prev, prev + RETURN_LONG_JUMP_SEC);
+    const longDay = w.days.find((d) => d.workout?.kind === 'long');
+    return {
+      ...old,
+      days: old.days.map((d) =>
+        jump && longDay !== undefined && d.date === longDay.date ? longDay : keepZ3(d)
+      )
+    };
+  });
+  return { ...built, weeks };
+}
 
 /** Datum „d. m." iz teksta → ISO u godini plana (od početka do trke). */
 function textDates(text: string, doc: PlanDoc): IsoDate[] {

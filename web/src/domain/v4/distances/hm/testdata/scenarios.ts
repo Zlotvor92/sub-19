@@ -21,7 +21,7 @@ const allDays = (doc: Any): Any[] => doc.weeks.flatMap((w: Any) => w.days);
 const weekOf = (doc: Any, n: number): Any => doc.weeks[n - 1];
 const sundayOf = (doc: Any, n: number): string => addDays(weekOf(doc, n).start, 6);
 
-function startPlan(
+export function startPlan(
   id: string,
   extraRuns: Any[] = []
 ): { facts: Any; state: Any; doc: Any; goal: Any } {
@@ -35,7 +35,11 @@ function startPlan(
 
 /** Trčanja tačno po planu do `through` (uključivo), osim dana koje `skip` izbaci. Test iz plana se beleži samo
     deo punim naporom u tempu današnje forme: ništa se nije desilo znači i da test nije doneo novu formu. */
-function runsAsPlanned(doc: Any, through: string, skip: (d: Any) => boolean = () => false): Any[] {
+export function runsAsPlanned(
+  doc: Any,
+  through: string,
+  skip: (d: Any) => boolean = () => false
+): Any[] {
   const ctx = E.paceCtxOf(doc.header);
   const runs: Any[] = [];
   for (const day of allDays(doc)) {
@@ -63,7 +67,7 @@ function testPart(w: Any, c: Any): { distanceM: number; durationSec: number } | 
 }
 
 /** Dan kvaliteta nedelje (prvi trening vrste quality/test), dugi nedelje. */
-const qualityDay = (doc: Any, n: number): Any =>
+export const qualityDay = (doc: Any, n: number): Any =>
   weekOf(doc, n).days.find((d: Any) => d.workout?.kind === 'quality' || d.workout?.kind === 'test');
 const longDay = (doc: Any, n: number): Any =>
   weekOf(doc, n).days.find((d: Any) => d.workout?.kind === 'long');
@@ -82,7 +86,7 @@ export interface Scenario {
   };
 }
 
-function replanWith(start: Any, facts: Any, extraEvents: Any[] = []): Any {
+export function replanWith(start: Any, facts: Any, extraEvents: Any[] = []): Any {
   /* `doc`: forma vidi odrađeni kvalitet i pauze u odnosu na plan */
   const state = E.buildState(facts, start.goal, hm, estimateForm, start.doc);
   const events = E.sortEvents([...E.deriveEvents(start.doc, state), ...extraEvents]);
