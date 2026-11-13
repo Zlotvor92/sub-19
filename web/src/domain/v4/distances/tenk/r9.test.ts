@@ -129,14 +129,8 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
     }
     /* poznato (krug 9, R9-REPORT): HM s07 — povratak posle bolesti traje do sužavanja (A10, otvoreno); 10K — drugi
        putevi izmene (rasterećenje, bol, nadovezani prozori) */
-    const KNOWN_A6 = new Set<string>([
-      's7 brz-udeo@15',
-      's14 ispod-cilja@11',
-      's15 lagan-dugi@14',
-      's26 brz-udeo@15',
-      /* krug 9b: A2 (test suzbijen posle trke) podigao nedelju −2; neslaganje prozora čuvar 21 / motor 28 dana — A6 */
-      's26 silazak@16'
-    ]);
+    /* krug 10: preostao samo s14 (bol posle kvaliteta: nedelja ispod cilja) */
+    const KNOWN_A6 = new Set<string>(['s14 ispod-cilja@11']);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
 });

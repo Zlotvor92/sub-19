@@ -181,7 +181,8 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
        putevi izmene (rasterećenje, bol, nadovezani prozori) */
     /* krug 10: s15 — posle bola dugi raste najviše + 25 % / + 20 min (stavka 2), pa najduži dugi (100 min pre bola) ne
        stiže do dugog za distancu do vrha */
-    const KNOWN_A6 = new Set<string>(['s7 dugi-za-distancu@15', 's15 dugi-za-distancu@11']);
+    /* krug 10: posle povratka po stavkama 1–3 HM nema preostalih nalaza */
+    const KNOWN_A6 = new Set<string>([]);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
 });

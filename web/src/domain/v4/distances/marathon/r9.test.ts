@@ -130,15 +130,8 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
     /* poznato (maraton, 13. 11.; zahtevi u F7-MAR-REPORT): dugi-za-distancu posle događaja kod početnika malog obima
        (p11: najduži dugi posle izmene ispod 27 km — plan to kaže upozorenjem); ostalo su putevi izmene motora
        (povratak posle bolesti, bol, nadovezani prozori) */
-    const KNOWN_A6 = new Set<string>([
-      's2 ispod-cilja@20',
-      's7 dugi-za-distancu@21',
-      's12 taper@16',
-      's14 ispod-cilja@15',
-      's15 dugi-za-distancu@17',
-      's25 brz-udeo@6',
-      's26 dugi-za-distancu@21'
-    ]);
+    /* krug 10: preostali: s15 dugi posle bola raste po R2, s25 udeo brzog u nedelji izmene */
+    const KNOWN_A6 = new Set<string>(['s15 dugi-za-distancu@17', 's25 brz-udeo@6']);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
 });

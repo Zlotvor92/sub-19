@@ -512,8 +512,11 @@ export const guard: GuardFn = (doc, _state, data) => {
         );
       }
     }
+    /* krug 10 (stavka 26): udeo brzog rada sužavanja meri se u kalendarskoj nedelji pred nedeljom trke (isto što
+       motor drži, dani 8–14); ranije nedelje dužeg sužavanja (3 nedelje) mere km provere silaska (M7) */
     if (
       week.intent.kind === 'taper' &&
+      week.start === addDays(raceMonday, -7) &&
       peakWork > 0 &&
       c.fastSec > taperShare * peakWork + GUARD_DOSE_TOLERANCE_SEC
     ) {
