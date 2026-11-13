@@ -85,7 +85,9 @@ describe('kapija maratona (19 profila)', () => {
      pada i spisak se briše. Maraton (13. 11.): 2–30 s sporije (≤ 0,3 %) kod p06, p07 (12 nedelja, provera u 4.
      nedelji trčana tačno u tempu današnje forme), p09, p18, p19 — ne podaci maratona */
   /* krug 10 (stavka 22): p09 skinut — dugi sa km bloka stiže do dugog za distancu, prognoza računa napredak */
-  const FORM_DRIFT = new Set<string>(['p06', 'p07', 'p18', 'p19']);
+  /* krug 14 (M7, motor): p06 i p19 bez napretka od obima (obim/dugi ne nose trku) — prognoza = današnja forma, pa
+     prolaze; p10 isto bez napretka, pa se vidi pomak današnje forme posle 6 nedelja po planu (+6 s, isti uzrok) */
+  const FORM_DRIFT = new Set<string>(['p07', 'p10', 'p18']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);

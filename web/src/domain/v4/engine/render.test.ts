@@ -104,6 +104,14 @@ describe('mašinske provere K1–K5 nad ispisom (SPEC § 14.2)', () => {
     let checked = 0;
     for (const { c, b } of built) {
       if (b.doc.weeks.length < 10) continue;
+      /* M7 (krug 14): obim ili dugi daleko ispod adekvatnog — prognoza bez napretka, uz rečenicu zašto */
+      if (b.doc.header.decisions.raceDayNoProgress === true) {
+        expect(renderPlan(b.doc, b.state, SYNTHETIC), c.name).toMatch(/bez računanja napretka: /);
+        /* ni prognoza ni tempo trke nisu brži od današnje forme */
+        const h = b.doc.header;
+        expect(h.form.raceDay.expectedSec, c.name).toBeGreaterThanOrEqual(h.form.current.raceTimeSec);
+        continue;
+      }
       checked += 1;
       const { form } = b.doc.header;
       expect(form.raceDay.expectedSec, c.name).toBeLessThan(form.current.raceTimeSec);

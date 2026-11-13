@@ -324,7 +324,10 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
       : /* krug 10 (stavka 12): nula napretka samo uz izričit razlog u zaglavlju */
         h.decisions.raceDayMaxGain === 0
         ? ' — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke'
-        : '';
+        : /* M7 (krug 14): upozorenje kaže da obim ili dugi ne nose trku — broj to prati i kaže zašto */
+          h.decisions.raceDayNoProgress === true && gain === 0
+          ? ' — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma'
+          : '';
   lines.push(
     `Očekivano na dan trke: ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)})${why}`
   );

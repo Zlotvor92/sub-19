@@ -1,6 +1,6 @@
 S06 — p08, E2: bolest 7 dana u ned 17 (specifična, blok 1)
 
-STANJE: danas 2027-02-28; sadašnji obim 50 km nedeljno, 3 dana; forma 3:33:26 (pouzdanost srednja), očekivano na dan trke 3:31:15.
+STANJE: danas 2027-02-28; sadašnji obim 50 km nedeljno, 3 dana; forma 3:33:26 (pouzdanost srednja), očekivano na dan trke 3:31:13.
 DOGAĐAJ: Bolest 2027-02-22 – 2027-02-28 (17. nedelja), bez treninga. Događaji: result:2026-12-24:run-w8d3, result:2027-02-11:run-w15d3, pause:2027-02-22:2027-02-28.
 PROMENA: 16.
 
@@ -307,7 +307,7 @@ Polazim od tvojih ≈ 50 km nedeljno (4 h 57 min trčanja).
 FORMA
 Polazna forma (1. 11.): 3:32:21
 Današnja prognoza (28. 2.): 3:33:26, pouzdanost srednja
-Očekivano na dan trke: 3:31:46 (raspon 3:27:51–3:37:03) — 1:40 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 3:31:45 (raspon 3:27:51–3:37:04) — 1:41 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 7 dana (22. 2. – 28. 2.); posle petog dana forma polako opada — procena za 42,2 km: 3:32:23 → 3:33:26.
 - Test 11. 2.: 21,1 km za 1:40:14. Rezultat sa 21,1 km prenosim na 42,2 km uz umanjenje, jer uz oko 51 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 42,2 km: 3:32:24 → 3:32:23.
@@ -321,7 +321,7 @@ TEMPA
 - tempo trke 5:02/km
 - intervali 4:16/km
 - brze deonice 4:01/km
-Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:31:46) traži 5:01/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:31:45) traži 5:01/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 75 min — nedelja tada stiže do 68,1 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 28,5 km i nosi manji deo nedelje.
@@ -343,7 +343,7 @@ Pauza zbog bolesti trajala je 7 dana (22–28. 2.), pa je povratak postepen: tre
 - 19. nedelja: 62 km → 24,5 km
 - 20. nedelja: 41,6 km → 28,9 km
 - 21. nedelja: 65,5 km → 54,5 km
-Očekivano vreme trke je sada oko 3:31:46 umesto 3:31:15: plan je posle ovog događaja ispod prvobitnog ukupno za 2 nedelje treninga, pa je i očekivani napredak toliko manji.
+Očekivano vreme trke je sada oko 3:31:45 umesto 3:31:13: plan je posle ovog događaja ispod prvobitnog ukupno za 2 nedelje treninga, pa je i očekivani napredak toliko manji.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor

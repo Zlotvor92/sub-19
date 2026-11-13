@@ -12,7 +12,7 @@ Polazim od tvojih ≈ 25 km nedeljno (3 h 1 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:20:37
 Današnja prognoza (1. 11.): 4:20:37, pouzdanost srednja
-Očekivano na dan trke: 4:12:48 (raspon 4:01:53–4:31:58) — 7:49 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:20:37 (raspon 4:09:42–4:39:47) — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 4:20:37 za 42,2 km.
 
@@ -23,7 +23,7 @@ TEMPA
 - tempo trke 6:11/km
 - intervali 5:24/km
 - brze deonice 4:55/km
-Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (4:12:48) traži 5:59/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (4:20:37) traži 6:11/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Najveća nedelja u planu ima 50,3 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 50,3 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 25 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
@@ -295,7 +295,7 @@ UPOZORENJA
       napomena: Tempo za trku: 6:11/km (današnja forma 4:20:37).
       napomena: Prvih 5–10 km trči 6:16–6:21/km, mirno, iako ti se čini lako; od 10. do 32. km 6:11/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
-      napomena: Posle trke: 24 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 25 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 13,4 km, 95 min, 3 treninga + trka, brz rad 8 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -306,7 +306,7 @@ Polazim od tvojih ≈ 25 km nedeljno (3 h 1 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:20:37
 Današnja prognoza (13. 2.): 4:14:52, pouzdanost srednja
-Očekivano na dan trke: 4:08:31 (raspon 4:01:30–4:19:21) — 6:21 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:14:52 (raspon 4:07:51–4:25:42) — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
 - Trka 13. 2.: 21,1 km za 2:00:05. Rezultat sa 21,1 km prenosim na 42,2 km uz umanjenje, jer uz oko 37 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:44 → 4:14:52.
 - Test 26. 12.: 5 km za 27:00. Rezultat sa 5 km prenosim na 42,2 km uz umanjenje, jer uz oko 27 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 50 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:37 → 4:20:44.
@@ -319,7 +319,7 @@ TEMPA
 - tempo trke 6:02/km
 - intervali 5:03/km
 - brze deonice 4:46/km
-Tempo trke u treninzima je tvoja današnja forma (6:02/km). Očekivano vreme na dan trke (4:08:31) traži 5:53/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (6:02/km). Očekivano vreme na dan trke (4:14:52) traži 6:02/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Najveća nedelja u planu ima 50,3 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 50,3 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 25 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
@@ -327,7 +327,7 @@ UPOZORENJA
 - Tražio si 4 dana trčanja nedeljno, a plan u nekim nedeljama (nedelje 4, 8, 15) ima 2 treninga. Uz sadašnji obim od oko 25 km nedeljno, svi traženi dani bi i sa najkraćim trčanjem od 30 min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede. Te nedelje trči kako piše — od 16. nedelje plan koristi sve tražene dane. Ako želiš da izlaziš sva 4 dana odmah, dodatni dan neka bude šetnja ili 30 min vrlo laganog trčanja.
 
 PROMENE
-Rezultat 21,1 km za 2:00:05 (13. 2.) pokazuje bolju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag brži za 11 s/km, tempo trke brži za 9 s/km, intervali brži za 21 s/km, a očekivano vreme trke je sada oko 4:08:31 (raspon 4:01:30–4:19:21).
+Rezultat 21,1 km za 2:00:05 (13. 2.) pokazuje bolju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag brži za 11 s/km, tempo trke brži za 9 s/km, intervali brži za 21 s/km, a očekivano vreme trke je sada oko 4:14:52 (raspon 4:07:51–4:25:42).
 - plan: prag 5:40/km, tempo trke 6:11/km → prag 5:29/km, tempo trke 6:02/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje

@@ -7,7 +7,7 @@ Polazim od tvojih ≈ 30 km nedeljno (3 h 47 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:33:03
 Današnja prognoza (1. 11.): 4:33:03, pouzdanost srednja
-Očekivano na dan trke: 4:24:52 (raspon 4:16:08–4:38:14) — 8:11 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:33:03 (raspon 4:24:19–4:46:25) — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 4:33:03 za 42,2 km.
 
@@ -18,7 +18,7 @@ TEMPA
 - tempo trke 6:28/km
 - intervali 5:38/km
 - brze deonice 5:09/km
-Tempo trke u treninzima je tvoja današnja forma (6:28/km). Očekivano vreme na dan trke (4:24:52) traži 6:17/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (6:28/km). Očekivano vreme na dan trke (4:33:03) traži 6:28/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Najveća nedelja u planu ima 47,7 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 47,7 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: obim ograničava broj dana trčanja (3), ne dužina pripreme.
@@ -230,5 +230,5 @@ UPOZORENJA
       napomena: Tempo za trku: 6:28/km (današnja forma 4:33:03).
       napomena: Prvih 5–10 km trči 6:33–6:38/km, mirno, iako ti se čini lako; od 10. do 32. km 6:28/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
-      napomena: Posle trke: 25 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 26 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 12,2 km, 90 min, 2 treninga + trka, brz rad 9 % vremena trčanja

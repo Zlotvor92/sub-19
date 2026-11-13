@@ -1,7 +1,7 @@
 P2A — P2 A — početnik, 8 meseci bez prekida (ulazi kao p11)
 MORA DA SE RAZLIKUJE: B: niži vrh (× 1,4–1,5 umesto × 1,8), rasterećenje 2:1, dugi hod-trk po vremenu, brda/ubrzanja kasnije, širi raspon i predlog duže pripreme
 ISTORIJA: 44 trčanja; nedelje (km): 21,9 / 26,3 / 27,5 / 21,9 / 26,3 / 27,5 / 21,9 / 26,3 / 27,5 / 20,6 / 26,3 / 27,5; pauze 0, bol 0
-BROJEVI: nivo pocetnik; nedelja 1 25,4 km; vrh 51,2 km; prvi dugi 11,1 km, najduži 24,7 km; prvi kvalitet u 5. nedelji; provera forme u 8. nedelji; forma 4:20:38 (srednja), dan trke 4:12:49 (3:59:27–4:35:13)
+BROJEVI: nivo pocetnik; nedelja 1 25,4 km; vrh 51,2 km; prvi dugi 11,1 km, najduži 24,7 km; prvi kvalitet u 5. nedelji; provera forme u 8. nedelji; forma 4:20:38 (srednja), dan trke 4:20:38 (4:07:16–4:43:02)
 
 PLAN: maraton, trka 18. 4. 2027.
 Početak 2. 11. 2026. · 24 nedelje · 4 dana trčanja nedeljno
@@ -10,7 +10,7 @@ Polazim od tvojih ≈ 25 km nedeljno (2 h 53 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:20:38
 Današnja prognoza (1. 11.): 4:20:38, pouzdanost srednja
-Očekivano na dan trke: 4:12:49 (raspon 3:59:27–4:35:13) — 7:49 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:20:38 (raspon 4:07:16–4:43:02) — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
 - Trka 18. 10.: 10 km za 56:02. Rezultat sa 10 km prenosim na 42,2 km uz umanjenje, jer uz oko 25 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 42,2 km ostaje 4:20:38.
 - Polazna procena je iz rezultata koji si uneo: oko 4:20:38 za 42,2 km.
@@ -22,7 +22,7 @@ TEMPA
 - tempo trke 6:11/km
 - intervali 5:13/km
 - brze deonice 4:55/km
-Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (4:12:49) traži 5:59/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (4:20:38) traži 6:11/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Najveća nedelja u planu ima 51,2 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 51,2 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 24,7 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
@@ -294,5 +294,5 @@ UPOZORENJA
       napomena: Tempo za trku: 6:11/km (današnja forma 4:20:38).
       napomena: Prvih 5–10 km trči 6:16–6:21/km, mirno, iako ti se čini lako; od 10. do 32. km 6:11/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35 min od 30. minuta, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
-      napomena: Posle trke: 24 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 25 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 12,7 km, 90 min, 3 treninga + trka, brz rad 9 % vremena trčanja

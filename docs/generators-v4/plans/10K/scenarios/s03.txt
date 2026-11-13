@@ -1,6 +1,6 @@
 S03 — p11, E1: ned 12, trka 5 km umesto testa 3 km, 3,4 % brže od očekivanog
 
-STANJE: danas 2027-01-21; sadašnji obim 15 km nedeljno, 3 dana; forma 54:43 (pouzdanost srednja), očekivano na dan trke 53:38.
+STANJE: danas 2027-01-21; sadašnji obim 15 km nedeljno, 3 dana; forma 54:43 (pouzdanost srednja), očekivano na dan trke 53:07.
 DOGAĐAJ: Trka 5 km za 25:38 na 2027-01-21 (dan provere forme u 12. nedelji). Događaji: result:2027-01-21:trka-2027-01-21.
 PROMENA: 1.
 
@@ -226,7 +226,7 @@ Polazim od tvojih ≈ 15 km nedeljno (1 h 48 min trčanja).
 FORMA
 Polazna forma (1. 11.): 56:02
 Današnja prognoza (21. 1.): 54:43, pouzdanost srednja
-Očekivano na dan trke: 53:38 (raspon 52:11–55:42) — 1:05 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 53:07 (raspon 51:42–55:42) — 1:36 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Trka 21. 1.: 5 km za 25:38. Rezultat sa 5 km prenosim na 10 km uz umanjenje, jer uz oko 20 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 10 km: 56:02 → 54:43.
 - Polazna procena je iz rezultata koji si uneo: oko 56:02 za 10 km.
@@ -238,13 +238,13 @@ TEMPA
 - tempo trke 5:28/km
 - intervali 4:59/km
 - brze deonice 4:41/km
-Tempo trke u treninzima je tvoja današnja forma (5:28/km). Očekivano vreme na dan trke (53:38) traži 5:22/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:28/km). Očekivano vreme na dan trke (53:07) traži 5:19/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 35 min — nedelja tada stiže do 27,2 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 11,8 km i nosi manji deo nedelje.
 
 PROMENE
-Rezultat 5 km za 25:38 (21. 1.) pokazuje bolju formu od one po kojoj je plan pisan (56:02 na distanci trke): prag brži za 7 s/km, tempo trke brži za 8 s/km, intervali brži za 19 s/km, a očekivano vreme trke je sada oko 53:38 (raspon 52:11–55:42).
+Rezultat 5 km za 25:38 (21. 1.) pokazuje bolju formu od one po kojoj je plan pisan (56:02 na distanci trke): prag brži za 7 s/km, tempo trke brži za 8 s/km, intervali brži za 19 s/km, a očekivano vreme trke je sada oko 53:07 (raspon 51:42–55:42).
 - plan: prag 5:42/km, tempo trke 5:36/km → prag 5:35/km, tempo trke 5:28/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 17 nedelja

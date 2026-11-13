@@ -502,7 +502,8 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
     for (const p of RENDERED) {
       if (p.doc.weeks.length < 10) continue;
       /* M3 (motor): plan bez dugog za distancu ne računa napredak od obima — prognoza ostaje današnja, uz upozorenje */
-      if (p.doc.header.warnings.some((w) => w.code === 'dugi-za-distancu')) continue;
+      /* M7 (krug 14, motor): isto kad obim ili dugi ne nose trku (`raceDayNoProgress`) */
+      if (p.doc.header.decisions.raceDayNoProgress === true) continue;
       /* R2/M7 (krug 12): nov ili spor početnik — prognoza bez napretka (`forecastMaxGainByLevel` 0) */
       if (p.doc.header.decisions.level === 'pocetnik-nov') continue;
       const line = p.text.split('\n').find((l) => l.startsWith('Očekivano na dan trke')) ?? '';

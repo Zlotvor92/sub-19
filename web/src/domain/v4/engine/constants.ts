@@ -321,6 +321,8 @@ export const PAIN_FIRST_ZONE_MAX_DAYS = 42;
 /** Z7 (krug 7): razlika do adekvatnog ispod 5 % se ne prijavljuje (38,6 naspram 40 km, 14,8 naspram 15 km) — tolerancija
     zaokruživanja za sve nalaze o obimu i dugom. */
 export const NEAR_ENOUGH = 0.95;
+/** M7 (krug 14): vrh ili dugi ispod ovog dela adekvatnog uz upozorenje o obimu — prognoza bez napretka od obima. */
+export const NO_PROGRESS_SHARE = 0.9;
 /** Z7: najviše ovoliko nedelja duža priprema se proba pre nego što se kaže da dužina pripreme nije uzrok. */
 export const PREP_PROBE_MAX_EXTRA_WEEKS = 16;
 

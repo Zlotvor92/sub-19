@@ -912,6 +912,8 @@ describe('R10: ispis', () => {
       ...state,
       form: {
         ...state.form,
+        /* M7 (krug 14): plan primera ne računa napredak od obima (dugi 14 od 18 km) — pomera se i današnja forma */
+        current: { ...state.form.current, raceTimeSec: state.form.current.raceTimeSec - 45 },
         raceDay: { ...state.form.raceDay, expectedSec: state.form.raceDay.expectedSec - 45 },
         history: [
           ...state.form.history,

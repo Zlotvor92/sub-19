@@ -1,6 +1,6 @@
 S11 — p11, E3: ned 14: propušteni kvalitet i dugi
 
-STANJE: danas 2027-02-08; sadašnji obim 20 km nedeljno, 4 dana; forma 2:04:12 (pouzdanost srednja), očekivano na dan trke 2:01:24.
+STANJE: danas 2027-02-08; sadašnji obim 20 km nedeljno, 4 dana; forma 2:04:12 (pouzdanost srednja), očekivano na dan trke 2:01:23.
 DOGAĐAJ: Propušteno: w14d3, w14d6; sve ostalo urađeno; danas 2027-02-08. Događaji: result:2027-01-23:run-w12d5, missed:2027-02-04:w14d3, missed:2027-02-07:w14d6.
 PROMENA: 2.
 
@@ -253,7 +253,7 @@ Polazim od tvojih ≈ 20 km nedeljno (2 h 22 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (8. 2.): 2:04:12, pouzdanost srednja
-Očekivano na dan trke: 2:01:24 (raspon 1:56:51–2:08:04) — 2:48 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:01:23 (raspon 1:56:50–2:08:04) — 2:49 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
@@ -264,7 +264,7 @@ TEMPA
 - tempo trke 5:53/km
 - intervali 5:24/km
 - brze deonice 4:55/km
-Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:01:24) traži 5:45/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:01:23) traži 5:45/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
 Propušten je ključni trening „prag 3 × 8 min, oporavak 2 min džog" (4. 2.). To je bio glavni brzi trening te nedelje; sledeći isti trening (18. 2.) je po planu manji, pa se zbog ovoga ne produžava.

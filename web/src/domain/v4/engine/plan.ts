@@ -1,6 +1,11 @@
 /* V4 — `plan` (SPEC § 6.1–6.2): čista funkcija (stanje, cilj, podaci distance) → plan. Redosled odluka:
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
-import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE, RETURNED_AFTER_DAYS } from './constants';
+import {
+  FATIGUE_RATIO,
+  FATIGUE_WEEK_SHARE,
+  NO_PROGRESS_SHARE,
+  RETURNED_AFTER_DAYS
+} from './constants';
 import { runPass } from './build';
 import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
 import { decide, ladderInputOf, longStepOf } from './decide';
@@ -24,6 +29,7 @@ import {
   type PlanFn,
   type PlanWeek,
   type RunnerState,
+  type Warning,
   type Weekday,
   type WeekIntent
 } from './types';
@@ -369,9 +375,13 @@ export function createPlan(
     return out;
   };
   const found = warnings({ state, goal, data, decisions, doc: built, withExtraDay, withWeeks });
-  /* M3: nalaz „dugi-za-distancu" kaže da prognoza ne računa napredak od obima — i broj to prati */
+  /* M3: nalaz „dugi-za-distancu" kaže da prognoza ne računa napredak od obima — i broj to prati.
+     M7 (krug 14): isto kad upozorenje kaže da obim ili dugi ne nose trku („mali-obim", „kratak-dugi") — tada ni
+     prognoza ni tempo trke nisu brži od današnje forme. */
   const flags = {
-    ...(found.some((w) => w.code === 'dugi-za-distancu') ? { raceDayNoProgress: true } : {}),
+    ...(found.some((w) => w.code === 'dugi-za-distancu') || farBelowAdequate(built, goal, data, found)
+      ? { raceDayNoProgress: true }
+      : {}),
     ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) }),
     ...(data.safety.forecastMaxGainByLevel?.[level] === undefined
       ? {}
@@ -390,6 +400,18 @@ export function createPlan(
       warnings: found
     }
   };
+}
+
+/** M7 (krug 14): upozorenje „mali-obim" ili „kratak-dugi" i vrh ili dugi plana ispod `NO_PROGRESS_SHARE` adekvatnog —
+    obim ne nosi trku, pa prognoza ne računa napredak od obima (blizu praga, npr. dugi 15 od 16 km, napredak ostaje). */
+function farBelowAdequate(doc: PlanDoc, goal: Goal, data: DistanceData, found: readonly Warning[]): boolean {
+  if (!found.some((w) => w.code === 'mali-obim' || w.code === 'kratak-dugi')) return false;
+  const ctx = paceCtxOf(doc.header);
+  const costs = doc.weeks.map((w) => weekCost(w, goal.raceDate, ctx));
+  const peakKm = Math.max(0, ...costs.map((c) => c.km));
+  const longKm = Math.max(0, ...costs.map((c) => c.longKm));
+  const a = data.adequate;
+  return peakKm < NO_PROGRESS_SHARE * a.minPeakWeeklyKm || longKm < NO_PROGRESS_SHARE * a.minLongKm;
 }
 
 /** Slobodan dan koji je najdalje od postojećih dana trčanja (izjednačeno: raniji); `null` kad su svi zauzeti. */

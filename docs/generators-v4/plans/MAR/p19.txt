@@ -7,7 +7,7 @@ Polazim od tvojih ≈ 40 km nedeljno (4 h 30 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:02:21
 Današnja prognoza (1. 11.): 4:02:21, pouzdanost srednja
-Očekivano na dan trke: 3:59:34 (raspon 3:54:20–4:06:23) — 2:47 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:02:21 (raspon 3:57:07–4:09:10) — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 4:02:21 za 42,2 km.
 
@@ -18,7 +18,7 @@ TEMPA
 - tempo trke 5:45/km
 - intervali 4:51/km
 - brze deonice 4:34/km
-Tempo trke u treninzima je tvoja današnja forma (5:45/km). Očekivano vreme na dan trke (3:59:34) traži 5:41/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:45/km). Očekivano vreme na dan trke (4:02:21) traži 5:45/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Do trke je 8 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 28 km, ili na isti datum trči kraću distancu: polumaraton.

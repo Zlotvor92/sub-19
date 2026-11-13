@@ -48,11 +48,14 @@ describe('SPEC § 12 (a): nov plan, 30 km nedeljno, 4 dana, 10 nedelja, forma 1:
     expect(doc.header.startDate).toBe('2026-11-16');
   });
 
-  it('raspon na dan trke: 1:40:00 (1:38:25–1:41:59)', () => {
+  /* M7 (krug 14): dugi primera je 14 od 18 km (78 % adekvatnog) uz upozorenje „kratak-dugi" — prognoza ne računa
+     napredak od obima: očekivano = današnja forma 1:41:00, raspon iste širine kao pre (1:38:25–1:41:59 + 60 s) */
+  it('raspon na dan trke: 1:41:00 (1:39:25–1:42:59), bez napretka od obima', () => {
     const r = doc.header.form.raceDay;
-    expect(Math.abs(r.expectedSec - 6000)).toBeLessThanOrEqual(2);
-    expect(Math.abs(r.lowSec - 5905)).toBeLessThanOrEqual(2);
-    expect(Math.abs(r.highSec - 6119)).toBeLessThanOrEqual(2);
+    expect(doc.header.decisions.raceDayNoProgress).toBe(true);
+    expect(Math.abs(r.expectedSec - 6060)).toBeLessThanOrEqual(2);
+    expect(Math.abs(r.lowSec - 5965)).toBeLessThanOrEqual(2);
+    expect(Math.abs(r.highSec - 6179)).toBeLessThanOrEqual(2);
   });
 
   it('nedelja 1: cilj = baza + dodatno opterećenje kvaliteta (krug 2, R5), prag 2 × 8 min, dugi 11,5 km, oko 30 km', () => {
