@@ -440,3 +440,13 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   postavljeno treneru (da li je dugi u rasterećenju prekratak).
 - Ocena: trener (traženo da B i C čita dan po dan, ne iz pregleda) → `coach/ROUND-V4-HM-06.md`; drugi sudija nov Opus
   tab `session_01GnHHiWupkdx7vHFKGMsgSE` → `judge2/ROUND-V4-HM-06.md`. Sudija kruga 5 arhiviran.
+
+### 13. 11. 2026, 05:27 — OCENA TRENERA, krug 6 (`coach/ROUND-V4-HM-06.md`; B i C čitani dan po dan) [srednja]
+- Plan 79,3 (8/12 ≥ 80) · Prilagođavanje 84,7 · Personalizacija 84,0 · zbirna 81,9. Najslabiji scenario s14 (73).
+- Presuda: HM ZATVOREN U CELINI uz 3 ispravke motora bez novog kruga ocene: (1) povratak dugog +25 %/+20 min od
+  poslednjeg STVARNO istrčanog, i preko rasterećenja/provere (s14: 70/90 → 2 h 10); (2) kad provera otpadne, lagan dan
+  ≤ 65 % dugog te nedelje (s14, s05); (3) prvi blok tempa trke posle bola ≤ 60 % planiranog (s13). Plus tekst (s04,
+  s08, s10, s11/s12), pouzdanost „visoka" tek posle dva saglasna rezultata, parovi (P2 B, P3 A, P1 A).
+- Skok dugog posle rasterećenja u prvobitnom planu je u redu (70 min je dugi dan posle pripremne trke); pravilo:
+  obično rasterećenje dugi 70–75 % prethodnog, nedelja provere 50–60 %.
+- Nepokriveno: više događaja zaredom (nijedan scenario) — dodati.
