@@ -8,9 +8,9 @@
 2026-11-09 | odmor | - | 0.0 |  | - | - | -
 2026-11-10 | trening | quality | 9.1 | usponi 10 × 1 min snažno uzbrdo, nazad 2 min hod | - | - | -
 2026-11-11 | odmor | - | 0.0 |  | - | - | -
-2026-11-12 | trening | easy | 7.0 | lagano 7 km | - | - | -
+2026-11-12 | trening | quality | 9.0 | prag 2 × 9 min, oporavak 1:30 džog | - | - | -
 2026-11-13 | odmor | - | 0.0 |  | - | - | -
-2026-11-14 | trening | easy | 7.0 | lagano 7 km | - | - | -
+2026-11-14 | trening | easy | 6.0 | lagano 6 km | - | - | -
 2026-11-15 | trening | long | 16.0 | dugi 16 km lagano | - | - | -
 2026-11-16 | odmor | - | 0.0 |  | - | - | -
 2026-11-17 | trening | quality | 10.3 | brze deonice 10 × 300 m, oporavak 300 m džog | - | - | -
@@ -34,9 +34,9 @@
 2026-12-05 | trening | easy | 8.0 | lagano 8 km | - | - | -
 2026-12-06 | trening | long | 17.5 | dugi 17,5 km, završni deo 2,5 km progresivno do tempa trke | - | - | -
 2026-12-07 | odmor | - | 0.0 |  | - | - | -
-2026-12-08 | odmor | - | 0.0 |  | - | - | -
+2026-12-08 | trening | easy | 5.5 | lagano 4,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
-2026-12-10 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
+2026-12-10 | trening | easy | 4.5 | lagano 4,5 km | - | - | -
 2026-12-11 | odmor | - | 0.0 |  | - | - | -
 2026-12-12 | trening | test | 14.6 | provera forme: pripremna trka ili test na 10 km punim naporom | - | - | -
 2026-12-13 | trening | long | 13.0 | dugi 13 km lagano | - | - | -
@@ -90,7 +90,7 @@
 2027-01-30 | trening | easy | 7.0 | lagano 7 km | - | - | -
 2027-01-31 | trening | long | 14.5 | dugi 14,5 km lagano | - | - | -
 2027-02-01 | odmor | - | 0.0 |  | - | - | -
-2027-02-02 | odmor | - | 0.0 |  | - | - | -
+2027-02-02 | trening | easy | 6.5 | lagano 5,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-02-03 | odmor | - | 0.0 |  | - | - | -
 2027-02-04 | trening | quality | 7.3 | oštrenje: tempo trke 3 × 3 min, oporavak 2 min džog | - | - | -
 2027-02-05 | odmor | - | 0.0 |  | - | - | -
