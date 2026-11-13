@@ -197,3 +197,29 @@ describe('krug 9 — A13: provera forme je u prikazu brz rad', () => {
     }
   });
 });
+
+describe('krug 9 — A18: jedan izvor prognoze', () => {
+  it('tempo trke u napomeni za dan trke = današnja prognoza iz zaglavlja (ili sporiji cilj)', () => {
+    const fmt = (sec: number): string => {
+      const p = Math.round(sec);
+      return `${String(Math.floor(p / 60))}:${String(p % 60).padStart(2, '0')}`;
+    };
+    for (const p of PROFILES) {
+      const state = buildState(factsOf(p), p.goal, hm, estimateForm);
+      const r = plan(state, p.goal, hm);
+      if (!r.ok || r.doc.header.paces.byFeel) continue;
+      const h = r.doc.header;
+      const m = /od 5\. do 16\. km (\d+:\d+)\/km/.exec(renderPlan(r.doc, state, hm));
+      if (m === null) continue;
+      const now = (h.form.current.raceTimeSec / hm.distanceM) * 1000;
+      const goal =
+        h.goal.targetTimeSec === undefined ? null : (h.goal.targetTimeSec / hm.distanceM) * 1000;
+      const ok = [now, ...(goal === null ? [] : [goal])].flatMap((x) => [
+        fmt(x),
+        fmt(x - 0.5),
+        fmt(x + 0.5)
+      ]);
+      expect(ok, p.id).toContain(m[1]);
+    }
+  });
+});

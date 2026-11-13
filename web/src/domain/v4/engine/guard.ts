@@ -1002,6 +1002,8 @@ function shortEasyWarning(
   const short = costs.filter(
     (c) =>
       (c.week.intent.kind === 'build' || c.week.intent.kind === 'peak') &&
+      /* A18 (krug 9): nedelja u oporavku/rampi nije „kratak lagan dan zbog traženih dana" */
+      !inAnyWindow(c.week, header.adjustments ?? []) &&
       c.week.days.some(
         (x) => x.workout?.kind === 'easy' && summarize(x.workout, ctx).durationSec < want - 90
       )
@@ -1012,12 +1014,19 @@ function shortEasyWarning(
   const span =
     first === last ? `${String(first)}. nedelji` : `${String(first)}–${String(last)}. nedelji`;
   const baseKm = (d.baseLoad * 60) / header.paces.easy;
-  const week1 = costs[0]?.km ?? 0;
+  /* A18: rečenica o obimu prati brojeve — prva takva nedelja prema sadašnjem obimu */
+  const firstKm = short[0]?.km ?? 0;
+  const versus =
+    firstKm > baseKm + 0.5
+      ? `nešto više od sadašnjeg obima (${km(baseKm)})`
+      : firstKm < baseKm - 0.5
+        ? `manje od sadašnjeg obima (${km(baseKm)}), uz kraće lagane dane`
+        : 'koliko i sadašnji obim';
   return {
     code: 'lagan-kratak',
     severity: 'info',
     problem: `Tražio si ${count(d.runDays.length, DAYS)} trčanja nedeljno; uz sadašnji obim od oko ${km(baseKm)} lagani dani su u ${span} oko ${String(s.minEasyFallbackMin)} min umesto ${String(Math.round(want / 60))}.`,
-    meaning: `Svi traženi dani ostaju u planu; zato je prva nedelja oko ${km(week1)}, nešto više od sadašnjeg obima.`,
+    meaning: `Svi traženi dani ostaju u planu; zato je ${String(first)}. nedelja oko ${km(firstKm)}, ${versus}.`,
     proposal:
       'Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.'
   };

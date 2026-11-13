@@ -39,7 +39,7 @@ import type {
   Workout,
   ZoneId
 } from './types';
-import { paceAtShare, raceTimeSec } from './vdot';
+import { paceAtShare } from './vdot';
 
 export interface RenderOptions {
   /** Spisak promena posle `replan` (sa objašnjenjem). */
@@ -207,7 +207,8 @@ export function raceNotes(
     .find((d) => d.workout?.kind === 'race' && d.date === h.goal.raceDate);
   /* S7 (krug 4): tempo trke iz DANAŠNJE potvrđene forme (po njoj su tempa plana); cilj samo kad je sporiji. Očekivani
      napredak dobija drugu rečenicu — uslovljenu proverom forme iz plana koja je još pred trkačem. */
-  const confirmedSec = raceTimeSec(h.form.paceVdot, data.distanceM);
+  /* A18 (krug 9): jedan izvor — današnja prognoza iz zaglavlja (ne posebno računanje iz VDOT-a tempa) */
+  const confirmedSec = h.form.current.raceTimeSec;
   const target = h.goal.targetTimeSec;
   const fromGoal = target !== undefined && target >= confirmedSec;
   const timeSec = fromGoal ? target : confirmedSec;
