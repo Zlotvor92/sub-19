@@ -205,7 +205,9 @@ export const SAFETY: SafetyNumbers = {
     weekBeforeMaxOfPeak: 0.6,
     weekMinus2MaxOfPeak: 0.8,
     calendarMinus2MaxQuality: 2,
-    raceWeekMaxOfPeak: 0.6
+    raceWeekMaxOfPeak: 0.6,
+    /* M9 (krug 5; trener § 7, s06): poslednji dugi sa blokom zadržava najmanji korak (15 min) */
+    lastLongMinBlockSec: 900
   },
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */

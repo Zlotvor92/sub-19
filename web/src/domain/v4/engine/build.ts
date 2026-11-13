@@ -10,6 +10,7 @@ import {
   RACE_NO_LONG_DAYS,
   RETURN_TEST_AFTER_RAMP_DAYS,
   MOVED_TEST_MIN_DAYS_BEFORE_RACE,
+  RESTORE_PEAK_AFTER_DAYS,
   RP_TEST_GAP_DAYS,
   TAPER_BLOCK_SHARE,
   RETURN_WEEK_MAX_OVER_LAST,
@@ -748,10 +749,14 @@ function taperIntensity(
     }
     const work = isQuality && r.type === 'quality' ? r.dose : r.type === 'long' ? r.dose : 0;
     /* dopuna kruga 4: u nedelji −2 prednost ima kvalitet usred nedelje — blok u dugom dobija najviše pola budžeta */
-    const room =
+    let room =
       peakFastSec > 0
         ? Math.min(budget - fast, isBlock ? TAPER_BLOCK_SHARE * budget : Number.POSITIVE_INFINITY)
         : Number.POSITIVE_INFINITY;
+    /* M9 (krug 5): poslednji dugi pred trku zadržava najmanji blok (`taper.lastLongMinBlockSec`) — i posle bolesti,
+       kad je vršna nedelja ponovo izgrađena sa manje brzog rada (s06) */
+    const lastBlock = t.lastLongMinBlockSec;
+    if (isBlock && lastBlock !== undefined && count < t.weekBeforeMaxQuality) room = Math.max(room, Math.min(work, lastBlock));
     if (count >= t.weekBeforeMaxQuality || room < ctx.data.safety.minDoseSec) {
       out.set(date, r.type === 'long' ? plainLong(r) : asEasy(r));
       continue;
@@ -1556,7 +1561,20 @@ export function runPass(
           sum + (x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long') ? x.workout.workSec : 0),
         0
       );
-      peakFast = Math.max(peakFast, real);
+      /* M9 (krug 5): vršna nedelja u 21 dan posle rampe povratka je skraćena zbog povratka — merilo silaska je
+         prvobitna vršna nedelja (čuvar je tada ne meri, isto pravilo) */
+      const afterRamp = adjustments.some((adj) => {
+        const w = adjustmentWindow(adj);
+        return w !== null && w.from <= addDays(week.start, 6) && week.start < addDays(w.rampEnd, RESTORE_PEAK_AFTER_DAYS);
+      });
+      const planned = afterRamp
+        ? week.days.reduce(
+            (sum, x) =>
+              sum + (x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long') ? x.workout.workSec : 0),
+            0
+          )
+        : 0;
+      peakFast = Math.max(peakFast, real, planned);
     }
     const built: PlanWeek = {
       index: week.index,

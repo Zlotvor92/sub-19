@@ -813,6 +813,8 @@ export interface SafetyNumbers {
     /** M7 (krug 5): kalendarska nedelja dve pred nedeljom trke ≤ ovoliki deo vršne nedelje (km), najviše
         `calendarMinus2MaxQuality` brzih treninga; nedelja trke (bez trke) ≤ `raceWeekMaxOfPeak`. */
     weekMinus2MaxOfPeak?: number;
+    /** M9 (krug 5): blok poslednjeg dugog pred trku ne pada ispod ovoga (sekunde), kad šablon traži blok. */
+    lastLongMinBlockSec?: Seconds;
     calendarMinus2MaxQuality?: number;
     raceWeekMaxOfPeak?: number;
   };

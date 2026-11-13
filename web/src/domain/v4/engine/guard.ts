@@ -13,6 +13,7 @@ import {
   RAMP_MIN_DURATION_SEC,
   GUARD_DOSE_TOLERANCE_SEC,
   GUARD_TAPER_KM_SLACK,
+  RESTORE_PEAK_AFTER_DAYS,
   GUARD_FAST_SHARE_TOLERANCE,
   GUARD_JUMP_TOLERANCE,
   GUARD_LONG_STEP_TOLERANCE_SEC,
@@ -221,11 +222,15 @@ export function weekCost(week: PlanWeek, raceDate: IsoDate, ctx: PaceCtx): WeekC
   return out;
 }
 
-function inAnyWindow(week: PlanWeek, adjustments: readonly Adjustment[]): boolean {
+function inAnyWindow(week: PlanWeek, adjustments: readonly Adjustment[], afterDays = 0): boolean {
   const end = addDays(week.start, 6);
   return adjustments.some((adj) => {
     const w = adjustmentWindow(adj);
-    return w !== null && w.from <= end && w.rampEnd >= week.start;
+    return (
+      w !== null &&
+      w.from <= end &&
+      (w.rampEnd >= week.start || (afterDays > 0 && addDays(w.rampEnd, afterDays) > week.start))
+    );
   });
 }
 
@@ -287,7 +292,8 @@ export const guard: GuardFn = (doc, _state, data) => {
   const peakWork = Math.max(
     0,
     ...costs
-      .filter((c) => c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes))
+      /* M9 (krug 5): ni vršna nedelja u 21 dan posle rampe (skraćena zbog povratka) */
+      .filter((c) => c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes, RESTORE_PEAK_AFTER_DAYS))
       .map((c) => c.fastSec)
   );
 
