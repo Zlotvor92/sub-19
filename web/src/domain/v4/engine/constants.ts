@@ -128,6 +128,8 @@ export const DEFAULT_TAPER_EASY_MAX_SEC: Readonly<Record<string, number>> = {
 export const TAPER_ADDON_MIN_EASY_SEC = 600;
 /** Prva nedelja posle rampe povratka: obim ≤ poslednja puna nedelja pre pauze × 1,10 (R9). */
 export const RETURN_WEEK_MAX_OVER_LAST = 1.1;
+/** Pomerena provera forme najranije 10 dana posle kraja rampe povratka (krug 4, S9). */
+export const RETURN_TEST_AFTER_RAMP_DAYS = 10;
 
 /* ------------------------------------------------------------------ spremnost (§ 6.5, § 14.1) */
 

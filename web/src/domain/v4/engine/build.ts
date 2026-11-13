@@ -8,6 +8,7 @@ import {
   RACE_CALM_DAYS,
   RACE_EVE_MAX_SEC,
   RACE_NO_LONG_DAYS,
+  RETURN_TEST_AFTER_RAMP_DAYS,
   RETURN_WEEK_MAX_OVER_LAST,
   TAPER_ADDON_MIN_EASY_SEC
 } from './constants';
@@ -24,6 +25,7 @@ import {
 import { doneIds } from './done';
 import { paceCtxOf, stepsCost, summarize } from './load';
 import {
+  adjustmentWindow,
   applyReadiness,
   inReturn,
   modsFor,
@@ -268,7 +270,9 @@ export function weekSlots(
   forcedTest: Extract<Recipe, { type: 'test' }> | null = null,
   /** Poslednji težak dan prethodne nedelje: kvalitet ne ide dan posle njega (u nedelji trke dani kvaliteta se
       biraju prema danu trke, pa bi ponedeljak mogao da stane uz nedeljni kvalitet). */
-  hardBefore: IsoDate | null = null
+  hardBefore: IsoDate | null = null,
+  /** Pomerena provera ne ide pre ovog dana (S9: najranije 10 dana posle kraja rampe). */
+  forcedFrom: IsoDate | null = null
 ): WeekSlots {
   const { decisions: d } = ctx;
   const { intent } = week;
@@ -355,7 +359,10 @@ export function weekSlots(
     const wd = qualityDays[0];
     const date = at >= 0 ? items[at]?.date : wd === undefined ? undefined : dateOf(wd);
     const usable =
-      date !== undefined && date < calmFrom && (longWd === null || date !== dateOf(longWd));
+      date !== undefined &&
+      date < calmFrom &&
+      (forcedFrom === null || date >= forcedFrom) &&
+      (longWd === null || date !== dateOf(longWd));
     if (date !== undefined && usable && runDays.some((x) => dateOf(x) === date)) {
       const item: SlotItem = { kind: 'test', date, def: forcedTest.def, slot: forcedTest.slot };
       if (at >= 0) items[at] = item;
@@ -809,6 +816,19 @@ function applyRepeat(
   return out;
 }
 
+/** Sitna razlika dana (S9): lagan ili dugi bez rada, ista vrsta i isti unos biblioteke, a dužina se razlikuje < 1 km i < 10 %. */
+export const MINOR_CHANGE_KM = 1;
+export const MINOR_CHANGE_SHARE = 0.1;
+function minorChange(before: Workout, after: Workout, ctx: BuildCtx): boolean {
+  if (before.kind !== after.kind || before.libraryId !== after.libraryId) return false;
+  if (before.kind === 'race' || before.kind === 'test') return false;
+  if (before.workSec > 0 || after.workSec > 0) return false;
+  const a = summarize(before, ctx.pace).km;
+  const b = summarize(after, ctx.pace).km;
+  const diff = Math.abs(a - b);
+  return diff < MINOR_CHANGE_KM && diff < MINOR_CHANGE_SHARE * Math.max(a, b);
+}
+
 const sameWorkout = (a: Workout | null, b: Workout | null): boolean =>
   canonical(a) === canonical(b);
 
@@ -888,6 +908,7 @@ export function runPass(
   let previousHard: IsoDate | null = null;
   /* Provera forme koja je pala u pauzu ili rampu: čeka prvu nedelju posle rampe (R9). */
   let pendingTest: Extract<Recipe, { type: 'test' }> | null = null;
+  let pendingFrom: IsoDate | null = null;
   const lastThree = <T>(list: readonly T[]): T[] => list.slice(Math.max(0, list.length - 3));
   const high = highShareWeeks(doc.weeks, data);
 
@@ -900,7 +921,8 @@ export function runPass(
       ctx,
       slotCounter(doc.weeks, week.index),
       forced,
-      previousHard
+      previousHard,
+      pendingFrom
     );
     if (forced !== null && slots.items.some((x) => x.kind === 'test' && x.def === forced.def)) {
       pendingTest = null;
@@ -994,7 +1016,15 @@ export function runPass(
         /* Dugi izgrađen bez skraćivanja: lanac rasta uzima odlučenu (nezaokruženu) dužinu. */
         if (ready.type === 'long' && ready.sec === shell.longSec) longAsDecided = true;
         const workout = realize(ready, ctx);
-        if (!sameWorkout(workout, day.workout)) {
+        /* S9 (krug 4): u ponovnom planiranju sitna razlika (< 1 km i < 10 %, ista vrsta i isti trening) ne pravi
+           izmenu — nema repa ± 0,5 km nedeljama posle događaja. */
+        const minor =
+          opts.fresh !== true &&
+          day.workout !== null &&
+          workout !== null &&
+          !adjustments.some((a) => a.kind === 'repeat' && a.dayId === day.id) &&
+          minorChange(day.workout, workout, ctx);
+        if (!minor && !sameWorkout(workout, day.workout)) {
           final = {
             id: day.id,
             date: day.date,
@@ -1011,6 +1041,14 @@ export function runPass(
       /* Provera forme koju su pauza ili rampa povratka pojele se pomera, ne briše (R9). */
       if (planned.type === 'test' && !kept && inReturn(day.date, adjustments)) {
         pendingTest = planned;
+        /* S9: najranije 10 dana posle kraja rampe povratka — ne kao pun napor odmah posle rampe */
+        let end: IsoDate | null = null;
+        for (const adj of adjustments) {
+          const w = adjustmentWindow(adj);
+          if (w !== null && w.from <= day.date && day.date <= w.rampEnd && (end === null || w.rampEnd > end))
+            end = w.rampEnd;
+        }
+        pendingFrom = end === null ? null : addDays(end, RETURN_TEST_AFTER_RAMP_DAYS);
       }
       const key = seenKey(final.workout);
       if (key !== null) seen.push({ date: final.date, key });

@@ -817,13 +817,17 @@ describe('dodatak krugu 3 (zahtevi taba podataka)', () => {
     const r = replan(start, state, deriveEvents(start, state), late);
     const rampEnd = addDays(to, 14);
     const tests = days(r.doc).filter((d) => d.date > to && d.workout?.kind === 'test');
-    expect(tests.length).toBeGreaterThan(0);
-    for (const d of tests) expect(d.date > rampEnd, d.date).toBe(true);
+    /* krug 4 (S9): najranije 10 dana posle rampe; kad do sužavanja nema mesta, otpada uz rečenicu */
+    for (const d of tests) expect(d.date >= addDays(rampEnd, 10), d.date).toBe(true);
+    if (tests.length === 0)
+      expect(r.changes.map((x) => x.reason).join(' ')).toContain('Provera forme otpada');
     expect(days(r.doc).find((d) => d.date === test.date)?.workout?.kind).toBe('easy');
     const reason = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
     const show = (iso: string): string =>
       `${String(Number(iso.slice(8, 10)))}. ${String(Number(iso.slice(5, 7)))}.`;
-    expect(reason).toContain(`Provera forme je pomerena na ${show(tests[0]?.date ?? '')}`);
+    if (tests.length > 0)
+      expect(reason).toContain(`Provera forme je pomerena na ${show(tests[0]?.date ?? '')}`);
+    else expect(reason).toContain('Provera forme otpada');
     const firstFast = days(r.doc).find((d) => d.date > to && isFast(d));
     expect(reason).toContain(`prvi brzi trening je ${show(firstFast?.date ?? '')}`);
   });

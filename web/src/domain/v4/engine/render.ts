@@ -357,7 +357,11 @@ export function renderPlan(
   const today = state?.today;
   const runs = new Map<string, Run>();
   for (const run of state?.runs ?? []) if (run.dayId !== undefined) runs.set(run.dayId, run);
-  const past = (day: PlanDay): boolean => today !== undefined && day.date <= today;
+  /* S9 (krug 4): dan pauze (i današnji) nije urađen trening — ispisuje se kao pauza i ne ulazi u zbir. */
+  const paused = (date: string): boolean =>
+    (h.adjustments ?? []).some((a) => a.kind === 'pause' && a.from <= date && date <= a.to);
+  const past = (day: PlanDay): boolean =>
+    today !== undefined && (day.date < today || (day.date === today && paused(day.date)));
   for (const week of doc.weeks) {
     const cost = weekCost(week, h.goal.raceDate, ctx);
     const toRace = Math.max(0, Math.round(diffDays(mondayOf(h.goal.raceDate), week.start) / 7));
@@ -388,10 +392,10 @@ export function renderPlan(
         for (const note of raceNotes(doc, state, data)) lines.push(`      napomena: ${note}`);
         continue;
       }
-      if (past(day) && (run !== undefined || day.date !== today)) {
+      if (past(day) && (run !== undefined || day.date !== today || paused(day.date))) {
         /* Prošao dan: šta je urađeno (ili da nije), bez prepisivanja novim tempom. */
         if (run === undefined) {
-          lines.push(`  ${when}  ${w.text} — nije urađeno`);
+          lines.push(`  ${when}  ${w.text} — ${paused(day.date) ? 'pauza, bez treninga' : 'nije urađeno'}`);
         } else {
           lines.push(`  ${when}  ${w.text} — ${doneLine(run)}`);
           km += Math.round(run.distanceM / 100) / 10;

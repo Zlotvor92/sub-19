@@ -693,7 +693,18 @@ function explain(
   data: DistanceData,
   last: IsoDate
 ): Explain {
-  const lighter = `zato su treninzi do ${fmtDate(last)} lakši nego što su bili`;
+  /* S9 (krug 4): „lakši nego što su bili" samo ako jeste — svaka buduća nedelja do `last` je ≤ nego pre. */
+  const ctxB = paceCtxOf(before.header);
+  const ctxA = paceCtxOf(c.doc.header);
+  const raceDay = before.header.goal.raceDate;
+  const truly = c.doc.weeks.every((w) => {
+    if (addDays(w.start, 6) <= state.today || w.start > last) return true;
+    const old = before.weeks.find((x) => x.start === w.start);
+    return old === undefined || weekCost(w, raceDay, ctxA).km <= weekCost(old, raceDay, ctxB).km + 0.5;
+  });
+  const lighter = truly
+    ? `zato su treninzi do ${fmtDate(last)} lakši nego što su bili`
+    : `nijedna nedelja do ${fmtDate(last)} nije veća nego pre prekida`;
   const next = fmtDate(addDays(c.until, 1));
   const resume = `od ${next} plan se nastavlja kako je bio`;
   const same = (text: string): Explain => ({
@@ -722,7 +733,18 @@ function explain(
       const rampLast = addDays(ev.to, pauseRampDays(length, ev.reason));
       const rampEnd = fmtDate(rampLast < raceDate ? rampLast : addDays(raceDate, -1));
       const test = movedTest(before, c.doc, state.today);
-      const moved = test === null ? '' : ` Provera forme je pomerena na ${fmtDate(test)}`;
+      const hadTest = allDays(before).some(
+        (d) => d.date > state.today && d.date < raceDate && d.workout?.kind === 'test'
+      );
+      const hasTest = allDays(c.doc).some(
+        (d) => d.date > state.today && d.date < raceDate && d.workout?.kind === 'test'
+      );
+      const moved =
+        test !== null
+          ? ` Provera forme je pomerena na ${fmtDate(test)}`
+          : hadTest && !hasTest
+            ? ' Provera forme otpada: do sužavanja pred trku nema 10 dana posle povratka, a pun napor odmah posle bolesti nije dobar test forme'
+            : '';
       const back = `${what}, pa je povratak postepen: treninzi su kraći do ${rampEnd}, a ${fastFrom(ev.to)}`;
       const tail = addDays(c.until, 1) < raceDate ? `; ${resume}` : '';
       const day = `${back}${tail}.${moved}`;
