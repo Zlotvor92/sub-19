@@ -703,3 +703,14 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   medijane te razlike na distanci + 5 poena; (2) presuda drugog sudije „ne" uz trenerovu ocenu ≥ 75; (3) obrnuto —
   drugi sudija ≥ 75, trener < 72. Uz svaki plan: obe ocene, 2–3 glavne zamerke svakog sudije, jedno pitanje za
   vlasnika. Do tada se pregledi vlasnika ne traže.
+
+### 13. 11. 2026, 22:15 — OCENE R16 (stanje `fb2c1a3`) i nalog R17
+- Provera R15 kod organizatora: 60 fajlova, 1001 + 23 očekivano; typecheck čist; kapije 4 × 0 [visoka].
+- Trener: HM 78,3 / 83,4 / 83,7 → 80,9; 10K 77,7 / 82,4 / 83,0 → 80,2; MAR 77,2 / 81,0 / 80,5 → 79,0;
+  5K 75,9 / 82,1 / 80,0 → 78,6. B i C ≥ 80 svuda; Plan < 80 svuda.
+- Drugi sudija (planovi): HM 72,7 (p02 80, p04 59), 10K 68,1 (P06 56, P10 62, P02 63, P03 64), MAR 64,6 (p13 49,
+  p18 52), 5K 62,1 (p06 45, p12 53, p13 56).
+- Nove greške: regresija `maxConsecutiveWithHard` (HM p04 79,5 → 75 / judge2 59); STABILNOST — HM i 10K s22
+  („ništa") menjaju cilj bez PROMENE; smer tempa posle boljeg rezultata i dalje pogrešan u 5K (S02/S03/S18).
+- R17: motor (regresija → stabilnost → smer tempa → prenos HM→10K → provera ne istiskuje RP → tekstovi → MAR s17 i
+  povratak → HM podatak → M27); 10K, 5K, maraton tabovi podatak (R17-10K/5K/MAR).
