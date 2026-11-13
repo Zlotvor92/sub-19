@@ -1,8 +1,10 @@
 /* KRUG 10 (poruka organizatora 13. 11.) — povratak posle događaja, provera nad podacima ove distance. */
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment,
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return,
    @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { longCapAfterEvent, noCatchUp, returnsToOriginal } from '../../engine/testdata/round10';
+import { renderPlan } from '../../engine';
+import { tenk } from './index';
 import { SCENARIOS } from './testdata/scenarios';
 
 const RUNS = SCENARIOS.filter((s) => !s.title.startsWith('E5')).map((s) => ({
@@ -27,6 +29,65 @@ describe('krug 10 — povratak posle događaja (tenk)', () => {
     const bad: string[] = [];
     for (const { s, r } of RUNS)
       bad.push(...noCatchUp(`s${String(s.no)}`, r.before, r.after, r.afterState.today));
+    expect(bad).toEqual([]);
+  });
+});
+
+describe('krug 10 — stavka 4: tekst izmene i provera forme', () => {
+  const ALL = SCENARIOS.map((s) => ({ s, r: s.run() as any }));
+  it('a/b: izmena nosi samo poslednji rezultat; rezultat stariji od 14 dana uz drugi događaj se ne objavljuje', () => {
+    const bad: string[] = [];
+    for (const { s, r } of ALL) {
+      const today: string = r.afterState.today;
+      const ids = new Set<string>((r.changes as any[]).map((c) => String(c.eventId)));
+      const results = [...ids].filter((x) => x.startsWith('result:'));
+      if (results.length > 1) bad.push(`s${String(s.no)} više rezultata: ${results.join(', ')}`);
+      const others = [...ids].some((x) => !x.startsWith('result:'));
+      for (const id of results) {
+        const date = id.split(':')[1] ?? '';
+        const old = new Date(Date.parse(today) - 14 * 86400000).toISOString().slice(0, 10);
+        if (others && date < old) bad.push(`s${String(s.no)} stari rezultat ${id}`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+  it('c: „ništa" bez izmena (E6, promena 0) — ni napomena za dan trke se ne menja', () => {
+    const note = (doc: any, st: any): string => {
+      const lines = renderPlan(doc, st, tenk).split('\n');
+      const i = lines.findIndex((l) => l.includes('TRKA:'));
+      const out: string[] = [];
+      for (let j = i + 1; j < lines.length && (lines[j] ?? '').includes('napomena'); j += 1)
+        out.push(lines[j] ?? '');
+      return out.join('\n');
+    };
+    for (const { s, r } of ALL.filter(({ s }) => s.title.startsWith('E6'))) {
+      if ((r.changes as any[]).length > 0) continue;
+      expect(note(r.after, r.afterState), `s${String(s.no)}`).toBe(note(r.before, r.afterState));
+    }
+  });
+  it('d: propušten glavni trening nedelje (prvi kvalitet) se imenuje (s09)', () => {
+    const r = ALL.find(({ s }) => s.no === 9)?.r;
+    const named = (r.changes as any[]).filter((c) =>
+      String(c.reason).startsWith('Propušten je ključni')
+    );
+    expect(named.length).toBe(2);
+  });
+  it('e: jedina provera forme se pomera, ne briše (osim < 3 nedelje do trke ili kad je zameni trka)', () => {
+    const bad: string[] = [];
+    for (const { s, r } of ALL.filter(({ s }) => !/^E[57]/.test(s.title))) {
+      const today: string = r.afterState.today;
+      const tests = (doc: any): string[] =>
+        doc.weeks
+          .flatMap((w: any) => w.days)
+          .filter((x: any) => x.workout?.kind === 'test' && x.date > today)
+          .map((x: any) => x.date as string);
+      const b = tests(r.before);
+      const a = tests(r.after);
+      const race: string = r.after.header.goal.raceDate;
+      const late = new Date(Date.parse(race) - 21 * 86400000).toISOString().slice(0, 10);
+      if (a.length < b.length && b.some((x) => x <= late))
+        bad.push(`s${String(s.no)} provera ${b.join(',')} → ${a.join(',') || 'nema'}`);
+    }
     expect(bad).toEqual([]);
   });
 });

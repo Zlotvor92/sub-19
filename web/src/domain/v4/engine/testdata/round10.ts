@@ -58,7 +58,10 @@ export function longCapAfterEvent(
   let back = false;
   for (const w of after.weeks) {
     const l = longOf(w, after);
-    if (w.start <= mondayOf(today) || back || w.intent.kind === 'race') {
+    /* tekuća nedelja se meri kad joj je dugi posle danas */
+    const longDay = w.days.find((d) => d.workout?.kind === 'long');
+    const past = addDays(w.start, 6) <= today || (longDay !== undefined && longDay.date <= today);
+    if (past || back || w.intent.kind === 'race') {
       if (l > 0) last = l;
       continue;
     }

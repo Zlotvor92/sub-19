@@ -691,8 +691,14 @@ describe('R9: pauza, provera forme i povratak', () => {
         w.start <= addDays(goal.raceDate, -21)
     );
     if (rest === undefined) {
-      expect(moved).toHaveLength(0);
-      expect(r.changes[0]?.reason).toContain('Provera forme otpada');
+      /* krug 10: bez rasterećenja jedina provera se pomera u prvu pogodnu nedelju (≥ 10 dana posle rampe, ≥ 3
+         nedelje pred trku), a otpada samo kad takvog dana nema */
+      expect(moved.length).toBeLessThanOrEqual(1);
+      for (const m of moved) {
+        expect(diffDays(m.date, rampEnd)).toBeGreaterThanOrEqual(10);
+        expect(m.date <= addDays(goal.raceDate, -21)).toBe(true);
+      }
+      if (moved.length === 0) expect(r.changes[0]?.reason).toContain('Provera forme otpada');
     } else {
       expect(moved).toHaveLength(1);
       expect(diffDays(moved[0]?.date ?? to, rampEnd)).toBeGreaterThanOrEqual(10);

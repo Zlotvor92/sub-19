@@ -42,12 +42,12 @@ describe('krug 9b — A2: trka u prozoru povratka', () => {
 });
 
 describe('krug 9b — A11: tekst pominje izbačenu proveru forme', () => {
-  it('s26 (trka): bar jedna rečenica izmene pominje izostavljenu proveru forme', () => {
+  it('s26 (trka): bar jedna rečenica izmene pominje izostavljenu ili pomerenu proveru forme', () => {
     const s = SCENARIOS.find((x) => x.no === 26);
     expect(s).toBeDefined();
     const r: any = s!.run();
     const has = (r.changes as any[]).some((c) =>
-      String(c.reason).includes('Provera forme planirana za')
+      /Provera forme planirana za|Provera forme je pomerena/.test(String(c.reason))
     );
     expect(has).toBe(true);
   });

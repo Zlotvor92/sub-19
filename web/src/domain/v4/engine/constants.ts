@@ -292,6 +292,8 @@ export const RETURN_LONG_JUMP_SEC = 1200;
 export const RETURN_WEEK_JUMP_SHARE = 1.2;
 /** Krug 10: prognoza se pomera tek kad je plan posle događaja ukupno bar pola nedelje ispod prvobitnog. */
 export const LOST_WEEKS_MIN = 0.5;
+/** Krug 10: rezultat stariji od ovoliko dana, uz drugi događaj u istom prolazu, primenjuje se bez nove izmene. */
+export const OLD_RESULT_SILENT_DAYS = 14;
 /** A2 (krug 9b): posle neplanirane trke nema provere forme toliko dana (pun napor nije dobar test odmah posle). */
 export const NO_TEST_AFTER_RACE_DAYS = 14;
 /** Odluka organizatora (krug 9b): dan posle provere forme je lagano trčanje, najviše 60 % prethodnog dugog. */

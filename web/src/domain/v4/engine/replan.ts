@@ -28,6 +28,7 @@ import {
   TAIL_MAX_DAYS,
   RETURN_WEEK_JUMP_SHARE,
   NO_TEST_AFTER_RACE_DAYS,
+  OLD_RESULT_SILENT_DAYS,
   LOST_WEEKS_MIN,
   PAIN_FIRST_ZONE_MAX_DAYS,
   PAIN_MID_DOSE_FACTOR
@@ -326,7 +327,10 @@ function onMissed(
   const isFirstStimulus =
     (missed.kind === 'quality' || missed.kind === 'test') &&
     (week.intent.kind === 'build' || week.intent.kind === 'peak') &&
-    week.intent.stimuli[0]?.stimulus === missed.stimulus;
+    /* krug 10: glavni trening je prvi kvalitet nedelje po danu (i kad je zamenski podražaj, npr. prag umesto tempa
+       trke) */
+    (week.intent.stimuli[0]?.stimulus === missed.stimulus ||
+      week.days.find((d) => d.workout?.kind === 'quality')?.id === day.id);
   if (!isLong && !isFirstStimulus) return null;
   const done = doneDayIds(state);
   const days = allDays(doc);
@@ -606,7 +610,45 @@ function smoothExit(
   const n = weeks.length;
   /* Krug 10: granica skoka važi od prve nedelje posle događaja (i u rampi — rampa samo dodatno smanjuje); merilo je i
      nedelja događaja (stvarno odrađena) */
+  /* krug 10 (stavka 2): i dugi u tekućoj nedelji (posle danas) ≤ + 25 % / + 20 min od poslednjeg dugog pre njega */
+  const cw = base > 0 ? weeks[base - 1] : undefined;
+  if (cw !== undefined) {
+    const day = longOf(cw);
+    if (
+      day?.workout != null &&
+      day.date > state.today &&
+      isMutable(day, after.header, state.today, done)
+    ) {
+      let last = 0;
+      for (const d of weeks.slice(0, base).flatMap((x) => x.days))
+        if (d.date < day.date && d.workout?.kind === 'long')
+          last = summarize(d.workout, pace).durationSec;
+      const cap = Math.max(RETURN_LONG_JUMP_SHARE * last, last + RETURN_LONG_JUMP_SEC);
+      const sec = summarize(day.workout, pace).durationSec;
+      if (last > 0 && sec > cap + 60) {
+        const def = data.library.find((x) => x.id === day.workout?.libraryId) ?? null;
+        const workout = realize(
+          {
+            type: 'long',
+            sec: Math.round(cap / 60) * 60,
+            def,
+            dose: Math.min(day.workout.workSec, cap / 2),
+            slot: null
+          },
+          ctxB
+        );
+        if (workout !== null) {
+          weeks[base - 1] = {
+            ...cw,
+            days: cw.days.map((d) => (d.id === day.id ? { ...d, origin: 'template', workout } : d))
+          };
+          until = day.date > until ? day.date : until;
+        }
+      }
+    }
+  }
   let trimmedPrev = false;
+  let fitted = 0;
   for (let i = base; i < n - 1; i += 1) {
     const w = weeks[i];
     if (w === undefined) break;
@@ -647,8 +689,13 @@ function smoothExit(
         w.days.some((d) => d.workout?.kind === 'test')
       )
         continue;
-      break;
+      /* krug 10: povratak je gotov kad DVE uzastopne nedelje gradnje stanu (nedelja koju je spustio raniji događaj
+         staje, a sledeća prvobitna bi bila skok) */
+      fitted += 1;
+      if (fitted >= 2) break;
+      continue;
     }
+    fitted = 0;
     /* dugi do granice (blok ostaje, ne duži od dugog) */
     const days = w.days.map((d): PlanDay => {
       if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
@@ -744,7 +791,9 @@ function smoothExit(
     const lshare = data.safety.shortenedLongMaxShare;
     const longDay = shrunk.days.find((d) => d.workout?.kind === 'long');
     /* A10 b: spušten ostatak čuva oblik nedelje (isti udeo i za dugi) */
+    /* krug 10: posle rampe dugi prati samo svoju granicu (+ 25 % / + 20 min) — udeo nedelje ga ne drži ravnim */
     if (
+      i < first &&
       lshare !== undefined &&
       longDay?.workout != null &&
       isMutable(longDay, after.header, state.today, done)
@@ -1694,6 +1743,22 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     (k) => k !== 'missed' && k !== 'none'
   );
   const multi = major.length >= 2;
+  /* Krug 10 (stavka 4): kad u istom prolazu stigne više rezultata, izmena je samo najnoviji (forma ih već sadrži
+     sve); stariji se beleže kao primenjeni, bez ponovnog objavljivanja */
+  const results = todo.filter((e) => e.kind === 'result');
+  const latestResult = results[results.length - 1];
+  /* i stari rezultat (> 14 dana pre danas) uz drugi događaj — primenjuje se, ali ne objavljuje kao nova izmena (p12
+     scenariji); sam stari rezultat menja tempa i objavljuje se */
+  const others = todo.some((e) => e.kind !== 'result');
+  const silent = new Set(
+    results
+      .filter(
+        (e) =>
+          e !== latestResult || (others && e.date < addDays(state.today, -OLD_RESULT_SILENT_DAYS))
+      )
+      .map((e) => e.id)
+  );
+  const silentApplied: string[] = [];
   for (const ev of todo) {
     const raw = candidateFor(current, state, ev, data);
     if (raw === null) continue;
@@ -1732,6 +1797,10 @@ export const replan: ReplanFn = (doc, state, events, data) => {
         appliedEvents: [...h.appliedEvents, ev.id]
       }
     };
+    if (silent.has(ev.id)) {
+      silentApplied.push(ev.id);
+      continue;
+    }
     changes.push(...diff);
     const was = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
     if (lost !== null && raceDay.expectedSec > was.expectedSec) {
@@ -1746,7 +1815,7 @@ export const replan: ReplanFn = (doc, state, events, data) => {
       });
     }
   }
-  const result = changes.length === 0 ? doc : current;
+  const result = changes.length === 0 && silentApplied.length === 0 ? doc : current;
   /* R5 (krug 6): upozorenje koje pominje prošli datum („odradi proveru 28. 11.") se računa iznova — i kad se
      treninzi ne menjaju */
   return { doc: freshDatedWarnings(result, state, data), changes };

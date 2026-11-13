@@ -422,7 +422,9 @@ export function weekSlots(
   /** Pomerena provera ne ide pre ovog dana (S9: najranije 10 dana posle kraja rampe). */
   forcedFrom: IsoDate | null = null,
   /** P3 (krug 5): oznake kvaliteta prethodnih nedelja (poslednja na kraju) — za `safety.tagMaxRun`. */
-  previousTags: ReadonlyArray<ReadonlySet<string>> = []
+  previousTags: ReadonlyArray<ReadonlySet<string>> = [],
+  /** Krug 10: pred trkom nema rasterećenja za pomerenu proveru — ide u prvu pogodnu nedelju (ne briše se). */
+  forcedAnyWeek = false
 ): WeekSlots {
   const { decisions: d } = ctx;
   const { intent } = week;
@@ -606,7 +608,7 @@ export function weekSlots(
     /* M4 (krug 5): pomerena provera ide u prvo RASTEREĆENJE posle prozora izmene, najkasnije 3 nedelje pred trku;
        bez takve nedelje otpada (plan to kaže) */
     const restWeek =
-      week.intent.kind === 'recovery' &&
+      (week.intent.kind === 'recovery' || forcedAnyWeek) &&
       date !== undefined &&
       date <= addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
     const usable =
@@ -1771,6 +1773,15 @@ export function runPass(
   const weeks = doc.weeks.map((week): PlanWeek => {
     const ramped = underRamp(week.start, adjustments);
     const forced = ramped ? null : pendingTest;
+    /* krug 10: jedina provera se pomera, ne briše — kad do 3 nedelje pred trku nema rasterećenja posle nje */
+    const lastTestDay = addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
+    const recoveryAhead = doc.weeks.some(
+      (w) =>
+        w.index >= week.index &&
+        w.intent.kind === 'recovery' &&
+        w.start <= lastTestDay &&
+        (pendingFrom === null || addDays(w.start, 6) >= pendingFrom)
+    );
     const slots = weekSlots(
       week,
       span,
@@ -1779,7 +1790,8 @@ export function runPass(
       forced,
       previousHard,
       pendingFrom,
-      weekTags
+      weekTags,
+      forced !== null && !recoveryAhead
     );
     if (forced !== null && slots.items.some((x) => x.kind === 'test' && x.def === forced.def)) {
       pendingTest = null;
