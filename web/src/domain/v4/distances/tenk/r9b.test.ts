@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildState, plan, renderPlan } from '../../engine';
 import {
+  afterTestEasy,
   forecastReacts,
   raceInWindow,
   returnWindow,
@@ -87,5 +88,21 @@ describe('krug 9b — A11: tekst pominje izbačenu proveru forme', () => {
       String(c.reason).includes('Provera forme planirana za')
     );
     expect(has).toBe(true);
+  });
+});
+
+describe('krug 9b — dan posle provere forme (odluka organizatora umesto A15)', () => {
+  it('profili i mreža: dan posle provere je lagano trčanje ≤ 60 % prethodnog dugog', () => {
+    const bad: string[] = [];
+    for (const p of PROFILES) {
+      const r = plan(buildState(factsOf(p), p.goal, tenk, estimateForm), p.goal, tenk);
+      if (r.ok) bad.push(...afterTestEasy(p.id, r.doc, tenk));
+    }
+    for (const g of smallGrid(tenk.distanceM, FORMS)) {
+      const goal = { distanceId: tenk.id, raceDate: g.raceDate };
+      const r = plan(buildState(g.facts, goal, tenk, estimateForm), goal, tenk);
+      if (r.ok) bad.push(...afterTestEasy(g.label, r.doc, tenk));
+    }
+    expect(bad).toEqual([]);
   });
 });

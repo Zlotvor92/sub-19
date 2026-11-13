@@ -143,13 +143,13 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 8 nedelja
   pon 18. 1.  odmor
-  uto 19. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,3 km, 30 min
+  uto 19. 1.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5 km, 35 min
   sre 20. 1.  odmor
-  čet 21. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,3 km, 30 min
+  čet 21. 1.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5 km, 35 min
   pet 22. 1.  odmor
   sub 23. 1.  provera forme: test na 3 km punim naporom — 5,8 km, 36 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
-  ned 24. 1.  dugi 70 min lagano — 9,9 km, 70 min
+  ned 24. 1.  lagano 60 min — 8,5 km, 60 min
   Zbir: 24,3 km, 2 h 46 min, 4 treninga, brz rad 9 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — razvoj, gradnja; do trke 7 nedelja
@@ -383,13 +383,13 @@ Rezultat 5 km za 26:05 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 8 nedelja
   pon 18. 1.  odmor
-  uto 19. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 4,3 km, 30 min (7:01/km)
+  uto 19. 1.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 5 km, 35 min (7:01/km)
   sre 20. 1.  odmor
-  čet 21. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 4,3 km, 30 min (7:01/km)
+  čet 21. 1.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 5 km, 35 min (7:01/km)
   pet 22. 1.  odmor
   sub 23. 1.  trka umesto „provera forme: test na 3 km punim naporom" — urađeno 5 km, 26 min (5:13/km)
-  ned 24. 1.  dugi 70 min lagano — 10,1 km, 70 min
-  Zbir: 23,7 km, 2 h 37 min, 4 treninga
+  ned 24. 1.  lagano 60 min — 8,6 km, 60 min
+  Zbir: 23,6 km, 2 h 37 min, 4 treninga
 
 13. NEDELJA (od 25. 1.) — razvoj, gradnja; do trke 7 nedelja
   pon 25. 1.  odmor

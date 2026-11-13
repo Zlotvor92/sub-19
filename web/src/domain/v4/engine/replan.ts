@@ -872,8 +872,12 @@ function smoothExit(
       targetLoad: Math.round(w.targetLoad * share),
       ...(w.volumeMin === undefined ? {} : { volumeMin: Math.round(w.volumeMin * share * 10) / 10 })
     };
-    /* spušten ostatak nije produžen povratak: prozor izmene ostaje prozor povratka */
-    if (scale === null) until = addDays(w.start, 6);
+    /* spušten ostatak nije produžen povratak: prozor izmene ostaje prozor povratka; nedelja koja posle skraćenja
+       ostaje ista (± 0,5 km, ± 1 min dugog) ne produžava prozor */
+    const changed =
+      Math.abs(km(weeks[i] as PlanWeek) - curKm) > 0.5 ||
+      Math.abs(longSec(weeks[i]) - curLong) > 60;
+    if (scale === null && changed) until = addDays(w.start, 6);
   }
   return { doc: { ...after, weeks }, until };
 }
@@ -1792,7 +1796,16 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     if (raw === null) continue;
     /* R8 t. 17 (Z10): posle više događaja izmene ne idu dalje od 28 dana; kad bi vraćanje dugog bilo skok veći od
        R2, rep se produžava samo za taj dugi (jedna nedelja) */
-    const candidate = multi ? { ...raw, doc: capTail(raw.doc, doc, state.today) } : raw;
+    /* posle `capTail` nedelje iza danas + 28 dana su prvobitne, pa ni prozor izmene ne ide dalje (stvarno izmenjeni
+       dani i dalje produžavaju rečenicu kroz `last` u `describe`) */
+    const tailEnd = addDays(state.today, TAIL_MAX_DAYS);
+    const candidate = multi
+      ? {
+          ...raw,
+          doc: capTail(raw.doc, doc, state.today),
+          until: raw.until > tailEnd ? tailEnd : raw.until
+        }
+      : raw;
     const diff = describe(current, candidate, ev, state, data);
     if (diff.length === 0) continue;
     const h = candidate.doc.header;

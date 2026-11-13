@@ -59,3 +59,14 @@ HM p06: silazak više nije naopako (9. ned 33,5 km < 8. ned 37 km), kvalitet u s
 (nedelja −1 ≤ nedelja −2). HM/10K s07: rampa posle bolesti ne traje do trke — od prve nedelje posle prozora ostatak je
 niži (HM vrh 36,9 → 27,9 km) uz rečenicu. s26 obe distance: dan trke prikazuje trku, provera forme 23. 1. izostavljena uz
 rečenicu. HM p11 (početnik): prognoza −3 % (A8) nepromenjena. vlasnik-v2: nepromenjen.
+
+## Krug 9b — posle odluke organizatora (13. 11.)
+- Typecheck (`npm run typecheck`, `tsc -b`) na `5989be4` je padao (`IsoDate` u `render.ts`); popravljeno u `05c05c9`.
+  Ranije sam proveravao samo `tsc --noEmit -p .`, koji to ne hvata.
+- A15 odbačen, R17 (provera subotom) ostaje. Dan posle provere forme je sada lagano trčanje ≤ 60 % prethodnog dugog
+  (`AFTER_TEST_EASY_MAX_OF_LONG`), nikad „dugi"; skinuti minuti idu u ostale lagane dane nedelje (≤ + 10 min po danu,
+  `AFTER_TEST_SPREAD_MAX_SEC`), da sledeća nedelja ne bude skok (R2). Odluka: ne kraće od najkraćeg smislenog trčanja
+  (kod malog obima 60 % dugog je ispod njega). Ne važi za proveru u pauzi/rampi i proveru koju je trka izbacila (A2) — tada
+  se dan sutradan vraća na dugi. Usput: `smoothExit` ne produžava prozor za nedelju koja ostaje ista, a posle više
+  događaja (`capTail`) prozor izmene ne ide dalje od danas + 28 dana. Test `r9b` (profili + mreža obe distance).
+- Otisci: HM p01, p02, p04, p05, p09, p11, p12; 10K p01, p04, p09, p12 (nedelja provere). Kapije 0/0; V4 733 + 14.

@@ -143,13 +143,13 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 8 nedelja
   pon 18. 1.  odmor
-  uto 19. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,3 km, 30 min
+  uto 19. 1.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5 km, 35 min
   sre 20. 1.  odmor
-  čet 21. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,3 km, 30 min
+  čet 21. 1.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5 km, 35 min
   pet 22. 1.  odmor
   sub 23. 1.  provera forme: test na 3 km punim naporom — 5,8 km, 36 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
-  ned 24. 1.  dugi 70 min lagano — 9,9 km, 70 min
+  ned 24. 1.  lagano 60 min — 8,5 km, 60 min
   Zbir: 24,3 km, 2 h 46 min, 4 treninga, brz rad 9 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — razvoj, gradnja; do trke 7 nedelja
@@ -268,10 +268,10 @@ Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na 
 
 PROMENE
 Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 27. 1. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 31. 1. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 28. 1.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu. Provera forme je pomerena na 18. 2.
-- uto 19. 1.: lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → odmor
-- čet 21. 1.: lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 20 min
+- uto 19. 1.: lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → odmor
+- čet 21. 1.: lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 20 min
 - sub 23. 1.: provera forme: test na 3 km punim naporom → lagano 25 min
-- ned 24. 1.: dugi 70 min lagano → dugi 45 min lagano
+- ned 24. 1.: lagano 60 min → dugi 45 min lagano
 - čet 28. 1.: prag 2 × 11 min, oporavak 2 min džog → prag 2 × 7 min, oporavak 2 min džog
 - ned 31. 1.: dugi 1 h 50 min lagano → dugi 70 min lagano
 - ned 7. 2.: dugi 1 h 55 min lagano → dugi 90 min lagano

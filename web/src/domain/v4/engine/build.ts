@@ -20,7 +20,9 @@ import {
   RP_TEST_GAP_DAYS,
   TAPER_BLOCK_SHARE,
   RETURN_WEEK_MAX_OVER_LAST,
-  TAPER_ADDON_MIN_EASY_SEC
+  TAPER_ADDON_MIN_EASY_SEC,
+  AFTER_TEST_EASY_MAX_OF_LONG,
+  AFTER_TEST_SPREAD_MAX_SEC
 } from './constants';
 import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
 import {
@@ -2086,6 +2088,47 @@ export function runPass(
         }
       }
     }
+    /* Odluka organizatora (krug 9b, umesto A15): dan posle provere forme je lagano trčanje ≤
+       `AFTER_TEST_EASY_MAX_OF_LONG` prethodnog dugog — ne „dugi" */
+    {
+      const ref = Math.min(
+        ...[lastBuiltLong, previousLong].filter((x) => x > 0),
+        Number.POSITIVE_INFINITY
+      );
+      const next = new Map(recipes);
+      for (const [date, r] of recipes) {
+        if (r.type !== 'test') continue;
+        /* provera u pauzi, rampi povratka ili posle trke se ne radi (dan je lagan) — pravilo ne važi */
+        if (ramped || inReturn(date, adjustments) || afterRace(date, adjustments)) continue;
+        const after = addDays(date, 1);
+        const day = next.get(after);
+        if (day === undefined || (day.type !== 'long' && day.type !== 'easy')) continue;
+        const sec = summarize(realize(day, ctx), ctx.pace).durationSec;
+        const cap = Number.isFinite(ref)
+          ? Math.floor((AFTER_TEST_EASY_MAX_OF_LONG * ref) / 300) * 300
+          : sec;
+        const least = minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length);
+        const easySec = Math.max(least, Math.min(sec, cap));
+        if (day.type === 'easy' && sec <= easySec + 60) continue;
+        next.set(after, { type: 'easy', sec: easySec });
+        /* skinuti minuti idu u ostale lagane dane nedelje (najviše + 10 min po danu) — obim nedelje ostaje, pa
+           sledeća nedelja nije skok (R2) */
+        let left = sec - easySec;
+        const others = [...next.entries()].filter(
+          ([d, x]) => d !== after && (x.type === 'easy' || x.type === 'addon')
+        );
+        for (const [d, x] of others) {
+          if (left <= 0 || (x.type !== 'easy' && x.type !== 'addon')) break;
+          const add = Math.min(
+            AFTER_TEST_SPREAD_MAX_SEC,
+            Math.ceil(left / others.length / 60) * 60
+          );
+          next.set(d, { ...x, sec: x.sec + add, maxSec: undefined });
+          left -= add;
+        }
+      }
+      recipes = next;
+    }
     const volumeMin = Math.round(plannedMin(shell.targetLoad) * 10) / 10;
 
     if (week.intent.kind !== 'recovery' && week.intent.source === 'template') {
@@ -2106,7 +2149,11 @@ export function runPass(
       /* M4: pomerena provera forme sme van prozora izmene (prvo rasterećenje posle njega) */
       const movedTest = forced !== null && planned.type === 'test' && planned.def === forced.def;
       /* A2 (krug 9b): provera forme u 14 dana posle trke se dira i van prozora izmene (pretvara se u lagan dan) */
-      const raceTest = planned.type === 'test' && afterRace(day.date, adjustments);
+      const prevDate = addDays(day.date, -1);
+      const raceTest =
+        (planned.type === 'test' && afterRace(day.date, adjustments)) ||
+        /* i dan posle izbačene provere (bio je lagan zbog provere — vraća se dugi) */
+        (recipes.get(prevDate)?.type === 'test' && afterRace(prevDate, adjustments));
       const inWindow =
         opts.window === null ||
         movedTest ||

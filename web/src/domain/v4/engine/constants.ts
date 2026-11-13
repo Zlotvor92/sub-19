@@ -301,6 +301,10 @@ export const LOWERED_REST_MIN_SHARE = 0.05;
 export const LOST_VOLUME_MIN_SHARE = 0.15;
 /** A2 (krug 9b): posle neplanirane trke nema provere forme toliko dana (pun napor nije dobar test odmah posle). */
 export const NO_TEST_AFTER_RACE_DAYS = 14;
+/** Odluka organizatora (krug 9b): dan posle provere forme je lagano trčanje, najviše 60 % prethodnog dugog. */
+export const AFTER_TEST_EASY_MAX_OF_LONG = 0.6;
+/** Minuti skinuti sa dana posle provere idu u ostale lagane dane nedelje, najviše ovoliko po danu. */
+export const AFTER_TEST_SPREAD_MAX_SEC = 600;
 /** R2 (krug 6): prvi dugi posle prekida (pauza, bol) najmanje 62 % poslednjeg dugog pre njega (trener: 60–65 %). */
 export const RETURN_FIRST_LONG_SHARE = 0.62;
 /** Z3 (krug 7): „prvi rad zone posle bola ≤ 60 %" važi do 6 nedelja posle bola. */

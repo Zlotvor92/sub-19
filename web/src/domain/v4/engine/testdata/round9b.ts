@@ -1,6 +1,7 @@
 /* KRUG 9b — provere nad planom bez imena distance (koriste ih testovi foldera distanci). */
 import { NO_TEST_AFTER_RACE_DAYS } from '../constants';
 import { addDays, diffDays, mondayOf } from '../dates';
+import { minEasyOf } from '../decide';
 import { fmtDate } from '../format';
 import { weekCost } from '../guard';
 import { paceCtxOf, summarize } from '../load';
@@ -191,5 +192,35 @@ export function raceInWindow(
       if (days <= NO_TEST_AFTER_RACE_DAYS && d.workout.kind === 'test')
         bad.push(`${id} ${d.date} provera forme ${String(days)} dana posle trke`);
     }
+  return bad;
+}
+
+/** Odluka organizatora (krug 9b, umesto A15): dan posle provere forme je lagano trčanje (ne „dugi"), najviše 60 %
+    poslednjeg dugog pre provere (+ 1 min zaokruživanja). Vraća opise prekršaja. */
+export function afterTestEasy(id: string, doc: PlanDoc, data: DistanceData): string[] {
+  const bad: string[] = [];
+  const ctx = paceCtxOf(doc.header);
+  const days = doc.weeks.flatMap((w) => w.days);
+  let lastLong = 0;
+  days.forEach((d, i) => {
+    if (d.workout?.kind === 'long') lastLong = summarize(d.workout, ctx).durationSec;
+    if (d.workout?.kind !== 'test') return;
+    const next = days[i + 1];
+    if (next?.workout == null) return;
+    const sec = summarize(next.workout, ctx).durationSec;
+    if (next.workout.kind !== 'easy')
+      bad.push(`${id} ${next.date} posle provere „${next.workout.kind}"`);
+    /* ne kraće od najkraćeg smislenog trčanja (kod malog obima 60 % dugog je ispod njega) */
+    else if (
+      lastLong > 0 &&
+      sec >
+        Math.max(
+          0.6 * lastLong,
+          minEasyOf(data.safety, doc.header.decisions.level, doc.header.decisions.runDays.length)
+        ) +
+          Math.max(60, 0.5 * ctx.paces.easy)
+    )
+      bad.push(`${id} ${next.date} ${String(Math.round(sec / 60))} min > 60 % dugog`);
+  });
   return bad;
 }

@@ -127,14 +127,14 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
 
 10. NEDELJA (od 4. 1.) — specifična priprema, rasterećenje; do trke 6 nedelja
   pon 4. 1.  odmor
-  uto 5. 1.  lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,5 km, 57 min
+  uto 5. 1.  lagano 10 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11 km, 66 min
   sre 6. 1.  odmor
-  čet 7. 1.  lagano 9,5 km — 9,5 km, 57 min
+  čet 7. 1.  lagano 10,5 km — 10,5 km, 64 min
   pet 8. 1.  odmor
   sub 9. 1.  provera forme: trka ili test na 5 km punim naporom — 10,8 km, 57 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
-  ned 10. 1.  dugi 12 km lagano — 12 km, 73 min
-  Zbir: 41,8 km, 4 h 4 min, 4 treninga, brz rad 9 % vremena trčanja
+  ned 10. 1.  lagano 9 km — 9 km, 54 min
+  Zbir: 41,3 km, 4 h 1 min, 4 treninga, brz rad 9 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 11. 1.  odmor
@@ -338,14 +338,14 @@ Propušten je ključni trening „dugi 15,5 km lagano" (27. 12.). Dugi trening n
 
 10. NEDELJA (od 4. 1.) — specifična priprema, rasterećenje; do trke 6 nedelja
   pon 4. 1.  odmor
-  uto 5. 1.  lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,5 km, 57 min
+  uto 5. 1.  lagano 10 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 11 km, 66 min
   sre 6. 1.  odmor
-  čet 7. 1.  lagano 9,5 km — 9,5 km, 57 min
+  čet 7. 1.  lagano 10,5 km — 10,5 km, 64 min
   pet 8. 1.  odmor
   sub 9. 1.  provera forme: trka ili test na 5 km punim naporom — 10,8 km, 57 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
-  ned 10. 1.  dugi 12 km lagano — 12 km, 73 min
-  Zbir: 41,8 km, 4 h 4 min, 4 treninga, brz rad 9 % vremena trčanja
+  ned 10. 1.  lagano 9 km — 9 km, 54 min
+  Zbir: 41,3 km, 4 h 1 min, 4 treninga, brz rad 9 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 11. 1.  odmor
