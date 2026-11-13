@@ -12,23 +12,15 @@ Lint i typecheck su čisti. Ispisi sve četiri distance su osveženi.
 - M17: rezultat bolji od dosadašnje procene, a slabiji od verovanog, zadržava pripisani napredak do nivoa koji je
   pokazao (`fitness/estimate.ts`). 5K s03: 1570 → 1551 s, pa je KNOWN obrisan. Promene: 10K s03 (53:38 → 53:07),
   HM s11 (−1 s).
-- Testovi su menjani namerno:
-  - SPEC § 12 (a): primer ima dugi 14 od 18 km, pa je očekivano 1:41:00 (raspon + 60 s).
-  - K1 (sintetika, maraton): izuzetak važi za `raceDayNoProgress`, uz rečenicu i prognozu ≥ današnje.
-  - R10: forma se pomera zajedno sa prognozom.
-  - Kapija MAR „ništa": p06 i p19 sada prolaze. p10 je prešao u FORM_DRIFT, jer se bez napretka vidi pomak
-    današnje forme od +6 s.
-  - Maratonski testovi imaju jednu liniju izmene (K1) i FORM_DRIFT, jer to zahteva promena motora.
+- Namerno menjani testovi: SPEC § 12 (a) (dugi 14 od 18 km → očekivano 1:41:00); K1 sintetika i maraton (izuzetak
+  `raceDayNoProgress`, uz rečenicu); R10 (forma se pomera sa prognozom); kapija MAR „ništa": p06, p19 prolaze,
+  p10 u FORM_DRIFT (+6 s pomak današnje forme). U maratonskom folderu samo te dve linije, jer ih traži motor.
 
 ## 2. M2 ostatak (deo)
-- Rampa posle pauze kreće od 0,5 (`PAUSE_RAMP_START`), bez dana odmora. Brz rad i plafon dugog prate isti deo
-  rampe kao ranije. Povratna nedelja / druga (u % poslednje odrađene):
-  - HM s05 45/56 → 67/58 % (druga je rasterećenje);
-  - HM s06 41/55 → 68/68 %, a ned 17 ostaje 53,1 km;
-  - HM s27 64/76 → 69/83 %, vrh ned 17 62,7 km je zadržan;
-  - 10K s05 45/55 → 64/77 %;
-  - MAR s05 41/57 → 67/76 %;
-  - MAR s06 38/43 → 60/68 %.
+- Rampa posle pauze kreće od 0,5 (`PAUSE_RAMP_START`), bez dana odmora; brz rad i plafon dugog na istom delu rampe.
+  Povratna/druga nedelja (% poslednje odrađene): HM s05 45/56 → 67/58 (druga je rasterećenje); HM s06 41/55 → 68/68,
+  ned 17 ostaje 53,1 km; HM s27 64/76 → 69/83, vrh 62,7 km zadržan; 10K s05 45/55 → 64/77; MAR s05 41/57 → 67/76;
+  MAR s06 38/43 → 60/68.
 - Rast dugog posle prekida je najviše +20 min, bez „ili +25 %" (`smoothExit`, `capTail`).
 - U povratku je lagan dan bar 30 min uz dugi ≥ 90 min, odnosno 45 min kod 5+ dana i obima ≥ 55 km. Pravilo važi
   za nedelje koje skraćuje `smoothExit`.
