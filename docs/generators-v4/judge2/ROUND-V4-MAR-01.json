@@ -1,0 +1,315 @@
+{
+ "krug": "ROUND-V4-MAR-01",
+ "stanje": "02e06e1",
+ "distanca": "maraton",
+ "sudija": "drugi (nezavisni)",
+ "procitano_van_plana": [
+  "plans/MAR/pregled.md",
+  "red MORA DA SE RAZLIKUJE u zaglavljima parova"
+ ],
+ "planovi": {
+  "p01": {
+   "ocene": {
+    "q1": 6,
+    "q2": 7,
+    "q3": 5,
+    "q4": 7,
+    "q5": 7,
+    "q6": 6,
+    "q7": 7
+   },
+   "ukupno": 63,
+   "dao_bih": "da uz izmenu"
+  },
+  "p02": {
+   "ocene": {
+    "q1": 6,
+    "q2": 7,
+    "q3": 5,
+    "q4": 7,
+    "q5": 7,
+    "q6": 5,
+    "q7": 7
+   },
+   "ukupno": 62,
+   "dao_bih": "da uz izmenu"
+  },
+  "p03": {
+   "ocene": {
+    "q1": 5,
+    "q2": 6,
+    "q3": 5,
+    "q4": 6,
+    "q5": 6,
+    "q6": 5,
+    "q7": 6
+   },
+   "ukupno": 55,
+   "dao_bih": "da uz izmenu"
+  },
+  "p04": {
+   "ocene": {
+    "q1": 5,
+    "q2": 5,
+    "q3": 7,
+    "q4": 5,
+    "q5": 7,
+    "q6": 7,
+    "q7": 5
+   },
+   "ukupno": 58,
+   "dao_bih": "ne"
+  },
+  "p05": {
+   "ocene": {
+    "q1": 8,
+    "q2": 7,
+    "q3": 9,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "ukupno": 79,
+   "dao_bih": "da"
+  },
+  "p06": {
+   "ocene": {
+    "q1": 6,
+    "q2": 7,
+    "q3": 4,
+    "q4": 7,
+    "q5": 5,
+    "q6": 4,
+    "q7": 7
+   },
+   "ukupno": 57,
+   "dao_bih": "da uz izmenu"
+  },
+  "p07": {
+   "ocene": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 8,
+    "q4": 8,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "ukupno": 78,
+   "dao_bih": "da"
+  },
+  "p08": {
+   "ocene": {
+    "q1": 7,
+    "q2": 6,
+    "q3": 8,
+    "q4": 7,
+    "q5": 8,
+    "q6": 7,
+    "q7": 7
+   },
+   "ukupno": 71,
+   "dao_bih": "da"
+  },
+  "p09": {
+   "ocene": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 7,
+    "q4": 7,
+    "q5": 7,
+    "q6": 7,
+    "q7": 7
+   },
+   "ukupno": 70,
+   "dao_bih": "da"
+  },
+  "p10": {
+   "ocene": {
+    "q1": 5,
+    "q2": 6,
+    "q3": 5,
+    "q4": 6,
+    "q5": 6,
+    "q6": 5,
+    "q7": 6
+   },
+   "ukupno": 55,
+   "dao_bih": "da uz izmenu"
+  },
+  "p11": {
+   "ocene": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 5,
+    "q4": 7,
+    "q5": 6,
+    "q6": 6,
+    "q7": 6
+   },
+   "ukupno": 65,
+   "dao_bih": "da uz izmenu"
+  },
+  "p12": {
+   "ocene": {
+    "q1": 7,
+    "q2": 6,
+    "q3": 7,
+    "q4": 6,
+    "q5": 7,
+    "q6": 7,
+    "q7": 6
+   },
+   "ukupno": 66,
+   "dao_bih": "da uz izmenu"
+  },
+  "p13": {
+   "ocene": {
+    "q1": 4,
+    "q2": 5,
+    "q3": 2,
+    "q4": 4,
+    "q5": 4,
+    "q6": 4,
+    "q7": 6
+   },
+   "ukupno": 40,
+   "dao_bih": "ne"
+  },
+  "p14": {
+   "ocene": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 8,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "ukupno": 79,
+   "dao_bih": "da"
+  },
+  "p15": {
+   "ocene": {
+    "q1": 6,
+    "q2": 7,
+    "q3": 7,
+    "q4": 7,
+    "q5": 7,
+    "q6": 5,
+    "q7": 7
+   },
+   "ukupno": 66,
+   "dao_bih": "da uz izmenu"
+  },
+  "p16": {
+   "ocene": {
+    "q1": 5,
+    "q2": 4,
+    "q3": 7,
+    "q4": 7,
+    "q5": 7,
+    "q6": 5,
+    "q7": 7
+   },
+   "ukupno": 58,
+   "dao_bih": "ne"
+  },
+  "p17": {
+   "ocene": {
+    "q1": 8,
+    "q2": 7,
+    "q3": 8,
+    "q4": 6,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "ukupno": 76,
+   "dao_bih": "da"
+  },
+  "p18": {
+   "ocene": {
+    "q1": 6,
+    "q2": 7,
+    "q3": 5,
+    "q4": 6,
+    "q5": 7,
+    "q6": 6,
+    "q7": 6
+   },
+   "ukupno": 61,
+   "dao_bih": "da uz izmenu"
+  },
+  "p19": {
+   "ocene": {
+    "q1": 5,
+    "q2": 7,
+    "q3": 3,
+    "q4": 4,
+    "q5": 5,
+    "q6": 5,
+    "q7": 6
+   },
+   "ukupno": 50,
+   "dao_bih": "ne"
+  }
+ },
+ "prosek_planova": 63.6,
+ "scenariji": {
+  "s01": 9,
+  "s02": 7,
+  "s03": 7,
+  "s04": 8,
+  "s05": 5,
+  "s06": 5,
+  "s07": 8,
+  "s08": 8,
+  "s09": 7,
+  "s10": 9,
+  "s11": 8,
+  "s12": 5,
+  "s13": 8,
+  "s14": 8,
+  "s15": 7,
+  "s16": 6,
+  "s17": 6,
+  "s18": 8,
+  "s19": 7,
+  "s20": 7,
+  "s21": 8,
+  "s22": 10,
+  "s23": 10,
+  "s24": 9,
+  "s25": 5,
+  "s26": 6,
+  "s27": 4,
+  "s28": 8,
+  "s29": 9
+ },
+ "prosek_scenarija": 7.31,
+ "parovi": {
+  "P1": 8,
+  "P2": 6,
+  "P3": 6
+ },
+ "prosek_parova": 6.67,
+ "ispravke": [
+  "dugi za maraton do ~28-30 km/~3 h ili jasno reći da plan nije priprema za maraton",
+  "tempo trke i prognoza umanjeni kad upozorenje kaže da obim/dugi ne nose trku; bez „brže od današnje\"",
+  "povratak posle bolesti/puta 1-2 nedelje, ne 3-5; put nije bolest; ne seći vršni dugi ispod ~80 %",
+  "raspored: kratak oporavak posle dugog, bez 4 dana zaredom sa 2 duga trčanja; manje intenziteta za starije/tegobe",
+  "predlozi u upozorenjima moraju da računaju (+40 min ≠ +0,5 km), bez kontradikcija",
+  "oznaka vršne nedelje = stvarno najveća nedelja",
+  "kratke pripreme: sužavanje 2 nedelje, vrh u N-3",
+  "blok PROMENE uvek kad se menjaju tempa; ispraviti „148 km\" i nazive treninga",
+  "napomena o patikama samo na najdužem dugom; uskladiti gel na dugom i na trci",
+  "profil povratnik samo uz stvarnu pauzu; tekst o pauzi po datumu kraja; ograničiti dugi posle 2 propuštena"
+ ],
+ "za_pregled_vlasnika": [
+  "p13",
+  "p04",
+  "p07"
+ ]
+}
