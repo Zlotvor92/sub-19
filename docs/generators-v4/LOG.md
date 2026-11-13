@@ -690,3 +690,9 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Dopuna 19:35: forma/tempa i mala usklađivanja primenjuju se sami (uz „zašto"); prijavljeni događaji traže
   „Primeni". Premeštanje dana = činjenica; generator preslaže ostatak nedelje; posle 2 ista premeštanja jedna
   ponuda „ubuduće". Za motor (posle kruga 12): M27 premeštanje dana kao ulaz, preslaganje nedelje.
+
+### 13. 11. 2026, 19:40 — krugovi 12–13 motora delimični; nov tab motora
+- K12 (`e45d153`): M1, M9, M14 cele; M2 deo (HM s06 ned 17 40,2 → 53,1 km); M3 deo; HM prag-p-2x.
+- K13 (`22ebb2e`): M18 — determinizam ispravan, uzrok razlike je weeklyKmAt (1 trčanje → 70 km/ned); polazna forma
+  59 profila nepromenjena, procena vlasnika 0 s; M17 deo. Tab motora potrošio kontekst.
+- Nov tab motora (Opus) po `briefs/R14-MOTOR.md`.
