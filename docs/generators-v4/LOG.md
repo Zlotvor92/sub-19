@@ -450,3 +450,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Skok dugog posle rasterećenja u prvobitnom planu je u redu (70 min je dugi dan posle pripremne trke); pravilo:
   obično rasterećenje dugi 70–75 % prethodnog, nedelja provere 50–60 %.
 - Nepokriveno: više događaja zaredom (nijedan scenario) — dodati.
+
+### 13. 11. 2026, 05:36 — drugi sudija kruga 6 (`383dd17`); HM zatvoren kao obrazac, završni krug 7
+| drugi sudija | krug 3 | krug 4 | krug 5 | krug 6 |
+|---|---|---|---|---|
+| planovi | 62,9 | 70,2 | 69,7 | 73,3 |
+| ≥ 70 | 1 | 6 | 6 | 10 |
+| v1 / v2 | 61 / 68 | 68 / 76 | 71 / 76 | 66 / 78 |
+| scenariji | 78 | 79 | 72,9 | 79 |
+| parovi | 67 | 72 | 63 | 80 |
+- Nema više degenerisanih slučajeva; ostale zamerke su istinitost upozorenja i prognoze, p06 (5 → 4 dana), jedna provera
+  u 20 nedelja, ravne nedelje p08. Ispod 65: p06 63, p10 64 (profili na plafonu ulaza).
+- ODLUKA: HM je zatvoren kao OBRAZAC (trener: A + B + C iznad pragova; drugi sudija bez krupnih grešaka). Završni krug 7
+  po `briefs/R7-ROUND7.md` (Z1–Z10, Y1–Y4, uklj. tri scenarija sa više događaja), bez nove ocene trenera — proveravam
+  testovima i kapijom; drugi sudija (Opus, jeftin) još jednom posle kruga 7. Zatim 10K po PLAN.md F7.
