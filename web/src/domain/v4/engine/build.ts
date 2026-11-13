@@ -559,7 +559,8 @@ export function weekSlots(
   if (tq !== undefined && week.start === addDays(raceMonday, -14)) {
     const room = tq - (long !== null && long.wanted > 0 ? 1 : 0);
     /* T6 (krug 6): prednost ima tempo trke (nedelja −2 nosi tempo trke, ne intervale; p05 N14) */
-    const rp = (x: SlotItem): number => (x.kind === 'quality' && mainZone(x.def.main) === 'RP' ? 1 : 0);
+    const rp = (x: SlotItem): number =>
+      x.kind === 'quality' && mainZone(x.def.main) === 'RP' ? 1 : 0;
     const keep = new Set(
       items
         .filter((x) => x.kind === 'quality')
@@ -1170,7 +1171,12 @@ function layoutOnce(
   /* T6 (krug 6): vršna nedelja nije ispod polaznog obima (p08: 3 dana, dugi na plafonu) — lagani dani rastu preko
      udela dugog tačno koliko treba */
   const baseVolume = d.baseVolumeMin ?? d.baseLoad;
-  if (s.peakNotBelowBase === true && intent.kind === 'peak' && baseVolume !== undefined && filled.size > 0) {
+  if (
+    s.peakNotBelowBase === true &&
+    intent.kind === 'peak' &&
+    baseVolume !== undefined &&
+    filled.size > 0
+  ) {
     let km = 0;
     for (const r of out.values()) {
       const w = realize(r, ctx);
@@ -1182,7 +1188,10 @@ function layoutOnce(
     if (missing > 0 && missing <= 0.1 * baseKm) {
       const per = (missing * ctx.pace.paces.easy + 0.5 * ctx.pace.paces.easy) / filled.size;
       /* lagan dan ne prelazi udeo dugog za ovaj broj dana (+ 2 %) */
-      const most = realLong > 0 ? (easyShareOfLong(s, d.runDays.length) + 0.02) * realLong : Number.POSITIVE_INFINITY;
+      const most =
+        realLong > 0
+          ? (easyShareOfLong(s, d.runDays.length) + 0.02) * realLong
+          : Number.POSITIVE_INFINITY;
       for (const [date, recipe] of filled) {
         if (recipe.type !== 'easy' && recipe.type !== 'addon') continue;
         const sec = Math.round(Math.max(recipe.sec, Math.min(recipe.sec + per, most)) / 60) * 60;

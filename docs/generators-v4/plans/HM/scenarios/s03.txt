@@ -255,7 +255,7 @@ Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (23. 1.): 2:01:18, pouzdanost srednja
 Očekivano na dan trke: 1:58:12 (raspon 1:55:18–2:02:44) — 3:06 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Trka 23. 1.: 5 km za 26:05. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 21,1 km: 2:04:13 → 2:01:18.
+- Trka 23. 1.: 5 km za 26:05. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 21,1 km: 2:04:13 → 2:01:18.
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
 TEMPA
@@ -387,10 +387,9 @@ Rezultat 5 km za 26:05 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
   sre 20. 1.  odmor
   čet 21. 1.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 5,7 km, 40 min (7:02/km)
   pet 22. 1.  odmor
-  sub 23. 1.  provera forme: test na 3 km punim naporom — 5,9 km, 35 min
-      napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
+  sub 23. 1.  trka umesto „provera forme: test na 3 km punim naporom" — urađeno 5 km, 26 min (5:13/km)
   ned 24. 1.  dugi 70 min lagano — 10,1 km, 70 min
-  Zbir: 27,4 km, 3 h 6 min, 4 treninga
+  Zbir: 26,5 km, 2 h 57 min, 4 treninga
 
 13. NEDELJA (od 25. 1.) — razvoj, gradnja; do trke 7 nedelja
   pon 25. 1.  odmor

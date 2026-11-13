@@ -571,7 +571,10 @@ describe('R8: propušten ključni trening', () => {
     const next = longs(r.doc).find((d) => d.date > missed.date);
     const planned = longs(start).find((d) => d.date === next?.date);
     /* krug 6 (R1): nadoknada samo u naredne 2 nedelje i van sužavanja — inače plan ostaje isti, uz rečenicu */
-    const late = next === undefined || diffDays(next.date, today) > 14 || r.doc.weeks.findIndex((w) => w.days.some((d) => d.id === next.id)) >= r.doc.weeks.length - 2;
+    const late =
+      next === undefined ||
+      diffDays(next.date, today) > 14 ||
+      r.doc.weeks.findIndex((w) => w.days.some((d) => d.id === next.id)) >= r.doc.weeks.length - 2;
     if (late) {
       expect(next?.workout?.workSec).toBe(planned?.workout?.workSec);
       expect(r.changes[0]?.reason).toContain('ostaje kako je planiran');
@@ -610,7 +613,10 @@ describe('R8: propušten ključni trening', () => {
     const next = after[0];
     expect(next?.workout?.workSec).toBe(0);
     /* krug 6 (R1): sledeći dugi nije kraći od prvobitnog (ne „poslednji odrađen + korak"), ali bez bloka */
-    const plannedSec = summarize(longs(start).find((d) => d.date === next?.date)?.workout ?? null, ctx).durationSec;
+    const plannedSec = summarize(
+      longs(start).find((d) => d.date === next?.date)?.workout ?? null,
+      ctx
+    ).durationSec;
     expect(secOf(r.doc, next)).toBeGreaterThanOrEqual(plannedSec - ROUND);
     void lastDone;
     let previous = secOf(r.doc, next);

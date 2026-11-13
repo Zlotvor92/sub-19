@@ -1,8 +1,8 @@
 S12 — p12, E3: ned 9–10: propušten po jedan dugi u obe nedelje
 
-STANJE: danas 2027-01-11; sadašnji obim 45 km nedeljno, 5 dana; forma 2:02:10 (pouzdanost niska), očekivano na dan trke 2:00:57.
+STANJE: danas 2027-01-11; sadašnji obim 45 km nedeljno, 5 dana; forma 2:02:08 (pouzdanost visoka), očekivano na dan trke 2:00:33.
 DOGAĐAJ: Propušteno: w9d6, w10d6; sve ostalo urađeno; danas 2027-01-11. Događaji: missed:2027-01-03:w9d6, missed:2027-01-10:w10d6.
-PROMENA: 10.
+PROMENA: 2.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.
@@ -20,7 +20,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
 - umereno: ravnomerno, kratke rečenice, napor 5 od 10
 - prag: ugodno teško, samo par reči, napor 7 od 10
-- tempo trke: napor koji možeš da držiš sat i po do dva, napor 6 od 10
+- tempo trke: napor koji možeš da držiš oko 2 h, napor 6 od 10
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
@@ -205,7 +205,7 @@ UPOZORENJA
   pet 19. 2.  odmor
   sub 20. 2.  lagano 20 min — 2,9 km, 20 min
   ned 21. 2.  TRKA: polumaraton
-      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš sat i po do dva, napor 6 od 10.
+      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 2 h, napor 6 od 10.
       napomena: Prvih 5 km trči malo lakše nego što ti se čini da možeš (pričaš u kratkim rečenicama), od 5. do 16. km ravnomerno, napor koji možeš da držiš do kraja, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
       napomena: Posle trke: 18 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
@@ -218,35 +218,28 @@ Polazim od tvojih ≈ 45 km nedeljno (5 h 15 min trčanja).
 
 FORMA
 Polazna forma (1. 11.): 2:02:10
-Današnja prognoza (11. 1.): 2:02:10, pouzdanost niska
-Očekivano na dan trke: 2:00:57 (raspon 1:52:40–2:05:08) — 1:13 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Današnja prognoza (11. 1.): 2:02:08, pouzdanost visoka
+Očekivano na dan trke: 2:00:33 (raspon 1:59:17–2:02:52) — 1:35 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
+- Test 28. 11.: 3 km za 15:28. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 21,1 km: 2:02:10 → 2:02:06.
 - Polazna procena je iz laganog tempa koji si uneo: oko 2:02:10 za 21,1 km. Prvi test ili trka je preciziraju.
 
 NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
 - umereno: ravnomerno, kratke rečenice, napor 5 od 10
 - prag: ugodno teško, samo par reči, napor 7 od 10
-- tempo trke: napor koji možeš da držiš sat i po do dva, napor 6 od 10
+- tempo trke: napor koji možeš da držiš oko 2 h, napor 6 od 10
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
-- Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 3 km koja je u planu 28. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
+- Nemam tvoj skorašnji rezultat; forma je procenjena iz 49 trčanja sa sata, pa je manje pouzdana. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca ili istrči test na 3 km — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 PROMENE
 Propušten je ključni trening „dugi 2 h lagano" (3. 1.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (17. 1.) je po planu kraći, pa ne raste i plan ostaje isti.
 Propušten je ključni trening „dugi 2 h 10 min lagano" (10. 1.). Dugi trening je propušten 2 puta zaredom, pa se dužina više ne nastavlja tamo gde je plan stao; sledeći dugi (17. 1.) kreće od poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak.
 - ned 17. 1.: dugi 1 h 55 min, završni deo 20 min u tempu trke → dugi 1 h 55 min lagano
-- pon 1. 2.: lagano 40 min → lagano 35 min
-- uto 2. 2.: lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
-- sub 6. 2.: lagano 40 min → lagano 35 min
-- ned 7. 2.: dugi 95 min lagano → dugi 1 h 45 min lagano
-- pon 8. 2.: lagano 40 min → lagano 35 min
-- uto 9. 2.: lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
-- sub 13. 2.: lagano 40 min → lagano 35 min
-- 14. nedelja: 44 km → 43,3 km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  lagano 50 min — urađeno 7,1 km, 50 min (7:00/km)
@@ -349,7 +342,7 @@ Propušten je ključni trening „dugi 2 h 10 min lagano" (10. 1.). Dugi trening
   Urađeno: 41,5 km, 4 h 45 min, 4 treninga
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
-  pon 11. 1.  lagano 70 min — 10 km, 70 min
+  pon 11. 1.  lagano 70 min — urađeno 10 km, 70 min (7:00/km)
   uto 12. 1.  lagano 65 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 10,1 km, 70 min
   sre 13. 1.  odmor
   čet 14. 1.  tempo trke 25 min u komadu — 9,3 km, 60 min
@@ -383,26 +376,26 @@ Propušten je ključni trening „dugi 2 h 10 min lagano" (10. 1.). Dugi trening
   Zbir: 55,5 km, 6 h 11 min, 5 treninga, brz rad 18 % vremena trčanja
 
 14. NEDELJA (od 1. 2.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
-  pon 1. 2.  lagano 35 min — 5 km, 35 min
-  uto 2. 2.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,8 km, 40 min
+  pon 1. 2.  lagano 40 min — 5,7 km, 40 min
+  uto 2. 2.  lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,5 km, 45 min
   sre 3. 2.  odmor
   čet 4. 2.  tempo trke 2 × 21 min, oporavak 2 min džog — 12,5 km, 79 min
   pet 5. 2.  odmor
-  sub 6. 2.  lagano 35 min — 5 km, 35 min
-  ned 7. 2.  dugi 1 h 45 min lagano — 15 km, 1 h 45 min
+  sub 6. 2.  lagano 40 min — 5,7 km, 40 min
+  ned 7. 2.  dugi 95 min lagano — 13,6 km, 95 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 43,3 km, 4 h 54 min, 5 treninga, brz rad 14 % vremena trčanja
+  Zbir: 44 km, 4 h 59 min, 5 treninga, brz rad 14 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — završnica, sužavanje pred trku; do trke 1 nedelja
-  pon 8. 2.  lagano 35 min — 5 km, 35 min
-  uto 9. 2.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,8 km, 40 min
+  pon 8. 2.  lagano 40 min — 5,7 km, 40 min
+  uto 9. 2.  lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,5 km, 45 min
   sre 10. 2.  odmor
   čet 11. 2.  tempo trke 24 min u komadu — 9,1 km, 59 min
   pet 12. 2.  odmor
-  sub 13. 2.  lagano 35 min — 5 km, 35 min
+  sub 13. 2.  lagano 40 min — 5,7 km, 40 min
   ned 14. 2.  dugi 75 min lagano — 10,7 km, 75 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 35,6 km, 4 h 4 min, 5 treninga, brz rad 10 % vremena trčanja
+  Zbir: 37,7 km, 4 h 19 min, 5 treninga, brz rad 9 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — završnica, nedelja trke
   pon 15. 2.  lagano 25 min — 3,6 km, 25 min
@@ -412,7 +405,7 @@ Propušten je ključni trening „dugi 2 h 10 min lagano" (10. 1.). Dugi trening
   pet 19. 2.  odmor
   sub 20. 2.  lagano 20 min — 2,9 km, 20 min
   ned 21. 2.  TRKA: polumaraton
-      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš sat i po do dva, napor 6 od 10.
+      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 2 h, napor 6 od 10.
       napomena: Prvih 5 km trči malo lakše nego što ti se čini da možeš (pričaš u kratkim rečenicama), od 5. do 16. km ravnomerno, napor koji možeš da držiš do kraja, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
       napomena: Posle trke: 18 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

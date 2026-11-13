@@ -232,7 +232,9 @@ function guardMissed(
           const was = summarize(o.workout, pace).durationSec;
           if (summarize(d.workout, pace).durationSec < was - 60) {
             /* sadržaj izmene ostaje (bez bloka / manji blok), dužina je prvobitna */
-            const sameContent = d.workout.workSec === o.workout.workSec && d.workout.libraryId === o.workout.libraryId;
+            const sameContent =
+              d.workout.workSec === o.workout.workSec &&
+              d.workout.libraryId === o.workout.libraryId;
             if (sameContent) {
               if (target) why = 'propušten trening se ne nadoknađuje skraćivanjem sledećeg dugog';
               return o;
@@ -242,7 +244,13 @@ function guardMissed(
             const dose = d.workout.workSec;
             const at = (extraKm: number): ReturnType<typeof realize> =>
               realize(
-                { type: 'long', sec: Math.ceil((was + extraKm * ctxB.pace.paces.easy) / 60) * 60, def, dose, slot: null },
+                {
+                  type: 'long',
+                  sec: Math.ceil((was + extraKm * ctxB.pace.paces.easy) / 60) * 60,
+                  def,
+                  dose,
+                  slot: null
+                },
                 ctxB
               );
             const first = at(0.25);
@@ -517,7 +525,9 @@ function onPause(
     doc,
     full ? null : rampEnd
   );
-  const until = full ? rampEnd : minDate(addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc));
+  const until = full
+    ? rampEnd
+    : minDate(addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc));
   /* R2 (krug 6): izlazak iz prozora bez skoka */
   const smooth = smoothExit(built, doc, rampEnd, state, data);
   return {
@@ -545,10 +555,13 @@ function smoothExit(
   const pace = paceCtxOf(after.header);
   const race = after.header.goal.raceDate;
   const km = (w: PlanWeek): number => weekCost(w, race, pace).km;
-  const longOf = (w: PlanWeek): PlanDay | undefined => w.days.find((d) => d.workout?.kind === 'long');
+  const longOf = (w: PlanWeek): PlanDay | undefined =>
+    w.days.find((d) => d.workout?.kind === 'long');
   const longSec = (w: PlanWeek | undefined): number => {
     const day = w === undefined ? undefined : longOf(w);
-    return day?.workout === undefined || day.workout === null ? 0 : summarize(day.workout, pace).durationSec;
+    return day?.workout === undefined || day.workout === null
+      ? 0
+      : summarize(day.workout, pace).durationSec;
   };
   const done = doneDayIds(state);
   const weeks = [...after.weeks];
@@ -571,7 +584,10 @@ function smoothExit(
     const oLong = Math.max(...prevOld.map((x) => longSec(x)));
     const curKm = km(w);
     const curLong = longSec(w);
-    const kmCap = Math.max(RETURN_WEEK_JUMP_SHARE * pKm, oKm > 0 && old !== undefined ? (pKm * km(old)) / oKm : 0);
+    const kmCap = Math.max(
+      RETURN_WEEK_JUMP_SHARE * pKm,
+      oKm > 0 && old !== undefined ? (pKm * km(old)) / oKm : 0
+    );
     const longCap = Math.max(
       RETURN_LONG_JUMP_SHARE * pLong,
       pLong + RETURN_LONG_JUMP_SEC,
@@ -582,7 +598,8 @@ function smoothExit(
     if (!longOver && !kmOver) continue;
     /* dugi do granice (blok ostaje, ne duži od dugog) */
     const days = w.days.map((d): PlanDay => {
-      if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done)) return d;
+      if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
+        return d;
       const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
       const sec = Math.round(longCap / 60) * 60;
       const workout = realize(
@@ -594,13 +611,25 @@ function smoothExit(
     /* lagani dani srazmerno do obima nedelje */
     const trimmed: PlanWeek = { ...w, days };
     const over = km(trimmed) - kmCap;
-    const easy = days.filter((d) => d.workout?.kind === 'easy' && isMutable(d, after.header, state.today, done));
-    const easyKm = easy.reduce((sum, d) => sum + (d.workout === null ? 0 : summarize(d.workout, pace).km), 0);
+    const easy = days.filter(
+      (d) => d.workout?.kind === 'easy' && isMutable(d, after.header, state.today, done)
+    );
+    const easyKm = easy.reduce(
+      (sum, d) => sum + (d.workout === null ? 0 : summarize(d.workout, pace).km),
+      0
+    );
     const f = over > 0 && easyKm > 0 ? Math.max(0, 1 - over / easyKm) : 1;
-    const minEasy = minEasyOf(data.safety, after.header.decisions.level, after.header.decisions.runDays.length);
+    const minEasy = minEasyOf(
+      data.safety,
+      after.header.decisions.level,
+      after.header.decisions.runDays.length
+    );
     const finalDays = days.map((d): PlanDay => {
       if (f >= 1 || !easy.includes(d) || d.workout === null) return d;
-      const sec = Math.max(minEasy, Math.round((summarize(d.workout, pace).durationSec * f) / 60) * 60);
+      const sec = Math.max(
+        minEasy,
+        Math.round((summarize(d.workout, pace).durationSec * f) / 60) * 60
+      );
       const workout = realize({ type: 'easy', sec }, ctxB);
       return workout === null ? d : { ...d, origin: 'template', workout };
     });
@@ -697,7 +726,13 @@ function onPain(
     ? minDate(addDays(window.rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc))
     : window.rampEnd;
   /* R2 (krug 6): izlazak iz prozora bez skoka */
-  const smooth = smoothExit(returning ? restoreAfter(built, doc, window.rampEnd) : built, doc, window.rampEnd, state, data);
+  const smooth = smoothExit(
+    returning ? restoreAfter(built, doc, window.rampEnd) : built,
+    doc,
+    window.rampEnd,
+    state,
+    data
+  );
   return { doc: smooth.doc, until: smooth.until > until ? smooth.until : until };
 }
 
@@ -1313,7 +1348,13 @@ function textDates(text: string, doc: PlanDoc): IsoDate[] {
     const mm = (m[2] ?? '').padStart(2, '0');
     const a = `${String(y0)}-${mm}-${dd}`;
     const b = `${String(y0 + 1)}-${mm}-${dd}`;
-    out.push(addDays(doc.header.startDate, -366) <= a && a <= doc.header.goal.raceDate && a >= addDays(doc.header.startDate, -60) ? a : b);
+    out.push(
+      addDays(doc.header.startDate, -366) <= a &&
+        a <= doc.header.goal.raceDate &&
+        a >= addDays(doc.header.startDate, -60)
+        ? a
+        : b
+    );
   }
   return out;
 }
@@ -1324,7 +1365,13 @@ function freshDatedWarnings(doc: PlanDoc, state: RunnerState, data: DistanceData
   );
   if (stale.length === 0) return doc;
   const codes = new Set(stale.map((w) => w.code));
-  const fresh = warnings({ state, goal: doc.header.goal, data, decisions: doc.header.decisions, doc });
+  const fresh = warnings({
+    state,
+    goal: doc.header.goal,
+    data,
+    decisions: doc.header.decisions,
+    doc
+  });
   const next = doc.header.warnings.flatMap((w) => {
     if (!codes.has(w.code)) return [w];
     const f = fresh.find((x) => x.code === w.code);

@@ -81,7 +81,9 @@ const ZONE_FEEL: Readonly<Record<ZoneId, string>> = {
 const feelOf = (zone: ZoneId, data: DistanceData, raceSec?: number): string => {
   const text = data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone];
   const duration =
-    raceSec === undefined ? 'koliko traje tvoja trka' : `oko ${fmtMinutes(Math.round(raceSec / 300) * 300)}`;
+    raceSec === undefined
+      ? 'koliko traje tvoja trka'
+      : `oko ${fmtMinutes(Math.round(raceSec / 300) * 300)}`;
   return text.split('{duration}').join(duration);
 };
 
@@ -300,7 +302,8 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   lines.push('');
   lines.push(h.paces.byFeel ? 'NAPOR PO ZONAMA (tempa još nisu pouzdana)' : 'TEMPA');
   const zones: ZoneId[] = ['E', 'M', 'T', 'RP', 'I', 'R'];
-  for (const zone of zones) lines.push(`- ${zoneHint(zone, h.paces, data, h.form.raceDay.expectedSec)}`);
+  for (const zone of zones)
+    lines.push(`- ${zoneHint(zone, h.paces, data, h.form.raceDay.expectedSec)}`);
   lines.push(raceTruth(h, raceDay, data));
   if (h.warnings.length > 0) {
     lines.push('');
@@ -319,7 +322,11 @@ function forecastChange(h: PlanHeader, state: RunnerState | undefined): string[]
   if (state === undefined) return [];
   const before = h.form.raceDay.expectedSec;
   /* T1 (krug 6): obe strane po istim pravilima plana (adjustRaceDay) — inače se poredi prilagođeno sa sirovim */
-  const after = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions).expectedSec;
+  const after = adjustRaceDay(
+    state.form.raceDay,
+    state.form.current.raceTimeSec,
+    h.decisions
+  ).expectedSec;
   const moved = Math.abs(after - before) > FORECAST_CHANGE_MIN_SEC;
   /* M8c (krug 5): koraci bez signala (pripisani napredak plana) ne menjaju prikazanu prognozu — ne prikazuju se,
      da „zašto" uvek vodi do broja u zaglavlju */
@@ -440,7 +447,10 @@ export function renderPlan(
       }
       /* R4 (krug 6): i današnji dan sa odrađenim trčanjem (trka na dan provere) je urađen, ne zakazan */
       const doneToday = day.date === today && run !== undefined;
-      if ((past(day) || doneToday) && (run !== undefined || day.date !== today || paused(day.date))) {
+      if (
+        (past(day) || doneToday) &&
+        (run !== undefined || day.date !== today || paused(day.date))
+      ) {
         /* Prošao dan: šta je urađeno (ili da nije), bez prepisivanja novim tempom. */
         if (run === undefined) {
           lines.push(
@@ -448,7 +458,8 @@ export function renderPlan(
           );
         } else {
           /* R4 (krug 6): trka trčana na dan drugog treninga — red kaže šta je stvarno trčano */
-          const what = run.effort === 'race' && w.kind !== 'race' ? `trka umesto „${w.text}"` : w.text;
+          const what =
+            run.effort === 'race' && w.kind !== 'race' ? `trka umesto „${w.text}"` : w.text;
           lines.push(`  ${when}  ${what} — ${doneLine(run)}`);
           km += Math.round(run.distanceM / 100) / 10;
           durationSec += run.durationSec;

@@ -147,9 +147,13 @@ describe('krug 5: polumaraton', () => {
       /* krug 6 (R2): prvi dugi posle prekida ima pod 62 % poslednjeg dugog pre njega — tada važi pod, ne 45 % */
       const lastBefore = Math.max(
         0,
-        ...runs.filter((r) => r.date < from && r.date >= addDays(from, -28)).map((r) => r.distanceM / 1000)
+        ...runs
+          .filter((r) => r.date < from && r.date >= addDays(from, -28))
+          .map((r) => r.distanceM / 1000)
       );
-      expect(long, `n${String(w.index)}`).toBeLessThanOrEqual(Math.max(share * km(w), 0.65 * lastBefore) + 0.5);
+      expect(long, `n${String(w.index)}`).toBeLessThanOrEqual(
+        Math.max(share * km(w), 0.65 * lastBefore) + 0.5
+      );
     }
   });
 });

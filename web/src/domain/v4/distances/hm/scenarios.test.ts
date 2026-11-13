@@ -26,7 +26,9 @@ function windowEnd(r: any): string | null {
 const longSec = (w: PlanWeek, doc: PlanDoc, by: PlanDoc = doc): number => {
   const ctx = paceCtxOf(by.header);
   const day = w.days.find((d) => d.workout?.kind === 'long');
-  return day?.workout === undefined || day.workout === null ? 0 : summarize(day.workout, ctx).durationSec;
+  return day?.workout === undefined || day.workout === null
+    ? 0
+    : summarize(day.workout, ctx).durationSec;
 };
 const weekKm = (w: PlanWeek, doc: PlanDoc, by: PlanDoc = doc): number =>
   weekCost(w, doc.header.goal.raceDate, paceCtxOf(by.header)).km;
@@ -43,23 +45,36 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
         if (old === undefined) continue;
         const a = longSec(w, r.after);
         const b = longSec(old, r.before, r.after);
-        if (b > 0 && a < b - 60) bad.push(`${name(s.no)} n${String(w.index)} dugi ${String(Math.round(a / 60))} < ${String(Math.round(b / 60))} min`);
+        if (b > 0 && a < b - 60)
+          bad.push(
+            `${name(s.no)} n${String(w.index)} dugi ${String(Math.round(a / 60))} < ${String(Math.round(b / 60))} min`
+          );
         const ka = weekKm(w, r.after);
         const kb = weekKm(old, r.before, r.after);
-        if (ka < kb - 0.5) bad.push(`${name(s.no)} n${String(w.index)} nedelja ${ka.toFixed(1)} < ${kb.toFixed(1)} km`);
+        if (ka < kb - 0.5)
+          bad.push(
+            `${name(s.no)} n${String(w.index)} nedelja ${ka.toFixed(1)} < ${kb.toFixed(1)} km`
+          );
       }
     }
     /* propušten trening (E3): sledeći dugi nikad kraći od prvobitnog; sužavanje (nedelje −2 i −1) se ne dira */
     for (const { s, r } of REPLANS.filter(({ s }) => s.title.startsWith('E3'))) {
       const today: string = r.afterState.today;
       const n = r.after.weeks.length;
-      const next = (r.after.weeks as PlanWeek[]).find((w) => w.start >= today && w.days.some((d) => d.date > today && d.workout?.kind === 'long'));
+      const next = (r.after.weeks as PlanWeek[]).find(
+        (w) => w.start >= today && w.days.some((d) => d.date > today && d.workout?.kind === 'long')
+      );
       const old = (r.before.weeks as PlanWeek[]).find((w) => w.start === next?.start);
-      if (next !== undefined && old !== undefined && longSec(next, r.after) < longSec(old, r.before, r.after) - 60)
+      if (
+        next !== undefined &&
+        old !== undefined &&
+        longSec(next, r.after) < longSec(old, r.before, r.after) - 60
+      )
         bad.push(`${name(s.no)} sledeći dugi n${String(next.index)} kraći od prvobitnog`);
-      for (const c of r.changes as any[]) {
+      for (const c of r.changes) {
         const w = (r.after.weeks as PlanWeek[]).find((x) => x.days.some((d) => d.id === c.dayId));
-        if (w !== undefined && w.index >= n - 2 && w.index < n) bad.push(`${name(s.no)} izmena u sužavanju n${String(w.index)} (${String(c.dayId)})`);
+        if (w !== undefined && w.index >= n - 2 && w.index < n)
+          bad.push(`${name(s.no)} izmena u sužavanju n${String(w.index)} (${String(c.dayId)})`);
       }
     }
     expect(bad).toEqual([]);
@@ -82,7 +97,10 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       const rampEnd = ((r.after.header.adjustments ?? []) as any[])
         .map((a) => adjustmentWindow(a)?.rampEnd ?? '')
         .reduce((a: string, b: string) => (a > b ? a : b), '');
-      const from = Math.max(base + 1, after.findIndex((w) => addDays(w.start, 6) > rampEnd));
+      const from = Math.max(
+        base + 1,
+        after.findIndex((w) => addDays(w.start, 6) > rampEnd)
+      );
       const to = firstOut < 0 ? after.length : Math.min(after.length, firstOut + 2);
       for (let i = from; i < to; i += 1) {
         const w = after[i];
@@ -93,14 +111,26 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
         const curLong = longSec(w, r.after);
         const oldPrev = Math.max(...before.slice(lo, i).map((x) => longSec(x, r.before)));
         const oldCur = longSec(before[i] as PlanWeek, r.before);
-        const allowed = Math.max(prevLong * 1.25, prevLong + 1200, oldPrev > 0 ? (prevLong * oldCur) / oldPrev : 0);
+        const allowed = Math.max(
+          prevLong * 1.25,
+          prevLong + 1200,
+          oldPrev > 0 ? (prevLong * oldCur) / oldPrev : 0
+        );
         if (prevLong > 0 && curLong > allowed + 60)
-          bad.push(`${name(s.no)} n${String(w.index)} dugi ${String(Math.round(prevLong / 60))} → ${String(Math.round(curLong / 60))} min`);
+          bad.push(
+            `${name(s.no)} n${String(w.index)} dugi ${String(Math.round(prevLong / 60))} → ${String(Math.round(curLong / 60))} min`
+          );
         const prevKm = Math.max(...after.slice(lo, i).map((x) => weekKm(x, r.after)));
         const oldPrevKm = Math.max(...before.slice(lo, i).map((x) => weekKm(x, r.before)));
         const km = weekKm(w, r.after);
-        const allowedKm = Math.max(prevKm * 1.2, oldPrevKm > 0 ? (prevKm * weekKm(before[i] as PlanWeek, r.before)) / oldPrevKm : 0);
-        if (km > allowedKm + 0.5) bad.push(`${name(s.no)} n${String(w.index)} nedelja ${prevKm.toFixed(1)} → ${km.toFixed(1)} km`);
+        const allowedKm = Math.max(
+          prevKm * 1.2,
+          oldPrevKm > 0 ? (prevKm * weekKm(before[i] as PlanWeek, r.before)) / oldPrevKm : 0
+        );
+        if (km > allowedKm + 0.5)
+          bad.push(
+            `${name(s.no)} n${String(w.index)} nedelja ${prevKm.toFixed(1)} → ${km.toFixed(1)} km`
+          );
       }
     }
     expect(bad).toEqual([]);
@@ -123,13 +153,19 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       }
       const text = renderPlan(r.after, r.afterState, hm);
       const days = (r.after.weeks as PlanWeek[]).flatMap((w) => w.days);
-      for (const m of text.matchAll(/(?:[Oo]porav\w* (?:traje )?do|Do) (\d{1,2})\. (\d{1,2})\.(?: traje oporavak)?/g)) {
+      for (const m of text.matchAll(
+        /(?:[Oo]porav\w* (?:traje )?do|Do) (\d{1,2})\. (\d{1,2})\.(?: traje oporavak)?/g
+      )) {
         if (!m[0].includes('porav')) continue;
         const until = isoOf(m[1] ?? '', m[2] ?? '');
         const early = days.find(
-          (d) => d.date > today && d.date <= until && (d.workout?.kind === 'quality' || (d.workout?.kind === 'long' && d.workout.workSec > 0))
+          (d) =>
+            d.date > today &&
+            d.date <= until &&
+            (d.workout?.kind === 'quality' || (d.workout?.kind === 'long' && d.workout.workSec > 0))
         );
-        if (early !== undefined) bad.push(`${name(s.no)} oporavak do ${until}, a brzi ${early.date}`);
+        if (early !== undefined)
+          bad.push(`${name(s.no)} oporavak do ${until}, a brzi ${early.date}`);
       }
     }
     expect(bad).toEqual([]);

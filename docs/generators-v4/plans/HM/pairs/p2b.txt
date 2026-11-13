@@ -1,7 +1,7 @@
 P2B — P2 B — početnik, 6 nedelja trčanja, tegoba u potkolenici pre godinu dana (ulazi kao p11)
 MORA DA SE RAZLIKUJE: B: vrh × 1,5 (A × 2,0), rasterećenje 2:1, dugi po vremenu uz hod-trk, brda/ubrzanja od ned 5, cilj „završiti" sa predlogom duže pripreme
 ISTORIJA: 21 trčanja; nedelje (km): 0,0 / 0,0 / 0,0 / 0,0 / 0,0 / 0,0 / 8,0 / 11,0 / 14,0 / 17,0 / 19,0 / 20,0; pauze 0, bol 1
-BROJEVI: nivo pocetnik-nov; nedelja 1 9,8 km; vrh 30,0 km; prvi dugi 4,2 km, najduži 14,8 km; prvi kvalitet u 5. nedelji; provera forme u 12. nedelji; forma 2:04:13 (srednja), dan trke 2:04:13 (1:57:10–2:17:03)
+BROJEVI: nivo pocetnik-nov; nedelja 1 10,5 km; vrh 30,0 km; prvi dugi 4,9 km, najduži 14,8 km; prvi kvalitet u 5. nedelji; provera forme u 12. nedelji; forma 2:04:13 (srednja), dan trke 2:04:13 (1:57:10–2:17:03)
 
 PLAN: polumaraton, trka 21. 3. 2027.
 Početak 2. 11. 2026. · 20 nedelja · 4 dana trčanja nedeljno
@@ -11,7 +11,6 @@ FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (1. 11.): 2:04:13, pouzdanost srednja
 Očekivano na dan trke: 2:04:13 (raspon 1:57:10–2:17:03)
-Prognoza je bolja nego u prethodnom ispisu (2:04:13 → 1:57:11). Procena forme je ponovo izračunata iz trčanja posle 1. 11.; nijedan pojedinačan trening je nije pomerio.
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
@@ -28,8 +27,8 @@ UPOZORENJA
 - Najveća nedelja u planu ima 30 km, a adekvatna priprema za ovu distancu traži bar 40 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke dodaj 5. dan laganog trčanja od oko 20 min — vrh tada ide do 31 km nedeljno. Za sledeću trku planiraj 26 nedelja pripreme — obim tada bezbedno stiže do 40 km nedeljno.
 - Plan traje 20 nedelja, a najduži trening je 14,8 km — za ovu distancu treba bar 15 km ili 1 h 50 min, jer nedeljni obim od najviše 30 km ne nosi duži dugi. Druga polovina trke biće duža od svega što si trčao, pa prognoza ne računa napredak od obima, a trku treba početi oprezno. Podigni nedeljni obim laganim trčanjem (10–15 min više po danu) — kad nedelja pređe 40 km, dugi stiže do 15 km.
 - U poslednjih 12 meseci si imao tegobu (bol pri trčanju). Prve 4 nedelje plan nema sprinteve uzbrdo ni druge treninge visokog udara, a obim raste sporije, da se isto mesto ne vrati. Ako se ista tegoba javi (bol 3/10 ili više, ili raste tokom trčanja), prekini trening, upiši bol u aplikaciju i javi se lekaru ili fizioterapeutu ako ne prođe za 7 dana.
-- Trčiš tek oko 5 nedelja. Telo se na trčanje navikava sporije nego što forma raste: tetive i kosti traže više vremena od srca i pluća. Prognoza je zato manje pouzdana, a raspon širi. Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana. Ako želiš rezultat, izaberi trku za bar 16 nedelja ili kraću distancu (10 km).
-- Tražio si 4 dana trčanja nedeljno, a plan u nekim nedeljama ima 3 treninga (nedelje 4, 12). Uz sadašnji obim od oko 18,9 km nedeljno, svi traženi dani bi i sa najkraćim trčanjem od 25 min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede. Te nedelje trči kako piše — od 13. nedelje plan koristi sve tražene dane. Ako želiš da izlaziš sva 4 dana odmah, dodatni dan neka bude šetnja ili 15–20 min vrlo laganog trčanja.
+- Trčiš tek oko 5 nedelja. Telo se na trčanje navikava sporije nego što forma raste: tetive i kosti traže više vremena od srca i pluća. Prognoza je zato manje pouzdana, a raspon širi. Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana. Ako želiš rezultat, izaberi trku za bar 26 nedelja ili kraću distancu (10 km).
+- Tražio si 4 dana trčanja nedeljno, a plan u nekim nedeljama (nedelje 4, 12) ima 3 treninga. Uz sadašnji obim od oko 18,9 km nedeljno, svi traženi dani bi i sa najkraćim trčanjem od 25 min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede. Te nedelje trči kako piše — od 13. nedelje plan koristi sve tražene dane. Ako želiš da izlaziš sva 4 dana odmah, dodatni dan neka bude šetnja ili 30 min vrlo laganog trčanja.
 - Plan počinje dan posle testa (10 km za 56:02). Do 10. 11. traje oporavak: treninzi su kraći i lagani, da se telo vrati pre nego što opterećenje krene da raste. Prvi brzi trening je 3. 12.; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja
@@ -39,8 +38,8 @@ UPOZORENJA
   čet 5. 11.  lagano 20 min — 2,8 km, 20 min
   pet 6. 11.  odmor
   sub 7. 11.  lagano 20 min — 2,8 km, 20 min
-  ned 8. 11.  dugi 30 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 4,2 km, 30 min
-  Zbir: 9,8 km, 70 min, 3 treninga, brz rad 0 % vremena trčanja
+  ned 8. 11.  dugi 35 min hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 4,9 km, 35 min
+  Zbir: 10,5 km, 75 min, 3 treninga, brz rad 0 % vremena trčanja
 
 2. NEDELJA (od 9. 11.) — osnova, gradnja; do trke 18 nedelja
   pon 9. 11.  odmor
