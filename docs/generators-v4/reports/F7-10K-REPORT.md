@@ -120,3 +120,6 @@ scenariji s07, s15, s26 i dalje imaju nalaz čuvara (A6, motor); p04 nedelja 5 b
 | B10 | p08 sada ned 1 38,9 km (97 %), vrh 45 km (× 1,13) — „plan podiže obim" sledi iz brojeva | — |
 Najmanje odluke: N−5 tempo trke ostaje 5 × 1 km (veća doza lomi R2 u s25: nedelja 41,8 → 52,5 km); plan kraći od
 8 nedelja ima manju dozu u najtežoj (inače skok nedelje + 21 %); s13 Z3 72 % (zaokruživanje deonica, u `KNOWN`).
+Posle A1 (854f65d): p02 nedelja −2 ima tempo trke 3 × 1,2 km; p06 svaka nedelja gradnje ima kvalitet (WAIT_A1 prazan).
+Ostaje p06 B9: nedelja −2 26,3 km < nedelja −1 33,3 km (u ned −2 jedan lagan dan izostavljen uz A1, u ned −1 pet laganih po
+30 min) — motor, imenovan u `gate.test` (kapija 1 nalaz, očekivan).
