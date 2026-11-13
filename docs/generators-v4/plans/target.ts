@@ -1,5 +1,6 @@
-/* Poređenje V4 sa ciljnim planovima trenera (docs/generators-v2/perfection/target/HM/, krug 3: META).
-   Pokretanje iz korena:  node docs/generators-v4/plans/target.ts [--md]
+/* Poređenje V4 sa ciljnim planovima trenera (polumaraton: docs/generators-v2/perfection/target/HM/, krug 3: META;
+   10 km: docs/generators-v4/coach/target/10K/). Pokretanje iz korena:  node docs/generators-v4/plans/target.ts
+   [--dist tenk] [--md]
    Po nedelji: km, dugi (km), blok u dugom (km), kvaliteti (vrsta i minuti rada) — cilj / V4 / razlika, i provera
    tolerancija organizatora: km ± 8 %, dugi ± 1,5 km, isti broj i vrsta kvaliteta, doza ± 20 %. */
 import { registerHooks } from 'node:module';
@@ -21,15 +22,17 @@ const here = dirname(fileURLToPath(import.meta.url));
 const v4 = join(here, '../../../web/src/domain/v4');
 const E = await import(join(v4, 'engine/index.ts'));
 const { estimateForm } = await import(join(v4, 'fitness/index.ts'));
-const { hm } = await import(join(v4, 'distances/hm/index.ts'));
-const { PROFILES, factsOf } = await import(join(v4, 'distances/hm/testdata/profiles.ts'));
+const { loadDist } = await import(join(here, 'dist.ts'));
+const D = await loadDist(v4, process.argv);
+const hm = D.data;
+const { PROFILES, factsOf } = D;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Any = any;
 /** Kvalitet: R brzina/brda, T prag, I intervali, RP tempo trke, O oštrenje, X provera/trka; broj = min rada (0 = bez doze). */
 type Q = [string, number];
 type W = [number, number, number, Q[]]; // km, dugi km, blok km, kvaliteti
-const TARGETS: Record<string, W[]> = {
+const TARGETS_HM: Record<string, W[]> = {
   p01: [
     [40, 15, 0, [['R', 0], ['T', 14]]], [42, 16, 0, [['R', 0], ['T', 19]]], [44, 17, 0, [['R', 0], ['T', 24]]],
     [35, 14, 0, [['T', 9]]], [47, 18, 0, [['R', 0], ['T', 24]]], [50, 19, 0, [['I', 17], ['T', 28]]],
@@ -61,6 +64,36 @@ const TARGETS: Record<string, W[]> = {
     [53, 16, 0, [['RP', 31]]], [41, 11, 0, [['RP', 22]]], [19, 0, 0, [['O', 6]]]
   ]
 };
+/* 10 km (coach/target/10K/p01, p03, p06, p11): „blok" = završnica u dugom (km u pragu ili tempu trke); brzina i
+   usponi bez doze; usponi kao dodatak lakog dana se ne broje kao kvalitet */
+const TARGETS_TENK: Record<string, W[]> = {
+  p01: [
+    [40, 13, 0, [['R', 0], ['T', 14]]], [42, 14, 0, [['R', 0], ['T', 16]]], [44, 15, 0, [['R', 0], ['T', 19]]],
+    [35, 12, 0, [['T', 9]]], [46, 15.5, 0, [['R', 0], ['T', 23]]], [48, 16, 0, [['I', 14], ['T', 24]]],
+    [50, 16.5, 0, [['I', 17], ['T', 28]]], [40, 13, 0, [['T', 14]]], [52, 17, 0, [['I', 22], ['T', 28]]],
+    [44, 12, 0, [['R', 0], ['X', 0]]], [50, 16, 3, [['RP', 23]]], [41, 13, 0, [['RP', 14]]],
+    [53, 16, 3, [['RP', 28], ['I', 17]]], [49, 15, 0, [['RP', 29], ['T', 14]]], [38, 12, 0, [['RP', 14], ['T', 12]]],
+    [17, 0, 0, [['O', 11]]]
+  ],
+  p03: [
+    [20, 9, 0, [['T', 12]]], [21.5, 9.5, 0, [['T', 12]]], [23, 10, 0, [['T', 18]]], [18, 8, 0, [['T', 10]]],
+    [24.5, 10.5, 0, [['T', 19]]], [26, 11.5, 0, [['T', 18]]], [27.5, 12.5, 1.3, [['T', 24]]], [21, 8, 0, [['X', 0]]],
+    [28, 12.5, 1.7, [['RP', 21]]], [26, 11.5, 0, [['RP', 19]]], [20, 9, 0, [['RP', 12]]], [9, 0, 0, [['O', 6]]]
+  ],
+  p06: [
+    [30, 10, 0, [['R', 0], ['T', 11]]], [32, 11, 0, [['I', 8], ['T', 15]]], [35, 12, 0, [['I', 14], ['T', 19]]],
+    [37, 13, 2.7, [['RP', 17], ['T', 23]]], [30, 10, 0, [['R', 0], ['X', 0]]], [39, 13, 2.7, [['RP', 22]]],
+    [31, 10, 0, [['RP', 11], ['T', 10]]], [14, 0, 0, [['O', 9]]]
+  ],
+  p11: [
+    [15, 6.5, 0, []], [16, 7, 0, []], [17, 7.5, 0, []], [14, 6, 0, []], [18, 8, 0, [['T', 10]]],
+    [19, 8.5, 0, [['T', 6]]], [20, 9, 0, [['T', 10]]], [16, 7, 0, []], [21, 9.5, 0, [['T', 15]]],
+    [22.5, 10, 0, [['T', 16]]], [24, 10.5, 0, [['T', 15]]], [18, 7, 0, [['X', 0]]], [25.5, 11.5, 0, [['T', 18]]],
+    [26, 12, 0, [['RP', 17]]], [27, 12, 1.8, [['RP', 22]]], [24, 10.5, 0, [['RP', 18]]], [19, 8, 0, [['RP', 11]]],
+    [8, 0, 0, [['O', 3]]]
+  ]
+};
+const TARGETS = D.key === 'hm' ? TARGETS_HM : TARGETS_TENK;
 const KIND: Record<string, string> = {
   brzina: 'R', prag: 'T', 'prag-p': 'T', intervali: 'I', 'tempo-trke': 'RP', ostrenje: 'O',
   kontrola: 'X', 'kontrola-rana': 'X'
@@ -86,7 +119,7 @@ for (const id of Object.keys(TARGETS)) {
       if (x === null || x.kind === 'race') continue;
       const c = E.summarize(x, ctx);
       km += c.km;
-      if (x.kind === 'long') { long = c.km; if (x.stimulus === 'dugi-rp') block = (c.workSec / 60) / (ctx.paces.RP / 60); }
+      if (x.kind === 'long') { long = c.km; if (x.stimulus === 'dugi-rp') block = (c.workSec / 60) / (ctx.paces.RP / 60); if (x.stimulus === 'dugi-prag') block = (c.workSec / 60) / (ctx.paces.T / 60); }
       if (x.kind === 'quality' || x.kind === 'test') qs.push([KIND[x.stimulus ?? ''] ?? '?', Math.round(c.workSec / 60)]);
     }
     const bad: string[] = [];
@@ -110,5 +143,5 @@ for (const id of Object.keys(TARGETS)) {
 }
 lines.push(`Nedelja u svim tolerancijama: ${String(totalOk)} od ${String(total)}.`);
 const text = lines.join('\n');
-if (md) writeFileSync(join(here, 'HM/target-compare.md'), `# V4 prema ciljnim planovima trenera\n\n${text}\n`);
+if (md) writeFileSync(join(here, D.outDir, 'target-compare.md'), `# V4 prema ciljnim planovima trenera${D.key === 'hm' ? '' : ` — ${D.name}`}\n\n${text}\n`);
 console.log(text);
