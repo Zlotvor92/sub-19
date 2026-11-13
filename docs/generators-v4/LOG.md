@@ -630,3 +630,13 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   posle provere nije „dugi", jedan izvor tempa trke, start trke kao udeo, oporavak posle trke jedan broj).
 - 10K krug 3 (podaci): p06, p08, faze unazad, P3 A, predlozi obima, p10.
 - Radi: motor (krug 10), 10K (krug 3), 5K, maraton. Sudije završile (arhivirati posle provere push-a).
+
+### 13. 11. 2026, 15:20 — 10K krug 3 (`a52b8bc`), 5K isporučen (`97ec683`), dopune kruga 10
+- 10K krug 3: faze ne idu unazad, jedan izvor predloga obima, tempo trke p10 raste. Za motor: plafon dugog po broju
+  dana (p08), bodovi skraćenog kvaliteta u dugi (p06).
+- 5K (tab `session_01GnHHiYgBWy4zCKtBd6YPxy`, ≈ 40 min): `distances/fivek/`, 16 profila, 27 scenarija; po izveštaju
+  818 zeleno + 20 očekivanih padova, kapija 15/16 (p06 = greška motora, `it.fails`), HM i 10K ispisi bajt-isti. Nisam
+  još sam pokretao (motor se menja u krugu 10) [srednja]. Otvoreno: provera u N−4 a ciljni planovi u N−8 (trener).
+- MOJ PROPUST: `briefs/F7-COMMON.md` nije bio gurnut (pull je pao, upis preskočen) — tabovi 5K i maraton su počeli
+  bez njega. Fajl dodat; maraton tab obavešten; 5K je radio po `F7-5K.md` i obrascu 10K.
+- Krug 10 motora sada ima 20 stavki (1–6 povratak/tekst, 7–13 drugi sudija HM, 14–15 zahtevi 10K, 16–20 zahtevi 5K).
