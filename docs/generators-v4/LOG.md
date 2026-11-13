@@ -731,3 +731,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Za sledeći nalog motora (R19-MOTOR): plafon dugog po broju dana (10K); p02 najkraći lagan dan 25 min (spajanje/
   izostavljanje); udeo dugog bez viška km bloka MP i korak dugog u km sa blokom (MAR p11/p18); zaokruživanje koraka
   dugog (p06 ne stiže do 26 km).
+
+### 14. 11. 2026, 00:05 — motor R18 primljen (`dbda3aaa`), provera organizatora, nalog R19-MOTOR
+- Sam pokrenuo: V4 + isolation 62 fajla, 1038 + 25 očekivano; typecheck čist; kapije HM/10K/5K/MAR 0 [visoka].
+- R18 urađeno 1–5, 7, 9, 12, 13; nije 6, 8, 10, 11.
+- Odluka organizatora (stavka 6): R2 je pravilo rasta iznad dostignutog nivoa; merilo `max(prethodna, referentna pre
+  pauze)`. Rampa: ≤ 4 dana bez; 5–10 dana 75/90/plan; 11–21 dan 60/75/90/plan; > 21 postojeća. Test se pomera ≤ 2 ned.
+- R19-MOTOR (`briefs/R19-MOTOR.md`) u istom tabu motora (kontekst 464 000): povratak, dugi (zahtevi MAR/10K), 5K p06,
+  M22, HM podatak, upozorenja po nivou, 5K s26 tekst. Ocena R19 posle ovog kruga.
