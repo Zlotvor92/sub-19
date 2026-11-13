@@ -824,6 +824,10 @@ export interface SafetyNumbers {
   minEasySec: Seconds;
   /** M5 (krug 5): najkraće lagano trčanje po nivou, u minutima; nivo bez unosa koristi `minEasySec`. */
   minEasyMin?: Readonly<Record<LevelId, number>>;
+  /** P3 (krug 5): sporiji od `fromRaceSec` na distanci — tempo intervala ne brži od tempa trke na `distanceM`. */
+  intervalPaceFloor?: { distanceM: Meters; fromRaceSec: Seconds };
+  /** P3 (krug 5): kvalitet sa oznakom `tag` najviše `max` od `window` nedelja zaredom; inače `replacement`. */
+  tagMaxRun?: ReadonlyArray<{ tag: string; max: number; window: number; replacement: StimulusTag }>;
   /** Od koliko dana trčanja nedeljno važi `minEasyMin`. */
   minEasyFromRunDays?: number;
   /** Lagan dan najviše ovoliki udeo dugog te nedelje; broj, ili mapa po broju dana trčanja („1"…„7"). */

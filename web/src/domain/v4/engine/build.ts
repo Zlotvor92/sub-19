@@ -332,7 +332,9 @@ export function weekSlots(
       biraju prema danu trke, pa bi ponedeljak mogao da stane uz nedeljni kvalitet). */
   hardBefore: IsoDate | null = null,
   /** Pomerena provera ne ide pre ovog dana (S9: najranije 10 dana posle kraja rampe). */
-  forcedFrom: IsoDate | null = null
+  forcedFrom: IsoDate | null = null,
+  /** P3 (krug 5): oznake kvaliteta prethodnih nedelja (poslednja na kraju) — za `safety.tagMaxRun`. */
+  previousTags: ReadonlyArray<ReadonlySet<string>> = []
 ): WeekSlots {
   const { decisions: d } = ctx;
   const { intent } = week;
@@ -396,9 +398,28 @@ export function weekSlots(
       phase: intent.phase,
       ...(st.workoutId === undefined ? {} : { workoutId: st.workoutId })
     };
-    const wanted = slotDose(slot, st.dosePct, intent.kind, ctx);
-    const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: cautious });
+    let wanted = slotDose(slot, st.dosePct, intent.kind, ctx);
+    let def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: cautious });
     if (def === null) return;
+    /* P3 (krug 5): oznaka (npr. brdo) najviše `max` od `window` nedelja zaredom — inače zamenski podražaj */
+    for (const rule of ctx.data.safety.tagMaxRun ?? []) {
+      if (!def.tags.includes(rule.tag)) continue;
+      const recent = previousTags.slice(-(rule.window - 1)).filter((t) => t.has(rule.tag)).length;
+      if (recent < rule.max) continue;
+      /* indeks zamenskog podražaja (prvi trening zone ≤ 70 % plafona, K7) */
+      const alt: SlotRef = {
+        ...slot,
+        stimulus: rule.replacement,
+        index: slotIndex('quality', rule.replacement),
+        workoutId: undefined
+      };
+      const altWanted = slotDose(alt, undefined, intent.kind, ctx);
+      const altDef = pickDef(alt, altWanted > 0 ? altWanted : null, ctx, { noHighImpact: cautious });
+      if (altDef !== null && !altDef.tags.includes(rule.tag) && altDef.main.kind !== 'add-on' && altDef.main.kind !== 'all-out') {
+        def = altDef;
+        wanted = altWanted;
+      }
+    }
     const date = dateOf(wd);
     if (def.main.kind === 'add-on') {
       items.push({ kind: 'addon', date, def });
@@ -1289,6 +1310,8 @@ export function runPass(
   const taperAcc = { count: 0, fast: 0 };
   /* M7: obim vršne nedelje (km u minutima laganog tempa) */
   let peakVolume = 0;
+  /* P3: oznake kvaliteta po nedelji (za `tagMaxRun`) */
+  const weekTags: Set<string>[] = [];
   let previousHard: IsoDate | null = null;
   /* Provera forme koja je pala u pauzu ili rampu: čeka prvu nedelju posle rampe (R9). */
   let pendingTest: Extract<Recipe, { type: 'test' }> | null = null;
@@ -1306,7 +1329,8 @@ export function runPass(
       slotCounter(doc.weeks, week.index),
       forced,
       previousHard,
-      pendingFrom
+      pendingFrom,
+      weekTags
     );
     if (forced !== null && slots.items.some((x) => x.kind === 'test' && x.def === forced.def)) {
       pendingTest = null;
@@ -1508,6 +1532,15 @@ export function runPass(
       return final;
     });
     const days = shortenLong(rawDays, week, header, state.today, done, ctx, opts);
+    weekTags.push(
+      new Set(
+        days.flatMap((x) =>
+          x.workout?.kind === 'quality'
+            ? (ctx.data.library.find((def) => def.id === x.workout?.libraryId)?.tags ?? [])
+            : []
+        )
+      )
+    );
     /* E9: merilo silaska je OSTVAREN brz rad vršne nedelje (posle spremnosti), isto što meri čuvar */
     if (week.intent.kind === 'peak') {
       const real = days.reduce(

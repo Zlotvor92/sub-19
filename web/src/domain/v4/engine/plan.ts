@@ -231,7 +231,7 @@ export function createPlan(
         pacesUpdatedOn: state.today,
         raceDay: widened(state, data)
       },
-      paces: zonePaces(form.vdot, data.distanceM, form.confidence === 'niska'),
+      paces: zonePaces(form.vdot, data.distanceM, form.confidence === 'niska', data.safety.intervalPaceFloor),
       decisions,
       warnings: [],
       protected: false,

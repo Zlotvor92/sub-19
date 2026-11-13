@@ -78,14 +78,24 @@ function roundPace(secPerKm: SecPerKm): SecPerKm {
 }
 
 /** Tempa zona za VDOT; RP je tempo trke na `distanceM` (§ 5.4). */
-export function zonePaces(vdot: Vdot, distanceM: Meters, byFeel: boolean): Paces {
+export function zonePaces(
+  vdot: Vdot,
+  distanceM: Meters,
+  byFeel: boolean,
+  /** P3 (krug 5): sporiji od `fromRaceSec` na distanci — intervali ne brži od tempa trke na `distanceM` iz forme. */
+  intervalFloor?: { distanceM: Meters; fromRaceSec: Seconds }
+): Paces {
+  const slow = intervalFloor !== undefined && raceTimeSec(vdot, distanceM) >= intervalFloor.fromRaceSec;
+  const I = slow
+    ? Math.max(paceAtShare(vdot, ZONE_SHARE.I), racePace(vdot, intervalFloor.distanceM))
+    : paceAtShare(vdot, ZONE_SHARE.I);
   return {
     easySlow: roundPace(paceAtShare(vdot, EASY_SLOW_SHARE)),
     easyFast: roundPace(paceAtShare(vdot, EASY_FAST_SHARE)),
     easy: roundPace(paceAtShare(vdot, ZONE_SHARE.E)),
     M: roundPace(paceAtShare(vdot, ZONE_SHARE.M)),
     T: roundPace(paceAtShare(vdot, ZONE_SHARE.T)),
-    I: roundPace(paceAtShare(vdot, ZONE_SHARE.I)),
+    I: roundPace(I),
     R: roundPace(paceAtShare(vdot, ZONE_SHARE.R)),
     RP: roundPace(racePace(vdot, distanceM)),
     byFeel

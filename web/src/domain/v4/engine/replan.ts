@@ -154,7 +154,7 @@ function onResult(
           paceVdot,
           pacesUpdatedOn: moved ? state.today : header.form.pacesUpdatedOn
         },
-        paces: zonePaces(paceVdot, data.distanceM, false),
+        paces: zonePaces(paceVdot, data.distanceM, false, data.safety.intervalPaceFloor),
         warnings: header.warnings.filter(
           (w) =>
             w.code !== 'nema-podataka' ||
@@ -541,7 +541,7 @@ function onFormUpdate(
   const header: PlanHeader = {
     ...doc.header,
     form: { ...doc.header.form, paceVdot: ev.vdot, pacesUpdatedOn: ev.date },
-    paces: zonePaces(ev.vdot, data.distanceM, byFeel)
+    paces: zonePaces(ev.vdot, data.distanceM, byFeel, data.safety.intervalPaceFloor)
   };
   return { doc: { ...doc, header }, until: header.goal.raceDate };
 }
@@ -637,7 +637,7 @@ function reskeleton(
     policyId: data.id,
     policyVersion: data.version,
     decisions,
-    paces: zonePaces(old.form.paceVdot, data.distanceM, old.paces.byFeel)
+    paces: zonePaces(old.form.paceVdot, data.distanceM, old.paces.byFeel, data.safety.intervalPaceFloor)
   };
   const built = runPass({ ...doc, header, weeks: [...kept, ...weeksOut] }, state, data, {
     window: null,

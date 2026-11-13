@@ -214,6 +214,10 @@ export const SAFETY: SafetyNumbers = {
      početnici ostaju na 25 */
   minEasyMin: { brz: 35, srednji: 35, spor: 35, mali: 30, povratnik: 30 },
   minEasyFromRunDays: 4,
+  /* P3 (krug 5; trener § 8, p04): usponi najviše 2 od 3 nedelje — treća dobija intervale */
+  tagMaxRun: [{ tag: 'brdo', max: 2, window: 3, replacement: 'intervali' }],
+  /* P3 (krug 5; p03): sporiji od 1:55 — intervali ne brži od tempa na 5 km iz forme */
+  intervalPaceFloor: { distanceM: 5000, fromRaceSec: 6900 },
   easyMaxShareOfLong: {
     '1': 0.68,
     '2': 0.68,

@@ -13,11 +13,11 @@
 2026-11-14 | trening | easy | 9.0 | lagano 9 km | - | - | -
 2026-11-15 | trening | long | 16.0 | dugi 16 km lagano | - | - | -
 2026-11-16 | odmor | - | 0.0 |  | - | - | -
-2026-11-17 | trening | quality | 10.1 | usponi 10 × 1 min snažno uzbrdo, nazad 2 min hod | - | - | -
+2026-11-17 | trening | quality | 9.8 | intervali 4 × 3 min, oporavak 2:30 džog | - | - | -
 2026-11-18 | odmor | - | 0.0 |  | - | - | -
 2026-11-19 | trening | quality | 11.3 | prag 3 × 8 min, oporavak 1:30 džog | - | - | -
 2026-11-20 | odmor | - | 0.0 |  | - | - | -
-2026-11-21 | trening | easy | 9.5 | lagano 9,5 km | - | - | -
+2026-11-21 | trening | easy | 10.0 | lagano 10 km | - | - | -
 2026-11-22 | trening | long | 16.5 | dugi 16,5 km, završni deo 2 km progresivno do tempa trke | - | - | -
 2026-11-23 | odmor | - | 0.0 |  | - | - | -
 2026-11-24 | trening | easy | 8.0 | lagano 7 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
