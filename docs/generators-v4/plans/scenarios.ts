@@ -1,5 +1,5 @@
 /* Scenariji prilagođavanja (coach/SCENARIOS-V4.md § 2) za distancu `--dist hm|tenk`: plan PRE i POSLE događaja sa
-   spiskom promena. Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/scenarios.ts [--dist tenk]
+   spiskom promena. Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/scenarios.ts [--dist tenk|fivek]
    Piše docs/generators-v4/plans/HM/scenarios/s01.txt … i pregled.txt (10 km: plans/10K/scenarios/).
    Trkač do događaja radi tačno ono što piše u planu (trčanja vezana za dan plana); događaj se zadaje činjenicama
    (trka, pauza, propušteni dani, bol) i `deriveEvents` iz njih izvodi događaje — osim bola, koji se prijavljuje. */

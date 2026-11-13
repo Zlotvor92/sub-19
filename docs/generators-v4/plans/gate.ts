@@ -1,5 +1,5 @@
 /* Kapija nad 12 profila (i planovima vlasnika kod polumaratona): tabela brojeva i prekršaji.
-   Pokretanje iz korena:  node docs/generators-v4/plans/gate.ts [--dist tenk] [--weeks]   (--weeks: km po nedeljama) */
+   Pokretanje iz korena:  node docs/generators-v4/plans/gate.ts [--dist tenk|fivek] [--weeks]   (--weeks: km po nedeljama) */
 import { registerHooks } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

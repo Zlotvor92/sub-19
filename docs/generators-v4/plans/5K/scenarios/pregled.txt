@@ -1,0 +1,29 @@
+# Scenariji prilagođavanja — 5 km (pregled)
+
+s01 p01 E1: ned 8 (provera), parkrun 5 km 3,0 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
+s02 p04 E1: ned 12 (provera), test 3 km 3,1 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
+s03 p11 E1: ned 12 (provera), test 1,5 km 3,4 % brže od očekivanog — promena: 0; nalazi čuvara posle: 0
+s04 p12 E1: ned 6 (provera), prva trka u životu, 5 km 33:00 — promena: 2; nalazi čuvara posle: 0
+s05 p01 E2: bolest 7 dana u ned 5 (razvoj, I blok) — promena: 16; nalazi čuvara posle: 0
+s06 p04 E2: bolest 7 dana u ned 13 (najteža) — promena: 14; nalazi čuvara posle: 0
+s07 p11 E2: bolest 7 dana u ned 9 — promena: 17; nalazi čuvara posle: 0
+s08 p12 E2: bolest 7 dana u ned 7 (najteža) — promena: 13; nalazi čuvara posle: 0
+s09 p01 E3: ned 9 (najteža): propušteni tempo trke i dugi sa završnicom — promena: 2; nalazi čuvara posle: 0
+s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 1; nalazi čuvara posle: 0
+s11 p11 E3: ned 13 (najteža): propušteni tempo trke i dugi — promena: 2; nalazi čuvara posle: 0
+s12 p12 E3: ned 4–5: propušten po jedan dugi u obe nedelje — promena: 2; nalazi čuvara posle: 0
+s13 p01 E4: ned 9, bol u kolenu 4/10 posle tempa trke — promena: 9; nalazi čuvara posle: 0
+s14 p04 E4: ned 6, bol 4/10 posle kvaliteta (osnova) — promena: 11; nalazi čuvara posle: ispod-cilja@9
+s15 p11 E4: ned 10, bol 4/10 posle dugog — promena: 14; nalazi čuvara posle: 0
+s16 p12 E4: ned 4, bol 4/10 posle laganog dana — promena: 9; nalazi čuvara posle: 0
+s17 p01 E5: juče trka 10 km 46:00 — promena: 0; nalazi čuvara posle: 0
+s18 p04 E5: juče trka 5 km 26:30 — promena: 0; nalazi čuvara posle: 0
+s19 p11 E5: juče prva trka 5 km 27:30 — promena: 0; nalazi čuvara posle: 0
+s20 p12 E5: juče trka 10 km 70:00 (prvi rezultat) — promena: 0; nalazi čuvara posle: ispod-cilja@3
+s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
+s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
+s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
+s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; nalazi čuvara posle: 0
+s25 p01 E7: bolest 5 dana u ned 5, pa propušten dugi 10 dana kasnije — promena: 16; nalazi čuvara posle: 0
+s26 p11 E7: bol 4/10 u ned 9, pa trka 5 km dve nedelje kasnije — promena: 19; nalazi čuvara posle: 0
+s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 11; nalazi čuvara posle: 0

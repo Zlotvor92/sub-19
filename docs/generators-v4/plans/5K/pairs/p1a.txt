@@ -1,0 +1,171 @@
+P1A — P1 A — stabilan 12 meseci, rezultat star 3 nedelje (ulazi kao p01)
+MORA DA SE RAZLIKUJE: B: nedelja 1 ≈ 34–36 km, niži vrh od A (A ≈ 53), dugi kreće niže (≈ 11–12 km), prve 2 nedelje bez T/R, rana provera forme, širi raspon prognoze
+ISTORIJA: 48 trčanja; nedelje (km): 40,0 / 40,1 / 40,0 / 42,6 / 40,0 / 40,1 / 40,0 / 42,6 / 34,5 / 40,1 / 40,0 / 42,6; pauze 0, bol 0
+BROJEVI: nivo srednji; nedelja 1 40,8 km; vrh 47,8 km; prvi dugi 12,5 km, najduži 15,1 km; prvi kvalitet u 1. nedelji; provera forme u 8. nedelji; forma 21:49 (srednja), dan trke 21:30 (21:05–22:08)
+
+PLAN: 5 km, trka 24. 1. 2027.
+Početak 2. 11. 2026. · 12 nedelja · 4 dana trčanja nedeljno
+Ciljno vreme: 21:44
+Polazim od tvojih ≈ 41 km nedeljno (4 h trčanja).
+
+FORMA
+Polazna forma (1. 11.): 21:49
+Današnja prognoza (1. 11.): 21:49, pouzdanost srednja
+Očekivano na dan trke: 21:30 (raspon 21:05–22:08) — 0:19 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Zašto je prognoza ovakva (najnovije prvo):
+- Trka 11. 10.: 10 km za 46:00. Rezultat sa 10 km prenosim na kraću 5 km: na kraćoj trci tempo je brži, pa se forma računa nešto bolje. Procena za 5 km ostaje 21:49.
+- Polazna procena je iz rezultata koji si uneo: oko 21:49 za 5 km.
+
+TEMPA
+- lagano 5:47–6:22/km
+- umereno 5:00/km
+- prag 4:46/km
+- tempo trke 4:22/km
+- intervali 4:15/km
+- brze deonice 4:01/km
+Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 traži 4:21/km — dostižan je (raspon na dan trke 21:05–22:08). Tempa se ubrzavaju kad trka ili test to potvrde.
+
+1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
+  pon 2. 11.  odmor
+  uto 3. 11.  brze deonice 10 × 200 m (4:01/km), oporavak 200 m džog — 8,8 km, 49 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 4. 11.  odmor
+  čet 5. 11.  prag 2 × 8 min (4:46/km), oporavak 1 min džog — 8,5 km, 47 min
+  pet 6. 11.  odmor
+  sub 7. 11.  lagano 11 km — 11 km, 67 min
+  ned 8. 11.  dugi 12,5 km lagano — 12,5 km, 76 min
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 40,8 km, 3 h 59 min, 4 treninga, brz rad 10 % vremena trčanja
+
+2. NEDELJA (od 9. 11.) — osnova, gradnja; do trke 10 nedelja
+  pon 9. 11.  odmor
+  uto 10. 11.  brze deonice 10 × 300 m (4:01/km), oporavak 300 m džog — 10,7 km, 59 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 11. 11.  odmor
+  čet 12. 11.  prag 21 min u komadu (4:46/km) — 9,4 km, 51 min
+  pet 13. 11.  odmor
+  sub 14. 11.  lagano 10 km — 10 km, 61 min
+  ned 15. 11.  dugi 13,5 km lagano — 13,5 km, 82 min
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 43,6 km, 4 h 13 min, 4 treninga, brz rad 13 % vremena trčanja
+
+3. NEDELJA (od 16. 11.) — osnova, gradnja; do trke 9 nedelja
+  pon 16. 11.  odmor
+  uto 17. 11.  usponi 10 × 45 s snažno uzbrdo, nazad 1:45 hod — 8,5 km, 53 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 18. 11.  odmor
+  čet 19. 11.  prag 3 × 8 min (4:46/km), oporavak 1 min džog — 10,3 km, 56 min
+  pet 20. 11.  odmor
+  sub 21. 11.  lagano 11 km — 11 km, 67 min
+  ned 22. 11.  dugi 14,5 km lagano — 14,5 km, 88 min
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 44,3 km, 4 h 24 min, 4 treninga, brz rad 12 % vremena trčanja
+
+4. NEDELJA (od 23. 11.) — osnova, rasterećenje; do trke 8 nedelja
+  pon 23. 11.  odmor
+  uto 24. 11.  brze deonice 4 × 400 m (4:01/km), oporavak 400 m džog — 7,8 km, 44 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 25. 11.  odmor
+  čet 26. 11.  lagano 7,5 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 8,9 km, 53 min
+  pet 27. 11.  odmor
+  sub 28. 11.  lagano 8,5 km — 8,5 km, 51 min
+  ned 29. 11.  dugi 11,5 km lagano — 11,5 km, 70 min
+  Zbir: 36,7 km, 3 h 38 min, 4 treninga, brz rad 3 % vremena trčanja
+
+5. NEDELJA (od 30. 11.) — razvoj, gradnja; do trke 7 nedelja
+  pon 30. 11.  odmor
+  uto 1. 12.  intervali 4 × 800 m (4:15/km), oporavak 2:30 džog — 9,3 km, 51 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 2. 12.  odmor
+  čet 3. 12.  prag 4 × 6 min (4:46/km), oporavak 1 min džog — 10,5 km, 57 min
+  pet 4. 12.  odmor
+  sub 5. 12.  lagano 11 km — 11 km, 67 min
+  ned 6. 12.  dugi 14,5 km lagano — 14,5 km, 88 min
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 45,3 km, 4 h 23 min, 4 treninga, brz rad 14 % vremena trčanja
+
+6. NEDELJA (od 7. 12.) — razvoj, gradnja; do trke 6 nedelja
+  pon 7. 12.  odmor
+  uto 8. 12.  intervali 5 × 1 km (4:15/km), oporavak 3 min džog — 11,8 km, 63 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 9. 12.  odmor
+  čet 10. 12.  prag 2 × 12 min (4:46/km), oporavak 1 min džog — 10,2 km, 55 min
+  pet 11. 12.  odmor
+  sub 12. 12.  lagano 11 km — 11 km, 67 min
+  ned 13. 12.  dugi 13 km lagano — 13 km, 79 min
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 46 km, 4 h 24 min, 4 treninga, brz rad 17 % vremena trčanja
+
+7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 5 nedelja
+  pon 14. 12.  odmor
+  uto 15. 12.  intervali 12 × 400 m (4:15/km), oporavak 1:30 džog — 12,4 km, 67 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 16. 12.  odmor
+  čet 17. 12.  tempo trke 8 × 400 m (4:22/km), oporavak 1:30 hod — 9,3 km, 54 min
+  pet 18. 12.  odmor
+  sub 19. 12.  lagano 11 km — 11 km, 67 min
+  ned 20. 12.  dugi 86 min, završnih 7 min u pragu (4:46/km) — 14,5 km, 86 min
+      napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 47,2 km, 4 h 34 min, 4 treninga, brz rad 15 % vremena trčanja
+
+8. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
+  pon 21. 12.  odmor
+  uto 22. 12.  lagano 7,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,5 km, 51 min
+  sre 23. 12.  odmor
+  čet 24. 12.  lagano 7 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 8,4 km, 50 min
+  pet 25. 12.  odmor
+  sub 26. 12.  provera forme: test na 3 km punim naporom, ravnomerno (ili parkrun 5 km) — 8 km, 43 min
+      napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.
+  ned 27. 12.  dugi 10,5 km lagano — 10,5 km, 64 min
+  Zbir: 35,4 km, 3 h 28 min, 4 treninga, brz rad 6 % vremena trčanja
+
+9. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
+  pon 28. 12.  odmor
+  uto 29. 12.  lagano 10,5 km — 10,5 km, 64 min
+  sre 30. 12.  odmor
+  čet 31. 12.  tempo trke 5 × 1 km (4:22/km), oporavak 2 min džog — 11,2 km, 60 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  pet 1. 1.  odmor
+  sub 2. 1.  lagano 11 km — 11 km, 67 min
+  ned 3. 1.  dugi 89 min, završnih 10 min u pragu (4:46/km) — 15,1 km, 89 min
+      napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 47,8 km, 4 h 40 min, 4 treninga, brz rad 11 % vremena trčanja
+
+10. NEDELJA (od 4. 1.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
+  pon 4. 1.  odmor
+  uto 5. 1.  tempo trke 4 × 1,2 km (4:22/km), oporavak 2:30 džog — 10,9 km, 58 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 6. 1.  odmor
+  čet 7. 1.  brze deonice 9 × 200 m (4:01/km), oporavak 200 m džog — 8,4 km, 47 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  pet 8. 1.  odmor
+  sub 9. 1.  lagano 8 km — 8 km, 48 min
+  ned 10. 1.  dugi 12 km lagano — 12 km, 73 min
+      napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
+  Zbir: 39,3 km, 3 h 46 min, 4 treninga, brz rad 12 % vremena trčanja
+
+11. NEDELJA (od 11. 1.) — završnica, sužavanje pred trku; do trke 1 nedelja
+  pon 11. 1.  odmor
+  uto 12. 1.  tempo trke 4 × 800 m (4:22/km), oporavak 2 min džog — 9,1 km, 50 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
+  sre 13. 1.  odmor
+  čet 14. 1.  lagano 6,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,5 km, 45 min
+  pet 15. 1.  odmor
+  sub 16. 1.  lagano 7,5 km — 7,5 km, 45 min
+  ned 17. 1.  dugi 10,5 km lagano — 10,5 km, 64 min
+  Zbir: 34,6 km, 3 h 24 min, 4 treninga, brz rad 7 % vremena trčanja
+
+12. NEDELJA (od 18. 1.) — završnica, nedelja trke
+  pon 18. 1.  odmor
+  uto 19. 1.  lagano 4 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5 km, 30 min
+  sre 20. 1.  odmor
+  čet 21. 1.  oštrenje: tempo trke 4 × 400 m (4:22/km), oporavak 1 min džog — 7 km, 40 min
+  pet 22. 1.  odmor
+  sub 23. 1.  lagano 3 km — 3 km, 18 min
+  ned 24. 1.  TRKA: 5 km
+      napomena: Tempo za trku: 4:22/km (današnja forma 21:49).
+      napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 4:23–4:25/km (ne brže od 4:22/km), 2.–4. km ravnomerno 4:22/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
+      napomena: Posle trke: 4 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+  Zbir: 15 km, 88 min, 3 treninga + trka, brz rad 8 % vremena trčanja

@@ -1,5 +1,5 @@
 /* Parovi personalizacije P1–P3 (coach/SCENARIOS-V4.md § 3–4): isti ulazi, različita istorija trčanja. Procena forme
-   iz `fitness/` ide u `buildState`. Pokretanje iz korena:  node docs/generators-v4/plans/pairs.ts [--dist tenk]
+   iz `fitness/` ide u `buildState`. Pokretanje iz korena:  node docs/generators-v4/plans/pairs.ts [--dist tenk|fivek]
    Piše docs/generators-v4/plans/HM/pairs/p1a.txt … p3b.txt i pregled.txt (10 km: plans/10K/pairs/).
    Istorija para je zadata za polumaratonske profile (p01 40 km, p11 20 km, p04 55 km); za drugu distancu se obim
    trčanja istorije srazmerno skalira na sadašnji obim profila te distance (`scale`), trke i testovi ostaju iste

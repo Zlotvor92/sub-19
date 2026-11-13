@@ -1,5 +1,5 @@
 /* Ispis planova kroz `renderPlan` (motor V4 + podaci distance, `--dist hm|tenk`, podrazumevano hm).
-   Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/render.ts [--dist tenk] [--load] [--stats]
+   Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/render.ts [--dist tenk|fivek] [--load] [--stats]
    Piše docs/generators-v4/plans/HM/p01.txt … p12.txt i vlasnik-v1.txt, vlasnik-v2.txt (10 km: plans/10K/).
    Motor uvozi fajlove bez nastavka `.ts`; kuka ispod dodaje nastavak (samo za ovu skriptu). */
 import { registerHooks } from 'node:module';
