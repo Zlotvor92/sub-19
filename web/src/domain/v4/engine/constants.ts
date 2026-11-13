@@ -237,6 +237,7 @@ export const DEFAULT_TEXTS: Readonly<Record<string, string>> = {
     'Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.',
   'trka.tempo': 'Tempo za trku: {pace} ({basis} {time}).',
   'trka.po-osecaju': 'Trku trči po osećaju, bez gledanja u tempo: {feel}.',
+  'trka.ako-potvrdi': 'Ako {check} potvrdi očekivani napredak, ciljaj {pace} ({time}).',
   'trka.oporavak':
     'Posle trke: {days} bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.'
 };

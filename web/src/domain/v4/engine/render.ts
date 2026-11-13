@@ -38,7 +38,7 @@ import type {
   Workout,
   ZoneId
 } from './types';
-import { paceAtShare } from './vdot';
+import { paceAtShare, raceTimeSec } from './vdot';
 
 export interface RenderOptions {
   /** Spisak promena posle `replan` (sa objašnjenjem). */
@@ -183,19 +183,40 @@ export function raceNotes(
   const race = doc.weeks
     .flatMap((w) => w.days)
     .find((d) => d.workout?.kind === 'race' && d.date === h.goal.raceDate);
-  const basis = raceBasis(h.goal.targetTimeSec, raceDay);
-  const pace = (basis.timeSec / data.distanceM) * 1000;
+  /* S7 (krug 4): tempo trke iz DANAŠNJE potvrđene forme (po njoj su tempa plana); cilj samo kad je sporiji. Očekivani
+     napredak dobija drugu rečenicu — uslovljenu proverom forme iz plana koja je još pred trkačem. */
+  const confirmedSec = raceTimeSec(h.form.paceVdot, data.distanceM);
+  const target = h.goal.targetTimeSec;
+  const fromGoal = target !== undefined && target >= confirmedSec;
+  const timeSec = fromGoal ? target : confirmedSec;
+  const pace = (timeSec / data.distanceM) * 1000;
   const values = {
     pace: fmtPace(pace),
     paceFrom: fmtPaceBare(pace + 5),
     paceTo: fmtPace(pace + 10),
-    time: fmtClock(basis.timeSec),
-    basis: basis.fromGoal ? 'tvoj cilj' : 'očekivano vreme',
+    time: fmtClock(timeSec),
+    basis: fromGoal ? 'tvoj cilj' : 'današnja forma',
     feel: feelOf('RP', data)
   };
   const out: string[] = [
     h.paces.byFeel ? line(data, 'trka.po-osecaju', values) : line(data, 'trka.tempo', values)
   ];
+  const hoped = raceBasis(target, raceDay);
+  const slower = h.warnings.some((w) => w.proposal.includes('počni sporije'));
+  const today = state?.today ?? h.eventsFrom;
+  const check = doc.weeks
+    .flatMap((w) => w.days)
+    .find((d) => d.workout?.kind === 'test' && d.date > today && d.date < h.goal.raceDate);
+  if (!h.paces.byFeel && !slower && check !== undefined && hoped.timeSec < timeSec - 30) {
+    const hopedPace = (hoped.timeSec / data.distanceM) * 1000;
+    out.push(
+      line(data, 'trka.ako-potvrdi', {
+        check: `provera forme ${fmtDate(check.date)}`,
+        pace: fmtPace(hopedPace),
+        time: fmtClock(hoped.timeSec)
+      })
+    );
+  }
   for (const note of race?.workout?.notes ?? []) {
     const rule = data.noteRules.find((r) => data.texts[r.text] === note);
     const feel = rule?.byFeelText === undefined ? undefined : data.texts[rule.byFeelText];

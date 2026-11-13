@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildCtx, weekTarget } from './build';
 import { addDays, diffDays } from './dates';
 import { decidePeak } from './decide';
+import { raceTimeSec } from './vdot';
 import { weekCost } from './guard';
 import {
   buildState,
@@ -733,15 +734,16 @@ describe('R6: istina o tempu trke', () => {
     expect(far.text).toContain(`traži ${paceOf(lowSec - 300)} — van raspona je (raspon`);
   });
 
-  it('taktika dana trke: iz cilja ako je u rasponu, inače iz očekivanog vremena', () => {
+  it('taktika dana trke (krug 4, S7): iz današnje potvrđene forme; cilj samo kad je sporiji od nje', () => {
     const base = withGoal(undefined);
-    const { lowSec, expectedSec } = base.doc.header.form.raceDay;
-    const inRange = Math.round((lowSec + expectedSec) / 2);
-    expect(withGoal(inRange).text).toContain(`Tempo za trku: ${paceOf(inRange)} (tvoj cilj`);
-    expect(withGoal(lowSec - 300).text).toContain(
-      `Tempo za trku: ${paceOf(expectedSec)} (očekivano vreme`
+    const confirmed = raceTimeSec(base.doc.header.form.paceVdot, HALF_M);
+    expect(base.text).toContain(`Tempo za trku: ${paceOf(confirmed)} (današnja forma`);
+    expect(withGoal(confirmed + 120).text).toContain(
+      `Tempo za trku: ${paceOf(confirmed + 120)} (tvoj cilj`
     );
-    expect(base.text).toContain(`Tempo za trku: ${paceOf(expectedSec)} (očekivano vreme`);
+    expect(withGoal(confirmed - 300).text).toContain(
+      `Tempo za trku: ${paceOf(confirmed)} (današnja forma`
+    );
   });
 
   it('napomene trke iz podataka: zamene tempa, a za trkača po osećaju tekst bez s/km', () => {

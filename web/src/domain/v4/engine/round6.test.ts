@@ -605,7 +605,7 @@ describe('pravila koja nisu imala test (sabotaže koje su prolazile)', () => {
 
   it('histereza tempa: `form-update` tek posle 14 dana od poslednje promene tempa (§ 7.6)', () => {
     const { doc, state } = make(facts());
-    const at = (today: string): RunnerState => {
+    const at = (today: string, signal: 'kvalitet' | 'plan' = 'kvalitet'): RunnerState => {
       const s = buildState(
         { ...facts(), today, runs: runsAsPlanned(doc, today) },
         GOAL,
@@ -614,9 +614,21 @@ describe('pravila koja nisu imala test (sabotaže koje su prolazile)', () => {
         doc
       );
       const vdot = doc.header.form.paceVdot + 1;
+      /* krug 4 (S6): tempa prate samo dokaz sa treninga (odrađen kvalitet) */
+      const change = {
+        date: today,
+        signal,
+        before: doc.header.form.paceVdot,
+        after: vdot,
+        reason: ''
+      };
       return {
         ...s,
-        form: { ...s.form, current: { ...s.form.current, vdot, confidence: 'srednja' } }
+        form: {
+          ...s.form,
+          current: { ...s.form.current, vdot, confidence: 'srednja' },
+          history: [...s.form.history, change]
+        }
       };
     };
     expect(state.form.current.confidence).not.toBe('niska');
@@ -624,6 +636,10 @@ describe('pravila koja nisu imala test (sabotaže koje su prolazile)', () => {
     expect(early).not.toContain('form-update');
     const late = deriveEvents(doc, at('2026-11-29')).map((e) => e.kind);
     expect(late).toContain('form-update');
+    /* S6: pripisani napredak plana ne menja tempa */
+    expect(deriveEvents(doc, at('2026-11-29', 'plan')).map((e) => e.kind)).not.toContain(
+      'form-update'
+    );
   });
 
   it('nepotpuna prva nedelja: cilj i obim srazmerni broju dana koje plan pokriva', () => {
