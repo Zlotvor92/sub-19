@@ -2,7 +2,7 @@ S13 — p01, E4: ned 11, bol u kolenu 4/10 posle tempa trke
 
 STANJE: danas 2027-01-14; sadašnji obim 40 km nedeljno, 4 dana; forma 46:00 (pouzdanost srednja), očekivano na dan trke 45:39.
 DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2027-01-14 („tempo trke 5 × 1 km, oporavak 1:30 džog"). Događaji: result:2027-01-09:run-w10d5, pain:2027-01-14.
-PROMENA: 10.
+PROMENA: 11.
 
 ==================== PRE ====================
 PLAN: 10 km, trka 21. 2. 2027.
@@ -234,6 +234,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 24. 1. trči sa
 - ned 17. 1.: dugi 93 min, završnih 11 min u pragu → dugi 10,5 km lagano
 - uto 19. 1.: tempo trke 4 × 1,6 km, oporavak 1:30 džog → lagano 8 km
 - čet 21. 1.: intervali 6 × 800 m, oporavak 2:30 džog → lagano 8 km
+- sub 23. 1.: lagano 12 km → lagano 11,5 km
 - ned 24. 1.: dugi 16,5 km lagano → dugi 11,5 km lagano
 - uto 26. 1.: tempo trke 7 × 1 km, oporavak 1:30 džog → tempo trke 5 × 1 km, oporavak 1:30 džog
 - čet 28. 1.: intervali 5 × 1 km, oporavak 2:30 džog → intervali 3 × 1 km, oporavak 2:30 džog
@@ -357,9 +358,9 @@ Očekivano vreme trke je sada oko 45:42 umesto 45:39: plan je posle ovog događa
   sre 20. 1.  odmor
   čet 21. 1.  lagano 8 km — 8 km, 48 min
   pet 22. 1.  odmor
-  sub 23. 1.  lagano 12 km — 12 km, 73 min
+  sub 23. 1.  lagano 11,5 km — 11,5 km, 70 min
   ned 24. 1.  dugi 11,5 km lagano — 11,5 km, 70 min
-  Zbir: 39,5 km, 3 h 59 min, 4 treninga, brz rad 0 % vremena trčanja
+  Zbir: 39 km, 3 h 56 min, 4 treninga, brz rad 0 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 25. 1.  odmor

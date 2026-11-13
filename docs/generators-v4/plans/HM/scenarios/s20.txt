@@ -26,6 +26,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
+- Tvoji dani trčanja (pon, uto, čet, sub, ned) prave 4 dana zaredom (sub–uto) u kojima bi bili i dugi i brzi trening u utorak. Posle dugog telo treba dan-dva bez brzog rada; brz trening na kraju takvog niza nosi umor dugog i podiže rizik od povrede, pa plan taj dan ostavlja laganim. Ako možeš, trči u sredu umesto u ponedeljak — tada nedelja nosi oba brza treninga bez dugog niza.
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 3 km koja je u planu 28. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
@@ -233,6 +234,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (6:38/km). Očekivano vreme na dan trke (2:15:48) traži 6:26/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
+- Tvoji dani trčanja (pon, uto, čet, sub, ned) prave 4 dana zaredom (sub–uto) u kojima bi bili i dugi i brzi trening u utorak. Posle dugog telo treba dan-dva bez brzog rada; brz trening na kraju takvog niza nosi umor dugog i podiže rizik od povrede, pa plan taj dan ostavlja laganim. Ako možeš, trči u sredu umesto u ponedeljak — tada nedelja nosi oba brza treninga bez dugog niza.
 - Tražio si 5 dana trčanja nedeljno, a u nedelji provere forme (8. nedelja) plan ima 2 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.
 - Plan počinje dan posle trke (21,1 km za 2:20:00). Do 18. 11. traje oporavak: treninzi su lagani, da se telo vrati pre nego što opterećenje krene da raste; do 21. 11. su i kraći nego inače. Prvi brzi trening je 19. 11.; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.
 

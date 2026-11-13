@@ -26,6 +26,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
+- Tvoji dani trčanja (pon, uto, čet, sub, ned) prave 4 dana zaredom (sub–uto) u kojima bi bili i dugi i brzi trening u utorak. Posle dugog telo treba dan-dva bez brzog rada; brz trening na kraju takvog niza nosi umor dugog i podiže rizik od povrede, pa plan taj dan ostavlja laganim. Ako možeš, trči u sredu umesto u ponedeljak — tada nedelja nosi oba brza treninga bez dugog niza.
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 3 km koja je u planu 28. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
@@ -232,6 +233,9 @@ TEMPA
 - intervali 5:13/km
 - brze deonice 4:50/km
 Tempo trke u treninzima je tvoja današnja forma (6:00/km). Očekivano vreme na dan trke (2:04:50) traži 5:55/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+
+UPOZORENJA
+- Tvoji dani trčanja (pon, uto, čet, sub, ned) prave 4 dana zaredom (sub–uto) u kojima bi bili i dugi i brzi trening u utorak. Posle dugog telo treba dan-dva bez brzog rada; brz trening na kraju takvog niza nosi umor dugog i podiže rizik od povrede, pa plan taj dan ostavlja laganim. Ako možeš, trči u sredu umesto u ponedeljak — tada nedelja nosi oba brza treninga bez dugog niza.
 
 PROMENE
 Rezultat 10 km za 58:00 (26. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 2:04:50 (raspon 2:00:19–2:10:33).

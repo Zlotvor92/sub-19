@@ -27,13 +27,14 @@ import {
   PREP_PROBE_MAX_EXTRA_WEEKS
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
-import { addDays, diffDays, isValidDate, mondayOf } from './dates';
+import { addDays, diffDays, isValidDate, mondayOf, weekdayOf } from './dates';
 import {
   levelMinEasy,
   longReaches,
   longStepOf,
   maxWorkOf,
   minEasyOf,
+  runStreak,
   minRampOf,
   ranGoalDistance
 } from './decide';
@@ -78,6 +79,7 @@ import type {
   Seconds,
   Step,
   Warning,
+  Weekday,
   Workout
 } from './types';
 
@@ -888,6 +890,8 @@ export function warnings(input: WarningInput): Warning[] {
   const dropMin = levelMinEasy(s, lvl.level, lvl.runDays.length)
     ? Math.max(s.minEasySec, (s.minEasyFallbackMin ?? 0) * 60)
     : minEasyOf(s, lvl.level, lvl.runDays.length);
+  const streak = streakWarning(doc, s);
+  if (streak !== null) out.push(streak);
   const dropped = droppedDayWarning(doc, costs, dropMin);
   if (dropped !== null) out.push(dropped);
   const shortEasy = shortEasyWarning(doc, costs, s);
@@ -953,6 +957,64 @@ function testHint(doc: PlanDoc, data: DistanceData, today: IsoDate): string {
     d.kind === 'test' && d.main.kind === 'all-out' ? [d.main.distanceM] : []
   );
   return lengths.length === 0 ? '' : ` ili istrči test na ${fmtDistance(Math.min(...lengths))}`;
+}
+
+const WEEKDAY_ACC = ['ponedeljak', 'utorak', 'sredu', 'četvrtak', 'petak', 'subotu', 'nedelju'];
+const WEEKDAY_SHORT_NAMES = ['pon', 'uto', 'sre', 'čet', 'pet', 'sub', 'ned'];
+
+/** Krug 15 (M4): raspored dana pravi niz duži od `maxConsecutiveWithHard` sa brzim treningom i dugim — taj brz trening
+    se ne zadaje; plan kaže zašto i koji dan odmora rešava. */
+function streakWarning(doc: PlanDoc, s: DistanceData['safety']): Warning | null {
+  const rule = s.maxConsecutiveWithHard;
+  const d = doc.header.decisions;
+  if (rule === undefined || !rule.levels.includes(d.level) || d.runDays.length > 5) return null;
+  const max = rule.days;
+  const bad = d.qualityDays
+    .slice(0, 2)
+    .map((wd) => ({ wd, st: runStreak(d.runDays, wd, d.longDay) }))
+    .filter((x) => x.st.hasLong && x.st.len > max && x.wd !== d.longDay);
+  const first = bad[0];
+  if (first === undefined) return null;
+  /* samo kad plan stvarno ima takvu nedelju: dan je lagan, a nedelja nosi drugi brz trening */
+  const happened = doc.weeks.some(
+    (w) =>
+      (w.intent.kind === 'build' || w.intent.kind === 'peak') &&
+      w.intent.stimuli.length >= 2 &&
+      w.days.some((x) => x.workout?.kind === 'quality') &&
+      w.days.some((x) => x.workout?.kind === 'easy' && weekdayOf(x.date) === first.wd)
+  );
+  if (!happened) return null;
+  /* dan odmora koji rešava: zamena jednog dana trčanja u nizu (ne dugog ni brzog) slobodnim danom van niza */
+  const free = [0, 1, 2, 3, 4, 5, 6].filter((x) => !d.runDays.includes(x as Weekday));
+  let fix: { off: number; on: number } | null = null;
+  for (const off of d.runDays) {
+    if (off === d.longDay || off === first.wd || fix !== null) continue;
+    for (const on of free) {
+      const days = [...d.runDays.filter((x) => x !== off), on as Weekday].sort((a, b) => a - b);
+      const ok = d.qualityDays.slice(0, 2).every((q) => {
+        if (!days.includes(q)) return false;
+        const st = runStreak(days, q, d.longDay);
+        return !st.hasLong || st.len <= max;
+      });
+      if (ok) {
+        fix = { off, on };
+        break;
+      }
+    }
+  }
+  const list = d.runDays.map((x) => WEEKDAY_SHORT_NAMES[x] ?? '').join(', ');
+  const span = `${WEEKDAY_SHORT_NAMES[first.st.from] ?? ''}–${WEEKDAY_SHORT_NAMES[first.st.to] ?? ''}`;
+  return {
+    code: 'raspored-dana',
+    severity: 'info',
+    problem: `Tvoji dani trčanja (${list}) prave ${String(first.st.len)} dana zaredom (${span}) u kojima bi bili i dugi i brzi trening u ${WEEKDAY_ACC[first.wd] ?? ''}.`,
+    meaning:
+      'Posle dugog telo treba dan-dva bez brzog rada; brz trening na kraju takvog niza nosi umor dugog i podiže rizik od povrede, pa plan taj dan ostavlja laganim.',
+    proposal:
+      fix === null
+        ? 'Trči kako piše; ako možeš da pomeriš jedan dan odmora usred niza, plan tada nosi oba brza treninga.'
+        : `Ako možeš, trči u ${WEEKDAY_ACC[fix.on] ?? ''} umesto u ${WEEKDAY_ACC[fix.off] ?? ''} — tada nedelja nosi oba brza treninga bez dugog niza.`
+  };
 }
 
 /** `obim-za-nivo` (krug 2, R11): trkač sa poznatom formom kome obim ograničava kvalitet — plan ne može da smesti

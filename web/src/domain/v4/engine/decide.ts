@@ -159,6 +159,31 @@ export function minEasyOf(safety: SafetyNumbers, level: LevelId, runDays: number
   return min === undefined ? safety.minEasySec : Math.max(safety.minEasySec, min * 60);
 }
 
+/** Krug 15 (M4): niz dana trčanja zaredom (ciklično preko granice nedelje) koji sadrži dan `wd`: dužina, da li sadrži
+    dan dugog, i prvi/poslednji dan niza. */
+export function runStreak(
+  runDays: readonly Weekday[],
+  wd: Weekday,
+  longDay: Weekday
+): { len: number; hasLong: boolean; from: Weekday; to: Weekday } {
+  const set = new Set<number>(runDays);
+  let len = 1;
+  let hasLong = wd === longDay;
+  let from = wd as number;
+  let to = wd as number;
+  for (let k = 1; len < 7 && set.has((wd - k + 7) % 7); k += 1) {
+    len += 1;
+    from = (wd - k + 7) % 7;
+    if (from === longDay) hasLong = true;
+  }
+  for (let k = 1; len < 7 && set.has((wd + k) % 7); k += 1) {
+    len += 1;
+    to = (wd + k) % 7;
+    if (to === longDay) hasLong = true;
+  }
+  return { len, hasLong, from: from as Weekday, to: to as Weekday };
+}
+
 /** Krug 15 (M2, M21): pod laganog dana uz dugi nedelje — 0 kad je dugi kraći od `LONG_EASY_FLOOR_FROM_SEC`. Jedini
     vlasnik pravila „lagan ≥ 30 min (45 min kod 5+ dana i ≥ 55 km) uz dugi ≥ 90 min". */
 export function longEasyFloor(

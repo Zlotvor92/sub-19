@@ -37,6 +37,7 @@ import {
   levelMinEasy,
   longEasyFloor,
   minEasyOf,
+  runStreak,
   minRampOf,
   taperEasyMax
 } from './decide';
@@ -45,6 +46,7 @@ import { paceCtxOf, stepsCost, summarize, type WorkoutSummary, zonePace } from '
 import {
   adjustmentWindow,
   afterRace,
+  anyCauseIn,
   applyReadiness,
   inReturn,
   modsFor,
@@ -394,6 +396,9 @@ type SlotItem =
       extra: number;
       /** R8 t. 3: `dosePct` mesta iz šablona — nosi ga i zamenski podražaj. */
       dosePct?: number;
+      /** Krug 15 (M4): mesto ostaje u nameri nedelje (cilj i obim se ne menjaju), ali se trening ne zadaje — dan je
+          lagan (predug niz dana trčanja sa dugim). */
+      skip?: boolean;
     };
 
 /** Mesta nedelje iz namere + odluka, PRE budžeta i cilja: ko je dugi, koji dani nose koji podražaj i koju dozu
@@ -485,12 +490,28 @@ export function weekSlots(
   }
 
   const items: SlotItem[] = [];
+  /* krug 15 (M4): brzi treninzi koji bi napravili predug niz sa dugim — otpadaju posle izbora, ako nedelji ostaje bar
+     jedan drugi brz trening */
+  const streakDates = new Set<IsoDate>();
   intent.stimuli.forEach((st, k) => {
     const wd = qualityDays[k];
     if (wd === undefined || !runDays.includes(wd) || wd === longWd || dateOf(wd) >= calmFrom)
       return;
     if (hardBefore !== null && dateOf(wd) === addDays(hardBefore, 1)) return;
     if (st.onlyByFeel === true && !ctx.pace.paces.byFeel) return;
+    /* krug 15 (M4): brz trening ne pravi niz dužih od `maxConsecutiveWithHard` dana trčanja zaredom sa dugim (provera
+       forme i dodatak se ne broje); pravilo ima smisla samo uz bar dva dana odmora (sa 6–7 dana niz je neizbežan) */
+    const maxRun = ctx.data.safety.maxConsecutiveWithHard;
+    const longStreak =
+      maxRun !== undefined &&
+      maxRun.levels.includes(d.level) &&
+      longWd !== null &&
+      !race &&
+      d.runDays.length <= 5
+        ? runStreak(d.runDays, wd, longWd)
+        : null;
+    const tooLong =
+      longStreak !== null && longStreak.hasLong && longStreak.len > (maxRun?.days ?? 7);
     /* krug 11 (stavka 19): stariji trkač — brzi treninzi nedelje bar `qualityMinGapDays` dana razmaka */
     const gapDays = d.qualityMinGapDays;
     if (
@@ -544,6 +565,7 @@ export function weekSlots(
       items.push({ kind: 'addon', date, def });
       return;
     }
+    if (tooLong && def.main.kind !== 'all-out') streakDates.add(date);
     if (def.main.kind === 'all-out') {
       items.push({ kind: 'test', date, def, slot });
       return;
@@ -561,6 +583,23 @@ export function weekSlots(
     });
   });
 
+  if (streakDates.size > 0 && items.some((x) => x.kind === 'quality' && !streakDates.has(x.date))) {
+    for (let i = 0; i < items.length; i += 1) {
+      const x = items[i];
+      if (x !== undefined && x.kind === 'quality' && streakDates.has(x.date))
+        items[i] = { ...x, skip: true };
+    }
+    /* smena podražaja: svake druge nedelje preostali dan nosi podražaj izostavljenog (raznovrsnost, R16) */
+    const odd = Math.floor(diffDays(week.start, mondayOf(span.startDate)) / 7) % 2 === 1;
+    const kept = items.findIndex((x) => x.kind === 'quality' && x.skip !== true);
+    const gone = items.findIndex((x) => x.kind === 'quality' && x.skip === true);
+    const a = items[kept];
+    const b = items[gone];
+    if (odd && a !== undefined && b !== undefined && a.kind === 'quality' && b.kind === 'quality') {
+      items[kept] = { ...b, date: a.date, skip: false };
+      items[gone] = { ...a, date: b.date, skip: true };
+    }
+  }
   /* krug 15 (M10): trka ili provera na dan dugog (pripremna trka) — prvo mesto nedelje */
   const raceOnLong = intent.long?.race;
   if (raceOnLong !== undefined && longWd !== null) {
@@ -1211,7 +1250,7 @@ function layoutOnce(
   /* Kad u obim staje samo jedan od dva kvaliteta, parne nedelje prednost daju drugom — da nedelje ne nose isti
      trening iz nedelje u nedelju (smena podražaja; krug 4). */
   const order = [...slots.items];
-  const qi = order.flatMap((x, i) => (x.kind === 'quality' ? [i] : []));
+  const qi = order.flatMap((x, i) => (x.kind === 'quality' && x.skip !== true ? [i] : []));
   const [a, b] = qi;
   if (a !== undefined && b !== undefined && keepDays && week.index % 2 === 0) {
     const secOf = (x: SlotItem): Seconds =>
@@ -1234,6 +1273,7 @@ function layoutOnce(
   const unplaced: { item: Extract<SlotItem, { kind: 'quality' }>; dose: Seconds }[] = [];
   for (let item of order) {
     if (item.date === (longWd === null ? null : dateOf(longWd))) continue;
+    if (item.kind === 'quality' && item.skip === true) continue;
     if (item.kind === 'addon') {
       addons.set(item.date, { type: 'addon', sec: 0, def: item.def });
       continue;
@@ -1752,6 +1792,34 @@ function capDroppedDays(
     if (summarize(d.workout, ctx.pace).durationSec <= most + 60) return d;
     const workout = realize({ type: 'easy', sec: most }, ctx);
     return workout === null ? d : { ...d, workout };
+  });
+}
+
+/** Krug 15 (M26): lagan dan nije duži od dugog nedelje (ni po trajanju ni po km) — jedini vlasnik ovog pravila na
+    kraju prolaza; dan koji je duži se skraćuje na dužinu dugog (zaokruživanje naniže). */
+function easyNotOverLong(days: PlanDay[], rebuilt: ReadonlySet<DayId>, ctx: BuildCtx): PlanDay[] {
+  const long = days.find((d) => d.workout?.kind === 'long')?.workout;
+  if (long == null) return days;
+  const l = summarize(long, ctx.pace);
+  return days.map((d): PlanDay => {
+    if (!rebuilt.has(d.id) || d.workout?.kind !== 'easy') return d;
+    const e = summarize(d.workout, ctx.pace);
+    if (e.durationSec <= l.durationSec + 30 && e.km <= l.km + 0.05) return d;
+    const most = Math.min(l.durationSec, l.km * ctx.pace.paces.easy);
+    const addon = ctx.data.library.find(
+      (x) => x.id === d.workout?.libraryId && x.main.kind === 'add-on'
+    );
+    const extra = addon === undefined ? 0 : stepsCost(addonSteps(addon), ctx.pace).durationSec;
+    const workout = realize(
+      addon === undefined
+        ? { type: 'easy', sec: Math.floor(most / 60) * 60, maxSec: most }
+        : { type: 'addon', def: addon, sec: Math.floor((most - extra) / 60) * 60, maxSec: most },
+      ctx
+    );
+    if (workout === null) return d;
+    const w = summarize(workout, ctx.pace);
+    if (w.durationSec > l.durationSec + 30 || w.km > l.km + 0.05) return d;
+    return { ...d, origin: 'template', locked: false, workout };
   });
 }
 
@@ -2655,20 +2723,25 @@ export function runPass(
       }
       return final;
     });
-    const days = balanceEasy(
-      capDroppedDays(
-        shortenLong(rawDays, week, header, state.today, done, ctx, opts),
-        recipes,
-        week,
+    const days = easyNotOverLong(
+      balanceEasy(
+        capDroppedDays(
+          shortenLong(rawDays, week, header, state.today, done, ctx, opts),
+          recipes,
+          week,
+          header,
+          state.today,
+          done,
+          ctx
+        ),
+        rebuilt,
         header,
-        state.today,
-        done,
-        ctx
+        ctx,
+        /* i nedelja pod uzrokom spremnosti (rampa, bol, umor): dugi daje lagane minute */
+        capVolume !== null || anyCauseIn(week.start, adjustments)
       ),
       rebuilt,
-      header,
-      ctx,
-      capVolume !== null
+      ctx
     );
     weekTags.push(
       new Set(

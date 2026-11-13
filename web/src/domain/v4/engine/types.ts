@@ -850,6 +850,10 @@ export interface SafetyNumbers {
   /** Krug 15 (M2): posle prekida, kad je do trke bar `minWeeksToRace` nedelja, ostaje jedan dugi od bar `km` (najduži
       prvobitni dugi pre sužavanja); dugi do njega raste najviše `RETURN_LONG_JUMP_SEC` nedeljno (lestvica unazad). */
   returnKeepLong?: { km: number; minWeeksToRace: number };
+  /** Krug 15 (M4): najviše `days` dana trčanja zaredom (preko granice nedelje) kad niz nosi i brz trening i dugi —
+      za nivoe `levels` brz trening koji bi napravio duži niz se ne zadaje (dan je lagan), a plan to kaže
+      (`raspored-dana`); ostali nivoi zadržavaju oba brza treninga. */
+  maxConsecutiveWithHard?: { days: number; levels: readonly LevelId[] };
   /** Krug 15 (M3, E5): posle duge trke van plana (pun napor ≥ `minEffortSec`) u prvih `weeks` nedelja dugi je najviše
       `longShare` planiranog, a nedelja najviše `weekShare` polaznog obima (lagani dani se skraćuju, ne ispod najkraćeg). */
   afterLongRace?: { minEffortSec: Seconds; weeks: number; longShare: number; weekShare: number };

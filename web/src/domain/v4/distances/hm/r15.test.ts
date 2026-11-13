@@ -30,7 +30,8 @@ function shortEasy(doc: PlanDoc, from = 0): string[] {
     for (const d of w.days) {
       if (d.workout?.kind !== 'easy' || d.workout.stimulus !== null || d.date === eveIso) continue;
       const sec = summarize(d.workout, ctx).durationSec;
-      if (sec < floor - 60) out.push(`n${String(w.index)} ${d.date} ${String(Math.round(sec / 60))} min`);
+      if (sec < floor - 60)
+        out.push(`n${String(w.index)} ${d.date} ${String(Math.round(sec / 60))} min`);
     }
   }
   return out;
@@ -52,10 +53,13 @@ describe('krug 15 — lagan dan uz dugi ≥ 90 min (M2, M21)', () => {
   });
 
   /* s05 (bolest, p01: ned 12 sa pomerenom proverom), s08 (bolest u ned 13), s14 (bol), s27 (put) */
-  it.each([5, 8, 14, 27])('s%i: posle izmene nijedan lagan dan ispod poda uz dugi ≥ 90 min', (no) => {
-    const r = run(no);
-    expect(shortEasy(r.after)).toEqual([]);
-  });
+  it.each([5, 8, 14, 27])(
+    's%i: posle izmene nijedan lagan dan ispod poda uz dugi ≥ 90 min',
+    (no) => {
+      const r = run(no);
+      expect(shortEasy(r.after)).toEqual([]);
+    }
+  );
 
   it('p01: kvalitet ostaje (dva kvaliteta u ned 3 i 5), skraćuje se samo zagrevanje', () => {
     const p = PROFILES.find((x) => x.id === 'p01');
@@ -66,6 +70,68 @@ describe('krug 15 — lagan dan uz dugi ≥ 90 min (M2, M21)', () => {
     for (const i of [2, 4]) {
       const w = res.doc.weeks[i];
       expect(w?.days.filter((d) => d.workout?.kind === 'quality').length).toBe(2);
+    }
+  });
+
+  it('M4: p04 (spor, pon-uto-čet-sub-ned) — utorak bez brzog treninga uz dugi nedeljom, plan kaže zašto', () => {
+    const p = PROFILES.find((x) => x.id === 'p04');
+    if (p === undefined) throw new Error('p04');
+    const state = buildState(factsOf(p), p.goal, hm, estimateForm);
+    const res = plan(state, p.goal, hm);
+    if (!res.ok) throw new Error('p04');
+    expect(res.doc.header.warnings.some((w) => w.code === 'raspored-dana')).toBe(true);
+    for (const w of res.doc.weeks) {
+      if (w.intent.kind !== 'build' && w.intent.kind !== 'peak') continue;
+      const tue = w.days.find((d) => new Date(`${d.date}T00:00:00Z`).getUTCDay() === 2);
+      const sunLong = w.days.some(
+        (d) => new Date(`${d.date}T00:00:00Z`).getUTCDay() === 0 && d.workout?.kind === 'long'
+      );
+      /* jedini brz trening nedelje ostaje (pravilo važi kad nedelja nosi i drugi) */
+      const others = w.days.filter((d) => d.workout?.kind === 'quality' && d !== tue).length;
+      if (sunLong && others > 0) expect(tue?.workout?.kind, w.start).not.toBe('quality');
+    }
+  });
+
+  it('M26: lagan dan nikad duži od dugog (profili i krajnji ulazi)', () => {
+    const cases = [
+      ...PROFILES.map((p) => ({ facts: factsOf(p), goal: p.goal })),
+      ...[4, 5, 6].map((n) => ({
+        facts: {
+          today: '2026-11-01',
+          availability: {
+            runDays: (n === 4
+              ? [1, 3, 5, 6]
+              : n === 5
+                ? [0, 1, 3, 5, 6]
+                : [0, 1, 2, 3, 5, 6]) as never,
+            longDay: 6 as never
+          },
+          profile: {
+            weeklyKm: 10,
+            recentResult: { distanceM: 21097.5, timeSec: 5700, date: '2026-10-19' }
+          },
+          runs: [],
+          pauses: [],
+          pain: []
+        },
+        goal: { distanceId: 'hm', raceDate: '2026-12-27' }
+      }))
+    ];
+    for (const c of cases) {
+      const state = buildState(c.facts, c.goal, hm, estimateForm);
+      const res = plan(state, c.goal, hm);
+      if (!res.ok) continue;
+      const ctx = paceCtxOf(res.doc.header);
+      for (const w of res.doc.weeks) {
+        const long = w.days.find((d) => d.workout?.kind === 'long')?.workout;
+        if (long == null) continue;
+        const l = summarize(long, ctx);
+        for (const d of w.days) {
+          if (d.workout?.kind !== 'easy') continue;
+          const e = summarize(d.workout, ctx);
+          expect(e.durationSec, d.date).toBeLessThanOrEqual(l.durationSec + 30);
+        }
+      }
     }
   });
 });
