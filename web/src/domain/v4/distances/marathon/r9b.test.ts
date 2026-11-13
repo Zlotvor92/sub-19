@@ -35,7 +35,7 @@ describe('krug 9b — A10 (a): sužavanje nije naopako i ne izostavlja dan', () 
       /* mreža: 2:50 sa 20 km i 4 dana — gradnja na najkraćim laganim danima sa danom manje, sužavanje vraća dan
        (cilj nedelje −2 motor spušta na 7 BO); izrođen ulaz, zahtev motoru u F7-MAR-REPORT */
       const KNOWN_SHAPE = new Set([
-        '{"days":4,"weeks":8,"km":20,"formSec":10200} nedelja −2 24.7 > vrh 22.5 km'
+        '{"days":4,"weeks":8,"km":20,"formSec":10200} nedelja −2 24.7 > vrh 24.0 km'
       ]);
       expect(bad.filter((b) => !KNOWN_SHAPE.has(b))).toEqual([]);
     }

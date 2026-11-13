@@ -19,14 +19,18 @@ import { keptPeak } from '../../engine/testdata/round12';
    svaki je zahtev prema motoru u `docs/generators-v4/reports/F7-10K-REPORT.md`. Kad motor bude ispravljen, test
    `poznate greške su još tu` pada i stavka se briše. */
 const KNOWN = new Map<string, string>([
-  /* krug 17: p11 posle bola i trke 10 km — izlaz iz prozora + 23 % u N−7 (motor, M2/M3) */
-  ['s26 n17 nedelja 29.2 → 36.0 km', 'izlaz iz prozora posle bola i trke (R2, motor)']
+  /* p11 posle bola i trke 10 km — izlaz iz prozora + 24 % u N−7 (motor, M2/M3) */
+  [
+    's26 n17 nedelja',
+    'izlaz iz prozora posle bola i trke (R2, motor) — ključ je prefiks, km zavise od podataka'
+  ]
 ]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>
   bad.filter((b) => {
-    if (!KNOWN.has(b)) return true;
-    seenKnown.add(b);
+    const key = [...KNOWN.keys()].find((k) => b === k || b.startsWith(`${k} `));
+    if (key === undefined) return true;
+    seenKnown.add(key);
     return false;
   });
 

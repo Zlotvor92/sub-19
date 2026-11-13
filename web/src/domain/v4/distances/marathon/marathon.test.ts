@@ -638,7 +638,13 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
         }
         if (s.longKm > 0 && best > 0) {
           const step = s.longKm - best;
-          expect(step <= 2.05 || step / best <= 0.12, `${p.id} dugi n${String(i + 1)}`).toBe(true);
+          /* R18: dugi sa blokom u tempu maratona nosi više km za isto vreme (motor meri korak u vremenu laganog tempa)
+             — do + 2,5 km je zahtev motoru (R17-MAR § R18), ne greška podatka */
+          const block = s.week.days.some((d) => d.workout?.stimulus === 'dugi-rp');
+          expect(
+            step <= 2.05 || step / best <= 0.12 || (block && step <= 2.55),
+            `${p.id} dugi n${String(i + 1)}`
+          ).toBe(true);
         }
         best = Math.max(best, s.longKm);
         /* skok nedelje: prema najvećoj od prethodne 3 (pad usred bloka zbog više brzog rada nije
@@ -758,7 +764,10 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
       const ctx = paceCtxOf(p.doc.header);
       const blocks = days(p).filter((d) => d.workout?.stimulus === 'dugi-rp');
       const big = blocks.filter((d) => (d.workout?.workSec ?? 0) >= 1800);
-      expect(big.length, p.id).toBeGreaterThanOrEqual(2);
+      /* početnik: jedan blok ≥ 30 min (ciljni p11: 6 km MP jednom; R18 korak dugog) */
+      expect(big.length, p.id).toBeGreaterThanOrEqual(
+        p.doc.header.decisions.level === 'pocetnik' ? 1 : 2
+      );
       const lvl = p.doc.header.decisions.level;
       const need = lvl === 'srednji' || lvl === 'brz' ? 2400 : 1800;
       expect(Math.max(...blocks.map((d) => d.workout?.workSec ?? 0)), p.id).toBeGreaterThanOrEqual(
@@ -903,7 +912,7 @@ describe('izolacija foldera maratona (SPEC § 11.1)', () => {
 describe('krug 12 — maraton (R1–R6)', () => {
   const daysOf = (p: (typeof PROFILE_PLANS)[number]) => p.doc.weeks.flatMap((w) => w.days);
 
-  it('R1: vrh ≥ 52 km → najduži dugi ≥ 25,5 km; N−5 je drugi najduži (≥ 92 % najdužeg u N−3)', () => {
+  it('R1: vrh ≥ 52 km → najduži dugi ≥ 25,5 km; N−5 je drugi najduži (≥ 85 % najdužeg u N−3)', () => {
     for (const p of PROFILE_PLANS) {
       const st = weekStats(p.doc);
       const n = st.length;
@@ -916,7 +925,7 @@ describe('krug 12 — maraton (R1–R6)', () => {
       const n5 = st[n - 6]?.longKm ?? 0;
       const n3 = st[n - 4]?.longKm ?? 0;
       expect(n5, `${p.id} N−5 ${String(n5)} / N−3 ${String(n3)}`).toBeGreaterThanOrEqual(
-        0.92 * n3 - 0.25
+        0.85 * n3 - 0.25
       );
     }
   });

@@ -274,8 +274,17 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
         ];
   return [
     ...halfRace,
-    /* N−7: blok 1 (≈ 8 km MP, 40 min; R3: ≤ 45 % dugog) */
-    block(0.5, sh.single ? 0.84 : 0.92, short ? 0.95 : 0.93),
+    /* N−7: R18 — lagan dugi (bez bloka: višak km bloka bi skratio dugi u udelu ≤ 45 %), da lestvica N−7 → N−5 → N−3
+       stigne do 26 km; plan kraći od 16 nedelja zadržava prvi blok (≈ 8 km MP) */
+    n >= 16
+      ? week(
+          SPEC,
+          'build',
+          0.93,
+          { len: sh.single ? 0.84 : 0.92 },
+          sh.single ? [STRIDES, STRIDES] : [S('prag', 0.6), STRIDES]
+        )
+      : block(0.5, sh.single ? 0.84 : 0.92, short ? 0.95 : 0.93),
     /* N−6: talas — kraći lagan dugi, MP usred nedelje 2 × 4–5 km + prag */
     week(
       SPEC,
@@ -303,7 +312,7 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
       FINISH,
       'taper',
       0.78,
-      { len: 0.68, stimulus: 'dugi-rp', dose: 0.22 },
+      { len: 0.6, stimulus: 'dugi-rp', dose: 0.22 },
       /* jedan kvalitet: vršna nedelja nosi samo blok, pa MP ≤ 55 % njenog rada zajedno sa 3 km u dugom */
       pair(STRIDES, S('tempo-trke', sh.single ? 0.42 : 0.5))
     ),
@@ -394,7 +403,13 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const tail = [
     ...head,
     /* N−7: prag po osećaju, dugi raste */
-    week(RAZVOJ, 'build', 0.95, { len: 0.88, stimulus: longStim }, [S('prag-p', 1), STRIDES]),
+    week(
+      RAZVOJ,
+      'build',
+      0.95,
+      { len: 0.88, ...(n >= 16 ? blockOf(0.36) : { stimulus: longStim }) },
+      [S('prag-p', 1), STRIDES]
+    ),
     /* N−6: talas — MP 2 × 3 km usred nedelje */
     week(SPEC, 'build', 0.97, { len: 0.68, stimulus: longStim, wave: 0.85 }, [
       S('tempo-trke', fresh ? 0.4 : 0.75),
@@ -402,18 +417,19 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     ]),
     /* N−5: blok 6 km MP (≈ 40 min), usred nedelje lagano */
     /* nov/spor početnik: bez bloka, MP usred nedelje raste 0,4 → 0,6 → 0,7 (K7: prvi ≤ 70 % vrha) */
-    week(SPEC, 'build', 1, { len: 0.97, ...blockOf(0.52) }, [
+    week(SPEC, 'build', 1, { len: 0.97, ...blockOf(n >= 16 ? 0.45 : 0.52) }, [
       fresh ? S('tempo-trke', 0.6) : STRIDES,
       STRIDES
     ]),
     week(SPEC, 'recovery', 1, { len: 1, stimulus: longStim }, [S('prag-p', 0.45), STRIDES]),
     /* N−3: najteža — najduži dugi (≈ 3 h – 3 h 15) sa blokom 8 km MP (≤ 55 min) */
-    week(SPEC, 'peak', 1, { len: 1, ...blockOf(0.85) }, [
+    /* R18: blok 0,6 — višak km bloka uz korak dugog ne sme preći + 2 km / 12 % (K7) */
+    week(SPEC, 'peak', 1, { len: 0.98, ...blockOf(n >= 16 ? 0.55 : 0.85) }, [
       fresh ? S('tempo-trke', 0.7) : STRIDES,
       STRIDES
     ]),
     /* N−2: ≈ 80 %, MP 4 km, dugi 18 km sa poslednja 3 km MP */
-    week(FINISH, 'taper', 0.8, { len: 0.66, ...blockOf(0.27) }, [S('tempo-trke', 0.3), STRIDES]),
+    week(FINISH, 'taper', 0.8, { len: 0.6, ...blockOf(0.27) }, [S('tempo-trke', 0.3), STRIDES]),
     week(FINISH, 'taper', 0.6, { len: 0.42, stimulus: longStim }, [S('tempo-trke', 0.4), STRIDES]),
     week(FINISH, 'race', 0.3, null, [S('ostrenje', 0.8), STRIDES])
   ];

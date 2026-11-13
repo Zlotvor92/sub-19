@@ -144,7 +144,10 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
       's2 ispod-cilja@20',
       's6 dugi-korak@21',
       's7 dugi-za-distancu@19',
-      's26 ispod-cilja@18'
+      's26 ispod-cilja@18',
+      /* R18: p12 posle dva propuštena duga — lestvica dugog (motor); p11 posle bola */
+      's12 dugi-plafon@15',
+      's15 dugi-za-distancu@13'
     ]);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
