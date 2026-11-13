@@ -1919,8 +1919,13 @@ export function runPass(
       week.start === addDays(mondayOf(span.raceDate), -7) && lastBuiltVolume !== null
         ? lastBuiltVolume
         : null;
-    const capVolume =
-      m7Cap === null ? minusOne : minusOne === null ? m7Cap : Math.min(m7Cap, minusOne);
+    /* krug 10: nedelja sa pomerenom proverom forme ne prelazi prvobitnu nedelju (bez nadoknade nabijanjem) */
+    const forcedCap =
+      forced !== null && opts.fresh !== true
+        ? (weekTotals(week, header, state, ctx).km * ctx.pace.paces.easy) / 60
+        : null;
+    const caps = [m7Cap, minusOne, forcedCap].filter((x): x is number => x !== null);
+    const capVolume = caps.length === 0 ? null : Math.min(...caps);
     if (capVolume !== null) {
       const measure = (): { over: number; load: number; volume: number } => {
         let km = 0;
@@ -2154,9 +2159,13 @@ export function runPass(
         (planned.type === 'test' && afterRace(day.date, adjustments)) ||
         /* i dan posle izbačene provere (bio je lagan zbog provere — vraća se dugi) */
         (recipes.get(prevDate)?.type === 'test' && afterRace(prevDate, adjustments));
+      /* krug 10: nedelja koja prima pomerenu proveru se gradi cela (obim ≤ prvobitne nedelje) */
+      const forcedWeek =
+        forced !== null && slots.items.some((x) => x.kind === 'test' && x.def === forced.def);
       const inWindow =
         opts.window === null ||
         movedTest ||
+        forcedWeek ||
         raceTest ||
         (day.date >= opts.window.from && day.date <= opts.window.to);
       const mutable = isMutable(day, header, state.today, done);

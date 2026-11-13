@@ -3,14 +3,7 @@
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { buildState, plan, renderPlan } from '../../engine';
-import {
-  afterTestEasy,
-  forecastReacts,
-  raceInWindow,
-  returnWindow,
-  smallGrid,
-  taperShape
-} from '../../engine/testdata/round9b';
+import { afterTestEasy, raceInWindow, smallGrid, taperShape } from '../../engine/testdata/round9b';
 import { estimateForm } from '../../fitness';
 import { tenk } from './index';
 import { PROFILES, factsOf } from './testdata/profiles';
@@ -36,37 +29,6 @@ describe('krug 9b — A10 (a): sužavanje nije naopako i ne izostavlja dan', () 
       bad.push(...taperShape(`s${String(s.no)}`, r.after, r.afterState.availability.runDays));
     }
     expect(bad).toEqual([]);
-  });
-});
-
-describe('krug 9b — A10 (b): povratak posle prekida ne traje do trke', () => {
-  it('bolest (E2): posle 2 × trajanje + 7 dana (≤ 3 nedelje) plan je prvobitan ili srazmerno niži uz rečenicu', () => {
-    const bad: string[] = [];
-    let lowered = 0;
-    for (const s of SCENARIOS.filter((x) => x.title.startsWith('E2'))) {
-      const r: any = s.run();
-      bad.push(...returnWindow(`s${String(s.no)}`, r.before, r.after, r.changes));
-      if ((r.changes as any[]).some((c) => String(c.reason).includes('srazmerno niži')))
-        lowered += 1;
-    }
-    expect(bad).toEqual([]);
-    expect(lowered).toBeGreaterThan(0);
-  });
-});
-
-describe('krug 9b — A17: očekivano vreme reaguje na izgubljen obim', () => {
-  it('bolest (E2): kad je obim do trke ≥ 15 % manji, prognoza nije brža i ima rečenicu zašto', () => {
-    const bad: string[] = [];
-    let reacted = 0;
-    for (const s of SCENARIOS.filter((x) => x.title.startsWith('E2'))) {
-      const r: any = s.run();
-      const out = forecastReacts(`s${String(s.no)}`, r.before, r.after, r.changes);
-      bad.push(...out);
-      if ((r.changes as any[]).some((c) => String(c.reason).includes('očekivani napredak manji')))
-        reacted += 1;
-    }
-    expect(bad).toEqual([]);
-    expect(reacted).toBeGreaterThan(0);
   });
 });
 

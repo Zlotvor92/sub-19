@@ -241,14 +241,15 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     expect(result.changes.every((c) => c.scope !== 'dan' || (c.dayId ?? '') > 'w5')).toBe(true);
   });
 
-  it('ciljevi posle povratka rastu od stvarno odrađenog (pravilo rasta), poslednje dve nedelje ostaju', () => {
+  /* Krug 10 (odluka organizatora): posle povratka nijedna nedelja nije veća od prvobitne, plan se geometrijski vraća
+     na prvobitan; poslednje dve nedelje ostaju */
+  it('posle povratka nijedna nedelja nije veća od prvobitne, poslednje dve nedelje ostaju', () => {
     const targets = result.doc.weeks.map((w) => w.targetLoad);
     const old = start.doc.weeks.map((w) => w.targetLoad);
     expect(targets.slice(0, 5)).toEqual(old.slice(0, 5));
-    expect(targets[6] ?? 0).toBeLessThan(old[6] ?? 0);
-    expect(targets[7] ?? 0).toBeLessThanOrEqual(old[7] ?? 0);
+    targets.forEach((t, i) => expect(t, `n${String(i + 1)}`).toBeLessThanOrEqual(old[i] ?? 0));
     expect(targets.slice(8)).toEqual(old.slice(8));
-    expect(result.changes.some((c) => c.what === 'obim')).toBe(true);
+    expect(result.changes.some((c) => c.what === 'skraceno')).toBe(true);
   });
 
   it('objašnjenje kaže šta se desilo, šta je promenjeno i do kada', () => {

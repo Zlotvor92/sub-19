@@ -179,7 +179,9 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
     }
     /* poznato (krug 9, R9-REPORT): HM s07 — povratak posle bolesti traje do sužavanja (A10, otvoreno); 10K — drugi
        putevi izmene (rasterećenje, bol, nadovezani prozori) */
-    const KNOWN_A6 = new Set<string>(['s7 dugi-za-distancu@15']);
+    /* krug 10: s15 — posle bola dugi raste najviše + 25 % / + 20 min (stavka 2), pa najduži dugi (100 min pre bola) ne
+       stiže do dugog za distancu do vrha */
+    const KNOWN_A6 = new Set<string>(['s7 dugi-za-distancu@15', 's15 dugi-za-distancu@11']);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
 });
