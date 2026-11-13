@@ -1,7 +1,7 @@
 # R11 — krug 11 (samo 5 km), 13. 11. 2026
 
 Kapije: 5K 0 (p06 bez `it.fails`), HM 0, 10K 0, maraton 0. V4 (posle rebase na R12 10K/MAR): 53 fajla, 953 + 25 očekivano; lint i typecheck čisti.
-HM, 10K i maraton bajt-isti: `git diff 02e06e1 -- distances/{hm,tenk,marathon} plans/{HM,10K,MAR}` = 0 linija, i prema
+HM, 10K i maraton bajt-isti: `git diff -- distances/{hm,tenk,marathon} plans/{HM,10K,MAR}` pre rebase prema 02e06e1 i posle prema
 5cc0be9 (R12 drugih tabova) = 0 (otisci, ispisi, scenariji, parovi). Sve nove odluke motora su podaci; bez unosa motor radi kao do sada.
 
 ## Urađeno
