@@ -499,3 +499,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   (+1,0 za dokaz druge dužine); „visoka" samo za dokaz dužine 0,5–2 × cilja; bez plana nema rečenica o planiranom.
 - Procena vlasnika po predlogu: danas 1:43:46; Bokeški 13. 12. 1:42:05 – 1:43:20 – 1:44:49; Beogradski 17. 4. 2027.
   1:39:37 – 1:41:40 – 1:44:49. Ranija procena iz 8 trčanja (1:41:05) bila je preoptimistična.
+
+### 13. 11. 2026, 06:52 — otvoren 10K (F7) uporedo sa krugom 7
+- Trener je u krugu 6 presudio da je HM spreman kao obrazac; svi modeli nedeljno na 50 % → ima prostora za Opus.
+  10K je samo podatak (`distances/tenk/`), motor ne dira; zahtevi za motor idu organizatoru.
+- Tab 10K (Opus, nov): `session_01GnHHiXivSsUTpEuBAFcJZi` — šabloni, biblioteka, safety, 12 profila, 24 scenarija,
+  parovi, kapija, ispisi `plans/10K/`, izveštaj `reports/F7-10K-REPORT.md`. Čita R3–R7 kao spisak zamki.
+- 5K i maraton se otvaraju kad 10K pokaže koliko obrazac stvarno nosi (prva ocena trenera).
+- Aktivni tabovi: krug 7 (Opus), 10K (Opus), forma (Opus, čeka krug 7 za izmenu modela), trener (Fable).
