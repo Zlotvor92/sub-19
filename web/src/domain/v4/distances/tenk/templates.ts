@@ -130,8 +130,14 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const devFrom = builds[builds.length - devCount] ?? Number.POSITIVE_INFINITY;
   /* jedan kvalitet (1–3 dana): smenjuje vrste; lagan dan smenjuje dodatak (ubrzanja / kratki usponi / 6 ubrzanja),
      da utorak nije isti iz nedelje u nedelju (krug 2, p08) */
-  const one = (thu: StimulusSlot, tue: StimulusSlot, k: number): StimulusSlot[] =>
-    sh.single ? [k % 2 === 0 ? tue : thu, ADDONS[k % ADDONS.length] ?? STRIDES] : [thu, tue];
+  const one = (thu: StimulusSlot, tue: StimulusSlot, k: number): StimulusSlot[] => {
+    if (!sh.single) return [thu, tue];
+    const main = k % 2 === 0 ? tue : thu;
+    const addon = ADDONS[k % ADDONS.length] ?? STRIDES;
+    /* R18 (p03, p08, p10 ned 5): uz brzinu (usponi 12 × 45 s) dodatak nisu i kratki usponi — dva puta usponi nisu
+       nedelja gradnje */
+    return [main, main.stimulus === 'brzina' && addon === HILLS_SHORT ? STRIDES : addon];
+  };
 
   const out: WeekIntent[] = [];
   let osn = 0;
@@ -220,7 +226,12 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     } else {
       osn += 1;
       /* svaka treća nedelja osnove: kratki intervali umesto brzine (raznovrsnost, krug 2) */
-      const tue = osn % 3 === 0 && sh.gentle !== true ? S('intervali', 0.5) : S('brzina');
+      /* R18: jedan kvalitet (1–3 dana) — svaka druga nedelja „brzine" su kratki intervali, da intervali nisu
+         2–3 puta u 12–18 nedelja (p03, p08, p10) */
+      const tue =
+        sh.gentle !== true && (sh.single ? osn % 4 === 0 : osn % 3 === 0)
+          ? S('intervali', 0.5)
+          : S('brzina');
       out.push(
         week(OSNOVA, 'build', load, longSpec, one(S('prag', tDose(t, sh.gentle)), tue, osn))
       );
@@ -398,9 +409,11 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       withSaturday(sh, [STRIDES, STRIDES], KONTROLA)
     ),
     /* N−5: vrh obima, prag 18 min (ciljni p11 ned 13) */
-    week(SPEC, 'build', 0.98, { len: 0.95, stimulus: longStim }, [S('prag-p', 0.95), STRIDES]),
+    /* R18 (p11): najveća nedelja je najteža (N−3), ne N−5 / N−4 */
+    week(SPEC, 'build', 0.92, { len: 0.95, stimulus: longStim }, [S('prag-p', 0.95), STRIDES]),
     /* N−4: tempo trke 3 × 1000 m (ciljni p11 ned 14) */
-    week(SPEC, 'build', 1, { len: 1 }, [S('tempo-trke', 0.45), STRIDES]),
+    /* R18 (p11): N−4 malo ispod najteže (bila je najveća nedelja sa 2 × 1 km), tempo trke 3 × 1 km */
+    week(SPEC, 'build', 0.9, { len: 0.95 }, [S('tempo-trke', 0.6), STRIDES]),
     /* N−3: najteža — tempo trke 4 × 1000 m, završnih 10 min dugog u tempu trke (ciljni p11 ned 15) */
     week(SPEC, 'peak', 1, { len: 1, stimulus: 'dugi-rp', dose: 1 }, [
       S('tempo-trke', 0.95),

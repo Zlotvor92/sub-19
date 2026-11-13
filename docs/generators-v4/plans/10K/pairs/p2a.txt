@@ -1,7 +1,7 @@
 P2A — P2 A — početnik, 8 meseci bez prekida (ulazi kao p11)
 MORA DA SE RAZLIKUJE: B: niži vrh (× 1,4–1,5 umesto × 1,8), rasterećenje 2:1, dugi hod-trk po vremenu, brda/ubrzanja kasnije, širi raspon i predlog duže pripreme
 ISTORIJA: 44 trčanja; nedelje (km): 13,1 / 15,8 / 16,5 / 13,1 / 15,8 / 16,5 / 13,1 / 15,8 / 16,5 / 16,4 / 15,8 / 16,5; pauze 0, bol 0
-BROJEVI: nivo pocetnik; nedelja 1 16,0 km; vrh 25,7 km; prvi dugi 6,2 km, najduži 11,7 km; prvi kvalitet u 3. nedelji; provera forme u 12. nedelji; forma 56:02 (srednja), dan trke 54:21 (51:57–58:34)
+BROJEVI: nivo pocetnik; nedelja 1 16,0 km; vrh 25,5 km; prvi dugi 6,2 km, najduži 11,0 km; prvi kvalitet u 3. nedelji; provera forme u 12. nedelji; forma 56:02 (srednja), dan trke 54:21 (51:57–58:34)
 
 PLAN: 10 km, trka 7. 3. 2027.
 Početak 2. 11. 2026. · 18 nedelja · 3 dana trčanja nedeljno
@@ -24,7 +24,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na dan trke (54:21) traži 5:26/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 35 min — nedelja tada stiže do 27,7 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 11,7 km i nosi manji deo nedelje.
+- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 30 min — isti obim se tada deli na više kraćih trčanja, pa je svako lakše za oporavak.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 17 nedelja
   pon 2. 11.  odmor
@@ -127,7 +127,7 @@ UPOZORENJA
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 23,9 km, 2 h 49 min, 3 treninga, brz rad 9 % vremena trčanja
 
-11. NEDELJA (od 11. 1.) — razvoj, gradnja; do trke 7 nedelja
+11. NEDELJA (od 11. 1.) — razvoj, vršna nedelja; do trke 7 nedelja
   pon 11. 1.  odmor
   uto 12. 1.  lagano 55 min, usred trčanja 6 × 15 s jako uzbrdo, nazad 1:15 hod — 8,7 km, 64 min
   sre 13. 1.  odmor
@@ -151,25 +151,25 @@ UPOZORENJA
 
 13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 25. 1.  odmor
-  uto 26. 1.  lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,4 km, 60 min
+  uto 26. 1.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,7 km, 55 min
   sre 27. 1.  odmor
   čet 28. 1.  prag 17 min u komadu (5:42/km) — 5,7 km, 37 min
   pet 29. 1.  odmor
   sub 30. 1.  odmor
-  ned 31. 1.  dugi 80 min lagano — 11 km, 80 min
+  ned 31. 1.  dugi 75 min lagano — 10,3 km, 75 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 25,1 km, 2 h 57 min, 3 treninga, brz rad 10 % vremena trčanja
+  Zbir: 23,7 km, 2 h 47 min, 3 treninga, brz rad 10 % vremena trčanja
 
-14. NEDELJA (od 1. 2.) — specifična priprema, vršna nedelja; do trke 4 nedelje
+14. NEDELJA (od 1. 2.) — specifična priprema, gradnja; do trke 4 nedelje
   pon 1. 2.  odmor
-  uto 2. 2.  lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,1 km, 65 min
+  uto 2. 2.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,7 km, 55 min
   sre 3. 2.  odmor
-  čet 4. 2.  tempo trke 2 × 1 km (5:36/km), oporavak 1:30 džog — 4,9 km, 33 min
+  čet 4. 2.  tempo trke 2 × 1,2 km (5:36/km), oporavak 1:30 džog — 5,3 km, 35 min
   pet 5. 2.  odmor
   sub 6. 2.  odmor
-  ned 7. 2.  dugi 85 min lagano — 11,7 km, 85 min
+  ned 7. 2.  dugi 75 min lagano — 10,3 km, 75 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 25,7 km, 3 h 3 min, 3 treninga, brz rad 6 % vremena trčanja
+  Zbir: 23,3 km, 2 h 45 min, 3 treninga, brz rad 8 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 8. 2.  odmor

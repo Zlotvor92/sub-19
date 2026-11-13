@@ -61,8 +61,10 @@ export const SAFETY: SafetyNumbers = {
     pocetnik: 5400,
     'pocetnik-nov': 4800,
     povratnik: 5700,
-    mali: 5700,
-    spor: 6600,
+    /* R18 (p03, p10): mali 1 h 30, spor 1 h 40 (bilo 1 h 35 / 1 h 50) — spor 1 h 30 obara p04 (5 dana, 50 km) na vrh
+       × 1,08; plafon po broju dana traži motor */
+    mali: 5400,
+    spor: 6000,
     srednji: 6000,
     brz: 6000
   },
