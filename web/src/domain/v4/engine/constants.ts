@@ -316,3 +316,8 @@ export const ZONE_LIMIT_DAYS = 84;
 export const ZONE_LIMIT_T_MIN_SEC = 2400;
 export const ZONE_LIMIT_T_MAX_SEC = 4200;
 export const ZONE_LIMIT_I_MAX_SEC = 900;
+
+/** A1 (krug 9): korak skraćivanja doze treninga koji ne staje uz tražene dane. */
+export const QUALITY_SHORTEN_STEP_SEC = 60;
+/** A1: najmanja smislena doza skraćenog kvaliteta (rad); nedelja gradnje/vrha ima bar jedan takav trening. */
+export const QUALITY_MIN_WORK_SEC = 720;

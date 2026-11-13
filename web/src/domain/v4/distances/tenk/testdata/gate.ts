@@ -246,7 +246,8 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     doc.header.decisions.painCaution === true ||
     shortEasy;
   const peakMin = easyStart ? 0.1 : 0.14;
-  if (!shortEasy && weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
+  /* krug 9 (A1): vršna nedelja i uz lagan-kratak ima donju granicu brzog rada (kvalitet se skraćuje, ne briše) */
+  if (weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
     v.push(
       `vršna nedelja brz rad ${String(Math.round(peakFast * 100))} % < ${String(Math.round(peakMin * 100))} %`
     );
@@ -308,6 +309,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (fastDays > 2) v.push(`nedelja −2 ima ${String(fastDays)} brza treninga`);
   }
   const rw = weeks[nW - 1];
+  /* nedelja trke sa traženim danima na najkraćem laganom (lagan-kratak) ne može ispod 60 % vrha (p06: 5 dana) */
   if (!shortEasy && rw !== undefined && peakKm > 0 && rw.km > 0.6 * peakKm + 0.5)
     v.push(`nedelja trke ${String(rw.km)} km > 60 % vrha`);
   /* ---- krug 2 (dopuna drugog sudije) ---- */

@@ -4,6 +4,8 @@
 import {
   EASY_FLOOR_MIN_RUN_DAYS,
   EASY_FLOOR_OVER_TARGET,
+  QUALITY_MIN_WORK_SEC,
+  QUALITY_SHORTEN_STEP_SEC,
   LONG_BLOCK_MIN_WEEK_SHARE,
   VOLUME_ROOM_OVER,
   RACE_CALM_DAYS,
@@ -33,7 +35,7 @@ import {
   taperEasyMax
 } from './decide';
 import { doneIds } from './done';
-import { paceCtxOf, stepsCost, summarize, zonePace } from './load';
+import { paceCtxOf, stepsCost, summarize, type WorkoutSummary, zonePace } from './load';
 import {
   adjustmentWindow,
   applyReadiness,
@@ -304,6 +306,37 @@ export function longPlan(
     minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
     Math.round(sec / 60) * 60
   );
+}
+
+/** A1 (krug 9): skraćivanje treninga koji ne staje — prvo najkraće zagrevanje/hlađenje iz podataka (`warmupCooldown`),
+    pa doza korak po korak do najmanje smislene (≥ `QUALITY_MIN_WORK_SEC` i najmanji oblik; manji unos istog
+    podražaja kad treba). `null` kad ni tako ne staje. */
+function shrinkQuality(
+  item: Extract<SlotItem, { kind: 'quality' }>,
+  dose: Seconds,
+  ctx: BuildCtx,
+  fits: (cost: WorkoutSummary) => boolean
+): { recipe: Recipe; cost: WorkoutSummary } | null {
+  const wc = ctx.data.safety.warmupCooldown;
+  const shortest = wc.reduce(
+    (m, x) => (x.warmupSec + x.cooldownSec < m.warmupSec + m.cooldownSec ? x : m),
+    wc[0] ?? { warmupSec: ctx.decisions.warmupSec, cooldownSec: ctx.decisions.cooldownSec }
+  );
+  const wuCd = { warmupSec: shortest.warmupSec, cooldownSec: shortest.cooldownSec };
+  const floor = Math.max(ctx.data.safety.minDoseSec, QUALITY_MIN_WORK_SEC);
+  for (let d = dose; d >= floor; d -= QUALITY_SHORTEN_STEP_SEC) {
+    let def = item.def;
+    if (d < minDoseOf(def, ctx)) {
+      const smaller = pickDef(item.slot, d, ctx, { noHighImpact: false });
+      if (smaller === null || smaller.stimulus !== def.stimulus || d < minDoseOf(smaller, ctx))
+        break;
+      def = smaller;
+    }
+    const recipe: Recipe = { type: 'quality', def, dose: d, slot: item.slot, wuCd };
+    const cost = summarize(realize(recipe, ctx), ctx.pace);
+    if (fits(cost)) return { recipe, cost };
+  }
+  return null;
 }
 
 /** BUDŽET BRZOG RADA (§ 6.2 k. 6): redom dugi pa podražaji; `take` vraća dozu koja staje, `book` je knjiži. */
@@ -1101,6 +1134,7 @@ function layoutOnce(
       order[b] = first;
     }
   }
+  const unplaced: { item: Extract<SlotItem, { kind: 'quality' }>; dose: Seconds }[] = [];
   for (let item of order) {
     if (item.date === (longWd === null ? null : dateOf(longWd))) continue;
     if (item.kind === 'addon') {
@@ -1178,15 +1212,94 @@ function layoutOnce(
       }
     }
     if (dose < minDoseOf(item.def, ctx)) continue;
-    const recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
-    const cost = summarize(realize(recipe, ctx), ctx.pace);
-    if (keepDays && !roomFor(item.date, cost.load, cost.durationSec)) continue;
+    let recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
+    let cost = summarize(realize(recipe, ctx), ctx.pace);
+    if (keepDays && !roomFor(item.date, cost.load, cost.durationSec)) {
+      /* A1 (krug 9): trening koji ne staje uz tražene dane — (1) najkraće zagrevanje i hlađenje iz podataka, (2) kraća
+         doza do najmanje smislene; (3) izostavljen lagan dan i (4) brisanje dolaze posle petlje */
+      const fit = shrinkQuality(item, dose, ctx, (c) => roomFor(item.date, c.load, c.durationSec));
+      if (fit === null) {
+        unplaced.push({ item, dose });
+        continue;
+      }
+      recipe = fit.recipe;
+      cost = fit.cost;
+      dose = fit.recipe.type === 'quality' ? fit.recipe.dose : dose;
+      if (fit.recipe.type === 'quality' && fit.recipe.def !== item.def) {
+        const zone = mainZone(fit.recipe.def.main);
+        if (zone !== null) item = { ...item, def: fit.recipe.def, extra: extraWeight(zone, ctx) };
+      }
+    }
     budget.book(dose, item.extra);
     if (inZone(item.def)) zoneLeft -= dose;
     fix(item.date, recipe);
     placedQuality += 1;
   }
 
+  /* A1 (3): nedelja gradnje/vrha bez ijednog kvaliteta — izostavlja se jedan lagan dan (rečenica „dan-izostavljen")
+     da prvi trening stane; (4) tek kad ni tada ne staje, kvalitet otpada */
+  const first = unplaced[0];
+  const buildWeek = intent.kind === 'build' || intent.kind === 'peak';
+  if (buildWeek && placedQuality === 0 && first !== undefined) {
+    const longDay = longWd === null ? null : dateOf(longWd);
+    const free = runDays
+      .map((wd) => dateOf(wd))
+      .filter((x) => !fixed.has(x) && x !== first.item.date && x !== longDay);
+    const drop = free[free.length - 1];
+    if (drop !== undefined && free.length >= 2) {
+      fixed.set(drop, { type: 'rest' });
+      const fit = shrinkQuality(first.item, first.dose, ctx, (c) =>
+        roomFor(first.item.date, c.load, c.durationSec)
+      );
+      if (fit === null) fixed.delete(drop);
+      else {
+        const zone = fit.recipe.type === 'quality' ? mainZone(fit.recipe.def.main) : null;
+        budget.book(
+          fit.recipe.type === 'quality' ? fit.recipe.dose : 0,
+          zone === null ? first.item.extra : extraWeight(zone, ctx)
+        );
+        fix(first.item.date, fit.recipe);
+        placedQuality += 1;
+      }
+    }
+  }
+  /* A1 (krug 9) + R8 t. 15: dugi sa blokom ≥ donji udeo OSTVARENE nedelje (kvalitet i najkraći lagani dani su sada
+     poznati) — duži dugi, plafon dugog važi */
+  if (longWd !== null && week.longSec > 0) {
+    const lr = fixed.get(dateOf(longWd));
+    if (lr !== undefined && lr.type === 'long' && lr.dose > 0) {
+      const minShare = s.longBlockMinWeekShare ?? LONG_BLOCK_MIN_WEEK_SHARE;
+      const minEasyNow = minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length);
+      let otherSec = 0;
+      for (const [date, r] of fixed)
+        if (date !== dateOf(longWd)) otherSec += summarize(realize(r, ctx), ctx.pace).durationSec;
+      const easyLeft = runDays.filter((wd) => !fixed.has(dateOf(wd))).length;
+      otherSec += easyLeft * minEasyNow;
+      const longNow = summarize(realize(lr, ctx), ctx.pace).durationSec;
+      /* koliko ostali dani smeju da traju da dugi nosi donji udeo; višak skida poslednji kvalitet nedelje (ne prvi),
+         do najmanje smislene doze — dugi i obim nedelje se ne dižu */
+      const allowed = (longNow * (1 - minShare)) / minShare;
+      const qualityDates = [...fixed.entries()]
+        .filter(([, r]) => r.type === 'quality')
+        .map(([date]) => date)
+        .sort();
+      const lastQ = qualityDates.length >= 2 ? qualityDates[qualityDates.length - 1] : undefined;
+      const qr = lastQ === undefined ? undefined : fixed.get(lastQ);
+      if (otherSec > allowed && lastQ !== undefined && qr !== undefined && qr.type === 'quality') {
+        const qSec = summarize(realize(qr, ctx), ctx.pace).durationSec;
+        const target = qSec - (otherSec - allowed);
+        const fit = shrinkQuality(
+          { kind: 'quality', date: lastQ, def: qr.def, slot: qr.slot, wanted: qr.dose, extra: 0 },
+          qr.dose - QUALITY_SHORTEN_STEP_SEC,
+          ctx,
+          (c) => c.durationSec <= target
+        );
+        /* ni najmanja doza ne ostavlja dugom donji udeo: poslednji kvalitet otpada (A1 korak 4), dan je lagan */
+        if (fit !== null) fixed.set(lastQ, fit.recipe);
+        else fixed.delete(lastQ);
+      }
+    }
+  }
   for (const [date, recipe] of fixed) out.set(date, recipe);
   const longDate = longWd === null ? null : dateOf(longWd);
   /* Dugi kakav će stvarno biti (posle zaokruživanja; blok je brži): merilo plafona laganog dana i po trajanju

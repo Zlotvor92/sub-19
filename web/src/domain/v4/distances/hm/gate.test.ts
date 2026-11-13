@@ -98,8 +98,7 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
        F4-K2: skinut — očekivano se više ne pogoršava (lična kriva forme) */
     /* krug 5 (P3): p04 1 s (intervali u 3. nedelji umesto uspona menjaju pripisani napredak) */
     'p04',
-    /* krug 9 (A14): p06 1 s sporije posle sidra praga od 60 min (model forme, R12) */
-    'p06',
+    /* krug 9: p06 vraćen pa skinut (A14 + A1: posle A1 „ništa" više nije sporije) */
     'p08',
     'vlasnik-v1',
     'vlasnik-v2'

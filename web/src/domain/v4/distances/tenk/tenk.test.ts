@@ -917,7 +917,7 @@ const fastCount = (w: PlanWeek): number =>
 
 /* p02 (5 km 20:25, 30 km, 8 ned) i p06 (VDOT 58, 30 km, 5 dana): motor briše tempo trke u nedelji −2 jer obim ne nosi
    kvalitet (A1 — ne zaobilazi se u podacima, brief R9 § B4) */
-const WAIT_A1_RP = new Set(['p02', 'p06']);
+const WAIT_A1_RP = new Set<string>([]);
 
 describe('krug 2: specifična faza, rast obima, kratka priprema (B1–B4)', () => {
   it('B1: između poslednje provere i najteže nedelje nema rasterećenja; tempo trke raste do najteže (≥ 12 nedelja)', () => {
@@ -1002,7 +1002,8 @@ describe('krug 2: specifična faza, rast obima, kratka priprema (B1–B4)', () =
 
   /* B4: svaka nedelja gradnje i vrha ima kvalitet (motor A1, krug 9). Dok A1 ne stigne, p02 i p06 (mali obim uz visok
      nivo) ga nemaju — podaci to NE zaobilaze (brief R9 § B4). Kad A1 stigne, ovaj test pada: briše se `WAIT_A1`. */
-  const WAIT_A1 = new Set(['p06']);
+  /* krug 9: A1 u motoru — p06 više nije izuzetak */
+  const WAIT_A1 = new Set<string>([]);
   it('B4: svaka nedelja gradnje/vrha (van provere) ima bar jedan brz trening (kvalitet ili dodatak)', () => {
     const missing = new Set<string>();
     for (const p of PROFILE_PLANS)

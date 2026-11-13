@@ -53,16 +53,23 @@ describe('krug 5', () => {
         );
   });
 
-  it('Z8 (krug 7, zamenjuje M5): p06 (brz, 5 dana, 35 km) — traženih 5 dana, lagano ≥ 30 min, upozorenje lagan-kratak', () => {
+  it('Z8 + A1 (krug 9): p06 (brz, 5 dana, 35 km) — lagano ≥ 30 min; svaka nedelja gradnje/vrha ima kvalitet ≥ 12 min; izostavljen dan samo uz rečenicu', () => {
     const b = ALL.find((x) => x.id === 'p06');
     if (b === undefined) throw new Error('p06');
     const ctx = paceCtxOf(b.doc.header);
-    expect(b.doc.header.warnings.map((w) => w.code)).toContain('lagan-kratak');
-    expect(b.doc.header.warnings.map((w) => w.code)).not.toContain('dan-izostavljen');
+    const codes = b.doc.header.warnings.map((w) => w.code);
+    expect(codes).toContain('lagan-kratak');
     for (const w of b.doc.weeks) {
       if (w.intent.kind !== 'build' && w.intent.kind !== 'peak') continue;
       const runs = w.days.filter((d) => d.workout !== null).length;
-      expect(runs, `n${String(w.index)}`).toBe(5);
+      expect(runs, `n${String(w.index)}`).toBeGreaterThanOrEqual(4);
+      if (runs < 5) expect(codes, `n${String(w.index)}`).toContain('dan-izostavljen');
+      const work = Math.max(
+        0,
+        ...w.days.map((d) => (d.workout?.kind === 'quality' ? d.workout.workSec : 0))
+      );
+      /* ≥ 12 min je granica skraćivanja (A1); u uvodne dve nedelje zadate doze šablona su manje (K7: prvi ≤ 70 % vrha; K8: ≥ 8 min) */
+      expect(work, `n${String(w.index)}`).toBeGreaterThanOrEqual(w.index <= 2 ? 8 * 60 : 12 * 60);
       for (const d of w.days)
         if (d.workout?.kind === 'easy')
           expect(summarize(d.workout, ctx).durationSec, d.date).toBeGreaterThanOrEqual(

@@ -60,7 +60,14 @@ export type Recipe =
   | { type: 'easy'; sec: Seconds; maxSec?: Seconds }
   | { type: 'addon'; sec: Seconds; def: WorkoutDef; maxSec?: Seconds }
   | { type: 'long'; sec: Seconds; def: WorkoutDef | null; dose: Seconds; slot: SlotRef | null }
-  | { type: 'quality'; def: WorkoutDef; dose: Seconds; slot: SlotRef }
+  | {
+      type: 'quality';
+      def: WorkoutDef;
+      dose: Seconds;
+      slot: SlotRef;
+      /** A1 (krug 9): kraće zagrevanje i hlađenje kad trening inače ne staje uz tražene dane. */
+      wuCd?: { warmupSec: Seconds; cooldownSec: Seconds };
+    }
   | { type: 'test'; def: WorkoutDef; slot: SlotRef };
 
 export const REST: Recipe = { type: 'rest' };
@@ -587,7 +594,12 @@ function longWorkout(recipe: Extract<Recipe, { type: 'long' }>, ctx: BuildCtx): 
   return withNotes(workout, def, ctx);
 }
 
-function qualityWorkout(def: WorkoutDef, dose: Seconds, ctx: BuildCtx): Workout {
+function qualityWorkout(
+  def: WorkoutDef,
+  dose: Seconds,
+  ctx: BuildCtx,
+  wuCd?: { warmupSec: Seconds; cooldownSec: Seconds }
+): Workout {
   const cap = ctx.decisions.doseCapSec[def.stimulus] ?? Number.POSITIVE_INFINITY;
   const main = mainSteps(
     def.main,
@@ -597,9 +609,9 @@ function qualityWorkout(def: WorkoutDef, dose: Seconds, ctx: BuildCtx): Workout 
     ctx
   );
   const steps: Step[] = [
-    zoneStep('warmup', 'E', { durationSec: ctx.decisions.warmupSec }),
+    zoneStep('warmup', 'E', { durationSec: wuCd?.warmupSec ?? ctx.decisions.warmupSec }),
     ...main.steps,
-    zoneStep('cooldown', 'E', { durationSec: ctx.decisions.cooldownSec })
+    zoneStep('cooldown', 'E', { durationSec: wuCd?.cooldownSec ?? ctx.decisions.cooldownSec })
   ];
   const workSec = Math.round(stepsCost(main.steps, ctx.pace).workSec);
   const workout: Workout = {
@@ -625,7 +637,7 @@ export function realize(recipe: Recipe, ctx: BuildCtx): Workout | null {
     case 'long':
       return longWorkout(recipe, ctx);
     case 'quality':
-      return qualityWorkout(recipe.def, recipe.dose, ctx);
+      return qualityWorkout(recipe.def, recipe.dose, ctx, recipe.wuCd);
     case 'test':
       return qualityWorkout(recipe.def, 0, ctx);
   }
