@@ -33,13 +33,13 @@
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
 2026-12-05 | trening | easy | 10.0 | lagano 10 km | - | - | -
 2026-12-06 | trening | long | 18.9 | dugi 88 min, završnih 7 min u pragu | - | - | -
-2026-12-07 | trening | easy | 10.5 | lagano 10,5 km | - | - | -
-2026-12-08 | trening | easy | 10.7 | lagano 9,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-07 | trening | easy | 12.0 | lagano 12 km | - | - | -
+2026-12-08 | trening | easy | 11.7 | lagano 10,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
-2026-12-10 | trening | easy | 10.8 | lagano 9 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-10 | trening | easy | 11.3 | lagano 9,5 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-11 | odmor | - | 0.0 |  | - | - | -
 2026-12-12 | trening | test | 9.3 | provera forme: test na 3 km punim naporom, ravnomerno (ili parkrun 5 km) | - | - | -
-2026-12-13 | trening | long | 13.5 | dugi 13,5 km lagano | - | - | -
+2026-12-13 | trening | easy | 10.5 | lagano 10,5 km | - | - | -
 2026-12-14 | trening | easy | 12.5 | lagano 12,5 km | - | - | -
 2026-12-15 | trening | easy | 11.0 | lagano 11 km | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -

@@ -112,14 +112,14 @@ Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 tra�
 
 8. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 21. 12.  odmor
-  uto 22. 12.  lagano 7,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,5 km, 51 min
+  uto 22. 12.  lagano 9 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 10 km, 60 min
   sre 23. 12.  odmor
-  čet 24. 12.  lagano 7 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 8,4 km, 50 min
+  čet 24. 12.  lagano 8 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 9,4 km, 56 min
   pet 25. 12.  odmor
   sub 26. 12.  provera forme: test na 3 km punim naporom, ravnomerno (ili parkrun 5 km) — 8 km, 43 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.
-  ned 27. 12.  dugi 10,5 km lagano — 10,5 km, 64 min
-  Zbir: 35,4 km, 3 h 28 min, 4 treninga, brz rad 6 % vremena trčanja
+  ned 27. 12.  lagano 7,5 km — 7,5 km, 45 min
+  Zbir: 34,9 km, 3 h 24 min, 4 treninga, brz rad 6 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 28. 12.  odmor
@@ -181,7 +181,7 @@ Polazna forma (1. 11.): 21:49
 Današnja prognoza (4. 1.): 21:49, pouzdanost srednja
 Očekivano na dan trke: 21:45 (raspon 21:25–22:08) — 0:04 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Test 26. 12.: 3 km za 12:37. Rezultat sa 3 km prenosim na 5 km uz umanjenje, jer uz oko 40 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 5 km ostaje 21:49.
+- Test 26. 12.: 3 km za 12:37. Rezultat sa 3 km prenosim na 5 km uz umanjenje, jer uz oko 41 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 5 km ostaje 21:49.
 - Polazna procena je iz rezultata koji si uneo: oko 21:49 za 5 km.
 
 TEMPA
@@ -269,13 +269,13 @@ Propušten je ključni trening „dugi 86 min, završnih 10 min u pragu" (3. 1.)
 
 8. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 21. 12.  odmor
-  uto 22. 12.  lagano 7,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 8,5 km, 51 min (6:00/km)
+  uto 22. 12.  lagano 9 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 10 km, 60 min (6:00/km)
   sre 23. 12.  odmor
-  čet 24. 12.  lagano 7 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — urađeno 8,4 km, 50 min (5:58/km)
+  čet 24. 12.  lagano 8 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — urađeno 9,4 km, 56 min (5:58/km)
   pet 25. 12.  odmor
   sub 26. 12.  provera forme: test na 3 km punim naporom, ravnomerno (ili parkrun 5 km) — urađeno 3 km, 13 min (4:12/km)
-  ned 27. 12.  dugi 10,5 km lagano — urađeno 10,5 km, 64 min (6:03/km)
-  Urađeno: 30,4 km, 2 h 57 min, 4 treninga
+  ned 27. 12.  lagano 7,5 km — urađeno 7,5 km, 45 min (6:03/km)
+  Urađeno: 29,9 km, 2 h 54 min, 4 treninga
 
 9. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 28. 12.  odmor

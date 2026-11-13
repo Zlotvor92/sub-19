@@ -4,9 +4,9 @@ Grana `claude/v4`, posle kruga 9b. Folder `web/src/domain/v4/distances/fivek/` (
 šabloni 1–52 ned × 7 dana × 4 porodice (sadržajno 4–24 nedelje), biblioteka (36 unosa), `safety`, tekstovi,
 16 profila (P9 5K p01–p12 + p13–p16 iz briefa), 27 scenarija (24 + 3 E7), parovi, kapija. Nula uvoza iz `hm/` i
 `tenk/` i obrnuto (test), nula izmena u `engine/` i `fitness/`; skripte `plans/*.ts` dobile `--dist fivek`
-(HM i 10K ispisi bajt-isti). **V4 skup: 814 prolaze, 20 očekivano pada (`it.fails`), 0 pada; lint i format čisti.
-Typecheck pada samo na `engine/render.ts:413` (`IsoDate`) — greška motora iz kruga 9b, nije moja. Kapija 5 km:
-15/16 bez prekršaja, p06 imenovan (motor). Čuvar: 15/16 bez nalaza (p06 `silazak`, isto). Otisci HM i 10K nepromenjeni.**
+(HM i 10K ispisi bajt-isti). **V4 skup (posle rebase-a na 10K krug 3 i krug 9b R17): 818 prolaze, 20 očekivano
+pada (`it.fails`), 0 pada; typecheck, lint i format čisti. Kapija 5 km: 15/16 bez prekršaja, p06 imenovan (motor).
+Čuvar: 15/16 bez nalaza (p06 `silazak`, isto). Otisci HM i 10K nepromenjeni.**
 
 Napomena: brief kaže „pročitaj `briefs/F7-COMMON.md`", a tog fajla nema na grani (ni u istoriji). Radio sam po
 `F7-5K.md`, obrascu 10 km (`F7-10K-REPORT.md`) i uputstvima iz AGENTS.md.
@@ -24,7 +24,7 @@ Napomena: brief kaže „pročitaj `briefs/F7-COMMON.md`", a tog fajla nema na g
 | brz rad ≤ 20 % nedelje, najteža ≤ 23 %; najbrža nedelja plana ≥ 12 % (početnik 8 %, hod-trk 6 %) — najteža nedelja 5 km je posle provere i nosi ≈ 9–14 % (ciljni p01 9 %) | README: ≤ 20 % | visoka / niska (donja) |
 | dugi 50–90 min bez bloka tempa trke (nema `dugi-rp` u biblioteci); udeo 4 dana 32 %, 5 dana 29 %, 3 dana 42 % (početnik 45 %); početnik do 90 min, hod-trk 55 min | README, brief | srednja |
 | sužavanje 5–7 dana: `taper.lastDays` 5, `weekBeforeFromDays` 8, nedelja −2 ≤ 85 %, nedelja trke ≤ 50 % vrha | brief, README | srednja |
-| provera: 3 km (`kontrola-3k`, tekst dozvoljava parkrun 5 km); početnik i < 20 km 1,5 km „jako ravnomerno" | brief | visoka |
+| provera: 3 km (`kontrola-3k`, tekst dozvoljava parkrun 5 km); početnik i < 20 km 1,5 km „jako ravnomerno"; dan posle provere (nedelja) motor daje lagano ≤ 60 % dugog (krug 9b, R17) | brief | visoka |
 | `raceStartPaceOffsetSec` 1–3 s/km (ciljni p01 1. km 4:28 uz 4:26) | ciljni | srednja |
 | `minEasyMin` 30 (mali, povratnik 25), zamena 20 min; `minEasySec` 20 min | K8 | srednja |
 | WU/CD 10/10 (≤ 120 BO), 15/10, 20/10; brzi treninzi nose napomenu „lagano, pa 4–6 ubrzanja po 20 s" | brief | srednja |

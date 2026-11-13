@@ -2,7 +2,7 @@ S16 — p12, E4: ned 4, bol 4/10 posle laganog dana
 
 STANJE: danas 2026-11-24; sadašnji obim 45 km nedeljno, 4 dana; forma 26:32 (pouzdanost niska), očekivano na dan trke 26:16.
 DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-11-24 („lagano 65 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog"). Događaji: pain:2026-11-24.
-PROMENA: 9.
+PROMENA: 11.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 10. 1. 2027.
@@ -87,14 +87,14 @@ UPOZORENJA
 
 6. NEDELJA (od 7. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 7. 12.  odmor
-  uto 8. 12.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,9 km, 50 min
+  uto 8. 12.  lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,2 km, 60 min
   sre 9. 12.  odmor
-  čet 10. 12.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,9 km, 50 min
+  čet 10. 12.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,5 km, 55 min
   pet 11. 12.  odmor
   sub 12. 12.  provera forme: 1,5 km jako i ravnomerno — napor koji jedva držiš do kraja — 5,6 km, 37 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.
-  ned 13. 12.  dugi 65 min lagano — 8,8 km, 65 min
-  Zbir: 28,2 km, 3 h 22 min, 4 treninga, brz rad 4 % vremena trčanja
+  ned 13. 12.  lagano 50 min — 6,8 km, 50 min
+  Zbir: 28,1 km, 3 h 22 min, 4 treninga, brz rad 4 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 14. 12.  odmor
@@ -177,6 +177,8 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 4. 12. trči sa
 - uto 1. 12.: lagano 65 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 45 min
 - čet 3. 12.: tempo trke 4 × 600 m, oporavak 1:30 džog → lagano 45 min
 - ned 6. 12.: dugi 90 min lagano → dugi 65 min lagano
+- uto 8. 12.: lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
+- ned 13. 12.: lagano 50 min → dugi 65 min lagano
 - čet 17. 12.: tempo trke 4 × 800 m, oporavak 2 min džog → tempo trke 3 × 400 m, oporavak 1:30 džog
 - ned 20. 12.: dugi 90 min lagano → dugi 85 min lagano
 - 7. nedelja: 37,8 km → 34,7 km
@@ -235,12 +237,12 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 4. 12. trči sa
   pon 7. 12.  odmor
   uto 8. 12.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,9 km, 50 min
   sre 9. 12.  odmor
-  čet 10. 12.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,9 km, 50 min
+  čet 10. 12.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,5 km, 55 min
   pet 11. 12.  odmor
   sub 12. 12.  provera forme: 1,5 km jako i ravnomerno — napor koji jedva držiš do kraja — 5,6 km, 37 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.
   ned 13. 12.  dugi 65 min lagano — 8,8 km, 65 min
-  Zbir: 28,2 km, 3 h 22 min, 4 treninga, brz rad 4 % vremena trčanja
+  Zbir: 28,8 km, 3 h 27 min, 4 treninga, brz rad 4 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 14. 12.  odmor

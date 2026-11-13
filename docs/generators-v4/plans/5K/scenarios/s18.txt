@@ -160,14 +160,14 @@ Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na 
   Zbir: 48,8 km, 5 h 40 min, 5 treninga, brz rad 13 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 18. 1.  lagano 50 min — 6,9 km, 50 min
-  uto 19. 1.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7 km, 50 min
+  pon 18. 1.  lagano 55 min — 7,6 km, 55 min
+  uto 19. 1.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,7 km, 55 min
   sre 20. 1.  odmor
-  čet 21. 1.  lagano 40 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 6,7 km, 48 min
+  čet 21. 1.  lagano 45 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 7,4 km, 53 min
   pet 22. 1.  odmor
   sub 23. 1.  provera forme: test na 3 km punim naporom, ravnomerno (ili parkrun 5 km) — 7,1 km, 45 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.
-  ned 24. 1.  dugi 65 min lagano — 9 km, 65 min
+  ned 24. 1.  lagano 50 min — 6,9 km, 50 min
   Zbir: 36,7 km, 4 h 18 min, 5 treninga, brz rad 6 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
@@ -380,14 +380,14 @@ UPOZORENJA
   Zbir: 48 km, 5 h 40 min, 5 treninga, brz rad 12 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 18. 1.  lagano 50 min — 6,8 km, 50 min
-  uto 19. 1.  lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,9 km, 50 min
+  pon 18. 1.  lagano 55 min — 7,4 km, 55 min
+  uto 19. 1.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,6 km, 55 min
   sre 20. 1.  odmor
-  čet 21. 1.  lagano 40 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 6,6 km, 48 min
+  čet 21. 1.  lagano 45 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 7,3 km, 53 min
   pet 22. 1.  odmor
   sub 23. 1.  provera forme: test na 3 km punim naporom, ravnomerno (ili parkrun 5 km) — 7,1 km, 45 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.
-  ned 24. 1.  dugi 65 min lagano — 8,8 km, 65 min
+  ned 24. 1.  lagano 50 min — 6,8 km, 50 min
   Zbir: 36,2 km, 4 h 18 min, 5 treninga, brz rad 6 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
