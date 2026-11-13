@@ -410,3 +410,91 @@ describe('maraton — poznate greške motora', () => {
     expect([...KNOWN.keys()].filter((k) => !seenKnown.has(k))).toEqual([]);
   });
 });
+
+/* KRUG 17 (nalog R17): podaci maratona za pravila motora iz kruga 15 — `returnKeepLong` (lestvica dugog posle
+   prekida) i `afterLongRace` (E5 posle polumaratona). */
+describe('maraton — R17: lestvica dugog posle prekida i E5 posle polumaratona', () => {
+  const kmOfLongs = (doc: PlanDoc): { index: number; start: string; km: number; sec: number }[] => {
+    const ctx = paceCtxOf(doc.header);
+    return doc.weeks.map((w) => {
+      let km = 0;
+      let sec = 0;
+      for (const d of w.days)
+        if (d.workout?.kind === 'long') {
+          const c = summarize(d.workout, ctx);
+          km = Math.max(km, c.km);
+          sec = Math.max(sec, c.durationSec);
+        }
+      return { index: w.index, start: w.start, km, sec };
+    });
+  };
+
+  it('returnKeepLong: posle prekida (E2 bolest, E7 put) sa ≥ 4 nedelje do trke ostaje dugi ≥ 26 km pre sužavanja, a lestvica do njega raste ≤ +20 min nedeljno', () => {
+    const keep = marathon.safety.returnKeepLong;
+    expect(keep).toEqual({ km: 26, minWeeksToRace: 4 });
+    const bad: string[] = [];
+    let checked = 0;
+    for (const { s, r } of RUNS.filter(({ s }) => s.title.startsWith('E2') || s.no === 27)) {
+      const before = kmOfLongs(r.before as PlanDoc);
+      const after = kmOfLongs(r.after as PlanDoc);
+      const n = after.length;
+      const today = r.afterState.today as string;
+      const weeksLeft = after.filter((w) => w.start > today).length;
+      /* prvobitni najduži dugi pre sužavanja (do N−3) bio je ≥ 26 km; posle prekida mora da ostane bar jedan */
+      const hadLong = before.slice(0, n - 2).some((w) => w.km >= (keep?.km ?? 26));
+      if (!hadLong || weeksLeft < (keep?.minWeeksToRace ?? 4)) continue;
+      checked += 1;
+      const future = after.filter((w) => w.start > today && w.index <= n - 3);
+      if (!future.some((w) => w.km >= (keep?.km ?? 26) - 0.25))
+        bad.push(
+          `${name(s.no)} najduži dugi posle prekida ${String(Math.max(0, ...future.map((w) => w.km)))} km`
+        );
+      let prev = 0;
+      for (const w of future) {
+        if (w.sec <= 0) continue;
+        if (prev > 0 && w.sec > prev + 20 * 60 + 60)
+          bad.push(
+            `${name(s.no)} n${String(w.index)} dugi +${String(Math.round((w.sec - prev) / 60))} min`
+          );
+        prev = Math.max(prev, w.sec);
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
+    expect(bad).toEqual([]);
+  });
+
+  it('afterLongRace (E5): posle polumaratona dve nedelje dugi ≤ 60 % planiranog, nedelja ≤ 75 % polaznog obima', () => {
+    const rule = marathon.safety.afterLongRace;
+    expect(rule).toEqual({ minEffortSec: 4500, weeks: 2, longShare: 0.6, weekShare: 0.75 });
+    const bad: string[] = [];
+    for (const { s, r } of RUNS.filter(
+      ({ s }) => s.title.startsWith('E5') && s.title.includes('polumaraton')
+    )) {
+      const before = kmOfLongs(r.before as PlanDoc);
+      const after = kmOfLongs(r.after as PlanDoc);
+      const base = (r.afterState.profile?.weeklyKm as number | undefined) ?? 0;
+      const ctx = paceCtxOf((r.after as PlanDoc).header);
+      for (let i = 0; i < (rule?.weeks ?? 2); i += 1) {
+        const a = after[i];
+        const b = before[i];
+        if (a === undefined || b === undefined) continue;
+        if (b.sec > 0 && a.sec > (rule?.longShare ?? 0.6) * b.sec + 120)
+          bad.push(
+            `${name(s.no)} n${String(i + 1)} dugi ${String(Math.round(a.sec / 60))} od ${String(Math.round(b.sec / 60))} min`
+          );
+        const week = (r.after as PlanDoc).weeks[i];
+        const km = (week?.days ?? []).reduce(
+          (sum, d) =>
+            sum +
+            (d.workout === null || d.workout.kind === 'race' ? 0 : summarize(d.workout, ctx).km),
+          0
+        );
+        if (base > 0 && km > (rule?.weekShare ?? 0.75) * base + 1)
+          bad.push(
+            `${name(s.no)} n${String(i + 1)} nedelja ${km.toFixed(1)} od ${String(base)} km`
+          );
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});

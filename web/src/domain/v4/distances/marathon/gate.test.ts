@@ -87,7 +87,8 @@ describe('kapija maratona (19 profila)', () => {
   /* krug 10 (stavka 22): p09 skinut — dugi sa km bloka stiže do dugog za distancu, prognoza računa napredak */
   /* krug 14 (M7, motor): p06 i p19 bez napretka od obima (obim/dugi ne nose trku) — prognoza = današnja forma, pa
      prolaze; p10 isto bez napretka, pa se vidi pomak današnje forme posle 6 nedelja po planu (+6 s, isti uzrok) */
-  const FORM_DRIFT = new Set<string>(['p07', 'p10', 'p18']);
+  /* krug 17 (R17): p01 sada sa dugim 26 km računa napredak od obima, pa se vidi isti pomak današnje forme (+3 s) */
+  const FORM_DRIFT = new Set<string>(['p01', 'p07', 'p10', 'p18']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);

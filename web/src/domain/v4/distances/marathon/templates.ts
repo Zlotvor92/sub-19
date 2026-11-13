@@ -188,7 +188,7 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     const load = lerp(startLoad, 0.95, t ** 0.7) * (1 - (sh.single ? 0.6 : 0.3) * (1 - wave));
     /* 1–3 dana: dugi kreće bliže polaznom, da raste od prve nedelje (inače stoji na polaznom, a nedelja ne može da
        raste — lagani dani su vezani za dugi) */
-    const long = (sh.single ? lerp(0.8, 0.95, t) : lerp(0.8, 0.95, t)) * wave;
+    const long = (sh.single || sh.gentle === true ? lerp(0.8, 0.95, t) : lerp(0.9, 0.97, t)) * wave;
     if (sh.gentle === true && w <= 2) {
       out.push(week(OSNOVA, 'build', load, { len: long }, [HILLS_SHORT, STRIDES]));
       continue;
@@ -205,7 +205,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       /* R4: talas i na plafonu (dugi koji je stigao do najdužeg dozvoljenog ne stoji) */
       const capWave = { wave: 1 - (1 - wave) * 1.5 };
       const longSpec =
-        dev % 2 === 0
+        /* povratnik: dugi lagan (progresivni deo nosi više km za isto vreme — korak dugog u km, K7) */
+        dev % 2 === 0 || sh.gentle === true
           ? { len: long, ...capWave }
           : { len: long, stimulus: 'dugi-progresivno', ...capWave };
       /* u nedelji sa intervalima prag je kraći: budžet brzog rada (≤ 18 %) ostavlja intervalima 17–21 min (K7) */
@@ -272,7 +273,7 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
   return [
     ...halfRace,
     /* N−7: blok 1 (≈ 8 km MP, 40 min; R3: ≤ 45 % dugog) */
-    block(0.5, 0.86, short ? 0.95 : 0.93),
+    block(0.5, 0.92, short ? 0.95 : 0.93),
     /* N−6: talas — kraći lagan dugi, MP usred nedelje 2 × 4–5 km + prag */
     week(
       SPEC,
@@ -399,7 +400,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     ]),
     /* N−5: blok 6 km MP (≈ 40 min), usred nedelje lagano */
     /* nov/spor početnik: bez bloka, MP usred nedelje raste 0,4 → 0,6 → 0,7 (K7: prvi ≤ 70 % vrha) */
-    week(SPEC, 'build', 1, { len: 0.97, ...blockOf(0.6) }, [
+    week(SPEC, 'build', 1, { len: 0.97, ...blockOf(0.52) }, [
       fresh ? S('tempo-trke', 0.6) : STRIDES,
       STRIDES
     ]),

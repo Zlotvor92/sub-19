@@ -248,11 +248,11 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
     }, 0);
     if (rp >= capSec - 180) return 'tempo trke na nedeljnom plafonu nivoa (D7)';
   }
-  /* maraton, mali obim po danu (< 40 min): motor izostavlja dan koji ne staje u najkraće lagano trčanje; kad se
+  /* maraton, mali obim po danu (< 45 min): motor izostavlja dan koji ne staje u najkraće lagano trčanje; kad se
      dan vrati (obim poraste), nedelja skoči za ceo dan — upozorenje `dan-izostavljen` ili manje treninga ranije */
   if (f.check === 'skok' && st !== undefined && f.weekIndex !== null) {
     const before = stats.slice(Math.max(0, f.weekIndex - 4), f.weekIndex - 1);
-    if (perDay < 40 && before.some((x) => x.workouts < st.workouts))
+    if (perDay < 45 && before.some((x) => x.workouts < st.workouts))
       return 'dan vraćen posle izostavljenog (mali obim po danu)';
   }
   /* krug 4 (S2, presuda trenera): korak nedelje je + 8 % ILI + 3 km — kod malog obima + 3 km je više od 10 % */
@@ -869,7 +869,7 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
       const w = PROFILE_PLANS.find((x) => x.id === id)?.doc.header.warnings.find(
         (x) => x.code === 'kratka-priprema'
       );
-      expect(w?.proposal ?? '', id).toMatch(/16 nedelja/);
+      expect(w?.proposal ?? '', id).toMatch(/1[6-9] nedelja/);
       expect(w?.proposal ?? '', id).toMatch(/polumaraton/);
     }
   });

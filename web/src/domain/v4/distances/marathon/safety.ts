@@ -94,7 +94,7 @@ export const SAFETY: SafetyNumbers = {
   },
   /* korak dugog: + 1,5 km ili + 8 min po nedelji gradnje (README: + 1–2 km po koraku; K7 ≤ 2 km i ≤ 12 %, dan se zaokružuje na 0,5 km) */
   longStepSec: 480,
-  longStepKm: 1.3,
+  longStepKm: 1.5,
   longStartFloorShare: 0.85,
   longStartFloorFromCapShare: 0.88,
   longFloorGrowMinRunDays: 4,
@@ -117,7 +117,7 @@ export const SAFETY: SafetyNumbers = {
     midKm: 85,
     midShare: 0.44
   },
-  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.44, '4': 0.4, '5': 0.32, '6': 0.29, '7': 0.26 },
+  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.44, '4': 0.4, '5': 0.34, '6': 0.29, '7': 0.26 },
   /* plafon doze po treningu (README trenera) */
   doseCaps: {
     /* osnova: usponi 8–10 × 1 min, kratke brze deonice — malo R (brief) */
@@ -263,7 +263,8 @@ export const ADEQUATE: AdequatePrep = {
   /* provera `dugi-za-distancu` meri dugi u km laganog tempa (bez viška km bloka u tempu maratona, ≈ 1–1,5 km), pa je
      prag 27 km ili 2 h 50 — dugi od 28 km sa blokom tada ne dobija upozorenje (zahtev motoru u izveštaju) */
   minLongSec: 10200,
-  longCheckKm: 27,
+  /* R17 (presuda trenera MAR-01 § E1): 26 km je tačno za vrh 45–60 km */
+  longCheckKm: 26,
   longCheckMinWeeks: 16,
   minTenureWeeks: 26,
   minPeakWeeklyKmByLevel: { brz: 80 },

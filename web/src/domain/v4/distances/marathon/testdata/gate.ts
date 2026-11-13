@@ -144,7 +144,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   let maxJump = 0;
   weeks.forEach((g, i) => {
     if (i === 0 || g.kind === 'recovery') return;
-    if (back && g.km <= baseKm + 0.5) return;
+    if (back && g.km <= 1.05 * baseKm + 0.5) return;
     const window = weeks.slice(Math.max(0, i - 3), i);
     const prev = window.filter((x) => full(x) && !x.ramp);
     /* rampa posle trke iz istorije je rasterećenje: posle nje meri se prema obimu pre trke (R9: poslednja puna
