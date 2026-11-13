@@ -84,7 +84,8 @@ describe('kapija maratona (19 profila)', () => {
      forme, isti uzrok kao kod polumaratona i 10 km — FORM_DRIFT u F7-10K-REPORT); kad forma bude ispravljena, test
      pada i spisak se briše. Maraton (13. 11.): 2–30 s sporije (≤ 0,3 %) kod p06, p07 (12 nedelja, provera u 4.
      nedelji trčana tačno u tempu današnje forme), p09, p18, p19 — ne podaci maratona */
-  const FORM_DRIFT = new Set<string>(['p06', 'p07', 'p09', 'p18', 'p19']);
+  /* krug 10 (stavka 22): p09 skinut — dugi sa km bloka stiže do dugog za distancu, prognoza računa napredak */
+  const FORM_DRIFT = new Set<string>(['p06', 'p07', 'p18', 'p19']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);

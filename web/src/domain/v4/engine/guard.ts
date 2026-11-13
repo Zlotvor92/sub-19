@@ -548,7 +548,8 @@ export const guard: GuardFn = (doc, _state, data) => {
   /* S3 (krug 4): nalaz čuvara — plan od 16+ nedelja bez dugog za distancu */
   const longest = Math.max(0, ...costs.map((c) => c.longSec));
   const planWeeks = countWeeks(header.startDate, header.goal.raceDate);
-  if (!longReaches(data, planWeeks, longest, ctx.paces.easy)) {
+  const longestKm = Math.max(0, ...costs.map((c) => c.longKm));
+  if (!longReaches(data, planWeeks, longest, ctx.paces.easy, longestKm)) {
     const at = costs.find((c) => c.longSec === longest)?.week ?? doc.weeks[0];
     if (at !== undefined)
       report('dugi-za-distancu', at, null, 'Najduži dugi plana ne stiže do dugog za distancu.');
@@ -721,7 +722,8 @@ export function warnings(input: WarningInput): Warning[] {
   /* S3 (krug 4): plan od 16+ nedelja koji ne stiže do dugog za distancu — posebno upozorenje, sa razlogom; prognoza
      tada ne računa napredak od obima (`buildState`). */
   const longSecMax = Math.max(0, ...costs.map((c) => c.longSec));
-  const reaches = longReaches(data, weeks, longSecMax, ctx.paces.easy);
+  const longKmMax = Math.max(0, ...costs.map((c) => c.longKm));
+  const reaches = longReaches(data, weeks, longSecMax, ctx.paces.easy, longKmMax);
   if (!reaches) {
     const need = a.longCheckKm ?? a.minLongKm;
     const byTime = a.minLongSec === undefined ? '' : ` ili ${fmtMinutes(a.minLongSec)}`;

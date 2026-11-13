@@ -360,13 +360,15 @@ export function longReaches(
   data: DistanceData,
   weeks: number,
   longSec: Seconds,
-  easyPaceSecPerKm: number
+  easyPaceSecPerKm: number,
+  /** Krug 10 (stavka 22): stvarni km najdužeg dugog (sa km bloka u tempu trke); bez njega km iz laganog tempa. */
+  longKm?: number
 ): boolean {
   const a = data.adequate;
   if (a.longCheckMinWeeks === undefined || weeks < a.longCheckMinWeeks) return true;
   const km = a.longCheckKm ?? a.minLongKm;
   return (
     longSec >= NEAR_ENOUGH * (a.minLongSec ?? Number.POSITIVE_INFINITY) ||
-    longSec / easyPaceSecPerKm >= NEAR_ENOUGH * km
+    Math.max(longSec / easyPaceSecPerKm, longKm ?? 0) >= NEAR_ENOUGH * km
   );
 }
