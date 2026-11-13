@@ -213,4 +213,25 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
     }
     expect(bad).toEqual([]);
   });
+
+  it('Z2: provera ili kvalitet koji otpadne postaje lagan dan ≤ 65 % dugog te nedelje', () => {
+    const bad: string[] = [];
+    for (const { s, r } of REPLANS) {
+      const ctx = paceCtxOf(r.after.header);
+      for (const w of r.after.weeks as PlanWeek[]) {
+        const old = (r.before.weeks as PlanWeek[]).find((x) => x.start === w.start);
+        const long = longSec(w, r.after);
+        if (old === undefined || long <= 0) continue;
+        for (const d of w.days) {
+          const o = old.days.find((x) => x.id === d.id);
+          if (o?.workout == null || d.workout === null || d.date <= r.afterState.today) continue;
+          if ((o.workout.kind === 'test' || o.workout.kind === 'quality') && d.workout.kind === 'easy') {
+            const sec = summarize(d.workout, ctx).durationSec;
+            if (sec > 0.65 * long + 300) bad.push(`${name(s.no)} ${d.date} lagano ${String(Math.round(sec / 60))} uz dugi ${String(Math.round(long / 60))} min`);
+          }
+        }
+      }
+    }
+    expect(bad).toEqual([]);
+  });
 });

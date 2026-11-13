@@ -1340,6 +1340,35 @@ function weekTotals(
 
 /** E2 (dopuna kruga 4): kad je nedelja skraćena (spremnost, bol, pauza), dugi i blok u njemu se skraćuju srazmerno —
     dugi ≤ `safety.shortenedLongMaxShare` nedelje u km. Menja samo promenljiv dugi; nedelja trke i 1–3 dana ne. */
+/** Z2 (krug 7): provera ili kvalitet koji otpadne (spremnost, rampa) postaje lagan dan ≤ udela dugog te nedelje
+    (65 %), ne dužine dugog (s14 ned 8, s05 ned 8, s16). Meri se prema KONAČNOM dugom nedelje. */
+function capDroppedDays(
+  days: PlanDay[],
+  recipes: ReadonlyMap<IsoDate, Recipe>,
+  week: PlanWeek,
+  header: PlanHeader,
+  today: IsoDate,
+  done: ReadonlySet<DayId>,
+  ctx: BuildCtx
+): PlanDay[] {
+  const long = days.find((d) => d.workout?.kind === 'long')?.workout ?? null;
+  if (long === null) return days;
+  const s = ctx.data.safety;
+  const most = Math.max(
+    minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length),
+    Math.round((easyShareOfLong(s, ctx.decisions.runDays.length) * summarize(long, ctx.pace).durationSec) / 300) * 300
+  );
+  return days.map((d) => {
+    const was = recipes.get(d.date)?.type;
+    void week;
+    if ((was !== 'test' && was !== 'quality') || d.workout?.kind !== 'easy' || !isMutable(d, header, today, done))
+      return d;
+    if (summarize(d.workout, ctx.pace).durationSec <= most + 60) return d;
+    const workout = realize({ type: 'easy', sec: most }, ctx);
+    return workout === null ? d : { ...d, workout };
+  });
+}
+
 function shortenLong(
   days: PlanDay[],
   week: PlanWeek,
@@ -1725,7 +1754,7 @@ export function runPass(
       }
       return final;
     });
-    const days = shortenLong(rawDays, week, header, state.today, done, ctx, opts);
+    const days = capDroppedDays(shortenLong(rawDays, week, header, state.today, done, ctx, opts), recipes, week, header, state.today, done, ctx);
     weekTags.push(
       new Set(
         days.flatMap((x) =>

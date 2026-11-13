@@ -626,8 +626,45 @@ function smoothExit(
       const workout = realize({ type: 'easy', sec }, ctxB);
       return workout === null ? d : { ...d, origin: 'template', workout };
     });
+    /* lagani dani na najmanjem: ostatak viška skida dugi, ne ispod poslednjeg dugog */
+    let shrunk: PlanWeek = { ...w, days: finalDays };
+    const rest = km(shrunk) - kmCap;
+    if (rest > 0.5) {
+      shrunk = {
+        ...shrunk,
+        days: shrunk.days.map((d): PlanDay => {
+          if (d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done)) return d;
+          const sec = summarize(d.workout, pace).durationSec;
+          const next = Math.max(lastLong, sec - rest * pace.paces.easy);
+          if (next >= sec - 60) return d;
+          const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
+          const workout = realize(
+            { type: 'long', sec: Math.round(next / 60) * 60, def, dose: Math.min(d.workout.workSec, next / 2), slot: null },
+            ctxB
+          );
+          return workout === null ? d : { ...d, origin: 'template', workout };
+        })
+      };
+    }
+    /* E2: u skraćenoj nedelji dugi ≤ `shortenedLongMaxShare` nedelje (D' = udeo × ostatak / (1 − udeo)) */
+    const lshare = data.safety.shortenedLongMaxShare;
+    const longDay = shrunk.days.find((d) => d.workout?.kind === 'long');
+    if (lshare !== undefined && longDay?.workout != null && isMutable(longDay, after.header, state.today, done)) {
+      const lkm = summarize(longDay.workout, pace).km;
+      const others = km(shrunk) - lkm;
+      const maxKm = (lshare * others) / (1 - lshare);
+      if (lkm > maxKm + 0.25) {
+        const sec = Math.max(lastLong, (maxKm * pace.paces.easy) - 30);
+        const def = data.library.find((x) => x.id === longDay.workout?.libraryId) ?? null;
+        const workout = realize(
+          { type: 'long', sec: Math.round(sec / 60) * 60, def, dose: Math.min(longDay.workout.workSec, sec / 2), slot: null },
+          ctxB
+        );
+        if (workout !== null)
+          shrunk = { ...shrunk, days: shrunk.days.map((d) => (d.id === longDay.id ? { ...d, origin: 'template', workout } : d)) };
+      }
+    }
     /* cilj nedelje prati skraćenje (nedelja je namerno manja, ne „ispod cilja") */
-    const shrunk: PlanWeek = { ...w, days: finalDays };
     const share = curKm > 0 ? Math.min(1, km(shrunk) / curKm) : 1;
     weeks[i] = {
       ...shrunk,
