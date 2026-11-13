@@ -1,7 +1,8 @@
 /* KRUG 12 (briefs/R12.md) — motor nad podacima polumaratona. */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
-   @typescript-eslint/no-unsafe-member-access -- scenariji su netipizovani */
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
+import { paceCtxOf, summarize } from '../../engine';
 import { pacesAnnounced } from '../../engine/testdata/round12';
 import { SCENARIOS } from './testdata/scenarios';
 
@@ -24,5 +25,15 @@ describe('krug 12 — polumaraton', () => {
           bad.push(`s${String(s.no)}: put kao bolest`);
       }
     expect(bad).toEqual([]);
+  });
+
+  it('M3: s26 — dugi 3 dana posle trke 10 km ne raste preko poslednjeg odrađenog dugog (60 min)', () => {
+    const r = ALL.find(({ s }) => s.no === 26)?.r;
+    const ctx = paceCtxOf(r.after.header);
+    const day = (r.after.weeks as any[])
+      .flatMap((w) => w.days)
+      .find((d) => d.date === '2027-01-17');
+    expect(day?.workout?.kind).toBe('long');
+    expect(summarize(day.workout, ctx).durationSec).toBeLessThanOrEqual(60 * 60 + 60);
   });
 });

@@ -203,9 +203,55 @@ function onResult(
     const w = adjustmentWindow(a);
     return w !== null && addDays(w.rampEnd, 28) >= state.today;
   });
-  if (planned && !returning) return { doc: built, until: window.rampEnd };
+  /* krug 12 (M3): trka koja nije provera iz plana — dugi u prva 3 dana posle nje ne raste preko poslednjeg odrađenog
+     dugog pre trke */
+  const noGrow = (d: PlanDoc): PlanDoc => (fromPlan ? d : capLongAfter(d, state, data, run.date));
+  if (planned && !returning) return { doc: noGrow(built), until: window.rampEnd };
   const smooth = smoothExit(built, doc, window.rampEnd, state, data);
-  return { doc: smooth.doc, until: smooth.until > window.rampEnd ? smooth.until : window.rampEnd };
+  return {
+    doc: noGrow(smooth.doc),
+    until: smooth.until > window.rampEnd ? smooth.until : window.rampEnd
+  };
+}
+
+/** Krug 12 (M3): dugi u `NO_FAST_DAYS_AFTER_EFFORT` dana posle trke ≤ najduže odrađeno trčanje pre nje (bez trke). */
+function capLongAfter(
+  doc: PlanDoc,
+  state: RunnerState,
+  data: DistanceData,
+  raceDay: IsoDate
+): PlanDoc {
+  /* poslednji odrađen dugi: trčanje na dan dugog iz plana, najkasnije pre trke */
+  const longIds = new Set(
+    doc.weeks
+      .flatMap((w) => w.days)
+      .filter((d) => d.workout?.kind === 'long')
+      .map((d) => d.id)
+  );
+  const lastRun = state.runs
+    .filter((r) => r.date < raceDay && r.dayId !== undefined && longIds.has(r.dayId))
+    .sort((a, b) => (a.date < b.date ? -1 : 1))
+    .pop();
+  const last = lastRun?.durationSec ?? lastLongBefore(state, raceDay);
+  if (last <= 0) return doc;
+  const pace = paceCtxOf(doc.header);
+  const ctx = buildCtx(doc.header, data);
+  const done = doneDayIds(state);
+  const end = addDays(raceDay, NO_FAST_DAYS_AFTER_EFFORT);
+  const weeks = doc.weeks.map((w) => ({
+    ...w,
+    days: w.days.map((d) => {
+      if (d.workout?.kind !== 'long' || d.date <= raceDay || d.date > end) return d;
+      if (!isMutable(d, doc.header, state.today, done)) return d;
+      if (summarize(d.workout, pace).durationSec <= last + 60) return d;
+      const workout = realizeLong(
+        { type: 'long', sec: Math.round(last / 60) * 60, def: null, dose: 0, slot: null },
+        ctx
+      );
+      return workout === null ? d : { ...d, origin: 'template' as const, workout };
+    })
+  }));
+  return { ...doc, weeks };
 }
 
 /** Dugi sa završnim delom u tempu (blok ili progresija). */
@@ -1559,8 +1605,10 @@ function explain(
           : dropped !== null
             ? ` Provera forme planirana za ${fmtDate(dropped)} se izostavlja: pun napor nije dobar test forme ${count(NO_TEST_AFTER_RACE_DAYS, DAYS)} posle trke.`
             : '';
+      const isTest = allDays(before).some((d) => d.id === run?.dayId && d.workout?.kind === 'test');
+      /* krug 12 (M3/M5): kratka trka van plana nije „provera iz plana" — oporavlja se kao provera */
       const day = planned
-        ? `${what}: provera forme je bila deo plana, pa su ${countWith(NO_FAST_DAYS_AFTER_EFFORT, NEXT, DAYS)} bez brzih deonica; ${resume}.${testNote}`
+        ? `${what}: ${isTest ? 'provera forme je bila deo plana' : 'trka je kratka, pa je oporavak kao posle provere forme'}, pa su ${countWith(NO_FAST_DAYS_AFTER_EFFORT, NEXT, DAYS)} bez brzih deonica; ${resume}.${testNote}`
         : `${what}: ${recovery}; ${resume}.${testNote}`;
       const old = fmtClock(raceTimeSec(before.header.form.paceVdot, data.distanceM));
       const faster = c.doc.header.form.paceVdot > before.header.form.paceVdot;
