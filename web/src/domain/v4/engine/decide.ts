@@ -134,6 +134,18 @@ export function minRampOf(safety: SafetyNumbers, easyPaceSecPerKm: number): numb
 }
 
 /** Korak dugog (S2): veće od `longStepSec` i `longStepKm` u laganom tempu. */
+/** M5 (krug 5): važi li najkraće lagano po nivou (nivo ima unos i trkač trči ≥ `minEasyFromRunDays` dana). */
+export function levelMinEasy(safety: SafetyNumbers, level: LevelId, runDays: number): boolean {
+  return safety.minEasyMin?.[level] !== undefined && runDays >= (safety.minEasyFromRunDays ?? 0);
+}
+
+/** M5 (krug 5): najkraće lagano trčanje nivoa (sekunde). */
+export function minEasyOf(safety: SafetyNumbers, level: LevelId, runDays: number): Seconds {
+  if (!levelMinEasy(safety, level, runDays)) return safety.minEasySec;
+  const min = safety.minEasyMin?.[level];
+  return min === undefined ? safety.minEasySec : Math.max(safety.minEasySec, min * 60);
+}
+
 export function longStepOf(safety: SafetyNumbers, easyPaceSecPerKm: number): Seconds {
   return Math.max(safety.longStepSec, (safety.longStepKm ?? 0) * easyPaceSecPerKm);
 }

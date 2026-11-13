@@ -820,6 +820,10 @@ export interface SafetyNumbers {
   maxFastShare: number;
   maxFastSharePeak: number;
   minEasySec: Seconds;
+  /** M5 (krug 5): najkraće lagano trčanje po nivou, u minutima; nivo bez unosa koristi `minEasySec`. */
+  minEasyMin?: Readonly<Record<LevelId, number>>;
+  /** Od koliko dana trčanja nedeljno važi `minEasyMin`. */
+  minEasyFromRunDays?: number;
   /** Lagan dan najviše ovoliki udeo dugog te nedelje; broj, ili mapa po broju dana trčanja („1"…„7"). */
   easyMaxShareOfLong: number | Readonly<Record<string, number>>;
   dayBeforeLongMaxShare: number;

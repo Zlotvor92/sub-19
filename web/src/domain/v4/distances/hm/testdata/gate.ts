@@ -185,8 +185,10 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   const build = weeks.filter(
     (g) => (g.kind === 'build' || g.kind === 'peak') && !g.ramp && full(g)
   );
+  /* M5 (krug 5): najkraće lagano po nivou — jedan dan manje uz upozorenje „dan-izostavljen" */
+  const dropOk = doc.header.warnings.some((w) => w.code === 'dan-izostavljen');
   for (const g of build)
-    if (g.workouts !== runDays)
+    if (g.workouts !== runDays && !(dropOk && g.workouts === runDays - 1))
       v.push(`n${String(g.index)} ${String(g.workouts)} treninga uz ${String(runDays)} dana`);
   /* 6. nedelja trke: lagan dan ≤ 50 min i ≤ isti dan prethodne nedelje */
   const raceWeek = doc.weeks[doc.weeks.length - 1];

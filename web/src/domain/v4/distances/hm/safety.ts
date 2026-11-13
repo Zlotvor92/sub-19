@@ -207,6 +207,10 @@ export const SAFETY: SafetyNumbers = {
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */
   minEasySec: 1500,
+  /* M5 (krug 5; trener § 8): najkraće lagano trčanje po nivou — iskusni nivoi 35 min, mali obim/povratak 30,
+     početnici ostaju na 25 */
+  minEasyMin: { brz: 35, srednji: 35, spor: 35, mali: 30, povratnik: 30 },
+  minEasyFromRunDays: 4,
   easyMaxShareOfLong: {
     '1': 0.68,
     '2': 0.68,

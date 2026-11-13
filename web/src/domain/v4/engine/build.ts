@@ -21,6 +21,8 @@ import {
   easyShareOfLong,
   longShareFor,
   longStepOf,
+  levelMinEasy,
+  minEasyOf,
   minRampOf,
   taperEasyMax
 } from './decide';
@@ -248,7 +250,7 @@ export function longPlan(
   if (wave !== undefined && week !== undefined && atCap && previousLongest > 0 && sec <= previousLongest + 60)
     sec *= wave;
   /* Dugi nije kraći od najkraćeg smislenog trčanja (krug 3, S13). */
-  return Math.max(ctx.data.safety.minEasySec, Math.round(sec / 60) * 60);
+  return Math.max(minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length), Math.round(sec / 60) * 60);
 }
 
 /** BUDŽET BRZOG RADA (§ 6.2 k. 6): redom dugi pa podražaji; `take` vraća dozu koja staje, `book` je knjiži. */
@@ -553,7 +555,7 @@ function easyFill(
   ctx: BuildCtx
 ): Map<IsoDate, Recipe> {
   const out = new Map<IsoDate, Recipe>();
-  const minEasy = ctx.data.safety.minEasySec;
+  const minEasy = minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length);
   const leftMin = week.targetLoad - week.fixedLoad;
   const addonCost = (day: EasyDay): { load: number; durationSec: number } =>
     day.addon !== null && day.addon.type === 'addon'
@@ -582,14 +584,21 @@ function easyFill(
   let days = [...pool].sort((a, b) => (a.date < b.date ? -1 : 1));
   if (days.length > 0 && budget(days) / days.length < minEasy) {
     if (week.runDays >= EASY_FLOOR_MIN_RUN_DAYS) {
+      /* M5 (krug 5): nivo sa najkraćim laganim po nivou meri i obim (minuti) — dan otpada kad najkraći lagani dani
+         ne staju u obim nedelje */
+      const byVolume = levelMinEasy(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length);
       const over = (list: EasyDay[]): boolean =>
         week.fixedLoad + addons(list) + (list.length * minEasy) / 60 >
-        week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET);
+          week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET) ||
+        (byVolume &&
+          (list.length * minEasy + addonSec(list)) / 60 > week.leftVolumeMin * (1 + EASY_FLOOR_OVER_TARGET));
       const dropOrder = [
         ...days.filter((d) => !afterQuality.has(d.date)),
         ...days.filter((d) => afterQuality.has(d.date))
       ];
-      while (days.length > 0 && over(days)) {
+      /* M5: nivo sa najkraćim laganim po nivou gubi najviše jedan dan nedeljno */
+      const least = byVolume ? days.length - 1 : 0;
+      while (days.length > least && days.length > 0 && over(days)) {
         const drop = dropOrder.shift();
         days = days.filter((d) => d.date !== drop?.date);
       }
@@ -684,7 +693,7 @@ function taperIntensity(
   const asEasy = (recipe: Recipe): Recipe => ({
     type: 'easy',
     sec: roundMin(Math.max(
-      ctx.data.safety.minEasySec,
+      minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
       Math.min(
         summarize(realize(recipe, ctx), ctx.pace).durationSec - 600,
         taperEasyMax(ctx.data.safety, ctx.decisions.runDays.length),
@@ -853,12 +862,16 @@ function layoutOnce(
   const roomFor = (date: IsoDate, load: LoadPoints, sec: Seconds): boolean => {
     const room = placedQuality === 0 ? EASY_FLOOR_OVER_TARGET : VOLUME_ROOM_OVER;
     const rest = runDays.map((wd) => dateOf(wd)).filter((x) => x !== date && !fixed.has(x));
-    const floor = rest.reduce((sum, x) => sum + s.minEasySec / 60 + addonLoad(x), 0);
+    const minEasy = minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length);
+    /* M5 (krug 5): nivo sa najkraćim laganim po nivou — kvalitet ostaje, a otpada jedan lagan dan (dan manje uz
+       rečenicu „dan-izostavljen"), dok ostaju bar dva lagana dana */
+    const spare = levelMinEasy(s, ctx.decisions.level, ctx.decisions.runDays.length) && rest.length >= 3 ? minEasy / 60 : 0;
+    const floor = rest.reduce((sum, x) => sum + minEasy / 60 + addonLoad(x), 0) - spare;
     /* i obim (minuti): kvalitet sa zagrevanjem i hlađenjem ne sme da digne nedelju preko pravila rasta (S2) */
     const volume = week.volumeMin ?? Number.POSITIVE_INFINITY;
-    const floorMin = rest.reduce((sum, x) => sum + (s.minEasySec + addonSec(x)) / 60, 0);
+    const floorMin = rest.reduce((sum, x) => sum + (minEasy + addonSec(x)) / 60, 0) - spare;
     /* Kad ni najkraći lagani dani ne staju u obim (mnogo dana, mali obim), važi samo provera bodova. */
-    const fits = fixedSec / 60 + floorMin + s.minEasySec / 60 <= volume * (1 + EASY_FLOOR_OVER_TARGET);
+    const fits = fixedSec / 60 + floorMin + minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length) / 60 <= volume * (1 + EASY_FLOOR_OVER_TARGET);
     return (
       fixedLoad + load + floor <= week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET) &&
       (!fits || (fixedSec + sec) / 60 + floorMin <= volume * (1 + room))
@@ -878,7 +891,7 @@ function layoutOnce(
     const others = runDays.filter((wd) => !fixed.has(dateOf(wd))).length - 2;
     const both =
       (fixedSec + secOf(order[a] as SlotItem) + secOf(order[b] as SlotItem)) / 60 +
-      (Math.max(0, others) * s.minEasySec) / 60;
+      (Math.max(0, others) * minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length)) / 60;
     if (both > (week.volumeMin ?? Number.POSITIVE_INFINITY) * (1 + VOLUME_ROOM_OVER)) {
       const first = order[a] as SlotItem;
       order[a] = order[b] as SlotItem;
@@ -989,7 +1002,7 @@ function layoutOnce(
         if (previous !== null) cap = Math.min(cap, previous.byWeekday.get(wd) ?? previous.max);
       }
       /* Plafoni ne spuštaju lagan dan ispod najkraćeg smislenog trčanja; kraći je samo dan pred trku. */
-      cap = Math.max(cap, s.minEasySec);
+      cap = Math.max(cap, minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length));
       if (date === eve) cap = Math.min(cap, RACE_EVE_MAX_SEC);
       return { date, addon: date === eve ? null : (addons.get(date) ?? null), cap, tight: calm };
     });
@@ -1180,7 +1193,7 @@ function shortenLong(
   const ratio = (share * (total - longKm)) / (1 - share) / longKm;
   const w = day.workout;
   const def = ctx.data.library.find((x) => x.id === w.libraryId) ?? steadyLongDef(ctx, null);
-  const sec = Math.round(Math.max(ctx.data.safety.minEasySec, summarize(w, ctx.pace).durationSec * ratio) / 60) * 60;
+  const sec = Math.round(Math.max(minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length), summarize(w, ctx.pace).durationSec * ratio) / 60) * 60;
   const recipe: Recipe = { type: 'long', sec, def, dose: Math.round(w.workSec * ratio), slot: null };
   const workout = realize(recipe, ctx);
   const out = [...days];

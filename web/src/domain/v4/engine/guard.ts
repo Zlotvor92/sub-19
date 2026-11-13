@@ -24,7 +24,7 @@ import {
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate, mondayOf } from './dates';
-import { longReaches, longStepOf, maxWorkOf, minRampOf } from './decide';
+import { longReaches, longStepOf, maxWorkOf, minEasyOf, minRampOf } from './decide';
 import {
   count,
   DAYS,
@@ -719,7 +719,7 @@ export function warnings(input: WarningInput): Warning[] {
       proposal: `Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana. Ako želiš rezultat, izaberi trku za bar ${count(a.minWeeks + 6, WEEKS, 'acc')}${a.shorter === undefined ? '' : ` ili kraću distancu (${a.shorter.label})`}.`
     });
   }
-  const dropped = droppedDayWarning(doc, costs, s.minEasySec);
+  const dropped = droppedDayWarning(doc, costs, minEasyOf(s, doc.header.decisions.level, doc.header.decisions.runDays.length));
   if (dropped !== null) out.push(dropped);
   const back = returnWarning(doc, state);
   if (back !== null) out.push(back);

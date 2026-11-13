@@ -94,6 +94,8 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
     'p02',
     'p03',
     /* p07 skinut u krugu 5 (R5): posle M7/P1 očekivano vreme se ne pogoršava */
+    /* krug 5 (M5): p06 1 s posle ponovnog planiranja (dan manje menja pripisani napredak) */
+    'p06',
     'p08',
     'vlasnik-v1',
     'vlasnik-v2'
