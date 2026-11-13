@@ -215,6 +215,8 @@ const hasBlock = (day: PlanDay | undefined): boolean =>
 const MISSED_MEANING = {
   block:
     'To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano',
+  /* krug 12 (M9): vršni kvalitet koji nije tempo trke (prag, intervali) se ne zove „tempo trke" */
+  peak: 'To je bio glavni brzi trening najteže nedelje',
   long: 'Dugi trening nosi izdržljivost za drugu polovinu trke',
   quality: 'To je bio glavni brzi trening te nedelje'
 } as const;
@@ -403,9 +405,18 @@ function onMissed(
   const block = hasBlock(day);
   const peakQuality = !isLong && week.intent.kind === 'peak';
   if (block || peakQuality) {
+    const rpWork = missed.steps.some(
+      (x) =>
+        'role' in x &&
+        x.role === 'work' &&
+        'target' in x &&
+        x.target.type === 'zone' &&
+        x.target.zone === 'RP'
+    );
+    const meaning = block || rpWork ? MISSED_MEANING.block : MISSED_MEANING.peak;
     if (nextBuildLong === undefined) {
       return notice(
-        MISSED_MEANING.block,
+        meaning,
         'do trke više nema nedelje u kojoj bi mogao da se nadoknadi — poslednje dve nedelje su za odmor, pa plan ostaje isti'
       );
     }
@@ -425,7 +436,7 @@ function onMissed(
     const defId = sample?.workout?.libraryId;
     if (wanted <= 0 || defId === undefined || (wanted === planned && !block)) {
       return notice(
-        MISSED_MEANING.block,
+        meaning,
         `sledeći dugi (${fmtDate(nextBuildLong.date)}) već nosi završni deo u tempu trke, pa se zbog ovog treninga ništa ne menja`
       );
     }
@@ -441,7 +452,7 @@ function onMissed(
       },
       nextBuildLong,
       base(
-        MISSED_MEANING.block,
+        meaning,
         `sledeći dugi (${fmtDate(nextBuildLong.date)}) nosi završni deo u tempu trke na prethodnom koraku, ne na većem`
       )
     );
@@ -1317,6 +1328,14 @@ function candidateFor(
 
 /* ------------------------------------------------------------------ objašnjenje (§ 10) */
 
+/** Krug 12 (M9): „posle bolesti / puta / povrede / pauze" — reč iz razloga pauze, ne uvek bolest. */
+const PAUSE_AFTER: Readonly<Record<EventOf<'pause'>['reason'], string>> = {
+  bolest: 'bolesti',
+  put: 'puta',
+  povreda: 'povrede',
+  nepoznato: 'pauze'
+};
+
 const PAUSE_REASON: Readonly<Record<EventOf<'pause'>['reason'], string>> = {
   bolest: ' zbog bolesti',
   put: ' zbog puta',
@@ -1509,7 +1528,7 @@ function explain(
         test !== null
           ? ` Provera forme je pomerena na ${fmtDate(test)}`
           : hadTest && !hasTest
-            ? ' Provera forme otpada: posle povratka nema nedelje rasterećenja bar 3 nedelje pred trku, a pun napor odmah posle bolesti nije dobar test forme'
+            ? ` Provera forme otpada: posle povratka nema nedelje rasterećenja bar 3 nedelje pred trku, a pun napor odmah posle ${PAUSE_AFTER[ev.reason]} nije dobar test forme`
             : '';
       const back = `${what}, pa je povratak postepen: treninzi su kraći do ${rampEnd}, a ${fastFrom(ev.to)}`;
       const tail = addDays(c.until, 1) < raceDate ? `; ${resume}` : '';

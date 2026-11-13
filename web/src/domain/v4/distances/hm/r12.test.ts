@@ -12,4 +12,16 @@ describe('krug 12 — polumaraton', () => {
     const replans = ALL.filter(({ s }) => !s.title.startsWith('E5'));
     expect(replans.flatMap(({ s, r }) => pacesAnnounced(`s${String(s.no)}`, r))).toEqual([]);
   });
+
+  it('M9: tekst imenuje tačnu vrstu treninga (prag nije „tempo trke") i razlog pauze (put nije bolest)', () => {
+    const bad: string[] = [];
+    for (const { s, r } of ALL)
+      for (const c of r.changes as { reason: string }[]) {
+        if (/ključni trening „prag/.test(c.reason) && /treninga u tempu trke/.test(c.reason))
+          bad.push(`s${String(s.no)}: prag kao tempo trke`);
+        if (/Pauza zbog puta/.test(c.reason) && /posle bolesti/.test(c.reason))
+          bad.push(`s${String(s.no)}: put kao bolest`);
+      }
+    expect(bad).toEqual([]);
+  });
 });
