@@ -229,6 +229,12 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (share > cap + 0.005)
       v.push(`n${String(g.index)} brz rad ${String(Math.round(share * 100))} % > ${String(cap * 100)} %`);
   }
+  /* 10. dopuna kruga 4: vršna nedelja 16–25 % brzog rada (početnik sa kratkim stažom i tegoba: ≥ 10 %) */
+  const easyStart =
+    doc.header.decisions.level === 'pocetnik-nov' || doc.header.decisions.painCaution === true;
+  const peakMin = easyStart ? 0.1 : 0.16;
+  if (weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
+    v.push(`vršna nedelja brz rad ${String(Math.round(peakFast * 100))} % < ${String(peakMin * 100)} %`);
   /* 9. nova provera (T7): plan ≥ 16 nedelja ima dugi ≥ 15 km ili 1 h 50 */
   const longestMin = Math.max(...weeks.map((g) => g.longMin));
   const longestKm = Math.max(...weeks.map((g) => g.longKm));

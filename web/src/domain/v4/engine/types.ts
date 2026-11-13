@@ -768,7 +768,14 @@ export interface SafetyNumbers {
   longVsRace?: { fromRaceSec: Seconds; overSec: Seconds; blockMaxSec: Seconds };
   /** Najviše rada u jednoj zoni nedeljno po nivou (krug 5, D7: tempo trke uklj. blok u dugom); nivo bez broja
       nema plafon. */
-  weeklyZoneMaxSec?: { zone: ZoneId; byLevel: Readonly<Record<LevelId, Seconds>> };
+  weeklyZoneMaxSec?: {
+    zone: ZoneId;
+    byLevel: Readonly<Record<LevelId, Seconds>>;
+    /** Podražaj koji dobija mesto kad plafon zone ne ostavi dozu (krug 4 dopuna). */
+    fallbackStimulus?: StimulusTag;
+  };
+  /** E2 (krug 4 dopuna): skraćena nedelja — dugi ≤ ovoliki deo nedelje u km (4+ dana). */
+  shortenedLongMaxShare?: number;
   /** Trka/test do ovoliko sekundi (i van plana) dobija oporavak kao planirana provera forme (krug 5, E5). */
   shortEffortSec?: Seconds;
   /** Bol od ovog nivoa vraća obim kao posle pauze; niži menja samo dane u prozoru zaštite (krug 5, E4).

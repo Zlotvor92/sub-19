@@ -136,6 +136,8 @@ export const RESTORE_PEAK_AFTER_DAYS = 21;
 export const RETURN_TEST_AFTER_RAMP_DAYS = 10;
 /** E3 (krug 5): pomerena provera ne ide u ± 2 dana od treninga u tempu trke. */
 export const RP_TEST_GAP_DAYS = 2;
+/** Silazak intenziteta: blok u dugom u nedelji −2 najviše ovoliki deo budžeta (kvalitet usred nedelje ima prednost). */
+export const TAPER_BLOCK_SHARE = 0.5;
 
 /* ------------------------------------------------------------------ spremnost (§ 6.5, § 14.1) */
 

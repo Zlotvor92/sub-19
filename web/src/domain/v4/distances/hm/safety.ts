@@ -151,9 +151,13 @@ export const SAFETY: SafetyNumbers = {
   painReturnFromLevel: 5,
   /* krug 5 (E5): trka do 65 min (10 km i kraće) van plana — oporavak kao planirana provera (s02 kao s01) */
   shortEffortSec: 3900,
+  /* krug 4 dopuna (E2): skraćena nedelja — dugi i blok srazmerno, dugi ≤ 45 % nedelje u km */
+  shortenedLongMaxShare: 0.45,
   /* krug 5 (D7): tempo trke (uklj. blok u dugom) nedeljno — početnik ≤ 45, srednji ≤ 60, napredni ≤ 75 min */
   weeklyZoneMaxSec: {
     zone: 'RP',
+    /* odsečen tempo trke postaje prag (dopuna kruga 4), ne lagan dan */
+    fallbackStimulus: 'prag',
     byLevel: {
       pocetnik: 2700,
       'pocetnik-nov': 2700,

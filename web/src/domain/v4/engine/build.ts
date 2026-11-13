@@ -10,6 +10,7 @@ import {
   RACE_NO_LONG_DAYS,
   RETURN_TEST_AFTER_RAMP_DAYS,
   RP_TEST_GAP_DAYS,
+  TAPER_BLOCK_SHARE,
   RETURN_WEEK_MAX_OVER_LAST,
   TAPER_ADDON_MIN_EASY_SEC
 } from './constants';
@@ -642,7 +643,11 @@ function taperIntensity(
       continue;
     }
     const work = isQuality && r.type === 'quality' ? r.dose : r.type === 'long' ? r.dose : 0;
-    const room = peakFastSec > 0 ? budget - fast : Number.POSITIVE_INFINITY;
+    /* dopuna kruga 4: u nedelji −2 prednost ima kvalitet usred nedelje — blok u dugom dobija najviše pola budžeta */
+    const room =
+      peakFastSec > 0
+        ? Math.min(budget - fast, isBlock ? TAPER_BLOCK_SHARE * budget : Number.POSITIVE_INFINITY)
+        : Number.POSITIVE_INFINITY;
     if (count >= t.weekBeforeMaxQuality || room < ctx.data.safety.minDoseSec) {
       out.set(date, r.type === 'long' ? plainLong(r) : asEasy(r));
       continue;
@@ -798,7 +803,7 @@ function layoutOnce(
       order[b] = first;
     }
   }
-  for (const item of order) {
+  for (let item of order) {
     if (item.date === (longWd === null ? null : dateOf(longWd))) continue;
     if (item.kind === 'addon') {
       addons.set(item.date, { type: 'addon', sec: 0, def: item.def });
@@ -817,6 +822,17 @@ function layoutOnce(
       fixed.set(item.date, recipe);
       fixedSec += summarize(realize(recipe, ctx), ctx.pace).durationSec;
       continue;
+    }
+    /* D7 dopuna: kad plafon zone ne ostavlja ni najmanju dozu, mesto dobija zamenski podražaj iz biblioteke
+       (`weeklyZoneMaxSec.fallbackStimulus`), ne lagano trčanje */
+    if (inZone(item.def) && zoneLeft < minDoseOf(item.def, ctx) && zoneCap?.fallbackStimulus !== undefined) {
+      const slot: SlotRef = { place: 'quality', stimulus: zoneCap.fallbackStimulus, index: 0, phase: item.slot.phase };
+      const capSec = d.doseCapSec[slot.stimulus] ?? 0;
+      const wanted = Math.min(capSec, item.wanted);
+      const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: false });
+      const zone = def === null ? null : mainZone(def.main);
+      if (def !== null && zone !== null && def.main.kind !== 'add-on' && def.main.kind !== 'all-out')
+        item = { ...item, def, slot, wanted, extra: extraWeight(zone, ctx) };
     }
     const dose = Math.min(
       budget.take(item.wanted, item.extra),
@@ -1032,6 +1048,45 @@ function weekTotals(
   return { durationSec, longSec, km };
 }
 
+/** E2 (dopuna kruga 4): kad je nedelja skraćena (spremnost, bol, pauza), dugi i blok u njemu se skraćuju srazmerno —
+    dugi ≤ `safety.shortenedLongMaxShare` nedelje u km. Menja samo promenljiv dugi; nedelja trke i 1–3 dana ne. */
+function shortenLong(
+  days: PlanDay[],
+  week: PlanWeek,
+  header: PlanHeader,
+  today: IsoDate,
+  done: ReadonlySet<DayId>,
+  ctx: BuildCtx,
+  opts: PassOptions
+): PlanDay[] {
+  const share = ctx.data.safety.shortenedLongMaxShare;
+  if (share === undefined || ctx.decisions.runDays.length < 4 || week.intent.kind === 'race') return days;
+  /* samo skraćena nedelja: ponovno planiranje ili nedelja u rampi/zaštiti */
+  if (opts.fresh === true && !underRamp(week.start, header.adjustments ?? [])) return days;
+  const kmOf = (d: PlanDay): number =>
+    d.workout === null || (d.workout.kind === 'race' && d.date === header.goal.raceDate)
+      ? 0
+      : summarize(d.workout, ctx.pace).km;
+  const total = days.reduce((sum, d) => sum + kmOf(d), 0);
+  const at = days.findIndex((d) => d.workout?.kind === 'long');
+  const day = days[at];
+  if (day === undefined || day.workout === null || total <= 0) return days;
+  const longKm = kmOf(day);
+  if (longKm <= share * total + 0.25) return days;
+  const inWindow = opts.window === null || (day.date >= opts.window.from && day.date <= opts.window.to);
+  if (!inWindow || !isMutable(day, header, today, done)) return days;
+  /* dugi D, ostatak R: D' ≤ share × (R + D') → D' = share × R / (1 − share) */
+  const ratio = (share * (total - longKm)) / (1 - share) / longKm;
+  const w = day.workout;
+  const def = ctx.data.library.find((x) => x.id === w.libraryId) ?? steadyLongDef(ctx, null);
+  const sec = Math.max(ctx.data.safety.minEasySec, summarize(w, ctx.pace).durationSec * ratio);
+  const recipe: Recipe = { type: 'long', sec, def, dose: Math.round(w.workSec * ratio), slot: null };
+  const workout = realize(recipe, ctx);
+  const out = [...days];
+  out[at] = { ...day, origin: 'template', locked: false, workout };
+  return out;
+}
+
 /** Broj nedelja gradnje/vrha pre nedelje `index`. */
 function buildsBefore(weeks: readonly PlanWeek[], index: number): number {
   return weeks.filter(
@@ -1184,7 +1239,7 @@ export function runPass(
       if (hard && (previousHard === null || date > previousHard)) previousHard = date;
     }
     let longAsDecided = false;
-    const days = week.days.map((day): PlanDay => {
+    const rawDays = week.days.map((day): PlanDay => {
       let final = day;
       const planned = recipes.get(day.date) ?? REST;
       const inWindow =
@@ -1258,6 +1313,7 @@ export function runPass(
       }
       return final;
     });
+    const days = shortenLong(rawDays, week, header, state.today, done, ctx, opts);
     const built: PlanWeek = {
       index: week.index,
       start: week.start,
