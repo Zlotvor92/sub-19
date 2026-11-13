@@ -76,7 +76,7 @@ uporedni prediktor, nije potvrđen van uzorka. Lični β je bolji od stalnog či
 ## 6. Šta podaci ne mogu da kažu
 - Puls: 21 trčanje, raštrkano → trend pulsa nijednom nije izračunat; tvrdnja „radi i bez pulsa" je ovde trivijalno tačna.
 - Samo 1 polumaraton i 1 trka ~14 km; sve ostalo ≤ 5 km → prenos na HM se ne može potvrditi van uzorka.
-- Teren i vetar trka nepoznati (14 km 17. 5. „Somborski polumaraton 14 km" — moguće sporija staza).
+- Teren i vetar trka nepoznati. Sombor 17. 5. je potvrđeno trka na 14 km (vlasnik, 13. 11.) i u tabeli je punovažan rezultat na 14,14 km.
 - Nema dana plana → signal kvaliteta (§ 7.3) i R12 se ne mogu proveriti na stvarnim podacima.
 - Interval 9. 8. je u podacima „3×1 km punim naporom" — uzet kao uzastopan test (krugovi nemaju pauzu); ako je bilo
   stajanja, 3 km je precenjen za ~1 VDOT.
