@@ -290,6 +290,8 @@ export const guard: GuardFn = (doc, _state, data) => {
   const races: PlanDay[] = [];
   let lastWorkout: PlanDay | null = null;
   let previous: PlanDay | null = null;
+  /* R8 t. 1: udeo brzog rada sužavanja je podatak distance (`safety.taper.weekBeforeMaxOfPeak`) */
+  const taperShare = data.safety.taper?.weekBeforeMaxOfPeak ?? GUARD_TAPER_WORK_SHARE;
   /* Vršna nedelja pod rampom (skraćen brz rad) nije merilo za sužavanje. */
   const peakWork = Math.max(
     0,
@@ -513,13 +515,13 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (
       week.intent.kind === 'taper' &&
       peakWork > 0 &&
-      c.fastSec > GUARD_TAPER_WORK_SHARE * peakWork + GUARD_DOSE_TOLERANCE_SEC
+      c.fastSec > taperShare * peakWork + GUARD_DOSE_TOLERANCE_SEC
     ) {
       report(
         'taper',
         week,
         null,
-        'Brz rad u nedelji sužavanja je veći od 60 % rada vršne nedelje.'
+        `Brz rad u nedelji sužavanja je veći od ${String(Math.round(taperShare * 100))} % rada vršne nedelje.`
       );
     }
     if (week.intent.source === 'template') {

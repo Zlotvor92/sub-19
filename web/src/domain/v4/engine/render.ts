@@ -214,8 +214,8 @@ export function raceNotes(
   const pace = (timeSec / data.distanceM) * 1000;
   const values = {
     pace: fmtPace(pace),
-    paceFrom: fmtPaceBare(pace + 5),
-    paceTo: fmtPace(pace + 10),
+    paceFrom: fmtPaceBare(pace + (data.safety.raceStartPaceOffsetSec?.from ?? 5)),
+    paceTo: fmtPace(pace + (data.safety.raceStartPaceOffsetSec?.to ?? 10)),
     time: fmtClock(timeSec),
     basis: fromGoal ? 'tvoj cilj' : 'današnja forma',
     feel: feelOf('RP', data, raceDay.expectedSec)

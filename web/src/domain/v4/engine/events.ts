@@ -76,7 +76,10 @@ export const deriveEvents: DeriveEventsFn = (doc, state) => {
     (p) => p.to > since && pauseLength(p.from, p.to) >= PAUSE_MIN_DAYS
   );
   const firstDay = maxDate(addDays(since, 1), header.startDate);
-  const pauses = [...declared, ...derivedPauses(days, runDates, firstDay, today, declared)];
+  const pauses = [
+    ...declared,
+    ...derivedPauses(days, runDates, firstDay, today, declared, header.decisions.runDays)
+  ];
   for (const pause of pauses) {
     events.push({
       id: `pause:${pause.from}:${pause.to}`,

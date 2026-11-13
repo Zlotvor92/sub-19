@@ -801,6 +801,8 @@ export interface SafetyNumbers {
   shortenedLongMaxShare?: number;
   /** Trka/test do ovoliko sekundi (i van plana) dobija oporavak kao planirana provera forme (krug 5, E5). */
   shortEffortSec?: Seconds;
+  /** R8 t. 8: start trke — `{paceFrom}`–`{paceTo}` u napomeni trke je tempo trke + ovoliko s/km (bez: 5 i 10). */
+  raceStartPaceOffsetSec?: { from: number; to: number };
   /** Bol od ovog nivoa vraća obim kao posle pauze; niži menja samo dane u prozoru zaštite (krug 5, E4).
       Podrazumevano 4. */
   painReturnFromLevel?: number;

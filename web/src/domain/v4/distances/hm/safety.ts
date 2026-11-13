@@ -169,6 +169,8 @@ export const SAFETY: SafetyNumbers = {
   painReturnFromLevel: 5,
   /* krug 5 (E5): trka do 65 min (10 km i kraće) van plana — oporavak kao planirana provera (s02 kao s01) */
   shortEffortSec: 3900,
+  /* R8 t. 8: start polumaratona 5–10 s/km sporije od tempa trke (napomena trke) */
+  raceStartPaceOffsetSec: { from: 5, to: 10 },
   /* krug 4 dopuna (E2): skraćena nedelja — dugi i blok srazmerno, dugi ≤ 45 % nedelje u km */
   shortenedLongMaxShare: 0.45,
   /* krug 4 dopuna (D8): prag i tempo trke bliži od 5 s/km — jedan podražaj nedeljno (p05, p06) */
@@ -257,5 +259,6 @@ export const ADEQUATE: AdequatePrep = {
   minTenureWeeks: 8,
   /* vrh koji nivo traži da bi kvalitet nivoa stao u plan (upozorenje `obim-za-nivo`): brz ≈ 60 km (v3) */
   minPeakWeeklyKmByLevel: { brz: 60 },
-  shorter: { distanceId: '10k', label: '10 km' }
+  /* R8 t. 9: id foldera distance (adapteri, registar) */
+  shorter: { distanceId: 'tenk', label: '10 km' }
 };

@@ -159,6 +159,8 @@ export const BLOCK_GATE_PAUSE_DAYS = 7;
 export const BLOCK_GATE_SHARE = 0.9;
 export const BLOCK_GATE_MAX_DAYS = 42;
 export const PAUSE_MIN_DAYS = 3;
+/** R8 t. 5: praznina je pauza tek kad je duža od najvećeg razmaka u rasporedu trkača + ovoliko dana. */
+export const PAUSE_SCHEDULE_SLACK_DAYS = 2;
 /** Posle pauze trkač koji već trči ovoliko dana (≥ 6 trčanja) se vratio: plan ne ponavlja rampu (krug 5, E6). */
 export const RETURNED_AFTER_DAYS = 21;
 /** Izvedena pauza traži bar 2 planirana treninga u prekidu (§ 2.3). */

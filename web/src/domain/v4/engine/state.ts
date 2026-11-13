@@ -343,7 +343,8 @@ function allPauses(facts: RunnerFacts, runs: readonly Run[], doc: PlanDoc | unde
     new Set(runs.map((r) => r.date)),
     from,
     facts.today,
-    declared
+    declared,
+    doc.header.decisions.runDays
   );
   return [...declared, ...derived].sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0));
 }

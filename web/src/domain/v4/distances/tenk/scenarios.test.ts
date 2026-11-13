@@ -18,10 +18,7 @@ import { SCENARIOS } from './testdata/scenarios';
    svaki je zahtev prema motoru u `docs/generators-v4/reports/F7-10K-REPORT.md`. Kad motor bude ispravljen, test
    `poznate greške su još tu` pada i stavka se briše. */
 const KNOWN = new Map<string, string>([
-  /* 3 dana (uto, čet, ned): propušteni čet + ned daju 5 dana bez trčanja, a `deriveEvents` iz praznine izvodi
-     PAUZU (rampa povratka), pa se dira i sledeći dugi i nedelja −2 */
-  ['s11 sledeći dugi n15 kraći od prvobitnog', 'pauza izvedena iz praznine kod 3 dana'],
-  ['s11 izmena u sužavanju n16 (w16d1)', 'pauza izvedena iz praznine kod 3 dana'],
+  /* s11 (pauza izvedena iz praznine kod 3 dana) skinut u krugu 8 (R8 t. 5: praznina > najveći razmak + 2 dana) */
   /* trka 5 km na dan testa 3 km (početnik): rezultat bolji od današnje forme, a prognoza dana trke sporija za 47 s —
      preostali pripisani napredak se posle rezultata računa od kraćeg ostatka pripreme (forma/motor, Z4) */
   ['s03 bolji rezultat usporio prognozu 3171 → 3218', 'pripisani napredak posle rezultata (Z4)'],
