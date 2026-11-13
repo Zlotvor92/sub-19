@@ -10,3 +10,4 @@ export { canonical, fingerprint, serializePlan } from './fingerprint';
 export { summarize, type PaceCtx, type WorkoutSummary, paceCtxOf } from './load';
 export { isMutable } from './build';
 export { declaredForm } from './formFallback';
+export { effortTimeSec, vdotAt, zoneVdot } from './vdot';

@@ -191,7 +191,8 @@ describe('R12 sa ciljevima nedelja plana (krug 3): kao S09 i S21', () => {
 describe('R13 — pad baze', () => {
   it('baza ≤ 70 % one od pre 6 nedelja: forma blago opada, sa rečenicom; najviše −3 %', () => {
     const runs = history(8, (w) => (w >= 2 ? 0.35 : 1));
-    const far = { distanceM: HALF, raceDate: add(T0, 400) };
+    /* cilj iste dužine kao uneti rezultat (10 km): bez prenosa na dužinu */
+    const far = { distanceM: TEN, raceDate: add(T0, 400) };
     const e = estimateForm(facts(runs, add(T0, 7 * 8 - 1)), far, null);
     const drop = e.history.filter((h) => h.reason.includes('šest nedelja'));
     expect(drop.length).toBeGreaterThan(0);
@@ -229,7 +230,7 @@ describe('R13 — pad baze', () => {
 
 describe('R14 — prvi rezultat i trka sa hodanjem', () => {
   const noResult = { profile: { easyPaceSecPerKm: 400 } };
-  const far = { distanceM: HALF, raceDate: add(T0, 400) };
+  const far = { distanceM: TEN, raceDate: add(T0, 400) };
 
   it('trka sa hodanjem: bez korekcije, vreme = rezultat, pouzdanost srednja, rečenica', () => {
     const paces = Array.from({ length: 21 }, (_, i) => (i % 5 === 4 ? 560 : 360));
@@ -242,7 +243,7 @@ describe('R14 — prvi rezultat i trka sa hodanjem', () => {
       effort: 'race',
       splits: paces.map((p) => ({ paceSec: p }))
     };
-    const e = estimateForm(facts([race], T0, noResult), far, null);
+    const e = estimateForm(facts([race], T0, noResult), { ...far, distanceM: HALF }, null);
     expect(Math.abs(e.current.raceTimeSec - dur)).toBeLessThanOrEqual(2);
     expect(e.current.confidence).toBe('srednja');
     expect(e.history.find((h) => h.signal === 'trka')?.reason).toContain('hodanja');

@@ -94,9 +94,21 @@ function replanWith(start: Any, facts: Any, extraEvents: Any[] = []): Any {
 }
 
 /* E1 — rezultat pripremne trke na danu provere forme */
-function e1(id: string, week: number, distanceM: number, timeSec: number): Scenario['run'] {
+/** `time`: sekunde, ili `{ share }` = udeo očekivanog vremena na toj dužini po ličnoj krivi plana (F4-K2: očekivano
+    se računa istim `effortTimeSec` kao pun napor u planu). */
+function e1(
+  id: string,
+  week: number,
+  distanceM: number,
+  time: number | { share: number }
+): Scenario['run'] {
   return () => {
     const start = startPlan(id);
+    const h = start.doc.header;
+    const timeSec =
+      typeof time === 'number'
+        ? time
+        : Math.round(time.share * E.effortTimeSec(h.form.paceVdot, distanceM, h.form.transfer));
     const day =
       weekOf(start.doc, week).days.find((d: Any) => d.workout?.kind === 'test') ??
       qualityDay(start.doc, week);
@@ -407,20 +419,20 @@ export const SCENARIOS: Scenario[] = [
   {
     no: 1,
     id: 'p01',
-    title: 'E1: ned 10, trka 5 km 21:30 (očekivano 22:10)',
-    run: e1('p01', 10, 5000, 1290)
+    title: 'E1: ned 10, trka 5 km 3,0 % brže od očekivanog',
+    run: e1('p01', 10, 5000, { share: 0.97 })
   },
   {
     no: 2,
     id: 'p04',
-    title: 'E1: ned 12, trka 5 km 26:10 (očekivano 27:00)',
-    run: e1('p04', 12, 5000, 1570)
+    title: 'E1: ned 12, trka 5 km 3,1 % brže od očekivanog',
+    run: e1('p04', 12, 5000, { share: 0.969 })
   },
   {
     no: 3,
     id: 'p11',
-    title: 'E1: ned 12, trka 5 km 26:05 umesto testa 3 km (očekivano 27:00)',
-    run: e1('p11', 12, 5000, 1565)
+    title: 'E1: ned 12, trka 5 km umesto testa 3 km, 3,4 % brže od očekivanog',
+    run: e1('p11', 12, 5000, { share: 0.966 })
   },
   {
     no: 4,

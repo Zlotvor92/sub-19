@@ -175,7 +175,10 @@ describe('motor + procena forme, dan za danom kroz ceo plan', () => {
     const sim = simulate(WITH_TEST, (day, doc) => {
       const run = asPlanned(day, doc);
       if (day.workout?.kind !== 'test') return run;
-      const sec = Math.round(raceTimeSec(doc.header.form.paceVdot + 2, 3000));
+      /* 3 km se prenosi na cilj 8 km uz umanjenje β·ln(8/3) (F4-K2; β ≤ 3,5): rezultat je i posle prenosa bolji za 2 */
+      const sec = Math.round(
+        raceTimeSec(doc.header.form.paceVdot + 2 + 3.5 * Math.log(8000 / 3000), 3000)
+      );
       return {
         ...run,
         effort: 'test',

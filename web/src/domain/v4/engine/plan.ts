@@ -181,6 +181,8 @@ export function createPlan(
   const hist = historyBase(state, baseLoadOf(state));
   const baseLoad = hist.baseLoad ?? baseLoadOf(state);
   const form = state.form.current;
+  /* F4-K2: lična kriva forme po dužini iz procene (tempa svake zone po svom sidru) */
+  const transfer = state.form.transfer;
   const level = pickLevel(data, {
     yearsRunning: state.profile.yearsRunning,
     beginner: state.profile.beginner === true,
@@ -199,18 +201,18 @@ export function createPlan(
     longestRecentSec: state.longestRecentSec,
     runDays: availability.runDays,
     longDay: availability.longDay,
-    easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
+    easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false, undefined, transfer).easy,
     raceSec: state.form.raceDay.expectedSec,
     ladder: ladderInputOf({
       baseLoad,
-      easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
+      easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false, undefined, transfer).easy,
       weeks,
       yearsRunning: state.profile.yearsRunning,
       painInYear: (state.painHistory ?? []).length > 0,
       safety: data.safety
     })
   });
-  const easyPace = zonePaces(form.vdot, data.distanceM, false).easy;
+  const easyPace = zonePaces(form.vdot, data.distanceM, false, undefined, transfer).easy;
   const fromRuns = !state.load.seeded && state.longestRecentSec > 0;
   const decisions: Decisions = {
     ...decided,
@@ -251,6 +253,7 @@ export function createPlan(
         current: form,
         paceVdot: form.vdot,
         pacesUpdatedOn: state.today,
+        ...(transfer !== undefined ? { transfer } : {}),
         raceDay: adjustRaceDay(state.form.raceDay, form.raceTimeSec, {
           raceDayWiden: widenOf(state, data)
         })
@@ -259,7 +262,8 @@ export function createPlan(
         form.vdot,
         data.distanceM,
         form.confidence === 'niska',
-        data.safety.intervalPaceFloor
+        data.safety.intervalPaceFloor,
+        transfer
       ),
       decisions,
       warnings: [],

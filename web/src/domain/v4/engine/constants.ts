@@ -18,6 +18,21 @@ export const SHARE_K2 = -0.1932605;
 export const ZONE_SHARE = { E: 0.66, M: 0.8, T: 0.88, I: 0.975, R: 1.05 } as const;
 export const EASY_SLOW_SHARE = 0.62;
 export const EASY_FAST_SHARE = 0.7;
+/** Lična kriva forme po dužini (F4-K2): sidro zone = dužina trke koju trkač pretrči za ovoliko sekundi punim
+    naporom (motor ne zna dužine trka, § 11). R i I ≈ 20 min (rekreativcu ≈ trka od 5 km), T ≈ 45 min (≈ 10 km);
+    E/lagano i dugi: duže od dužine cilja i trke od ≈ 75 min (rekreativcu ≈ 15 km; za cilj od 75 min i duži = cilj); M i tempo trke = dužina cilja. [niska–srednja] */
+export const ZONE_ANCHOR_SEC = { R: 1200, I: 1200, T: 2700 } as const;
+export const EASY_ANCHOR_MIN_SEC = 4500;
+/** Dužina u prenosu se ograničava na trke od 4 min do 5 h punog napora (≈ 1,5 km do ≈ 45 km). */
+export const TRANSFER_MIN_SEC = 240;
+export const TRANSFER_MAX_SEC = 18000;
+/** Bez ličnog β prenos naviše (ka kraćoj dužini) uzima pola β: ne ubrzavamo intervale na osnovu pretpostavke. */
+export const TRANSFER_UP_SHARE = 0.5;
+/** Granice krive (odluka organizatora, F4-K2): od preloma naviše najviše ≈ 6 s/km bržih intervala (tempo I);
+    naniže najviše ≈ 8 s/km sporijeg tempa trke (približno tempom M) kad je prelom na unetom rezultatu bez istorije
+    (`Transfer.capDown`) — stvarne trke u istoriji koriste pun β. Efektivni β se tu zaustavlja. */
+export const TRANSFER_UP_MAX_SEC = 6;
+export const TRANSFER_DOWN_MAX_SEC = 8;
 /** Tempa se zaokružuju na 1 s/km (§ 5.4). */
 export const PACE_ROUND_SEC = 1;
 /** Bisekcija vremena trke: granice brzine (m/s) i broj koraka; 60 koraka daje tačnost ispod 1 ms. */

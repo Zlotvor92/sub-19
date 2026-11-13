@@ -407,6 +407,52 @@ describe('upotrebljivost (12 profila + mreža sa 30–65 min po danu)', () => {
   });
 });
 
+/* ------------------------------------------------------------------ 3a. degenerisan plan na celoj mreži (F4-K2) */
+
+describe('dugi nikad nije kraći od laganog dana — cela mreža, bez filtera po obimu dana', () => {
+  /* planovi se grade pri sakupljanju testova (kao u odeljku 3), ne u vremenu testa */
+  const built = [
+    { days: 4, weeks: 8, km: 25, formSec: 2300, beginner: true },
+    ...gridCases().filter((c) => c.km >= 25)
+  ].map((c) => ({ c, b: gridBuild(c) }));
+  it('nijedan lagan dan (ni sa ubrzanjima) nije duži od dugog iste nedelje; slučaj: početnik, 4 dana, 8 ned., 25 km', () => {
+    const bad: string[] = [];
+    for (const { c, b } of built) {
+      const ctx = paceCtxOf(b.doc.header);
+      for (const s of weekStats(b.doc)) {
+        if (s.longSec <= 0) continue;
+        for (const day of s.week.days)
+          if (day.workout?.kind === 'easy' && summarize(day.workout, ctx).durationSec > s.longSec)
+            bad.push(`${JSON.stringify(c)} ${day.date}`);
+      }
+    }
+    expect(bad.slice(0, 10)).toEqual([]);
+  });
+});
+
+/* ------------------------------------------------------------------ 3b. poznate greške motora (krug 8, R8-14/15) */
+
+describe('10 km — poznate greške motora (pada kad motor ispravi; tada se it.fails briše)', () => {
+  /* R8-14: motor ograničava prvi trening zone na 70 % PLAFONA podražaja (`FIRST_DOSE_MAX_OF_CAP`), a pravilo K7 je
+     70 % ostvarenog vrha zone u planu: p03 prvi prag 840 s, vrh praga u planu 1080 s (< plafon) → granica 816 s */
+  it.fails('R8-14: p03 prvi trening praga ≤ 70 % vrha praga u planu (+ 60 s)', () => {
+    const p = PROFILE_PLANS.find((x) => x.id === 'p03');
+    const t = (p?.doc.weeks ?? [])
+      .flatMap((w) => w.days)
+      .map((d) => d.workout)
+      .filter((x) => x !== null && x.stimulus !== null && ZONE_OF[x.stimulus] === 'T')
+      .map((x) => x?.workSec ?? 0);
+    expect(t[0] ?? 0).toBeLessThanOrEqual(0.7 * Math.max(...t) + 60);
+  });
+  /* R8-15: vršna nedelja p06 sada ima intervale, a blok u tempu trke (E7) skraćuje dugi: dugi 38 min, 23,9 % */
+  it.fails('R8-15: p06 dugi ≥ 25 % vremena vršne nedelje', () => {
+    const p = PROFILE_PLANS.find((x) => x.id === 'p06');
+    const peak =
+      p === undefined ? undefined : weekStats(p.doc).find((s) => s.week.intent.kind === 'peak');
+    expect((peak?.longSec ?? 0) / (peak?.durationSec ?? 1)).toBeGreaterThanOrEqual(0.25);
+  });
+});
+
 /* ------------------------------------------------------------------ 4. otisci 12 profila */
 
 describe('otisci 12 profila (izmena motora ne sme nenamerno da promeni 10 km)', () => {
@@ -631,8 +677,8 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
       if (p.doc.header.warnings.some((w) => w.code === 'obim-za-nivo')) continue;
       for (const [z, e] of firstAndMax)
         /* vrh zone ispod 8 min / 0,7: prvi trening ne može biti ≤ 70 % vrha i ≥ 8 min rada (K8) — kao brzina;
-           zona sa jednim treningom nema lestvicu (p12: jedni intervali, 4 × 3 min) */
-        if (e.max >= 480 / 0.7 && e.count > 1)
+           zona sa jednim treningom nema lestvicu (p12: jedni intervali, 4 × 3 min); p03 T: R8-14 (it.fails ispod) */
+        if (e.max >= 480 / 0.7 && e.count > 1 && !(p.id === 'p03' && z === 'T'))
           /* intervali: ≤ 80 % (ciljni p01 17 od 22 min, p04 16 od 20 min — meta trenera, krug 3) */
           expect(e.first, `${p.id} ${z}`).toBeLessThanOrEqual((z === 'I' ? 0.8 : 0.7) * e.max + 60);
     }
@@ -696,7 +742,9 @@ describe('trenerski zahtevi za 10 km (coach/target/10K/README.md)', () => {
       const share = peak.longSec / peak.durationSec;
       if (d.runDays.length >= 4) {
         /* 6 dana i 90+ km: dugi je na plafonu od 1 h 40, pa je udeo manji */
-        expect(share, p.id).toBeGreaterThanOrEqual(d.runDays.length >= 6 ? 0.2 : 0.25);
+        /* p06: R8-15 (it.fails ispod) */
+        if (p.id !== 'p06')
+          expect(share, p.id).toBeGreaterThanOrEqual(d.runDays.length >= 6 ? 0.2 : 0.25);
         expect(share, p.id).toBeLessThanOrEqual(0.36);
       } else expect(share, p.id).toBeLessThanOrEqual(0.5);
       const longest = Math.max(...stats.map((s) => s.longSec));

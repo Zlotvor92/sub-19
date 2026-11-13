@@ -1,7 +1,7 @@
 /* V4 — FORMA IZ TRČANJA (SPEC § 7, § 14.3, § 14.6; AGENTS V4 t. 9a).
    Čista funkcija: ista trčanja → ista procena; ulaz se ne menja. Trčanja se obrađuju hronološki, dan po dan;
    svaka promena je zapis `FormChange` sa rečenicom „zašto". */
-import { DEFAULT_VDOT, EASY_FAST_SHARE, ZONE_SHARE } from '../engine/constants';
+import { DEFAULT_VDOT, ZONE_SHARE } from '../engine/constants';
 import type {
   Confidence,
   FormChange,
@@ -10,6 +10,7 @@ import type {
   IsoDate,
   Meters,
   SecPerKm,
+  Transfer,
   Vdot,
   ZoneId
 } from '../engine/types';
@@ -19,8 +20,10 @@ import {
   raceTimeSec,
   vdotFromEasyPace,
   effortResult,
+  vdotAt,
   vdotFromResult,
-  vo2AtSpeed
+  vo2AtSpeed,
+  zoneVdot
 } from '../engine/vdot';
 import * as C from './constants';
 import {
@@ -134,7 +137,13 @@ interface QualityEvidence {
 }
 
 /** § 7.3. `null` = trčanje nije kvalitet ili je „između" (bez dokaza). */
-export function qualityEvidence(r: FitnessRun, old: Vdot, goalM: Meters): QualityEvidence | null {
+export function qualityEvidence(
+  r: FitnessRun,
+  old: Vdot,
+  goalM: Meters,
+  /** F4-K2: lična kriva; tempo zone i dokaz važe na sidru zone (R, I 5 km, T 10 km) i prevode se na cilj. */
+  transfer?: Transfer
+): QualityEvidence | null {
   if (!usableForForm(r) || r.effort !== undefined || r.planned === undefined) return null;
   if (!isQualityZone(r.planned.zone)) return null;
   const work = (r.laps ?? []).filter(
@@ -144,9 +153,13 @@ export function qualityEvidence(r: FitnessRun, old: Vdot, goalM: Meters): Qualit
   const workSec = work.reduce((a, l) => a + l.durationSec, 0);
   const workM = work.reduce((a, l) => a + l.distanceM, 0);
   const pr = (workSec / workM) * 1000;
-  const pc = zonePace(r.planned.zone, old, goalM);
+  const zone = r.planned.zone;
+  const anchorZone = zone === 'T' || zone === 'I' || zone === 'R' ? zone : null;
+  const zoneV = anchorZone === null ? old : zoneVdot(old, anchorZone, transfer);
+  const pc = zonePace(zone, zoneV, goalM);
   const done = workSec >= C.QUALITY_DONE_SHARE * r.planned.workSec;
-  const atPace = vdotForZonePace(r.planned.zone, pr, goalM);
+  /* dokaz na sidru zone → cilj: ista razlika kao između očekivanog na sidru i procene na cilju */
+  const atPace = vdotForZonePace(zone, pr, goalM) - (zoneV - old);
   if (done && pr <= C.QUALITY_HELD_RATIO * pc) {
     const v =
       r.rpe !== undefined && r.rpe >= C.QUALITY_LIMIT_RPE
@@ -247,7 +260,7 @@ function startingPoint(
     return { vdot: vdotFromEasyPace(p.easyPaceSecPerKm), source: 'lagani-tempo' };
   }
   /* Bez izjave: medijana tempa trčanja ≥ 25 min iz prve 4 nedelje istorije, čitana kao GORNJA granica laganog
-     (70 % VO2max): rekreativci lagano često trče brže od 66 %, pa bi 66 % precenilo formu (odluka F4, § 2.4). */
+     (72 % VO2max, F4-K2): rekreativci lagano često trče brže od 66 %, pa bi 66 % precenilo formu (odluka F4, § 2.4). */
   const first = runs[0];
   if (first !== undefined) {
     const until = dayNum(first.date) + 27;
@@ -258,7 +271,7 @@ function startingPoint(
       )
       .map((r) => (r.durationSec / r.distanceM) * 1000);
     if (paces.length > 0) {
-      return { vdot: vo2AtSpeed(60000 / median(paces)) / EASY_FAST_SHARE, source: 'trcanja' };
+      return { vdot: vo2AtSpeed(60000 / median(paces)) / C.EASY_START_SHARE, source: 'trcanja' };
     }
   }
   return { vdot: DEFAULT_VDOT, source: 'nista' };
@@ -287,7 +300,104 @@ export function estimateForm(
     .slice()
     .sort((a, b) => dayNum(a.date) - dayNum(b.date) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
-  const init = startingPoint(facts, runs);
+  /* F4-K2: prenos rezultata na dužinu cilja — β po obimu poslednjih 8 nedelja, lični β iz dve dužine */
+  const firstRunAt = runs[0] !== undefined ? dayNum(runs[0].date) : Number.POSITIVE_INFINITY;
+  const weeklyKmAt = (d: number): number | null => {
+    if (firstRunAt > d) return facts.profile.weeklyKm ?? null;
+    let km = 0;
+    for (const r of runs) {
+      const day = dayNum(r.date);
+      if (day > d - C.TRANSFER_VOLUME_DAYS && day <= d) km += r.distanceM / 1000;
+    }
+    return (km * 7) / Math.min(C.TRANSFER_VOLUME_DAYS, d - firstRunAt + 1);
+  };
+  const defaultBeta = (km: number | null): number => {
+    if (km === null) return C.TRANSFER_BETA_UNKNOWN;
+    for (const row of C.TRANSFER_BETA) if (km >= row.minWeeklyKm) return row.beta;
+    return C.TRANSFER_BETA_UNKNOWN;
+  };
+  /** Rezultati pre prenosa (bez hodanja i vrućine), za lični β. */
+  const rawResults: { day: number; distanceM: Meters; vdot: Vdot }[] = [];
+  const personalBetaAt = (d: number): number | null => {
+    const pool = rawResults.filter((x) => x.day <= d && d - x.day < C.PERSONAL_BETA_DAYS);
+    if (pool.length < 2) return null;
+    const long = pool.reduce((a, x) => (x.distanceM > a.distanceM ? x : a));
+    const short = pool.reduce((a, x) => (x.distanceM < a.distanceM ? x : a));
+    if (long.distanceM / short.distanceM < C.PERSONAL_BETA_MIN_RATIO) return null;
+    return clamp(
+      (short.vdot - long.vdot) / Math.log(long.distanceM / short.distanceM),
+      0,
+      C.PERSONAL_BETA_MAX
+    );
+  };
+  /** Prelom lične krive: dužina poslednjeg rezultata (unet rezultat, trka, test); bez njih dužina cilja. */
+  let anchorM: Meters = goal.distanceM;
+  let anchorFromProfile = false;
+  /** Lična kriva na dan `d` (F4-K2): β po obimu ili lični, prelom na poslednjem rezultatu. */
+  const curveAt = (d: number): { curve: Transfer; weeklyKm: number | null } => {
+    const weeklyKm = weeklyKmAt(d);
+    const personal = personalBetaAt(d);
+    const def = defaultBeta(weeklyKm);
+    const beta =
+      personal === null
+        ? def
+        : C.PERSONAL_BETA_SHARE * personal + (1 - C.PERSONAL_BETA_SHARE) * def;
+    /* prelom na unetom rezultatu bez ijednog rezultata iz istorije: granica naniže (F4-K2) */
+    const capDown = anchorFromProfile;
+    return {
+      curve: {
+        beta,
+        personal: personal !== null,
+        refM: goal.distanceM,
+        anchorM,
+        ...(capDown ? { capDown } : {})
+      },
+      weeklyKm
+    };
+  };
+  /** Prevod dokaza sa `fromM` na dužinu cilja: `loss` = koliko je VDOT na `fromM` viši od VDOT-a na cilju po
+      krivi. Postojeći plan: njegova kriva (tempo punog napora je zadat po njoj — „kao planirano" = bez promene). */
+  const transferAt = (
+    fromM: Meters,
+    d: number,
+    /** VDOT dokaza (za granice dužine krive). */
+    at: Vdot
+  ): { loss: number; beta: number; weeklyKm: number | null; personal: boolean } => {
+    const own = curveAt(d);
+    const curve = planned?.transfer ?? own.curve;
+    return {
+      loss: vdotAt(at, fromM, curve) - at,
+      beta: curve.beta,
+      weeklyKm: own.weeklyKm,
+      personal: curve.personal
+    };
+  };
+  const sameDistance = (m: Meters): boolean =>
+    m >= C.SAME_DISTANCE_MIN * goal.distanceM && m <= C.SAME_DISTANCE_MAX * goal.distanceM;
+
+  const init0 = startingPoint(facts, runs);
+  const profileResult = facts.profile.recentResult;
+  /* Unet rezultat bez datuma važi „pre svih trčanja": β iz izjavljenog obima, ne iz trčanja koja tek pristižu
+     (inače bi se polazna procena menjala sa svakim novim trčanjem). */
+  const profileDay =
+    profileResult?.date !== undefined
+      ? Math.min(dayNum(profileResult.date), today)
+      : Math.min(firstRunAt, today + 1) - 1;
+  if (init0.source === 'rezultat' && profileResult !== undefined) {
+    rawResults.push({ day: profileDay, distanceM: profileResult.distanceM, vdot: init0.vdot });
+  }
+  if (init0.source === 'rezultat' && profileResult !== undefined) {
+    anchorM = profileResult.distanceM;
+    anchorFromProfile = true;
+  }
+  const init =
+    init0.source === 'rezultat' && profileResult !== undefined
+      ? {
+          ...init0,
+          vdot:
+            2 * init0.vdot - vdotAt(init0.vdot, profileResult.distanceM, curveAt(profileDay).curve)
+        }
+      : init0;
   let vdot = init.vdot;
   let preFirstVdot = init.vdot;
   const pauses = pauseSpans(facts, runs, today);
@@ -298,8 +408,15 @@ export function estimateForm(
   const startDay = Math.min(firstDay, today);
 
   /** Trke i testovi; `strong` = nije prvi rezultat i nije trka sa hodanjem (R14: samo takav daje „visoku"). */
-  const results: { day: number; strong: boolean; vdot: Vdot; weak?: boolean; race?: boolean }[] =
-    [];
+  const results: {
+    day: number;
+    strong: boolean;
+    vdot: Vdot;
+    weak?: boolean;
+    race?: boolean;
+    /** Dokaz dužine 0,5–2 × cilja (F4-K2: samo takav daje „visoku" i ne dobija σ druge dužine). */
+    inRange?: boolean;
+  }[] = [];
   const qualityDays: number[] = [];
   /** Dani primenjenog trenda pulsa: za pouzdanost vrede kao dokaz kvaliteta (§ 2.4 „bez pulsa niža pouzdanost"). */
   const hrDays: number[] = [];
@@ -324,6 +441,7 @@ export function estimateForm(
     if (
       last !== undefined &&
       last.strong &&
+      last.inRange !== false &&
       pool.length >= 2 &&
       pool.filter((v) => Math.abs(v - last.vdot) <= C.CONF_AGREE_SHARE * last.vdot).length >= 2
     )
@@ -407,7 +525,10 @@ export function estimateForm(
 
   /* baza (R12, R13): dnevna opterećenja po pragu tekuće forme; seme iz izjave ili proseka prvih 28 dana */
   const dayLoad = (d: number, v: Vdot): number => {
-    const threshold = paceAtShare(v, ZONE_SHARE.T);
+    const threshold = paceAtShare(
+      zoneVdot(v, 'T', planned?.transfer ?? curveAt(d).curve),
+      ZONE_SHARE.T
+    );
     return (runsByDay.get(d) ?? []).reduce((a, r) => a + runLoad(r, threshold), 0);
   };
   const firstRunDay = runs[0] !== undefined ? dayNum(runs[0].date) : today;
@@ -503,6 +624,13 @@ export function estimateForm(
           ? run
           : { ...bare, distanceM: result.distanceM, durationSec: result.durationSec };
         const ev = resultEvidence(scored);
+        if (!ev.walking && !ev.hot) {
+          rawResults.push({ day: d, distanceM: scored.distanceM, vdot: ev.vdot });
+        }
+        const transfer = transferAt(scored.distanceM, d, ev.vdot);
+        /** Dokaz preveden na dužinu cilja (F4-K2). */
+        const target = ev.vdot - transfer.loss;
+        const inRange = sameDistance(scored.distanceM);
         const firstInApp = results.length === 0;
         if (firstInApp) preFirstVdot = vdot;
         /* Prvi rezultat zamenjuje procenu bez osnova (iz laganog tempa, trčanja ili opštu): k = 1 (R14). */
@@ -510,23 +638,27 @@ export function estimateForm(
         const low = confidenceAt(d) === 'niska';
         const k = low || first ? C.K_LOW_CONFIDENCE : kind === 'trka' ? C.K_RACE : C.K_TEST;
         const before = vdot;
-        let next = vdot + k * (ev.vdot - vdot);
-        /* Toplo: donja granica — ne spušta procenu koja već ima osnov (srednja/visoka pouzdanost). */
-        if (ev.hot && !low && !first && next < vdot) next = vdot;
+        let next = vdot + k * (target - vdot);
+        /* Toplo (≥ 25 °C): dužina 0,5–2 × cilja se nikad ne odbacuje — spušta upola; druga dužina je donja granica. */
+        const hotHeld = ev.hot && !low && !first && next < vdot;
+        if (hotHeld) next = inRange ? vdot + k * C.HOT_LOWER_K_SHARE * (target - vdot) : vdot;
         vdot = next;
         /* R14: prvi rezultat U APLIKACIJI (unet rezultat ne računa) i trka sa hodanjem — najviše srednja. */
         results.push({
           day: d,
           strong: !firstInApp && !ev.walking,
-          vdot: ev.vdot,
-          race: kind === 'trka'
+          vdot: target,
+          race: kind === 'trka',
+          inRange
         });
         lastResultDay = d;
+        anchorM = scored.distanceM;
+        anchorFromProfile = false;
         credited = 0;
         /* Z4 (krug 7): rezultat bar onoliko dobar koliko se verovalo (forma + pripisani napredak) ne spušta verovanu
            formu — ostatak pripisanog napretka ostaje; slabiji rezultat ga briše */
         const believed = before + planVdot;
-        planVdot = ev.vdot >= believed ? Math.max(0, believed - vdot) : 0;
+        planVdot = target >= believed ? Math.max(0, believed - vdot) : 0;
         week = { from: d + 1, provisional: 0, done: 0, ref: 0, days: 0 };
         baseDropApplied = 0;
         record(
@@ -540,18 +672,29 @@ export function estimateForm(
               scored.distanceM,
               scored.durationSec,
               ev,
-              { k, first },
+              {
+                k,
+                first,
+                target,
+                inRange,
+                hotHeld,
+                transferLoss: transfer.loss,
+                weeklyKm: transfer.weeklyKm,
+                personalBeta: transfer.personal
+              },
               before,
               vdot,
               goalM
             )
           },
           before,
-          vdot
+          vdot,
+          /* toplota i prenos uvek dobijaju rečenicu, i kad se procena ne pomeri */
+          ev.hot || Math.abs(transfer.loss) >= C.CHANGE_MIN
         );
         continue;
       }
-      const q = qualityEvidence(run, vdot, goalM);
+      const q = qualityEvidence(run, vdot, goalM, planned?.transfer ?? curveAt(d).curve);
       if (q === null) continue;
       qualityDays.push(d);
       let delta = clamp(C.K_QUALITY * (q.vdot - vdot), -C.QUALITY_MAX_STEP, C.QUALITY_MAX_STEP);
@@ -595,7 +738,14 @@ export function estimateForm(
        kalendarske nedelje se ispravlja po stvarnom pridržavanju te nedelje (opterećenje / planirano). Tako se
        očekivano vreme ne pomera usred nedelje, a manjak dobija rečenicu na dan kad se utvrdi. */
     const toRace = raceDay - d;
-    if (toRace >= 7 && toRace < 7 * (C.WEEKS_MAX + 1) && d > lastResultDay && d >= planStart) {
+    /* F4-K2: bez plana (`planned` null) nema pripisivanja ni rečenica o „% planiranog" */
+    if (
+      planned !== null &&
+      toRace >= 7 &&
+      toRace < 7 * (C.WEEKS_MAX + 1) &&
+      d > lastResultDay &&
+      d >= planStart
+    ) {
       const ceil = ceilingOn(d);
       /* Mogući napredak po nedelji (bez `f_p`, da pripisano ne hrani samo sebe). */
       const take = Math.min((ceil.rate * fv) / 7, Math.max(0, ceil.max - credited));
@@ -732,7 +882,15 @@ export function estimateForm(
   /* `W` neprekidno (dani / 7), da se smanjuje dan po dan, kao i pripisano (R12). */
   const w = clamp((raceDay - today) / 7 - 1, 0, C.WEEKS_MAX);
   const gain = Math.min(rate * fv * fp * w, Math.max(0, max - credited));
-  const sigma = C.SIGMA[confidence];
+  /* F4-K2: σ + 1,0 kad je glavni dokaz (poslednji rezultat ili unet rezultat) sa druge dužine */
+  const lastResult = results.at(-1);
+  const mainOther =
+    lastResult !== undefined
+      ? lastResult.inRange === false
+      : init.source === 'rezultat' &&
+        profileResult !== undefined &&
+        !sameDistance(profileResult.distanceM);
+  const sigma = C.SIGMA[confidence] + (mainOther ? C.SIGMA_OTHER_DISTANCE : 0);
   /* Z4 (krug 7): prvi rezultat koji je zamenio procenu niske pouzdanosti još ne otvara pun očekivani napredak (potvrda
      forme ne pomera prognozu > 1 %; s24) — dok ga ne potvrdi drugi rezultat */
   const firstOnly =
@@ -759,7 +917,9 @@ export function estimateForm(
         : 0
     ),
     ceilingGain: r2(gain),
-    history
+    history,
+    /* F4-K2: lična kriva forme po dužini za tempa i pun napor u planu */
+    transfer: curveAt(today).curve
   };
 }
 

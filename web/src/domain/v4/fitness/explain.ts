@@ -72,6 +72,17 @@ export interface ResultContext {
   k: number;
   /** Prvi rezultat (pre njega nije bilo ni trke ni testa u aplikaciji). */
   first: boolean;
+  /** Dokaz preveden na dužinu cilja (F4-K2); bez njega = `ev.vdot`. */
+  target?: Vdot;
+  /** Dužina 0,5–2 × cilja. */
+  inRange?: boolean;
+  /** Toplota je zadržala pad procene (upola ili potpuno). */
+  hotHeld?: boolean;
+  /** Umanjenje pri prenosu na dužu ciljnu dužinu (VDOT). */
+  transferLoss?: number;
+  weeklyKm?: number | null;
+  /** β je delom iz trkačevih rezultata na dve dužine. */
+  personalBeta?: boolean;
 }
 
 /** Test ili trka upisani kao jedna aktivnost sa zagrevanjem: nije dokaz forme dok trkač ne unese vreme (K1). */
@@ -114,12 +125,37 @@ export function explainResult(
       `Druga polovina je bila izrazito brža od prve: deo snage je ostao neiskorišćen, pa se ${asRun} računa kao ${corrected}.`
     );
   }
-  if (ev.hot && after < before) {
-    parts.push('Bilo je toplo, pa je stvarna forma verovatno nešto bolja od ovog rezultata.');
-  } else if (ev.hot) {
-    parts.push('Bilo je toplo, pa se rezultat uzima kao donja granica forme.');
+  const loss = ctx.transferLoss ?? 0;
+  if (loss <= -0.01) {
+    parts.push(
+      `Rezultat sa ${km(distanceM)} prenosim na kraću ${km(goalM)}: na kraćoj trci tempo je brži, pa se forma računa nešto bolje.`
+    );
+  } else if (loss >= 0.01) {
+    const why =
+      ctx.personalBeta === true
+        ? 'tvoji rezultati na kraćoj i dužoj trci pokazuju koliko ti tempo pada sa dužinom'
+        : ctx.weeklyKm !== undefined && ctx.weeklyKm !== null
+          ? `uz oko ${String(Math.round(ctx.weeklyKm))} km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće`
+          : 'izdržljivost za dužu trku se sa kraće trke ne vidi';
+    parts.push(`Rezultat sa ${km(distanceM)} prenosim na ${km(goalM)} uz umanjenje, jer ${why}.`);
   }
-  if (ctx.k < 1 && Math.abs(after - ev.vdot) >= 0.01) {
+  if (ev.hot && ctx.hotHeld === true && ctx.inRange !== false) {
+    parts.push(
+      'Bilo je vruće (25 °C ili više), pa se rezultat usvaja samo upola: stvarna forma je verovatno nešto bolja.'
+    );
+  } else if (ev.hot && ctx.hotHeld === true) {
+    parts.push(
+      'Bilo je vruće (25 °C ili više), a trka je druge dužine, pa rezultat procenu ne spušta: forma je verovatno bolja od ovog vremena.'
+    );
+  } else if (ev.hot && after < before) {
+    parts.push(
+      'Bilo je vruće (25 °C ili više), pa je stvarna forma verovatno nešto bolja od ovog rezultata.'
+    );
+  } else if (ev.hot) {
+    parts.push('Bilo je vruće (25 °C ili više), pa se rezultat uzima kao donja granica forme.');
+  }
+  const target = ctx.target ?? ev.vdot;
+  if (ctx.k < 1 && Math.abs(after - target) >= 0.01) {
     parts.push(
       `Usvaja se ${String(Math.round(ctx.k * 100))} % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima.`
     );

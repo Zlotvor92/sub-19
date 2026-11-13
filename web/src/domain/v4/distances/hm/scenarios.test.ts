@@ -201,15 +201,8 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       if (s.title.startsWith('E3') && !result && now < was - 1)
         bad.push(`${name(s.no)} propušten trening ubrzao prognozu ${String(was)} → ${String(now)}`);
       /* bolji rezultat od očekivanog ne usporava prognozu (0,1 %: zaokruživanje preostalog napretka) */
-      const m = /očekivano (\d+):(\d+)/.exec(s.title);
-      const t = /km (\d+):(\d+)/.exec(s.title);
-      if (
-        s.title.startsWith('E1') &&
-        m !== null &&
-        t !== null &&
-        Number(t[1]) * 60 + Number(t[2]) < Number(m[1]) * 60 + Number(m[2]) &&
-        now > was * 1.001
-      )
+      /* F4-K2: „brže od očekivanog" = brže od očekivanog po ličnoj krivi plana (isti `effortTimeSec`) */
+      if (s.title.startsWith('E1') && s.title.includes('brže od očekivanog') && now > was * 1.001)
         bad.push(`${name(s.no)} bolji rezultat usporio prognozu ${String(was)} → ${String(now)}`);
       /* ništa se nije desilo (test potvrdio formu): najviše 1 % */
       if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was)

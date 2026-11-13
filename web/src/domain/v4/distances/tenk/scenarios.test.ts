@@ -23,7 +23,7 @@ const KNOWN = new Map<string, string>([
      preostali pripisani napredak se posle rezultata računa od kraćeg ostatka pripreme (forma/motor, Z4) */
   ['s03 bolji rezultat usporio prognozu 3171 → 3218', 'pripisani napredak posle rezultata (Z4)'],
   /* bol pa trka: drugi prozor se nadovezuje na prvi; rep izmena 4 nedelje + 6 dana (Z10) */
-  ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)'],
+  ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)']
   /* Z3 i deonice fiksne dužine (s13, s15, s16) skinuto u krugu 8 (R8 t. 4: manji unos ili kraće deonice) */
 ]);
 const seenKnown = new Set<string>();
@@ -221,15 +221,8 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
       if (s.title.startsWith('E3') && !result && now < was - 1)
         bad.push(`${name(s.no)} propušten trening ubrzao prognozu ${String(was)} → ${String(now)}`);
       /* bolji rezultat od očekivanog ne usporava prognozu (0,1 %: zaokruživanje preostalog napretka) */
-      const m = /očekivano (\d+):(\d+)/.exec(s.title);
-      const t = /km (\d+):(\d+)/.exec(s.title);
-      if (
-        s.title.startsWith('E1') &&
-        m !== null &&
-        t !== null &&
-        Number(t[1]) * 60 + Number(t[2]) < Number(m[1]) * 60 + Number(m[2]) &&
-        now > was * 1.001
-      )
+      /* F4-K2: „brže od očekivanog" = brže od očekivanog po ličnoj krivi plana (isti `effortTimeSec`) */
+      if (s.title.startsWith('E1') && s.title.includes('brže od očekivanog') && now > was * 1.001)
         bad.push(`${name(s.no)} bolji rezultat usporio prognozu ${String(was)} → ${String(now)}`);
       /* ništa se nije desilo (test potvrdio formu): najviše 1 % */
       if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was)

@@ -79,6 +79,7 @@ import type {
   PlanWeek,
   ReplanFn,
   RunnerState,
+  Transfer,
   Warning
 } from './types';
 import { effortResult, raceTimeSec, zonePaces } from './vdot';
@@ -159,9 +160,18 @@ function onResult(
         form: {
           ...header.form,
           paceVdot,
-          pacesUpdatedOn: moved ? state.today : header.form.pacesUpdatedOn
+          pacesUpdatedOn: moved ? state.today : header.form.pacesUpdatedOn,
+          ...(transferOf(state, header) !== undefined
+            ? { transfer: transferOf(state, header) }
+            : {})
         },
-        paces: zonePaces(paceVdot, data.distanceM, false, data.safety.intervalPaceFloor),
+        paces: zonePaces(
+          paceVdot,
+          data.distanceM,
+          false,
+          data.safety.intervalPaceFloor,
+          transferOf(state, header)
+        ),
         warnings: header.warnings.filter(
           (w) =>
             w.code !== 'nema-podataka' ||
@@ -882,6 +892,11 @@ function onFatigue(
   };
 }
 
+/** F4-K2: lična kriva forme za nova tempa — iz tekuće procene; bez nje ostaje ona iz zaglavlja. */
+function transferOf(state: RunnerState, header: PlanHeader): Transfer | undefined {
+  return state.form.transfer ?? header.form.transfer;
+}
+
 function onFormUpdate(
   doc: PlanDoc,
   state: RunnerState,
@@ -892,8 +907,21 @@ function onFormUpdate(
   const byFeel = doc.header.paces.byFeel && state.form.current.confidence === 'niska';
   const header: PlanHeader = {
     ...doc.header,
-    form: { ...doc.header.form, paceVdot: ev.vdot, pacesUpdatedOn: ev.date },
-    paces: zonePaces(ev.vdot, data.distanceM, byFeel, data.safety.intervalPaceFloor)
+    form: {
+      ...doc.header.form,
+      paceVdot: ev.vdot,
+      pacesUpdatedOn: ev.date,
+      ...(transferOf(state, doc.header) !== undefined
+        ? { transfer: transferOf(state, doc.header) }
+        : {})
+    },
+    paces: zonePaces(
+      ev.vdot,
+      data.distanceM,
+      byFeel,
+      data.safety.intervalPaceFloor,
+      transferOf(state, doc.header)
+    )
   };
   return { doc: { ...doc, header }, until: header.goal.raceDate };
 }
@@ -993,7 +1021,8 @@ function reskeleton(
       old.form.paceVdot,
       data.distanceM,
       old.paces.byFeel,
-      data.safety.intervalPaceFloor
+      data.safety.intervalPaceFloor,
+      old.form.transfer
     )
   };
   const built = runPass({ ...doc, header, weeks: [...kept, ...weeksOut] }, state, data, {

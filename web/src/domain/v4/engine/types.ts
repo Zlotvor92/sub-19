@@ -199,6 +199,23 @@ export interface FormHeader {
   pacesUpdatedOn: IsoDate;
   /** Očekivani raspon na dan trke. */
   raceDay: { lowSec: Seconds; expectedSec: Seconds; highSec: Seconds };
+  /** Lična kriva forme po dužini (F4-K2) po kojoj su računata tempa: `paceVdot` važi na `refM`. Bez nje β = 0. */
+  transfer?: Transfer;
+}
+
+/** Lična kriva forme po dužini (F4-K2): VDOT na dužini d = VDOT na `refM` + β · ln(refM / d). */
+export interface Transfer {
+  /** VDOT po jedinici ln dužine (naniže, ka dužoj trci, pun iznos). */
+  beta: number;
+  /** β je delom iz trkačevih rezultata na dve dužine; bez toga se naviše (ka kraćoj dužini) uzima pola. */
+  personal: boolean;
+  /** Dužina na kojoj važi referentni VDOT (dužina cilja). */
+  refM: Meters;
+  /** Prelom krive: dužina poslednjeg dokaza (rezultata). Ka kraćem od nje pola β (bez ličnog), ka dužem pun β.
+      Bez njega = `refM`. */
+  anchorM?: Meters;
+  /** Prelom je na unetom rezultatu bez istorije: naniže najviše `TRANSFER_DOWN_MAX_SEC` (odluka F4-K2). */
+  capDown?: boolean;
 }
 
 /** Tempa zona izvedena iz `FormHeader.paceVdot` (§ 5.4). E je raspon, ostalo tačka. */
@@ -472,6 +489,8 @@ export interface FormEstimate {
   /** Najveći očekivani napredak do trke, u VDOT. */
   ceilingGain: number;
   history: FormChange[];
+  /** Lična kriva forme po dužini (F4-K2); bez nje motor uzima β = 0 (jedan VDOT za sve dužine). */
+  transfer?: Transfer;
 }
 
 /** Sve što motor sme da zna o trkaču DANAS. Izvedena polja računa `buildState` (§ 2.3), motor ih ne preračunava. */
@@ -944,6 +963,8 @@ export interface FormPlanned {
   peakLoad: LoadPoints;
   /** `PlanWeek.start` i `targetLoad` (bez dana trke). */
   weeks?: readonly { start: IsoDate; targetLoad: LoadPoints }[];
+  /** Lična kriva po kojoj je plan zadao tempa i pun napor (F4-K2): rezultat se poredi sa očekivanim po njoj. */
+  transfer?: Transfer;
 }
 export type EstimateFormFn = (
   facts: RunnerFacts,

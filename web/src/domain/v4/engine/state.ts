@@ -44,7 +44,7 @@ import type {
   WeekSummary,
   Weekday
 } from './types';
-import { paceAtShare } from './vdot';
+import { paceAtShare, zoneVdot } from './vdot';
 
 /** Dani trčanja bez duplikata, rastuće; neispravne vrednosti se odbacuju (odbija ih `validate`). */
 export function normalizeAvailability(a: Availability): Availability {
@@ -258,7 +258,7 @@ function plannedLoads(
   if (picked === null) return null;
   const ladder = ladderInputOf({
     baseLoad,
-    easyPaceSecPerKm: paceAtShare(form.current.vdot, ZONE_SHARE.E),
+    easyPaceSecPerKm: paceAtShare(zoneVdot(form.current.vdot, 'E', form.transfer), ZONE_SHARE.E),
     weeks,
     yearsRunning: facts.profile.yearsRunning,
     painInYear: painInYear(facts),
@@ -268,7 +268,7 @@ function plannedLoads(
   const peakLoad = decidePeak(baseLoad, picked.template, data.safety, level, over);
   /* S3 (krug 4): plan od bar `longCheckMinWeeks` koji ne može da stigne do dugog za distancu — prognoza ne računa
      napredak od obima (vrh = baza za procenu, f_v = 1). */
-  const easy = paceAtShare(form.current.vdot, ZONE_SHARE.E);
+  const easy = paceAtShare(zoneVdot(form.current.vdot, 'E', form.transfer), ZONE_SHARE.E);
   const longMax = decideLongMax(peakLoad, data.safety, level, runDays, easy);
   if (!longReaches(data, weeks, longMax, easy)) return { baseLoad, peakLoad: baseLoad };
   return { baseLoad, peakLoad };
@@ -351,7 +351,10 @@ function allPauses(facts: RunnerFacts, runs: readonly Run[], doc: PlanDoc | unde
 
 /** Opterećenje poslednjih `days` dana (uključujući danas), po pragu tekuće forme. */
 export function recentLoad(state: RunnerState, days: number): LoadPoints {
-  const threshold = paceAtShare(state.form.current.vdot, ZONE_SHARE.T);
+  const threshold = paceAtShare(
+    zoneVdot(state.form.current.vdot, 'T', state.form.transfer),
+    ZONE_SHARE.T
+  );
   let load = 0;
   for (const run of state.runs) {
     if (diffDays(state.today, run.date) < days) load += runLoad(run, threshold);
@@ -369,7 +372,10 @@ export function baseLoadOf(state: RunnerState): LoadPoints {
       ? undefined
       : state.runs.find((r) => r.date === effort.date && r.effort !== undefined);
   if (run !== undefined && !state.load.seeded) {
-    const threshold = paceAtShare(state.form.current.vdot, ZONE_SHARE.T);
+    const threshold = paceAtShare(
+      zoneVdot(state.form.current.vdot, 'T', state.form.transfer),
+      ZONE_SHARE.T
+    );
     const days = diffDays(state.today, run.date);
     chronic -= (runLoad(run, threshold) / CHRONIC_DAYS) * (1 - 1 / CHRONIC_DAYS) ** days;
   }
@@ -439,8 +445,11 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
   /* Procena forme vidi isto što i motor: trčanja sa `planned` i pauze izvedene iz plana. */
   const seen: RunnerFacts = { ...facts, runs, pauses };
   const first = estimate(seen, formGoal, null);
-  const thresholdPace = paceAtShare(first.current.vdot, ZONE_SHARE.T);
-  const easyPace = paceAtShare(first.current.vdot, ZONE_SHARE.E);
+  const thresholdPace = paceAtShare(
+    zoneVdot(first.current.vdot, 'T', first.transfer),
+    ZONE_SHARE.T
+  );
+  const easyPace = paceAtShare(zoneVdot(first.current.vdot, 'E', first.transfer), ZONE_SHARE.E);
   const loadOf = (run: Run): LoadPoints => runLoad(run, thresholdPace);
   const declared = declaredWeekLoad(facts, easyPace, data, availability.runDays.length);
   const load = loadState(
@@ -453,7 +462,7 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
     facts.today,
     runs,
     pauses,
-    paceAtShare(first.current.vdot, EASY_FAST_SHARE)
+    paceAtShare(zoneVdot(first.current.vdot, 'E', first.transfer), EASY_FAST_SHARE)
   );
   /* Postojeći plan: baza i vrh iz odluka plana (ne preračunato iz današnje baze) + ciljevi nedelja. */
   const planned: FormPlanned | null =
@@ -470,7 +479,8 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
       : {
           baseLoad: doc.header.decisions.baseLoad,
           peakLoad: doc.header.decisions.peakLoad,
-          weeks: doc.weeks.map((w) => ({ start: w.start, targetLoad: w.targetLoad }))
+          weeks: doc.weeks.map((w) => ({ start: w.start, targetLoad: w.targetLoad })),
+          ...(doc.header.form.transfer !== undefined ? { transfer: doc.header.form.transfer } : {})
         };
   const weeks = weekSummaries(facts, runs, loadOf);
   const volume = historyVolume(weeks, load.seeded, facts.today);

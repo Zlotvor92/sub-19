@@ -77,8 +77,9 @@ function tempoRun(
   };
 }
 
+/** Cilj iste dužine kao uneti rezultat (10 km): ovi testovi proveravaju signale, ne prenos na dužinu (F4-K2). */
 const goal = (raceDate: string): { distanceM: number; raceDate: string } => ({
-  distanceM: HALF,
+  distanceM: TEN,
   raceDate
 });
 const signals = (e: FormEstimate): string[] => e.history.map((h) => h.signal);
@@ -136,11 +137,8 @@ describe('trka i test (§ 7.2)', () => {
   });
 
   it('test, k = 0,5', () => {
-    const e = estimateForm(
-      facts([race(47, add(T0, 5), 'test', 3000)], add(T0, 6)),
-      goal(FAR),
-      null
-    );
+    /* test iste dužine kao cilj (F4-K2: kraći test se prenosi na duži cilj uz umanjenje) */
+    const e = estimateForm(facts([race(47, add(T0, 5), 'test', TEN)], add(T0, 6)), goal(FAR), null);
     expect(e.current.vdot).toBeCloseTo(46, 1);
   });
 
@@ -164,10 +162,24 @@ describe('trka i test (§ 7.2)', () => {
     expect(e.current.vdot).toBeCloseTo(45, 2);
   });
 
-  it('toplo: slabiji rezultat ne spušta procenu', () => {
+  it('vruće (≥ 25 °C), dužina cilja: slabiji rezultat se usvaja upola, uz rečenicu', () => {
     const r = { ...race(43, add(T0, 5), 'race', TEN), tempC: 27 };
     const e = estimateForm(facts([r], add(T0, 6)), goal(FAR), null);
+    expect(e.current.vdot).toBeCloseTo(45 + 0.7 * 0.5 * (43 - 45), 1);
+    expect(e.history.find((h) => h.signal === 'trka')?.reason).toContain('upola');
+  });
+
+  it('vruće, druga dužina: rezultat ne spušta procenu, a rečenica postoji', () => {
+    const r = { ...race(43, add(T0, 5), 'race', 4000), tempC: 30 };
+    const e = estimateForm(facts([r], add(T0, 6)), goal(FAR), null);
     expect(e.current.vdot).toBeCloseTo(45, 2);
+    expect(e.history.find((h) => h.signal === 'trka')?.reason).toContain('druge dužine');
+  });
+
+  it('ispod 25 °C nema korekcije za toplotu', () => {
+    const r = { ...race(43, add(T0, 5), 'race', TEN), tempC: 22 };
+    const e = estimateForm(facts([r], add(T0, 6)), goal(FAR), null);
+    expect(e.current.vdot).toBeCloseTo(45 + 0.7 * (43 - 45), 1);
   });
 });
 
@@ -475,7 +487,11 @@ describe('korekcija rezultata', () => {
       effort: 'race',
       splits: paces.map((p) => ({ paceSec: p }))
     };
-    const e = estimateForm(facts([r], T0, { profile: {} }), goal(FAR), null);
+    const e = estimateForm(
+      facts([r], T0, { profile: {} }),
+      { distanceM: HALF, raceDate: FAR },
+      null
+    );
     const raw = vdotFromResult(HALF, dur);
     expect(e.current.vdot).toBeGreaterThan(raw + 0.1);
     expect(e.current.vdot).toBeLessThanOrEqual(raw + 1.0);
@@ -497,12 +513,14 @@ describe('K1 (krug 3): rezultat testa je deonica punog napora, ne cela aktivnost
     dayId: 'w2d1',
     plannedEffortM: 3000
   };
+  /* cilj 3 km: K1 proverava izdvajanje deonice, ne prenos na dužinu (F4-K2) */
   const run = (over: Partial<FitnessRun>): FormEstimate =>
-    estimateForm(facts([{ ...whole, ...over }], today), goal(FAR), null);
+    estimateForm(facts([{ ...whole, ...over }], today), { distanceM: 3000, raceDate: FAR }, null);
 
   it('cela aktivnost sa zagrevanjem nije dokaz forme: procena ostaje, rečenica kaže šta uneti', () => {
     const e = run({});
-    expect(Math.abs(e.current.vdot - 45)).toBeLessThan(0.05);
+    const none = estimateForm(facts([], today), { distanceM: 3000, raceDate: FAR }, null);
+    expect(Math.abs(e.current.vdot - none.current.vdot)).toBeLessThan(0.05);
     const note = e.history.find((h) => h.runId === 'test');
     expect(note?.ignored).toBe(true);
     expect(note?.before).toBe(note?.after);

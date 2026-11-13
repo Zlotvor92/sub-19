@@ -2,6 +2,7 @@
    težina tempa trke. Ovaj fajl i `constants.ts` su jedino što `fitness/` i `distances/` uvoze iz motora (§ 14.4). */
 import {
   BISECTION_STEPS,
+  EASY_ANCHOR_MIN_SEC,
   EASY_FAST_SHARE,
   EFFORT_WHOLE_MAX_OVER_PLANNED,
   EASY_SLOW_SHARE,
@@ -14,13 +15,19 @@ import {
   SHARE_P0,
   SHARE_P1,
   SHARE_P2,
+  TRANSFER_DOWN_MAX_SEC,
+  TRANSFER_MAX_SEC,
+  TRANSFER_MIN_SEC,
+  TRANSFER_UP_MAX_SEC,
+  TRANSFER_UP_SHARE,
   VO2_A,
   VO2_B,
   VO2_C,
   WEIGHT_ANCHORS,
+  ZONE_ANCHOR_SEC,
   ZONE_SHARE
 } from './constants';
-import type { Meters, Paces, Run, SecPerKm, Seconds, Vdot } from './types';
+import type { Meters, Paces, Run, SecPerKm, Seconds, Transfer, Vdot } from './types';
 
 /** VO2 pri brzini `v` (m/min). */
 export function vo2AtSpeed(metersPerMin: number): number {
@@ -78,26 +85,90 @@ function roundPace(secPerKm: SecPerKm): SecPerKm {
 }
 
 /** Tempa zona za VDOT; RP je tempo trke na `distanceM` (§ 5.4). */
+/** Dužina koju VDOT pretrči punim naporom za `timeSec` (inverz `raceTimeSec`; VDOT raste sa dužinom pri istom vremenu). */
+export function distanceForTime(vdot: Vdot, timeSec: Seconds): Meters {
+  let short = (timeSec * RACE_SPEED_MIN_MPS) / 1;
+  let long = timeSec * RACE_SPEED_MAX_MPS;
+  for (let i = 0; i < BISECTION_STEPS; i += 1) {
+    const mid = (short + long) / 2;
+    if (vdotFromResult(mid, timeSec) < vdot) short = mid;
+    else long = mid;
+  }
+  return (short + long) / 2;
+}
+
+/** F4-K2: VDOT na dužini `d` po ličnoj krivi (jedno mesto za sve: procena, plan, simulacije).
+    `vdot` važi na `transfer.refM`; bez `transfer` (ili β = 0) isti VDOT za sve dužine. Dužine se ograničavaju na
+    trke od 4 min do 5 h po `vdot`. */
+export function vdotAt(vdot: Vdot, distanceM: Meters, transfer?: Transfer): Vdot {
+  if (transfer === undefined || !(transfer.beta > 0)) return vdot;
+  const t = transfer;
+  const lo = distanceForTime(vdot, TRANSFER_MIN_SEC);
+  const hi = distanceForTime(vdot, TRANSFER_MAX_SEC);
+  const clampM = (m: Meters): Meters => Math.min(hi, Math.max(lo, m));
+  const anchor = clampM(t.anchorM ?? t.refM);
+  /* granice pomaka (u VDOT, oko `vdot`): VDOT ~ brzina, pa Δv ≈ v · Δp / (p − Δp) */
+  const pI = paceAtShare(vdot, ZONE_SHARE.I);
+  const pM = paceAtShare(vdot, ZONE_SHARE.M);
+  const upMax = (vdot * TRANSFER_UP_MAX_SEC) / (pI - TRANSFER_UP_MAX_SEC);
+  const downMax = (vdot * TRANSFER_DOWN_MAX_SEC) / (pM + TRANSFER_DOWN_MAX_SEC);
+  /* pomak krive od preloma: ka kraćoj dužini (naviše) pola β bez ličnog, ka dužoj pun β */
+  const offset = (m: Meters): number => {
+    const l = Math.log(anchor / clampM(m));
+    const raw = (l > 0 && !t.personal ? TRANSFER_UP_SHARE * t.beta : t.beta) * l;
+    return Math.min(upMax, t.capDown === true ? Math.max(-downMax, raw) : raw);
+  };
+  return vdot - offset(t.refM) + offset(distanceM);
+}
+
+/** Dužina sidra zone za formu na cilju (F4-K2): trka od `ZONE_ANCHOR_SEC` punim naporom; E: duže od cilja i od
+    trke od `EASY_ANCHOR_MIN_SEC`. */
+export function zoneAnchorM(vdot: Vdot, zone: 'E' | 'T' | 'I' | 'R', refM: Meters): Meters {
+  if (zone === 'E') return Math.max(refM, distanceForTime(vdot, EASY_ANCHOR_MIN_SEC));
+  return distanceForTime(vdot, ZONE_ANCHOR_SEC[zone]);
+}
+
+/** VDOT zone po njenom sidru (F4-K2); M i tempo trke = dužina cilja. */
+export function zoneVdot(vdot: Vdot, zone: 'E' | 'M' | 'T' | 'I' | 'R', transfer?: Transfer): Vdot {
+  if (transfer === undefined || zone === 'M') return vdot;
+  return vdotAt(vdot, zoneAnchorM(vdot, zone, transfer.refM), transfer);
+}
+
+/** Vreme punog napora na `distanceM` po ličnoj krivi (test, pripremna trka, trka). */
+export function effortTimeSec(vdot: Vdot, distanceM: Meters, transfer?: Transfer): Seconds {
+  return raceTimeSec(vdotAt(vdot, distanceM, transfer), distanceM);
+}
+
+/** Tempa zona za VDOT; RP je tempo trke na `distanceM` (§ 5.4). Sa `transfer` svaka zona po svom sidru (F4-K2). */
 export function zonePaces(
   vdot: Vdot,
   distanceM: Meters,
   byFeel: boolean,
   /** P3 (krug 5): sporiji od `fromRaceSec` na distanci — intervali ne brži od tempa trke na `distanceM` iz forme. */
-  intervalFloor?: { distanceM: Meters; fromRaceSec: Seconds }
+  intervalFloor?: { distanceM: Meters; fromRaceSec: Seconds },
+  transfer?: Transfer
 ): Paces {
+  const at = (m: Meters): Vdot => vdotAt(vdot, m, transfer);
+  const vR = zoneVdot(vdot, 'R', transfer);
+  const vI = zoneVdot(vdot, 'I', transfer);
+  const vT = zoneVdot(vdot, 'T', transfer);
+  const vE = zoneVdot(vdot, 'E', transfer);
   const slow =
     intervalFloor !== undefined && raceTimeSec(vdot, distanceM) >= intervalFloor.fromRaceSec;
   const I = slow
-    ? Math.max(paceAtShare(vdot, ZONE_SHARE.I), racePace(vdot, intervalFloor.distanceM))
-    : paceAtShare(vdot, ZONE_SHARE.I);
+    ? Math.max(
+        paceAtShare(vI, ZONE_SHARE.I),
+        racePace(at(intervalFloor.distanceM), intervalFloor.distanceM)
+      )
+    : paceAtShare(vI, ZONE_SHARE.I);
   return {
-    easySlow: roundPace(paceAtShare(vdot, EASY_SLOW_SHARE)),
-    easyFast: roundPace(paceAtShare(vdot, EASY_FAST_SHARE)),
-    easy: roundPace(paceAtShare(vdot, ZONE_SHARE.E)),
+    easySlow: roundPace(paceAtShare(vE, EASY_SLOW_SHARE)),
+    easyFast: roundPace(paceAtShare(vE, EASY_FAST_SHARE)),
+    easy: roundPace(paceAtShare(vE, ZONE_SHARE.E)),
     M: roundPace(paceAtShare(vdot, ZONE_SHARE.M)),
-    T: roundPace(paceAtShare(vdot, ZONE_SHARE.T)),
+    T: roundPace(paceAtShare(vT, ZONE_SHARE.T)),
     I: roundPace(I),
-    R: roundPace(paceAtShare(vdot, ZONE_SHARE.R)),
+    R: roundPace(paceAtShare(vR, ZONE_SHARE.R)),
     RP: roundPace(racePace(vdot, distanceM)),
     byFeel
   };

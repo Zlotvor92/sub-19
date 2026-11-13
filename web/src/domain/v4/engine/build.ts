@@ -734,7 +734,9 @@ function easyFill(
           : minEasy;
       for (const day of days) {
         /* Na najkraćem trčanju dodatak ide preko laganog dela; strog plafon važi samo u sužavanju i nedelji trke. */
-        const free = !day.tight && day.cap >= per;
+        /* F4-K2: „preko" samo kad ceo dan (lagano + dodatak) staje pod plafon dana — inače bi lagan dan sa ubrzanjima
+           bio duži od dugog u rasterećenju (degenerisan plan) */
+        const free = !day.tight && day.cap >= per + addonCost(day).durationSec;
         if (free && !calm && day.addon !== null && day.addon.type === 'addon') {
           out.set(day.date, { ...day.addon, sec: per });
         } else put(day, per);
@@ -1692,19 +1694,24 @@ export function runPass(
         Object.assign(taperAcc, accBefore);
         const from = Math.min(shell.targetLoad, m.load);
         const f = capVolume / m.volume;
+        /* F4-K2: korekcija ne spušta dugi ispod najkraćeg smislenog trčanja (inače je lagan dan duži od dugog) */
+        const longFloor =
+          shell.longSec > 0
+            ? minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length)
+            : 0;
         shell =
           step === 'scale'
             ? {
                 ...shell,
                 targetLoad: Math.max(0, Math.round(from * f)),
-                longSec: Math.max(0, Math.round((shell.longSec * f) / 60) * 60)
+                longSec: Math.max(longFloor, Math.round((shell.longSec * f) / 60) * 60)
               }
             : step === 'easy'
               ? { ...shell, targetLoad: Math.max(0, Math.round(from - m.over)) }
               : {
                   ...shell,
                   targetLoad: Math.max(0, Math.round(from - m.over)),
-                  longSec: Math.max(0, Math.round((shell.longSec - m.over * 60) / 60) * 60)
+                  longSec: Math.max(longFloor, Math.round((shell.longSec - m.over * 60) / 60) * 60)
                 };
         recipes = lay(shell);
       }

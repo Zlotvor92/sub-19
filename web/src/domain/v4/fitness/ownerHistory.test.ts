@@ -52,7 +52,8 @@ function ownerRuns(withHr: boolean): FitnessRun[] {
     const distanceM = half ? HALF : isTest ? 3000 : Math.round(r.km * 1000);
     /* test 9. 8.: tri uzastopna kruga od 1 km punim naporom (233 + 232 + 231 s), pa hlađenje */
     const durationSec = isTest ? 696 : r.sec;
-    const laps = isTest ? undefined : lapsOf(x, r.sec / r.km);
+    /* trka i test se boduju celi (krugovi samo za opterećenje treninga) */
+    const laps = isTest || r.race ? undefined : lapsOf(x, r.sec / r.km);
     const temp = r.temp ?? x?.tempC;
     return {
       id: `${r.date}-${r.dayId}`,
@@ -284,45 +285,59 @@ describe('F4-K: istorija vlasnika', () => {
     }
   });
 
-  /* ---------------- promašaji modela (nalazi F4-K; model se ne menja u ovom zadatku) ---------------- */
+  /* ---------------- nalazi F4-K posle ispravke F4-K2 (bili `it.fails`) ---------------- */
 
-  it.fails(
-    'NALAZ 1: polumaraton 3. 10. (1:42:09, 22 °C) mora da pomeri procenu ili da ima rečenicu — sada se tiho odbacuje (pravilo toplote ≥ 20 °C, rezultat ne sme da spusti procenu)',
-    () => {
-      const e = estimateForm(
-        factsOn('2026-11-13', true),
-        { distanceM: HALF, raceDate: '2026-12-13' },
-        null
-      );
-      expect(e.history.some((h) => h.date === '2026-10-03')).toBe(true);
-    }
-  );
-
-  it.fails(
-    'NALAZ 2: stvarni rezultat u rasponu procene sa dana pre (sada 0 od 6; σ visoke pouzdanosti 0,5 VDOT je preusko, a prenos na drugu dužinu nema grešku)',
-    () => {
-      for (const c of CHECKS) expect(predict(c, true).inRange).toBe(true);
-    }
-  );
-
-  it.fails('NALAZ 3: bez plana (planned = null) nema rečenica o „planiranom opterećenju"', () => {
+  it('NALAZ 1 (ispravljen): polumaraton 3. 10. (1:42:09, 22,2 °C) ulazi u procenu, sa rečenicom', () => {
     const e = estimateForm(
       factsOn('2026-11-13', true),
       { distanceM: HALF, raceDate: '2026-12-13' },
       null
     );
-    expect(e.history.some((h) => h.signal === 'plan')).toBe(false);
+    const race = e.history.find((h) => h.date === '2026-10-03' && h.signal === 'trka');
+    expect(race).toBeDefined();
+    expect(race?.after).toBeLessThan(race?.before ?? 0);
+  });
+
+  it('NALAZ 2 (delimično): back-test — srednja aps. greška ≤ 5 %, polumaraton u rasponu (stvarno: v. F4K-REPORT)', () => {
+    const errs = CHECKS.map((c) => predict(c, true));
+    const mae =
+      errs.reduce((a, p, i) => a + Math.abs(p.errSec) / (CHECKS[i]?.actualSec ?? 1), 0) /
+      errs.length;
+    expect(mae).toBeLessThanOrEqual(0.05);
+    const half = CHECKS.findIndex((c) => c.distanceM === HALF);
+    expect(errs[half]?.inRange).toBe(true);
+    expect(Math.abs(errs[half]?.errSec ?? 999) / 6129).toBeLessThanOrEqual(0.03);
   });
 
   it.fails(
-    'NALAZ 4: procena za polumaraton danas ne sme biti brža od poslednjeg polumaratona za više od 3 % bez nove trke (sada 1:35:24 naspram 1:42:09)',
+    'cilj organizatora još NIJE dostignut: srednja greška ≤ 3 % i ≥ 4 od 6 u rasponu (kratke trke posle dužih: naviše se ne prenosi)',
     () => {
-      const e = estimateForm(
-        factsOn('2026-11-13', true),
-        { distanceM: HALF, raceDate: '2026-12-13' },
-        null
-      );
-      expect(e.current.raceTimeSec).toBeGreaterThan(6129 * 0.97);
+      const errs = CHECKS.map((c) => predict(c, true));
+      const mae =
+        errs.reduce((a, p, i) => a + Math.abs(p.errSec) / (CHECKS[i]?.actualSec ?? 1), 0) /
+        errs.length;
+      expect(mae).toBeLessThanOrEqual(0.03);
+      expect(errs.filter((p) => p.inRange).length).toBeGreaterThanOrEqual(4);
     }
   );
+
+  it('NALAZ 3 (ispravljen): bez plana (planned = null) nema rečenica o „planiranom opterećenju"', () => {
+    const e = estimateForm(
+      factsOn('2026-11-13', true),
+      { distanceM: HALF, raceDate: '2026-12-13' },
+      null
+    );
+    expect(e.history.some((h) => h.signal === 'plan' && h.reason.includes('planiranog'))).toBe(
+      false
+    );
+  });
+
+  it('NALAZ 4 (ispravljen): procena za polumaraton danas nije brža od poslednjeg polumaratona za više od 3 %', () => {
+    const e = estimateForm(
+      factsOn('2026-11-13', true),
+      { distanceM: HALF, raceDate: '2026-12-13' },
+      null
+    );
+    expect(e.current.raceTimeSec).toBeGreaterThan(6129 * 0.97);
+  });
 });

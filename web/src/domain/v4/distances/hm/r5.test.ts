@@ -12,7 +12,7 @@ import {
   type PlanDoc,
   type RunnerFacts
 } from '../../engine';
-import { racePace } from '../../engine/vdot';
+import { racePace, vdotAt } from '../../engine/vdot';
 import { weekCost } from '../../engine/guard';
 import { estimateForm } from '../../fitness';
 import { hm } from './index';
@@ -101,7 +101,9 @@ describe('krug 5', () => {
     const p03 = ALL.find((x) => x.id === 'p03');
     const p01 = ALL.find((x) => x.id === 'p01');
     const vdot = p03?.doc.header.form.paceVdot ?? 0;
-    expect(p03?.doc.header.paces.I ?? 0).toBeGreaterThanOrEqual(racePace(vdot, 5000) - 3);
+    /* F4-K2: „tempo na 5 km" po ličnoj krivi plana (isti `vdotAt` kao pun napor) */
+    const at5 = vdotAt(vdot, 5000, p03?.doc.header.form.transfer);
+    expect(p03?.doc.header.paces.I ?? 0).toBeGreaterThanOrEqual(racePace(at5, 5000) - 3);
     /* brži od 1:55: bez promene (I iz VDOT) */
     expect((p01?.doc.header.paces.T ?? 0) - (p01?.doc.header.paces.I ?? 0)).toBeGreaterThanOrEqual(
       20

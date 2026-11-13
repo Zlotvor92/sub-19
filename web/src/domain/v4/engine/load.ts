@@ -24,20 +24,28 @@ import type {
   Seconds,
   SingleStep,
   Step,
+  Transfer,
   Vdot,
   Workout,
   ZoneId
 } from './types';
-import { paceAtShare, racePace, weightAtPace } from './vdot';
+import { paceAtShare, racePace, vdotAt, weightAtPace, zoneVdot } from './vdot';
 
 /** Sve što treba da se korak pretvori u vreme, dužinu i opterećenje: tempa i forma po kojoj su računata. */
 export interface PaceCtx {
   paces: Paces;
   vdot: Vdot;
+  /** Lična kriva forme po dužini (F4-K2): pun napor na dužini d ide po `vdotAt(vdot, d, transfer)`. */
+  transfer?: Transfer;
 }
 
 export function paceCtxOf(header: PlanHeader): PaceCtx {
-  return { paces: header.paces, vdot: header.form.paceVdot };
+  const transfer = header.form.transfer;
+  return {
+    paces: header.paces,
+    vdot: header.form.paceVdot,
+    ...(transfer !== undefined ? { transfer } : {})
+  };
 }
 
 /** Tempo zone za račun (E = 66 %). */
@@ -48,7 +56,7 @@ export function zonePace(zone: ZoneId, paces: Paces): SecPerKm {
 /** Težina zone (§ 5.1). RP nema stalnu: iz odnosa tempa trke i (nezaokruženog) praga forme, na 0,05. */
 export function zoneWeight(zone: ZoneId, ctx: PaceCtx): number {
   if (zone !== 'RP') return ZONE_WEIGHT[zone];
-  const threshold = paceAtShare(ctx.vdot, ZONE_SHARE.T);
+  const threshold = paceAtShare(zoneVdot(ctx.vdot, 'T', ctx.transfer), ZONE_SHARE.T);
   return Math.round(weightAtPace(ctx.paces.RP, threshold) / RP_WEIGHT_STEP) * RP_WEIGHT_STEP;
 }
 
@@ -83,7 +91,9 @@ function pacingOf(step: SingleStep, ctx: PaceCtx): Pacing {
       return { pace: target.secPerKm, weight: weightAtPace(target.secPerKm, ctx.paces.T) };
     case 'allOut': {
       const pace =
-        'distanceM' in step.extent ? racePace(ctx.vdot, step.extent.distanceM) : ctx.paces.T;
+        'distanceM' in step.extent
+          ? racePace(vdotAt(ctx.vdot, step.extent.distanceM, ctx.transfer), step.extent.distanceM)
+          : ctx.paces.T;
       return { pace, weight: weightAtPace(pace, ctx.paces.T) };
     }
   }

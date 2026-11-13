@@ -33,7 +33,7 @@ import type {
   ZoneId
 } from './types';
 import { historyOk } from './template';
-import { raceTimeSec } from './vdot';
+import { effortTimeSec, raceTimeSec } from './vdot';
 
 export interface BuildCtx {
   data: DistanceData;
@@ -613,7 +613,7 @@ export function realize(recipe: Recipe, ctx: BuildCtx): Workout | null {
 
 /** Očekivano trajanje punog napora na `distanceM` po formi plana (za budžet i rampu posle testa). */
 export function allOutSec(distanceM: number, ctx: BuildCtx): Seconds {
-  return raceTimeSec(ctx.pace.vdot, distanceM);
+  return effortTimeSec(ctx.pace.vdot, distanceM, ctx.pace.transfer);
 }
 
 /** Dan trke: jedan korak punog napora na dužinu cilja (§ 6.2 k. 10); tekst `texts['race']`, napomene iz

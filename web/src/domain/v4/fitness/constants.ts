@@ -63,9 +63,34 @@ export const NEG_SPLIT_MIN = 0.03;
 /** Usvaja se polovina razlike između VDOT druge polovine (kao da je cela trka tako trčana) i rezultata. [niska] */
 export const NEG_SPLIT_SHARE = 0.5;
 export const NEG_SPLIT_MAX_BONUS = 1.0;
-/** Toplo: od 20 °C rezultat je donja granica (ne spušta procenu); vreme se ne preračunava — nema proverenog
-    koeficijenta po stepenu za rekreativce na polumaratonu. [srednja da toplota usporava, niska za prag] */
-export const HOT_FROM_C = 20;
+/** Toplo: od 25 °C (F4-K2; ranije 20). Rezultat dužine 0,5–2 × cilja se nikad ne odbacuje: kad bi spustio procenu,
+    usvaja se upola manji deo razlike; dužina van tog opsega je donja granica (ne spušta). Uvek uz rečenicu; vreme se
+    ne preračunava po stepenu — nema proverenog koeficijenta. [srednja da toplota usporava, niska za prag] */
+export const HOT_FROM_C = 25;
+export const HOT_LOWER_K_SHARE = 0.5;
+
+/* ------------------------------------------------------------------ prenos na dužinu cilja (F4-K2) */
+
+/** Lična kriva forme po dužini (F4-K2, simetrično): VDOT_d = VDOT_cilj + β · ln(D_cilj / d), prelom na dužini
+    poslednjeg rezultata (ka kraćoj dužini pola β bez ličnog, ka dužoj pun β; formula u `engine/vdot.ts` `vdotAt`).
+    β po prosečnom obimu poslednjih 8 nedelja (prvi red čiji je prag ≤ obim). [niska — kalibrisano na jednom trkaču] */
+export const TRANSFER_BETA: readonly { readonly minWeeklyKm: number; readonly beta: number }[] = [
+  { minWeeklyKm: 70, beta: 0.5 },
+  { minWeeklyKm: 50, beta: 1.5 },
+  { minWeeklyKm: 30, beta: 2.5 },
+  { minWeeklyKm: 0, beta: 3.5 }
+];
+/** Bez trčanja i bez izjave o obimu: srednji β. */
+export const TRANSFER_BETA_UNKNOWN = 2.5;
+export const TRANSFER_VOLUME_DAYS = 56;
+/** Lični β: rezultati na ≥ 2 dužine (odnos ≥ 2×) u 12 nedelja; ograničen na 0–5, mešan 50/50 sa podrazumevanim. */
+export const PERSONAL_BETA_DAYS = 84;
+export const PERSONAL_BETA_MIN_RATIO = 2;
+export const PERSONAL_BETA_MAX = 5;
+export const PERSONAL_BETA_SHARE = 0.5;
+/** „Ista dužina": dokaz dužine 0,5–2 × cilja. */
+export const SAME_DISTANCE_MIN = 0.5;
+export const SAME_DISTANCE_MAX = 2;
 
 /* ------------------------------------------------------------------ pouzdanost i raspon (§ 7.5) */
 
@@ -73,11 +98,11 @@ export const CONF_HIGH_DAYS = 42;
 export const CONF_MID_DAYS = 180;
 export const CONF_MID_QUALITY = 4;
 export const CONF_MID_QUALITY_DAYS = 28;
-/** Neodređenost σ po pouzdanosti (VDOT). [niska] */
+/** Neodređenost σ po pouzdanosti (VDOT; F4-K2: bilo 0,5 / 1,0 / 2,0). [niska] */
 export const SIGMA: Readonly<Record<Confidence, number>> = {
-  visoka: 0.5,
-  srednja: 1.0,
-  niska: 2.0
+  visoka: 1.0,
+  srednja: 1.5,
+  niska: 2.5
 };
 
 /** Plafon napretka (§ 14.6, kalibracija F4): `r` VDOT nedeljno i `G_max` po stažu. [niska–srednja] */
@@ -146,3 +171,7 @@ export const LOW_CONFIDENCE_MAX_GAIN = 0.01;
 export const CONF_AGREE_SHARE = 0.02;
 /** Z6 (krug 7): prva trka u životu — raspon prognoze bar ± 2 %. */
 export const FIRST_RESULT_MIN_RANGE = 0.02;
+/** σ + 1,0 kad je glavni dokaz sa druge dužine (van 0,5–2 × cilja) (F4-K2). [niska] */
+export const SIGMA_OTHER_DISTANCE = 1.0;
+/** Polazna tačka iz laganih trčanja: medijana tempa kao 72 % VO2max (F4-K2; bilo 70 %). [niska] */
+export const EASY_START_SHARE = 0.72;
