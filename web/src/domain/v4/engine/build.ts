@@ -2437,6 +2437,55 @@ export function runPass(
         }
       }
     }
+    /* krug 15 (M3, E5): posle duge trke van plana (podatak `afterLongRace`) prve nedelje su manje — dugi ≤ udeo
+       planiranog, nedelja ≤ udeo polaznog obima (lagani dani srazmerno, ne ispod najkraćeg) */
+    {
+      const rule = data.safety.afterLongRace;
+      const race =
+        rule === undefined
+          ? undefined
+          : adjustments.find(
+              (a) =>
+                a.kind === 'effort' &&
+                a.planned !== true &&
+                a.durationSec >= rule.minEffortSec &&
+                week.start > a.date &&
+                week.start <= addDays(a.date, 7 * rule.weeks)
+            );
+      if (rule !== undefined && race !== undefined) {
+        const next = new Map(recipes);
+        let longDate: IsoDate | null = null;
+        for (const [date, r] of recipes) if (r.type === 'long') longDate = date;
+        const lr = longDate === null ? undefined : recipes.get(longDate);
+        if (longDate !== null && lr !== undefined && lr.type === 'long') {
+          const cap = Math.round((rule.longShare * lr.sec) / 60) * 60;
+          if (cap < lr.sec)
+            next.set(longDate, { ...lr, sec: cap, dose: Math.min(lr.dose, cap / 2) });
+        }
+        const secOf = (r: Recipe): Seconds =>
+          r.type === 'rest' ? 0 : summarize(realize(r, ctx), ctx.pace).durationSec;
+        let total = 0;
+        for (const r of next.values()) total += secOf(r);
+        const most =
+          rule.weekShare * (header.decisions.baseVolumeMin ?? header.decisions.baseLoad) * 60;
+        const easy = [...next.entries()].filter(([, r]) => r.type === 'easy' || r.type === 'addon');
+        const easySec = easy.reduce((sum, [, r]) => sum + secOf(r), 0);
+        if (total > most && easySec > 0) {
+          const least = minEasyOf(
+            ctx.data.safety,
+            ctx.decisions.level,
+            ctx.decisions.runDays.length
+          );
+          const f = Math.max(0, 1 - (total - most) / easySec);
+          for (const [date, r] of easy) {
+            if (r.type !== 'easy' && r.type !== 'addon') continue;
+            const sec = Math.max(least, Math.round((r.sec * f) / 60) * 60);
+            next.set(date, { ...r, sec, maxSec: undefined });
+          }
+        }
+        recipes = next;
+      }
+    }
     /* krug 10 (stavka 5): posle kasne bolesti (skraćena rampa) nedelja pred trkom zadržava samo oštrenje u tempu trke
        — doza ≤ `LATE_PAUSE_SHARPEN_MAX_SEC` */
     if (

@@ -850,6 +850,9 @@ export interface SafetyNumbers {
   /** Krug 15 (M2): posle prekida, kad je do trke bar `minWeeksToRace` nedelja, ostaje jedan dugi od bar `km` (najduži
       prvobitni dugi pre sužavanja); dugi do njega raste najviše `RETURN_LONG_JUMP_SEC` nedeljno (lestvica unazad). */
   returnKeepLong?: { km: number; minWeeksToRace: number };
+  /** Krug 15 (M3, E5): posle duge trke van plana (pun napor ≥ `minEffortSec`) u prvih `weeks` nedelja dugi je najviše
+      `longShare` planiranog, a nedelja najviše `weekShare` polaznog obima (lagani dani se skraćuju, ne ispod najkraćeg). */
+  afterLongRace?: { minEffortSec: Seconds; weeks: number; longShare: number; weekShare: number };
   /** Trka/test do ovoliko sekundi (i van plana) dobija oporavak kao planirana provera forme (krug 5, E5). */
   shortEffortSec?: Seconds;
   /** A8 (krug 9): najveći očekivani napredak do trke po nivou (udeo vremena; npr. početnik 0,03, potpuno nov 0). */

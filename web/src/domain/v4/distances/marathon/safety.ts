@@ -180,6 +180,8 @@ export const SAFETY: SafetyNumbers = {
   shortenedLongMaxShare: 0.45,
   /* R12 M2 (krug 15): posle prekida ≥ 4 nedelje pred trku ostaje jedan dugi ≥ 26 km */
   returnKeepLong: { km: 26, minWeeksToRace: 4 },
+  /* R12 M3 (krug 15): E5 — 1. i 2. nedelja posle polumaratona: dugi ≤ 60 %, nedelja ≤ 75 % */
+  afterLongRace: { minEffortSec: 4500, weeks: 2, longShare: 0.6, weekShare: 0.75 },
   minZoneGapSecPerKm: 5,
   noQualityBeforeTestDays: 2,
   zoneGapReplacement: 'intervali',
