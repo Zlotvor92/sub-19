@@ -2,7 +2,7 @@ S16 — p12, E4: ned 5, bol 4/10 posle laganog dana
 
 STANJE: danas 2026-12-01; sadašnji obim 35 km nedeljno, 4 dana; forma 55:06 (pouzdanost niska), očekivano na dan trke 54:33.
 DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-01 („lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog"). Događaji: pain:2026-12-01.
-PROMENA: 18.
+PROMENA: 19.
 
 ==================== PRE ====================
 PLAN: 10 km, trka 24. 1. 2027.
@@ -170,7 +170,7 @@ Polazim od tvojih ≈ 36 km nedeljno (4 h 9 min trčanja).
 FORMA
 Polazna forma (1. 11.): 55:06
 Današnja prognoza (1. 12.): 55:06, pouzdanost niska
-Očekivano na dan trke: 54:33 (raspon 50:53–56:48) — 0:33 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 54:38 (raspon 50:58–56:53) — 0:28 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 55:06 za 10 km. Prvi test ili trka je preciziraju.
 
@@ -206,6 +206,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 11. 12. trči s
 - 7. nedelja: 38,6 km → 27,3 km
 - 8. nedelja: 39,1 km → 32,2 km
 - 9. nedelja: 42 km → 39,1 km
+Očekivano vreme trke je sada oko 54:38 umesto 54:33: do trke je planirano oko 16 % manje kilometara nego pre (209 umesto 248 km), pa je i očekivani napredak manji.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  odmor

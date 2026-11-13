@@ -32,3 +32,30 @@ vlasnik-v1-8n (F4-K2) uklonjena — v1 ponovo ima predlog „planiraj N".
 HM p06: protivrečna upozorenja 35/30 min ispravljena; ostaje naopako sužavanje (9. ned 39 km > 8. ned 34 km, 0 %
 brzog u poslednjoj punoj nedelji) — isto kao 10K B9 (A10). HM p11 (početnik): prognoza tačno −3 % (A8), uvod 4
 nedelje bez brzog. 10K p06: kvalitet svake nedelje gradnje; „vršna" je 3. nedelja (najveći obim, Z9).
+
+## Krug 9b (dopuna organizatora, 13. 11.)
+
+V4 skup: **731 prolazi, 14 očekivano pada, 0 pada**; `npm run check` zelen; typecheck i lint čisti. Kapije: **HM 0, 10K 0
+bez izuzetaka** (`WAIT_A1`/B9 uklonjeni). `target-compare` HM 26/72, 10K 15/54.
+
+| # | stanje | test |
+|---|---|---|
+| 1 (A10 a) | urađeno: sužavanje nije naopako — nedelja −1 ≤ nedelja −2 ≤ vrh (km i dugi); u nedeljama −2 i −1 lagani dani idu do `minEasyFallbackMin` umesto izostavljenog dana; korekcija silaska ne skida trčanje ni kvalitet (prihvata se samo raspored sa istim brojem trčanja/kvaliteta i dugim dužim od laganog dana). Kapija 10K bez `WAIT_A1`. | `r9b` A10 (a): profili + mreža + 27 scenarija obe distance |
+| 1 (A10 b) | urađeno: povratak posle pauze traje najviše 2 × trajanje + 7 dana (≤ 3 nedelje); posle toga prvobitan plan koji ne staje u granicu skoka (R2) se spušta srazmerno (niži vrh, prelazi i brz rad u istom odnosu, dugi ne ispod dugog-za-distancu kad R2 dozvoli), uz rečenicu sa brojevima; manjak < 5 % zatvara obična rampa (s05, s07). | `r9b` A10 (b): E2 obe distance |
+| 2 (A17) | urađeno: izgubljen obim do trke (spušten ostatak ili ≥ 15 % manje km) smanjuje očekivani napredak u istom odnosu (`raceDayVolumeShare`, posle `maxGain`), uz rečenicu sa brojevima (s05/s07/s08; par 2 B ostaje ≠ A preko A8). | `r9b` A17: E2 obe distance |
+| 3 (A2) | urađeno: neplanirana trka (effort race) — render dana trke prikazuje trku (spoj po datumu kad nema `dayId`); nema provere forme 14 dana posle (`race` flag na effort adjustmentu, `NO_TEST_AFTER_RACE_DAYS` 14, važi i van prozora izmene); 3 dana bez brzog (postojeći `NO_FAST_DAYS_AFTER_EFFORT`); dugi po R2 (`smoothExit`). | `r9b` A2: s26 obe distance |
+| 4 (A11) | urađeno: kad trka izbaci proveru forme (14 dana posle sebe) tekst result izmene to navodi (`droppedTestAfter`); pomerena provera se i dalje pominje. A3 ostatak: rečenica po zoni (krug 9) i imenovanje propuštenog glavnog treninga (s09 „dugi …") rade; nije: reči o zoni iz teksta distance (nijansa biblioteke). | `r9b` A11: s26 obe distance |
+| 5 (A12) | E6 („ništa se nije desilo", s21–s24): otisak pre = posle, nula promene prognoze — radi. `FORM_DRIFT` nepromenjen (isti 6 profila 10K): uzrok je model forme (pripisani napredak posle odrađene provere u `estimateForm`), ne motor — čeka F-seriju. | `scenarios` E6; `gate` `it.fails` |
+| 6 (A6) | preostali nalazi čuvara posle događaja su legitimne posledice spuštanja/događaja, ne degeneracija plana: HM s7 `dugi-za-distancu@15` (bolest + spušten ostatak — najduži dugi stvarno ne stiže, plan to kaže rečenicom), 10K s14 `ispod-cilja@11`, s15 `lagan-dugi@14`, s26 `brz-udeo@15` + `silazak@16` (A2 podigao nedelju −2; neslaganje prozora čuvar 21 / motor 28 dana). Ostaju u `KNOWN_A6` sa objašnjenjem. | `r9` A6 `KNOWN_A6` |
+| 7 (A15) | **nije prihvaćeno (treći put):** provera forme usred nedelje + dugi skraćen vikendom radi na p01 (provera uto, dugi 60 min ned), ali se sudara sa R17 (koji traži proveru SUBOTOM kad je subota dan trčanja), kapijom i čuvarom mreže — 41 pad. Protivreči ustaljenom pravilu R17; vraćeno. Treba prvo odluka da li R17 (subota) ili A15 (sreda) važi. | — |
+| 8 (t18) | nije urađeno (isti razlog kao R8: pod laganih dana iz istorije diže nedelju preko pravila rasta ili skraćuje dugi; nije rešeno bez sudara sa pravilom rasta). | — |
+
+Nove konstante: `NO_TEST_AFTER_RACE_DAYS` 14, `RETURN_WINDOW_PER_BREAK_DAY` 2 / `RETURN_WINDOW_EXTRA_DAYS` 7 /
+`RETURN_WINDOW_MAX_DAYS` 21, `LOWERED_REST_MIN_SHARE` 0,05, `LOST_VOLUME_MIN_SHARE` 0,15. Novo polje `Decisions.raceDayVolumeShare`,
+`Adjustment(effort).race`, `PlanHeader` nepromenjen (baseline iz stavke 3 nije bio potreban — render spaja trku po datumu).
+
+## Pregled (sam, dan po dan)
+HM p06: silazak više nije naopako (9. ned 33,5 km < 8. ned 37 km), kvalitet u svakoj nedelji gradnje. 10K p06 isto
+(nedelja −1 ≤ nedelja −2). HM/10K s07: rampa posle bolesti ne traje do trke — od prve nedelje posle prozora ostatak je
+niži (HM vrh 36,9 → 27,9 km) uz rečenicu. s26 obe distance: dan trke prikazuje trku, provera forme 23. 1. izostavljena uz
+rečenicu. HM p11 (početnik): prognoza −3 % (A8) nepromenjena. vlasnik-v2: nepromenjen.
