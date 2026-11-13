@@ -1,7 +1,6 @@
 # R10 — krug 10 (motor), 13. 11. 2026
 
-Kapije: HM 0, 10K 0, maraton 0, 5K 1 (p06, `it.fails` — stavka 15/20, predlog ispod). V4: 52 fajla, 944 + 25 očekivano pada.
-Ispisi sve četiri distance osveženi.
+Kapije: HM 0, 10K 0, maraton 0, 5K 1 (p06, `it.fails` — stavka 15/20, predlog ispod). V4: 52 fajla, 944 + 25 očekivano pada. Ispisi osveženi.
 
 ## Najteža nedelja i dugi pred trku (PRE = plan bez događaja)
 
@@ -38,5 +37,4 @@ provere lagan); 10 (`raceStartPaceOffsetShare`, HM 1–2 %); 11; 12; 14 (`longMa
   HM 5 / 5K 7; predlog: redosled kao podatak distance (`trimOrder`), uvesti po distanci uz nove otiske.
 - 23 (pripremna trka na dan dugog), 24 (srednje dugi dan), 25 (spajanje upozorenja): nov tip dana / spoj nalaza u
   čuvaru — zaseban segment.
-- 16, 17, 19 (5K): nisu stigle u ovaj krug.
-- HM p08 nema vrednost `longMaxSecByRunDays` (dugi je već 47 % nedelje).
+- 16, 17, 19 (5K) nisu stigle; HM p08 bez `longMaxSecByRunDays` (dugi već 47 % nedelje).
