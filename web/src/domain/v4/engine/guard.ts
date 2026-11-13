@@ -12,6 +12,7 @@ import {
   RACE_NO_LONG_DAYS,
   RAMP_MIN_DURATION_SEC,
   GUARD_DOSE_TOLERANCE_SEC,
+  GUARD_TAPER_KM_SLACK,
   GUARD_FAST_SHARE_TOLERANCE,
   GUARD_JUMP_TOLERANCE,
   GUARD_LONG_STEP_TOLERANCE_SEC,
@@ -22,7 +23,7 @@ import {
   GUARD_UNDER_TARGET
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
-import { addDays, diffDays, isValidDate } from './dates';
+import { addDays, diffDays, isValidDate, mondayOf } from './dates';
 import { longReaches, longStepOf, maxWorkOf, minRampOf } from './decide';
 import {
   count,
@@ -290,8 +291,31 @@ export const guard: GuardFn = (doc, _state, data) => {
       .map((c) => c.fastSec)
   );
 
+  /* M7 (krug 5): silazak obima po KALENDARSKOJ nedelji (km prema vršnoj nedelji, broj brzih treninga) */
+  const peakKm = Math.max(0, ...costs.filter((c) => c.week.intent.kind === 'peak').map((c) => c.km));
+  const raceMonday = mondayOf(header.goal.raceDate);
+
   costs.forEach((c, i) => {
     const { week } = c;
+    const taper = s.taper;
+    if (taper !== undefined && peakKm > 0 && week.start >= header.startDate) {
+      if (week.start === addDays(raceMonday, -14)) {
+        const fastDays = week.days.filter((d) => fastWorkSec(d.workout) > 0).length;
+        if (taper.calendarMinus2MaxQuality !== undefined && fastDays > taper.calendarMinus2MaxQuality) {
+          report('silazak', week, null, 'Dve nedelje pred nedeljom trke ima više brzih treninga od dozvoljenog.');
+        }
+        if (taper.weekMinus2MaxOfPeak !== undefined && c.km > taper.weekMinus2MaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK) {
+          report('silazak', week, null, 'Obim dve nedelje pred nedeljom trke nije spušten prema vršnoj nedelji.');
+        }
+      }
+      if (
+        week.start === raceMonday &&
+        taper.raceWeekMaxOfPeak !== undefined &&
+        c.km > taper.raceWeekMaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK
+      ) {
+        report('silazak', week, null, 'Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.');
+      }
+    }
     const ramp = inAnyWindow(week, causes);
     const partial = week.start < header.startDate;
     const raceWeek = week.intent.kind === 'race';

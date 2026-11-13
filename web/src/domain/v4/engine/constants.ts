@@ -213,6 +213,8 @@ export const PACE_UPDATE_AFTER_RESULT_VDOT = 0.3;
 /* ------------------------------------------------------------------ čuvar (§ 8.2) */
 
 export const GUARD_DOSE_TOLERANCE_SEC = 90;
+/** M7 (krug 5): silazak obima — dani se zaokružuju na 0,5 km. */
+export const GUARD_TAPER_KM_SLACK = 0.5;
 /** Krug 4 (S1): čuvar prijavljuje svaku nedelju preko granice (samo zaokruživanje). */
 export const GUARD_FAST_SHARE_TOLERANCE = 0.005;
 /** § 8.2 daje 5 %; drugi krug: čuvar ne prijavljuje do + 10 % (lagan dan na najkraćem trajanju). */

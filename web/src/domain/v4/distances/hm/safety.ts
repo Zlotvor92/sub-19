@@ -169,6 +169,8 @@ export const SAFETY: SafetyNumbers = {
   shortenedLongMaxShare: 0.45,
   /* krug 4 dopuna (D8): prag i tempo trke bliži od 5 s/km — jedan podražaj nedeljno (p05, p06) */
   minZoneGapSecPerKm: 5,
+  /* M6 (krug 5): bez kvaliteta 2 dana pre provere forme */
+  noQualityBeforeTestDays: 2,
   /* P4 (krug 5): u nedelji sa tempom trke prag postaje intervali (dva različita kvaliteta) */
   zoneGapReplacement: 'intervali',
   /* krug 5 (D7): tempo trke (uklj. blok u dugom) nedeljno — početnik ≤ 45, srednji ≤ 60, napredni ≤ 75 min */
@@ -190,7 +192,17 @@ export const SAFETY: SafetyNumbers = {
   },
   /* krug 5 (D3; trener § D6): trkač sporiji od 2:05 (očekivano na dan trke; p03, p10) — dugi ≤ vreme trke + 5 min, blok u dugom ≤ 35 min */
   longVsRace: { fromRaceSec: 7500, overSec: 300, blockMaxSec: 2100 },
-  taper: { lastDays: 7, weekBeforeFromDays: 14, weekBeforeMaxQuality: 2, weekBeforeMaxOfPeak: 0.6 },
+  /* M7 (krug 5): silazak obima — dve nedelje pred nedeljom trke ≤ 80 % vršne (km) i ≤ 2 brza treninga, nedelja
+     trke ≤ 60 % */
+  taper: {
+    lastDays: 7,
+    weekBeforeFromDays: 14,
+    weekBeforeMaxQuality: 2,
+    weekBeforeMaxOfPeak: 0.6,
+    weekMinus2MaxOfPeak: 0.8,
+    calendarMinus2MaxQuality: 2,
+    raceWeekMaxOfPeak: 0.6
+  },
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */
   minEasySec: 1500,

@@ -14,7 +14,7 @@ import {
   RETURN_WEEK_MAX_OVER_LAST,
   TAPER_ADDON_MIN_EASY_SEC
 } from './constants';
-import { addDays, diffDays, weekdayOf } from './dates';
+import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
 import {
   assignDays,
   easyOverPrevious,
@@ -137,6 +137,8 @@ export interface TargetInput {
   extra?: LoadPoints;
   /** Prva nedelja posle rampe povratka: najveći obim u minutima (R9); `null` = bez uslova. */
   returnCap?: number | null;
+  /** M7 (krug 5): silazak obima — najveći obim nedelje prema vršnoj nedelji; `null` = bez uslova. */
+  taperCap?: number | null;
 }
 
 /** CILJ NEDELJE (§ 6.2 k. 5, krug 2: R3, R5, R9). Cilj je obim (minuti) + dodatno opterećenje kvaliteta:
@@ -169,6 +171,9 @@ export function weekTarget(
   if (input.returnCap !== undefined && input.returnCap !== null) {
     /* S9/E1: obim (km nedelje) ≤ poslednja puna nedelja gradnje pre pauze × 1,10; kvalitet ide preko (R5) */
     full = Math.min(full, input.returnCap + extra);
+  }
+  if (input.taperCap !== undefined && input.taperCap !== null) {
+    full = Math.min(full, input.taperCap + extra);
   }
   return { full, target: Math.round(full * input.fraction) };
 }
@@ -462,7 +467,31 @@ export function weekSlots(
       }
     }
   }
-  return { race, eve, calmFrom, runDays, longWd, long, items };
+  /* M7 (krug 5): kalendarska nedelja dve pred nedeljom trke — najviše `weekMinus2MaxQuality` brzih treninga
+     (blok u dugom se broji); otpadaju poslednji po važnosti */
+  const tq = ctx.data.safety.taper?.calendarMinus2MaxQuality;
+  const raceMonday = mondayOf(span.raceDate);
+  if (tq !== undefined && week.start === addDays(raceMonday, -14)) {
+    let room = tq - (long !== null && long.wanted > 0 ? 1 : 0);
+    for (let i = 0; i < items.length; i += 1) {
+      const x = items[i];
+      if (x === undefined || x.kind !== 'quality') continue;
+      if (room > 0) room -= 1;
+      else {
+        items.splice(i, 1);
+        i -= 1;
+      }
+    }
+  }
+  /* M6 (krug 5): nema kvaliteta 2 dana pre provere forme / trke-testa — taj kvalitet otpada (dan je lagan) */
+  const gapDays = ctx.data.safety.noQualityBeforeTestDays ?? 0;
+  const tests = items.filter((x) => x.kind === 'test').map((x) => x.date);
+  const kept = items.filter(
+    (x) =>
+      x.kind !== 'quality' ||
+      !tests.some((t) => x.date < t && diffDays(t, x.date) <= gapDays)
+  );
+  return { race, eve, calmFrom, runDays, longWd, long, items: kept };
 }
 
 /** Opterećenje punog napora iznad laganog trčanja istog trajanja, i njegovo trajanje (za budžet i R5). */
@@ -1135,6 +1164,23 @@ function growPast(ctx: BuildCtx): boolean {
   );
 }
 
+/** M7 (krug 5): silazak obima po KALENDARSKOJ nedelji — dve nedelje pred nedeljom trke ≤ `weekMinus2MaxOfPeak`,
+    nedelja trke (bez trke) ≤ `raceWeekMaxOfPeak` vršne nedelje. */
+function taperVolumeCap(
+  week: { start: IsoDate },
+  span: Span,
+  peakVolume: number,
+  data: DistanceData
+): number | null {
+  const t = data.safety.taper;
+  if (t === undefined || peakVolume <= 0) return null;
+  const raceMonday = mondayOf(span.raceDate);
+  if (week.start === raceMonday && t.raceWeekMaxOfPeak !== undefined) return t.raceWeekMaxOfPeak * peakVolume;
+  if (week.start === addDays(raceMonday, -14) && t.weekMinus2MaxOfPeak !== undefined)
+    return t.weekMinus2MaxOfPeak * peakVolume;
+  return null;
+}
+
 /** Broj nedelja gradnje/vrha pre nedelje `index`. */
 function buildsBefore(weeks: readonly PlanWeek[], index: number): number {
   return weeks.filter(
@@ -1191,6 +1237,8 @@ export function runPass(
   /* E9: brz rad vršne nedelje (merilo silaska intenziteta) */
   let peakFast = 0;
   const taperAcc = { count: 0, fast: 0 };
+  /* M7: obim vršne nedelje (km u minutima laganog tempa) */
+  let peakVolume = 0;
   let previousHard: IsoDate | null = null;
   /* Provera forme koja je pala u pauzu ili rampu: čeka prvu nedelju posle rampe (R9). */
   let pendingTest: Extract<Recipe, { type: 'test' }> | null = null;
@@ -1231,7 +1279,8 @@ export function runPass(
           fraction,
           previousTarget,
           extra,
-          returnCap: !ramped && previousRamped ? RETURN_WEEK_MAX_OVER_LAST * lastFullVolume : null
+          returnCap: !ramped && previousRamped ? RETURN_WEEK_MAX_OVER_LAST * lastFullVolume : null,
+          taperCap: null
         },
         ctx
       );
@@ -1266,14 +1315,61 @@ export function runPass(
       };
     }
     previousTarget = fullTarget;
+    const accBefore = { ...taperAcc };
+    const lay = (sh: WeekShell): Map<IsoDate, Recipe> =>
+      taperIntensity(
+        layoutWeek({ ...sh, volumeMin: Math.round(plannedMin(sh.targetLoad) * 10) / 10 }, ctx, slots, previousEasy),
+        span,
+        peakFast,
+        ctx,
+        taperAcc
+      );
+    let recipes = lay(shell);
+    /* M7 (krug 5): granica silaska je u km (km u minutima laganog tempa); kvalitet i dugi nose više km po minutu
+       od cilja, pa se višak skida JEDNOM sa laganih dana (cilj − višak km × lagan tempo) */
+    const capVolume = taperVolumeCap(week, span, peakVolume, data);
+    if (capVolume !== null) {
+      const measure = (): { over: number; load: number; volume: number } => {
+        let km = 0;
+        let load = 0;
+        for (const r of recipes.values()) {
+          const w = realize(r, ctx);
+          if (w === null) continue;
+          const c = summarize(w, ctx.pace);
+          km += c.km;
+          load += c.load;
+        }
+        /* pola km rezerve: dani se zaokružuju na 0,5 km */
+        const volume = ((km + 0.5) * ctx.pace.paces.easy) / 60;
+        return { over: volume - capVolume, load, volume };
+      };
+      /* korak 1: cela nedelja srazmerno (dugi i lagani dani, od OSTVARENOG — lagani dani mogu biti na plafonu dana,
+         ispod cilja; udeo dugog ostaje); korak 2: ostatak sa laganih dana; korak 3: kad su lagani dani na
+         najmanjem trajanju, ostatak skraćuje dugi */
+      for (const step of ['scale', 'easy', 'long'] as const) {
+        const m = measure();
+        if (m.over <= 0) break;
+        Object.assign(taperAcc, accBefore);
+        const from = Math.min(shell.targetLoad, m.load);
+        const f = capVolume / m.volume;
+        shell =
+          step === 'scale'
+            ? {
+                ...shell,
+                targetLoad: Math.max(0, Math.round(from * f)),
+                longSec: Math.max(0, Math.round((shell.longSec * f) / 60) * 60)
+              }
+            : step === 'easy'
+              ? { ...shell, targetLoad: Math.max(0, Math.round(from - m.over)) }
+              : {
+                  ...shell,
+                  targetLoad: Math.max(0, Math.round(from - m.over)),
+                  longSec: Math.max(0, Math.round((shell.longSec - m.over * 60) / 60) * 60)
+                };
+        recipes = lay(shell);
+      }
+    }
     const volumeMin = Math.round(plannedMin(shell.targetLoad) * 10) / 10;
-    const recipes = taperIntensity(
-      layoutWeek({ ...shell, volumeMin }, ctx, slots, previousEasy),
-      span,
-      peakFast,
-      ctx,
-      taperAcc
-    );
 
     if (week.intent.kind !== 'recovery' && week.intent.source === 'template') {
       previousEasy = easyRefOf(recipes, ctx) ?? previousEasy;
@@ -1387,6 +1483,7 @@ export function runPass(
          „+ 8 % ili + 3 km" je pravilo kilometara). */
       const volume = (totals.km * ctx.pace.paces.easy) / 60;
       volumes.push(volume);
+      if (week.intent.kind === 'peak') peakVolume = Math.max(peakVolume, volume);
       /* E1 (krug 5): merilo povratka je poslednja PUNA nedelja gradnje — ne lanča se preko rasterećenja */
       if (fraction >= 1 && week.intent.kind !== 'recovery') lastFullVolume = volume;
       longs.push(longAsDecided ? Math.max(shell.longSec, totals.longSec) : totals.longSec);

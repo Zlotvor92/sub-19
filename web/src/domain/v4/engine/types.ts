@@ -783,6 +783,8 @@ export interface SafetyNumbers {
     /** Ostatak plafona ispod ovoga (s) ide celim u zamenski podražaj (M1). */
     minLeftSec?: Seconds;
   };
+  /** M6 (krug 5): toliko dana pre provere forme nema kvaliteta. */
+  noQualityBeforeTestDays?: number;
   /** D8 (krug 4 dopuna): prag i tempo trke bliži od ovoga (s/km) se ne zadaju u istoj nedelji. */
   minZoneGapSecPerKm?: number;
   /** Podražaj koji zamenjuje prag u nedelji sa tempom trke kad su bliski (P4). */
@@ -802,6 +804,11 @@ export interface SafetyNumbers {
     weekBeforeFromDays: number;
     weekBeforeMaxQuality: number;
     weekBeforeMaxOfPeak: number;
+    /** M7 (krug 5): kalendarska nedelja dve pred nedeljom trke ≤ ovoliki deo vršne nedelje (km), najviše
+        `calendarMinus2MaxQuality` brzih treninga; nedelja trke (bez trke) ≤ `raceWeekMaxOfPeak`. */
+    weekMinus2MaxOfPeak?: number;
+    calendarMinus2MaxQuality?: number;
+    raceWeekMaxOfPeak?: number;
   };
   /** Oštrenje nedelje trke (krug 4, S1): podražaj van budžeta brzog rada, doza uvek u [minSec, maxSec]. */
   sharpening?: { stimulus: StimulusTag; minSec: Seconds; maxSec: Seconds };
