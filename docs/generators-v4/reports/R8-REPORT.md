@@ -1,8 +1,9 @@
 # Krug 8 V4 — zahtevi 10K za motor + ostatak HM, 13. 11. 2026
 
 Grana `claude/v4`. V4 skup: **689 prolaze, 19 očekivano pada (`it.fails`), 0 pada**; typecheck i lint čisti;
-`npm run check` zelen (4125 + 19). Kapije: **HM 0, 10K 0 prekršaja**. Mreže obe distance (pun nivo) zelene. `target-compare`
-HM 24/72 (isto), 10K 16/54 (bilo 14). Stavku 6 (forma) nisam dirao; `vdot.ts` i polja forme u `types.ts` netaknuti.
+`npm run check` zelen (4125 + 19). Kapije: **HM 0; 10K 0 na mom poslednjem stanju, 2 posle rebase-a na `cfba8b7` (tab forme)** — p01 n13 skok
+46,8 → 53 km, p08 n15 36,9 → 41,5 km; na `cfba8b7~1` sa istim podacima 0 (uzrok u izmeni forme/easyFill, nisam dirao). Mreže obe distance (pun nivo) zelene. `target-compare`
+HM 24/72 (isto), 10K 18/54 (bilo 14; 16 pre rebase-a). Stavku 6 (forma) nisam dirao; `vdot.ts` i polja forme u `types.ts` netaknuti.
 
 | # | stanje | test |
 |---|---|---|
