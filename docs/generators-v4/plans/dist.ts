@@ -1,5 +1,5 @@
-/* Izbor distance za skripte ispisa (render, scenarios, gate, target, pairs): `--dist hm` (podrazumevano) ili
-   `--dist tenk` ili `--dist fivek`. Svaka distanca daje isti oblik iz svog foldera `web/src/domain/v4/distances/<d>/`: podatke,
+/* Izbor distance za skripte ispisa (render, scenarios, gate, target, pairs): `--dist hm` (podrazumevano),
+   `--dist tenk`, `--dist fivek` ili `--dist marathon`. Svaka distanca daje isti oblik iz svog foldera `web/src/domain/v4/distances/<d>/`: podatke,
    12 profila, scenarije, kapiju; planovi vlasnika postoje samo za polumaraton. */
 import { join } from 'node:path';
 
@@ -21,7 +21,8 @@ export interface Dist {
 const DISTS: Record<string, { folder: string; exportName: string; outDir: string; name: string }> = {
   hm: { folder: 'hm', exportName: 'hm', outDir: 'HM', name: 'polumaraton' },
   tenk: { folder: 'tenk', exportName: 'tenk', outDir: '10K', name: '10 km' },
-  fivek: { folder: 'fivek', exportName: 'fivek', outDir: '5K', name: '5 km' }
+  fivek: { folder: 'fivek', exportName: 'fivek', outDir: '5K', name: '5 km' },
+  marathon: { folder: 'marathon', exportName: 'marathon', outDir: 'MAR', name: 'maraton' }
 };
 
 export function distKey(argv: string[]): string {

@@ -1,6 +1,6 @@
 /* Poređenje V4 sa ciljnim planovima trenera (polumaraton: docs/generators-v2/perfection/target/HM/, krug 3: META;
-   10 km: docs/generators-v4/coach/target/10K/; 5 km: coach/target/5K/). Pokretanje iz korena:
-   node docs/generators-v4/plans/target.ts [--dist tenk|fivek] [--md]
+   10 km: docs/generators-v4/coach/target/10K/; 5 km: coach/target/5K/; maraton: coach/target/MAR/). Pokretanje iz
+   korena:  node docs/generators-v4/plans/target.ts [--dist tenk|fivek|marathon] [--md]
    Po nedelji: km, dugi (km), blok u dugom (km), kvaliteti (vrsta i minuti rada) — cilj / V4 / razlika, i provera
    tolerancija organizatora: km ± 8 %, dugi ± 1,5 km, isti broj i vrsta kvaliteta, doza ± 20 %. */
 import { registerHooks } from 'node:module';
@@ -124,7 +124,47 @@ const TARGETS_FIVEK: Record<string, W[]> = {
     [14, 6, 0, [['RP', 10]]], [6, 0, 0, [['O', 3]]]
   ]
 };
-const TARGETS = D.key === 'hm' ? TARGETS_HM : D.key === 'fivek' ? TARGETS_FIVEK : TARGETS_TENK;
+/* maraton: coach/target/MAR/ (p07 12 ned, p08 3 dana 24 ned, p11 početnik 24 ned, p12 početnik po osećaju 18 ned);
+   redovi spojeni u tabeli trenera („1–2", „5–7") su razvijeni po nedeljama */
+const TARGETS_MAR: Record<string, W[]> = {
+  p07: [
+    [65, 22, 0, [['R', 0], ['T', 23]]], [69, 24, 0, [['R', 0], ['T', 28]]], [73, 26, 0, [['T', 35]]],
+    [60, 16, 0, [['T', 14], ['X', 0]]], [77, 28, 8, [['T', 30]]], [81, 24, 0, [['RP', 50], ['T', 23]]],
+    [84, 30, 12, [['T', 28]]], [66, 21, 0, [['T', 22]]], [84, 32, 14, [['T', 19]]],
+    [66, 22, 3, [['RP', 30], ['T', 14]]], [50, 14, 0, [['RP', 20]]], [24, 0, 0, [['O', 10]]]
+  ],
+  p08: [
+    [48, 22, 0, [['T', 19]]], [50, 24, 0, [['T', 23]]], [50, 20, 0, [['T', 23]]], [40, 18, 0, [['T', 14]]],
+    [51, 25, 0, [['R', 0]]], [52, 21, 0, [['T', 28]]], [53, 26, 0, [['T', 28]]], [42, 16, 0, [['X', 0]]],
+    [54, 26, 0, [['I', 17]]], [55, 22, 0, [['T', 32]]], [56, 28, 0, [['I', 21]]], [45, 20, 0, [['T', 14]]],
+    [57, 24, 0, [['T', 32]]], [58, 29, 0, [['T', 35]]], [46, 21, 0, [['X', 0]]], [43, 20, 0, []],
+    [58, 28, 8, []], [58, 24, 0, [['RP', 50]]], [60, 30, 12, []], [47, 21, 0, [['T', 22]]],
+    [60, 32, 14, []], [47, 21, 3, [['RP', 30]]], [35, 13, 0, [['RP', 20]]], [13, 0, 0, [['O', 9]]]
+  ],
+  p11: [
+    [25, 10, 0, []], [27, 11, 0, []], [29, 12, 0, [['T', 10]]], [23, 9, 0, []], [31, 13, 0, [['T', 10]]],
+    [33, 14, 0, [['T', 15]]], [35, 15, 0, [['T', 15]]], [28, 11, 0, [['R', 0]]], [37, 16, 0, [['T', 16]]],
+    [39, 17.5, 0, [['T', 20]]], [41, 19, 0, [['T', 21]]], [32, 10, 0, [['X', 0]]], [43, 20, 0, [['T', 20]]],
+    [45, 22, 0, [['T', 24]]], [47, 18, 0, [['T', 25]]], [38, 21, 0, [['X', 0]]], [36, 16, 0, []],
+    [48, 25, 0, [['RP', 38]]], [50, 20, 6, []], [40, 16, 0, [['T', 15]]], [52, 27, 0, []],
+    [40, 18, 3, [['RP', 32]]], [30, 12, 0, [['RP', 19]]], [12, 0, 0, [['O', 6]]]
+  ],
+  p12: [
+    [50, 17, 0, []], [52, 18, 0, []], [54, 19, 0, [['T', 12]]], [43, 14, 0, [['X', 0]]], [56, 20, 0, [['T', 18]]],
+    [58, 21, 0, [['T', 24]]], [60, 22.5, 0, [['T', 28]]], [48, 12, 0, [['X', 0]]], [62, 24, 0, [['T', 28]]],
+    [64, 20, 0, [['RP', 39]]], [52, 21, 8, [['X', 0]]], [50, 16, 0, []], [64, 25, 6, []],
+    [65, 21, 0, [['RP', 39]]], [65, 27, 8, []], [51, 18, 3, [['RP', 26]]], [39, 12, 0, [['RP', 19]]],
+    [16, 0, 0, [['O', 6]]]
+  ]
+};
+const TARGETS =
+  D.key === 'hm'
+    ? TARGETS_HM
+    : D.key === 'fivek'
+      ? TARGETS_FIVEK
+      : D.key === 'marathon'
+        ? TARGETS_MAR
+        : TARGETS_TENK;
 const KIND: Record<string, string> = {
   brzina: 'R', prag: 'T', 'prag-p': 'T', intervali: 'I', 'tempo-trke': 'RP', ostrenje: 'O',
   kontrola: 'X', 'kontrola-rana': 'X'
