@@ -432,14 +432,18 @@ export function renderPlan(
         for (const note of raceNotes(doc, state, data)) lines.push(`      napomena: ${note}`);
         continue;
       }
-      if (past(day) && (run !== undefined || day.date !== today || paused(day.date))) {
+      /* R4 (krug 6): i današnji dan sa odrađenim trčanjem (trka na dan provere) je urađen, ne zakazan */
+      const doneToday = day.date === today && run !== undefined;
+      if ((past(day) || doneToday) && (run !== undefined || day.date !== today || paused(day.date))) {
         /* Prošao dan: šta je urađeno (ili da nije), bez prepisivanja novim tempom. */
         if (run === undefined) {
           lines.push(
             `  ${when}  ${w.text} — ${paused(day.date) ? 'pauza, bez treninga' : 'nije urađeno'}`
           );
         } else {
-          lines.push(`  ${when}  ${w.text} — ${doneLine(run)}`);
+          /* R4 (krug 6): trka trčana na dan drugog treninga — red kaže šta je stvarno trčano */
+          const what = run.effort === 'race' && w.kind !== 'race' ? `trka umesto „${w.text}"` : w.text;
+          lines.push(`  ${when}  ${what} — ${doneLine(run)}`);
           km += Math.round(run.distanceM / 100) / 10;
           durationSec += run.durationSec;
           trainings += 1;

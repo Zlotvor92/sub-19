@@ -604,7 +604,14 @@ function smoothExit(
       const workout = realize({ type: 'easy', sec }, ctxB);
       return workout === null ? d : { ...d, origin: 'template', workout };
     });
-    weeks[i] = { ...w, days: finalDays };
+    /* cilj nedelje prati skraćenje (nedelja je namerno manja, ne „ispod cilja") */
+    const shrunk: PlanWeek = { ...w, days: finalDays };
+    const share = curKm > 0 ? Math.min(1, km(shrunk) / curKm) : 1;
+    weeks[i] = {
+      ...shrunk,
+      targetLoad: Math.round(w.targetLoad * share),
+      ...(w.volumeMin === undefined ? {} : { volumeMin: Math.round(w.volumeMin * share * 10) / 10 })
+    };
     until = addDays(w.start, 6);
   }
   return { doc: { ...after, weeks }, until };

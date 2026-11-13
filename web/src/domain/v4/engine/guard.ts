@@ -303,7 +303,10 @@ export const guard: GuardFn = (doc, _state, data) => {
   /* M7 (krug 5): silazak obima po KALENDARSKOJ nedelji (km prema vršnoj nedelji, broj brzih treninga) */
   const peakKm = Math.max(
     0,
-    ...costs.filter((c) => c.week.intent.kind === 'peak').map((c) => c.km)
+    /* vrh skraćen povratkom (21 dan posle rampe) nije merilo silaska — isto kao za brz rad (M9) */
+    ...costs
+      .filter((c) => c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes, RESTORE_PEAK_AFTER_DAYS))
+      .map((c) => c.km)
   );
   const raceMonday = mondayOf(header.goal.raceDate);
 

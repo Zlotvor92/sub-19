@@ -82,6 +82,8 @@ function resultKind(r: FitnessRun): 'trka' | 'test' | null {
   if (!usableForForm(r)) return null;
   if (r.effort === 'race' && r.distanceM >= C.RACE_MIN_M) return 'trka';
   if (r.effort === 'test' && r.distanceM >= C.TEST_MIN_M) return 'test';
+  /* R4 (krug 6): odrađena provera forme iz plana (trčanje vezano za dan punog napora) je rezultat */
+  if (r.effort === undefined && (r.plannedEffortM ?? 0) > 0 && r.distanceM >= C.TEST_MIN_M) return 'test';
   return null;
 }
 
@@ -509,7 +511,7 @@ export function estimateForm(
               scored.distanceM,
               scored.durationSec,
               ev,
-              { k, first: firstInApp },
+              { k, first },
               before,
               vdot,
               goalM
