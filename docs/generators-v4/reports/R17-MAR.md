@@ -28,3 +28,15 @@ Odluka organizatora za p04: spor nivo ostaje na 3 h 10, jer je očekivano 4:13 <
 4. Tekstovi upozorenja („duža priprema pomaže/ne pomaže" p13, broj treninga u nedelji provere p10). Iz MAR-02:
    § D1–D3, s17, povratak (s07/s15/s16/s25), s26, P3 A.
 5. KNOWN posle događaja: s2/s26 `ispod-cilja`, s6 `dugi-korak`, s7 `dugi-za-distancu`, s26 R2 + 23 %.
+
+## § R18 — dužina najdužeg dugog ima prednost (odluka organizatora)
+Udeo dugog je najviše 45 % kod 4 dana i 50 % kod 3 dana, osim dve nedelje sa najdužim dugim (N−5 i N−3, razdvojene
+rasterećenjem N−4), kad sme 50 % i 55 %. Kapija je vraćena na 26 km kod vrha ≥ 52 km; izuzetak važi samo za dugi na
+plafonu po vremenu. N−7 je lagan dugi bez bloka (plan ≥ 16 nedelja), da lestvica N−7 → N−5 → N−3 stigne do 26 km;
+korak dugog je 1,7 km.
+Najduži dugi: p01 26,5 km (47 % vrha), p02 26, p16 27,5, p07 30. p03 20,5 i p10 20,7 km (3 dana, vrh 40–43 km, pa
+kapija od 26 km ne važi). p06 24,5 km: plan od 12 nedelja ne potpada pod kapiju (≥ 16 nedelja); ne stiže do 26 km
+zbog koraka (zahtev 1). p11 21,2 km / 2 h 28 (početnik, vrh 50 km).
+Prag za vrh 45–52 km spušten je sa 2 h 30 na 2 h 25 (p11).
+K7 dozvoljava + 2,5 km kad dugi nosi blok MP. Zahtev motoru: korak dugog meriti u km sa blokom, ne u vremenu laganog
+tempa. Početnik ima jedan blok ≥ 30 min (ciljni p11), u vršnoj nedelji brz rad ≥ 7 %.
