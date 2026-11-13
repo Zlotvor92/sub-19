@@ -77,16 +77,21 @@ const ZONE_FEEL: Readonly<Record<ZoneId, string>> = {
   RP: 'napor koji planiraš za trku'
 };
 
-const feelOf = (zone: ZoneId, data: DistanceData): string =>
-  data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone];
+/** T5 (krug 6): `{duration}` u opisu napora je očekivano trajanje trke trkača (na 5 min). */
+const feelOf = (zone: ZoneId, data: DistanceData, raceSec?: number): string => {
+  const text = data.texts[`napor.${zone}`] ?? ZONE_FEEL[zone];
+  const duration =
+    raceSec === undefined ? 'koliko traje tvoja trka' : `oko ${fmtMinutes(Math.round(raceSec / 300) * 300)}`;
+  return text.split('{duration}').join(duration);
+};
 
 /** Tekst zaglavlja ili dana trke: iz podataka distance, inače podrazumevani (`DEFAULT_TEXTS`). */
 function line(data: DistanceData, key: string, values: Readonly<Record<string, string>>): string {
   return fillText(data.texts[key] ?? DEFAULT_TEXTS[key] ?? '', values);
 }
 
-function zoneHint(zone: ZoneId, paces: Paces, data: DistanceData): string {
-  if (paces.byFeel) return `${ZONE_NAME[zone]}: ${feelOf(zone, data)}`;
+function zoneHint(zone: ZoneId, paces: Paces, data: DistanceData, raceSec?: number): string {
+  if (paces.byFeel) return `${ZONE_NAME[zone]}: ${feelOf(zone, data, raceSec)}`;
   if (zone === 'E') return `lagano ${fmtPaceBare(paces.easyFast)}–${fmtPace(paces.easySlow)}`;
   return `${ZONE_NAME[zone]} ${fmtPace(paces[zone])}`;
 }
@@ -211,7 +216,7 @@ export function raceNotes(
     paceTo: fmtPace(pace + 10),
     time: fmtClock(timeSec),
     basis: fromGoal ? 'tvoj cilj' : 'današnja forma',
-    feel: feelOf('RP', data)
+    feel: feelOf('RP', data, raceDay.expectedSec)
   };
   const out: string[] = [
     h.paces.byFeel ? line(data, 'trka.po-osecaju', values) : line(data, 'trka.tempo', values)
@@ -295,7 +300,7 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   lines.push('');
   lines.push(h.paces.byFeel ? 'NAPOR PO ZONAMA (tempa još nisu pouzdana)' : 'TEMPA');
   const zones: ZoneId[] = ['E', 'M', 'T', 'RP', 'I', 'R'];
-  for (const zone of zones) lines.push(`- ${zoneHint(zone, h.paces, data)}`);
+  for (const zone of zones) lines.push(`- ${zoneHint(zone, h.paces, data, h.form.raceDay.expectedSec)}`);
   lines.push(raceTruth(h, raceDay, data));
   if (h.warnings.length > 0) {
     lines.push('');

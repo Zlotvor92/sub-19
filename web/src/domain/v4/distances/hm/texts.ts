@@ -59,7 +59,8 @@ export const TEXTS: Record<string, string> = {
   'napor.T': 'ugodno teško, samo par reči, napor 7 od 10',
   'napor.I': 'teško, ali isto do poslednje deonice, napor 8 od 10',
   'napor.R': 'brzo i opušteno, uz pun oporavak, napor 8–9 od 10',
-  'napor.RP': 'napor koji možeš da držiš sat i po do dva, napor 6 od 10'
+  /* T5 (krug 6): trajanje iz očekivanog vremena trkača (p10, p12: ne „sat i po do dva" za 2:01–2:10) */
+  'napor.RP': 'napor koji možeš da držiš {duration}, napor 6 od 10'
 };
 
 /** Napomene po vrsti i trajanju treninga. */
