@@ -1,0 +1,269 @@
+{
+ "sudija": "judge2",
+ "distanca": "5K",
+ "runda": "ROUND-V4-5K-02",
+ "stanje": "fb2c1a3",
+ "planovi": {
+  "p01": {
+   "q": [
+    7,
+    7,
+    7,
+    6,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 68.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p02": {
+   "q": [
+    6,
+    7,
+    5,
+    4,
+    7,
+    5,
+    7
+   ],
+   "ukupno": 59.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p03": {
+   "q": [
+    7,
+    8,
+    6,
+    6,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 68.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p04": {
+   "q": [
+    6,
+    6,
+    5,
+    5,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 59.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p05": {
+   "q": [
+    6,
+    7,
+    6,
+    6,
+    7,
+    6,
+    6
+   ],
+   "ukupno": 63.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p06": {
+   "q": [
+    3,
+    8,
+    3,
+    3,
+    6,
+    4,
+    4
+   ],
+   "ukupno": 45.0,
+   "dao_bih": "ne"
+  },
+  "p07": {
+   "q": [
+    6,
+    7,
+    6,
+    5,
+    7,
+    6,
+    5
+   ],
+   "ukupno": 61.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p08": {
+   "q": [
+    7,
+    8,
+    6,
+    6,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 68.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p09": {
+   "q": [
+    6,
+    7,
+    6,
+    5,
+    6,
+    6,
+    7
+   ],
+   "ukupno": 62.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p10": {
+   "q": [
+    7,
+    8,
+    6,
+    6,
+    7,
+    7,
+    7
+   ],
+   "ukupno": 69.0,
+   "dao_bih": "da"
+  },
+  "p11": {
+   "q": [
+    8,
+    8,
+    6,
+    7,
+    7,
+    7,
+    7
+   ],
+   "ukupno": 72.0,
+   "dao_bih": "da"
+  },
+  "p12": {
+   "q": [
+    5,
+    6,
+    5,
+    4,
+    6,
+    5,
+    6
+   ],
+   "ukupno": 53.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p13": {
+   "q": [
+    6,
+    8,
+    4,
+    3,
+    6,
+    5,
+    6
+   ],
+   "ukupno": 56.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p14": {
+   "q": [
+    6,
+    7,
+    5,
+    5,
+    7,
+    5,
+    7
+   ],
+   "ukupno": 60.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p15": {
+   "q": [
+    6,
+    7,
+    6,
+    6,
+    7,
+    5,
+    6
+   ],
+   "ukupno": 62.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p16": {
+   "q": [
+    7,
+    8,
+    6,
+    6,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 68.0,
+   "dao_bih": "da"
+  }
+ },
+ "prosek_planova": 62.1,
+ "scenariji": {
+  "s01": 6,
+  "s02": 6,
+  "s03": 6,
+  "s04": 5,
+  "s05": 7,
+  "s06": 8,
+  "s07": 8,
+  "s08": 6,
+  "s09": 7,
+  "s10": 8,
+  "s11": 6,
+  "s12": 6,
+  "s13": 8,
+  "s14": 7,
+  "s15": 7,
+  "s16": 7,
+  "s17": 6,
+  "s18": 5,
+  "s19": 6,
+  "s20": 5,
+  "s21": 10,
+  "s22": 10,
+  "s23": 10,
+  "s24": 9,
+  "s25": 7,
+  "s26": 5,
+  "s27": 7
+ },
+ "prosek_scenarija": 6.96,
+ "parovi": {
+  "P1": 8,
+  "P2": 6,
+  "P3": 6
+ },
+ "prosek_parova": 6.67,
+ "pregled_vlasnika": [
+  "p06",
+  "S01+S18",
+  "p13"
+ ],
+ "top_ispravke": [
+  "bolji rezultat ne sme usporiti lagano/prag; prag ne sme pasti na umereno (S02,S03,S18,S19,S26)",
+  "tempo trke posle rezultata = nova forma, ne stari cilj (S01)",
+  "sužavanje 5K 7-10 dana, ne 3 nedelje (p01,p02,p03,p06,p07,p09,p13,p14)",
+  "mali obim ne sme seći kvalitet (p06)",
+  "protivrečnost rezultata i unetog laganog tempa prijaviti (S04,S20,P2B)",
+  "objašnjenja moraju odgovarati izmeni (S08,S11,S12,S26); obrazloženje prognoze bez šablona",
+  "početnik bez 5 nedelja pada (p13)",
+  "raspored kvaliteta i RP 400 sa hodom (p04 i dr.)"
+ ],
+ "napomena_citanje": "za parove pročitan samo prvi red fajla (opis ulaza) pre očekivanja"
+}
