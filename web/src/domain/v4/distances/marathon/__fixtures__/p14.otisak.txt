@@ -53,7 +53,7 @@
 2026-12-24 | trening | easy | 9.6 | lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-25 | odmor | - | 0.0 |  | - | - | -
 2026-12-26 | trening | test | 16.6 | provera forme: pripremna trka ili test na 10 km punim naporom | - | - | -
-2026-12-27 | trening | long | 16.5 | dugi 16,5 km lagano | - | - | -
+2026-12-27 | trening | easy | 16.5 | lagano 16,5 km | - | - | -
 2026-12-28 | trening | easy | 13.5 | lagano 13,5 km | - | - | -
 2026-12-29 | trening | easy | 13.5 | lagano 13,5 km | - | - | -
 2026-12-30 | trening | easy | 13.5 | lagano 13,5 km | - | - | -

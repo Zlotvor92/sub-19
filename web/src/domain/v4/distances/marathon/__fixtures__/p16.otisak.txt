@@ -67,7 +67,7 @@
 2027-01-07 | trening | easy | 5.2 | lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-08 | odmor | - | 0.0 |  | - | - | -
 2027-01-09 | trening | test | 15.1 | provera forme: pripremna trka ili test na 10 km punim naporom | - | - | -
-2027-01-10 | trening | long | 13.8 | dugi 95 min lagano | - | - | -
+2027-01-10 | trening | easy | 13.8 | lagano 95 min | - | - | -
 2027-01-11 | odmor | - | 0.0 |  | - | - | -
 2027-01-12 | trening | easy | 10.9 | lagano 75 min | - | - | -
 2027-01-13 | odmor | - | 0.0 |  | - | - | -

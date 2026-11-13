@@ -826,7 +826,7 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
         const x = d.workout;
         if (x === null || x.kind !== 'long' || summarize(x, ctx).durationSec < 5400) continue;
         expect(
-          x.notes.some((n) => n.includes('gel')),
+          (x.notes ?? []).some((n) => n.includes('gel')),
           `${p.id} ${d.date}`
         ).toBe(true);
       }

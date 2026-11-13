@@ -21,7 +21,7 @@ const KNOWN = new Map<string, string>([
   /* maraton (13. 11.), motor: nadovezani prozori (bolest → propušten dugi, bol → trka) daju rep izmena duži od
      4 nedelje — isti uzrok kao 10 km s26 (drugo ponovno planiranje nad već izmenjenim planom); zahtev u F7-MAR-REPORT */
   ['s25 rep do 2027-01-17', 'nadovezani prozori bolest → propušten dugi (Z10)'],
-  ['s26 rep do 2027-03-28', 'nadovezani prozori bol → trka (Z10)'],
+  ['s26 rep do 2027-03-14', 'nadovezani prozori bol → trka (Z10)'],
   /* s07 (p11, bolest u ned 14): povratak traje 4 nedelje, pa ned 19 (N−5, blok) skače na plan — motor (A10 b) */
   ['s07 n19 nedelja 36.8 → 47.6 km', 'izlazak iz prozora povratka posle bolesti (R2, motor A10 b)']
 ]);

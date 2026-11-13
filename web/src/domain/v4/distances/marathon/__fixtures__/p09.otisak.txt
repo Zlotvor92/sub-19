@@ -34,12 +34,12 @@
 2026-12-05 | trening | easy | 12.5 | lagano 12,5 km | - | - | -
 2026-12-06 | trening | long | 23.0 | dugi 23 km lagano | - | - | -
 2026-12-07 | odmor | - | 0.0 |  | - | - | -
-2026-12-08 | trening | easy | 9.0 | lagano 8 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-08 | trening | easy | 10.5 | lagano 9,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
-2026-12-10 | trening | easy | 8.0 | lagano 8 km | - | - | -
+2026-12-10 | trening | easy | 9.0 | lagano 9 km | - | - | -
 2026-12-11 | odmor | - | 0.0 |  | - | - | -
 2026-12-12 | trening | test | 9.2 | provera forme: test na 5 km punim naporom, ravnomerno | - | - | -
-2026-12-13 | trening | long | 16.5 | dugi 16,5 km lagano | - | - | -
+2026-12-13 | trening | easy | 13.5 | lagano 13,5 km | - | - | -
 2026-12-14 | odmor | - | 0.0 |  | - | - | -
 2026-12-15 | trening | easy | 8.5 | lagano 8,5 km | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -
@@ -67,7 +67,7 @@
 2027-01-07 | trening | easy | 7.0 | lagano 6 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-08 | odmor | - | 0.0 |  | - | - | -
 2027-01-09 | trening | test | 14.2 | provera forme: pripremna trka ili test na 10 km punim naporom | - | - | -
-2027-01-10 | trening | long | 15.0 | dugi 15 km lagano | - | - | -
+2027-01-10 | trening | easy | 15.0 | lagano 15 km | - | - | -
 2027-01-11 | odmor | - | 0.0 |  | - | - | -
 2027-01-12 | trening | easy | 14.0 | lagano 14 km | - | - | -
 2027-01-13 | odmor | - | 0.0 |  | - | - | -
