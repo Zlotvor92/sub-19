@@ -264,7 +264,7 @@ Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (15. 12.): 2:04:14, pouzdanost srednja
 Očekivano na dan trke: 2:01:00 (raspon 1:56:10–2:08:18) — 3:14 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Test 28. 11.: 10 km za 55:35. Rezultat sa 10 km prenosim na 21,1 km uz umanjenje, jer uz oko 50 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 21,1 km: 2:04:13 → 2:04:14.
+- Test 28. 11.: 10 km za 55:35. Rezultat sa 10 km prenosim na 21,1 km uz umanjenje, jer uz oko 52 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 21,1 km: 2:04:13 → 2:04:14.
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
 TEMPA

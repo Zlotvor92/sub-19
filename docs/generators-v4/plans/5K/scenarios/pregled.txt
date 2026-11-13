@@ -19,7 +19,7 @@ s16 p12 E4: ned 4, bol 4/10 posle laganog dana — promena: 11; nalazi čuvara p
 s17 p01 E5: juče trka 10 km 46:00 — promena: 0; nalazi čuvara posle: ispod-cilja@2 ispod-cilja@4
 s18 p04 E5: juče trka 5 km 26:30 — promena: 0; nalazi čuvara posle: 0
 s19 p11 E5: juče prva trka 5 km 27:30 — promena: 0; nalazi čuvara posle: 0
-s20 p12 E5: juče trka 10 km 70:00 (prvi rezultat) — promena: 0; nalazi čuvara posle: ispod-cilja@3 ispod-cilja@5
+s20 p12 E5: juče trka 10 km 70:00 (prvi rezultat) — promena: 0; nalazi čuvara posle: ispod-cilja@5
 s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
 s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0

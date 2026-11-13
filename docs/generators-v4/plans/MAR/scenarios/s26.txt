@@ -309,7 +309,7 @@ Današnja prognoza (13. 2.): 4:26:35, pouzdanost srednja
 Očekivano na dan trke: 4:22:54 (raspon 4:13:20–4:35:15) — 3:41 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Trka 13. 2.: 10 km za 58:00. Rezultat sa 10 km prenosim na 42,2 km uz umanjenje, jer uz oko 32 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:44 → 4:26:35.
-- Test 26. 12.: 5 km za 27:00. Rezultat sa 5 km prenosim na 42,2 km uz umanjenje, jer uz oko 28 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 50 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:37 → 4:20:44.
+- Test 26. 12.: 5 km za 27:00. Rezultat sa 5 km prenosim na 42,2 km uz umanjenje, jer uz oko 27 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 50 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 42,2 km: 4:20:37 → 4:20:44.
 - Polazna procena je iz rezultata koji si uneo: oko 4:20:37 za 42,2 km.
 
 TEMPA

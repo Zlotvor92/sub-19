@@ -128,7 +128,10 @@ export function explainResult(
   const loss = ctx.transferLoss ?? 0;
   if (loss <= -0.01) {
     parts.push(
-      `Rezultat sa ${km(distanceM)} prenosim na kraću ${km(goalM)}: na kraćoj trci tempo je brži, pa se forma računa nešto bolje.`
+      /* krug 13 (M17 c): rečenica prati smer broja — prenos podiže rezultat, ali procena može i da padne */
+      after >= before
+        ? `Rezultat sa ${km(distanceM)} prenosim na kraću ${km(goalM)}: na kraćoj trci tempo je brži, pa se forma računa nešto bolje.`
+        : `Rezultat sa ${km(distanceM)} prenosim na kraću ${km(goalM)} (na kraćoj trci tempo je brži), ali je i tako sporiji od dosadašnje procene, pa procena pada.`
     );
   } else if (loss >= 0.01) {
     const why =

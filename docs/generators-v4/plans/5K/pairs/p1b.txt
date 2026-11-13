@@ -27,7 +27,7 @@ Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili 
 
 UPOZORENJA
 - Ciljno vreme 21:44 je brže od onoga što tvoja forma i dužina pripreme sada pokazuju. Realan raspon na dan trke je 22:21–24:02; tempo za cilj verovatno ne bi mogao da se održi do kraja. Kreni na 23:11, a cilj vrati ako test ili pripremna trka pokažu da si brži za oko 17 s po kilometru.
-- Tvoja obična trčanja iz poslednjih nedelja su u proseku brža od 6:11/km, a to je brža granica laganog tempa. Kad je svako trčanje srednje teško, telo se ne odmori za brze treninge i dugi, pa napredak staje, a rizik od povrede raste. Lagane dane trči sporije od 6:11/km — tako da možeš da pričaš u celim rečenicama; brzinu čuvaj za zadate treninge.
+- Tvoja obična trčanja iz poslednjih nedelja su u proseku brža od 6:10/km, a to je brža granica laganog tempa. Kad je svako trčanje srednje teško, telo se ne odmori za brze treninge i dugi, pa napredak staje, a rizik od povrede raste. Lagane dane trči sporije od 6:10/km — tako da možeš da pričaš u celim rečenicama; brzinu čuvaj za zadate treninge.
 - Nemam tvoj skorašnji rezultat; forma je procenjena iz 18 trčanja sa sata, pa je manje pouzdana. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 1,5 km koja je u planu 28. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
@@ -79,28 +79,28 @@ UPOZORENJA
   pon 30. 11.  odmor
   uto 1. 12.  lagano 8,5 km — 8,5 km, 55 min
   sre 2. 12.  odmor
-  čet 3. 12.  prag 24 min u komadu — 9,3 km, 54 min
+  čet 3. 12.  prag 24 min u komadu — 9,4 km, 54 min
   pet 4. 12.  odmor
-  sub 5. 12.  lagano 8 km — 8 km, 52 min
+  sub 5. 12.  lagano 7,5 km — 7,5 km, 49 min
   ned 6. 12.  dugi 12,5 km lagano — 12,5 km, 81 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
-  Zbir: 38,3 km, 4 h 2 min, 4 treninga, brz rad 10 % vremena trčanja
+  Zbir: 37,9 km, 3 h 59 min, 4 treninga, brz rad 10 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — razvoj, gradnja; do trke 6 nedelja
   pon 7. 12.  odmor
-  uto 8. 12.  intervali 7 × 3 min, oporavak 2:30 džog — 11,4 km, 66 min
+  uto 8. 12.  intervali 7 × 3 min, oporavak 2:30 džog — 11,5 km, 66 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   sre 9. 12.  odmor
-  čet 10. 12.  prag 3 × 8 min, oporavak 1 min džog — 9,6 km, 56 min
+  čet 10. 12.  prag 3 × 8 min, oporavak 1 min džog — 9,7 km, 56 min
   pet 11. 12.  odmor
   sub 12. 12.  lagano 7 km — 7 km, 45 min
-  ned 13. 12.  dugi 13 km lagano — 13 km, 84 min
+  ned 13. 12.  dugi 12,5 km lagano — 12,5 km, 81 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
-  Zbir: 41 km, 4 h 11 min, 4 treninga, brz rad 18 % vremena trčanja
+  Zbir: 40,7 km, 4 h 8 min, 4 treninga, brz rad 18 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 5 nedelja
   pon 14. 12.  odmor
-  uto 15. 12.  intervali 7 × 3 min, oporavak 2:30 džog — 11,4 km, 66 min
+  uto 15. 12.  intervali 7 × 3 min, oporavak 2:30 džog — 11,5 km, 66 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   sre 16. 12.  odmor
   čet 17. 12.  tempo trke 8 × 400 m, oporavak 1:30 hod — 9 km, 55 min
@@ -109,7 +109,7 @@ UPOZORENJA
   ned 20. 12.  dugi 88 min, završnih 7 min u pragu — 13,9 km, 88 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
-  Zbir: 42,8 km, 4 h 24 min, 4 treninga, brz rad 16 % vremena trčanja
+  Zbir: 42,9 km, 4 h 24 min, 4 treninga, brz rad 16 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 21. 12.  odmor

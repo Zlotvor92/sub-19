@@ -240,7 +240,7 @@ Očekivano na dan trke: 56:00 (raspon 54:48–57:30) — 0:20 brže od današnje
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 7 dana (25. 1. – 31. 1.); posle petog dana forma polako opada — procena za 10 km: 56:02 → 56:20.
 - Test 23. 1.: 5 km za 26:39. Rezultat sa 5 km prenosim na 10 km uz umanjenje, jer uz oko 53 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 10 km ostaje 56:02.
-- Test 28. 11.: 5 km za 26:39. Rezultat sa 5 km prenosim na 10 km uz umanjenje, jer uz oko 48 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 10 km ostaje 56:02.
+- Test 28. 11.: 5 km za 26:39. Rezultat sa 5 km prenosim na 10 km uz umanjenje, jer uz oko 49 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 10 km ostaje 56:02.
 - Polazna procena je iz rezultata koji si uneo: oko 56:02 za 10 km.
 
 TEMPA

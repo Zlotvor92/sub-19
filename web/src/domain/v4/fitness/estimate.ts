@@ -316,7 +316,15 @@ export function estimateForm(
       const day = dayNum(r.date);
       if (day > d - C.TRANSFER_VOLUME_DAYS && day <= d) km += r.distanceM / 1000;
     }
-    return (km * 7) / Math.min(C.TRANSFER_VOLUME_DAYS, d - firstRunAt + 1);
+    /* krug 13 (M18/M17): kratka istorija ne daje nedeljni obim množenjem jednog dana sa 7 (jedna trka juče = 70 km
+       nedeljno) — deo prozora bez trčanja popunjava izjavljeni obim, a bez izjave prozor je bar 7 dana */
+    const span = Math.min(C.TRANSFER_VOLUME_DAYS, d - firstRunAt + 1);
+    const declared = facts.profile.weeklyKm;
+    if (span < C.TRANSFER_VOLUME_DAYS && declared !== undefined) {
+      const filled = km + (declared * (C.TRANSFER_VOLUME_DAYS - span)) / 7;
+      return (filled * 7) / C.TRANSFER_VOLUME_DAYS;
+    }
+    return (km * 7) / Math.max(7, span);
   };
   const defaultBeta = (km: number | null): number => {
     if (km === null) return C.TRANSFER_BETA_UNKNOWN;

@@ -265,7 +265,7 @@ Današnja prognoza (23. 1.): 2:01:37, pouzdanost srednja
 Očekivano na dan trke: 2:00:03 (raspon 1:55:53–2:05:19) — 1:34 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Trka 23. 1.: 10 km za 53:54. Rezultat sa 10 km prenosim na 21,1 km uz umanjenje, jer uz oko 54 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Usvaja se 70 % razlike, jer je i ranija procena imala osnov u rezultatima i treninzima. Procena za 21,1 km: 2:04:14 → 2:01:37.
-- Test 28. 11.: 10 km za 55:35. Rezultat sa 10 km prenosim na 21,1 km uz umanjenje, jer uz oko 50 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 21,1 km: 2:04:13 → 2:04:14.
+- Test 28. 11.: 10 km za 55:35. Rezultat sa 10 km prenosim na 21,1 km uz umanjenje, jer uz oko 52 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 21,1 km: 2:04:13 → 2:04:14.
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
 TEMPA
