@@ -377,3 +377,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Otvoreno, prihvaćeno: p06 lagani < 35 min (D5), s05 13 izmena, s14 11, P2 B hod-trk dugi do 1 h 35, p02 dugi 20,5 km.
 - Ocena: trener → `coach/ROUND-V4-HM-04.md`; drugi sudija nov Opus tab `session_01GnHHiYrHj5qD7zJK7L4MU4` →
   `judge2/ROUND-V4-HM-04.md` (uporediv sa krugom 3: isti model, isto uputstvo).
+
+### 13. 11. 2026, 02:52 — OCENA TRENERA, krug 4 (`coach/ROUND-V4-HM-04.md`) [srednja]
+| | krug 3 | krug 4 | v3 |
+|---|---|---|---|
+| Plan | 78,7 | 78,8 | 77,6 |
+| profila ≥ 80 | 7/12 | 6/12 (p05 81,5 → 79,5) | 7/12 |
+| Prilagođavanje | 81,9 | 84,5 | — |
+| Personalizacija | 82,5 | 81,8 | — |
+| zbirna | 80,4 | 81,1 | — |
+- Plan stoji: plafon tempa trke je izbacio prag i iz nedelja bez tempa trke (p05), tempo trke usred najteže nedelje simboličan
+  (p01, p04, p09), p04 dugi 2 h 26–2 h 30, polazni dugi 85 % prenizak kad je istorija stabilna (p12, p01, P3 A).
+- Trener: HM JE spreman kao obrazac za 10K/5K/maraton uz uslov da se ispravke 1, 3, 4 reše pre prenosa; dao je spisak
+  zajedničkih pravila motora i šta ostaje podatak distance (u ROUND fajlu).
+- Čeka se drugi sudija pre odluke.
