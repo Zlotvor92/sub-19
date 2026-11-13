@@ -1,0 +1,33 @@
+{
+  "round": "V4-5K-02", "date": "2026-11-13", "judge": "glavni trener (Opus)", "source": "fb2c1a3; poredjenje sa 41b5c79",
+  "plan": {
+    "p01": { "prev": 81, "now": 82 }, "p02": { "prev": 72, "now": 72.5 }, "p03": { "prev": 75, "now": 75 },
+    "p04": { "prev": 77, "now": 79 }, "p05": { "prev": 81, "now": 82 }, "p06": { "prev": 62.5, "now": 64 },
+    "p07": { "prev": 77, "now": 77 }, "p08": { "prev": 73.5, "now": 73.5 }, "p09": { "prev": 76, "now": 77 },
+    "p10": { "prev": 76, "now": 76 }, "p11": { "prev": 80, "now": 80 }, "p12": { "prev": 70, "now": 75 },
+    "p13": { "prev": 75, "now": 75 }, "p14": { "prev": 73.5, "now": 73.5 }, "p15": { "prev": 75, "now": 75 },
+    "p16": { "prev": 77, "now": 78.5 },
+    "average": 75.9, "atLeast80": 3, "profiles": 16
+  },
+  "adaptation": {
+    "E1": { "score": 83.8, "s01": 85, "s02": 85, "s03": 83, "s04": 82 },
+    "E2": { "score": 80.0, "s05": 81, "s06": 80, "s07": 80, "s08": 79 },
+    "E3": { "score": 82 }, "E4": { "score": 79 }, "E5": { "score": 83 }, "E6": { "score": 89.8 },
+    "E7": { "score": 77, "s25": 82, "s26": 71, "s27": 78 },
+    "partB": 82.1, "previousPartB": 81.0
+  },
+  "personalization": { "P1": 84, "P2": 79, "P3": 77, "partC": 80.0 },
+  "composite": 78.6, "previousComposite": 77.8,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "p06 suzavanje i trimOrder u ned 2-6 (ispravljena samo ned 1)" },
+    { "n": 2, "kind": "motor", "text": "posle bola prag najvise ~10 s/km (s26)" },
+    { "n": 3, "kind": "motor", "text": "dugi od stvarnog dugog iz istorije (P3)" },
+    { "n": 4, "kind": "podatak", "text": "rast obima p02, p07, p08, p09" },
+    { "n": 5, "kind": "podatak", "text": "lagani >= 30 min" },
+    { "n": 6, "kind": "podatak", "text": "p08 predlog 4. dana" },
+    { "n": 7, "kind": "podatak", "text": "p16 ubrzanja svake nedelje" },
+    { "n": 8, "kind": "podatak", "text": "oznaka vrsna nedelja" }
+  ],
+  "verdict": "B i C prolaze; Plan 75,9 ne prolazi",
+  "ownerReview": ["p06", "p12", "s03"]
+}
