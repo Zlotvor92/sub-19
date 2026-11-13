@@ -23,6 +23,7 @@ const REGULAR: LevelId[] = ['spor', 'srednji', 'brz'];
 const RETURNING: LevelId[] = ['povratnik'];
 const SMALL: LevelId[] = ['mali'];
 const BEGINNER: LevelId[] = ['pocetnik'];
+const BEGINNER_NEW: LevelId[] = ['pocetnik-nov'];
 
 /** Isto što i `SAFETY.maxPeakOverBase`. */
 export const MAX_PEAK_OVER_BASE = 1.75;
@@ -83,6 +84,8 @@ interface Shape {
   single: boolean;
   /** Povratnik posle pauze: prve 2 nedelje samo ubrzanja i kratki usponi, prag kreće niže (par P1 B). */
   gentle?: boolean;
+  /** Početnik sa stažom ≤ 8 nedelja (T1): 2:1 i dugi hod-trk. */
+  fresh?: boolean;
 }
 
 /** Mesto subote u nizu dana kvaliteta: sa 4+ dana poslednje (subota je najbliža nedelji); sa 1–3 dana subota nije
@@ -116,9 +119,9 @@ interface Layout {
 
 /** Rasterećenja: N−4, N−8, … unazad, nikad pre 4. nedelje. Provera forme: rasterećenje najbliže 8. nedelji, a
     najkasnije N−8 (ciljni planovi: p01 ned 8 = N−8, p04 ned 8 = N−12, p11 ned 12 = N−8). Početnik: N−8. */
-function layout(n: number, family: Family): Layout {
+function layout(n: number, family: Family, every = 4): Layout {
   const recoveries = new Set<number>();
-  for (let w = n - 4; w >= 4; w -= 4) recoveries.add(w);
+  for (let w = n - 4; w >= every; w -= every) recoveries.add(w);
   const candidates = [...recoveries].filter((w) => w <= n - 8);
   let check = 0;
   if (family === 'pocetnik') check = candidates.includes(n - 8) ? n - 8 : 0;
@@ -287,7 +290,10 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
 /* ------------------------------------------------------------------ početnik */
 
 function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
-  const L = layout(n, 'pocetnik');
+  /* T1: staž ≤ 8 nedelja — rasterećenje svake 3. nedelje (2:1), dugi hod-trk do repa */
+  const fresh = sh.fresh === true;
+  const L = layout(n, 'pocetnik', fresh ? 3 : 4);
+  const longStim = fresh ? 'dugi-hod' : 'dugi';
   const intro = n >= 20 ? 3 : 2;
   const tailStart = Math.max(1, n - 8);
   const firstRecovery = Math.min(...L.recoveries);
@@ -317,7 +323,13 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
         ? [w === 1 ? STRIDES6 : HILLS_SHORT, STRIDES]
         : [S('prag-p', lerp(0.45, 0.85, t)), k % 2 === 0 ? HILLS_SHORT : STRIDES];
     out.push(
-      week(w >= tailStart - 3 ? RAZVOJ : OSNOVA, 'build', load, { len: lerp(0.7, 0.9, t) }, stimuli)
+      week(
+        w >= tailStart - 3 ? RAZVOJ : OSNOVA,
+        'build',
+        load,
+        { len: lerp(0.7, 0.9, t), stimulus: longStim },
+        stimuli
+      )
     );
   }
   const tail = [
@@ -401,6 +413,14 @@ export const TEMPLATES: Template[] = WEEKS.flatMap((n) =>
         { days, single: true },
         n,
         BEGINNER,
+        beginnerMult(n, days)
+      ),
+      makeTemplate(
+        'pocetnik-nov',
+        'pocetnik',
+        { days, single: true, fresh: true },
+        n,
+        BEGINNER_NEW,
         beginnerMult(n, days)
       ),
       /* povratnik: vrh ≈ 1,25 × u km (par P1 B: 48–50 km umesto 56) */

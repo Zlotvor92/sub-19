@@ -240,6 +240,7 @@ function plannedLoads(
       ? goal.startDate
       : addDays(facts.today, 1);
   const level = pickLevel(data, {
+    yearsRunning: facts.profile.yearsRunning,
     beginner: facts.profile.beginner === true,
     vdot: form.current.vdot,
     baseLoad,

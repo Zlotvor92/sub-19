@@ -133,6 +133,7 @@ export function createPlan(
   const baseLoad = baseLoadOf(state);
   const form = state.form.current;
   const level = pickLevel(data, {
+    yearsRunning: state.profile.yearsRunning,
     beginner: state.profile.beginner === true,
     vdot: form.vdot,
     baseLoad,

@@ -620,7 +620,11 @@ function layoutOnce(
     const item = slots.items.find((x) => x.kind === 'addon' && x.date === date);
     return item === undefined ? 0 : stepsCost(addonSteps(item.def), ctx.pace).durationSec;
   };
+  /* Prvi (najvažniji) kvalitet nedelje sme da digne obim do 10 %, ostali do 5 % (krug 4: brz trkač malog obima
+     ne ostaje bez ijednog kvaliteta — p06) */
+  let placedQuality = 0;
   const roomFor = (date: IsoDate, load: LoadPoints, sec: Seconds): boolean => {
+    const room = placedQuality === 0 ? EASY_FLOOR_OVER_TARGET : VOLUME_ROOM_OVER;
     const rest = runDays.map((wd) => dateOf(wd)).filter((x) => x !== date && !fixed.has(x));
     const floor = rest.reduce((sum, x) => sum + s.minEasySec / 60 + addonLoad(x), 0);
     /* i obim (minuti): kvalitet sa zagrevanjem i hlađenjem ne sme da digne nedelju preko pravila rasta (S2) */
@@ -630,7 +634,7 @@ function layoutOnce(
     const fits = fixedSec / 60 + floorMin + s.minEasySec / 60 <= volume * (1 + VOLUME_ROOM_OVER);
     return (
       fixedLoad + load + floor <= week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET) &&
-      (!fits || (fixedSec + sec) / 60 + floorMin <= volume * (1 + VOLUME_ROOM_OVER))
+      (!fits || (fixedSec + sec) / 60 + floorMin <= volume * (1 + room))
     );
   };
   /* Kad u obim staje samo jedan od dva kvaliteta, parne nedelje prednost daju drugom — da nedelje ne nose isti
@@ -681,6 +685,7 @@ function layoutOnce(
     if (keepDays && !roomFor(item.date, cost.load, cost.durationSec)) continue;
     budget.book(dose, item.extra);
     fix(item.date, recipe);
+    placedQuality += 1;
   }
 
   for (const [date, recipe] of fixed) out.set(date, recipe);

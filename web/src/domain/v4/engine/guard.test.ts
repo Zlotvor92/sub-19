@@ -29,6 +29,9 @@ function allowed(
   if (afterRace && check === 'taper') return true;
   if (perDay > 70) return check === 'ispod-cilja';
   if (perDay < 25) return ['ispod-cilja', 'lagan-dugi', 'skok'].includes(check);
+  /* krug 4: prvi kvalitet nedelje sme da digne obim do 10 % iznad pravila kad su ostali dani na najkraćem
+     trčanju (25–30 bodova po danu) */
+  if (perDay < 30 && check === 'skok') return true;
   return afterRace && check === 'ispod-cilja' && (weekIndex ?? 99) <= 4;
 }
 

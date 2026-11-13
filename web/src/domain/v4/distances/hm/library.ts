@@ -27,6 +27,17 @@ export const LIBRARY: WorkoutDef[] = [
     main: { kind: 'steady', zone: 'E' },
     text: 'dugi'
   },
+  /* krug 4 (T1): dugi hod-trk za početnika sa stažom ≤ 8 nedelja (par P2 B) */
+  {
+    id: 'dugi-hod',
+    kind: 'long',
+    stimulus: 'dugi-hod',
+    tags: [],
+    impact: 'obican',
+    requires: { levels: ['pocetnik-nov'] },
+    main: { kind: 'steady', zone: 'E' },
+    text: 'dugi-hod'
+  },
   {
     id: 'dugi-rp',
     kind: 'long',

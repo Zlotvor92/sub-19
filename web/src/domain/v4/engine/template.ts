@@ -47,6 +47,7 @@ export function pickLevel(
     baseLoad: LoadPoints;
     recentQualityWeeks?: number | null | undefined;
     weeksSincePause?: number | null | undefined;
+    yearsRunning?: number | undefined;
   }
 ): LevelId {
   for (const rule of data.levels) {
@@ -55,6 +56,11 @@ export function pickLevel(
     if (w.minVdot !== undefined && runner.vdot < w.minVdot) continue;
     if (w.maxVdot !== undefined && runner.vdot > w.maxVdot) continue;
     if (w.maxBaseLoad !== undefined && runner.baseLoad > w.maxBaseLoad) continue;
+    if (
+      w.maxTenureWeeks !== undefined &&
+      (runner.yearsRunning === undefined || runner.yearsRunning * 52 > w.maxTenureWeeks)
+    )
+      continue;
     if (!historyOk(w, runner)) continue;
     return rule.id;
   }

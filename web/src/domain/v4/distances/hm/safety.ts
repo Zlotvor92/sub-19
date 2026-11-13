@@ -7,6 +7,8 @@ import { MAX_PEAK_OVER_BASE } from './templates';
 /** Nivo: prvo pravilo koje važi. Početnik po izjavi; mali obim (ispod 3 h 30 min nedeljno) nosi jedan kvalitet
     nedeljno (v3: ispod 25 km jedan kvalitet); ostali po formi (VDOT). */
 export const LEVELS: LevelRule[] = [
+  /* krug 4 (T1, par P2): početnik sa stažom ≤ 8 nedelja — ritam 2:1 i dugi hod-trk */
+  { id: 'pocetnik-nov', when: { beginner: true, maxTenureWeeks: 8 } },
   { id: 'pocetnik', when: { beginner: true } },
   /* povratnik: ≤ 8 nedelja od kraja pauze (uslov iz istorije, motor krug 3) — blaži početak i niži vrh (par P1 B) */
   { id: 'povratnik', when: { maxWeeksSincePause: 8 } },
@@ -59,6 +61,7 @@ export const SAFETY: SafetyNumbers = {
      nedeljno (v3 apsolutni plafon) */
   peakLoadCap: {
     pocetnik: 440,
+    'pocetnik-nov': 360,
     povratnik: 500,
     mali: 420,
     spor: 540,
@@ -72,6 +75,7 @@ export const SAFETY: SafetyNumbers = {
   longMaxSec: {
     /* krug 4 (S3): ispod 45 km nedeljno granica dugog je vreme — do 2 h 15 */
     pocetnik: 8100,
+    'pocetnik-nov': 7800,
     povratnik: 8100,
     mali: 8100,
     spor: 9000,
@@ -82,6 +86,7 @@ export const SAFETY: SafetyNumbers = {
      cilja (vlasnik-v2 ned. 11 bi imala 41 %) */
   longShareByRunDays: {
     pocetnik: LONG_SHARE,
+    'pocetnik-nov': LONG_SHARE,
     povratnik: LONG_SHARE,
     mali: { ...LONG_SHARE, '4': 0.37, '5': 0.34 },
     spor: LONG_SHARE,

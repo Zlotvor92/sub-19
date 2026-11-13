@@ -707,6 +707,8 @@ export interface LevelRule {
     minVdot?: Vdot;
     maxVdot?: Vdot;
     maxBaseLoad?: LoadPoints;
+    /** Staž (nedelje, iz `profile.yearsRunning`) najviše ovoliko; nepoznat staž ne ispunjava uslov (krug 4, T1). */
+    maxTenureWeeks?: number;
   } & HistoryConditions;
 }
 
