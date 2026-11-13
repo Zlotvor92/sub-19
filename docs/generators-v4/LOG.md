@@ -338,3 +338,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   `session_01GnHHiWa47Guy3uDTKR2kE5`; tab M (Fable) i tab D se više ne koriste za ovaj krug.
 - Arhivirani završeni tabovi: QA1, F8, drugi sudija kruga 2 (sve gurnuto).
 - Fable ostaje samo za: kratke odluke organizatora i ocenjivanje kruga 3 (trener + nov drugi sudija).
+
+### 13. 11. 2026, 01:50 — krug 3 primljen (`0d9d9bd`), poslat na ocenu
+- Moj pregled: 592 testa zeleno + 9 očekivanih padova, typecheck čist, kapija 0 prekršaja (po izveštaju taba) [visoka za testove].
+- Brz rad ≤ 25 % svuda; p11 vrh 39 km / dugi 16,2 km; oštrenje u svim planovima. Otvoreno: v2 dugi 16 km (cilj ≥ 18),
+  v1 15 km, P2 B dugi 11,3 km, target-compare 23/72 (ciljni planovi nose staru grešku), 3 profila „ništa" 1–3 s sporije.
+- Ocena: trener (isti tab, ista rubrika) → `coach/ROUND-V4-HM-03.md`; drugi sudija NOV tab na Opusu (štednja Fable-a;
+  napomena: krugovi 1–2 su bili Fable sudija, poređenje sa 71,2 je zato [srednja]) `session_01GnHHiXKn9aKh43UqK2wpAM`
+  → `judge2/ROUND-V4-HM-03.md`.
