@@ -333,14 +333,14 @@ describe('krug 7 — Y4: tekst promena', () => {
   it('nijedna rečenica nema „2.." (datum na kraju nosi svoju tačku), ni ispis plana', () => {
     for (const { s, r } of RUNS) {
       for (const t of texts(r)) expect(t, name(s.no)).not.toMatch(/\d\.\.(\s|$)/);
-      expect(renderPlan(r.after, r.state, hm), name(s.no)).not.toMatch(/\d\.\.(\s|$)/m);
+      expect(renderPlan(r.after, r.afterState, hm), name(s.no)).not.toMatch(/\d\.\.(\s|$)/m);
     }
   });
   it('s10: nadoknada nije „skraćivanje"; nigde „plan ostaje isti" uz izmenu istog dana', () => {
     for (const { s, r } of RUNS) {
       for (const t of texts(r)) expect(t, name(s.no)).not.toMatch(/nadoknađuje skraćivanjem/);
       const changed = new Set(
-        (r.changes).flatMap((c) => {
+        r.changes.flatMap((c) => {
           const d = (r.after.weeks as PlanWeek[])
             .flatMap((w) => w.days)
             .find((x) => x.id === c.dayId);

@@ -21,8 +21,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (4:47/km). Očekivano vreme na dan trke (1:39:39) traži 4:43/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Najveća nedelja u planu ima 37,2 km, a adekvatna priprema za ovu distancu traži bar 40 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke dodaj 5. dan laganog trčanja od oko 20 min — vrh tada ide do 40,2 km nedeljno. Za sledeću trku planiraj 12 nedelja pripreme — obim tada bezbedno stiže do 40 km nedeljno.
-- Najduži trening u planu je 15 km, a za ovu distancu treba bar 16 km. Poslednji deo trke biće duži od svega što si trčao u pripremi, pa tu treba očekivati najveći pad. Uz isti datum trke dugi ostaje 15 km, pa trku počni sporije i čuvaj snagu za poslednjih 6 km. Za sledeću trku planiraj 12 nedelja pripreme — dugi tada stiže do 16 km.
+- Najduži trening u planu je 15 km, jer nedelja od najviše 38,7 km ne nosi duži dugi; za ovu distancu treba bar 16 km. Poslednji deo trke biće duži od svega što si trčao u pripremi, pa tu treba očekivati najveći pad. Uz isti datum trke dugi ostaje 15 km, pa trku počni sporije i čuvaj snagu za poslednjih 6 km. Za sledeću trku planiraj 12 nedelja pripreme — nedelja tada stiže do 46,5 km, a dugi do 18,5 km.
 
 1. NEDELJA (od 16. 11.) — osnova, gradnja; do trke 9 nedelja
   pon 16. 11.  odmor
@@ -59,36 +58,35 @@ UPOZORENJA
 
 4. NEDELJA (od 7. 12.) — specifična priprema, gradnja; do trke 6 nedelja
   pon 7. 12.  odmor
-  uto 8. 12.  tempo trke 2 × 3 km (4:47/km), oporavak 2 min džog — 10,6 km, 56 min
+  uto 8. 12.  tempo trke 2 × 2 km (4:47/km), oporavak 2 min džog — 8,6 km, 46 min
   sre 9. 12.  odmor
-  čet 10. 12.  lagano 5,5 km — 5,5 km, 32 min
+  čet 10. 12.  prag 3 × 7 min (4:40/km), oporavak 1:30 džog — 9,2 km, 49 min
   pet 11. 12.  odmor
-  sub 12. 12.  lagano 5,5 km — 5,5 km, 32 min
-  ned 13. 12.  dugi 13,5 km lagano — 13,5 km, 79 min
-      napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 35,1 km, 3 h 19 min, 4 treninga, brz rad 14 % vremena trčanja
+  sub 12. 12.  lagano 6 km — 6 km, 35 min
+  ned 13. 12.  dugi 11,5 km lagano — 11,5 km, 67 min
+  Zbir: 35,3 km, 3 h 17 min, 4 treninga, brz rad 20 % vremena trčanja
 
 5. NEDELJA (od 14. 12.) — specifična priprema, vršna nedelja; do trke 5 nedelja
   pon 14. 12.  odmor
   uto 15. 12.  tempo trke 3 × 1,5 km (4:47/km), oporavak 1:30 džog — 9,2 km, 50 min
   sre 16. 12.  odmor
-  čet 17. 12.  lagano 5,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,5 km, 38 min
+  čet 17. 12.  lagano 6,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,5 km, 43 min
   pet 18. 12.  odmor
-  sub 19. 12.  lagano 6,5 km — 6,5 km, 38 min
+  sub 19. 12.  lagano 7 km — 7 km, 41 min
   ned 20. 12.  dugi 15 km, završni deo 4,5 km u tempu trke (4:47/km) — 15 km, 83 min
       napomena: Završni deo trči ravnomerno u tempu trke; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 37,2 km, 3 h 29 min, 4 treninga, brz rad 21 % vremena trčanja
+  Zbir: 38,7 km, 3 h 37 min, 4 treninga, brz rad 20 % vremena trčanja
 
 6. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 21. 12.  odmor
-  uto 22. 12.  lagano 6,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,5 km, 43 min
+  uto 22. 12.  lagano 6 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7 km, 41 min
   sre 23. 12.  odmor
   čet 24. 12.  prag 11 min u komadu (4:40/km) — 6,6 km, 36 min
   pet 25. 12.  odmor
-  sub 26. 12.  lagano 7 km — 7 km, 41 min
-  ned 27. 12.  dugi 12 km lagano — 12 km, 70 min
-  Zbir: 33,1 km, 3 h 10 min, 4 treninga, brz rad 6 % vremena trčanja
+  sub 26. 12.  lagano 6,5 km — 6,5 km, 38 min
+  ned 27. 12.  dugi 11 km lagano — 11 km, 65 min
+  Zbir: 31,1 km, 3 h, 4 treninga, brz rad 6 % vremena trčanja
 
 7. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 28. 12.  odmor
