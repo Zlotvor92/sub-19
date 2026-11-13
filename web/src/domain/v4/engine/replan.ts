@@ -1595,6 +1595,10 @@ function firstFastAfter(doc: PlanDoc, after: IsoDate): IsoDate | null {
 
 /** A11 (krug 9b): provera forme koju je trka izbacila — bila je zakazana u `NO_TEST_AFTER_RACE_DAYS` dana posle
     trke, a u novom planu tog dana više nije provera (postala lagan dan). Vraća njen datum ili `null`. */
+/** R18 (M5): rečenica kad pomerena provera forme nema mesto. */
+const TEST_DROPPED =
+  'Provera forme otpada: do 3 nedelje pred trku nema nedelje rasterećenja u kojoj bi stala, a da ne zameni trening u tempu trke';
+
 function droppedTestAfter(
   before: PlanDoc,
   after: PlanDoc,
@@ -1739,7 +1743,7 @@ function explain(
         test !== null
           ? ` Provera forme je pomerena na ${fmtDate(test)}`
           : hadTest && !hasTest
-            ? ` Provera forme otpada: posle povratka nema nedelje rasterećenja bar 3 nedelje pred trku, a pun napor odmah posle ${PAUSE_AFTER[ev.reason]} nije dobar test forme`
+            ? ` ${TEST_DROPPED}, a pun napor odmah posle ${PAUSE_AFTER[ev.reason]} nije dobar test forme`
             : '';
       const back = `${what}, pa je povratak postepen: treninzi su kraći do ${rampEnd}, a ${fastFrom(ev.to)}`;
       const tail = addDays(c.until, 1) < raceDate ? `; ${resume}` : '';
@@ -1800,7 +1804,18 @@ function explain(
     case 'pain': {
       /* M4 (krug 5): pomerena provera forme se kaže i kod bola (s14, s15), isto kao kod bolesti */
       const testAt = movedTest(before, c.doc, state.today);
-      const note = testAt === null ? '' : ` Provera forme je pomerena na ${fmtDate(testAt)}.`;
+      /* R18 (M5): provera koja nema mesto bez zamene tempa trke otpada — i to se kaže */
+      const race = c.doc.header.goal.raceDate;
+      const testIn = (doc: PlanDoc): boolean =>
+        allDays(doc).some(
+          (d) => d.date > state.today && d.date < race && d.workout?.kind === 'test'
+        );
+      const note =
+        testAt !== null
+          ? ` Provera forme je pomerena na ${fmtDate(testAt)}.`
+          : testIn(before) && !testIn(c.doc)
+            ? ` ${TEST_DROPPED}.`
+            : '';
       const same = (text: string): Explain => ({
         day: text + note,
         late: text + note,

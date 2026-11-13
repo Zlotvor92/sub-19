@@ -86,3 +86,28 @@ describe('krug 18 — prenos sa duže trke i očekivani napredak', () => {
     expect(perWeek(r.afterState)).toBeLessThanOrEqual(perWeek(r.beforeState) * 1.5);
   });
 });
+
+/* KRUG 18 (t. 3, M5): pomerena provera forme ne zamenjuje trening u tempu trke; posle prave trke otpada. */
+describe('krug 18 — pomerena provera forme (sve distance)', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', (_id, d) => {
+    const bad: string[] = [];
+    for (const s of d.scenarios) {
+      const r = s.run();
+      const today: string = r.afterState.today;
+      const days = (doc: any): any[] => doc.weeks.flatMap((w: any) => w.days);
+      const was = new Map<string, any>(days(r.before).map((x: any) => [x.date, x.workout]));
+      const race = (r.after.header.adjustments ?? []).some(
+        (a: any) => a.kind === 'effort' && a.race === true && a.planned !== true
+      );
+      for (const x of days(r.after)) {
+        if (x.date <= today || x.workout?.kind !== 'test') continue;
+        const old = was.get(x.date);
+        if (old?.kind === 'test') continue;
+        if (race) bad.push(`s${String(s.no)} ${String(x.date)} provera posle prave trke`);
+        if (old?.kind === 'quality' && String(old.text).startsWith('tempo trke'))
+          bad.push(`s${String(s.no)} ${String(x.date)} provera umesto tempa trke`);
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+});

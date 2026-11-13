@@ -216,7 +216,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na dan trke (26:18) traži 5:16/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 20. 1. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 24. 1. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 28. 1.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu.
+Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 20. 1. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 24. 1. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 28. 1.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu. Provera forme otpada: do 3 nedelje pred trku nema nedelje rasterećenja u kojoj bi stala, a da ne zameni trening u tempu trke.
 - uto 12. 1.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → odmor
 - čet 14. 1.: tempo trke 3 × 600 m, oporavak 1:30 džog → lagano 25 min
 - ned 17. 1.: dugi 55 min lagano → dugi 40 min lagano

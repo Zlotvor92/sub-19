@@ -92,7 +92,9 @@ describe('krug 10 — stavka 4: tekst izmene i provera forme', () => {
       const a = tests(r.after);
       const race: string = r.after.header.goal.raceDate;
       const late = new Date(Date.parse(race) - 21 * 86400000).toISOString().slice(0, 10);
-      if (a.length < b.length && b.some((x) => x <= late))
+      /* R18 (M5): bez mesta koje ne zamenjuje tempo trke provera otpada, uz rečenicu */
+      const said = JSON.stringify(r.changes).includes('Provera forme otpada');
+      if (a.length < b.length && b.some((x) => x <= late) && !said)
         bad.push(`s${String(s.no)} provera ${b.join(',')} → ${a.join(',') || 'nema'}`);
     }
     expect(bad).toEqual([]);

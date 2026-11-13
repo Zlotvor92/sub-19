@@ -16,6 +16,7 @@ import {
   GOAL_RACE_EFFORT_SHARE,
   LATE_PAUSE_SHARPEN_MAX_SEC,
   MOVED_TEST_MIN_DAYS_BEFORE_RACE,
+  NO_TEST_AFTER_RACE_DAYS,
   RESTORE_PEAK_AFTER_DAYS,
   RETURN_FIRST_LONG_SHARE,
   RETURN_LONG_JUMP_SEC,
@@ -675,15 +676,10 @@ export function weekSlots(
   /* Pomerena provera forme: na mesto prvog kvaliteta; nedelja koja već ima proveru ostaje kakva je. */
   const movable = week.intent.kind !== 'taper' && week.intent.kind !== 'race';
   if (forcedTest !== null && movable && !items.some((x) => x.kind === 'test')) {
-    const at = items.findIndex((x) => x.kind === 'quality');
-    const wd = qualityDays[0];
-    const date = at >= 0 ? items[at]?.date : wd === undefined ? undefined : dateOf(wd);
-    /* E3 (krug 5): pomerena provera ne ide u ± 2 dana od treninga u tempu trke (ni bloka u dugom) i ne zamenjuje
-       jedini tempo trke nedelje */
+    /* E3 (krug 5): pomerena provera ne ide u ± 2 dana od treninga u tempu trke (ni bloka u dugom) */
+    const rpItem = (x: SlotItem): boolean => x.kind === 'quality' && mainZone(x.def.main) === 'RP';
     const rpDates = [
-      ...items
-        .filter((x) => x.kind === 'quality' && mainZone(x.def.main) === 'RP')
-        .map((x) => x.date),
+      ...items.filter(rpItem).map((x) => x.date),
       ...(long !== null &&
       long.wanted > 0 &&
       long.def !== null &&
@@ -692,9 +688,27 @@ export function weekSlots(
         ? [dateOf(longWd)]
         : [])
     ];
+    /* R18 (stavka 3, M5): pomerena provera ne zamenjuje trening u tempu trke — ide na mesto prvog drugog kvaliteta,
+       a bez njega na lagan dan nedelje (ne uz tempo trke i ne na dan dugog) */
+    const otherQ = items.findIndex((x) => x.kind === 'quality' && !rpItem(x));
+    const easyDay = runDays
+      .map((x) => dateOf(x))
+      .find(
+        (x) =>
+          !items.some((y) => y.date === x) &&
+          (longWd === null || x !== dateOf(longWd)) &&
+          !rpDates.some((r) => Math.abs(diffDays(r, x)) <= RP_TEST_GAP_DAYS)
+      );
+    const at = otherQ;
+    const wd = qualityDays[0];
+    const date =
+      at >= 0
+        ? items[at]?.date
+        : items.some((x) => x.kind === 'quality') || wd === undefined
+          ? easyDay
+          : dateOf(wd);
     const replaced = at >= 0 ? items[at] : undefined;
-    const replacesOnlyRp =
-      replaced?.kind === 'quality' && mainZone(replaced.def.main) === 'RP' && rpDates.length === 1;
+    const replacesOnlyRp = replaced !== undefined && rpItem(replaced);
     const nearRp =
       date !== undefined &&
       rpDates.some((x) => x !== replaced?.date && Math.abs(diffDays(x, date)) <= RP_TEST_GAP_DAYS);
@@ -2102,6 +2116,8 @@ export function runPass(
   /* Provera forme koja je pala u pauzu ili rampu: čeka prvu nedelju posle rampe (R9). */
   let pendingTest: Extract<Recipe, { type: 'test' }> | null = null;
   let pendingFrom: IsoDate | null = null;
+  /** R18: prvobitni dan pomerene provere. */
+  let pendingOrigin: IsoDate | null = null;
   const lastThree = <T>(list: readonly T[]): T[] => list.slice(Math.max(0, list.length - 3));
   const high = highShareWeeks(doc.weeks, data);
 
@@ -2736,11 +2752,36 @@ export function runPass(
       }
       /* Provera forme koju su pauza ili rampa povratka pojele se pomera, ne briše (R9); posle trke (A2) čeka da prođe
          14 dana. */
+      /* R18 (stavka 3, M5): posle prave (neplanirane) trke provera otpada — trka je već dala formu */
+      const raceNear = adjustments.some(
+        (a) =>
+          a.kind === 'effort' &&
+          a.race === true &&
+          a.planned !== true &&
+          a.date >= addDays(day.date, -NO_TEST_AFTER_RACE_DAYS)
+      );
+      if (pendingTest !== null && pendingOrigin !== null) {
+        const origin = pendingOrigin;
+        if (
+          adjustments.some(
+            (a) =>
+              a.kind === 'effort' &&
+              a.race === true &&
+              a.planned !== true &&
+              a.date >= addDays(origin, -NO_TEST_AFTER_RACE_DAYS)
+          )
+        ) {
+          pendingTest = null;
+          pendingOrigin = null;
+        }
+      }
       if (
         planned.type === 'test' &&
         !kept &&
+        !raceNear &&
         (inReturn(day.date, adjustments) || afterRace(day.date, adjustments))
       ) {
+        pendingOrigin = day.date;
         pendingTest = planned;
         /* S9: najranije 10 dana posle kraja rampe povratka — ne kao pun napor odmah posle rampe */
         let end: IsoDate | null = null;
