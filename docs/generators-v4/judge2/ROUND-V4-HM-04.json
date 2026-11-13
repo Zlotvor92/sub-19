@@ -1,0 +1,321 @@
+{
+ "krug": "V4-HM-04",
+ "sudija": "drugi",
+ "napomene": [
+  "red 'MORA DA SE RAZLIKUJE' u pairs/ viđen pre sopstvenog očekivanja",
+  "zbirovi provereni skriptom koja samo čita tekst; generator nije pokretan",
+  "target-compare.md i nalazi-cuvara.txt nisu otvarani"
+ ],
+ "planovi": {
+  "p01": {
+   "ocene": {
+    "daBihDao": 8,
+    "zdravISvez": 8,
+    "spreman": 8,
+    "ideNekud": 8,
+    "trkaResena": 8,
+    "istina": 8,
+    "uredan": 7
+   },
+   "ukupno": 79.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "ned 8: 14×200 m 2 dana pred test 10 km, dugi 12 km dan posle",
+    "ned 13 'vršna' 47,0 km < ned 11 54,5 km",
+    "napomena trke 1:41:59 ≠ zaglavlje 1:41:58"
+   ]
+  },
+  "p02": {
+   "ocene": {
+    "daBihDao": 8,
+    "zdravISvez": 7,
+    "spreman": 8,
+    "ideNekud": 8,
+    "trkaResena": 7,
+    "istina": 8,
+    "uredan": 7
+   },
+   "ukupno": 76.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "ned 6: 3 dana odmora pa 8×400 m 2 dana pred test",
+    "ned 12 (2 ned do trke): 3 kvaliteta, brz rad 20 %",
+    "intervali 4:00/km brži od tempa trke na 5 km 4:05/km"
+   ]
+  },
+  "p03": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 7,
+    "spreman": 7,
+    "ideNekud": 8,
+    "trkaResena": 7,
+    "istina": 7,
+    "uredan": 7
+   },
+   "ukupno": 71.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "intervali 5:28/km vs 5 km ekvivalent 5:40/km (12 s brže)",
+    "upozorenje +30–40 min → 39,8 km; moj račun ≈43 km",
+    "dugi 47–49 % nedelje (ned 13–15)"
+   ]
+  },
+  "p04": {
+   "ocene": {
+    "daBihDao": 6,
+    "zdravISvez": 6,
+    "spreman": 8,
+    "ideNekud": 7,
+    "trkaResena": 6,
+    "istina": 7,
+    "uredan": 7
+   },
+   "ukupno": 67.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "ned 15/17: dugi 2 h 30/2 h 28 sa 45–48 min TT za trkača 2:04",
+    "ned 18: 56,6 km = 83 % vrha, 3 kvaliteta, dugi 2 h 15",
+    "usponi 10×1 min 6 nedelja bez napretka; ned 8 2 dana pred test"
+   ]
+  },
+  "p05": {
+   "ocene": {
+    "daBihDao": 6,
+    "zdravISvez": 7,
+    "spreman": 6,
+    "ideNekud": 6,
+    "trkaResena": 7,
+    "istina": 4,
+    "uredan": 6
+   },
+   "ukupno": 61.0,
+   "daBih": "ne",
+   "zamerke": [
+    "upozorenje o granici 22 % netačno: ned 6/7/9/11 = 6/7/8/9 %",
+    "6 od 11 nedelja gradnje sa jednim kvalitetom za trkača 1:18",
+    "ned 14: 98,2 km = 89 % vrha sa 3×4 km TT + 24 km/6 km TT; prag 3:40 vs TT 3:42"
+   ]
+  },
+  "p06": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 8,
+    "spreman": 7,
+    "ideNekud": 6,
+    "trkaResena": 8,
+    "istina": 5,
+    "uredan": 6
+   },
+   "ukupno": 69.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "upozorenje 22 %, a ned 7 = 24 %; savet 60 km za 10 nedelja",
+    "3 × 5 km (24 min) nedeljno su punila za VDOT 58",
+    "ned 7 'vršna' 42,9 < ned 4 44,6 km"
+   ]
+  },
+  "p07": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 6,
+    "spreman": 8,
+    "ideNekud": 7,
+    "trkaResena": 6,
+    "istina": 7,
+    "uredan": 8
+   },
+   "ukupno": 70.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "ned 1→4: 55→71 km (+29 %)",
+    "ned 8: 65,3 km = 91 % vrha 2 nedelje pred trku",
+    "bez testa 10 nedelja"
+   ]
+  },
+  "p08": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 7,
+    "spreman": 7,
+    "ideNekud": 5,
+    "trkaResena": 6,
+    "istina": 6,
+    "uredan": 6
+   },
+   "ukupno": 65.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "obim ravan 41–47 km ned 1–18, vrh +5 %",
+    "ned 18: 45,3 km = 96 % vrha 2 nedelje pred trku",
+    "upozorenje +30–40 min → 58,2 km; moj račun ≈53 km"
+   ]
+  },
+  "p09": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 7,
+    "spreman": 7,
+    "ideNekud": 7,
+    "trkaResena": 7,
+    "istina": 8,
+    "uredan": 7
+   },
+   "ukupno": 71.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "ned 4 prag i ned 8 usponi 2 dana pred testove",
+    "ned 11: 61,8 km (+37 %), dugi 22 km/2 h 12",
+    "ned 13 'vršna' sa TT 2×1 km"
+   ]
+  },
+  "p10": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 8,
+    "spreman": 6,
+    "ideNekud": 7,
+    "trkaResena": 7,
+    "istina": 7,
+    "uredan": 6
+   },
+   "ukupno": 69.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "upozorenje +30–40 min → 45,3 km; moj račun ≈41 km",
+    "ned 19 dugi 80 min = 50 % nedelje",
+    "ned 6 i 7 isti dugi 1 h 46"
+   ]
+  },
+  "p11": {
+   "ocene": {
+    "daBihDao": 8,
+    "zdravISvez": 8,
+    "spreman": 7,
+    "ideNekud": 7,
+    "trkaResena": 8,
+    "istina": 7,
+    "uredan": 7
+   },
+   "ukupno": 75.0,
+   "daBih": "da",
+   "zamerke": [
+    "faze idu unazad ned 12→13",
+    "prognoza −7:02 (5,7 %) optimistična",
+    "jedini test u ned 12"
+   ]
+  },
+  "p12": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 7,
+    "spreman": 7,
+    "ideNekud": 7,
+    "trkaResena": 7,
+    "istina": 7,
+    "uredan": 6
+   },
+   "ukupno": 69.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "ned 10 dugi 2 h 15 za procenu 2:02",
+    "ned 14: TT 2×21 min = 42 min 2 nedelje pred trku",
+    "faze idu unazad ned 8→9"
+   ]
+  },
+  "vlasnik-v1": {
+   "ocene": {
+    "daBihDao": 7,
+    "zdravISvez": 7,
+    "spreman": 7,
+    "ideNekud": 7,
+    "trkaResena": 7,
+    "istina": 6,
+    "uredan": 6
+   },
+   "ukupno": 68.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "upozorenje +30–40 min → 38,7 km (+1,5 km) netačno",
+    "dugi ostaje 15 km uz upozorenje 'treba 16'",
+    "ned 8: 33,3 km = 90 % vrha; 1:40:59 vs 1:41:00"
+   ]
+  },
+  "vlasnik-v2": {
+   "ocene": {
+    "daBihDao": 8,
+    "zdravISvez": 8,
+    "spreman": 7,
+    "ideNekud": 7,
+    "trkaResena": 8,
+    "istina": 8,
+    "uredan": 7
+   },
+   "ukupno": 76.0,
+   "daBih": "da uz izmenu",
+   "zamerke": [
+    "ned 10: usponi 2 dana pred test 5 km",
+    "ned 15 'vršna' 39,6 < ned 12 47,3; TT 2×1,5 km",
+    "ned 16: 3 kvaliteta 2 nedelje pred trku"
+   ]
+  }
+ },
+ "prosekPlanova": 70.2,
+ "brojGe80": 0,
+ "brojGe70": 6,
+ "brojLt65": 1,
+ "vlasnik": {
+  "v1": 68.0,
+  "v2": 76.0
+ },
+ "scenariji": {
+  "s01": 9,
+  "s02": 7,
+  "s03": 9,
+  "s04": 8.5,
+  "s05": 8,
+  "s06": 6,
+  "s07": 8.5,
+  "s08": 7.5,
+  "s09": 8.5,
+  "s10": 6.5,
+  "s11": 8.5,
+  "s12": 7.5,
+  "s13": 9,
+  "s14": 6.5,
+  "s15": 7,
+  "s16": 8.5,
+  "s17": 9,
+  "s18": 9,
+  "s19": 7,
+  "s20": 7,
+  "s21": 8,
+  "s22": 8,
+  "s23": 8,
+  "s24": 8
+ },
+ "prosekScenarija": 79.0,
+ "parovi": {
+  "P1": 8,
+  "P2": 6.5,
+  "P3": 7,
+  "prosek": 71.7
+ },
+ "ispravke": [
+  "upozorenja računski i činjenično iz plana (+30–40 min → km; 22 %; širi raspon; 16 nedelja)",
+  "'Zašto' mora da se slaže sa prikazanom prognozom; tačna obrazloženja propuštenog",
+  "sužavanje 2 nedelje pred trku ≤80–85 % vrha i ≤2 kvaliteta",
+  "2 dana pred test/trku samo lagano + ubrzanja",
+  "brzi trkači: 2 kvaliteta u gradnji, prag ≥5 s/km brži od TT",
+  "dugi po vremenu ≤ vreme trke + ~10 min za spore, TT blok ≤35–40 min",
+  "intervali sporijih ne brži od tempa trke na 5 km",
+  "posle bolesti/bola vratiti TT kad je zdrav, dugi postepeno, test pomeriti i objasniti",
+  "'vršna nedelja' = stvarni vrh; faze ne idu unazad",
+  "dan trke zamenjuje trening tog dana; urađen test ulazi u formu; jedan broj forme svuda; obim 3-dnevne duge pripreme mora rasti"
+ ],
+ "zaPregledVlasniku": [
+  "p01",
+  "vlasnik-v2",
+  "p05"
+ ]
+}
