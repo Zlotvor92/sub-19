@@ -1557,9 +1557,59 @@ function candidateFor(
     case 'form-update':
       return onFormUpdate(doc, state, ev, data);
     case 'manual-edit':
+      return onManualEdit(doc, state, ev);
     case 'none':
       return null;
   }
+}
+
+/** R18 (stavka 13, M27; F8 § 9 t. 5): ručno izmenjen ili premešten dan je činjenica — ostaje kako ga je trkač postavio,
+    a ostali nezaključani dani te nedelje se preslažu radi razmaka: težak trening (kvalitet, provera, dugi) ne stoji
+    dan uz drugi težak — menja mesto sa laganim danom ili odmorom iste nedelje koji nije uz težak. Obim nedelje i sadržaj
+    treninga ostaju isti (samo datumi). */
+function onManualEdit(doc: PlanDoc, state: RunnerState, ev: EventOf<'manual-edit'>): Candidate | null {
+  const week = doc.weeks.find((w) => w.days.some((d) => d.id === ev.dayId));
+  const moved = week?.days.find((d) => d.id === ev.dayId);
+  if (week === undefined || moved === undefined) return null;
+  const done = doneDayIds(state);
+  const hard = (d: PlanDay | undefined): boolean =>
+    d?.workout != null &&
+    (d.workout.kind === 'quality' ||
+      d.workout.kind === 'test' ||
+      d.workout.kind === 'long' ||
+      d.workout.kind === 'race');
+  if (!hard(moved)) return null;
+  const days = [...week.days];
+  const at = (date: IsoDate): PlanDay | undefined => days.find((d) => d.date === date);
+  const mutable = (d: PlanDay): boolean =>
+    d.id !== moved.id && isMutable(d, doc.header, state.today, done);
+  const near = (date: IsoDate, except: string): boolean =>
+    [addDays(date, -1), addDays(date, 1)].some((x) => {
+      const d = at(x);
+      return d !== undefined && d.id !== except && hard(d);
+    });
+  let changed = false;
+  for (const x of [...days]) {
+    if (!mutable(x) || !hard(x) || Math.abs(diffDays(x.date, moved.date)) !== 1) continue;
+    const swap = days.find(
+      (y) =>
+        mutable(y) &&
+        !hard(y) &&
+        Math.abs(diffDays(y.date, moved.date)) > 1 &&
+        !near(y.date, x.id)
+    );
+    if (swap === undefined) continue;
+    const xi = days.findIndex((d) => d.id === x.id);
+    const yi = days.findIndex((d) => d.id === swap.id);
+    days[xi] = { ...x, workout: swap.workout, origin: 'template' };
+    days[yi] = { ...swap, workout: x.workout, origin: 'template' };
+    changed = true;
+  }
+  if (!changed) return null;
+  return {
+    doc: { ...doc, weeks: doc.weeks.map((w) => (w.index === week.index ? { ...w, days } : w)) },
+    until: addDays(week.start, 6)
+  };
 }
 
 /* ------------------------------------------------------------------ objašnjenje (§ 10) */
@@ -1908,6 +1958,12 @@ function explain(
       const now = fmtClock(raceTimeSec(ev.vdot, data.distanceM));
       return same(
         `Procena forme se promenila (${old} → ${now} na distanci trke): ${paceShift(before, c.doc)}; treninzi ostaju isti.`
+      );
+    }
+    case 'manual-edit': {
+      const day = allDays(before).find((d) => d.id === ev.dayId);
+      return same(
+        `Trening ${day === undefined ? '' : `„${textOf(day)}" `}je ručno postavljen na ${day === undefined ? 'nov dan' : fmtDate(day.date)} i ostaje tako; ostali dani te nedelje su presloženi da težak trening ne stoji dan uz drugi težak.`
       );
     }
     default:
