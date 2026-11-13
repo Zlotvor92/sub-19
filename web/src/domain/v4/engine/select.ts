@@ -6,6 +6,7 @@ import {
   FIRST_DOSE_MAX_OF_CAP,
   LADDER_TOLERANCE_SEC,
   LONG_BLOCK_MAX_SHARE,
+  REP_SHORTEN_MIN_SHARE,
   RPE_STAND,
   RPE_WALK,
   WORK_DISTANCE_STEP_M,
@@ -301,6 +302,23 @@ function ladderMain(
   };
 }
 
+/** R8 t. 4: kraća deonica istog oblika — `share` dužine, zaokruženo (100 m / 15 s), nikad duže od izvorne. */
+function shortenedRep(rep: Extent, share: number): Extent {
+  if ('distanceM' in rep)
+    return {
+      distanceM: Math.max(
+        100,
+        Math.min(rep.distanceM, Math.round((rep.distanceM * share) / 100) * 100)
+      )
+    };
+  return {
+    durationSec: Math.max(
+      15,
+      Math.min(rep.durationSec, Math.round((rep.durationSec * share) / 15) * 15)
+    )
+  };
+}
+
 /** Glavni deo treninga iz doze (§ 4.3); vraća i vrednosti za tekst. */
 function mainSteps(
   main: MainSet,
@@ -336,9 +354,15 @@ function mainSteps(
       const wanted = repSec > 0 ? Math.round(dose / repSec) : main.minReps;
       const fits = repSec > 0 ? Math.floor((cap + LADDER_TOLERANCE_SEC) / repSec) : main.maxReps;
       const n = Math.max(1, main.minReps, Math.min(main.maxReps, wanted, fits));
+      /* R8 t. 4: doza ispod `minReps` ponavljanja (posle bola, u sužavanju) — broj ostaje najmanji, a deonica se
+         skraćuje (distanca na 100 m, trajanje na 15 s, najviše do `REP_SHORTEN_MIN_SHARE` dužine) */
+      const rep =
+        repSec > 0 && dose < (main.minReps - 0.5) * repSec
+          ? shortenedRep(main.rep, Math.max(REP_SHORTEN_MIN_SHARE, dose / (main.minReps * repSec)))
+          : main.rep;
       return {
-        steps: repeated(n, zoneStep('work', main.zone, main.rep), recoveryStep(main.recovery)),
-        values: { n: String(n), rep: fmtExtent(main.rep), rec: fmtRecovery(main.recovery) }
+        steps: repeated(n, zoneStep('work', main.zone, rep), recoveryStep(main.recovery)),
+        values: { n: String(n), rep: fmtExtent(rep), rec: fmtRecovery(main.recovery) }
       };
     }
     case 'ladder':

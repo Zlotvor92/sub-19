@@ -192,6 +192,8 @@ export interface Mods {
   doseFactor: number;
   /** Najduži dozvoljeni dugi dok rampa traje. */
   longCapSec: Seconds;
+  /** R8 t. 4: doza sme ispod najmanjeg oblika unosa (prvi rad zone posle bola, Z3). */
+  belowShape?: boolean;
   /** Blok ili progresija u dugom dozvoljeni (pauza ≥ 7 dana: tek posle dugog bez bloka). */
   block: boolean;
   /** Posle pauze ≥ 7 dana lestvica bloka kreće ispočetka: redni broj bloka od povratka; `null` = bez izmene. */
@@ -285,7 +287,10 @@ export function modsFor(
           const done = seen.some(
             (s) => (s.key === key || s.key.endsWith(zone)) && s.date > adj.date && s.date < date
           );
-          if (!done) m.doseFactor = Math.min(m.doseFactor, PAIN_MID_DOSE_FACTOR);
+          if (!done) {
+            m.doseFactor = Math.min(m.doseFactor, PAIN_MID_DOSE_FACTOR);
+            m.belowShape = true;
+          }
         }
       } else if (n >= 1 && n <= PAIN_HIGH_REST_DAYS) {
         m.rest = true;
@@ -364,18 +369,29 @@ export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recip
     }
     case 'quality': {
       if (!mods.quality) return asEasy(recipe, mods, ctx);
-      /* Smanjenje (× 0,8) ne obara trening ispod njegovog najmanjeg oblika: tada ostaje najmanja doza. */
-      const dose = Math.max(
-        recipe.dose * mods.doseFactor,
-        Math.min(recipe.dose, minDoseOf(recipe.def, ctx))
-      );
+      /* R8 t. 4: smanjenje sme ispod najmanjeg oblika unosa — prvo manji unos istog podražaja, a kad ga nema,
+         deonice fiksne dužine se skraćuju (`mainSteps`); ostali oblici ostaju na najmanjoj dozi (kao ranije). */
+      const want = recipe.dose * mods.doseFactor;
       let def = recipe.def;
+      let dose = want;
+      if (want < minDoseOf(def, ctx) && mods.belowShape !== true) {
+        dose = Math.max(want, Math.min(recipe.dose, minDoseOf(def, ctx)));
+      } else if (want < minDoseOf(def, ctx)) {
+        const other = pickDef(recipe.slot, want, ctx, { noHighImpact: !mods.highImpact });
+        if (other !== null && other.kind === 'quality' && want >= minDoseOf(other, ctx))
+          def = other;
+        else if (def.main.kind !== 'reps') dose = Math.min(recipe.dose, minDoseOf(def, ctx));
+      }
       if (!mods.highImpact && def.impact === 'visok') {
         const other = pickDef(recipe.slot, dose, ctx, { noHighImpact: true });
         if (other === null || other.kind !== 'quality') return asEasy(recipe, mods, ctx);
         def = other;
       }
-      if (dose < minDoseOf(def, ctx)) return asEasy(recipe, mods, ctx);
+      const floor =
+        def.main.kind === 'reps' && mods.belowShape === true
+          ? ctx.data.safety.minDoseSec
+          : minDoseOf(def, ctx);
+      if (dose < floor) return asEasy(recipe, mods, ctx);
       return { ...recipe, def, dose };
     }
     case 'test':

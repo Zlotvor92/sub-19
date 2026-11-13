@@ -284,3 +284,6 @@ export const PAIN_FIRST_ZONE_MAX_DAYS = 42;
 export const NEAR_ENOUGH = 0.95;
 /** Z7: najviše ovoliko nedelja duža priprema se proba pre nego što se kaže da dužina pripreme nije uzrok. */
 export const PREP_PROBE_MAX_EXTRA_WEEKS = 16;
+
+/** R8 t. 4: deonica fiksne dužine se skraćuje najviše do ovolikog dela (ispod toga ostaje najmanji oblik). */
+export const REP_SHORTEN_MIN_SHARE = 0.5;

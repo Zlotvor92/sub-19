@@ -24,12 +24,7 @@ const KNOWN = new Map<string, string>([
   ['s03 bolji rezultat usporio prognozu 3171 → 3218', 'pripisani napredak posle rezultata (Z4)'],
   /* bol pa trka: drugi prozor se nadovezuje na prvi; rep izmena 4 nedelje + 6 dana (Z10) */
   ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)'],
-  /* Z3 nad unosima sa deonicama fiksne dužine (`reps`): 60 % doze ne staje ispod `minReps` (2 × 1,2 km), a za prag u
-     komadu prvi rad zone se broji od progresivnog dugog — motor ne bira kraći unos istog podražaja */
-  ['s13 2027-01-26 prvi rad zone RP: 22 od 29 min', 'Z3 i deonice fiksne dužine'],
-  ['s15 2027-02-04 prvi rad zone RP: 13 od 13 min', 'Z3 i deonice fiksne dužine'],
-  ['s16 2026-12-17 prvi rad zone T: 15 od 21 min', 'Z3 i deonice fiksne dužine'],
-  ['s16 2026-12-24 prvi rad zone RP: 13 od 13 min', 'Z3 i deonice fiksne dužine']
+  /* Z3 i deonice fiksne dužine (s13, s15, s16) skinuto u krugu 8 (R8 t. 4: manji unos ili kraće deonice) */
 ]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>
