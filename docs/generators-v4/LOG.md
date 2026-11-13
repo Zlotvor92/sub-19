@@ -537,3 +537,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - ODLUKA: krug 8 po `briefs/R8-ENGINE.md` — Opus tab motora `session_01GnHHiWa47Guy3uDTKR2kE5`; uporedo tab forme radi
   ličnu krivu (ne diraju iste fajlove). Ocena 10K (trener + Fable drugi sudija) tek posle oba. 5K i maraton posle
   ocene 10K.
+
+### 13. 11. 2026, 08:25 — lična kriva forme gurnuta (`cfba8b7`, izveštaj `a3d27c4`)
+- Moj pregled: ceo V4 skup zelen (broj u izlazu ispod), typecheck čist, kapija HM 0 prekršaja [visoka].
+- Back-test vlasnika 6,1 % → 3,7 %, 1/6 u rasponu (cilj ≤ 3 %, ≥ 4/6 nije dostignut; za 4/6 σ ≈ 4 VDOT — nije primenjeno).
+  Vlasnik danas 1:42:09; Bokeški 1:40:22 – 1:41:56 – 1:43:40; Beogradski 1:39:09 – 1:41:07 – 1:43:40.
+- Sidra zona po trajanju napora (R/I 20 min, T 45 min, E max(cilj, 75 min)); „dugi < lagan" uklonjen iz cele mreže
+  (postojao i pre; test ga je preskakao filterom). 4 `it.fails` u `tenk/` (R8-13/14/15) čekaju tab motora.
+- Ispisi u `plans/` nisu osveženi — radi tab motora na kraju kruga 8.
