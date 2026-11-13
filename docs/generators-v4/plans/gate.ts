@@ -1,5 +1,5 @@
-/* Kapija kruga 2 nad 12 profila i dva plana vlasnika: tabela brojeva (D-REPORT) i prekršaji.
-   Pokretanje iz korena:  node docs/generators-v4/plans/gate.ts [--weeks]   (--weeks: km po nedeljama) */
+/* Kapija nad 12 profila (i planovima vlasnika kod polumaratona): tabela brojeva i prekršaji.
+   Pokretanje iz korena:  node docs/generators-v4/plans/gate.ts [--dist tenk] [--weeks]   (--weeks: km po nedeljama) */
 import { registerHooks } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,10 +19,10 @@ const here = dirname(fileURLToPath(import.meta.url));
 const v4 = join(here, '../../../web/src/domain/v4');
 const E = await import(join(v4, 'engine/index.ts'));
 const { estimateForm } = await import(join(v4, 'fitness/index.ts'));
-const { hm } = await import(join(v4, 'distances/hm/index.ts'));
-const { PROFILES, factsOf } = await import(join(v4, 'distances/hm/testdata/profiles.ts'));
-const { OWNER_PLANS } = await import(join(v4, 'distances/hm/testdata/owner.ts'));
-const { gateStats } = await import(join(v4, 'distances/hm/testdata/gate.ts'));
+const { loadDist } = await import(join(here, 'dist.ts'));
+const D = await loadDist(v4, process.argv);
+const hm = D.data;
+const { PROFILES, factsOf, OWNER_PLANS, gateStats } = D;
 
 const weeks = process.argv.includes('--weeks');
 const f = (x: number, d = 0): string => x.toFixed(d).replace('.', ',');

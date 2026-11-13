@@ -1,6 +1,6 @@
-/* Ispis planova polumaratona kroz `renderPlan` (motor V4 + podaci `distances/hm`).
-   Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/render.ts [--load] [--stats]
-   Piše docs/generators-v4/plans/HM/p01.txt … p12.txt i vlasnik-v1.txt, vlasnik-v2.txt.
+/* Ispis planova kroz `renderPlan` (motor V4 + podaci distance, `--dist hm|tenk`, podrazumevano hm).
+   Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/render.ts [--dist tenk] [--load] [--stats]
+   Piše docs/generators-v4/plans/HM/p01.txt … p12.txt i vlasnik-v1.txt, vlasnik-v2.txt (10 km: plans/10K/).
    Motor uvozi fajlove bez nastavka `.ts`; kuka ispod dodaje nastavak (samo za ovu skriptu). */
 import { registerHooks } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -22,13 +22,14 @@ const here = dirname(fileURLToPath(import.meta.url));
 const v4 = join(here, '../../../web/src/domain/v4');
 const engine = await import(join(v4, 'engine/index.ts'));
 const { estimateForm } = await import(join(v4, 'fitness/index.ts'));
-const { hm } = await import(join(v4, 'distances/hm/index.ts'));
-const { PROFILES, factsOf } = await import(join(v4, 'distances/hm/testdata/profiles.ts'));
-const { OWNER_PLANS } = await import(join(v4, 'distances/hm/testdata/owner.ts'));
+const { loadDist } = await import(join(here, 'dist.ts'));
+const D = await loadDist(v4, process.argv);
+const hm = D.data;
+const { PROFILES, factsOf, OWNER_PLANS } = D;
 
 const showLoad = process.argv.includes('--load');
 const stats = process.argv.includes('--stats');
-const out = join(here, 'HM');
+const out = join(here, D.outDir);
 mkdirSync(out, { recursive: true });
 
 const guardLines: string[] = [];

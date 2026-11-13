@@ -1,6 +1,6 @@
-/* 24 scenarija prilagođavanja za polumaraton (coach/SCENARIOS-V4.md § 2): plan PRE i POSLE događaja sa spiskom
-   promena. Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/scenarios.ts
-   Piše docs/generators-v4/plans/HM/scenarios/s01.txt … s24.txt i pregled.txt.
+/* Scenariji prilagođavanja (coach/SCENARIOS-V4.md § 2) za distancu `--dist hm|tenk`: plan PRE i POSLE događaja sa
+   spiskom promena. Pokretanje iz korena repozitorijuma:  node docs/generators-v4/plans/scenarios.ts [--dist tenk]
+   Piše docs/generators-v4/plans/HM/scenarios/s01.txt … i pregled.txt (10 km: plans/10K/scenarios/).
    Trkač do događaja radi tačno ono što piše u planu (trčanja vezana za dan plana); događaj se zadaje činjenicama
    (trka, pauza, propušteni dani, bol) i `deriveEvents` iz njih izvodi događaje — osim bola, koji se prijavljuje. */
 import { registerHooks } from 'node:module';
@@ -23,16 +23,18 @@ const here = dirname(fileURLToPath(import.meta.url));
 const v4 = join(here, '../../../web/src/domain/v4');
 const E = await import(join(v4, 'engine/index.ts'));
 const { estimateForm } = await import(join(v4, 'fitness/index.ts'));
-const { hm } = await import(join(v4, 'distances/hm/index.ts'));
+const { loadDist } = await import(join(here, 'dist.ts'));
+const D = await loadDist(v4, process.argv);
+const hm = D.data;
 
-const { SCENARIOS, clock, profile } = await import(join(v4, 'distances/hm/testdata/scenarios.ts'));
+const { SCENARIOS, clock, profile } = await import(join(D.folder, 'testdata/scenarios.ts'));
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Any = any;
-const out = join(here, 'HM/scenarios');
+const out = join(here, D.outDir, 'scenarios');
 mkdirSync(out, { recursive: true });
 
-const summary: string[] = ['# Scenariji prilagođavanja — polumaraton (pregled)', ''];
+const summary: string[] = [`# Scenariji prilagođavanja — ${D.name} (pregled)`, ''];
 for (const s of SCENARIOS) {
   const r = s.run();
   const name = `s${String(s.no).padStart(2, '0')}`;
