@@ -464,3 +464,16 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - ODLUKA: HM je zatvoren kao OBRAZAC (trener: A + B + C iznad pragova; drugi sudija bez krupnih grešaka). Završni krug 7
   po `briefs/R7-ROUND7.md` (Z1–Z10, Y1–Y4, uklj. tri scenarija sa više događaja), bez nove ocene trenera — proveravam
   testovima i kapijom; drugi sudija (Opus, jeftin) još jednom posle kruga 7. Zatim 10K po PLAN.md F7.
+
+### 13. 11. 2026, 06:45 — ISPRAVKA VLASNIKA: raspodela modela (važi od sada)
+- Vlasnik: „Nisam ti rekao da menjaš sudiju … motor i kritičan deo arhitekture radi isključivo Fable, sve ostalo Opus i Sonnet."
+- MOJA GREŠKA: nalog „smanji Fable" sam protumačio preširoko — (a) drugog sudiju sam od kruga 3 prebacio na Opus,
+  (b) izmene MOTORA u krugovima 3–6 dao Opus tabu. Oba suprotno AGENTS t. 11.
+- Pravilo od sada: Fable = organizator, trener, drugi sudija, motor (`engine/`), `fitness/`, SPEC. Opus = podaci
+  distanci, adapteri, ispisi, testovi podataka, izveštaji. Sonnet = čisto mehanički posao.
+- Odmah: Opus tab `session_01GnHHiWa47Guy3uDTKR2kE5` prekinut u krugu 7 (poruka sa prioritetom „now"): vraća nedovršeno u
+  motoru, gura završeno, javlja stanje, čeka. Motor preuzima Fable tab M `session_01GnHHiWRtiyqqMB7Bn2wiFM`:
+  (1) pregled svih izmena motora koje je Opus uneo u krugovima 3–6 (`c003597..HEAD`), (2) Z1–Z10 iz `briefs/R7-ROUND7.md`.
+  Opus posle toga radi samo Y1–Y4. Drugi sudija kruga 7: Fable.
+- Posledica za brojeve: ocene drugog sudije krugova 3–6 (62,9 → 73,3) su od Opus sudije; sa Fable sudijom je uporediv
+  samo krug 2 (71,2).
