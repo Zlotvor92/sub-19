@@ -15,7 +15,14 @@ import {
   ZONE_SHARE
 } from './constants';
 import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday, weekdayOf } from './dates';
-import { decideLongMax, decidePeak, ladderInputOf, ladderOverBase, longReaches } from './decide';
+import {
+  decideLongMax,
+  decidePeak,
+  ladderInputOf,
+  ladderOverBase,
+  longReaches,
+  ranGoalDistance
+} from './decide';
 import { validate } from './guard';
 import { derivedPauses } from './pauses';
 import { declaredForm } from './formFallback';
@@ -270,7 +277,8 @@ function plannedLoads(
      napredak od obima (vrh = baza za procenu, f_v = 1). */
   const easy = paceAtShare(zoneVdot(form.current.vdot, 'E', form.transfer), ZONE_SHARE.E);
   const longMax = decideLongMax(peakLoad, data.safety, level, runDays, easy);
-  if (!longReaches(data, weeks, longMax, easy)) return { baseLoad, peakLoad: baseLoad };
+  const ran = ranGoalDistance(facts.today, facts.runs, facts.profile.recentResult, data.distanceM);
+  if (!ran && !longReaches(data, weeks, longMax, easy)) return { baseLoad, peakLoad: baseLoad };
   return { baseLoad, peakLoad };
 }
 

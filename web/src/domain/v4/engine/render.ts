@@ -312,7 +312,10 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   const why =
     gain > 0
       ? ` — ${fmtClock(gain)} brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke`
-      : '';
+      : /* krug 10 (stavka 12): nula napretka samo uz izričit razlog u zaglavlju */
+        h.decisions.raceDayMaxGain === 0
+        ? ' — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke'
+        : '';
   lines.push(
     `Očekivano na dan trke: ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)})${why}`
   );

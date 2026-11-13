@@ -27,7 +27,15 @@ import {
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate, mondayOf } from './dates';
-import { levelMinEasy, longReaches, longStepOf, maxWorkOf, minEasyOf, minRampOf } from './decide';
+import {
+  levelMinEasy,
+  longReaches,
+  longStepOf,
+  maxWorkOf,
+  minEasyOf,
+  minRampOf,
+  ranGoalDistance
+} from './decide';
 import {
   count,
   DAYS,
@@ -738,8 +746,9 @@ export function warnings(input: WarningInput): Warning[] {
       code: 'dugi-za-distancu',
       severity: 'upozorenje',
       problem: `Plan traje ${count(weeks, WEEKS, 'acc')}, a najduži trening je ${km(longKm)} — za ovu distancu treba bar ${km(need)}${byTime}, jer ${why}.`,
-      meaning:
-        'Druga polovina trke biće duža od svega što si trčao, pa prognoza ne računa napredak od obima, a trku treba početi oprezno.',
+      meaning: ranGoalDistance(state.today, state.runs, state.profile.recentResult, data.distanceM)
+        ? 'Ovu dužinu si već istrčao, ali najduži trening plana je kraći, pa drugu polovinu trke ne vežbaš u treningu — trku počni oprezno.'
+        : 'Druga polovina trke biće duža od svega što si trčao, pa prognoza ne računa napredak od obima, a trku treba početi oprezno.',
       proposal:
         trial !== null && trial.longKm >= longKm + 0.5
           ? `${extraDay} — dugi tada stiže do ${km(trial.longKm)}.`

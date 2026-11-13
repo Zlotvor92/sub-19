@@ -161,3 +161,19 @@ describe('krug 10 — stavka 11: oporavak posle trke, tekst i plan isto', () => 
     }
   });
 });
+
+describe('krug 10 — stavka 12: trka na ciljnoj dužini juče (E5)', () => {
+  it('nema „duže od svega što si trčao"; prognoza računa napredak (osim potpuno novog uz rečenicu)', () => {
+    for (const s of SCENARIOS.filter((x) => x.title.startsWith('E5'))) {
+      const r: any = s.run();
+      const text = renderPlan(r.after, r.afterState, hm);
+      expect(text, `s${String(s.no)}`).not.toContain('duža od svega što si trčao');
+      const h = r.after.header;
+      if (h.decisions.raceDayMaxGain === 0) expect(text).toContain('bez računanja napretka');
+      else
+        expect(h.form.raceDay.expectedSec, `s${String(s.no)}`).toBeLessThan(
+          h.form.current.raceTimeSec
+        );
+    }
+  });
+});

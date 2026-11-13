@@ -339,3 +339,6 @@ export const ZONE_LIMIT_I_MAX_SEC = 900;
 export const QUALITY_SHORTEN_STEP_SEC = 60;
 /** A1: najmanja smislena doza skraćenog kvaliteta (rad); nedelja gradnje/vrha ima bar jedan takav trening. */
 export const QUALITY_MIN_WORK_SEC = 720;
+/** Krug 10 (stavka 12): istrčana dužina cilja — bar ovoliki deo dužine, u poslednjih ovoliko dana. */
+export const RAN_GOAL_SHARE = 0.98;
+export const RAN_GOAL_DAYS = 84;

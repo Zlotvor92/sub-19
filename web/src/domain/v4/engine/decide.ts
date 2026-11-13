@@ -4,10 +4,14 @@ import {
   DEFAULT_EASY_MAX_OVER_PREVIOUS,
   DEFAULT_MAX_PEAK_OVER_BASE,
   DEFAULT_TAPER_EASY_MAX_SEC,
-  NEAR_ENOUGH
+  NEAR_ENOUGH,
+  RAN_GOAL_DAYS,
+  RAN_GOAL_SHARE
 } from './constants';
+import { diffDays } from './dates';
 import type {
   Decisions,
+  IsoDate,
   DistanceData,
   LevelId,
   LoadPoints,
@@ -371,4 +375,19 @@ export function longReaches(
     longSec >= NEAR_ENOUGH * (a.minLongSec ?? Number.POSITIVE_INFINITY) ||
     Math.max(longSec / easyPaceSecPerKm, longKm ?? 0) >= NEAR_ENOUGH * km
   );
+}
+
+/** Krug 10 (stavka 12): trkač je u poslednjih 12 nedelja istrčao dužinu cilja (trka ili unet rezultat) — dugi za
+    distancu tada nije uslov za napredak, a „duže od svega što si trčao" nije tačno. */
+export function ranGoalDistance(
+  today: IsoDate,
+  runs: readonly { date: IsoDate; distanceM: number; effort?: string }[],
+  recent: { distanceM: number; date?: IsoDate } | undefined,
+  distanceM: number
+): boolean {
+  const near = (m: number): boolean => m >= RAN_GOAL_SHARE * distanceM;
+  const inWindow = (d: IsoDate | undefined): boolean =>
+    d === undefined || (d <= today && diffDays(today, d) <= RAN_GOAL_DAYS);
+  if (recent !== undefined && near(recent.distanceM) && inWindow(recent.date)) return true;
+  return runs.some((r) => r.effort !== undefined && near(r.distanceM) && inWindow(r.date));
 }
