@@ -2,6 +2,7 @@
    sa predlogom u brojevima). Ništa ne menja — ni generisan ni lični plan. */
 import {
   BASE_UNDER_DECLARED_SHARE,
+  PEAK_BELOW_BASE_KM,
   EASY_DISTANCE_STEP_M,
   EASY_DURATION_STEP_SEC,
   EASY_FLOOR_MIN_RUN_DAYS,
@@ -809,6 +810,26 @@ export function warnings(input: WarningInput): Warning[] {
         'Plan polazi od onoga što si stvarno trčao, pa su prve nedelje manje nego što očekuješ — nagli povratak na stari obim je čest put do povrede.',
       proposal: `Ako je razlog pauza ili putovanje, upiši je; ako trčanja nisu stigla sa sata, poveži sat ili ih unesi — plan tada polazi od ${km(declaredKm)}.`
     });
+  }
+  /* krug 10 (stavka 18): najveća nedelja plana ispod sadašnjeg obima (bez bola i povratka) — uz rečenicu */
+  {
+    const peakPlanKm = Math.max(
+      0,
+      ...costs.filter((c) => c.week.intent.kind !== 'race').map((c) => c.km)
+    );
+    const returning =
+      d.painCaution === true ||
+      (doc.header.adjustments ?? []).some((x) => x.kind === 'pause' || x.kind === 'pain');
+    if (!returning && baseKm > 0 && peakPlanKm < baseKm - PEAK_BELOW_BASE_KM) {
+      out.push({
+        code: 'vrh-ispod-obima',
+        severity: 'upozorenje',
+        problem: `Najveća nedelja plana je ${km(peakPlanKm)}, a sada trčiš oko ${km(baseKm)} nedeljno.`,
+        meaning:
+          'Dugi i lagani dani su ograničeni svojim udelom u nedelji, pa uz ovaj broj dana plan ne stiže do obima koji već trčiš — priprema je lakša nego tvoja sadašnja nedelja.',
+        proposal: `Zadrži sadašnji obim: dodaj oko ${km(baseKm - peakPlanKm)} nedeljno laganim trčanjem (po 10–15 min uz lagane dane) ili dodaj dan laganog trčanja.`
+      });
+    }
   }
   /* S8d (krug 4): lagana trčanja brža od laganog tempa — podatak za personalizaciju, ne veći plan */
   if (state.easyTooFast === true) {

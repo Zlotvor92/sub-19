@@ -342,3 +342,5 @@ export const QUALITY_MIN_WORK_SEC = 720;
 /** Krug 10 (stavka 12): istrčana dužina cilja — bar ovoliki deo dužine, u poslednjih ovoliko dana. */
 export const RAN_GOAL_SHARE = 0.98;
 export const RAN_GOAL_DAYS = 84;
+/** Krug 10 (stavka 18): upozorenje kad je najveća nedelja plana ispod sadašnjeg obima za više od ovoliko km. */
+export const PEAK_BELOW_BASE_KM = 1;
