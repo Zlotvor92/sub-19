@@ -289,6 +289,7 @@ export function estimateForm(
 
   const init = startingPoint(facts, runs);
   let vdot = init.vdot;
+  let preFirstVdot = init.vdot;
   const pauses = pauseSpans(facts, runs, today);
   const firstDay = Math.min(
     runs[0] !== undefined ? dayNum(runs[0].date) : today,
@@ -485,6 +486,7 @@ export function estimateForm(
           : { ...bare, distanceM: result.distanceM, durationSec: result.durationSec };
         const ev = resultEvidence(scored);
         const firstInApp = results.length === 0;
+        if (firstInApp) preFirstVdot = vdot;
         /* Prvi rezultat zamenjuje procenu bez osnova (iz laganog tempa, trčanja ili opštu): k = 1 (R14). */
         const first = firstInApp && init.source !== 'rezultat';
         const low = confidenceAt(d) === 'niska';
@@ -498,7 +500,10 @@ export function estimateForm(
         results.push({ day: d, strong: !firstInApp && !ev.walking });
         lastResultDay = d;
         credited = 0;
-        planVdot = 0;
+        /* Z4 (krug 7): rezultat bar onoliko dobar koliko se verovalo (forma + pripisani napredak) ne spušta verovanu
+           formu — ostatak pripisanog napretka ostaje; slabiji rezultat ga briše */
+        const believed = before + planVdot;
+        planVdot = ev.vdot >= believed ? Math.max(0, believed - vdot) : 0;
         week = { from: d + 1, provisional: 0, done: 0, ref: 0, days: 0 };
         baseDropApplied = 0;
         record(
@@ -705,11 +710,24 @@ export function estimateForm(
   const w = clamp((raceDay - today) / 7 - 1, 0, C.WEEKS_MAX);
   const gain = Math.min(rate * fv * fp * w, Math.max(0, max - credited));
   const sigma = C.SIGMA[confidence];
+  /* Z4 (krug 7): prvi rezultat koji je zamenio procenu niske pouzdanosti još ne otvara pun očekivani napredak (potvrda
+     forme ne pomera prognozu > 1 %; s24) — dok ga ne potvrdi drugi rezultat */
+  const firstOnly = results.length === 1 && init.source !== 'rezultat' && startConfidence === 'niska';
 
   return {
     start: point(init.vdot, startDay, startConfidence),
     current: point(vdot, today, confidence),
-    raceDay: raceDayRange(vdot, planVdot, gain, sigma, confidence, goalM),
+    /* Z4 (krug 7): prvi rezultat koji je zamenio procenu bez osnova još ne otvara pun očekivani napredak (potvrda
+       forme ne pomera prognozu > 1 %; s24) — kao niska pouzdanost, dok ga ne potvrdi drugi rezultat */
+    raceDay: raceDayRange(
+      vdot,
+      planVdot,
+      gain,
+      sigma,
+      firstOnly ? 'niska' : confidence,
+      goalM,
+      firstOnly ? Math.max(vdot, preFirstVdot) : vdot
+    ),
     ceilingGain: r2(gain),
     history
   };
@@ -723,11 +741,13 @@ function raceDayRange(
   gain: number,
   sigma: number,
   confidence: Confidence,
-  goalM: number
+  goalM: number,
+  /** Merilo ograničenja napretka pri niskoj pouzdanosti (Z4: posle prve potvrde bolje od dva stanja). */
+  capVdot: Vdot = vdot
 ): { lowSec: number; expectedSec: number; highSec: number } {
-  const now = raceTimeSec(vdot, goalM);
   let expected = raceTimeSec(vdot + planVdot + C.EXPECTED_SHARE * gain, goalM);
-  if (confidence === 'niska') expected = Math.max(expected, now * (1 - C.LOW_CONFIDENCE_MAX_GAIN));
+  if (confidence === 'niska')
+    expected = Math.max(expected, raceTimeSec(capVdot, goalM) * (1 - C.LOW_CONFIDENCE_MAX_GAIN));
   const low = Math.min(expected, raceTimeSec(vdot + planVdot + gain + sigma / 2, goalM));
   return {
     lowSec: Math.round(low),
