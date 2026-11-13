@@ -1,0 +1,45 @@
+{
+  "round": "V4-HM-10",
+  "date": "2026-11-13",
+  "judge": "glavni trener (Opus)",
+  "source": "02e06e1 (posle kruga 10 motora); poredjenje sa 12651ae",
+  "plan": {
+    "p01": { "prev": 81.5, "now": 81.5 }, "p02": { "prev": 82, "now": 82 }, "p03": { "prev": 77, "now": 77 },
+    "p04": { "prev": 79.5, "now": 79.5 }, "p05": { "prev": 80.5, "now": 80.5 }, "p06": { "prev": 71, "now": 71 },
+    "p07": { "prev": 80.5, "now": 80.5 }, "p08": { "prev": 74, "now": 74, "withChecks": 73.3 },
+    "p09": { "prev": 81, "now": 81 }, "p10": { "prev": 76.5, "now": 76.5, "withChecks": 73.5 },
+    "p11": { "prev": 80.5, "now": 81 }, "p12": { "prev": 78.5, "now": 79.5 },
+    "average": 78.7, "averageWithChecks": 78.4, "atLeast80": 6,
+    "owner": { "vlasnik-v1": 78, "vlasnik-v2": 81.5 }
+  },
+  "adaptation": {
+    "E1": { "score": 81.0, "s01": 85, "s02": 77, "s03": 85, "s04": 77 },
+    "E2": { "score": 78.3, "s05": 79, "s06": 74, "s07": 80, "s08": 80 },
+    "E3": { "score": 83.5, "s09": 84, "s10": 84, "s11": 83, "s12": 83 },
+    "E4": { "score": 79.3, "s13": 80, "s14": 81, "s15": 78, "s16": 78 },
+    "E5": { "score": 84.5, "s17": 84, "s18": 85, "s19": 85, "s20": 84 },
+    "E6": { "score": 90.8, "s21": 91, "s22": 91, "s23": 91, "s24": 90 },
+    "E7": { "score": 77.3, "s25": 80, "s26": 72, "s27": 80 },
+    "partB": 82.1, "previousPartB": 80.8
+  },
+  "personalization": { "P1": 85, "P2": 83, "P3": 83, "partC": 83.7 },
+  "composite": 80.7, "previousComposite": 80.2,
+  "returnVerdicts": {
+    "s05": "ispravno: ned 13 vraca prvobitnu (50 km, dugi 18,5 km sa 9 km RP)",
+    "s06": "preoprezno: najteza nedelja 64,8 -> 40,2 km, dugi do trke 1 h 51",
+    "s07": "ispravno", "s08": "ispravno",
+    "s26": "delimicno: dugi 60 -> 80 min 3 dana posle trke",
+    "s27": "ispravno: dugi +20 min nedeljno"
+  },
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "izmena posle rezultata uvek ima recenicu i broji se (s02, s04 PROMENA 0 uz promenjena tempa); stari test se ne objavljuje ponovo (s24)" },
+    { "n": 2, "kind": "motor", "text": "bolest 4-6 nedelja pred trku: najteza nedelja -10-20 %, povratna 60-70 % (s06)" },
+    { "n": 3, "kind": "motor", "text": "3 dana posle trke dugi ne raste (s26); tekst o proveri jednom" },
+    { "n": 4, "kind": "motor", "text": "prvi rast dugog posle povratka <= +20 min; lagani >= 30 min kad je dugi >= 90 min (s05)" },
+    { "n": 5, "kind": "podatak", "text": "p06 suzavanje i ned 6" },
+    { "n": 6, "kind": "podatak", "text": "p08 nedelja 1 = 45 km; p08/p10 ned 15" },
+    { "n": 7, "kind": "podatak", "text": "s09 prag nije tempo trke u tekstu" }
+  ],
+  "verdict": "B i C prolaze; Plan 78,7 na plafonu ulaza (~80 na merilu prethodnog trenera); HM zatvoren uz uslov ispravke 1 i pogled na s06",
+  "ownerReview": ["s06", "s02", "s05"]
+}
