@@ -25,7 +25,9 @@ import {
   RESTORE_PEAK_AFTER_DAYS,
   RETURN_LONG_JUMP_SEC,
   RETURN_LONG_JUMP_SHARE,
-  RETURN_WEEK_JUMP_SHARE
+  RETURN_WEEK_JUMP_SHARE,
+  PAIN_FIRST_ZONE_MAX_DAYS,
+  PAIN_MID_DOSE_FACTOR
 } from './constants';
 import { buildCtx, doneDayIds, isMutable, runPass } from './build';
 import { addDays, isValidDate, mondayOf } from './dates';
@@ -59,7 +61,7 @@ import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { adjustRaceDay, skeleton } from './plan';
 import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
-import { realize } from './select';
+import { mainZone, realize } from './select';
 import { lastLongAfterEffort, lastLongBefore, normalizeAvailability } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import type {
@@ -572,8 +574,7 @@ function smoothExit(
   const n = weeks.length;
   for (let i = Math.max(first, base + 1); i < n - 2; i += 1) {
     const w = weeks[i];
-    /* Z10 (krug 7): rep izlaska najviše 4 nedelje od danas — prozori se ne sabiraju */
-    if (w === undefined || w.start > addDays(state.today, 28)) break;
+    if (w === undefined) break;
     const lo = Math.max(base, i - 3);
     const prev = weeks.slice(lo, i);
     const pKm = Math.max(...prev.map(km));
@@ -588,7 +589,11 @@ function smoothExit(
     const longOver = lastLong > 0 && curLong > longCap + 60;
     const kmOver = pKm > 0 && curKm > kmCap + 0.5;
     /* povratak je gotov kod prve nedelje koja staje u granicu — dalje važi prvobitan plan */
-    if (!longOver && !kmOver) break;
+    /* Z1 (krug 7): nedelja rasterećenja ili provere ne završava povratak — završava ga nedelja gradnje koja staje */
+    if (!longOver && !kmOver) {
+      if (w.intent.kind === 'recovery' || w.days.some((d) => d.workout?.kind === 'test')) continue;
+      break;
+    }
     /* dugi do granice (blok ostaje, ne duži od dugog) */
     const days = w.days.map((d): PlanDay => {
       if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
@@ -755,15 +760,69 @@ function onPain(
   const until = returning
     ? minDate(addDays(window.rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc))
     : window.rampEnd;
-  /* R2 (krug 6): izlazak iz prozora bez skoka */
-  const smooth = smoothExit(
+  /* Z3 (krug 7): prvi rad svake zone posle bola ≤ 60 %; R2: zatim izlazak iz prozora bez skoka */
+  const first = firstZoneAfterPain(
     returning ? restoreAfter(built, doc, window.rampEnd) : built,
-    doc,
+    ev.date,
     window.rampEnd,
     state,
     data
   );
-  return { doc: smooth.doc, until: smooth.until > until ? smooth.until : until };
+  const smooth = smoothExit(first.doc, doc, window.rampEnd, state, data);
+  const end = [until, smooth.until, first.until].reduce((a, b) => (a > b ? a : b));
+  return { doc: smooth.doc, until: end };
+}
+
+/** Z3 (krug 7): posle bola prvi rad SVAKE zone (kvalitet ili blok u dugom) koji se posle bola još nije pojavio ima
+    `PAIN_MID_DOSE_FACTOR` (60 %) planirane doze — i kad je posle prozora zaštite (s13: blok 9 km → 5–6 km). */
+function firstZoneAfterPain(
+  doc: PlanDoc,
+  painDate: IsoDate,
+  windowEnd: IsoDate,
+  state: RunnerState,
+  data: DistanceData
+): { doc: PlanDoc; until: IsoDate } {
+  const ctxB = buildCtx(doc.header, data);
+  const pace = paceCtxOf(doc.header);
+  const done = doneDayIds(state);
+  const last = addDays(painDate, PAIN_FIRST_ZONE_MAX_DAYS);
+  const seenZones = new Set<string>();
+  let until = windowEnd;
+  const weeks = doc.weeks.map(
+    (w): PlanWeek => ({
+      ...w,
+      days: w.days.map((d): PlanDay => {
+        const x = d.workout;
+        if (x === null || d.date <= painDate || d.date > last || x.workSec <= 0) return d;
+        if (x.kind !== 'quality' && x.kind !== 'long') return d;
+        const def = data.library.find((y) => y.id === x.libraryId);
+        const zone = def === undefined ? null : mainZone(def.main);
+        if (def === undefined || zone === null || seenZones.has(zone)) return d;
+        seenZones.add(zone);
+        if (d.date <= windowEnd || !isMutable(d, doc.header, state.today, done)) return d;
+        const dose = Math.round((PAIN_MID_DOSE_FACTOR * x.workSec) / 60) * 60;
+        const workout =
+          x.kind === 'long'
+            ? realize(
+                { type: 'long', sec: Math.round(summarize(x, pace).durationSec / 60) * 60, def, dose, slot: null },
+                ctxB
+              )
+            : realize(
+                {
+                  type: 'quality',
+                  def,
+                  dose,
+                  slot: { place: 'quality', stimulus: def.stimulus, index: 0, phase: w.intent.phase }
+                },
+                ctxB
+              );
+        if (workout === null) return d;
+        if (d.date > until) until = d.date;
+        return { ...d, origin: 'template', workout };
+      })
+    })
+  );
+  return { doc: { ...doc, weeks }, until };
 }
 
 function onFatigue(

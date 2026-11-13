@@ -110,10 +110,12 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
         const w = after[i];
         if (w === undefined || w.intent.kind === 'race') continue;
         /* povratak je gotov kod prve nedelje jednake prvobitnoj — dalje je prvobitan plan (i njegovi prelazi) */
-        const same = (before[i] as PlanWeek | undefined)?.days.every(
-          (d, k) => JSON.stringify(d.workout) === JSON.stringify(w.days[k]?.workout)
-        );
-        if (same === true && i > from) break;
+        const ob = before[i] as PlanWeek | undefined;
+        const same =
+          ob !== undefined &&
+          Math.abs(weekKm(ob, r.before, r.after) - weekKm(w, r.after)) <= 0.5 &&
+          Math.abs(longSec(ob, r.before, r.after) - longSec(w, r.after)) <= 60;
+        if (same && i > from) break;
         /* merilo: najveće od nedelje događaja (ne pre nje) — najviše 3 prethodne */
         const lo = Math.max(base, i - 3);
         /* Z1 (krug 7): dugi od POSLEDNJEG dugog, i preko rasterećenja/provere, bez izuzetka prvobitnog plana */
@@ -230,6 +232,27 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
             if (sec > 0.65 * long + 300) bad.push(`${name(s.no)} ${d.date} lagano ${String(Math.round(sec / 60))} uz dugi ${String(Math.round(long / 60))} min`);
           }
         }
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('Z3: prvi rad svake zone posle bola (i blok u dugom) ≤ 60 % planirane doze', () => {
+    const bad: string[] = [];
+    for (const { s, r } of REPLANS.filter(({ s }) => s.title.startsWith('E4'))) {
+      const painDate: string = (r.afterState.pain as any[])[0]?.date ?? r.afterState.today;
+      const seen = new Set<string>();
+      for (const d of (r.after.weeks as PlanWeek[]).flatMap((w) => w.days)) {
+        const x = d.workout;
+        /* pravilo važi do 6 nedelja posle bola */
+        if (x === null || d.date <= painDate || d.date > addDays(painDate, 42) || x.workSec <= 0) continue;
+        const zone = hm.library.find((y) => y.id === x.libraryId)?.main;
+        const z = zone === undefined || zone.kind === 'all-out' ? null : zone.zone;
+        if (z === null || seen.has(z)) continue;
+        seen.add(z);
+        const old = (r.before.weeks as PlanWeek[]).flatMap((w) => w.days).find((y) => y.id === d.id)?.workout;
+        if (old != null && old.workSec > 0 && x.workSec > 0.6 * old.workSec + 90)
+          bad.push(`${name(s.no)} ${d.date} prvi rad zone ${z}: ${String(Math.round(x.workSec / 60))} od ${String(Math.round(old.workSec / 60))} min`);
       }
     }
     expect(bad).toEqual([]);

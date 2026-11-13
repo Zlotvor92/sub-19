@@ -1301,10 +1301,13 @@ function minorChange(before: Workout, after: Workout, ctx: BuildCtx): boolean {
 const sameWorkout = (a: Workout | null, b: Workout | null): boolean =>
   canonical(a) === canonical(b);
 
-function seenKey(workout: Workout | null): string | null {
+/** Ključ treninga: vrsta, podražaj i zona rada (Z3: „prvi rad zone posle bola" vidi i blok u dugom). */
+function seenKey(workout: Workout | null, ctx: BuildCtx): string | null {
   if (workout === null || workout.stimulus === null) return null;
-  if (workout.kind === 'quality' || workout.kind === 'test') return `quality:${workout.stimulus}`;
-  if (workout.kind === 'long' && workout.workSec > 0) return `long:${workout.stimulus}`;
+  const def = ctx.data.library.find((x) => x.id === workout.libraryId);
+  const zone = def === undefined ? '' : (mainZone(def.main) ?? '');
+  if (workout.kind === 'quality' || workout.kind === 'test') return `quality:${workout.stimulus}@${zone}`;
+  if (workout.kind === 'long' && workout.workSec > 0) return `long:${workout.stimulus}@${zone}`;
   return null;
 }
 
@@ -1735,7 +1738,7 @@ export function runPass(
         }
         pendingFrom = end === null ? null : addDays(end, RETURN_TEST_AFTER_RAMP_DAYS);
       }
-      const key = seenKey(final.workout);
+      const key = seenKey(final.workout, ctx);
       if (key !== null) seen.push({ date: final.date, key });
       /* Dugi bez bloka: za prošle dane se računa samo ako je odrađen (§ 14.6). */
       if (

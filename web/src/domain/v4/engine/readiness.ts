@@ -11,6 +11,7 @@ import {
   PAIN_LOW_REST_DAYS,
   PAIN_MID_DAYS,
   PAIN_MID_DOSE_FACTOR,
+  PAIN_FIRST_ZONE_MAX_DAYS,
   PAIN_MID_FACTOR,
   PAIN_MID_LONG_DAYS,
   PAIN_MID_MAX,
@@ -33,7 +34,7 @@ import {
 } from './constants';
 import { addDays, diffDays } from './dates';
 import { summarize } from './load';
-import { type BuildCtx, minDoseOf, pickDef, realize, type Recipe, steadyLongDef } from './select';
+import { type BuildCtx, mainZone, minDoseOf, pickDef, realize, type Recipe, steadyLongDef } from './select';
 import type { Adjustment, IsoDate, Pause, Seconds } from './types';
 
 /** Rampa povratka: `zero` je dan napora ili poslednji dan pauze; traje `days`; `noFast` dana bez ičeg brzog. */
@@ -270,8 +271,10 @@ export function modsFor(
           const last = adj.lastLongSec ?? 0;
           if (last > 0) m.longCapSec = Math.min(m.longCapSec, RAMP_LONG_SHARE * last);
         }
-        if (n > PAIN_MID_DAYS && n <= PAIN_MID_DAYS + POST_RAMP_FIRST_DAYS && key !== null) {
-          const done = seen.some((s) => s.key === key && s.date > adj.date && s.date < date);
+        /* Z3 (krug 7): prvi rad svake ZONE posle bola (i blok u dugom) ≤ 60 % planirane doze, do 6 nedelja posle bola */
+        if (n > PAIN_MID_DAYS && n <= PAIN_FIRST_ZONE_MAX_DAYS && key !== null) {
+          const zone = key.slice(key.indexOf('@'));
+          const done = seen.some((s) => (s.key === key || s.key.endsWith(zone)) && s.date > adj.date && s.date < date);
           if (!done) m.doseFactor = Math.min(m.doseFactor, PAIN_MID_DOSE_FACTOR);
         }
       } else if (n >= 1 && n <= PAIN_HIGH_REST_DAYS) {
@@ -305,9 +308,10 @@ function asEasy(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recipe {
 
 /** Ključ podražaja za pravilo „prvi kvalitet posle rampe"; `null` za dan bez brzog rada. */
 export function recipeKey(recipe: Recipe): string | null {
-  if (recipe.type === 'quality' || recipe.type === 'test') return `quality:${recipe.def.stimulus}`;
+  if (recipe.type === 'quality' || recipe.type === 'test')
+    return `quality:${recipe.def.stimulus}@${mainZone(recipe.def.main) ?? ''}`;
   if (recipe.type === 'long' && recipe.def !== null && recipe.dose > 0)
-    return `long:${recipe.def.stimulus}`;
+    return `long:${recipe.def.stimulus}@${mainZone(recipe.def.main) ?? ''}`;
   return null;
 }
 
