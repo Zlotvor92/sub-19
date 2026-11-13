@@ -138,3 +138,21 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
 });
+
+describe('krug 9 — A3: tekst o tempu prati zone', () => {
+  it('„tempa su ubrzana/usporena" samo kad sve zone idu u istom smeru', () => {
+    const bad: string[] = [];
+    for (const s of SCENARIOS) {
+      const r: any = s.run();
+      const text = (r.changes as any[]).map((c) => String(c.reason ?? '')).join(' ');
+      const a = r.after.header.paces;
+      const b = r.before.header.paces;
+      const zs = ['T', 'RP', 'I'] as const;
+      if (/tempa su ubrzana/.test(text) && zs.some((z) => a[z] > b[z]))
+        bad.push(`s${String(s.no)} ubrzana`);
+      if (/tempa su usporena/.test(text) && zs.some((z) => a[z] < b[z]))
+        bad.push(`s${String(s.no)} usporena`);
+    }
+    expect(bad).toEqual([]);
+  });
+});

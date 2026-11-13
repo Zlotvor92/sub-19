@@ -1163,6 +1163,23 @@ interface Explain {
 }
 
 function paceShift(before: PlanDoc, after: PlanDoc): string {
+  /* A3 (krug 9): kad zone idu u suprotnim smerovima, rečenica po zoni (ne „tempa ubrzana" uz sporiji tempo trke) */
+  const zones = [
+    ['prag', 'T'],
+    ['tempo trke', 'RP'],
+    ['intervali', 'I']
+  ] as const;
+  const deltas = zones.map(([name, z]) => ({
+    name,
+    d: after.header.paces[z] - before.header.paces[z]
+  }));
+  const moved = deltas.filter((x) => x.d !== 0);
+  const faster = moved.some((x) => x.d < 0);
+  const slower = moved.some((x) => x.d > 0);
+  if (faster && slower)
+    return moved
+      .map((x) => `${x.name} ${x.d < 0 ? 'brži' : 'sporiji'} za ${String(Math.abs(x.d))} s/km`)
+      .join(', ');
   const delta = after.header.paces.T - before.header.paces.T;
   return `tempa su ${delta < 0 ? 'ubrzana' : 'usporena'} za oko ${String(Math.max(1, Math.abs(delta)))} s po kilometru`;
 }
