@@ -1,4 +1,4 @@
-# Maraton — pregled 19 profila (V4, 13. 11. 2026. 22:51 po Beogradu)
+# Maraton — pregled 19 profila (V4, 13. 11. 2026. 22:54 po Beogradu)
 
 Kapija (`node docs/generators-v4/plans/gate.ts --dist marathon`):
 
