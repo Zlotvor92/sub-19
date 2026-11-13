@@ -1,0 +1,111 @@
+{
+  "krug": "V4-HM-06",
+  "sudija": "drugi (nezavisni)",
+  "procitano_van_dozvoljenog": "pairs/pregled.txt i red 'MORA DA SE RAZLIKUJE' u pairs/pX.txt pre zapisivanja očekivanja za parove",
+  "tezine": {"P1": 20, "P2": 20, "P3": 20, "P4": 10, "P5": 10, "P6": 10, "P7": 10},
+  "planovi": {
+    "p01": {"ocene": [8, 8, 8, 7, 8, 8, 7], "ukupno": 78, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 13, "sta": "oznaka 'vršna nedelja' na 49,1 km, a 11. ned 54,5 km i 10. ned 54 km"},
+        {"nedelja": 8, "sta": "sub 26. 12. test 10 km (14,2 km), ned 27. 12. dugi 12 km — dva teška dana zaredom u rasterećenju"},
+        {"nedelja": 16, "sta": "napomena trke 'današnja forma 1:41:59', zaglavlje 1:41:58"}]},
+    "p02": {"ocene": [8, 8, 8, 7, 8, 8, 8], "ukupno": 79, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 11, "sta": "'vršna' 47,4 km, a 8.–9. ned 54,4 i 54,2 km"},
+        {"nedelja": 6, "sta": "test sub 12. 12. + dugi 13 km u nedelju"},
+        {"nedelja": 6, "sta": "jedini test 8 nedelja pred trku"}]},
+    "p03": {"ocene": [7, 7, 7, 8, 8, 7, 7], "ukupno": 72, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 0, "sta": "upozorenje '4. dan od 20 min → 39,8 km': vrh 38,8 + ≈2,7 km = ≈41,5 km; broj nejasan"},
+        {"nedelja": 15, "sta": "dugi nosi 47–51 % nedelje (15. ned 51 %); dugi 2 h 15 min (11. ned) na 3 dana"},
+        {"nedelja": 16, "sta": "'19 dana bez brzih' posle trke bez objašnjenja (drugi planovi 11–18)"}]},
+    "p04": {"ocene": [7, 7, 8, 6, 8, 7, 7], "ukupno": 72, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 13, "sta": "13.–17. ned skoro kopije (dugi 2 h 10 min ×4, pon/sub 80 min)"},
+        {"nedelja": 8, "sta": "jedini test 26. 12., 12 nedelja pred trku 21. 3.; od njega zavisi 'ciljaj 5:43/km'"},
+        {"nedelja": 14, "sta": "TT 3×15 + prag 3×12 + dugi 2 h 10 (81 min brzog, 19 %); vikend 3 h 30 min"}]},
+    "p05": {"ocene": [8, 7, 9, 8, 7, 8, 8], "ukupno": 79, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 16, "sta": "start trke 3:47–3:52/km za 1:18 trkača — gubitak 25–50 s"},
+        {"nedelja": 13, "sta": "26,5 km sa 13 km u tempu trke 3 nedelje pred trku — skoro trka"},
+        {"nedelja": 5, "sta": "svi lagani dani identični 15 km (monotonija)"}]},
+    "p06": {"ocene": [5, 8, 6, 6, 7, 5, 7], "ukupno": 63, "dao_bih": "ne",
+      "zamerke": [
+        {"nedelja": 0, "sta": "traženo 5 dana, dato 4; obrazloženje '>10 % skok' netačno — isti obim u 5 dana smanjuje opterećenje po treningu"},
+        {"nedelja": 2, "sta": "za VDOT 58: intervali jednom (3×3 min), prag 10 min dvaput, 1 kvalitet nedeljno u 10 nedelja"},
+        {"nedelja": 3, "sta": "najduži dugi 17 km (78 min) za cilj ~1:20"}]},
+    "p07": {"ocene": [8, 7, 8, 8, 7, 8, 8], "ukupno": 77, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 8, "sta": "2 nedelje pred trku prag 2×18 min + 5 km TT u dugom, 55,5 km (77 % vrha)"},
+        {"nedelja": 4, "sta": "TT 3×3 km + prag 2×18 + dugi 18,5 km u istoj nedelji (20 %)"},
+        {"nedelja": 10, "sta": "start trke 5–10 s/km sporiji"}]},
+    "p08": {"ocene": [7, 8, 7, 5, 8, 7, 8], "ukupno": 72, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 1, "sta": "20 nedelja: 41,2 → vrh 47,4 km; dugi 17,5 km pet od prvih sedam nedelja"},
+        {"nedelja": 8, "sta": "jedini test 24. 12., 12 nedelja pred trku"},
+        {"nedelja": 0, "sta": "predlog 4. dana od 70 min (≈12 km, ≈+25 %) bez reči o postepenom uvođenju"}]},
+    "p09": {"ocene": [8, 8, 8, 8, 7, 7, 8], "ukupno": 78, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 16, "sta": "tempo trke 'napor 6/10' (umereno 5, prag 7) — prenisko za polumaraton"},
+        {"nedelja": 0, "sta": "raspon 1:37:56–1:45:26 preuzak za pouzdanost 'niska'"},
+        {"nedelja": 11, "sta": "TT 3×3 km + prag 3×9 + dugi 22 km (20 %)"}]},
+    "p10": {"ocene": [6, 8, 6, 6, 7, 5, 6], "ukupno": 64, "dao_bih": "ne u ovom obliku",
+      "zamerke": [
+        {"nedelja": 9, "sta": "20 nedelja, vrh 37,1 km (sa 25), 9.–17. ned ravno 34–37; upozorenje 'planiraj 22 nedelje' okrivljuje dužinu pripreme"},
+        {"nedelja": 0, "sta": "isto upozorenje 'dodaj 4. dan od 70 min' dvaput"},
+        {"nedelja": 8, "sta": "druga provera test 3 km posle 5 km; nema provere 6–8 nedelja pred trku"}]},
+    "p11": {"ocene": [8, 8, 7, 7, 8, 7, 6], "ukupno": 74, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 12, "sta": "faze unazad: 12. 'specifična', 13.–14. 'razvoj', 15. 'specifična'"},
+        {"nedelja": 20, "sta": "prognoza 7:02 brža (5:53 → 'ciljaj 5:33') na osnovu testa 3 km 8 nedelja pred trku"},
+        {"nedelja": 15, "sta": "prvi trening u tempu trke tek 15. ned"}]},
+    "p12": {"ocene": [7, 8, 7, 7, 7, 7, 6], "ukupno": 71, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 8, "sta": "faze: 8. 'specifična', 9.–10. 'razvoj'"},
+        {"nedelja": 14, "sta": "2 nedelje pred trku TT 2×21 min po osećaju za početnika"},
+        {"nedelja": 10, "sta": "dugi 2 h 10 min duži od trke bez objašnjenja"}]}
+  },
+  "prosek_planova": 73.3,
+  "broj_planova": {"ge80": 0, "ge70": 10, "lt65": 2},
+  "vlasnik": {
+    "v1": {"ocene": [6, 8, 6, 6, 8, 5, 7], "ukupno": 66, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 7, "sta": "dugi max 15 km; upozorenje traži 16 km i '12 nedelja', a plan sam spušta dugi (3. ned 15, 4. 13,5, 7. 'vršna' 13,5)"},
+        {"nedelja": 3, "sta": "TT svakog utorka od 3. ned, brz rad 21–25 % na 30–37 km"},
+        {"nedelja": 10, "sta": "'današnja forma 1:40:59' vs zaglavlje 1:41:00"}]},
+    "v2": {"ocene": [8, 8, 8, 7, 8, 8, 7], "ukupno": 78, "dao_bih": "da uz izmenu",
+      "zamerke": [
+        {"nedelja": 15, "sta": "'vršna' 40 km, a 12. ned 47,3 km"},
+        {"nedelja": 10, "sta": "jedini test (5 km 20. 2.) 8 nedelja pred trku"},
+        {"nedelja": 2, "sta": "13 → 28 km u danima 8–14 posle polumaratona"}]}
+  },
+  "scenariji": {
+    "s01": 9, "s02": 9, "s03": 7, "s04": 8, "s05": 8, "s06": 8, "s07": 8, "s08": 6,
+    "s09": 7, "s10": 8, "s11": 6, "s12": 7, "s13": 9, "s14": 8, "s15": 8, "s16": 7,
+    "s17": 9, "s18": 7, "s19": 8, "s20": 8, "s21": 10, "s22": 9, "s23": 10, "s24": 6,
+    "prosek": 7.9
+  },
+  "scenariji_redovi": {
+    "s03": "bolji rezultat, a očekivano na dan trke gore (1:57:11 → 1:58:12) bez objašnjenja",
+    "s08": "kontradiktorno upozorenje 'nemam rezultat' uz test i pouzdanost visoka",
+    "s09": "prognoza −1:19 posle 2 propuštena treninga, neobjašnjeno",
+    "s11": "prognoza −4:13 neobjašnjena; 17 → 18 dana posle trke bez razloga",
+    "s14": "dugi 90 min > ¾ poslednjeg (83 min)",
+    "s18": "dugi 2 h 5 min u 3. ned posle polumaratona, najduži do 9. ned",
+    "s24": "prognoza +3:40 posle testa koji je potvrdio formu; napomena trke 'napor za 1 h 55 min' pri formi 2:02"
+  },
+  "parovi": {"P1": 9, "P2": 8, "P3": 7, "prosek": 8.0},
+  "ispravke_po_vaznosti": [
+    "Upozorenja ne smeju da okrivljuju dužinu pripreme za ograničenja koja plan sam postavlja (p10, vlasnik-v1, P2B, p03); prvo popraviti progresiju; bez pragova od 0,2 km",
+    "Ne prepisivati traženi broj dana (p06); 5 dana sa istim obimom je bezbednije; 2 kvaliteta nedeljno za brze trkače malog obima",
+    "Planovi po osećaju: posle prvog testa dati tempa; ukloniti 'nemam tvoj rezultat' kad test postoji (s08, s12, s16, s24)",
+    "Svaka promena prognoze mora da ima red u 'Zašto' (s03, s09, s10, s11, s24)",
+    "Druga provera 4–6 nedelja pred trku u planovima ≥ 14 nedelja (p04, p08, p11, vlasnik-v2)",
+    "Progresija bez praznih/kopiranih nedelja (p08, p04 13.–17., p10)",
+    "'Vršna nedelja' mora biti vršna; faze ne smeju unazad (p01, p02, vlasnik-v1/v2, p11, p12, P2B)",
+    "Dan posle testa/trke nije dugi; posle HM dugi ne sme u 3. nedelji da bude najduži do 9. (s18)",
+    "Tempo trke po osećaju 7/10, ne 6/10; napomena trke ne sme da bude brža od forme (s16, s24)",
+    "Urednost: 1:41:58/1:41:59, 1:41:00/1:40:59, dvostruke tačke u datumima, 'oko X za 21,1 km' kad je unet 10 km, 11–19 dana posle trke bez objašnjenja, 'u 8 nedelja staje' (p04), start trke 5–10 s sporiji i za 1:18–1:20"
+  ],
+  "za_vlasnika": ["vlasnik-v2", "p10", "p06"]
+}
