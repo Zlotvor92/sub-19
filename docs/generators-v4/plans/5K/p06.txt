@@ -78,7 +78,7 @@ UPOZORENJA
   Zbir: 24,2 km, 1 h 57 min, 5 treninga, brz rad 0 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — završnica, nedelja trke
-  pon 7. 12.  lagano 4,5 km — 4,5 km, 22 min
+  pon 7. 12.  odmor
   uto 8. 12.  lagano 3,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,7 km, 22 min
   sre 9. 12.  odmor
   čet 10. 12.  oštrenje: tempo trke 5 × 400 m (3:31/km), oporavak 1 min džog — 7,9 km, 36 min
@@ -88,4 +88,4 @@ UPOZORENJA
       napomena: Tempo za trku: 3:31/km (današnja forma 17:33).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 3:32–3:34/km (ne brže od 3:31/km), 2.–4. km ravnomerno 3:31/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
       napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
-  Zbir: 21,6 km, 1 h 42 min, 4 treninga + trka, brz rad 7 % vremena trčanja
+  Zbir: 17,1 km, 80 min, 3 treninga + trka, brz rad 9 % vremena trčanja

@@ -358,6 +358,18 @@ export const guard: GuardFn = (doc, _state, data) => {
         }
       }
       if (
+        week.start === addDays(raceMonday, -7) &&
+        taper.weekMinus1MaxOfPeak !== undefined &&
+        c.km > taper.weekMinus1MaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK
+      ) {
+        report(
+          'silazak',
+          week,
+          null,
+          'Obim nedelje pred nedeljom trke nije spušten prema vršnoj nedelji.'
+        );
+      }
+      if (
         week.start === raceMonday &&
         taper.raceWeekMaxOfPeak !== undefined &&
         c.km > taper.raceWeekMaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK

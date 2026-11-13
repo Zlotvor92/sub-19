@@ -57,4 +57,12 @@ describe('krug 15 — kvalitet pre laganog dana na podu (M20)', () => {
       expect(nums.size, p.id).toBeLessThanOrEqual(1);
     }
   });
+
+  it('M23 (p16, pravilo godina): nedelja kojoj je skinut brz trening ima ubrzanja na dan pred dugi', () => {
+    const doc = build('p16');
+    const w9 = doc.weeks[8];
+    const before = w9?.days[5];
+    expect(before?.workout?.kind).toBe('easy');
+    expect(before?.workout?.stimulus).not.toBeNull();
+  });
 });

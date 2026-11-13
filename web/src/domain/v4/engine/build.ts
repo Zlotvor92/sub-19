@@ -493,6 +493,8 @@ export function weekSlots(
   /* krug 15 (M4): brzi treninzi koji bi napravili predug niz sa dugim — otpadaju posle izbora, ako nedelji ostaje bar
      jedan drugi brz trening */
   const streakDates = new Set<IsoDate>();
+  /* krug 16 (M23): pravilo godina skinulo je brz trening — nedelja dobija dodatak (ubrzanja) na dan pred dugi */
+  let gapSkipped = false;
   intent.stimuli.forEach((st, k) => {
     const wd = qualityDays[k];
     if (wd === undefined || !runDays.includes(wd) || wd === longWd || dateOf(wd) >= calmFrom)
@@ -522,8 +524,10 @@ export function weekSlots(
           (x.kind === 'quality' || x.kind === 'test') &&
           Math.abs(diffDays(x.date, dateOf(wd))) < gapDays
       )
-    )
+    ) {
+      gapSkipped = true;
       return;
+    }
     const slot: SlotRef = {
       place: 'quality',
       stimulus: st.stimulus,
@@ -599,6 +603,20 @@ export function weekSlots(
       items[kept] = { ...b, date: a.date, skip: false };
       items[gone] = { ...a, date: b.date, skip: true };
     }
+  }
+  if (gapSkipped && longWd !== null && !items.some((x) => x.kind === 'addon')) {
+    const before = ((longWd + 6) % 7) as Weekday;
+    const date = dateOf(before);
+    const addon = ctx.data.library.find(
+      (x) => x.main.kind === 'add-on' && x.impact !== 'visok' && x.kind === 'easy'
+    );
+    if (
+      addon !== undefined &&
+      runDays.includes(before) &&
+      date < calmFrom &&
+      !items.some((x) => x.date === date)
+    )
+      items.push({ kind: 'addon', date, def: addon });
   }
   /* krug 15 (M10): trka ili provera na dan dugog (pripremna trka) — prvo mesto nedelje */
   const raceOnLong = intent.long?.race;
@@ -2006,6 +2024,8 @@ function taperVolumeCap(
     return t.raceWeekMaxOfPeak * peakVolume;
   if (week.start === addDays(raceMonday, -14) && t.weekMinus2MaxOfPeak !== undefined)
     return t.weekMinus2MaxOfPeak * peakVolume;
+  if (week.start === addDays(raceMonday, -7) && t.weekMinus1MaxOfPeak !== undefined)
+    return t.weekMinus1MaxOfPeak * peakVolume;
   return null;
 }
 
@@ -2469,6 +2489,38 @@ export function runPass(
             ])
           );
           if (measure().over > 0 && valid(short)) recipes = short;
+        }
+      }
+      /* krug 16 (odluka organizatora, izuzetak od A10 a): nedelja trke i nedelja pred njom koje ni na najkraćim
+         laganim danima ne silaze do granice — lagani dani redom postaju odmor (pre skraćenja dugog), dok ostaju bar dva trčanja */
+      const lastTwo =
+        week.start === mondayOf(span.raceDate) ||
+        week.start === addDays(mondayOf(span.raceDate), -7);
+      for (let k = 0; lastTwo && k < 3 && measure().over > 0; k += 1) {
+        const easyDates = [...recipes.entries()]
+          .filter(([date, r]) => r.type === 'easy' && date < addDays(span.raceDate, -1))
+          .map(([date]) => date)
+          .sort();
+        const runs = [...recipes.values()].filter((r) => r.type !== 'rest').length;
+        const first = easyDates[0];
+        if (first === undefined || runs < 3) break;
+        const next = new Map(recipes);
+        next.set(first, REST);
+        recipes = next;
+      }
+      /* dugi skraćen silaskom dobija nazad prostor koji je oslobodio izostavljen dan (ne preko prvobitnog) */
+      if (lastTwo && measure().over < 0) {
+        const startLong = [...start.recipes.values()].find((r) => r.type === 'long');
+        const nowEntry = [...recipes.entries()].find(([, r]) => r.type === 'long');
+        if (startLong?.type === 'long' && nowEntry !== undefined && nowEntry[1].type === 'long') {
+          const [date, now] = nowEntry;
+          const room = -measure().over * 60;
+          const sec = Math.min(startLong.sec, now.sec + room);
+          if (sec > now.sec + 60) {
+            const next = new Map(recipes);
+            next.set(date, { ...now, sec: Math.floor(sec / 60) * 60 });
+            recipes = next;
+          }
         }
       }
     }

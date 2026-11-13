@@ -216,8 +216,10 @@ export const SAFETY: SafetyNumbers = {
     weekBeforeMaxQuality: 2,
     weekBeforeMaxOfPeak: 0.6,
     weekMinus2MaxOfPeak: 0.8,
+    /* krug 16 (podatak HM, p06): nedelja −1 ≤ 70 % vrha, nedelja trke ≤ 45 % */
+    weekMinus1MaxOfPeak: 0.7,
     calendarMinus2MaxQuality: 2,
-    raceWeekMaxOfPeak: 0.6,
+    raceWeekMaxOfPeak: 0.45,
     /* M9 (krug 5; trener § 7, s06): poslednji dugi sa blokom zadržava najmanji korak (15 min) */
     lastLongMinBlockSec: 900
   },

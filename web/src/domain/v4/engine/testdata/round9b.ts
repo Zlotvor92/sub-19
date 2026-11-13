@@ -8,8 +8,8 @@ import { paceCtxOf, summarize } from '../load';
 import { adjustmentWindow } from '../readiness';
 import type { DistanceData, PlanDoc, RunnerFacts, RunnerState, Weekday } from '../types';
 
-/** A10 (a): nedelja −1 ≤ nedelja −2 ≤ vrh (km, + 0,5 zaokruživanja); u nedeljama −2 i −1 nijedan traženi dan nije
-    izostavljen (kad događaj ne seče te nedelje). Vraća opise prekršaja. */
+/** A10 (a): nedelja −1 ≤ nedelja −2 ≤ vrh (km, + 0,5 zaokruživanja); u nedelji −2 nijedan traženi dan nije
+    izostavljen (kad događaj ne seče te nedelje; −1 sme, krug 16). Vraća opise prekršaja. */
 export function taperShape(id: string, doc: PlanDoc, runDays: readonly Weekday[]): string[] {
   const bad: string[] = [];
   const ctx = paceCtxOf(doc.header);
@@ -43,7 +43,8 @@ export function taperShape(id: string, doc: PlanDoc, runDays: readonly Weekday[]
     (w) => (w.intent.kind === 'peak' || w.intent.kind === 'build') && w.start < m2.start
   );
   const want = Math.min(runDays.length, Math.max(0, ...built.map(runsOf)));
-  for (const w of [m2, m1])
+  /* krug 16 (odluka organizatora): nedelja −1 i nedelja trke smeju da izostave lagan dan na podu; −2 ne sme */
+  for (const w of [m2])
     if (runsOf(w) < want)
       bad.push(
         `${id} n${String(w.index)} ${String(runsOf(w))} trčanja uz ${String(want)} u gradnji`

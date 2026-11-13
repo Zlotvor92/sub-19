@@ -134,4 +134,26 @@ describe('krug 15 — lagan dan uz dugi ≥ 90 min (M2, M21)', () => {
       }
     }
   });
+
+  it('krug 16 (podatak p06): nedelja −1 ≤ 70 % vrha, nedelja trke ≤ 45 %, dugi −1 nije skraćen ispod laganog', () => {
+    const p = PROFILES.find((x) => x.id === 'p06');
+    if (p === undefined) throw new Error('p06');
+    const state = buildState(factsOf(p), p.goal, hm, estimateForm);
+    const res = plan(state, p.goal, hm);
+    if (!res.ok) throw new Error('p06');
+    const ctx = paceCtxOf(res.doc.header);
+    const km = (i: number): number =>
+      (res.doc.weeks[i]?.days ?? []).reduce(
+        (sum, d) =>
+          sum +
+          (d.workout === null || d.workout.kind === 'race' ? 0 : summarize(d.workout, ctx).km),
+        0
+      );
+    const n = res.doc.weeks.length;
+    const peak = Math.max(
+      ...res.doc.weeks.flatMap((w, i) => (w.intent.kind === 'peak' ? [km(i)] : []))
+    );
+    expect(km(n - 2)).toBeLessThanOrEqual(0.7 * peak + 0.5);
+    expect(km(n - 1)).toBeLessThanOrEqual(0.45 * peak + 0.5);
+  });
 });
