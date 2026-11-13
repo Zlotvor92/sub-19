@@ -299,6 +299,8 @@ export const RETURN_WINDOW_MAX_DAYS = 21;
 export const LOWERED_REST_MIN_SHARE = 0.05;
 /** A17 (krug 9b): obim do trke bar 15 % manji od planiranog smanjuje očekivani napredak (i bez spuštenog ostatka). */
 export const LOST_VOLUME_MIN_SHARE = 0.15;
+/** A2 (krug 9b): posle neplanirane trke nema provere forme toliko dana (pun napor nije dobar test odmah posle). */
+export const NO_TEST_AFTER_RACE_DAYS = 14;
 /** R2 (krug 6): prvi dugi posle prekida (pauza, bol) najmanje 62 % poslednjeg dugog pre njega (trener: 60–65 %). */
 export const RETURN_FIRST_LONG_SHARE = 0.62;
 /** Z3 (krug 7): „prvi rad zone posle bola ≤ 60 %" važi do 6 nedelja posle bola. */

@@ -2,8 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
-import { buildState, plan } from '../../engine';
-import { forecastReacts, returnWindow, smallGrid, taperShape } from '../../engine/testdata/round9b';
+import { buildState, plan, renderPlan } from '../../engine';
+import {
+  forecastReacts,
+  raceInWindow,
+  returnWindow,
+  smallGrid,
+  taperShape
+} from '../../engine/testdata/round9b';
 import { estimateForm } from '../../fitness';
 import { tenk } from './index';
 import { PROFILES, factsOf } from './testdata/profiles';
@@ -60,5 +66,14 @@ describe('krug 9b — A17: očekivano vreme reaguje na izgubljen obim', () => {
     }
     expect(bad).toEqual([]);
     expect(reacted).toBeGreaterThan(0);
+  });
+});
+
+describe('krug 9b — A2: trka u prozoru povratka', () => {
+  it('s26 (bol pa trka): dan trke prikazuje trku; 3 dana bez brzog; nema provere forme 14 dana posle', () => {
+    const s = SCENARIOS.find((x) => x.no === 26);
+    expect(s).toBeDefined();
+    const r: any = s!.run();
+    expect(raceInWindow('s26', r.after, r.afterState, tenk, renderPlan)).toEqual([]);
   });
 });

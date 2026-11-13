@@ -5,6 +5,7 @@ import {
   FATIGUE_DAYS,
   FATIGUE_FACTOR,
   NO_FAST_DAYS_AFTER_EFFORT,
+  NO_TEST_AFTER_RACE_DAYS,
   PAIN_HIGH_REST_DAYS,
   PAIN_LOW_DAYS,
   PAIN_LOW_MAX,
@@ -163,6 +164,17 @@ function returns(adj: Adjustment): boolean {
 }
 
 /** Da li je dan u pauzi ili rampi povratka posle pauze (ne posle napora): tu se provera forme pomera (R9). */
+/** A2 (krug 9b): dan pada u `NO_TEST_AFTER_RACE_DAYS` dana posle neplanirane trke (provera forme se tada ne radi). */
+export function afterRace(date: IsoDate, adjustments: readonly Adjustment[]): boolean {
+  return adjustments.some(
+    (adj) =>
+      adj.kind === 'effort' &&
+      adj.race === true &&
+      date >= adj.date &&
+      diffDays(date, adj.date) <= NO_TEST_AFTER_RACE_DAYS
+  );
+}
+
 export function inReturn(date: IsoDate, adjustments: readonly Adjustment[]): boolean {
   return adjustments.some((adj) => {
     if (adj.kind === 'effort' || !returns(adj)) return false;

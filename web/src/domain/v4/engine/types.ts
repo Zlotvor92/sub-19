@@ -333,6 +333,8 @@ export type Adjustment =
       /** Pun napor IZ PLANA (provera forme, pripremna trka): važi samo § 14.1 — 3 dana bez ičeg brzog, bez rampe
           i bez „prvi kvalitet × 0,8" (treći krug). */
       planned?: boolean;
+      /** Krug 9b (A2): neplanirana trka — nema provere forme `NO_TEST_AFTER_RACE_DAYS` dana posle nje. */
+      race?: boolean;
     }
   | {
       kind: 'pause';

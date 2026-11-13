@@ -410,7 +410,12 @@ export function renderPlan(
   lines.push(...changeLines(options.changes ?? [], doc));
   const today = state?.today;
   const runs = new Map<string, Run>();
-  for (const run of state?.runs ?? []) if (run.dayId !== undefined) runs.set(run.dayId, run);
+  const runsByDate = new Map<IsoDate, Run>();
+  for (const run of state?.runs ?? []) {
+    if (run.dayId !== undefined) runs.set(run.dayId, run);
+    /* A2 (krug 9b): neplanirana trka bez dayId se spaja sa planskim danom po datumu (pun napor umesto zakazanog) */
+    if (run.effort !== undefined) runsByDate.set(run.date, run);
+  }
   /* S9 (krug 4): dan pauze (i današnji) nije urađen trening — ispisuje se kao pauza i ne ulazi u zbir. */
   const paused = (date: string): boolean =>
     (h.adjustments ?? []).some((a) => a.kind === 'pause' && a.from <= date && date <= a.to);
@@ -444,7 +449,7 @@ export function renderPlan(
     for (const { day, cost: c } of cost.days) {
       const when = `${fmtWeekday(day.date)} ${fmtDate(day.date)}`;
       const w = day.workout;
-      const run = runs.get(day.id);
+      const run = runs.get(day.id) ?? runsByDate.get(day.date);
       if (w === null) {
         lines.push(`  ${when}  odmor`);
         continue;

@@ -1,9 +1,11 @@
 /* KRUG 9b — provere nad planom bez imena distance (koriste ih testovi foldera distanci). */
+import { NO_TEST_AFTER_RACE_DAYS } from '../constants';
 import { addDays, diffDays, mondayOf } from '../dates';
+import { fmtDate } from '../format';
 import { weekCost } from '../guard';
 import { paceCtxOf, summarize } from '../load';
 import { adjustmentWindow } from '../readiness';
-import type { PlanDoc, RunnerFacts, Weekday } from '../types';
+import type { DistanceData, PlanDoc, RunnerFacts, RunnerState, Weekday } from '../types';
 
 /** A10 (a): nedelja −1 ≤ nedelja −2 ≤ vrh (km, + 0,5 zaokruživanja); u nedeljama −2 i −1 nijedan traženi dan nije
     izostavljen (kad događaj ne seče te nedelje). Vraća opise prekršaja. */
@@ -158,5 +160,36 @@ export function forecastReacts(
   if (expAfter < expBefore - 1) bad.push(`${id} očekivano brže (${expAfter} < ${expBefore})`);
   const hasReason = changes.some((c) => (c.reason ?? '').includes('očekivani napredak manji'));
   if (!hasReason) bad.push(`${id} nema rečenicu o izgubljenom obimu`);
+  return bad;
+}
+
+/** A2 (krug 9b): posle neplanirane trke (effort race) — render dana trke prikazuje trku; nema provere forme
+    `NO_TEST_AFTER_RACE_DAYS` dana posle; 3 dana posle bez brzog. Vraća opise prekršaja. */
+export function raceInWindow(
+  id: string,
+  doc: PlanDoc,
+  state: RunnerState,
+  data: DistanceData,
+  renderPlan: (d: PlanDoc, s: RunnerState, data: DistanceData) => string
+): string[] {
+  const bad: string[] = [];
+  const race = state.runs.find((r) => r.effort === 'race');
+  if (race === undefined) return bad;
+  /* na dan trke render prikazuje trku, ne stari trening */
+  const text = renderPlan(doc, state, data);
+  const line = text
+    .split('\n')
+    .find((l) => l.includes(fmtDate(race.date)) && (l.includes('trka') || l.includes('TRKA')));
+  if (line === undefined) bad.push(`${id} dan trke ne prikazuje trku`);
+  /* 3 dana posle bez brzog; nema provere forme 14 dana posle */
+  for (const w of doc.weeks)
+    for (const d of w.days) {
+      if (d.workout === null || d.date <= race.date) continue;
+      const days = diffDays(d.date, race.date);
+      if (days <= 3 && d.workout.workSec > 0 && d.workout.kind !== 'long')
+        bad.push(`${id} ${d.date} brz rad ${String(days)} dana posle trke`);
+      if (days <= NO_TEST_AFTER_RACE_DAYS && d.workout.kind === 'test')
+        bad.push(`${id} ${d.date} provera forme ${String(days)} dana posle trke`);
+    }
   return bad;
 }

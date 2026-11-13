@@ -142,9 +142,8 @@ function onResult(
   /* E5 (krug 5): kratka trka van plana (do `safety.shortEffortSec`) se oporavlja kao planirana provera — samo
      § 14.1, bez rampe */
   const short = data.safety.shortEffortSec;
-  const planned =
-    allDays(doc).some((d) => d.id === run.dayId && d.workout?.kind === 'test') ||
-    (short !== undefined && run.durationSec <= short);
+  const fromPlan = allDays(doc).some((d) => d.id === run.dayId && d.workout?.kind === 'test');
+  const planned = fromPlan || (short !== undefined && run.durationSec <= short);
   /* K1: rezultat je deonica punog napora; aktivnost iz koje se ona ne može izdvojiti nije dokaz forme. */
   const result = effortResult(run);
   const durationSec = result?.durationSec ?? run.durationSec;
@@ -154,7 +153,9 @@ function onResult(
     date: run.date,
     durationSec,
     lastLongSec: lastLongAfterEffort(state, run.date, durationSec),
-    ...(planned ? { planned: true } : {})
+    ...(planned ? { planned: true } : {}),
+    /* A2 (krug 9b): svaka trka (i kratka) koja nije provera iz plana → bez provere forme 14 dana posle */
+    ...(!fromPlan && run.effort === 'race' ? { race: true } : {})
   };
   let header = withAdjustment(doc.header, adj);
   if (result !== null) {

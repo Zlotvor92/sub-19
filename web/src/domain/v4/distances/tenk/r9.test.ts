@@ -133,7 +133,9 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
       's7 brz-udeo@15',
       's14 ispod-cilja@11',
       's15 lagan-dugi@14',
-      's26 brz-udeo@15'
+      's26 brz-udeo@15',
+      /* krug 9b: A2 (test suzbijen posle trke) podigao nedelju −2; neslaganje prozora čuvar 21 / motor 28 dana — A6 */
+      's26 silazak@16'
     ]);
     expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });

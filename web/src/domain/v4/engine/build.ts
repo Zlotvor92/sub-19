@@ -38,6 +38,7 @@ import { doneIds } from './done';
 import { paceCtxOf, stepsCost, summarize, type WorkoutSummary, zonePace } from './load';
 import {
   adjustmentWindow,
+  afterRace,
   applyReadiness,
   inReturn,
   modsFor,
@@ -2104,9 +2105,12 @@ export function runPass(
       const planned = recipes.get(day.date) ?? REST;
       /* M4: pomerena provera forme sme van prozora izmene (prvo rasterećenje posle njega) */
       const movedTest = forced !== null && planned.type === 'test' && planned.def === forced.def;
+      /* A2 (krug 9b): provera forme u 14 dana posle trke se dira i van prozora izmene (pretvara se u lagan dan) */
+      const raceTest = planned.type === 'test' && afterRace(day.date, adjustments);
       const inWindow =
         opts.window === null ||
         movedTest ||
+        raceTest ||
         (day.date >= opts.window.from && day.date <= opts.window.to);
       const mutable = isMutable(day, header, state.today, done);
       let kept = planned.type === 'test';
@@ -2114,7 +2118,8 @@ export function runPass(
         /* Provera forme se ne radi u pauzi ni u rampi povratka — ni pri njenom kraju: čeka prvu nedelju posle
            rampe (R9), a dan ostaje lagan. */
         const source: Recipe =
-          planned.type === 'test' && inReturn(day.date, adjustments)
+          planned.type === 'test' &&
+          (inReturn(day.date, adjustments) || afterRace(day.date, adjustments))
             ? { type: 'easy', sec: summarize(realize(planned, ctx), ctx.pace).durationSec }
             : planned;
         const recipe = applyRepeat(source, day.id, adjustments, ctx);
@@ -2146,8 +2151,13 @@ export function runPass(
       } else if (!mutable) {
         kept = day.workout?.kind === 'test' && (day.date > state.today || done.has(day.id));
       }
-      /* Provera forme koju su pauza ili rampa povratka pojele se pomera, ne briše (R9). */
-      if (planned.type === 'test' && !kept && inReturn(day.date, adjustments)) {
+      /* Provera forme koju su pauza ili rampa povratka pojele se pomera, ne briše (R9); posle trke (A2) čeka da prođe
+         14 dana. */
+      if (
+        planned.type === 'test' &&
+        !kept &&
+        (inReturn(day.date, adjustments) || afterRace(day.date, adjustments))
+      ) {
         pendingTest = planned;
         /* S9: najranije 10 dana posle kraja rampe povratka — ne kao pun napor odmah posle rampe */
         let end: IsoDate | null = null;
