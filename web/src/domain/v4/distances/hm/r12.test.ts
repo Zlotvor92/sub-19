@@ -1,6 +1,7 @@
 /* KRUG 12 (briefs/R12.md) — motor nad podacima polumaratona. */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
-   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument,
+   @typescript-eslint/no-unsafe-return -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { paceCtxOf, summarize } from '../../engine';
 import { pacesAnnounced } from '../../engine/testdata/round12';
