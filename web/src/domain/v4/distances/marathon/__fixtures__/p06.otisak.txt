@@ -33,19 +33,19 @@
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
 2026-12-05 | trening | easy | 7.0 | lagano 7 km | - | - | -
 2026-12-06 | trening | long | 19.0 | dugi 19 km, poslednjih 6 km u tempu maratona | - | - | -
-2026-12-07 | trening | easy | 6.0 | lagano 6 km | - | - | -
+2026-12-07 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
 2026-12-08 | trening | quality | 10.7 | tempo maratona 2 × 2,5 km, oporavak 3 min džog | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
-2026-12-10 | trening | quality | 9.1 | prag 15 min u komadu | - | - | -
+2026-12-10 | trening | quality | 8.1 | prag 15 min u komadu | - | - | -
 2026-12-11 | odmor | - | 0.0 |  | - | - | -
-2026-12-12 | trening | easy | 6.0 | lagano 6 km | - | - | -
+2026-12-12 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
 2026-12-13 | trening | long | 20.5 | dugi 20,5 km lagano | - | - | -
-2026-12-14 | trening | easy | 7.5 | lagano 7,5 km | - | - | -
-2026-12-15 | trening | easy | 7.5 | lagano 7,5 km | - | - | -
+2026-12-14 | trening | easy | 8.0 | lagano 8 km | - | - | -
+2026-12-15 | trening | easy | 8.0 | lagano 8 km | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -
 2026-12-17 | trening | quality | 8.6 | prag 2 × 6 min, oporavak 1:30 džog | - | - | -
 2026-12-18 | odmor | - | 0.0 |  | - | - | -
-2026-12-19 | trening | easy | 7.5 | lagano 7,5 km | - | - | -
+2026-12-19 | trening | easy | 8.0 | lagano 8 km | - | - | -
 2026-12-20 | trening | long | 22.5 | dugi 22,5 km, poslednjih 8 km u tempu maratona | - | - | -
 2026-12-21 | trening | easy | 6.0 | lagano 6 km | - | - | -
 2026-12-22 | trening | easy | 7.2 | lagano 6 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
@@ -61,13 +61,13 @@
 2027-01-01 | odmor | - | 0.0 |  | - | - | -
 2027-01-02 | trening | easy | 8.0 | lagano 8 km | - | - | -
 2027-01-03 | trening | long | 24.0 | dugi 24 km, poslednjih 10 km u tempu maratona | - | - | -
-2027-01-04 | trening | easy | 6.0 | lagano 6 km | - | - | -
+2027-01-04 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
 2027-01-05 | trening | quality | 8.1 | tempo maratona 4 km u komadu | - | - | -
 2027-01-06 | odmor | - | 0.0 |  | - | - | -
 2027-01-07 | trening | easy | 7.2 | lagano 6 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-08 | odmor | - | 0.0 |  | - | - | -
-2027-01-09 | trening | easy | 6.0 | lagano 6 km | - | - | -
-2027-01-10 | trening | long | 19.0 | dugi 19 km, poslednjih 2,5 km u tempu maratona | - | - | -
+2027-01-09 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
+2027-01-10 | trening | long | 18.0 | dugi 18 km, poslednjih 2,5 km u tempu maratona | - | - | -
 2027-01-11 | trening | easy | 6.0 | lagano 6 km | - | - | -
 2027-01-12 | trening | easy | 6.0 | lagano 6 km | - | - | -
 2027-01-13 | odmor | - | 0.0 |  | - | - | -

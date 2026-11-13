@@ -2,7 +2,7 @@ S14 — p04, E4: ned 7, bol 4/10 posle kvaliteta (brzina/usponi)
 
 STANJE: danas 2026-12-15; sadašnji obim 55 km nedeljno, 5 dana; forma 2:04:14 (pouzdanost srednja), očekivano na dan trke 2:00:48.
 DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-15 („usponi 10 × 1 min snažno uzbrdo, nazad 2 min hod"). Događaji: result:2026-11-28:run-w4d5, pain:2026-12-15.
-PROMENA: 17.
+PROMENA: 18.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 3. 2027.
@@ -281,9 +281,10 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 25. 12. trči s
 - čet 17. 12.: prag 3 × 12 min, oporavak 1:30 džog → odmor
 - sub 19. 12.: lagano 70 min → lagano 50 min
 - ned 20. 12.: dugi 2 h 10 min lagano → dugi 90 min lagano
-- pon 21. 12.: lagano 55 min → lagano 40 min
-- uto 22. 12.: lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 40 min
-- čet 24. 12.: prag 14 min u komadu → lagano 50 min
+- pon 21. 12.: lagano 55 min → lagano 45 min
+- uto 22. 12.: lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 45 min
+- čet 24. 12.: prag 14 min u komadu → lagano 45 min
+- sub 26. 12.: lagano 55 min → lagano 50 min
 - pon 28. 12.: lagano 75 min → lagano 55 min
 - uto 29. 12.: intervali 5 × 3 min, oporavak 2:30 džog → intervali 3 × 3 min, oporavak 2:30 džog
 - čet 31. 12.: prag 2 × 17 min, oporavak 1:30 džog → prag 2 × 6 min, oporavak 1:30 džog
@@ -368,12 +369,12 @@ Očekivano vreme trke je sada oko 2:01:00 umesto 2:00:48: plan je posle ovog dog
   Zbir: 38,4 km, 4 h 33 min, 4 treninga
 
 8. NEDELJA (od 21. 12.) — osnova, rasterećenje; do trke 12 nedelja
-  pon 21. 12.  lagano 40 min — 5,6 km, 40 min
-  uto 22. 12.  lagano 40 min — 5,6 km, 40 min
+  pon 21. 12.  lagano 45 min — 6,3 km, 45 min
+  uto 22. 12.  lagano 45 min — 6,3 km, 45 min
   sre 23. 12.  odmor
-  čet 24. 12.  lagano 50 min — 7 km, 50 min
+  čet 24. 12.  lagano 45 min — 6,3 km, 45 min
   pet 25. 12.  odmor
-  sub 26. 12.  lagano 55 min — 7,7 km, 55 min
+  sub 26. 12.  lagano 50 min — 7 km, 50 min
   ned 27. 12.  dugi 95 min lagano — 13,4 km, 95 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 39,3 km, 4 h 40 min, 5 treninga, brz rad 0 % vremena trčanja

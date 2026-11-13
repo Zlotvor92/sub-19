@@ -127,6 +127,14 @@ export const RACE_NO_LONG_DAYS = 5;
     ne pređe cilj za više od 10 % (odluka organizatora, drugi krug). */
 export const EASY_FLOOR_MIN_RUN_DAYS = 3;
 export const EASY_FLOOR_OVER_TARGET = 0.1;
+/** Krug 14–15 (M2, M21): uz dugi od bar `LONG_EASY_FLOOR_FROM_SEC` lagan dan nije kraći od `LONG_EASY_FLOOR_SEC`
+    (`LONG_EASY_FLOOR_HIGH_SEC` kod `LONG_EASY_FLOOR_HIGH_DAYS`+ dana i polaznog obima ≥ `LONG_EASY_FLOOR_HIGH_KM`) —
+    u svakoj nedelji (prvobitnoj, rampi, zaštiti posle bola i izlasku iz njih). */
+export const LONG_EASY_FLOOR_FROM_SEC = 5400;
+export const LONG_EASY_FLOOR_SEC = 1800;
+export const LONG_EASY_FLOOR_HIGH_SEC = 2700;
+export const LONG_EASY_FLOOR_HIGH_DAYS = 5;
+export const LONG_EASY_FLOOR_HIGH_KM = 55;
 /** Drugi i sledeći kvalitet nedelje se prihvata dok nedelja sa najkraćim laganim danima ne pređe obim (krug 4–5). */
 export const VOLUME_ROOM_OVER = 0;
 

@@ -58,7 +58,8 @@ export interface SlotRef {
 export type Recipe =
   | { type: 'rest' }
   /** `maxSec`: plafon celog dana (lagani deo + dodatak) — zaokruživanje ga ne prelazi (krug 2, R1–R2). */
-  | { type: 'easy'; sec: Seconds; maxSec?: Seconds }
+  /** `minSec` (krug 15): pod dana uz dugi ≥ 90 min — zaokruživanje na 0,5 km ga ne spušta. */
+  | { type: 'easy'; sec: Seconds; maxSec?: Seconds; minSec?: Seconds }
   | { type: 'addon'; sec: Seconds; def: WorkoutDef; maxSec?: Seconds }
   | { type: 'long'; sec: Seconds; def: WorkoutDef | null; dose: Seconds; slot: SlotRef | null }
   | {
@@ -542,15 +543,12 @@ function withNotes(workout: Workout, def: WorkoutDef | null, ctx: BuildCtx): Wor
   return notes.length === 0 ? workout : { ...workout, notes };
 }
 
-function easyWorkout(sec: Seconds, ctx: BuildCtx, maxSec?: Seconds): Workout {
+function easyWorkout(sec: Seconds, ctx: BuildCtx, maxSec?: Seconds, minSec?: Seconds): Workout {
   const def = easyDef(ctx);
-  const extent = easyExtent(
-    sec,
-    ctx,
-    false,
-    maxSec,
-    ctx.data.safety.easyNotBelowMin === true ? ctx.data.safety.minEasySec : undefined
-  );
+  const own = ctx.data.safety.easyNotBelowMin === true ? ctx.data.safety.minEasySec : undefined;
+  const floor =
+    minSec === undefined ? own : own === undefined ? minSec : Math.max(own, minSec);
+  const extent = easyExtent(sec, ctx, false, maxSec, floor);
   const workout: Workout = {
     kind: 'easy',
     stimulus: null,
@@ -719,7 +717,7 @@ export function realize(recipe: Recipe, ctx: BuildCtx): Workout | null {
     case 'rest':
       return null;
     case 'easy':
-      return easyWorkout(recipe.sec, ctx, recipe.maxSec);
+      return easyWorkout(recipe.sec, ctx, recipe.maxSec, recipe.minSec);
     case 'addon':
       return addonWorkout(recipe.sec, recipe.def, ctx, recipe.maxSec);
     case 'long':

@@ -266,10 +266,10 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 10. 12. trči s
 - čet 3. 12.: prag 2 × 12 min, oporavak 2 min džog → lagano 45 min
 - sub 5. 12.: lagano 50 min → lagano 35 min
 - ned 6. 12.: dugi 2 h 15 min lagano → dugi 95 min lagano
-- pon 7. 12.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 20 min
+- pon 7. 12.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - uto 8. 12.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - čet 10. 12.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
-- sub 12. 12.: provera forme: test na 3 km punim naporom, ravnomerno → lagano 50 min
+- sub 12. 12.: provera forme: test na 3 km punim naporom, ravnomerno → lagano 40 min
 - ned 13. 12.: lagano 80 min → dugi 95 min lagano
 - pon 14. 12.: lagano 50 min → lagano 30 min
 - uto 15. 12.: lagano 50 min → lagano 35 min
@@ -345,12 +345,12 @@ Očekivano vreme trke je sada oko 4:09:44 umesto 4:09:31: plan je posle ovog dog
   Zbir: 32,1 km, 3 h 45 min, 4 treninga, brz rad 0 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — osnova, rasterećenje; do trke 12 nedelja
-  pon 7. 12.  lagano 20 min — 2,9 km, 20 min
+  pon 7. 12.  lagano 30 min — 4,3 km, 30 min
   uto 8. 12.  lagano 30 min — 4,3 km, 30 min
   sre 9. 12.  odmor
   čet 10. 12.  lagano 30 min — 4,3 km, 30 min
   pet 11. 12.  odmor
-  sub 12. 12.  lagano 50 min — 7,1 km, 50 min
+  sub 12. 12.  lagano 40 min — 5,7 km, 40 min
   ned 13. 12.  dugi 95 min lagano — 13,6 km, 95 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
   Zbir: 32,2 km, 3 h 45 min, 5 treninga, brz rad 0 % vremena trčanja

@@ -2,7 +2,7 @@ S13 — p07, E4: ned 7, bol u kolenu 4/10 posle praga (nedelja bloka)
 
 STANJE: danas 2026-12-17; sadašnji obim 65 km nedeljno, 5 dana; forma 3:32:24 (pouzdanost srednja), očekivano na dan trke 3:30:11.
 DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-17 („prag 2 × 12 min, oporavak 1:30 džog"). Događaji: result:2026-11-28:run-w4d5, pain:2026-12-17.
-PROMENA: 13.
+PROMENA: 14.
 
 ==================== PRE ====================
 PLAN: maraton, trka 24. 1. 2027.
@@ -196,9 +196,10 @@ PROMENE
 Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 27. 12. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 31. 12. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 31. 12.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu.
 - sub 19. 12.: lagano 13,5 km → odmor
 - ned 20. 12.: dugi 27 km, poslednjih 11,5 km u tempu maratona → dugi 18,5 km lagano
-- pon 21. 12.: lagano 10,5 km → lagano 7 km
-- uto 22. 12.: lagano 10,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 7 km
-- čet 24. 12.: prag 3 × 6 min, oporavak 1:30 džog → lagano 6,5 km
+- pon 21. 12.: lagano 10,5 km → lagano 8 km
+- uto 22. 12.: lagano 10,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 8 km
+- čet 24. 12.: prag 3 × 6 min, oporavak 1:30 džog → lagano 8 km
+- sub 26. 12.: lagano 10,5 km → lagano 8 km
 - ned 27. 12.: dugi 19,5 km lagano → dugi 18,5 km lagano
 - pon 28. 12.: lagano 13,5 km → lagano 11,5 km
 - uto 29. 12.: lagano 13,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 12,5 km
@@ -280,15 +281,15 @@ Očekivano vreme trke je sada oko 3:30:28 umesto 3:30:11: plan je posle ovog dog
   Zbir: 57,8 km, 5 h 37 min, 4 treninga
 
 8. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 21. 12.  lagano 7 km — 7 km, 42 min
-  uto 22. 12.  lagano 7 km — 7 km, 42 min
+  pon 21. 12.  lagano 8 km — 8 km, 48 min
+  uto 22. 12.  lagano 8 km — 8 km, 48 min
   sre 23. 12.  odmor
-  čet 24. 12.  lagano 6,5 km — 6,5 km, 39 min
+  čet 24. 12.  lagano 8 km — 8 km, 48 min
   pet 25. 12.  odmor
-  sub 26. 12.  lagano 10,5 km — 10,5 km, 62 min
+  sub 26. 12.  lagano 8 km — 8 km, 48 min
   ned 27. 12.  dugi 18,5 km lagano — 18,5 km, 1 h 50 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 49,5 km, 4 h 55 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 50,5 km, 5 h 2 min, 5 treninga, brz rad 0 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 28. 12.  lagano 11,5 km — 11,5 km, 68 min

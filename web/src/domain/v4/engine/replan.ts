@@ -44,6 +44,7 @@ import {
   decideLongMax,
   decidePeak,
   decideWarmup,
+  longEasyFloor,
   longStepOf,
   minEasyOf,
   decide
@@ -670,11 +671,6 @@ const minDate = (a: IsoDate, b: IsoDate): IsoDate => (a < b ? a : b);
 
 /** Korak skraćenja laganog dana pri izlasku iz prozora izmene (krug 14). */
 const EASY_TRIM_STEP_SEC = 300;
-/** Krug 14 (M2): najkraći lagan dan povratka uz dugi od bar `RETURN_EASY_LONG_FROM_SEC`. */
-const RETURN_EASY_LONG_FROM_SEC = 5400;
-const RETURN_EASY_MIN_SEC = 1800;
-const RETURN_EASY_HIGH_MIN_SEC = 2700;
-const RETURN_EASY_HIGH_KM = 55;
 
 /** R2 (krug 6): izlazak iz prozora izmene bez skoka. Posle `end` nedelja po nedelja: dugi najviše
     `RETURN_LONG_JUMP_SHARE` / `RETURN_LONG_JUMP_SEC` iznad najvećeg od prethodnih (od prve cele nedelje posle
@@ -855,13 +851,7 @@ function smoothExit(
     const f = over > 0 && easyKm > 0 ? Math.max(0, 1 - over / easyKm) : 1;
     /* krug 14 (M2): uz dugi ≥ 90 min lagan dan povratka nije kraći od 30 min (45 min kod 5+ dana i obima ≥ 55 km) */
     const dec = after.header.decisions;
-    const baseKm = ((dec.baseVolumeMin ?? 0) * 60) / pace.paces.easy;
-    const longFloor =
-      longSec(trimmed) >= RETURN_EASY_LONG_FROM_SEC
-        ? dec.runDays.length >= 5 && baseKm >= RETURN_EASY_HIGH_KM
-          ? RETURN_EASY_HIGH_MIN_SEC
-          : RETURN_EASY_MIN_SEC
-        : 0;
+    const longFloor = longEasyFloor(dec, longSec(trimmed), pace.paces.easy);
     const minEasy = Math.max(minEasyOf(data.safety, dec.level, dec.runDays.length), longFloor);
     const finalDays = days.map((d): PlanDay => {
       if (f >= 1 || !easy.includes(d) || d.workout === null) return d;

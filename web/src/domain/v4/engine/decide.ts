@@ -4,6 +4,11 @@ import {
   DEFAULT_EASY_MAX_OVER_PREVIOUS,
   DEFAULT_MAX_PEAK_OVER_BASE,
   DEFAULT_TAPER_EASY_MAX_SEC,
+  LONG_EASY_FLOOR_FROM_SEC,
+  LONG_EASY_FLOOR_HIGH_DAYS,
+  LONG_EASY_FLOOR_HIGH_KM,
+  LONG_EASY_FLOOR_HIGH_SEC,
+  LONG_EASY_FLOOR_SEC,
   NEAR_ENOUGH,
   RAN_GOAL_DAYS,
   RAN_GOAL_SHARE
@@ -152,6 +157,23 @@ export function minEasyOf(safety: SafetyNumbers, level: LevelId, runDays: number
   if (!levelMinEasy(safety, level, runDays)) return safety.minEasySec;
   const min = safety.minEasyMin?.[level];
   return min === undefined ? safety.minEasySec : Math.max(safety.minEasySec, min * 60);
+}
+
+/** Krug 15 (M2, M21): pod laganog dana uz dugi nedelje — 0 kad je dugi kraći od `LONG_EASY_FLOOR_FROM_SEC`. Jedini
+    vlasnik pravila „lagan ≥ 30 min (45 min kod 5+ dana i ≥ 55 km) uz dugi ≥ 90 min". */
+export function longEasyFloor(
+  decisions: Pick<Decisions, 'runDays' | 'baseVolumeMin' | 'baseKm' | 'baseLoad'>,
+  longSec: Seconds,
+  easyPace: number
+): Seconds {
+  if (longSec < LONG_EASY_FLOOR_FROM_SEC) return 0;
+  /* polazni obim u km iz istorije (kao u zaglavlju „Polazim od ≈ N km"), inače minuti u laganom tempu */
+  const baseKm =
+    decisions.baseKm ??
+    (easyPace > 0 ? ((decisions.baseVolumeMin ?? decisions.baseLoad) * 60) / easyPace : 0);
+  return decisions.runDays.length >= LONG_EASY_FLOOR_HIGH_DAYS && baseKm >= LONG_EASY_FLOOR_HIGH_KM
+    ? LONG_EASY_FLOOR_HIGH_SEC
+    : LONG_EASY_FLOOR_SEC;
 }
 
 export function longStepOf(safety: SafetyNumbers, easyPaceSecPerKm: number): Seconds {

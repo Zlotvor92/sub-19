@@ -195,10 +195,10 @@ UPOZORENJA
 
 PROMENE
 Pauza zbog bolesti trajala je 7 dana (7–13. 12.), pa je povratak postepen: treninzi su kraći do 27. 12., a prvi brzi trening je 24. 12.; od 11. 1. plan se nastavlja kako je bio.
-- pon 14. 12.: lagano 13,5 km → lagano 7 km
+- pon 14. 12.: lagano 13,5 km → lagano 8 km
 - uto 15. 12.: lagano 13,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 7,5 km
-- čet 17. 12.: prag 2 × 12 min, oporavak 1:30 džog → lagano 6,5 km
-- sub 19. 12.: lagano 13,5 km → lagano 9,5 km
+- čet 17. 12.: prag 2 × 12 min, oporavak 1:30 džog → lagano 8 km
+- sub 19. 12.: lagano 13,5 km → lagano 8 km
 - ned 20. 12.: dugi 27 km, poslednjih 11,5 km u tempu maratona → dugi 18,5 km lagano
 - pon 21. 12.: lagano 10,5 km → lagano 8 km
 - uto 22. 12.: lagano 10,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 8,5 km
@@ -272,15 +272,15 @@ Očekivano vreme trke je sada oko 3:31:46 umesto 3:31:33: plan je posle ovog dog
   Urađeno: 0 km, 0 min, 0 treninga
 
 7. NEDELJA (od 14. 12.) — specifična priprema, gradnja; do trke 5 nedelja
-  pon 14. 12.  lagano 7 km — 7 km, 42 min
+  pon 14. 12.  lagano 8 km — 8 km, 48 min
   uto 15. 12.  lagano 7,5 km — 7,5 km, 45 min
   sre 16. 12.  odmor
-  čet 17. 12.  lagano 6,5 km — 6,5 km, 39 min
+  čet 17. 12.  lagano 8 km — 8 km, 48 min
   pet 18. 12.  odmor
-  sub 19. 12.  lagano 9,5 km — 9,5 km, 57 min
+  sub 19. 12.  lagano 8 km — 8 km, 48 min
   ned 20. 12.  dugi 18,5 km lagano — 18,5 km, 1 h 50 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 49 km, 4 h 53 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 50 km, 4 h 59 min, 5 treninga, brz rad 0 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 21. 12.  lagano 8 km — 8 km, 48 min
