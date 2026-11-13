@@ -1,0 +1,39 @@
+{
+  "round": "V4-5K-01",
+  "date": "2026-11-13",
+  "judge": "glavni trener (Opus); merilo iz ROUND-V4-HM-09",
+  "source": "41b5c79",
+  "plan": {
+    "p01": 81, "p02": 72, "p03": 75, "p04": 77, "p05": 81, "p06": 62.5, "p07": 77, "p08": 73.5,
+    "p09": 76, "p10": 76, "p11": 80, "p12": 70, "p13": 75, "p14": 73.5, "p15": 75, "p16": 77,
+    "average": 75.1, "atLeast80": 3, "profiles": 16
+  },
+  "adaptation": {
+    "E1": { "score": 79.3, "s01": 80, "s02": 85, "s03": 72, "s04": 80 },
+    "E2": { "score": 78.0, "s05": 80, "s06": 80, "s07": 80, "s08": 72 },
+    "E3": { "score": 82 }, "E4": { "score": 79 },
+    "E5": { "score": 83, "s17": 82, "s18": 84, "s19": 84, "s20": 82 },
+    "E6": { "score": 89.8 },
+    "E7": { "score": 76, "s25": 82, "s26": 70, "s27": 76 },
+    "partB": 81.0
+  },
+  "personalization": { "P1": 84, "P2": 80, "P3": 75, "partC": 79.7 },
+  "composite": 77.8,
+  "verdicts": {
+    "formCheck": "dobro: subota rasteretne nedelje 4-6 nedelja pred trku, test 3 km ravnomerno ili parkrun; pocetnik 1,5 km; kratki planovi bez provere",
+    "p06": "lose (62,5): nedelja -1 bez kvaliteta, nedelja trke 70 % vrha; trimOrder brise kvalitet pre laganih dana; upozorenje protivreci planu",
+    "p16": "dobar plan (77): jedan kvalitet nedeljno ispravan za 66 god.; upozorenje pogresno; dodati ubrzanja/kratka brda svake nedelje"
+  },
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "trimOrder: prvo lagan dan, ne kvalitet; nijedna nedelja pred trku bez kvaliteta (p06)" },
+    { "n": 2, "kind": "motor", "text": "bolji test uvek pomera zone (s03); tekst navodi stvarni pomak (s01)" },
+    { "n": 3, "kind": "motor", "text": "jedan sporiji rezultat posle bola: prag najvise ~10 s/km (s26); dugi 3 dana posle trke ne raste" },
+    { "n": 4, "kind": "motor", "text": "plan ne krece ispod sadasnjeg obima; dugi od stvarnog dugog (p12, P3)" },
+    { "n": 5, "kind": "podatak", "text": "rast obima x1,15-1,25 kod >= 10 nedelja" },
+    { "n": 6, "kind": "podatak", "text": "lagan dan >= 30 min (pocetnik >= 25)" },
+    { "n": 7, "kind": "podatak", "text": "p08 predlog 4. dana" },
+    { "n": 8, "kind": "podatak", "text": "oznaka vrsna nedelja samo za stvarnu najtezu" }
+  ],
+  "verdict": "nije zatvoreno: Plan 75,1, B 81,0, C 79,7",
+  "ownerReview": ["p06", "p12", "s03"]
+}
