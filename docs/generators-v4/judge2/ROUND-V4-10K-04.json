@@ -1,0 +1,219 @@
+{
+ "runda": "ROUND-V4-10K-04",
+ "distanca": "10K",
+ "stanje": "fb2c1a3",
+ "sudija": "drugi (judge2)",
+ "planovi": {
+  "p01": {
+   "ocene": {
+    "p1": 8,
+    "p2": 7,
+    "p3": 8,
+    "p4": 7,
+    "p5": 8,
+    "p6": 8,
+    "p7": 7
+   },
+   "ukupno": 76.0,
+   "dao_bih": "da uz sitne izmene"
+  },
+  "p02": {
+   "ocene": {
+    "p1": 6,
+    "p2": 8,
+    "p3": 5,
+    "p4": 5,
+    "p5": 7,
+    "p6": 6,
+    "p7": 7
+   },
+   "ukupno": 63.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p03": {
+   "ocene": {
+    "p1": 6,
+    "p2": 8,
+    "p3": 5,
+    "p4": 6,
+    "p5": 8,
+    "p6": 5,
+    "p7": 7
+   },
+   "ukupno": 64.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p04": {
+   "ocene": {
+    "p1": 8,
+    "p2": 7,
+    "p3": 8,
+    "p4": 7,
+    "p5": 8,
+    "p6": 8,
+    "p7": 7
+   },
+   "ukupno": 76.0,
+   "dao_bih": "da"
+  },
+  "p05": {
+   "ocene": {
+    "p1": 7,
+    "p2": 6,
+    "p3": 8,
+    "p4": 7,
+    "p5": 8,
+    "p6": 7,
+    "p7": 8
+   },
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p06": {
+   "ocene": {
+    "p1": 5,
+    "p2": 8,
+    "p3": 4,
+    "p4": 4,
+    "p5": 7,
+    "p6": 5,
+    "p7": 6
+   },
+   "ukupno": 56.0,
+   "dao_bih": "ne"
+  },
+  "p07": {
+   "ocene": {
+    "p1": 7,
+    "p2": 7,
+    "p3": 7,
+    "p4": 6,
+    "p5": 8,
+    "p6": 7,
+    "p7": 8
+   },
+   "ukupno": 71.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p08": {
+   "ocene": {
+    "p1": 6,
+    "p2": 8,
+    "p3": 6,
+    "p4": 6,
+    "p5": 8,
+    "p6": 6,
+    "p7": 7
+   },
+   "ukupno": 67.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p09": {
+   "ocene": {
+    "p1": 7,
+    "p2": 7,
+    "p3": 7,
+    "p4": 7,
+    "p5": 7,
+    "p6": 8,
+    "p7": 7
+   },
+   "ukupno": 71.0,
+   "dao_bih": "da"
+  },
+  "p10": {
+   "ocene": {
+    "p1": 6,
+    "p2": 7,
+    "p3": 5,
+    "p4": 6,
+    "p5": 7,
+    "p6": 6,
+    "p7": 7
+   },
+   "ukupno": 62.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p11": {
+   "ocene": {
+    "p1": 8,
+    "p2": 7,
+    "p3": 6,
+    "p4": 6,
+    "p5": 8,
+    "p6": 6,
+    "p7": 7
+   },
+   "ukupno": 69.0,
+   "dao_bih": "da uz izmenu"
+  },
+  "p12": {
+   "ocene": {
+    "p1": 7,
+    "p2": 8,
+    "p3": 6,
+    "p4": 7,
+    "p5": 7,
+    "p6": 7,
+    "p7": 7
+   },
+   "ukupno": 70.0,
+   "dao_bih": "da"
+  }
+ },
+ "prosek_planova": 68.1,
+ "scenariji": {
+  "s01": 86,
+  "s02": 85,
+  "s03": 80,
+  "s04": 82,
+  "s05": 78,
+  "s06": 78,
+  "s07": 70,
+  "s08": 76,
+  "s09": 86,
+  "s10": 85,
+  "s11": 76,
+  "s12": 80,
+  "s13": 84,
+  "s14": 78,
+  "s15": 66,
+  "s16": 64,
+  "s17": 76,
+  "s18": 88,
+  "s19": 82,
+  "s20": 70,
+  "s21": 100,
+  "s22": 60,
+  "s23": 100,
+  "s24": 90,
+  "s25": 78,
+  "s26": 60,
+  "s27": 84
+ },
+ "prosek_scenarija": 79.3,
+ "parovi": {
+  "P1": 8,
+  "P2": 7,
+  "P3": 5
+ },
+ "prosek_parova": 6.7,
+ "najvaznije_ispravke": [
+  "Provera forme posle dogadjaja ne sme da zameni glavni tempo trke 3 ned. pred trku; posle prave trke 10 km test otpada (s07,s15,s16,s26)",
+  "Kratke pripreme 8 ned.: test u 4. n. + 3 ned. suzavanja = 3 ned. gradnje (P02,P06)",
+  "Prenos HM->10 km prebrz (1:42:30->45:30; 2:20->1:00:08); prava trka mora nadjacati procenu po osecaju",
+  "Ocekivani napredak posle novog rezultata ne sme rasti kako trka prilazi (s03,s04)",
+  "Nista = nula promena i u napomenama za trku; brojac promena da vidi napomene (s22)",
+  "Ukloniti \"za 10 km treba bar 4 dana\" i \"bar 35 km\" (netacno za rekreativca)",
+  "P3A: netacno \"60,3 km\", oznaka povratnik, dugi skracen ispod onoga sto trkac vec trci",
+  "Sledeci dugi od poslednjeg URADJENOG dugog (s25 10,5->16 km, s12)",
+  "Skok obima + tri teska u istoj nedelji (P05 9. n., P07 5. n., P09 9. n.)",
+  "Pravilo \"prvi brzi trening manja doza\" vremenski ograniciti (s14, s11)"
+ ],
+ "za_pregled_vlasnika": [
+  "p06",
+  "s26",
+  "p05"
+ ],
+ "odstupanja_od_postupka": "Zaglavlja scenarija (STANJE, PROMENA) bila vidljiva pre zapisa ocekivanja; za parove ulazi nisu dati odvojeno, ocekivanja opsta."
+}
