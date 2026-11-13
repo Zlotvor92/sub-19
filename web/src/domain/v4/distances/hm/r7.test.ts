@@ -168,3 +168,47 @@ describe('krug 7 — Y1/Y2: podaci polumaratona', () => {
     }
   });
 });
+
+describe('krug 7 — Y3: parovi', () => {
+  it('Y3 P3 A: trkač bez kvaliteta, dugi 14–15 km (povratnik) — dugi raste od 3. nedelje', () => {
+    const p = PROFILES.find((x) => x.id === 'p04');
+    if (p === undefined) throw new Error('p04');
+    const base = factsOf(p);
+    const runs: RunnerFacts['runs'] = [];
+    for (let k = 0; k < 12; k += 1) {
+      const m = addDays('2026-10-26', -7 * (11 - k));
+      [0, 1, 3, 5].forEach((d, j) => {
+        const km = [10, 11, 10, 10][j] ?? 10;
+        runs.push({
+          id: `a${String(k)}-${String(j)}`,
+          date: addDays(m, d),
+          distanceM: km * 1000,
+          durationSec: Math.round(km * (375 + 5 * (j % 2)))
+        });
+      });
+      const km = k % 2 === 0 ? 14 : 15;
+      runs.push({
+        id: `a${String(k)}-l`,
+        date: addDays(m, 6),
+        distanceM: km * 1000,
+        durationSec: km * 382
+      });
+    }
+    const facts: RunnerFacts = {
+      ...base,
+      today: '2026-11-01',
+      runs,
+      profile: { ...base.profile, yearsRunning: 3, longestRecentKm: 15 }
+    };
+    const doc = make(facts, p.goal);
+    const ctx = paceCtxOf(doc.header);
+    const longs = doc.weeks
+      .filter((w) => w.intent.kind === 'build')
+      .slice(0, 5)
+      .map((w) => weekCost(w, p.goal.raceDate, ctx).longSec);
+    expect(doc.header.decisions.level).toBe('povratnik');
+    /* od 3. nedelje gradnje dugi je duži od prve, a 5. gradnje za bar 10 min */
+    expect(longs[2] ?? 0, longs.join(',')).toBeGreaterThan(longs[0] ?? 0);
+    expect(longs[4] ?? 0, longs.join(',')).toBeGreaterThanOrEqual((longs[0] ?? 0) + 600);
+  });
+});

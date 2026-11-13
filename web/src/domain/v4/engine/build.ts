@@ -227,9 +227,13 @@ export function longPlan(
     const n = few ? 0 : (week.builds ?? 0);
     const start = startFloor === undefined ? full : startFloor * full;
     const reach = step > 0 ? Math.max(0, Math.ceil((full - start) / step)) : 0;
+    /* Y3 (krug 7): ni trkač čiji polazni dugi nije na plafonu ne stoji na polaznom — od 3. nedelje gradnje pod raste
+       pola koraka po nedelji (P3 A), kad podaci distance to dozvoljavaju nivou (`longGrowPastStart`) */
     const floor =
       startFloor === undefined
-        ? full
+        ? growPast(ctx)
+          ? Math.min(d.longMaxSec, full + (Math.max(0, n - 1) * step) / 2)
+          : full
         : Math.min(
             d.longMaxSec,
             n <= reach || !growPast(ctx)

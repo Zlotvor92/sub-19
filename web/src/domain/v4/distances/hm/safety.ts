@@ -110,7 +110,8 @@ export const SAFETY: SafetyNumbers = {
   /* D6 (p08, 3 dana): pod ne raste do polaznog — 20,5+ km samo u završnici */
   longFloorGrowMinRunDays: 4,
   /* D1 (trener § D1, p04): spor trkač sa 4+ dana — dugi raste i posle polaznog; ostali ne dobijaju duži najduži dugi */
-  longGrowPastStart: { minRunDays: 4, levels: ['spor'] },
+  /* Y3 (krug 7): i povratnik (P3 A: dugi raste od 3. nedelje) */
+  longGrowPastStart: { minRunDays: 4, levels: ['spor', 'povratnik'] },
   /* krug 4 (S3): ispod 45 km nedeljno (motor procenjuje km iz minuta, pa prag 42 km u minutima ≈ 45 km stvarno) udeo dugog ≤ 42 % (u najviše 3 nedelje ≤ 45 %) — u minutima nešto niže, jer
      je dugi sa blokom brži od nedelje (kapija meri km) */
   /* dopuna kruga 4 (D4; trener § D4 „ili 42 % do 50 km"): od 45 do 50 km (procena 42–48) udeo do 42 % */
