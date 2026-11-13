@@ -163,12 +163,12 @@ Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 tra�
   sre 20. 1.  odmor
   čet 21. 1.  oštrenje: tempo trke 4 × 400 m (4:22/km), oporavak 1 min džog — 7 km, 40 min
   pet 22. 1.  odmor
-  sub 23. 1.  lagano 3 km — 3 km, 18 min
+  sub 23. 1.  lagano 3,5 km — 3,5 km, 21 min
   ned 24. 1.  TRKA: 5 km
       napomena: Tempo za trku: 4:22/km (današnja forma 21:49).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 4:23–4:25/km (ne brže od 4:22/km), 2.–4. km ravnomerno 4:22/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
       napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
-  Zbir: 14,5 km, 85 min, 3 treninga + trka, brz rad 8 % vremena trčanja
+  Zbir: 15 km, 88 min, 3 treninga + trka, brz rad 8 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
 PLAN: 5 km, trka 24. 1. 2027.
@@ -322,9 +322,9 @@ Očekivano vreme trke je sada oko 21:44 umesto 21:43: plan je posle ovog događa
   sre 20. 1.  odmor
   čet 21. 1.  oštrenje: tempo trke 4 × 400 m (4:22/km), oporavak 1 min džog — 7 km, 40 min
   pet 22. 1.  odmor
-  sub 23. 1.  lagano 3 km — 3 km, 18 min
+  sub 23. 1.  lagano 3,5 km — 3,5 km, 21 min
   ned 24. 1.  TRKA: 5 km
       napomena: Tempo za trku: 4:22/km (današnja forma 21:49).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km 4:23–4:25/km (ne brže od 4:22/km), 2.–4. km ravnomerno 4:22/km, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.
       napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
-  Zbir: 14,5 km, 85 min, 3 treninga + trka, brz rad 8 % vremena trčanja
+  Zbir: 15 km, 88 min, 3 treninga + trka, brz rad 8 % vremena trčanja

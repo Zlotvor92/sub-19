@@ -4,7 +4,7 @@ p02: bez nalaza
 p03: bez nalaza
 p04: bez nalaza
 p05: bez nalaza
-p06: silazak@4 (Obim dve nedelje pred nedeljom trke nije spušten prema vršnoj nedelji.); silazak@6 (Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.)
+p06: silazak@6 (Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.)
 p07: bez nalaza
 p08: bez nalaza
 p09: bez nalaza

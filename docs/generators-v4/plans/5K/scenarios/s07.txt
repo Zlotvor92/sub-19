@@ -162,12 +162,12 @@ Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na 
   pon 1. 2.  odmor
   uto 2. 2.  lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 3,6 km, 25 min
   sre 3. 2.  odmor
-  čet 4. 2.  tempo trke 3 × 1 km (5:24/km), oporavak 2 min džog — 6,3 km, 40 min
+  čet 4. 2.  tempo trke 3 × 900 m (5:24/km), oporavak 2 min džog — 6 km, 39 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   pet 5. 2.  odmor
   sub 6. 2.  odmor
   ned 7. 2.  dugi 45 min lagano — 6,2 km, 45 min
-  Zbir: 16,1 km, 1 h 50 min, 3 treninga, brz rad 15 % vremena trčanja
+  Zbir: 15,8 km, 1 h 49 min, 3 treninga, brz rad 13 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 8. 2.  odmor
@@ -365,12 +365,12 @@ Očekivano vreme trke je sada oko 26:24 umesto 26:18: plan je posle ovog događa
   pon 1. 2.  odmor
   uto 2. 2.  lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 3,6 km, 25 min
   sre 3. 2.  odmor
-  čet 4. 2.  tempo trke 3 × 1 km (5:24/km), oporavak 2 min džog — 6,3 km, 40 min
+  čet 4. 2.  tempo trke 3 × 900 m (5:24/km), oporavak 2 min džog — 6 km, 39 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   pet 5. 2.  odmor
   sub 6. 2.  odmor
   ned 7. 2.  dugi 45 min lagano — 6,2 km, 45 min
-  Zbir: 16,1 km, 1 h 50 min, 3 treninga, brz rad 15 % vremena trčanja
+  Zbir: 15,8 km, 1 h 49 min, 3 treninga, brz rad 13 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 8. 2.  odmor
