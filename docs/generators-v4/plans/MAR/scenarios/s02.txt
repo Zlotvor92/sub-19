@@ -2,7 +2,7 @@ S02 — p08, E1: ned 15, pripremni polumaraton 3,1 % brže od očekivanog
 
 STANJE: danas 2027-02-11; sadašnji obim 50 km nedeljno, 3 dana; forma 3:27:46 (pouzdanost srednja), očekivano na dan trke 3:24:43.
 DOGAĐAJ: Trka 21.0975 km za 1:37:08 na 2027-02-11 (dan provere forme u 15. nedelji). Događaji: result:2026-12-24:run-w8d3, result:2027-02-11:trka-2027-02-11.
-PROMENA: 1.
+PROMENA: 2.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.
@@ -326,6 +326,8 @@ UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 75 min — nedelja tada stiže do 68,1 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 28,5 km i nosi manji deo nedelje.
 
 PROMENE
+Rezultat 21,1 km za 1:37:08 (11. 2.) pokazuje bolju formu od one po kojoj je plan pisan (3:32:21 na distanci trke): tempa su ubrzana za oko 5 s po kilometru, a očekivano vreme trke je sada oko 3:24:43 (raspon 3:20:24–3:30:42).
+- plan: prag 4:38/km, tempo trke 5:02/km → prag 4:33/km, tempo trke 4:55/km
 Rezultat 21,1 km za 1:37:08 (11. 2.): provera forme je bila deo plana, pa su naredna 3 dana bez brzih deonica; od 15. 2. plan se nastavlja kako je bio.
 - ned 14. 2.: lagano 5 km → lagano 6 km
 

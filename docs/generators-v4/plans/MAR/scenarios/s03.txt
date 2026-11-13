@@ -2,7 +2,7 @@ S03 — p11, E1: ned 15, pripremni polumaraton 3,4 % brže od očekivanog
 
 STANJE: danas 2027-02-13; sadašnji obim 25 km nedeljno, 4 dana; forma 4:14:52 (pouzdanost srednja), očekivano na dan trke 4:08:31.
 DOGAĐAJ: Trka 21.0975 km za 2:00:05 na 2027-02-13 (dan provere forme u 15. nedelji). Događaji: result:2026-12-26:run-w8d5, result:2027-02-13:trka-2027-02-13.
-PROMENA: 0.
+PROMENA: 1.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.
@@ -325,6 +325,10 @@ UPOZORENJA
 - Najveća nedelja u planu ima 50,3 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 50,3 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 25 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
 - Najduži trening u planu je 24,8 km, jer nedelja od najviše 50,3 km ne nosi duži dugi; za ovu distancu treba bar 28 km. Poslednji deo trke biće duži od svega što si trčao u pripremi, pa tu treba očekivati najveći pad. Uz isti datum trke dugi ostaje 24,8 km, pa trku počni sporije i čuvaj snagu za poslednjih 17 km. Duža priprema ovde ne pomaže: dugi ograničava nedeljni obim — za sledeću trku podigni nedelju do 60 km, pa dugi može do 28 km.
 - Tražio si 4 dana trčanja nedeljno, a plan u nekim nedeljama (nedelje 4, 8, 15) ima 2 treninga. Uz sadašnji obim od oko 25 km nedeljno, svi traženi dani bi i sa najkraćim trčanjem od 30 min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede. Te nedelje trči kako piše — od 16. nedelje plan koristi sve tražene dane. Ako želiš da izlaziš sva 4 dana odmah, dodatni dan neka bude šetnja ili 30 min vrlo laganog trčanja.
+
+PROMENE
+Rezultat 21,1 km za 2:00:05 (13. 2.) pokazuje bolju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): tempa su ubrzana za oko 11 s po kilometru, a očekivano vreme trke je sada oko 4:08:31 (raspon 4:01:30–4:19:21).
+- plan: prag 5:40/km, tempo trke 6:11/km → prag 5:29/km, tempo trke 6:02/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor

@@ -2,7 +2,7 @@ S08 — p12, E2: bolest 7 dana u ned 15 (najteža)
 
 STANJE: danas 2027-02-14; sadašnji obim 50 km nedeljno, 5 dana; forma 4:13:12 (pouzdanost srednja), očekivano na dan trke 4:07:00.
 DOGAĐAJ: Bolest 2027-02-08 – 2027-02-14 (15. nedelja), bez treninga. Događaji: result:2026-12-12:run-w6d5, result:2027-01-02:run-w9d5, pause:2027-02-08:2027-02-14.
-PROMENA: 10.
+PROMENA: 12.
 
 ==================== PRE ====================
 PLAN: maraton, trka 7. 3. 2027.
@@ -262,6 +262,9 @@ UPOZORENJA
 - Tražio si 5 dana trčanja nedeljno, a u nedelji provere forme (9. nedelja) plan ima 3 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.
 
 PROMENE
+Rezultat 21,1 km za 2:02:09 (2. 1.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 4:07:00 (raspon 4:02:03–4:17:37).
+- plan: po osećaju → prag 5:35/km, tempo trke 5:58/km
+- upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Pauza zbog bolesti trajala je 7 dana (8–14. 2.), pa je povratak postepen: treninzi su kraći do 21. 2., a prvi brzi trening je 25. 2.
 - pon 15. 2.: lagano 60 min → odmor
 - uto 16. 2.: lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 35 min

@@ -2,7 +2,7 @@ S08 — p12, E2: bolest 7 dana u ned 9 (najteža)
 
 STANJE: danas 2027-01-03; sadašnji obim 35 km nedeljno, 4 dana; forma 55:21 (pouzdanost srednja), očekivano na dan trke 54:33.
 DOGAĐAJ: Bolest 2026-12-28 – 2027-01-03 (9. nedelja), bez treninga. Događaji: result:2026-12-12:run-w6d5, pause:2026-12-28:2027-01-03.
-PROMENA: 6.
+PROMENA: 8.
 
 ==================== PRE ====================
 PLAN: 10 km, trka 24. 1. 2027.
@@ -187,6 +187,9 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:31/km). Očekivano vreme na dan trke (54:33) traži 5:27/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
+Rezultat 3 km za 15:28 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 54:33 (raspon 52:46–57:04).
+- plan: po osećaju → prag 5:36/km, tempo trke 5:31/km
+- upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepen: treninzi su kraći do 10. 1., a prvi brzi trening je 14. 1.
 - uto 5. 1.: lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 25 min
 - čet 7. 1.: tempo trke 4 × 1,2 km, oporavak 1:30 džog → lagano 50 min

@@ -1832,6 +1832,9 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     ...todo.filter((e) => !silent.has(e.id)).map((e) => e.kind)
   ].filter((k) => k !== 'missed' && k !== 'none');
   const multi = major.length >= 2;
+  /* krug 12 (M1): tiho primenjen stariji rezultat već menja tempa; sledeća objavljena izmena se zato opisuje prema
+     planu PRE tihih izmena, da promena tempa ne ostane bez rečenice */
+  let publishBase: PlanDoc | null = null;
   for (const ev of todo) {
     const raw = candidateFor(current, state, ev, data);
     if (raw === null) continue;
@@ -1847,8 +1850,23 @@ export const replan: ReplanFn = (doc, state, events, data) => {
           until: raw.until > tailEnd ? tailEnd : raw.until
         }
       : raw;
-    const diff = describe(current, candidate, ev, state, data);
-    if (diff.length === 0) continue;
+    const own = describe(current, candidate, ev, state, data);
+    /* krug 12 (M1): najnoviji rezultat se opisuje prema planu pre tihih starijih rezultata (njihova promena tempa je
+       njegova); primena (`own`) ostaje kao do sada */
+    const diff =
+      ev === latestResult && publishBase !== null
+        ? describe(publishBase, candidate, ev, state, data)
+        : own;
+    if (own.length === 0) {
+      if (ev === latestResult)
+        changes.push(
+          ...diff.filter(
+            (c) => c.scope === 'zaglavlje' && (c.what === 'tempa' || c.what === 'upozorenje')
+          )
+        );
+      continue;
+    }
+    if (silent.has(ev.id) && ev !== latestResult && publishBase === null) publishBase = current;
     const h = candidate.doc.header;
     /* A17 (krug 9b): izgubljen obim do trke (spušten ostatak ili ≥ 15 % manje km) smanjuje očekivani napredak */
     const lost = lostVolume(current, candidate.doc, state.today);
@@ -1872,8 +1890,16 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     };
     if (silent.has(ev.id)) {
       silentApplied.push(ev.id);
+      /* krug 12 (M1): stari rezultat uz drugi događaj — dani tiho, ali promena tempa ide trkaču sa svojom rečenicom */
+      if (ev === latestResult)
+        changes.push(
+          ...diff.filter(
+            (c) => c.scope === 'zaglavlje' && (c.what === 'tempa' || c.what === 'upozorenje')
+          )
+        );
       continue;
     }
+    if (ev === latestResult) publishBase = null;
     changes.push(...diff);
     const was = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
     if (lost !== null && raceDay.expectedSec > was.expectedSec) {

@@ -2,7 +2,7 @@ S12 — p12, E3: ned 7–8: propušten po jedan dugi u obe nedelje
 
 STANJE: danas 2026-12-28; sadašnji obim 35 km nedeljno, 4 dana; forma 55:04 (pouzdanost srednja), očekivano na dan trke 54:31.
 DOGAĐAJ: Propušteno: w7d6, w8d6; sve ostalo urađeno; danas 2026-12-28. Događaji: result:2026-12-12:run-w6d5, missed:2026-12-20:w7d6, missed:2026-12-27:w8d6.
-PROMENA: 2.
+PROMENA: 4.
 
 ==================== PRE ====================
 PLAN: 10 km, trka 24. 1. 2027.
@@ -186,6 +186,9 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:31/km). Očekivano vreme na dan trke (54:31) traži 5:27/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
+Rezultat 3 km za 15:28 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 54:31 (raspon 52:33–56:46).
+- plan: po osećaju → prag 5:36/km, tempo trke 5:31/km
+- upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Propušten je ključni trening „dugi 85 min lagano" (20. 12.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći dugi ostaje kako je planiran — propušten trening se ne nadoknađuje produžavanjem sledećeg dugog.
 Propušten je ključni trening „dugi 90 min lagano" (27. 12.). Dugi trening je propušten 2 puta zaredom, pa se dužina više ne nastavlja tamo gde je plan stao; sledeći dugi (3. 1.) kreće od poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak.
 - ned 3. 1.: dugi 86 min, završnih 11 min u tempu trke → dugi 90 min lagano

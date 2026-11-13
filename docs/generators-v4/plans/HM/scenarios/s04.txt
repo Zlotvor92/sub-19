@@ -2,7 +2,7 @@ S04 — p12, E1: ned 8, prva trka u životu, 10 km 58:00
 
 STANJE: danas 2026-12-26; sadašnji obim 45 km nedeljno, 5 dana; forma 2:06:33 (pouzdanost srednja), očekivano na dan trke 2:04:50.
 DOGAĐAJ: Trka 10 km za 58:00 na 2026-12-26 (dan provere forme u 8. nedelji). Događaji: result:2026-11-28:run-w4d5, result:2026-12-26:trka-2026-12-26.
-PROMENA: 0.
+PROMENA: 2.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.
@@ -232,6 +232,11 @@ TEMPA
 - intervali 5:13/km
 - brze deonice 4:50/km
 Tempo trke u treninzima je tvoja današnja forma (6:00/km). Očekivano vreme na dan trke (2:04:50) traži 5:55/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+
+PROMENE
+Rezultat 10 km za 58:00 (26. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 2:04:50 (raspon 2:00:19–2:10:33).
+- plan: po osećaju → prag 5:48/km, tempo trke 6:00/km
+- upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  lagano 50 min — urađeno 7,1 km, 50 min (7:00/km)

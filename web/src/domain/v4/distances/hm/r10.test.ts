@@ -40,7 +40,14 @@ describe('krug 10 — stavka 4: tekst izmene i provera forme', () => {
     const bad: string[] = [];
     for (const { s, r } of ALL) {
       const today: string = r.afterState.today;
-      const ids = new Set<string>((r.changes as any[]).map((c) => String(c.eventId)));
+      /* krug 12 (M1): stari rezultat objavljuje samo svoju promenu tempa (zaglavlje), ne izmene dana */
+      const ids = new Set<string>(
+        (r.changes as any[])
+          .filter(
+            (c) => !(c.scope === 'zaglavlje' && (c.what === 'tempa' || c.what === 'upozorenje'))
+          )
+          .map((c) => String(c.eventId))
+      );
       const results = [...ids].filter((x) => x.startsWith('result:'));
       if (results.length > 1) bad.push(`s${String(s.no)} više rezultata: ${results.join(', ')}`);
       const others = [...ids].some((x) => !x.startsWith('result:'));

@@ -2,7 +2,7 @@ S26 — p11, E7: bol 4/10 u ned 13, pa trka 10 km dve nedelje kasnije
 
 STANJE: danas 2027-02-13; sadašnji obim 25 km nedeljno, 4 dana; forma 4:26:35 (pouzdanost srednja), očekivano na dan trke 4:22:33.
 DOGAĐAJ: Bol 4/10 2027-01-28, pa trka 10 km 58:00 dve nedelje kasnije. Događaji: result:2026-12-26:run-w8d5, pain:2027-01-28, result:2026-12-26:run-w8d5, result:2027-02-13:trka-2027-02-13.
-PROMENA: 25.
+PROMENA: 26.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.
@@ -345,15 +345,17 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 7. 2. trči sam
 - 19. nedelja: 50,3 km → 48,9 km
 - 21. nedelja: 49,2 km → 45,8 km
 Očekivano vreme trke je sada oko 4:13:35 umesto 4:12:55: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
+Rezultat 10 km za 58:00 (13. 2.) pokazuje slabiju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): tempa su usporena za oko 8 s po kilometru, a očekivano vreme trke je sada oko 4:22:54 (raspon 4:13:20–4:35:15).
+- plan: prag 5:40/km, tempo trke 6:11/km → prag 5:48/km, tempo trke 6:19/km
 Rezultat 10 km za 58:00 (13. 2.): provera forme je bila deo plana, pa su naredna 3 dana bez brzih deonica; od 1. 3. plan se nastavlja kako je bio.
 - ned 14. 2.: lagano 30 min → odmor
-- uto 16. 2.: lagano 40 min → lagano 30 min
-- čet 18. 2.: lagano 45 min → lagano 35 min
-- sub 20. 2.: lagano 40 min → lagano 30 min
-- uto 23. 2.: lagano 50 min → lagano 30 min
-- sub 27. 2.: lagano 45 min → lagano 30 min
-- 16. nedelja: 33,8 km → 29,8 km
-- 17. nedelja: 40,6 km → 35,9 km
+- uto 16. 2.: lagano 45 min → lagano 30 min
+- čet 18. 2.: lagano 50 min → lagano 35 min
+- sub 20. 2.: lagano 45 min → lagano 30 min
+- uto 23. 2.: lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
+- sub 27. 2.: lagano 55 min → lagano 30 min
+- 16. nedelja: 35,9 km → 29,8 km
+- 17. nedelja: 43,3 km → 35,9 km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor
