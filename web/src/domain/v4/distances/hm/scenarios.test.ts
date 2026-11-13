@@ -95,9 +95,12 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
          njena kriva) do dve nedelje posle prozora */
       const base = after.findIndex((w) => w.start > today);
       if (base < 0) continue;
+      /* Z1 (krug 7): pravilo važi posle prekida (pauza, bol); u prvobitnom planu bez prekida ne važi */
       const rampEnd = ((r.after.header.adjustments ?? []) as any[])
+        .filter((a) => a.kind === 'pause' || a.kind === 'pain' || (a.kind === 'effort' && a.planned !== true))
         .map((a) => adjustmentWindow(a)?.rampEnd ?? '')
         .reduce((a: string, b: string) => (a > b ? a : b), '');
+      if (rampEnd === '') continue;
       const from = Math.max(
         base + 1,
         after.findIndex((w) => addDays(w.start, 6) > rampEnd)
@@ -106,17 +109,21 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
       for (let i = from; i < to; i += 1) {
         const w = after[i];
         if (w === undefined || w.intent.kind === 'race') continue;
+        /* povratak je gotov kod prve nedelje jednake prvobitnoj — dalje je prvobitan plan (i njegovi prelazi) */
+        const same = (before[i] as PlanWeek | undefined)?.days.every(
+          (d, k) => JSON.stringify(d.workout) === JSON.stringify(w.days[k]?.workout)
+        );
+        if (same === true && i > from) break;
         /* merilo: najveće od nedelje događaja (ne pre nje) — najviše 3 prethodne */
         const lo = Math.max(base, i - 3);
-        const prevLong = Math.max(...after.slice(lo, i).map((x) => longSec(x, r.after)));
+        /* Z1 (krug 7): dugi od POSLEDNJEG dugog, i preko rasterećenja/provere, bez izuzetka prvobitnog plana */
+        const prevLong =
+          [...after.slice(lo, i)]
+            .reverse()
+            .map((x) => longSec(x, r.after))
+            .find((x) => x > 0) ?? 0;
         const curLong = longSec(w, r.after);
-        const oldPrev = Math.max(...before.slice(lo, i).map((x) => longSec(x, r.before)));
-        const oldCur = longSec(before[i] as PlanWeek, r.before);
-        const allowed = Math.max(
-          prevLong * 1.25,
-          prevLong + 1200,
-          oldPrev > 0 ? (prevLong * oldCur) / oldPrev : 0
-        );
+        const allowed = Math.max(prevLong * 1.25, prevLong + 1200);
         if (prevLong > 0 && curLong > allowed + 60)
           bad.push(
             `${name(s.no)} n${String(w.index)} dugi ${String(Math.round(prevLong / 60))} → ${String(Math.round(curLong / 60))} min`
@@ -124,10 +131,9 @@ describe('krug 6: ponovno planiranje nad 24 scenarija', () => {
         const prevKm = Math.max(...after.slice(lo, i).map((x) => weekKm(x, r.after)));
         const oldPrevKm = Math.max(...before.slice(lo, i).map((x) => weekKm(x, r.before)));
         const km = weekKm(w, r.after);
-        const allowedKm = Math.max(
-          prevKm * 1.2,
-          oldPrevKm > 0 ? (prevKm * weekKm(before[i] as PlanWeek, r.before)) / oldPrevKm : 0
-        );
+        /* Z1 (krug 7): posle prekida bez izuzetka prvobitnog plana */
+        const allowedKm = prevKm * 1.2;
+        void oldPrevKm;
         if (km > allowedKm + 0.5)
           bad.push(
             `${name(s.no)} n${String(w.index)} nedelja ${prevKm.toFixed(1)} → ${km.toFixed(1)} km`

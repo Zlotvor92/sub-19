@@ -170,10 +170,9 @@ function onResult(
   }
   const window = adjustmentWindow(adj);
   if (window === null) return null;
-  return {
-    doc: runPass({ ...doc, header }, state, data, { window, rechainFrom: null }),
-    until: window.rampEnd
-  };
+  /* Z1 (krug 7): i posle oporavka od trke izlazak bez skoka */
+  const smooth = smoothExit(runPass({ ...doc, header }, state, data, { window, rechainFrom: null }), doc, window.rampEnd, state, data);
+  return { doc: smooth.doc, until: smooth.until > window.rampEnd ? smooth.until : window.rampEnd };
 }
 
 /** Dugi sa završnim delom u tempu (blok ili progresija). */
@@ -546,7 +545,7 @@ const minDate = (a: IsoDate, b: IsoDate): IsoDate => (a < b ? a : b);
     Vraća plan i poslednji izmenjen dan (novi kraj prozora). */
 function smoothExit(
   after: PlanDoc,
-  original: PlanDoc,
+  _original: PlanDoc,
   end: IsoDate,
   state: RunnerState,
   data: DistanceData
@@ -573,29 +572,23 @@ function smoothExit(
   const n = weeks.length;
   for (let i = Math.max(first, base + 1); i < n - 2; i += 1) {
     const w = weeks[i];
-    const old = original.weeks.find((x) => x.start === w?.start);
-    if (w === undefined) break;
+    /* Z10 (krug 7): rep izlaska najviše 4 nedelje od danas — prozori se ne sabiraju */
+    if (w === undefined || w.start > addDays(state.today, 28)) break;
     const lo = Math.max(base, i - 3);
     const prev = weeks.slice(lo, i);
-    const prevOld = prev.map((x) => original.weeks.find((y) => y.start === x.start) ?? x);
     const pKm = Math.max(...prev.map(km));
-    const pLong = Math.max(...prev.map((x) => longSec(x)));
-    const oKm = Math.max(...prevOld.map(km));
-    const oLong = Math.max(...prevOld.map((x) => longSec(x)));
     const curKm = km(w);
     const curLong = longSec(w);
-    const kmCap = Math.max(
-      RETURN_WEEK_JUMP_SHARE * pKm,
-      oKm > 0 && old !== undefined ? (pKm * km(old)) / oKm : 0
-    );
-    const longCap = Math.max(
-      RETURN_LONG_JUMP_SHARE * pLong,
-      pLong + RETURN_LONG_JUMP_SEC,
-      oLong > 0 && old !== undefined ? (pLong * longSec(old)) / oLong : 0
-    );
-    const longOver = pLong > 0 && curLong > longCap + 60;
+    /* Z1 (krug 7): posle prekida bez izuzetka prvobitnog plana (ni za nedelju) */
+    const kmCap = RETURN_WEEK_JUMP_SHARE * pKm;
+    /* Z1 (krug 7): dugi se meri od POSLEDNJEG dugog (ne najvećeg od tri) i važi i preko rasterećenja/provere —
+       posle prekida nema izuzetka „prvobitan plan ima isti skok" */
+    const lastLong = [...prev].reverse().map((x) => longSec(x)).find((x) => x > 0) ?? 0;
+    const longCap = Math.max(RETURN_LONG_JUMP_SHARE * lastLong, lastLong + RETURN_LONG_JUMP_SEC);
+    const longOver = lastLong > 0 && curLong > longCap + 60;
     const kmOver = pKm > 0 && curKm > kmCap + 0.5;
-    if (!longOver && !kmOver) continue;
+    /* povratak je gotov kod prve nedelje koja staje u granicu — dalje važi prvobitan plan */
+    if (!longOver && !kmOver) break;
     /* dugi do granice (blok ostaje, ne duži od dugog) */
     const days = w.days.map((d): PlanDay => {
       if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
