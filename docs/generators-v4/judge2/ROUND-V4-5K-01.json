@@ -1,0 +1,273 @@
+{
+ "sudija": "judge2",
+ "distanca": "5K",
+ "krug": "01",
+ "stanje": "41b5c79",
+ "datum": "2026-11-13",
+ "planovi": {
+  "p01": {
+   "q": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 7,
+    "q4": 7,
+    "q5": 8,
+    "q6": 6,
+    "q7": 7
+   },
+   "ukupno": 74.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p02": {
+   "q": {
+    "q1": 6,
+    "q2": 8,
+    "q3": 5,
+    "q4": 4,
+    "q5": 7,
+    "q6": 4,
+    "q7": 6
+   },
+   "ukupno": 59.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p03": {
+   "q": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 6,
+    "q4": 6,
+    "q5": 7,
+    "q6": 3,
+    "q7": 6
+   },
+   "ukupno": 64.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p04": {
+   "q": {
+    "q1": 6,
+    "q2": 6,
+    "q3": 5,
+    "q4": 4,
+    "q5": 7,
+    "q6": 6,
+    "q7": 6
+   },
+   "ukupno": 57.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p05": {
+   "q": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 6,
+    "q4": 6,
+    "q5": 7,
+    "q6": 6,
+    "q7": 7
+   },
+   "ukupno": 66.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p06": {
+   "q": {
+    "q1": 5,
+    "q2": 8,
+    "q3": 4,
+    "q4": 4,
+    "q5": 5,
+    "q6": 4,
+    "q7": 5
+   },
+   "ukupno": 52.0,
+   "daoBih": "ne"
+  },
+  "p07": {
+   "q": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 7,
+    "q4": 5,
+    "q5": 7,
+    "q6": 6,
+    "q7": 6
+   },
+   "ukupno": 66.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p08": {
+   "q": {
+    "q1": 6,
+    "q2": 8,
+    "q3": 5,
+    "q4": 5,
+    "q5": 7,
+    "q6": 6,
+    "q7": 7
+   },
+   "ukupno": 63.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p09": {
+   "q": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 6,
+    "q4": 6,
+    "q5": 6,
+    "q6": 7,
+    "q7": 6
+   },
+   "ukupno": 67.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p10": {
+   "q": {
+    "q1": 7,
+    "q2": 9,
+    "q3": 6,
+    "q4": 6,
+    "q5": 6,
+    "q6": 7,
+    "q7": 7
+   },
+   "ukupno": 70.0,
+   "daoBih": "da"
+  },
+  "p11": {
+   "q": {
+    "q1": 6,
+    "q2": 9,
+    "q3": 5,
+    "q4": 5,
+    "q5": 7,
+    "q6": 6,
+    "q7": 7
+   },
+   "ukupno": 65.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p12": {
+   "q": {
+    "q1": 4,
+    "q2": 7,
+    "q3": 4,
+    "q4": 3,
+    "q5": 6,
+    "q6": 4,
+    "q7": 4
+   },
+   "ukupno": 47.0,
+   "daoBih": "ne"
+  },
+  "p13": {
+   "q": {
+    "q1": 5,
+    "q2": 8,
+    "q3": 4,
+    "q4": 6,
+    "q5": 5,
+    "q6": 3,
+    "q7": 5
+   },
+   "ukupno": 53.0,
+   "daoBih": "ne"
+  },
+  "p14": {
+   "q": {
+    "q1": 6,
+    "q2": 8,
+    "q3": 5,
+    "q4": 4,
+    "q5": 7,
+    "q6": 3,
+    "q7": 5
+   },
+   "ukupno": 57.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p15": {
+   "q": {
+    "q1": 6,
+    "q2": 8,
+    "q3": 6,
+    "q4": 6,
+    "q5": 7,
+    "q6": 5,
+    "q7": 6
+   },
+   "ukupno": 64.0,
+   "daoBih": "da uz izmenu"
+  },
+  "p16": {
+   "q": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 6,
+    "q4": 6,
+    "q5": 7,
+    "q6": 5,
+    "q7": 7
+   },
+   "ukupno": 67.0,
+   "daoBih": "da uz izmenu"
+  }
+ },
+ "prosekPlanova": 61.9,
+ "scenariji": {
+  "s01": 72,
+  "s02": 76,
+  "s03": 48,
+  "s04": 74,
+  "s05": 70,
+  "s06": 76,
+  "s07": 84,
+  "s08": 76,
+  "s09": 90,
+  "s10": 88,
+  "s11": 68,
+  "s12": 85,
+  "s13": 82,
+  "s14": 85,
+  "s15": 72,
+  "s16": 82,
+  "s17": 56,
+  "s18": 70,
+  "s19": 70,
+  "s20": 66,
+  "s21": 100,
+  "s22": 100,
+  "s23": 100,
+  "s24": 95,
+  "s25": 80,
+  "s26": 70,
+  "s27": 66
+ },
+ "prosekScenarija": 77.8,
+ "parovi": {
+  "P1": 9,
+  "P2": 6,
+  "P3": 6
+ },
+ "prosekParova": 7.0,
+ "najvaznijeZamerke": [
+  "Upozorenja koja plan sam pobija: dugi >= 7 km za 5K, 'poslednji deo trke duži od svega' (p03, p13), 'dugi od 7 km' uz dugi 11 km (p14), 'sada trčiš 55,6 km' uz istoriju 45 km (P3A)",
+  "Model tempa nedosledan: prag se ne pomera sa formom ili ide u suprotnom smeru (S01, S02, S17, S18, S26); prag ~ maratonski tempo za VDOT 60 (p05)",
+  "Rezultat testa ignorisan (S03, S11) i tempo na dan trke vraćen na sporiji cilj (S01)",
+  "Plan ispod sadašnjeg obima i 'dodaj sam' (p12, p15, P2B, S20)",
+  "Oznake faza i sužavanje: 'vršna' u 1.-2. nedelji, sužavanje 3-5 nedelja za 5K (p02, p06, p07, p12, p14)"
+ ],
+ "zaPregledVlasnika": [
+  "p12",
+  "p13",
+  "S03+S01"
+ ],
+ "necitano": [
+  "coach/* osim JUDGE2-BRIEF.md",
+  "judge2/* (samo listanje imena)",
+  "target-compare.md",
+  "nalazi-cuvara.txt",
+  "pregled.txt"
+ ]
+}
