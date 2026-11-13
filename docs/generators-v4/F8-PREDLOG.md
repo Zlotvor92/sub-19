@@ -279,15 +279,19 @@ vraća se kad se zastavica ponovo upali; za trčanja nema gubitka (Strava + `log
 
 ## 9. ODLUKE VLASNIKA (13. 11. 2026, ≈ 19:20)
 
-1. **Odobravanje:** korisnik odobrava SVAKU promenu plana — i izvedenu (rezultat, propušten trening, rupa) i
-   prijavljenu (bolest, put, bol, umor): pregled promene pa „Primeni" / „Ne menjaj". Ništa se ne primenjuje samo.
+1. **Odobravanje (dopuna 19:35):** promene koje dolaze iz FORME (tempa naviše/naniže iz Strava trčanja, rezultat
+   testa/trke) i mala usklađivanja posle propuštenog treninga aplikacija primenjuje SAMA, bez pitanja; razlog je
+   dostupan u „Zašto se promenilo" (AGENTS 9a: objašnjivo). Promene po događaju koji korisnik PRIJAVI (bolest,
+   put, bol, umor) traže zeleno svetlo: pregled pa „Primeni" / „Ne menjaj".
 2. **Baza:** vlasnik daje puno odobrenje za sve izmene baze potrebne V4 (nove tabele po izboru organizatora,
    imena slobodna). Izvršava se u F9, ne pre; `user_state` i v2 podaci se ne diraju dok se v2 ne ugasi.
 3. **Strava:** uvoz što veće istorije koju Strava dozvoljava (najmanje 26 nedelja kao sažetak), detalji po km za
    poslednjih 8 nedelja; obim i tempo uvoza po ograničenjima Strava API-ja (proveriti važeće limite pre F9).
 4. **Lični plan:** prihvaćen predlog (zaštićen do Bokeške 13. 12.; sledeći plan pravi V4 uz pregled vlasnika).
-5. **Zaključavanje:** vlasnik prepustio odluku organizatoru. ODLUKA: nema posebnog dugmeta. Urađen dan je uvek
-   zaštićen. Ručna izmena budućeg dana ga automatski zaključava (mala oznaka katanca, „Otključaj" vraća V4 pravo da
-   ga menja). Oznaka „ručno ispravljen unos" (Strava ga ne prepisuje) odnosi se na urađen dan i ostaje kakva je.
-6. **Redosled:** sve odjednom. V4 se završava u celini (sve četiri distance, forma, preuzimanje planova, ekrani),
+5. **Zaključavanje i premeštanje (dopuna 19:35):** bez posebnog dugmeta. Urađen dan je uvek zaštićen. Kad korisnik
+   ručno izmeni ili PREMESTI trening (postojeća zamena dana u aplikaciji), generator to vidi kao činjenicu: taj dan
+   ostaje kako ga je korisnik postavio, a ostali nezaključani dani te nedelje se sami preslože radi razmaka (npr.
+   dugi u subotu → petak lagan, kvalitet ne dan pre dugog), bez pitanja. Ako korisnik isti trening premesti dve
+   nedelje zaredom, aplikacija jednom ponudi „Ubuduće dugi subotom?". Oznaka „ručno ispravljen unos" ostaje kakva je.
+6. **Redosled:** sve odjednom (potvrđeno 19:35: aplikacija ima malo aktivnih korisnika, kvarovi se popravljaju posle). V4 se završava u celini (sve četiri distance, forma, preuzimanje planova, ekrani),
    pa ulazi u aplikaciju u jednom koraku; posle uspešnog ulaska v2 se briše. Bez faznog uvođenja.

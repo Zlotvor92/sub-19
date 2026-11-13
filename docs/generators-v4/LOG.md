@@ -687,3 +687,6 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Korisnik odobrava svaku promenu; puno odobrenje za izmene baze za V4 (izvršenje u F9); Strava što više istorije
   (≥ 26 ned sažetak, 8 ned po km); lični plan po predlogu; zaključavanje = ručna izmena budućeg dana ga zaključava
   (bez dugmeta); uvođenje sve odjednom, zatim brisanje v2.
+- Dopuna 19:35: forma/tempa i mala usklađivanja primenjuju se sami (uz „zašto"); prijavljeni događaji traže
+  „Primeni". Premeštanje dana = činjenica; generator preslaže ostatak nedelje; posle 2 ista premeštanja jedna
+  ponuda „ubuduće". Za motor (posle kruga 12): M27 premeštanje dana kao ulaz, preslaganje nedelje.
