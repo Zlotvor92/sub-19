@@ -293,12 +293,18 @@ export const guard: GuardFn = (doc, _state, data) => {
     0,
     ...costs
       /* M9 (krug 5): ni vršna nedelja u 21 dan posle rampe (skraćena zbog povratka) */
-      .filter((c) => c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes, RESTORE_PEAK_AFTER_DAYS))
+      .filter(
+        (c) =>
+          c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes, RESTORE_PEAK_AFTER_DAYS)
+      )
       .map((c) => c.fastSec)
   );
 
   /* M7 (krug 5): silazak obima po KALENDARSKOJ nedelji (km prema vršnoj nedelji, broj brzih treninga) */
-  const peakKm = Math.max(0, ...costs.filter((c) => c.week.intent.kind === 'peak').map((c) => c.km));
+  const peakKm = Math.max(
+    0,
+    ...costs.filter((c) => c.week.intent.kind === 'peak').map((c) => c.km)
+  );
   const raceMonday = mondayOf(header.goal.raceDate);
 
   costs.forEach((c, i) => {
@@ -307,11 +313,27 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (taper !== undefined && peakKm > 0 && week.start >= header.startDate) {
       if (week.start === addDays(raceMonday, -14)) {
         const fastDays = week.days.filter((d) => fastWorkSec(d.workout) > 0).length;
-        if (taper.calendarMinus2MaxQuality !== undefined && fastDays > taper.calendarMinus2MaxQuality) {
-          report('silazak', week, null, 'Dve nedelje pred nedeljom trke ima više brzih treninga od dozvoljenog.');
+        if (
+          taper.calendarMinus2MaxQuality !== undefined &&
+          fastDays > taper.calendarMinus2MaxQuality
+        ) {
+          report(
+            'silazak',
+            week,
+            null,
+            'Dve nedelje pred nedeljom trke ima više brzih treninga od dozvoljenog.'
+          );
         }
-        if (taper.weekMinus2MaxOfPeak !== undefined && c.km > taper.weekMinus2MaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK) {
-          report('silazak', week, null, 'Obim dve nedelje pred nedeljom trke nije spušten prema vršnoj nedelji.');
+        if (
+          taper.weekMinus2MaxOfPeak !== undefined &&
+          c.km > taper.weekMinus2MaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK
+        ) {
+          report(
+            'silazak',
+            week,
+            null,
+            'Obim dve nedelje pred nedeljom trke nije spušten prema vršnoj nedelji.'
+          );
         }
       }
       if (
@@ -319,7 +341,12 @@ export const guard: GuardFn = (doc, _state, data) => {
         taper.raceWeekMaxOfPeak !== undefined &&
         c.km > taper.raceWeekMaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK
       ) {
-        report('silazak', week, null, 'Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.');
+        report(
+          'silazak',
+          week,
+          null,
+          'Obim nedelje trke (bez trke) nije spušten prema vršnoj nedelji.'
+        );
       }
     }
     const ramp = inAnyWindow(week, causes);
@@ -438,7 +465,10 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (c.longSec > d.longMaxSec + GUARD_LONG_STEP_TOLERANCE_SEC) {
       report('dugi-plafon', week, null, 'Dugi je duži od najdužeg dozvoljenog u planu.');
     }
-    if (c.longSec > longBefore + longStepOf(s, ctx.paces.easy) + GUARD_LONG_STEP_TOLERANCE_SEC + roundingSlack) {
+    if (
+      c.longSec >
+      longBefore + longStepOf(s, ctx.paces.easy) + GUARD_LONG_STEP_TOLERANCE_SEC + roundingSlack
+    ) {
       report('dugi-korak', week, null, 'Dugi raste za više od jednog koraka.');
     }
     /* Sužavanje je namerno manje od cilja (R1: višak se ne preliva), kao i nedelja u kojoj dugi ustupa mesto
@@ -570,7 +600,10 @@ export function warnings(input: WarningInput): Warning[] {
   const dayMin =
     trial === null
       ? null
-      : Math.max(20, Math.round(((Math.max(0, trial.peakKm - peakKm) * doc.header.paces.easy) / 60) / 5) * 5);
+      : Math.max(
+          20,
+          Math.round((Math.max(0, trial.peakKm - peakKm) * doc.header.paces.easy) / 60 / 5) * 5
+        );
   const dayText = dayMin === null ? 'od 30–40 min' : `od oko ${String(dayMin)} min`;
   const extraDay = `Uz isti datum trke dodaj ${String(runDays + 1)}. dan laganog trčanja ${dayText}`;
   if (peakKm < NEAR_ENOUGH * a.minPeakWeeklyKm) {
@@ -643,7 +676,10 @@ export function warnings(input: WarningInput): Warning[] {
   }
   if (reaches && longKm < NEAR_ENOUGH * a.minLongKm) {
     const capKm = d.longMaxSec / ctx.paces.easy;
-    const stepKm = Math.max(0.5, Math.round((longStepOf(s, ctx.paces.easy) / ctx.paces.easy) * 2) / 2);
+    const stepKm = Math.max(
+      0.5,
+      Math.round((longStepOf(s, ctx.paces.easy) / ctx.paces.easy) * 2) / 2
+    );
     const moreWeeks = Math.max(1, Math.ceil((a.minLongKm - longKm) / stepKm));
     const byTime = capKm >= a.minLongKm;
     const left = Math.max(1, Math.round(data.distanceM / 1000 - longKm));
@@ -721,7 +757,8 @@ export function warnings(input: WarningInput): Warning[] {
     });
   }
   /* S8e: staž kraći od praga — širi raspon prognoze */
-  const tenureWeeks = state.profile.yearsRunning === undefined ? null : state.profile.yearsRunning * 52;
+  const tenureWeeks =
+    state.profile.yearsRunning === undefined ? null : state.profile.yearsRunning * 52;
   if (a.minTenureWeeks !== undefined && tenureWeeks !== null && tenureWeeks < a.minTenureWeeks) {
     out.push({
       code: 'kratak-staz',
@@ -732,7 +769,11 @@ export function warnings(input: WarningInput): Warning[] {
       proposal: `Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana. Ako želiš rezultat, izaberi trku za bar ${count(a.minWeeks + 6, WEEKS, 'acc')}${a.shorter === undefined ? '' : ` ili kraću distancu (${a.shorter.label})`}.`
     });
   }
-  const dropped = droppedDayWarning(doc, costs, minEasyOf(s, doc.header.decisions.level, doc.header.decisions.runDays.length));
+  const dropped = droppedDayWarning(
+    doc,
+    costs,
+    minEasyOf(s, doc.header.decisions.level, doc.header.decisions.runDays.length)
+  );
   if (dropped !== null) out.push(dropped);
   const back = returnWarning(doc, state);
   if (back !== null) out.push(back);

@@ -232,42 +232,56 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (g.kind === 'peak') peakFast = Math.max(peakFast, share);
     const cap = g.kind === 'peak' ? 0.25 : 0.22;
     if (share > cap + 0.005)
-      v.push(`n${String(g.index)} brz rad ${String(Math.round(share * 100))} % > ${String(cap * 100)} %`);
+      v.push(
+        `n${String(g.index)} brz rad ${String(Math.round(share * 100))} % > ${String(cap * 100)} %`
+      );
   }
   /* 10. dopuna kruga 4: vršna nedelja 16–25 % brzog rada (početnik sa kratkim stažom i tegoba: ≥ 10 %) */
   const easyStart =
     doc.header.decisions.level === 'pocetnik-nov' || doc.header.decisions.painCaution === true;
   const peakMin = easyStart ? 0.1 : 0.16;
   if (weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
-    v.push(`vršna nedelja brz rad ${String(Math.round(peakFast * 100))} % < ${String(peakMin * 100)} %`);
+    v.push(
+      `vršna nedelja brz rad ${String(Math.round(peakFast * 100))} % < ${String(peakMin * 100)} %`
+    );
   /* 9. nova provera (T7): plan ≥ 16 nedelja ima dugi ≥ 15 km ili 1 h 50 */
   const longestMin = Math.max(...weeks.map((g) => g.longMin));
   const longestKm = Math.max(...weeks.map((g) => g.longKm));
   if (doc.weeks.length >= 16 && longestKm < 15 && longestMin < 110)
-    v.push(`najduži dugi ${String(longestKm)} km / ${String(Math.round(longestMin))} min < 15 km ili 1 h 50`);
+    v.push(
+      `najduži dugi ${String(longestKm)} km / ${String(Math.round(longestMin))} min < 15 km ili 1 h 50`
+    );
 
   /* ---- krug 5 (P5) ---- */
   const ctx5 = paceCtxOf(doc.header);
   const lvl = doc.header.decisions.level;
   const fastOf = (x: PlanDoc['weeks'][number]['days'][number]): number =>
-    x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long') ? x.workout.workSec : 0;
+    x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long')
+      ? x.workout.workSec
+      : 0;
   /* 11. M2: nedelja gradnje nivoa sa dva kvaliteta (srednji, brz) ima dva kvaliteta kad šablon traži dva — osim
      nedelje sa proverom forme */
   /* plan sa „dan-izostavljen" (obim ne nosi sve dane, M5; p06) je ograničen obimom, ne zamenom zone */
   if ((lvl === 'srednji' || lvl === 'brz') && !dropOk)
     for (const w of doc.weeks) {
-      if (w.intent.kind !== 'build' || w.intent.source !== 'template' || w.days.length < 7) continue;
+      if (w.intent.kind !== 'build' || w.intent.source !== 'template' || w.days.length < 7)
+        continue;
       if (weeks[w.index - 1]?.ramp === true) continue;
       if (w.days.some((x) => x.workout?.kind === 'test')) continue;
       /* kalendarska nedelja −2: M7 (≤ 2 brza treninga uz blok u dugom) */
       if (w.index === doc.weeks.length - 2) continue;
       /* M2 važi za nedelju u kojoj plafon/zamena tempa trke deluje (tempo trke usred nedelje ili u dugom); jedan
          kvalitet zbog prostora u obimu (p06 n1–n2, p09 n5 — isto u krugu 4) je otvoreno pitanje, ne M2 */
-      const rpWeek = w.days.some((x) => x.workout?.stimulus === 'tempo-trke' || x.workout?.stimulus === 'dugi-rp');
+      const rpWeek = w.days.some(
+        (x) => x.workout?.stimulus === 'tempo-trke' || x.workout?.stimulus === 'dugi-rp'
+      );
       if (!rpWeek) continue;
-      const wanted = w.intent.stimuli.filter((x) => !x.stimulus.startsWith('ubrzanja') && x.stimulus !== 'usponi-kratki').length;
+      const wanted = w.intent.stimuli.filter(
+        (x) => !x.stimulus.startsWith('ubrzanja') && x.stimulus !== 'usponi-kratki'
+      ).length;
       const placed = w.days.filter((x) => x.workout?.kind === 'quality').length;
-      if (wanted >= 2 && placed < 2) v.push(`n${String(w.index)} ${String(placed)} kvalitet u nedelji gradnje (${lvl})`);
+      if (wanted >= 2 && placed < 2)
+        v.push(`n${String(w.index)} ${String(placed)} kvalitet u nedelji gradnje (${lvl})`);
     }
   /* 12. M6: nema kvaliteta 2 dana pre provere forme */
   const all = doc.weeks.flatMap((w) => w.days);
@@ -285,15 +299,18 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (fastDays > 2) v.push(`nedelja −2 ima ${String(fastDays)} brza treninga`);
   }
   const rw = weeks[nW - 1];
-  if (rw !== undefined && peakKm > 0 && rw.km > 0.6 * peakKm + 0.5) v.push(`nedelja trke ${String(rw.km)} km > 60 % vrha`);
+  if (rw !== undefined && peakKm > 0 && rw.km > 0.6 * peakKm + 0.5)
+    v.push(`nedelja trke ${String(rw.km)} km > 60 % vrha`);
   /* 14. P1: sporiji od 1:55 — dugi ≤ vreme trke + 10 min, blok tempa trke u dugom ≤ 35 min */
   const raceSec = doc.header.form.raceDay.expectedSec;
   if (raceSec >= 6900)
     for (const x of all) {
       if (x.workout?.kind !== 'long') continue;
       const min = summarize(x.workout, ctx5).durationSec / 60;
-      if (min > raceSec / 60 + 10 + 1) v.push(`dugi ${x.date} ${String(Math.round(min))} min > trka + 10`);
-      if (x.workout.workSec > 35 * 60 + 60) v.push(`blok u dugom ${x.date} ${String(Math.round(x.workout.workSec / 60))} min > 35`);
+      if (min > raceSec / 60 + 10 + 1)
+        v.push(`dugi ${x.date} ${String(Math.round(min))} min > trka + 10`);
+      if (x.workout.workSec > 35 * 60 + 60)
+        v.push(`blok u dugom ${x.date} ${String(Math.round(x.workout.workSec / 60))} min > 35`);
     }
 
   const counted = build.length > 0 ? build : weeks;

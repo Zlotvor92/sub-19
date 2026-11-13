@@ -191,7 +191,9 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
   const st = f.weekIndex === null ? undefined : stats[f.weekIndex - 1];
   const share = st === undefined || st.durationSec === 0 ? 0 : st.workSec / st.durationSec;
   /* M7 (krug 5): silazak obima je provera obima (najkraći lagani dani ne silaze ispod svog minimuma) */
-  const volume = ['ispod-cilja', 'min-nedelja', 'lagan-dugi', 'prazan', 'skok', 'silazak'].includes(f.check);
+  const volume = ['ispod-cilja', 'min-nedelja', 'lagan-dugi', 'prazan', 'skok', 'silazak'].includes(
+    f.check
+  );
   if (perDay < 20 && (volume || f.check === 'brz-udeo'))
     return 'ispod 20 min po danu: plan je samo okvir (upozorenje „mali obim")';
   /* brz udeo raste kad lagani dani ne mogu da ponesu cilj — isti uzrok kao „ispod cilja", do 27 % */
@@ -229,7 +231,10 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
     const rp = st.week.days.reduce((sum, x) => {
       const w = x.workout;
       const step = w?.steps.find((y) => 'role' in y && y.role === 'work');
-      const zone = step !== undefined && 'target' in step && step.target.type === 'zone' ? step.target.zone : null;
+      const zone =
+        step !== undefined && 'target' in step && step.target.type === 'zone'
+          ? step.target.zone
+          : null;
       return sum + (zone === zc.zone ? (w?.workSec ?? 0) : 0);
     }, 0);
     if (rp >= capSec - 180) return 'tempo trke na nedeljnom plafonu nivoa (D7)';

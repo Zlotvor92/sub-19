@@ -365,12 +365,7 @@ function onMissed(
 }
 
 /** Pauza ≥ 14 dana: vrh iz nove baze (ne iznad starog), plafoni i najduži dugi iz njega (§ 6.3). */
-function redecide(
-  d: Decisions,
-  state: RunnerState,
-  data: DistanceData,
-  easy: number
-): Decisions {
+function redecide(d: Decisions, state: RunnerState, data: DistanceData, easy: number): Decisions {
   const template = data.templates.find((t) => t.id === d.templateId);
   if (template === undefined) return d;
   const baseLoad = Math.round(70 * state.load.chronic) / 10;
@@ -423,7 +418,8 @@ function onPause(
   };
   let header = withAdjustment(doc.header, adj);
   const full = length >= PAUSE_FULL_REPLAN_DAYS;
-  if (full) header = { ...header, decisions: redecide(header.decisions, state, data, header.paces.easy) };
+  if (full)
+    header = { ...header, decisions: redecide(header.decisions, state, data, header.paces.easy) };
   const rampEnd = addDays(ev.to, pauseRampDays(length, ev.reason));
   const built = restoreAfter(
     runPass({ ...doc, header }, state, data, {
@@ -464,7 +460,9 @@ function restoreAfter(built: PlanDoc, original: PlanDoc, rampEnd: IsoDate | null
       ...w,
       days: w.days.map((d) => {
         const nb = week.days.find((x) => x.id === d.id);
-        return nb !== undefined && nb.workout?.kind === 'test' && d.workout?.kind !== 'test' ? nb : d;
+        return nb !== undefined && nb.workout?.kind === 'test' && d.workout?.kind !== 'test'
+          ? nb
+          : d;
       })
     });
     if (old.start > back || keepPeak) return movedTest(old);
@@ -648,7 +646,12 @@ function reskeleton(
     policyId: data.id,
     policyVersion: data.version,
     decisions,
-    paces: zonePaces(old.form.paceVdot, data.distanceM, old.paces.byFeel, data.safety.intervalPaceFloor)
+    paces: zonePaces(
+      old.form.paceVdot,
+      data.distanceM,
+      old.paces.byFeel,
+      data.safety.intervalPaceFloor
+    )
   };
   const built = runPass({ ...doc, header, weeks: [...kept, ...weeksOut] }, state, data, {
     window: null,
@@ -771,7 +774,9 @@ function explain(
   const truly = c.doc.weeks.every((w) => {
     if (addDays(w.start, 6) <= state.today || w.start > last) return true;
     const old = before.weeks.find((x) => x.start === w.start);
-    return old === undefined || weekCost(w, raceDay, ctxA).km <= weekCost(old, raceDay, ctxB).km + 0.5;
+    return (
+      old === undefined || weekCost(w, raceDay, ctxA).km <= weekCost(old, raceDay, ctxB).km + 0.5
+    );
   });
   const lighter = truly
     ? `zato su treninzi do ${fmtDate(last)} lakši nego što su bili`
@@ -806,7 +811,10 @@ function explain(
       const test = movedTest(before, c.doc, state.today);
       /* provera koja je pala u pauzu takođe „je bila" (M4) */
       const hadTest = allDays(before).some(
-        (d) => d.date >= minDate(ev.from, addDays(state.today, 1)) && d.date < raceDate && d.workout?.kind === 'test'
+        (d) =>
+          d.date >= minDate(ev.from, addDays(state.today, 1)) &&
+          d.date < raceDate &&
+          d.workout?.kind === 'test'
       );
       const hasTest = allDays(c.doc).some(
         (d) => d.date > state.today && d.date < raceDate && d.workout?.kind === 'test'
@@ -842,7 +850,11 @@ function explain(
         : `${what}: ${recovery}; ${resume}.`;
       const old = fmtClock(raceTimeSec(before.header.form.paceVdot, data.distanceM));
       const faster = c.doc.header.form.paceVdot > before.header.form.paceVdot;
-      const raceDay = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, c.doc.header.decisions);
+      const raceDay = adjustRaceDay(
+        state.form.raceDay,
+        state.form.current.raceTimeSec,
+        c.doc.header.decisions
+      );
       const header = `${what} pokazuje ${faster ? 'bolju' : 'slabiju'} formu od one po kojoj je plan pisan (${old} na distanci trke): ${paceShift(before, c.doc)}, a očekivano vreme trke je sada oko ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)}).`;
       const late = `${what}: ${recovery}; i posle toga je prvi brzi trening svake vrste nešto kraći — ${lighter}.`;
       return { day, late, week: late, header };
@@ -858,7 +870,12 @@ function explain(
       /* M4 (krug 5): pomerena provera forme se kaže i kod bola (s14, s15), isto kao kod bolesti */
       const testAt = movedTest(before, c.doc, state.today);
       const note = testAt === null ? '' : ` Provera forme je pomerena na ${fmtDate(testAt)}.`;
-      const same = (text: string): Explain => ({ day: text + note, late: text + note, week: text + note, header: text + note });
+      const same = (text: string): Explain => ({
+        day: text + note,
+        late: text + note,
+        week: text + note,
+        header: text + note
+      });
       if (ev.level <= PAIN_LOW_MAX) {
         return same(
           `Prijavljen je blag bol (nivo ${String(ev.level)}): ${countWith(PAIN_LOW_REST_DAYS, NEXT, DAYS)} je odmor, prvo trčanje posle toga je lagano, a do ${fmtDate(addDays(ev.date, PAIN_LOW_DAYS))} nema treninga sa jakim udarom (uzbrdice, kratke brze deonice). ${PAIN_RULE} Ako bol ne smeta, od ${next} plan ide dalje po rasporedu.`

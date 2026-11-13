@@ -51,7 +51,9 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
         const fast = w.days.reduce((sum, d) => sum + fastWorkSec(d.workout), 0);
         expect(c.fastSec).toBe(fast);
         const cap = w.intent.kind === 'peak' ? 0.25 : 0.22;
-        expect(fast / c.durationSec, `${b.id} n${String(w.index)}`).toBeLessThanOrEqual(cap + 0.005);
+        expect(fast / c.durationSec, `${b.id} n${String(w.index)}`).toBeLessThanOrEqual(
+          cap + 0.005
+        );
       }
       expect(guard(b.doc, b.state, hm).filter((f) => f.check === 'brz-udeo')).toEqual([]);
     }
@@ -87,7 +89,9 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
       const km = weekCost(first, b.goal.raceDate, ctx).km;
       const base = b.facts.profile.weeklyKm ?? km;
       /* krug 5 (D6): sa 3 dana dugi kreće sa 85 % najdužeg — nedelja 1 ≥ 90 % */
-      expect(km / base, b.id).toBeGreaterThanOrEqual(b.doc.header.decisions.runDays.length <= 3 ? 0.9 : 0.95);
+      expect(km / base, b.id).toBeGreaterThanOrEqual(
+        b.doc.header.decisions.runDays.length <= 3 ? 0.9 : 0.95
+      );
       expect(km / base, b.id).toBeLessThanOrEqual(1.05);
     }
   });
@@ -97,9 +101,9 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
       if (b.doc.weeks.length < 16) continue;
       const ctx = paceCtxOf(b.doc.header);
       const longest = Math.max(
-        ...b.doc.weeks.flatMap((w) => w.days).map((d) =>
-          d.workout?.kind === 'long' ? summarize(d.workout, ctx).km : 0
-        )
+        ...b.doc.weeks
+          .flatMap((w) => w.days)
+          .map((d) => (d.workout?.kind === 'long' ? summarize(d.workout, ctx).km : 0))
       );
       const warned = b.doc.header.warnings.some((w) => w.code === 'dugi-za-distancu');
       expect(longest >= 15 || warned, b.id).toBe(true);
@@ -118,7 +122,8 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
   it('S7: taktika trke iz današnje forme, bez brže rečenice kad upozorenje kaže da se počne sporije', () => {
     for (const b of ALL) {
       const text = renderPlan(b.doc, b.state, hm);
-      if (!b.doc.header.paces.byFeel) expect(text, b.id).toMatch(/Tempo za trku: .*\((današnja forma|tvoj cilj)/);
+      if (!b.doc.header.paces.byFeel)
+        expect(text, b.id).toMatch(/Tempo za trku: .*\((današnja forma|tvoj cilj)/);
       if (b.doc.header.warnings.some((w) => w.proposal.includes('počni sporije')))
         expect(text, b.id).not.toContain('potvrdi očekivani napredak');
     }
@@ -128,11 +133,17 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
     const p = PROFILES.find((x) => x.id === 'p11');
     if (p === undefined) throw new Error('p11');
     const base = factsOf(p);
-    const pained = make('bol', {
-      ...base,
-      profile: { ...base.profile, yearsRunning: 0.1 },
-      painHistory: [{ date: '2026-03-01', level: 5, part: 'potkolenica', resolvedOn: '2026-04-01' }]
-    }, p.goal);
+    const pained = make(
+      'bol',
+      {
+        ...base,
+        profile: { ...base.profile, yearsRunning: 0.1 },
+        painHistory: [
+          { date: '2026-03-01', level: 5, part: 'potkolenica', resolvedOn: '2026-04-01' }
+        ]
+      },
+      p.goal
+    );
     const codes = pained.doc.header.warnings.map((w) => w.code);
     expect(codes).toContain('tegoba');
     expect(codes).toContain('kratak-staz');
@@ -144,7 +155,9 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
       expect(def?.impact, d.date).not.toBe('visok');
     }
     /* T1: dugi hod-trk i rasterećenje 2:1 */
-    expect(pained.doc.weeks.some((w) => w.days.some((d) => d.workout?.libraryId === 'dugi-hod'))).toBe(true);
+    expect(
+      pained.doc.weeks.some((w) => w.days.some((d) => d.workout?.libraryId === 'dugi-hod'))
+    ).toBe(true);
   });
 
   it('S10: trka se usvaja cela i kad je na dan planiranog testa kraće distance', () => {
@@ -161,7 +174,8 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
   });
 
   it('S11: plan za trkača ne nosi interne nalaze čuvara', () => {
-    for (const b of ALL) expect(renderPlan(b.doc, b.state, hm), b.id).not.toContain('NALAZI ČUVARA');
+    for (const b of ALL)
+      expect(renderPlan(b.doc, b.state, hm), b.id).not.toContain('NALAZI ČUVARA');
   });
 
   it('T3: dugi ne stoji isti 4 nedelje gradnje zaredom', () => {
@@ -176,7 +190,8 @@ describe('krug 4: motor (S1–S11) nad polumaratonom', () => {
           continue;
         }
         const long = w.days.find((d) => d.workout?.kind === 'long')?.workout ?? null;
-        const key = long === null ? '' : `${long.text}|${String(Math.round(summarize(long, ctx).km))}`;
+        const key =
+          long === null ? '' : `${long.text}|${String(Math.round(summarize(long, ctx).km))}`;
         run = key !== '' && key === prev ? run + 1 : 1;
         prev = key;
         expect(run, `${b.id} n${String(w.index)}`).toBeLessThan(4);

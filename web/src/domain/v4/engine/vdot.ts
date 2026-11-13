@@ -85,7 +85,8 @@ export function zonePaces(
   /** P3 (krug 5): sporiji od `fromRaceSec` na distanci — intervali ne brži od tempa trke na `distanceM` iz forme. */
   intervalFloor?: { distanceM: Meters; fromRaceSec: Seconds }
 ): Paces {
-  const slow = intervalFloor !== undefined && raceTimeSec(vdot, distanceM) >= intervalFloor.fromRaceSec;
+  const slow =
+    intervalFloor !== undefined && raceTimeSec(vdot, distanceM) >= intervalFloor.fromRaceSec;
   const I = slow
     ? Math.max(paceAtShare(vdot, ZONE_SHARE.I), racePace(vdot, intervalFloor.distanceM))
     : paceAtShare(vdot, ZONE_SHARE.I);

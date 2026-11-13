@@ -102,7 +102,8 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
     /* E6 (krug 5): trkač koji posle pauze već trči 3+ nedelje (bar 6 trčanja) se vratio — rampa se ne ponavlja */
     const after = state.runs.filter((r) => r.date > pause.to);
     const back =
-      after.length >= 6 && diffDays(state.today, after[0]?.date ?? state.today) >= RETURNED_AFTER_DAYS;
+      after.length >= 6 &&
+      diffDays(state.today, after[0]?.date ?? state.today) >= RETURNED_AFTER_DAYS;
     if (back) continue;
     out.push({
       kind: 'pause',
@@ -191,24 +192,24 @@ export function createPlan(
   const picked = pickTemplate(data, level, weeks, availability.runDays.length);
   if (picked === null) throw new Error('DistanceData bez šablona');
   const decided = decide({
-      data,
-      template: picked.template,
-      level,
+    data,
+    template: picked.template,
+    level,
+    baseLoad,
+    longestRecentSec: state.longestRecentSec,
+    runDays: availability.runDays,
+    longDay: availability.longDay,
+    easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
+    raceSec: state.form.raceDay.expectedSec,
+    ladder: ladderInputOf({
       baseLoad,
-      longestRecentSec: state.longestRecentSec,
-      runDays: availability.runDays,
-      longDay: availability.longDay,
       easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
-      raceSec: state.form.raceDay.expectedSec,
-      ladder: ladderInputOf({
-        baseLoad,
-        easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false).easy,
-        weeks,
-        yearsRunning: state.profile.yearsRunning,
-        painInYear: (state.painHistory ?? []).length > 0,
-        safety: data.safety
-      })
-    });
+      weeks,
+      yearsRunning: state.profile.yearsRunning,
+      painInYear: (state.painHistory ?? []).length > 0,
+      safety: data.safety
+    })
+  });
   const easyPace = zonePaces(form.vdot, data.distanceM, false).easy;
   const fromRuns = !state.load.seeded && state.longestRecentSec > 0;
   const decisions: Decisions = {
@@ -249,9 +250,16 @@ export function createPlan(
         current: form,
         paceVdot: form.vdot,
         pacesUpdatedOn: state.today,
-        raceDay: adjustRaceDay(state.form.raceDay, form.raceTimeSec, { raceDayWiden: widenOf(state, data) })
+        raceDay: adjustRaceDay(state.form.raceDay, form.raceTimeSec, {
+          raceDayWiden: widenOf(state, data)
+        })
       },
-      paces: zonePaces(form.vdot, data.distanceM, form.confidence === 'niska', data.safety.intervalPaceFloor),
+      paces: zonePaces(
+        form.vdot,
+        data.distanceM,
+        form.confidence === 'niska',
+        data.safety.intervalPaceFloor
+      ),
       decisions,
       warnings: [],
       protected: false,

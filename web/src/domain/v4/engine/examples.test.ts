@@ -283,7 +283,8 @@ describe('blok u dugom se vraća posle rampe (presuda organizatora uz § 14.6)',
     /* krug 4 (S9): nedelje posle rampe nisu veće nego pre pauze, pa prvi dugi ne mora odmah da stigne 90 %; blok
        se vraća posle PRVOG dugog bez bloka od ≥ 90 % poslednjeg pre pauze */
     const gateAt = all.findIndex(
-      (x) => summarize(x.workout, ctx).durationSec >= 0.9 * lastLong && (x.workout?.workSec ?? 0) === 0
+      (x) =>
+        summarize(x.workout, ctx).durationSec >= 0.9 * lastLong && (x.workout?.workSec ?? 0) === 0
     );
     expect(gateAt).toBeGreaterThanOrEqual(0);
     for (const day of all.slice(0, gateAt)) expect(day.workout?.workSec ?? 0, day.date).toBe(0);

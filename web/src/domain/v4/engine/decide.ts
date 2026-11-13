@@ -78,7 +78,10 @@ export function decidePeak(
 }
 
 /** Plafon rada po treningu za nivo (S4): broj, ili mapa po nivou (`*` za ostale; bez njega bez plafona). */
-export function maxWorkOf(raw: Seconds | Readonly<Record<LevelId, Seconds>>, level: LevelId): Seconds {
+export function maxWorkOf(
+  raw: Seconds | Readonly<Record<LevelId, Seconds>>,
+  level: LevelId
+): Seconds {
   if (typeof raw === 'number') return raw;
   return raw[level] ?? raw['*'] ?? Number.POSITIVE_INFINITY;
 }
@@ -292,12 +295,19 @@ export interface DecideInput {
 }
 
 /** D3 (krug 5): spor trkač — dugi ≤ vreme trke + `overSec`, blok/progresija u dugom ≤ `blockMaxSec`. */
-function applyLongVsRace(d: Decisions, data: DistanceData, raceSec: Seconds | undefined): Decisions {
+function applyLongVsRace(
+  d: Decisions,
+  data: DistanceData,
+  raceSec: Seconds | undefined
+): Decisions {
   const r = data.safety.longVsRace;
   if (r === undefined || raceSec === undefined || raceSec < r.fromRaceSec) return d;
   const blockTags = new Set(
     data.library
-      .filter((x) => x.kind === 'long' && (x.main.kind === 'finish-block' || x.main.kind === 'progressive'))
+      .filter(
+        (x) =>
+          x.kind === 'long' && (x.main.kind === 'finish-block' || x.main.kind === 'progressive')
+      )
       .map((x) => x.stimulus)
   );
   const doseCapSec: Record<StimulusTag, Seconds> = { ...d.doseCapSec };
@@ -328,13 +338,7 @@ function decideBase(input: DecideInput): Decisions {
     level,
     baseLoad,
     peakLoad,
-    longMaxSec: decideLongMax(
-      peakLoad,
-      data.safety,
-      level,
-      runDays.length,
-      input.easyPaceSecPerKm
-    ),
+    longMaxSec: decideLongMax(peakLoad, data.safety, level, runDays.length, input.easyPaceSecPerKm),
     longStartSec: decideLongStart(input.longestRecentSec, baseLoad, data.safety, runDays.length),
     doseCapSec: decideCaps(peakLoad, data.safety, level),
     doseBaseSec: decideDoseBase(peakLoad, data.safety),

@@ -215,7 +215,8 @@ export function longPlan(
     const full = Math.min(d.longStartSec, d.longMaxSec);
     /* P2 (krug 5): 85 % samo kad je polazni dugi na plafonu (≥ `longStartFloorFromCapShare` × najduži dozvoljeni);
        inače stabilan trkač kreće od onoga što već trči */
-    const atCap = d.longStartSec >= (ctx.data.safety.longStartFloorFromCapShare ?? 0) * d.longMaxSec;
+    const atCap =
+      d.longStartSec >= (ctx.data.safety.longStartFloorFromCapShare ?? 0) * d.longMaxSec;
     const startFloor = atCap ? ctx.data.safety.longStartFloorShare : undefined;
     /* posle polaznog pod raste dalje pola koraka po nedelji gradnje (D1 dopuna: p04 1 h 50 → 2 h 10) */
     /* D6: sa malo dana pod ne raste do polaznog — dugi prati nameru šablona (p08: 20,5+ km samo u završnici) */
@@ -228,14 +229,22 @@ export function longPlan(
         ? full
         : Math.min(
             d.longMaxSec,
-            n <= reach || !growPast(ctx) ? Math.min(full, start + n * step) : full + ((n - reach) * step) / 2
+            n <= reach || !growPast(ctx)
+              ? Math.min(full, start + n * step)
+              : full + ((n - reach) * step) / 2
           );
     wanted = Math.max(wanted, floor);
   }
   let cap = Number.POSITIVE_INFINITY;
   if (week !== undefined) {
     const weekKm = (week.plannedMin * 60) / ctx.pace.paces.easy;
-    const share = longShareFor(ctx.data.safety, d.level, week.runDays, weekKm, week.highShare === true);
+    const share = longShareFor(
+      ctx.data.safety,
+      d.level,
+      week.runDays,
+      weekKm,
+      week.highShare === true
+    );
     /* E7 (krug 5): udeo je u KM — km nedelje se procenjuju iz minuta u laganom tempu (donja procena), a blok u
        dugom nosi više km od istog vremena lagano, pa se njegov višak oduzima. */
     const easy = ctx.pace.paces.easy;
@@ -252,10 +261,19 @@ export function longPlan(
   const wave = intent.long.wave;
   /* D1 (krug 5): talas samo kad je dugi na plafonu (najduži dozvoljen ili udeo nedelje) */
   const atCap = sec >= d.longMaxSec - 60 || sec >= cap - 60;
-  if (wave !== undefined && week !== undefined && atCap && previousLongest > 0 && sec <= previousLongest + 60)
+  if (
+    wave !== undefined &&
+    week !== undefined &&
+    atCap &&
+    previousLongest > 0 &&
+    sec <= previousLongest + 60
+  )
     sec *= wave;
   /* Dugi nije kraći od najkraćeg smislenog trčanja (krug 3, S13). */
-  return Math.max(minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length), Math.round(sec / 60) * 60);
+  return Math.max(
+    minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
+    Math.round(sec / 60) * 60
+  );
 }
 
 /** BUDŽET BRZOG RADA (§ 6.2 k. 6): redom dugi pa podražaji; `take` vraća dozu koja staje, `book` je knjiži. */
@@ -416,8 +434,15 @@ export function weekSlots(
         workoutId: undefined
       };
       const altWanted = slotDose(alt, undefined, intent.kind, ctx);
-      const altDef = pickDef(alt, altWanted > 0 ? altWanted : null, ctx, { noHighImpact: cautious });
-      if (altDef !== null && !altDef.tags.includes(rule.tag) && altDef.main.kind !== 'add-on' && altDef.main.kind !== 'all-out') {
+      const altDef = pickDef(alt, altWanted > 0 ? altWanted : null, ctx, {
+        noHighImpact: cautious
+      });
+      if (
+        altDef !== null &&
+        !altDef.tags.includes(rule.tag) &&
+        altDef.main.kind !== 'add-on' &&
+        altDef.main.kind !== 'all-out'
+      ) {
         def = altDef;
         wanted = altWanted;
       }
@@ -448,12 +473,28 @@ export function weekSlots(
       for (let i = items.length - 1; i >= 0; i -= 1) {
         const x = items[i];
         if (x === undefined || x.kind !== 'quality' || mainZone(x.def.main) !== 'T') continue;
-        const slot: SlotRef = repl === undefined ? x.slot : { ...x.slot, stimulus: repl, workoutId: undefined };
+        const slot: SlotRef =
+          repl === undefined ? x.slot : { ...x.slot, stimulus: repl, workoutId: undefined };
         const wanted = repl === undefined ? 0 : slotDose(slot, undefined, intent.kind, ctx);
-        const def = repl === undefined ? null : pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: cautious });
+        const def =
+          repl === undefined
+            ? null
+            : pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: cautious });
         const zone = def === null ? null : mainZone(def.main);
-        if (def !== null && zone !== null && def.main.kind !== 'add-on' && def.main.kind !== 'all-out')
-          items[i] = { kind: 'quality', date: x.date, def, slot, wanted, extra: extraWeight(zone, ctx) };
+        if (
+          def !== null &&
+          zone !== null &&
+          def.main.kind !== 'add-on' &&
+          def.main.kind !== 'all-out'
+        )
+          items[i] = {
+            kind: 'quality',
+            date: x.date,
+            def,
+            slot,
+            wanted,
+            extra: extraWeight(zone, ctx)
+          };
         else items.splice(i, 1);
       }
     }
@@ -467,8 +508,14 @@ export function weekSlots(
     /* E3 (krug 5): pomerena provera ne ide u ± 2 dana od treninga u tempu trke (ni bloka u dugom) i ne zamenjuje
        jedini tempo trke nedelje */
     const rpDates = [
-      ...items.filter((x) => x.kind === 'quality' && mainZone(x.def.main) === 'RP').map((x) => x.date),
-      ...(long !== null && long.wanted > 0 && long.def !== null && mainZone(long.def.main) === 'RP' && longWd !== null
+      ...items
+        .filter((x) => x.kind === 'quality' && mainZone(x.def.main) === 'RP')
+        .map((x) => x.date),
+      ...(long !== null &&
+      long.wanted > 0 &&
+      long.def !== null &&
+      mainZone(long.def.main) === 'RP' &&
+      longWd !== null
         ? [dateOf(longWd)]
         : [])
     ];
@@ -481,7 +528,9 @@ export function weekSlots(
     /* M4 (krug 5): pomerena provera ide u prvo RASTEREĆENJE posle prozora izmene, najkasnije 3 nedelje pred trku;
        bez takve nedelje otpada (plan to kaže) */
     const restWeek =
-      week.intent.kind === 'recovery' && date !== undefined && date <= addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
+      week.intent.kind === 'recovery' &&
+      date !== undefined &&
+      date <= addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
     const usable =
       date !== undefined &&
       restWeek &&
@@ -520,9 +569,7 @@ export function weekSlots(
   const gapDays = ctx.data.safety.noQualityBeforeTestDays ?? 0;
   const tests = items.filter((x) => x.kind === 'test').map((x) => x.date);
   const kept = items.filter(
-    (x) =>
-      x.kind !== 'quality' ||
-      !tests.some((t) => x.date < t && diffDays(t, x.date) <= gapDays)
+    (x) => x.kind !== 'quality' || !tests.some((t) => x.date < t && diffDays(t, x.date) <= gapDays)
   );
   return { race, eve, calmFrom, runDays, longWd, long, items: kept };
 }
@@ -617,12 +664,17 @@ function easyFill(
     if (week.runDays >= EASY_FLOOR_MIN_RUN_DAYS) {
       /* M5 (krug 5): nivo sa najkraćim laganim po nivou meri i obim (minuti) — dan otpada kad najkraći lagani dani
          ne staju u obim nedelje */
-      const byVolume = levelMinEasy(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length);
+      const byVolume = levelMinEasy(
+        ctx.data.safety,
+        ctx.decisions.level,
+        ctx.decisions.runDays.length
+      );
       const over = (list: EasyDay[]): boolean =>
         week.fixedLoad + addons(list) + (list.length * minEasy) / 60 >
           week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET) ||
         (byVolume &&
-          (list.length * minEasy + addonSec(list)) / 60 > week.leftVolumeMin * (1 + EASY_FLOOR_OVER_TARGET));
+          (list.length * minEasy + addonSec(list)) / 60 >
+            week.leftVolumeMin * (1 + EASY_FLOOR_OVER_TARGET));
       const dropOrder = [
         ...days.filter((d) => !afterQuality.has(d.date)),
         ...days.filter((d) => afterQuality.has(d.date))
@@ -677,7 +729,8 @@ export function layoutWeek(
   /* S1: budžet brzog rada i čuvar mere isto — od PLANIRANOG zbira nedelje. Prvi raspored procenjuje zbir iz cilja;
      kad lagani dani udare u plafon i nedelja ispadne manja, drugi raspored deli budžet od stvarnog zbira (rad samo
      opada, lagani deo samo raste, pa treći nije potreban). */
-  const share = week.intent.kind === 'peak' ? ctx.data.safety.maxFastSharePeak : ctx.data.safety.maxFastShare;
+  const share =
+    week.intent.kind === 'peak' ? ctx.data.safety.maxFastSharePeak : ctx.data.safety.maxFastShare;
   let out = layoutOnce(week, ctx, slots, previous, null);
   /* Budžet od planiranog: rad W sme da bude `udeo × zbir`; kad lagani dani ne mogu da porastu (plafon dana), zbir
      pada zajedno sa radom, pa je granica `W ≤ udeo / (1 − udeo) × ostatak`. Najviše dva ispravljena rasporeda. */
@@ -716,21 +769,28 @@ function taperIntensity(
   /* dugi bez bloka zadržava dužinu (km), ne trajanje — lagani dani ostaju u odnosu prema dugom */
   const plainLong = (recipe: Extract<Recipe, { type: 'long' }>): Recipe => {
     const km = summarize(realize(recipe, ctx), ctx.pace).km;
-    return { ...recipe, def: steadyLongDef(ctx, null), dose: 0, sec: Math.round((km * ctx.pace.paces.easy) / 60) * 60 };
+    return {
+      ...recipe,
+      def: steadyLongDef(ctx, null),
+      dose: 0,
+      sec: Math.round((km * ctx.pace.paces.easy) / 60) * 60
+    };
   };
   /* kvalitet postaje lagan dan: kraći za zagrevanje/hlađenje, ne duži od plafona sužavanja ni 60 % dugog te nedelje */
   const longOfWeek = [...out.values()].find((x) => x.type === 'long');
   const longCap = longOfWeek?.type === 'long' ? 0.6 * longOfWeek.sec : Number.POSITIVE_INFINITY;
   const asEasy = (recipe: Recipe): Recipe => ({
     type: 'easy',
-    sec: roundMin(Math.max(
-      minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
-      Math.min(
-        summarize(realize(recipe, ctx), ctx.pace).durationSec - 600,
-        taperEasyMax(ctx.data.safety, ctx.decisions.runDays.length),
-        longCap
+    sec: roundMin(
+      Math.max(
+        minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
+        Math.min(
+          summarize(realize(recipe, ctx), ctx.pace).durationSec - 600,
+          taperEasyMax(ctx.data.safety, ctx.decisions.runDays.length),
+          longCap
+        )
       )
-    ))
+    )
   });
   function roundMin(x: number): number {
     return Math.round(x / 300) * 300;
@@ -756,7 +816,8 @@ function taperIntensity(
     /* M9 (krug 5): poslednji dugi pred trku zadržava najmanji blok (`taper.lastLongMinBlockSec`) — i posle bolesti,
        kad je vršna nedelja ponovo izgrađena sa manje brzog rada (s06) */
     const lastBlock = t.lastLongMinBlockSec;
-    if (isBlock && lastBlock !== undefined && count < t.weekBeforeMaxQuality) room = Math.max(room, Math.min(work, lastBlock));
+    if (isBlock && lastBlock !== undefined && count < t.weekBeforeMaxQuality)
+      room = Math.max(room, Math.min(work, lastBlock));
     if (count >= t.weekBeforeMaxQuality || room < ctx.data.safety.minDoseSec) {
       out.set(date, r.type === 'long' ? plainLong(r) : asEasy(r));
       continue;
@@ -769,7 +830,12 @@ function taperIntensity(
         let def = r.def;
         if (dose < minDoseOf(def, ctx)) {
           const smaller = pickDef(r.slot, dose, ctx, { noHighImpact: false });
-          if (smaller !== null && smaller.stimulus === def.stimulus && dose >= minDoseOf(smaller, ctx)) def = smaller;
+          if (
+            smaller !== null &&
+            smaller.stimulus === def.stimulus &&
+            dose >= minDoseOf(smaller, ctx)
+          )
+            def = smaller;
         }
         if (dose < minDoseOf(def, ctx)) {
           out.set(date, asEasy(r));
@@ -786,7 +852,8 @@ function taperIntensity(
     if (real !== null && real.workSec > room && (cur.type === 'quality' || cur.type === 'long')) {
       const less = Math.max(0, cur.dose - (real.workSec - room) - 60);
       const next: Recipe =
-        less < ctx.data.safety.minDoseSec || (cur.type === 'quality' && less < minDoseOf(cur.def, ctx))
+        less < ctx.data.safety.minDoseSec ||
+        (cur.type === 'quality' && less < minDoseOf(cur.def, ctx))
           ? cur.type === 'long'
             ? plainLong(cur)
             : asEasy(cur)
@@ -844,7 +911,9 @@ function layoutOnce(
   /* D7 (krug 5): plafon rada jedne zone nedeljno (tempo trke uklj. blok u dugom) po nivou */
   const zoneCap = s.weeklyZoneMaxSec;
   let zoneLeft =
-    zoneCap === undefined ? Number.POSITIVE_INFINITY : (zoneCap.byLevel[d.level] ?? Number.POSITIVE_INFINITY);
+    zoneCap === undefined
+      ? Number.POSITIVE_INFINITY
+      : (zoneCap.byLevel[d.level] ?? Number.POSITIVE_INFINITY);
   const inZone = (def: WorkoutDef | null): boolean =>
     zoneCap !== undefined && def !== null && mainZone(def.main) === zoneCap.zone;
   let longZoneSec = 0;
@@ -900,13 +969,20 @@ function layoutOnce(
     const minEasy = minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length);
     /* M5 (krug 5): nivo sa najkraćim laganim po nivou — kvalitet ostaje, a otpada jedan lagan dan (dan manje uz
        rečenicu „dan-izostavljen"), dok ostaju bar dva lagana dana */
-    const spare = levelMinEasy(s, ctx.decisions.level, ctx.decisions.runDays.length) && rest.length >= 3 ? minEasy / 60 : 0;
+    const spare =
+      levelMinEasy(s, ctx.decisions.level, ctx.decisions.runDays.length) && rest.length >= 3
+        ? minEasy / 60
+        : 0;
     const floor = rest.reduce((sum, x) => sum + minEasy / 60 + addonLoad(x), 0) - spare;
     /* i obim (minuti): kvalitet sa zagrevanjem i hlađenjem ne sme da digne nedelju preko pravila rasta (S2) */
     const volume = week.volumeMin ?? Number.POSITIVE_INFINITY;
     const floorMin = rest.reduce((sum, x) => sum + (minEasy + addonSec(x)) / 60, 0) - spare;
     /* Kad ni najkraći lagani dani ne staju u obim (mnogo dana, mali obim), važi samo provera bodova. */
-    const fits = fixedSec / 60 + floorMin + minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length) / 60 <= volume * (1 + EASY_FLOOR_OVER_TARGET);
+    const fits =
+      fixedSec / 60 +
+        floorMin +
+        minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length) / 60 <=
+      volume * (1 + EASY_FLOOR_OVER_TARGET);
     return (
       fixedLoad + load + floor <= week.targetLoad * (1 + EASY_FLOOR_OVER_TARGET) &&
       (!fits || (fixedSec + sec) / 60 + floorMin <= volume * (1 + room))
@@ -920,8 +996,10 @@ function layoutOnce(
   if (a !== undefined && b !== undefined && keepDays && week.index % 2 === 0) {
     const secOf = (x: SlotItem): Seconds =>
       x.kind === 'quality'
-        ? summarize(realize({ type: 'quality', def: x.def, dose: x.wanted, slot: x.slot }, ctx), ctx.pace)
-            .durationSec
+        ? summarize(
+            realize({ type: 'quality', def: x.def, dose: x.wanted, slot: x.slot }, ctx),
+            ctx.pace
+          ).durationSec
         : 0;
     const others = runDays.filter((wd) => !fixed.has(dateOf(wd))).length - 2;
     const both =
@@ -960,15 +1038,30 @@ function layoutOnce(
     /* krug 5 (P1 → p04): dugi već nosi blok iste zone, a plafon seče i ovaj trening — nedelja bi imala dva ista
        podražaja, pa i tada ide zamenski podražaj pune doze */
     const clippedTwice = longZoneSec > 0 && zoneLeft < item.wanted;
-    if (inZone(item.def) && (zoneLeft < minLeft || clippedTwice) && zoneCap?.fallbackStimulus !== undefined) {
+    if (
+      inZone(item.def) &&
+      (zoneLeft < minLeft || clippedTwice) &&
+      zoneCap?.fallbackStimulus !== undefined
+    ) {
       /* pun dozni korak (M1: „prag pune doze") */
-      const slot: SlotRef = { place: 'quality', stimulus: zoneCap.fallbackStimulus, index: 99, phase: item.slot.phase };
+      const slot: SlotRef = {
+        place: 'quality',
+        stimulus: zoneCap.fallbackStimulus,
+        index: 99,
+        phase: item.slot.phase
+      };
       const wanted = slotDose(slot, undefined, intent.kind, ctx);
       const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: false });
       const zone = def === null ? null : mainZone(def.main);
       /* zamena dva puta isečene zone samo kad nosi više rada od ostatka zone */
       const gains = zoneLeft < minLeft || wanted > zoneLeft;
-      if (gains && def !== null && zone !== null && def.main.kind !== 'add-on' && def.main.kind !== 'all-out')
+      if (
+        gains &&
+        def !== null &&
+        zone !== null &&
+        def.main.kind !== 'add-on' &&
+        def.main.kind !== 'all-out'
+      )
         item = { ...item, def, slot, wanted, extra: extraWeight(zone, ctx) };
     }
     let dose = Math.min(
@@ -979,7 +1072,11 @@ function layoutOnce(
        koji tu dozu nosi (2 × 7 umesto 3 × …) — kvalitet ne otpada zbog izbora unosa */
     if (dose < minDoseOf(item.def, ctx) && dose > 0) {
       const smaller = pickDef(item.slot, dose, ctx, { noHighImpact: false });
-      if (smaller !== null && smaller.stimulus === item.def.stimulus && dose >= minDoseOf(smaller, ctx)) {
+      if (
+        smaller !== null &&
+        smaller.stimulus === item.def.stimulus &&
+        dose >= minDoseOf(smaller, ctx)
+      ) {
         const zone = mainZone(smaller.main);
         if (zone !== null) {
           item = { ...item, def: smaller, extra: extraWeight(zone, ctx) };
@@ -1209,7 +1306,8 @@ function shortenLong(
   opts: PassOptions
 ): PlanDay[] {
   const share = ctx.data.safety.shortenedLongMaxShare;
-  if (share === undefined || ctx.decisions.runDays.length < 4 || week.intent.kind === 'race') return days;
+  if (share === undefined || ctx.decisions.runDays.length < 4 || week.intent.kind === 'race')
+    return days;
   /* samo skraćena nedelja: ponovno planiranje ili nedelja u rampi/zaštiti */
   if (opts.fresh === true && !underRamp(week.start, header.adjustments ?? [])) return days;
   const kmOf = (d: PlanDay): number =>
@@ -1222,14 +1320,27 @@ function shortenLong(
   if (day === undefined || day.workout === null || total <= 0) return days;
   const longKm = kmOf(day);
   if (longKm <= share * total + 0.25) return days;
-  const inWindow = opts.window === null || (day.date >= opts.window.from && day.date <= opts.window.to);
+  const inWindow =
+    opts.window === null || (day.date >= opts.window.from && day.date <= opts.window.to);
   if (!inWindow || !isMutable(day, header, today, done)) return days;
   /* dugi D, ostatak R: D' ≤ share × (R + D') → D' = share × R / (1 − share) */
   const ratio = (share * (total - longKm)) / (1 - share) / longKm;
   const w = day.workout;
   const def = ctx.data.library.find((x) => x.id === w.libraryId) ?? steadyLongDef(ctx, null);
-  const sec = Math.round(Math.max(minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length), summarize(w, ctx.pace).durationSec * ratio) / 60) * 60;
-  const recipe: Recipe = { type: 'long', sec, def, dose: Math.round(w.workSec * ratio), slot: null };
+  const sec =
+    Math.round(
+      Math.max(
+        minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
+        summarize(w, ctx.pace).durationSec * ratio
+      ) / 60
+    ) * 60;
+  const recipe: Recipe = {
+    type: 'long',
+    sec,
+    def,
+    dose: Math.round(w.workSec * ratio),
+    slot: null
+  };
   const workout = realize(recipe, ctx);
   const out = [...days];
   out[at] = { ...day, origin: 'template', locked: false, workout };
@@ -1257,7 +1368,8 @@ function taperVolumeCap(
   const t = data.safety.taper;
   if (t === undefined || peakVolume <= 0) return null;
   const raceMonday = mondayOf(span.raceDate);
-  if (week.start === raceMonday && t.raceWeekMaxOfPeak !== undefined) return t.raceWeekMaxOfPeak * peakVolume;
+  if (week.start === raceMonday && t.raceWeekMaxOfPeak !== undefined)
+    return t.raceWeekMaxOfPeak * peakVolume;
   if (week.start === addDays(raceMonday, -14) && t.weekMinus2MaxOfPeak !== undefined)
     return t.weekMinus2MaxOfPeak * peakVolume;
   return null;
@@ -1281,10 +1393,11 @@ function blockOf(slots: WeekSlots): { block?: { sec: Seconds; pace: number } } {
 function highShareWeeks(weeks: readonly PlanWeek[], data: DistanceData): Set<number> {
   const n = data.safety.longShareLowVolume?.peakWeeks ?? 0;
   const list = weeks
-    .filter((w) => (w.intent.kind === 'build' || w.intent.kind === 'peak') && w.intent.long !== null)
+    .filter(
+      (w) => (w.intent.kind === 'build' || w.intent.kind === 'peak') && w.intent.long !== null
+    )
     .sort(
-      (a, b) =>
-        (b.intent.long?.lenPct ?? 0) - (a.intent.long?.lenPct ?? 0) || b.index - a.index
+      (a, b) => (b.intent.long?.lenPct ?? 0) - (a.intent.long?.lenPct ?? 0) || b.index - a.index
     );
   return new Set(list.slice(0, n).map((w) => w.index));
 }
@@ -1403,7 +1516,12 @@ export function runPass(
     const accBefore = { ...taperAcc };
     const lay = (sh: WeekShell): Map<IsoDate, Recipe> =>
       taperIntensity(
-        layoutWeek({ ...sh, volumeMin: Math.round(plannedMin(sh.targetLoad) * 10) / 10 }, ctx, slots, previousEasy),
+        layoutWeek(
+          { ...sh, volumeMin: Math.round(plannedMin(sh.targetLoad) * 10) / 10 },
+          ctx,
+          slots,
+          previousEasy
+        ),
         span,
         peakFast,
         ctx,
@@ -1474,7 +1592,9 @@ export function runPass(
       /* M4: pomerena provera forme sme van prozora izmene (prvo rasterećenje posle njega) */
       const movedTest = forced !== null && planned.type === 'test' && planned.def === forced.def;
       const inWindow =
-        opts.window === null || movedTest || (day.date >= opts.window.from && day.date <= opts.window.to);
+        opts.window === null ||
+        movedTest ||
+        (day.date >= opts.window.from && day.date <= opts.window.to);
       const mutable = isMutable(day, header, state.today, done);
       let kept = planned.type === 'test';
       if (inWindow && mutable) {
@@ -1520,7 +1640,12 @@ export function runPass(
         let end: IsoDate | null = null;
         for (const adj of adjustments) {
           const w = adjustmentWindow(adj);
-          if (w !== null && w.from <= day.date && day.date <= w.rampEnd && (end === null || w.rampEnd > end))
+          if (
+            w !== null &&
+            w.from <= day.date &&
+            day.date <= w.rampEnd &&
+            (end === null || w.rampEnd > end)
+          )
             end = w.rampEnd;
         }
         pendingFrom = end === null ? null : addDays(end, RETURN_TEST_AFTER_RAMP_DAYS);
@@ -1558,19 +1683,29 @@ export function runPass(
     if (week.intent.kind === 'peak') {
       const real = days.reduce(
         (sum, x) =>
-          sum + (x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long') ? x.workout.workSec : 0),
+          sum +
+          (x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long')
+            ? x.workout.workSec
+            : 0),
         0
       );
       /* M9 (krug 5): vršna nedelja u 21 dan posle rampe povratka je skraćena zbog povratka — merilo silaska je
          prvobitna vršna nedelja (čuvar je tada ne meri, isto pravilo) */
       const afterRamp = adjustments.some((adj) => {
         const w = adjustmentWindow(adj);
-        return w !== null && w.from <= addDays(week.start, 6) && week.start < addDays(w.rampEnd, RESTORE_PEAK_AFTER_DAYS);
+        return (
+          w !== null &&
+          w.from <= addDays(week.start, 6) &&
+          week.start < addDays(w.rampEnd, RESTORE_PEAK_AFTER_DAYS)
+        );
       });
       const planned = afterRamp
         ? week.days.reduce(
             (sum, x) =>
-              sum + (x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long') ? x.workout.workSec : 0),
+              sum +
+              (x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long')
+                ? x.workout.workSec
+                : 0),
             0
           )
         : 0;

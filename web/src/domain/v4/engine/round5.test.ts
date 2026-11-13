@@ -250,7 +250,11 @@ describe('R3: rast i vrh', () => {
     expect(plain.full).toBeCloseTo(165, 5);
     expect(loaded.full).toBeCloseTo(195, 5);
     /* krug 4 (S2): prva nedelja plana je sadašnji obim — bez rasta */
-    const first = weekTarget({ ...intent, loadPct: 1 }, { ...input, previousTarget: null, extra: 0 }, ctx);
+    const first = weekTarget(
+      { ...intent, loadPct: 1 },
+      { ...input, previousTarget: null, extra: 0 },
+      ctx
+    );
     expect(first.full).toBeCloseTo(150, 5);
   });
 
@@ -369,7 +373,9 @@ describe('R4: dugi i traženi dani', () => {
       availability: { runDays: [0, 1, 2, 3, 4, 5, 6], longDay: 6 },
       profile: { weeklyKm: 30, recentResult: { distanceM: HALF_M, timeSec: 6060 } }
     });
-    expect(days(make(more, EXAMPLE, EX_GOAL).doc).some((d) => d.workout?.kind === 'quality')).toBe(true);
+    expect(days(make(more, EXAMPLE, EX_GOAL).doc).some((d) => d.workout?.kind === 'quality')).toBe(
+      true
+    );
   });
 });
 

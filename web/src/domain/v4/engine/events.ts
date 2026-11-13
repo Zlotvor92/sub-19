@@ -112,11 +112,15 @@ export const deriveEvents: DeriveEventsFn = (doc, state) => {
   /* S6 (krug 4): tempa prate samo DOKAZ sa treninga — odrađen kvalitet; pripisani napredak plana menja samo
      očekivano vreme na dan trke. Ne u prozoru bolesti, bola ili pauze i ne uz takav događaj. */
   const evidence = form.history
-    .filter((c) => c.signal === 'kvalitet' && c.ignored !== true && c.date > header.form.pacesUpdatedOn)
+    .filter(
+      (c) => c.signal === 'kvalitet' && c.ignored !== true && c.date > header.form.pacesUpdatedOn
+    )
     .reduce((v, c) => v + (c.after - c.before), header.form.paceVdot);
   const troubled =
     events.some((e) => (e.kind === 'pause' || e.kind === 'fatigue') && !applied.has(e.id)) ||
-    state.pain.some((p) => p.resolvedOn === undefined || diffDays(today, p.resolvedOn) < PACE_UPDATE_DAYS) ||
+    state.pain.some(
+      (p) => p.resolvedOn === undefined || diffDays(today, p.resolvedOn) < PACE_UPDATE_DAYS
+    ) ||
     state.pauses.some((p) => diffDays(today, p.to) < PACE_UPDATE_DAYS);
   if (
     !hasResult &&

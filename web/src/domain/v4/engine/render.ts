@@ -179,7 +179,10 @@ function raceTruth(
     osećaju dobija opis napora bez s/km. Napomene iz podataka mogu da nose `{pace}`, `{paceFrom}`, `{paceTo}`
     (5 i 10 s sporije) i `{time}`; uz pravilo sa `byFeelText` trkač po osećaju dobija taj tekst. */
 /** M3 (krug 5): prognoza dana trke za ispis — novija procena iz stanja, po istim pravilima plana. */
-function raceDayShown(doc: PlanDoc, state: RunnerState | undefined): PlanDoc['header']['form']['raceDay'] {
+function raceDayShown(
+  doc: PlanDoc,
+  state: RunnerState | undefined
+): PlanDoc['header']['form']['raceDay'] {
   const h = doc.header;
   if (state === undefined) return h.form.raceDay;
   return adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
@@ -432,7 +435,9 @@ export function renderPlan(
       if (past(day) && (run !== undefined || day.date !== today || paused(day.date))) {
         /* Prošao dan: šta je urađeno (ili da nije), bez prepisivanja novim tempom. */
         if (run === undefined) {
-          lines.push(`  ${when}  ${w.text} — ${paused(day.date) ? 'pauza, bez treninga' : 'nije urađeno'}`);
+          lines.push(
+            `  ${when}  ${w.text} — ${paused(day.date) ? 'pauza, bez treninga' : 'nije urađeno'}`
+          );
         } else {
           lines.push(`  ${when}  ${w.text} — ${doneLine(run)}`);
           km += Math.round(run.distanceM / 100) / 10;

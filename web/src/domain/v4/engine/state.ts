@@ -221,7 +221,10 @@ function historyFacts(
 export const PAIN_HISTORY_DAYS = 365;
 function painHistoryOf(facts: RunnerFacts): PainFlag[] {
   return [...(facts.painHistory ?? []), ...facts.pain].filter(
-    (p) => isValidDate(p.date) && p.date <= facts.today && diffDays(facts.today, p.date) <= PAIN_HISTORY_DAYS
+    (p) =>
+      isValidDate(p.date) &&
+      p.date <= facts.today &&
+      diffDays(facts.today, p.date) <= PAIN_HISTORY_DAYS
   );
 }
 function painInYear(facts: RunnerFacts): boolean {
@@ -270,7 +273,6 @@ function plannedLoads(
   if (!longReaches(data, weeks, longMax, easy)) return { baseLoad, peakLoad: baseLoad };
   return { baseLoad, peakLoad };
 }
-
 
 /** Zona rada dana plana: prvi korak uloge `work` sa zonom (za `Run.planned`). */
 function workZone(steps: readonly Step[]): ZoneId | null {
