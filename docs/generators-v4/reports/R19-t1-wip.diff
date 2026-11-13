@@ -1,0 +1,123 @@
+diff --git a/web/src/domain/v4/engine/readiness.ts b/web/src/domain/v4/engine/readiness.ts
+index 55906ff..985ed59 100644
+--- a/web/src/domain/v4/engine/readiness.ts
++++ b/web/src/domain/v4/engine/readiness.ts
+@@ -75,8 +75,17 @@ export function effortRampDays(durationSec: Seconds): number {
+ }
+ 
+ export function pauseRampDays(pauseDays: number, reason: Pause['reason'] = 'nepoznato'): number {
++  /* R19 (stavka 1, odluka organizatora): rampa po dužini pauze — ≤ 4 dana bez rampe, 5–10 dana ≈ 75 % / 90 % / plan,
++     11–21 dan ≈ 60 / 75 / 90 % / plan; duža pauza po starom pravilu (razlog pauze) */
++  if (pauseDays <= SHORT_PAUSE_NO_RAMP_DAYS) return 0;
++  if (pauseDays <= 10) return SHORT_PAUSE_RAMP_DAYS;
++  if (pauseDays <= 21) return MID_PAUSE_RAMP_DAYS;
+   return Math.ceil(PAUSE_RAMP_FACTORS[reason] * Math.min(pauseDays, PAUSE_RAMP_MAX_DAYS));
+ }
++const SHORT_PAUSE_NO_RAMP_DAYS = 4;
++const SHORT_PAUSE_RAMP_START = 0.85;
++const SHORT_PAUSE_RAMP_DAYS = 10;
++const MID_PAUSE_RAMP_DAYS = 21;
+ 
+ export const pauseLength = (from: IsoDate, to: IsoDate): number => diffDays(to, from) + 1;
+ 
+@@ -103,7 +112,8 @@ export function rampOf(adj: Adjustment): Ramp | null {
+         lastLongSec: adj.lastLongSec ?? 0,
+         gate: length >= BLOCK_GATE_PAUSE_DAYS,
+         firstReduced: true,
+-        start: adj.baseAfter === true ? 1 : PAUSE_RAMP_START
++        /* R19: pauza do 21 dan — blaga dnevna rampa; nedeljni raspored (75/90 % referentne…) drži `smoothExit` */
++        start: adj.baseAfter === true ? 1 : length <= 21 ? SHORT_PAUSE_RAMP_START : PAUSE_RAMP_START
+       };
+     }
+     case 'pain':
+diff --git a/web/src/domain/v4/engine/replan.ts b/web/src/domain/v4/engine/replan.ts
+index 7243059..5a2c9bd 100644
+--- a/web/src/domain/v4/engine/replan.ts
++++ b/web/src/domain/v4/engine/replan.ts
+@@ -672,7 +672,7 @@ function onPause(
+         rechainFrom: null
+       });
+   const until = full ? rampEnd : (window?.to ?? rampEnd);
+-  const smooth = smoothExit(built, doc, rampEnd, state, data);
++  const smooth = smoothExit(built, doc, rampEnd, state, data, { from: ev.from, to: ev.to });
+   return {
+     doc: full ? refreshWarnings(smooth.doc, state, data) : smooth.doc,
+     until: smooth.until > until ? smooth.until : until
+@@ -702,12 +702,18 @@ function realizeLong(
+   return realize({ ...recipe, def: null, dose: 0 }, ctx);
+ }
+ 
++/** R19: prvi dugi posle pauze ≤ ovaj udeo poslednjeg dugog pre nje. */
++const RETURN_FIRST_LONG_SHARE = 0.75;
++
+ function smoothExit(
+   after: PlanDoc,
+   original: PlanDoc,
+   end: IsoDate,
+   state: RunnerState,
+-  data: DistanceData
++  data: DistanceData,
++  /** R19 (stavka 1): pauza (dani bez trčanja) — povratak po rasporedu od referentne nedelje pre pauze; R2 važi tek
++      za rast iznad referentne. */
++  ret?: { from: IsoDate; to: IsoDate }
+ ): { doc: PlanDoc; until: IsoDate } {
+   const ctxB = buildCtx(after.header, data);
+   const pace = paceCtxOf(after.header);
+@@ -775,6 +781,22 @@ function smoothExit(
+     const o = original.weeks.find((x) => x.start === weeks[i]?.start);
+     return o === undefined ? 0 : km(o);
+   };
++  const ref = ((): { km: number; long: Seconds } | null => {
++    if (ret === undefined) return null;
++    const prior = original.weeks.filter((w) => addDays(w.start, 6) < ret.from).slice(-4);
++    if (prior.length === 0) return null;
++    const lastLong = [...prior].reverse().map((w) => longSec(w)).find((x) => x > 0) ?? 0;
++    return { km: Math.max(...prior.map(km)), long: lastLong };
++  })();
++  const pauseDays = ret === undefined ? 0 : pauseLength(ret.from, ret.to);
++  const shares: readonly number[] =
++    pauseDays <= 4 ? [] : pauseDays <= 10 ? [0.75, 0.9] : pauseDays <= 21 ? [0.6, 0.75, 0.9] : [];
++  const returnShare = (i: number): { share: number | null; k: number } => {
++    const w = weeks[i];
++    if (ret === undefined || w === undefined) return { share: null, k: 0 };
++    const k = Math.floor(diffDays(w.start, mondayOf(addDays(ret.to, 1))) / 7) + 1;
++    return { share: k >= 1 ? (shares[k - 1] ?? null) : null, k };
++  };
+   let peakIdx = -1;
+   /* posle rampe (nedelja u rampi ne može biti vrh) */
+   for (let i = Math.max(base, first); i < n - 2; i += 1) {
+@@ -818,9 +840,12 @@ function smoothExit(
+     const prev = weeks.slice(lo, i);
+     const pKm = Math.max(...prev.map(km));
+     /* Z1 (krug 7): posle prekida bez izuzetka prvobitnog plana (ni za nedelju) */
+-    const kmCap = minusOne
++    let kmCap = minusOne
+       ? Math.min(RETURN_WEEK_JUMP_SHARE * pKm, km(weeks[i - 1] as PlanWeek))
+       : RETURN_WEEK_JUMP_SHARE * pKm;
++    /* R19 (stavka 1): referentna nedelja (najveća od poslednje 4 pre pauze) i poslednji dugi pre nje; nedelje
++       povratka po rasporedu (udeo referentne, ne iznad plana), posle njega R2 samo iznad referentne */
++    const sched = returnShare(i);
+     /* Z1 (krug 7): dugi se meri od POSLEDNJEG dugog (ne najvećeg od tri) i važi i preko rasterećenja/provere —
+        posle prekida nema izuzetka „prvobitan plan ima isti skok" */
+     const lastLong =
+@@ -828,10 +853,19 @@ function smoothExit(
+         .reverse()
+         .map((x) => longSec(x))
+         .find((x) => x > 0) ?? 0;
+-    const longCap = minusOne
++    let longCap = minusOne
+       ? lastLong
+       : /* krug 14 (M2): rast dugog posle prekida najviše + 20 min (i kad je + 25 % više) */
+         lastLong + RETURN_LONG_JUMP_SEC;
++    if (ref !== null && !minusOne) {
++      if (sched.share !== null) {
++        kmCap = Math.min(origKm(i), sched.share * ref.km);
++        if (ref.long > 0) longCap = sched.k === 1 ? RETURN_FIRST_LONG_SHARE * ref.long : ref.long;
++      } else {
++        kmCap = Math.max(kmCap, Math.min(ref.km, origKm(i)));
++        longCap = Math.max(longCap, ref.long);
++      }
++    }
+     /* krug 15: lestvica dugog — dugi raste do nje, u granici rasta */
+     const rung = ladder.get(i);
+     /* lestvica je u km (nominalno, lagan tempo); granica rasta (+ 20 min) se meri stvarnim trajanjem — blok u tempu
