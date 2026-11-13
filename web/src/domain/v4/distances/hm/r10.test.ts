@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { longCapAfterEvent, noCatchUp, returnsToOriginal } from '../../engine/testdata/round10';
 import { paceCtxOf, renderPlan, summarize } from '../../engine';
+import { effortNoFastDays } from '../../engine/readiness';
 import { hm } from './index';
 import { SCENARIOS } from './testdata/scenarios';
 
@@ -133,5 +134,30 @@ describe('krug 10 — stavka 5: kasna bolest i posle trke na ciljnoj dužini', (
       expect(sec(w2, 'long'), `s${String(s.no)}`).toBeLessThanOrEqual(cap);
     }
     expect(seen).toBeGreaterThan(0);
+  });
+});
+
+describe('krug 10 — stavka 11: oporavak posle trke, tekst i plan isto', () => {
+  it('E5: prvi brz trening nije pre dana koji kaže napomena (isto pravilo kao rampa)', () => {
+    for (const s of SCENARIOS.filter((x) => x.title.startsWith('E5'))) {
+      const r: any = s.run();
+      const race = (r.afterState.runs as any[]).filter((x) => x.effort === 'race').pop();
+      if (race === undefined) continue;
+      const days = effortNoFastDays(race.durationSec as number);
+      const first = (r.after.weeks as any[])
+        .flatMap((w) => w.days as any[])
+        .find(
+          (d) =>
+            d.date > race.date &&
+            (d.workout?.kind === 'quality' ||
+              d.workout?.kind === 'test' ||
+              (d.workout?.kind === 'long' && d.workout.workSec > 0))
+        );
+      if (first === undefined) continue;
+      const gap = Math.round(
+        (Date.parse(first.date as string) - Date.parse(race.date as string)) / 86400000
+      );
+      expect(gap, `s${String(s.no)}`).toBeGreaterThan(days);
+    }
   });
 });

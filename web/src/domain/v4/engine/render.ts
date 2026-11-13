@@ -21,7 +21,7 @@ import {
 } from './format';
 import { weekCost } from './guard';
 import { paceCtxOf } from './load';
-import { effortRampDays } from './readiness';
+import { effortNoFastDays } from './readiness';
 import { adjustRaceDay } from './plan';
 import { countWeeks } from './template';
 import type {
@@ -259,7 +259,9 @@ export function raceNotes(
     const feel = rule?.byFeelText === undefined ? undefined : data.texts[rule.byFeelText];
     out.push(fillText(h.paces.byFeel && feel !== undefined ? feel : note, values));
   }
-  out.push(line(data, 'trka.oporavak', { days: count(effortRampDays(raceDay.expectedSec), DAYS) }));
+  out.push(
+    line(data, 'trka.oporavak', { days: count(effortNoFastDays(raceDay.expectedSec), DAYS) })
+  );
   return out;
 }
 

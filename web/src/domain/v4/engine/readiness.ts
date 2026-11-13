@@ -59,6 +59,14 @@ export interface Ramp {
   firstReduced: boolean;
 }
 
+/** Krug 10 (stavka 11): dani posle punog napora bez brzog treninga — isto pravilo kao rampa u planu (brz rad tek kad
+    faktor rampe dostigne `QUALITY_FROM_F`), najmanje `NO_FAST_DAYS_AFTER_EFFORT`. */
+export function effortNoFastDays(durationSec: Seconds): number {
+  const days = effortRampDays(durationSec);
+  const firstFast = Math.ceil(((QUALITY_FROM_F - RAMP_START) / RAMP_SPAN) * days);
+  return Math.max(NO_FAST_DAYS_AFTER_EFFORT, firstFast - 1);
+}
+
 export function effortRampDays(durationSec: Seconds): number {
   return Math.max(1, Math.ceil(durationSec / 60 / EFFORT_MIN_PER_RAMP_DAY));
 }
