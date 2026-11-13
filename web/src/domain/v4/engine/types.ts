@@ -223,6 +223,8 @@ export interface Decisions {
   /** M3 (krug 5): prognoza dana trke bez napretka od obima (nalaz `dugi-za-distancu`) i faktor širenja raspona
       (kratak staž); ispis i plan ih primenjuju istom funkcijom (`adjustRaceDay`). */
   raceDayNoProgress?: boolean;
+  /** T7 (krug 6): polazni dugi je iz stvarnih trčanja (poslednje 4 nedelje) — dugi kreće od njega. */
+  longStartFromRuns?: boolean;
   raceDayWiden?: number;
   /** Bazno nedeljno opterećenje trkača na dan nastanka plana. */
   baseLoad: LoadPoints;

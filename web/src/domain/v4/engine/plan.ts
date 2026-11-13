@@ -216,6 +216,7 @@ export function createPlan(
     ...decided,
     ...(fromRuns
       ? {
+          longStartFromRuns: true,
           longStartSec: Math.min(
             decided.longStartSec,
             Math.round((state.longestRecentSec + longStepOf(data.safety, easyPace)) / 60) * 60

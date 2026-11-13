@@ -216,7 +216,9 @@ export function longPlan(
     const full = Math.min(d.longStartSec, d.longMaxSec);
     /* P2 (krug 5): 85 % samo kad je polazni dugi na plafonu (≥ `longStartFloorFromCapShare` × najduži dozvoljeni);
        inače stabilan trkač kreće od onoga što već trči */
+    /* T7 (krug 6): polazni dugi iz stvarnih trčanja nije procena — dugi kreće od njega (P3 B) */
     const atCap =
+      d.longStartFromRuns !== true &&
       d.longStartSec >= (ctx.data.safety.longStartFloorFromCapShare ?? 0) * d.longMaxSec;
     const startFloor = atCap ? ctx.data.safety.longStartFloorShare : undefined;
     /* posle polaznog pod raste dalje pola koraka po nedelji gradnje (D1 dopuna: p04 1 h 50 → 2 h 10) */
