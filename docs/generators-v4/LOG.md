@@ -423,3 +423,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Ostalo 6 ispravki (s12 rep u nedelje sužavanja, zamenski prag istog oblika, nedelja −2 tempo trke, prvi dugi posle
   bolesti, predlog dana ≥ 30 min, P3 B polazni dugi) — idu uz rad na sledećoj distanci.
 - Čeka se drugi sudija.
+
+### 13. 11. 2026, 04:26 — drugi sudija kruga 5 (`93759ea`); HM NIJE zatvoren, krug 6
+- Drugi sudija: planovi 70,2 → 69,7 (0 ≥ 80; 6 ≥ 70; p06 63, p10 60), v1 68 → 71, v2 76 → 76, scenariji 79 → 72,9
+  (s09 = 3: posle propuštenog dugog sledeći dugi 15 → 6 km; s12 = 5), parovi 72 → 63.
+- Trener kaže „zatvoren", ali je scenarije i parove uglavnom nasledio iz pregleda kruga 4 (sam navodi kao ograničenje);
+  drugi sudija ih je čitao i našao stvarne greške u `replan` i u tekstu. To su pravila MOTORA — prenela bi se na sve
+  distance. ODLUKA: generisanje novog plana je zatvoreno (ne dira se), ali HM se ne zatvara dok ponovno planiranje i
+  istinitost teksta ne prođu: krug 6 po `briefs/R6-ROUND6.md`, isti Opus tab. 10K se ne otvara pre toga.
