@@ -257,7 +257,10 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     v.push(
       `najduži dugi ${String(longestKm)} km / ${String(Math.round(longestMin))} min < 10 km ili 1 h`
     );
-  if (longestMin > 101) v.push(`najduži dugi ${String(Math.round(longestMin))} min > 1 h 40`);
+  /* spor nivo (krug 2, B2): do 1 h 50 */
+  const longCapMin = doc.header.decisions.level === 'spor' ? 111 : 101;
+  if (longestMin > longCapMin)
+    v.push(`najduži dugi ${String(Math.round(longestMin))} min > ${String(longCapMin - 1)} min`);
 
   /* ---- krug 5 (P5) ---- */
   const lvl = doc.header.decisions.level;

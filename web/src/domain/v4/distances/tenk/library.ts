@@ -49,7 +49,7 @@ export const LIBRARY: WorkoutDef[] = [
     tags: ['blok'],
     impact: 'obican',
     requires: { minDoseSec: 480 },
-    main: { kind: 'finish-block', zone: 'RP' },
+    main: { kind: 'finish-block', zone: 'RP', by: 'trajanje' },
     text: 'dugi-rp',
     notes: ['napomena.dugi-blok']
   },
@@ -61,11 +61,12 @@ export const LIBRARY: WorkoutDef[] = [
     tags: ['blok'],
     impact: 'obican',
     requires: { minDoseSec: 480 },
-    main: { kind: 'finish-block', zone: 'T' },
+    main: { kind: 'finish-block', zone: 'T', by: 'trajanje' },
     text: 'dugi-prag',
     notes: ['napomena.dugi-blok']
   },
-  /* progresivno: poslednja ≈ 3 km od laganog ka pragu (ciljni p01 ned 9) */
+  /* progresivno: poslednjih ≈ 10–15 min od laganog ka pragu (ciljni p01 ned 9: 3 km). Krug 2: završnica i
+     progresija zadate trajanjem — na 0,5 km je kod malog obima prelazila plafon doze */
   {
     id: 'dugi-progresivno',
     kind: 'long',
@@ -73,7 +74,7 @@ export const LIBRARY: WorkoutDef[] = [
     tags: ['progresija'],
     impact: 'obican',
     requires: { minDoseSec: 480 },
-    main: { kind: 'progressive', zone: 'T' },
+    main: { kind: 'progressive', zone: 'T', by: 'trajanje' },
     text: 'dugi-progresivno'
   },
 
@@ -130,14 +131,15 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'usponi-kratki'
   },
 
-  /* ---------------------------------------------------------------- brzina (osnova): 200–400 m i usponi 45 s */
+  /* ---------------------------------------------------------------- brzina (osnova): 200–400 m i usponi 45 s
+     krug 2: 200/300 m i intervali 800/1000 m od VDOT 30 — spor trkač (p04) inače ima samo uspone i 7 × 3 min šest puta */
   {
     id: 'r-200',
     kind: 'quality',
     stimulus: 'brzina',
     tags: [],
     impact: 'visok',
-    requires: { needsKnownPaces: true, minVdot: 36 },
+    requires: { needsKnownPaces: true, minVdot: 30 },
     main: {
       kind: 'reps',
       zone: 'R',
@@ -171,7 +173,7 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'brzina',
     tags: [],
     impact: 'visok',
-    requires: { needsKnownPaces: true, minVdot: 36 },
+    requires: { needsKnownPaces: true, minVdot: 30 },
     main: {
       kind: 'reps',
       zone: 'R',
@@ -297,7 +299,7 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'intervali',
     tags: [],
     impact: 'obican',
-    requires: { needsKnownPaces: true, minVdot: 36 },
+    requires: { needsKnownPaces: true, minVdot: 30 },
     main: {
       kind: 'reps',
       zone: 'I',
@@ -314,7 +316,7 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'intervali',
     tags: [],
     impact: 'obican',
-    requires: { needsKnownPaces: true, minVdot: 36 },
+    requires: { needsKnownPaces: true, minVdot: 30 },
     main: {
       kind: 'reps',
       zone: 'I',

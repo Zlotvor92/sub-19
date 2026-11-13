@@ -34,7 +34,7 @@ export const SAFETY: SafetyNumbers = {
   peakLadder: {
     rows: [
       { maxBaseKm: 25.5, minWeeks: 18, overBase: 1.95 },
-      { maxBaseKm: 25.5, minWeeks: 12, overBase: 1.8 },
+      { maxBaseKm: 25.5, minWeeks: 12, overBase: 1.72 },
       { maxBaseKm: 25.5, minWeeks: 0, overBase: 1.6 },
       { maxBaseKm: 35.5, minWeeks: 12, overBase: 1.75 },
       { maxBaseKm: 35.5, minWeeks: 0, overBase: 1.55 },
@@ -55,13 +55,14 @@ export const SAFETY: SafetyNumbers = {
     srednji: 560,
     brz: 600
   },
-  /* najduži dugi: 60–100 min (ciljni p03 ≈ 93 min, p11 ≈ 85 min); dugi za 10 km nije duži od 1 h 40 */
+  /* najduži dugi: 60–100 min (ciljni p03 ≈ 93 min, p11 ≈ 85 min); dugi za 10 km nije duži od 1 h 40, osim sporog
+     nivoa (VDOT < 40): 1 h 50 ≈ 15 km — krug 2 (B2): sa 1 h 40 (14 km) obim sporog trkača sa 5 dana ne raste (p04) */
   longMaxSec: {
     pocetnik: 5400,
     'pocetnik-nov': 4800,
     povratnik: 5700,
     mali: 5700,
-    spor: 6000,
+    spor: 6600,
     srednji: 6000,
     brz: 6000
   },

@@ -744,7 +744,7 @@ describe('trenerski zahtevi za 10 km (coach/target/10K/README.md)', () => {
       } else expect(share, p.id).toBeLessThanOrEqual(0.5);
       const longest = Math.max(...stats.map((s) => s.longSec));
       const longestKm = Math.max(...stats.map((s) => s.longKm));
-      expect(longest, p.id).toBeLessThanOrEqual(6060);
+      expect(longest, p.id).toBeLessThanOrEqual(d.level === 'spor' ? 6660 : 6060);
       /* najmanje 1 h ili dužina trke (brz trkač malog obima: 10 km za 48 min) */
       expect(longest >= 3540 || longestKm >= 9.95, p.id).toBe(true);
     }

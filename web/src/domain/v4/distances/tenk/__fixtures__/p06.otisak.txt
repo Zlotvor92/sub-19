@@ -32,7 +32,7 @@
 2026-12-03 | trening | easy | 5.5 | lagano 5,5 km | - | - | -
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
 2026-12-05 | trening | easy | 5.5 | lagano 5,5 km | - | - | -
-2026-12-06 | trening | long | 9.0 | dugi 9 km, završnih 3 km u tempu trke | - | - | -
+2026-12-06 | trening | long | 9.5 | dugi 43 min, završnih 11 min u tempu trke | - | - | -
 2026-12-07 | trening | easy | 5.0 | lagano 5 km | - | - | -
 2026-12-08 | trening | easy | 5.0 | lagano 5 km | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -

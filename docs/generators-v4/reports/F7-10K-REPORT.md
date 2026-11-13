@@ -74,3 +74,39 @@ P2 B vrh 22 (A 27), hod-trk, širi raspon; P3 A povratnik (kvalitet od 3. ned, d
   trajanju meri samo K8; plan sa `lagan-kratak` (Z8) nema donju granicu brzog rada u vršnoj ni 60 % nedelje trke.
 - `tenk.test` mreža: `taper` za 6-nedeljne planove sporog trkača velikog obima opravdan kao zahtev motoru (t. 2).
 - Bez drugog sudije i ocene trenera za 10 km; ciljni planovi trenera nisu dostignuti u dozi (namerno, R3 S1).
+
+## Krug 2 (brief R9 § B; ocena trenera `coach/ROUND-V4-10K-01.md`), 13. 11. 2026
+Samo `distances/tenk/` (motor, forma i HM nedirnuti). V4 skup: 724 prolaze, 14 očekivano pada, 0 pada; kapija
+10 km 0 prekršaja; `target-compare` 16 od 54 (krug 1: 14).
+| # | stanje | test |
+|---|---|---|
+| B1 | urađeno: dug plan — rasterećenja unazad od provere N−6, nema rasterećenja između provere i najteže; tempo trke u razvoju (N−7 3 × 1 km), pa 5 × 1 → 4 × 1,6 → najteža (p01 ned 9–13: 3 × 1, provera, 5 × 1, 4 × 1,6 + I, 6 × 1 + I) | `tenk.test` B1 |
+| B2 | delimično: lagan ≤ 80 % dugog i kod 3 dana, namera dugog od 80 % plafona, viši plafoni nivoa, spor dugi do 1 h 50; p04 × 1,13 → × 1,20, p01/p09 × 1,34, p08 ned 1 92 → 97 %; p12 i P3 A bez pet istih nedelja. **Nije:** × 1,25–1,30 za p04 i p12 (× 1,15), p08 3 dana ostaje × 1,08 (dugi ≤ 100 min + 2 dana) | B2 |
+| B3 | urađeno u podacima: 8 ned → jedna nedelja sužavanja + nedelja trke; N−2 ima tempo trke (p07); p02/p06 čekaju A1 | B3 |
+| B4 | p06 i dalje bez kvaliteta u nedeljama gradnje, p02 bez tempa trke u N−2/N−1 — A1 (motor), ne zaobilazi se | B4 (`WAIT_A1`) |
+| B5 | `raceStartPaceOffsetSec` 3/6 s/km (dodao tab motora, R8 t. 19); tekst dana trke 10 km bez HM rečenica | `krug 8 — t. 19` |
+| B6 | testovi B1–B4, kapija (spor dugi ≤ 1 h 50), ispisi osveženi | — |
+Usput: intervali 800/1000 m i brzina 200/300 m od VDOT 30 (p04 je imao 7 × 3 min šest puta); svaka treća nedelja
+osnove kratki intervali; jedan kvalitet (3 dana) smenjuje dodatak laganog dana; završnica i progresija u dugom zadate
+trajanjem (na 0,5 km prelazile plafon kod malog obima).
+
+| profil | ned | polazno → vrh km | najduži dugi | brz rad najteža | rad ned −2 / −1 |
+|---|---|---|---|---|---|
+| p01 | 16 | 40 → 53,5 (× 1,34) | 16,5 km / 100 min | 21 % | 45 / 20 |
+| p02 | 8 | 30 → 32,8 (× 1,09) | 11,5 / 64 min | 18 % | 10 / 9 (A1) |
+| p03 | 12 | 20 → 28,6 (× 1,43) | 12,6 / 95 min | 14 % | 21 / 12 |
+| p04 | 18 | 50 → 59,9 (× 1,20) | 15,9 / 110 min | 16 % | 48 / 22 |
+| p05 | 12 | 80 → 105,6 (× 1,32) | 21,6 / 97 min | 14 % | 47 / 26 |
+| p06 | 8 | 30 → 36,3 (× 1,21) | 11 / 54 min | 7 % | 0 / 9 (A1) |
+| p07 | 8 | 50 → 61,5 (× 1,23) | 16,9 / 97 min | 18 % | 42 / 20 |
+| p08 | 18 | 40 → 43,2 (× 1,08) | 17,2 / 98 min | 17 % | 29 / 11 |
+| p09 | 12 | 40 → 53,6 (× 1,34) | 16,4 / 97 min | 20 % | 43 / 20 |
+| p10 | 18 | 20 → 33,0 (× 1,65) | 14,4 / 110 min | 16 % | 29 / 14 |
+| p11 | 18 | 15 → 25,9 (× 1,73) | 11,8 / 85 min | 19 % | 13 / 11 |
+| p12 | 12 | 35 → 40,2 (× 1,15) | 12,6 / 90 min | 14 % | 26 / 11 |
+
+Pročitao dan po dan p01, p04, p08, p12: specifična faza puna (p01 gore; p04 ned 13–16 5 × 1, 3 × 1,6 + I, 5 × 1 + I,
+3 × 1,6 + I; p08 3 × 1 / provera / 5 × 1 / I / 3 × 2 / 4 × 1,6; p12 2 × 1,2 → 3 × 1,6 → 4 × 1,2); bez istih uzastopnih
+nedelja (test). Ostaje: p01 najteža je 6 × 1 km, ne 3 × 2 km (plafon 29 min spušta 3 × 2 km na 2 × 2 kod sporijih,
+pa je unos prepušten rotaciji); „vršna nedelja" u ispisu je nedelja najvećeg obima (Z9), jednu pre najteže;
+scenariji s07, s15, s26 i dalje imaju nalaz čuvara (A6, motor); p04 nedelja 5 bez utorka (brzina ispala).
