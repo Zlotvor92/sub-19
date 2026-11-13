@@ -526,3 +526,14 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   Simulacije koriste isto. Zaštita: I/R ne brže za > 6 s/km, tempo trke ne sporiji za > 8 s/km po profilu.
 - Radi tab forme (Opus) u `fitness/` i potrebnom delu `engine/`; tab motora miruje. Otisci HM se menjaju jednom, namerno.
 - Rizik [srednja]: β po obimu je izveden iz jednog trkača (vlasnik); 10K/5K/maraton zavise od istog pravila.
+
+### 13. 11. 2026, 07:42 — 10K isporučen (`aca41b0`, 50 min), 9 zahteva za motor → krug 8
+- Tab 10K: 698 testova zeleno + 19 očekivanih padova, kapija 10K 0 prekršaja 12/12, otisci HM nepromenjeni
+  (nisam još sam pokretao — proveravam posle kruga 8 i forme, jer oba menjaju motor) [srednja].
+- 12 profila, 27 scenarija, parovi, ispisi `plans/10K/`. Slabo: p02 bez tempa trke u N−2/N−1, p06 8 % brzog u vršnoj,
+  p11 prognoza −5,7 % optimistična za početnika.
+- Pouka: obrazac nosi (druga distanca za < 1 h), a motor ima 9 mesta gde nije opšti (konstanta u čuvaru, doze kod
+  velikog obima, minReps, pauza kod 3 dana, brisanje umesto skraćenja kvaliteta, tempo na dan trke, id distance).
+- ODLUKA: krug 8 po `briefs/R8-ENGINE.md` — Opus tab motora `session_01GnHHiWa47Guy3uDTKR2kE5`; uporedo tab forme radi
+  ličnu krivu (ne diraju iste fajlove). Ocena 10K (trener + Fable drugi sudija) tek posle oba. 5K i maraton posle
+  ocene 10K.
