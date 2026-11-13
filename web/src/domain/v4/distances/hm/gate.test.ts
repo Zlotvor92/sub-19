@@ -93,6 +93,8 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
     'p01',
     'p02',
     'p03',
+    /* krug 5 (D7): p07 1 s posle ponovnog planiranja (plafon tempa trke menja pripisani napredak) */
+    'p07',
     'p08',
     'vlasnik-v1',
     'vlasnik-v2'

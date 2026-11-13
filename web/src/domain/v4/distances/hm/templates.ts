@@ -340,8 +340,9 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     week(RAZVOJ, 'build', 0.97, { len: 0.95 }, [S('prag-p', 0.9), STRIDES]),
     week(RAZVOJ, 'build', 1, { len: 1 }, [S('prag-p', 1), HILLS_SHORT]),
     /* N−5: tempo trke 2 × 2 km + blok 3 km */
+    /* krug 5 (D7): tempo trke početnika ≤ 45 min nedeljno (uklj. blok) — prva doza niža (K7) */
     week(SPEC, 'build', 1, { len: 0.9, stimulus: 'dugi-rp', dose: 0.37 }, [
-      S('tempo-trke', 0.6),
+      S('tempo-trke', 0.42),
       STRIDES
     ]),
     week(SPEC, 'recovery', 1, { len: 0.74 }, [S('prag-p', 0.35), STRIDES]),

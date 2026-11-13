@@ -149,6 +149,19 @@ export const SAFETY: SafetyNumbers = {
   /* krug 5 (E4; trener § E4): bol 4/10 — 2 dana odmora i 7–10 dana lagano, kasnije nedelje netaknute; od 5/10
      obim se vraća kao posle pauze */
   painReturnFromLevel: 5,
+  /* krug 5 (D7): tempo trke (uklj. blok u dugom) nedeljno — početnik ≤ 45, srednji ≤ 60, napredni ≤ 75 min */
+  weeklyZoneMaxSec: {
+    zone: 'RP',
+    byLevel: {
+      pocetnik: 2700,
+      'pocetnik-nov': 2700,
+      povratnik: 3600,
+      mali: 3600,
+      spor: 3600,
+      srednji: 3600,
+      brz: 4500
+    }
+  },
   /* krug 5 (D3; trener § D6): trkač sporiji od 2:05 (očekivano na dan trke; p03, p10) — dugi ≤ vreme trke + 5 min, blok u dugom ≤ 35 min */
   longVsRace: { fromRaceSec: 7500, overSec: 300, blockMaxSec: 2100 },
   taper: { lastDays: 7, weekBeforeFromDays: 14, weekBeforeMaxQuality: 2, weekBeforeMaxOfPeak: 0.6 },

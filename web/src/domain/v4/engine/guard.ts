@@ -287,7 +287,7 @@ export const guard: GuardFn = (doc, _state, data) => {
     0,
     ...costs
       .filter((c) => c.week.intent.kind === 'peak' && !inAnyWindow(c.week, causes))
-      .map((c) => c.workSec)
+      .map((c) => c.fastSec)
   );
 
   costs.forEach((c, i) => {
@@ -437,7 +437,7 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (
       week.intent.kind === 'taper' &&
       peakWork > 0 &&
-      c.workSec > GUARD_TAPER_WORK_SHARE * peakWork
+      c.fastSec > GUARD_TAPER_WORK_SHARE * peakWork + GUARD_DOSE_TOLERANCE_SEC
     ) {
       report(
         'taper',

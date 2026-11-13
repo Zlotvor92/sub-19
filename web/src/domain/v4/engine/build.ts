@@ -667,6 +667,12 @@ function layoutOnce(
     maxWorkMin
   );
   const sharp = s.sharpening;
+  /* D7 (krug 5): plafon rada jedne zone nedeljno (tempo trke uklj. blok u dugom) po nivou */
+  const zoneCap = s.weeklyZoneMaxSec;
+  let zoneLeft =
+    zoneCap === undefined ? Number.POSITIVE_INFINITY : (zoneCap.byLevel[d.level] ?? Number.POSITIVE_INFINITY);
+  const inZone = (def: WorkoutDef | null): boolean =>
+    zoneCap !== undefined && def !== null && mainZone(def.main) === zoneCap.zone;
   const fixed = new Map<IsoDate, Recipe>();
   const addons = new Map<IsoDate, Recipe>();
   let fixedLoad = 0;
@@ -683,11 +689,13 @@ function layoutOnce(
     let dose = 0;
     if (slots.long.wanted > 0 && def !== null) {
       dose = budget.take(slots.long.wanted, slots.long.extra);
+      if (inZone(def)) dose = Math.min(dose, zoneLeft);
       if (dose < minDoseOf(def, ctx)) {
         def = steadyLongDef(ctx, null);
         dose = 0;
       } else {
         budget.book(dose, slots.long.extra);
+        if (inZone(def)) zoneLeft -= dose;
       }
     }
     fix(dateOf(longWd), { type: 'long', sec: week.longSec, def, dose, slot: slots.long.slot });
@@ -763,12 +771,16 @@ function layoutOnce(
       fixedSec += summarize(realize(recipe, ctx), ctx.pace).durationSec;
       continue;
     }
-    const dose = budget.take(item.wanted, item.extra);
+    const dose = Math.min(
+      budget.take(item.wanted, item.extra),
+      inZone(item.def) ? zoneLeft : Number.POSITIVE_INFINITY
+    );
     if (dose < minDoseOf(item.def, ctx)) continue;
     const recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
     const cost = summarize(realize(recipe, ctx), ctx.pace);
     if (keepDays && !roomFor(item.date, cost.load, cost.durationSec)) continue;
     budget.book(dose, item.extra);
+    if (inZone(item.def)) zoneLeft -= dose;
     fix(item.date, recipe);
     placedQuality += 1;
   }

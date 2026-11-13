@@ -221,6 +221,18 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
       return 'lagan dan otpao (ostatak < 25 min) — motor ne vraća ostatak';
   }
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
+  /* krug 5 (D7): tempo trke na nedeljnom plafonu nivoa — skraćen rad ostavlja nedelju ispod cilja */
+  const zc = hm.safety.weeklyZoneMaxSec;
+  if (f.check === 'ispod-cilja' && zc !== undefined && st !== undefined) {
+    const capSec = zc.byLevel[d.level] ?? Number.POSITIVE_INFINITY;
+    const rp = st.week.days.reduce((sum, x) => {
+      const w = x.workout;
+      const step = w?.steps.find((y) => 'role' in y && y.role === 'work');
+      const zone = step !== undefined && 'target' in step && step.target.type === 'zone' ? step.target.zone : null;
+      return sum + (zone === zc.zone ? (w?.workSec ?? 0) : 0);
+    }, 0);
+    if (rp >= capSec - 180) return 'tempo trke na nedeljnom plafonu nivoa (D7)';
+  }
   /* krug 4 (S2, presuda trenera): korak nedelje je + 8 % ILI + 3 km — kod malog obima + 3 km je više od 10 % */
   if (f.check === 'skok' && st !== undefined && f.weekIndex !== null) {
     const prev = stats.slice(Math.max(0, f.weekIndex - 4), f.weekIndex - 1).map((x) => x.km);

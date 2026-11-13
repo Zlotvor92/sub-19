@@ -766,6 +766,9 @@ export interface SafetyNumbers {
   /** Dugi prema vremenu trke (krug 5, D3): za očekivano vreme ≥ `fromRaceSec` dugi ≤ vreme trke + `overSec`, a blok
       ili progresija u dugom ≤ `blockMaxSec`. */
   longVsRace?: { fromRaceSec: Seconds; overSec: Seconds; blockMaxSec: Seconds };
+  /** Najviše rada u jednoj zoni nedeljno po nivou (krug 5, D7: tempo trke uklj. blok u dugom); nivo bez broja
+      nema plafon. */
+  weeklyZoneMaxSec?: { zone: ZoneId; byLevel: Readonly<Record<LevelId, Seconds>> };
   /** Bol od ovog nivoa vraća obim kao posle pauze; niži menja samo dane u prozoru zaštite (krug 5, E4).
       Podrazumevano 4. */
   painReturnFromLevel?: number;
