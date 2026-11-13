@@ -140,3 +140,18 @@ describe('krug 9 — A16: trka na ciljnoj dužini se usvaja cela', () => {
     }
   });
 });
+
+describe('krug 9 — A5: u prozoru bola/bolesti nijedna zona se ne ubrzava', () => {
+  it('scenariji bolesti, bola i više događaja: posle tempa nisu brža ni u jednoj zoni', () => {
+    const bad: string[] = [];
+    for (const s of SCENARIOS.filter((x) => /^E(2|4|7)/.test(x.title))) {
+      const r: any = s.run();
+      const a = r.after.header.paces;
+      const b = r.before.header.paces;
+      if (b.byFeel) continue;
+      for (const z of ['easy', 'M', 'T', 'I', 'R', 'RP'] as const)
+        if (a[z] < b[z]) bad.push(`s${String(s.no)} ${z} ${String(b[z])} → ${String(a[z])}`);
+    }
+    expect(bad).toEqual([]);
+  });
+});

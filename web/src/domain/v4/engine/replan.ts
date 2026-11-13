@@ -78,6 +78,7 @@ import type {
   PlanEvent,
   PlanHeader,
   PlanWeek,
+  Paces,
   ReplanFn,
   RunnerState,
   Transfer,
@@ -166,12 +167,16 @@ function onResult(
             ? { transfer: transferOf(state, header) }
             : {})
         },
-        paces: zonePaces(
-          paceVdot,
-          data.distanceM,
-          false,
-          data.safety.intervalPaceFloor,
-          transferOf(state, header)
+        paces: noFasterInWindow(
+          zonePaces(
+            paceVdot,
+            data.distanceM,
+            false,
+            data.safety.intervalPaceFloor,
+            transferOf(state, header)
+          ),
+          header,
+          state.today
         ),
         warnings: header.warnings.filter(
           (w) =>
@@ -894,6 +899,30 @@ function onFatigue(
 }
 
 /** F4-K2: lična kriva forme za nova tempa — iz tekuće procene; bez nje ostaje ona iz zaglavlja. */
+/** A5 (krug 9): dok traje prozor bola ili bolesti/pauze (do kraja rampe + 28 dana), nijedna zona se ne ubrzava —
+    nova tempa su po zoni sporija od dva. */
+function noFasterInWindow(next: Paces, header: PlanHeader, today: IsoDate): Paces {
+  if (header.paces.byFeel) return next;
+  const active = (header.adjustments ?? []).some((a) => {
+    if (a.kind !== 'pain' && a.kind !== 'pause') return false;
+    const w = adjustmentWindow(a);
+    return w !== null && w.from <= today && addDays(w.rampEnd, 28) >= today;
+  });
+  if (!active) return next;
+  const old = header.paces;
+  return {
+    ...next,
+    easySlow: Math.max(next.easySlow, old.easySlow),
+    easyFast: Math.max(next.easyFast, old.easyFast),
+    easy: Math.max(next.easy, old.easy),
+    M: Math.max(next.M, old.M),
+    T: Math.max(next.T, old.T),
+    I: Math.max(next.I, old.I),
+    R: Math.max(next.R, old.R),
+    RP: Math.max(next.RP, old.RP)
+  };
+}
+
 function transferOf(state: RunnerState, header: PlanHeader): Transfer | undefined {
   return state.form.transfer ?? header.form.transfer;
 }
@@ -916,12 +945,16 @@ function onFormUpdate(
         ? { transfer: transferOf(state, doc.header) }
         : {})
     },
-    paces: zonePaces(
-      ev.vdot,
-      data.distanceM,
-      byFeel,
-      data.safety.intervalPaceFloor,
-      transferOf(state, doc.header)
+    paces: noFasterInWindow(
+      zonePaces(
+        ev.vdot,
+        data.distanceM,
+        byFeel,
+        data.safety.intervalPaceFloor,
+        transferOf(state, doc.header)
+      ),
+      doc.header,
+      state.today
     )
   };
   return { doc: { ...doc, header }, until: header.goal.raceDate };
