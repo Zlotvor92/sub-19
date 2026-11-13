@@ -231,6 +231,13 @@ export interface Decisions {
   doseBaseSec?: Readonly<Record<StimulusTag, Seconds>>;
   /** Množilac vrha iz lestvice (S2), zapamćen da preračun posle pauze koristi isti. */
   peakOverBase?: number;
+  /** Polazni obim u minutima kad je istorija merodavna (S8a): lanac rasta kreće od stvarnih minuta, ne od bodova
+      (trkač koji sve trči brže ima više bodova nego minuta). Nema ga: lanac kreće od `baseLoad`. */
+  baseVolumeMin?: number;
+  /** Stvarni prosek km iz istorije (S8a) — „Polazim od ≈ N km". */
+  baseKm?: number;
+  /** Tegoba u poslednjih 12 meseci (S8e): bez unosa visokog udara prve 4 nedelje. */
+  painCaution?: boolean;
   warmupSec: Seconds;
   cooldownSec: Seconds;
   runDays: Weekday[];
@@ -483,8 +490,9 @@ export interface RunnerState {
   weeksSincePause?: number | null;
   /** Bol u poslednjih 12 meseci (krug 4, S2/S8e: opreznost rasta i izbora). */
   painHistory?: PainFlag[];
-  /** Prosek km poslednjih nedelja kad je istorija merodavna (krug 4, S8a); `null` = nije. */
-  historyWeeklyKm?: number | null;
+  /** Prosek km i minuta poslednje 4 cele nedelje kad je istorija merodavna (krug 4, S8a); nema ih kad nije. */
+  historyWeeklyKm?: number;
+  historyWeeklyMin?: number;
   /** Prosečan lagani tempo istorije brži od brže granice laganog (krug 4, S8d). */
   easyTooFast?: boolean;
   /** Neispravan unos koji je `buildState` morao da preskoči da bi izračunao stanje (datum, nivo bola…); `plan` ga
@@ -778,6 +786,8 @@ export interface AdequatePrep {
   minLongKm: number;
   /** Dugi je dovoljan i kad traje bar ovoliko (krug 4, S3: „15 km ili 1 h 50"). */
   minLongSec?: Seconds;
+  /** Dugi za distancu u km za proveru `dugi-za-distancu` (S3); bez njega `minLongKm`. */
+  longCheckKm?: number;
   /** Provera `dugi-za-distancu` važi za plan od bar ovoliko nedelja (S3). */
   longCheckMinWeeks?: number;
   /** Staž (nedelje) ispod koga trkač nosi upozorenje i širi raspon (S8e). */

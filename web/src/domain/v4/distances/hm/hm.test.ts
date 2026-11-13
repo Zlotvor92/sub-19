@@ -221,6 +221,13 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
       return 'lagan dan otpao (ostatak < 25 min) — motor ne vraća ostatak';
   }
   if (f.check === 'taper' && days <= 3) return '3 dana, jedan kvalitet u najtežoj nedelji';
+  /* krug 4 (S3): plan 16+ nedelja bez dugog za distancu — mali obim ili malo dana; plan to kaže upozorenjem sa
+     razlogom i predlogom, a prognoza ne računa napredak od obima */
+  if (
+    f.check === 'dugi-za-distancu' &&
+    b.doc.header.warnings.some((w) => w.code === 'dugi-za-distancu')
+  )
+    return 'upozorenje dugi-za-distancu u zaglavlju';
   /* krug 4 (S1): budžet brzog rada vršne nedelje je od planiranog zbira (≤ 25 %), pa kod početnika u kratkom planu
      (≤ 8 nedelja) sužavanje sa jednim kvalitetom prelazi 60 % vršnog rada */
   if (f.check === 'taper' && d.level === 'pocetnik' && b.doc.weeks.length <= 8)

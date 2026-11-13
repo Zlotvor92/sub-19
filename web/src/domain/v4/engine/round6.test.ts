@@ -855,13 +855,24 @@ describe('dodatak krugu 3 (zahtevi taba podataka)', () => {
     };
     const profile = { weeklyKm: 40, recentResult: { distanceM: HALF_M, timeSec: 6060 } };
     const history = (quality: boolean): Run[] =>
-      Array.from({ length: 16 }, (_, i): Run => {
+      /* krug 4 (S8a): istorija svaka 2 dana (≈ 30 km nedeljno) — lanac rasta kreće od stvarnih minuta */
+      Array.from({ length: 24 }, (_, i): Run => {
         const fast = quality && i % 4 === 1;
         return {
           id: `h${String(i)}`,
-          date: addDays('2026-11-15', -(2 + 3 * i)),
+          date: addDays('2026-11-15', -(2 + 2 * i)),
           distanceM: 8000,
-          durationSec: fast ? 8 * 290 : 8 * 352
+          durationSec: fast ? 8 * 290 : 8 * 352,
+          /* krug 4 (S8c): kvalitet je trčanje sa krugovima rada, ne prosečan tempo */
+          ...(fast
+            ? {
+                laps: [
+                  { role: 'other' as const, distanceM: 2000, durationSec: 704 },
+                  { role: 'work' as const, distanceM: 4000, durationSec: 960 },
+                  { role: 'other' as const, distanceM: 2000, durationSec: 656 }
+                ]
+              }
+            : {})
         };
       });
     const plain = make(facts({ profile }), data);
@@ -887,7 +898,8 @@ describe('dodatak krugu 3 (zahtevi taba podataka)', () => {
     expect(back.doc.header.decisions.level).toBe('pocetni');
     expect(trained.doc.header.decisions.level).toBe('osnovni');
     const firstQuality = (doc: PlanDoc): string =>
-      days(doc).find((d) => d.workout?.kind === 'quality')?.workout?.libraryId ?? '';
+      days(doc).find((d) => d.workout?.kind === 'quality' && d.workout.stimulus === 'prag')?.workout
+        ?.libraryId ?? '';
     expect(firstQuality(trained.doc)).toBe('prag-iskusni');
     expect(firstQuality(plain.doc)).not.toBe('prag-iskusni');
     expect(canonical(trained.doc.weeks)).not.toBe(canonical(easyOnly.doc.weeks));

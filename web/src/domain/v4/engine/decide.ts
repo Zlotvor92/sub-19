@@ -301,3 +301,17 @@ export function decide(input: DecideInput): Decisions {
     qualityDays: assignDays(runDays, input.longDay)
   };
 }
+
+/** Da li dugi (najduži dozvoljen, trajanje) stiže do dugog za distancu (S3): ≥ `minLongSec` ili ≥ `longCheckKm`;
+    plan kraći od `longCheckMinWeeks` se ne proverava. */
+export function longReaches(
+  data: DistanceData,
+  weeks: number,
+  longSec: Seconds,
+  easyPaceSecPerKm: number
+): boolean {
+  const a = data.adequate;
+  if (a.longCheckMinWeeks === undefined || weeks < a.longCheckMinWeeks) return true;
+  const km = a.longCheckKm ?? a.minLongKm;
+  return longSec >= (a.minLongSec ?? Number.POSITIVE_INFINITY) || longSec / easyPaceSecPerKm >= km;
+}

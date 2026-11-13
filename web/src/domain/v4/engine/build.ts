@@ -151,7 +151,7 @@ export function weekTarget(
   const extra = input.extra ?? 0;
   let full = intent.loadPct * ctx.decisions.peakLoad;
   if (intent.kind === 'build' || intent.kind === 'peak') {
-    const wanted = Math.max(full - extra, ctx.decisions.baseLoad);
+    const wanted = Math.max(full - extra, ctx.decisions.baseVolumeMin ?? ctx.decisions.baseLoad);
     /* Prva nedelja plana je sadašnji obim (S2: ograničenje je korak od onoga što trkač sada trči). */
     const rule =
       input.previousTarget === null
@@ -279,6 +279,8 @@ export function weekSlots(
   const calmFrom = addDays(span.raceDate, -RACE_CALM_DAYS);
   const noLongFrom = addDays(span.raceDate, -RACE_NO_LONG_DAYS);
   const runDays = usableRunDays(week.start, span, ctx);
+  /* S8e (krug 4): tegoba u 12 meseci — prve 4 nedelje bez unosa visokog udara */
+  const cautious = d.painCaution === true && week.start < addDays(span.startDate, 28);
   const longWd =
     intent.long !== null && runDays.includes(d.longDay) && dateOf(d.longDay) < noLongFrom
       ? d.longDay
@@ -330,7 +332,7 @@ export function weekSlots(
       ...(st.workoutId === undefined ? {} : { workoutId: st.workoutId })
     };
     const wanted = slotDose(slot, st.dosePct, intent.kind, ctx);
-    const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: false });
+    const def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: cautious });
     if (def === null) return;
     const date = dateOf(wd);
     if (def.main.kind === 'add-on') {
@@ -880,7 +882,7 @@ export function runPass(
   let previousEasy: EasyRef | null = null;
   /* Odlučen dugi prethodne nedelje plana (rasterećenje ga ne prelazi). */
   let previousLong: Seconds = 0;
-  let lastFullVolume: number = header.decisions.baseLoad;
+  let lastFullVolume: number = header.decisions.baseVolumeMin ?? header.decisions.baseLoad;
   let previousRamped = false;
   let rampSeen = false;
   let previousHard: IsoDate | null = null;
@@ -912,7 +914,8 @@ export function runPass(
       const recent = lastThree(volumes);
       /* Posle rampe povratka lanac rasta kreće od odrađenih nedelja posle nje, ne od baze pre pauze (S9). */
       const fallback = recent.length < 3 && !(rampSeen && recent.length > 0);
-      const m = Math.max(...recent, ...(fallback ? [header.decisions.baseLoad] : []));
+      const baseVolume = header.decisions.baseVolumeMin ?? header.decisions.baseLoad;
+      const m = Math.max(...recent, ...(fallback ? [baseVolume] : []));
       const decided = weekTarget(
         week.intent,
         {

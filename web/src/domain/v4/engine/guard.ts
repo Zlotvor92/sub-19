@@ -23,14 +23,16 @@ import {
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate } from './dates';
-import { longStepOf, maxWorkOf, minRampOf } from './decide';
+import { longReaches, longStepOf, maxWorkOf, minRampOf } from './decide';
 import {
   count,
   DAYS,
   fmtClock,
   fmtDate,
   fmtDistance,
+  fmtMinutes,
   fmtNumber,
+  fmtPace,
   pluralForm,
   WEEKS,
   WORKOUTS
@@ -300,7 +302,7 @@ export const guard: GuardFn = (doc, _state, data) => {
     /* Pravilo rasta meri obim u minutima (krug 2, R3): kvalitet ide preko minuta, ne umesto njih. */
     const m = Math.max(
       ...before.map((x) => x.durationSec / 60),
-      ...(before.length < 3 ? [d.baseLoad] : [])
+      ...(before.length < 3 ? [d.baseVolumeMin ?? d.baseLoad] : [])
     );
     /* Prethodni dugi se meri odlučenom dužinom kad nedelja ima dugi (dugi sa blokom kraće traje za iste km). */
     const longBefore = Math.max(
@@ -463,6 +465,14 @@ export const guard: GuardFn = (doc, _state, data) => {
     }
   });
 
+  /* S3 (krug 4): nalaz čuvara — plan od 16+ nedelja bez dugog za distancu */
+  const longest = Math.max(0, ...costs.map((c) => c.longSec));
+  const planWeeks = countWeeks(header.startDate, header.goal.raceDate);
+  if (!longReaches(data, planWeeks, longest, ctx.paces.easy)) {
+    const at = costs.find((c) => c.longSec === longest)?.week ?? doc.weeks[0];
+    if (at !== undefined)
+      report('dugi-za-distancu', at, null, 'Najduži dugi plana ne stiže do dugog za distancu.');
+  }
   const lastWeek = doc.weeks[doc.weeks.length - 1];
   const final: PlanDay | null = lastWorkout;
   const raceOk =
@@ -568,7 +578,31 @@ export function warnings(input: WarningInput): Warning[] {
       suggest: { runDays: a.minRunDays }
     });
   }
-  if (longKm < NEAR_ENOUGH * a.minLongKm) {
+  /* S3 (krug 4): plan od 16+ nedelja koji ne stiže do dugog za distancu — posebno upozorenje, sa razlogom; prognoza
+     tada ne računa napredak od obima (`buildState`). */
+  const longSecMax = Math.max(0, ...costs.map((c) => c.longSec));
+  const reaches = longReaches(data, weeks, longSecMax, ctx.paces.easy);
+  if (!reaches) {
+    const need = a.longCheckKm ?? a.minLongKm;
+    const byTime = a.minLongSec === undefined ? '' : ` ili ${fmtMinutes(a.minLongSec)}`;
+    const why =
+      runDays < a.minRunDays
+        ? `uz ${String(runDays)} dana trčanja nedeljno dugi ne sme da nosi veći deo nedelje`
+        : `nedeljni obim od najviše ${km(peakKm)} ne nosi duži dugi`;
+    out.push({
+      code: 'dugi-za-distancu',
+      severity: 'upozorenje',
+      problem: `Plan traje ${count(weeks, WEEKS, 'acc')}, a najduži trening je ${km(longKm)} — za ovu distancu treba bar ${km(need)}${byTime}, jer ${why}.`,
+      meaning:
+        'Druga polovina trke biće duža od svega što si trčao, pa prognoza ne računa napredak od obima, a trku treba početi oprezno.',
+      proposal:
+        trial !== null && trial.longKm >= longKm + 0.5
+          ? `${extraDay} — dugi tada stiže do ${km(trial.longKm)}.`
+          : `Podigni nedeljni obim laganim trčanjem (10–15 min više po danu) — kad nedelja pređe ${km(a.minPeakWeeklyKm)}, dugi stiže do ${km(need)}.`,
+      suggest: { longKm: need }
+    });
+  }
+  if (reaches && longKm < NEAR_ENOUGH * a.minLongKm) {
     const capKm = d.longMaxSec / ctx.paces.easy;
     const stepKm = Math.max(0.5, Math.round((longStepOf(s, ctx.paces.easy) / ctx.paces.easy) * 2) / 2);
     const moreWeeks = Math.max(1, Math.ceil((a.minLongKm - longKm) / stepKm));
@@ -622,6 +656,41 @@ export function warnings(input: WarningInput): Warning[] {
       meaning:
         'Plan polazi od onoga što si stvarno trčao, pa su prve nedelje manje nego što očekuješ — nagli povratak na stari obim je čest put do povrede.',
       proposal: `Ako je razlog pauza ili putovanje, upiši je; ako trčanja nisu stigla sa sata, poveži sat ili ih unesi — plan tada polazi od ${km(declaredKm)}.`
+    });
+  }
+  /* S8d (krug 4): lagana trčanja brža od laganog tempa — podatak za personalizaciju, ne veći plan */
+  if (state.easyTooFast === true) {
+    out.push({
+      code: 'lagano-prebrzo',
+      severity: 'info',
+      problem: `Tvoja obična trčanja iz poslednjih nedelja su u proseku brža od ${fmtPace(ctx.paces.easyFast)}, a to je brža granica laganog tempa.`,
+      meaning:
+        'Kad je svako trčanje srednje teško, telo se ne odmori za brze treninge i dugi, pa napredak staje, a rizik od povrede raste.',
+      proposal: `Lagane dane trči sporije od ${fmtPace(ctx.paces.easyFast)} — tako da možeš da pričaš u celim rečenicama; brzinu čuvaj za zadate treninge.`
+    });
+  }
+  /* S8e: tegoba u poslednjih 12 meseci — bez treninga visokog udara prve 4 nedelje */
+  if (d.painCaution === true) {
+    out.push({
+      code: 'tegoba',
+      severity: 'info',
+      problem: 'U poslednjih 12 meseci si imao tegobu (bol pri trčanju).',
+      meaning:
+        'Prve 4 nedelje plan nema sprinteve uzbrdo ni druge treninge visokog udara, a obim raste sporije, da se isto mesto ne vrati.',
+      proposal:
+        'Ako se ista tegoba javi (bol 3/10 ili više, ili raste tokom trčanja), prekini trening, upiši bol u aplikaciju i javi se lekaru ili fizioterapeutu ako ne prođe za 7 dana.'
+    });
+  }
+  /* S8e: staž kraći od praga — širi raspon prognoze */
+  const tenureWeeks = state.profile.yearsRunning === undefined ? null : state.profile.yearsRunning * 52;
+  if (a.minTenureWeeks !== undefined && tenureWeeks !== null && tenureWeeks < a.minTenureWeeks) {
+    out.push({
+      code: 'kratak-staz',
+      severity: 'upozorenje',
+      problem: `Trčiš tek oko ${count(Math.max(1, Math.round(tenureWeeks)), WEEKS, 'acc')}.`,
+      meaning:
+        'Telo se na trčanje navikava sporije nego što forma raste: tetive i kosti traže više vremena od srca i pluća. Prognoza je zato manje pouzdana, a raspon širi.',
+      proposal: `Cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana. Ako želiš rezultat, izaberi trku za bar ${count(a.minWeeks + 6, WEEKS, 'acc')}${a.shorter === undefined ? '' : ` ili kraću distancu (${a.shorter.label})`}.`
     });
   }
   const dropped = droppedDayWarning(doc, costs, s.minEasySec);

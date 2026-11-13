@@ -15,7 +15,7 @@ import {
   ZONE_SHARE
 } from './constants';
 import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday } from './dates';
-import { decidePeak, ladderInputOf, ladderOverBase } from './decide';
+import { decideLongMax, decidePeak, ladderInputOf, ladderOverBase, longReaches } from './decide';
 import { validate } from './guard';
 import { derivedPauses } from './pauses';
 import { declaredForm } from './formFallback';
@@ -164,6 +164,21 @@ function lastHardEffort(facts: RunnerFacts, runs: readonly Run[]): HardEffort | 
 interface HistoryFacts {
   recentQualityWeeks: number | null;
   weeksSincePause: number | null;
+  easyTooFast?: boolean;
+}
+
+/** S8a (krug 4): stvarni prosek poslednjih 4 cele nedelje kad je istorija merodavna (km i minuti). */
+const HISTORY_AVG_WEEKS = 4;
+function historyVolume(
+  weeks: readonly WeekSummary[],
+  seeded: boolean
+): { historyWeeklyKm: number; historyWeeklyMin: number } | null {
+  if (seeded) return null;
+  const full = weeks.slice(0, -1).slice(-HISTORY_AVG_WEEKS);
+  if (full.length < HISTORY_AVG_WEEKS || full.some((w) => w.runs === 0)) return null;
+  const km = full.reduce((sum, w) => sum + w.distanceM, 0) / 1000 / full.length;
+  const min = full.reduce((sum, w) => sum + w.durationSec, 0) / 60 / full.length;
+  return { historyWeeklyKm: Math.round(km * 10) / 10, historyWeeklyMin: Math.round(min * 10) / 10 };
 }
 
 /** Broj nedelja (od poslednjih 8 kalendarskih) sa bar jednim trčanjem bržim od laganog: krugovi rada, zadat
@@ -177,17 +192,24 @@ function historyFacts(
 ): HistoryFacts {
   const from = addDays(mondayOf(today), -7 * (RECENT_QUALITY_WEEKS - 1));
   const recent = runs.filter((run) => run.date >= from);
+  /* S8c (krug 4): kvalitet je samo ono što ima krugove rada, zadat kvalitet ili pun napor — ne prosečan tempo
+     (trkač koji sve trči u istom bržem tempu nema strukturisan kvalitet). */
   const fast = (run: Run): boolean =>
     run.effort !== undefined ||
     (run.laps ?? []).some((lap) => lap.role === 'work') ||
-    (run.planned !== undefined && run.planned.zone !== 'E') ||
-    (run.distanceM > 0 && (run.durationSec / run.distanceM) * 1000 < easyFastPace);
+    (run.planned !== undefined && run.planned.zone !== 'E');
   const weeks = new Set(recent.filter(fast).map((run) => mondayOf(run.date)));
   const ended = pauses.map((p) => p.to).filter((to) => to <= today);
   const last = ended.length === 0 ? null : ended.reduce((a, b) => (a > b ? a : b));
+  /* S8d: prosečan tempo trčanja bez kvaliteta brži od brže granice laganog */
+  const plain = recent.filter((run) => !fast(run) && run.distanceM > 0);
+  const meters = plain.reduce((sum, run) => sum + run.distanceM, 0);
+  const secs = plain.reduce((sum, run) => sum + run.durationSec, 0);
+  const tooFast = plain.length >= 4 && meters > 0 && (secs / meters) * 1000 < easyFastPace;
   return {
     recentQualityWeeks: recent.length === 0 ? null : weeks.size,
-    weeksSincePause: last === null ? null : Math.floor(diffDays(today, last) / 7)
+    weeksSincePause: last === null ? null : Math.floor(diffDays(today, last) / 7),
+    ...(tooFast ? { easyTooFast: true } : {})
   };
 }
 
@@ -235,8 +257,15 @@ function plannedLoads(
     safety: data.safety
   });
   const over = ladderOverBase(data.safety, ladder);
-  return { baseLoad, peakLoad: decidePeak(baseLoad, picked.template, data.safety, level, over) };
+  const peakLoad = decidePeak(baseLoad, picked.template, data.safety, level, over);
+  /* S3 (krug 4): plan od bar `longCheckMinWeeks` koji ne može da stigne do dugog za distancu — prognoza ne računa
+     napredak od obima (vrh = baza za procenu, f_v = 1). */
+  const easy = paceAtShare(form.current.vdot, ZONE_SHARE.E);
+  const longMax = decideLongMax(peakLoad, data.safety, level, runDays, easy);
+  if (!longReaches(data, weeks, longMax, easy)) return { baseLoad, peakLoad: baseLoad };
+  return { baseLoad, peakLoad };
 }
+
 
 /** Zona rada dana plana: prvi korak uloge `work` sa zonom (za `Run.planned`). */
 function workZone(steps: readonly Step[]): ZoneId | null {
@@ -435,12 +464,15 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
           peakLoad: doc.header.decisions.peakLoad,
           weeks: doc.weeks.map((w) => ({ start: w.start, targetLoad: w.targetLoad }))
         };
+  const weeks = weekSummaries(facts, runs, loadOf);
+  const volume = historyVolume(weeks, load.seeded);
   const state: RunnerState = {
     today: facts.today,
     availability,
     profile: facts.profile,
     runs,
-    weeks: weekSummaries(facts, runs, loadOf),
+    weeks,
+    ...(volume === null ? {} : volume),
     load,
     longestRecentSec: Math.round(longestRecent(facts, runs, easyPace)),
     form: planned === null ? first : estimate(seen, formGoal, planned),

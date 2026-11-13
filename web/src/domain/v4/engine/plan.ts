@@ -3,7 +3,7 @@
 import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE } from './constants';
 import { runPass } from './build';
 import { addDays, mondayOf } from './dates';
-import { decide, ladderInputOf } from './decide';
+import { decide, ladderInputOf, longStepOf } from './decide';
 import { validate, warnings, weekCost } from './guard';
 import { paceCtxOf } from './load';
 import { raceWorkout } from './select';
@@ -27,6 +27,20 @@ import {
   type WeekIntent
 } from './types';
 import { zonePaces } from './vdot';
+
+/** S8e (krug 4): staž kraći od `adequate.minTenureWeeks` širi raspon prognoze (× 1,5 oko očekivanog). */
+const TENURE_RANGE_FACTOR = 1.5;
+function widened(state: RunnerState, data: DistanceData): RunnerState['form']['raceDay'] {
+  const r = state.form.raceDay;
+  const years = state.profile.yearsRunning;
+  const min = data.adequate.minTenureWeeks;
+  if (years === undefined || min === undefined || years * 52 >= min) return r;
+  return {
+    lowSec: Math.round(r.expectedSec - (r.expectedSec - r.lowSec) * TENURE_RANGE_FACTOR),
+    expectedSec: r.expectedSec,
+    highSec: Math.round(r.expectedSec + (r.highSec - r.expectedSec) * TENURE_RANGE_FACTOR)
+  };
+}
 
 /** Plan počinje sutra, osim ako je zadat kasniji početak (§ 6.1). */
 export function startDateOf(state: RunnerState, goal: Goal): IsoDate {
@@ -127,8 +141,7 @@ export function createPlan(
   });
   const picked = pickTemplate(data, level, weeks, availability.runDays.length);
   if (picked === null) throw new Error('DistanceData bez šablona');
-  const decisions: Decisions = {
-    ...decide({
+  const decided = decide({
       data,
       template: picked.template,
       level,
@@ -145,7 +158,28 @@ export function createPlan(
         painInYear: (state.painHistory ?? []).length > 0,
         safety: data.safety
       })
-    }),
+    });
+  const easyPace = zonePaces(form.vdot, data.distanceM, false).easy;
+  const fromRuns = !state.load.seeded && state.longestRecentSec > 0;
+  const decisions: Decisions = {
+    ...decided,
+    ...(fromRuns
+      ? {
+          longStartSec: Math.min(
+            decided.longStartSec,
+            Math.round((state.longestRecentSec + longStepOf(data.safety, easyPace)) / 60) * 60
+          )
+        }
+      : {}),
+    /* S8a/b (krug 4): istorija je merodavna → lanac rasta kreće od stvarnih minuta, polazni dugi ≤ najduže stvarno
+       trčanje u 28 dana + korak (ne udeo nedelje u bodovima). */
+    ...(state.historyWeeklyMin === undefined || state.historyWeeklyKm === undefined
+      ? {}
+      : {
+          baseVolumeMin: Math.min(baseLoad, state.historyWeeklyMin),
+          baseKm: state.historyWeeklyKm
+        }),
+    ...((state.painHistory ?? []).length > 0 ? { painCaution: true } : {}),
     /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
     ...(state.recentQualityWeeks === null || state.recentQualityWeeks === undefined
       ? {}
@@ -168,7 +202,7 @@ export function createPlan(
         current: form,
         paceVdot: form.vdot,
         pacesUpdatedOn: state.today,
-        raceDay: state.form.raceDay
+        raceDay: widened(state, data)
       },
       paces: zonePaces(form.vdot, data.distanceM, form.confidence === 'niska'),
       decisions,

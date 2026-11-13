@@ -10,6 +10,9 @@ export const LEVELS: LevelRule[] = [
   { id: 'pocetnik', when: { beginner: true } },
   /* povratnik: ≤ 8 nedelja od kraja pauze (uslov iz istorije, motor krug 3) — blaži početak i niži vrh (par P1 B) */
   { id: 'povratnik', when: { maxWeeksSincePause: 8 } },
+  /* krug 4 (S8c, presuda trenera § F7): istorija bez ijedne nedelje sa kvalitetom (krugovi rada, zadat kvalitet, pun
+     napor) — „sve u istom tempu" se tretira kao BEZ kvaliteta: blaži početak kao povratnik (par P3 A) */
+  { id: 'povratnik', when: { maxRecentQualityWeeks: 0 } },
   /* mali obim samo ispod VDOT 52: brz trkač malog obima ostaje „brz" (dva kvaliteta) i dobija upozorenje
      `obim-za-nivo` (krug 2, R11; p06) */
   { id: 'mali', when: { maxBaseLoad: 210, maxVdot: 51.9 } },
@@ -158,6 +161,12 @@ export const ADEQUATE: AdequatePrep = {
   minPeakWeeklyKm: 40,
   minRunDays: 4,
   minLongKm: 16,
+  /* krug 4 (S3, T7; trener § F1): plan od 16+ nedelja mora stići do dugog od 15 km ili 1 h 50 */
+  longCheckKm: 15,
+  minLongSec: 6600,
+  longCheckMinWeeks: 16,
+  /* krug 4 (S8e): staž ispod 8 nedelja — širi raspon prognoze i upozorenje */
+  minTenureWeeks: 8,
   /* vrh koji nivo traži da bi kvalitet nivoa stao u plan (upozorenje `obim-za-nivo`): brz ≈ 60 km (v3) */
   minPeakWeeklyKmByLevel: { brz: 60 },
   shorter: { distanceId: '10k', label: '10 km' }

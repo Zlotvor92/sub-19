@@ -242,8 +242,8 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   const startEasy = paceAtShare(h.form.start.vdot, ZONE_SHARE.E);
   lines.push(
     line(data, 'zaglavlje.obim', {
-      km: fmtNumber((baseMin * 60) / startEasy, 0),
-      time: fmtMinutes(baseMin * 60)
+      km: fmtNumber(h.decisions.baseKm ?? (baseMin * 60) / startEasy, 0),
+      time: fmtMinutes((h.decisions.baseVolumeMin ?? baseMin) * 60)
     })
   );
   lines.push('');
