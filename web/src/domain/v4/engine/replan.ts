@@ -62,7 +62,7 @@ import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { adjustRaceDay, skeleton } from './plan';
 import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
-import { mainZone, realize } from './select';
+import { mainZone, minDoseOf, realize } from './select';
 import { lastLongAfterEffort, lastLongBefore, normalizeAvailability } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import type {
@@ -718,6 +718,41 @@ function smoothExit(
               d.id === longDay.id ? { ...d, origin: 'template', workout } : d
             )
           };
+      }
+    }
+    /* A6 (krug 9): skraćena nedelja ne prelazi udeo brzog rada — kraći lagani dani ne smeju da podignu udeo, pa se
+       doze kvaliteta srazmerno smanjuju (ne ispod najmanjeg oblika unosa) */
+    {
+      const maxShare =
+        w.intent.kind === 'peak' ? data.safety.maxFastSharePeak : data.safety.maxFastShare;
+      const c = weekCost(shrunk, race, pace);
+      if (c.durationSec > 0 && c.fastSec / c.durationSec > maxShare) {
+        const target = (maxShare * (c.durationSec - c.fastSec)) / (1 - maxShare);
+        const f = c.fastSec > 0 ? target / c.fastSec : 1;
+        shrunk = {
+          ...shrunk,
+          days: shrunk.days.map((d): PlanDay => {
+            if (d.workout?.kind !== 'quality' || !isMutable(d, after.header, state.today, done))
+              return d;
+            const def = data.library.find((x) => x.id === d.workout?.libraryId);
+            if (def === undefined) return d;
+            const dose = Math.max(
+              minDoseOf(def, ctxB),
+              Math.floor((d.workout.workSec * f) / 60) * 60
+            );
+            if (dose >= d.workout.workSec) return d;
+            const workout = realize(
+              {
+                type: 'quality',
+                def,
+                dose,
+                slot: { place: 'quality', stimulus: def.stimulus, index: 1, phase: w.intent.phase }
+              },
+              ctxB
+            );
+            return workout === null ? d : { ...d, origin: 'template', workout };
+          })
+        };
       }
     }
     /* cilj nedelje prati skraćenje (nedelja je namerno manja, ne „ispod cilja") */

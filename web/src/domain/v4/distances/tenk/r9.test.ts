@@ -2,7 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
-import { buildState, plan, type DistanceData, type PlanDoc, type RunnerState } from '../../engine';
+import {
+  buildState,
+  guard,
+  plan,
+  type DistanceData,
+  type PlanDoc,
+  type RunnerState
+} from '../../engine';
 import { diffDays } from '../../engine/dates';
 import { effortResult, paceAtShare, vdotFromResult } from '../../engine/vdot';
 import { ZONE_SHARE } from '../../engine/constants';
@@ -104,5 +111,30 @@ describe('krug 9 — A5: u prozoru bola/bolesti nijedna zona se ne ubrzava', () 
         if (a[z] < b[z]) bad.push(`s${String(s.no)} ${z} ${String(b[z])} → ${String(a[z])}`);
     }
     expect(bad).toEqual([]);
+  });
+});
+
+describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
+  it('svih 27 scenarija: čuvar nad planom posle izmene nema nalaza', () => {
+    const bad: string[] = [];
+    /* E5 (s17–s20) je nov plan iz novog stanja, ne izmena */
+    for (const s of SCENARIOS.filter((x) => !x.title.startsWith('E5'))) {
+      const r: any = s.run();
+      /* samo nalazi koje je događaj uveo (prvobitan plan ima svoje opravdane nalaze profila) */
+      const key = (f: { check: string; weekIndex: number | null }): string =>
+        `${f.check}@${String(f.weekIndex)}`;
+      const before = new Set(guard(r.before, r.beforeState ?? r.afterState, tenk).map(key));
+      for (const f of guard(r.after, r.afterState, tenk))
+        if (!before.has(key(f))) bad.push(`s${String(s.no)} ${key(f)}`);
+    }
+    /* poznato (krug 9, R9-REPORT): HM s07 — povratak posle bolesti traje do sužavanja (A10, otvoreno); 10K — drugi
+       putevi izmene (rasterećenje, bol, nadovezani prozori) */
+    const KNOWN_A6 = new Set<string>([
+      's7 brz-udeo@15',
+      's14 ispod-cilja@11',
+      's15 lagan-dugi@14',
+      's26 brz-udeo@15'
+    ]);
+    expect(bad.filter((b) => !KNOWN_A6.has(b))).toEqual([]);
   });
 });
