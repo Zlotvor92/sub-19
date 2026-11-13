@@ -284,15 +284,15 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 25. 12. trči s
 - pon 21. 12.: lagano 55 min → lagano 40 min
 - uto 22. 12.: lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 40 min
 - čet 24. 12.: prag 14 min u komadu → lagano 50 min
-- pon 28. 12.: lagano 75 min → lagano 60 min
+- pon 28. 12.: lagano 75 min → lagano 55 min
 - uto 29. 12.: intervali 5 × 3 min, oporavak 2:30 džog → intervali 3 × 3 min, oporavak 2:30 džog
-- čet 31. 12.: prag 2 × 17 min, oporavak 1:30 džog → prag 2 × 5 min, oporavak 1:30 džog
+- čet 31. 12.: prag 2 × 17 min, oporavak 1:30 džog → prag 2 × 6 min, oporavak 1:30 džog
 - sub 2. 1.: lagano 75 min → lagano 60 min
 - ned 3. 1.: dugi 2 h 11 min, završni deo 11 min progresivno do tempa trke → dugi 1 h 55 min lagano
 - pon 4. 1.: lagano 80 min → lagano 70 min
 - sub 9. 1.: lagano 80 min → lagano 70 min
 - ned 17. 1.: dugi 2 h 11 min, završni deo 11 min progresivno do tempa trke → dugi 2 h 8 min, završni deo 8 min progresivno do tempa trke
-- 9. nedelja: 60,3 km → 47,4 km
+- 9. nedelja: 60,3 km → 47 km
 - 10. nedelja: 59,3 km → 56,5 km
 Očekivano vreme trke je sada oko 2:01:00 umesto 2:00:48: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
 
@@ -379,15 +379,15 @@ Očekivano vreme trke je sada oko 2:01:00 umesto 2:00:48: plan je posle ovog dog
   Zbir: 39,3 km, 4 h 40 min, 5 treninga, brz rad 0 % vremena trčanja
 
 9. NEDELJA (od 28. 12.) — razvoj, gradnja; do trke 11 nedelja
-  pon 28. 12.  lagano 60 min — 8,5 km, 60 min
+  pon 28. 12.  lagano 55 min — 7,7 km, 55 min
   uto 29. 12.  intervali 3 × 3 min (5:21/km), oporavak 2:30 džog — 7,3 km, 49 min
   sre 30. 12.  odmor
-  čet 31. 12.  prag 2 × 5 min (5:37/km), oporavak 1:30 džog — 6,9 km, 47 min
+  čet 31. 12.  prag 2 × 6 min (5:37/km), oporavak 1:30 džog — 7,3 km, 49 min
   pet 1. 1.  odmor
   sub 2. 1.  lagano 60 min — 8,5 km, 60 min
   ned 3. 1.  dugi 1 h 55 min lagano — 16,2 km, 1 h 55 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 47,4 km, 5 h 31 min, 5 treninga, brz rad 6 % vremena trčanja
+  Zbir: 47 km, 5 h 28 min, 5 treninga, brz rad 6 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — razvoj, gradnja; do trke 10 nedelja
   pon 4. 1.  lagano 70 min — 9,9 km, 70 min

@@ -350,6 +350,9 @@ export type Adjustment =
       /** Krug 10 (stavka 5): kraća rampa kad pauza završi blizu trke — rampa se završava pre nedelje pred trkom, da
           ta nedelja zadrži sužavanje sa oštrenjem u tempu trke. Bez polja: `pauseRampDays`. */
       rampDays?: number;
+      /** Krug 14 (M2): sadašnji obim je izmeren posle pauze (trkač već trči bar nedelju dana posle nje) — rampa ne
+          skraćuje trajanje (ono već polazi od sadašnjeg obima), samo odlaže brz rad i drži plafon dugog. */
+      baseAfter?: boolean;
     }
   | { kind: 'pain'; source: string; date: IsoDate; level: number; lastLongSec?: Seconds }
   | { kind: 'fatigue'; source: string; date: IsoDate }

@@ -152,7 +152,9 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
       from: pause.from,
       to: pause.to,
       reason: pause.reason,
-      lastLongSec: lastLongBefore(state, pause.from)
+      lastLongSec: lastLongBefore(state, pause.from),
+      /* krug 14 (M2): obim plana polazi od današnjeg (posle pauze) — rampa ga ne skraćuje ponovo */
+      ...(diffDays(state.today, pause.to) >= BASE_AFTER_PAUSE_DAYS ? { baseAfter: true } : {})
     });
   }
   for (const pain of state.pain) {
@@ -401,6 +403,9 @@ export function createPlan(
     }
   };
 }
+
+/** Krug 14 (M2): bar ovoliko dana od kraja pauze do danas — sadašnji obim je već obim posle pauze. */
+const BASE_AFTER_PAUSE_DAYS = 7;
 
 /** M7 (krug 14): upozorenje „mali-obim" ili „kratak-dugi" i vrh ili dugi plana ispod `NO_PROGRESS_SHARE` adekvatnog —
     obim ne nosi trku, pa prognoza ne računa napredak od obima (blizu praga, npr. dugi 15 od 16 km, napredak ostaje). */

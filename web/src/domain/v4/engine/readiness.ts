@@ -20,6 +20,7 @@ import {
   PAIN_MID_SHORT_DAYS,
   PAUSE_MIN_DAYS,
   PAUSE_RAMP_FACTORS,
+  PAUSE_RAMP_START,
   BLOCK_GATE_MAX_DAYS,
   BLOCK_GATE_PAUSE_DAYS,
   BLOCK_GATE_SHARE,
@@ -57,6 +58,8 @@ export interface Ramp {
   gate: boolean;
   /** Prvi kvalitet svakog podražaja posle rampe × 0,8 — samo za spoljne uzroke, ne za napor iz plana. */
   firstReduced: boolean;
+  /** Faktor prvog dana rampe (krug 14, M2: posle pauze `PAUSE_RAMP_START`, inače `RAMP_START`). */
+  start?: number;
 }
 
 /** Krug 10 (stavka 11): dani posle punog napora bez brzog treninga — isto pravilo kao rampa u planu (brz rad tek kad
@@ -99,7 +102,8 @@ export function rampOf(adj: Adjustment): Ramp | null {
         noFast: 0,
         lastLongSec: adj.lastLongSec ?? 0,
         gate: length >= BLOCK_GATE_PAUSE_DAYS,
-        firstReduced: true
+        firstReduced: true,
+        start: adj.baseAfter === true ? 1 : PAUSE_RAMP_START
       };
     }
     case 'pain':
@@ -118,7 +122,9 @@ export function rampOf(adj: Adjustment): Ramp | null {
 }
 
 export const rampFactor = (n: number, ramp: Ramp): number =>
-  RAMP_START + (RAMP_SPAN * n) / ramp.days;
+  ramp.start === undefined
+    ? RAMP_START + (RAMP_SPAN * n) / ramp.days
+    : ramp.start + ((1 - ramp.start) * n) / ramp.days;
 
 /** Poslednji dan na koji uzrok utiče (uklj. „prvi kvalitet posle rampe"); `null` za uzrok bez prozora. */
 export function adjustmentWindow(
@@ -258,12 +264,17 @@ export function modsFor(
       const n = diffDays(date, ramp.zero);
       if (n >= 1 && n <= ramp.days) {
         const f = rampFactor(n, ramp);
+        /* krug 14 (M2): viši početak rampe posle pauze menja samo trajanje; brz rad i plafon dugog prate isti deo
+           rampe kao ranije (faktor od `RAMP_START`) */
+        const g = RAMP_START + (RAMP_SPAN * n) / ramp.days;
         m.f = Math.min(m.f, f);
         if (f < REST_BELOW_F) m.rest = true;
-        if (f < QUALITY_FROM_F) noFast();
+        if (g < QUALITY_FROM_F) noFast();
         m.doseFactor = Math.min(m.doseFactor, RAMP_DOSE_FACTOR);
-        if (ramp.lastLongSec > 0 && f < QUALITY_FROM_F) {
-          m.longCapSec = Math.min(m.longCapSec, RAMP_LONG_SHARE * ramp.lastLongSec);
+        if (ramp.lastLongSec > 0 && g < QUALITY_FROM_F) {
+          /* krug 14 (M2): obim već posle pauze — plafon je sadašnji dugi, ne 75 % njega */
+          const share = ramp.start === 1 ? 1 : RAMP_LONG_SHARE;
+          m.longCapSec = Math.min(m.longCapSec, share * ramp.lastLongSec);
         }
       }
       if (ramp.gate && n >= 1 && n <= BLOCK_GATE_MAX_DAYS) {

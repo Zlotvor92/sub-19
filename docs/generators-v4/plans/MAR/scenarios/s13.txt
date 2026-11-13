@@ -201,10 +201,10 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 27. 12. trči s
 - čet 24. 12.: prag 3 × 6 min, oporavak 1:30 džog → lagano 6,5 km
 - ned 27. 12.: dugi 19,5 km lagano → dugi 18,5 km lagano
 - pon 28. 12.: lagano 13,5 km → lagano 11,5 km
-- uto 29. 12.: lagano 13,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 12 km
+- uto 29. 12.: lagano 13,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 12,5 km
 - čet 31. 12.: prag 2 × 10 min, oporavak 1:30 džog → prag 2 × 6 min, oporavak 1:30 džog
 - sub 2. 1.: lagano 13,5 km → lagano 11,5 km
-- ned 3. 1.: dugi 28,5 km, poslednjih 12,5 km u tempu maratona → dugi 23 km, poslednjih 4,5 km u tempu maratona
+- ned 3. 1.: dugi 28,5 km, poslednjih 12,5 km u tempu maratona → dugi 22,5 km, poslednjih 4,5 km u tempu maratona
 - 9. nedelja: 80,4 km → 66,7 km
 Očekivano vreme trke je sada oko 3:30:28 umesto 3:30:11: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
 
@@ -292,12 +292,12 @@ Očekivano vreme trke je sada oko 3:30:28 umesto 3:30:11: plan je posle ovog dog
 
 9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 28. 12.  lagano 11,5 km — 11,5 km, 68 min
-  uto 29. 12.  lagano 12 km — 12 km, 71 min
+  uto 29. 12.  lagano 12,5 km — 12,5 km, 74 min
   sre 30. 12.  odmor
   čet 31. 12.  prag 2 × 6 min (4:38/km), oporavak 1:30 džog — 8,7 km, 49 min
   pet 1. 1.  odmor
   sub 2. 1.  lagano 11,5 km — 11,5 km, 68 min
-  ned 3. 1.  dugi 23 km, poslednjih 4,5 km u tempu maratona (5:02/km) — 23 km, 2 h 13 min
+  ned 3. 1.  dugi 22,5 km, poslednjih 4,5 km u tempu maratona (5:02/km) — 22,5 km, 2 h 10 min
       napomena: Blok trči ravnomerno u tempu maratona, ne brže; unos gela vežbaj i tokom bloka, kao na trci. Ako tempo ne možeš da držiš bez naprezanja, skrati blok — ne ubrzavaj.
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
   Zbir: 66,7 km, 6 h 29 min, 5 treninga, brz rad 9 % vremena trčanja

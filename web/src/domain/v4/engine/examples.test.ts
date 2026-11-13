@@ -174,12 +174,14 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     expect(new Set(result.changes.map((c) => c.eventId)).size).toBe(1);
   });
 
-  it('§ 14.6: rampa posle bolesti traje 14 dana; bez brzog rada dok je f < 0,8; utorak 22. 12. je odmor', () => {
+  /* krug 14 (M2): rampa posle pauze kreće od 0,5 (povratna nedelja 60–70 %), pa utorak 22. 12. (n = 2) više nije
+     odmor nego kratko lagano trčanje; brz rad i dalje čeka isti deo rampe (n ≥ 10) */
+  it('§ 14.6: rampa posle bolesti traje 14 dana; bez brzog rada do n = 9; utorak 22. 12. je kratko lagano', () => {
     for (const day of days(result.doc)) {
       const n = diffDays(day.date, today);
       if (n >= 1 && n <= 9) expect(fastSec(result.doc, day), day.date).toBe(0);
     }
-    expect(onDate(result.doc, '2026-12-22')?.workout).toBeNull();
+    expect(onDate(result.doc, '2026-12-22')?.workout?.kind).toBe('easy');
     expect(onDate(result.doc, '2026-12-24')?.workout?.kind).toBe('easy');
     const pause = result.doc.header.adjustments?.find((a) => a.kind === 'pause');
     expect(pause).toMatchObject({ reason: 'bolest', from: '2026-12-14', to: today });

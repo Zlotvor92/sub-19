@@ -687,7 +687,7 @@ export function estimateForm(
         /* Z4 (krug 7): rezultat bar onoliko dobar koliko se verovalo (forma + pripisani napredak) ne spušta verovanu
            formu — ostatak pripisanog napretka ostaje; slabiji rezultat ga briše */
         /* M17 (krug 14): rezultat bolji od dosadašnje procene (ali slabiji od verovanog) zadržava pripisani napredak do
-           nivoa koji je rezultat pokazao — bolji rezultat ne usporava prognozu dana trke (5K s03) */
+           nivoa koji je rezultat pokazao — bolji rezultat ne usporava prognozu dana trke */
         const believed = before + planVdot;
         planVdot = target > before ? Math.max(0, Math.min(believed, target) - vdot) : 0;
         week = { from: d + 1, provisional: 0, done: 0, ref: 0, days: 0 };

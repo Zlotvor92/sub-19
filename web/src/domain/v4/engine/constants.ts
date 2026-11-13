@@ -167,6 +167,9 @@ export const EFFORT_MIN_PER_RAMP_DAY = 7;
 /** Posle pauze (§ 14.6): `R = ceil(faktor razloga × min(dani, 28))`, pauza je ≥ 3 dana. */
 export const PAUSE_RAMP_FACTORS = { bolest: 2.0, povreda: 2.0, put: 1.0, nepoznato: 1.5 } as const;
 export const PAUSE_RAMP_MAX_DAYS = 28;
+/** Krug 14 (M2): rampa posle pauze kreće od ovog faktora (ne 0,4) — povratna nedelja posle 5–7 dana pauze je oko
+    60–70 % poslednje odrađene, druga (uz `RETURN_WEEK_JUMP_SHARE`) oko 75–80 %; bez dana odmora u rampi. */
+export const PAUSE_RAMP_START = 0.5;
 /** Trka ili test se kao „dugi" računa sa 60 % svog trajanja (polazni dugi i referenca plafona; ispravka tačke E). */
 export const EFFORT_AS_LONG_SHARE = 0.6;
 /** Dok je `f < 0,8`, dugi ≤ 75 % poslednjeg odrađenog dugog (§ 14.6; od `f ≥ 0,8` određuju ga rampa i lanac). */
