@@ -1076,7 +1076,9 @@ function layoutOnce(
   ctx: BuildCtx,
   slots: WeekSlots,
   previous: EasyRef | null,
-  maxWorkMin: number | null
+  maxWorkMin: number | null,
+  /** Krug 15 (M20): bez izostavljanja laganog dana za drugi kvalitet (kad bi nedelja ispala manja od obima). */
+  noSecondDrop = false
 ): Map<IsoDate, Recipe> {
   const { decisions: d, data } = ctx;
   const s = data.safety;
@@ -1332,8 +1334,25 @@ function layoutOnce(
      da prvi trening stane; (4) tek kad ni tada ne staje, kvalitet otpada */
   const first = unplaced[0];
   const buildWeek = intent.kind === 'build' || intent.kind === 'peak';
+  /* krug 15 (M20): kvalitet ima prednost nad laganim danom na podu — i DRUGI kvalitet nedelje gradnje/vrha dobija
+     mesto izostavljanjem jednog laganog dana, kad su lagani dani na najkraćem (ostatak obima po danu ispod najkraćeg
+     laganog) */
+  /* lagani dani kakvi bi bili bez drugog kvaliteta (i njegov dan je tada lagan) */
+  const restDays = runDays.filter((wd) => !fixed.has(dateOf(wd))).length;
+  const perEasy =
+    restDays > 0 && week.volumeMin !== undefined
+      ? (week.volumeMin - fixedSec / 60) / restDays
+      : Number.POSITIVE_INFINITY;
+  const easyAtFloor = keepDays && perEasy * 60 < minEasyOf(s, d.level, d.runDays.length);
+  const secondQuality =
+    !noSecondDrop && buildWeek && placedQuality === 1 && week.easyFloorSec === undefined;
+  let secondDropped = false;
   /* krug 9b (A10 a): u silasku (nedelja pod granicom silaska) dan se ne izostavlja */
-  if (buildWeek && placedQuality === 0 && first !== undefined && week.easyFloorSec === undefined) {
+  if (
+    first !== undefined &&
+    ((buildWeek && placedQuality === 0 && week.easyFloorSec === undefined) ||
+      (easyAtFloor && secondQuality))
+  ) {
     const longDay = longWd === null ? null : dateOf(longWd);
     const free = runDays
       .map((wd) => dateOf(wd))
@@ -1341,11 +1360,30 @@ function layoutOnce(
     const drop = free[free.length - 1];
     if (drop !== undefined && free.length >= 2) {
       fixed.set(drop, { type: 'rest' });
-      const fit = shrinkQuality(first.item, first.dose, ctx, (c) =>
-        roomFor(first.item.date, c.load, c.durationSec)
-      );
+      /* doza kakva je (i ispod praga skraćivanja), pa kraće zagrevanje/hlađenje, pa kraća doza */
+      const asIs = (wuCd?: { warmupSec: Seconds; cooldownSec: Seconds }) => {
+        const recipe: Recipe = {
+          type: 'quality',
+          def: first.item.def,
+          dose: first.dose,
+          slot: first.item.slot,
+          ...(wuCd === undefined ? {} : { wuCd })
+        };
+        const cost = summarize(realize(recipe, ctx), ctx.pace);
+        return first.dose >= minDoseOf(first.item.def, ctx) &&
+          roomFor(first.item.date, cost.load, cost.durationSec)
+          ? { recipe, cost }
+          : null;
+      };
+      const fit =
+        asIs() ??
+        asIs(shortestWuCd(ctx)) ??
+        shrinkQuality(first.item, first.dose, ctx, (c) =>
+          roomFor(first.item.date, c.load, c.durationSec)
+        );
       if (fit === null) fixed.delete(drop);
       else {
+        if (placedQuality === 1) secondDropped = true;
         const zone = fit.recipe.type === 'quality' ? mainZone(fit.recipe.def.main) : null;
         budget.book(
           fit.recipe.type === 'quality' ? fit.recipe.dose : 0,
@@ -1356,6 +1394,14 @@ function layoutOnce(
       }
     }
   }
+  /* krug 15 (M20): lagani dani na najkraćem — ostatak obima po slobodnom danu ispod najkraćeg laganog */
+  const easyAtFloorNow = (): boolean => {
+    if (!keepDays || week.volumeMin === undefined) return false;
+    let sec = 0;
+    for (const r of fixed.values()) sec += summarize(realize(r, ctx), ctx.pace).durationSec;
+    const free = runDays.filter((wd) => !fixed.has(dateOf(wd))).length;
+    return free > 0 && (week.volumeMin * 60 - sec) / free < minEasyOf(s, d.level, d.runDays.length);
+  };
   /* A1 (krug 9) + R8 t. 15: dugi sa blokom ≥ donji udeo OSTVARENE nedelje (kvalitet i najkraći lagani dani su sada
      poznati) — duži dugi, plafon dugog važi */
   if (longWd !== null && week.longSec > 0) {
@@ -1387,8 +1433,12 @@ function layoutOnce(
           ctx,
           (c) => c.durationSec <= target
         );
-        /* ni najmanja doza ne ostavlja dugom donji udeo: poslednji kvalitet otpada (A1 korak 4), dan je lagan */
+        /* ni najmanja doza ne ostavlja dugom donji udeo: poslednji kvalitet otpada (A1 korak 4), dan je lagan —
+           krug 15 (M20): osim kad je to drugi kvalitet nedelje, a lagani dani su na najkraćem: tada otpada blok u dugom
+           (dugi je lagan), a kvalitet ostaje */
         if (fit !== null) fixed.set(lastQ, fit.recipe);
+        else if (qualityDates.length === 2 && easyAtFloorNow())
+          fixed.set(dateOf(longWd), { ...lr, def: steadyLongDef(ctx, null), dose: 0 });
         else fixed.delete(lastQ);
       }
     }
@@ -1499,6 +1549,16 @@ function layoutOnce(
         else out.set(date, { ...recipe, sec, maxSec: undefined });
       }
     }
+  }
+  /* krug 15 (M20): izostavljen lagan dan ne sme da spusti nedelju ispod prethodne (preostali lagani dani su na
+     plafonu dana, pa bi sledeća nedelja bila skok) — tada nedelja ostaje sa jednim kvalitetom i svim danima */
+  if (secondDropped && previous !== null) {
+    let sec = 0;
+    for (const r of out.values())
+      if (r.type !== 'rest') sec += summarize(realize(r, ctx), ctx.pace).durationSec;
+    let before = 0;
+    for (const x of previous.byWeekday.values()) before += x;
+    if (sec < before - 60) return layoutOnce(week, ctx, slots, previous, maxWorkMin, true);
   }
   return out;
 }
@@ -1749,7 +1809,13 @@ function balanceEasy(
       const def = ctx.data.library.find((x) => x.id === w.libraryId) ?? steadyLongDef(ctx, null);
       const sec = Math.round(longNext / 60) * 60;
       const workout = realize(
-        { type: 'long', sec, def, dose: Math.min(w.workSec, Math.floor(sec / 120) * 60), slot: null },
+        {
+          type: 'long',
+          sec,
+          def,
+          dose: Math.min(w.workSec, Math.floor(sec / 120) * 60),
+          slot: null
+        },
         ctx
       );
       return workout === null ? d : { ...d, origin: 'template', locked: false, workout };
@@ -1758,7 +1824,11 @@ function balanceEasy(
     if (want === undefined || d.workout === null) return d;
     if (Math.abs(want - secOf(d.workout)) < 30) return d;
     const workout = realize(
-      { type: 'easy', sec: Math.round(want / 60) * 60, ...(want >= floor ? { minSec: floor } : {}) },
+      {
+        type: 'easy',
+        sec: Math.round(want / 60) * 60,
+        ...(want >= floor ? { minSec: floor } : {})
+      },
       ctx
     );
     return workout === null ? d : { ...d, origin: 'template', locked: false, workout };

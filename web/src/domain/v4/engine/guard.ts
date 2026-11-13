@@ -1062,7 +1062,8 @@ function shortEasyWarning(
     code: 'lagan-kratak',
     severity: 'info',
     problem: `Tražio si ${count(d.runDays.length, DAYS)} trčanja nedeljno; uz sadašnji obim od oko ${km(baseKm)} lagani dani su u ${span} oko ${String(s.minEasyFallbackMin)} min umesto ${String(Math.round(want / 60))}.`,
-    meaning: `Svi traženi dani ostaju u planu; zato je ${String(first)}. nedelja oko ${km(firstKm)}, ${versus}.`,
+    /* krug 15 (M20): kad nedelja ustupi lagan dan drugom brzom treningu, ne piše se „svi traženi dani ostaju" */
+    meaning: `${costs.some((c) => c.workouts < d.runDays.length && (c.week.intent.kind === 'build' || c.week.intent.kind === 'peak') && !inAnyWindow(c.week, header.adjustments ?? []) && !c.days.some((x) => x.day.workout?.kind === 'test') && c.days.filter((x) => x.day.workout?.kind === 'quality').length >= 2) ? 'U ostalim nedeljama traženi dani ostaju u planu' : 'Svi traženi dani ostaju u planu'}; zato je ${String(first)}. nedelja oko ${km(firstKm)}, ${versus}.`,
     proposal:
       'Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.'
   };
@@ -1097,6 +1098,22 @@ function droppedDayWarning(
       meaning:
         'Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak.',
       proposal: 'Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.'
+    };
+  }
+  /* krug 15 (M20): lagan dan izostavljen da stane drugi brzi trening (lagani dani su na najkraćem) — to je razlog */
+  const hard = (c: WeekCost): number =>
+    c.days.filter((x) => x.day.workout?.kind === 'quality').length;
+  const forQuality = short.filter((c) => !withTest(c) && hard(c) >= 2);
+  if (forQuality.length > 0 && short.every((c) => withTest(c) || hard(c) >= 2)) {
+    const list = forQuality.map((c) => `${String(c.week.index)}.`).join(', ');
+    return {
+      code: 'dan-izostavljen',
+      severity: 'info',
+      problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno, a plan u ${list} nedelji ima ${count(Math.min(...forQuality.map((c) => c.workouts)), WORKOUTS)}.`,
+      meaning:
+        'Uz sadašnji obim lagani dani su već na najkraćem, pa jedan lagan dan te nedelje ustupa mesto drugom brzom treningu — za tvoju formu brzi trening vredi više od još jednog kratkog laganog trčanja.',
+      proposal:
+        'Te nedelje trči kako piše; ako ipak želiš da izađeš i tog dana, neka to bude šetnja ili 20 min vrlo laganog trčanja.'
     };
   }
   const least = Math.min(...short.map((c) => c.workouts));
