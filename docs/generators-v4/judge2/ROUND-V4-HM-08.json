@@ -1,0 +1,322 @@
+{
+ "krug": "V4-HM-08",
+ "sudija": "drugi",
+ "pitanja": [
+  "trkac",
+  "zdrav",
+  "spreman",
+  "smer",
+  "trka",
+  "istina",
+  "uredan"
+ ],
+ "tezine": [
+  20,
+  20,
+  20,
+  10,
+  10,
+  10,
+  10
+ ],
+ "planovi": {
+  "p01": {
+   "ocene": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    8,
+    7
+   ],
+   "ukupno": 75,
+   "zamerke": [
+    "8. ned: test 10 km u subotu + dugi 12 km sutradan; 'brz rad 0 %' a ~46 min punog napora je ~22 % od 208 min",
+    "9. ned čet: prag 2x18=36 min (7,7 km, 16 % nedelje), +50 % prema 7. ned, 5 dana posle testa",
+    "3. ned: lagani dan 4 km/24 min; vrh 54,9 km = +34 % od 1. ned na 4 dana"
+   ]
+  },
+  "p02": {
+   "ocene": [
+    7.5,
+    7,
+    8,
+    8,
+    7.5,
+    8,
+    7.5
+   ],
+   "ukupno": 76.0,
+   "zamerke": [
+    "6. ned: test u subotu + dugi 12,5 km sutradan",
+    "12->13. ned: 35,5 -> 34 km (-4 %), dugi 14 km 7 dana pre trke",
+    "8. ned: 12 km tempa trke = 23 % nedelje odmah posle rasterecenja"
+   ]
+  },
+  "p03": {
+   "ocene": [
+    7,
+    7,
+    7.5,
+    8,
+    8,
+    8,
+    7
+   ],
+   "ukupno": 74.0,
+   "zamerke": [
+    "1. ned: dugi 12,1 od 25,9 km = 47 %; 11. ned 18,2 od 38,2 = 48 %",
+    "utorak isti trening svih 16 nedelja",
+    "trajanja 98 min / 1 h 51 / 1 h 56 / 1 h 43"
+   ]
+  },
+  "p04": {
+   "ocene": [
+    7.5,
+    7,
+    7.5,
+    6.5,
+    8,
+    7.5,
+    7
+   ],
+   "ukupno": 73.0,
+   "zamerke": [
+    "14,15,17. ned: sub 80 min + ned 2 h 10 = 3 h 30 u dva dana",
+    "1->11. ned: 52,9 -> 61,6 km = +16 % za 11 nedelja",
+    "napomena trke upucuje na test 28.11 umesto 23.1; test nedelje 'brz rad 0 %'"
+   ]
+  },
+  "p05": {
+   "ocene": [
+    8,
+    7.5,
+    8.5,
+    8,
+    7.5,
+    8,
+    7.5
+   ],
+   "ukupno": 79.0,
+   "zamerke": [
+    "11. ned: 12 km tempa trke + lestvica 5,4 km + dugi 28 km = 111,7 km",
+    "9. ned 109,2 km posle 71,5 (+53 %)",
+    "lagani dani svi isti, nema srednje dugog; start 3:47-3:52 kosta 25-50 s"
+   ]
+  },
+  "p06": {
+   "ocene": [
+    5.5,
+    8,
+    5,
+    5,
+    6,
+    8,
+    6
+   ],
+   "ukupno": 62.0,
+   "zamerke": [
+    "4, 6, 9. ned bez brzog rada; poslednje 3 nedelje samo 3,5 km tempa trke + 9 min",
+    "8->9. ned: 35,5 -> 39 km (+10 %) u suzavanju; dugi 9,5 km",
+    "10 nedelja isti lagani 6,5 km/31 min; najduzi 17 km"
+   ]
+  },
+  "p07": {
+   "ocene": [
+    7,
+    6.5,
+    8.5,
+    7.5,
+    7.5,
+    6.5,
+    7.5
+   ],
+   "ukupno": 73.0,
+   "zamerke": [
+    "3-5. ned: 63,8/68,1/71,1 km (+27 % od 1. ned) uz 16/21/20 % brzog, bez rasterecenja",
+    "prag 2x18=36 min tri puta (4,5,8. ned), u 8. je 12 dana pre trke",
+    "nema testa: ocekivano 4:41/km se ne moze potvrditi"
+   ]
+  },
+  "p08": {
+   "ocene": [
+    7,
+    7.5,
+    7.5,
+    6,
+    8,
+    7.5,
+    7.5
+   ],
+   "ukupno": 73.0,
+   "zamerke": [
+    "1. ned 41,2 km a pise 'polazim od 45' (-8 %)",
+    "1,2,3,5. ned isti dugi 17,5 km; 11 nedelja u 41-47 km",
+    "napomena upucuje na test 26.11 umesto 21.1"
+   ]
+  },
+  "p09": {
+   "ocene": [
+    7,
+    6.5,
+    7.5,
+    8,
+    7.5,
+    8.5,
+    7
+   ],
+   "ukupno": 73.0,
+   "zamerke": [
+    "vrh 62,4 km = +43 % od 1. ned na 4 dana, dugi 22 km, forma 'niska'",
+    "tempo trke 'napor 6 od 10' ispod praga (7)",
+    "oba testa subotom, dugi sutradan"
+   ]
+  },
+  "p10": {
+   "ocene": [
+    7,
+    7,
+    7,
+    7.5,
+    7.5,
+    8.5,
+    7
+   ],
+   "ukupno": 72.5,
+   "zamerke": [
+    "1. ned: prag 16 min u komadu po osecaju (p03: 13)",
+    "dugi 18 km = 45 % vrsne nedelje 40,1",
+    "98 min / 1 h 46 / 2 h 1 min"
+   ]
+  },
+  "p11": {
+   "ocene": [
+    8.5,
+    8.5,
+    6.5,
+    8,
+    7.5,
+    7.5,
+    7
+   ],
+   "ukupno": 77.0,
+   "zamerke": [
+    "tempo trke najduze 22 min u komadu (17. ned), ukupno ~104 min; najduzi 16,2 km",
+    "oznake faza 12-14. ned; 16. ned prag 2x4 min",
+    "uslovni cilj 5:33/km (-20 s) iz testa 3 km"
+   ]
+  },
+  "p12": {
+   "ocene": [
+    7.5,
+    7.5,
+    7.5,
+    7,
+    7.5,
+    8,
+    6.5
+   ],
+   "ukupno": 74.0,
+   "zamerke": [
+    "8. ned: test 10 km za pocetnika + dugi 75 min sutradan",
+    "oznake faza 8-10. ned",
+    "najveca doza tempa trke 2x21 min 17 dana pre trke"
+   ]
+  }
+ },
+ "prosek_planova": 73.5,
+ "broj_80_plus": 0,
+ "broj_70_plus": 11,
+ "broj_ispod_65": 1,
+ "vlasnik": {
+  "vlasnik-v1": {
+   "ocene": [
+    7,
+    8,
+    6,
+    7,
+    7.5,
+    6.5,
+    7.5
+   ],
+   "ukupno": 70.5,
+   "zamerke": [
+    "najduzi dugi 15,5 km = 73 % distance; 4. ned dugi 11,5",
+    "vrsna nedelja 3x1,5 km = 4,5 km tempa trke; najvise 11 km/ned",
+    "nema testa; 1:40:59 naspram 1:41:00"
+   ]
+  },
+  "vlasnik-v2": {
+   "ocene": [
+    7.5,
+    8,
+    7,
+    7.5,
+    7.5,
+    7,
+    6.5
+   ],
+   "ukupno": 73.5,
+   "zamerke": [
+    "15. ned brz rad 25 % u 'gradnji' protivno upozorenju (22 %, 25 % samo vrsna)",
+    "8. ned: jedini lagani dan 4,5 km = 11 % od 39,5 km",
+    "1. ned oporavka oznacena 'osnova, gradnja'; 16. i 17. ned po 30,3 km"
+   ]
+  }
+ },
+ "scenariji": {
+  "s01": 8.5,
+  "s02": 7,
+  "s03": 5,
+  "s04": 6,
+  "s05": 7.5,
+  "s06": 8.5,
+  "s07": 7,
+  "s08": 7,
+  "s09": 8,
+  "s10": 9,
+  "s11": 8.5,
+  "s12": 8,
+  "s13": 8,
+  "s14": 8.5,
+  "s15": 8.5,
+  "s16": 8,
+  "s17": 8,
+  "s18": 6.5,
+  "s19": 7.5,
+  "s20": 8.5,
+  "s21": 9.5,
+  "s22": 9,
+  "s23": 10,
+  "s24": 7.5,
+  "s25": 8.5,
+  "s26": 5.5,
+  "s27": 9
+ },
+ "prosek_scenarija": 78.7,
+ "parovi": {
+  "par1": 8,
+  "par2": 7.5,
+  "par3": 8
+ },
+ "prosek_parova": 78.3,
+ "ispravke": [
+  "tempa iz kratkog testa/trke: prag brzi od tempa same trke (s03,s04,s24,s26,par2)",
+  "objasnjenje promene navodi pogresan rezultat ili je protivrecno (s02,s04,s08,s26)",
+  "test punim naporom i dugi dan za danom; 'brz rad 0 %' u nedelji testa",
+  "povratak posle bolesti nesrazmeran: 7 dana -> 5 nedelja (s05,s07) prema 5 dana -> 10 dana (s25)",
+  "rezultat na istoj distanci usvojen samo 70 % (s17)",
+  "ocekivano vreme ne reaguje na izgubljen trening (s07,s08,s15,par2B)",
+  "prvi prag za povratnika/bez kvaliteta veci nego za stabilnog (par1B,par3A,p10)",
+  "p06: prazne nedelje i suzavanje koje raste",
+  "s18: besmisleno upozorenje i pad dugog 2 h 5 -> 80 min",
+  "urednost: oznake faza, razlike 1-40 s, cudni minuti, napomena na prvi test, tempo trke 6/10"
+ ],
+ "za_pregled_vlasnika": [
+  "p06",
+  "p01",
+  "p11"
+ ],
+ "napomena": "Slucajno vidjen red 'MORA DA SE RAZLIKUJE' u pairs/p1a.txt posle zapisanih ocekivanja; za parove 2 i 3 isfiltriran."
+}
