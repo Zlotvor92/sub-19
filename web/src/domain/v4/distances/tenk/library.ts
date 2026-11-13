@@ -427,7 +427,7 @@ export const LIBRARY: WorkoutDef[] = [
       zone: 'RP',
       rep: { distanceM: 1000 },
       recovery: jog(90),
-      minReps: 3,
+      minReps: 2,
       maxReps: 10
     },
     text: 'rp-deonice'

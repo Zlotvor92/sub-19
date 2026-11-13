@@ -143,6 +143,9 @@ export const SAFETY: SafetyNumbers = {
      35), početnici 25 */
   minEasyMin: { brz: 30, srednji: 30, spor: 30, mali: 30, povratnik: 30 },
   minEasyFromRunDays: 5,
+  /* Z8 (krug 7): traženi dani se poštuju — kad obim ne nosi najkraće lagano nivoa, lagan dan sme do 25 min uz
+     rečenicu (10 km: najkraće lagano je 30 min, pa je zamena 5 min kraća, kao kod polumaratona 35 → 30) */
+  minEasyFallbackMin: 25,
   peakNotBelowBase: true,
   /* usponi najviše 2 od 3 nedelje — treća dobija intervale */
   tagMaxRun: [{ tag: 'brdo', max: 2, window: 3, replacement: 'intervali' }],

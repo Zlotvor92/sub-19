@@ -13,7 +13,7 @@
        ≤ 85 % (tempo trke + kratak prag) → N−1 sužavanje → trka.
      8 ≤ N < 14 (ciljni p03, p06): provera forme u rasterećenju N−4, u četvrtak → N−3 najteža → N−2 → N−1 →
        trka.
-     Rasterećenje svake 4. nedelje brojano od N−4 unazad (nikad pre 4. nedelje); N ≥ 18: i provera u N−12.
+     Rasterećenje svake 4. nedelje brojano od N−4 unazad (nikad pre 4. nedelje); N ≥ 16: i provera u N−12.
    Početnik (jedan kvalitet u četvrtak; ciljni p11): uvod 2 nedelje samo ubrzanja, pa usponi i prag po osećaju
      10 → 18 min, provera 3 km u rasterećenju N−6, vrh obima N−5, tempo trke 1000 m od N−4, najteža N−3 (završnih
      10 min dugog u tempu trke), sužavanje, oštrenje.
@@ -118,8 +118,9 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const tailStart = Math.max(1, n - tailLen + 1);
   const recoveries = new Set<number>();
   for (let w = n - 4; w >= 4; w -= 4) recoveries.add(w);
-  /* provera forme: N−6 (dug plan, deo repa) ili rasterećenje N−4 (deo repa); dug plan od 18+ nedelja i u N−12 */
-  const extraCheck = n >= 18 && recoveries.has(n - 12) ? n - 12 : 0;
+  /* provera forme: N−6 (dug plan, deo repa) ili rasterećenje N−4 (deo repa); plan od 16+ nedelja i u N−12, da
+     provere budu na ≤ 8 nedelja (Y1, krug 7) */
+  const extraCheck = n >= 16 && recoveries.has(n - 12) ? n - 12 : 0;
   const firstRecovery = Math.min(...recoveries);
   const builds: number[] = [];
   for (let w = 1; w < tailStart; w += 1) if (!recoveries.has(w)) builds.push(w);
@@ -182,8 +183,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           load,
           longSpec,
           sh.single
-            ? [S('tempo-trke', 0.4, 'rp-1000'), STRIDES]
-            : [S('intervali', 0.5), S('tempo-trke', 0.4, 'rp-1000')]
+            ? [S('tempo-trke', 0.4, 'rp-1200'), STRIDES]
+            : [S('intervali', 0.5), S('tempo-trke', 0.4, 'rp-1200')]
         )
       );
       continue;
@@ -298,7 +299,7 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
       'taper',
       0.68,
       { len: long ? 0.72 : 0.62 },
-      pair(S('intervali', 0.4), S('tempo-trke', 0.4))
+      pair(S('intervali', 0.4), S('tempo-trke', 0.4, 'rp-1200'))
     ),
     /* N: nedelja trke — oštrenje 3 × 800 m u četvrtak, utorak lagano uz ubrzanja */
     week(FINISH, 'race', 0.32, null, [S('ostrenje', 1), STRIDES])

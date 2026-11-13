@@ -165,7 +165,10 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     maxEasy = Math.max(maxEasy, g.easyKm / ref);
     /* lakša nedelja (rasterećenje, provera, sužavanje): lagan dan na najkraćem trajanju nivoa (+ ubrzanja) je vlasnik
        te odluke — meri se samo K8 (lagan ≤ dugi) */
-    const minEasy = (doc.header.decisions.level === 'pocetnik' || doc.header.decisions.level === 'pocetnik-nov' ? 25 : 30) + 7;
+    const minEasy =
+      (doc.header.decisions.level === 'pocetnik' || doc.header.decisions.level === 'pocetnik-nov'
+        ? 25
+        : 30) + 7;
     if (!building && g.easyMin <= minEasy) {
       if (g.easyKm > g.longKm + 0.25)
         v.push(`n${String(g.index)} lagan ${String(g.easyKm)} > dugi ${String(g.longKm)}`);
@@ -243,10 +246,16 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   }
   /* 10. vršna nedelja 14–25 % brzog rada (10 km: ciljni p03 15 %, p11 17 %; početnik sa kratkim stažom i tegoba:
      ≥ 10 %) */
+  /* Z8 (krug 7): traženi dani uz lagan dan na najkraćem trajanju (upozorenje `lagan-kratak`) — obim ne nosi kvalitet
+     (motor ga zamenjuje laganim, upozorenje `obim-za-nivo`), pa vršna nedelja nema donju granicu brzog rada, a nedelja
+     trke ne može ispod najkraćih laganih dana (p06: 5 dana, 30 km) */
+  const shortEasy = doc.header.warnings.some((w) => w.code === 'lagan-kratak');
   const easyStart =
-    doc.header.decisions.level === 'pocetnik-nov' || doc.header.decisions.painCaution === true;
+    doc.header.decisions.level === 'pocetnik-nov' ||
+    doc.header.decisions.painCaution === true ||
+    shortEasy;
   const peakMin = easyStart ? 0.1 : 0.14;
-  if (weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
+  if (!shortEasy && weeks.some((g) => g.kind === 'peak') && peakFast < peakMin - 0.005)
     v.push(
       `vršna nedelja brz rad ${String(Math.round(peakFast * 100))} % < ${String(Math.round(peakMin * 100))} %`
     );
@@ -260,7 +269,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   if (longestMin > 101) v.push(`najduži dugi ${String(Math.round(longestMin))} min > 1 h 40`);
 
   /* ---- krug 5 (P5) ---- */
-    const lvl = doc.header.decisions.level;
+  const lvl = doc.header.decisions.level;
   const fastOf = (x: PlanDoc['weeks'][number]['days'][number]): number =>
     x.workout !== null && (x.workout.kind === 'quality' || x.workout.kind === 'long')
       ? x.workout.workSec
@@ -305,7 +314,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     if (fastDays > 2) v.push(`nedelja −2 ima ${String(fastDays)} brza treninga`);
   }
   const rw = weeks[nW - 1];
-  if (rw !== undefined && peakKm > 0 && rw.km > 0.6 * peakKm + 0.5)
+  if (!shortEasy && rw !== undefined && peakKm > 0 && rw.km > 0.6 * peakKm + 0.5)
     v.push(`nedelja trke ${String(rw.km)} km > 60 % vrha`);
   const counted = build.length > 0 ? build : weeks;
   return {
