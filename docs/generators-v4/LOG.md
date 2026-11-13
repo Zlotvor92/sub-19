@@ -588,3 +588,16 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   na izgubljen trening (A17), povratak posle 7 dana bolesti pet nedelja (A10), p06 (A1).
 - 10K: slaže se sa trenerom (rupa u specifičnoj fazi, p06/p02), plus lestvica tempa trke (B7) i sužavanje naopako (B9).
 - Dopune poslate: motor A10–A18, 10K B7–B10. Arhivirana dva taba drugog sudije (gurnuto).
+
+### 13. 11. 2026, 13:25 — štednja Fable-a (nalog vlasnika) i stanje kruga 9
+- Vlasnik (≈ 10:05): Fable na 91 %, nedeljni 65 % → „Fable ostavi samo za sebe". Od sada: organizator jedini Fable;
+  trener i drugi sudija kad zatrebaju idu na Opus (nov tab sa rubrikom i dosadašnjim ROUND fajlovima; prva Opus ocena
+  ponavlja i HM krug 8 radi zajedničke polazne tačke). Satna provera `trig_01YSecBGzp1ugHwXhLb7ugBu` ISKLJUČENA;
+  tabovi šalju jednu završnu poruku. Oba Opus taba su stajala 10:07–12:12, gurnuta ručno.
+- 10K krug 2 (`b24cf14`): specifična faza puna, tempo trke raste (≥ 6 km / ≥ 4 km), 8 ned = 1 nedelja sužavanja.
+  Nije: p04/p12 rast × 1,22/1,20, p08 × 1,13, p06 sužavanje naopako (motor).
+- Krug 9 deo A (`e8bb740`), moj pregled: 739 zeleno + 14 očekivanih padova, typecheck čist, kapija HM 0, 10K 1 (p06)
+  [visoka]. Urađeno A14 (prag ne brži od trke 40–70 min, zone ≤ najbolji kraći rezultat; s04 prag 5:31 → 5:48),
+  A1, A4, A5, A7, A8, A13, A16. Nije: A2, A10, A11, A12, A17; A15 vraćeno.
+- Krug 9b poslat tabu motora (8 stavki: sužavanje nikad naopako + prozor povratka ≤ 3 ned, A17, A2 sa `baseline`
+  u PlanDoc, tekstovi, A15 samo pri gradnji novog plana). Ocena sudija čeka nalog vlasnika.
