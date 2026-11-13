@@ -67,7 +67,7 @@ import { warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { adjustRaceDay, skeleton } from './plan';
 import { adjustmentWindow, effortRampDays, pauseLength, pauseRampDays } from './readiness';
-import { mainZone, minDoseOf, realize } from './select';
+import { mainZone, minDoseOf, realize, type Recipe } from './select';
 import { lastLongAfterEffort, lastLongBefore, normalizeAvailability } from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import type {
@@ -87,7 +87,8 @@ import type {
   ReplanFn,
   RunnerState,
   Transfer,
-  Warning
+  Warning,
+  Workout
 } from './types';
 import { effortResult, raceTimeSec, zonePaces } from './vdot';
 
@@ -596,9 +597,21 @@ const minDate = (a: IsoDate, b: IsoDate): IsoDate => (a < b ? a : b);
     gradnja). Nedelja koja traži više se skraćuje (dugi do granice uz zadržan blok, lagani dani srazmerno) i prozor
     se produžava; prva nedelja koja staje vraća prvobitan plan. Sužavanje i nedelja trke se ne diraju.
     Vraća plan i poslednji izmenjen dan (novi kraj prozora). */
+/** Krug 10: dugi zadatog trajanja — kad unos iz biblioteke drži svoju dužinu (ne skraćuje se), dugi postaje ravnomeran
+    lagan dugi tog trajanja. */
+function realizeLong(
+  recipe: Extract<Recipe, { type: 'long' }>,
+  ctx: ReturnType<typeof buildCtx>
+): Workout | null {
+  const w = realize(recipe, ctx);
+  if (w === null || recipe.def === null) return w;
+  if (summarize(w, ctx.pace).durationSec <= recipe.sec + 120) return w;
+  return realize({ ...recipe, def: null, dose: 0 }, ctx);
+}
+
 function smoothExit(
   after: PlanDoc,
-  _original: PlanDoc,
+  original: PlanDoc,
   end: IsoDate,
   state: RunnerState,
   data: DistanceData
@@ -642,7 +655,7 @@ function smoothExit(
       const sec = summarize(day.workout, pace).durationSec;
       if (last > 0 && sec > cap + 60) {
         const def = data.library.find((x) => x.id === day.workout?.libraryId) ?? null;
-        const workout = realize(
+        const workout = realizeLong(
           {
             type: 'long',
             sec: Math.round(cap / 60) * 60,
@@ -663,7 +676,6 @@ function smoothExit(
     }
   }
   let trimmedPrev = false;
-  let fitted = 0;
   for (let i = base; i < n - 1; i += 1) {
     const w = weeks[i];
     if (w === undefined) break;
@@ -704,20 +716,22 @@ function smoothExit(
         w.days.some((d) => d.workout?.kind === 'test')
       )
         continue;
-      /* krug 10: povratak je gotov kad DVE uzastopne nedelje gradnje stanu (nedelja koju je spustio raniji događaj
-         staje, a sledeća prvobitna bi bila skok) */
-      fitted += 1;
-      if (fitted >= 2) break;
+      /* krug 10: povratak je gotov kad nedelja koja staje JESTE prvobitna (± 0,5 km, ± 1 min dugog) — niža nedelja
+         (spustio je prozor ili raniji događaj) ne završava povratak, jer bi sledeća prvobitna bila skok */
+      const orig = original.weeks.find((x) => x.start === w.start);
+      const isOrig =
+        orig === undefined ||
+        (Math.abs(km(orig) - curKm) <= 0.5 && Math.abs(longSec(orig) - curLong) <= 60);
+      if (isOrig) break;
       continue;
     }
-    fitted = 0;
     /* dugi do granice (blok ostaje, ne duži od dugog) */
     const days = w.days.map((d): PlanDay => {
       if (!longOver || d.workout?.kind !== 'long' || !isMutable(d, after.header, state.today, done))
         return d;
       const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
       const sec = Math.round(longCap / 60) * 60;
-      const workout = realize(
+      const workout = realizeLong(
         { type: 'long', sec, def, dose: Math.min(d.workout.workSec, sec / 2), slot: null },
         ctxB
       );
@@ -763,7 +777,7 @@ function smoothExit(
           const next = Math.max(lastLong, sec - rest * pace.paces.easy);
           if (next >= sec - 60) return d;
           const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
-          const workout = realize(
+          const workout = realizeLong(
             {
               type: 'long',
               sec: Math.round(next / 60) * 60,
@@ -819,7 +833,7 @@ function smoothExit(
       if (lkm > maxKm + 0.25) {
         const sec = Math.max(lastLong, maxKm * pace.paces.easy - 30);
         const def = data.library.find((x) => x.id === longDay.workout?.libraryId) ?? null;
-        const workout = realize(
+        const workout = realizeLong(
           {
             type: 'long',
             sec: Math.round(sec / 60) * 60,
@@ -850,8 +864,24 @@ function smoothExit(
         shrunk = {
           ...shrunk,
           days: shrunk.days.map((d): PlanDay => {
-            if (d.workout?.kind !== 'quality' || !isMutable(d, after.header, state.today, done))
-              return d;
+            if (!isMutable(d, after.header, state.today, done)) return d;
+            /* krug 10: i blok u dugom (tempo trke u dugom) */
+            if (d.workout?.kind === 'long' && d.workout.workSec > 0) {
+              const def = data.library.find((x) => x.id === d.workout?.libraryId) ?? null;
+              const sec = summarize(d.workout, pace).durationSec;
+              const workout = realizeLong(
+                {
+                  type: 'long',
+                  sec: Math.round(sec / 60) * 60,
+                  def,
+                  dose: Math.floor((d.workout.workSec * f) / 60) * 60,
+                  slot: null
+                },
+                ctxB
+              );
+              return workout === null ? d : { ...d, origin: 'template', workout };
+            }
+            if (d.workout?.kind !== 'quality') return d;
             const def = data.library.find((x) => x.id === d.workout?.libraryId);
             if (def === undefined) return d;
             const dose = Math.max(
@@ -872,6 +902,24 @@ function smoothExit(
           })
         };
       }
+    }
+    /* krug 10: lagan dan nije duži od skraćenog dugog (dugi ostaje najduže trčanje nedelje, − 5 min) */
+    {
+      const ld = shrunk.days.find((d) => d.workout?.kind === 'long');
+      const lsec = ld?.workout == null ? 0 : summarize(ld.workout, pace).durationSec;
+      if (lsec > 0)
+        shrunk = {
+          ...shrunk,
+          days: shrunk.days.map((d): PlanDay => {
+            if (d.workout?.kind !== 'easy' || !isMutable(d, after.header, state.today, done))
+              return d;
+            const sec = summarize(d.workout, pace).durationSec;
+            const most = Math.max(lsec - 300, 1200);
+            if (sec <= most) return d;
+            const workout = realize({ type: 'easy', sec: Math.floor(most / 60) * 60 }, ctxB);
+            return workout === null ? d : { ...d, origin: 'template', workout };
+          })
+        };
     }
     /* cilj nedelje prati skraćenje (nedelja je namerno manja, ne „ispod cilja") */
     const share = curKm > 0 ? Math.min(1, km(shrunk) / curKm) : 1;
@@ -1762,10 +1810,6 @@ export const replan: ReplanFn = (doc, state, events, data) => {
   const changes: Change[] = [];
   /* R8 t. 17: više događaja = bar dva događaja koji nisu propušten trening (bol pa trka, bolest pa put …) */
   const kindOf = (id: string): string => id.slice(0, id.indexOf(':'));
-  const major = [...doc.header.appliedEvents.map(kindOf), ...todo.map((e) => e.kind)].filter(
-    (k) => k !== 'missed' && k !== 'none'
-  );
-  const multi = major.length >= 2;
   /* Krug 10 (stavka 4): kad u istom prolazu stigne više rezultata, izmena je samo najnoviji (forma ih već sadrži
      sve); stariji se beleže kao primenjeni, bez ponovnog objavljivanja */
   const results = todo.filter((e) => e.kind === 'result');
@@ -1782,6 +1826,12 @@ export const replan: ReplanFn = (doc, state, events, data) => {
       .map((e) => e.id)
   );
   const silentApplied: string[] = [];
+  /* R8 t. 17: više događaja = bar dva događaja koji nisu propušten trening; tiho primenjen stari rezultat se ne broji */
+  const major = [
+    ...doc.header.appliedEvents.map(kindOf),
+    ...todo.filter((e) => !silent.has(e.id)).map((e) => e.kind)
+  ].filter((k) => k !== 'missed' && k !== 'none');
+  const multi = major.length >= 2;
   for (const ev of todo) {
     const raw = candidateFor(current, state, ev, data);
     if (raw === null) continue;

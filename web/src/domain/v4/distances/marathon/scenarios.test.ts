@@ -17,14 +17,7 @@ import { SCENARIOS } from './testdata/scenarios';
 /* POZNATE GREŠKE MOTORA na 10 km (13. 11. 2026) — nalaz se ne briše iz provere nego se ovde imenuje, sa uzrokom;
    svaki je zahtev prema motoru u `docs/generators-v4/reports/F7-10K-REPORT.md`. Kad motor bude ispravljen, test
    `poznate greške su još tu` pada i stavka se briše. */
-const KNOWN = new Map<string, string>([
-  /* maraton (13. 11.), motor: nadovezani prozori (bolest → propušten dugi, bol → trka) daju rep izmena duži od
-     4 nedelje — isti uzrok kao 10 km s26 (drugo ponovno planiranje nad već izmenjenim planom); zahtev u F7-MAR-REPORT */
-  ['s25 rep do 2027-01-17', 'nadovezani prozori bolest → propušten dugi (Z10)'],
-  ['s26 rep do 2027-03-14', 'nadovezani prozori bol → trka (Z10)'],
-  /* s07 (p11, bolest u ned 14): povratak traje 4 nedelje, pa ned 19 (N−5, blok) skače na plan — motor (A10 b) */
-  ['s07 n19 nedelja 36.8 → 47.6 km', 'izlazak iz prozora povratka posle bolesti (R2, motor A10 b)']
-]);
+const KNOWN = new Map<string, string>([]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>
   bad.filter((b) => {
@@ -243,8 +236,20 @@ describe('maraton: ponovno planiranje nad 29 scenarija', () => {
     const bad: string[] = [];
     for (const { s, r } of RUNS.filter(({ s }) => s.title.startsWith('E7'))) {
       const end = windowEnd(r);
-      if (end !== null && end > addDays(r.afterState.today as string, 28))
-        bad.push(`${name(s.no)} rep do ${end}`);
+      const limit = addDays(r.afterState.today as string, 28);
+      /* krug 10 (stavka 2): posle 28 dana sme da traje samo geometrijski povratak dugog/obima — nedelje posle granice
+         su ≤ prvobitnih */
+      const onlyLower = (r.after.weeks as PlanWeek[])
+        .filter((w) => w.start > limit && w.intent.kind !== 'race')
+        .every((w) => {
+          const old = (r.before.weeks as PlanWeek[]).find((x) => x.start === w.start);
+          return (
+            old === undefined ||
+            (weekKm(w, r.after) <= weekKm(old, r.before, r.after) + 0.5 &&
+              longSec(w, r.after) <= longSec(old, r.before, r.after) + 60)
+          );
+        });
+      if (end !== null && end > limit && !onlyLower) bad.push(`${name(s.no)} rep do ${end}`);
     }
     expect(open(bad)).toEqual([]);
   });

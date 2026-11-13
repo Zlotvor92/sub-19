@@ -23,7 +23,7 @@ const KNOWN = new Map<string, string>([
   /* bol pa trka: rep 4 nedelje + 6 dana nastaje već u PRVOM ponovnom planiranju (samo bol, izlaz po R2); R8 t. 17
      (`capTail`) seče rep kad su oba događaja u istom ponovnom planiranju, a ovde je trka posebno ponovno planiranje
      nad već izmenjenim planom (prvobitan plan mu nije dostupan) */
-  ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)'],
+  /* krug 10: s26 rep skinut — Z10 dozvoljava geometrijski povratak (nedelje posle granice ≤ prvobitnih) */
   /* Z3 i deonice fiksne dužine (s13, s15, s16) skinuto u krugu 8 (R8 t. 4: manji unos ili kraće deonice) */
   /* krug 2 10 km: s13 prvi tempo trke posle bola 23 od 32 min (72 %; B7 podigao plafon tempa trke) — zaokruživanje na ceo komad deonice; granica
      je 60 % + 90 s */
@@ -247,8 +247,20 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
     const bad: string[] = [];
     for (const { s, r } of RUNS.filter(({ s }) => s.title.startsWith('E7'))) {
       const end = windowEnd(r);
-      if (end !== null && end > addDays(r.afterState.today as string, 28))
-        bad.push(`${name(s.no)} rep do ${end}`);
+      const limit = addDays(r.afterState.today as string, 28);
+      /* krug 10 (stavka 2): posle 28 dana sme da traje samo geometrijski povratak dugog/obima — nedelje posle granice
+         su ≤ prvobitnih */
+      const onlyLower = (r.after.weeks as PlanWeek[])
+        .filter((w) => w.start > limit && w.intent.kind !== 'race')
+        .every((w) => {
+          const old = (r.before.weeks as PlanWeek[]).find((x) => x.start === w.start);
+          return (
+            old === undefined ||
+            (weekKm(w, r.after) <= weekKm(old, r.before, r.after) + 0.5 &&
+              longSec(w, r.after) <= longSec(old, r.before, r.after) + 60)
+          );
+        });
+      if (end !== null && end > limit && !onlyLower) bad.push(`${name(s.no)} rep do ${end}`);
     }
     expect(open(bad)).toEqual([]);
   });

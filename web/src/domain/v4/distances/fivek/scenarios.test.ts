@@ -236,8 +236,20 @@ describe('5 km: ponovno planiranje nad 27 scenarija', () => {
     const bad: string[] = [];
     for (const { s, r } of RUNS.filter(({ s }) => s.title.startsWith('E7'))) {
       const end = windowEnd(r);
-      if (end !== null && end > addDays(r.afterState.today as string, 28))
-        bad.push(`${name(s.no)} rep do ${end}`);
+      const limit = addDays(r.afterState.today as string, 28);
+      /* krug 10 (stavka 2): posle 28 dana sme da traje samo geometrijski povratak dugog/obima — nedelje posle granice
+         su ≤ prvobitnih */
+      const onlyLower = (r.after.weeks as PlanWeek[])
+        .filter((w) => w.start > limit && w.intent.kind !== 'race')
+        .every((w) => {
+          const old = (r.before.weeks as PlanWeek[]).find((x) => x.start === w.start);
+          return (
+            old === undefined ||
+            (weekKm(w, r.after) <= weekKm(old, r.before, r.after) + 0.5 &&
+              longSec(w, r.after) <= longSec(old, r.before, r.after) + 60)
+          );
+        });
+      if (end !== null && end > limit && !onlyLower) bad.push(`${name(s.no)} rep do ${end}`);
     }
     expect(open(bad)).toEqual([]);
   });
