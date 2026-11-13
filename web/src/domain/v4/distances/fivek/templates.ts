@@ -137,7 +137,10 @@ const threeDayProgressive = (sh: Shape, k: number): boolean => sh.days === 3 && 
 function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const check = n >= 8;
   /* rep: N−4 (provera) … N, kraći plan N−3 … N */
-  const tailLen = check ? 5 : 4;
+  /* R17: plan ≤ 5 nedelja — najteža je 2 pred trku, bez nedelje −2 (sužavanje 7–10 dana; p14: 4 nedelje nisu
+     1 najteža + 3 silaska) */
+  const short = n <= 5;
+  const tailLen = check ? 5 : short ? 3 : 4;
   const tailStart = Math.max(1, n - tailLen + 1);
   const recoveries = new Set<number>();
   if (check) for (let w = n - 8; w >= 4; w -= 4) recoveries.add(w);
@@ -183,19 +186,19 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
          tempo trke umesto praga (≈ 60 % najvećeg, deonice od 400 m da zaokruživanje ne pređe 70 % — K7: prvi trening podražaja ≤ 70 % vrha, inače bi najteža nedelja
          dobila samo 70 %) */
       const longSpec =
-        top && sh.days !== 3
+        top && sh.days !== 3 && !short
           ? { len: 1, stimulus: 'dugi-prag', dose: 1 }
           : threeDayProgressive(sh, k) && !top
             ? { len, stimulus: 'dugi-progresivno', dose: 0.8, wave }
             : { len: top ? 1 : len, wave: top ? 1 : wave };
-      const thu = top && check ? S('tempo-trke', 0.6, 'rp-400') : S('prag', 0.8);
+      const thu = top && (check || short) ? S('tempo-trke', 0.6, 'rp-400') : S('prag', 0.8);
       out.push(
         week(
           RAZVOJ,
           'build',
           top ? (sh.days === 3 ? 1 : 0.94) : load,
           longSpec,
-          sh.days === 3 && top && check
+          sh.days === 3 && top && (check || short)
             ? [thu, S('intervali', iDose)]
             : pairFor(sh, thu, S('intervali', iDose), k)
         )
@@ -218,11 +221,11 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       );
     }
   }
-  return [...out, ...regularTail(sh, check)].slice(-n);
+  return [...out, ...regularTail(sh, check, short)].slice(-n);
 }
 
 /** Rep: N−4 (provera) … N; plan kraći od 8 nedelja N−3 … N. */
-function regularTail(sh: Shape, check: boolean): WeekIntent[] {
+function regularTail(sh: Shape, check: boolean, short = false): WeekIntent[] {
   const head: WeekIntent[] = check
     ? [
         /* N−4: rasterećenje + provera 3 km subotom (ciljni p01 ned 8); 3 dana: četvrtak; dan pre provere lagan */
@@ -242,23 +245,27 @@ function regularTail(sh: Shape, check: boolean): WeekIntent[] {
       /* bez provere (plan < 8 nedelja) ovo je prvi tempo trke (≤ 70 % vrha, K7): deonice od 400 m, da
          zaokruživanje ne pređe granicu */
       one
-        ? [S('tempo-trke', 1, check ? 'rp-1000' : 'rp-400'), STRIDES]
+        ? [S('tempo-trke', 1, check || short ? 'rp-1000' : 'rp-400'), STRIDES]
         : check
           ? [S('tempo-trke', 1, 'rp-1000'), STRIDES6]
-          : [S('tempo-trke', 1, 'rp-400'), S('brzina', 0.6)]
+          : [S('tempo-trke', 1, short ? 'rp-1000' : 'rp-400'), S('brzina', 0.6)]
     ),
-    /* N−2: ≤ 85 % — tempo trke 4 × 1000 m + R 6 × 200 m (ciljni p01 ned 10) */
-    week(
-      SPEC,
-      'build',
-      0.82,
-      { len: 0.88 },
-      one
-        ? [S('tempo-trke', 0.85), STRIDES]
-        : sh.days === 3
-          ? [STRIDES6, S('tempo-trke', 0.85)]
-          : [S('brzina', 0.35, 'r-200'), S('tempo-trke', 0.85)]
-    ),
+    /* N−2: ≤ 85 % — tempo trke 4 × 1000 m + R 6 × 200 m (ciljni p01 ned 10); plan ≤ 5 nedelja je nema */
+    ...(short
+      ? []
+      : [
+          week(
+            SPEC,
+            'build',
+            0.82,
+            { len: 0.88 },
+            one
+              ? [S('tempo-trke', 0.85), STRIDES]
+              : sh.days === 3
+                ? [STRIDES6, S('tempo-trke', 0.85)]
+                : [S('brzina', 0.35, 'r-200'), S('tempo-trke', 0.85)]
+          )
+        ]),
     /* N−1: sužavanje — tempo trke ≈ 60 % (ciljni p01 ned 11: 3 × 1000 m; ovde deonice od 800 m, da zaokruživanje ne
        pređe 60 % najveće doze) */
     week(
@@ -270,7 +277,10 @@ function regularTail(sh: Shape, check: boolean): WeekIntent[] {
          prelazi rad nedelje −2 (p05: 26 prema 25 min) — silazak intenziteta ima prednost.
          3 dana: jedan podražaj (tempo trke u četvrtak), utorak lagan bez ubrzanja — mali obim bi dan sa ubrzanjima
          skratio ispod 20 min (dodatak ne čuva najkraće lagano; zahtev motoru) */
-      sh.days === 3 ? [S('tempo-trke', 0.6, 'rp-600')] : [STRIDES, S('tempo-trke', 0.6, 'rp-800')]
+      /* plan ≤ 5 nedelja: najteža ima prvi tempo trke (≤ 70 % vrha), pa sužavanje 40 % da ostane ≤ 60 % najteže */
+      sh.days === 3
+        ? [S('tempo-trke', short ? 0.4 : 0.6, 'rp-600')]
+        : [STRIDES, S('tempo-trke', short ? 0.4 : 0.6, 'rp-800')]
     ),
     /* N: nedelja trke — oštrenje 4 × 400 m u tempu trke u četvrtak, utorak lagano uz ubrzanja */
     /* 3 dana: utorak lagan bez ubrzanja (mali obim bi ga skratio ispod 20 min) */
@@ -292,11 +302,15 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
      nedelju od 2 treninga (20 min je najkraće trčanje) */
   const every = 4;
   const longStim = fresh ? 'dugi-hod' : 'dugi';
-  /* R12 (F5): hod-trk početnik u repu (N−4 … N−1) trči dugi u komadu, 30–35 min — pre trke bar jedno neprekidno
-     trčanje dužine trke (trka traje ≈ 31 min) */
-  const tailLong = (len: number): { len: number; stimulus: string } =>
-    fresh ? { len: Math.min(len, 0.6), stimulus: 'dugi' } : { len, stimulus: longStim };
-  const intro = 2;
+  /* R12 (F5): hod-trk početnik pre trke trči dugi u komadu 30–35 min (trka traje ≈ 31 min). R17: samo u nedelji
+     provere (N−4) i u N−1 — u najtežoj i N−2 dugi ostaje hod-trk pune dužine, inače nedelja (lagan ≤ 75 % dugog) pada
+     5 nedelja zaredom posle vrha */
+  const tailLong = (len: number, inOnePiece = false): { len: number; stimulus: string } =>
+    fresh && inOnePiece
+      ? { len: Math.min(len, 0.6), stimulus: 'dugi' }
+      : { len, stimulus: longStim };
+  /* R17 (p12): uvod samo ubrzanjima 2 nedelje kod 12+ nedelja, 1 nedelja kod kraćih (p12: prvi rad tek u ned 4–5) */
+  const intro = fresh || n >= 12 ? 2 : 1;
   const check = n >= 8;
   /* rep: N−4 provera (kraći plan bez provere), N−3 … N; telo sa rasterećenjima unazad od provere */
   const tailStart = Math.max(1, n - (check ? 4 : 3));
@@ -336,7 +350,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
               [S('tempo-trke', 0.6, 'rp-600'), STRIDES]
             : k % 3 === 0
               ? [HILLS_SHORT, STRIDES]
-              : [S('prag-p', lerp(0.5, 1, t)), STRIDES];
+              : [S('prag-p', lerp(0.45, 1, t)), STRIDES];
     out.push(
       week(
         w >= tailStart - 3 ? RAZVOJ : OSNOVA,
@@ -351,7 +365,13 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     ...(check
       ? [
           /* N−4: rasterećenje + provera 1,5 km „jako ravnomerno" (ciljni p11 ned 8: kraći test) */
-          week(SPEC, 'recovery', 1, tailLong(0.72), withSaturday(sh, [STRIDES, STRIDES], KONTROLA))
+          week(
+            SPEC,
+            'recovery',
+            1,
+            tailLong(0.72, true),
+            withSaturday(sh, [STRIDES, STRIDES], KONTROLA)
+          )
         ]
       : []),
     /* N−3: najteža — prvi put ciljni tempo, 4 × 800 m (ciljni p11 ned 13) */
@@ -365,7 +385,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       STRIDES
     ]),
     /* N−1: sužavanje — tempo trke 3 × 600 m (ciljni p11 ned 15) */
-    week(FINISH, 'taper', 0.72, tailLong(0.55), [
+    week(FINISH, 'taper', 0.72, tailLong(0.6, true), [
       S('tempo-trke', 0.6, fresh ? 'rp-400' : 'rp-600'),
       STRIDES
     ]),

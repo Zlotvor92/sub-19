@@ -250,6 +250,18 @@ export const LIBRARY: WorkoutDef[] = [
     text: 'prag-deonice'
   },
   /* prag početnika: fartlek i tempo po osećaju (ciljni p11 ned 5, 7, 9–11) */
+  /* R17: prvi u nizu — deonice zadate trajanjem tačno pogađaju prvu dozu (≤ 70 % vrha); fartlek po 1 min se
+     zaokružuje naviše (p12) */
+  {
+    id: 'prag-p-2x',
+    kind: 'quality',
+    stimulus: 'prag-p',
+    tags: [],
+    impact: 'obican',
+    requires: {},
+    main: { kind: 'split', zone: 'T', pieces: 2, recovery: jog(120), by: 'trajanje' },
+    text: 'prag-deonice'
+  },
   {
     id: 'fartlek',
     kind: 'quality',
@@ -266,16 +278,6 @@ export const LIBRARY: WorkoutDef[] = [
       maxReps: 12
     },
     text: 'fartlek'
-  },
-  {
-    id: 'prag-p-2x',
-    kind: 'quality',
-    stimulus: 'prag-p',
-    tags: [],
-    impact: 'obican',
-    requires: {},
-    main: { kind: 'split', zone: 'T', pieces: 2, recovery: jog(120), by: 'trajanje' },
-    text: 'prag-deonice'
   },
   {
     id: 'fartlek-2min',

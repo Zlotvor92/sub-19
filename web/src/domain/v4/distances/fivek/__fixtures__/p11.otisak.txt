@@ -27,23 +27,23 @@
 2026-11-28 | odmor | - | 0.0 |  | - | - | -
 2026-11-29 | trening | long | 4.8 | dugi 35 min lagano | - | - | -
 2026-11-30 | odmor | - | 0.0 |  | - | - | -
-2026-12-01 | trening | easy | 4.3 | lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-01 | trening | easy | 3.6 | lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-02 | odmor | - | 0.0 |  | - | - | -
-2026-12-03 | trening | easy | 3.5 | lagano 25 min | - | - | -
+2026-12-03 | trening | quality | 4.8 | prag 2 × 5 min, oporavak 2 min džog | - | - | -
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
 2026-12-05 | odmor | - | 0.0 |  | - | - | -
 2026-12-06 | trening | long | 6.2 | dugi 45 min lagano | - | - | -
 2026-12-07 | odmor | - | 0.0 |  | - | - | -
-2026-12-08 | trening | easy | 4.3 | lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-08 | trening | easy | 3.6 | lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
-2026-12-10 | trening | quality | 4.8 | prag 2 × 5 min, oporavak 2 min džog | - | - | -
+2026-12-10 | trening | quality | 6.9 | fartlek 10 × 1 min živo, između 2 min džog lagano | - | - | -
 2026-12-11 | odmor | - | 0.0 |  | - | - | -
 2026-12-12 | odmor | - | 0.0 |  | - | - | -
 2026-12-13 | trening | long | 6.2 | dugi 45 min lagano | - | - | -
 2026-12-14 | odmor | - | 0.0 |  | - | - | -
-2026-12-15 | trening | easy | 4.3 | lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-15 | trening | easy | 4.9 | lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -
-2026-12-17 | trening | easy | 4.5 | lagano 25 min, usred trčanja 6 × 12 s jako uzbrdo, nazad 1:15 hod | - | - | -
+2026-12-17 | trening | easy | 5.2 | lagano 30 min, usred trčanja 6 × 12 s jako uzbrdo, nazad 1:15 hod | - | - | -
 2026-12-18 | odmor | - | 0.0 |  | - | - | -
 2026-12-19 | odmor | - | 0.0 |  | - | - | -
 2026-12-20 | trening | long | 7.6 | dugi 55 min lagano | - | - | -

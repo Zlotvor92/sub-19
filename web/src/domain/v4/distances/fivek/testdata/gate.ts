@@ -318,7 +318,9 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   const nW = doc.weeks.length;
   const m2 = weeks[nW - 3];
   const m2Week = doc.weeks[nW - 3];
-  if (m2 !== undefined && m2Week !== undefined && peakKm > 0) {
+  /* R17: plan ≤ 5 nedelja — najteža je baš nedelja −2 (sužavanje 7–10 dana), pravilo „−2 ≤ 85 %" ne važi */
+  const shortPlan = m2Week?.intent.kind === 'peak';
+  if (!shortPlan && m2 !== undefined && m2Week !== undefined && peakKm > 0) {
     if (m2.km > 0.85 * peakKm + 0.5) v.push(`nedelja −2 ${String(m2.km)} km > 85 % vrha`);
     const fastDays = m2Week.days.filter((x) => fastOf(x) > 0).length;
     if (fastDays > 2) v.push(`nedelja −2 ima ${String(fastDays)} brza treninga`);

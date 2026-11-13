@@ -229,6 +229,9 @@ function justified(f: Finding, b: Built, stats: WeekStat[]): string | null {
      najteže nedelje je manji od pune doze, pa sužavanje sa tempom trke prelazi 60 % */
   if (f.check === 'taper' && b.doc.weeks.length <= 6)
     return 'kratak plan: najteža nedelja sa prvim treningom podražaja';
+  /* R17: plan ≤ 5 nedelja — najteža nedelja je kalendarska nedelja −2, pa je „−2 ≤ 85 % vrha" uvek nalaz (zahtev motoru) */
+  if (f.check === 'silazak' && b.doc.weeks[b.doc.weeks.length - 3]?.intent.kind === 'peak')
+    return 'kratak plan: najteža nedelja je nedelja −2';
   /* krug 8 (R8 t. 2, 12): izuzetak „kratak plan, spor trkač velikog obima" uklonjen — % doze se u sužavanju
      primenjuje na manji od osnovice i plafona */
   /* krug 5 (D7): tempo trke na nedeljnom plafonu nivoa — skraćen rad ostavlja nedelju ispod cilja */
@@ -751,11 +754,12 @@ describe('trenerski zahtevi za 5 km (coach/target/5K/README.md, brief F7-5K)', (
     for (const p of ALL_PLANS) {
       const n = p.doc.weeks.length;
       const peakAt = p.doc.weeks.findIndex((w) => w.intent.kind === 'peak') + 1;
-      expect(n - peakAt, p.id).toBe(3);
+      /* R17: plan ≤ 5 nedelja — najteža 2 pred trku */
+      expect(n - peakAt, p.id).toBe(n <= 5 ? 2 : 3);
       if (KNOWN.has(p.id)) continue;
       const s = weekStats(p.doc);
       const peakKm = Math.max(...s.map((x) => x.km));
-      expect(s[n - 3]?.km ?? 0, p.id).toBeLessThanOrEqual(0.85 * peakKm + 0.5);
+      if (n > 5) expect(s[n - 3]?.km ?? 0, p.id).toBeLessThanOrEqual(0.85 * peakKm + 0.5);
       if (!p.doc.header.warnings.some((w) => w.code === 'lagan-kratak'))
         expect(s[n - 1]?.km ?? 0, p.id).toBeLessThanOrEqual(0.5 * peakKm + 0.5);
     }

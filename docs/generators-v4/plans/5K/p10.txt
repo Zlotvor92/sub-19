@@ -15,7 +15,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
 - umereno: ravnomerno, kratke rečenice, napor 5 od 10
 - prag: ugodno teško, samo par reči, napor 7 od 10
-- tempo trke: napor koji možeš da držiš oko 30 min, napor 8 od 10
+- tempo trke: napor koji možeš da držiš oko 30 min: 8–9 od 10, poslednji kilometar sve što imaš
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
@@ -69,11 +69,11 @@ UPOZORENJA
   pon 30. 11.  odmor
   uto 1. 12.  prag 12 min u komadu — 4,3 km, 32 min
   sre 2. 12.  odmor
-  čet 3. 12.  lagano 25 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 4,2 km, 33 min
+  čet 3. 12.  lagano 30 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 4,8 km, 38 min
   pet 4. 12.  odmor
   sub 5. 12.  odmor
   ned 6. 12.  dugi 55 min lagano — 6,8 km, 55 min
-  Zbir: 15,3 km, 2 h, 3 treninga, brz rad 10 % vremena trčanja
+  Zbir: 15,9 km, 2 h 5 min, 3 treninga, brz rad 10 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — osnova, gradnja; do trke 10 nedelja
   pon 7. 12.  odmor
@@ -83,8 +83,8 @@ UPOZORENJA
   čet 10. 12.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5 km, 40 min
   pet 11. 12.  odmor
   sub 12. 12.  odmor
-  ned 13. 12.  dugi 50 min lagano — 6,2 km, 50 min
-  Zbir: 16,8 km, 2 h 13 min, 3 treninga, brz rad 6 % vremena trčanja
+  ned 13. 12.  dugi 55 min lagano — 6,8 km, 55 min
+  Zbir: 17,4 km, 2 h 18 min, 3 treninga, brz rad 5 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — osnova, gradnja; do trke 9 nedelja
   pon 14. 12.  odmor
@@ -193,7 +193,7 @@ UPOZORENJA
   pet 19. 2.  odmor
   sub 20. 2.  odmor
   ned 21. 2.  TRKA: 5 km
-      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 30 min, napor 8 od 10.
+      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 30 min: 8–9 od 10, poslednji kilometar sve što imaš.
       napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (21. 1.) — do tada trči po osećaju.
       napomena: Zagrevanje 10–15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km malo lakše nego što ti se čini da možeš, 2.–4. km ravnomerno, napor koji možeš da držiš do kraja, poslednji km sve što imaš.
       napomena: Posle trke: 3 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

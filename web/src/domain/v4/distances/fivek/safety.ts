@@ -195,6 +195,10 @@ export const SAFETY: SafetyNumbers = {
     '7': 0.8
   },
   dayBeforeLongMaxShare: 0.75,
+  /* R17: lagan dan sme do 2 × najdužeg laganog prethodne nedelje (podrazumevano 1,25) — kod 5 km nedelja tela sa dva
+     kvaliteta ima lagan dan od ≈ 22 min, pa je sa 1,25 najteža nedelja posle provere ostajala ispod cilja i ispod nedelje
+     tela (p02: „vršna" u 2. od 8, silazak od 2. nedelje) */
+  easyMaxOverPrevious: 2,
   /* WU/CD po baznoj nedelji: rad 5 km je najbrži, pa je zagrevanje duže i sa ubrzanjima (tekst u biblioteci):
      do ≈ 20 km 10/10, do ≈ 35 km 15/10, više 20/10 (izbor; ciljni p01: dan kvaliteta ≈ 10 km uz 40 km nedeljno) */
   warmupCooldown: [
