@@ -1,20 +1,20 @@
 # Parovi personalizacije — polumaraton (pregled)
 
 P1A — P1 A — stabilan 12 meseci, rezultat star 3 nedelje (ulazi kao p01)
-BROJEVI: nivo srednji; nedelja 1 40,7 km; vrh 56,2 km; prvi dugi 16,0 km, najduži 21,5 km; prvi kvalitet u 1. nedelji; provera forme u 8. nedelji; forma 1:44:16 (srednja), dan trke 1:42:28 (1:39:11–1:46:56)
+BROJEVI: nivo srednji; nedelja 1 40,8 km; vrh 53,3 km; prvi dugi 16,0 km, najduži 21,0 km; prvi kvalitet u 1. nedelji; provera forme u 8. nedelji; forma 1:44:16 (srednja), dan trke 1:42:28 (1:39:11–1:46:56)
 
 P1B — P1 B — povratnik posle 3 meseca pauze, rezultat star 8 meseci (ulazi kao p01)
-BROJEVI: nivo povratnik; nedelja 1 33,6 km; vrh 51,4 km; prvi dugi 13,5 km, najduži 20,0 km; prvi kvalitet u 3. nedelji; provera forme u 4. nedelji; forma 1:51:59 (niska), dan trke 1:50:52 (1:45:03–1:56:23)
+BROJEVI: nivo povratnik; nedelja 1 33,6 km; vrh 49,6 km; prvi dugi 13,5 km, najduži 19,5 km; prvi kvalitet u 3. nedelji; provera forme u 4. nedelji; forma 1:51:59 (niska), dan trke 1:50:52 (1:45:03–1:56:23)
 
 P2A — P2 A — početnik, 8 meseci bez prekida (ulazi kao p11)
-BROJEVI: nivo pocetnik; nedelja 1 20,1 km; vrh 40,4 km; prvi dugi 7,6 km, najduži 16,1 km; prvi kvalitet u 5. nedelji; provera forme u 12. nedelji; forma 2:06:30 (srednja), dan trke 1:59:12 (1:52:29–2:10:31)
+BROJEVI: nivo pocetnik; nedelja 1 20,1 km; vrh 40,4 km; prvi dugi 7,6 km, najduži 16,1 km; prvi kvalitet u 5. nedelji; provera forme u 12. nedelji; forma 2:06:30 (srednja), dan trke 2:02:42 (1:55:59–2:14:01)
 
 P2B — P2 B — početnik, 6 nedelja trčanja, tegoba u potkolenici pre godinu dana (ulazi kao p11)
-BROJEVI: nivo pocetnik-nov; nedelja 1 10,4 km; vrh 30,9 km; prvi dugi 4,8 km, najduži 14,5 km; prvi kvalitet u 5. nedelji; provera forme u 12. nedelji; forma 2:06:30 (srednja), dan trke 1:59:12 (1:49:08–2:16:11)
+BROJEVI: nivo pocetnik-nov; nedelja 1 10,4 km; vrh 30,8 km; prvi dugi 4,8 km, najduži 14,5 km; prvi kvalitet u 5. nedelji; provera forme u 12. nedelji; forma 2:06:30 (srednja), dan trke 2:06:30 (1:56:26–2:23:29)
 
 P3A — P3 A — sve u istom prebrzom tempu, bez kvaliteta, dugi 14–15 km (ulazi kao p04)
-BROJEVI: nivo povratnik; nedelja 1 50,0 km; vrh 63,5 km; prvi dugi 14,8 km, najduži 19,3 km; prvi kvalitet u 3. nedelji; provera forme u 4. nedelji; forma 2:04:13 (srednja), dan trke 2:00:35 (1:56:42–2:06:30)
+BROJEVI: nivo povratnik; nedelja 1 50,0 km; vrh 63,4 km; prvi dugi 14,8 km, najduži 19,3 km; prvi kvalitet u 3. nedelji; provera forme u 4. nedelji; forma 2:04:13 (srednja), dan trke 2:00:40 (1:56:50–2:06:30)
 
 P3B — P3 B — spori lagani + prag jednom nedeljno, dugi 15/18 km (ulazi kao p04)
-BROJEVI: nivo spor; nedelja 1 57,8 km; vrh 65,5 km; prvi dugi 18,3 km, najduži 19,3 km; prvi kvalitet u 1. nedelji; provera forme u 4. nedelji; forma 2:04:13 (srednja), dan trke 1:59:36 (1:55:18–2:06:30)
+BROJEVI: nivo spor; nedelja 1 57,7 km; vrh 65,4 km; prvi dugi 18,3 km, najduži 19,3 km; prvi kvalitet u 1. nedelji; provera forme u 4. nedelji; forma 2:04:13 (srednja), dan trke 1:59:37 (1:55:19–2:06:30)
 

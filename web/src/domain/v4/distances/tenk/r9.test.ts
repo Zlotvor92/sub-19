@@ -1,5 +1,5 @@
 /* KRUG 9 (briefs/R9-ROUND9.md § A) — opšta pravila motora, provera nad podacima 10 km. */
-/* eslint-disable @typescript-eslint/no-explicit-any,
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- scenariji su netipizovani */
 import { describe, expect, it } from 'vitest';
 import {

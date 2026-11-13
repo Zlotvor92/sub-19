@@ -63,7 +63,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 29. 11.  dugi 80 min lagano — 11,2 km, 80 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 45 km, 5 h 12 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 45 km, 5 h 12 min, 5 treninga, brz rad 9 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — osnova, gradnja; do trke 13 nedelja
   pon 30. 11.  lagano 80 min — 11,2 km, 80 min
@@ -152,7 +152,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 24. 1.  dugi 80 min lagano — 11,2 km, 80 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 46,4 km, 5 h 22 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 46,4 km, 5 h 22 min, 5 treninga, brz rad 8 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 25. 1.  lagano 80 min — 11,2 km, 80 min

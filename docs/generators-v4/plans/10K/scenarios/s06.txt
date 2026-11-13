@@ -68,7 +68,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 29. 11.  dugi 80 min lagano — 11,2 km, 80 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 45 km, 5 h 12 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 45 km, 5 h 12 min, 5 treninga, brz rad 9 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — osnova, gradnja; do trke 13 nedelja
   pon 30. 11.  lagano 80 min — 11,2 km, 80 min
@@ -157,7 +157,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 24. 1.  dugi 80 min lagano — 11,2 km, 80 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 46,4 km, 5 h 22 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 46,4 km, 5 h 22 min, 5 treninga, brz rad 8 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 25. 1.  lagano 80 min — 11,2 km, 80 min
@@ -454,7 +454,7 @@ Pauza zbog bolesti trajala je 7 dana (25–31. 1.), pa je povratak postepen: tre
   pet 5. 3.  odmor
   sub 6. 3.  lagano 20 min — 2,8 km, 20 min
   ned 7. 3.  TRKA: 10 km
-      napomena: Tempo za trku: 5:36/km (današnja forma 56:02).
-      napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:39–5:42/km (ne brže od 5:36/km), od 3. do 8. km ravnomerno 5:36/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
+      napomena: Tempo za trku: 5:38/km (današnja forma 56:20).
+      napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:41–5:44/km (ne brže od 5:38/km), od 3. do 8. km ravnomerno 5:38/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
       napomena: Posle trke: 8 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 21,8 km, 2 h 33 min, 4 treninga + trka, brz rad 6 % vremena trčanja

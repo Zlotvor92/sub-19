@@ -134,7 +134,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
   sub 9. 1.  provera forme: trka ili test na 5 km punim naporom — 10,8 km, 57 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 10. 1.  dugi 12 km lagano — 12 km, 73 min
-  Zbir: 41,8 km, 4 h 4 min, 4 treninga, brz rad 0 % vremena trčanja
+  Zbir: 41,8 km, 4 h 4 min, 4 treninga, brz rad 9 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 11. 1.  odmor
@@ -345,7 +345,7 @@ Propušten je ključni trening „dugi 15,5 km lagano" (27. 12.). Dugi trening n
   sub 9. 1.  provera forme: trka ili test na 5 km punim naporom — 10,8 km, 57 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 10. 1.  dugi 12 km lagano — 12 km, 73 min
-  Zbir: 41,8 km, 4 h 4 min, 4 treninga, brz rad 0 % vremena trčanja
+  Zbir: 41,8 km, 4 h 4 min, 4 treninga, brz rad 9 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 11. 1.  odmor

@@ -93,7 +93,7 @@ UPOZORENJA
   sub 12. 12.  provera forme: test na 3 km punim naporom, ravnomerno — 8,4 km, 49 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 13. 12.  dugi 11,5 km lagano — 11,5 km, 74 min
-  Zbir: 37,3 km, 3 h 55 min, 4 treninga, brz rad 0 % vremena trčanja
+  Zbir: 37,3 km, 3 h 55 min, 4 treninga, brz rad 6 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 9 nedelja
   pon 14. 12.  odmor
@@ -137,7 +137,7 @@ UPOZORENJA
   sub 9. 1.  provera forme: trka ili test na 5 km punim naporom — 10,4 km, 58 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   ned 10. 1.  dugi 11 km lagano — 11 km, 71 min
-  Zbir: 38,3 km, 3 h 58 min, 4 treninga, brz rad 0 % vremena trčanja
+  Zbir: 38,3 km, 3 h 58 min, 4 treninga, brz rad 10 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 11. 1.  odmor
