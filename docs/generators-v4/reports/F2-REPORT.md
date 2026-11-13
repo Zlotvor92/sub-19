@@ -331,3 +331,15 @@ brži od brže granice laganog; `null` = u tom periodu nema trčanja) i `weeksSi
 (tip `HistoryConditions`); nepoznata činjenica NE zadovoljava uslov, pa plan bez istorije ostaje bajt-isti. Činjenice
 se pamte u `decisions` (opciono), da ponovno građenje bira iste unose. Podaci distance sada mogu da daju niži početak
 onome ko nije radio kvalitet i povratniku — bez grananja u motoru.
+
+## Krug 4 (S1–S12) — 13. 11. 2026
+
+Motor (brief `briefs/R3-ROUND3.md`); detalji i brojevi u `R3-REPORT.md`. Novi podaci koje distanca mora da podesi:
+- `safety.peakLadder` (redovi `maxBaseKm`/`minWeeks`/`overBase` u BODOVIMA, `limitedOverBase`, `limitedTenureWeeks`);
+  sa njom je lestvica jedini vlasnik vrha (`startPct` šablona samo oblikuje prve nedelje).
+- `safety.minRampKm`, `safety.longStepKm` (korak u km, motor ga pretvara laganim tempom).
+- `safety.longShareLowVolume` (`belowKm`, `minRunDays`, `share`, `peakShare`, `peakWeeks`).
+- `safety.doseCaps.*.maxWorkSec` može biti mapa po nivou; `safety.sharpening` (podražaj van budžeta, min/max sek).
+- `adequate.longCheckKm`, `minLongSec`, `longCheckMinWeeks` (nalaz/upozorenje `dugi-za-distancu`), `minTenureWeeks`.
+- `LevelRule.when.maxTenureWeeks`; `LongSlot.wave` (talas dugog kad ne raste).
+- Lanac rasta i čuvar mere obim kao km nedelje u minutima laganog tempa; `PlanWeek.volumeMin` nosi obim nedelje.
