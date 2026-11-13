@@ -572,3 +572,19 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   obima i množilac opterećenja za dugi > 2 h 30.
 - ODLUKA: krug 9 po `briefs/R9-ROUND9.md` — A (motor, Opus tab motora) i B (10K krug 2, Opus tab 10K) uporedo.
   5K i maraton i dalje čekaju. Zamerke drugog sudije (Fable, HM i 10K) stižu kao dopuna.
+
+### 13. 11. 2026, 09:45 — drugi sudija (Fable): 10K krug 1 (`0e0d06f`) i HM krug 8 (`ef354ea`)
+| drugi sudija (Fable) | HM krug 2 | HM krug 8 | 10K krug 1 |
+|---|---|---|---|
+| planovi | 71,2 | 73,5 (0 ≥ 80; 11 ≥ 70; p06 62) | 67,6 (0 ≥ 80; 5 ≥ 70; 4 < 65; p06 51) |
+| vlasnik v1 / v2 | 58,5 / 57 | 70,5 / 73,5 | — |
+| scenariji | 78,7 | 78,7 | 79 |
+| parovi | 48 | 78,3 | 78 |
+- MOJA GREŠKA (lična kriva, odluka 07:32): sidra zona po trajanju (I 20 min, T 45 min) kod sporijeg trkača padaju na
+  dužinu kraću od njegove trke → prag brži od tempa same trke (10 km 5:48/km → prag 5:31; 5 km 5:08/km → I 4:43).
+  Nebezbedno za početnike. Ispravka A14: sidro T 60 min; zona nikad iznad najvećeg sirovog VDOT-a stvarnog rezultata;
+  prag ≥ tempo trke ≥ 40 min, I ≥ tempo trke/testa ≤ 15 min; test nad svim profilima i scenarijima obe distance.
+- Ostalo HM: test subotom pa dugi nedeljom (A15), rezultat na ciljnoj dužini usvojen 70 % (A16), prognoza ne reaguje
+  na izgubljen trening (A17), povratak posle 7 dana bolesti pet nedelja (A10), p06 (A1).
+- 10K: slaže se sa trenerom (rupa u specifičnoj fazi, p06/p02), plus lestvica tempa trke (B7) i sužavanje naopako (B9).
+- Dopune poslate: motor A10–A18, 10K B7–B10. Arhivirana dva taba drugog sudije (gurnuto).
