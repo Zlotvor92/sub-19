@@ -41,11 +41,11 @@
 2026-12-12 | trening | test | 7.9 | provera forme: test na 3 km punim naporom, ravnomerno | - | - | -
 2026-12-13 | trening | long | 7.7 | dugi 55 min lagano | - | - | -
 2026-12-14 | odmor | - | 0.0 |  | - | - | -
-2026-12-15 | trening | easy | 8.4 | lagano 60 min | - | - | -
+2026-12-15 | trening | easy | 7.7 | lagano 55 min | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -
 2026-12-17 | trening | quality | 9.2 | prag 3 × 7 min, oporavak 2 min džog | - | - | -
 2026-12-18 | odmor | - | 0.0 |  | - | - | -
-2026-12-19 | trening | easy | 8.4 | lagano 60 min | - | - | -
+2026-12-19 | trening | easy | 7.7 | lagano 55 min | - | - | -
 2026-12-20 | trening | long | 11.9 | dugi 85 min lagano | - | - | -
 2026-12-21 | odmor | - | 0.0 |  | - | - | -
 2026-12-22 | trening | easy | 9.9 | lagano 65 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -

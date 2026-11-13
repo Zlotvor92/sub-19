@@ -4,6 +4,7 @@
 import {
   EASY_FLOOR_MIN_RUN_DAYS,
   EASY_FLOOR_OVER_TARGET,
+  LONG_BLOCK_MIN_WEEK_SHARE,
   VOLUME_ROOM_OVER,
   RACE_CALM_DAYS,
   RACE_EVE_MAX_SEC,
@@ -142,6 +143,8 @@ export interface TargetInput {
   previousTarget: LoadPoints | null;
   /** Dodatno opterećenje kvaliteta te nedelje: bodovi iznad laganog trčanja istog trajanja (R5). */
   extra?: LoadPoints;
+  /** R8 t. 13: višak km kvaliteta (minuti laganog tempa) — ulazi u pravilo rasta, koje je pravilo km. */
+  kmExtra?: number;
   /** Prva nedelja posle rampe povratka: najveći obim u minutima (R9); `null` = bez uslova. */
   returnCap?: number | null;
   /** M7 (krug 5): silazak obima — najveći obim nedelje prema vršnoj nedelji; `null` = bez uslova. */
@@ -158,8 +161,9 @@ export function weekTarget(
   intent: WeekIntent,
   input: TargetInput,
   ctx: BuildCtx
-): { full: LoadPoints; target: LoadPoints } {
+): { full: LoadPoints; target: LoadPoints; kmCut: number } {
   const s = ctx.data.safety;
+  let kmCut = 0;
   const { m } = input;
   const extra = input.extra ?? 0;
   let full = intent.loadPct * ctx.decisions.peakLoad;
@@ -170,7 +174,12 @@ export function weekTarget(
       input.previousTarget === null
         ? m
         : Math.max(m * (1 + s.maxWeeklyRampPct), m + minRampOf(s, ctx.pace.paces.easy));
-    full = Math.min(wanted, rule) + extra;
+    /* R8 t. 13: pravilo rasta je u km — minuti nedelje + višak km kvaliteta ≤ pravilo */
+    const kmOver = input.previousTarget === null ? 0 : (input.kmExtra ?? 0);
+    const minutes = Math.min(wanted, rule);
+    /* R8 t. 13: cilj (i budžet kvaliteta) ostaje; višak km kvaliteta preko pravila skida se sa laganih minuta */
+    kmCut = Math.max(0, minutes + kmOver - rule);
+    full = minutes + extra;
   }
   if (intent.kind === 'recovery' && input.previousTarget !== null && ctx.template !== null) {
     full = Math.min(full, ctx.template.recovery.loadFactor * input.previousTarget);
@@ -182,7 +191,7 @@ export function weekTarget(
   if (input.taperCap !== undefined && input.taperCap !== null) {
     full = Math.min(full, input.taperCap + extra);
   }
-  return { full, target: Math.round(full * input.fraction) };
+  return { full, target: Math.round(full * input.fraction), kmCut: kmCut * input.fraction };
 }
 
 /** DUGI (§ 6.2 k. 6, krug 2: R4, R5): `min(namera, najduži od prethodne 3 (ili polazni) + korak,
@@ -260,12 +269,24 @@ export function longPlan(
     const blockKm =
       week.block === undefined ? 0 : week.block.sec * (1 / week.block.pace - 1 / easy);
     cap = Math.max(0, share * weekKm - blockKm) * easy;
+    /* R8 t. 15: blok u dugom (višak km) ne spušta plafon dugog ispod donjeg udela vremena nedelje */
+    if (week.block !== undefined) {
+      const minShare = ctx.data.safety.longBlockMinWeekShare ?? LONG_BLOCK_MIN_WEEK_SHARE;
+      /* nedelja traje najmanje koliko planirani minuti, ili ostali dani na najkraćem laganom trajanju */
+      const others =
+        (Math.max(0, week.runDays - 1) * minEasyOf(ctx.data.safety, d.level, d.runDays.length)) /
+        60;
+      const weekMin = Math.max(week.plannedMin, others / (1 - minShare));
+      /* dugi je zadat dužinom: brži blok skraćuje vreme za isti km, pa se višak km bloka dodaje */
+      cap = Math.max(cap, Math.min(d.longMaxSec, minShare * weekMin * 60 + blockKm * easy));
+    }
     const before = week.previousLong ?? 0;
     if (intent.kind === 'recovery' && before > 0 && ctx.template !== null) {
       cap = Math.min(cap, ctx.template.recovery.longFactor * before);
     }
   }
   let sec = Math.min(wanted, grown, cap);
+
   /* T3 (krug 4): dugi koji ne raste (na plafonu ili polaznom) ide u talasu po nameri šablona */
   const wave = intent.long.wave;
   /* D1 (krug 5): talas samo kad je dugi na plafonu (najduži dozvoljen ili udeo nedelje) */
@@ -613,6 +634,21 @@ function testCost(
 }
 
 /** DODATNO OPTEREĆENJE KVALITETA nedelje (R5): bodovi iznad laganog trčanja istog trajanja, iz željenih doza. */
+/** R8 t. 13: višak km kvaliteta u minutima laganog tempa — brži rad nosi više km po minutu od laganog, pa pravilo
+    rasta (koje je pravilo kilometara, S2) mora da ga vidi pre nego što odredi minute nedelje. */
+export function wantedKmExtra(slots: WeekSlots, ctx: BuildCtx): number {
+  const easy = ctx.pace.paces.easy;
+  const over = (sec: Seconds, pace: number | undefined): number =>
+    pace === undefined || pace <= 0 ? 0 : Math.max(0, (sec * (easy / pace - 1)) / 60);
+  let minutes = slots.long === null ? 0 : over(slots.long.wanted, slots.long.pace);
+  for (const item of slots.items) {
+    if (item.kind !== 'quality') continue;
+    const zone = mainZone(item.def.main);
+    if (zone !== null) minutes += over(item.wanted, zonePace(zone, ctx.pace.paces));
+  }
+  return minutes;
+}
+
 export function wantedExtra(slots: WeekSlots, ctx: BuildCtx): LoadPoints {
   let extra = slots.long === null ? 0 : (slots.long.wanted * slots.long.extra) / 60;
   for (const item of slots.items) {
@@ -767,6 +803,8 @@ export interface WeekShell {
   /** Obim nedelje u minutima (cilj bez dodatka kvaliteta, R5): lagani dani ga ne prelaze (S1/S2: kad budžet skrati
       rad, oslobođeni bodovi ne postaju dodatni minuti). */
   volumeMin?: number;
+  /** R8 t. 13: lagani minuti koje pravilo rasta u km skida (višak km kvaliteta) — samo sa laganih dana, kvalitet ostaje. */
+  kmCutMin?: number;
 }
 
 /** RASPORED NEDELJE: recept za svaki dan iz mesta nedelje + sačuvanih veličina (cilj, dugi). Čista funkcija —
@@ -1204,7 +1242,9 @@ function layoutOnce(
       fixedLoad,
       runDays: d.runDays.length,
       leftVolumeMin:
-        week.volumeMin === undefined ? Number.POSITIVE_INFINITY : week.volumeMin - fixedSec / 60
+        week.volumeMin === undefined
+          ? Number.POSITIVE_INFINITY
+          : week.volumeMin - fixedSec / 60 - (week.kmCutMin ?? 0)
     },
     dayBeforeLong,
     afterQuality,
@@ -1607,6 +1647,8 @@ export function runPass(
     const plannedMin = (target: LoadPoints): number => Math.max(0, target - extra * fraction);
     let shell: WeekShell = week;
     let fullTarget: LoadPoints = week.targetLoad;
+    /* R8 t. 13: lagani minuti koje pravilo rasta u km skida (višak km kvaliteta) */
+    let weekKmCut = 0;
     if (opts.rechainFrom !== null && week.index >= opts.rechainFrom) {
       const recent = lastThree(volumes);
       /* Posle rampe povratka lanac rasta kreće od odrađenih nedelja posle nje, ne od baze pre pauze (S9). */
@@ -1620,12 +1662,14 @@ export function runPass(
           fraction,
           previousTarget,
           extra,
+          kmExtra: wantedKmExtra(slots, ctx) * fraction,
           returnCap: !ramped && previousRamped ? RETURN_WEEK_MAX_OVER_LAST * lastFullVolume : null,
           taperCap: null
         },
         ctx
       );
       fullTarget = decided.full;
+      weekKmCut = decided.kmCut;
       shell = {
         ...week,
         targetLoad: decided.target,
@@ -1675,7 +1719,11 @@ export function runPass(
     const lay = (sh: WeekShell): Map<IsoDate, Recipe> =>
       taperIntensity(
         layoutWeek(
-          { ...sh, volumeMin: Math.round(plannedMin(sh.targetLoad) * 10) / 10 },
+          {
+            ...sh,
+            volumeMin: Math.round(plannedMin(sh.targetLoad) * 10) / 10,
+            kmCutMin: weekKmCut
+          },
           ctx,
           slots,
           previousEasy
@@ -1714,9 +1762,17 @@ export function runPass(
         const from = Math.min(shell.targetLoad, m.load);
         const f = capVolume / m.volume;
         /* F4-K2: korekcija ne spušta dugi ispod najkraćeg smislenog trčanja (inače je lagan dan duži od dugog) */
+        /* R8 t. 13: i ne ispod najdužeg laganog dana nedelje (sa dodatkom) + 5 min — dugi ostaje duži i po km */
+        let easiest = 0;
+        for (const r of recipes.values())
+          if (r.type === 'easy' || r.type === 'addon')
+            easiest = Math.max(easiest, summarize(realize(r, ctx), ctx.pace).durationSec);
         const longFloor =
           shell.longSec > 0
-            ? minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length)
+            ? Math.max(
+                minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
+                Math.min(shell.longSec, easiest + 300)
+              )
             : 0;
         shell =
           step === 'scale'

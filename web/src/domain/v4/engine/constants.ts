@@ -302,3 +302,7 @@ export const PREP_PROBE_MAX_EXTRA_WEEKS = 16;
 
 /** R8 t. 4: deonica fiksne dužine se skraćuje najviše do ovolikog dela (ispod toga ostaje najmanji oblik). */
 export const REP_SHORTEN_MIN_SHARE = 0.5;
+
+/** R8 t. 15: blok u dugom ne skraćuje dugi ispod ovog udela vremena nedelje (podatak distance:
+    `safety.longBlockMinWeekShare`). */
+export const LONG_BLOCK_MIN_WEEK_SHARE = 0.25;

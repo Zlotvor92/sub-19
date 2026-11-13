@@ -87,6 +87,18 @@ export function mainZone(main: MainSet): ZoneId | null {
 }
 
 /** Doza mesta pre budžeta: `dosePct × plafon`, ili lestvica napredovanja kad šablon ne zada `dosePct`. */
+/** R8 t. 14: planirani vrh doze podražaja — najveći `dosePct` u nedeljama gradnje/vrha šablona × osnovica, do plafona
+    (mesto bez `dosePct` ide po lestvici do plafona). Bez šablona: plafon. */
+function plannedPeakSec(stimulus: string, cap: Seconds, base: Seconds, ctx: BuildCtx): Seconds {
+  const weeks = ctx.template?.tail ?? [];
+  let pct = 0;
+  for (const w of weeks) {
+    if (w.kind !== 'build' && w.kind !== 'peak') continue;
+    for (const st of w.stimuli) if (st.stimulus === stimulus) pct = Math.max(pct, st.dosePct ?? 1);
+  }
+  return pct === 0 ? cap : Math.min(cap, pct * base);
+}
+
 export function slotDose(
   slot: SlotRef,
   dosePct: number | undefined,
@@ -98,9 +110,17 @@ export function slotDose(
   /* S4: lestvica se računa od osnovice (udeo × vrh), plafon nivoa ograničava samo dozu. */
   const base = ctx.decisions.doseBaseSec?.[slot.stimulus] ?? cap;
   /* Prvi trening podražaja ≤ 70 % plafona (K7): kad osnovica premašuje plafon, lestvica bi inače počela pri vrhu. */
+  /* R8 t. 14: prvi trening podražaja ≤ 70 % PLANIRANOG vrha (najveći % tog podražaja u nedeljama gradnje i vrha
+     šablona × osnovica, do plafona), ne 70 % plafona — kad plan ne stiže do plafona, inače prvi postaje vrh (K7) */
   const most =
     slot.index === 0
-      ? Math.min(cap, Math.max(ctx.data.safety.minDoseSec, FIRST_DOSE_MAX_OF_CAP * cap))
+      ? Math.min(
+          cap,
+          Math.max(
+            ctx.data.safety.minDoseSec,
+            FIRST_DOSE_MAX_OF_CAP * plannedPeakSec(slot.stimulus, cap, base, ctx)
+          )
+        )
       : cap;
   /* R8 t. 2: u sužavanju i rasterećenju % se primenjuje na manji od osnovice i plafona — kod velikog obima osnovica
      prelazi plafon, pa bi mali % inače dao skoro pun plafon (druga distanca, p05 N−2) */

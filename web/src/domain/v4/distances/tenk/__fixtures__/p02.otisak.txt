@@ -1,9 +1,9 @@
 2026-11-02 | odmor | - | 0.0 |  | - | - | -
 2026-11-03 | trening | quality | 8.7 | brze deonice 11 × 200 m, oporavak 200 m džog | - | - | -
 2026-11-04 | odmor | - | 0.0 |  | - | - | -
-2026-11-05 | trening | quality | 7.4 | prag 13 min u komadu | - | - | -
+2026-11-05 | trening | quality | 7.2 | prag 12 min u komadu | - | - | -
 2026-11-06 | odmor | - | 0.0 |  | - | - | -
-2026-11-07 | trening | easy | 5.0 | lagano 5 km | - | - | -
+2026-11-07 | trening | easy | 5.5 | lagano 5,5 km | - | - | -
 2026-11-08 | trening | long | 10.0 | dugi 10 km lagano | - | - | -
 2026-11-09 | odmor | - | 0.0 |  | - | - | -
 2026-11-10 | trening | quality | 8.9 | usponi 12 × 45 s snažno uzbrdo, nazad 1:45 hod | - | - | -

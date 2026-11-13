@@ -77,9 +77,13 @@ describe('SPEC § 12 (a): nov plan, 30 km nedeljno, 4 dana, 10 nedelja, forma 1:
     /* 1–2. nedelja: baza + dodatno opterećenje (R5); 4. (rasterećenje): najviše 0,8 × cilj prethodne. */
     /* krug 4 (S2): lanac rasta meri km nedelje (u minutima laganog tempa), pa 5. nedelja posle rasterećenja raste
        od km 3. nedelje (212 → 220) */
-    const spec = [195, 199, 210, 168, 220, 235, 245, 208, 159, 86];
+    /* krug 8 (R8 t. 14): prvi trening zone ≤ 70 % planiranog vrha → manje dodatno opterećenje 5. nedelje (216) */
+    const spec = [195, 199, 210, 168, 216, 235, 245, 208, 159, 86];
     doc.weeks.forEach((w, i) =>
-      expect(Math.abs(w.targetLoad - (spec[i] ?? 0)), String(i + 1)).toBeLessThanOrEqual(1)
+      expect(
+        Math.abs(w.targetLoad - (spec[i] ?? 0)),
+        `${String(i + 1)}: ${doc.weeks.map((x) => x.targetLoad).join(',')}`
+      ).toBeLessThanOrEqual(1)
     );
     expect(doc.weeks[6]?.intent.kind).toBe('peak');
     /* Dugi je udeo PLANIRANIH km te nedelje (R4, krug 5 E7: blok nosi više km), ne vrha: 13,5 km od 37 km. */

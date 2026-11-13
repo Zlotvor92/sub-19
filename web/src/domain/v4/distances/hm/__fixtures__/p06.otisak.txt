@@ -6,7 +6,7 @@
 2026-11-07 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
 2026-11-08 | trening | long | 13.0 | dugi 13 km lagano | - | - | -
 2026-11-09 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
-2026-11-10 | trening | quality | 9.2 | intervali 3 × 1 km, oporavak 2:30 džog | - | - | -
+2026-11-10 | trening | quality | 8.9 | intervali 3 × 3 min, oporavak 2:30 džog | - | - | -
 2026-11-11 | odmor | - | 0.0 |  | - | - | -
 2026-11-12 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
 2026-11-13 | odmor | - | 0.0 |  | - | - | -

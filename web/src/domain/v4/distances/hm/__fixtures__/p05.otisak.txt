@@ -26,12 +26,12 @@
 2026-11-27 | odmor | - | 0.0 |  | - | - | -
 2026-11-28 | trening | easy | 11.0 | lagano 11 km | - | - | -
 2026-11-29 | trening | long | 18.0 | dugi 18 km lagano | - | - | -
-2026-11-30 | trening | easy | 15.0 | lagano 15 km | - | - | -
+2026-11-30 | trening | easy | 14.5 | lagano 14,5 km | - | - | -
 2026-12-01 | trening | quality | 13.6 | brze deonice 8 × 400 m, oporavak 400 m džog | - | - | -
-2026-12-02 | trening | easy | 15.0 | lagano 15 km | - | - | -
+2026-12-02 | trening | easy | 14.5 | lagano 14,5 km | - | - | -
 2026-12-03 | trening | quality | 18.0 | prag 3 × 12 min, oporavak 1:30 džog | - | - | -
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
-2026-12-05 | trening | easy | 15.0 | lagano 15 km | - | - | -
+2026-12-05 | trening | easy | 14.5 | lagano 14,5 km | - | - | -
 2026-12-06 | trening | long | 24.0 | dugi 24 km lagano | - | - | -
 2026-12-07 | trening | easy | 15.0 | lagano 15 km | - | - | -
 2026-12-08 | trening | quality | 14.6 | intervali 5 × 1 km, oporavak 2:30 džog | - | - | -
@@ -54,12 +54,12 @@
 2026-12-25 | odmor | - | 0.0 |  | - | - | -
 2026-12-26 | trening | test | 17.6 | provera forme: pripremna trka ili test na 10 km punim naporom | - | - | -
 2026-12-27 | trening | long | 15.5 | dugi 15,5 km lagano | - | - | -
-2026-12-28 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
+2026-12-28 | trening | easy | 17.0 | lagano 17 km | - | - | -
 2026-12-29 | trening | easy | 16.5 | lagano 16,5 km | - | - | -
-2026-12-30 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
+2026-12-30 | trening | easy | 17.0 | lagano 17 km | - | - | -
 2026-12-31 | trening | quality | 17.7 | prag 2 × 18 min, oporavak 1:30 džog | - | - | -
 2027-01-01 | odmor | - | 0.0 |  | - | - | -
-2027-01-02 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
+2027-01-02 | trening | easy | 17.0 | lagano 17 km | - | - | -
 2027-01-03 | trening | long | 24.0 | dugi 24 km lagano | - | - | -
 2027-01-04 | trening | easy | 15.0 | lagano 15 km | - | - | -
 2027-01-05 | trening | quality | 16.0 | tempo trke 2 × 4 km, oporavak 2 min džog | - | - | -
