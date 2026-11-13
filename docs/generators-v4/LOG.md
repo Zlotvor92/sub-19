@@ -739,3 +739,9 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   pauze)`. Rampa: ≤ 4 dana bez; 5–10 dana 75/90/plan; 11–21 dan 60/75/90/plan; > 21 postojeća. Test se pomera ≤ 2 ned.
 - R19-MOTOR (`briefs/R19-MOTOR.md`) u istom tabu motora (kontekst 464 000): povratak, dugi (zahtevi MAR/10K), 5K p06,
   M22, HM podatak, upozorenja po nivou, 5K s26 tekst. Ocena R19 posle ovog kruga.
+
+### 14. 11. 2026, 00:10 — motor R19: stari tab stao bez koda, nov tab
+- Tab `…WAUGx5TtBZpKGZEo7` stao na 490 000 tokena („kontekst potrošen", mimo naloga „tek preko 700 000"); push
+  `82d1b4a` = samo `reports/R19-REPORT.md` i `reports/R19-t1-wip.diff` (stavka 1, 13 testova pada). Arhiviran.
+- Nov tab motora (Opus): `session_01GnHHiaZSGWeHY2sPFdz4bo`, nalog `briefs/R19-MOTOR.md` + dopune (10K p08 polazni
+  dugi, 10K p06 sužavanje, MAR tekstovi/KNOWN); stavka 1 kreće od wip diff-a, raspored rampe u build.
