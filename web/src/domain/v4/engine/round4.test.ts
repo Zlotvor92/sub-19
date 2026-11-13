@@ -142,6 +142,11 @@ describe('A: padež uz broj', () => {
         });
         const result = replan(b.doc, state, deriveEvents(b.doc, state), SYNTHETIC);
         const all = result.changes.map((c) => c.reason).join(' ');
+        /* R19 (odluka organizatora): pauza do 4 dana nema rampu — propušteno je propušteno, sledeća nedelja je plan */
+        if (length <= 4) {
+          expect(result.changes, `${String(length)} ${reason}`).toEqual([]);
+          continue;
+        }
         expect(all.length, `${String(length)} ${reason}`).toBeGreaterThan(0);
         expect(caseErrors(all), `${String(length)} ${reason}: ${all.slice(0, 200)}`).toEqual([]);
         expect(all).toContain(`trajala je ${count(length, DAYS)}`);

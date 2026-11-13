@@ -128,6 +128,17 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
         .map((a) => adjustmentWindow(a)?.rampEnd ?? '')
         .reduce((a: string, b: string) => (a > b ? a : b), '');
       if (rampEnd === '') continue;
+      /* R19 (odluka organizatora): R2 je pravilo rasta IZNAD dostignutog — merilo je veće od prethodne nedelje
+         (dugog) i referentne nedelje (dugog) pre pauze */
+      const ref = ((r.after.header.adjustments ?? []) as any[])
+        .filter((a) => a.kind === 'pause' && a.refWeekKm !== undefined)
+        .reduce(
+          (acc: { km: number; long: number }, a) => ({
+            km: Math.max(acc.km, a.refWeekKm as number),
+            long: Math.max(acc.long, (a.lastLongSec as number | undefined) ?? 0)
+          }),
+          { km: 0, long: 0 }
+        );
       const from = Math.max(
         base + 1,
         after.findIndex((w) => addDays(w.start, 6) > rampEnd)
@@ -163,7 +174,8 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
             .map((x) => longSec(x, r.after))
             .find((x) => x > 0) ?? 0;
         const curLong = longSec(w, r.after);
-        const allowed = Math.max(prevLong * 1.25, prevLong + 1200);
+        const fromLong = Math.max(prevLong, ref.long);
+        const allowed = Math.max(fromLong * 1.25, fromLong + 1200);
         if (prevLong > 0 && curLong > allowed + 60)
           bad.push(
             `${name(s.no)} n${String(w.index)} dugi ${String(Math.round(prevLong / 60))} → ${String(Math.round(curLong / 60))} min`
@@ -172,7 +184,7 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
         const oldPrevKm = Math.max(...before.slice(lo, i).map((x) => weekKm(x, r.before)));
         const km = weekKm(w, r.after);
         /* Z1 (krug 7): posle prekida bez izuzetka prvobitnog plana */
-        const allowedKm = prevKm * 1.2;
+        const allowedKm = Math.max(prevKm, ref.km) * 1.2;
         void oldPrevKm;
         if (km > allowedKm + 0.5)
           bad.push(

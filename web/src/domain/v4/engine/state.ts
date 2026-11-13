@@ -405,6 +405,14 @@ export function lastLongBefore(state: RunnerState, date: string): Seconds {
   return Math.round(longest);
 }
 
+/** R19 (stavka 1): referentna nedelja pre pauze — najveća (km) od poslednje 4 kalendarske nedelje pre nedelje u kojoj
+    pauza počinje; 0 kad nema trčanja. */
+export function refWeekKmBefore(state: RunnerState, date: string): number {
+  const monday = mondayOf(date);
+  const prior = state.weeks.filter((w) => w.start < monday && diffDays(monday, w.start) <= 28);
+  return Math.round(Math.max(0, ...prior.map((w) => w.distanceM)) / 100) / 10;
+}
+
 /** Referenca dugog posle punog napora: najduže pre njega ili 60 % samog napora, šta je veće. */
 export function lastLongAfterEffort(
   state: RunnerState,

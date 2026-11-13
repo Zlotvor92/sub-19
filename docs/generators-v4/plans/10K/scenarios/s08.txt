@@ -2,7 +2,7 @@ S08 — p12, E2: bolest 7 dana u ned 9 (najteža)
 
 STANJE: danas 2027-01-03; sadašnji obim 35 km nedeljno, 4 dana; forma 55:21 (pouzdanost srednja), očekivano na dan trke 54:33.
 DOGAĐAJ: Bolest 2026-12-28 – 2027-01-03 (9. nedelja), bez treninga. Događaji: result:2026-12-12:run-w6d5, pause:2026-12-28:2027-01-03.
-PROMENA: 8.
+PROMENA: 9.
 
 ==================== PRE ====================
 PLAN: 10 km, trka 24. 1. 2027.
@@ -189,13 +189,14 @@ PROMENE
 Rezultat 3 km za 15:28 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 54:33 (raspon 52:46–57:04).
 - plan: po osećaju → prag 5:35/km, tempo trke 5:31/km
 - upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
-Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepen: treninzi su kraći do 10. 1., a prvi brzi trening je 14. 1.
-- uto 5. 1.: lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 25 min
-- čet 7. 1.: tempo trke 4 × 1,2 km, oporavak 1:30 džog → lagano 50 min
-- sub 9. 1.: lagano 45 min → lagano 40 min
-- uto 12. 1.: lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
+Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepen: treninzi su kraći do 10. 1., a prvi brzi trening je 14. 1.; od 18. 1. plan se nastavlja kako je bio.
+- uto 5. 1.: lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 50 min
+- čet 7. 1.: tempo trke 4 × 1,2 km, oporavak 1:30 džog → lagano 45 min
+- ned 10. 1.: dugi 70 min lagano → dugi 60 min lagano
+- uto 12. 1.: lagano 40 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
 - čet 14. 1.: tempo trke 3 × 1 km, oporavak 1:30 džog → tempo trke 2 × 1 km, oporavak 1:30 džog
-- sub 16. 1.: lagano 45 min → lagano 30 min
+- sub 16. 1.: lagano 45 min → lagano 35 min
+- 10. nedelja: 34 km → 28,5 km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  odmor
@@ -289,23 +290,23 @@ Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepe
 
 10. NEDELJA (od 4. 1.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
   pon 4. 1.  odmor
-  uto 5. 1.  lagano 25 min — 3,6 km, 25 min
+  uto 5. 1.  lagano 50 min — 7,1 km, 50 min
   sre 6. 1.  odmor
-  čet 7. 1.  lagano 50 min — 7,1 km, 50 min
+  čet 7. 1.  lagano 45 min — 6,4 km, 45 min
   pet 8. 1.  odmor
-  sub 9. 1.  lagano 40 min — 5,7 km, 40 min
-  ned 10. 1.  dugi 70 min lagano — 10 km, 70 min
-  Zbir: 26,4 km, 3 h 5 min, 4 treninga, brz rad 0 % vremena trčanja
+  sub 9. 1.  lagano 45 min — 6,4 km, 45 min
+  ned 10. 1.  dugi 60 min lagano — 8,6 km, 60 min
+  Zbir: 28,5 km, 3 h 20 min, 4 treninga, brz rad 0 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 11. 1.  odmor
-  uto 12. 1.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,4 km, 30 min
+  uto 12. 1.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,1 km, 35 min
   sre 13. 1.  odmor
   čet 14. 1.  tempo trke 2 × 1 km (5:31/km), oporavak 1:30 džog — 7,2 km, 48 min
   pet 15. 1.  odmor
-  sub 16. 1.  lagano 30 min — 4,3 km, 30 min
+  sub 16. 1.  lagano 35 min — 5 km, 35 min
   ned 17. 1.  dugi 60 min lagano — 8,6 km, 60 min
-  Zbir: 24,5 km, 2 h 48 min, 4 treninga, brz rad 7 % vremena trčanja
+  Zbir: 25,9 km, 2 h 58 min, 4 treninga, brz rad 6 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — završnica, nedelja trke
   pon 18. 1.  odmor

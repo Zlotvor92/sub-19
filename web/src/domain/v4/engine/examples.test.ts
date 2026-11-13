@@ -174,17 +174,39 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     expect(new Set(result.changes.map((c) => c.eventId)).size).toBe(1);
   });
 
-  /* krug 14 (M2): rampa posle pauze kreće od 0,5 (povratna nedelja 60–70 %), pa utorak 22. 12. (n = 2) više nije
-     odmor nego kratko lagano trčanje; brz rad i dalje čeka isti deo rampe (n ≥ 10) */
-  it('§ 14.6: rampa posle bolesti traje 14 dana; bez brzog rada do n = 9; utorak 22. 12. je kratko lagano', () => {
+  /* R19 (odluka organizatora, stavka 1): povratak posle pauze od 5–10 dana ide po NEDELJAMA — prva nedelja ≤ 75 %
+     referentne (najveća od poslednje 4 pre pauze) i bez brzog rada, druga ≤ 90 % i najviše jedan kvalitet, treća je
+     plan; nikad iznad plana. Utorak 22. 12. je kratko lagano. (Ranije: dnevna rampa od 14 dana, brz rad tek od n = 10.) */
+  it('§ 14.6 (R19): povratak po nedeljama — 75 % bez brzog rada, 90 % sa jednim kvalitetom, pa plan', () => {
     for (const day of days(result.doc)) {
       const n = diffDays(day.date, today);
-      if (n >= 1 && n <= 9) expect(fastSec(result.doc, day), day.date).toBe(0);
+      if (n >= 1 && n <= 7) expect(fastSec(result.doc, day), day.date).toBe(0);
     }
     expect(onDate(result.doc, '2026-12-22')?.workout?.kind).toBe('easy');
     expect(onDate(result.doc, '2026-12-24')?.workout?.kind).toBe('easy');
     const pause = result.doc.header.adjustments?.find((a) => a.kind === 'pause');
     expect(pause).toMatchObject({ reason: 'bolest', from: '2026-12-14', to: today });
+    const ref = pause?.kind === 'pause' ? (pause.refWeekKm ?? 0) : 0;
+    expect(ref).toBeGreaterThan(0);
+    const ctx = paceCtxOf(result.doc.header);
+    const kmOf = (doc: PlanDoc, start: string): number =>
+      (doc.weeks.find((w) => w.start === start)?.days ?? []).reduce(
+        (sum, d) => sum + summarize(d.workout, ctx).km,
+        0
+      );
+    const w1 = kmOf(result.doc, '2026-12-21');
+    const w2 = kmOf(result.doc, '2026-12-28');
+    expect(w1).toBeGreaterThanOrEqual(0.6 * ref);
+    expect(w1).toBeLessThanOrEqual(0.75 * ref + 0.5);
+    expect(w2).toBeLessThanOrEqual(Math.min(0.9 * ref, kmOf(start.doc, '2026-12-28')) + 0.5);
+    expect(w2).toBeGreaterThan(w1);
+    const quality = (result.doc.weeks.find((w) => w.start === '2026-12-28')?.days ?? []).filter(
+      (d) => d.workout?.kind === 'quality'
+    );
+    expect(quality.length).toBeLessThanOrEqual(1);
+    expect(kmOf(result.doc, '2027-01-04')).toBeGreaterThanOrEqual(
+      0.95 * kmOf(start.doc, '2027-01-04')
+    );
   });
 
   it('§ 14.6: dugi u rampi ≤ 75 % poslednjeg odrađenog i bez bloka; blok tek posle dugog bez bloka', () => {
@@ -211,12 +233,9 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     }
   });
 
-  it('§ 14.6: rampa zavisi od razloga pauze (put 7, nepoznato 11, bolest i povreda 14 dana)', () => {
-    for (const [reason, rampDays] of [
-      ['put', 7],
-      ['nepoznato', 11],
-      ['povreda', 14]
-    ] as const) {
+  /* R19: rampa zavisi od DUŽINE pauze, ne od razloga (ranije put 7, nepoznato 11, bolest i povreda 14 dana) */
+  it('§ 14.6 (R19): povratak posle 7 dana isti za svaki razlog — kraći treninzi do kraja druge nedelje', () => {
+    for (const reason of ['put', 'nepoznato', 'povreda'] as const) {
       const st = buildState(
         {
           ...facts(),
@@ -229,11 +248,10 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
       );
       const r = replan(start.doc, st, deriveEvents(start.doc, st), EXAMPLE);
       const text = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
-      expect(text, reason).toContain(`treninzi su kraći do ${fmtDate(addDays(today, rampDays))}`);
+      expect(text, reason).toContain('treninzi su kraći do 3. 1.');
       for (const day of days(r.doc)) {
         const n = diffDays(day.date, today);
-        if (n >= 1 && n < (0.4 * rampDays) / 0.6)
-          expect(fastSec(r.doc, day), `${reason} ${day.date}`).toBe(0);
+        if (n >= 1 && n <= 7) expect(fastSec(r.doc, day), `${reason} ${day.date}`).toBe(0);
       }
     }
   });
@@ -262,8 +280,13 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     expect(reason).toContain('7 dana (14–20. 12.)');
     /* Tekst prati plan (krug 2, R9): do kada su treninzi kraći i kog dana je prvi brzi trening. */
     expect(reason).toContain('treninzi su kraći do 3. 1.');
+    /* R19: „brzi trening" je kvalitet (ubrzanja uz lagano trčanje druge nedelje to nisu) */
     const first = days(result.doc).find(
-      (d) => d.date > today && d.workout !== null && fastSec(result.doc, d) > 0
+      (d) =>
+        d.date > today &&
+        (d.workout?.kind === 'quality' ||
+          d.workout?.kind === 'test' ||
+          (d.workout?.kind === 'long' && d.workout.workSec > 0))
     );
     expect(first).toBeDefined();
     expect(reason).toContain(`prvi brzi trening je ${fmtDate(first?.date ?? '')}`);

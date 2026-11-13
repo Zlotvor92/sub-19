@@ -326,9 +326,9 @@ UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 75 min — dugi tada može da naraste do 30 km.
 
 PROMENE
-Pauza zbog bolesti trajala je 7 dana (22–28. 3.), pa je povratak postepen: treninzi su kraći do 4. 4., a prvi brzi trening je 8. 4.
-- uto 30. 3.: lagano 11 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 7,5 km
-- čet 1. 4.: tempo maratona 4 km u komadu → lagano 6 km
+Pauza zbog bolesti trajala je 7 dana (22–28. 3.), pa je povratak postepen: treninzi su kraći do 4. 4., a prvi brzi trening je 8. 4.; od 12. 4. plan se nastavlja kako je bio.
+- uto 30. 3.: lagano 11 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 11,5 km
+- čet 1. 4.: tempo maratona 4 km u komadu → lagano 12 km
 - ned 4. 4.: dugi 18 km, poslednjih 3 km u tempu maratona → dugi 18 km lagano
 - čet 8. 4.: tempo maratona 2 × 2 km, oporavak 3 min džog → tempo maratona 2 × 1 km, oporavak 3 min džog
 
@@ -544,14 +544,14 @@ Pauza zbog bolesti trajala je 7 dana (22–28. 3.), pa je povratak postepen: tre
 
 22. NEDELJA (od 29. 3.) — završnica, sužavanje pred trku; do trke 2 nedelje
   pon 29. 3.  odmor
-  uto 30. 3.  lagano 7,5 km — 7,5 km, 45 min
+  uto 30. 3.  lagano 11,5 km — 11,5 km, 68 min
   sre 31. 3.  odmor
-  čet 1. 4.  lagano 6 km — 6 km, 36 min
+  čet 1. 4.  lagano 12 km — 12 km, 71 min
   pet 2. 4.  odmor
   sub 3. 4.  odmor
   ned 4. 4.  dugi 18 km lagano — 18 km, 1 h 47 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 31,5 km, 3 h 8 min, 3 treninga, brz rad 0 % vremena trčanja
+  Zbir: 41,5 km, 4 h 6 min, 3 treninga, brz rad 0 % vremena trčanja
 
 23. NEDELJA (od 5. 4.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 5. 4.  odmor

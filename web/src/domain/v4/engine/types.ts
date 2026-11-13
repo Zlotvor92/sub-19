@@ -359,6 +359,9 @@ export type Adjustment =
       /** Krug 14 (M2): sadašnji obim je izmeren posle pauze (trkač već trči bar nedelju dana posle nje) — rampa ne
           skraćuje trajanje (ono već polazi od sadašnjeg obima), samo odlaže brz rad i drži plafon dugog. */
       baseAfter?: boolean;
+      /** R19 (stavka 1): referentna nedelja pre pauze (km; najveća od poslednje 4 odrađene) — povratak posle pauze od
+          5 do 21 dan ide po nedeljama (udeo nje), a pravilo rasta R2 važi tek iznad nje. */
+      refWeekKm?: number;
     }
   | { kind: 'pain'; source: string; date: IsoDate; level: number; lastLongSec?: Seconds }
   | { kind: 'fatigue'; source: string; date: IsoDate }

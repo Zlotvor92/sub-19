@@ -93,7 +93,13 @@ describe('krug 10 — stavka 4: tekst izmene i provera forme', () => {
       const a = tests(r.after);
       const race: string = r.after.header.goal.raceDate;
       const late = new Date(Date.parse(race) - 21 * 86400000).toISOString().slice(0, 10);
-      if (a.length < b.length && b.some((x) => x <= late))
+      /* R19 (odluka organizatora): posle kratke pauze provera se pomera najviše 2 nedelje, inače otpada uz rečenicu */
+      const dropped = (r.changes as any[]).some((c) =>
+        String(c.reason ?? '').includes(
+          'Provera forme otpada: posle povratka bi se pomerila više od 2 nedelje'
+        )
+      );
+      if (a.length < b.length && b.some((x) => x <= late) && !dropped)
         bad.push(`s${String(s.no)} provera ${b.join(',')} → ${a.join(',') || 'nema'}`);
     }
     expect(bad).toEqual([]);

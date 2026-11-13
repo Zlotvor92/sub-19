@@ -24,7 +24,8 @@ import {
   GUARD_TAPER_WORK_SHARE,
   GUARD_UNDER_TARGET,
   NEAR_ENOUGH,
-  PREP_PROBE_MAX_EXTRA_WEEKS
+  PREP_PROBE_MAX_EXTRA_WEEKS,
+  RETURN_LONG_JUMP_SEC
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate, mondayOf, weekdayOf } from './dates';
@@ -57,6 +58,7 @@ import {
   effortRampDays,
   pauseLength,
   pauseRampDays,
+  rampOf,
   underRamp
 } from './readiness';
 import { byDistance, candidates } from './select';
@@ -506,9 +508,27 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (c.longSec > d.longMaxSec + GUARD_LONG_STEP_TOLERANCE_SEC) {
       report('dugi-plafon', week, null, 'Dugi je duži od najdužeg dozvoljenog u planu.');
     }
+    /* R19 (odluka organizatora): posle povratka po nedeljama (pauza 5–21 dan) rast dugog se meri od većeg od
+       prethodnog i referentnog dugog pre pauze, po pravilu izlaska (+ 20 min) — isto kao motor */
+    const ret = adjustments.reduce<{ ref: Seconds; step: Seconds }>(
+      (acc, adj) => {
+        const ramp = rampOf(adj);
+        if (ramp?.schedule === undefined) return acc;
+        const end = addDays(ramp.zero, ramp.days);
+        if (week.start <= end || week.start > addDays(end, 28)) return acc;
+        return {
+          ref: Math.max(acc.ref, ramp.schedule.refLongSec),
+          step: Math.max(acc.step, RETURN_LONG_JUMP_SEC)
+        };
+      },
+      { ref: 0, step: 0 }
+    );
     if (
       c.longSec >
-      longBefore + longStepOf(s, ctx.paces.easy) + GUARD_LONG_STEP_TOLERANCE_SEC + roundingSlack
+      Math.max(longBefore, ret.ref) +
+        Math.max(longStepOf(s, ctx.paces.easy), ret.step) +
+        GUARD_LONG_STEP_TOLERANCE_SEC +
+        roundingSlack
     ) {
       report('dugi-korak', week, null, 'Dugi raste za više od jednog koraka.');
     }

@@ -52,7 +52,10 @@ import {
   inReturn,
   modsFor,
   PLAIN_LONG,
+  rampOf,
   recipeKey,
+  RETURN_SCHEDULE_FIRST_LONG_SHARE,
+  returnWeekNo,
   type Seen,
   underRamp
 } from './readiness';
@@ -440,7 +443,9 @@ export function weekSlots(
   /** P3 (krug 5): oznake kvaliteta prethodnih nedelja (poslednja na kraju) — za `safety.tagMaxRun`. */
   previousTags: ReadonlyArray<ReadonlySet<string>> = [],
   /** Krug 10: pred trkom nema rasterećenja za pomerenu proveru — ide u prvu pogodnu nedelju (ne briše se). */
-  forcedAnyWeek = false
+  forcedAnyWeek = false,
+  /** R19: pomerena provera ne ide posle ovog dana (posle kratke pauze najviše 2 nedelje od prvobitnog dana). */
+  forcedUntil: IsoDate | null = null
 ): WeekSlots {
   const { decisions: d } = ctx;
   const { intent } = week;
@@ -723,6 +728,7 @@ export function weekSlots(
       restWeek &&
       date < calmFrom &&
       (forcedFrom === null || date >= forcedFrom) &&
+      (forcedUntil === null || date <= forcedUntil) &&
       !replacesOnlyRp &&
       !nearRp &&
       (longWd === null || date !== dateOf(longWd));
@@ -1791,6 +1797,90 @@ function weekTotals(
 
 /** E2 (dopuna kruga 4): kad je nedelja skraćena (spremnost, bol, pauza), dugi i blok u njemu se skraćuju srazmerno —
     dugi ≤ `safety.shortenedLongMaxShare` nedelje u km. Menja samo promenljiv dugi; nedelja trke i 1–3 dana ne. */
+/** R19 (stavka 1): granica obima nedelje u rasporedu povratka (km u minutima laganog tempa) i dugog; `null` van
+    rasporeda. */
+function returnWeekCap(
+  weekStart: IsoDate,
+  adjustments: readonly Adjustment[],
+  ctx: BuildCtx
+): { volume: number; longSec: Seconds; first: boolean } | null {
+  let cap: { volume: number; longSec: Seconds; first: boolean } | null = null;
+  for (const adj of adjustments) {
+    const ramp = rampOf(adj);
+    const sch = ramp?.schedule;
+    if (ramp === null || sch === undefined || ramp.days <= 0) continue;
+    const end = addDays(ramp.zero, ramp.days);
+    if (addDays(weekStart, 6) <= ramp.zero || weekStart > end) continue;
+    const k = returnWeekNo(weekStart, sch);
+    const share = sch.shares[k - 1];
+    if (share === undefined) continue;
+    const volume = (share * sch.refKm * ctx.pace.paces.easy) / 60;
+    const longSec =
+      sch.refLongSec <= 0
+        ? Number.POSITIVE_INFINITY
+        : k === 1
+          ? RETURN_SCHEDULE_FIRST_LONG_SHARE * sch.refLongSec
+          : sch.refLongSec;
+    cap =
+      cap === null
+        ? { volume, longSec, first: k === 1 }
+        : {
+            volume: Math.min(cap.volume, volume),
+            longSec: Math.min(cap.longSec, longSec),
+            first: cap.first || k === 1
+          };
+  }
+  return cap;
+}
+
+/** R19 (stavka 1): lagani dani nedelje povratka rastu po 5 min (najkraći prvi) dok nedelja ne stigne cilj (km);
+    lagan dan ne prelazi najduži lagan dan prvobitne nedelje ni dugi − 5 min. */
+function fillReturnWeek(
+  days: PlanDay[],
+  rebuilt: ReadonlySet<DayId>,
+  targetKm: number,
+  week: PlanWeek,
+  header: PlanHeader,
+  ctx: BuildCtx
+): PlanDay[] {
+  const secOf = (w: Workout | null): Seconds =>
+    w === null ? 0 : summarize(w, ctx.pace).durationSec;
+  const kmOf = (ds: readonly PlanDay[]): number =>
+    ds.reduce((sum, d) => sum + (d.workout === null ? 0 : summarize(d.workout, ctx.pace).km), 0);
+  const eve = addDays(header.goal.raceDate, -1);
+  const long = secOf(days.find((d) => d.workout?.kind === 'long')?.workout ?? null);
+  const planMax = Math.max(
+    0,
+    ...week.days.map((d) => (d.workout?.kind === 'easy' ? secOf(d.workout) : 0))
+  );
+  let out = [...days];
+  for (let guard = 0; guard < 40 && kmOf(out) < targetKm - 0.75; guard += 1) {
+    let pick = -1;
+    let pickSec = Number.POSITIVE_INFINITY;
+    out.forEach((d, i) => {
+      if (!rebuilt.has(d.id) || d.date === eve || d.workout?.kind !== 'easy') return;
+      const sec = secOf(d.workout);
+      const most = Math.min(Math.max(planMax, sec), long > 0 ? long - 300 : planMax);
+      if (sec + EASY_FILL_STEP_SEC <= most && sec < pickSec) {
+        pick = i;
+        pickSec = sec;
+      }
+    });
+    const day = out[pick];
+    if (day === undefined) break;
+    const workout = realize({ type: 'easy', sec: pickSec + EASY_FILL_STEP_SEC }, ctx);
+    if (workout === null) break;
+    const next = [...out];
+    next[pick] = { ...day, origin: 'template', locked: false, workout };
+    if (kmOf(next) > targetKm + 0.25) break;
+    out = next;
+  }
+  return out;
+}
+const EASY_FILL_STEP_SEC = 300;
+/** R19: najveće pomeranje provere forme posle kratke pauze (dana). */
+const RETURN_TEST_MAX_SHIFT_DAYS = 14;
+
 /** Z2 (krug 7): provera ili kvalitet koji otpadne (spremnost, rampa) postaje lagan dan ≤ udela dugog te nedelje
     (65 %), ne dužine dugog (s14 ned 8, s05 ned 8, s16). Meri se prema KONAČNOM dugom nedelje. */
 function capDroppedDays(
@@ -2118,11 +2208,17 @@ export function runPass(
   let pendingFrom: IsoDate | null = null;
   /** R18: prvobitni dan pomerene provere. */
   let pendingOrigin: IsoDate | null = null;
+  /** R19: posle kratke pauze (povratak po nedeljama) provera se pomera najviše 2 nedelje, inače otpada. */
+  let pendingUntil: IsoDate | null = null;
   const lastThree = <T>(list: readonly T[]): T[] => list.slice(Math.max(0, list.length - 3));
   const high = highShareWeeks(doc.weeks, data);
 
   const weeks = doc.weeks.map((week): PlanWeek => {
     const ramped = underRamp(week.start, adjustments);
+    if (pendingTest !== null && pendingUntil !== null && week.start > pendingUntil) {
+      pendingTest = null;
+      pendingUntil = null;
+    }
     const forced = ramped ? null : pendingTest;
     /* krug 10: jedina provera se pomera, ne briše — kad do 3 nedelje pred trku nema rasterećenja posle nje */
     const lastTestDay = addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
@@ -2131,9 +2227,14 @@ export function runPass(
         w.index >= week.index &&
         w.intent.kind === 'recovery' &&
         w.start <= lastTestDay &&
-        (pendingFrom === null || addDays(w.start, 6) >= pendingFrom)
+        (pendingFrom === null || addDays(w.start, 6) >= pendingFrom) &&
+        (pendingUntil === null || w.start <= pendingUntil)
     );
-    const slots = weekSlots(
+    /* R19 (stavka 1): povratak posle pauze od 5 do 21 dan po nedeljama — cilj nedelje je udeo referentne nedelje pre
+       pauze (75 / 90 % …, nikad iznad plana), dugi prve nedelje ≤ ¾ referentnog, dalje ≤ referentni; prva nedelja se
+       slaže bez kvaliteta (lagani dani nose obim, ne kvalitet koji bi spremnost posle skinula) */
+    const schedule = returnWeekCap(week.start, adjustments, ctx);
+    const planSlots = weekSlots(
       week,
       span,
       ctx,
@@ -2142,8 +2243,20 @@ export function runPass(
       previousHard,
       pendingFrom,
       weekTags,
-      forced !== null && !recoveryAhead
+      forced !== null && !recoveryAhead,
+      forced === null ? null : pendingUntil
     );
+    /* R19: prva nedelja povratka bez kvaliteta, dalje u rasporedu najviše jedan (prvi u nedelji) */
+    const firstQuality = planSlots.items.find((x) => x.kind === 'quality');
+    const slots: WeekSlots =
+      schedule === null
+        ? planSlots
+        : {
+            ...planSlots,
+            items: planSlots.items.filter(
+              (x) => x.kind !== 'quality' || (!schedule.first && x === firstQuality)
+            )
+          };
     if (forced !== null && slots.items.some((x) => x.kind === 'test' && x.def === forced.def)) {
       pendingTest = null;
     }
@@ -2274,6 +2387,8 @@ export function runPass(
           (ctx.data.safety.minEasyFallbackMin ?? 0) * 60
         )
       };
+    if (schedule !== null && shell.longSec > schedule.longSec)
+      shell = { ...shell, longSec: Math.floor(schedule.longSec / 60) * 60 };
     let recipes = lay(shell);
     /* M7 (krug 5): granica silaska je u km (km u minutima laganog tempa); kvalitet i dugi nose više km po minutu
        od cilja, pa se višak skida JEDNOM sa laganih dana (cilj − višak km × lagan tempo) */
@@ -2289,13 +2404,20 @@ export function runPass(
       forced !== null && opts.fresh !== true
         ? (weekTotals(week, header, state, ctx).km * ctx.pace.paces.easy) / 60
         : null;
-    const caps = [m7Cap, minusOne, forcedCap].filter((x): x is number => x !== null);
+    const caps = [m7Cap, minusOne, forcedCap, schedule?.volume ?? null].filter(
+      (x): x is number => x !== null
+    );
     const capVolume = caps.length === 0 ? null : Math.min(...caps);
     if (capVolume !== null) {
       const measure = (): { over: number; load: number; volume: number } => {
         let km = 0;
         let load = 0;
-        for (const r of recipes.values()) {
+        for (const [date, r0] of recipes) {
+          /* R19: u rasporedu povratka meri se nedelja posle spremnosti (manja doza prvog kvaliteta) */
+          const r =
+            schedule === null
+              ? r0
+              : applyReadiness(r0, modsFor(date, causes, seen, recipeKey(r0)), ctx);
           const w = realize(r, ctx);
           if (w === null) continue;
           const c = summarize(w, ctx.pace);
@@ -2339,7 +2461,11 @@ export function runPass(
           : 0;
       };
       let lost = false;
-      const order = data.safety.taper?.trimOrder ?? (['scale', 'easy', 'long'] as const);
+      /* R19: u rasporedu povratka dugi je već na svojoj granici — skraćuju se prvo lagani dani */
+      const order =
+        schedule !== null
+          ? (['easy', 'long'] as const)
+          : (data.safety.taper?.trimOrder ?? (['scale', 'easy', 'long'] as const));
       /* krug 11: brzi treninzi nedelje na najmanjoj dozi (oštrenje nedelje trke ima svoju dozu) */
       const minDoseSlots = (sl: WeekSlots): WeekSlots =>
         sl.race
@@ -2388,6 +2514,33 @@ export function runPass(
             lost = true;
             break;
           }
+        }
+        /* R19: u rasporedu povratka korak „lagani dani" ne preskače cilj (bodovi i minuti nisu ista mera) — cilj nedelje
+           se traži polovljenjem između skraćenog i prvobitnog, najveći koji staje u granicu */
+        if (!lost && schedule !== null && measure().over < -1) {
+          const keep = { shell, recipes, acc: { ...taperAcc } };
+          let lo = shell.targetLoad;
+          let hi = start.shell.targetLoad;
+          for (let it = 0; it < 7 && hi - lo > 2; it += 1) {
+            const mid = Math.round((lo + hi) / 2);
+            Object.assign(taperAcc, accBefore);
+            const next = { ...shell, targetLoad: mid };
+            const rs = lay(next, trimSlots);
+            const prev = recipes;
+            recipes = rs;
+            const m = measure();
+            const sh = shape(rs);
+            if (m.over <= 0 && sh.runs >= startShape.runs && sh.hard >= startShape.hard) {
+              lo = mid;
+              keep.shell = next;
+              keep.recipes = rs;
+              keep.acc = { ...taperAcc };
+            } else hi = mid;
+            recipes = prev;
+          }
+          shell = keep.shell;
+          recipes = keep.recipes;
+          Object.assign(taperAcc, keep.acc);
         }
       }
       if (byMinusOne || lost) {
@@ -2679,7 +2832,8 @@ export function runPass(
     }
     const volumeMin = Math.round(plannedMin(shell.targetLoad) * 10) / 10;
 
-    if (week.intent.kind !== 'recovery' && week.intent.source === 'template') {
+    /* R19: nedelja rasporeda povratka nije merilo laganih dana sledeće nedelje (merilo ostaje nedelja pre pauze) */
+    if (week.intent.kind !== 'recovery' && week.intent.source === 'template' && schedule === null) {
       previousEasy = easyRefOf(recipes, ctx) ?? previousEasy;
     }
     previousHard = null;
@@ -2727,7 +2881,13 @@ export function runPass(
                    izgrađenog dugog — ne „lagano 2 h 30" tri dana posle trke */
                 sec: Math.min(
                   summarize(realize(planned, ctx), ctx.pace).durationSec,
-                  lastBuiltLong > 0 ? Math.floor(lastBuiltLong / 300) * 300 : Number.POSITIVE_INFINITY
+                  lastBuiltLong > 0
+                    ? Math.floor(lastBuiltLong / 300) * 300
+                    : Number.POSITIVE_INFINITY,
+                  /* R19: u rasporedu povratka ni duži od dugog te nedelje */
+                  schedule === null
+                    ? Number.POSITIVE_INFINITY
+                    : Math.floor(schedule.longSec / 300) * 300
                 )
               }
             : planned;
@@ -2806,6 +2966,18 @@ export function runPass(
             end = w.rampEnd;
         }
         pendingFrom = end === null ? null : addDays(end, RETURN_TEST_AFTER_RAMP_DAYS);
+        /* R19 (odluka organizatora): posle kratke pauze provera se pomera najviše 2 nedelje; ako tu ne staje,
+           otpada (rečenica u objašnjenju) */
+        const fromSchedule = adjustments.some((a) => {
+          const w = adjustmentWindow(a);
+          return (
+            rampOf(a)?.schedule !== undefined &&
+            w !== null &&
+            w.from <= day.date &&
+            day.date <= w.rampEnd
+          );
+        });
+        pendingUntil = fromSchedule ? addDays(day.date, RETURN_TEST_MAX_SHIFT_DAYS) : null;
       }
       const key = seenKey(final.workout, ctx);
       if (key !== null) seen.push({ date: final.date, key });
@@ -2826,10 +2998,13 @@ export function runPass(
       }
       return final;
     });
-    const days = easyNotOverLong(
+    const shaped = easyNotOverLong(
       balanceEasy(
         capDroppedDays(
-          shortenLong(rawDays, week, header, state.today, done, ctx, opts),
+          /* R19: u rasporedu povratka dugi drži raspored (¾ referentnog, pa referentni), ne udeo skraćene nedelje */
+          schedule === null
+            ? shortenLong(rawDays, week, header, state.today, done, ctx, opts)
+            : rawDays,
           recipes,
           week,
           header,
@@ -2846,6 +3021,22 @@ export function runPass(
       rebuilt,
       ctx
     );
+    /* R19 (stavka 1): nedelja rasporeda povratka ne ostaje ispod svog cilja (udeo referentne, ne iznad plana) zbog
+       izostavljenog kvaliteta ili pomerene provere — manjak nose lagani dani */
+    const days =
+      schedule === null
+        ? shaped
+        : fillReturnWeek(
+            shaped,
+            rebuilt,
+            Math.min(
+              (schedule.volume * 60) / ctx.pace.paces.easy,
+              weekTotals(week, header, state, ctx).km
+            ),
+            week,
+            header,
+            ctx
+          );
     weekTags.push(
       new Set(
         days.flatMap((x) =>

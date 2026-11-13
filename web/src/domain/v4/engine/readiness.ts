@@ -34,7 +34,7 @@ import {
   RAMP_START,
   REST_BELOW_F
 } from './constants';
-import { addDays, diffDays } from './dates';
+import { addDays, diffDays, mondayOf } from './dates';
 import { summarize } from './load';
 import {
   type BuildCtx,
@@ -60,7 +60,52 @@ export interface Ramp {
   firstReduced: boolean;
   /** Faktor prvog dana rampe (krug 14, M2: posle pauze `PAUSE_RAMP_START`, inače `RAMP_START`). */
   start?: number;
+  /** R19 (stavka 1): kratka pauza (5–21 dan) — povratak po NEDELJAMA (udeo referentne nedelje), ne po danima. */
+  schedule?: ReturnSchedule;
 }
+
+/** R19 (stavka 1, odluka organizatora): povratak posle pauze od 5 do 21 dan po nedeljama. Nedelja `k` (od
+    `week1`, ponedeljak) ima cilj `shares[k−1]` × referentna nedelja (najveća od poslednje 4 pre pauze), nikad iznad
+    plana; posle rasporeda važi plan. Prva nedelja bez brzog rada i dugi ≤ ¾ referentnog dugog; dalje dugi ≤ referentni,
+    a prvi trening svakog podražaja smanjene doze. */
+export interface ReturnSchedule {
+  week1: IsoDate;
+  shares: readonly number[];
+  refKm: number;
+  refLongSec: Seconds;
+}
+
+/** R19: udeli referentne nedelje po dužini pauze (dani bez trčanja); `null` = stara rampa (pauza > 21 dan). */
+export function returnShares(pauseDays: number): readonly number[] | null {
+  if (pauseDays <= RETURN_NO_RAMP_MAX_DAYS) return [];
+  if (pauseDays <= RETURN_SHORT_MAX_DAYS) return RETURN_SHORT_SHARES;
+  if (pauseDays <= RETURN_MID_MAX_DAYS) return RETURN_MID_SHARES;
+  return null;
+}
+const RETURN_NO_RAMP_MAX_DAYS = 4;
+const RETURN_SHORT_MAX_DAYS = 10;
+const RETURN_MID_MAX_DAYS = 21;
+const RETURN_SHORT_SHARES = [0.75, 0.9] as const;
+const RETURN_MID_SHARES = [0.6, 0.75, 0.9] as const;
+/** Prvi dugi posle pauze ≤ ovaj udeo referentnog dugog. */
+export const RETURN_SCHEDULE_FIRST_LONG_SHARE = 0.75;
+
+/** Raspored povratka za pauzu sa poznatom referentnom nedeljom (5–21 dan); `null` = stara rampa. */
+export function returnSchedule(adj: Adjustment): ReturnSchedule | null {
+  if (adj.kind !== 'pause' || adj.refWeekKm === undefined || adj.baseAfter === true) return null;
+  const shares = returnShares(pauseLength(adj.from, adj.to));
+  if (shares === null) return null;
+  /* prva nedelja povratka: nedelja prvog dana posle pauze, osim kad u njoj ostaju manje od 4 dana (tada sledeća;
+     ostatak nedelje pauze se računa kao prva) */
+  const next = addDays(adj.to, 1);
+  const monday = mondayOf(next);
+  const week1 = diffDays(addDays(monday, 6), next) + 1 >= 4 ? monday : addDays(monday, 7);
+  return { week1, shares, refKm: adj.refWeekKm, refLongSec: adj.lastLongSec ?? 0 };
+}
+
+/** R19: redni broj nedelje povratka (1 = prva; ostatak nedelje pauze pre `week1` je takođe 1). */
+export const returnWeekNo = (date: IsoDate, s: ReturnSchedule): number =>
+  Math.max(1, Math.floor(diffDays(date, s.week1) / 7) + 1);
 
 /** Krug 10 (stavka 11): dani posle punog napora bez brzog treninga — isto pravilo kao rampa u planu (brz rad tek kad
     faktor rampe dostigne `QUALITY_FROM_F`), najmanje `NO_FAST_DAYS_AFTER_EFFORT`. */
@@ -96,6 +141,24 @@ export function rampOf(adj: Adjustment): Ramp | null {
     case 'pause': {
       const length = pauseLength(adj.from, adj.to);
       if (length < PAUSE_MIN_DAYS) return null;
+      const schedule = returnSchedule(adj);
+      if (schedule !== null) {
+        /* R19: rampa traje do kraja rasporeda (kraća rampa blizu trke ostaje); bez dnevnog skraćenja — obim nedelje
+           drži gradnja (cilj = udeo referentne), brz rad tek od druge nedelje */
+        const end = addDays(schedule.week1, 7 * schedule.shares.length - 1);
+        const days = schedule.shares.length === 0 ? 0 : Math.max(0, diffDays(end, adj.to));
+        const firstEnd = addDays(schedule.week1, 6);
+        return {
+          zero: adj.to,
+          days: adj.rampDays === undefined ? days : Math.min(days, adj.rampDays),
+          noFast: schedule.shares.length === 0 ? 0 : Math.max(0, diffDays(firstEnd, adj.to)),
+          lastLongSec: adj.lastLongSec ?? 0,
+          gate: length >= BLOCK_GATE_PAUSE_DAYS,
+          firstReduced: false,
+          start: 1,
+          schedule
+        };
+      }
       return {
         zero: adj.to,
         days: adj.rampDays ?? pauseRampDays(length, adj.reason),
@@ -267,7 +330,23 @@ export function modsFor(
     const ramp = rampOf(adj);
     if (ramp !== null) {
       const n = diffDays(date, ramp.zero);
-      if (n >= 1 && n <= ramp.days) {
+      const sch = ramp.schedule;
+      if (sch !== undefined) {
+        /* R19: povratak po nedeljama — prva nedelja bez brzog rada i dugi ≤ ¾ referentnog; dalje u rasporedu dugi ≤
+           referentni i prvi trening svakog podražaja smanjene doze */
+        if (n >= 1 && n <= ramp.days) {
+          const k = returnWeekNo(date, sch);
+          if (sch.refLongSec > 0)
+            m.longCapSec = Math.min(
+              m.longCapSec,
+              k === 1 ? RETURN_SCHEDULE_FIRST_LONG_SHARE * sch.refLongSec : sch.refLongSec
+            );
+          if (k >= 2 && key !== null) {
+            const done = seen.some((s) => s.key === key && s.date > ramp.zero && s.date < date);
+            if (!done) m.doseFactor = Math.min(m.doseFactor, RAMP_DOSE_FACTOR);
+          }
+        }
+      } else if (n >= 1 && n <= ramp.days) {
         const f = rampFactor(n, ramp);
         /* krug 14 (M2): viši početak rampe posle pauze menja samo trajanje; brz rad i plafon dugog prate isti deo
            rampe kao ranije (faktor od `RAMP_START`) */
