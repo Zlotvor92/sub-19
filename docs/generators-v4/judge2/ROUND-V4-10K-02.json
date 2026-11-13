@@ -1,0 +1,295 @@
+{
+ "krug": "ROUND-V4-10K-02",
+ "sudija": "drugi",
+ "distanca": "10K",
+ "datum": "2026-11-13",
+ "otvoreno_van_dozvoljenog": [
+  "plans/10K/pregled.md",
+  "plans/10K/scenarios/pregled.txt (pre zapisa očekivanja)",
+  "zaglavlja pairs sa „MORA DA SE RAZLIKUJE\""
+ ],
+ "planovi": [
+  {
+   "plan": "p01",
+   "q": [
+    7,
+    7,
+    8,
+    8,
+    8,
+    8,
+    7
+   ],
+   "ukupno": 75.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 13: 24 % brzog rada (TT 7x1 km + I 5x1 km + 15 min praga) > vršna ned 12 (16 %)",
+    "ned 3 i 9: tri treninga sa brzim delom, 20 %",
+    "napomena „Dugi je lagan\" na progresivnom dugom/dugom sa pragom"
+   ]
+  },
+  {
+   "plan": "p02",
+   "q": [
+    6,
+    8,
+    6,
+    6,
+    7,
+    5,
+    7
+   ],
+   "ukupno": 65.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "upozorenje: obim do 65 km za trkača na 30 km, nedostižno",
+    "poslednje 3 ned samo 3 kvaliteta; ned 6 −24 % od vrha",
+    "napomena trke bez veze sa proverom 26. 11."
+   ]
+  },
+  {
+   "plan": "p03",
+   "q": [
+    7,
+    8,
+    7,
+    7,
+    8,
+    8,
+    7
+   ],
+   "ukupno": 74.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "prag 5:57 sporiji od tempa trke 5:53",
+    "ned 5 dva treninga uzbrdo, bez praga",
+    "ned 8 rasterećenje sa 21 % brzog rada"
+   ]
+  },
+  {
+   "plan": "p04",
+   "q": [
+    7,
+    7,
+    8,
+    8,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "napomena trke pominje proveru 28. 11. umesto 23. 1.",
+    "ned 16: 17 % brzog rada 2 ned pred trku",
+    "pon 75–85 min posle dugog 1 h 40–1 h 50"
+   ]
+  },
+  {
+   "plan": "p05",
+   "q": [
+    7,
+    6,
+    8,
+    8,
+    7,
+    6,
+    7
+   ],
+   "ukupno": 70.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 9: 86 -> 106,2 km (+23 %) i tri teška treninga",
+    "ned 10: 87,5 km sa 4x2 km TT + 7x800 + dugi 20 km",
+    "napomena trke bez provere 24. 12."
+   ]
+  },
+  {
+   "plan": "p06",
+   "q": [
+    5,
+    8,
+    4,
+    4,
+    7,
+    6,
+    6
+   ],
+   "ukupno": 57.0,
+   "dao_bih": "ne",
+   "zamerke": [
+    "brz rad 5–16 %, kvalitet zamenjen laganim u 4 od 5 nedelja gradnje",
+    "vršna ned 3 od 8",
+    "dugi 6,5 km u ned 6–7"
+   ]
+  },
+  {
+   "plan": "p07",
+   "q": [
+    7,
+    7,
+    8,
+    7,
+    7,
+    7,
+    7
+   ],
+   "ukupno": 72.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 5: tri teška treninga",
+    "napomena trke bez provere 26. 11.",
+    "—"
+   ]
+  },
+  {
+   "plan": "p08",
+   "q": [
+    6,
+    8,
+    6,
+    4,
+    7,
+    6,
+    6
+   ],
+   "ukupno": 63.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "18 nedelja na 39–45 km (x1,04)",
+    "napomena trke pominje 26. 11. umesto 21. 1.",
+    "nejasna rečenica „Dugi trening u 9 nedelja staje na 1 h 40 min\""
+   ]
+  },
+  {
+   "plan": "p09",
+   "q": [
+    7,
+    7,
+    7,
+    7,
+    6,
+    8,
+    7
+   ],
+   "ukupno": 70.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 3: tri brza treninga (21 %) bez poznate forme",
+    "dan trke po osećaju uprkos 2 provere",
+    "—"
+   ]
+  },
+  {
+   "plan": "p10",
+   "q": [
+    6,
+    6,
+    7,
+    7,
+    6,
+    7,
+    6
+   ],
+   "ukupno": 64.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "ned 14: dugi 1 h 50 = 43 % nedelje",
+    "dan trke po osećaju uprkos 2 provere; bez napomene posle trke",
+    "ned 7: samo 6 % brzog rada"
+   ]
+  },
+  {
+   "plan": "p11",
+   "q": [
+    7,
+    8,
+    7,
+    7,
+    7,
+    7,
+    6
+   ],
+   "ukupno": 71.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "ned 13 „razvoj\" posle „specifične\"",
+    "nema napomene posle trke",
+    "ned 7, 8, 11: 0 % brzog rada"
+   ]
+  },
+  {
+   "plan": "p12",
+   "q": [
+    7,
+    8,
+    7,
+    6,
+    7,
+    7,
+    6
+   ],
+   "ukupno": 70.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "faze: specifična -> razvoj -> specifična (ned 6–8)",
+    "ned 9: 6,4 km TT po osećaju, skok sa 2,4 km",
+    "—"
+   ]
+  }
+ ],
+ "prosek_planova": 68.6,
+ "scenariji": {
+  "s01": 90,
+  "s02": 76,
+  "s03": 88,
+  "s04": 88,
+  "s05": 86,
+  "s06": 70,
+  "s07": 56,
+  "s08": 62,
+  "s09": 80,
+  "s10": 90,
+  "s11": 72,
+  "s12": 62,
+  "s13": 84,
+  "s14": 80,
+  "s15": 66,
+  "s16": 62,
+  "s17": 78,
+  "s18": 82,
+  "s19": 84,
+  "s20": 86,
+  "s21": 100,
+  "s22": 80,
+  "s23": 100,
+  "s24": 94,
+  "s25": 86,
+  "s26": 50,
+  "s27": 72
+ },
+ "prosek_scenarija": 78.7,
+ "parovi": {
+  "P1": 90,
+  "P2": 80,
+  "P3": 65
+ },
+ "prosek_parova": 78.3,
+ "ispravke": [
+  "napomena dana trke iz poslednje provere u svakom planu",
+  "povratak posle bolesti/bola vremenski ograničen, bez trajnog sečenja (s07, s08, s26)",
+  "ništa ne raste u oporavku/sužavanju (s26, s06, s12, s15, s27)",
+  "ne brisati jedinu proveru, pomeriti je (s07, s15, s16)",
+  "p06: 2 kvaliteta/ned, vrh u ned 5–6, dugi >= 9–10 km",
+  "predlog obima u upozorenju dostižan i usklađen (p02 65 km, p06 45 km)",
+  "duga priprema mora da raste (p08)",
+  "tekst PROMENE navodi tačan događaj i svaku izmenu (s02, s09, s22)",
+  "faze bez vraćanja unazad (p11, p12, p2a/b)",
+  "konverzija HM->10K (s17); p09 ned 3 bez tri brza treninga"
+ ],
+ "za_pregled_vlasnika": [
+  "p06",
+  "p08",
+  "s26"
+ ]
+}
