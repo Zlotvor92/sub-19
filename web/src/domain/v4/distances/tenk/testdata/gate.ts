@@ -310,6 +310,37 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   const rw = weeks[nW - 1];
   if (!shortEasy && rw !== undefined && peakKm > 0 && rw.km > 0.6 * peakKm + 0.5)
     v.push(`nedelja trke ${String(rw.km)} km > 60 % vrha`);
+  /* ---- krug 2 (dopuna drugog sudije) ---- */
+  /* 15. B7: tempo trke raste preko urađenog praga — plan ≥ 12 nedelja ima tempo trke od ≥ 6 km rada (srednji, brz)
+     ili ≥ 4 km (ostali); prvi tempo trke ≥ 60 % minuta poslednjeg praga pre njega */
+  if (doc.weeks.length >= 12) {
+    const rp = all.filter((x) => x.workout?.stimulus === 'tempo-trke');
+    const rpKm = Math.max(0, ...rp.map((x) => (x.workout?.workSec ?? 0) / ctx.paces.RP));
+    const needKm = lvl === 'srednji' || lvl === 'brz' ? 6 : 4;
+    if (rpKm < needKm - 0.05)
+      v.push(`najveći tempo trke ${rpKm.toFixed(1)} km < ${String(needKm)} km`);
+    const first = rp[0];
+    if (first !== undefined) {
+      const prags = all.filter(
+        (x) =>
+          x.date < first.date &&
+          (x.workout?.stimulus === 'prag' || x.workout?.stimulus === 'prag-p')
+      );
+      const lastPrag = prags[prags.length - 1]?.workout?.workSec ?? 0;
+      if ((first.workout?.workSec ?? 0) < 0.6 * lastPrag - 30)
+        v.push(
+          `prvi tempo trke ${String(Math.round((first.workout?.workSec ?? 0) / 60))} min < 60 % praga ${String(Math.round(lastPrag / 60))} min`
+        );
+    }
+  }
+  /* 16. B9: sužavanje nije naopako — nedelja −1 ≤ nedelja −2 ≤ vrh (km, + 0,5 za zaokruživanje) */
+  const w1 = weeks[nW - 2];
+  if (m2 !== undefined && w1 !== undefined) {
+    if (w1.km > m2.km + 0.5)
+      v.push(`nedelja −1 ${String(w1.km)} km > nedelja −2 ${String(m2.km)} km`);
+    if (m2.km > peakKm + 0.5) v.push(`nedelja −2 ${String(m2.km)} km > vrh ${String(peakKm)} km`);
+  }
+
   const counted = build.length > 0 ? build : weeks;
   return {
     baseKm,

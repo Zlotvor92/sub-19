@@ -92,7 +92,8 @@ export const SAFETY: SafetyNumbers = {
     prag: { maxWorkSec: { brz: 1920, '*': 1680 }, shareOfPeakLoad: 0.1 },
     'prag-p': { maxWorkSec: 1200, shareOfPeakLoad: 0.085 },
     intervali: { maxWorkSec: { brz: 1500, '*': 1320 }, shareOfPeakLoad: 0.08 },
-    'tempo-trke': { maxWorkSec: { brz: 2400, '*': 1740 }, shareOfPeakLoad: 0.1 },
+    /* krug 2 (B7): do 35 min (brz 40) — najveći tempo trke plana ≥ 6 km i za trkača od 56 min (p04: 6 × 1 km) */
+    'tempo-trke': { maxWorkSec: { brz: 2400, '*': 2100 }, shareOfPeakLoad: 0.1 },
     ostrenje: { maxWorkSec: 720, shareOfPeakLoad: 0.06 },
     'dugi-rp': { maxWorkSec: 900, shareOfPeakLoad: 0.08 },
     'dugi-prag': { maxWorkSec: 900, shareOfPeakLoad: 0.08 },

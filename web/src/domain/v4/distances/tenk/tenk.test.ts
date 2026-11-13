@@ -757,11 +757,11 @@ describe('trenerski zahtevi za 10 km (coach/target/10K/README.md)', () => {
           expect(d.workout.workSec, `${p.id} ${d.date}`).toBeLessThanOrEqual(15 * 60 + 30);
   });
 
-  it('doze po lestvici README: prag ≤ 28 min (brz 32), intervali ≤ 22 min (brz 25), tempo trke ≤ 29 min (brz 40)', () => {
+  it('doze po lestvici README: prag ≤ 28 min (brz 32), intervali ≤ 22 min (brz 25), tempo trke ≤ 35 min (brz 40; B7)', () => {
     const caps: Record<string, [number, number]> = {
       prag: [28, 32],
       intervali: [22, 25],
-      'tempo-trke': [29, 40]
+      'tempo-trke': [35, 40]
     };
     for (const p of ALL_PLANS) {
       const fast = p.doc.header.decisions.level === 'brz';

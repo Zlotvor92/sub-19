@@ -178,8 +178,9 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       out.push(week(OSNOVA, 'build', load, { len }, [HILLS_SHORT, STRIDES]));
       continue;
     }
-    /* kratak plan: poslednja nedelja tela uvodi tempo trke i intervale malom dozom — prvi trening zone ≤ 70 %
-       najvećeg (K7); prag bi kod bliskih zona motor zamenio intervalima pune doze */
+    /* kratak plan: poslednja nedelja tela uvodi tempo trke i intervale — prvi tempo trke ≥ 60 % minuta poslednjeg
+       praga (B7) i ≤ 70 % najvećeg (K7: najteža je 1 km deonice do plafona, ≥ 6 km); prag bi kod bliskih zona motor
+       zamenio intervalima pune doze */
     if (!long && w === tailStart - 1 && n >= 8) {
       out.push(
         week(
@@ -188,8 +189,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           load,
           longSpec,
           sh.single
-            ? [S('tempo-trke', 0.37, 'rp-1200'), STRIDES]
-            : [S('intervali', 0.5), S('tempo-trke', 0.37, 'rp-1200')]
+            ? [S('tempo-trke', 0.45, 'rp-1200'), STRIDES]
+            : [S('intervali', 0.5), S('tempo-trke', 0.45, 'rp-1200')]
         )
       );
       continue;
@@ -230,14 +231,15 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
     sh.single ? [pick(thu, tue), STRIDES] : [thu, tue];
   const head: WeekIntent[] = long
     ? [
-        /* N−7: vrh razvoja — intervali + prvi tempo trke 3 × 1 km (krug 2, B1: tempo trke ulazi u razvoju),
+        /* N−7: vrh razvoja — intervali + prvi tempo trke 4–5 × 1 km (B1: tempo trke ulazi u razvoju; B7: ≥ 60 % minuta
+           poslednjeg praga),
            progresivan dugi (ciljni p01 ned 9) */
         week(
           RAZVOJ,
           'build',
           0.97,
           { len: 0.95, stimulus: 'dugi-progresivno', dose: 1 },
-          pair(S('tempo-trke', 0.3, 'rp-1000'), S('intervali', 0.9))
+          pair(S('tempo-trke', 0.55, 'rp-1000'), S('intervali', 0.9))
         ),
         /* N−6: provera 5 km subotom (rasterećenje), dugi u nedelju lagan i kraći (ciljni p01 ned 10) */
         week(
@@ -278,7 +280,7 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
               'build',
               0.95,
               { len: 0.92 },
-              pair(S('intervali', 0.6), S('tempo-trke', 0.5))
+              pair(S('intervali', 0.6), S('tempo-trke', 0.4))
             )
       ];
   return [
@@ -292,7 +294,8 @@ function regularTail(sh: Shape, long: boolean, check: boolean): WeekIntent[] {
       /* kratak plan (mali obim, budžet brzog rada): tempo trke u prvom mestu (četvrtak) dobija budžet prvi */
       long
         ? pair(S('intervali', 0.8), S('tempo-trke', 1))
-        : pair(S('tempo-trke', 1), S('intervali', 0.9))
+        : /* plan kraći od 8 nedelja: manja doza, da najteža ne skoči preko pravila rasta (8 × 1 km posle 42 km) */
+          pair(S('tempo-trke', check ? 1 : 0.7, 'rp-1000'), S('intervali', 0.9))
     ),
     /* N−2: ≤ 85 % — tempo trke 4 × 1600 m + kratki intervali, dugi lagan (ciljni p01 ned 14: kratak prag; kod 10 km
        je prag često ≈ tempo trke, pa bi ga motor zamenio intervalima pune doze — zato intervali male doze odmah) */

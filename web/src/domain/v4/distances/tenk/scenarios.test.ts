@@ -27,9 +27,9 @@ const KNOWN = new Map<string, string>([
      nad već izmenjenim planom (prvobitan plan mu nije dostupan) */
   ['s26 rep do 2027-02-14', 'nadovezani prozori bol → trka (Z10)'],
   /* Z3 i deonice fiksne dužine (s13, s15, s16) skinuto u krugu 8 (R8 t. 4: manji unos ili kraće deonice) */
-  /* krug 2 10 km: s13 prvi tempo trke posle bola 18 od 28 min (64 %) — zaokruživanje na ceo komad deonice; granica
+  /* krug 2 10 km: s13 prvi tempo trke posle bola 23 od 32 min (72 %; B7 podigao plafon tempa trke) — zaokruživanje na ceo komad deonice; granica
      je 60 % + 90 s */
-  ['s13 2027-01-26 prvi rad zone RP: 18 od 28 min', 'Z3: zaokruživanje deonice (64 %)']
+  ['s13 2027-01-26 prvi rad zone RP: 23 od 32 min', 'Z3: zaokruživanje deonice (72 %)']
 ]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>

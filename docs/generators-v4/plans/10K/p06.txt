@@ -14,7 +14,7 @@ Zašto je prognoza ovakva (najnovije prvo):
 TEMPA
 - lagano 4:39–5:08/km
 - umereno 4:04/km
-- prag 3:48/km
+- prag 3:50/km
 - tempo trke 3:38/km
 - intervali 3:26/km
 - brze deonice 3:14/km
@@ -28,7 +28,7 @@ UPOZORENJA
   pon 2. 11.  lagano 5 km — 5 km, 24 min
   uto 3. 11.  lagano 5 km — 5 km, 24 min
   sre 4. 11.  odmor
-  čet 5. 11.  prag 11 min u komadu (3:48/km) — 7 km, 31 min
+  čet 5. 11.  prag 11 min u komadu (3:50/km) — 7 km, 31 min
   pet 6. 11.  odmor
   sub 7. 11.  lagano 5 km — 5 km, 24 min
   ned 8. 11.  dugi 9 km lagano — 9 km, 44 min
@@ -62,8 +62,8 @@ UPOZORENJA
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   pet 27. 11.  odmor
   sub 28. 11.  lagano 5 km — 5 km, 24 min
-  ned 29. 11.  dugi 8 km lagano — 8 km, 39 min
-  Zbir: 32,1 km, 2 h 28 min, 5 treninga, brz rad 0 % vremena trčanja
+  ned 29. 11.  dugi 8,5 km lagano — 8,5 km, 42 min
+  Zbir: 32,6 km, 2 h 31 min, 5 treninga, brz rad 0 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 30. 11.  lagano 5,5 km — 5,5 km, 27 min
@@ -83,8 +83,8 @@ UPOZORENJA
   čet 10. 12.  lagano 5 km — 5 km, 24 min
   pet 11. 12.  odmor
   sub 12. 12.  lagano 5 km — 5 km, 24 min
-  ned 13. 12.  dugi 6 km lagano — 6 km, 29 min
-  Zbir: 26 km, 2 h 5 min, 5 treninga, brz rad 0 % vremena trčanja
+  ned 13. 12.  dugi 6,5 km lagano — 6,5 km, 32 min
+  Zbir: 26,5 km, 2 h 8 min, 5 treninga, brz rad 0 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 14. 12.  lagano 6 km — 6 km, 29 min
