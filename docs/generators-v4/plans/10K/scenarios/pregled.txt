@@ -1,29 +1,29 @@
 # Scenariji prilagođavanja — 10 km (pregled)
 
 s01 p01 E1: ned 10, trka 5 km 3,0 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
-s02 p04 E1: ned 12, trka 5 km 3,1 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
+s02 p04 E1: ned 12, trka 5 km 3,1 % brže od očekivanog — promena: 1; nalazi čuvara posle: ispod-cilja@8
 s03 p11 E1: ned 12, trka 5 km umesto testa 3 km, 3,4 % brže od očekivanog — promena: 1; nalazi čuvara posle: 0
 s04 p12 E1: ned 6, prva trka u životu, 5 km 28:30 — promena: 2; nalazi čuvara posle: 0
-s05 p01 E2: bolest 7 dana u ned 6 (razvoj) — promena: 12; nalazi čuvara posle: 0
-s06 p04 E2: bolest 7 dana u ned 13 (specifična priprema) — promena: 13; nalazi čuvara posle: 0
-s07 p11 E2: bolest 7 dana u ned 10 — promena: 15; nalazi čuvara posle: brz-udeo@15
-s08 p12 E2: bolest 7 dana u ned 9 (najteža) — promena: 9; nalazi čuvara posle: 0
+s05 p01 E2: bolest 7 dana u ned 6 (razvoj) — promena: 9; nalazi čuvara posle: 0
+s06 p04 E2: bolest 7 dana u ned 13 (specifična priprema) — promena: 15; nalazi čuvara posle: ispod-cilja@8
+s07 p11 E2: bolest 7 dana u ned 10 — promena: 17; nalazi čuvara posle: brz-udeo@15
+s08 p12 E2: bolest 7 dana u ned 9 (najteža) — promena: 8; nalazi čuvara posle: 0
 s09 p01 E3: ned 13 (najteža): propušteni tempo trke i dugi sa završnicom — promena: 1; nalazi čuvara posle: 0
-s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 1; nalazi čuvara posle: 0
+s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 1; nalazi čuvara posle: ispod-cilja@8
 s11 p11 E3: ned 14: propušteni tempo trke i dugi — promena: 2; nalazi čuvara posle: 0
 s12 p12 E3: ned 7–8: propušten po jedan dugi u obe nedelje — promena: 4; nalazi čuvara posle: 0
-s13 p01 E4: ned 11, bol u kolenu 4/10 posle tempa trke — promena: 10; nalazi čuvara posle: 0
-s14 p04 E4: ned 7, bol 4/10 posle kvaliteta (osnova) — promena: 11; nalazi čuvara posle: 0
+s13 p01 E4: ned 11, bol u kolenu 4/10 posle tempa trke — promena: 9; nalazi čuvara posle: 0
+s14 p04 E4: ned 7, bol 4/10 posle kvaliteta (osnova) — promena: 12; nalazi čuvara posle: 0
 s15 p11 E4: ned 11, bol 4/10 posle dugog — promena: 10; nalazi čuvara posle: lagan-dugi@14
-s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 15; nalazi čuvara posle: 0
+s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 17; nalazi čuvara posle: 0
 s17 p01 E5: juče polumaraton 1:42:30 — promena: 0; nalazi čuvara posle: 0
-s18 p04 E5: juče trka 10 km 56:02 — promena: 0; nalazi čuvara posle: 0
+s18 p04 E5: juče trka 10 km 56:02 — promena: 0; nalazi čuvara posle: ispod-cilja@8
 s19 p11 E5: juče prva trka 10 km 58:30 — promena: 0; nalazi čuvara posle: 0
 s20 p12 E5: juče polumaraton 2:20 (prvi rezultat) — promena: 0; nalazi čuvara posle: 0
 s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
-s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
+s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: ispod-cilja@8
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; nalazi čuvara posle: 0
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; nalazi čuvara posle: 0
-s25 p01 E7: bolest 5 dana u ned 6, pa propušten dugi 10 dana kasnije — promena: 14; nalazi čuvara posle: 0
-s26 p11 E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije — promena: 21; nalazi čuvara posle: 0
-s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 7; nalazi čuvara posle: 0
+s25 p01 E7: bolest 5 dana u ned 6, pa propušten dugi 10 dana kasnije — promena: 13; nalazi čuvara posle: 0
+s26 p11 E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije — promena: 21; nalazi čuvara posle: brz-udeo@15
+s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 7; nalazi čuvara posle: ispod-cilja@8

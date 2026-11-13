@@ -49,21 +49,21 @@ Tempo trke u treninzima je tvoja današnja forma (4:31/km). Očekivano vreme na 
   čet 19. 11.  intervali 5 × 800 m (4:13/km), oporavak 2:30 džog — 11,5 km, 62 min
   pet 20. 11.  odmor
   sub 21. 11.  lagano 10,5 km — 10,5 km, 62 min
-  ned 22. 11.  dugi 14,5 km lagano — 14,5 km, 86 min
+  ned 22. 11.  dugi 15 km lagano — 15 km, 89 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 57 km, 5 h 26 min, 5 treninga, brz rad 10 % vremena trčanja
+  Zbir: 57,5 km, 5 h 29 min, 5 treninga, brz rad 10 % vremena trčanja
 
 4. NEDELJA (od 23. 11.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 23. 11.  lagano 8 km — 8 km, 47 min
-  uto 24. 11.  lagano 8 km — 8 km, 47 min
+  pon 23. 11.  lagano 7,5 km — 7,5 km, 44 min
+  uto 24. 11.  lagano 7,5 km — 7,5 km, 44 min
   sre 25. 11.  odmor
   čet 26. 11.  provera forme: trka ili test na 5 km punim naporom — 10,9 km, 57 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   pet 27. 11.  odmor
-  sub 28. 11.  lagano 8 km — 8 km, 47 min
-  ned 29. 11.  dugi 13 km lagano — 13 km, 77 min
+  sub 28. 11.  lagano 7,5 km — 7,5 km, 44 min
+  ned 29. 11.  dugi 13,5 km lagano — 13,5 km, 80 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 47,9 km, 4 h 35 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 46,9 km, 4 h 29 min, 5 treninga, brz rad 0 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 30. 11.  lagano 10 km — 10 km, 59 min
@@ -72,31 +72,31 @@ Tempo trke u treninzima je tvoja današnja forma (4:31/km). Očekivano vreme na 
   čet 3. 12.  tempo trke 4 × 1,6 km (4:31/km), oporavak 1:30 džog — 13,1 km, 68 min
   pet 4. 12.  odmor
   sub 5. 12.  lagano 10 km — 10 km, 59 min
-  ned 6. 12.  dugi 15,5 km, završnih 2,5 km u tempu trke (4:31/km) — 15,5 km, 88 min
+  ned 6. 12.  dugi 16 km, završnih 2,5 km u tempu trke (4:31/km) — 16 km, 91 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 61,1 km, 5 h 40 min, 5 treninga, brz rad 18 % vremena trčanja
+  Zbir: 61,6 km, 5 h 43 min, 5 treninga, brz rad 18 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
-  pon 7. 12.  lagano 6,5 km — 6,5 km, 38 min
+  pon 7. 12.  lagano 7 km — 7 km, 41 min
   uto 8. 12.  tempo trke 3 × 2 km (4:31/km), oporavak 2 min džog — 12,6 km, 66 min
   sre 9. 12.  odmor
-  čet 10. 12.  intervali 4 × 1,2 km (4:13/km), oporavak 3 min džog — 12,2 km, 64 min
+  čet 10. 12.  intervali 3 × 1,2 km (4:13/km), oporavak 3 min džog — 10,5 km, 56 min
   pet 11. 12.  odmor
-  sub 12. 12.  lagano 6,5 km — 6,5 km, 38 min
-  ned 13. 12.  dugi 13,5 km lagano — 13,5 km, 80 min
+  sub 12. 12.  lagano 7 km — 7 km, 41 min
+  ned 13. 12.  dugi 14 km lagano — 14 km, 83 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 51,3 km, 4 h 46 min, 5 treninga, brz rad 17 % vremena trčanja
+  Zbir: 51,1 km, 4 h 47 min, 5 treninga, brz rad 15 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — završnica, sužavanje pred trku; do trke 1 nedelja
-  pon 14. 12.  lagano 6,5 km — 6,5 km, 38 min
+  pon 14. 12.  lagano 7 km — 7 km, 41 min
   uto 15. 12.  tempo trke 2 × 1,2 km (4:31/km), oporavak 1:30 džog — 8,6 km, 47 min
   sre 16. 12.  odmor
   čet 17. 12.  intervali 3 × 3 min (4:13/km), oporavak 2:30 džog — 8,9 km, 49 min
   pet 18. 12.  odmor
-  sub 19. 12.  lagano 6,5 km — 6,5 km, 38 min
+  sub 19. 12.  lagano 7 km — 7 km, 41 min
   ned 20. 12.  dugi 10,5 km lagano — 10,5 km, 62 min
-  Zbir: 41 km, 3 h 54 min, 5 treninga, brz rad 8 % vremena trčanja
+  Zbir: 42 km, 4 h, 5 treninga, brz rad 8 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — završnica, nedelja trke
   pon 21. 12.  lagano 5 km — 5 km, 30 min
