@@ -133,7 +133,8 @@ function layout(n: number, family: Family, every = 4): Layout {
 /* ------------------------------------------------------------------ redovan */
 
 /** Doza praga po položaju u pripremi (0 = početak, 1 = kraj tela): ciljni p01 14 → 33 min, p04 23 → 34 min. */
-const tDose = (t: number, gentle = false): number => lerp(gentle ? 0.35 : 0.45, 0.95, t);
+/* krug 5: prvi prag 0,4 osnovice — silazak intenziteta (E9) skraćuje kasne doze, a K7 traži prvi ≤ 70 % vrha */
+const tDose = (t: number, gentle = false): number => lerp(gentle ? 0.35 : 0.4, 0.95, t);
 
 function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const L = layout(n, 'redovan');

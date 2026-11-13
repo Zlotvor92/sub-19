@@ -14,7 +14,7 @@ import {
   STATE_WEEKS,
   ZONE_SHARE
 } from './constants';
-import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday } from './dates';
+import { addDays, dayNumber, diffDays, isValidDate, mondayOf, toWeekday, weekdayOf } from './dates';
 import { decideLongMax, decidePeak, ladderInputOf, ladderOverBase, longReaches } from './decide';
 import { validate } from './guard';
 import { derivedPauses } from './pauses';
@@ -168,13 +168,17 @@ interface HistoryFacts {
 }
 
 /** S8a (krug 4): stvarni prosek poslednjih 4 cele nedelje kad je istorija merodavna (km i minuti). */
-const HISTORY_AVG_WEEKS = 4;
+/* E6 (krug 5): prosek poslednje 3 stvarne nedelje */
+const HISTORY_AVG_WEEKS = 3;
 function historyVolume(
   weeks: readonly WeekSummary[],
-  seeded: boolean
+  seeded: boolean,
+  today: string
 ): { historyWeeklyKm: number; historyWeeklyMin: number } | null {
   if (seeded) return null;
-  const full = weeks.slice(0, -1).slice(-HISTORY_AVG_WEEKS);
+  /* tekuća nedelja je cela kad je danas nedelja */
+  const done = weekdayOf(today) === 6 ? weeks : weeks.slice(0, -1);
+  const full = done.slice(-HISTORY_AVG_WEEKS);
   if (full.length < HISTORY_AVG_WEEKS || full.some((w) => w.runs === 0)) return null;
   const km = full.reduce((sum, w) => sum + w.distanceM, 0) / 1000 / full.length;
   const min = full.reduce((sum, w) => sum + w.durationSec, 0) / 60 / full.length;
@@ -466,7 +470,7 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
           weeks: doc.weeks.map((w) => ({ start: w.start, targetLoad: w.targetLoad }))
         };
   const weeks = weekSummaries(facts, runs, loadOf);
-  const volume = historyVolume(weeks, load.seeded);
+  const volume = historyVolume(weeks, load.seeded, facts.today);
   const state: RunnerState = {
     today: facts.today,
     availability,

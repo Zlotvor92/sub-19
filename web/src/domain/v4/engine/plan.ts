@@ -1,8 +1,8 @@
 /* V4 — `plan` (SPEC § 6.1–6.2): čista funkcija (stanje, cilj, podaci distance) → plan. Redosled odluka:
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
-import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE } from './constants';
+import { FATIGUE_RATIO, FATIGUE_WEEK_SHARE, RETURNED_AFTER_DAYS } from './constants';
 import { runPass } from './build';
-import { addDays, mondayOf } from './dates';
+import { addDays, diffDays, mondayOf } from './dates';
 import { decide, ladderInputOf, longStepOf } from './decide';
 import { validate, warnings, weekCost } from './guard';
 import { paceCtxOf } from './load';
@@ -27,6 +27,23 @@ import {
   type WeekIntent
 } from './types';
 import { zonePaces } from './vdot';
+
+/** E6 (krug 5): polazni obim = prosek poslednje 3 stvarne nedelje; uz bol ili pauzu u te 3 nedelje (ili bez
+    merodavne istorije) ostaje manje od baze i proseka. */
+function historyBase(
+  state: RunnerState,
+  baseLoad: number
+): { baseVolumeMin?: number; baseKm?: number; baseLoad?: number } {
+  const min = state.historyWeeklyMin;
+  const km = state.historyWeeklyKm;
+  if (min === undefined || km === undefined) return {};
+  const from = addDays(mondayOf(state.today), -21);
+  const troubled =
+    state.pauses.some((p) => p.to >= from) ||
+    [...state.pain, ...(state.painHistory ?? [])].some((p) => p.date >= from);
+  if (troubled) return { baseVolumeMin: Math.min(baseLoad, min), baseKm: km };
+  return { baseVolumeMin: min, baseKm: km, ...(min > baseLoad ? { baseLoad: min } : {}) };
+}
 
 /** S8e (krug 4): staž kraći od `adequate.minTenureWeeks` širi raspon prognoze (× 1,5 oko očekivanog). */
 const TENURE_RANGE_FACTOR = 1.5;
@@ -62,6 +79,11 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
     });
   }
   for (const pause of state.pauses) {
+    /* E6 (krug 5): trkač koji posle pauze već trči 3+ nedelje (bar 6 trčanja) se vratio — rampa se ne ponavlja */
+    const after = state.runs.filter((r) => r.date > pause.to);
+    const back =
+      after.length >= 6 && diffDays(state.today, after[0]?.date ?? state.today) >= RETURNED_AFTER_DAYS;
+    if (back) continue;
     out.push({
       kind: 'pause',
       source: 'plan',
@@ -84,7 +106,12 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
   }
   const { load } = state;
   const strained = !load.seeded && load.chronic > 0 && load.acute / load.chronic >= FATIGUE_RATIO;
-  if (strained && recentLoad(state, 7) >= FATIGUE_WEEK_SHARE * 7 * load.chronic) {
+  /* E6 (krug 5): trkač koji ravnomerno gradi obim (poslednja nedelja ≤ 1,2 × prosek poslednje 3) nije umoran samo
+     zato što je baza od 42 dana niska */
+  const steady =
+    state.historyWeeklyMin !== undefined &&
+    recentLoad(state, 7) <= FATIGUE_WEEK_SHARE * state.historyWeeklyMin;
+  if (strained && !steady && recentLoad(state, 7) >= FATIGUE_WEEK_SHARE * 7 * load.chronic) {
     out.push({ kind: 'fatigue', source: 'plan', date: state.today });
   }
   return out;
@@ -130,7 +157,8 @@ export function createPlan(
   trial = false
 ): PlanDoc {
   const weeks = countWeeks(startDate, goal.raceDate);
-  const baseLoad = baseLoadOf(state);
+  const hist = historyBase(state, baseLoadOf(state));
+  const baseLoad = hist.baseLoad ?? baseLoadOf(state);
   const form = state.form.current;
   const level = pickLevel(data, {
     yearsRunning: state.profile.yearsRunning,
@@ -174,12 +202,9 @@ export function createPlan(
       : {}),
     /* S8a/b (krug 4): istorija je merodavna → lanac rasta kreće od stvarnih minuta, polazni dugi ≤ najduže stvarno
        trčanje u 28 dana + korak (ne udeo nedelje u bodovima). */
-    ...(state.historyWeeklyMin === undefined || state.historyWeeklyKm === undefined
+    ...(hist.baseVolumeMin === undefined
       ? {}
-      : {
-          baseVolumeMin: Math.min(baseLoad, state.historyWeeklyMin),
-          baseKm: state.historyWeeklyKm
-        }),
+      : { baseVolumeMin: hist.baseVolumeMin, baseKm: hist.baseKm ?? 0 }),
     ...((state.painHistory ?? []).length > 0 ? { painCaution: true } : {}),
     /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
     ...(state.recentQualityWeeks === null || state.recentQualityWeeks === undefined

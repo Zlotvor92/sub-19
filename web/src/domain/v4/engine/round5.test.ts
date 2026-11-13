@@ -696,13 +696,19 @@ describe('R9: pauza, provera forme i povratak', () => {
     expect(reason).not.toMatch(/prvih \d+ dana/);
     /* Povratak: prva nedelja posle rampe ≤ poslednja puna nedelja pre pauze × 1,10, pa pravilo rasta. */
     const index = r.doc.weeks.findIndex((w) => w.start > addDays(today, 14));
-    const before = weekMin(
-      start,
-      start.weeks.findIndex((w) => w.start === '2026-12-07')
+    /* krug 5 (E1): merilo je poslednja PUNA nedelja gradnje pre pauze (ne rasterećenje) */
+    const lastBuild = start.weeks.reduce(
+      (best, w, i) => (w.start <= '2026-12-07' && w.intent.kind !== 'recovery' ? i : best),
+      -1
     );
+    const before = weekMin(start, lastBuild);
     expect(weekMin(r.doc, index)).toBeLessThanOrEqual(1.1 * before + 4);
+    /* krug 5 (E1): posle rampe + 14 dana vraća se prvobitan plan — tada je merilo prvobitna nedelja */
     expect(weekMin(r.doc, index + 1)).toBeLessThanOrEqual(
-      Math.max(weekMin(r.doc, index), before) * (1 + EXAMPLE.safety.maxWeeklyRampPct) + 14
+      Math.max(
+        Math.max(weekMin(r.doc, index), before) * (1 + EXAMPLE.safety.maxWeeklyRampPct) + 14,
+        weekMin(start, index + 1)
+      )
     );
   });
 });

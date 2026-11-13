@@ -109,8 +109,8 @@ export const RACE_NO_LONG_DAYS = 5;
     ne pređe cilj za više od 10 % (odluka organizatora, drugi krug). */
 export const EASY_FLOOR_MIN_RUN_DAYS = 3;
 export const EASY_FLOOR_OVER_TARGET = 0.1;
-/** Kvalitet se prihvata dok nedelja sa najkraćim laganim danima ne pređe obim (minuti) za više od 5 % (krug 4, S2). */
-export const VOLUME_ROOM_OVER = 0.05;
+/** Drugi i sledeći kvalitet nedelje se prihvata dok nedelja sa najkraćim laganim danima ne pređe obim (krug 4–5). */
+export const VOLUME_ROOM_OVER = 0;
 
 /* ------------------------------------------------------------------ krug 2 (R1–R5): podrazumevane vrednosti */
 
@@ -128,6 +128,10 @@ export const DEFAULT_TAPER_EASY_MAX_SEC: Readonly<Record<string, number>> = {
 export const TAPER_ADDON_MIN_EASY_SEC = 600;
 /** Prva nedelja posle rampe povratka: obim ≤ poslednja puna nedelja pre pauze × 1,10 (R9). */
 export const RETURN_WEEK_MAX_OVER_LAST = 1.1;
+/** E1 (krug 5): prozor izmene posle pauze/bola = rampa + 14 dana; posle toga prvobitan plan. Najteža nedelja koja
+    počinje ≥ 21 dan posle rampe se ne dira. */
+export const RESTORE_AFTER_RAMP_DAYS = 14;
+export const RESTORE_PEAK_AFTER_DAYS = 21;
 /** Pomerena provera forme najranije 10 dana posle kraja rampe povratka (krug 4, S9). */
 export const RETURN_TEST_AFTER_RAMP_DAYS = 10;
 
@@ -151,6 +155,8 @@ export const BLOCK_GATE_PAUSE_DAYS = 7;
 export const BLOCK_GATE_SHARE = 0.9;
 export const BLOCK_GATE_MAX_DAYS = 42;
 export const PAUSE_MIN_DAYS = 3;
+/** Posle pauze trkač koji već trči ovoliko dana (≥ 6 trčanja) se vratio: plan ne ponavlja rampu (krug 5, E6). */
+export const RETURNED_AFTER_DAYS = 21;
 /** Izvedena pauza traži bar 2 planirana treninga u prekidu (§ 2.3). */
 export const PAUSE_MIN_PLANNED = 2;
 export const REST_BELOW_F = 0.5;

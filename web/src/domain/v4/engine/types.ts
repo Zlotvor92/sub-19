@@ -760,6 +760,15 @@ export interface SafetyNumbers {
       { maxWorkSec: Seconds | Readonly<Record<LevelId, Seconds>>; shareOfPeakLoad: number }
     >
   >;
+  /** Silazak intenziteta pred trku (krug 5, E9): u danima [trka − `weekBeforeFromDays`, trka − `lastDays` − 1]
+      najviše `weekBeforeMaxQuality` brzih treninga (blok u dugom se broji) i brz rad ≤ `weekBeforeMaxOfPeak` ×
+      brz rad vršne nedelje; u poslednjih `lastDays` dana samo oštrenje. */
+  taper?: {
+    lastDays: number;
+    weekBeforeFromDays: number;
+    weekBeforeMaxQuality: number;
+    weekBeforeMaxOfPeak: number;
+  };
   /** Oštrenje nedelje trke (krug 4, S1): podražaj van budžeta brzog rada, doza uvek u [minSec, maxSec]. */
   sharpening?: { stimulus: StimulusTag; minSec: Seconds; maxSec: Seconds };
   /** Napredovanje doze kad šablon ne zada `dosePct`. */

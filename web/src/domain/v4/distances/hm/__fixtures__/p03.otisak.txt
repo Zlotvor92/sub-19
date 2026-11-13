@@ -1,10 +1,10 @@
 2026-11-02 | odmor | - | 0.0 |  | - | - | -
-2026-11-03 | trening | easy | 7.5 | lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-11-03 | trening | easy | 8.2 | lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-11-04 | odmor | - | 0.0 |  | - | - | -
-2026-11-05 | trening | quality | 5.9 | prag 15 min u komadu | - | - | -
+2026-11-05 | trening | quality | 5.6 | prag 13 min u komadu | - | - | -
 2026-11-06 | odmor | - | 0.0 |  | - | - | -
 2026-11-07 | odmor | - | 0.0 |  | - | - | -
-2026-11-08 | trening | long | 11.4 | dugi 85 min lagano | - | - | -
+2026-11-08 | trening | long | 12.1 | dugi 90 min lagano | - | - | -
 2026-11-09 | odmor | - | 0.0 |  | - | - | -
 2026-11-10 | trening | easy | 8.2 | lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-11-11 | odmor | - | 0.0 |  | - | - | -
@@ -15,7 +15,7 @@
 2026-11-16 | odmor | - | 0.0 |  | - | - | -
 2026-11-17 | trening | easy | 8.8 | lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-11-18 | odmor | - | 0.0 |  | - | - | -
-2026-11-19 | trening | quality | 6.9 | prag 2 × 10 min, oporavak 1:30 džog | - | - | -
+2026-11-19 | trening | quality | 6.6 | prag 2 × 9 min, oporavak 1:30 džog | - | - | -
 2026-11-20 | odmor | - | 0.0 |  | - | - | -
 2026-11-21 | odmor | - | 0.0 |  | - | - | -
 2026-11-22 | trening | long | 13.4 | dugi 98 min, završni deo 8 min progresivno do tempa trke | - | - | -
@@ -27,7 +27,7 @@
 2026-11-28 | odmor | - | 0.0 |  | - | - | -
 2026-11-29 | trening | long | 10.8 | dugi 80 min lagano | - | - | -
 2026-11-30 | odmor | - | 0.0 |  | - | - | -
-2026-12-01 | trening | easy | 9.5 | lagano 65 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-01 | trening | easy | 8.8 | lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-02 | odmor | - | 0.0 |  | - | - | -
 2026-12-03 | trening | quality | 7.2 | usponi 10 × 1 min snažno uzbrdo, nazad 2 min hod | - | - | -
 2026-12-04 | odmor | - | 0.0 |  | - | - | -

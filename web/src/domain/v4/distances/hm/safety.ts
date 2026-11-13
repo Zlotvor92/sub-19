@@ -26,7 +26,9 @@ export const LEVELS: LevelRule[] = [
 /** Udeo dugog u PLANIRANIM minutima nedelje po broju dana (krug 2, R4/R15). Kapija meri km, a dugi sa blokom je
     brži od nedelje, pa je udeo u minutima nešto ispod granice u km: 4 dana 0,38 (≤ 40 % km), 5 → 0,34, 6 → 0,31,
     3 → 0,48 (≤ 50 %). Početnik isto (organizator: ≤ 45 %; kapija ≤ 40 % kod 4+ dana) — lagani dani rastu sa dugim. */
-const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.48, '4': 0.385, '5': 0.36, '6': 0.33, '7': 0.3 };
+/* krug 5 (E7): udeli su u KILOMETRIMA. Motor ih primenjuje na minute nedelje u laganom tempu, a stvarni km nedelje
+   su veći (kvalitet je brži), pa je udeo dugog u km uvek ≤ zadatog. */
+const LONG_SHARE = { '1': 1, '2': 0.6, '3': 0.5, '4': 0.4, '5': 0.37, '6': 0.34, '7': 0.3 };
 
 export const SAFETY: SafetyNumbers = {
   /* rast nedelje: +7 % u bodovima (km rastu i do ≈ 12 % kad nedelja ima manje brzog rada), najmanje
@@ -86,9 +88,10 @@ export const SAFETY: SafetyNumbers = {
      cilja (vlasnik-v2 ned. 11 bi imala 41 %) */
   longShareByRunDays: {
     pocetnik: LONG_SHARE,
-    'pocetnik-nov': LONG_SHARE,
+    /* D2: hod-trk dugi do 50 % nedelje (hodanje spušta udar; trener ROUND-V4-HM-03 § D3) */
+    'pocetnik-nov': { ...LONG_SHARE, '3': 0.5, '4': 0.5, '5': 0.45 },
     povratnik: LONG_SHARE,
-    mali: { ...LONG_SHARE, '4': 0.37, '5': 0.34 },
+    mali: LONG_SHARE,
     spor: LONG_SHARE,
     srednji: LONG_SHARE,
     brz: LONG_SHARE
@@ -101,7 +104,7 @@ export const SAFETY: SafetyNumbers = {
   longStepKm: 1.5,
   /* krug 4 (S3): ispod 45 km nedeljno (motor procenjuje km iz minuta, pa prag 42 km u minutima ≈ 45 km stvarno) udeo dugog ≤ 42 % (u najviše 3 nedelje ≤ 45 %) — u minutima nešto niže, jer
      je dugi sa blokom brži od nedelje (kapija meri km) */
-  longShareLowVolume: { belowKm: 42, minRunDays: 4, share: 0.405, peakShare: 0.435, peakWeeks: 3 },
+  longShareLowVolume: { belowKm: 42, minRunDays: 4, share: 0.42, peakShare: 0.45, peakWeeks: 3 },
   longStartShare: { '1': 0.6, '2': 0.5, '3': 0.46, '4': 0.35, '5': 0.32, '6': 0.27, '7': 0.24 },
   /* plafon doze po treningu: sekunde rada i udeo vrha (min rada / BO vrha) */
   doseCaps: {
@@ -139,6 +142,9 @@ export const SAFETY: SafetyNumbers = {
   maxFastSharePeak: 0.25,
   /* oštrenje nedelje trke: van budžeta, 8–12 min rada (krug 4, S1; trener § F8: 6–12 min) */
   sharpening: { stimulus: 'ostrenje', minSec: 480, maxSec: 720 },
+  /* krug 5 (E9; drugi sudija: Bosquet i sar. 2007, trener): 8–14 dana pred trku najviše 2 brza treninga i ≤ 60 %
+     brzog rada vršne nedelje; poslednjih 7 dana samo oštrenje */
+  taper: { lastDays: 7, weekBeforeFromDays: 14, weekBeforeMaxQuality: 2, weekBeforeMaxOfPeak: 0.6 },
   /* lagan dan najmanje 25 min; lagan ≤ 65 % dugog (3 dana ≤ 70 %; krug 2, R2/R15). Motor meri stvarni dugi
      posle zaokruživanja, a dugi sa blokom je brži — 0,63/0,68 ostavljaju rezervu za 0,5 km zaokruživanja */
   minEasySec: 1500,

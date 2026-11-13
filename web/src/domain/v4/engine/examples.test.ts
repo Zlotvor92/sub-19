@@ -82,8 +82,8 @@ describe('SPEC § 12 (a): nov plan, 30 km nedeljno, 4 dana, 10 nedelja, forma 1:
       expect(Math.abs(w.targetLoad - (spec[i] ?? 0)), String(i + 1)).toBeLessThanOrEqual(1)
     );
     expect(doc.weeks[6]?.intent.kind).toBe('peak');
-    /* Dugi je udeo PLANIRANIH minuta te nedelje (R4), ne vrha: 14,5 km od 37 km. */
-    expect(onDate(doc, '2027-01-03')?.workout?.text).toContain('14,5 km');
+    /* Dugi je udeo PLANIRANIH km te nedelje (R4, krug 5 E7: blok nosi više km), ne vrha: 13,5 km od 37 km. */
+    expect(onDate(doc, '2027-01-03')?.workout?.text).toContain('13,5 km');
     expect(guard(doc, state, EXAMPLE)).toEqual([]);
   });
 });

@@ -20,7 +20,9 @@ import {
   PAUSE_MIN_DAYS,
   FATIGUE_DAYS,
   MISSED_LOOKAHEAD_DAYS,
-  NO_FAST_DAYS_AFTER_EFFORT
+  NO_FAST_DAYS_AFTER_EFFORT,
+  RESTORE_AFTER_RAMP_DAYS,
+  RESTORE_PEAK_AFTER_DAYS
 } from './constants';
 import { doneDayIds, isMutable, runPass } from './build';
 import { addDays, isValidDate, mondayOf } from './dates';
@@ -414,14 +416,43 @@ function onPause(
   let header = withAdjustment(doc.header, adj);
   const full = length >= PAUSE_FULL_REPLAN_DAYS;
   if (full) header = { ...header, decisions: redecide(header.decisions, state, data, header.paces.easy) };
-  const built = runPass({ ...doc, header }, state, data, {
-    window: null,
-    rechainFrom: currentWeekIndex(doc, state.today) + 1
-  });
+  const rampEnd = addDays(ev.to, pauseRampDays(length, ev.reason));
+  const built = restoreAfter(
+    runPass({ ...doc, header }, state, data, {
+      window: null,
+      rechainFrom: currentWeekIndex(doc, state.today) + 1
+    }),
+    doc,
+    full ? null : rampEnd
+  );
   return {
     doc: full ? refreshWarnings(built, state, data) : built,
-    until: addDays(ev.to, pauseRampDays(length, ev.reason))
+    until: full ? rampEnd : minDate(addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc))
   };
+}
+
+const minDate = (a: IsoDate, b: IsoDate): IsoDate => (a < b ? a : b);
+const lastPlanDay = (doc: PlanDoc): IsoDate => addDays(doc.header.goal.raceDate, -1);
+
+/** E1 (krug 5): posle rampe + 14 dana vraća se PRVOBITAN plan bajt-isto; najteža nedelja ≥ 3 nedelje posle povratka
+    se ne dira. `rampEnd = null`: bez vraćanja (pauza ≥ 14 dana preračunava plan). */
+function restoreAfter(built: PlanDoc, original: PlanDoc, rampEnd: IsoDate | null): PlanDoc {
+  if (rampEnd === null) return built;
+  const back = addDays(rampEnd, RESTORE_AFTER_RAMP_DAYS);
+  const peakFrom = addDays(rampEnd, RESTORE_PEAK_AFTER_DAYS);
+  const weeks = built.weeks.map((week) => {
+    const old = original.weeks.find((w) => w.start === week.start);
+    if (old === undefined) return week;
+    const keepPeak = old.intent.kind === 'peak' && old.start >= peakFrom;
+    if (old.start > back || keepPeak) return old;
+    if (addDays(old.start, 6) <= back) return week;
+    /* nedelja preseca granicu: dani posle nje su prvobitni */
+    return {
+      ...week,
+      days: week.days.map((d) => (d.date > back ? (old.days.find((x) => x.id === d.id) ?? d) : d))
+    };
+  });
+  return { ...built, weeks };
 }
 
 const PAIN_WARNING: Warning = {
@@ -455,12 +486,15 @@ function onPain(
   /* Nivo 4 i više: obim se posle zaštite vraća kao posle pauze — od poslednje pune nedelje pre bola, pa pravilom
      rasta (R7, R9); blag bol menja samo dane u svom prozoru. */
   const returning = ev.level > PAIN_LOW_MAX;
+  const built = runPass({ ...doc, header }, state, data, {
+    window: returning ? null : window,
+    rechainFrom: returning ? currentWeekIndex(doc, state.today) + 1 : null
+  });
   return {
-    doc: runPass({ ...doc, header }, state, data, {
-      window: returning ? null : window,
-      rechainFrom: returning ? currentWeekIndex(doc, state.today) + 1 : null
-    }),
-    until: window.rampEnd
+    doc: returning ? restoreAfter(built, doc, window.rampEnd) : built,
+    until: returning
+      ? minDate(addDays(window.rampEnd, RESTORE_AFTER_RAMP_DAYS), lastPlanDay(doc))
+      : window.rampEnd
   };
 }
 
