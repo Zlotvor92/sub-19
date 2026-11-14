@@ -8,3 +8,10 @@ export {
   type FactsInput
 } from './facts';
 export { tagOf, toResolved, toStored } from './view';
+export {
+  adapterInput,
+  adoptActive,
+  type AdoptDeps,
+  type AdoptOutcome,
+  type AdoptSnapshot
+} from './adopt';
