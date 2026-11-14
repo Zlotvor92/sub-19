@@ -365,16 +365,26 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
             : k % 3 === 0
               ? [HILLS_SHORT, STRIDES]
               : [S('prag-p', lerp(0.45, 1, t)), STRIDES];
+    /* R20b (p13): hod-trk napreduje kroz telo — 5 + 1 → 8 + 1 → 10 + 1 min (trener: odnos se menja, ne stoji ceo plan) */
+    const bodyLong = fresh
+      ? t < 0.34
+        ? 'dugi-hod'
+        : t < 0.67
+          ? 'dugi-hod-8'
+          : 'dugi-hod-10'
+      : longStim;
     out.push(
       week(
         w >= tailStart - 3 ? RAZVOJ : OSNOVA,
         'build',
         load,
-        { len: lerp(0.82, 1, t), stimulus: longStim },
+        { len: lerp(0.82, 1, t), stimulus: bodyLong },
         stimuli
       )
     );
   }
+  /* R20b (p13): hod-trk početnik — N−3 hod-trk 10 + 1, najteža je N−2 sa dugim u komadu (≈ 40 min), pa JEDNA laka
+     nedelja pred trku (trener: ne tri nedelje sužavanja; pravilo „N−2 ≤ 85 % vrha" tada ne važi, kao kod plana od 4 ned) */
   const tail = [
     ...(check
       ? [
@@ -389,17 +399,23 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
         ]
       : []),
     /* N−3: najteža — prvi put ciljni tempo, 4 × 800 m (ciljni p11 ned 13) */
-    week(SPEC, 'peak', 1, tailLong(1), [
-      S('tempo-trke', fresh ? 0.7 : 1, fresh ? 'rp-400' : 'rp-800'),
-      STRIDES
-    ]),
+    week(
+      SPEC,
+      fresh ? 'build' : 'peak',
+      fresh ? 0.95 : 1,
+      fresh ? { len: 1, stimulus: 'dugi-hod-10' } : tailLong(1),
+      [S('tempo-trke', fresh ? 0.7 : 1, fresh ? 'rp-400' : 'rp-800'), STRIDES]
+    ),
     /* N−2: tempo trke 3 × 1000 m (ciljni p11 ned 14) */
-    week(SPEC, 'build', 0.88, tailLong(0.9), [
-      S('tempo-trke', fresh ? 0.8 : 0.95, fresh ? 'rp-400' : 'rp-1000'),
-      STRIDES
-    ]),
+    week(
+      SPEC,
+      fresh ? 'peak' : 'build',
+      fresh ? 1 : 0.88,
+      fresh ? { len: 0.75, stimulus: 'dugi' } : tailLong(0.9),
+      [S('tempo-trke', fresh ? 0.8 : 0.95, fresh ? 'rp-400' : 'rp-1000'), STRIDES]
+    ),
     /* N−1: sužavanje — tempo trke 3 × 600 m (ciljni p11 ned 15) */
-    week(FINISH, 'taper', 0.72, tailLong(0.6, true), [
+    week(FINISH, 'taper', fresh ? 0.75 : 0.72, tailLong(0.6, true), [
       S('tempo-trke', 0.6, fresh ? 'rp-400' : 'rp-600'),
       STRIDES
     ]),

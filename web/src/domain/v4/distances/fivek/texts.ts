@@ -10,6 +10,8 @@ export const TEXTS: Record<string, string> = {
   lagano: 'lagano {len}',
   dugi: 'dugi {len} lagano',
   'dugi-hod': 'dugi {len} hod-trk: 5 min lagano trčanje + 1 min brz hod, ponavljaj do kraja',
+  'dugi-hod-8': 'dugi {len} hod-trk: 8 min lagano trčanje + 1 min brz hod, ponavljaj do kraja',
+  'dugi-hod-10': 'dugi {len} hod-trk: 10 min lagano trčanje + 1 min brz hod, ponavljaj do kraja',
   'dugi-prag': 'dugi {len}, završnih {dose} u pragu{pace}',
   'dugi-progresivno': 'dugi {len}, poslednjih {dose} progresivno od laganog do praga{pace}',
   ubrzanja: 'lagano {len}, na kraju {n} × {rep} ubrzanja, oporavak {rec}',

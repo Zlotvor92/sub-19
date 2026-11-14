@@ -42,6 +42,27 @@ export const LIBRARY: WorkoutDef[] = [
     main: { kind: 'steady', zone: 'E' },
     text: 'dugi-hod'
   },
+  /* R20b (p13): hod-trk napreduje — duži komadi trčanja uz isti minut hoda */
+  {
+    id: 'dugi-hod-8',
+    kind: 'long',
+    stimulus: 'dugi-hod-8',
+    tags: [],
+    impact: 'obican',
+    requires: { levels: ['pocetnik-nov'] },
+    main: { kind: 'steady', zone: 'E' },
+    text: 'dugi-hod-8'
+  },
+  {
+    id: 'dugi-hod-10',
+    kind: 'long',
+    stimulus: 'dugi-hod-10',
+    tags: [],
+    impact: 'obican',
+    requires: { levels: ['pocetnik-nov'] },
+    main: { kind: 'steady', zone: 'E' },
+    text: 'dugi-hod-10'
+  },
   /* završnih 8–10 min u pragu, samo u 2–3 nedelje vrha (README trenera 5K; ciljni p01 ned 7, p04 ned 11) */
   {
     id: 'dugi-prag',

@@ -758,12 +758,14 @@ describe('trenerski zahtevi za 5 km (coach/target/5K/README.md, brief F7-5K)', (
     for (const p of ALL_PLANS) {
       const n = p.doc.weeks.length;
       const peakAt = p.doc.weeks.findIndex((w) => w.intent.kind === 'peak') + 1;
-      /* R17: plan ≤ 5 nedelja — najteža 2 pred trku */
-      expect(n - peakAt, p.id).toBe(n <= 5 ? 2 : 3);
+      /* R17: plan ≤ 5 nedelja — najteža 2 pred trku. R20b: hod-trk početnik (pocetnik-nov) takođe — trener R19B
+         (p13): jedna laka nedelja pred trku umesto tri, N−2 sa dugim u komadu */
+      const twoBefore = n <= 5 || p.doc.header.decisions.level === 'pocetnik-nov';
+      expect(n - peakAt, p.id).toBe(twoBefore ? 2 : 3);
       if (KNOWN.has(p.id)) continue;
       const s = weekStats(p.doc);
       const peakKm = Math.max(...s.map((x) => x.km));
-      if (n > 5) expect(s[n - 3]?.km ?? 0, p.id).toBeLessThanOrEqual(0.85 * peakKm + 0.5);
+      if (!twoBefore) expect(s[n - 3]?.km ?? 0, p.id).toBeLessThanOrEqual(0.85 * peakKm + 0.5);
       if (!p.doc.header.warnings.some((w) => w.code === 'lagan-kratak'))
         expect(s[n - 1]?.km ?? 0, p.id).toBeLessThanOrEqual(0.5 * peakKm + 0.5);
     }
