@@ -1,0 +1,37 @@
+{
+  "round": "V4-5K-03", "date": "2026-11-14", "judge": "glavni trener (nov tab)", "source": "ef506f4c; poredjenje sa fb2c1a3",
+  "calibrationShift": 0,
+  "plan": {
+    "p01": { "prev": 82, "now": 82 }, "p02": { "prev": 72.5, "now": 73.5 }, "p03": { "prev": 75, "now": 75 },
+    "p04": { "prev": 79, "now": 79 }, "p05": { "prev": 82, "now": 82 },
+    "p06": { "prev": 64, "now": 65.5, "note": "nedelja trke 55 %; ned 5 i dalje bez kvaliteta; ned 2-4 pet dana po 22 min; tri upozorenja" },
+    "p07": { "prev": 77, "now": 78.5 }, "p08": { "prev": 73.5, "now": 73.5 }, "p09": { "prev": 77, "now": 77.5 },
+    "p10": { "prev": 76, "now": 76 }, "p11": { "prev": 80, "now": 80 }, "p12": { "prev": 75, "now": 76.5 },
+    "p13": { "prev": 75, "now": 75.5 }, "p14": { "prev": 73.5, "now": 75.5 }, "p15": { "prev": 75, "now": 75.5 },
+    "p16": { "prev": 78.5, "now": 80, "note": "ubrzanja svake subote" },
+    "average": 76.6, "previousAverage": 75.9, "atLeast80": 4
+  },
+  "adaptation": {
+    "E1": { "score": 83.8, "s01": 85, "s02": 85, "s03": 83, "s04": 82 },
+    "E2": { "score": 81.0, "s05": 82, "s06": 81, "s07": 81, "s08": 80 },
+    "E3": { "score": 82 }, "E4": { "score": 79 },
+    "E5": { "score": 82.8, "s17": 83, "s18": 84, "s19": 83, "s20": 81 },
+    "E6": { "score": 89.8 },
+    "E7": { "score": 79.7, "s25": 81, "s26": 78, "s27": 80 },
+    "partB": 82.7, "previousPartB": 82.1
+  },
+  "personalization": { "P1": 84, "P2": 79, "P3": 77, "partC": 80.0, "previousPartC": 80.0 },
+  "composite": 79.1, "previousComposite": 78.6,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "p06 / kratak plan: nedelja -1 sa tempom trke; ned 2-4 cetiri dana sa dva kvaliteta" },
+    { "n": 2, "kind": "motor", "text": "dugi krece od stvarnog dugog iz istorije (P3)" },
+    { "n": 3, "kind": "motor", "text": "oznaka 'vrsna nedelja' ne u prve tri nedelje posle trke (s20)" },
+    { "n": 4, "kind": "motor", "text": "spisak promena: jedna recenica jednom; stari dogadjaj se ne ponavlja (s26, s08)" },
+    { "n": 5, "kind": "podatak", "text": "lagan dan >= 30 min (p02, p06, p09, p15)" },
+    { "n": 6, "kind": "podatak", "text": "p08: rast obima x 1,15-1,25 i predlog 4. dana" },
+    { "n": 7, "kind": "podatak", "text": "p02, p09: nedelja -1 <= 70 % vrha" },
+    { "n": 8, "kind": "podatak", "text": "P2 B: prvi kvalitet do ned 9" }
+  ],
+  "verdict": "B i C prolaze (C tesno); Plan 76,6 ne prolazi (4 od 16 >= 80)",
+  "ownerReview": ["p06", "p16", "s26"]
+}
