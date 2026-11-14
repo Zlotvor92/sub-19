@@ -192,8 +192,9 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
         week(
           RAZVOJ,
           'build',
-          load,
-          longSpec,
+          /* R22 (p03): jedan kvalitet u tempu trke nosi više bodova po km — 6 % više, da obim ne padne pred proveru */
+          sh.single ? load * 1.06 : load,
+          { ...longSpec, len: Math.min(1, longSpec.len * (sh.single ? 1.04 : 1)) },
           sh.single
             ? [S('tempo-trke', 0.45, 'rp-1200'), STRIDES]
             : /* R12 T2 (p02): VO2 doza veća od 3 × 800 m */
@@ -413,8 +414,9 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       withSaturday(sh, [STRIDES, STRIDES], KONTROLA)
     ),
     /* N−5: vrh obima, prag 18 min (ciljni p11 ned 13) */
-    /* R18 (p11): najveća nedelja je najteža (N−3), ne N−5 / N−4 */
-    week(SPEC, 'build', 0.92, { len: 0.95, stimulus: longStim }, [S('prag-p', 0.95), STRIDES]),
+    /* R22 (trener D1, p11): N−5 je stvarna vršna nedelja obima — najduži dugi (80–85 min) i najveći obim; N−4 malo
+       niže, N−3 najteža po sadržaju */
+    week(SPEC, 'build', 0.98, { len: 1, stimulus: longStim }, [S('prag-p', 0.95), STRIDES]),
     /* N−4: tempo trke 3 × 1000 m (ciljni p11 ned 14) */
     /* R18 (p11): N−4 malo ispod najteže (bila je najveća nedelja sa 2 × 1 km), tempo trke 3 × 1 km */
     week(SPEC, 'build', 0.9, { len: 0.95 }, [S('tempo-trke', 0.6), STRIDES]),

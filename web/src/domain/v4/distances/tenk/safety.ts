@@ -58,7 +58,8 @@ export const SAFETY: SafetyNumbers = {
   /* najduži dugi: 60–100 min (ciljni p03 ≈ 93 min, p11 ≈ 85 min); dugi za 10 km nije duži od 1 h 40, osim sporog
      nivoa (VDOT < 40): 1 h 50 ≈ 15 km — krug 2 (B2): sa 1 h 40 (14 km) obim sporog trkača sa 5 dana ne raste (p04) */
   longMaxSec: {
-    pocetnik: 5400,
+    /* R22 (p12): početnik do 1 h 35 — dugi 85 → 90 → 95 min u nedeljama 4–9, obim do 42+ km */
+    pocetnik: 5700,
     'pocetnik-nov': 4800,
     povratnik: 5700,
     /* R18 (p03, p10): mali 1 h 30, spor 1 h 40 (bilo 1 h 35 / 1 h 50) — spor 1 h 30 obara p04 (5 dana, 50 km) na vrh
@@ -71,7 +72,8 @@ export const SAFETY: SafetyNumbers = {
   /* krug 10 (F7-10K § Krug 3, t. 2): srednji sa 3 dana sme dugi do 1 h 50 da bi obim rastao (p08 × 1,10 → × 1,20); R19: spor 1 h 30 do 3 dana */
   longMaxSecByRunDays: { srednji: { '3': 6600 }, spor: { '1': 5400, '2': 5400, '3': 5400 } },
   longShareByRunDays: {
-    pocetnik: LONG_SHARE,
+    /* R22 (p11): 3 dana 45 % — dugi 80 min u vršnoj nedelji obima (46 % lomi čuvara posle bola i trke, s26) */
+    pocetnik: { ...LONG_SHARE, '3': 0.45 },
     'pocetnik-nov': { ...LONG_SHARE, '3': 0.45, '4': 0.38, '5': 0.34 },
     povratnik: LONG_SHARE,
     mali: LONG_SHARE,
@@ -86,7 +88,8 @@ export const SAFETY: SafetyNumbers = {
   longStartFloorShare: 0.96,
   longStartFloorFromCapShare: 0.88,
   longFloorGrowMinRunDays: 3,
-  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.42, '4': 0.31, '5': 0.28, '6': 0.25, '7': 0.22 },
+  /* R22 (p08): 3 dana — polazni dugi 45 % bazne nedelje, da 1. nedelja bude sadašnji obim (41 km, ne 38,9) */
+  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.45, '4': 0.31, '5': 0.28, '6': 0.25, '7': 0.22 },
   /* plafon doze po treningu (README: T do 28 min, I 14 → 22 min, RP 23 → 29 min; završnica u dugom 10–15 min) */
   doseCaps: {
     /* brzina do 12 min: prvi trening (68 % plafona) ostaje ≥ 8 min rada (K8) */

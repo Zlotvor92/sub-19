@@ -41,12 +41,12 @@
 2026-12-12 | odmor | - | 0.0 |  | - | - | -
 2026-12-13 | trening | long | 11.0 | dugi 80 min, poslednjih 10 min progresivno od laganog do praga | - | - | -
 2026-12-14 | odmor | - | 0.0 |  | - | - | -
-2026-12-15 | trening | easy | 8.1 | lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-15 | trening | easy | 8.7 | lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -
 2026-12-17 | trening | quality | 5.9 | tempo trke 2 × 1,2 km, oporavak 1:30 džog | - | - | -
 2026-12-18 | odmor | - | 0.0 |  | - | - | -
 2026-12-19 | odmor | - | 0.0 |  | - | - | -
-2026-12-20 | trening | long | 10.6 | dugi 80 min lagano | - | - | -
+2026-12-20 | trening | long | 11.3 | dugi 85 min lagano | - | - | -
 2026-12-21 | odmor | - | 0.0 |  | - | - | -
 2026-12-22 | trening | easy | 3.3 | lagano 25 min | - | - | -
 2026-12-23 | odmor | - | 0.0 |  | - | - | -
