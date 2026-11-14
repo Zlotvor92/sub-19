@@ -145,8 +145,10 @@ describe('mašinske provere K1–K5 nad ispisom (SPEC § 14.2)', () => {
     for (const { c, b } of built) {
       const text = renderPlan(b.doc, b.state, SYNTHETIC);
       for (const w of b.doc.header.warnings) {
-        const shown = [w.problem, w.meaning, w.proposal].filter((x) => x !== '').join(' ');
-        expect(text, c.name).toContain(`- ${shown}`);
+        /* R20 B6: upozorenje bez sopstvenog predloga je u redu upozorenja sa „Pomoglo bi i: …" */
+        expect(text, c.name).toContain(
+          w.proposal === '' ? `${w.problem} ${w.meaning}` : `- ${w.problem} ${w.meaning} `
+        );
         /* R20 B6: predlog spojen u „Pomoglo bi i: …" drugog upozorenja ostavlja ovo bez sopstvenog */
         if (w.proposal === '') continue;
         expect(/\d/.test(w.proposal), `${c.name} ${w.code}`).toBe(true);

@@ -378,8 +378,19 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   if (h.warnings.length > 0) {
     lines.push('');
     lines.push('UPOZORENJA');
-    for (const w of h.warnings)
-      lines.push(`- ${[w.problem, w.meaning, w.proposal].filter((x) => x !== '').join(' ')}`);
+    /* R20 B6: upozorenje čiji je predlog spojen u „Pomoglo bi i: …" ne stoji samo — njegove činjenice idu u isti
+       red, ispred te rečenice (jedan blok, bez reda bez predloga) */
+    const merged = h.warnings.filter((w) => w.proposal === '' && w.severity !== 'info');
+    const facts = merged.map((w) => `${w.problem} ${w.meaning}`).join(' ');
+    for (const w of h.warnings) {
+      if (merged.includes(w)) continue;
+      const [own, extra] = w.proposal.split(' Pomoglo bi i: ');
+      const proposal =
+        extra !== undefined && facts !== ''
+          ? `${own ?? ''} ${facts} Pomoglo bi i: ${extra}`
+          : w.proposal;
+      lines.push(`- ${[w.problem, w.meaning, proposal].filter((x) => x !== '').join(' ')}`);
+    }
   }
   return lines;
 }
