@@ -32,7 +32,9 @@ import {
   RAMP_MIN_DURATION_SEC,
   RAMP_SPAN,
   RAMP_START,
-  REST_BELOW_F
+  REST_BELOW_F,
+  MEANINGFUL_MIN_SEC,
+  MEANINGFUL_RP_M
 } from './constants';
 import { addDays, diffDays, mondayOf } from './dates';
 import { summarize } from './load';
@@ -43,9 +45,35 @@ import {
   pickDef,
   realize,
   type Recipe,
+  repSecOf,
   steadyLongDef
 } from './select';
-import type { Adjustment, IsoDate, Pause, Seconds } from './types';
+import type { Adjustment, IsoDate, Pause, Seconds, WorkoutDef } from './types';
+
+/** R22 (A3): najmanja smislena doza rada zone praga i tempa trke; 0 za ostale zone. */
+export function meaningfulMinSec(def: WorkoutDef, ctx: BuildCtx): Seconds {
+  const zone = mainZone(def.main);
+  if (zone === 'T') return MEANINGFUL_MIN_SEC;
+  if (zone === 'RP')
+    return Math.min(MEANINGFUL_MIN_SEC, (MEANINGFUL_RP_M / 1000) * ctx.pace.paces.RP);
+  return 0;
+}
+
+/** R22 (A3): smanjena doza (`cut` < `planned`) ne pada ispod najmanje smislene — tada ide puna najmanja doza (ili
+    planirana, kad je i ona manja). */
+export function meaningfulDose(
+  def: WorkoutDef,
+  ctx: BuildCtx,
+  cut: Seconds,
+  planned: Seconds
+): Seconds {
+  const floor = meaningfulMinSec(def, ctx);
+  if (!(cut < floor && cut < planned)) return cut;
+  /* deonice fiksne dužine: ceo broj deonica koji dostiže najmanju dozu (ne „2 × 1 km" kad je granica 12 min) */
+  const rep = repSecOf(def, ctx);
+  const whole = rep === null || rep <= 0 ? floor : Math.ceil((floor - 30) / rep) * rep;
+  return Math.min(Math.max(floor, whole), planned);
+}
 
 /** Rampa povratka: `zero` je dan napora ili poslednji dan pauze; traje `days`; `noFast` dana bez ičeg brzog. */
 export interface Ramp {

@@ -284,13 +284,12 @@ Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treni
 - čet 11. 2.: prag 2 × 18 min, oporavak 1:30 džog → lagano 55 min
 - sub 13. 2.: lagano 80 min → lagano 55 min
 - ned 14. 2.: dugi 2 h 10 min lagano → dugi 95 min lagano
-- čet 18. 2.: prag 12 min u komadu → prag 8 min u komadu
+- pon 15. 2.: lagano 55 min → lagano 50 min
 - pon 22. 2.: lagano 80 min → lagano 60 min
 - čet 25. 2.: lagano 75 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 60 min
 - sub 27. 2.: lagano 80 min → lagano 60 min
 - ned 28. 2.: dugi 2 h 10 min, završni deo 35 min u tempu trke → dugi 1 h 55 min, završni deo 25 min u tempu trke
 - 15. nedelja: 65,4 km → 45,8 km
-- 16. nedelja: 43,8 km → 43,2 km
 - 17. nedelja: 64,8 km → 53,9 km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja
@@ -445,15 +444,15 @@ Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treni
   Zbir: 45,8 km, 5 h 25 min, 5 treninga, brz rad 0 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 15. 2.  lagano 55 min — 7,7 km, 55 min
+  pon 15. 2.  lagano 50 min — 7 km, 50 min
   uto 16. 2.  lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 7,9 km, 55 min
   sre 17. 2.  odmor
-  čet 18. 2.  prag 8 min u komadu (5:37/km) — 6,5 km, 44 min
+  čet 18. 2.  prag 12 min u komadu (5:37/km) — 7,1 km, 47 min
   pet 19. 2.  odmor
   sub 20. 2.  lagano 55 min — 7,7 km, 55 min
   ned 21. 2.  dugi 95 min lagano — 13,4 km, 95 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 43,2 km, 5 h 4 min, 5 treninga, brz rad 3 % vremena trčanja
+  Zbir: 43,1 km, 5 h 2 min, 5 treninga, brz rad 4 % vremena trčanja
 
 17. NEDELJA (od 22. 2.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 22. 2.  lagano 60 min — 8,5 km, 60 min

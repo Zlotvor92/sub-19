@@ -11,7 +11,7 @@ import { buildCtx } from '../engine/build';
 import { addDays } from '../engine/dates';
 import { paceCtxOf, summarize, type DistanceData } from '../engine';
 import { minDoseOf, mainZone, realize } from '../engine/select';
-import { pauseLength } from '../engine/readiness';
+import { meaningfulDose, pauseLength } from '../engine/readiness';
 
 const dataMods = import.meta.glob<Record<string, unknown>>('./*/index.ts', { eager: true });
 const scenMods = import.meta.glob<Record<string, unknown>>('./*/testdata/scenarios.ts', {
@@ -78,7 +78,8 @@ describe('R20 (A1) — jedna rampa posle prekida (sve distance)', () => {
         const key = (w: any): string | null => {
           const def = w === null ? undefined : defOf(w);
           if (def === undefined) return null;
-          if (w.kind === 'quality') return `q:${String(def.stimulus)}@${String(mainZone(def.main))}`;
+          if (w.kind === 'quality')
+            return `q:${String(def.stimulus)}@${String(mainZone(def.main))}`;
           if (w.kind === 'long' && w.workSec > 0)
             return `l:${String(def.stimulus)}@${String(mainZone(def.main))}`;
           return null;
@@ -143,7 +144,19 @@ describe('R20 (A1) — jedna rampa posle prekida (sve distance)', () => {
                     ctx
                   )?.workSec ?? 0);
             const atMin = x.workout.kind === 'quality' && x.workout.workSec <= min + 30;
-            if (inWindow && planned !== null && !atMin && x.workout.workSec > firstShare(r) * planned + 30)
+            /* R22 (A3): prag i tempo trke ne ispod najmanje smislene doze (ceo broj deonica) */
+            const meaningful =
+              x.workout.kind === 'quality' && planned !== null
+                ? meaningfulDose(def, ctx, 0, planned)
+                : 0;
+            const atMeaningful = x.workout.workSec <= meaningful + 45;
+            if (
+              inWindow &&
+              planned !== null &&
+              !atMin &&
+              !atMeaningful &&
+              x.workout.workSec > firstShare(r) * planned + 30
+            )
               bad.push(
                 `${tag} ${String(x.date)} ${k} ${String(x.workout.workSec)} > 70 % od ${String(planned)}`
               );

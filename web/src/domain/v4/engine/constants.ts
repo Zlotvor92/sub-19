@@ -382,3 +382,8 @@ export const RACE_PACE_STIMULUS = 'tempo-trke';
 /** R22 (A1): pripremna trka iz plana — provera ili trka punim naporom od bar ovoliko rada (oporavak posle nje, ne u
     prve 3 nedelje povratka). */
 export const PREP_RACE_WORK_MIN_SEC = 4500;
+
+/** R22 (A3): najmanja smislena doza smanjenog kvaliteta u pragu i tempu trke (2 × 6 min praga; tempo trke 3 × 1 km ili
+    12 min, šta je kraće) — smanjenje (rampa, bol) ne seče trening ispod nje: ide puna najmanja doza. */
+export const MEANINGFUL_MIN_SEC = 720;
+export const MEANINGFUL_RP_M = 3000;

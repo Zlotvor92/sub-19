@@ -200,7 +200,9 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
     const w2 = kmOf(result.doc, '2026-12-28');
     expect(w1).toBeGreaterThanOrEqual(0.6 * ref);
     expect(w1).toBeLessThanOrEqual(0.75 * ref + 0.5);
-    expect(w2).toBeLessThanOrEqual(Math.min(0.9 * ref, kmOf(start.doc, '2026-12-28')) + 0.5);
+    /* R22 (A3): prvi kvalitet ostaje na najmanjoj smislenoj dozi (tempo trke 3 × 1 km, ne 2 × 1 km) — do 1 km iznad
+       90 % kad su lagani dani već na najmanjem; nikad iznad plana */
+    expect(w2).toBeLessThanOrEqual(Math.min(0.9 * ref + 1, kmOf(start.doc, '2026-12-28')) + 0.5);
     expect(w2).toBeGreaterThan(w1);
     const quality = (result.doc.weeks.find((w) => w.start === '2026-12-28')?.days ?? []).filter(
       (d) => d.workout?.kind === 'quality'

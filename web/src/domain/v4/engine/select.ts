@@ -300,6 +300,11 @@ function extentSec(extent: Extent, zone: ZoneId, ctx: BuildCtx): Seconds {
   return 'durationSec' in extent ? extent.durationSec : (extent.distanceM * pace) / 1000;
 }
 
+/** R22 (A3): trajanje jedne deonice unosa sa deonicama fiksne dužine; `null` za ostale oblike. */
+export function repSecOf(def: WorkoutDef, ctx: BuildCtx): Seconds | null {
+  return def.main.kind === 'reps' ? extentSec(def.main.rep, def.main.zone, ctx) : null;
+}
+
 /** `n` komada rada sa oporavkom posle svakog osim poslednjeg. */
 function repeated(n: number, work: SingleStep, recovery: SingleStep): Step[] {
   if (n <= 1) return [work];

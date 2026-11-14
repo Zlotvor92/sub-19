@@ -327,8 +327,8 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 17. 1. trči sa
 - uto 12. 1.: lagano 18 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 9 km
 - čet 14. 1.: tempo maratona 2 × 2 km, oporavak 3 min džog → lagano 5,5 km
 - ned 17. 1.: dugi 27 km lagano → dugi 15 km lagano
-- uto 19. 1.: lagano 12,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 11 km
-- čet 21. 1.: prag 2 × 8 min, oporavak 1:30 džog → prag 9 min u komadu
+- uto 19. 1.: lagano 12,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 10 km
+- čet 21. 1.: prag 2 × 8 min, oporavak 1:30 džog → prag 12 min u komadu
 - ned 24. 1.: dugi 19,5 km lagano → dugi 18 km lagano
 - uto 26. 1.: lagano 18 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 12,5 km
 - ned 31. 1.: dugi 28 km, poslednjih 3 km progresivno od laganog do tempa maratona → dugi 21 km, poslednjih 2 km progresivno od laganog do tempa maratona
@@ -336,7 +336,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 17. 1. trči sa
 - čet 4. 2.: tempo maratona 5,5 km u komadu → tempo maratona 3,5 km u komadu
 - ned 7. 2.: dugi 27 km lagano → dugi 24 km lagano
 - 11. nedelja: 54,7 km → 29,5 km
-- 12. nedelja: 40,9 km → 35,1 km
+- 12. nedelja: 40,9 km → 34,8 km
 - 13. nedelja: 55,7 km → 42,2 km
 - 14. nedelja: 57,2 km → 50,4 km
 
@@ -453,14 +453,14 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 17. 1. trči sa
 
 12. NEDELJA (od 18. 1.) — razvoj, rasterećenje; do trke 12 nedelja
   pon 18. 1.  odmor
-  uto 19. 1.  lagano 11 km — 11 km, 65 min
+  uto 19. 1.  lagano 10 km — 10 km, 60 min
   sre 20. 1.  odmor
-  čet 21. 1.  prag 9 min u komadu (4:38/km) — 6,1 km, 34 min
+  čet 21. 1.  prag 12 min u komadu (4:38/km) — 6,8 km, 37 min
   pet 22. 1.  odmor
   sub 23. 1.  odmor
   ned 24. 1.  dugi 18 km lagano — 18 km, 1 h 47 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 35,1 km, 3 h 26 min, 3 treninga, brz rad 4 % vremena trčanja
+  Zbir: 34,8 km, 3 h 24 min, 3 treninga, brz rad 6 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — razvoj, gradnja; do trke 11 nedelja
   pon 25. 1.  odmor

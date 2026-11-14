@@ -6,7 +6,7 @@ s03 p11 E1: ned 12 (provera), test 1,5 km 3,4 % brže od očekivanog — promena
 s04 p12 E1: ned 6 (provera), prva trka u životu, 5 km 33:00 — promena: 2; forma 33:00 (srednja); nalazi čuvara posle: 0
 s05 p01 E2: bolest 7 dana u ned 5 (razvoj, I blok) — promena: 14; forma 21:56 (srednja); nalazi čuvara posle: 0
 s06 p04 E2: bolest 7 dana u ned 13 (najteža) — promena: 4; forma 27:07 (srednja); nalazi čuvara posle: 0
-s07 p11 E2: bolest 7 dana u ned 9 — promena: 9; forma 27:07 (srednja); nalazi čuvara posle: 0
+s07 p11 E2: bolest 7 dana u ned 9 — promena: 8; forma 27:07 (srednja); nalazi čuvara posle: 0
 s08 p12 E2: bolest 7 dana u ned 7 (najteža) — promena: 7; forma 26:39 (srednja); nalazi čuvara posle: 0
 s09 p01 E3: ned 9 (najteža): propušteni tempo trke i dugi sa završnicom — promena: 2; forma 21:49 (srednja); nalazi čuvara posle: 0
 s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 2; forma 26:59 (srednja); nalazi čuvara posle: 0
@@ -19,7 +19,7 @@ s16 p12 E4: ned 4, bol 4/10 posle laganog dana — promena: 19; forma 30:46 (nis
 s17 p01 E5: juče trka 10 km 46:00 — promena: 0; forma 21:49 (srednja); nalazi čuvara posle: 0
 s18 p04 E5: juče trka 5 km 26:30 — promena: 0; forma 26:30 (srednja); nalazi čuvara posle: 0
 s19 p11 E5: juče prva trka 5 km 27:30 — promena: 0; forma 27:21 (srednja); nalazi čuvara posle: 0
-s20 p12 E5: juče trka 10 km 70:00 (prvi rezultat) — promena: 0; forma 31:56 (srednja); nalazi čuvara posle: ispod-cilja@4 ispod-cilja@5
+s20 p12 E5: juče trka 10 km 70:00 (prvi rezultat) — promena: 0; forma 31:56 (srednja); nalazi čuvara posle: ispod-cilja@2 ispod-cilja@4 ispod-cilja@5
 s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 21:49 (srednja); nalazi čuvara posle: 0
 s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 26:59 (srednja); nalazi čuvara posle: 0
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 26:59 (srednja); nalazi čuvara posle: 0

@@ -221,10 +221,9 @@ Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepe
 - čet 7. 1.: prag 2 × 7 min, oporavak 2 min džog → lagano 25 min
 - ned 10. 1.: dugi 55 min lagano → dugi 40 min lagano
 - uto 12. 1.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
-- čet 14. 1.: tempo trke 3 × 600 m, oporavak 1:30 džog → tempo trke 3 × 400 m, oporavak 1:30 džog
 - uto 26. 1.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - 10. nedelja: 18 km → 13,1 km
-- 11. nedelja: 18,2 km → 16 km
+- 11. nedelja: 18,2 km → 16,2 km
 - 13. nedelja: 19,6 km → 18,1 km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
@@ -331,12 +330,12 @@ Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepe
   pon 11. 1.  odmor
   uto 12. 1.  lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 3,6 km, 25 min
   sre 13. 1.  odmor
-  čet 14. 1.  tempo trke 3 × 400 m (5:24/km), oporavak 1:30 džog — 4,8 km, 32 min
+  čet 14. 1.  tempo trke 3 × 600 m (5:24/km), oporavak 1:30 džog — 5 km, 33 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   pet 15. 1.  odmor
   sub 16. 1.  odmor
   ned 17. 1.  dugi 55 min lagano — 7,6 km, 55 min
-  Zbir: 16 km, 1 h 52 min, 3 treninga, brz rad 6 % vremena trčanja
+  Zbir: 16,2 km, 1 h 53 min, 3 treninga, brz rad 9 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 18. 1.  odmor

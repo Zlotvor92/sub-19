@@ -36,7 +36,7 @@ import {
   PAIN_FIRST_ZONE_MAX_DAYS,
   PAIN_MID_DOSE_FACTOR
 } from './constants';
-import { applyBreakRamp, applyPostRace, breakStartOf, postRacesOf } from './breakRamp';
+import { applyBreakRamp, applyPostRace, breakStartOf, noMicroCuts, postRacesOf } from './breakRamp';
 import { buildCtx, doneDayIds, isMutable, runPass } from './build';
 import { addDays, diffDays, isValidDate, mondayOf } from './dates';
 import {
@@ -2421,7 +2421,14 @@ export const replan: ReplanFn = (doc, state, events, data) => {
           };
     /* R22 (A1): prvih 7 dana posle trke — jedno mesto, posle svakog događaja i posle rampe (samo smanjuje; posle
        više događaja ne dalje od 28 dana) */
-    const postRace = applyPostRace(ramped.doc, state, data);
+    /* R22 (A3): smanjen prag ili tempo trke ne pada ispod najmanje smislene doze; kad je mikro-doza zamenjena laganim
+       danom, rampa još jednom (prvi brzi te zone je sada sledeći — i on ≤ 70 %; rampa samo smanjuje i ne seče ispod
+       najmanje smislene doze) */
+    const micro = noMicroCuts(applyPostRace(ramped.doc, state, data), current, state, data);
+    const postRace =
+      brk === null || micro === ramped.doc
+        ? micro
+        : applyBreakRamp(micro, current, state, data, brk);
     const candidate: Candidate = {
       ...ramped,
       doc: multi ? capTail(postRace, doc, state.today) : postRace

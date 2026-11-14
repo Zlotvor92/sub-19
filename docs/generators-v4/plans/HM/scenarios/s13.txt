@@ -239,7 +239,8 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 15. 1. trči sa
 - čet 14. 1.: prag 25 min u komadu → lagano 7,5 km
 - sub 16. 1.: lagano 8 km → lagano 7 km
 - ned 17. 1.: dugi 20,5 km lagano → dugi 14 km lagano
-- čet 21. 1.: prag 15 min u komadu → prag 8 min u komadu
+- čet 21. 1.: prag 15 min u komadu → prag 12 min u komadu
+- sub 23. 1.: lagano 9 km → lagano 8,5 km
 - uto 26. 1.: prag 2 × 13 min, oporavak 1:30 džog → prag 2 × 14 min, oporavak 1:30 džog
 - čet 28. 1.: lagano 9 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 9,5 km
 - ned 31. 1.: dugi 18,5 km, završni deo 9 km u tempu trke → dugi 15 km, završni deo 6 km u tempu trke
@@ -364,12 +365,12 @@ Očekivano vreme trke je sada oko 1:43:20 umesto 1:43:10: plan je posle ovog dog
   pon 18. 1.  odmor
   uto 19. 1.  lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,5 km, 57 min
   sre 20. 1.  odmor
-  čet 21. 1.  prag 8 min u komadu (4:46/km) — 7,5 km, 43 min
+  čet 21. 1.  prag 12 min u komadu (4:46/km) — 8,3 km, 47 min
   pet 22. 1.  odmor
-  sub 23. 1.  lagano 9 km — 9 km, 54 min
+  sub 23. 1.  lagano 8,5 km — 8,5 km, 51 min
   ned 24. 1.  dugi 15,5 km lagano — 15,5 km, 94 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
-  Zbir: 41,5 km, 4 h 8 min, 4 treninga, brz rad 3 % vremena trčanja
+  Zbir: 41,8 km, 4 h 9 min, 4 treninga, brz rad 5 % vremena trčanja
 
 13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 25. 1.  odmor

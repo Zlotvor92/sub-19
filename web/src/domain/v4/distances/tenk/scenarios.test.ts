@@ -8,7 +8,8 @@ import { describe, expect, it } from 'vitest';
 import { paceCtxOf, renderPlan, summarize, type PlanDoc, type PlanWeek } from '../../engine';
 import { addDays } from '../../engine/dates';
 import { weekCost } from '../../engine/guard';
-import { adjustmentWindow } from '../../engine/readiness';
+import { adjustmentWindow, meaningfulDose } from '../../engine/readiness';
+import { buildCtx } from '../../engine/build';
 import { adjustRaceDay } from '../../engine/plan';
 import { easyShareOfLong } from '../../engine/decide';
 import { tenk } from './index';
@@ -348,10 +349,17 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
         const old = (r.before.weeks as PlanWeek[])
           .flatMap((w) => w.days)
           .find((y) => y.id === d.id)?.workout;
+        /* R22 (A3): kad bi 60 % bilo ispod najmanje smislene doze praga / tempa trke, ide puna najmanja doza */
+        const zdef = tenk.library.find((y) => y.id === x.libraryId);
+        const meaningful =
+          old == null || zdef === undefined || x.kind !== 'quality'
+            ? 0
+            : meaningfulDose(zdef, buildCtx(r.after.header, tenk), 0, old.workSec);
         if (
           old != null &&
           old.workSec > 0 &&
-          x.workSec > 0.6 * old.workSec + 180 /* R20: deonice na cele minute (do 3 min) */
+          x.workSec > 0.6 * old.workSec + 180 /* R20: deonice na cele minute (do 3 min) */ &&
+          x.workSec > meaningful + 45
         )
           bad.push(
             `${name(s.no)} ${d.date} prvi rad zone ${z}: ${String(Math.round(x.workSec / 60))} od ${String(Math.round(old.workSec / 60))} min`

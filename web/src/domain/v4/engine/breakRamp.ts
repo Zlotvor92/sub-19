@@ -8,7 +8,7 @@
    - nedelja posle prekida najviše `BREAK_WEEK_STEP_SHARE` × prethodna (i posle rasterećenja), dok ne stigne plan.
    Sužavanje i nedelja trke se ne diraju. */
 import { buildCtx, doneDayIds, isMutable } from './build';
-import { minEasyOf } from './decide';
+import { easyShareOfLong, minEasyOf } from './decide';
 import { addDays, mondayOf } from './dates';
 import { weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
@@ -26,7 +26,7 @@ import type {
   WorkoutDef
 } from './types';
 import { PAIN_LOW_MAX, PAIN_MID_LONG_DAYS, PREP_RACE_WORK_MIN_SEC } from './constants';
-import { pauseLength, RETURN_TRAVEL_DOSE_FACTOR } from './readiness';
+import { meaningfulDose, pauseLength, RETURN_TRAVEL_DOSE_FACTOR } from './readiness';
 import { refWeekKmBefore } from './state';
 
 export const BREAK_LONG_STEP_SEC = 1200;
@@ -193,12 +193,16 @@ export function applyBreakRamp(
 
   /* poslednji odrađeni (dan ≤ danas iz plana koji je trkač odradio) */
   const lastDone = new Map<string, Seconds>();
+  /* R22 (A3): unos poslednjeg odrađenog (kraće deonice kad cele deonice plana ne staju ispod njega) */
+  const lastDoneDef = new Map<string, WorkoutDef>();
   let lastLong = 0;
   for (const d of after.weeks.flatMap((w) => w.days)) {
     if (d.date > today || d.workout === null || !done.has(d.id)) continue;
     if (d.workout.kind === 'long' && d.date <= zero) lastLong = dur(d.workout);
     const key = fastKey(d.workout, data);
     if (key !== null) lastDone.set(key, d.workout.workSec);
+    const def = defOf(d.workout, data);
+    if (key !== null && def !== undefined) lastDoneDef.set(key, def);
   }
 
   /* R20 (A4): posle bola prva nedelja sa kvalitetom ima jedan kvalitet (ostali su lagani istog trajanja), a u
@@ -288,17 +292,43 @@ export function applyBreakRamp(
         }
         /* deonice fiksne dužine se skraćuju (3 × 400 m umesto 3 × 600 m) do najmanje smislene doze; ostali oblici
            staju na najmanjoj dozi unosa */
-        const dose =
-          def.main.kind === 'reps' && want >= data.safety.minDoseSec ? want : Math.max(want, min);
+        /* R22 (A3): prag i tempo trke ne ispod najmanje smislene doze (ne „2 × 600 m") */
+        const meaningful = Math.min(
+          meaningfulDose(def, ctx, 0, d.workout.workSec),
+          lastDone.get(key) ?? Number.POSITIVE_INFINITY
+        );
+        const dose = Math.max(
+          meaningful,
+          def.main.kind === 'reps' && want >= data.safety.minDoseSec ? want : Math.max(want, min)
+        );
         if (dose >= d.workout.workSec - 30) continue;
-        const floor = def.main.kind === 'reps' ? data.safety.minDoseSec : min;
-        const cut = fitQuality(
+        const floor = Math.max(meaningful, def.main.kind === 'reps' ? data.safety.minDoseSec : min);
+        const fit0 = fitQuality(
           def,
           dose,
           Math.min(dose, Math.max(floor, dose - 600)),
           w.intent.phase,
           0
         );
+        /* ceo broj deonica ne sme da pređe poslednji odrađeni — tada najbliži ispod njega */
+        const ceiling = lastDone.get(key) ?? Number.POSITIVE_INFINITY;
+        const over = fit0 !== null && fit0.workSec > ceiling + 30;
+        const doneDef = lastDoneDef.get(key);
+        const byDone =
+          over && doneDef !== undefined && doneDef.id !== def.id
+            ? fitQuality(
+                doneDef,
+                ceiling,
+                Math.max(minDoseOf(doneDef, ctx), ceiling - 600),
+                w.intent.phase,
+                0
+              )
+            : null;
+        const cut = !over
+          ? fit0
+          : byDone !== null && byDone.workSec >= meaningful - 45 && byDone.workSec <= ceiling + 30
+            ? byDone
+            : fitQuality(def, ceiling, Math.max(min, ceiling - 600), w.intent.phase, 0);
         if (cut === null || cut.workSec >= d.workout.workSec - 30) continue;
         /* manje rada, isto vreme treninga: razlika ide u lagano hlađenje (nedelja ne gubi obim) */
         const wasSec = dur(d.workout);
@@ -665,4 +695,121 @@ export function applyPostRace(doc: PlanDoc, state: RunnerState, data: DistanceDa
   /* cilj nedelje (namera plana) ostaje — oporavak posle trke je izmena dana, ne nov cilj (sledeći prolaz gradi od
      cilja, pa bi snižen cilj spustio i lanac dugog) */
   return { ...doc, weeks };
+}
+
+/* ------------------------------------------------------------------ R22 (A3): bez mikro-doza */
+
+/** R22 (A3): posle događaja kvalitet praga i tempa trke koji je smanjen u odnosu na plan pre događaja ne pada ispod
+    najmanje smislene doze (12 min; tempo trke 3 km ako je kraće) — ide puna najmanja doza (ceo broj deonica), ne
+    „2 × 600 m"; kad je i plan bio ispod nje, plan. Samo budući promenljivi dani, van sužavanja. */
+export function noMicroCuts(
+  after: PlanDoc,
+  before: PlanDoc,
+  state: RunnerState,
+  data: DistanceData
+): PlanDoc {
+  const ctx = buildCtx(after.header, data);
+  const done = doneDayIds(state);
+  const old = new Map(before.weeks.flatMap((w) => w.days).map((d) => [d.date, d] as const));
+  const pace = paceCtxOf(after.header);
+  const dur = (w: Workout | null | undefined): Seconds =>
+    w == null ? 0 : summarize(w, pace).durationSec;
+  const dec = after.header.decisions;
+  const minEasy = minEasyOf(data.safety, dec.level, dec.runDays.length);
+  /* poslednji odrađeni kvalitet po zoni */
+  const lastDone = new Map<string, Seconds>();
+  for (const d of after.weeks.flatMap((w) => w.days)) {
+    if (d.date > state.today || d.workout?.kind !== 'quality' || !done.has(d.id)) continue;
+    const def = defOf(d.workout, data);
+    if (def !== undefined) lastDone.set(mainZone(def.main) ?? '', d.workout.workSec);
+  }
+  let changed = false;
+  const weeks = after.weeks.map((w) => ({
+    ...w,
+    days: w.days.map((d) => {
+      const x = d.workout;
+      /* sužavanje i nedelja trke imaju svoju (malu) dozu oštrenja */
+      if (w.intent.kind === 'taper' || w.intent.kind === 'race') return d;
+      if (x?.kind !== 'quality' || !isMutable(d, after.header, state.today, done)) return d;
+      const def = defOf(x, data);
+      const prev = old.get(d.date)?.workout ?? null;
+      if (def === undefined || prev === null || prev.kind !== 'quality') return d;
+      const pdef = defOf(prev, data);
+      if (pdef === undefined || mainZone(pdef.main) !== mainZone(def.main)) return d;
+      if (x.workSec >= prev.workSec - 30) return d;
+      /* ne preko poslednjeg odrađenog iste zone */
+      const cap = Math.min(
+        prev.workSec,
+        lastDone.get(mainZone(def.main) ?? '') ?? Number.POSITIVE_INFINITY
+      );
+      /* prvo unos izmene, pa unos plana (deonice druge dužine mogu da ne stignu do granice) */
+      const raise = (u: WorkoutDef): Workout | null => {
+        const want = meaningfulDose(u, ctx, x.workSec, cap);
+        if (want <= x.workSec + 30) return null;
+        const y = realize(
+          {
+            type: 'quality',
+            def: u,
+            dose: want,
+            slot: { place: 'quality', stimulus: u.stimulus, index: 1, phase: w.intent.phase }
+          },
+          ctx
+        );
+        return y !== null && y.workSec >= want - 45 && y.workSec <= cap + 30 ? y : null;
+      };
+      const next = raise(def) ?? raise(pdef);
+      if (next === null) return d;
+      changed = true;
+      return { ...d, origin: 'template' as const, workout: next };
+    })
+  }));
+  if (!changed) return after;
+  /* obim nedelje ostaje: dodato vreme kvaliteta skida se sa najdužeg laganog dana iste nedelje (ne ispod najmanjeg);
+     kad ni tada nedelja ne staje u + 20 % od prethodne (lagani dani na najmanjem), umesto mikro-doze ide lakša vrsta:
+     lagano istog trajanja */
+  const km = (w: PlanWeek): number => weekCost(w, after.header.goal.raceDate, pace).km;
+  const out: PlanWeek[] = [];
+  weeks.forEach((w, wi) => {
+    const was = after.weeks[wi] as PlanWeek;
+    const extra =
+      w.days.reduce((a, d) => a + dur(d.workout), 0) -
+      was.days.reduce((a, d) => a + dur(d.workout), 0);
+    if (extra < 120) {
+      out.push(w);
+      return;
+    }
+    const days = [...w.days];
+    const easy = days
+      .map((d, di) => ({ d, di }))
+      .filter((y) => y.d.workout?.kind === 'easy' && y.d.workout.steps.length === 1)
+      .filter((y) => isMutable(y.d, after.header, state.today, done))
+      .sort((a, b) => dur(b.d.workout) - dur(a.d.workout))[0];
+    if (easy !== undefined) {
+      const sec = Math.max(minEasy, Math.floor((dur(easy.d.workout) - extra) / 300) * 300);
+      const e = sec < dur(easy.d.workout) - 60 ? realize({ type: 'easy', sec }, ctx) : null;
+      if (e !== null) days[easy.di] = { ...easy.d, origin: 'template', workout: e };
+    }
+    const prev = out[wi - 1];
+    const next = { ...w, days };
+    if (prev === undefined || km(next) <= BREAK_WEEK_EXIT_SHARE * km(prev) + 0.25) {
+      out.push(next);
+      return;
+    }
+    const light = was.days.map((d, di) => {
+      const raised = days[di];
+      /* podignut kvalitet postaje lagan dan trajanja smanjenog; ostali dani su kakvi su bili pre podizanja */
+      if (raised?.workout?.kind !== 'quality' || raised.workout === d.workout) return d;
+      /* lagan dan ne duži od udela dugog te nedelje (kao kvalitet koji otpadne) */
+      const long = Math.max(
+        0,
+        ...was.days.map((y) => (y.workout?.kind === 'long' ? dur(y.workout) : 0))
+      );
+      const share = long > 0 ? easyShareOfLong(data.safety, dec.runDays.length) * long : Infinity;
+      const sec = Math.max(minEasy, Math.floor(Math.min(dur(d.workout), share) / 60) * 60);
+      const e = realize({ type: 'easy', sec }, ctx);
+      return e === null ? d : { ...d, origin: 'template' as const, workout: e };
+    });
+    out.push({ ...w, days: light });
+  });
+  return { ...after, weeks: out };
 }
