@@ -218,7 +218,7 @@ Polazim od tvojih ≈ 45 km nedeljno (5 h 15 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:17:08
 Današnja prognoza (31. 1.): 2:02:45, pouzdanost srednja
-Očekivano na dan trke: 2:00:01 (raspon 1:56:12–2:06:31) — 2:44 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:00:01 (raspon 1:56:12–2:06:31) — 2:44 brže od današnje prognoze, jer plan do trke dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 7 dana (25. 1. – 31. 1.); posle petog dana forma polako opada — procena za 21,1 km: 2:02:08 → 2:02:45.
 - Test 28. 11.: 3 km za 15:28. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 21,1 km: 2:17:08 → 2:02:06.

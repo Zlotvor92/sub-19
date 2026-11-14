@@ -259,7 +259,6 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 10. 12. trči s
 - 6. nedelja: 52,3 km → 34,2 km
 - 7. nedelja: 53,7 km → 41 km
 - 9. nedelja: 56,4 km → 41,3 km
-Očekivano vreme trke je sada oko 2:01:02 umesto 2:00:53: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  lagano 50 min — urađeno 7,1 km, 50 min (7:00/km)

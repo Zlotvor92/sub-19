@@ -241,7 +241,7 @@ Polazim od tvojih ≈ 50 km nedeljno (5 h 50 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:41:18
 Današnja prognoza (14. 2.): 4:13:12, pouzdanost srednja
-Očekivano na dan trke: 4:07:35 (raspon 4:02:37–4:17:37) — 5:37 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:07:35 (raspon 4:02:37–4:17:37) — 5:37 brže od današnje prognoze, jer plan do trke dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 7 dana (8. 2. – 14. 2.); posle petog dana forma polako opada — procena za 42,2 km: 4:11:58 → 4:13:12.
 - Test 12. 12.: 3 km za 15:28. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 42,2 km: 4:41:18 → 4:11:55.

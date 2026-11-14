@@ -2540,6 +2540,32 @@ export const replan: ReplanFn = (doc, state, events, data) => {
   }
   /* bez kasnijeg objavljenog događaja promena tempa ostaje sa svojom rečenicom */
   changes.push(...pendingTempo);
+  /* R22 (A5): brojevi u PROMENAMA = zaglavlje — rečenica o izgubljenom napretku ostaje samo poslednja i ako je posle
+     nje nijedan događaj ne daje novo očekivano vreme; broj je konačan iz zaglavlja */
+  const LOST = 'Očekivano vreme trke je sada oko ';
+  const finalSec = current.header.form.raceDay.expectedSec;
+  const origSec = doc.header.form.raceDay.expectedSec;
+  const lastLost = changes.map((c) => c.reason.startsWith(LOST)).lastIndexOf(true);
+  const laterTime = changes.some(
+    (c, i) => i > lastLost && /očekivano vreme trke je sada oko/i.test(c.reason)
+  );
+  for (let i = changes.length - 1; i >= 0; i -= 1) {
+    const c = changes[i] as Change;
+    if (!c.reason.startsWith(LOST)) continue;
+    if (i !== lastLost || laterTime || finalSec <= origSec) {
+      changes.splice(i, 1);
+      continue;
+    }
+    changes[i] = {
+      ...c,
+      before: fmtClock(origSec),
+      after: fmtClock(finalSec),
+      reason: c.reason.replace(
+        /^Očekivano vreme trke je sada oko \S+ umesto \S+:/,
+        `${LOST}${fmtClock(finalSec)} umesto ${fmtClock(origSec)}:`
+      )
+    };
+  }
   const result = changes.length === 0 && silentApplied.length === 0 ? doc : current;
   /* R19 (stavka 7): „prvi brzi trening je X" u rečenici o bolu ili pauzi se računa iz KONAČNOG plana (kasniji događaj
      istog ponovnog planiranja može da ga pomeri) */

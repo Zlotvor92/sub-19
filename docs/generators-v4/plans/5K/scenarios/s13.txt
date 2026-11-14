@@ -180,7 +180,7 @@ Polazim od tvojih ≈ 42 km nedeljno (4 h 2 min trčanja).
 FORMA
 Polazna forma (1. 11.): 21:49
 Današnja prognoza (31. 12.): 21:49, pouzdanost srednja
-Očekivano na dan trke: 21:44 (raspon 21:24–22:09) — 0:05 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 21:44 (raspon 21:24–22:09) — 0:05 brže od današnje prognoze, jer plan do trke dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 26. 12.: 3 km za 12:37. Rezultat sa 3 km prenosim na 5 km uz umanjenje, jer uz oko 43 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 5 km ostaje 21:49.
 - Polazna procena je iz rezultata koji si uneo: oko 21:49 za 5 km.
@@ -204,7 +204,7 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 10. 1. trči sa
 - ned 10. 1.: dugi 13,5 km lagano → dugi 11,5 km lagano
 - uto 12. 1.: tempo trke 4 × 800 m, oporavak 2 min džog → tempo trke 2 × 1 km, oporavak 2 min džog
 - 10. nedelja: 42,1 km → 32 km
-Očekivano vreme trke je sada oko 21:44 umesto 21:43: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
+Očekivano vreme trke je sada oko 21:44 umesto 21:28: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  odmor

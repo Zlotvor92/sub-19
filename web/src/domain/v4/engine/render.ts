@@ -358,8 +358,14 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
     h.decisions.baseKm ??
     (h.decisions.baseLoad * 60) / paceAtShare(h.form.start.vdot, ZONE_SHARE.E);
   const pc = paceCtxOf(h);
+  /* R22 (A5): samo nedelje koje su još pred trkačem i nisu sužavanje — u sužavanju plan obim ne podiže */
+  const fromDay = state?.today ?? '';
   const raises = doc.weeks.some(
-    (w) => w.intent.kind !== 'race' && weekCost(w, h.goal.raceDate, pc).km > startKm * 1.05
+    (w) =>
+      w.intent.kind !== 'race' &&
+      w.intent.kind !== 'taper' &&
+      addDays(w.start, 6) > fromDay &&
+      weekCost(w, h.goal.raceDate, pc).km > startKm * 1.05
   );
   /* R20 (I): kazna — očekivano je sporije od današnje forme i plan to kaže brojem */
   const slowerBy = raceDay.expectedSec - h.form.current.raceTimeSec;
@@ -544,7 +550,21 @@ export function renderPlan(
   const h = doc.header;
   const ctx = paceCtxOf(h);
   const lines = headerLines(doc, state, data);
-  lines.push(...changeLines(options.changes ?? [], doc));
+  /* R22 (A5): broj u rečenici o izgubljenom napretku = očekivano vreme iz zaglavlja (isti prikaz) */
+  const shown = fmtClock(raceDayShown(doc, state).expectedSec);
+  const LOST = /^Očekivano vreme trke je sada oko \S+ umesto/;
+  const all = options.changes ?? [];
+  /* kad kasniji događaj (rezultat) da novo očekivano vreme, rečenica o izgubljenom napretku ranijeg otpada */
+  const later = (i: number): boolean =>
+    all.some((c, j) => j > i && !LOST.test(c.reason) && /očekivano vreme trke je sada oko/i.test(c.reason));
+  const fixed = all
+    .filter((c, i) => !LOST.test(c.reason) || !later(i))
+    .map((c) =>
+      LOST.test(c.reason)
+        ? { ...c, reason: c.reason.replace(LOST, `Očekivano vreme trke je sada oko ${shown} umesto`) }
+        : c
+    );
+  lines.push(...changeLines(fixed, doc));
   const today = state?.today;
   const runs = new Map<string, Run>();
   const runsByDate = new Map<IsoDate, Run>();
