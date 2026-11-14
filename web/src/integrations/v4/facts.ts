@@ -95,6 +95,36 @@ export function mergeRuns(adopted: readonly Run[], activities: readonly Run[]): 
   return [...out.values()].sort(byDateId);
 }
 
+/**
+ * Zapis aktivnosti → dani plana: aktivnost `strava:<id>` / `icu:<id>` dobija `dayId` dana čiji unos u `log` nosi isti
+ * `stravaId` / `icuId` (tako je Strava uvoz plana danas upario trčanje sa danom). Tada `mergeRuns` izbacuje
+ * `log:<dan>`, pa se isto trčanje ne broji dvaput. Aktivnost koja već ima `dayId` se ne menja.
+ */
+export function linkActivities(
+  activities: readonly Run[],
+  log: Readonly<Record<string, unknown>>
+): Run[] {
+  const byKey = new Map<string, string>();
+  for (const [dayId, entry] of Object.entries(log)) {
+    if (!isRec(entry)) continue;
+    for (const [field, prefix] of [
+      ['stravaId', 'strava'],
+      ['icuId', 'icu']
+    ] as const) {
+      const v = entry[field];
+      if (typeof v === 'string' || typeof v === 'number') {
+        const key = `${prefix}:${String(v)}`;
+        if (!byKey.has(key)) byKey.set(key, dayId);
+      }
+    }
+  }
+  return activities.map((a) => {
+    if (a.dayId !== undefined) return a;
+    const dayId = byKey.get(a.id);
+    return dayId === undefined ? a : { ...a, dayId };
+  });
+}
+
 /** Stanje aplikacije → `RunnerFacts`. Isti ulaz daje isti izlaz (redosled trčanja i bolova je određen). */
 export function toFacts(input: FactsInput): RunnerFacts {
   const a = input.adopted;

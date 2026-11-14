@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildState, validate, type Run } from '../../domain/v4/engine';
-import { DISTANCES, distanceData, mergeRuns, painFromKnee, toFacts } from './facts';
+import { DISTANCES, distanceData, linkActivities, mergeRuns, painFromKnee, toFacts } from './facts';
 import { adoptSample, clone, deepFreeze, SAMPLES, TODAY } from './samples.test-data';
 
 const run = (id: string, date: string, extra: Partial<Run> = {}): Run => ({
@@ -134,5 +134,30 @@ describe('toFacts', () => {
         expect(isKnown || finished, `${s.name}: ${e.code} ${e.field}`).toBe(true);
       }
     }
+  });
+});
+
+describe('aktivnosti uz `log` i `vanPlana`: trčanje se ne broji dvaput', () => {
+  it('aktivnost dobija dan iz `log.stravaId`; `log:` i `van:` istog trčanja otpadaju', () => {
+    const acts = linkActivities(
+      [
+        run('strava:9', '2026-11-02'),
+        run('strava:10', '2026-10-28'),
+        run('strava:11', '2026-11-05')
+      ],
+      { w1d1: { status: 'done', km: 8, stravaId: 9 }, w1d3: { status: 'done', km: 6 } }
+    );
+    expect(acts.map((a) => a.dayId)).toEqual(['w1d1', undefined, undefined]);
+    const adopted = [
+      run('log:w1d1', '2026-11-02', { dayId: 'w1d1' }),
+      run('log:w1d3', '2026-11-04', { dayId: 'w1d3' }),
+      run('van:2026-10-28', '2026-10-28')
+    ];
+    expect(mergeRuns(adopted, acts).map((r) => r.id)).toEqual([
+      'strava:10',
+      'strava:9',
+      'log:w1d3',
+      'strava:11'
+    ]);
   });
 });

@@ -97,6 +97,10 @@ export interface StravaSyncDeps {
   now: () => number;
   /** Danas kao `YYYY-MM-DD`. */
   today: () => string;
+  /** F9 korak 4: uvoz aktivnosti za V4 (`activityImport.ts`). Bez njega, ili dok `enabled()` vraća `false`
+   *  (podrazumevano), sinhronizacija je ista kao pre. Uvoz ide POSLE redovne sinhronizacije i nikad ne menja njen
+   *  ishod; radi i kad plana nema. */
+  activities?: { enabled(): boolean; run(): Promise<unknown> };
 }
 
 export type StravaSyncResult =
@@ -432,5 +436,18 @@ export function createStravaSync(deps: StravaSyncDeps): { run(): Promise<StravaS
     return { ok: true, imported, paces, moved: realigned.moved };
   }
 
-  return { run };
+  async function runWithActivities(): Promise<StravaSyncResult> {
+    const result = await run();
+    const extra = deps.activities;
+    if (extra !== undefined && extra.enabled() && link.get() !== null) {
+      try {
+        await extra.run();
+      } catch {
+        /* uvoz za V4 nikad ne obara redovnu sinhronizaciju */
+      }
+    }
+    return result;
+  }
+
+  return { run: deps.activities === undefined ? run : runWithActivities };
 }

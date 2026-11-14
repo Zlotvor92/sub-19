@@ -48,9 +48,48 @@ const ExchangeResponse = z
   })
   .passthrough();
 
+/** Stanje limita iz zaglavlja odgovora (`X-ReadRateLimit-*`, inače `X-RateLimit-*`): prozor od 15 min i dan. */
+export interface RateLimits {
+  windowLimit: number;
+  windowUsage: number;
+  dayLimit: number;
+  dayUsage: number;
+}
+
+const pair = (v: string | null): [number, number] | null => {
+  if (v === null) return null;
+  const parts = v.split(',').map((x) => Number(x.trim()));
+  const [a, b] = parts;
+  return parts.length === 2 &&
+    a !== undefined &&
+    b !== undefined &&
+    Number.isFinite(a) &&
+    Number.isFinite(b)
+    ? [a, b]
+    : null;
+};
+
+/** `null` kad zaglavlja nema ili nisu ispravna. Prednost imaju limiti ČITANJA (uvoz samo čita). */
+export function parseRateLimits(headers: { get(name: string): string | null }): RateLimits | null {
+  for (const prefix of ['X-ReadRateLimit', 'X-RateLimit']) {
+    const limit = pair(headers.get(`${prefix}-Limit`));
+    const usage = pair(headers.get(`${prefix}-Usage`));
+    if (limit !== null && usage !== null)
+      return {
+        windowLimit: limit[0],
+        dayLimit: limit[1],
+        windowUsage: usage[0],
+        dayUsage: usage[1]
+      };
+  }
+  return null;
+}
+
 export interface StravaApi {
   /** GET nad `/api/v3` (osvežava token, ponavlja 401 jednom). Telo se NE proverava — pozivalac ga parsira. */
   get(path: string): Promise<Result<unknown>>;
+  /** Isto kao `get`, uz stanje limita iz zaglavlja poslednjeg odgovora (F9: uvoz istorije). */
+  getWithLimits?(path: string): Promise<{ result: Result<unknown>; limits: RateLimits | null }>;
   /** Razmena koda sa povratka sa Strave; uspeh upisuje vezu. */
   exchange(
     code: string,
@@ -89,7 +128,10 @@ export function createStravaApi(deps: StravaApiDeps): StravaApi {
     return { ok: true };
   }
 
-  async function get(path: string, retried = false): Promise<Result<unknown>> {
+  /* `sink` prima zaglavlja poslednjeg odgovora ovog poziva (samo `getWithLimits`); bez njega `get` je kao i pre. */
+  type Sink = { headers: { get(name: string): string | null } | null };
+
+  async function get(path: string, retried = false, sink?: Sink): Promise<Result<unknown>> {
     const t = await ensureToken(false);
     if (!t.ok) return { ok: false, kind: 'http', error: t.error };
     const access = str(deps.link.get()?.['access']);
@@ -101,6 +143,7 @@ export function createStravaApi(deps: StravaApiDeps): StravaApi {
     } catch {
       return networkFailure();
     }
+    if (sink) sink.headers = typeof res.headers?.get === 'function' ? res.headers : null;
     const body = await readJson(res);
     if (res.ok) {
       if (!body.ok)
@@ -118,7 +161,7 @@ export function createStravaApi(deps: StravaApiDeps): StravaApi {
     if (res.status === 401 && !retried) {
       /* istekao/opozvan access token — jedan forsirani refresh pa ponovi */
       const forced = await ensureToken(true);
-      if (forced.ok) return get(path, true);
+      if (forced.ok) return get(path, true, sink);
     }
     if (res.status === 429)
       return {
@@ -141,6 +184,12 @@ export function createStravaApi(deps: StravaApiDeps): StravaApi {
 
   return {
     get: (path) => get(path),
+    async getWithLimits(path) {
+      const sink: Sink = { headers: null };
+      const result = await get(path, false, sink);
+      const limits = sink.headers === null ? null : parseRateLimits(sink.headers);
+      return { result, limits };
+    },
     async exchange(code, scope) {
       const owner = deps.accountKey?.();
       const r = await deps.appApi.getAuthed(

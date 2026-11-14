@@ -2,6 +2,7 @@
 export {
   DISTANCES,
   distanceData,
+  linkActivities,
   mergeRuns,
   painFromKnee,
   toFacts,
