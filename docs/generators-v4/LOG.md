@@ -753,3 +753,6 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   3 (5K p06), 4 (M22), 5 (HM podatak), 8; MAR p11/p18 ostaju 22,6/22 km.
 - Ocena R19 nad `ef506f4c` po `briefs/R19-JUDGES.md`: nov Fable trener + 4 nova Fable druga sudije (ID-jevi u
   sledećem unosu). Sledeći nalog motora čeka nalaze ocene.
+- Tabovi ocene R19 (svi Fable 5.2): trener `session_01GnHHiajAuY2hEBCkKoaSun`; drugi sudija HM
+  `session_01GnHHiY1dmTvgZ4iUX2fpQ7`, 10K `session_01GnHHiZzrwbVVjqUjvFCFkA`, MAR `session_01GnHHiYAfzVnVCKGFhhxZ52`,
+  5K `session_01GnHHiWRNyTk9mdk45p8FaH`. Motor R19 tab `session_01GnHHiaZSGWeHY2sPFdz4bo` čeka (bez naloga).
