@@ -15,3 +15,27 @@ export {
   type AdoptOutcome,
   type AdoptSnapshot
 } from './adopt';
+export {
+  applyEdit,
+  applyMove,
+  doneFrom,
+  longDayOffer,
+  weekdayOf,
+  type EditContext,
+  type EditRefusal,
+  type EditResult
+} from './edits';
+export {
+  accept,
+  approvalOf,
+  autoStep,
+  awaiting,
+  EMPTY_LEDGER,
+  preview,
+  reject,
+  reportedEvent,
+  type Approval,
+  type EventOrigin,
+  type Ledger,
+  type Report
+} from './events';

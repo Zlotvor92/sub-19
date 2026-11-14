@@ -19,7 +19,14 @@ const ALLOWED_APP = /^\.\.\/\.\.\/domain\/(date|plan|state)$/;
 describe('izolacija sloja', () => {
   it('čita izvor sloja', () => {
     expect(files.map(([p]) => p)).toEqual(
-      expect.arrayContaining(['./facts.ts', './view.ts', './adopt.ts', './index.ts'])
+      expect.arrayContaining([
+        './facts.ts',
+        './view.ts',
+        './adopt.ts',
+        './edits.ts',
+        './events.ts',
+        './index.ts'
+      ])
     );
   });
 
