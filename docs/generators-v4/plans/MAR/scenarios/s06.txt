@@ -1,8 +1,7 @@
 S06 — p08, E2: bolest 7 dana u ned 17 (specifična, blok 1)
 
-STANJE: danas 2027-02-28; sadašnji obim 50 km nedeljno, 3 dana; forma 3:33:26 (pouzdanost srednja), očekivano na dan trke 3:31:16.
-DOGAĐAJ: Bolest 2027-02-22 – 2027-02-28 (17. nedelja), bez treninga. Događaji: result:2026-12-24:run-w8d3, result:2027-02-14:run-w15d6, pause:2027-02-22:2027-02-28.
-PROMENA: 9.
+STANJE: danas 2027-02-28; sadašnji obim 50 km nedeljno, 3 dana.
+DOGAĐAJ: Bolest 2027-02-22 – 2027-02-28 (17. nedelja), bez treninga.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

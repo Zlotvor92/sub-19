@@ -1,8 +1,7 @@
 S25 — p01, E7: bolest 5 dana u ned 6, pa propušten dugi 10 dana kasnije
 
-STANJE: danas 2026-12-28; sadašnji obim 40 km nedeljno, 4 dana; forma 1:44:16 (pouzdanost srednja), očekivano na dan trke 1:42:13.
-DOGAĐAJ: Bolest 2026-12-07 – 2026-12-11, pa propušten dugi 10+ dana posle povratka. Događaji: pause:2026-12-07:2026-12-11, missed:2026-12-27:w8d6.
-PROMENA: 10.
+STANJE: danas 2026-12-28; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Bolest 2026-12-07 – 2026-12-11, pa propušten dugi 10+ dana posle povratka.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.

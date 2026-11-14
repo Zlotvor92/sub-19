@@ -1,8 +1,7 @@
 S28 — p07, MAR: propušten najduži dugi (ned 9, 3 nedelje pred trku)
 
-STANJE: danas 2027-01-04; sadašnji obim 65 km nedeljno, 5 dana; forma 3:32:24 (pouzdanost srednja), očekivano na dan trke 3:30:29.
-DOGAĐAJ: Propušteno: w9d6; sve ostalo urađeno; danas 2027-01-04. Događaji: result:2026-11-28:run-w4d5, missed:2027-01-03:w9d6.
-PROMENA: 1.
+STANJE: danas 2027-01-04; sadašnji obim 65 km nedeljno, 5 dana.
+DOGAĐAJ: Propušteno: w9d6; sve ostalo urađeno; danas 2027-01-04.
 
 ==================== PRE ====================
 PLAN: maraton, trka 24. 1. 2027.

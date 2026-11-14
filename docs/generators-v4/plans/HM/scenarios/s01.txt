@@ -1,8 +1,7 @@
 S01 — p01, E1: ned 8, trka 10 km 2,9 % brže od očekivanog
 
-STANJE: danas 2026-12-26; sadašnji obim 40 km nedeljno, 4 dana; forma 1:42:13 (pouzdanost srednja), očekivano na dan trke 1:41:07.
-DOGAĐAJ: Trka 10 km za 44:42 na 2026-12-26 (dan provere forme u 8. nedelji). Događaji: result:2026-12-26:trka-2026-12-26.
-PROMENA: 1.
+STANJE: danas 2026-12-26; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Trka 10 km za 44:42 na 2026-12-26 (dan provere forme u 8. nedelji).
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.

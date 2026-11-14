@@ -1,8 +1,7 @@
 S01 — p01, E1: ned 8 (provera), parkrun 5 km 3,0 % brže od očekivanog
 
-STANJE: danas 2026-12-26; sadašnji obim 40 km nedeljno, 4 dana; forma 21:10 (pouzdanost srednja), očekivano na dan trke 21:04.
-DOGAĐAJ: Trka 5 km za 21:10 na 2026-12-26 (dan provere forme u 8. nedelji). Događaji: result:2026-12-26:trka-2026-12-26.
-PROMENA: 1.
+STANJE: danas 2026-12-26; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Trka 5 km za 21:10 na 2026-12-26 (dan provere forme u 8. nedelji).
 
 ==================== PRE ====================
 PLAN: 5 km, trka 24. 1. 2027.

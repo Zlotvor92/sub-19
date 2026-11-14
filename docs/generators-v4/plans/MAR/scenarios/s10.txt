@@ -1,8 +1,7 @@
 S10 — p08, E3: ned 12 (razvoj): propušteni kvalitet i dugi
 
-STANJE: danas 2027-01-25; sadašnji obim 50 km nedeljno, 3 dana; forma 3:32:24 (pouzdanost srednja), očekivano na dan trke 3:28:01.
-DOGAĐAJ: Propušteno: w12d3, w12d6; sve ostalo urađeno; danas 2027-01-25. Događaji: result:2026-12-24:run-w8d3, missed:2027-01-21:w12d3, missed:2027-01-24:w12d6.
-PROMENA: 1.
+STANJE: danas 2027-01-25; sadašnji obim 50 km nedeljno, 3 dana.
+DOGAĐAJ: Propušteno: w12d3, w12d6; sve ostalo urađeno; danas 2027-01-25.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

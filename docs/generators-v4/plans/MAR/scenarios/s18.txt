@@ -1,8 +1,7 @@
 S18 — p08, E5: juče trka 10 km 45:13
 
-STANJE: danas 2026-11-01; sadašnji obim 50 km nedeljno, 3 dana; forma 3:32:28 (pouzdanost srednja), očekivano na dan trke 3:27:34.
+STANJE: danas 2026-11-01; sadašnji obim 50 km nedeljno, 3 dana.
 DOGAĐAJ: Juče (1. 11.) trka 10 km 45:13 . POSLE je nov plan iz stanja sa tom trkom (isti ulazi).
-PROMENA: 0.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

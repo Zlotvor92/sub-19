@@ -1,8 +1,7 @@
 S14 — p04, E4: ned 7, bol 4/10 posle kvaliteta (osnova)
 
-STANJE: danas 2026-12-15; sadašnji obim 50 km nedeljno, 5 dana; forma 56:02 (pouzdanost srednja), očekivano na dan trke 54:41.
-DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-15 („intervali 4 × 1 km, oporavak 2:30 džog"). Događaji: result:2026-11-28:run-w4d5, pain:2026-12-15.
-PROMENA: 13.
+STANJE: danas 2026-12-15; sadašnji obim 50 km nedeljno, 5 dana.
+DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-15 („intervali 4 × 1 km, oporavak 2:30 džog").
 
 ==================== PRE ====================
 PLAN: 10 km, trka 7. 3. 2027.

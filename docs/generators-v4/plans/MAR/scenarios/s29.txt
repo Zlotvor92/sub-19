@@ -1,8 +1,7 @@
 S29 — p08, MAR: bolest 7 dana u poslednje 4 nedelje (ned 21, najteža)
 
-STANJE: danas 2027-03-28; sadašnji obim 50 km nedeljno, 3 dana; forma 3:33:26 (pouzdanost srednja), očekivano na dan trke 3:31:17.
-DOGAĐAJ: Bolest 2027-03-22 – 2027-03-28 (21. nedelja), bez treninga. Događaji: result:2026-12-24:run-w8d3, result:2027-02-14:run-w15d6, pause:2027-03-22:2027-03-28.
-PROMENA: 4.
+STANJE: danas 2027-03-28; sadašnji obim 50 km nedeljno, 3 dana.
+DOGAĐAJ: Bolest 2027-03-22 – 2027-03-28 (21. nedelja), bez treninga.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

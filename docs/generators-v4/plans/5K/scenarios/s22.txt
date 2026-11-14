@@ -1,8 +1,7 @@
 S22 — p04, E6: ništa se nije desilo do kraja ned 6
 
-STANJE: danas 2026-12-13; sadašnji obim 45 km nedeljno, 5 dana; forma 26:59 (pouzdanost srednja), očekivano na dan trke 26:15.
-DOGAĐAJ: Sve urađeno po planu do 2026-12-13. Događaji: nema. Otisak plana pre = posle: DA; promena: 0.
-PROMENA: 0.
+STANJE: danas 2026-12-13; sadašnji obim 45 km nedeljno, 5 dana.
+DOGAĐAJ: Sve urađeno po planu do 2026-12-13.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 21. 2. 2027.

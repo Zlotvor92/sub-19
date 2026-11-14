@@ -1,8 +1,7 @@
 S01 — p01, E1: ned 10, trka 5 km 3,0 % brže od očekivanog
 
-STANJE: danas 2027-01-09; sadašnji obim 40 km nedeljno, 4 dana; forma 45:00 (pouzdanost srednja), očekivano na dan trke 44:40.
-DOGAĐAJ: Trka 5 km za 21:10 na 2027-01-09 (dan provere forme u 10. nedelji). Događaji: result:2027-01-09:trka-2027-01-09.
-PROMENA: 1.
+STANJE: danas 2027-01-09; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Trka 5 km za 21:10 na 2027-01-09 (dan provere forme u 10. nedelji).
 
 ==================== PRE ====================
 PLAN: 10 km, trka 21. 2. 2027.

@@ -1,8 +1,7 @@
 S15 — p11, E4: ned 10, bol 4/10 posle dugog
 
-STANJE: danas 2027-01-10; sadašnji obim 12 km nedeljno, 3 dana; forma 26:59 (pouzdanost srednja), očekivano na dan trke 25:34.
-DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2027-01-10 („dugi 55 min lagano"). Događaji: pain:2027-01-10.
-PROMENA: 12.
+STANJE: danas 2027-01-10; sadašnji obim 12 km nedeljno, 3 dana.
+DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2027-01-10 („dugi 55 min lagano").
 
 ==================== PRE ====================
 PLAN: 5 km, trka 21. 2. 2027.

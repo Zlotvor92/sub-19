@@ -1,8 +1,7 @@
 S11 — p11, E3: ned 14: propušteni kvalitet i dugi
 
-STANJE: danas 2027-02-08; sadašnji obim 20 km nedeljno, 4 dana; forma 2:04:12 (pouzdanost srednja), očekivano na dan trke 2:01:24.
-DOGAĐAJ: Propušteno: w14d3, w14d6; sve ostalo urađeno; danas 2027-02-08. Događaji: result:2027-01-23:run-w12d5, missed:2027-02-04:w14d3, missed:2027-02-07:w14d6.
-PROMENA: 2.
+STANJE: danas 2027-02-08; sadašnji obim 20 km nedeljno, 4 dana.
+DOGAĐAJ: Propušteno: w14d3, w14d6; sve ostalo urađeno; danas 2027-02-08.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 3. 2027.

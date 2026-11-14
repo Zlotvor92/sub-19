@@ -1,8 +1,7 @@
 S01 — p07, E1: ned 4, trka 10 km 3,0 % brže od očekivanog
 
-STANJE: danas 2026-11-28; sadašnji obim 65 km nedeljno, 5 dana; forma 3:28:01 (pouzdanost srednja), očekivano na dan trke 3:25:54.
-DOGAĐAJ: Trka 10 km za 43:27 na 2026-11-28 (dan provere forme u 4. nedelji). Događaji: result:2026-11-28:trka-2026-11-28.
-PROMENA: 1.
+STANJE: danas 2026-11-28; sadašnji obim 65 km nedeljno, 5 dana.
+DOGAĐAJ: Trka 10 km za 43:27 na 2026-11-28 (dan provere forme u 4. nedelji).
 
 ==================== PRE ====================
 PLAN: maraton, trka 24. 1. 2027.

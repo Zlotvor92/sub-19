@@ -1,8 +1,7 @@
 S27 — p04, E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana
 
-STANJE: danas 2027-01-23; sadašnji obim 55 km nedeljno, 5 dana; forma 2:04:33 (pouzdanost srednja), očekivano na dan trke 2:01:12.
-DOGAĐAJ: Propuštena dva kvaliteta (2026-12-29, 2027-01-05), pa put 6 dana. Događaji: result:2026-11-28:run-w4d5, missed:2026-12-29:w9d1, missed:2027-01-05:w10d1, result:2026-11-28:run-w4d5, pause:2027-01-18:2027-01-23.
-PROMENA: 15.
+STANJE: danas 2027-01-23; sadašnji obim 55 km nedeljno, 5 dana.
+DOGAĐAJ: Propuštena dva kvaliteta (2026-12-29, 2027-01-05), pa put 6 dana.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 3. 2027.

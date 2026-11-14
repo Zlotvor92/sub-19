@@ -1,8 +1,7 @@
 S13 — p01, E4: ned 10, bol u kolenu 4/10 posle kvaliteta
 
-STANJE: danas 2027-01-05; sadašnji obim 40 km nedeljno, 4 dana; forma 1:44:19 (pouzdanost srednja), očekivano na dan trke 1:43:10.
-DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2027-01-05 („tempo trke 2 × 3 km, oporavak 2 min džog"). Događaji: result:2026-12-26:run-w8d5, pain:2027-01-05.
-PROMENA: 11.
+STANJE: danas 2027-01-05; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2027-01-05 („tempo trke 2 × 3 km, oporavak 2 min džog").
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.

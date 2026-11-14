@@ -1,8 +1,7 @@
 S23 — p11, E6: ništa se nije desilo do kraja ned 6
 
-STANJE: danas 2026-12-13; sadašnji obim 25 km nedeljno, 4 dana; forma 4:20:37 (pouzdanost srednja), očekivano na dan trke 4:06:09.
-DOGAĐAJ: Sve urađeno po planu do 2026-12-13. Događaji: nema. Otisak plana pre = posle: DA; promena: 0.
-PROMENA: 0.
+STANJE: danas 2026-12-13; sadašnji obim 25 km nedeljno, 4 dana.
+DOGAĐAJ: Sve urađeno po planu do 2026-12-13.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

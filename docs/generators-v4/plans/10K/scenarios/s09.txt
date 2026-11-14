@@ -1,8 +1,7 @@
 S09 — p01, E3: ned 13 (najteža): propušteni tempo trke i dugi sa završnicom
 
-STANJE: danas 2027-02-01; sadašnji obim 40 km nedeljno, 4 dana; forma 46:00 (pouzdanost srednja), očekivano na dan trke 45:43.
-DOGAĐAJ: Propušteno: w13d1, w13d6; sve ostalo urađeno; danas 2027-02-01. Događaji: result:2027-01-09:run-w10d5, missed:2027-01-26:w13d1, missed:2027-01-31:w13d6.
-PROMENA: 2.
+STANJE: danas 2027-02-01; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Propušteno: w13d1, w13d6; sve ostalo urađeno; danas 2027-02-01.
 
 ==================== PRE ====================
 PLAN: 10 km, trka 21. 2. 2027.

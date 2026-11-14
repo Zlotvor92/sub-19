@@ -1,8 +1,7 @@
 S16 — p12, E4: ned 4, bol 4/10 posle laganog dana
 
-STANJE: danas 2026-11-24; sadašnji obim 45 km nedeljno, 4 dana; forma 26:32 (pouzdanost niska), očekivano na dan trke 26:16.
-DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-11-24 („lagano 70 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog"). Događaji: pain:2026-11-24.
-PROMENA: 11.
+STANJE: danas 2026-11-24; sadašnji obim 45 km nedeljno, 4 dana.
+DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-11-24 („lagano 70 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog").
 
 ==================== PRE ====================
 PLAN: 5 km, trka 10. 1. 2027.

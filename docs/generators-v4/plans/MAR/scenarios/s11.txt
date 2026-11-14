@@ -1,8 +1,7 @@
 S11 — p11, E3: ned 19: propušteni tempo maratona i dugi
 
-STANJE: danas 2027-03-15; sadašnji obim 25 km nedeljno, 4 dana; forma 4:20:46 (pouzdanost srednja), očekivano na dan trke 4:14:13.
-DOGAĐAJ: Propušteno: w19d6; sve ostalo urađeno; danas 2027-03-15. Događaji: result:2026-12-26:run-w8d5, result:2027-02-14:run-w15d6, missed:2027-03-14:w19d6.
-PROMENA: 1.
+STANJE: danas 2027-03-15; sadašnji obim 25 km nedeljno, 4 dana.
+DOGAĐAJ: Propušteno: w19d6; sve ostalo urađeno; danas 2027-03-15.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

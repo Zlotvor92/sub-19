@@ -1,8 +1,7 @@
 S13 — p01, E4: ned 9, bol u kolenu 4/10 posle tempa trke
 
-STANJE: danas 2026-12-31; sadašnji obim 40 km nedeljno, 4 dana; forma 21:49 (pouzdanost srednja), očekivano na dan trke 21:43.
-DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-31 („tempo trke 5 × 1 km, oporavak 2 min džog"). Događaji: result:2026-12-26:run-w8d5, pain:2026-12-31.
-PROMENA: 7.
+STANJE: danas 2026-12-31; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Bol 4/10 (koleno) posle treninga 2026-12-31 („tempo trke 5 × 1 km, oporavak 2 min džog").
 
 ==================== PRE ====================
 PLAN: 5 km, trka 24. 1. 2027.

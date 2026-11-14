@@ -1,8 +1,7 @@
 S25 — p07, E7: bolest 5 dana u ned 3, pa propušten dugi 10 dana kasnije
 
-STANJE: danas 2026-12-07; sadašnji obim 65 km nedeljno, 5 dana; forma 3:32:21 (pouzdanost srednja), očekivano na dan trke 3:29:34.
-DOGAĐAJ: Bolest 2026-11-16 – 2026-11-20, pa propušten dugi 10+ dana posle povratka. Događaji: pause:2026-11-16:2026-11-20, missed:2026-12-06:w5d6.
-PROMENA: 13.
+STANJE: danas 2026-12-07; sadašnji obim 65 km nedeljno, 5 dana.
+DOGAĐAJ: Bolest 2026-11-16 – 2026-11-20, pa propušten dugi 10+ dana posle povratka.
 
 ==================== PRE ====================
 PLAN: maraton, trka 24. 1. 2027.

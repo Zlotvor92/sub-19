@@ -1,8 +1,7 @@
 S07 — p11, E2: bolest 7 dana u ned 9
 
-STANJE: danas 2027-01-03; sadašnji obim 12 km nedeljno, 3 dana; forma 27:07 (pouzdanost srednja), očekivano na dan trke 25:47.
-DOGAĐAJ: Bolest 2026-12-28 – 2027-01-03 (9. nedelja), bez treninga. Događaji: pause:2026-12-28:2027-01-03.
-PROMENA: 6.
+STANJE: danas 2027-01-03; sadašnji obim 12 km nedeljno, 3 dana.
+DOGAĐAJ: Bolest 2026-12-28 – 2027-01-03 (9. nedelja), bez treninga.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 21. 2. 2027.

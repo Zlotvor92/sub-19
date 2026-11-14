@@ -1,8 +1,7 @@
 S26 — p11, E7: bol 4/10 u ned 9, pa trka 10 km dve nedelje kasnije
 
-STANJE: danas 2027-01-14; sadašnji obim 20 km nedeljno, 4 dana; forma 2:05:42 (pouzdanost srednja), očekivano na dan trke 2:01:48.
-DOGAĐAJ: Bol 4/10 2026-12-31, pa trka 10 km 58:00 dve nedelje kasnije. Događaji: pain:2026-12-31, result:2027-01-14:trka-2027-01-14.
-PROMENA: 29.
+STANJE: danas 2027-01-14; sadašnji obim 20 km nedeljno, 4 dana.
+DOGAĐAJ: Bol 4/10 2026-12-31, pa trka 10 km 58:00 dve nedelje kasnije.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 3. 2027.

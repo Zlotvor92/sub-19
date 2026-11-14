@@ -1,8 +1,7 @@
 S24 — p12, E6: ništa se nije desilo do kraja ned 6
 
-STANJE: danas 2026-12-13; sadašnji obim 50 km nedeljno, 5 dana; forma 4:11:55 (pouzdanost srednja), očekivano na dan trke 4:09:24.
-DOGAĐAJ: Sve urađeno po planu do 2026-12-13. Događaji: result:2026-12-12:run-w6d5. Otisak plana pre = posle: DA; promena: 2.
-PROMENA: 2.
+STANJE: danas 2026-12-13; sadašnji obim 50 km nedeljno, 5 dana.
+DOGAĐAJ: Sve urađeno po planu do 2026-12-13.
 
 ==================== PRE ====================
 PLAN: maraton, trka 7. 3. 2027.

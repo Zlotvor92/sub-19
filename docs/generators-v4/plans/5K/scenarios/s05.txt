@@ -1,8 +1,7 @@
 S05 — p01, E2: bolest 7 dana u ned 5 (razvoj, I blok)
 
-STANJE: danas 2026-12-06; sadašnji obim 40 km nedeljno, 4 dana; forma 21:56 (pouzdanost srednja), očekivano na dan trke 21:37.
-DOGAĐAJ: Bolest 2026-11-30 – 2026-12-06 (5. nedelja), bez treninga. Događaji: pause:2026-11-30:2026-12-06.
-PROMENA: 11.
+STANJE: danas 2026-12-06; sadašnji obim 40 km nedeljno, 4 dana.
+DOGAĐAJ: Bolest 2026-11-30 – 2026-12-06 (5. nedelja), bez treninga.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 24. 1. 2027.

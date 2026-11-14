@@ -1,8 +1,7 @@
 S03 — p11, E1: ned 12 (provera), test 1,5 km 3,4 % brže od očekivanog
 
-STANJE: danas 2027-01-21; sadašnji obim 12 km nedeljno, 3 dana; forma 26:34 (pouzdanost srednja), očekivano na dan trke 26:10.
-DOGAĐAJ: Trka 1.5 km za 7:03 na 2027-01-21 (dan provere forme u 12. nedelji). Događaji: result:2027-01-21:trka-2027-01-21.
-PROMENA: 1.
+STANJE: danas 2027-01-21; sadašnji obim 12 km nedeljno, 3 dana.
+DOGAĐAJ: Trka 1.5 km za 7:03 na 2027-01-21 (dan provere forme u 12. nedelji).
 
 ==================== PRE ====================
 PLAN: 5 km, trka 21. 2. 2027.

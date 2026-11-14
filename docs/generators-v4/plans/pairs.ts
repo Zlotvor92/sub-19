@@ -190,6 +190,7 @@ const facts = (base: string, prof: Any, runs: Any[], pauses: Any[] = [], pain: A
     ...(pain.length > 0 ? { painHistory: pain } : {})
   };
 };
+const f1 = (x: number): string => x.toFixed(1).replace('.', ',');
 const r01 = profile('p01').profile.recentResult;
 const r11 = profile('p11').profile.recentResult;
 const r04 = profile('p04').profile.recentResult;
@@ -205,12 +206,12 @@ const MUST_HM = {
 };
 const MUST = D.key === 'hm' ? MUST_HM : MUST_TENK;
 const PAIRS: Pair[] = [
-  { id: 'p1a', base: 'p01', label: 'P1 A — stabilan 12 meseci, rezultat star 3 nedelje', must: MUST.p1, facts: facts('p01', { yearsRunning: 4, longestRecentKm: 18 * k1, recentResult: { ...r01, date: '2026-10-11' } }, p1a()) },
+  { id: 'p1a', base: 'p01', label: `P1 A — stabilan 12 meseci, dugi ${f1(15.5 * k1)}–${f1(18 * k1)} km, rezultat star 3 nedelje`, must: MUST.p1, facts: facts('p01', { yearsRunning: 4, longestRecentKm: 18 * k1, recentResult: { ...r01, date: '2026-10-11' } }, p1a()) },
   { id: 'p1b', base: 'p01', label: 'P1 B — povratnik posle 3 meseca pauze, rezultat star 8 meseci', must: MUST.p1, facts: facts('p01', { yearsRunning: 4, longestRecentKm: 12 * k1, recentResult: { ...r01, date: '2026-03-01' } }, p1b(), [{ from: '2026-06-29', to: '2026-09-27', reason: 'nepoznato' }]) },
   { id: 'p2a', base: 'p11', label: 'P2 A — početnik, 8 meseci bez prekida', must: MUST.p2, facts: facts('p11', { yearsRunning: 0.7, longestRecentKm: 10, recentResult: { ...r11, distanceM: 10000, timeSec: 3362, date: '2026-10-04' } }, p2a()) },
   { id: 'p2b', base: 'p11', label: 'P2 B — početnik, 6 nedelja trčanja, tegoba u potkolenici pre godinu dana', must: MUST.p2, facts: facts('p11', { yearsRunning: 0.1, longestRecentKm: 10, recentResult: { ...r11, distanceM: 10000, timeSec: 3362, date: '2026-10-25' } }, p2b(), [], [{ date: '2025-11-10', part: 'potkolenica', level: 5, resolvedOn: '2025-12-15' }]) },
-  { id: 'p3a', base: 'p04', label: 'P3 A — sve u istom prebrzom tempu, bez kvaliteta, dugi 14–15 km', must: MUST.p3, facts: facts('p04', { yearsRunning: 3, longestRecentKm: 15 * k3, recentResult: r04 }, p3a()) },
-  { id: 'p3b', base: 'p04', label: 'P3 B — spori lagani + prag jednom nedeljno, dugi 15/18 km', must: MUST.p3, facts: facts('p04', { yearsRunning: 3, longestRecentKm: 18 * k3, recentResult: r04 }, p3b()) }
+  { id: 'p3a', base: 'p04', label: `P3 A — sve u istom prebrzom tempu, bez kvaliteta, dugi ${f1(14 * k3)}–${f1(15 * k3)} km`, must: MUST.p3, facts: facts('p04', { yearsRunning: 3, longestRecentKm: 15 * k3, recentResult: r04 }, p3a()) },
+  { id: 'p3b', base: 'p04', label: `P3 B — spori lagani + prag jednom nedeljno, dugi naizmenično ${f1(15 * k3)} / ${f1(18 * k3)} km`, must: MUST.p3, facts: facts('p04', { yearsRunning: 3, longestRecentKm: 18 * k3, recentResult: r04 }, p3b()) }
 ];
 
 const clock = (sec: number): string => {
@@ -219,8 +220,14 @@ const clock = (sec: number): string => {
   const s = Math.round(sec % 60);
   return `${h > 0 ? `${String(h)}:` : ''}${String(m).padStart(h > 0 ? 2 : 1, '0')}:${String(s).padStart(2, '0')}`;
 };
-const f1 = (x: number): string => x.toFixed(1).replace('.', ',');
 const summary: string[] = [`# Parovi personalizacije — ${D.name} (pregled)`, ''];
+const opis: string[] = [
+  `# Parovi personalizacije — ${D.name}: ulazi`,
+  '',
+  'Svaki par ima iste ulaze profila, a razlikuje se samo istorija trčanja (12 nedelja do 1. 11. 2026). Ovde su samo',
+  'ulazi; plan je u fajlu para.',
+  ''
+];
 for (const pair of PAIRS) {
   const goal = profile(pair.base).goal;
   const state = E.buildState(pair.facts, goal, hm, estimateForm);
@@ -231,15 +238,29 @@ for (const pair of PAIRS) {
   const firstQ = doc.weeks.find((w: Any) => w.days.some((d: Any) => d.workout?.kind === 'quality'));
   const test = doc.weeks.find((w: Any) => w.days.some((d: Any) => d.workout?.kind === 'test'));
   const firstLong = g.weeks.find((w: Any) => w.longKm > 0)?.longKm ?? 0;
-  const lines = [
-    `${pair.id.toUpperCase()} — ${pair.label} (ulazi kao ${pair.base})`,
+  const title = `${pair.id.toUpperCase()} — ${pair.label} (ulazi kao ${pair.base})`;
+  const history = `ISTORIJA: ${String(pair.facts.runs.length)} trčanja; nedelje (km): ${state.weeks.map((w: Any) => f1(w.distanceM / 1000)).join(' / ')}; pauze ${String(state.pauses.length)}, bol ${String((pair.facts.painHistory ?? []).length)}`;
+  /* R20 B7: fajl para nosi samo ulaze i plan; očekivanje i brojevi idu u pregled */
+  writeFileSync(join(out, `${pair.id}.txt`), `${[title, history, ''].join('\n')}\n${E.renderPlan(doc, state, hm)}\n`);
+  summary.push(
+    title,
     `MORA DA SE RAZLIKUJE: ${pair.must}`,
-    `ISTORIJA: ${String(pair.facts.runs.length)} trčanja; nedelje (km): ${state.weeks.map((w: Any) => f1(w.distanceM / 1000)).join(' / ')}; pauze ${String(state.pauses.length)}, bol ${String((pair.facts.painHistory ?? []).length)}`,
     `BROJEVI: nivo ${String(doc.header.decisions.level)}; nedelja 1 ${f1(g.weeks[0]?.km ?? 0)} km; vrh ${f1(g.peakKm)} km; prvi dugi ${f1(firstLong)} km, najduži ${f1(g.longestLongKm)} km; prvi kvalitet u ${String(firstQ?.index ?? '-')}. nedelji; provera forme u ${String(test?.index ?? '-')}. nedelji; forma ${clock(state.form.current.raceTimeSec)} (${String(state.form.current.confidence)}), dan trke ${clock(doc.header.form.raceDay.expectedSec)} (${clock(doc.header.form.raceDay.lowSec)}–${clock(doc.header.form.raceDay.highSec)})`,
     ''
-  ];
-  writeFileSync(join(out, `${pair.id}.txt`), `${lines.join('\n')}\n${E.renderPlan(doc, state, hm)}\n`);
-  summary.push(...lines.slice(0, 1), ...lines.slice(3, 4), '');
+  );
+  const pr = pair.facts.profile;
+  const rr = pr.recentResult;
+  opis.push(
+    `## ${pair.id.toUpperCase()} — ${pair.label}`,
+    '',
+    `- Osnova: profil ${pair.base}; trka ${String(goal.raceDate)}; ${String(pair.facts.availability.runDays.length)} dana trčanja nedeljno; sadašnji obim ${String(pr.weeklyKm)} km nedeljno; staž ${String(pr.yearsRunning ?? '-')} god.`,
+    `- Uneti rezultat: ${rr === undefined ? 'nema' : `${f1(rr.distanceM / 1000)} km za ${clock(rr.timeSec)} (${String(rr.date ?? '-')})`}; najduže skorašnje trčanje ${pr.longestRecentKm === undefined ? '-' : `${f1(pr.longestRecentKm)} km`}.`,
+    `- ${history.replace('ISTORIJA: ', 'Istorija: ')}.`,
+    ...(pair.facts.pauses.length > 0 ? [`- Pauza: ${pair.facts.pauses.map((x: Any) => `${String(x.from)} – ${String(x.to)}`).join(', ')}.`] : []),
+    ...((pair.facts.painHistory ?? []).length > 0 ? [`- Tegoba: ${(pair.facts.painHistory as Any[]).map((x: Any) => `${String(x.part)} ${String(x.level)}/10, ${String(x.date)} – ${String(x.resolvedOn ?? '')}`).join('; ')}.`] : []),
+    ''
+  );
 }
 writeFileSync(join(out, 'pregled.txt'), `${summary.join('\n')}\n`);
+writeFileSync(join(out, 'OPIS.md'), `${opis.join('\n')}\n`);
 console.log(summary.join('\n'));

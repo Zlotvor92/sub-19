@@ -1,8 +1,7 @@
 S24 — p12, E6: ništa se nije desilo do kraja ned 6
 
-STANJE: danas 2026-12-13; sadašnji obim 45 km nedeljno, 5 dana; forma 2:02:06 (pouzdanost srednja), očekivano na dan trke 2:00:53.
-DOGAĐAJ: Sve urađeno po planu do 2026-12-13. Događaji: result:2026-11-28:run-w4d5. Otisak plana pre = posle: DA; promena: 2.
-PROMENA: 2.
+STANJE: danas 2026-12-13; sadašnji obim 45 km nedeljno, 5 dana.
+DOGAĐAJ: Sve urađeno po planu do 2026-12-13.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.

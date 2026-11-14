@@ -1,8 +1,7 @@
 S02 — p08, E1: ned 15, pripremni polumaraton 3,1 % brže od očekivanog
 
-STANJE: danas 2027-02-14; sadašnji obim 50 km nedeljno, 3 dana; forma 3:27:46 (pouzdanost srednja), očekivano na dan trke 3:24:52.
-DOGAĐAJ: Trka 21.0975 km za 1:37:08 na 2027-02-14 (dan provere forme u 15. nedelji). Događaji: result:2026-12-24:run-w8d3, result:2027-02-14:trka-2027-02-14.
-PROMENA: 1.
+STANJE: danas 2027-02-14; sadašnji obim 50 km nedeljno, 3 dana.
+DOGAĐAJ: Trka 21.0975 km za 1:37:08 na 2027-02-14 (dan provere forme u 15. nedelji).
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

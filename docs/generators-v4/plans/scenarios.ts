@@ -35,19 +35,29 @@ const out = join(here, D.outDir, 'scenarios');
 mkdirSync(out, { recursive: true });
 
 const summary: string[] = [`# Scenariji prilagođavanja — ${D.name} (pregled)`, ''];
+const opis: string[] = [
+  `# Scenariji prilagođavanja — ${D.name}: ulazi`,
+  '',
+  'Trkač do događaja radi tačno ono što piše u planu; ovde su samo ulazi (ko je trkač i šta se desilo). Plan PRE i',
+  'POSLE događaja je u fajlu scenarija.',
+  ''
+];
 for (const s of SCENARIOS) {
   const r = s.run();
   const name = `s${String(s.no).padStart(2, '0')}`;
   const st = r.afterState;
   const f = st.form;
+  /* R20 B7: fajl scenarija nosi samo ulaze (bez broja promena, izvedenih događaja i prognoze — ona je u zaglavlju
+     plana); broj promena je u pregledu */
+  const event = String(r.note).replace(/\s*Događaji: .*$/, '');
+  const stateLine =
+    `STANJE: danas ${st.today}; sadašnji obim ${String(profile(s.id).profile.weeklyKm)} km nedeljno, ` +
+    `${String(st.availability.runDays.length)} dana.`;
   const text = [
     `${name.toUpperCase()} — ${s.id}, ${s.title}`,
     '',
-    `STANJE: danas ${st.today}; sadašnji obim ${String(profile(s.id).profile.weeklyKm)} km nedeljno, ` +
-      `${String(st.availability.runDays.length)} dana; forma ${clock(f.current.raceTimeSec)} (pouzdanost ` +
-      `${f.current.confidence}), očekivano na dan trke ${clock(f.raceDay.expectedSec)}.`,
-    `DOGAĐAJ: ${r.note}`,
-    `PROMENA: ${String(r.changes.length)}.`,
+    stateLine,
+    `DOGAĐAJ: ${event}`,
     '',
     '==================== PRE ====================',
     E.renderPlan(r.before, r.beforeState, hm),
@@ -58,8 +68,11 @@ for (const s of SCENARIOS) {
   writeFileSync(join(out, `${name}.txt`), `${text}\n`);
   const findings = E.guard(r.after, r.afterState, hm).map((f: Any) => `${f.check}@${String(f.weekIndex)}`);
   summary.push(
-    `${name} ${s.id} ${s.title} — promena: ${String(r.changes.length)}; nalazi čuvara posle: ${findings.join(' ') || '0'}`
+    `${name} ${s.id} ${s.title} — promena: ${String(r.changes.length)}; forma ${clock(f.current.raceTimeSec)} ` +
+      `(${String(f.current.confidence)}); nalazi čuvara posle: ${findings.join(' ') || '0'}`
   );
+  opis.push(`## ${name.toUpperCase()} — ${s.id}, ${s.title}`, '', `- ${stateLine.replace('STANJE: ', 'Stanje: ')}`, `- Događaj: ${event}`, '');
 }
 writeFileSync(join(out, 'pregled.txt'), `${summary.join('\n')}\n`);
+writeFileSync(join(out, 'OPIS.md'), `${opis.join('\n')}\n`);
 console.log(summary.join('\n'));

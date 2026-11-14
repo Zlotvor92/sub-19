@@ -1,8 +1,7 @@
 S12 — p12, E3: ned 4–5: propušten po jedan dugi u obe nedelje
 
-STANJE: danas 2026-12-07; sadašnji obim 45 km nedeljno, 4 dana; forma 26:32 (pouzdanost niska), očekivano na dan trke 26:16.
-DOGAĐAJ: Propušteno: w4d6, w5d6; sve ostalo urađeno; danas 2026-12-07. Događaji: missed:2026-11-29:w4d6, missed:2026-12-06:w5d6.
-PROMENA: 2.
+STANJE: danas 2026-12-07; sadašnji obim 45 km nedeljno, 4 dana.
+DOGAĐAJ: Propušteno: w4d6, w5d6; sve ostalo urađeno; danas 2026-12-07.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 10. 1. 2027.

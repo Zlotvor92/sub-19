@@ -1,8 +1,7 @@
 S05 — p07, E2: bolest 7 dana u ned 6 (specifična, talas)
 
-STANJE: danas 2026-12-13; sadašnji obim 65 km nedeljno, 5 dana; forma 3:33:28 (pouzdanost srednja), očekivano na dan trke 3:31:33.
-DOGAĐAJ: Bolest 2026-12-07 – 2026-12-13 (6. nedelja), bez treninga. Događaji: result:2026-11-28:run-w4d5, pause:2026-12-07:2026-12-13.
-PROMENA: 7.
+STANJE: danas 2026-12-13; sadašnji obim 65 km nedeljno, 5 dana.
+DOGAĐAJ: Bolest 2026-12-07 – 2026-12-13 (6. nedelja), bez treninga.
 
 ==================== PRE ====================
 PLAN: maraton, trka 24. 1. 2027.

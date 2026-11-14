@@ -1,8 +1,7 @@
 S08 — p12, E2: bolest 7 dana u ned 13 (najteža)
 
-STANJE: danas 2027-01-31; sadašnji obim 45 km nedeljno, 5 dana; forma 2:02:45 (pouzdanost srednja), očekivano na dan trke 2:00:01.
-DOGAĐAJ: Bolest 2027-01-25 – 2027-01-31 (13. nedelja), bez treninga. Događaji: result:2026-11-28:run-w4d5, result:2026-12-26:run-w8d5, pause:2027-01-25:2027-01-31.
-PROMENA: 8.
+STANJE: danas 2027-01-31; sadašnji obim 45 km nedeljno, 5 dana.
+DOGAĐAJ: Bolest 2027-01-25 – 2027-01-31 (13. nedelja), bez treninga.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.

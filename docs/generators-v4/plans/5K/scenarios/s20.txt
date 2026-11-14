@@ -1,8 +1,7 @@
 S20 — p12, E5: juče trka 10 km 70:00 (prvi rezultat)
 
-STANJE: danas 2026-11-01; sadašnji obim 45 km nedeljno, 4 dana; forma 31:56 (pouzdanost srednja), očekivano na dan trke 31:06.
+STANJE: danas 2026-11-01; sadašnji obim 45 km nedeljno, 4 dana.
 DOGAĐAJ: Juče (1. 11.) trka 10 km 1:10:00 (prvi rezultat). POSLE je nov plan iz stanja sa tom trkom (isti ulazi).
-PROMENA: 0.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 10. 1. 2027.

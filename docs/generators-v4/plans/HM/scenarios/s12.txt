@@ -1,8 +1,7 @@
 S12 — p12, E3: ned 9–10: propušten po jedan dugi u obe nedelje
 
-STANJE: danas 2027-01-11; sadašnji obim 45 km nedeljno, 5 dana; forma 2:02:08 (pouzdanost srednja), očekivano na dan trke 2:00:33.
-DOGAĐAJ: Propušteno: w9d6, w10d6; sve ostalo urađeno; danas 2027-01-11. Događaji: result:2026-11-28:run-w4d5, result:2026-12-26:run-w8d5, missed:2027-01-03:w9d6, missed:2027-01-10:w10d6.
-PROMENA: 4.
+STANJE: danas 2027-01-11; sadašnji obim 45 km nedeljno, 5 dana.
+DOGAĐAJ: Propušteno: w9d6, w10d6; sve ostalo urađeno; danas 2027-01-11.
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 2. 2027.

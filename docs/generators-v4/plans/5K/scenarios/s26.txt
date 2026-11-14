@@ -1,8 +1,7 @@
 S26 — p11, E7: bol 4/10 u ned 9, pa trka 5 km dve nedelje kasnije
 
-STANJE: danas 2027-01-14; sadašnji obim 12 km nedeljno, 3 dana; forma 27:41 (pouzdanost srednja), očekivano na dan trke 27:13.
-DOGAĐAJ: Bol 4/10 2026-12-31, pa trka 5 km 28:00 dve nedelje kasnije. Događaji: pain:2026-12-31, result:2027-01-14:trka-2027-01-14.
-PROMENA: 16.
+STANJE: danas 2027-01-14; sadašnji obim 12 km nedeljno, 3 dana.
+DOGAĐAJ: Bol 4/10 2026-12-31, pa trka 5 km 28:00 dve nedelje kasnije.
 
 ==================== PRE ====================
 PLAN: 5 km, trka 21. 2. 2027.

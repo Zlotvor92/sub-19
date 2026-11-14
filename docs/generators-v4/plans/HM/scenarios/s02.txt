@@ -1,8 +1,7 @@
 S02 — p04, E1: ned 12, trka 10 km 3,0 % brže od očekivanog
 
-STANJE: danas 2027-01-23; sadašnji obim 55 km nedeljno, 5 dana; forma 2:01:37 (pouzdanost srednja), očekivano na dan trke 2:00:03.
-DOGAĐAJ: Trka 10 km za 53:54 na 2027-01-23 (dan provere forme u 12. nedelji). Događaji: result:2026-11-28:run-w4d5, result:2027-01-23:trka-2027-01-23.
-PROMENA: 1.
+STANJE: danas 2027-01-23; sadašnji obim 55 km nedeljno, 5 dana.
+DOGAĐAJ: Trka 10 km za 53:54 na 2027-01-23 (dan provere forme u 12. nedelji).
 
 ==================== PRE ====================
 PLAN: polumaraton, trka 21. 3. 2027.

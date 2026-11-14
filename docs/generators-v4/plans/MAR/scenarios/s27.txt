@@ -1,8 +1,7 @@
 S27 — p08, E7: propuštena dva kvaliteta (ned 13–14), pa put 6 dana
 
-STANJE: danas 2027-02-20; sadašnji obim 50 km nedeljno, 3 dana; forma 3:32:54 (pouzdanost srednja), očekivano na dan trke 3:30:25.
-DOGAĐAJ: Propuštena dva kvaliteta (2027-01-28, 2027-02-04), pa put 6 dana. Događaji: result:2026-12-24:run-w8d3, missed:2027-01-28:w13d3, missed:2027-02-04:w14d3, result:2026-12-24:run-w8d3, result:2027-02-14:run-w15d6, pause:2027-02-15:2027-02-20.
-PROMENA: 15.
+STANJE: danas 2027-02-20; sadašnji obim 50 km nedeljno, 3 dana.
+DOGAĐAJ: Propuštena dva kvaliteta (2027-01-28, 2027-02-04), pa put 6 dana.
 
 ==================== PRE ====================
 PLAN: maraton, trka 18. 4. 2027.

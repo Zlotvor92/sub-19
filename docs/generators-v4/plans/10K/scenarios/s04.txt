@@ -1,8 +1,7 @@
 S04 — p12, E1: ned 6, prva trka u životu, 5 km 28:30
 
-STANJE: danas 2026-12-12; sadašnji obim 35 km nedeljno, 4 dana; forma 59:14 (pouzdanost srednja), očekivano na dan trke 58:02.
-DOGAĐAJ: Trka 5 km za 28:30 na 2026-12-12 (dan provere forme u 6. nedelji). Događaji: result:2026-12-12:trka-2026-12-12.
-PROMENA: 2.
+STANJE: danas 2026-12-12; sadašnji obim 35 km nedeljno, 4 dana.
+DOGAĐAJ: Trka 5 km za 28:30 na 2026-12-12 (dan provere forme u 6. nedelji).
 
 ==================== PRE ====================
 PLAN: 10 km, trka 24. 1. 2027.
