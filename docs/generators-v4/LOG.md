@@ -789,3 +789,21 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   (`e5866105`) — nastavlja B2, B3, preporuke, dopune MAR, B8. Odluke organizatora za B: 5K p06 duži dugi (≥ 1,4 × pod
   laganog); „najviše dve preporuke" = sve činjenice, dva predloga; skok nedelje samo usko pravilo (obim > +15 % i tri
   teška dana); 10K p08 se ostavlja.
+
+### 14. 11. 2026, 08:25 — R20 završen, provera organizatora (`21d4b070`); ocena R21 pokrenuta
+- Sam pokrenuo: 69 fajlova, 1088 + 17 očekivano (bilo 25: osam poznatih mana skinuto); typecheck čist; kapije 4 × 0
+  [visoka].
+- R19B (trener po novom merilu, stanje `ef506f4c`, `coach/ROUND-V4-R19B.md`): trener je razvrstao 11 profila kao
+  plafon ulaza (HM p03, p10; MAR p03, p06, p08, p10, p13, p18, p19; 5K p13, p14), ostalih 48 „ulaz dozvoljava".
+  Prolazi 23/59 (dozvoljava 23/48; plafon 0/11, „Plan za ulaz" 57,7–74,5). Glavni nalaz: bezbednost 7,5–8,5, iskrenost
+  4–7 (upozori pa zada tempo iz forme).
+- Motor A (`cf064743`, arhiviran): A1 `breakRamp` jedno pravilo povratka; A2 put ≠ bolest; A3 provera se pomera; A4
+  bol; A5 propušten najduži dugi; A6. Ostaje: prognoza posle pauze prema izgubljenom radu (5K s27).
+- Motor B (`54c05dc5`): B1 dugi iz istorije; B4 tempo za trku; B5 raspon; B6 dva predloga; B7 ispis bez nagoveštaja +
+  `OPIS.md`; iskrenost prognoze (kazna uz upozorenje: MAR p03 4:39:53, p13 4:55:59, p19 4:16:53); procena iz laganog
+  tempa (MAR p10 4:55:22, p18 5:02:24); predlog 4. dana sa brojem; pred pripremnu trku skraćenje. Vraćeno/ostaje:
+  B2 po odluci (5K p06 gubi drugi kvalitet), B3 (doze uspona/fartleka traže manji unos u biblioteci; usko pravilo
+  skoka pravi 3 prekršaja), B8 (M22).
+- Podatak R20/R20b: 10K `0296e7c`, HM `cb6a82ce`, MAR `82bbed9b` (dugi po vremenu, predlog 4. dana), 5K `6ab36d5f`
+  (p13 hod-trk napreduje, fartlek vraćen).
+- Odluka vlasnika (07:55): ocena sudija ISKLJUČIVO po novom stanju, posle izmena. R21 po `briefs/R21-JUDGES.md`.
