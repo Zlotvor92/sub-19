@@ -7,7 +7,7 @@ Polazim od tvojih ≈ 36 km nedeljno (3 h 29 min trčanja).
 FORMA
 Polazna forma (1. 11.): 21:49
 Današnja prognoza (1. 11.): 21:49, pouzdanost srednja
-Očekivano na dan trke: 21:43 (raspon 21:22–22:08) — 0:06 brže od današnje prognoze, jer plan do trke dodaje rad u tempu trke
+Očekivano na dan trke: 21:43 (raspon 21:22–22:08) — 0:06 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 21:49 za 5 km.
 
@@ -36,15 +36,15 @@ UPOZORENJA
 
 2. NEDELJA (od 9. 11.) — specifična priprema, vršna nedelja; do trke 2 nedelje
   pon 9. 11.  odmor
-  uto 10. 11.  lagano 7,5 km — 7,5 km, 45 min
+  uto 10. 11.  intervali 4 × 800 m (4:15/km), oporavak 2:30 džog — 8,6 km, 46 min
+      napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   sre 11. 11.  odmor
   čet 12. 11.  tempo trke 5 × 1 km (4:22/km), oporavak 2 min džog — 10,5 km, 55 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   pet 13. 11.  odmor
   sub 14. 11.  lagano 7,5 km — 7,5 km, 45 min
-  ned 15. 11.  dugi 70 min, završnih 7 min u pragu (4:44/km) — 12 km, 70 min
-      napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
-  Zbir: 37,5 km, 3 h 35 min, 4 treninga, brz rad 13 % vremena trčanja
+  ned 15. 11.  dugi 11 km lagano — 11 km, 66 min
+  Zbir: 37,6 km, 3 h 32 min, 4 treninga, brz rad 17 % vremena trčanja
 
 3. NEDELJA (od 16. 11.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 16. 11.  odmor
