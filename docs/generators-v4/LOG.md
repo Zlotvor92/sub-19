@@ -829,3 +829,9 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Tabovi R22 (svi Opus): motor A `session_01GnHHiY77vK5sAVSExCfQTc`, motor B `session_01GnHHiWpYkG4yofXY4tFEFD`, HM
   podatak `session_01GnHHiYnYWNqXAuWCD4B9eM`; 10K `…XivSsUTpEuBAFcJZi`, MAR `…WbwULZGywbJmwtnzH`, 5K
   `…YgBWy4zCKtBd6YPxy` (postojeći, nalog u poruci). Svi tabovi ocene R21 arhivirani.
+
+### 14. 11. 2026, 18:40 — R22 završen, provera organizatora (`e1136a16`); PRESEK po nalogu vlasnika
+- Sam pokrenuo: 74 fajla, 1121 + 12 očekivano; typecheck čist; kapije 4 × 0 [visoka]. R22 NIJE ocenjen.
+- Vlasnik (11:56): kad svi završe — stati, presek, plan. (12:20): krediti se troše prebrzo (40 % nedeljnog limita).
+  Ništa se ne pokreće dok vlasnik ne odobri plan. Motor A je 12:45–18:00 stajao na limitu (i organizator do 17:59).
+- Stanje, otvoreno, tabovi, trošak i naučeno: `HANDOFF-4.md`.
