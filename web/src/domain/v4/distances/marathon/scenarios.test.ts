@@ -93,7 +93,12 @@ describe('maraton: ponovno planiranje nad 29 scenarija', () => {
         bad.push(`${name(s.no)} sledeći dugi n${String(next.index)} kraći od prvobitnog`);
       for (const c of r.changes) {
         const w = (r.after.weeks as PlanWeek[]).find((x) => x.days.some((d) => d.id === c.dayId));
-        if (w !== undefined && w.index >= n - 2 && w.index < n)
+        /* R20 (A5): propušten najduži dugi — N−2 dobija lagan dugi ≈ 85 % propuštenog (namerna izmena u sužavanju) */
+        const a5 =
+          String(c.eventId).startsWith('missed:') &&
+          w?.index === n - 2 &&
+          w.days.some((d) => d.id === c.dayId && d.workout?.kind === 'long');
+        if (w !== undefined && w.index >= n - 2 && w.index < n && !a5)
           bad.push(`${name(s.no)} izmena u sužavanju n${String(w.index)} (${String(c.dayId)})`);
       }
     }

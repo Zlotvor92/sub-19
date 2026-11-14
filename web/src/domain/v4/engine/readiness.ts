@@ -137,7 +137,11 @@ function firstReturnWeek(last: IsoDate): IsoDate {
 
 /** R20 (A1): raspored povratka posle trke važi samo kad se završi pre nedelje pred trkom (inače stara rampa — nedelja
     pred trkom zadržava sužavanje). */
-export function effortScheduleFits(date: IsoDate, durationSec: Seconds, raceDate: IsoDate): boolean {
+export function effortScheduleFits(
+  date: IsoDate,
+  durationSec: Seconds,
+  raceDate: IsoDate
+): boolean {
   const shares = effortShares(durationSec);
   const end = addDays(firstReturnWeek(date), 7 * shares.length - 1);
   return shares.length > 0 && end < addDays(mondayOf(raceDate), -7);

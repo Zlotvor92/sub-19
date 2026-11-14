@@ -79,7 +79,7 @@ import {
   rampOf,
   type ReturnSchedule
 } from './readiness';
-import { mainZone, minDoseOf, realize, type Recipe } from './select';
+import { mainZone, minDoseOf, realize, steadyLongDef, type Recipe } from './select';
 import {
   lastLongAfterEffort,
   lastLongBefore,
@@ -120,6 +120,8 @@ interface Candidate {
   /** Propušten ključni trening: šta je propušteno i šta plan radi (R8) — rečenica ide trkaču i kad se treninzi
       ne menjaju. */
   missed?: { day: PlanDay; weekIndex: number; meaning: string; action: string };
+  /** R20 (A5): ciljni dan sme da bude u sužavanju (lagan dugi posle propuštenog najdužeg). */
+  keepTaper?: boolean;
 }
 
 const sameAdjustment = (a: Adjustment, b: Adjustment): boolean => {
@@ -304,6 +306,10 @@ const hasBlock = (day: PlanDay | undefined): boolean =>
 
 /** R19: posle pauze sledeći dugi posle propuštenog ≤ poslednji odrađeni dugi + 20 min — ovoliko dana posle pauze. */
 const RETURN_CAP_AFTER_PAUSE_DAYS = 42;
+/** R20 (A5): sledeći dugi posle propuštenog najdužeg ≈ ovaj udeo propuštenog. */
+const MISSED_LONGEST_SHARE = 0.85;
+/** R20 (A5): … samo kad je bar ovoliko dana pred trkom. */
+const MISSED_LONGEST_MIN_DAYS_TO_RACE = 12;
 
 const MISSED_MEANING = {
   block:
@@ -367,7 +373,7 @@ function guardMissed(
         const o = old.days.find((x) => x.id === d.id);
         if (o === undefined || canonical(o.workout) === canonical(d.workout)) return d;
         const target = d.id === c.repeatDayId;
-        if (taper) {
+        if (taper && !(target && c.keepTaper === true)) {
           if (target) why = 'poslednje dve nedelje pred trku su za odmor';
           return o;
         }
@@ -548,6 +554,53 @@ function onMissed(
     }
   }
 
+  /* R20 (A5): propušten NAJDUŽI dugi plana kad do trke nema nedelje gradnje — sledeći dugi (u sužavanju, bar 12 dana
+     pred trku) postaje lagan dugi ≈ 85 % propuštenog (MAR s28/s09: N−2 24–26 km lagano, ne 18 km sa blokom) */
+  if (isLong && nextBuildLong === undefined && nextLong !== undefined) {
+    const missedSec = summarize(missed, ctx).durationSec;
+    const longest = Math.max(
+      0,
+      ...days
+        .filter((d) => d.workout?.kind === 'long')
+        .map((d) => summarize(d.workout, ctx).durationSec)
+    );
+    const nowSec = summarize(nextLong.workout, ctx).durationSec;
+    const farEnough =
+      diffDays(doc.header.goal.raceDate, nextLong.date) >= MISSED_LONGEST_MIN_DAYS_TO_RACE;
+    if (missedSec >= longest - 60 && farEnough) {
+      const target = Math.round((MISSED_LONGEST_SHARE * missedSec) / 60) * 60;
+      const ctxB = buildCtx(doc.header, data);
+      const workout =
+        target > nowSec + 300
+          ? realize(
+              { type: 'long', sec: target, def: steadyLongDef(ctxB, null), dose: 0, slot: null },
+              ctxB
+            )
+          : null;
+      if (workout !== null) {
+        const next: PlanDoc = {
+          ...doc,
+          weeks: doc.weeks.map((w) => ({
+            ...w,
+            days: w.days.map((d) =>
+              d.id === nextLong.id ? { ...d, origin: 'template', workout } : d
+            )
+          }))
+        };
+        return {
+          doc: next,
+          until: nextLong.date,
+          repeatDayId: nextLong.id,
+          keepTaper: true,
+          missed: base(
+            MISSED_MEANING.block,
+            `najduži dugi se ne nadoknađuje u celini, ali sledeći dugi (${fmtDate(nextLong.date)}) je lagan ${fmtDistance(summarize(workout, ctx).km * 1000)} umesto kraćeg sa blokom — dovoljno blizu da zadrži izdržljivost, dovoljno daleko od trke za oporavak`
+          )
+        };
+      }
+    }
+  }
+
   /* (b) Propušten dugi sa blokom ili vršni kvalitet. */
   const block = hasBlock(day);
   const peakQuality = !isLong && week.intent.kind === 'peak';
@@ -591,7 +644,7 @@ function onMissed(
       );
     }
     const lengthSec = block ? Math.round(summarize(missed, ctx).durationSec) : undefined;
-    return build(
+    const carried = build(
       {
         kind: 'repeat',
         source: ev.id,
@@ -603,9 +656,43 @@ function onMissed(
       nextBuildLong,
       base(
         meaning,
-        `sledeći dugi (${fmtDate(nextBuildLong.date)}) nosi završni deo u tempu trke na prethodnom koraku, ne na većem`
+        `sledeći dugi (${fmtDate(nextBuildLong.date)}) nosi završni deo u tempu trke na prethodnom koraku, ne na većem${block ? '; te nedelje jedan brzi trening usred nedelje postaje lagan' : ''}`
       )
     );
+    if (!block) return carried;
+    /* R20 (A5): prenet blok u dugom — te nedelje poslednji kvalitet pre dugog postaje lagan istog trajanja (MAR s25:
+       ne tri podražaja u nedelji) */
+    const ctxB = buildCtx(carried.doc.header, data);
+    const tw = carried.doc.weeks.find((w) => w.days.some((d) => d.id === nextBuildLong.id));
+    const qs = (tw?.days ?? []).filter(
+      (d) =>
+        d.workout?.kind === 'quality' &&
+        d.date < nextBuildLong.date &&
+        isMutable(d, carried.doc.header, state.today, done)
+    );
+    /* tri podražaja (kvaliteti, provera i blok u dugom) su previše — jedan kvalitet otpada */
+    const hard = (tw?.days ?? []).filter(
+      (d) => d.workout?.kind === 'quality' || d.workout?.kind === 'test'
+    ).length;
+    const cut = hard + 1 >= 3 ? qs[qs.length - 1] : undefined;
+    if (cut?.workout == null) return carried;
+    const easy = realize(
+      { type: 'easy', sec: Math.round(summarize(cut.workout, ctx).durationSec / 60) * 60 },
+      ctxB
+    );
+    if (easy === null) return carried;
+    return {
+      ...carried,
+      doc: {
+        ...carried.doc,
+        weeks: carried.doc.weeks.map((w) => ({
+          ...w,
+          days: w.days.map((d) =>
+            d.id === cut.id ? { ...d, origin: 'template', workout: easy } : d
+          )
+        }))
+      }
+    };
   }
 
   /* Ostalo: sledeći isti trening u 14 dana ostaje na propuštenoj dozi ili dužini. */

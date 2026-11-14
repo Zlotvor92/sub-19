@@ -94,7 +94,9 @@ export function breakStartOf(
         lastLongSec: 'lastLongSec' in a ? (a.lastLongSec ?? 0) : 0,
         refFrom: a.kind === 'pause' ? a.from : z,
         firstShare:
-          a.kind === 'pause' && a.reason === 'put' ? RETURN_TRAVEL_DOSE_FACTOR : BREAK_FIRST_DOSE_SHARE,
+          a.kind === 'pause' && a.reason === 'put'
+            ? RETURN_TRAVEL_DOSE_FACTOR
+            : BREAK_FIRST_DOSE_SHARE,
         pain: a.kind === 'pain'
       };
   }
@@ -123,8 +125,7 @@ function fastKey(w: Workout | null, data: DistanceData): string | null {
   const def = defOf(w, data);
   if (def === undefined) return null;
   if (w.kind === 'quality') return `quality:${def.stimulus}@${mainZone(def.main) ?? ''}`;
-  if (w.kind === 'long' && w.workSec > 0)
-    return `long:${def.stimulus}@${mainZone(def.main) ?? ''}`;
+  if (w.kind === 'long' && w.workSec > 0) return `long:${def.stimulus}@${mainZone(def.main) ?? ''}`;
   return null;
 }
 
@@ -150,8 +151,7 @@ export function applyBreakRamp(
     w == null ? 0 : summarize(w, pace).durationSec;
   const km = (w: PlanWeek): number => weekCost(w, race, pace).km;
   const oldDay = new Map(before.weeks.flatMap((w) => w.days).map((d) => [d.date, d] as const));
-  const mutable = (d: PlanDay): boolean =>
-    d.date > zero && isMutable(d, after.header, today, done);
+  const mutable = (d: PlanDay): boolean => d.date > zero && isMutable(d, after.header, today, done);
   const weeks = after.weeks.map((w) => ({ ...w, days: [...w.days] }));
   const touched = new Set<number>();
   const put = (wi: number, di: number, workout: Workout): void => {
@@ -304,7 +304,13 @@ export function applyBreakRamp(
           def.main.kind === 'reps' && want >= data.safety.minDoseSec ? want : Math.max(want, min);
         if (dose >= d.workout.workSec - 30) continue;
         const floor = def.main.kind === 'reps' ? data.safety.minDoseSec : min;
-        const cut = fitQuality(def, dose, Math.min(dose, Math.max(floor, dose - 600)), w.intent.phase, 0);
+        const cut = fitQuality(
+          def,
+          dose,
+          Math.min(dose, Math.max(floor, dose - 600)),
+          w.intent.phase,
+          0
+        );
         if (cut === null || cut.workSec >= d.workout.workSec - 30) continue;
         /* manje rada, isto vreme treninga: razlika ide u lagano hlađenje (nedelja ne gubi obim) */
         const wasSec = dur(d.workout);
@@ -312,7 +318,13 @@ export function applyBreakRamp(
         const next =
           extra < 60
             ? cut
-            : (fitQuality(def, cut.workSec, cut.workSec - 60, w.intent.phase, Math.round(extra / 60) * 60) ?? cut);
+            : (fitQuality(
+                def,
+                cut.workSec,
+                cut.workSec - 60,
+                w.intent.phase,
+                Math.round(extra / 60) * 60
+              ) ?? cut);
         put(wi, di, next.workSec <= cut.workSec + 30 ? next : cut);
       }
     }

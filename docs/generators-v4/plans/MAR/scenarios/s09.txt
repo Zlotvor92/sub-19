@@ -193,7 +193,8 @@ UPOZORENJA
 
 PROMENE
 Propušten je ključni trening „prag 2 × 10 min, oporavak 1:30 džog" (31. 12.). To je bio glavni brzi trening najteže nedelje; do trke više nema nedelje u kojoj bi mogao da se nadoknadi — poslednje dve nedelje su za odmor, pa plan ostaje isti.
-Propušten je ključni trening „dugi 30 km, poslednjih 12,5 km u tempu maratona" (3. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; do trke više nema nedelje u kojoj bi mogao da se nadoknadi — poslednje dve nedelje su za odmor, pa plan ostaje isti.
+Propušten je ključni trening „dugi 30 km, poslednjih 12,5 km u tempu maratona" (3. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; najduži dugi se ne nadoknađuje u celini, ali sledeći dugi (10. 1.) je lagan 23,5 km umesto kraćeg sa blokom — dovoljno blizu da zadrži izdržljivost, dovoljno daleko od trke za oporavak.
+- ned 10. 1.: dugi 18 km, poslednjih 3 km u tempu maratona → dugi 23,5 km lagano
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  lagano 11 km — urađeno 11 km, 65 min (5:57/km)
@@ -292,10 +293,9 @@ Propušten je ključni trening „dugi 30 km, poslednjih 12,5 km u tempu maraton
   čet 7. 1.  lagano 8 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9 km, 53 min
   pet 8. 1.  odmor
   sub 9. 1.  lagano 10,5 km — 10,5 km, 62 min
-  ned 10. 1.  dugi 18 km, poslednjih 3 km u tempu maratona (5:02/km) — 18 km, 1 h 44 min
-      napomena: Blok trči ravnomerno u tempu maratona, ne brže; unos gela vežbaj i tokom bloka, kao na trci. Ako tempo ne možeš da držiš bez naprezanja, skrati blok — ne ubrzavaj.
+  ned 10. 1.  dugi 23,5 km lagano — 23,5 km, 2 h 20 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 58,9 km, 5 h 41 min, 5 treninga, brz rad 12 % vremena trčanja
+  Zbir: 64,4 km, 6 h 17 min, 5 treninga, brz rad 7 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 11. 1.  lagano 8 km — 8 km, 48 min
