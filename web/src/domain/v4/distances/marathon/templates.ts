@@ -276,13 +276,13 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
   return [
     ...halfRace,
     /* N−7: R18 — lagan dugi (bez bloka: višak km bloka bi skratio dugi u udelu ≤ 45 %), da lestvica N−7 → N−5 → N−3
-       stigne do 26 km; plan kraći od 16 nedelja zadržava prvi blok (≈ 8 km MP) */
+       stigne do 26 km; plan kraći od 16 nedelja zadržava prvi blok (≈ 8 km MP); R20b: i kod 1–3 dana 92 % (p08 dva puta 30 km) */
     n >= 16
       ? week(
           SPEC,
           'build',
           0.93,
-          { len: sh.single ? 0.84 : 0.92 },
+          { len: 0.92 },
           sh.single ? [STRIDES, STRIDES] : [S('prag', 0.6), STRIDES]
         )
       : block(0.5, sh.single ? 0.84 : 0.92, short ? 0.95 : 0.93),

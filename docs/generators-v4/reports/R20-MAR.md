@@ -20,3 +20,15 @@ p04, p05, p07, p08, p12, p14, p15, p16 isti. P2 A: 2 h 15 → 2:52 (N−5) i 3:0
 3. A4: s15 — prvi blok MP posle bola (N−5, dve nedelje kasnije) 33 od 33 min; u KNOWN.
 4. Rastezanje koraka (R19, × 1,15) uz zaokruživanje dana prelazi K7 za 0,02–0,3 km (p13, p19) kod koraka > 1,75.
 5. B6/D7: P2 B (najduži 17,3 km) bez predloga polumaratona; D8 p18 raspon prognoze do 5 h 15 (B5).
+
+## § R20b — 3 dana, p06, p08 (trener `coach/ROUND-V4-R19B`)
+- Upozorenje `malo-dana` sada dobijaju i p03, p10 i p13 (podatak: `minRunDaysByLevel` samo za početnika; ranije su
+  spor/mali/hod-trk bili izuzeti). Predlog: 4. dan od 50 min (p03), 55 min (p10), 40 min (p13); p08 75 min → dugi 30 km.
+- MOTOR: za p03/p10/p13 probni plan sa 4 dana ne daje više km (vrh se računa iz polaznog obima), pa tekst kaže „isti
+  obim se deli…" bez broja; trener traži broj (km nedelje i najduži dugi sa 4. danom). p13: B6 spaja predlog dana u
+  `mali-obim`, a `malo-dana` ostaje bez predloga (prazan tekst).
+- p08 (3 dana, 24 ned): N−7 lagan dugi 92 % i kod 1–3 dana → dugi 30 km (2:47) u N−5 i 30 km (2:48) u N−3 (pre 27/28,5).
+  p03 i p10 isti najduži (25,8 / 25,8 km; p10 sa 25,1). Blok MP od 12. nedelje (p08) nije rađen.
+- p06 (brz, 12 ned): 26 km / 1:59, ne 2 h 20 / 30 km — MOTOR: korak dugog je stalan (1,75 km, × 1,15), a 15 → 30 km
+  za 8 nedelja gradnje traži korak ≈ 12 % (K7 to dozvoljava); vrh 56 km (lestvica), trener traži ≈ 65.
+- Kapije 4 × 0; V4 + isolation 1072 + 24; typecheck čist; HM/10K/5K bajt-isti; target-compare 21 od 78.
