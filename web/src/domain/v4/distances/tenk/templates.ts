@@ -273,7 +273,9 @@ function regularTail(sh: Shape, long: boolean, check: boolean, eight = false): W
           SPEC,
           'build',
           0.97,
-          { len: 0.95, stimulus: 'dugi-prag', dose: 1 },
+          /* R20 (p04): završnica dugog u tempu trke, ne u pragu (9 nedelja istog dugog bez rada u tempu trke); jedan
+             kvalitet (1–3 dana) zadržava prag, da najteža ostane nedelja sa najviše tempa trke (B1) */
+          { len: 0.95, stimulus: sh.single ? 'dugi-prag' : 'dugi-rp', dose: 1 },
           /* jedan kvalitet: drugi oblik (1,2 km), da N−7 i N−5 nisu isti trening (krug 3, p10) */
           pair(S('tempo-trke', 0.6, sh.single ? 'rp-1200' : 'rp-1000'), STRIDES)
         ),
@@ -296,7 +298,7 @@ function regularTail(sh: Shape, long: boolean, check: boolean, eight = false): W
           ? eight
             ? /* R17 (p02, p06): plan od 8–9 nedelja nema rasterećenje — provera je u nedelji gradnje (četvrtak, jedini
                  brz trening), da gradnja traje 4 nedelje + najteža, a silazak 2 nedelje */
-              week(SPEC, 'build', 0.95, { len: 0.92 }, [KONTROLA])
+              week(SPEC, 'build', 0.95, { len: 0.88 }, [KONTROLA])
             : week(SPEC, 'recovery', 1, { len: 0.88 }, [KONTROLA])
           : week(
               RAZVOJ,
@@ -318,7 +320,7 @@ function regularTail(sh: Shape, long: boolean, check: boolean, eight = false): W
          kvalitet) i 5 dana (p06, p07: mali obim, budžet brzog rada) zadržavaju završnicu u dugom */
       !sh.single && (sh.days <= 4 || sh.days >= 6)
         ? { len: 1 }
-        : { len: 1, stimulus: long ? 'dugi-prag' : 'dugi-rp', dose: 1 },
+        : { len: 1, stimulus: long && sh.single ? 'dugi-prag' : 'dugi-rp', dose: 1 },
       /* kratak plan (mali obim, budžet brzog rada): tempo trke u prvom mestu (četvrtak) dobija budžet prvi */
       long
         ? pair(S('intervali', !sh.single && sh.days <= 4 ? 1 : 0.8), S('tempo-trke', 1))
@@ -338,7 +340,9 @@ function regularTail(sh: Shape, long: boolean, check: boolean, eight = false): W
     week(
       FINISH,
       'taper',
-      0.68,
+      /* R20 (p02): kratak plan sa ≤ 4 dana — nedelja −1 ≤ 70 % vrha; sa 5+ dana (p06) 0,6 briše jedini tempo trke
+         nedelje −1 (lagani dani na podu), pa ostaje 0,68 */
+      long || sh.days >= 5 ? 0.68 : 0.6,
       { len: long ? 0.72 : 0.62 },
       pair(S('intervali', 0.4), S('tempo-trke', 0.4, 'rp-1200'))
     ),

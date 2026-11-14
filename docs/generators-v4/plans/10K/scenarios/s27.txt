@@ -165,7 +165,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
   čet 28. 1.  tempo trke 6 × 1 km (5:36/km), oporavak 1:30 džog — 11,9 km, 76 min
   pet 29. 1.  odmor
   sub 30. 1.  lagano 75 min — 10,5 km, 75 min
-  ned 31. 1.  dugi 96 min, završnih 11 min u pragu (5:41/km) — 13,8 km, 96 min
+  ned 31. 1.  dugi 96 min, završnih 11 min u tempu trke (5:36/km) — 13,8 km, 96 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 57,9 km, 6 h 42 min, 5 treninga, brz rad 11 % vremena trčanja
@@ -188,7 +188,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
   čet 11. 2.  intervali 5 × 800 m (5:20/km), oporavak 2:30 džog — 10,2 km, 66 min
   pet 12. 2.  odmor
   sub 13. 2.  lagano 75 min — 10,5 km, 75 min
-  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u pragu (5:41/km) — 14,5 km, 1 h 40 min
+  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u tempu trke (5:36/km) — 14,5 km, 1 h 40 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 58,3 km, 6 h 37 min, 5 treninga, brz rad 18 % vremena trčanja
@@ -261,7 +261,7 @@ Pauza zbog puta trajala je 6 dana (18–23. 1.), pa je povratak postepen: trenin
 - uto 26. 1.: lagano 75 min → lagano 55 min
 - čet 28. 1.: tempo trke 6 × 1 km, oporavak 1:30 džog → lagano 55 min
 - sub 30. 1.: lagano 75 min → lagano 55 min
-- ned 31. 1.: dugi 96 min, završnih 11 min u pragu → dugi 75 min lagano
+- ned 31. 1.: dugi 96 min, završnih 11 min u tempu trke → dugi 75 min lagano
 - pon 1. 2.: lagano 80 min → lagano 65 min
 - uto 2. 2.: tempo trke 4 × 1,6 km, oporavak 1:30 džog → lagano 60 min
 - čet 4. 2.: intervali 7 × 3 min, oporavak 2:30 džog → intervali 6 × 3 min, oporavak 2:30 džog
@@ -419,7 +419,7 @@ Pauza zbog puta trajala je 6 dana (18–23. 1.), pa je povratak postepen: trenin
   čet 11. 2.  intervali 5 × 800 m (5:20/km), oporavak 2:30 džog — 10,2 km, 66 min
   pet 12. 2.  odmor
   sub 13. 2.  lagano 75 min — 10,5 km, 75 min
-  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u pragu (5:41/km) — 14,5 km, 1 h 40 min
+  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u tempu trke (5:36/km) — 14,5 km, 1 h 40 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 58,3 km, 6 h 37 min, 5 treninga, brz rad 18 % vremena trčanja

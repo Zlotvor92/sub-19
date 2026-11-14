@@ -143,10 +143,10 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
   čet 14. 1.  tempo trke 5 × 1 km (4:36/km), oporavak 1:30 džog — 11,7 km, 64 min
   pet 15. 1.  odmor
   sub 16. 1.  lagano 11 km — 11 km, 67 min
-  ned 17. 1.  dugi 93 min, završnih 11 min u pragu (4:46/km) — 15,8 km, 93 min
+  ned 17. 1.  dugi 93 min, završnih 11 min u tempu trke (4:36/km) — 15,9 km, 93 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 50 km, 4 h 54 min, 4 treninga, brz rad 12 % vremena trčanja
+  Zbir: 50,1 km, 4 h 54 min, 4 treninga, brz rad 12 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, vršna nedelja; do trke 4 nedelje
   pon 18. 1.  odmor
@@ -338,10 +338,10 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
   čet 14. 1.  tempo trke 5 × 1 km (4:36/km), oporavak 1:30 džog — 11,7 km, 64 min
   pet 15. 1.  odmor
   sub 16. 1.  lagano 11 km — 11 km, 67 min
-  ned 17. 1.  dugi 93 min, završnih 11 min u pragu (4:46/km) — 15,8 km, 93 min
+  ned 17. 1.  dugi 93 min, završnih 11 min u tempu trke (4:36/km) — 15,9 km, 93 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 50 km, 4 h 54 min, 4 treninga, brz rad 12 % vremena trčanja
+  Zbir: 50,1 km, 4 h 54 min, 4 treninga, brz rad 12 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, vršna nedelja; do trke 4 nedelje
   pon 18. 1.  odmor

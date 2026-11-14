@@ -165,7 +165,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
   čet 28. 1.  tempo trke 6 × 1 km (5:36/km), oporavak 1:30 džog — 11,9 km, 76 min
   pet 29. 1.  odmor
   sub 30. 1.  lagano 75 min — 10,5 km, 75 min
-  ned 31. 1.  dugi 96 min, završnih 11 min u pragu (5:41/km) — 13,8 km, 96 min
+  ned 31. 1.  dugi 96 min, završnih 11 min u tempu trke (5:36/km) — 13,8 km, 96 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 57,9 km, 6 h 42 min, 5 treninga, brz rad 11 % vremena trčanja
@@ -188,7 +188,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
   čet 11. 2.  intervali 5 × 800 m (5:20/km), oporavak 2:30 džog — 10,2 km, 66 min
   pet 12. 2.  odmor
   sub 13. 2.  lagano 75 min — 10,5 km, 75 min
-  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u pragu (5:41/km) — 14,5 km, 1 h 40 min
+  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u tempu trke (5:36/km) — 14,5 km, 1 h 40 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 58,3 km, 6 h 37 min, 5 treninga, brz rad 18 % vremena trčanja
@@ -383,7 +383,7 @@ Rezultat 5 km za 25:49 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
   čet 28. 1.  tempo trke 6 × 1 km (5:29/km), oporavak 1:30 džog — 12 km, 75 min
   pet 29. 1.  odmor
   sub 30. 1.  lagano 75 min — 10,7 km, 75 min
-  ned 31. 1.  dugi 96 min, završnih 11 min u pragu (5:34/km) — 14,1 km, 96 min
+  ned 31. 1.  dugi 96 min, završnih 11 min u tempu trke (5:29/km) — 14,1 km, 96 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 58,9 km, 6 h 41 min, 5 treninga, brz rad 11 % vremena trčanja
@@ -406,7 +406,7 @@ Rezultat 5 km za 25:49 (23. 1.) pokazuje bolju formu od one po kojoj je plan pis
   čet 11. 2.  intervali 5 × 800 m (5:13/km), oporavak 2:30 džog — 10,3 km, 66 min
   pet 12. 2.  odmor
   sub 13. 2.  lagano 75 min — 10,7 km, 75 min
-  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u pragu (5:34/km) — 14,8 km, 1 h 40 min
+  ned 14. 2.  dugi 1 h 40 min, završnih 15 min u tempu trke (5:29/km) — 14,8 km, 1 h 40 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 59,2 km, 6 h 36 min, 5 treninga, brz rad 18 % vremena trčanja
