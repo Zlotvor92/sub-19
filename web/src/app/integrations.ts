@@ -38,8 +38,10 @@ import { useSettingsStore } from '../stores/settingsStore';
 import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
 import { useV4Store } from '../stores/v4Store';
 import type { PlanEvent } from '../domain/v4/engine';
+import { createActivityImport } from '../services/strava/activityImport';
 import {
   commitAction,
+  createSupabaseActivityStore,
   createEventsApi,
   createPlanApi,
   createV4Rest,
@@ -225,7 +227,35 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
       });
     }
   };
+  const v4Rest =
+    deps.supabaseUrl && deps.anonKey
+      ? createV4Rest({
+          fetcher: deps.fetcher,
+          session: deps.session,
+          supabaseUrl: deps.supabaseUrl,
+          anonKey: deps.anonKey
+        })
+      : null;
+  /* F9 korak 7 (6): uvoz aktivnosti za V4 (`aktivnost`) posle redovne sinhronizacije — SAMO dok je V4 uključen. */
+  const v4Activities =
+    v4Rest === null
+      ? undefined
+      : {
+          enabled: (): boolean => useV4Store.getState().enabled,
+          run: () =>
+            createActivityImport({
+              api: stravaApi,
+              store: createSupabaseActivityStore({
+                rest: v4Rest,
+                kv: deps.kv,
+                deviceId: deps.session.state.deviceId ?? 'uredjaj',
+                progressKey: (uid) => `sub19-v1:v4-aktivnost:${uid}`
+              }),
+              now
+            }).run()
+        };
   const stravaSync = createStravaSync({
+    ...(v4Activities !== undefined ? { activities: v4Activities } : {}),
     accountKey: deps.accountKey,
     api: stravaApi,
     link: stravaLink,
@@ -427,15 +457,6 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
   };
 
   /* ---------------------------------------------------------------- V4 (F9 korak 7) */
-  const v4Rest =
-    deps.supabaseUrl && deps.anonKey
-      ? createV4Rest({
-          fetcher: deps.fetcher,
-          session: deps.session,
-          supabaseUrl: deps.supabaseUrl,
-          anonKey: deps.anonKey
-        })
-      : null;
   const v4Plan = v4Rest === null ? null : createPlanApi(v4Rest);
   const v4Events = v4Rest === null ? null : createEventsApi(v4Rest);
   const v4 =
