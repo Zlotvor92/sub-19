@@ -1,7 +1,8 @@
 /* R22 (A2) — svojstvo nad scenarijima SVIH distanci: propušten trening (kvalitet ili dugi, bez drugog događaja; i dva
    pojedinačna, ne dva duga zaredom)
    nije prekid — nijedan budući ključni trening (kvalitet, provera: rad) i nijedan dugi (trajanje) nije manji nego u
-   planu bez događaja, a izmene nema osim obaveštenja ili dodatka. */
+   planu bez događaja, a izmene nema osim obaveštenja ili dodatka. R24 (M1): izuzetak je dugi skraćen do granice
+   odrađenog (najduži odrađeni + 20 min, blok ≤ 1,5 × odrađeni) — izmena to kaže („toliko nosi ono što je odrađeno"). */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument,
    @typescript-eslint/no-unsafe-return -- scenariji su netipizovani */
@@ -68,7 +69,11 @@ describe('R22 (A2) — jedan propušten trening nije prekid (sve distance)', () 
               : k === 'long'
                 ? summarize(a, pa).durationSec
                 : a.workSec;
-          if (now < was - 30)
+          /* R24 (M1): sledeći dugi se meri prema odrađenom — skraćen do te granice (izmena to kaže) nije prekid */
+          const m1 =
+            k === 'long' &&
+            JSON.stringify(r.changes ?? []).includes('toliko nosi ono što je odrađeno');
+          if (now < was - 30 && !m1)
             bad.push(
               `${tag} ${String(b.date)} ${String(b.workout.text)} → ${String(a?.text ?? 'odmor')}`
             );

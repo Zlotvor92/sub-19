@@ -58,6 +58,7 @@ import {
   DAYS,
   fmtClock,
   fmtDate,
+  fmtMinutes,
   fmtDateRange,
   fmtDateYear,
   fmtDistance,
@@ -461,6 +462,111 @@ function guardMissed(
   }
   const missed = action !== null && c.missed !== undefined ? { ...c.missed, action } : c.missed;
   return { ...c, doc: { ...c.doc, weeks }, ...(missed === undefined ? {} : { missed }) };
+}
+
+/** R24 (M1): posle propuštenog ključnog treninga budući dugi se meri prema ODRAĐENOM — najviše najduži odrađeni dugi
+    u poslednjih 5 nedelja + 20 min, a blok najviše 1,5 × najveći odrađeni blok iste vrste (bez odrađenog: doza prvog
+    propuštenog bloka). Ko ne ispuni, skraćuje se tačno na granicu (ne briše se); naredni rastu od nje (lanac). */
+const M1_DONE_WEEKS_DAYS = 35;
+const M1_BLOCK_OVER_DONE = 1.5;
+function missedFromDone(
+  c: Candidate | null,
+  original: PlanDoc,
+  state: RunnerState,
+  data: DistanceData
+): Candidate | null {
+  if (c === null) return null;
+  const pace = paceCtxOf(c.doc.header);
+  const ctxB = buildCtx(c.doc.header, data);
+  const done = doneDayIds(state);
+  const ran = new Map(
+    state.runs.flatMap((r) => (r.dayId === undefined ? [] : [[r.dayId, r] as const]))
+  );
+  const days = allDays(original);
+  const blockKey = (w: Workout): string | null =>
+    w.kind === 'long' && w.workSec > 0 ? (w.stimulus ?? w.libraryId ?? null) : null;
+  let maxLong = 0;
+  const maxBlock = new Map<string, Seconds>();
+  const firstMissed = new Map<string, Seconds>();
+  /* „poslednjih 5 nedelja": 5 nedelja pre nedelje poslednjeg propuštenog dugog */
+  const lastMissed = days
+    .filter((d) => d.date <= state.today && d.workout?.kind === 'long' && !ran.has(d.id))
+    .at(-1);
+  const from = addDays(mondayOf(lastMissed?.date ?? state.today), -M1_DONE_WEEKS_DAYS);
+  for (const d of days) {
+    if (d.date > state.today || d.workout?.kind !== 'long') continue;
+    const key = blockKey(d.workout);
+    const run = ran.get(d.id);
+    if (run === undefined) {
+      if (key !== null && !firstMissed.has(key)) firstMissed.set(key, d.workout.workSec);
+      continue;
+    }
+    if (d.date >= from) maxLong = Math.max(maxLong, run.durationSec);
+    if (key !== null) maxBlock.set(key, Math.max(maxBlock.get(key) ?? 0, d.workout.workSec));
+  }
+  if (maxLong === 0 || firstMissed.size === 0) return c;
+  let changed: { date: IsoDate; sec: Seconds; block: Seconds } | null = null;
+  const weeks = c.doc.weeks.map((w): PlanWeek => ({
+    ...w,
+    days: w.days.map((d): PlanDay => {
+      const x = d.workout;
+      if (x?.kind !== 'long' || d.date <= state.today) return d;
+      if (!isMutable(d, c.doc.header, state.today, done)) return d;
+      const sec = summarize(x, pace).durationSec;
+      const key = blockKey(x);
+      const capSec = maxLong + RETURN_LONG_JUMP_SEC;
+      const doneBlock = key === null ? 0 : (maxBlock.get(key) ?? 0);
+      const capBlock =
+        key === null
+          ? Number.POSITIVE_INFINITY
+          : doneBlock > 0
+            ? M1_BLOCK_OVER_DONE * doneBlock
+            : (firstMissed.get(key) ?? Number.POSITIVE_INFINITY);
+      let out = d;
+      if (sec > capSec + 60 || x.workSec > capBlock + 30) {
+        const def = data.library.find((y) => y.id === x.libraryId) ?? null;
+        const dose = Math.min(x.workSec, Math.floor(capBlock / 60) * 60);
+        /* dužina ostaje (km u laganom tempu), osim kad prelazi granicu trajanja — tada do granice */
+        const limit = Math.min(sec, Math.floor(capSec / 300) * 300);
+        let workout: Workout | null = null;
+        for (
+          let s = Math.ceil((summarize(x, pace).km * pace.paces.easy) / 60) * 60;
+          s > 0;
+          s -= 60
+        ) {
+          workout = realize(
+            { type: 'long', sec: s, def, dose: Math.min(dose, s / 2), slot: null },
+            ctxB
+          );
+          if (workout === null || summarize(workout, pace).durationSec <= limit + 60) break;
+        }
+        if (workout !== null) {
+          out = { ...d, workout };
+          if (changed === null)
+            changed = {
+              date: d.date,
+              sec: summarize(workout, pace).durationSec,
+              block: workout.workSec
+            };
+        }
+      }
+      const now = out.workout;
+      if (now != null) {
+        maxLong = Math.max(maxLong, summarize(now, pace).durationSec);
+        const k = blockKey(now);
+        if (k !== null) maxBlock.set(k, Math.max(maxBlock.get(k) ?? 0, now.workSec));
+      }
+      return out;
+    })
+  }));
+  if (changed === null) return c;
+  const ch: { date: IsoDate; sec: Seconds; block: Seconds } = changed;
+  const action = `sledeći dugi (${fmtDate(ch.date)}) je ${fmtMinutes(ch.sec)}${ch.block > 0 ? ` sa ${String(Math.round(ch.block / 60))} min u tempu trke` : ''}: toliko nosi ono što je odrađeno`;
+  return {
+    ...c,
+    doc: { ...c.doc, weeks },
+    ...(c.missed === undefined ? {} : { missed: { ...c.missed, action } })
+  };
 }
 
 function onMissed(
@@ -1714,7 +1820,12 @@ function candidateFor(
     case 'result':
       return onResult(doc, state, ev, data);
     case 'missed':
-      return guardMissed(onMissed(doc, state, ev, data), doc, state, data);
+      return missedFromDone(
+        guardMissed(onMissed(doc, state, ev, data), doc, state, data),
+        doc,
+        state,
+        data
+      );
     case 'pause':
       return onPause(doc, state, ev, data);
     case 'pain':
