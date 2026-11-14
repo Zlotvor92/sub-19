@@ -172,3 +172,16 @@ export function expandTemplate(
   });
   return [...body, ...tail.map((t): WeekIntent => ({ ...t, source: 'template' }))];
 }
+
+/** R22 (B4): udeo vrha za kalendarsku nedelju −2 — u planu od najviše `weekMinus2ByWeeks.maxWeeks` nedelja svoj
+    udeo (kratak plan: sužavanje je samo poslednja nedelja). Jedno mesto za motor i čuvara. */
+export function weekMinus2Share(
+  taper: { weekMinus2MaxOfPeak?: number; weekMinus2ByWeeks?: { maxWeeks: number; value: number } },
+  startDate: IsoDate,
+  raceDate: IsoDate
+): number | undefined {
+  const short = taper.weekMinus2ByWeeks;
+  return short !== undefined && countWeeks(startDate, raceDate) <= short.maxWeeks
+    ? short.value
+    : taper.weekMinus2MaxOfPeak;
+}

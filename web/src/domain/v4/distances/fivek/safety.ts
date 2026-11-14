@@ -161,6 +161,7 @@ export const SAFETY: SafetyNumbers = {
     weekBeforeMaxQuality: 2,
     weekBeforeMaxOfPeak: 0.6,
     weekMinus2MaxOfPeak: 0.85,
+    weekMinus2ByWeeks: { maxWeeks: 6, value: 0.92 },
     calendarMinus2MaxQuality: 2,
     raceWeekMaxOfPeak: 0.5,
     /* krug 11: kad su lagani dani i dugi već na najkraćem, silazak skraćuje brz trening do najmanje doze (i

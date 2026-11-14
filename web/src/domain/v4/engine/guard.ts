@@ -62,7 +62,7 @@ import {
   underRamp
 } from './readiness';
 import { byDistance, candidates } from './select';
-import { countWeeks } from './template';
+import { countWeeks, weekMinus2Share } from './template';
 import type {
   AdequatePrep,
   Adjustment,
@@ -353,10 +353,8 @@ export const guard: GuardFn = (doc, _state, data) => {
             'Dve nedelje pred nedeljom trke ima više brzih treninga od dozvoljenog.'
           );
         }
-        if (
-          taper.weekMinus2MaxOfPeak !== undefined &&
-          c.km > taper.weekMinus2MaxOfPeak * peakKm + GUARD_TAPER_KM_SLACK
-        ) {
+        const m2 = weekMinus2Share(taper, header.startDate, header.goal.raceDate);
+        if (m2 !== undefined && c.km > m2 * peakKm + GUARD_TAPER_KM_SLACK) {
           report(
             'silazak',
             week,

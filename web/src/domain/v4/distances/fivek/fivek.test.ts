@@ -767,7 +767,9 @@ describe('trenerski zahtevi za 5 km (coach/target/5K/README.md, brief F7-5K)', (
       if (KNOWN.has(p.id)) continue;
       const s = weekStats(p.doc);
       const peakKm = Math.max(...s.map((x) => x.km));
-      if (!twoBefore) expect(s[n - 3]?.km ?? 0, p.id).toBeLessThanOrEqual(0.85 * peakKm + 0.5);
+      /* R22 (B4, organizator): plan ≤ 6 nedelja — nedelja −2 ≤ 92 % vrha (`weekMinus2ByWeeks`) */
+      const m2 = n <= 6 ? 0.92 : 0.85;
+      if (!twoBefore) expect(s[n - 3]?.km ?? 0, p.id).toBeLessThanOrEqual(m2 * peakKm + 0.5);
       if (!p.doc.header.warnings.some((w) => w.code === 'lagan-kratak'))
         expect(s[n - 1]?.km ?? 0, p.id).toBeLessThanOrEqual(0.5 * peakKm + 0.5);
     }
