@@ -1,6 +1,7 @@
 /* V4 ADAPTERI — OTISAK DIREKTNO IZ STAROG STANJA (SPEC § 9.2). Isti kanonski tekst kao `fingerprint(doc, facts)`
    motora, ali građen iz razrešenog starog plana (plan + `alts` + `moves` + `log`), bez `PlanDoc`-a: km iz starog
-   `km`, tekst iz starog opisa, urađeno iz `log.status`, zaključano iz `log.lock`, ručno iz `alts`/`moves`.
+   `km`, tekst iz starog opisa, urađeno iz `log.status`, ručno iz `alts`/`moves`. Stari format nema zaključan dan:
+   `log.lock` je ručno ispravljen unos, ne zaključan dan (R24 7b, odluka vlasnika F8-PREDLOG § 9.5).
    Test: `fingerprintLegacy(stanje) === fingerprint(adopt(stanje))` za svaki uzorak. */
 import { readState } from './read';
 import { isManual, kindOf, resolveDays } from './shared';
@@ -33,7 +34,7 @@ export function fingerprintLegacy(input: unknown): string | null {
         kmText(meters),
         r.rest ? '' : (r.desc ?? ''),
         flag(entry?.['status'] === 'done', 'urađeno'),
-        flag(entry?.['lock'] === true, 'zaključano'),
+        flag(false, 'zaključano'),
         flag(isManual(r), 'ručno')
       ].join(' | ');
     })

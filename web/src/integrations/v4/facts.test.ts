@@ -110,10 +110,9 @@ describe('toFacts', () => {
     expect(dates).toEqual([...dates].sort());
   });
 
-  /* NALAZ za V4 (F9 etapa 2a): adapter za odrađen dan bez km/vremena daje `Run` 0 m / 0 s (`source: 'procena'`),
-     a `validate` motora to odbija (`broj-neispravan`). Sloj ih NE izbacuje (dan bi izgledao propušten). Test dozvoljava
-     samo tu jednu poznatu grešku; svaka druga obara test. */
-  it('činjenice preuzetog plana prolaze kroz `buildState` (osim poznatog nalaza 0 m / 0 s)', () => {
+  /* NALAZ za V4 (F9 etapa 2a) rešen u R24 (7a): odrađen dan bez km/vremena ostaje odrađen bez `Run`-a 0 m / 0 s
+     (planirana dužina i trajanje kao procena), pa `validate` nema šta da odbije. */
+  it('činjenice preuzetog plana prolaze kroz `buildState` (bez grešaka ulaza)', () => {
     for (const s of SAMPLES) {
       const r = adoptSample(s);
       const data = distanceData(r.doc.header.goal.distanceId);
@@ -122,16 +121,9 @@ describe('toFacts', () => {
       const facts = toFacts({ today: s.today, adopted: r.facts, knee: s.snap.knee });
       const state = buildState(facts, r.doc.header.goal, data, undefined, r.doc);
       for (const e of state.inputErrors ?? []) {
-        const i = /^runs\[(\d+)\]\.(durationSec|distanceM)$/.exec(e.field);
-        const bad = i === null ? undefined : facts.runs[Number(i[1])];
-        const isKnown =
-          e.code === 'broj-neispravan' &&
-          bad?.source === 'procena' &&
-          bad.distanceM === 0 &&
-          bad.durationSec === 0;
         /* Plan posle trke: motor ispravno odbija ponovno planiranje (sloj tada ne zove `replan`). */
         const finished = e.code === 'trka-u-proslosti' && s.today > r.doc.header.goal.raceDate;
-        expect(isKnown || finished, `${s.name}: ${e.code} ${e.field}`).toBe(true);
+        expect(finished, `${s.name}: ${e.code} ${e.field}`).toBe(true);
       }
     }
   });

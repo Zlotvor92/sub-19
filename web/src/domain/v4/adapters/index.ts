@@ -2,5 +2,7 @@
 export { adopt, distanceOf, type AdoptResult } from './detect';
 export { fingerprintLegacy } from './fingerprintLegacy';
 export type { AdoptOk } from './shared';
+/* R24 (7c): zapisi bola starog formata → `PainFlag` (sloj aplikacije ih čita bez sopstvenog prevoda) */
+export { painOf } from './shared';
 export type { AdoptErrorCode, ReadError } from './read';
 export { STIMULUS_TABLE, DISTANCE_BY_METERS, type Cue } from './stimuli';

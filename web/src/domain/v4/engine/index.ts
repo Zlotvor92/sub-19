@@ -9,5 +9,16 @@ export { raceNotes, renderPlan, type RenderOptions } from './render';
 export { canonical, fingerprint, serializePlan } from './fingerprint';
 export { summarize, type PaceCtx, type WorkoutSummary, paceCtxOf } from './load';
 export { isMutable } from './build';
+/* R24 (7c): pomoćnici za datume (sloj aplikacije ih ne piše ponovo) */
+export {
+  addDays,
+  diffDays,
+  isValidDate,
+  maxDate,
+  minDate,
+  mondayOf,
+  toWeekday,
+  weekdayOf
+} from './dates';
 export { declaredForm } from './formFallback';
 export { effortTimeSec, vdotAt, zoneVdot } from './vdot';

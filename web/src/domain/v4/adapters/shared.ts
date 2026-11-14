@@ -574,6 +574,8 @@ export function runsOf(state: ReadState, days: readonly Resolved[], ctx: RunCtx)
     if (date === null || km === null || km < 0) continue;
     const distanceM = Math.round(km * 1000);
     const sec = num(x['sec']);
+    /* R24 (7a): trčanje van plana bez km i vremena nema meru ni dan plana — nije `Run` (0 m / 0 s odbija `validate`) */
+    if (distanceM === 0 && !(sec !== null && sec > 0)) continue;
     const run: Run = {
       id: `van2:${key}`,
       date,
@@ -651,13 +653,15 @@ const bump = (m: Map<Weekday, number>, d: Weekday): void => {
   m.set(d, (m.get(d) ?? 0) + 1);
 };
 
+/** R24 (7a): trajanje zapisa „urađeno bez mere" za dan bez trčanja (najmanji ispravan `Run`; forma ga ne čita). */
+const NO_MEASURE_SEC = 60;
+
 /** Ceo `PlanDoc` + činjenice iz razrešenog stanja. */
 export function assemble(state: ReadState, spec: FormatSpec, today: IsoDate): AdoptOk {
   const paces: Paces = zonePaces(spec.vdot, spec.distanceM, false);
   const easyPace = paceAtShare(spec.vdot, ZONE_SHARE.E);
   const resolved = resolveDays(state);
   const runs = runsOf(state, resolved, { easyPace });
-  const locked = (id: string): boolean => state.log[id]?.['lock'] === true;
   const meta = state.plan.meta;
   const raceDate = isoPrefix(meta['raceDate']) ?? resolved[resolved.length - 1]?.date ?? today;
   const startDate =
@@ -675,7 +679,8 @@ export function assemble(state: ReadState, spec: FormatSpec, today: IsoDate): Ad
       id: r.day.id,
       date: r.date,
       origin: manual ? 'manual' : 'adopted',
-      locked: locked(r.day.id),
+      /* R24 (7b): `log[id].lock` (ručno ispravljen unos) NIJE zaključan dan (odluka vlasnika, F8-PREDLOG § 9.5) */
+      locked: false,
       workout: built.workout
     };
     if (r.date !== r.origDate) day.movedFrom = r.origDate;
@@ -841,11 +846,28 @@ export function assemble(state: ReadState, spec: FormatSpec, today: IsoDate): Ad
     header,
     weeks
   };
+  /* R24 (7a): odrađen dan bez km i vremena („urađeno bez mere") ostaje odrađen, bez 0 m / 0 s koje `validate`
+     odbija: trčanje dobija planiranu dužinu i trajanje dana kao procenu (`source: 'procena'` — forma ga ne čita);
+     dan bez trčanja (npr. mobilnost) dobija najmanji ispravan zapis (0 m, `NO_MEASURE_SEC`) */
+  const planned = new Map(weeks.flatMap((w) => w.days).map((d) => [d.id, d.workout] as const));
+  const measured = runs.map((run): Run => {
+    if (run.dayId === undefined || run.distanceM > 0 || run.durationSec > 0) return run;
+    const w = planned.get(run.dayId);
+    const s = w == null ? null : summarize(w, ctx);
+    return s !== null && s.durationSec > 0
+      ? {
+          ...run,
+          distanceM: Math.round(s.km * 1000),
+          durationSec: Math.round(s.durationSec),
+          source: 'procena'
+        }
+      : { ...run, distanceM: 0, durationSec: NO_MEASURE_SEC, source: 'procena' };
+  });
   const facts: RunnerFacts = {
     today,
     availability: { runDays, longDay },
     profile: spec.profile,
-    runs,
+    runs: measured,
     pauses: [],
     pain: painOf(state)
   };

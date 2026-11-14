@@ -330,3 +330,54 @@ describe('neispravan ili nepoznat ulaz → { error }, bez izuzetka', () => {
     expect(r.facts.runs.map((x) => x.id)).toEqual(['log:g1d2']);
   });
 });
+
+/* R24 (7) — nalazi sloja aplikacije: (a) odrađen dan bez km i vremena ostaje odrađen bez `Run`-a 0 m / 0 s; (b)
+   `log[id].lock` nije zaključan dan; (c) javni izvoz `painOf` i pomoćnika za datume. */
+describe('R24 (7) — adapter: urađeno bez mere, `lock` nije zaključano, javni izvoz', () => {
+  it('(a) i (b) nad svim uzorcima: nijedno trčanje 0 m / 0 s, odrađeni dani ostaju odrađeni, nijedan dan zaključan', () => {
+    for (const s of samples) {
+      const r = adopt(s.input, s.today);
+      if ('error' in r) continue;
+      for (const run of r.facts.runs)
+        expect(run.distanceM > 0 || run.durationSec > 0, `${s.name} ${run.id}`).toBe(true);
+      const log = (s.input['log'] ?? {}) as Record<string, Record<string, unknown>>;
+      const ran = new Set(r.facts.runs.flatMap((x) => (x.dayId === undefined ? [] : [x.dayId])));
+      for (const [id, e] of Object.entries(log))
+        if (e['status'] === 'done' && r.doc.weeks.some((w) => w.days.some((d) => d.id === id)))
+          expect(ran.has(id), `${s.name} ${id}`).toBe(true);
+      for (const w of r.doc.weeks)
+        for (const d of w.days) expect(d.locked, `${s.name} ${d.id}`).toBe(false);
+    }
+  });
+
+  it('(a) „urađeno bez mere" prolazi `validate` (buildState bez grešaka trčanja)', () => {
+    const s: Sample = {
+      name: 'bez mere',
+      today: '2026-01-20',
+      input: {
+        genPlan: plans.values().next().value,
+        log: {},
+        alts: {},
+        moves: {},
+        vanPlana: {}
+      }
+    };
+    const r0 = ok(adopt(s.input, s.today));
+    const day = r0.doc.weeks.flatMap((w) => w.days).find((d) => d.workout !== null);
+    if (day === undefined) throw new Error('dan');
+    s.input['log'] = { [day.id]: { status: 'done', lock: true } };
+    const r = ok(adopt(s.input, addDays(day.date, 1)));
+    const run = r.facts.runs.find((x) => x.dayId === day.id);
+    expect(run?.durationSec ?? 0).toBeGreaterThan(0);
+    expect(r.doc.weeks.flatMap((w) => w.days).find((d) => d.id === day.id)?.locked).toBe(false);
+  });
+
+  it('(c) javni izvoz: `painOf` iz adaptera, pomoćnici za datume iz motora', async () => {
+    const adapters = await import('.');
+    const engine = await import('../engine');
+    expect(typeof adapters.painOf).toBe('function');
+    expect(engine.addDays('2026-11-14', 1)).toBe('2026-11-15');
+    expect(engine.diffDays('2026-11-15', '2026-11-14')).toBe(1);
+    expect(typeof engine.mondayOf).toBe('function');
+  });
+});
