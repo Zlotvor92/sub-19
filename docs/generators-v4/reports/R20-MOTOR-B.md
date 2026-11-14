@@ -1,14 +1,12 @@
-# R20 — MOTOR B, 14. 11. 2026 (po Beogradu) — B1, B4 (deo), B5, B6 (deo), B7, dopuna (a); B2, B3, B8, (b) nisu
+# R20 — MOTOR B, 14. 11. 2026 (po Beogradu) — B1, B4 (deo), B5, B6, B7, B2 (deo), dopune (a), MAR (a, c); B3, B8 nisu
 
-Stanje `e5866105`. Kapije HM/10K/5K/MAR 0. V4: 69 fajlova, 1071 prolazi, 24 očekivano pada; typecheck čist. Ispisi
+Stanje `85d57599`. Kapije HM/10K/5K/MAR 0. V4: 69 fajlova, 1073 prolazi, 24 očekivano pada; typecheck čist. Ispisi
 sve 4 distance obnovljeni. Novi testovi: `distances/longStart.test.ts`, `warnings20.test.ts`, `range20.test.ts`.
 
 ## Urađeno
-- **B1 `5b99ae85`**: prvi dugi ≤ najduži iz istorije (ili uneti) + 2 km, na 5 min naniže (`longFirstCapSec`); bez
-  podatka procena 1,5 × prosečan dan, samo za dugi > 90 min i pripremu ≥ `longCheckMinWeeks`. Plafon dugog ≥ drugi
-  najduži nedeljni dugi u 4 nedelje (`longHabitSec`, ostaje i posle promene dana). Ned 1 / najduži: MAR P3 B 23,5 →
-  22,8; MAR p04 23,5 → 21,4; p01 17,5 → 15,5; p02 17,5 → 15; p05 32 → 29 (najduži 35 ostaje); 10K P3 B 14 → 15,3,
-  najduži 14,5 → 16,6 (istorija 16,4); 5K P3 B najduži 14,2 → 15. Otisci: HM p02, p05; MAR p01, p02, p04, p05, p09, p14.
+- **B1 `5b99ae85`**: prvi dugi ≤ najduži iz istorije + 2 km (`longFirstCapSec`), plafon ≥ navika (`longHabitSec`).
+  MAR P3 B 23,5 → 22,8, p04 23,5 → 21,4, p01 17,5 → 15,5; 10K P3 B najduži 14,5 → 16,6; 5K P3 B 14,2 → 15. Otisci HM
+  p02, p05; MAR p01, p02, p04, p05, p09, p14.
 - **B7 `fca8d237`**: `pairs/*`, `scenarios/*` bez MORA DA SE RAZLIKUJE, BROJEVI, PROMENA, spiska izvedenih događaja i
   prognoze u STANJE (sve u `pregled.txt`); oznake parova sa stvarnim (skaliranim) km dugih — sudije su čitale
   „15/18 km", a MAR istorija je 17,7/21,3. Novi `pairs/OPIS.md`, `scenarios/OPIS.md` (samo ulazi).
@@ -24,13 +22,21 @@ sve 4 distance obnovljeni. Novi testovi: `distances/longStart.test.ts`, `warning
 - **Dopuna (a) `e5866105`**: nedelja −1: pre laganog dana u odmor otpada DRUGI kvalitet (ne tempo trke); vraćen
   prostor ne diže udeo dugog. 10K `weekMinus1MaxOfPeak` 0,7 (1 linija): p06 −1 78 % → 62 % sa tempom trke, p02 67 %.
   Otisci 10K p01, p06, p11, p12; HM s19 (dugi −1 75 → 70 min).
+- **B6 drugi deo `64746524`** (odluka organizatora): činjenice svih upozorenja ostaju, predlozi upozorenja koja nisu
+  „info" rangirani po težini — dva prikazana, ostali u „Pomoglo bi i: …" uz drugi. Prepravljeni K3 testovi (≤ 2).
+- **B2 deo `b0b39296`**: brzi trening ≤ dugi + 1 min kad doza dozvoljava (5K p15 intervali 7,5 → 6,8 km, HM p06
+  tempo trke 10,2 → 9,2 km); otisci 5K p02, p09, p15, HM p06. 5 × 300 m (p15) ni na najmanjoj dozi ne staje.
+- **MAR (a, c) `85d57599`**: pred pripremnu trku ≥ 75 min dan pre ≤ 30 min, dva dana pre ≤ 60 % (MAR p05 nedelja
+  116 → 98,5 km); rastezanje koraka ≤ 2 km (K7, bez promene plana). Otisci HM p04, p09; MAR p03–p05, p07–p09,
+  p12, p14–p18.
 
 ## Nije urađeno
-- B2: 5K p06 — lagan ≤ 0,8 dugog (34 min) ne dozvoljava dane od 30 min; spajanje dana gubi obim (vrh 31 → 29,5) i
-  ruši silazak. Treba duži dugi za 5K p06 (podatak) ili odluka o udelu laganog. „Brzi ≤ dugi" nije započet.
-- B3: skok ≤ +15 % posle rasterećenja (`weekTarget`) ruši MAR (11 prekršaja, p01 vrh pada) — vraćeno; doze uspona/
-  fartleka po obimu nisu započete.
-- B6 „najviše dve preporuke": AGENTS § 6 i K3 traže predlog u svakom upozorenju — treba odluka (spajanje upozorenja).
-- (b) 10K p08 ned 1 = 41 km: pun polazni dugi daje +0,5 km i HM p08 ned 1 dugi 19,5 → 22 km — vraćeno; potreban
-  dugi ≈ 17 km > polazni 100 min (podatak `longStartShare` 10K). Udeo doze tempa trke 0,13 briše tempo trke u −1.
+- B2 (odluka: dugi ≥ 1,4 × 30 min, manje dana): dugi 34 → 42 min i spajanje laganih dana (bez gubitka obima) daju
+  4 dana po 29 min u ned 1 i 3, ali ned 1 gubi drugi kvalitet (2 → 1), F7 (nedelja gradnje bez brzog) i M20 padaju,
+  ned 2 ostaje 22 min — vraćeno. roomFor sa danom manje ruši HM p06 — vraćeno.
+- B3 (b) usko (> +15 % prema prethodnoj i tri teška dana → brzi lagan): 35 ispisa promenjeno, kapije 10K 2 i MAR 1
+  prekršaj, a 10K p05 i dalje +21 % (106,6 → 104,3), p11 bez promene — vraćeno. Opšte ≤ +15 % ruši MAR vrh.
+- B3 (a): usponi/fartlek nemaju manji oblik istog podražaja, pa skraćivanje doze (× 1,3 najdužeg laganog) ne deluje
+  na 5K p10 / 10K p11, a menja 23 plana — vraćeno; treba unos manje doze u biblioteke (podatak).
+- (b) 10K p08 i udeo 0,13: ostavljeno po odluci organizatora.
 - B8 (M22, `LATE_BUILD_WEEKS`) nije započet. Prettier je preformatirao ceo `build.ts`, `guard.ts`, `plan.ts`, `render.ts`.
