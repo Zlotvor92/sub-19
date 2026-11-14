@@ -188,12 +188,12 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   const afterHalf = new Set(halfAt === undefined ? [] : [halfAt + 1, halfAt + 2]);
   let maxShare = 0;
   /* R18 (odluka organizatora): dužina najdužeg dugog ima prednost nad udelom — u dve nedelje sa najdužim dugim udeo
-     sme 5 poena više (4 dana 50 %, 3 dana 55 %); ispravka R18: kod 3 dana u TRI nedelje najdužeg dugog */
+     sme više — R20 (odluka organizatora, dugi po vremenu): 4 dana 55 %, 3 dana 60 % */
   const top2 = new Set(
     [...weeks]
       .filter((g) => g.longKm > 0)
       .sort((a, b) => b.longKm - a.longKm || b.index - a.index)
-      .slice(0, runDays === 3 ? 3 : 2)
+      .slice(0, 2)
       .map((g) => g.index)
   );
   for (const g of weeks) {
@@ -202,7 +202,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
        nije mera rasporeda */
     if (afterHalf.has(g.index)) continue;
     maxShare = Math.max(maxShare, g.longKm / g.km);
-    const cap = (runDays === 3 ? 0.5 : 0.45) + (top2.has(g.index) ? 0.05 : 0);
+    const cap = (runDays === 3 ? 0.5 : 0.45) + (top2.has(g.index) ? 0.1 : 0);
     /* + 0,5 km: dani se zaokružuju na 0,5 km */
     if (g.longKm > cap * g.km + 0.5)
       v.push(`n${String(g.index)} dugi ${String(g.longKm)} od ${String(g.km)} km`);

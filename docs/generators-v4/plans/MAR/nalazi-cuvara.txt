@@ -9,7 +9,7 @@ p07: bez nalaza
 p08: ispod-cilja@20 (Planirano opterećenje je ispod 85 % cilja nedelje.)
 p09: bez nalaza
 p10: bez nalaza
-p11: dugi-za-distancu@21 (Najduži dugi plana ne stiže do dugog za distancu.)
+p11: bez nalaza
 p12: bez nalaza
 p13: bez nalaza
 p14: bez nalaza

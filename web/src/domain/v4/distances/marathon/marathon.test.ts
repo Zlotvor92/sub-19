@@ -624,6 +624,8 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
       const stats = weekStats(p.doc);
       const easy = paceCtxOf(p.doc.header).paces.easy;
       let best = 0;
+      let bestSec = 0;
+      let bestKm = 0;
       /* oporavak posle trke iz istorije (rampa motora, § 6.5) skraćuje dugi; povratak na planirani dugi posle
          rampe nije skok lestvice — dugi se proverava od prve nedelje posle rampe */
       const rampEnd = (p.doc.header.adjustments ?? [])
@@ -643,9 +645,21 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
         const eq = (s.week.longSec > 0 ? s.week.longSec : s.longSec) / easy;
         if (s.longKm > 0 && best > 0) {
           const step = eq - best;
-          expect(step <= 2.05 || step / best <= 0.12, `${p.id} dugi n${String(i + 1)}`).toBe(true);
+          /* R20: hod-trk dugi se vodi po vremenu — korak ≤ 12 % stvarnog trajanja (sa hodom) */
+          const walk =
+            p.doc.header.decisions.level === 'pocetnik-nov' && s.longSec <= bestSec * 1.12 + 30;
+          /* dugi bez bloka: trkač vidi km dana (zaokružen na 0,5 km) — korak u prikazanim km */
+          const plain =
+            !s.week.days.some((d) => d.workout?.stimulus === 'dugi-rp') &&
+            s.longKm - bestKm <= 2.05;
+          expect(
+            walk || plain || step <= 2.05 || step / best <= 0.12,
+            `${p.id} dugi n${String(i + 1)} ${eq.toFixed(2)} od ${best.toFixed(2)}`
+          ).toBe(true);
         }
         if (s.longKm > 0) best = Math.max(best, eq);
+        if (s.longKm > 0) bestSec = Math.max(bestSec, s.longSec);
+        if (s.longKm > 0) bestKm = Math.max(bestKm, s.longKm);
         /* skok nedelje: prema najvećoj od prethodne 3 (pad usred bloka zbog više brzog rada nije
            rasterećenje); posle rasterećenja povratak na raniji nivo nije skok; + 1,5 km = zaokruživanje 3 dana na 0,5 km. Posle
            rampe (trka pre plana) pravilo rasta tri nedelje gradi iz smanjenih nedelja — to je motor (F3-REPORT). */
@@ -1006,7 +1020,7 @@ describe('krug 12 — maraton (R1–R6)', () => {
 
 /* ------------------------------------------------------------------ 8. R18 (organizator): bez regresije najdužeg dugog */
 
-describe('R18 — najduži dugi nije kraći nego u b38a0ec4 (osim navedenih izuzetaka)', () => {
+describe('R18 — najduži dugi nije kraći nego u b38a0ec4', () => {
   /* najduži dugi po profilu u `plans/MAR/pregled.md` na b38a0ec4 (km) */
   const BASE: Record<string, number> = {
     p01: 24.5,
@@ -1029,14 +1043,7 @@ describe('R18 — najduži dugi nije kraći nego u b38a0ec4 (osim navedenih izuz
     p18: 24,
     p19: 22
   };
-  /* izuzeci (ispravka R18): dugi na plafonu po vremenu nivoa se proverava ispod (sada nijedan); ova tri ne mogu do
-     ranijeg dugog uz pravila udela (R17 c, R18: 4 dana ≤ 45 %, dve najduže nedelje 50 %; 3 dana ≤ 50 %, tri najduže
-     55 %; + 0,5 km zaokruživanja) i korak dugog 1,7 km (K7 ≤ 2 km) — lestvica N−7 → N−5 → N−3 */
-  const EXCEPT: Record<string, string> = {
-    p11: 'početnik 4 dana: N−7 ≤ 45 % od 41 km ≈ 19 km, pa N−5 ≤ 20,7 i N−3 ≤ 22,4 km (b38: 24,8 uz 57 % u N−7)',
-    p13: 'hod-trk 3 dana, 10 nedelja: vrh 35 km × 55 % + 0,5 = 19,75 km < 19,9 (b38: 57 %)',
-    p18: 'hod-trk 4 dana: N−7 ≤ 45 % od 44 km ≈ 20 km, pa N−3 ≤ 22 km uz korak 1,7 km (b38: 24 uz udeo 50 % u svim nedeljama)'
-  };
+  /* R20 (organizator): dugi po vremenu — bez izuzetaka (ranije p10, p11, p13, p18); plafon po vremenu i dalje važi */
   it('svih 19 profila (tolerancija 0,5 km: dan se zaokružuje na 0,5 km)', () => {
     const bad: string[] = [];
     for (const p of PROFILE_PLANS) {
@@ -1045,18 +1052,42 @@ describe('R18 — najduži dugi nije kraći nego u b38a0ec4 (osim navedenih izuz
       const longestMin = Math.max(...g.weeks.map((w) => w.longMin));
       const atTimeCap = longestMin >= p.doc.header.decisions.longMaxSec / 60 - 5;
       const base = BASE[p.id] ?? 0;
-      if (longest < base - 0.5 && !atTimeCap && EXCEPT[p.id] === undefined)
+      if (longest < base - 0.5 && !atTimeCap)
         bad.push(`${p.id} ${longest.toFixed(1)} < ${String(base)} km`);
     }
     expect(bad).toEqual([]);
   });
-  it('izuzeci su stvarno ispod (lista se ne zadržava kad prestane da važi)', () => {
-    const still = Object.keys(EXCEPT).filter((id) => {
-      const p = PROFILE_PLANS.find((x) => x.id === id);
-      if (p === undefined) return false;
-      const g = gateStats(p.doc, p.facts);
-      return Math.max(...g.weeks.map((w) => w.longKm)) < (BASE[id] ?? 0) - 0.5;
-    });
-    expect(still).toEqual(Object.keys(EXCEPT));
+});
+
+/* ------------------------------------------------------------------ 9. R20 (organizator): dugi po vremenu */
+
+describe('R20 — kod malog obima dugi se vodi po vremenu (trener MAR-03 § D6)', () => {
+  const longMins = (id: string): number[] => {
+    const p = PROFILE_PLANS.find((x) => x.id === id);
+    if (p === undefined) throw new Error(id);
+    return gateStats(p.doc, p.facts).weeks.map((w) => w.longMin);
+  };
+  it('početnik/spor sa ≥ 20 nedelja: bar dva duga ≥ 2 h 50 (N−5, N−3)', () => {
+    for (const p of PROFILE_PLANS) {
+      const lvl = p.doc.header.decisions.level;
+      if (p.doc.weeks.length < 20 || (lvl !== 'pocetnik' && lvl !== 'spor')) continue;
+      expect(longMins(p.id).filter((m) => m >= 170).length, p.id).toBeGreaterThanOrEqual(2);
+    }
+  });
+  it('p18: jedan dugi ≥ 3 h hod-trk (± 5 min); p13: najduži ≥ 2 h 35 (2 h 45 ne dozvoljava K7, v. R20-MAR)', () => {
+    expect(Math.max(...longMins('p18'))).toBeGreaterThanOrEqual(175);
+    expect(Math.max(...longMins('p13'))).toBeGreaterThanOrEqual(155);
+  });
+  it('dugi ne stoji: najviše 3 uzastopne nedelje gradnje sa istim dugim (± 3 min) kod p11', () => {
+    const p = PROFILE_PLANS.find((x) => x.id === 'p11');
+    if (p === undefined) throw new Error('p11');
+    const st = gateStats(p.doc, p.facts).weeks.filter((w) => w.longMin > 0 && w.kind === 'build');
+    let run = 1;
+    let most = 1;
+    for (let i = 1; i < st.length; i += 1) {
+      run = Math.abs((st[i]?.longMin ?? 0) - (st[i - 1]?.longMin ?? 0)) < 4 ? run + 1 : 1;
+      most = Math.max(most, run);
+    }
+    expect(most).toBeLessThanOrEqual(3);
   });
 });

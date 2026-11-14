@@ -38,9 +38,9 @@ export const TEXTS: Record<string, string> = {
   'napomena.kontrola':
     'Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.',
   /* ishrana i tečnost su sadržaj plana (README): unos na 35–40 min, voda uz svaki unos, proba na dugim */
-  /* R17 (sudija 2): trka duža od 4 h 30 — ista hod-trk strategija kao na dugim */
+  /* R17 (sudija 2): trka duža od 4 h 30 — ista hod-trk strategija kao na dugim; R20: 10 + 1 kao u dugom hod-trk */
   'napomena.trka-hod':
-    'Hod-trk od starta, kao na dugim: 9 min trčanja + 1 min brzog hoda, i na svakoj okrepi hod dok piješ. Tako stižeš do cilja bez zida — ne preskači hod ni kad se osećaš sveže.',
+    'Hod-trk od starta: 10 min trčanja + 1 min brzog hoda, isti ritam kao hod-trk na dugim (ako ti dugi nisu bili hod-trk, probaj ga na poslednja dva duga), i na svakoj okrepi hod dok piješ. Tako stižeš do cilja bez zida — ne preskači hod ni kad se osećaš sveže.',
   'napomena.dugi':
     'Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.',
   'napomena.dugi-obuca':

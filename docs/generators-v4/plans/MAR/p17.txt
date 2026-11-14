@@ -28,9 +28,9 @@ Tempo trke u treninzima je tvoja današnja forma (4:11/km). Tvoj cilj 2:59:00 tr
   čet 5. 11.  prag 25 min u komadu (3:56/km) — 13,4 km, 60 min
   pet 6. 11.  odmor
   sub 7. 11.  lagano 12,5 km — 12,5 km, 62 min
-  ned 8. 11.  dugi 29 km lagano — 29 km, 2 h 25 min
+  ned 8. 11.  dugi 29,5 km lagano — 29,5 km, 2 h 27 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 90,7 km, 7 h 28 min, 6 treninga, brz rad 7 % vremena trčanja
+  Zbir: 91,2 km, 7 h 30 min, 6 treninga, brz rad 7 % vremena trčanja
 
 2. NEDELJA (od 9. 11.) — osnova, gradnja; do trke 16 nedelja
   pon 9. 11.  lagano 12,5 km — 12,5 km, 62 min
@@ -138,9 +138,9 @@ Tempo trke u treninzima je tvoja današnja forma (4:11/km). Tvoj cilj 2:59:00 tr
   čet 14. 1.  prag 5 × 1,6 km (3:56/km), oporavak 1:30 džog — 16,2 km, 72 min
   pet 15. 1.  odmor
   sub 16. 1.  lagano 15,5 km — 15,5 km, 77 min
-  ned 17. 1.  dugi 29 km lagano — 29 km, 2 h 25 min
+  ned 17. 1.  dugi 29,5 km lagano — 29,5 km, 2 h 27 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 108,4 km, 8 h 51 min, 6 treninga, brz rad 6 % vremena trčanja
+  Zbir: 108,9 km, 8 h 53 min, 6 treninga, brz rad 6 % vremena trčanja
 
 12. NEDELJA (od 18. 1.) — specifična priprema, gradnja; do trke 6 nedelja
   pon 18. 1.  lagano 13,5 km — 13,5 km, 67 min
@@ -160,21 +160,21 @@ Tempo trke u treninzima je tvoja današnja forma (4:11/km). Tvoj cilj 2:59:00 tr
   čet 28. 1.  prag 2 × 16 min (3:56/km), oporavak 1:30 džog — 15,4 km, 69 min
   pet 29. 1.  odmor
   sub 30. 1.  lagano 16,5 km — 16,5 km, 82 min
-  ned 31. 1.  dugi 31 km, poslednjih 9 km u tempu maratona (4:11/km) — 31 km, 2 h 27 min
+  ned 31. 1.  dugi 31,5 km, poslednjih 9 km u tempu maratona (4:11/km) — 31,5 km, 2 h 30 min
       napomena: Blok trči ravnomerno u tempu maratona, ne brže; unos gela vežbaj i tokom bloka, kao na trci. Ako tempo ne možeš da držiš bez naprezanja, skrati blok — ne ubrzavaj.
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 112,6 km, 9 h 5 min, 6 treninga, brz rad 13 % vremena trčanja
+  Zbir: 113,1 km, 9 h 8 min, 6 treninga, brz rad 13 % vremena trčanja
 
 14. NEDELJA (od 1. 2.) — specifična priprema, rasterećenje; do trke 4 nedelje
-  pon 1. 2.  lagano 13,5 km — 13,5 km, 67 min
+  pon 1. 2.  lagano 13 km — 13 km, 65 min
   uto 2. 2.  lagano 13 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 14,2 km, 70 min
-  sre 3. 2.  lagano 13,5 km — 13,5 km, 67 min
+  sre 3. 2.  lagano 13 km — 13 km, 65 min
   čet 4. 2.  prag 3 × 6 min (3:56/km), oporavak 1:30 džog — 12,2 km, 56 min
   pet 5. 2.  odmor
   sub 6. 2.  lagano 13 km — 13 km, 65 min
-  ned 7. 2.  dugi 22 km lagano — 22 km, 1 h 50 min
+  ned 7. 2.  dugi 22,5 km lagano — 22,5 km, 1 h 52 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 88,4 km, 7 h 15 min, 6 treninga, brz rad 4 % vremena trčanja
+  Zbir: 87,9 km, 7 h 13 min, 6 treninga, brz rad 4 % vremena trčanja
 
 15. NEDELJA (od 8. 2.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 8. 2.  lagano 17 km — 17 km, 85 min
@@ -183,10 +183,10 @@ Tempo trke u treninzima je tvoja današnja forma (4:11/km). Tvoj cilj 2:59:00 tr
   čet 11. 2.  prag 23 min u komadu (3:56/km) — 12,9 km, 58 min
   pet 12. 2.  odmor
   sub 13. 2.  lagano 17 km — 17 km, 85 min
-  ned 14. 2.  dugi 32,5 km, poslednjih 13 km u tempu maratona (4:11/km) — 32,5 km, 2 h 32 min
+  ned 14. 2.  dugi 33 km, poslednjih 13 km u tempu maratona (4:11/km) — 33 km, 2 h 34 min
       napomena: Blok trči ravnomerno u tempu maratona, ne brže; unos gela vežbaj i tokom bloka, kao na trci. Ako tempo ne možeš da držiš bez naprezanja, skrati blok — ne ubrzavaj.
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 114,6 km, 9 h 15 min, 6 treninga, brz rad 14 % vremena trčanja
+  Zbir: 115,1 km, 9 h 17 min, 6 treninga, brz rad 14 % vremena trčanja
 
 16. NEDELJA (od 15. 2.) — završnica, sužavanje pred trku; do trke 2 nedelje
   pon 15. 2.  lagano 12 km — 12 km, 60 min

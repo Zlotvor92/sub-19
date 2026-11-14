@@ -85,9 +85,11 @@ export const SAFETY: SafetyNumbers = {
   longShareByRunDays: {
     /* početnik: ciljni p11 (4 dana) najduži 27 km = 52 % vrha od 52 km, p12 (5 dana) 41 % — dugi je jedini put do
        27 km kad je obim mali; hod-trk spušta udar */
-    pocetnik: { ...LONG_SHARE, '5': 0.43, '6': 0.4 },
+    /* R20: dugi po vremenu — p11 N−5 2 h 52, N−3 3 h 03 (trener MAR-03 § D6) */
+    pocetnik: { ...LONG_SHARE, '4': 0.455, '5': 0.43, '6': 0.4 },
     /* hod-trk: vreme na nogama (p13 3 dana, 10 nedelja) — dugi nosi više nedelje */
-    'pocetnik-nov': { ...LONG_SHARE, '5': 0.43, '6': 0.4 },
+    /* R20: p18 jedan dugi 3 h hod-trk u N−3 */
+    'pocetnik-nov': { ...LONG_SHARE, '4': 0.445, '5': 0.43, '6': 0.4 },
     povratnik: LONG_SHARE,
     mali: LONG_SHARE,
     spor: LONG_SHARE,
@@ -96,7 +98,8 @@ export const SAFETY: SafetyNumbers = {
   },
   /* korak dugog: + 1,5 km ili + 8 min po nedelji gradnje (README: + 1–2 km po koraku; K7 ≤ 2 km i ≤ 12 %, dan se zaokružuje na 0,5 km) */
   longStepSec: 480,
-  longStepKm: 1.7,
+  /* R20: 1,75 km (R19 rastezanje × 1,15 = 2,0 km, K7) */
+  longStepKm: 1.75,
   longStartFloorShare: 0.85,
   longStartFloorFromCapShare: 0.88,
   longFloorGrowMinRunDays: 4,
@@ -114,8 +117,9 @@ export const SAFETY: SafetyNumbers = {
     belowKm: 66,
     minRunDays: 3,
     share: 0.44,
-    /* ispravka R18: 0,564 u minutima (= 55 % u km uz zaokruživanje): p03 23,8 km; 0,568 bi p03 N−5 diglo na 56,5 % */
-    peakShare: 0.564,
+    /* R20 (organizator): dugi kod malog obima po vremenu — dve najduže nedelje do 55 % (4 dana) / 60 % (3 dana) u km;
+       jedan broj za sve dane (MOTOR: `peakShare` po broju dana), 0,6 u minutima je u km ≤ 55 % kod 4 dana */
+    peakShare: 0.6,
     peakWeeks: 2,
     midKm: 85,
     midShare: 0.44
