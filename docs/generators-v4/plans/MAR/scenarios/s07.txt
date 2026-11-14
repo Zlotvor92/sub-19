@@ -198,9 +198,9 @@ UPOZORENJA
   čet 18. 2.  lagano 30 min — 4,1 km, 30 min
   pet 19. 2.  odmor
   sub 20. 2.  lagano 30 min — 4,1 km, 30 min
-  ned 21. 2.  dugi 2 h 25 min lagano — 20 km, 2 h 25 min
+  ned 21. 2.  dugi 2 h 20 min lagano — 19,4 km, 2 h 20 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 32,3 km, 3 h 55 min, 4 treninga, brz rad 0 % vremena trčanja
+  Zbir: 31,7 km, 3 h 50 min, 4 treninga, brz rad 0 % vremena trčanja
 
 17. NEDELJA (od 22. 2.) — razvoj, gradnja; do trke 7 nedelja
   pon 22. 2.  odmor
@@ -331,10 +331,10 @@ Pauza zbog bolesti trajala je 7 dana (1–7. 2.), pa je povratak postepen: treni
 - uto 16. 2.: lagano 30 min → lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
 - čet 18. 2.: lagano 30 min → lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
 - sub 20. 2.: lagano 30 min → lagano 45 min
-- ned 21. 2.: dugi 2 h 25 min lagano → dugi 2 h 10 min lagano
+- ned 21. 2.: dugi 2 h 20 min lagano → dugi 2 h 10 min lagano
 - čet 25. 2.: prag 2 × 14 min, oporavak 2 min džog → prag 2 × 10 min, oporavak 2 min džog
 - čet 4. 3.: tempo maratona 2 × 11 min, oporavak 3 min džog → tempo maratona 2 × 7 min, oporavak 3 min džog
-- 16. nedelja: 32,3 km → 38,2 km
+- 16. nedelja: 31,7 km → 38,2 km
 - 17. nedelja: 46,8 km → 46,5 km
 - 18. nedelja: 49,5 km → 49,4 km
 

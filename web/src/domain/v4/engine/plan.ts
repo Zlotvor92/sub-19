@@ -567,9 +567,13 @@ export function createPlan(
       decisions: finalDecisions,
       form: { ...built.header.form, raceDay: finalRaceDay },
       /* R20 (IV): upozorenje nivoa nosi brojeve konačne prognoze (posle kazne) */
-      warnings: found.map((w) =>
-        w.code === 'nivo' ? (levelWarning(data, finalDecisions.level, finalRaceDay) ?? w) : w
-      )
+      /* R24 (M4 d): plan koji počinje dan posle trke — prve nedelje su oporavak, pa se „forma traži više brzog rada"
+         ne ispisuje (prognoza i dalje računa njen nalaz) */
+      warnings: found
+        .filter((w) => !(w.code === 'obim-za-nivo' && startsAfterRace(built)))
+        .map((w) =>
+          w.code === 'nivo' ? (levelWarning(data, finalDecisions.level, finalRaceDay) ?? w) : w
+        )
     }
   };
   /* R22 (B2): tempo trke u treninzima = tempo koji plan savetuje za trku (sporiji cilj, oprezno uz kaznu ili
@@ -614,6 +618,17 @@ function highImpactFromOf(
   if (dates.length === 0) return {};
   if ((state.painHistory ?? []).length > 0) dates.push(addDays(startDate, 28));
   return { highImpactFrom: dates.sort().at(-1) };
+}
+
+/** R24 (M4 d): plan počinje dan posle trke van plana. */
+function startsAfterRace(doc: PlanDoc): boolean {
+  return (doc.header.adjustments ?? []).some(
+    (a) =>
+      a.kind === 'effort' &&
+      a.race === true &&
+      a.planned !== true &&
+      addDays(a.date, 1) === doc.header.startDate
+  );
 }
 
 /** R22 (B3): udeo očekivanog napretka uz upozorenje `obim-za-nivo`. */

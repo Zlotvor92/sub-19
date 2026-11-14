@@ -26,7 +26,12 @@ import type {
   WorkoutDef
 } from './types';
 import { PAIN_LOW_MAX, PAIN_MID_LONG_DAYS, PREP_RACE_WORK_MIN_SEC } from './constants';
-import { meaningfulDose, pauseLength, RETURN_TRAVEL_DOSE_FACTOR } from './readiness';
+import {
+  adjustmentWindow,
+  meaningfulDose,
+  pauseLength,
+  RETURN_TRAVEL_DOSE_FACTOR
+} from './readiness';
 import { refWeekKmBefore } from './state';
 
 export const BREAK_LONG_STEP_SEC = 1200;
@@ -548,9 +553,24 @@ export const POST_RACE_WEEK_SHARE = 0.6;
 export const POST_PREP_RACE_WEEK_SHARE = 0.7;
 const POST_RACE_WEEK_FROM_SEC = 2400;
 
+/** R24 (M4 a, suženo): dugi 6–8. dana posle pripremne trke koji bi bio duži od poslednjeg dugog pre nje ≤ ovaj udeo
+    poslednjeg dugog. Trener traži 0,75; uz 0,75 MAR s26 (bol, pa trka umesto pripremne) dobija nalaz „ispod cilja"
+    jer R22 (A4) drži dugi povratka ≤ dugog iz plana pre događaja — zato 1 (dugi posle trke ne raste). */
+export const M4_LONG_OF_LAST = 1;
+/** R24 (M4 c): nivoi početnika (nedelja 2 plana od dana posle trke ≤ `safety.postRaceBeginnerWeek2Share`). */
+const M4_BEGINNER_LEVELS = new Set(['pocetnik', 'pocetnik-nov']);
+
 export interface PostRace {
   date: IsoDate;
   durationSec: Seconds;
+  /** R24 (M4): trka punim naporom (pripremna iz plana ili trka van plana duža od 40 min). */
+  full?: boolean;
+  /** R24 (M4 a): poslednji dugi pre pripremne trke iz plana (s). */
+  lastLongSec?: Seconds;
+  /** R24 (M4): plan počinje dan posle ove trke. */
+  yesterday?: boolean;
+  /** R24 (M4): uobičajen nedeljni obim (km) — referenca nedelje 2 početnika. */
+  refKm?: number;
   /** Gornja granica km prvih 7 dana; `null` = bez granice nedelje (kratka trka). */
   weekKm: number | null;
   /** Pripremna trka iz plana: broj dana trčanja ostaje (bez odmora) — lagani dani su kraći. */
@@ -568,9 +588,14 @@ export function postRacesOf(doc: PlanDoc, state: RunnerState, data: DistanceData
     /* i trka na danu plana (`planned`) — posle trke je trka */
     if (a.kind !== 'effort' || a.race !== true) continue;
     const ref = a.refWeekKm ?? state.profile.weeklyKm ?? 0;
+    const full = a.planned !== true && a.durationSec > POST_RACE_WEEK_FROM_SEC;
     out.set(a.date, {
       date: a.date,
       durationSec: a.durationSec,
+      /* R24 (M4 c): plan od dana posle trke — nedelja 2 početnika (dugi ne: „juče" deo M4 nije urađen) */
+      ...(full
+        ? { full: true, yesterday: addDays(a.date, 1) === doc.header.startDate, refKm: ref }
+        : {}),
       /* kratka trka van plana (`planned`, E5) se oporavlja kao provera iz plana: samo dani 1–3 */
       weekKm:
         a.planned !== true && a.durationSec > POST_RACE_WEEK_FROM_SEC && ref > 0
@@ -586,9 +611,15 @@ export function postRacesOf(doc: PlanDoc, state: RunnerState, data: DistanceData
       if (d.workout.workSec < PREP_RACE_WORK_MIN_SEC) continue;
       const prev = doc.weeks.slice(Math.max(0, wi - 3), wi).map((x) => weekCost(x, race, pace).km);
       const ref = Math.max(0, ...prev);
+      /* R24 (M4): poslednji dugi pre pripremne trke iz plana — ne kad ga je skratio događaj (prozor izmene) */
+      let lastLong = 0;
+      for (const x of doc.weeks.flatMap((y) => y.days))
+        if (x.date < d.date && x.date >= addDays(d.date, -21) && x.workout?.kind === 'long')
+          lastLong = inWindowOf(x.date, doc) ? 0 : summarize(x.workout, pace).durationSec;
       out.set(d.date, {
         date: d.date,
         durationSec: d.workout.workSec,
+        ...(lastLong > 0 ? { full: true, lastLongSec: lastLong } : {}),
         weekKm: ref > 0 ? POST_PREP_RACE_WEEK_SHARE * ref : null,
         planned: true,
         keepLong: true
@@ -597,6 +628,16 @@ export function postRacesOf(doc: PlanDoc, state: RunnerState, data: DistanceData
   });
   void data;
   return [...out.values()].sort((x, y) => (x.date < y.date ? -1 : 1));
+}
+
+/** R24 (M4): dan je u prozoru nekog uzroka izmene (pauza, bol, napor) ili u dve nedelje posle njega — tamo dugi
+    tek raste nazad, pa „dugi posle trke duži od poslednjeg pre nje" nije rast. */
+const M4_AFTER_WINDOW_DAYS = 14;
+function inWindowOf(date: IsoDate, doc: PlanDoc): boolean {
+  return (doc.header.adjustments ?? []).some((a) => {
+    const w = adjustmentWindow(a);
+    return w !== null && date >= w.from && date <= addDays(w.to, M4_AFTER_WINDOW_DAYS);
+  });
 }
 
 /** R22 (A1): JEDNO mesto oporavka posle trke — dan 1 odmor (trka ≥ 75 min), dani 1–3 lagano ≤ 30 min (ili odmor),
@@ -637,6 +678,75 @@ export function applyPostRace(doc: PlanDoc, state: RunnerState, data: DistanceDa
   const easy = (sec: Seconds): Workout | null => realize({ type: 'easy', sec, maxSec: sec }, ctx);
   const can = (d: PlanDay | undefined): d is PlanDay =>
     d !== undefined && d.workout !== null && isMutable(d, doc.header, today, done);
+  const postRaceM4 = (r: PostRace): void => {
+    const last = r.lastLongSec ?? 0;
+    if (last > 0) {
+      for (const date of [6, 7, 8].map((k) => addDays(r.date, k))) {
+        const d = dayAt(date);
+        if (!can(d) || d.workout?.kind !== 'long' || date >= raceDate) continue;
+        const planned = dur(d.workout);
+        /* dugi koji bi posle trke rastao preko poslednjeg dugog pre nje → ne raste */
+        if (planned <= last + 60) continue;
+        /* ne kraći od najdužeg laganog dana iste nedelje + 5 min (dugi ostaje najduži trening nedelje) */
+        const p = pos.get(date);
+        const week = p === undefined ? undefined : weeks[p.wi];
+        const longestEasy = Math.max(
+          0,
+          ...(week?.days ?? []).map((x) => (x.workout?.kind === 'easy' ? dur(x.workout) : 0))
+        );
+        const s = Math.max(
+          easyFloor,
+          longestEasy + 300,
+          Math.round((M4_LONG_OF_LAST * last) / 300) * 300
+        );
+        if (planned <= s + 60) continue;
+        const next = realize(
+          { type: 'long', sec: s, def: steadyLongDef(ctx, null), dose: 0, slot: null },
+          ctx
+        );
+        if (next !== null) setDay(date, next);
+      }
+    }
+    /* (c) nedelja 2 plana koji počinje dan posle trke — početnik */
+    const ref = r.refKm ?? 0;
+    const share = data.safety.postRaceBeginnerWeek2Share;
+    if (
+      share !== undefined &&
+      r.yesterday === true &&
+      M4_BEGINNER_LEVELS.has(dec.level) &&
+      ref > 0
+    ) {
+      const w2 = weeks[1];
+      if (w2 === undefined || w2.intent.kind === 'taper' || w2.intent.kind === 'race') return;
+      const cap = share * ref;
+      const now = (): number => weekCost(w2, raceDate, pace).km;
+      if (now() <= cap + 0.5) return;
+      const ds = w2.days.filter((d) => can(d) && d.workout?.kind === 'easy');
+      const ekm = ds.reduce((x, d) => x + kmOf(d.workout), 0);
+      if (ekm > 0) {
+        const f = Math.max(0, 1 - (now() - cap) / ekm);
+        for (const d of ds) {
+          const sec = Math.max(easyFloor, Math.floor((dur(d.workout) * f) / 300) * 300);
+          if (sec < dur(d.workout) - 60) setDay(d.date, easy(sec));
+        }
+      }
+      const ld = w2.days.find((d) => can(d) && d.workout?.kind === 'long');
+      if (ld !== undefined && now() > cap) {
+        const sec = dur(ld.workout);
+        const s = Math.max(
+          easyFloor,
+          Math.floor((sec - (now() - cap) * pace.paces.easy) / 300) * 300
+        );
+        if (s < sec - 60) {
+          const next = realize(
+            { type: 'long', sec: s, def: steadyLongDef(ctx, null), dose: 0, slot: null },
+            ctx
+          );
+          if (next !== null) setDay(ld.date, next);
+        }
+      }
+    }
+  };
   for (const r of races) {
     const dates = Array.from({ length: 7 }, (_, i) => addDays(r.date, i + 1)).filter(
       (x) => x < raceDate
@@ -664,6 +774,9 @@ export function applyPostRace(doc: PlanDoc, state: RunnerState, data: DistanceDa
           : easy(Math.max(cap, r.planned ? Math.min(minEasy, POST_RACE_EASY_MAX_SEC) : 0))
       );
     }
+    /* R24 (M4): posle trke punim naporom — (a) dugi 6–8. dana posle pripremne trke ne raste preko poslednjeg dugog
+       pre nje; (c) početnik: nedelja 2 plana od dana posle trke ≤ udeo uobičajenog obima */
+    if (r.full === true) postRaceM4(r);
     /* nedelja: prvih 7 dana */
     if (r.weekKm === null || addDays(r.date, 7) >= addDays(mondayOf(raceDate), -7)) continue;
     const limit = r.weekKm;

@@ -156,3 +156,85 @@ describe('R22 (A1) — oporavak posle trke (sve distance, scenariji i profili)',
     60_000
   );
 });
+
+/* R24 (M4) — posle pripremne trke iz plana (pun napor ≥ 75 min) dugi 6–8. dana ne raste preko poslednjeg dugog pre
+   nje, osim kad je poslednji dugi u prozoru događaja ili dve nedelje posle njega (dugi tek raste
+   nazad); svojstvo nad profilima i scenarijima SVIH distanci. (c) početnik u planu od dana posle trke (HM s19):
+   nedelja 2 ≤ 75 % uobičajenog obima; (d) taj plan nema „forma traži više brzog rada" (HM s18). */
+import { adjustmentWindow } from '../engine/readiness';
+
+function m4Bad(c: Case): string[] {
+  const bad: string[] = [];
+  const doc = c.doc;
+  const pace = paceCtxOf(doc.header);
+  const race: string = doc.header.goal.raceDate;
+  const days: any[] = doc.weeks.flatMap((w: any) => w.days);
+  const done = new Set((c.state.runs as any[]).map((x) => x.dayId));
+  const windowed = (date: string): boolean =>
+    ((doc.header.adjustments ?? []) as any[]).some((a) => {
+      const w = adjustmentWindow(a);
+      return w !== null && date >= w.from && date <= addDays(w.to, 14);
+    });
+  for (const t of days) {
+    if (t.workout?.kind !== 'test' || t.workout.workSec < 4500 || t.date >= race) continue;
+    const before = days.filter(
+      (x) => x.date < t.date && x.date >= addDays(t.date, -21) && x.workout?.kind === 'long'
+    );
+    const lastDay = before[before.length - 1];
+    if (lastDay === undefined || windowed(lastDay.date)) continue;
+    const last = summarize(lastDay.workout, pace).durationSec;
+    for (const x of days) {
+      if (x.date < addDays(t.date, 6) || x.date > addDays(t.date, 8)) continue;
+      if (x.workout?.kind !== 'long' || x.date <= c.state.today || done.has(x.id) || x.locked)
+        continue;
+      if (x.origin === 'manual') continue;
+      const sec = summarize(x.workout, pace).durationSec;
+      if (sec > last + 60)
+        bad.push(
+          `${c.tag} dugi ${String(x.date)} ${String(Math.round(sec / 60))} > ${String(Math.round(last / 60))} min`
+        );
+    }
+  }
+  return bad;
+}
+
+describe('R24 (M4) — dugi posle pripremne trke ne raste (sve distance)', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))(
+    '%s: dugi 6–8. dana ≤ poslednji dugi pre trke',
+    (_id, d) => {
+      expect(cases(d).flatMap((c) => m4Bad(c))).toEqual([]);
+    },
+    60_000
+  );
+
+  it('MAR p11 (ned 16): dugi posle pripremnog polumaratona ne raste preko 2 h 20 (bio 2 h 25)', () => {
+    const d = DIST.find((x) => x.data.id === 'marathon');
+    const c = d === undefined ? undefined : cases(d).find((x) => x.tag === 'p11');
+    if (c === undefined) throw new Error('p11');
+    const pace = paceCtxOf(c.doc.header);
+    const day = (c.doc.weeks as any[])
+      .flatMap((w) => w.days)
+      .find((x: any) => x.date === '2027-02-21');
+    expect(day.workout.kind).toBe('long');
+    expect(summarize(day.workout, pace).durationSec).toBeLessThanOrEqual(8400 + 60);
+  });
+
+  it('HM s19: nedelja 2 početnika ≤ 75 % uobičajenog obima; HM s18 bez „forma traži više brzog rada"', () => {
+    const d = DIST.find((x) => x.data.id === 'hm');
+    if (d === undefined) throw new Error('hm');
+    const all = cases(d);
+    const s19 = all.find((x) => x.tag === 's19');
+    const s18 = all.find((x) => x.tag === 's18');
+    if (s19 === undefined || s18 === undefined) throw new Error('s18/s19');
+    const pace = paceCtxOf(s19.doc.header);
+    const w2 = s19.doc.weeks[1];
+    const ref =
+      (s19.doc.header.adjustments as any[]).find((a) => a.kind === 'effort').refWeekKm ??
+      s19.state.profile.weeklyKm;
+    expect(weekCost(w2, s19.doc.header.goal.raceDate, pace).km).toBeLessThanOrEqual(
+      0.75 * ref + 0.5
+    );
+    expect(weekCost(w2, s19.doc.header.goal.raceDate, pace).km).toBeLessThanOrEqual(15);
+    expect((s18.doc.header.warnings as any[]).some((w) => w.code === 'obim-za-nivo')).toBe(false);
+  });
+});

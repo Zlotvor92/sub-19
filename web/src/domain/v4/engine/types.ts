@@ -970,6 +970,9 @@ export interface SafetyNumbers {
   /** R24 (P1): najkraći lagan dan po nivou samo za pravilo M6 (dopuna `minEasyMin` za nivoe koje stara pravila
       laganih dana ne mere, npr. početnik). */
   minEasyBuildMin?: Readonly<Record<LevelId, number>>;
+  /** R24 (M4 c): početnik (`pocetnik`, `pocetnik-nov`) u planu koji počinje dan posle trke — nedelja 2 ≤ ovaj udeo
+      uobičajenog nedeljnog obima. Bez polja: bez pravila. */
+  postRaceBeginnerWeek2Share?: number;
   /** Lagan dan najviše ovoliki udeo dugog te nedelje; broj, ili mapa po broju dana trčanja („1"…„7"). */
   easyMaxShareOfLong: number | Readonly<Record<string, number>>;
   dayBeforeLongMaxShare: number;

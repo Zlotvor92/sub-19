@@ -238,6 +238,8 @@ export const SAFETY: SafetyNumbers = {
      dana) ovde ne važi — 4-dnevni planovi polumaratona/maratona (p01, planovi vlasnika) nemaju lagan dan ispod praga
      zbog broja dana, a trener ih vodi kao bajt-iste */
   minEasyBuildFromRunDays: 5,
+  /* R24 (M4 c): početnik u planu od dana posle trke (HM s19) — nedelja 2 ≤ 75 % uobičajenog obima */
+  postRaceBeginnerWeek2Share: 0.75,
   /* Z8 (krug 7; AGENTS t. 6): traženi dani se poštuju — lagan dan sme do 30 min uz rečenicu (p06) */
   minEasyFallbackMin: 30,
   /* T6 (krug 6; p08): vršna nedelja nije ispod polaznog obima */
