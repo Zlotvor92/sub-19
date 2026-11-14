@@ -54,7 +54,9 @@ export { doneFromLog, otisakOf, workoutFromAlt, type AltInput } from './manual';
 export { undoEdit, undoWeekMoves } from './undo';
 export {
   acceptReport,
+  clock,
   formView,
+  shortDate,
   liveState,
   previewReport,
   refreshPlan,

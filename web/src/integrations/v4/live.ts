@@ -14,6 +14,7 @@ import {
   type RunnerState
 } from '../../domain/v4/engine';
 import { estimateForm } from '../../domain/v4/fitness';
+export { clock, shortDate } from '../../domain/v4/fitness';
 import { accept, autoStep, preview, reportedEvent, type Ledger, type Report } from './events';
 import { distanceData, linkActivities, toFacts } from './facts';
 
