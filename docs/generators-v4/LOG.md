@@ -756,3 +756,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Tabovi ocene R19 (svi Fable 5.2): trener `session_01GnHHiajAuY2hEBCkKoaSun`; drugi sudija HM
   `session_01GnHHiY1dmTvgZ4iUX2fpQ7`, 10K `session_01GnHHiZzrwbVVjqUjvFCFkA`, MAR `session_01GnHHiYAfzVnVCKGFhhxZ52`,
   5K `session_01GnHHiWRNyTk9mdk45p8FaH`. Motor R19 tab `session_01GnHHiaZSGWeHY2sPFdz4bo` čeka (bez naloga).
+
+### 14. 11. 2026, 02:00 — OCENE R19 (stanje `ef506f4c`, sve sudije Fable) i nalog R20
+- Trener (kalibracija na `fb2c1a3`: pomak ≈ 0): HM 78,8 / 83,0 / 83,7 → 81,0 (7 od 12 ≥ 80); 10K 78,2 / 82,5 / 82,5
+  → 80,4; MAR 77,9 / 81,4 / 79,0 → 79,2; 5K 76,6 / 82,7 / 80,0 → 79,1. Plan < 80 svuda; C pao na MAR (79,0).
+- Drugi sudija (planovi; model Fable umesto Opusa — poređenje sa R16 nije čisto): HM 76,3 (min p06 68), 10K 76,2
+  (min p06 68), MAR 68,0 (p13 61, p19 61,5, p18 63, p10 63,5, p06 64, p11 64,5), 5K 72,3 (p06 64, p15 64).
+  Scenariji HM 88,7, 10K 80, MAR 80, 5K 83; parovi HM 83, 10K 77, MAR 65, 5K 80.
+- Zajedničko: rampa posle pauze važi za obim, ne za dugi i prvi kvalitet; put se vodi kao bolest; provera forme se
+  briše umesto da se pomeri; MAR dugi kod malog obima staje na udelu (odluka: voditi po vremenu); dugi u ned 1 ne
+  gleda istoriju; više brojeva za istu stvar; ispis parova/scenarija odaje očekivanja sudijama.
+- Trener: Plan 80 na maratonu nedostižan dok su u skupu profili 8–12 ned / 28–40 km (plafon ulaza) — pitanje merila
+  za vlasnika na kraju.
+- R20 (`briefs/R20.md`): dva taba motora (A prilagođavanje, B plan/upozorenja/prognoza/ispis) + podatak HM (nov tab),
+  10K, MAR, 5K. Svi tabovi ocene R19 arhivirani; motor R19 tab (547 000) se arhivira.
