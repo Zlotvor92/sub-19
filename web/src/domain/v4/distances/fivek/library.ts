@@ -122,6 +122,45 @@ export const LIBRARY: WorkoutDef[] = [
 
   /* ---------------------------------------------------------------- brzina R 200–400 m i usponi 45 s (osnova i
      drugi podražaj specifične faze; README: R 6 → 12 min, u dve nedelje osnove usponi 8–10 × 45 s umesto R) */
+  /* R20 (p09): brzina po osećaju (bez rezultata) — kratke brze deonice na ravnom umesto uspona 45 s pre prve
+     provere; prvi u nizu */
+  {
+    id: 'r-30s',
+    kind: 'quality',
+    stimulus: 'brzina',
+    tags: [],
+    impact: 'obican',
+    requires: { onlyByFeel: true },
+    main: {
+      kind: 'reps',
+      zone: 'R',
+      rep: { durationSec: 30 },
+      recovery: jog(90),
+      minReps: 8,
+      maxReps: 16
+    },
+    text: 'r-30s',
+    notes: ['napomena.zagrevanje']
+  },
+  {
+    id: 'r-45s',
+    kind: 'quality',
+    stimulus: 'brzina',
+    tags: [],
+    impact: 'obican',
+    /* mali obim (< 20 km): 45 s × 9 uz zagrevanje skače nedelju + 22 % (p10) */
+    requires: { onlyByFeel: true, minBaseLoad: 120 },
+    main: {
+      kind: 'reps',
+      zone: 'R',
+      rep: { durationSec: 45 },
+      recovery: jog(105),
+      minReps: 6,
+      maxReps: 12
+    },
+    text: 'r-30s',
+    notes: ['napomena.zagrevanje']
+  },
   {
     id: 'r-200',
     kind: 'quality',

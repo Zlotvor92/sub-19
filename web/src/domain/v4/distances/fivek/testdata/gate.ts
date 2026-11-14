@@ -49,10 +49,10 @@ export interface GateStats {
 
 /** Tabela vrha za 5 km u km (ciljni planovi trenera: p11 × 1,6 za 16 ned, p01 × 1,2 za 12, p04 × 1,1 za 16, p08
     × 1,03 za 16): polazno ≤ 20 km → × 1,7 (≥ 14 ned), × 1,5 (8–13), × 1,35 kraće; 20–35 km → × 1,35 (≥ 12 ned),
-    × 1,25 kraće; > 35 km → × 1,3 (≥ 12 ned), × 1,22 (8–11), × 1,15 kraće (R12, F1); staž < 8 nedelja ili tegoba u 12 meseci → najviše
+    × 1,25 kraće; > 35 km → × 1,3 (≥ 12 ned), × 1,25 (8–11; R20), × 1,15 kraće (R12, F1); staž < 8 nedelja ili tegoba u 12 meseci → najviše
     × 1,5. */
 export function ladderKm(baseKm: number, weeks: number, limited: boolean): number {
-  let x = weeks >= 12 ? 1.3 : weeks >= 8 ? 1.22 : 1.15;
+  let x = weeks >= 12 ? 1.3 : weeks >= 8 ? 1.25 : 1.15;
   if (baseKm <= 20.5) x = weeks >= 14 ? 1.7 : weeks >= 8 ? 1.5 : 1.35;
   else if (baseKm <= 35.5) x = weeks >= 12 ? 1.35 : 1.25;
   return limited ? Math.min(x, 1.5) : x;
@@ -272,9 +272,8 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     v.push(
       `najduži dugi ${String(longestKm)} km / ${String(Math.round(longestMin))} min < ${String(needLongKm)} km ili ${String(needLongMin)} min`
     );
-  const longCapMin = ['spor', 'pocetnik', 'povratnik'].includes(doc.header.decisions.level)
-    ? 101
-    : 91;
+  /* R20: jedan plafon dugog 100 min (mali obim i hod-trk imaju niži u podatku) */
+  const longCapMin = 101;
   if (longestMin > longCapMin)
     v.push(`najduži dugi ${String(Math.round(longestMin))} min > ${String(longCapMin - 1)} min`);
 

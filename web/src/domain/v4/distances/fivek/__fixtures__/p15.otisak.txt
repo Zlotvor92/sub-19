@@ -38,8 +38,8 @@
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
 2026-12-10 | trening | easy | 4.2 | lagano 20 min, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-11 | odmor | - | 0.0 |  | - | - | -
-2026-12-12 | trening | easy | 2.9 | lagano 20 min | - | - | -
-2026-12-13 | trening | long | 5.9 | dugi 40 min lagano | - | - | -
+2026-12-12 | trening | easy | 3.7 | lagano 25 min | - | - | -
+2026-12-13 | trening | long | 5.1 | dugi 35 min lagano | - | - | -
 2026-12-14 | odmor | - | 0.0 |  | - | - | -
 2026-12-15 | trening | easy | 2.9 | lagano 20 min | - | - | -
 2026-12-16 | odmor | - | 0.0 |  | - | - | -

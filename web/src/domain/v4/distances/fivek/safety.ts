@@ -75,8 +75,10 @@ export const SAFETY: SafetyNumbers = {
     /* R12 (F1): spor do 100 min — ciljni p04 dugi 14 km uz lagano 6:47–7:28 ≈ 100 min; sa 90 min obim sporog sa 5
        dana ne raste (lagan ≤ 80 % dugog) */
     spor: 6000,
-    srednji: 5400,
-    brz: 5400
+    /* R20: jedan plafon dugog za 5 km — 100 min (bilo 90/95/100 po nivou, sudija B4); kod 3 dana i srednjeg nivoa
+       obim inače ne raste (p08 ravan 33–36 km 16 nedelja) */
+    srednji: 6000,
+    brz: 6000
   },
   longShareByRunDays: {
     /* početnik sa 3 dana: ciljni p11 dugi 9 od 19,5 km (46 %) */
@@ -106,7 +108,8 @@ export const SAFETY: SafetyNumbers = {
   doseCaps: {
     brzina: { maxWorkSec: 720, shareOfPeakLoad: 0.06 },
     prag: { maxWorkSec: { brz: 1680, '*': 1440 }, shareOfPeakLoad: 0.085 },
-    'prag-p': { maxWorkSec: 900, shareOfPeakLoad: 0.09 },
+    /* R20 (P2 B): 0,11 — kod obima hod-trka (P ≈ 95) prvi fartlek je inače ispod najmanje doze i otpada do 13. nedelje */
+    'prag-p': { maxWorkSec: 900, shareOfPeakLoad: 0.11 },
     intervali: { maxWorkSec: { brz: 1440, spor: 1200, '*': 1260 }, shareOfPeakLoad: 0.075 },
     'tempo-trke': {
       maxWorkSec: { brz: 1440, pocetnik: 1020, 'pocetnik-nov': 900, '*': 1320 },

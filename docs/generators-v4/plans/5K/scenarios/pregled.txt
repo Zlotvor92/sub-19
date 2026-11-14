@@ -12,8 +12,8 @@ s09 p01 E3: ned 9 (najteža): propušteni tempo trke i dugi sa završnicom — p
 s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 2; nalazi čuvara posle: 0
 s11 p11 E3: ned 13 (najteža): propušteni tempo trke i dugi — promena: 2; nalazi čuvara posle: 0
 s12 p12 E3: ned 4–5: propušten po jedan dugi u obe nedelje — promena: 2; nalazi čuvara posle: 0
-s13 p01 E4: ned 9, bol u kolenu 4/10 posle tempa trke — promena: 9; nalazi čuvara posle: 0
-s14 p04 E4: ned 6, bol 4/10 posle kvaliteta (osnova) — promena: 13; nalazi čuvara posle: ispod-cilja@9
+s13 p01 E4: ned 9, bol u kolenu 4/10 posle tempa trke — promena: 7; nalazi čuvara posle: 0
+s14 p04 E4: ned 6, bol 4/10 posle kvaliteta (osnova) — promena: 12; nalazi čuvara posle: 0
 s15 p11 E4: ned 10, bol 4/10 posle dugog — promena: 12; nalazi čuvara posle: 0
 s16 p12 E4: ned 4, bol 4/10 posle laganog dana — promena: 11; nalazi čuvara posle: 0
 s17 p01 E5: juče trka 10 km 46:00 — promena: 0; nalazi čuvara posle: ispod-cilja@2

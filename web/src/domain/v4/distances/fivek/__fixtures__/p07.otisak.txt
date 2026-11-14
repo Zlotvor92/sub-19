@@ -1,10 +1,10 @@
-2026-11-02 | trening | easy | 8.0 | lagano 8 km | - | - | -
+2026-11-02 | trening | easy | 7.5 | lagano 7,5 km | - | - | -
 2026-11-03 | trening | quality | 9.4 | intervali 4 × 800 m, oporavak 2:30 džog | - | - | -
 2026-11-04 | odmor | - | 0.0 |  | - | - | -
 2026-11-05 | trening | quality | 8.6 | prag 2 × 8 min, oporavak 1 min džog | - | - | -
 2026-11-06 | odmor | - | 0.0 |  | - | - | -
-2026-11-07 | trening | easy | 8.0 | lagano 8 km | - | - | -
-2026-11-08 | trening | long | 12.5 | dugi 12,5 km lagano | - | - | -
+2026-11-07 | trening | easy | 7.5 | lagano 7,5 km | - | - | -
+2026-11-08 | trening | long | 13.0 | dugi 13 km lagano | - | - | -
 2026-11-09 | trening | easy | 6.5 | lagano 6,5 km | - | - | -
 2026-11-10 | trening | quality | 11.9 | intervali 5 × 1 km, oporavak 3 min džog | - | - | -
 2026-11-11 | odmor | - | 0.0 |  | - | - | -
@@ -26,14 +26,14 @@
 2026-11-27 | odmor | - | 0.0 |  | - | - | -
 2026-11-28 | trening | easy | 5.0 | lagano 5 km | - | - | -
 2026-11-29 | trening | long | 11.5 | dugi 11,5 km lagano | - | - | -
-2026-11-30 | trening | easy | 5.0 | lagano 5 km | - | - | -
+2026-11-30 | trening | easy | 4.0 | lagano 4 km | - | - | -
 2026-12-01 | trening | quality | 9.2 | tempo trke 4 × 800 m, oporavak 2 min džog | - | - | -
 2026-12-02 | odmor | - | 0.0 |  | - | - | -
-2026-12-03 | trening | easy | 6.5 | lagano 5,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-03 | trening | easy | 5.0 | lagano 4 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-04 | odmor | - | 0.0 |  | - | - | -
-2026-12-05 | trening | easy | 5.0 | lagano 5 km | - | - | -
-2026-12-06 | trening | long | 9.5 | dugi 9,5 km lagano | - | - | -
-2026-12-07 | trening | easy | 5.0 | lagano 5 km | - | - | -
+2026-12-05 | trening | easy | 4.0 | lagano 4 km | - | - | -
+2026-12-06 | trening | long | 8.0 | dugi 8 km lagano | - | - | -
+2026-12-07 | trening | easy | 4.0 | lagano 4 km | - | - | -
 2026-12-08 | trening | easy | 6.0 | lagano 5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2026-12-09 | odmor | - | 0.0 |  | - | - | -
 2026-12-10 | trening | quality | 7.1 | oštrenje: tempo trke 4 × 400 m, oporavak 1 min džog | - | - | -

@@ -207,9 +207,11 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       osn += 1;
       /* osnova: R raste 70 → 100 % (README 6 → 12 min), prag 55 → 100 % (deonice → u komadu) */
       const tb = (osn - 1) / Math.max(1, devFrom - 2);
-      const longSpec = threeDayProgressive(sh, k)
-        ? { len, stimulus: 'dugi-progresivno', dose: 0.8, wave }
-        : { len, wave };
+      /* R20 (p04): i kod 4+ dana svaka treća nedelja osnove progresivan dugi — osnova nije niz istih nedelja */
+      const longSpec =
+        threeDayProgressive(sh, k) || (sh.days >= 4 && osn % 3 === 0)
+          ? { len, stimulus: 'dugi-progresivno', dose: 0.8, wave }
+          : { len, wave };
       out.push(
         week(
           OSNOVA,
@@ -220,6 +222,12 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
         )
       );
     }
+  }
+  /* R20 (p09): rani test po osećaju u 3. nedelji (v. `earlyTest`) — dodaje se slot provere, ostali ostaju */
+  if (check && recoveries.size === 0 && tailStart > 3) {
+    const wk = out[2];
+    if (wk !== undefined && wk.kind === 'build')
+      out[2] = { ...wk, stimuli: withSaturday(sh, wk.stimuli, EARLY_TEST) };
   }
   return [...out, ...regularTail(sh, check, short)].slice(-n);
 }
@@ -268,11 +276,13 @@ function regularTail(sh: Shape, check: boolean, short = false): WeekIntent[] {
         ]),
     /* N−1: sužavanje — tempo trke ≈ 60 % (ciljni p01 ned 11: 3 × 1000 m; ovde deonice od 800 m, da zaokruživanje ne
        pređe 60 % najveće doze) */
+    /* R20: 58 % vrha — sa 70 % nedelja −1 izlazi 75–76 % vrha (p02, p09; trener ≤ 70 %); najkraći lagani dani je
+       drže iznad zadatog */
     week(
       FINISH,
       'taper',
-      0.7,
-      { len: 0.66 },
+      0.58,
+      { len: 0.6 },
       /* sužavanje bez praga (README: RP 3 × 1000 m + T 1,5 km): sa pragom brz rad nedelje −1 kod velikog obima
          prelazi rad nedelje −2 (p05: 26 prema 25 min) — silazak intenziteta ima prednost.
          3 dana: jedan podražaj (tempo trke u četvrtak), utorak lagan bez ubrzanja — mali obim bi dan sa ubrzanjima
@@ -344,7 +354,11 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       w <= intro
         ? [w === 1 ? STRIDES : STRIDES6, STRIDES]
         : fresh
-          ? [k % 2 === 0 ? HILLS_SHORT : STRIDES6, STRIDES]
+          ? /* R20 (P2 B): hod-trk početnik dobija prvi kvalitet (fartlek 6 × 1 min) od druge polovine tela, ne tek
+               u najtežoj nedelji */
+            w > intro + 1 && t >= 0.45 && k % 2 === 1
+            ? [S('prag-p', 0.9, 'fartlek'), STRIDES]
+            : [k % 2 === 0 ? HILLS_SHORT : STRIDES6, STRIDES]
           : check && w === tailStart - 1
             ? /* prvi tempo trke pre najteže (K7), kao kod redovnog */
               [S('tempo-trke', 0.6, 'rp-600'), STRIDES]

@@ -16,6 +16,7 @@ export const TEXTS: Record<string, string> = {
   'usponi-kratki': 'lagano {len}, usred trčanja {n} × {rep} jako uzbrdo, nazad {rec}',
 
   /* kvalitet */
+  'r-30s': 'brze deonice {n} × {rep} živo i opušteno, oporavak {rec}',
   'r-200': 'brze deonice {n} × {rep}{pace}, oporavak {rec}',
   'r-300': 'brze deonice {n} × {rep}{pace}, oporavak {rec}',
   'r-400': 'brze deonice {n} × {rep}{pace}, oporavak {rec}',

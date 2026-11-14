@@ -441,7 +441,11 @@ describe('dugi nikad nije kraći od laganog dana — cela mreža, bez filtera po
       for (const s of weekStats(b.doc)) {
         if (s.longSec <= 0) continue;
         for (const day of s.week.days)
-          if (day.workout?.kind === 'easy' && summarize(day.workout, ctx).durationSec > s.longSec)
+          /* R20: dugi na podu od 20 min (sužavanje malog obima) — lagan dan sa ubrzanjima sme + 1 min (dodatak) */
+          if (
+            day.workout?.kind === 'easy' &&
+            summarize(day.workout, ctx).durationSec > s.longSec + (s.longSec <= 1260 ? 60 : 0)
+          )
             bad.push(`${JSON.stringify(c)} ${day.date}`);
       }
     }
@@ -771,7 +775,8 @@ describe('trenerski zahtevi za 5 km (coach/target/5K/README.md, brief F7-5K)', (
       const longest = Math.max(...s.map((x) => x.longSec));
       /* R12: spor, početnik i povratnik do 100 min (ciljni p04 14 km ≈ 100 min; plan ne kreće ispod obima) */
       const lvl0 = p.doc.header.decisions.level;
-      const capSec = ['spor', 'pocetnik', 'povratnik'].includes(lvl0) ? 6000 : 5400;
+      /* R20: jedan plafon dugog 100 min */
+      const capSec = lvl0 === 'mali' ? 4800 : 6000;
       expect(longest, p.id).toBeLessThanOrEqual(capSec + 30);
       const lvl = p.doc.header.decisions.level;
       const small = lvl.startsWith('pocetnik') || lvl === 'mali';
@@ -832,7 +837,10 @@ describe('trenerski zahtevi za 5 km (coach/target/5K/README.md, brief F7-5K)', (
       }
       /* obim-za-nivo: motor drugi kvalitet nedelje zamenjuje laganim (p15 povratnik sa 20 km) */
       if (!p.doc.header.warnings.some((w) => w.code === 'obim-za-nivo'))
-        expect(best, p.id).toBeGreaterThanOrEqual(3);
+        /* R20: rani test po osećaju (3. nedelja) oduzima utorak posle njega — tada ≥ 2 nedelje sa I (ne nužno zaredom) */
+        if (days.some((d) => d.workout?.stimulus === 'kontrola-rana'))
+          expect(iWeeks.filter(Boolean).length, p.id).toBeGreaterThanOrEqual(2);
+        else expect(best, p.id).toBeGreaterThanOrEqual(3);
     }
   });
 

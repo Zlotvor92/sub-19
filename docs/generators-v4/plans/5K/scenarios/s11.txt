@@ -79,11 +79,11 @@ Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na 
   pon 7. 12.  odmor
   uto 8. 12.  lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 3,6 km, 25 min
   sre 9. 12.  odmor
-  čet 10. 12.  fartlek 10 × 1 min živo, između 2 min džog lagano — 6,9 km, 48 min
+  čet 10. 12.  fartlek 6 × 2 min živo, između 2 min džog lagano — 6,2 km, 42 min
   pet 11. 12.  odmor
   sub 12. 12.  odmor
   ned 13. 12.  dugi 45 min lagano — 6,2 km, 45 min
-  Zbir: 16,7 km, 1 h 58 min, 3 treninga, brz rad 8 % vremena trčanja
+  Zbir: 16 km, 1 h 52 min, 3 treninga, brz rad 11 % vremena trčanja
 
 7. NEDELJA (od 14. 12.) — osnova, gradnja; do trke 9 nedelja
   pon 14. 12.  odmor
@@ -107,13 +107,13 @@ Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na 
 
 9. NEDELJA (od 28. 12.) — razvoj, gradnja; do trke 7 nedelja
   pon 28. 12.  odmor
-  uto 29. 12.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,9 km, 35 min
+  uto 29. 12.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,3 km, 30 min
   sre 30. 12.  odmor
-  čet 31. 12.  prag 13 min u komadu (5:46/km) — 5 km, 33 min
+  čet 31. 12.  prag 15 min u komadu (5:46/km) — 5,4 km, 35 min
   pet 1. 1.  odmor
   sub 2. 1.  odmor
   ned 3. 1.  dugi 55 min lagano — 7,6 km, 55 min
-  Zbir: 17,5 km, 2 h 3 min, 3 treninga, brz rad 11 % vremena trčanja
+  Zbir: 17,3 km, 2 h, 3 treninga, brz rad 12 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — razvoj, gradnja; do trke 6 nedelja
   pon 4. 1.  odmor
@@ -274,11 +274,11 @@ Propušten je ključni trening „dugi 60 min lagano" (31. 1.). Dugi trening nos
   pon 7. 12.  odmor
   uto 8. 12.  lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 3,6 km, 25 min (7:06/km)
   sre 9. 12.  odmor
-  čet 10. 12.  fartlek 10 × 1 min živo, između 2 min džog lagano — urađeno 6,9 km, 48 min (6:59/km)
+  čet 10. 12.  fartlek 6 × 2 min živo, između 2 min džog lagano — urađeno 6,2 km, 42 min (6:49/km)
   pet 11. 12.  odmor
   sub 12. 12.  odmor
   ned 13. 12.  dugi 45 min lagano — urađeno 6,2 km, 45 min (7:14/km)
-  Urađeno: 16,7 km, 1 h 58 min, 3 treninga
+  Urađeno: 16 km, 1 h 52 min, 3 treninga
 
 7. NEDELJA (od 14. 12.) — osnova, gradnja; do trke 9 nedelja
   pon 14. 12.  odmor
@@ -302,13 +302,13 @@ Propušten je ključni trening „dugi 60 min lagano" (31. 1.). Dugi trening nos
 
 9. NEDELJA (od 28. 12.) — razvoj, gradnja; do trke 7 nedelja
   pon 28. 12.  odmor
-  uto 29. 12.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 4,9 km, 35 min (7:08/km)
+  uto 29. 12.  lagano 25 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 4,3 km, 30 min (7:07/km)
   sre 30. 12.  odmor
-  čet 31. 12.  prag 13 min u komadu — urađeno 5 km, 33 min (6:35/km)
+  čet 31. 12.  prag 15 min u komadu — urađeno 5,4 km, 35 min (6:31/km)
   pet 1. 1.  odmor
   sub 2. 1.  odmor
   ned 3. 1.  dugi 55 min lagano — urađeno 7,6 km, 55 min (7:14/km)
-  Urađeno: 17,5 km, 2 h 3 min, 3 treninga
+  Urađeno: 17,3 km, 2 h, 3 treninga
 
 10. NEDELJA (od 4. 1.) — razvoj, gradnja; do trke 6 nedelja
   pon 4. 1.  odmor
