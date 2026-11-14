@@ -357,7 +357,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           ? /* R20 (P2 B): hod-trk početnik dobija prvi kvalitet (fartlek 6 × 1 min) od druge polovine tela, ne tek
                u najtežoj nedelji */
             w > intro + 1 && t >= 0.45 && k % 2 === 1
-            ? [S('prag-p', 0.9, 'fartlek'), STRIDES]
+            ? [S('prag-p', 0.45, 'fartlek'), STRIDES]
             : [k % 2 === 0 ? HILLS_SHORT : STRIDES6, STRIDES]
           : check && w === tailStart - 1
             ? /* prvi tempo trke pre najteže (K7), kao kod redovnog */
@@ -402,7 +402,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     week(
       SPEC,
       fresh ? 'build' : 'peak',
-      fresh ? 0.95 : 1,
+      1,
       fresh ? { len: 1, stimulus: 'dugi-hod-10' } : tailLong(1),
       [S('tempo-trke', fresh ? 0.7 : 1, fresh ? 'rp-400' : 'rp-800'), STRIDES]
     ),
