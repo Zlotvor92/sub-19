@@ -37,13 +37,16 @@ import { useRecoveryStore } from '../stores/recoveryStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
 import { useV4Store } from '../stores/v4Store';
+import type { PlanEvent } from '../domain/v4/engine';
 import {
+  commitAction,
   createEventsApi,
   createPlanApi,
   createV4Rest,
   readAccess,
   type EventsApi,
   type LoadResult,
+  type PlanAction,
   type PlanApi,
   type PlanRow
 } from '../services/v4';
@@ -134,6 +137,9 @@ export interface Integrations {
     plan: PlanApi;
     events: EventsApi;
     deviceId(): string;
+    /** Radnja nad planom (`commitAction`) → `useV4Store.row`; uz upisan plan dopisuje i događaje (`manual-edit`…).
+     *  `false` = nije sačuvano (mreža, odjava, sukob posle ponovljenih pokušaja). */
+    commit(action: PlanAction, events?: readonly PlanEvent[]): Promise<boolean>;
   } | null;
 }
 
@@ -428,13 +434,33 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
         })
       : null;
   const v4Plan = v4Rest === null ? null : createPlanApi(v4Rest);
+  const v4Events = v4Rest === null ? null : createEventsApi(v4Rest);
   const v4 =
-    v4Rest === null || v4Plan === null
+    v4Rest === null || v4Plan === null || v4Events === null
       ? null
       : {
           plan: v4Plan,
-          events: createEventsApi(v4Rest),
+          events: v4Events,
           deviceId: (): string => deps.session.state.deviceId ?? 'uredjaj',
+          async commit(action: PlanAction, events: readonly PlanEvent[] = []): Promise<boolean> {
+            const owner = deps.accountKey?.();
+            const device = deps.session.state.deviceId ?? 'uredjaj';
+            const r = await commitAction(v4Plan, action, device).catch(() => null);
+            if (r === null || !r.ok || deps.accountKey?.() !== owner) return false;
+            useV4Store.getState().set({ row: r.row });
+            if (r.wrote && events.length > 0)
+              await v4Events
+                .append(
+                  events.map((event) => ({
+                    event,
+                    vrsta: event.kind,
+                    revPlana: r.row?.rev ?? null
+                  })),
+                  device
+                )
+                .catch(() => undefined);
+            return true;
+          },
           async load(): Promise<void> {
             const owner = deps.accountKey?.();
             const next = await v4Startup({

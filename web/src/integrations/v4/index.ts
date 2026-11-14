@@ -40,3 +40,14 @@ export {
   type Ledger,
   type Report
 } from './events';
+export {
+  DAY_DROPPED,
+  makePlan,
+  V4_DISTANCE,
+  warningText,
+  wizardGoal,
+  type MadePlan,
+  type WizardAnswers,
+  type WizardGoal
+} from './wizard';
+export { workoutFromAlt, type AltInput } from './manual';

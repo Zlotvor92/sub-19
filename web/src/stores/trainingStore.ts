@@ -29,7 +29,7 @@ import {
   personalVisible
 } from '../domain/personal';
 import { isOwnerNow, useIsOwner } from './owner';
-import { toResolved } from '../integrations/v4';
+import { toResolved, warningText } from '../integrations/v4';
 import { useRecoveryStore } from './recoveryStore';
 import { useV4Store, v4DocOf, type V4State } from './v4Store';
 import { pickKnown, requestPersist, TRAINING_KEYS, type PersistMode } from './persistence';
@@ -199,6 +199,28 @@ export function useHasPlan(): boolean {
   const gen = useActiveGenPlan();
   const v4 = useV4Store((s) => s.enabled && s.row !== null);
   return gen !== null || v4;
+}
+
+/** F9 korak 7: upozorenja zaglavlja V4 plana (`header.warnings` bez napomena nedelja) kao rečenice, kad se prikazuje
+ *  plan iz V4; inače `null` (tada važe upozorenja starog plana). */
+export function useV4Warnings(): string[] | null {
+  const plan = useActiveGenPlan();
+  const enabled = useV4Store((s) => s.enabled);
+  const row = useV4Store((s) => s.row);
+  const today = useV4Store((s) => s.today);
+  return useMemo(() => {
+    if (!enabled || row === null) return null;
+    try {
+      const hit = v4DocOf(
+        { enabled, row, today },
+        { plan, log: {}, alts: {}, moves: {}, vanPlana: {}, knee: [] }
+      );
+      if (hit === null) return null;
+      return hit.doc.header.warnings.filter((w) => w.weeks === undefined).map(warningText);
+    } catch {
+      return null;
+    }
+  }, [plan, enabled, row, today]);
 }
 
 /** Izvedeni plan, memoizovan po (aktivni plan, izmene, pomeranja). `null` kad nema plana ili je neispravan. */

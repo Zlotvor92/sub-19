@@ -49,6 +49,11 @@ import {
   MarathonV2Result
 } from './MarathonV2Steps';
 import { Step1Race } from './Step1Race';
+import { getApp } from '../../app/appContext';
+import { Disclosure } from '../../components/ui/Disclosure';
+import { DAY_DROPPED, makePlan, warningText, type WizardAnswers } from '../../integrations/v4';
+import { useRecoveryStore } from '../../stores/recoveryStore';
+import { useV4Store } from '../../stores/v4Store';
 
 /* ČAROBNJAK ZA PLAN: četiri koraka (trka → rezultat → iskustvo → dani). V1b: nov plan pravi SAMO generator v2 ciljne
    distance (5K, 10K, polumaraton, maraton; `FiveKV2Steps`, `TenKV2Steps`, `HmV2Steps`, `MarathonV2Steps`); pravila ulaza
@@ -122,6 +127,76 @@ export function Wizard({ today }: { today: string }) {
           ? marathonV2StepValid(mw, step, w.raceDate, today)
           : false;
 
+  /* F9 korak 7: pod zastavicom V4 plan pravi V4 motor iz istih odgovora (ulaz v2 kao oblik razmene). Sa ugašenom
+     zastavicom ništa od ovoga se ne računa ni ne prikazuje. */
+  const v4On = useV4Store((s) => s.enabled) && distance !== null;
+  const v4Today = useV4Store((s) => s.today) ?? today;
+  const knee = useRecoveryStore((s) => s.knee);
+  const [confirmedDays, setConfirmedDays] = useState(false);
+  const answersV4 = (): WizardAnswers | null =>
+    isV2
+      ? toFiveKV2Input(v2w, w.raceDate, today)
+      : isTenKV2
+        ? toTenKV2Input(t2w, w.raceDate, today)
+        : isHmV2
+          ? toHmV2Input(hmw, w.raceDate, today)
+          : isMarathonV2
+            ? toMarathonV2Input(mw, w.raceDate, today)
+            : null;
+  const v4Preview = useMemo(() => {
+    if (!v4On || step !== TOTAL_STEPS || !valid || distance === null) return null;
+    const answers = answersV4();
+    if (answers === null) return null;
+    try {
+      return makePlan({ distance, answers, today: v4Today, knee, confirmedRunDays: confirmedDays });
+    } catch {
+      return null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- odgovori su u v2w/t2w/hmw/mw
+  }, [
+    v4On,
+    step,
+    valid,
+    distance,
+    v2w,
+    t2w,
+    hmw,
+    mw,
+    w.raceDate,
+    today,
+    v4Today,
+    knee,
+    confirmedDays
+  ]);
+  const runDayCount = v4Preview?.ok ? v4Preview.facts.availability.runDays.length : 0;
+
+  /** V4: upis plana kroz `commitAction`; stari plan (genPlan, prethodni red → `plan_v4_verzija`) ostaje kao arhiva,
+   *  a trčanja (`log`) i forma se ne diraju (odluka vlasnika 4). */
+  async function finishV4(): Promise<void> {
+    const made = v4Preview;
+    const v4 = getApp().v4;
+    if (made === null || v4 === null) return;
+    if (!made.ok) {
+      setErr(made.errors.map((e) => e.message).join('\n'));
+      setStep(1);
+      return;
+    }
+    if (
+      hasPlan &&
+      !(await confirmAction(
+        'Postojeći plan se arhivira, a trčanja i forma ostaju.\n\nNapraviti nov plan?'
+      ))
+    )
+      return;
+    const ok = await v4.commit(() => ({ doc: made.doc, otisak: made.otisak }));
+    if (!ok) {
+      setErr('Plan nije sačuvan — nema veze sa serverom. Pokušaj ponovo.');
+      setStep(1);
+      return;
+    }
+    closeWizard(false);
+  }
+
   /** Upis novog plana (posle potvrde kad postoji stari plan sa unosima). */
   async function activate(plan: GenPlanState): Promise<void> {
     const t = useTrainingStore.getState();
@@ -191,6 +266,7 @@ export function Wizard({ today }: { today: string }) {
   }
 
   async function finish(): Promise<void> {
+    if (v4On) return finishV4();
     if (isV2) return finishV2();
     if (isTenKV2) return finishTenKV2();
     if (isHmV2) return finishHmV2();
@@ -294,6 +370,30 @@ export function Wizard({ today }: { today: string }) {
           ) : null}
           {isMarathonV2 && step === 4 ? (
             <MarathonV2Days v={mw} set={setMar} rejection={rejection} />
+          ) : null}
+          {v4Preview?.ok && v4Preview.warnings.length > 0 ? (
+            <div className="plan-warn" id="v4-warnings">
+              <Disclosure
+                title="Na šta da paziš u ovom planu"
+                meta={String(v4Preview.warnings.length)}
+                open
+              >
+                {v4Preview.warnings.map((x) => (
+                  <p className="note-src" key={x.code + x.problem}>
+                    {warningText(x)}
+                  </p>
+                ))}
+                {!confirmedDays && v4Preview.warnings.some((x) => x.code === DAY_DROPPED) ? (
+                  <button
+                    type="button"
+                    className="btn ghost block"
+                    onClick={() => setConfirmedDays(true)}
+                  >
+                    Ipak hoću {runDayCount} dana
+                  </button>
+                ) : null}
+              </Disclosure>
+            </div>
           ) : null}
         </div>
         <div className="ob-btnrow">

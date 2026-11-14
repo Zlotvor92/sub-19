@@ -150,6 +150,8 @@ export interface App {
   forgetEverything(): void;
   /** Strava i intervals.icu: povezivanje, otkačivanje. */
   strava: Integrations['strava'];
+  /** F9 korak 7: V4 iza zastavice (`null` bez Supabase-a). */
+  v4: Integrations['v4'];
   icu: Integrations['icu'];
   /** Uvoz treninga iz primarnog izvora (intervals.icu, inače Strava). */
   activities: Integrations['activities'];
@@ -629,6 +631,7 @@ export function createApp(deps: AppDeps): App {
       return { ok: true };
     },
     strava: integrations.strava,
+    v4: integrations.v4,
     icu: integrations.icu,
     activities: integrations.activities,
     weather: integrations.weather,
