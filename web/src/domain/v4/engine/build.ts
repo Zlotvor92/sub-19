@@ -3198,5 +3198,44 @@ export function runPass(
     previousLong = shell.longSec;
     return built;
   });
-  return { ...doc, weeks };
+  return { ...doc, weeks: onlyLongestNotes(weeks, state, ctx) };
+}
+
+/** R20 B6: napomena sa `onlyLongest` ostaje samo uz najduži trening te vrste; sa ostalih (budućih, iz šablona,
+    nezaključanih) dana se skida. */
+function onlyLongestNotes(weeks: PlanWeek[], state: RunnerState, ctx: BuildCtx): PlanWeek[] {
+  let out = weeks;
+  for (const rule of ctx.data.noteRules) {
+    const text = ctx.data.texts[rule.text];
+    if (rule.onlyLongest !== true || text === undefined) continue;
+    let best: { id: string; sec: number } | null = null;
+    for (const w of out)
+      for (const day of w.days) {
+        const wk = day.workout;
+        if (wk === null || !rule.kinds.includes(wk.kind) || !(wk.notes ?? []).includes(text)) continue;
+        const sec = summarize(wk, ctx.pace).durationSec;
+        if (best === null || sec > best.sec) best = { id: day.id, sec };
+      }
+    if (best === null) continue;
+    const keep = best.id;
+    out = out.map((w) => ({
+      ...w,
+      days: w.days.map((day) => {
+        const wk = day.workout;
+        if (
+          wk === null ||
+          day.id === keep ||
+          day.locked ||
+          day.origin !== 'template' ||
+          day.date < state.today ||
+          !(wk.notes ?? []).includes(text)
+        )
+          return day;
+        const notes = (wk.notes ?? []).filter((n) => n !== text);
+        const { notes: _drop, ...rest } = wk;
+        return { ...day, workout: notes.length === 0 ? rest : { ...rest, notes } };
+      })
+    }));
+  }
+  return out;
 }

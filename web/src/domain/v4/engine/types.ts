@@ -984,6 +984,8 @@ export interface NoteRule {
   text: TextKey;
   /** Tekst iste napomene za trkača čija su tempa „po osećaju" (bez s/km); bez njega važi `text`. */
   byFeelText?: TextKey;
+  /** R20 B6: napomena stoji samo uz NAJDUŽI trening te vrste u planu (npr. oprema na najdužem dugom). */
+  onlyLongest?: boolean;
 }
 
 /** Sve što folder distance isporučuje motoru (§ 11). */

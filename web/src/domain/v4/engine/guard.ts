@@ -86,6 +86,11 @@ import type {
   Workout
 } from './types';
 
+/** R20 B6: dodatni dan tek posle ovoliko nedelja staža. */
+const EXTRA_DAY_MIN_TENURE_WEEKS = 13;
+/** R20 B6: predlog kraće distance kad najduži dugi ostaje ispod ovog udela potrebnog. */
+const SHORTER_DISTANCE_LONG_SHARE = 0.8;
+
 /* ------------------------------------------------------------------ § 8.1 neispravan unos */
 
 const positive = (value: number): boolean => Number.isFinite(value) && value > 0;
@@ -729,7 +734,16 @@ export function warnings(input: WarningInput): Warning[] {
   const extraDay = `Uz isti datum trke dodaj ${String(runDays + 1)}. dan laganog trčanja ${dayText}`;
   /* krug 15 (M6): dodatni dan se nudi samo kad vrh stvarno raste (bar 5 %), a kad ni tada ne stiže do praga, rečenica
      to kaže */
-  const dayGain = trial !== null && trial.peakKm >= Math.max(peakKm + 0.5, TRIAL_MIN_GAIN * peakKm);
+  /* R20 B6: dodatni dan se ne predlaže trkaču sa < 3 meseca staža ni uz tegobu u poslednjih 12 meseci */
+  const tenureW =
+    state.profile.yearsRunning === undefined ? null : state.profile.yearsRunning * 52;
+  const extraOk =
+    !(tenureW !== null && tenureW < EXTRA_DAY_MIN_TENURE_WEEKS) && d.painCaution !== true;
+  const dayGain =
+    extraOk &&
+    trial !== null &&
+    trial.peakKm >= Math.max(peakKm + 0.5, TRIAL_MIN_GAIN * peakKm);
+  const longGain = extraOk && trial !== null && trial.longKm >= longKm + 0.5;
   if (peakKm < NEAR_ENOUGH * a.minPeakWeeklyKm) {
     const fix = weeksThatFix(input, weeks, (p) => p.peakKm >= NEAR_ENOUGH * a.minPeakWeeklyKm);
     /* Predlog nudi samo brojeve VEĆE od onoga što plan već ima (R11). */
@@ -779,7 +793,9 @@ export function warnings(input: WarningInput): Warning[] {
       problem: `Trčiš ${count(runDays, DAYS)} nedeljno, a za ovu distancu treba bar ${count(a.minRunDays, DAYS)}.`,
       meaning:
         'Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa.',
-      proposal: `Dodaj ${String(runDays + 1)}. dan laganog trčanja ${dayText} — ${gain}.`,
+      proposal: extraOk
+        ? `Dodaj ${String(runDays + 1)}. dan laganog trčanja ${dayText} — ${gain}.`
+        : `Dan više dodaj tek kad trčiš bar 3 meseca bez tegobe — do tada drži ${count(runDays, DAYS)} nedeljno.`,
       suggest: { runDays: a.minRunDays }
     });
   }
@@ -802,10 +818,16 @@ export function warnings(input: WarningInput): Warning[] {
       meaning: ranGoalDistance(state.today, state.runs, state.profile.recentResult, data.distanceM)
         ? 'Ovu dužinu si već istrčao, ali najduži trening plana je kraći, pa drugu polovinu trke ne vežbaš u treningu — trku počni oprezno.'
         : 'Druga polovina trke biće duža od svega što si trčao, pa prognoza ne računa napredak od obima, a trku treba početi oprezno.',
-      proposal:
-        trial !== null && trial.longKm >= longKm + 0.5
+      proposal: `${
+        longGain && trial !== null
           ? `${extraDay} — dugi tada stiže do ${km(trial.longKm)}.`
-          : `Podigni nedeljni obim laganim trčanjem (10–15 min više po danu) — kad nedelja pređe ${km(a.minPeakWeeklyKm)}, dugi stiže do ${km(need)}.`,
+          : `Podigni nedeljni obim laganim trčanjem (10–15 min više po danu) — kad nedelja pređe ${km(a.minPeakWeeklyKm)}, dugi stiže do ${km(need)}.`
+      }${
+        /* R20 B6: dugi ostaje daleko od potrebnog — predlog kraće distance */
+        a.shorter !== undefined && longKm < SHORTER_DISTANCE_LONG_SHARE * need
+          ? ` Ili na isti datum trči kraću distancu (${a.shorter.label}) — za nju je ovaj dugi dovoljan.`
+          : ''
+      }`,
       suggest: { longKm: need }
     });
   }
@@ -813,7 +835,7 @@ export function warnings(input: WarningInput): Warning[] {
     const fix = weeksThatFix(input, weeks, (p) => p.longKm >= NEAR_ENOUGH * a.minLongKm);
     const left = Math.max(1, Math.round(data.distanceM / 1000 - longKm));
     const now =
-      trial !== null && trial.longKm >= longKm + 0.5
+      longGain && trial !== null
         ? `${extraDay} — dugi tada stiže do ${km(trial.longKm)}.`
         : `Uz isti datum trke dugi ostaje ${km(longKm)}, pa trku počni sporije i čuvaj snagu za poslednjih ${km(left)}.`;
     const next =
@@ -933,8 +955,8 @@ export function warnings(input: WarningInput): Warning[] {
   const streak = streakWarning(doc, s);
   if (streak !== null) out.push(streak);
   const dropped = droppedDayWarning(doc, costs, dropMin);
-  if (dropped !== null) out.push(dropped);
   const shortEasy = shortEasyWarning(doc, costs, s);
+  if (dropped !== null) out.push(dropped);
   if (shortEasy !== null) out.push(shortEasy);
   const back = returnWarning(doc, state);
   if (back !== null) out.push(back);
@@ -1217,9 +1239,11 @@ function droppedDayWarning(
   const { header } = doc;
   const asked = header.decisions.runDays.length;
   if (asked < EASY_FLOOR_MIN_RUN_DAYS) return null;
+  /* R20 B6: sužavanje ima manje treninga po nameri — nije „izostavljen dan" */
   const full = costs.filter(
     (c) =>
       c.week.intent.kind !== 'race' &&
+      c.week.intent.kind !== 'taper' &&
       c.week.start >= header.startDate &&
       !inAnyWindow(c.week, header.adjustments ?? [])
   );

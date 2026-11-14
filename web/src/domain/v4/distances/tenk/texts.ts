@@ -41,9 +41,9 @@ export const TEXTS: Record<string, string> = {
     'Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.',
 
   'napomena.trka':
-    'Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km {paceFrom}–{paceTo} (ne brže od {pace}), od 3. do 8. km ravnomerno {pace}, poslednja 2 km po osećaju — ubrzaj ako možeš.',
+    'Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km {paceFrom}–{paceTo} (ne brže od {pace}), od 3. do 8. km ravnomerno {pace}, poslednja 2 km po osećaju — ubrzaj ako možeš. Doručak 2–3 h pre starta, lagan i proveren; na dan trke ništa novo.',
   'napomena.trka.po-osecaju':
-    'Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km malo lakše nego što ti se čini da možeš, od 3. do 8. km ravnomerno, napor koji možeš da držiš do kraja, poslednja 2 km po osećaju.',
+    'Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km malo lakše nego što ti se čini da možeš, od 3. do 8. km ravnomerno, napor koji možeš da držiš do kraja, poslednja 2 km po osećaju. Doručak 2–3 h pre starta, lagan i proveren; na dan trke ništa novo.',
 
   /* trka i faze */
   race: 'trka — 10 km',

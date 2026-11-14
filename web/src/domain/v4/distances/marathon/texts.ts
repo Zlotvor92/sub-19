@@ -86,5 +86,5 @@ export const NOTE_RULES: NoteRule[] = [
   /* svaki dugi ≥ 90 min nosi unos (README) */
   { kinds: ['long'], minDurationSec: 5400, text: 'napomena.dugi' },
   /* najduži dugi (≥ 2 h 50; sudija 2: ne na svakom dugom od 2 h 30): oprema za trku */
-  { kinds: ['long'], minDurationSec: 10200, text: 'napomena.dugi-obuca' }
+  { kinds: ['long'], minDurationSec: 10200, text: 'napomena.dugi-obuca', onlyLongest: true }
 ];

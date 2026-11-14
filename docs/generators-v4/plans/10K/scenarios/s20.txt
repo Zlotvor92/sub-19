@@ -157,7 +157,7 @@ UPOZORENJA
   ned 24. 1.  TRKA: 10 km
       napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 55 min, napor 7–8 od 10.
       napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (12. 12.) — do tada trči po osećaju.
-      napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km malo lakše nego što ti se čini da možeš, od 3. do 8. km ravnomerno, napor koji možeš da držiš do kraja, poslednja 2 km po osećaju.
+      napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km malo lakše nego što ti se čini da možeš, od 3. do 8. km ravnomerno, napor koji možeš da držiš do kraja, poslednja 2 km po osećaju. Doručak 2–3 h pre starta, lagan i proveren; na dan trke ništa novo.
       napomena: Posle trke: 5 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 14,2 km, 98 min, 3 treninga + trka, brz rad 9 % vremena trčanja
 
@@ -315,6 +315,6 @@ UPOZORENJA
   ned 24. 1.  TRKA: 10 km
       napomena: Tempo za trku: 6:19/km (današnja forma 1:03:13).
       napomena: Ako provera forme 12. 12. potvrdi očekivani napredak, ciljaj 6:08/km (1:01:19).
-      napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 6:22–6:25/km (ne brže od 6:19/km), od 3. do 8. km ravnomerno 6:19/km, poslednja 2 km po osećaju — ubrzaj ako možeš.
+      napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 6:22–6:25/km (ne brže od 6:19/km), od 3. do 8. km ravnomerno 6:19/km, poslednja 2 km po osećaju — ubrzaj ako možeš. Doručak 2–3 h pre starta, lagan i proveren; na dan trke ništa novo.
       napomena: Posle trke: 6 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 12,7 km, 98 min, 3 treninga + trka, brz rad 9 % vremena trčanja
