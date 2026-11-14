@@ -18,7 +18,7 @@ s15 p11 E4: ned 11, bol 4/10 posle dugog — promena: 15; forma 56:02 (srednja);
 s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 25; forma 1:03:12 (niska); nalazi čuvara posle: 0
 s17 p01 E5: juče polumaraton 1:42:30 — promena: 0; forma 46:10 (srednja); nalazi čuvara posle: 0
 s18 p04 E5: juče trka 10 km 56:02 — promena: 0; forma 56:02 (srednja); nalazi čuvara posle: ispod-cilja@2 ispod-cilja@8
-s19 p11 E5: juče prva trka 10 km 58:30 — promena: 0; forma 57:44 (srednja); nalazi čuvara posle: ispod-cilja@2
+s19 p11 E5: juče prva trka 10 km 58:30 — promena: 0; forma 57:44 (srednja); nalazi čuvara posle: 0
 s20 p12 E5: juče polumaraton 2:20 (prvi rezultat) — promena: 0; forma 1:03:13 (srednja); nalazi čuvara posle: 0
 s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 46:00 (srednja); nalazi čuvara posle: 0
 s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 56:02 (srednja); nalazi čuvara posle: ispod-cilja@8
