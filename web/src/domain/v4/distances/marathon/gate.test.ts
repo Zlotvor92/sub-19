@@ -89,7 +89,8 @@ describe('kapija maratona (19 profila)', () => {
      prolaze; p10 isto bez napretka, pa se vidi pomak današnje forme posle 6 nedelja po planu (+6 s, isti uzrok) */
   /* krug 17 (dopuna sudije 2): p01 opet ima `dugi-za-distancu` (bez napretka od obima) i prolazi; p06 sa dugim
      24,5 km računa napredak, pa se vidi pomak današnje forme (+53 s, isti uzrok) */
-  const FORM_DRIFT = new Set<string>(['p01', 'p06', 'p07', 'p10', 'p18']);
+  /* R20 (II): p10 i p18 (forma iz laganog tempa) više ne gube očekivano vreme */
+  const FORM_DRIFT = new Set<string>(['p01', 'p06', 'p07']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);

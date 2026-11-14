@@ -5,9 +5,9 @@ Početak 2. 11. 2026. · 16 nedelja · 4 dana trčanja nedeljno
 Polazim od tvojih ≈ 45 km nedeljno (4 h 30 min trčanja).
 
 FORMA
-Polazna forma (1. 11.): 1:43:21
-Današnja prognoza (1. 11.): 1:43:21, pouzdanost niska
-Očekivano na dan trke: 1:42:19 (raspon 1:37:29–1:47:09) — 1:02 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Polazna forma (1. 11.): 1:50:46
+Današnja prognoza (1. 11.): 1:50:46, pouzdanost niska
+Očekivano na dan trke: 1:49:44 (raspon 1:44:54–1:54:34) — 1:02 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 1:43:21 za 21,1 km. Prvi test ili trka je preciziraju.
 
@@ -15,7 +15,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
 - umereno: ravnomerno, kratke rečenice, napor 5 od 10
 - prag: ugodno teško, samo par reči, napor 7 od 10
-- tempo trke: napor koji možeš da držiš oko 1 h 40 min, napor 6 od 10
+- tempo trke: napor koji možeš da držiš oko 1 h 50 min, napor 6 od 10
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
@@ -199,7 +199,7 @@ UPOZORENJA
   pet 19. 2.  odmor
   sub 20. 2.  lagano 3 km — 3 km, 18 min
   ned 21. 2.  TRKA: polumaraton
-      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 1 h 40 min, napor 6 od 10.
+      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 1 h 50 min, napor 6 od 10.
       napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (26. 12.) — do tada trči po osećaju.
       napomena: Prvih 5 km trči malo lakše nego što ti se čini da možeš (pričaš u kratkim rečenicama), od 5. do 16. km ravnomerno, napor koji možeš da držiš do kraja, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.

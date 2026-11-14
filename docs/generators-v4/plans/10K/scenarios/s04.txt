@@ -9,9 +9,9 @@ Početak 2. 11. 2026. · 12 nedelja · 4 dana trčanja nedeljno
 Polazim od tvojih ≈ 36 km nedeljno (4 h 9 min trčanja).
 
 FORMA
-Polazna forma (1. 11.): 55:06
-Današnja prognoza (1. 11.): 55:06, pouzdanost niska
-Očekivano na dan trke: 54:33 (raspon 50:28–58:38) — 0:33 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Polazna forma (1. 11.): 1:03:12
+Današnja prognoza (1. 11.): 1:03:12, pouzdanost niska
+Očekivano na dan trke: 1:02:39 (raspon 58:34–1:06:44) — 0:33 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 55:06 za 10 km. Prvi test ili trka je preciziraju.
 
@@ -19,7 +19,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
 - umereno: ravnomerno, kratke rečenice, napor 5 od 10
 - prag: ugodno teško, samo par reči, napor 7 od 10
-- tempo trke: napor koji možeš da držiš oko 55 min, napor 7–8 od 10
+- tempo trke: napor koji možeš da držiš oko 65 min, napor 7–8 od 10
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
@@ -155,10 +155,10 @@ UPOZORENJA
   pet 22. 1.  odmor
   sub 23. 1.  lagano 20 min — 2,8 km, 20 min
   ned 24. 1.  TRKA: 10 km
-      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 55 min, napor 7–8 od 10.
+      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 65 min, napor 7–8 od 10.
       napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (12. 12.) — do tada trči po osećaju.
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km malo lakše nego što ti se čini da možeš, od 3. do 8. km ravnomerno, napor koji možeš da držiš do kraja, poslednja 2 km po osećaju. Doručak 2–3 h pre starta, lagan i proveren; na dan trke ništa novo.
-      napomena: Posle trke: 5 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
+      napomena: Posle trke: 6 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 14,2 km, 98 min, 3 treninga + trka, brz rad 9 % vremena trčanja
 
 ==================== POSLE (sa spiskom promena) ====================
@@ -167,7 +167,7 @@ Početak 2. 11. 2026. · 12 nedelja · 4 dana trčanja nedeljno
 Polazim od tvojih ≈ 36 km nedeljno (4 h 9 min trčanja).
 
 FORMA
-Polazna forma (1. 11.): 55:06
+Polazna forma (1. 11.): 1:03:12
 Današnja prognoza (12. 12.): 59:14, pouzdanost srednja
 Očekivano na dan trke: 58:02 (raspon 56:21–1:00:24) — 1:12 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):

@@ -252,7 +252,13 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
       if (s.title.startsWith('E1') && s.title.includes('brže od očekivanog') && now > was)
         bad.push(`${name(s.no)} bolji rezultat usporio prognozu ${String(was)} → ${String(now)}`);
       /* ništa se nije desilo (test potvrdio formu): najviše 1 % */
-      if (s.title.startsWith('E6') && Math.abs(now - was) > 0.01 * was)
+      /* R20 (II): plan po osećaju (forma iz laganog tempa, oprezna prognoza) — prvi test pokazuje formu, nije
+         „potvrda" stare prognoze */
+      if (
+        s.title.startsWith('E6') &&
+        !r.before.header.paces.byFeel &&
+        Math.abs(now - was) > 0.01 * was
+      )
         bad.push(`${name(s.no)} prognoza ${String(was)} → ${String(now)} bez događaja`);
       /* svaka promena ima rečenicu „zašto" (korak sa signalom posle polazne procene) */
       if (Math.abs(now - was) > 20) {
@@ -328,7 +334,12 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
       for (const d of (r.after.weeks as PlanWeek[]).flatMap((w) => w.days)) {
         const x = d.workout;
         /* pravilo važi do 6 nedelja posle bola */
-        if (x === null || d.date <= painDate || d.date > addDays(painDate, 24) /* R20 (A4): gasi se 2 nedelje posle zabrane brzog */ || x.workSec <= 0)
+        if (
+          x === null ||
+          d.date <= painDate ||
+          d.date > addDays(painDate, 24) /* R20 (A4): gasi se 2 nedelje posle zabrane brzog */ ||
+          x.workSec <= 0
+        )
           continue;
         const zone = tenk.library.find((y) => y.id === x.libraryId)?.main;
         const z = zone === undefined || zone.kind === 'all-out' ? null : zone.zone;
@@ -337,7 +348,11 @@ describe('10 km: ponovno planiranje nad 27 scenarija', () => {
         const old = (r.before.weeks as PlanWeek[])
           .flatMap((w) => w.days)
           .find((y) => y.id === d.id)?.workout;
-        if (old != null && old.workSec > 0 && x.workSec > 0.6 * old.workSec + 180 /* R20: deonice na cele minute (do 3 min) */)
+        if (
+          old != null &&
+          old.workSec > 0 &&
+          x.workSec > 0.6 * old.workSec + 180 /* R20: deonice na cele minute (do 3 min) */
+        )
           bad.push(
             `${name(s.no)} ${d.date} prvi rad zone ${z}: ${String(Math.round(x.workSec / 60))} od ${String(Math.round(old.workSec / 60))} min`
           );

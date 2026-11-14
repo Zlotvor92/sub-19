@@ -85,7 +85,8 @@ describe('kapija 5 km (16 profila)', () => {
   /* 5 km (13. 11.): 1–8 s sporije (≤ 0,7 %) kod p02, p03, p05, p09, p14 — isti uzrok kao kod 10 km i polumaratona
      (pripisani napredak posle ponovnog planiranja, model forme), ne podaci 5 km */
   /* krug 13: p12 — provera 1,5 km se sada čita kao test (bila je ispod najmanje dužine), isti uzrok (+3 s) */
-  const FORM_DRIFT = new Set<string>(['p02', 'p03', 'p05', 'p09', 'p12', 'p14']);
+  /* R20 (II): p09 i p12 (forma iz laganog tempa) više ne gube očekivano vreme */
+  const FORM_DRIFT = new Set<string>(['p02', 'p03', 'p05', 'p14']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);

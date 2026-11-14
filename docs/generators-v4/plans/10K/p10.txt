@@ -5,9 +5,9 @@ Početak 2. 11. 2026. · 18 nedelja · 3 dana trčanja nedeljno
 Polazim od tvojih ≈ 20 km nedeljno (2 h 33 min trčanja).
 
 FORMA
-Polazna forma (1. 11.): 59:25
-Današnja prognoza (1. 11.): 59:25, pouzdanost niska
-Očekivano na dan trke: 58:50 (raspon 54:56–1:02:44) — 0:35 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Polazna forma (1. 11.): 1:04:48
+Današnja prognoza (1. 11.): 1:04:48, pouzdanost niska
+Očekivano na dan trke: 1:04:13 (raspon 1:00:19–1:08:07) — 0:35 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 59:25 za 10 km. Prvi test ili trka je preciziraju.
 
@@ -15,7 +15,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
 - umereno: ravnomerno, kratke rečenice, napor 5 od 10
 - prag: ugodno teško, samo par reči, napor 7 od 10
-- tempo trke: napor koji možeš da držiš oko 60 min, napor 7–8 od 10
+- tempo trke: napor koji možeš da držiš oko 65 min, napor 7–8 od 10
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
@@ -215,7 +215,7 @@ UPOZORENJA
   pet 5. 3.  odmor
   sub 6. 3.  odmor
   ned 7. 3.  TRKA: 10 km
-      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 60 min, napor 7–8 od 10.
+      napomena: Trku trči po osećaju, bez gledanja u tempo: napor koji možeš da držiš oko 65 min, napor 7–8 od 10.
       napomena: Tempo i taktiku za trku plan postavlja iz poslednje provere forme (21. 1.) — do tada trči po osećaju.
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km malo lakše nego što ti se čini da možeš, od 3. do 8. km ravnomerno, napor koji možeš da držiš do kraja, poslednja 2 km po osećaju. Doručak 2–3 h pre starta, lagan i proveren; na dan trke ništa novo.
       napomena: Posle trke: 6 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

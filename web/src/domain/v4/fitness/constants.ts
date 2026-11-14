@@ -189,3 +189,9 @@ export const UP_HIGH_FORM_VDOT = 50;
 
 /** A16 (krug 9): trka u ovom udelu dužine cilja je „na ciljnoj dužini" — usvaja se 100 %. */
 export const GOAL_RACE_SAME_SHARE = 0.02;
+
+/** R20 (II): granica tempa trke prema laganom tempu kad nema rezultata (v. `easyRaceFloorSec`). */
+export const EASY_RP_REF_M = 42195;
+export const EASY_RP_MARGIN_MARATHON_SEC = 30;
+export const EASY_RP_MARGIN_PER_HALVING_SEC = 15;
+export const EASY_RP_MARGIN_BEGINNER = 2 / 3;

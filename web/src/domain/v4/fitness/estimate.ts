@@ -685,8 +685,7 @@ export function estimateForm(
         const afterBreak =
           facts.pain.some(
             (p) => p.level >= 4 && d >= dayNum(p.date) && d - dayNum(p.date) <= C.AFTER_BREAK_DAYS
-          ) ||
-          pauses.some((p) => d > dayNum(p.to) && d - dayNum(p.to) <= C.AFTER_BREAK_DAYS);
+          ) || pauses.some((p) => d > dayNum(p.to) && d - dayNum(p.to) <= C.AFTER_BREAK_DAYS);
         /* trka na dužini cilja ostaje mera (A14: zone ne brže od nje) */
         if (!hotHeld && afterBreak && !inRange && !low && !first && next < vdot)
           next = vdot + C.HOT_LOWER_K_SHARE * (next - vdot);
@@ -948,40 +947,82 @@ export function estimateForm(
   const firstOnly =
     results.length === 1 && init.source !== 'rezultat' && startConfidence === 'niska';
 
+  /* R20 (II, odluka organizatora): bez ijednog rezultata forma iz laganog tempa je oprezna za PROGNOZU — vreme na
+     cilju nije brže od (lagan tempo − granica distance) po km; zone ostaju iz laganog tempa (km i minuti plana) */
+  const easyDecl = facts.profile.easyPaceSecPerKm;
+  const capSec =
+    init.source === 'lagani-tempo' && results.length === 0 && easyDecl !== undefined
+      ? easyRaceFloorSec(
+          easyDecl,
+          goalM,
+          tenureOf(facts) === 'pocetnik' || facts.profile.beginner === true
+        )
+      : 0;
+  const shiftOf = (t: number): number => Math.max(0, capSec - t);
+  const capped = (fp0: FormPoint): FormPoint => ({
+    ...fp0,
+    raceTimeSec: fp0.raceTimeSec + shiftOf(fp0.raceTimeSec)
+  });
+  const est = estimateCore();
+  const shift = shiftOf(est.current.raceTimeSec);
+  if (shift <= 0) return est;
   return {
-    start: point(init.vdot, startDay, startConfidence),
-    current: point(vdot, today, confidence),
-    /* Z4 (krug 7): prvi rezultat koji je zamenio procenu bez osnova još ne otvara pun očekivani napredak (potvrda
-       forme ne pomera prognozu > 1 %; s24) — kao niska pouzdanost, dok ga ne potvrdi drugi rezultat */
-    /* R18 (stavka 2): nivo koji je rezultat pokazao (M17) i budući napredak se preklapaju — prognoza nije ispod
-       rezultata, a očekivani napredak ne raste kako trka prilazi (10 km s03: 1:36 za 6 nedelja posle 1:41 za 18) */
-    raceDay: raceDayRange(
-      vdot,
-      planVdot - Math.min(retained, C.EXPECTED_SHARE * gain),
-      gain,
-      sigma,
-      firstOnly ? 'niska' : confidence,
-      goalM,
-      firstOnly ? Math.max(vdot, preFirstVdot) : vdot,
-      /* prva trka u životu: bez unetog rezultata, jedina trka i najviše jedan raniji rezultat */
-      init.source !== 'rezultat' &&
-        results.filter((x) => x.race === true).length === 1 &&
-        results.length <= 2
-        ? C.FIRST_RESULT_MIN_RANGE
-        : 0
-    ),
-    ceilingGain: r2(gain),
-    history,
-    /* F4-K2: lična kriva forme po dužini za tempa i pun napor u planu; A14: granice iz stvarnih rezultata */
-    transfer: withUp(
-      withLimits(curveAt(today).curve, rawResults, today),
-      rawResults.some((x) => x.day <= today && x.distanceM <= C.UP_EVIDENCE_MAX_M) ||
-        qualityDays.some((x) => x <= today),
-      tenureOf(facts) === 'pocetnik' ||
-        ((weeklyKmAt(today) ?? Number.POSITIVE_INFINITY) < C.UP_LOW_VOLUME_KM &&
-          vdot >= C.UP_HIGH_FORM_VDOT)
-    )
+    ...est,
+    start: capped(est.start),
+    current: capped(est.current),
+    raceDay: {
+      lowSec: est.raceDay.lowSec + shift,
+      expectedSec: est.raceDay.expectedSec + shift,
+      highSec: est.raceDay.highSec + shift
+    }
   };
+
+  function estimateCore(): FormEstimate {
+    return {
+      start: point(init.vdot, startDay, startConfidence),
+      current: point(vdot, today, confidence),
+      /* Z4 (krug 7): prvi rezultat koji je zamenio procenu bez osnova još ne otvara pun očekivani napredak (potvrda
+       forme ne pomera prognozu > 1 %; s24) — kao niska pouzdanost, dok ga ne potvrdi drugi rezultat */
+      /* R18 (stavka 2): nivo koji je rezultat pokazao (M17) i budući napredak se preklapaju — prognoza nije ispod
+       rezultata, a očekivani napredak ne raste kako trka prilazi (10 km s03: 1:36 za 6 nedelja posle 1:41 za 18) */
+      raceDay: raceDayRange(
+        vdot,
+        planVdot - Math.min(retained, C.EXPECTED_SHARE * gain),
+        gain,
+        sigma,
+        firstOnly ? 'niska' : confidence,
+        goalM,
+        firstOnly ? Math.max(vdot, preFirstVdot) : vdot,
+        /* prva trka u životu: bez unetog rezultata, jedina trka i najviše jedan raniji rezultat */
+        init.source !== 'rezultat' &&
+          results.filter((x) => x.race === true).length === 1 &&
+          results.length <= 2
+          ? C.FIRST_RESULT_MIN_RANGE
+          : 0
+      ),
+      ceilingGain: r2(gain),
+      history,
+      /* F4-K2: lična kriva forme po dužini za tempa i pun napor u planu; A14: granice iz stvarnih rezultata */
+      transfer: withUp(
+        withLimits(curveAt(today).curve, rawResults, today),
+        rawResults.some((x) => x.day <= today && x.distanceM <= C.UP_EVIDENCE_MAX_M) ||
+          qualityDays.some((x) => x <= today),
+        tenureOf(facts) === 'pocetnik' ||
+          ((weeklyKmAt(today) ?? Number.POSITIVE_INFINITY) < C.UP_LOW_VOLUME_KM &&
+            vdot >= C.UP_HIGH_FORM_VDOT)
+      )
+    };
+  }
+}
+
+/** R20 (II): najbrže vreme na cilju iz laganog tempa bez rezultata — tempo trke ≥ lagan − granica distance: ≈ 30 s/km
+    za 42,2 km, 45 za 21,1, 60 za 10, 75 za 5 km (15 s po prepolovljenoj dužini); početnik dve trećine granice. */
+function easyRaceFloorSec(easy: SecPerKm, goalM: Meters, beginner: boolean): number {
+  const margin =
+    (C.EASY_RP_MARGIN_MARATHON_SEC +
+      C.EASY_RP_MARGIN_PER_HALVING_SEC * Math.max(0, Math.log2(C.EASY_RP_REF_M / goalM))) *
+    (beginner ? C.EASY_RP_MARGIN_BEGINNER : 1);
+  return Math.round((Math.max(1, easy - margin) * goalM) / 1000);
 }
 
 /** A7 (krug 9): bez ličnog β i bez dokaza na kraćoj dužini prenos naviše je mali i ograničen (početnik/mali obim uz

@@ -67,3 +67,22 @@ describe('R20 B5 — uneti lagan tempo i plan (5 km)', () => {
     );
   });
 });
+
+/* R20 (II): bez rezultata, prognoza iz laganog tempa — tempo trke na cilju nije brži od (lagan − granica distance):
+   ≈ 30 s/km za 42,2 km, 45 za 21,1, 60 za 10, 75 za 5 km (početnik dve trećine). */
+describe('R20 (II) — forma iz laganog tempa je oprezna (sve distance)', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', (_id, d) => {
+    const bad: string[] = [];
+    for (const p of d.profiles) {
+      const easy = p.profile.easyPaceSecPerKm;
+      if (easy === undefined || p.profile.recentResult !== undefined) continue;
+      const st = buildState(d.factsOf(p), p.goal, d.data, estimateForm);
+      const m = d.data.distanceM;
+      const margin = 30 + 15 * Math.max(0, Math.log2(42195 / m));
+      const pace = (st.form.current.raceTimeSec / m) * 1000;
+      if (pace < easy - margin - 1)
+        bad.push(`${String(p.id)} ${pace.toFixed(0)} < ${String(easy)} − ${margin.toFixed(0)}`);
+    }
+    expect(bad).toEqual([]);
+  });
+});
