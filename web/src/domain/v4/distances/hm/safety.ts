@@ -53,7 +53,11 @@ export const SAFETY: SafetyNumbers = {
       /* 25–35 km: × 1,6 (trener „do × 1,6"); priprema kraća od 12 nedelja ide niže (≈ × 1,3 u km, izbor: vlasnik-v1
          sa 10 nedelja — trener i drugi sudija traže dugi do ≈ 16 km, ne vrh od 48 km) */
       { maxBaseKm: 35.5, minWeeks: 12, overBase: 1.8 },
-      { maxBaseKm: 35.5, minWeeks: 0, overBase: 1.47 },
+      { maxBaseKm: 32.5, minWeeks: 0, overBase: 1.47 },
+      /* R22 (trener HM-13 § D6, p06): 33–35 km sa < 12 nedelja — vrh ≈ × 1,45 u km (kapija × 1,6; bilo × 1,40):
+         dugi jednom 18 km, tempo trke 2 × 3,5 km. Veći vrh (× 1,6–1,7 bodova) dodaje drugi kvalitet u ned 2, pa prvi
+         prag prelazi 70 % najvećeg (K7) */
+      { maxBaseKm: 35.5, minWeeks: 0, overBase: 1.58 },
       { maxBaseKm: null, minWeeks: 0, overBase: 1.58 }
     ],
     limitedOverBase: 1.7,

@@ -45,6 +45,23 @@ interface LongSpec {
 /* T3 (krug 4): talas dugog 100 / 85 / 100 / 90 % kad dugi stoji (p04, p05, p08, P3 A) */
 const WAVE = [1, 0.85, 1, 0.9];
 
+/** R22: prvi kratak blok tempa trke u dugom početnika (N−9), udeo plafona bloka. */
+const FIRST_RP_BLOCK = 0.3;
+
+/** R22: dugi u bloku gradnje sa 1–3 dana (udeo najdužeg): polazni, korak u bloku, pomak sledećeg bloka. */
+const SINGLE_LONG_FROM = 0.85;
+const SINGLE_LONG_STEP = 0.035;
+const SINGLE_LONG_BLOCK = 0.015;
+/** R22: najveći blok u dugom (N−3) sa 1–3 dana, udeo plafona bloka. */
+const SINGLE_PEAK_BLOCK = 0.7;
+/** R22: prag usred nedelje uz najveći blok (N−3) sa 1–3 dana, udeo plafona praga. */
+const SINGLE_PEAK_T = 0.45;
+/** R22: opterećenje najteže nedelje (N−3) sa 1–3 dana — kraći prag ne nosi obim (dan kvaliteta se ne dopunjuje
+    laganim), pa je cilj nedelje niži da plan ne bude „ispod cilja". */
+const SINGLE_PEAK_LOAD = 0.88;
+/** R22: dugi nedelje −1 sa 1–3 dana — manje brzog rada u sužavanju (≤ 60 % vršne) skraćuje nedelju, dugi ≤ 50 %. */
+const SINGLE_TAPER_LEN = 0.55;
+
 /** N−4 sa 5+ dana: doza malog praga (udeo plafona) — kraći trening staje u obim rasterećenja uz pod laganih dana. */
 const RECOVERY_T_MANY_DAYS = 0.33;
 
@@ -162,6 +179,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
 
   let osn = 0;
   let dev = 0;
+  let block = 0;
+  let pos = 0;
   for (let w = 1; w < tailStart; w += 1) {
     const t = (w - 1) / Math.max(1, tailStart - 1);
     if (L.recoveries.has(w)) {
@@ -195,7 +214,16 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     }
     /* obim raste brže na početku (ciljni p01: 0,71 → 0,93 vrha do 7. nedelje) */
     const load = lerp(startLoad, 0.97, t ** 0.6);
-    const long = lerp(0.68, 0.95, t);
+    /* R22 (trener HM-13 § D3, p08): sa 1–3 dana dugi nosi nedelju (lagani dani su vezani udelom dugog) — u svakom
+       bloku gradnje između rasterećenja dugi raste 3 koraka (19,5 / 20,5 / 21 km), a svaki sledeći blok kreće malo
+       više; sa 4+ dana namera raste pravo */
+    if (L.recoveries.has(w - 1) || w === 1) {
+      block += 1;
+      pos = 0;
+    } else pos += 1;
+    const long = sh.single
+      ? Math.min(0.95, SINGLE_LONG_FROM + SINGLE_LONG_STEP * Math.min(pos, 2) + SINGLE_LONG_BLOCK * (block - 1))
+      : lerp(0.68, 0.95, t);
     /* T3: talas i smena sadržaja — svaka treća nedelja gradnje progresivan dugi (lagan / progresivan) */
     const wave = WAVE[(w - 1) % WAVE.length] ?? 1;
     const longSpec =
@@ -290,9 +318,12 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
     week(
       SPEC,
       'peak',
-      1,
-      { len: 0.95, stimulus: 'dugi-rp', dose: 1 },
-      pair(STRIDES, S('tempo-trke', 0.85))
+      sh.single ? SINGLE_PEAK_LOAD : 1,
+      /* R22 (trener HM-13 § D3–D4, p03, p08, p10): sa jednim kvalitetom blok u dugom je kraći (p08 10 → 7,5 km), a
+         usred nedelje je kratak prag umesto tempa trke — tempo trke uz blok prelazi plafon tempa trke i postaje prag
+         pune doze (2 × 15–18 min), pa je brz rad bio 25 % nedelje */
+      { len: 0.95, stimulus: 'dugi-rp', dose: sh.single ? SINGLE_PEAK_BLOCK : 1 },
+      sh.single ? [S('prag', SINGLE_PEAK_T), STRIDES] : pair(STRIDES, S('tempo-trke', 0.85))
     ),
     /* N−2: ≤ 90 %, blok 4 km, tempo trke 2 × 3 km + kratak prag */
     week(
@@ -305,7 +336,7 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
     ),
     /* N−1: sužavanje — tempo trke 2 × 2,5 km + prag 2 × 1 km */
     /* krug 4 (S4, T4): osnovica doze više nije plafon, pa su doze sužavanja niže (rad ≤ 60 % vršne nedelje) */
-    week(FINISH, 'taper', 0.68, { len: 0.59 }, pair(S('prag', 0.2), S('tempo-trke', 0.38))),
+    week(FINISH, 'taper', 0.68, { len: sh.single ? SINGLE_TAPER_LEN : 0.59 }, pair(S('prag', 0.2), S('tempo-trke', 0.38))),
     /* N: nedelja trke — oštrenje 2 × 1200 m u četvrtak, utorak lagano uz ubrzanja */
     week(FINISH, 'race', 0.33, null, [S('ostrenje', 1), STRIDES])
   ];
@@ -347,12 +378,20 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       w <= intro
         ? [w === 1 ? STRIDES6 : HILLS_SHORT, STRIDES]
         : [S('prag-p', lerp(0.45, 0.85, t)), k % 2 === 0 ? HILLS_SHORT : STRIDES];
+    /* R22 (trener HM-13 § D1, p12): poslednja nedelja tela — prvi kratak tempo trke (≈ 15 min) kao završni deo dugog;
+       usred nedelje ostaje prag (R16: tempo trke usred nedelje nije kraći od prethodnog praga) */
+    /* samo sa 5+ dana (p12): sa 4 dana (p11) blok od 11 min postaje „poslednji odrađeni" pre bola, a rampa posle
+       prekida tada ne sme da vrati tempo trke iz plana (breakRamp, s15) */
+    const firstRp = w === tailStart - 1 && !fresh && w > intro && sh.days >= 5;
     out.push(
       week(
         w >= tailStart - 3 ? RAZVOJ : OSNOVA,
         'build',
         load,
-        { len: lerp(0.7, 0.9, t), stimulus: longStim },
+        /* R22 (trener HM-13 § D1, p12): dugi raste od prve nedelje (1 h 40 → 1 h 45 → 1 h 50), ne stoji na polaznom */
+        firstRp
+          ? { len: lerp(0.745, 1, t), stimulus: 'dugi-rp', dose: FIRST_RP_BLOCK }
+          : { len: lerp(0.745, 1, t), stimulus: longStim },
         stimuli
       )
     );
@@ -361,7 +400,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     /* N−8: rasterećenje + pripremna trka subotom (p11 ned 12, p12 ned 8) */
     week(SPEC, 'recovery', 1, { len: 0.58 }, withSaturday(sh, [STRIDES, STRIDES], KONTROLA)),
     /* N−7, N−6: prag do 20 min, vrh obima */
-    week(RAZVOJ, 'build', 0.97, { len: 0.95 }, [S('prag-p', 0.9), STRIDES]),
+    week(RAZVOJ, 'build', 0.97, { len: 0.97 }, [S('prag-p', 0.9), STRIDES]),
     week(RAZVOJ, 'build', 1, { len: 1 }, [S('prag-p', 1), HILLS_SHORT]),
     /* N−5: tempo trke 2 × 2 km + blok 3 km */
     /* krug 5 (D7): tempo trke početnika ≤ 45 min nedeljno (uklj. blok) — prva doza niža (K7) */
