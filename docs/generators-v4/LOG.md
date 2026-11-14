@@ -773,3 +773,19 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Tabovi R20 (svi Opus): motor A `session_01GnHHiXB2o3uiEC8jywt6tW`, motor B `session_01GnHHiWSukXvHnqPEjLYjRy`, HM
   podatak `session_01GnHHiaga9HNBQcMHnyj73X`; 10K `…XivSsUTpEuBAFcJZi`, MAR `…WbwULZGywbJmwtnzH`, 5K
   `…YgBWy4zCKtBd6YPxy` (postojeći, nalog u poruci). Motor R19 `…aZSGWeHY2sPFdz4bo` arhiviran.
+
+### 14. 11. 2026, 07:10 — ODLUKA VLASNIKA: merilo za profile sa plafonom ulaza; stanje R20
+- Vlasnik prihvatio predlog organizatora. Merilo od kruga 21: (1) svaki profil kome ulaz dozvoljava — trener Plan ≥ 80,
+  drugi sudija ≥ 65; (2) profil sa plafonom ulaza — „Plan za ulaz" ≥ 80 („da li bi iskusan trener sa istim ulazom
+  napravio primetno bolji plan": bezbednost 30, iskorišćenost ulaza 30, iskrenost 25, šta ostaje posle trke 15),
+  drugi sudija ≥ 65; stara ocena ostaje kao drugi broj. Prosek distance je pomoćni broj. Razvrstavanje radi trener
+  unapred iz ulaza. Upisano u `coach/RUBRIC-V4.md` § A3 i `coach/JUDGE2-BRIEF.md`.
+- Polazni predlog razvrstavanja (organizator): plafon ulaza = HM p03, p06, p08, p10; 10K p02, p03, p06, p08, p10, p11;
+  MAR p03, p06, p08, p10, p13, p18, p19; 5K p03, p06, p08, p10, p11, p13, p14. Sporno: 5K p02; 3 dana na 5K/10K.
+  Po R19: ulaz dozvoljava ≥ 80 — HM 7/8 (fali p12), 10K 4/6 (p04, p12), MAR 8/12 (p16, p04, p15, p11), 5K 3/9.
+- R20 stanje: podatak 10K (`0296e7c`), 5K (`53d24cb`), HM (`cb6a82ce`), MAR (`70412549`: dugi po vremenu — p11 26,1
+  km / 3 h 03, p10 25,1, p18 24 km / 3 h, p13 19,9) gotovi. Tabovi su 02:16–04:00 stajali na 5-satnom limitu;
+  probuđeni 05:59. Motor A: A1 (`e7f27ca0`, `breakRamp`) + deo A6 — nastavlja A2–A6. Motor B: B1, B4–B7 deo
+  (`e5866105`) — nastavlja B2, B3, preporuke, dopune MAR, B8. Odluke organizatora za B: 5K p06 duži dugi (≥ 1,4 × pod
+  laganog); „najviše dve preporuke" = sve činjenice, dva predloga; skok nedelje samo usko pravilo (obim > +15 % i tri
+  teška dana); 10K p08 se ostavlja.

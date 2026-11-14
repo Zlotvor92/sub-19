@@ -51,6 +51,17 @@ trkaču rečeno šta se promenilo i zašto. Prosek × 10.
 Pre čitanja planova napiši u 3–5 redova po čemu bi se, po tebi, planovi morali razlikovati. Zatim oceni 0–10 da li
 se razlikuju tamo gde treba, u pravom smeru i u pravoj meri, i da li plan priznaje ono što ne zna.
 
+## Kad sam unos ograničava plan (dodato 14. 11. 2026)
+
+Neki trkači traže trku za koju im priprema, obim ili broj dana nisu dovoljni (npr. maraton za 8 nedelja, 3 dana
+nedeljno, vrlo mali obim). Aplikacija takav unos ne odbija: pravi najbolji mogući plan i upozorenje. Za svaki plan
+PRVO, samo iz profila i pre čitanja plana, zapiši jednom rečenicom da li ulaz dozvoljava dobar plan za tu trku ili
+ne. Sedam pitanja ocenjuješ uvek isto, za sve planove. Za planove gde si zapisao da ulaz ne dozvoljava, dodaj još
+jednu ocenu 0–10 (izveštava se posebno, ne ulazi u ukupno): **„Da li bih ja, sa istim ulazom, napravio primetno
+bolji plan?"** — 8 znači „ne bih; plan je bezbedan, izvukao je ono što ulaz daje, upozorenje je tačno i kaže šta
+tačno treba za pravu pripremu, i trkača ostavlja spremnijim za sledeću"; 5 znači „bezopasno, ali tanko ili
+upozorenje ne pomaže".
+
 ## Izlaz
 
 Fajl koji ti organizator navede (`.md` ≤ 150 redova + `.json`):

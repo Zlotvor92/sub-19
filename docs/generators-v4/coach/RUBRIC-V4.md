@@ -42,6 +42,28 @@ Svaka provera je da/ne po planu. Nalaz spušta navedeni kriterijum na najviše d
 
 K1–K5 se proveravaju mašinski gde god može (zbir, vreme, gramatika po obrascima) i ručno na 3 plana po distanci.
 
+### A3. Profili sa plafonom ulaza (odluka vlasnika, 14. 11. 2026)
+
+Merilo dela A od kruga 21: **svaki profil kome ulaz dozvoljava ima Plan ≥ 80**; prosek distance je pomoćni broj.
+Profil ima „plafon ulaza" kad sam unos (dužina pripreme, obim, broj dana, staž) ne dozvoljava plan od 80 ma kako
+bio složen. **Razvrstavanje radi trener unapred, samo iz ulaza, PRE čitanja plana**, i zapisuje ga sa razlogom u
+jednoj rečenici na vrhu izveštaja (polazni predlog organizatora: `LOG.md`, unos 14. 11. 07:10; sporni su 5K p02 i
+profili sa 3 dana na 5K i 10K).
+
+Za profil sa plafonom ulaza izveštavaju se DVA broja:
+1. **Plan (stara skala)** — kao i do sada, A1 + A2, radi uporedivosti sa ranijim krugovima.
+2. **Plan za ulaz** (0–100) — pitanje: „Da li bi iskusan trener sa ISTIM ulazom napravio primetno bolji plan?"
+
+| kriterijum | težina | 5 | 8 | 10 |
+|---|---|---|---|---|
+| Bezbednost | 30 % | trkač verovatno stiže na start, ali ima nedelju ili skok koji ga ugrožava | nema nalaza K2, K6, K7; dugi i obim rastu koliko ulaz bezbedno nosi | i plan ima rezervu za propuštenu nedelju |
+| Iskorišćenost ulaza | 30 % | plan je bezopasan ali tanak — ostavlja neiskorišćeno ono što ulaz dozvoljava (dugi kraći, doza manja, prazne nedelje) | izvučeno je ono što ovih N nedelja i dana mogu da daju; nema nedelje koja samo popunjava kalendar | svaka nedelja je na granici onoga što ulaz nosi, bez prelaska |
+| Iskrenost | 25 % | upozorenje postoji, ali je opšte ili netačno | kaže šta je problem, šta to znači za OVU trku (realno vreme/raspon) i konkretno šta treba za pravu pripremu (nedelja, km, dana ili kraća distanca) — AGENTS § 6 | i tempo i plan trke su usklađeni sa tim upozorenjem |
+| Šta ostaje posle trke | 15 % | trkač posle trke kreće ispočetka | priprema ga ostavlja sa većim bezbednim obimom/dugim i navikom na kojoj sledeća priprema može da počne | i plan kaže kako da nastavi |
+
+Prag: **Plan za ulaz ≥ 80**; uz to Plan (stara skala) ne sme pasti u odnosu na prethodni krug. Nalaz K2 ili K6 =
+Bezbednost ≤ 4.
+
 ## B. Prilagođavanje (30 %)
 
 Ocenjuje se plan POSLE događaja, na scenarijima iz `SCENARIOS-V4.md` (4 profila × 6 događaja = 24). Po scenariju:
