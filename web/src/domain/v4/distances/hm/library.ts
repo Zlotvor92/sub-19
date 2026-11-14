@@ -1,9 +1,36 @@
 /* POLUMARATON — BIBLIOTEKA TRENINGA. Unos se bira po podražaju (`stimulus`) i redosledu u nizu (§ 4.5): isti podražaj
    kroz nedelje smenjuje oblike onim redom kojim su ovde poređani. Nov trening = nov unos, ne nov kod. */
-import type { RecoverySpec, WorkoutDef } from '../../engine/types';
+import type { LevelId, RecoverySpec, Requirements, WorkoutDef } from '../../engine/types';
 
 const jog = (sec: number): RecoverySpec => ({ extent: { durationSec: sec }, mode: 'dzog' });
 const walkBack = (sec: number): RecoverySpec => ({ extent: { durationSec: sec }, mode: 'hod' });
+
+/** Nivoi koji smeju prag u komadu duži od 11 min (svi osim povratnika: bez istorije kvaliteta ili posle pauze). */
+const WITH_QUALITY_HISTORY: LevelId[] = ['pocetnik', 'pocetnik-nov', 'mali', 'spor', 'srednji', 'brz'];
+
+/** R20: oprezan prag — 2 × 6–9 min ili 3 × 6–8 min (uslov grupe: nivo ili tempo po osećaju). */
+const cautiousThreshold = (when: Requirements): WorkoutDef[] => [
+  {
+    id: `prag-oprez-2x${when.onlyByFeel === true ? '-osecaj' : ''}`,
+    kind: 'quality',
+    stimulus: 'prag',
+    tags: [],
+    impact: 'obican',
+    requires: { ...when, minDoseSec: 720, maxDoseSec: 1080 },
+    main: { kind: 'split', zone: 'T', pieces: 2, recovery: jog(90), by: 'trajanje' },
+    text: 'prag-deonice'
+  },
+  {
+    id: `prag-oprez-3x${when.onlyByFeel === true ? '-osecaj' : ''}`,
+    kind: 'quality',
+    stimulus: 'prag',
+    tags: [],
+    impact: 'obican',
+    requires: { ...when, minDoseSec: 1081, maxDoseSec: 1440 },
+    main: { kind: 'split', zone: 'T', pieces: 3, recovery: jog(90), by: 'trajanje' },
+    text: 'prag-deonice'
+  }
+];
 
 export const LIBRARY: WorkoutDef[] = [
   /* ---------------------------------------------------------------- lagano i dugi */
@@ -186,13 +213,18 @@ export const LIBRARY: WorkoutDef[] = [
   /* ---------------------------------------------------------------- prag
      Deonice praga se zadaju trajanjem: zaokruživanje komada na 60 s drži rad u plafonu + 90 s i za 3 komada
      (na 500 m bi 3 komada mogla da pređu plafon za 3 min). U komadu se zadaje dužinom kao lagani dani. */
+  /* R20 (drugi sudija, P3 A, P1 B, p09, p10): trkač bez istorije kvaliteta (povratnik — i „sve u istom tempu" je
+     povratnik, LEVELS) ili sa tempom po osećaju ne dobija prag od 16–23 min u komadu, nego 2–3 deonice od 6–9 min;
+     u komadu samo kratak prag (do 11 min, `prag-komad-kratki`) */
+  ...cautiousThreshold({ levels: ['povratnik'] }),
+  ...cautiousThreshold({ onlyByFeel: true }),
   {
     id: 'prag-komad',
     kind: 'quality',
     stimulus: 'prag',
     tags: [],
     impact: 'obican',
-    requires: { maxDoseSec: 1500 },
+    requires: { maxDoseSec: 1500, needsKnownPaces: true, levels: WITH_QUALITY_HISTORY },
     main: { kind: 'continuous', zone: 'T', by: 'trajanje' },
     text: 'prag-komad'
   },
@@ -222,7 +254,18 @@ export const LIBRARY: WorkoutDef[] = [
     stimulus: 'prag',
     tags: [],
     impact: 'obican',
-    requires: { maxDoseSec: 1500 },
+    requires: { maxDoseSec: 1500, needsKnownPaces: true, levels: WITH_QUALITY_HISTORY },
+    main: { kind: 'continuous', zone: 'T', by: 'trajanje' },
+    text: 'prag-komad'
+  },
+  /* R20: kratak prag u komadu (8–11 min) za svakog — rasterećenje i sužavanje oprezne grupe */
+  {
+    id: 'prag-komad-kratki',
+    kind: 'quality',
+    stimulus: 'prag',
+    tags: [],
+    impact: 'obican',
+    requires: { maxDoseSec: 660 },
     main: { kind: 'continuous', zone: 'T', by: 'trajanje' },
     text: 'prag-komad'
   },

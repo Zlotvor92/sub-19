@@ -125,7 +125,7 @@ export const SAFETY: SafetyNumbers = {
     midKm: 48,
     midShare: 0.42
   },
-  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.46, '4': 0.35, '5': 0.32, '6': 0.27, '7': 0.24 },
+  longStartShare: { '1': 0.6, '2': 0.5, '3': 0.52, '4': 0.35, '5': 0.32, '6': 0.27, '7': 0.24 },
   /* plafon doze po treningu: sekunde rada i udeo vrha (min rada / BO vrha) */
   doseCaps: {
     brzina: { maxWorkSec: 720, shareOfPeakLoad: 0.05 },
@@ -270,8 +270,9 @@ export const ADEQUATE: AdequatePrep = {
   minTenureWeeks: 8,
   /* vrh koji nivo traži da bi kvalitet nivoa stao u plan (upozorenje `obim-za-nivo`): brz ≈ 60 km (v3) */
   minPeakWeeklyKmByLevel: { brz: 60 },
-  /* R19 (stavka 6): početnik, mali obim i spor nivo — bar 3 dana (srednji, brz, povratnik 4) */
-  minRunDaysByLevel: { pocetnik: 3, 'pocetnik-nov': 3, mali: 3, spor: 3 },
+  /* R19 (stavka 6): početnik — bar 3 dana (ostali 4). R20 (trener HM-12 § D6): mali obim i spor nivo sa 3 dana
+     opet dobijaju predlog 4. dana sa brojem (p03, p10: dugi ≈ 48 % nedelje) */
+  minRunDaysByLevel: { pocetnik: 3, 'pocetnik-nov': 3 },
   /* R8 t. 9: id foldera distance (adapteri, registar) */
   shorter: { distanceId: 'tenk', label: '10 km' }
 };

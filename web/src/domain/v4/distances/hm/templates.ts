@@ -45,6 +45,9 @@ interface LongSpec {
 /* T3 (krug 4): talas dugog 100 / 85 / 100 / 90 % kad dugi stoji (p04, p05, p08, P3 A) */
 const WAVE = [1, 0.85, 1, 0.9];
 
+/** N−4 sa 5+ dana: doza malog praga (udeo plafona) — kraći trening staje u obim rasterećenja uz pod laganih dana. */
+const RECOVERY_T_MANY_DAYS = 0.33;
+
 const r3 = (x: number): number => Math.round(x * 1000) / 1000;
 
 const week = (
@@ -277,7 +280,12 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
   return [
     ...head,
     /* N−4: rasterećenje sa malim pragom */
-    week(SPEC, 'recovery', 1, { len: 1 }, [S('prag', 0.42), STRIDES]),
+    /* R20 (trener HM-12 § D7, p06): sa 5+ dana pod laganih dana (4 × 30 min) ne ostavlja mesta pragu od 10 min u
+       obimu rasterećenja (nedelja bez ijednog kvaliteta) — prag je kraći (8–12 min) i staje */
+    week(SPEC, 'recovery', 1, { len: 1 }, [
+      S('prag', sh.days >= 5 ? RECOVERY_T_MANY_DAYS : 0.42),
+      STRIDES
+    ]),
     /* N−3: najteža — najveći blok (8–10 km) + tempo trke 6–9 km usred nedelje, četvrtak lagan */
     week(
       SPEC,
@@ -363,12 +371,14 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     ]),
     week(SPEC, 'recovery', 1, { len: 1 }, [S('prag-p', 0.35), STRIDES]),
     /* N−3: najteža — najduži dugi sa blokom 5 km, tempo trke 4–6 km */
-    week(SPEC, 'peak', 1, { len: 1, stimulus: 'dugi-rp', dose: 0.6 }, [
+    /* R20 (trener HM-12, p12): najveća doza tempa trke je u N−3, ne 14–17 dana pred trku — blok u dugom veći,
+       tempo trke u N−2 manji (prva doza tempa trke ostaje ≤ 70 % najveće, K7 za p11) */
+    week(SPEC, 'peak', 1, { len: 1, stimulus: 'dugi-rp', dose: 0.72 }, [
       S('tempo-trke', 0.84),
       STRIDES
     ]),
     /* dopuna kruga 4: ≤ 90 % najteže i kad plafon tempa trke spusti vršnu nedelju */
-    week(SPEC, 'build', 0.86, { len: 0.84 }, [S('tempo-trke', 0.7), STRIDES]),
+    week(SPEC, 'build', 0.86, { len: 0.84 }, [S('tempo-trke', 0.5), STRIDES]),
     week(FINISH, 'taper', 0.69, { len: 0.58 }, [S('tempo-trke', 0.4), STRIDES]),
     week(FINISH, 'race', 0.32, null, [S('ostrenje', 0.7), STRIDES])
   ];
