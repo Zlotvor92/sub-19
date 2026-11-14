@@ -785,10 +785,13 @@ describe('trenerski zahtevi za 10 km (coach/target/10K/README.md)', () => {
     expect(w?.proposal).toMatch(/\d/);
     for (const id of ['p03', 'p08', 'p10', 'p11']) {
       const p = RENDERED.find((x) => x.id === id);
-      expect(
-        p?.doc.header.warnings.map((x) => x.code),
-        id
-      ).toContain('malo-dana');
+      /* R19 (stavka 6, odluka organizatora): početniku, malom obimu i sporom nivou su dovoljna 3 dana */
+      const level = p?.doc.header.decisions.level ?? '';
+      const need = tenk.adequate.minRunDaysByLevel?.[level] ?? tenk.adequate.minRunDays;
+      const enough = (p?.doc.header.decisions.runDays.length ?? 0) >= need;
+      const codes = p?.doc.header.warnings.map((x) => x.code);
+      if (enough) expect(codes, id).not.toContain('malo-dana');
+      else expect(codes, id).toContain('malo-dana');
     }
     const p11 = RENDERED.find((x) => x.id === 'p11');
     expect(p11?.text).toMatch(/Očekivano na dan trke: .* brže od današnje prognoze/);
@@ -1057,7 +1060,9 @@ describe('R17 (ROUND-V4-10K-04)', () => {
       const p = RENDERED.find((x) => x.id === id);
       const kinds = p?.doc.weeks.map((w) => w.intent.kind) ?? [];
       const peak = kinds.indexOf('peak');
-      expect(kinds.slice(0, peak).filter((k) => k === 'build').length, id).toBeGreaterThanOrEqual(4);
+      expect(kinds.slice(0, peak).filter((k) => k === 'build').length, id).toBeGreaterThanOrEqual(
+        4
+      );
       expect(kinds.length - peak - 1, id).toBeLessThanOrEqual(3);
     }
   });

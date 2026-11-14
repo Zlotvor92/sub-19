@@ -272,5 +272,6 @@ export const ADEQUATE: AdequatePrep = {
   longCheckMinWeeks: 16,
   minTenureWeeks: 26,
   minPeakWeeklyKmByLevel: { brz: 80 },
+  minRunDaysByLevel: { pocetnik: 3, 'pocetnik-nov': 3, mali: 3, spor: 3 },
   shorter: { distanceId: 'hm', label: 'polumaraton' }
 };

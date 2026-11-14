@@ -64,6 +64,7 @@ import {
 import { byDistance, candidates } from './select';
 import { countWeeks } from './template';
 import type {
+  AdequatePrep,
   Adjustment,
   Decisions,
   DistanceData,
@@ -660,7 +661,12 @@ const TRIAL_MIN_GAIN = 1.05;
 /** Upozorenja: problem → značenje → predlog sa brojem (AGENTS t. 6). Brojevi iz `data.adequate` i plana. */
 export function warnings(input: WarningInput): Warning[] {
   const { state, goal, data, decisions: d, doc } = input;
-  const a = data.adequate;
+  /* R19 (stavka 6): broj dana i dugi za distancu po nivou (podatak distance), inače opšti */
+  const a: AdequatePrep = {
+    ...data.adequate,
+    minRunDays: data.adequate.minRunDaysByLevel?.[d.level] ?? data.adequate.minRunDays,
+    minLongKm: data.adequate.minLongKmByLevel?.[d.level] ?? data.adequate.minLongKm
+  };
   const s = data.safety;
   const ctx = paceCtxOf(doc.header);
   const costs = doc.weeks.map((w) => weekCost(w, goal.raceDate, ctx));
@@ -1126,6 +1132,11 @@ function levelVolumeWarning(
   const neededKm = Math.ceil((neededLoad * 60) / header.paces.easy / 5) * 5;
   const target = Math.max(byLevel ?? neededKm, Math.ceil((peakKm * 1.15) / 5) * 5);
   const share = fmtNumber(s.maxFastShare * 100, 0);
+  /* R19 (stavka 6): rezultat ciljne distance nije „rezultat na kraćoj trci" */
+  const result = input.state.profile.recentResult;
+  const shorterResult =
+    result === undefined || result.distanceM < NEAR_ENOUGH * input.data.distanceM;
+  const hint = shorterResult ? 'rezultat na kraćoj trci' : 'tvoj rezultat';
   const daysShort = eligible.some((c) => c.workouts < d.runDays.length);
   const binding = eligible.some((c) => {
     const most = c.week.intent.kind === 'peak' ? s.maxFastSharePeak : s.maxFastShare;
@@ -1140,8 +1151,8 @@ function levelVolumeWarning(
     problem,
     /* M8b (krug 5): granica brzog rada se pominje samo kad stvarno steže (neka nedelja gradnje je na njoj) */
     meaning: binding
-      ? `Brz rad sme da bude najviše ${share} % vremena trčanja (u vršnoj nedelji ${fmtNumber(s.maxFastSharePeak * 100, 0)} %), pa uz mali obim doze ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što rezultat na kraćoj trci nagoveštava.`
-      : 'Uz mali obim doze brzih treninga ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što rezultat na kraćoj trci nagoveštava.',
+      ? `Brz rad sme da bude najviše ${share} % vremena trčanja (u vršnoj nedelji ${fmtNumber(s.maxFastSharePeak * 100, 0)} %), pa uz mali obim doze ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što ${hint} nagoveštava.`
+      : `Uz mali obim doze brzih treninga ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što ${hint} nagoveštava.`,
     /* T4 (krug 6): obim koji ova priprema ne može da dostigne je predlog za sledeću; dan se ne nudi kad plan ni
        tražene dane ne koristi sve */
     proposal: `${target > peakKm + 0.5 ? 'Za sledeću pripremu podigni' : 'Podigni'} nedeljni obim laganim trčanjem do oko ${km(target)} (${daysShort ? 'produži lagane dane za 10–15 min' : 'dodaj dan ili produži lagane dane za 10–15 min'}) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.`,

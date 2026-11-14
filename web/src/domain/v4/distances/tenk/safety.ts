@@ -202,5 +202,6 @@ export const ADEQUATE: AdequatePrep = {
   /* R17: spor (VDOT < 40, 10 km ≥ 53 min) 30 km — doze nivoa su manje, 35 km je bio prag srednjeg trkača (p03 VDOT 33);
      mali obim 25 km */
   minPeakWeeklyKmByLevel: { brz: 45, srednji: 40, spor: 30, mali: 25, povratnik: 35 },
+  minRunDaysByLevel: { pocetnik: 3, 'pocetnik-nov': 3, mali: 3, spor: 3 },
   shorter: { distanceId: 'fivek', label: '5 km' }
 };

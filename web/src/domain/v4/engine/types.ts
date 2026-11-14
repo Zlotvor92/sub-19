@@ -964,6 +964,10 @@ export interface AdequatePrep {
   /** Vrh nedeljnog obima (km) koji nivo traži da bi kvalitet tog nivoa stao u plan (upozorenje `obim-za-nivo`,
       krug 2, R11); nivo bez broja: obim pri kom plafoni doza prestaju da zavise od obima. */
   minPeakWeeklyKmByLevel?: Readonly<Record<LevelId, number>>;
+  /** R19 (stavka 6): najmanji broj dana za upozorenje `malo-dana` po nivou; nivo bez broja: `minRunDays`. */
+  minRunDaysByLevel?: Readonly<Partial<Record<LevelId, number>>>;
+  /** R19 (stavka 6): dugi za distancu u upozorenjima po nivou; nivo bez broja: `minLongKm`. */
+  minLongKmByLevel?: Readonly<Partial<Record<LevelId, number>>>;
   /** Kraća distanca koja se predlaže kad priprema nije dovoljna. */
   shorter?: { distanceId: string; label: string };
 }

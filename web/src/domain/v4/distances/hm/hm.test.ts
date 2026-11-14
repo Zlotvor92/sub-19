@@ -741,10 +741,13 @@ describe('trenerski zahtevi (brief F3)', () => {
     expect(w?.proposal).toMatch(/\d/);
     for (const id of ['p03', 'p08', 'p10']) {
       const p = RENDERED.find((x) => x.id === id);
-      expect(
-        p?.doc.header.warnings.map((w) => w.code),
-        id
-      ).toContain('malo-dana');
+      /* R19 (stavka 6, odluka organizatora): početniku, malom obimu i sporom nivou su dovoljna 3 dana */
+      const level = p?.doc.header.decisions.level ?? '';
+      const need = hm.adequate.minRunDaysByLevel?.[level] ?? hm.adequate.minRunDays;
+      const enough = (p?.doc.header.decisions.runDays.length ?? 0) >= need;
+      const codes = p?.doc.header.warnings.map((w) => w.code);
+      if (enough) expect(codes, id).not.toContain('malo-dana');
+      else expect(codes, id).toContain('malo-dana');
     }
     const p11 = RENDERED.find((x) => x.id === 'p11');
     expect(p11?.text).toMatch(/Očekivano na dan trke: .* brže od današnje prognoze/);

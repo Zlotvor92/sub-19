@@ -270,6 +270,8 @@ export const ADEQUATE: AdequatePrep = {
   minTenureWeeks: 8,
   /* vrh koji nivo traži da bi kvalitet nivoa stao u plan (upozorenje `obim-za-nivo`): brz ≈ 60 km (v3) */
   minPeakWeeklyKmByLevel: { brz: 60 },
+  /* R19 (stavka 6): početnik, mali obim i spor nivo — bar 3 dana (srednji, brz, povratnik 4) */
+  minRunDaysByLevel: { pocetnik: 3, 'pocetnik-nov': 3, mali: 3, spor: 3 },
   /* R8 t. 9: id foldera distance (adapteri, registar) */
   shorter: { distanceId: 'tenk', label: '10 km' }
 };
