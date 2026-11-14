@@ -931,3 +931,20 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - R25 (`briefs/R25-JUDGES.md`): trener (nov Fable tab `session_01GnHHiXpK8ZCCn7LQ9bWynL`, samo ispisi promenjeni od
   `e1136a16`) i drugi sudija (nov Fable tab `session_01GnHHiacaXwvxSYvDU8CNJt`, jedan za sve četiri distance, planovi
   profila promenjeni od `21d4b070`).
+
+### 15. 11. 2026, 00:40 — OCENE R25 (stanje `b8ad0bb6`): trener i drugi sudija
+- Trener (`coach/ROUND-V4-HM-15`, `-10K-08`, `-MAR-06`, `-5K-06`; `0444ea7b`), prolaz R23 → R25, dozvoljava / plafon:
+  HM 9/10 → 9/10 · 2/2; 10K 7/12 → 8/12; MAR 11/12 → 12/12 · 2/7 → 3/7; 5K 7/14 → 7/14 · 0/2. Ukupno 34/48 → 36/48 i
+  4/11 → 5/11. Plan HM 80,2, 10K 79,4, MAR 79,3, 5K 77,4; B 82,6–83,5; C 82,7–84,2 (B i C ≥ 80 svuda).
+- NE PROLAZE: HM p06 77; 10K p10 79, p08 77,5, p02 77, p06 74; MAR plafon p10 78,5, p13 77,5, p19 76, p06 73,5; 5K
+  p12 77, p10 76,5, p15 76, p02 75,5, p03 75, p08 75, p06 65,5, plafon p14 78, p13 76.
+- Zatvorene regresije R23: MAR s11/s12/s25, 5K P2 B, MAR p03/p13 tekst, MAR p04; delom 10K s15. NISU: HM s27, s16
+  (M5 neurađen), nedelja posle pripremnog polumaratona (MAR p11, p15, p02).
+- Nove regresije (R24 M3): granica 3 upozorenja briše predlog kraće distance i staž u P2 B (HM, 10K, MAR) i cilj van
+  raspona u MAR P1 B; MAR p04 obim ravan 65,5–68 km ned 1–18; 5K p02 oznaka „vršna" na 2. nedelji. „Dan manje" se u
+  ispisima ne javlja (M6 je samo produžio lagane dane), osim MAR p06.
+- Trener: pustio bi trkačima „da, uz navedeno" — pre puštanja vratiti predlog kraće distance u upozorenja.
+- Drugi sudija (`judge2/ROUND-V4-HM-14`, `-10K-07`, `-MAR-05`, `-5K-05`): < 65 samo 5K p13 58, p06 59, p15 63. HM
+  najniža p08 69,5; 10K p06 65; MAR p10 65,5. Tab arhiviran (12,31 USD).
+- Pokrenuto: `briefs/R25-POPRAVKA.md` (upozorenja: predlog kraće distance, prazan proposal, oznaka vršne) — samo
+  tekst zaglavlja, treninzi bajt-isti. 5 km (tri plana < 65) čeka odluku vlasnika.
