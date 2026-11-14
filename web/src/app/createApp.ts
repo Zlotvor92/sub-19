@@ -509,7 +509,9 @@ export function createApp(deps: AppDeps): App {
       saver.flush(collectPersisted);
       if (accountStorage.select(session.state.userId)) {
         accountGeneration++;
-        useV4Store.getState().set({ enabled: false, row: null }); // V4 prethodnog naloga se ne prikazuje
+        useV4Store
+          .getState()
+          .set({ enabled: false, row: null, runs: [], rejected: [], changes: [] }); // V4 prethodnog naloga se ne prikazuje
         loaded = loadState(accountStorage.kv, deps.today());
         hydratePersisted(loaded.state);
         engine.reset(!!loaded.loadFailure);
@@ -541,7 +543,7 @@ export function createApp(deps: AppDeps): App {
     },
     logout() {
       accountGeneration++;
-      useV4Store.getState().set({ enabled: false, row: null }); // V4 prethodnog naloga se ne prikazuje
+      useV4Store.getState().set({ enabled: false, row: null, runs: [], rejected: [], changes: [] }); // V4 prethodnog naloga se ne prikazuje
       /* Odjava mora da očisti i POZADINU: bez ovoga bi service worker zadržao kopiju tokena i neposlato stanje pa ih gurnuo posle odjave — na tuđem
          telefonu bi to bio tuđ nalog. Obaveštenja se gase iz istog razloga; token se prosleđuje jer se sesija briše u istom potezu. */
       const token = session.state.access ?? undefined;
@@ -645,7 +647,7 @@ export function createApp(deps: AppDeps): App {
     isOwner,
     forgetEverything() {
       accountGeneration++;
-      useV4Store.getState().set({ enabled: false, row: null }); // V4 prethodnog naloga se ne prikazuje
+      useV4Store.getState().set({ enabled: false, row: null, runs: [], rejected: [], changes: [] }); // V4 prethodnog naloga se ne prikazuje
       /* Pretplata se gasi BEZ poziva servera: red u bazi je već obrisan, a token više ne važi (naloga nema). */
       void push
         .forget()

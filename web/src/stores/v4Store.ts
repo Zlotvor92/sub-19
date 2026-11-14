@@ -6,7 +6,7 @@
    Lični plan vlasnika (`meta.licni`) se ne dira do 13. 12. 2026 (Bokeška): ostaje stari prikaz.
    Ovaj store ništa ne upisuje u `user_state` i ne zove mrežu; puni ga učitavač (`loadV4`) iz servisa. */
 import { create } from 'zustand';
-import type { PlanDoc } from '../domain/v4/engine';
+import type { Change, PlanDoc, Run } from '../domain/v4/engine';
 import { isPersonalPlan } from '../domain/generators/select';
 import { adoptActive, type AdoptSnapshot } from '../integrations/v4';
 import type { PlanRow } from '../services/v4';
@@ -20,13 +20,24 @@ export interface V4State {
   row: PlanRow | null;
   /** Danas po Beogradu (`YYYY-MM-DD`); bez njega se preuzimanje ne radi. */
   today: string | null;
-  set(p: Partial<Pick<V4State, 'enabled' | 'row' | 'today'>>): void;
+  /** Korak 8: trčanja iz `aktivnost` (forma iz trčanja); prazno dok se ne učitaju. */
+  runs: readonly Run[];
+  /** Prijavljeni događaji koje je trkač odbio („Ne menjaj") — ne nude se ponovo. */
+  rejected: readonly string[];
+  /** Promene koje je V4 sam primenio u ovoj sesiji (traka „Plan je promenjen — zašto"). */
+  changes: readonly Change[];
+  set(
+    p: Partial<Pick<V4State, 'enabled' | 'row' | 'today' | 'runs' | 'rejected' | 'changes'>>
+  ): void;
 }
 
 export const useV4Store = create<V4State>()((set) => ({
   enabled: false,
   row: null,
   today: null,
+  runs: [],
+  rejected: [],
+  changes: [],
   set: (p) => set(p)
 }));
 

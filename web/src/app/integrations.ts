@@ -37,7 +37,10 @@ import { useRecoveryStore } from '../stores/recoveryStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
 import { useV4Store } from '../stores/v4Store';
-import type { PlanEvent } from '../domain/v4/engine';
+import type { Change, PlanEvent } from '../domain/v4/engine';
+import { liveState, otisakOf, refreshPlan } from '../integrations/v4';
+import { loadRuns } from '../services/v4/activities';
+import { personalProtected } from '../stores/v4Store';
 import { createActivityImport } from '../services/strava/activityImport';
 import { v4ActivityKey } from '../services/storage/keys';
 import {
@@ -142,6 +145,8 @@ export interface Integrations {
     deviceId(): string;
     /** Radnja nad planom (`commitAction`) → `useV4Store.row`; uz upisan plan dopisuje i događaje (`manual-edit`…).
      *  `false` = nije sačuvano (mreža, odjava, sukob posle ponovljenih pokušaja). */
+    /** Korak 8: izvedene promene se primenjuju same (v. `refresh` u kodu). */
+    refresh(): Promise<void>;
     commit(
       action: PlanAction,
       events?: readonly PlanEvent[] | (() => readonly PlanEvent[])
@@ -499,9 +504,47 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
               load: () => v4Plan.load(),
               same: () => deps.accountKey?.() === owner
             });
-            if (next !== null) useV4Store.getState().set(next);
+            if (next === null) return;
+            useV4Store.getState().set(next);
+            if (!next.enabled) return;
+            /* korak 8: trčanja (forma iz trčanja) i odbijeni prijavljeni događaji; pa izvedene promene same */
+            const [runs, ev] = await Promise.all([
+              loadRuns(v4Rest),
+              v4Events.list().catch(() => null)
+            ]);
+            if (deps.accountKey?.() !== owner) return;
+            useV4Store.getState().set({
+              runs: runs ?? [],
+              rejected:
+                ev !== null && ev.ok
+                  ? ev.records.filter((r) => r.vrsta === 'odbijeno').map((r) => r.event.id)
+                  : []
+            });
+            await v4Self.refresh();
+          },
+          /** Izvedene promene (forma iz trčanja, propušten trening, pauza iz rupe) se primenjuju SAME (odluka vlasnika
+           *  1) — samo nad planom iz `plan_v4` i ne nad zaštićenim ličnim planom. Promene idu u traku. */
+          async refresh(): Promise<void> {
+            const st = useV4Store.getState();
+            const today = st.today;
+            if (!st.enabled || st.row === null || today === null) return;
+            if (personalProtected(activeGenPlan(), today)) return;
+            const log = useTrainingStore.getState().log;
+            const knee = useRecoveryStore.getState().knee;
+            let changes: Change[] = [];
+            await v4Self.commit((cur) => {
+              if (cur === null) return null;
+              const live = liveState({ doc: cur, today, runs: st.runs, log, knee });
+              if (live === null) return null;
+              const res = refreshPlan(cur, live, { rejected: st.rejected });
+              if (res.changes.length === 0) return null;
+              changes = res.changes;
+              return { doc: res.doc, otisak: otisakOf(res.doc, today) };
+            });
+            if (changes.length > 0) useV4Store.getState().set({ changes });
           }
         };
+  const v4Self = v4 as NonNullable<typeof v4>;
 
   return {
     v4,

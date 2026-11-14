@@ -165,6 +165,8 @@ export function Wizard({ today }: { today: string }) {
   const v4On = v4Flag && distance !== null;
   const v4Today = useV4Store((s) => s.today) ?? today;
   const knee = useRecoveryStore((s) => s.knee);
+  /* korak 8: forma iz trčanja (`aktivnost`) ulazi u nov plan */
+  const v4Runs = useV4Store((s) => s.runs);
   const [confirmedDays, setConfirmedDays] = useState(false);
   const answersV4 = (): WizardAnswers | null => {
     const a = answersOf();
@@ -188,7 +190,14 @@ export function Wizard({ today }: { today: string }) {
     const answers = answersV4();
     if (answers === null) return null;
     try {
-      return makePlan({ distance, answers, today: v4Today, knee, confirmedRunDays: confirmedDays });
+      return makePlan({
+        distance,
+        answers,
+        today: v4Today,
+        knee,
+        activities: v4Runs,
+        confirmedRunDays: confirmedDays
+      });
     } catch {
       return null;
     }
@@ -206,6 +215,7 @@ export function Wizard({ today }: { today: string }) {
     today,
     v4Today,
     knee,
+    v4Runs,
     confirmedDays
   ]);
   const runDayCount = v4Preview?.ok ? v4Preview.facts.availability.runDays.length : 0;
