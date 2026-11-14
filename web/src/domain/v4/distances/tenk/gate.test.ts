@@ -86,7 +86,8 @@ describe('kapija 10 km (12 profila)', () => {
   /* 10 km (13. 11., posle kruga 7): 1–30 s sporije (≤ 1 %) kod 7 od 12 — p02, p06, p07 (8 nedelja: provera u 4.
      nedelji trčana tačno u tempu današnje forme), p01, p03, p04, p08; isti uzrok kao kod polumaratona (pripisani
      napredak posle ponovnog planiranja), ne podaci 10 km */
-  const FORM_DRIFT = new Set<string>(['p02', 'p03', 'p04', 'p06', 'p07', 'p08']);
+  /* R22 B3 (MOTOR): p03, p06, p08 skinuti — uz upozorenje o 3 dana ili obimu za nivo očekivano se ne pogoršava */
+  const FORM_DRIFT = new Set<string>(['p02', 'p04', 'p07']);
   const nothing = (c: Case): void => {
     const doc = build(c);
     const today = addDays(doc.weeks[5]?.start ?? doc.header.startDate, 6);

@@ -26,7 +26,6 @@ Tempo trke u treninzima je tempo koji plan savetuje za trku (6:35/km), oprezniji
 
 UPOZORENJA
 - Najveća nedelja u planu ima 50,1 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 50,1 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 25 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
-- Tražio si 4 dana trčanja nedeljno, a u nedelji provere forme (8. nedelja) plan ima 3 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor
@@ -104,6 +103,7 @@ UPOZORENJA
   Zbir: 36 km, 4 h 16 min, 4 treninga, brz rad 7 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — osnova, rasterećenje; do trke 16 nedelja
+  napomena: Ove nedelje 3 treninga umesto 4: pre provere forme ili pripremne trke dan ostaje slobodan da je trčiš odmoran, a posle nje telo traži oporavak. Posle ove nedelje plan opet koristi sve tražene dane.
   pon 21. 12.  odmor
   uto 22. 12.  odmor
   sre 23. 12.  odmor
@@ -321,7 +321,6 @@ Tempo trke u treninzima je tempo koji plan savetuje za trku (6:35/km), oprezniji
 
 UPOZORENJA
 - Najveća nedelja u planu ima 50,1 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 50,1 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 25 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
-- Tražio si 4 dana trčanja nedeljno, a u nedelji provere forme (8. nedelja) plan ima 3 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.
 
 PROMENE
 Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 7. 2. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 11. 2. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 25. 2.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu.
@@ -419,6 +418,7 @@ Rezultat 10 km za 58:00 (11. 2.) pokazuje slabiju formu od one po kojoj je plan 
   Urađeno: 36 km, 4 h 16 min, 4 treninga
 
 8. NEDELJA (od 21. 12.) — osnova, rasterećenje; do trke 16 nedelja
+  napomena: Ove nedelje 3 treninga umesto 4: pre provere forme ili pripremne trke dan ostaje slobodan da je trčiš odmoran, a posle nje telo traži oporavak. Posle ove nedelje plan opet koristi sve tražene dane.
   pon 21. 12.  odmor
   uto 22. 12.  odmor
   sre 23. 12.  odmor

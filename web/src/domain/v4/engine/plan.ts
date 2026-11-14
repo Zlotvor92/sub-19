@@ -534,11 +534,15 @@ export function createPlan(
      M7 (krug 14): isto kad upozorenje kaže da obim ili dugi ne nose trku („mali-obim", „kratak-dugi") — tada ni
      prognoza ni tempo trke nisu brži od današnje forme. */
   const flags = {
-    ...(found.some((w) => w.code === 'dugi-za-distancu') ||
+    /* R22 (B3): i uz upozorenje o broju dana (`malo-dana`) prognoza ne računa napredak — upozorenje to kaže za ovu
+       trku (krug 21: profili sa 3 dana) */
+    ...(found.some((w) => w.code === 'dugi-za-distancu' || w.code === 'malo-dana') ||
     farBelowAdequate(built, goal, data, found)
       ? { raceDayNoProgress: true }
       : {}),
     ...penaltyOf(built, goal, data, found, weeks, state),
+    /* R22 (B3): obim ispod potrebnog za nivo (`obim-za-nivo`) — upola manji očekivani napredak (brz trkač malog obima) */
+    ...(found.some((w) => w.code === 'obim-za-nivo') ? { raceDayVolumeShare: LEVEL_VOLUME_GAIN_SHARE } : {}),
     ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) }),
     ...(data.safety.forecastMaxGainByLevel?.[level] === undefined
       ? {}
@@ -579,6 +583,9 @@ function withRacePace(paces: Paces, racePaceSec: SecPerKm | undefined): Paces {
     ? paces
     : { ...paces, RP: racePaceSec, rpBase: paces.RP };
 }
+
+/** R22 (B3): udeo očekivanog napretka uz upozorenje `obim-za-nivo`. */
+const LEVEL_VOLUME_GAIN_SHARE = 0.5;
 
 /** R20 (I, odluka organizatora): kazna prognoze kad upozorenje kaže da obim (`mali-obim`), dugi (`dugi-za-distancu`,
     `kratak-dugi`) ili priprema (`kratka-priprema`) ne nose distancu — `PENALTY_SCALE` × najveći manjak (udeo ispod

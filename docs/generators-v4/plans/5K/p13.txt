@@ -23,7 +23,6 @@ Kilometri laganih dana su računati sa 8:39/km, sporije od tvog unetog laganog t
 
 UPOZORENJA
 - Najveća nedelja u planu ima 12,6 km, a adekvatna priprema za ovu distancu traži bar 15 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 12,6 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 10 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 15 km.
-- Tražio si 3 dana trčanja nedeljno, a u nedelji provere forme (6. nedelja) plan ima 2 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.
 - Tek počinješ da trčiš, pa je cilj ove pripreme da istrčiš celih 5 km bez hodanja. Očekivano vreme na dan trke je 36:27 (raspon 33:26–39:28); tačno vreme sada nije važno — važno je da trčiš ravnomerno i bez bola. Posle trke nastavi sa 3 dana nedeljno još 4 nedelje, pa izaberi sledećih 5 km za 8–10 nedelja — tada plan cilja vreme.
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 1,5 km koja je u planu 10. 12. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
@@ -78,6 +77,7 @@ UPOZORENJA
   Zbir: 12,5 km, 1 h 46 min, 3 treninga, brz rad 6 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — specifična priprema, rasterećenje; do trke 4 nedelje
+  napomena: Ove nedelje 2 treninga umesto 3: pre provere forme ili pripremne trke dan ostaje slobodan da je trčiš odmoran, a posle nje telo traži oporavak. Posle ove nedelje plan opet koristi sve tražene dane.
   pon 7. 12.  odmor
   uto 8. 12.  odmor
   sre 9. 12.  odmor

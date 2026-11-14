@@ -173,6 +173,8 @@ export interface Warning {
   meaning: string;
   /** Konkretan predlog šta je potrebno. */
   proposal: string;
+  /** R22 (B3): stavka pripada ovim nedeljama (napomena nedelje), ne zaglavlju plana. */
+  weeks?: number[];
   /** Predlog u brojevima, da ekran može da ponudi dugme. */
   suggest?: {
     weeks?: number;

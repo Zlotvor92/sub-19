@@ -261,7 +261,7 @@ Dugi trening u 8 nedelja staje na 2 h 11 min: duže trčanje za ovu distancu don
 FORMA
 Polazna forma (1. 11.): 2:04:13
 Današnja prognoza (1. 11.): 2:04:13, pouzdanost srednja
-Očekivano na dan trke: 2:00:36 (raspon 1:56:43–2:06:30) — 3:37 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:02:25 (raspon 1:58:32–2:08:19) — 1:48 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 2:04:13 za 21,1 km.
 
@@ -272,7 +272,7 @@ TEMPA
 - tempo trke 5:53/km
 - intervali 5:21/km
 - brze deonice 4:53/km
-Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:00:36) traži 5:43/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (2:02:25) traži 5:48/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Tvoja forma traži više brzog rada nego što obim od 65,4 km nedeljno može da nosi: u 3 od 12 nedelja gradnje brzi trening je zamenjen laganim. Uz mali obim doze brzih treninga ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što tvoj rezultat nagoveštava. Za sledeću pripremu podigni nedeljni obim laganim trčanjem do oko 80 km (dodaj dan ili produži lagane dane za 10–15 min) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.
@@ -499,7 +499,7 @@ UPOZORENJA
   sub 20. 3.  lagano 20 min — 2,8 km, 20 min
   ned 21. 3.  TRKA: polumaraton
       napomena: Tempo za trku: 5:53/km (današnja forma 2:04:13).
-      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:43/km (2:00:36).
+      napomena: Ako provera forme 23. 1. potvrdi očekivani napredak, ciljaj 5:48/km (2:02:25).
       napomena: Prvih 5 km trči 5:57–6:00/km, od 5. do 16. km 5:53/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
       napomena: Posle trke: 12 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

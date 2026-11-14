@@ -122,7 +122,10 @@ describe('A: padež uz broj', () => {
         expect(caseErrors(all), `${String(n)}/${String(weeks)}: ${all}`).toEqual([]);
         expect(all).toContain(`imaš ${count(n + weeks, WEEKS, 'acc')} pripreme`);
         /* Z7 (krug 7): „planiraj N" samo kad probni plan to potvrđuje; inače se imenuje uzrok */
-        expect(all).toMatch(/Za sledeću trku planiraj \d+ nedelj|Duža priprema ovde ne pomaže/);
+        /* R22 B3: predlog dužine pripreme jednom (u „kratka priprema"); ostali kažu uzrok bez protivrečnosti */
+        expect(all).toMatch(
+          /Za sledeću trku planiraj \d+ nedelj|Duža priprema ovde ne pomaže|I uz dužu pripremu|imaš \d+ nedelj\w* pripreme/
+        );
         checked += 1;
       }
     }
@@ -195,7 +198,11 @@ describe('B: upozorenja o obimu i dugom — šta može sada, šta za sledeći ci
   it('`kratak-dugi`: isto — nikad samo „produži pripremu"', () => {
     const w = find('kratak-dugi');
     expect(w?.proposal).toMatch(/^Uz isti datum trke /);
-    expect(w?.proposal).toMatch(/Za sledeću trku |Duža priprema ovde ne pomaže/);
+    /* R22 B3: predlog za sledeći ciklus jednom — kad ga nosi drugo upozorenje, ovde ostaje broj za ovu trku */
+    const all = b.doc.header.warnings.map((x) => x.proposal).join(' ');
+    expect(`${w?.proposal ?? ''} ${all}`).toMatch(
+      /Za sledeću trku |Duža priprema ovde ne pomaže|Dugi raste tek sa nedeljom/
+    );
     expect(/\d/.test(w?.proposal ?? '')).toBe(true);
   });
 

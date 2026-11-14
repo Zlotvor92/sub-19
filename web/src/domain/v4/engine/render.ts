@@ -373,7 +373,7 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
           ? ' — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke'
           : /* M7 (krug 14): upozorenje kaže da obim ili dugi ne nose trku — broj to prati i kaže zašto */
             h.decisions.raceDayNoProgress === true && gain === 0
-            ? ' — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma'
+            ? ' — bez računanja napretka: obim, dugi ili broj dana u planu ne nose napredak za ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma'
             : '';
   lines.push(
     `Očekivano na dan trke: ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)})${why}`
@@ -387,22 +387,20 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   lines.push(raceTruth(h, raceDay, data));
   const declared = declaredEasyLine(h, state);
   if (declared !== null) lines.push(declared);
-  if (h.warnings.length > 0) {
+  /* R22 (B3): stavka nedelje (npr. nedelja provere forme) ide uz tu nedelju, ne u upozorenja */
+  const headWarnings = h.warnings.filter((w) => w.weeks === undefined);
+  if (headWarnings.length > 0) {
     lines.push('');
     lines.push('UPOZORENJA');
-    /* R20 B6: upozorenje čiji je predlog spojen u „Pomoglo bi i: …" ne stoji samo — njegove činjenice idu u isti
-       red, ispred te rečenice (jedan blok, bez reda bez predloga) */
-    const merged = h.warnings.filter((w) => w.proposal === '' && w.severity !== 'info');
-    const facts = merged.map((w) => `${w.problem} ${w.meaning}`).join(' ');
-    for (const w of h.warnings) {
-      if (merged.includes(w)) continue;
+    /* R22 (B3, menja R20 B6): jedna tema = jedna stavka — činjenice upozorenja bez predloga se ne spajaju u tuđi
+       pasus; ostali predlozi („Pomoglo bi i: …") su posebna, poslednja stavka */
+    let more = '';
+    for (const w of headWarnings) {
       const [own, extra] = w.proposal.split(' Pomoglo bi i: ');
-      const proposal =
-        extra !== undefined && facts !== ''
-          ? `${own ?? ''} ${facts} Pomoglo bi i: ${extra}`
-          : w.proposal;
-      lines.push(`- ${[w.problem, w.meaning, proposal].filter((x) => x !== '').join(' ')}`);
+      if (extra !== undefined) more = `Pomoglo bi i: ${extra}`;
+      lines.push(`- ${[w.problem, w.meaning, own ?? ''].filter((x) => x !== '').join(' ')}`);
     }
+    if (more !== '') lines.push(`- ${more}`);
   }
   return lines;
 }
@@ -592,6 +590,8 @@ export function renderPlan(
     const until = toRace === 0 ? '' : `; do trke ${count(toRace, WEEKS)}`;
     lines.push('');
     lines.push(`${String(week.index)}. NEDELJA (od ${fmtDate(week.start)}) — ${label}${until}`);
+    for (const w of h.warnings.filter((x) => x.weeks?.includes(week.index) === true))
+      lines.push(`  napomena: ${[w.problem, w.meaning, w.proposal].filter((x) => x !== '').join(' ')}`);
     let km = 0;
     let durationSec = 0;
     let trainings = 0;

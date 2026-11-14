@@ -8,7 +8,7 @@ Godine (66): oporavak posle brzog treninga traje duže, pa su dva brza treninga 
 FORMA
 Polazna forma (1. 11.): 27:40
 Današnja prognoza (1. 11.): 27:40, pouzdanost srednja
-Očekivano na dan trke: 27:16 (raspon 26:34–28:11) — 0:24 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 27:28 (raspon 26:46–28:23) — 0:12 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 27:40 za 5 km.
 
@@ -19,7 +19,7 @@ TEMPA
 - tempo trke 5:32/km
 - intervali 5:17/km
 - brze deonice 4:59/km
-Tempo trke u treninzima je tvoja današnja forma (5:32/km). Očekivano vreme na dan trke (27:16) traži 5:27/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (5:32/km). Očekivano vreme na dan trke (27:28) traži 5:30/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Uz tvojih 66 godina brzi treninzi u nedelji imaju bar 3 dana razmaka, pa u 7 od 8 nedelja gradnje plan ima jedan brz trening manje nego što šablon traži. Oporavak posle brzog treninga sa godinama traje duže; dva brza treninga preblizu jedan drugom podižu rizik od povrede više nego što donose napretka. Drži zadate treninge i razmak između njih, a brzinu ne dodaj na svoju ruku. Napredak u ovoj pripremi nosi redovnost: svaki trening odrađen bez bola vredi više od još jednog brzog.

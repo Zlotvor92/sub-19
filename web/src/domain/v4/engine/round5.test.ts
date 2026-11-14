@@ -780,7 +780,12 @@ describe('R6: istina o tempu trke', () => {
     const base = withGoal(undefined);
     const { lowSec, expectedSec } = base.doc.header.form.raceDay;
     const rp = paceOf((base.doc.header.paces.RP * HALF_M) / 1000);
-    expect(base.text).toContain(`Tempo trke u treninzima je tvoja današnja forma (${rp}).`);
+    /* R22 B2: tempo trke u treninzima je tempo za trku — forma ili oprezan tempo uz kaznu prognoze */
+    expect(base.text).toMatch(
+      new RegExp(
+        `Tempo trke u treninzima je (tvoja današnja forma|tempo koji plan savetuje za trku) \\(${rp}\\)`
+      )
+    );
     expect(base.text).toContain(`Očekivano vreme na dan trke`);
     expect(base.text).toContain('Tempa se ubrzavaju kad trka ili test to potvrde.');
     const easy = withGoal(expectedSec + 120);

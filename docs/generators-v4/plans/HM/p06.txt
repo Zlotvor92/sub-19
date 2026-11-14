@@ -7,7 +7,7 @@ Polazim od tvojih ≈ 35 km nedeljno (2 h 47 min trčanja).
 FORMA
 Polazna forma (1. 11.): 1:20:28
 Današnja prognoza (1. 11.): 1:20:28, pouzdanost srednja
-Očekivano na dan trke: 1:19:38 (raspon 1:18:20–1:21:23) — 0:50 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 1:20:03 (raspon 1:18:45–1:21:48) — 0:25 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 1:20:28 za 21,1 km.
 
@@ -18,11 +18,11 @@ TEMPA
 - tempo trke 3:49/km
 - intervali 3:26/km
 - brze deonice 3:14/km
-Tempo trke u treninzima je tvoja današnja forma (3:49/km). Očekivano vreme na dan trke (1:19:38) traži 3:46/km. Tempa se ubrzavaju kad trka ili test to potvrde. Kod tebe je tempo trke ≈ prag (3:49/km), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.
+Tempo trke u treninzima je tvoja današnja forma (3:49/km). Očekivano vreme na dan trke (1:20:03) traži 3:48/km. Tempa se ubrzavaju kad trka ili test to potvrde. Kod tebe je tempo trke ≈ prag (3:49/km), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.
 
 UPOZORENJA
 - Tvoja forma traži više brzog rada nego što obim od 50,5 km nedeljno može da nosi: u 2 od 7 nedelja gradnje brzi trening je zamenjen laganim. Brz rad sme da bude najviše 22 % vremena trčanja (u vršnoj nedelji 25 %), pa uz mali obim doze ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što tvoj rezultat nagoveštava. Za sledeću pripremu podigni nedeljni obim laganim trčanjem do oko 60 km (dodaj dan ili produži lagane dane za 10–15 min) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.
-- Tražio si 5 dana trčanja nedeljno; uz sadašnji obim od oko 35 km lagani dani su u 1–8. nedelji oko 30 min umesto 35. Svi traženi dani ostaju u planu; zato je 1. nedelja oko 40,7 km, nešto više od sadašnjeg obima (35 km). Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.
+- Tražio si 5 dana trčanja nedeljno; uz sadašnji obim od oko 35 km lagani dani su u 1–8. nedelji kratki — oko 30 min, a za tvoj nivo lagan dan inače traje bar 35 min. Svi traženi dani ostaju u planu; zato je 1. nedelja oko 40,7 km, nešto više od sadašnjeg obima (35 km). Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 9 nedelja
   pon 2. 11.  lagano 6,5 km — 6,5 km, 31 min

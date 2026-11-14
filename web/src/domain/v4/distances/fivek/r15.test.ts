@@ -39,10 +39,10 @@ describe('krug 15 — kvalitet pre laganog dana na podu (M20)', () => {
   it('p14: kratka priprema obećava dugi iz probnog plana, ne manji od onoga što plan već ima', () => {
     const doc = build('p14');
     const w = doc.header.warnings.find((x) => x.code === 'kratka-priprema');
-    const promised = Number(
-      /dugog od ([\d,]+) km/.exec(w?.proposal ?? '')?.[1]?.replace(',', '.') ?? 0
-    );
-    expect(promised).toBeGreaterThan(5);
+    /* R22 B3 (MOTOR): broj dugog samo kad probni plan stvarno donosi dobitak; broj nedelja uvek */
+    expect(w?.proposal).toMatch(/imaš \d+ nedelj\w* pripreme/);
+    const promised = /dugi do ([\d,]+) km/.exec(w?.proposal ?? '')?.[1];
+    if (promised !== undefined) expect(Number(promised.replace(',', '.'))).toBeGreaterThan(5);
   });
 
   it('p16 (66 god.): manje brzih treninga je zbog godina — bez saveta „podigni obim"', () => {

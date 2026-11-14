@@ -92,14 +92,13 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
   const FORM_DRIFT = new Set([
     'p01',
     'p02',
-    'p03',
+    /* R22 B3 (MOTOR): p03, p08 skinuti — uz 3 dana prognoza ne računa napredak, pa se očekivano ne pogoršava */
     /* p07 skinut u krugu 5 (R5): posle M7/P1 očekivano vreme se ne pogoršava */
     /* krug 7: p06 skinut posle Z8 (5 dana), vraćen posle Y2 (rasterećenje: dugi 75 % prethodnog) — 1 s;
        F4-K2: skinut — očekivano se više ne pogoršava (lična kriva forme) */
     /* krug 5 (P3): p04 1 s (intervali u 3. nedelji umesto uspona menjaju pripisani napredak) */
     'p04',
     /* krug 9: p06 vraćen pa skinut (A14 + A1: posle A1 „ništa" više nije sporije) */
-    'p08',
     'vlasnik-v1'
     /* R20 (A1): vlasnik-v2 skinut — posle povratka po nedeljama „ništa" više nije sporije */
   ]);

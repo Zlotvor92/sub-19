@@ -507,6 +507,8 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
     for (const p of RENDERED) {
       /* hod-trk početnik: prognoza bez napretka po pravilu (`forecastMaxGainByLevel['pocetnik-nov'] = 0`) */
       if (p.doc.weeks.length < 10 || p.doc.header.decisions.level === 'pocetnik-nov') continue;
+      /* R22 B3 (MOTOR): uz upozorenje o broju dana (3 dana) prognoza ne računa napredak, uz rečenicu */
+      if (p.doc.header.decisions.raceDayNoProgress === true) continue;
       const line = p.text.split('\n').find((l) => l.startsWith('Očekivano na dan trke')) ?? '';
       expect(line, p.id).toMatch(/raspon \d/);
       expect(line, p.id).toMatch(/brže od današnje prognoze, jer /);

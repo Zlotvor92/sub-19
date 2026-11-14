@@ -7,7 +7,7 @@ Polazim od tvojih ≈ 25 km nedeljno (3 h 8 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:22:24
 Današnja prognoza (1. 11.): 2:22:24, pouzdanost niska
-Očekivano na dan trke: 2:21:05 (raspon 2:12:31–2:29:39) — 1:19 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:22:24 (raspon 2:13:50–2:30:58) — bez računanja napretka: obim, dugi ili broj dana u planu ne nose napredak za ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 2:22:24 za 21,1 km. Lagan tempo ne pokazuje koliko brzo možeš da trčiš trku, pa je procena namerno oprezna; prvi test ili trka je preciziraju.
 
@@ -21,7 +21,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
-- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 60 min — dugi tada može da naraste do 19,6 km.
+- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Za ovu trku: sa 3 dana nedeljno računaj na današnju formu (2:22:24), ne na napredak — prognoza ga zato ne računa. Dodaj 4. dan laganog trčanja od oko 60 min — dugi tada može da naraste do 19,6 km.
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 3 km koja je u planu 26. 11. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 19 nedelja

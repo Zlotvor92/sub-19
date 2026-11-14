@@ -7,7 +7,7 @@ Polazim od tvojih ≈ 20 km nedeljno (2 h 31 min trčanja).
 FORMA
 Polazna forma (1. 11.): 58:54
 Današnja prognoza (1. 11.): 58:54, pouzdanost srednja
-Očekivano na dan trke: 57:38 (raspon 55:57–1:00:03) — 1:16 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 58:16 (raspon 56:35–1:00:41) — 0:38 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 58:54 za 10 km.
 
@@ -18,7 +18,7 @@ TEMPA
 - tempo trke 5:53/km
 - intervali 5:35/km
 - brze deonice 5:05/km
-Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (57:38) traži 5:46/km. Tempa se ubrzavaju kad trka ili test to potvrde. Kod tebe je tempo trke ≈ prag (5:53/km), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.
+Tempo trke u treninzima je tvoja današnja forma (5:53/km). Očekivano vreme na dan trke (58:16) traži 5:50/km. Tempa se ubrzavaju kad trka ili test to potvrde. Kod tebe je tempo trke ≈ prag (5:53/km), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.
 
 UPOZORENJA
 - Najveća nedelja u planu ima 28,4 km, a za tvoj nivo forme treba bar 35 km nedeljno da bi brzi treninzi imali punu dozu. Uz mali obim doze brzih treninga ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što tvoj rezultat nagoveštava. Za sledeću pripremu podigni nedeljni obim laganim trčanjem do oko 35 km (dodaj dan ili produži lagane dane za 10–15 min) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.
@@ -148,7 +148,7 @@ UPOZORENJA
   sub 23. 1.  odmor
   ned 24. 1.  TRKA: 10 km
       napomena: Tempo za trku: 5:53/km (današnja forma 58:54).
-      napomena: Ako provera forme 24. 12. potvrdi očekivani napredak, ciljaj 5:46/km (57:38).
+      napomena: Ako provera forme 24. 12. potvrdi očekivani napredak, ciljaj 5:50/km (58:16).
       napomena: Zagrevanje 15 min lagano + 4 ubrzanja, završi 10 min pre starta. Prva 2 km 5:56–5:59/km (ne brže od 5:53/km), od 3. do 8. km ravnomerno 5:53/km, poslednja 2 km po osećaju — ubrzaj ako možeš. Doručak 2–3 h pre starta, lagan i proveren; na dan trke ništa novo.
       napomena: Posle trke: 6 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 10 km, 73 min, 2 treninga + trka, brz rad 12 % vremena trčanja

@@ -7,7 +7,7 @@ Polazim od tvojih ≈ 25 km nedeljno (3 h 6 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:10:31
 Današnja prognoza (1. 11.): 2:10:31, pouzdanost srednja
-Očekivano na dan trke: 2:06:45 (raspon 2:02:36–2:13:03) — 3:46 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:10:31 (raspon 2:06:22–2:16:49) — bez računanja napretka: obim, dugi ili broj dana u planu ne nose napredak za ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz rezultata koji si uneo: oko 2:10:31 za 21,1 km.
 
@@ -18,10 +18,10 @@ TEMPA
 - tempo trke 6:11/km
 - intervali 5:37/km
 - brze deonice 5:07/km
-Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (2:06:45) traži 6:00/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (2:10:31) traži 6:11/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 60 min — nedelja tada stiže do 49,1 km, a dugi ostaje 18,2 km i nosi manji deo nedelje.
+- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Za ovu trku: sa 3 dana nedeljno računaj na današnju formu (2:10:31), ne na napredak — prognoza ga zato ne računa. Dodaj 4. dan laganog trčanja od oko 60 min — nedelja tada stiže do 49,1 km, a dugi ostaje 18,2 km i nosi manji deo nedelje.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  odmor
@@ -199,7 +199,6 @@ UPOZORENJA
   sub 20. 2.  odmor
   ned 21. 2.  TRKA: polumaraton
       napomena: Tempo za trku: 6:11/km (današnja forma 2:10:31).
-      napomena: Ako provera forme 24. 12. potvrdi očekivani napredak, ciljaj 6:00/km (2:06:45).
       napomena: Prvih 5 km trči 6:15–6:18/km, od 5. do 16. km 6:11/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
       napomena: Posle trke: 12 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

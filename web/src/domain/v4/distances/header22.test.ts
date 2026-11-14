@@ -94,3 +94,28 @@ describe('R22 B1/B2 — jedan polazni broj, tempo trke = tempo za trku (sve dist
     expect(bad).toEqual([]);
   });
 });
+
+/* R22 B3 — upozorenja nad svim distancama i profilima: jedna tema = jedna stavka, isti predlog jednom, bez
+   protivrečnosti („Izaberi trku za N nedelja" / „Duža priprema ovde ne pomaže"), nedelja provere van upozorenja. */
+describe('R22 B3 — upozorenja bez ponavljanja i protivrečnosti (sve distance)', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', (_id, d) => {
+    const bad: string[] = [];
+    for (const p of d.profiles) {
+      const state = buildState(d.factsOf(p), p.goal, d.data, estimateForm);
+      const res = plan(state, p.goal, d.data);
+      if (!res.ok) throw new Error(String(p.id));
+      const text = renderPlan(res.doc, state, d.data);
+      const head = (text.split('\n1. NEDELJA')[0] ?? '').split('UPOZORENJA')[1] ?? '';
+      const id = String(p.id);
+      const days = head.match(/[Dd]odaj \d+\. dan/g) ?? [];
+      if (days.length > 1) bad.push(`${id}: dodatni dan × ${String(days.length)}`);
+      const no = head.match(/Duža priprema ovde ne pomaže/g) ?? [];
+      if (no.length > 1) bad.push(`${id}: „ne pomaže" × ${String(no.length)}`);
+      if (no.length > 0 && /imaš \d+ nedelj\w* pripreme/.test(head)) bad.push(`${id}: protivrečno`);
+      const plans = head.match(/[Pp]laniraj \d+ nedelj/g) ?? [];
+      if (plans.length > 1) bad.push(`${id}: planiraj × ${String(plans.length)}`);
+      if (/u nedelji provere forme/.test(head)) bad.push(`${id}: nedelja provere u upozorenjima`);
+    }
+    expect(bad).toEqual([]);
+  });
+});

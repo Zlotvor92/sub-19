@@ -25,7 +25,7 @@ TEMPA
 Tempo trke u treninzima je tempo koji plan savetuje za trku (5:20/km), oprezniji od današnje forme (5:02/km) — v. upozorenja. Očekivano vreme na dan trke (3:38:43) traži 5:11/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 30 km, ili na isti datum trči kraću distancu: polumaraton.
+- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada nedelja stiže do 83,2 km, ili na isti datum trči kraću distancu: polumaraton.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  lagano 11 km — 11 km, 65 min
@@ -190,7 +190,7 @@ TEMPA
 Tempo trke u treninzima je tempo koji plan savetuje za trku (5:21/km), oprezniji od današnje forme (5:02/km) — v. upozorenja. Očekivano vreme na dan trke (3:38:46) traži 5:11/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada plan stiže do dugog od 30 km, ili na isti datum trči kraću distancu: polumaraton.
+- Do trke je 12 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada nedelja stiže do 83,2 km, ili na isti datum trči kraću distancu: polumaraton.
 
 PROMENE
 Propušten je ključni trening „dugi 30 km, poslednjih 12,5 km u tempu maratona" (3. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; najduži dugi se ne nadoknađuje u celini, ali sledeći dugi (10. 1.) je lagan 24 km umesto kraćeg sa blokom — dovoljno blizu da zadrži izdržljivost, dovoljno daleko od trke za oporavak.
