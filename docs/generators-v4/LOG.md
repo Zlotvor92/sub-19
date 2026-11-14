@@ -807,3 +807,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Podatak R20/R20b: 10K `0296e7c`, HM `cb6a82ce`, MAR `82bbed9b` (dugi po vremenu, predlog 4. dana), 5K `6ab36d5f`
   (p13 hod-trk napreduje, fartlek vraćen).
 - Odluka vlasnika (07:55): ocena sudija ISKLJUČIVO po novom stanju, posle izmena. R21 po `briefs/R21-JUDGES.md`.
+- Tabovi ocene R21 (svi Fable 5.2, stanje `21d4b070`): trener `session_01GnHHiZageuvAi4uaQypaXr`; drugi sudija HM
+  `session_01GnHHiZmiAq1QU2vMQLeEvk`, 10K `session_01GnHHiYwXz7sJ15jTAaXULc`, MAR `session_01GnHHiYzu9JuSecjPDaqdRf`,
+  5K `session_01GnHHiamqeaDxEsfL7zhJr6`. Motor B `…WSukXvHnqPEjLYjRy` arhiviran (659 000 tokena). Aktivni tabovi
+  podatka (čekaju): 10K `…XivSsUTpEuBAFcJZi`, MAR `…WbwULZGywbJmwtnzH`, 5K `…YgBWy4zCKtBd6YPxy`.
