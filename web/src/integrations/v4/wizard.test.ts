@@ -24,6 +24,7 @@ describe('F9 korak 7 · čarobnjak → V4 plan', () => {
       expect(a.otisak).toBe(fingerprint(a.doc, a.facts));
       expect(a.otisak).toBe(b.otisak);
       expect(a.doc.header.goal.raceDate).toBe(BASE.raceDate);
+      expect(a.doc.header.startDate).toBe('2026-11-15'); // motor: plan počinje sutradan (§ 6.1)
     });
   }
 
