@@ -44,6 +44,7 @@ export * from './persistence';
 export {
   activeGenPlan,
   useActiveGenPlan,
+  useHasPlan,
   useResolvedPlan,
   useTrainingStore
 } from './trainingStore';

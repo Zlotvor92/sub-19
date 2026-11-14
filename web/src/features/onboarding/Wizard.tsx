@@ -36,7 +36,7 @@ import {
   type MarathonV2Wizard
 } from '../../domain/onboarding/marathonV2';
 import { TOTAL_STEPS, initialWizard, type WizardState } from '../../domain/onboarding';
-import { useActiveGenPlan, useTrainingStore } from '../../stores';
+import { useHasPlan, useTrainingStore } from '../../stores';
 import { activateNewPlan } from '../../stores/actions';
 import { useUIStore } from '../../stores/uiStore';
 import { FiveKV2Days, FiveKV2Experience, FiveKV2RaceHint, FiveKV2Result } from './FiveKV2Steps';
@@ -61,7 +61,7 @@ export function Wizard({ today }: { today: string }) {
   const [w, setW] = useState<WizardState>(initialWizard);
   const [step, setStep] = useState(1);
   const [err, setErr] = useState('');
-  const hasPlan = !!useActiveGenPlan();
+  const hasPlan = useHasPlan();
   const closeWizard = useUIStore((s) => s.setWizard);
   const set = (patch: Partial<WizardState>): void => setW((cur) => ({ ...cur, ...patch }));
   /* V1b: generator v2 distance iz prvog koraka (jedina putanja). */

@@ -193,6 +193,14 @@ export function useActiveGenPlan(): GenPlanState | null {
   }, [genPlan, owner, entries, baseline]);
 }
 
+/** F9 korak 7: postoji li plan — generisan / ugrađeni lični, ili (SAMO pod zastavicom V4) plan iz `plan_v4`. Sa
+ *  ugašenom zastavicom isto što i `!!useActiveGenPlan()`. */
+export function useHasPlan(): boolean {
+  const gen = useActiveGenPlan();
+  const v4 = useV4Store((s) => s.enabled && s.row !== null);
+  return gen !== null || v4;
+}
+
 /** Izvedeni plan, memoizovan po (aktivni plan, izmene, pomeranja). `null` kad nema plana ili je neispravan. */
 export function useResolvedPlan(): ResolvedPlan | null {
   const plan = useActiveGenPlan();

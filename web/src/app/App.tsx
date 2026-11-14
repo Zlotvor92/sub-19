@@ -6,7 +6,7 @@ import { BannerHost } from '../components/ui/BannerHost';
 import { ConfirmHost } from '../components/ui/ConfirmHost';
 import { Sheet } from '../components/ui/Sheet';
 import { downloadText } from '../lib/download';
-import { requestPersist, useActiveGenPlan, useResolvedPlan, useTrainingStore } from '../stores';
+import { requestPersist, useHasPlan, useResolvedPlan, useTrainingStore } from '../stores';
 import { useAuthStore } from '../stores/authStore';
 import { useUpdateStore } from '../pwa/updateStore';
 import { useSyncStore } from '../stores/syncStore';
@@ -44,11 +44,6 @@ function forgetConsent(): void {
 /* LJUSKA APLIKACIJE: ekrani po tabovima (sa ekranima iznad njih), traka tabova, list, dijalog potvrde, trake i kapija za prijavu. Nema trajnog zaglavlja:
    svaki ekran nosi svoj naslov. */
 
-/** Postoji li aktivan plan (generisan ili ugrađeni lični) — bez njega je čarobnjak jedini ekran. */
-function useActiveGenPlanPresent(): boolean {
-  return !!useActiveGenPlan();
-}
-
 /** Završava odloženi upis, ali nikad iza kapije za prijavu: odjava i brisanje naloga ostavljaju lokalno skladište prazno, bez novog upisa. */
 function flushPending(): void {
   if (useAuthStore.getState().gate === null) requestPersist('now');
@@ -66,7 +61,8 @@ export function App() {
   const today = useToday();
   const plan = useResolvedPlan();
   const wizard = useUIStore((s) => s.wizard);
-  const hasPlan = useActiveGenPlanPresent();
+  /* Postoji li plan (generisan, ugrađeni lični ili — pod zastavicom V4 — iz `plan_v4`); bez njega je čarobnjak jedini ekran. */
+  const hasPlan = useHasPlan();
   const [consentId, setConsentId] = useState(readPendingConsent);
   const closeConsent = useCallback(() => {
     forgetConsent();

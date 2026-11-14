@@ -5,7 +5,7 @@ import { resolvePlan } from '../domain/plan';
 import { personalPlan } from '../domain/personal';
 import type { GenPlanState } from '../domain/state';
 import { adoptActive, toResolved } from '../integrations/v4';
-import { currentPlan, useResolvedPlan, useTrainingStore } from './trainingStore';
+import { currentPlan, useHasPlan, useResolvedPlan, useTrainingStore } from './trainingStore';
 import { useRecoveryStore } from './recoveryStore';
 import { PERSONAL_PROTECTED_UNTIL, useV4Store } from './v4Store';
 
@@ -81,5 +81,20 @@ describe('grananje prikaza plana (F9 korak 7)', () => {
       row: { doc: { weeks: 'x' } as never, rev: 1, otisak: 'x' }
     });
     expect(shape(currentPlan())).toEqual(shape(resolvePlan(plan.weeks, { alts: {}, moves: {} })));
+  });
+
+  it('useHasPlan: bez plana false; samo plan_v4 → true SAMO pod zastavicom; generisan plan → true', () => {
+    setPlan(null);
+    const a = adoptActive({ plan, log: {}, alts: {}, moves: {}, vanPlana: {}, knee: [] }, TODAY);
+    if (a.status !== 'preuzet') throw new Error(a.status);
+    expect(renderHook(() => useHasPlan()).result.current).toBe(false);
+    useV4Store.setState({ row: { doc: a.doc, rev: 1, otisak: a.fingerprint }, today: TODAY });
+    expect(renderHook(() => useHasPlan()).result.current).toBe(false);
+    useV4Store.setState({ enabled: true });
+    expect(renderHook(() => useHasPlan()).result.current).toBe(true);
+    expect(currentPlan()?.weeks.length).toBe(a.doc.weeks.length);
+    useV4Store.setState({ enabled: false, row: null });
+    setPlan(plan);
+    expect(renderHook(() => useHasPlan()).result.current).toBe(true);
   });
 });
