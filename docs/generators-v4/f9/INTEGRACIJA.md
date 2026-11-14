@@ -159,6 +159,10 @@ onim što je već uvezeno (AGENTS 9a).
 - **Paljenje (odluka 1).** V4 se pušta SVIMA odmah, bez probe samo za vlasnika. Tabela `v4_pristup(user_id,
   ukljuceno, od)` ostaje samo kao prekidač za vraćanje nazad: pri ulasku se jednim SQL upisom uključuje svima;
   klijent je čita jednom pri pokretanju.
+- **Lista za puštanje — zastavica (organizator prihvatio 14. 11. 2026):** do puštanja važi `WITHOUT_ROW = false`
+  u `web/src/services/v4/access.ts` (nema reda = isključen). Pri puštanju se ta jedna konstanta menja u `true`
+  (nema reda = uključen; red sa `ukljuceno = false` gasi V4 tom korisniku), bez izmene baze. Menja se tek kad
+  organizator javi.
 - **Bez reda ili bez mreže** → V4 je isključen. Odluka se kešira lokalno samo za prikaz; ako lokalna vrednost i server
   ne daju istu odluku, važi isključeno.
 - **Šta gašenje vraća.** Sa ugašenom zastavicom app je bajt-isti kao danas: V4 nikad ne piše u `genPlan`, `log` ni u
