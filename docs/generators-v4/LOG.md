@@ -890,3 +890,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   nalazi sloja: Run 0 m, lock ≠ locked, izvoz painOf/datuma).
 - F9 etapa 2a (`a2dc8927`, `06de0b10`): `web/src/integrations/v4/` facts/view/adopt, 139 testova, otisak pre = posle
   na 34 uzorka. Etapa 2b (odluke u dokument + edits/events) zadata istom tabu.
+- (21:30) F9 etapa 2b (`6fe7048a` odluke u INTEGRACIJA.md; `6be8f493` edits/events) i 2c (`6bba2343` Strava uvoz
+  aktivnosti iza ugašene zastavice, bez baze i bez poziva prave Strave) primljene. Provera organizatora: commit 2c
+  dira samo `services/strava/**` i `integrations/v4/**`; `vitest run src/services/strava src/integrations/v4` → 9
+  fajlova, 220 prolazi [visoka]. Tab F9 stoji: korak 5 (tabele na Supabase grani) čeka vlasnikovo „kreni".
