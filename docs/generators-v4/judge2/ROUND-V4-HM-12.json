@@ -1,0 +1,463 @@
+{
+ "runda": "V4-HM-12",
+ "stanje": "ef506f4c",
+ "distanca": "HM",
+ "planovi": [
+  {
+   "plan": "p01",
+   "ocene": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    7,
+    8
+   ],
+   "ukupno": 79.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "Zaglavlje: 10 km 46:00 preveden u 1:44:16, a Riegel daje 1:41:30 (razlika 2:46) — umanjenje nije objašnjeno u polaznom planu (objašnjeno je tek u scenariju S01).",
+    "Ned 1: dva brza treninga (10×200 m + prag 15 min) i dugi 15 km uz samo jedno lagano trčanje (7,5 km) — 4 dana, 3 od 4 treninga su opterećenje.",
+    "Ned 16: tri različita tempa za trku (cilj 4:44, forma 4:56, „ako provera potvrdi“ 4:50) — trkač sa ciljem ne zna koji važi.",
+    "Ned 11: 54,8 km = +37 % na polaznih 40; dugi 20,5 km je 37 % nedelje."
+   ],
+   "dobro": [
+    "Ned 13: dugi 18,5 km sa 9 km u tempu trke tri nedelje pre trke — pravi trening na pravom mestu.",
+    "Poštena rečenica da je cilj 1:39:56 „na ivici“."
+   ]
+  },
+  {
+   "plan": "p02",
+   "ocene": [
+    8,
+    8,
+    8,
+    8,
+    8,
+    7,
+    8
+   ],
+   "ukupno": 79.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "Zaglavlje: 5 km 20:25 → 1:36:03 (Riegel 1:33:54), bez objašnjenja umanjenja.",
+    "Ned 4: dugi 18,5 km od 44,5 km = 42 % nedelje.",
+    "Ned 7: posle provere forme samo jedan brz trening (prag 3×11) uz skok 36,5 → 48,9 km (+34 %).",
+    "Prag 4:27 i tempo trke 4:33 su 6 s razlike — dva „različita“ treninga koja trkač ne razlikuje."
+   ],
+   "dobro": [
+    "Ned 8–11: 6,5 km u komadu, 3×2,5 km i blokovi 5,5 → 9 km u dugom — jasna progresija rada u tempu trke.",
+    "Suženje 47,2 → 35,5 → 32 → 17,1 km uredno."
+   ]
+  },
+  {
+   "plan": "p03",
+   "ocene": [
+    8,
+    7,
+    7.5,
+    8,
+    8,
+    6.5,
+    8
+   ],
+   "ukupno": 75.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Sve nedelje: dugi je 43–52 % nedeljnog obima (ned 15: 10,8 od 21,1 km = 51 %), a upozorenja za 3 dana nema (P08 ga ima).",
+    "Ned 13: prag 2×15 min + 35 min tempa trke u dugom = 65 min brzog od 262 (25 %) — najteža nedelja za najsporijeg trkača.",
+    "Ned 9: 24 → 35,7 km (+49 %) posle nedelje provere forme.",
+    "Ned 16: između oštrenja (čet) i trke nema ničega, a doručak/zagrevanje su jedina uputstva."
+   ],
+   "dobro": [
+    "Vremenom zadati treninzi (55 min, 2 h 15 min) umesto kilometara — ispravno za 7:20/km.",
+    "Dugi do 2 h 15 min, duže od očekivanog trajanja trke 2:06–2:10."
+   ]
+  },
+  {
+   "plan": "p04",
+   "ocene": [
+    7.5,
+    8,
+    8,
+    7,
+    8,
+    8,
+    8
+   ],
+   "ukupno": 78.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "Ned 1: prag 22 min u komadu već prve nedelje (P01 dobija 15 min).",
+    "Sedam dugih od 2 h 10–2 h 11 (ned 5, 7, 9, 11, 14, 15, 17) i tri ista lagana od 75–80 min svake nedelje — 20 nedelja sa malo promene.",
+    "Ned 15: 45 min tempa trke + 36 min praga = 81 min brzog u nedelji od 446 min (18 %) uz dugi 2 h 10.",
+    "Ned 5/9/13/17: skokovi +40/+37/+45/+46 % posle rasterećenja (vraćanje na staro, ali naglo)."
+   ],
+   "dobro": [
+    "Objašnjeno zašto dugi staje na 2 h 11 min.",
+    "Dve provere forme (ned 4 i 12) na 20 nedelja."
+   ]
+  },
+  {
+   "plan": "p05",
+   "ocene": [
+    8,
+    8,
+    8.5,
+    8,
+    8,
+    8,
+    8
+   ],
+   "ukupno": 81.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "Sva lagana trčanja u nedelji su ista (ned 11: 4 × 16,5 km) — nema srednje dugog trčanja ni lakšeg dana; trkač od 100 km to očekuje.",
+    "Ned 11: 12 km tempa trke + 5,4 km intervala + dugi 28 km u istoj nedelji (113,2 km).",
+    "Ned 9: 72 → 109,2 km (+52 %) sa samo jednim brzim treningom.",
+    "Intervali 5 × 1 km (ned 6) su mala doza za 100 km nedeljno (5 % obima)."
+   ],
+   "dobro": [
+    "Ned 13: dugi 26,5 km sa 13 km u tempu trke.",
+    "Rečeno da su prag i tempo trke isti (3:39/3:42) i da se ne zadaju odvojeno."
+   ]
+  },
+  {
+   "plan": "p06",
+   "ocene": [
+    7,
+    7.5,
+    6.5,
+    7,
+    7,
+    6,
+    6
+   ],
+   "ukupno": 68.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Upozorenja se pobijaju: „plan ostaje na 4 dana nedeljno“ i „svi traženi dani ostaju u planu“; prebrojao sam 5,5,5,5,5,5,5,5,4,3 treninga.",
+    "Ned 1: 40,4 km na polaznih 35 (+15 %), a isto upozorenje kaže da je skok > 10 % put do povrede.",
+    "Najduži dugi 16,5 km (75 min) za trkača 1:20; ned 8 (2 nedelje pre trke) dugi samo 9 km.",
+    "Ned 2 i 4: intervali 3×3 i 4×3 min (9–12 min) — doza koja ne menja ništa.",
+    "Sva lagana trčanja 6,5 km / 31 min, 3–4 puta nedeljno, 8 nedelja."
+   ],
+   "dobro": [
+    "Pošteno: „napredak će biti sporiji nego što rezultat nagoveštava“ + konkretan predlog 60 km.",
+    "Tempo trke u dugom raste 3,5 → 5,5 → 7,5 km."
+   ]
+  },
+  {
+   "plan": "p07",
+   "ocene": [
+    7.5,
+    6.5,
+    8.5,
+    8,
+    8,
+    7.5,
+    8
+   ],
+   "ukupno": 76.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Ned 1–5: 56,0 → 59,7 → 63,8 → 68,1 → 71,1 km, +27 % za četiri nedelje bez rasterećenja.",
+    "Ned 4: 9 km tempa trke (43 min) + prag 2×18 (36 min) = 79 min brzog (21 %) usred tog rasta.",
+    "Ned 8 (2 nedelje pre trke): prag 2×18 min + 5 km tempa trke u dugom — isto brzog rada kao u vršnoj nedelji.",
+    "Bez provere forme: prognoza 1:38:54, a uputstvo za trku 4:45/km (1:40:14) — napredak koji plan najavljuje nema gde da se potvrdi."
+   ],
+   "dobro": [
+    "Ned 5 i 7: dugi 21 i 21,5 km sa 9 i 10 km u tempu trke.",
+    "Ned 3: odmah u specifičan rad, razumno za 10 nedelja."
+   ]
+  },
+  {
+   "plan": "p08",
+   "ocene": [
+    7.5,
+    7.5,
+    8,
+    7.5,
+    8,
+    8,
+    7.5
+   ],
+   "ukupno": 77.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "Ned 1: 41,2 km, a zaglavlje kaže „polazim od tvojih ≈ 45 km“ (−8 %).",
+    "Dugi 40–47 % nedelje svake nedelje (ned 17: 21,5 od 45,3 km).",
+    "Ned 1–8: obim 41–44 km, jedan brz trening nedeljno — osam nedelja gotovo bez promene.",
+    "Upozorenje: „nedelja tada stiže do 62,4 km“ — lažna preciznost; trkač čita da treba +17 km."
+   ],
+   "dobro": [
+    "Upozorenje za 3 dana sa konkretnim predlogom (4. dan od 60 min).",
+    "Ned 17: dugi 21,5 km sa 10 km u tempu trke, uz mali prag (2×7) iste nedelje."
+   ]
+  },
+  {
+   "plan": "p09",
+   "ocene": [
+    7,
+    7,
+    8,
+    8,
+    7.5,
+    7,
+    8
+   ],
+   "ukupno": 74.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Ned 1: usponi 8×1 min + prag 17 min u komadu za trkača bez ijednog rezultata; ned 3 ima intervale, prag i progresivan dugi.",
+    "Raspon prognoze 1:37:29–1:45:58 uz „nisku pouzdanost“: samo +3:39 na sporu stranu.",
+    "Ned 11: 62,3 km na 4 dana (15,3 + 12 + 13 + 22 km) = +38 % na polaznih 45.",
+    "„Tempo trke: napor 6 od 10“ — polumaraton nije 6/10; između „umereno 5“ i „prag 7“ razlika je premala da se oseti."
+   ],
+   "dobro": [
+    "Napor umesto tempa dok nema rezultata, sa dve provere (5 km ned 4, 10 km ned 8).",
+    "Uputstvo za trku po osećaju je upotrebljivo."
+   ]
+  },
+  {
+   "plan": "p10",
+   "ocene": [
+    7.5,
+    7,
+    7.5,
+    7.5,
+    7.5,
+    6.5,
+    8
+   ],
+   "ukupno": 73.5,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Dugi 43–52 % nedelje, 3 dana, bez upozorenja (P08 ga ima).",
+    "Ned 1: prag 16 min u komadu po osećaju, prve nedelje, trkač 7:30/km bez rezultata.",
+    "Raspon 2:01:48–2:16:02: +5:40 na sporu stranu uz „nisku pouzdanost“.",
+    "Ned 13: 21,7 → 37,2 km (+71 %) posle nedelje testa."
+   ],
+   "dobro": [
+    "Test na 3 km (ne 10 km) — primereno nivou.",
+    "Dugi do 2 h 15 min."
+   ]
+  },
+  {
+   "plan": "p11",
+   "ocene": [
+    8.5,
+    8.5,
+    7,
+    8,
+    8,
+    7.5,
+    8
+   ],
+   "ukupno": 79.5,
+   "dao_bih": "da",
+   "zamerke": [
+    "Ceo plan ima oko 95 min rada u tempu trke (ned 15: 17+13, ned 17: 22, ned 18: 27, ned 19: 16).",
+    "Najduži dugi 16,2 km (1 h 55) = 77 % distance.",
+    "Ned 5 i 13: +55 % i +56 % posle rasterećenja.",
+    "Jedina provera forme tek u 12. nedelji."
+   ],
+   "dobro": [
+    "Prve 4 nedelje bez brzog rada, samo ubrzanja i kratki usponi.",
+    "Gel-napomena se pojavljuje tek kad dugi pređe 75 min."
+   ]
+  },
+  {
+   "plan": "p12",
+   "ocene": [
+    7.5,
+    8,
+    7.5,
+    7.5,
+    7,
+    6.5,
+    8
+   ],
+   "ukupno": 75.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Ned 14 (suženje, 17 dana pre trke): tempo trke 2×21 = 42 min — najveći trening u tempu trke u celom planu (ned 11: 25, ned 13: 32).",
+    "Raspon 1:49:37–2:05:54: −11:20 / +4:57 — optimizam bez osnova za početnika bez rezultata.",
+    "Ned 8: test 10 km punim naporom kao „rasterećenje“, sutradan 65 min.",
+    "Ned 5–10: jedan prag nedeljno (24–27 min) i ništa drugo; specifičan rad počinje tek u ned 11."
+   ],
+   "dobro": [
+    "Prve dve nedelje bez kvaliteta.",
+    "Obim 45 → 60 km u koracima do 8 %."
+   ]
+  },
+  {
+   "plan": "vlasnik-v1",
+   "ocene": [
+    6.5,
+    8,
+    6,
+    7,
+    7.5,
+    8.5,
+    8
+   ],
+   "ukupno": 72.0,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Dugi: 12 / 13,5 / 14,5 / 11,5 / 15 / 11,5 / 14 / 10,5 / 9,5 km — samo tri ≥ 14 km; trkač koji već ima 1:41 može bezbedno 17–18.",
+    "Ned 4 („gradnja“): dugi pada na 11,5 km (32 % nedelje) da bi stala dva brza treninga.",
+    "Ned 5 (vršna): 3 × 1,5 km u tempu trke = 21,5 min — premalo za trkača 1:41.",
+    "Bez provere forme; prognoza 1:39:39 ostaje nepotvrđena, trka na 4:47."
+   ],
+   "dobro": [
+    "Upozorenje o dugom od 15 km je pošteno i konkretno (12 nedelja → 17,5 km).",
+    "Nijedna nedelja ne raste više od 7 %."
+   ]
+  },
+  {
+   "plan": "vlasnik-v2",
+   "ocene": [
+    8,
+    8.5,
+    7.5,
+    8,
+    8,
+    8,
+    8
+   ],
+   "ukupno": 80.0,
+   "dao_bih": "da",
+   "zamerke": [
+    "Ned 1–3: 13 → 23,3 → 32,4 km (+79 %, +39 %); u ned 3 dva brza treninga 16–18 dana posle polumaratona.",
+    "Dugi najviše 18,5 km (ned 12 i 13), 40 % nedelje.",
+    "Ned 7–9: dugi 16,5 → 14 → 15,5 km — bez smera.",
+    "Ned 4–5: 8×400 m i 14×200 m na 3:59/km u osnovi — brže deonice pre nego što je obim vraćen."
+   ],
+   "dobro": [
+    "Oporavak posle trke ugrađen i objašnjen (prvi brz trening 24. 12., sa rezervom).",
+    "Subotnja trka: oštrenje utorak, lagano četvrtak, petak odmor."
+   ]
+  }
+ ],
+ "prosek_planova": 76.3,
+ "scenariji": {
+  "S01": 96,
+  "S02": 95,
+  "S03": 88,
+  "S04": 92,
+  "S05": 84,
+  "S06": 86,
+  "S07": 78,
+  "S08": 74,
+  "S09": 96,
+  "S10": 96,
+  "S11": 96,
+  "S12": 92,
+  "S13": 92,
+  "S14": 92,
+  "S15": 62,
+  "S16": 86,
+  "S17": 94,
+  "S18": 90,
+  "S19": 92,
+  "S20": 86,
+  "S21": 100,
+  "S22": 98,
+  "S23": 100,
+  "S24": 95,
+  "S25": 76,
+  "S26": 84,
+  "S27": 74
+ },
+ "prosek_scenarija": 88.7,
+ "parovi": {
+  "P1": 85,
+  "P2": 85,
+  "P3": 80
+ },
+ "prosek_parova": 83.3,
+ "scenariji_beleske": {
+  "S01": "Očekivao: tempa ~3 % brža, prognoza 1:40–1:41, raspored isti. Plan: prag 4:46→4:40, tempo trke 4:56→4:51, prognoza 1:41:07, usvojeno 70 % razlike i to rečeno. Sitno: u tekstu 1:44:15, u zaglavlju 1:44:16.",
+  "S02": "Očekivao isto. Plan: tempo trke 5:53→5:46, prognoza 2:00:03, ništa drugo. Nejasno zašto prag ide 3 s, a tempo trke 7 s.",
+  "S03": "Očekivao oprezno ubrzanje. Plan: 2:04:13→2:01:18, prognoza 1:58:12. Zamerke: za 5 km nema „umanjenja“ koje 10 km ima; oznaka „vršna nedelja“ prešla sa 15. na 14. bez ijedne izmene treninga; „11 dana“ umesto 12 posle trke.",
+  "S04": "Očekivao 2:08–2:10 i jasnu rečenicu da je sporije od procene. Plan: 2:06:33, tempa umesto napora, upozorenje skinuto; ne kaže izričito da je prognoza pala sa 2:00:57 na 2:04:50.",
+  "S05": "Očekivao: nedelja na 60–70 %, kvalitet posle 3–5 dana, test zadržan ili pomeren. Plan: 32,5 km lagano (67 %) — dobro; ali dve nedelje bez ijednog brzog (prvi 31. 12., 18 dana posle bolesti) i provera forme obrisana uz razlog koji ne stoji (pomeranje za 7 dana je moguće).",
+  "S06": "Očekivao: lagana nedelja, pa obnova, sačuvan dugi sa blokom. Plan: 45,8 km lagano, zatim 43 km, pa odjednom 64,8 km sa dugim 2 h 10 + 35 min tempa trke (+50 %). Ključno sačuvano, prognoza poštena (2:00:36→2:03:26).",
+  "S07": "Očekivao: dugi korak nazad pa postepeno. Plan: dugi 65 → 70 → 1 h 50 min (+57 %) i nedelja 24 → 36,5 km (+52 %) kod početnika posle bolesti. Test pomeren na 4. 2. — dobro.",
+  "S08": "Očekivao: bez nadoknade, eventualno jedan umeren trening u tempu trke. Plan: sve lagano, ostaje samo 2×6 min; prvi dan posle bolesti produžen 40→50 min; prognoza i dalje računa 2:44 napretka u tri nedelje suženja — neuverljivo.",
+  "S09": "Očekivao: ništa ne nadoknađivati. Plan: nula izmena treninga, dve jasne poruke, prognoza 1:41:53→1:43:20, cilj „van raspona“ — pošteno.",
+  "S10": "Kao S09: nula izmena, jasno zašto.",
+  "S11": "Kao S09: nula izmena, jasno zašto.",
+  "S12": "Očekivao: dugi bez bloka, pa ponovo graditi. Plan: 17. 1. dugi 1 h 55 lagano umesto sa 20 min tempa trke, objašnjeno („propušten 2 puta zaredom“).",
+  "S13": "Očekivao: 2–3 dana odmor, lagano, bez kvaliteta ~7 dana, kraći dugi, lekar ako traje. Plan: upravo to (odmor, dugi 13,5 km, prvi brz 21. 1. sa manjom dozom, pravilo 2/10, lekar posle 7 dana). Sitno: prag 2×13 → 2×14 bez razloga.",
+  "S14": "Kao S13; usponi izbačeni, prvi brz 29. 12. smanjen (3×3 min, prag 2×6). 18 izmena kroz 4 nedelje — malo dugo, ali bezbedno.",
+  "S15": "Očekivao: nedelja smanjena, sledeći dugi kraći. Plan: tri nedelje na 12 / 19 / 22 km (umesto 24 / 38 / 39), dugi 45 min iako poruka kaže „tri četvrtine poslednjeg“ (= 75 min), lagana po 25 min dok prag ostaje; zatim skok 22 → 32 km i dugi 65 → 88 min sa tempom trke. Najduži dugi do trke 97 min. Prognoza gora samo 42 s.",
+  "S16": "Očekivao: −20–30 % te nedelje, bez kvaliteta. Plan: −37 % i smanjeno 2,5 nedelje; pon 21. 12. postaje odmor bez objašnjenja. Bezbedno, opširno (27 izmena).",
+  "S17": "Očekivao: forma 1:42:30, ~10 dana oporavka. Plan: 17,5 → 30 → 41 km, prvi brz 12. 11., prognoza 1:40:12, cilj „na ivici“.",
+  "S18": "Očekivao: samo oporavak. Plan: 18 → 38 → 54 km; u 3. nedelji dugi 70 → 2 h 5 min (naglo).",
+  "S19": "Očekivao: forma 2:12, dve vrlo lagane nedelje. Plan: 2:09:34 (70 % razlike), 10 i 12 km, prvi brz 3. 12., ceo plan smanjen.",
+  "S20": "Očekivao: prava tempa, oporavak. Plan: forma 2:20:00, tempa data; ali dugi 65 → 1 h 50 min u 3. nedelji (+69 %) i nigde ne piše da je lagani tempo sada 7:35–8:19 umesto unetih 7:00.",
+  "S21": "Nula izmena.",
+  "S22": "Nula izmena treninga; 3:37→3:38 zbog 1 s zaokruživanja.",
+  "S23": "Nula izmena.",
+  "S24": "Izmena je posledica urađenog testa 3 km (napor → tempa), ne „ničega“; treninzi isti.",
+  "S25": "Očekivao: smanjena nedelja povratka, propušteno lagano bez posledica. Plan: posle 5 dana bolesti dve nedelje bez brzog i obrisana provera forme koja je bila 15 dana posle povratka. Dugi 16 umesto 19 km (pravilo +20 min) — dobro.",
+  "S26": "Očekivao: protokol bola, pa oprezno usporenje. Plan: dugi 60 → 60 → 70 → 90 → 1 h 50, tempa sporija (prag +8 s), test 23. 1. izostavljen uz dobar razlog. Poruke se ponavljaju i daju dve prognoze (2:00:49, pa 2:02:16).",
+  "S27": "Očekivao: bez nadoknade, test pomeren, blago smanjena nedelja. Plan: posle 6 dana puta cela nedelja lagano bez brzog, test obrisan, pa dugi 95 min → 2 h 10 sa 20 min tempa trke."
+ },
+ "parovi_beleske": {
+  "P1": "Očekivao: B slabija forma, niži start, bez kvaliteta 2–3 nedelje, rani test, širi raspon. Plan: forma 1:44:16→1:51:59 (niska), 33,6 vs 40,7 km, vrh 49,6 vs 55,7, test u 4. nedelji, napor umesto tempa, upozorenje da cilj 1:39:56 nije realan sa brojem (31 s/km). Mana: prvi prag povratnika je 18 min u komadu (stabilan trkač dobija 16) uz uspone iste nedelje.",
+  "P2": "Očekivao: B sporiji rast, bez udara na početku, niži vrh, upozorenje. Plan: vrh 30,8 vs 40,4 km, dugi hod-trk, tri rasterećenja više, prognoza bez pretpostavljenog napretka i raspon 1:56–2:23. Mane: 6 upozorenja; hod-trk 8+1 za nekoga ko je juče istrčao 10 km u komadu; dugi 80–95 min pored laganih od 25 min; „oko 5 nedelja“ a istorija ima 6.",
+  "P3": "Očekivao: A da uspori lagane i kvalitet uvodi postepeno; B odmah prag i dugi od 18. Plan: A upozorenje sa brojem (sporije od 6:47/km), dve nedelje bez kvaliteta, dugi od 1 h 45; B prag od 1. nedelje, dugi 2 h 10. Mana: prvi prag za A (nikad nije radio kvalitet) je 23 min u komadu — veći od prvog praga za B (22 min)."
+ },
+ "ispravke_generatora": [
+  "Provera forme se ne briše kad može da se pomeri do 2 nedelje (S05, S25, S27: razlog „pomerila bi se više od 2 nedelje“ nije tačan); bez nje trkač ostaje bez potvrde tempa do trke.",
+  "Jedno pravilo za povratak dugog posle smanjenja: najviše +20 min od poslednjeg odrađenog (postoji u S25) — danas S07 70→110 min, S20 65→110, S18 70→125, S06/S27 95→130 sa blokom, S15 65→88.",
+  "Bol 4/10 kod početnika (S15): tri nedelje na pola obima, dugi 45 min protivno sopstvenoj poruci („tri četvrtine“), lagana od 25 min uz zadržan prag — uskladiti sa S13/S14.",
+  "Povratak posle bolesti/puta: lagan brz rad (ubrzanja, kratak prag) u drugoj nedelji, ne tek posle 18–20 dana (S05, S25, S27); prvi dan povratka ne sme biti duži od planiranog (S08).",
+  "Prva doza praga za trkača bez istorije kvaliteta ili posle pauze: 2×6–3×5 min, ne 16–23 min u komadu (P3A 23, P1B 18, P09 17, P10 16, P04 22).",
+  "Raspon prognoze pri „niskoj pouzdanosti“ proširiti na sporu stranu (P09 +3:39, P10 +5:40, P12 +4:57; S04 je pokazao promašaj od 4,5 min).",
+  "Upozorenja: ukloniti protivrečnost u P06 („ostaje na 4 dana“ / „svi dani ostaju“); upozorenje za 3 dana dati i P03 i P10; najviše 3 upozorenja (P2B ima 6).",
+  "Mali obim i kratka priprema: dugi do ~45 % nedelje za 4 dana kad trkač već ima polumaraton (vlasnik-v1 najviše 15 km, ned 4 pad na 11,5); P06 dugi 9 km dve nedelje pre trke.",
+  "Prognoza posle izgubljenih ključnih nedelja je previše optimistična (S08: 2:44 napretka u suženju; S15: −42 s za tri nedelje na pola); P07: ubaciti rasterećenje u niz 56→71 km.",
+  "Prikaz: zagrevanje/hlađenje u redu treninga; vreme po deonici (200 m = 49 s); objasniti umanjenje 5/10 km → 21,1 km već u polaznom planu; izbaciti zonu „umereno“ koja se ne koristi; P12 najveći trening u tempu trke ne u suženju."
+ ],
+ "nejasno_trkacu": [
+  "„prag 15 min u komadu (4:46/km) — 8,9 km, 50 min“: gde je ostalih 35 min i 5,7 km? Zagrevanje i hlađenje nisu napisani ni u jednom treningu.",
+  "„brze deonice 10 × 200 m (4:05/km)“: na stazi mi treba 49 s po deonici, ne tempo po kilometru.",
+  "„usponi 10 × 1 min snažno uzbrdo“: koliki nagib, koliko je „snažno“ (tempo 5 km? sprint?).",
+  "Zona „umereno“ stoji u svakom zaglavlju, a nijedan trening u 14 planova je ne koristi.",
+  "„Tempo trke: napor 6 od 10“ — a prag je 7; razliku ne mogu da osetim.",
+  "Tri broja za dan trke kod P01: cilj 4:44, forma 4:56, „ako provera potvrdi“ 4:50 — a raspodela po kilometrima je ispisana samo za 4:56.",
+  "Zašto je moj 10 km 46:00 „oko 1:44:16“ kad svaki kalkulator daje 1:41:30 (objašnjenje postoji tek posle prve trke u pripremi).",
+  "„Ponesi vodu; od 40. min gel…“ uz dugi 15 km lagano u 1. nedelji i uz dugi 13 km u suženju — isti tekst 10+ puta.",
+  "„nedelja tada stiže do 62,4 km“ (P08), „41,7 km / 17,5 km“ (vlasnik-v1): decimale u predlogu zvuče kao obaveza.",
+  "U scenarijima: „PROMENE“ ponovo nabraja staru vest (rezultat od pre mesec dana) kao da je nova; oznaka „vršna nedelja“ menja nedelju bez izmene treninga.",
+  "P2B: „hod-trk 8 min + 1 min“ 95 minuta, a istog dana mi piše tempo trke 6:00/km — da li u hod-trk gledam tempo?"
+ ],
+ "za_pregled_vlasnika": [
+  "vlasnik-v1 — dugi najviše 15 km i pad na 11,5 km u 4. nedelji: da li vlasnik prihvata plan koji sam kaže da će poslednjih 6 km biti nepoznato.",
+  "p06 — tri upozorenja koja se međusobno pobijaju i doze od 9–12 min intervala.",
+  "S15 (scenario) — reakcija na bol 4/10 kod početnika: tri nedelje na pola i gubitak dugog."
+ ],
+ "nisam_siguran": [
+  "Procena forme iz laganog tempa (P09, P10, P12): ne znam koliko je metoda tačna; S04 pokazuje promašaj od 4,5 min, a S20 od 18 min.",
+  "Da li su dva brza treninga od 1. nedelje na 4 dana (P01, P02) previše — za trkača 46:00 mislim da nisu, ali nemam podatak da li je kvalitet ranije radio.",
+  "U zaglavlju scenarija red STANJE navodi „očekivano na dan trke“ koje se ne slaže sa planom (S07 1:58:10 vs 2:01:06; S15/S23 1:57:11 vs 2:00:29) — ne znam da li je greška ispisa ili motora.",
+  "Umanjenje 10 km → 21,1 km od ~2:45 za 40 km nedeljno: smer je ispravan, veličinu nisam mogao da proverim.",
+  "Ocene scenarija „bolest“ zavise od toga koliko je bolest bila teška; plan to ne pita, pa sam sudio kao za prehladu sa temperaturom."
+ ],
+ "pravilo_citanja": [
+  "Fajlovi parova (plans/HM/pairs/p*.txt) sami sadrže redove „MORA DA SE RAZLIKUJE“, „ISTORIJA“ i „BROJEVI“. Video sam ih tek pošto sam zapisao očekivanja; red „MORA DA SE RAZLIKUJE“ je tuđe očekivanje i nisam ga koristio kao merilo.",
+  "Za S01 sam pre zapisanog očekivanja video i red STANJE (forma posle događaja 1:42:13). Za S02–S27 sam pre očekivanja video samo naslov i red DOGAĐAJ.",
+  "Nisam otvarao pregled.txt (scenarios, pairs), target-compare.md, nalazi-cuvara.txt, ništa u coach/ osim JUDGE2-BRIEF.md, ništa u judge2/, kod, reports/, LOG, briefs, HANDOFF.",
+  "Brojeve sam proveravao sopstvenom skriptom nad ispisanim planovima (zbir km i minuta po danima, udeo dugog, promena iz nedelje u nedelju): svi nedeljni zbirovi se slažu sa ispisom."
+ ],
+ "izvori": [
+  "Daniels, Running Formula (VDOT tabele, T/I/R tempa)",
+  "Pfitzinger & Latter, Faster Road Racing",
+  "Riegel (1981), T2 = T1 × (D2/D1)^1,06"
+ ]
+}
