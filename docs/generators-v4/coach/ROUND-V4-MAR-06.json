@@ -1,0 +1,335 @@
+{
+ "distanca": "MAR",
+ "krug": 6,
+ "stanje": "b8ad0bb6",
+ "prethodno": "e1136a16",
+ "profili": {
+  "p01": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p02": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p03": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 76.5,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": 80.5,
+   "plan_za_ulaz": 81,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p04": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 79.5,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p05": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81.5,
+   "plan_stara": 81.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p06": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 75,
+   "plan_za_ulaz_prethodna": 73,
+   "plan_za_ulaz": 73.5,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p07": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p08": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": 81,
+   "plan_za_ulaz": 81,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p09": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p10": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 77.5,
+   "plan_stara": 77.5,
+   "plan_za_ulaz_prethodna": 77.5,
+   "plan_za_ulaz": 78.5,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p11": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p12": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p13": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 74,
+   "plan_stara": 74.5,
+   "plan_za_ulaz_prethodna": 76.5,
+   "plan_za_ulaz": 77.5,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  },
+  "p14": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82.5,
+   "plan_stara": 82.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p15": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p16": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80.5,
+   "plan_stara": 80.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p17": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 81,
+   "plan_stara": 81,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "status": "prenet",
+   "prolazi": true
+  },
+  "p18": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 76,
+   "plan_stara": 77,
+   "plan_za_ulaz_prethodna": 78.5,
+   "plan_za_ulaz": 80.5,
+   "status": "ocenjen ponovo",
+   "prolazi": true
+  },
+  "p19": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 73.5,
+   "plan_stara": 73.5,
+   "plan_za_ulaz_prethodna": 75.5,
+   "plan_za_ulaz": 76,
+   "status": "ocenjen ponovo",
+   "prolazi": false
+  }
+ },
+ "plan_za_ulaz_kriterijumi": {
+  "p03": [
+   8,
+   8,
+   8.75,
+   7.5
+  ],
+  "p06": [
+   8,
+   6,
+   8.25,
+   7.5
+  ],
+  "p08": [
+   8,
+   8,
+   8.5,
+   8
+  ],
+  "p10": [
+   8,
+   7,
+   9,
+   7.5
+  ],
+  "p13": [
+   8,
+   7.5,
+   8,
+   7.5
+  ],
+  "p18": [
+   8.5,
+   7.75,
+   8,
+   8
+  ],
+  "p19": [
+   8,
+   7,
+   8.25,
+   7
+  ]
+ },
+ "prolaz": {
+  "dozvoljava": {
+   "prethodno": "11/12",
+   "sada": "12/12"
+  },
+  "plafon": {
+   "prethodno": "2/7",
+   "sada": "3/7"
+  }
+ },
+ "plan_prosek": {
+  "prethodno": 79.2,
+  "sada": 79.3
+ },
+ "B": {
+  "prethodno": 82.2,
+  "sada": 82.6,
+  "dogadjaji": {
+   "E1": 83.8,
+   "E2": 81.3,
+   "E3": 81.3,
+   "E4": 78.5,
+   "E5": 81.5,
+   "E6": 89.8,
+   "E7": 81.3,
+   "maraton": 83
+  },
+  "promenjeni": {
+   "s11": [
+    80,
+    81
+   ],
+   "s12": [
+    74,
+    80
+   ],
+   "s25": [
+    77,
+    80
+   ]
+  },
+  "ocenjeni_ponovo_bez_izmene_ocene": [
+   "s15",
+   "s19",
+   "s20",
+   "s26",
+   "s03",
+   "s07",
+   "s23",
+   "s01",
+   "s05",
+   "s09",
+   "s13",
+   "s17",
+   "s21",
+   "s28"
+  ]
+ },
+ "C": {
+  "prethodno": 82.5,
+  "sada": 82.7,
+  "parovi": {
+   "P1": 83.5,
+   "P2": 81.5,
+   "P3": 83
+  }
+ },
+ "zbirna": {
+  "prethodno": 80.8,
+  "sada": 81.0
+ },
+ "regresije": [
+  "P2 B: iz upozorenja ispali predlog polumaratona, najduži dugi i staž",
+  "P1 B: ispala stavka da je cilj van raspona (84 -> 83,5)",
+  "p04: obim ravan 65,5-68 km od 1. do 18. nedelje"
+ ],
+ "runda": "R25",
+ "kalibracija": {
+  "stanje": "e1136a16",
+  "HM p06": {
+   "R23": 76.5,
+   "moja": 77.5
+  },
+  "10K p03": {
+   "R23": 79.5,
+   "moja": 78
+  },
+  "MAR p04": {
+   "R23": 79.5,
+   "moja": 77.5
+  },
+  "5K p12": {
+   "R23": 77,
+   "moja": 73.5,
+   "napomena": "razlika > 3, zapisano, nije štimovano"
+  },
+  "nacin": "ocene promenjenih = R23 + učinak izmene"
+ },
+ "van_spiska_c": [
+  "pairs/p1a",
+  "pairs/p1b",
+  "pairs/p2a",
+  "pairs/p3b",
+  "scenarios/s19 i s20 (četvrtak prag umesto laganog sa tempom maratona)"
+ ],
+ "dan_manje": {
+  "p06": "nedelje 1, 2, 6 imaju 4 treninga uz jasno upozorenje; postojalo i u R23"
+ },
+ "otvoreno_iz_R23": [
+  "dugi 7. dan posle pripremnog polumaratona 2 h 20 - 2 h 40 (p11, p15, p04; p02 22 km)",
+  "s20: 95 min hod-trk 7. dan posle prvog polumaratona"
+ ]
+}
