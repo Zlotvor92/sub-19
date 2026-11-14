@@ -875,3 +875,6 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   10 povezanih sportista, povezano 5. Prosleđeno tabu F9.
 - R24 5K (`f8a2a5dc`): P2 urađen (menja se samo par P2 B); P3 za p12 podatkom ne može (4 dana, dugi ≤ 100 min →
   ≈ 44–46 km) — p12 ostaje ispod praga, nalog motora se ne širi.
+- (20:55) ODLUKA VLASNIKA za M6: plan SME da dobije dan manje od traženog, uz upozorenje; ako trkač ipak hoće
+  traženi broj dana, to mu se pušta (izričit izbor ima prednost; tada ostaju svi dani i upozorenje o kratkim
+  laganim danima). Ulazi u nalog motora R24.
