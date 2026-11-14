@@ -36,6 +36,17 @@ import type { SessionManager } from '../services/supabase/session';
 import { useRecoveryStore } from '../stores/recoveryStore';
 import { useSettingsStore } from '../stores/settingsStore';
 import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
+import { useV4Store } from '../stores/v4Store';
+import {
+  createEventsApi,
+  createPlanApi,
+  createV4Rest,
+  readAccess,
+  type EventsApi,
+  type LoadResult,
+  type PlanApi,
+  type PlanRow
+} from '../services/v4';
 
 export type Busy = { ok: false; error: string; busy: true };
 
@@ -61,6 +72,19 @@ export interface IntegrationDeps {
   notify: (message: string) => void;
   /** Lokacija uređaja; bez nje se vreme ne može uključiti. */
   geo?: GeoPort;
+  /** F9 korak 7: Supabase za V4 tabele (`supabase/v4.sql`). Bez njih je V4 isključen. */
+  supabaseUrl?: string;
+  anonKey?: string;
+}
+
+/** Današnji dan po beogradskom vremenu (`YYYY-MM-DD`), nezavisno od vremenske zone uređaja. */
+export function belgradeDate(ms: number): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Belgrade',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(new Date(ms));
 }
 
 export interface Integrations {
@@ -103,12 +127,43 @@ export interface Integrations {
   ): Promise<void>;
   /** Tihi uvoz kad je prošlo više od `thresholdMs`; i jednom dnevno jutarnja merenja. */
   pullIfDue(thresholdMs: number): void;
+  /** F9 korak 7: V4 iza zastavice `v4_pristup`. `null` kad Supabase nije podešen (tada je V4 uvek isključen). */
+  v4: {
+    /** Pri pokretanju: zastavica + red `plan_v4` → `useV4Store`. Bez mreže, bez reda ili sa greškom: isključeno. */
+    load(): Promise<void>;
+    plan: PlanApi;
+    events: EventsApi;
+    deviceId(): string;
+  } | null;
 }
 
 const icuLinkStore = {
   get: (): IcuLink | null => useSettingsStore.getState().icu,
   set: (v: IcuLink | null): void => useSettingsStore.getState().setIcu(v)
 };
+
+/** Odluka učitavača V4 (čista, bez store-a): zastavica + red `plan_v4` → stanje `useV4Store`, ili `null` kad se
+ *  nalog promenio usred učitavanja (tada se ništa ne upisuje). Bez mreže, bez reda u `v4_pristup` (`WITHOUT_ROW`) ili
+ *  sa greškom servera: isključeno. */
+export async function v4Startup(p: {
+  online: boolean;
+  today: string;
+  access: () => Promise<{ enabled: boolean }>;
+  load: () => Promise<LoadResult>;
+  same: () => boolean;
+}): Promise<{ enabled: boolean; row: PlanRow | null; today: string } | null> {
+  const off = { enabled: false, row: null, today: p.today };
+  if (!p.online) return off;
+  const access = await p.access().catch(() => ({ enabled: false }));
+  if (!p.same()) return null;
+  if (!access.enabled) return off;
+  const r = await p
+    .load()
+    .catch((): LoadResult => ({ ok: false, reason: 'network', retryable: true }));
+  if (!p.same()) return null;
+  if (!r.ok) return off;
+  return { enabled: true, row: r.row, today: p.today };
+}
 
 export function createIntegrations(deps: IntegrationDeps): Integrations {
   const { now } = deps;
@@ -362,7 +417,39 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
     }
   };
 
+  /* ---------------------------------------------------------------- V4 (F9 korak 7) */
+  const v4Rest =
+    deps.supabaseUrl && deps.anonKey
+      ? createV4Rest({
+          fetcher: deps.fetcher,
+          session: deps.session,
+          supabaseUrl: deps.supabaseUrl,
+          anonKey: deps.anonKey
+        })
+      : null;
+  const v4Plan = v4Rest === null ? null : createPlanApi(v4Rest);
+  const v4 =
+    v4Rest === null || v4Plan === null
+      ? null
+      : {
+          plan: v4Plan,
+          events: createEventsApi(v4Rest),
+          deviceId: (): string => deps.session.state.deviceId ?? 'uredjaj',
+          async load(): Promise<void> {
+            const owner = deps.accountKey?.();
+            const next = await v4Startup({
+              online: deps.online(),
+              today: belgradeDate(now()),
+              access: () => readAccess(v4Rest),
+              load: () => v4Plan.load(),
+              same: () => deps.accountKey?.() === owner
+            });
+            if (next !== null) useV4Store.getState().set(next);
+          }
+        };
+
   return {
+    v4,
     weather,
     strava: {
       api: stravaApi,

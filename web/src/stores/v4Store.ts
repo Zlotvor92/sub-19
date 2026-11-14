@@ -42,10 +42,7 @@ export function v4DocOf(
 ): { doc: PlanDoc; source: V4Source } | null {
   if (!v4.enabled) return null;
   const today = v4.today;
-  if (
-    isPersonalPlan(snap.plan) &&
-    (today === null || today <= PERSONAL_PROTECTED_UNTIL)
-  )
+  if (isPersonalPlan(snap.plan) && (today === null || today <= PERSONAL_PROTECTED_UNTIL))
     return null;
   if (v4.row !== null) return { doc: v4.row.doc, source: 'plan_v4' };
   if (snap.plan === null || today === null) return null;
