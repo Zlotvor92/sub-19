@@ -622,6 +622,7 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
   it('K7: dugi raste ≤ 2 km i ≤ 12 %; nedelja ≤ +12 % bez prethodnog rasterećenja; prvi trening zone ≤ 70 % vrha', () => {
     for (const p of RENDERED) {
       const stats = weekStats(p.doc);
+      const easy = paceCtxOf(p.doc.header).paces.easy;
       let best = 0;
       /* oporavak posle trke iz istorije (rampa motora, § 6.5) skraćuje dugi; povratak na planirani dugi posle
          rampe nije skok lestvice — dugi se proverava od prve nedelje posle rampe */
@@ -634,20 +635,17 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
       stats.forEach((s, i) => {
         if (addDays(s.week.start, 6) <= rampEnd) return;
         if (back && i < 4) {
-          best = Math.max(best, s.longKm);
+          best = Math.max(best, (s.week.longSec > 0 ? s.week.longSec : s.longSec) / easy);
           return;
         }
+        /* R19 (stavka 2b, zahtev R17-MAR § R18): korak se meri bez dodatnih km bloka u tempu maratona — u km
+           laganog tempa (odlučeno trajanje dugog / lagan tempo), kako ga meri motor; dan se zaokružuje na 0,5 km */
+        const eq = (s.week.longSec > 0 ? s.week.longSec : s.longSec) / easy;
         if (s.longKm > 0 && best > 0) {
-          const step = s.longKm - best;
-          /* R18: dugi sa blokom u tempu maratona nosi više km za isto vreme (motor meri korak u vremenu laganog tempa)
-             — do + 2,5 km je zahtev motoru (R17-MAR § R18), ne greška podatka */
-          const block = s.week.days.some((d) => d.workout?.stimulus === 'dugi-rp');
-          expect(
-            step <= 2.05 || step / best <= 0.12 || (block && step <= 2.55),
-            `${p.id} dugi n${String(i + 1)}`
-          ).toBe(true);
+          const step = eq - best;
+          expect(step <= 2.05 || step / best <= 0.12, `${p.id} dugi n${String(i + 1)}`).toBe(true);
         }
-        best = Math.max(best, s.longKm);
+        if (s.longKm > 0) best = Math.max(best, eq);
         /* skok nedelje: prema najvećoj od prethodne 3 (pad usred bloka zbog više brzog rada nije
            rasterećenje); posle rasterećenja povratak na raniji nivo nije skok; + 1,5 km = zaokruživanje 3 dana na 0,5 km. Posle
            rampe (trka pre plana) pravilo rasta tri nedelje gradi iz smanjenih nedelja — to je motor (F3-REPORT). */

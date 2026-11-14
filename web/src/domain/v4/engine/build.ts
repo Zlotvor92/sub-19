@@ -226,17 +226,36 @@ export function longPlan(
     block?: { sec: Seconds; pace: number };
     /** Broj ranijih nedelja gradnje/vrha u planu (D1/D6: pod dugog raste od `longStartShare` polaznog). */
     builds?: number;
+    /** R19 (stavka 2a): koraka dugog do nedelje najdužeg dugog (uključujući ovu); 0 = posle nje. */
+    toPeak?: number;
   }
 ): Seconds {
   /* krug 15 (M10): trka na dan dugog — te nedelje nema dugog */
   if (intent.long === null || intent.long.race !== undefined) return 0;
   const d = ctx.decisions;
-  /* D1/D6 (krug 5): dugi raste od prethodnog (ne skače na polazni kad je krenuo niže) */
-  const grown =
-    (previousLongest > 0 ? previousLongest : d.longStartSec) +
-    longStepOf(ctx.data.safety, ctx.pace.paces.easy);
-  let wanted = intent.long.lenPct * d.longMaxSec;
   const step = longStepOf(ctx.data.safety, ctx.pace.paces.easy);
+  /* R19 (stavka 2a): kad lestvica sa korakom iz podataka ne stiže do dugog za distancu (`minLongKm`) do nedelje
+     najdužeg dugog, korak raste koliko treba, najviše `LONG_STEP_STRETCH` × korak (zaokruživanje dana na 0,5 km tada
+     ne prelazi korak + 0,5 km) */
+  let grownStep = step;
+  if (
+    week?.toPeak !== undefined &&
+    week.toPeak > 0 &&
+    previousLongest > 0 &&
+    (intent.kind === 'build' || intent.kind === 'peak')
+  ) {
+    /* cilj je dugi provere `dugi-za-distancu` (km u laganom tempu, ne duže od plafona dugog) */
+    const a = ctx.data.adequate;
+    const target = Math.min((a.longCheckKm ?? a.minLongKm) * ctx.pace.paces.easy, d.longMaxSec);
+    const t = week.toPeak;
+    /* korak raste što kasnije: tek kad ni uz veći korak u ostalim nedeljama ova ne sme da ostane na osnovnom */
+    const late = previousLongest + step + (t - 1) * LONG_STEP_STRETCH * step < target;
+    if (previousLongest + t * step < target && late)
+      grownStep = Math.min((target - previousLongest) / t, LONG_STEP_STRETCH * step);
+  }
+  /* D1/D6 (krug 5): dugi raste od prethodnog (ne skače na polazni kad je krenuo niže) */
+  const grown = (previousLongest > 0 ? previousLongest : d.longStartSec) + grownStep;
+  let wanted = intent.long.lenPct * d.longMaxSec;
   if (week !== undefined && (intent.kind === 'build' || intent.kind === 'peak')) {
     /* D1/D6 (krug 5): dugi ne kreće na plafonu — pod je `longStartFloorShare` × polazni, pa raste za korak po
        nedelji gradnje do polaznog (bez podatka: odmah polazni) */
@@ -320,6 +339,27 @@ export function longPlan(
     minEasyOf(ctx.data.safety, ctx.decisions.level, ctx.decisions.runDays.length),
     Math.round(sec / 60) * 60
   );
+}
+
+/** R19 (stavka 2a): najveće povećanje koraka dugog kad lestvica inače ne stiže do dugog za distancu. */
+const LONG_STEP_STRETCH = 1.15;
+
+/** R19 (stavka 2a): broj nedelja gradnje/vrha sa dugim od `index` do nedelje najdužeg dugog (najveći `lenPct` pre
+    sužavanja, poslednja pri jednakim); 0 posle nje. */
+function longStepsToPeak(weeks: readonly PlanWeek[], index: number): number {
+  const grows = (w: PlanWeek): boolean =>
+    (w.intent.kind === 'build' || w.intent.kind === 'peak') &&
+    w.intent.long !== null &&
+    w.intent.long.race === undefined;
+  let peak: PlanWeek | null = null;
+  for (const w of weeks)
+    if (
+      grows(w) &&
+      (peak === null || (w.intent.long?.lenPct ?? 0) >= (peak.intent.long?.lenPct ?? 0))
+    )
+      peak = w;
+  if (peak === null || index > peak.index) return 0;
+  return weeks.filter((w) => w.index >= index && w.index <= (peak?.index ?? 0) && grows(w)).length;
 }
 
 /** Najkraće zagrevanje i hlađenje iz podataka (`warmupCooldown`). */
@@ -2297,6 +2337,10 @@ export function runPass(
           previousLong,
           highShare: high.has(week.index),
           builds: buildsBefore(doc.weeks, week.index),
+          /* R19 (stavka 2a): samo kratak plan (kraći od provere dugog za distancu) — duži stiže lestvicom */
+          ...(doc.weeks.length < (data.adequate.longCheckMinWeeks ?? 0)
+            ? { toPeak: longStepsToPeak(doc.weeks, week.index) }
+            : {}),
           ...blockOf(slots)
         })
       };
@@ -2313,6 +2357,10 @@ export function runPass(
           previousLong,
           highShare: high.has(week.index),
           builds: buildsBefore(doc.weeks, week.index),
+          /* R19 (stavka 2a): samo kratak plan (kraći od provere dugog za distancu) — duži stiže lestvicom */
+          ...(doc.weeks.length < (data.adequate.longCheckMinWeeks ?? 0)
+            ? { toPeak: longStepsToPeak(doc.weeks, week.index) }
+            : {}),
           ...blockOf(slots)
         })
       };
