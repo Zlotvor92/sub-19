@@ -1,0 +1,349 @@
+{
+ "round": "ROUND-V4-5K-05",
+ "commit": "b8ad0bb6",
+ "date": "2026-11-14",
+ "distance": "5K",
+ "plans": [
+  {
+   "id": "p01",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 8,
+    "q4": 8,
+    "q5": 8,
+    "q6": 7,
+    "q7": 8
+   },
+   "total": 79,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Dan trke: napomena daje 4:22/km (21:49) a ne pominje uneti cilj 21:44 (4:21/km)",
+    "9. ned: 50,8 km u 4 dana (+36 % posle rasterećenja), lagani dani 11,5 km/70 min",
+    "6. i 7. ned: isti trening 5 × 1 km dva puta zaredom"
+   ]
+  },
+  {
+   "id": "p02",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 7,
+    "q4": 6,
+    "q5": 8,
+    "q6": 8,
+    "q7": 7
+   },
+   "total": 73,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "2. ned (od 8) nosi oznaku 'vršna nedelja', a 3. ned intervali padaju sa 4 × 1 km na 3 × 1 km — plan nema jasan uspon",
+    "1. ned, uto+čet: odmah 4 × 800 m u intervalnom tempu i prag, bez uvodne nedelje; obim ceo plan stoji na 31–34 km",
+    "5. ned: jedini pun trening u tempu trke (5 × 1 km) dolazi tek 3 nedelje pre trke"
+   ]
+  },
+  {
+   "id": "p03",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 6,
+    "q4": 6,
+    "q5": 6,
+    "q6": 7,
+    "q7": 7
+   },
+   "total": 68,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "9. ned: 9,2 km bez ijednog brzog koraka, 10. ned 6,7 km — sužavanje od 3 nedelje preduboko za trkača sa 16 km nedeljno",
+    "Najviše 2,4 km u tempu trke u jednom treningu (2 × 1 km, 4 × 600 m): ne zna kako izgleda 3.–4. km trke",
+    "3. i 4. ned identične (3 × 3 min), 5. ned 3 × 600 m ≈ isto; u 5. ned oba radna dana brza (uto intervali, čet tempo trke) uz 15,7 km"
+   ]
+  },
+  {
+   "id": "p04",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 7,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8,
+    "q7": 7
+   },
+   "total": 76,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Zaglavlje: 'dugi u 4 nedelje staje na 1 h 40 min' — u planu su takve 2 nedelje (7. i 13.)",
+    "Najviše 4 km u tempu trke (4 × 1 km, 13. ned) uz 53 km nedeljno — premalo specifičnog rada za 16 nedelja",
+    "5.–7. ned skoro ponavljaju 1.–3. ned; osnova traje 8 nedelja"
+   ]
+  },
+  {
+   "id": "p05",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 9,
+    "q4": 8,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "total": 82,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Tempo trke 3:25 i intervalni 3:23/km su praktično isti — dve vrste treninga se razlikuju samo po pauzi",
+    "2. ned čet: prag 28 min u komadu posle 2 × 10 min — veliki skok",
+    "Dugi 21,4 km/1 h 40 min za trkača na 5 km je na gornjoj granici smisla"
+   ]
+  },
+  {
+   "id": "p06",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 5,
+    "q2": 8,
+    "q3": 5,
+    "q4": 5,
+    "q5": 5,
+    "q6": 7,
+    "q7": 6
+   },
+   "total": 59,
+   "constrained_extra": 5,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "5. ned (nedelju pre trke): nijedan brz trening, samo 4 × 20 s u četvrtak — trkač od 17:33 dolazi na start tup",
+    "2.–4. ned: po jedan brzi trening nedeljno, lagani dani 4,5 km/22 min bez ubrzanja; ukupno u 6 nedelja ≈ 8 km rada u tempu trke i 19 min praga",
+    "Tri upozorenja se sudaraju: '25 km' naspram '26 km' u zaglavlju; u 1. ned dan je izbačen 'da ustupi mesto drugom brzom treningu', što trkač ne može da razume"
+   ]
+  },
+  {
+   "id": "p07",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 7,
+    "q3": 8,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "total": 77,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "2. ned: intervali 3,2 → 5 km, prag 16 → 24 min u komadu i još 7 min praga u dugom (19 % brzog rada) — prevelik skok za jednu nedelju",
+    "3. ned 'vršna' ima lakši kvalitet (10 × 200 m, 8 × 400 m sa hodom) nego 2. ned",
+    "Sužavanje: 45,3 → 30,2 → 20,6 km"
+   ]
+  },
+  {
+   "id": "p08",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 7,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "total": 77,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Obim 16 nedelja stoji na 33,5–40 km; 5.–7. ned ponavljaju 1.–3.",
+    "U osnovi prag samo svake druge nedelje (2., 5., 7.)",
+    "Dugi je 41–45 % nedeljnog obima (posledica 3 dana)"
+   ]
+  },
+  {
+   "id": "p09",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 7,
+    "q4": 7,
+    "q5": 7,
+    "q6": 8,
+    "q7": 7
+   },
+   "total": 71,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "8. ned čet: prvi i jedini trening uspona u planu (8 × 45 s snažno) 17 dana pre trke, 2 dana posle 4 × 1,2 km — nov podražaj u sužavanju",
+    "Forma nepoznata (pouzdanost niska), a od 1. ned dva brza treninga; 5. ned 20 % brzog rada (6 × 3 min, 8 × 400 m, prag u dugom) dok subota pada na 5 km",
+    "'Brze deonice: brzo i opušteno… napor 8–9 od 10' — protivrečno; test tek 12. 12., pa 5 nedelja brzog rada bez tempa"
+   ]
+  },
+  {
+   "id": "p10",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 7,
+    "q4": 7,
+    "q5": 7,
+    "q6": 8,
+    "q7": 7
+   },
+   "total": 71,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "3. ned uto: usponi 10 × 45 s snažno (43 min) za trkača sa 13 km nedeljno, iste nedelje i 6 × 12 s jako uzbrdo — rizik za list i Ahilovu tetivu",
+    "6. ned uto: 16 × 30 s traje 51 min i 6,7 km — koliko i dugi, dvaput duže od običnog dana",
+    "9.–11. ned: intervali 3–4 × 3 min po osećaju, ukupno malo; najviše 3 km u tempu trke"
+   ]
+  },
+  {
+   "id": "p12",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 8,
+    "q3": 6,
+    "q4": 6,
+    "q5": 7,
+    "q6": 7,
+    "q7": 6
+   },
+   "total": 68,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Zaglavlje: 'polazim od ≈ 48 km', a nijedna nedelja ne prelazi 44,4 km; kad se pojavi brzi trening obim pada (43,5 → 39,9 km)",
+    "3. ned nosi oznaku 'razvoj, vršna nedelja', a ima 0 % brzog rada",
+    "Dugi 1 h 40 min pet puta za početnika na 5 km, a rada u tempu trke najviše 3,2 km (4 × 800 m)"
+   ]
+  },
+  {
+   "id": "p13",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 6,
+    "q2": 8,
+    "q3": 5,
+    "q4": 5,
+    "q5": 5,
+    "q6": 4,
+    "q7": 6
+   },
+   "total": 58,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Upozorenje: 'obim ne može bezbedno iznad 12,6 km' i 'duža priprema ne pomaže' — netačno: sa 10 km za 10 nedelja se bezbedno stiže do 15–16 km; prognoza sporija od današnje forme za početnika koji napreduje je neuverljiva",
+    "Radni dani ostaju 20–25 min svih 10 nedelja; 6. ned ima 2 treninga i 7,3 km zbog testa 'jako' na 1,5 km; prvi dugi bez hodanja (40 min) tek u 8. ned",
+    "Dan trke: 'napor 8–9 od 10, poslednji km sve što imaš' protivreči upozorenju da je cilj istrčati bez hodanja; 'tempo postavlja provera 10. 12. — do tada po osećaju' na dan trke nema smisla"
+   ]
+  },
+  {
+   "id": "p14",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 7,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "total": 77,
+   "constrained_extra": 8,
+   "would_give": "da",
+   "top_issues": [
+    "1. ned: dva brza treninga u 48 h (3 × 800 m, 8 × 400 m) odmah, bez podatka šta je trkač do sada radio",
+    "Nema nijednog treninga praga",
+    "Upozorenje kaže 'izaberi trku sa 6 nedelja' ali ne kaže šta od ove trke da očekuje osim 'mali napredak'"
+   ]
+  },
+  {
+   "id": "p15",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 6,
+    "q2": 7,
+    "q3": 6,
+    "q4": 5,
+    "q5": 7,
+    "q6": 6,
+    "q7": 7
+   },
+   "total": 63,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "14 nedelja, a obim ide samo 17 → 24,8 km i dugi stoji na 45 min; lagani dani 20–25 min (2,9–3,7 km) do kraja",
+    "Upozorenje traži 'za sledeću pripremu oko 45 km nedeljno' — više nego dvostruko, dok ovaj plan obim ne diže; trkaču nejasno",
+    "8. ned: 3 × 1 km (uto) + prag 13 min (čet) = 20 % brzog rada uz 21,7 km za povratnika posle povrede; 3. ned sub 6 × 12 s jako uzbrdo već u prvoj nedelji posle oporavka"
+   ]
+  },
+  {
+   "id": "p16",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 9,
+    "q3": 7,
+    "q4": 8,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "total": 80,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "4. ned (rasterećenje) uto: usponi 9 × 45 s snažno — najteži mišićni trening plana u nedelji odmora, za trkača od 66 godina",
+    "Nijedan intervalni trening u 12 nedelja",
+    "Najviše 4 km u tempu trke"
+   ]
+  }
+ ],
+ "below_75": [
+  "p02",
+  "p03",
+  "p06",
+  "p09",
+  "p10",
+  "p12",
+  "p13",
+  "p15"
+ ],
+ "below_65": [
+  "p06",
+  "p13",
+  "p15"
+ ],
+ "min": {
+  "id": "p13",
+  "total": 58
+ },
+ "generator_changes": [
+  "Mali obim (≤ 30 km): diži lagani obim kroz plan (p15, p13, p03 stoje u mestu 10–14 nedelja) umesto da se rast ostavlja 'za sledeću pripremu'",
+  "Brz trkač sa malim obimom (p06): ne brisati brze treninge zbog procenta — zadati kratke doze (5–6 × 400 m, 10–12 min praga) i ubrzanja u laganim danima; nikad nedelja pre trke bez brzog rada",
+  "Početnik (p13): prognoza i upozorenje ne smeju da tvrde da obim ne može da raste; napomene za dan trke uskladiti sa ciljem 'istrčati bez hodanja'",
+  "Usponi 8–10 × 45 s: ne u nedelji rasterećenja (p16), ne u sužavanju kao prvi put (p09), ne u 3. ned trkača sa 13 km (p10)",
+  "Oznaka 'vršna nedelja' u 2.–3. nedelji (p02, p12) i tekst zaglavlja o dugom (p04: 4 naspram 2 nedelje) moraju da odgovaraju planu"
+ ]
+}
