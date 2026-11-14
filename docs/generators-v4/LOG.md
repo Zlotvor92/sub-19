@@ -948,3 +948,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   najniža p08 69,5; 10K p06 65; MAR p10 65,5. Tab arhiviran (12,31 USD).
 - Pokrenuto: `briefs/R25-POPRAVKA.md` (upozorenja: predlog kraće distance, prazan proposal, oznaka vršne) — samo
   tekst zaglavlja, treninzi bajt-isti. 5 km (tri plana < 65) čeka odluku vlasnika.
+- (00:50) F9 ostaci koraka 7 + korak 8 primljeni (do `c3573a4e`): vraćanje ručne izmene, validacija čarobnjaka bez
+  odbijanja, lični plan vlasnika ide starim putem do 13. 12. (`personalProtected`), `integrations/v4/live` (forma iz
+  trčanja), kartica Forma, traka promena, „Nešto se desilo?". Provera organizatora na `c3573a4e`: `npm run check` čist —
+  4842 prolazi + 12 očekivano [visoka]; E2E (89 + 7 V4) po izveštaju taba, nisam sam pokretao.
+  Ostaje: traka promena samo u sesiji, „Vrati kako je bilo", bol preko KneeSheet-a, ručni unos u formu, forma na
+  Napretku, „Ubuduće dugi subotom?".
+- Do puštanja: popravka upozorenja (tab radi), odluka vlasnika za 5 km, potvrda vlasnika za `plan_v4_zapamti` +
+  `v4_iskljuci`, izričito „da" za `main` i deploy.
