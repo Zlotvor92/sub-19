@@ -906,3 +906,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   taj deo traži potvrdu vlasnika (funkcija sadrži `delete`), a pitanje nije stiglo do vlasnikovog ekrana (isteklo
   posle 230 s). Čeka potvrdu vlasnika.
 - `v4_pristup` je prazan: V4 nije uključen nikome.
+
+### 14. 11. 2026, 23:45 — F9: etape 2d, 2e i korak 7 primljeni; motor R24 u toku
+- 2d (`6ebceb19`, `6ef6577e`): `supabase/v4.sql` = primenjeno stanje; `services/v4/` (planApi, commitAction, eventsApi,
+  activityStore, access). 2e (`e395d65a`): `stores/v4Store.ts`, grananje `useResolvedPlan`/`currentPlan`. Tab F9-1
+  arhiviran na ≈ 60 % konteksta (20,44 USD po obračunu).
+- Korak 7 (nov Opus tab `session_01GnHHiWgxLzTEFBcTicTncG`, do `df22a585`): učitavač, `useHasPlan`, čarobnjak +
+  „Ipak hoću N dana", SwapSheet/AltSheet, Strava priključak, E2E. Po izveštaju: `npm run check` 4811 testova zeleno,
+  build OK, E2E 31/31 ugašena zastavica + 5/5 V4 (organizator još nije sam pokretao).
+- Plan za puštanje: `WITHOUT_ROW = true` u `services/v4/access.ts` (nema reda = uključen); do tada `false`.
+- Zadato istom tabu: ostaci koraka 7 (output.json iz gita, forgetEverything, vraćanje ručne izmene, validacija
+  čarobnjaka bez odbijanja, lični plan vlasnika) i korak 8 (Forma, traka promena, „Nešto se desilo?").
+- Za motor POSLE kruga R24 (nalaz F9): upozorenja `malo-dana` i `kratak-dugi` imaju prazan `proposal` (maraton,
+  početnik, 8 nedelja, 10 km/ned) — suprotno AGENTS t. 6.
+- Motor R24 u 23:13: stavke 0, 1 (M6+P1), 2 (M4 suženo), 3 (M1) na grani; rade M2, M5, M3, nalazi sloja.
