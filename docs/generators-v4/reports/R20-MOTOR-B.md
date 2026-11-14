@@ -1,7 +1,6 @@
 # R20 — MOTOR B, 14. 11. 2026 (po Beogradu) — B1, B4 (deo), B5, B6, B7, B2 (deo), dopune (a), MAR (a, c); B3, B8 nisu
 
-Stanje `85d57599`. Kapije HM/10K/5K/MAR 0. V4: 69 fajlova, 1073 prolazi, 24 očekivano pada; typecheck čist. Ispisi
-sve 4 distance obnovljeni. Novi testovi: `distances/longStart.test.ts`, `warnings20.test.ts`, `range20.test.ts`.
+Stanje `85d57599`: kapije 0, V4 69 fajlova, 1073 + 24, typecheck čist. Testovi: `distances/longStart`, `warnings20`, `range20`.
 
 ## Urađeno
 - **B1 `5b99ae85`**: prvi dugi ≤ najduži iz istorije + 2 km (`longFirstCapSec`), plafon ≥ navika (`longHabitSec`).
@@ -38,5 +37,4 @@ sve 4 distance obnovljeni. Novi testovi: `distances/longStart.test.ts`, `warning
   prekršaj, a 10K p05 i dalje +21 % (106,6 → 104,3), p11 bez promene — vraćeno. Opšte ≤ +15 % ruši MAR vrh.
 - B3 (a): usponi/fartlek nemaju manji oblik istog podražaja, pa skraćivanje doze (× 1,3 najdužeg laganog) ne deluje
   na 5K p10 / 10K p11, a menja 23 plana — vraćeno; treba unos manje doze u biblioteke (podatak).
-- (b) 10K p08 i udeo 0,13: ostavljeno po odluci organizatora.
-- B8 (M22, `LATE_BUILD_WEEKS`) nije započet. Prettier je preformatirao ceo `build.ts`, `guard.ts`, `plan.ts`, `render.ts`.
+- B8 nije započet. Prettier je preformatirao ceo `build.ts`, `guard.ts`, `plan.ts`, `render.ts`.
