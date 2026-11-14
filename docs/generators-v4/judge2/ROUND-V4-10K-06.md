@@ -138,20 +138,16 @@ lagani 55–60 min, dugi 85 min četiri puta; obim ravan (35,2 → 40,6 km); tes
 - „Tempo trke u treninzima je tvoja današnja forma", a cilj traži brže: kada tačno prelazim na ciljni tempo?
 - p06, treće upozorenje („zato je 2. nedelja oko 32,5 km") i zašto mi fali dan koji sam tražio.
 - „nazad 1:45 hod" kod uspona — hodam nizbrdo ili je to trajanje pauze? „Živo" u fartleku nema opis napora.
-- Zašto je 4. nedelja „vršna" (p06) ako je u njoj test, i zašto „vršna" u p11 ima kraći dugi.
 - Posle bola: „prvi brzi trening svake vrste ima manju dozu" — jedna rečenica od 60 reči, čitao sam je triput.
-- Trajanja su čas „93 min", čas „1 h 40 min"; sitno, ali upada u oči.
-- Ishrana je samo „doručak 2–3 h pre starta"; ni reči o vodi i vremenu na dan trke.
+- „Vršna" nedelja sa testom (p06) ili kraćim dugim (p11); trajanja čas „93 min", čas „1 h 40 min"; o vodi na trci ništa.
 
 ## 8. Za pregled vlasnika
 
-**p06** (jedini ispod 65 i jedini gde ulaz ne dozvoljava), **p10** (spor trkač po osećaju, usponi i skok
-intervala), **P3B** (dugi 1 h 59 i 95 min dan posle) i scenario **S27**.
+**p06** (jedini ispod 65, ulaz ne dozvoljava), **p10** (usponi, skok intervala), **P3B** (dugi 1 h 59) i scenario **S27**.
 
 ## 9. Gde nisam siguran
 
 - Da li su intervali u p01 zaista prebrzi: p05 se slaže sa tabelama, p01 odstupa ~5–11 s; VDOT računam po sećanju.
 - Da li je povratak posle 7 dana bolesti (11–18 dana bez brzog) preoprezan ili primeren — zavisi od bolesti.
 - Pravilo „usvaja se 70 % razlike" za trku na ciljnoj distanci (S19, S26): branjivo, ali ja bih uzeo rezultat.
-- Scenarije i parove čitao sam kroz poređenje PRE/POSLE (struktura i zaglavlje), ne red po red urađenog dela.
-- p02 i p07 bih možda ocenio i kao „ulaz ograničava" (kratka priprema); ostavio sam ih u „dozvoljava".
+- Scenarije i parove čitao sam kao poređenje PRE/POSLE, ne red po red; p02 i p07 su možda „ulaz ograničava".
