@@ -230,6 +230,7 @@ TEMPA
 - intervali 6:05/km
 - brze deonice 5:31/km
 Tempo trke u treninzima je tvoja današnja forma (6:38/km). Očekivano vreme na dan trke (2:15:48) traži 6:26/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tvoj uneti lagan tempo (7:00/km) je brži od laganog za formu iz rezultata (7:35–8:19/km): lagane dane trči sporije, u tom rasponu.
 
 UPOZORENJA
 - Tražio si 5 dana trčanja nedeljno, a u nedelji provere forme (8. nedelja) plan ima 4 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.

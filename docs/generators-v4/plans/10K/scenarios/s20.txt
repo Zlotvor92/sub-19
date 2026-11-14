@@ -182,6 +182,7 @@ TEMPA
 - intervali 6:05/km
 - brze deonice 5:31/km
 Tempo trke u treninzima je tvoja današnja forma (6:19/km). Očekivano vreme na dan trke (1:01:19) traži 6:08/km. Tempa se ubrzavaju kad trka ili test to potvrde. Kod tebe je tempo trke ≈ prag (6:19/km), pa ih plan ne zadaje kao dva različita treninga u istoj nedelji.
+Tvoj uneti lagan tempo (7:00/km) je brži od laganog za formu iz rezultata (7:35–8:19/km): lagane dane trči sporije, u tom rasponu.
 
 UPOZORENJA
 - Plan počinje dan posle trke (21,1 km za 2:20:00). Do 18. 11. traje oporavak: treninzi su lagani, da se telo vrati pre nego što opterećenje krene da raste; do 21. 11. su i kraći nego inače. Prvi brzi trening je 19. 11.; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.

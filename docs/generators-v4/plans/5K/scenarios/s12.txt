@@ -24,6 +24,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
+Kilometri laganih dana su računati sa 7:24/km, sporije od tvog unetog laganog tempa (7:00/km): lagani dani se mere minutima, a tvoj tempo je njihova brža granica — ne trči ih brže od njega.
 
 UPOZORENJA
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 1,5 km koja je u planu 12. 12. — tempa i prognoza se tada računaju iz stvarnog rezultata.
@@ -165,6 +166,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
+Kilometri laganih dana su računati sa 7:24/km, sporije od tvog unetog laganog tempa (7:00/km): lagani dani se mere minutima, a tvoj tempo je njihova brža granica — ne trči ih brže od njega.
 
 UPOZORENJA
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 1,5 km koja je u planu 12. 12. — tempa i prognoza se tada računaju iz stvarnog rezultata.

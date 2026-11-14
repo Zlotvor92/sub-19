@@ -254,6 +254,7 @@ TEMPA
 - intervali 5:52/km
 - brze deonice 5:32/km
 Tempo trke u treninzima je tvoja današnja forma (6:50/km). Očekivano vreme na dan trke (4:39:32) traži 6:37/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tvoj uneti lagan tempo (7:00/km) je brži od laganog za formu iz rezultata (7:37–8:21/km): lagane dane trči sporije, u tom rasponu.
 
 PROMENE
 Rezultat 5 km za 30:30 (26. 11.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 4:39:32 (raspon 4:24:20–5:04:21).

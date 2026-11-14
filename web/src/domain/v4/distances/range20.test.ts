@@ -45,3 +45,25 @@ describe('R20 B5 — raspon prognoze nije naopako (sve distance)', () => {
     expect(bad).toEqual([]);
   });
 });
+
+/* R20 B5 (drugi deo): uneti lagan tempo — plan kaže kad se njegov lagan tempo razlikuje od unetog (5K p10 po
+   osećaju: km sa 8:07 uz uneti 7:30; 5K s04: rezultat protivreči unetom tempu 7:00). */
+describe('R20 B5 — uneti lagan tempo i plan (5 km)', () => {
+  const fivek = DIST.find((d) => d.data.id === 'fivek');
+  it('po osećaju (p10) i posle rezultata (s04) rečenica postoji', async () => {
+    const { renderPlan } = await import('../engine');
+    if (fivek === undefined) throw new Error('fivek');
+    const p = fivek.profiles.find((x) => x.id === 'p10');
+    const st = buildState(fivek.factsOf(p), p.goal, fivek.data, estimateForm);
+    const res = plan(st, p.goal, fivek.data);
+    if (!res.ok) throw new Error('p10');
+    expect(renderPlan(res.doc, st, fivek.data)).toContain(
+      'sporije od tvog unetog laganog tempa (7:30/km)'
+    );
+    const s = fivek.scenarios.find((x) => x.no === 4);
+    const r = s.run();
+    expect(renderPlan(r.after, r.afterState, fivek.data)).toContain(
+      'Tvoj uneti lagan tempo (7:00/km) je brži'
+    );
+  });
+});

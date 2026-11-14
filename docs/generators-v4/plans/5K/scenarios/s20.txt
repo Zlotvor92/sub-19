@@ -24,6 +24,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
+Kilometri laganih dana su računati sa 7:24/km, sporije od tvog unetog laganog tempa (7:00/km): lagani dani se mere minutima, a tvoj tempo je njihova brža granica — ne trči ih brže od njega.
 
 UPOZORENJA
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 1,5 km koja je u planu 12. 12. — tempa i prognoza se tada računaju iz stvarnog rezultata.
@@ -166,6 +167,7 @@ TEMPA
 - intervali 6:14/km
 - brze deonice 5:47/km
 Tempo trke u treninzima je tvoja današnja forma (6:23/km). Očekivano vreme na dan trke (31:06) traži 6:13/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tvoj uneti lagan tempo (7:00/km) je brži od laganog za formu iz rezultata (8:06–8:53/km): lagane dane trči sporije, u tom rasponu.
 
 UPOZORENJA
 - Najveća nedelja plana je 38,9 km, a sada trčiš oko 45 km nedeljno. Dugi i lagani dani su ograničeni svojim udelom u nedelji, pa uz ovaj broj dana plan ne stiže do obima koji već trčiš — priprema je lakša nego tvoja sadašnja nedelja. Zadrži sadašnji obim: dodaj oko 6,1 km nedeljno laganim trčanjem (po 10–15 min uz lagane dane) ili dodaj dan laganog trčanja.

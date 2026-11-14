@@ -373,12 +373,34 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   for (const zone of zones)
     lines.push(`- ${zoneHint(zone, h.paces, data, h.form.raceDay.expectedSec)}`);
   lines.push(raceTruth(h, raceDay, data));
+  const declared = declaredEasyLine(h, state);
+  if (declared !== null) lines.push(declared);
   if (h.warnings.length > 0) {
     lines.push('');
     lines.push('UPOZORENJA');
     for (const w of h.warnings) lines.push(`- ${w.problem} ${w.meaning} ${w.proposal}`);
   }
   return lines;
+}
+
+/** R20 B5: uneti lagan tempo i lagan tempo plana — razlika veća od ovoga (s/km) dobija rečenicu. */
+const DECLARED_EASY_TOLERANCE_SEC = 10;
+
+/** R20 B5: plan kaže kad se njegov lagan tempo razlikuje od unetog — po osećaju (km se računaju sporije od unetog)
+    ili kad rezultat protivreči unetom tempu (uneti je brži ili sporiji od laganog za formu iz rezultata). */
+function declaredEasyLine(h: PlanHeader, state: RunnerState | undefined): string | null {
+  const declared = state?.profile.easyPaceSecPerKm;
+  if (declared === undefined || declared <= 0) return null;
+  const { easy, easyFast, easySlow } = h.paces;
+  if (h.paces.byFeel) {
+    if (easy <= declared + DECLARED_EASY_TOLERANCE_SEC) return null;
+    return `Kilometri laganih dana su računati sa ${fmtPace(easy)}, sporije od tvog unetog laganog tempa (${fmtPace(declared)}): lagani dani se mere minutima, a tvoj tempo je njihova brža granica — ne trči ih brže od njega.`;
+  }
+  if (declared < easyFast - DECLARED_EASY_TOLERANCE_SEC)
+    return `Tvoj uneti lagan tempo (${fmtPace(declared)}) je brži od laganog za formu iz rezultata (${fmtPaceBare(easyFast)}–${fmtPace(easySlow)}): lagane dane trči sporije, u tom rasponu.`;
+  if (declared > easySlow + DECLARED_EASY_TOLERANCE_SEC)
+    return `Tvoj uneti lagan tempo (${fmtPace(declared)}) je sporiji od laganog za formu iz rezultata (${fmtPaceBare(easyFast)}–${fmtPace(easySlow)}): forma je bolja nego što lagan tempo pokazuje — lagane dane i dalje trči po osećaju, bez žurbe.`;
+  return null;
 }
 
 /** Najviše ovoliko rečenica iz istorije procene forme u odeljku FORMA (krug 3). */

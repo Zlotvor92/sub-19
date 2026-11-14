@@ -24,6 +24,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - intervali: teško, ali isto do poslednje deonice, napor 8 od 10
 - brze deonice: brzo i opušteno, uz pun oporavak, napor 8–9 od 10
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
+Kilometri laganih dana su računati sa 7:24/km, sporije od tvog unetog laganog tempa (7:00/km): lagani dani se mere minutima, a tvoj tempo je njihova brža granica — ne trči ih brže od njega.
 
 UPOZORENJA
 - Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 1,5 km koja je u planu 12. 12. — tempa i prognoza se tada računaju iz stvarnog rezultata.
@@ -166,6 +167,7 @@ TEMPA
 - intervali 6:21/km
 - brze deonice 5:54/km
 Tempo trke u treninzima je tvoja današnja forma (6:36/km). Očekivano vreme na dan trke (32:41) traži 6:32/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tvoj uneti lagan tempo (7:00/km) je brži od laganog za formu iz rezultata (8:18–9:05/km): lagane dane trči sporije, u tom rasponu.
 
 PROMENE
 Rezultat 5 km za 33:00 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 32:41 (raspon 31:48–33:46).
