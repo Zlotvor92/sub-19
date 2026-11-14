@@ -770,3 +770,6 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   za vlasnika na kraju.
 - R20 (`briefs/R20.md`): dva taba motora (A prilagođavanje, B plan/upozorenja/prognoza/ispis) + podatak HM (nov tab),
   10K, MAR, 5K. Svi tabovi ocene R19 arhivirani; motor R19 tab (547 000) se arhivira.
+- Tabovi R20 (svi Opus): motor A `session_01GnHHiXB2o3uiEC8jywt6tW`, motor B `session_01GnHHiWSukXvHnqPEjLYjRy`, HM
+  podatak `session_01GnHHiaga9HNBQcMHnyj73X`; 10K `…XivSsUTpEuBAFcJZi`, MAR `…WbwULZGywbJmwtnzH`, 5K
+  `…YgBWy4zCKtBd6YPxy` (postojeći, nalog u poruci). Motor R19 `…aZSGWeHY2sPFdz4bo` arhiviran.
