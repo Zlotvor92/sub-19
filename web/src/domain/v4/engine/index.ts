@@ -2,7 +2,7 @@
 export * from './types';
 export { buildState } from './state';
 export { plan } from './plan';
-export { replan } from './replan';
+export { mergeChanges, replan } from './replan';
 export { deriveEvents, sortEvents } from './events';
 export { guard, validate, warnings } from './guard';
 export { raceNotes, renderPlan, type RenderOptions } from './render';

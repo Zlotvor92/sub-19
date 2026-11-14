@@ -333,30 +333,25 @@ Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 7. 2. trči sam
 - uto 9. 2.: lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - čet 11. 2.: lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - ned 21. 2.: dugi 2 h 20 min lagano → dugi 1 h 55 min lagano
-- čet 25. 2.: prag 2 × 14 min, oporavak 2 min džog → prag 2 × 9 min, oporavak 2 min džog
 - ned 28. 2.: dugi 2 h 25 min lagano → dugi 2 h 15 min lagano
-- čet 4. 3.: tempo maratona 2 × 11 min, oporavak 3 min džog → tempo maratona 2 × 7 min, oporavak 3 min džog
 - ned 7. 3.: dugi 2 h 40 min lagano → dugi 2 h 35 min lagano
 - 15. nedelja: 38,5 km → 36,9 km
-- 16. nedelja: 43 km → 39,5 km
-- 17. nedelja: 46,1 km → 43 km
-- 18. nedelja: 49,7 km → 47,7 km
-Rezultat 10 km za 58:00 (11. 2.) pokazuje slabiju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag sporiji za 8 s/km, tempo trke sporiji za 4 s/km, intervali sporiji za 4 s/km, a očekivano vreme trke je sada oko 4:23:37 (raspon 4:14:12–4:35:49). Provera forme planirana za 14. 2. se izostavlja: to je samo 3 dana posle trke, a pun napor pre 14 dana posle trke nije dobar test forme; trka je već dala novu formu.
-- plan: prag 5:40/km, tempo trke 6:11/km → prag 5:48/km, tempo trke 6:15/km
 Rezultat 10 km za 58:00 (11. 2.): trka je kratka, pa je oporavak kao posle provere forme, pa su naredna 3 dana bez brzih deonica; od 8. 3. plan se nastavlja kako je bio. Provera forme planirana za 14. 2. se izostavlja: to je samo 3 dana posle trke, a pun napor pre 14 dana posle trke nije dobar test forme; trka je već dala novu formu.
+- čet 25. 2.: prag 2 × 14 min, oporavak 2 min džog → prag 2 × 4 min, oporavak 2 min džog
+- čet 4. 3.: tempo maratona 2 × 11 min, oporavak 3 min džog → tempo maratona 2 × 4 min, oporavak 3 min džog
+- 16. nedelja: 43 km → 30,2 km
+- 17. nedelja: 46,1 km → 35,9 km
+- 18. nedelja: 49,7 km → 42,8 km
 - ned 14. 2.: pripremna trka: polumaraton punim naporom, ravnomerno → lagano 95 min
 - uto 16. 2.: lagano 55 min → lagano 35 min
 - čet 18. 2.: lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 35 min
 - sub 20. 2.: lagano 55 min → lagano 35 min
 - uto 23. 2.: lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 40 min
-- čet 25. 2.: prag 2 × 9 min, oporavak 2 min džog → prag 2 × 4 min, oporavak 2 min džog
 - sub 27. 2.: lagano 60 min → lagano 40 min
 - uto 2. 3.: lagano 70 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 60 min
-- čet 4. 3.: tempo maratona 2 × 7 min, oporavak 3 min džog → tempo maratona 2 × 4 min, oporavak 3 min džog
 - sub 6. 3.: lagano 70 min → lagano 55 min
-- 16. nedelja: 39,1 km → 30,2 km
-- 17. nedelja: 42,5 km → 35,9 km
-- 18. nedelja: 47,3 km → 42,8 km
+Rezultat 10 km za 58:00 (11. 2.) pokazuje slabiju formu od one po kojoj je plan pisan (4:20:38 na distanci trke): prag sporiji za 8 s/km, tempo trke sporiji za 4 s/km, intervali sporiji za 4 s/km, a očekivano vreme trke je sada oko 4:23:37 (raspon 4:14:12–4:35:49). Provera forme planirana za 14. 2. se izostavlja: to je samo 3 dana posle trke, a pun napor pre 14 dana posle trke nije dobar test forme; trka je već dala novu formu.
+- plan: prag 5:40/km, tempo trke 6:11/km → prag 5:48/km, tempo trke 6:15/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor

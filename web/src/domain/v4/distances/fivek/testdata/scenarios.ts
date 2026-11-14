@@ -283,7 +283,8 @@ function chain(
   return {
     state,
     events: [...one.events, ...events],
-    changes: [...one.result.changes, ...two.changes],
+    /* R20 (A6): jedan dan — jedan red */
+    changes: E.mergeChanges(one.result.changes, two.changes),
     doc: two.doc
   };
 }

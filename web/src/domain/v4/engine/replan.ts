@@ -2487,3 +2487,46 @@ function freshDatedWarnings(doc: PlanDoc, state: RunnerState, data: DistanceData
   });
   return { ...doc, header: { ...doc.header, warnings: next } };
 }
+
+/** R20 (A6): spisak promena dva uzastopna ponovna planiranja kao JEDAN spisak — jedan dan (i jedna nedelja) jedan red:
+    kasniji red zamenjuje raniji za isti dan/nedelju, „pre" ostaje iz prvog; dan vraćen na prvobitno ispada; isti red
+    zaglavlja se ne ponavlja. */
+export function mergeChanges(
+  first: readonly Change[],
+  second: readonly Change[],
+  /** Rečenica spojenog reda: kasnija (dva ponovna planiranja) ili prva (više događaja u jednom prolazu — prvi uzrok
+      objašnjava zašto se dan menja). */
+  reason: 'last' | 'first' = 'last'
+): Change[] {
+  const keyOf = (c: Change): string | null =>
+    c.scope === 'dan' && c.dayId !== undefined
+      ? `d:${c.dayId}`
+      : c.scope === 'nedelja' && c.weekIndex !== undefined
+        ? `w:${String(c.weekIndex)}:${c.what}`
+        : null;
+  const out: Change[] = [];
+  const at = new Map<string, number>();
+  const header = new Set<string>();
+  for (const c of [...first, ...second]) {
+    const key = keyOf(c);
+    if (key === null) {
+      const h = `${c.what}|${c.before}|${c.after}|${c.reason}`;
+      if (header.has(h)) continue;
+      header.add(h);
+      out.push(c);
+      continue;
+    }
+    const i = at.get(key);
+    if (i === undefined) {
+      at.set(key, out.length);
+      out.push(c);
+      continue;
+    }
+    const prev = out[i] as Change;
+    out[i] =
+      reason === 'last'
+        ? { ...c, before: prev.before }
+        : { ...c, before: prev.before, reason: prev.reason, eventId: prev.eventId };
+  }
+  return out.filter((c) => keyOf(c) === null || c.before !== c.after);
+}
