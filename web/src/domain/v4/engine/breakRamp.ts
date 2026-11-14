@@ -25,7 +25,7 @@ import type {
   Workout,
   WorkoutDef
 } from './types';
-import { PAIN_LOW_MAX } from './constants';
+import { PAIN_LOW_MAX, PAIN_MID_LONG_DAYS } from './constants';
 import { pauseLength, RETURN_TRAVEL_DOSE_FACTOR } from './readiness';
 import { refWeekKmBefore } from './state';
 
@@ -35,6 +35,10 @@ export const BREAK_FIRST_DOSE_SHARE = 0.7;
 export const BREAK_FIRST_WINDOW_DAYS = 14;
 export const BREAK_WEEK_STEP_SHARE = 1.25;
 export const BREAK_WEEK_EXIT_SHARE = 1.2;
+/** R20 (A4): prvi trening iste vrste posle bola ≤ ovaj udeo treninga posle kog je bol prijavljen. */
+export const PAIN_TRIGGER_SHARE = 0.8;
+/** R20 (A4): u nedeljama zaštite posle bola lagan dan ≤ ovaj udeo dugog. */
+export const PAIN_EASY_OF_LONG_SHARE = 0.65;
 /** Smanjen prvi brzi trening: razlika do prvobitnog trajanja ide u hlađenje, najviše ovoliko. */
 const BREAK_COOLDOWN_MAX_EXTRA_SEC = 600;
 /** Pauza do 4 dana nema rampu (R19): propušteno je propušteno. */
@@ -55,6 +59,8 @@ export interface BreakStart {
   refFrom: IsoDate;
   /** Udeo doze prvog brzog (R20 A2: posle puta 0,8, inače 0,7). */
   firstShare: number;
+  /** R20 (A4): prekid je bol (prijavljen posle treninga na dan `zero`). */
+  pain: boolean;
 }
 
 /** Prekid važi ovoliko dana posle svog poslednjeg dana (pravilo samo smanjuje, a lanac se gasi kad stigne plan). */
@@ -88,7 +94,8 @@ export function breakStartOf(
         lastLongSec: 'lastLongSec' in a ? (a.lastLongSec ?? 0) : 0,
         refFrom: a.kind === 'pause' ? a.from : z,
         firstShare:
-          a.kind === 'pause' && a.reason === 'put' ? RETURN_TRAVEL_DOSE_FACTOR : BREAK_FIRST_DOSE_SHARE
+          a.kind === 'pause' && a.reason === 'put' ? RETURN_TRAVEL_DOSE_FACTOR : BREAK_FIRST_DOSE_SHARE,
+        pain: a.kind === 'pain'
       };
   }
   if (best !== null) return best;
@@ -100,7 +107,8 @@ export function breakStartOf(
         longOnly: true,
         lastLongSec: 0,
         refFrom: day.date,
-        firstShare: BREAK_FIRST_DOSE_SHARE
+        firstShare: BREAK_FIRST_DOSE_SHARE,
+        pain: false
       };
   }
   return null;
@@ -133,6 +141,11 @@ export function applyBreakRamp(
   const ctx = buildCtx(after.header, data);
   const race = after.header.goal.raceDate;
   const done = doneDayIds(state);
+  const minEasyFloor = minEasyOf(
+    data.safety,
+    after.header.decisions.level,
+    after.header.decisions.runDays.length
+  );
   const dur = (w: Workout | null | undefined): Seconds =>
     w == null ? 0 : summarize(w, pace).durationSec;
   const km = (w: PlanWeek): number => weekCost(w, race, pace).km;
@@ -200,6 +213,46 @@ export function applyBreakRamp(
     if (key !== null) lastDone.set(key, d.workout.workSec);
   }
 
+  /* R20 (A4): posle bola prva nedelja sa kvalitetom ima jedan kvalitet (ostali su lagani istog trajanja), a u
+     nedeljama zaštite (14 dana) lagan dan ≤ 65 % dugog */
+  if (start.pain) {
+    let firstWeek = true;
+    for (let wi = 0; wi < weeks.length; wi += 1) {
+      const w = weeks[wi] as PlanWeek;
+      if (w.intent.kind === 'taper' || w.intent.kind === 'race') break;
+      if (addDays(w.start, 6) <= zero) continue;
+      if (firstWeek) {
+        const qs = w.days
+          .map((d, di) => ({ d, di }))
+          .filter((x) => x.d.date > zero && x.d.workout?.kind === 'quality');
+        if (qs.length > 0) {
+          firstWeek = false;
+          for (const { d, di } of qs.slice(1)) {
+            if (!mutable(d)) continue;
+            const next = realize({ type: 'easy', sec: Math.round(dur(d.workout) / 60) * 60 }, ctx);
+            if (next !== null) put(wi, di, next);
+          }
+        }
+      }
+      if (w.start > addDays(zero, PAIN_MID_LONG_DAYS)) continue;
+      const ld = w.days.find((d) => d.workout?.kind === 'long');
+      if (ld?.workout == null) continue;
+      const cap = Math.max(minEasyFloor, PAIN_EASY_OF_LONG_SHARE * dur(ld.workout));
+      w.days.forEach((d, di) => {
+        if (d.workout?.kind !== 'easy' || !mutable(d) || dur(d.workout) <= cap + 60) return;
+        const next = realize({ type: 'easy', sec: Math.floor(cap / 300) * 300 }, ctx);
+        if (next !== null) put(wi, di, next);
+      });
+    }
+  }
+
+  /* R20 (A4): trening posle kog je bol prijavljen — prvi iste vrste posle bola je STROGO manji od njega */
+  const painDay = start.pain
+    ? after.weeks.flatMap((w) => w.days).find((d) => d.date === zero && done.has(d.id))
+    : undefined;
+  const painKey = painDay === undefined ? null : fastKey(painDay.workout, data);
+  const painSec = painDay?.workout?.workSec ?? 0;
+
   /* 1. prvi brzi trening svake vrste (i blok u dugom) */
   if (!start.longOnly) {
     const seen = new Set<string>();
@@ -227,7 +280,8 @@ export function applyBreakRamp(
         const want = Math.min(
           d.workout.workSec,
           inWindow ? start.firstShare * planned : Number.POSITIVE_INFINITY,
-          lastDone.get(key) ?? Number.POSITIVE_INFINITY
+          lastDone.get(key) ?? Number.POSITIVE_INFINITY,
+          key === painKey && painSec > 0 ? PAIN_TRIGGER_SHARE * painSec : Number.POSITIVE_INFINITY
         );
         if (want >= d.workout.workSec - 30) continue;
         const min = minDoseOf(def, ctx);
@@ -279,6 +333,7 @@ export function applyBreakRamp(
     const w = weeks[wi] as PlanWeek;
     if (w.intent.kind === 'taper' || w.intent.kind === 'race' || w.start > horizon) break;
     if (addDays(w.start, 6) <= zero) continue;
+    const runningBefore = running;
     const li = w.days.findIndex((d) => d.workout?.kind === 'long' && d.date > zero);
     const ld = li < 0 ? undefined : w.days[li];
     if (longOn && ld?.workout != null) {
@@ -306,20 +361,25 @@ export function applyBreakRamp(
       }
     }
     if (!weekOn) continue;
-    /* povratak obima je gotov kod prve nedelje gradnje na nivou pre prekida (rasterećenje i provera ga ne završavaju) */
-    {
-      const cur = weeks[wi] as PlanWeek;
-      const plain =
-        cur.intent.kind !== 'recovery' && !cur.days.some((d) => d.workout?.kind === 'test');
-      if (plain && refKm > 0 && cur.start > zero && km(cur) >= refKm - 0.5) {
-        weekOn = false;
-        continue;
-      }
-    }
     const prevW = weeks[wi - 1];
     /* nedelja plana posle rasterećenja (cela nedelja posle prekida): najviše + 25 % od njega; ostale nedelje drži
        pravilo izlaska (`smoothExit`) */
-    if (prevW === undefined || prevW.start <= start.zero || prevW.intent.kind !== 'recovery') continue;
+    /* R20 (A4): posle bola i svaka sledeća nedelja (ravnomeran povratak, bez skoka 22 → 32 km) */
+    /* povratak obima je gotov kod prve nedelje gradnje na nivou pre prekida koja staje u granicu (rasterećenje i
+       provera ga ne završavaju) */
+    const doneAt = (cur: PlanWeek): boolean =>
+      cur.intent.kind !== 'recovery' &&
+      !cur.days.some((d) => d.workout?.kind === 'test') &&
+      refKm > 0 &&
+      km(cur) >= refKm - 0.5;
+    if (
+      prevW === undefined ||
+      prevW.start <= start.zero ||
+      (prevW.intent.kind !== 'recovery' && !start.pain)
+    ) {
+      if (doneAt(w) && w.start > zero) weekOn = false;
+      continue;
+    }
     /* i pravilo izlaska R2 (≤ 1,2 × najveće od tri prethodne posle prekida) — skraćen dugi ne sme da ga probije */
     const prev3 = weeks.slice(Math.max(0, wi - 3), wi).filter((x) => x.start > start.zero);
     const cap = Math.min(
@@ -328,9 +388,7 @@ export function applyBreakRamp(
     );
     const now = weeks[wi] as PlanWeek;
     if (km(now) <= cap + 0.5) {
-      /* rasterećenje i nedelja provere ne završavaju povratak — završava ga nedelja gradnje na nivou pre prekida */
-      const plain = now.intent.kind !== 'recovery' && !now.days.some((d) => d.workout?.kind === 'test');
-      if (plain && refKm > 0 && km(now) >= refKm - 0.5) weekOn = false;
+      if (doneAt(now)) weekOn = false;
       continue;
     }
     /* lagani dani srazmerno (ne ispod najmanjeg laganog dana) */
@@ -346,6 +404,22 @@ export function applyBreakRamp(
       if (sec >= dur(d.workout) - 30) continue;
       const next = realize({ type: 'easy', sec }, ctx);
       if (next !== null) put(wi, di, next);
+    }
+    /* R20 (A4): posle bola, kad su lagani dani na najmanjem, ostatak skida dugi — ne ispod najdužeg pre njega */
+    const left = km(weeks[wi] as PlanWeek) - cap;
+    const cur = li < 0 ? undefined : (weeks[wi] as PlanWeek).days[li];
+    if (start.pain && left > 0.5 && cur?.workout != null && mutable(cur)) {
+      const sec = dur(cur.workout);
+      const target = Math.max(runningBefore, sec - left * pace.paces.easy);
+      if (target < sec - 60) {
+        const def = defOf(cur.workout, data) ?? null;
+        const s2 = Math.floor(target / 60) * 60;
+        const w2 = longWorkout(s2, def, Math.min(cur.workout.workSec, s2 / 2));
+        if (w2 !== null) {
+          put(wi, li, w2);
+          running = Math.max(runningBefore, dur(w2));
+        }
+      }
     }
   }
   /* cilj izmenjene nedelje je ono što je planirano (odluka povratka), da čuvar ne prijavi manjak */

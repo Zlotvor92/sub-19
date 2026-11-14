@@ -111,6 +111,8 @@ const RETURN_SHORT_SHARES = [0.75, 0.9] as const;
 const RETURN_MID_SHARES = [0.6, 0.75, 0.9] as const;
 /** Prvi dugi posle pauze ≤ ovaj udeo referentnog dugog. */
 export const RETURN_SCHEDULE_FIRST_LONG_SHARE = 0.75;
+/** R20 (A4): dugi u prvih 7 dana posle bola nivoa 4–6 ≤ ovaj udeo poslednjeg dugog. */
+const PAIN_FIRST_WEEK_LONG_SHARE = 0.6;
 
 /** R20 (A1): udeli referentne nedelje posle NEPLANIRANE trke, po trajanju napora (srazmerno dužini trke): do 40 min
     bez rasporeda (samo dani bez brzog), do 75 min jedna nedelja, do 2 h dve, do 3 h tri, duže četiri. */
@@ -490,7 +492,12 @@ export function modsFor(
       } else if (adj.level <= PAIN_MID_MAX) {
         if (n >= 1 && n <= PAIN_MID_REST_DAYS) m.rest = true;
         if (n >= 1 && n <= PAIN_MID_DAYS) noFast();
-        if (n >= 1 && n <= PAIN_MID_SHORT_DAYS) m.f = Math.min(m.f, PAIN_MID_FACTOR);
+        if (n >= 1 && n <= PAIN_MID_SHORT_DAYS) {
+          m.f = Math.min(m.f, PAIN_MID_FACTOR);
+          /* R20 (A4): dugi u prvoj nedelji posle bola ≤ 60 % poslednjeg (MAR s13/s14: ne 18–19 km treći dan) */
+          const last = adj.lastLongSec ?? 0;
+          if (last > 0) m.longCapSec = Math.min(m.longCapSec, PAIN_FIRST_WEEK_LONG_SHARE * last);
+        }
         if (n >= 1 && n <= PAIN_MID_LONG_DAYS) {
           m.highImpact = false;
           const last = adj.lastLongSec ?? 0;
@@ -606,6 +613,10 @@ export function applyReadiness(recipe: Recipe, mods: Mods, ctx: BuildCtx): Recip
         def.main.kind === 'reps' && mods.belowShape === true
           ? ctx.data.safety.minDoseSec
           : minDoseOf(def, ctx);
+      /* R20 (A4): prvi rad zone posle bola ispod najmanje smislene doze ostaje kvalitet na toj dozi (ravnomeran
+         povratak: kvalitet ima–nema–ima je gore od manjeg kvaliteta) */
+      if (dose < floor && mods.belowShape === true && floor <= recipe.dose)
+        return { ...recipe, def, dose: floor };
       if (dose < floor) return asEasy(recipe, mods, ctx);
       return { ...recipe, def, dose };
     }

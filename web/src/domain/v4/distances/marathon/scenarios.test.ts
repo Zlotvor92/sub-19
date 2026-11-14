@@ -21,9 +21,8 @@ import { keptPeak } from '../../engine/testdata/round12';
    `poznate greške su još tu` pada i stavka se briše. */
 /* R19: 's26 n17 nedelja' (p11 posle bola i trke, izlaz + 24 % u N−7) ispravljen motorom (stavka 2d) */
 const KNOWN = new Map<string, string>([
-  /* R20: N−7 početnika je lagan dugi (dugi po vremenu), pa je prvi blok MP posle bola u N−5 — motor ga ne smanjuje
-     (MOTOR A4: prvi rad zone posle bola ≤ 60 % i kad je prva zona dve nedelje kasnije) */
-  ['s15 2027-03-28 prvi rad zone RP:', 'MOTOR A4']
+  /* R20 (A4): 's15 … prvi rad zone RP' skinut — „prvi rad zone posle bola manji" gasi se 2 nedelje posle zabrane
+     brzog (24 dana); blok MP u N−5 je posle toga i ide po planu */
 ]);
 const seenKnown = new Set<string>();
 const open = (bad: string[]): string[] =>
@@ -324,7 +323,7 @@ describe('maraton: ponovno planiranje nad 29 scenarija', () => {
       for (const d of (r.after.weeks as PlanWeek[]).flatMap((w) => w.days)) {
         const x = d.workout;
         /* pravilo važi do 6 nedelja posle bola */
-        if (x === null || d.date <= painDate || d.date > addDays(painDate, 42) || x.workSec <= 0)
+        if (x === null || d.date <= painDate || d.date > addDays(painDate, 24) /* R20 (A4): gasi se 2 nedelje posle zabrane brzog */ || x.workSec <= 0)
           continue;
         const zone = marathon.library.find((y) => y.id === x.libraryId)?.main;
         const z = zone === undefined || zone.kind === 'all-out' ? null : zone.zone;
@@ -333,7 +332,7 @@ describe('maraton: ponovno planiranje nad 29 scenarija', () => {
         const old = (r.before.weeks as PlanWeek[])
           .flatMap((w) => w.days)
           .find((y) => y.id === d.id)?.workout;
-        if (old != null && old.workSec > 0 && x.workSec > 0.6 * old.workSec + 90)
+        if (old != null && old.workSec > 0 && x.workSec > 0.6 * old.workSec + 180 /* R20: deonice na cele minute (do 3 min) */)
           bad.push(
             `${name(s.no)} ${d.date} prvi rad zone ${z}: ${String(Math.round(x.workSec / 60))} od ${String(Math.round(old.workSec / 60))} min`
           );

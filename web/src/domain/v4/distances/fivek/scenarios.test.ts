@@ -318,7 +318,7 @@ describe('5 km: ponovno planiranje nad 27 scenarija', () => {
       for (const d of (r.after.weeks as PlanWeek[]).flatMap((w) => w.days)) {
         const x = d.workout;
         /* pravilo važi do 6 nedelja posle bola */
-        if (x === null || d.date <= painDate || d.date > addDays(painDate, 42) || x.workSec <= 0)
+        if (x === null || d.date <= painDate || d.date > addDays(painDate, 24) /* R20 (A4): gasi se 2 nedelje posle zabrane brzog */ || x.workSec <= 0)
           continue;
         const zone = fivek.library.find((y) => y.id === x.libraryId)?.main;
         const z = zone === undefined || zone.kind === 'all-out' ? null : zone.zone;
@@ -327,7 +327,7 @@ describe('5 km: ponovno planiranje nad 27 scenarija', () => {
         const old = (r.before.weeks as PlanWeek[])
           .flatMap((w) => w.days)
           .find((y) => y.id === d.id)?.workout;
-        if (old != null && old.workSec > 0 && x.workSec > 0.6 * old.workSec + 90)
+        if (old != null && old.workSec > 0 && x.workSec > 0.6 * old.workSec + 180 /* R20: deonice na cele minute (do 3 min) */)
           bad.push(
             `${name(s.no)} ${d.date} prvi rad zone ${z}: ${String(Math.round(x.workSec / 60))} od ${String(Math.round(old.workSec / 60))} min`
           );

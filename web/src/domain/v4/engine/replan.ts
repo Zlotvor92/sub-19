@@ -2304,7 +2304,13 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     const candidate =
       brk === null
         ? capped
-        : { ...capped, doc: applyBreakRamp(capped.doc, current, state, data, brk) };
+        : {
+            ...capped,
+            /* Z10: posle više događaja ni pravilo povratka ne menja plan dalje od 28 dana */
+            doc: multi
+              ? capTail(applyBreakRamp(capped.doc, current, state, data, brk), doc, state.today)
+              : applyBreakRamp(capped.doc, current, state, data, brk)
+          };
     const own = describe(current, candidate, ev, state, data);
     /* krug 12 (M1): najnoviji rezultat se opisuje prema planu pre tihih starijih rezultata (njihova promena tempa je
        njegova); primena (`own`) ostaje kao do sada */

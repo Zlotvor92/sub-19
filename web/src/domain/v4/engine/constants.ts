@@ -326,8 +326,9 @@ export const AFTER_TEST_EASY_MAX_OF_LONG = 0.6;
 export const AFTER_TEST_SPREAD_MAX_SEC = 600;
 /** R2 (krug 6): prvi dugi posle prekida (pauza, bol) najmanje 62 % poslednjeg dugog pre njega (trener: 60–65 %). */
 export const RETURN_FIRST_LONG_SHARE = 0.62;
-/** Z3 (krug 7): „prvi rad zone posle bola ≤ 60 %" važi do 6 nedelja posle bola. */
-export const PAIN_FIRST_ZONE_MAX_DAYS = 42;
+/** Z3 (krug 7): „prvi rad zone posle bola ≤ 60 %" važi do 6 nedelja posle bola. R20 (A4): gasi se 2 nedelje posle
+    zabrane brzog (10 + 14 dana) — mesec dana posle bola trening je opet po planu. */
+export const PAIN_FIRST_ZONE_MAX_DAYS = 24;
 
 /** Z7 (krug 7): razlika do adekvatnog ispod 5 % se ne prijavljuje (38,6 naspram 40 km, 14,8 naspram 15 km) — tolerancija
     zaokruživanja za sve nalaze o obimu i dugom. */
