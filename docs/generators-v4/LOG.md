@@ -878,3 +878,15 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - (20:55) ODLUKA VLASNIKA za M6: plan SME da dobije dan manje od traženog, uz upozorenje; ako trkač ipak hoće
   traženi broj dana, to mu se pušta (izričit izbor ima prednost; tada ostaju svi dani i upozorenje o kratkim
   laganim danima). Ulazi u nalog motora R24.
+
+### 14. 11. 2026, 21:10 — R24 podatak primljen, provera organizatora; motor R24 pokrenut; F9 etapa 2a primljena
+- Podatak: 5K `f8a2a5dc` (P2; p12 neizvodivo podatkom), 10K `fb12606` (p03: ned 4 19,3 km, ned 7 26,7 km — traženih
+  27–27,5 nije dostignuto; p10: dve provere, obim ned 6–15 ostaje 25,5–29,1 km), MAR `3efe27dd` (p04 nedelja ≤ 513
+  min, lagan ≤ 90 min; p18 provera u rasterećenju, dugi ned 11 2:10 umesto 2:25; P2 B vrh 32 km / dugi 17,3 km —
+  uzrok je bio podatak iz R22 `344f74b6`; menja i s19, s20, par p3b).
+- Sam pokrenuo na `3efe27dd`: `vitest run src/domain/v4 src/integrations/v4` → 78 fajlova, 1250 + 12 očekivano; `tsc`
+  čist [visoka]. Lint/format ne prolaze zbog `domain/v4` (plan.ts:608 + 13 fajlova formata) — u nalogu motora.
+- Motor R24: Opus tab, nalog `briefs/R24-MOTOR.md` (higijena → M6+P1 sa odlukom vlasnika → M4 → M1 → M2 → M5 → M3 →
+  nalazi sloja: Run 0 m, lock ≠ locked, izvoz painOf/datuma).
+- F9 etapa 2a (`a2dc8927`, `06de0b10`): `web/src/integrations/v4/` facts/view/adopt, 139 testova, otisak pre = posle
+  na 34 uzorka. Etapa 2b (odluke u dokument + edits/events) zadata istom tabu.
