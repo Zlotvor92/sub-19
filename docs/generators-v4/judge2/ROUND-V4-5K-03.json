@@ -1,0 +1,407 @@
+{
+ "runda": "V4-5K-03",
+ "stanje": "ef506f4c",
+ "planovi": {
+  "p01": {
+   "ocene": [
+    8,
+    8,
+    8,
+    8,
+    7,
+    7,
+    8
+   ],
+   "ukupno": 78,
+   "dao_bih": "da",
+   "zamerke": [
+    "Dan trke nosi tri broja: 21:44, 4:22/km, 21:28",
+    "7. ned.: tri brza dana od četiri"
+   ],
+   "dobro": [
+    "Specifična priprema 9.–11. ned.",
+    "Zbirovi se slažu"
+   ]
+  },
+  "p02": {
+   "ocene": [
+    7,
+    7,
+    8,
+    7,
+    7,
+    7,
+    8
+   ],
+   "ukupno": 73,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "3. ned.: tri brza od četiri treninga, brz rad 20 %",
+    "Lagani dani 4–5 km (22–28 min)",
+    "Obim raste samo 31,2 → 33,8 km"
+   ],
+   "dobro": [
+    "Raspored tempa trke"
+   ]
+  },
+  "p03": {
+   "ocene": [
+    8,
+    8,
+    6,
+    6,
+    7,
+    7,
+    8
+   ],
+   "ukupno": 72,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Dugi +29 % u 2. ned., pa 45 min četiri nedelje",
+    "Vrh 16 km; najviše 2,4 km u tempu trke"
+   ],
+   "dobro": [
+    "Primerene doze",
+    "Jasan"
+   ]
+  },
+  "p04": {
+   "ocene": [
+    7,
+    7,
+    7,
+    5,
+    8,
+    7,
+    7
+   ],
+   "ukupno": 69,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Dugi 90 min u 8 od prvih 10 nedelja; 2. i 7. ned. iste",
+    "Četiri dana zaredom nose 279 od 326 min",
+    "Dugi 97 i 100 min preko plafona od 90"
+   ],
+   "dobro": [
+    "Red za dan trke posle provere",
+    "Sužavanje"
+   ]
+  },
+  "p05": {
+   "ocene": [
+    8,
+    8,
+    8,
+    7,
+    7,
+    7,
+    8
+   ],
+   "ukupno": 77,
+   "dao_bih": "da",
+   "zamerke": [
+    "Oznaka 'vršna' u 4. ned.",
+    "8 × 400 m sa hodom dva dana posle 16 × 400 m"
+   ],
+   "dobro": [
+    "6 × 1 km u tempu trke",
+    "Obim +14 % pa silazak"
+   ]
+  },
+  "p06": {
+   "ocene": [
+    6,
+    9,
+    5,
+    5,
+    6,
+    7,
+    6
+   ],
+   "ukupno": 64,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "≈ 54 min brzog rada za 6 nedelja; 5. ned. 0 %",
+    "Tri obima u upozorenjima: 31, 25, 26 km",
+    "1. ned. 4 treninga umesto 5"
+   ],
+   "dobro": [
+    "Iskreno upozorenje o obimu"
+   ]
+  },
+  "p07": {
+   "ocene": [
+    8,
+    7,
+    8,
+    8,
+    7,
+    7,
+    8
+   ],
+   "ukupno": 76,
+   "dao_bih": "da",
+   "zamerke": [
+    "2. ned. brz rad 19 % (52 od 271 min)",
+    "Četiri dana zaredom"
+   ],
+   "dobro": [
+    "Zbijen plan za 6 nedelja",
+    "6 × 800 m dve nedelje pred trku"
+   ]
+  },
+  "p08": {
+   "ocene": [
+    8,
+    8,
+    7,
+    7,
+    7,
+    8,
+    8
+   ],
+   "ukupno": 76,
+   "dao_bih": "da",
+   "zamerke": [
+    "Prag ukupno 60 min za 16 nedelja",
+    "Dugi 42 % nedelje"
+   ],
+   "dobro": [
+    "Prognoza ne obećava rast obima",
+    "Objašnjen plafon dugog"
+   ]
+  },
+  "p09": {
+   "ocene": [
+    7,
+    7,
+    7,
+    7,
+    7,
+    8,
+    7
+   ],
+   "ukupno": 71,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "1. ned. usponi 10 × 45 s + prag bez rezultata; 2. ned. prag 24 min",
+    "Provera forme tek u 6. od 10 nedelja",
+    "Lagano 6:19/km umesto unetih ≈ 5:56"
+   ],
+   "dobro": [
+    "Zone po naporu",
+    "Dan trke po osećaju"
+   ]
+  },
+  "p10": {
+   "ocene": [
+    7,
+    7,
+    7,
+    8,
+    7,
+    8,
+    7
+   ],
+   "ukupno": 72,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Usponi 10 × 45 s = 35 % vremena 3. nedelje uz 13 km",
+    "Lagano 8:10/km umesto unetih 7:30"
+   ],
+   "dobro": [
+    "Dve provere forme",
+    "Dugi 40 → 60 min"
+   ]
+  },
+  "p11": {
+   "ocene": [
+    8,
+    9,
+    7,
+    7,
+    8,
+    8,
+    8
+   ],
+   "ukupno": 79,
+   "dao_bih": "da",
+   "zamerke": [
+    "Fartlek 48 min duži od dugog 45 min (6. ned.)",
+    "Utorak 20 min osam nedelja"
+   ],
+   "dobro": [
+    "Četiri lagane nedelje na početku",
+    "Dan trke sa oba tempa"
+   ]
+  },
+  "p12": {
+   "ocene": [
+    7,
+    8,
+    6,
+    6,
+    7,
+    7,
+    7
+   ],
+   "ukupno": 69,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "'Vršna nedelja' sa 0 % brzog",
+    "Brz rad ≤ 6 %",
+    "Zaglavlje 48 km, 1. ned. 43,5 km"
+   ],
+   "dobro": [
+    "Bezbedan",
+    "Jasno upozorenje"
+   ]
+  },
+  "p13": {
+   "ocene": [
+    7,
+    8,
+    6,
+    6,
+    6,
+    7,
+    6
+   ],
+   "ukupno": 67,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Najduže trčanje u komadu 30 min pre trke od ≈ 30:40",
+    "6. ned. 2 treninga, 7,3 km",
+    "Upozorenje 'duža priprema ne pomaže'",
+    "Obim 10/11/12,7 na tri mesta"
+   ],
+   "dobro": [
+    "Prognoza bez obećanja",
+    "Hod-trk u dugom"
+   ]
+  },
+  "p14": {
+   "ocene": [
+    8,
+    8,
+    7,
+    8,
+    7,
+    6,
+    8
+   ],
+   "ukupno": 75,
+   "dao_bih": "da",
+   "zamerke": [
+    "Upozorenje obećava dugi 12,1 km, plan već ima 12 km"
+   ],
+   "dobro": [
+    "4 nedelje dobro iskorišćene"
+   ]
+  },
+  "p15": {
+   "ocene": [
+    6,
+    6,
+    6,
+    6,
+    8,
+    7,
+    7
+   ],
+   "ukupno": 64,
+   "dao_bih": "da uz izmenu",
+   "zamerke": [
+    "Brzi trening duži od dugog (7,6 prema 6,6 km)",
+    "'Lagano 20 min — 2,9 km' 10 puta",
+    "Dugi 40–49 min svih 14 nedelja; vrh 24,8 km",
+    "8. ned. 20 % brzog za povratnika; nema pravila za bol"
+   ],
+   "dobro": [
+    "Dve lagane nedelje, objašnjeno",
+    "Red za dan trke"
+   ]
+  },
+  "p16": {
+   "ocene": [
+    8,
+    8,
+    7,
+    7,
+    7,
+    8,
+    7
+   ],
+   "ukupno": 75,
+   "dao_bih": "da",
+   "zamerke": [
+    "Usponi 9 × 45 s u nedelji rasterećenja",
+    "Reč 'šablon' u upozorenju"
+   ],
+   "dobro": [
+    "Jedan brz trening nedeljno, objašnjeno",
+    "Dugi i obim rastu"
+   ]
+  }
+ },
+ "prosek_planova": 72.3,
+ "scenariji": {
+  "s01": 82,
+  "s02": 90,
+  "s03": 90,
+  "s04": 74,
+  "s05": 72,
+  "s06": 80,
+  "s07": 86,
+  "s08": 84,
+  "s09": 86,
+  "s10": 92,
+  "s11": 88,
+  "s12": 78,
+  "s13": 84,
+  "s14": 88,
+  "s15": 82,
+  "s16": 78,
+  "s17": 84,
+  "s18": 82,
+  "s19": 78,
+  "s20": 72,
+  "s21": 100,
+  "s22": 100,
+  "s23": 100,
+  "s24": 86,
+  "s25": 74,
+  "s26": 74,
+  "s27": 58
+ },
+ "prosek_scenarija": 83.0,
+ "parovi": {
+  "par1": 8.5,
+  "par2": 8.5,
+  "par3": 7.0
+ },
+ "prosek_parova": 8.0,
+ "ispravke": [
+  "Pauza koja nije bolest i bolest od 7 dana ne smeju da izbrišu ceo blok (s27, s05, s06)",
+  "Posle izgubljenih nedelja ukinuti planirano rasterećenje (s05)",
+  "Mali obim: ne skraćivati lagane dane na 20 min; brzi trening ne duži od dugog (p15, p06, p11)",
+  "Doze skalirati po obimu (usponi 10 × 45 s za 13 i 40 km)",
+  "Po osećaju: provera u 2.–3. nedelji; lagani tempo iz unosa",
+  "Reći kad se rezultat i uneti lagani tempo ne slažu (s04, s20)",
+  "Jedan broj za isto: očekivano vreme, obim, plafon dugog",
+  "Duga osnova bez ponovljenih nedelja (p04, p03)",
+  "Dan trke: jedan tempo sa uslovom; nadmašen cilj tako nazvati; obrok",
+  "Novi plan dan posle trke ne menja duge unapred ni ne produžava dugi u nedelji oporavka"
+ ],
+ "za_vlasnika": [
+  "p15",
+  "p06",
+  "s27"
+ ],
+ "nesigurno": [
+  "STANJE 'očekivano' u scenarijima p11 se ne slaže sa planom",
+  "Neobični ulazi p12 i par 2B",
+  "100 % prema 70 % usvajanja rezultata trke (s01, s19)"
+ ],
+ "pravilo_citanja": "Bez čitanja zabranjenog. Pre očekivanja za parove pročitan samo 1. red svakog fajla para (ls ne daje opis); red 'MORA DA SE RAZLIKUJE' viđen posle. Poređenje PRE/POSLE rađeno skriptom za čitanje."
+}
