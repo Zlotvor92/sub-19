@@ -1,0 +1,657 @@
+{
+ "round": "V4-R19B",
+ "date": "2026-11-14",
+ "judge": "glavni trener-sudija (nov tab)",
+ "source": "ef506f4c",
+ "rubric": "RUBRIC-V4 § A3",
+ "weights": {
+  "bezbednost": 0.3,
+  "iskoriscenost": 0.3,
+  "iskrenost": 0.25,
+  "posleTrke": 0.15
+ },
+ "classificationCommit": "23aac07c",
+ "distances": {
+  "HM": {
+   "profiles": {
+    "p01": {
+     "group": "ulaz dozvoljava",
+     "planOld": 82,
+     "passes": true
+    },
+    "p02": {
+     "group": "ulaz dozvoljava",
+     "planOld": 82,
+     "passes": true
+    },
+    "p03": {
+     "group": "plafon ulaza",
+     "planOld": 76.5,
+     "planForInput": 68.5,
+     "criteria": {
+      "bezbednost": 7.5,
+      "iskoriscenost": 8,
+      "iskrenost": 4,
+      "posleTrke": 8
+     },
+     "why": {
+      "bezbednost": "nema skoka ni K2/K7, ali ned 13 ima 25 % brzog rada (prag 2 × 15 min + 35 min tempa trke u dugom) — na ivici K6",
+      "iskoriscenost": "tri dana su iskorišćena: utorak do 75 min, kvalitet svake nedelje, dugi do 2 h 15 (18,2 km) sa blokovima",
+      "iskrenost": "plan nema nijedno upozorenje: ne kaže da su 3 dana i 25 km malo za polumaraton, a prognoza računa napredak (2:06:45)",
+      "posleTrke": "ostavlja 38 km nedeljno i dugi od 18 km — dobra osnova"
+     },
+     "fix": "PODATAK: vratiti upozorenje o 3 dana sa brojem (4. dan od 40 min → nedelja ≈ 40 km, dugi 18 km pada sa 48 % na ispod 45 %) i prognozu bez napretka dok ga provera ne potvrdi",
+     "passes": false
+    },
+    "p04": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80,
+     "passes": true
+    },
+    "p05": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80.5,
+     "passes": true
+    },
+    "p06": {
+     "group": "ulaz dozvoljava",
+     "planOld": 72,
+     "passes": false,
+     "gapTo80": "tri upozorenja od kojih je jedno netačno i protivreči drugom, a 6. nedelja nema nijedan kvalitet"
+    },
+    "p07": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80.5,
+     "passes": true
+    },
+    "p08": {
+     "group": "ulaz dozvoljava",
+     "planOld": 74,
+     "passes": false,
+     "gapTo80": "kreće sa 41,2 km uz sadašnjih 45, 15. nedelja skače +15 %, a brz rad je 24–25 % u tri nedelje"
+    },
+    "p09": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81,
+     "passes": true
+    },
+    "p10": {
+     "group": "plafon ulaza",
+     "planOld": 76,
+     "planForInput": 67.0,
+     "criteria": {
+      "bezbednost": 7.5,
+      "iskoriscenost": 7.5,
+      "iskrenost": 4,
+      "posleTrke": 8
+     },
+     "why": {
+      "bezbednost": "isto kao p03: ned 17 ima 25 % brzog rada; ostalo mirno",
+      "iskoriscenost": "dugi stoji 1 h 55–2 h 1 od 9. do 14. nedelje, pa 2 h 15 jednom — 20 nedelja daje isti vrh kao 16 kod p03",
+      "iskrenost": "jedino upozorenje je o nedostatku rezultata; prognoza 2:11 iz laganog tempa 7:30/km je 15–20 min prebrza, a dugi od 18 km traje duže od prognozirane trke",
+      "posleTrke": "40 km nedeljno i dugi 18 km"
+     },
+     "fix": "MOTOR: procena iz laganog tempa ne sme dati tempo trke brži od laganog za više od ≈ 45 s/km na polumaratonu (ovde 1:16); uz to upozorenje o 3 dana kao kod p03",
+     "passes": false
+    },
+    "p11": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81,
+     "passes": true
+    },
+    "p12": {
+     "group": "ulaz dozvoljava",
+     "planOld": 79.5,
+     "passes": false,
+     "gapTo80": "dugi stoji 1 h 40 prve tri nedelje, a tempo trke se prvi put javlja tek u 11. od 16 nedelja"
+    }
+   },
+   "summary": {
+    "allows": 10,
+    "allowsPass": 7,
+    "ceiling": 2,
+    "ceilingPass": 0
+   }
+  },
+  "10K": {
+   "profiles": {
+    "p01": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81.5,
+     "passes": true
+    },
+    "p02": {
+     "group": "ulaz dozvoljava",
+     "planOld": 75,
+     "passes": false,
+     "gapTo80": "lagani dani od 4,5 km / 25 min i nedelja −1 na 73 % vrha"
+    },
+    "p03": {
+     "group": "ulaz dozvoljava",
+     "planOld": 78,
+     "passes": false,
+     "gapTo80": "obim se ljulja (23,7 / 21,3 / 24,6 / 26,5 / 24,6 / 19,5 km) pa jedna vršna od 28,4 km; dugi 80 min tri nedelje zaredom"
+    },
+    "p04": {
+     "group": "ulaz dozvoljava",
+     "planOld": 79,
+     "passes": false,
+     "gapTo80": "dugi 100 min devet nedelja, nijednom sa završnicom u tempu trke"
+    },
+    "p05": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81,
+     "passes": true
+    },
+    "p06": {
+     "group": "ulaz dozvoljava",
+     "planOld": 72.5,
+     "passes": false,
+     "gapTo80": "nedelja −1 na 78 % vrha, tri upozorenja i lagani dani od 5 km / 24 min"
+    },
+    "p07": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80.5,
+     "passes": true
+    },
+    "p08": {
+     "group": "ulaz dozvoljava",
+     "planOld": 75,
+     "passes": false,
+     "gapTo80": "kreće sa 38,9 km uz sadašnjih 41 i stoji 39–44 km četrnaest nedelja"
+    },
+    "p09": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81,
+     "passes": true
+    },
+    "p10": {
+     "group": "ulaz dozvoljava",
+     "planOld": 77.5,
+     "passes": false,
+     "gapTo80": "obim stoji 25–29 km od 6. do 15. nedelje uz tri nedelje provere; dugi posle provere skače +2,6 do +3,9 km"
+    },
+    "p11": {
+     "group": "ulaz dozvoljava",
+     "planOld": 79.5,
+     "passes": false,
+     "gapTo80": "dugi 75 min pet puta i obim 23,5–24,7 km od 10. do 15. nedelje — fali jedna nedelja stvarnog vrha"
+    },
+    "p12": {
+     "group": "ulaz dozvoljava",
+     "planOld": 77.5,
+     "passes": false,
+     "gapTo80": "rast samo 35 → 40,6 km: 2. nedelja jednaka prvoj, 4–8. nedelja ista (38 km, dugi 85 min)"
+    }
+   },
+   "summary": {
+    "allows": 12,
+    "allowsPass": 4,
+    "ceiling": 0,
+    "ceilingPass": 0
+   }
+  },
+  "MAR": {
+   "profiles": {
+    "p01": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80.5,
+     "passes": true
+    },
+    "p02": {
+     "group": "ulaz dozvoljava",
+     "planOld": 82,
+     "passes": true
+    },
+    "p03": {
+     "group": "plafon ulaza",
+     "planOld": 75.5,
+     "planForInput": 73.0,
+     "criteria": {
+      "bezbednost": 8,
+      "iskoriscenost": 8,
+      "iskrenost": 5.5,
+      "posleTrke": 7.5
+     },
+     "why": {
+      "bezbednost": "bez nalaza; dugi 3 h 1 min sa 51 min tempa maratona tri nedelje pred trku je zahtevan, ali podnošljiv",
+      "iskoriscenost": "najbolje iskorišćen plan sa 3 dana: utorak do 1 h 45, pripremni polumaraton, dugi 2 h 49 i 3 h 1",
+      "iskrenost": "upozorenje govori samo o obimu, ne o 3 dana; prognoza 4:33 (6:28/km) uz dugi od 25 km i lagan tempo 7:13–7:56 je 15–30 min prebrza; „hod-trk kao na dugim\" iako dugi nisu hod-trk",
+      "posleTrke": "47 km i dugi od 3 h; kaže 26 dana bez brzog"
+     },
+     "fix": "MOTOR: kad plan ima upozorenje o obimu ili dugom, očekivano vreme dobija kaznu i širi raspon (ovde 4:45–5:10) i trka kreće 15–20 s/km sporije od tempa iz forme; upozorenje predlaže 4. dan",
+     "passes": false
+    },
+    "p04": {
+     "group": "ulaz dozvoljava",
+     "planOld": 78.5,
+     "passes": false,
+     "gapTo80": "dugi 23,5 km već u prvoj nedelji i zatim 2 h 40–3 h 10 u talasu bez daljeg rasta"
+    },
+    "p05": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81.5,
+     "passes": true
+    },
+    "p06": {
+     "group": "plafon ulaza",
+     "planOld": 74,
+     "planForInput": 65.5,
+     "criteria": {
+      "bezbednost": 8,
+      "iskoriscenost": 5.5,
+      "iskrenost": 5.5,
+      "posleTrke": 7.5
+     },
+     "why": {
+      "bezbednost": "bez nalaza; rast 40 → 56 km uz dva rasterećenja",
+      "iskoriscenost": "za trkača od 2:52 najveća nedelja traje 4 h 23, dugi 26 km manje od 2 h, prag 11–15 min svih 12 nedelja bez rasta, lagani 29–37 min",
+      "iskrenost": "četiri upozorenja; prognoza obećava napredak (2:50:20) dok upozorenja kažu da će tempo pasti — realno 3:00–3:10",
+      "posleTrke": "56 km i dugi 26 km"
+     },
+     "fix": "PODATAK: brzom trkaču granice po vremenu, ne po km — dugi do 2 h 20 (30 km), prag 20–30 min, lagani ≥ 40 min; vrh ≈ 65 km",
+     "passes": false
+    },
+    "p07": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81,
+     "passes": true
+    },
+    "p08": {
+     "group": "plafon ulaza",
+     "planOld": 78,
+     "planForInput": 74.5,
+     "criteria": {
+      "bezbednost": 8,
+      "iskoriscenost": 7,
+      "iskrenost": 7,
+      "posleTrke": 8
+     },
+     "why": {
+      "bezbednost": "bez nalaza; prvi dugi 23,5 km je visok, ali trkač već trči 50 km u tri treninga",
+      "iskoriscenost": "utorak 17–20 km je dobro rešenje, ali dugi za 24 nedelje raste samo 23,5 → 28,5 km, a tempo maratona se ozbiljno javlja tek od 18. nedelje",
+      "iskrenost": "jedno tačno upozorenje sa predlogom 4. dana (75 min → dugi 30 km); ne kaže šta 3 dana znače za vreme, a prognoza računa napredak od 5 min",
+      "posleTrke": "65 km i dugi 28,5 km"
+     },
+     "fix": "PODATAK: sa 24 nedelje i 3 dana dugi dva puta do 30–32 km (2 h 55–3 h 5) i blok tempa maratona u dugom od 12. nedelje",
+     "passes": false
+    },
+    "p09": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81.5,
+     "passes": true
+    },
+    "p10": {
+     "group": "plafon ulaza",
+     "planOld": 75.5,
+     "planForInput": 70.0,
+     "criteria": {
+      "bezbednost": 8,
+      "iskoriscenost": 7,
+      "iskrenost": 5.5,
+      "posleTrke": 7.5
+     },
+     "why": {
+      "bezbednost": "bez nalaza",
+      "iskoriscenost": "dugi stoji 2 h 5–2 h 40 od 5. do 18. nedelje, vrh 46,9 km kao kod p03 sa 18 nedelja — šest nedelja više nije donelo ništa; tri nedelje provere",
+      "iskrenost": "tri upozorenja, nijedno o 3 dana; prognoza 4:30 iz laganog tempa 7:30/km (6:25/km kroz maraton) je nerealna — realno 5:00–5:30",
+      "posleTrke": "47 km i dugi od 3 h"
+     },
+     "fix": "MOTOR: procena maratona iz laganog tempa (sada 65 s/km brže od laganog) — za ovakav ulaz tempo trke ≈ lagani tempo, raspon do 5 h 30",
+     "passes": false
+    },
+    "p11": {
+     "group": "ulaz dozvoljava",
+     "planOld": 75,
+     "passes": false,
+     "gapTo80": "dugi stoji na 2 h 15 pet nedelja i staje na 22,6 km / 2 h 38 iako 24 nedelje nose 2 h 50–3 h dva puta"
+    },
+    "p12": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80.5,
+     "passes": true
+    },
+    "p13": {
+     "group": "plafon ulaza",
+     "planOld": 71,
+     "planForInput": 69.8,
+     "criteria": {
+      "bezbednost": 8,
+      "iskoriscenost": 6.5,
+      "iskrenost": 6,
+      "posleTrke": 7.5
+     },
+     "why": {
+      "bezbednost": "bez nalaza; dugi hod-trk raste 10–15 min, rasterećenje u 6. nedelji",
+      "iskoriscenost": "četvrtak je 34–50 min sa 10–22 min rada — trećina dana potrošena na trening koji maratonu ovde ne treba; dugi staje na 2 h 30",
+      "iskrenost": "upozorenja su konkretna (16 nedelja, polumaraton na isti datum), ali ih je tri, piše „tek počinješ da trčiš\" trkaču sa polumaratonom 2:15, a prognoza 4:42 uz hod-trk i dugi od 19 km je 20–40 min prebrza",
+      "posleTrke": "35 km i navika od 3 dana; kaže šta treba za sledeću trku"
+     },
+     "fix": "PODATAK: četvrtak 60–75 min lagano sa 2 × 6–10 min tempa maratona, dugi do 2 h 45 (21 km) — nedelja 38–40 km umesto 34,8",
+     "passes": false
+    },
+    "p14": {
+     "group": "ulaz dozvoljava",
+     "planOld": 82.5,
+     "passes": true
+    },
+    "p15": {
+     "group": "ulaz dozvoljava",
+     "planOld": 78.5,
+     "passes": false,
+     "gapTo80": "lagani dani 30–35 min jedanaest nedelja uz dugi od 2 h+, pa dugi nosi 45–50 % nedelje"
+    },
+    "p16": {
+     "group": "ulaz dozvoljava",
+     "planOld": 79.5,
+     "passes": false,
+     "gapTo80": "dugi od 2 h 15 u prvoj nedelji (49 % nedelje) trkaču sa skorašnjom tegobom u kolenu"
+    },
+    "p17": {
+     "group": "ulaz dozvoljava",
+     "planOld": 81,
+     "passes": true
+    },
+    "p18": {
+     "group": "plafon ulaza",
+     "planOld": 72.5,
+     "planForInput": 66.8,
+     "criteria": {
+      "bezbednost": 8.5,
+      "iskoriscenost": 6,
+      "iskrenost": 4.5,
+      "posleTrke": 8
+     },
+     "why": {
+      "bezbednost": "najmirniji plan skupa; rasterećenje na dve nedelje daje rezervu",
+      "iskoriscenost": "od prvih 11 nedelja četiri su rasterećenje ili provera; dugi je 2 h 20 tek u 13. nedelji i 2 h 45 jednom; lagani 40 min prve tri nedelje",
+      "iskrenost": "četiri upozorenja; prognoza 4:30 (raspon od 4:03) za početnika sa laganim tempom 7:30/km i ciljem „samo da završim\" — realno 5:15–5:45; nema predloga polumaratona",
+      "posleTrke": "48 km, 4 dana, dugi 2 h 45"
+     },
+     "fix": "MOTOR: uz cilj „samo da završim\" i procenu iz laganog tempa prognoza je raspon do realnog vremena hod-trka (5 h 15–5 h 45), ne 4:30; upozorenje nudi polumaraton",
+     "passes": false
+    },
+    "p19": {
+     "group": "plafon ulaza",
+     "planOld": 72,
+     "planForInput": 69.0,
+     "criteria": {
+      "bezbednost": 8,
+      "iskoriscenost": 6.5,
+      "iskrenost": 6,
+      "posleTrke": 7
+     },
+     "why": {
+      "bezbednost": "bez nalaza; dugi +2 km nedeljno, rasterećenje u 4. nedelji",
+      "iskoriscenost": "dugi staje na 22,5 km (47 % nedelje) iako bi 25 km u N−3 bio bezbedan; četvrtak 6–7,5 km sa pragom 12–18 min umesto srednje dugog",
+      "iskrenost": "upozorenja su konkretna (16 nedelja, 60 km, 26 km, polumaraton), ali su tri i dva se ponavljaju; prognoza 4:02 i plan trke „od 10. do 32. km 5:45/km\" protivreče rečenici „trku počni sporije\"",
+      "posleTrke": "48 km i dugi 22,5 km; 23 dana bez brzog"
+     },
+     "fix": "MOTOR: isto kao MAR p03 — kazna u prognozi (4:10–4:30) i sporiji početak u planu trke kad upozorenje kaže da dugi ne nosi distancu",
+     "passes": false
+    }
+   },
+   "summary": {
+    "allows": 12,
+    "allowsPass": 8,
+    "ceiling": 7,
+    "ceilingPass": 0
+   }
+  },
+  "5K": {
+   "profiles": {
+    "p01": {
+     "group": "ulaz dozvoljava",
+     "planOld": 82,
+     "passes": true
+    },
+    "p02": {
+     "group": "ulaz dozvoljava",
+     "planOld": 73.5,
+     "passes": false,
+     "gapTo80": "obim ne raste (31 → 33,8 km), lagani dani 22 min u tri nedelje, nedelja −1 na 75 %"
+    },
+    "p03": {
+     "group": "ulaz dozvoljava",
+     "planOld": 75,
+     "passes": false,
+     "gapTo80": "obim stoji 15,3–16 km od 3. do 7. nedelje, dugi 45 min četiri puta, lagani dan 20–25 min"
+    },
+    "p04": {
+     "group": "ulaz dozvoljava",
+     "planOld": 79,
+     "passes": false,
+     "gapTo80": "obim stoji 48–50 km od 2. do 11. nedelje, a dugi 90 min deset puta"
+    },
+    "p05": {
+     "group": "ulaz dozvoljava",
+     "planOld": 82,
+     "passes": true
+    },
+    "p06": {
+     "group": "ulaz dozvoljava",
+     "planOld": 65.5,
+     "passes": false,
+     "gapTo80": "nedelja 5 bez ijednog brzog treninga, nedelje 2–4 pet dana po 22 min sa jednim kvalitetom, tri upozorenja"
+    },
+    "p07": {
+     "group": "ulaz dozvoljava",
+     "planOld": 78.5,
+     "passes": false,
+     "gapTo80": "sužavanje počinje već u 4. od 6 nedelja (82 % pa 70 %), a ponedeljak i subota padaju na 5 km"
+    },
+    "p08": {
+     "group": "ulaz dozvoljava",
+     "planOld": 73.5,
+     "passes": false,
+     "gapTo80": "obim ravan 33–36 km šesnaest nedelja i nema predloga 4. dana"
+    },
+    "p09": {
+     "group": "ulaz dozvoljava",
+     "planOld": 77.5,
+     "passes": false,
+     "gapTo80": "nedelja −1 na 76 % vrha i lagani dani 20–22 min"
+    },
+    "p10": {
+     "group": "ulaz dozvoljava",
+     "planOld": 76,
+     "passes": false,
+     "gapTo80": "obim stoji 16,3–17,8 km od 6. do 13. nedelje, dugi 55 min šest puta, tri nedelje provere u 16"
+    },
+    "p11": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80,
+     "passes": true
+    },
+    "p12": {
+     "group": "ulaz dozvoljava",
+     "planOld": 76.5,
+     "passes": false,
+     "gapTo80": "plan kreće sa 43,5 km i nikad ne stiže sadašnjih 48 km (najviše 44,4)"
+    },
+    "p13": {
+     "group": "plafon ulaza",
+     "planOld": 75.5,
+     "planForInput": 57.7,
+     "criteria": {
+      "bezbednost": 8.5,
+      "iskoriscenost": 4.5,
+      "iskrenost": 4.5,
+      "posleTrke": 5
+     },
+     "why": {
+      "bezbednost": "bezopasan; ništa ne može da povredi",
+      "iskoriscenost": "lagani 20 min šest nedelja, dugi hod-trk 5 + 1 od prve do poslednje nedelje bez promene odnosa, tri nedelje sužavanja sa vrha od 12,7 km — trkač nijednom ne trči 5 km u komadu",
+      "iskrenost": "tri upozorenja; „treba 15 km nedeljno\" i „duža priprema ne pomaže\" nisu tačni za početnika; prognoza 30:40 je optimistična; ne kaže da je cilj istrčati celu trku i da je hod dozvoljen",
+      "posleTrke": "posle trke je tamo gde je bio: 12 km nedeljno, 25 min u komadu"
+     },
+     "fix": "PODATAK: početnički šablon — neprekidno trčanje 20 → 30–35 min, dugi 5 + 1 → 8 + 1 → 40 min u komadu, jedna laka nedelja pred trku umesto tri; upozorenje: „cilj je istrčati celu trku, očekuj 32–36 min\"",
+     "passes": false
+    },
+    "p14": {
+     "group": "plafon ulaza",
+     "planOld": 75.5,
+     "planForInput": 69.8,
+     "criteria": {
+      "bezbednost": 8,
+      "iskoriscenost": 7,
+      "iskrenost": 6,
+      "posleTrke": 6.5
+     },
+     "why": {
+      "bezbednost": "bez nalaza; dva kvaliteta u prvoj nedelji su umerena",
+      "iskoriscenost": "za 4 nedelje gotovo sve je tu; druga nedelja ima jedan pravi kvalitet (tempo trke 5 × 1 km), treća samo 3 × 800 m",
+      "iskrenost": "prognoza je poštena (6 s napretka), ali upozorenje je prepisano sa dugih distanci („završni deo trke biće teži od svega u pripremi\", „dugi do 12,1 km\") i ne kaže šta 4 nedelje stvarno znače",
+      "posleTrke": "ništa se ne gradi; nema reči o nastavku"
+     },
+     "fix": "PODATAK: upozorenje za kratku pripremu na 5 km („4 nedelje samo izoštravaju postojeću formu; za napredak 8–10 nedelja\") i drugi kvalitet u 2. nedelji",
+     "passes": false
+    },
+    "p15": {
+     "group": "ulaz dozvoljava",
+     "planOld": 75.5,
+     "passes": false,
+     "gapTo80": "lagani dani od 20 min u sedam nedelja"
+    },
+    "p16": {
+     "group": "ulaz dozvoljava",
+     "planOld": 80,
+     "passes": true
+    }
+   },
+   "summary": {
+    "allows": 14,
+    "allowsPass": 4,
+    "ceiling": 2,
+    "ceilingPass": 0
+   }
+  }
+ },
+ "owner": {
+  "vlasnik-v1": {
+   "group": "ulaz dozvoljava",
+   "planOld": 78,
+   "passes": false,
+   "note": "van zbira 59"
+  },
+  "vlasnik-v2": {
+   "group": "ulaz dozvoljava",
+   "planOld": 81.5,
+   "passes": true,
+   "note": "van zbira 59"
+  }
+ },
+ "fixes": [
+  {
+   "n": 1,
+   "kind": "motor",
+   "text": "prognoza i plan trke uz upozorenje o obimu/dugom: kazna i siri raspon, sporiji pocetak; bez napretka",
+   "profiles": [
+    "MAR p03",
+    "MAR p06",
+    "MAR p13",
+    "MAR p19"
+   ],
+   "gain": "+5 do +7"
+  },
+  {
+   "n": 2,
+   "kind": "motor",
+   "text": "procena iz laganog tempa: tempo trke ne brzi od laganog za vise od ~45 s/km (HM), ~0-20 s/km (maraton)",
+   "profiles": [
+    "MAR p10",
+    "MAR p18",
+    "HM p10"
+   ],
+   "gain": "+6 do +9"
+  },
+  {
+   "n": 3,
+   "kind": "podatak",
+   "text": "upozorenje o 3 dana sa predlogom 4. dana i brojem na HM i maratonu",
+   "profiles": [
+    "HM p03",
+    "HM p10",
+    "MAR p03",
+    "MAR p10"
+   ],
+   "gain": "+4 do +10"
+  },
+  {
+   "n": 4,
+   "kind": "podatak",
+   "text": "dugi na maratonu po vremenu (do 3 h; brzi do 2 h 20) i do 55 % nedelje u dve najduze nedelje",
+   "profiles": [
+    "MAR p06",
+    "MAR p08",
+    "MAR p13",
+    "MAR p18",
+    "MAR p19"
+   ],
+   "gain": "+3 do +6"
+  },
+  {
+   "n": 5,
+   "kind": "podatak",
+   "text": "pocetnicki sablon 5 km: rast neprekidnog trcanja, bez tri nedelje suzavanja, posteno upozorenje",
+   "profiles": [
+    "5K p13"
+   ],
+   "gain": "+15"
+  },
+  {
+   "n": 6,
+   "kind": "podatak",
+   "text": "cetvrtak malih maratonskih planova: 60-75 min lagano umesto praga 12-18 min; brzom trkacu prag 20-30 min",
+   "profiles": [
+    "MAR p13",
+    "MAR p19",
+    "MAR p06"
+   ],
+   "gain": "+3 do +5"
+  },
+  {
+   "n": 7,
+   "kind": "motor",
+   "text": "najvise dva upozorenja; obim i dugi su jedno upozorenje",
+   "profiles": [
+    "MAR p06",
+    "MAR p18",
+    "MAR p10",
+    "MAR p13",
+    "MAR p19",
+    "5K p13"
+   ],
+   "gain": "+1 do +2"
+  },
+  {
+   "n": 8,
+   "kind": "podatak",
+   "text": "tekst upozorenja o kratkoj pripremi po distanci (5 km ne govori o dugom)",
+   "profiles": [
+    "5K p14"
+   ],
+   "gain": "+4"
+  },
+  {
+   "n": 9,
+   "kind": "podatak",
+   "text": "HM 3 dana: nedelja sa pragom 2 x 15 min i 35 min tempa trke u dugom ima 25 % brzog rada",
+   "profiles": [
+    "HM p03",
+    "HM p10"
+   ],
+   "gain": "+1,5"
+  },
+  {
+   "n": 10,
+   "kind": "motor",
+   "text": "napomena hod-trk kao na dugim samo kad su dugi u planu hod-trk",
+   "profiles": [
+    "MAR p03",
+    "MAR p10"
+   ],
+   "gain": "+1"
+  }
+ ]
+}
