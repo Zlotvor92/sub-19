@@ -466,7 +466,16 @@ export function createPlan(
       runDays: [...availability.runDays, extra].sort((x, y) => x - y),
       longDay: availability.longDay
     };
-    const probe = createPlan(state, goal, data, startDate, more, true);
+    /* R20 (dopuna MAR 1): dodat dan ide NA postojeći obim (bazna nedelja + jedan lagan dan od `EXTRA_DAY_MIN`), ne
+       deli isti obim na više dana — probni plan tada kaže koliko nedelja i dugi stvarno rastu */
+    const more_state: RunnerState = {
+      ...state,
+      load: { ...state.load, chronic: state.load.chronic + EXTRA_DAY_MIN / 7 },
+      ...(state.historyWeeklyMin === undefined
+        ? {}
+        : { historyWeeklyMin: state.historyWeeklyMin + EXTRA_DAY_MIN })
+    };
+    const probe = createPlan(more_state, goal, data, startDate, more, true);
     const ctx = paceCtxOf(probe.header);
     const costs = probe.weeks.map((w) => weekCost(w, goal.raceDate, ctx));
     /* Z7 (krug 7): trajanje dodatnog dana je ono što probni plan stvarno daje tom danu (prosek nedelja gradnje) */
@@ -562,6 +571,9 @@ function penaltyOf(
     raceDayNoProgress: true
   };
 }
+
+/** R20 (dopuna MAR 1): trajanje dana koji probni plan „+1 dan" dodaje na postojeći obim (min). */
+const EXTRA_DAY_MIN = 40;
 
 /** Krug 14 (M2): bar ovoliko dana od kraja pauze do danas — sadašnji obim je već obim posle pauze. */
 const BASE_AFTER_PAUSE_DAYS = 7;

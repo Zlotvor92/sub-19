@@ -789,8 +789,10 @@ describe('R6: istina o tempu trke', () => {
   it('taktika dana trke (krug 4, S7; R20 B4): iz današnje forme, a sporiji cilj je tempo za trku', () => {
     const base = withGoal(undefined);
     const confirmed = raceTimeSec(base.doc.header.form.paceVdot, HALF_M);
-    /* ovaj primer ima upozorenje „počni sporije" — tempo je oprezan, ne brži od forme */
-    expect(base.text).toMatch(/Tempo za trku: \d+:\d\d\/km \(oprezno, sporija polovina raspona/);
+    /* forma ili oprezan tempo (uz upozorenje „počni sporije" ili kaznu prognoze), nikad brži od forme */
+    expect(base.text).toMatch(
+      /Tempo za trku: \d+:\d\d\/km \((današnja forma|oprezno, sporija polovina raspona)/
+    );
     expect(withGoal(confirmed + 600).text).toContain(
       `Tempo za trku: ${paceOf(confirmed + 600)} (tvoj cilj`
     );

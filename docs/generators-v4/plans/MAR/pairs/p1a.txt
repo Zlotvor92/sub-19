@@ -24,7 +24,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:08/km). Tvoj cilj 3:27:30 traži 4:55/km — van raspona je (raspon na dan trke 3:29:44–3:48:45). Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Najveća nedelja u planu ima 56,1 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 56,1 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 40,7 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
+- Najveća nedelja u planu ima 56,1 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke dodaj 5. dan laganog trčanja od oko 45 min — vrh tada ide do 65,4 km nedeljno, a dugi do 29,5 km. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 40,7 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
 - Tražio si 4 dana trčanja nedeljno, a u nedelji provere forme (8. nedelja) plan ima 3 treninga. Pre provere forme ili pripremne trke dan ostaje slobodan da trku trčiš odmoran, a posle nje telo traži oporavak. Te nedelje trči kako piše; posle nje plan opet koristi sve tražene dane.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
@@ -202,6 +202,7 @@ UPOZORENJA
   sub 20. 2.  lagano 3 km — 3 km, 18 min
   ned 21. 2.  TRKA: maraton
       napomena: Tempo za trku: 5:18/km (oprezno, sporija polovina raspona prognoze 3:43:25).
+      napomena: Ako provera forme 26. 12. potvrdi očekivani napredak, ciljaj 5:10/km (3:38:05).
       napomena: Prvih 5–10 km trči 5:23–5:28/km, mirno, iako ti se čini lako; od 10. do 32. km 5:18/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35–40 min od 35. minuta, kao na dugim, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
       napomena: Posle trke: 21 dan bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

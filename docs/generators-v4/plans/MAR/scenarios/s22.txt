@@ -25,7 +25,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:27:27) traži 4:55/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 75 min — isti obim se tada deli na više kraćih trčanja, pa je svako lakše za oporavak.
+- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 90 min — nedelja tada stiže do 75,7 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 30 km i nosi manji deo nedelje.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor
@@ -319,7 +319,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:02/km). Očekivano vreme na dan trke (3:27:27) traži 4:55/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 75 min — isti obim se tada deli na više kraćih trčanja, pa je svako lakše za oporavak.
+- Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Dodaj 4. dan laganog trčanja od oko 90 min — nedelja tada stiže do 75,7 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 30 km i nosi manji deo nedelje.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor
