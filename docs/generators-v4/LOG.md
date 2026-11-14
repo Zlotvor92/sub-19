@@ -826,3 +826,6 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   kod trkača po osećaju; tempa treninga ne prate usporenu prognozu.
 - Trener: najveći učinak ima PODATAK (rast umesto platoa, lagan dan ≥ 30 min) — 8–10 profila preko 80.
 - R22 (`briefs/R22.md`): motor A (događaji), motor B (plan/tekstovi), podatak HM (nov tab), 10K, MAR, 5K.
+- Tabovi R22 (svi Opus): motor A `session_01GnHHiY77vK5sAVSExCfQTc`, motor B `session_01GnHHiWpYkG4yofXY4tFEFD`, HM
+  podatak `session_01GnHHiYnYWNqXAuWCD4B9eM`; 10K `…XivSsUTpEuBAFcJZi`, MAR `…WbwULZGywbJmwtnzH`, 5K
+  `…YgBWy4zCKtBd6YPxy` (postojeći, nalog u poruci). Svi tabovi ocene R21 arhivirani.
