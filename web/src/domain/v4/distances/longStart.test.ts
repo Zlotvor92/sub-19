@@ -97,3 +97,24 @@ describe('R20 B1 — dugi u nedelji 1 i navika dugog (sve distance)', () => {
     }
   );
 });
+
+/* R20 B2: brzi trening nije duži od dugog te nedelje kad doza to dozvoljava (5K p15: intervali 7,5 → 6,8 km uz
+   dugi 6,6 km; brze deonice 5 × 300 m ni na najmanjoj dozi ne staju pod dugi od 45 min) */
+describe('R20 B2 — brzi trening skraćen prema dugom (5 km p15)', () => {
+  it('p15: intervali 22. 12. ≤ 7 km', () => {
+    const d = DIST.find((x) => x.data.id === 'fivek');
+    const p = d?.profiles.find((x) => x.id === 'p15');
+    if (d === undefined || p === undefined) throw new Error('p15');
+    const res = plan(buildState(d.factsOf(p), p.goal, d.data, estimateForm), p.goal, d.data);
+    if (!res.ok) throw new Error('plan');
+    const ctx = paceCtxOf(res.doc.header);
+    const w = (res.doc.weeks as any[]).find((x) =>
+      x.days.some((y: any) => y.date === '2026-12-22')
+    );
+    const day = w.days.find((y: any) => y.date === '2026-12-22');
+    expect(day.workout.kind).toBe('quality');
+    expect(
+      weekCost({ ...w, days: [day] }, res.doc.header.goal.raceDate, ctx).km
+    ).toBeLessThanOrEqual(7);
+  });
+});

@@ -1445,6 +1445,22 @@ function layoutOnce(
     if (dose < minDoseOf(item.def, ctx)) continue;
     let recipe: Recipe = { type: 'quality', def: item.def, dose, slot: item.slot };
     let cost = summarize(realize(recipe, ctx), ctx.pace);
+    /* R20 B2/B3: brzi trening (sa zagrevanjem, oporavcima i hlađenjem) nije duži od dugog te nedelje — doza se
+       skraćuje do najmanje smislene; kad ni tako ne staje, ostaje kakav jeste */
+    const sessionCap =
+      longWd !== null && week.longSec > 0 ? week.longSec + 60 : Number.POSITIVE_INFINITY;
+    if (cost.durationSec > sessionCap) {
+      const fit = shrinkQuality(item, dose, ctx, (c) => c.durationSec <= sessionCap);
+      if (fit !== null && fit.recipe.type === 'quality') {
+        recipe = fit.recipe;
+        cost = fit.cost;
+        dose = fit.recipe.dose;
+        if (fit.recipe.def !== item.def) {
+          const zone = mainZone(fit.recipe.def.main);
+          if (zone !== null) item = { ...item, def: fit.recipe.def, extra: extraWeight(zone, ctx) };
+        }
+      }
+    }
     /* krug 15: uz pod laganog dana (dugi ≥ 90 min) trening prvo dobija najkraće zagrevanje i hlađenje, iste doze */
     if (keepDays && longFloor > 0 && !roomFor(item.date, cost.load, cost.durationSec, true)) {
       const short: Recipe = { ...recipe, wuCd: shortestWuCd(ctx) };
