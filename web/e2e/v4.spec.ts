@@ -206,7 +206,7 @@ test('V4: trčanje/hodanje (ne mogu 30 min) za 10K se ne odbija — plan uz upoz
   const v4 = installV4(backend);
   await page.goto('/');
   await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(0);
-  const input = { ...(INPUTS['10K'] as PlanInput), weeklyKm: '8', run30: 'Ne još' as const };
+  const input = { ...INPUTS['10K'], weeklyKm: '8', run30: 'Ne još' as const };
   await runWizard(page, input);
   await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(1);
   await tab(page, 'Plan').click();
