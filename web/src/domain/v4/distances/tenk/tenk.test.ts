@@ -1098,7 +1098,9 @@ describe('R24 P6 (p03, p10; R24-ISPRAVKA)', () => {
   it('šablon 10 km: najviše jedna provera forme na 8 nedelja', () => {
     const bad: string[] = [];
     for (const t of tenk.templates) {
-      const checks = t.tail.filter((w) => w.stimuli.some((s) => s.stimulus.startsWith('kontrola'))).length;
+      const checks = t.tail.filter((w) =>
+        w.stimuli.some((s) => s.stimulus.startsWith('kontrola'))
+      ).length;
       if (checks > Math.ceil(t.tail.length / 8)) bad.push(`${t.id}: ${String(checks)}`);
     }
     expect(bad).toEqual([]);

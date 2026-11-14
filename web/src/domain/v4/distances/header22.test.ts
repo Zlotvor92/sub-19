@@ -41,7 +41,8 @@ function startNumbers(text: string): string[] {
   const head = text.split('\n1. NEDELJA')[0] ?? text;
   const out: string[] = [];
   for (const l of head.split('\n')) {
-    if (l.startsWith('Polazna forma')) out.push(CLOCK.exec(l.split(': ').slice(1).join(': '))?.[1] ?? '?');
+    if (l.startsWith('Polazna forma'))
+      out.push(CLOCK.exec(l.split(': ').slice(1).join(': '))?.[1] ?? '?');
     const m = /Polazna procena je iz .*?oko (\d+:\d{2}(?::\d{2})?) za/.exec(l);
     if (m?.[1] !== undefined) out.push(m[1]);
   }

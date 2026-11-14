@@ -6,7 +6,14 @@ const jog = (sec: number): RecoverySpec => ({ extent: { durationSec: sec }, mode
 const walkBack = (sec: number): RecoverySpec => ({ extent: { durationSec: sec }, mode: 'hod' });
 
 /** Nivoi koji smeju prag u komadu duži od 11 min (svi osim povratnika: bez istorije kvaliteta ili posle pauze). */
-const WITH_QUALITY_HISTORY: LevelId[] = ['pocetnik', 'pocetnik-nov', 'mali', 'spor', 'srednji', 'brz'];
+const WITH_QUALITY_HISTORY: LevelId[] = [
+  'pocetnik',
+  'pocetnik-nov',
+  'mali',
+  'spor',
+  'srednji',
+  'brz'
+];
 
 /** R20: oprezan prag — 2 × 6–9 min ili 3 × 6–8 min (uslov grupe: nivo ili tempo po osećaju). */
 const cautiousThreshold = (when: Requirements): WorkoutDef[] => [

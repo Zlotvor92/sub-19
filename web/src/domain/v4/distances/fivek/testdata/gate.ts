@@ -322,7 +322,8 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
   if (!shortPlan && m2 !== undefined && m2Week !== undefined && peakKm > 0) {
     /* R22 (B4): plan ≤ 6 nedelja — nedelja −2 ≤ 92 % vrha (`weekMinus2ByWeeks`) */
     const m2Share = nW <= 6 ? 0.92 : 0.85;
-    if (m2.km > m2Share * peakKm + 0.5) v.push(`nedelja −2 ${String(m2.km)} km > ${String(Math.round(m2Share * 100))} % vrha`);
+    if (m2.km > m2Share * peakKm + 0.5)
+      v.push(`nedelja −2 ${String(m2.km)} km > ${String(Math.round(m2Share * 100))} % vrha`);
     const fastDays = m2Week.days.filter((x) => fastOf(x) > 0).length;
     if (fastDays > 2) v.push(`nedelja −2 ima ${String(fastDays)} brza treninga`);
   }

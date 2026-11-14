@@ -1107,7 +1107,6 @@ export function rankProposals(list: Warning[]): Warning[] {
 }
 const MAX_PROPOSALS = 2;
 
-
 /** Deo predloga `nema-podataka` o testu: distanca se čita iz plana (prva provera forme koju plan sadrži), inače iz
     biblioteke distance (najkraći unos vrste `test`); bez toga se test ne pominje. */
 /** R5 (krug 6): samo provera koja je još pred trkačem. */

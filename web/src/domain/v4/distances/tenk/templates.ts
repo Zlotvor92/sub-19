@@ -201,7 +201,12 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           sh.single ? load * (sh.slow === true ? 1.12 : 1.06) : load,
           { ...longSpec, len: Math.min(1, longSpec.len * (sh.single ? 1.04 : 1)) },
           sh.single
-            ? [sh.slow === true ? S('tempo-trke', 0.65, 'rp-1000') : S('tempo-trke', 0.45, 'rp-1200'), STRIDES]
+            ? [
+                sh.slow === true
+                  ? S('tempo-trke', 0.65, 'rp-1000')
+                  : S('tempo-trke', 0.45, 'rp-1200'),
+                STRIDES
+              ]
             : /* R12 T2 (p02): VO2 doza veća od 3 × 800 m */
               /* R17 (p02): tempo trke ≥ 4 km od 3. nedelje */
               [
@@ -491,7 +496,16 @@ export const TEMPLATES: Template[] = WEEKS.flatMap((n) =>
     return [
       /* R24 P6: spor nivo sa 1–3 dana ima svoj šablon (prvi koji odgovara) */
       ...(few
-        ? [makeTemplate('spor', 'redovan', { days, single: true, slow: true }, n, ['spor'], regularMult(n, days))]
+        ? [
+            makeTemplate(
+              'spor',
+              'redovan',
+              { days, single: true, slow: true },
+              n,
+              ['spor'],
+              regularMult(n, days)
+            )
+          ]
         : []),
       makeTemplate(
         'redovan',

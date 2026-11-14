@@ -32,16 +32,14 @@ export function raceAdvice(
     slowerAdvice && midSec > CAUTIOUS_MIN_OVER * confirmedSec ? midSec : confirmedSec;
   /* R22 (B2): cilj brži od polazne forme koji je forma posle rezultata prestigla nije više tempo za trku — plan nudi
      nov cilj iz današnje forme (5 km s01: parkrun 21:10 uz cilj 21:44) */
-  const passed =
-    target !== undefined && target < h.form.start.raceTimeSec && target >= cautiousSec;
+  const passed = target !== undefined && target < h.form.start.raceTimeSec && target >= cautiousSec;
   const fromGoal = target !== undefined && target >= cautiousSec && !passed;
   const timeSec = fromGoal ? target : cautiousSec;
   /* razlika do 1 % nije nov broj — ostaje potvrđena forma */
   const cautious = !fromGoal && timeSec > confirmedSec;
   const basis = fromGoal ? 'cilj' : cautious ? 'oprezno' : passed ? 'nov-cilj' : 'forma';
   const base = h.paces.rpBase ?? h.paces.RP;
-  const pace =
-    fromGoal || cautious || h.paces.byFeel ? (timeSec / distanceM) * 1000 : base;
+  const pace = fromGoal || cautious || h.paces.byFeel ? (timeSec / distanceM) * 1000 : base;
   return { timeSec, pace, basis };
 }
 

@@ -222,7 +222,10 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       pos = 0;
     } else pos += 1;
     const long = sh.single
-      ? Math.min(0.95, SINGLE_LONG_FROM + SINGLE_LONG_STEP * Math.min(pos, 2) + SINGLE_LONG_BLOCK * (block - 1))
+      ? Math.min(
+          0.95,
+          SINGLE_LONG_FROM + SINGLE_LONG_STEP * Math.min(pos, 2) + SINGLE_LONG_BLOCK * (block - 1)
+        )
       : lerp(0.68, 0.95, t);
     /* T3: talas i smena sadržaja — svaka treća nedelja gradnje progresivan dugi (lagan / progresivan) */
     const wave = WAVE[(w - 1) % WAVE.length] ?? 1;
@@ -336,7 +339,13 @@ function regularTail(sh: Shape, afterCheck: boolean, short: boolean): WeekIntent
     ),
     /* N−1: sužavanje — tempo trke 2 × 2,5 km + prag 2 × 1 km */
     /* krug 4 (S4, T4): osnovica doze više nije plafon, pa su doze sužavanja niže (rad ≤ 60 % vršne nedelje) */
-    week(FINISH, 'taper', 0.68, { len: sh.single ? SINGLE_TAPER_LEN : 0.59 }, pair(S('prag', 0.2), S('tempo-trke', 0.38))),
+    week(
+      FINISH,
+      'taper',
+      0.68,
+      { len: sh.single ? SINGLE_TAPER_LEN : 0.59 },
+      pair(S('prag', 0.2), S('tempo-trke', 0.38))
+    ),
     /* N: nedelja trke — oštrenje 2 × 1200 m u četvrtak, utorak lagano uz ubrzanja */
     week(FINISH, 'race', 0.33, null, [S('ostrenje', 1), STRIDES])
   ];

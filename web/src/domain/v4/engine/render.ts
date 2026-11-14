@@ -178,10 +178,14 @@ function raceTruth(
   const basis = raceAdvice(h, raceDay, data.distanceM).basis;
   const own =
     h.paces.RP > formRP && (basis === 'cilj' || basis === 'oprezno')
-      ? line(data, basis === 'cilj' ? 'zaglavlje.tempo-trke-cilj' : 'zaglavlje.tempo-trke-oprezno', {
-          ...values,
-          formPace: fmtPace(formRP)
-        })
+      ? line(
+          data,
+          basis === 'cilj' ? 'zaglavlje.tempo-trke-cilj' : 'zaglavlje.tempo-trke-oprezno',
+          {
+            ...values,
+            formPace: fmtPace(formRP)
+          }
+        )
       : line(data, 'zaglavlje.tempo-trke', values);
   return [
     own,
@@ -556,12 +560,17 @@ export function renderPlan(
   const all = options.changes ?? [];
   /* kad kasniji događaj (rezultat) da novo očekivano vreme, rečenica o izgubljenom napretku ranijeg otpada */
   const later = (i: number): boolean =>
-    all.some((c, j) => j > i && !LOST.test(c.reason) && /očekivano vreme trke je sada oko/i.test(c.reason));
+    all.some(
+      (c, j) => j > i && !LOST.test(c.reason) && /očekivano vreme trke je sada oko/i.test(c.reason)
+    );
   const fixed = all
     .filter((c, i) => !LOST.test(c.reason) || !later(i))
     .map((c) =>
       LOST.test(c.reason)
-        ? { ...c, reason: c.reason.replace(LOST, `Očekivano vreme trke je sada oko ${shown} umesto`) }
+        ? {
+            ...c,
+            reason: c.reason.replace(LOST, `Očekivano vreme trke je sada oko ${shown} umesto`)
+          }
         : c
     );
   lines.push(...changeLines(fixed, doc));
@@ -611,7 +620,9 @@ export function renderPlan(
     lines.push('');
     lines.push(`${String(week.index)}. NEDELJA (od ${fmtDate(week.start)}) — ${label}${until}`);
     for (const w of h.warnings.filter((x) => x.weeks?.includes(week.index) === true))
-      lines.push(`  napomena: ${[w.problem, w.meaning, w.proposal].filter((x) => x !== '').join(' ')}`);
+      lines.push(
+        `  napomena: ${[w.problem, w.meaning, w.proposal].filter((x) => x !== '').join(' ')}`
+      );
     let km = 0;
     let durationSec = 0;
     let trainings = 0;

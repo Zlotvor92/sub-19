@@ -1637,8 +1637,7 @@ function layoutOnce(
     ctx.pace.paces.rpBase === undefined
       ? ctx.pace
       : { ...ctx.pace, paces: { ...ctx.pace.paces, RP: ctx.pace.paces.rpBase } };
-  const longCost =
-    longRecipe === undefined ? null : summarize(realize(longRecipe, ctx), formPace);
+  const longCost = longRecipe === undefined ? null : summarize(realize(longRecipe, ctx), formPace);
   const realLong =
     longCost === null
       ? 0
@@ -2261,7 +2260,9 @@ function taperVolumeCap(
     return t.raceWeekMaxOfPeak * peakVolume;
   if (week.start === addDays(raceMonday, -14) && t.weekMinus2MaxOfPeak !== undefined) {
     /* R22 (B4): u kratkom planu nedelja −2 je još gradnja — svoj udeo vrha (podatak po dužini plana) */
-    return (weekMinus2Share(t, span.startDate, span.raceDate) ?? t.weekMinus2MaxOfPeak) * peakVolume;
+    return (
+      (weekMinus2Share(t, span.startDate, span.raceDate) ?? t.weekMinus2MaxOfPeak) * peakVolume
+    );
   }
   if (week.start === addDays(raceMonday, -7) && t.weekMinus1MaxOfPeak !== undefined)
     return t.weekMinus1MaxOfPeak * peakVolume;

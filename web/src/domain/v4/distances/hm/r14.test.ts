@@ -47,7 +47,9 @@ describe('krug 14 — povratak posle pauze (M2)', () => {
       const travel = ((r.after.header.adjustments ?? []) as any[]).some(
         (a) => a.kind === 'pause' && a.reason === 'put'
       );
-      expect(w1).toBeLessThanOrEqual(Math.min((travel ? 0.875 : 0.75) * ref, plan[first] ?? 0) + 0.5);
+      expect(w1).toBeLessThanOrEqual(
+        Math.min((travel ? 0.875 : 0.75) * ref, plan[first] ?? 0) + 0.5
+      );
       expect(w2).toBeLessThanOrEqual(
         Math.min(travel ? Number.POSITIVE_INFINITY : 0.9 * ref, plan[first + 1] ?? 0) + 0.5
       );

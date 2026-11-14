@@ -544,7 +544,9 @@ export function createPlan(
       : {}),
     ...penaltyOf(built, goal, data, found, weeks, state),
     /* R22 (B3): obim ispod potrebnog za nivo (`obim-za-nivo`) — upola manji očekivani napredak (brz trkač malog obima) */
-    ...(found.some((w) => w.code === 'obim-za-nivo') ? { raceDayVolumeShare: LEVEL_VOLUME_GAIN_SHARE } : {}),
+    ...(found.some((w) => w.code === 'obim-za-nivo')
+      ? { raceDayVolumeShare: LEVEL_VOLUME_GAIN_SHARE }
+      : {}),
     ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) }),
     ...(data.safety.forecastMaxGainByLevel?.[level] === undefined
       ? {}
@@ -605,7 +607,7 @@ function highImpactFromOf(
     dates.push(addDays(startDate, Math.ceil((HIGH_IMPACT_MIN_TENURE_WEEKS - tenure) * 7)));
   if (dates.length === 0) return {};
   if ((state.painHistory ?? []).length > 0) dates.push(addDays(startDate, 28));
-  return { highImpactFrom: dates.sort().at(-1) as IsoDate };
+  return { highImpactFrom: dates.sort().at(-1) };
 }
 
 /** R22 (B3): udeo očekivanog napretka uz upozorenje `obim-za-nivo`. */

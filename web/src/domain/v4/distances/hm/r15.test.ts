@@ -160,7 +160,6 @@ describe('krug 15 — lagan dan uz dugi ≥ 90 min (M2, M21)', () => {
   it('stabilnost (R16): „ništa se nije desilo" — očekivano vreme i raspon u ispisu isti pre i posle', () => {
     const line = (t: string): string => /Očekivano na dan trke: [^—]*/.exec(t)?.[0] ?? '';
     for (const sc of SCENARIOS.filter((x) => x.title.includes('ništa'))) {
-       
       const r: any = sc.run();
       /* scenarij „ništa" sa proverom forme iz plana (promena ≠ 0) ima pravu izmenu — meri se samo promena 0 */
       if ((r.changes as unknown[]).length > 0) continue;
