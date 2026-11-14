@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument */
 import { describe, expect, it } from 'vitest';
+import { effortShares } from '../../engine/readiness';
 import { paceCtxOf, renderPlan, summarize, type PlanDoc, type PlanWeek } from '../../engine';
 import { addDays } from '../../engine/dates';
 import { weekCost } from '../../engine/guard';
@@ -463,7 +464,15 @@ describe('maraton — R17: lestvica dugog posle prekida i E5 posle polumaratona'
       if (!hadLong || weeksLeft < (keep?.minWeeksToRace ?? 4)) continue;
       checked += 1;
       const future = after.filter((w) => w.start > today && w.index <= n - 3);
-      if (!future.some((w) => w.km >= (keep?.km ?? 26) - 0.25))
+      /* R20 (A1): dugi posle prekida raste najviše + 20 min nedeljno — kad lanac ne stiže do 26 km, dovoljno je da
+         najduži bude na granici lanca (blok u tempu maratona skraćuje trajanje za isti km do ~ 15 min) */
+      let chain = 0;
+      const atChain = future.some((w) => {
+        const capped = chain > 0 && w.sec >= chain + 20 * 60 - 15 * 60;
+        chain = Math.max(chain, w.sec);
+        return capped;
+      });
+      if (!future.some((w) => w.km >= (keep?.km ?? 26) - 0.25) && !atChain)
         bad.push(
           `${name(s.no)} najduži dugi posle prekida ${String(Math.max(0, ...future.map((w) => w.km)))} km`
         );
@@ -489,25 +498,26 @@ describe('maraton — R17: lestvica dugog posle prekida i E5 posle polumaratona'
     expect(bad).toEqual([]);
   });
 
-  it('afterLongRace (E5): posle polumaratona dve nedelje dugi ≤ 60 % planiranog, nedelja ≤ 75 % polaznog obima', () => {
-    const rule = marathon.safety.afterLongRace;
-    expect(rule).toEqual({ minEffortSec: 4500, weeks: 2, longShare: 0.6, weekShare: 0.75 });
+  /* R20 (A1): posle neplanirane trke povratak po nedeljama (jedan vlasnik odluke; podatak `afterLongRace` ostaje samo za
+     trku bez rasporeda): nedelja k ≤ udeo × referentna nedelja pre trke, dugi prve ≤ ¾ poslednjeg dugog, druge ≤ njega */
+  it('E5 posle polumaratona: nedelje rasporeda ≤ udela referentne, dugi ≤ ¾ pa ceo poslednji', () => {
     const bad: string[] = [];
+    let seen = 0;
     for (const { s, r } of RUNS.filter(
       ({ s }) => s.title.startsWith('E5') && s.title.includes('polumaraton')
     )) {
-      const before = kmOfLongs(r.before as PlanDoc);
+      const eff = ((r.after as PlanDoc).header.adjustments ?? []).find((a) => a.kind === 'effort');
+      if (eff?.kind !== 'effort' || eff.refWeekKm === undefined) continue;
+      seen += 1;
+      const shares = effortShares(eff.durationSec);
       const after = kmOfLongs(r.after as PlanDoc);
-      const base = (r.afterState.profile?.weeklyKm as number | undefined) ?? 0;
       const ctx = paceCtxOf((r.after as PlanDoc).header);
-      for (let i = 0; i < (rule?.weeks ?? 2); i += 1) {
+      shares.forEach((share, i) => {
         const a = after[i];
-        const b = before[i];
-        if (a === undefined || b === undefined) continue;
-        if (b.sec > 0 && a.sec > (rule?.longShare ?? 0.6) * b.sec + 120)
-          bad.push(
-            `${name(s.no)} n${String(i + 1)} dugi ${String(Math.round(a.sec / 60))} od ${String(Math.round(b.sec / 60))} min`
-          );
+        const ref = eff.lastLongSec ?? 0;
+        const longCap = (i === 0 ? 0.75 : 1) * ref + 120;
+        if (a !== undefined && ref > 0 && a.sec > longCap)
+          bad.push(`${name(s.no)} n${String(i + 1)} dugi ${String(Math.round(a.sec / 60))} min`);
         const week = (r.after as PlanDoc).weeks[i];
         const km = (week?.days ?? []).reduce(
           (sum, d) =>
@@ -515,12 +525,11 @@ describe('maraton — R17: lestvica dugog posle prekida i E5 posle polumaratona'
             (d.workout === null || d.workout.kind === 'race' ? 0 : summarize(d.workout, ctx).km),
           0
         );
-        if (base > 0 && km > (rule?.weekShare ?? 0.75) * base + 1)
-          bad.push(
-            `${name(s.no)} n${String(i + 1)} nedelja ${km.toFixed(1)} od ${String(base)} km`
-          );
-      }
+        if (km > share * (eff.refWeekKm ?? 0) + 1)
+          bad.push(`${name(s.no)} n${String(i + 1)} nedelja ${km.toFixed(1)} km`);
+      });
     }
+    expect(seen).toBeGreaterThan(0);
     expect(bad).toEqual([]);
   });
 });

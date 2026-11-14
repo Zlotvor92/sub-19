@@ -1,6 +1,7 @@
 /* R19 (briefs/R19-MOTOR.md, stavka 1) — povratak posle kratke bolesti/pauze nad scenarijima SVIH distanci (svojstvo):
    posle pauze od 5 do 10 dana nijedna nedelja rasporeda nije veća od referentne nedelje (ni od svog udela: 75 / 90 %),
-   a treća nedelja je ≥ 95 % plana bez događaja (osim sužavanja i nedelje trke). */
+   a treća nedelja je ≥ 95 % plana bez događaja (osim sužavanja i nedelje trke) — R20 (A1): ili na granici rasta
+   od druge (+ 25 %, ≤ 1,2 × najveće posle pauze). */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
    @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
    -- scenariji su netipizovani */
@@ -70,8 +71,13 @@ describe('R19 — povratak po nedeljama posle pauze 5–10 dana (sve distance)',
         ) {
           const plan = km(r.before, third.start);
           const now = km(r.after, third.start);
-          if (now < 0.95 * plan)
-            bad.push(`${tag} ned 3 ${now.toFixed(1)} < 95 % od ${plan.toFixed(1)}`);
+          /* R20 (A1): treća nedelja najviše + 25 % od druge i ≤ 1,2 × najveće posle pauze */
+          const w1 = km(r.after, at(0));
+          const w2 = km(r.after, at(1));
+          const step = Math.min(1.25 * w2, 1.2 * Math.max(w1, w2));
+          /* dugi (+ 20 min) i prvi brzi (70 %) je spuštaju još: merilo 85 % manjeg od plana i granice rasta */
+          if (now < 0.85 * Math.min(plan, step))
+            bad.push(`${tag} ned 3 ${now.toFixed(1)} < 85 % od ${Math.min(plan, step).toFixed(1)}`);
         }
       }
       expect(seen).toBeGreaterThan(0);

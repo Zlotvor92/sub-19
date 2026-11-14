@@ -134,6 +134,11 @@ describe('krug 9 — A6: posle događaja čuvar bez nalaza', () => {
     /* krug 12 (maraton): p11 posle bolesti/bola gubi najduži dugi ispod 27 km — plan to kaže upozorenjem (s7, s26);
        s26 silazak N−2 posle trke u prozoru bola — motor (M3) */
     const KNOWN_A6 = new Set<string>([
+      /* R20 (A1): posle propuštenih dugih dugi raste najviše + 20 min od poslednjeg odrađenog (s12: 2 h 25 → 2 h 22,
+         ne 3 h 07) — vrh je niži, pa sužavanje izgleda veće od njega (silazak) i najduži dugi je kraći */
+      's11 silazak@22',
+      's11 dugi-za-distancu@19',
+      's12 silazak@16',
       's15 dugi-za-distancu@17',
       's25 brz-udeo@6',
       's7 dugi-za-distancu@13',

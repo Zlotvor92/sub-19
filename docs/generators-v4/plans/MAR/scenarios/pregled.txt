@@ -2,19 +2,19 @@
 
 s01 p07 E1: ned 4, trka 10 km 3,0 % brže od očekivanog — promena: 1; forma 3:28:01 (srednja); nalazi čuvara posle: 0
 s02 p08 E1: ned 15, pripremni polumaraton 3,1 % brže od očekivanog — promena: 1; forma 3:27:46 (srednja); nalazi čuvara posle: ispod-cilja@20
-s03 p11 E1: ned 15, pripremni polumaraton 3,4 % brže od očekivanog — promena: 1; forma 4:14:52 (srednja); nalazi čuvara posle: 0
+s03 p11 E1: ned 15, pripremni polumaraton 3,4 % brže od očekivanog — promena: 1; forma 4:14:52 (srednja); nalazi čuvara posle: dugi-za-distancu@21
 s04 p12 E1: ned 4, prva trka u životu, 5 km 30:30 — promena: 3; forma 4:48:11 (srednja); nalazi čuvara posle: 0
-s05 p07 E2: bolest 7 dana u ned 6 (specifična, talas) — promena: 7; forma 3:33:28 (srednja); nalazi čuvara posle: 0
-s06 p08 E2: bolest 7 dana u ned 17 (specifična, blok 1) — promena: 9; forma 3:33:26 (srednja); nalazi čuvara posle: 0
-s07 p11 E2: bolest 7 dana u ned 14 (razvoj) — promena: 9; forma 4:22:00 (srednja); nalazi čuvara posle: 0
+s05 p07 E2: bolest 7 dana u ned 6 (specifična, talas) — promena: 9; forma 3:33:28 (srednja); nalazi čuvara posle: 0
+s06 p08 E2: bolest 7 dana u ned 17 (specifična, blok 1) — promena: 16; forma 3:33:26 (srednja); nalazi čuvara posle: 0
+s07 p11 E2: bolest 7 dana u ned 14 (razvoj) — promena: 13; forma 4:22:00 (srednja); nalazi čuvara posle: dugi-za-distancu@21
 s08 p12 E2: bolest 7 dana u ned 15 (najteža) — promena: 6; forma 4:13:12 (srednja); nalazi čuvara posle: 0
 s09 p07 E3: ned 9 (najteža): propušteni kvalitet i najduži dugi sa blokom — promena: 2; forma 3:32:24 (srednja); nalazi čuvara posle: 0
 s10 p08 E3: ned 12 (razvoj): propušteni kvalitet i dugi — promena: 1; forma 3:32:24 (srednja); nalazi čuvara posle: ispod-cilja@20
-s11 p11 E3: ned 19: propušteni tempo maratona i dugi — promena: 1; forma 4:20:46 (srednja); nalazi čuvara posle: 0
-s12 p12 E3: ned 11 i 13: propušten po jedan dugi — promena: 4; forma 4:11:58 (srednja); nalazi čuvara posle: 0
+s11 p11 E3: ned 19: propušteni tempo maratona i dugi — promena: 2; forma 4:20:46 (srednja); nalazi čuvara posle: silazak@22 dugi-za-distancu@19
+s12 p12 E3: ned 11 i 13: propušten po jedan dugi — promena: 5; forma 4:11:58 (srednja); nalazi čuvara posle: silazak@16
 s13 p07 E4: ned 7, bol u kolenu 4/10 posle praga (nedelja bloka) — promena: 14; forma 3:32:24 (srednja); nalazi čuvara posle: 0
-s14 p08 E4: ned 10, bol 4/10 posle kvaliteta (osnova) — promena: 11; forma 3:32:24 (srednja); nalazi čuvara posle: ispod-cilja@20
-s15 p11 E4: ned 17, bol 4/10 posle dugog — promena: 11; forma 4:20:46 (srednja); nalazi čuvara posle: 0
+s14 p08 E4: ned 10, bol 4/10 posle kvaliteta (osnova) — promena: 12; forma 3:32:24 (srednja); nalazi čuvara posle: ispod-cilja@20
+s15 p11 E4: ned 17, bol 4/10 posle dugog — promena: 19; forma 4:20:46 (srednja); nalazi čuvara posle: dugi-za-distancu@13
 s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 25; forma 4:12:03 (niska); nalazi čuvara posle: 0
 s17 p07 E5: juče polumaraton 1:40:14 — promena: 0; forma 3:32:21 (srednja); nalazi čuvara posle: 0
 s18 p08 E5: juče trka 10 km 45:13 — promena: 0; forma 3:32:28 (srednja); nalazi čuvara posle: ispod-cilja@20
@@ -22,10 +22,10 @@ s19 p11 E5: juče prva trka 10 km 58:30 — promena: 0; forma 4:30:54 (srednja);
 s20 p12 E5: juče polumaraton 2:20 (prvi rezultat) — promena: 0; forma 4:51:15 (srednja); nalazi čuvara posle: 0
 s21 p07 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 3:32:24 (srednja); nalazi čuvara posle: 0
 s22 p08 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 3:32:21 (srednja); nalazi čuvara posle: ispod-cilja@20
-s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 4:20:37 (srednja); nalazi čuvara posle: 0
+s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 4:20:37 (srednja); nalazi čuvara posle: dugi-za-distancu@21
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; forma 4:11:55 (srednja); nalazi čuvara posle: 0
-s25 p07 E7: bolest 5 dana u ned 3, pa propušten dugi 10 dana kasnije — promena: 13; forma 3:32:21 (srednja); nalazi čuvara posle: brz-udeo@6
-s26 p11 E7: bol 4/10 u ned 13, pa trka 10 km dve nedelje kasnije — promena: 28; forma 4:23:37 (srednja); nalazi čuvara posle: 0
-s27 p08 E7: propuštena dva kvaliteta (ned 13–14), pa put 6 dana — promena: 15; forma 3:32:54 (srednja); nalazi čuvara posle: 0
+s25 p07 E7: bolest 5 dana u ned 3, pa propušten dugi 10 dana kasnije — promena: 21; forma 3:32:21 (srednja); nalazi čuvara posle: 0
+s26 p11 E7: bol 4/10 u ned 13, pa trka 10 km dve nedelje kasnije — promena: 31; forma 4:23:37 (srednja); nalazi čuvara posle: dugi-za-distancu@21
+s27 p08 E7: propuštena dva kvaliteta (ned 13–14), pa put 6 dana — promena: 21; forma 3:32:54 (srednja); nalazi čuvara posle: 0
 s28 p07 MAR: propušten najduži dugi (ned 9, 3 nedelje pred trku) — promena: 1; forma 3:32:24 (srednja); nalazi čuvara posle: 0
 s29 p08 MAR: bolest 7 dana u poslednje 4 nedelje (ned 21, najteža) — promena: 4; forma 3:33:26 (srednja); nalazi čuvara posle: ispod-cilja@20

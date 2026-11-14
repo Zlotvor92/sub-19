@@ -117,8 +117,10 @@ describe('SPEC § 12 (d): plan koji počinje dan posle trke od 1:41:00', () => {
     expect(first?.workout?.workSec ?? 0).toBeLessThan(20 * 60);
   });
 
-  it('utorak 17. 11. je odmor (f < 0,5), četvrtak je lagan umesto kvaliteta, dugi je skraćen', () => {
-    expect(onDate(doc, '2026-11-17')?.workout).toBeNull();
+  /* R20 (A1): posle neplanirane trke povratak po nedeljama (polumaraton: 60 / 80 % referentne nedelje) — dan posle
+     trke je odmor, prva nedelja bez kvaliteta, dugi ≤ ¾ poslednjeg (ranije: dnevna rampa, odmor i u utorak) */
+  it('ponedeljak 16. 11. je odmor, četvrtak je lagan umesto kvaliteta, dugi je skraćen', () => {
+    expect(onDate(doc, '2026-11-16')?.workout).toBeNull();
     expect(onDate(doc, '2026-11-19')?.workout?.kind).toBe('easy');
     const ctx = paceCtxOf(doc.header);
     const long = summarize(onDate(doc, '2026-11-22')?.workout ?? null, ctx);

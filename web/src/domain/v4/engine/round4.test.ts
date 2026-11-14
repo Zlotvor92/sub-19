@@ -300,7 +300,8 @@ describe('E: plan koji počinje u rampi posle trke', () => {
     expect(after.state.longestRecentSec).toBe(Math.round(0.6 * race.durationSec));
     expect(after.doc.header.decisions.longStartSec).toBe(3660);
     const effort = after.doc.header.adjustments?.find((x) => x.kind === 'effort');
-    expect(effort).toMatchObject({ lastLongSec: 3636 });
+    /* R20 (A1): bez istorije dugih „poslednji dugi" posle trke je polazni dugi plana (ne 60 % trke) */
+    expect(effort).toMatchObject({ lastLongSec: 3660 });
   });
   it('posle rampe pravilo rasta gradi od baze pre trke: nema skoka obima, nedelje rampe ne ulaze u `m`', () => {
     const base = after.doc.header.decisions.baseLoad;
@@ -336,10 +337,9 @@ describe('E: plan koji počinje u rampi posle trke', () => {
     /* krug 10 (stavka 5): druga nedelja posle trke na ciljnoj dužini — dugi ≤ 70 % planiranog */
     expect(km('2026-11-22')).toBeGreaterThanOrEqual(5);
     expect(km('2026-11-22')).toBeLessThanOrEqual(8);
-    expect(sec('2026-11-29')).toBeGreaterThan(0.75 * 3636);
-    /* krug 10: raste po R2 od skraćenog dugog druge nedelje posle trke */
-    expect(km('2026-11-29')).toBeGreaterThanOrEqual(7.5);
-    expect(km('2026-11-29')).toBeLessThanOrEqual(11.5);
+    /* R20 (A1): povratak po nedeljama (60 / 80 %); dugi druge nedelje raste najviše + 20 min od prvog */
+    expect(sec('2026-11-29')).toBeLessThanOrEqual(sec('2026-11-22') + 1200 + 60);
+    expect(km('2026-11-29')).toBeGreaterThanOrEqual(5);
     expect(km('2026-12-06')).toBeGreaterThanOrEqual(km('2026-11-29'));
     /* R18 (stavka 5): oporavak posle TRKE nije povratak posle pauze — posle oporavka dugi se vraća lancu plana (bez
        R2 izlaska od skraćenog dugog), ali nije duži od same trke */

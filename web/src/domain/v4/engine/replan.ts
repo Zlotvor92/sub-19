@@ -36,6 +36,7 @@ import {
   PAIN_FIRST_ZONE_MAX_DAYS,
   PAIN_MID_DOSE_FACTOR
 } from './constants';
+import { applyBreakRamp, breakStartOf } from './breakRamp';
 import { buildCtx, doneDayIds, isMutable, runPass } from './build';
 import { addDays, diffDays, isValidDate, mondayOf } from './dates';
 import {
@@ -72,6 +73,7 @@ import { adjustRaceDay, skeleton } from './plan';
 import {
   adjustmentWindow,
   effortRampDays,
+  effortScheduleFits,
   pauseLength,
   pauseRampDays,
   rampOf,
@@ -170,7 +172,14 @@ function onResult(
     lastLongSec: lastLongAfterEffort(state, run.date, durationSec),
     ...(planned ? { planned: true } : {}),
     /* A2 (krug 9b): svaka trka (i kratka) koja nije provera iz plana → bez provere forme 14 dana posle */
-    ...(!fromPlan && run.effort === 'race' ? { race: true } : {})
+    ...(!fromPlan && run.effort === 'race' ? { race: true } : {}),
+    /* R20 (A1): povratak posle neplanirane trke po nedeljama — od referentne nedelje pre trke */
+    ...(!planned &&
+    run.effort === 'race' &&
+    refWeekKmBefore(state, run.date) > 0 &&
+    effortScheduleFits(run.date, durationSec, doc.header.goal.raceDate)
+      ? { refWeekKm: refWeekKmBefore(state, run.date) }
+      : {})
   };
   let header = withAdjustment(doc.header, adj);
   if (result !== null) {
@@ -227,7 +236,7 @@ function onResult(
      dugog pre trke */
   const noGrow = (d: PlanDoc): PlanDoc => (fromPlan ? d : capLongAfter(d, state, data, run.date));
   if (planned && !returning) return { doc: noGrow(built), until: window.rampEnd };
-  const smooth = smoothExit(built, doc, window.rampEnd, state, data);
+  const smooth = smoothExit(built, doc, window.rampEnd, state, data, rampOf(adj)?.schedule);
   return {
     doc: noGrow(smooth.doc),
     until: smooth.until > window.rampEnd ? smooth.until : window.rampEnd
@@ -2283,13 +2292,19 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     /* posle `capTail` nedelje iza danas + 28 dana su prvobitne, pa ni prozor izmene ne ide dalje (stvarno izmenjeni
        dani i dalje produžavaju rečenicu kroz `last` u `describe`) */
     const tailEnd = addDays(state.today, TAIL_MAX_DAYS);
-    const candidate = multi
+    const capped = multi
       ? {
           ...raw,
           doc: capTail(raw.doc, doc, state.today),
           until: raw.until > tailEnd ? tailEnd : raw.until
         }
       : raw;
+    /* R20 (A1): jedno pravilo povratka posle prekida (dugi, prvi brzi, nedelja) za svaki događaj */
+    const brk = breakStartOf(capped.doc, state.today, ev, current);
+    const candidate =
+      brk === null
+        ? capped
+        : { ...capped, doc: applyBreakRamp(capped.doc, current, state, data, brk) };
     const own = describe(current, candidate, ev, state, data);
     /* krug 12 (M1): najnoviji rezultat se opisuje prema planu pre tihih starijih rezultata (njihova promena tempa je
        njegova); primena (`own`) ostaje kao do sada */

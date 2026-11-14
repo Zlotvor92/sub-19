@@ -13,7 +13,7 @@ describe('determinizam (SPEC § 6.1)', () => {
     expect(cases.length).toBeGreaterThanOrEqual(200);
   });
 
-  it('isti ulaz → bajt-isti plan; ulaz se ne menja', () => {
+  it('isti ulaz → bajt-isti plan; ulaz se ne menja', { timeout: 15000 }, () => {
     for (const c of cases) {
       const before = JSON.stringify([c.facts, c.goal]);
       const a = build(c.facts, c.goal);

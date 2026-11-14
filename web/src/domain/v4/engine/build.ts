@@ -1867,11 +1867,11 @@ function returnWeekCap(
           : sch.refLongSec;
     cap =
       cap === null
-        ? { volume, longSec, first: k === 1 }
+        ? { volume, longSec, first: k === 1 && sch.noFirstQuality }
         : {
             volume: Math.min(cap.volume, volume),
             longSec: Math.min(cap.longSec, longSec),
-            first: cap.first || k === 1
+            first: cap.first || (k === 1 && sch.noFirstQuality)
           };
   }
   return cap;
@@ -2098,6 +2098,8 @@ function shortenLong(
     return days;
   /* samo skraćena nedelja: ponovno planiranje ili nedelja u rampi/zaštiti */
   if (opts.fresh === true && !underRamp(week.start, header.adjustments ?? [])) return days;
+  /* R20 (A1): nedelja rasporeda povratka ima svoj plafon dugog (¾ / ceo referentni) — udeo nedelje ga ne spušta */
+  if (returnWeekCap(week.start, header.adjustments ?? [], ctx) !== null) return days;
   const kmOf = (d: PlanDay): number =>
     d.workout === null || (d.workout.kind === 'race' && d.date === header.goal.raceDate)
       ? 0
@@ -2538,7 +2540,15 @@ export function runPass(
           Object.assign(taperAcc, accBefore);
           const from = Math.min(shell.targetLoad, m.load);
           const f = capVolume / m.volume;
-          const longFloor = longFloorOf();
+          /* R20 (A1): u drugoj i daljim nedeljama rasporeda dugi ne pada ispod plafona prve (¾ referentnog) — dugi
+             posle prekida raste, ne spušta se */
+          const longFloor =
+            schedule !== null && !schedule.first
+              ? Math.max(
+                  longFloorOf(),
+                  Math.min(shell.longSec, RETURN_SCHEDULE_FIRST_LONG_SHARE * schedule.longSec)
+                )
+              : longFloorOf();
           /* krug 11: brz trening do najmanje doze (podražaj i dan ostaju), cilj nedelje srazmerno */
           if (step === 'quality') trimSlots = minDoseSlots(trimSlots);
           shell =
@@ -2755,6 +2765,8 @@ export function runPass(
           a.kind === 'effort' &&
           a.planned !== true &&
           a.durationSec >= GOAL_RACE_EFFORT_SHARE * header.form.current.raceTimeSec &&
+          /* R20 (A1): trka sa rasporedom povratka — nedelje drži raspored (jedan vlasnik odluke) */
+          rampOf(a)?.schedule === undefined &&
           week.start > addDays(a.date, 7) &&
           week.start <= addDays(a.date, 14)
       );
@@ -2792,6 +2804,7 @@ export function runPass(
                 a.kind === 'effort' &&
                 a.planned !== true &&
                 a.durationSec >= rule.minEffortSec &&
+                rampOf(a)?.schedule === undefined &&
                 week.start > a.date &&
                 week.start <= addDays(a.date, 7 * rule.weeks)
             );

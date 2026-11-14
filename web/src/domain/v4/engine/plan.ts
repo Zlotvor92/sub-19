@@ -1,5 +1,7 @@
 /* V4 — `plan` (SPEC § 6.1–6.2): čista funkcija (stanje, cilj, podaci distance) → plan. Redosled odluka:
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
+import { applyBreakRamp, breakStartOf } from './breakRamp';
+import { effortScheduleFits } from './readiness';
 import {
   LONG_HABIT_GUESS_DAY_SHARE,
   LONG_HABIT_WEEKS,
@@ -16,7 +18,13 @@ import { decide, ladderInputOf, longStepOf } from './decide';
 import { validate, warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { raceWorkout } from './select';
-import { baseLoadOf, lastLongAfterEffort, lastLongBefore, recentLoad } from './state';
+import {
+  baseLoadOf,
+  lastLongAfterEffort,
+  lastLongBefore,
+  recentLoad,
+  refWeekKmBefore
+} from './state';
 import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
 import {
   type Adjustment,
@@ -130,6 +138,12 @@ export function startDateOf(state: RunnerState, goal: Goal): IsoDate {
   return goal.startDate !== undefined && goal.startDate > tomorrow ? goal.startDate : tomorrow;
 }
 
+/** R20 (A1): referentna nedelja pre trke — iz istorije, inače sadašnji obim iz profila. */
+function raceRefKm(state: RunnerState, date: IsoDate): number {
+  const fromRuns = refWeekKmBefore(state, date);
+  return fromRuns > 0 ? fromRuns : (state.profile.weeklyKm ?? 0);
+}
+
 /** Uzroci spremnosti poznati na dan plana (§ 6.2 k. 8): poslednji pun napor, pauze, bol, umor. */
 export function initialAdjustments(state: RunnerState): Adjustment[] {
   const out: Adjustment[] = [];
@@ -141,7 +155,11 @@ export function initialAdjustments(state: RunnerState): Adjustment[] {
       date: effort.date,
       durationSec: effort.durationSec,
       lastLongSec: lastLongAfterEffort(state, effort.date, effort.durationSec),
-      ...(effort.race === true ? { race: true } : {})
+      ...(effort.race === true ? { race: true } : {}),
+      /* R20 (A1): povratak posle trke po nedeljama — od referentne nedelje pre trke (bez istorije: sadašnji obim) */
+      ...(effort.race === true && raceRefKm(state, effort.date) > 0
+        ? { refWeekKm: raceRefKm(state, effort.date) }
+        : {})
     });
   }
   for (const pause of state.pauses) {
@@ -358,8 +376,18 @@ export function createPlan(
         (a.kind === 'effort' || a.kind === 'pause' || a.kind === 'pain') &&
         (a.lastLongSec === undefined || a.lastLongSec === 0)
           ? { ...a, lastLongSec: decisions.longStartSec }
-          : a
-      )
+          : /* R20 (A1): posle trke bez istorije dugih „poslednji dugi" je polazni dugi plana, ne 60 % trke */
+            a.kind === 'effort' && lastLongBefore(state, a.date) === 0
+            ? { ...a, lastLongSec: Math.max(a.lastLongSec ?? 0, decisions.longStartSec) }
+            : a
+      ).map((a) => {
+        /* R20 (A1): raspored posle trke samo kad se završi pre nedelje pred trkom */
+        if (a.kind !== 'effort' || a.refWeekKm === undefined) return a;
+        if (effortScheduleFits(a.date, a.durationSec, goal.raceDate)) return a;
+        const { refWeekKm: _drop, ...rest } = a;
+        void _drop;
+        return rest;
+      })
     },
     weeks: skeleton(
       startDate,
@@ -370,7 +398,10 @@ export function createPlan(
       form.vdot
     )
   };
-  const built = runPass(draft, state, data, { window: null, rechainFrom: 1, fresh: true });
+  const pass = runPass(draft, state, data, { window: null, rechainFrom: 1, fresh: true });
+  /* R20 (A1): plan iz stanja posle skorog prekida (bolest, bol, trka) — isto pravilo povratka kao u `replan` */
+  const brk = breakStartOf(pass, state.today);
+  const built = brk === null ? pass : applyBreakRamp(pass, pass, state, data, brk);
   if (trial) return built;
   /* Šta bi dao još jedan dan trčanja uz isti datum trke — brojevi za predlog u upozorenju. */
   const withExtraDay = (): { peakKm: number; longKm: number; dayMin: number } | null => {

@@ -25,15 +25,15 @@ Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 tra�
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  odmor
-  uto 3. 11.  brze deonice 10 × 200 m (4:01/km), oporavak 200 m džog — 8,8 km, 49 min
+  uto 3. 11.  brze deonice 7 × 200 m (4:01/km), oporavak 200 m džog — 8,6 km, 49 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   sre 4. 11.  odmor
-  čet 5. 11.  prag 2 × 8 min (4:46/km), oporavak 1 min džog — 8,5 km, 47 min
+  čet 5. 11.  prag 2 × 5 min (4:46/km), oporavak 1 min džog — 8,2 km, 47 min
   pet 6. 11.  odmor
   sub 7. 11.  lagano 10 km, na kraju 6 × 20 s ubrzanja, oporavak 1 min džog — 11,4 km, 69 min
   ned 8. 11.  dugi 12,5 km lagano — 12,5 km, 76 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
-  Zbir: 41,2 km, 4 h 1 min, 4 treninga, brz rad 10 % vremena trčanja
+  Zbir: 40,7 km, 4 h 1 min, 4 treninga, brz rad 6 % vremena trčanja
 
 2. NEDELJA (od 9. 11.) — osnova, gradnja; do trke 10 nedelja
   pon 9. 11.  odmor
@@ -49,7 +49,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 tra�
 
 3. NEDELJA (od 16. 11.) — osnova, gradnja; do trke 9 nedelja
   pon 16. 11.  odmor
-  uto 17. 11.  usponi 10 × 45 s snažno uzbrdo, nazad 1:45 hod — 8,5 km, 53 min
+  uto 17. 11.  usponi 8 × 45 s snažno uzbrdo, nazad 1:45 hod — 8,6 km, 53 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   sre 18. 11.  odmor
   čet 19. 11.  prag 3 × 8 min (4:46/km), oporavak 1 min džog — 10,3 km, 56 min
@@ -57,7 +57,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 tra�
   sub 21. 11.  lagano 10,5 km, usred trčanja 6 × 12 s jako uzbrdo, nazad 1:15 hod — 11,6 km, 72 min
   ned 22. 11.  dugi 89 min, poslednjih 7 min progresivno od laganog do praga (4:46/km) — 15 km, 89 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
-  Zbir: 45,4 km, 4 h 30 min, 4 treninga, brz rad 14 % vremena trčanja
+  Zbir: 45,5 km, 4 h 30 min, 4 treninga, brz rad 14 % vremena trčanja
 
 4. NEDELJA (od 23. 11.) — osnova, rasterećenje; do trke 8 nedelja
   pon 23. 11.  odmor

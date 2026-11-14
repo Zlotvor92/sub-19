@@ -138,7 +138,14 @@ describe('krug 10 — stavka 5: kasna bolest i posle trke na ciljnoj dužini', (
       if (old === undefined || sec(old, 'long') === 0) continue;
       seen += 1;
       /* motor meri 70 % planiranog dugog novog plana; prema prvobitnom planu do 75 % */
-      const cap = Math.max(0.75 * sec(old, 'long'), sec(w2, 'easy') + 300) + 120;
+      /* R20 (A1): trka sa rasporedom povratka po nedeljama — dugi druge nedelje ≤ referentni (poslednji pre trke) i
+         ≤ dugi prve nedelje + 20 min */
+      const eff = ((r.after.header.adjustments ?? []) as any[]).find((a) => a.kind === 'effort');
+      const w1 = (r.after.weeks as any[])[0];
+      const cap =
+        eff?.refWeekKm !== undefined
+          ? Math.min(eff.lastLongSec as number, sec(w1, 'long') + 1200) + 120
+          : Math.max(0.75 * sec(old, 'long'), sec(w2, 'easy') + 300) + 120;
       expect(sec(w2, 'long'), `s${String(s.no)}`).toBeLessThanOrEqual(cap);
     }
     expect(seen).toBeGreaterThan(0);

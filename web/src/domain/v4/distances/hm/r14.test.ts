@@ -46,8 +46,12 @@ describe('krug 14 — povratak posle pauze (M2)', () => {
       expect(w1).toBeLessThanOrEqual(Math.min(0.75 * ref, plan[first] ?? 0) + 0.5);
       expect(w2).toBeLessThanOrEqual(Math.min(0.9 * ref, plan[first + 1] ?? 0) + 0.5);
       const w3 = r.after.weeks[first + 2];
+      /* R20 (A1): treća nedelja je plan, ali najviše + 25 % od druge i ≤ 1,2 × najveće posle pauze; dugi (+ 20 min) i
+         prvi brzi (70 %) je spuštaju još — merilo je 85 % manjeg od plana i granice rasta */
       if (w3 !== undefined && w3.intent.kind !== 'taper' && w3.intent.kind !== 'race')
-        expect(km[first + 2] ?? 0).toBeGreaterThanOrEqual(0.95 * (plan[first + 2] ?? 0));
+        expect(km[first + 2] ?? 0).toBeGreaterThanOrEqual(
+          0.85 * Math.min(plan[first + 2] ?? 0, 1.2 * Math.max(w1, w2))
+        );
     }
   );
 

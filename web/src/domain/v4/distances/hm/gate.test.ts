@@ -100,8 +100,8 @@ describe('kapija kruga 2 (12 profila + oba plana vlasnika)', () => {
     'p04',
     /* krug 9: p06 vraćen pa skinut (A14 + A1: posle A1 „ništa" više nije sporije) */
     'p08',
-    'vlasnik-v1',
-    'vlasnik-v2'
+    'vlasnik-v1'
+    /* R20 (A1): vlasnik-v2 skinut — posle povratka po nedeljama „ništa" više nije sporije */
   ]);
   const nothing = (c: Case): void => {
     const doc = build(c);

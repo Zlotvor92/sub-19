@@ -349,6 +349,8 @@ export type Adjustment =
       planned?: boolean;
       /** Krug 9b (A2): neplanirana trka — nema provere forme `NO_TEST_AFTER_RACE_DAYS` dana posle nje. */
       race?: boolean;
+      /** R20 (A1): referentna nedelja pre trke (km) — povratak posle neplanirane trke po nedeljama. */
+      refWeekKm?: number;
     }
   | {
       kind: 'pause';
