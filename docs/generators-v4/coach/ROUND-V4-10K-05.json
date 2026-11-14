@@ -1,0 +1,36 @@
+{
+  "round": "V4-10K-05", "date": "2026-11-14", "judge": "glavni trener (nov tab)", "source": "ef506f4c; poredjenje sa fb2c1a3",
+  "calibrationShift": 0,
+  "plan": {
+    "p01": { "prev": 81.5, "now": 81.5 }, "p02": { "prev": 71.5, "now": 75, "note": "8 nedelja bez rasterecenja; RP 4-6 x 1 km" },
+    "p03": { "prev": 78, "now": 78 }, "p04": { "prev": 79, "now": 79, "note": "plafon dugog 1 h 40, devet puta" },
+    "p05": { "prev": 81, "now": 81 }, "p06": { "prev": 71, "now": 72.5, "note": "nedelja trke 45 %; tri upozorenja" },
+    "p07": { "prev": 80, "now": 80.5 }, "p08": { "prev": 75, "now": 75 }, "p09": { "prev": 81, "now": 81 },
+    "p10": { "prev": 77, "now": 77.5 }, "p11": { "prev": 79.5, "now": 79.5 }, "p12": { "prev": 77.5, "now": 77.5 },
+    "average": 78.2, "previousAverage": 77.7, "atLeast80": 4
+  },
+  "longCap": { "p03": "86 min", "p10": "90 min", "p04": "100 min", "p11": "75 min", "p12": "86 min", "verdict": "ispravno" },
+  "adaptation": {
+    "E1": { "score": 84.3, "s01": 85, "s02": 85, "s03": 85, "s04": 82 },
+    "E2": { "score": 80.5, "s05": 82, "s06": 82, "s07": 77, "s08": 81 },
+    "E3": { "score": 82.0 }, "E4": { "score": 77.0, "s13": 77, "s15": 78 },
+    "E5": { "score": 84.0, "s17": 84, "s18": 84, "s19": 84, "s20": 84 },
+    "E6": { "score": 89.8 },
+    "E7": { "score": 79.3, "s25": 80, "s26": 78, "s27": 80 },
+    "partB": 82.5, "previousPartB": 82.4
+  },
+  "personalization": { "P1": 84, "P2": 83.5, "P3": 80, "partC": 82.5, "previousPartC": 83.0 },
+  "composite": 80.4, "previousComposite": 80.2,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "prozor bola: lagan dan <= 65 % dugog; prvi trening zone strogo manji od onog posle kog je bol; jedan kvalitet u prvoj nedelji (s13)" },
+    { "n": 2, "kind": "motor", "text": "nedelja 'plan' posle rasterecenja u povratku: dugi <= +20 min, prvi kvalitet <= poslednji odradjeni (s07)" },
+    { "n": 3, "kind": "motor", "text": "plafon dugog ne spusta dugi ispod onoga sto trkac vec redovno trci (P3 B)" },
+    { "n": 4, "kind": "motor", "text": "najvise dve preporuke; 'poslednjih 1 km'" },
+    { "n": 5, "kind": "podatak", "text": "p06, p02: nedelja -1 <= 70 % vrha" },
+    { "n": 6, "kind": "podatak", "text": "p08 nedelja 1 = 41 km" },
+    { "n": 7, "kind": "podatak", "text": "lagan dan >= 30 min (p02, p06)" },
+    { "n": 8, "kind": "podatak", "text": "p04: bar dva duga sa zavrsnicom u tempu trke" }
+  ],
+  "verdict": "B i C prolaze; Plan 78,2 ne prolazi (4 od 12 >= 80)",
+  "ownerReview": ["p02", "p04", "s13"]
+}
