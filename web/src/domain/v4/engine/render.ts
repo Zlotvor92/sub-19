@@ -406,8 +406,30 @@ function forecastChange(h: PlanHeader, state: RunnerState | undefined): string[]
   return lines;
 }
 
-function changeLines(changes: readonly Change[], doc: PlanDoc): string[] {
-  if (changes.length === 0) return [];
+/** R19 (stavka 7): „prvi brzi trening je X" u rečenici o bolu ili pauzi se računa iz plana koji se ispisuje — kasniji
+    događaj može da pomeri prvi brzi trening, a rečenica ostaje u spisku promena. */
+const FAST_PHRASE = /prvi brzi trening je \d{1,2}\. \d{1,2}\.|brzih treninga do trke nema/;
+function currentFast(change: Change, doc: PlanDoc): Change {
+  const m = /^(pain):(\d{4}-\d{2}-\d{2})$|^(pause):\d{4}-\d{2}-\d{2}:(\d{4}-\d{2}-\d{2})$/.exec(change.eventId);
+  const anchor = m?.[2] ?? m?.[4];
+  if (anchor === undefined || !FAST_PHRASE.test(change.reason)) return change;
+  const day = doc.weeks
+    .flatMap((w) => w.days)
+    .find(
+      (d) =>
+        d.date > anchor &&
+        d.workout !== null &&
+        d.workout.kind !== 'race' &&
+        (d.workout.kind === 'quality' || d.workout.kind === 'test' || d.workout.workSec > 0)
+    );
+  const phrase =
+    day === undefined ? 'brzih treninga do trke nema' : `prvi brzi trening je ${fmtDate(day.date)}`;
+  return { ...change, reason: change.reason.replace(FAST_PHRASE, phrase) };
+}
+
+function changeLines(all: readonly Change[], doc: PlanDoc): string[] {
+  if (all.length === 0) return [];
+  const changes = all.map((c) => currentFast(c, doc));
   const lines: string[] = ['', 'PROMENE'];
   const dayDate = new Map(doc.weeks.flatMap((w) => w.days.map((d) => [d.id, d.date] as const)));
   const groups = new Map<string, Change[]>();

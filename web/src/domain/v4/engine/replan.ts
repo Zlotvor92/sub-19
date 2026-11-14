@@ -2370,6 +2370,23 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     }
   }
   const result = changes.length === 0 && silentApplied.length === 0 ? doc : current;
+  /* R19 (stavka 7): „prvi brzi trening je X" u rečenici o bolu ili pauzi se računa iz KONAČNOG plana (kasniji događaj
+     istog ponovnog planiranja može da ga pomeri) */
+  const fastAnchor = new Map<string, IsoDate>(
+    todo.flatMap((ev): [string, IsoDate][] =>
+      ev.kind === 'pain' ? [[ev.id, ev.date]] : ev.kind === 'pause' ? [[ev.id, ev.to]] : []
+    )
+  );
+  const FAST_PHRASE = /prvi brzi trening je \d{1,2}\. \d{1,2}\.|brzih treninga do trke nema/;
+  const fresh = changes.map((c): Change => {
+    const anchor = fastAnchor.get(c.eventId);
+    if (anchor === undefined || c.reason === undefined || !FAST_PHRASE.test(c.reason)) return c;
+    const date = firstFastAfter(result, anchor);
+    const phrase =
+      date === null ? 'brzih treninga do trke nema' : `prvi brzi trening je ${fmtDate(date)}`;
+    return { ...c, reason: c.reason.replace(FAST_PHRASE, phrase) };
+  });
+  changes.splice(0, changes.length, ...fresh);
   /* R5 (krug 6): upozorenje koje pominje prošli datum („odradi proveru 28. 11.") se računa iznova — i kad se
      treninzi ne menjaju */
   return { doc: freshDatedWarnings(result, state, data), changes };
