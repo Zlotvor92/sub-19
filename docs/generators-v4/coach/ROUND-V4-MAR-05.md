@@ -63,7 +63,7 @@ Ocenjeno stanje **e1136a16**, upoređeno sa 21d4b070 (krug 4 / R21). Ista rubrik
 
 ## C. Personalizacija
 
-P1 84 (B najduži 24 km, bilo 22,5) · **P2 82 → 80,5** (B: najduži dugi 15,2 km i vrh 29,9 km za maraton — bilo 17,3 / 32,4; prvi kvalitet u 18. nedelji, bilo u 4.; smer razlike je tačan, mera prevelika) · P3 83 → **82,5** (k4 83,0).
+P1 84 (B najduži 24 km, bilo 22,5) · **P2 82 → 80,5** (B: najduži dugi 15,2 km i vrh 29,9 km za maraton — bilo 17,3 / 32,4; prvi kvalitet u 18. nedelji, bilo u 4.; smer razlike je tačan, mera prevelika) · P3 83 (isti odnos A / B; promenjeni samo tempo trke i nedelja posle pripremne trke) → **82,5** (k4 83,0).
 
 ## D. Regresije (R21 dobro → sada lošije)
 
