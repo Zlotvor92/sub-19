@@ -378,7 +378,8 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   if (h.warnings.length > 0) {
     lines.push('');
     lines.push('UPOZORENJA');
-    for (const w of h.warnings) lines.push(`- ${w.problem} ${w.meaning} ${w.proposal}`);
+    for (const w of h.warnings)
+      lines.push(`- ${[w.problem, w.meaning, w.proposal].filter((x) => x !== '').join(' ')}`);
   }
   return lines;
 }

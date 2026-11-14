@@ -536,14 +536,15 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
 
   it('K3: svako upozorenje kaže šta, koliko (broj) i šta se dobija; najviše dva predloga', () => {
     for (const p of RENDERED) {
+      /* R20 B6 (odluka organizatora): predlozi se rangiraju — najviše dva, ostali u „Pomoglo bi i: …" */
       for (const w of p.doc.header.warnings) {
-        if (w.severity === 'info') continue;
+        if (w.severity === 'info' || w.proposal === '') continue;
         expect(w.proposal, `${p.id} ${w.code}`).toMatch(/\d/);
       }
-      const proposals = p.doc.header.warnings.filter((w) => w.severity !== 'info').length;
-      /* maraton: prvi maraton za 10 nedelja sa 28 km i 3 dana (p13) ima četiri stvarna problema (dužina pripreme,
-         obim, dani, dugi) — motor ih ne spaja (zahtev u F7-MAR-REPORT) */
-      expect(proposals, p.id).toBeLessThanOrEqual(4);
+      const proposals = p.doc.header.warnings.filter(
+        (w) => w.severity !== 'info' && w.proposal !== ''
+      ).length;
+      expect(proposals, p.id).toBeLessThanOrEqual(2);
     }
   });
 
@@ -884,15 +885,16 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
       expect(warns.length, id).toBeGreaterThan(0);
       for (const w of warns) {
         expect(w.problem, `${id} ${w.code}`).toMatch(/\d/);
-        expect(w.proposal, `${id} ${w.code}`).toMatch(/\d/);
+        if (w.proposal !== '') expect(w.proposal, `${id} ${w.code}`).toMatch(/\d/);
       }
     }
+    /* R20 B6: predlog može biti spojen u „Pomoglo bi i: …" drugog upozorenja — traži se u celom bloku */
     for (const id of ['p13', 'p19']) {
-      const w = PROFILE_PLANS.find((x) => x.id === id)?.doc.header.warnings.find(
-        (x) => x.code === 'kratka-priprema'
-      );
-      expect(w?.proposal ?? '', id).toMatch(/1[6-9] nedelja/);
-      expect(w?.proposal ?? '', id).toMatch(/polumaraton/);
+      const all = (PROFILE_PLANS.find((x) => x.id === id)?.doc.header.warnings ?? [])
+        .map((x) => x.proposal)
+        .join(' ');
+      expect(all, id).toMatch(/1[6-9] nedelja/);
+      expect(all, id).toMatch(/polumaraton/);
     }
   });
 });

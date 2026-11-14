@@ -133,7 +133,8 @@ describe('odbija se samo neispravan unos (SPEC § 8.1)', () => {
   });
 });
 
-const sentences = (w: Warning): string[] => [w.problem, w.meaning, w.proposal];
+const sentences = (w: Warning): string[] =>
+  [w.problem, w.meaning, w.proposal].filter((x) => x !== '');
 
 describe('sve se pravi uz upozorenje (AGENTS t. 6)', () => {
   const marathonLength = {
@@ -184,7 +185,8 @@ describe('sve se pravi uz upozorenje (AGENTS t. 6)', () => {
         expect(s.length, w.code).toBeGreaterThan(25);
         expect(s.trim().endsWith('.'), `${w.code}: ${s}`).toBe(true);
       }
-      expect(/\d/.test(w.proposal), `${w.code}: ${w.proposal}`).toBe(true);
+      /* R20 B6: predlog spojen u „Pomoglo bi i: …" drugog upozorenja */
+      if (w.proposal !== '') expect(/\d/.test(w.proposal), `${w.code}: ${w.proposal}`).toBe(true);
     }
     const short = result.doc.header.warnings.find((w) => w.code === 'kratka-priprema');
     expect(short?.problem).toContain('3 nedelje');
