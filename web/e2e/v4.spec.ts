@@ -212,3 +212,58 @@ test('V4: trčanje/hodanje (ne mogu 30 min) za 10K se ne odbija — plan uz upoz
   await tab(page, 'Plan').click();
   await expect(page.locator('.page.active .plan-warn')).toBeVisible();
 });
+
+test('V4 korak 8: Forma iz trčanja, „Nešto se desilo?" → pregled → Primeni / Ne menjaj, traka promena', async ({
+  page
+}) => {
+  const backend = await installBackend(page);
+  const v4 = installV4(backend);
+  v4.runs.push({
+    id: 'strava:900',
+    date: '2026-01-10',
+    distanceM: 10000,
+    durationSec: 44 * 60,
+    effort: 'race'
+  });
+  await page.goto('/');
+  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(0);
+  await runWizard(page, INPUTS['10K']);
+  await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(1);
+  await page.reload(); // učitavač čita aktivnost uz postojeći plan_v4
+  await expect.poll(() => backend.count('/rest/v1/aktivnost', 'GET'), SYNC).toBeGreaterThan(0);
+
+  // Forma na Planu: danas, dan trke sa rasponom, zašto se promenilo
+  await tab(page, 'Plan').click();
+  const form = page.locator('.page.active #v4-form');
+  await expect(form).toContainText('Danas:');
+  await expect(form).toContainText(/Na dan trke: \d+:\d\d(:\d\d)? · raspon/);
+  await form.getByText('Zašto se promenilo').click();
+  await expect(form).toContainText(/10\.? ?1\./);
+
+  // Danas: umor → pregled → Primeni (plan se menja, događaj upisan, traka promena)
+  await tab(page, 'Danas').click();
+  const before = v4.row?.rev ?? 0;
+  await page
+    .locator('#v4-report')
+    .getByRole('button', { name: /Prijavi/ })
+    .click();
+  await page.getByRole('button', { name: 'Umoran sam' }).click();
+  await expect(page.locator('#v4-preview')).toBeVisible();
+  expect(v4.row?.rev).toBe(before); // pregled ne menja plan
+  await page.getByRole('button', { name: 'Primeni' }).click();
+  await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(before + 1);
+  await expect.poll(() => v4.events.map((e) => e.vrsta), SYNC).toContain('fatigue');
+  await expect(page.locator('#v4-changes')).toBeVisible();
+
+  // bolest 2 dana → Ne menjaj plan: plan isti, odbijanje zapamćeno
+  await page
+    .locator('#v4-report')
+    .getByRole('button', { name: /Prijavi/ })
+    .click();
+  await page.getByRole('button', { name: 'Bolestan sam' }).click();
+  await page.getByRole('button', { name: '2 dana' }).click();
+  await expect(page.locator('#v4-preview')).toBeVisible();
+  await page.getByRole('button', { name: 'Ne menjaj plan' }).click();
+  await expect.poll(() => v4.events.map((e) => e.vrsta), SYNC).toContain('odbijeno');
+  expect(v4.row?.rev).toBe(before + 1);
+});

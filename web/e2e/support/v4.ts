@@ -13,6 +13,8 @@ export interface V4Fake {
   row: V4Row | null;
   events: Array<{ event_id: string; vrsta: string }>;
   writes: number;
+  /** Trčanja u `aktivnost` (oblik `Run` motora). */
+  runs: Array<Record<string, unknown>>;
 }
 
 const revOf = (url: string): number | null => {
@@ -21,7 +23,7 @@ const revOf = (url: string): number | null => {
 };
 
 export function installV4(backend: Backend, enabled = true): V4Fake {
-  const fake: V4Fake = { enabled, row: null, events: [], writes: 0 };
+  const fake: V4Fake = { enabled, row: null, events: [], writes: 0, runs: [] };
   backend.api.set('/rest/v1/v4_pristup', () => ({
     body: fake.enabled ? [{ ukljuceno: true }] : []
   }));
@@ -33,7 +35,9 @@ export function installV4(backend: Backend, enabled = true): V4Fake {
     return { status: 201, body: [] };
   });
   backend.api.set('/rest/v1/aktivnost', (r: Recorded) =>
-    r.method === 'GET' ? { body: [] } : { status: 201, body: [] }
+    r.method === 'GET'
+      ? { body: fake.runs.map((run) => ({ id: run['id'], run })) }
+      : { status: 201, body: [] }
   );
   backend.api.set('/rest/v1/plan_v4', (r: Recorded) => {
     const b = r.body as { doc: V4Row['doc']; otisak: string } | undefined;

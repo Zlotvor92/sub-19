@@ -13,6 +13,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { sessionView } from '../session/sessionModel';
 import { useEasyPace, usePlanRpe } from '../session/useEasyPace';
 import { Advisories } from './Advisories';
+import { V4Today } from './V4Today';
 import { Description, type DayStatus } from './DayCard';
 import { TodayHero } from './TodayHero';
 import { useTodayModel } from './useTodayModel';
@@ -91,6 +92,7 @@ export default function TodayPage() {
       <AppBar right={fmtDayLong(today)} />
       <h1 className="sr-only">Danas</h1>
       <Advisories today={today} />
+      <V4Today />
 
       {!day ? (
         <div className="state">
