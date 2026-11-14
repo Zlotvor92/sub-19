@@ -1085,3 +1085,43 @@ describe('R17 (ROUND-V4-10K-04)', () => {
     expect(bad).toEqual([]);
   });
 });
+
+describe('R24 P6 (p03, p10; R24-ISPRAVKA)', () => {
+  const km = (w: PlanWeek, ctx: ReturnType<typeof paceCtxOf>): number =>
+    w.days.reduce((s, d) => (d.workout === null ? s : s + summarize(d.workout, ctx).km), 0);
+  const find = (id: string) => {
+    const p = RENDERED.find((x) => x.id === id);
+    if (p === undefined) throw new Error(id);
+    return { p, ctx: paceCtxOf(p.doc.header) };
+  };
+
+  it('šablon 10 km: najviše jedna provera forme na 8 nedelja', () => {
+    const bad: string[] = [];
+    for (const t of tenk.templates) {
+      const checks = t.tail.filter((w) => w.stimuli.some((s) => s.stimulus.startsWith('kontrola'))).length;
+      if (checks > Math.ceil(t.tail.length / 8)) bad.push(`${t.id}: ${String(checks)}`);
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('p03: ned 7 ne pada ispod ned 6; rasterećenje ned 4 ≈ −20 %; lagan dan u nedelji provere ≥ 30 min', () => {
+    const { p, ctx } = find('p03');
+    const w = p.doc.weeks;
+    const k = (i: number): number => km(w[i - 1] as PlanWeek, ctx);
+    expect(k(7)).toBeGreaterThanOrEqual(k(6));
+    expect(k(4)).toBeLessThanOrEqual(0.83 * k(3));
+    const check = w.find((x) => x.days.some((d) => d.workout?.kind === 'test'));
+    const easy = (check?.days ?? [])
+      .map((d) => d.workout)
+      .filter((x): x is Workout => x !== null && x.kind === 'easy')
+      .map((x) => summarize(x, ctx).durationSec / 60);
+    expect(Math.min(...easy)).toBeGreaterThanOrEqual(29.5);
+  });
+
+  it('p10: dve lake nedelje (provere u ned 4 i 12), ned 8 je gradnja', () => {
+    const { p } = find('p10');
+    const light = p.doc.weeks.filter((w) => w.intent.kind === 'recovery').map((w) => w.index);
+    expect(light).toEqual([4, 12]);
+    expect(p.doc.weeks[7]?.intent.kind).toBe('build');
+  });
+});

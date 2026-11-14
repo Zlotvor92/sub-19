@@ -83,6 +83,8 @@ const KONTROLA = S('kontrola', undefined, 'kontrola-5k');
 interface Shape {
   days: number;
   single: boolean;
+  /** R24 P6: spor nivo sa 1–3 dana (p03, p10) — sopstveni šablon, da ostali profili ostanu isti. */
+  slow?: boolean;
   gentle?: boolean;
   fresh?: boolean;
 }
@@ -123,6 +125,9 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const recoveries = new Set<number>();
   for (let w = n - (long ? 10 : 4); w >= 4; w -= 4) recoveries.add(w);
   const extraCheck = long && n >= 18 && recoveries.has(n - 14) ? n - 14 : 0;
+  /* R24 P6 (p10): spor sa 1–3 dana — između provere N−14 i provere N−6 nema trećeg rasterećenja (N−10 je gradnja):
+     najviše jedna laka nedelja na 8 nedelja, obim raste do najteže */
+  if (sh.slow === true && extraCheck > 0) recoveries.delete(n - 10);
   const firstRecovery = Math.min(...recoveries);
   const builds: number[] = [];
   for (let w = 1; w < tailStart; w += 1) if (!recoveries.has(w)) builds.push(w);
@@ -193,10 +198,10 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           RAZVOJ,
           'build',
           /* R22 (p03): jedan kvalitet u tempu trke nosi više bodova po km — 6 % više, da obim ne padne pred proveru */
-          sh.single ? load * 1.06 : load,
+          sh.single ? load * (sh.slow === true ? 1.12 : 1.06) : load,
           { ...longSpec, len: Math.min(1, longSpec.len * (sh.single ? 1.04 : 1)) },
           sh.single
-            ? [S('tempo-trke', 0.45, 'rp-1200'), STRIDES]
+            ? [sh.slow === true ? S('tempo-trke', 0.65, 'rp-1000') : S('tempo-trke', 0.45, 'rp-1200'), STRIDES]
             : /* R12 T2 (p02): VO2 doza veća od 3 × 800 m */
               /* R17 (p02): tempo trke ≥ 4 km od 3. nedelje */
               [
@@ -296,7 +301,7 @@ function regularTail(sh: Shape, long: boolean, check: boolean, eight = false): W
         /* N−4: rasterećenje sa proverom 5 km u ČETVRTAK (ciljni p03 ned 8: „čet, sub ako može"): vršna nedelja posle
            nje počinje 5. dan posle provere i zadržava oba kvaliteta (K2: 3 dana bez brzog posle provere) */
         check
-          ? eight
+          ? eight || sh.slow === true
             ? /* R17 (p02, p06): plan od 8–9 nedelja nema rasterećenje — provera je u nedelji gradnje (četvrtak, jedini
                  brz trening), da gradnja traje 4 nedelje + najteža, a silazak 2 nedelje */
               week(SPEC, 'build', 0.95, { len: 0.88 }, [KONTROLA])
@@ -467,7 +472,13 @@ function makeTemplate(
     tail,
     body: [],
     recoveryEvery: 0,
-    recovery: { loadFactor: 0.8, longFactor: 0.9, doseFactor: 0.65 }
+    /* R24 P6 (p03): spor sa 1–3 dana u planu < 14 nedelja — rasterećenje ≈ −20 % (bilo −10 %); duži plan (p10) zadržava
+       0,8 (manje izbacuje lagan dan iz nedelje provere) */
+    recovery: {
+      loadFactor: sh.slow === true && weeks < 14 ? 0.71 : 0.8,
+      longFactor: 0.9,
+      doseFactor: 0.65
+    }
   };
 }
 
@@ -478,6 +489,10 @@ export const TEMPLATES: Template[] = WEEKS.flatMap((n) =>
   DAYS.flatMap((days) => {
     const few = days <= 3;
     return [
+      /* R24 P6: spor nivo sa 1–3 dana ima svoj šablon (prvi koji odgovara) */
+      ...(few
+        ? [makeTemplate('spor', 'redovan', { days, single: true, slow: true }, n, ['spor'], regularMult(n, days))]
+        : []),
       makeTemplate(
         'redovan',
         'redovan',
