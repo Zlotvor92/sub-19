@@ -1,0 +1,37 @@
+{
+  "round": "V4-HM-12", "date": "2026-11-14", "judge": "glavni trener (nov tab)", "source": "ef506f4c; poredjenje sa fb2c1a3",
+  "calibration": { "state": "fb2c1a3", "HM-p01": { "prev": 82, "mine": 81.5 }, "HM-p04": { "prev": 75, "mine": 74 }, "HM-p06": { "prev": 71, "mine": 71 }, "5K-p06": { "prev": 64, "mine": 64 }, "5K-p12": { "prev": 75, "mine": 76 }, "shift": 0 },
+  "plan": {
+    "p01": { "prev": 82, "now": 82 }, "p02": { "prev": 82, "now": 82 },
+    "p03": { "prev": 77, "now": 76.5, "note": "uklonjeno upozorenje o 3 dana sa predlogom 4. dana" },
+    "p04": { "prev": 75, "now": 80, "note": "utorak opet nosi kvalitet; RP 3 x 15 min u ned 15" },
+    "p05": { "prev": 80.5, "now": 80.5 },
+    "p06": { "prev": 71, "now": 72, "note": "suzavanje 76/61/40 %; novo upozorenje netacno, tri upozorenja" },
+    "p07": { "prev": 80.5, "now": 80.5 }, "p08": { "prev": 74, "now": 74, "withChecks": 73.3 }, "p09": { "prev": 81, "now": 81 },
+    "p10": { "prev": 76.5, "now": 76, "withChecks": 73 }, "p11": { "prev": 81, "now": 81 }, "p12": { "prev": 79.5, "now": 79.5 },
+    "average": 78.8, "previousAverage": 78.3, "atLeast80": 7, "owner": { "vlasnik-v1": 78, "vlasnik-v2": 81.5 }
+  },
+  "adaptation": {
+    "E1": { "score": 84.3, "s01": 85, "s02": 85, "s03": 85, "s04": 82 },
+    "E2": { "score": 79.0, "s05": 79, "s06": 81, "s07": 75, "s08": 81 },
+    "E3": { "score": 83.5 }, "E4": { "score": 79.3 },
+    "E5": { "score": 84.0, "s17": 85, "s18": 85, "s19": 83, "s20": 83 },
+    "E6": { "score": 90.8 },
+    "E7": { "score": 79.3, "s25": 79, "s26": 79, "s27": 80 },
+    "partB": 83.0, "previousPartB": 83.4
+  },
+  "personalization": { "P1": 85, "P2": 83, "P3": 83, "partC": 83.7 },
+  "composite": 81.0, "previousComposite": 80.9,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "rampa posle pauze i za dugi (+20 min/ned) i za prvi kvalitet (<= 70 % doze, ne veci od poslednjeg odradjenog): s05, s07, s25" },
+    { "n": 2, "kind": "motor", "text": "nedelja 'plan' posle rasterecenja: skok <= +25 % (s07 24 -> 36,5 km)" },
+    { "n": 3, "kind": "motor", "text": "upozorenje o manje treninga ne za nedelje suzavanja; najvise dve preporuke (p06, s19)" },
+    { "n": 4, "kind": "motor", "text": "bez rasterecenja u prve 4 nedelje posle trke kad su ned 1-2 ispod 65 % (s19)" },
+    { "n": 5, "kind": "motor", "text": "spisak promena: stari dogadjaj se ne ponavlja; jedan dan jedan red (s08, s16, s26)" },
+    { "n": 6, "kind": "podatak", "text": "vratiti predlog 4. dana za 3 dana nedeljno (p03, p10)" },
+    { "n": 7, "kind": "podatak", "text": "p06 ned 6 jedan kvalitet; p08 nedelja 1 = 45 km, ned 15 bez +15 %" },
+    { "n": 8, "kind": "podatak", "text": "vlasnik-v2: dugi posle trke 6 -> 8 -> 10 -> 12 km" }
+  ],
+  "verdict": "B i C prolaze; Plan 78,8 ispod 80, ali 7 od 12 profila >= 80 (prag rubrike za HM)",
+  "ownerReview": ["p04", "s07", "p06"]
+}
