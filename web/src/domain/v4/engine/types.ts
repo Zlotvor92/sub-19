@@ -254,6 +254,10 @@ export interface Decisions {
   raceDayNoProgress?: boolean;
   /** T7 (krug 6): polazni dugi je iz stvarnih trčanja (poslednje 4 nedelje) — dugi kreće od njega. */
   longStartFromRuns?: boolean;
+  /** R20 B1: plafon dugog podignut na dugi koji trkač već redovno trči (s); preračun plafona ga zadržava. */
+  longHabitSec?: Seconds;
+  /** R20 B1: prvi dugi plana ≤ najduži iz istorije + 2 km (s, na 5 min naniže). */
+  longFirstCapSec?: Seconds;
   raceDayWiden?: number;
   /** A8 (krug 9): očekivano vreme najviše ovoliko (udeo) brže od današnje forme — podatak distance po nivou. */
   raceDayMaxGain?: number;
@@ -540,6 +544,8 @@ export interface RunnerState {
   load: LoadState;
   /** Najduže trčanje u poslednjih 28 dana; 0 kad nema podataka. */
   longestRecentSec: Seconds;
+  /** R20 B1: dužina tog trčanja (m); bez trčanja `profile.longestRecentKm`. Nema je kad nema podatka. */
+  longestRecentM?: Meters;
   form: FormEstimate;
   lastHardEffort: HardEffort | null;
   /** Prekidi od 3+ dana u poslednjih 42 dana. */

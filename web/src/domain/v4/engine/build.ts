@@ -254,7 +254,11 @@ export function longPlan(
       grownStep = Math.min((target - previousLongest) / t, LONG_STEP_STRETCH * step);
   }
   /* D1/D6 (krug 5): dugi raste od prethodnog (ne skače na polazni kad je krenuo niže) */
-  const grown = (previousLongest > 0 ? previousLongest : d.longStartSec) + grownStep;
+  /* R20 B1: prvi dugi plana ≤ najduži iz istorije + 2 km */
+  const grown =
+    previousLongest > 0
+      ? previousLongest + grownStep
+      : Math.min(d.longStartSec + grownStep, d.longFirstCapSec ?? Number.POSITIVE_INFINITY);
   let wanted = intent.long.lenPct * d.longMaxSec;
   if (week !== undefined && (intent.kind === 'build' || intent.kind === 'peak')) {
     /* D1/D6 (krug 5): dugi ne kreće na plafonu — pod je `longStartFloorShare` × polazni, pa raste za korak po

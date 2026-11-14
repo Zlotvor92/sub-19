@@ -362,3 +362,12 @@ export const RAN_GOAL_SHARE = 0.98;
 export const RAN_GOAL_DAYS = 84;
 /** Krug 10 (stavka 18): upozorenje kad je najveća nedelja plana ispod sadašnjeg obima za više od ovoliko km. */
 export const PEAK_BELOW_BASE_KM = 1;
+
+/** R20 B1: dugi u nedelji 1 ≤ najduži iz istorije + ovoliko km. */
+export const LONG_START_OVER_KM = 2;
+/** R20 B1: bez istorije i unetog najdužeg — procena navike: dugi ≈ 1,5 × prosečan dan trčanja. */
+export const LONG_HABIT_GUESS_DAY_SHARE = 1.5;
+/** R20 B1: navika dugog se čita iz poslednjih toliko nedelja (drugi najduži nedeljni dugi). */
+export const LONG_HABIT_WEEKS = 4;
+/** R20 B1: procena navike dugog (bez istorije) ne ograničava dugi kraći od ovoga. */
+export const LONG_GUESS_FREE_SEC = 5400;

@@ -27,9 +27,9 @@ Tempo trke u treninzima je tvoja današnja forma (4:28/km). Očekivano vreme na 
   čet 5. 11.  prag 25 min u komadu (4:11/km) — 12,6 km, 60 min
   pet 6. 11.  odmor
   sub 7. 11.  lagano 12 km — 12 km, 64 min
-  ned 8. 11.  dugi 27,5 km lagano — 27,5 km, 2 h 26 min
+  ned 8. 11.  dugi 27 km lagano — 27 km, 2 h 24 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 86,3 km, 7 h 35 min, 6 treninga, brz rad 7 % vremena trčanja
+  Zbir: 85,8 km, 7 h 33 min, 6 treninga, brz rad 7 % vremena trčanja
 
 2. NEDELJA (od 9. 11.) — osnova, gradnja; do trke 14 nedelja
   pon 9. 11.  lagano 11 km — 11 km, 58 min
@@ -43,15 +43,15 @@ Tempo trke u treninzima je tvoja današnja forma (4:28/km). Očekivano vreme na 
   Zbir: 86,5 km, 7 h 27 min, 6 treninga, brz rad 9 % vremena trčanja
 
 3. NEDELJA (od 16. 11.) — osnova, gradnja; do trke 13 nedelja
-  pon 16. 11.  lagano 10,5 km — 10,5 km, 56 min
+  pon 16. 11.  lagano 11 km — 11 km, 58 min
   uto 17. 11.  brze deonice 16 × 30 s brzo i opušteno (3:38/km), oporavak 1:30 džog — 12,8 km, 66 min
-  sre 18. 11.  lagano 10,5 km — 10,5 km, 56 min
+  sre 18. 11.  lagano 11 km — 11 km, 58 min
   čet 19. 11.  prag 5 × 1,6 km (4:11/km), oporavak 1:30 džog — 15,7 km, 74 min
   pet 20. 11.  odmor
-  sub 21. 11.  lagano 10,5 km — 10,5 km, 56 min
-  ned 22. 11.  dugi 29 km lagano — 29 km, 2 h 34 min
+  sub 21. 11.  lagano 11 km — 11 km, 58 min
+  ned 22. 11.  dugi 28,5 km lagano — 28,5 km, 2 h 32 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 89 km, 7 h 42 min, 6 treninga, brz rad 9 % vremena trčanja
+  Zbir: 90 km, 7 h 46 min, 6 treninga, brz rad 9 % vremena trčanja
 
 4. NEDELJA (od 23. 11.) — osnova, rasterećenje; do trke 12 nedelja
   pon 23. 11.  lagano 9 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 10,1 km, 53 min
@@ -60,9 +60,9 @@ Tempo trke u treninzima je tvoja današnja forma (4:28/km). Očekivano vreme na 
   čet 26. 11.  prag 14 min u komadu (4:11/km) — 9,9 km, 49 min
   pet 27. 11.  odmor
   sub 28. 11.  lagano 9 km — 9 km, 48 min
-  ned 29. 11.  dugi 21 km lagano — 21 km, 1 h 52 min
+  ned 29. 11.  dugi 20,5 km lagano — 20,5 km, 1 h 49 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 70,2 km, 6 h 8 min, 6 treninga, brz rad 4 % vremena trčanja
+  Zbir: 69,7 km, 6 h 5 min, 6 treninga, brz rad 4 % vremena trčanja
 
 5. NEDELJA (od 30. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 30. 11.  lagano 12 km — 12 km, 64 min
@@ -71,9 +71,9 @@ Tempo trke u treninzima je tvoja današnja forma (4:28/km). Očekivano vreme na 
   čet 3. 12.  prag 2 × 18 min (4:11/km), oporavak 1:30 džog — 15,5 km, 73 min
   pet 4. 12.  odmor
   sub 5. 12.  lagano 12 km — 12 km, 64 min
-  ned 6. 12.  dugi 31 km lagano — 31 km, 2 h 45 min
+  ned 6. 12.  dugi 30,5 km lagano — 30,5 km, 2 h 42 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 94 km, 8 h 15 min, 6 treninga, brz rad 9 % vremena trčanja
+  Zbir: 93,5 km, 8 h 12 min, 6 treninga, brz rad 9 % vremena trčanja
 
 6. NEDELJA (od 7. 12.) — razvoj, gradnja; do trke 10 nedelja
   pon 7. 12.  lagano 13 km — 13 km, 69 min
@@ -93,10 +93,10 @@ Tempo trke u treninzima je tvoja današnja forma (4:28/km). Očekivano vreme na 
   čet 17. 12.  prag 5 × 1,6 km (4:11/km), oporavak 1:30 džog — 15,7 km, 74 min
   pet 18. 12.  odmor
   sub 19. 12.  lagano 12,5 km — 12,5 km, 66 min
-  ned 20. 12.  dugi 32,5 km lagano — 32,5 km, 2 h 53 min
+  ned 20. 12.  dugi 32 km lagano — 32 km, 2 h 50 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
       napomena: Najduže dugo trči u patikama i odeći za trku: tada se vidi da li žulja ili trlja. Patike za trku neka imaju 50–150 km pre starta, ne nove.
-  Zbir: 99,8 km, 8 h 34 min, 6 treninga, brz rad 13 % vremena trčanja
+  Zbir: 99,3 km, 8 h 31 min, 6 treninga, brz rad 13 % vremena trčanja
 
 8. NEDELJA (od 21. 12.) — razvoj, rasterećenje; do trke 8 nedelja
   pon 21. 12.  lagano 8,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,6 km, 51 min

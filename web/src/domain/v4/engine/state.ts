@@ -39,6 +39,7 @@ import type {
   LoadPoints,
   LoadState,
   Pause,
+  Meters,
   PainFlag,
   PlanDoc,
   Step,
@@ -146,15 +147,29 @@ function weekSummaries(
 const asLong = (run: Run): Seconds =>
   run.effort === undefined ? run.durationSec : EFFORT_AS_LONG_SHARE * run.durationSec;
 
-function longestRecent(facts: RunnerFacts, runs: readonly Run[], easyPace: SecPerKm): Seconds {
+function longestRecent(
+  facts: RunnerFacts,
+  runs: readonly Run[],
+  easyPace: SecPerKm,
+  /** istorija je merodavna (nije seme) — km najdužeg se čita iz trčanja */
+  trustRuns: boolean
+): { sec: Seconds; m: Meters } {
   let longest = 0;
+  let meters = 0;
+  let longestEasy = 0;
   for (const run of runs) {
-    if (diffDays(facts.today, run.date) < LONGEST_RECENT_DAYS)
-      longest = Math.max(longest, asLong(run));
+    if (diffDays(facts.today, run.date) >= LONGEST_RECENT_DAYS) continue;
+    longest = Math.max(longest, asLong(run));
+    /* R20 B1: km najdužeg — samo trčanje bez napora trke/testa (trka nije dugi) */
+    if (run.effort === undefined && run.durationSec > longestEasy) {
+      longestEasy = run.durationSec;
+      meters = run.distanceM;
+    }
   }
-  if (longest > 0) return longest;
   const km = facts.profile.longestRecentKm;
-  return km !== undefined && km > 0 ? km * easyPace : 0;
+  const declared = km !== undefined && km > 0 ? km * 1000 : 0;
+  if (longest > 0) return { sec: longest, m: trustRuns ? meters || declared : declared };
+  return declared > 0 ? { sec: (declared / 1000) * easyPace, m: declared } : { sec: 0, m: 0 };
 }
 
 function lastHardEffort(facts: RunnerFacts, runs: readonly Run[]): HardEffort | null {
@@ -505,6 +520,7 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
         };
   const weeks = weekSummaries(facts, runs, loadOf);
   const volume = historyVolume(weeks, load.seeded, facts.today);
+  const longest = longestRecent(facts, runs, easyPace, !load.seeded);
   const state: RunnerState = {
     today: facts.today,
     availability,
@@ -513,7 +529,8 @@ export const buildState: BuildStateFn = (input, goal, data, estimate = declaredF
     weeks,
     ...(volume === null ? {} : volume),
     load,
-    longestRecentSec: Math.round(longestRecent(facts, runs, easyPace)),
+    longestRecentSec: Math.round(longest.sec),
+    ...(longest.m > 0 ? { longestRecentM: Math.round(longest.m) } : {}),
     form: planned === null ? first : estimate(seen, formGoal, planned),
     lastHardEffort: lastHardEffort(facts, runs),
     pauses,

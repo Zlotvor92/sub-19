@@ -347,6 +347,8 @@ export interface DecideInput {
   easyPaceSecPerKm?: number;
   /** Očekivano vreme na dan trke (D3: dugi prema vremenu trke). */
   raceSec?: Seconds;
+  /** R20 B1: dugi koji trkač već redovno trči (s); plafon dugog ne spušta ispod njega. */
+  habitLongSec?: Seconds;
 }
 
 /** D3 (krug 5): spor trkač — dugi ≤ vreme trke + `overSec`, blok/progresija u dugom ≤ `blockMaxSec`. */
@@ -379,7 +381,17 @@ function applyLongVsRace(
 
 /** Sve odluke plana na jednom mestu, svaka iz svog vlasnika. */
 export function decide(input: DecideInput): Decisions {
-  return applyLongVsRace(decideBase(input), input.data, input.raceSec);
+  return withLongHabit(
+    applyLongVsRace(decideBase(input), input.data, input.raceSec),
+    input.habitLongSec
+  );
+}
+
+/** R20 B1: plafon dugog važi za RAST — ne spušta dugi ispod onoga što trkač već redovno trči. */
+export function withLongHabit(d: Decisions, habitLongSec: Seconds | undefined): Decisions {
+  const habit = Math.round((habitLongSec ?? 0) / 60) * 60;
+  if (habit <= d.longMaxSec) return d;
+  return { ...d, longMaxSec: habit, longHabitSec: habit };
 }
 
 function decideBase(input: DecideInput): Decisions {

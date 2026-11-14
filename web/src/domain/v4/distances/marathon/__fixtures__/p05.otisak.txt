@@ -1,10 +1,10 @@
-2026-11-02 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
+2026-11-02 | trening | easy | 18.5 | lagano 18,5 km | - | - | -
 2026-11-03 | trening | quality | 11.4 | usponi 8 × 1 min snažno uzbrdo, nazad 2 min hod | - | - | -
-2026-11-04 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
+2026-11-04 | trening | easy | 18.5 | lagano 18,5 km | - | - | -
 2026-11-05 | trening | quality | 14.3 | prag 25 min u komadu | - | - | -
 2026-11-06 | odmor | - | 0.0 |  | - | - | -
-2026-11-07 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
-2026-11-08 | trening | long | 32.0 | dugi 32 km lagano | - | - | -
+2026-11-07 | trening | easy | 18.5 | lagano 18,5 km | - | - | -
+2026-11-08 | trening | long | 29.0 | dugi 29 km lagano | - | - | -
 2026-11-09 | trening | easy | 18.0 | lagano 18 km | - | - | -
 2026-11-10 | trening | quality | 12.9 | brze deonice 14 × 200 m, oporavak 200 m džog | - | - | -
 2026-11-11 | trening | easy | 18.0 | lagano 18 km | - | - | -
@@ -12,13 +12,13 @@
 2026-11-13 | odmor | - | 0.0 |  | - | - | -
 2026-11-14 | trening | easy | 18.0 | lagano 18 km | - | - | -
 2026-11-15 | trening | long | 28.5 | dugi 28,5 km lagano | - | - | -
-2026-11-16 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
+2026-11-16 | trening | easy | 18.0 | lagano 18 km | - | - | -
 2026-11-17 | trening | quality | 14.6 | brze deonice 16 × 30 s brzo i opušteno, oporavak 1:30 džog | - | - | -
-2026-11-18 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
+2026-11-18 | trening | easy | 18.0 | lagano 18 km | - | - | -
 2026-11-19 | trening | quality | 16.8 | prag 5 × 1,6 km, oporavak 1:30 džog | - | - | -
 2026-11-20 | odmor | - | 0.0 |  | - | - | -
-2026-11-21 | trening | easy | 17.5 | lagano 17,5 km | - | - | -
-2026-11-22 | trening | long | 32.0 | dugi 32 km lagano | - | - | -
+2026-11-21 | trening | easy | 18.0 | lagano 18 km | - | - | -
+2026-11-22 | trening | long | 30.5 | dugi 30,5 km lagano | - | - | -
 2026-11-23 | trening | easy | 16.5 | lagano 16,5 km | - | - | -
 2026-11-24 | trening | quality | 12.8 | usponi 14 × 45 s snažno uzbrdo, nazad 1:30 hod | - | - | -
 2026-11-25 | trening | easy | 16.5 | lagano 16,5 km | - | - | -

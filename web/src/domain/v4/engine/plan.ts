@@ -1,6 +1,10 @@
 /* V4 — `plan` (SPEC § 6.1–6.2): čista funkcija (stanje, cilj, podaci distance) → plan. Redosled odluka:
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
 import {
+  LONG_HABIT_GUESS_DAY_SHARE,
+  LONG_HABIT_WEEKS,
+  LONG_GUESS_FREE_SEC,
+  LONG_START_OVER_KM,
   FATIGUE_RATIO,
   FATIGUE_WEEK_SHARE,
   NO_PROGRESS_SHARE,
@@ -212,6 +216,17 @@ export function skeleton(
 }
 
 /** Plan od `startDate` bez provere unosa; koristi ga `plan` i ponovno planiranje ostatka (§ 6.4). */
+/** R20 B1: dugi koji trkač redovno trči — drugi najduži nedeljni dugi u poslednjih `LONG_HABIT_WEEKS` nedelja
+    (jedno dugo trčanje nije navika); bez stvarnih trčanja 0. */
+function habitLong(state: RunnerState): Seconds {
+  if (state.load.seeded) return 0;
+  const longs = state.weeks
+    .slice(-LONG_HABIT_WEEKS)
+    .map((w) => w.longestSec)
+    .sort((a, b) => b - a);
+  return longs[1] ?? 0;
+}
+
 export function createPlan(
   state: RunnerState,
   goal: Goal,
@@ -247,6 +262,7 @@ export function createPlan(
     longDay: availability.longDay,
     easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false, undefined, transfer).easy,
     raceSec: state.form.raceDay.expectedSec,
+    habitLongSec: habitLong(state),
     ladder: ladderInputOf({
       baseLoad,
       easyPaceSecPerKm: zonePaces(form.vdot, data.distanceM, false, undefined, transfer).easy,
@@ -258,8 +274,29 @@ export function createPlan(
   });
   const easyPace = zonePaces(form.vdot, data.distanceM, false, undefined, transfer).easy;
   const fromRuns = !state.load.seeded && state.longestRecentSec > 0;
+  /* R20 B1: dugi u nedelji 1 ≤ najduži iz istorije + 2 km (bez podatka: procena navike iz obima i dana) */
+  const weeklyKm = state.profile.weeklyKm ?? 0;
+  const knownLongKm =
+    state.longestRecentM !== undefined
+      ? state.longestRecentM / 1000
+      : (LONG_HABIT_GUESS_DAY_SHARE * weeklyKm) / Math.max(1, availability.runDays.length);
+  /* na 5 min naniže; kad veže, prvi dugi plana je polazni (bez koraka) */
+  const kmCapRaw =
+    knownLongKm > 0
+      ? Math.floor(((knownLongKm + LONG_START_OVER_KM) * easyPace) / 300) * 300
+      : Number.POSITIVE_INFINITY;
+  /* procena navike (bez podatka) ne spušta dugi do 90 min — to nosi svaki trkač tog obima — niti dugi kratke
+     pripreme (< `longCheckMinWeeks`): ona nema nedelja da nadoknadi niži početak */
+  const guessOnly = state.longestRecentM === undefined;
+  const short = weeks < (data.adequate.longCheckMinWeeks ?? 0);
+  const kmCap = !guessOnly
+    ? kmCapRaw
+    : short
+      ? Number.POSITIVE_INFINITY
+      : Math.max(kmCapRaw, LONG_GUESS_FREE_SEC);
   const decisions: Decisions = {
     ...decided,
+    ...(Number.isFinite(kmCap) ? { longFirstCapSec: kmCap } : {}),
     ...(fromRuns
       ? {
           longStartFromRuns: true,

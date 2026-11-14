@@ -1517,12 +1517,9 @@ function onAvailability(
     runDays: a.runDays,
     longDay: a.longDay,
     qualityDays: assignDays(a.runDays, a.longDay),
-    longMaxSec: decideLongMax(
-      d.peakLoad,
-      data.safety,
-      d.level,
-      a.runDays.length,
-      doc.header.paces.easy
+    longMaxSec: Math.max(
+      d.longHabitSec ?? 0,
+      decideLongMax(d.peakLoad, data.safety, d.level, a.runDays.length, doc.header.paces.easy)
     )
   };
   const built = runPass({ ...doc, header: { ...doc.header, decisions } }, state, data, {
