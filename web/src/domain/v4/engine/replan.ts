@@ -11,6 +11,7 @@ import {
   PAIN_LOW_MAX,
   PAIN_LOW_REST_DAYS,
   PAIN_MID_DAYS,
+  RACE_PACE_STIMULUS,
   PAIN_MID_LONG_DAYS,
   PAIN_MID_MAX,
   PAIN_MID_REST_DAYS,
@@ -38,7 +39,7 @@ import {
 } from './constants';
 import { applyBreakRamp, applyPostRace, breakStartOf, noMicroCuts, postRacesOf } from './breakRamp';
 import { buildCtx, doneDayIds, isMutable, runPass } from './build';
-import { addDays, diffDays, isValidDate, mondayOf } from './dates';
+import { addDays, diffDays, isValidDate, mondayOf, weekdayOf } from './dates';
 import {
   assignDays,
   decideCaps,
@@ -74,6 +75,7 @@ import {
   adjustmentWindow,
   effortRampDays,
   effortScheduleFits,
+  meaningfulDose,
   pauseLength,
   pauseRampDays,
   rampOf,
@@ -106,7 +108,9 @@ import type {
   Seconds,
   Transfer,
   Warning,
-  Workout
+  Workout,
+  WorkoutDef,
+  DayId
 } from './types';
 import { withTrainingRacePace } from './racePace';
 import { effortResult, raceTimeSec, zonePaces } from './vdot';
@@ -2437,6 +2441,146 @@ function describe(
   return changes;
 }
 
+/** R24 (M2): posle bola prvi termin kvaliteta od `M2_FIRST_DAY`. dana dobija prag u komadu — veće od najmanje doze
+    biblioteke i pola poslednje odrađene doze praga (najviše 60 % nje; ne ispod najmanje smislene doze, R22 A3); sledeće
+    nedelje prvi termin kvaliteta je tempo trke najmanje doze. Samo kad do 7 dana posle kraja zaštite (dan 10) nema
+    brzog treninga i kad je do trke bar 10 dana. Samo lagani promenljivi dani; ostalo ostaje. */
+const M2_FIRST_DAY = 11;
+const M2_WITHIN_DAYS = 7;
+const M2_RACE_MIN_DAYS = 10;
+const M2_DONE_SHARE = 0.5;
+const M2_DONE_MAX_SHARE = 0.6;
+function painFirstFast(
+  doc: PlanDoc,
+  before: PlanDoc,
+  state: RunnerState,
+  ev: EventOf<'pain'>,
+  data: DistanceData
+): PlanDoc {
+  if (ev.level <= PAIN_LOW_MAX || ev.level > PAIN_MID_MAX) return doc;
+  /* suženo: bol prijavljen posle dugog (tada zaštita dugog traje duže, pa brzi trening ume da nestane do sužavanja) */
+  const painDay = allDays(before).find((d) => d.date === ev.date);
+  if (painDay?.workout?.kind !== 'long') return doc;
+  const race = doc.header.goal.raceDate;
+  const from = addDays(ev.date, M2_FIRST_DAY);
+  const days = allDays(doc);
+  const fast = (d: PlanDay): boolean =>
+    d.workout !== null &&
+    (d.workout.kind === 'quality' || d.workout.kind === 'test' || d.workout.kind === 'race');
+  /* brz trening već postoji u 7 dana posle kraja zaštite */
+  if (
+    days.some(
+      (d) =>
+        d.date > ev.date && d.date <= addDays(ev.date, PAIN_MID_DAYS + M2_WITHIN_DAYS) && fast(d)
+    )
+  )
+    return doc;
+  if (diffDays(race, from) < M2_RACE_MIN_DAYS) return doc;
+  const ctxB = buildCtx(doc.header, data);
+  const done = doneDayIds(state);
+  const qDays = new Set<number>(doc.header.decisions.qualityDays);
+  const beforeDay = new Map(allDays(before).map((d) => [d.date, d] as const));
+  const slot = (d: PlanDay): boolean =>
+    qDays.has(weekdayOf(d.date)) &&
+    d.workout?.kind === 'easy' &&
+    /* provera forme iz plana se ne pretvara u prag (Z3) */
+    beforeDay.get(d.date)?.workout?.kind !== 'test' &&
+    d.date < addDays(race, -M2_RACE_MIN_DAYS) &&
+    isMutable(d, doc.header, state.today, done);
+  const first = days.find((d) => d.date >= from && slot(d));
+  if (first === undefined) return doc;
+  const zoneDefs = (zone: string, stimulus: string): WorkoutDef[] =>
+    data.library.filter(
+      (x) => x.kind === 'quality' && x.stimulus === stimulus && mainZone(x.main) === zone
+    );
+  const tDef = zoneDefs('T', 'prag').find((x) => x.main.kind === 'continuous');
+  if (tDef === undefined) return doc;
+  /* poslednja odrađena doza praga (plan dana sa odrađenim trčanjem) */
+  const ran = new Set(state.runs.flatMap((r) => (r.dayId === undefined ? [] : [r.dayId])));
+  const lastT = allDays(before)
+    .filter((d) => d.date <= ev.date && ran.has(d.id) && d.workout?.kind === 'quality')
+    .filter((d) => {
+      const def = data.library.find((x) => x.id === d.workout?.libraryId);
+      return def !== undefined && mainZone(def.main) === 'T';
+    })
+    .at(-1)?.workout?.workSec;
+  const libMin = minDoseOf(tDef, ctxB);
+  const want =
+    lastT === undefined
+      ? libMin
+      : Math.max(libMin, Math.min(M2_DONE_SHARE * lastT, M2_DONE_MAX_SHARE * lastT));
+  const plannedT = (() => {
+    const b = allDays(before).find((d) => d.date === first.date)?.workout;
+    return b?.kind === 'quality' ? b.workSec : Number.POSITIVE_INFINITY;
+  })();
+  const dose = Math.round(meaningfulDose(tDef, ctxB, want, plannedT) / 60) * 60;
+  const weekOf = (d: PlanDay): PlanWeek | undefined =>
+    doc.weeks.find((w) => w.days.some((x) => x.id === d.id));
+  const phase = weekOf(first)?.intent.phase ?? 'osnova';
+  const tWorkout = realize(
+    {
+      type: 'quality',
+      def: tDef,
+      dose,
+      slot: { place: 'quality', stimulus: tDef.stimulus, index: 0, phase }
+    },
+    ctxB
+  );
+  if (tWorkout === null) return doc;
+  const put = new Map<DayId, Workout>([[first.id, tWorkout]]);
+  /* sledeće nedelje: tempo trke najmanje doze (ceo broj deonica, ne ispod najmanje smislene) */
+  const nextMonday = addDays(mondayOf(first.date), 7);
+  const second = days.find(
+    (d) => d.date >= nextMonday && d.date < addDays(nextMonday, 7) && slot(d)
+  );
+  if (second !== undefined) {
+    let best: Workout | null = null;
+    for (const def of zoneDefs('RP', RACE_PACE_STIMULUS)) {
+      const min = meaningfulDose(def, ctxB, minDoseOf(def, ctxB), Number.POSITIVE_INFINITY);
+      const w = realize(
+        {
+          type: 'quality',
+          def,
+          dose: min,
+          slot: {
+            place: 'quality',
+            stimulus: def.stimulus,
+            index: 0,
+            phase: weekOf(second)?.intent.phase ?? phase
+          }
+        },
+        ctxB
+      );
+      if (w !== null && w.workSec >= min - 30 && (best === null || w.workSec < best.workSec))
+        best = w;
+    }
+    if (best !== null) put.set(second.id, best);
+  }
+  /* R2: nedelja sa dodatim brzim treningom ne raste više od 20 % od prethodne (inače se taj trening ne dodaje) */
+  const pace = paceCtxOf(doc.header);
+  let weeks = doc.weeks;
+  for (const [id, x] of put) {
+    const next = weeks.map((w) => ({
+      ...w,
+      days: w.days.map((d) => (d.id === id ? { ...d, origin: 'template' as const, workout: x } : d))
+    }));
+    const wi = next.findIndex((w) => w.days.some((d) => d.id === id));
+    const km = (w: PlanWeek | undefined): number =>
+      w === undefined ? Number.NaN : weekCost(w, race, pace).km;
+    /* skok a → b: ne nov (bio je i bez ovog treninga) */
+    const jump = (a: number, b: number): boolean => b > M2_WEEK_JUMP * a + 0.5;
+    const newJump =
+      (wi > 0 && jump(km(next[wi - 1]), km(next[wi])) && !jump(km(weeks[wi - 1]), km(weeks[wi]))) ||
+      (wi + 1 < next.length &&
+        jump(km(next[wi]), km(next[wi + 1])) &&
+        !jump(km(weeks[wi]), km(weeks[wi + 1])));
+    if (newJump) continue;
+    weeks = next;
+  }
+  return { ...doc, weeks };
+}
+const M2_WEEK_JUMP = 1.2;
+
 /** R22 (A1): posle pripremne trke iz plana koja je u kandidatu nestala (otpala ili pomerena) lagani dani njenih 7
     dana se grade ponovo — skraćenje oporavka bez trke nema razlog. */
 function restoreAfterDropped(
@@ -2545,9 +2689,12 @@ export const replan: ReplanFn = (doc, state, events, data) => {
       brk === null || micro === ramped.doc
         ? micro
         : applyBreakRamp(micro, current, state, data, brk);
+    /* R24 (M2): posle bola prvi brzi trening postoji (prag ≥ 11. dana, sledeće nedelje najmanji tempo trke) */
+    const painFixed =
+      ev.kind === 'pain' ? painFirstFast(postRace, current, state, ev, data) : postRace;
     const candidate: Candidate = {
       ...ramped,
-      doc: multi ? capTail(postRace, doc, state.today) : postRace
+      doc: multi ? capTail(painFixed, doc, state.today) : painFixed
     };
     const own = describe(current, candidate, ev, state, data);
     /* krug 12 (M1): najnoviji rezultat se opisuje prema planu pre tihih starijih rezultata (njihova promena tempa je
