@@ -25,7 +25,7 @@
 2026-11-26 | trening | quality | 7.3 | prag 14 min u komadu | - | - | -
 2026-11-27 | odmor | - | 0.0 |  | - | - | -
 2026-11-28 | trening | easy | 9.0 | lagano 65 min | - | - | -
-2026-11-29 | trening | long | 16.6 | dugi 2 h lagano | - | - | -
+2026-11-29 | trening | long | 17.3 | dugi 2 h 5 min lagano | - | - | -
 2026-11-30 | trening | easy | 11.1 | lagano 80 min | - | - | -
 2026-12-01 | trening | quality | 8.7 | usponi 10 × 1 min snažno uzbrdo, nazad 2 min hod | - | - | -
 2026-12-02 | odmor | - | 0.0 |  | - | - | -

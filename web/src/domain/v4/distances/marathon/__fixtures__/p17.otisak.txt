@@ -4,7 +4,7 @@
 2026-11-05 | trening | quality | 13.4 | prag 25 min u komadu | - | - | -
 2026-11-06 | odmor | - | 0.0 |  | - | - | -
 2026-11-07 | trening | easy | 12.5 | lagano 12,5 km | - | - | -
-2026-11-08 | trening | long | 29.5 | dugi 29,5 km lagano | - | - | -
+2026-11-08 | trening | long | 29.0 | dugi 29 km lagano | - | - | -
 2026-11-09 | trening | easy | 12.5 | lagano 12,5 km | - | - | -
 2026-11-10 | trening | quality | 12.4 | brze deonice 14 × 200 m, oporavak 200 m džog | - | - | -
 2026-11-11 | trening | easy | 12.5 | lagano 12,5 km | - | - | -

@@ -76,7 +76,7 @@ POSLE događaja je u fajlu scenarija.
 ## S15 — p11, E4: ned 17, bol 4/10 posle dugog
 
 - Stanje: danas 2027-02-28; sadašnji obim 25 km nedeljno, 4 dana.
-- Događaj: Bol 4/10 (koleno) posle treninga 2027-02-28 („dugi 2 h 12 min, poslednjih 22 min u tempu maratona").
+- Događaj: Bol 4/10 (koleno) posle treninga 2027-02-28 („dugi 2 h 25 min lagano").
 
 ## S16 — p12, E4: ned 5, bol 4/10 posle laganog dana
 
