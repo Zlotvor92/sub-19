@@ -176,6 +176,19 @@ function raceTruth(
   /* R22 (B2): tempo trke u treninzima je tempo za trku — rečenica kaže zašto je sporiji od forme */
   const formRP = h.paces.rpBase ?? h.paces.RP;
   const basis = raceAdvice(h, raceDay, data.distanceM).basis;
+  /* R24 (M3 a): savet sporiji od tempa očekivanog vremena — jedan tempo za trku (savet) uz formu; „Očekivano vreme …
+     traži X/km" se ne ispisuje (tri tempa za istu trku zbunjuju) */
+  if (slowerAdvice(h, raceDay, data)) {
+    return [
+      line(data, 'zaglavlje.tempo-trke-sporiji', { ...values, formPace: fmtPace(formRP) }),
+      ...(target === undefined ? [] : [second]),
+      line(data, 'zaglavlje.tempa-prate', values),
+      ...(data.safety.minZoneGapSecPerKm !== undefined &&
+      Math.abs(h.paces.T - h.paces.RP) < data.safety.minZoneGapSecPerKm
+        ? [line(data, 'zaglavlje.prag-tempo-trke', values)]
+        : [])
+    ].join(' ');
+  }
   const own =
     h.paces.RP > formRP && (basis === 'cilj' || basis === 'oprezno')
       ? line(
@@ -352,7 +365,9 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
     `Polazna forma (${fmtDate(h.form.start.asOf)}): ${fmtClock(h.form.start.raceTimeSec)}`
   );
   const now = state?.form.current ?? h.form.current;
-  const raceDay = raceDayShown(doc, state);
+  /* R24 (M3 a): savetovano vreme (tempo za trku × distanca) je unutar raspona — gornja granica se širi do njega */
+  const shown = raceDayShown(doc, state);
+  const raceDay = withAdvisedInRange(h, shown, data);
   lines.push(
     `Današnja prognoza (${fmtDate(now.asOf)}): ${fmtClock(now.raceTimeSec)}, pouzdanost ${now.confidence}`
   );
@@ -398,22 +413,108 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   const declared = declaredEasyLine(h, state);
   if (declared !== null) lines.push(declared);
   /* R22 (B3): stavka nedelje (npr. nedelja provere forme) ide uz tu nedelju, ne u upozorenja */
-  const headWarnings = h.warnings.filter((w) => w.weeks === undefined);
+  const allHead = h.warnings.filter((w) => w.weeks === undefined);
+  /* R24 (M3 c): najviše tri stavke, redom prvenstva (tegoba → dužina pripreme → obim → najduži dugi → broj dana →
+     nema rezultata); višak ide u „Pomoglo bi i" jednom rečenicom (samo kad stavki ima više od tri) */
+  const ranked =
+    allHead.length <= WARNINGS_MAX
+      ? allHead
+      : allHead
+          .map((w, i) => ({ w, i, r: WARNING_RANK[w.code] ?? WARNING_RANK_OTHER }))
+          .sort((a, b) => a.r - b.r || a.i - b.i)
+          .map((x) => x.w);
+  const headWarnings = ranked.slice(0, WARNINGS_MAX);
+  const overflow = ranked.slice(WARNINGS_MAX);
   if (headWarnings.length > 0) {
     lines.push('');
     lines.push('UPOZORENJA');
     /* R22 (B3, menja R20 B6): jedna tema = jedna stavka — činjenice upozorenja bez predloga se ne spajaju u tuđi
        pasus; ostali predlozi („Pomoglo bi i: …") su posebna, poslednja stavka */
-    let more = '';
+    const extras: string[] = [];
+    /* R24 (M3 b): „računaj na današnju formu … ne na napredak" samo kad je očekivano == forma */
+    const formSec = h.form.current.raceTimeSec;
+    const honest = (text: string): string =>
+      Math.abs(raceDay.expectedSec - formSec) <= 1
+        ? text
+        : text.replace(
+            /računaj na današnju formu \([^)]*\), ne na napredak — prognoza ga zato ne računa\./,
+            `računaj na očekivano vreme (${fmtClock(raceDay.expectedSec)}), ${raceDay.expectedSec > formSec ? 'sporije' : 'brže'} od današnje forme.`
+          );
     for (const w of headWarnings) {
       const [own, extra] = w.proposal.split(' Pomoglo bi i: ');
-      if (extra !== undefined) more = `Pomoglo bi i: ${extra}`;
-      lines.push(`- ${[w.problem, w.meaning, own ?? ''].filter((x) => x !== '').join(' ')}`);
+      if (extra !== undefined) extras.push(extra);
+      lines.push(
+        `- ${honest([w.problem, w.meaning, own ?? ''].filter((x) => x !== '').join(' '))}`
+      );
     }
+    /* višak: prva rečenica predloga (i njegovi dodaci) — sve u jednu rečenicu „Pomoglo bi i" */
+    for (const w of overflow) {
+      const [own, extra] = w.proposal.split(' Pomoglo bi i: ');
+      /* kraj rečenice: tačka (ne posle broja, „13. nedelje") pa veliko slovo */
+      const first = (own ?? '').split(/(?<=[^\d]\.) (?=[A-ZČĆŠŽĐ])/)[0] ?? '';
+      if (first.trim() !== '') extras.push(first);
+      if (extra !== undefined) extras.push(extra);
+    }
+    const parts = extras
+      .flatMap((x) => x.split(/; /))
+      .map((x) => x.trim().replace(/\.$/, ''))
+      .filter((x) => x !== '')
+      .map((x, k) => (k === 0 ? x : x.charAt(0).toLowerCase() + x.slice(1)));
+    const more =
+      parts.length === 0
+        ? ''
+        : overflow.length === 0
+          ? `Pomoglo bi i: ${extras.join(' ')}`.replace(/\s+$/, '')
+          : `Pomoglo bi i: ${parts.map((x, k) => (k === 0 ? x.charAt(0).toLowerCase() + x.slice(1) : x)).join('; ')}.`;
     if (more !== '') lines.push(`- ${more}`);
   }
   return lines;
 }
+
+/** R24 (M3 a): savet sporiji od tempa očekivanog vremena (oprezno) — savetovano vreme je unutar raspona prognoze
+    (gornja granica se širi do njega). */
+function slowerAdvice(
+  h: PlanHeader,
+  raceDay: Parameters<typeof raceAdvice>[1],
+  data: DistanceData
+): boolean {
+  if (h.paces.byFeel) return false;
+  const formRP = h.paces.rpBase ?? h.paces.RP;
+  const expectedPace = raceDay.expectedSec / (data.distanceM / 1000);
+  return (
+    raceAdvice(h, raceDay, data.distanceM).basis === 'oprezno' &&
+    h.paces.RP > formRP &&
+    h.paces.RP > expectedPace + 0.5
+  );
+}
+function withAdvisedInRange<T extends Parameters<typeof raceAdvice>[1]>(
+  h: PlanHeader,
+  raceDay: T,
+  data: DistanceData
+): T {
+  if (!slowerAdvice(h, raceDay, data)) return raceDay;
+  const advised = Math.round((h.paces.RP * data.distanceM) / 1000);
+  return advised > raceDay.highSec ? { ...raceDay, highSec: advised } : raceDay;
+}
+
+/** R24 (M3 c): najviše ovoliko stavki u UPOZORENJIMA (+ jedna „Pomoglo bi i"). */
+const WARNINGS_MAX = 3;
+/** R24 (M3 c): redosled prvenstva po kodu upozorenja (manji broj ide pre). */
+const WARNING_RANK: Readonly<Record<string, number>> = {
+  tegoba: 0,
+  bol: 0,
+  povratak: 0.5,
+  'kratka-priprema': 1,
+  'mali-obim': 2,
+  'obim-za-nivo': 2,
+  'kratak-dugi': 3,
+  'dugi-za-distancu': 3,
+  'malo-dana': 4,
+  'dan-izostavljen': 4,
+  'lagan-kratak': 4,
+  'nema-podataka': 5
+};
+const WARNING_RANK_OTHER = 6;
 
 /** R20 B5: uneti lagan tempo i lagan tempo plana — razlika veća od ovoga (s/km) dobija rečenicu. */
 const DECLARED_EASY_TOLERANCE_SEC = 10;

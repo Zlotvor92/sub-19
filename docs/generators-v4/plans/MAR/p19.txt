@@ -18,7 +18,7 @@ TEMPA
 - tempo trke 6:20/km
 - intervali 4:51/km
 - brze deonice 4:34/km
-Tempo trke u treninzima je tempo koji plan savetuje za trku (6:20/km), oprezniji od današnje forme (5:45/km) — v. upozorenja. Očekivano vreme na dan trke (4:16:53) traži 6:05/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tempo koji plan savetuje za trku (6:20/km) — sporiji od današnje forme (5:45/km), v. upozorenja. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Do trke je 8 nedelja, a adekvatna priprema za ovu distancu traje bar 16 nedelja. Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi. Izaberi trku za koju imaš 16 nedelja pripreme — tada nedelja stiže do 57,4 km, a dugi do 26,5 km, ili na isti datum trči kraću distancu: polumaraton.

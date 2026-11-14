@@ -282,6 +282,8 @@ export const DEFAULT_TEXTS: Readonly<Record<string, string>> = {
   'zaglavlje.tempo-trke': 'Tempo trke u treninzima je tvoja današnja forma ({pace}).',
   'zaglavlje.tempo-trke-oprezno':
     'Tempo trke u treninzima je tempo koji plan savetuje za trku ({pace}), oprezniji od današnje forme ({formPace}) — v. upozorenja.',
+  'zaglavlje.tempo-trke-sporiji':
+    'Tempo trke u treninzima je tempo koji plan savetuje za trku ({pace}) — sporiji od današnje forme ({formPace}), v. upozorenja.',
   'zaglavlje.tempo-trke-cilj':
     'Tempo trke u treninzima je tempo tvog cilja ({pace}); današnja forma nudi {formPace}.',
   'zaglavlje.cilj.dostizan':

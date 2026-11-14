@@ -862,7 +862,7 @@ export function warnings(input: WarningInput): Warning[] {
     const now =
       longGain && trial !== null && !extraDayProposed
         ? `${extraDay} — dugi tada stiže do ${km(trial.longKm)}.`
-        : `Uz isti datum trke dugi ostaje ${km(longKm)}, pa trku počni sporije i čuvaj snagu za poslednjih ${km(left)}.`;
+        : `Uz isti datum trke dugi ostaje ${km(longKm)}, pa trku počni sporije i čuvaj snagu za ${km(left) === '1 km' ? 'poslednji kilometar' : `poslednjih ${km(left)}`}.`;
     const next =
       fix !== null
         ? weeksProposed

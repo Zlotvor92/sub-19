@@ -147,6 +147,17 @@ describe('mašinske provere K1–K5 nad ispisom (SPEC § 14.2)', () => {
   it('K3: upozorenje u ispisu ima problem, značenje i predlog sa brojem', () => {
     for (const { c, b } of built) {
       const text = renderPlan(b.doc, b.state, SYNTHETIC);
+      /* R24 (M3 c): više od tri stavke — prikazane su tri po prvenstvu, višak je u „Pomoglo bi i" */
+      const head = b.doc.header.warnings.filter((w) => w.weeks === undefined);
+      if (head.length > 3) {
+        const items = (text.split('\nUPOZORENJA\n')[1] ?? '')
+          .split('\n\n')[0]
+          ?.split('\n')
+          .filter((l) => l.startsWith('- ') && !l.startsWith('- Pomoglo bi i'));
+        expect(items?.length, c.name).toBe(3);
+        expect(text, c.name).toContain('- Pomoglo bi i: ');
+        continue;
+      }
       for (const w of b.doc.header.warnings) {
         /* R20 B6: upozorenje bez sopstvenog predloga je u redu upozorenja sa „Pomoglo bi i: …" */
         expect(text, c.name).toContain(

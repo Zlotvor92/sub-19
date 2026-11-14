@@ -253,7 +253,7 @@ TEMPA
 - tempo trke 7:18/km
 - intervali 6:00/km
 - brze deonice 5:31/km
-Tempo trke u treninzima je tempo koji plan savetuje za trku (7:18/km), oprezniji od današnje forme (6:54/km) — v. upozorenja. Očekivano vreme na dan trke (4:55:55) traži 7:01/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tempo koji plan savetuje za trku (7:18/km) — sporiji od današnje forme (6:54/km), v. upozorenja. Tempa se ubrzavaju kad trka ili test to potvrde.
 Tvoj uneti lagan tempo (7:00/km) je brži od laganog za formu iz rezultata (7:41–8:26/km): lagane dane trči sporije, u tom rasponu.
 
 UPOZORENJA

@@ -786,7 +786,9 @@ describe('R6: istina o tempu trke', () => {
         `Tempo trke u treninzima je (tvoja današnja forma|tempo koji plan savetuje za trku) \\(${rp}\\)`
       )
     );
-    expect(base.text).toContain(`Očekivano vreme na dan trke`);
+    /* R24 (M3 a): kad je savet sporiji od tempa očekivanog vremena, rečenica „Očekivano vreme … traži" se ne
+       ispisuje — red kaže da je savet sporiji od forme */
+    expect(base.text).toMatch(/Očekivano vreme na dan trke|— sporiji od današnje forme/);
     expect(base.text).toContain('Tempa se ubrzavaju kad trka ili test to potvrde.');
     const easy = withGoal(expectedSec + 120);
     expect(easy.text).toContain(`traži ${paceOf(expectedSec + 120)} — dostižan je (raspon`);
