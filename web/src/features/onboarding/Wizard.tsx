@@ -117,23 +117,60 @@ export function Wizard({ today }: { today: string }) {
     const r = input ? generateMarathonV2Plan(input) : null;
     return r && !r.ok ? r.reasons : null;
   }, [isMarathonV2, mw, w.raceDate, today]);
-  const valid = isV2
-    ? v2StepValid(v2w, step, w.raceDate, today)
-    : isTenKV2
-      ? tenKV2StepValid(t2w, step, w.raceDate, today)
-      : isHmV2
-        ? hmV2StepValid(hmw, step, w.raceDate, today)
-        : isMarathonV2
-          ? marathonV2StepValid(mw, step, w.raceDate, today)
-          : false;
+  /* F9 korak 7 (A4): pod zastavicom V4 korak 3 traži samo ispravan unos (obim, odgovor na pitanja) — izbor trkača
+     (trčanje/hodanje, početnik, mali obim) se ne odbija; plan se pravi uz upozorenje (AGENTS § V4 t. 6). */
+  const v4Flag = useV4Store((s) => s.enabled);
+  const step3V4 = (v: {
+    weeklyKm: string;
+    experience: string | null;
+    canRun30: boolean | null;
+  }): boolean =>
+    (!isV2 && v.canRun30 === false) ||
+    (v.weeklyKm !== '' &&
+      Number.isFinite(+v.weeklyKm) &&
+      +v.weeklyKm >= 0 &&
+      (isV2
+        ? v.experience !== null && (v.experience === 'regular' || v.canRun30 !== null)
+        : v.canRun30 === true && v.experience !== null));
+  const v4Step3 =
+    v4Flag && step === 3
+      ? isV2
+        ? step3V4(v2w)
+        : isTenKV2
+          ? step3V4(t2w)
+          : isHmV2
+            ? step3V4(hmw)
+            : isMarathonV2
+              ? step3V4(mw)
+              : null
+      : null;
+  const valid =
+    v4Step3 !== null
+      ? v4Step3
+      : isV2
+        ? v2StepValid(v2w, step, w.raceDate, today)
+        : isTenKV2
+          ? tenKV2StepValid(t2w, step, w.raceDate, today)
+          : isHmV2
+            ? hmV2StepValid(hmw, step, w.raceDate, today)
+            : isMarathonV2
+              ? marathonV2StepValid(mw, step, w.raceDate, today)
+              : false;
 
   /* F9 korak 7: pod zastavicom V4 plan pravi V4 motor iz istih odgovora (ulaz v2 kao oblik razmene). Sa ugašenom
      zastavicom ništa od ovoga se ne računa ni ne prikazuje. */
-  const v4On = useV4Store((s) => s.enabled) && distance !== null;
+  const v4On = v4Flag && distance !== null;
   const v4Today = useV4Store((s) => s.today) ?? today;
   const knee = useRecoveryStore((s) => s.knee);
   const [confirmedDays, setConfirmedDays] = useState(false);
-  const answersV4 = (): WizardAnswers | null =>
+  const answersV4 = (): WizardAnswers | null => {
+    const a = answersOf();
+    /* trčanje/hodanje (v2 ga odbija): V4 pravi plan kao za početnika, uz upozorenje motora */
+    return a !== null && 'runWalk' in a && a.runWalk === true
+      ? { ...a, experience: 'beginner' }
+      : a;
+  };
+  const answersOf = () =>
     isV2
       ? toFiveKV2Input(v2w, w.raceDate, today)
       : isTenKV2
@@ -350,7 +387,11 @@ export function Wizard({ today }: { today: string }) {
             <TenKV2Result v={t2w} set={setT2} raceDate={w.raceDate} today={today} />
           ) : null}
           {isTenKV2 && step === 3 ? (
-            <TenKV2Experience v={t2w} set={setT2} runWalkRejection={runWalkRejection} />
+            <TenKV2Experience
+              v={t2w}
+              set={setT2}
+              runWalkRejection={v4Flag ? null : runWalkRejection}
+            />
           ) : null}
           {isTenKV2 && step === 4 ? <TenKV2Days v={t2w} set={setT2} rejection={rejection} /> : null}
 
@@ -358,7 +399,11 @@ export function Wizard({ today }: { today: string }) {
             <HmV2Result v={hmw} set={setHm} raceDate={w.raceDate} today={today} />
           ) : null}
           {isHmV2 && step === 3 ? (
-            <HmV2Experience v={hmw} set={setHm} runWalkRejection={hmRunWalkRejection} />
+            <HmV2Experience
+              v={hmw}
+              set={setHm}
+              runWalkRejection={v4Flag ? null : hmRunWalkRejection}
+            />
           ) : null}
           {isHmV2 && step === 4 ? <HmV2Days v={hmw} set={setHm} rejection={rejection} /> : null}
 
@@ -366,7 +411,11 @@ export function Wizard({ today }: { today: string }) {
             <MarathonV2Result v={mw} set={setMar} raceDate={w.raceDate} today={today} />
           ) : null}
           {isMarathonV2 && step === 3 ? (
-            <MarathonV2Experience v={mw} set={setMar} runWalkRejection={marRunWalkRejection} />
+            <MarathonV2Experience
+              v={mw}
+              set={setMar}
+              runWalkRejection={v4Flag ? null : marRunWalkRejection}
+            />
           ) : null}
           {isMarathonV2 && step === 4 ? (
             <MarathonV2Days v={mw} set={setMar} rejection={rejection} />

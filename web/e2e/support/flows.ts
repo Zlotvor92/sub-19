@@ -18,6 +18,8 @@ export interface PlanInput {
   days?: string[];
   longDay?: string;
   goal?: { hours?: string; min: string; sec: string };
+  /** Odgovor na pitanje o 30 minuta bez prekida (podrazumevano Da). */
+  run30?: 'Da' | 'Ne još';
 }
 /* V1b: plan v2 ima cele nedelje koje se završavaju danom trke i ne kreće pre „danas" (`fixToday`: sreda 14. 1. 2026).
    Trka u utorak 7. 4. → 12 nedelja od srede 14. 1., pa je danas prvi dan plana (sreda je dan trčanja). */
@@ -60,9 +62,14 @@ export async function runWizard(page: Page, input: PlanInput = TEN_K): Promise<v
   await page.getByRole('button', { name: 'Dalje' }).click();
   // 3. iskustvo i obim (10K/HM/maraton: i 30 minuta bez prekida)
   const run30 = group(page, '30 minuta bez prekida');
-  if (await run30.count()) await run30.getByRole('button', { name: 'Da', exact: true }).click();
-  await page.getByLabel('Nedeljna kilometraža').fill(input.weeklyKm);
-  await page.getByRole('button', { name: 'Trčim redovno' }).click();
+  if (await run30.count())
+    await run30.getByRole('button', { name: input.run30 ?? 'Da', exact: true }).click();
+  if (input.run30 === 'Ne još') {
+    /* bez 30 minuta trčanja v2 dalje ne pita (obim i iskustvo su skriveni) */
+  } else {
+    await page.getByLabel('Nedeljna kilometraža').fill(input.weeklyKm);
+    await page.getByRole('button', { name: 'Trčim redovno' }).click();
+  }
   await page.getByRole('button', { name: 'Dalje' }).click();
   // 4. dani, dan dugog, cilj
   const days = group(page, 'Dani trčanja');

@@ -198,3 +198,17 @@ test('V4 ugašen (nema reda u v4_pristup): isti čarobnjak pravi v2 plan, plan_v
   expect(v4.row).toBeNull();
   expect(backend.count('/rest/v1/plan_v4?')).toBe(0);
 });
+
+test('V4: trčanje/hodanje (ne mogu 30 min) za 10K se ne odbija — plan uz upozorenje', async ({
+  page
+}) => {
+  const backend = await installBackend(page);
+  const v4 = installV4(backend);
+  await page.goto('/');
+  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(0);
+  const input = { ...(INPUTS['10K'] as PlanInput), weeklyKm: '8', run30: 'Ne još' as const };
+  await runWizard(page, input);
+  await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(1);
+  await tab(page, 'Plan').click();
+  await expect(page.locator('.page.active .plan-warn')).toBeVisible();
+});

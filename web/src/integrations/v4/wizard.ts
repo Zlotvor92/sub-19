@@ -72,7 +72,10 @@ export function wizardGoal(
   );
   const easy = a.easyPaceSecPerKm ?? a.typicalEasyPaceSecPerKm ?? null;
   const profile: RunnerProfile = {
-    ...(Number.isFinite(a.currentWeeklyKm) ? { weeklyKm: a.currentWeeklyKm } : {}),
+    /* 0 = obim nepoznat (npr. trčanje/hodanje — čarobnjak ga ne pita); motor tada procenjuje sam, uz upozorenje */
+    ...(Number.isFinite(a.currentWeeklyKm) && a.currentWeeklyKm > 0
+      ? { weeklyKm: a.currentWeeklyKm }
+      : {}),
     ...(easy !== null ? { easyPaceSecPerKm: easy } : {}),
     ...(a.recentResult
       ? {
