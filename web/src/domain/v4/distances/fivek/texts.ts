@@ -38,6 +38,16 @@ export const TEXTS: Record<string, string> = {
   'zaglavlje.godine':
     'Godine ({age}): oporavak posle brzog treninga traje duže, pa su dva brza treninga u nedelji razmaknuta bar {days}. Kad dani trčanja to ne dozvoljavaju, nedelja ima jedan brz trening, a dugi i lagani dani nose obim.',
 
+  /* R20 (IV, motor čita): upozorenja iz podatka distance */
+  'upozorenje.kratka-priprema':
+    'Za 5 km {weeks} samo izoštravaju formu koju već imaš: plan ne stiže da podigne obim, pa je napredak do trke mali.',
+  'upozorenje.nivo.pocetnik-nov.problem':
+    'Tek počinješ da trčiš, pa je cilj ove pripreme da istrčiš celih 5 km bez hodanja.',
+  'upozorenje.nivo.pocetnik-nov.znacenje':
+    'Očekivano vreme na dan trke je {expected} (raspon {low}–{high}); tačno vreme sada nije važno — važno je da trčiš ravnomerno i bez bola.',
+  'upozorenje.nivo.pocetnik-nov.predlog':
+    'Posle trke nastavi sa 3 dana nedeljno još 4 nedelje, pa izaberi sledećih 5 km za 8–10 nedelja — tada plan cilja vreme.',
+
   /* napomene */
   'napomena.kontrola':
     'Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje. Prvi kvalitet posle provere je najranije 4 dana kasnije.',

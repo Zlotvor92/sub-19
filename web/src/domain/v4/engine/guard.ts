@@ -698,8 +698,12 @@ export function warnings(input: WarningInput): Warning[] {
       code: 'kratka-priprema',
       severity: weeks < a.minWeeks / 2 ? 'ozbiljno' : 'upozorenje',
       problem: `Do trke ${pluralForm(weeks, ['je', 'su', 'je'])} ${count(weeks, WEEKS)}, a adekvatna priprema za ovu distancu traje bar ${count(a.minWeeks, WEEKS)}.`,
-      meaning:
-        'Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi.',
+      /* R20 (IV): značenje može da da distanca (`texts['upozorenje.kratka-priprema']`, zamene {weeks}, {minWeeks}) */
+      meaning: fillWarn(
+        data.texts['upozorenje.kratka-priprema'] ??
+          'Plan nema vremena da postepeno podigne obim i dugi trening, pa će završni deo trke biti teži od svega što stigneš da odradiš u pripremi.',
+        { weeks: count(weeks, WEEKS), minWeeks: count(a.minWeeks, WEEKS) }
+      ),
       /* krug 15 (M6): isti broj nedelja kao u ostalim predlozima (jedan broj u planu), dugi iz probnog plana te dužine */
       proposal: `Izaberi trku za koju imaš ${prep(a.minWeeks)} pripreme — tada plan stiže do dugog od ${LONG_AT}${shorter}.`,
       suggest: {
@@ -957,6 +961,10 @@ export function warnings(input: WarningInput): Warning[] {
   if (shortEasy !== null) out.push(shortEasy);
   const back = returnWarning(doc, state);
   if (back !== null) out.push(back);
+  /* R20 (IV): upozorenje nivoa iz podatka distance (npr. početnik na hod-trku: cilj, očekivani raspon, šta sledeće) —
+     `texts['upozorenje.nivo.<nivo>.problem|znacenje|predlog']`, zamene {low}, {high}, {expected} */
+  const lvlWarn = levelWarning(data, d.level, doc.header.form.raceDay);
+  if (lvlWarn !== null) out.push(lvlWarn);
   /* O4: tempa po osećaju (dok ne stigne prvi usvojen rezultat) ili obim bez ikakvog podatka. */
   if (doc.header.paces.byFeel || (state.load.seeded && state.profile.weeklyKm === undefined)) {
     out.push({
@@ -991,6 +999,35 @@ export function warnings(input: WarningInput): Warning[] {
       proposal: fill(w.proposal)
     }))
   );
+}
+
+/** R20 (IV): upozorenje nivoa iz podatka distance — `texts['upozorenje.nivo.<nivo>.problem|znacenje|predlog']`,
+    zamene {low}, {high}, {expected} iz prognoze; `null` kad distanca za nivo nema tekst. */
+export function levelWarning(
+  data: DistanceData,
+  level: string,
+  rd: { lowSec: number; expectedSec: number; highSec: number }
+): Warning | null {
+  const key = `upozorenje.nivo.${level}`;
+  const problem = data.texts[`${key}.problem`];
+  if (problem === undefined) return null;
+  const v = {
+    low: fmtClock(rd.lowSec),
+    high: fmtClock(rd.highSec),
+    expected: fmtClock(rd.expectedSec)
+  };
+  return {
+    code: 'nivo',
+    severity: 'info',
+    problem: fillWarn(problem, v),
+    meaning: fillWarn(data.texts[`${key}.znacenje`] ?? '', v),
+    proposal: fillWarn(data.texts[`${key}.predlog`] ?? '', v)
+  };
+}
+
+/** R20 (IV): zamene {ključ} u tekstu upozorenja iz podatka distance. */
+function fillWarn(text: string, values: Readonly<Record<string, string>>): string {
+  return text.replace(/\{(\w+)\}/g, (m, k: string) => values[k] ?? m);
 }
 
 const SEVERITY_RANK: Readonly<Record<string, number>> = { ozbiljno: 0, upozorenje: 1, info: 2 };

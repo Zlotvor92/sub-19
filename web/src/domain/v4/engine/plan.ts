@@ -15,7 +15,7 @@ import {
 import { runPass } from './build';
 import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
 import { decide, ladderInputOf, longStepOf, ranGoalDistance } from './decide';
-import { validate, warnings, weekCost } from './guard';
+import { levelWarning, validate, warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { raceWorkout } from './select';
 import {
@@ -525,16 +525,17 @@ export function createPlan(
       : { raceDayMaxGain: data.safety.forecastMaxGainByLevel[level] })
   };
   const finalDecisions = { ...built.header.decisions, ...flags };
+  const finalRaceDay = adjustRaceDay(state.form.raceDay, form.raceTimeSec, finalDecisions);
   return {
     ...built,
     header: {
       ...built.header,
       decisions: finalDecisions,
-      form: {
-        ...built.header.form,
-        raceDay: adjustRaceDay(state.form.raceDay, form.raceTimeSec, finalDecisions)
-      },
-      warnings: found
+      form: { ...built.header.form, raceDay: finalRaceDay },
+      /* R20 (IV): upozorenje nivoa nosi brojeve konačne prognoze (posle kazne) */
+      warnings: found.map((w) =>
+        w.code === 'nivo' ? (levelWarning(data, finalDecisions.level, finalRaceDay) ?? w) : w
+      )
     }
   };
 }
