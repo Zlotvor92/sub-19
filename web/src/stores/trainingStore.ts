@@ -29,6 +29,9 @@ import {
   personalVisible
 } from '../domain/personal';
 import { isOwnerNow, useIsOwner } from './owner';
+import { toResolved } from '../integrations/v4';
+import { useRecoveryStore } from './recoveryStore';
+import { useV4Store, v4DocOf, type V4State } from './v4Store';
 import { pickKnown, requestPersist, TRAINING_KEYS, type PersistMode } from './persistence';
 
 export type TrainingSlice = Pick<PersistedState, (typeof TRAINING_KEYS)[number]>;
@@ -195,13 +198,72 @@ export function useResolvedPlan(): ResolvedPlan | null {
   const plan = useActiveGenPlan();
   const alts = useTrainingStore((s) => s.alts);
   const moves = useTrainingStore((s) => s.moves);
-  return useMemo(() => (plan ? safeResolve(plan, alts, moves) : null), [plan, alts, moves]);
+  const log = useTrainingStore((s) => s.log);
+  const enabled = useV4Store((s) => s.enabled);
+  const row = useV4Store((s) => s.row);
+  const today = useV4Store((s) => s.today);
+  const knee = useRecoveryStore((s) => s.knee);
+  const vanPlana = useRecoveryStore((s) => s.vanPlana);
+  const vanPlanaV2 = useRecoveryStore((s) => s.vanPlanaV2);
+  return useMemo(() => {
+    /* F9 korak 7: sa ugašenom zastavicom (podrazumevano) ova grana se ne uzima — prikaz je kao pre. */
+    const v4 = v4ResolvedOf({ enabled, row, today }, plan, {
+      log,
+      alts,
+      moves,
+      knee,
+      vanPlana,
+      vanPlanaV2
+    });
+    if (v4 !== null) return v4;
+    return plan ? safeResolve(plan, alts, moves) : null;
+  }, [plan, alts, moves, log, enabled, row, today, knee, vanPlana, vanPlanaV2]);
+}
+
+/** V4 grana prikaza (zastavica, `plan_v4` ili preuzimanje uz isti otisak); `null` = stari prikaz. Nikad ne baca. */
+function v4ResolvedOf(
+  v4: Pick<V4State, 'enabled' | 'row' | 'today'>,
+  plan: GenPlanState | null,
+  s: {
+    log: Record<string, unknown>;
+    alts: Record<string, unknown>;
+    moves: Record<string, unknown>;
+    knee: readonly unknown[];
+    vanPlana: Record<string, unknown>;
+    vanPlanaV2: Record<string, unknown> | undefined;
+  }
+): ResolvedPlan | null {
+  if (!v4.enabled) return null;
+  try {
+    const hit = v4DocOf(v4, {
+      plan,
+      log: s.log,
+      alts: s.alts,
+      moves: s.moves,
+      vanPlana: s.vanPlana,
+      ...(s.vanPlanaV2 !== undefined ? { vanPlanaV2: s.vanPlanaV2 } : {}),
+      knee: s.knee
+    });
+    return hit === null ? null : toResolved(hit.doc);
+  } catch {
+    return null; // V4 ne sme da obori ekran: ostaje stari prikaz
+  }
 }
 
 /** Izvedeni plan iz TRENUTNOG stanja (izvan komponenti). `null` kad nema plana ili je neispravan. */
 export function currentPlan(): ResolvedPlan | null {
   const s = useTrainingStore.getState();
   const plan = activeOf(s, isOwnerNow());
+  const r = useRecoveryStore.getState();
+  const v4 = v4ResolvedOf(useV4Store.getState(), plan, {
+    log: s.log,
+    alts: s.alts,
+    moves: s.moves,
+    knee: r.knee,
+    vanPlana: r.vanPlana,
+    vanPlanaV2: r.vanPlanaV2
+  });
+  if (v4 !== null) return v4;
   return plan ? safeResolve(plan, s.alts, s.moves) : null;
 }
 
