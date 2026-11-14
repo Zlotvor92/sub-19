@@ -71,9 +71,9 @@
 2027-01-11 | odmor | - | 0.0 |  | - | - | -
 2027-01-12 | trening | easy | 7.4 | lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-13 | odmor | - | 0.0 |  | - | - | -
-2027-01-14 | trening | easy | 7.4 | lagano 50 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2027-01-14 | trening | easy | 4.8 | lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-15 | odmor | - | 0.0 |  | - | - | -
-2027-01-16 | trening | easy | 6.7 | lagano 50 min | - | - | -
+2027-01-16 | trening | easy | 4.0 | lagano 30 min | - | - | -
 2027-01-17 | trening | test | 13.3 | provera forme: pripremna trka ili test na 10 km punim naporom | - | - | -
 2027-01-18 | odmor | - | 0.0 |  | - | - | -
 2027-01-19 | trening | easy | 7.3 | lagano 55 min | - | - | -

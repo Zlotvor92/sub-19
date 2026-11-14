@@ -57,7 +57,7 @@
 2026-12-28 | odmor | - | 0.0 |  | - | - | -
 2026-12-29 | trening | easy | 4.6 | lagano 35 min | - | - | -
 2026-12-30 | odmor | - | 0.0 |  | - | - | -
-2026-12-31 | trening | easy | 5.4 | lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
+2026-12-31 | trening | easy | 4.7 | lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog | - | - | -
 2027-01-01 | odmor | - | 0.0 |  | - | - | -
 2027-01-02 | odmor | - | 0.0 |  | - | - | -
 2027-01-03 | trening | test | 24.4 | pripremna trka: polumaraton punim naporom, ravnomerno | - | - | -

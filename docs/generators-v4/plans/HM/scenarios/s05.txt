@@ -239,9 +239,9 @@ Pauza zbog bolesti trajala je 7 dana (7–13. 12.), pa je povratak postepen: tre
 - čet 24. 12.: lagano 4,5 km → lagano 8 km
 - sub 26. 12.: provera forme: pripremna trka ili test na 10 km punim naporom → lagano 8,5 km
 - ned 27. 12.: lagano 10,5 km → dugi 12 km lagano
-- uto 29. 12.: lagano 7 km → lagano 5,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
+- uto 29. 12.: lagano 7 km → lagano 4 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
 - čet 31. 12.: prag 2 × 18 min, oporavak 1:30 džog → provera forme: pripremna trka ili test na 10 km punim naporom
-- sub 2. 1.: lagano 8 km → lagano 5,5 km
+- sub 2. 1.: lagano 8 km → lagano 7 km
 - ned 3. 1.: dugi 19 km lagano → dugi 16 km lagano
 - uto 5. 1.: tempo trke 2 × 3 km, oporavak 2 min džog → tempo trke 2 × 2 km, oporavak 2 min džog
 - ned 10. 1.: dugi 19,5 km, završni deo 5,5 km u tempu trke → dugi 18 km, završni deo 3,5 km u tempu trke
@@ -334,12 +334,12 @@ Pauza zbog bolesti trajala je 7 dana (7–13. 12.), pa je povratak postepen: tre
 
 9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 28. 12.  odmor
-  uto 29. 12.  lagano 5,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 6,5 km, 39 min
+  uto 29. 12.  lagano 4 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5 km, 30 min
   sre 30. 12.  odmor
   čet 31. 12.  provera forme: pripremna trka ili test na 10 km punim naporom — 15,8 km, 81 min
       napomena: Rezultat ove provere postaje nova polazna forma: tempa i prognoza za trku se računaju iz njega od sledeće nedelje.
   pet 1. 1.  odmor
-  sub 2. 1.  lagano 5,5 km — 5,5 km, 33 min
+  sub 2. 1.  lagano 7 km — 7 km, 42 min
   ned 3. 1.  dugi 16 km lagano — 16 km, 97 min
       napomena: Ponesi vodu; od 40. min unesi gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na trci.
   Zbir: 43,8 km, 4 h 10 min, 4 treninga, brz rad 18 % vremena trčanja

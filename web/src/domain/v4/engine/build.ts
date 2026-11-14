@@ -252,7 +252,12 @@ export function longPlan(
     /* korak raste što kasnije: tek kad ni uz veći korak u ostalim nedeljama ova ne sme da ostane na osnovnom */
     const late = previousLongest + step + (t - 1) * LONG_STEP_STRETCH * step < target;
     if (previousLongest + t * step < target && late)
-      grownStep = Math.min((target - previousLongest) / t, LONG_STEP_STRETCH * step);
+      /* R20 (dopuna MAR c): rastezanje ne prelazi K7 (korak dugog ≤ 2 km) kad je osnovni korak već blizu njega */
+      grownStep = Math.min(
+        (target - previousLongest) / t,
+        LONG_STEP_STRETCH * step,
+        Math.max(step, LONG_STEP_MAX_KM * ctx.pace.paces.easy)
+      );
   }
   /* D1/D6 (krug 5): dugi raste od prethodnog (ne skače na polazni kad je krenuo niže) */
   /* R20 B1: prvi dugi plana ≤ najduži iz istorije + 2 km */
@@ -348,6 +353,8 @@ export function longPlan(
 
 /** R19 (stavka 2a): najveće povećanje koraka dugog kad lestvica inače ne stiže do dugog za distancu. */
 const LONG_STEP_STRETCH = 1.15;
+/** R20 (dopuna MAR c): najveći korak dugog posle rastezanja (K7). */
+const LONG_STEP_MAX_KM = 2;
 
 /** R19 (stavka 2a): broj nedelja gradnje/vrha sa dugim od `index` do nedelje najdužeg dugog (najveći `lenPct` pre
     sužavanja, poslednja pri jednakim); 0 posle nje. */
@@ -1725,8 +1732,39 @@ function layoutOnce(
     for (const x of previous.byWeekday.values()) before += x;
     if (sec < before - 60) return layoutOnce(week, ctx, slots, previous, maxWorkMin, true);
   }
-  return out;
+  return prepRaceEase(out, ctx);
 }
+
+/** R20 (dopuna MAR a): pred pripremnu trku punim naporom od bar `PREP_RACE_MIN_SEC` lagani dani se rasterećuju —
+    dan pred trku najviše `PREP_EVE_MAX_SEC`, dva dana pre toga najviše `PREP_EASE_SHARE` svog trajanja (MAR p05/p17:
+    pet laganih dana po 80 min do pripremne trke). */
+function prepRaceEase(out: Map<IsoDate, Recipe>, ctx: BuildCtx): Map<IsoDate, Recipe> {
+  const tests = [...out.entries()].filter(
+    ([, r]) =>
+      r.type === 'test' && summarize(realize(r, ctx), ctx.pace).durationSec >= PREP_RACE_MIN_SEC
+  );
+  if (tests.length === 0) return out;
+  const next = new Map(out);
+  for (const [date] of tests)
+    for (let k = 1; k <= 3; k += 1) {
+      const d = addDays(date, -k);
+      const r = next.get(d);
+      if (r === undefined || (r.type !== 'easy' && r.type !== 'addon')) continue;
+      const cap = k === 1 ? PREP_EVE_MAX_SEC : Math.round((PREP_EASE_SHARE * r.sec) / 60) * 60;
+      if (r.sec <= cap) continue;
+      next.set(
+        d,
+        k === 1 || r.type === 'easy'
+          ? { type: 'easy', sec: Math.max(cap, ctx.data.safety.minEasySec) }
+          : { ...r, sec: Math.max(cap, ctx.data.safety.minEasySec), maxSec: undefined }
+      );
+    }
+  return next;
+}
+/** R20 (dopuna MAR a): pripremna trka (test) od bar 75 min punim naporom dobija rasterećena 3 dana pre sebe. */
+const PREP_RACE_MIN_SEC = 4500;
+const PREP_EVE_MAX_SEC = 1800;
+const PREP_EASE_SHARE = 0.6;
 
 /** Lagani dani rasporeda (pre spremnosti) kao merilo za sledeću nedelju; `null` kad nedelja nema laganih dana. */
 function easyRefOf(recipes: ReadonlyMap<IsoDate, Recipe>, ctx: BuildCtx): EasyRef | null {
@@ -3120,7 +3158,10 @@ export function runPass(
         pendingFrom =
           end === null
             ? null
-            : addDays(end, fromSchedule ? RETURN_TEST_AFTER_SCHEDULE_DAYS : RETURN_TEST_AFTER_RAMP_DAYS);
+            : addDays(
+                end,
+                fromSchedule ? RETURN_TEST_AFTER_SCHEDULE_DAYS : RETURN_TEST_AFTER_RAMP_DAYS
+              );
       }
       const key = seenKey(final.workout, ctx);
       if (key !== null) seen.push({ date: final.date, key });
