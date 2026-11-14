@@ -54,7 +54,8 @@ describe('krug 18 — smer tempa posle rezultata (sve distance)', () => {
         if (Math.abs(kT - kRP) > 0.012)
           bad.push(`${id} prag ${a.paces.T}→${b.paces.T}, RP ${a.paces.RP}→${b.paces.RP}`);
         const text = renderPlan(r.after, r.afterState, d.data);
-        const m = /Tempo za trku: (\d+:\d\d)\/km/.exec(text);
+        /* R20 B4: sporiji cilj i oprezan tempo (uz „počni sporije") su namerno sporiji od forme */
+        const m = /Tempo za trku: (\d+:\d\d)\/km \(današnja forma/.exec(text);
         if (m?.[1] !== undefined && sec(m[1]) > b.paces.RP + 1)
           bad.push(`${id} trka ${m[1]} sporija od forme ${String(b.paces.RP)} s/km`);
       }

@@ -784,17 +784,23 @@ describe('R6: istina o tempu trke', () => {
     expect(far.text).toContain(`traži ${paceOf(lowSec - 300)} — van raspona je (raspon`);
   });
 
-  /* R18 (stavka 1): ni sporiji cilj ne usporava tempo dana trke ispod potvrđene forme */
-  it('taktika dana trke (krug 4, S7; R18): iz današnje potvrđene forme, i kad je cilj sporiji', () => {
+  /* R20 B4 (menja R18 stavku 1): sporiji cilj JE tempo za trku (jedan broj: cilj iz zaglavlja); brži cilj ne
+     ubrzava tempo preko potvrđene forme */
+  it('taktika dana trke (krug 4, S7; R20 B4): iz današnje forme, a sporiji cilj je tempo za trku', () => {
     const base = withGoal(undefined);
     const confirmed = raceTimeSec(base.doc.header.form.paceVdot, HALF_M);
-    expect(base.text).toContain(`Tempo za trku: ${paceOf(confirmed)} (današnja forma`);
-    expect(withGoal(confirmed + 120).text).toContain(
-      `Tempo za trku: ${paceOf(confirmed)} (današnja forma`
+    /* ovaj primer ima upozorenje „počni sporije" — tempo je oprezan, ne brži od forme */
+    expect(base.text).toMatch(/Tempo za trku: \d+:\d\d\/km \(oprezno, sporija polovina raspona/);
+    expect(withGoal(confirmed + 600).text).toContain(
+      `Tempo za trku: ${paceOf(confirmed + 600)} (tvoj cilj`
     );
-    expect(withGoal(confirmed - 300).text).toContain(
-      `Tempo za trku: ${paceOf(confirmed)} (današnja forma`
+    /* brži cilj: forma ili oprezniji tempo (uz upozorenje „počni sporije"), nikad brži od forme */
+    const fast = /Tempo za trku: (\d+):(\d\d)\/km \((današnja forma|oprezno)/.exec(
+      withGoal(confirmed - 300).text
     );
+    expect(fast).not.toBeNull();
+    const fastPace = Number(fast?.[1]) * 60 + Number(fast?.[2]);
+    expect(fastPace).toBeGreaterThanOrEqual(Math.round((confirmed / HALF_M) * 1000));
   });
 
   it('napomene trke iz podataka: zamene tempa, a za trkača po osećaju tekst bez s/km', () => {

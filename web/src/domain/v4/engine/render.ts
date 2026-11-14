@@ -206,6 +206,9 @@ function raceDayShown(
   return adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
 }
 
+/** R20 B4: oprezan tempo za trku tek kad je bar 1 % sporiji od potvrđene forme. */
+const CAUTIOUS_MIN_OVER = 1.01;
+
 export function raceNotes(
   doc: PlanDoc,
   state: RunnerState | undefined,
@@ -221,11 +224,19 @@ export function raceNotes(
   /* A18 (krug 9): jedan izvor — današnja prognoza iz zaglavlja (ne posebno računanje iz VDOT-a tempa) */
   const confirmedSec = h.form.current.raceTimeSec;
   const target = h.goal.targetTimeSec;
-  /* R18 (stavka 1): tempo dana trke nikad sporiji od potvrđene forme — cilj samo dok su tempa po osećaju */
-  const fromGoal = h.paces.byFeel && target !== undefined && target >= confirmedSec;
-  const timeSec = fromGoal ? target : confirmedSec;
+  /* R20 B4 (menja R18 stavku 1): sporiji cilj je tempo za trku (MAR p17 4:15, ne 4:11); uz upozorenje „počni
+     sporije" tempo je sredina očekivanog vremena i sporije granice raspona, nikad brži od potvrđene forme */
+  const slowerAdvice = !h.paces.byFeel && h.warnings.some((w) => w.proposal.includes('počni sporije'));
+  const midSec = Math.round((raceDay.expectedSec + raceDay.highSec) / 2);
+  const cautiousSec =
+    slowerAdvice && midSec > CAUTIOUS_MIN_OVER * confirmedSec ? midSec : confirmedSec;
+  const fromGoal = target !== undefined && target >= cautiousSec;
+  const timeSec = fromGoal ? target : cautiousSec;
+  /* razlika do 1 % nije nov broj — ostaje potvrđena forma */
+  const cautious = !fromGoal && timeSec > confirmedSec;
   /* krug 10 (stavka 9): jedan izvor tempa trke — isti broj kao tempo trke u treninzima (zaokruživanje bez razlike) */
-  const pace = fromGoal || h.paces.byFeel ? (timeSec / data.distanceM) * 1000 : h.paces.RP;
+  const pace =
+    fromGoal || cautious || h.paces.byFeel ? (timeSec / data.distanceM) * 1000 : h.paces.RP;
   /* krug 10 (stavka 10): pomak starta kao udeo tempa kad ga distanca daje, inače sekunde */
   const startOffset = (k: 'from' | 'to'): number => {
     const share = data.safety.raceStartPaceOffsetShare?.[k];
@@ -237,7 +248,11 @@ export function raceNotes(
     paceFrom: fmtPaceBare(pace + startOffset('from')),
     paceTo: fmtPace(pace + startOffset('to')),
     time: fmtClock(timeSec),
-    basis: fromGoal ? 'tvoj cilj' : 'današnja forma',
+    basis: fromGoal
+      ? 'tvoj cilj'
+      : cautious
+        ? 'oprezno, sporija polovina raspona prognoze'
+        : 'današnja forma',
     feel: feelOf('RP', data, raceDay.expectedSec)
   };
   const out: string[] = [

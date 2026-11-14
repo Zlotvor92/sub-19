@@ -119,7 +119,9 @@ export function raceNoteSource(id: string, doc: PlanDoc, text: string): string[]
     notes.push(lines[j] ?? '');
   const joined = notes.join(' ');
   const h = doc.header;
-  if (!h.paces.byFeel && h.goal.targetTimeSec === undefined) {
+  /* R20 B4: uz upozorenje „počni sporije" tempo za trku je oprezniji od tempa u treninzima (rečenica to kaže) */
+  const cautious = joined.includes('oprezno, sporija polovina raspona');
+  if (!h.paces.byFeel && h.goal.targetTimeSec === undefined && !cautious) {
     const p = Math.round(h.paces.RP);
     const pace = `${String(Math.floor(p / 60))}:${String(p % 60).padStart(2, '0')}/km`;
     if (!joined.includes(pace)) bad.push(`${id} napomena bez tempa trke ${pace}`);
