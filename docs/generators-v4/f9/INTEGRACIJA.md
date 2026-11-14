@@ -1,6 +1,6 @@
 # F9 etapa 1: kako V4 ulazi u aplikaciju (priprema, ne ulazak)
 
-Napisano 14. 11. 2026. oko 20:30 po beogradskom vremenu. Grana `claude/v4`, polazni commit `b73e0db2`. Etapa 1 ne menja
+Napisano 14. 11. 2026. oko 20:30 po beogradskom vremenu; odluke vlasnika upisane oko 21:00 (§ 7). Grana `claude/v4`, polazni commit `b73e0db2`. Etapa 1 ne menja
 nijedan fajl aplikacije, ne piše u bazu i ne radi deploy. Oznake pouzdanosti: [visoka] znači da sam to pročitao u kodu na
 navedenom mestu, [srednja] je izvod iz koda ili dokumenta, [niska] je procena. Gde piše „neprovereno", nisam proverio.
 Odluke vlasnika iz F8 § 9 imaju prednost nad svim predlozima ovde.
@@ -22,7 +22,7 @@ Odluke vlasnika iz F8 § 9 imaju prednost nad svim predlozima ovde.
 5. Motor nema javnu funkciju koja ručnu izmenu ili premeštanje upisuje u `PlanDoc`. Postoji samo događaj
    `manual-edit {dayId}`: `replan` preslaže ostatak nedelje (`engine/replan.ts:1725–1760`) za dan koji je već
    `origin: 'manual'`. Upis datuma, `movedFrom`, `origin` i `base` zato mora da uradi sloj (§ 2d), ili tim V4 da doda
-   pomoćnu funkciju u motor. Odluka pripada organizatoru (pitanje 3). [visoka]
+   pomoćnu funkciju u motor. Odluka vlasnika 3: upis radi sloj (§ 7). [visoka]
 
 ## 1. Šavovi u aplikaciji
 
@@ -131,36 +131,34 @@ RLS je po uzoru na `supabase/user-state.sql:231–245` (svaka politika `auth.uid
 - Sva trčanja, ne samo dane plana.
 - Oznaku trke.
 
-**Ograničenja Strava API-ja.** Proverio sam ih 14. 11. 2026. veb pretragom; rezime zvanične stranice
-<https://developers.strava.com/docs/rate-limits/>. Stranicu nisam otvorio direktno.
-- Ograničenje važi po aplikaciji. Ukupno: 200 zahteva na 15 min i 2000 dnevno. Čitanje: 100 zahteva na 15 min i
-  1000 dnevno. [srednja]
-- <https://developers.strava.com/docs/getting-started/> navodi veće limite kad aplikacija pređe 10 sportista. Dve
-  stranice se razlikuju, pa važeći broj treba pročitati u podešavanjima API aplikacije. [srednja]
-- Prozor od 15 min se resetuje na :00, :15, :30 i :45. Dnevni limit se resetuje u ponoć UTC, tj. u 1:00 po Beogradu
-  zimi. [srednja]
-- Zaglavlja `X-ReadRateLimit-Limit/Usage` nose oba broja, a Strava za povlačenje istorije preporučuje usporavanje po
-  tim zaglavljima. Današnji `stravaApi.ts:123` zna samo za 429. [srednja za zaglavlja, visoka za kod]
-- Najveći `per_page`: 200, po zajednici i generisanim klijentima, ne po zvaničnoj stranici. [niska]
-- Neprovereno: koliko unazad spisak sme da ide (da li postoji granica istorije), da li `SummaryActivity` nosi
-  `workout_type`, i šta uslovi korišćenja Strava API-ja kažu o čuvanju podataka na serveru.
+**Ograničenja Strava API-ja** — važeći brojevi sa snimka ekrana `strava.com/settings/api` koji je vlasnik poslao
+14. 11. 2026. u 20:44 po Beogradu [visoka, pročitano sa snimka]; zamenjuju brojeve iz pretrage:
+- Ukupno: 400 zahteva na 15 min, 4.000 dnevno. Čitanje: 200 na 15 min, 2.000 dnevno. Važi za celu aplikaciju.
+- Najviše 10 povezanih sportista (sada 5); za više treba zahtev Stravi. Opseg tokena: `read`.
+- Iz zvanične dokumentacije (pretraga, [srednja]): prozor od 15 min se resetuje na :00/:15/:30/:45, dnevni u ponoć
+  UTC (1:00 po Beogradu zimi); zaglavlja `X-ReadRateLimit-Limit/Usage` nose oba broja. Današnji `stravaApi.ts:123`
+  zna samo za 429. Najveći `per_page` 200 [niska].
+- Otvoreno (ne proverava se prema Stravi): grafikon „Daily requests" na snimku pokazuje 0 za 6–13. 11. — nije jasno
+  da li je grafikon prazan ili sinhronizacija ide preko druge API aplikacije. Neprovereno: granica istorije spiska,
+  `workout_type` u spisku, uslovi čuvanja podataka.
 
-**Posledica** [niska, računica iz gornjih brojeva, ne merenje]:
-- Po korisniku: spisak 26 nedelja je 1–2 zahteva. Podela po km za 8 nedelja, oko 5 trčanja nedeljno, je ≈ 40 zahteva
-  za streamove. Ukupno ≈ 40–45 zahteva.
-- Uz limit čitanja od 100 na 15 min, to su 2 korisnika po prozoru, za celu aplikaciju zajedno.
+**Uvoz kompletne istorije za 5 korisnika** (odluka 2) [niska, računica, ne merenje]:
+- Sažetak cele istorije: pretpostavka do ≈ 1.250 trčanja po korisniku (5 god. × 250) → ≈ 13 zahteva po korisniku
+  sa `per_page=100` (današnji kod), ≈ 7 sa 200.
+- Podela po km ostaje za poslednjih 8 nedelja (F8 § 9.3): ≈ 40 zahteva po korisniku.
+- Ukupno ≈ 55 po korisniku, ≈ 270 za 5 korisnika: dva prozora od 15 min (200 čitanja po prozoru), ≈ 14 % dnevnog
+  limita čitanja. Na 10 sportista ≈ 550, i dalje ispod 2.000 dnevno.
 
-**Predlog:**
-- Prvo povlačenje istorije radi u delovima: prvo sažeci (jeftino), pa podela po km najnovije unazad.
-- Zahtevi idu sa uređaja, ne više od ≈ 20 po pokretanju, uz praćenje zaglavlja.
-- Prekinuto povlačenje se nastavlja pri sledećem otvaranju aplikacije, a forma u međuvremenu radi sa onim što ima
-  (AGENTS 9a).
+**Pravila uvoza:** svima odjednom, cela istorija; zahtevi sa uređaja; posle svakog odgovora čitaju se zaglavlja
+limita i uvoz staje kad do limita prozora ostane < 20 zahteva (rezerva za redovnu sinhronizaciju); na 429 staje i
+nastavlja posle sledećeg prozora; redovna sinhronizacija ima prednost i nikad ne čeka uvoz istorije. Forma radi sa
+onim što je već uvezeno (AGENTS 9a).
 
 ## 5. Zastavica i vraćanje nazad
 
-- **Paljenje.** Tabela `v4_pristup(user_id, ukljuceno, od)`. Klijent je čita jednom pri pokretanju; red postoji samo za
-  vlasnika. Odluka § 9.6 („sve odjednom") važi za korisnike, a zastavica služi samo dok traje priprema i proba na
-  vlasniku. Kad se uđe, isti mehanizam se uključuje svima jednim SQL upisom, bez novog deploya. [srednja]
+- **Paljenje (odluka 1).** V4 se pušta SVIMA odmah, bez probe samo za vlasnika. Tabela `v4_pristup(user_id,
+  ukljuceno, od)` ostaje samo kao prekidač za vraćanje nazad: pri ulasku se jednim SQL upisom uključuje svima;
+  klijent je čita jednom pri pokretanju.
 - **Bez reda ili bez mreže** → V4 je isključen. Odluka se kešira lokalno samo za prikaz; ako lokalna vrednost i server
   ne daju istu odluku, važi isključeno.
 - **Šta gašenje vraća.** Sa ugašenom zastavicom app je bajt-isti kao danas: V4 nikad ne piše u `genPlan`, `log` ni u
@@ -189,24 +187,19 @@ Svaki korak je jedan commit na `claude/v4`. Nijedan ne ide u `main` bez izričit
 | 6 | `store.ts` + servis `plan_v4` (`rev`), zastavica `v4_pristup` | testovi sukoba: dva uređaja, isti doc → nema sukoba; različite radnje → ponovna primena | ne | srednji |
 | 7 | grananje u `useActiveGenPlan`/`useResolvedPlan`/`currentPlan`; čarobnjak i „Generiši nov plan" pod zastavicom | sa ugašenom zastavicom svi postojeći UI i E2E testovi zeleni; sa upaljenom E2E za sve četiri distance | ne | veliki |
 | 8 | ekrani: upozorenja pre generisanja, Forma, traka promena, „Nešto se desilo?", pregled sa „Primeni" | E2E dirnutih ekrana, `npm run build` | ne | veliki |
-| 9 | deploy sa zastavicom samo za vlasnika; senka nad bazom (samo SELECT) i merenje iz F8 § 7 | otisak 100 %, čuvar 0 nalaza | **da** (deploy, `main`) | mali |
-| 10 | uključenje svima + kasnije gašenje v2 | merenja iz koraka 9 | **da** | mali (kod), veliki (posledice) |
+| 9 | pre ulaska: senka nad bazom (samo SELECT) i merenje iz F8 § 7 nad svim stvarnim planovima | otisak 100 %, čuvar 0 nalaza | ne (samo SELECT) | mali |
+| 10 | deploy i uključenje SVIMA odjednom (odluka 1), uvoz cele istorije (odluka 2); kasnije gašenje v2 | merenja iz koraka 9; prekidač `v4_pristup` za vraćanje | **da** (deploy, `main`) | mali (kod), veliki (posledice) |
 
-## 7. Otvorena pitanja za vlasnika (odgovor „da" prihvata predlog)
+## 7. Odluke vlasnika (14. 11. 2026, ≈ 20:45 po Beogradu, preneo organizator)
 
-1. **Zastavica pre ulaska.** Predlog: iako je odluka „sve odjednom", V4 prvo radi nekoliko dana samo tebi (red u
-   `v4_pristup`). Posle toga se jednim SQL upisom uključuje svima. Sa „ne" se preskače proba na produkciji.
-2. **Uvoz istorije pri ulasku.** Predlog: istorija se povlači postepeno, po korisniku, pri otvaranju aplikacije (≈ 20
-   zahteva po pokretanju). Forma je prvih dana zasnovana na kraćoj istoriji i to piše u objašnjenju. Razlog: Strava
-   limit važi za celu aplikaciju (§ 4).
-3. **Ko upisuje ručnu izmenu u `PlanDoc`.** Predlog: sloj aplikacije (`edits.ts`), a motor se ne menja. Sa „ne" tim
-   V4 dodaje `applyManualEdit` u `engine/`, pa ulazak čeka tu izmenu.
-4. **„Generiši nov plan" pod V4.** Predlog: stari `plan_v4` se arhivira u `plan_v4_verzija`, a trčanja i istorija forme
-   ostaju. Danas se `log` i forma vezani za plan trajno brišu.
-5. **Plan koji ne prođe proveru otiska.** Predlog: takav korisnik ostaje na starom prikazu, a nalaz dobija organizator;
-   nema delimičnog preuzimanja.
-6. **Strava zaglavlja i uslovi.** Predlog: pre koraka 4 pročitati važeće limite u podešavanjima Strava API aplikacije i
-   uslove čuvanja podataka. Za to je potreban tvoj pristup nalogu programera; ja tom nalogu nemam pristup.
+1. **Proba samo za vlasnika: NE.** V4 se pušta svima odmah; zastavica ostaje samo kao prekidač za vraćanje (§ 5).
+2. **Postepen uvoz: NE.** Svima se povlači kompletna istorija sa Strave, uz poštovanje limita aplikacije (zaglavlja,
+   stanka na 429, bez obaranja redovne sinhronizacije) — § 4.
+3. **Ručnu izmenu i premeštanje u `PlanDoc` upisuje sloj aplikacije: DA.** Motor se ne menja (`edits.ts`).
+4. **„Generiši nov plan" pod V4 čuva trčanja i formu: DA.** Stari `plan_v4` se arhivira u `plan_v4_verzija`.
+5. **Plan bez istog otiska: DA (predlog prihvaćen).** Ostaje na starom prikazu, nalaz ide organizatoru, bez
+   delimičnog preuzimanja.
+6. **Strava limiti:** vlasnik je poslao snimak podešavanja API aplikacije; brojevi su u § 4.
 
 ## 8. Rizici
 
@@ -215,9 +208,11 @@ Svaki korak je jedan commit na `claude/v4`. Nijedan ne ide u `main` bez izričit
 | sinhronizacija „poslednji upis pobeđuje" (`decide.ts:41`) | dva uređaja: jedan premesti dan, drugi primi izvedeni događaj → jedan od dva upisa nestane | `plan_v4` ima uslovan upis po `rev`. Isti doc = isti otisak = nije sukob (F8 § 6.3). `user_state` se ne koristi za V4 |
 | istorija od 40 verzija | da je plan u `user_state`: 40 × (37 + 60) KB ≈ 4 MB po korisniku [srednja, F8] | posebne tabele; `plan_v4_verzija` najviše 10 |
 | veličina dokumenta | 41 KB za 18 nedelja; maraton od 24+ nedelje veći [niska]; računanje na telefonu nije mereno | meriti u koraku 9 (prag < 50 KB, < 200 ms, F8 § 7); ako se prag pređe, čuvaju se samo nedelje koje nisu prošle + otisak prošlih |
-| stari planovi bez generatora (19 u bazi, F8 § 5) | adapter za neki oblik da drugačiji otisak | korak 2 + pitanje 5: bez otiska nema preuzimanja |
-| Strava limit po aplikaciji | uvoz istorije pri ulasku → 429 svima, i v2 korisnicima | uvoz u delovima, praćenje zaglavlja (§ 4), pitanje 2 |
+| stari planovi bez generatora (19 u bazi, F8 § 5) | adapter za neki oblik da drugačiji otisak | korak 2 + odluka 5: bez otiska nema preuzimanja |
+| Strava limit po aplikaciji | uvoz istorije pri ulasku → 429 svima, i v2 korisnicima | rezerva od 20 zahteva po prozoru, stanka na 429, redovna sinhronizacija ima prednost (§ 4) |
+| Strava: najviše 10 povezanih sportista | 11. korisnik ne može da poveže Stravu, V4 nema istoriju | zahtev Stravi pre rasta; do tada ručni unos (F8 § 6.7) |
+| Strava: grafikon „Daily requests" 0 za 6–13. 11. | moguće da sinhronizacija ide preko druge API aplikacije, pa važe njeni limiti | otvoreno; proverava vlasnik, ne tab prema Stravi |
 | uvoz zahteva `genPlan` (`stravaSync.ts:177`) | korisnik bez plana nema istoriju, pa ni formu na prvom planu | korak 4: aktivnosti se uvoze nezavisno od plana |
-| `discardPlan` briše `log` | nov plan pod V4 izgubi trčanja iz forme | `aktivnost` se ne briše; pitanje 4 |
+| `discardPlan` briše `log` | nov plan pod V4 izgubi trčanja iz forme | `aktivnost` se ne briše; odluka 4 |
 | mapiranje `workout.kind` → `DayTag` | ekrani dana (unos, Strava uparivanje po `d.tag`, `stravaSync.ts` streamovi za `lako/lr/trka`) se ponašaju pogrešno | test mapiranja u koraku 1; uparivanje pod V4 ide po `Run.dayId`, ne po `tag` |
 | lični plan vlasnika | V4 ga dirne pre 13. 12. | `header.protected` + test zaštite (`engine/protection.test.ts` postoji) + preuzimanje samo za čitanje |
