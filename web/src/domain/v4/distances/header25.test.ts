@@ -139,4 +139,19 @@ describe('R25 — upozorenja u zaglavlju', () => {
       expect(bad).toEqual([]);
     }
   );
+
+  it.each(DIST.map((d) => [d.data.id] as const))(
+    '%s (2): „Pomoglo bi i" nema deo bez prethodnika',
+    (id) => {
+      const bad: string[] = [];
+      for (const c of CASES.get(id) ?? []) {
+        const more = warnBlock(c.text).find((l) => l.startsWith('- Pomoglo bi i: '));
+        if (more === undefined) continue;
+        for (const part of more.slice('- Pomoglo bi i: '.length).split('; '))
+          if (/^(te|ove|tih|tim|tog|taj|to|tada|tu)\b/i.test(part))
+            bad.push(`${c.label}: „${part}"`);
+      }
+      expect(bad).toEqual([]);
+    }
+  );
 });

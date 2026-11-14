@@ -469,12 +469,20 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
       const [own, extra] = w.proposal.split(' Pomoglo bi i: ');
       /* kraj rečenice: tačka (ne posle broja, „13. nedelje") pa veliko slovo */
       const first = (own ?? '').split(/(?<=[^\d]\.) (?=[A-ZČĆŠŽĐ])/)[0] ?? '';
-      if (first.trim() !== '') extras.push(first);
+      /* R25 (2): rečenica koja upućuje na problem svoje stavke („Te nedelje trči …") dobija taj problem ispred sebe,
+         jer stavka nije prikazana */
+      if (first.trim() !== '')
+        extras.push(
+          ANAPHORA.test(first)
+            ? `${w.problem.trim().replace(/[.:]$/, '')}: ${first.charAt(0).toLowerCase()}${first.slice(1)}`
+            : first
+        );
       if (extra !== undefined) extras.push(extra);
     }
     const parts = extras
       .flatMap((x) => x.split(/; /))
-      .map((x) => x.trim().replace(/\.$/, ''))
+      /* R25 (2): tačka posle datuma („26. 11.") ostaje */
+      .map((x) => x.trim().replace(/(?<!\d)\.$/, ''))
       .filter((x) => x !== '')
       .map((x, k) => (k === 0 ? x : x.charAt(0).toLowerCase() + x.slice(1)));
     const more =
@@ -482,7 +490,10 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
         ? ''
         : overflow.length === 0
           ? `Pomoglo bi i: ${extras.join(' ')}`.replace(/\s+$/, '')
-          : `Pomoglo bi i: ${parts.map((x, k) => (k === 0 ? x.charAt(0).toLowerCase() + x.slice(1) : x)).join('; ')}.`;
+          : `Pomoglo bi i: ${parts.map((x, k) => (k === 0 ? x.charAt(0).toLowerCase() + x.slice(1) : x)).join('; ')}`.replace(
+              /\.?$/,
+              '.'
+            );
     if (more !== '') lines.push(`- ${more}`);
   }
   return lines;
@@ -516,6 +527,8 @@ function withAdvisedInRange<T extends Parameters<typeof raceAdvice>[1]>(
 
 /** R24 (M3 c): najviše ovoliko stavki u UPOZORENJIMA (+ jedna „Pomoglo bi i"). */
 const WARNINGS_MAX = 3;
+/** R25 (2): početak rečenice koji upućuje na prethodnu rečenicu iste stavke. */
+const ANAPHORA = /^(Te|Ove|Tih|Tim|Tog|Taj|To|Tada|Tu)\s/;
 /** R25 (1): bezbednost — uvek stavka, prva. */
 const SAFETY_CODES: ReadonlySet<string> = new Set(['tegoba', 'bol']);
 /** R25 (1): uvek stavka (staž, cilj van raspona), mesto po prvenstvu. */
