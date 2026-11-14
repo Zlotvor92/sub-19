@@ -1,0 +1,417 @@
+{
+ "round": "ROUND-V4-MAR-05",
+ "commit": "b8ad0bb6",
+ "date": "2026-11-14",
+ "distance": "MAR",
+ "plans": [
+  {
+   "id": "p01",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 6.5,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "total": 72.0,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 11/13 ned: najduži dugi samo 25–26,5 km (2 h 33) uz 55,7 km vrha — za 3:38 premalo dugih preko 28 km i ukupno ≤ 9,5 km u tempu maratona u komadu",
+    "Ned. 1–3 uto+čet: dva brza treninga (usponi/200 m + prag 17–21 min) od prve nedelje na 4 dana i 40 km — ostaje jedan jedini lagan dan",
+    "Ned. 8 sub→ned: test 10 km pa sutradan 12,5 km lagano, a te nedelje nema dugog; posle toga skok 33→52 km"
+   ]
+  },
+  {
+   "id": "p02",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 7.5,
+    "q3": 7.5,
+    "q4": 7.5,
+    "q5": 8,
+    "q6": 8,
+    "q7": 8
+   },
+   "total": 77.5,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Ned. 15 ned: dugi 28,5 km sa 10,5 km u tempu maratona je 47 % nedelje",
+    "Ned. 10: nosi oznaku „razvoj, gradnja“ a to je oporavak posle polumaratona (37 km, 0 % brzog)",
+    "Ned. 10→11: 37→57 km"
+   ]
+  },
+  {
+   "id": "p03",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 6.5,
+    "q2": 6.5,
+    "q3": 6,
+    "q4": 7,
+    "q5": 7,
+    "q6": 8,
+    "q7": 7.5
+   },
+   "total": 67.5,
+   "constrained_extra": 7,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 8/12 uto: „lagano“ 1 h 45–1 h 50 usred nedelje pa ned dugi 2 h 40 — sa 3 dana svaki trening je dug, dugi nosi 47–54 % nedelje",
+    "Trka: hod-trk 10+1 se prvi put pominje u napomeni na dan trke („probaj na poslednja dva duga“), a nijedan dugi u planu nije zadat kao hod-trk",
+    "Tri broja za trku (forma 4:33, očekivano 4:40, savetovani tempo 6:52 = 4:50) — trkač ne zna šta mu je cilj; tempo 6:52 uz hod nije isto što i 6:52 trčanja"
+   ]
+  },
+  {
+   "id": "p04",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 6.5,
+    "q3": 8,
+    "q4": 6,
+    "q5": 8,
+    "q6": 7.5,
+    "q7": 7.5
+   },
+   "total": 72.0,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 1–18: obim stoji na 65–68 km (vrh tek 73 km u 19. ned.), dugi 2 h 35–3 h svake nedelje 20 nedelja — plan od 24 nedelje ne raste, nedelje 2–7 su iste",
+    "Svaka nedelja sub 80 min → ned dugi 2 h 45–3 h → pon 80–100 min → uto brzi: četiri dana zaredom oko dugog, odmor je sre i pet umesto pon",
+    "Upozorenje u zaglavlju o „kratkim laganim danima u 15–16. nedelji“ opisuje nedelju pripremne trke — zbunjuje, nije upozorenje"
+   ]
+  },
+  {
+   "id": "p05",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7.5,
+    "q2": 8,
+    "q3": 6.5,
+    "q4": 7.5,
+    "q5": 8,
+    "q6": 7.5,
+    "q7": 8
+   },
+   "total": 75.0,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Ned. 12/15: rad u tempu maratona najviše 3 × 4,5 km i 14 km u dugom — za 2:41 i 130 km nedeljno tanko (nema 18–22 km u tempu)",
+    "Ned. 7 uto: intervali 4 × 1 km su jedini VO2 trening u 18 nedelja; ned. 11, 13, 15 imaju samo jedan brzi + dugi",
+    "Ned. 10 pon–sre: 3 × 6 km (28 min) trkaču sa 110 km nedeljno; upozorenje o tome u zaglavlju je šum"
+   ]
+  },
+  {
+   "id": "p06",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 6,
+    "q4": 7,
+    "q5": 8,
+    "q6": 8.5,
+    "q7": 7.5
+   },
+   "total": 71.0,
+   "constrained_extra": 7.5,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 9 ned: jedini dugi preko 25 km (26,5 km, 10 km u tempu) je 47 % nedelje; ukupno četiri duga ≥ 20 km za maraton",
+    "Ned. 1, 2, 6: 4 treninga iako je traženo 5 — za maraton sa malim obimom izbačen je baš lagan dan",
+    "Lagani dani 6–7 km (29–34 min) celih 12 nedelja; sav rast ide u dugi"
+   ]
+  },
+  {
+   "id": "p07",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 7.5,
+    "q3": 6.5,
+    "q4": 7.5,
+    "q5": 7.5,
+    "q6": 6.5,
+    "q7": 8
+   },
+   "total": 71.5,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Tempo maratona 5:20/km (3:45) uz formu 5:02 i tri duga 27,5–30 km na 65–79 km nedeljno — kazna od 13 min je preterana; P08 sa 3 dana i 50 km dobija 5:02",
+    "Zato su svi „tempo maratona“ treninzi (ned. 5–11) sporiji od umerenog (5:06) i blizu laganog — ciljni tempo se ne vežba",
+    "Sub lagano → ned dugi 27–30 km → pon lagano 11–13,5 km → uto brzi: odmor nije posle dugog"
+   ]
+  },
+  {
+   "id": "p08",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 7,
+    "q2": 6.5,
+    "q3": 6.5,
+    "q4": 6.5,
+    "q5": 8,
+    "q6": 7.5,
+    "q7": 8
+   },
+   "total": 70.0,
+   "constrained_extra": 7,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 17/19/21: 17–19,5 km uto + 17–19,5 km čet + 27,5–30 km ned = 61–69 km u tri treninga, svaki ≥ 1 h 41 — veliko opterećenje po treningu",
+    "Ned. 1–16: brzi rad 3–11 %, prag najviše 21 min, tempo maratona do 5,5 km — 24 nedelje a kvalitet tanak",
+    "Prognoza = današnja forma (3:32:21) posle 24 nedelje i rasta 50→69 km; P07 sa većim obimom dobija sporiju — nedosledno"
+   ]
+  },
+  {
+   "id": "p09",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7.5,
+    "q2": 7.5,
+    "q3": 7,
+    "q4": 7.5,
+    "q5": 7.5,
+    "q6": 8.5,
+    "q7": 8
+   },
+   "total": 75.5,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Ned. 8 sub+ned: 17,5 km (1 h 45) pa 23,5 km (2 h 21) uzastopno",
+    "Ned. 4: oznaka „gradnja“, a dugi pada na 16,5 km",
+    "Ned. 1: usponi + prag 20 min bez poznatog tempa i rezultata"
+   ]
+  },
+  {
+   "id": "p10",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 6.5,
+    "q2": 6.5,
+    "q3": 5.5,
+    "q4": 6.5,
+    "q5": 6.5,
+    "q6": 8,
+    "q7": 7.5
+   },
+   "total": 65.5,
+   "constrained_extra": 6.5,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Dugi nikad nisu hod-trk (1 h 50–3 h 05 neprekidno), a na dan trke piše „hod-trk od starta“ i uz to „hod 1 min na okrepama je dozvoljen“ — dve različite taktike, nijedna uvežbana",
+    "Ned. 4, 8, 15: tri provere punim naporom (5 km, 10 km, polumaraton) za trkača sa 30 km i 3 dana; ned. 4 i 8 padaju na 24 km, ned. 8 ima 2 treninga",
+    "Ned. 11/14 uto: „lagano“ 1 h 45 usred nedelje + dugi 2 h 25–2 h 40; najduži 25,8 km za trku od 5 h"
+   ]
+  },
+  {
+   "id": "p11",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 7.5,
+    "q2": 7.5,
+    "q3": 6.5,
+    "q4": 7.5,
+    "q5": 7.5,
+    "q6": 7.5,
+    "q7": 8
+   },
+   "total": 73.5,
+   "constrained_extra": 7.5,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 19/21: dugi 2 h 57–3 h 03 je 50–51 % nedelje, ostala tri dana po 55 min — nema srednje dugog trčanja",
+    "Ned. 16 ned: dugi 2 h 20 nedelju dana posle polumaratona punim naporom, uz 3 × 30 min (dugi 61 % nedelje)",
+    "„Obim ne može bezbedno iznad 50,1 km“ uz 24 nedelje — vrh je vezan za polazni obim, pa duga priprema ne donosi ništa"
+   ]
+  },
+  {
+   "id": "p12",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 7.5,
+    "q3": 7,
+    "q4": 7,
+    "q5": 7.5,
+    "q6": 8.5,
+    "q7": 8
+   },
+   "total": 76.0,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Ned. 1–5: ista nedelja (5 × 55 min + dugi) pet puta, obim 50–51 km",
+    "Ned. 12: lagani dani skaču sa 55 na 75 min",
+    "Ned. 9: polumaraton punim naporom početniku po osećaju"
+   ]
+  },
+  {
+   "id": "p13",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 7,
+    "q2": 6.5,
+    "q3": 5,
+    "q4": 7,
+    "q5": 7.5,
+    "q6": 9,
+    "q7": 7
+   },
+   "total": 67.5,
+   "constrained_extra": 8,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 7 ned: najduži dugi 20,5 km (2 h 40) je 60 % nedelje, a trka je duplo duža — plan to pošteno kaže",
+    "Ned. 4 uto: lagano skače sa 55–60 na 85–90 min",
+    "Četiri pasusa upozorenja, deo nerazumljiv („dugi tada može do 21,2 km; uz isti datum dugi ostaje 20,5 km“); tempo 7:22 uz hod-trk nije objašnjen"
+   ]
+  },
+  {
+   "id": "p15",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 7,
+    "q4": 7.5,
+    "q5": 8,
+    "q6": 7.5,
+    "q7": 7.5
+   },
+   "total": 72.5,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 13–17: četiri lagana dana po 45–60 min + dugi 2 h 40–3 h (42–46 % nedelje) — na 5 dana nema srednje dugog trčanja",
+    "Ned. 1: povratnik posle povrede dobija dugi 1 h 40 (42 % nedelje) dok su lagani dani „skraćeni“ na 35 min — oprez na pogrešnom mestu",
+    "Ned. 17 ned: 3 h sa poslednjih 60 min u tempu maratona, tri nedelje pre trke, trkaču koji je bio povređen"
+   ]
+  },
+  {
+   "id": "p16",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 6.5,
+    "q2": 6,
+    "q3": 7.5,
+    "q4": 7.5,
+    "q5": 8,
+    "q6": 7.5,
+    "q7": 8
+   },
+   "total": 71.0,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 8 i 12: tempo maratona uto + prag čet + 85–90 min sub + dugi ned — dva brza i dugi za trkača od 65 godina sa tegobom u kolenu",
+    "Rasterećenje tek u 6. i 14. nedelji; godine se nigde ne vide u planu osim prve 4 nedelje bez uspona",
+    "Ned. 15: 60 km u 4 dana sa dugim 3 h (55 min u tempu); ned. 10 dugi 2 h 25 nedelju posle polumaratona"
+   ]
+  },
+  {
+   "id": "p17",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 7,
+    "q4": 7.5,
+    "q5": 6.5,
+    "q6": 7.5,
+    "q7": 7.5
+   },
+   "total": 75.0,
+   "constrained_extra": null,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Trka: 4:15/km je 2:59:20, ne 2:59:00; uz prvih 5–10 km na 4:20–4:25 zadati raspored završava preko 3 h — cilj „ispod 3 h“ taktikom nije pokriven",
+    "Tempo maratona najviše 3 × 4,5 km i 13 km u dugom",
+    "Ned. 7: jedini intervali 4 × 1 km"
+   ]
+  },
+  {
+   "id": "p18",
+   "input_allows_good_plan": true,
+   "scores": {
+    "q1": 8,
+    "q2": 8,
+    "q3": 6.5,
+    "q4": 7,
+    "q5": 7.5,
+    "q6": 8,
+    "q7": 7.5
+   },
+   "total": 75.0,
+   "constrained_extra": null,
+   "would_give": "da",
+   "top_issues": [
+    "Ned. 4, 7, 10: tri rasterećenja u prvih 10 nedelja (19,8/29,2/26,9 km) — dugi do 13. nedelje tek 2 h 20",
+    "Ned. 10: test 10 km punim naporom za cilj „samo da završim“",
+    "Tri duga pasusa upozorenja; „hod na okrepama dozvoljen“ i „hod-trk od starta, ne preskači“ u istoj napomeni"
+   ]
+  },
+  {
+   "id": "p19",
+   "input_allows_good_plan": false,
+   "scores": {
+    "q1": 7,
+    "q2": 7,
+    "q3": 5,
+    "q4": 6.5,
+    "q5": 7.5,
+    "q6": 9,
+    "q7": 7.5
+   },
+   "total": 68.5,
+   "constrained_extra": 7,
+   "would_give": "da uz izmenu",
+   "top_issues": [
+    "Ned. 4 ned: dugi pada sa 21 na 19,5 km — u planu od 8 nedelja to je izgubljena nedelja; najduži ostaje 23 km",
+    "„Tempo maratona“ 6:20 je gotovo lagan tempo (6:26), pa blokovi u dugom nisu poseban podražaj",
+    "Nema predloga hod-trka iako se očekuje 4:17–4:27 i poslednjih 19 km je nepoznato"
+   ]
+  }
+ ],
+ "below_75": [
+  "p01",
+  "p03",
+  "p04",
+  "p06",
+  "p07",
+  "p08",
+  "p10",
+  "p11",
+  "p13",
+  "p15",
+  "p16",
+  "p19"
+ ],
+ "below_65": [],
+ "min": {
+  "id": "p10",
+  "total": 65.5
+ },
+ "generator_changes": [
+  "Hod-trk: ako ga plan savetuje na trci, mora biti zadat na dugima od početka (P03, P10); ukloni dve suprotne napomene o hodu na dan trke",
+  "Raspodela nedelje: uz 4–5 dana uvedi srednje dug dan (75–100 min) umesto 3–4 jednaka kratka + dugi od 45–50 % (P11, P15, P01); odmor stavi dan posle dugog, ne sre/pet (P04, P07)",
+  "Kazna na tempo trke: uskladi je između profila (P07 5:20 uz 65–79 km prema P08 5:02 uz 3 dana) i ne zadaj „tempo maratona“ sporiji od umerenog/na ivici laganog (P07, P13, P19)",
+  "Tempo za trku računaj iz ciljnog vremena bez zaokruživanja naviše i uz zadati spori početak (P17: 4:15 = 2:59:20)",
+  "Brži i iskusni (P05, P17): veće doze u tempu maratona (16–22 km) i više od jednog VO2 treninga; stariji/povređeni (P16, P15): jedan brzi nedeljno i rasterećenje na 3 nedelje"
+ ],
+ "unclear_to_runner": [
+  "Tri vremena u zaglavlju (forma / očekivano / savetovani tempo) — koje je moj cilj? „Sporija polovina raspona prognoze“ nije jezik trkača.",
+  "Oznaka „razvoj, gradnja“ na nedelji pripremne trke i oporavka posle nje; upozorenje o „kratkim laganim danima“ koje zapravo opisuje te dve nedelje.",
+  "„Lagano 1 h 45“ utorkom kod 3 dana — da li je to drugi dugi? „Adekvatna priprema traži bar 60 km“ rečeno početniku čiji je cilj samo da završi."
+ ]
+}
