@@ -840,7 +840,12 @@ describe('trenerski zahtevi za maraton (coach/target/MAR/README.md, brief F7-MAR
       for (const w of tests) expect(w.index, p.id).toBeGreaterThan(3);
       if (n < 12) continue;
       expect(
-        tests.some((w) => w.index >= n - 9 && w.index <= n - 7),
+        /* R24 (P8): hod-trk početnik ≥ 18 ned — provera u nedelji rasterećenja N−10 (p18) */
+        tests.some(
+          (w) =>
+            w.index >= n - (p.doc.header.decisions.level === 'pocetnik-nov' ? 10 : 9) &&
+            w.index <= n - 7
+        ),
         p.id
       ).toBe(true);
     }
@@ -1091,5 +1096,123 @@ describe('R20 — kod malog obima dugi se vodi po vremenu (trener MAR-03 § D6)'
       most = Math.max(most, run);
     }
     expect(most).toBeLessThanOrEqual(3);
+  });
+});
+
+/* ------------------------------------------------------------------ 10. R24 (trener R24-ISPRAVKA P8) */
+
+describe('R24 P8 — p04, p18, par P2 B', () => {
+  const plan = (id: string) => {
+    const p = PROFILE_PLANS.find((x) => x.id === id);
+    if (p === undefined) throw new Error(id);
+    return p;
+  };
+  it('p04: od 3. nedelje lagan dan ≤ 90 min i nedelja ≤ 540 min; dugi u ned 3–9 raste do ≥ 2 h 55', () => {
+    const p = plan('p04');
+    const ctx = paceCtxOf(p.doc.header);
+    const long: number[] = [];
+    p.doc.weeks.forEach((w, i) => {
+      const secs = w.days.map((d) =>
+        d.workout === null ? 0 : summarize(d.workout, ctx).durationSec
+      );
+      expect(
+        secs.reduce((a, b) => a + b, 0),
+        `p04 n${String(i + 1)}`
+      ).toBeLessThanOrEqual(540 * 60 + 60);
+      /* nedelja provere: dugi dan posle testa je lagan (rasterećenje) */
+      const test = w.days.some((d) => d.workout?.kind === 'test');
+      if (i >= 2 && !test)
+        for (const d of w.days)
+          if (d.workout?.kind === 'easy')
+            expect(
+              summarize(d.workout, ctx).durationSec,
+              `p04 n${String(i + 1)} ${d.date}`
+            ).toBeLessThanOrEqual(90 * 60 + 30);
+      if (i >= 2 && i <= 8 && w.intent.kind === 'build') {
+        const l = w.days.find((d) => d.workout?.kind === 'long')?.workout;
+        if (l != null) long.push(summarize(l, ctx).durationSec / 60);
+      }
+    });
+    for (let i = 1; i < long.length; i += 1)
+      expect(long[i] ?? 0).toBeGreaterThanOrEqual((long[i - 1] ?? 0) - 1);
+    expect(Math.max(...long)).toBeGreaterThanOrEqual(170);
+  });
+  it('p18: nema dve uzastopne nedelje < 75 % prethodne nedelje gradnje (provera u nedelji rasterećenja)', () => {
+    const st = gateStats(plan('p18').doc, plan('p18').facts).weeks;
+    let lastBuild = 0;
+    let low = 0;
+    for (const w of st) {
+      if (w.kind === 'taper' || w.kind === 'race') break;
+      if (lastBuild > 0 && w.km < 0.75 * lastBuild) low += 1;
+      else low = 0;
+      expect(low, `p18 n${String(w.index)}`).toBeLessThan(2);
+      if (w.kind === 'build' && w.km >= 0.75 * lastBuild) lastBuild = Math.max(lastBuild * 0, w.km);
+    }
+  });
+});
+
+/* R24 P8 — par P2 B (ulaz kao u `docs/generators-v4/plans/pairs.ts`, p2b): najduži ≥ 17 km, vrh ≥ 32 km */
+describe('R24 P8 — par P2 B', () => {
+  it('početnik 6 nedelja trčanja, tegoba pre godinu dana: najduži dugi ≥ 17 km, vrh ≥ 32 km', () => {
+    const base = PROFILES.find((x) => x.id === 'p11');
+    if (base === undefined) throw new Error('p11');
+    const add = (iso: string, d: number): string => {
+      const [y, m, dd] = iso.split('-').map(Number);
+      return new Date(Date.UTC(y ?? 2026, (m ?? 1) - 1, (dd ?? 1) + d)).toISOString().slice(0, 10);
+    };
+    const monday = (k: number): string => add('2026-10-26', -7 * (11 - k));
+    const k2 = (base.profile.weeklyKm ?? 0) / 20;
+    let seq = 0;
+    const run = (date: string, km: number, pace: number, extra: object = {}) => {
+      seq += 1;
+      return {
+        id: `r${String(seq)}-${date}`,
+        date,
+        distanceM: Math.round(km * 1000),
+        durationSec: Math.round(km * pace),
+        ...extra
+      };
+    };
+    const weeks = [
+      { n: 3, total: 8, long: 4 },
+      { n: 3, total: 11, long: 5 },
+      { n: 3, total: 14, long: 6 },
+      { n: 4, total: 17, long: 7 },
+      { n: 4, total: 19, long: 8 },
+      { n: 4, total: 20, long: 10 }
+    ];
+    const runs: object[] = [];
+    weeks.forEach((w, i) => {
+      const m = monday(6 + i);
+      const ds = w.n === 3 ? [1, 3, 6] : [1, 3, 5, 6];
+      const rest = ((w.total - w.long) / (w.n - 1)) * k2;
+      ds.forEach((d, j) => {
+        const last = j === ds.length - 1;
+        if (last && i === 5) runs.push(run(add(m, d), 10, 336.2, { effort: 'test' }));
+        else runs.push(run(add(m, d), last ? w.long * k2 : rest, 440 + 8 * j));
+      });
+    });
+    const pain = [{ date: '2025-11-10', part: 'potkolenica', level: 5, resolvedOn: '2025-12-15' }];
+    const r11 = base.profile.recentResult;
+    const facts = {
+      today: '2026-11-01',
+      availability: { runDays: base.runDays, longDay: base.longDay },
+      profile: {
+        ...base.profile,
+        yearsRunning: 0.1,
+        longestRecentKm: 10,
+        ...(r11 === undefined
+          ? {}
+          : { recentResult: { ...r11, distanceM: 10000, timeSec: 3362, date: '2026-10-25' } })
+      },
+      runs,
+      pauses: [],
+      pain,
+      painHistory: pain
+    } as unknown as RunnerFacts;
+    const b = build(facts, base.goal);
+    const g = gateStats(b.doc, facts);
+    expect(Math.max(...g.weeks.map((w) => w.longKm))).toBeGreaterThanOrEqual(17);
+    expect(Math.max(...g.weeks.map((w) => w.km))).toBeGreaterThanOrEqual(32);
   });
 });
