@@ -216,16 +216,14 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:24/km). Očekivano vreme na dan trke (26:18) traži 5:16/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepen: treninzi su kraći do 17. 1., a prvi brzi trening je 14. 1.; i posle toga se obim vraća postepeno — zato su treninzi do 26. 1. lakši nego što su bili.
+Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepen: treninzi su kraći do 17. 1., a prvi brzi trening je 14. 1.; od 18. 1. plan se nastavlja kako je bio.
 - uto 5. 1.: lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - čet 7. 1.: prag 2 × 7 min, oporavak 2 min džog → lagano 25 min
 - ned 10. 1.: dugi 55 min lagano → dugi 40 min lagano
 - uto 12. 1.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 20 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
 - čet 14. 1.: tempo trke 3 × 600 m, oporavak 1:30 džog → tempo trke 3 × 400 m, oporavak 1:30 džog
-- uto 26. 1.: lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 30 min
 - 10. nedelja: 18 km → 13,1 km
 - 11. nedelja: 18,2 km → 16 km
-- 13. nedelja: 19,6 km → 18,1 km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  odmor
@@ -351,14 +349,14 @@ Pauza zbog bolesti trajala je 7 dana (28. 12. – 3. 1.), pa je povratak postepe
 
 13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 25. 1.  odmor
-  uto 26. 1.  lagano 30 min — 4,1 km, 30 min
+  uto 26. 1.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,6 km, 40 min
   sre 27. 1.  odmor
   čet 28. 1.  tempo trke 3 × 800 m (5:24/km), oporavak 2 min džog — 5,7 km, 37 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   pet 29. 1.  odmor
   sub 30. 1.  odmor
   ned 31. 1.  dugi 60 min lagano — 8,3 km, 60 min
-  Zbir: 18,1 km, 2 h 7 min, 3 treninga, brz rad 10 % vremena trčanja
+  Zbir: 19,6 km, 2 h 17 min, 3 treninga, brz rad 9 % vremena trčanja
 
 14. NEDELJA (od 1. 2.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
   pon 1. 2.  odmor

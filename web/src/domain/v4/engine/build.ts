@@ -1864,7 +1864,7 @@ function returnWeekCap(
       sch.refLongSec <= 0
         ? Number.POSITIVE_INFINITY
         : k === 1
-          ? RETURN_SCHEDULE_FIRST_LONG_SHARE * sch.refLongSec
+          ? sch.firstLongShare * sch.refLongSec
           : sch.refLongSec;
     cap =
       cap === null
@@ -2294,7 +2294,12 @@ export function runPass(
       forced === null ? null : pendingUntil
     );
     /* R19: prva nedelja povratka bez kvaliteta, dalje u rasporedu najviše jedan (prvi u nedelji) */
-    const firstQuality = planSlots.items.find((x) => x.kind === 'quality');
+    /* R20 (A2): zadržava se podražaj bloka — najveće doze u nameri nedelje (specifičan blok se smanjuje, ne briše) */
+    const main = [...week.intent.stimuli].sort((a, b) => (b.dosePct ?? 0) - (a.dosePct ?? 0))[0]
+      ?.stimulus;
+    const firstQuality =
+      planSlots.items.find((x) => x.kind === 'quality' && x.slot.stimulus === main) ??
+      planSlots.items.find((x) => x.kind === 'quality');
     const slots: WeekSlots =
       schedule === null
         ? planSlots

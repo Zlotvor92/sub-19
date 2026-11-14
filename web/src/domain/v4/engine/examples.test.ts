@@ -236,8 +236,9 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
   });
 
   /* R19: rampa zavisi od DUŽINE pauze, ne od razloga (ranije put 7, nepoznato 11, bolest i povreda 14 dana) */
-  it('§ 14.6 (R19): povratak posle 7 dana isti za svaki razlog — kraći treninzi do kraja druge nedelje', () => {
-    for (const reason of ['put', 'nepoznato', 'povreda'] as const) {
+  /* R20 (A2): put je izuzet — posle puta jedna nedelja ≈ 87,5 % sa jednim kvalitetom (test ispod) */
+  it('§ 14.6 (R19): povratak posle 7 dana isti za svaki razlog osim puta — kraći treninzi do kraja druge nedelje', () => {
+    for (const reason of ['nepoznato', 'povreda'] as const) {
       const st = buildState(
         {
           ...facts(),
@@ -256,6 +257,29 @@ describe('SPEC § 12 (b): bolest 7 dana u 5. nedelji', () => {
         if (n >= 1 && n <= 7) expect(fastSec(r.doc, day), `${reason} ${day.date}`).toBe(0);
       }
     }
+  });
+
+  it('R20 (A2): posle puta od 7 dana jedna nedelja povratka, prva 2 dana bez brzog, kvalitet u toj nedelji', () => {
+    const st = buildState(
+      {
+        ...facts(),
+        today,
+        runs: runsAsPlanned(start.doc, '2026-12-13'),
+        pauses: [{ from: '2026-12-14', to: today, reason: 'put' }]
+      },
+      GOAL,
+      EXAMPLE
+    );
+    const r = replan(start.doc, st, deriveEvents(start.doc, st), EXAMPLE);
+    const text = r.changes.find((c) => c.scope === 'dan')?.reason ?? '';
+    expect(text).toContain('treninzi su kraći do 27. 12.');
+    let fast = 0;
+    for (const day of days(r.doc)) {
+      const n = diffDays(day.date, today);
+      if (n >= 1 && n <= 2) expect(fastSec(r.doc, day), day.date).toBe(0);
+      if (n >= 1 && n <= 7 && fastSec(r.doc, day) > 0) fast += 1;
+    }
+    expect(fast).toBeGreaterThan(0);
   });
 
   it('urađene nedelje 1–4 i propuštena nedelja 5 su netaknute', () => {

@@ -43,8 +43,14 @@ describe('krug 14 — povratak posle pauze (M2)', () => {
       const w1 = km[first] ?? 0;
       const w2 = km[first + 1] ?? 0;
       expect(w1).toBeGreaterThanOrEqual(0.6 * ref);
-      expect(w1).toBeLessThanOrEqual(Math.min(0.75 * ref, plan[first] ?? 0) + 0.5);
-      expect(w2).toBeLessThanOrEqual(Math.min(0.9 * ref, plan[first + 1] ?? 0) + 0.5);
+      /* R20 (A2): posle puta jedna nedelja ≈ 87,5 % referentne, druga je plan */
+      const travel = ((r.after.header.adjustments ?? []) as any[]).some(
+        (a) => a.kind === 'pause' && a.reason === 'put'
+      );
+      expect(w1).toBeLessThanOrEqual(Math.min((travel ? 0.875 : 0.75) * ref, plan[first] ?? 0) + 0.5);
+      expect(w2).toBeLessThanOrEqual(
+        Math.min(travel ? Number.POSITIVE_INFINITY : 0.9 * ref, plan[first + 1] ?? 0) + 0.5
+      );
       const w3 = r.after.weeks[first + 2];
       /* R20 (A1): treća nedelja je plan, ali najviše + 25 % od druge i ≤ 1,2 × najveće posle pauze; dugi (+ 20 min) i
          prvi brzi (70 %) je spuštaju još — merilo je 85 % manjeg od plana i granice rasta */

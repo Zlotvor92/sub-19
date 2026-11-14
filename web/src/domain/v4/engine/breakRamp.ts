@@ -26,7 +26,7 @@ import type {
   WorkoutDef
 } from './types';
 import { PAIN_LOW_MAX } from './constants';
-import { pauseLength } from './readiness';
+import { pauseLength, RETURN_TRAVEL_DOSE_FACTOR } from './readiness';
 import { refWeekKmBefore } from './state';
 
 export const BREAK_LONG_STEP_SEC = 1200;
@@ -53,6 +53,8 @@ export interface BreakStart {
   lastLongSec: Seconds;
   /** Dan od kog se meri nivo pre prekida (pauza: prvi dan pauze). */
   refFrom: IsoDate;
+  /** Udeo doze prvog brzog (R20 A2: posle puta 0,8, inače 0,7). */
+  firstShare: number;
 }
 
 /** Prekid važi ovoliko dana posle svog poslednjeg dana (pravilo samo smanjuje, a lanac se gasi kad stigne plan). */
@@ -84,14 +86,22 @@ export function breakStartOf(
         zero: z,
         longOnly: false,
         lastLongSec: 'lastLongSec' in a ? (a.lastLongSec ?? 0) : 0,
-        refFrom: a.kind === 'pause' ? a.from : z
+        refFrom: a.kind === 'pause' ? a.from : z,
+        firstShare:
+          a.kind === 'pause' && a.reason === 'put' ? RETURN_TRAVEL_DOSE_FACTOR : BREAK_FIRST_DOSE_SHARE
       };
   }
   if (best !== null) return best;
   if (ev?.kind === 'missed') {
     const day = before.weeks.flatMap((w) => w.days).find((d) => d.id === ev.dayId);
     if (day?.workout?.kind === 'long')
-      return { zero: day.date, longOnly: true, lastLongSec: 0, refFrom: day.date };
+      return {
+        zero: day.date,
+        longOnly: true,
+        lastLongSec: 0,
+        refFrom: day.date,
+        firstShare: BREAK_FIRST_DOSE_SHARE
+      };
   }
   return null;
 }
@@ -216,7 +226,7 @@ export function applyBreakRamp(
           prev !== null && fastKey(prev, data) === key ? prev.workSec : d.workout.workSec;
         const want = Math.min(
           d.workout.workSec,
-          inWindow ? BREAK_FIRST_DOSE_SHARE * planned : Number.POSITIVE_INFINITY,
+          inWindow ? start.firstShare * planned : Number.POSITIVE_INFINITY,
           lastDone.get(key) ?? Number.POSITIVE_INFINITY
         );
         if (want >= d.workout.workSec - 30) continue;
@@ -296,6 +306,16 @@ export function applyBreakRamp(
       }
     }
     if (!weekOn) continue;
+    /* povratak obima je gotov kod prve nedelje gradnje na nivou pre prekida (rasterećenje i provera ga ne završavaju) */
+    {
+      const cur = weeks[wi] as PlanWeek;
+      const plain =
+        cur.intent.kind !== 'recovery' && !cur.days.some((d) => d.workout?.kind === 'test');
+      if (plain && refKm > 0 && cur.start > zero && km(cur) >= refKm - 0.5) {
+        weekOn = false;
+        continue;
+      }
+    }
     const prevW = weeks[wi - 1];
     /* nedelja plana posle rasterećenja (cela nedelja posle prekida): najviše + 25 % od njega; ostale nedelje drži
        pravilo izlaska (`smoothExit`) */

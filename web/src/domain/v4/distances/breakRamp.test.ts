@@ -28,6 +28,15 @@ const DIST = Object.entries(dataMods).map(([path, mod]) => {
 });
 
 /** Poslednji dan prekida iz uzroka koje je događaj dodao (posle-plan prema pre-plan). */
+/** Udeo prvog brzog: posle puta 0,8 (R20 A2), inače 0,7. */
+function firstShare(r: any): number {
+  const old = new Set(((r.before.header.adjustments ?? []) as any[]).map((a) => JSON.stringify(a)));
+  const travel = ((r.after.header.adjustments ?? []) as any[]).some(
+    (a) => !old.has(JSON.stringify(a)) && a.kind === 'pause' && a.reason === 'put'
+  );
+  return travel ? 0.8 : 0.7;
+}
+
 function breakZero(r: any): string | null {
   const old = new Set(((r.before.header.adjustments ?? []) as any[]).map((a) => JSON.stringify(a)));
   let zero: string | null = null;
@@ -134,7 +143,7 @@ describe('R20 (A1) — jedna rampa posle prekida (sve distance)', () => {
                     ctx
                   )?.workSec ?? 0);
             const atMin = x.workout.kind === 'quality' && x.workout.workSec <= min + 30;
-            if (inWindow && planned !== null && !atMin && x.workout.workSec > 0.7 * planned + 30)
+            if (inWindow && planned !== null && !atMin && x.workout.workSec > firstShare(r) * planned + 30)
               bad.push(
                 `${tag} ${String(x.date)} ${k} ${String(x.workout.workSec)} > 70 % od ${String(planned)}`
               );

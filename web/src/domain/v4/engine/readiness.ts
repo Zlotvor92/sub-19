@@ -75,15 +75,35 @@ export interface ReturnSchedule {
   refLongSec: Seconds;
   /** Prva nedelja bez kvaliteta (pauza; posle trke kad raspored ima bar dve nedelje). */
   noFirstQuality: boolean;
+  /** Plafon dugog prve nedelje kao udeo referentnog (¾; posle puta 0,9 — R20 A2). */
+  firstLongShare: number;
 }
 
 /** R19: udeli referentne nedelje po dužini pauze (dani bez trčanja); `null` = stara rampa (pauza > 21 dan). */
-export function returnShares(pauseDays: number): readonly number[] | null {
+/** R20 (A2): put / odsustvo bez bolesti je blaži od bolesti, i kraća bolest od duže (srazmerno danima). */
+export function returnShares(
+  pauseDays: number,
+  reason: Pause['reason'] = 'nepoznato'
+): readonly number[] | null {
   if (pauseDays <= RETURN_NO_RAMP_MAX_DAYS) return [];
-  if (pauseDays <= RETURN_SHORT_MAX_DAYS) return RETURN_SHORT_SHARES;
-  if (pauseDays <= RETURN_MID_MAX_DAYS) return RETURN_MID_SHARES;
+  const travel = reason === 'put';
+  if (pauseDays <= RETURN_SHORT_MAX_DAYS) {
+    if (travel) return RETURN_TRAVEL_SHARES;
+    return pauseDays <= RETURN_SHORTEST_MAX_DAYS ? RETURN_SHORTEST_SHARES : RETURN_SHORT_SHARES;
+  }
+  if (pauseDays <= RETURN_MID_MAX_DAYS) return travel ? RETURN_SHORT_SHARES : RETURN_MID_SHARES;
   return null;
 }
+/** R20 (A2): put 5–10 dana — jedna nedelja ≈ 87,5 % sa jednim kvalitetom (doza 0,8), pa plan. */
+const RETURN_TRAVEL_SHARES = [0.875] as const;
+/** R20 (A2): posle puta prva 2 dana bez brzog. */
+const TRAVEL_NO_FAST_DAYS = 2;
+const RETURN_TRAVEL_FIRST_LONG_SHARE = 0.9;
+/** R20 (A2): bolest 5–6 dana — blaža od 7–10 dana. */
+const RETURN_SHORTEST_MAX_DAYS = 6;
+const RETURN_SHORTEST_SHARES = [0.8, 0.95] as const;
+/** R20 (A2): doza prvog kvaliteta posle puta (prva nedelja ga ima). */
+export const RETURN_TRAVEL_DOSE_FACTOR = 0.8;
 const RETURN_NO_RAMP_MAX_DAYS = 4;
 const RETURN_SHORT_MAX_DAYS = 10;
 const RETURN_MID_MAX_DAYS = 21;
@@ -133,18 +153,24 @@ export function returnSchedule(adj: Adjustment): ReturnSchedule | null {
       shares,
       refKm: adj.refWeekKm,
       refLongSec: adj.lastLongSec ?? 0,
-      noFirstQuality: shares.length >= 2
+      noFirstQuality: shares.length >= 2,
+      firstLongShare: RETURN_SCHEDULE_FIRST_LONG_SHARE
     };
   }
   if (adj.kind !== 'pause' || adj.refWeekKm === undefined || adj.baseAfter === true) return null;
-  const shares = returnShares(pauseLength(adj.from, adj.to));
+  const shares = returnShares(pauseLength(adj.from, adj.to), adj.reason);
   if (shares === null) return null;
   return {
     week1: firstReturnWeek(adj.to),
     shares,
     refKm: adj.refWeekKm,
     refLongSec: adj.lastLongSec ?? 0,
-    noFirstQuality: true
+    /* R20 (A2): posle puta prva nedelja ima jedan kvalitet, a dugi ostaje blizu uobičajenog */
+    noFirstQuality: !(adj.reason === 'put' && shares === RETURN_TRAVEL_SHARES),
+    firstLongShare:
+      adj.reason === 'put' && shares === RETURN_TRAVEL_SHARES
+        ? RETURN_TRAVEL_FIRST_LONG_SHARE
+        : RETURN_SCHEDULE_FIRST_LONG_SHARE
   };
 }
 
@@ -217,7 +243,12 @@ export function rampOf(adj: Adjustment): Ramp | null {
         return {
           zero: adj.to,
           days: adj.rampDays === undefined ? days : Math.min(days, adj.rampDays),
-          noFast: schedule.shares.length === 0 ? 0 : Math.max(0, diffDays(firstEnd, adj.to)),
+          noFast:
+            schedule.shares.length === 0
+              ? 0
+              : schedule.noFirstQuality
+                ? Math.max(0, diffDays(firstEnd, adj.to))
+                : TRAVEL_NO_FAST_DAYS,
           lastLongSec: adj.lastLongSec ?? 0,
           gate: length >= BLOCK_GATE_PAUSE_DAYS,
           firstReduced: false,
@@ -408,9 +439,9 @@ export function modsFor(
           if (sch.refLongSec > 0)
             m.longCapSec = Math.min(
               m.longCapSec,
-              k === 1 ? RETURN_SCHEDULE_FIRST_LONG_SHARE * sch.refLongSec : sch.refLongSec
+              k === 1 ? sch.firstLongShare * sch.refLongSec : sch.refLongSec
             );
-          if (k >= 2 && key !== null) {
+          if ((k >= 2 || !sch.noFirstQuality) && key !== null) {
             const done = seen.some((s) => s.key === key && s.date > ramp.zero && s.date < date);
             if (!done) m.doseFactor = Math.min(m.doseFactor, RAMP_DOSE_FACTOR);
           }

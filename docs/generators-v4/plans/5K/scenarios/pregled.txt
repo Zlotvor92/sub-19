@@ -4,9 +4,9 @@ s01 p01 E1: ned 8 (provera), parkrun 5 km 3,0 % brže od očekivanog — promena
 s02 p04 E1: ned 12 (provera), test 3 km 3,1 % brže od očekivanog — promena: 1; forma 26:23 (srednja); nalazi čuvara posle: 0
 s03 p11 E1: ned 12 (provera), test 1,5 km 3,4 % brže od očekivanog — promena: 1; forma 26:34 (srednja); nalazi čuvara posle: 0
 s04 p12 E1: ned 6 (provera), prva trka u životu, 5 km 33:00 — promena: 2; forma 33:00 (srednja); nalazi čuvara posle: 0
-s05 p01 E2: bolest 7 dana u ned 5 (razvoj, I blok) — promena: 14; forma 21:56 (srednja); nalazi čuvara posle: 0
+s05 p01 E2: bolest 7 dana u ned 5 (razvoj, I blok) — promena: 11; forma 21:56 (srednja); nalazi čuvara posle: 0
 s06 p04 E2: bolest 7 dana u ned 13 (najteža) — promena: 4; forma 27:07 (srednja); nalazi čuvara posle: 0
-s07 p11 E2: bolest 7 dana u ned 9 — promena: 9; forma 27:07 (srednja); nalazi čuvara posle: 0
+s07 p11 E2: bolest 7 dana u ned 9 — promena: 7; forma 27:07 (srednja); nalazi čuvara posle: 0
 s08 p12 E2: bolest 7 dana u ned 7 (najteža) — promena: 7; forma 26:39 (srednja); nalazi čuvara posle: 0
 s09 p01 E3: ned 9 (najteža): propušteni tempo trke i dugi sa završnicom — promena: 2; forma 21:49 (srednja); nalazi čuvara posle: 0
 s10 p04 E3: ned 10 (razvoj): propušteni kvalitet i dugi — promena: 2; forma 26:59 (srednja); nalazi čuvara posle: 0
@@ -24,6 +24,6 @@ s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 21:49 (sr
 s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 26:59 (srednja); nalazi čuvara posle: 0
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 26:59 (srednja); nalazi čuvara posle: 0
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; forma 26:31 (srednja); nalazi čuvara posle: 0
-s25 p01 E7: bolest 5 dana u ned 5, pa propušten dugi 10 dana kasnije — promena: 17; forma 21:49 (srednja); nalazi čuvara posle: 0
+s25 p01 E7: bolest 5 dana u ned 5, pa propušten dugi 10 dana kasnije — promena: 14; forma 21:49 (srednja); nalazi čuvara posle: 0
 s26 p11 E7: bol 4/10 u ned 9, pa trka 5 km dve nedelje kasnije — promena: 14; forma 27:41 (srednja); nalazi čuvara posle: 0
-s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 12; forma 27:03 (srednja); nalazi čuvara posle: 0
+s27 p04 E7: propuštena dva kvaliteta (ned 9–10), pa put 6 dana — promena: 11; forma 27:03 (srednja); nalazi čuvara posle: 0
