@@ -8,3 +8,4 @@ public
 sw
 scripts/*.mjs
 deploy/vercel.cutover.json
+.vitest
