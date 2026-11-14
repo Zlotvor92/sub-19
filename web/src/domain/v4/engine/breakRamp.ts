@@ -59,6 +59,8 @@ export interface BreakStart {
   firstShare: number;
   /** R20 (A4): prekid je bol (prijavljen posle treninga na dan `zero`). */
   pain: boolean;
+  /** R22 (A4): prekid je pauza (bolest, put, …) — prvi dan posle nje nije dugi, lagani dani ne duži od plana. */
+  pause: boolean;
 }
 
 /** Prekid važi ovoliko dana posle svog poslednjeg dana (pravilo samo smanjuje, a lanac se gasi kad stigne plan). */
@@ -98,7 +100,8 @@ export function breakStartOf(
           a.kind === 'pause' && a.reason === 'put'
             ? RETURN_TRAVEL_DOSE_FACTOR
             : BREAK_FIRST_DOSE_SHARE,
-        pain: a.kind === 'pain'
+        pain: a.kind === 'pain',
+        pause: a.kind === 'pause'
       };
   }
   return best;
@@ -348,6 +351,53 @@ export function applyBreakRamp(
     }
   }
 
+  /* R22 (A4): posle pauze prvi dan trčanja nije dugi (ni 70–75 min) i nije duži od plana pre događaja; posle puta u
+     14 dana lagani dani nisu duži od istog dana u planu pre događaja, a lagan dan umesto kvaliteta nije duži od najdužeg
+     laganog dana te nedelje u planu pre događaja */
+  if (start.pause) {
+    let first = true;
+    for (let wi = 0; wi < weeks.length; wi += 1) {
+      const w = weeks[wi] as PlanWeek;
+      if (w.intent.kind === 'taper' || w.intent.kind === 'race') break;
+      if (w.start > addDays(zero, 14)) break;
+      if (addDays(w.start, 6) <= zero) continue;
+      const oldWeekEasy = Math.max(
+        0,
+        ...w.days.map((d) => {
+          const o = oldDay.get(d.date)?.workout;
+          return o?.kind === 'easy' ? dur(o) : 0;
+        })
+      );
+      w.days.forEach((d, di) => {
+        if (d.date <= zero || d.date > addDays(zero, 14) || d.workout === null) return;
+        const firstRun = first;
+        first = false;
+        if (!mutable(d)) return;
+        const o = oldDay.get(d.date)?.workout ?? null;
+        const cur = d.workout;
+        const capOf = (): Seconds =>
+          o?.kind === 'easy' ? dur(o) : oldWeekEasy > 0 ? oldWeekEasy : dur(cur);
+        if (firstRun && cur.kind === 'long') {
+          const sec = Math.max(minEasyFloor, Math.min(dur(cur), capOf()));
+          const e = realize({ type: 'easy', sec: Math.floor(sec / 300) * 300 || sec }, ctx);
+          if (e !== null) put(wi, di, e);
+          return;
+        }
+        /* samo posle puta (posle bolesti nedelju povratka dopunjava raspored) i samo ravnomerno lagano */
+        if (start.firstShare !== RETURN_TRAVEL_DOSE_FACTOR) return;
+        if (cur.kind !== 'easy' || cur.steps.length !== 1) return;
+        const cap = capOf();
+        /* lagan dan duži od plana bar 5 min — na dužinu iz plana (ne niže od nje) */
+        if (dur(cur) <= cap + 300) return;
+        const e = realize(
+          { type: 'easy', sec: Math.max(minEasyFloor, Math.ceil(cap / 60) * 60) },
+          ctx
+        );
+        if (e !== null) put(wi, di, e);
+      });
+    }
+  }
+
   /* 2. dugi i 3. nedelja: dugi raste od poslednjeg odrađenog (najviše `BREAK_ACTIVE_DAYS` posle prekida); nedelja dok
      ne stigne nivo pre prekida (najveća od poslednje 4 nedelje pre njega) */
   /* prvi dugi posle prekida se meri od poslednjeg odrađenog; dalje od najdužeg posle prekida */
@@ -385,7 +435,12 @@ export function applyBreakRamp(
       if (!mutable(ld) || base === 0) {
         running = Math.max(running, sec);
       } else {
-        const cap = breakLongCap(base);
+        /* R22 (A4): u povratku dugi nije duži od dugog istog dana u planu pre događaja */
+        const was = oldDay.get(ld.date)?.workout;
+        const cap = Math.min(
+          breakLongCap(base),
+          was?.kind === 'long' ? dur(was) : Number.POSITIVE_INFINITY
+        );
         if (sec > cap + 60) {
           const def = defOf(ld.workout, data) ?? null;
           /* ostvaren dugi (zaokružen na 0,5 km) ne prelazi granicu */

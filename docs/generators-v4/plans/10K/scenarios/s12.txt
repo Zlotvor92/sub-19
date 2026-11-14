@@ -187,8 +187,8 @@ Tempo trke u treninzima je tvoja današnja forma (5:31/km). Očekivano vreme na 
 PROMENE
 Propušten je ključni trening „dugi 95 min lagano" (20. 12.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (3. 1.) je po planu kraći, pa se zbog ovoga ne produžava. Uz to, tempa su usklađena sa ranijim rezultatom (3 km za 15:28, 12. 12.).
 - plan: po osećaju → prag 5:35/km, tempo trke 5:31/km
-Propušten je ključni trening „dugi 90 min lagano" (27. 12.). Dugi trening je propušten 2 puta zaredom, pa se dužina više ne nastavlja tamo gde je plan stao; sledeći dugi (3. 1.) kreće od poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak.
-- ned 3. 1.: dugi 91 min, završnih 11 min u tempu trke → dugi 95 min lagano
+Propušten je ključni trening „dugi 90 min lagano" (27. 12.). Dugi trening je propušten 2 puta zaredom, pa se dužina više ne nastavlja tamo gde je plan stao; sledeći dugi (3. 1.) je dužine poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak.
+- ned 3. 1.: dugi 91 min, završnih 11 min u tempu trke → dugi 90 min lagano
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  odmor
@@ -277,9 +277,9 @@ Propušten je ključni trening „dugi 90 min lagano" (27. 12.). Dugi trening je
   čet 31. 12.  tempo trke 4 × 1,6 km (5:31/km), oporavak 1:30 džog — 12 km, 75 min
   pet 1. 1.  odmor
   sub 2. 1.  lagano 65 min — 9,3 km, 65 min
-  ned 3. 1.  dugi 95 min lagano — 13,6 km, 95 min
+  ned 3. 1.  dugi 90 min lagano — 12,9 km, 90 min
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
-  Zbir: 45 km, 5 h 5 min, 4 treninga, brz rad 12 % vremena trčanja
+  Zbir: 44,3 km, 5 h, 4 treninga, brz rad 12 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
   pon 4. 1.  odmor

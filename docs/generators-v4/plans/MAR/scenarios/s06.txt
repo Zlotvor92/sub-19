@@ -324,7 +324,7 @@ UPOZORENJA
 - Trčiš 3 dana nedeljno, a za ovu distancu treba bar 4 dana. Sa toliko dana ceo obim staje u malo treninga, pa svaki trening nosi veliki deo nedelje, a svaki propušten dan je velika rupa. Za ovu trku: sa 3 dana nedeljno računaj na današnju formu (3:32:21), ne na napredak — prognoza ga zato ne računa. Dodaj 4. dan laganog trčanja od oko 85 min — nedelja tada stiže do 75,7 km (deo obima se seli sa ostalih dana na novi, pa su oni kraći), a dugi ostaje 30 km i nosi manji deo nedelje.
 
 PROMENE
-Pauza zbog bolesti trajala je 7 dana (22–28. 2.), pa je povratak postepen: treninzi su kraći do 14. 3., a prvi brzi trening je 18. 3.; i posle toga se obim vraća postepeno — nijedna nedelja do 28. 3. nije veća nego pre prekida.
+Pauza zbog bolesti trajala je 7 dana (22–28. 2.), pa je povratak postepen: treninzi su kraći do 14. 3., a prvi brzi trening je 18. 3.; i posle toga se obim vraća postepeno — zato su treninzi do 28. 3. lakši nego što su bili.
 - uto 2. 3.: lagano 17 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 11,5 km
 - čet 4. 3.: tempo maratona 2 × 4 km, oporavak 3 min džog → lagano 10,5 km
 - ned 7. 3.: dugi 22 km lagano → dugi 20,5 km lagano
@@ -332,14 +332,13 @@ Pauza zbog bolesti trajala je 7 dana (22–28. 2.), pa je povratak postepen: tre
 - čet 11. 3.: lagano 17,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 12 km
 - ned 14. 3.: dugi 29,5 km, poslednjih 9 km u tempu maratona → dugi 23,5 km lagano
 - čet 18. 3.: prag 3 × 6 min, oporavak 1:30 džog → prag 3 × 5 min, oporavak 1:30 džog
-- ned 21. 3.: dugi 21 km lagano → dugi 22,5 km lagano
-- uto 23. 3.: lagano 18,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 14,5 km
-- čet 25. 3.: lagano 18,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 14,5 km
+- uto 23. 3.: lagano 18,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 13,5 km
+- čet 25. 3.: lagano 18,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 13,5 km
 - ned 28. 3.: dugi 30 km, poslednjih 11,5 km u tempu maratona → dugi 28 km, poslednjih 8 km u tempu maratona
 - 18. nedelja: 52,7 km → 42,5 km
 - 19. nedelja: 66,5 km → 47,5 km
-- 20. nedelja: 44,1 km → 45,4 km
-- 21. nedelja: 69 km → 57 km
+- 20. nedelja: 44,1 km → 43,9 km
+- 21. nedelja: 69 km → 55 km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 23 nedelje
   pon 2. 11.  odmor
@@ -540,21 +539,21 @@ Pauza zbog bolesti trajala je 7 dana (22–28. 2.), pa je povratak postepen: tre
   čet 18. 3.  prag 3 × 5 min (4:38/km), oporavak 1:30 džog — 8,4 km, 46 min
   pet 19. 3.  odmor
   sub 20. 3.  odmor
-  ned 21. 3.  dugi 22,5 km lagano — 22,5 km, 2 h 14 min
+  ned 21. 3.  dugi 21 km lagano — 21 km, 2 h 5 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 45,4 km, 4 h 26 min, 3 treninga, brz rad 6 % vremena trčanja
+  Zbir: 43,9 km, 4 h 17 min, 3 treninga, brz rad 6 % vremena trčanja
 
 21. NEDELJA (od 22. 3.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 22. 3.  odmor
-  uto 23. 3.  lagano 14,5 km — 14,5 km, 86 min
+  uto 23. 3.  lagano 13,5 km — 13,5 km, 80 min
   sre 24. 3.  odmor
-  čet 25. 3.  lagano 14,5 km — 14,5 km, 86 min
+  čet 25. 3.  lagano 13,5 km — 13,5 km, 80 min
   pet 26. 3.  odmor
   sub 27. 3.  odmor
   ned 28. 3.  dugi 28 km, poslednjih 8 km u tempu maratona (5:02/km) — 28 km, 2 h 39 min
       napomena: Blok trči ravnomerno u tempu maratona, ne brže; unos gela vežbaj i tokom bloka, kao na trci. Ako tempo ne možeš da držiš bez naprezanja, skrati blok — ne ubrzavaj.
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 57 km, 5 h 31 min, 3 treninga, brz rad 12 % vremena trčanja
+  Zbir: 55 km, 5 h 19 min, 3 treninga, brz rad 13 % vremena trčanja
 
 22. NEDELJA (od 29. 3.) — završnica, sužavanje pred trku; do trke 2 nedelje
   pon 29. 3.  odmor

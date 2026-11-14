@@ -47,7 +47,6 @@ import {
   decidePeak,
   decideWarmup,
   longEasyFloor,
-  longStepOf,
   minEasyOf,
   decide
 } from './decide';
@@ -534,21 +533,22 @@ function onMissed(
     if (streak >= 2 && nextLong !== undefined) {
       const lastDone = lastLongBefore(state, addDays(state.today, 1));
       const from = lastDone > 0 ? lastDone : doc.header.decisions.longStartSec;
-      const lengthSec = from + longStepOf(data.safety, doc.header.paces.easy);
+      /* R22 (A4): posle dva propuštena duga sledeći nije duži od poslednjeg odrađenog (ne „kreće od njega + korak") */
+      const lengthSec = from;
       const targetWeek = weekOf(nextLong);
       /* R18 (stavka 4): sledeći dugi nije duži od poslednjeg odrađenog uz jedan korak — ništa se ne menja, i tekst
          to kaže (ne najavljuje skraćenje kog nema) */
       if (summarize(nextLong.workout, ctx).durationSec <= lengthSec + 60 && !hasBlock(nextLong))
         return notice(
           `Dugi trening je propušten ${String(streak)} puta zaredom`,
-          `sledeći dugi (${fmtDate(nextLong.date)}) nije duži od poslednjeg odrađenog uz jedan korak, pa ostaje kakav je`
+          `sledeći dugi (${fmtDate(nextLong.date)}) nije duži od poslednjeg odrađenog, pa ostaje kakav je`
         );
       return build(
         { kind: 'repeat', source: ev.id, dayId: nextLong.id, lengthSec, noBlock: true },
         nextLong,
         base(
           `Dugi trening je propušten ${String(streak)} puta zaredom, pa se dužina više ne nastavlja tamo gde je plan stao`,
-          `sledeći dugi (${fmtDate(nextLong.date)}) kreće od poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak`
+          `sledeći dugi (${fmtDate(nextLong.date)}) je dužine poslednjeg odrađenog i nema brzi završni deo, a zatim opet raste korak po korak`
         ),
         (targetWeek?.index ?? week.index) + 1
       );

@@ -327,12 +327,14 @@ PROMENE
 Propušten je ključni trening „prag 21 min u komadu" (28. 1.). To je bio glavni brzi trening te nedelje; u naredne dve nedelje nema istog treninga na kom bi se nadoknadio, pa plan ostaje isti.
 Propušten je ključni trening „tempo maratona 5,5 km u komadu" (4. 2.). To je bio glavni brzi trening te nedelje; u naredne dve nedelje nema istog treninga na kom bi se nadoknadio, pa plan ostaje isti.
 Pauza zbog puta trajala je 6 dana (15–20. 2.), pa je povratak postepen: treninzi su kraći do 28. 2., a prvi brzi trening je 4. 3.; i posle toga se obim vraća postepeno — zato su treninzi do 18. 3. lakši nego što su bili.
+- ned 21. 2.: dugi 22 km lagano → lagano 12 km
 - uto 23. 2.: lagano 16 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 8,5 km
 - čet 25. 2.: lagano 16 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 7 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog
 - ned 28. 2.: dugi 27,5 km lagano → dugi 24,5 km lagano
 - čet 4. 3.: tempo maratona 2 × 4 km, oporavak 3 min džog → tempo maratona 2 × 2 km, oporavak 3 min džog
 - ned 14. 3.: dugi 29,5 km, poslednjih 9 km u tempu maratona → dugi 28 km, poslednjih 7 km u tempu maratona
 - čet 18. 3.: prag 3 × 6 min, oporavak 1:30 džog → prag 3 × 5 min, oporavak 1:30 džog
+- 16. nedelja: 39,5 km → 29,5 km
 - 17. nedelja: 61,5 km → 41 km
 - 18. nedelja: 52,7 km → 50,4 km
 - 19. nedelja: 66,5 km → 65 km
@@ -495,9 +497,8 @@ Pauza zbog puta trajala je 6 dana (15–20. 2.), pa je povratak postepen: trenin
   čet 18. 2.  lagano 12,5 km — pauza, bez treninga
   pet 19. 2.  odmor
   sub 20. 2.  odmor
-  ned 21. 2.  dugi 22 km lagano — 22 km, 2 h 11 min
-      napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 22 km, 2 h 11 min, 1 trening
+  ned 21. 2.  lagano 12 km — 12 km, 71 min
+  Zbir: 12 km, 71 min, 1 trening
 
 17. NEDELJA (od 22. 2.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 22. 2.  odmor
