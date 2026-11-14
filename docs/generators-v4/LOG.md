@@ -870,3 +870,8 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   povlači kompletna Strava istorija; (3) ručnu izmenu i premeštanje upisuje sloj aplikacije, motor se ne menja;
   (4) „Generiši nov plan" čuva trčanja i formu; (5) nije odlučeno — pitanje objašnjeno vlasniku; (6) vlasnik šalje
   snimak ekrana Strava API podešavanja.
+- (20:50) F9 pitanje 5: vlasnik prihvata predlog (plan bez istog otiska ostaje na starom prikazu). Pitanje 6, snimak
+  ekrana strava.com/settings/api: ukupno 400 / 15 min i 4.000 dnevno; čitanje 200 / 15 min i 2.000 dnevno; dozvoljeno
+  10 povezanih sportista, povezano 5. Prosleđeno tabu F9.
+- R24 5K (`f8a2a5dc`): P2 urađen (menja se samo par P2 B); P3 za p12 podatkom ne može (4 dana, dugi ≤ 100 min →
+  ≈ 44–46 km) — p12 ostaje ispod praga, nalog motora se ne širi.
