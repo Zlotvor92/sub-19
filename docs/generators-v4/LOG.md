@@ -811,3 +811,18 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   `session_01GnHHiZmiAq1QU2vMQLeEvk`, 10K `session_01GnHHiYwXz7sJ15jTAaXULc`, MAR `session_01GnHHiYzu9JuSecjPDaqdRf`,
   5K `session_01GnHHiamqeaDxEsfL7zhJr6`. Motor B `…WSukXvHnqPEjLYjRy` arhiviran (659 000 tokena). Aktivni tabovi
   podatka (čekaju): 10K `…XivSsUTpEuBAFcJZi`, MAR `…WbwULZGywbJmwtnzH`, 5K `…YgBWy4zCKtBd6YPxy`.
+
+### 14. 11. 2026, 11:10 — OCENE R21 (stanje `21d4b070`, novo merilo) i nalog R22
+- Tabovi ocene su završili oko 08:35; završne poruke su zaglavile do buđenja u 10:51 (uzrok nepoznat).
+- Trener (kalibracija ≈ 1 poen strože na staroj skali): prolaz „dozvoljava" 23/48 → 24/48, plafon 0/11 → 1/11 (MAR p03
+  80,5). Plan / B / C: HM 79,4 / 83,2 / 84,2; 10K 78,5 / 83,0 / 83,5; MAR 78,7 / 82,1 / 83,0; 5K 76,9 / 82,7 / 82,7.
+  C na MAR 79,0 → 83,0. 5K p13 „Plan za ulaz" 57,7 → 74. 5K p06 65,5 bez promene (4. krug).
+- Drugi sudija (novi sudije, strožiji ~4–5 poena): HM 71,6 (min p06 66; nijedan < 65), 10K 71,4 (p06 62), MAR 69,9
+  (p19 60, p13 61, p06 64,5, p10 64,5; bilo 6 ispod 65), 5K 72,1 (p12 63,5). Scenariji 78,1 / 77,0 / 80 / 81,7;
+  parovi 80 / 78,3 / 78 / 76,7.
+- Potvrđeno ispravljeno: iskrena prognoza, procena iz laganog tempa, MAR dugi po vremenu, s28/s09, dugi u ned 1 iz
+  istorije, 10K s13, HM s07. NOVE GREŠKE R20: posle trke nema 3 dana odmora; `breakRamp` se primenjuje i na jedan
+  propušten trening (polovi sledeći ključni, skraćuje najduži dugi) i daje mikro-doze; dva polazna broja u zaglavlju
+  kod trkača po osećaju; tempa treninga ne prate usporenu prognozu.
+- Trener: najveći učinak ima PODATAK (rast umesto platoa, lagan dan ≥ 30 min) — 8–10 profila preko 80.
+- R22 (`briefs/R22.md`): motor A (događaji), motor B (plan/tekstovi), podatak HM (nov tab), 10K, MAR, 5K.
