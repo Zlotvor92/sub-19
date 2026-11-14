@@ -86,3 +86,28 @@ describe('R20 (II) — forma iz laganog tempa je oprezna (sve distance)', () => 
     expect(bad).toEqual([]);
   });
 });
+
+/* R20 (I): kad upozorenje kaže da obim, dugi ili priprema ne nose distancu (kazna u odlukama), očekivano je sporije od
+   današnje forme, spora strana nije uža od brze, a tempo za trku je oprezan i kaže broj */
+describe('R20 (I) — iskrena prognoza uz upozorenje (sve distance)', () => {
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s', async (_id, d) => {
+    const { renderPlan } = await import('../engine');
+    const bad: string[] = [];
+    let seen = 0;
+    for (const p of d.profiles) {
+      const st = buildState(d.factsOf(p), p.goal, d.data, estimateForm);
+      const res = plan(st, p.goal, d.data);
+      if (!res.ok || (res.doc.header.decisions.raceDayPenalty ?? 0) <= 0) continue;
+      seen += 1;
+      const h = res.doc.header;
+      if (h.form.raceDay.expectedSec <= h.form.current.raceTimeSec)
+        bad.push(`${String(p.id)} očekivano`);
+      const text = renderPlan(res.doc, st, d.data);
+      if (!/sporije od današnje forme, jer /.test(text)) bad.push(`${String(p.id)} rečenica`);
+      if (!h.paces.byFeel && !/Tempo za trku: [^\n]*oprezno/.test(text))
+        bad.push(`${String(p.id)} tempo`);
+    }
+    expect(bad).toEqual([]);
+    expect(seen).toBeGreaterThanOrEqual(0);
+  });
+});

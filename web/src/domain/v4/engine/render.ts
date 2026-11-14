@@ -226,8 +226,11 @@ export function raceNotes(
   const target = h.goal.targetTimeSec;
   /* R20 B4 (menja R18 stavku 1): sporiji cilj je tempo za trku (MAR p17 4:15, ne 4:11); uz upozorenje „počni
      sporije" tempo je sredina očekivanog vremena i sporije granice raspona, nikad brži od potvrđene forme */
+  /* R20 (I): i uz kaznu prognoze (obim/dugi/priprema ne nose distancu) */
   const slowerAdvice =
-    !h.paces.byFeel && h.warnings.some((w) => w.proposal.includes('počni sporije'));
+    !h.paces.byFeel &&
+    (h.warnings.some((w) => w.proposal.includes('počni sporije')) ||
+      (h.decisions.raceDayPenalty ?? 0) > 0);
   const midSec = Math.round((raceDay.expectedSec + raceDay.highSec) / 2);
   const cautiousSec =
     slowerAdvice && midSec > CAUTIOUS_MIN_OVER * confirmedSec ? midSec : confirmedSec;
@@ -353,16 +356,20 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   const raises = doc.weeks.some(
     (w) => w.intent.kind !== 'race' && weekCost(w, h.goal.raceDate, pc).km > startKm * 1.05
   );
+  /* R20 (I): kazna — očekivano je sporije od današnje forme i plan to kaže brojem */
+  const slowerBy = raceDay.expectedSec - h.form.current.raceTimeSec;
   const why =
-    gain > 0
-      ? ` — ${fmtClock(gain)} brže od današnje prognoze, jer plan do trke ${raises ? 'podiže obim i dodaje' : 'dodaje'} rad u tempu trke`
-      : /* krug 10 (stavka 12): nula napretka samo uz izričit razlog u zaglavlju */
-        h.decisions.raceDayMaxGain === 0
-        ? ' — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke'
-        : /* M7 (krug 14): upozorenje kaže da obim ili dugi ne nose trku — broj to prati i kaže zašto */
-          h.decisions.raceDayNoProgress === true && gain === 0
-          ? ' — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma'
-          : '';
+    (h.decisions.raceDayPenalty ?? 0) > 0 && slowerBy > 0
+      ? ` — ${fmtClock(slowerBy)} sporije od današnje forme, jer obim, dugi ili dužina pripreme u planu ne nose ovu distancu (v. upozorenja): druga polovina trke biće sporija nego što forma na kraćim deonicama pokazuje`
+      : gain > 0
+        ? ` — ${fmtClock(gain)} brže od današnje prognoze, jer plan do trke ${raises ? 'podiže obim i dodaje' : 'dodaje'} rad u tempu trke`
+        : /* krug 10 (stavka 12): nula napretka samo uz izričit razlog u zaglavlju */
+          h.decisions.raceDayMaxGain === 0
+          ? ' — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke'
+          : /* M7 (krug 14): upozorenje kaže da obim ili dugi ne nose trku — broj to prati i kaže zašto */
+            h.decisions.raceDayNoProgress === true && gain === 0
+            ? ' — bez računanja napretka: obim i dugi u planu ne nose ovu distancu (v. upozorenja), pa je očekivano vreme današnja forma'
+            : '';
   lines.push(
     `Očekivano na dan trke: ${fmtClock(raceDay.expectedSec)} (raspon ${fmtClock(raceDay.lowSec)}–${fmtClock(raceDay.highSec)})${why}`
   );

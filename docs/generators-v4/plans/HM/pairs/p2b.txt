@@ -8,7 +8,7 @@ Polazim od tvojih ≈ 19 km nedeljno (2 h 15 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:06:30
 Današnja prognoza (1. 11.): 2:06:30, pouzdanost srednja
-Očekivano na dan trke: 2:06:30 (raspon 1:56:26–2:23:29) — bez računanja napretka: tek počinješ da trčiš, pa se napredak ne pretpostavlja unapred, nego se procena pomera posle prve provere forme ili trke
+Očekivano na dan trke: 2:10:03 (raspon 1:54:39–2:32:20) — 3:33 sporije od današnje forme, jer obim, dugi ili dužina pripreme u planu ne nose ovu distancu (v. upozorenja): druga polovina trke biće sporija nego što forma na kraćim deonicama pokazuje
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 1. 11.: 10 km za 56:02. Rezultat sa 10 km prenosim na 21,1 km uz umanjenje, jer uz oko 16 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 21,1 km ostaje 2:06:30.
 - Polazna procena je iz rezultata koji si uneo: oko 2:06:30 za 21,1 km.
@@ -20,7 +20,7 @@ TEMPA
 - tempo trke 6:00/km
 - intervali 5:13/km
 - brze deonice 4:55/km
-Tempo trke u treninzima je tvoja današnja forma (6:00/km). Očekivano vreme na dan trke (2:06:30) traži 6:00/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tvoja današnja forma (6:00/km). Očekivano vreme na dan trke (2:10:03) traži 6:10/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
 - Najveća nedelja u planu ima 30,8 km, a adekvatna priprema za ovu distancu traži bar 40 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 30,8 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 18,6 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 40 km.
@@ -241,8 +241,8 @@ UPOZORENJA
   pet 19. 3.  odmor
   sub 20. 3.  lagano 20 min — 2,8 km, 20 min
   ned 21. 3.  TRKA: polumaraton
-      napomena: Tempo za trku: 6:24/km (oprezno, sporija polovina raspona prognoze 2:15:00).
-      napomena: Prvih 5 km trči 6:28–6:32/km, od 5. do 16. km 6:24/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
+      napomena: Tempo za trku: 6:42/km (oprezno, sporija polovina raspona prognoze 2:21:12).
+      napomena: Prvih 5 km trči 6:46–6:50/km, od 5. do 16. km 6:42/km, poslednjih 5 km po osećaju. Zagrevanje 10 min lagano + 4 ubrzanja; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Od 40. min gel ili sportski napitak na svakih 30–40 min — isto pravilo kao na dugim treninzima.
       napomena: Posle trke: 12 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.
   Zbir: 11,2 km, 78 min, 3 treninga + trka, brz rad 11 % vremena trčanja

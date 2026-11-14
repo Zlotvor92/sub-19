@@ -14,7 +14,7 @@ import {
 } from './constants';
 import { runPass } from './build';
 import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
-import { decide, ladderInputOf, longStepOf } from './decide';
+import { decide, ladderInputOf, longStepOf, ranGoalDistance } from './decide';
 import { validate, warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { raceWorkout } from './select';
@@ -93,7 +93,14 @@ function widenOf(state: RunnerState, data: DistanceData): number | undefined {
 export function adjustRaceDay(
   raw: RunnerState['form']['raceDay'],
   todaySec: Seconds,
-  d: Pick<Decisions, 'raceDayNoProgress' | 'raceDayWiden' | 'raceDayMaxGain' | 'raceDayVolumeShare'>
+  d: Pick<
+    Decisions,
+    | 'raceDayNoProgress'
+    | 'raceDayWiden'
+    | 'raceDayMaxGain'
+    | 'raceDayVolumeShare'
+    | 'raceDayPenalty'
+  >
 ): RunnerState['form']['raceDay'] {
   let r = raw;
   /* A8 (krug 9): napredak u tački ograničen po nivou (početnik ≤ 3 %, potpuno nov 0) */
@@ -121,6 +128,18 @@ export function adjustRaceDay(
       lowSec: Math.round(todaySec - (r.expectedSec - r.lowSec)),
       expectedSec: todaySec,
       highSec: Math.round(todaySec + (r.highSec - r.expectedSec))
+    };
+  }
+  /* R20 (I): obim/dugi/priprema ne nose distancu — očekivano je sporije od današnje forme za kaznu, brža granica
+     ostaje, a spora strana se širi za istu kaznu */
+  const pen = d.raceDayPenalty ?? 0;
+  if (pen > 0) {
+    const base = Math.max(r.expectedSec, todaySec);
+    const add = pen * todaySec;
+    r = {
+      lowSec: r.lowSec,
+      expectedSec: Math.round(base + add),
+      highSec: Math.round(Math.max(r.highSec, base) + 2 * add)
     };
   }
   const f = d.raceDayWiden;
@@ -490,6 +509,7 @@ export function createPlan(
     farBelowAdequate(built, goal, data, found)
       ? { raceDayNoProgress: true }
       : {}),
+    ...penaltyOf(built, goal, data, found, weeks, state),
     ...(widenOf(state, data) === undefined ? {} : { raceDayWiden: widenOf(state, data) }),
     ...(data.safety.forecastMaxGainByLevel?.[level] === undefined
       ? {}
@@ -507,6 +527,39 @@ export function createPlan(
       },
       warnings: found
     }
+  };
+}
+
+/** R20 (I, odluka organizatora): kazna prognoze kad upozorenje kaže da obim (`mali-obim`), dugi (`dugi-za-distancu`,
+    `kratak-dugi`) ili priprema (`kratka-priprema`) ne nose distancu — `PENALTY_SCALE` × najveći manjak (udeo ispod
+    adekvatnog), najviše `PENALTY_MAX`. */
+const PENALTY_SCALE = 0.12;
+const PENALTY_MAX = 0.08;
+function penaltyOf(
+  doc: PlanDoc,
+  goal: Goal,
+  data: DistanceData,
+  found: readonly Warning[],
+  weeks: number,
+  state: RunnerState
+): { raceDayPenalty?: number; raceDayNoProgress?: true } {
+  /* ko je ciljnu dužinu već istrčao, nema kaznu (njegova forma je dokazana na toj dužini) */
+  if (ranGoalDistance(state.today, state.runs, state.profile.recentResult, data.distanceM))
+    return {};
+  const has = (c: string): boolean => found.some((w) => w.code === c);
+  const ctx = paceCtxOf(doc.header);
+  const costs = doc.weeks.map((w) => weekCost(w, goal.raceDate, ctx));
+  const a = data.adequate;
+  const short: number[] = [];
+  if (has('mali-obim')) short.push(1 - Math.max(0, ...costs.map((c) => c.km)) / a.minPeakWeeklyKm);
+  if (has('dugi-za-distancu') || has('kratak-dugi'))
+    short.push(1 - Math.max(0, ...costs.map((c) => c.longKm)) / (a.longCheckKm ?? a.minLongKm));
+  if (has('kratka-priprema')) short.push(1 - weeks / a.minWeeks);
+  const worst = Math.max(0, ...short);
+  if (worst <= 0) return {};
+  return {
+    raceDayPenalty: Math.round(Math.min(PENALTY_MAX, PENALTY_SCALE * worst) * 1000) / 1000,
+    raceDayNoProgress: true
   };
 }
 
