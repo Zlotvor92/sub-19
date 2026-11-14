@@ -28,14 +28,17 @@ describe('krug 12 — polumaraton', () => {
     expect(bad).toEqual([]);
   });
 
-  it('M3: s26 — dugi 3 dana posle trke 10 km ne raste preko poslednjeg odrađenog dugog (60 min)', () => {
+  /* R22 (A1): treći dan posle trke je odmor ili lagano ≤ 30 min (ranije: dugi ≤ poslednji odrađeni, 60 min) */
+  it('M3: s26 — treći dan posle trke 10 km nije dugi: odmor ili lagano ≤ 30 min', () => {
     const r = ALL.find(({ s }) => s.no === 26)?.r;
     const ctx = paceCtxOf(r.after.header);
     const day = (r.after.weeks as any[])
       .flatMap((w) => w.days)
       .find((d) => d.date === '2027-01-17');
-    expect(day?.workout?.kind).toBe('long');
-    expect(summarize(day.workout, ctx).durationSec).toBeLessThanOrEqual(60 * 60 + 60);
+    if (day?.workout != null) {
+      expect(day.workout.kind).toBe('easy');
+      expect(summarize(day.workout, ctx).durationSec).toBeLessThanOrEqual(30 * 60 + 30);
+    }
   });
 
   it('M2: s06 (bolest 4–6 nedelja pred trku) — najteža nedelja spuštena, ne obrisana (≥ 50 km, dugi ≥ 1 h 40 sa blokom)', () => {

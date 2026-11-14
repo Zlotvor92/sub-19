@@ -36,7 +36,7 @@ import {
   PAIN_FIRST_ZONE_MAX_DAYS,
   PAIN_MID_DOSE_FACTOR
 } from './constants';
-import { applyBreakRamp, breakStartOf } from './breakRamp';
+import { applyBreakRamp, applyPostRace, breakStartOf, postRacesOf } from './breakRamp';
 import { buildCtx, doneDayIds, isMutable, runPass } from './build';
 import { addDays, diffDays, isValidDate, mondayOf } from './dates';
 import {
@@ -644,59 +644,40 @@ function onMissed(
           : `propušten trening se ne nadoknađuje: sledeći dugi (${fmtDate(nextBuildLong.date)}) ostaje lagan, a tempo trke se nastavlja na sledećem treningu po planu`
       );
     }
-    const lengthSec = block ? Math.round(summarize(missed, ctx).durationSec) : undefined;
-    const carried = build(
+    /* R22 (A2): jedan propušten trening nije prekid — sledeći dugi zadržava svoju dužinu (blok se dodaje, dugi se ne
+       skraćuje na propušteni), a nijedan drugi trening se ne smanjuje; kad bi nedelja tada imala tri podražaja, blok se
+       ne prenosi */
+    const tw = doc.weeks.find((w) => w.days.some((d) => d.id === nextBuildLong.id));
+    const hard = (tw?.days ?? []).filter(
+      (d) => d.workout?.kind === 'quality' || d.workout?.kind === 'test'
+    ).length;
+    if (planned <= 0 && hard + 1 >= 3)
+      return notice(
+        meaning,
+        `propušten trening se ne nadoknađuje: nedelja sledećeg dugog (${fmtDate(nextBuildLong.date)}) već ima dva brza treninga, pa plan ostaje isti`
+      );
+    if (wanted <= planned + 30)
+      return notice(
+        meaning,
+        `sledeći dugi (${fmtDate(nextBuildLong.date)}) već nosi završni deo u tempu trke, pa se zbog ovog treninga ništa ne menja`
+      );
+    return build(
       {
         kind: 'repeat',
         source: ev.id,
         dayId: nextBuildLong.id,
         blockSec: Math.round(wanted),
-        blockDefId: defId,
-        ...(lengthSec === undefined ? {} : { lengthSec })
+        blockDefId: defId
       },
       nextBuildLong,
       base(
         meaning,
-        `sledeći dugi (${fmtDate(nextBuildLong.date)}) nosi završni deo u tempu trke na prethodnom koraku, ne na većem${block ? '; te nedelje jedan brzi trening usred nedelje postaje lagan' : ''}`
+        `sledeći dugi (${fmtDate(nextBuildLong.date)}) nosi završni deo u tempu trke na prethodnom koraku, ne na većem; dužina dugog ostaje ista`
       )
     );
-    if (!block) return carried;
-    /* R20 (A5): prenet blok u dugom — te nedelje poslednji kvalitet pre dugog postaje lagan istog trajanja (MAR s25:
-       ne tri podražaja u nedelji) */
-    const ctxB = buildCtx(carried.doc.header, data);
-    const tw = carried.doc.weeks.find((w) => w.days.some((d) => d.id === nextBuildLong.id));
-    const qs = (tw?.days ?? []).filter(
-      (d) =>
-        d.workout?.kind === 'quality' &&
-        d.date < nextBuildLong.date &&
-        isMutable(d, carried.doc.header, state.today, done)
-    );
-    /* tri podražaja (kvaliteti, provera i blok u dugom) su previše — jedan kvalitet otpada */
-    const hard = (tw?.days ?? []).filter(
-      (d) => d.workout?.kind === 'quality' || d.workout?.kind === 'test'
-    ).length;
-    const cut = hard + 1 >= 3 ? qs[qs.length - 1] : undefined;
-    if (cut?.workout == null) return carried;
-    const easy = realize(
-      { type: 'easy', sec: Math.round(summarize(cut.workout, ctx).durationSec / 60) * 60 },
-      ctxB
-    );
-    if (easy === null) return carried;
-    return {
-      ...carried,
-      doc: {
-        ...carried.doc,
-        weeks: carried.doc.weeks.map((w) => ({
-          ...w,
-          days: w.days.map((d) =>
-            d.id === cut.id ? { ...d, origin: 'template', workout: easy } : d
-          )
-        }))
-      }
-    };
   }
 
-  /* Ostalo: sledeći isti trening u 14 dana ostaje na propuštenoj dozi ili dužini. */
+  /* Ostalo: obaveštenje — sledeći isti trening u 14 dana (ako postoji) ide po planu. */
   const last = addDays(day.date, MISSED_LOOKAHEAD_DAYS);
   const target = days.find(
     (d) =>
@@ -713,11 +694,10 @@ function onMissed(
       'u naredne dve nedelje nema istog treninga na kom bi se nadoknadio, pa plan ostaje isti'
     );
   }
-  /* S7: kad je sledeći isti trening već kraći (rasterećenje) ili manje doze, nema šta da „ostane" — plan je isti. */
+  /* S7: kad je sledeći isti trening već kraći (rasterećenje) ili manje doze — rečenica prema planu */
   const next = isLong ? summarize(target.workout, ctx).durationSec : (target.workout?.workSec ?? 0);
   const was = isLong ? summarize(missed, ctx).durationSec : missed.workSec;
-  const already = next <= was;
-  if (already) {
+  if (next <= was) {
     /* M8d (krug 5): obrazloženje prema planu — „iste dužine" kad nije kraći (s10) */
     const equal = Math.abs(next - was) < 60;
     const how = isLong ? (equal ? 'iste dužine' : 'kraći') : equal ? 'iste doze' : 'manji';
@@ -727,21 +707,13 @@ function onMissed(
       `sledeći isti trening (${fmtDate(target.date)}) je po planu ${how}, pa se zbog ovoga ne produžava`
     );
   }
-  const adj: Adjustment = isLong
-    ? {
-        kind: 'repeat',
-        source: ev.id,
-        dayId: target.id,
-        lengthSec: Math.round(summarize(missed, ctx).durationSec)
-      }
-    : { kind: 'repeat', source: ev.id, dayId: target.id, workSec: missed.workSec };
-  return build(
-    adj,
-    target,
-    base(
-      meaning,
-      `sledeći isti trening (${fmtDate(target.date)}) ostaje na ${isLong ? 'toj dužini' : 'toj dozi'} umesto da raste`
-    )
+  /* R22 (A2): jedan propušten trening nije prekid — sledeći isti trening ide po planu (ne ostaje na propuštenoj dozi
+     ili dužini, ne smanjuje se) */
+  return notice(
+    meaning,
+    isLong
+      ? `sledeći dugi (${fmtDate(target.date)}) ostaje kako je planiran — propušten trening se ne nadoknađuje produžavanjem sledećeg dugog, a jedan propušten dugi ne skraćuje ostatak plana`
+      : `sledeći isti trening (${fmtDate(target.date)}) ide po planu — jedan propušten trening ne menja ostatak plana`
   );
 }
 
@@ -2349,6 +2321,39 @@ function describe(
   return changes;
 }
 
+/** R22 (A1): posle pripremne trke iz plana koja je u kandidatu nestala (otpala ili pomerena) lagani dani njenih 7
+    dana se grade ponovo — skraćenje oporavka bez trke nema razlog. */
+function restoreAfterDropped(
+  before: PlanDoc,
+  after: PlanDoc,
+  state: RunnerState,
+  data: DistanceData
+): PlanDoc {
+  const now = new Set(postRacesOf(after, state, data).map((r) => r.date));
+  const gone = postRacesOf(before, state, data)
+    .filter((r) => r.planned && !now.has(r.date) && r.date >= state.today)
+    .map((r) => r.date);
+  let doc = after;
+  for (const date of gone) {
+    const from = addDays(date, 1);
+    const to = addDays(date, 7);
+    const rebuilt = runPass(doc, state, data, { window: { from, to }, rechainFrom: null });
+    const fresh = new Map(rebuilt.weeks.flatMap((w) => w.days).map((d) => [d.id, d] as const));
+    doc = {
+      ...doc,
+      weeks: doc.weeks.map((w) => ({
+        ...w,
+        days: w.days.map((d) => {
+          if (d.date < from || d.date > to || d.workout?.kind !== 'easy') return d;
+          const x = fresh.get(d.id);
+          return x?.workout?.kind === 'easy' ? x : d;
+        })
+      }))
+    };
+  }
+  return doc;
+}
+
 export const replan: ReplanFn = (doc, state, events, data) => {
   if (doc.header.protected) return { doc, changes: [] };
   const applied = new Set(doc.header.appliedEvents);
@@ -2385,8 +2390,11 @@ export const replan: ReplanFn = (doc, state, events, data) => {
   /* R20 (A6): promena tempa tiho primenjenog starog rezultata — ide uz sledeći objavljen događaj */
   const pendingTempo: Change[] = [];
   for (const ev of todo) {
-    const raw = candidateFor(current, state, ev, data);
-    if (raw === null) continue;
+    const raw0 = candidateFor(current, state, ev, data);
+    if (raw0 === null) continue;
+    /* R22 (A1): pripremna trka koja je posle događaja otpala (ili se pomerila) ne ostavlja skraćene lagane dane posle
+       sebe — lagani dani njenih 7 dana se grade ponovo (dugi i kvalitet ostaju kakvi su u kandidatu) */
+    const raw = { ...raw0, doc: restoreAfterDropped(current, raw0.doc, state, data) };
     /* R8 t. 17 (Z10): posle više događaja izmene ne idu dalje od 28 dana; kad bi vraćanje dugog bilo skok veći od
        R2, rep se produžava samo za taj dugi (jedna nedelja) */
     /* posle `capTail` nedelje iza danas + 28 dana su prvobitne, pa ni prozor izmene ne ide dalje (stvarno izmenjeni
@@ -2401,7 +2409,7 @@ export const replan: ReplanFn = (doc, state, events, data) => {
       : raw;
     /* R20 (A1): jedno pravilo povratka posle prekida (dugi, prvi brzi, nedelja) za svaki događaj */
     const brk = breakStartOf(capped.doc, state.today, ev, current);
-    const candidate =
+    const ramped: Candidate =
       brk === null
         ? capped
         : {
@@ -2411,6 +2419,13 @@ export const replan: ReplanFn = (doc, state, events, data) => {
               ? capTail(applyBreakRamp(capped.doc, current, state, data, brk), doc, state.today)
               : applyBreakRamp(capped.doc, current, state, data, brk)
           };
+    /* R22 (A1): prvih 7 dana posle trke — jedno mesto, posle svakog događaja i posle rampe (samo smanjuje; posle
+       više događaja ne dalje od 28 dana) */
+    const postRace = applyPostRace(ramped.doc, state, data);
+    const candidate: Candidate = {
+      ...ramped,
+      doc: multi ? capTail(postRace, doc, state.today) : postRace
+    };
     const own = describe(current, candidate, ev, state, data);
     /* krug 12 (M1): najnoviji rezultat se opisuje prema planu pre tihih starijih rezultata (njihova promena tempa je
        njegova); primena (`own`) ostaje kao do sada */

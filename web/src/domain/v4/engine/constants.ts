@@ -378,3 +378,7 @@ export const LONG_HABIT_WEEKS = 4;
 export const LONG_GUESS_FREE_SEC = 5400;
 /** R20 (dopuna a): podražaj tempa trke — u silasku se ne briše pre drugog brzog treninga. */
 export const RACE_PACE_STIMULUS = 'tempo-trke';
+
+/** R22 (A1): pripremna trka iz plana — provera ili trka punim naporom od bar ovoliko rada (oporavak posle nje, ne u
+    prve 3 nedelje povratka). */
+export const PREP_RACE_WORK_MIN_SEC = 4500;

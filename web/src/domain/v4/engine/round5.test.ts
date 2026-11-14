@@ -581,6 +581,13 @@ describe('R8: propušten ključni trening', () => {
       return;
     }
     expect(next?.workout?.workSec ?? 0).toBeGreaterThan(0);
+    /* R22 (A2): jedan propušten trening nije prekid — planirani blok sledećeg dugog se ne smanjuje na propušteni
+       (ranije: ≤ propušteni); kad je već veći, plan ostaje uz rečenicu */
+    if ((planned?.workout?.workSec ?? 0) > (missed.workout?.workSec ?? 0) + 60) {
+      expect(next?.workout?.workSec).toBe(planned?.workout?.workSec);
+      expect(r.changes[0]?.reason).toContain('već nosi završni deo');
+      return;
+    }
     expect(next?.workout?.workSec ?? 0).toBeLessThanOrEqual((missed.workout?.workSec ?? 0) + 60);
     /* Ne manje od planiranog ni od koraka pre propuštenog (kad je plan za taj dan imao manje). */
     expect(next?.workout?.workSec ?? 0).toBeGreaterThanOrEqual(

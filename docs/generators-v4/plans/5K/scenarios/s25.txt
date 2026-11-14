@@ -211,8 +211,7 @@ Pauza zbog bolesti trajala je 5 dana (30. 11. – 4. 12.), pa je povratak postep
 - 7. nedelja: 48,6 km → 40,6 km
 - 9. nedelja: 50,8 km → 46,8 km
 Očekivano vreme trke je sada oko 21:30 umesto 21:28: plan je posle ovog događaja ispod prvobitnog ukupno za 1 nedelju treninga, pa je i očekivani napredak toliko manji.
-Propušten je ključni trening „dugi 13,5 km lagano" (20. 12.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći isti trening (3. 1.) ostaje na toj dužini umesto da raste.
-- ned 3. 1.: dugi 98 min, završnih 10 min u pragu → dugi 80 min, završnih 10 min u pragu
+Propušten je ključni trening „dugi 13,5 km lagano" (20. 12.). Dugi trening nosi izdržljivost za drugu polovinu trke; sledeći dugi (3. 1.) ostaje kako je planiran — propušten trening se ne nadoknađuje produžavanjem sledećeg dugog, a jedan propušten dugi ne skraćuje ostatak plana.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 11 nedelja
   pon 2. 11.  odmor
@@ -303,10 +302,10 @@ Propušten je ključni trening „dugi 13,5 km lagano" (20. 12.). Dugi trening n
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
   pet 1. 1.  odmor
   sub 2. 1.  lagano 9,5 km — 9,5 km, 57 min
-  ned 3. 1.  dugi 80 min, završnih 10 min u pragu (4:46/km) — 13,6 km, 80 min
+  ned 3. 1.  dugi 98 min, završnih 10 min u pragu (4:46/km) — 16,6 km, 98 min
       napomena: Završni deo trči ravnomerno; ako ne možeš da ga držiš, skrati ga — ne ubrzavaj.
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
-  Zbir: 43,8 km, 4 h 14 min, 4 treninga, brz rad 13 % vremena trčanja
+  Zbir: 46,8 km, 4 h 32 min, 4 treninga, brz rad 12 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — specifična priprema, sužavanje pred trku; do trke 2 nedelje
   pon 4. 1.  odmor

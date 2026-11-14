@@ -1,6 +1,6 @@
 /* V4 — `plan` (SPEC § 6.1–6.2): čista funkcija (stanje, cilj, podaci distance) → plan. Redosled odluka:
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
-import { applyBreakRamp, breakStartOf } from './breakRamp';
+import { applyBreakRamp, applyPostRace, breakStartOf } from './breakRamp';
 import { effortScheduleFits, effortShares } from './readiness';
 import {
   LONG_HABIT_GUESS_DAY_SHARE,
@@ -466,7 +466,12 @@ export function createPlan(
   });
   /* R20 (A1): plan iz stanja posle skorog prekida (bolest, bol, trka) — isto pravilo povratka kao u `replan` */
   const brk = breakStartOf(pass, state.today);
-  const built = brk === null ? pass : applyBreakRamp(pass, pass, state, data, brk);
+  /* R22 (A1): prvih 7 dana posle trke (iz zaglavlja i pripremne iz plana) — jedno mesto, posle rampe */
+  const built = applyPostRace(
+    brk === null ? pass : applyBreakRamp(pass, pass, state, data, brk),
+    state,
+    data
+  );
   if (trial) return built;
   /* Šta bi dao još jedan dan trčanja uz isti datum trke — brojevi za predlog u upozorenju. */
   const withExtraDay = (): { peakKm: number; longKm: number; dayMin: number } | null => {

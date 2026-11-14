@@ -27,7 +27,8 @@ import {
   RETURN_WEEK_MAX_OVER_LAST,
   TAPER_ADDON_MIN_EASY_SEC,
   AFTER_TEST_EASY_MAX_OF_LONG,
-  AFTER_TEST_SPREAD_MAX_SEC
+  AFTER_TEST_SPREAD_MAX_SEC,
+  PREP_RACE_WORK_MIN_SEC
 } from './constants';
 import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
 import {
@@ -2003,6 +2004,8 @@ const EASY_FILL_STEP_SEC = 300;
 /** R19: najveće pomeranje provere forme posle kratke pauze (dana). */
 const RETURN_TEST_MAX_SHIFT_DAYS = 14;
 const RETURN_TEST_AFTER_SCHEDULE_DAYS = 3;
+/** R22 (A1): pripremna trka ne ide u ovoliko dana povratka posle prekida (prve 3 nedelje). */
+const PREP_RACE_NO_RETURN_DAYS = 21;
 
 /** Z2 (krug 7): provera ili kvalitet koji otpadne (spremnost, rampa) postaje lagan dan ≤ udela dugog te nedelje
     (65 %), ne dužine dugog (s14 ned 8, s05 ned 8, s16). Meri se prema KONAČNOM dugom nedelje. */
@@ -3177,6 +3180,20 @@ export function runPass(
                 end,
                 fromSchedule ? RETURN_TEST_AFTER_SCHEDULE_DAYS : RETURN_TEST_AFTER_RAMP_DAYS
               );
+        /* R22 (A1): pripremna trka (pun napor ≥ 75 min) ne ide u prve 3 nedelje povratka posle prekida */
+        if ((realize(planned, ctx)?.workSec ?? 0) >= PREP_RACE_WORK_MIN_SEC) {
+          let zero: IsoDate | null = null;
+          for (const adj of adjustments) {
+            const w = adjustmentWindow(adj);
+            const r = rampOf(adj);
+            if (w === null || r === null || w.from > day.date || day.date > w.rampEnd) continue;
+            if (zero === null || r.zero > zero) zero = r.zero;
+          }
+          if (zero !== null) {
+            const from = addDays(zero, PREP_RACE_NO_RETURN_DAYS + 1);
+            pendingFrom = pendingFrom === null || pendingFrom < from ? from : pendingFrom;
+          }
+        }
       }
       const key = seenKey(final.workout, ctx);
       if (key !== null) seen.push({ date: final.date, key });

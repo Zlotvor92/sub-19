@@ -22,7 +22,7 @@ TEMPA
 Tempo trke u treninzima je tempo tvog cilja (4:15/km); današnja forma nudi 4:11/km. Tvoj cilj 2:59:00 traži 4:15/km — dostižan je (raspon na dan trke 2:50:47–2:58:22). Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Tražio si 6 dana trčanja nedeljno; uz sadašnji obim od oko 89,9 km lagani dani su u 9. nedelji oko 30 min umesto 35. Svi traženi dani ostaju u planu; zato je 9. nedelja oko 83 km, manje od sadašnjeg obima (89,9 km), uz kraće lagane dane. Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.
+- Tražio si 6 dana trčanja nedeljno; uz sadašnji obim od oko 89,9 km lagani dani su u 9–10. nedelji oko 30 min umesto 35. Svi traženi dani ostaju u planu; zato je 9. nedelja oko 83 km, manje od sadašnjeg obima (89,9 km), uz kraće lagane dane. Trči kako piše; ako ti neki dan ne odgovara, zameni ga šetnjom ili ga izostavi — ostatak nedelje ostaje isti.
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 17 nedelja
   pon 2. 11.  lagano 12,5 km — 12,5 km, 62 min
@@ -124,15 +124,15 @@ UPOZORENJA
   Zbir: 83 km, 6 h 32 min, 6 treninga, brz rad 21 % vremena trčanja
 
 10. NEDELJA (od 4. 1.) — razvoj, gradnja; do trke 8 nedelja
-  pon 4. 1.  lagano 14,5 km — 14,5 km, 72 min
-  uto 5. 1.  lagano 14,5 km — 14,5 km, 72 min
-  sre 6. 1.  lagano 14,5 km — 14,5 km, 72 min
-  čet 7. 1.  lagano 14,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 15,7 km, 78 min
+  pon 4. 1.  lagano 6 km — 6 km, 30 min
+  uto 5. 1.  lagano 6 km — 6 km, 30 min
+  sre 6. 1.  lagano 6 km — 6 km, 30 min
+  čet 7. 1.  lagano 13 km — 13 km, 65 min
   pet 8. 1.  odmor
-  sub 9. 1.  lagano 14,5 km — 14,5 km, 72 min
+  sub 9. 1.  lagano 12 km — 12 km, 60 min
   ned 10. 1.  dugi 27,5 km lagano — 27,5 km, 2 h 17 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 101,2 km, 8 h 23 min, 6 treninga, brz rad 0 % vremena trčanja
+  Zbir: 70,5 km, 5 h 52 min, 6 treninga, brz rad 0 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — specifična priprema, gradnja; do trke 7 nedelja
   pon 11. 1.  lagano 15,5 km — 15,5 km, 77 min
