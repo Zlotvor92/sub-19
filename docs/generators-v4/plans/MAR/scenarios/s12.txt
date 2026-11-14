@@ -256,11 +256,9 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:58/km). Očekivano vreme na dan trke (4:08:21) traži 5:53/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 21,1 km za 2:02:09 (3. 1.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 4:08:21 (raspon 4:03:23–4:16:20).
-- plan: po osećaju → prag 5:35/km, tempo trke 5:58/km
-- upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
-Propušten je ključni trening „dugi 2 h 47 min, poslednjih 27 min u tempu maratona" (17. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; sledeći dugi (14. 2.) nosi završni deo u tempu trke na prethodnom koraku, ne na većem; te nedelje jedan brzi trening usred nedelje postaje lagan; dužina ostaje prvobitna.
+Propušten je ključni trening „dugi 2 h 47 min, poslednjih 27 min u tempu maratona" (17. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; sledeći dugi (14. 2.) nosi završni deo u tempu trke na prethodnom koraku, ne na većem; te nedelje jedan brzi trening usred nedelje postaje lagan; dužina ostaje prvobitna. Uz to, tempa su usklađena sa ranijim rezultatom (21,1 km za 2:02:09, 3. 1.).
 - ned 14. 2.: dugi 3 h 6 min, poslednjih 41 min u tempu maratona → dugi 3 h 7 min, poslednjih 27 min u tempu maratona
+- plan: po osećaju → prag 5:35/km, tempo trke 5:58/km
 Propušten je ključni trening „dugi 2 h 59 min, poslednjih 34 min u tempu maratona" (31. 1.). To je bio jedan od glavnih treninga u tempu trke, pa je specifična priprema tanja nego što je planirano; sledeći dugi ostaje kako je planiran — propušten trening se ne nadoknađuje produžavanjem sledećeg dugog.
 - ned 14. 2.: dugi 3 h 7 min, poslednjih 27 min u tempu maratona → dugi 2 h 22 min, poslednjih 27 min u tempu maratona
 - 15. nedelja: 63,4 km → 57 km

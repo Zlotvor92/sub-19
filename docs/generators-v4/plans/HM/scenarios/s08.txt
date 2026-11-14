@@ -233,16 +233,14 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:47/km). Očekivano vreme na dan trke (2:00:01) traži 5:41/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 10 km za 55:06 (26. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 2:00:01 (raspon 1:56:12–2:06:31).
-- plan: po osećaju → prag 5:35/km, tempo trke 5:47/km
-- upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
-Pauza zbog bolesti trajala je 7 dana (25–31. 1.), pa je povratak postepen: treninzi su kraći do 7. 2., a prvi brzi trening je 11. 2.; od 15. 2. plan se nastavlja kako je bio.
+Pauza zbog bolesti trajala je 7 dana (25–31. 1.), pa je povratak postepen: treninzi su kraći do 7. 2., a prvi brzi trening je 11. 2.; od 15. 2. plan se nastavlja kako je bio. Uz to, tempa su usklađena sa ranijim rezultatom (10 km za 55:06, 26. 12.).
 - pon 1. 2.: lagano 45 min → lagano 50 min
 - uto 2. 2.: lagano 45 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog → lagano 50 min
 - čet 4. 2.: tempo trke 3 × 10 min, oporavak 1:30 džog → lagano 50 min
 - sub 6. 2.: lagano 45 min → lagano 50 min
 - čet 11. 2.: tempo trke 2 × 9 min, oporavak 2 min džog → tempo trke 2 × 6 min, oporavak 2 min džog
 - 14. nedelja: 44,2 km → 42 km
+- plan: po osećaju → prag 5:35/km, tempo trke 5:47/km
 
 1. NEDELJA (od 2. 11.) — osnova, gradnja; do trke 15 nedelja
   pon 2. 11.  lagano 50 min — urađeno 7,1 km, 50 min (7:00/km)

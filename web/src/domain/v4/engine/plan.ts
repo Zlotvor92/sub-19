@@ -1,7 +1,7 @@
 /* V4 — `plan` (SPEC § 6.1–6.2): čista funkcija (stanje, cilj, podaci distance) → plan. Redosled odluka:
    unos → šablon → odluke (vrh, plafoni, dugi, dani) → prolaz kroz nedelje → zaglavlje i upozorenja. */
 import { applyBreakRamp, breakStartOf } from './breakRamp';
-import { effortScheduleFits } from './readiness';
+import { effortScheduleFits, effortShares } from './readiness';
 import {
   LONG_HABIT_GUESS_DAY_SHARE,
   LONG_HABIT_WEEKS,
@@ -145,6 +145,27 @@ function slowSideAtLeastFast(r: RunnerState['form']['raceDay']): RunnerState['fo
 export function startDateOf(state: RunnerState, goal: Goal): IsoDate {
   const tomorrow = addDays(state.today, 1);
   return goal.startDate !== undefined && goal.startDate > tomorrow ? goal.startDate : tomorrow;
+}
+
+/** R20 (A6): posle neplanirane trke prve 3 nedelje nisu „vršne" (oznaka gradnja), a kad raspored povratka kreće ispod
+    65 % (duga trka), u prve 4 nedelje nema ni rasterećenja — povratak je već rasterećenje. */
+function afterRaceIntents(doc: PlanDoc): PlanDoc {
+  const race = (doc.header.adjustments ?? []).find(
+    (a) => a.kind === 'effort' && a.race === true && a.planned !== true
+  );
+  if (race?.kind !== 'effort') return doc;
+  const low = race.refWeekKm !== undefined && (effortShares(race.durationSec)[0] ?? 1) < 0.65;
+  let prevLoad = 0;
+  const weeks = doc.weeks.map((w) => {
+    const days = diffDays(w.start, race.date);
+    let intent = w.intent;
+    if (intent.kind === 'peak' && days <= 21) intent = { ...intent, kind: 'build' };
+    if (intent.kind === 'recovery' && low && days <= 28)
+      intent = { ...intent, kind: 'build', loadPct: Math.max(intent.loadPct, prevLoad) };
+    prevLoad = intent.loadPct;
+    return intent === w.intent ? w : { ...w, intent };
+  });
+  return { ...doc, weeks };
 }
 
 /** R20 (A1): referentna nedelja pre trke — iz istorije, inače sadašnji obim iz profila. */
@@ -381,22 +402,24 @@ export function createPlan(
       appliedEvents: [],
       eventsFrom: state.today,
       /* Kad nema istorije dugih, „poslednji dugi" za plafon u rampi je polazni dugi plana. */
-      adjustments: initialAdjustments(state).map((a) =>
-        (a.kind === 'effort' || a.kind === 'pause' || a.kind === 'pain') &&
-        (a.lastLongSec === undefined || a.lastLongSec === 0)
-          ? { ...a, lastLongSec: decisions.longStartSec }
-          : /* R20 (A1): posle trke bez istorije dugih „poslednji dugi" je polazni dugi plana, ne 60 % trke */
-            a.kind === 'effort' && lastLongBefore(state, a.date) === 0
-            ? { ...a, lastLongSec: Math.max(a.lastLongSec ?? 0, decisions.longStartSec) }
-            : a
-      ).map((a) => {
-        /* R20 (A1): raspored posle trke samo kad se završi pre nedelje pred trkom */
-        if (a.kind !== 'effort' || a.refWeekKm === undefined) return a;
-        if (effortScheduleFits(a.date, a.durationSec, goal.raceDate)) return a;
-        const { refWeekKm: _drop, ...rest } = a;
-        void _drop;
-        return rest;
-      })
+      adjustments: initialAdjustments(state)
+        .map((a) =>
+          (a.kind === 'effort' || a.kind === 'pause' || a.kind === 'pain') &&
+          (a.lastLongSec === undefined || a.lastLongSec === 0)
+            ? { ...a, lastLongSec: decisions.longStartSec }
+            : /* R20 (A1): posle trke bez istorije dugih „poslednji dugi" je polazni dugi plana, ne 60 % trke */
+              a.kind === 'effort' && lastLongBefore(state, a.date) === 0
+              ? { ...a, lastLongSec: Math.max(a.lastLongSec ?? 0, decisions.longStartSec) }
+              : a
+        )
+        .map((a) => {
+          /* R20 (A1): raspored posle trke samo kad se završi pre nedelje pred trkom */
+          if (a.kind !== 'effort' || a.refWeekKm === undefined) return a;
+          if (effortScheduleFits(a.date, a.durationSec, goal.raceDate)) return a;
+          const { refWeekKm: _drop, ...rest } = a;
+          void _drop;
+          return rest;
+        })
     },
     weeks: skeleton(
       startDate,
@@ -407,7 +430,11 @@ export function createPlan(
       form.vdot
     )
   };
-  const pass = runPass(draft, state, data, { window: null, rechainFrom: 1, fresh: true });
+  const pass = runPass(afterRaceIntents(draft), state, data, {
+    window: null,
+    rechainFrom: 1,
+    fresh: true
+  });
   /* R20 (A1): plan iz stanja posle skorog prekida (bolest, bol, trka) — isto pravilo povratka kao u `replan` */
   const brk = breakStartOf(pass, state.today);
   const built = brk === null ? pass : applyBreakRamp(pass, pass, state, data, brk);

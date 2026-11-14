@@ -7,18 +7,18 @@ s04 p12 E1: ned 8, prva trka u životu, 10 km 58:00 — promena: 2; forma 2:06:3
 s05 p01 E2: bolest 7 dana u ned 6 — promena: 18; forma 1:44:48 (srednja); nalazi čuvara posle: 0
 s06 p04 E2: bolest 7 dana u ned 14 — promena: 13; forma 2:04:52 (srednja); nalazi čuvara posle: 0
 s07 p11 E2: bolest 7 dana u ned 10 — promena: 21; forma 2:04:51 (srednja); nalazi čuvara posle: 0
-s08 p12 E2: bolest 7 dana u ned 13 (najteža) — promena: 8; forma 2:02:45 (srednja); nalazi čuvara posle: 0
+s08 p12 E2: bolest 7 dana u ned 13 (najteža) — promena: 7; forma 2:02:45 (srednja); nalazi čuvara posle: 0
 s09 p01 E3: ned 13 (najteža): propušteni RP usred nedelje i dugi sa blokom — promena: 2; forma 1:44:19 (srednja); nalazi čuvara posle: 0
 s10 p04 E3: ned 10: propušteni kvalitet i dugi — promena: 2; forma 2:04:14 (srednja); nalazi čuvara posle: ispod-cilja@16
 s11 p11 E3: ned 14: propušteni kvalitet i dugi — promena: 2; forma 2:04:12 (srednja); nalazi čuvara posle: 0
-s12 p12 E3: ned 9–10: propušten po jedan dugi u obe nedelje — promena: 4; forma 2:02:08 (srednja); nalazi čuvara posle: 0
+s12 p12 E3: ned 9–10: propušten po jedan dugi u obe nedelje — promena: 3; forma 2:02:08 (srednja); nalazi čuvara posle: 0
 s13 p01 E4: ned 10, bol u kolenu 4/10 posle kvaliteta — promena: 16; forma 1:44:19 (srednja); nalazi čuvara posle: 0
 s14 p04 E4: ned 7, bol 4/10 posle kvaliteta (brzina/usponi) — promena: 19; forma 2:04:14 (srednja); nalazi čuvara posle: ispod-cilja@16
 s15 p11 E4: ned 11, bol 4/10 posle dugog — promena: 26; forma 2:04:13 (srednja); nalazi čuvara posle: 0
 s16 p12 E4: ned 5, bol 4/10 posle laganog dana — promena: 27; forma 2:02:06 (srednja); nalazi čuvara posle: 0
 s17 p01 E5: juče polumaraton 1:42:30 — promena: 0; forma 1:42:30 (srednja); nalazi čuvara posle: 0
 s18 p04 E5: juče polumaraton 2:04:13 — promena: 0; forma 2:04:13 (srednja); nalazi čuvara posle: ispod-cilja@16
-s19 p11 E5: juče polumaraton 2:12 uz hodanje (prvi) — promena: 0; forma 2:09:34 (srednja); nalazi čuvara posle: ispod-cilja@8
+s19 p11 E5: juče polumaraton 2:12 uz hodanje (prvi) — promena: 0; forma 2:09:34 (srednja); nalazi čuvara posle: 0
 s20 p12 E5: juče polumaraton 2:20 (prvi rezultat) — promena: 0; forma 2:20:00 (srednja); nalazi čuvara posle: 0
 s21 p01 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 1:44:16 (srednja); nalazi čuvara posle: 0
 s22 p04 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 2:04:14 (srednja); nalazi čuvara posle: ispod-cilja@16

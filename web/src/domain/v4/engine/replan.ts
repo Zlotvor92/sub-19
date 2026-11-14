@@ -2371,6 +2371,8 @@ export const replan: ReplanFn = (doc, state, events, data) => {
   /* krug 12 (M1): tiho primenjen stariji rezultat već menja tempa; sledeća objavljena izmena se zato opisuje prema
      planu PRE tihih izmena, da promena tempa ne ostane bez rečenice */
   let publishBase: PlanDoc | null = null;
+  /* R20 (A6): promena tempa tiho primenjenog starog rezultata — ide uz sledeći objavljen događaj */
+  const pendingTempo: Change[] = [];
   for (const ev of todo) {
     const raw = candidateFor(current, state, ev, data);
     if (raw === null) continue;
@@ -2406,7 +2408,10 @@ export const replan: ReplanFn = (doc, state, events, data) => {
         ? describe(publishBase, candidate, ev, state, data)
         : own;
     if (own.length === 0) {
-      if (ev === latestResult)
+      /* R20 (A6): tiho primenjen stari rezultat se ne objavljuje — njegova promena tempa ide uz sledeći događaj */
+      if (ev === latestResult && silent.has(ev.id))
+        pendingTempo.push(...diff.filter((c) => c.scope === 'zaglavlje' && c.what === 'tempa'));
+      else if (ev === latestResult)
         changes.push(
           ...diff.filter(
             (c) => c.scope === 'zaglavlje' && (c.what === 'tempa' || c.what === 'upozorenje')
@@ -2450,17 +2455,32 @@ export const replan: ReplanFn = (doc, state, events, data) => {
     };
     if (silent.has(ev.id)) {
       silentApplied.push(ev.id);
-      /* krug 12 (M1): stari rezultat uz drugi događaj — dani tiho, ali promena tempa ide trkaču sa svojom rečenicom */
+      /* R20 (A6): stari rezultat (> 14 dana) uz drugi događaj se ne objavljuje kao nov događaj — promena tempa (M1:
+         uvek sa rečenicom) ide uz sledeći objavljen događaj */
       if (ev === latestResult)
-        changes.push(
-          ...diff.filter(
-            (c) => c.scope === 'zaglavlje' && (c.what === 'tempa' || c.what === 'upozorenje')
-          )
-        );
+        pendingTempo.push(...diff.filter((c) => c.scope === 'zaglavlje' && c.what === 'tempa'));
       continue;
     }
     if (ev === latestResult) publishBase = null;
-    changes.push(...diff);
+    if (pendingTempo.length > 0 && !diff.some((c) => c.what === 'tempa')) {
+      /* jedna rečenica za događaj: njegova + kratko o ranijem rezultatu; red tempa ide pod isti događaj */
+      const was = /^Rezultat (.*?) \((.*?)\)/
+        .exec(pendingTempo[0]?.reason ?? '')
+        ?.slice(1, 3)
+        .join(', ');
+      const add = (r: string): string =>
+        `${r} Uz to, tempa su usklađena sa ranijim rezultatom${was === undefined ? '' : ` (${was})`}.`;
+      changes.push(
+        ...diff.map((c) => ({ ...c, reason: add(c.reason) })),
+        ...pendingTempo.map((c) => ({
+          ...c,
+          eventId: ev.id,
+          until: diff[0]?.until ?? c.until,
+          reason: add(diff[0]?.reason ?? '')
+        }))
+      );
+    } else changes.push(...diff);
+    pendingTempo.splice(0, pendingTempo.length);
     const was = adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
     if (lost !== null && raceDay.expectedSec > was.expectedSec) {
       changes.push({
@@ -2474,6 +2494,8 @@ export const replan: ReplanFn = (doc, state, events, data) => {
       });
     }
   }
+  /* bez kasnijeg objavljenog događaja promena tempa ostaje sa svojom rečenicom */
+  changes.push(...pendingTempo);
   const result = changes.length === 0 && silentApplied.length === 0 ? doc : current;
   /* R19 (stavka 7): „prvi brzi trening je X" u rečenici o bolu ili pauzi se računa iz KONAČNOG plana (kasniji događaj
      istog ponovnog planiranja može da ga pomeri) */

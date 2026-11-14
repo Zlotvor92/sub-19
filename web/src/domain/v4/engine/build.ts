@@ -2586,6 +2586,15 @@ export function runPass(
             )
           : 0;
       };
+      /* R20: u rasporedu povratka dugi ne pada ispod ¾ svoje granice (prve nedelje: ¾ od ¾ referentnog) — kad lagani
+         dani na podu ne daju više, nedelja ostaje iznad cilja (višak se prijavljuje), dugi se ne seče na 35 min */
+      const schedLongFloor = (): Seconds =>
+        schedule === null
+          ? longFloorOf()
+          : Math.max(
+              longFloorOf(),
+              Math.min(shell.longSec, RETURN_SCHEDULE_FIRST_LONG_SHARE * schedule.longSec)
+            );
       let lost = false;
       /* R19: u rasporedu povratka dugi je već na svojoj granici — skraćuju se prvo lagani dani */
       const order =
@@ -2614,13 +2623,7 @@ export function runPass(
           const f = capVolume / m.volume;
           /* R20 (A1): u drugoj i daljim nedeljama rasporeda dugi ne pada ispod plafona prve (¾ referentnog) — dugi
              posle prekida raste, ne spušta se */
-          const longFloor =
-            schedule !== null && !schedule.first
-              ? Math.max(
-                  longFloorOf(),
-                  Math.min(shell.longSec, RETURN_SCHEDULE_FIRST_LONG_SHARE * schedule.longSec)
-                )
-              : longFloorOf();
+          const longFloor = schedLongFloor();
           /* krug 11: brz trening do najmanje doze (podražaj i dan ostaju), cilj nedelje srazmerno */
           if (step === 'quality') trimSlots = minDoseSlots(trimSlots);
           shell =
@@ -2767,7 +2770,7 @@ export function runPass(
         }
         let cut = measure().over * 60;
         for (let i = 0; i < 6 && measure().over > 0 && cut >= 60; i += 1) {
-          const longSec = Math.max(longFloorOf(), Math.round((shell.longSec - cut) / 60) * 60);
+          const longSec = Math.max(schedLongFloor(), Math.round((shell.longSec - cut) / 60) * 60);
           if (longSec >= shell.longSec) break;
           if (attempt({ ...shell, longSec })) cut = measure().over * 60;
           else cut /= 2;
