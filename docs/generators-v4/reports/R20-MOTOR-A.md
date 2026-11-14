@@ -1,40 +1,38 @@
-# R20 — MOTOR A (prilagođavanje na događaje), 14. 11. 2026 (po Beogradu) — A1 urađen, A6 delom; A2–A5 nisu
-Stanje `468ecca9` (+ ovaj izveštaj). V4: 69 fajlova, 1071 prolazi, 24 očekivano pada (polazno 64 / 1043 / 25; razlika
-= novi testovi oba motora i tabova; jedan `it.fails` pretvoren u prolaz, v. dole). Typecheck čist, kapije HM/10K/5K/MAR 0.
-Ispisi (planovi, scenariji, parovi) sve 4 distance obnovljeni posle poslednjeg rebase-a.
-## A1 — urađeno (`e7f27ca0`, ispis `8e35a662`)
-- Novo `engine/breakRamp.ts`: JEDNO pravilo posle prekida (pauza > 4 dana, bol ≥ 4, neplanirana trka, propušten dugi),
-  u `replan` i u `plan` (plan iz stanja posle skorog prekida). Dugi raste ≤ max(+20 min, +15 %) od poslednjeg
-  odrađenog / najdužeg posle prekida (6 nedelja); prvi brzi svake vrste u 14 dana od prvog brzog ≤ 70 % doze iz
-  plana i ≤ poslednji odrađeni iste vrste (deonice se skraćuju do najmanje smislene doze; razlika vremena ide u
-  hlađenje, pa nedelja ne gubi obim); blok u dugom ≤ poslednji odrađeni blok; nedelja posle rasterećenja ≤ +25 %
-  (i ≤ 1,2 × najveće od tri, R2). Samo smanjuje, nikad ne dodaje rad; cilj izmenjene nedelje = planirano.
-- Posle NEPLANIRANE trke povratak po nedeljama (kao R19 posle pauze), po dužini trke: ≤ 75 min → 85 %; ≤ 2 h → 60/80 %;
-  ≤ 3 h → 50/65/80 %; duže → 40/55/70/85 % referentne nedelje (bez istorije: obim iz profila); dan posle trke ≥ 75 min
-  odmor; raspored samo ako se završi pre nedelje −1. Stara pravila „dugi 2. nedelje 70 %" i `afterLongRace` ne važe
-  uz raspored (jedan vlasnik odluke). Bez istorije dugih „poslednji dugi" posle trke = polazni dugi plana (ne 60 % trke).
-- Svojstvo nad SVIM distancama `distances/breakRamp.test.ts` (dugi ≤ +20 min/+15 %; prvi kvalitet ≤ 70 % i ≤ odrađeni).
-- Pre → posle: HM s07 dugi 65/70/110 → 65/70/90/110, nedelja 24 → 36,5 → 24 → 29,8; HM s05 dugi 79/73/115 → 79/73/97,
-  prag 2 × 18 → 2 × 12 min, blok 27 → 17 min; MAR s05 30 km/12,5 km MP → 135 min (~24 km)/40 min MP; MAR s12 (dva
-  propuštena duga) 2 h 25 → 3 h 07 → 2 h 22; MAR s17 posle polumaratona ned 1 18 → 32 km, s18 posle 10 km 22 → 38 km;
-  HM vlasnik-v2 (dopuna organizatora) dugi 6/8/12/13,5 → 6,5/8,5/11,5/13,5/15 km.
-- Namerno prepravljeni testovi: returnSchedule + hm/r14 (treća nedelja ≥ 85 % manjeg od plana i granice rasta, ne
-  95 % plana); examples § 12 (d) (odmor 16. 11., ne 17. 11.); round4 E (lastLongSec 3660; dugi 2. nedelje ≤ 1. + 20 min);
-  hm/r10 i tenk/r10 (dugi 2. nedelje ≤ referentni uz raspored); marathon/scenarios: `afterLongRace` test zamenjen
-  testom rasporeda, `returnKeepLong` prihvata dugi na granici lanca; marathon/r9 KNOWN + s11 silazak, s11
-  dugi-za-distancu, s12 silazak (niži vrh posle propuštenih dugih); hm/gate: vlasnik-v2 skinut sa „ČEKA FORMU"
-  (sada prolazi); determinism dobio timeout 15 s (već je bio ~4 s od 5 s).
-- Otisci: 5K p15 i MAR p15 (pauza zbog povrede pre plana → prvi brzi 70 %: 5K 7 × 300 → 5 × 300 m, MAR prag 16 → 11
-  min). Ostali otisci profila bez promene.
-## A6 — delom (`468ecca9`)
-- `mergeChanges` u motoru: spisak dva uzastopna ponovna planiranja kao jedan (jedan dan / jedna nedelja — jedan red,
-  „pre" iz prvog, dan vraćen na prvobitno ispada, isti red zaglavlja se ne ponavlja); lanci E7 svih distanci ga
-  koriste; svojstvo `distances/changeList.test.ts`. HM s25/s26, 10K s25/s26, 5K s26, MAR s25/s26: duplikati nestali.
-- NIJE: „stari događaj se ne ponavlja" (HM s08, 5K s08, MAR s08/s26 — tiho primenjen stari rezultat), rasterećenje
-  posle trke (HM s19), „vršna" u prve 3 nedelje posle trke (5K s20); MAR s12 u jednom prolazu i dalje dva reda (spajanje
-  u prolazu briše rečenicu „2 puta zaredom" — vraćeno).
-## Nije urađeno
-- A2 (put ≠ bolest, srazmerno danima; blok se pomera, ne briše; prognoza posle pauze), A3 (provera forme se pomera ≤ 2
-  nedelje, zamena za trkača po osećaju), A4 (bol: lagan ≤ 65 % dugog, strogo manji prvi trening zone, gašenje posle 2
-  nedelje), A5 (MAR s28/s09 N−2 24–26 km; s25 kvalitet u lagano). Uočeno: u nedelji 2 rasporeda lagani dani
-  ponekad 18 min (primer § 12 d) — sečenje u `build` (korak „easy") ide ispod najmanjeg laganog dana.
+# R20 — MOTOR A (prilagođavanje na događaje), 14. 11. 2026 (po Beogradu) — A1–A6 urađeni (A2 bez prognoze)
+Stanje `cf064743` (+ ispis `500a88f5`). V4 69 fajlova, 1081 prolazi, 20 očekivano pada (polazno 64 / 1043 / 25; razlika =
+novi testovi oba motora i tabova). Typecheck 0, kapije HM/10K/5K/MAR 0, ispisi sve 4 distance obnovljeni.
+## A1 (`e7f27ca0`) — jedno pravilo posle prekida (`engine/breakRamp.ts`, u replan i plan)
+- Dugi ≤ max(+20 min, +15 %) od poslednjeg odrađenog (6 nedelja); prvi brzi svake vrste u 14 dana ≤ 70 % i ≤ odrađeni
+  (razlika u hlađenje); blok ≤ odrađeni blok; nedelja posle rasterećenja ≤ +25 % i ≤ 1,2 × najveće od tri.
+- Posle neplanirane trke povratak po nedeljama po dužini trke (≤ 75 min 85 %; ≤ 2 h 60/80 %; ≤ 3 h 50/65/80 %; duže
+  40/55/70/85 %), dan posle duge trke odmor; pravila „70 %"/`afterLongRace` ne važe uz raspored. Svojstvo nad svim
+  distancama `distances/breakRamp.test.ts`.
+- HM s07 dugi 70→110 → 70→90→110; MAR s12 3 h 07 → 2 h 22; MAR s17/s18 ned 1 18→32 / 22→38 km; vlasnik-v2 dugi
+  6,5/8,5/11,5/13,5/15 km. Otisci: 5K p15, MAR p15 (prvi brzi posle povrede 70 %).
+## A2 (`9cd6dee1`) — put ≠ bolest, srazmerno danima
+- Put 5–10 dana: jedna nedelja 87,5 % sa jednim kvalitetom (0,8), dugi ≤ 0,9 referentnog, druga = plan; bolest 5–6
+  dana 80/95 % (7–10: 75/90 %). Nedelja sa jednim kvalitetom zadržava podražaj bloka (5K s05: intervali ostaju).
+- HM s27 ned 1 44,3 → 49,7 km sa pragom; 5K s27 dobija rp u ned 1. NIJE: prognoza posle pauze (5K s27 26:15 → 26:22).
+## A3 (`eb753ab0`) — provera forme se pomera, ne briše
+- Posle rasporeda 3 dana (ne 10), kandidati: drugi kvalitet, dan kvaliteta, svaki lagan dan (HM s05, s25, s27
+  zadržavaju proveru); po osećaju provera sme da zameni tempo trke (10K s16: 31. 12.); upozorenje prati novi datum.
+## A4 (`70e90446`) — bol
+- Prvi trening iste vrste strogo manji (≤ 80 %; 10K s13 23 → 18 min); prva nedelja sa kvalitetom jedan kvalitet;
+  14 dana lagan ≤ 65 % dugog; Z3 se gasi posle 24 dana; ispod najmanje doze ostaje kvalitet (10K s15 ima–ima–ima);
+  dugi prvih 7 dana ≤ 60 % (MAR s13 116 → 92 min); svaka nedelja ≤ +25 % (HM s15 22 → 31 → 37 postaje 22 → 26,8 →
+  27,7 → 33,3). KNOWN skinuti: MAR s15 (MOTOR A4), 10K s13.
+## A5 (`70516a22`) — propušten najduži dugi / prenet blok
+- Bez nedelje gradnje do trke: sledeći dugi lagan ≈ 85 % propuštenog (MAR s28, s09: N−2 104 min sa blokom → 140 min
+  lagano ≈ 24 km). Prenet blok: kad bi nedelja imala tri podražaja, poslednji kvalitet pre dugog postaje lagan.
+## A6 (`468ecca9`, `cf064743`)
+- `mergeChanges`: jedan dan/nedelja jedan red u lancima; stari rezultat (> 14 dana) se ne objavljuje kao nov događaj
+  (tempa idu uz sledeći: HM s08, MAR s08/s26); posle trke prve 3 nedelje nisu „vršne" (5K s20), bez rasterećenja u
+  prve 4 kad raspored kreće < 65 % (HM s19 13,6 → 21,3 km u ned 4; dugi 35/35/35 → 40/55/55).
+## Namerno prepravljeni testovi (sažetak)
+returnSchedule, hm/r14 (treća nedelja i put), examples § 12 b/d, round4 E, hm+tenk r10, marathon scenarios (raspored
+umesto `afterLongRace`, `returnKeepLong` na granici lanca, R1 izmena N−2), marathon r9 KNOWN (s11/s12 silazak),
+paceDirection (po osećaju), Z3 u sva 4 scenarios.test (24 dana, +3 min), hm/gate (vlasnik-v2 skinut sa „ČEKA FORMU"),
+determinism timeout 15 s.
+## Lagan dan 18 min (nalaz organizatora)
+Proverom nad svim scenarijima: na stvarnim distancama lagan dan ispod poda (osim dana pred trku) postoji samo u
+rampi posle bola (HM s15, 20 min). 18 min je u sintetičkim podacima primera § 12 (bez `easyNotBelowMin`) — nije menjano.
