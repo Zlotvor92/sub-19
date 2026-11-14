@@ -177,7 +177,7 @@ test('V4 ugašen (nema reda u v4_pristup): isti čarobnjak pravi v2 plan, plan_v
   const v4 = installV4(backend, false);
   await page.goto('/');
   await expect.poll(() => backend.count('/rest/v1/v4_pristup'), SYNC).toBeGreaterThan(0);
-  await runWizard(page, INPUTS['10K'] as PlanInput);
+  await runWizard(page, INPUTS['10K']);
   await expect
     .poll(
       () =>
