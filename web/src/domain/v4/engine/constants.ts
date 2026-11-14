@@ -371,3 +371,5 @@ export const LONG_HABIT_GUESS_DAY_SHARE = 1.5;
 export const LONG_HABIT_WEEKS = 4;
 /** R20 B1: procena navike dugog (bez istorije) ne ograničava dugi kraći od ovoga. */
 export const LONG_GUESS_FREE_SEC = 5400;
+/** R20 (dopuna a): podražaj tempa trke — u silasku se ne briše pre drugog brzog treninga. */
+export const RACE_PACE_STIMULUS = 'tempo-trke';

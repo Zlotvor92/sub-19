@@ -145,6 +145,7 @@ export const SAFETY: SafetyNumbers = {
     weekBeforeMaxQuality: 2,
     weekBeforeMaxOfPeak: 0.6,
     weekMinus2MaxOfPeak: 0.85,
+    weekMinus1MaxOfPeak: 0.7,
     calendarMinus2MaxQuality: 2,
     raceWeekMaxOfPeak: 0.6
   },

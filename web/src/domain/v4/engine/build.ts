@@ -4,6 +4,7 @@
 import {
   EASY_FLOOR_MIN_RUN_DAYS,
   EASY_FLOOR_OVER_TARGET,
+  RACE_PACE_STIMULUS,
   QUALITY_MIN_WORK_SEC,
   QUALITY_SHORTEN_STEP_SEC,
   LONG_BLOCK_MIN_WEEK_SHARE,
@@ -2729,6 +2730,22 @@ export function runPass(
       const lastTwo =
         week.start === mondayOf(span.raceDate) ||
         week.start === addDays(mondayOf(span.raceDate), -7);
+      /* R20 (dopuna a): pre nego što lagan dan postane odmor, nedelja −1 sa dva brza treninga gubi DRUGI (ne tempo
+         trke) — on postaje najkraće lagano trčanje; jedini tempo trke ostaje */
+      const minusOneWeek = week.start === addDays(mondayOf(span.raceDate), -7);
+      if (minusOneWeek && measure().over > 0) {
+        const hard = [...recipes.entries()]
+          .filter(([, r]) => r.type === 'quality')
+          .sort(([a], [b]) => (a < b ? 1 : -1));
+        const drop = hard.find(
+          ([, r]) => r.type === 'quality' && r.def.stimulus !== RACE_PACE_STIMULUS
+        );
+        if (hard.length >= 2 && drop !== undefined) {
+          const next = new Map(recipes);
+          next.set(drop[0], { type: 'easy', sec: ctx.data.safety.minEasySec });
+          recipes = next;
+        }
+      }
       for (let k = 0; lastTwo && k < 3 && measure().over > 0; k += 1) {
         const easyDates = [...recipes.entries()]
           .filter(([date, r]) => r.type === 'easy' && date < addDays(span.raceDate, -1))
@@ -2748,7 +2765,24 @@ export function runPass(
         if (startLong?.type === 'long' && nowEntry !== undefined && nowEntry[1].type === 'long') {
           const [date, now] = nowEntry;
           const room = -measure().over * 60;
-          const sec = Math.min(startLong.sec, now.sec + room);
+          /* R20 (dopuna a): vraćeni prostor ne diže udeo dugog preko udela nedelje (dan je postao odmor) */
+          let otherKm = 0;
+          for (const [d0, r] of recipes) {
+            if (d0 === date || r.type === 'rest') continue;
+            otherKm += summarize(realize(r, ctx), ctx.pace).km;
+          }
+          const share = longShareFor(
+            ctx.data.safety,
+            ctx.decisions.level,
+            ctx.decisions.runDays.length,
+            otherKm,
+            false
+          );
+          const shareCap =
+            share > 0 && share < 1
+              ? (share / (1 - share)) * otherKm * ctx.pace.paces.easy
+              : Number.POSITIVE_INFINITY;
+          const sec = Math.min(startLong.sec, now.sec + room, Math.max(now.sec, shareCap));
           if (sec > now.sec + 60) {
             const next = new Map(recipes);
             next.set(date, { ...now, sec: Math.floor(sec / 60) * 60 });
