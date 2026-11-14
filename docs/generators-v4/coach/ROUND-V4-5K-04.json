@@ -1,0 +1,205 @@
+{
+ "distanca": "5K",
+ "krug": 4,
+ "stanje": "21d4b070",
+ "prethodno": "ef506f4c",
+ "profili": {
+  "p01": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p02": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 73.5,
+   "plan_stara": 75,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p03": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75,
+   "plan_stara": 75,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p04": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 79,
+   "plan_stara": 79,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p05": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 82,
+   "plan_stara": 82,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p06": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 65.5,
+   "plan_stara": 65.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p07": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 78.5,
+   "plan_stara": 78.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p08": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 73.5,
+   "plan_stara": 74.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p09": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 77.5,
+   "plan_stara": 78.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p10": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 76,
+   "plan_stara": 76,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p11": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  },
+  "p12": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 76.5,
+   "plan_stara": 76.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p13": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 75.5,
+   "plan_stara": 76.5,
+   "plan_za_ulaz_prethodna": 57.7,
+   "plan_za_ulaz": 74,
+   "prolazi": false
+  },
+  "p14": {
+   "grupa": "plafon",
+   "plan_stara_prethodna": 75.5,
+   "plan_stara": 76,
+   "plan_za_ulaz_prethodna": 69.8,
+   "plan_za_ulaz": 73.5,
+   "prolazi": false
+  },
+  "p15": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 75.5,
+   "plan_stara": 75.5,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": false
+  },
+  "p16": {
+   "grupa": "dozvoljava",
+   "plan_stara_prethodna": 80,
+   "plan_stara": 80,
+   "plan_za_ulaz_prethodna": null,
+   "plan_za_ulaz": null,
+   "prolazi": true
+  }
+ },
+ "plan_za_ulaz_kriterijumi": {
+  "p13": {
+   "bezbednost": 8.5,
+   "iskoriscenost": 6.5,
+   "iskrenost": 7,
+   "posle_trke": 7.5
+  },
+  "p14": {
+   "bezbednost": 8,
+   "iskoriscenost": 7,
+   "iskrenost": 7.5,
+   "posle_trke": 6.5
+  }
+ },
+ "prolaz": {
+  "dozvoljava": {
+   "prethodno": "4/14",
+   "sada": "4/14"
+  },
+  "plafon": {
+   "prethodno": "0/2",
+   "sada": "0/2"
+  }
+ },
+ "plan_prosek": {
+  "prethodno": 76.6,
+  "sada": 76.9
+ },
+ "B": {
+  "prethodno": 82.7,
+  "sada": 82.7,
+  "dogadjaji": {
+   "E1": 83.8,
+   "E2": 81.0,
+   "E3": 82,
+   "E4": 79.8,
+   "E5": 81.3,
+   "E6": 89.8,
+   "E7": 80.3
+  },
+  "scenariji": {
+   "s05": 82,
+   "s06": 81,
+   "s07": 81,
+   "s08": 80,
+   "s13": 82,
+   "s15": 79,
+   "s17": 82,
+   "s18": 82,
+   "s19": 82,
+   "s20": 79,
+   "s25": 81,
+   "s26": 79,
+   "s27": 81
+  }
+ },
+ "C": {
+  "prethodno": 80.0,
+  "sada": 82.7,
+  "parovi": {
+   "P1": 84,
+   "P2": 82,
+   "P3": 82
+  }
+ },
+ "zbirna": {
+  "prethodno": 79.1,
+  "sada": 79.8
+ }
+}
