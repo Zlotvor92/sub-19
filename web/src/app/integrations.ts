@@ -39,6 +39,7 @@ import { activeGenPlan, useTrainingStore } from '../stores/trainingStore';
 import { useV4Store } from '../stores/v4Store';
 import type { PlanEvent } from '../domain/v4/engine';
 import { createActivityImport } from '../services/strava/activityImport';
+import { v4ActivityKey } from '../services/storage/keys';
 import {
   commitAction,
   createSupabaseActivityStore,
@@ -249,7 +250,7 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
                 rest: v4Rest,
                 kv: deps.kv,
                 deviceId: deps.session.state.deviceId ?? 'uredjaj',
-                progressKey: (uid) => `sub19-v1:v4-aktivnost:${uid}`
+                progressKey: v4ActivityKey
               }),
               now
             }).run()

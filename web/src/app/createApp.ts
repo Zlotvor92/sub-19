@@ -55,6 +55,7 @@ import { migrateState, seedState, type PersistedState } from '../domain/state';
 import { adoptServerState } from '../domain/sync/payload';
 import {
   ALL_LOCAL_KEYS,
+  v4ActivityKey,
   SB_LOGIN_WINDOW_MS,
   SB_NONCE_OK_KEY,
   SB_STATE_KEY,
@@ -652,6 +653,8 @@ export function createApp(deps: AppDeps): App {
         .finally(() => void background.forgetAll());
       accountStorage.forget();
       engine.reset();
+      const forgotten = session.state.userId;
+      if (forgotten) kv.remove(v4ActivityKey(forgotten)); // F9: napredak uvoza aktivnosti za V4
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);
       hydratePersisted(seedState(deps.today()));

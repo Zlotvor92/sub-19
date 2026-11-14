@@ -14,6 +14,9 @@ export const SB_NONCE_OK_KEY = 'sub19_sb_nonce_ok';
 export const STRAVA_STATE_KEY = 'sub19_st_state';
 export const ICU_STATE_KEY = 'sub19-icu-state';
 /** Poslednji tab (sessionStorage: preživljava ponovno učitavanje posle ažuriranja, ne i zatvaranje). */
+/** F9: napredak uvoza aktivnosti za V4, po nalogu (`services/v4/activityStore`). Briše ga `forgetEverything`. */
+export const v4ActivityKey = (uid: string): string => `${LS_KEY}:v4-aktivnost:${uid}`;
+
 export const TAB_KEY = 'sub19-tab';
 /** Uvodni ekran viđen u ovoj sesiji (sessionStorage). */
 export const INTRO_SEEN_KEY = 'sub20-uvod';

@@ -494,7 +494,11 @@ describe('podaci: backup, uvoz, ranije verzije, zaboravljanje', () => {
 
   it('zaboravljanje: brišu se svi ključevi naloga i stanje, sesija je odjavljena', () => {
     const s = setup({ localState: withLinks() });
+    const uid = s.app.session.state.userId ?? '';
+    s.store.setItem(`sub19-v1:v4-aktivnost:${uid}`, '{"v":1}');
     s.app.forgetEverything();
+    expect(s.store.getItem(`sub19-v1:v4-aktivnost:${uid}`)).toBeNull();
+    expect(uid).not.toBe('');
     expect(s.store.getItem(LS_KEY)).toBeNull();
     expect(s.store.getItem(SB_KEY)).toBeNull();
     expect(useTrainingStore.getState().log).toEqual({});
