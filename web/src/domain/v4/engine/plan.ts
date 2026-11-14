@@ -306,7 +306,9 @@ export function createPlan(
   /** Probni plan za upozorenja: bez sopstvenih upozorenja (da se probni poziv ne ponavlja). */
   trial = false,
   /** R22 (B2): drugi prolaz — tempo trke u treninzima = tempo koji plan savetuje za trku (s/km). */
-  racePaceSec?: SecPerKm
+  racePaceSec?: SecPerKm,
+  /** R22 (B2): probni planovi prvog prolaza (dodatni dan, duža priprema) — drugi prolaz ih ne gradi ponovo. */
+  cache: ProbeCache = { probes: new Map() }
 ): PlanDoc {
   const weeks = countWeeks(startDate, goal.raceDate);
   const hist = historyBase(state, baseLoadOf(state));
@@ -468,6 +470,11 @@ export function createPlan(
   if (trial) return built;
   /* Šta bi dao još jedan dan trčanja uz isti datum trke — brojevi za predlog u upozorenju. */
   const withExtraDay = (): { peakKm: number; longKm: number; dayMin: number } | null => {
+    if (cache.extra !== undefined) return cache.extra;
+    cache.extra = extraDayProbe();
+    return cache.extra;
+  };
+  const extraDayProbe = (): { peakKm: number; longKm: number; dayMin: number } | null => {
     const extra = extraRunDay(availability.runDays);
     if (extra === null) return null;
     const more: Availability = {
@@ -502,7 +509,7 @@ export function createPlan(
   };
   /* Z7 (krug 7): šta bi dala duža priprema (isti start, trka kasnije) — predlog „planiraj N nedelja" samo kad probni
      plan stvarno menja nalaz */
-  const probes = new Map<number, { peakKm: number; longKm: number }>();
+  const probes = cache.probes;
   const withWeeks = (total: number): { peakKm: number; longKm: number } => {
     const hit = probes.get(total);
     if (hit !== undefined) return hit;
@@ -552,7 +559,13 @@ export function createPlan(
   const rp = trainingRacePace(out.header, finalRaceDay, data.distanceM);
   return rp === null
     ? out
-    : createPlan(state, goal, data, startDate, availability, false, rp);
+    : createPlan(state, goal, data, startDate, availability, false, rp, cache);
+}
+
+/** R22 (B2): probni planovi jednog nastanka plana (dele ih oba prolaza). */
+interface ProbeCache {
+  extra?: { peakKm: number; longKm: number; dayMin: number } | null;
+  probes: Map<number, { peakKm: number; longKm: number }>;
 }
 
 /** R22 (B2): tempo trke zadat planom (sporiji od tempa iz forme). */

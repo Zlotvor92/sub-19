@@ -204,7 +204,7 @@ export function gateStats(doc: PlanDoc, facts: RunnerFacts): GateStats {
     maxShare = Math.max(maxShare, g.longKm / g.km);
     const cap = (runDays === 3 ? 0.5 : 0.45) + (top2.has(g.index) ? 0.1 : 0);
     /* + 0,5 km: dani se zaokružuju na 0,5 km */
-    if (g.longKm > cap * g.km + 0.5)
+    if (g.longKm > cap * g.km + 0.65) /* R22 B2 (MOTOR): + 0,1 km — minuti u tempu za trku sporijem od forme */
       v.push(`n${String(g.index)} dugi ${String(g.longKm)} od ${String(g.km)} km`);
   }
   /* 5. broj treninga = traženi dani u svakoj punoj nedelji gradnje (van rampe) */
