@@ -154,4 +154,16 @@ describe('R25 — upozorenja u zaglavlju', () => {
       expect(bad).toEqual([]);
     }
   );
+
+  it.each(DIST.map((d) => [d.data.id] as const))(
+    '%s (3): svako upozorenje ima problem, posledicu i predlog',
+    (id) => {
+      const bad: string[] = [];
+      for (const c of CASES.get(id) ?? [])
+        for (const w of c.doc.header.warnings)
+          for (const k of ['problem', 'meaning', 'proposal'] as const)
+            if (w[k].trim() === '') bad.push(`${c.label}: ${w.code} bez ${k}`);
+      expect(bad).toEqual([]);
+    }
+  );
 });

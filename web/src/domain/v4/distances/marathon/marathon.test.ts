@@ -534,17 +534,14 @@ describe('provere K1–K8 (RUBRIC-V4 § A2) nad ispisom', () => {
     }
   });
 
-  it('K3: svako upozorenje kaže šta, koliko (broj) i šta se dobija; najviše dva predloga', () => {
+  it('K3: svako upozorenje kaže šta, koliko (broj) i šta se dobija; svako ima svoj predlog', () => {
     for (const p of RENDERED) {
-      /* R20 B6 (odluka organizatora): predlozi se rangiraju — najviše dva, ostali u „Pomoglo bi i: …" */
+      /* R25 (3, menja R20 B6): svako upozorenje zadržava svoj predlog; sažimanje viška („najviše tri stavke + jedna
+         „Pomoglo bi i"") radi samo ispis zaglavlja — v. `header24.test.ts` (c), `header25.test.ts` */
       for (const w of p.doc.header.warnings) {
-        if (w.severity === 'info' || w.proposal === '') continue;
-        expect(w.proposal, `${p.id} ${w.code}`).toMatch(/\d/);
+        expect(w.proposal, `${p.id} ${w.code}`).not.toBe('');
+        if (w.severity !== 'info') expect(w.proposal, `${p.id} ${w.code}`).toMatch(/\d/);
       }
-      const proposals = p.doc.header.warnings.filter(
-        (w) => w.severity !== 'info' && w.proposal !== ''
-      ).length;
-      expect(proposals, p.id).toBeLessThanOrEqual(2);
     }
   });
 

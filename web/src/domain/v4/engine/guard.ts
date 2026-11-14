@@ -1040,14 +1040,14 @@ export function warnings(input: WarningInput): Warning[] {
       .join(km(at?.peakKm ?? a.minPeakWeeklyKm))
       .split(LONG_AT)
       .join(km(at?.longKm ?? a.minLongKm));
-  return rankProposals(
-    out.map((w) => ({
-      ...w,
-      problem: fill(w.problem),
-      meaning: fill(w.meaning),
-      proposal: fill(w.proposal)
-    }))
-  );
+  /* R25 (3, menja R20 B6): svako upozorenje zadržava svoj predlog (AGENTS § V4 t. 6) — sažimanje viška u
+     „Pomoglo bi i: …" radi samo ispis zaglavlja (`render.ts`) */
+  return out.map((w) => ({
+    ...w,
+    problem: fill(w.problem),
+    meaning: fill(w.meaning),
+    proposal: fill(w.proposal)
+  }));
 }
 
 /** R20 (IV): upozorenje nivoa iz podatka distance — `texts['upozorenje.nivo.<nivo>.problem|znacenje|predlog']`,
@@ -1078,35 +1078,6 @@ export function levelWarning(
 function fillWarn(text: string, values: Readonly<Record<string, string>>): string {
   return text.replace(/\{(\w+)\}/g, (m, k: string) => values[k] ?? m);
 }
-
-const SEVERITY_RANK: Readonly<Record<string, number>> = { ozbiljno: 0, upozorenje: 1, info: 2 };
-/** R20 B6 (odluka organizatora): sve činjenice ostaju, a konkretni predlozi (upozorenja koja nisu „info") se
-    rangiraju po težini i redu; prikazuju se najviše dva, ostali se spajaju u jednu rečenicu „Pomoglo bi i: …" uz
-    drugi predlog. */
-export function rankProposals(list: Warning[]): Warning[] {
-  const ranked = list
-    .map((w, i) => ({ w, i }))
-    .filter(({ w }) => w.severity !== 'info' && w.proposal !== '')
-    .sort(
-      (a, b) => (SEVERITY_RANK[a.w.severity] ?? 3) - (SEVERITY_RANK[b.w.severity] ?? 3) || a.i - b.i
-    );
-  if (ranked.length <= MAX_PROPOSALS) return list;
-  const keepAt = ranked[MAX_PROPOSALS - 1]?.i ?? -1;
-  const extra = ranked.slice(MAX_PROPOSALS);
-  const moved = new Set(extra.map((x) => x.i));
-  const joined = extra
-    .map(({ w }) => w.proposal.replace(/\.$/, ''))
-    .map((t) => `${t.charAt(0).toLowerCase()}${t.slice(1)}`)
-    .join('; ');
-  return list.map((w, i) =>
-    moved.has(i)
-      ? { ...w, proposal: '' }
-      : i === keepAt
-        ? { ...w, proposal: `${w.proposal} Pomoglo bi i: ${joined}.` }
-        : w
-  );
-}
-const MAX_PROPOSALS = 2;
 
 /** Deo predloga `nema-podataka` o testu: distanca se čita iz plana (prva provera forme koju plan sadrži), inače iz
     biblioteke distance (najkraći unos vrste `test`); bez toga se test ne pominje. */
