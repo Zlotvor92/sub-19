@@ -292,6 +292,9 @@ export interface Decisions {
   baseKm?: number;
   /** Tegoba u poslednjih 12 meseci (S8e): bez unosa visokog udara prve 4 nedelje. */
   painCaution?: boolean;
+  /** R22 (B5): do ovog datuma bez unosa visokog udara (sprintevi uzbrdo) — tegoba potkolenice: ceo plan; staž kraći
+      od `HIGH_IMPACT_MIN_TENURE_WEEKS`: dok ga ne dostigne. Bez polja važi pravilo tegobe (prve 4 nedelje). */
+  highImpactFrom?: IsoDate;
   /** Krug 11 (stavka 19): godine trkača (iz `birthYear`) kad podatak distance (`ageRecovery`) za njih traži duži
       oporavak; tada brzi treninzi u nedelji imaju bar `qualityMinGapDays` dana razmaka (datum − datum). */
   ageYears?: number;
@@ -785,6 +788,8 @@ export interface LevelRule {
     maxBaseLoad?: LoadPoints;
     /** Staž (nedelje, iz `profile.yearsRunning`) najviše ovoliko; nepoznat staž ne ispunjava uslov (krug 4, T1). */
     maxTenureWeeks?: number;
+    /** R22 (B5): najduže istrčano (trčanje ili rezultat, m) ispod ovoga; ko je istrčao više, nije na ovom nivou. */
+    maxLongestRunM?: Meters;
   } & HistoryConditions;
 }
 

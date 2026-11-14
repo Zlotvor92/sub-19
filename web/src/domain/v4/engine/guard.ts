@@ -957,8 +957,8 @@ export function warnings(input: WarningInput): Warning[] {
       code: 'tegoba',
       severity: 'info',
       problem: 'U poslednjih 12 meseci si imao tegobu (bol pri trčanju).',
-      meaning:
-        'Prve 4 nedelje plan nema sprinteve uzbrdo ni druge treninge visokog udara, a obim raste sporije, da se isto mesto ne vrati.',
+      /* R22 (B5): tegoba potkolenice — bez visokog udara u celom planu */
+      meaning: `${d.highImpactFrom !== undefined && d.highImpactFrom > goal.raceDate ? 'Plan nema sprinteve uzbrdo ni druge treninge visokog udara' : 'Prve 4 nedelje plan nema sprinteve uzbrdo ni druge treninge visokog udara'}, a obim raste sporije, da se isto mesto ne vrati.`,
       proposal:
         'Ako se ista tegoba javi (bol 3/10 ili više, ili raste tokom trčanja), prekini trening, upiši bol u aplikaciju i javi se lekaru ili fizioterapeutu ako ne prođe za 7 dana.'
     });

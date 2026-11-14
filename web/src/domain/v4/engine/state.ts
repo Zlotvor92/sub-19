@@ -27,7 +27,7 @@ import { validate } from './guard';
 import { derivedPauses } from './pauses';
 import { declaredForm } from './formFallback';
 import { paceCtxOf, rollDay, runLoad, summarize } from './load';
-import { countWeeks, pickLevel, pickTemplate } from './template';
+import { countWeeks, longestRunOf, pickLevel, pickTemplate } from './template';
 import type {
   Availability,
   BuildStateFn,
@@ -278,7 +278,8 @@ function plannedLoads(
     beginner: facts.profile.beginner === true,
     vdot: form.current.vdot,
     baseLoad,
-    ...history
+    ...history,
+    longestRunM: longestRunOf(facts.runs, facts.profile.recentResult)
   });
   const weeks = countWeeks(start, goal.raceDate);
   const picked = pickTemplate(data, level, weeks, runDays);

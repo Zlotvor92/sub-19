@@ -25,7 +25,7 @@ import {
   recentLoad,
   refWeekKmBefore
 } from './state';
-import { countWeeks, expandTemplate, pickLevel, pickTemplate } from './template';
+import { countWeeks, expandTemplate, longestRunOf, pickLevel, pickTemplate } from './template';
 import {
   type Adjustment,
   type Availability,
@@ -322,7 +322,8 @@ export function createPlan(
     vdot: form.vdot,
     baseLoad,
     recentQualityWeeks: state.recentQualityWeeks,
-    weeksSincePause: state.weeksSincePause
+    weeksSincePause: state.weeksSincePause,
+    longestRunM: longestRunOf(state.runs, state.profile.recentResult)
   });
   const picked = pickTemplate(data, level, weeks, availability.runDays.length);
   if (picked === null) throw new Error('DistanceData bez šablona');
@@ -386,6 +387,7 @@ export function createPlan(
       ? {}
       : { baseVolumeMin: hist.baseVolumeMin, baseKm: hist.baseKm ?? 0 }),
     ...((state.painHistory ?? []).length > 0 ? { painCaution: true } : {}),
+    ...highImpactFromOf(state, startDate, goal.raceDate),
     ...ageDecision(state, data, startDate),
     /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
     ...(state.recentQualityWeeks === null || state.recentQualityWeeks === undefined
@@ -582,6 +584,28 @@ function withRacePace(paces: Paces, racePaceSec: SecPerKm | undefined): Paces {
   return racePaceSec === undefined || racePaceSec <= paces.RP
     ? paces
     : { ...paces, RP: racePaceSec, rpBase: paces.RP };
+}
+
+/** R22 (B5): staž (nedelje) pre kog plan nema sprinteve uzbrdo. */
+const HIGH_IMPACT_MIN_TENURE_WEEKS = 10;
+/** R22 (B5): tegoba ovog dela tela isključuje unose visokog udara iz celog plana. */
+const SHIN_PART = /potkolen|cevanic|list/i;
+
+/** R22 (B5): od kog dana plan sme da ima unose visokog udara (sprintevi uzbrdo). */
+function highImpactFromOf(
+  state: RunnerState,
+  startDate: IsoDate,
+  raceDate: IsoDate
+): { highImpactFrom?: IsoDate } {
+  const dates: IsoDate[] = [];
+  if ((state.painHistory ?? []).some((p) => p.part !== undefined && SHIN_PART.test(p.part)))
+    dates.push(addDays(raceDate, 1));
+  const tenure = state.profile.yearsRunning === undefined ? null : state.profile.yearsRunning * 52;
+  if (tenure !== null && tenure < HIGH_IMPACT_MIN_TENURE_WEEKS)
+    dates.push(addDays(startDate, Math.ceil((HIGH_IMPACT_MIN_TENURE_WEEKS - tenure) * 7)));
+  if (dates.length === 0) return {};
+  if ((state.painHistory ?? []).length > 0) dates.push(addDays(startDate, 28));
+  return { highImpactFrom: dates.sort().at(-1) as IsoDate };
 }
 
 /** R22 (B3): udeo očekivanog napretka uz upozorenje `obim-za-nivo`. */

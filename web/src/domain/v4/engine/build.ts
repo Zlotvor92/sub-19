@@ -517,7 +517,11 @@ export function weekSlots(
   const noLongFrom = addDays(span.raceDate, -RACE_NO_LONG_DAYS);
   const runDays = usableRunDays(week.start, span, ctx);
   /* S8e (krug 4): tegoba u 12 meseci — prve 4 nedelje bez unosa visokog udara */
-  const cautious = d.painCaution === true && week.start < addDays(span.startDate, 28);
+  /* R22 (B5): tegoba potkolenice ili kratak staž — bez visokog udara do `highImpactFrom` */
+  const cautious =
+    d.highImpactFrom !== undefined
+      ? week.start < d.highImpactFrom
+      : d.painCaution === true && week.start < addDays(span.startDate, 28);
   const longWd =
     intent.long !== null && runDays.includes(d.longDay) && dateOf(d.longDay) < noLongFrom
       ? d.longDay

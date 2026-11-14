@@ -9,7 +9,7 @@ import { MAX_PEAK_OVER_BASE } from './templates';
 /** Nivo: prvo pravilo koje važi. Isti nivoi kao kod drugih distanci; „mali obim" je ispod ≈ 20 km nedeljno
     (≈ 2 h): 5 km nosi dva kvaliteta već od ≈ 20 km (ciljni p08 sa 3 dana i 35 km nosi dva mala). */
 export const LEVELS: LevelRule[] = [
-  { id: 'pocetnik-nov', when: { beginner: true, maxTenureWeeks: 8 } },
+  { id: 'pocetnik-nov', when: { beginner: true, maxTenureWeeks: 8, maxLongestRunM: 5000 } },
   { id: 'pocetnik', when: { beginner: true } },
   { id: 'povratnik', when: { maxWeeksSincePause: 8 } },
   { id: 'povratnik', when: { maxRecentQualityWeeks: 0 } },

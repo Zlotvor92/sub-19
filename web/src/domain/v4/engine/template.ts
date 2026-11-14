@@ -39,6 +39,14 @@ export function historyOk(
   );
 }
 
+/** R22 (B5): najduže istrčano (m): najduže trčanje iz istorije ili unet rezultat. */
+export function longestRunOf(
+  runs: readonly { distanceM: number }[],
+  result: { distanceM: number } | undefined
+): number {
+  return Math.max(0, result?.distanceM ?? 0, ...runs.map((r) => r.distanceM));
+}
+
 export function pickLevel(
   data: DistanceData,
   runner: {
@@ -48,6 +56,8 @@ export function pickLevel(
     recentQualityWeeks?: number | null | undefined;
     weeksSincePause?: number | null | undefined;
     yearsRunning?: number | undefined;
+    /** R22 (B5): najduže istrčano (m) iz trčanja i unetog rezultata. */
+    longestRunM?: number | undefined;
   }
 ): LevelId {
   for (const rule of data.levels) {
@@ -61,6 +71,7 @@ export function pickLevel(
       (runner.yearsRunning === undefined || runner.yearsRunning * 52 > w.maxTenureWeeks)
     )
       continue;
+    if (w.maxLongestRunM !== undefined && (runner.longestRunM ?? 0) >= w.maxLongestRunM) continue;
     if (!historyOk(w, runner)) continue;
     return rule.id;
   }
