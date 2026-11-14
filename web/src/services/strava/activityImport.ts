@@ -122,7 +122,7 @@ export function createActivityImport(deps: ActivityImportDeps): { run(): Promise
   const perPage = deps.perPage ?? PER_PAGE;
   const blind = deps.maxRequestsBlind ?? 50;
 
-  async function run(): Promise<ImportRun> {
+  async function runInner(): Promise<ImportRun> {
     const getWithLimits = deps.api.getWithLimits;
     if (getWithLimits === undefined) return { status: 'iskljuceno', requests: 0, stored: 0 };
     const p: ImportProgress = (await deps.store.load()) ?? {
@@ -252,6 +252,20 @@ export function createActivityImport(deps: ActivityImportDeps): { run(): Promise
     }
     await deps.store.save(p);
     return done('gotovo');
+  }
+
+  /** Greška skladišta (npr. pala mreža pri upisu u `aktivnost`) → „greska"; napredak je sačuvan do poslednje strane. */
+  async function run(): Promise<ImportRun> {
+    try {
+      return await runInner();
+    } catch (e) {
+      return {
+        status: 'greska',
+        requests: 0,
+        stored: 0,
+        error: e instanceof Error ? e.message : String(e)
+      };
+    }
   }
 
   return { run };
