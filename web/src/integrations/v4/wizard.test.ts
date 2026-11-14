@@ -81,3 +81,25 @@ describe('F9 korak 7 · čarobnjak → V4 plan', () => {
     });
   });
 });
+
+describe('F9 korak 7 · pomoćnici izmene', () => {
+  it('doneFromLog: samo status done', async () => {
+    const { doneFromLog } = await import('./manual');
+    expect([...doneFromLog({ a: { status: 'done' }, b: { status: 'skip' }, c: null })]).toEqual([
+      'a'
+    ]);
+  });
+  it('otisakOf: deterministički; premeštanje menja otisak', async () => {
+    const { otisakOf } = await import('./manual');
+    const { applyMove } = await import('./edits');
+    const r = makePlan({ distance: 'hm', answers: BASE, today: TODAY });
+    if (!r.ok) throw new Error('plan');
+    expect(otisakOf(r.doc, TODAY)).toBe(otisakOf(r.doc, TODAY));
+    const week = r.doc.weeks[1];
+    const [a, b] = week?.days ?? [];
+    if (!a || !b) throw new Error('dani');
+    const m = applyMove(r.doc, a.id, b.date, { today: TODAY, done: new Set() });
+    expect(m.ok).toBe(true);
+    if (m.ok) expect(otisakOf(m.doc, TODAY)).not.toBe(otisakOf(r.doc, TODAY));
+  });
+});

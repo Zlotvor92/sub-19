@@ -45,6 +45,7 @@ export {
   activeGenPlan,
   useActiveGenPlan,
   useHasPlan,
+  useV4Doc,
   useV4Warnings,
   useResolvedPlan,
   useTrainingStore

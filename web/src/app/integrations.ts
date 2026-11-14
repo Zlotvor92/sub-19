@@ -139,7 +139,10 @@ export interface Integrations {
     deviceId(): string;
     /** Radnja nad planom (`commitAction`) → `useV4Store.row`; uz upisan plan dopisuje i događaje (`manual-edit`…).
      *  `false` = nije sačuvano (mreža, odjava, sukob posle ponovljenih pokušaja). */
-    commit(action: PlanAction, events?: readonly PlanEvent[]): Promise<boolean>;
+    commit(
+      action: PlanAction,
+      events?: readonly PlanEvent[] | (() => readonly PlanEvent[])
+    ): Promise<boolean>;
   } | null;
 }
 
@@ -442,12 +445,16 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
           plan: v4Plan,
           events: v4Events,
           deviceId: (): string => deps.session.state.deviceId ?? 'uredjaj',
-          async commit(action: PlanAction, events: readonly PlanEvent[] = []): Promise<boolean> {
+          async commit(
+            action: PlanAction,
+            eventsOf: readonly PlanEvent[] | (() => readonly PlanEvent[]) = []
+          ): Promise<boolean> {
             const owner = deps.accountKey?.();
             const device = deps.session.state.deviceId ?? 'uredjaj';
             const r = await commitAction(v4Plan, action, device).catch(() => null);
             if (r === null || !r.ok || deps.accountKey?.() !== owner) return false;
             useV4Store.getState().set({ row: r.row });
+            const events = typeof eventsOf === 'function' ? eventsOf() : eventsOf;
             if (r.wrote && events.length > 0)
               await v4Events
                 .append(

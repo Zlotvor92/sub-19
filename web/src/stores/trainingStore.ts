@@ -30,6 +30,7 @@ import {
 } from '../domain/personal';
 import { isOwnerNow, useIsOwner } from './owner';
 import { toResolved, warningText } from '../integrations/v4';
+import type { PlanDoc } from '../domain/v4/engine';
 import { useRecoveryStore } from './recoveryStore';
 import { useV4Store, v4DocOf, type V4State } from './v4Store';
 import { pickKnown, requestPersist, TRAINING_KEYS, type PersistMode } from './persistence';
@@ -247,6 +248,42 @@ export function useResolvedPlan(): ResolvedPlan | null {
     });
     if (v4 !== null) return v4;
     return plan ? safeResolve(plan, alts, moves) : null;
+  }, [plan, alts, moves, log, enabled, row, today, knee, vanPlana, vanPlanaV2]);
+}
+
+/** F9 korak 7: V4 dokument plana koji se upravo prikazuje (`plan_v4` ili preuzet uz isti otisak), ili `null` (stari
+ *  prikaz — i sve izmene idu starim putem). */
+export function useV4Doc(): PlanDoc | null {
+  const plan = useActiveGenPlan();
+  const alts = useTrainingStore((s) => s.alts);
+  const moves = useTrainingStore((s) => s.moves);
+  const log = useTrainingStore((s) => s.log);
+  const enabled = useV4Store((s) => s.enabled);
+  const row = useV4Store((s) => s.row);
+  const today = useV4Store((s) => s.today);
+  const knee = useRecoveryStore((s) => s.knee);
+  const vanPlana = useRecoveryStore((s) => s.vanPlana);
+  const vanPlanaV2 = useRecoveryStore((s) => s.vanPlanaV2);
+  return useMemo(() => {
+    if (!enabled) return null;
+    try {
+      return (
+        v4DocOf(
+          { enabled, row, today },
+          {
+            plan,
+            log,
+            alts,
+            moves,
+            vanPlana,
+            ...(vanPlanaV2 !== undefined ? { vanPlanaV2 } : {}),
+            knee
+          }
+        )?.doc ?? null
+      );
+    } catch {
+      return null;
+    }
   }, [plan, alts, moves, log, enabled, row, today, knee, vanPlana, vanPlanaV2]);
 }
 

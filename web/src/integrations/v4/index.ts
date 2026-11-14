@@ -50,4 +50,4 @@ export {
   type WizardAnswers,
   type WizardGoal
 } from './wizard';
-export { workoutFromAlt, type AltInput } from './manual';
+export { doneFromLog, otisakOf, workoutFromAlt, type AltInput } from './manual';
