@@ -131,12 +131,12 @@ UPOZORENJA
   pon 4. 1.  lagano 60 min — 8,6 km, 60 min
   uto 5. 1.  lagano 60 min — 8,6 km, 60 min
   sre 6. 1.  odmor
-  čet 7. 1.  lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 8,7 km, 60 min
+  čet 7. 1.  lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 9,4 km, 65 min
   pet 8. 1.  odmor
   sub 9. 1.  lagano 60 min — 8,6 km, 60 min
   ned 10. 1.  dugi 2 h 25 min lagano — 20,7 km, 2 h 25 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 55,2 km, 6 h 25 min, 5 treninga, brz rad 0 % vremena trčanja
+  Zbir: 55,9 km, 6 h 30 min, 5 treninga, brz rad 0 % vremena trčanja
 
 11. NEDELJA (od 11. 1.) — razvoj, gradnja; do trke 7 nedelja
   pon 11. 1.  lagano 55 min — 7,9 km, 55 min
@@ -362,11 +362,11 @@ Pauza zbog bolesti trajala je 7 dana (8–14. 2.), pa je povratak postepen: tren
   pon 4. 1.  lagano 60 min — urađeno 8,6 km, 60 min (7:00/km)
   uto 5. 1.  lagano 60 min — urađeno 8,6 km, 60 min (7:00/km)
   sre 6. 1.  odmor
-  čet 7. 1.  lagano 55 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 8,7 km, 60 min (6:57/km)
+  čet 7. 1.  lagano 60 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 9,4 km, 65 min (6:57/km)
   pet 8. 1.  odmor
   sub 9. 1.  lagano 60 min — urađeno 8,6 km, 60 min (7:00/km)
   ned 10. 1.  dugi 2 h 25 min lagano — urađeno 20,7 km, 2 h 25 min (7:00/km)
-  Urađeno: 55,2 km, 6 h 25 min, 5 treninga
+  Urađeno: 55,9 km, 6 h 30 min, 5 treninga
 
 11. NEDELJA (od 11. 1.) — razvoj, gradnja; do trke 7 nedelja
   pon 11. 1.  lagano 55 min — urađeno 7,9 km, 55 min (7:00/km)

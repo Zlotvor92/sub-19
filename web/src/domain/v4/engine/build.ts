@@ -2881,7 +2881,13 @@ export function runPass(
     const volumeMin = Math.round(plannedMin(shell.targetLoad) * 10) / 10;
 
     /* R19: nedelja rasporeda povratka nije merilo laganih dana sledeće nedelje (merilo ostaje nedelja pre pauze) */
-    if (week.intent.kind !== 'recovery' && week.intent.source === 'template' && schedule === null) {
+    if (
+      week.intent.kind !== 'recovery' &&
+      week.intent.source === 'template' &&
+      schedule === null &&
+      /* R19 (stavka 2d): nedelja pripremne trke (trka na mestu dugog) nije merilo laganih dana posle nje */
+      week.intent.long?.race === undefined
+    ) {
       previousEasy = easyRefOf(recipes, ctx) ?? previousEasy;
     }
     previousHard = null;

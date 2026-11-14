@@ -1033,7 +1033,6 @@ describe('R18 — najduži dugi nije kraći nego u b38a0ec4 (osim navedenih izuz
      ranijeg dugog uz pravila udela (R17 c, R18: 4 dana ≤ 45 %, dve najduže nedelje 50 %; 3 dana ≤ 50 %, tri najduže
      55 %; + 0,5 km zaokruživanja) i korak dugog 1,7 km (K7 ≤ 2 km) — lestvica N−7 → N−5 → N−3 */
   const EXCEPT: Record<string, string> = {
-    p10: '3 dana: N−3 155 min od 286 min nedelje (udeo 56,4 % minus višak bloka MP) = 21,8 km; 22,5 km traži udeo 0,568, a on p03 N−5 diže na 22,6 od 40 km (56,5 % > 55 % + 0,5 km)',
     p11: 'početnik 4 dana: N−7 ≤ 45 % od 41 km ≈ 19 km, pa N−5 ≤ 20,7 i N−3 ≤ 22,4 km (b38: 24,8 uz 57 % u N−7)',
     p13: 'hod-trk 3 dana, 10 nedelja: vrh 35 km × 55 % + 0,5 = 19,75 km < 19,9 (b38: 57 %)',
     p18: 'hod-trk 4 dana: N−7 ≤ 45 % od 44 km ≈ 20 km, pa N−3 ≤ 22 km uz korak 1,7 km (b38: 24 uz udeo 50 % u svim nedeljama)'
