@@ -835,3 +835,9 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Vlasnik (11:56): kad svi završe — stati, presek, plan. (12:20): krediti se troše prebrzo (40 % nedeljnog limita).
   Ništa se ne pokreće dok vlasnik ne odobri plan. Motor A je 12:45–18:00 stajao na limitu (i organizator do 17:59).
 - Stanje, otvoreno, tabovi, trošak i naučeno: `HANDOFF-4.md`.
+
+### 14. 11. 2026, 20:30 — predaja organizatora (nalog vlasnika)
+- Nov organizator (Fable): `session_01GnHHiXvCMLj5eDdp2ae77u`; čita `HANDOFF-4.md`. Prethodni
+  (`session_01GnHHiXbHoY1xUw1QNCS3LN`) više ne vodi i ne prima poruke.
+- U toku samo trener R23 `session_01GnHHiWfvagsgAreR6WJRvi` (štedljiva ocena `e1136a16`), obavešten o novom ID-ju.
+  Posle ocene se STAJE: vlasnik pravi plan.
