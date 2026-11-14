@@ -226,7 +226,8 @@ export function raceNotes(
   const target = h.goal.targetTimeSec;
   /* R20 B4 (menja R18 stavku 1): sporiji cilj je tempo za trku (MAR p17 4:15, ne 4:11); uz upozorenje „počni
      sporije" tempo je sredina očekivanog vremena i sporije granice raspona, nikad brži od potvrđene forme */
-  const slowerAdvice = !h.paces.byFeel && h.warnings.some((w) => w.proposal.includes('počni sporije'));
+  const slowerAdvice =
+    !h.paces.byFeel && h.warnings.some((w) => w.proposal.includes('počni sporije'));
   const midSec = Math.round((raceDay.expectedSec + raceDay.highSec) / 2);
   const cautiousSec =
     slowerAdvice && midSec > CAUTIOUS_MIN_OVER * confirmedSec ? midSec : confirmedSec;
@@ -350,8 +351,8 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
     (h.decisions.baseLoad * 60) / paceAtShare(h.form.start.vdot, ZONE_SHARE.E);
   const pc = paceCtxOf(h);
   const raises = doc.weeks.some(
-      (w) => w.intent.kind !== 'race' && weekCost(w, h.goal.raceDate, pc).km > startKm * 1.05
-    );
+    (w) => w.intent.kind !== 'race' && weekCost(w, h.goal.raceDate, pc).km > startKm * 1.05
+  );
   const why =
     gain > 0
       ? ` — ${fmtClock(gain)} brže od današnje prognoze, jer plan do trke ${raises ? 'podiže obim i dodaje' : 'dodaje'} rad u tempu trke`
@@ -425,7 +426,9 @@ function forecastChange(h: PlanHeader, state: RunnerState | undefined): string[]
     događaj može da pomeri prvi brzi trening, a rečenica ostaje u spisku promena. */
 const FAST_PHRASE = /prvi brzi trening je \d{1,2}\. \d{1,2}\.|brzih treninga do trke nema/;
 function currentFast(change: Change, doc: PlanDoc): Change {
-  const m = /^(pain):(\d{4}-\d{2}-\d{2})$|^(pause):\d{4}-\d{2}-\d{2}:(\d{4}-\d{2}-\d{2})$/.exec(change.eventId);
+  const m = /^(pain):(\d{4}-\d{2}-\d{2})$|^(pause):\d{4}-\d{2}-\d{2}:(\d{4}-\d{2}-\d{2})$/.exec(
+    change.eventId
+  );
   const anchor = m?.[2] ?? m?.[4];
   if (anchor === undefined || !FAST_PHRASE.test(change.reason)) return change;
   const day = doc.weeks
@@ -469,10 +472,10 @@ function changeLines(all: readonly Change[], doc: PlanDoc): string[] {
           c.what === 'napomena-trke'
             ? 'napomena za trku'
             : date !== undefined
-            ? `${fmtWeekday(date)} ${fmtDate(date)}`
-            : c.weekIndex !== undefined
-              ? `${String(c.weekIndex)}. nedelja`
-              : 'plan';
+              ? `${fmtWeekday(date)} ${fmtDate(date)}`
+              : c.weekIndex !== undefined
+                ? `${String(c.weekIndex)}. nedelja`
+                : 'plan';
         lines.push(`- ${where}: ${c.before} → ${c.after}`);
       }
     }

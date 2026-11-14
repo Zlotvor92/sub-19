@@ -735,14 +735,11 @@ export function warnings(input: WarningInput): Warning[] {
   /* krug 15 (M6): dodatni dan se nudi samo kad vrh stvarno raste (bar 5 %), a kad ni tada ne stiže do praga, rečenica
      to kaže */
   /* R20 B6: dodatni dan se ne predlaže trkaču sa < 3 meseca staža ni uz tegobu u poslednjih 12 meseci */
-  const tenureW =
-    state.profile.yearsRunning === undefined ? null : state.profile.yearsRunning * 52;
+  const tenureW = state.profile.yearsRunning === undefined ? null : state.profile.yearsRunning * 52;
   const extraOk =
     !(tenureW !== null && tenureW < EXTRA_DAY_MIN_TENURE_WEEKS) && d.painCaution !== true;
   const dayGain =
-    extraOk &&
-    trial !== null &&
-    trial.peakKm >= Math.max(peakKm + 0.5, TRIAL_MIN_GAIN * peakKm);
+    extraOk && trial !== null && trial.peakKm >= Math.max(peakKm + 0.5, TRIAL_MIN_GAIN * peakKm);
   const longGain = extraOk && trial !== null && trial.longKm >= longKm + 0.5;
   if (peakKm < NEAR_ENOUGH * a.minPeakWeeklyKm) {
     const fix = weeksThatFix(input, weeks, (p) => p.peakKm >= NEAR_ENOUGH * a.minPeakWeeklyKm);

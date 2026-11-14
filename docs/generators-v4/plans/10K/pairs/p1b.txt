@@ -9,7 +9,7 @@ Polazim od tvojih ≈ 35 km nedeljno (3 h 37 min trčanja).
 FORMA
 Polazna forma (1. 11.): 49:24
 Današnja prognoza (1. 11.): 49:24, pouzdanost niska
-Očekivano na dan trke: 48:54 (raspon 46:53–50:44) — 0:30 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 48:54 (raspon 46:53–50:55) — 0:30 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 91 dan (29. 6. – 27. 9.); posle petog dana forma polako opada — procena za 10 km: 46:00 → 49:24.
 - Polazna procena je iz rezultata koji si uneo: oko 46:00 za 10 km.
@@ -24,7 +24,7 @@ NAPOR PO ZONAMA (tempa još nisu pouzdana)
 Tempa još nisu pouzdana, pa su brzi treninzi zadati po osećaju; prva trka ili test daje tempa.
 
 UPOZORENJA
-- Ciljno vreme 45:05 je brže od onoga što tvoja forma i dužina pripreme sada pokazuju. Realan raspon na dan trke je 46:53–50:44; tempo za cilj verovatno ne bi mogao da se održi do kraja. Kreni na 48:54, a cilj vrati ako test ili pripremna trka pokažu da si brži za oko 23 s po kilometru.
+- Ciljno vreme 45:05 je brže od onoga što tvoja forma i dužina pripreme sada pokazuju. Realan raspon na dan trke je 46:53–50:55; tempo za cilj verovatno ne bi mogao da se održi do kraja. Kreni na 48:54, a cilj vrati ako test ili pripremna trka pokažu da si brži za oko 23 s po kilometru.
 - Tvoja obična trčanja iz poslednjih nedelja su u proseku brža od 6:10/km, a to je brža granica laganog tempa. Kad je svako trčanje srednje teško, telo se ne odmori za brze treninge i dugi, pa napredak staje, a rizik od povrede raste. Lagane dane trči sporije od 6:10/km — tako da možeš da pričaš u celim rečenicama; brzinu čuvaj za zadate treninge.
 - Nemam tvoj skorašnji rezultat; forma je procenjena iz 18 trčanja sa sata, pa je manje pouzdana. Brzi treninzi su zadati po osećaju umesto po tempu, a prognoza vremena trke ima širok raspon. Unesi rezultat trke iz poslednja 3 meseca, ili odradi proveru forme na 3 km koja je u planu 12. 12. — tempa i prognoza se tada računaju iz stvarnog rezultata.
 

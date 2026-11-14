@@ -3,7 +3,8 @@
    (b) napomena sa `onlyLongest` (oprema na najdužem dugom) stoji u planu najviše jednom;
    (c) `dan-izostavljen` ne navodi nedelje sužavanja (manje treninga tamo je namera). */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
-   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument,
+   @typescript-eslint/no-unsafe-return
    -- profili su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { buildState, plan, type DistanceData } from '../engine';
@@ -35,11 +36,14 @@ describe('R20 B6 — upozorenja i napomene (sve distance)', () => {
     for (const p of d.profiles) {
       for (const extra of [
         { profile: { yearsRunning: 0.1 } },
-        { painHistory: [{ date: '2026-06-01', part: 'koleno', level: 5, resolvedOn: '2026-07-01' }] }
+        {
+          painHistory: [{ date: '2026-06-01', part: 'koleno', level: 5, resolvedOn: '2026-07-01' }]
+        }
       ]) {
         const doc = build(d, p, extra);
         for (const w of doc.header.warnings)
-          if (/[Dd]odaj \d\. dan/.test(String(w.proposal))) bad.push(`${String(p.id)} ${String(w.code)}: dodatni dan`);
+          if (/[Dd]odaj \d\. dan/.test(String(w.proposal)))
+            bad.push(`${String(p.id)} ${String(w.code)}: dodatni dan`);
       }
       const doc = build(d, p);
       for (const rule of d.data.noteRules.filter((r) => r.onlyLongest === true)) {

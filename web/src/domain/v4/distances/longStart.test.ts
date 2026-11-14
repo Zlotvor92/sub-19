@@ -3,7 +3,8 @@
    (b) trkač koji redovno trči dugi od 18 km (svake druge nedelje, 12 nedelja): prvi dugi ≤ 18 + 2 km, a najduži dugi
        plana nije kraći od onoga što već trči (plafon dugog važi za rast, ne spušta ispod navike). */
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment,
-   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
+   @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument,
+   @typescript-eslint/no-unsafe-return
    -- profili su netipizovani */
 import { describe, expect, it } from 'vitest';
 import { buildState, paceCtxOf, plan, type DistanceData, type Run } from '../engine';
@@ -42,21 +43,20 @@ function addDays(iso: string, n: number): string {
 }
 
 describe('R20 B1 — dugi u nedelji 1 i navika dugog (sve distance)', () => {
-  it.each(DIST.map((d) => [d.data.id, d] as const))(
-    '%s: uneti najduži + 2 km',
-    (_id, d) => {
-      const bad: string[] = [];
-      for (const p of d.profiles.filter((x) => (x.profile.longestRecentKm ?? 0) > 0)) {
-        const facts = d.factsOf(p);
-        const res = plan(buildState(facts, p.goal, d.data, estimateForm), p.goal, d.data);
-        if (!res.ok) throw new Error(p.id);
-        const first = longs(res.doc).find((k) => k > 0) ?? 0;
-        if (first > p.profile.longestRecentKm + 2.5)
-          bad.push(`${String(p.id)} prvi dugi ${first.toFixed(1)} uz ${String(p.profile.longestRecentKm)}`);
-      }
-      expect(bad).toEqual([]);
+  it.each(DIST.map((d) => [d.data.id, d] as const))('%s: uneti najduži + 2 km', (_id, d) => {
+    const bad: string[] = [];
+    for (const p of d.profiles.filter((x) => (x.profile.longestRecentKm ?? 0) > 0)) {
+      const facts = d.factsOf(p);
+      const res = plan(buildState(facts, p.goal, d.data, estimateForm), p.goal, d.data);
+      if (!res.ok) throw new Error(p.id);
+      const first = longs(res.doc).find((k) => k > 0) ?? 0;
+      if (first > p.profile.longestRecentKm + 2.5)
+        bad.push(
+          `${String(p.id)} prvi dugi ${first.toFixed(1)} uz ${String(p.profile.longestRecentKm)}`
+        );
     }
-  );
+    expect(bad).toEqual([]);
+  });
 
   it.each(DIST.map((d) => [d.data.id, d] as const))(
     '%s: istorija 14/18 km — prvi ≤ 20 km, najduži ≥ 18 km',
@@ -66,10 +66,20 @@ describe('R20 B1 — dugi u nedelji 1 i navika dugog (sve distance)', () => {
       for (let k = 0; k < 12; k += 1) {
         const mon = addDays('2026-10-26', -7 * (11 - k));
         [1, 3, 5].forEach((day, j) =>
-          runs.push({ id: `e${String(k)}-${String(j)}`, date: addDays(mon, day), distanceM: 9000, durationSec: 9 * 430 })
+          runs.push({
+            id: `e${String(k)}-${String(j)}`,
+            date: addDays(mon, day),
+            distanceM: 9000,
+            durationSec: 9 * 430
+          })
         );
         const km = k % 2 === 0 ? 14 : 18;
-        runs.push({ id: `l${String(k)}`, date: addDays(mon, 6), distanceM: km * 1000, durationSec: km * 435 });
+        runs.push({
+          id: `l${String(k)}`,
+          date: addDays(mon, 6),
+          distanceM: km * 1000,
+          durationSec: km * 435
+        });
       }
       const facts = {
         ...d.factsOf(base),

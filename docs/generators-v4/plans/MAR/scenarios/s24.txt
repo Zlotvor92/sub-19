@@ -11,7 +11,7 @@ Polazim od tvojih ≈ 50 km nedeljno (5 h 50 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:12:03
 Današnja prognoza (1. 11.): 4:12:03, pouzdanost niska
-Očekivano na dan trke: 4:09:31 (raspon 3:45:58–4:19:26) — 2:32 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:09:31 (raspon 3:45:58–4:33:04) — 2:32 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 4:12:03 za 42,2 km. Prvi test ili trka je preciziraju.
 
@@ -241,7 +241,7 @@ Polazim od tvojih ≈ 50 km nedeljno (5 h 50 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:12:03
 Današnja prognoza (13. 12.): 4:11:55, pouzdanost srednja
-Očekivano na dan trke: 4:09:24 (raspon 3:51:23–4:19:18) — 2:31 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 4:09:24 (raspon 3:51:23–4:27:25) — 2:31 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 12. 12.: 3 km za 15:28. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 42,2 km: 4:12:03 → 4:11:55.
 - Polazna procena je iz laganog tempa koji si uneo: oko 4:12:03 za 42,2 km. Prvi test ili trka je preciziraju.
@@ -256,7 +256,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:58/km). Očekivano vreme na dan trke (4:09:24) traži 5:55/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 3 km za 15:28 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 4:09:24 (raspon 3:51:23–4:19:18).
+Rezultat 3 km za 15:28 (12. 12.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 4:09:24 (raspon 3:51:23–4:27:25).
 - plan: po osećaju → prag 5:35/km, tempo trke 5:58/km
 - upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 

@@ -200,7 +200,8 @@ describe('krug 18 — napomena za trku prati prognozu (sve distance)', () => {
       const text = renderPlan(r.before, r.beforeState, d.data);
       const exp = /Očekivano na dan trke: (\d[\d:]*)/.exec(text)?.[1];
       const aim = /potvrdi očekivani napredak, ciljaj [^(]*\((\d[\d:]*)\)/.exec(text)?.[1];
-      if (aim !== undefined && aim !== exp) bad.push(`s${String(s.no)} ciljaj ${aim}, očekivano ${String(exp)}`);
+      if (aim !== undefined && aim !== exp)
+        bad.push(`s${String(s.no)} ciljaj ${aim}, očekivano ${String(exp)}`);
     }
     expect(bad).toEqual([]);
   });

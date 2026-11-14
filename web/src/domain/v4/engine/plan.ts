@@ -124,12 +124,21 @@ export function adjustRaceDay(
     };
   }
   const f = d.raceDayWiden;
-  if (f === undefined) return r;
-  return {
-    lowSec: Math.round(r.expectedSec - (r.expectedSec - r.lowSec) * f),
-    expectedSec: r.expectedSec,
-    highSec: Math.round(r.expectedSec + (r.highSec - r.expectedSec) * f)
-  };
+  if (f !== undefined)
+    r = {
+      lowSec: Math.round(r.expectedSec - (r.expectedSec - r.lowSec) * f),
+      expectedSec: r.expectedSec,
+      highSec: Math.round(r.expectedSec + (r.highSec - r.expectedSec) * f)
+    };
+  return slowSideAtLeastFast(r);
+}
+
+/** R20 B5: raspon nikad naopako — spora strana nije uža od brze (nepouzdana forma češće ispadne sporija nego
+    brža). */
+function slowSideAtLeastFast(r: RunnerState['form']['raceDay']): RunnerState['form']['raceDay'] {
+  const fast = Math.max(0, r.expectedSec - r.lowSec);
+  const high = Math.max(r.highSec, r.expectedSec + fast);
+  return { ...r, highSec: Math.round(high) };
 }
 
 /** Plan počinje sutra, osim ako je zadat kasniji početak (§ 6.1). */

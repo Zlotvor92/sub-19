@@ -3225,7 +3225,8 @@ function onlyLongestNotes(weeks: PlanWeek[], state: RunnerState, ctx: BuildCtx):
     for (const w of out)
       for (const day of w.days) {
         const wk = day.workout;
-        if (wk === null || !rule.kinds.includes(wk.kind) || !(wk.notes ?? []).includes(text)) continue;
+        if (wk === null || !rule.kinds.includes(wk.kind) || !(wk.notes ?? []).includes(text))
+          continue;
         const sec = summarize(wk, ctx.pace).durationSec;
         if (best === null || sec > best.sec) best = { id: day.id, sec };
       }

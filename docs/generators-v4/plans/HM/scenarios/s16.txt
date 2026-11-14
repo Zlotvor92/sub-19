@@ -11,7 +11,7 @@ Polazim od tvojih ≈ 45 km nedeljno (5 h 15 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:02:10
 Današnja prognoza (1. 11.): 2:02:10, pouzdanost niska
-Očekivano na dan trke: 2:00:57 (raspon 1:49:37–2:05:54) — 1:13 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:00:57 (raspon 1:49:37–2:12:17) — 1:13 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Polazna procena je iz laganog tempa koji si uneo: oko 2:02:10 za 21,1 km. Prvi test ili trka je preciziraju.
 
@@ -217,7 +217,7 @@ Polazim od tvojih ≈ 45 km nedeljno (5 h 15 min trčanja).
 FORMA
 Polazna forma (1. 11.): 2:02:10
 Današnja prognoza (30. 11.): 2:02:06, pouzdanost srednja
-Očekivano na dan trke: 2:01:01 (raspon 1:51:57–2:05:58) — 1:05 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
+Očekivano na dan trke: 2:01:01 (raspon 1:51:57–2:10:05) — 1:05 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 28. 11.: 3 km za 15:28. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 21,1 km: 2:02:10 → 2:02:06.
 - Polazna procena je iz laganog tempa koji si uneo: oko 2:02:10 za 21,1 km. Prvi test ili trka je preciziraju.
@@ -232,7 +232,7 @@ TEMPA
 Tempo trke u treninzima je tvoja današnja forma (5:47/km). Očekivano vreme na dan trke (2:01:01) traži 5:44/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 PROMENE
-Rezultat 3 km za 15:28 (28. 11.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 2:00:53 (raspon 1:51:49–2:05:50).
+Rezultat 3 km za 15:28 (28. 11.): tempa su sada izračunata iz ovog rezultata, umesto po osećaju; očekivano vreme trke je sada oko 2:00:53 (raspon 1:51:49–2:09:57).
 - plan: po osećaju → prag 5:35/km, tempo trke 5:47/km
 - upozorenje više ne važi: Nemam tvoj skorašnji rezultat ni trčanja sa sata, pa su forma i obim procenjeni.
 Prijavljen je bol (nivo 4): naredna 2 dana su odmor, zatim se do 10. 12. trči samo lagano, bez brzih deonica i bez brzog dela u dugom; dugi je do 14. 12. najviše tri četvrtine poslednjeg dugog, uzbrdica i kratkih brzih deonica do tada nema, a prvi brzi trening svake vrste posle toga ima manju dozu (prvi brzi trening je 17. 12.). Trči samo ako je bol najviše 2 od 10 i ne raste tokom trčanja; ako poraste na 4 ili više, ili ne prolazi za 7 dana, prekini trčanje i javi se lekaru ili fizioterapeutu.
