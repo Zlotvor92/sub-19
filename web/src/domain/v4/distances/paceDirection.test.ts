@@ -106,7 +106,12 @@ describe('krug 18 — pomerena provera forme (sve distance)', () => {
         const old = was.get(x.date);
         if (old?.kind === 'test') continue;
         if (race) bad.push(`s${String(s.no)} ${String(x.date)} provera posle prave trke`);
-        if (old?.kind === 'quality' && String(old.text).startsWith('tempo trke'))
+        /* R20 (A3): trkaču po osećaju provera sme da zameni tempo trke (inače otpada bez zamene) */
+        if (
+          old?.kind === 'quality' &&
+          String(old.text).startsWith('tempo trke') &&
+          r.after.header.paces.byFeel !== true
+        )
           bad.push(`s${String(s.no)} ${String(x.date)} provera umesto tempa trke`);
       }
     }

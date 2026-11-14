@@ -740,44 +740,55 @@ export function weekSlots(
     ];
     /* R18 (stavka 3, M5): pomerena provera ne zamenjuje trening u tempu trke — ide na mesto prvog drugog kvaliteta,
        a bez njega na lagan dan nedelje (ne uz tempo trke i ne na dan dugog) */
-    const otherQ = items.findIndex((x) => x.kind === 'quality' && !rpItem(x));
-    const easyDay = runDays
+    const otherQ = items.findIndex(
+      (x) => x.kind === 'quality' && (!rpItem(x) || ctx.pace.paces.byFeel)
+    );
+    /* R20 (A3): kandidati redom — mesto prvog drugog kvaliteta, dan kvaliteta, pa svaki lagan dan nedelje; prvi koji
+       staje u prozor pomeranja (ranije: samo prvi lagan dan, pa je provera otpadala i kad je u nedelji bilo mesta) */
+    const easyDays = runDays
       .map((x) => dateOf(x))
-      .find(
+      .filter(
         (x) =>
           !items.some((y) => y.date === x) &&
           (longWd === null || x !== dateOf(longWd)) &&
           !rpDates.some((r) => Math.abs(diffDays(r, x)) <= RP_TEST_GAP_DAYS)
       );
-    const at = otherQ;
     const wd = qualityDays[0];
-    const date =
-      at >= 0
-        ? items[at]?.date
-        : items.some((x) => x.kind === 'quality') || wd === undefined
-          ? easyDay
-          : dateOf(wd);
-    const replaced = at >= 0 ? items[at] : undefined;
-    const replacesOnlyRp = replaced !== undefined && rpItem(replaced);
-    const nearRp =
-      date !== undefined &&
-      rpDates.some((x) => x !== replaced?.date && Math.abs(diffDays(x, date)) <= RP_TEST_GAP_DAYS);
+    const candidates: { date: IsoDate; at: number }[] = [
+      ...(otherQ >= 0 && items[otherQ] !== undefined
+        ? [{ date: items[otherQ].date, at: otherQ }]
+        : !items.some((x) => x.kind === 'quality') && wd !== undefined
+          ? [{ date: dateOf(wd), at: -1 }]
+          : []),
+      ...easyDays.map((date) => ({ date, at: -1 }))
+    ];
     /* M4 (krug 5): pomerena provera ide u prvo RASTEREĆENJE posle prozora izmene, najkasnije 3 nedelje pred trku;
        bez takve nedelje otpada (plan to kaže) */
-    const restWeek =
-      (week.intent.kind === 'recovery' || forcedAnyWeek) &&
-      date !== undefined &&
-      date <= addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
-    const usable =
-      date !== undefined &&
-      restWeek &&
-      date < calmFrom &&
-      (forcedFrom === null || date >= forcedFrom) &&
-      (forcedUntil === null || date <= forcedUntil) &&
-      !replacesOnlyRp &&
-      !nearRp &&
-      (longWd === null || date !== dateOf(longWd));
-    if (date !== undefined && usable && runDays.some((x) => dateOf(x) === date)) {
+    const usableAt = (date: IsoDate, at: number): boolean => {
+      const replaced = at >= 0 ? items[at] : undefined;
+      /* R20 (A3): trkaču po osećaju provera daje tempa — sme da zameni i trening u tempu trke (inače otpada bez
+         zamene) */
+      const replacesOnlyRp = replaced !== undefined && rpItem(replaced) && !ctx.pace.paces.byFeel;
+      const nearRp = rpDates.some(
+        (x) => x !== replaced?.date && Math.abs(diffDays(x, date)) <= RP_TEST_GAP_DAYS
+      );
+      const restWeek =
+        (week.intent.kind === 'recovery' || forcedAnyWeek) &&
+        date <= addDays(span.raceDate, -MOVED_TEST_MIN_DAYS_BEFORE_RACE);
+      return (
+        restWeek &&
+        date < calmFrom &&
+        (forcedFrom === null || date >= forcedFrom) &&
+        (forcedUntil === null || date <= forcedUntil) &&
+        !replacesOnlyRp &&
+        !nearRp &&
+        (longWd === null || date !== dateOf(longWd)) &&
+        runDays.some((x) => dateOf(x) === date)
+      );
+    };
+    const pick = candidates.find((c) => usableAt(c.date, c.at));
+    if (pick !== undefined) {
+      const { date, at } = pick;
       const item: SlotItem = { kind: 'test', date, def: forcedTest.def, slot: forcedTest.slot };
       if (at >= 0) items[at] = item;
       else {
@@ -1925,6 +1936,7 @@ function fillReturnWeek(
 const EASY_FILL_STEP_SEC = 300;
 /** R19: najveće pomeranje provere forme posle kratke pauze (dana). */
 const RETURN_TEST_MAX_SHIFT_DAYS = 14;
+const RETURN_TEST_AFTER_SCHEDULE_DAYS = 3;
 
 /** Z2 (krug 7): provera ili kvalitet koji otpadne (spremnost, rampa) postaje lagan dan ≤ udela dugog te nedelje
     (65 %), ne dužine dugog (s14 ned 8, s05 ned 8, s16). Meri se prema KONAČNOM dugom nedelje. */
@@ -3075,7 +3087,6 @@ export function runPass(
           )
             end = w.rampEnd;
         }
-        pendingFrom = end === null ? null : addDays(end, RETURN_TEST_AFTER_RAMP_DAYS);
         /* R19 (odluka organizatora): posle kratke pauze provera se pomera najviše 2 nedelje; ako tu ne staje,
            otpada (rečenica u objašnjenju) */
         const fromSchedule = adjustments.some((a) => {
@@ -3088,6 +3099,12 @@ export function runPass(
           );
         });
         pendingUntil = fromSchedule ? addDays(day.date, RETURN_TEST_MAX_SHIFT_DAYS) : null;
+        /* R20 (A3): posle povratka po nedeljama (već dve nedelje postepeno) provera sme 3 dana posle rasporeda, ne
+           tek 10 — inače posle kratke bolesti nema mesta u 2 nedelje i otpada */
+        pendingFrom =
+          end === null
+            ? null
+            : addDays(end, fromSchedule ? RETURN_TEST_AFTER_SCHEDULE_DAYS : RETURN_TEST_AFTER_RAMP_DAYS);
       }
       const key = seenKey(final.workout, ctx);
       if (key !== null) seen.push({ date: final.date, key });

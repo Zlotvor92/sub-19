@@ -2468,9 +2468,18 @@ function textDates(text: string, doc: PlanDoc): IsoDate[] {
 }
 
 function freshDatedWarnings(doc: PlanDoc, state: RunnerState, data: DistanceData): PlanDoc {
-  const stale = doc.header.warnings.filter((w) =>
-    textDates(`${w.problem} ${w.meaning} ${w.proposal}`, doc).some((d) => d <= state.today)
+  /* R20 (A3): i upozorenje koje upućuje na proveru forme na dan koji je više nema (provera pomerena) */
+  const testOn = new Set(
+    doc.weeks.flatMap((w) => w.days).flatMap((d) => (d.workout?.kind === 'test' ? [d.date] : []))
   );
+  const stale = doc.header.warnings.filter((w) => {
+    const text = `${w.problem} ${w.meaning} ${w.proposal}`;
+    const dates = textDates(text, doc);
+    return (
+      dates.some((d) => d <= state.today) ||
+      (/prover/i.test(text) && dates.some((d) => !testOn.has(d)))
+    );
+  });
   if (stale.length === 0) return doc;
   const codes = new Set(stale.map((w) => w.code));
   const fresh = warnings({
