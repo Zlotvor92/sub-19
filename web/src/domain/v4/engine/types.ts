@@ -241,6 +241,8 @@ export interface Paces {
   I: SecPerKm;
   R: SecPerKm;
   RP: SecPerKm;
+  /** R22 (B2): tempo trke iz forme kad je `RP` tempo koji plan savetuje za trku (sporiji cilj ili oprezno). */
+  rpBase?: SecPerKm;
   /** true: forma je niske pouzdanosti — kvalitet se prikazuje kao napor dok ne dođe test ili trka. */
   byFeel: boolean;
 }

@@ -66,7 +66,7 @@ POSLE događaja je u fajlu scenarija.
 ## S13 — p07, E4: ned 7, bol u kolenu 4/10 posle praga (nedelja bloka)
 
 - Stanje: danas 2026-12-17; sadašnji obim 65 km nedeljno, 5 dana.
-- Događaj: Bol 4/10 (koleno) posle treninga 2026-12-17 („prag 2 × 12 min, oporavak 1:30 džog").
+- Događaj: Bol 4/10 (koleno) posle treninga 2026-12-17 („prag 2 × 11 min, oporavak 1:30 džog").
 
 ## S14 — p08, E4: ned 10, bol 4/10 posle kvaliteta (osnova)
 

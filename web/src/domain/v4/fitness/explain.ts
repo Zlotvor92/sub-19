@@ -67,6 +67,11 @@ export function explainStart(
   }
 }
 
+/** R22 (B1): polazna procena iz laganog tempa posle oprezne granice (R20 II) — jedan broj, jedna rečenica zašto. */
+export function explainStartEasyCapped(timeSec: Seconds, goalM: Meters): string {
+  return `Polazna procena je iz laganog tempa koji si uneo: oko ${clock(timeSec)} za ${km(goalM)}. Lagan tempo ne pokazuje koliko brzo možeš da trčiš trku, pa je procena namerno oprezna; prvi test ili trka je preciziraju.`;
+}
+
 export interface ResultContext {
   /** Deo razlike koji je usvojen (0–1). */
   k: number;

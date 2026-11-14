@@ -13,7 +13,7 @@ Polazna forma (1. 11.): 2:17:08
 Današnja prognoza (1. 11.): 2:17:08, pouzdanost niska
 Očekivano na dan trke: 2:15:55 (raspon 2:04:35–2:27:15) — 1:13 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Polazna procena je iz laganog tempa koji si uneo: oko 2:02:10 za 21,1 km. Prvi test ili trka je preciziraju.
+- Polazna procena je iz laganog tempa koji si uneo: oko 2:17:08 za 21,1 km. Lagan tempo ne pokazuje koliko brzo možeš da trčiš trku, pa je procena namerno oprezna; prvi test ili trka je preciziraju.
 
 NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
@@ -220,8 +220,8 @@ Polazna forma (1. 11.): 2:17:08
 Današnja prognoza (11. 1.): 2:02:08, pouzdanost srednja
 Očekivano na dan trke: 2:00:36 (raspon 1:56:39–2:05:52) — 1:32 brže od današnje prognoze, jer plan do trke podiže obim i dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Test 28. 11.: 3 km za 15:28. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 21,1 km: 2:02:10 → 2:02:06.
-- Polazna procena je iz laganog tempa koji si uneo: oko 2:02:10 za 21,1 km. Prvi test ili trka je preciziraju.
+- Test 28. 11.: 3 km za 15:28. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 21,1 km: 2:17:08 → 2:02:06.
+- Polazna procena je iz laganog tempa koji si uneo: oko 2:17:08 za 21,1 km. Lagan tempo ne pokazuje koliko brzo možeš da trčiš trku, pa je procena namerno oprezna; prvi test ili trka je preciziraju.
 
 TEMPA
 - lagano 6:41–7:21/km

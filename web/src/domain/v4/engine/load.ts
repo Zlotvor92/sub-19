@@ -53,11 +53,19 @@ export function zonePace(zone: ZoneId, paces: Paces): SecPerKm {
   return zone === 'E' ? paces.easy : paces[zone];
 }
 
+/** R22 (B2): tempo po kom se DOZA (sekunde rada) pretvara u dužinu — za tempo trke tempo iz forme (`rpBase`), da
+    tempo za trku sporiji od forme ne menja km treninga. */
+export function dosePace(zone: ZoneId, paces: Paces): SecPerKm {
+  return zone === 'RP' && paces.rpBase !== undefined ? paces.rpBase : zonePace(zone, paces);
+}
+
 /** Težina zone (§ 5.1). RP nema stalnu: iz odnosa tempa trke i (nezaokruženog) praga forme, na 0,05. */
 export function zoneWeight(zone: ZoneId, ctx: PaceCtx): number {
   if (zone !== 'RP') return ZONE_WEIGHT[zone];
   const threshold = thresholdOf(ctx);
-  return Math.round(weightAtPace(ctx.paces.RP, threshold) / RP_WEIGHT_STEP) * RP_WEIGHT_STEP;
+  /* R22 (B2): oprezan tempo trke (tempo za trku) je oznaka tempa, ne lakši trening — težina ostaje iz forme */
+  const rp = ctx.paces.rpBase ?? ctx.paces.RP;
+  return Math.round(weightAtPace(rp, threshold) / RP_WEIGHT_STEP) * RP_WEIGHT_STEP;
 }
 
 /* R8 t. 20 (brzina): isti račun po ličnoj krivi se ponavlja za svaki korak — čista funkcija, pamti se po ulazu */
@@ -153,11 +161,21 @@ export function singleStepCost(step: SingleStep, ctx: PaceCtx): Cost {
     distanceM = standing || pace <= 0 ? 0 : (step.extent.durationSec / pace) * 1000;
   }
   const fast = step.role === 'work' || step.target.type === 'allOut';
+  /* R22 (B2): tempo trke zadat kao tempo za trku (sporiji od forme) je oznaka tempa — doza i opterećenje deonice
+     zadate dužinom mere se tempom iz forme (isti km, isti trening; duže traje samo na satu) */
+  const rpBase = ctx.paces.rpBase;
+  const doseSec =
+    rpBase !== undefined &&
+    step.target.type === 'zone' &&
+    step.target.zone === 'RP' &&
+    'distanceM' in step.extent
+      ? (step.extent.distanceM * rpBase) / 1000
+      : durationSec;
   return {
     durationSec,
     distanceM,
-    load: (durationSec / 60) * weight,
-    workSec: fast ? durationSec : 0
+    load: (doseSec / 60) * weight,
+    workSec: fast ? doseSec : 0
   };
 }
 

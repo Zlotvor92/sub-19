@@ -30,7 +30,9 @@ import {
   type Adjustment,
   type Availability,
   type Decisions,
+  type Paces,
   type Seconds,
+  type SecPerKm,
   type DistanceData,
   ENGINE_VERSION,
   type Goal,
@@ -45,6 +47,7 @@ import {
   type Weekday,
   type WeekIntent
 } from './types';
+import { trainingRacePace } from './racePace';
 import { zonePaces } from './vdot';
 
 /** E6 (krug 5): polazni obim = prosek poslednje 3 stvarne nedelje; uz bol ili pauzu u te 3 nedelje (ili bez
@@ -301,7 +304,9 @@ export function createPlan(
   startDate: IsoDate,
   availability: Availability = state.availability,
   /** Probni plan za upozorenja: bez sopstvenih upozorenja (da se probni poziv ne ponavlja). */
-  trial = false
+  trial = false,
+  /** R22 (B2): drugi prolaz — tempo trke u treninzima = tempo koji plan savetuje za trku (s/km). */
+  racePaceSec?: SecPerKm
 ): PlanDoc {
   const weeks = countWeeks(startDate, goal.raceDate);
   const hist = historyBase(state, baseLoadOf(state));
@@ -408,12 +413,15 @@ export function createPlan(
           raceDayMaxGain: data.safety.forecastMaxGainByLevel?.[level]
         })
       },
-      paces: zonePaces(
-        form.vdot,
-        data.distanceM,
-        form.confidence === 'niska',
-        data.safety.intervalPaceFloor,
-        transfer
+      paces: withRacePace(
+        zonePaces(
+          form.vdot,
+          data.distanceM,
+          form.confidence === 'niska',
+          data.safety.intervalPaceFloor,
+          transfer
+        ),
+        racePaceSec
       ),
       decisions,
       warnings: [],
@@ -526,7 +534,7 @@ export function createPlan(
   };
   const finalDecisions = { ...built.header.decisions, ...flags };
   const finalRaceDay = adjustRaceDay(state.form.raceDay, form.raceTimeSec, finalDecisions);
-  return {
+  const out: PlanDoc = {
     ...built,
     header: {
       ...built.header,
@@ -538,6 +546,20 @@ export function createPlan(
       )
     }
   };
+  /* R22 (B2): tempo trke u treninzima = tempo koji plan savetuje za trku (sporiji cilj, oprezno uz kaznu ili
+     „počni sporije") — plan se gradi još jednom sa tim tempom, da tekst, km i trajanje treninga nose isti broj */
+  if (racePaceSec !== undefined) return out;
+  const rp = trainingRacePace(out.header, finalRaceDay, data.distanceM);
+  return rp === null
+    ? out
+    : createPlan(state, goal, data, startDate, availability, false, rp);
+}
+
+/** R22 (B2): tempo trke zadat planom (sporiji od tempa iz forme). */
+function withRacePace(paces: Paces, racePaceSec: SecPerKm | undefined): Paces {
+  return racePaceSec === undefined || racePaceSec <= paces.RP
+    ? paces
+    : { ...paces, RP: racePaceSec, rpBase: paces.RP };
 }
 
 /** R20 (I, odluka organizatora): kazna prognoze kad upozorenje kaže da obim (`mali-obim`), dugi (`dugi-za-distancu`,

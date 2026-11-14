@@ -14,7 +14,7 @@ Polazna forma (1. 11.): 30:46
 Današnja prognoza (1. 11.): 30:46, pouzdanost niska
 Očekivano na dan trke: 30:30 (raspon 29:11–31:49) — 0:16 brže od današnje prognoze, jer plan do trke dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
-- Polazna procena je iz laganog tempa koji si uneo: oko 26:32 za 5 km. Prvi test ili trka je preciziraju.
+- Polazna procena je iz laganog tempa koji si uneo: oko 30:46 za 5 km. Lagan tempo ne pokazuje koliko brzo možeš da trčiš trku, pa je procena namerno oprezna; prvi test ili trka je preciziraju.
 
 NAPOR PO ZONAMA (tempa još nisu pouzdana)
 - lagano: možeš da pričaš u celim rečenicama, napor 3–4 od 10
@@ -157,8 +157,8 @@ Današnja prognoza (20. 12.): 26:39, pouzdanost srednja
 Očekivano na dan trke: 26:31 (raspon 25:42–27:28) — 0:08 brže od današnje prognoze, jer plan do trke dodaje rad u tempu trke
 Zašto je prognoza ovakva (najnovije prvo):
 - Bez trčanja 7 dana (14. 12. – 20. 12.); posle petog dana forma polako opada — procena za 5 km: 26:31 → 26:39.
-- Test 12. 12.: 1,5 km za 7:17. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 5 km: 26:32 → 26:31.
-- Polazna procena je iz laganog tempa koji si uneo: oko 26:32 za 5 km. Prvi test ili trka je preciziraju.
+- Test 12. 12.: 1,5 km za 7:17. Ovo je prvi rezultat koji imam, pa procena ima srednju pouzdanost dok je ne potvrdi još jedan test ili trka. Procena za 5 km: 30:46 → 26:31.
+- Polazna procena je iz laganog tempa koji si uneo: oko 30:46 za 5 km. Lagan tempo ne pokazuje koliko brzo možeš da trčiš trku, pa je procena namerno oprezna; prvi test ili trka je preciziraju.
 
 TEMPA
 - lagano 6:41–7:21/km

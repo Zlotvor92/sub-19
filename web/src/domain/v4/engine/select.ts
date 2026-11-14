@@ -14,7 +14,7 @@ import {
   WORK_DURATION_STEP_SEC
 } from './constants';
 import { fillText, fmtDistance, fmtDuration, fmtKm, fmtMinutes } from './format';
-import { type PaceCtx, singleStepCost, stepsCost, summarize, zonePace } from './load';
+import { type PaceCtx, singleStepCost, stepsCost, summarize, dosePace } from './load';
 import type {
   Decisions,
   DistanceData,
@@ -282,7 +282,7 @@ function unitOf(by: WorkUnit | undefined, ctx: BuildCtx): WorkUnit {
 /** Komad rada doze `sec` u jedinici mesta: 60 s ili 500 m (§ 4.3). Ako bi zaokruživanje spustilo komad ispod
     `minSec`, zaokružuje se naviše (četvrti krug). */
 function workExtent(sec: Seconds, zone: ZoneId, unit: WorkUnit, ctx: BuildCtx, minSec = 0): Extent {
-  const pace = zonePace(zone, ctx.pace.paces);
+  const pace = dosePace(zone, ctx.pace.paces);
   if (unit === 'trajanje') {
     const step = WORK_DURATION_STEP_SEC;
     const rounded = Math.max(step, roundTo(sec, step));
@@ -295,9 +295,9 @@ function workExtent(sec: Seconds, zone: ZoneId, unit: WorkUnit, ctx: BuildCtx, m
 }
 
 function extentSec(extent: Extent, zone: ZoneId, ctx: BuildCtx): Seconds {
-  return 'durationSec' in extent
-    ? extent.durationSec
-    : (extent.distanceM * zonePace(zone, ctx.pace.paces)) / 1000;
+  /* R22 (B2): doza deonice u tempu trke zadate dužinom meri se tempom iz forme (kao u `singleStepCost`) */
+  const pace = dosePace(zone, ctx.pace.paces);
+  return 'durationSec' in extent ? extent.durationSec : (extent.distanceM * pace) / 1000;
 }
 
 /** `n` komada rada sa oporavkom posle svakog osim poslednjeg. */
@@ -367,7 +367,7 @@ function underCap(
   }
   const step = WORK_DISTANCE_STEP_M;
   const m =
-    Math.floor(((cap / pieces / zonePace(zone, ctx.pace.paces)) * 1000) / step + 1e-9) * step;
+    Math.floor(((cap / pieces / dosePace(zone, ctx.pace.paces)) * 1000) / step + 1e-9) * step;
   return m >= step ? { distanceM: m } : extent;
 }
 
@@ -622,13 +622,13 @@ function longWorkout(recipe: Extract<Recipe, { type: 'long' }>, ctx: BuildCtx): 
   let steady: Extent;
   if ('distanceM' in total && unit === 'duzina') {
     const wanted = roundTo(
-      (recipe.dose / zonePace(main.zone, ctx.pace.paces)) * 1000,
+      (recipe.dose / dosePace(main.zone, ctx.pace.paces)) * 1000,
       WORK_DISTANCE_STEP_M
     );
     const most =
       Math.floor((total.distanceM * LONG_BLOCK_MAX_SHARE) / WORK_DISTANCE_STEP_M) *
       WORK_DISTANCE_STEP_M;
-    const pace = zonePace(main.zone, ctx.pace.paces);
+    const pace = dosePace(main.zone, ctx.pace.paces);
     const least =
       Math.ceil(((minDoseOf(def, ctx) / pace) * 1000) / WORK_DISTANCE_STEP_M - 1e-9) *
       WORK_DISTANCE_STEP_M;

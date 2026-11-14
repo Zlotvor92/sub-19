@@ -8,7 +8,7 @@ Polazim od tvojih ≈ 23 km nedeljno (2 h 44 min trčanja).
 FORMA
 Polazna forma (1. 11.): 4:20:38
 Današnja prognoza (1. 11.): 4:20:38, pouzdanost srednja
-Očekivano na dan trke: 4:36:01 (raspon 3:55:31–5:25:42) — 15:23 sporije od današnje forme, jer obim, dugi ili dužina pripreme u planu ne nose ovu distancu (v. upozorenja): druga polovina trke biće sporija nego što forma na kraćim deonicama pokazuje
+Očekivano na dan trke: 4:36:16 (raspon 3:55:24–5:26:22) — 15:38 sporije od današnje forme, jer obim, dugi ili dužina pripreme u planu ne nose ovu distancu (v. upozorenja): druga polovina trke biće sporija nego što forma na kraćim deonicama pokazuje
 Zašto je prognoza ovakva (najnovije prvo):
 - Test 1. 11.: 10 km za 56:02. Rezultat sa 10 km prenosim na 42,2 km uz umanjenje, jer uz oko 20 km nedeljno izdržljivost za dužu trku još nije na nivou brzine sa kraće. Procena za 42,2 km ostaje 4:20:38.
 - Polazna procena je iz rezultata koji si uneo: oko 4:20:38 za 42,2 km.
@@ -17,14 +17,14 @@ TEMPA
 - lagano 6:54–7:35/km
 - umereno 6:13/km
 - prag 5:42/km
-- tempo trke 6:11/km
+- tempo trke 7:08/km
 - intervali 5:13/km
 - brze deonice 4:55/km
-Tempo trke u treninzima je tvoja današnja forma (6:11/km). Očekivano vreme na dan trke (4:36:01) traži 6:32/km. Tempa se ubrzavaju kad trka ili test to potvrde.
+Tempo trke u treninzima je tempo koji plan savetuje za trku (7:08/km), oprezniji od današnje forme (6:11/km) — v. upozorenja. Očekivano vreme na dan trke (4:36:16) traži 6:33/km. Tempa se ubrzavaju kad trka ili test to potvrde.
 
 UPOZORENJA
-- Najveća nedelja u planu ima 30,3 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 30,3 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 22,6 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
-- Plan traje 24 nedelje, a najduži trening je 15,2 km — za ovu distancu treba bar 26 km ili 2 h 50 min, jer nedeljni obim od najviše 30,3 km ne nosi duži dugi. Druga polovina trke biće duža od svega što si trčao, pa prognoza ne računa napredak od obima, a trku treba početi oprezno. Podigni nedeljni obim laganim trčanjem (10–15 min više po danu) — kad nedelja pređe 60 km, dugi stiže do 26 km. Ili na isti datum trči kraću distancu (polumaraton) — za nju je ovaj dugi dovoljan. Trčiš tek oko 5 nedelja. Telo se na trčanje navikava sporije nego što forma raste: tetive i kosti traže više vremena od srca i pluća. Prognoza je zato manje pouzdana, a raspon širi. Pomoglo bi i: cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana.
+- Najveća nedelja u planu ima 29,9 km, a adekvatna priprema za ovu distancu traži bar 60 km nedeljno. Sa manjim obimom izdržljivost u drugoj polovini trke je slabija, pa tempo pada ranije nego što forma na kraćim deonicama pokazuje. Uz isti datum trke obim ne može bezbedno iznad 29,9 km nedeljno, pa trku počni sporije nego što forma na kraćim deonicama nudi. Duža priprema ovde ne pomaže: vrh plana se računa iz tvog sadašnjeg obima (oko 22,6 km nedeljno), ne iz broja nedelja — za sledeću trku uđi u pripremu sa većim redovnim obimom, da vrh pređe 60 km.
+- Plan traje 24 nedelje, a najduži trening je 15,2 km — za ovu distancu treba bar 26 km ili 2 h 50 min, jer nedeljni obim od najviše 29,9 km ne nosi duži dugi. Druga polovina trke biće duža od svega što si trčao, pa prognoza ne računa napredak od obima, a trku treba početi oprezno. Podigni nedeljni obim laganim trčanjem (10–15 min više po danu) — kad nedelja pređe 60 km, dugi stiže do 26 km. Ili na isti datum trči kraću distancu (polumaraton) — za nju je ovaj dugi dovoljan. Trčiš tek oko 5 nedelja. Telo se na trčanje navikava sporije nego što forma raste: tetive i kosti traže više vremena od srca i pluća. Prognoza je zato manje pouzdana, a raspon širi. Pomoglo bi i: cilj neka bude da završiš trku; za vreme trke odluči posle provere forme iz plana.
 - U poslednjih 12 meseci si imao tegobu (bol pri trčanju). Prve 4 nedelje plan nema sprinteve uzbrdo ni druge treninge visokog udara, a obim raste sporije, da se isto mesto ne vrati. Ako se ista tegoba javi (bol 3/10 ili više, ili raste tokom trčanja), prekini trening, upiši bol u aplikaciju i javi se lekaru ili fizioterapeutu ako ne prođe za 7 dana.
 - Tražio si 4 dana trčanja nedeljno, a plan u nekim nedeljama (nedelje 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 20) ima 3 treninga. Uz sadašnji obim od oko 22,6 km nedeljno, svi traženi dani bi i sa najkraćim trčanjem od 30 min podigli nedelju za više od 10 % odjednom, a nagli skok obima je čest put do povrede. Te nedelje trči kako piše — od 21. nedelje plan koristi sve tražene dane. Ako želiš da izlaziš sva 4 dana odmah, dodatni dan neka bude šetnja ili 30 min vrlo laganog trčanja.
 - Plan počinje dan posle testa (10 km za 56:02). Do 10. 11. traje oporavak: treninzi su kraći i lagani, da se telo vrati pre nego što opterećenje krene da raste. Prvi brzi trening je 14. 2.; ako se tog dana i dalje osećaš umorno, zameni ga laganim trčanjem od 30 min.
@@ -204,22 +204,22 @@ UPOZORENJA
   pon 1. 3.  odmor
   uto 2. 3.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,6 km, 40 min
   sre 3. 3.  odmor
-  čet 4. 3.  tempo maratona 2 × 4 min (6:11/km), oporavak 3 min džog — 4,7 km, 33 min
+  čet 4. 3.  tempo maratona 2 × 4 min (7:08/km), oporavak 3 min džog — 4,6 km, 33 min
   pet 5. 3.  odmor
   sub 6. 3.  lagano 35 min — 4,8 km, 35 min
   ned 7. 3.  dugi 80 min hod-trk: 10 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 11,1 km, 80 min
-  Zbir: 26,2 km, 3 h 8 min, 4 treninga, brz rad 4 % vremena trčanja
+  Zbir: 26,1 km, 3 h 8 min, 4 treninga, brz rad 4 % vremena trčanja
 
 19. NEDELJA (od 8. 3.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 8. 3.  odmor
-  uto 9. 3.  lagano 35 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 5,6 km, 40 min
+  uto 9. 3.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,9 km, 35 min
   sre 10. 3.  odmor
-  čet 11. 3.  tempo maratona 16 min u komadu (6:11/km) — 5,4 km, 36 min
+  čet 11. 3.  tempo maratona 16 min u komadu (7:08/km) — 5 km, 36 min
   pet 12. 3.  odmor
-  sub 13. 3.  lagano 35 min — 4,8 km, 35 min
+  sub 13. 3.  lagano 30 min — 4,1 km, 30 min
   ned 14. 3.  dugi 95 min hod-trk: 10 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 13,1 km, 95 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 28,9 km, 3 h 26 min, 4 treninga, brz rad 8 % vremena trčanja
+  Zbir: 27,1 km, 3 h 16 min, 4 treninga, brz rad 8 % vremena trčanja
 
 20. NEDELJA (od 15. 3.) — specifična priprema, rasterećenje; do trke 4 nedelje
   pon 15. 3.  odmor
@@ -235,12 +235,12 @@ UPOZORENJA
   pon 22. 3.  odmor
   uto 23. 3.  lagano 30 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 4,9 km, 35 min
   sre 24. 3.  odmor
-  čet 25. 3.  tempo maratona 2 × 9 min (6:11/km), oporavak 3 min džog — 6,1 km, 41 min
+  čet 25. 3.  tempo maratona 2 × 9 min (7:08/km), oporavak 3 min džog — 5,7 km, 41 min
   pet 26. 3.  odmor
   sub 27. 3.  lagano 30 min — 4,1 km, 30 min
   ned 28. 3.  dugi 1 h 50 min hod-trk: 10 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 15,2 km, 1 h 50 min
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
-  Zbir: 30,3 km, 3 h 36 min, 4 treninga, brz rad 8 % vremena trčanja
+  Zbir: 29,9 km, 3 h 36 min, 4 treninga, brz rad 8 % vremena trčanja
 
 22. NEDELJA (od 29. 3.) — završnica, sužavanje pred trku; do trke 2 nedelje
   pon 29. 3.  odmor
@@ -249,8 +249,8 @@ UPOZORENJA
   čet 1. 4.  lagano 30 min — 4,1 km, 30 min
   pet 2. 4.  odmor
   sub 3. 4.  lagano 30 min — 4,1 km, 30 min
-  ned 4. 4.  dugi 80 min hod-trk: 10 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 11,1 km, 80 min
-  Zbir: 24,2 km, 2 h 55 min, 4 treninga, brz rad 0 % vremena trčanja
+  ned 4. 4.  dugi 75 min hod-trk: 10 min lagano trčanje + 1 min brz hod, ponavljaj do kraja — 10,4 km, 75 min
+  Zbir: 23,5 km, 2 h 50 min, 4 treninga, brz rad 0 % vremena trčanja
 
 23. NEDELJA (od 5. 4.) — završnica, sužavanje pred trku; do trke 1 nedelja
   pon 5. 4.  odmor
@@ -270,7 +270,7 @@ UPOZORENJA
   pet 16. 4.  odmor
   sub 17. 4.  lagano 20 min — 2,8 km, 20 min
   ned 18. 4.  TRKA: maraton
-      napomena: Tempo za trku: 7:08/km (oprezno, sporija polovina raspona prognoze 5:00:52).
+      napomena: Tempo za trku: 7:08/km (oprezno, sporija polovina raspona prognoze 5:01:19).
       napomena: Prvih 5–10 km trči 7:13–7:18/km, mirno, iako ti se čini lako; od 10. do 32. km 7:08/km; poslednjih 10 km po osećaju. Zid (≈ 30.–35. km): ne staj — skrati korak, uzmi gel i vodu, drži ritam. Zagrevanje 5–10 min lagano hodanje i džog; doručak 3 h pre starta, isti kao pred najduži dugi.
       napomena: Ishrana na trci: gel svakih 35–40 min od 35. minuta, kao na dugim, piće na svakoj okrepi. Poslednja 2–3 dana pred trku više ugljenih hidrata (testenina, pirinač, hleb); na dan trke ništa novo — ni hrana, ni patike, ni odeća.
       napomena: Posle trke: 26 dana bez brzih treninga — prvih nekoliko dana odmor ili šetnja, zatim kratko lagano trčanje.

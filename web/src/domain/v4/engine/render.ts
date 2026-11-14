@@ -40,6 +40,7 @@ import type {
   Workout,
   ZoneId
 } from './types';
+import { raceAdvice } from './racePace';
 import { paceAtShare } from './vdot';
 
 export interface RenderOptions {
@@ -172,8 +173,18 @@ function raceTruth(
           goal: fmtClock(target),
           goalPace: pacePerKm(target, data.distanceM)
         });
+  /* R22 (B2): tempo trke u treninzima je tempo za trku — rečenica kaže zašto je sporiji od forme */
+  const formRP = h.paces.rpBase ?? h.paces.RP;
+  const basis = raceAdvice(h, raceDay, data.distanceM).basis;
+  const own =
+    h.paces.RP > formRP && (basis === 'cilj' || basis === 'oprezno')
+      ? line(data, basis === 'cilj' ? 'zaglavlje.tempo-trke-cilj' : 'zaglavlje.tempo-trke-oprezno', {
+          ...values,
+          formPace: fmtPace(formRP)
+        })
+      : line(data, 'zaglavlje.tempo-trke', values);
   return [
-    line(data, 'zaglavlje.tempo-trke', values),
+    own,
     second,
     line(data, 'zaglavlje.tempa-prate', values),
     ...(data.safety.minZoneGapSecPerKm !== undefined &&
@@ -206,8 +217,8 @@ function raceDayShown(
   return adjustRaceDay(state.form.raceDay, state.form.current.raceTimeSec, h.decisions);
 }
 
-/** R20 B4: oprezan tempo za trku tek kad je bar 1 % sporiji od potvrđene forme. */
-const CAUTIOUS_MIN_OVER = 1.01;
+/** R22 (B2): tempo za trku i tempo trke u treninzima do ovoliko s/km razlike je isti broj (onaj iz treninga). */
+const SAME_RACE_PACE_SEC = 3;
 
 export function raceNotes(
   doc: PlanDoc,
@@ -219,28 +230,20 @@ export function raceNotes(
   const race = doc.weeks
     .flatMap((w) => w.days)
     .find((d) => d.workout?.kind === 'race' && d.date === h.goal.raceDate);
-  /* S7 (krug 4): tempo trke iz DANAŠNJE potvrđene forme (po njoj su tempa plana); cilj samo kad je sporiji. Očekivani
-     napredak dobija drugu rečenicu — uslovljenu proverom forme iz plana koja je još pred trkačem. */
-  /* A18 (krug 9): jedan izvor — današnja prognoza iz zaglavlja (ne posebno računanje iz VDOT-a tempa) */
-  const confirmedSec = h.form.current.raceTimeSec;
-  const target = h.goal.targetTimeSec;
-  /* R20 B4 (menja R18 stavku 1): sporiji cilj je tempo za trku (MAR p17 4:15, ne 4:11); uz upozorenje „počni
-     sporije" tempo je sredina očekivanog vremena i sporije granice raspona, nikad brži od potvrđene forme */
-  /* R20 (I): i uz kaznu prognoze (obim/dugi/priprema ne nose distancu) */
-  const slowerAdvice =
-    !h.paces.byFeel &&
-    (h.warnings.some((w) => w.proposal.includes('počni sporije')) ||
-      (h.decisions.raceDayPenalty ?? 0) > 0);
-  const midSec = Math.round((raceDay.expectedSec + raceDay.highSec) / 2);
-  const cautiousSec =
-    slowerAdvice && midSec > CAUTIOUS_MIN_OVER * confirmedSec ? midSec : confirmedSec;
-  const fromGoal = target !== undefined && target >= cautiousSec;
-  const timeSec = fromGoal ? target : cautiousSec;
-  /* razlika do 1 % nije nov broj — ostaje potvrđena forma */
-  const cautious = !fromGoal && timeSec > confirmedSec;
-  /* krug 10 (stavka 9): jedan izvor tempa trke — isti broj kao tempo trke u treninzima (zaokruživanje bez razlike) */
+  /* S7 (krug 4), A18 (krug 9), R20 B4 / I: tempo za trku — R22 (B2): jedan izvor sa tempom trke u treninzima */
+  const adv = raceAdvice(h, raceDay, data.distanceM);
+  const fromGoal = adv.basis === 'cilj';
+  const cautious = adv.basis === 'oprezno';
+  /* R22 (B2): oprezan tempo trke u treninzima koji je posle bola ili pauze ostao sporiji od novog saveta je i tempo
+     za trku (oprez se ne ukida pre trke) */
+  const held =
+    cautious && h.paces.rpBase !== undefined && h.paces.RP > adv.pace + SAME_RACE_PACE_SEC;
+  const timeSec = held ? Math.round((h.paces.RP * data.distanceM) / 1000) : adv.timeSec;
+  /* krug 10 (stavka 9): isti broj kao tempo trke u treninzima (zaokruživanje bez razlike) */
   const pace =
-    fromGoal || cautious || h.paces.byFeel ? (timeSec / data.distanceM) * 1000 : h.paces.RP;
+    !h.paces.byFeel && (held || Math.abs(adv.pace - h.paces.RP) <= SAME_RACE_PACE_SEC)
+      ? h.paces.RP
+      : adv.pace;
   /* krug 10 (stavka 10): pomak starta kao udeo tempa kad ga distanca daje, inače sekunde */
   const startOffset = (k: 'from' | 'to'): number => {
     const share = data.safety.raceStartPaceOffsetShare?.[k];
@@ -256,7 +259,9 @@ export function raceNotes(
       ? 'tvoj cilj'
       : cautious
         ? 'oprezno, sporija polovina raspona prognoze'
-        : 'današnja forma',
+        : adv.basis === 'nov-cilj' && h.goal.targetTimeSec !== undefined
+          ? `današnja forma, brža od tvog cilja ${fmtClock(h.goal.targetTimeSec)} — nov cilj`
+          : 'današnja forma',
     feel: feelOf('RP', data, raceDay.expectedSec)
   };
   const out: string[] = [

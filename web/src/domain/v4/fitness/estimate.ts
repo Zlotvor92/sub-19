@@ -43,7 +43,8 @@ import {
   explainQuality,
   explainResult,
   explainUnusable,
-  explainStart
+  explainStart,
+  explainStartEasyCapped
 } from './explain';
 import { rollChronic, runLoad } from './load';
 import type {
@@ -487,13 +488,30 @@ export function estimateForm(
   };
 
   const startConfidence = confidenceAt(startDay);
+  /* R22 (B1): polazna procena iz laganog tempa se kaže opreznim brojem (R20 II) i kad kasnije stigne rezultat —
+     zaglavlje plana ima jedan polazni broj; rečenica prvog rezultata polazi od istog broja */
+  const easyStartCap =
+    init.source === 'lagani-tempo' && facts.profile.easyPaceSecPerKm !== undefined
+      ? easyRaceFloorSec(
+          facts.profile.easyPaceSecPerKm,
+          goalM,
+          tenureOf(facts) === 'pocetnik' || facts.profile.beginner === true
+        )
+      : 0;
+  const shownVdot = (v: Vdot): Vdot => {
+    const t = raceTimeSec(v, goalM);
+    return easyStartCap > t ? vdotFromResult(goalM, easyStartCap) : v;
+  };
   const history: FormChange[] = [
     {
       date: isoOf(startDay),
       signal: 'izjava',
       before: r2(init.vdot),
       after: r2(init.vdot),
-      reason: explainStart(init.source, init.vdot, goalM)
+      reason:
+        easyStartCap > raceTimeSec(init.vdot, goalM)
+          ? explainStartEasyCapped(easyStartCap, goalM)
+          : explainStart(init.source, init.vdot, goalM)
     }
   ];
   const record = (
@@ -733,7 +751,7 @@ export function estimateForm(
                 weeklyKm: transfer.weeklyKm,
                 personalBeta: transfer.personal
               },
-              before,
+              firstInApp ? shownVdot(before) : before,
               vdot,
               goalM
             )
@@ -965,7 +983,8 @@ export function estimateForm(
   });
   const est = estimateCore();
   const shift = shiftOf(est.current.raceTimeSec);
-  if (shift <= 0) return est;
+  if (shift <= 0)
+    return shiftOf(est.start.raceTimeSec) > 0 ? { ...est, start: capped(est.start) } : est;
   return {
     ...est,
     start: capped(est.start),

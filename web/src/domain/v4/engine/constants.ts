@@ -270,6 +270,10 @@ export const GUARD_TAPER_WORK_SHARE = 0.6;
 export const DEFAULT_TEXTS: Readonly<Record<string, string>> = {
   'zaglavlje.obim': 'Polazim od tvojih ≈ {km} km nedeljno ({time} trčanja).',
   'zaglavlje.tempo-trke': 'Tempo trke u treninzima je tvoja današnja forma ({pace}).',
+  'zaglavlje.tempo-trke-oprezno':
+    'Tempo trke u treninzima je tempo koji plan savetuje za trku ({pace}), oprezniji od današnje forme ({formPace}) — v. upozorenja.',
+  'zaglavlje.tempo-trke-cilj':
+    'Tempo trke u treninzima je tempo tvog cilja ({pace}); današnja forma nudi {formPace}.',
   'zaglavlje.cilj.dostizan':
     'Tvoj cilj {goal} traži {goalPace} — dostižan je (raspon na dan trke {low}–{high}).',
   'zaglavlje.cilj.na-ivici':

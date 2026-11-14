@@ -47,10 +47,14 @@ describe('krug 18 — smer tempa posle rezultata (sve distance)', () => {
         if (!(b.form.paceVdot > a.form.paceVdot + 0.05)) continue;
         checked += 1;
         const id = `s${String(s.no)}`;
+        /* R22 (B2): `RP` je tempo koji plan savetuje za trku (sporiji cilj ili oprezno) — smer forme se meri tempom
+           trke iz forme (`rpBase`) */
+        const form = (p: any, z: string): number => (z === 'RP' ? (p.rpBase ?? p.RP) : p[z]);
         for (const z of ZONES)
-          if (b.paces[z] > a.paces[z]) bad.push(`${id} ${z} ${a.paces[z]} → ${b.paces[z]}`);
+          if (form(b.paces, z) > form(a.paces, z))
+            bad.push(`${id} ${z} ${form(a.paces, z)} → ${form(b.paces, z)}`);
         const kT = b.paces.T / a.paces.T;
-        const kRP = b.paces.RP / a.paces.RP;
+        const kRP = form(b.paces, 'RP') / form(a.paces, 'RP');
         if (Math.abs(kT - kRP) > 0.012)
           bad.push(`${id} prag ${a.paces.T}→${b.paces.T}, RP ${a.paces.RP}→${b.paces.RP}`);
         const text = renderPlan(r.after, r.afterState, d.data);

@@ -44,7 +44,7 @@ import {
   taperEasyMax
 } from './decide';
 import { doneIds } from './done';
-import { paceCtxOf, stepsCost, summarize, type WorkoutSummary, zonePace } from './load';
+import { paceCtxOf, stepsCost, summarize, type WorkoutSummary, dosePace } from './load';
 import {
   adjustmentWindow,
   afterRace,
@@ -549,7 +549,7 @@ export function weekSlots(
       def,
       wanted: blocky ? wanted : 0,
       extra: blocky && zone !== null ? extraWeight(zone, ctx) : 0,
-      ...(blocky && zone !== null ? { pace: zonePace(zone, ctx.pace.paces) } : {})
+      ...(blocky && zone !== null ? { pace: dosePace(zone, ctx.pace.paces) } : {})
     };
   }
 
@@ -864,7 +864,7 @@ export function wantedKmExtra(slots: WeekSlots, ctx: BuildCtx): number {
   for (const item of slots.items) {
     if (item.kind !== 'quality') continue;
     const zone = mainZone(item.def.main);
-    if (zone !== null) minutes += over(item.wanted, zonePace(zone, ctx.pace.paces));
+    if (zone !== null) minutes += over(item.wanted, dosePace(zone, ctx.pace.paces));
   }
   return minutes;
 }
@@ -1626,7 +1626,13 @@ function layoutOnce(
   /* Dugi kakav će stvarno biti (posle zaokruživanja; blok je brži): merilo plafona laganog dana i po trajanju
      i po dužini — strože od ta dva. */
   const longRecipe = longDate === null ? undefined : fixed.get(longDate);
-  const longCost = longRecipe === undefined ? null : summarize(realize(longRecipe, ctx), ctx.pace);
+  /* R22 (B2): dugi se meri tempom trke iz forme (tempo za trku sporiji od forme ne produžava merilo laganih dana) */
+  const formPace =
+    ctx.pace.paces.rpBase === undefined
+      ? ctx.pace
+      : { ...ctx.pace, paces: { ...ctx.pace.paces, RP: ctx.pace.paces.rpBase } };
+  const longCost =
+    longRecipe === undefined ? null : summarize(realize(longRecipe, ctx), formPace);
   const realLong =
     longCost === null
       ? 0

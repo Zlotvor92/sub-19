@@ -108,6 +108,7 @@ import type {
   Warning,
   Workout
 } from './types';
+import { withTrainingRacePace } from './racePace';
 import { effortResult, raceTimeSec, zonePaces } from './vdot';
 
 type EventOf<K extends PlanEvent['kind']> = Extract<PlanEvent, { kind: K }>;
@@ -296,7 +297,7 @@ function sameDirection(next: Paces, prev: Paces, delta: number): Paces {
     T: pick(next.T, prev.T),
     I: pick(next.I, prev.I),
     R: pick(next.R, prev.R),
-    RP: pick(next.RP, prev.RP)
+    RP: pick(next.RP, prev.rpBase ?? prev.RP)
   };
 }
 
@@ -1551,8 +1552,18 @@ function noFasterInWindow(next: Paces, header: PlanHeader, today: IsoDate): Pace
     T: Math.max(next.T, old.T),
     I: Math.max(next.I, old.I),
     R: Math.max(next.R, old.R),
-    RP: Math.max(next.RP, old.RP)
+    RP: Math.max(next.RP, old.rpBase ?? old.RP)
   };
+}
+
+/** R22 (B2) uz A5 (krug 9): tempo za trku posle bola ili pauze (i u njihovom prozoru) nije brži od dosadašnjeg. */
+function racePaceNoFaster(next: Paces, header: PlanHeader, today: IsoDate, hold: boolean): Paces {
+  if (next.byFeel || header.paces.byFeel || next.RP >= header.paces.RP) return next;
+  const { rpBase: _base, ...shown } = header.paces;
+  void _base;
+  const held = noFasterInWindow(next, { ...header, paces: shown }, today);
+  if (!hold && held.RP === next.RP) return next;
+  return { ...next, RP: header.paces.RP, rpBase: next.rpBase ?? next.RP };
 }
 
 function transferOf(state: RunnerState, header: PlanHeader): Transfer | undefined {
@@ -2444,13 +2455,24 @@ export const replan: ReplanFn = (doc, state, events, data) => {
           : !better && rawDay.expectedSec < prevDay.expectedSec
             ? { ...rawDay, expectedSec: prevDay.expectedSec }
             : rawDay;
+    const nextHeader: PlanHeader = {
+      ...h,
+      decisions,
+      form: { ...h.form, current: state.form.current, raceDay },
+      appliedEvents: [...h.appliedEvents, ev.id]
+    };
     current = {
       ...candidate.doc,
       header: {
-        ...h,
-        decisions,
-        form: { ...h.form, current: state.form.current, raceDay },
-        appliedEvents: [...h.appliedEvents, ev.id]
+        ...nextHeader,
+        /* R22 (B2): tempo trke u treninzima = tempo koji plan savetuje za trku, i posle događaja; A5: u prozoru
+           bola ili pauze ni on se ne ubrzava */
+        paces: racePaceNoFaster(
+          withTrainingRacePace(nextHeader, raceDay, data.distanceM),
+          nextHeader,
+          state.today,
+          ev.kind === 'pain' || ev.kind === 'pause'
+        )
       }
     };
     if (silent.has(ev.id)) {
