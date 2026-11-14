@@ -210,7 +210,9 @@ test('V4: trčanje/hodanje (ne mogu 30 min) za 10K se ne odbija — plan uz upoz
   await runWizard(page, input);
   await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(1);
   await tab(page, 'Plan').click();
-  await expect(page.locator('.page.active .plan-warn')).toBeVisible();
+  await expect(
+    page.locator('.page.active .plan-warn').filter({ hasText: 'Na šta da paziš' })
+  ).toBeVisible();
 });
 
 test('V4 korak 8: Forma iz trčanja, „Nešto se desilo?" → pregled → Primeni / Ne menjaj, traka promena', async ({
