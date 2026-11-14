@@ -137,6 +137,11 @@ for (const [name, input] of Object.entries(INPUTS)) {
           {}) as object
       )
     ).toHaveLength(0);
+    // „Vrati raspored nedelje na plan" pod V4 → nov rev, nema više pomerenih dana
+    await sheet.getByRole('button', { name: 'Vrati raspored nedelje na plan' }).click();
+    await page.getByRole('button', { name: 'Da', exact: true }).click();
+    await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(3);
+    await expect(sheet.getByText(/pomeren sa/)).toHaveCount(0);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
 
@@ -148,7 +153,12 @@ for (const [name, input] of Object.entries(INPUTS)) {
     await alt.getByLabel('Kilometraža').fill('5');
     await alt.getByRole('button', { name: 'Sačuvaj' }).click();
     await expect(page.getByRole('dialog')).toBeHidden();
-    await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(3);
+    await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(4);
+    // vraćanje ručne izmene (dan dobija trening iz plana)
+    await page.getByRole('button', { name: /^Zameni ili skrati/ }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Vrati na plan' }).click();
+    await page.getByRole('button', { name: 'Da', exact: true }).click();
+    await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(5);
     await back(page).click();
 
     // unos trčanja: sutradan je prvi dan plana (motor počinje sutra)
@@ -166,7 +176,7 @@ for (const [name, input] of Object.entries(INPUTS)) {
         SYNC
       )
       .toBe(8);
-    expect(v4.row?.rev).toBe(3); // unos trčanja ne menja plan
+    expect(v4.row?.rev).toBe(5); // unos trčanja ne menja plan
   });
 }
 

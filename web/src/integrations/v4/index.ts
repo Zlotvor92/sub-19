@@ -51,3 +51,4 @@ export {
   type WizardGoal
 } from './wizard';
 export { doneFromLog, otisakOf, workoutFromAlt, type AltInput } from './manual';
+export { undoEdit, undoWeekMoves } from './undo';

@@ -13,7 +13,7 @@ import {
 import { fmtClock, parseTimeStr } from '../../domain/format';
 import { confirmAction } from '../../app/confirm';
 import { useResolvedPlan, useTrainingStore, useV4Doc } from '../../stores';
-import { applyEdit, workoutFromAlt } from '../../integrations/v4';
+import { applyEdit, undoEdit, workoutFromAlt } from '../../integrations/v4';
 import { commitV4Edit } from './v4Edit';
 import { predRowsForDay, storedRows } from '../../stores/dayActions';
 import { useUIStore } from '../../stores/uiStore';
@@ -78,6 +78,9 @@ export function AltSheet({ id }: { id: string }) {
   const v4Doc = useV4Doc();
   const storedAlt = useTrainingStore((s) => s.alts[id]);
   const existing = v4Doc ? undefined : storedAlt;
+  const v4Edited = !!v4Doc?.weeks.some((wk) =>
+    wk.days.some((d) => d.id === id && d.base !== undefined)
+  );
   const setAlt = useTrainingStore((s) => s.setAlt);
   const clearAlt = useTrainingStore((s) => s.clearAlt);
   const closeSheet = useUIStore((s) => s.closeSheet);
@@ -154,7 +157,7 @@ export function AltSheet({ id }: { id: string }) {
       <div className="sh-t">Izmeni trening</div>
       <div className="sh-s">
         N{day.w} · {dowShort(day.date)} {fmtDayMonthYear(day.date)}
-        {existing ? ' · izmenjen' : ''}
+        {existing || v4Edited ? ' · izmenjen' : ''}
       </div>
       {err ? (
         <div role="alert" className="note-src err">
@@ -268,7 +271,7 @@ export function AltSheet({ id }: { id: string }) {
           Sačuvaj
         </button>
       </div>
-      {existing ? (
+      {existing || v4Edited ? (
         <div className="btnrow">
           <button
             type="button"
@@ -276,6 +279,13 @@ export function AltSheet({ id }: { id: string }) {
             onClick={() => {
               void confirmAction('Vratiti ovaj dan na originalni trening iz plana?').then((ok) => {
                 if (!ok) return;
+                if (v4Doc) {
+                  void commitV4Edit(v4Doc, (doc, ctx) => undoEdit(doc, id, ctx)).then((e) => {
+                    if (e === null) closeSheet();
+                    else setErr(`Vraćanje nije uspelo: ${e}`);
+                  });
+                  return;
+                }
                 clearAlt(id);
                 closeSheet();
               });

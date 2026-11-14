@@ -3,7 +3,7 @@ import { dowShort, fmtDayMonth, fmtKm } from '../../domain/format';
 import { confirmAction } from '../../app/confirm';
 import { Icon } from '../../components/ui/icons';
 import { useResolvedPlan, useTrainingStore, useV4Doc } from '../../stores';
-import { applyMove } from '../../integrations/v4';
+import { applyMove, undoWeekMoves as undoV4WeekMoves } from '../../integrations/v4';
 import { commitV4Edit } from './v4Edit';
 
 /* POMERANJE TRENINGA: dodir na dan, pa dodir na drugi dan iste nedelje → zamena. Kad se otvori iz Detalja treninga, dan je već izabran, pa je
@@ -32,7 +32,12 @@ export function SwapSheet({ w, from }: { w: number; from?: string }) {
     });
   const isMoved = (d: (typeof week.days)[number]): boolean =>
     v4Doc ? d.origDate !== d.date : moves[d.id] != null;
-  const moved = !v4Doc && week.days.some((x) => !x.test && isMoved(x));
+  const v4Week = v4Doc?.weeks.find((x) => x.index === w);
+  const moved = v4Doc
+    ? !!v4Week?.days.some(
+        (d) => d.movedFrom !== undefined || (d.origin === 'manual' && d.base === undefined)
+      )
+    : week.days.some((x) => !x.test && isMoved(x));
   const selDay = sel ? plan.byId.get(sel) : undefined;
 
   const pick = (id: string): void => {
@@ -117,6 +122,19 @@ export function SwapSheet({ w, from }: { w: number; from?: string }) {
                 'Vratiti sve pomerene dane ove nedelje na originalni raspored iz plana?'
               ).then((ok) => {
                 if (!ok) return;
+                if (v4Doc) {
+                  setSel(null);
+                  void commitV4Edit(v4Doc, (doc, ctx) =>
+                    undoV4WeekMoves(
+                      doc,
+                      doc.weeks.findIndex((x) => x.index === w),
+                      ctx
+                    )
+                  ).then((e) => {
+                    if (e !== null) setErr(`Vraćanje nije uspelo: ${e}`);
+                  });
+                  return;
+                }
                 undoWeekMoves(w);
                 setSel(null);
               });
