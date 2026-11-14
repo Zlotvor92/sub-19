@@ -188,7 +188,13 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     const load = lerp(startLoad, 0.95, t ** 0.7) * (1 - (sh.single ? 0.6 : 0.3) * (1 - wave));
     /* 1–3 dana: dugi kreće bliže polaznom, da raste od prve nedelje (inače stoji na polaznom, a nedelja ne može da
        raste — lagani dani su vezani za dugi) */
-    const long = (sh.single || sh.gentle === true ? lerp(0.8, 0.95, t) : lerp(0.9, 0.97, t)) * wave;
+    /* R22 (trener MAR-04 § D3): spor nivo (p16 uz tegobu) kreće od sadašnjeg dugog, ne od njega + korak */
+    const long =
+      (sh.single || sh.gentle === true
+        ? lerp(0.8, 0.95, t)
+        : sh.noIntervals === true
+          ? lerp(0.65, 0.97, t)
+          : lerp(0.9, 0.97, t)) * wave;
     if (sh.gentle === true && w <= 2) {
       out.push(week(OSNOVA, 'build', load, { len: long }, [HILLS_SHORT, STRIDES]));
       continue;
@@ -215,7 +221,8 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     } else {
       osn += 1;
       /* brzina: smena uspona i kratkih brzih deonica (redosled u biblioteci) */
-      const second = S('brzina');
+      /* R22 (trener MAR-04 § D7): povratnik u osnovi jedan kvalitet — lagani dani 40–45 min umesto 30 (p15) */
+      const second = sh.gentle === true ? STRIDES : S('brzina');
       out.push(
         week(
           OSNOVA,
@@ -331,6 +338,8 @@ function regularTail(sh: Shape, n: number): WeekIntent[] {
 
 function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
   const fresh = sh.fresh === true;
+  /* R22 (trener MAR-04 § D6): hod-trk početnik umesto kratkog praga trči srednje dug lagan dan sa 2 × 8 min MP */
+  const pragP = (dose: number): StimulusSlot => (fresh ? S('lagano-rp') : S('prag-p', dose));
   const L = layout(n, fresh ? 3 : 4);
   const longStim = fresh ? 'dugi-hod' : 'dugi';
   /* R2/R4 (krug 12): nov ili spor početnik (p13, p18, P2 B) — dugi je vreme na nogama uz hod-trk, bez MP bloka */
@@ -364,7 +373,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
     const stimuli: StimulusSlot[] =
       w <= intro
         ? [w === 1 ? STRIDES6 : HILLS_SHORT, STRIDES]
-        : [S('prag-p', lerp(0.45, 0.9, t)), k % 2 === 0 ? HILLS_SHORT : STRIDES];
+        : [pragP(lerp(0.45, 0.9, t)), k % 2 === 0 ? HILLS_SHORT : STRIDES];
     /* početnik (jedan kvalitet): talas daju rasterećenja i N−6, kao kod 1–3 dana */
     const wave = WAVE_FEW[(w - 1) % WAVE.length] ?? 1;
     const load = lerp(startLoad, 0.93, t ** 0.7) * (1 - 0.3 * (1 - wave));
@@ -392,10 +401,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
         ]
       : [
           n < 12
-            ? week(RAZVOJ, 'build', 0.9, { len: 0.8, stimulus: longStim }, [
-                S('prag-p', 0.8),
-                STRIDES
-              ])
+            ? week(RAZVOJ, 'build', 0.9, { len: 0.8, stimulus: longStim }, [pragP(0.8), STRIDES])
             : week(
                 RAZVOJ,
                 'recovery',
@@ -415,7 +421,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
         len: 0.88,
         ...(n >= 20 ? { stimulus: longStim } : n >= 16 ? blockOf(0.36) : { stimulus: longStim })
       },
-      [S('prag-p', 1), STRIDES]
+      [pragP(1), STRIDES]
     ),
     /* N−6: talas — MP 2 × 3 km usred nedelje */
     week(
@@ -431,7 +437,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       fresh ? S('tempo-trke', 0.6) : STRIDES,
       STRIDES
     ]),
-    week(SPEC, 'recovery', 1, { len: 1, stimulus: longStim }, [S('prag-p', 0.45), STRIDES]),
+    week(SPEC, 'recovery', 1, { len: 1, stimulus: longStim }, [pragP(0.45), STRIDES]),
     /* N−3: najteža — najduži dugi (≈ 3 h – 3 h 15) sa blokom 8 km MP (≤ 55 min) */
     /* R18: blok 0,6 — višak km bloka uz korak dugog ne sme preći + 2 km / 12 % (K7) */
     week(SPEC, 'peak', 1, { len: 0.98, ...blockOf(n >= 16 ? 0.55 : 0.85) }, [

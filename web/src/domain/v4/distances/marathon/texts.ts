@@ -13,6 +13,7 @@ export const TEXTS: Record<string, string> = {
     'dugi {len}, poslednjih {dose} progresivno od laganog do tempa maratona{pace}',
   ubrzanja: 'lagano {len}, na kraju {n} × {rep} ubrzanja, oporavak {rec}',
   'usponi-kratki': 'lagano {len}, usred trčanja {n} × {rep} jako uzbrdo, nazad {rec}',
+  'lagano-rp': 'lagano {len}, usred trčanja {n} × {rep} u tempu maratona, oporavak {rec}',
 
   /* kvalitet */
   'r-200': 'brze deonice {n} × {rep}{pace}, oporavak {rec}',

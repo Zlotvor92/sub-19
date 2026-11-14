@@ -96,6 +96,25 @@ export const LIBRARY: WorkoutDef[] = [
     },
     text: 'ubrzanja'
   },
+  /* R22 (trener MAR-04 § D6): hod-trk početnik — četvrtak lagano sa 2 × 6 min tempa maratona usred trčanja umesto
+     kratkog praga (prvi rad zone ≤ 70 % vrha, K7); od N−6 MP raste kao do sada */
+  {
+    id: 'lagano-rp',
+    kind: 'easy',
+    stimulus: 'lagano-rp',
+    tags: [],
+    impact: 'obican',
+    requires: {},
+    main: {
+      kind: 'add-on',
+      zone: 'RP',
+      count: 2,
+      rep: { durationSec: 360 },
+      recovery: jog(180),
+      place: 'sredina'
+    },
+    text: 'lagano-rp'
+  },
   {
     id: 'usponi-kratki',
     kind: 'easy',

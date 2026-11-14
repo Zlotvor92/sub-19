@@ -85,8 +85,8 @@ export const SAFETY: SafetyNumbers = {
   longShareByRunDays: {
     /* početnik: ciljni p11 (4 dana) najduži 27 km = 52 % vrha od 52 km, p12 (5 dana) 41 % — dugi je jedini put do
        27 km kad je obim mali; hod-trk spušta udar */
-    /* R20: dugi po vremenu — p11 N−5 2 h 52, N−3 3 h 03 (trener MAR-03 § D6) */
-    pocetnik: { ...LONG_SHARE, '4': 0.455, '5': 0.43, '6': 0.4 },
+    /* R20: dugi po vremenu — p11 N−5 2 h 52, N−3 3 h 03 (trener MAR-03 § D6); R22: 0,465 — 2 h 20 ne stoji tri nedelje */
+    pocetnik: { ...LONG_SHARE, '4': 0.465, '5': 0.43, '6': 0.4 },
     /* hod-trk: vreme na nogama (p13 3 dana, 10 nedelja) — dugi nosi više nedelje */
     /* R20: p18 jedan dugi 3 h hod-trk u N−3 */
     'pocetnik-nov': { ...LONG_SHARE, '4': 0.445, '5': 0.43, '6': 0.4 },

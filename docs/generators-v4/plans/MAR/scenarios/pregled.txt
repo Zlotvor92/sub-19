@@ -25,7 +25,7 @@ s22 p08 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 3:32:21 (
 s23 p11 E6: ništa se nije desilo do kraja ned 6 — promena: 0; forma 4:20:37 (srednja); nalazi čuvara posle: 0
 s24 p12 E6: ništa se nije desilo do kraja ned 6 — promena: 2; forma 4:11:55 (srednja); nalazi čuvara posle: 0
 s25 p07 E7: bolest 5 dana u ned 3, pa propušten dugi 10 dana kasnije — promena: 22; forma 3:32:21 (srednja); nalazi čuvara posle: 0
-s26 p11 E7: bol 4/10 u ned 13, pa trka 10 km dve nedelje kasnije — promena: 25; forma 4:23:37 (srednja); nalazi čuvara posle: 0
+s26 p11 E7: bol 4/10 u ned 13, pa trka 10 km dve nedelje kasnije — promena: 20; forma 4:23:37 (srednja); nalazi čuvara posle: 0
 s27 p08 E7: propuštena dva kvaliteta (ned 13–14), pa put 6 dana — promena: 12; forma 3:32:54 (srednja); nalazi čuvara posle: 0
 s28 p07 MAR: propušten najduži dugi (ned 9, 3 nedelje pred trku) — promena: 1; forma 3:32:24 (srednja); nalazi čuvara posle: 0
 s29 p08 MAR: bolest 7 dana u poslednje 4 nedelje (ned 21, najteža) — promena: 4; forma 3:33:26 (srednja); nalazi čuvara posle: 0
