@@ -57,3 +57,18 @@ Organizator ≈ 47+; motori R18 27, R20-B 44, R20-A ≥ 8, R22-A 36, R22-B ≥ 1
 - Trener razvrstava plafon ulaza strože od organizatora (11, ne 24) — većina slabih profila je slaba zbog generatora.
 - Najveća poluga po treneru: PODATAK distance (rast umesto platoa, lagan ≥ 30 min), ne motor.
 - Organizator na 600 000+ tokena je skup po poruci; javljati vlasniku zbirno, ne po svakoj poruci taba.
+
+## Dopuna pri predaji (14. 11. 2026, 20:25 po Beogradu)
+- Vlasnik je tražio ocenu stanja posle R22 i zatim predaju organizacije novom tabu.
+- U TOKU: trener R23 (Fable) `session_01GnHHiWfvagsgAreR6WJRvi` — štedljiva ocena stanja `e1136a16`: ponovo ocenjuje
+  samo profile/scenarije/parove čiji se ispis promenio od `21d4b070`; izlaz `coach/ROUND-V4-HM-14`, `-10K-07`,
+  `-MAR-05`, `-5K-05`; završnu poruku šalje NOVOM organizatoru (obavešten). Druge sudije NISU pokrenute (predlog
+  organizatora: jednom, na kraju; vlasnik nije odlučio drugačije).
+- Kad stigne ocena: javi vlasniku prolaz po merilu (R21 → sada), regresije, ko ne prolazi; arhiviraj tab trenera.
+  ZATIM STANI — vlasnik hoće presek i plan pre bilo kog novog kruga. Predlog plana prethodnog organizatora (vlasnik
+  ga još nije odobrio): ocena samo dirnutog; jedan motor sa uskim nalogom bez dopuna usred rada; prvo podatak pa
+  motor; jedina velika stavka motora = raspodela obima u nedelji (dugi/lagani pre kvaliteta — drži sve p06 i lagane
+  < 30 min); odluka vlasnika: zamrznuti generator i krenuti F9, ili prvo do merila.
+- Vlasnik je osetljiv na trošak (40 % nedeljnog limita za ≈ 14 h): javljaj zbirno, ne pokreći više tabova nego što
+  treba, zakaži proveru posle svakog pokretanja (tabovi staju na 5-satnom limitu i završne poruke umeju da zaglave).
+- Zakazane provere prethodnog organizatora su obrisane.
