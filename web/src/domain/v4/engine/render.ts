@@ -37,6 +37,7 @@ import type {
   SingleStep,
   Step,
   WeekKind,
+  Warning,
   Workout,
   ZoneId
 } from './types';
@@ -415,16 +416,32 @@ function headerLines(doc: PlanDoc, state: RunnerState | undefined, data: Distanc
   /* R22 (B3): stavka nedelje (npr. nedelja provere forme) ide uz tu nedelju, ne u upozorenja */
   const allHead = h.warnings.filter((w) => w.weeks === undefined);
   /* R24 (M3 c): najviše tri stavke, redom prvenstva (tegoba → dužina pripreme → obim → najduži dugi → broj dana →
-     nema rezultata); višak ide u „Pomoglo bi i" jednom rečenicom (samo kad stavki ima više od tri) */
+     nema rezultata); višak ide u „Pomoglo bi i" jednom rečenicom (samo kad stavki ima više od tri).
+     R25 (1): granica ne izbacuje bezbednost (tegoba, bol), prvi predlog kraće distance, staž ni cilj van raspona —
+     one su uvek stavke (i kad ih je više od tri), bezbednost i kraća distanca prve; ostala mesta do tri po prvenstvu */
+  const shorterAt = allHead
+    .map((w, i) => ({ w, i, r: WARNING_RANK[w.code] ?? WARNING_RANK_OTHER }))
+    .filter((x) => x.w.proposal.includes(SHORTER_MARK))
+    .sort((a, b) => a.r - b.r || a.i - b.i)[0]?.i;
+  const tier = (w: Warning, i: number): number =>
+    SAFETY_CODES.has(w.code) ? 0 : i === shorterAt ? 1 : KEPT_CODES.has(w.code) ? 2 : 3;
   const ranked =
     allHead.length <= WARNINGS_MAX
-      ? allHead
+      ? allHead.map((w, i) => ({ w, t: tier(w, i) }))
       : allHead
-          .map((w, i) => ({ w, i, r: WARNING_RANK[w.code] ?? WARNING_RANK_OTHER }))
-          .sort((a, b) => a.r - b.r || a.i - b.i)
-          .map((x) => x.w);
-  const headWarnings = ranked.slice(0, WARNINGS_MAX);
-  const overflow = ranked.slice(WARNINGS_MAX);
+          .map((w, i) => ({ w, i, t: tier(w, i), r: WARNING_RANK[w.code] ?? WARNING_RANK_OTHER }))
+          .sort((a, b) => Math.min(a.t, 2) - Math.min(b.t, 2) || a.r - b.r || a.i - b.i);
+  const kept = ranked.filter((x) => x.t < 3).length;
+  const free = Math.max(0, WARNINGS_MAX - kept);
+  const headWarnings: Warning[] = [];
+  const overflow: Warning[] = [];
+  let rest = 0;
+  for (const x of ranked) {
+    if (x.t < 3 || rest < free) {
+      if (x.t === 3) rest += 1;
+      headWarnings.push(x.w);
+    } else overflow.push(x.w);
+  }
   if (headWarnings.length > 0) {
     lines.push('');
     lines.push('UPOZORENJA');
@@ -499,12 +516,19 @@ function withAdvisedInRange<T extends Parameters<typeof raceAdvice>[1]>(
 
 /** R24 (M3 c): najviše ovoliko stavki u UPOZORENJIMA (+ jedna „Pomoglo bi i"). */
 const WARNINGS_MAX = 3;
+/** R25 (1): bezbednost — uvek stavka, prva. */
+const SAFETY_CODES: ReadonlySet<string> = new Set(['tegoba', 'bol']);
+/** R25 (1): uvek stavka (staž, cilj van raspona), mesto po prvenstvu. */
+const KEPT_CODES: ReadonlySet<string> = new Set(['kratak-staz', 'cilj-van-raspona']);
+/** R25 (1): predlog kraće distance (tekst čuvara: „… trči kraću distancu …", „… ili kraću distancu (…)"). */
+const SHORTER_MARK = 'kraću distancu';
 /** R24 (M3 c): redosled prvenstva po kodu upozorenja (manji broj ide pre). */
 const WARNING_RANK: Readonly<Record<string, number>> = {
   tegoba: 0,
   bol: 0,
   povratak: 0.5,
   'kratka-priprema': 1,
+  'kratak-staz': 1.5,
   'mali-obim': 2,
   'obim-za-nivo': 2,
   'kratak-dugi': 3,
@@ -512,6 +536,7 @@ const WARNING_RANK: Readonly<Record<string, number>> = {
   'malo-dana': 4,
   'dan-izostavljen': 4,
   'lagan-kratak': 4,
+  'cilj-van-raspona': 4.5,
   'nema-podataka': 5
 };
 const WARNING_RANK_OTHER = 6;
