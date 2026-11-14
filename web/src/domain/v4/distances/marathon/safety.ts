@@ -100,6 +100,8 @@ export const SAFETY: SafetyNumbers = {
   longStepSec: 480,
   /* R20: 1,75 km (R19 rastezanje × 1,15 = 2,0 km, K7) */
   longStepKm: 1.75,
+  /* R20b (zahtev taba MAR, motor): brz nivo — korak dugog do 12 % prethodnog (K7) */
+  longStepShareByLevel: { brz: 0.12 },
   longStartFloorShare: 0.85,
   longStartFloorFromCapShare: 0.88,
   longFloorGrowMinRunDays: 4,

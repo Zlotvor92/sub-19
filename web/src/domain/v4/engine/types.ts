@@ -825,6 +825,8 @@ export interface SafetyNumbers {
   longGrowPastStart?: { minRunDays: number; levels: readonly LevelId[] };
   /** Korak dugog i u km (u trajanju laganog tempa); važi veće od ta dva (krug 4, S2). */
   longStepKm?: number;
+  /** R20 (dopuna MAR 3): korak dugog srazmeran prethodnom dugom (udeo, npr. 0,12) po nivou — veći od dva gornja. */
+  longStepShareByLevel?: Readonly<Partial<Record<LevelId, number>>>;
   /** Udeo dugog kod malog obima (krug 4, S3): nedelja ispod `belowKm` (planirani km) uz bar `minRunDays` dana ima
       udeo `share` (u minutima), a u najviše `peakWeeks` nedelja (najduži dugi namere, kasnije prvo) `peakShare`. */
   longShareLowVolume?: {

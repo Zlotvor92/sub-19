@@ -234,7 +234,13 @@ export function longPlan(
   /* krug 15 (M10): trka na dan dugog — te nedelje nema dugog */
   if (intent.long === null || intent.long.race !== undefined) return 0;
   const d = ctx.decisions;
-  const step = longStepOf(ctx.data.safety, ctx.pace.paces.easy);
+  /* R20 (dopuna MAR 3): nivo sa udelom koraka (brz) raste srazmerno dosadašnjem dugom, do K7 (+12 %) */
+  const share = ctx.data.safety.longStepShareByLevel?.[d.level] ?? 0;
+  const baseStep = longStepOf(ctx.data.safety, ctx.pace.paces.easy);
+  const step = Math.max(
+    baseStep,
+    Math.min(share * previousLongest, LONG_STEP_MAX_KM * ctx.pace.paces.easy)
+  );
   /* R19 (stavka 2a): kad lestvica sa korakom iz podataka ne stiže do dugog za distancu (`minLongKm`) do nedelje
      najdužeg dugog, korak raste koliko treba, najviše `LONG_STEP_STRETCH` × korak (zaokruživanje dana na 0,5 km tada
      ne prelazi korak + 0,5 km) */
