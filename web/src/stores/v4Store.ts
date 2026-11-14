@@ -30,6 +30,12 @@ export const useV4Store = create<V4State>()((set) => ({
   set: (p) => set(p)
 }));
 
+/** Lični plan vlasnika je aktivan i još zaštićen (do `PERSONAL_PROTECTED_UNTIL`): V4 ga ne prikazuje i ne pravi mu
+ *  nov plan (čarobnjak tada ide starim putem, kao sa ugašenom zastavicom — ništa se tiho ne upisuje u `plan_v4`). */
+export function personalProtected(plan: AdoptSnapshot['plan'], today: string | null): boolean {
+  return isPersonalPlan(plan) && (today === null || today <= PERSONAL_PROTECTED_UNTIL);
+}
+
 export type V4Source = 'plan_v4' | 'preuzet';
 
 /**
@@ -42,8 +48,7 @@ export function v4DocOf(
 ): { doc: PlanDoc; source: V4Source } | null {
   if (!v4.enabled) return null;
   const today = v4.today;
-  if (isPersonalPlan(snap.plan) && (today === null || today <= PERSONAL_PROTECTED_UNTIL))
-    return null;
+  if (personalProtected(snap.plan, today)) return null;
   if (v4.row !== null) return { doc: v4.row.doc, source: 'plan_v4' };
   if (snap.plan === null || today === null) return null;
   const r = adoptActive(snap, today);

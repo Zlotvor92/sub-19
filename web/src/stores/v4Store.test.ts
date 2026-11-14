@@ -7,7 +7,7 @@ import type { GenPlanState } from '../domain/state';
 import { adoptActive, toResolved } from '../integrations/v4';
 import { currentPlan, useHasPlan, useResolvedPlan, useTrainingStore } from './trainingStore';
 import { useRecoveryStore } from './recoveryStore';
-import { PERSONAL_PROTECTED_UNTIL, useV4Store } from './v4Store';
+import { PERSONAL_PROTECTED_UNTIL, personalProtected, useV4Store } from './v4Store';
 
 const plan = (hmFixture as unknown as { plan: GenPlanState }).plan;
 const TODAY = plan.weeks[0]?.start ?? '2026-01-05';
@@ -96,5 +96,15 @@ describe('grananje prikaza plana (F9 korak 7)', () => {
     useV4Store.setState({ enabled: false, row: null });
     setPlan(plan);
     expect(renderHook(() => useHasPlan()).result.current).toBe(true);
+  });
+
+  it('A5: lični plan vlasnika je zaštićen do 13. 12. 2026 (uključivo) — čarobnjak tada ne ide kroz V4', () => {
+    const own = personalPlan(45);
+    expect(personalProtected(own, '2026-11-14')).toBe(true);
+    expect(personalProtected(own, PERSONAL_PROTECTED_UNTIL)).toBe(true);
+    expect(personalProtected(own, null)).toBe(true);
+    expect(personalProtected(own, '2026-12-14')).toBe(false);
+    expect(personalProtected(plan, '2026-11-14')).toBe(false);
+    expect(personalProtected(null, '2026-11-14')).toBe(false);
   });
 });
