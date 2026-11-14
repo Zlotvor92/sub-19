@@ -894,3 +894,15 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   aktivnosti iza ugašene zastavice, bez baze i bez poziva prave Strave) primljene. Provera organizatora: commit 2c
   dira samo `services/strava/**` i `integrations/v4/**`; `vitest run src/services/strava src/integrations/v4` → 9
   fajlova, 220 prolazi [visoka]. Tab F9 stoji: korak 5 (tabele na Supabase grani) čeka vlasnikovo „kreni".
+
+### 14. 11. 2026, 22:05 — BAZA (produkcija `Sub20`, nalog vlasnika: „baza kompletno u produkciju, sačuvaj trenutnu bazu")
+- Rezerva: migracija `rezerva_pre_v4_20261114` — šema `rezerva_20261114` sa kopijom svih 11 tabela iz `public`
+  (broj redova po tabeli jednak; `user_state` 31 = 31), bez pristupa za anon/authenticated.
+- Primenjeno (migracije `v4_aktivnost`, `v4_plan`): tabele `aktivnost`, `plan_v4`, `plan_v4_verzija`,
+  `plan_v4_dogadjaj`, `v4_pristup` sa RLS-om (11 politika) i okidač `plan_v4_rev`. Naspram nacrta: politike koriste
+  `(select auth.uid())`, `plan_v4_rev` ima `search_path`. Postojeće tabele nisu dirane. Savetnik bezbednosti: bez
+  novih upozorenja za V4 tabele.
+- NIJE primenjeno: `plan_v4_zapamti()` + okidač (čuvanje prethodnih verzija plana) i `v4_iskljuci()` — Supabase za
+  taj deo traži potvrdu vlasnika (funkcija sadrži `delete`), a pitanje nije stiglo do vlasnikovog ekrana (isteklo
+  posle 230 s). Čeka potvrdu vlasnika.
+- `v4_pristup` je prazan: V4 nije uključen nikome.
