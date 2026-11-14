@@ -1,0 +1,44 @@
+{
+  "round": "V4-MAR-03", "date": "2026-11-14", "judge": "glavni trener (nov tab)", "source": "ef506f4c; poredjenje sa fb2c1a3",
+  "calibrationShift": 0,
+  "plan": {
+    "p01": { "prev": 79.5, "now": 80.5, "longestKm": 26.5 }, "p02": { "prev": 81, "now": 82, "longestKm": 28.5 },
+    "p03": { "prev": 75.5, "now": 75.5, "longestKm": 25.1 },
+    "p04": { "prev": 73.5, "now": 78.5, "longestKm": 27.6, "note": "utorak opet nosi kvalitet" },
+    "p05": { "prev": 81.5, "now": 81.5, "longestKm": 35 }, "p06": { "prev": 72, "now": 74, "longestKm": 26 },
+    "p07": { "prev": 79.5, "now": 81, "longestKm": 30 }, "p08": { "prev": 78, "now": 78, "longestKm": 28.5 },
+    "p09": { "prev": 81, "now": 81.5, "longestKm": 28.5 }, "p10": { "prev": 75.5, "now": 75.5, "longestKm": 25.1 },
+    "p11": { "prev": 77.5, "now": 75, "longestKm": 22.6, "note": "nedovoljno; plato 2 h 15 pet nedelja; bilo 24,8" },
+    "p12": { "prev": 80, "now": 80.5, "longestKm": 27.6 },
+    "p13": { "prev": 70, "now": 71, "longestKm": 19.2, "note": "nedovoljno, ali plafon ulaza; 2 h 45 moguce" },
+    "p14": { "prev": 82, "now": 82.5, "longestKm": 33.5 }, "p15": { "prev": 77.5, "now": 78.5, "longestKm": 27.8 },
+    "p16": { "prev": 78.5, "now": 79.5, "longestKm": 28.2 }, "p17": { "prev": 80.5, "now": 81, "longestKm": 32.5 },
+    "p18": { "prev": 73, "now": 72.5, "longestKm": 22, "note": "donja ivica; jedan dugi 3 h hod-trk" },
+    "p19": { "prev": 71, "now": 72, "longestKm": 22.5 },
+    "average": 77.9, "previousAverage": 77.2, "atLeast80": 8
+  },
+  "adaptation": {
+    "E1": { "score": 83.8, "s01": 85, "s02": 84, "s03": 84, "s04": 82 },
+    "E2": { "score": 79.5, "s05": 79, "s06": 79, "s07": 80, "s08": 80 },
+    "E3": { "score": 79.8 }, "E4": { "score": 77.8 },
+    "E5": { "score": 82.5, "s17": 83, "s18": 84, "s19": 83, "s20": 80 },
+    "E6": { "score": 89.8 },
+    "E7": { "score": 78.0, "s25": 76, "s26": 77, "s27": 81 },
+    "marathon": { "score": 77, "s28": 74, "s29": 80 },
+    "partB": 81.4, "previousPartB": 81.0
+  },
+  "personalization": { "P1": 84, "P2": 77, "P3": 76, "partC": 79.0, "previousPartC": 80.5 },
+  "composite": 79.2, "previousComposite": 79.0,
+  "fixes": [
+    { "n": 1, "kind": "motor", "text": "dugi u nedelji 1 <= najduzi iz istorije + 2 km (P3 A/B)" },
+    { "n": 2, "kind": "motor", "text": "propusten najduzi dugi u N-3: N-2 dugi 24-26 km lagano (s28, s09)" },
+    { "n": 3, "kind": "motor", "text": "prvi specifican dugi posle pauze: blok <= poslednji odradjeni, duzina <= +3 km (s05); posle trke nedelja 3 <= 80 % (s20)" },
+    { "n": 4, "kind": "motor", "text": "prenet blok: jedan kvalitet te nedelje postaje lagan (s25)" },
+    { "n": 5, "kind": "motor", "text": "najvise 2-3 preporuke; bez predloga dodatnog dana za < 3 meseca staza ili tegobu (P2 B)" },
+    { "n": 6, "kind": "podatak", "text": "pocetnik >= 20 nedelja: dugi do 2 h 50-3 h, bez platoa (p11, P2 A); p18 3 h hod-trk; p13 2 h 45" },
+    { "n": 7, "kind": "podatak", "text": "predlog krace distance kad je najduzi dugi < 20 km (P2 B)" },
+    { "n": 8, "kind": "podatak", "text": "p18: prognoza sa realnim rasponom za 'samo da zavrsim'" }
+  ],
+  "verdict": "B prolazi; Plan 77,9 ne prolazi (8 od 19 >= 80); C 79,0 ispod 80",
+  "ownerReview": ["p11", "p04", "s28"]
+}
