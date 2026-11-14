@@ -254,7 +254,12 @@ const TABELE = [
   'bug_report_usage',
   'endpoint_usage',
   'zajednica_profil',
-  'user_state_istorija'
+  'user_state_istorija',
+  'aktivnost',
+  'plan_v4',
+  'plan_v4_verzija',
+  'plan_v4_dogadjaj',
+  'v4_pristup'
 ];
 
 async function adminRuta(req, res, body, vlasnik, baza, srvHead, token) {

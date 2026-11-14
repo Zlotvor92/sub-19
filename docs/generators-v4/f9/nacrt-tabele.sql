@@ -1,6 +1,10 @@
 -- =====================================================================
 -- SUB-20 — V4: NACRT TABELA (F9 etapa 1, 14. 11. 2026)
 --
+-- ZAMENJEN (14. 11. 2026): primenjeno stanje je u supabase/v4.sql, a deo koji
+-- čeka potvrdu u docs/generators-v4/f9/v4-ceka-potvrdu.sql. Ovaj fajl se
+-- čuva samo kao istorija nacrta.
+--
 -- NACRT. NE IZVRŠAVATI. Izvršava se tek u F9 koraku 5, na Supabase GRANI,
 -- posle izričitog „kreni" vlasnika (odluka F8 § 9.2 daje odobrenje za izmene
 -- baze, ali tek u F9). `user_state`, `user_state_istorija` i v2 podaci se
