@@ -920,3 +920,14 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Za motor POSLE kruga R24 (nalaz F9): upozorenja `malo-dana` i `kratak-dugi` imaju prazan `proposal` (maraton,
   početnik, 8 nedelja, 10 km/ned) — suprotno AGENTS t. 6.
 - Motor R24 u 23:13: stavke 0, 1 (M6+P1), 2 (M4 suženo), 3 (M1) na grani; rade M2, M5, M3, nalazi sloja.
+
+### 15. 11. 2026, 00:15 — motor R24 primljen (`b8ad0bb6`), provera organizatora; završna ocena R25 pokrenuta
+- Motor (izveštaj `reports/R24-MOTOR.md`): urađeno 0 higijena, M6+P1 (P1 suženo: prag 4 dana samo 5K/10K), M4
+  delimično, M1, M2 suženo (samo bol posle dugog; prag 12 min), M3, nalazi sloja (urađeno bez mere, lock ≠ locked,
+  izvoz). NEURAĐENO: M5 (povratak posle pauze — pravilo menja 15+ nenavedenih scenarija; vraćeno) → HM s27, s16 ostaju.
+  M3 je promenio i MAR parove P1 A, P1 B, P2 A (van § (c)). Tab arhiviran (45,02 USD po obračunu).
+- Sam pokrenuo na `b8ad0bb6`: `vitest run src/domain/v4 src/integrations/v4 src/services/v4 src/services/strava` → 89
+  fajlova, 1387 + 12 očekivano; `tsc`, lint, format čisti [visoka].
+- R25 (`briefs/R25-JUDGES.md`): trener (nov Fable tab `session_01GnHHiXpK8ZCCn7LQ9bWynL`, samo ispisi promenjeni od
+  `e1136a16`) i drugi sudija (nov Fable tab `session_01GnHHiacaXwvxSYvDU8CNJt`, jedan za sve četiri distance, planovi
+  profila promenjeni od `21d4b070`).
