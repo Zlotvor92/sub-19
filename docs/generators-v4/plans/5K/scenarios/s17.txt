@@ -97,7 +97,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 tra�
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
   Zbir: 48 km, 4 h 36 min, 4 treninga, brz rad 16 % vremena trčanja
 
-7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 5 nedelja
+7. NEDELJA (od 14. 12.) — razvoj, vršna nedelja; do trke 5 nedelja
   pon 14. 12.  odmor
   uto 15. 12.  intervali 5 × 1 km (4:15/km), oporavak 3 min džog — 11,8 km, 63 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
@@ -121,7 +121,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:22/km). Tvoj cilj 21:44 tra�
   ned 27. 12.  lagano 9 km — 9 km, 54 min
   Zbir: 37,4 km, 3 h 39 min, 4 treninga, brz rad 6 % vremena trčanja
 
-9. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
+9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 28. 12.  odmor
   uto 29. 12.  lagano 11,5 km — 11,5 km, 70 min
   sre 30. 12.  odmor
@@ -267,7 +267,7 @@ UPOZORENJA
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
   Zbir: 48 km, 4 h 36 min, 4 treninga, brz rad 16 % vremena trčanja
 
-7. NEDELJA (od 14. 12.) — razvoj, gradnja; do trke 5 nedelja
+7. NEDELJA (od 14. 12.) — razvoj, vršna nedelja; do trke 5 nedelja
   pon 14. 12.  odmor
   uto 15. 12.  intervali 5 × 1 km (4:15/km), oporavak 3 min džog — 11,8 km, 63 min
       napomena: Zagrevanje je deo treninga: lagano, pa 4–6 ubrzanja po 20 s pre prve deonice. Hladno telo ne može brzo.
@@ -291,7 +291,7 @@ UPOZORENJA
   ned 27. 12.  lagano 9 km — 9 km, 54 min
   Zbir: 37,4 km, 3 h 39 min, 4 treninga, brz rad 6 % vremena trčanja
 
-9. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
+9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 3 nedelje
   pon 28. 12.  odmor
   uto 29. 12.  lagano 11,5 km — 11,5 km, 70 min
   sre 30. 12.  odmor

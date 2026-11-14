@@ -169,7 +169,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 57,9 km, 6 h 42 min, 5 treninga, brz rad 11 % vremena trčanja
 
-14. NEDELJA (od 1. 2.) — specifična priprema, vršna nedelja; do trke 4 nedelje
+14. NEDELJA (od 1. 2.) — specifična priprema, gradnja; do trke 4 nedelje
   pon 1. 2.  lagano 80 min — 11,2 km, 80 min
   uto 2. 2.  tempo trke 4 × 1,6 km (5:36/km), oporavak 1:30 džog — 11,9 km, 75 min
   sre 3. 2.  odmor
@@ -180,7 +180,7 @@ Tempo trke u treninzima je tvoja današnja forma (5:36/km). Očekivano vreme na 
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 58,4 km, 6 h 41 min, 5 treninga, brz rad 14 % vremena trčanja
 
-15. NEDELJA (od 8. 2.) — specifična priprema, gradnja; do trke 3 nedelje
+15. NEDELJA (od 8. 2.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 8. 2.  lagano 80 min — 11,2 km, 80 min
   uto 9. 2.  tempo trke 6 × 1 km (5:36/km), oporavak 1:30 džog — 11,9 km, 76 min
   sre 10. 2.  odmor
@@ -396,7 +396,7 @@ UPOZORENJA
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 57,9 km, 6 h 42 min, 5 treninga, brz rad 11 % vremena trčanja
 
-14. NEDELJA (od 1. 2.) — specifična priprema, vršna nedelja; do trke 4 nedelje
+14. NEDELJA (od 1. 2.) — specifična priprema, gradnja; do trke 4 nedelje
   pon 1. 2.  lagano 80 min — 11,2 km, 80 min
   uto 2. 2.  tempo trke 4 × 1,6 km (5:36/km), oporavak 1:30 džog — 11,9 km, 75 min
   sre 3. 2.  odmor
@@ -407,7 +407,7 @@ UPOZORENJA
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 58,4 km, 6 h 41 min, 5 treninga, brz rad 14 % vremena trčanja
 
-15. NEDELJA (od 8. 2.) — specifična priprema, gradnja; do trke 3 nedelje
+15. NEDELJA (od 8. 2.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 8. 2.  lagano 80 min — 11,2 km, 80 min
   uto 9. 2.  tempo trke 6 × 1 km (5:36/km), oporavak 1:30 džog — 11,9 km, 76 min
   sre 10. 2.  odmor

@@ -58,6 +58,8 @@ const KIND_LABEL: Readonly<Record<WeekKind, string>> = {
   taper: 'sužavanje pred trku',
   race: 'nedelja trke'
 };
+/** R25 (4): opterećenje nedelje u ovom udelu najvećeg je „jednako" — vršna je kasnija takva nedelja. */
+const PEAK_LOAD_SHARE = 0.99;
 /** Nedelja gradnje u poslednje dve nedelje pred nedelju trke više nije „gradnja" (R10). */
 const LATE_BUILD_WEEKS = 2;
 
@@ -734,10 +736,20 @@ export function renderPlan(
       const win = adjustmentWindow(a);
       return win !== null && win.from <= addDays(w.start, 6) && win.rampEnd >= w.start;
     });
-  const kms = doc.weeks.map((w) =>
-    w.intent.kind === 'race' || touched(w) ? 0 : weekCost(w, h.goal.raceDate, ctx).km
+  /* R25 (4): „vršna" je nedelja najvećeg opterećenja (jedna mera, AGENTS § V4 t. 5) pre sužavanja — bez nedelje trke,
+     sužavanja i kasne gradnje koja se ispisuje kao sužavanje; jednako opterećenje (PEAK_LOAD_SHARE) — kasnija */
+  const lateBuild = (w: PlanWeek): boolean => {
+    const toRace = Math.round(diffDays(mondayOf(h.goal.raceDate), w.start) / 7);
+    return w.intent.kind === 'build' && toRace >= 1 && toRace <= LATE_BUILD_WEEKS;
+  };
+  const loads = doc.weeks.map((w) =>
+    w.intent.kind === 'race' || w.intent.kind === 'taper' || lateBuild(w) || touched(w)
+      ? 0
+      : weekCost(w, h.goal.raceDate, ctx).load
   );
-  const peakAt = kms.indexOf(Math.max(...kms));
+  const maxLoad = Math.max(...loads);
+  const peakAt =
+    maxLoad > 0 ? loads.reduce((at, x, i) => (x >= PEAK_LOAD_SHARE * maxLoad ? i : at), 0) : 0;
   /* krug 10 (stavka 7): faza se u ispisu ne vraća unazad (red faza = red prvog pojavljivanja u planu) */
   const order = [...new Set(doc.weeks.map((w) => w.intent.phase))];
   let phaseAt = 0;

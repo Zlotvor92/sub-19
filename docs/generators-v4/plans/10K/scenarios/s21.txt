@@ -147,7 +147,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 50,1 km, 4 h 54 min, 4 treninga, brz rad 12 % vremena trčanja
 
-12. NEDELJA (od 18. 1.) — specifična priprema, vršna nedelja; do trke 4 nedelje
+12. NEDELJA (od 18. 1.) — specifična priprema, gradnja; do trke 4 nedelje
   pon 18. 1.  odmor
   uto 19. 1.  tempo trke 4 × 1,6 km (4:36/km), oporavak 1:30 džog — 12,9 km, 69 min
   sre 20. 1.  odmor
@@ -158,7 +158,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 54 km, 5 h 10 min, 4 treninga, brz rad 16 % vremena trčanja
 
-13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 3 nedelje
+13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 25. 1.  odmor
   uto 26. 1.  tempo trke 7 × 1 km (4:36/km), oporavak 1:30 džog — 14,2 km, 76 min
   sre 27. 1.  odmor
@@ -342,7 +342,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 50,1 km, 4 h 54 min, 4 treninga, brz rad 12 % vremena trčanja
 
-12. NEDELJA (od 18. 1.) — specifična priprema, vršna nedelja; do trke 4 nedelje
+12. NEDELJA (od 18. 1.) — specifična priprema, gradnja; do trke 4 nedelje
   pon 18. 1.  odmor
   uto 19. 1.  tempo trke 4 × 1,6 km (4:36/km), oporavak 1:30 džog — 12,9 km, 69 min
   sre 20. 1.  odmor
@@ -353,7 +353,7 @@ Tempo trke u treninzima je tvoja današnja forma (4:36/km). Tvoj cilj 45:05 tra�
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Ako je toplo, ponesi vodu.
   Zbir: 54 km, 5 h 10 min, 4 treninga, brz rad 16 % vremena trčanja
 
-13. NEDELJA (od 25. 1.) — specifična priprema, gradnja; do trke 3 nedelje
+13. NEDELJA (od 25. 1.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 25. 1.  odmor
   uto 26. 1.  tempo trke 7 × 1 km (4:36/km), oporavak 1:30 džog — 14,2 km, 76 min
   sre 27. 1.  odmor

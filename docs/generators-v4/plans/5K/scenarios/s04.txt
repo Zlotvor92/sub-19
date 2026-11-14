@@ -51,7 +51,7 @@ UPOZORENJA
       napomena: Dugi je lagan: tempo u kome možeš da pričaš u celim rečenicama. Za 5 km dugi gradi osnovu, ne brzinu.
   Zbir: 39,9 km, 4 h 52 min, 4 treninga, brz rad 3 % vremena trčanja
 
-3. NEDELJA (od 16. 11.) — razvoj, vršna nedelja; do trke 7 nedelja
+3. NEDELJA (od 16. 11.) — razvoj, gradnja; do trke 7 nedelja
   pon 16. 11.  odmor
   uto 17. 11.  lagano 70 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 10,3 km, 75 min
   sre 18. 11.  odmor
@@ -96,7 +96,7 @@ UPOZORENJA
   ned 13. 12.  lagano 60 min — 8,1 km, 60 min
   Zbir: 30,1 km, 3 h 37 min, 4 treninga, brz rad 3 % vremena trčanja
 
-7. NEDELJA (od 14. 12.) — specifična priprema, gradnja; do trke 3 nedelje
+7. NEDELJA (od 14. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 14. 12.  odmor
   uto 15. 12.  lagano 80 min — 10,8 km, 80 min
   sre 16. 12.  odmor
@@ -194,7 +194,7 @@ Rezultat 5 km za 33:00 (12. 12.): tempa su sada izračunata iz ovog rezultata, u
   ned 15. 11.  dugi 1 h 40 min lagano — urađeno 13,5 km, 1 h 40 min (7:24/km)
   Urađeno: 39,9 km, 4 h 52 min, 4 treninga
 
-3. NEDELJA (od 16. 11.) — razvoj, vršna nedelja; do trke 7 nedelja
+3. NEDELJA (od 16. 11.) — razvoj, gradnja; do trke 7 nedelja
   pon 16. 11.  odmor
   uto 17. 11.  lagano 70 min, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 10,3 km, 75 min (7:21/km)
   sre 18. 11.  odmor
@@ -234,7 +234,7 @@ Rezultat 5 km za 33:00 (12. 12.): tempa su sada izračunata iz ovog rezultata, u
   ned 13. 12.  lagano 60 min — 6,9 km, 60 min
   Zbir: 28,3 km, 3 h 34 min, 4 treninga
 
-7. NEDELJA (od 14. 12.) — specifična priprema, gradnja; do trke 3 nedelje
+7. NEDELJA (od 14. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 14. 12.  odmor
   uto 15. 12.  lagano 80 min — 9,2 km, 80 min
   sre 16. 12.  odmor

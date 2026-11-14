@@ -94,7 +94,7 @@ UPOZORENJA
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
   Zbir: 73,9 km, 7 h 7 min, 5 treninga, brz rad 14 % vremena trčanja
 
-7. NEDELJA (od 14. 12.) — specifična priprema, vršna nedelja; do trke 5 nedelja
+7. NEDELJA (od 14. 12.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 14. 12.  lagano 12,5 km — 12,5 km, 74 min
   uto 15. 12.  lagano 12,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 13,5 km, 80 min
   sre 16. 12.  odmor
@@ -117,7 +117,7 @@ UPOZORENJA
       napomena: Ishrana na dugom: gel ili sportski napitak na svakih 35–40 min, od 35. min, uz par gutljaja vode svaki put. Probaj tačno ono što ćeš koristiti na trci (vrsta gela, raspored) — na trci ništa novo.
   Zbir: 62,2 km, 6 h 6 min, 5 treninga, brz rad 5 % vremena trčanja
 
-9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 3 nedelje
+9. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 28. 12.  lagano 12,5 km — 12,5 km, 74 min
   uto 29. 12.  lagano 12,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — 13,5 km, 80 min
   sre 30. 12.  odmor
@@ -257,7 +257,7 @@ Propušten je ključni trening „dugi 30 km, poslednjih 12,5 km u tempu maraton
   ned 13. 12.  dugi 22 km lagano — urađeno 22 km, 2 h 11 min (5:57/km)
   Urađeno: 73,9 km, 7 h 8 min, 5 treninga
 
-7. NEDELJA (od 14. 12.) — specifična priprema, vršna nedelja; do trke 5 nedelja
+7. NEDELJA (od 14. 12.) — specifična priprema, gradnja; do trke 5 nedelja
   pon 14. 12.  lagano 12,5 km — urađeno 12,5 km, 74 min (5:57/km)
   uto 15. 12.  lagano 12,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 13,5 km, 80 min (5:55/km)
   sre 16. 12.  odmor
@@ -277,7 +277,7 @@ Propušten je ključni trening „dugi 30 km, poslednjih 12,5 km u tempu maraton
   ned 27. 12.  dugi 21 km lagano — urađeno 21 km, 2 h 5 min (5:57/km)
   Urađeno: 62,2 km, 6 h 5 min, 5 treninga
 
-9. NEDELJA (od 28. 12.) — specifična priprema, gradnja; do trke 3 nedelje
+9. NEDELJA (od 28. 12.) — specifična priprema, vršna nedelja; do trke 3 nedelje
   pon 28. 12.  lagano 12,5 km — urađeno 12,5 km, 74 min (5:57/km)
   uto 29. 12.  lagano 12,5 km, na kraju 4 × 20 s ubrzanja, oporavak 1 min džog — urađeno 13,5 km, 80 min (5:55/km)
   sre 30. 12.  odmor

@@ -125,18 +125,20 @@ describe('krug 5', () => {
       ).toEqual([]);
   });
 
-  it('Z9 (krug 7): „vršna nedelja" u ispisu je nedelja sa najvećim obimom plana', () => {
+  /* R25 (4, menja Z9): „vršna" je nedelja najvećeg OPTEREĆENJA pre sužavanja (`header25.test.ts` (4)); ovde ostaje
+     da je jedna i da joj je obim blizu najvećeg */
+  it('Z9 (krug 7): „vršna nedelja" u ispisu je jedna, sa obimom blizu najvećeg', () => {
     for (const b of ALL) {
       const text = renderPlan(b.doc, b.state, hm);
       const ctx = paceCtxOf(b.doc.header);
       const kms = b.doc.weeks.map((w) =>
         w.intent.kind === 'race' ? 0 : weekCost(w, b.doc.header.goal.raceDate, ctx).km
       );
-      const peak = kms.indexOf(Math.max(...kms)) + 1;
       const labeled = [...text.matchAll(/^(\d+)\. NEDELJA[^\n]*vršna nedelja/gm)].map((m) =>
         Number(m[1])
       );
-      expect(labeled, b.id).toEqual([peak]);
+      expect(labeled.length, b.id).toBe(1);
+      expect(kms[(labeled[0] ?? 0) - 1] ?? 0, b.id).toBeGreaterThanOrEqual(0.9 * Math.max(...kms));
     }
   });
 });

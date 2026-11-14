@@ -10,12 +10,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildState,
+  paceCtxOf,
   plan,
   renderPlan,
   type DistanceData,
   type PlanDoc,
   type Warning
 } from '../engine';
+import { weekCost } from '../engine/guard';
 import { estimateForm } from '../fitness';
 
 const dataMods = import.meta.glob<Record<string, unknown>>('./*/index.ts', { eager: true });
@@ -166,4 +168,34 @@ describe('R25 — upozorenja u zaglavlju', () => {
       expect(bad).toEqual([]);
     }
   );
+
+  it.each(DIST.map((d) => [d.data.id] as const))(
+    '%s (4): „vršna nedelja" je nedelja najvećeg opterećenja pre sužavanja',
+    (id) => {
+      const bad: string[] = [];
+      for (const c of CASES.get(id) ?? []) {
+        if (!c.plain || (c.doc.header.adjustments ?? []).length > 0) continue;
+        const ctx = paceCtxOf(c.doc.header);
+        const labels = c.text.split('\n').filter((l) => /^\d+\. NEDELJA /.test(l));
+        const peakIdx = labels.flatMap((l, i) => (l.includes('vršna nedelja') ? [i] : []));
+        if (peakIdx.length > 1) bad.push(`${c.label}: ${String(peakIdx.length)} vršne nedelje`);
+        const at = peakIdx[0];
+        if (at === undefined) continue;
+        /* pre sužavanja: nedelje pre prve nedelje sužavanja ili trke */
+        const end = labels.findIndex((l) => /sužavanje|nedelja trke/.test(l));
+        const load = c.doc.weeks.map((w) => weekCost(w, c.doc.header.goal.raceDate, ctx).load);
+        const before = load.slice(0, end < 0 ? load.length : end);
+        const max = Math.max(...before);
+        const want = before.reduce((best, x, i) => (x >= PEAK_SHARE * max ? i : best), -1);
+        if (at !== want)
+          bad.push(
+            `${c.label}: vršna ${String(at + 1)}. (opt. ${(load[at] ?? 0).toFixed(1)}), najveće ${String(want + 1)}. (${(load[want] ?? 0).toFixed(1)})`
+          );
+      }
+      expect(bad).toEqual([]);
+    }
+  );
 });
+
+/** Jednako opterećenje (u ovom udelu najvećeg): vršna je kasnija nedelja. */
+const PEAK_SHARE = 0.99;
