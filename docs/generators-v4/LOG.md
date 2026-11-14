@@ -856,3 +856,17 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Vlasnik (≈ 20:35): „Kreni preko opusa polako da spremaš integraciju u samu aplikaciju." Pokrenut jedan Opus tab
   `session_01GnHHiXabdQXVWRpNM3TAFP`, nalog `briefs/F9-PRIPREMA.md` (etapa 1: popis šavova, sloj, nacrt tabela,
   Strava, zastavica, redosled, pitanja; bez izmene koda, baze, deploya). Izlaz: `f9/INTEGRACIJA.md`.
+
+### 14. 11. 2026, 20:45 — R24 (poslednji krug) i odluke vlasnika za F9
+- Vlasnik: „Daj treneru da da jednu detaljnu ispravku i da se privodi ovo kraju." Trener (isti tab, vraćen iz arhive,
+  pa ponovo arhiviran) napisao `coach/R24-ISPRAVKA.md` (`821d523`): 6 MOTOR (M1–M6) + 9 PODATAK (P1–P9), crta
+  „obavezno za kraj" / „može da ostane", § (c) čiji se ispis menja.
+- Pokrenuto SAMO obavezno, podatak uporedo: 5K (P2, P3 samo p12), 10K (P6 samo p03, p10), MAR (P8: p04, p18, P2 B).
+  HM nema obaveznu stavku podatka. Motor (M6+P1 → M4 → M1 → M2 → M5 → M3) jedan Opus tab POSLE podatka.
+- M6 (dan manje kad obim ne da lagan ≥ 30 min) menja pravilo „svi traženi dani ostaju" — pitanje postavljeno
+  vlasniku; bez odgovora M6 staje na koraku 2 (preliv u lagane, kraći dugi; broj dana ostaje).
+- F9 etapa 1 primljena (`eca994f6`, `f9/INTEGRACIJA.md` + `f9/nacrt-tabele.sql`); etapa 2a (facts/view/adopt) u toku.
+- ODLUKE VLASNIKA na `f9/INTEGRACIJA.md` § 7: (1) pušta se SVIMA odmah, bez probe samo za vlasnika; (2) svima se
+  povlači kompletna Strava istorija; (3) ručnu izmenu i premeštanje upisuje sloj aplikacije, motor se ne menja;
+  (4) „Generiši nov plan" čuva trčanja i formu; (5) nije odlučeno — pitanje objašnjeno vlasniku; (6) vlasnik šalje
+  snimak ekrana Strava API podešavanja.
