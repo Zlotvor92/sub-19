@@ -292,6 +292,8 @@ export interface Decisions {
   baseKm?: number;
   /** Tegoba u poslednjih 12 meseci (S8e): bez unosa visokog udara prve 4 nedelje. */
   painCaution?: boolean;
+  /** R24 (M6): trkač je potvrdio traženi broj dana (`Availability.confirmedRunDays`) — dan se ne izostavlja. */
+  confirmedRunDays?: true;
   /** R22 (B5): do ovog datuma bez unosa visokog udara (sprintevi uzbrdo) — tegoba potkolenice: ceo plan; staž kraći
       od `HIGH_IMPACT_MIN_TENURE_WEEKS`: dok ga ne dostigne. Bez polja važi pravilo tegobe (prve 4 nedelje). */
   highImpactFrom?: IsoDate;
@@ -472,6 +474,9 @@ export interface Availability {
   runDays: Weekday[];
   /** Mora biti među `runDays`. */
   longDay: Weekday;
+  /** R24 (M6, odluka vlasnika 14. 11. 2026): trkač je izričito potvrdio traženi broj dana — plan ne izostavlja
+      lagan dan zbog kratkih laganih dana (upozorenje o kratkim laganim danima ostaje). Bez polja: nepotvrđeno. */
+  confirmedRunDays?: boolean;
 }
 
 export interface WeekSummary {
@@ -958,6 +963,13 @@ export interface SafetyNumbers {
   minEasyFallbackMin?: number;
   /** Od koliko dana trčanja nedeljno važi `minEasyMin`. */
   minEasyFromRunDays?: number;
+  /** R24 (M6 + P1): od koliko dana trčanja nedeljno lagan dan nedelje gradnje/rasterećenja (ne trke, sužavanja ni
+      provere) nije kraći od `minEasyMin` — tri koraka: nedelja do +5 % iznad cilja, kraći dugi, pa dan manje
+      (nikad ispod 3 dana; trkač koji potvrdi dane — `Availability.confirmedRunDays` — zadržava sve dane). */
+  minEasyBuildFromRunDays?: number;
+  /** R24 (P1): najkraći lagan dan po nivou samo za pravilo M6 (dopuna `minEasyMin` za nivoe koje stara pravila
+      laganih dana ne mere, npr. početnik). */
+  minEasyBuildMin?: Readonly<Record<LevelId, number>>;
   /** Lagan dan najviše ovoliki udeo dugog te nedelje; broj, ili mapa po broju dana trčanja („1"…„7"). */
   easyMaxShareOfLong: number | Readonly<Record<string, number>>;
   dayBeforeLongMaxShare: number;

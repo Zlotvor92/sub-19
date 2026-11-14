@@ -30,6 +30,7 @@ import {
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate, mondayOf, weekdayOf } from './dates';
 import {
+  buildMinEasyOf,
   levelMinEasy,
   longReaches,
   longStepOf,
@@ -987,7 +988,7 @@ export function warnings(input: WarningInput): Warning[] {
     : minEasyOf(s, lvl.level, lvl.runDays.length);
   const streak = streakWarning(doc, s);
   if (streak !== null) out.push(streak);
-  const dropped = droppedDayWarning(doc, costs, dropMin);
+  const dropped = droppedDayWarning(doc, costs, dropMin, s);
   const shortEasy = shortEasyWarning(doc, costs, s);
   if (dropped !== null) out.push(dropped);
   if (shortEasy !== null) out.push(shortEasy);
@@ -1304,9 +1305,15 @@ function shortEasyWarning(
 ): Warning | null {
   const { header } = doc;
   const d = header.decisions;
-  if (!levelMinEasy(s, d.level, d.runDays.length) || s.minEasyFallbackMin === undefined)
+  /* R24 (M6): i najkraći lagan dan nedelje gradnje (od `minEasyBuildFromRunDays` dana) — npr. potvrđeni dani */
+  /* … ali samo kad je trkač potvrdio dane (inače kratak dan otpada, `dan-izostavljen`) */
+  const m6 = d.confirmedRunDays === true ? buildMinEasyOf(s, d.level, d.runDays.length) : null;
+  if (
+    (!levelMinEasy(s, d.level, d.runDays.length) && m6 === null) ||
+    s.minEasyFallbackMin === undefined
+  )
     return null;
-  const want = minEasyOf(s, d.level, d.runDays.length);
+  const want = Math.max(minEasyOf(s, d.level, d.runDays.length), m6 ?? 0);
   const ctx = paceCtxOf(header);
   const short = costs.filter(
     (c) =>
@@ -1348,7 +1355,8 @@ function shortEasyWarning(
 function droppedDayWarning(
   doc: PlanDoc,
   costs: readonly WeekCost[],
-  minEasySec: number
+  minEasySec: number,
+  s: DistanceData['safety']
 ): Warning | null {
   const { header } = doc;
   const asked = header.decisions.runDays.length;
@@ -1375,6 +1383,39 @@ function droppedDayWarning(
       meaning:
         'pre provere forme ili pripremne trke dan ostaje slobodan da je trčiš odmoran, a posle nje telo traži oporavak.',
       proposal: 'Posle ove nedelje plan opet koristi sve tražene dane.'
+    };
+  }
+  /* R24 (M6, odluka vlasnika 14. 11. 2026): dan manje da nijedno trčanje ne bude kraće od najkraćeg laganog nivoa —
+     zaglavlje to kaže jednom; trkač koji potvrdi dane zadržava ih sve */
+  const m6 = buildMinEasyOf(s, header.decisions.level, asked);
+  const m6Weeks = short.filter((c) => !withTest(c));
+  /* nedelje koje su dan ustupile drugom brzom treningu (M20) imaju svoj, tačniji razlog — rečenica ispod */
+  const twoHard = (c: WeekCost): boolean =>
+    c.days.filter((x) => x.day.workout?.kind === 'quality').length >= 2;
+  if (
+    m6 !== null &&
+    header.decisions.confirmedRunDays !== true &&
+    m6Weeks.length > 0 &&
+    !m6Weeks.every(twoHard)
+  ) {
+    const ids = m6Weeks.map((c) => c.week.index);
+    const first = ids[0] ?? 0;
+    const last = ids[ids.length - 1] ?? 0;
+    const span =
+      ids.length === 1
+        ? `${String(first)}. nedelji`
+        : last - first + 1 === ids.length
+          ? `nedeljama ${String(first)}–${String(last)}`
+          : `nedeljama ${ids.join(', ')}`;
+    const least = Math.min(...m6Weeks.map((c) => c.workouts));
+    const minutes = String(Math.round(m6 / 60));
+    const baseKm = (header.decisions.baseLoad * 60) / header.paces.easy;
+    return {
+      code: 'dan-izostavljen',
+      severity: 'info',
+      problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno; u ${span} plan ima ${count(least, DAYS)}, da nijedno trčanje ne bude kraće od ${minutes} min — taj dan može biti šetnja.`,
+      meaning: `Uz sadašnji obim od oko ${km(baseKm)} nedeljno svi traženi dani bili bi kraći od ${minutes} min, a tako kratko lagano trčanje malo gradi — isti obim u manje, dužih trčanja vredi više.`,
+      proposal: `Te nedelje trči kako piše. Ako ti je važno da trčiš ${pluralForm(asked, ['svaki', 'sva', 'svih'])} ${count(asked, DAYS)}, potvrdi broj dana — plan ih tada zadržava, uz kraće lagane dane.`
     };
   }
   /* krug 15 (M20): lagan dan izostavljen da stane drugi brzi trening (lagani dani su na najkraćem) — to je razlog */

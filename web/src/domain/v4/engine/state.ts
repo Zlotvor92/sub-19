@@ -58,7 +58,11 @@ import { paceAtShare, zoneVdot } from './vdot';
 export function normalizeAvailability(a: Availability): Availability {
   const days = new Set<Weekday>();
   for (const d of a.runDays) if (Number.isInteger(d) && d >= 0 && d <= 6) days.add(toWeekday(d));
-  return { runDays: [...days].sort((x, y) => x - y), longDay: a.longDay };
+  return {
+    runDays: [...days].sort((x, y) => x - y),
+    longDay: a.longDay,
+    ...(a.confirmedRunDays === true ? { confirmedRunDays: true } : {})
+  };
 }
 
 const usable = (run: Run, today: string): boolean =>

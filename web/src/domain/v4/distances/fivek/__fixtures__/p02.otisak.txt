@@ -10,7 +10,7 @@
 2026-11-11 | odmor | - | 0.0 |  | - | - | -
 2026-11-12 | trening | quality | 8.5 | prag 18 min u komadu | - | - | -
 2026-11-13 | odmor | - | 0.0 |  | - | - | -
-2026-11-14 | trening | easy | 5.0 | lagano 5 km | - | - | -
+2026-11-14 | trening | easy | 5.5 | lagano 5,5 km | - | - | -
 2026-11-15 | trening | long | 10.0 | dugi 10 km lagano | - | - | -
 2026-11-16 | odmor | - | 0.0 |  | - | - | -
 2026-11-17 | trening | quality | 8.5 | intervali 3 × 1 km, oporavak 3 min džog | - | - | -

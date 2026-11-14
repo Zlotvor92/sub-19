@@ -9,6 +9,7 @@ import {
   LONG_EASY_FLOOR_HIGH_KM,
   LONG_EASY_FLOOR_HIGH_SEC,
   LONG_EASY_FLOOR_SEC,
+  M6_MIN_RUN_DAYS,
   NEAR_ENOUGH,
   RAN_GOAL_DAYS,
   RAN_GOAL_SHARE
@@ -157,6 +158,20 @@ export function minEasyOf(safety: SafetyNumbers, level: LevelId, runDays: number
   if (!levelMinEasy(safety, level, runDays)) return safety.minEasySec;
   const min = safety.minEasyMin?.[level];
   return min === undefined ? safety.minEasySec : Math.max(safety.minEasySec, min * 60);
+}
+
+/** R24 (M6 + P1): najkraći lagan dan nedelje gradnje/rasterećenja (s) — `minEasyMin` nivoa od
+    `minEasyBuildFromRunDays` (i bar `M6_MIN_RUN_DAYS`) traženih dana; `null` kad pravilo ne važi. */
+export function buildMinEasyOf(
+  safety: SafetyNumbers,
+  level: LevelId,
+  runDays: number
+): Seconds | null {
+  const from = safety.minEasyBuildFromRunDays;
+  const least = safety.minEasyMin?.[level] ?? safety.minEasyBuildMin?.[level];
+  if (from === undefined || least === undefined) return null;
+  if (runDays < Math.max(M6_MIN_RUN_DAYS, from)) return null;
+  return Math.max(safety.minEasySec, least * 60);
 }
 
 /** Krug 15–16 (M4): niz TEŠKIH dana zaredom (dugi i dani kvaliteta, ciklično preko granice nedelje) koji sadrži dan

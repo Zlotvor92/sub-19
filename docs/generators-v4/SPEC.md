@@ -61,6 +61,13 @@ jednom, § 6.2); `warnings[]`; `protected`; `appliedEvents[]`; `eventsFrom`.
 opciono: `profile` (izjava trkača: `weeklyKm`, `easyPaceSecPerKm`, `longestRecentKm`, `recentResult`, `beginner`,
 `yearsRunning`), `runs[]`, `pauses[]`, `pain[]`.
 
+2.1a. **`availability.confirmedRunDays`** (opciono, R24 — odluka vlasnika 14. 11. 2026): `true` = trkač je izričito
+potvrdio traženi broj dana. Bez polja (podrazumevano) plan u nedelji gradnje/rasterećenja sme da ima jedan lagan dan
+manje od traženog (nikad ispod 3 dana) kad bi inače lagan dan bio kraći od najkraćeg laganog nivoa (`minEasyMin`,
+od `minEasyBuildFromRunDays` dana) — zaglavlje kaže šta je urađeno i zašto (`dan-izostavljen`). Sa `true` plan
+zadržava sve tražene dane u tim nedeljama, a ostaje upozorenje o kratkim laganim danima (`lagan-kratak`). Pamti se u
+`decisions.confirmedRunDays`; događaj `availability-change` ga postavlja iz svog `availability`.
+
 2.2. **`Run`**: obavezno `id, date, distanceM, durationSec`; opciono `dayId` (vezano za dan plana ili ne — motoru
 je svejedno, forma i opterećenje čitaju sva trčanja), `effort` (`race | test`), `avgHr`, `splits[]` (po km: tempo,
 puls), `laps[]` (uloga rad/oporavak, dužina, trajanje, puls), `rpe`. Napomena iz F0: aplikacija danas čuva pun zapis

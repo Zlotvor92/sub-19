@@ -1590,9 +1590,11 @@ function onAvailability(
 ): Candidate | null {
   const a: Availability = normalizeAvailability(ev.availability);
   if (a.runDays.length === 0 || !a.runDays.includes(a.longDay)) return null;
-  const d = doc.header.decisions;
+  const { confirmedRunDays: _confirmed, ...d } = doc.header.decisions;
   const decisions: Decisions = {
     ...d,
+    /* R24 (M6): potvrda dana važi za dane iz događaja */
+    ...(a.confirmedRunDays === true ? { confirmedRunDays: true as const } : {}),
     runDays: a.runDays,
     longDay: a.longDay,
     qualityDays: assignDays(a.runDays, a.longDay),
@@ -1643,7 +1645,10 @@ function reskeleton(
   /* Ista distanca: vrh, plafoni i polazni dugi ostaju (plan je u toku); menja se samo raspored nedelja do trke. */
   const decisions: Decisions = sameDistance
     ? { ...old.decisions, templateId: picked.template.id }
-    : fresh;
+    : {
+        ...fresh,
+        ...(old.decisions.confirmedRunDays === true ? { confirmedRunDays: true as const } : {})
+      };
   const intents = sameDistance
     ? expandTemplate(picked.template, kept.length + weeks, data.library).slice(kept.length)
     : expandTemplate(picked.template, weeks, data.library);

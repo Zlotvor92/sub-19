@@ -233,6 +233,10 @@ export const SAFETY: SafetyNumbers = {
   minEasySec: 1800,
   minEasyMin: { brz: 35, srednji: 35, spor: 35, mali: 30, povratnik: 35 },
   minEasyFromRunDays: 5,
+  /* R24 (M6): u nedeljama gradnje i rasterećenja najkraći lagan dan nivoa važi od 5 dana (korak 3: dan manje); P1 (od 4
+     dana) ovde ne važi — 4-dnevni planovi polumaratona/maratona (p01, planovi vlasnika) nemaju lagan dan ispod praga
+     zbog broja dana, a trener ih vodi kao bajt-iste */
+  minEasyBuildFromRunDays: 5,
   minEasyFallbackMin: 30,
   peakNotBelowBase: true,
   tagMaxRun: [{ tag: 'brdo', max: 2, window: 3, replacement: 'intervali' }],

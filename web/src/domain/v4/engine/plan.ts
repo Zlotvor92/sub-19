@@ -387,6 +387,7 @@ export function createPlan(
       ? {}
       : { baseVolumeMin: hist.baseVolumeMin, baseKm: hist.baseKm ?? 0 }),
     ...((state.painHistory ?? []).length > 0 ? { painCaution: true } : {}),
+    ...(availability.confirmedRunDays === true ? { confirmedRunDays: true as const } : {}),
     ...highImpactFromOf(state, startDate, goal.raceDate),
     ...ageDecision(state, data, startDate),
     /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
@@ -497,7 +498,12 @@ export function createPlan(
         ? {}
         : { historyWeeklyMin: state.historyWeeklyMin + EXTRA_DAY_MIN })
     };
-    const probe = createPlan(more_state, goal, data, startDate, more, true);
+    /* R24 (M6): probni plan meri šta daje dodat dan po dosadašnjem pravilu laganih dana (bez M6) */
+    const probeData: DistanceData = {
+      ...data,
+      safety: { ...data.safety, minEasyBuildFromRunDays: undefined }
+    };
+    const probe = createPlan(more_state, goal, probeData, startDate, more, true);
     const ctx = paceCtxOf(probe.header);
     const costs = probe.weeks.map((w) => weekCost(w, goal.raceDate, ctx));
     /* Z7 (krug 7): trajanje dodatnog dana je ono što probni plan stvarno daje tom danu (prosek nedelja gradnje) */

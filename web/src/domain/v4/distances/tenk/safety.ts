@@ -158,6 +158,11 @@ export const SAFETY: SafetyNumbers = {
      35), početnici 25 */
   minEasyMin: { brz: 30, srednji: 30, spor: 30, mali: 30, povratnik: 30 },
   minEasyFromRunDays: 5,
+  /* R24 (M6 + P1): u nedeljama gradnje i rasterećenja najkraći lagan dan nivoa važi od 4 dana (korak 3: dan manje) */
+  minEasyBuildFromRunDays: 4,
+  /* R24 (P1): početnik u nedelji gradnje — najkraći lagan dan 25 min (samo pravilo M6; stara pravila laganih dana
+     za početnika ostaju) */
+  minEasyBuildMin: { pocetnik: 25 },
   /* Z8 (krug 7): traženi dani se poštuju — kad obim ne nosi najkraće lagano nivoa, lagan dan sme do 25 min uz
      rečenicu (10 km: najkraće lagano je 30 min, pa je zamena 5 min kraća, kao kod polumaratona 35 → 30) */
   minEasyFallbackMin: 25,

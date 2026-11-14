@@ -4,6 +4,11 @@
 import {
   EASY_FLOOR_MIN_RUN_DAYS,
   EASY_FLOOR_OVER_TARGET,
+  M6_LONG_OVER_EASY,
+  M6_LONG_TEMPLATE_SHARE,
+  M6_MIN_RUN_DAYS,
+  M6_KEEP_VOLUME,
+  M6_WEEK_OVER,
   RACE_PACE_STIMULUS,
   QUALITY_MIN_WORK_SEC,
   QUALITY_SHORTEN_STEP_SEC,
@@ -37,6 +42,7 @@ import {
   easyShareOfLong,
   longShareFor,
   longStepOf,
+  buildMinEasyOf,
   levelMinEasy,
   longEasyFloor,
   minEasyOf,
@@ -904,6 +910,20 @@ export interface EasyRef {
   max: Seconds;
 }
 
+/** R24 (M6): nedelja u kojoj važi najkraći lagan dan nivoa (gradnja/rasterećenje, bez trke, sužavanja i provere). */
+interface M6Week {
+  /** Najkraći lagan dan (s). */
+  minSec: Seconds;
+  /** Najviše bodova nedelje (cilj + 5 %). */
+  maxLoad: LoadPoints;
+  /** Najviše sekundi za lagane dane (ostatak obima + 5 % cilja). */
+  maxVolumeSec: Seconds;
+  /** Sme li nedelja da ima lagan dan manje (nikad ispod 3 dana; nepotvrđeni dani; u nedelji još nije izostavljen dan). */
+  mayDrop: boolean;
+  /** Dugi nedelje i koliko sme da se skrati (korak 2). */
+  long?: { date: IsoDate; recipe: Extract<Recipe, { type: 'long' }>; slackSec: Seconds };
+}
+
 /** LAGANI DANI (§ 6.2 k. 7, krug 2: R2, R4): ostatak cilja jednako na lagane dane, uz plafon po danu; višak se NE
     preraspodeljuje (nedelja je tada manja od cilja). Kad je deo po danu ispod `minEasySec`: sa ≥ 3 dana trčanja
     svaki traženi dan ostaje na `minEasySec`; dan otpada tek kad bi nedelja i bez kvaliteta prešla cilj za više od
@@ -920,6 +940,8 @@ function easyFill(
     floorSec?: Seconds;
     /** Krug 15 (M2, M21): pod laganog dana uz dugi ≥ 90 min (`longEasyFloor`); 0 = bez uslova. */
     longFloorSec?: Seconds;
+    /** R24 (M6): najkraći lagan dan nedelje gradnje/rasterećenja (`minEasyBuildFromRunDays`) — tri koraka. */
+    m6?: M6Week;
   },
   dayBeforeLong: IsoDate | null,
   afterQuality: ReadonlySet<IsoDate>,
@@ -983,6 +1005,72 @@ function easyFill(
     (days.length * withFloor + addonSec(days)) / 60 <=
       week.leftVolumeMin * (1 + EASY_FLOOR_OVER_TARGET);
   const minEasy = floorFits ? withFloor : Math.max(baseMinEasy, Math.min(longFloor, share));
+  /* R24 (M6): lagan dan nedelje gradnje/rasterećenja nije kraći od najkraćeg laganog nivoa — 1. nedelja sme do +5 %
+     iznad cilja; 2. dugi se skraćuje do max(1,3 × najkraći lagan, 85 % dugog nedelje); 3. jedan lagan dan manje (njegovi
+     minuti idu u ostale lagane dane). Kad ništa od toga ne staje (ili je trkač potvrdio dane), važi pravilo ispod. */
+  const m6 = week.m6;
+  const m6Want = m6 === undefined ? 0 : Math.max(minEasy, m6.minSec);
+  /* lagani deo dana koji mu daje bar najkraće lagano — dan sa dodatkom (ubrzanja) meri se ceo */
+  const m6Need = (day: EasyDay): Seconds => {
+    /* dodatak ostaje samo uz lagani deo ≥ najkraćeg (`put`); inače je dan ceo lagan */
+    const part = m6Want - addonCost(day).durationSec;
+    return day.addon !== null && part >= minEasy ? part : m6Want;
+  };
+  const m6Per = (list: EasyDay[]): Seconds => Math.max(...list.map(m6Need), 0);
+  if (m6 !== undefined && days.length > 0 && budget(days) / days.length < m6Per(days) - 30) {
+    /* koliko bi dugi morao da se skrati da svi dani `list` dobiju najkraće lagano (0 = staje bez skraćivanja) */
+    const cutFor = (list: EasyDay[]): Seconds => {
+      const share = budget(list) / list.length;
+      const easySec = list.reduce((sum, day) => sum + Math.max(m6Need(day), share), 0);
+      const byLoad = (week.fixedLoad + addons(list) + easySec / 60 - m6.maxLoad) * 60;
+      const byVolume = easySec + addonSec(list) - m6.maxVolumeSec;
+      return Math.max(0, Math.ceil(Math.max(byLoad, byVolume) / 60) * 60);
+    };
+    /* lagani minuti nedelje kakvi bi bili sa svim danima (dosadašnje pravilo: najkraće do `minEasyFallbackMin`) —
+       izostavljen dan ih predaje ostalim laganim danima */
+    const fallbackSec = Math.max(
+      ctx.data.safety.minEasySec,
+      (ctx.data.safety.minEasyFallbackMin ?? 0) * 60
+    );
+    const allDaysSec =
+      days.length * Math.min(m6Want, Math.max(fallbackSec, budget(days) / days.length)) +
+      addonSec(days);
+    const fill = (list: EasyDay[], cut: Seconds): Map<IsoDate, Recipe> => {
+      if (cut > 0 && m6.long !== undefined)
+        out.set(m6.long.date, { ...m6.long.recipe, sec: m6.long.recipe.sec - cut });
+      const share =
+        list.length < days.length
+          ? Math.max(budget(list), allDaysSec - addonSec(list)) / list.length
+          : budget(list) / list.length;
+      for (const day of list) put(day, Math.round(Math.max(m6Need(day), share) / 60) * 60);
+      return out;
+    };
+    const slack = m6.long?.slackSec ?? 0;
+    const cutAll = cutFor(days);
+    if (cutAll === 0 || cutAll <= slack) return fill(days, cutAll);
+    if (m6.mayDrop && days.length >= 2) {
+      const order = [
+        ...days.filter((d) => !afterQuality.has(d.date) && d.date !== dayBeforeLong),
+        ...days.filter((d) => !afterQuality.has(d.date) && d.date === dayBeforeLong),
+        ...days.filter((d) => afterQuality.has(d.date))
+      ];
+      const drop = order[order.length - 1];
+      const rest = days.filter((d) => d.date !== drop?.date);
+      const cutRest = cutFor(rest);
+      /* dan otpada samo kad preostali dani tada stvarno dobiju najkraće lagano (plafon dana to dozvoljava); inače
+         nedelja zadržava sve dane (pravilo ispod) — dan manje bez dužih laganih dana samo gubi obim */
+      const reach = rest.every((day) => day.cap + 30 >= m6Want - addonCost(day).durationSec);
+      /* … i kad preostali dani preuzmu (do plafona dana) bar `M6_KEEP_VOLUME` minuta izostavljenog dana — nedelja
+         ne gubi obim (manji vrh bi spustio i sužavanje) */
+      const share = Math.max(budget(rest), allDaysSec - addonSec(rest)) / rest.length;
+      const absorbed =
+        rest.reduce((sum, day) => sum + Math.min(day.cap, Math.max(m6Need(day), share)), 0) +
+        addonSec(rest);
+      const keeps = absorbed >= M6_KEEP_VOLUME * allDaysSec;
+      /* dan manje i kraći dugi zajedno ne idu (nedelja bi izgubila obim dvaput) */
+      if (reach && keeps && cutRest === 0) return fill(rest, 0);
+    }
+  }
   if (week.floorSec !== undefined && days.length > 0 && budget(days) / days.length < minEasy) {
     const per = Math.round(Math.max(week.floorSec, budget(days) / days.length) / 60) * 60;
     for (const day of days) put(day, per);
@@ -1014,7 +1102,7 @@ function easyFill(
         ctx.data.safety.minEasySec,
         (ctx.data.safety.minEasyFallbackMin ?? 0) * 60
       );
-      const least = byVolume ? days.length : 0;
+      const least = byVolume || ctx.decisions.confirmedRunDays === true ? days.length : 0;
       while (days.length > least && days.length > 0 && over(days)) {
         const drop = dropOrder.shift();
         days = days.filter((d) => d.date !== drop?.date);
@@ -1068,6 +1156,8 @@ export interface WeekShell {
   easyFloorSec?: Seconds;
   /** Krug 9b (A10 a): najduži lagan dan nedelje silaska (korekcija obima skraćuje lagane dane, cilj ostaje). */
   easyMaxSec?: Seconds;
+  /** R24 (M6): nedelja u prozoru povratka — najkraći lagan dan nivoa (M6) tu ne važi. */
+  noM6?: true;
 }
 
 /** RASPORED NEDELJE: recept za svaki dan iz mesta nedelje + sačuvanih veličina (cilj, dugi). Čista funkcija —
@@ -1532,8 +1622,10 @@ function layoutOnce(
     !noSecondDrop && buildWeek && placedQuality === 1 && week.easyFloorSec === undefined;
   let secondDropped = false;
   /* krug 9b (A10 a): u silasku (nedelja pod granicom silaska) dan se ne izostavlja */
+  /* R24 (M6): potvrđeni dani se ne izostavljaju */
   if (
     first !== undefined &&
+    d.confirmedRunDays !== true &&
     ((buildWeek && placedQuality === 0 && week.easyFloorSec === undefined) ||
       (easyAtFloor && secondQuality))
   ) {
@@ -1685,6 +1777,50 @@ function layoutOnce(
       if (date === eve) cap = Math.min(cap, RACE_EVE_MAX_SEC);
       return { date, addon: date === eve ? null : (addons.get(date) ?? null), cap, tight: calm };
     });
+  /* R24 (M6 + P1): nedelja gradnje/rasterećenja (ne trke, sužavanja, silaska ni provere) sa ≥ 4 tražena dana */
+  const m6WeekOf = (): { m6?: M6Week } => {
+    const minSec = buildMinEasyOf(s, d.level, d.runDays.length);
+    if (minSec === null) return {};
+    const asked = d.runDays.length;
+    /* gradnja i rasterećenje — vršna nedelja je merilo silaska i ostaje kakva jeste */
+    if (intent.kind !== 'build' && intent.kind !== 'recovery') return {};
+    if (slots.race) return {};
+    if (week.noM6 === true || week.easyFloorSec !== undefined) return {};
+    if (slots.items.some((x) => x.kind === 'test')) return {};
+    let fixedSecNow = 0;
+    for (const r of fixed.values()) fixedSecNow += summarize(realize(r, ctx), ctx.pace).durationSec;
+    const volume = week.volumeMin ?? Number.POSITIVE_INFINITY;
+    const dropped = runDays.filter((wd) => fixed.get(dateOf(wd))?.type === 'rest').length;
+    const lr = longDate === null ? undefined : fixed.get(longDate);
+    /* dugi se ne skraćuje ispod najdužeg brzog treninga nedelje (R20 B2: brzi trening nije duži od dugog) */
+    let hardSec = 0;
+    for (const [date, r] of fixed)
+      if (date !== longDate && r.type !== 'rest')
+        hardSec = Math.max(hardSec, summarize(realize(r, ctx), ctx.pace).durationSec);
+    const lower = Math.max(
+      M6_LONG_OVER_EASY * minSec,
+      M6_LONG_TEMPLATE_SHARE * week.longSec,
+      lr?.type === 'long' ? lr.dose : 0,
+      hardSec + 5 * 60
+    );
+    return {
+      m6: {
+        minSec,
+        maxLoad: week.targetLoad * (1 + M6_WEEK_OVER),
+        maxVolumeSec: (volume * (1 + M6_WEEK_OVER) - (week.kmCutMin ?? 0)) * 60 - fixedSecNow,
+        mayDrop:
+          d.confirmedRunDays !== true &&
+          dropped === 0 &&
+          runDays.length >= asked &&
+          runDays.length - 1 >= Math.max(M6_MIN_RUN_DAYS - 1, asked - 1),
+        ...(lr?.type === 'long' && longDate !== null && lr.sec > lower
+          ? {
+              long: { date: longDate, recipe: lr, slackSec: Math.floor((lr.sec - lower) / 60) * 60 }
+            }
+          : {})
+      }
+    };
+  };
   const afterQuality = new Set<IsoDate>();
   for (const [date, recipe] of fixed) {
     if (recipe.type === 'quality' || recipe.type === 'test') afterQuality.add(addDays(date, 1));
@@ -1700,7 +1836,8 @@ function layoutOnce(
           ? Number.POSITIVE_INFINITY
           : week.volumeMin - fixedSec / 60 - (week.kmCutMin ?? 0),
       ...(week.easyFloorSec === undefined ? {} : { floorSec: week.easyFloorSec }),
-      longFloorSec: longFloor
+      longFloorSec: longFloor,
+      ...m6WeekOf()
     },
     dayBeforeLong,
     afterQuality,
@@ -2269,6 +2406,13 @@ function taperVolumeCap(
   return null;
 }
 
+/** R24 (M6): nedelja je merilo laganih dana vršne nedelje (R2b) — sledeća nedelja koja nije rasterećenje je vrh;
+    ona ostaje bez M6 (vrh je merilo silaska, pa se ni njegovo merilo ne menja). */
+function beforePeak(weeks: readonly PlanWeek[], index: number): boolean {
+  const next = weeks.find((w) => w.index > index && w.intent.kind !== 'recovery');
+  return next?.intent.kind === 'peak';
+}
+
 /** Broj nedelja gradnje/vrha pre nedelje `index`. */
 function buildsBefore(weeks: readonly PlanWeek[], index: number): number {
   return weeks.filter(
@@ -2485,13 +2629,21 @@ export function runPass(
     }
     previousTarget = fullTarget;
     const accBefore = { ...taperAcc };
+    /* R24 (M6): nedelja u prozoru povratka (rampa, oporavak posle trke/testa, bol) ima svoja pravila laganih dana;
+       ni nedelja pred vrhom (merilo vrha) ne dobija M6 */
+    const inWindow =
+      adjustments.some((adj) => {
+        const w = adjustmentWindow(adj);
+        return w !== null && w.from <= addDays(week.start, 6) && w.rampEnd >= week.start;
+      }) || beforePeak(doc.weeks, week.index);
     const lay = (sh: WeekShell, sl: WeekSlots = slots): Map<IsoDate, Recipe> =>
       taperIntensity(
         layoutWeek(
           {
             ...sh,
             volumeMin: Math.round(plannedMin(sh.targetLoad) * 10) / 10,
-            kmCutMin: weekKmCut
+            kmCutMin: weekKmCut,
+            ...(inWindow ? { noM6: true as const } : {})
           },
           ctx,
           sl,
@@ -2539,6 +2691,24 @@ export function runPass(
     if (schedule !== null && shell.longSec > schedule.longSec)
       shell = { ...shell, longSec: Math.floor(schedule.longSec / 60) * 60 };
     let recipes = lay(shell);
+    /* R24 (M6): lanac rasta čita nedelju kakva bi bila bez M6 — dopuna laganih dana (+5 %) ne diže cilj sledećih
+       nedelja (bez ulančavanja) */
+    let m6Km = 0;
+    if (shell.noM6 !== true && !inWindow) {
+      const kmOf = (m: ReadonlyMap<IsoDate, Recipe>): number => {
+        let km = 0;
+        for (const r of m.values()) {
+          const w = realize(r, ctx);
+          if (w !== null) km += summarize(w, ctx.pace).km;
+        }
+        return km;
+      };
+      const after = { ...taperAcc };
+      Object.assign(taperAcc, accBefore);
+      const plain = lay({ ...shell, noM6: true });
+      Object.assign(taperAcc, after);
+      m6Km = kmOf(recipes) - kmOf(plain);
+    }
     /* M7 (krug 5): granica silaska je u km (km u minutima laganog tempa); kvalitet i dugi nose više km po minutu
        od cilja, pa se višak skida JEDNOM sa laganih dana (cilj − višak km × lagan tempo) */
     const m7Cap = taperVolumeCap(week, span, peakVolume, data);
@@ -3317,6 +3487,8 @@ export function runPass(
       /* Krug 4 (S2): obim u lancu rasta = km u minutima laganog tempa (minuti kvaliteta nose više km; pravilo
          „+ 8 % ili + 3 km" je pravilo kilometara). */
       const volume = (totals.km * ctx.pace.paces.easy) / 60;
+      /* R24 (M6): lanac rasta bez dopune M6 */
+      const chainVolume = ((totals.km - m6Km) * ctx.pace.paces.easy) / 60;
       /* R18 (stavka 5): nedelja oporavka posle trke (do 14 dana) ne spušta lanac rasta — oporavak posle trke nije
          povratak posle pauze; lanac nastavlja od nameravane nedelje (MAR s17: vrh 80,4 → 65,6 km) */
       const raceRecovery = adjustments.some(
@@ -3326,7 +3498,9 @@ export function runPass(
           a.date <= addDays(week.start, 6) &&
           a.date >= addDays(week.start, -14)
       );
-      volumes.push(raceRecovery ? Math.max(volume, plannedMin(shell.targetLoad)) : volume);
+      volumes.push(
+        raceRecovery ? Math.max(chainVolume, plannedMin(shell.targetLoad)) : chainVolume
+      );
       /* R8 t. 10: vršna nedelja skraćena zbog događaja (u prozoru izmene + 28 dana) nije merilo silaska — merilo je
          najveća puna nedelja gradnje van prozora, pa sužavanje posle više događaja ne produžava rep izmena */
       const shortened = adjustments.some((adj) => {

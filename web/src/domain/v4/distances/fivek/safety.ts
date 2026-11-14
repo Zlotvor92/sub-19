@@ -181,6 +181,11 @@ export const SAFETY: SafetyNumbers = {
      obimu i povratniku */
   minEasyMin: { brz: 30, srednji: 30, spor: 30, mali: 25, povratnik: 25 },
   minEasyFromRunDays: 5,
+  /* R24 (M6 + P1): u nedeljama gradnje i rasterećenja najkraći lagan dan nivoa važi od 4 dana (korak 3: dan manje) */
+  minEasyBuildFromRunDays: 4,
+  /* R24 (P1): početnik u nedelji gradnje — najkraći lagan dan 25 min (samo pravilo M6; stara pravila laganih dana
+     za početnika ostaju) */
+  minEasyBuildMin: { pocetnik: 25 },
   /* Z8: kad obim ne nosi najkraće lagano nivoa, lagan dan sme do 20 min uz rečenicu */
   minEasyFallbackMin: 20,
   peakNotBelowBase: true,
