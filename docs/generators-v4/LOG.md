@@ -745,3 +745,11 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   `82d1b4a` = samo `reports/R19-REPORT.md` i `reports/R19-t1-wip.diff` (stavka 1, 13 testova pada). Arhiviran.
 - Nov tab motora (Opus): `session_01GnHHiaZSGWeHY2sPFdz4bo`, nalog `briefs/R19-MOTOR.md` + dopune (10K p08 polazni
   dugi, 10K p06 sužavanje, MAR tekstovi/KNOWN); stavka 1 kreće od wip diff-a, raspored rampe u build.
+
+### 14. 11. 2026, 01:40 — motor R19 primljen (`ef506f4c`), provera organizatora; ocena R19 pokrenuta
+- Sam pokrenuo: 64 fajla, 1043 + 25 očekivano; typecheck čist; kapije 4 × 0 [visoka].
+- R19 urađeno: 1 (povratak po nedeljama; MAR s07 23,6|27,6|32,7 → 28,2|36,8|41,4; HM s05 ned 8 ≥ ned 7), 2a/2b (MAR
+  p06 26 km), 2d/2e (MAR p03/p10 dugi 25,1 km), 6 (pragovi po nivou), 7. Nije: 2c (→ tab MAR), 2f (p08 bez istorije),
+  3 (5K p06), 4 (M22), 5 (HM podatak), 8; MAR p11/p18 ostaju 22,6/22 km.
+- Ocena R19 nad `ef506f4c` po `briefs/R19-JUDGES.md`: nov Fable trener + 4 nova Fable druga sudije (ID-jevi u
+  sledećem unosu). Sledeći nalog motora čeka nalaze ocene.
