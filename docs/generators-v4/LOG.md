@@ -976,3 +976,24 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   obrisani na v4, a menjani u main: byteSame × 3, guidance/state reference, captureReference, guidance test).
   Redosled: 5K + priprema puštanja → spajanje `main` u `claude/v4` (lični plan iz `main` ima prednost) → `check:full`
   + E2E + CI → `main`. Završni upis u `main` tek kad vlasnik potvrdi da zna za obim (345 commitova van V4).
+
+### 15. 11. 2026, 07:50 — R26/R27 (5 km), priprema puštanja, OCENA R28; PREKID IZMENA (odluka vlasnika)
+- Vlasnik (≈ 06:20): „još krugova koliko je potrebno za 5K da se sredi i drugi sudija". R26 podatak 5K: p13 i p06
+  neizvodivi podatkom; p15 `21abcf1e` (bez uzbrdica ned 1–4, ned 8 brz rad 14 %; menja par P1 B, vrh 46,3 → 43,3 km;
+  provera „povratnik ≤ 4 dana" ≥ 2 treninga brzine umesto 3). R27 (Fable tab, `51e1bc57`, izveštaj `reports/R27-5K.md`,
+  26,02 USD): p13 vrh 12,6 → 14,9 km, p06 kvaliteti 2-2-2-2-1 i 4 dana uz „dan manje", p15 17 → 27 km; HM/10K/MAR
+  ispisi bajt-isti (provera organizatora: `git diff --stat 7f3ea1fa HEAD -- plans/{HM,10K,MAR}` prazno; V4 + sloj
+  1401 + 12 očekivano, `tsc` čist).
+- Priprema puštanja (tab F9, do `af31016d`): SQL usklađen sa bazom, verzije plana na 3 (`pruneVersions`),
+  `WITHOUT_ROW = true`, keš plana V4 za rad bez mreže; po izveštaju `npm run check` 4864 + 12, E2E 92/92, build OK.
+  NIJE spojeno u `main`, nije deployovano.
+- OCENA R28 (stanje `51e1bc57`, samo 5 km): trener `coach/ROUND-V4-5K-07` (`4653d577`): dozvoljava 7/14 → 8/14,
+  plafon 0/2 → 1/2; p06 65,5 → 78,5, p13 ulaz 76 → 81, p15 76 → 80; prosek 77,4 → 78,8; B 82,8, C 82,7; nijedna
+  ocena nije pala; „pustio bih 5 km". Drugi sudija `judge2/ROUND-V4-5K-06` (`85c5a68d`): svi profili, najniža p12
+  65,5, planova < 65 NEMA (p06 70, p13 79, p15 73,5).
+- Otvoreno za vlasnika (trener): p06 dobija 4 dana iako je tražio 5 (vraća ih potvrdom) — odluka vlasnika za M6 od
+  14. 11. to dozvoljava uz upozorenje.
+- ODLUKA VLASNIKA (≈ 07:40): PREKID IZMENA — „ovo kad završi gotovo je, ne čačkaj više ništa"; Fable više nije
+  dostupan. Novi krugovi i tabovi se ne pokreću. Vlasniku poslato 13 planova za pregled. Tabovi ocene arhivirani.
+- Stanje: generator i aplikacija na `claude/v4` @ `85c5a68d`; `main` i produkcija nepromenjeni (osim baze: rezerva +
+  V4 tabele, V4 nikome uključen). Spajanje u `main` čeka potvrdu vlasnika o obimu (345 commitova radne grane).
