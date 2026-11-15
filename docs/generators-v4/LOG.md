@@ -997,3 +997,16 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   dostupan. Novi krugovi i tabovi se ne pokreću. Vlasniku poslato 13 planova za pregled. Tabovi ocene arhivirani.
 - Stanje: generator i aplikacija na `claude/v4` @ `85c5a68d`; `main` i produkcija nepromenjeni (osim baze: rezerva +
   V4 tabele, V4 nikome uključen). Spajanje u `main` čeka potvrdu vlasnika o obimu (345 commitova radne grane).
+
+### 15. 11. 2026, 10:50 — puštanje u toku; NOVA ODLUKA VLASNIKA: svi planovi na V4, brisanje v2 i v1
+- (≈ 08:00) Vlasnik: „Sve je ovo ok, imaš amin, kreni u prebacivanje na V4 generator; koristi Opus, ne Fable; korak 2
+  radi nov Opus tab." PUŠTANJE-1 (Opus `session_01GnHHiYunp7hnUF3m71joHV`): `main` spojen u `claude/v4` (`f16761cf`,
+  bez izmene sadržaja — #55 je već bio na grani; lični plan identičan `main`), `check` 4884 + 12, `check:full`
+  5416 + 12 (73,6 min), E2E 92/92, build OK (`reports/PUSTANJE-SPAJANJE.md`, `883cbf9d`). CI grane crven od ranije:
+  `test/api.test.mjs` (izuzeci čišćenja u `user-state.sql` bez `plan_v4_zapamti`) i istek vremena 5 V4 testova —
+  istom tabu zadato da popravi (bez skip-a) i prati CI. Nalog za korak 2: `briefs/PUSTANJE-2.md` (otvara se kad je
+  CI zelen).
+- (≈ 10:45) Vlasnik: svi aktivni planovi prelaze na V4, zatim se v2 KOMPLETNO briše; briše se i v1; lični plan
+  vlasnika prelazi na V4; uklanja se dupli kod. Menja ranije odluke (lični plan zaštićen do 13. 12.; „stari prikaz"
+  kao rezerva). Baza (zbir): 31 nalog, 22 sa planom (oko 3 v2, ostalo stari format), 4 aktivna u 14 dana.
+  Pokrenuta etapa 1 (samo popis i plan): `briefs/BRISANJE-1-POPIS.md` → `f9/BRISANJE-PLAN.md`.
