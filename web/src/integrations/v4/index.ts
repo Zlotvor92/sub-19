@@ -10,8 +10,10 @@ export {
 } from './facts';
 export { tagOf, toResolved, toStored } from './view';
 export {
+  ADOPT_WARNING_CODE,
   adapterInput,
   adoptActive,
+  adoptedDoc,
   type AdoptDeps,
   type AdoptOutcome,
   type AdoptSnapshot

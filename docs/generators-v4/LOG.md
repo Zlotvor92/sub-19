@@ -1029,3 +1029,20 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   vlasnika; SVE OSTALO se briše iz baze (stari planovi i sve vezano za njih), bez arhive u `user_state`. Štedljivo —
   limit je blizu. Popis nad bazom (zbir): v2 = 3 (sva tri aktivna u 14 dana, trka nije prošla); stari format = 19
   (0 aktivnih u 14 dana, poslednja izmena 18. 10.). Prosleđeno tabu BRISANJE-1 za konačan dokument i SQL nacrt.
+
+### 15. 11. 2026, 12:00 — V4 PUŠTEN U PRODUKCIJU
+- Vlasnik je potvrdio direktno u tabu PUŠTANJE-2 (≈ 11:40): „Spajaj i deploy". PR #56 spojen metodom merge u 11:41 →
+  `main` = `638c9e04`; Vercel produkcioni deployment `dpl_AaYv2BttHizAgUHtyEQWaW7k9Y5Q` READY u 11:44; prethodni
+  `dpl_7MsjJPUAPfBwZFzBp1HxxwPLKq5k` (`6a37541d`). Produkcija vraća 200; runtime greške 11:44–11:55: nema. Baza
+  (select): `user_state` 31, `plan_v4` 0, `aktivnost` 0, `v4_pristup` 0. Izveštaj `reports/PUSTANJE-2.md`.
+- Vraćanje nazad (neizvršeno): Vercel Promote prethodnog deploymenta; ili red `ukljuceno=false` u `v4_pristup`;
+  rezerva baze `rezerva_20261114`.
+- Pre toga: CI run 1019 zelen na `823ec123` (izuzetak čišćenja za `plan_v4_zapamti`; duži rokovi za 5 sporih testova).
+- Sledeće (drugo puštanje, čeka nalog vlasnika): `f9/BRISANJE-PLAN.md` (`cdb3213d`) — dva v2 plana + lični plan
+  vlasnika u V4, brisanje starih planova iz baze (19), brisanje v2, v1 i duplog koda. Pre brisanja proveriti čiji je
+  treći v2 plan.
+- (12:10) Vlasnik: „Puštaj drugo puštanje." Provera baze (zbir): 3 v2 plana su na TRI naloga koji NISU vlasnikov
+  (trke 6. 1. – 26. 2. 2027, sva tri aktivna); vlasnikov nalog nema `genPlan`; starih 19 (trke 24. 9. 2026 – 1. 5.
+  2027). Zadržavaju se sva tri v2 plana (pravilo: v2 sa trkom koja nije prošla). Pokrenut korak 1
+  (`briefs/PUSTANJE2-KORAK1.md`): trajno preuzimanje, `discardLegacyPlan` + čuvar. SQL brisanja se ne izvršava dok
+  kod koraka 1 ne bude u produkciji.

@@ -98,6 +98,8 @@ describe('ugrađeni lični plan ide HM generatoru', () => {
 
 describe('plan bez podržane distance', () => {
   it('„Prilagodi plan" to eksplicitno prikazuje; prilagođavanje se odbija bez starog mehanizma', () => {
+    /* drugo puštanje: na vlasnikovom nalogu lični plan ima prednost nad genPlan — predmet testa je tuđ plan */
+    useAuthStore.setState({ userId: 'neko-drugi' });
     const plan = v2Plan({
       startDate: '2026-10-05',
       raceDate: '2026-12-13',

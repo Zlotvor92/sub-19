@@ -170,6 +170,8 @@ export function activeOf(
   s: Pick<TrainingSlice, 'genPlan' | 'log'>,
   isOwner: boolean
 ): GenPlanState | null {
+  /* Drugo puštanje (BRISANJE-PLAN § 2b „Prednost"): na vlasnikovom nalogu lični plan ima prednost nad `genPlan`. */
+  if (isOwner) return personalPlan(personalBaselineVdot(s.log));
   if (s.genPlan) return s.genPlan;
   return personalVisible({ hasGenPlan: false, isOwner, log: s.log })
     ? personalPlan(personalBaselineVdot(s.log))
@@ -186,8 +188,11 @@ export function useActiveGenPlan(): GenPlanState | null {
   const genPlan = useTrainingStore((s) => s.genPlan);
   const owner = useIsOwner();
   const entries = useTrainingStore((s) => ownsEntries(s.log));
-  const baseline = useTrainingStore((s) => (s.genPlan ? null : personalBaselineVdot(s.log)));
+  const baseline = useTrainingStore((s) =>
+    s.genPlan && !owner ? null : personalBaselineVdot(s.log)
+  );
   return useMemo(() => {
+    if (owner && baseline != null) return personalPlan(baseline);
     if (genPlan) return genPlan;
     if (!(owner || entries) || baseline == null) return null;
     return personalPlan(baseline);

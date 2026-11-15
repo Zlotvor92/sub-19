@@ -36,7 +36,7 @@ import {
   type MarathonV2Wizard
 } from '../../domain/onboarding/marathonV2';
 import { TOTAL_STEPS, initialWizard, type WizardState } from '../../domain/onboarding';
-import { useActiveGenPlan, useHasPlan, useTrainingStore } from '../../stores';
+import { useHasPlan, useTrainingStore } from '../../stores';
 import { activateNewPlan } from '../../stores/actions';
 import { useUIStore } from '../../stores/uiStore';
 import { FiveKV2Days, FiveKV2Experience, FiveKV2RaceHint, FiveKV2Result } from './FiveKV2Steps';
@@ -53,7 +53,7 @@ import { getApp } from '../../app/appContext';
 import { Disclosure } from '../../components/ui/Disclosure';
 import { DAY_DROPPED, makePlan, warningText, type WizardAnswers } from '../../integrations/v4';
 import { useRecoveryStore } from '../../stores/recoveryStore';
-import { personalProtected, useV4Store } from '../../stores/v4Store';
+import { useV4Store } from '../../stores/v4Store';
 
 /* ČAROBNJAK ZA PLAN: četiri koraka (trka → rezultat → iskustvo → dani). V1b: nov plan pravi SAMO generator v2 ciljne
    distance (5K, 10K, polumaraton, maraton; `FiveKV2Steps`, `TenKV2Steps`, `HmV2Steps`, `MarathonV2Steps`); pravila ulaza
@@ -119,10 +119,7 @@ export function Wizard({ today }: { today: string }) {
   }, [isMarathonV2, mw, w.raceDate, today]);
   /* F9 korak 7 (A4): pod zastavicom V4 korak 3 traži samo ispravan unos (obim, odgovor na pitanja) — izbor trkača
      (trčanje/hodanje, početnik, mali obim) se ne odbija; plan se pravi uz upozorenje (AGENTS § V4 t. 6). */
-  /* A5: dok je lični plan vlasnika zaštićen (do 13. 12. 2026), nov plan ide starim putem — V4 se ne nudi. */
-  const activePlan = useActiveGenPlan();
-  const v4Today0 = useV4Store((s) => s.today);
-  const v4Flag = useV4Store((s) => s.enabled) && !personalProtected(activePlan, v4Today0 ?? today);
+  const v4Flag = useV4Store((s) => s.enabled);
   const step3V4 = (v: {
     weeklyKm: string;
     experience: string | null;

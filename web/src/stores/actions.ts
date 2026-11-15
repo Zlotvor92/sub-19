@@ -8,6 +8,9 @@ import type { StoredPredRow } from '../domain/training/adaptation';
 import { withoutPersist, requestPersist } from './persistence';
 import { useRecoveryStore } from './recoveryStore';
 import { useTrainingStore } from './trainingStore';
+import { useSettingsStore } from './settingsStore';
+import { isOwnerNow } from './owner';
+import { DISCARDED_KINDS, kindOfStoredPlan, type StoredPlanKind } from './detect';
 
 /**
  * Aktivira nov generisan plan (čarobnjak): stari `g` podaci odlaze (novi plan dobija ISTE ID-jeve), lanac forme se
@@ -86,4 +89,49 @@ export function discardPlan(): void {
     useRecoveryStore.setState({ knee: purged.knee, kg: purged.kg });
   });
   requestPersist('now');
+}
+
+/**
+ * DRUGO PUŠTANJE, KORAK 1 (BRISANJE-PLAN § 2b, § 2d): uklanjanje plana koji ne prelazi u V4 (stari format, v2 sa
+ * prošlom trkom, nepoznat oblik) sa svim podacima vezanim za plan — tačno polja iz § 2d. Prazni se: `genPlan`, `log`,
+ * `alts`, `moves`, `pred`, `predLock`, `vdotLog`, `vanPlana`, `vanPlanaV2`; iz `knee`/`kg` odlaze zapisi sa `src`
+ * (vezani za dan plana); `ui.seenWeek`/`ui.snooze` = `null`. Ostaje: `t3k`, `wellness`, ostatak `ui`, `vreme`,
+ * `zajed`, `icu`, `strava`, ručni `knee`/`kg` i nepoznata polja. Jedan upis. Poziva ga SAMO `guardStoredPlan`.
+ */
+export function discardLegacyPlan(): void {
+  const r = useRecoveryStore.getState();
+  const manual = <T extends { src?: string | null }>(xs: readonly T[]): T[] =>
+    xs.filter((x) => x.src === undefined || x.src === null || x.src === '');
+  withoutPersist(() => {
+    useTrainingStore.setState({
+      genPlan: null,
+      log: {},
+      alts: {},
+      moves: {},
+      pred: {},
+      predLock: {},
+      vdotLog: []
+    });
+    useRecoveryStore.setState({
+      knee: manual(r.knee),
+      kg: manual(r.kg),
+      vanPlana: {},
+      vanPlanaV2: undefined
+    });
+    useSettingsStore.getState().patchUi({ seenWeek: null, snooze: null });
+  });
+  requestPersist('now');
+}
+
+/**
+ * Čuvar pri otvaranju (posle učitavanja stanja naloga): vrste `stari`, `v2-prosla-trka`, `nepoznat` → uklanjanje, pa
+ * korisnik vidi samo čarobnjak, bez pitanja. NIKAD za `v2`, `licni`, `nema`. Vraća vrstu (za beleženje/test).
+ */
+export function guardStoredPlan(today: string): StoredPlanKind {
+  const kind = kindOfStoredPlan(
+    { genPlan: useTrainingStore.getState().genPlan, isOwner: isOwnerNow() },
+    today
+  );
+  if (DISCARDED_KINDS.includes(kind)) discardLegacyPlan();
+  return kind;
 }

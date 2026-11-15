@@ -24,7 +24,6 @@ import { FiveKV2Adjustment } from './FiveKV2Adjustment';
 import { HmV2Adjustment } from './HmV2Adjustment';
 import { MarathonV2Adjustment } from './MarathonV2Adjustment';
 import { HandoffAppliedNotice } from './ShorterDistanceDecision';
-import { LegacyPlanNotice } from './LegacyPlanNotice';
 import { TenKV2Adjustment } from './TenKV2Adjustment';
 
 /* PRILAGODI PLAN: jedino mesto za sve što menja plan kao celinu — predlog zbog bola, predlog tempa prema formi, preračunavanje, novi plan. Predlozi se
@@ -47,7 +46,7 @@ export function AdjustPlan() {
   const hmV2 = isHmV2Plan(genPlan);
   const marathonV2 = isMarathonV2Plan(genPlan);
   const v2 = isFiveKV2Plan(genPlan) || tenV2 || hmV2 || marathonV2;
-  /* V1b: plan starog generatora se ne prilagođava — jedna poruka i „Generiši nov plan" (`LegacyPlanNotice`). */
+  /* V1b: plan starog generatora se ne prilagođava; drugo puštanje: takav plan uklanja čuvar pri otvaranju (`guardStoredPlan`). */
   const legacy = isLegacyPlan(genPlan);
 
   const injury = v2 ? null : (rec?.proposal ?? null);
@@ -81,7 +80,6 @@ export function AdjustPlan() {
         <h1>Prilagodi plan</h1>
         <p>Predlozi i radnje koje menjaju plan kao celinu.</p>
       </header>
-      <LegacyPlanNotice id="legacy-plan-adjust" />
 
       {injury ? (
         <Section title="Zbog bola" extra={injury.urgent ? 'Hitno' : 'Predlog'}>
