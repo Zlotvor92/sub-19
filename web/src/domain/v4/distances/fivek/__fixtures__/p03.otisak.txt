@@ -57,7 +57,7 @@
 2026-12-28 | odmor | - | 0.0 |  | - | - | -
 2026-12-29 | trening | easy | 2.6 | lagano 20 min | - | - | -
 2026-12-30 | odmor | - | 0.0 |  | - | - | -
-2026-12-31 | trening | easy | 2.6 | lagano 20 min | - | - | -
+2026-12-31 | trening | quality | 4.8 | tempo trke 3 × 600 m, oporavak 1:30 džog | - | - | -
 2027-01-01 | odmor | - | 0.0 |  | - | - | -
 2027-01-02 | odmor | - | 0.0 |  | - | - | -
 2027-01-03 | trening | long | 4.0 | dugi 30 min lagano | - | - | -

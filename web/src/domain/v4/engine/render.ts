@@ -284,8 +284,14 @@ export function raceNotes(
           : 'današnja forma',
     feel: feelOf('RP', data, raceDay.expectedSec)
   };
+  /* R27: tekst dana trke po nivou — unos `<ključ>.<nivo>` u tekstovima distance ima prednost (početnik čiji je cilj
+     da istrči trku ne dobija „sve što imaš"); prazan tekst = rečenica se ne ispisuje */
+  const byLevel = (key: string): string =>
+    data.texts[`${key}.${h.decisions.level}`] === undefined ? key : `${key}.${h.decisions.level}`;
   const out: string[] = [
-    h.paces.byFeel ? line(data, 'trka.po-osecaju', values) : line(data, 'trka.tempo', values)
+    h.paces.byFeel
+      ? line(data, byLevel('trka.po-osecaju'), values)
+      : line(data, 'trka.tempo', values)
   ];
   /* R18 (stavka 9): „ako provera potvrdi očekivani napredak" — broj je očekivano vreme (prognoza), ne cilj */
   const hoped = { timeSec: raceDay.expectedSec };
@@ -306,13 +312,13 @@ export function raceNotes(
       })
     );
   }
-  if (h.paces.byFeel && check !== undefined)
-    out.push(
-      `Tempo i taktiku za trku plan postavlja iz poslednje provere forme (${fmtDate(check.date)}) — do tada trči po osećaju.`
-    );
+  if (h.paces.byFeel && check !== undefined) {
+    const afterCheck = line(data, byLevel('trka.posle-provere'), { check: fmtDate(check.date) });
+    if (afterCheck !== '') out.push(afterCheck);
+  }
   for (const note of race?.workout?.notes ?? []) {
     const rule = data.noteRules.find((r) => data.texts[r.text] === note);
-    const feel = rule?.byFeelText === undefined ? undefined : data.texts[rule.byFeelText];
+    const feel = rule?.byFeelText === undefined ? undefined : data.texts[byLevel(rule.byFeelText)];
     out.push(fillText(h.paces.byFeel && feel !== undefined ? feel : note, values));
   }
   out.push(

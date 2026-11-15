@@ -25,7 +25,8 @@ import {
   GUARD_UNDER_TARGET,
   NEAR_ENOUGH,
   PREP_PROBE_MAX_EXTRA_WEEKS,
-  RETURN_LONG_JUMP_SEC
+  RETURN_LONG_JUMP_SEC,
+  ZONE_SHARE
 } from './constants';
 import { buildCtx, plannedEffort } from './build';
 import { addDays, diffDays, isValidDate, mondayOf, weekdayOf } from './dates';
@@ -37,7 +38,7 @@ import {
   maxWorkOf,
   minEasyOf,
   runStreak,
-  minRampOf,
+  rampRuleOf,
   ranGoalDistance
 } from './decide';
 import {
@@ -54,6 +55,7 @@ import {
   WORKOUTS
 } from './format';
 import { type PaceCtx, paceCtxOf, summarize, type WorkoutSummary } from './load';
+import { paceAtShare } from './vdot';
 import {
   adjustmentWindow,
   effortRampDays,
@@ -500,7 +502,7 @@ export const guard: GuardFn = (doc, _state, data) => {
     if (!raceWeek && !ramp && share > exitShare + GUARD_FAST_SHARE_TOLERANCE) {
       report('brz-udeo', week, null, 'Udeo brzog rada u nedelji je iznad dozvoljenog.');
     }
-    const rule = Math.max(m * (1 + s.maxWeeklyRampPct), m + minRampOf(s, ctx.paces.easy));
+    const rule = rampRuleOf(s, d.level, m, ctx.paces.easy);
     /* Z1 (krug 7): 4 nedelje posle rampe važi pravilo izlaska (+ 20 %), ne pravilo rasta */
     const exiting = inAnyWindow(week, causes, 28);
     if (
@@ -990,6 +992,25 @@ export function warnings(input: WarningInput): Warning[] {
   if (streak !== null) out.push(streak);
   const dropped = droppedDayWarning(doc, costs, dropMin, s);
   const shortEasy = shortEasyWarning(doc, costs, s);
+  /* R27 (`fewerRunDays`): plan ima dan manje od traženih u svim nedeljama — jedno upozorenje, sa brojevima */
+  const fewerRule = s.fewerRunDays?.minAvgMin[lvl.level];
+  if (lvl.askedRunDays !== undefined && fewerRule !== undefined) {
+    const asked = lvl.askedRunDays;
+    const freeDay = [0, 1, 2, 3, 4, 5, 6].find(
+      (wd) => !lvl.runDays.includes(wd as Weekday) && wd === (lvl.longDay + 6) % 7
+    );
+    /* isti broj obima kao u zaglavlju („Polazim od tvojih ≈ … km") */
+    const shownPace = paceAtShare(doc.header.form.start.vdot, ZONE_SHARE.E);
+    const shownKm = Math.round(d.baseKm ?? (d.baseLoad * 60) / shownPace);
+    const needKm = Math.ceil((fewerRule * asked * 60) / shownPace);
+    out.push({
+      code: 'dan-manje',
+      severity: 'info',
+      problem: `Tražio si ${count(asked, DAYS)} trčanja nedeljno, a plan ima ${count(lvl.runDays.length, DAYS)}: uz sadašnji obim od oko ${km(shownKm)} nedeljno ${count(asked, DAYS)} bi značilo trčanja kraća od ${String(Math.round(fewerRule))} min u proseku.`,
+      meaning: `Tako kratko lagano trčanje malo gradi — isti obim u manje, dužih trčanja vredi više, a oba brza treninga nedelje tada imaju mesto.${freeDay === undefined ? '' : ` Slobodan dan (${WEEKDAY_FULL_NAMES[freeDay] ?? ''}) neka bude odmor ili šetnja.`}`,
+      proposal: `Kad redovni obim pređe oko ${km(needKm)} nedeljno, plan koristi ${pluralForm(asked, ['svaki', 'sva', 'svih'])} ${count(asked, DAYS)}. Ako ti je važno da i sada trčiš ${pluralForm(asked, ['svaki', 'sva', 'svih'])} ${count(asked, DAYS)}, potvrdi broj dana — plan ih tada zadržava, uz kraće lagane dane.`
+    });
+  }
   if (dropped !== null) out.push(dropped);
   if (shortEasy !== null) out.push(shortEasy);
   const back = returnWarning(doc, state);
@@ -1108,6 +1129,15 @@ function testHint(doc: PlanDoc, data: DistanceData, today: IsoDate): string {
 
 const WEEKDAY_ACC = ['ponedeljak', 'utorak', 'sredu', 'četvrtak', 'petak', 'subotu', 'nedelju'];
 const WEEKDAY_SHORT_NAMES = ['pon', 'uto', 'sre', 'čet', 'pet', 'sub', 'ned'];
+const WEEKDAY_FULL_NAMES = [
+  'ponedeljak',
+  'utorak',
+  'sreda',
+  'četvrtak',
+  'petak',
+  'subota',
+  'nedelja'
+];
 
 /** Krug 15 (M4): raspored dana pravi niz duži od `maxConsecutiveWithHard` sa brzim treningom i dugim — taj brz trening
     se ne zadaje; plan kaže zašto i koji dan odmora rešava. */
@@ -1237,7 +1267,22 @@ function levelVolumeWarning(
     }
   }
   const neededKm = Math.ceil((neededLoad * 60) / header.paces.easy / 5) * 5;
-  const target = Math.max(byLevel ?? neededKm, Math.ceil((peakKm * 1.15) / 5) * 5);
+  /* R27 (`levelVolumeNextMaxOver`): bez broja za nivo predlog za sledeću pripremu je dostižan korak od vrha ovog
+     plana (ne obim pune doze kad je dvostruko veći od sadašnjeg), a rečenica kaže šta ovaj plan već radi */
+  const nextOver = data.adequate.levelVolumeNextMaxOver;
+  const reachable =
+    byLevel === undefined && nextOver !== undefined
+      ? Math.ceil((peakKm * nextOver) / 5) * 5
+      : Number.POSITIVE_INFINITY;
+  const target = Math.max(
+    Math.min(byLevel ?? neededKm, reachable),
+    Math.ceil((peakKm * 1.15) / 5) * 5
+  );
+  const startKm = d.baseKm ?? (d.baseLoad * 60) / header.paces.easy;
+  const raises =
+    nextOver !== undefined && byLevel === undefined && peakKm >= 1.15 * startKm
+      ? `Ovaj plan već podiže obim sa oko ${km(Math.round(startKm))} na ${km(peakKm)} nedeljno. `
+      : '';
   const share = fmtNumber(s.maxFastShare * 100, 0);
   /* R19 (stavka 6): rezultat ciljne distance nije „rezultat na kraćoj trci" */
   const result = input.state.profile.recentResult;
@@ -1262,7 +1307,7 @@ function levelVolumeWarning(
       : `Uz mali obim doze brzih treninga ostaju ispod onoga što tvoja forma može da iskoristi — napredak će biti sporiji nego što ${hint} nagoveštava.`,
     /* T4 (krug 6): obim koji ova priprema ne može da dostigne je predlog za sledeću; dan se ne nudi kad plan ni
        tražene dane ne koristi sve */
-    proposal: `${target > peakKm + 0.5 ? 'Za sledeću pripremu podigni' : 'Podigni'} nedeljni obim laganim trčanjem do oko ${km(target)} (${daysShort ? 'produži lagane dane za 10–15 min' : 'dodaj dan ili produži lagane dane za 10–15 min'}) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.`,
+    proposal: `${raises}${target > peakKm + 0.5 ? (raises === '' ? 'Za sledeću pripremu podigni' : 'U sledećoj pripremi nastavi: podigni') : 'Podigni'} nedeljni obim laganim trčanjem do oko ${km(target)} (${daysShort ? 'produži lagane dane za 10–15 min' : 'dodaj dan ili produži lagane dane za 10–15 min'}) — tada brzi treninzi dobijaju punu dozu. Do tada drži zadate doze i ne dodaj brzinu na svoju ruku.`,
     suggest: { peakWeeklyKm: target }
   };
 }

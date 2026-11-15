@@ -47,7 +47,7 @@ import {
   longEasyFloor,
   minEasyOf,
   runStreak,
-  minRampOf,
+  rampRuleOf,
   taperEasyMax
 } from './decide';
 import { doneIds } from './done';
@@ -185,9 +185,11 @@ export function weekTarget(
   intent: WeekIntent,
   input: TargetInput,
   ctx: BuildCtx
-): { full: LoadPoints; target: LoadPoints; kmCut: number } {
+): { full: LoadPoints; target: LoadPoints; kmCut: number; rule: number | null } {
   const s = ctx.data.safety;
   let kmCut = 0;
+  /* R27: obim koji pravilo rasta dozvoljava ovoj nedelji (minuti u laganom tempu); `null` van gradnje i vrha */
+  let ruleMin: number | null = null;
   const { m } = input;
   const extra = input.extra ?? 0;
   let full = intent.loadPct * ctx.decisions.peakLoad;
@@ -197,13 +199,14 @@ export function weekTarget(
     const rule =
       input.previousTarget === null
         ? m
-        : Math.max(m * (1 + s.maxWeeklyRampPct), m + minRampOf(s, ctx.pace.paces.easy));
+        : rampRuleOf(s, ctx.decisions.level, m, ctx.pace.paces.easy);
     /* R8 t. 13: pravilo rasta je u km — minuti nedelje + višak km kvaliteta ≤ pravilo */
     const kmOver = input.previousTarget === null ? 0 : (input.kmExtra ?? 0);
     const minutes = Math.min(wanted, rule);
     /* R8 t. 13: cilj (i budžet kvaliteta) ostaje; višak km kvaliteta preko pravila skida se sa laganih minuta */
     kmCut = Math.max(0, minutes + kmOver - rule);
     full = minutes + extra;
+    ruleMin = rule * input.fraction;
   }
   if (intent.kind === 'recovery' && input.previousTarget !== null && ctx.template !== null) {
     full = Math.min(full, ctx.template.recovery.loadFactor * input.previousTarget);
@@ -215,7 +218,12 @@ export function weekTarget(
   if (input.taperCap !== undefined && input.taperCap !== null) {
     full = Math.min(full, input.taperCap + extra);
   }
-  return { full, target: Math.round(full * input.fraction), kmCut: kmCut * input.fraction };
+  return {
+    full,
+    target: Math.round(full * input.fraction),
+    kmCut: kmCut * input.fraction,
+    rule: ruleMin
+  };
 }
 
 /** DUGI (§ 6.2 k. 6, krug 2: R4, R5): `min(namera, najduži od prethodne 3 (ili polazni) + korak,
@@ -612,6 +620,19 @@ export function weekSlots(
       ...(st.workoutId === undefined ? {} : { workoutId: st.workoutId })
     };
     let wanted = slotDose(slot, st.dosePct, intent.kind, ctx);
+    /* R27 (`minDoseLift`): doza malo ispod najmanje smislene u nedelji gradnje/vrha — najmanja doza, ne prazno mesto */
+    const lift = ctx.data.safety.minDoseLift;
+    const least = ctx.data.safety.minDoseSec;
+    if (
+      lift !== undefined &&
+      lift.levels.includes(d.level) &&
+      (intent.kind === 'build' || intent.kind === 'peak') &&
+      wanted > 0 &&
+      wanted < least &&
+      wanted >= lift.share * least &&
+      least <= (d.doseCapSec[slot.stimulus] ?? 0)
+    )
+      wanted = least;
     let def = pickDef(slot, wanted > 0 ? wanted : null, ctx, { noHighImpact: cautious });
     if (def === null) return;
     /* P3 (krug 5): oznaka (npr. brdo) najviše `max` od `window` nedelja zaredom — inače zamenski podražaj */
@@ -1419,11 +1440,22 @@ function layoutOnce(
      kvalitet ima prednost nad podom, pa se zbog njega ne skraćuje doza ni ne izbacuje trening) */
   const roomFor = (date: IsoDate, load: LoadPoints, sec: Seconds, withFloor = false): boolean => {
     const lf = withFloor ? longFloor : 0;
-    const room = placedQuality === 0 ? EASY_FLOOR_OVER_TARGET : VOLUME_ROOM_OVER;
+    const room =
+      placedQuality === 0
+        ? EASY_FLOOR_OVER_TARGET
+        : (s.secondQualityVolumeRoom?.[d.level] ?? VOLUME_ROOM_OVER);
     const rest = runDays.map((wd) => dateOf(wd)).filter((x) => x !== date && !fixed.has(x));
+    /* R27 (`easyBeforeQuality`): nivo iz podataka — preostali lagani dani se mere najkraćim laganim danom gradnje (M6) */
+    const buildMin =
+      week.easyFloorSec === undefined &&
+      (intent.kind === 'build' || intent.kind === 'peak') &&
+      s.easyBeforeQuality?.levels.includes(d.level) === true
+        ? (buildMinEasyOf(s, d.level, d.runDays.length) ?? 0)
+        : 0;
     const minEasy = Math.max(
       week.easyFloorSec ?? minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length),
-      lf
+      lf,
+      buildMin
     );
     /* M5 (krug 5): nivo sa najkraćim laganim po nivou — kvalitet ostaje, a otpada jedan lagan dan (dan manje uz
        rečenicu „dan-izostavljen"), dok ostaju bar dva lagana dana */
@@ -1467,7 +1499,11 @@ function layoutOnce(
     const both =
       (fixedSec + secOf(order[a] as SlotItem) + secOf(order[b] as SlotItem)) / 60 +
       (Math.max(0, others) * minEasyOf(s, ctx.decisions.level, ctx.decisions.runDays.length)) / 60;
-    if (both > (week.volumeMin ?? Number.POSITIVE_INFINITY) * (1 + VOLUME_ROOM_OVER)) {
+    if (
+      both >
+      (week.volumeMin ?? Number.POSITIVE_INFINITY) *
+        (1 + (s.secondQualityVolumeRoom?.[d.level] ?? VOLUME_ROOM_OVER))
+    ) {
       const first = order[a] as SlotItem;
       order[a] = order[b] as SlotItem;
       order[b] = first;
@@ -1668,6 +1704,27 @@ function layoutOnce(
         fix(first.item.date, fit.recipe);
         placedQuality += 1;
       }
+    }
+  }
+  /* R27 (`taper.keepQuality`): nedelja sužavanja bez ijednog brzog treninga — prvi kvalitet ostaje sa najkraćim
+     zagrevanjem/hlađenjem, u najmanjoj dozi koju nosi (nedelja pred trku nije bez brzog rada) */
+  if (
+    first !== undefined &&
+    intent.kind === 'taper' &&
+    placedQuality === 0 &&
+    s.taper?.keepQuality === true
+  ) {
+    if (first.dose >= minDoseOf(first.item.def, ctx)) {
+      const zone = mainZone(first.item.def.main);
+      budget.book(first.dose, zone === null ? first.item.extra : extraWeight(zone, ctx));
+      fix(first.item.date, {
+        type: 'quality',
+        def: first.item.def,
+        dose: first.dose,
+        slot: first.item.slot,
+        wuCd: shortestWuCd(ctx)
+      });
+      placedQuality += 1;
     }
   }
   /* krug 15 (M20): lagani dani na najkraćem — ostatak obima po slobodnom danu ispod najkraćeg laganog */
@@ -2552,10 +2609,16 @@ export function runPass(
     let fullTarget: LoadPoints = week.targetLoad;
     /* R8 t. 13: lagani minuti koje pravilo rasta u km skida (višak km kvaliteta) */
     let weekKmCut = 0;
+    /* R27 (`m6ChainWithinRule`): obim koji pravilo rasta dozvoljava ovoj nedelji */
+    let weekRule: number | null = null;
     if (opts.rechainFrom !== null && week.index >= opts.rechainFrom) {
       const recent = lastThree(volumes);
       /* Posle rampe povratka lanac rasta kreće od odrađenih nedelja posle nje, ne od baze pre pauze (S9). */
-      const fallback = recent.length < 3 && !(rampSeen && recent.length > 0);
+      /* R27 (`rampWeeksInChain`): plan koji počinje u prozoru povratka — polazni obim je sadašnji (posle pauze), pa
+         važi kao pod lanca dok lanac nema tri nedelje */
+      const chainInRamp =
+        ctx.data.safety.rampWeeksInChain?.levels.includes(header.decisions.level) === true;
+      const fallback = recent.length < 3 && (chainInRamp || !(rampSeen && recent.length > 0));
       const baseVolume = header.decisions.baseVolumeMin ?? header.decisions.baseLoad;
       const m = Math.max(...recent, ...(fallback ? [baseVolume] : []));
       const decided = weekTarget(
@@ -2573,6 +2636,7 @@ export function runPass(
       );
       fullTarget = decided.full;
       weekKmCut = decided.kmCut;
+      weekRule = decided.rule;
       shell = {
         ...week,
         targetLoad: decided.target,
@@ -2610,6 +2674,19 @@ export function runPass(
         })
       };
     }
+    /* R27 (`rampWeeksInChain`): nedelja prozora povratka bez brzog treninga (oporavak) — dugi ne prelazi pod
+       polaznog dugog (`longStartFloorShare`): rampa te nedelje skraćuje lagane dane, pa bi veći dugi nosio preveliki udeo nedelje */
+    if (
+      ramped &&
+      ctx.data.safety.rampWeeksInChain?.levels.includes(header.decisions.level) === true &&
+      !slots.items.some((x) => x.kind === 'quality' || x.kind === 'test')
+    ) {
+      const cap =
+        Math.round(
+          ((ctx.data.safety.longStartFloorShare ?? 1) * header.decisions.longStartSec) / 60
+        ) * 60;
+      if (shell.longSec > cap) shell = { ...shell, longSec: cap };
+    }
     /* R8 t. 11: izlazak iz POČETNE rampe (plan počinje dan posle testa/trke) po pravilu R2 — dugi nedelju za nedeljom
        ≤ + `RETURN_LONG_JUMP_SHARE` ili + `RETURN_LONG_JUMP_SEC` od istrčanog dugog prethodne nedelje */
     let exitCapped = false;
@@ -2631,11 +2708,18 @@ export function runPass(
     const accBefore = { ...taperAcc };
     /* R24 (M6): nedelja u prozoru povratka (rampa, oporavak posle trke/testa, bol) ima svoja pravila laganih dana;
        ni nedelja pred vrhom (merilo vrha) ne dobija M6 */
+    /* R27 (`rampWeeksInChain`): plan koji počinje u prozoru povratka — M6 važi i u prozoru (nedelje prozora su
+       redovne nedelje plana), osim dok traje oporavak bez brzog rada (raspored povratka) */
+    const windowM6 =
+      ctx.data.safety.rampWeeksInChain?.levels.includes(header.decisions.level) === true &&
+      schedule === null;
     const inWindow =
-      adjustments.some((adj) => {
-        const w = adjustmentWindow(adj);
-        return w !== null && w.from <= addDays(week.start, 6) && w.rampEnd >= week.start;
-      }) || beforePeak(doc.weeks, week.index);
+      (!windowM6 &&
+        adjustments.some((adj) => {
+          const w = adjustmentWindow(adj);
+          return w !== null && w.from <= addDays(week.start, 6) && w.rampEnd >= week.start;
+        })) ||
+      beforePeak(doc.weeks, week.index);
     const lay = (sh: WeekShell, sl: WeekSlots = slots): Map<IsoDate, Recipe> =>
       taperIntensity(
         layoutWeek(
@@ -3488,7 +3572,14 @@ export function runPass(
          „+ 8 % ili + 3 km" je pravilo kilometara). */
       const volume = (totals.km * ctx.pace.paces.easy) / 60;
       /* R24 (M6): lanac rasta bez dopune M6 */
-      const chainVolume = ((totals.km - m6Km) * ctx.pace.paces.easy) / 60;
+      const plainVolume = ((totals.km - m6Km) * ctx.pace.paces.easy) / 60;
+      /* R27 (`m6ChainWithinRule`): dopuna M6 koja nedelju ne diže preko pravila rasta ulazi u lanac — dopuna samo
+         vraća minute koje je pravilo u km skinulo laganim danima, a lanac ni tada ne raste brže od pravila (bez nje
+         obim stoji dok god M6 dopunjava: p15 21 km šest nedelja) */
+      const chainVolume =
+        ctx.data.safety.m6ChainWithinRule === true && weekRule !== null && m6Km > 0
+          ? Math.max(plainVolume, Math.min(volume, weekRule))
+          : plainVolume;
       /* R18 (stavka 5): nedelja oporavka posle trke (do 14 dana) ne spušta lanac rasta — oporavak posle trke nije
          povratak posle pauze; lanac nastavlja od nameravane nedelje (MAR s17: vrh 80,4 → 65,6 km) */
       const raceRecovery = adjustments.some(
@@ -3518,6 +3609,17 @@ export function runPass(
       longs.push(
         longAsDecided || raceRecovery ? Math.max(shell.longSec, totals.longSec) : totals.longSec
       );
+    }
+    /* R27 (`rampWeeksInChain`): plan koji POČINJE u prozoru povratka (nivo iz podataka, npr. povratnik) — njegove
+       nedelje u prozoru su odrađene nedelje kao i svake druge, pa lanac rasta obima i dugog čita i njih (inače cilj
+       stoji na polaznom obimu + korak do kraja prozora, a dugi na polaznom: p15 pet nedelja 21 km i dugi 45 min) */
+    if (
+      ramped &&
+      ctx.data.safety.rampWeeksInChain?.levels.includes(header.decisions.level) === true
+    ) {
+      const totals = weekTotals(built, header, state, ctx);
+      volumes.push(((totals.km - m6Km) * ctx.pace.paces.easy) / 60);
+      longs.push(totals.longSec);
     }
     if (opts.fresh === true && (touched || exitCapped)) {
       const real = weekTotals(built, header, state, ctx).longSec;

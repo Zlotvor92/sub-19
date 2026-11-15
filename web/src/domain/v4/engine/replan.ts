@@ -49,7 +49,8 @@ import {
   decideWarmup,
   longEasyFloor,
   minEasyOf,
-  decide
+  decide,
+  fewerRunDaysOf
 } from './decide';
 import { sortEvents } from './events';
 import { canonical } from './fingerprint';
@@ -1698,11 +1699,15 @@ function onAvailability(
   ev: EventOf<'availability-change'>,
   data: DistanceData
 ): Candidate | null {
-  const a: Availability = normalizeAvailability(ev.availability);
-  if (a.runDays.length === 0 || !a.runDays.includes(a.longDay)) return null;
-  const { confirmedRunDays: _confirmed, ...d } = doc.header.decisions;
+  const asked: Availability = normalizeAvailability(ev.availability);
+  if (asked.runDays.length === 0 || !asked.runDays.includes(asked.longDay)) return null;
+  const { confirmedRunDays: _confirmed, askedRunDays: _asked, ...d } = doc.header.decisions;
+  /* R27 (`fewerRunDays`): ista odluka kao pri nastanku plana — obim koji ne nosi tražene dane daje dan manje */
+  const fewer = fewerRunDaysOf(data.safety, d.level, asked, d.baseVolumeMin ?? d.baseLoad);
+  const a: Availability = fewer === null ? asked : { ...asked, runDays: fewer };
   const decisions: Decisions = {
     ...d,
+    ...(fewer === null ? {} : { askedRunDays: asked.runDays.length }),
     /* R24 (M6): potvrda dana važi za dane iz događaja */
     ...(a.confirmedRunDays === true ? { confirmedRunDays: true as const } : {}),
     runDays: a.runDays,

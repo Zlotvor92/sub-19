@@ -28,10 +28,13 @@ describe('krug 15 — kvalitet pre laganog dana na podu (M20)', () => {
     expect(runs).toBe(4);
   });
 
-  it('p06: upozorenje kaže pravi razlog (drugi brzi trening), bez „svi traženi dani ostaju"', () => {
+  /* R27: p06 dan manje ima kao odluku plana (`fewerRunDays`, upozorenje `dan-manje`) — razlog je i dalje mesto za
+     oba brza treninga, jednom rečenicom umesto dve stavke (`dan-izostavljen` + `lagan-kratak`) */
+  it('p06: upozorenje kaže pravi razlog (oba brza treninga imaju mesto), bez „svi traženi dani ostaju"', () => {
     const doc = build('p06');
-    const dropped = doc.header.warnings.find((w) => w.code === 'dan-izostavljen');
-    expect(dropped?.meaning).toContain('drugom brzom treningu');
+    const fewer = doc.header.warnings.find((w) => w.code === 'dan-manje');
+    expect(fewer?.meaning).toContain('oba brza treninga');
+    expect(doc.header.warnings.some((w) => w.code === 'dan-izostavljen')).toBe(false);
     const short = doc.header.warnings.find((w) => w.code === 'lagan-kratak');
     expect(short?.meaning ?? '').not.toContain('Svi traženi dani');
   });

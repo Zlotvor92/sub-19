@@ -49,8 +49,19 @@ export const SAFETY: SafetyNumbers = {
       { maxBaseKm: null, minWeeks: 0, overBase: 1.3 }
     ],
     limitedOverBase: 1.45,
-    limitedTenureWeeks: 8
+    limitedTenureWeeks: 8,
+    /* R27 (p13): početnik koji tek počinje, bez tegobe — vrh do adekvatnih 15 km kad nedelje to nose korakom 10 %
+       (10 → 15 km za 10 nedelja; drugi sudija: bezbedno). Množilac bodova ≈ 1,15 × množilac u km, kao u lestvici */
+    adequateFloor: {
+      peakKm: 15,
+      stepPct: 0.1,
+      tailWeeks: 4,
+      loadOverKm: 1.15,
+      levels: ['pocetnik-nov']
+    }
   },
+  /* R27 (p13): početnik koji tek počinje raste + 10 % nedeljno; najmanji korak od 1,5 km je kod 10 km nedeljno + 15 % */
+  rampByLevel: { 'pocetnik-nov': { pct: 0.1, minLoad: 0 } },
   /* plafon vrha po nivou (BO ≈ minuti nedelje sa težinom rada): 5 km — brz ≈ 8 h 30, srednji i spor ≈ 7 h 30
      (ciljni p04 vrh 50 km ≈ 5,8 h; brz trkač 65 km ≈ 6 h) (izbor) */
   /* R12 (F1): plafoni podignuti (spor/srednji 600, brz 660) — sa 460/520 plafon je, a ne lestvica, držao obim ravnim
@@ -85,7 +96,8 @@ export const SAFETY: SafetyNumbers = {
     /* početnik sa 3 dana: ciljni p11 dugi 9 od 19,5 km (46 %) */
     pocetnik: { ...LONG_SHARE, '3': 0.45 },
     'pocetnik-nov': { ...LONG_SHARE, '3': 0.44, '4': 0.36, '5': 0.32 },
-    povratnik: LONG_SHARE,
+    /* R27 (p15): povratnik sa 4 dana 36 % — sa 32 % dugi stoji na polaznih 45 min dok nedelja ne pređe 23 km */
+    povratnik: { ...LONG_SHARE, '4': 0.36 },
     mali: LONG_SHARE,
     spor: LONG_SHARE,
     srednji: LONG_SHARE,
@@ -167,8 +179,16 @@ export const SAFETY: SafetyNumbers = {
     raceWeekMaxOfPeak: 0.5,
     /* krug 11: kad su lagani dani i dugi već na najkraćem, silazak skraćuje brz trening do najmanje doze (i
        najkraćeg zagrevanja i hlađenja); nedelja ne gubi ni dan ni kvalitet (p06: brz, 25 km, 5 dana) */
-    trimOrder: ['scale', 'easy', 'long', 'quality']
+    trimOrder: ['scale', 'easy', 'long', 'quality'],
+    /* R27 (p06; drugi sudija: „nikad nedelja pre trke bez brzog rada") */
+    keepQuality: true
   },
+  /* R27 (p06): drugi kvalitet nedelje brzog trkača sme da digne obim do 5 % (kao dopuna laganog dana M6) — kod
+     ≈ 25 km nedeljno drugi trening je inače otpadao zbog jednog minuta */
+  secondQualityVolumeRoom: { brz: 0.05 },
+  /* R27 (p06): brz trkač malog obima — brzina 6 min (6 × 300 m, 9 × 200 m) umesto praznog mesta kad osnovica daje
+     3,5–6 min */
+  minDoseLift: { share: 0.55, levels: ['brz'] },
   /* lagan dan najmanje 20 min (K8: najkraći trening ≥ 20 min; ciljni p11 3 km ≈ 21 min) */
   minEasySec: 1200,
   /* krug 11 (stavka 16): lagan dan i dan sa ubrzanjima ne padaju ispod 20 min zbog zaokruživanja na 0,5 km */
@@ -186,6 +206,16 @@ export const SAFETY: SafetyNumbers = {
   /* R24 (P1): početnik u nedelji gradnje — najkraći lagan dan 25 min (samo pravilo M6; stara pravila laganih dana
      za početnika ostaju) */
   minEasyBuildMin: { pocetnik: 25 },
+  /* R27 (p15): povratnik — plan počinje u prozoru povratka, pa obim i dugi rastu od odrađenih nedelja i u njemu */
+  rampWeeksInChain: { levels: ['povratnik'] },
+  /* R27 (p15): povratnik — brzi trening staje samo ako laganim danima ostaje 25 min (skraćuje se zagrevanje, pa doza) */
+  easyBeforeQuality: { levels: ['povratnik'] },
+  /* R27 (p15, p02): dopuna M6 ulazi u lanac rasta do granice pravila rasta — inače obim stoji dok M6 dopunjava */
+  m6ChainWithinRule: true,
+  /* R27 (p06): od 5 traženih dana — kad sadašnji obim daje prosečno trčanje kraće od 27 min (90 % najkraćeg laganog
+     nivoa; p06: 122 min na 5 dana = 24 min), plan ima dan manje u svim nedeljama: oba kvaliteta staju, lagan dan nije
+     22 min pet puta nedeljno (trener P5: „plan ima 4 dana u ned 1–5") */
+  fewerRunDays: { fromRunDays: 5, minAvgMin: { brz: 27, srednji: 27, spor: 27 } },
   /* Z8: kad obim ne nosi najkraće lagano nivoa, lagan dan sme do 20 min uz rečenicu */
   minEasyFallbackMin: 20,
   peakNotBelowBase: true,
@@ -212,7 +242,9 @@ export const SAFETY: SafetyNumbers = {
   /* WU/CD po baznoj nedelji: rad 5 km je najbrži, pa je zagrevanje duže i sa ubrzanjima (tekst u biblioteci):
      do ≈ 20 km 10/10, do ≈ 35 km 15/10, više 20/10 (izbor; ciljni p01: dan kvaliteta ≈ 10 km uz 40 km nedeljno) */
   warmupCooldown: [
-    { uptoBaseLoad: 120, warmupSec: 600, cooldownSec: 600 },
+    /* R27 (p06): granica 125 (bilo 120) — 25 km brzog trkača je 122 min; sa 15 min zagrevanja dva kvaliteta ne
+       ostavljaju laganom danu ni 25 min */
+    { uptoBaseLoad: 125, warmupSec: 600, cooldownSec: 600 },
     { uptoBaseLoad: 210, warmupSec: 900, cooldownSec: 600 },
     { uptoBaseLoad: null, warmupSec: 1200, cooldownSec: 600 }
   ]
@@ -231,6 +263,8 @@ export const ADEQUATE: AdequatePrep = {
   longCheckMinWeeks: 10,
   minTenureWeeks: 6,
   /* brz trkač: obim ≥ 35 km da kvalitet nivoa stane (I 20+ min, RP 22 min uz WU/CD) */
-  minPeakWeeklyKmByLevel: { brz: 35 }
+  minPeakWeeklyKmByLevel: { brz: 35 },
+  /* R27 (p15): predlog obima za sledeću pripremu ≤ 1,25 × vrh ovog plana (povratnik sa 20 km ne dobija „oko 45 km") */
+  levelVolumeNextMaxOver: 1.25
   /* kraće distance od 5 km u aplikaciji nema */
 };

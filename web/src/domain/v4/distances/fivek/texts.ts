@@ -62,6 +62,13 @@ export const TEXTS: Record<string, string> = {
     'Zagrevanje 15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km {paceFrom}–{paceTo} (ne brže od {pace}), 2.–4. km ravnomerno {pace}, poslednji km sve što imaš. Ne kreći u guži brže od plana: prvih 400 m odlučuje trku.',
   'napomena.trka.po-osecaju':
     'Zagrevanje 10–15 min lagano + 4 ubrzanja, završi 5–10 min pre starta. 1. km malo lakše nego što ti se čini da možeš, 2.–4. km ravnomerno, napor koji možeš da držiš do kraja, poslednji km sve što imaš.',
+  /* R27 (p13): početnik koji tek počinje — dan trke prati cilj „istrči bez hodanja" (drugi sudija: „8–9 od 10,
+     poslednji km sve što imaš" i „do tada trči po osećaju" protivreče cilju) */
+  'trka.po-osecaju.pocetnik-nov':
+    'Cilj trke je da istrčiš celih 5 km bez hodanja — vreme danas nije važno. Trči po osećaju, bez gledanja u sat: napor 6–7 od 10, da možeš da izgovoriš kratku rečenicu.',
+  'trka.posle-provere.pocetnik-nov': '',
+  'napomena.trka.po-osecaju.pocetnik-nov':
+    'Zagrevanje 10 min lagano + 4 kratka ubrzanja, završi 5–10 min pre starta. 1. km namerno sporije nego što ti se čini da možeš — gužva i uzbuđenje vuku napred. 2.–4. km ravnomerno, kao na dugom trčanju ili malo jače, a poslednji km ubrzaj samo ako imaš snage; ako postane teško, uspori — ne staj.',
 
   /* trka i faze */
   race: 'trka — 5 km',

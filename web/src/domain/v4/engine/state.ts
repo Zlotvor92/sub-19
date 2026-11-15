@@ -294,7 +294,8 @@ function plannedLoads(
     weeks,
     yearsRunning: facts.profile.yearsRunning,
     painInYear: painInYear(facts),
-    safety: data.safety
+    safety: data.safety,
+    level
   });
   const over = ladderOverBase(data.safety, ladder);
   const peakLoad = decidePeak(baseLoad, picked.template, data.safety, level, over);

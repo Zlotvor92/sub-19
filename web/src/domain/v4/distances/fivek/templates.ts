@@ -304,7 +304,9 @@ function regularTail(sh: Shape, check: boolean, short = false): WeekIntent[] {
     week(
       FINISH,
       'taper',
-      0.58,
+      /* R27 (p06): 4 dana u pripremi od 6–7 nedelja — 66 %: sa 58 % dugi (udeo nedelje) pada na 5 km, ispod laganog
+         dana / 0,8 (kapija) */
+      sh.days === 4 && !check && !short ? 0.66 : 0.58,
       { len: 0.6 },
       /* sužavanje bez praga (README: RP 3 × 1000 m + T 1,5 km): sa pragom brz rad nedelje −1 kod velikog obima
          prelazi rad nedelje −2 (p05: 26 prema 25 min) — silazak intenziteta ima prednost.
@@ -313,7 +315,11 @@ function regularTail(sh: Shape, check: boolean, short = false): WeekIntent[] {
       /* plan ≤ 5 nedelja: najteža ima prvi tempo trke (≤ 70 % vrha), pa sužavanje 40 % da ostane ≤ 60 % najteže */
       sh.days === 3
         ? [S('tempo-trke', short ? 0.4 : 0.6, 'rp-600')]
-        : [STRIDES, S('tempo-trke', short ? 0.4 : 0.6, 'rp-800')]
+        : /* R27 (p06): 4 dana u pripremi od 6–7 nedelja (mali obim, dan manje od traženih) — jedan podražaj, tempo trke
+             u četvrtak, bez dana sa ubrzanjima: taj dan bi bio duži od dugog, a nedelja preko 70 % vrha */
+          sh.days === 4 && !check && !short
+          ? [S('tempo-trke', 0.6, 'rp-800')]
+          : [STRIDES, S('tempo-trke', short ? 0.4 : 0.6, 'rp-800')]
     ),
     /* N: nedelja trke — oštrenje 4 × 400 m u tempu trke u četvrtak, utorak lagano uz ubrzanja */
     /* 3 dana: utorak lagan bez ubrzanja (mali obim bi ga skratio ispod 20 min) */
@@ -340,7 +346,7 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
      5 nedelja zaredom posle vrha */
   const tailLong = (len: number, inOnePiece = false): { len: number; stimulus: string } =>
     fresh && inOnePiece
-      ? { len: Math.min(len, 0.6), stimulus: 'dugi' }
+      ? { len: Math.min(len, 0.65), stimulus: 'dugi' }
       : { len, stimulus: longStim };
   /* R17 (p12): uvod samo ubrzanjima 2 nedelje kod 12+ nedelja, 1 nedelja kod kraćih (p12: prvi rad tek u ned 4–5) */
   const intro = fresh || n >= 12 ? 2 : 1;
@@ -434,7 +440,9 @@ function beginnerWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       SPEC,
       fresh ? 'peak' : 'build',
       fresh ? 1 : 0.88,
-      fresh ? { len: 0.75, stimulus: 'dugi' } : tailLong(0.9),
+      /* R27 (p13): dugi u komadu 45 min (0,82 × najduži; bilo 0,75 = 40 min) — duži od trke, a lagan dan uz njega
+         staje na 35 min (lagan ≤ 75 % dugog) */
+      fresh ? { len: 0.82, stimulus: 'dugi' } : tailLong(0.9),
       [S('tempo-trke', fresh ? 0.8 : 0.95, fresh ? 'rp-400' : 'rp-1000'), STRIDES]
     ),
     /* N−1: sužavanje — tempo trke 3 × 600 m (ciljni p11 ned 15) */

@@ -14,7 +14,7 @@ import {
 } from './constants';
 import { runPass } from './build';
 import { addDays, diffDays, mondayOf, weekdayOf } from './dates';
-import { decide, ladderInputOf, longStepOf, ranGoalDistance } from './decide';
+import { decide, fewerRunDaysOf, ladderInputOf, longStepOf, ranGoalDistance } from './decide';
 import { levelWarning, validate, warnings, weekCost } from './guard';
 import { paceCtxOf, summarize } from './load';
 import { raceWorkout } from './select';
@@ -302,7 +302,7 @@ export function createPlan(
   goal: Goal,
   data: DistanceData,
   startDate: IsoDate,
-  availability: Availability = state.availability,
+  askedAvailability: Availability = state.availability,
   /** Probni plan za upozorenja: bez sopstvenih upozorenja (da se probni poziv ne ponavlja). */
   trial = false,
   /** R22 (B2): drugi prolaz — tempo trke u treninzima = tempo koji plan savetuje za trku (s/km). */
@@ -325,6 +325,12 @@ export function createPlan(
     weeksSincePause: state.weeksSincePause,
     longestRunM: longestRunOf(state.runs, state.profile.recentResult)
   });
+  /* R27 (`fewerRunDays`): sadašnji obim ne nosi tražene dane — plan ima dan manje u svim nedeljama (jedna odluka) */
+  const fewer = trial
+    ? null
+    : fewerRunDaysOf(data.safety, level, askedAvailability, hist.baseVolumeMin ?? baseLoad);
+  const availability: Availability =
+    fewer === null ? askedAvailability : { ...askedAvailability, runDays: fewer };
   const picked = pickTemplate(data, level, weeks, availability.runDays.length);
   if (picked === null) throw new Error('DistanceData bez šablona');
   const decided = decide({
@@ -344,7 +350,8 @@ export function createPlan(
       weeks,
       yearsRunning: state.profile.yearsRunning,
       painInYear: (state.painHistory ?? []).length > 0,
-      safety: data.safety
+      safety: data.safety,
+      level
     })
   });
   const easyPace = zonePaces(form.vdot, data.distanceM, false, undefined, transfer).easy;
@@ -388,6 +395,7 @@ export function createPlan(
       : { baseVolumeMin: hist.baseVolumeMin, baseKm: hist.baseKm ?? 0 }),
     ...((state.painHistory ?? []).length > 0 ? { painCaution: true } : {}),
     ...(availability.confirmedRunDays === true ? { confirmedRunDays: true as const } : {}),
+    ...(fewer === null ? {} : { askedRunDays: askedAvailability.runDays.length }),
     ...highImpactFromOf(state, startDate, goal.raceDate),
     ...ageDecision(state, data, startDate),
     /* Personalizacija: činjenice iz istorije se pamte u planu, da ponovno građenje bira iste unose. */
@@ -483,6 +491,8 @@ export function createPlan(
     return cache.extra;
   };
   const extraDayProbe = (): { peakKm: number; longKm: number; dayMin: number } | null => {
+    /* R27: plan koji je upravo odlučio dan manje ne predlaže dodatni dan */
+    if (fewer !== null) return null;
     const extra = extraRunDay(availability.runDays);
     if (extra === null) return null;
     const more: Availability = {
@@ -582,7 +592,7 @@ export function createPlan(
   const rp = trainingRacePace(out.header, finalRaceDay, data.distanceM);
   return rp === null
     ? out
-    : createPlan(state, goal, data, startDate, availability, false, rp, cache);
+    : createPlan(state, goal, data, startDate, askedAvailability, false, rp, cache);
 }
 
 /** R22 (B2): probni planovi jednog nastanka plana (dele ih oba prolaza). */

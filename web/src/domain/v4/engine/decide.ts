@@ -33,6 +33,9 @@ export interface PeakLadderInput {
   baseKm: number;
   weeks: number;
   limited: boolean;
+  /** R27 (pod vrha do adekvatnog obima): nivo i tegoba u poslednjih 12 meseci. */
+  level?: LevelId;
+  pain?: boolean;
 }
 
 /** Množilac vrha (S2): red lestvice za polazni obim i dužinu pripreme; ograničen trkač najviše `limitedOverBase`.
@@ -45,9 +48,22 @@ export function ladderOverBase(safety: SafetyNumbers, input: PeakLadderInput | n
     (r) => (r.maxBaseKm === null || input.baseKm <= r.maxBaseKm) && input.weeks >= r.minWeeks
   );
   const over = row?.overBase ?? fallback;
-  return input.limited && ladder.limitedOverBase !== undefined
-    ? Math.min(over, ladder.limitedOverBase)
-    : over;
+  const limited =
+    input.limited && ladder.limitedOverBase !== undefined
+      ? Math.min(over, ladder.limitedOverBase)
+      : over;
+  /* R27: vrh ispod adekvatnog obima distance diže se do njega kad nedelje to nose korakom `stepPct` */
+  const f = ladder.adequateFloor;
+  if (
+    f === undefined ||
+    input.level === undefined ||
+    !f.levels.includes(input.level) ||
+    input.pain === true ||
+    input.baseKm <= 0
+  )
+    return limited;
+  const reach = (1 + f.stepPct) ** Math.max(0, input.weeks - f.tailWeeks);
+  return Math.max(limited, Math.min((f.peakKm * f.loadOverKm) / input.baseKm, reach));
 }
 
 /** Ulaz lestvice iz činjenica: km = bodovi baze u minutima laganog tempa; ograničen = staž ispod praga ili tegoba
@@ -59,13 +75,15 @@ export function ladderInputOf(input: {
   yearsRunning: number | undefined;
   painInYear: boolean;
   safety: SafetyNumbers;
+  level?: LevelId;
 }): PeakLadderInput {
   const tenure = input.safety.peakLadder?.limitedTenureWeeks ?? 0;
   const shortTenure = input.yearsRunning !== undefined && input.yearsRunning * 52 < tenure;
   return {
     baseKm: input.easyPaceSecPerKm > 0 ? (input.baseLoad * 60) / input.easyPaceSecPerKm : 0,
     weeks: input.weeks,
-    limited: shortTenure || input.painInYear
+    limited: shortTenure || input.painInYear,
+    ...(input.level === undefined ? {} : { level: input.level, pain: input.painInYear })
   };
 }
 
@@ -145,6 +163,24 @@ export function decideWarmup(
 /** Najmanji dozvoljen rast nedelje u minutima (S2): veće od `minRampLoad` i `minRampKm` u laganom tempu. */
 export function minRampOf(safety: SafetyNumbers, easyPaceSecPerKm: number): number {
   return Math.max(safety.minRampLoad, ((safety.minRampKm ?? 0) * easyPaceSecPerKm) / 60);
+}
+
+/** PRAVILO RASTA NEDELJE (S2, R27): najveći obim (minuti) posle najveće od prethodne 3 nedelje `m` — procenat ili
+    najmanji korak, po nivou kad ga podaci daju (`rampByLevel`), inače opšti brojevi. Jedan vlasnik: čitaju ga
+    konstruktor i čuvar. */
+export function rampRuleOf(
+  safety: SafetyNumbers,
+  level: LevelId,
+  m: number,
+  easyPaceSecPerKm: number
+): number {
+  const own = safety.rampByLevel?.[level];
+  if (own === undefined)
+    return Math.max(m * (1 + safety.maxWeeklyRampPct), m + minRampOf(safety, easyPaceSecPerKm));
+  return Math.max(
+    m * (1 + own.pct),
+    m + Math.max(own.minLoad, ((own.minKm ?? 0) * easyPaceSecPerKm) / 60)
+  );
 }
 
 /** Korak dugog (S2): veće od `longStepSec` i `longStepKm` u laganom tempu. */
@@ -317,6 +353,27 @@ export function decideLongStart(
   const raw = safety.longStartShare;
   const share = typeof raw === 'number' ? raw : (byRunDays(raw, runDays) ?? 0);
   return Math.round(Math.max(longestRecentSec, share * baseLoad * 60) / 60) * 60;
+}
+
+/** R27 (`fewerRunDays`): dani plana kad sadašnji obim ne nosi tražene dane — bez dana pred dugi (ako nije dan
+    kvaliteta), inače bez poslednjeg po prioritetu; `null` kad pravilo ne važi (svi traženi dani ostaju). */
+export function fewerRunDaysOf(
+  safety: SafetyNumbers,
+  level: LevelId,
+  availability: { runDays: readonly Weekday[]; longDay: Weekday; confirmedRunDays?: boolean },
+  baseVolumeMin: number
+): Weekday[] | null {
+  const rule = safety.fewerRunDays;
+  const least = rule?.minAvgMin[level];
+  const n = availability.runDays.length;
+  if (rule === undefined || least === undefined || availability.confirmedRunDays === true)
+    return null;
+  if (n < rule.fromRunDays || n <= M6_MIN_RUN_DAYS - 1 || baseVolumeMin / n >= least) return null;
+  const order = assignDays(availability.runDays, availability.longDay);
+  const eve = ((availability.longDay + 6) % 7) as Weekday;
+  const drop = order.indexOf(eve) >= 2 ? eve : order[order.length - 1];
+  if (drop === undefined) return null;
+  return availability.runDays.filter((wd) => wd !== drop).sort((a, b) => a - b);
 }
 
 const gap = (a: number, b: number): number => Math.min(Math.abs(a - b), 7 - Math.abs(a - b));

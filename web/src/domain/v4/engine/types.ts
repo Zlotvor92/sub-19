@@ -253,6 +253,8 @@ export interface Paces {
 export interface Decisions {
   templateId: string;
   level: LevelId;
+  /** R27 (`fewerRunDays`): broj dana koje je trkač tražio kad plan ima dan manje (`runDays` su dani plana). */
+  askedRunDays?: number;
   /** M3 (krug 5): prognoza dana trke bez napretka od obima (nalaz `dugi-za-distancu`) i faktor širenja raspona
       (kratak staž); ispis i plan ih primenjuju istom funkcijom (`adjustRaceDay`). */
   raceDayNoProgress?: boolean;
@@ -816,7 +818,25 @@ export interface SafetyNumbers {
     rows: readonly { maxBaseKm: number | null; minWeeks: number; overBase: number }[];
     limitedOverBase?: number;
     limitedTenureWeeks?: number;
+    /** R27: POD VRHA DO ADEKVATNOG OBIMA. Kad je vrh lestvice ispod obima koji distanca traži, a priprema ima dovoljno
+        nedelja da se do njega stigne korakom `stepPct` nedeljno od sadašnjeg obima, vrh je taj obim: množilac je
+        `min(peakKm × loadOverKm / polazni km, (1 + stepPct)^(nedelja − tailWeeks))`, nikad ispod lestvice. `loadOverKm`
+        = množilac bodova prema množiocu u km (kvalitet vršne nedelje nosi više bodova po minutu). Važi samo za nivoe iz
+        `levels` i samo bez tegobe u poslednjih 12 meseci (tegoba drži oprezan vrh). Bez unosa: samo lestvica. */
+    adequateFloor?: {
+      peakKm: number;
+      stepPct: number;
+      tailWeeks: number;
+      loadOverKm: number;
+      levels: readonly LevelId[];
+    };
   };
+  /** R27: KORAK OBIMA PO NIVOU — rast nedelje za nivo iz mape umesto `maxWeeklyRampPct` / `minRampLoad` /
+      `minRampKm` (npr. početnik sa malim obimom: + 10 % bez najmanjeg koraka u km, koji je kod 10 km nedeljno + 15 %).
+      Nivo bez unosa: opšti brojevi. */
+  rampByLevel?: Readonly<
+    Partial<Record<LevelId, { pct: number; minLoad: LoadPoints; minKm?: number }>>
+  >;
   /** Rast nedelje je dozvoljen bar za ovoliko km (u minutima laganog tempa; krug 4, S2); uz `minRampLoad`. */
   minRampKm?: number;
   longMaxSec: Readonly<Record<LevelId, Seconds>>;
@@ -930,7 +950,18 @@ export interface SafetyNumbers {
     /** Krug 11: redosled koraka silaska obima (M7) — `scale` cela nedelja srazmerno, `easy` lagani dani, `quality`
         brzi treninzi do najmanje doze, `long` dugi; bez unosa `['scale', 'easy', 'long']`. */
     trimOrder?: readonly ('scale' | 'easy' | 'quality' | 'long')[];
+    /** R27: nedelja sužavanja ne ostaje bez brzog treninga — kad prvi kvalitet nedelje ne staje u cilj uz najkraće
+        lagane dane, ostaje sa najkraćim zagrevanjem/hlađenjem i dozom do najmanje smislene (nedelja sme preko cilja;
+        granice silaska i dalje važe). Bez polja: kvalitet koji ne staje otpada (dan je lagan). */
+    keepQuality?: boolean;
   };
+  /** R27: prostor obima za DRUGI kvalitet nedelje po nivou (udeo obima nedelje preko kog sme da ide; prvi kvalitet
+      ima `EASY_FLOOR_OVER_TARGET`). Nivo bez broja: `VOLUME_ROOM_OVER` (0). */
+  secondQualityVolumeRoom?: Readonly<Partial<Record<LevelId, number>>>;
+  /** R27: DOZA DO NAJMANJE SMISLENE. Mesto kvaliteta čija je doza iz osnovice ispod `minDoseSec`, ali bar `share` ×
+      `minDoseSec`, dobija najmanju dozu umesto da otpadne (mali obim brzog trkača: 6 × 300 m umesto ničega). Važi za
+      nivoe iz `levels`, u nedeljama gradnje i vrha; budžet brzog rada i dalje odlučuje da li trening staje. */
+  minDoseLift?: { share: number; levels: readonly LevelId[] };
   /** Oštrenje nedelje trke (krug 4, S1): podražaj van budžeta brzog rada, doza uvek u [minSec, maxSec]. */
   sharpening?: { stimulus: StimulusTag; minSec: Seconds; maxSec: Seconds };
   /** Napredovanje doze kad šablon ne zada `dosePct`. */
@@ -967,9 +998,26 @@ export interface SafetyNumbers {
       provere) nije kraći od `minEasyMin` — tri koraka: nedelja do +5 % iznad cilja, kraći dugi, pa dan manje
       (nikad ispod 3 dana; trkač koji potvrdi dane — `Availability.confirmedRunDays` — zadržava sve dane). */
   minEasyBuildFromRunDays?: number;
+  /** R27: nedelje u prozoru povratka ulaze u lanac rasta obima i dugog za nivoe iz `levels` (plan koji počinje u
+      prozoru povratka). Bez polja: nedelje u prozoru ne ulaze u lanac (povratak određuje samo rampa). */
+  rampWeeksInChain?: { levels: readonly LevelId[] };
+  /** R27: LAGAN DAN PRE KVALITETA. Za nivoe iz `levels` brzi trening staje u nedelju samo ako preostalim laganim
+      danima ostaje najkraći lagan dan gradnje (`minEasyMin` / `minEasyBuildMin`, pravilo M6), ne rezervnih
+      `minEasyFallbackMin`; trening se pre toga skraćuje (najkraće zagrevanje/hlađenje, manja doza), a kad ni tako ne
+      staje, dan je lagan. Bez polja: kvalitet se meri prema rezervnom najkraćem danu. */
+  easyBeforeQuality?: { levels: readonly LevelId[] };
+  /** R27: dopuna laganih dana (M6) ulazi u lanac rasta do obima koji pravilo rasta dozvoljava toj nedelji (nikad
+      preko njega). Bez polja: lanac čita nedelju bez dopune M6 (R24). */
+  m6ChainWithinRule?: boolean;
   /** R24 (P1): najkraći lagan dan po nivou samo za pravilo M6 (dopuna `minEasyMin` za nivoe koje stara pravila
       laganih dana ne mere, npr. početnik). */
   minEasyBuildMin?: Readonly<Record<LevelId, number>>;
+  /** R27: DAN MANJE KAO ODLUKA PLANA. Kad sadašnji obim podeljen na tražene dane daje prosečno trčanje kraće od
+      `minAvgMin[nivo]` minuta, plan od `fromRunDays` traženih dana ima jedan dan manje (dan pred dugi; nikad dva dana
+      manje) u SVIM nedeljama — isti obim u manje, dužih trčanja, a oba kvaliteta nedelje imaju mesto. Jedna odluka pri
+      nastanku plana (`Decisions.askedRunDays`), jedno upozorenje (`dan-manje`); trkač koji potvrdi dane
+      (`Availability.confirmedRunDays`) zadržava sve. Nivo bez broja i distanca bez polja: bez pravila. */
+  fewerRunDays?: { fromRunDays: number; minAvgMin: Readonly<Partial<Record<LevelId, number>>> };
   /** R24 (M4 c): početnik (`pocetnik`, `pocetnik-nov`) u planu koji počinje dan posle trke — nedelja 2 ≤ ovaj udeo
       uobičajenog nedeljnog obima. Bez polja: bez pravila. */
   postRaceBeginnerWeek2Share?: number;
@@ -1003,6 +1051,9 @@ export interface AdequatePrep {
   /** Vrh nedeljnog obima (km) koji nivo traži da bi kvalitet tog nivoa stao u plan (upozorenje `obim-za-nivo`,
       krug 2, R11); nivo bez broja: obim pri kom plafoni doza prestaju da zavise od obima. */
   minPeakWeeklyKmByLevel?: Readonly<Record<LevelId, number>>;
+  /** R27: upozorenje `obim-za-nivo` bez broja za nivo — predlog obima za sledeću pripremu najviše ovoliko puta
+      vrh ovog plana (na 5 km naviše), i rečenica o tome koliko ovaj plan već podiže obim. Bez polja: obim pune doze. */
+  levelVolumeNextMaxOver?: number;
   /** R19 (stavka 6): najmanji broj dana za upozorenje `malo-dana` po nivou; nivo bez broja: `minRunDays`. */
   minRunDaysByLevel?: Readonly<Partial<Record<LevelId, number>>>;
   /** R19 (stavka 6): dugi za distancu u upozorenjima po nivou; nivo bez broja: `minLongKm`. */
