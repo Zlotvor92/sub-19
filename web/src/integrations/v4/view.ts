@@ -81,6 +81,14 @@ function kindOfStep(s: SingleStep, w: Workout): SStep['kind'] {
   }
 }
 
+/* Struktura PRE / RAD / POSLE samo za trening sa zagrevanjem ili hlađenjem (kvalitet, test). Lagan i dugi dan (i sa
+   ubrzanjima ili završnim delom) ostaje lagan dan kao pre: opis, km i lagan tempo — ubrzanja nisu „tempo rada". */
+function hasWarmupOrCooldown(w: Workout): boolean {
+  return (w.steps as readonly Step[]).some(
+    (s) => !('repeat' in s) && (s.role === 'warmup' || s.role === 'cooldown')
+  );
+}
+
 const round2 = (x: number): number => Math.round(x * 100) / 100;
 
 function structStep(s: SingleStep, w: Workout, ctx: PaceCtx): SStep {
@@ -174,7 +182,9 @@ function storedDay(day: PlanDay, weekStart: string, ctx: PaceCtx): StoredDay {
   const km = tag === 'snaga' ? null : kmOf(w, ctx);
   /* Preuzet dan ostaje kao pre (svoja stara polja); generisan i ručno unet dan dobija strukturu iz koraka. */
   const structure =
-    day.origin === 'adopted' || tag === 'snaga' ? {} : { structure: structureOf(w, ctx) };
+    day.origin === 'adopted' || tag === 'snaga' || !hasWarmupOrCooldown(w)
+      ? {}
+      : { structure: structureOf(w, ctx) };
   return {
     ...legacy,
     ...structure,
