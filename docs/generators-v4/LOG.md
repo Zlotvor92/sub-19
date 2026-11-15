@@ -1041,3 +1041,8 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
 - Sledeće (drugo puštanje, čeka nalog vlasnika): `f9/BRISANJE-PLAN.md` (`cdb3213d`) — dva v2 plana + lični plan
   vlasnika u V4, brisanje starih planova iz baze (19), brisanje v2, v1 i duplog koda. Pre brisanja proveriti čiji je
   treći v2 plan.
+- (12:10) Vlasnik: „Puštaj drugo puštanje." Provera baze (zbir): 3 v2 plana su na TRI naloga koji NISU vlasnikov
+  (trke 6. 1. – 26. 2. 2027, sva tri aktivna); vlasnikov nalog nema `genPlan`; starih 19 (trke 24. 9. 2026 – 1. 5.
+  2027). Zadržavaju se sva tri v2 plana (pravilo: v2 sa trkom koja nije prošla). Pokrenut korak 1
+  (`briefs/PUSTANJE2-KORAK1.md`): trajno preuzimanje, `discardLegacyPlan` + čuvar. SQL brisanja se ne izvršava dok
+  kod koraka 1 ne bude u produkciji.
