@@ -177,10 +177,23 @@ for (const [name, input] of Object.entries(INPUTS)) {
       )
       .toBe(8);
     expect(v4.row?.rev).toBe(5); // unos trčanja ne menja plan
+
+    // „Nešto se desilo?" → umor → pregled → Primeni
+    if (await back(page).isVisible()) await back(page).click();
+    await tab(page, 'Danas').click();
+    await page
+      .locator('#v4-report')
+      .getByRole('button', { name: /Prijavi/ })
+      .click();
+    await page.getByRole('button', { name: 'Umoran sam' }).click();
+    await expect(page.locator('#v4-preview')).toBeVisible();
+    await page.getByRole('button', { name: 'Primeni' }).click();
+    await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(6);
+    await expect(page.locator('#v4-changes')).toBeVisible();
   });
 }
 
-test('V4 ugašen (nema reda u v4_pristup): isti čarobnjak pravi v2 plan, plan_v4 se ne piše', async ({
+test('V4 ugašen (red ukljuceno=false u v4_pristup): isti čarobnjak pravi v2 plan, plan_v4 se ne piše', async ({
   page
 }) => {
   const backend = await installBackend(page);
@@ -268,4 +281,62 @@ test('V4 korak 8: Forma iz trčanja, „Nešto se desilo?" → pregled → Prime
   await page.getByRole('button', { name: 'Ne menjaj plan' }).click();
   await expect.poll(() => v4.events.map((e) => e.vrsta), SYNC).toContain('odbijeno');
   expect(v4.row?.rev).toBe(before + 1);
+});
+
+test('puštanje: postojeći korisnik sa v2 planom posle puštanja vidi isti plan (preuzimanje uz isti otisak), bez praznog ekrana', async ({
+  page
+}) => {
+  const backend = await installBackend(page);
+  const v4 = installV4(backend, false);
+  await page.goto('/');
+  await runWizard(page, INPUTS['Polumaraton']);
+  await expect
+    .poll(
+      () =>
+        JSON.stringify((backend.row?.data as { genPlan?: unknown } | undefined)?.genPlan ?? null),
+      SYNC
+    )
+    .toContain('"policyId":"hm-v2"');
+  await tab(page, 'Plan').click();
+  const rows = page.locator('.page.active .plan-row');
+  await expect(rows.first()).toBeVisible();
+  const before = await rows.allInnerTexts();
+
+  // puštanje: korisnik nema red u v4_pristup → V4 uključen
+  v4.enabled = true;
+  await page.reload();
+  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(0);
+  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
+  await tab(page, 'Plan').click();
+  await expect(rows.first()).toBeVisible();
+  expect(await rows.allInnerTexts()).toEqual(before);
+  expect(v4.row).toBeNull(); // samo prikaz: preuzimanje ništa ne upisuje dok nema izmene
+});
+
+test('puštanje: korisnik koji ima samo plan_v4 vidi plan i bez mreže (lokalni keš)', async ({
+  page
+}) => {
+  const backend = await installBackend(page);
+  const v4 = installV4(backend);
+  await page.goto('/');
+  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(0);
+  await runWizard(page, INPUTS['5K']);
+  await expect.poll(() => v4.row?.rev ?? 0, SYNC).toBe(1);
+  await page.reload(); // učitavač upisuje keš posle uspešnog učitavanja
+  await expect.poll(() => backend.count('/rest/v1/plan_v4?', 'GET'), SYNC).toBeGreaterThan(1);
+  await tab(page, 'Plan').click();
+  const rows = page.locator('.page.active .plan-row');
+  await expect(rows.first()).toBeVisible();
+  const online = await rows.allInnerTexts();
+
+  /* van mreže: API ne odgovara, a pregledač javlja da mreže nema (stranica dolazi iz lokalnog servera, kao iz keša PWA) */
+  backend.offline = true;
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'onLine', { get: () => false, configurable: true });
+  });
+  await page.reload();
+  await expect(page.getByRole('dialog', { name: 'Pravljenje plana' })).toHaveCount(0);
+  await tab(page, 'Plan').click();
+  await expect(rows.first()).toBeVisible();
+  expect(await rows.allInnerTexts()).toEqual(online);
 });

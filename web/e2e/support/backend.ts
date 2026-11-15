@@ -119,6 +119,9 @@ export class Backend {
         return { status: 201, body: [{ updated_at: this.row.updated_at }] };
       }
     }
+    /* F9 puštanje (15. 11. 2026): bez reda u v4_pristup V4 je UKLJUČEN. Postojeći tokovi brane v2 put, pa je V4 ovde
+       IZRIČITO isključen (red `ukljuceno = false`); V4 testovi to zamenjuju kroz `support/v4.ts` (`backend.api`). */
+    if (url.includes('/rest/v1/v4_pristup')) return { body: [{ ukljuceno: false }] };
     if (url.includes('/rest/v1/zajednica')) return { body: [] };
     if (url.includes('/rest/v1/rpc/zabelezi_otvaranje')) return { body: null };
     return { status: 404, body: { error: 'nepoznata adresa u lažnom backendu: ' + url } };

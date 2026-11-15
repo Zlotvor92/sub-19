@@ -351,8 +351,9 @@ describe('plan_v4_dogadjaj: samo dopisivanje', () => {
 });
 
 describe('v4_pristup: značenje na jednom mestu', () => {
-  it('bez reda = WITHOUT_ROW; red = njegova vrednost; mreža = isključeno', async () => {
-    expect(v4Enabled(null)).toBe(WITHOUT_ROW);
+  it('bez reda = WITHOUT_ROW (puštanje svima: uključen); red = njegova vrednost; mreža = isključeno', async () => {
+    expect(WITHOUT_ROW).toBe(true);
+    expect(v4Enabled(null)).toBe(true);
     expect(v4Enabled({ ukljuceno: true })).toBe(true);
     expect(v4Enabled({ ukljuceno: false })).toBe(false);
     expect(v4Enabled('nepoznato')).toBe(false);

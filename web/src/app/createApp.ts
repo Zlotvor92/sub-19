@@ -56,6 +56,7 @@ import { adoptServerState } from '../domain/sync/payload';
 import {
   ALL_LOCAL_KEYS,
   v4ActivityKey,
+  v4PlanKey,
   SB_LOGIN_WINDOW_MS,
   SB_NONCE_OK_KEY,
   SB_STATE_KEY,
@@ -517,6 +518,7 @@ export function createApp(deps: AppDeps): App {
         engine.reset(!!loaded.loadFailure);
         sync.set({ conflict: null, loadFailure: loaded.loadFailure });
       }
+      integrations.v4?.hydrateCached(); // F9: plan iz plan_v4 se vidi odmah (i bez mreže)
       auth.set({ gate: null, ready: true });
       reconcileOwnerData(); // sesija je potvrđena: sada se pouzdano zna čiji je nalog
       await engine.start().catch(() => 'offline');
@@ -656,7 +658,10 @@ export function createApp(deps: AppDeps): App {
       accountStorage.forget();
       engine.reset();
       const forgotten = session.state.userId;
-      if (forgotten) kv.remove(v4ActivityKey(forgotten)); // F9: napredak uvoza aktivnosti za V4
+      if (forgotten) {
+        kv.remove(v4ActivityKey(forgotten)); // F9: napredak uvoza aktivnosti za V4
+        kv.remove(v4PlanKey(forgotten)); // F9: keš poslednjeg V4 plana
+      }
       session.logout(); // pre brisanja ključeva: odjava upisuje praznu sesiju
       for (const k of ALL_LOCAL_KEYS) kv.remove(k);
       hydratePersisted(seedState(deps.today()));

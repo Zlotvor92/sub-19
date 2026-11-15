@@ -24,8 +24,9 @@ const revOf = (url: string): number | null => {
 
 export function installV4(backend: Backend, enabled = true): V4Fake {
   const fake: V4Fake = { enabled, row: null, events: [], writes: 0, runs: [] };
+  /* puštanje svima: uključen = korisnik NEMA red (kao u produkciji); isključen = red `ukljuceno = false` */
   backend.api.set('/rest/v1/v4_pristup', () => ({
-    body: fake.enabled ? [{ ukljuceno: true }] : []
+    body: fake.enabled ? [] : [{ ukljuceno: false }]
   }));
   backend.api.set('/rest/v1/plan_v4_dogadjaj', (r: Recorded) => {
     if (r.method === 'GET') return { body: fake.events };

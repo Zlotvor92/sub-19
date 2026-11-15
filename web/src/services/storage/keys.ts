@@ -17,6 +17,9 @@ export const ICU_STATE_KEY = 'sub19-icu-state';
 /** F9: napredak uvoza aktivnosti za V4, po nalogu (`services/v4/activityStore`). Briše ga `forgetEverything`. */
 export const v4ActivityKey = (uid: string): string => `${LS_KEY}:v4-aktivnost:${uid}`;
 
+/** F9: poslednje učitano V4 stanje naloga (plan iz `plan_v4`), samo za prikaz bez mreže. Briše ga `forgetEverything`. */
+export const v4PlanKey = (uid: string): string => `${LS_KEY}:v4-plan:${uid}`;
+
 export const TAB_KEY = 'sub19-tab';
 /** Uvodni ekran viđen u ovoj sesiji (sessionStorage). */
 export const INTRO_SEEN_KEY = 'sub20-uvod';

@@ -42,7 +42,7 @@ import { liveState, otisakOf, refreshPlan } from '../integrations/v4';
 import { loadRuns } from '../services/v4/activities';
 import { personalProtected } from '../stores/v4Store';
 import { createActivityImport } from '../services/strava/activityImport';
-import { v4ActivityKey } from '../services/storage/keys';
+import { v4ActivityKey, v4PlanKey } from '../services/storage/keys';
 import {
   commitAction,
   createSupabaseActivityStore,
@@ -138,8 +138,10 @@ export interface Integrations {
   pullIfDue(thresholdMs: number): void;
   /** F9 korak 7: V4 iza zastavice `v4_pristup`. `null` kad Supabase nije podešen (tada je V4 uvek isključen). */
   v4: {
-    /** Pri pokretanju: zastavica + red `plan_v4` → `useV4Store`. Bez mreže, bez reda ili sa greškom: isključeno. */
+    /** Pri pokretanju: zastavica + red `plan_v4` → `useV4Store` (bez mreže: poslednje učitano stanje naloga). */
     load(): Promise<void>;
+    /** Sinhrono, pre mreže: poslednje učitano V4 stanje naloga iz lokalnog keša. */
+    hydrateCached(): void;
     plan: PlanApi;
     events: EventsApi;
     deviceId(): string;
@@ -160,26 +162,60 @@ const icuLinkStore = {
 };
 
 /** Odluka učitavača V4 (čista, bez store-a): zastavica + red `plan_v4` → stanje `useV4Store`, ili `null` kad se
- *  nalog promenio usred učitavanja (tada se ništa ne upisuje). Bez mreže, bez reda u `v4_pristup` (`WITHOUT_ROW`) ili
- *  sa greškom servera: isključeno. */
+ *  nalog promenio usred učitavanja (tada se ništa ne upisuje). Puštanje svima (15. 11. 2026): nema reda u
+ *  `v4_pristup` = uključen (`WITHOUT_ROW`). Izričito isključen (red `ukljuceno = false`) → isključeno i keš se briše.
+ *  Bez mreže ili sa greškom mreže/servera: poslednje učitano V4 stanje ovog naloga (`cached`, samo za prikaz), a bez
+ *  njega isključeno — korisnik koji ima samo `plan_v4` tako ne ostaje bez plana van mreže. */
+export type V4StartupResult = {
+  enabled: boolean;
+  row: PlanRow | null;
+  today: string;
+  /** Šta uraditi sa lokalnim kešom. */
+  cache: 'upisi' | 'obrisi' | 'zadrzi';
+};
+
 export async function v4Startup(p: {
   online: boolean;
   today: string;
-  access: () => Promise<{ enabled: boolean }>;
+  access: () => Promise<{ enabled: boolean; state?: string }>;
   load: () => Promise<LoadResult>;
   same: () => boolean;
-}): Promise<{ enabled: boolean; row: PlanRow | null; today: string } | null> {
-  const off = { enabled: false, row: null, today: p.today };
-  if (!p.online) return off;
-  const access = await p.access().catch(() => ({ enabled: false }));
+  /** Poslednje uspešno učitano stanje ovog naloga (uključen, red plana), ili `null`. */
+  cached?: { row: PlanRow | null } | null;
+}): Promise<V4StartupResult | null> {
+  const fallback = (): V4StartupResult =>
+    p.cached
+      ? { enabled: true, row: p.cached.row, today: p.today, cache: 'zadrzi' }
+      : { enabled: false, row: null, today: p.today, cache: 'zadrzi' };
+  if (!p.online) return fallback();
+  const access = await p
+    .access()
+    .catch((): { enabled: boolean; state?: string } => ({ enabled: false, state: 'nepoznato' }));
   if (!p.same()) return null;
-  if (!access.enabled) return off;
+  if (access.state === 'nepoznato') return fallback();
+  if (!access.enabled) return { enabled: false, row: null, today: p.today, cache: 'obrisi' };
   const r = await p
     .load()
     .catch((): LoadResult => ({ ok: false, reason: 'network', retryable: true }));
   if (!p.same()) return null;
-  if (!r.ok) return off;
-  return { enabled: true, row: r.row, today: p.today };
+  if (!r.ok) return fallback();
+  return { enabled: true, row: r.row, today: p.today, cache: 'upisi' };
+}
+
+/** Lokalni keš poslednjeg V4 stanja (samo prikaz van mreže); neispravan zapis = nema keša. */
+export function readV4Cache(kv: KeyValueStore, uid: string): { row: PlanRow | null } | null {
+  try {
+    const raw = kv.get(v4PlanKey(uid));
+    if (!raw) return null;
+    const v = JSON.parse(raw) as { v?: unknown; row?: unknown };
+    if (v.v !== 1) return null;
+    const row = v.row as PlanRow | null;
+    if (row !== null && (typeof row !== 'object' || typeof row.rev !== 'number' || !row.doc))
+      return null;
+    return { row };
+  } catch {
+    return null;
+  }
 }
 
 export function createIntegrations(deps: IntegrationDeps): Integrations {
@@ -495,17 +531,37 @@ export function createIntegrations(deps: IntegrationDeps): Integrations {
                 .catch(() => undefined);
             return true;
           },
+          /** Keš ovog naloga u store PRE mreže (nema treptaja čarobnjaka kod korisnika koji ima samo `plan_v4`). */
+          hydrateCached(): void {
+            const uid = deps.session.state.userId;
+            if (!uid) return;
+            const c = readV4Cache(deps.kv, uid);
+            if (c !== null)
+              useV4Store.getState().set({ enabled: true, row: c.row, today: belgradeDate(now()) });
+          },
           async load(): Promise<void> {
             const owner = deps.accountKey?.();
+            const uid = deps.session.state.userId;
             const next = await v4Startup({
               online: deps.online(),
               today: belgradeDate(now()),
               access: () => readAccess(v4Rest),
               load: () => v4Plan.load(),
-              same: () => deps.accountKey?.() === owner
+              same: () => deps.accountKey?.() === owner,
+              cached: uid ? readV4Cache(deps.kv, uid) : null
             });
             if (next === null) return;
-            useV4Store.getState().set(next);
+            const { cache, ...state } = next;
+            useV4Store.getState().set(state);
+            if (uid) {
+              try {
+                if (cache === 'upisi')
+                  deps.kv.set(v4PlanKey(uid), JSON.stringify({ v: 1, row: next.row }));
+                else if (cache === 'obrisi') deps.kv.remove(v4PlanKey(uid));
+              } catch {
+                /* pun ili zabranjen lokalni prostor: radi i bez keša */
+              }
+            }
             if (!next.enabled) return;
             /* korak 8: trčanja (forma iz trčanja) i odbijeni prijavljeni događaji; pa izvedene promene same */
             const [runs, ev] = await Promise.all([

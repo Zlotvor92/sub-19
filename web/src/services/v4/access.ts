@@ -1,16 +1,14 @@
 /* V4 · ZASTAVICA `v4_pristup` — ZNAČENJE JE SAMO OVDE.
-   Danas (supabase/v4.sql): nema reda = V4 ISKLJUČEN; red = vrednost `ukljuceno`.
-   Odluka vlasnika „pušta se svima" se izražava jednim od dva načina (F9 etapa 2d, izveštaj):
-     (a) bez izmene baze i koda: pri ulasku jedan SQL upis reda `ukljuceno = true` za svakog korisnika — ali nov
-         korisnik posle toga nema red, pa nema V4 dok mu se red ne doda;
-     (b) predlog: promeniti značenje na „nema reda = UKLJUČEN" (`WITHOUT_ROW = true` ispod) — tada red služi samo
-         za gašenje (`ukljuceno = false`), nov korisnik dobija V4 sam, a vraćanje nazad svima je jedan upis redova.
-   Bez mreže ili sa greškom servera uvek važi ISKLJUČENO (ostaje stari prikaz; ništa se ne gubi). */
+   PUŠTANJE SVIMA (odluka vlasnika 15. 11. 2026, varijanta (b) iz F9 etape 2d): nema reda = V4 UKLJUČEN; red =
+   vrednost `ukljuceno` (red `false` gasi V4 tom korisniku — `v4_iskljuci()` ili SQL vlasnika). Vraćanje nazad svima:
+   upis redova `ukljuceno = false`, ili ova konstanta nazad na `false`.
+   Bez mreže ili sa greškom servera ovde važi ISKLJUČENO (`nepoznato`); učitavač tada prikazuje poslednje učitano V4
+   stanje naloga iz lokalnog keša (app/integrations.ts, `v4Startup`). */
 import { z } from 'zod';
 import { eq, type V4Rest } from './rest';
 
-/** Šta važi kad korisnik nema red u `v4_pristup`. Jedina konstanta koju (b) menja. */
-export const WITHOUT_ROW = false;
+/** Šta važi kad korisnik nema red u `v4_pristup` (puštanje svima: `true`). */
+export const WITHOUT_ROW = true;
 
 export type AccessState = 'ukljucen' | 'iskljucen' | 'nepoznato';
 
