@@ -86,7 +86,8 @@ const round2 = (x: number): number => Math.round(x * 100) / 100;
 function structStep(s: SingleStep, w: Workout, ctx: PaceCtx): SStep {
   const pace = paceOfStep(s, ctx);
   const feel = ctx.paces.byFeel && s.target.type === 'zone' && s.target.zone !== 'E';
-  const zone = s.target.type === 'zone' ? (s.role === 'recovery' ? 'jog' : s.target.zone) : undefined;
+  const zone =
+    s.target.type === 'zone' ? (s.role === 'recovery' ? 'jog' : s.target.zone) : undefined;
   const byDistance = 'distanceM' in s.extent;
   const km = byDistance
     ? round2((s.extent as { distanceM: number }).distanceM / 1000)
@@ -126,7 +127,11 @@ export function structureOf(w: Workout, ctx: PaceCtx): Structure {
     }
     const [main, rec, ...rest] = st.steps;
     if (main && rec && rest.length === 0 && rec.role === 'recovery') {
-      blocks.push({ reps: st.repeat, step: structStep(main, w, ctx), recovery: structStep(rec, w, ctx) });
+      blocks.push({
+        reps: st.repeat,
+        step: structStep(main, w, ctx),
+        recovery: structStep(rec, w, ctx)
+      });
       continue;
     }
     for (let i = 0; i < st.repeat; i++)
@@ -152,7 +157,6 @@ export function structureOf(w: Workout, ctx: PaceCtx): Structure {
   };
 }
 
-
 function storedDay(day: PlanDay, weekStart: string, ctx: PaceCtx): StoredDay {
   const origDate = day.movedFrom ?? day.date;
   const from = parseIsoDate(weekStart);
@@ -171,7 +175,15 @@ function storedDay(day: PlanDay, weekStart: string, ctx: PaceCtx): StoredDay {
   /* Preuzet dan ostaje kao pre (svoja stara polja); generisan i ručno unet dan dobija strukturu iz koraka. */
   const structure =
     day.origin === 'adopted' || tag === 'snaga' ? {} : { structure: structureOf(w, ctx) };
-  return { ...legacy, ...structure, id: day.id, dow, tag, km, desc: w.text } as unknown as StoredDay;
+  return {
+    ...legacy,
+    ...structure,
+    id: day.id,
+    dow,
+    tag,
+    km,
+    desc: w.text
+  } as unknown as StoredDay;
 }
 
 /** `PlanDoc` → sačuvan oblik plana + pomeranja (`moves`: id → važeći datum za premeštene dane). */
