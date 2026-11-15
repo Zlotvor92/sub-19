@@ -25,7 +25,6 @@ import { useEasyPace } from '../session/useEasyPace';
 import { DayRow } from './DayRow';
 import { GoalAssessmentLine } from './GoalAssessment';
 import { V4FormCard } from './V4FormCard';
-import { LegacyPlanNotice } from './LegacyPlanNotice';
 
 const byDate = (a: { date: string }, b: { date: string }): number => {
   const da = a.date || '9999-99-99';
@@ -111,7 +110,6 @@ export default function PlanPage() {
         <GoalAssessmentLine meta={gen?.meta} />
         <V4FormCard />
       </header>
-      <LegacyPlanNotice />
 
       <div className="weeknav">
         <div className="weeknav-t">

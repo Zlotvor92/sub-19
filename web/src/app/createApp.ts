@@ -10,6 +10,7 @@ import {
   withoutPersist,
   type PersistMode
 } from '../stores';
+import { guardStoredPlan } from '../stores/actions';
 import { recomputeChain } from '../domain/day';
 import { removeForeignSeed } from '../domain/personal';
 import { useRecoveryStore } from '../stores/recoveryStore';
@@ -18,7 +19,7 @@ import { workPaceContext } from '../stores/dayActions';
 import { useAuthStore } from '../stores/authStore';
 import { useSyncStore } from '../stores/syncStore';
 import { useSettingsStore } from '../stores/settingsStore';
-import { createIntegrations, type Integrations } from './integrations';
+import { belgradeDate, createIntegrations, type Integrations } from './integrations';
 import { useV4Store } from '../stores/v4Store';
 import { createAdminApi, type AdminApi } from '../services/api/adminApi';
 import { createCommunity, type Community } from './community';
@@ -523,6 +524,8 @@ export function createApp(deps: AppDeps): App {
       reconcileOwnerData(); // sesija je potvrđena: sada se pouzdano zna čiji je nalog
       await engine.start().catch(() => 'offline');
       if (session.state.userId !== startingUser) return;
+      /* drugo puštanje: plan koji ne prelazi u V4 (stari format, prošla trka, nepoznat) se uklanja → samo čarobnjak */
+      guardStoredPlan(belgradeDate(now()));
       void activity.opened();
       await integrations.consumeOAuthReturn(loc.search, deps.replaceUrl, loc.pathname);
       integrations.pullIfDue(60 * 60000);
