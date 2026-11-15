@@ -961,3 +961,18 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   opterećenje pre sužavanja (oznaka promenjena u 87 ispisa). Provera organizatora na `7f3ea1fa`: V4 + sloj 1381 + 12
   očekivano, `tsc` čist; razlika ispisa naspram `b8ad0bb6` samo u zaglavlju i redovima nedelje [visoka za MAR, uzorak].
   Tab arhiviran. Stanje generatora za puštanje: `7f3ea1fa` (osim 5 km — čeka odluku vlasnika).
+
+### 15. 11. 2026, 01:25 — ODLUKE VLASNIKA: krug 5 km, 3 verzije plana, „spajaj pa deploy"
+- (1) „pusti taj krug": R26 podatak 5 km (p13, p06, p15) zadat postojećem tabu 5K.
+- (2) „ima 3 prethodna plana koja se koriste, ostale briši": na produkciji primenjene migracije `v4_verzije_plana`
+  (`plan_v4_zapamti()` samo dopisuje + okidač; politika `plan_v4_verzija_ukloni` for delete + grant delete — višak
+  preko 3 uklanja aplikacija) i `v4_iskljuci` (upsert reda sa `ukljuceno=false`). Provereno: 2 okidača na `plan_v4`,
+  3 funkcije, `v4_pristup` 0 redova, `plan_v4` 0 redova, `user_state` 31.
+- (3) „spajaj pa deploy": priprema puštanja zadata tabu F9 (verzije na 3, `WITHOUT_ROW = true`, E2E tokova).
+- NALAZ ORGANIZATORA pre spajanja: `claude/v4` je 856 commitova ispred `main`; od toga 345 je sa radne grane
+  `claude/generator-isolation-5k-10k-hm-marathon` (rad posle 30. 10. koji NIJE u `main`: V1b brisanje v1 generatora,
+  test infrastruktura …) — spajanje pušta i to. `main` ima 1 commit koga nema na `claude/v4`: `6a37541d` (#55, 1. 11.)
+  — NOV lični plan vlasnika (6 nedelja od 2. 11., Bokeški, cilj 1:40:00). Probno spajanje: 7 sukoba (fajlovi
+  obrisani na v4, a menjani u main: byteSame × 3, guidance/state reference, captureReference, guidance test).
+  Redosled: 5K + priprema puštanja → spajanje `main` u `claude/v4` (lični plan iz `main` ima prednost) → `check:full`
+  + E2E + CI → `main`. Završni upis u `main` tek kad vlasnik potvrdi da zna za obim (345 commitova van V4).
