@@ -205,14 +205,21 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
       const iv =
         top && (check || short) && sh.gentle !== true
           ? S('intervali', iDose, 'i-1000')
-          : S('intervali', iDose);
+          : sh.gentle === true && sh.days <= 4 && !top
+            ? /* R26 (p15): povratnik sa 4 dana — kraće deonice i manja doza, da brzi trening ne bude duži od dugog */
+              S('intervali', iDose * 0.7, 'i-600')
+            : S('intervali', iDose);
       out.push(
         week(
           RAZVOJ,
           'build',
           top ? (sh.days === 3 ? 1 : 0.94) : load,
           longSpec,
-          sh.days === 3 && top && (check || short) ? [thu, iv] : pairFor(sh, thu, iv, k)
+          sh.days === 3 && top && (check || short)
+            ? [thu, iv]
+            : /* R26 (p15): povratnik sa ≤ 4 dana u razvoju kraći prag uz intervale — sa punim pragom nedelja je
+                 nosila 20 % brzog rada uz 21,7 km (drugi sudija) */
+              pairFor(sh, sh.gentle === true && sh.days <= 4 && !top ? S('prag', 0.4) : thu, iv, k)
         )
       );
     } else {
@@ -230,7 +237,11 @@ function regularWeeks(n: number, sh: Shape, startLoad: number): WeekIntent[] {
           'build',
           load,
           longSpec,
-          pairFor(sh, S('prag', lerp(0.55, 1, tb)), S('brzina', lerp(0.7, 1, tb)), k, true)
+          /* R26 (p15): povratnik sa ≤ 4 dana bez jakih uzbrdica u prve 4 nedelje — dodatak su ubrzanja */
+          pairFor(sh, S('prag', lerp(0.55, 1, tb)), S('brzina', lerp(0.7, 1, tb)), k, true).map(
+            (s) =>
+              sh.gentle === true && sh.days <= 4 && w <= 4 && s === HILLS_SHORT ? STRIDES6 : s
+          )
         )
       );
     }

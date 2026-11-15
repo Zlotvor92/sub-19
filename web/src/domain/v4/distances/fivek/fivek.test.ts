@@ -831,7 +831,11 @@ describe('trenerski zahtevi za 5 km (coach/target/5K/README.md, brief F7-5K)', (
       const r = days.filter((d) => d.workout?.stimulus === 'brzina').length;
       if (p.doc.header.warnings.some((w) => w.code === 'obim-za-nivo')) continue;
       /* 10–11 nedelja: osnova ima 2–3 nedelje (3 dana: utorak smenjuje R i prag) */
-      expect(r, p.id).toBeGreaterThanOrEqual(p.doc.weeks.length >= 12 ? 3 : 1);
+      /* R26 (p15): povratnik sa ≤ 4 dana posle povrede — bez jakih uzbrdica u ned 1–4, pa i bez brzine koja ih
+         smenjuje (`tagMaxRun`); dovoljna su 2 */
+      const gentle4 =
+        p.doc.header.decisions.level === 'povratnik' && p.doc.header.decisions.runDays.length <= 4;
+      expect(r, p.id).toBeGreaterThanOrEqual(p.doc.weeks.length >= 12 ? (gentle4 ? 2 : 3) : 1);
       const iWeeks = p.doc.weeks.map((w) =>
         w.days.some((d) => d.workout?.stimulus === 'intervali')
       );
