@@ -1010,3 +1010,7 @@ Vremena po Beogradu. Novi unosi idu na dno. Pouzdanost: [visoka] izmereno/proči
   vlasnika prelazi na V4; uklanja se dupli kod. Menja ranije odluke (lični plan zaštićen do 13. 12.; „stari prikaz"
   kao rezerva). Baza (zbir): 31 nalog, 22 sa planom (oko 3 v2, ostalo stari format), 4 aktivna u 14 dana.
   Pokrenuta etapa 1 (samo popis i plan): `briefs/BRISANJE-1-POPIS.md` → `f9/BRISANJE-PLAN.md`.
+- (≈ 10:55) Vlasnik: „Samo te v2 planove i moj plan prebacuješ u V4, ostale briši, nek generišu nove." U V4 trajno
+  prelaze samo v2 planovi (oko 3 u bazi) i lični plan vlasnika; planovi starog formata se ne preuzimaju — korisnik
+  pravi nov. Dopuna poslata tabu BRISANJE-1 (`session_01GnHHiYx7DRzrJiqGRkxCEf`); adapteri starog formata i
+  `legacyPlans`/`legacyAdapt` idu na spisak za brisanje.
