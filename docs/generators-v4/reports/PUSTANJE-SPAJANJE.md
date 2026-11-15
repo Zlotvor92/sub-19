@@ -57,3 +57,6 @@ Zamena za ove reference ne postoji jer je v1 (osim zamrznutog HM v1) obrisan; li
   `engine/guard.test.ts:39` 3,9 s → 30 s; `engine/stability.test.ts:9` 3,7 s → 30 s; `hm/r9b.test.ts:57` 3,7 s → 30 s;
   `tenk/r9b.test.ts:15` 3,4 s → 30 s; `marathon/marathon.test.ts:343` 34,8 s → 140 s (bilo 60 s). U run-u 1018 nije
   istekao nijedan drugi test. Tela testova i tvrdnje netaknuti (u 3 fajla prettier samo preuvlači).
+- Commit `cf939ee7` (+ merge `20eb9a75` organizatora = `823ec123`). CI run **1019 ZELEN** (09:38–09:43): scope, test
+  (korenski), database, web (tipovi, lint, format, build), web-test 1/1 (select), web-e2e 1/3, 2/3, 3/3 — svih 8 uspešno.
+  Domet je bio „select" (izmena samo `domain/v4/**` testova i `supabase/`), ne „sve": `src/test/` nije diran.
